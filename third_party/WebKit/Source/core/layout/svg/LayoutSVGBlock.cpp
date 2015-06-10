@@ -23,10 +23,10 @@
 #include "core/layout/svg/LayoutSVGBlock.h"
 
 #include "core/layout/LayoutView.h"
-#include "core/style/ShadowList.h"
 #include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/layout/svg/SVGResourcesCache.h"
+#include "core/style/ShadowList.h"
 #include "core/svg/SVGElement.h"
 
 namespace blink {

@@ -44,7 +44,6 @@
 #include "core/layout/LayoutVideo.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/compositing/DeprecatedPaintLayerCompositor.h"
-#include "core/style/KeyframeList.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
@@ -53,6 +52,7 @@
 #include "core/paint/ScrollableAreaPainter.h"
 #include "core/paint/TransformRecorder.h"
 #include "core/plugins/PluginView.h"
+#include "core/style/KeyframeList.h"
 #include "platform/LengthFunctions.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/fonts/FontCache.h"
@@ -1061,7 +1061,8 @@ void CompositedDeprecatedPaintLayerMapping::updateInternalHierarchy()
 
     // Layer to which children should be attached as we build the hierarchy.
     GraphicsLayer* bottomLayer = m_graphicsLayer.get();
-    auto updateBottomLayer = [&bottomLayer](GraphicsLayer* layer) {
+    auto updateBottomLayer = [&bottomLayer](GraphicsLayer* layer)
+    {
         if (layer) {
             bottomLayer->addChild(layer);
             bottomLayer = layer;

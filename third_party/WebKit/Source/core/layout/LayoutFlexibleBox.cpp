@@ -34,9 +34,9 @@
 #include "core/frame/UseCounter.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/TextAutosizer.h"
-#include "core/style/ComputedStyle.h"
 #include "core/paint/BlockPainter.h"
 #include "core/paint/DeprecatedPaintLayer.h"
+#include "core/style/ComputedStyle.h"
 #include "platform/LengthFunctions.h"
 #include "wtf/MathExtras.h"
 #include <limits>

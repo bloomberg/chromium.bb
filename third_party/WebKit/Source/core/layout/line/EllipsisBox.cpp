@@ -25,8 +25,8 @@
 #include "core/layout/TextRunConstructor.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/layout/line/RootInlineBox.h"
-#include "core/style/ShadowList.h"
 #include "core/paint/EllipsisBoxPainter.h"
+#include "core/style/ShadowList.h"
 #include "platform/fonts/Font.h"
 #include "platform/text/TextRun.h"
 

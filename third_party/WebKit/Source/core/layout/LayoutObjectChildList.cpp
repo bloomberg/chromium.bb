@@ -31,8 +31,8 @@
 #include "core/layout/LayoutCounter.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutView.h"
-#include "core/style/ComputedStyle.h"
 #include "core/paint/DeprecatedPaintLayer.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 

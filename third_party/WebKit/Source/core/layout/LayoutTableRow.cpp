@@ -32,8 +32,8 @@
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/SubtreeLayoutScope.h"
-#include "core/style/StyleInheritedData.h"
 #include "core/paint/TableRowPainter.h"
+#include "core/style/StyleInheritedData.h"
 
 namespace blink {
 

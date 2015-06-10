@@ -28,10 +28,10 @@
 
 #include "core/layout/LayoutView.h"
 #include "core/layout/TextAutosizer.h"
-#include "core/style/GridCoordinate.h"
-#include "core/style/ComputedStyle.h"
 #include "core/paint/DeprecatedPaintLayer.h"
 #include "core/paint/GridPainter.h"
+#include "core/style/ComputedStyle.h"
+#include "core/style/GridCoordinate.h"
 #include "platform/LengthFunctions.h"
 
 namespace blink {
