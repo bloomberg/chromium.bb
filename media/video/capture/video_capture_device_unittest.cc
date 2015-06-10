@@ -322,8 +322,7 @@ TEST_P(VideoCaptureDeviceTest, CaptureWithSize) {
   EXPECT_EQ(last_format().frame_size.width(), width);
   EXPECT_EQ(last_format().frame_size.height(), height);
   if (last_format().pixel_format != PIXEL_FORMAT_MJPEG)
-    EXPECT_LE(static_cast<size_t>(width * height * 3 / 2),
-              last_format().ImageAllocationSize());
+    EXPECT_EQ(size.GetArea(), last_format().frame_size.GetArea());
   device->StopAndDeAllocate();
 }
 
@@ -345,6 +344,7 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_AllocateBadSize) {
 
   EXPECT_CALL(*client_, OnError(_)).Times(0);
 
+  const gfx::Size input_size(640, 480);
   VideoCaptureParams capture_params;
   capture_params.requested_format.frame_size.SetSize(637, 472);
   capture_params.requested_format.frame_rate = 35;
@@ -352,10 +352,10 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_AllocateBadSize) {
   device->AllocateAndStart(capture_params, client_.Pass());
   WaitForCapturedFrame();
   device->StopAndDeAllocate();
-  EXPECT_EQ(last_format().frame_size.width(), 640);
-  EXPECT_EQ(last_format().frame_size.height(), 480);
-  EXPECT_EQ(static_cast<size_t>(640 * 480 * 3 / 2),
-            last_format().ImageAllocationSize());
+  EXPECT_EQ(last_format().frame_size.width(), input_size.width());
+  EXPECT_EQ(last_format().frame_size.height(), input_size.height());
+  if (last_format().pixel_format != PIXEL_FORMAT_MJPEG)
+    EXPECT_EQ(input_size.GetArea(), last_format().frame_size.GetArea());
 }
 
 // Cause hangs on Windows Debug. http://crbug.com/417824
