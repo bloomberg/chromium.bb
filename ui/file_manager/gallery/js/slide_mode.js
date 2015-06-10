@@ -203,6 +203,7 @@ function SlideMode(container, content, topToolbar, bottomToolbar, prompt,
    */
   this.spinnerTimer_ = null;
 
+  this.context_.appWindow.onRestored.addListener(this.onRestored_.bind(this));
   window.addEventListener('resize', this.onResize_.bind(this));
 
   // ----------------------------------------------------------------
@@ -1108,7 +1109,9 @@ SlideMode.prototype.onKeyDown = function(event) {
 
   if (this.isSlideshowOn_()) {
     switch (keyID) {
-      case 'U+001B':  // Escape
+      // Escape key is captured by the platform to exit full screen. We handle
+      // it by onRestored event.
+
       case 'MediaStop':
         this.stopSlideshow_(event);
         break;
@@ -1210,6 +1213,17 @@ SlideMode.prototype.onKeyDown = function(event) {
   }
 
   return true;
+};
+
+/**
+ * Restored event handler.
+ * @private
+ */
+SlideMode.prototype.onRestored_ = function() {
+  // Leave slide show since the window should not be in full screen when
+  // onRestored event is dispatched.
+  if (this.isSlideshowOn_())
+    this.stopSlideshow_();
 };
 
 /**
