@@ -105,7 +105,7 @@
 
     // HTML
     // https://html.spec.whatwg.org/#htmlelement
-    // FIXME: dataset should be on HTMLElement.
+    // FIXME: dataset should be on HTMLElement. crbug.com/498485
     [SameObject, PerWorldBindings] readonly attribute DOMStringMap dataset;
 
     // Non-standard APIs

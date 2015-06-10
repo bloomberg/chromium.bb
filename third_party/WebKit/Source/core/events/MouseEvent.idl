@@ -71,6 +71,6 @@
     [DeprecateAs=PrefixedMouseEventMovementX, ImplementedAs=movementX] readonly attribute long webkitMovementX;
     [DeprecateAs=PrefixedMouseEventMovementY, ImplementedAs=movementY] readonly attribute long webkitMovementY;
 
-    // FIXME: this belongs on the DragEvent interface
+    // FIXME: dataTransfer belongs on the DragEvent interface. crbug.com/498504
     readonly attribute DataTransfer dataTransfer;
 };
