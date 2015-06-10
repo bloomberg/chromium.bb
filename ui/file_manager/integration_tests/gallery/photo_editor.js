@@ -30,7 +30,7 @@ function setupPhotoEditor(testVolumeName, volumeType) {
 
     // Lauch the photo editor.
     var photoEditorPromise = slideImagePromise.then(function() {
-      return gallery.waitAndClickElement(appId, '.button.edit');
+      return gallery.waitAndClickElement(appId, 'button.edit');
     });
 
     return photoEditorPromise.then(function() {

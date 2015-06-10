@@ -43,7 +43,7 @@ input[type='checkbox']:checked {
 }
 
 /* Common background for both mosaic and slide mode. */
-.gallery > .content {
+.gallery .content {
   background-color: black;
 }
 
@@ -157,12 +157,13 @@ input[type='checkbox']:checked {
   -webkit-box-orient: horizontal;
   -webkit-box-pack: start;
   background-color: rgba(40, 42, 45, 0.9);
+  border-top: 1px solid rgba(50, 50, 50, 0.8);
   display: flex;
-  height: 48px;
+  height: 55px;
   left: 0;
   opacity: 0;
   overflow: hidden;
-  padding: 0;
+  padding: 0 10px;
   pointer-events: none;
   position: absolute;
   right: 0;
@@ -175,7 +176,6 @@ input[type='checkbox']:checked {
 
 .gallery > .toolbar.bottom {
   bottom: 0;
-  height: 55px;
 }
 
 .gallery > .toolbar.bottom > .slide-mode-toolbar {
@@ -303,7 +303,6 @@ input[type='checkbox']:checked {
 /* Filename */
 
 .gallery .filename-spacer {
-  -webkit-margin-start: 16px;
   flex: 1 0 auto;
   height: 100%;
   min-width: 140px;
@@ -336,7 +335,7 @@ input[type='checkbox']:checked {
   padding: 0 3px;
   position: absolute;
   text-overflow: ellipsis;
-  top: 13px;
+  top: 15px;
   white-space: nowrap;
   width: 100%;
 }
@@ -731,72 +730,95 @@ input[type='checkbox']:checked {
   display: none;
 }
 
-.gallery > .toolbar paper-button {
-  background-position: center;
-  background-repeat: no-repeat;
-  height: 32px;
-  margin: 0 8px;
-  min-width: 32px;
-  width: 32px;
-}
-
-/* Since currently Gallery does not use shadow dom with Polymer, ::shadow
- * selector does not work correctly. */
-.gallery > .toolbar paper-button::shadow paper-ripple,
-.gallery > .toolbar paper-button > paper-ripple {
-  color: white;
-}
-
-.gallery > .toolbar paper-button.edit {
+.gallery[mode='slide'] > .toolbar button.mode {
   background-image: -webkit-image-set(
-      url(../images/100/edit.png) 1x,
-      url(../images/200/edit.png) 2x);
+      url(../images/100/icon_mosaic.png) 1x,
+      url(../images/200/icon_mosaic.png) 2x);
 }
 
-.gallery > .toolbar paper-button.print {
+.gallery[mode='slide'] > .toolbar button.mode:active {
   background-image: -webkit-image-set(
-      url(../images/100/print.png) 1x,
-      url(../images/200/print.png) 2x);
+      url(../images/100/icon_mosaic_selected.png) 1x,
+      url(../images/200/icon_mosaic_selected.png) 2x);
 }
 
-.gallery > .toolbar paper-button.delete {
+.gallery[mode='mosaic'] > .toolbar button.mode {
   background-image: -webkit-image-set(
-      url(../images/100/delete.png) 1x,
-      url(../images/200/delete.png) 2x);
+      url(../images/100/icon_1up.png) 1x,
+      url(../images/200/icon_1up.png) 2x);
 }
 
-.gallery > .toolbar paper-button.slide-mode {
+.gallery[mode='mosaic'] > .toolbar button.mode:active {
   background-image: -webkit-image-set(
-      url(../images/100/slide_view.png) 1x,
-      url(../images/200/slide_view.png) 2x);
+      url(../images/100/icon_1up_selected.png) 1x,
+      url(../images/200/icon_1up_selected.png) 2x);
 }
 
-.gallery > .toolbar paper-button.mosaic-mode {
+.gallery > .toolbar button.slideshow {
   background-image: -webkit-image-set(
-      url(../images/100/mosaic_view.png) 1x,
-      url(../images/200/mosaic_view.png) 2x);
+      url(../images/100/icon_slideshow.png) 1x,
+      url(../images/200/icon_slideshow.png) 2x);
 }
 
-.gallery > .toolbar paper-button.slideshow {
+.gallery > .toolbar button.slideshow:active,
+.gallery > .toolbar button.slideshow[pressed] {
   background-image: -webkit-image-set(
-      url(../images/100/slideshow.png) 1x,
-      url(../images/200/slideshow.png) 2x);
+      url(../images/100/icon_slideshow_selected.png) 1x,
+      url(../images/200/icon_slideshow_selected.png) 2x);
 }
 
-.gallery > .toolbar paper-button.share {
+.gallery > .toolbar button.delete {
   background-image: -webkit-image-set(
-      url(../images/100/share.png) 1x,
-      url(../images/200/share.png) 2x);
+      url(../images/100/icon_delete.png) 1x,
+      url(../images/200/icon_delete.png) 2x);
 }
 
-.gallery[editing] > .toolbar paper-button.edit {
-  opacity: 0.5;
-  pointer-events: none;
+.gallery > .toolbar button.delete:active {
+  background-image: -webkit-image-set(
+      url(../images/100/icon_delete_selected.png) 1x,
+      url(../images/200/icon_delete_selected.png) 2x);
 }
 
-.gallery[mode='slide'] > .toolbar paper-button.slide-mode,
-.gallery[mode='mosaic'] > .toolbar paper-button.mosaic-mode,
-.gallery > .toolbar paper-button[disabled] {
+.gallery > .toolbar button.edit {
+  background-image: -webkit-image-set(
+      url(../images/100/icon_edit.png) 1x,
+      url(../images/200/icon_edit.png) 2x);
+}
+
+.gallery > .toolbar button.edit:active,
+.gallery > .toolbar button.edit[pressed] {
+  background-image: -webkit-image-set(
+      url(../images/100/icon_edit_selected.png) 1x,
+      url(../images/200/icon_edit_selected.png) 2x);
+}
+
+.gallery > .toolbar button.print {
+  background-image: -webkit-image-set(
+      url(../images/100/icon_print.png) 1x,
+      url(../images/200/icon_print.png) 2x);
+}
+
+.gallery > .toolbar button.print:active,
+.gallery > .toolbar button.print[pressed] {
+  background-image: -webkit-image-set(
+      url(../images/100/icon_print_selected.png) 1x,
+      url(../images/200/icon_print_selected.png) 2x);
+}
+
+.gallery > .toolbar button.share {
+  background-image: -webkit-image-set(
+      url(../images/100/icon_share.png) 1x,
+      url(../images/200/icon_share.png) 2x);
+}
+
+.gallery > .toolbar button.share:active,
+.gallery > .toolbar button.share[pressed] {
+  background-image: -webkit-image-set(
+      url(../images/100/icon_share_selected.png) 1x,
+      url(../images/200/icon_share_selected.png) 2x);
+}
+
+.gallery > .toolbar button.share[disabled] {
   display: none;
 }
 

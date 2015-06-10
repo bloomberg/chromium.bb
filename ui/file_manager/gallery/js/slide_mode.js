@@ -341,7 +341,8 @@ function SlideMode(container, content, topToolbar, bottomToolbar, prompt,
    * @const
    */
   var slideShowButton = queryRequiredElement(this.topToolbar_,
-      '.button.slideshow');
+      'button.slideshow');
+  slideShowButton.title = this.displayStringFunction_('GALLERY_SLIDESHOW');
   slideShowButton.addEventListener('click',
       this.startSlideshow.bind(this, SlideMode.SLIDESHOW_INTERVAL_FIRST));
 
@@ -362,7 +363,9 @@ function SlideMode(container, content, topToolbar, bottomToolbar, prompt,
    * @private
    * @const
    */
-  this.editButton_ = queryRequiredElement(this.topToolbar_, '.button.edit');
+  this.editButton_ = queryRequiredElement(this.topToolbar_, 'button.edit');
+  this.editButton_.title = this.displayStringFunction_('GALLERY_EDIT');
+  this.editButton_.disabled = true;  // Disabled by default.
   this.editButton_.addEventListener('click', this.toggleEditor.bind(this));
 
   /**
@@ -370,7 +373,9 @@ function SlideMode(container, content, topToolbar, bottomToolbar, prompt,
    * @private
    * @const
    */
-  this.printButton_ = queryRequiredElement(this.topToolbar_, '.button.print');
+  this.printButton_ = queryRequiredElement(this.topToolbar_, 'button.print');
+  this.printButton_.title = this.displayStringFunction_('GALLERY_PRINT');
+  this.printButton_.disabled = true;  // Disabled by default.
   this.printButton_.addEventListener('click', this.print_.bind(this));
 
   /**
