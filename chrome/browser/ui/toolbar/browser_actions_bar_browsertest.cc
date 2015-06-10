@@ -335,7 +335,14 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarRedesignBrowserTest,
   EXPECT_FALSE(browser_actions_bar()->OverflowedActionButtonWantsToRun());
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, BrowserActionPopupTest) {
+// Flaky on Mac ASan 64 bot. See http://crbug.com/498665.
+#if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
+#define MAYBE_BrowserActionPopupTest DISABLED_BrowserActionPopupTest
+#else
+#define MAYBE_BrowserActionPopupTest BrowserActionPopupTest
+#endif
+IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest,
+                       MAYBE_BrowserActionPopupTest) {
   // Load up two extensions that have browser action popups.
   base::FilePath data_dir =
       test_data_dir_.AppendASCII("api_test").AppendASCII("browser_action");
