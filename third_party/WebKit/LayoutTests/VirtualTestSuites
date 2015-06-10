@@ -32,20 +32,6 @@
     "args": ["--enable-threaded-compositing"]
   },
   {
-    "prefix": "deferred",
-    "base": "fast/images",
-    "args": ["--enable-deferred-image-decoding",
-             "--enable-per-tile-painting",
-             "--disable-impl-side-painting"]
-  },
-  {
-    "prefix": "deferred",
-    "base": "inspector/tracing",
-    "args": ["--enable-deferred-image-decoding",
-             "--enable-per-tile-painting",
-             "--disable-impl-side-painting"]
-  },
-  {
     "prefix": "prefer_compositing_to_lcd_text",
     "base": "compositing/overflow",
     "args": ["--enable-prefer-compositing-to-lcd-text"]

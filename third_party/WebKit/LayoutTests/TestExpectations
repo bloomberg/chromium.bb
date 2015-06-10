@@ -511,9 +511,6 @@ crbug.com/433727 [ XP ] http/tests/cachestorage/window/cache-put.html [ Pass Tim
 crbug.com/433727 [ XP ] http/tests/cachestorage/worker/cache-put.html [ Pass Timeout Failure ]
 crbug.com/433727 [ XP ] http/tests/cachestorage/serviceworker/cache-put.html [ Pass Timeout Failure ]
 
-# Flaky tests under Linux Aura
-crbug.com/318980 [ Linux ] virtual/deferred/fast/images/imagemap-focus-ring-zoom-style.html [ ImageOnlyFailure Pass ]
-
 # Untriaged Linux-specific Aura failures
 
 crbug.com/381684 [ Win Android Mac ] fonts/family-fallback-gardiner.html [ Skip ]
@@ -924,8 +921,6 @@ crbug.com/310323 [ Debug ] http/tests/security/contentSecurityPolicy/report-mult
 
 crbug.com/311301 fast/history/history_reload.html [ Failure Pass ]
 
-crbug.com/316151 [ Win ] virtual/deferred/fast/images/2-comp.html [ Pass Timeout ]
-
 crbug.com/317742 [ Win7 ] fast/css-grid-layout/grid-item-z-index-stacking-context.html [ Timeout Pass ]
 
 crbug.com/311469 [ Mac ] svg/custom/getSubStringLength.html [ Failure Pass ]
@@ -1155,7 +1150,6 @@ crbug.com/352856 [ Mac ] svg/batik/text/textPosition.svg [ Pass Failure NeedsMan
 crbug.com/352856 [ Mac ] svg/batik/text/textPosition2.svg [ Pass Failure NeedsManualRebaseline ]
 
 crbug.com/453944 [ Mac ] fast/images/png-suite/test.html [ Crash Pass ]
-crbug.com/453944 [ Mac ] virtual/deferred/fast/images/png-suite/test.html [ Crash Pass ]
 crbug.com/453944 [ Mac ] virtual/slimmingpaint/fast/images/png-suite/test.html [ Skip ]
 
 crbug.com/419696 [ Mac Debug ] fast/text/font-linux-normalize.html [ Crash Pass ]
@@ -1459,7 +1453,6 @@ crbug.com/363099 [ Win ] plugins/open-and-close-window-with-plugin.html [ Failur
 
 crbug.com/420008 [ Win ] inspector/tracing [ Pass Failure ]
 crbug.com/420008 [ Win ] http/tests/inspector/tracing [ Pass Failure ]
-crbug.com/420008 [ Win ] virtual/deferred/inspector/tracing [ Pass Failure ]
 
 # These are experiencing assertions in harfbuzz.
 # fast/text/international/bidi-neutral-run.html is missing here, since it has a NeedsManualRebaseline expectation up above.
@@ -1652,8 +1645,6 @@ crbug.com/487880 [ Win ] fast/scroll-behavior/overflow-scroll-animates.html [ Pa
 crbug.com/487880 [ Win Linux ] virtual/threaded/fast/scroll-behavior/overflow-scroll-animates.html [ Pass Timeout ]
 crbug.com/487880 [ Win ] virtual/scroll_customization/fast/scroll-behavior/overflow-scroll-animates.html [ Pass Timeout ]
 
-crbug.com/439856 virtual/deferred/fast/images/pixelated-composited.html [ ImageOnlyFailure ]
-
 crbug.com/445889 virtual/slimmingpaint/fast/inline/fixed-pos-moves-with-abspos-inline-parent.html [ Skip ]
 crbug.com/445889 fast/inline/fixed-pos-moves-with-abspos-inline-parent.html [ Pass Failure ]
 
@@ -1835,7 +1826,6 @@ crbug.com/471824 virtual/pointerevent/imported/web-platform-tests/pointerevents/
 crbug.com/471824 virtual/pointerevent/imported/web-platform-tests/pointerevents/pointerevent_touch-action-verification.html [ Skip ]
 
 crbug.com/470429 inspector/tracing/worker-js-profile.html [ Pass Timeout Crash ]
-crbug.com/470429 virtual/deferred/inspector/tracing/worker-js-profile.html [ Pass Timeout Crash ]
 
 crbug.com/471066 [ SnowLeopard ] virtual/antialiasedtext/fast/text/apply-start-width-after-skipped-text.html [ Failure ]
 crbug.com/471066 [ SnowLeopard ] virtual/antialiasedtext/fast/text/bidi-explicit-embedding-past-end.html [ Failure ]
@@ -1850,8 +1840,6 @@ crbug.com/471093 inspector/sources/debugger-frameworks/frameworks-dom-xhr-event-
 
 #crbug.com/471381 inspector-protocol/debugger/suspend-setTimeout-on-pause-in-dedicated-worker.html [ Pass Timeout ]
 crbug.com/497252 inspector-protocol/debugger/suspend-setTimeout-on-pause-in-dedicated-worker.html [ Pass Crash Timeout ]
-
-crbug.com/472904 virtual/deferred/inspector/tracing/worker-events.html [ Pass Crash ]
 
 crbug.com/473626 fast/forms/form-submission-cancelable.html [ Pass Timeout ]
 crbug.com/473626 virtual/slimmingpaint/fast/forms/form-submission-cancelable.html [ Skip ]

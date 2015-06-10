@@ -178,10 +178,6 @@ fast/canvas/canvas-lost-gpu-context.html [ WontFix ]
 [ SnowLeopard Debug ] fast/text/trailing_whitespace_wrapping.html [ WontFix ]
 
 
-# /deferred/ does not have impl-side painting, so no picture attribute in Paint event,
-# hence the test can't launch paint profiler
-virtual/deferred/inspector/tracing/paint-profiler-update.html [ WontFix ]
-
 # Subpixel font scaling requires DirectWrite on windows (which isn't supported
 # on XP) and antialiasing on mac (which isn't enabled tests).
 [ XP Mac ] fast/text/sub-pixel/text-scaling-ltr.html [ WontFix ]
