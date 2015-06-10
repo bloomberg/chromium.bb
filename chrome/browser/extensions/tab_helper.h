@@ -7,7 +7,6 @@
 
 #include <set>
 #include <string>
-#include <vector>
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -67,8 +66,6 @@ class TabHelper : public content::WebContentsObserver,
   virtual void AddScriptExecutionObserver(ScriptExecutionObserver* observer);
   virtual void RemoveScriptExecutionObserver(ScriptExecutionObserver* observer);
 
-  // App extensions ------------------------------------------------------------
-
   // Sets the extension denoting this as an app. If |extension| is non-null this
   // tab becomes an app-tab. WebContents does not listen for unload events for
   // the extension. It's up to consumers of WebContents to do that.
@@ -125,6 +122,11 @@ class TabHelper : public content::WebContentsObserver,
       WebstoreInlineInstallerFactory* factory);
 
  private:
+  // Utility function to invoke member functions on all relevant
+  // ContentRulesRegistries.
+  template <class Func>
+  void InvokeForContentRulesRegistries(const Func& func);
+
   // Different types of action when web app info is available.
   // OnDidGetApplicationInfo uses this to dispatch calls.
   enum WebAppAction {
@@ -171,7 +173,6 @@ class TabHelper : public content::WebContentsObserver,
   void OnContentScriptsExecuting(
       const ScriptExecutionObserver::ExecutingScriptsMap& extension_ids,
       const GURL& on_url);
-  void OnWatchedPageChange(const std::vector<std::string>& css_selectors);
   void OnDetailedConsoleMessageAdded(const base::string16& message,
                                      const base::string16& source,
                                      const StackTrace& stack_trace,
@@ -212,7 +213,7 @@ class TabHelper : public content::WebContentsObserver,
   // Sends our tab ID to |render_frame_host|.
   void SetTabId(content::RenderFrameHost* render_frame_host);
 
-  // Data for app extensions ---------------------------------------------------
+  Profile* profile_;
 
   // Our content script observers. Declare at top so that it will outlive all
   // other members, since they might add themselves as observers.
@@ -254,8 +255,6 @@ class TabHelper : public content::WebContentsObserver,
   scoped_ptr<ActiveTabPermissionGranter> active_tab_permission_granter_;
 
   scoped_ptr<BookmarkAppHelper> bookmark_app_helper_;
-
-  Profile* profile_;
 
   // Creates WebstoreInlineInstaller instances for inline install triggers.
   scoped_ptr<WebstoreInlineInstallerFactory> webstore_inline_installer_factory_;

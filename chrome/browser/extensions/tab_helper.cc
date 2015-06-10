@@ -74,10 +74,9 @@ namespace extensions {
 
 TabHelper::TabHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
+      profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
       extension_app_(NULL),
-      extension_function_dispatcher_(
-          Profile::FromBrowserContext(web_contents->GetBrowserContext()),
-          this),
+      extension_function_dispatcher_(profile_, this),
       pending_web_app_action_(NONE),
       last_committed_nav_entry_unique_id_(0),
       update_shortcut_on_load_complete_(false),
@@ -97,13 +96,13 @@ TabHelper::TabHelper(content::WebContents* web_contents)
   active_tab_permission_granter_.reset(new ActiveTabPermissionGranter(
       web_contents,
       SessionTabHelper::IdForTab(web_contents),
-      Profile::FromBrowserContext(web_contents->GetBrowserContext())));
-
-  // If more classes need to listen to global content script activity, then
-  // a separate routing class with an observer interface should be written.
-  profile_ = Profile::FromBrowserContext(web_contents->GetBrowserContext());
+      profile_));
 
   AddScriptExecutionObserver(ActivityLog::GetInstance(profile_));
+
+  InvokeForContentRulesRegistries([this](ContentRulesRegistry* registry) {
+    registry->MonitorWebContentsForRuleEvaluation(this->web_contents());
+  });
 
   registrar_.Add(this,
                  content::NOTIFICATION_LOAD_STOP,
@@ -192,6 +191,30 @@ SkBitmap* TabHelper::GetExtensionAppIcon() {
   return &extension_app_icon_;
 }
 
+// Encapsulates the logic to decide which ContentRulesRegistries need to be
+// invoked, depending on whether this WebContents is associated with an Original
+// or OffTheRecord profile. In the latter case, we need to invoke on both the
+// Original and OffTheRecord ContentRulesRegistries since the Original registry
+// handles spanning-mode incognito extensions.
+template <class Func>
+void TabHelper::InvokeForContentRulesRegistries(const Func& func) {
+  RulesRegistryService* rules_registry_service =
+      RulesRegistryService::Get(profile_);
+  if (rules_registry_service) {
+    func(rules_registry_service->content_rules_registry());
+    if (profile_->IsOffTheRecord()) {
+      // The original profile's content rules registry handles rules for
+      // spanning extensions in incognito profiles, so invoke it also.
+      RulesRegistryService* original_profile_rules_registry_service =
+          RulesRegistryService::Get(profile_->GetOriginalProfile());
+      DCHECK_NE(rules_registry_service,
+                original_profile_rules_registry_service);
+      if (original_profile_rules_registry_service)
+        func(original_profile_rules_registry_service->content_rules_registry());
+    }
+  }
+}
+
 void TabHelper::FinishCreateBookmarkApp(
     const Extension* extension,
     const WebApplicationInfo& web_app_info) {
@@ -205,27 +228,10 @@ void TabHelper::RenderFrameCreated(content::RenderFrameHost* host) {
 void TabHelper::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
-  RulesRegistryService* rules_registry_service =
-      RulesRegistryService::Get(profile_);
-  if (rules_registry_service) {
-    rules_registry_service->content_rules_registry()->
-        DidNavigateMainFrame(web_contents(), details, params);
-    // The original profile's content rules registry handles rules for spanning
-    // extensions in incognito profiles, so let it know about the navigation
-    // also.
-    if (profile_->IsOffTheRecord()) {
-      RulesRegistryService* incognito_rules_registry_service =
-          RulesRegistryService::Get(profile_->GetOriginalProfile());
-      // The content and web request rules registries depend on separate
-      // instances for original/incognito profiles. See the comment on
-      // ChromeContentRulesRegistry.
-      DCHECK_NE(rules_registry_service, incognito_rules_registry_service);
-      if (incognito_rules_registry_service) {
-        incognito_rules_registry_service->content_rules_registry()->
-            DidNavigateMainFrame(web_contents(), details, params);
-      }
-    }
-  }
+  InvokeForContentRulesRegistries(
+      [this, &details, &params](ContentRulesRegistry* registry) {
+    registry->DidNavigateMainFrame(web_contents(), details, params);
+  });
 
   content::BrowserContext* context = web_contents()->GetBrowserContext();
   ExtensionRegistry* registry = ExtensionRegistry::Get(context);
@@ -262,8 +268,6 @@ bool TabHelper::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_GetAppInstallState,
                         OnGetAppInstallState);
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_Request, OnRequest)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_OnWatchedPageChange,
-                        OnWatchedPageChange)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -356,12 +360,9 @@ void TabHelper::OnInlineWebstoreInstall(int install_id,
   }
   // Inform the Webstore API that an inline install is happening, in case the
   // page requested status updates.
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-
-  ExtensionRegistry* registry = ExtensionRegistry::Get(profile);
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile_);
   if (registry->disabled_extensions().Contains(webstore_item_id) &&
-      (ExtensionPrefs::Get(profile)->GetDisableReasons(webstore_item_id) &
+      (ExtensionPrefs::Get(profile_)->GetDisableReasons(webstore_item_id) &
            Extension::DISABLE_PERMISSIONS_INCREASE) != 0) {
       // The extension was disabled due to permissions increase. Prompt for
       // re-enable.
@@ -371,7 +372,7 @@ void TabHelper::OnInlineWebstoreInstall(int install_id,
       extension_reenabler_.reset();
       extension_reenabler_ = ExtensionReenabler::PromptForReenable(
           registry->disabled_extensions().GetByID(webstore_item_id),
-          profile,
+          profile_,
           web_contents(),
           requestor_url,
           base::Bind(&TabHelper::OnReenableComplete,
@@ -381,7 +382,7 @@ void TabHelper::OnInlineWebstoreInstall(int install_id,
   } else {
     // TODO(devlin): We should adddress the case of the extension already
     // being installed and enabled.
-    WebstoreAPI::Get(profile)->OnInlineInstallStart(
+    WebstoreAPI::Get(profile_)->OnInlineInstallStart(
         return_route_id, this, webstore_item_id, listeners_mask);
 
     WebstoreStandaloneInstaller::Callback callback =
@@ -433,15 +434,6 @@ void TabHelper::OnContentScriptsExecuting(
       OnScriptsExecuted(web_contents(), executing_scripts_map, on_url));
 }
 
-void TabHelper::OnWatchedPageChange(
-    const std::vector<std::string>& css_selectors) {
-  if (ExtensionSystem::Get(profile_)->extension_service() &&
-      RulesRegistryService::Get(profile_)) {
-    RulesRegistryService::Get(profile_)->content_rules_registry()->Apply(
-        web_contents(), css_selectors);
-  }
-}
-
 void TabHelper::OnDetailedConsoleMessageAdded(
     const base::string16& message,
     const base::string16& source,
@@ -480,9 +472,7 @@ void TabHelper::UpdateExtensionAppIcon(const Extension* extension) {
 
   // Enqueue OnImageLoaded callback.
   if (extension) {
-    Profile* profile =
-        Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-    ImageLoader* loader = ImageLoader::Get(profile);
+    ImageLoader* loader = ImageLoader::Get(profile_);
     loader->LoadImageAsync(
         extension,
         IconsInfo::GetIconResource(extension,

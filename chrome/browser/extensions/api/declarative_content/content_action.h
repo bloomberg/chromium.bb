@@ -16,6 +16,7 @@
 namespace base {
 class Time;
 class Value;
+class DictionaryValue;
 }
 
 namespace content {

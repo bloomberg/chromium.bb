@@ -621,5 +621,21 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
               testing::ContainsRegex("compound selector.*: div input$"));
 }
 
+// https://crbug.com/497586
+IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
+                       WebContentsWithoutTabAddedNotificationAtOnLoaded) {
+  // Add a web contents to the tab strip in a way that doesn't trigger
+  // NOTIFICATION_TAB_ADDED.
+  content::WebContents* contents = content::WebContents::Create(
+      content::WebContents::CreateParams(profile()));
+  browser()->tab_strip_model()->AppendWebContents(contents, false);
+
+  // The actual extension contents don't matter here -- we're just looking to
+  // trigger OnExtensionLoaded.
+  ext_dir_.WriteManifest(kDeclarativeContentManifest);
+  ext_dir_.WriteFile(FILE_PATH_LITERAL("background.js"), kBackgroundHelpers);
+  ASSERT_TRUE(LoadExtension(ext_dir_.unpacked_path()));
+}
+
 }  // namespace
 }  // namespace extensions
