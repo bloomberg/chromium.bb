@@ -504,33 +504,4 @@ BASE_EXPORT bool MatchPattern(const base::StringPiece& string,
 BASE_EXPORT bool MatchPattern(const base::string16& string,
                               const base::string16& pattern);
 
-// Hack to convert any char-like type to its unsigned counterpart.
-// For example, it will convert char, signed char and unsigned char to unsigned
-// char.
-template<typename T>
-struct ToUnsigned {
-  typedef T Unsigned;
-};
-
-template<>
-struct ToUnsigned<char> {
-  typedef unsigned char Unsigned;
-};
-template<>
-struct ToUnsigned<signed char> {
-  typedef unsigned char Unsigned;
-};
-template<>
-struct ToUnsigned<wchar_t> {
-#if defined(WCHAR_T_IS_UTF16)
-  typedef unsigned short Unsigned;
-#elif defined(WCHAR_T_IS_UTF32)
-  typedef uint32 Unsigned;
-#endif
-};
-template<>
-struct ToUnsigned<short> {
-  typedef unsigned short Unsigned;
-};
-
 #endif  // BASE_STRINGS_STRING_UTIL_H_
