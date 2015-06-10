@@ -49,11 +49,7 @@ public:
 
     // Called when the frame requests to send Blob data to an existing session.
     // Embedder copies the |data| and the ownership is not transferred.
-    virtual void sendBlobData(const WebString& presentationUrl, const WebString& presentationId, const uint8_t* data, size_t length)
-    {
-        // TODO(s.singapati): Make this method pure virtual once Chromium has the implementation.
-        BLINK_ASSERT_NOT_REACHED();
-    }
+    virtual void sendBlobData(const WebString& presentationUrl, const WebString& presentationId, const uint8_t* data, size_t length) = 0;
 
     // Called when the frame requests to close an existing session.
     virtual void closeSession(const WebString& url, const WebString& presentationId) = 0;
