@@ -15,6 +15,10 @@
 namespace blink {
 
 class DisplayItemListTest : public ::testing::Test {
+public:
+    DisplayItemListTest()
+        : m_originalSlimmingPaintEnabled(RuntimeEnabledFeatures::slimmingPaintEnabled()) { }
+
 protected:
     DisplayItemList& displayItemList() { return m_displayItemList; }
     const DisplayItems& newPaintListBeforeUpdate() { return displayItemList().m_newDisplayItems; }
@@ -26,10 +30,11 @@ private:
     }
     virtual void TearDown() override
     {
-        RuntimeEnabledFeatures::setSlimmingPaintEnabled(false);
+        RuntimeEnabledFeatures::setSlimmingPaintEnabled(m_originalSlimmingPaintEnabled);
     }
 
     DisplayItemList m_displayItemList;
+    bool m_originalSlimmingPaintEnabled;
 };
 
 const DisplayItem::Type foregroundDrawingType = static_cast<DisplayItem::Type>(DisplayItem::DrawingPaintPhaseFirst + 4);

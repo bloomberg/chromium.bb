@@ -190,6 +190,10 @@ void PrintContextTest::testBasicLinkTarget()
 }
 
 class PrintContextTestWithSlimmingPaint : public PrintContextTest {
+public:
+    PrintContextTestWithSlimmingPaint()
+        : m_originalSlimmingPaintEnabled(RuntimeEnabledFeatures::slimmingPaintEnabled()) { }
+
 protected:
     virtual void SetUp() override
     {
@@ -198,9 +202,12 @@ protected:
     }
     virtual void TearDown() override
     {
-        RuntimeEnabledFeatures::setSlimmingPaintEnabled(false);
+        RuntimeEnabledFeatures::setSlimmingPaintEnabled(m_originalSlimmingPaintEnabled);
         PrintContextTest::TearDown();
     }
+
+private:
+    bool m_originalSlimmingPaintEnabled;
 };
 
 TEST_F(PrintContextTest, LinkTarget)

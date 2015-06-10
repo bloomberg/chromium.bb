@@ -18,7 +18,9 @@ namespace blink {
 
 class LayoutObjectDrawingRecorderTest : public RenderingTest {
 public:
-    LayoutObjectDrawingRecorderTest() : m_layoutView(nullptr) { }
+    LayoutObjectDrawingRecorderTest()
+        : m_layoutView(nullptr)
+        , m_originalSlimmingPaintEnabled(RuntimeEnabledFeatures::slimmingPaintEnabled()) { }
 
 protected:
     LayoutView& layoutView() { return *m_layoutView; }
@@ -39,10 +41,11 @@ private:
 
     virtual void TearDown() override
     {
-        RuntimeEnabledFeatures::setSlimmingPaintEnabled(false);
+        RuntimeEnabledFeatures::setSlimmingPaintEnabled(m_originalSlimmingPaintEnabled);
     }
 
     LayoutView* m_layoutView;
+    bool m_originalSlimmingPaintEnabled;
 };
 
 namespace {

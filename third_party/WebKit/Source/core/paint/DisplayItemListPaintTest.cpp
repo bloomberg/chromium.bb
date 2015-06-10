@@ -26,7 +26,8 @@ namespace blink {
 class DisplayItemListPaintTest : public RenderingTest {
 public:
     DisplayItemListPaintTest()
-        : m_layoutView(nullptr) { }
+        : m_layoutView(nullptr)
+        , m_originalSlimmingPaintEnabled(RuntimeEnabledFeatures::slimmingPaintEnabled()) { }
 
 protected:
     LayoutView& layoutView() { return *m_layoutView; }
@@ -47,10 +48,11 @@ private:
 
     virtual void TearDown() override
     {
-        RuntimeEnabledFeatures::setSlimmingPaintEnabled(false);
+        RuntimeEnabledFeatures::setSlimmingPaintEnabled(m_originalSlimmingPaintEnabled);
     }
 
     LayoutView* m_layoutView;
+    bool m_originalSlimmingPaintEnabled;
 };
 
 class TestDisplayItem : public DisplayItem {
