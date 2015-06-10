@@ -414,3 +414,18 @@ class BinhostTestStage(generic_stages.BuilderStage):
     incremental = not (self._run.config.chrome_rev or
                        self._run.options.chrome_rev)
     commands.RunBinhostTest(self._build_root, incremental=incremental)
+
+
+class BranchUtilTestStage(generic_stages.BuilderStage):
+  """Stage that verifies branching works on the latest manifest version."""
+
+  config_name = 'branch_util_test'
+
+  def PerformStage(self):
+    assert (hasattr(self._run.attrs, 'manifest_manager') and
+            self._run.attrs.manifest_manager is not None), \
+        'Must run ManifestVersionedSyncStage before this stage.'
+    manifest_manager = self._run.attrs.manifest_manager
+    commands.RunBranchUtilTest(
+        self._build_root,
+        manifest_manager.GetCurrentVersionInfo().VersionString())

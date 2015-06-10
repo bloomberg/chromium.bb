@@ -415,6 +415,21 @@ def RunBinhostTest(buildroot, incremental=True):
   RunBuildScript(buildroot, cmd, chromite_cmd=True, enter_chroot=True)
 
 
+def RunBranchUtilTest(buildroot, version):
+  """Tests that branch-util works at the given manifest version."""
+  with osutils.TempDir() as tempdir:
+    cmd = [
+        'cbuildbot',
+        'branch-util',
+        '--local',
+        '--skip-remote-push',
+        '--branch-name', 'test_branch',
+        '--version', version,
+        '--buildroot', tempdir,
+    ]
+    RunBuildScript(buildroot, cmd, chromite_cmd=True)
+
+
 def UpdateBinhostJson(buildroot):
   """Test prebuilts for all boards, making sure everybody gets Chrome prebuilts.
 

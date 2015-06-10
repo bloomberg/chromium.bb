@@ -197,6 +197,7 @@ class SimpleBuilder(generic_builders.Builder):
     if self._run.config.build_type == constants.PALADIN_TYPE:
       self._RunStage(build_stages.RegenPortageCacheStage)
     self._RunStage(test_stages.BinhostTestStage)
+    self._RunStage(test_stages.BranchUtilTestStage)
     self._RunStage(artifact_stages.MasterUploadPrebuiltsStage)
 
   def _RunDefaultTypeBuild(self):
@@ -208,6 +209,7 @@ class SimpleBuilder(generic_builders.Builder):
     self._RunStage(chrome_stages.SyncChromeStage)
     self._RunStage(chrome_stages.PatchChromeStage)
     self._RunStage(test_stages.BinhostTestStage)
+    self._RunStage(test_stages.BranchUtilTestStage)
 
     # Prepare stages to run in background.  If child_configs exist then
     # run each of those here, otherwise use default config.

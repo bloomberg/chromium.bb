@@ -15,6 +15,7 @@
         "board_replace": false,
         "boards": null,
         "branch": false,
+        "branch_util_test": false,
         "build_before_patching": false,
         "build_packages_in_background": false,
         "build_tests": true,

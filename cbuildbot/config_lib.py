@@ -682,6 +682,10 @@ def DefaultSettings():
       # boards.
       binhost_test=False,
 
+      # Run the BranchUtilTestStage. Useful for builders that publish new
+      # manifest versions that we may later want to branch off of.
+      branch_util_test=False,
+
       # TODO(sosa): Collapse to one option.
       # ========== Dev installer prebuilts options =======================
 
