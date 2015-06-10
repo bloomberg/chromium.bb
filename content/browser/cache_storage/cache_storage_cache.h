@@ -16,7 +16,7 @@
 #include "net/disk_cache/disk_cache.h"
 
 namespace net {
-class URLRequestContext;
+class URLRequestContextGetter;
 class IOBufferWithSize;
 }
 
@@ -50,13 +50,13 @@ class CONTENT_EXPORT CacheStorageCache
 
   static scoped_refptr<CacheStorageCache> CreateMemoryCache(
       const GURL& origin,
-      net::URLRequestContext* request_context,
+      const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
       const scoped_refptr<storage::QuotaManagerProxy>& quota_manager_proxy,
       base::WeakPtr<storage::BlobStorageContext> blob_context);
   static scoped_refptr<CacheStorageCache> CreatePersistentCache(
       const GURL& origin,
       const base::FilePath& path,
-      net::URLRequestContext* request_context,
+      const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
       const scoped_refptr<storage::QuotaManagerProxy>& quota_manager_proxy,
       base::WeakPtr<storage::BlobStorageContext> blob_context);
 
@@ -121,7 +121,7 @@ class CONTENT_EXPORT CacheStorageCache
   CacheStorageCache(
       const GURL& origin,
       const base::FilePath& path,
-      net::URLRequestContext* request_context,
+      const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
       const scoped_refptr<storage::QuotaManagerProxy>& quota_manager_proxy,
       base::WeakPtr<storage::BlobStorageContext> blob_context);
 
@@ -206,7 +206,7 @@ class CONTENT_EXPORT CacheStorageCache
 
   GURL origin_;
   base::FilePath path_;
-  net::URLRequestContext* request_context_;
+  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
   base::WeakPtr<storage::BlobStorageContext> blob_storage_context_;
   BackendState backend_state_;

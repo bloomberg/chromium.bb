@@ -24,6 +24,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "net/base/directory_lister.h"
 #include "net/base/net_errors.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 
@@ -52,12 +53,12 @@ class CacheStorage::CacheLoader {
 
   CacheLoader(
       base::SequencedTaskRunner* cache_task_runner,
-      net::URLRequestContext* request_context,
+      const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
       const scoped_refptr<storage::QuotaManagerProxy>& quota_manager_proxy,
       base::WeakPtr<storage::BlobStorageContext> blob_context,
       const GURL& origin)
       : cache_task_runner_(cache_task_runner),
-        request_context_(request_context),
+        request_context_getter_(request_context_getter),
         quota_manager_proxy_(quota_manager_proxy),
         blob_context_(blob_context),
         origin_(origin) {
@@ -90,7 +91,7 @@ class CacheStorage::CacheLoader {
 
  protected:
   scoped_refptr<base::SequencedTaskRunner> cache_task_runner_;
-  net::URLRequestContext* request_context_;
+  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
   base::WeakPtr<storage::BlobStorageContext> blob_context_;
   GURL origin_;
@@ -104,7 +105,7 @@ class CacheStorage::MemoryLoader : public CacheStorage::CacheLoader {
  public:
   MemoryLoader(
       base::SequencedTaskRunner* cache_task_runner,
-      net::URLRequestContext* request_context,
+      const scoped_refptr<net::URLRequestContextGetter>& request_context,
       const scoped_refptr<storage::QuotaManagerProxy>& quota_manager_proxy,
       base::WeakPtr<storage::BlobStorageContext> blob_context,
       const GURL& origin)
@@ -117,7 +118,7 @@ class CacheStorage::MemoryLoader : public CacheStorage::CacheLoader {
   scoped_refptr<CacheStorageCache> CreateCache(
       const std::string& cache_name) override {
     return CacheStorageCache::CreateMemoryCache(
-        origin_, request_context_, quota_manager_proxy_, blob_context_);
+        origin_, request_context_getter_, quota_manager_proxy_, blob_context_);
   }
 
   void CreateCache(const std::string& cache_name,
@@ -160,7 +161,7 @@ class CacheStorage::SimpleCacheLoader : public CacheStorage::CacheLoader {
   SimpleCacheLoader(
       const base::FilePath& origin_path,
       base::SequencedTaskRunner* cache_task_runner,
-      net::URLRequestContext* request_context,
+      const scoped_refptr<net::URLRequestContextGetter>& request_context,
       const scoped_refptr<storage::QuotaManagerProxy>& quota_manager_proxy,
       base::WeakPtr<storage::BlobStorageContext> blob_context,
       const GURL& origin)
@@ -178,7 +179,7 @@ class CacheStorage::SimpleCacheLoader : public CacheStorage::CacheLoader {
 
     return CacheStorageCache::CreatePersistentCache(
         origin_, CreatePersistentCachePath(origin_path_, cache_name),
-        request_context_, quota_manager_proxy_, blob_context_);
+        request_context_getter_, quota_manager_proxy_, blob_context_);
   }
 
   void CreateCache(const std::string& cache_name,
@@ -357,7 +358,7 @@ CacheStorage::CacheStorage(
     const base::FilePath& path,
     bool memory_only,
     base::SequencedTaskRunner* cache_task_runner,
-    net::URLRequestContext* request_context,
+    const scoped_refptr<net::URLRequestContextGetter>& request_context,
     const scoped_refptr<storage::QuotaManagerProxy>& quota_manager_proxy,
     base::WeakPtr<storage::BlobStorageContext> blob_context,
     const GURL& origin)

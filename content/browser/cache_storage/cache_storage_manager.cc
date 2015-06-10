@@ -99,7 +99,7 @@ scoped_ptr<CacheStorageManager> CacheStorageManager::Create(
       old_manager->quota_manager_proxy_.get()));
   // These values may be NULL, in which case this will be called again later by
   // the dispatcher host per usual.
-  manager->SetBlobParametersForCache(old_manager->url_request_context(),
+  manager->SetBlobParametersForCache(old_manager->url_request_context_getter(),
                                      old_manager->blob_storage_context());
   return manager.Pass();
 }
@@ -173,13 +173,14 @@ void CacheStorageManager::MatchAllCaches(
 }
 
 void CacheStorageManager::SetBlobParametersForCache(
-    net::URLRequestContext* request_context,
+    const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
     base::WeakPtr<storage::BlobStorageContext> blob_storage_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(cache_storage_map_.empty());
-  DCHECK(!request_context_ || request_context_ == request_context);
+  DCHECK(!request_context_getter_ ||
+         request_context_getter_.get() == request_context_getter.get());
   DCHECK(!blob_context_ || blob_context_.get() == blob_storage_context.get());
-  request_context_ = request_context;
+  request_context_getter_ = request_context_getter;
   blob_context_ = blob_storage_context;
 }
 
@@ -292,7 +293,6 @@ CacheStorageManager::CacheStorageManager(
     : root_path_(path),
       cache_task_runner_(cache_task_runner),
       quota_manager_proxy_(quota_manager_proxy),
-      request_context_(NULL),
       weak_ptr_factory_(this) {
   if (quota_manager_proxy_.get()) {
     quota_manager_proxy_->RegisterClient(
@@ -303,13 +303,13 @@ CacheStorageManager::CacheStorageManager(
 CacheStorage* CacheStorageManager::FindOrCreateCacheStorage(
     const GURL& origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(request_context_);
+  DCHECK(request_context_getter_);
   CacheStorageMap::const_iterator it = cache_storage_map_.find(origin);
   if (it == cache_storage_map_.end()) {
     MigrateOrigin(origin);
     CacheStorage* cache_storage = new CacheStorage(
         ConstructOriginPath(root_path_, origin), IsMemoryBacked(),
-        cache_task_runner_.get(), request_context_, quota_manager_proxy_,
+        cache_task_runner_.get(), request_context_getter_, quota_manager_proxy_,
         blob_context_, origin);
     // The map owns fetch_stores.
     cache_storage_map_.insert(std::make_pair(origin, cache_storage));

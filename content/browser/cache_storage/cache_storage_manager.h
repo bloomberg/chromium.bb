@@ -11,17 +11,15 @@
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/ref_counted.h"
 #include "content/browser/cache_storage/cache_storage.h"
 #include "content/common/content_export.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "storage/browser/quota/quota_client.h"
 #include "url/gurl.h"
 
 namespace base {
 class SequencedTaskRunner;
-}
-
-namespace net {
-class URLRequestContext;
 }
 
 namespace storage {
@@ -73,7 +71,7 @@ class CONTENT_EXPORT CacheStorageManager {
   // This must be called before creating any of the public *Cache functions
   // above.
   void SetBlobParametersForCache(
-      net::URLRequestContext* request_context,
+      const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
       base::WeakPtr<storage::BlobStorageContext> blob_storage_context);
 
   base::WeakPtr<CacheStorageManager> AsWeakPtr() {
@@ -110,8 +108,9 @@ class CONTENT_EXPORT CacheStorageManager {
       scoped_ptr<CacheStorage> cache_storage,
       base::WeakPtr<CacheStorageManager> cache_manager);
 
-  net::URLRequestContext* url_request_context() const {
-    return request_context_;
+  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter()
+      const {
+    return request_context_getter_;
   }
   base::WeakPtr<storage::BlobStorageContext> blob_storage_context() const {
     return blob_context_;
@@ -147,7 +146,7 @@ class CONTENT_EXPORT CacheStorageManager {
   // |cache_task_runner_|.
   CacheStorageMap cache_storage_map_;
 
-  net::URLRequestContext* request_context_;
+  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   base::WeakPtr<storage::BlobStorageContext> blob_context_;
 
   base::WeakPtrFactory<CacheStorageManager> weak_ptr_factory_;

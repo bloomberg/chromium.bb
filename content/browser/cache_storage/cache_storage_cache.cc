@@ -19,7 +19,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/disk_cache/disk_cache.h"
-#include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_storage_context.h"
@@ -178,15 +178,20 @@ class CacheStorageCache::BlobReader : public net::URLRequest::Delegate {
         weak_ptr_factory_(this) {}
 
   // |entry| is passed to the callback once complete.
-  void StreamBlobToCache(disk_cache::ScopedEntryPtr entry,
-                         net::URLRequestContext* request_context,
-                         scoped_ptr<storage::BlobDataHandle> blob_data_handle,
-                         const EntryAndBoolCallback& callback) {
+  void StreamBlobToCache(
+      disk_cache::ScopedEntryPtr entry,
+      const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
+      scoped_ptr<storage::BlobDataHandle> blob_data_handle,
+      const EntryAndBoolCallback& callback) {
     DCHECK(entry);
+    DCHECK(request_context_getter->GetURLRequestContext());
+
     entry_ = entry.Pass();
     callback_ = callback;
+
     blob_request_ = storage::BlobProtocolHandler::CreateBlobRequest(
-        blob_data_handle.Pass(), request_context, this);
+        blob_data_handle.Pass(), request_context_getter->GetURLRequestContext(),
+        this);
     blob_request_->Start();
   }
 
@@ -341,14 +346,14 @@ struct CacheStorageCache::PutContext {
       scoped_ptr<ServiceWorkerResponse> response,
       scoped_ptr<storage::BlobDataHandle> blob_data_handle,
       const CacheStorageCache::ErrorCallback& callback,
-      net::URLRequestContext* request_context,
+      const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
       const scoped_refptr<storage::QuotaManagerProxy>& quota_manager_proxy)
       : origin(origin),
         request(request.Pass()),
         response(response.Pass()),
         blob_data_handle(blob_data_handle.Pass()),
         callback(callback),
-        request_context(request_context),
+        request_context_getter(request_context_getter),
         quota_manager_proxy(quota_manager_proxy),
         cache_entry(NULL) {}
   ~PutContext() {
@@ -362,7 +367,7 @@ struct CacheStorageCache::PutContext {
   scoped_ptr<ServiceWorkerResponse> response;
   scoped_ptr<storage::BlobDataHandle> blob_data_handle;
   CacheStorageCache::ErrorCallback callback;
-  net::URLRequestContext* request_context;
+  scoped_refptr<net::URLRequestContextGetter> request_context_getter;
   scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy;
 
   // This isn't a scoped_ptr because the disk_cache needs an Entry** as input to
@@ -375,11 +380,11 @@ struct CacheStorageCache::PutContext {
 // static
 scoped_refptr<CacheStorageCache> CacheStorageCache::CreateMemoryCache(
     const GURL& origin,
-    net::URLRequestContext* request_context,
+    const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
     const scoped_refptr<storage::QuotaManagerProxy>& quota_manager_proxy,
     base::WeakPtr<storage::BlobStorageContext> blob_context) {
   return make_scoped_refptr(
-      new CacheStorageCache(origin, base::FilePath(), request_context,
+      new CacheStorageCache(origin, base::FilePath(), request_context_getter,
                             quota_manager_proxy, blob_context));
 }
 
@@ -387,11 +392,11 @@ scoped_refptr<CacheStorageCache> CacheStorageCache::CreateMemoryCache(
 scoped_refptr<CacheStorageCache> CacheStorageCache::CreatePersistentCache(
     const GURL& origin,
     const base::FilePath& path,
-    net::URLRequestContext* request_context,
+    const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
     const scoped_refptr<storage::QuotaManagerProxy>& quota_manager_proxy,
     base::WeakPtr<storage::BlobStorageContext> blob_context) {
   return make_scoped_refptr(new CacheStorageCache(
-      origin, path, request_context, quota_manager_proxy, blob_context));
+      origin, path, request_context_getter, quota_manager_proxy, blob_context));
 }
 
 CacheStorageCache::~CacheStorageCache() {
@@ -554,12 +559,12 @@ int64 CacheStorageCache::MemoryBackedSize() const {
 CacheStorageCache::CacheStorageCache(
     const GURL& origin,
     const base::FilePath& path,
-    net::URLRequestContext* request_context,
+    const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
     const scoped_refptr<storage::QuotaManagerProxy>& quota_manager_proxy,
     base::WeakPtr<storage::BlobStorageContext> blob_context)
     : origin_(origin),
       path_(path),
-      request_context_(request_context),
+      request_context_getter_(request_context_getter),
       quota_manager_proxy_(quota_manager_proxy),
       blob_storage_context_(blob_context),
       backend_state_(BACKEND_UNINITIALIZED),
@@ -794,7 +799,7 @@ void CacheStorageCache::Put(const CacheStorageBatchOperation& operation,
 
   scoped_ptr<PutContext> put_context(new PutContext(
       origin_, request.Pass(), response.Pass(), blob_data_handle.Pass(),
-      pending_callback, request_context_, quota_manager_proxy_));
+      pending_callback, request_context_getter_, quota_manager_proxy_));
 
   scheduler_->ScheduleOperation(base::Bind(&CacheStorageCache::PutImpl,
                                            weak_ptr_factory_.GetWeakPtr(),
@@ -932,12 +937,13 @@ void CacheStorageCache::PutDidWriteHeaders(scoped_ptr<PutContext> put_context,
   BlobReader* reader_ptr = reader.get();
 
   // Grab some pointers before passing put_context in Bind.
-  net::URLRequestContext* request_context = put_context->request_context;
+  scoped_refptr<net::URLRequestContextGetter> request_context_getter =
+      put_context->request_context_getter;
   scoped_ptr<storage::BlobDataHandle> blob_data_handle =
       put_context->blob_data_handle.Pass();
 
   reader_ptr->StreamBlobToCache(
-      entry.Pass(), request_context, blob_data_handle.Pass(),
+      entry.Pass(), request_context_getter, blob_data_handle.Pass(),
       base::Bind(&CacheStorageCache::PutDidWriteBlobToCache,
                  weak_ptr_factory_.GetWeakPtr(),
                  base::Passed(put_context.Pass()),

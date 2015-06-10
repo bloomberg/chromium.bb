@@ -41,8 +41,6 @@ class CacheStorageManagerTest : public testing::Test {
     quota_manager_proxy_ = new MockQuotaManagerProxy(
         nullptr, base::ThreadTaskRunnerHandle::Get().get());
 
-    net::URLRequestContext* url_request_context =
-        browser_context_.GetRequestContext()->GetURLRequestContext();
     if (MemoryOnly()) {
       cache_manager_ = CacheStorageManager::Create(
           base::FilePath(), base::ThreadTaskRunnerHandle::Get(),
@@ -55,7 +53,8 @@ class CacheStorageManagerTest : public testing::Test {
     }
 
     cache_manager_->SetBlobParametersForCache(
-        url_request_context, blob_storage_context->context()->AsWeakPtr());
+        browser_context_.GetRequestContext(),
+        blob_storage_context->context()->AsWeakPtr());
   }
 
   void TearDown() override {

@@ -59,7 +59,7 @@ class CONTENT_EXPORT CacheStorageContextImpl
   // function immediately returns without forwarding to the
   // CacheStorageManager.
   void SetBlobParametersForCache(
-      net::URLRequestContextGetter* request_context,
+      net::URLRequestContextGetter* request_context_getter,
       ChromeBlobStorageContext* blob_storage_context);
 
  private:

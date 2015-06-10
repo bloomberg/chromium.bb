@@ -6,6 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
 #include "base/thread_task_runner_handle.h"
@@ -128,12 +129,12 @@ class TestCacheStorageCache : public CacheStorageCache {
   TestCacheStorageCache(
       const GURL& origin,
       const base::FilePath& path,
-      net::URLRequestContext* request_context,
+      const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
       const scoped_refptr<storage::QuotaManagerProxy>& quota_manager_proxy,
       base::WeakPtr<storage::BlobStorageContext> blob_context)
       : CacheStorageCache(origin,
                           path,
-                          request_context,
+                          request_context_getter,
                           quota_manager_proxy,
                           blob_context),
         delay_backend_creation_(false) {}
@@ -204,7 +205,7 @@ class CacheStorageCacheTest : public testing::Test {
     base::FilePath path = MemoryOnly() ? base::FilePath() : temp_dir_.path();
 
     cache_ = make_scoped_refptr(new TestCacheStorageCache(
-        GURL("http://example.com"), path, url_request_context,
+        GURL("http://example.com"), path, browser_context_.GetRequestContext(),
         quota_manager_proxy_, blob_storage_context->context()->AsWeakPtr()));
   }
 
