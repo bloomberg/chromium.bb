@@ -839,7 +839,8 @@ TEST_F(CRWWKWebViewWebControllerTest, SSLError) {
       [NSError errorWithDomain:NSURLErrorDomain
                           code:NSURLErrorServerCertificateHasUnknownRoot
                       userInfo:nil];
-  [static_cast<id<WKNavigationDelegate>>(webController_.get()) webView:nil
+  WKWebView* webView = static_cast<WKWebView*>([webController_ webView]);
+  [static_cast<id<WKNavigationDelegate>>(webController_.get()) webView:webView
                                           didFailProvisionalNavigation:nil
                                                              withError:error];
 

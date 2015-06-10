@@ -17,11 +17,6 @@
 
 @implementation CRWRedirectNetworkClient
 
-- (instancetype)init {
-  NOTREACHED();
-  return nil;
-}
-
 - (instancetype)initWithDelegate:
     (base::WeakNSProtocol<id<CRWRedirectClientDelegate>>)delegate {
   self = [super init];
@@ -33,6 +28,11 @@
     delegate_ = delegate;
   }
   return self;
+}
+
+- (instancetype)init {
+  NOTREACHED();
+  return nil;
 }
 
 - (void)wasRedirectedToRequest:(NSURLRequest*)request

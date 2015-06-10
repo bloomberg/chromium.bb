@@ -171,9 +171,24 @@
         'src/Source/NSString-CDExtensions.m',
         'src/Source/cd_objc2.h',
       ],
+      'variables': {
+        'developer_dir': '<!(xcode-select -print-path)',
+        'xcode_version': '<!(xcodebuild -version | awk \'/Xcode/ {print $2}\')',
+      },
+      'conditions': [
+        ['xcode_version>="7.0"', {
+          'variables': {
+            'dynamic_library_extension': 'tbd',
+          },
+        }, {  # else: xcode_version<"7.0"
+          'variables': {
+            'dynamic_library_extension': 'dylib',
+          },
+        }]
+      ],
       'libraries': [
         '$(SDKROOT)/System/Library/Frameworks/Foundation.framework',
-        '$(SDKROOT)/usr/lib/libcrypto.dylib',
+        '$(SDKROOT)/usr/lib/libcrypto.<(dynamic_library_extension)',
       ],
       'include_dirs': [
         'src/Source',

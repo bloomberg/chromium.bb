@@ -72,7 +72,7 @@
   [_webView loadData:data
               MIMEType:@"application/pdf"
       textEncodingName:@"utf-8"
-               baseURL:nil];
+               baseURL:[NSURL URLWithString:@""]];
 }
 
 - (void)evaluateJavaScript:(NSString*)script

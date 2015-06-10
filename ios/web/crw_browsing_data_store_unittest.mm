@@ -22,6 +22,7 @@
 // Designated init. |browsingDataStore| cannot be null.
 - (instancetype)initWithBrowsingDataStore:
         (CRWBrowsingDataStore*)browsingDataStore NS_DESIGNATED_INITIALIZER;
+- (instancetype)init NS_UNAVAILABLE;
 // The number of times that the mode of the underlying CRWBrowsingDataStore
 // changed.
 @property(nonatomic, assign) NSUInteger modeChangeCount;
@@ -46,6 +47,11 @@
     _browsingDataStore = browsingDataStore;
   }
   return self;
+}
+
+- (instancetype)init {
+  NOTREACHED();
+  return nil;
 }
 
 - (void)observeValueForKeyPath:(NSString*)keyPath

@@ -43,7 +43,12 @@ TEST_F(CRWJSEarlyScriptManagerTest, Content) {
   // |earlyScript| is a substring of |injectionContent|. The latter wraps the
   // former with "if (typeof __gCrWeb !== 'object')" check to avoid multiple
   // injections.
-  EXPECT_NE(NSNotFound, [injectionContent rangeOfString:earlyScript].location);
+  // TODO(justincohen): Cast indexOfObject to work around Xcode beta bugs.
+  // Revisit in future betas where hopefully these types match again.
+  // crbug.com/498825
+  EXPECT_NE(NSNotFound,
+            static_cast<NSInteger>(
+                [injectionContent rangeOfString:earlyScript].location));
 }
 
 }  // namespace

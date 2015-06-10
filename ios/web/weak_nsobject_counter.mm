@@ -29,11 +29,6 @@ const char kObserverAssociatedObjectKey = 'h';
   linked_ptr<NSUInteger> _counter;
 }
 
-- (instancetype)init {
-  NOTREACHED();
-  return nil;
-}
-
 - (instancetype)initWithSharedCounter:(const linked_ptr<NSUInteger>&)counter
                    objectToBeObserved:(id)object {
   self = [super init];
@@ -46,6 +41,11 @@ const char kObserverAssociatedObjectKey = 'h';
     (*_counter)++;
   }
   return self;
+}
+
+- (instancetype)init {
+  NOTREACHED();
+  return nil;
 }
 
 - (void)dealloc {

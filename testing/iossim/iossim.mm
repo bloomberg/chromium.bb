@@ -32,6 +32,7 @@
 // (crbug.com/385030).
 #if defined(IOSSIM_USE_XCODE_6)
 @protocol SimBridge;
+@class DVTSimulatorApplication;
 @class SimDeviceSet;
 @class SimDeviceType;
 @class SimRuntime;

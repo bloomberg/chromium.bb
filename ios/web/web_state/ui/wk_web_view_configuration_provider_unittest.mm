@@ -68,6 +68,9 @@ TEST_F(WKWebViewConfigurationProviderTest, ConfigurationOwnerhip) {
             other_provider.GetWebViewConfiguration().processPool);
 }
 
+#if 0
+// TODO(shreyasv) Disabled for usage of nil on latest Xcode beta.
+// crbug.com/498841
 // Tests that internal configuration object can not be changed by clients.
 TEST_F(WKWebViewConfigurationProviderTest, ConfigurationProtection) {
   CR_TEST_REQUIRES_WK_WEB_VIEW();
@@ -93,6 +96,7 @@ TEST_F(WKWebViewConfigurationProviderTest, ConfigurationProtection) {
   EXPECT_EQ(userContentController.get(),
             provider.GetWebViewConfiguration().userContentController);
 }
+#endif
 
 // Tests that |HasWebViewConfiguration| returns false by default.
 TEST_F(WKWebViewConfigurationProviderTest, NoConfigurationByDefault) {

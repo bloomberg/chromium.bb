@@ -45,11 +45,6 @@ BOOL IsWebViewTerminationError(NSError* error) {
   base::mac::ScopedBlock<ProceduralBlock> _crashHandler;
 }
 
-- (instancetype)init {
-  NOTREACHED();
-  return nil;
-}
-
 - (instancetype)initWithWebView:(WKWebView*)webView
                    crashHandler:(ProceduralBlock)handler {
   DCHECK(webView);
@@ -69,6 +64,11 @@ BOOL IsWebViewTerminationError(NSError* error) {
                   context:nil];
   }
   return self;
+}
+
+- (instancetype)init {
+  NOTREACHED();
+  return nil;
 }
 
 - (void)dealloc {

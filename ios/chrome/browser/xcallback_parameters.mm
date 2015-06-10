@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/xcallback_parameters.h"
 
+#include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 
@@ -39,6 +40,11 @@ NSString* const kCreateNewTabKey = @"createNewTab";
     _createNewTab = createNewTab;
   }
   return self;
+}
+
+- (instancetype)init {
+  NOTREACHED();
+  return nil;
 }
 
 - (NSString*)description {

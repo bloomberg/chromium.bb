@@ -22,6 +22,7 @@
 #include "crypto/nss_util.h"
 #include "ios/net/cookies/cookie_store_ios.h"
 #include "ios/net/crn_http_protocol_handler.h"
+#include "ios/net/empty_nsurlcache.h"
 #include "ios/net/request_tracker.h"
 #include "ios/web/public/user_agent.h"
 #include "net/base/net_errors.h"
@@ -300,7 +301,7 @@ net::URLRequestContextGetter* CrNetEnvironment::GetMainContextGetter() {
 void CrNetEnvironment::SetHTTPProtocolHandlerRegistered(bool registered) {
   if (registered) {
     // Disable the default cache.
-    [NSURLCache setSharedURLCache:nil];
+    [NSURLCache setSharedURLCache:[EmptyNSURLCache emptyNSURLCache]];
     // Register the chrome http protocol handler to replace the default one.
     BOOL success = [NSURLProtocol registerClass:[CRNHTTPProtocolHandler class]];
     DCHECK(success);

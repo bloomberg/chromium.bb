@@ -10,6 +10,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "ios/net/cookies/cookie_store_ios.h"
 #import "ios/net/crn_http_protocol_handler.h"
+#import "ios/net/empty_nsurlcache.h"
 #import "ios/web/navigation/crw_session_controller.h"
 #include "ios/web/navigation/web_load_params.h"
 #import "ios/web/net/crw_url_verifying_protocol_handler.h"
@@ -130,7 +131,7 @@ bool UseWKWebView() {
 
 - (void)setUpNetworkStack {
   // Disable the default cache.
-  [NSURLCache setSharedURLCache:nil];
+  [NSURLCache setSharedURLCache:[EmptyNSURLCache emptyNSURLCache]];
 
   _httpProtocolDelegate.reset(new web::WebHTTPProtocolHandlerDelegate(
       _browserState->GetRequestContext()));

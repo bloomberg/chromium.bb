@@ -19,6 +19,8 @@ class BrowserState;
 - (instancetype)initWithBrowserState:(web::BrowserState*)browserState
     NS_DESIGNATED_INITIALIZER;
 
+- (instancetype)init NS_UNAVAILABLE;
+
 @end
 
 #endif  // IOS_WEB_BROWSING_DATA_MANAGERS_CRW_COOKIE_BROWSING_DATA_MANAGER_H_

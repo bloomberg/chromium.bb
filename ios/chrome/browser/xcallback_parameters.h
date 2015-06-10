@@ -33,6 +33,8 @@
                        createNewTab:(BOOL)createNewTab
     NS_DESIGNATED_INITIALIZER;
 
+- (instancetype)init NS_UNAVAILABLE;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_XCALLBACK_PARAMETERS_H_

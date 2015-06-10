@@ -42,6 +42,8 @@
         'crn_http_protocol_handler_proxy_with_client_thread.mm',
         'crn_http_url_response.h',
         'crn_http_url_response.mm',
+        'empty_nsurlcache.h',
+        'empty_nsurlcache.mm',
         'http_protocol_logging.h',
         'http_protocol_logging.mm',
         'http_response_headers_util.h',

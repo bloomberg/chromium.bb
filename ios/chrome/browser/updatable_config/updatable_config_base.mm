@@ -113,11 +113,6 @@ class ConfigFetcher : public net::URLFetcherDelegate {
 }
 
 // Overrides default designated initializer.
-- (instancetype)init {
-  NOTREACHED();
-  return nil;
-}
-
 - (instancetype)initWithAppId:(NSString*)appId
                       version:(NSString*)appVersion
                         plist:(NSString*)plistName {
@@ -155,6 +150,11 @@ class ConfigFetcher : public net::URLFetcherDelegate {
 #endif
   }
   return self;
+}
+
+- (instancetype)init {
+  NOTREACHED();
+  return nil;
 }
 
 - (void)dealloc {

@@ -18,10 +18,11 @@ class InfoBarDelegate;
 @interface InfoBarController : NSObject
 
 @property(nonatomic, readonly) InfoBarViewDelegate* delegate;
-
 // Designated initializer.
 - (instancetype)initWithDelegate:(InfoBarViewDelegate*)delegate
     NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)init NS_UNAVAILABLE;
 
 // Creates a view and lays out all the infobar elements in it. Will not add
 // it as a subview yet. This method must be overriden in subclasses.

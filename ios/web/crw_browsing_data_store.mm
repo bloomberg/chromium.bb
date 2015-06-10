@@ -45,6 +45,7 @@ NSString* const kStashOperationName = @"CRWBrowsingDataStore.STASH";
 // run. All remove operations need to be run on the same queue hence it is
 // shared with all CRWBrowsingDataStores.
 + (NSOperationQueue*)operationQueueForRemoveOperations;
+- (instancetype)init NS_UNAVAILABLE;
 
 // The array of all browsing data managers. Must be accessed from the main
 // thread.
@@ -174,6 +175,11 @@ NSString* const kStashOperationName = @"CRWBrowsingDataStore.STASH";
     } retain]);
   }
   return self;
+}
+
+- (instancetype)init {
+  NOTREACHED();
+  return nil;
 }
 
 - (NSString*)description {

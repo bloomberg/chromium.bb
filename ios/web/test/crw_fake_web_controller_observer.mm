@@ -15,11 +15,6 @@
 
 @synthesize pageLoaded = _pageLoaded;
 
-- (instancetype)init {
-  NOTREACHED();
-  return nil;
-}
-
 - (instancetype)initWithCommandPrefix:(NSString*)commandPrefix {
   DCHECK(commandPrefix);
   self = [super init];
@@ -27,6 +22,11 @@
     _commandPrefix.reset([commandPrefix copy]);
   }
   return self;
+}
+
+- (instancetype)init {
+  NOTREACHED();
+  return nil;
 }
 
 - (void)pageLoaded:(CRWWebController*)webController {

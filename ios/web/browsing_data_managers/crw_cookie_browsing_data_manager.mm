@@ -20,6 +20,11 @@
   return self;
 }
 
+- (instancetype)init {
+  NOTREACHED();
+  return nil;
+}
+
 #pragma mark CRWBrowsingDataManager implementation
 // TODO(shreyasv): During implementation of the following methods evaluate if
 // the entire BrowserState is required. Looks like only |state_path| may be

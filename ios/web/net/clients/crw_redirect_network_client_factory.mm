@@ -21,11 +21,6 @@
 
 @implementation CRWRedirectNetworkClientFactory
 
-- (instancetype)init {
-  NOTREACHED();
-  return nil;
-}
-
 - (instancetype)initWithDelegate:(id<CRWRedirectClientDelegate>)delegate {
   self = [super init];
   if (self) {
@@ -34,6 +29,11 @@
     client_delegate_.reset(delegate);
   }
   return self;
+}
+
+- (instancetype)init {
+  NOTREACHED();
+  return nil;
 }
 
 #pragma mark - CRNForwardingNetworkClientFactory

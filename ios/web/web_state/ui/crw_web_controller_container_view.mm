@@ -97,11 +97,6 @@
 
 @implementation CRWWebControllerContainerView
 
-- (instancetype)init {
-  NOTREACHED();
-  return nil;
-}
-
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
@@ -110,6 +105,11 @@
         UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
   }
   return self;
+}
+
+- (instancetype)init {
+  NOTREACHED();
+  return nil;
 }
 
 #pragma mark Accessors

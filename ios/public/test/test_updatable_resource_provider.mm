@@ -43,6 +43,7 @@
 - (instancetype)initWithDelegate:(id<UpdatableResourceDelegate>)delegate
                            plist:(NSString*)resource_identifier
     NS_DESIGNATED_INITIALIZER;
+- (instancetype)init NS_UNAVAILABLE;
 @end
 
 @implementation TestUpdatableResource {
@@ -60,6 +61,11 @@
     [_descriptor setBundleResourcePath:resourceIdentifier];
   }
   return self;
+}
+
+- (instancetype)init {
+  NOTREACHED();
+  return nil;
 }
 
 - (id<UpdatableResourceDescriptorBridge>)descriptor {
