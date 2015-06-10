@@ -113,7 +113,7 @@ void DeviceCommandScreenshotJob::OnSuccess() {
 }
 
 void DeviceCommandScreenshotJob::OnFailure(UploadJob::ErrorCode error_code) {
-  ResultCode result_code;
+  ResultCode result_code = FAILURE_CLIENT;
   switch (error_code) {
     case UploadJob::AUTHENTICATION_ERROR:
       result_code = FAILURE_AUTHENTICATION;
