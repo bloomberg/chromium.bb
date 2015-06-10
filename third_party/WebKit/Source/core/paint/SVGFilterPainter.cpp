@@ -87,7 +87,7 @@ static void paintFilteredContent(LayoutObject& object, GraphicsContext* context,
     // If the CTM contains rotation or shearing, apply the filter to
     // the unsheared/unrotated matrix, and do the shearing/rotation
     // as a final pass.
-    AffineTransform ctm = RuntimeEnabledFeatures::slimmingPaintEnabled() ? SVGLayoutSupport::deprecatedCalculateTransformToLayer(&object) : context->getCTM();
+    AffineTransform ctm = SVGLayoutSupport::deprecatedCalculateTransformToLayer(&object);
     if (ctm.b() || ctm.c()) {
         AffineTransform scaleAndTranslate;
         scaleAndTranslate.translate(ctm.e(), ctm.f());
@@ -95,10 +95,7 @@ static void paintFilteredContent(LayoutObject& object, GraphicsContext* context,
         ASSERT(scaleAndTranslate.isInvertible());
         AffineTransform shearAndRotate = scaleAndTranslate.inverse();
         shearAndRotate.multiply(ctm);
-        if (RuntimeEnabledFeatures::slimmingPaintEnabled())
-            context->concatCTM(shearAndRotate.inverse());
-        else
-            context->setCTM(scaleAndTranslate);
+        context->concatCTM(shearAndRotate.inverse());
         imageFilter = builder.buildTransform(shearAndRotate, imageFilter.get());
     }
 #endif
