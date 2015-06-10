@@ -33,9 +33,7 @@
 
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 TEST(AnimationAnimatableColorTest, ToColor)
 {
@@ -65,4 +63,4 @@ TEST(AnimationAnimatableColorTest, Interpolate)
     EXPECT_EQ(AnimatableColorImpl(Color(0x10204080)).interpolateTo(Color(0x104080C0), 0.5).toColor().rgb(), 0x103060A0u);
 }
 
-}
+} // namespace blink

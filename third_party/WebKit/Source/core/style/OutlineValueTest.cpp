@@ -7,9 +7,7 @@
 
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 TEST(OutlineValueTest, VisuallyEqualStyle)
 {
@@ -58,4 +56,4 @@ TEST(OutlineValueTest, VisuallyEqualIsAuto)
     EXPECT_TRUE(outline1.visuallyEqual(outline2));
 }
 
-}
+} // namespace blink

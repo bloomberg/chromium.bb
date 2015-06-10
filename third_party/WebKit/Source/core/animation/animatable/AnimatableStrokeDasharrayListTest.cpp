@@ -32,12 +32,9 @@
 #include "core/animation/animatable/AnimatableStrokeDasharrayList.h"
 
 #include "core/style/SVGComputedStyleDefs.h"
-
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 PassRefPtr<SVGDashArray> createSVGDashArray(size_t length)
 {
@@ -64,4 +61,4 @@ TEST(AnimationAnimatableStrokeDasharrayListTest, EqualTo)
     EXPECT_FALSE(listA->equals(listB.get()));
 }
 
-} // namespace
+} // namespace blink

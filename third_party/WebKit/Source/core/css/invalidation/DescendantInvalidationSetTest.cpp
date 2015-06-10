@@ -7,9 +7,7 @@
 
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 // Once we setWholeSubtreeInvalid, we should not keep the HashSets.
 TEST(DescendantInvalidationSetTest, SubtreeInvalid_AddBefore)
@@ -79,4 +77,4 @@ TEST(DescendantInvalidationSetTest, ShowDebug)
 }
 #endif // NDEBUG
 
-} // namespace
+} // namespace blink

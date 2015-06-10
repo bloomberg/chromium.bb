@@ -7,9 +7,7 @@
 
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 // Ensures RefPtr values are compared by their values, not by pointers.
 #define TEST_STYLE_REFPTR_VALUE_NO_DIFF(type, fieldName) \
@@ -67,4 +65,4 @@ TEST(SVGComputedStyleTest, MiscStyleShouldCompareValue)
     TEST_STYLE_VALUE_NO_DIFF(Length, BaselineShiftValue);
 }
 
-}
+} // namespace blink

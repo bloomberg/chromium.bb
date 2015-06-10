@@ -40,12 +40,9 @@
 #include "public/platform/Platform.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"
-
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 // An URL for the original request.
 const char kResourceURL[] = "http://resource.com/";
@@ -582,4 +579,4 @@ TEST_F(CachingCorrectnessTest, 302RedirectExplicitlyFreshExpires)
     EXPECT_EQ(firstResource, fetched);
 }
 
-} // namespace
+} // namespace blink

@@ -33,9 +33,7 @@
 
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 TEST(AnimationAnimatableDoubleTest, Create)
 {
@@ -69,4 +67,4 @@ TEST(AnimationAnimatableDoubleTest, Interpolate)
     EXPECT_EQ(25, toAnimatableDouble(AnimatableValue::interpolate(from10.get(), to20.get(), 1.5).get())->toDouble());
 }
 
-}
+} // namespace blink

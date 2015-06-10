@@ -33,13 +33,11 @@
 
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 TEST(AnimationAnimatableNeutralTest, Create)
 {
     EXPECT_TRUE(AnimatableValue::neutralValue());
 }
 
-}
+} // namespace blink

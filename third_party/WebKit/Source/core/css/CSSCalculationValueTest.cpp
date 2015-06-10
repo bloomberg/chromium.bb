@@ -48,10 +48,6 @@ void PrintTo(const CSSLengthArray& lengthArray, ::std::ostream* os)
         *os << lengthArray.at(i) << ' ';
 }
 
-}
-
-using namespace blink;
-
 namespace {
 
 void testAccumulatePixelsAndPercent(const CSSToLengthConversionData& conversionData, PassRefPtrWillBeRawPtr<CSSCalcExpressionNode> expression, float expectedPixels, float expectedPercent)
@@ -195,4 +191,6 @@ TEST(CSSCalculationValue, AddToLengthUnitValues)
     EXPECT_TRUE(lengthArraysEqual(expectation, setLengthArray(actual, "calc((1 * 2) * (5px + 20em / 2) - 80% / (3 - 1) + 5px)")));
 }
 
-}
+} // anonymous namespace
+
+} // namespace blink

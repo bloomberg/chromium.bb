@@ -43,8 +43,6 @@
 #include "public/platform/WebURLResponse.h"
 #include "public/platform/WebUnitTestSupport.h"
 
-using namespace blink;
-
 namespace blink {
 
 TEST(RawResourceTest, DontIgnoreAcceptForCacheReuse)

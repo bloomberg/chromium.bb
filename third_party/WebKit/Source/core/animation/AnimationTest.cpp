@@ -41,13 +41,11 @@
 #include "platform/weborigin/KURL.h"
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 class AnimationAnimationTest : public ::testing::Test {
 protected:
-    virtual void SetUp()
+    void SetUp() override
     {
         setUpWithoutStartingTimeline();
         startTimeline();
@@ -876,4 +874,4 @@ TEST_F(AnimationAnimationTest, PauseAfterCancel)
     EXPECT_TRUE(std::isnan(animation->startTime()));
 }
 
-}
+} // namespace blink

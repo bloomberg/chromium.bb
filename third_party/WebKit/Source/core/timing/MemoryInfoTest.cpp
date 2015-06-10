@@ -29,14 +29,11 @@
  */
 
 #include "config.h"
-
 #include "core/timing/MemoryInfo.h"
 
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 TEST(MemoryInfo, quantizeMemorySize)
 {
@@ -58,4 +55,4 @@ TEST(MemoryInfo, quantizeMemorySize)
     EXPECT_EQ(10000000u, quantizeMemorySize(0));
 }
 
-} // namespace
+} // namespace blink

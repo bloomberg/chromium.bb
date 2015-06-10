@@ -16,9 +16,7 @@
 #include <gtest/gtest.h>
 #include <v8.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 class AnimationEffectInputTest : public ::testing::Test {
 protected:
@@ -152,4 +150,4 @@ TEST_F(AnimationEffectInputTest, Invalid)
     EXPECT_EQ(InvalidModificationError, exceptionState.code());
 }
 
-}
+} // namespace blink

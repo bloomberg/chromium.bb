@@ -3,23 +3,21 @@
 // found in the LICENSE file.
 
 #include "config.h"
-
 #include "core/animation/animatable/AnimatableLength.h"
 
 #include "platform/CalculationValue.h"
-
 #include <gtest/gtest.h>
 
 namespace blink {
 
 namespace {
 
-    PassRefPtrWillBeRawPtr<AnimatableLength> create(const Length& length, double zoom = 1)
-    {
-        return AnimatableLength::create(length, zoom);
-    }
+PassRefPtrWillBeRawPtr<AnimatableLength> create(const Length& length, double zoom = 1)
+{
+    return AnimatableLength::create(length, zoom);
+}
 
-} // namespace
+} // anonymous namespace
 
 TEST(AnimationAnimatableLengthTest, RoundTripConversion)
 {

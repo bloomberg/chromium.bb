@@ -38,9 +38,7 @@
 #include "core/dom/Element.h"
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 const double duration = 1.0;
 

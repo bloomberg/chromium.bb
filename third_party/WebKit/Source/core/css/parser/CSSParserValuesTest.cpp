@@ -35,9 +35,7 @@
 #include "core/css/parser/CSSTokenizer.h"
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 TEST(CSSParserValuesTest, InitWithEmptyString)
 {
@@ -119,4 +117,4 @@ TEST(CSSParserValuesTest, CSSParserTokenUrlConversion)
     EXPECT_EQ(String(valueList.valueAt(3)->string), "/**/hi/**/");
 }
 
-} // namespace
+} // namespace blink

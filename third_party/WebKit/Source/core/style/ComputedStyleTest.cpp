@@ -7,12 +7,9 @@
 
 #include "core/layout/ClipPathOperation.h"
 #include "core/style/ShapeValue.h"
-
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 TEST(ComputedStyleTest, ShapeOutsideBoxEqual)
 {
@@ -50,4 +47,4 @@ TEST(ComputedStyleTest, ClipPathEqual)
     ASSERT_EQ(*style1, *style2);
 }
 
-}
+} // namespace blink

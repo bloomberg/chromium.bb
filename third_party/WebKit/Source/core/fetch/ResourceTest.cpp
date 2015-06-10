@@ -11,10 +11,7 @@
 #include "platform/testing/URLTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "wtf/Vector.h"
-
 #include <gtest/gtest.h>
-
-using namespace blink;
 
 namespace blink {
 
@@ -84,7 +81,7 @@ void createTestResourceAndSetCachedMetadata(const ResourceResponse* response)
     return;
 }
 
-} // namespace
+} // anonymous namespace
 
 TEST(ResourceTest, SetCachedMetadata_SendsMetadataToPlatform)
 {

@@ -7,9 +7,7 @@
 
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 TEST(OriginsUsingFeaturesTest, countName)
 {
@@ -31,4 +29,4 @@ TEST(OriginsUsingFeaturesTest, countName)
     originsUsingFeatures.clear();
 }
 
-} // namespace
+} // namespace blink

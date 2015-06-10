@@ -48,9 +48,7 @@
 #include "public/platform/WebURLResponse.h"
 #include "public/platform/WebUnitTestSupport.h"
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 static Vector<unsigned char> jpegImage()
 {
@@ -229,4 +227,4 @@ TEST(ImageResourceTest, UpdateBitmapImages)
     bitmapImages.add(cachedImage.get());
 }
 
-} // namespace
+} // namespace blink

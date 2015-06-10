@@ -11,16 +11,16 @@
 #include "core/dom/Document.h"
 #include <gtest/gtest.h>
 
+namespace blink {
+
 namespace {
 
-class TestListener : public blink::MediaQueryListListener {
+class TestListener : public MediaQueryListListener {
 public:
     virtual void notifyMediaQueryChanged() override { }
 };
 
-}
-
-namespace blink {
+} // anonymous namespace
 
 TEST(MediaQueryListTest, CrashInStop)
 {
@@ -31,4 +31,4 @@ TEST(MediaQueryListTest, CrashInStop)
     // This test passes if it's not crashed.
 }
 
-}
+} // namespace blink

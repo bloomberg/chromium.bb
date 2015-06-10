@@ -28,11 +28,9 @@
  */
 
 #include "config.h"
-
 #include "core/layout/shapes/BoxShape.h"
 
 #include "platform/geometry/FloatRoundedRect.h"
-
 #include <gtest/gtest.h>
 
 namespace blink {
@@ -47,11 +45,7 @@ protected:
     }
 };
 
-} // namespace blink
-
 namespace {
-
-using namespace blink;
 
 #define TEST_EXCLUDED_INTERVAL(shapePtr, lineTop, lineHeight, expectedLeft, expectedRight) \
 {                                                                                          \
@@ -138,4 +132,6 @@ TEST_F(BoxShapeTest, getIntervals)
     TEST_EXCLUDED_INTERVAL(shape, 85, 10, 0, 97.320511f);
 }
 
-} // namespace
+} // anonymous namespace
+
+} // namespace blink

@@ -12,9 +12,7 @@
 #include "core/testing/DummyPageHolder.h"
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 TEST(DragUpdateTest, AffectedByDragUpdate)
 {
@@ -68,4 +66,4 @@ TEST(DragUpdateTest, ChildrenOrSiblingsAffectedByDragUpdate)
     ASSERT_EQ(5U, accessCount);
 }
 
-} // namespace
+} // namespace blink

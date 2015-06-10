@@ -29,23 +29,19 @@
  */
 
 #include "config.h"
-
 #include "core/animation/animatable/AnimatableValueTestHelper.h"
 
 #include "core/layout/ClipPathOperation.h"
 #include "core/style/BasicShapes.h"
 #include "platform/transforms/ScaleTransformOperation.h"
 #include "platform/transforms/TranslateTransformOperation.h"
-
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <sstream>
 #include <string>
 
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 class AnimationAnimatableValueTestHelperTest : public ::testing::Test {
 protected:
@@ -102,4 +98,4 @@ TEST_F(AnimationAnimatableValueTestHelperTest, PrintTo)
         PrintToString(AnimatableVisibility::create(VISIBLE)));
 }
 
-} // namespace
+} // namespace blink

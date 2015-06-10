@@ -32,10 +32,7 @@
 #include "core/layout/OverflowModel.h"
 
 #include "platform/geometry/LayoutRect.h"
-
 #include <gtest/gtest.h>
-
-using namespace blink;
 
 namespace blink {
 
@@ -48,8 +45,6 @@ void PrintTo(const LayoutRect& rect, std::ostream* os)
         << rect.width().toFloat() << ", "
         << rect.height().toFloat() << ")";
 }
-
-} // namespace blink
 
 namespace {
 
@@ -191,4 +186,6 @@ TEST_F(OverflowModelTest, MoveAffectsContentsVisualOverflow)
     EXPECT_EQ(LayoutRect(500, 100, 10, 10), m_overflow.contentsVisualOverflowRect());
 }
 
-} // namespace
+} // anonymous namespace
+
+} // namespace blink

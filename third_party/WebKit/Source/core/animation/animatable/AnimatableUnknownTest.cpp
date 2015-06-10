@@ -33,12 +33,9 @@
 
 #include "core/animation/animatable/AnimatableNeutral.h"
 #include "core/css/CSSValuePool.h"
-
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 class AnimationAnimatableUnknownTest : public ::testing::Test {
 protected:
@@ -82,4 +79,4 @@ TEST_F(AnimationAnimatableUnknownTest, Interpolate)
     EXPECT_EQ(cssValue, toAnimatableUnknown(AnimatableValue::interpolate(otherAnimatableUnknown.get(), animatableUnknown.get(), 1).get())->toCSSValue());
 }
 
-}
+} // namespace blink

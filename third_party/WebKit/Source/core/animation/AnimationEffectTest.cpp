@@ -32,12 +32,9 @@
 #include "core/animation/AnimationEffect.h"
 
 #include "core/animation/ComputedTimingProperties.h"
-
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 class TestAnimationEffectEventDelegate : public AnimationEffect::EventDelegate {
 public:
@@ -784,4 +781,4 @@ TEST(AnimationAnimationEffectTest, TimeToEffectChange)
     EXPECT_TRUE(std::isinf(animationNode->takeTimeToNextIteration()));
 }
 
-}
+} // namespace blink

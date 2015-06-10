@@ -24,14 +24,10 @@
  */
 
 #include "config.h"
-
 #include "core/layout/LayoutTableRow.h"
 
 #include "core/testing/DummyPageHolder.h"
-
 #include <gtest/gtest.h>
-
-using namespace blink;
 
 namespace blink {
 
@@ -83,6 +79,6 @@ TEST_F(LayoutTableRowDeathTest, CrashIfSettingUnsetRowIndex)
 
 #endif
 
-}
+} // anonymous namespace
 
 } // namespace blink

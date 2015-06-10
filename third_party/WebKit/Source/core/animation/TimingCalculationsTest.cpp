@@ -33,9 +33,7 @@
 
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 TEST(AnimationTimingCalculationsTest, ActiveTime)
 {
@@ -211,4 +209,4 @@ TEST(AnimationTimingCalculationsTest, TransformedTime)
     EXPECT_EQ(std::numeric_limits<double>::infinity(), calculateTransformedTime(0, std::numeric_limits<double>::infinity(), 1, timing));
 }
 
-}
+} // namespace blink

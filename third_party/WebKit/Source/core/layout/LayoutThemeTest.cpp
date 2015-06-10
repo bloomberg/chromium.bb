@@ -16,14 +16,11 @@
 #include "platform/graphics/Color.h"
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 class LayoutThemeTest : public ::testing::Test {
-
 protected:
-    virtual void SetUp() override;
+    void SetUp() override;
     HTMLDocument& document() const { return *m_document; }
     void setHtmlInnerHTML(const char* htmlContent);
 
@@ -89,4 +86,4 @@ TEST_F(LayoutThemeTest, ChangeFocusRingColor)
     EXPECT_EQ(customColor, outlineColor(span));
 }
 
-}
+} // namespace blink

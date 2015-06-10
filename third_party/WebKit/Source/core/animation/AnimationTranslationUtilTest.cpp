@@ -23,7 +23,6 @@
  */
 
 #include "config.h"
-
 #include "core/animation/AnimationTranslationUtil.h"
 
 #include "platform/graphics/filters/FilterOperations.h"
@@ -38,9 +37,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 class WebTransformOperationsMock : public WebTransformOperations {
 public:
@@ -106,5 +103,4 @@ TEST(AnimationTranslationUtilTest, filtersWork)
     toWebFilterOperations(ops, &outOps);
 }
 
-}
-
+} // namespace blink

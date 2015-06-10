@@ -7,9 +7,7 @@
 
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 TEST(AnimationAnimatableDoubleAndBoolTest, Create)
 {
@@ -85,4 +83,4 @@ TEST(AnimationAnimatableDoubleAndBoolTest, Step)
     EXPECT_FALSE(toAnimatableDoubleAndBool(AnimatableValue::interpolate(from10.get(), to20.get(), 1.5).get())->flag());
 }
 
-}
+} // namespace blink

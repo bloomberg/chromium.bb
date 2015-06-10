@@ -34,17 +34,16 @@
 #include "wtf/OwnPtr.h"
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 class AnimationAnimationClockTest : public ::testing::Test {
 public:
     AnimationAnimationClockTest()
         : animationClock(mockTimeFunction)
     { }
+
 protected:
-    virtual void SetUp()
+    void SetUp() override
     {
         mockTime = 0;
         animationClock.resetTimeForTesting();
@@ -140,4 +139,4 @@ TEST_F(AnimationAnimationClockTest, CurrentTimeUpdatesTask)
     EXPECT_EQ(100, animationClock.currentTime());
 }
 
-}
+} // namespace blink
