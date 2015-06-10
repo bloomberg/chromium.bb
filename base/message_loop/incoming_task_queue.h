@@ -57,9 +57,6 @@ class BASE_EXPORT IncomingTaskQueue
   // scheduling work.
   void StartScheduling();
 
-  // Returns the delay for the most recently added task.
-  TimeTicks GetNewlyAddedTaskDelay();
-
  private:
   friend class RefCountedThreadSafe<IncomingTaskQueue>;
   virtual ~IncomingTaskQueue();
