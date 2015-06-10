@@ -24,7 +24,6 @@ import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_shell.Shell;
 import org.chromium.content_shell.ShellManager;
 import org.chromium.ui.base.ActivityWindowAndroid;
-import org.chromium.ui.base.WindowAndroid;
 
 /**
  * Test activity used for verifying the different configuration options for the ContentLinker.
@@ -43,7 +42,7 @@ public class ChromiumLinkerTestActivity extends Activity {
     private static final String LOW_MEMORY_DEVICE = "--low-memory-device";
 
     private ShellManager mShellManager;
-    private WindowAndroid mWindowAndroid;
+    private ActivityWindowAndroid mWindowAndroid;
 
     @Override
     public void onCreate(final Bundle savedInstanceState) {
@@ -63,21 +62,21 @@ public class ChromiumLinkerTestActivity extends Activity {
         // reason, so parse the command-line differently here:
         boolean hasLowMemoryDeviceSwitch = false;
         String[] cmdline = CommandLine.getJavaSwitchesOrNull();
-        if (cmdline == null)
+        if (cmdline == null) {
             Log.i(TAG, "Command line is null");
-        else {
+        } else {
             Log.i(TAG, "Command line is:");
             for (int n = 0; n < cmdline.length; ++n) {
                 Log.i(TAG, "  '" + cmdline[n] + "'");
-                if (cmdline[n].equals(LOW_MEMORY_DEVICE))
-                    hasLowMemoryDeviceSwitch = true;
+                if (cmdline[n].equals(LOW_MEMORY_DEVICE)) hasLowMemoryDeviceSwitch = true;
             }
         }
 
         // Determine which kind of device to simulate from the command-line.
         int memoryDeviceConfig = Linker.MEMORY_DEVICE_CONFIG_NORMAL;
-        if (hasLowMemoryDeviceSwitch)
+        if (hasLowMemoryDeviceSwitch) {
             memoryDeviceConfig = Linker.MEMORY_DEVICE_CONFIG_LOW;
+        }
         Linker.setMemoryDeviceConfig(memoryDeviceConfig);
 
         // Register the test runner class by name.
@@ -185,12 +184,14 @@ public class ChromiumLinkerTestActivity extends Activity {
      *         one is not showing.
      */
     public ContentViewCore getActiveContentViewCore() {
-        if (mShellManager == null)
+        if (mShellManager == null) {
             return null;
+        }
 
         Shell shell = mShellManager.getActiveShell();
-        if (shell == null)
+        if (shell == null) {
             return null;
+        }
 
         return shell.getContentViewCore();
     }

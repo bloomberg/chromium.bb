@@ -88,7 +88,7 @@ public class ChromeShellActivity extends AppCompatActivity implements AppMenuPro
                 }
             };
 
-    private WindowAndroid mWindow;
+    private ActivityWindowAndroid mWindow;
     private TabManager mTabManager;
     private ChromeShellToolbar mToolbar;
     private DevToolsServer mDevToolsServer;

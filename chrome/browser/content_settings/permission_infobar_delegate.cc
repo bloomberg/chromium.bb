@@ -34,6 +34,11 @@ void PermissionInfobarDelegate::InfoBarDismissed() {
   SetPermission(false, false);
 }
 
+PermissionInfobarDelegate*
+PermissionInfobarDelegate::AsPermissionInfobarDelegate() {
+  return this;
+}
+
 base::string16 PermissionInfobarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   return l10n_util::GetStringUTF16((button == BUTTON_OK) ?

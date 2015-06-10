@@ -66,6 +66,14 @@ bool MediaStreamInfoBarDelegate::Create(
   return true;
 }
 
+bool MediaStreamInfoBarDelegate::IsRequestingVideoAccess() const {
+  return controller_->HasVideo();
+}
+
+bool MediaStreamInfoBarDelegate::IsRequestingMicrophoneAccess() const {
+  return controller_->HasAudio();
+}
+
 MediaStreamInfoBarDelegate::MediaStreamInfoBarDelegate(
     scoped_ptr<MediaStreamDevicesController> controller)
     : ConfirmInfoBarDelegate(),

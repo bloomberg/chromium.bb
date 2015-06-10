@@ -68,6 +68,10 @@ NativeAppInfoBarDelegate* InfoBarDelegate::AsNativeAppInfoBarDelegate() {
   return nullptr;
 }
 
+PermissionInfobarDelegate* InfoBarDelegate::AsPermissionInfobarDelegate() {
+  return nullptr;
+}
+
 PopupBlockedInfoBarDelegate* InfoBarDelegate::AsPopupBlockedInfoBarDelegate() {
   return nullptr;
 }

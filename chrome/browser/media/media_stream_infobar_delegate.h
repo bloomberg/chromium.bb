@@ -30,6 +30,9 @@ class MediaStreamInfoBarDelegate : public ConfirmInfoBarDelegate {
                      const content::MediaStreamRequest& request,
                      const content::MediaResponseCallback& callback);
 
+  bool IsRequestingVideoAccess() const;
+  bool IsRequestingMicrophoneAccess() const;
+
  private:
   friend class WebRtcTestBase;
 

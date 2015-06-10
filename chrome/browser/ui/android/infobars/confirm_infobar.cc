@@ -4,13 +4,22 @@
 
 #include "chrome/browser/ui/android/infobars/confirm_infobar.h"
 
+#include <vector>
+
 #include "base/android/jni_android.h"
+#include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/logging.h"
 #include "chrome/browser/android/resource_mapper.h"
+#include "chrome/browser/content_settings/permission_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/media/media_stream_infobar_delegate.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
+#include "content/public/browser/android/content_view_core.h"
+#include "content/public/browser/web_contents.h"
 #include "jni/ConfirmInfoBarDelegate_jni.h"
+#include "ui/android/window_android.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/image/image.h"
 
@@ -53,10 +62,37 @@ base::android::ScopedJavaLocalRef<jobject> ConfirmInfoBar::CreateRenderInfoBar(
     java_bitmap = gfx::ConvertToJavaBitmap(delegate->GetIcon().ToSkBitmap());
   }
 
+  std::vector<int> content_settings;
+  if (delegate->AsPermissionInfobarDelegate()) {
+    content_settings.push_back(
+        delegate->AsPermissionInfobarDelegate()->content_setting());
+  } else if (delegate->AsMediaStreamInfoBarDelegate()) {
+    MediaStreamInfoBarDelegate* media_delegate =
+        delegate->AsMediaStreamInfoBarDelegate();
+    if (media_delegate->IsRequestingVideoAccess()) {
+      content_settings.push_back(
+          ContentSettingsType::CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
+    } else if (media_delegate->IsRequestingMicrophoneAccess()) {
+      content_settings.push_back(
+          ContentSettingsType::CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
+    }
+  }
+
+  content::WebContents* web_contents =
+      InfoBarService::WebContentsFromInfoBar(this);
+  DCHECK(web_contents);
+  content::ContentViewCore* cvc =
+      content::ContentViewCore::FromWebContents(web_contents);
+  DCHECK(cvc);
+  base::android::ScopedJavaLocalRef<jobject> jwindow_android =
+      cvc->GetWindowAndroid()->GetJavaObject();
+
   return Java_ConfirmInfoBarDelegate_showConfirmInfoBar(
-      env, java_confirm_delegate_.obj(), GetEnumeratedIconId(),
-      java_bitmap.obj(), message_text.obj(), link_text.obj(),
-      ok_button_text.obj(), cancel_button_text.obj());
+      env, java_confirm_delegate_.obj(),
+      jwindow_android.obj(), GetEnumeratedIconId(), java_bitmap.obj(),
+      message_text.obj(), link_text.obj(), ok_button_text.obj(),
+      cancel_button_text.obj(),
+      base::android::ToJavaIntArray(env, content_settings).obj());
 }
 
 void ConfirmInfoBar::OnLinkClicked(JNIEnv* env, jobject obj) {

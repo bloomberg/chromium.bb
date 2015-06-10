@@ -214,6 +214,16 @@ public class WindowAndroid {
     }
 
     /**
+     * Requests the specified permissions are granted for further use.
+     * @param permissions The list of permissions to request access to.
+     * @param callback The callback to be notified whether the permissions were granted.
+     */
+    public void requestPermissions(String[] permissions, PermissionCallback callback) {
+        Log.w(TAG, "Cannot request permissions as the context is not an Activity");
+        assert false : "Failed to request permissions using a WindowAndroid without an Activity";
+    }
+
+    /**
      * Displays an error message with a provided error message string.
      * @param error The error message string to be displayed.
      */
@@ -305,17 +315,6 @@ public class WindowAndroid {
         nativeOnActivityResumed(mNativeWindowAndroid);
     }
 
-    /**
-     * Responds to the intent result if the intent was created by the native window.
-     * @param requestCode Request code of the requested intent.
-     * @param resultCode Result code of the requested intent.
-     * @param data The data returned by the intent.
-     * @return Boolean value of whether the intent was started by the native window.
-     */
-    public boolean onActivityResult(int requestCode, int resultCode, Intent data) {
-        return false;
-    }
-
     @CalledByNative
     private void requestVSyncUpdate() {
         mVSyncMonitor.requestUpdate();
@@ -334,6 +333,23 @@ public class WindowAndroid {
          */
         void onIntentCompleted(WindowAndroid window, int resultCode,
                 ContentResolver contentResolver, Intent data);
+    }
+
+    /**
+     * Callback for permission requests.
+     */
+    public interface PermissionCallback {
+        /**
+         * Called upon completing a permission request.
+         * @param permissions The list of permissions in the result.
+         * @param grantResults Whether the permissions were granted.
+         */
+        void onRequestPermissionsResult(String[] permissions, int[] grantResults);
+
+        /**
+         * Called when a permission request has been aborted.
+         */
+        void onRequestPermissionAborted();
     }
 
     /**

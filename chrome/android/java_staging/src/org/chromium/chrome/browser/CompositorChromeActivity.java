@@ -71,6 +71,7 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.readback_types.ReadbackResponse;
 import org.chromium.printing.PrintManagerDelegateImpl;
 import org.chromium.printing.PrintingController;
+import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
@@ -91,7 +92,7 @@ public abstract class CompositorChromeActivity extends ChromeActivity
 
     private static final String TAG = "CompositorChromeActivity";
 
-    private WindowAndroid mWindowAndroid;
+    private ActivityWindowAndroid mWindowAndroid;
     private ChromeFullscreenManager mFullscreenManager;
     private CompositorViewHolder mCompositorViewHolder;
     private ContextualSearchManager mContextualSearchManager;
@@ -329,6 +330,15 @@ public abstract class CompositorChromeActivity extends ChromeActivity
     public boolean onActivityResultWithNative(int requestCode, int resultCode, Intent intent) {
         if (super.onActivityResultWithNative(requestCode, resultCode, intent)) return true;
         return mWindowAndroid.onActivityResult(requestCode, resultCode, intent);
+    }
+
+    // @Override[ANDROID-M]
+    public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            int[] grantResults) {
+        if (mWindowAndroid != null) {
+            mWindowAndroid.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
+        //super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     @Override

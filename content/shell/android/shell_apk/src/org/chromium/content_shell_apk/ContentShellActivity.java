@@ -28,7 +28,6 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_shell.Shell;
 import org.chromium.content_shell.ShellManager;
 import org.chromium.ui.base.ActivityWindowAndroid;
-import org.chromium.ui.base.WindowAndroid;
 
 /**
  * Activity for managing the Content Shell.
@@ -41,7 +40,7 @@ public class ContentShellActivity extends Activity {
     public static final String COMMAND_LINE_ARGS_KEY = "commandLineArgs";
 
     private ShellManager mShellManager;
-    private WindowAndroid mWindowAndroid;
+    private ActivityWindowAndroid mWindowAndroid;
     private Intent mLastSentIntent;
 
     @Override

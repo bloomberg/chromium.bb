@@ -20,6 +20,9 @@ class PermissionQueueController;
 // provide an icon and a message text to the infobar.
 class PermissionInfobarDelegate : public ConfirmInfoBarDelegate {
 
+ public:
+  ContentSettingsType content_setting() const { return type_; }
+
  protected:
   PermissionInfobarDelegate(PermissionQueueController* controller,
                             const PermissionRequestID& id,
@@ -31,6 +34,7 @@ class PermissionInfobarDelegate : public ConfirmInfoBarDelegate {
   // ConfirmInfoBarDelegate:
   Type GetInfoBarType() const override;
   void InfoBarDismissed() override;
+  PermissionInfobarDelegate* AsPermissionInfobarDelegate() override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;
   bool Accept() override;
   bool Cancel() override;
