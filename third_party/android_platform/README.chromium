@@ -26,7 +26,8 @@ include, but are not limited to, the following:
 Added memoization of addr2line and objdump.
 Added option to change the amount of symbolization done.
 Updated output directories to use environment variable.
-When calling addr2line, check the symbol is a file (and not a directory).
+When calling addr2line, check the symbol is a file that looks like it contains
+    symbols.
 Added support for parsing LOG(FATAL) and DCHECK errors and their
     stack traces, as emitted by src/base/debug/stack_trace_android.cc
 Added support for finding symbols when library is loaded directly from the APK.

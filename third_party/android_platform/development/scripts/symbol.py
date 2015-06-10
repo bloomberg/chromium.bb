@@ -452,6 +452,9 @@ def CallAddr2LineForSet(lib, unique_addrs):
 
 
   symbols = SYMBOLS_DIR + lib
+  if not os.path.splitext(symbols)[1] in ['', '.so', '.apk']:
+    return None
+
   if not os.path.isfile(symbols):
     return None
 
