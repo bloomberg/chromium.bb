@@ -798,8 +798,10 @@ public class ChromeLauncherActivity extends Activity
      * @return Whether or not the First Run Experience needed to be shown.
      */
     private boolean launchFirstRunExperience() {
+        final boolean isIntentActionMain = getIntent() != null
+                && TextUtils.equals(getIntent().getAction(), Intent.ACTION_MAIN);
         final Intent freIntent = FirstRunFlowSequencer.checkIfFirstRunIsNecessary(
-                this, getIntent());
+                this, getIntent(), isIntentActionMain);
         if (freIntent == null) return false;
 
         if ((getIntent().getFlags() & Intent.FLAG_ACTIVITY_NEW_TASK) != 0) {
