@@ -75,6 +75,19 @@ my_function(void)
 	x = function_with_a_really_long_name(parameter1, parameter2,
 					     parameter3, parameter4);
 
+== Licensing ==
+
+Wayland is licensed with the intention to be usable anywhere X.org is.
+Originally, X.org was covered under the MIT X11 license, but changed to
+the MIT Expat license.  Similarly, Wayland was covered initially as MIT
+X11 licensed, but changed to the MIT Expat license, following in X.org's
+footsteps.  Other than wording, the two licenses are substantially the
+same, with the exeption of a no-advertising clause in X11 not included
+in Expat.
+
+New source code files should specify the MIT Expat license in their
+boilerplate, as part of the copyright statement.
+
 == References ==
 
 	[1] http://git-scm.com/documentation
