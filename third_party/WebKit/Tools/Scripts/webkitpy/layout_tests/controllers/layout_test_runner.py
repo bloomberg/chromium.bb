@@ -283,6 +283,7 @@ class Worker(object):
             device_failed = True
             return device_failed
 
+        _log.debug("%s %s started" % (self._name, test_input.test_name))
         self._caller.post('started_test', test_input, test_timeout_sec)
         result = single_test_runner.run_single_test(self._port, self._options, self._results_directory,
             self._name, self._driver, test_input, stop_when_done)
