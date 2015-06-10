@@ -250,8 +250,8 @@ void InputDeviceFactoryEvdev::AttachInputDevice(
     ApplyCapsLockLed();
   }
 
-  if (--pending_device_changes_ == 0)
-    NotifyDevicesUpdated();
+  --pending_device_changes_;
+  NotifyDevicesUpdated();
 }
 
 void InputDeviceFactoryEvdev::DetachInputDevice(const base::FilePath& path) {
@@ -405,6 +405,8 @@ void InputDeviceFactoryEvdev::UpdateDirtyFlags(
 }
 
 void InputDeviceFactoryEvdev::NotifyDevicesUpdated() {
+  if (pending_device_changes_)
+    return;  // No update until pending opens complete.
   if (touchscreen_list_dirty_)
     NotifyTouchscreensUpdated();
   if (keyboard_list_dirty_)
