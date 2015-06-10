@@ -243,7 +243,8 @@ void PushMessagingBrowserTest::RequestAndAcceptPermission() {
         PermissionBubbleManager::ACCEPT_ALL);
     EXPECT_TRUE(RunScript("requestNotificationPermission();", &script_result));
   } else {
-    InfoBarResponder infobar_accept_responder(GetInfoBarService(), true);
+    InfoBarResponder infobar_accept_responder(GetInfoBarService(),
+                                              InfoBarResponder::ACCEPT);
     EXPECT_TRUE(RunScript("requestNotificationPermission();", &script_result));
   }
   EXPECT_EQ("permission status - granted", script_result);
@@ -257,7 +258,8 @@ void PushMessagingBrowserTest::RequestAndDenyPermission() {
         PermissionBubbleManager::DENY_ALL);
     EXPECT_TRUE(RunScript("requestNotificationPermission();", &script_result));
   } else {
-    InfoBarResponder infobar_deny_responder(GetInfoBarService(), false);
+    InfoBarResponder infobar_deny_responder(GetInfoBarService(),
+                                            InfoBarResponder::DENY);
     EXPECT_TRUE(RunScript("requestNotificationPermission();", &script_result));
   }
   EXPECT_EQ("permission status - denied", script_result);
@@ -319,7 +321,8 @@ IN_PROC_BROWSER_TEST_P(PushMessagingBrowserTest,
         PermissionBubbleManager::ACCEPT_ALL);
     ASSERT_TRUE(RunScript("subscribePush()", &script_result));
   } else {
-    InfoBarResponder infobar_accept_responder(GetInfoBarService(), true);
+    InfoBarResponder infobar_accept_responder(GetInfoBarService(),
+                                              InfoBarResponder::ACCEPT);
     ASSERT_TRUE(RunScript("subscribePush()", &script_result));
   }
   EXPECT_EQ(GetEndpointForSubscriptionId("1-0"), script_result);
