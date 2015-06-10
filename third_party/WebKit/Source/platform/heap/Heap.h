@@ -1176,7 +1176,6 @@ inline bool Heap::isNormalHeapIndex(int index)
     return index >= NormalPage1HeapIndex && index <= NormalPage4HeapIndex;
 }
 
-#if ENABLE(LAZY_SWEEPING)
 #define DECLARE_EAGER_FINALIZATION_OPERATOR_NEW() \
 public:                                           \
     GC_PLUGIN_IGNORE("491488")                    \
@@ -1208,13 +1207,6 @@ public:                                                \
     typedef int IsEagerlyFinalizedMarker
 #else
 #define EAGERLY_FINALIZE() typedef int IsEagerlyFinalizedMarker
-#endif
-#else
-#define DECLARE_EAGER_FINALIZATION_OPERATOR_NEW()
-#define EAGERLY_FINALIZE()
-// TODO(Oilpan): define in terms of Oilpan's EAGERLY_FINALIZE() once lazy
-// sweeping is enabled non-Oilpan.
-#define EAGERLY_FINALIZE_WILL_BE_REMOVED()
 #endif
 
 NO_SANITIZE_ADDRESS inline
