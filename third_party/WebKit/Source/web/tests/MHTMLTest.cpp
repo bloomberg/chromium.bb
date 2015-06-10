@@ -34,6 +34,9 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Location.h"
 #include "core/page/Page.h"
+#include "platform/SerializedResource.h"
+#include "platform/SharedBuffer.h"
+#include "platform/mhtml/MHTMLArchive.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/Platform.h"
@@ -48,7 +51,37 @@
 #include "web/tests/FrameTestHelpers.h"
 #include <gtest/gtest.h>
 
+using namespace blink;
+
+using blink::URLTestHelpers::toKURL;
+
 namespace {
+
+class LineReader {
+public:
+    LineReader(const std::string& text) : m_text(text), m_index(0) { }
+    bool getNextLine(std::string* line)
+    {
+        line->clear();
+        if (m_index >= m_text.length())
+            return false;
+
+        size_t endOfLineIndex = m_text.find("\r\n", m_index);
+        if (endOfLineIndex == std::string::npos) {
+            *line = m_text.substr(m_index);
+            m_index = m_text.length();
+            return true;
+        }
+
+        *line = m_text.substr(m_index, endOfLineIndex - m_index);
+        m_index = endOfLineIndex + 2;
+        return true;
+    }
+
+private:
+    std::string m_text;
+    size_t m_index;
+};
 
 using blink::URLTestHelpers::toKURL;
 using namespace blink;
@@ -57,6 +90,8 @@ class MHTMLTest : public testing::Test {
 public:
     MHTMLTest()
     {
+        m_filePath = Platform::current()->unitTestSupport()->webKitRootDir();
+        m_filePath.append("/Source/web/tests/data/mhtml/");
     }
 
 protected:
@@ -82,7 +117,50 @@ protected:
 
     Page* page() const { return m_helper.webViewImpl()->page(); }
 
+
+    void addResource(const char* url, const char* mime, PassRefPtr<SharedBuffer> data)
+    {
+        SerializedResource resource(toKURL(url), mime, data);
+        m_resources.append(resource);
+    }
+
+    void addResource(const char* url, const char* mime, const char* fileName)
+    {
+        addResource(url, mime, readFile(fileName));
+    }
+
+    void addTestResources()
+    {
+        addResource("http://www.test.com", "text/html", "css_test_page.html");
+        addResource("http://www.test.com/link_styles.css", "text/css", "link_styles.css");
+        addResource("http://www.test.com/import_style_from_link.css", "text/css", "import_style_from_link.css");
+        addResource("http://www.test.com/import_styles.css", "text/css", "import_styles.css");
+        addResource("http://www.test.com/red_background.png", "image/png", "red_background.png");
+        addResource("http://www.test.com/orange_background.png", "image/png", "orange_background.png");
+        addResource("http://www.test.com/yellow_background.png", "image/png", "yellow_background.png");
+        addResource("http://www.test.com/green_background.png", "image/png", "green_background.png");
+        addResource("http://www.test.com/blue_background.png", "image/png", "blue_background.png");
+        addResource("http://www.test.com/purple_background.png", "image/png", "purple_background.png");
+        addResource("http://www.test.com/ul-dot.png", "image/png", "ul-dot.png");
+        addResource("http://www.test.com/ol-dot.png", "image/png", "ol-dot.png");
+    }
+
+    PassRefPtr<SharedBuffer> serialize(const char *title, const char *mime,  MHTMLArchive::EncodingPolicy encodingPolicy)
+    {
+        return MHTMLArchive::generateMHTMLData(m_resources, encodingPolicy, title, mime);
+    }
+
+
+
 private:
+    PassRefPtr<SharedBuffer> readFile(const char* fileName)
+    {
+        String filePath = m_filePath + fileName;
+        return Platform::current()->unitTestSupport()->readFromFile(filePath);
+    }
+
+    String m_filePath;
+    Vector<SerializedResource> m_resources;
     FrameTestHelpers::WebViewHelper m_helper;
 };
 
@@ -108,4 +186,38 @@ TEST_F(MHTMLTest, CheckDomain)
     EXPECT_STRNE("localhost", origin->domain().ascii().data());
 }
 
+TEST_F(MHTMLTest, TestMHTMLEncoding)
+{
+    addTestResources();
+    RefPtr<SharedBuffer> data  = serialize("Test Serialization", "text/html", MHTMLArchive::UseDefaultEncoding);
+
+    // Read the MHTML data line per line and do some pseudo-parsing to make sure the right encoding is used for the different sections.
+    LineReader lineReader(std::string(data->data()));
+    int sectionCheckedCount = 0;
+    const char* expectedEncoding = 0;
+    std::string line;
+    while (lineReader.getNextLine(&line)) {
+        if (line.compare(0, 13, "Content-Type:") == 0) {
+            ASSERT_FALSE(expectedEncoding);
+            if (line.find("multipart/related;") != std::string::npos) {
+                // Skip this one, it's part of the MHTML header.
+                continue;
+            }
+            if (line.find("text/") != std::string::npos)
+                expectedEncoding = "quoted-printable";
+            else if (line.find("image/") != std::string::npos)
+                expectedEncoding = "base64";
+            else
+                FAIL() << "Unexpected Content-Type: " << line;
+            continue;
+        }
+        if (line.compare(0, 26, "Content-Transfer-Encoding:") == 0) {
+            ASSERT_TRUE(expectedEncoding);
+            EXPECT_NE(line.find(expectedEncoding), std::string::npos);
+            expectedEncoding = 0;
+            sectionCheckedCount++;
+        }
+    }
+    EXPECT_EQ(12, sectionCheckedCount);
+}
 }

@@ -298,7 +298,6 @@
       'tests/WebImageTest.cpp',
       'tests/WebInputEventConversionTest.cpp',
       'tests/WebInputEventFactoryTestMac.mm',
-      'tests/WebPageNewSerializerTest.cpp',
       'tests/WebPageSerializerTest.cpp',
       'tests/WebPluginContainerTest.cpp',
       'tests/WebScopedWindowFocusAllowedIndicatorTest.cpp',
@@ -314,7 +313,6 @@
       ['OS=="win"',
         {
           'web_unittest_files': [
-            'tests/WebPageNewSerializerTest.cpp',
             'tests/WebPageSerializerTest.cpp',
           ],
         }
