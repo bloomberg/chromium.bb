@@ -180,10 +180,13 @@ void TableCellPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo, 
     if (!m_layoutTableCell.hasBackground() && !m_layoutTableCell.styleRef().boxShadow() && !needsToPaintBorder)
         return;
 
-    LayoutRect paintRect = paintBounds(paintOffset, DoNotAddOffsetFromParent);
-    LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutTableCell, DisplayItem::BoxDecorationBackground, pixelSnappedIntRect(paintRect));
+    LayoutRect visualOverflowRect = m_layoutTableCell.visualOverflowRect();
+    visualOverflowRect.moveBy(paintOffset);
+    LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutTableCell, DisplayItem::BoxDecorationBackground, pixelSnappedIntRect(visualOverflowRect));
     if (recorder.canUseCachedDrawing())
         return;
+
+    LayoutRect paintRect = paintBounds(paintOffset, DoNotAddOffsetFromParent);
 
     BoxPainter::paintBoxShadow(paintInfo, paintRect, m_layoutTableCell.styleRef(), Normal);
 
