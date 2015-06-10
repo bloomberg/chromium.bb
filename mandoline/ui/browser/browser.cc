@@ -140,8 +140,8 @@ void Browser::OnEmbedForDescendant(mojo::View* view,
 
   scoped_ptr<FrameConnection> frame_connection(new FrameConnection);
   frame_connection->Init(app_, request.Pass(), client);
-  frame_tree_->CreateAndAddFrame(view, parent,
-                                 frame_connection->frame_tree_client(),
+  FrameTreeClient* frame_tree_client = frame_connection->frame_tree_client();
+  frame_tree_->CreateAndAddFrame(view, parent, frame_tree_client,
                                  frame_connection.Pass());
 }
 
@@ -190,8 +190,8 @@ void Browser::Embed(mojo::URLRequestPtr request) {
   frame_connection->Init(app_, request.Pass(), &view_manager_client);
   frame_connection->application_connection()->AddService<mojo::NavigatorHost>(
       this);
-  frame_tree_.reset(new FrameTree(content_, nullptr,
-                                  frame_connection->frame_tree_client(),
+  FrameTreeClient* frame_tree_client = frame_connection->frame_tree_client();
+  frame_tree_.reset(new FrameTree(content_, nullptr, frame_tree_client,
                                   frame_connection.Pass()));
   content_->Embed(view_manager_client.Pass());
 
