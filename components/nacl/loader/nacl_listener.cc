@@ -328,8 +328,7 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
 #if defined(OS_LINUX) || defined(OS_MACOSX)
   int urandom_fd = dup(base::GetUrandomFD());
   if (urandom_fd < 0) {
-    LOG(ERROR) << "Failed to dup() the urandom FD";
-    return;
+    LOG(FATAL) << "Failed to dup() the urandom FD";
   }
   NaClChromeMainSetUrandomFd(urandom_fd);
 #endif
@@ -344,8 +343,7 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
 
   nap = NaClAppCreate();
   if (nap == NULL) {
-    LOG(ERROR) << "NaClAppCreate() failed";
-    return;
+    LOG(FATAL) << "NaClAppCreate() failed";
   }
 
   IPC::ChannelHandle browser_handle;
@@ -383,12 +381,11 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
           ppapi_renderer_handle,
           trusted_listener_->TakeClientChannelHandle(),
           manifest_service_handle)))
-    LOG(ERROR) << "Failed to send IPC channel handle to NaClProcessHost.";
+    LOG(FATAL) << "Failed to send IPC channel handle to NaClProcessHost.";
 
   struct NaClChromeMainArgs* args = NaClChromeMainArgsCreate();
   if (args == NULL) {
-    LOG(ERROR) << "NaClChromeMainArgsCreate() failed";
-    return;
+    LOG(FATAL) << "NaClChromeMainArgsCreate() failed";
   }
 
 #if defined(OS_LINUX) || defined(OS_MACOSX)
@@ -409,8 +406,7 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
   args->irt_fd = _open_osfhandle(reinterpret_cast<intptr_t>(irt_handle),
                                  _O_RDONLY | _O_BINARY);
   if (args->irt_fd < 0) {
-    LOG(ERROR) << "_open_osfhandle() failed";
-    return;
+    LOG(FATAL) << "_open_osfhandle() failed";
   }
 #else
   args->irt_fd = irt_handle;
