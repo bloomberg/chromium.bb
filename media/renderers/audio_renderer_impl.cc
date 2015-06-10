@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
+#include "base/time/default_tick_clock.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/audio_buffer_converter.h"
 #include "media/base/audio_hardware_config.h"
@@ -52,6 +53,7 @@ AudioRendererImpl::AudioRendererImpl(
       audio_buffer_stream_(
           new AudioBufferStream(task_runner, decoders.Pass(), media_log)),
       hardware_config_(hardware_config),
+      tick_clock_(new base::DefaultTickClock()),
       playback_rate_(0.0),
       state_(kUninitialized),
       buffering_state_(BUFFERING_HAVE_NOTHING),
@@ -171,38 +173,59 @@ bool AudioRendererImpl::GetWallClockTimes(
     const std::vector<base::TimeDelta>& media_timestamps,
     std::vector<base::TimeTicks>* wall_clock_times) {
   base::AutoLock auto_lock(lock_);
-  if (last_render_time_.is_null() || !stop_rendering_time_.is_null() ||
-      !playback_rate_ || buffering_state_ != BUFFERING_HAVE_ENOUGH ||
-      !sink_playing_) {
-    return false;
+  DCHECK(wall_clock_times->empty());
+
+  // When playback is paused (rate is zero), assume a rate of 1.0.
+  const double playback_rate = playback_rate_ ? playback_rate_ : 1.0;
+  const bool is_time_moving = sink_playing_ && playback_rate_ &&
+                              !last_render_time_.is_null() &&
+                              stop_rendering_time_.is_null();
+
+  // Pre-compute the time until playback of the audio buffer extents, since
+  // these values are frequently used below.
+  const base::TimeDelta time_until_front =
+      audio_clock_->TimeUntilPlayback(audio_clock_->front_timestamp());
+  const base::TimeDelta time_until_back =
+      audio_clock_->TimeUntilPlayback(audio_clock_->back_timestamp());
+
+  if (media_timestamps.empty()) {
+    // Return the current media time as a wall clock time while accounting for
+    // frames which may be in the process of play out.
+    wall_clock_times->push_back(std::min(
+        std::max(tick_clock_->NowTicks(), last_render_time_ + time_until_front),
+        last_render_time_ + time_until_back));
+    return is_time_moving;
   }
 
-  DCHECK(wall_clock_times->empty());
   wall_clock_times->reserve(media_timestamps.size());
   for (const auto& media_timestamp : media_timestamps) {
-    base::TimeDelta base_time;
-    if (media_timestamp < audio_clock_->front_timestamp()) {
-      // See notes about |media_time| values less than |base_time| in TimeSource
-      // header.
-      base_time = audio_clock_->front_timestamp();
-    } else if (media_timestamp > audio_clock_->back_timestamp()) {
-      base_time = audio_clock_->back_timestamp();
-    } else {
-      // No need to estimate time, so return the actual wallclock time.
+    // When time was or is moving and the requested media timestamp is within
+    // range of played out audio, we can provide an exact conversion.
+    if (!last_render_time_.is_null() &&
+        media_timestamp >= audio_clock_->front_timestamp() &&
+        media_timestamp <= audio_clock_->back_timestamp()) {
       wall_clock_times->push_back(
-          last_render_time_ +
-          audio_clock_->TimeUntilPlayback(media_timestamp));
+          last_render_time_ + audio_clock_->TimeUntilPlayback(media_timestamp));
       continue;
+    }
+
+    base::TimeDelta base_timestamp, time_until_playback;
+    if (media_timestamp < audio_clock_->front_timestamp()) {
+      base_timestamp = audio_clock_->front_timestamp();
+      time_until_playback = time_until_front;
+    } else {
+      base_timestamp = audio_clock_->back_timestamp();
+      time_until_playback = time_until_back;
     }
 
     // In practice, most calls will be estimates given the relatively small
     // window in which clients can get the actual time.
-    wall_clock_times->push_back(
-        last_render_time_ + audio_clock_->TimeUntilPlayback(base_time) +
-        base::TimeDelta::FromMicroseconds(
-            (media_timestamp - base_time).InMicroseconds() / playback_rate_));
+    wall_clock_times->push_back(last_render_time_ + time_until_playback +
+                                (media_timestamp - base_timestamp) /
+                                    playback_rate);
   }
-  return true;
+
+  return is_time_moving;
 }
 
 TimeSource* AudioRendererImpl::GetTimeSource() {
@@ -596,10 +619,11 @@ int AudioRendererImpl::Render(AudioBus* audio_bus,
   int frames_written = 0;
   {
     base::AutoLock auto_lock(lock_);
-    last_render_time_ = base::TimeTicks::Now();
+    last_render_time_ = tick_clock_->NowTicks();
 
     if (!stop_rendering_time_.is_null()) {
-      // TODO(dalecurtis): Use |stop_rendering_time_| to advance the AudioClock.
+      audio_clock_->CompensateForSuspendedWrites(
+          last_render_time_ - stop_rendering_time_, delay_frames);
       stop_rendering_time_ = base::TimeTicks();
     }
 

@@ -49,9 +49,12 @@ class MEDIA_EXPORT TimeSource {
   // will never go backwards, the frequency at which they update may be low.
   virtual base::TimeDelta CurrentMediaTime() = 0;
 
-  // Converts a vector of media timestamps into a vector of wall clock times. If
-  // the media time is stopped, returns false and does not modify the output
-  // vector. Returns true and converts all timestamps otherwise.
+  // Converts a vector of media timestamps into a vector of wall clock times; if
+  // the media time is stopped, returns false, otherwise returns true. Even if
+  // time is stopped, timestamps will be converted.
+  //
+  // Passing an empty |media_timestamps| vector will return the last known media
+  // time as a wall clock time.
   //
   // Within a single call to GetWallClockTimes() the returned wall clock times
   // are a strictly increasing function of the given media times. There is no

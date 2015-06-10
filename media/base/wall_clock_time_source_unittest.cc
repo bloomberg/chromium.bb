@@ -28,22 +28,26 @@ class WallClockTimeSourceTest : public testing::Test {
     return time_source_.SetMediaTime(base::TimeDelta::FromSeconds(seconds));
   }
 
-  bool IsWallClockNowForMediaTimeInSeconds(int seconds) {
+  base::TimeTicks ConvertMediaTime(base::TimeDelta timestamp,
+                                   bool* is_time_moving) {
     std::vector<base::TimeTicks> wall_clock_times;
-    EXPECT_TRUE(time_source_.GetWallClockTimes(
-        std::vector<base::TimeDelta>(1, base::TimeDelta::FromSeconds(seconds)),
-        &wall_clock_times));
-    return tick_clock_->NowTicks() == wall_clock_times.front();
+    *is_time_moving = time_source_.GetWallClockTimes(
+        std::vector<base::TimeDelta>(1, timestamp), &wall_clock_times);
+    return wall_clock_times[0];
+  }
+
+  bool IsWallClockNowForMediaTimeInSeconds(int seconds) {
+    bool is_time_moving = false;
+    return tick_clock_->NowTicks() ==
+           ConvertMediaTime(base::TimeDelta::FromSeconds(seconds),
+                            &is_time_moving);
   }
 
   bool IsTimeStopped() {
-    std::vector<base::TimeTicks> wall_clock_times;
+    bool is_time_moving = false;
     // Convert any random value, it shouldn't matter for this call.
-    const bool time_stopped = !time_source_.GetWallClockTimes(
-        std::vector<base::TimeDelta>(1, base::TimeDelta::FromSeconds(1)),
-        &wall_clock_times);
-    EXPECT_EQ(time_stopped, wall_clock_times.empty());
-    return time_stopped;
+    ConvertMediaTime(base::TimeDelta::FromSeconds(1), &is_time_moving);
+    return !is_time_moving;
   }
 
  protected:
@@ -116,6 +120,46 @@ TEST_F(WallClockTimeSourceTest, StopTicking) {
   AdvanceTimeInSeconds(10);
   EXPECT_EQ(10, CurrentMediaTimeInSeconds());
   EXPECT_TRUE(IsTimeStopped());
+}
+
+TEST_F(WallClockTimeSourceTest, ConvertsTimestampsWhenStopped) {
+  const base::TimeDelta kOneSecond = base::TimeDelta::FromSeconds(1);
+  bool is_time_moving = false;
+  EXPECT_EQ(base::TimeTicks(),
+            ConvertMediaTime(base::TimeDelta(), &is_time_moving));
+  EXPECT_FALSE(is_time_moving);
+  EXPECT_NE(base::TimeTicks(), ConvertMediaTime(kOneSecond, &is_time_moving));
+  EXPECT_FALSE(is_time_moving);
+  time_source_.StartTicking();
+  time_source_.StopTicking();
+  EXPECT_EQ(tick_clock_->NowTicks(),
+            ConvertMediaTime(base::TimeDelta(), &is_time_moving));
+  EXPECT_FALSE(is_time_moving);
+  EXPECT_EQ(tick_clock_->NowTicks() + kOneSecond,
+            ConvertMediaTime(kOneSecond, &is_time_moving));
+  EXPECT_FALSE(is_time_moving);
+}
+
+TEST_F(WallClockTimeSourceTest, EmptyMediaTimestampsReturnMediaWallClockTime) {
+  std::vector<base::TimeTicks> wall_clock_times;
+  bool is_time_moving = time_source_.GetWallClockTimes(
+      std::vector<base::TimeDelta>(), &wall_clock_times);
+  EXPECT_FALSE(is_time_moving);
+  EXPECT_EQ(base::TimeTicks(), wall_clock_times[0]);
+
+  wall_clock_times.clear();
+  time_source_.StartTicking();
+  is_time_moving = time_source_.GetWallClockTimes(
+      std::vector<base::TimeDelta>(), &wall_clock_times);
+  EXPECT_TRUE(is_time_moving);
+  EXPECT_EQ(tick_clock_->NowTicks(), wall_clock_times[0]);
+
+  wall_clock_times.clear();
+  time_source_.StopTicking();
+  is_time_moving = time_source_.GetWallClockTimes(
+      std::vector<base::TimeDelta>(), &wall_clock_times);
+  EXPECT_FALSE(is_time_moving);
+  EXPECT_EQ(tick_clock_->NowTicks(), wall_clock_times[0]);
 }
 
 }  // namespace media

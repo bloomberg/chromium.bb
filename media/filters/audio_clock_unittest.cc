@@ -330,4 +330,30 @@ TEST_F(AudioClockTest, SupportsYearsWorthOfAudioData) {
   EXPECT_EQ((huge * 2).InDays(), ContiguousAudioDataBufferedInDays());
 }
 
+TEST_F(AudioClockTest, CompensateForSuspendedWrites) {
+  // Buffer 6 seconds of delay and 1 second of audio data.
+  WroteAudio(10, 10, 60, 1.0);
+
+  // Media timestamp zero has to wait for silence to pass.
+  const int kBaseTimeMs = 6000;
+  EXPECT_EQ(kBaseTimeMs, TimeUntilPlaybackInMilliseconds(0));
+
+  // Elapsing frames less than we have buffered should do nothing.
+  const int kDelayFrames = 2;
+  for (int i = 1000; i <= kBaseTimeMs; i += 1000) {
+    clock_.CompensateForSuspendedWrites(base::TimeDelta::FromMilliseconds(i),
+                                        kDelayFrames);
+    EXPECT_EQ(kBaseTimeMs - (i - 1000), TimeUntilPlaybackInMilliseconds(0));
+
+    // Write silence to simulate maintaining a 7s output buffer.
+    WroteAudio(0, 10, 60, 1.0);
+  }
+
+  // Exhausting all frames should advance timestamps and prime the buffer with
+  // our delay frames value.
+  clock_.CompensateForSuspendedWrites(base::TimeDelta::FromMilliseconds(7000),
+                                      kDelayFrames);
+  EXPECT_EQ(kDelayFrames * 100, TimeUntilPlaybackInMilliseconds(1000));
+}
+
 }  // namespace media

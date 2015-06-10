@@ -117,6 +117,10 @@ class MEDIA_EXPORT VideoRendererAlgorithm {
   // be counted as effective.
   size_t EffectiveFramesQueued() const;
 
+  // Tells the algorithm that Render() callbacks have been suspended for a known
+  // reason and such stoppage shouldn't be counted against future frames.
+  void set_time_stopped() { was_time_moving_ = false; }
+
   size_t frames_queued() const { return frame_queue_.size(); }
 
   // Returns the average of the duration of all frames in |frame_queue_|
@@ -175,9 +179,8 @@ class MEDIA_EXPORT VideoRendererAlgorithm {
                                  base::TimeTicks deadline_max);
 
   // Updates the render count and wall clock timestamps for all frames in
-  // |frame_queue_|. Returns false if statistics can't be updated at this time;
-  // which occurs if media time has stopped or there are not enough frames to
-  // calculate an average frame duration.  Updates |cadence_estimator_|.
+  // |frame_queue_|.  Updates |was_time_stopped_|, |cadence_estimator_| and
+  // |frame_duration_calculator_|.
   //
   // Note: Wall clock time is recomputed each Render() call because it's
   // expected that the TimeSource powering TimeSource::WallClockTimeCB will skew
@@ -186,7 +189,7 @@ class MEDIA_EXPORT VideoRendererAlgorithm {
   // TODO(dalecurtis): Investigate how accurate we need the wall clock times to
   // be, so we can avoid recomputing every time (we would need to recompute when
   // playback rate changes occur though).
-  bool UpdateFrameStatistics();
+  void UpdateFrameStatistics();
 
   // Updates the ideal render count for all frames in |frame_queue_| based on
   // the cadence returned by |cadence_estimator_|.  Cadence is assigned based
@@ -303,6 +306,11 @@ class MEDIA_EXPORT VideoRendererAlgorithm {
   // Tracks whether the last call to Render() choose to ignore the frame chosen
   // by cadence in favor of one by drift or coverage.
   bool last_render_ignored_cadence_frame_;
+
+  // Indicates if time was moving, set to the return value from
+  // UpdateFrameStatistics() during Render() or externally by
+  // set_time_stopped().
+  bool was_time_moving_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoRendererAlgorithm);
 };

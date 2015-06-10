@@ -36,7 +36,7 @@ void AudioClock::WroteAudio(int frames_written,
 
   // First write: initialize buffer with silence.
   if (start_timestamp_ == front_timestamp_ && buffered_.empty())
-    PushBufferedAudioData(delay_frames, 0.0f);
+    PushBufferedAudioData(delay_frames, 0.0);
 
   // Move frames from |buffered_| into the computed timestamp based on
   // |delay_frames|.
@@ -47,7 +47,7 @@ void AudioClock::WroteAudio(int frames_written,
       std::max(INT64_C(0), total_buffered_frames_ - delay_frames);
   front_timestamp_ += ComputeBufferedMediaTime(frames_played);
   PushBufferedAudioData(frames_written, playback_rate);
-  PushBufferedAudioData(frames_requested - frames_written, 0.0f);
+  PushBufferedAudioData(frames_requested - frames_written, 0.0);
   PopBufferedAudioData(frames_played);
 
   back_timestamp_ += base::TimeDelta::FromMicroseconds(
@@ -78,6 +78,23 @@ void AudioClock::WroteAudio(int frames_written,
   contiguous_audio_data_buffered_at_same_rate_ =
       base::TimeDelta::FromMicroseconds(scaled_frames_at_same_rate *
                                         microseconds_per_frame_);
+}
+
+void AudioClock::CompensateForSuspendedWrites(base::TimeDelta elapsed,
+                                              int delay_frames) {
+  const int64_t frames_elapsed =
+      elapsed.InMicroseconds() / microseconds_per_frame_ + 0.5;
+
+  // No need to do anything if we're within the limits of our played out audio
+  // or there are no delay frames, the next WroteAudio() call will expire
+  // everything correctly.
+  if (frames_elapsed < total_buffered_frames_ || !delay_frames)
+    return;
+
+  // Otherwise, flush everything and prime with the delay frames.
+  WroteAudio(0, 0, 0, 0);
+  DCHECK(buffered_.empty());
+  PushBufferedAudioData(delay_frames, 0.0);
 }
 
 base::TimeDelta AudioClock::TimeUntilPlayback(base::TimeDelta timestamp) const {

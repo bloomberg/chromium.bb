@@ -69,28 +69,24 @@ scoped_refptr<VideoFrame> VideoRendererAlgorithm::Render(
   // to Render().  If so, we assume the last frame provided was rendered during
   // those intervals and adjust its render count appropriately.
   AccountForMissedIntervals(deadline_min, deadline_max);
-  last_deadline_max_ = deadline_max;
 
   // Step 3: Update the wall clock timestamps and frame duration estimates for
   // all frames currently in the |frame_queue_|.
-  if (!UpdateFrameStatistics()) {
-    DVLOG(2) << "Failed to update frame statistics.";
-
+  UpdateFrameStatistics();
+  const bool have_known_duration = average_frame_duration_ > base::TimeDelta();
+  if (!(was_time_moving_ && have_known_duration)) {
     ReadyFrame& ready_frame = frame_queue_[last_frame_index_];
     DCHECK(ready_frame.frame);
 
     // If duration is unknown, we don't have enough frames to make a good guess
     // about which frame to use, so always choose the first.
-    if (average_frame_duration_ == base::TimeDelta() &&
-        !ready_frame.start_time.is_null()) {
+    if (was_time_moving_ && !have_known_duration)
       ++ready_frame.render_count;
-    }
 
     return ready_frame.frame;
   }
 
-  DCHECK_GT(average_frame_duration_, base::TimeDelta());
-
+  last_deadline_max_ = deadline_max;
   base::TimeDelta selected_frame_drift;
 
   // Step 4: Attempt to find the best frame by cadence.
@@ -250,7 +246,8 @@ size_t VideoRendererAlgorithm::RemoveExpiredFrames(base::TimeTicks deadline) {
   if (deadline > last_deadline_max_)
     last_deadline_max_ = deadline;
 
-  if (!UpdateFrameStatistics() || frame_queue_.size() < 2)
+  UpdateFrameStatistics();
+  if (frame_queue_.size() < 2)
     return 0;
 
   DCHECK_GT(average_frame_duration_, base::TimeDelta());
@@ -308,6 +305,7 @@ void VideoRendererAlgorithm::Reset() {
   first_frame_ = true;
   cadence_frame_counter_ = 0;
   last_render_ignored_cadence_frame_ = false;
+  was_time_moving_ = false;
 
   // Default to ATSC IS/191 recommendations for maximum acceptable drift before
   // we have enough frames to base the maximum on frame duration.
@@ -414,7 +412,7 @@ void VideoRendererAlgorithm::AccountForMissedIntervals(
     base::TimeTicks deadline_min,
     base::TimeTicks deadline_max) {
   if (last_deadline_max_.is_null() || deadline_min <= last_deadline_max_ ||
-      !have_rendered_frames_) {
+      !have_rendered_frames_ || !was_time_moving_) {
     return;
   }
 
@@ -445,7 +443,7 @@ void VideoRendererAlgorithm::AccountForMissedIntervals(
   ready_frame.render_count += render_cycle_count;
 }
 
-bool VideoRendererAlgorithm::UpdateFrameStatistics() {
+void VideoRendererAlgorithm::UpdateFrameStatistics() {
   DCHECK(!frame_queue_.empty());
 
   // Figure out all current ready frame times at once.
@@ -454,10 +452,9 @@ bool VideoRendererAlgorithm::UpdateFrameStatistics() {
   for (const auto& ready_frame : frame_queue_)
     media_timestamps.push_back(ready_frame.frame->timestamp());
 
-  // If time has stopped, we can bail out early.
   std::vector<base::TimeTicks> wall_clock_times;
-  if (!wall_clock_time_cb_.Run(media_timestamps, &wall_clock_times))
-    return false;
+  was_time_moving_ =
+      wall_clock_time_cb_.Run(media_timestamps, &wall_clock_times);
 
   // Transfer the converted wall clock times into our frame queue.
   DCHECK_EQ(wall_clock_times.size(), frame_queue_.size());
@@ -473,7 +470,7 @@ bool VideoRendererAlgorithm::UpdateFrameStatistics() {
   frame_queue_.back().start_time = wall_clock_times.back();
 
   if (!frame_duration_calculator_.count())
-    return false;
+    return;
 
   // Compute |average_frame_duration_|, a moving average of the last few frames;
   // see kMovingAverageSamples for the exact number.
@@ -496,7 +493,7 @@ bool VideoRendererAlgorithm::UpdateFrameStatistics() {
   // If we were called via RemoveExpiredFrames() and Render() was never called,
   // we may not have a render interval yet.
   if (render_interval_ == base::TimeDelta())
-    return true;
+    return;
 
   const bool cadence_changed = cadence_estimator_.UpdateCadenceEstimate(
       render_interval_, average_frame_duration_, max_acceptable_drift_);
@@ -504,15 +501,10 @@ bool VideoRendererAlgorithm::UpdateFrameStatistics() {
   // No need to update cadence if there's been no change; cadence will be set
   // as frames are added to the queue.
   if (!cadence_changed)
-    return true;
+    return;
 
   cadence_frame_counter_ = 0;
   UpdateCadenceForFrames();
-
-  // Thus far there appears to be no need for special 3:2 considerations, the
-  // smoothness scores seem to naturally fit that pattern based on maximizing
-  // frame coverage.
-  return true;
 }
 
 void VideoRendererAlgorithm::UpdateCadenceForFrames() {

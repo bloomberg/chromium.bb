@@ -59,6 +59,18 @@ class MEDIA_EXPORT AudioClock {
                   int delay_frames,
                   double playback_rate);
 
+  // If WroteAudio() calls are suspended (i.e. due to playback being paused) the
+  // AudioClock will not properly advance time (even though all data up until
+  // back_timestamp() will playout on the physical device).
+  //
+  // To compensate for this, when calls resume, before the next WroteAudio(),
+  // callers should call CompensateForSuspendedWrites() to advance the clock for
+  // audio which continued playing out while WroteAudio() calls were suspended.
+  //
+  // |delay_frames| must be provided to properly prime the clock to compensate
+  // for a new initial delay.
+  void CompensateForSuspendedWrites(base::TimeDelta elapsed, int delay_frames);
+
   // Returns the bounds of media data currently buffered by the audio hardware,
   // taking silence and changes in playback rate into account. Buffered audio
   // structure and timestamps are updated with every call to WroteAudio().

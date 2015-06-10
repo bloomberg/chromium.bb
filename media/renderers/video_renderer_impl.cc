@@ -504,9 +504,45 @@ void VideoRendererImpl::FrameReady(VideoFrameStream::Status status,
       AddReadyFrame_Locked(frame);
     }
 
+    // Background rendering updates may not be ticking fast enough by itself to
+    // remove expired frames, so give it a boost here by ensuring we don't exit
+    // the decoding cycle too early.
+    //
+    // Similarly, if we've paused for underflow, remove all frames which are
+    // before the current media time.
+    const bool have_nothing = buffering_state_ != BUFFERING_HAVE_ENOUGH;
+    const bool have_nothing_and_paused = have_nothing && !sink_started_;
+    if (was_background_rendering_ ||
+        (use_new_video_renderering_path_ && have_nothing_and_paused &&
+         drop_frames_)) {
+      base::TimeTicks expiry_time;
+      if (have_nothing_and_paused) {
+        // Use the current media wall clock time plus the frame duration since
+        // RemoveExpiredFrames() is expecting the end point of an interval (it
+        // will subtract from the given value).
+        std::vector<base::TimeTicks> current_time;
+        wall_clock_time_cb_.Run(std::vector<base::TimeDelta>(), &current_time);
+        expiry_time = current_time[0] + algorithm_->average_frame_duration();
+      } else {
+        expiry_time = tick_clock_->NowTicks();
+      }
+
+      // Prior to rendering the first frame, |have_nothing_and_paused| will be
+      // true, correspondingly the |expiry_time| will be null; in this case
+      // there's no reason to try and remove any frames.
+      if (!expiry_time.is_null()) {
+        const size_t removed_frames =
+            algorithm_->RemoveExpiredFrames(expiry_time);
+
+        // Frames removed during underflow should be counted as dropped.
+        if (have_nothing_and_paused && removed_frames)
+          frames_dropped_ += removed_frames;
+      }
+    }
+
     // Signal buffering state if we've met our conditions for having enough
     // data.
-    if (buffering_state_ != BUFFERING_HAVE_ENOUGH && HaveEnoughData_Locked()) {
+    if (have_nothing && HaveEnoughData_Locked()) {
       TransitionToHaveEnough_Locked();
       if (use_new_video_renderering_path_ && !sink_started_ &&
           !rendered_end_of_stream_) {
@@ -514,14 +550,6 @@ void VideoRendererImpl::FrameReady(VideoFrameStream::Status status,
         render_first_frame_and_stop_ = true;
         posted_maybe_stop_after_first_paint_ = false;
       }
-    }
-
-    // Background rendering updates may not be ticking fast enough by itself to
-    // remove expired frames, so give it a boost here by ensuring we don't exit
-    // the decoding cycle too early.
-    if (was_background_rendering_) {
-      DCHECK(use_new_video_renderering_path_);
-      algorithm_->RemoveExpiredFrames(tick_clock_->NowTicks());
     }
 
     // Always request more decoded video if we have capacity. This serves two
@@ -711,6 +739,7 @@ void VideoRendererImpl::StartSink() {
 void VideoRendererImpl::StopSink() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   sink_->Stop();
+  algorithm_->set_time_stopped();
   sink_started_ = false;
   was_background_rendering_ = false;
 }

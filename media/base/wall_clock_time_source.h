@@ -48,8 +48,8 @@ class MEDIA_EXPORT WallClockTimeSource : public TimeSource {
   // delta between our reference ticks and the current system ticks and scaling
   // that time by the playback rate.
   double playback_rate_;
-  base::TimeDelta base_time_;
-  base::TimeTicks reference_wall_ticks_;
+  base::TimeDelta base_timestamp_;
+  base::TimeTicks reference_time_;
 
   // TODO(scherkus): Remove internal locking from this class after access to
   // Renderer::CurrentMediaTime() is single threaded http://crbug.com/370634

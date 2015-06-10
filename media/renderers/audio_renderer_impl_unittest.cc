@@ -7,6 +7,7 @@
 #include "base/format_macros.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "media/base/audio_buffer_converter.h"
 #include "media/base/audio_hardware_config.h"
 #include "media/base/audio_splicer.h"
@@ -60,6 +61,7 @@ class AudioRendererImplTest : public ::testing::Test {
   // Give the decoder some non-garbage media properties.
   AudioRendererImplTest()
       : hardware_config_(AudioParameters(), AudioParameters()),
+        tick_clock_(new base::SimpleTestTickClock()),
         demuxer_stream_(DemuxerStream::AUDIO),
         decoder_(new MockAudioDecoder()),
         ended_(false) {
@@ -98,6 +100,8 @@ class AudioRendererImplTest : public ::testing::Test {
                                           decoders.Pass(),
                                           hardware_config_,
                                           new MediaLog()));
+    renderer_->tick_clock_.reset(tick_clock_);
+    tick_clock_->Advance(base::TimeDelta::FromSeconds(1));
   }
 
   virtual ~AudioRendererImplTest() {
@@ -285,12 +289,32 @@ class AudioRendererImplTest : public ::testing::Test {
   // Attempts to consume |requested_frames| frames from |renderer_|'s internal
   // buffer. Returns true if and only if all of |requested_frames| were able
   // to be consumed.
-  bool ConsumeBufferedData(OutputFrames requested_frames) {
+  bool ConsumeBufferedData(OutputFrames requested_frames,
+                           base::TimeDelta delay) {
     scoped_ptr<AudioBus> bus =
         AudioBus::Create(kChannels, requested_frames.value);
     int frames_read = 0;
-    EXPECT_TRUE(sink_->Render(bus.get(), 0, &frames_read));
+    EXPECT_TRUE(sink_->Render(bus.get(), delay.InMilliseconds(), &frames_read));
     return frames_read == requested_frames.value;
+  }
+
+  bool ConsumeBufferedData(OutputFrames requested_frames) {
+    return ConsumeBufferedData(requested_frames, base::TimeDelta());
+  }
+
+  base::TimeTicks ConvertMediaTime(base::TimeDelta timestamp,
+                                   bool* is_time_moving) {
+    std::vector<base::TimeTicks> wall_clock_times;
+    *is_time_moving = renderer_->GetWallClockTimes(
+        std::vector<base::TimeDelta>(1, timestamp), &wall_clock_times);
+    return wall_clock_times[0];
+  }
+
+  base::TimeTicks CurrentMediaWallClockTime(bool* is_time_moving) {
+    std::vector<base::TimeTicks> wall_clock_times;
+    *is_time_moving = renderer_->GetWallClockTimes(
+        std::vector<base::TimeDelta>(), &wall_clock_times);
+    return wall_clock_times[0];
   }
 
   OutputFrames frames_buffered() {
@@ -334,6 +358,7 @@ class AudioRendererImplTest : public ::testing::Test {
   scoped_ptr<AudioRendererImpl> renderer_;
   scoped_refptr<FakeAudioRendererSink> sink_;
   AudioHardwareConfig hardware_config_;
+  base::SimpleTestTickClock* tick_clock_;
 
  private:
   void DecodeDecoder(const scoped_refptr<DecoderBuffer>& buffer,
@@ -515,10 +540,6 @@ TEST_F(AudioRendererImplTest, Underflow_Flush) {
   EXPECT_FALSE(ConsumeBufferedData(OutputFrames(1)));
   WaitForPendingRead();
   StopTicking();
-
-  // After time stops ticking wall clock times should not be returned.
-  EXPECT_FALSE(
-      renderer_->GetWallClockTimes(std::vector<base::TimeDelta>(1), nullptr));
 
   // We shouldn't expect another buffering state change when flushing.
   FlushDuringPendingRead();
@@ -747,6 +768,117 @@ TEST_F(AudioRendererImplTest, SetPlaybackRate) {
   EXPECT_EQ(FakeAudioRendererSink::kPaused, sink_->state());
   renderer_->SetPlaybackRate(1.0);
   EXPECT_EQ(FakeAudioRendererSink::kPlaying, sink_->state());
+}
+
+TEST_F(AudioRendererImplTest, TimeSourceBehavior) {
+  Initialize();
+  Preroll();
+
+  AudioTimestampHelper timestamp_helper(kOutputSamplesPerSecond);
+  timestamp_helper.SetBaseTimestamp(base::TimeDelta());
+
+  // Prior to start, time should be shown as not moving.
+  bool is_time_moving = false;
+  EXPECT_EQ(base::TimeTicks(),
+            ConvertMediaTime(base::TimeDelta(), &is_time_moving));
+  EXPECT_FALSE(is_time_moving);
+
+  EXPECT_EQ(base::TimeTicks(), CurrentMediaWallClockTime(&is_time_moving));
+  EXPECT_FALSE(is_time_moving);
+
+  // Start ticking, but use a zero playback rate, time should still be stopped
+  // until a positive playback rate is set and the first Render() is called.
+  renderer_->SetPlaybackRate(0.0);
+  StartTicking();
+  EXPECT_EQ(base::TimeTicks(), CurrentMediaWallClockTime(&is_time_moving));
+  EXPECT_FALSE(is_time_moving);
+  renderer_->SetPlaybackRate(1.0);
+  EXPECT_EQ(base::TimeTicks(), CurrentMediaWallClockTime(&is_time_moving));
+  EXPECT_FALSE(is_time_moving);
+  renderer_->SetPlaybackRate(1.0);
+
+  // Issue the first render call to start time moving.
+  OutputFrames frames_to_consume(frames_buffered().value / 2);
+  EXPECT_TRUE(ConsumeBufferedData(frames_to_consume));
+  WaitForPendingRead();
+
+  // Time shouldn't change just yet because we've only sent the initial audio
+  // data to the hardware.
+  EXPECT_EQ(tick_clock_->NowTicks(),
+            ConvertMediaTime(base::TimeDelta(), &is_time_moving));
+  EXPECT_TRUE(is_time_moving);
+
+  // Consume some more audio data.
+  frames_to_consume = frames_buffered();
+  tick_clock_->Advance(
+      base::TimeDelta::FromSecondsD(1.0 / kOutputSamplesPerSecond));
+  EXPECT_TRUE(ConsumeBufferedData(frames_to_consume));
+
+  // Time should change now that the audio hardware has called back.
+  const base::TimeTicks wall_clock_time_zero =
+      tick_clock_->NowTicks() -
+      timestamp_helper.GetFrameDuration(frames_to_consume.value);
+  EXPECT_EQ(wall_clock_time_zero,
+            ConvertMediaTime(base::TimeDelta(), &is_time_moving));
+  EXPECT_TRUE(is_time_moving);
+
+  // The current wall clock time should change as our tick clock advances, up
+  // until we've reached the end of played out frames.
+  const int kSteps = 4;
+  const base::TimeDelta kAdvanceDelta =
+      timestamp_helper.GetFrameDuration(frames_to_consume.value) / kSteps;
+
+  for (int i = 0; i < kSteps; ++i) {
+    tick_clock_->Advance(kAdvanceDelta);
+    EXPECT_EQ(tick_clock_->NowTicks(),
+              CurrentMediaWallClockTime(&is_time_moving));
+    EXPECT_TRUE(is_time_moving);
+  }
+
+  // Converting the current media time should be relative to wall clock zero.
+  EXPECT_EQ(wall_clock_time_zero + kSteps * kAdvanceDelta,
+            ConvertMediaTime(renderer_->CurrentMediaTime(), &is_time_moving));
+  EXPECT_TRUE(is_time_moving);
+
+  // Advancing once more will exceed the amount of played out frames finally.
+  base::TimeTicks current_time = tick_clock_->NowTicks();
+  tick_clock_->Advance(
+      base::TimeDelta::FromSecondsD(1.0 / kOutputSamplesPerSecond));
+  EXPECT_EQ(current_time, CurrentMediaWallClockTime(&is_time_moving));
+  EXPECT_TRUE(is_time_moving);
+
+  StopTicking();
+  DeliverRemainingAudio();
+
+  // Elapse a lot of time between StopTicking() and the next Render() call.
+  const base::TimeDelta kOneSecond = base::TimeDelta::FromSeconds(1);
+  tick_clock_->Advance(kOneSecond);
+  StartTicking();
+
+  // Time should be stopped until the next render call.
+  EXPECT_EQ(current_time, CurrentMediaWallClockTime(&is_time_moving));
+  EXPECT_FALSE(is_time_moving);
+
+  // Consume some buffered data with a small delay.
+  base::TimeDelta delay_time = base::TimeDelta::FromMilliseconds(50);
+  frames_to_consume.value = frames_buffered().value / 16;
+  EXPECT_TRUE(ConsumeBufferedData(frames_to_consume, delay_time));
+
+  // Verify time is adjusted for the current delay.
+  current_time = tick_clock_->NowTicks() + delay_time;
+  EXPECT_EQ(current_time, CurrentMediaWallClockTime(&is_time_moving));
+  EXPECT_TRUE(is_time_moving);
+  EXPECT_EQ(current_time,
+            ConvertMediaTime(renderer_->CurrentMediaTime(), &is_time_moving));
+  EXPECT_TRUE(is_time_moving);
+
+  // Advance far enough that we shouldn't be clamped to current time (tested
+  // already above).
+  tick_clock_->Advance(kOneSecond);
+  EXPECT_EQ(
+      current_time + timestamp_helper.GetFrameDuration(frames_to_consume.value),
+      CurrentMediaWallClockTime(&is_time_moving));
+  EXPECT_TRUE(is_time_moving);
 }
 
 }  // namespace media

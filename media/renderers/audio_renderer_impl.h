@@ -36,6 +36,7 @@
 
 namespace base {
 class SingleThreadTaskRunner;
+class TickClock;
 }
 
 namespace media {
@@ -217,6 +218,9 @@ class MEDIA_EXPORT AudioRendererImpl
   // Callback provided to Flush().
   base::Closure flush_cb_;
 
+  // Overridable tick clock for testing.
+  scoped_ptr<base::TickClock> tick_clock_;
+
   // After Initialize() has completed, all variables below must be accessed
   // under |lock_|. ------------------------------------------------------------
   base::Lock lock_;
@@ -257,7 +261,8 @@ class MEDIA_EXPORT AudioRendererImpl
   base::TimeTicks last_render_time_;
 
   // Set to the value of |last_render_time_| when StopRendering_Locked() is
-  // called for any reason.  Cleared by the next successful Render() call.
+  // called for any reason.  Cleared by the next successful Render() call after
+  // being used to adjust for lost time between the last call.
   base::TimeTicks stop_rendering_time_;
 
   // Set upon receipt of the first decoded buffer after a StartPlayingFrom().
