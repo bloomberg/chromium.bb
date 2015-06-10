@@ -40,9 +40,6 @@ const char kMapOrigin[] = "map-origin";
 // url_resolver.cc for details.
 const char kOrigin[] = "origin";
 
-// Enables remote debug over HTTP on the specified port.
-const char kRemoteDebuggingPort[] = "remote-debugging-port";
-
 // Starts tracing when the shell starts up, saving a trace file on disk after 5
 // seconds or when the shell exits.
 const char kTraceStartup[] = "trace-startup";

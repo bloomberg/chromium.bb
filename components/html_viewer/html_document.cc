@@ -12,8 +12,10 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
+#include "components/devtools_service/public/cpp/switches.h"
 #include "components/html_viewer/blink_input_events_type_converters.h"
 #include "components/html_viewer/blink_url_request_type_converters.h"
+#include "components/html_viewer/devtools_agent_impl.h"
 #include "components/html_viewer/media_factory.h"
 #include "components/html_viewer/setup.h"
 #include "components/html_viewer/web_layer_tree_view_impl.h"
@@ -65,6 +67,11 @@ const char kOOPIF[] = "oopifs";
 
 bool EnableOOPIFs() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(kOOPIF);
+}
+
+bool EnableRemoteDebugging() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      devtools_service::kRemoteDebuggingPort);
 }
 
 // WebRemoteFrameClient implementation used for OOPIFs.
@@ -214,8 +221,19 @@ void HTMLDocument::Load(URLResponsePtr response) {
   touch_handler_.reset(new TouchHandler(web_view_));
   web_layer_tree_view_impl_->set_widget(web_view_);
   ConfigureSettings(web_view_->settings());
-  web_view_->setMainFrame(
-      blink::WebLocalFrame::create(blink::WebTreeScopeType::Document, this));
+
+  blink::WebLocalFrame* main_frame =
+      blink::WebLocalFrame::create(blink::WebTreeScopeType::Document, this);
+  web_view_->setMainFrame(main_frame);
+
+  // TODO(yzshen): http://crbug.com/498986 Creating DevToolsAgentImpl instances
+  // causes html_viewer_apptests flakiness currently. Before we fix that we
+  // cannot enable remote debugging (which is required by Telemetry tests) on
+  // the bots.
+  if (EnableRemoteDebugging()) {
+    devtools_agent_.reset(
+        new DevToolsAgentImpl(main_frame, html_document_app_->shell()));
+  }
 
   GURL url(response->url);
 
@@ -328,6 +346,9 @@ blink::WebFrame* HTMLDocument::createChildFrame(
 void HTMLDocument::frameDetached(blink::WebFrame* frame) {
   if (frame->parent())
     frame->parent()->removeChild(frame);
+
+  if (devtools_agent_ && frame == devtools_agent_->frame())
+    devtools_agent_.reset();
 
   // |frame| is invalid after here.
   frame->close();

@@ -20,6 +20,7 @@
 #include "base/strings/string_util.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "components/devtools_service/public/cpp/switches.h"
 #include "components/devtools_service/public/interfaces/devtools_service.mojom.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_delegate.h"
@@ -174,15 +175,16 @@ void InitNativeOptions(shell::ApplicationManager* manager,
 
 void InitDevToolsServiceIfNeeded(shell::ApplicationManager* manager,
                                  const base::CommandLine& command_line) {
-  if (!command_line.HasSwitch(switches::kRemoteDebuggingPort))
+  if (!command_line.HasSwitch(devtools_service::kRemoteDebuggingPort))
     return;
 
   std::string port_str =
-      command_line.GetSwitchValueASCII(switches::kRemoteDebuggingPort);
+      command_line.GetSwitchValueASCII(devtools_service::kRemoteDebuggingPort);
   unsigned port;
   if (!base::StringToUint(port_str, &port) || port > 65535) {
-    LOG(ERROR) << "Invalid value for switch " << switches::kRemoteDebuggingPort
-               << ": '" << port_str << "' is not a valid port number.";
+    LOG(ERROR) << "Invalid value for switch "
+               << devtools_service::kRemoteDebuggingPort << ": '" << port_str
+               << "' is not a valid port number.";
     return;
   }
 
