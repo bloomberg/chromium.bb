@@ -1267,11 +1267,13 @@ WebString WebLocalFrameImpl::selectionAsMarkup() const
 
 void WebLocalFrameImpl::selectWordAroundPosition(LocalFrame* frame, VisiblePosition position)
 {
+    TRACE_EVENT0("blink", "WebLocalFrameImpl::selectWordAroundPosition");
     frame->selection().selectWordAroundPosition(position);
 }
 
 bool WebLocalFrameImpl::selectWordAroundCaret()
 {
+    TRACE_EVENT0("blink", "WebLocalFrameImpl::selectWordAroundCaret");
     FrameSelection& selection = frame()->selection();
     if (selection.isNone() || selection.isRange())
         return false;
@@ -1285,17 +1287,20 @@ void WebLocalFrameImpl::selectRange(const WebPoint& baseInViewport, const WebPoi
 
 void WebLocalFrameImpl::selectRange(const WebRange& webRange)
 {
+    TRACE_EVENT0("blink", "WebLocalFrameImpl::selectRange");
     if (RefPtrWillBeRawPtr<Range> range = static_cast<PassRefPtrWillBeRawPtr<Range>>(webRange))
         frame()->selection().setSelectedRange(range.get(), VP_DEFAULT_AFFINITY, FrameSelection::NonDirectional, NotUserTriggered);
 }
 
 void WebLocalFrameImpl::moveRangeSelectionExtent(const WebPoint& point)
 {
+    TRACE_EVENT0("blink", "WebLocalFrameImpl::moveRangeSelectionExtent");
     frame()->selection().moveRangeSelectionExtent(frame()->view()->viewportToContents(point));
 }
 
 void WebLocalFrameImpl::moveRangeSelection(const WebPoint& baseInViewport, const WebPoint& extentInViewport, WebFrame::TextGranularity granularity)
 {
+    TRACE_EVENT0("blink", "WebLocalFrameImpl::moveRangeSelection");
     blink::TextGranularity blinkGranularity = blink::CharacterGranularity;
     if (granularity == WebFrame::WordGranularity)
         blinkGranularity = blink::WordGranularity;
@@ -1307,6 +1312,7 @@ void WebLocalFrameImpl::moveRangeSelection(const WebPoint& baseInViewport, const
 
 void WebLocalFrameImpl::moveCaretSelection(const WebPoint& pointInViewport)
 {
+    TRACE_EVENT0("blink", "WebLocalFrameImpl::moveCaretSelection");
     Element* editable = frame()->selection().rootEditableElement();
     if (!editable)
         return;
@@ -1317,11 +1323,13 @@ void WebLocalFrameImpl::moveCaretSelection(const WebPoint& pointInViewport)
 
 bool WebLocalFrameImpl::setEditableSelectionOffsets(int start, int end)
 {
+    TRACE_EVENT0("blink", "WebLocalFrameImpl::setEditableSelectionOffsets");
     return frame()->inputMethodController().setEditableSelectionOffsets(PlainTextRange(start, end));
 }
 
 bool WebLocalFrameImpl::setCompositionFromExistingText(int compositionStart, int compositionEnd, const WebVector<WebCompositionUnderline>& underlines)
 {
+    TRACE_EVENT0("blink", "WebLocalFrameImpl::setCompositionFromExistingText");
     if (!frame()->editor().canEdit())
         return false;
 
@@ -1338,6 +1346,7 @@ bool WebLocalFrameImpl::setCompositionFromExistingText(int compositionStart, int
 
 void WebLocalFrameImpl::extendSelectionAndDelete(int before, int after)
 {
+    TRACE_EVENT0("blink", "WebLocalFrameImpl::extendSelectionAndDelete");
     if (WebPlugin* plugin = focusedPluginIfInputMethodSupported()) {
         plugin->extendSelectionAndDelete(before, after);
         return;

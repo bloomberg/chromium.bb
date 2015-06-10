@@ -1940,7 +1940,6 @@ GranularityStrategy* FrameSelection::granularityStrategy()
 
 void FrameSelection::moveRangeSelectionExtent(const IntPoint& contentsPoint)
 {
-    TRACE_EVENT0("blink", "FrameSelection::moveRangeSelectionExtent");
     if (isNone())
         return;
 
