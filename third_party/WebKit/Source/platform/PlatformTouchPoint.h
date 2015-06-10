@@ -43,7 +43,7 @@ public:
     {
     }
 
-    unsigned id() const { return m_id; }
+    int id() const { return m_id; }
     State state() const { return m_state; }
     FloatPoint screenPos() const { return m_screenPos; }
     FloatPoint pos() const { return m_pos; }
@@ -52,7 +52,7 @@ public:
     float force() const { return m_force; }
 
 protected:
-    unsigned m_id;
+    int m_id;
     State m_state;
     FloatPoint m_screenPos;
     FloatPoint m_pos;

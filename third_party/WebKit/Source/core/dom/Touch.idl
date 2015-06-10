@@ -28,8 +28,7 @@
 [
     WillBeGarbageCollected,
 ] interface Touch {
-    // FIXME: identifier should be long, not unsigned long.
-    readonly attribute unsigned long identifier;
+    readonly attribute long identifier;
     readonly attribute EventTarget target;
     readonly attribute double screenX;
     readonly attribute double screenY;

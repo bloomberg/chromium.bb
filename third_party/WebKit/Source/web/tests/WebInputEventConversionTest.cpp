@@ -219,7 +219,7 @@ TEST(WebInputEventConversionTest, WebTouchEventBuilder)
     {
         RefPtrWillBeRawPtr<TouchList> touchList = TouchList::create();
         RefPtrWillBeRawPtr<TouchList> changedTouchList = TouchList::create();
-        for (unsigned i = 0; i <= static_cast<unsigned>(WebTouchEvent::touchesLengthCap) * 2; ++i) {
+        for (int i = 0; i <= static_cast<int>(WebTouchEvent::touchesLengthCap) * 2; ++i) {
             RefPtrWillBeRawPtr<Touch> touch = Touch::create(toLocalFrame(webViewImpl->page()->mainFrame()), document.get(), i, p0.screenPosition, p0.position, FloatSize(p0.radiusX, p0.radiusY), p0.rotationAngle, p0.force);
             touchList->append(touch);
             changedTouchList->append(touch);

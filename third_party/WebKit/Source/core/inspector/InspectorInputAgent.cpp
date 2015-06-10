@@ -50,7 +50,7 @@ namespace {
 
 class SyntheticInspectorTouchPoint : public blink::PlatformTouchPoint {
 public:
-    SyntheticInspectorTouchPoint(unsigned id, State state, const blink::IntPoint& screenPos, const blink::IntPoint& pos, int radiusX, int radiusY, double rotationAngle, double force)
+    SyntheticInspectorTouchPoint(int id, State state, const blink::IntPoint& screenPos, const blink::IntPoint& pos, int radiusX, int radiusY, double rotationAngle, double force)
     {
         m_id = id;
         m_screenPos = screenPos;

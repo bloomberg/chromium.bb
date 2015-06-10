@@ -45,7 +45,7 @@ class CORE_EXPORT Touch final : public RefCountedWillBeGarbageCollected<Touch>, 
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<Touch> create(LocalFrame* frame, EventTarget* target,
-        unsigned identifier, const FloatPoint& screenPos, const FloatPoint& pagePos,
+        int identifier, const FloatPoint& screenPos, const FloatPoint& pagePos,
         const FloatSize& radius, float rotationAngle, float force)
     {
         return adoptRefWillBeNoop(
@@ -54,7 +54,7 @@ public:
 
     // DOM Touch implementation
     EventTarget* target() const { return m_target.get(); }
-    unsigned identifier() const { return m_identifier; }
+    int identifier() const { return m_identifier; }
     double clientX() const { return m_clientPos.x(); }
     double clientY() const { return m_clientPos.y(); }
     double screenX() const { return m_screenPos.x(); }
@@ -74,16 +74,16 @@ public:
     DECLARE_TRACE();
 
 private:
-    Touch(LocalFrame* frame, EventTarget* target, unsigned identifier,
+    Touch(LocalFrame*, EventTarget*, int identifier,
         const FloatPoint& screenPos, const FloatPoint& pagePos,
         const FloatSize& radius, float rotationAngle, float force);
 
-    Touch(EventTarget*, unsigned identifier, const FloatPoint& clientPos,
+    Touch(EventTarget*, int identifier, const FloatPoint& clientPos,
         const FloatPoint& screenPos, const FloatPoint& pagePos,
         const FloatSize& radius, float rotationAngle, float force, LayoutPoint absoluteLocation);
 
     RefPtrWillBeMember<EventTarget> m_target;
-    unsigned m_identifier;
+    int m_identifier;
     // Position relative to the viewport in CSS px.
     FloatPoint m_clientPos;
     // Position relative to the screen in DIPs.
