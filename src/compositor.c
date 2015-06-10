@@ -4578,8 +4578,6 @@ weston_compositor_init(struct weston_compositor *ec,
 	weston_config_section_get_int(s, "repeat-delay",
 				      &ec->kb_repeat_delay, 400);
 
-	text_backend_init(ec);
-
 	wl_data_device_manager_init(ec->wl_display);
 
 	wl_display_init_shm(display);

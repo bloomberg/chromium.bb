@@ -423,6 +423,9 @@ module_init(struct weston_compositor *compositor,
 	if (input_panel_setup(shell) < 0)
 		goto out_settings;
 
+	if (text_backend_init(compositor) < 0)
+		goto out_settings;
+
 	if (wl_global_create(compositor->wl_display,
 			     &ivi_application_interface, 1,
 			     shell, bind_ivi_application) == NULL)

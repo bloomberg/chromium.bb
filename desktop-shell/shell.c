@@ -6676,6 +6676,9 @@ module_init(struct weston_compositor *ec,
 	if (input_panel_setup(shell) < 0)
 		return -1;
 
+	if (text_backend_init(ec) < 0)
+		return -1;
+
 	shell_configuration(shell);
 
 	shell->exposay.state_cur = EXPOSAY_LAYOUT_INACTIVE;
