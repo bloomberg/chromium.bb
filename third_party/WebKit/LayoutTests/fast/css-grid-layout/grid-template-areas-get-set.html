@@ -109,54 +109,27 @@
 <script>
     description("This test checks that grid-template-areas is properly parsed.");
 
+    function testGridTemplateAreas(gridId, expectedResult) {
+        shouldBeEqualToString("window.getComputedStyle(" + gridId + ").getPropertyValue('grid-template-areas')", expectedResult);
+    }
+
     debug("Test getting grid-template-areas set through CSS.");
-    var gridWithDefaultTemplate = document.getElementById("gridWithDefaultTemplate");
-    shouldBeEqualToString("window.getComputedStyle(gridWithDefaultTemplate).getPropertyValue('grid-template-areas')", "none")
-
-    var gridWithSingleStringTemplate = document.getElementById("gridWithSingleStringTemplate");
-    shouldBeEqualToString("window.getComputedStyle(gridWithSingleStringTemplate).getPropertyValue('grid-template-areas')", '"area"')
-
-    var gridWithTwoColumnsTemplate = document.getElementById("gridWithTwoColumnsTemplate");
-    shouldBeEqualToString("window.getComputedStyle(gridWithTwoColumnsTemplate).getPropertyValue('grid-template-areas')", '"first second"')
-
-    var gridWithTwoRowsTemplate = document.getElementById("gridWithTwoRowsTemplate");
-    shouldBeEqualToString("window.getComputedStyle(gridWithTwoRowsTemplate).getPropertyValue('grid-template-areas')", '"first" "second"')
-
-    var gridWithSpanningColumnsTemplate = document.getElementById("gridWithSpanningColumnsTemplate");
-    shouldBeEqualToString("window.getComputedStyle(gridWithSpanningColumnsTemplate).getPropertyValue('grid-template-areas')", '"span span"')
-
-    var gridWithSpanningRowsDotTemplate = document.getElementById("gridWithSpanningRowsDotTemplate");
-    shouldBeEqualToString("window.getComputedStyle(gridWithSpanningRowsDotTemplate).getPropertyValue('grid-template-areas')", '"span" "."')
-
-    var gridWithSpanningRowsDotsTemplate = document.getElementById("gridWithSpanningRowsDotsTemplate");
-    shouldBeEqualToString("window.getComputedStyle(gridWithSpanningRowsDotsTemplate).getPropertyValue('grid-template-areas')", '"span" "."')
-
-    var gridWithDotColumn = document.getElementById("gridWithDotColumn");
-    shouldBeEqualToString("window.getComputedStyle(gridWithDotColumn).getPropertyValue('grid-template-areas')", '"header ." "footer ."')
-
-    var gridWithDotsColumn = document.getElementById("gridWithDotsColumn");
-    shouldBeEqualToString("window.getComputedStyle(gridWithDotsColumn).getPropertyValue('grid-template-areas')", '"header ." "footer ."')
-
-    var gridWithDotCells = document.getElementById("gridWithDotCells");
-    shouldBeEqualToString("window.getComputedStyle(gridWithDotCells).getPropertyValue('grid-template-areas')", '"first ." ". second"')
-
-    var gridWithDotsCells = document.getElementById("gridWithDotsCells");
-    shouldBeEqualToString("window.getComputedStyle(gridWithDotsCells).getPropertyValue('grid-template-areas')", '"first ." ". second"')
-
-    var gridWithComplexDotAreas = document.getElementById("gridWithComplexDotAreas");
-    shouldBeEqualToString("window.getComputedStyle(gridWithComplexDotAreas).getPropertyValue('grid-template-areas')", '". header header ." ". . . ." "nav main main aside" "nav main main aside" ". . . aside" ". footer footer aside"')
-
-    var gridWithComplexDotsAreas = document.getElementById("gridWithComplexDotsAreas");
-    shouldBeEqualToString("window.getComputedStyle(gridWithComplexDotsAreas).getPropertyValue('grid-template-areas')", '". header header ." ". . . ." "nav main main aside" "nav main main aside" ". . . aside" ". footer footer aside"')
-
-    var gridWithMixedDotAndDotsAreas = document.getElementById("gridWithMixedDotAndDotsAreas");
-    shouldBeEqualToString("window.getComputedStyle(gridWithMixedDotAndDotsAreas).getPropertyValue('grid-template-areas')", '". title ." ". main main" "nav . aside" ". footer ."')
-
-    var gridWithHorizontalRectangle = document.getElementById("gridWithHorizontalRectangle");
-    shouldBeEqualToString("window.getComputedStyle(gridWithHorizontalRectangle).getPropertyValue('grid-template-areas')", '"a a a" "a a a"');
-
-    var gridWithVerticalRectangle = document.getElementById("gridWithVerticalRectangle");
-    shouldBeEqualToString("window.getComputedStyle(gridWithVerticalRectangle).getPropertyValue('grid-template-areas')", '"a a" "a a" "a a"');
+    testGridTemplateAreas("gridWithDefaultTemplate", "none");
+    testGridTemplateAreas("gridWithSingleStringTemplate", '"area"');
+    testGridTemplateAreas("gridWithTwoColumnsTemplate", '"first second"');
+    testGridTemplateAreas("gridWithTwoRowsTemplate", '"first" "second"');
+    testGridTemplateAreas("gridWithSpanningColumnsTemplate", '"span span"');
+    testGridTemplateAreas("gridWithSpanningRowsDotTemplate", '"span" "."');
+    testGridTemplateAreas("gridWithSpanningRowsDotsTemplate", '"span" "."');
+    testGridTemplateAreas("gridWithDotColumn", '"header ." "footer ."');
+    testGridTemplateAreas("gridWithDotsColumn", '"header ." "footer ."');
+    testGridTemplateAreas("gridWithDotCells", '"first ." ". second"');
+    testGridTemplateAreas("gridWithDotsCells", '"first ." ". second"');
+    testGridTemplateAreas("gridWithComplexDotAreas", '". header header ." ". . . ." "nav main main aside" "nav main main aside" ". . . aside" ". footer footer aside"');
+    testGridTemplateAreas("gridWithComplexDotsAreas", '". header header ." ". . . ." "nav main main aside" "nav main main aside" ". . . aside" ". footer footer aside"');
+    testGridTemplateAreas("gridWithMixedDotAndDotsAreas", '". title ." ". main main" "nav . aside" ". footer ."');
+    testGridTemplateAreas("gridWithHorizontalRectangle", '"a a a" "a a a"');
+    testGridTemplateAreas("gridWithVerticalRectangle", '"a a" "a a" "a a"');
 
     debug("Test grid-template-areas: initial");
     var element = document.createElement("div");
