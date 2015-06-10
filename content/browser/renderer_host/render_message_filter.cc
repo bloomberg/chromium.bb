@@ -445,6 +445,12 @@ void RenderMessageFilter::OnDestruct() const {
   BrowserThread::DeleteOnIOThread::Destruct(this);
 }
 
+void RenderMessageFilter::OverrideThreadForMessage(const IPC::Message& message,
+                                                   BrowserThread::ID* thread) {
+  if (message.type() == ViewHostMsg_MediaLogEvents::ID)
+    *thread = BrowserThread::UI;
+}
+
 base::TaskRunner* RenderMessageFilter::OverrideTaskRunnerForMessage(
     const IPC::Message& message) {
 #if defined(OS_WIN)
@@ -1055,6 +1061,9 @@ void RenderMessageFilter::OnKeygenOnWorkerThread(
 
 void RenderMessageFilter::OnMediaLogEvents(
     const std::vector<media::MediaLogEvent>& events) {
+  // OnMediaLogEvents() is always dispatched to the UI thread for handling.
+  // See OverrideThreadForMessage().
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (media_internals_)
     media_internals_->OnMediaEvents(render_process_id_, events);
 }

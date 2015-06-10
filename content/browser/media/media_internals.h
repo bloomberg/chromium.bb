@@ -124,6 +124,7 @@ class CONTENT_EXPORT MediaInternals
 
   // Must only be accessed on the UI thread.
   std::vector<UpdateCallback> update_callbacks_;
+  PendingEventsMap pending_events_map_;
 
   // Must only be accessed on the IO thread.
   base::ListValue video_capture_capabilities_cached_data_;
@@ -133,7 +134,6 @@ class CONTENT_EXPORT MediaInternals
   // All variables below must be accessed under |lock_|.
   base::Lock lock_;
   bool can_update_;
-  PendingEventsMap pending_events_map_;
   base::DictionaryValue audio_streams_cached_data_;
   int owner_ids_[AUDIO_COMPONENT_MAX];
   scoped_ptr<MediaInternalsUMAHandler> uma_handler_;

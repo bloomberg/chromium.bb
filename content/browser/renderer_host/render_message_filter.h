@@ -107,6 +107,8 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
   // BrowserMessageFilter methods:
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnDestruct() const override;
+  void OverrideThreadForMessage(const IPC::Message& message,
+                                BrowserThread::ID* thread) override;
   base::TaskRunner* OverrideTaskRunnerForMessage(
       const IPC::Message& message) override;
 

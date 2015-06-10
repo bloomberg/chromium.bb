@@ -247,6 +247,7 @@ void AudioLogImpl::StoreComponentMetadata(int component_id,
   dict->SetInteger("component_type", component_);
 }
 
+// This class lives on the browser UI thread.
 class MediaInternals::MediaInternalsUMAHandler {
  public:
   MediaInternalsUMAHandler();
@@ -284,13 +285,13 @@ class MediaInternals::MediaInternalsUMAHandler {
   // Helper to generate PipelineStatus UMA name for AudioVideo streams.
   std::string GetUMANameForAVStream(const PipelineInfo& player_info);
 
-  // Key is playerid
+  // Key is player id.
   typedef std::map<int, PipelineInfo> PlayerInfoMap;
 
-  // Key is renderer id
+  // Key is renderer id.
   typedef std::map<int, PlayerInfoMap> RendererPlayerMap;
 
-  // Stores player information per renderer
+  // Stores player information per renderer.
   RendererPlayerMap renderer_info_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaInternalsUMAHandler);
@@ -302,7 +303,7 @@ MediaInternals::MediaInternalsUMAHandler::MediaInternalsUMAHandler() {
 void MediaInternals::MediaInternalsUMAHandler::SavePlayerState(
     int render_process_id,
     const media::MediaLogEvent& event) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   PlayerInfoMap& player_info = renderer_info_[render_process_id];
   switch (event.type) {
     case media::MediaLogEvent::PIPELINE_ERROR: {
@@ -350,7 +351,7 @@ void MediaInternals::MediaInternalsUMAHandler::SavePlayerState(
 
 std::string MediaInternals::MediaInternalsUMAHandler::GetUMANameForAVStream(
     const PipelineInfo& player_info) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   static const char kPipelineUmaPrefix[] = "Media.PipelineStatus.AudioVideo.";
   std::string uma_name = kPipelineUmaPrefix;
   if (player_info.video_codec_name == "vp8") {
@@ -382,7 +383,7 @@ std::string MediaInternals::MediaInternalsUMAHandler::GetUMANameForAVStream(
 
 void MediaInternals::MediaInternalsUMAHandler::ReportUMAForPipelineStatus(
     const PipelineInfo& player_info) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (player_info.has_video && player_info.has_audio) {
     base::LinearHistogram::FactoryGet(
         GetUMANameForAVStream(player_info), 1, media::PIPELINE_STATUS_MAX,
@@ -412,17 +413,7 @@ void MediaInternals::MediaInternalsUMAHandler::ReportUMAForPipelineStatus(
 
 void MediaInternals::MediaInternalsUMAHandler::OnProcessTerminated(
     int render_process_id) {
-  // Ensures to run on the IO thread to avoid race in |updating renderer_info_|
-  // by both SavePlayerState and OnProcessTerminated.
-  // Using base::Unretained() on MediaInternalsUMAHandler is safe since
-  // it is owned by MediaInternals and shares the same lifetime.
-  if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&MediaInternalsUMAHandler::OnProcessTerminated,
-                   base::Unretained(this), render_process_id));
-    return;
-  }
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   auto players_it = renderer_info_.find(render_process_id);
   if (players_it == renderer_info_.end())
@@ -457,8 +448,6 @@ void MediaInternals::Observe(int type,
   RenderProcessHost* process = Source<RenderProcessHost>(source).ptr();
 
   uma_handler_->OnProcessTerminated(process->GetID());
-
-  base::AutoLock auto_lock(lock_);
   pending_events_map_.erase(process->GetID());
 }
 
@@ -500,7 +489,7 @@ static bool ConvertEventToUpdate(int render_process_id,
 
 void MediaInternals::OnMediaEvents(
     int render_process_id, const std::vector<media::MediaLogEvent>& events) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Notify observers that |event| has occurred.
   for (const auto& event : events) {
     if (CanUpdate()) {
@@ -542,7 +531,6 @@ bool MediaInternals::CanUpdate() {
 
 void MediaInternals::SendHistoricalMediaEvents() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::AutoLock auto_lock(lock_);
   for (const auto& pending_events : pending_events_map_) {
     for (const auto& event : pending_events.second) {
       base::string16 update;
@@ -630,7 +618,7 @@ void MediaInternals::SendUpdate(const base::string16& update) {
 
 void MediaInternals::SaveEvent(int process_id,
                                const media::MediaLogEvent& event) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Max number of saved updates allowed for one process.
   const size_t kMaxNumEvents = 128;
@@ -642,7 +630,6 @@ void MediaInternals::SaveEvent(int process_id,
     return;
   }
 
-  base::AutoLock auto_lock(lock_);
   auto& pending_events = pending_events_map_[process_id];
   // TODO(xhwang): Notify user that some old logs could have been truncated.
   // See http://crbug.com/498520
