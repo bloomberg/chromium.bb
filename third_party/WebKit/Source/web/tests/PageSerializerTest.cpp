@@ -273,7 +273,7 @@ TEST_F(PageSerializerTest, CSSImport)
 TEST_F(PageSerializerTest, XMLDeclaration)
 {
     V8TestingScope scope(v8::Isolate::GetCurrent());
-    setBaseFolder("pageserializer/xmldecl/");
+    setBaseFolder("pageserializer/xml/");
 
     registerURL("xmldecl.xml", "text/xml");
     serialize("xmldecl.xml");

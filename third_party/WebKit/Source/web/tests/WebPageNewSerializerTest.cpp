@@ -238,29 +238,6 @@ TEST_F(WebPageNewSerializeTest, FAILS_CSSResources)
     EXPECT_TRUE(resourceVectorContains(resources, m_baseURL + "ol-dot.png", "image/png"));
 }
 
-TEST_F(WebPageNewSerializeTest, SerializeXMLHasRightDeclaration)
-{
-    WebURL topFrameURL = toTestURL("simple.xhtml");
-    registerMockedURLLoad(topFrameURL, WebString::fromUTF8("simple.xhtml"), WebString::fromUTF8("pageserializer/"), xhtmlMimeType());
-
-    loadURLInTopFrame(topFrameURL);
-
-    WebVector<WebPageSerializer::Resource> resources;
-    WebPageSerializer::serialize(webView(), &resources);
-    ASSERT_FALSE(resources.isEmpty());
-
-    // We expect only one resource, the XML.
-    ASSERT_EQ(1U, resources.size());
-    std::string xml = std::string(resources[0].data.data());
-
-    // We should have one and only one instance of the XML declaration.
-    size_t pos = xml.find("<?xml version=");
-    ASSERT_TRUE(pos != std::string::npos);
-
-    pos = xml.find("<?xml version=", pos + 1);
-    ASSERT_TRUE(pos == std::string::npos);
-}
-
 TEST_F(WebPageNewSerializeTest, FAILS_TestMHTMLEncoding)
 {
     // Load a page with some CSS and some images.
