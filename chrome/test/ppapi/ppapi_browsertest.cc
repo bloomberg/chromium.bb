@@ -526,13 +526,25 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, MAYBE_URLLoader3) {
 #define MAYBE_URLLoader_BasicFilePOST URLLoader_BasicFilePOST
 #endif
 
-IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, URLLoader0) {
+#if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
+// Flaky on Mac ASAN: http://crbug.com/437411.
+#define MAYBE_URLLoader0 DISABLED_URLLoader0
+#else
+#define MAYBE_URLLoader0 URLLoader0
+#endif
+IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, MAYBE_URLLoader0) {
   RUN_URLLOADER_SUBTESTS_0;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, URLLoader1) {
   RUN_URLLOADER_SUBTESTS_1;
 }
-IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, URLLoader2) {
+#if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
+// Flaky on Mac ASAN: http://crbug.com/437411.
+#define MAYBE_URLLoader2 DISABLED_URLLoader2
+#else
+#define MAYBE_URLLoader2 URLLoader2
+#endif
+IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, MAYBE_URLLoader2) {
   RUN_URLLOADER_SUBTESTS_2;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, URLLoader3) {
