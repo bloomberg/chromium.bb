@@ -86,7 +86,6 @@
 #include "base/android/jni_android.h"
 #include "content/browser/android/browser_startup_controller.h"
 #include "content/browser/android/browser_surface_texture_manager.h"
-#include "content/browser/android/in_process_surface_texture_manager.h"
 #include "content/browser/android/tracing_controller_android.h"
 #include "content/browser/screen_orientation/screen_orientation_delegate_android.h"
 #include "content/public/browser/screen_orientation_provider.h"
@@ -103,7 +102,6 @@
 #include "content/browser/browser_io_surface_manager_mac.h"
 #include "content/browser/cocoa/system_hotkey_helper_mac.h"
 #include "content/browser/compositor/browser_compositor_view_mac.h"
-#include "content/browser/in_process_io_surface_manager_mac.h"
 #include "content/browser/theme_helper_mac.h"
 #endif
 
@@ -591,13 +589,7 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
 #if defined(OS_ANDROID)
   {
     TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:SurfaceTextureManager");
-    if (parsed_command_line_.HasSwitch(switches::kSingleProcess)) {
-      SurfaceTextureManager::SetInstance(
-          InProcessSurfaceTextureManager::GetInstance());
-    } else {
-      SurfaceTextureManager::SetInstance(
-          BrowserSurfaceTextureManager::GetInstance());
-    }
+    SurfaceTextureManager::SetInstance(new BrowserSurfaceTextureManager);
   }
 
   if (!parsed_command_line_.HasSwitch(
@@ -613,11 +605,7 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   {
     TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:IOSurfaceManager");
-    if (parsed_command_line_.HasSwitch(switches::kSingleProcess)) {
-      IOSurfaceManager::SetInstance(InProcessIOSurfaceManager::GetInstance());
-    } else {
-      IOSurfaceManager::SetInstance(BrowserIOSurfaceManager::GetInstance());
-    }
+    IOSurfaceManager::SetInstance(BrowserIOSurfaceManager::GetInstance());
   }
 #endif
 

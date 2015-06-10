@@ -7,17 +7,15 @@
 
 #include "content/common/android/surface_texture_manager.h"
 
-#include "base/memory/singleton.h"
 #include "content/common/android/surface_texture_peer.h"
-#include "content/common/content_export.h"
 
 namespace content {
 
-class CONTENT_EXPORT BrowserSurfaceTextureManager
-    : public SurfaceTextureManager,
-      public SurfaceTexturePeer {
+class BrowserSurfaceTextureManager : public SurfaceTextureManager,
+                                     public SurfaceTexturePeer {
  public:
-  static BrowserSurfaceTextureManager* GetInstance();
+  BrowserSurfaceTextureManager();
+  ~BrowserSurfaceTextureManager() override;
 
   // Overridden from SurfaceTextureManager:
   void RegisterSurfaceTexture(int surface_texture_id,
@@ -35,11 +33,6 @@ class CONTENT_EXPORT BrowserSurfaceTextureManager
       int player_id) override;
 
  private:
-  friend struct DefaultSingletonTraits<BrowserSurfaceTextureManager>;
-
-  BrowserSurfaceTextureManager();
-  ~BrowserSurfaceTextureManager() override;
-
   DISALLOW_COPY_AND_ASSIGN(BrowserSurfaceTextureManager);
 };
 
