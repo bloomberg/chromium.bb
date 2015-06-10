@@ -41,10 +41,10 @@ const char kGetOAuthTokenUrlSuffix[] = "o/oauth/GetOAuthToken/";
 const char kClientLoginToOAuth2UrlSuffix[] = "o/oauth2/programmatic_auth";
 const char kOAuth2AuthUrlSuffix[] = "o/oauth2/auth";
 const char kOAuth2RevokeUrlSuffix[] = "o/oauth2/revoke";
-const char kOAuth2TokenUrlSuffix[] = "o/oauth2/token";
 const char kOAuth2IFrameUrlSuffix[] = "o/oauth2/iframerpc";
 
 // API calls from www.googleapis.com
+const char kOAuth2TokenUrlSuffix[] = "oauth2/v4/token";
 const char kOAuth2IssueTokenUrlSuffix[] = "oauth2/v2/IssueToken";
 const char kOAuth2TokenInfoUrlSuffix[] = "oauth2/v2/tokeninfo";
 const char kOAuthUserInfoUrlSuffix[] = "oauth2/v1/userinfo";
@@ -121,12 +121,12 @@ GaiaUrls::GaiaUrls() {
   client_login_to_oauth2_url_ =
       lso_origin_url_.Resolve(kClientLoginToOAuth2UrlSuffix);
   oauth2_auth_url_ = lso_origin_url_.Resolve(kOAuth2AuthUrlSuffix);
-  oauth2_token_url_ = lso_origin_url_.Resolve(kOAuth2TokenUrlSuffix);
   oauth2_revoke_url_ = lso_origin_url_.Resolve(kOAuth2RevokeUrlSuffix);
   oauth2_iframe_url_ =
       lso_origin_url_.Resolve(kOAuth2IFrameUrlSuffix);
 
   // URLs from www.googleapis.com.
+  oauth2_token_url_ = google_apis_origin_url_.Resolve(kOAuth2TokenUrlSuffix);
   oauth2_issue_token_url_ =
       google_apis_origin_url_.Resolve(kOAuth2IssueTokenUrlSuffix);
   oauth2_token_info_url_ =

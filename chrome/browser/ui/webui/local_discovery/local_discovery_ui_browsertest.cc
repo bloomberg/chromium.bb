@@ -272,9 +272,6 @@ const char kURLCloudPrintConfirm[] =
 const char kURLRegisterComplete[] =
     "http://1.2.3.4:8888/privet/register?action=complete&user=user%40host.com";
 
-const char kURLGaiaToken[] =
-    "https://accounts.google.com/o/oauth2/token";
-
 const char kSampleGaiaId[] = "12345";
 const char kSampleUser[] = "user@host.com";
 
@@ -398,13 +395,13 @@ class LocalDiscoveryUITest : public WebUIBrowserTest {
         net::URLRequestStatus::SUCCESS);
 
     fake_fetcher_factory().SetFakeResponse(
-        GURL(kURLGaiaToken),
+        GaiaUrls::GetInstance()->oauth2_token_url(),
         kResponseGaiaToken,
         net::HTTP_OK,
         net::URLRequestStatus::SUCCESS);
 
     EXPECT_CALL(fake_url_fetcher_creator(), OnCreateFakeURLFetcher(
-        kURLGaiaToken))
+        GaiaUrls::GetInstance()->oauth2_token_url().spec()))
         .Times(AnyNumber());
 
     fake_fetcher_factory().SetFakeResponse(

@@ -266,7 +266,7 @@ void FakeGaia::Initialize() {
   // Handles /SSO GAIA call (not GAIA, made up for SAML tests).
   REGISTER_PATH_RESPONSE_HANDLER("/SSO", HandleSSO);
 
-  // Handles /o/oauth2/token GAIA call.
+  // Handles /oauth2/v4/token GAIA call.
   REGISTER_RESPONSE_HANDLER(
       gaia_urls->oauth2_token_url(), HandleAuthToken);
 
@@ -624,7 +624,7 @@ void FakeGaia::HandleAuthToken(const HttpRequest& request,
   std::string grant_type;
   if (!GetQueryParameter(request.content, "grant_type", &grant_type)) {
     http_response->set_code(net::HTTP_BAD_REQUEST);
-    LOG(ERROR) << "No 'grant_type' param in /o/oauth2/token";
+    LOG(ERROR) << "No 'grant_type' param in /oauth2/v4/token";
     return;
   }
 
@@ -633,7 +633,7 @@ void FakeGaia::HandleAuthToken(const HttpRequest& request,
     if (!GetQueryParameter(request.content, "code", &auth_code) ||
         auth_code != merge_session_params_.auth_code) {
       http_response->set_code(net::HTTP_BAD_REQUEST);
-      LOG(ERROR) << "No 'code' param in /o/oauth2/token";
+      LOG(ERROR) << "No 'code' param in /oauth2/v4/token";
       return;
     }
 
@@ -683,7 +683,7 @@ void FakeGaia::HandleAuthToken(const HttpRequest& request,
     }
   }
 
-  LOG(ERROR) << "Bad request for /o/oauth2/token - "
+  LOG(ERROR) << "Bad request for /oauth2/v4/token - "
               << "refresh_token = " << refresh_token
               << ", scope = " << scope
               << ", client_id = " << client_id;
