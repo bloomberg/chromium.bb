@@ -38,7 +38,7 @@ public:
 
     virtual bool userInputScrollable(ScrollbarOrientation) const override { return true; }
     virtual bool shouldPlaceVerticalScrollbarOnLeft() const override { return false; }
-    virtual void setScrollOffset(const IntPoint& offset) override { m_scrollPosition = offset.shrunkTo(m_maximumScrollPosition); }
+    virtual void setScrollOffset(const IntPoint& offset, ScrollType) override { m_scrollPosition = offset.shrunkTo(m_maximumScrollPosition); }
     virtual IntPoint scrollPosition() const override { return m_scrollPosition; }
     virtual IntPoint maximumScrollPosition() const override { return m_maximumScrollPosition; }
     virtual int visibleHeight() const override { return 768; }

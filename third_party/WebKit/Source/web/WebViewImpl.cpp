@@ -904,7 +904,7 @@ bool WebViewImpl::startPageScaleAnimation(const IntPoint& targetPosition, bool u
 
             FrameView* view = mainFrameImpl()->frameView();
             if (view && view->scrollableArea())
-                view->scrollableArea()->setScrollPosition(DoublePoint(clampedPoint.x, clampedPoint.y));
+                view->scrollableArea()->setScrollPosition(DoublePoint(clampedPoint.x, clampedPoint.y), ProgrammaticScroll);
 
             return false;
         }
@@ -3072,7 +3072,7 @@ void WebViewImpl::scrollAndRescaleViewports(float scaleFactor,
     // Order is important: pinch viewport location is clamped based on
     // main frame scroll position and pinch viewport scale.
 
-    view->setScrollOffset(mainFrameOrigin);
+    view->setScrollPosition(mainFrameOrigin, ProgrammaticScroll);
 
     setPageScaleFactor(scaleFactor);
 

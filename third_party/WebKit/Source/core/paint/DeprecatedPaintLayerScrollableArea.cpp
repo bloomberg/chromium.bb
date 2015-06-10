@@ -357,12 +357,12 @@ int DeprecatedPaintLayerScrollableArea::scrollSize(ScrollbarOrientation orientat
     return (orientation == HorizontalScrollbar) ? scrollDimensions.width() : scrollDimensions.height();
 }
 
-void DeprecatedPaintLayerScrollableArea::setScrollOffset(const IntPoint& newScrollOffset)
+void DeprecatedPaintLayerScrollableArea::setScrollOffset(const IntPoint& newScrollOffset, ScrollType scrollType)
 {
-    setScrollOffset(DoublePoint(newScrollOffset));
+    setScrollOffset(DoublePoint(newScrollOffset), scrollType);
 }
 
-void DeprecatedPaintLayerScrollableArea::setScrollOffset(const DoublePoint& newScrollOffset)
+void DeprecatedPaintLayerScrollableArea::setScrollOffset(const DoublePoint& newScrollOffset, ScrollType)
 {
     // Ensure that the dimensions will be computed if they need to be (for overflow:hidden blocks).
     if (m_scrollDimensionsDirty)
@@ -612,16 +612,8 @@ void DeprecatedPaintLayerScrollableArea::scrollToOffset(const DoubleSize& scroll
     cancelProgrammaticScrollAnimation();
     DoubleSize newScrollOffset = clamp == ScrollOffsetClamped ? clampScrollOffset(scrollOffset) : scrollOffset;
     if (newScrollOffset != adjustedScrollOffset()) {
-        if (scrollBehavior == ScrollBehaviorAuto)
-            scrollBehavior = scrollBehaviorStyle();
         DoublePoint origin(scrollOrigin());
-        if (scrollBehavior == ScrollBehaviorSmooth) {
-            // FIXME: Make programmaticallyScrollSmoothlyToOffset take DoublePoint. crbug.com/243871.
-            programmaticallyScrollSmoothlyToOffset(toFloatPoint(-origin + newScrollOffset));
-        } else {
-            // FIXME: Make scrollToOffsetWithoutAnimation take DoublePoint. crbug.com/414283.
-            scrollToOffsetWithoutAnimation(toFloatPoint(-origin + newScrollOffset));
-        }
+        ScrollableArea::setScrollPosition(-origin + newScrollOffset, ProgrammaticScroll, scrollBehavior);
     }
 }
 
@@ -642,7 +634,10 @@ void DeprecatedPaintLayerScrollableArea::updateAfterLayout()
 
     if (originalScrollOffset != adjustedScrollOffset()) {
         DoublePoint origin(scrollOrigin());
-        scrollToOffsetWithoutAnimation(toFloatPoint(-origin + adjustedScrollOffset()));
+
+        // Call the base version here since calling this class' version will early because the
+        // offset itself hasn't changed, the scroll origin has.
+        ScrollableArea::setScrollPosition(-origin + adjustedScrollOffset(), ProgrammaticScroll);
     }
 
     bool hasHorizontalOverflow = this->hasHorizontalOverflow();

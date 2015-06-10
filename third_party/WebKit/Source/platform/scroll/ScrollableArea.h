@@ -73,10 +73,10 @@ public:
     virtual HostWindow* hostWindow() const { return 0; };
 
     virtual ScrollResultOneDimensional userScroll(ScrollDirectionPhysical, ScrollGranularity, float delta = 1);
-    virtual void setScrollPosition(const DoublePoint&, ScrollBehavior = ScrollBehaviorInstant);
 
-    void scrollToOffsetWithoutAnimation(const FloatPoint&, bool cancelProgrammaticAnimations = true);
-    void scrollToOffsetWithoutAnimation(ScrollbarOrientation, float offset);
+    virtual void setScrollPosition(const DoublePoint&, ScrollType, ScrollBehavior = ScrollBehaviorInstant);
+    virtual void scrollBy(const DoubleSize&, ScrollType, ScrollBehavior = ScrollBehaviorInstant);
+    void setScrollPositionSingleAxis(ScrollbarOrientation, double, ScrollType, ScrollBehavior = ScrollBehaviorInstant);
 
     // Scrolls the area so that the given rect, given in the document's content coordinates, such that it's
     // visible in the area. Returns the new location of the input rect relative once again to the document.
@@ -88,8 +88,6 @@ public:
     // Scrolls the area so that the given rect, given in the area's content coordinates, such that it's
     // cenetered in the second rect, which is given relative to the area's origin.
     void scrollIntoRect(const LayoutRect& rectInContent, const FloatRect& targetRectInFrame);
-
-    void programmaticallyScrollSmoothlyToOffset(const FloatPoint&);
 
     // Should be called when the scroll position changes externally, for example if the scroll layer position
     // is updated on the scrolling thread and we need to notify the main thread.
@@ -154,7 +152,6 @@ public:
     // is causing too much nasty bugs but does not add too benefit on low-dpi devices.
     virtual bool shouldUseIntegerScrollOffset() const { return !RuntimeEnabledFeatures::fractionalScrollOffsetsEnabled(); }
 
-    // FIXME(bokan): Meaningless name, rename to isActiveFocus
     virtual bool isActive() const = 0;
     virtual int scrollSize(ScrollbarOrientation) const = 0;
     virtual void invalidateScrollbar(Scrollbar*, const IntRect&);
@@ -303,7 +300,6 @@ public:
     // Subtracts space occupied by this ScrollableArea's scrollbars.
     // Does nothing if overlay scrollbars are enabled.
     IntSize excludeScrollbars(const IntSize&) const;
-
 protected:
     ScrollableArea();
 
@@ -311,11 +307,14 @@ protected:
     void resetScrollOriginChanged() { m_scrollOriginChanged = false; }
 
 private:
-    void scrollPositionChanged(const DoublePoint&);
+    void scrollPositionChanged(const DoublePoint&, ScrollType);
 
     // NOTE: Only called from the ScrollAnimator.
     friend class ScrollAnimator;
-    void setScrollOffsetFromAnimation(const DoublePoint&);
+    void setScrollOffsetFromAnimation(const DoublePoint&, ScrollType);
+
+    void programmaticScrollHelper(const DoublePoint&, ScrollBehavior);
+    void userScrollHelper(const DoublePoint&, ScrollBehavior);
 
     // This function should be overriden by subclasses to perform the actual
     // scroll of the content. By default the DoublePoint version will just
@@ -324,10 +323,10 @@ private:
     // precision scroll offset.
     // FIXME: Remove the IntPoint version. And change the function to
     // take DoubleSize. crbug.com/414283.
-    virtual void setScrollOffset(const IntPoint&) = 0;
-    virtual void setScrollOffset(const DoublePoint& offset)
+    virtual void setScrollOffset(const IntPoint&, ScrollType) = 0;
+    virtual void setScrollOffset(const DoublePoint& offset, ScrollType scrollType)
     {
-        setScrollOffset(flooredIntPoint(offset));
+        setScrollOffset(flooredIntPoint(offset), scrollType);
     }
 
     virtual int lineStep(ScrollbarOrientation) const;

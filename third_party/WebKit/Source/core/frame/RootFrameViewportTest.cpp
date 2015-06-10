@@ -56,7 +56,6 @@ public:
         m_userInputScrollableY = y;
     }
 
-    void setScrollPosition(const DoublePoint& pos, ScrollBehavior = ScrollBehaviorInstant) override { scrollToOffsetWithoutAnimation(toFloatPoint(pos)); }
     IntPoint scrollPosition() const override { return flooredIntPoint(m_scrollPosition); }
     DoublePoint scrollPositionDouble() const override { return m_scrollPosition; }
     IntPoint minimumScrollPosition() const override { return IntPoint(); }
@@ -70,8 +69,8 @@ public:
     }
 
 protected:
-    void setScrollOffset(const IntPoint& offset) override { m_scrollPosition = offset; }
-    void setScrollOffset(const DoublePoint& offset) override { m_scrollPosition = offset; }
+    void setScrollOffset(const IntPoint& offset, ScrollType) override { m_scrollPosition = offset; }
+    void setScrollOffset(const DoublePoint& offset, ScrollType) override { m_scrollPosition = offset; }
     bool shouldUseIntegerScrollOffset() const override { return true; }
     bool isActive() const override { return true; }
     bool isScrollCornerVisible() const override { return true; }
@@ -198,7 +197,7 @@ TEST_F(RootFrameViewportTest, UserInputScrollable)
 
     // Disable just the visual viewport's horizontal scrolling, only the layout
     // viewport should scroll.
-    rootFrameViewport->setScrollPosition(DoublePoint());
+    rootFrameViewport->setScrollPosition(DoublePoint(), ProgrammaticScroll);
     layoutViewport.setUserInputScrollable(true, true);
     visualViewport.setUserInputScrollable(false, true);
 
@@ -209,7 +208,7 @@ TEST_F(RootFrameViewportTest, UserInputScrollable)
 
     // Disable both viewports' horizontal scrolling, all horizontal scrolling
     // should now be blocked.
-    rootFrameViewport->setScrollPosition(DoublePoint());
+    rootFrameViewport->setScrollPosition(DoublePoint(), ProgrammaticScroll);
     layoutViewport.setUserInputScrollable(false, true);
     visualViewport.setUserInputScrollable(false, true);
 
@@ -230,7 +229,7 @@ TEST_F(RootFrameViewportTest, UserInputScrollable)
     // Try the same checks as above but for the vertical direction.
     // ===============================================
 
-    rootFrameViewport->setScrollPosition(DoublePoint());
+    rootFrameViewport->setScrollPosition(DoublePoint(), ProgrammaticScroll);
 
     // Disable just the layout viewport's vertical scrolling, the
     // RootFrameViewport should remain scrollable overall.
@@ -249,7 +248,7 @@ TEST_F(RootFrameViewportTest, UserInputScrollable)
 
     // Disable just the visual viewport's vertical scrolling, only the layout
     // viewport should scroll.
-    rootFrameViewport->setScrollPosition(DoublePoint());
+    rootFrameViewport->setScrollPosition(DoublePoint(), ProgrammaticScroll);
     layoutViewport.setUserInputScrollable(true, true);
     visualViewport.setUserInputScrollable(true, false);
 
@@ -260,7 +259,7 @@ TEST_F(RootFrameViewportTest, UserInputScrollable)
 
     // Disable both viewports' horizontal scrolling, all vertical scrolling
     // should now be blocked.
-    rootFrameViewport->setScrollPosition(DoublePoint());
+    rootFrameViewport->setScrollPosition(DoublePoint(), ProgrammaticScroll);
     layoutViewport.setUserInputScrollable(true, false);
     visualViewport.setUserInputScrollable(true, false);
 
@@ -293,17 +292,17 @@ TEST_F(RootFrameViewportTest, TestScrollAnimatorUpdatedBeforeScroll)
 
     visualViewport.setScale(2);
 
-    visualViewport.setScrollPosition(DoublePoint(50, 75));
+    visualViewport.setScrollPosition(DoublePoint(50, 75), ProgrammaticScroll);
     EXPECT_POINT_EQ(DoublePoint(50, 75), rootFrameViewport->scrollPositionDouble());
 
     // If the scroll animator doesn't update, it will still think it's at (0, 0) and so it
     // may early exit.
-    rootFrameViewport->setScrollPosition(DoublePoint(0, 0));
+    rootFrameViewport->setScrollPosition(DoublePoint(0, 0), ProgrammaticScroll);
     EXPECT_POINT_EQ(DoublePoint(0, 0), rootFrameViewport->scrollPositionDouble());
     EXPECT_POINT_EQ(DoublePoint(0, 0), visualViewport.scrollPositionDouble());
 
     // Try again for scroll()
-    visualViewport.setScrollPosition(DoublePoint(50, 75));
+    visualViewport.setScrollPosition(DoublePoint(50, 75), ProgrammaticScroll);
     EXPECT_POINT_EQ(DoublePoint(50, 75), rootFrameViewport->scrollPositionDouble());
 
     rootFrameViewport->userScroll(ScrollLeft, ScrollByPixel, 50);
@@ -311,7 +310,7 @@ TEST_F(RootFrameViewportTest, TestScrollAnimatorUpdatedBeforeScroll)
     EXPECT_POINT_EQ(DoublePoint(0, 75), visualViewport.scrollPositionDouble());
 
     // Try again for handleWheel.
-    visualViewport.setScrollPosition(DoublePoint(50, 75));
+    visualViewport.setScrollPosition(DoublePoint(50, 75), ProgrammaticScroll);
     EXPECT_POINT_EQ(DoublePoint(50, 75), rootFrameViewport->scrollPositionDouble());
 
     PlatformWheelEvent wheelEvent(
@@ -325,7 +324,7 @@ TEST_F(RootFrameViewportTest, TestScrollAnimatorUpdatedBeforeScroll)
     EXPECT_POINT_EQ(DoublePoint(0, 0), visualViewport.scrollPositionDouble());
 
     // Make sure the layout viewport is also accounted for.
-    layoutViewport.setScrollPosition(DoublePoint(100, 150));
+    layoutViewport.setScrollPosition(DoublePoint(100, 150), ProgrammaticScroll);
     EXPECT_POINT_EQ(DoublePoint(100, 150), rootFrameViewport->scrollPositionDouble());
 
     rootFrameViewport->userScroll(ScrollLeft, ScrollByPixel, 100);
@@ -365,7 +364,7 @@ TEST_F(RootFrameViewportTest, ScrollIntoView)
     // Reset the pinch viewport's size, scale the page and repeat the test
     visualViewport.setViewportSize(IntSize(100, 150));
     visualViewport.setScale(2);
-    rootFrameViewport->setScrollPosition(DoublePoint());
+    rootFrameViewport->setScrollPosition(DoublePoint(), ProgrammaticScroll);
 
     rootFrameViewport->scrollIntoView(
         LayoutRect(50, 75, 50, 75),
@@ -384,8 +383,8 @@ TEST_F(RootFrameViewportTest, ScrollIntoView)
     // Scrolling into view the viewport rect itself should be a no-op.
     visualViewport.setViewportSize(IntSize(100, 100));
     visualViewport.setScale(1.5f);
-    visualViewport.setScrollPosition(DoublePoint(0, 10));
-    layoutViewport.setScrollPosition(DoublePoint(50, 50));
+    visualViewport.setScrollPosition(DoublePoint(0, 10), ProgrammaticScroll);
+    layoutViewport.setScrollPosition(DoublePoint(50, 50), ProgrammaticScroll);
     rootFrameViewport->notifyScrollPositionChanged(rootFrameViewport->scrollPositionDouble());
 
     rootFrameViewport->scrollIntoView(
@@ -423,24 +422,24 @@ TEST_F(RootFrameViewportTest, SetScrollPosition)
     visualViewport.setScale(2);
 
     // Ensure that the layout viewport scrolls first.
-    rootFrameViewport->setScrollPosition(DoublePoint(100, 100));
+    rootFrameViewport->setScrollPosition(DoublePoint(100, 100), ProgrammaticScroll);
     EXPECT_POINT_EQ(DoublePoint(0, 0), visualViewport.scrollPositionDouble());
     EXPECT_POINT_EQ(DoublePoint(100, 100), layoutViewport.scrollPositionDouble());
 
     // Scroll to the layout viewport's extent, the visual viewport should scroll the
     // remainder.
-    rootFrameViewport->setScrollPosition(DoublePoint(700, 1700));
+    rootFrameViewport->setScrollPosition(DoublePoint(700, 1700), ProgrammaticScroll);
     EXPECT_POINT_EQ(DoublePoint(200, 200), visualViewport.scrollPositionDouble());
     EXPECT_POINT_EQ(DoublePoint(500, 1500), layoutViewport.scrollPositionDouble());
 
     // Only the visual viewport should scroll further. Make sure it doesn't scroll
     // out of bounds.
-    rootFrameViewport->setScrollPosition(DoublePoint(780, 1780));
+    rootFrameViewport->setScrollPosition(DoublePoint(780, 1780), ProgrammaticScroll);
     EXPECT_POINT_EQ(DoublePoint(250, 250), visualViewport.scrollPositionDouble());
     EXPECT_POINT_EQ(DoublePoint(500, 1500), layoutViewport.scrollPositionDouble());
 
     // Scroll all the way back.
-    rootFrameViewport->setScrollPosition(DoublePoint(0, 0));
+    rootFrameViewport->setScrollPosition(DoublePoint(0, 0), ProgrammaticScroll);
     EXPECT_POINT_EQ(DoublePoint(0, 0), visualViewport.scrollPositionDouble());
     EXPECT_POINT_EQ(DoublePoint(0, 0), layoutViewport.scrollPositionDouble());
 }
@@ -456,7 +455,7 @@ TEST_F(RootFrameViewportTest, VisibleContentRect)
     OwnPtr<ScrollableArea> rootFrameViewport =
         RootFrameViewport::create(visualViewport, layoutViewport);
 
-    rootFrameViewport->setScrollPosition(DoublePoint(100, 75));
+    rootFrameViewport->setScrollPosition(DoublePoint(100, 75), ProgrammaticScroll);
 
     EXPECT_POINT_EQ(DoublePoint(100, 75), rootFrameViewport->visibleContentRect().location());
     EXPECT_POINT_EQ(DoublePoint(100, 75), rootFrameViewport->visibleContentRectDouble().location());

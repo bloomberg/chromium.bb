@@ -1135,7 +1135,7 @@ void LocalDOMWindow::scrollBy(double x, double y, ScrollBehavior scrollBehavior)
     DoublePoint currentOffset = view->scrollableArea()->scrollPositionDouble();
     DoubleSize scaledDelta(x * frame()->pageZoomFactor(), y * frame()->pageZoomFactor());
 
-    view->scrollableArea()->setScrollPosition(currentOffset + scaledDelta, scrollBehavior);
+    view->scrollableArea()->setScrollPosition(currentOffset + scaledDelta, ProgrammaticScroll, scrollBehavior);
 }
 
 void LocalDOMWindow::scrollBy(const ScrollToOptions& scrollToOptions) const
@@ -1169,7 +1169,7 @@ void LocalDOMWindow::scrollTo(double x, double y) const
         document()->updateLayoutIgnorePendingStylesheets();
 
     DoublePoint layoutPos(x * frame()->pageZoomFactor(), y * frame()->pageZoomFactor());
-    view->scrollableArea()->setScrollPosition(layoutPos, ScrollBehaviorAuto);
+    view->scrollableArea()->setScrollPosition(layoutPos, ProgrammaticScroll, ScrollBehaviorAuto);
 }
 
 void LocalDOMWindow::scrollTo(const ScrollToOptions& scrollToOptions) const
@@ -1205,7 +1205,7 @@ void LocalDOMWindow::scrollTo(const ScrollToOptions& scrollToOptions) const
 
     ScrollBehavior scrollBehavior = ScrollBehaviorAuto;
     ScrollableArea::scrollBehaviorFromString(scrollToOptions.behavior(), scrollBehavior);
-    view->scrollableArea()->setScrollPosition(DoublePoint(scaledX, scaledY), scrollBehavior);
+    view->scrollableArea()->setScrollPosition(DoublePoint(scaledX, scaledY), ProgrammaticScroll, scrollBehavior);
 }
 
 void LocalDOMWindow::moveBy(int x, int y, bool hasX, bool hasY) const

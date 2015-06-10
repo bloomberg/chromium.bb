@@ -243,7 +243,7 @@ bool PinchViewport::magnifyScaleAroundAnchor(float magnifyDelta, const FloatPoin
     FloatSize anchorDeltaUnusedByScroll = anchorDelta;
     FrameView* view = mainFrame()->view();
     DoublePoint oldPosition = view->scrollPositionDouble();
-    view->scrollBy(DoubleSize(anchorDelta.width(), anchorDelta.height()));
+    view->scrollBy(DoubleSize(anchorDelta.width(), anchorDelta.height()), UserScroll);
     DoublePoint newPosition = view->scrollPositionDouble();
     anchorDeltaUnusedByScroll = anchorDelta - toFloatSize(newPosition - oldPosition);
 
@@ -526,12 +526,12 @@ void PinchViewport::invalidateScrollbarRect(Scrollbar*, const IntRect&)
     // be updated when the viewport is synced to the CC.
 }
 
-void PinchViewport::setScrollOffset(const IntPoint& offset)
+void PinchViewport::setScrollOffset(const IntPoint& offset, ScrollType scrollType)
 {
-    setScrollOffset(DoublePoint(offset));
+    setScrollOffset(DoublePoint(offset), scrollType);
 }
 
-void PinchViewport::setScrollOffset(const DoublePoint& offset)
+void PinchViewport::setScrollOffset(const DoublePoint& offset, ScrollType)
 {
     setLocation(toFloatPoint(offset));
 }

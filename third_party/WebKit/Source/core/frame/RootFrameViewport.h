@@ -29,7 +29,7 @@ public:
     }
 
     // ScrollableArea Implementation
-    void setScrollPosition(const DoublePoint&, ScrollBehavior = ScrollBehaviorInstant) override;
+    void setScrollPosition(const DoublePoint&, ScrollType, ScrollBehavior = ScrollBehaviorInstant) override;
     LayoutRect scrollIntoView(
         const LayoutRect& rectInContent,
         const ScrollAlignment& alignX,
@@ -41,8 +41,8 @@ public:
     int scrollSize(ScrollbarOrientation) const override;
     bool isScrollCornerVisible() const override;
     IntRect scrollCornerRect() const override;
-    void setScrollOffset(const IntPoint&) override;
-    void setScrollOffset(const DoublePoint&) override;
+    void setScrollOffset(const IntPoint&, ScrollType) override;
+    void setScrollOffset(const DoublePoint&, ScrollType) override;
     IntPoint scrollPosition() const override;
     DoublePoint scrollPositionDouble() const override;
     IntPoint minimumScrollPosition() const override;
@@ -64,6 +64,7 @@ public:
     HostWindow* hostWindow() const override;
     void serviceScrollAnimations(double) override;
     void updateCompositorScrollAnimations() override;
+    virtual ScrollBehavior scrollBehaviorStyle() const override;
     // TODO(bokan): This method should be removed. It should be replaced by
     // making EventHandler::handleWheelEvent unpack the WheelEvent and make a
     // call to this class' scroll method.

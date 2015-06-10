@@ -170,7 +170,7 @@ public:
     IntSize inputEventsOffsetForEmulation() const;
     void setInputEventsTransformForEmulation(const IntSize&, float);
 
-    virtual void setScrollPosition(const DoublePoint&, ScrollBehavior = ScrollBehaviorInstant) override;
+    virtual void setScrollPosition(const DoublePoint&, ScrollType, ScrollBehavior = ScrollBehaviorInstant) override;
 
     FloatSize elasticOverscroll() const { return m_elasticOverscroll; }
     void setElasticOverscroll(const FloatSize&);
@@ -353,8 +353,6 @@ public:
     virtual GraphicsLayer* layerForVerticalScrollbar() const override;
     virtual GraphicsLayer* layerForScrollCorner() const override;
     virtual int scrollSize(ScrollbarOrientation) const override;
-    virtual void setScrollOffset(const IntPoint&) override;
-    virtual void setScrollOffset(const DoublePoint&) override;
     virtual bool isScrollCornerVisible() const override;
     virtual bool userInputScrollable(ScrollbarOrientation) const override;
     virtual bool shouldPlaceVerticalScrollbarOnLeft() const override;
@@ -439,12 +437,6 @@ public:
 
     void cacheCurrentScrollPosition() { m_cachedScrollPosition = scrollPositionDouble(); }
     DoublePoint cachedScrollPosition() const { return m_cachedScrollPosition; }
-
-    // Functions for scrolling the view.
-    void scrollBy(const DoubleSize& s, ScrollBehavior behavior = ScrollBehaviorInstant)
-    {
-        return setScrollPosition(scrollPositionDouble() + s, behavior);
-    }
 
     // Scroll the actual contents of the view (either blitting or invalidating as needed).
     void scrollContents(const IntSize& scrollDelta);
@@ -614,6 +606,9 @@ protected:
 
 private:
     explicit FrameView(LocalFrame*);
+
+    virtual void setScrollOffset(const IntPoint&, ScrollType) override;
+    virtual void setScrollOffset(const DoublePoint&, ScrollType) override;
 
     void updateLayoutAndStyleForPaintingInternal();
     void invalidateTreeIfNeededRecursive();

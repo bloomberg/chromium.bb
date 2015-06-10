@@ -21,7 +21,7 @@ ResizeViewportAnchor::ResizeViewportAnchor(FrameView& rootFrameView, PinchViewpo
 
 ResizeViewportAnchor::~ResizeViewportAnchor()
 {
-    m_rootFrameView->scrollableArea()->setScrollPosition(m_pinchViewportInDocument);
+    m_rootFrameView->scrollableArea()->setScrollPosition(m_pinchViewportInDocument, ProgrammaticScroll);
 }
 
 } // namespace blink

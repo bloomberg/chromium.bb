@@ -234,7 +234,7 @@ TEST_F(PinchViewportTest, TestResizeAtFullyScrolledPreservesViewportLocation)
     pinchViewport.setScale(2);
 
     // Fully scroll both viewports.
-    frameView.setScrollPosition(DoublePoint(10000, 10000));
+    frameView.setScrollPosition(DoublePoint(10000, 10000), ProgrammaticScroll);
     pinchViewport.move(FloatSize(10000, 10000));
 
     // Sanity check.
@@ -843,7 +843,7 @@ TEST_F(PinchViewportTest, TestNavigateToSmallerFrameViewHistoryItemClobberBug)
     navigateTo(m_baseURL + "content-width-1000.html");
 
     FrameView* frameView = webViewImpl()->mainFrameImpl()->frameView();
-    frameView->setScrollOffset(IntPoint(0, 1000));
+    frameView->setScrollPosition(IntPoint(0, 1000), ProgrammaticScroll);
 
     EXPECT_SIZE_EQ(IntSize(1000, 1000), frameView->frameRect().size());
 
@@ -935,7 +935,7 @@ TEST_F(PinchViewportTest, DISABLED_TestScrollFocusedNodeIntoRect)
     navigateTo(m_baseURL + "pinch-viewport-input-field-long-and-wide.html");
     webViewImpl()->setInitialFocus(false);
     pinchViewport.setLocation(FloatPoint());
-    frame()->view()->notifyScrollPositionChanged(IntPoint(0, 0));
+    frame()->view()->setScrollPosition(IntPoint(0, 0), ProgrammaticScroll);
     webViewImpl()->resizePinchViewport(IntSize(500, 300));
     pinchViewport.setLocation(FloatPoint(30, 50));
 
@@ -1084,14 +1084,14 @@ TEST_F(PinchViewportTest, ScrollIntoViewFractionalOffset)
     // The element is already in the view so the scrollIntoView shouldn't move
     // the viewport at all.
     webViewImpl()->setPinchViewportOffset(WebFloatPoint(250.25f, 100.25f));
-    frameView.setScrollPosition(DoublePoint(0, 900.75));
+    frameView.setScrollPosition(DoublePoint(0, 900.75), ProgrammaticScroll);
     inputBox->scrollIntoViewIfNeeded(false);
 
     EXPECT_POINT_EQ(DoublePoint(0, 900.75), frameView.scrollPositionDouble());
     EXPECT_POINT_EQ(FloatPoint(250.25f, 100.25f), pinchViewport.location());
 
     // Change the fractional part of the frameview to one that would round down.
-    frameView.setScrollPosition(DoublePoint(0, 900.125));
+    frameView.setScrollPosition(DoublePoint(0, 900.125), ProgrammaticScroll);
     inputBox->scrollIntoViewIfNeeded(false);
 
     EXPECT_POINT_EQ(DoublePoint(0, 900.125), frameView.scrollPositionDouble());
@@ -1099,14 +1099,14 @@ TEST_F(PinchViewportTest, ScrollIntoViewFractionalOffset)
 
     // Repeat both tests above with the pinch viewport at a high fractional.
     webViewImpl()->setPinchViewportOffset(WebFloatPoint(250.875f, 100.875f));
-    frameView.setScrollPosition(DoublePoint(0, 900.75));
+    frameView.setScrollPosition(DoublePoint(0, 900.75), ProgrammaticScroll);
     inputBox->scrollIntoViewIfNeeded(false);
 
     EXPECT_POINT_EQ(DoublePoint(0, 900.75), frameView.scrollPositionDouble());
     EXPECT_POINT_EQ(FloatPoint(250.875f, 100.875f), pinchViewport.location());
 
     // Change the fractional part of the frameview to one that would round down.
-    frameView.setScrollPosition(DoublePoint(0, 900.125));
+    frameView.setScrollPosition(DoublePoint(0, 900.125), ProgrammaticScroll);
     inputBox->scrollIntoViewIfNeeded(false);
 
     EXPECT_POINT_EQ(DoublePoint(0, 900.125), frameView.scrollPositionDouble());
@@ -1114,7 +1114,7 @@ TEST_F(PinchViewportTest, ScrollIntoViewFractionalOffset)
 
     // Both viewports with a 0.5 fraction.
     webViewImpl()->setPinchViewportOffset(WebFloatPoint(250.5f, 100.5f));
-    frameView.setScrollPosition(DoublePoint(0, 900.5));
+    frameView.setScrollPosition(DoublePoint(0, 900.5), ProgrammaticScroll);
     inputBox->scrollIntoViewIfNeeded(false);
 
     EXPECT_POINT_EQ(DoublePoint(0, 900.5), frameView.scrollPositionDouble());
@@ -1191,7 +1191,7 @@ TEST_F(PinchViewportTest, TestTopControlsAdjustment)
     EXPECT_POINT_EQ(FloatPoint(500, 860 - 430), pinchViewport.location());
 
     // The outer viewport (FrameView) should be affected as well.
-    frameView.scrollBy(IntSize(10000, 10000));
+    frameView.scrollBy(IntSize(10000, 10000), UserScroll);
     EXPECT_POINT_EQ(
         expectedMaxFrameViewScrollOffset(pinchViewport, frameView),
         frameView.scrollPosition());
@@ -1205,7 +1205,7 @@ TEST_F(PinchViewportTest, TestTopControlsAdjustment)
     EXPECT_FLOAT_POINT_EQ(FloatPoint(500, 881 - 440.5f), pinchViewport.location());
 
     // The outer viewport (FrameView) should be affected as well.
-    frameView.scrollBy(IntSize(10000, 10000));
+    frameView.scrollBy(IntSize(10000, 10000), UserScroll);
     EXPECT_POINT_EQ(
         expectedMaxFrameViewScrollOffset(pinchViewport, frameView),
         frameView.scrollPosition());
@@ -1239,7 +1239,7 @@ TEST_F(PinchViewportTest, TestTopControlsAdjustmentWithScale)
     EXPECT_POINT_EQ(FloatPoint(750, 860 - 215), pinchViewport.location());
 
     // The outer viewport (FrameView) should be affected as well.
-    frameView.scrollBy(IntSize(10000, 10000));
+    frameView.scrollBy(IntSize(10000, 10000), UserScroll);
     IntPoint expected = expectedMaxFrameViewScrollOffset(pinchViewport, frameView);
     EXPECT_POINT_EQ(expected, frameView.scrollPosition());
 
@@ -1248,7 +1248,7 @@ TEST_F(PinchViewportTest, TestTopControlsAdjustmentWithScale)
     webViewImpl()->applyViewportDeltas(WebFloatSize(), WebFloatSize(), WebFloatSize(), 0.5f, 0);
     EXPECT_EQ(1, pinchViewport.scale());
     EXPECT_POINT_EQ(expected, frameView.scrollPosition());
-    frameView.scrollBy(IntSize(10000, 10000));
+    frameView.scrollBy(IntSize(10000, 10000), UserScroll);
     EXPECT_POINT_EQ(expected, frameView.scrollPosition());
 
     EXPECT_POINT_EQ(FloatPoint(500, 860 - 430), pinchViewport.location());
@@ -1267,7 +1267,7 @@ TEST_F(PinchViewportTest, TestTopControlsAdjustmentWithScale)
     pinchViewport.move(FloatPoint(10000, 10000));
     EXPECT_FLOAT_POINT_EQ(FloatPoint(375, 877.5 - 548.75), pinchViewport.location());
 
-    frameView.scrollBy(IntSize(10000, 10000));
+    frameView.scrollBy(IntSize(10000, 10000), UserScroll);
     EXPECT_POINT_EQ(
         expectedMaxFrameViewScrollOffset(pinchViewport, frameView),
         frameView.scrollPosition());
@@ -1297,7 +1297,7 @@ TEST_F(PinchViewportTest, TestTopControlsAdjustmentAndResize)
 
     // Scroll all the way to the bottom.
     pinchViewport.move(FloatPoint(10000, 10000));
-    frameView.scrollBy(IntSize(10000, 10000));
+    frameView.scrollBy(IntSize(10000, 10000), UserScroll);
     IntPoint frameViewExpected = expectedMaxFrameViewScrollOffset(pinchViewport, frameView);
     FloatPoint pinchViewportExpected = FloatPoint(750, 860 - 215);
     EXPECT_POINT_EQ(pinchViewportExpected, pinchViewport.location());
@@ -1334,7 +1334,7 @@ TEST_F(PinchViewportTest, TestTopControlHidingResizeDoesntClampMainFrame)
     // for the full viewport height.
     webViewImpl()->applyViewportDeltas(WebFloatSize(), WebFloatSize(), WebFloatSize(), 1, -1);
     FrameView& frameView = *webViewImpl()->mainFrameImpl()->frameView();
-    frameView.setScrollPosition(IntPoint(0, 10000));
+    frameView.setScrollPosition(IntPoint(0, 10000), ProgrammaticScroll);
     EXPECT_EQ(500, frameView.scrollPositionDouble().y());
 
     // Now send the resize, make sure the scroll offset doesn't change.
@@ -1587,7 +1587,7 @@ TEST_F(PinchViewportTest, AccessibilityHitTestWhileZoomedIn)
 
     webViewImpl()->setPageScaleFactor(2);
     webViewImpl()->setPinchViewportOffset(WebFloatPoint(200, 230));
-    frameView.setScrollPosition(DoublePoint(400, 1100));
+    frameView.setScrollPosition(DoublePoint(400, 1100), ProgrammaticScroll);
 
     // Because of where the pinch viewport is located, this should hit the bottom right
     // target (target 4).

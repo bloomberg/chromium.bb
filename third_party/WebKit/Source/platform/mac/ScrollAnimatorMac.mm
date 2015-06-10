@@ -733,10 +733,10 @@ ScrollResultOneDimensional ScrollAnimatorMac::userScroll(ScrollbarOrientation or
     return ScrollResultOneDimensional(true, delta - usedDelta);
 }
 
-void ScrollAnimatorMac::scrollToOffsetWithoutAnimation(const FloatPoint& offset)
+void ScrollAnimatorMac::scrollToOffsetWithoutAnimation(const FloatPoint& offset, ScrollType scrollType)
 {
     [m_scrollAnimationHelper.get() _stopRun];
-    immediateScrollTo(offset);
+    immediateScrollTo(offset, scrollType);
 }
 
 FloatPoint ScrollAnimatorMac::adjustScrollPositionIfNecessary(const FloatPoint& position) const
@@ -753,7 +753,7 @@ FloatPoint ScrollAnimatorMac::adjustScrollPositionIfNecessary(const FloatPoint& 
     return FloatPoint(newX, newY);
 }
 
-void ScrollAnimatorMac::immediateScrollTo(const FloatPoint& newPosition)
+void ScrollAnimatorMac::immediateScrollTo(const FloatPoint& newPosition, ScrollType scrollType)
 {
     FloatPoint adjustedPosition = adjustScrollPositionIfNecessary(newPosition);
 
@@ -766,13 +766,13 @@ void ScrollAnimatorMac::immediateScrollTo(const FloatPoint& newPosition)
     m_currentPosX = adjustedPosition.x();
     m_currentPosY = adjustedPosition.y();
     notifyContentAreaScrolled(delta);
-    notifyPositionChanged();
+    notifyPositionChanged(scrollType);
 }
 
 void ScrollAnimatorMac::immediateScrollToPointForScrollAnimation(const FloatPoint& newPosition)
 {
     ASSERT(m_scrollAnimationHelper);
-    immediateScrollTo(newPosition);
+    immediateScrollTo(newPosition, ProgrammaticScroll);
 }
 
 void ScrollAnimatorMac::contentAreaWillPaint() const

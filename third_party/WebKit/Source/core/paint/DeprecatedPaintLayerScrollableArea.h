@@ -94,8 +94,6 @@ public:
     virtual IntPoint convertFromScrollbarToContainingView(const Scrollbar*, const IntPoint&) const override;
     virtual IntPoint convertFromContainingViewToScrollbar(const Scrollbar*, const IntPoint&) const override;
     virtual int scrollSize(ScrollbarOrientation) const override;
-    virtual void setScrollOffset(const IntPoint&) override;
-    virtual void setScrollOffset(const DoublePoint&) override;
     virtual IntPoint scrollPosition() const override;
     virtual DoublePoint scrollPositionDouble() const override;
     virtual IntPoint minimumScrollPosition() const override;
@@ -114,6 +112,7 @@ public:
     virtual bool userInputScrollable(ScrollbarOrientation) const override;
     virtual bool shouldPlaceVerticalScrollbarOnLeft() const override;
     virtual int pageStep(ScrollbarOrientation) const override;
+    virtual ScrollBehavior scrollBehaviorStyle() const override;
 
     double scrollXOffset() const { return m_scrollOffset.width() + scrollOrigin().x(); }
     double scrollYOffset() const { return m_scrollOffset.height() + scrollOrigin().y(); }
@@ -135,7 +134,7 @@ public:
         scrollToOffset(DoubleSize(scrollXOffset(), y), clamp, scrollBehavior);
     }
 
-    virtual void setScrollPosition(const DoublePoint& position, ScrollBehavior scrollBehavior = ScrollBehaviorInstant) override
+    virtual void setScrollPosition(const DoublePoint& position, ScrollType scrollType, ScrollBehavior scrollBehavior = ScrollBehaviorInstant) override
     {
         scrollToOffset(toDoubleSize(position), ScrollOffsetClamped, scrollBehavior);
     }
@@ -216,9 +215,6 @@ public:
     IntRect rectForHorizontalScrollbar(const IntRect& borderBoxRect) const;
     IntRect rectForVerticalScrollbar(const IntRect& borderBoxRect) const;
 
-protected:
-    virtual ScrollBehavior scrollBehaviorStyle() const override;
-
 private:
     bool hasHorizontalOverflow() const;
     bool hasVerticalOverflow() const;
@@ -229,6 +225,8 @@ private:
 
     DoubleSize clampScrollOffset(const DoubleSize&) const;
 
+    virtual void setScrollOffset(const IntPoint&, ScrollType) override;
+    virtual void setScrollOffset(const DoublePoint&, ScrollType) override;
 
     LayoutUnit verticalScrollbarStart(int minX, int maxX) const;
     LayoutUnit horizontalScrollbarStart(int minX) const;

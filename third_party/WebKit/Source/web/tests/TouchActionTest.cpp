@@ -186,7 +186,7 @@ WebView* TouchActionTest::setupTest(std::string file, TouchActionTrackingWebView
     // Scroll to verify the code properly transforms windows to client co-ords.
     const int kScrollOffset = 100;
     RefPtrWillBeRawPtr<Document> document = static_cast<PassRefPtrWillBeRawPtr<Document>>(webView->mainFrame()->document());
-    document->frame()->view()->setScrollOffset(IntPoint(0, kScrollOffset));
+    document->frame()->view()->setScrollPosition(IntPoint(0, kScrollOffset), ProgrammaticScroll);
 
     return webView;
 }

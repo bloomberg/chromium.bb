@@ -147,8 +147,8 @@ public:
         return IntPoint(contentsSize().width() - visibleWidth(), contentsSize().height() - visibleHeight());
     }
 
-    virtual void setScrollOffset(const IntPoint& scrollOffset) override { m_scrollPosition = scrollOffset; }
-    virtual void setScrollOffset(const DoublePoint& scrollOffset) override { m_scrollPosition = scrollOffset; }
+    virtual void setScrollOffset(const IntPoint& scrollOffset, ScrollType) override { m_scrollPosition = scrollOffset; }
+    virtual void setScrollOffset(const DoublePoint& scrollOffset, ScrollType) override { m_scrollPosition = scrollOffset; }
     virtual DoublePoint scrollPositionDouble() const override { return m_scrollPosition; }
     virtual IntPoint scrollPosition() const override { return flooredIntPoint(m_scrollPosition); }
 

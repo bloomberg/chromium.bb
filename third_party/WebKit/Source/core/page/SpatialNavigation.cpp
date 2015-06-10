@@ -215,7 +215,7 @@ bool scrollInDirection(LocalFrame* frame, WebFocusType type)
             return false;
         }
 
-        frame->view()->scrollBy(IntSize(dx, dy));
+        frame->view()->scrollBy(IntSize(dx, dy), UserScroll);
         return true;
     }
     return false;

@@ -106,7 +106,9 @@ void AXScrollbar::setValue(float value)
         return;
 
     float newValue = value * m_scrollbar->maximum();
-    m_scrollbar->scrollableArea()->scrollToOffsetWithoutAnimation(m_scrollbar->orientation(), newValue);
+
+    // TODO(bokan): This should potentially be a UserScroll.
+    m_scrollbar->scrollableArea()->setScrollPositionSingleAxis(m_scrollbar->orientation(), newValue, ProgrammaticScroll);
 }
 
 } // namespace blink

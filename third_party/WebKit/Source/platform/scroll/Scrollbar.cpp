@@ -297,7 +297,7 @@ void Scrollbar::moveThumb(int pos, bool draggingDocument)
         FloatPoint currentPosition = m_scrollableArea->scrollAnimator()->currentPosition();
         float destinationPosition = (m_orientation == HorizontalScrollbar ? currentPosition.x() : currentPosition.y()) + delta;
         destinationPosition = m_scrollableArea->clampScrollPosition(m_orientation, destinationPosition);
-        m_scrollableArea->scrollToOffsetWithoutAnimation(m_orientation, destinationPosition);
+        m_scrollableArea->setScrollPositionSingleAxis(m_orientation, destinationPosition, UserScroll);
         m_documentDragPos = pos;
         return;
     }
@@ -320,7 +320,7 @@ void Scrollbar::moveThumb(int pos, bool draggingDocument)
     float maxPos = m_scrollableArea->maximumScrollPosition(m_orientation);
     if (delta) {
         float newPosition = static_cast<float>(thumbPos + delta) * (maxPos - minPos) / (trackLen - thumbLen) + minPos;
-        m_scrollableArea->scrollToOffsetWithoutAnimation(m_orientation, newPosition);
+        m_scrollableArea->setScrollPositionSingleAxis(m_orientation, newPosition, UserScroll);
     }
 }
 
@@ -395,8 +395,9 @@ void Scrollbar::mouseMoved(const PlatformMouseEvent& evt)
 {
     if (m_pressedPart == ThumbPart) {
         if (theme()->shouldSnapBackToDragOrigin(this, evt)) {
-            if (m_scrollableArea)
-                m_scrollableArea->scrollToOffsetWithoutAnimation(m_orientation, m_dragOrigin + m_scrollableArea->minimumScrollPosition(m_orientation));
+            if (m_scrollableArea) {
+                m_scrollableArea->setScrollPositionSingleAxis(m_orientation, m_dragOrigin + m_scrollableArea->minimumScrollPosition(m_orientation), UserScroll);
+            }
         } else {
             moveThumb(m_orientation == HorizontalScrollbar ?
                       convertFromContainingWindow(evt.position()).x() :

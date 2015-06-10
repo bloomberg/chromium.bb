@@ -160,7 +160,7 @@ void RotationViewportAnchor::restoreToAnchor()
 
     computeOrigins(pinchViewportSize, mainFrameOrigin, pinchViewportOrigin);
 
-    m_rootFrameView->setScrollOffset(mainFrameOrigin);
+    m_rootFrameView->setScrollPosition(mainFrameOrigin, ProgrammaticScroll);
 
     // Set scale before location, since location can be clamped on setting scale.
     m_pinchViewport->setScale(newPageScaleFactor);

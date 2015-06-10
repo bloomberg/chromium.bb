@@ -433,7 +433,7 @@ ScrollResultOneDimensional ScrollAnimatorNone::userScroll(ScrollbarOrientation o
     return ScrollResultOneDimensional(needToScroll);
 }
 
-void ScrollAnimatorNone::scrollToOffsetWithoutAnimation(const FloatPoint& offset)
+void ScrollAnimatorNone::scrollToOffsetWithoutAnimation(const FloatPoint& offset, ScrollType scrollType)
 {
     stopAnimationTimerIfNeeded();
 
@@ -447,7 +447,7 @@ void ScrollAnimatorNone::scrollToOffsetWithoutAnimation(const FloatPoint& offset
     m_verticalData.m_desiredPosition = offset.y();
     m_currentPosY = offset.y();
 
-    notifyPositionChanged();
+    notifyPositionChanged(scrollType);
 }
 
 void ScrollAnimatorNone::cancelAnimations()
@@ -510,7 +510,7 @@ void ScrollAnimatorNone::animationTimerFired()
         m_animationActive = false;
 
     TRACE_EVENT0("blink", "ScrollAnimatorNone::notifyPositionChanged");
-    notifyPositionChanged();
+    notifyPositionChanged(UserScroll);
 
     if (!continueAnimation)
         animationDidFinish();

@@ -81,7 +81,7 @@ private:
     FloatSize m_contentAreaScrolledTimerScrollDelta;
 
     virtual ScrollResultOneDimensional userScroll(ScrollbarOrientation, ScrollGranularity, float step, float delta) override;
-    virtual void scrollToOffsetWithoutAnimation(const FloatPoint&) override;
+    virtual void scrollToOffsetWithoutAnimation(const FloatPoint&, ScrollType) override;
 
     virtual void handleWheelEventPhase(PlatformWheelEventPhase) override;
 
@@ -116,7 +116,7 @@ private:
 
     FloatPoint adjustScrollPositionIfNecessary(const FloatPoint&) const;
 
-    void immediateScrollTo(const FloatPoint&);
+    void immediateScrollTo(const FloatPoint&, ScrollType);
 
     bool m_haveScrolledSincePageLoad;
     bool m_needsScrollerStyleUpdate;

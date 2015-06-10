@@ -68,23 +68,28 @@ IntRect RootFrameViewport::scrollCornerRect() const
     return layoutViewport().scrollCornerRect();
 }
 
-void RootFrameViewport::setScrollPosition(const DoublePoint& position, ScrollBehavior scrollBehavior)
+void RootFrameViewport::setScrollPosition(const DoublePoint& position, ScrollType scrollType, ScrollBehavior scrollBehavior)
 {
     updateScrollAnimator();
 
     // TODO(bokan): Support smooth scrolling the visual viewport.
     if (scrollBehavior == ScrollBehaviorAuto)
-        scrollBehavior = layoutViewport().scrollBehaviorStyle();
+        scrollBehavior = scrollBehaviorStyle();
     if (scrollBehavior == ScrollBehaviorSmooth) {
-        layoutViewport().setScrollPosition(position, scrollBehavior);
+        layoutViewport().setScrollPosition(position, scrollType, scrollBehavior);
         return;
     }
 
-    if (!layoutViewport().isProgrammaticallyScrollable())
+    if (scrollType == ProgrammaticScroll && !layoutViewport().isProgrammaticallyScrollable())
         return;
 
     DoublePoint clampedPosition = clampScrollPosition(position);
-    scrollToOffsetWithoutAnimation(toFloatPoint(clampedPosition));
+    ScrollableArea::setScrollPosition(clampedPosition, scrollType, scrollBehavior);
+}
+
+ScrollBehavior RootFrameViewport::scrollBehaviorStyle() const
+{
+    return layoutViewport().scrollBehaviorStyle();
 }
 
 ScrollResult RootFrameViewport::handleWheel(const PlatformWheelEvent& event)
@@ -113,7 +118,7 @@ ScrollResult RootFrameViewport::handleWheel(const PlatformWheelEvent& event)
 
     DoublePoint targetPosition = visualViewport().adjustScrollPositionWithinRange(
         visualViewport().scrollPositionDouble() + toDoubleSize(locationDelta));
-    visualViewport().scrollToOffsetWithoutAnimation(FloatPoint(targetPosition));
+    visualViewport().setScrollPosition(targetPosition, UserScroll);
 
     DoublePoint usedLocationDelta(visualViewport().scrollPositionDouble() - oldOffset);
     if (!viewScrollResult.didScroll() && usedLocationDelta == DoublePoint::zero())
@@ -162,19 +167,19 @@ LayoutRect RootFrameViewport::scrollIntoView(const LayoutRect& rectInContent, co
         targetViewport.x() - centeringOffsetX,
         targetViewport.y() - centeringOffsetY);
 
-    setScrollPosition(targetOffset);
+    setScrollPosition(targetOffset, ProgrammaticScroll);
 
     // RootFrameViewport only changes the viewport relative to the document so we can't change the input
     // rect's location relative to the document origin.
     return rectInContent;
 }
 
-void RootFrameViewport::setScrollOffset(const IntPoint& offset)
+void RootFrameViewport::setScrollOffset(const IntPoint& offset, ScrollType scrollType)
 {
-    setScrollOffset(DoublePoint(offset));
+    setScrollOffset(DoublePoint(offset), scrollType);
 }
 
-void RootFrameViewport::setScrollOffset(const DoublePoint& offset)
+void RootFrameViewport::setScrollOffset(const DoublePoint& offset, ScrollType scrollType)
 {
     // Make sure we use the scroll positions as reported by each viewport's ScrollAnimator, since its
     // ScrollableArea's position may have the fractional part truncated off.
@@ -186,7 +191,7 @@ void RootFrameViewport::setScrollOffset(const DoublePoint& offset)
         return;
 
     DoublePoint targetPosition = layoutViewport().adjustScrollPositionWithinRange(layoutViewport().scrollAnimator()->currentPosition() + delta);
-    layoutViewport().scrollToOffsetWithoutAnimation(toFloatPoint(targetPosition));
+    layoutViewport().setScrollPosition(targetPosition, scrollType);
 
     DoubleSize applied = scrollOffsetFromScrollAnimators() - oldPosition;
     delta -= applied;
@@ -195,7 +200,7 @@ void RootFrameViewport::setScrollOffset(const DoublePoint& offset)
         return;
 
     targetPosition = visualViewport().adjustScrollPositionWithinRange(visualViewport().scrollAnimator()->currentPosition() + delta);
-    visualViewport().scrollToOffsetWithoutAnimation(toFloatPoint(targetPosition));
+    visualViewport().setScrollPosition(targetPosition, scrollType);
 }
 
 IntPoint RootFrameViewport::scrollPosition() const

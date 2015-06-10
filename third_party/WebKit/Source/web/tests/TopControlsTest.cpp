@@ -199,7 +199,7 @@ TEST_F(TopControlsTest, MAYBE(ScrollDownThenUp))
     // initialize top controls to be shown and position page at 100px.
     webView->setTopControlsHeight(50.f, true);
     webView->topControls().setShownRatio(1);
-    frame()->view()->scrollableArea()->setScrollPosition(IntPoint(0, 100));
+    frame()->view()->scrollableArea()->setScrollPosition(IntPoint(0, 100), ProgrammaticScroll);
 
     webView->handleInputEvent(generateEvent(WebInputEvent::GestureScrollBegin));
     EXPECT_FLOAT_EQ(50.f, webView->topControls().contentOffset());
@@ -237,7 +237,7 @@ TEST_F(TopControlsTest, MAYBE(ScrollUpThenDown))
     // initialize top controls to be hidden and position page at 100px.
     webView->setTopControlsHeight(50.f, false);
     webView->topControls().setShownRatio(0);
-    frame()->view()->scrollableArea()->setScrollPosition(IntPoint(0, 100));
+    frame()->view()->scrollableArea()->setScrollPosition(IntPoint(0, 100), ProgrammaticScroll);
 
     webView->handleInputEvent(generateEvent(WebInputEvent::GestureScrollBegin));
     EXPECT_FLOAT_EQ(0.f, webView->topControls().contentOffset());
@@ -351,7 +351,7 @@ TEST_F(TopControlsTest, MAYBE(ScrollableSubregionScrollFirst))
     WebViewImpl* webView = initialize("overflow-scrolling.html");
     webView->setTopControlsHeight(50.f, true);
     webView->topControls().setShownRatio(1);
-    frame()->view()->scrollableArea()->setScrollPosition(IntPoint(0, 50));
+    frame()->view()->scrollableArea()->setScrollPosition(IntPoint(0, 50), ProgrammaticScroll);
 
     // Test scroll down
     // Scroll down should scroll the overflow div first but top controls and main frame should not scroll.
@@ -393,7 +393,7 @@ TEST_F(TopControlsTest, MAYBE(ScrollableIframeScrollFirst))
     WebViewImpl* webView = initialize("iframe-scrolling.html");
     webView->setTopControlsHeight(50.f, true);
     webView->topControls().setShownRatio(1);
-    frame()->view()->scrollableArea()->setScrollPosition(IntPoint(0, 50));
+    frame()->view()->scrollableArea()->setScrollPosition(IntPoint(0, 50), ProgrammaticScroll);
 
     // Test scroll down
     // Scroll down should scroll the iframe first but top controls and main frame should not scroll.
@@ -456,7 +456,7 @@ TEST_F(TopControlsTest, MAYBE(ZeroHeightMeansNoEffect))
     WebViewImpl* webView = initialize();
     webView->setTopControlsHeight(0, false);
     webView->topControls().setShownRatio(0);
-    frame()->view()->scrollableArea()->setScrollPosition(IntPoint(0, 100));
+    frame()->view()->scrollableArea()->setScrollPosition(IntPoint(0, 100), ProgrammaticScroll);
 
     EXPECT_FLOAT_EQ(0.f, webView->topControls().contentOffset());
 
@@ -510,7 +510,7 @@ TEST_F(TopControlsTest, MAYBE(StateConstraints))
 {
     WebViewImpl* webView = initialize();
     webView->setTopControlsHeight(50.f, false);
-    frame()->view()->scrollableArea()->setScrollPosition(IntPoint(0, 100));
+    frame()->view()->scrollableArea()->setScrollPosition(IntPoint(0, 100), ProgrammaticScroll);
 
     // Setting permitted state should not change content offset
     webView->updateTopControlsState(WebTopControlsShown, WebTopControlsShown, false);

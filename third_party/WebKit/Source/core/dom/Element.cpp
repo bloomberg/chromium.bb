@@ -874,7 +874,7 @@ void Element::scrollFrameBy(const ScrollToOptions& scrollToOptions)
 
     double newScaledLeft = left * frame->pageZoomFactor() + view->scrollPositionDouble().x();
     double newScaledTop = top * frame->pageZoomFactor() + view->scrollPositionDouble().y();
-    view->setScrollPosition(DoublePoint(newScaledLeft, newScaledTop), scrollBehavior);
+    view->setScrollPosition(DoublePoint(newScaledLeft, newScaledTop), ProgrammaticScroll, scrollBehavior);
 }
 
 void Element::scrollFrameTo(const ScrollToOptions& scrollToOptions)
@@ -894,7 +894,7 @@ void Element::scrollFrameTo(const ScrollToOptions& scrollToOptions)
         scaledLeft = ScrollableArea::normalizeNonFiniteScroll(scrollToOptions.left()) * frame->pageZoomFactor();
     if (scrollToOptions.hasTop())
         scaledTop = ScrollableArea::normalizeNonFiniteScroll(scrollToOptions.top()) * frame->pageZoomFactor();
-    view->setScrollPosition(DoublePoint(scaledLeft, scaledTop), scrollBehavior);
+    view->setScrollPosition(DoublePoint(scaledLeft, scaledTop), ProgrammaticScroll, scrollBehavior);
 }
 
 void Element::incrementProxyCount()

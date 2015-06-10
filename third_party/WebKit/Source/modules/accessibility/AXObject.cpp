@@ -1087,7 +1087,8 @@ void AXObject::setScrollOffset(const IntPoint& offset) const
     if (!area)
         return;
 
-    area->setScrollPosition(DoublePoint(offset.x(), offset.y()));
+    // TODO(bokan): This should potentially be a UserScroll.
+    area->setScrollPosition(DoublePoint(offset.x(), offset.y()), ProgrammaticScroll);
 }
 
 //

@@ -1486,7 +1486,7 @@ void FrameView::maintainScrollPositionAtAnchor(Node* anchorNode)
         scrollToAnchor();
 }
 
-void FrameView::setScrollPosition(const DoublePoint& scrollPoint, ScrollBehavior scrollBehavior)
+void FrameView::setScrollPosition(const DoublePoint& scrollPoint, ScrollType scrollType, ScrollBehavior scrollBehavior)
 {
     cancelProgrammaticScrollAnimation();
     m_maintainScrollPositionAnchor = nullptr;
@@ -1500,9 +1500,11 @@ void FrameView::setScrollPosition(const DoublePoint& scrollPoint, ScrollBehavior
 
     if (scrollBehavior == ScrollBehaviorInstant) {
         DoubleSize newOffset(newScrollPosition.x(), newScrollPosition.y());
+        // TODO(bokan): Why do we need to go through updateScrollbars? If not, we can
+        // just delete this whole method and use the base version.
         updateScrollbars(newOffset);
     } else {
-        programmaticallyScrollSmoothlyToOffset(toFloatPoint(newScrollPosition));
+        ScrollableArea::setScrollPosition(newScrollPosition, ProgrammaticScroll, ScrollBehaviorSmooth);
     }
 }
 
@@ -3200,12 +3202,12 @@ int FrameView::scrollSize(ScrollbarOrientation orientation) const
     return scrollbar->totalSize() - scrollbar->visibleSize();
 }
 
-void FrameView::setScrollOffset(const IntPoint& offset)
+void FrameView::setScrollOffset(const IntPoint& offset, ScrollType)
 {
     scrollTo(DoublePoint(adjustScrollPositionWithinRange(offset)));
 }
 
-void FrameView::setScrollOffset(const DoublePoint& offset)
+void FrameView::setScrollOffset(const DoublePoint& offset, ScrollType)
 {
     scrollTo(adjustScrollPositionWithinRange(offset));
 }
@@ -3447,7 +3449,7 @@ void FrameView::setScrollOffsetFromUpdateScrollbars(const DoubleSize& offset)
     adjustedScrollPosition = adjustScrollPositionWithinRange(adjustedScrollPosition);
 
     if (adjustedScrollPosition != scrollPositionDouble() || scrollOriginChanged()) {
-        ScrollableArea::scrollToOffsetWithoutAnimation(toFloatPoint(adjustedScrollPosition));
+        ScrollableArea::setScrollPosition(adjustedScrollPosition, ProgrammaticScroll);
         resetScrollOriginChanged();
     }
 }
@@ -3733,7 +3735,7 @@ LayoutRect FrameView::scrollIntoView(const LayoutRect& rectInContent, const Scro
     double xOffset = exposeRect.x();
     double yOffset = exposeRect.y();
 
-    setScrollPosition(DoublePoint(xOffset, yOffset));
+    setScrollPosition(DoublePoint(xOffset, yOffset), ProgrammaticScroll);
 
     // Scrolling the FrameView cannot change the input rect's location relative to the document.
     return rectInContent;

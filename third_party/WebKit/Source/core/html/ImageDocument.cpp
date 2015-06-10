@@ -295,7 +295,7 @@ void ImageDocument::imageClicked(int x, int y)
         double scrollX = x / scale - static_cast<double>(frame()->view()->width()) / 2;
         double scrollY = y / scale - static_cast<double>(frame()->view()->height()) / 2;
 
-        frame()->view()->setScrollPosition(DoublePoint(scrollX, scrollY));
+        frame()->view()->setScrollPosition(DoublePoint(scrollX, scrollY), ProgrammaticScroll);
     }
 }
 

@@ -1151,9 +1151,10 @@ void GraphicsLayer::didScroll()
 {
     if (m_scrollableArea) {
         DoublePoint newPosition = m_scrollableArea->minimumScrollPosition() + toDoubleSize(m_layer->layer()->scrollPositionDouble());
-        bool cancelProgrammaticAnimations = false;
-        // FIXME: Remove the toFloatPoint(). crbug.com/414283.
-        m_scrollableArea->scrollToOffsetWithoutAnimation(toFloatPoint(newPosition), cancelProgrammaticAnimations);
+
+        // FrameView::setScrollPosition doesn't work for compositor commits (interacts poorly with programmatic scroll animations)
+        // so we need to use the ScrollableArea version. The FrameView method should go away soon anyway.
+        m_scrollableArea->ScrollableArea::setScrollPosition(newPosition, CompositorScroll);
     }
 }
 

@@ -53,7 +53,7 @@ public:
     MOCK_METHOD2(invalidateScrollbar, void(Scrollbar*, const IntRect&));
     MOCK_CONST_METHOD0(isScrollCornerVisible, bool());
     MOCK_CONST_METHOD0(scrollCornerRect, IntRect());
-    MOCK_METHOD1(setScrollOffset, void(const IntPoint&));
+    MOCK_METHOD2(setScrollOffset, void(const IntPoint&, ScrollType));
     MOCK_METHOD2(invalidateScrollbarRect, void(Scrollbar*, const IntRect&));
     MOCK_METHOD1(invalidateScrollCornerRect, void(const IntRect&));
     MOCK_METHOD1(setScrollOffsetFromAnimation, void(const IntPoint&));
@@ -107,7 +107,6 @@ public:
         m_count++;
     }
 
-    MOCK_METHOD1(scrollToOffsetWithoutAnimation, void(const FloatPoint&));
 private:
     explicit MockScrollAnimatorNone(ScrollableArea* scrollableArea)
         : ScrollAnimatorNone(scrollableArea) { }
@@ -122,7 +121,7 @@ TEST(ScrollAnimatorEnabled, Enabled)
     EXPECT_CALL(scrollableArea, scrollSize(_)).Times(AtLeast(1)).WillRepeatedly(Return(1000));
     EXPECT_CALL(scrollableArea, minimumScrollPosition()).Times(AtLeast(1)).WillRepeatedly(Return(IntPoint()));
     EXPECT_CALL(scrollableArea, maximumScrollPosition()).Times(AtLeast(1)).WillRepeatedly(Return(IntPoint(1000, 1000)));
-    EXPECT_CALL(scrollableArea, setScrollOffset(_)).Times(4);
+    EXPECT_CALL(scrollableArea, setScrollOffset(_, _)).Times(4);
 
     scrollAnimatorNone->userScroll(HorizontalScrollbar, ScrollByLine, 100, 1);
     EXPECT_NE(100, scrollAnimatorNone->currentX());
@@ -156,7 +155,7 @@ TEST(ScrollAnimatorEnabled, Disabled)
 
     EXPECT_CALL(scrollableArea, minimumScrollPosition()).Times(AtLeast(1)).WillRepeatedly(Return(IntPoint()));
     EXPECT_CALL(scrollableArea, maximumScrollPosition()).Times(AtLeast(1)).WillRepeatedly(Return(IntPoint(1000, 1000)));
-    EXPECT_CALL(scrollableArea, setScrollOffset(_)).Times(4);
+    EXPECT_CALL(scrollableArea, setScrollOffset(_, _)).Times(4);
 
     scrollAnimatorNone->userScroll(HorizontalScrollbar, ScrollByLine, 100, 1);
     EXPECT_EQ(100, scrollAnimatorNone->currentX());
