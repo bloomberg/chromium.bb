@@ -841,8 +841,27 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState,
                 clearFloats(lineBreaker.clear());
             }
 
-            if (appendFloatsToEndOfLine(layoutState, true))
-                checkForEndLineMatch = false;
+            if (m_floatingObjects && lastRootBox()) {
+                const FloatingObjectSet& floatingObjectSet = m_floatingObjects->set();
+                FloatingObjectSetIterator it = floatingObjectSet.begin();
+                FloatingObjectSetIterator end = floatingObjectSet.end();
+                if (layoutState.lastFloat()) {
+                    FloatingObjectSetIterator lastFloatIterator = floatingObjectSet.find(layoutState.lastFloat());
+                    ASSERT(lastFloatIterator != end);
+                    ++lastFloatIterator;
+                    it = lastFloatIterator;
+                }
+                for (; it != end; ++it) {
+                    FloatingObject* f = it->get();
+                    appendFloatingObjectToLastLine(f);
+                    ASSERT(f->layoutObject() == layoutState.floats()[layoutState.floatIndex()].object);
+                    // If a float's geometry has changed, give up on syncing with clean lines.
+                    if (layoutState.floats()[layoutState.floatIndex()].rect != f->frameRect())
+                        checkForEndLineMatch = false;
+                    layoutState.setFloatIndex(layoutState.floatIndex() + 1);
+                }
+                layoutState.setLastFloat(!floatingObjectSet.isEmpty() ? floatingObjectSet.last().get() : 0);
+            }
         }
 
         lineMidpointState.reset();
@@ -912,37 +931,6 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState,
     clearDidBreakAtLineToAvoidWidow();
 }
 
-bool LayoutBlockFlow::appendFloatsToEndOfLine(LineLayoutState& layoutState, bool updateFloatIndex)
-{
-    if (!m_floatingObjects || !lastRootBox())
-        return false;
-
-    const FloatingObjectSet& floatingObjectSet = m_floatingObjects->set();
-    FloatingObjectSetIterator it = floatingObjectSet.begin();
-    FloatingObjectSetIterator end = floatingObjectSet.end();
-    if (layoutState.lastFloat()) {
-        FloatingObjectSetIterator lastFloatIterator = floatingObjectSet.find(layoutState.lastFloat());
-        ASSERT(lastFloatIterator != end);
-        ++lastFloatIterator;
-        it = lastFloatIterator;
-    }
-
-    bool floatChangedSize = false;
-    for (; it != end; ++it) {
-        FloatingObject* f = it->get();
-        appendFloatingObjectToLastLine(f);
-        if (updateFloatIndex) {
-            ASSERT(f->layoutObject() == layoutState.floats()[layoutState.floatIndex()].object);
-            // If a float's geometry has changed, give up on syncing with clean lines.
-            if (layoutState.floats()[layoutState.floatIndex()].rect != f->frameRect())
-                floatChangedSize = true;
-            layoutState.setFloatIndex(layoutState.floatIndex() + 1);
-        }
-    }
-    layoutState.setLastFloat(!floatingObjectSet.isEmpty() ? floatingObjectSet.last().get() : 0);
-    return floatChangedSize;
-}
-
 void LayoutBlockFlow::linkToEndLineIfNeeded(LineLayoutState& layoutState)
 {
     if (layoutState.endLine()) {
@@ -977,8 +965,27 @@ void LayoutBlockFlow::linkToEndLineIfNeeded(LineLayoutState& layoutState)
         }
     }
 
-    if (positionNewFloats())
-        appendFloatsToEndOfLine(layoutState, false);
+    if (positionNewFloats() && lastRootBox()) {
+        // In case we have a float on the last line, it might not be positioned up to now.
+        // This has to be done before adding in the bottom border/padding, or the float will
+        // include the padding incorrectly. -dwh
+        const FloatingObjectSet& floatingObjectSet = m_floatingObjects->set();
+        FloatingObjectSetIterator it = floatingObjectSet.begin();
+        FloatingObjectSetIterator end = floatingObjectSet.end();
+        if (layoutState.lastFloat()) {
+            FloatingObjectSetIterator lastFloatIterator = floatingObjectSet.find(layoutState.lastFloat());
+            ASSERT(lastFloatIterator != end);
+            ++lastFloatIterator;
+            it = lastFloatIterator;
+        }
+        layoutState.setLastFloat(!floatingObjectSet.isEmpty() ? floatingObjectSet.last().get() : 0);
+
+        if (it == end)
+            return;
+
+        for (; it != end; ++it)
+            appendFloatingObjectToLastLine(it->get());
+    }
 }
 
 void LayoutBlockFlow::markDirtyFloatsForPaintInvalidation(Vector<FloatWithRect>& floats)
