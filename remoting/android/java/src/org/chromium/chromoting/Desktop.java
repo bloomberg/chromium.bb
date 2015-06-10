@@ -138,8 +138,9 @@ public class Desktop extends ActionBarActivity implements View.OnSystemUiVisibil
     }
 
     public void showActionBar() {
-        showActionBarWithoutSystemUi();
-
+        // Request exit from any fullscreen mode. The action-bar controls will be shown in response
+        // to the SystemUiVisibility notification. The visibility of the action-bar should be tied
+        // to the fullscreen state of the system, so there's no need to explicitly show it here.
         View decorView = getWindow().getDecorView();
         decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
     }
@@ -151,8 +152,12 @@ public class Desktop extends ActionBarActivity implements View.OnSystemUiVisibil
 
     @SuppressLint("InlinedApi")
     public void hideActionBar() {
-        hideActionBarWithoutSystemUi();
-
+        // Request the device to enter fullscreen mode. Don't hide the controls yet, because the
+        // system might not honor the fullscreen request immediately (for example, if the
+        // keyboard is visible, the system might delay fullscreen until the keyboard is hidden).
+        // The controls will be hidden in response to the SystemUiVisibility notification.
+        // This helps ensure that the visibility of the controls is synchronized with the
+        // fullscreen state.
         View decorView = getWindow().getDecorView();
 
         // LOW_PROFILE gives the status and navigation bars a "lights-out" appearance.
