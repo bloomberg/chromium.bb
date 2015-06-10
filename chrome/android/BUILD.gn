@@ -750,7 +750,11 @@ copy_ex("chrome_public_apk_assets") {
 jinja_template("chrome_public_apk_manifest") {
   input = "java_staging/AndroidManifest.xml"
   output = "$root_gen_dir/chrome_public_apk_manifest/AndroidManifest.xml"
-  variables = jinja_variables + [ "min_sdk_version=16" ]
+  variables = jinja_variables
+  variables += [
+    "min_sdk_version=16",
+    "target_sdk_version=22",
+  ]
 }
 
 # GYP: //chrome/android/chrome_apk.gyp:chrome_public_template_resources

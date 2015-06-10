@@ -281,6 +281,7 @@
           'configuration_policy=<(configuration_policy)',
           'manifest_package=<(manifest_package)',
           'min_sdk_version=16',
+          'target_sdk_version=22',
         ],
       },
       'includes': [ '../../build/android/jinja_template.gypi' ],
