@@ -506,16 +506,12 @@ public:
 
     unsigned borderLeftWidth() const { return surround->border.borderLeftWidth(); }
     EBorderStyle borderLeftStyle() const { return surround->border.left().style(); }
-    bool borderLeftIsTransparent() const { return surround->border.left().isTransparent(); }
     unsigned borderRightWidth() const { return surround->border.borderRightWidth(); }
     EBorderStyle borderRightStyle() const { return surround->border.right().style(); }
-    bool borderRightIsTransparent() const { return surround->border.right().isTransparent(); }
     unsigned borderTopWidth() const { return surround->border.borderTopWidth(); }
     EBorderStyle borderTopStyle() const { return surround->border.top().style(); }
-    bool borderTopIsTransparent() const { return surround->border.top().isTransparent(); }
     unsigned borderBottomWidth() const { return surround->border.borderBottomWidth(); }
     EBorderStyle borderBottomStyle() const { return surround->border.bottom().style(); }
-    bool borderBottomIsTransparent() const { return surround->border.bottom().isTransparent(); }
 
     unsigned short borderBeforeWidth() const;
     unsigned short borderAfterWidth() const;

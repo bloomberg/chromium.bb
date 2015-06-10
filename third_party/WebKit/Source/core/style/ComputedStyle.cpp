@@ -1725,25 +1725,21 @@ void ComputedStyle::getBorderEdgeInfo(BorderEdge edges[], bool includeLogicalLef
     edges[BSTop] = BorderEdge(borderTopWidth(),
         visitedDependentColor(CSSPropertyBorderTopColor),
         borderTopStyle(),
-        borderTopIsTransparent(),
         horizontal || includeLogicalLeftEdge);
 
     edges[BSRight] = BorderEdge(borderRightWidth(),
         visitedDependentColor(CSSPropertyBorderRightColor),
         borderRightStyle(),
-        borderRightIsTransparent(),
         !horizontal || includeLogicalRightEdge);
 
     edges[BSBottom] = BorderEdge(borderBottomWidth(),
         visitedDependentColor(CSSPropertyBorderBottomColor),
         borderBottomStyle(),
-        borderBottomIsTransparent(),
         horizontal || includeLogicalRightEdge);
 
     edges[BSLeft] = BorderEdge(borderLeftWidth(),
         visitedDependentColor(CSSPropertyBorderLeftColor),
         borderLeftStyle(),
-        borderLeftIsTransparent(),
         !horizontal || includeLogicalLeftEdge);
 }
 

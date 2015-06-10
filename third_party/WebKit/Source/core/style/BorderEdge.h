@@ -11,7 +11,7 @@
 namespace blink {
 
 struct BorderEdge {
-    BorderEdge(int edgeWidth, const Color& edgeColor, EBorderStyle edgeStyle, bool edgeIsTransparent, bool edgeIsPresent = true);
+    BorderEdge(int edgeWidth, const Color& edgeColor, EBorderStyle edgeStyle, bool edgeIsPresent = true);
     BorderEdge();
 
     bool hasVisibleColorAndStyle() const;
@@ -34,7 +34,6 @@ struct BorderEdge {
 
     int width;
     Color color;
-    bool isTransparent;
     bool isPresent;
 
 private:

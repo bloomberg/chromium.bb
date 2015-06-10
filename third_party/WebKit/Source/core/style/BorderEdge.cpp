@@ -7,10 +7,9 @@
 
 namespace blink {
 
-BorderEdge::BorderEdge(int edgeWidth, const Color& edgeColor, EBorderStyle edgeStyle, bool edgeIsTransparent, bool edgeIsPresent)
+BorderEdge::BorderEdge(int edgeWidth, const Color& edgeColor, EBorderStyle edgeStyle, bool edgeIsPresent)
     : width(edgeWidth)
     , color(edgeColor)
-    , isTransparent(edgeIsTransparent)
     , isPresent(edgeIsPresent)
     , style(edgeStyle)
 {
@@ -20,7 +19,6 @@ BorderEdge::BorderEdge(int edgeWidth, const Color& edgeColor, EBorderStyle edgeS
 
 BorderEdge::BorderEdge()
     : width(0)
-    , isTransparent(false)
     , isPresent(false)
     , style(BHIDDEN)
 {
@@ -28,7 +26,7 @@ BorderEdge::BorderEdge()
 
 bool BorderEdge::hasVisibleColorAndStyle() const
 {
-    return style > BHIDDEN && !isTransparent;
+    return style > BHIDDEN && color.alpha() > 0;
 }
 
 bool BorderEdge::shouldRender() const
@@ -43,7 +41,7 @@ bool BorderEdge::presentButInvisible() const
 
 bool BorderEdge::obscuresBackgroundEdge() const
 {
-    if (!isPresent || isTransparent || color.hasAlpha() || style == BHIDDEN)
+    if (!isPresent || color.hasAlpha() || style == BHIDDEN)
         return false;
 
     if (style == DOTTED || style == DASHED)
@@ -54,7 +52,7 @@ bool BorderEdge::obscuresBackgroundEdge() const
 
 bool BorderEdge::obscuresBackground() const
 {
-    if (!isPresent || isTransparent || color.hasAlpha() || style == BHIDDEN)
+    if (!isPresent || color.hasAlpha() || style == BHIDDEN)
         return false;
 
     if (style == DOTTED || style == DASHED || style == DOUBLE)

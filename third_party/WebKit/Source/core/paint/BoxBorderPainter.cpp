@@ -546,6 +546,8 @@ BoxBorderPainter::BoxBorderPainter(const LayoutRect& borderRect, const ComputedS
             continue;
         }
 
+        ASSERT(edge.color.alpha() > 0);
+
         m_visibleEdgeCount++;
         m_visibleEdgeSet |= edgeFlagForSide(static_cast<BoxSide>(i));
 
