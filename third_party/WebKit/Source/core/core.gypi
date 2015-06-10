@@ -769,6 +769,7 @@
             'layout/line/LineWidth.cpp',
             'layout/line/LineWidth.h',
             'layout/line/RootInlineBox.cpp',
+            'layout/line/TrailingFloatsRootInlineBox.h',
             'layout/line/TrailingObjects.cpp',
             'layout/line/TrailingObjects.h',
             'layout/shapes/BoxShape.cpp',
