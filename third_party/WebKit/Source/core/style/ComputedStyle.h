@@ -75,6 +75,7 @@
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/scroll/ScrollableArea.h"
 #include "platform/text/TextDirection.h"
+#include "platform/text/TextRun.h"
 #include "platform/text/UnicodeBidi.h"
 #include "platform/transforms/TransformOperations.h"
 #include "public/platform/WebScrollBlocksOn.h"

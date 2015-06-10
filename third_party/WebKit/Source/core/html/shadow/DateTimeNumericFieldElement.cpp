@@ -32,6 +32,7 @@
 #include "core/events/KeyboardEvent.h"
 #include "platform/fonts/Font.h"
 #include "platform/text/PlatformLocale.h"
+#include "platform/text/TextRun.h"
 
 using namespace WTF::Unicode;
 
