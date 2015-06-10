@@ -20,10 +20,6 @@
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
-namespace base {
-class CommandLine;
-}
-
 namespace net {
 class HostPortPair;
 class HttpResponseHeaders;
@@ -55,10 +51,6 @@ class DataReductionProxyConfigServiceClient
     : public net::NetworkChangeNotifier::IPAddressObserver,
       public net::URLFetcherDelegate {
  public:
-  // Returns the URL from which the Data Reduction Proxy configuration should
-  // be retrieved.
-  static GURL GetConfigServiceURL(const base::CommandLine& command_line);
-
   // The caller must ensure that all parameters remain alive for the lifetime of
   // the |DataReductionProxyConfigClient|, with the exception of |params|
   // which this instance will own.

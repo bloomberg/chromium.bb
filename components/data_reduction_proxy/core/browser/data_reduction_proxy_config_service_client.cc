@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -50,9 +49,6 @@ const char kUMAConfigServiceFetchFailedAttemptsBeforeSuccess[] =
 // Key of the UMA DataReductionProxy.ConfigService.FetchLatency histogram.
 const char kUMAConfigServiceFetchLatency[] =
     "DataReductionProxy.ConfigService.FetchLatency";
-
-// Default URL for retrieving the Data Reduction Proxy configuration.
-const char kClientConfigURL[] = "";
 
 // Used in all Data Reduction Proxy URLs to specify API Key.
 const char kApiKeyName[] = "key";
@@ -118,23 +114,6 @@ const net::BackoffEntry::Policy& GetBackoffPolicy() {
   return kDefaultBackoffPolicy;
 }
 
-// static
-GURL DataReductionProxyConfigServiceClient::GetConfigServiceURL(
-    const base::CommandLine& command_line) {
-  if (!command_line.HasSwitch(switches::kDataReductionProxyConfigURL))
-    return GURL(kClientConfigURL);
-
-  std::string value(
-      command_line.GetSwitchValueASCII(switches::kDataReductionProxyConfigURL));
-  GURL result(value);
-  if (result.is_valid())
-    return result;
-
-  LOG(WARNING) << "The following client config URL specified at the "
-               << "command-line is invalid: " << value;
-  return GURL(kClientConfigURL);
-}
-
 DataReductionProxyConfigServiceClient::DataReductionProxyConfigServiceClient(
     scoped_ptr<DataReductionProxyParams> params,
     const net::BackoffEntry::Policy& backoff_policy,
@@ -152,8 +131,8 @@ DataReductionProxyConfigServiceClient::DataReductionProxyConfigServiceClient(
       net_log_(net_log),
       config_storer_(config_storer),
       backoff_entry_(&backoff_policy),
-      config_service_url_(AddApiKeyToUrl(
-          GetConfigServiceURL(*base::CommandLine::ForCurrentProcess()))),
+      config_service_url_(
+          AddApiKeyToUrl(DataReductionProxyParams::GetConfigServiceURL())),
       use_local_config_(!config_service_url_.is_valid()),
       remote_config_applied_(false),
       url_request_context_getter_(nullptr),

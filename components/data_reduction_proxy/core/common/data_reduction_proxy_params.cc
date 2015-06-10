@@ -14,6 +14,7 @@
 #include "base/values.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_client_config_parser.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
+#include "components/variations/variations_associated_data.h"
 #include "net/base/host_port_pair.h"
 #include "net/proxy/proxy_server.h"
 #include "url/url_constants.h"
@@ -46,6 +47,12 @@ const char kAndroidOneIdentifier[] = "sprout";
 const char kQuicFieldTrial[] = "DataReductionProxyUseQuic";
 
 const char kLoFiFieldTrial[] = "DataReductionProxyLoFi";
+
+const char kConfigServiceFieldTrial[] = "DataReductionProxyConfigService";
+const char kConfigServiceURLParam[] = "url";
+
+// Default URL for retrieving the Data Reduction Proxy configuration.
+const char kClientConfigURL[] = "";
 
 const char kConfigScheme[] = "scheme";
 const char kConfigHost[] = "host";
@@ -149,8 +156,39 @@ bool DataReductionProxyParams::IsIncludedInUseDataSaverOnVPNFieldTrial() {
 
 // static
 bool DataReductionProxyParams::IsConfigClientEnabled() {
+  std::string group_value =
+      base::FieldTrialList::FindFullName(kConfigServiceFieldTrial);
+  base::StringPiece group = group_value;
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      data_reduction_proxy::switches::kEnableDataReductionProxyConfigClient);
+             data_reduction_proxy::switches::
+                 kEnableDataReductionProxyConfigClient) ||
+         group.starts_with(kEnabled);
+}
+
+// static
+GURL DataReductionProxyParams::GetConfigServiceURL() {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  std::string url;
+  if (command_line->HasSwitch(switches::kDataReductionProxyConfigURL)) {
+    url = command_line->GetSwitchValueASCII(
+        switches::kDataReductionProxyConfigURL);
+  }
+
+  if (url.empty()) {
+    url = variations::GetVariationParamValue(kConfigServiceFieldTrial,
+                                             kConfigServiceURLParam);
+  }
+
+  if (url.empty())
+    return GURL(kClientConfigURL);
+
+  GURL result(url);
+  if (result.is_valid())
+    return result;
+
+  LOG(WARNING) << "The following client config URL specified at the "
+               << "command-line or variation is invalid: " << url;
+  return GURL(kClientConfigURL);
 }
 
 // static

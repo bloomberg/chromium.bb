@@ -124,6 +124,10 @@ class DataReductionProxyParams : public DataReductionProxyConfigValues {
   // Returns true if the Data Reduction Proxy config client should be used.
   static bool IsConfigClientEnabled();
 
+  // If the Data Reduction Proxy config client is being used, the URL for the
+  // Data Reduction Proxy config service.
+  static GURL GetConfigServiceURL();
+
   // Returns true if the Data Reduction Proxy is forced to be enabled from the
   // command line.
   static bool ShouldForceEnableDataReductionProxy();

@@ -5,6 +5,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 
 #include <map>
+#include <string>
 #include <vector>
 
 #include "base/command_line.h"
@@ -15,6 +16,10 @@
 #include "net/proxy/proxy_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace {
+const char kConfigServiceFieldTrial[] = "DataReductionProxyConfigService";
+}
 
 namespace data_reduction_proxy {
 class DataReductionProxyParamsTest : public testing::Test {
@@ -574,6 +579,53 @@ TEST_F(DataReductionProxyParamsTest, AndroidOnePromoFieldTrial) {
       "google/sprout/sprout:4.4.4/KPW53/1379542:user/release-keys"));
   EXPECT_FALSE(DataReductionProxyParams::IsIncludedInAndroidOnePromoFieldTrial(
       "google/hammerhead/hammerhead:5.0/LRX210/1570415:user/release-keys"));
+}
+
+TEST_F(DataReductionProxyParamsTest, IsClientConfigEnabled) {
+  const struct {
+    std::string test_case;
+    bool command_line_set;
+    std::string trial_group_value;
+    bool expected;
+  } tests[] = {
+      {
+       "Nothing set", false, "", false,
+      },
+      {
+       "Command line set", true, "", true,
+      },
+      {
+       "Enabled in experiment", false, "Enabled", true,
+      },
+      {
+       "Alternate enabled in experiment", false, "EnabledOther", true,
+      },
+      {
+       "Disabled in experiment", false, "Disabled", false,
+      },
+      {
+       "Command line set, enabled in experiment", true, "Enabled", true,
+      },
+      {
+       "Command line set, disabled in experiment", true, "Disabled", true,
+      },
+  };
+
+  for (const auto& test : tests) {
+    // Reset all flags.
+    base::CommandLine::ForCurrentProcess()->InitFromArgv(0, NULL);
+    if (test.command_line_set) {
+      base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+          switches::kEnableDataReductionProxyConfigClient, "");
+    }
+    base::FieldTrialList field_trial_list(nullptr);
+    if (!test.trial_group_value.empty()) {
+      base::FieldTrialList::CreateFieldTrial(kConfigServiceFieldTrial,
+                                             test.trial_group_value);
+    }
+    EXPECT_EQ(test.expected, DataReductionProxyParams::IsConfigClientEnabled())
+        << test.test_case;
+  }
 }
 
 TEST_F(DataReductionProxyParamsTest, SecureProxyCheckDefault) {
