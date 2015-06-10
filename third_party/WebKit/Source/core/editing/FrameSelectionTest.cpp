@@ -35,7 +35,7 @@ protected:
 
 private:
     OwnPtr<DummyPageHolder> m_dummyPageHolder;
-    RawPtr<HTMLDocument> m_document;
+    RawPtrWillBePersistent<HTMLDocument> m_document;
     RefPtrWillBePersistent<Text> m_textNode;
 };
 

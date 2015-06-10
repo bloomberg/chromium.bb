@@ -85,18 +85,40 @@ private:
     RefPtrWillBePersistent<HTMLDocument> m_document;
     RefPtrWillBePersistent<HTMLCanvasElement> m_canvasElement;
 
+    class WrapGradients final : public NoBaseWillBeGarbageCollectedFinalized<WrapGradients> {
+    public:
+        static PassOwnPtrWillBeRawPtr<WrapGradients> create()
+        {
+            return adoptPtrWillBeNoop(new WrapGradients);
+        }
+
+        DEFINE_INLINE_TRACE()
+        {
+            visitor->trace(m_opaqueGradient);
+            visitor->trace(m_alphaGradient);
+        }
+
+        StringOrCanvasGradientOrCanvasPattern m_opaqueGradient;
+        StringOrCanvasGradientOrCanvasPattern m_alphaGradient;
+    };
+
+    // TODO(Oilpan): avoid tedious part-object wrapper by supporting on-heap ::testing::Tests.
+    OwnPtrWillBePersistent<WrapGradients> m_wrapGradients;
+
 protected:
     // Pre-canned objects for testing
     Persistent<ImageData> m_fullImageData;
     Persistent<ImageData> m_partialImageData;
     FakeImageSource m_opaqueBitmap;
     FakeImageSource m_alphaBitmap;
-    StringOrCanvasGradientOrCanvasPattern m_opaqueGradient;
-    StringOrCanvasGradientOrCanvasPattern m_alphaGradient;
+
+    StringOrCanvasGradientOrCanvasPattern& opaqueGradient() { return m_wrapGradients->m_opaqueGradient; }
+    StringOrCanvasGradientOrCanvasPattern& alphaGradient() { return m_wrapGradients->m_alphaGradient; }
 };
 
 CanvasRenderingContext2DTest::CanvasRenderingContext2DTest()
-    : m_opaqueBitmap(IntSize(10, 10), OpaqueBitmap)
+    : m_wrapGradients(WrapGradients::create())
+    , m_opaqueBitmap(IntSize(10, 10), OpaqueBitmap)
     , m_alphaBitmap(IntSize(10, 10), TransparentBitmap)
 { }
 
@@ -128,7 +150,7 @@ void CanvasRenderingContext2DTest::SetUp()
     EXPECT_FALSE(exceptionState.hadException());
     opaqueGradient->addColorStop(1, String("blue"), exceptionState);
     EXPECT_FALSE(exceptionState.hadException());
-    m_opaqueGradient.setCanvasGradient(opaqueGradient);
+    this->opaqueGradient().setCanvasGradient(opaqueGradient);
 
     RefPtrWillBeRawPtr<CanvasGradient> alphaGradient = CanvasGradient::create(FloatPoint(0, 0), FloatPoint(10, 0));
     alphaGradient->addColorStop(0, String("green"), exceptionState);
@@ -136,7 +158,7 @@ void CanvasRenderingContext2DTest::SetUp()
     alphaGradient->addColorStop(1, String("rgba(0, 0, 255, 0.5)"), exceptionState);
     EXPECT_FALSE(exceptionState.hadException());
     StringOrCanvasGradientOrCanvasPattern wrappedAlphaGradient;
-    m_alphaGradient.setCanvasGradient(alphaGradient);
+    this->alphaGradient().setCanvasGradient(alphaGradient);
 }
 
 //============================================================================
@@ -152,13 +174,19 @@ public:
 
 //============================================================================
 
-class MockCanvasObserver : public NoBaseWillBeGarbageCollectedFinalized<MockCanvasObserver>, public CanvasObserver {
+class MockCanvasObserver final : public NoBaseWillBeGarbageCollectedFinalized<MockCanvasObserver>, public CanvasObserver {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MockCanvasObserver);
 public:
     static PassOwnPtrWillBeRawPtr<MockCanvasObserver> create()
     {
         return adoptPtrWillBeNoop(new MockCanvasObserver);
     }
+
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        CanvasObserver::trace(visitor);
+    }
+
 
     virtual ~MockCanvasObserver() { }
     MOCK_METHOD2(canvasChanged, void(HTMLCanvasElement*, const FloatRect&));
@@ -261,9 +289,9 @@ TEST_F(CanvasRenderingContext2DTest, detectOverdrawWithFillRect)
     TEST_OVERDRAW_1(0, fillRect(0, 0, 9, 9));
     TEST_OVERDRAW_2(0, translate(1, 1), fillRect(0, 0, 10, 10));
     TEST_OVERDRAW_2(1, translate(1, 1), fillRect(-1, -1, 10, 10));
-    TEST_OVERDRAW_2(1, setFillStyle(m_opaqueGradient), fillRect(0, 0, 10, 10));
-    TEST_OVERDRAW_2(0, setFillStyle(m_alphaGradient), fillRect(0, 0, 10, 10));
-    TEST_OVERDRAW_3(0, setGlobalAlpha(0.5), setFillStyle(m_opaqueGradient), fillRect(0, 0, 10, 10));
+    TEST_OVERDRAW_2(1, setFillStyle(opaqueGradient()), fillRect(0, 0, 10, 10));
+    TEST_OVERDRAW_2(0, setFillStyle(alphaGradient()), fillRect(0, 0, 10, 10));
+    TEST_OVERDRAW_3(0, setGlobalAlpha(0.5), setFillStyle(opaqueGradient()), fillRect(0, 0, 10, 10));
     TEST_OVERDRAW_3(1, setGlobalAlpha(0.5f), setGlobalCompositeOperation(String("copy")), fillRect(0, 0, 10, 10));
     TEST_OVERDRAW_2(1, setGlobalCompositeOperation(String("copy")), fillRect(0, 0, 9, 9));
     TEST_OVERDRAW_3(0, rect(0, 0, 5, 5), clip(), fillRect(0, 0, 10, 10));
@@ -277,7 +305,7 @@ TEST_F(CanvasRenderingContext2DTest, detectOverdrawWithClearRect)
     TEST_OVERDRAW_1(1, clearRect(0, 0, 10, 10));
     TEST_OVERDRAW_1(0, clearRect(0, 0, 9, 9));
     TEST_OVERDRAW_2(1, setGlobalAlpha(0.5f), clearRect(0, 0, 10, 10));
-    TEST_OVERDRAW_2(1, setFillStyle(m_alphaGradient), clearRect(0, 0, 10, 10));
+    TEST_OVERDRAW_2(1, setFillStyle(alphaGradient()), clearRect(0, 0, 10, 10));
     TEST_OVERDRAW_2(0, translate(1, 1), clearRect(0, 0, 10, 10));
     TEST_OVERDRAW_2(1, translate(1, 1), clearRect(-1, -1, 10, 10));
     TEST_OVERDRAW_2(1, setGlobalCompositeOperation(String("destination-in")), clearRect(0, 0, 10, 10)); // composite op ignored
@@ -309,9 +337,9 @@ TEST_F(CanvasRenderingContext2DTest, detectOverdrawWithDrawImage)
     EXPECT_FALSE(exceptionState.hadException());
     TEST_OVERDRAW_2(0, translate(-1, 0), drawImage(&m_opaqueBitmap, 0, 0, 10, 10, 0, 0, 10, 10, exceptionState));
     EXPECT_FALSE(exceptionState.hadException());
-    TEST_OVERDRAW_2(0, setFillStyle(m_opaqueGradient), drawImage(&m_alphaBitmap, 0, 0, 10, 10, 0, 0, 10, 10, exceptionState)); // fillStyle ignored by drawImage
+    TEST_OVERDRAW_2(0, setFillStyle(opaqueGradient()), drawImage(&m_alphaBitmap, 0, 0, 10, 10, 0, 0, 10, 10, exceptionState)); // fillStyle ignored by drawImage
     EXPECT_FALSE(exceptionState.hadException());
-    TEST_OVERDRAW_2(1, setFillStyle(m_alphaGradient), drawImage(&m_opaqueBitmap, 0, 0, 10, 10, 0, 0, 10, 10, exceptionState)); // fillStyle ignored by drawImage
+    TEST_OVERDRAW_2(1, setFillStyle(alphaGradient()), drawImage(&m_opaqueBitmap, 0, 0, 10, 10, 0, 0, 10, 10, exceptionState)); // fillStyle ignored by drawImage
     EXPECT_FALSE(exceptionState.hadException());
     TEST_OVERDRAW_2(1, setGlobalCompositeOperation(String("copy")), drawImage(&m_opaqueBitmap, 0, 0, 10, 10, 1, 0, 10, 10, exceptionState));
     EXPECT_FALSE(exceptionState.hadException());

@@ -70,7 +70,7 @@ protected:
 
 private:
     OwnPtr<DummyPageHolder> m_dummyPageHolder;
-    RawPtr<HTMLDocument> m_document;
+    RawPtrWillBePersistent<HTMLDocument> m_document;
 };
 
 void GranularityStrategyTest::SetUp()
