@@ -439,8 +439,6 @@ void AudioRendererHost::OnCloseStream(int stream_id) {
   audio_entries_.erase(i);
 
   media::AudioOutputController* const controller = entry->controller();
-  if (mirroring_manager_)
-    mirroring_manager_->RemoveDiverter(controller);
   controller->Close(
       base::Bind(&AudioRendererHost::DeleteEntry, this, base::Passed(&entry)));
   audio_log_->OnClosed(stream_id);
@@ -448,6 +446,15 @@ void AudioRendererHost::OnCloseStream(int stream_id) {
 
 void AudioRendererHost::DeleteEntry(scoped_ptr<AudioEntry> entry) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  // De-register the controller from the AudioMirroringManager now that the
+  // controller has closed the AudioOutputStream and shut itself down.  This
+  // ensures that calling RemoveDiverter() here won't trigger the controller to
+  // re-start the default AudioOutputStream and cause a brief audio blip to come
+  // out the user's speakers.  http://crbug.com/474432
+  if (mirroring_manager_)
+    mirroring_manager_->RemoveDiverter(entry->controller());
+
   AudioStreamMonitor::StopMonitoringStream(
       render_process_id_, entry->render_frame_id(), entry->stream_id());
   UpdateNumPlayingStreams(entry.get(), false);
