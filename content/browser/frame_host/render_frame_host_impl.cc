@@ -788,11 +788,15 @@ void RenderFrameHostImpl::OnDidFailLoadWithError(
 void RenderFrameHostImpl::OnDidCommitProvisionalLoad(const IPC::Message& msg) {
   // Read the parameters out of the IPC message directly to avoid making another
   // copy when we filter the URLs.
+  ++commit_count_;
   base::PickleIterator iter(msg);
   FrameHostMsg_DidCommitProvisionalLoad_Params validated_params;
   if (!IPC::ParamTraits<FrameHostMsg_DidCommitProvisionalLoad_Params>::
-      Read(&msg, &iter, &validated_params))
+      Read(&msg, &iter, &validated_params)) {
+    base::debug::SetCrashKeyValue("369661-earlyreturn",
+                                  CommitCountString() + "/badipc");
     return;
+  }
   TRACE_EVENT1("navigation", "RenderFrameHostImpl::OnDidCommitProvisionalLoad",
                "url", validated_params.url.possibly_invalid_spec());
 
@@ -811,6 +815,8 @@ void RenderFrameHostImpl::OnDidCommitProvisionalLoad(const IPC::Message& msg) {
       !GetParent()) {
     base::TimeTicks approx_renderer_start_time = send_before_unload_start_time_;
     OnBeforeUnloadACK(true, approx_renderer_start_time, base::TimeTicks::Now());
+    base::debug::SetCrashKeyValue("369661-earlyreturn",
+                                  CommitCountString() + "/beforeunloadwait");
     return;
   }
 
@@ -819,8 +825,11 @@ void RenderFrameHostImpl::OnDidCommitProvisionalLoad(const IPC::Message& msg) {
   // unload request.  It will either respond to the unload request soon or our
   // timer will expire.  Either way, we should ignore this message, because we
   // have already committed to closing this renderer.
-  if (IsWaitingForUnloadACK())
+  if (IsWaitingForUnloadACK()) {
+    base::debug::SetCrashKeyValue("369661-earlyreturn",
+                                  CommitCountString() + "/unloadwait");
     return;
+  }
 
   if (validated_params.report_type ==
       FrameMsg_UILoadMetricsReportType::REPORT_LINK) {
@@ -872,6 +881,8 @@ void RenderFrameHostImpl::OnDidCommitProvisionalLoad(const IPC::Message& msg) {
           validated_params.page_state)) {
     bad_message::ReceivedBadMessage(
         GetProcess(), bad_message::RFH_CAN_ACCESS_FILES_OF_PAGE_STATE);
+    base::debug::SetCrashKeyValue("369661-earlyreturn",
+                                  CommitCountString() + "/fileaccess");
     return;
   }
 
@@ -2086,6 +2097,13 @@ void RenderFrameHostImpl::UpdatePermissionsForNavigation(
   if (request_params.page_state.IsValid()) {
     render_view_host_->GrantFileAccessFromPageState(request_params.page_state);
   }
+}
+
+std::string RenderFrameHostImpl::CommitCountString() {
+  std::string result = base::Int64ToString(reinterpret_cast<int64_t>(this));
+  result += "/";
+  result += base::IntToString(commit_count_);
+  return result;
 }
 
 }  // namespace content

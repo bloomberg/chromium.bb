@@ -10,9 +10,11 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/debug/crash_logging.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_number_conversions.h"  // Temporary
 #include "base/time/time.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/site_instance_impl.h"
@@ -439,6 +441,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // addition, its associated RenderWidgetHost has to be focused.
   bool IsFocused();
 
+  // Temporary for http://crbug.com/369661.
+  std::string CommitCountString();
+
  protected:
   friend class RenderFrameHostFactory;
 
@@ -727,6 +732,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // The frame's Mojo Shell service.
   scoped_ptr<FrameMojoShell> frame_mojo_shell_;
+
+  // Temporary for http://crbug.com/369661
+  int commit_count_ = 0;
 
   // NOTE: This must be the last member.
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_;
