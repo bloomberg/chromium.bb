@@ -25,6 +25,7 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.ui.UiUtils;
 
 /**
  * A utility class for the UI recording exceptions to the blocked list for site
@@ -115,7 +116,14 @@ public class AddExceptionPreference extends Preference implements OnPreferenceCl
                 .setView(view)
                 .setPositiveButton(R.string.website_settings_add_site_add_button, onClickListener)
                 .setNegativeButton(R.string.cancel, onClickListener)
-                .show();
+                .create();
+        alertDialog.setOnShowListener(new DialogInterface.OnShowListener() {
+            @Override
+            public void onShow(DialogInterface dialog) {
+                UiUtils.showKeyboard(input);
+            }
+        });
+        alertDialog.show();
         final Button okButton = alertDialog.getButton(AlertDialog.BUTTON_POSITIVE);
         okButton.setEnabled(false);
 
