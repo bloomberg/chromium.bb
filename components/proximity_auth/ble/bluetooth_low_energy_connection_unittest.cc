@@ -89,6 +89,7 @@ class MockBluetoothLowEnergyConnection : public BluetoothLowEnergyConnection {
 
   MOCK_METHOD2(OnDidSendMessage,
                void(const WireMessage& message, bool success));
+  MOCK_METHOD1(OnBytesReceived, void(const std::string& bytes));
 
   // Exposing inherited protected methods for testing.
   using BluetoothLowEnergyConnection::GattCharacteristicValueChanged;
@@ -267,9 +268,7 @@ class ProximityAuthBluetoothLowEnergyConnectionTest : public testing::Test {
               kInviteToConnectSignal);
 
     EXPECT_CALL(*connection, OnDidSendMessage(_, _)).Times(0);
-    EXPECT_FALSE(write_remote_characteristic_error_callback_.is_null());
-    ASSERT_FALSE(write_remote_characteristic_success_callback_.is_null());
-    write_remote_characteristic_success_callback_.Run();
+    RunWriteCharacteristicSuccessCallback();
 
     // Received the
     // BluetoothLowEneryConnection::ControlSignal::kInvitationResponseSignal.
@@ -296,6 +295,27 @@ class ProximityAuthBluetoothLowEnergyConnectionTest : public testing::Test {
     EXPECT_EQ(connection->sub_status(),
               BluetoothLowEnergyConnection::SubStatus::DISCONNECTED);
     EXPECT_EQ(connection->status(), Connection::DISCONNECTED);
+  }
+
+  void InitializeConnection(MockBluetoothLowEnergyConnection* connection) {
+    ConnectWithExistingGattConnection(connection);
+    CharacteristicsFound(connection);
+    NotifySessionStarted(connection);
+    ResponseSignalReceived(connection);
+  }
+
+  void RunWriteCharacteristicSuccessCallback() {
+    EXPECT_FALSE(write_remote_characteristic_error_callback_.is_null());
+    ASSERT_FALSE(write_remote_characteristic_success_callback_.is_null());
+    write_remote_characteristic_success_callback_.Run();
+  }
+
+  std::vector<uint8> CreateSendSignalWithSize(int message_size) {
+    std::vector<uint8> value = ToByteVector(static_cast<uint32>(
+        BluetoothLowEnergyConnection::ControlSignal::kSendSignal));
+    std::vector<uint8> size = ToByteVector(static_cast<uint32>(message_size));
+    value.insert(value.end(), size.begin(), size.end());
+    return value;
   }
 
   std::vector<uint8> ToByteVector(uint32 value) {
@@ -377,10 +397,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionTest,
 TEST_F(ProximityAuthBluetoothLowEnergyConnectionTest,
        Connect_Success_Disconnect) {
   scoped_ptr<MockBluetoothLowEnergyConnection> connection(CreateConnection());
-  ConnectWithExistingGattConnection(connection.get());
-  CharacteristicsFound(connection.get());
-  NotifySessionStarted(connection.get());
-  ResponseSignalReceived(connection.get());
+  InitializeConnection(connection.get());
   Disconnect(connection.get());
 }
 
@@ -505,6 +522,173 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionTest,
   EXPECT_EQ(connection->sub_status(),
             BluetoothLowEnergyConnection::SubStatus::DISCONNECTED);
   EXPECT_EQ(connection->status(), Connection::DISCONNECTED);
+}
+
+TEST_F(ProximityAuthBluetoothLowEnergyConnectionTest,
+       Receive_MessageSmallerThanCharacteristicSize) {
+  scoped_ptr<MockBluetoothLowEnergyConnection> connection(CreateConnection());
+  InitializeConnection(connection.get());
+
+  std::string received_bytes;
+  EXPECT_CALL(*connection, OnBytesReceived(_))
+      .WillOnce(SaveArg<0>(&received_bytes));
+
+  // Message (bytes) that is going to be received.
+  int message_size = 75;
+  std::string message(message_size, 'A');
+
+  // Sending the |kSendSignal| + |message_size|.
+  connection->GattCharacteristicValueChanged(
+      adapter_.get(), from_peripheral_char_.get(),
+      CreateSendSignalWithSize(message_size));
+
+  // Sending the message.
+  std::vector<uint8> value;
+  value.push_back(0);
+  value.insert(value.end(), message.begin(), message.end());
+  connection->GattCharacteristicValueChanged(
+      adapter_.get(), from_peripheral_char_.get(), value);
+
+  EXPECT_EQ(received_bytes, message);
+}
+
+TEST_F(ProximityAuthBluetoothLowEnergyConnectionTest,
+       Receive_MessageLargerThanCharacteristicSize) {
+  scoped_ptr<MockBluetoothLowEnergyConnection> connection(CreateConnection());
+  InitializeConnection(connection.get());
+
+  std::string received_bytes;
+  int chunk_size = 100;
+  EXPECT_CALL(*connection, OnBytesReceived(_))
+      .WillOnce(SaveArg<0>(&received_bytes));
+
+  // Message (bytes) that is going to be received.
+  int message_size = 150;
+  std::string message(message_size, 'A');
+
+  // Sending the |kSendSignal| + |message_size|.
+  connection->GattCharacteristicValueChanged(
+      adapter_.get(), from_peripheral_char_.get(),
+      CreateSendSignalWithSize(message_size));
+
+  // Sending the first chunk.
+  std::vector<uint8> value;
+  value.push_back(0);
+  value.insert(value.end(), message.begin(), message.begin() + chunk_size);
+  connection->GattCharacteristicValueChanged(
+      adapter_.get(), from_peripheral_char_.get(), value);
+
+  // Sending the second chunk.
+  value.clear();
+  value.push_back(0);
+  value.insert(value.end(), message.begin() + chunk_size, message.end());
+  connection->GattCharacteristicValueChanged(
+      adapter_.get(), from_peripheral_char_.get(), value);
+
+  EXPECT_EQ(received_bytes, message);
+}
+
+TEST_F(ProximityAuthBluetoothLowEnergyConnectionTest,
+       SendMessage_SmallerThanCharacteristicSize) {
+  scoped_ptr<MockBluetoothLowEnergyConnection> connection(CreateConnection());
+  InitializeConnection(connection.get());
+
+  // Expecting a first call of WriteRemoteCharacteristic, after SendMessage is
+  // called.
+  EXPECT_CALL(*to_peripheral_char_, WriteRemoteCharacteristic(_, _, _))
+      .WillOnce(
+          DoAll(SaveArg<0>(&last_value_written_on_to_peripheral_char_),
+                SaveArg<1>(&write_remote_characteristic_success_callback_),
+                SaveArg<2>(&write_remote_characteristic_error_callback_)));
+
+  // Message (bytes) that is going to be sent.
+  int message_size = 75;
+  std::string message(message_size, 'A');
+  message[0] = 'B';
+  connection->SendMessage(make_scoped_ptr(new FakeWireMessage(message)));
+
+  // Expecting that |kSendSignal| + |message_size| was written.
+  EXPECT_EQ(last_value_written_on_to_peripheral_char_,
+            CreateSendSignalWithSize(message_size));
+
+  // Expecting a second call of WriteRemoteCharacteristic, after success
+  // callback is called.
+  EXPECT_CALL(*to_peripheral_char_, WriteRemoteCharacteristic(_, _, _))
+      .WillOnce(
+          DoAll(SaveArg<0>(&last_value_written_on_to_peripheral_char_),
+                SaveArg<1>(&write_remote_characteristic_success_callback_),
+                SaveArg<2>(&write_remote_characteristic_error_callback_)));
+
+  RunWriteCharacteristicSuccessCallback();
+
+  // Expecting that the message was written.
+  std::vector<uint8> expected_value(message.begin(), message.end());
+  std::vector<uint8> written_value(
+      last_value_written_on_to_peripheral_char_.begin() + 1,
+      last_value_written_on_to_peripheral_char_.end());
+  EXPECT_EQ(expected_value, written_value);
+  EXPECT_EQ(expected_value.size(), written_value.size());
+
+  EXPECT_CALL(*connection, OnDidSendMessage(_, _));
+  RunWriteCharacteristicSuccessCallback();
+}
+
+TEST_F(ProximityAuthBluetoothLowEnergyConnectionTest,
+       SendMessage_LagerThanCharacteristicSize) {
+  scoped_ptr<MockBluetoothLowEnergyConnection> connection(CreateConnection());
+  InitializeConnection(connection.get());
+
+  // Expecting a first call of WriteRemoteCharacteristic, after SendMessage is
+  // called.
+  EXPECT_CALL(*to_peripheral_char_, WriteRemoteCharacteristic(_, _, _))
+      .WillOnce(
+          DoAll(SaveArg<0>(&last_value_written_on_to_peripheral_char_),
+                SaveArg<1>(&write_remote_characteristic_success_callback_),
+                SaveArg<2>(&write_remote_characteristic_error_callback_)));
+
+  // Message (bytes) that is going to be sent.
+  int message_size = 150;
+  std::string message(message_size, 'A');
+  message[0] = 'B';
+  connection->SendMessage(make_scoped_ptr(new FakeWireMessage(message)));
+
+  // Expecting that |kSendSignal| + |message_size| was written.
+  EXPECT_EQ(last_value_written_on_to_peripheral_char_,
+            CreateSendSignalWithSize(message_size));
+
+  // Expecting a second call of WriteRemoteCharacteristic, after success
+  // callback is called.
+  EXPECT_CALL(*to_peripheral_char_, WriteRemoteCharacteristic(_, _, _))
+      .WillOnce(
+          DoAll(SaveArg<0>(&last_value_written_on_to_peripheral_char_),
+                SaveArg<1>(&write_remote_characteristic_success_callback_),
+                SaveArg<2>(&write_remote_characteristic_error_callback_)));
+
+  RunWriteCharacteristicSuccessCallback();
+  std::vector<uint8> bytes_received(
+      last_value_written_on_to_peripheral_char_.begin() + 1,
+      last_value_written_on_to_peripheral_char_.end());
+
+  // Expecting a third call of WriteRemoteCharacteristic, after success callback
+  // is called.
+  EXPECT_CALL(*to_peripheral_char_, WriteRemoteCharacteristic(_, _, _))
+      .WillOnce(
+          DoAll(SaveArg<0>(&last_value_written_on_to_peripheral_char_),
+                SaveArg<1>(&write_remote_characteristic_success_callback_),
+                SaveArg<2>(&write_remote_characteristic_error_callback_)));
+
+  RunWriteCharacteristicSuccessCallback();
+  bytes_received.insert(bytes_received.end(),
+                        last_value_written_on_to_peripheral_char_.begin() + 1,
+                        last_value_written_on_to_peripheral_char_.end());
+
+  // Expecting that the message was written.
+  std::vector<uint8> expected_value(message.begin(), message.end());
+  EXPECT_EQ(expected_value.size(), bytes_received.size());
+  EXPECT_EQ(expected_value, bytes_received);
+
+  EXPECT_CALL(*connection, OnDidSendMessage(_, _));
+  RunWriteCharacteristicSuccessCallback();
 }
 
 }  // namespace proximity_auth
