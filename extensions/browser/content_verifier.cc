@@ -70,11 +70,8 @@ ContentVerifyJob* ContentVerifier::CreateJobFor(
   // TODO(asargent) - we can probably get some good performance wins by having
   // a cache of ContentHashReader's that we hold onto past the end of each job.
   return new ContentVerifyJob(
-      new ContentHashReader(extension_id,
-                            data->version,
-                            extension_root,
-                            relative_path,
-                            delegate_->PublicKey()),
+      new ContentHashReader(extension_id, data->version, extension_root,
+                            relative_path, delegate_->GetPublicKey()),
       base::Bind(&ContentVerifier::VerifyFailed, this, extension_id));
 }
 

@@ -458,15 +458,11 @@ void ContentHashFetcher::DoFetch(const Extension* extension, bool force) {
   DCHECK(extension->version());
   GURL url =
       delegate_->GetSignatureFetchUrl(extension->id(), *extension->version());
-  ContentHashFetcherJob* job =
-      new ContentHashFetcherJob(context_->GetRequestContext(),
-                                delegate_->PublicKey(),
-                                extension->id(),
-                                extension->path(),
-                                url,
-                                force,
-                                base::Bind(&ContentHashFetcher::JobFinished,
-                                           weak_ptr_factory_.GetWeakPtr()));
+  ContentHashFetcherJob* job = new ContentHashFetcherJob(
+      context_->GetRequestContext(), delegate_->GetPublicKey(), extension->id(),
+      extension->path(), url, force,
+      base::Bind(&ContentHashFetcher::JobFinished,
+                 weak_ptr_factory_.GetWeakPtr()));
   jobs_.insert(std::make_pair(key, job));
   job->Start();
 }

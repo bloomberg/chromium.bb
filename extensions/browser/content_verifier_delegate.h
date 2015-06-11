@@ -61,9 +61,8 @@ class ContentVerifierDelegate {
   virtual Mode ShouldBeVerified(const Extension& extension) = 0;
 
   // Should return the public key to use for validating signatures via the two
-  // out parameters. NOTE: the pointer returned *must* remain valid for the
-  // lifetime of this object.
-  virtual const ContentVerifierKey& PublicKey() = 0;
+  // out parameters.
+  virtual ContentVerifierKey GetPublicKey() = 0;
 
   // This should return a URL that can be used to fetch the
   // verified_contents.json containing signatures for the given extension

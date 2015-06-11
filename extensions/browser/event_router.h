@@ -76,8 +76,6 @@ class EventRouter : public KeyedService,
   };
 
   // Gets the EventRouter for |browser_context|.
-  // Shorthand for ExtensionSystem::Get(browser_context)->event_router(); it's
-  // a very common operation.
   static EventRouter* Get(content::BrowserContext* browser_context);
 
   // Converts event names like "foo.onBar/123" into "foo.onBar". Event names

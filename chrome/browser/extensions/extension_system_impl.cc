@@ -9,13 +9,11 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
-#include "base/metrics/field_trial.h"
-#include "base/metrics/histogram.h"
 #include "base/strings/string_tokenizer.h"
-#include "base/strings/string_util.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
+#include "chrome/browser/extensions/chrome_content_verifier_delegate.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_management.h"
@@ -33,29 +31,20 @@
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/url_data_source.h"
 #include "extensions/browser/content_verifier.h"
-#include "extensions/browser/content_verifier_delegate.h"
 #include "extensions/browser/extension_pref_store.h"
 #include "extensions/browser/extension_pref_value_map.h"
 #include "extensions/browser/extension_pref_value_map_factory.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/info_map.h"
-#include "extensions/browser/management_policy.h"
 #include "extensions/browser/quota_service.h"
 #include "extensions/browser/runtime_data.h"
 #include "extensions/browser/state_store.h"
 #include "extensions/common/constants.h"
-#include "extensions/common/extension.h"
-#include "extensions/common/extension_urls.h"
-#include "extensions/common/extensions_client.h"
-#include "extensions/common/manifest.h"
-#include "extensions/common/manifest_url_handlers.h"
-#include "net/base/escape.h"
 
 #if defined(ENABLE_NOTIFICATIONS)
 #include "chrome/browser/notifications/desktop_notification_service.h"
@@ -67,7 +56,6 @@
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/chromeos/extensions/device_local_account_management_policy_provider.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
-#include "chrome/browser/extensions/extension_assets_manager_chromeos.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/login/login_state.h"
 #include "components/user_manager/user.h"
@@ -75,13 +63,6 @@
 #endif
 
 using content::BrowserThread;
-
-namespace {
-
-const char kContentVerificationExperimentName[] =
-    "ExtensionContentVerification";
-
-}  // namespace
 
 namespace extensions {
 
@@ -140,172 +121,6 @@ void ExtensionSystemImpl::Shared::RegisterManagementPolicyProviders() {
   management_policy_->RegisterProvider(InstallVerifier::Get(profile_));
 }
 
-namespace {
-
-class ContentVerifierDelegateImpl : public ContentVerifierDelegate {
- public:
-  explicit ContentVerifierDelegateImpl(content::BrowserContext* context)
-      : context_(context), default_mode_(GetDefaultMode()) {}
-
-  ~ContentVerifierDelegateImpl() override {}
-
-  Mode ShouldBeVerified(const Extension& extension) override {
-#if defined(OS_CHROMEOS)
-    if (ExtensionAssetsManagerChromeOS::IsSharedInstall(&extension))
-      return ContentVerifierDelegate::ENFORCE_STRICT;
-#endif
-
-    if (!extension.is_extension() && !extension.is_legacy_packaged_app())
-      return ContentVerifierDelegate::NONE;
-    if (!Manifest::IsAutoUpdateableLocation(extension.location()))
-      return ContentVerifierDelegate::NONE;
-
-    if (!ManifestURL::UpdatesFromGallery(&extension)) {
-      // It's possible that the webstore update url was overridden for testing
-      // so also consider extensions with the default (production) update url
-      // to be from the store as well.
-      GURL default_webstore_url = extension_urls::GetDefaultWebstoreUpdateUrl();
-      if (ManifestURL::GetUpdateURL(&extension) != default_webstore_url)
-        return ContentVerifierDelegate::NONE;
-    }
-
-    return default_mode_;
-  }
-
-  const ContentVerifierKey& PublicKey() override {
-    static ContentVerifierKey key(
-        extension_misc::kWebstoreSignaturesPublicKey,
-        extension_misc::kWebstoreSignaturesPublicKeySize);
-    return key;
-  }
-
-  GURL GetSignatureFetchUrl(const std::string& extension_id,
-                            const base::Version& version) override {
-    // TODO(asargent) Factor out common code from the extension updater's
-    // ManifestFetchData class that can be shared for use here.
-    std::vector<std::string> parts;
-    parts.push_back("uc");
-    parts.push_back("installsource=signature");
-    parts.push_back("id=" + extension_id);
-    parts.push_back("v=" + version.GetString());
-    std::string x_value =
-        net::EscapeQueryParamValue(JoinString(parts, "&"), true);
-    std::string query = "response=redirect&x=" + x_value;
-
-    GURL base_url = extension_urls::GetWebstoreUpdateUrl();
-    GURL::Replacements replacements;
-    replacements.SetQuery(query.c_str(), url::Component(0, query.length()));
-    return base_url.ReplaceComponents(replacements);
-  }
-
-  std::set<base::FilePath> GetBrowserImagePaths(
-      const extensions::Extension* extension) override {
-    return ExtensionsClient::Get()->GetBrowserImagePaths(extension);
-  }
-
-  void VerifyFailed(const std::string& extension_id,
-                    ContentVerifyJob::FailureReason reason) override {
-    ExtensionRegistry* registry = ExtensionRegistry::Get(context_);
-    const Extension* extension =
-        registry->GetExtensionById(extension_id, ExtensionRegistry::ENABLED);
-    if (!extension)
-      return;
-    ExtensionSystem* system = ExtensionSystem::Get(context_);
-    Mode mode = ShouldBeVerified(*extension);
-    if (mode >= ContentVerifierDelegate::ENFORCE) {
-      if (!system->management_policy()->UserMayModifySettings(extension,
-                                                              NULL)) {
-        LogFailureForPolicyForceInstall(extension_id);
-        return;
-      }
-      system->extension_service()->DisableExtension(
-          extension_id, Extension::DISABLE_CORRUPTED);
-      ExtensionPrefs::Get(context_)->IncrementCorruptedDisableCount();
-      UMA_HISTOGRAM_BOOLEAN("Extensions.CorruptExtensionBecameDisabled", true);
-      UMA_HISTOGRAM_ENUMERATION("Extensions.CorruptExtensionDisabledReason",
-          reason, ContentVerifyJob::FAILURE_REASON_MAX);
-    } else if (!ContainsKey(would_be_disabled_ids_, extension_id)) {
-      UMA_HISTOGRAM_BOOLEAN("Extensions.CorruptExtensionWouldBeDisabled", true);
-      would_be_disabled_ids_.insert(extension_id);
-    }
-  }
-
-  static Mode GetDefaultMode() {
-    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-
-    Mode experiment_value = NONE;
-    const std::string group = base::FieldTrialList::FindFullName(
-        kContentVerificationExperimentName);
-    if (group == "EnforceStrict")
-      experiment_value = ContentVerifierDelegate::ENFORCE_STRICT;
-    else if (group == "Enforce")
-      experiment_value = ContentVerifierDelegate::ENFORCE;
-    else if (group == "Bootstrap")
-      experiment_value = ContentVerifierDelegate::BOOTSTRAP;
-
-    // The field trial value that normally comes from the server can be
-    // overridden on the command line, which we don't want to allow since
-    // malware can set chrome command line flags. There isn't currently a way
-    // to find out what the server-provided value is in this case, so we
-    // conservatively default to the strictest mode if we detect our experiment
-    // name being overridden.
-    if (command_line->HasSwitch(switches::kForceFieldTrials)) {
-      std::string forced_trials =
-          command_line->GetSwitchValueASCII(switches::kForceFieldTrials);
-      if (forced_trials.find(kContentVerificationExperimentName) !=
-              std::string::npos)
-        experiment_value = ContentVerifierDelegate::ENFORCE_STRICT;
-    }
-
-    Mode cmdline_value = NONE;
-    if (command_line->HasSwitch(switches::kExtensionContentVerification)) {
-      std::string switch_value = command_line->GetSwitchValueASCII(
-          switches::kExtensionContentVerification);
-      if (switch_value == switches::kExtensionContentVerificationBootstrap)
-        cmdline_value = ContentVerifierDelegate::BOOTSTRAP;
-      else if (switch_value == switches::kExtensionContentVerificationEnforce)
-        cmdline_value = ContentVerifierDelegate::ENFORCE;
-      else if (switch_value ==
-              switches::kExtensionContentVerificationEnforceStrict)
-        cmdline_value = ContentVerifierDelegate::ENFORCE_STRICT;
-      else
-        // If no value was provided (or the wrong one), just default to enforce.
-        cmdline_value = ContentVerifierDelegate::ENFORCE;
-    }
-
-    // We don't want to allow the command-line flags to eg disable enforcement
-    // if the experiment group says it should be on, or malware may just modify
-    // the command line flags. So return the more restrictive of the 2 values.
-    return std::max(experiment_value, cmdline_value);
-  }
-
- private:
-  void LogFailureForPolicyForceInstall(const std::string& extension_id) {
-    if (!ContainsKey(corrupt_policy_extensions_, extension_id)) {
-      corrupt_policy_extensions_.insert(extension_id);
-      UMA_HISTOGRAM_BOOLEAN("Extensions.CorruptPolicyExtensionWouldBeDisabled",
-                            true);
-    }
-  }
-
-  content::BrowserContext* context_;
-  ContentVerifierDelegate::Mode default_mode_;
-
-  // For reporting metrics in BOOTSTRAP mode, when an extension would be
-  // disabled if content verification was in ENFORCE mode.
-  std::set<std::string> would_be_disabled_ids_;
-
-  // Currently enterprise policy extensions that must remain enabled will not
-  // be disabled due to content verification failure, but we are considering
-  // changing this (crbug.com/447040), so for now we are tracking how often
-  // this happens to help inform the decision.
-  std::set<std::string> corrupt_policy_extensions_;
-
-  DISALLOW_COPY_AND_ASSIGN(ContentVerifierDelegateImpl);
-};
-
-}  // namespace
-
 void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
   TRACE_EVENT0("browser,startup", "ExtensionSystemImpl::Shared::Init");
   const base::CommandLine* command_line =
@@ -338,9 +153,9 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
   {
     InstallVerifier::Get(profile_)->Init();
     content_verifier_ = new ContentVerifier(
-        profile_, new ContentVerifierDelegateImpl(profile_));
+        profile_, new ChromeContentVerifierDelegate(profile_));
     ContentVerifierDelegate::Mode mode =
-        ContentVerifierDelegateImpl::GetDefaultMode();
+        ChromeContentVerifierDelegate::GetDefaultMode();
 #if defined(OS_CHROMEOS)
     mode = std::max(mode, ContentVerifierDelegate::BOOTSTRAP);
 #endif  // defined(OS_CHROMEOS)
