@@ -73,7 +73,7 @@ LayoutMultiColumnSet* LayoutMultiColumnFlowThread::lastMultiColumnSet() const
     return nullptr;
 }
 
-// Find the next layout object that has the multicol container in its containing block chain.
+// Find the next layout object that has the multicol container in its containing block chain, skipping nested multicol containers.
 static LayoutObject* nextInPreOrderAfterChildrenSkippingOutOfFlow(LayoutMultiColumnFlowThread* flowThread, LayoutObject* descendant)
 {
     ASSERT(descendant->isDescendantOf(flowThread));
@@ -90,21 +90,56 @@ static LayoutObject* nextInPreOrderAfterChildrenSkippingOutOfFlow(LayoutMultiCol
         }
         object = object->nextInPreOrderAfterChildren(flowThread);
     }
+    if (!object)
+        return nullptr;
+#if ENABLE(ASSERT)
+    // Make sure that we didn't stumble into an inner multicol container.
+    for (LayoutObject* walker = object->parent(); walker && walker != flowThread; walker = walker->parent())
+        ASSERT(!walker->isLayoutBlockFlow() || !toLayoutBlockFlow(walker)->multiColumnFlowThread());
+#endif
     return object;
 }
 
-// Find the previous layout object that has the multicol container in its containing block chain.
+// Find the previous layout object that has the multicol container in its containing block chain, skipping nested multicol containers.
 static LayoutObject* previousInPreOrderSkippingOutOfFlow(LayoutMultiColumnFlowThread* flowThread, LayoutObject* descendant)
 {
     ASSERT(descendant->isDescendantOf(flowThread));
     LayoutObject* object = descendant->previousInPreOrder(flowThread);
     while (object && object != flowThread) {
-        if (object->isColumnSpanAll() || object->flowThreadContainingBlock() == flowThread)
-            break;
+        if (object->isColumnSpanAll()) {
+            LayoutMultiColumnFlowThread* placeholderFlowThread = toLayoutBox(object)->spannerPlaceholder()->flowThread();
+            if (placeholderFlowThread == flowThread)
+                break;
+            // We're inside an inner multicol container. We have no business there. Continue on the outside.
+            object = placeholderFlowThread->parent();
+            ASSERT(object->isDescendantOf(flowThread));
+            continue;
+        }
+        if (object->flowThreadContainingBlock() == flowThread) {
+            LayoutObject* ancestor;
+            for (ancestor = object->parent(); ; ancestor = ancestor->parent()) {
+                if (ancestor == flowThread)
+                    return object;
+                if (ancestor->isLayoutBlockFlow() && toLayoutBlockFlow(ancestor)->multiColumnFlowThread()) {
+                    // We're inside an inner multicol container. We have no business there.
+                    break;
+                }
+            }
+            object = ancestor;
+            ASSERT(ancestor->isDescendantOf(flowThread));
+            continue; // Continue on the outside of the inner flow thread.
+        }
         // We're inside something that's out-of-flow. Keep looking upwards and backwards in the tree.
         object = object->previousInPreOrder(flowThread);
     }
-    return object && object != flowThread ? object : nullptr;
+    if (!object || object == flowThread)
+        return nullptr;
+#if ENABLE(ASSERT)
+    // Make sure that we didn't stumble into an inner multicol container.
+    for (LayoutObject* walker = object->parent(); walker && walker != flowThread; walker = walker->parent())
+        ASSERT(!walker->isLayoutBlockFlow() || !toLayoutBlockFlow(walker)->multiColumnFlowThread());
+#endif
+    return object;
 }
 
 static LayoutObject* firstLayoutObjectInSet(LayoutMultiColumnSet* multicolSet)
@@ -137,6 +172,9 @@ LayoutMultiColumnSet* LayoutMultiColumnFlowThread::mapDescendantToColumnSet(Layo
     ASSERT(layoutObject != this);
     ASSERT(layoutObject->isDescendantOf(this));
     ASSERT(layoutObject->containingBlock()->isDescendantOf(this)); // Out-of-flow objects don't belong in column sets.
+    ASSERT(layoutObject->flowThreadContainingBlock() == this);
+    ASSERT(!layoutObject->isLayoutMultiColumnSet());
+    ASSERT(!layoutObject->isLayoutMultiColumnSpannerPlaceholder());
     LayoutMultiColumnSet* multicolSet = firstMultiColumnSet();
     if (!multicolSet)
         return nullptr;
@@ -449,6 +487,7 @@ void LayoutMultiColumnFlowThread::createAndInsertSpannerPlaceholder(LayoutBox* s
 
     LayoutBlockFlow* multicolContainer = multiColumnBlockFlow();
     LayoutMultiColumnSpannerPlaceholder* newPlaceholder = LayoutMultiColumnSpannerPlaceholder::createAnonymous(multicolContainer->styleRef(), *spannerObjectInFlowThread);
+    ASSERT(!insertBeforeColumnBox || insertBeforeColumnBox->parent() == multicolContainer);
     multicolContainer->LayoutBlock::addChild(newPlaceholder, insertBeforeColumnBox);
     spannerObjectInFlowThread->setSpannerPlaceholder(*newPlaceholder);
 
@@ -603,10 +642,12 @@ void LayoutMultiColumnFlowThread::flowThreadDescendantWasInserted(LayoutObject* 
     // file for more information. Go through the subtree that was just inserted and create column
     // sets (needed by regular column content) and spanner placeholders (one needed by each spanner)
     // where needed.
+    if (shouldSkipInsertedOrRemovedChild(this, *descendant))
+        return;
     LayoutObject* objectAfterSubtree = nextInPreOrderAfterChildrenSkippingOutOfFlow(this, descendant);
     LayoutObject* next;
     for (LayoutObject* layoutObject = descendant; layoutObject; layoutObject = next) {
-        if (shouldSkipInsertedOrRemovedChild(this, *layoutObject)) {
+        if (layoutObject != descendant && shouldSkipInsertedOrRemovedChild(this, *layoutObject)) {
             next = layoutObject->nextInPreOrderAfterChildren(descendant);
             continue;
         }
@@ -648,12 +689,14 @@ void LayoutMultiColumnFlowThread::flowThreadDescendantWillBeRemoved(LayoutObject
     // remove column sets and/or spanner placeholders.
     if (m_isBeingEvacuated)
         return;
+    if (shouldSkipInsertedOrRemovedChild(this, *descendant))
+        return;
     bool hadContainingPlaceholder = containingColumnSpannerPlaceholder(descendant);
     bool processedSomething = false;
     LayoutObject* next;
     // Remove spanner placeholders that are no longer needed, and merge column sets around them.
     for (LayoutObject* layoutObject = descendant; layoutObject; layoutObject = next) {
-        if (shouldSkipInsertedOrRemovedChild(this, *layoutObject)) {
+        if (layoutObject != descendant && shouldSkipInsertedOrRemovedChild(this, *layoutObject)) {
             next = layoutObject->nextInPreOrderAfterChildren(descendant);
             continue;
         }
