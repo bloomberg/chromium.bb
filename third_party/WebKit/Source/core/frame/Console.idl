@@ -27,6 +27,12 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// Console API (non-standard but widely implemented in some form)
+// https://developer.chrome.com/devtools/docs/console-api
+
+// TODO(philipj): Both Firefox and IE expose the Console interface object, and
+// that interface does not inherit from a ConsoleBase or similar interface.
+
 [
     NoInterfaceObject
 ] interface Console : ConsoleBase {

@@ -108,7 +108,7 @@ void History::forward(ExecutionContext* context)
     go(context, 1);
 }
 
-void History::go(ExecutionContext* context, int distance)
+void History::go(ExecutionContext* context, int delta)
 {
     if (!m_frame || !m_frame->loader().client())
         return;
@@ -121,8 +121,8 @@ void History::go(ExecutionContext* context, int distance)
     if (!activeDocument->frame() || !activeDocument->frame()->canNavigate(*m_frame))
         return;
 
-    if (distance)
-        m_frame->loader().client()->navigateBackForward(distance);
+    if (delta)
+        m_frame->loader().client()->navigateBackForward(delta);
     else
         m_frame->reload(FrameLoadTypeReload, ClientRedirect);
 }

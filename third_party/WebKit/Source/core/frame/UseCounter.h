@@ -728,6 +728,7 @@ public:
         V8IDBDatabase_ObjectStoreNames_AttributeGetter = 824,
         V8IDBObjectStore_IndexNames_AttributeGetter = 825,
         V8IDBTransaction_ObjectStoreNames_AttributeGetter = 826,
+        V8Navigator_GetStorageUpdates_Method = 827,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

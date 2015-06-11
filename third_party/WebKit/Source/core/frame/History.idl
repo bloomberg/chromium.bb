@@ -23,18 +23,28 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// https://html.spec.whatwg.org/#the-history-interface
+
 [
     GarbageCollected,
 ] interface History {
+    // TODO(philipj): length is long in the spec, use that or change the spec:
+    // https://www.w3.org/Bugs/Public/show_bug.cgi?id=28789
     readonly attribute unsigned long length;
+    // TODO(philipj): The SerializedScriptValue type should be any.
     [CachedAttribute=stateChanged] readonly attribute SerializedScriptValue state;
-    [RuntimeEnabled=ScrollRestoration] readonly attribute StateOptions options;
-
+    // TODO(philipj): delta does not have a default value in the spec:
+    // https://www.w3.org/Bugs/Public/show_bug.cgi?id=28790
+    [CallWith=ExecutionContext] void go(optional long delta = 0);
     [CallWith=ExecutionContext] void back();
     [CallWith=ExecutionContext] void forward();
-    [CallWith=ExecutionContext] void go([Default=Undefined] optional long distance);
-
-    // FIXME: the title arguments below should simply be 'DOMString title'.
+    // TODO(philipj): The SerializedScriptValue types should be any.
+    // TODO(philipj): The title arguments should simply be 'DOMString title'.
+    // Note: The options arguments are part of the Scroll Restoration API.
     [RaisesException] void pushState(SerializedScriptValue data, [TreatUndefinedAs=NullString] DOMString? title, optional DOMString? url = null, optional StateOptions options);
     [RaisesException] void replaceState(SerializedScriptValue data, [TreatUndefinedAs=NullString] DOMString? title, optional DOMString? url = null, optional StateOptions options);
+
+    // Experimental Scroll Restoration API
+    // https://www.chromestatus.com/features/5657284784947200
+    [RuntimeEnabled=ScrollRestoration] readonly attribute StateOptions options;
 };

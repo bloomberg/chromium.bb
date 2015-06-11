@@ -28,15 +28,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://www.whatwg.org/specs/web-apps/current-work/#navigatorid
+// https://html.spec.whatwg.org/#client-identification
 
 [
     NoInterfaceObject, // Always used on target of 'implements'
+    Exposed=(Window,Worker),
 ] interface NavigatorID {
     readonly attribute DOMString appCodeName; // constant "Mozilla"
     readonly attribute DOMString appName;
     readonly attribute DOMString appVersion;
     readonly attribute DOMString platform;
     readonly attribute DOMString product; // constant "Gecko"
+    // https://www.w3.org/Bugs/Public/show_bug.cgi?id=22555
+    // boolean taintEnabled(); // constant false
     readonly attribute DOMString userAgent;
 };

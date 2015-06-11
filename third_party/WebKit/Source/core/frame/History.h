@@ -56,7 +56,7 @@ public:
 
     void back(ExecutionContext*);
     void forward(ExecutionContext*);
-    void go(ExecutionContext*, int distance);
+    void go(ExecutionContext*, int delta);
 
     void pushState(PassRefPtr<SerializedScriptValue> data, const String& title, const String& url, const StateOptions& options, ExceptionState& exceptionState)
     {

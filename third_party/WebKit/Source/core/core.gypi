@@ -478,6 +478,7 @@
             'frame/NavigatorID.idl',
             'frame/NavigatorLanguage.idl',
             'frame/NavigatorOnLine.idl',
+            'frame/NavigatorStorageUtils.idl',
             'frame/WindowBase64.idl',
             'frame/WindowEventHandlers.idl',
             'frame/WindowTimers.idl',

@@ -26,6 +26,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// https://html.spec.whatwg.org/#the-location-interface
+
 [
     CheckSecurity=Frame,
     Unforgeable,
@@ -36,13 +38,21 @@
     // property of an *existing* document at a different origin.
     // However, *reading* |href|, or accessing any component, is a security
     // problem, since that allows tracking navigation.
-    [SetterCallWith=(ActiveWindow,FirstWindow), DoNotCheckSecurity=Setter] attribute DOMString href;
-
     [CallWith=(ActiveWindow,FirstWindow), DoNotCheckSecurity] void assign(DOMString url);
     [CallWith=(ActiveWindow,FirstWindow), DoNotCheckSecurity] void replace(DOMString url);
     [CallWith=ActiveWindow] void reload();
 
-    // URI decomposition attributes
+    // TODO(philipj): ancestorOrigins should have [SameObject] and be of type
+    // DOMString[], i.e. it should return the same array every time.
+    [Measure] readonly attribute DOMStringList ancestorOrigins;
+
+    // TODO(philipj): Per spec, Location implements URLUtils. The below is
+    // mostly like the URLUtils interface, but with some members missing and
+    // using DOMString instead of USVString.
+    [SetterCallWith=(ActiveWindow,FirstWindow), DoNotCheckSecurity=Setter] attribute DOMString href;
+    [NotEnumerable, ImplementedAs=href] DOMString toString();
+    readonly attribute DOMString origin;
+
     [SetterCallWith=(ActiveWindow,FirstWindow), RaisesException=Setter] attribute DOMString protocol;
     [SetterCallWith=(ActiveWindow,FirstWindow)] attribute DOMString host;
     [SetterCallWith=(ActiveWindow,FirstWindow)] attribute DOMString hostname;
@@ -51,10 +61,7 @@
     [SetterCallWith=(ActiveWindow,FirstWindow)] attribute DOMString search;
     [SetterCallWith=(ActiveWindow,FirstWindow)] attribute DOMString hash;
 
-    readonly attribute DOMString origin;
-
-    [Measure] readonly attribute DOMStringList ancestorOrigins;
-
-    [NotEnumerable, ImplementedAs=href] DOMString toString();
+    // TODO(philipj): Location does not have a valueOf() override in the spec.
+    // See the comment in Location.h for the purpose of this.
     [NotEnumerable, CallWith=ThisValue] any valueOf();
 };

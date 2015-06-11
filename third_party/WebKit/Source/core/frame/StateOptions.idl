@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Spec work is being tracked on W3C bug: https://www.w3.org/Bugs/Public/show_bug.cgi?id=28553
+// Experimental Scroll Restoration API
+// https://www.chromestatus.com/features/5657284784947200
 
 enum ScrollRestoration {"auto", "manual"};
 
