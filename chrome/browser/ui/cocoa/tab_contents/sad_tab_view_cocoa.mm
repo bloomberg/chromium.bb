@@ -31,7 +31,7 @@ static const CGFloat kLinkButtonSpacing = 55;
 // Minimum margins on all sides.
 static const CGFloat kTabMargin = 13;
 // Maximum margin on top.
-static const CGFloat kMaxTopMargin = 100;
+static const CGFloat kMaxTopMargin = 130;
 
 @interface SadTabTextView : NSTextField
 
