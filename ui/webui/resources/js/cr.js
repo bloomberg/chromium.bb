@@ -346,7 +346,7 @@ var cr = function() {
    * JS internal method names or state. The callback will be removed from the
    * mapping once it has fired.
    * @param {string} methodName The name of the WebUI handler API.
-   * @param {Array} opt_args Arguments for the method call sent to the WebUI
+   * @param {Array=} opt_args Arguments for the method call sent to the WebUI
    *     handler.
    * @param {Function} callback A callback function which is called (indirectly)
    *     by the WebUI handler.
@@ -388,11 +388,10 @@ var cr = function() {
    * @param {Function} callback The callback run when the event is fired.
    */
   function addWebUIListener(event, callback) {
-    if (!webUIListenerMap.has(event)) {
+    if (!webUIListenerMap.has(event))
       webUIListenerMap.set(event, [callback]);
-    } else {
+    else
       webUIListenerMap.get(event).push(callback);
-    }
   }
 
   return {
