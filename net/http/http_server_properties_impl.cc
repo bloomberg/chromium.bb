@@ -5,13 +5,15 @@
 #include "net/http/http_server_properties_impl.h"
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 
 namespace net {
@@ -602,7 +604,7 @@ HttpServerPropertiesImpl::ScheduleBrokenAlternateProtocolMappingsExpiration() {
   base::TimeTicks now = base::TimeTicks::Now();
   base::TimeTicks when = broken_alternative_services_.front().second;
   base::TimeDelta delay = when > now ? when - now : base::TimeDelta();
-  base::MessageLoop::current()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::Bind(
           &HttpServerPropertiesImpl::ExpireBrokenAlternateProtocolMappings,

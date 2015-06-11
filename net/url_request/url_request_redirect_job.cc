@@ -8,9 +8,11 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/net_errors.h"
@@ -58,10 +60,9 @@ void URLRequestRedirectJob::Start() {
   request()->net_log().AddEvent(
       NetLog::TYPE_URL_REQUEST_REDIRECT_JOB,
       NetLog::StringCallback("reason", &redirect_reason_));
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&URLRequestRedirectJob::StartAsync,
-                 weak_factory_.GetWeakPtr()));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&URLRequestRedirectJob::StartAsync,
+                            weak_factory_.GetWeakPtr()));
 }
 
 bool URLRequestRedirectJob::CopyFragmentOnRedirect(const GURL& location) const {

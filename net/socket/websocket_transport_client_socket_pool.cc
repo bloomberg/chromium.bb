@@ -7,9 +7,12 @@
 #include <algorithm>
 
 #include "base/compiler_specific.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "net/base/net_errors.h"
@@ -506,13 +509,10 @@ void WebSocketTransportClientSocketPool::InvokeUserCallbackLater(
     int rv) {
   DCHECK(!pending_callbacks_.count(handle));
   pending_callbacks_.insert(handle);
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&WebSocketTransportClientSocketPool::InvokeUserCallback,
-                 weak_factory_.GetWeakPtr(),
-                 handle,
-                 callback,
-                 rv));
+                 weak_factory_.GetWeakPtr(), handle, callback, rv));
 }
 
 void WebSocketTransportClientSocketPool::InvokeUserCallback(

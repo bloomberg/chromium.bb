@@ -6,8 +6,11 @@
 #define NET_COOKIES_COOKIE_STORE_UNITTEST_H_
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_tokenizer.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_store.h"
@@ -208,7 +211,7 @@ class CookieStoreTest : public testing::Test {
 
   void RunFor(int ms) {
     // Runs the test thread message loop for up to |ms| milliseconds.
-    base::MessageLoop::current()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&base::MessageLoop::Quit, weak_factory_->GetWeakPtr()),
         base::TimeDelta::FromMilliseconds(ms));
@@ -1089,7 +1092,7 @@ class MultiThreadedCookieStoreTest :
  protected:
   void RunOnOtherThread(const base::Closure& task) {
     other_thread_.Start();
-    other_thread_.message_loop()->PostTask(FROM_HERE, task);
+    other_thread_.task_runner()->PostTask(FROM_HERE, task);
     CookieStoreTest<CookieStoreTestTraits>::RunFor(kTimeout);
     other_thread_.Stop();
   }

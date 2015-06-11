@@ -8,7 +8,9 @@
 #include <sys/types.h>
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/single_thread_task_runner.h"
 #include "base/sys_byteorder.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
@@ -35,7 +37,8 @@ void TCPListenSocketTester::SetUp() {
   thread_->StartWithOptions(options);
   loop_ = reinterpret_cast<base::MessageLoopForIO*>(thread_->message_loop());
 
-  loop_->PostTask(FROM_HERE, base::Bind(&TCPListenSocketTester::Listen, this));
+  loop_->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&TCPListenSocketTester::Listen, this));
 
   // verify Listen succeeded
   NextAction();
@@ -77,8 +80,8 @@ void TCPListenSocketTester::TearDown() {
   NextAction();
   ASSERT_EQ(ACTION_CLOSE, last_action_.type());
 
-  loop_->PostTask(FROM_HERE,
-                  base::Bind(&TCPListenSocketTester::Shutdown, this));
+  loop_->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&TCPListenSocketTester::Shutdown, this));
   NextAction();
   ASSERT_EQ(ACTION_SHUTDOWN, last_action_.type());
 
@@ -169,8 +172,8 @@ void TCPListenSocketTester::TestClientSendLong() {
 }
 
 void TCPListenSocketTester::TestServerSend() {
-  loop_->PostTask(FROM_HERE,
-                  base::Bind(&TCPListenSocketTester::SendFromTester, this));
+  loop_->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&TCPListenSocketTester::SendFromTester, this));
   NextAction();
   ASSERT_EQ(ACTION_SEND, last_action_.type());
   const int buf_len = 200;
@@ -196,8 +199,8 @@ void TCPListenSocketTester::TestServerSendMultiple() {
   // Send multiple writes. Since no reading is occurring the data should be
   // buffered in TCPListenSocket.
   for (int i = 0; i < send_count; ++i) {
-    loop_->PostTask(FROM_HERE,
-                    base::Bind(&TCPListenSocketTester::SendFromTester, this));
+    loop_->task_runner()->PostTask(
+        FROM_HERE, base::Bind(&TCPListenSocketTester::SendFromTester, this));
     NextAction();
     ASSERT_EQ(ACTION_SEND, last_action_.type());
   }

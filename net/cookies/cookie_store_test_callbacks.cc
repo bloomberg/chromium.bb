@@ -4,7 +4,9 @@
 
 #include "net/cookies/cookie_store_test_callbacks.h"
 
+#include "base/location.h"
 #include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -36,7 +38,8 @@ void CookieCallback::CallbackEpilogue() {
 
   did_run_ = true;
   EXPECT_EQ(expected_loop, base::MessageLoop::current());
-  loop_to_quit_->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
+  loop_to_quit_->task_runner()->PostTask(FROM_HERE,
+                                         base::MessageLoop::QuitClosure());
 }
 
 StringResultCookieCallback::StringResultCookieCallback() {}

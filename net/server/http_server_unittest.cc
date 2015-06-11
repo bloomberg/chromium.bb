@@ -11,15 +11,16 @@
 #include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/format_macros.h"
+#include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "net/base/address_list.h"
 #include "net/base/io_buffer.h"
@@ -58,10 +59,9 @@ void SetTimedOutAndQuitLoop(const base::WeakPtr<bool> timed_out,
 bool RunLoopWithTimeout(base::RunLoop* run_loop) {
   bool timed_out = false;
   base::WeakPtrFactory<bool> timed_out_weak_factory(&timed_out);
-  base::MessageLoop::current()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&SetTimedOutAndQuitLoop,
-                 timed_out_weak_factory.GetWeakPtr(),
+      base::Bind(&SetTimedOutAndQuitLoop, timed_out_weak_factory.GetWeakPtr(),
                  run_loop->QuitClosure()),
       base::TimeDelta::FromSeconds(1));
   run_loop->Run();
@@ -420,7 +420,7 @@ TEST_F(HttpServerTest, RequestWithTooLargeBody) {
   TestURLFetcherDelegate delegate(run_loop.QuitClosure());
 
   scoped_refptr<URLRequestContextGetter> request_context_getter(
-      new TestURLRequestContextGetter(base::MessageLoopProxy::current()));
+      new TestURLRequestContextGetter(base::ThreadTaskRunnerHandle::Get()));
   scoped_ptr<URLFetcher> fetcher =
       URLFetcher::Create(GURL(base::StringPrintf("http://127.0.0.1:%d/test",
                                                  server_address_.port())),

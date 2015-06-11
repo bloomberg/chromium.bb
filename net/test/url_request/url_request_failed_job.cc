@@ -5,10 +5,12 @@
 #include "net/test/url_request/url_request_failed_job.h"
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "net/base/net_errors.h"
 #include "net/base/url_util.h"
 #include "net/http/http_response_headers.h"
@@ -124,7 +126,7 @@ bool URLRequestFailedJob::ReadRawData(IOBuffer* buf,
   DCHECK_EQ(READ_ASYNC, phase_);
   DCHECK_NE(ERR_IO_PENDING, net_error_);
 
-  base::MessageLoopProxy::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&URLRequestFailedJob::NotifyDone, weak_factory_.GetWeakPtr(),
                  URLRequestStatus(URLRequestStatus::FAILED, net_error_)));

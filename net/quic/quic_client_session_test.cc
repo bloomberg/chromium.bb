@@ -9,6 +9,7 @@
 #include "base/base64.h"
 #include "base/files/file_path.h"
 #include "base/rand_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "net/base/test_completion_callback.h"
 #include "net/base/test_data_directory.h"
 #include "net/cert/cert_verify_result.h"
@@ -51,7 +52,7 @@ class QuicClientSessionTest : public ::testing::TestWithParam<QuicVersion> {
                  DefaultQuicConfig(),
                  "CONNECTION_UNKNOWN",
                  base::TimeTicks::Now(),
-                 base::MessageLoop::current()->message_loop_proxy().get(),
+                 base::ThreadTaskRunnerHandle::Get().get(),
                  &net_log_) {
     session_.InitializeSession(QuicServerId(kServerHostname, kServerPort,
                                             /*is_secure=*/false,

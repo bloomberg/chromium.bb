@@ -4,6 +4,9 @@
 
 #include "net/http/http_cache_transaction.h"
 
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "build/build_config.h"
 
 #if defined(OS_POSIX)
@@ -1385,7 +1388,7 @@ int HttpCache::Transaction::DoAddToEntry() {
         // the cache if at all possible. See http://crbug.com/408765
         timeout_milliseconds = 25;
       }
-      base::MessageLoop::current()->PostDelayedTask(
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE,
           base::Bind(&HttpCache::Transaction::OnAddToEntryTimeout,
                      weak_factory_.GetWeakPtr(), entry_lock_waiting_since_),
@@ -2616,12 +2619,10 @@ void HttpCache::Transaction::TriggerAsyncValidation() {
       NetLog::TYPE_ASYNC_REVALIDATION,
       base::Bind(
           &NetLogAsyncRevalidationInfoCallback, net_log_.source(), request_));
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&HttpCache::PerformAsyncValidation,
-                 cache_,  // cache_ is a weak pointer.
-                 *request_,
-                 async_revalidation_net_log));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&HttpCache::PerformAsyncValidation,
+                            cache_,  // cache_ is a weak pointer.
+                            *request_, async_revalidation_net_log));
 }
 
 void HttpCache::Transaction::FailRangeRequest() {

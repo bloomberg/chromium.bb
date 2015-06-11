@@ -10,10 +10,12 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/location.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/load_timing_info.h"
@@ -42,8 +44,8 @@ const RequestPriority kDefaultPriority = LOW;
 void RunLoopForTimePeriod(base::TimeDelta period) {
   base::RunLoop run_loop;
   base::Closure quit_closure(run_loop.QuitClosure());
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE, quit_closure, period);
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(FROM_HERE, quit_closure,
+                                                       period);
   run_loop.Run();
 }
 

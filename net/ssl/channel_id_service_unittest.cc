@@ -8,11 +8,13 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "crypto/ec_private_key.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
@@ -95,7 +97,7 @@ void MockChannelIDStoreWithAsyncGet::CallGetChannelIDCallbackWithResult(
     crypto::ECPrivateKey* key) {
   if (err == OK)
     channel_id_count_ = 1;
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(callback_, err, server_identifier_,
                  base::Passed(make_scoped_ptr(key ? key->Copy() : nullptr))));
@@ -104,10 +106,8 @@ void MockChannelIDStoreWithAsyncGet::CallGetChannelIDCallbackWithResult(
 class ChannelIDServiceTest : public testing::Test {
  public:
   ChannelIDServiceTest()
-      : service_(new ChannelIDService(
-            new DefaultChannelIDStore(NULL),
-            base::MessageLoopProxy::current())) {
-  }
+      : service_(new ChannelIDService(new DefaultChannelIDStore(NULL),
+                                      base::ThreadTaskRunnerHandle::Get())) {}
 
  protected:
   scoped_ptr<ChannelIDService> service_;
@@ -448,8 +448,8 @@ TEST_F(ChannelIDServiceTest, SimultaneousCreation) {
 TEST_F(ChannelIDServiceTest, AsyncStoreGetOrCreateNoChannelIDsInStore) {
   MockChannelIDStoreWithAsyncGet* mock_store =
       new MockChannelIDStoreWithAsyncGet();
-  service_ = scoped_ptr<ChannelIDService>(new ChannelIDService(
-      mock_store, base::MessageLoopProxy::current()));
+  service_ = scoped_ptr<ChannelIDService>(
+      new ChannelIDService(mock_store, base::ThreadTaskRunnerHandle::Get()));
 
   std::string host("encrypted.google.com");
 
@@ -477,8 +477,8 @@ TEST_F(ChannelIDServiceTest, AsyncStoreGetOrCreateNoChannelIDsInStore) {
 TEST_F(ChannelIDServiceTest, AsyncStoreGetNoChannelIDsInStore) {
   MockChannelIDStoreWithAsyncGet* mock_store =
       new MockChannelIDStoreWithAsyncGet();
-  service_ = scoped_ptr<ChannelIDService>(new ChannelIDService(
-      mock_store, base::MessageLoopProxy::current()));
+  service_ = scoped_ptr<ChannelIDService>(
+      new ChannelIDService(mock_store, base::ThreadTaskRunnerHandle::Get()));
 
   std::string host("encrypted.google.com");
 
@@ -506,8 +506,8 @@ TEST_F(ChannelIDServiceTest, AsyncStoreGetNoChannelIDsInStore) {
 TEST_F(ChannelIDServiceTest, AsyncStoreGetOrCreateOneCertInStore) {
   MockChannelIDStoreWithAsyncGet* mock_store =
       new MockChannelIDStoreWithAsyncGet();
-  service_ = scoped_ptr<ChannelIDService>(new ChannelIDService(
-      mock_store, base::MessageLoopProxy::current()));
+  service_ = scoped_ptr<ChannelIDService>(
+      new ChannelIDService(mock_store, base::ThreadTaskRunnerHandle::Get()));
 
   std::string host("encrypted.google.com");
 
@@ -542,8 +542,8 @@ TEST_F(ChannelIDServiceTest, AsyncStoreGetOrCreateOneCertInStore) {
 TEST_F(ChannelIDServiceTest, AsyncStoreGetOneCertInStore) {
   MockChannelIDStoreWithAsyncGet* mock_store =
       new MockChannelIDStoreWithAsyncGet();
-  service_ = scoped_ptr<ChannelIDService>(new ChannelIDService(
-      mock_store, base::MessageLoopProxy::current()));
+  service_ = scoped_ptr<ChannelIDService>(
+      new ChannelIDService(mock_store, base::ThreadTaskRunnerHandle::Get()));
 
   std::string host("encrypted.google.com");
 
@@ -577,8 +577,8 @@ TEST_F(ChannelIDServiceTest, AsyncStoreGetOneCertInStore) {
 TEST_F(ChannelIDServiceTest, AsyncStoreGetThenCreateNoCertsInStore) {
   MockChannelIDStoreWithAsyncGet* mock_store =
       new MockChannelIDStoreWithAsyncGet();
-  service_ = scoped_ptr<ChannelIDService>(new ChannelIDService(
-      mock_store, base::MessageLoopProxy::current()));
+  service_ = scoped_ptr<ChannelIDService>(
+      new ChannelIDService(mock_store, base::ThreadTaskRunnerHandle::Get()));
 
   std::string host("encrypted.google.com");
 

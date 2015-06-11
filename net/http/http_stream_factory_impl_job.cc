@@ -9,13 +9,16 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/profiler/scoped_tracker.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "net/base/connection_type_histograms.h"
@@ -214,10 +217,9 @@ void HttpStreamFactoryImpl::Job::Resume(Job* job) {
   // We know we're blocked if the next_state_ is STATE_WAIT_FOR_JOB_COMPLETE.
   // Unblock |this|.
   if (next_state_ == STATE_WAIT_FOR_JOB_COMPLETE) {
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&HttpStreamFactoryImpl::Job::OnIOComplete,
-                   ptr_factory_.GetWeakPtr(), OK));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&HttpStreamFactoryImpl::Job::OnIOComplete,
+                              ptr_factory_.GetWeakPtr(), OK));
   }
 }
 
@@ -485,7 +487,7 @@ int HttpStreamFactoryImpl::Job::RunLoop(int result) {
   DCHECK(result == OK || waiting_job_ == NULL);
 
   if (IsPreconnecting()) {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&HttpStreamFactoryImpl::Job::OnPreconnectsComplete,
                    ptr_factory_.GetWeakPtr()));
@@ -497,7 +499,7 @@ int HttpStreamFactoryImpl::Job::RunLoop(int result) {
     GetSSLInfo();
 
     next_state_ = STATE_WAITING_USER_ACTION;
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&HttpStreamFactoryImpl::Job::OnCertificateErrorCallback,
                    ptr_factory_.GetWeakPtr(), result, ssl_info_));
@@ -516,7 +518,7 @@ int HttpStreamFactoryImpl::Job::RunLoop(int result) {
       next_state_ = STATE_WAITING_USER_ACTION;
       ProxyClientSocket* proxy_socket =
           static_cast<ProxyClientSocket*>(connection_->socket());
-      base::MessageLoop::current()->PostTask(
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
           base::Bind(&Job::OnNeedsProxyAuthCallback, ptr_factory_.GetWeakPtr(),
                      *proxy_socket->GetConnectResponseInfo(),
@@ -525,7 +527,7 @@ int HttpStreamFactoryImpl::Job::RunLoop(int result) {
     }
 
     case ERR_SSL_CLIENT_AUTH_CERT_NEEDED:
-      base::MessageLoop::current()->PostTask(
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
           base::Bind(&Job::OnNeedsClientAuthCallback, ptr_factory_.GetWeakPtr(),
                      connection_->ssl_error_response_info().cert_request_info));
@@ -538,12 +540,11 @@ int HttpStreamFactoryImpl::Job::RunLoop(int result) {
 
       ProxyClientSocket* proxy_socket =
           static_cast<ProxyClientSocket*>(connection_->socket());
-      base::MessageLoop::current()->PostTask(
-          FROM_HERE,
-          base::Bind(&Job::OnHttpsProxyTunnelResponseCallback,
-                     ptr_factory_.GetWeakPtr(),
-                     *proxy_socket->GetConnectResponseInfo(),
-                     proxy_socket->CreateConnectResponseStream()));
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::Bind(&Job::OnHttpsProxyTunnelResponseCallback,
+                                ptr_factory_.GetWeakPtr(),
+                                *proxy_socket->GetConnectResponseInfo(),
+                                proxy_socket->CreateConnectResponseStream()));
       return ERR_IO_PENDING;
     }
 
@@ -552,19 +553,17 @@ int HttpStreamFactoryImpl::Job::RunLoop(int result) {
       MaybeMarkAlternativeServiceBroken();
       next_state_ = STATE_DONE;
       if (new_spdy_session_.get()) {
-        base::MessageLoop::current()->PostTask(
-            FROM_HERE,
-            base::Bind(&Job::OnNewSpdySessionReadyCallback,
-                       ptr_factory_.GetWeakPtr()));
+        base::ThreadTaskRunnerHandle::Get()->PostTask(
+            FROM_HERE, base::Bind(&Job::OnNewSpdySessionReadyCallback,
+                                  ptr_factory_.GetWeakPtr()));
       } else if (stream_factory_->for_websockets_) {
         DCHECK(websocket_stream_);
-        base::MessageLoop::current()->PostTask(
-            FROM_HERE,
-            base::Bind(&Job::OnWebSocketHandshakeStreamReadyCallback,
-                       ptr_factory_.GetWeakPtr()));
+        base::ThreadTaskRunnerHandle::Get()->PostTask(
+            FROM_HERE, base::Bind(&Job::OnWebSocketHandshakeStreamReadyCallback,
+                                  ptr_factory_.GetWeakPtr()));
       } else {
         DCHECK(stream_.get());
-        base::MessageLoop::current()->PostTask(
+        base::ThreadTaskRunnerHandle::Get()->PostTask(
             FROM_HERE,
             base::Bind(&Job::OnStreamReadyCallback, ptr_factory_.GetWeakPtr()));
       }
@@ -581,10 +580,9 @@ int HttpStreamFactoryImpl::Job::RunLoop(int result) {
         // alternative service) couple as invalid.
         MaybeMarkAlternativeServiceBroken();
       }
-      base::MessageLoop::current()->PostTask(
-          FROM_HERE,
-          base::Bind(&Job::OnStreamFailedCallback, ptr_factory_.GetWeakPtr(),
-                     result));
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::Bind(&Job::OnStreamFailedCallback,
+                                ptr_factory_.GetWeakPtr(), result));
       return ERR_IO_PENDING;
   }
 }

@@ -4,8 +4,10 @@
 
 #include "net/quic/quic_packet_reader.h"
 
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
 #include "base/metrics/histogram.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "net/base/net_errors.h"
 
 namespace net {
@@ -45,7 +47,7 @@ void QuicPacketReader::StartReading() {
     // Data was read, process it.
     // Schedule the work through the message loop to 1) prevent infinite
     // recursion and 2) avoid blocking the thread for too long.
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&QuicPacketReader::OnReadComplete,
                               weak_factory_.GetWeakPtr(), rv));
   } else {

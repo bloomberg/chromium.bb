@@ -6,27 +6,23 @@
 
 #include <algorithm>
 
-#include "base/compiler_specific.h"
-
-#if defined(OS_POSIX)
-#include <unistd.h>
-#endif
-
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/compiler_specific.h"
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/pickle.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/worker_pool.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
@@ -47,6 +43,10 @@
 #include "net/http/http_response_info.h"
 #include "net/http/http_util.h"
 #include "net/quic/crypto/quic_server_info.h"
+
+#if defined(OS_POSIX)
+#include <unistd.h>
+#endif
 
 namespace {
 
@@ -1175,7 +1175,7 @@ void HttpCache::ProcessPendingQueue(ActiveEntry* entry) {
     return;
   entry->will_process_pending_queue = true;
 
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&HttpCache::OnProcessPendingQueue, GetWeakPtr(), entry));
 }
@@ -1372,10 +1372,9 @@ void HttpCache::OnBackendCreated(int result, PendingOp* pending_op) {
     // go away from the callback.
     pending_op->writer = pending_item;
 
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&HttpCache::OnBackendCreated, GetWeakPtr(),
-                   result, pending_op));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&HttpCache::OnBackendCreated, GetWeakPtr(),
+                              result, pending_op));
   } else {
     building_backend_ = false;
     DeletePendingOp(pending_op);

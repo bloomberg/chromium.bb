@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "net/base/filename_util.h"
 #include "net/base/net_util.h"
@@ -74,10 +75,7 @@ class CallbacksJobFactory : public URLRequestJobFactory {
       URLRequest* request,
       NetworkDelegate* network_delegate) const override {
     URLRequestFileJobWithCallbacks* job = new URLRequestFileJobWithCallbacks(
-        request,
-        network_delegate,
-        path_,
-        base::MessageLoop::current()->message_loop_proxy());
+        request, network_delegate, path_, base::ThreadTaskRunnerHandle::Get());
     observer_->OnJobCreated(job);
     return job;
   }

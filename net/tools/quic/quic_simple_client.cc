@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/run_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_request_info.h"
 #include "net/http/http_response_info.h"
@@ -297,10 +298,8 @@ QuicConnectionId QuicSimpleClient::GenerateConnectionId() {
 }
 
 QuicConnectionHelper* QuicSimpleClient::CreateQuicConnectionHelper() {
-  return new QuicConnectionHelper(
-      base::MessageLoop::current()->message_loop_proxy().get(),
-      &clock_,
-      QuicRandom::GetInstance());
+  return new QuicConnectionHelper(base::ThreadTaskRunnerHandle::Get().get(),
+                                  &clock_, QuicRandom::GetInstance());
 }
 
 QuicPacketWriter* QuicSimpleClient::CreateQuicPacketWriter() {

@@ -8,8 +8,10 @@
 #include <queue>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
@@ -176,7 +178,7 @@ void MDnsConnection::PostOnError(SocketHandler* loop, int rv) {
           << std::find(socket_handlers_.begin(), socket_handlers_.end(), loop) -
                  socket_handlers_.begin() << ", error=" << rv;
   // Post to allow deletion of this object by delegate.
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&MDnsConnection::OnError, weak_ptr_factory_.GetWeakPtr(), rv));
 }
@@ -368,9 +370,9 @@ void MDnsClientImpl::Core::RemoveListener(MDnsListenerImpl* listener) {
   if (!observer_list_iterator->second->might_have_observers()) {
     // Schedule the actual removal for later in case the listener removal
     // happens while iterating over the observer list.
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(
-            &MDnsClientImpl::Core::CleanupObserverList, AsWeakPtr(), key));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&MDnsClientImpl::Core::CleanupObserverList,
+                              AsWeakPtr(), key));
   }
 }
 
@@ -587,10 +589,10 @@ void MDnsListenerImpl::ScheduleNextRefresh() {
       static_cast<int>(base::Time::kMillisecondsPerSecond *
                        kListenerRefreshRatio2 * ttl_));
 
-  base::MessageLoop::current()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, next_refresh_.callback(), next_refresh1 - clock_->Now());
 
-  base::MessageLoop::current()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, next_refresh_.callback(), next_refresh2 - clock_->Now());
 }
 
@@ -729,9 +731,8 @@ bool MDnsTransactionImpl::QueryAndListen() {
 
   timeout_.Reset(base::Bind(&MDnsTransactionImpl::SignalTransactionOver,
                             AsWeakPtr()));
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      timeout_.callback(),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, timeout_.callback(),
       base::TimeDelta::FromSeconds(MDnsTransactionTimeoutSeconds));
 
   return true;

@@ -5,6 +5,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
 #include "base/path_service.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread.h"
 #include "net/http/http_response_headers.h"
@@ -55,8 +56,8 @@ class EmbeddedTestServerTest: public testing::Test,
     thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
     ASSERT_TRUE(io_thread_.StartWithOptions(thread_options));
 
-    request_context_getter_ = new TestURLRequestContextGetter(
-        io_thread_.message_loop_proxy());
+    request_context_getter_ =
+        new TestURLRequestContextGetter(io_thread_.task_runner());
 
     server_.reset(new EmbeddedTestServer);
     ASSERT_TRUE(server_->InitializeAndWaitUntilReady());
@@ -261,7 +262,7 @@ class EmbeddedTestServerThreadingTestDelegate
     base::Thread::Options thread_options;
     thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
     ASSERT_TRUE(io_thread.StartWithOptions(thread_options));
-    io_thread_runner = io_thread.message_loop_proxy();
+    io_thread_runner = io_thread.task_runner();
 
     scoped_ptr<base::MessageLoop> loop;
     if (message_loop_present_on_initialize_)
@@ -280,7 +281,7 @@ class EmbeddedTestServerThreadingTestDelegate
     scoped_ptr<URLFetcher> fetcher =
         URLFetcher::Create(server.GetURL("/test?q=foo"), URLFetcher::GET, this);
     fetcher->SetRequestContext(
-        new TestURLRequestContextGetter(loop->message_loop_proxy()));
+        new TestURLRequestContextGetter(loop->task_runner()));
     fetcher->Start();
     loop->Run();
     fetcher.reset();

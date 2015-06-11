@@ -15,11 +15,12 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
 #include "base/rand_util.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "crypto/ec_private_key.h"
 #include "net/base/net_errors.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -118,19 +119,17 @@ class ChannelIDServiceWorker {
       int,
       scoped_ptr<ChannelIDStore::ChannelID>)> WorkerDoneCallback;
 
-  ChannelIDServiceWorker(
-      const std::string& server_identifier,
-      const WorkerDoneCallback& callback)
+  ChannelIDServiceWorker(const std::string& server_identifier,
+                         const WorkerDoneCallback& callback)
       : server_identifier_(server_identifier),
-        origin_loop_(base::MessageLoopProxy::current()),
-        callback_(callback) {
-  }
+        origin_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+        callback_(callback) {}
 
   // Starts the worker on |task_runner|. If the worker fails to start, such as
   // if the task runner is shutting down, then it will take care of deleting
   // itself.
   bool Start(const scoped_refptr<base::TaskRunner>& task_runner) {
-    DCHECK(origin_loop_->RunsTasksOnCurrentThread());
+    DCHECK(origin_task_runner_->RunsTasksOnCurrentThread());
 
     return task_runner->PostTask(
         FROM_HERE,
@@ -153,13 +152,13 @@ class ChannelIDServiceWorker {
     // destructors run.
     PR_DetachThread();
 #endif
-    origin_loop_->PostTask(FROM_HERE,
-                           base::Bind(callback_, server_identifier_, error,
-                                      base::Passed(&channel_id)));
+    origin_task_runner_->PostTask(
+        FROM_HERE, base::Bind(callback_, server_identifier_, error,
+                              base::Passed(&channel_id)));
   }
 
   const std::string server_identifier_;
-  scoped_refptr<base::SequencedTaskRunner> origin_loop_;
+  scoped_refptr<base::SequencedTaskRunner> origin_task_runner_;
   WorkerDoneCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ChannelIDServiceWorker);
@@ -167,7 +166,7 @@ class ChannelIDServiceWorker {
 
 // A ChannelIDServiceJob is a one-to-one counterpart of an
 // ChannelIDServiceWorker. It lives only on the ChannelIDService's
-// origin message loop.
+// origin task runner's thread.
 class ChannelIDServiceJob {
  public:
   ChannelIDServiceJob(bool create_if_missing)

@@ -11,13 +11,16 @@
 #include "base/cancelable_callback.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
+#include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "net/base/address_list.h"
 #include "net/base/ip_endpoint.h"
@@ -389,7 +392,7 @@ void GDig::Start() {
                                                base::Unretained(this)));
     timeout_closure_.Reset(base::Bind(&GDig::OnTimeout,
                                       base::Unretained(this)));
-    base::MessageLoop::current()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, timeout_closure_.callback(), config_timeout_);
   }
 }
@@ -445,9 +448,8 @@ void GDig::ReplayNextEntry() {
     const ReplayLogEntry& entry = replay_log_[replay_log_index_];
     if (time_since_start < entry.start_time) {
       // Delay call to next time and return.
-      base::MessageLoop::current()->PostDelayedTask(
-          FROM_HERE,
-          base::Bind(&GDig::ReplayNextEntry, base::Unretained(this)),
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+          FROM_HERE, base::Bind(&GDig::ReplayNextEntry, base::Unretained(this)),
           entry.start_time - time_since_start);
       return;
     }

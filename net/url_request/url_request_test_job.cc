@@ -10,8 +10,10 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/lazy_instance.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
@@ -176,9 +178,9 @@ void URLRequestTestJob::SetPriority(RequestPriority priority) {
 void URLRequestTestJob::Start() {
   // Start reading asynchronously so that all error reporting and data
   // callbacks happen as they would for network requests.
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE, base::Bind(&URLRequestTestJob::StartAsync,
-                            weak_factory_.GetWeakPtr()));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::Bind(&URLRequestTestJob::StartAsync, weak_factory_.GetWeakPtr()));
 }
 
 void URLRequestTestJob::StartAsync() {
@@ -330,7 +332,7 @@ bool URLRequestTestJob::NextReadAsync() {
 
 void URLRequestTestJob::AdvanceJob() {
   if (auto_advance_) {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&URLRequestTestJob::ProcessNextOperation,
                               weak_factory_.GetWeakPtr()));
     return;

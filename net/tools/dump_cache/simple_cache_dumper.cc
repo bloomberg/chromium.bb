@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/threading/thread.h"
 #include "net/base/cache_type.h"
 #include "net/base/io_buffer.h"
@@ -122,15 +121,8 @@ int SimpleCacheDumper::DoCreateCache() {
   DCHECK(!cache_);
   state_ = STATE_CREATE_CACHE_COMPLETE;
   return disk_cache::CreateCacheBackend(
-      DISK_CACHE,
-      CACHE_BACKEND_DEFAULT,
-      input_path_,
-      0,
-      false,
-      cache_thread_->message_loop_proxy().get(),
-      NULL,
-      &cache_,
-      io_callback_);
+      DISK_CACHE, CACHE_BACKEND_DEFAULT, input_path_, 0, false,
+      cache_thread_->task_runner().get(), NULL, &cache_, io_callback_);
 }
 
 int SimpleCacheDumper::DoCreateCacheComplete(int rv) {

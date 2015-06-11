@@ -6,6 +6,9 @@
 
 #include <string.h>
 
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/quic/crypto/crypto_handshake.h"
@@ -62,7 +65,7 @@ class CustomPacketWriterFactory : public QuicDispatcher::PacketWriterFactory {
 
 QuicSimpleServer::QuicSimpleServer(const QuicConfig& config,
                                    const QuicVersionVector& supported_versions)
-    : helper_(base::MessageLoop::current()->message_loop_proxy().get(),
+    : helper_(base::ThreadTaskRunnerHandle::Get().get(),
               &clock_,
               QuicRandom::GetInstance()),
       config_(config),
@@ -190,11 +193,9 @@ void QuicSimpleServer::StartReading() {
     synchronous_read_count_ = 0;
     // Schedule the processing through the message loop to 1) prevent infinite
     // recursion and 2) avoid blocking the thread for too long.
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&QuicSimpleServer::OnReadComplete,
-                   weak_factory_.GetWeakPtr(),
-                   result));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&QuicSimpleServer::OnReadComplete,
+                              weak_factory_.GetWeakPtr(), result));
   } else {
     OnReadComplete(result);
   }

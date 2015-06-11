@@ -31,10 +31,8 @@ class TransportSecurityPersisterTest : public testing::Test {
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     persister_.reset(new TransportSecurityPersister(
-        &state_,
-        temp_dir_.path(),
-        base::MessageLoopForIO::current()->message_loop_proxy(),
-        false));
+        &state_, temp_dir_.path(),
+        base::MessageLoopForIO::current()->task_runner(), false));
   }
 
  protected:

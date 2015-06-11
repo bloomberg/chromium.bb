@@ -12,8 +12,11 @@
 #include "base/files/file_path.h"
 #include "base/files/file_path_watcher.h"
 #include "base/lazy_instance.h"
+#include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_util.h"
@@ -232,11 +235,9 @@ class DnsConfigServicePosix::Watcher {
 #endif  // defined(OS_ANDROID)
     // Ignore transient flutter of resolv.conf by delaying the signal a bit.
     const base::TimeDelta kDelay = base::TimeDelta::FromMilliseconds(50);
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&Watcher::OnConfigChangedDelayed,
-                   weak_factory_.GetWeakPtr(),
-                   succeeded),
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, base::Bind(&Watcher::OnConfigChangedDelayed,
+                              weak_factory_.GetWeakPtr(), succeeded),
         kDelay);
   }
   void OnConfigChangedDelayed(bool succeeded) {

@@ -54,8 +54,8 @@ class ProxyConfigServiceAndroidTestBase : public testing::Test {
   ProxyConfigServiceAndroidTestBase(const StringMap& initial_configuration)
       : configuration_(initial_configuration),
         message_loop_(base::MessageLoop::current()),
-        service_(message_loop_->message_loop_proxy(),
-                 message_loop_->message_loop_proxy(),
+        service_(message_loop_->task_runner(),
+                 message_loop_->task_runner(),
                  base::Bind(&ProxyConfigServiceAndroidTestBase::GetProperty,
                             base::Unretained(this))) {}
 

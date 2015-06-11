@@ -19,10 +19,11 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/lazy_instance.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -370,9 +371,8 @@ class OCSPRequestSession
   void CancelLocked() {
     lock_.AssertAcquired();
     if (io_loop_) {
-      io_loop_->PostTask(
-          FROM_HERE,
-          base::Bind(&OCSPRequestSession::CancelURLRequest, this));
+      io_loop_->task_runner()->PostTask(
+          FROM_HERE, base::Bind(&OCSPRequestSession::CancelURLRequest, this));
     }
   }
 
@@ -532,7 +532,7 @@ void OCSPIOLoop::PostTaskToIOLoop(
     const tracked_objects::Location& from_here, const base::Closure& task) {
   base::AutoLock autolock(lock_);
   if (io_loop_)
-    io_loop_->PostTask(from_here, task);
+    io_loop_->task_runner()->PostTask(from_here, task);
 }
 
 void OCSPIOLoop::EnsureIOLoop() {

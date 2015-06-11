@@ -5,7 +5,7 @@
 #include "net/spdy/spdy_http_stream.h"
 
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "crypto/ec_private_key.h"

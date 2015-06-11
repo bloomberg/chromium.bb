@@ -20,12 +20,13 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/format_macros.h"
+#include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -33,6 +34,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
+#include "base/thread_task_runner_handle.h"
 #include "net/base/chunked_upload_data_stream.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/load_flags.h"
@@ -550,7 +552,7 @@ NetworkDelegate::AuthRequiredResponse BlockingNetworkDelegate::OnAuthRequired(
       return auth_retval_;
 
     case AUTO_CALLBACK:
-      base::MessageLoop::current()->PostTask(
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
           base::Bind(&BlockingNetworkDelegate::RunAuthCallback,
                      weak_factory_.GetWeakPtr(), auth_retval_, callback));
@@ -559,8 +561,8 @@ NetworkDelegate::AuthRequiredResponse BlockingNetworkDelegate::OnAuthRequired(
     case USER_CALLBACK:
       auth_callback_ = callback;
       stage_blocked_for_callback_ = ON_AUTH_REQUIRED;
-      base::MessageLoop::current()->PostTask(FROM_HERE,
-                                             base::MessageLoop::QuitClosure());
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::MessageLoop::QuitClosure());
       return AUTH_REQUIRED_RESPONSE_IO_PENDING;
   }
   NOTREACHED();
@@ -590,17 +592,16 @@ int BlockingNetworkDelegate::MaybeBlockStage(
       return retval_;
 
     case AUTO_CALLBACK:
-      base::MessageLoop::current()->PostTask(
-          FROM_HERE,
-          base::Bind(&BlockingNetworkDelegate::RunCallback,
-                     weak_factory_.GetWeakPtr(), retval_, callback));
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::Bind(&BlockingNetworkDelegate::RunCallback,
+                                weak_factory_.GetWeakPtr(), retval_, callback));
       return ERR_IO_PENDING;
 
     case USER_CALLBACK:
       callback_ = callback;
       stage_blocked_for_callback_ = stage;
-      base::MessageLoop::current()->PostTask(FROM_HERE,
-                                             base::MessageLoop::QuitClosure());
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::MessageLoop::QuitClosure());
       return ERR_IO_PENDING;
   }
   NOTREACHED();
@@ -648,7 +649,7 @@ class URLRequestTest : public PlatformTest {
     job_factory_impl_->SetProtocolHandler("data", new DataProtocolHandler);
 #if !defined(DISABLE_FILE_SUPPORT)
     job_factory_impl_->SetProtocolHandler(
-        "file", new FileProtocolHandler(base::MessageLoopProxy::current()));
+        "file", new FileProtocolHandler(base::ThreadTaskRunnerHandle::Get()));
 #endif
   }
 
@@ -4288,9 +4289,8 @@ class AsyncDelegateLogger : public base::RefCounted<AsyncDelegateLogger> {
     LoadStateWithParam load_state = url_request_->GetLoadState();
     EXPECT_EQ(expected_first_load_state_, load_state.state);
     EXPECT_NE(ASCIIToUTF16(kFirstDelegateInfo), load_state.param);
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&AsyncDelegateLogger::LogSecondDelegate, this));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&AsyncDelegateLogger::LogSecondDelegate, this));
   }
 
   void LogSecondDelegate() {
@@ -4302,9 +4302,8 @@ class AsyncDelegateLogger : public base::RefCounted<AsyncDelegateLogger> {
     } else {
       EXPECT_NE(ASCIIToUTF16(kSecondDelegateInfo), load_state.param);
     }
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&AsyncDelegateLogger::LogComplete, this));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&AsyncDelegateLogger::LogComplete, this));
   }
 
   void LogComplete() {
@@ -5162,11 +5161,8 @@ TEST_F(URLRequestTestHTTP, PostFileTest) {
     path = path.Append(kTestFilePath);
     path = path.Append(FILE_PATH_LITERAL("with-headers.html"));
     element_readers.push_back(
-        new UploadFileElementReader(base::MessageLoopProxy::current().get(),
-                                    path,
-                                    0,
-                                    kuint64max,
-                                    base::Time()));
+        new UploadFileElementReader(base::ThreadTaskRunnerHandle::Get().get(),
+                                    path, 0, kuint64max, base::Time()));
     r->set_upload(make_scoped_ptr<UploadDataStream>(
         new ElementsUploadDataStream(element_readers.Pass(), 0)));
 
@@ -5206,12 +5202,10 @@ TEST_F(URLRequestTestHTTP, PostUnreadableFileTest) {
     ScopedVector<UploadElementReader> element_readers;
 
     element_readers.push_back(new UploadFileElementReader(
-        base::MessageLoopProxy::current().get(),
+        base::ThreadTaskRunnerHandle::Get().get(),
         base::FilePath(FILE_PATH_LITERAL(
             "c:\\path\\to\\non\\existant\\file.randomness.12345")),
-        0,
-        kuint64max,
-        base::Time()));
+        0, kuint64max, base::Time()));
     r->set_upload(make_scoped_ptr<UploadDataStream>(
         new ElementsUploadDataStream(element_readers.Pass(), 0)));
 
@@ -5575,7 +5569,8 @@ TEST_F(URLRequestTestHTTP, ProtocolHandlerAndFactoryRestrictDataRedirects) {
 TEST_F(URLRequestTestHTTP, ProtocolHandlerAndFactoryRestrictFileRedirects) {
   // Test URLRequestJobFactory::ProtocolHandler::IsSafeRedirectTarget().
   GURL file_url("file:///foo.txt");
-  FileProtocolHandler file_protocol_handler(base::MessageLoopProxy::current());
+  FileProtocolHandler file_protocol_handler(
+      base::ThreadTaskRunnerHandle::Get());
   EXPECT_FALSE(file_protocol_handler.IsSafeRedirectTarget(file_url));
 
   // Test URLRequestJobFactoryImpl::IsSafeRedirectTarget().

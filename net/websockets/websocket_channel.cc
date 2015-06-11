@@ -13,13 +13,15 @@
 #include "base/big_endian.h"
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "net/base/io_buffer.h"
 #include "net/http/http_request_headers.h"
@@ -640,10 +642,9 @@ void WebSocketChannel::OnFinishOpeningHandshake(
 }
 
 void WebSocketChannel::ScheduleOpeningHandshakeNotification() {
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(HandshakeNotificationSender::Send,
-                 notification_sender_->AsWeakPtr()));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(HandshakeNotificationSender::Send,
+                            notification_sender_->AsWeakPtr()));
 }
 
 ChannelState WebSocketChannel::WriteFrames() {

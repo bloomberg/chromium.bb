@@ -8,10 +8,12 @@
 
 #include "base/compiler_specific.h"
 #include "base/format_macros.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "net/base/net_errors.h"
@@ -286,7 +288,7 @@ int ClientSocketPoolBaseHelper::RequestSocket(
     // re-entrancy issues if the socket pool is doing something else at the
     // time.
     if (group->CanUseAdditionalSocketSlot(max_sockets_per_group_)) {
-      base::MessageLoop::current()->PostTask(
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
           base::Bind(
               &ClientSocketPoolBaseHelper::TryToCloseSocketsInLayeredPools,
@@ -1128,10 +1130,9 @@ void ClientSocketPoolBaseHelper::InvokeUserCallbackLater(
     ClientSocketHandle* handle, const CompletionCallback& callback, int rv) {
   CHECK(!ContainsKey(pending_callback_map_, handle));
   pending_callback_map_[handle] = CallbackResultPair(callback, rv);
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&ClientSocketPoolBaseHelper::InvokeUserCallback,
-                 weak_factory_.GetWeakPtr(), handle));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&ClientSocketPoolBaseHelper::InvokeUserCallback,
+                            weak_factory_.GetWeakPtr(), handle));
 }
 
 void ClientSocketPoolBaseHelper::InvokeUserCallback(

@@ -5,7 +5,9 @@
 #include "net/http/mock_http_cache.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -297,7 +299,7 @@ void MockDiskEntry::CallbackLater(const CompletionCallback& callback,
                                   int result) {
   if (ignore_callbacks_)
     return StoreAndDeliverCallbacks(true, this, callback, result);
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&MockDiskEntry::RunCallback, this, callback, result));
 }
@@ -498,7 +500,7 @@ void MockDiskCache::ReleaseAll() {
 
 void MockDiskCache::CallbackLater(const CompletionCallback& callback,
                                   int result) {
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&CallbackForwader, callback, result));
 }
 

@@ -5,8 +5,10 @@
 #include "net/url_request/url_request_ftp_job.h"
 
 #include "base/compiler_specific.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "net/base/auth.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
@@ -239,10 +241,9 @@ void URLRequestFtpJob::OnStartCompleted(int result) {
 }
 
 void URLRequestFtpJob::OnStartCompletedAsync(int result) {
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&URLRequestFtpJob::OnStartCompleted,
-                 weak_factory_.GetWeakPtr(), result));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&URLRequestFtpJob::OnStartCompleted,
+                            weak_factory_.GetWeakPtr(), result));
 }
 
 void URLRequestFtpJob::OnReadCompleted(int result) {

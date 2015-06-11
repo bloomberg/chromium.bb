@@ -9,11 +9,11 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -629,10 +629,9 @@ class ProxyService::ProxyScriptDeciderPoller {
   void StartPollTimer() {
     DCHECK(!decider_.get());
 
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&ProxyScriptDeciderPoller::DoPoll,
-                   weak_factory_.GetWeakPtr()),
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, base::Bind(&ProxyScriptDeciderPoller::DoPoll,
+                              weak_factory_.GetWeakPtr()),
         next_poll_delay_);
   }
 
@@ -677,11 +676,10 @@ class ProxyService::ProxyScriptDeciderPoller {
       // rather than calling it directly -- this is done to avoid an ugly
       // destruction sequence, since |this| might be destroyed as a result of
       // the notification.
-      base::MessageLoop::current()->PostTask(
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
           base::Bind(&ProxyScriptDeciderPoller::NotifyProxyServiceOfChange,
-                     weak_factory_.GetWeakPtr(),
-                     result,
+                     weak_factory_.GetWeakPtr(), result,
                      make_scoped_refptr(decider_->script_data()),
                      decider_->effective_config()));
       return;
@@ -1531,8 +1529,8 @@ ProxyConfigService* ProxyService::CreateSystemProxyConfigService(
 
   return linux_config_service;
 #elif defined(OS_ANDROID)
-  return new ProxyConfigServiceAndroid(
-      io_task_runner, base::MessageLoop::current()->message_loop_proxy());
+  return new ProxyConfigServiceAndroid(io_task_runner,
+                                       base::ThreadTaskRunnerHandle::Get());
 #else
   LOG(WARNING) << "Failed to choose a system proxy settings fetcher "
                   "for this platform.";

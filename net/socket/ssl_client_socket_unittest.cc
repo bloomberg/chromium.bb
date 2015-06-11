@@ -5,8 +5,10 @@
 #include "net/socket/ssl_client_socket.h"
 
 #include "base/callback_helpers.h"
+#include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "net/base/address_list.h"
@@ -654,7 +656,7 @@ class AsyncFailingChannelIDStore : public ChannelIDStore {
   int GetChannelID(const std::string& server_identifier,
                    scoped_ptr<crypto::ECPrivateKey>* key_result,
                    const GetChannelIDCallback& callback) override {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(callback, ERR_UNEXPECTED, server_identifier, nullptr));
     return ERR_IO_PENDING;
@@ -1483,7 +1485,7 @@ TEST_F(SSLClientSocketTest, Write_WithSynchronousErrorNoRead) {
   // TODO(davidben): Avoid the arbitrary timeout?
   int old_write_count = raw_counting_socket->write_count();
   base::RunLoop loop;
-  base::MessageLoop::current()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, loop.QuitClosure(), base::TimeDelta::FromMilliseconds(100));
   loop.Run();
   EXPECT_EQ(old_write_count, raw_counting_socket->write_count());

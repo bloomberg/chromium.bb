@@ -5,8 +5,10 @@
 // Illustrates how to use worker threads that issue completion callbacks
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/worker_pool.h"
 #include "net/base/completion_callback.h"
 #include "net/base/test_completion_callback.h"
@@ -80,8 +82,8 @@ void ExampleEmployer::ExampleWorker::DoWork() {
   {
     base::AutoLock locked(origin_loop_lock_);
     if (origin_loop_)
-      origin_loop_->PostTask(FROM_HERE,
-                             base::Bind(&ExampleWorker::DoCallback, this));
+      origin_loop_->task_runner()->PostTask(
+          FROM_HERE, base::Bind(&ExampleWorker::DoCallback, this));
   }
 }
 

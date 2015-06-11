@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/location.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/prefs/testing_pref_store.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "net/base/sdch_manager.h"
 #include "net/log/net_log.h"
@@ -95,7 +98,7 @@ class URLRequestErrorCountingJob : public URLRequestJob {
   }
 
   void Start() override {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&URLRequestErrorCountingJob::StartAsync,
                               weak_factory_.GetWeakPtr()));
   }

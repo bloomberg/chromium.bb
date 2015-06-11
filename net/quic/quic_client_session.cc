@@ -5,11 +5,13 @@
 #include "net/quic/quic_client_session.h"
 
 #include "base/callback_helpers.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -905,10 +907,9 @@ void QuicClientSession::NotifyFactoryOfSessionClosedLater() {
   going_away_ = true;
   DCHECK_EQ(0u, GetNumOpenStreams());
   DCHECK(!connection()->connected());
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&QuicClientSession::NotifyFactoryOfSessionClosed,
-                 weak_factory_.GetWeakPtr()));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&QuicClientSession::NotifyFactoryOfSessionClosed,
+                            weak_factory_.GetWeakPtr()));
 }
 
 void QuicClientSession::NotifyFactoryOfSessionClosed() {

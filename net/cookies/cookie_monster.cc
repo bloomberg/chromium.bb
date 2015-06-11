@@ -51,9 +51,9 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/profiler/scoped_tracker.h"
@@ -1362,7 +1362,7 @@ void CookieMonster::FlushStore(const base::Closure& callback) {
   if (initialized_ && store_.get())
     store_->Flush(callback);
   else if (!callback.is_null())
-    base::MessageLoop::current()->PostTask(FROM_HERE, callback);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
 }
 
 bool CookieMonster::SetCookieWithOptions(const GURL& url,

@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -367,7 +368,7 @@ void Executor::StartJob(Job* job) {
   // cancelled), it will invoke OnJobCompleted() on this thread.
   job->set_executor(this);
   job->FinishedWaitingForThread();
-  thread_->message_loop()->PostTask(
+  thread_->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&Job::Run, job, base::ThreadTaskRunnerHandle::Get()));
 }

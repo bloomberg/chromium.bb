@@ -12,7 +12,8 @@
 #include "base/i18n/file_util_icu.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/worker_pool.h"
 #include "net/base/net_errors.h"
@@ -97,7 +98,7 @@ DirectoryLister::Core::Core(const base::FilePath& dir,
                             DirectoryLister* lister)
     : dir_(dir),
       type_(type),
-      origin_loop_(base::MessageLoopProxy::current()),
+      origin_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       lister_(lister),
       cancelled_(0) {
   DCHECK(lister_);
@@ -106,7 +107,7 @@ DirectoryLister::Core::Core(const base::FilePath& dir,
 DirectoryLister::Core::~Core() {}
 
 void DirectoryLister::Core::CancelOnOriginThread() {
-  DCHECK(origin_loop_->BelongsToCurrentThread());
+  DCHECK(origin_task_runner_->BelongsToCurrentThread());
 
   base::subtle::NoBarrier_Store(&cancelled_, 1);
   // Core must not call into |lister_| after cancellation, as the |lister_| may
@@ -119,7 +120,7 @@ void DirectoryLister::Core::Start() {
   scoped_ptr<DirectoryList> directory_list(new DirectoryList());
 
   if (!base::DirectoryExists(dir_)) {
-    origin_loop_->PostTask(
+    origin_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&Core::DoneOnOriginThread, this,
                    base::Passed(directory_list.Pass()), ERR_FILE_NOT_FOUND));
@@ -166,10 +167,9 @@ void DirectoryLister::Core::Start() {
 
   SortData(directory_list.get(), type_);
 
-  origin_loop_->PostTask(
-      FROM_HERE,
-      base::Bind(&Core::DoneOnOriginThread, this,
-                 base::Passed(directory_list.Pass()), OK));
+  origin_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&Core::DoneOnOriginThread, this,
+                            base::Passed(directory_list.Pass()), OK));
 }
 
 bool DirectoryLister::Core::IsCancelled() const {
@@ -178,7 +178,7 @@ bool DirectoryLister::Core::IsCancelled() const {
 
 void DirectoryLister::Core::DoneOnOriginThread(
     scoped_ptr<DirectoryList> directory_list, int error) const {
-  DCHECK(origin_loop_->BelongsToCurrentThread());
+  DCHECK(origin_task_runner_->BelongsToCurrentThread());
 
   // Need to check if the operation was before first callback.
   if (IsCancelled())

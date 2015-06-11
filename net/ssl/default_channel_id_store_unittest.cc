@@ -10,9 +10,12 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "crypto/ec_private_key.h"
 #include "net/base/net_errors.h"
 #include "net/test/channel_id_test_util.h"
@@ -93,7 +96,7 @@ void MockPersistentStore::Load(const LoadedCallback& loaded_callback) {
         new DefaultChannelIDStore::ChannelID(it->second));
   }
 
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(loaded_callback, base::Passed(&channel_ids)));
 }
 

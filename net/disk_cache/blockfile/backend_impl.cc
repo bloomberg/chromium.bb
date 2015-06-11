@@ -10,7 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/hash.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/rand_util.h"
@@ -18,6 +18,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -1032,7 +1033,7 @@ void BackendImpl::CriticalError(int error) {
   disabled_ = true;
 
   if (!num_refs_)
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&BackendImpl::RestartCache, GetWeakPtr(), true));
 }
 
@@ -1809,7 +1810,7 @@ void BackendImpl::DecreaseNumRefs() {
   num_refs_--;
 
   if (!num_refs_ && disabled_)
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&BackendImpl::RestartCache, GetWeakPtr(), true));
 }
 

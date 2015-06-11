@@ -31,6 +31,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/move.h"
+#include "base/single_thread_task_runner.h"
 #include "base/task_runner.h"
 #include "net/base/completion_callback.h"
 #include "net/base/file_stream.h"
@@ -180,15 +181,15 @@ class FileStream::Context {
   // The |buf_len| parameter contains the number of bytes to be read.
   // The |overlapped| parameter is a pointer to the OVERLAPPED structure being
   // used.
-  // The |origin_thread_loop| is a MessageLoopProxy instance used to post tasks
-  // back to the originating thread.
+  // The |origin_thread_task_runner| is a task runner instance used to post
+  // tasks back to the originating thread.
   static void ReadAsync(
       FileStream::Context* context,
       HANDLE file,
       scoped_refptr<IOBuffer> buf,
       int buf_len,
       OVERLAPPED* overlapped,
-      scoped_refptr<base::MessageLoopProxy> origin_thread_loop);
+      scoped_refptr<base::SingleThreadTaskRunner> origin_thread_task_runner);
 
   // This callback executes on the main calling thread. It informs the caller
   // about the result of the ReadFile call.

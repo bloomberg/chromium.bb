@@ -15,6 +15,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "net/base/chunked_upload_data_stream.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/io_buffer.h"
@@ -154,11 +155,8 @@ TEST(HttpStreamParser, ShouldMergeRequestHeadersAndBody_FileBody) {
                                                &temp_file_path));
 
     element_readers.push_back(
-        new UploadFileElementReader(base::MessageLoopProxy::current().get(),
-                                    temp_file_path,
-                                    0,
-                                    0,
-                                    base::Time()));
+        new UploadFileElementReader(base::ThreadTaskRunnerHandle::Get().get(),
+                                    temp_file_path, 0, 0, base::Time()));
 
     scoped_ptr<UploadDataStream> body(
         new ElementsUploadDataStream(element_readers.Pass(), 0));

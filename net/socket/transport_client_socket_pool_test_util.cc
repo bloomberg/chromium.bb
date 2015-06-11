@@ -6,9 +6,12 @@
 
 #include <string>
 
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/load_timing_info_test_util.h"
@@ -189,8 +192,8 @@ class MockTriggerableClientSocket : public StreamSocket {
       net::NetLog* net_log) {
     scoped_ptr<MockTriggerableClientSocket> socket(
         new MockTriggerableClientSocket(addrlist, should_connect, net_log));
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-                                           socket->GetConnectCallback());
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  socket->GetConnectCallback());
     return socket.Pass();
   }
 
@@ -201,7 +204,7 @@ class MockTriggerableClientSocket : public StreamSocket {
       net::NetLog* net_log) {
     scoped_ptr<MockTriggerableClientSocket> socket(
         new MockTriggerableClientSocket(addrlist, should_connect, net_log));
-    base::MessageLoop::current()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, socket->GetConnectCallback(), delay);
     return socket.Pass();
   }

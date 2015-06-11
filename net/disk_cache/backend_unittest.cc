@@ -54,7 +54,7 @@ scoped_ptr<disk_cache::BackendImpl> CreateExistingEntryCache(
   net::TestCompletionCallback cb;
 
   scoped_ptr<disk_cache::BackendImpl> cache(new disk_cache::BackendImpl(
-      cache_path, cache_thread.message_loop_proxy(), NULL));
+      cache_path, cache_thread.task_runner(), NULL));
   int rv = cache->Init(cb.callback());
   if (cb.GetResult(rv) != net::OK)
     return scoped_ptr<disk_cache::BackendImpl>();
@@ -1900,8 +1900,8 @@ TEST_F(DiskCacheTest, SimpleCacheControlRestart) {
 
   const int kRestartCount = 5;
   for (int i = 0; i < kRestartCount; ++i) {
-    cache.reset(new disk_cache::BackendImpl(
-        cache_path_, cache_thread.message_loop_proxy(), NULL));
+    cache.reset(new disk_cache::BackendImpl(cache_path_,
+                                            cache_thread.task_runner(), NULL));
     int rv = cache->Init(cb.callback());
     ASSERT_EQ(net::OK, cb.GetResult(rv));
     EXPECT_EQ(1, cache->GetEntryCount());
@@ -1942,7 +1942,7 @@ TEST_F(DiskCacheTest, SimpleCacheControlLeave) {
   const int kRestartCount = 5;
   for (int i = 0; i < kRestartCount; ++i) {
     scoped_ptr<disk_cache::BackendImpl> cache(new disk_cache::BackendImpl(
-        cache_path_, cache_thread.message_loop_proxy(), NULL));
+        cache_path_, cache_thread.task_runner(), NULL));
     int rv = cache->Init(cb.callback());
     ASSERT_EQ(net::OK, cb.GetResult(rv));
     EXPECT_EQ(1, cache->GetEntryCount());

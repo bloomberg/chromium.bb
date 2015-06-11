@@ -14,6 +14,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/test/test_file_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "net/base/auth.h"
 #include "net/base/chunked_upload_data_stream.h"
 #include "net/base/elements_upload_data_stream.h"
@@ -470,12 +471,9 @@ class SpdyNetworkTransactionTest
                base::WriteFile(file_path, kUploadData, kUploadDataSize));
 
       ScopedVector<UploadElementReader> element_readers;
-      element_readers.push_back(
-          new UploadFileElementReader(base::MessageLoopProxy::current().get(),
-                                      file_path,
-                                      0,
-                                      kUploadDataSize,
-                                      base::Time()));
+      element_readers.push_back(new UploadFileElementReader(
+          base::ThreadTaskRunnerHandle::Get().get(), file_path, 0,
+          kUploadDataSize, base::Time()));
       upload_data_stream_.reset(
           new ElementsUploadDataStream(element_readers.Pass(), 0));
 
@@ -498,12 +496,9 @@ class SpdyNetworkTransactionTest
     CHECK(base::MakeFileUnreadable(file_path));
 
     ScopedVector<UploadElementReader> element_readers;
-    element_readers.push_back(
-        new UploadFileElementReader(base::MessageLoopProxy::current().get(),
-                                    file_path,
-                                    0,
-                                    kUploadDataSize,
-                                    base::Time()));
+    element_readers.push_back(new UploadFileElementReader(
+        base::ThreadTaskRunnerHandle::Get().get(), file_path, 0,
+        kUploadDataSize, base::Time()));
     upload_data_stream_.reset(
         new ElementsUploadDataStream(element_readers.Pass(), 0));
 
@@ -528,12 +523,9 @@ class SpdyNetworkTransactionTest
       ScopedVector<UploadElementReader> element_readers;
       element_readers.push_back(
           new UploadBytesElementReader(kUploadData, kFileRangeOffset));
-      element_readers.push_back(
-          new UploadFileElementReader(base::MessageLoopProxy::current().get(),
-                                      file_path,
-                                      kFileRangeOffset,
-                                      kFileRangeLength,
-                                      base::Time()));
+      element_readers.push_back(new UploadFileElementReader(
+          base::ThreadTaskRunnerHandle::Get().get(), file_path,
+          kFileRangeOffset, kFileRangeLength, base::Time()));
       element_readers.push_back(new UploadBytesElementReader(
           kUploadData + kFileRangeOffset + kFileRangeLength,
           kUploadDataSize - (kFileRangeOffset + kFileRangeLength)));

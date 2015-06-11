@@ -6,8 +6,8 @@
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
@@ -32,12 +32,9 @@ class UploadFileElementReaderTest : public PlatformTest {
         static_cast<int>(bytes_.size()),
         base::WriteFile(temp_file_path_, &bytes_[0], bytes_.size()));
 
-    reader_.reset(
-        new UploadFileElementReader(base::MessageLoopProxy::current().get(),
-                                    temp_file_path_,
-                                    0,
-                                    kuint64max,
-                                    base::Time()));
+    reader_.reset(new UploadFileElementReader(
+        base::ThreadTaskRunnerHandle::Get().get(), temp_file_path_, 0,
+        kuint64max, base::Time()));
     TestCompletionCallback callback;
     ASSERT_EQ(ERR_IO_PENDING, reader_->Init(callback.callback()));
     EXPECT_EQ(OK, callback.WaitForResult());
@@ -180,12 +177,9 @@ TEST_F(UploadFileElementReaderTest, InitDuringAsyncOperation) {
 TEST_F(UploadFileElementReaderTest, Range) {
   const uint64_t kOffset = 2;
   const uint64_t kLength = bytes_.size() - kOffset * 3;
-  reader_.reset(
-      new UploadFileElementReader(base::MessageLoopProxy::current().get(),
-                                  temp_file_path_,
-                                  kOffset,
-                                  kLength,
-                                  base::Time()));
+  reader_.reset(new UploadFileElementReader(
+      base::ThreadTaskRunnerHandle::Get().get(), temp_file_path_, kOffset,
+      kLength, base::Time()));
   TestCompletionCallback init_callback;
   ASSERT_EQ(ERR_IO_PENDING, reader_->Init(init_callback.callback()));
   EXPECT_EQ(OK, init_callback.WaitForResult());
@@ -211,7 +205,7 @@ TEST_F(UploadFileElementReaderTest, FileChanged) {
   const base::Time expected_modification_time =
       info.last_modified - base::TimeDelta::FromSeconds(1);
   reader_.reset(new UploadFileElementReader(
-      base::MessageLoopProxy::current().get(), temp_file_path_, 0, kuint64max,
+      base::ThreadTaskRunnerHandle::Get().get(), temp_file_path_, 0, kuint64max,
       expected_modification_time));
   TestCompletionCallback init_callback;
   ASSERT_EQ(ERR_IO_PENDING, reader_->Init(init_callback.callback()));
@@ -225,7 +219,7 @@ TEST_F(UploadFileElementReaderTest, InexactExpectedTimeStamp) {
   const base::Time expected_modification_time =
       info.last_modified - base::TimeDelta::FromMilliseconds(900);
   reader_.reset(new UploadFileElementReader(
-      base::MessageLoopProxy::current().get(), temp_file_path_, 0, kuint64max,
+      base::ThreadTaskRunnerHandle::Get().get(), temp_file_path_, 0, kuint64max,
       expected_modification_time));
   TestCompletionCallback init_callback;
   ASSERT_EQ(ERR_IO_PENDING, reader_->Init(init_callback.callback()));
@@ -235,7 +229,7 @@ TEST_F(UploadFileElementReaderTest, InexactExpectedTimeStamp) {
 TEST_F(UploadFileElementReaderTest, WrongPath) {
   const base::FilePath wrong_path(FILE_PATH_LITERAL("wrong_path"));
   reader_.reset(
-      new UploadFileElementReader(base::MessageLoopProxy::current().get(),
+      new UploadFileElementReader(base::ThreadTaskRunnerHandle::Get().get(),
                                   wrong_path, 0, kuint64max, base::Time()));
   TestCompletionCallback init_callback;
   ASSERT_EQ(ERR_IO_PENDING, reader_->Init(init_callback.callback()));

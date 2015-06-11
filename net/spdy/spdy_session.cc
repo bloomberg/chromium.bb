@@ -10,17 +10,19 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/profiler/scoped_tracker.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "crypto/ec_private_key.h"
@@ -771,10 +773,10 @@ void SpdySession::InitializeWithSocket(
   pool_ = pool;
 
   // Bootstrap the read loop.
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&SpdySession::PumpReadLoop,
-                 weak_factory_.GetWeakPtr(), READ_STATE_DO_READ, OK));
+      base::Bind(&SpdySession::PumpReadLoop, weak_factory_.GetWeakPtr(),
+                 READ_STATE_DO_READ, OK));
 }
 
 bool SpdySession::VerifyDomainAuthentication(const std::string& domain) {
@@ -976,11 +978,9 @@ void SpdySession::ProcessPendingStreamRequests() {
     // Note that this post can race with other stream creations, and it's
     // possible that the un-stalled stream will be stalled again if it loses.
     // TODO(jgraettinger): Provide stronger ordering guarantees.
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&SpdySession::CompleteStreamRequest,
-                   weak_factory_.GetWeakPtr(),
-                   pending_request));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&SpdySession::CompleteStreamRequest,
+                              weak_factory_.GetWeakPtr(), pending_request));
   }
 }
 
@@ -1391,10 +1391,10 @@ int SpdySession::DoReadLoop(ReadState expected_read_state, int result) {
 
     if (bytes_read_without_yielding > kMaxReadBytesWithoutYielding) {
       read_state_ = READ_STATE_DO_READ;
-      base::MessageLoop::current()->PostTask(
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
-          base::Bind(&SpdySession::PumpReadLoop,
-                     weak_factory_.GetWeakPtr(), READ_STATE_DO_READ, OK));
+          base::Bind(&SpdySession::PumpReadLoop, weak_factory_.GetWeakPtr(),
+                     READ_STATE_DO_READ, OK));
       result = ERR_IO_PENDING;
       break;
     }
@@ -1906,10 +1906,10 @@ void SpdySession::MaybePostWriteLoop() {
   if (write_state_ == WRITE_STATE_IDLE) {
     CHECK(!in_flight_write_);
     write_state_ = WRITE_STATE_DO_WRITE;
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&SpdySession::PumpWriteLoop,
-                   weak_factory_.GetWeakPtr(), WRITE_STATE_DO_WRITE, OK));
+        base::Bind(&SpdySession::PumpWriteLoop, weak_factory_.GetWeakPtr(),
+                   WRITE_STATE_DO_WRITE, OK));
   }
 }
 
@@ -2933,10 +2933,10 @@ void SpdySession::PlanToCheckPingStatus() {
     return;
 
   check_ping_status_pending_ = true;
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&SpdySession::CheckPingStatus, weak_factory_.GetWeakPtr(),
-                 time_func_()), hung_interval_);
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&SpdySession::CheckPingStatus,
+                            weak_factory_.GetWeakPtr(), time_func_()),
+      hung_interval_);
 }
 
 void SpdySession::CheckPingStatus(base::TimeTicks last_check_time) {
@@ -2959,10 +2959,9 @@ void SpdySession::CheckPingStatus(base::TimeTicks last_check_time) {
   }
 
   // Check the status of connection after a delay.
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&SpdySession::CheckPingStatus, weak_factory_.GetWeakPtr(),
-                 now),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&SpdySession::CheckPingStatus,
+                            weak_factory_.GetWeakPtr(), now),
       delay);
 }
 

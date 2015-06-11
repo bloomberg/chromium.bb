@@ -6,11 +6,13 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "net/spdy/spdy_buffer_producer.h"
 #include "net/spdy/spdy_http_utils.h"
@@ -131,9 +133,8 @@ void SpdyStream::SetDelegate(Delegate* delegate) {
 
   if (io_state_ == STATE_HALF_CLOSED_LOCAL_UNCLAIMED) {
     DCHECK_EQ(type_, SPDY_PUSH_STREAM);
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&SpdyStream::PushedStreamReplay, GetWeakPtr()));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&SpdyStream::PushedStreamReplay, GetWeakPtr()));
   }
 }
 

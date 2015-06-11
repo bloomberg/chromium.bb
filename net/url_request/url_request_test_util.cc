@@ -5,8 +5,11 @@
 #include "net/url_request/url_request_test_util.h"
 
 #include "base/compiler_specific.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/threading/worker_pool.h"
 #include "net/base/host_port_pair.h"
@@ -196,8 +199,8 @@ void TestDelegate::OnReceivedRedirect(URLRequest* request,
   received_redirect_count_++;
   if (quit_on_redirect_) {
     *defer_redirect = true;
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-                                           base::MessageLoop::QuitClosure());
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::MessageLoop::QuitClosure());
   } else if (cancel_in_rr_) {
     request->Cancel();
   }
@@ -207,8 +210,8 @@ void TestDelegate::OnBeforeNetworkStart(URLRequest* request, bool* defer) {
   received_before_network_start_count_++;
   if (quit_on_before_network_start_) {
     *defer = true;
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-                                           base::MessageLoop::QuitClosure());
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::MessageLoop::QuitClosure());
   }
 }
 
@@ -216,8 +219,8 @@ void TestDelegate::OnAuthRequired(URLRequest* request,
                                   AuthChallengeInfo* auth_info) {
   auth_required_ = true;
   if (quit_on_auth_required_) {
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-                                           base::MessageLoop::QuitClosure());
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::MessageLoop::QuitClosure());
     return;
   }
   if (!credentials_.Empty()) {
@@ -306,8 +309,8 @@ void TestDelegate::OnReadCompleted(URLRequest* request, int bytes_read) {
 
 void TestDelegate::OnResponseCompleted(URLRequest* request) {
   if (quit_on_complete_)
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-                                           base::MessageLoop::QuitClosure());
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::MessageLoop::QuitClosure());
 }
 
 TestNetworkDelegate::TestNetworkDelegate()

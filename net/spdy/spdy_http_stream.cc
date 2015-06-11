@@ -8,9 +8,11 @@
 #include <list>
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_util.h"
@@ -447,7 +449,7 @@ void SpdyHttpStream::ScheduleBufferedReadCallback() {
   more_read_data_pending_ = false;
   buffered_read_callback_pending_ = true;
   const base::TimeDelta kBufferTime = base::TimeDelta::FromMilliseconds(1);
-  base::MessageLoop::current()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::Bind(base::IgnoreResult(&SpdyHttpStream::DoBufferedReadCallback),
                  weak_factory_.GetWeakPtr()),

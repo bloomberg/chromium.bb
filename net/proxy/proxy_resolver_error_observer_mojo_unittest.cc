@@ -8,6 +8,8 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
 #include "mojo/common/common_type_converters.h"
@@ -91,7 +93,7 @@ TEST_F(ProxyResolverErrorObserverMojoTest, ErrorReportedOnAnotherThread) {
   base::Thread other_thread("error reporting thread");
   base::string16 error(base::ASCIIToUTF16("error message"));
   other_thread.Start();
-  other_thread.message_loop()->PostTask(
+  other_thread.task_runner()->PostTask(
       FROM_HERE, base::Bind(&ProxyResolverErrorObserver::OnPACScriptError,
                             base::Unretained(&error_observer()), 123, error));
   client().event_waiter().WaitForEvent(ErrorObserverClient::ERROR_RECEIVED);

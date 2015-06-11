@@ -16,7 +16,7 @@
 #include "net/base/net_export.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace net {
@@ -110,7 +110,7 @@ class NET_EXPORT DirectoryLister  {
 
     const base::FilePath dir_;
     const ListingType type_;
-    const scoped_refptr<base::MessageLoopProxy> origin_loop_;
+    const scoped_refptr<base::SingleThreadTaskRunner> origin_task_runner_;
 
     // Only used on the origin thread.
     DirectoryLister* lister_;

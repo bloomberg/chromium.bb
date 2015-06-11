@@ -240,7 +240,7 @@ int main(int argc, char* argv[]) {
       // The URLFetcher will take a reference on the object, and hence
       // implicitly take ownership.
       new net::TrivialURLRequestContextGetter(url_request_context.get(),
-                                              main_loop.message_loop_proxy()));
+                                              main_loop.task_runner()));
   const base::Time start_time = base::Time::Now();
   const base::TimeTicks start_ticks = base::TimeTicks::Now();
 

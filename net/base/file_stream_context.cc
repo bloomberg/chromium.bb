@@ -6,7 +6,6 @@
 
 #include "base/files/file_path.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/task_runner.h"
 #include "base/task_runner_util.h"

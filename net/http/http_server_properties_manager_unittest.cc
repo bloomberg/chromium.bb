@@ -10,9 +10,11 @@
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/test_simple_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "net/base/ip_address_number.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -106,9 +108,8 @@ class HttpServerPropertiesManagerTest : public testing::Test {
     pref_service_.registry()->RegisterDictionaryPref(kTestHttpServerProperties);
     http_server_props_manager_.reset(
         new StrictMock<TestingHttpServerPropertiesManager>(
-            &pref_service_,
-            kTestHttpServerProperties,
-            base::MessageLoop::current()->message_loop_proxy()));
+            &pref_service_, kTestHttpServerProperties,
+            base::ThreadTaskRunnerHandle::Get()));
     ExpectCacheUpdate();
     base::RunLoop().RunUntilIdle();
   }

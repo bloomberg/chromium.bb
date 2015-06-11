@@ -22,11 +22,13 @@
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
 #include "base/files/file_path.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/process/process.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -112,10 +114,8 @@ void StressTheCache(int iteration) {
           base::Thread::Options(base::MessageLoop::TYPE_IO, 0)))
     return;
 
-  disk_cache::BackendImpl* cache =
-      new disk_cache::BackendImpl(path, mask,
-                                  cache_thread.message_loop_proxy().get(),
-                                  NULL);
+  disk_cache::BackendImpl* cache = new disk_cache::BackendImpl(
+      path, mask, cache_thread.task_runner().get(), NULL);
   cache->SetMaxSize(cache_size);
   cache->SetFlags(disk_cache::kNoLoadProtection);
 
@@ -215,7 +215,7 @@ void CrashCallback() {
 
 void RunSoon(base::MessageLoop* target_loop) {
   const base::TimeDelta kTaskDelay = base::TimeDelta::FromSeconds(10);
-  target_loop->PostDelayedTask(
+  target_loop->task_runner()->PostDelayedTask(
       FROM_HERE, base::Bind(&CrashCallback), kTaskDelay);
 }
 

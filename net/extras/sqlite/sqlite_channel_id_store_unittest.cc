@@ -7,9 +7,9 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "crypto/ec_private_key.h"
 #include "net/base/test_data_directory.h"
 #include "net/cert/asn1_util.h"
@@ -101,7 +101,7 @@ class SQLiteChannelIDStoreTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     store_ = new SQLiteChannelIDStore(
         temp_dir_.path().Append(kTestChannelIDFilename),
-        base::MessageLoopProxy::current());
+        base::ThreadTaskRunnerHandle::Get());
     ScopedVector<DefaultChannelIDStore::ChannelID> channel_ids;
     Load(&channel_ids);
     ASSERT_EQ(0u, channel_ids.size());
@@ -134,7 +134,7 @@ TEST_F(SQLiteChannelIDStoreTest, TestPersistence) {
   base::RunLoop().RunUntilIdle();
   store_ =
       new SQLiteChannelIDStore(temp_dir_.path().Append(kTestChannelIDFilename),
-                               base::MessageLoopProxy::current());
+                               base::ThreadTaskRunnerHandle::Get());
 
   // Reload and test for persistence
   Load(&channel_ids);
@@ -164,7 +164,7 @@ TEST_F(SQLiteChannelIDStoreTest, TestPersistence) {
   channel_ids.clear();
   store_ =
       new SQLiteChannelIDStore(temp_dir_.path().Append(kTestChannelIDFilename),
-                               base::MessageLoopProxy::current());
+                               base::ThreadTaskRunnerHandle::Get());
 
   // Reload and check if the keypair has been removed.
   Load(&channel_ids);
@@ -190,7 +190,7 @@ TEST_F(SQLiteChannelIDStoreTest, TestDeleteAll) {
   base::RunLoop().RunUntilIdle();
   store_ =
       new SQLiteChannelIDStore(temp_dir_.path().Append(kTestChannelIDFilename),
-                               base::MessageLoopProxy::current());
+                               base::ThreadTaskRunnerHandle::Get());
 
   // Reload and test for persistence
   Load(&channel_ids);
@@ -208,7 +208,7 @@ TEST_F(SQLiteChannelIDStoreTest, TestDeleteAll) {
   channel_ids.clear();
   store_ =
       new SQLiteChannelIDStore(temp_dir_.path().Append(kTestChannelIDFilename),
-                               base::MessageLoopProxy::current());
+                               base::ThreadTaskRunnerHandle::Get());
 
   // Reload and check that only foo.com persisted in store.
   Load(&channel_ids);
@@ -264,8 +264,8 @@ TEST_F(SQLiteChannelIDStoreTest, TestUpgradeV1) {
     SCOPED_TRACE(i);
 
     ScopedVector<DefaultChannelIDStore::ChannelID> channel_ids;
-    store_ =
-        new SQLiteChannelIDStore(v1_db_path, base::MessageLoopProxy::current());
+    store_ = new SQLiteChannelIDStore(v1_db_path,
+                                      base::ThreadTaskRunnerHandle::Get());
 
     // Load the database. Because the existing v1 certs are implicitly of type
     // RSA, which is unsupported, they're discarded.
@@ -336,8 +336,8 @@ TEST_F(SQLiteChannelIDStoreTest, TestUpgradeV2) {
     SCOPED_TRACE(i);
 
     ScopedVector<DefaultChannelIDStore::ChannelID> channel_ids;
-    store_ =
-        new SQLiteChannelIDStore(v2_db_path, base::MessageLoopProxy::current());
+    store_ = new SQLiteChannelIDStore(v2_db_path,
+                                      base::ThreadTaskRunnerHandle::Get());
 
     // Load the database and ensure the certs can be read.
     Load(&channel_ids);
@@ -414,8 +414,8 @@ TEST_F(SQLiteChannelIDStoreTest, TestUpgradeV3) {
     SCOPED_TRACE(i);
 
     ScopedVector<DefaultChannelIDStore::ChannelID> channel_ids;
-    store_ =
-        new SQLiteChannelIDStore(v3_db_path, base::MessageLoopProxy::current());
+    store_ = new SQLiteChannelIDStore(v3_db_path,
+                                      base::ThreadTaskRunnerHandle::Get());
 
     // Load the database and ensure the certs can be read.
     Load(&channel_ids);
@@ -508,8 +508,8 @@ TEST_F(SQLiteChannelIDStoreTest, TestUpgradeV4) {
     SCOPED_TRACE(i);
 
     ScopedVector<DefaultChannelIDStore::ChannelID> channel_ids;
-    store_ =
-        new SQLiteChannelIDStore(v4_db_path, base::MessageLoopProxy::current());
+    store_ = new SQLiteChannelIDStore(v4_db_path,
+                                      base::ThreadTaskRunnerHandle::Get());
 
     // Load the database and ensure the certs can be read.
     Load(&channel_ids);

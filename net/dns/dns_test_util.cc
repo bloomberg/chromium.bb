@@ -8,9 +8,11 @@
 
 #include "base/big_endian.h"
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/sys_byteorder.h"
+#include "base/thread_task_runner_handle.h"
 #include "net/base/dns_util.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -70,7 +72,7 @@ class MockTransaction : public DnsTransaction,
     if (delayed_)
       return;
     // Using WeakPtr to cleanly cancel when transaction is destroyed.
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&MockTransaction::Finish, AsWeakPtr()));
   }
 

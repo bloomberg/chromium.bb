@@ -8,8 +8,10 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/location.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/worker_pool.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -41,7 +43,7 @@ URLRequestSimpleJob::URLRequestSimpleJob(URLRequest* request,
 void URLRequestSimpleJob::Start() {
   // Start reading asynchronously so that all error reporting and data
   // callbacks happen as they would for network requests.
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&URLRequestSimpleJob::StartAsync, weak_factory_.GetWeakPtr()));
 }

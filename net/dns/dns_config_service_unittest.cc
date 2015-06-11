@@ -7,10 +7,13 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/cancelable_callback.h"
+#include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_split.h"
 #include "base/test/test_timeouts.h"
+#include "base/thread_task_runner_handle.h"
 #include "net/base/net_util.h"
 #include "net/dns/dns_protocol.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -148,7 +151,7 @@ class DnsConfigServiceTest : public testing::Test {
 
   void WaitForConfig(base::TimeDelta timeout) {
     base::CancelableClosure closure(base::MessageLoop::QuitClosure());
-    base::MessageLoop::current()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, closure.callback(), timeout);
     quit_on_config_ = true;
     base::MessageLoop::current()->Run();

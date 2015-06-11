@@ -6,10 +6,12 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/hash.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/pickle.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
@@ -274,11 +276,8 @@ TEST_F(SimpleIndexFileTest, SimpleCacheUpgrade) {
   ASSERT_TRUE(cache_thread.StartWithOptions(
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0)));
   disk_cache::SimpleBackendImpl* simple_cache =
-      new disk_cache::SimpleBackendImpl(cache_path,
-                                        0,
-                                        net::DISK_CACHE,
-                                        cache_thread.message_loop_proxy().get(),
-                                        NULL);
+      new disk_cache::SimpleBackendImpl(cache_path, 0, net::DISK_CACHE,
+                                        cache_thread.task_runner().get(), NULL);
   net::TestCompletionCallback cb;
   int rv = simple_cache->Init(cb.callback());
   EXPECT_EQ(net::OK, cb.GetResult(rv));
@@ -291,7 +290,7 @@ TEST_F(SimpleIndexFileTest, SimpleCacheUpgrade) {
   // thread after that.
   MessageLoopHelper helper;
   CallbackTest cb_shutdown(&helper, false);
-  cache_thread.message_loop_proxy()->PostTask(
+  cache_thread.task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&CallbackTest::Run, base::Unretained(&cb_shutdown), net::OK));
   helper.WaitUntilCacheIoFinished(1);

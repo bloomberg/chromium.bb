@@ -10,12 +10,14 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/file_version_info.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/rand_util.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "net/base/host_port_pair.h"
@@ -510,10 +512,9 @@ void URLRequestHttpJob::StartTransactionInternal() {
 
   // The transaction started synchronously, but we need to notify the
   // URLRequest delegate via the message loop.
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&URLRequestHttpJob::OnStartCompleted,
-                 weak_factory_.GetWeakPtr(), rv));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&URLRequestHttpJob::OnStartCompleted,
+                            weak_factory_.GetWeakPtr(), rv));
 }
 
 void URLRequestHttpJob::AddExtraHeaders() {
@@ -1204,10 +1205,9 @@ void URLRequestHttpJob::CancelAuth() {
   //
   // We have to do this via InvokeLater to avoid "recursing" the consumer.
   //
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&URLRequestHttpJob::OnStartCompleted,
-                 weak_factory_.GetWeakPtr(), OK));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&URLRequestHttpJob::OnStartCompleted,
+                            weak_factory_.GetWeakPtr(), OK));
 }
 
 void URLRequestHttpJob::ContinueWithCertificate(
@@ -1229,10 +1229,9 @@ void URLRequestHttpJob::ContinueWithCertificate(
 
   // The transaction started synchronously, but we need to notify the
   // URLRequest delegate via the message loop.
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&URLRequestHttpJob::OnStartCompleted,
-                 weak_factory_.GetWeakPtr(), rv));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&URLRequestHttpJob::OnStartCompleted,
+                            weak_factory_.GetWeakPtr(), rv));
 }
 
 void URLRequestHttpJob::ContinueDespiteLastError() {
@@ -1255,10 +1254,9 @@ void URLRequestHttpJob::ContinueDespiteLastError() {
 
   // The transaction started synchronously, but we need to notify the
   // URLRequest delegate via the message loop.
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&URLRequestHttpJob::OnStartCompleted,
-                 weak_factory_.GetWeakPtr(), rv));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&URLRequestHttpJob::OnStartCompleted,
+                            weak_factory_.GetWeakPtr(), rv));
 }
 
 void URLRequestHttpJob::ResumeNetworkStart() {

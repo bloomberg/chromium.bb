@@ -19,7 +19,9 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_piece.h"
+#include "base/thread_task_runner_handle.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/http/http_response_headers.h"
@@ -484,12 +486,9 @@ class ReadableFakeWebSocketStream : public FakeWebSocketStream {
       return ERR_IO_PENDING;
     if (responses_[index_]->async == ASYNC) {
       read_frames_pending_ = true;
-      base::MessageLoop::current()->PostTask(
-          FROM_HERE,
-          base::Bind(&ReadableFakeWebSocketStream::DoCallback,
-                     base::Unretained(this),
-                     frames,
-                     callback));
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::Bind(&ReadableFakeWebSocketStream::DoCallback,
+                                base::Unretained(this), frames, callback));
       return ERR_IO_PENDING;
     } else {
       frames->swap(responses_[index_]->frames);
@@ -580,10 +579,9 @@ class EchoeyFakeWebSocketStream : public FakeWebSocketStream {
 
  private:
   void PostCallback() {
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&EchoeyFakeWebSocketStream::DoCallback,
-                   base::Unretained(this)));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&EchoeyFakeWebSocketStream::DoCallback,
+                              base::Unretained(this)));
   }
 
   void DoCallback() {
@@ -634,17 +632,15 @@ class ResetOnWriteFakeWebSocketStream : public FakeWebSocketStream {
 
   int WriteFrames(ScopedVector<WebSocketFrame>* frames,
                   const CompletionCallback& callback) override {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&ResetOnWriteFakeWebSocketStream::CallCallbackUnlessClosed,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   callback,
+                   weak_ptr_factory_.GetWeakPtr(), callback,
                    ERR_CONNECTION_RESET));
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&ResetOnWriteFakeWebSocketStream::CallCallbackUnlessClosed,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   read_callback_,
+                   weak_ptr_factory_.GetWeakPtr(), read_callback_,
                    ERR_CONNECTION_RESET));
     return ERR_IO_PENDING;
   }

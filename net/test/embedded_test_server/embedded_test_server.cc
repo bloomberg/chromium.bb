@@ -7,12 +7,14 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/location.h"
 #include "base/message_loop/message_loop.h"
 #include "base/process/process_metrics.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
@@ -194,7 +196,7 @@ void EmbeddedTestServer::StartThread() {
 }
 
 void EmbeddedTestServer::InitializeOnIOThread() {
-  DCHECK(io_thread_->message_loop_proxy()->BelongsToCurrentThread());
+  DCHECK(io_thread_->task_runner()->BelongsToCurrentThread());
   DCHECK(!Started());
 
   SocketDescriptor socket_descriptor =
@@ -215,13 +217,13 @@ void EmbeddedTestServer::InitializeOnIOThread() {
 }
 
 void EmbeddedTestServer::ListenOnIOThread() {
-  DCHECK(io_thread_->message_loop_proxy()->BelongsToCurrentThread());
+  DCHECK(io_thread_->task_runner()->BelongsToCurrentThread());
   DCHECK(Started());
   listen_socket_->ListenOnIOThread();
 }
 
 void EmbeddedTestServer::ShutdownOnIOThread() {
-  DCHECK(io_thread_->message_loop_proxy()->BelongsToCurrentThread());
+  DCHECK(io_thread_->task_runner()->BelongsToCurrentThread());
 
   listen_socket_.reset();
   STLDeleteContainerPairSecondPointers(connections_.begin(),
@@ -231,7 +233,7 @@ void EmbeddedTestServer::ShutdownOnIOThread() {
 
 void EmbeddedTestServer::HandleRequest(HttpConnection* connection,
                                scoped_ptr<HttpRequest> request) {
-  DCHECK(io_thread_->message_loop_proxy()->BelongsToCurrentThread());
+  DCHECK(io_thread_->task_runner()->BelongsToCurrentThread());
 
   bool request_handled = false;
 
@@ -288,7 +290,7 @@ void EmbeddedTestServer::RegisterRequestHandler(
 void EmbeddedTestServer::DidAccept(
     StreamListenSocket* server,
     scoped_ptr<StreamListenSocket> connection) {
-  DCHECK(io_thread_->message_loop_proxy()->BelongsToCurrentThread());
+  DCHECK(io_thread_->task_runner()->BelongsToCurrentThread());
 
   HttpConnection* http_connection = new HttpConnection(
       connection.Pass(),
@@ -301,7 +303,7 @@ void EmbeddedTestServer::DidAccept(
 void EmbeddedTestServer::DidRead(StreamListenSocket* connection,
                          const char* data,
                          int length) {
-  DCHECK(io_thread_->message_loop_proxy()->BelongsToCurrentThread());
+  DCHECK(io_thread_->task_runner()->BelongsToCurrentThread());
 
   HttpConnection* http_connection = FindConnection(connection);
   if (http_connection == NULL) {
@@ -312,7 +314,7 @@ void EmbeddedTestServer::DidRead(StreamListenSocket* connection,
 }
 
 void EmbeddedTestServer::DidClose(StreamListenSocket* connection) {
-  DCHECK(io_thread_->message_loop_proxy()->BelongsToCurrentThread());
+  DCHECK(io_thread_->task_runner()->BelongsToCurrentThread());
 
   HttpConnection* http_connection = FindConnection(connection);
   if (http_connection == NULL) {
@@ -325,7 +327,7 @@ void EmbeddedTestServer::DidClose(StreamListenSocket* connection) {
 
 HttpConnection* EmbeddedTestServer::FindConnection(
     StreamListenSocket* socket) {
-  DCHECK(io_thread_->message_loop_proxy()->BelongsToCurrentThread());
+  DCHECK(io_thread_->task_runner()->BelongsToCurrentThread());
 
   std::map<StreamListenSocket*, HttpConnection*>::iterator it =
       connections_.find(socket);
@@ -337,11 +339,12 @@ HttpConnection* EmbeddedTestServer::FindConnection(
 
 bool EmbeddedTestServer::PostTaskToIOThreadAndWait(
     const base::Closure& closure) {
-  // Note that PostTaskAndReply below requires base::MessageLoopProxy::current()
-  // to return a loop for posting the reply task. However, in order to make
-  // EmbeddedTestServer universally usable, it needs to cope with the situation
-  // where it's running on a thread on which a message loop is not (yet)
-  // available or as has been destroyed already.
+  // Note that PostTaskAndReply below requires
+  // base::ThreadTaskRunnerHandle::Get() to return a task runner for posting
+  // the reply task. However, in order to make EmbeddedTestServer universally
+  // usable, it needs to cope with the situation where it's running on a thread
+  // on which a message loop is not (yet) available or as has been destroyed
+  // already.
   //
   // To handle this situation, create temporary message loop to support the
   // PostTaskAndReply operation if the current thread as no message loop.
@@ -350,8 +353,8 @@ bool EmbeddedTestServer::PostTaskToIOThreadAndWait(
     temporary_loop.reset(new base::MessageLoop());
 
   base::RunLoop run_loop;
-  if (!io_thread_->message_loop_proxy()->PostTaskAndReply(
-          FROM_HERE, closure, run_loop.QuitClosure())) {
+  if (!io_thread_->task_runner()->PostTaskAndReply(FROM_HERE, closure,
+                                                   run_loop.QuitClosure())) {
     return false;
   }
   run_loop.Run();

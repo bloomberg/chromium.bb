@@ -6,6 +6,7 @@
 
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "net/base/test_data_directory.h"
 #include "net/cert/cert_verifier.h"
 #include "net/dns/mock_host_resolver.h"
@@ -198,7 +199,7 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<TestParams> {
         cert_verifier_(CertVerifier::CreateDefault()),
         channel_id_service_(
             new ChannelIDService(new DefaultChannelIDStore(nullptr),
-                                 base::MessageLoopProxy::current())),
+                                 base::ThreadTaskRunnerHandle::Get())),
         factory_(&host_resolver_,
                  &socket_factory_,
                  base::WeakPtr<HttpServerProperties>(),

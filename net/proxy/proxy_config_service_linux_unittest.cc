@@ -13,7 +13,9 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
+#include "base/location.h"
 #include "base/logging.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
@@ -267,7 +269,8 @@ class SynchConfigGetter {
     io_thread_.StartWithOptions(options);
 
     // Make sure the thread started.
-    io_thread_.message_loop()->PostTask(FROM_HERE,
+    io_thread_.task_runner()->PostTask(
+        FROM_HERE,
         base::Bind(&SynchConfigGetter::Init, base::Unretained(this)));
     Wait();
   }
@@ -277,7 +280,8 @@ class SynchConfigGetter {
     // before cleaning up that thread.
     delete config_service_;
     // Clean up the IO thread.
-    io_thread_.message_loop()->PostTask(FROM_HERE,
+    io_thread_.task_runner()->PostTask(
+        FROM_HERE,
         base::Bind(&SynchConfigGetter::CleanUp, base::Unretained(this)));
     Wait();
   }
@@ -288,15 +292,15 @@ class SynchConfigGetter {
   void SetupAndInitialFetch() {
     // We pass the mock IO thread as both the IO and file threads.
     config_service_->SetupAndFetchInitialConfig(
-        base::ThreadTaskRunnerHandle::Get(), io_thread_.message_loop_proxy(),
-        io_thread_.message_loop_proxy());
+        base::ThreadTaskRunnerHandle::Get(), io_thread_.task_runner(),
+        io_thread_.task_runner());
   }
   // Synchronously gets the proxy config.
   ProxyConfigService::ConfigAvailability SyncGetLatestProxyConfig(
       ProxyConfig* config) {
-    io_thread_.message_loop()->PostTask(FROM_HERE,
-        base::Bind(&SynchConfigGetter::GetLatestConfigOnIOThread,
-                   base::Unretained(this)));
+    io_thread_.task_runner()->PostTask(
+        FROM_HERE, base::Bind(&SynchConfigGetter::GetLatestConfigOnIOThread,
+                              base::Unretained(this)));
     Wait();
     *config = proxy_config_;
     return get_latest_config_result_;

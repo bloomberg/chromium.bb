@@ -9,11 +9,13 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
@@ -202,7 +204,7 @@ void UDPSocketTest::ConnectTest(bool use_nonblocking_io) {
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   // Client sends to the server.
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&UDPSocketTest::WriteSocketIgnoreResult,
                  base::Unretained(this), client.get(), simple_message));

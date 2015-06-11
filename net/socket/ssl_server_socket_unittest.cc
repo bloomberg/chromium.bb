@@ -22,7 +22,10 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/location.h"
 #include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "crypto/nss_util.h"
 #include "crypto/rsa_private_key.h"
 #include "net/base/address_list.h"
@@ -94,7 +97,7 @@ class FakeDataChannel {
         return ERR_CONNECTION_RESET;
       write_called_after_close_ = true;
       write_callback_ = callback;
-      base::MessageLoop::current()->PostTask(
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::Bind(&FakeDataChannel::DoWriteCallback,
                                 weak_factory_.GetWeakPtr()));
       return ERR_IO_PENDING;
@@ -103,7 +106,7 @@ class FakeDataChannel {
     data_.push(new DrainableIOBuffer(
         new StringIOBuffer(std::string(buf->data(), buf_len)),
         buf_len));
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&FakeDataChannel::DoReadCallback,
                               weak_factory_.GetWeakPtr()));
     return buf_len;
@@ -546,7 +549,7 @@ TEST_F(SSLServerSocketTest, ClientWriteAfterServerClose) {
   client_ret = write_callback.GetResult(client_ret);
   EXPECT_GT(client_ret, 0);
 
-  base::MessageLoop::current()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::MessageLoop::QuitClosure(),
       base::TimeDelta::FromMilliseconds(10));
   base::MessageLoop::current()->Run();

@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/thread_task_runner_handle.h"
 #include "net/base/chunked_upload_data_stream.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/net_errors.h"
@@ -210,7 +211,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
         connection_, scoped_ptr<DatagramClientSocket>(socket), nullptr,
         &transport_security_state_, make_scoped_ptr((QuicServerInfo*)nullptr),
         DefaultQuicConfig(), "CONNECTION_UNKNOWN", base::TimeTicks::Now(),
-        base::MessageLoop::current()->message_loop_proxy().get(), nullptr));
+        base::ThreadTaskRunnerHandle::Get().get(), nullptr));
     session_->InitializeSession(
         QuicServerId(kDefaultServerHostName, kDefaultServerPort,
                      /*is_secure=*/false, PRIVACY_MODE_DISABLED),

@@ -10,17 +10,20 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_samples.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "net/cookies/canonical_cookie.h"
@@ -54,7 +57,7 @@ class NewMockPersistentCookieStore
   MOCK_METHOD1(DeleteCookie, void(const CanonicalCookie& cc));
   virtual void Flush(const base::Closure& callback) {
     if (!callback.is_null())
-      base::MessageLoop::current()->PostTask(FROM_HERE, callback);
+      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
   }
   MOCK_METHOD0(SetForceKeepSessionState, void());
 
@@ -637,8 +640,8 @@ struct CookiesInputInfo {
 };
 
 ACTION(QuitCurrentMessageLoop) {
-  base::MessageLoop::current()->PostTask(FROM_HERE,
-                                         base::MessageLoop::QuitClosure());
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::MessageLoop::QuitClosure());
 }
 
 // TODO(erikwright): When the synchronous helpers 'GetCookies' etc. are removed,
@@ -2062,7 +2065,7 @@ class FlushablePersistentStore : public CookieMonster::PersistentCookieStore {
 
   void Load(const LoadedCallback& loaded_callback) override {
     std::vector<CanonicalCookie*> out_cookies;
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&LoadedCallbackTask::Run,
                    new LoadedCallbackTask(loaded_callback, out_cookies)));
@@ -2445,7 +2448,7 @@ class MultiThreadedCookieMonsterTest : public CookieMonsterTest {
  protected:
   void RunOnOtherThread(const base::Closure& task) {
     other_thread_.Start();
-    other_thread_.message_loop()->PostTask(FROM_HERE, task);
+    other_thread_.task_runner()->PostTask(FROM_HERE, task);
     RunFor(kTimeout);
     other_thread_.Stop();
   }

@@ -8,15 +8,16 @@
 #include <set>
 
 #include "base/cpu.h"
-#include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/location.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/rand_util.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_verifier.h"
@@ -657,7 +658,7 @@ int QuicStreamFactory::Create(const HostPortPair& host_port_pair,
   // TODO(rtenneti): |task_runner_| is used by the Job. Initialize task_runner_
   // in the constructor after WebRequestActionWithThreadsTest.* tests are fixed.
   if (!task_runner_)
-    task_runner_ = base::MessageLoop::current()->message_loop_proxy().get();
+    task_runner_ = base::ThreadTaskRunnerHandle::Get().get();
 
   QuicServerInfo* quic_server_info = nullptr;
   if (quic_server_info_factory_) {
@@ -1075,9 +1076,9 @@ int QuicStreamFactory::CreateSession(const QuicServerId& server_id,
   DefaultPacketWriterFactory packet_writer_factory(socket.get());
 
   if (!helper_.get()) {
-    helper_.reset(new QuicConnectionHelper(
-        base::MessageLoop::current()->message_loop_proxy().get(),
-        clock_.get(), random_generator_));
+    helper_.reset(
+        new QuicConnectionHelper(base::ThreadTaskRunnerHandle::Get().get(),
+                                 clock_.get(), random_generator_));
   }
 
   QuicConnection* connection = new QuicConnection(
@@ -1110,8 +1111,7 @@ int QuicStreamFactory::CreateSession(const QuicServerId& server_id,
   *session = new QuicClientSession(
       connection, socket.Pass(), this, transport_security_state_,
       server_info.Pass(), config, network_connection_.GetDescription(),
-      dns_resolution_end_time,
-      base::MessageLoop::current()->message_loop_proxy().get(),
+      dns_resolution_end_time, base::ThreadTaskRunnerHandle::Get().get(),
       net_log.net_log());
 
   all_sessions_[*session] = server_id;  // owning pointer

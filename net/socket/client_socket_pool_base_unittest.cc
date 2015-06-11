@@ -9,14 +9,17 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/platform_thread.h"
 #include "base/values.h"
 #include "net/base/load_timing_info.h"
@@ -327,24 +330,20 @@ class TestConnectJob : public ConnectJob {
         // abstract time for the purpose of unittests. Unfortunately, we have
         // a lot of third-party components that directly call the various
         // time functions, so this change would be rather invasive.
-        base::MessageLoop::current()->PostDelayedTask(
+        base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
             FROM_HERE,
             base::Bind(base::IgnoreResult(&TestConnectJob::DoConnect),
-                       weak_factory_.GetWeakPtr(),
-                       true /* successful */,
-                       true /* async */,
-                       false /* recoverable */),
+                       weak_factory_.GetWeakPtr(), true /* successful */,
+                       true /* async */, false /* recoverable */),
             base::TimeDelta::FromMilliseconds(kPendingConnectDelay));
         return ERR_IO_PENDING;
       case kMockPendingFailingJob:
         set_load_state(LOAD_STATE_CONNECTING);
-        base::MessageLoop::current()->PostDelayedTask(
+        base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
             FROM_HERE,
             base::Bind(base::IgnoreResult(&TestConnectJob::DoConnect),
-                       weak_factory_.GetWeakPtr(),
-                       false /* error */,
-                       true  /* async */,
-                       false /* recoverable */),
+                       weak_factory_.GetWeakPtr(), false /* error */,
+                       true /* async */, false /* recoverable */),
             base::TimeDelta::FromMilliseconds(2));
         return ERR_IO_PENDING;
       case kMockWaitingJob:
@@ -357,13 +356,11 @@ class TestConnectJob : public ConnectJob {
                          true /* recoverable */);
       case kMockPendingRecoverableJob:
         set_load_state(LOAD_STATE_CONNECTING);
-        base::MessageLoop::current()->PostDelayedTask(
+        base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
             FROM_HERE,
             base::Bind(base::IgnoreResult(&TestConnectJob::DoConnect),
-                       weak_factory_.GetWeakPtr(),
-                       false /* error */,
-                       true  /* async */,
-                       true  /* recoverable */),
+                       weak_factory_.GetWeakPtr(), false /* error */,
+                       true /* async */, true /* recoverable */),
             base::TimeDelta::FromMilliseconds(2));
         return ERR_IO_PENDING;
       case kMockAdditionalErrorStateJob:
@@ -373,13 +370,11 @@ class TestConnectJob : public ConnectJob {
       case kMockPendingAdditionalErrorStateJob:
         set_load_state(LOAD_STATE_CONNECTING);
         store_additional_error_state_ = true;
-        base::MessageLoop::current()->PostDelayedTask(
+        base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
             FROM_HERE,
             base::Bind(base::IgnoreResult(&TestConnectJob::DoConnect),
-                       weak_factory_.GetWeakPtr(),
-                       false /* error */,
-                       true  /* async */,
-                       false /* recoverable */),
+                       weak_factory_.GetWeakPtr(), false /* error */,
+                       true /* async */, false /* recoverable */),
             base::TimeDelta::FromMilliseconds(2));
         return ERR_IO_PENDING;
       case kMockUnreadDataJob: {
@@ -3655,9 +3650,8 @@ TEST_F(ClientSocketPoolBaseTest, PreconnectWithoutBackupJob) {
   // the backup job a pending job instead of a waiting job, so it
   // *would* complete if it were created.
   connect_job_factory_->set_job_type(TestConnectJob::kMockPendingJob);
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::MessageLoop::QuitClosure(),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::MessageLoop::QuitClosure(),
       base::TimeDelta::FromSeconds(1));
   base::MessageLoop::current()->Run();
   EXPECT_FALSE(pool_->HasGroup("a"));

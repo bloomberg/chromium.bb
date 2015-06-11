@@ -10,13 +10,14 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/location.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "crypto/nss_util.h"
@@ -306,7 +307,7 @@ class URLFetcherTest : public testing::Test {
   CreateSameThreadContextGetter() {
     return scoped_refptr<FetcherTestURLRequestContextGetter>(
         new FetcherTestURLRequestContextGetter(
-            base::MessageLoopProxy::current(), hanging_url().host()));
+            base::ThreadTaskRunnerHandle::Get(), hanging_url().host()));
   }
 
   // Creates a URLRequestContextGetter with a URLRequestContext that lives on
@@ -360,12 +361,12 @@ class URLFetcherTest : public testing::Test {
         URLFetcher::GET, CreateSameThreadContextGetter());
     if (save_to_temporary_file) {
       delegate->fetcher()->SaveResponseToTemporaryFile(
-          scoped_refptr<base::MessageLoopProxy>(
-              base::MessageLoopProxy::current()));
+          scoped_refptr<base::SingleThreadTaskRunner>(
+              base::ThreadTaskRunnerHandle::Get()));
     } else {
       delegate->fetcher()->SaveResponseToFileAtPath(
-          requested_out_path, scoped_refptr<base::MessageLoopProxy>(
-                                  base::MessageLoopProxy::current()));
+          requested_out_path, scoped_refptr<base::SingleThreadTaskRunner>(
+                                  base::ThreadTaskRunnerHandle::Get()));
     }
     delegate->StartFetcherAndWait();
 
@@ -682,7 +683,7 @@ TEST_F(URLFetcherTest, PostEntireFile) {
                          CreateSameThreadContextGetter());
   delegate.fetcher()->SetUploadFilePath("application/x-www-form-urlencoded",
                                         upload_path, 0, kuint64max,
-                                        base::MessageLoopProxy::current());
+                                        base::ThreadTaskRunnerHandle::Get());
   delegate.StartFetcherAndWait();
 
   EXPECT_TRUE(delegate.fetcher()->GetStatus().is_success());
@@ -705,7 +706,7 @@ TEST_F(URLFetcherTest, PostFileRange) {
                          CreateSameThreadContextGetter());
   delegate.fetcher()->SetUploadFilePath("application/x-www-form-urlencoded",
                                         upload_path, kRangeStart, kRangeLength,
-                                        base::MessageLoopProxy::current());
+                                        base::ThreadTaskRunnerHandle::Get());
   delegate.StartFetcherAndWait();
 
   EXPECT_TRUE(delegate.fetcher()->GetStatus().is_success());
@@ -1133,8 +1134,8 @@ TEST_F(URLFetcherTest, CancelDifferentThreads) {
   scoped_refptr<FetcherTestURLRequestContextGetter> context_getter(
       CreateCrossThreadContextGetter());
   context_getter->set_on_destruction_callback(base::Bind(
-      base::IgnoreResult(&base::MessageLoopProxy::PostTask),
-      base::MessageLoopProxy::current(), FROM_HERE, run_loop_.QuitClosure()));
+      base::IgnoreResult(&base::SingleThreadTaskRunner::PostTask),
+      base::ThreadTaskRunnerHandle::Get(), FROM_HERE, run_loop_.QuitClosure()));
   delegate.CreateFetcher(hanging_url(), URLFetcher::GET, context_getter);
 
   // The getter won't be destroyed if the test holds on to a reference to it.
@@ -1155,8 +1156,8 @@ TEST_F(URLFetcherTest, CancelWhileDelayedByThrottleDifferentThreads) {
   scoped_refptr<FetcherTestURLRequestContextGetter> context_getter(
       CreateCrossThreadContextGetter());
   context_getter->set_on_destruction_callback(base::Bind(
-      base::IgnoreResult(&base::MessageLoopProxy::PostTask),
-      base::MessageLoopProxy::current(), FROM_HERE, run_loop_.QuitClosure()));
+      base::IgnoreResult(&base::SingleThreadTaskRunner::PostTask),
+      base::ThreadTaskRunnerHandle::Get(), FROM_HERE, run_loop_.QuitClosure()));
   delegate.CreateFetcher(url, URLFetcher::GET, context_getter);
 
   // Register an entry for test url using a sliding window of 400 seconds, and
@@ -1364,8 +1365,8 @@ TEST_F(URLFetcherTest, FileTestTryToOverwriteDirectory) {
       test_server_->GetURL(std::string(kTestServerFilePrefix) + kFileToFetch),
       URLFetcher::GET, CreateSameThreadContextGetter());
   delegate.fetcher()->SaveResponseToFileAtPath(
-      out_path,
-      scoped_refptr<base::MessageLoopProxy>(base::MessageLoopProxy::current()));
+      out_path, scoped_refptr<base::SingleThreadTaskRunner>(
+                    base::ThreadTaskRunnerHandle::Get()));
   delegate.StartFetcherAndWait();
 
   EXPECT_FALSE(delegate.fetcher()->GetStatus().is_success());

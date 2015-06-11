@@ -5,7 +5,10 @@
 #include "net/tools/quic/synchronous_host_resolver.h"
 
 #include "base/at_exit.h"
+#include "base/location.h"
 #include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/simple_thread.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
@@ -86,9 +89,8 @@ int ResolverThread::Resolve(const std::string& host, AddressList* addresses) {
 
 void ResolverThread::OnResolutionComplete(int rv) {
   rv_ = rv;
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::MessageLoop::QuitClosure());
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::MessageLoop::QuitClosure());
 }
 
 }  // namespace

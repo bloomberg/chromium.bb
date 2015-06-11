@@ -13,10 +13,12 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/location.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_piece.h"
+#include "base/thread_task_runner_handle.h"
 #include "net/base/auth.h"
 #include "net/base/network_delegate.h"
 #include "net/base/test_data_directory.h"
@@ -177,7 +179,7 @@ ChannelState ConnectTestingEventInterface::OnSSLCertificateError(
     const GURL& url,
     const SSLInfo& ssl_info,
     bool fatal) {
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&SSLErrorCallbacks::CancelSSLRequest,
                             base::Owned(ssl_error_callbacks.release()),
                             ERR_SSL_PROTOCOL_ERROR, &ssl_info));

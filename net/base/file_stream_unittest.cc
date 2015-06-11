@@ -9,12 +9,12 @@
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "net/base/io_buffer.h"
@@ -71,7 +71,7 @@ namespace {
 
 TEST_F(FileStreamTest, OpenExplicitClose) {
   TestCompletionCallback callback;
-  FileStream stream(base::MessageLoopProxy::current());
+  FileStream stream(base::ThreadTaskRunnerHandle::Get());
   int flags = base::File::FLAG_OPEN |
               base::File::FLAG_READ |
               base::File::FLAG_ASYNC;
@@ -88,8 +88,8 @@ TEST_F(FileStreamTest, OpenExplicitClose) {
 
 TEST_F(FileStreamTest, OpenExplicitCloseOrphaned) {
   TestCompletionCallback callback;
-  scoped_ptr<FileStream> stream(new FileStream(
-      base::MessageLoopProxy::current()));
+  scoped_ptr<FileStream> stream(
+      new FileStream(base::ThreadTaskRunnerHandle::Get()));
   int flags = base::File::FLAG_OPEN | base::File::FLAG_READ |
               base::File::FLAG_ASYNC;
   int rv = stream->Open(temp_file_path(), flags, callback.callback());
@@ -119,7 +119,7 @@ TEST_F(FileStreamTest, UseFileHandle) {
 
   // Seek to the beginning of the file and read.
   scoped_ptr<FileStream> read_stream(
-      new FileStream(file.Pass(), base::MessageLoopProxy::current()));
+      new FileStream(file.Pass(), base::ThreadTaskRunnerHandle::Get()));
   ASSERT_EQ(ERR_IO_PENDING,
             read_stream->Seek(base::File::FROM_BEGIN, 0,
                               callback64.callback()));
@@ -139,7 +139,7 @@ TEST_F(FileStreamTest, UseFileHandle) {
   file.Initialize(temp_file_path(), flags);
 
   scoped_ptr<FileStream> write_stream(
-      new FileStream(file.Pass(), base::MessageLoopProxy::current()));
+      new FileStream(file.Pass(), base::ThreadTaskRunnerHandle::Get()));
   ASSERT_EQ(ERR_IO_PENDING,
             write_stream->Seek(base::File::FROM_BEGIN, 0,
                                callback64.callback()));
@@ -162,7 +162,7 @@ TEST_F(FileStreamTest, UseClosedStream) {
   TestCompletionCallback callback;
   TestInt64CompletionCallback callback64;
 
-  FileStream stream(base::MessageLoopProxy::current());
+  FileStream stream(base::ThreadTaskRunnerHandle::Get());
 
   EXPECT_FALSE(stream.IsOpen());
 
@@ -180,7 +180,7 @@ TEST_F(FileStreamTest, Read) {
   int64_t file_size;
   EXPECT_TRUE(base::GetFileSize(temp_file_path(), &file_size));
 
-  FileStream stream(base::MessageLoopProxy::current());
+  FileStream stream(base::ThreadTaskRunnerHandle::Get());
   int flags = base::File::FLAG_OPEN | base::File::FLAG_READ |
               base::File::FLAG_ASYNC;
   TestCompletionCallback callback;
@@ -209,7 +209,7 @@ TEST_F(FileStreamTest, Read_EarlyDelete) {
   EXPECT_TRUE(base::GetFileSize(temp_file_path(), &file_size));
 
   scoped_ptr<FileStream> stream(
-      new FileStream(base::MessageLoopProxy::current()));
+      new FileStream(base::ThreadTaskRunnerHandle::Get()));
   int flags = base::File::FLAG_OPEN | base::File::FLAG_READ |
               base::File::FLAG_ASYNC;
   TestCompletionCallback callback;
@@ -234,7 +234,7 @@ TEST_F(FileStreamTest, Read_FromOffset) {
   int64_t file_size;
   EXPECT_TRUE(base::GetFileSize(temp_file_path(), &file_size));
 
-  FileStream stream(base::MessageLoopProxy::current());
+  FileStream stream(base::ThreadTaskRunnerHandle::Get());
   int flags = base::File::FLAG_OPEN | base::File::FLAG_READ |
               base::File::FLAG_ASYNC;
   TestCompletionCallback callback;
@@ -268,7 +268,7 @@ TEST_F(FileStreamTest, Read_FromOffset) {
 }
 
 TEST_F(FileStreamTest, SeekAround) {
-  FileStream stream(base::MessageLoopProxy::current());
+  FileStream stream(base::ThreadTaskRunnerHandle::Get());
   int flags = base::File::FLAG_OPEN | base::File::FLAG_ASYNC |
               base::File::FLAG_READ;
   TestCompletionCallback callback;
@@ -303,7 +303,7 @@ TEST_F(FileStreamTest, SeekAround) {
 }
 
 TEST_F(FileStreamTest, Write) {
-  FileStream stream(base::MessageLoopProxy::current());
+  FileStream stream(base::ThreadTaskRunnerHandle::Get());
   int flags = base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE |
               base::File::FLAG_ASYNC;
   TestCompletionCallback callback;
@@ -329,7 +329,7 @@ TEST_F(FileStreamTest, Write) {
 
 TEST_F(FileStreamTest, Write_EarlyDelete) {
   scoped_ptr<FileStream> stream(
-      new FileStream(base::MessageLoopProxy::current()));
+      new FileStream(base::ThreadTaskRunnerHandle::Get()));
   int flags = base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE |
               base::File::FLAG_ASYNC;
   TestCompletionCallback callback;
@@ -359,7 +359,7 @@ TEST_F(FileStreamTest, Write_FromOffset) {
   int64_t file_size;
   EXPECT_TRUE(base::GetFileSize(temp_file_path(), &file_size));
 
-  FileStream stream(base::MessageLoopProxy::current());
+  FileStream stream(base::ThreadTaskRunnerHandle::Get());
   int flags = base::File::FLAG_OPEN | base::File::FLAG_WRITE |
               base::File::FLAG_ASYNC;
   TestCompletionCallback callback;
@@ -399,7 +399,7 @@ TEST_F(FileStreamTest, BasicReadWrite) {
   EXPECT_TRUE(base::GetFileSize(temp_file_path(), &file_size));
 
   scoped_ptr<FileStream> stream(
-      new FileStream(base::MessageLoopProxy::current()));
+      new FileStream(base::ThreadTaskRunnerHandle::Get()));
   int flags = base::File::FLAG_OPEN | base::File::FLAG_READ |
               base::File::FLAG_WRITE | base::File::FLAG_ASYNC;
   TestCompletionCallback callback;
@@ -452,7 +452,7 @@ TEST_F(FileStreamTest, BasicWriteRead) {
   EXPECT_TRUE(base::GetFileSize(temp_file_path(), &file_size));
 
   scoped_ptr<FileStream> stream(
-      new FileStream(base::MessageLoopProxy::current()));
+      new FileStream(base::ThreadTaskRunnerHandle::Get()));
   int flags = base::File::FLAG_OPEN | base::File::FLAG_READ |
               base::File::FLAG_WRITE | base::File::FLAG_ASYNC;
   TestCompletionCallback callback;
@@ -623,7 +623,7 @@ TEST_F(FileStreamTest, WriteRead) {
   EXPECT_TRUE(base::GetFileSize(temp_file_path(), &file_size));
 
   scoped_ptr<FileStream> stream(
-      new FileStream(base::MessageLoopProxy::current()));
+      new FileStream(base::ThreadTaskRunnerHandle::Get()));
   int flags = base::File::FLAG_OPEN | base::File::FLAG_READ |
               base::File::FLAG_WRITE | base::File::FLAG_ASYNC;
   TestCompletionCallback open_callback;
@@ -730,7 +730,7 @@ TEST_F(FileStreamTest, WriteClose) {
   EXPECT_TRUE(base::GetFileSize(temp_file_path(), &file_size));
 
   scoped_ptr<FileStream> stream(
-      new FileStream(base::MessageLoopProxy::current()));
+      new FileStream(base::ThreadTaskRunnerHandle::Get()));
   int flags = base::File::FLAG_OPEN | base::File::FLAG_READ |
               base::File::FLAG_WRITE | base::File::FLAG_ASYNC;
   TestCompletionCallback open_callback;
@@ -800,7 +800,7 @@ TEST_F(FileStreamTest, WriteError) {
   ASSERT_TRUE(file.IsValid());
 
   scoped_ptr<FileStream> stream(
-  new FileStream(file.Pass(), base::MessageLoopProxy::current()));
+      new FileStream(file.Pass(), base::ThreadTaskRunnerHandle::Get()));
 
   scoped_refptr<IOBuffer> buf = new IOBuffer(1);
   buf->data()[0] = 0;
@@ -825,7 +825,7 @@ TEST_F(FileStreamTest, ReadError) {
   ASSERT_TRUE(file.IsValid());
 
   scoped_ptr<FileStream> stream(
-  new FileStream(file.Pass(), base::MessageLoopProxy::current()));
+      new FileStream(file.Pass(), base::ThreadTaskRunnerHandle::Get()));
 
   scoped_refptr<IOBuffer> buf = new IOBuffer(1);
   TestCompletionCallback callback;
@@ -857,7 +857,7 @@ TEST_F(FileStreamTest, ContentUriRead) {
   EXPECT_TRUE(base::GetFileSize(path, &file_size));
   EXPECT_LT(0, file_size);
 
-  FileStream stream(base::MessageLoopProxy::current());
+  FileStream stream(base::ThreadTaskRunnerHandle::Get());
   int flags = base::File::FLAG_OPEN | base::File::FLAG_READ |
               base::File::FLAG_ASYNC;
   TestCompletionCallback callback;

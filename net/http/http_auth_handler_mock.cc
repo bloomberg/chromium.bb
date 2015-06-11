@@ -5,8 +5,10 @@
 #include "net/http/http_auth_handler_mock.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_auth_challenge_tokenizer.h"
 #include "net/http/http_request_info.h"
@@ -60,10 +62,9 @@ int HttpAuthHandlerMock::ResolveCanonicalName(
       EXPECT_TRUE(callback_.is_null());
       rv = ERR_IO_PENDING;
       callback_ = callback;
-      base::MessageLoop::current()->PostTask(
-          FROM_HERE,
-          base::Bind(&HttpAuthHandlerMock::OnResolveCanonicalName,
-                     weak_factory_.GetWeakPtr()));
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::Bind(&HttpAuthHandlerMock::OnResolveCanonicalName,
+                                weak_factory_.GetWeakPtr()));
       break;
     default:
       NOTREACHED();
@@ -119,10 +120,9 @@ int HttpAuthHandlerMock::GenerateAuthTokenImpl(
     EXPECT_TRUE(auth_token_ == NULL);
     callback_ = callback;
     auth_token_ = auth_token;
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&HttpAuthHandlerMock::OnGenerateAuthToken,
-                   weak_factory_.GetWeakPtr()));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&HttpAuthHandlerMock::OnGenerateAuthToken,
+                              weak_factory_.GetWeakPtr()));
     return ERR_IO_PENDING;
   } else {
     if (generate_rv_ == OK)

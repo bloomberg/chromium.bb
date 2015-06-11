@@ -6,9 +6,11 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -45,10 +47,9 @@ void URLRequestFileDirJob::StartAsync() {
 void URLRequestFileDirJob::Start() {
   // Start reading asynchronously so that all error reporting and data
   // callbacks happen as they would for network requests.
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&URLRequestFileDirJob::StartAsync,
-                 weak_factory_.GetWeakPtr()));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&URLRequestFileDirJob::StartAsync,
+                            weak_factory_.GetWeakPtr()));
 }
 
 void URLRequestFileDirJob::Kill() {

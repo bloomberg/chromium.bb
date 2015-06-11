@@ -6,7 +6,9 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request_status.h"
 
@@ -21,7 +23,7 @@ URLRequestErrorJob::URLRequestErrorJob(
 URLRequestErrorJob::~URLRequestErrorJob() {}
 
 void URLRequestErrorJob::Start() {
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&URLRequestErrorJob::StartAsync, weak_factory_.GetWeakPtr()));
 }

@@ -5,7 +5,9 @@
 #include "net/cookies/cookie_store_test_helpers.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 
 namespace net {
 
@@ -42,11 +44,9 @@ void DelayedCookieMonster::SetCookieWithOptionsAsync(
       base::Bind(&DelayedCookieMonster::SetCookiesInternalCallback,
                  base::Unretained(this)));
   DCHECK_EQ(did_run_, true);
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&DelayedCookieMonster::InvokeSetCookiesCallback,
-                 base::Unretained(this),
-                 callback),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&DelayedCookieMonster::InvokeSetCookiesCallback,
+                            base::Unretained(this), callback),
       base::TimeDelta::FromMilliseconds(kDelayedTime));
 }
 
@@ -60,11 +60,10 @@ void DelayedCookieMonster::GetCookiesWithOptionsAsync(
       base::Bind(&DelayedCookieMonster::GetCookiesWithOptionsInternalCallback,
                  base::Unretained(this)));
   DCHECK_EQ(did_run_, true);
-  base::MessageLoop::current()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&DelayedCookieMonster::InvokeGetCookieStringCallback,
-                 base::Unretained(this),
-                 callback),
+                 base::Unretained(this), callback),
       base::TimeDelta::FromMilliseconds(kDelayedTime));
 }
 

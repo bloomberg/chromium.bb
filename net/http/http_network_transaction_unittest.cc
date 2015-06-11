@@ -22,6 +22,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_file_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "net/base/auth.h"
 #include "net/base/chunked_upload_data_stream.h"
 #include "net/base/completion_callback.h"
@@ -8414,11 +8415,8 @@ TEST_P(HttpNetworkTransactionTest, UploadFileSmallerThanLength) {
 
   ScopedVector<UploadElementReader> element_readers;
   element_readers.push_back(
-      new UploadFileElementReader(base::MessageLoopProxy::current().get(),
-                                  temp_file_path,
-                                  0,
-                                  kuint64max,
-                                  base::Time()));
+      new UploadFileElementReader(base::ThreadTaskRunnerHandle::Get().get(),
+                                  temp_file_path, 0, kuint64max, base::Time()));
   ElementsUploadDataStream upload_data_stream(element_readers.Pass(), 0);
 
   HttpRequestInfo request;
@@ -8471,11 +8469,8 @@ TEST_P(HttpNetworkTransactionTest, UploadUnreadableFile) {
 
   ScopedVector<UploadElementReader> element_readers;
   element_readers.push_back(
-      new UploadFileElementReader(base::MessageLoopProxy::current().get(),
-                                  temp_file,
-                                  0,
-                                  kuint64max,
-                                  base::Time()));
+      new UploadFileElementReader(base::ThreadTaskRunnerHandle::Get().get(),
+                                  temp_file, 0, kuint64max, base::Time()));
   ElementsUploadDataStream upload_data_stream(element_readers.Pass(), 0);
 
   HttpRequestInfo request;

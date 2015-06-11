@@ -10,10 +10,10 @@
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/location.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task_runner_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "crypto/sha2.h"
 #include "net/cert/x509_certificate.h"
@@ -95,7 +95,7 @@ TransportSecurityPersister::TransportSecurityPersister(
     bool readonly)
     : transport_security_state_(state),
       writer_(profile_path.AppendASCII("TransportSecurity"), background_runner),
-      foreground_runner_(base::MessageLoop::current()->message_loop_proxy()),
+      foreground_runner_(base::ThreadTaskRunnerHandle::Get()),
       background_runner_(background_runner),
       readonly_(readonly),
       weak_ptr_factory_(this) {

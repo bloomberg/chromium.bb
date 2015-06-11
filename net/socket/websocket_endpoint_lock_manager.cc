@@ -7,8 +7,10 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "net/base/net_errors.h"
 #include "net/log/net_log.h"
 
@@ -127,7 +129,7 @@ void WebSocketEndpointLockManager::UnlockEndpointAfterDelay(
   DVLOG(3) << "Delaying " << unlock_delay_.InMilliseconds()
            << "ms before unlocking endpoint " << endpoint.ToString();
   ++pending_unlock_count_;
-  base::MessageLoop::current()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&WebSocketEndpointLockManager::DelayedUnlockEndpoint,
                  weak_factory_.GetWeakPtr(), endpoint),

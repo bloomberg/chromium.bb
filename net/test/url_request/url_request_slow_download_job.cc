@@ -6,10 +6,12 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
@@ -59,7 +61,7 @@ base::LazyInstance<URLRequestSlowDownloadJob::SlowJobsSet>::Leaky
     URLRequestSlowDownloadJob::pending_requests_ = LAZY_INSTANCE_INITIALIZER;
 
 void URLRequestSlowDownloadJob::Start() {
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&URLRequestSlowDownloadJob::StartAsync,
                             weak_factory_.GetWeakPtr()));
 }
@@ -199,7 +201,7 @@ bool URLRequestSlowDownloadJob::ReadRawData(IOBuffer* buf,
       buffer_ = buf;
       buffer_size_ = buf_size;
       SetStatus(URLRequestStatus(URLRequestStatus::IO_PENDING, 0));
-      base::MessageLoop::current()->PostDelayedTask(
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE, base::Bind(&URLRequestSlowDownloadJob::CheckDoneStatus,
                                 weak_factory_.GetWeakPtr()),
           base::TimeDelta::FromMilliseconds(100));
@@ -228,7 +230,7 @@ void URLRequestSlowDownloadJob::CheckDoneStatus() {
     NotifyDone(
         URLRequestStatus(URLRequestStatus::FAILED, ERR_CONNECTION_RESET));
   } else {
-    base::MessageLoop::current()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, base::Bind(&URLRequestSlowDownloadJob::CheckDoneStatus,
                               weak_factory_.GetWeakPtr()),
         base::TimeDelta::FromMilliseconds(100));

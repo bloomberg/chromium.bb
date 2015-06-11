@@ -6,11 +6,13 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/profiler/scoped_tracker.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "net/base/auth.h"
 #include "net/base/host_port_pair.h"
@@ -545,10 +547,9 @@ void URLRequestJob::NotifyDone(const URLRequestStatus &status) {
 
   // Complete this notification later.  This prevents us from re-entering the
   // delegate if we're done because of a synchronous call.
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&URLRequestJob::CompleteNotifyDone,
-                 weak_factory_.GetWeakPtr()));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&URLRequestJob::CompleteNotifyDone,
+                            weak_factory_.GetWeakPtr()));
 }
 
 void URLRequestJob::CompleteNotifyDone() {

@@ -6,6 +6,8 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "net/base/net_errors.h"
@@ -89,12 +91,9 @@ TEST(NetworkDelegateErrorObserverTest, CallOnThread) {
   TestNetworkDelegate network_delegate;
   NetworkDelegateErrorObserver observer(
       &network_delegate, base::ThreadTaskRunnerHandle::Get().get());
-  thread.message_loop()
-      ->PostTask(FROM_HERE,
-                 base::Bind(&NetworkDelegateErrorObserver::OnPACScriptError,
-                            base::Unretained(&observer),
-                            42,
-                            base::string16()));
+  thread.task_runner()->PostTask(
+      FROM_HERE, base::Bind(&NetworkDelegateErrorObserver::OnPACScriptError,
+                            base::Unretained(&observer), 42, base::string16()));
   thread.Stop();
   base::MessageLoop::current()->RunUntilIdle();
   ASSERT_TRUE(network_delegate.got_pac_error());
@@ -106,12 +105,9 @@ TEST(NetworkDelegateErrorObserverTest, NoDelegate) {
   thread.Start();
   NetworkDelegateErrorObserver observer(
       NULL, base::ThreadTaskRunnerHandle::Get().get());
-  thread.message_loop()
-      ->PostTask(FROM_HERE,
-                 base::Bind(&NetworkDelegateErrorObserver::OnPACScriptError,
-                            base::Unretained(&observer),
-                            42,
-                            base::string16()));
+  thread.task_runner()->PostTask(
+      FROM_HERE, base::Bind(&NetworkDelegateErrorObserver::OnPACScriptError,
+                            base::Unretained(&observer), 42, base::string16()));
   thread.Stop();
   base::MessageLoop::current()->RunUntilIdle();
   // Shouldn't have crashed until here...

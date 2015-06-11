@@ -19,7 +19,6 @@ class GURL;
 
 namespace base {
 class FilePath;
-class MessageLoopProxy;
 class SequencedTaskRunner;
 class TaskRunner;
 class TimeDelta;

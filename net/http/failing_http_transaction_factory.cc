@@ -6,8 +6,10 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/upload_progress.h"
 #include "net/http/http_response_info.h"
@@ -77,8 +79,8 @@ FailingHttpTransaction::~FailingHttpTransaction() {}
 int FailingHttpTransaction::Start(const HttpRequestInfo* request_info,
                                   const CompletionCallback& callback,
                                   const BoundNetLog& net_log)  {
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE, base::Bind(callback, error_));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                base::Bind(callback, error_));
   return ERR_IO_PENDING;
 }
 

@@ -30,9 +30,11 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "net/disk_cache/blockfile/backend_impl.h"
 #include "net/disk_cache/blockfile/disk_format.h"
@@ -147,7 +149,7 @@ void Eviction::TrimCache(bool empty) {
     }
     if (!empty && (deleted_entries > 20 ||
                    (TimeTicks::Now() - start).InMilliseconds() > 20)) {
-      base::MessageLoop::current()->PostTask(
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
           base::Bind(&Eviction::TrimCache, ptr_factory_.GetWeakPtr(), false));
       break;
@@ -215,9 +217,8 @@ void Eviction::PostDelayedTrim() {
     return;
   delay_trim_ = true;
   trim_delays_++;
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&Eviction::DelayedTrim, ptr_factory_.GetWeakPtr()),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&Eviction::DelayedTrim, ptr_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(1000));
 }
 
@@ -369,7 +370,7 @@ void Eviction::TrimCacheV2(bool empty) {
       }
       if (!empty && (deleted_entries > 20 ||
                      (TimeTicks::Now() - start).InMilliseconds() > 20)) {
-        base::MessageLoop::current()->PostTask(
+        base::ThreadTaskRunnerHandle::Get()->PostTask(
             FROM_HERE,
             base::Bind(&Eviction::TrimCache, ptr_factory_.GetWeakPtr(), false));
         break;
@@ -382,7 +383,7 @@ void Eviction::TrimCacheV2(bool empty) {
   if (empty) {
     TrimDeleted(true);
   } else if (ShouldTrimDeleted()) {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&Eviction::TrimDeleted, ptr_factory_.GetWeakPtr(), empty));
   }
@@ -515,7 +516,7 @@ void Eviction::TrimDeleted(bool empty) {
   }
 
   if (deleted_entries && !empty && ShouldTrimDeleted()) {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&Eviction::TrimDeleted, ptr_factory_.GetWeakPtr(), false));
   }
