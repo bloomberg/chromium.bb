@@ -427,11 +427,11 @@ void OmniboxViewMac::SetTextInternal(const base::string16& display_text) {
   }
 
   NSString* ss = base::SysUTF16ToNSString(display_text);
-  NSMutableAttributedString* as =
+  NSMutableAttributedString* attributedString =
       [[[NSMutableAttributedString alloc] initWithString:ss] autorelease];
 
-  ApplyTextAttributes(display_text, as);
-  [field_ setAttributedStringValue:as];
+  ApplyTextAttributes(display_text, attributedString);
+  [field_ setAttributedStringValue:attributedString];
 
   // TODO(shess): This may be an appropriate place to call:
   //   model()->OnChanged();
@@ -482,9 +482,11 @@ void OmniboxViewMac::EmphasizeURLComponents() {
   }
 }
 
-void OmniboxViewMac::ApplyTextStyle(NSMutableAttributedString* as) {
-  [as addAttribute:NSFontAttributeName value:GetFieldFont(gfx::Font::NORMAL)
-             range:NSMakeRange(0, [as length])];
+void OmniboxViewMac::ApplyTextStyle(
+    NSMutableAttributedString* attributedString) {
+  [attributedString addAttribute:NSFontAttributeName
+                           value:GetFieldFont(gfx::Font::NORMAL)
+                           range:NSMakeRange(0, [attributedString length])];
 
   // Make a paragraph style locking in the standard line height as the maximum,
   // otherwise the baseline may shift "downwards".
@@ -494,21 +496,24 @@ void OmniboxViewMac::ApplyTextStyle(NSMutableAttributedString* as) {
   [paragraph_style setMaximumLineHeight:line_height];
   [paragraph_style setMinimumLineHeight:line_height];
   [paragraph_style setLineBreakMode:NSLineBreakByTruncatingTail];
-  [as addAttribute:NSParagraphStyleAttributeName value:paragraph_style
-             range:NSMakeRange(0, [as length])];
+  [attributedString addAttribute:NSParagraphStyleAttributeName
+                           value:paragraph_style
+                           range:NSMakeRange(0, [attributedString length])];
 }
 
-void OmniboxViewMac::ApplyTextAttributes(const base::string16& display_text,
-                                         NSMutableAttributedString* as) {
-  NSUInteger as_length = [as length];
+void OmniboxViewMac::ApplyTextAttributes(
+    const base::string16& display_text,
+    NSMutableAttributedString* attributedString) {
+  NSUInteger as_length = [attributedString length];
   NSRange as_entire_string = NSMakeRange(0, as_length);
 
-  ApplyTextStyle(as);
+  ApplyTextStyle(attributedString);
 
   // A kinda hacky way to add breaking at periods. This is what Safari does.
   // This works for IDNs too, despite the "en_US".
-  [as addAttribute:@"NSLanguage" value:@"en_US_POSIX"
-             range:as_entire_string];
+  [attributedString addAttribute:@"NSLanguage"
+                           value:@"en_US_POSIX"
+                           range:as_entire_string];
 
   url::Component scheme, host;
   AutocompleteInput::ParseForEmphasizeComponents(
@@ -518,12 +523,14 @@ void OmniboxViewMac::ApplyTextAttributes(const base::string16& display_text,
       base::UTF8ToUTF16(extensions::kExtensionScheme);
   if (model()->CurrentTextIsURL() &&
       (host.is_nonempty() || grey_out_url)) {
-    [as addAttribute:NSForegroundColorAttributeName value:BaseTextColor()
-               range:as_entire_string];
+    [attributedString addAttribute:NSForegroundColorAttributeName
+                             value:BaseTextColor()
+                             range:as_entire_string];
 
     if (!grey_out_url) {
-      [as addAttribute:NSForegroundColorAttributeName value:HostTextColor()
-               range:ComponentToNSRange(host)];
+      [attributedString addAttribute:NSForegroundColorAttributeName
+                               value:HostTextColor()
+                               range:ComponentToNSRange(host)];
     }
   }
 
@@ -544,7 +551,7 @@ void OmniboxViewMac::ApplyTextAttributes(const base::string16& display_text,
     } else if (security_level == ConnectionSecurityHelper::SECURITY_ERROR) {
       color = SecurityErrorSchemeColor();
       // Add a strikethrough through the scheme.
-      [as addAttribute:NSStrikethroughStyleAttributeName
+      [attributedString addAttribute:NSStrikethroughStyleAttributeName
                  value:[NSNumber numberWithInt:NSUnderlineStyleSingle]
                  range:ComponentToNSRange(scheme)];
     } else if (security_level == ConnectionSecurityHelper::SECURITY_WARNING) {
@@ -553,8 +560,9 @@ void OmniboxViewMac::ApplyTextAttributes(const base::string16& display_text,
       NOTREACHED();
       color = BaseTextColor();
     }
-    [as addAttribute:NSForegroundColorAttributeName value:color
-               range:ComponentToNSRange(scheme)];
+    [attributedString addAttribute:NSForegroundColorAttributeName
+                             value:color
+                             range:ComponentToNSRange(scheme)];
   }
 }
 

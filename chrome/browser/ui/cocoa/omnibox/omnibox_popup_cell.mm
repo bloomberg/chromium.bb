@@ -315,9 +315,9 @@ NSAttributedString* CreateClassifiedAttributedString(
     DCHECK(!match_.answer->second_line().text_fields().empty());
     for (const SuggestionAnswer::TextField& textField :
          match_.answer->second_line().text_fields()) {
-      NSAttributedString* as =
+      NSAttributedString* attributedString =
           CreateAnswerString(textField.text(), textField.type());
-      [answerString appendAttributedString:as];
+      [answerString appendAttributedString:attributedString];
     }
     const base::char16 space(' ');
     const SuggestionAnswer::TextField* textField =
@@ -495,7 +495,7 @@ NSAttributedString* CreateClassifiedAttributedString(
   return offset;
 }
 
-- (CGFloat)drawMatchPart:(NSAttributedString*)as
+- (CGFloat)drawMatchPart:(NSAttributedString*)attributedString
                withFrame:(NSRect)cellFrame
                 atOffset:(CGFloat)offset
             withMaxWidth:(int)maxWidth
@@ -506,7 +506,7 @@ NSAttributedString* CreateClassifiedAttributedString(
   renderRect.size.width =
       std::min(NSWidth(renderRect), static_cast<CGFloat>(maxWidth));
   if (renderRect.size.width != 0) {
-    [self drawTitle:as
+    [self drawTitle:attributedString
           withFrame:FlipIfRTL(renderRect, cellFrame)
              inView:controlView];
   }
@@ -537,9 +537,10 @@ NSAttributedString* CreateClassifiedAttributedString(
       base::i18n::GetFirstStrongCharacterDirection(match.contents));
 
   // Color does not matter.
-  NSAttributedString* as = CreateAttributedString(inputText, DimTextColor());
-  base::scoped_nsobject<NSTextStorage> textStorage([[NSTextStorage alloc]
-      initWithAttributedString:as]);
+  NSAttributedString* attributedString =
+      CreateAttributedString(inputText, DimTextColor());
+  base::scoped_nsobject<NSTextStorage> textStorage(
+      [[NSTextStorage alloc] initWithAttributedString:attributedString]);
   base::scoped_nsobject<NSLayoutManager> layoutManager(
       [[NSLayoutManager alloc] init]);
   base::scoped_nsobject<NSTextContainer> textContainer(
@@ -555,7 +556,7 @@ NSAttributedString* CreateClassifiedAttributedString(
   // left edge of the string, irrespective of the directionality of UI or text.
   CGFloat glyphOffset = [layoutManager locationForGlyphAtIndex:glyphIndex].x;
 
-  CGFloat inputWidth = [as size].width;
+  CGFloat inputWidth = [attributedString size].width;
 
   // The offset obtained above may need to be corrected because the left-most
   // glyph may not have 0 offset. So we find the offset of left-most glyph, and
@@ -569,7 +570,7 @@ NSAttributedString* CreateClassifiedAttributedString(
   // we are looking for.
   CGFloat glyphWidth = inputWidth;
 
-  for (NSUInteger i = 0; i < [as length]; i++) {
+  for (NSUInteger i = 0; i < [attributedString length]; i++) {
     if (i == charIndex) continue;
     glyphIndex = [layoutManager glyphIndexForCharacterAtIndex:i];
     CGFloat offset = [layoutManager locationForGlyphAtIndex:glyphIndex].x;

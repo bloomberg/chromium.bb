@@ -157,13 +157,13 @@ class OmniboxViewMac : public OmniboxView,
   // though here we cannot really do the in-place operation they do.
   void EmphasizeURLComponents() override;
 
-  // Apply our font and paragraph style to |as|.
-  void ApplyTextStyle(NSMutableAttributedString* as);
+  // Apply our font and paragraph style to |attributedString|.
+  void ApplyTextStyle(NSMutableAttributedString* attributedString);
 
   // Calculates text attributes according to |display_text| and applies them
-  // to the given |as| object.
+  // to the given |attributedString| object.
   void ApplyTextAttributes(const base::string16& display_text,
-                           NSMutableAttributedString* as);
+                           NSMutableAttributedString* attributedString);
 
   // Return the number of UTF-16 units in the current buffer, excluding the
   // suggested text.
