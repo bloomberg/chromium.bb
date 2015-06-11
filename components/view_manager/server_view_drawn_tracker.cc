@@ -10,13 +10,9 @@
 namespace view_manager {
 
 ServerViewDrawnTracker::ServerViewDrawnTracker(
-    ServerView* root,
     ServerView* view,
     ServerViewDrawnTrackerObserver* observer)
-    : root_(root),
-      view_(view),
-      observer_(observer),
-      drawn_(view->IsDrawn(root)) {
+    : view_(view), observer_(observer), drawn_(view->IsDrawn()) {
   AddObservers();
 }
 
@@ -64,12 +60,12 @@ void ServerViewDrawnTracker::OnViewHierarchyChanged(ServerView* view,
                                                     ServerView* old_parent) {
   RemoveObservers();
   AddObservers();
-  const bool is_drawn = view_->IsDrawn(root_);
+  const bool is_drawn = view_->IsDrawn();
   SetDrawn(is_drawn ? nullptr : old_parent, is_drawn);
 }
 
 void ServerViewDrawnTracker::OnViewVisibilityChanged(ServerView* view) {
-  const bool is_drawn = view_->IsDrawn(root_);
+  const bool is_drawn = view_->IsDrawn();
   SetDrawn(is_drawn ? nullptr : view->parent(), is_drawn);
 }
 

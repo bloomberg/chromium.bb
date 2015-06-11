@@ -117,11 +117,11 @@ ConnectionManager::ConnectionManager(ConnectionManagerDelegate* delegate,
       next_connection_id_(1),
       event_dispatcher_(this),
       display_manager_(display_manager.Pass()),
-      root_(CreateServerView(RootViewId())),
+      root_(CreateServerView(RootViewId(0))),
       current_change_(nullptr),
       in_destructor_(false),
       animation_runner_(base::TimeTicks::Now()),
-      focus_controller_(new FocusController(this, root_.get())) {
+      focus_controller_(new FocusController(this)) {
   root_->SetBounds(gfx::Rect(800, 600));
   root_->SetVisible(true);
 
@@ -227,6 +227,11 @@ ServerView* ConnectionManager::GetFocusedView() {
   return focus_controller_->GetFocusedView();
 }
 
+bool ConnectionManager::IsViewAttachedToRoot(const ServerView* view) const {
+  // TODO(fsamuel): Iterate over all roots once we support multiple roots.
+  return root_->Contains(view) && view != root_.get();
+}
+
 void ConnectionManager::OnConnectionMessagedClient(ConnectionSpecificId id) {
   if (current_change_)
     current_change_->MarkConnectionAsMessaged(id);
@@ -279,7 +284,7 @@ ConnectionManager::GetWindowManagerViewManagerClient() {
 
 bool ConnectionManager::CloneAndAnimate(const ViewId& view_id) {
   ServerView* view = GetView(view_id);
-  if (!view || !view->IsDrawn(root_.get()) || view == root_.get())
+  if (!view || !view->IsDrawn() || view == root_.get())
     return false;
   if (!animation_timer_.IsRunning()) {
     animation_timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(100),
@@ -391,7 +396,7 @@ void ConnectionManager::AddConnection(ClientConnection* connection) {
 }
 
 void ConnectionManager::PrepareToDestroyView(ServerView* view) {
-  if (!in_destructor_ && root_->Contains(view) && view != root_.get() &&
+  if (!in_destructor_ && IsViewAttachedToRoot(view) &&
       view->id() != ClonedViewId()) {
     // We're about to destroy a view. Any cloned views need to be reparented
     // else the animation would no longer be visible. By moving to a visible
@@ -409,7 +414,7 @@ void ConnectionManager::PrepareToChangeViewHierarchy(ServerView* view,
   if (view->id() == ClonedViewId() || in_destructor_)
     return;
 
-  if (root_->Contains(view) && view != root_.get()) {
+  if (IsViewAttachedToRoot(view)) {
     // We're about to reparent a view. Any cloned views need to be reparented
     // else the animation may be effected in unusual ways. For example, the view
     // could move to a new location such that the animation is entirely clipped.
@@ -425,16 +430,15 @@ void ConnectionManager::PrepareToChangeViewVisibility(ServerView* view) {
   if (in_destructor_)
     return;
 
-  if (view != root_.get() && view->id() != ClonedViewId() &&
-      root_->Contains(view) && view->IsDrawn(root_.get())) {
+  if (IsViewAttachedToRoot(view) && view->id() != ClonedViewId() &&
+      view->IsDrawn()) {
     // We're about to hide |view|, this would implicitly make any cloned views
     // hide too. Reparent so that animations are still visible.
     ServerView* parent_above = view;
     ReparentClonedViews(view->parent(), &parent_above, view);
   }
 
-  const bool is_parent_drawn =
-      view->parent() && view->parent()->IsDrawn(root_.get());
+  const bool is_parent_drawn = view->parent() && view->parent()->IsDrawn();
   if (!is_parent_drawn || !view->visible())
     animation_runner_.CancelAnimationForView(view);
 }
@@ -442,6 +446,15 @@ void ConnectionManager::PrepareToChangeViewVisibility(ServerView* view) {
 void ConnectionManager::OnScheduleViewPaint(const ServerView* view) {
   if (!in_destructor_)
     display_manager_->SchedulePaint(view, gfx::Rect(view->bounds().size()));
+}
+
+bool ConnectionManager::IsViewDrawn(const ServerView* view) const {
+  // TODO(fsamuel): Iterate over all roots once we support multiple roots.
+  if (!root_->visible())
+    return false;
+  while (view && view != root_.get() && view->visible())
+    view = view->parent();
+  return view == root_.get();
 }
 
 void ConnectionManager::OnViewDestroyed(ServerView* view) {
@@ -505,8 +518,8 @@ void ConnectionManager::OnWillChangeViewVisibility(ServerView* view) {
 
   // Need to repaint if the view was drawn (which means it's in the process of
   // hiding) or the view is transitioning to drawn.
-  if (view->IsDrawn(root_.get()) || (!view->visible() && view->parent() &&
-                                     view->parent()->IsDrawn(root_.get()))) {
+  if (view->parent() && (view->IsDrawn() ||
+      (!view->visible() && view->parent()->IsDrawn()))) {
     display_manager_->SchedulePaint(view->parent(), view->bounds());
   }
 

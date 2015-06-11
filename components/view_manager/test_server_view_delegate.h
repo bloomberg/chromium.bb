@@ -15,6 +15,7 @@ class TestServerViewDelegate : public ServerViewDelegate {
   TestServerViewDelegate();
   ~TestServerViewDelegate() override;
 
+  void set_root_view(const ServerView* view) { root_view_ = view; }
  private:
   // ServerViewDelegate:
   void PrepareToDestroyView(ServerView* view) override;
@@ -23,6 +24,9 @@ class TestServerViewDelegate : public ServerViewDelegate {
                                     ServerView* old_parent) override;
   void PrepareToChangeViewVisibility(ServerView* view) override;
   void OnScheduleViewPaint(const ServerView* view) override;
+  bool IsViewDrawn(const ServerView* view) const override;
+
+  const ServerView* root_view_;
 
   DISALLOW_COPY_AND_ASSIGN(TestServerViewDelegate);
 };

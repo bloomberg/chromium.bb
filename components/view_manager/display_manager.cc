@@ -130,7 +130,8 @@ DefaultDisplayManager::~DefaultDisplayManager() {
 
 void DefaultDisplayManager::SchedulePaint(const ServerView* view,
                                           const gfx::Rect& bounds) {
-  if (!view->IsDrawn(connection_manager_->root()))
+  DCHECK(view);
+  if (!view->IsDrawn())
     return;
   const gfx::Rect root_relative_rect =
       ConvertRectBetweenViews(view, connection_manager_->root(), bounds);

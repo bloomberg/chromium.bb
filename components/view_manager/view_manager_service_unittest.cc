@@ -245,7 +245,7 @@ class ViewManagerServiceTest : public testing::Test {
     connection_manager_.reset(new ConnectionManager(
         &delegate_, scoped_ptr<DisplayManager>(new TestDisplayManager)));
     scoped_ptr<ViewManagerServiceImpl> service(new ViewManagerServiceImpl(
-        connection_manager_.get(), kInvalidConnectionId, RootViewId()));
+        connection_manager_.get(), kInvalidConnectionId, RootViewId(0)));
     scoped_ptr<TestClientConnection> client_connection(
         new TestClientConnection(service.Pass()));
     wm_client_ = client_connection->client();
@@ -523,7 +523,7 @@ TEST_F(ViewManagerServiceTest, FocusOnPointer) {
   EXPECT_EQ(connection_manager()->root(),
             connection_manager()->GetFocusedView());
   ASSERT_GE(wm_client()->tracker()->changes()->size(), 1u);
-  EXPECT_EQ("Focused id=0,1",
+  EXPECT_EQ("Focused id=0,2",
             ChangesToDescription1(*wm_client()->tracker()->changes())[0]);
   ASSERT_GE(connection1_client->tracker()->changes()->size(), 1u);
   EXPECT_EQ(
@@ -540,7 +540,7 @@ TEST_F(ViewManagerServiceTest, FocusOnPointer) {
   EXPECT_EQ(connection_manager()->root(),
             connection_manager()->GetFocusedView());
   ASSERT_EQ(wm_client()->tracker()->changes()->size(), 1u);
-  EXPECT_EQ("InputEvent view=0,1 event_action=4",
+  EXPECT_EQ("InputEvent view=0,2 event_action=4",
             ChangesToDescription1(*wm_client()->tracker()->changes())[0]);
   EXPECT_TRUE(connection1_client->tracker()->changes()->empty());
   ;

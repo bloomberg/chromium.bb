@@ -342,7 +342,7 @@ class ViewManagerClientImpl : public mojo::ViewManagerClient,
     // The bounds of the root may change during startup on Android at random
     // times. As this doesn't matter, and shouldn't impact test exepctations,
     // it is ignored.
-    if (view_id == ViewIdToTransportId(RootViewId()))
+    if (view_id == ViewIdToTransportId(RootViewId(0)))
         return;
     tracker()->OnViewBoundsChanged(view_id, old_bounds.Pass(),
                                    new_bounds.Pass());
@@ -779,7 +779,7 @@ TEST_F(ViewManagerServiceAppTest, ViewHierarchyChangedViews) {
   {
     // Client 2 is now connected to the root, so it should have gotten a drawn
     // notification.
-    ASSERT_TRUE(AddView(vm1(), BuildViewId(0, 1), BuildViewId(1, 1)));
+    ASSERT_TRUE(AddView(vm1(), BuildViewId(0, 2), BuildViewId(1, 1)));
     vm_client2_->WaitForChangeCount(1u);
     EXPECT_EQ("DrawnStateChanged view=1,1 drawn=true",
               SingleChangeToDescription(*changes2()));
@@ -809,7 +809,7 @@ TEST_F(ViewManagerServiceAppTest, ViewHierarchyChangedViews) {
   // 0,1->1,1->1,2->1,11->1,111
   {
     changes2()->clear();
-    ASSERT_TRUE(AddView(vm1(), BuildViewId(0, 1), BuildViewId(1, 1)));
+    ASSERT_TRUE(AddView(vm1(), BuildViewId(0, 2), BuildViewId(1, 1)));
     vm_client2_->WaitForChangeCount(1);
     EXPECT_EQ("DrawnStateChanged view=1,1 drawn=true",
               SingleChangeToDescription(*changes2()));
@@ -826,7 +826,7 @@ TEST_F(ViewManagerServiceAppTest, ViewHierarchyChangedAddingKnownToUnknown) {
   ASSERT_TRUE(CreateView(vm2(), BuildViewId(2, 21)));
 
   // Set up the hierarchy.
-  ASSERT_TRUE(AddView(vm1(), BuildViewId(0, 1), BuildViewId(1, 1)));
+  ASSERT_TRUE(AddView(vm1(), BuildViewId(0, 2), BuildViewId(1, 1)));
   ASSERT_TRUE(AddView(vm2(), BuildViewId(1, 1), BuildViewId(2, 11)));
   ASSERT_TRUE(AddView(vm2(), BuildViewId(2, 2), BuildViewId(2, 21)));
 
@@ -877,9 +877,9 @@ TEST_F(ViewManagerServiceAppTest, ReorderView) {
   ASSERT_TRUE(AddView(vm2(), view1_id, view2_id));
   ASSERT_TRUE(AddView(vm2(), view2_id, view6_id));
   ASSERT_TRUE(AddView(vm2(), view1_id, view3_id));
-  ASSERT_TRUE(AddView(vm1(), ViewIdToTransportId(RootViewId()), view4_id));
-  ASSERT_TRUE(AddView(vm1(), ViewIdToTransportId(RootViewId()), view5_id));
-  ASSERT_TRUE(AddView(vm1(), ViewIdToTransportId(RootViewId()), view1_id));
+  ASSERT_TRUE(AddView(vm1(), ViewIdToTransportId(RootViewId(0)), view4_id));
+  ASSERT_TRUE(AddView(vm1(), ViewIdToTransportId(RootViewId(0)), view5_id));
+  ASSERT_TRUE(AddView(vm1(), ViewIdToTransportId(RootViewId(0)), view1_id));
 
   {
     changes1()->clear();
@@ -993,7 +993,7 @@ TEST_F(ViewManagerServiceAppTest, GetViewTree) {
 
   // Create 11 in first connection and make it a child of 1.
   ASSERT_TRUE(CreateView(vm1(), BuildViewId(1, 11)));
-  ASSERT_TRUE(AddView(vm1(), BuildViewId(0, 1), BuildViewId(1, 1)));
+  ASSERT_TRUE(AddView(vm1(), BuildViewId(0, 2), BuildViewId(1, 1)));
   ASSERT_TRUE(AddView(vm1(), BuildViewId(1, 1), BuildViewId(1, 11)));
 
   // Create two views in second connection, 2 and 3, both children of 1.
@@ -1005,10 +1005,10 @@ TEST_F(ViewManagerServiceAppTest, GetViewTree) {
   // Verifies GetViewTree() on the root. The root connection sees all.
   {
     std::vector<TestView> views;
-    GetViewTree(vm1(), BuildViewId(0, 1), &views);
+    GetViewTree(vm1(), BuildViewId(0, 2), &views);
     ASSERT_EQ(5u, views.size());
-    EXPECT_EQ("view=0,1 parent=null", views[0].ToString());
-    EXPECT_EQ("view=1,1 parent=0,1", views[1].ToString());
+    EXPECT_EQ("view=0,2 parent=null", views[0].ToString());
+    EXPECT_EQ("view=1,1 parent=0,2", views[1].ToString());
     EXPECT_EQ("view=1,11 parent=1,1", views[2].ToString());
     EXPECT_EQ("view=2,2 parent=1,1", views[3].ToString());
     EXPECT_EQ("view=2,3 parent=1,1", views[4].ToString());
@@ -1028,14 +1028,14 @@ TEST_F(ViewManagerServiceAppTest, GetViewTree) {
   // Connection 2 shouldn't be able to get the root tree.
   {
     std::vector<TestView> views;
-    GetViewTree(vm2(), BuildViewId(0, 1), &views);
+    GetViewTree(vm2(), BuildViewId(0, 2), &views);
     ASSERT_EQ(0u, views.size());
   }
 }
 
 TEST_F(ViewManagerServiceAppTest, SetViewBounds) {
   ASSERT_TRUE(CreateView(vm1(), BuildViewId(1, 1)));
-  ASSERT_TRUE(AddView(vm1(), BuildViewId(0, 1), BuildViewId(1, 1)));
+  ASSERT_TRUE(AddView(vm1(), BuildViewId(0, 2), BuildViewId(1, 1)));
 
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(false));
 
@@ -1065,7 +1065,7 @@ TEST_F(ViewManagerServiceAppTest, CantMoveViewsFromOtherRoot) {
 
   // Try to reparent 1 to the root. A connection is not allowed to reparent its
   // roots.
-  ASSERT_FALSE(AddView(vm2(), BuildViewId(0, 1), BuildViewId(1, 1)));
+  ASSERT_FALSE(AddView(vm2(), BuildViewId(0, 2), BuildViewId(1, 1)));
 }
 
 // Verify RemoveViewFromParent fails for views that are descendants of the
@@ -1075,8 +1075,8 @@ TEST_F(ViewManagerServiceAppTest, CantRemoveViewsInOtherRoots) {
   ASSERT_TRUE(CreateView(vm1(), BuildViewId(1, 1)));
   ASSERT_TRUE(CreateView(vm1(), BuildViewId(1, 2)));
 
-  ASSERT_TRUE(AddView(vm1(), BuildViewId(0, 1), BuildViewId(1, 1)));
-  ASSERT_TRUE(AddView(vm1(), BuildViewId(0, 1), BuildViewId(1, 2)));
+  ASSERT_TRUE(AddView(vm1(), BuildViewId(0, 2), BuildViewId(1, 1)));
+  ASSERT_TRUE(AddView(vm1(), BuildViewId(0, 2), BuildViewId(1, 2)));
 
   // Establish the second connection and give it the root 1.
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(false));
@@ -1097,11 +1097,11 @@ TEST_F(ViewManagerServiceAppTest, CantRemoveViewsInOtherRoots) {
   // Verify nothing was actually removed.
   {
     std::vector<TestView> views;
-    GetViewTree(vm1(), BuildViewId(0, 1), &views);
+    GetViewTree(vm1(), BuildViewId(0, 2), &views);
     ASSERT_EQ(3u, views.size());
-    EXPECT_EQ("view=0,1 parent=null", views[0].ToString());
-    EXPECT_EQ("view=1,1 parent=0,1", views[1].ToString());
-    EXPECT_EQ("view=1,2 parent=0,1", views[2].ToString());
+    EXPECT_EQ("view=0,2 parent=null", views[0].ToString());
+    EXPECT_EQ("view=1,1 parent=0,2", views[1].ToString());
+    EXPECT_EQ("view=1,2 parent=0,2", views[2].ToString());
   }
 }
 
@@ -1111,15 +1111,15 @@ TEST_F(ViewManagerServiceAppTest, CantGetViewTreeOfOtherRoots) {
   ASSERT_TRUE(CreateView(vm1(), BuildViewId(1, 1)));
   ASSERT_TRUE(CreateView(vm1(), BuildViewId(1, 2)));
 
-  ASSERT_TRUE(AddView(vm1(), BuildViewId(0, 1), BuildViewId(1, 1)));
-  ASSERT_TRUE(AddView(vm1(), BuildViewId(0, 1), BuildViewId(1, 2)));
+  ASSERT_TRUE(AddView(vm1(), BuildViewId(0, 2), BuildViewId(1, 1)));
+  ASSERT_TRUE(AddView(vm1(), BuildViewId(0, 2), BuildViewId(1, 2)));
 
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(false));
 
   std::vector<TestView> views;
 
   // Should get nothing for the root.
-  GetViewTree(vm2(), BuildViewId(0, 1), &views);
+  GetViewTree(vm2(), BuildViewId(0, 2), &views);
   ASSERT_TRUE(views.empty());
 
   // Should get nothing for view 2.
@@ -1220,14 +1220,14 @@ TEST_F(ViewManagerServiceAppTest, SetViewVisibility) {
   ASSERT_TRUE(CreateView(vm1(), BuildViewId(1, 1)));
   ASSERT_TRUE(CreateView(vm1(), BuildViewId(1, 2)));
 
-  ASSERT_TRUE(AddView(vm1(), BuildViewId(0, 1), BuildViewId(1, 1)));
+  ASSERT_TRUE(AddView(vm1(), BuildViewId(0, 2), BuildViewId(1, 1)));
   {
     std::vector<TestView> views;
-    GetViewTree(vm1(), BuildViewId(0, 1), &views);
+    GetViewTree(vm1(), BuildViewId(0, 2), &views);
     ASSERT_EQ(2u, views.size());
-    EXPECT_EQ("view=0,1 parent=null visible=true drawn=true",
+    EXPECT_EQ("view=0,2 parent=null visible=true drawn=true",
               views[0].ToString2());
-    EXPECT_EQ("view=1,1 parent=0,1 visible=false drawn=false",
+    EXPECT_EQ("view=1,1 parent=0,2 visible=false drawn=false",
               views[1].ToString2());
   }
 
@@ -1236,11 +1236,11 @@ TEST_F(ViewManagerServiceAppTest, SetViewVisibility) {
   ASSERT_TRUE(SetViewVisibility(vm1(), BuildViewId(1, 2), true));
   {
     std::vector<TestView> views;
-    GetViewTree(vm1(), BuildViewId(0, 1), &views);
+    GetViewTree(vm1(), BuildViewId(0, 2), &views);
     ASSERT_EQ(2u, views.size());
-    EXPECT_EQ("view=0,1 parent=null visible=true drawn=true",
+    EXPECT_EQ("view=0,2 parent=null visible=true drawn=true",
               views[0].ToString2());
-    EXPECT_EQ("view=1,1 parent=0,1 visible=true drawn=true",
+    EXPECT_EQ("view=1,1 parent=0,2 visible=true drawn=true",
               views[1].ToString2());
   }
 
@@ -1250,7 +1250,7 @@ TEST_F(ViewManagerServiceAppTest, SetViewVisibility) {
     std::vector<TestView> views;
     GetViewTree(vm1(), BuildViewId(1, 1), &views);
     ASSERT_EQ(1u, views.size());
-    EXPECT_EQ("view=1,1 parent=0,1 visible=false drawn=false",
+    EXPECT_EQ("view=1,1 parent=0,2 visible=false drawn=false",
               views[0].ToString2());
   }
 
@@ -1260,7 +1260,7 @@ TEST_F(ViewManagerServiceAppTest, SetViewVisibility) {
     std::vector<TestView> views;
     GetViewTree(vm1(), BuildViewId(1, 1), &views);
     ASSERT_EQ(2u, views.size());
-    EXPECT_EQ("view=1,1 parent=0,1 visible=false drawn=false",
+    EXPECT_EQ("view=1,1 parent=0,2 visible=false drawn=false",
               views[0].ToString2());
     EXPECT_EQ("view=1,2 parent=1,1 visible=true drawn=false",
               views[1].ToString2());
@@ -1272,7 +1272,7 @@ TEST_F(ViewManagerServiceAppTest, SetViewVisibility) {
     std::vector<TestView> views;
     GetViewTree(vm1(), BuildViewId(1, 1), &views);
     ASSERT_EQ(2u, views.size());
-    EXPECT_EQ("view=1,1 parent=0,1 visible=true drawn=true",
+    EXPECT_EQ("view=1,1 parent=0,2 visible=true drawn=true",
               views[0].ToString2());
     EXPECT_EQ("view=1,2 parent=1,1 visible=true drawn=true",
               views[1].ToString2());
@@ -1286,7 +1286,7 @@ TEST_F(ViewManagerServiceAppTest, SetViewVisibilityNotifications) {
   ASSERT_TRUE(SetViewVisibility(vm1(), BuildViewId(1, 1), true));
   ASSERT_TRUE(CreateView(vm1(), BuildViewId(1, 2)));
   ASSERT_TRUE(SetViewVisibility(vm1(), BuildViewId(1, 2), true));
-  ASSERT_TRUE(AddView(vm1(), BuildViewId(0, 1), BuildViewId(1, 1)));
+  ASSERT_TRUE(AddView(vm1(), BuildViewId(0, 2), BuildViewId(1, 1)));
   ASSERT_TRUE(AddView(vm1(), BuildViewId(1, 1), BuildViewId(1, 2)));
 
   // Establish the second connection at 1,2.
@@ -1354,7 +1354,7 @@ TEST_F(ViewManagerServiceAppTest, SetViewVisibilityNotifications) {
 
   changes2()->clear();
   // Add 1,1 back to the root, connection 2 should see drawn state changed.
-  ASSERT_TRUE(AddView(vm1(), BuildViewId(0, 1), BuildViewId(1, 1)));
+  ASSERT_TRUE(AddView(vm1(), BuildViewId(0, 2), BuildViewId(1, 1)));
   {
     vm_client2_->WaitForChangeCount(1);
     EXPECT_EQ("DrawnStateChanged view=1,2 drawn=true",
@@ -1368,12 +1368,12 @@ TEST_F(ViewManagerServiceAppTest, SetViewProperty) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(false));
   changes2()->clear();
 
-  ASSERT_TRUE(AddView(vm1(), BuildViewId(0, 1), BuildViewId(1, 1)));
+  ASSERT_TRUE(AddView(vm1(), BuildViewId(0, 2), BuildViewId(1, 1)));
   {
     std::vector<TestView> views;
-    GetViewTree(vm1(), BuildViewId(0, 1), &views);
+    GetViewTree(vm1(), BuildViewId(0, 2), &views);
     ASSERT_EQ(2u, views.size());
-    EXPECT_EQ(BuildViewId(0, 1), views[0].view_id);
+    EXPECT_EQ(BuildViewId(0, 2), views[0].view_id);
     EXPECT_EQ(BuildViewId(1, 1), views[1].view_id);
     ASSERT_EQ(0u, views[1].properties.size());
   }
@@ -1428,7 +1428,7 @@ TEST_F(ViewManagerServiceAppTest, OnEmbeddedAppDisconnected) {
 TEST_F(ViewManagerServiceAppTest, OnParentOfEmbedDisconnects) {
   // Create connection 2 and 3.
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
-  ASSERT_TRUE(AddView(vm1(), BuildViewId(0, 1), BuildViewId(1, 1)));
+  ASSERT_TRUE(AddView(vm1(), BuildViewId(0, 2), BuildViewId(1, 1)));
   ASSERT_TRUE(CreateView(vm2(), BuildViewId(2, 2)));
   ASSERT_TRUE(AddView(vm2(), BuildViewId(1, 1), BuildViewId(2, 2)));
   ASSERT_TRUE(CreateView(vm2(), BuildViewId(2, 3)));
@@ -1461,7 +1461,7 @@ TEST_F(ViewManagerServiceAppTest, DontCleanMapOnDestroy) {
 TEST_F(ViewManagerServiceAppTest, CloneAndAnimate) {
   // Create connection 2 and 3.
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
-  ASSERT_TRUE(AddView(vm1(), BuildViewId(0, 1), BuildViewId(1, 1)));
+  ASSERT_TRUE(AddView(vm1(), BuildViewId(0, 2), BuildViewId(1, 1)));
   ASSERT_TRUE(CreateView(vm2(), BuildViewId(2, 2)));
   ASSERT_TRUE(CreateView(vm2(), BuildViewId(2, 3)));
   ASSERT_TRUE(AddView(vm2(), BuildViewId(1, 1), BuildViewId(2, 2)));
@@ -1507,7 +1507,7 @@ TEST_F(ViewManagerServiceAppTest, EmbedSupplyingViewManagerClient) {
 TEST_F(ViewManagerServiceAppTest, OnWillEmbed) {
   // Create connections 2 and 3, marking 2 as an embed root.
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
-  ASSERT_TRUE(AddView(vm1(), BuildViewId(0, 1), BuildViewId(1, 1)));
+  ASSERT_TRUE(AddView(vm1(), BuildViewId(0, 2), BuildViewId(1, 1)));
   ASSERT_TRUE(CreateView(vm2(), BuildViewId(2, 2)));
   ASSERT_TRUE(AddView(vm2(), BuildViewId(1, 1), BuildViewId(2, 2)));
   ASSERT_NO_FATAL_FAILURE(EstablishThirdConnection(vm2(), BuildViewId(2, 2)));

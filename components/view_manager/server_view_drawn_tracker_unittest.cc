@@ -51,8 +51,9 @@ class TestServerViewDrawnTrackerObserver
 TEST(ServerViewDrawnTrackerTest, ChangeBecauseOfDeletionAndVisibility) {
   TestServerViewDelegate server_view_delegate;
   scoped_ptr<ServerView> view(new ServerView(&server_view_delegate, ViewId()));
+  server_view_delegate.set_root_view(view.get());
   TestServerViewDrawnTrackerObserver drawn_observer;
-  ServerViewDrawnTracker tracker(view.get(), view.get(), &drawn_observer);
+  ServerViewDrawnTracker tracker(view.get(), &drawn_observer);
   view->SetVisible(true);
   EXPECT_EQ(1u, drawn_observer.change_count());
   EXPECT_EQ(view.get(), drawn_observer.view());
@@ -84,13 +85,14 @@ TEST(ServerViewDrawnTrackerTest, ChangeBecauseOfDeletionAndVisibility) {
 TEST(ServerViewDrawnTrackerTest, ChangeBecauseOfRemovingFromRoot) {
   TestServerViewDelegate server_view_delegate;
   ServerView root(&server_view_delegate, ViewId());
+  server_view_delegate.set_root_view(&root);
   root.SetVisible(true);
   ServerView child(&server_view_delegate, ViewId());
   child.SetVisible(true);
   root.Add(&child);
 
   TestServerViewDrawnTrackerObserver drawn_observer;
-  ServerViewDrawnTracker tracker(&root, &child, &drawn_observer);
+  ServerViewDrawnTracker tracker(&child, &drawn_observer);
   root.Remove(&child);
   EXPECT_EQ(1u, drawn_observer.change_count());
   EXPECT_EQ(&child, drawn_observer.view());
@@ -108,6 +110,7 @@ TEST(ServerViewDrawnTrackerTest, ChangeBecauseOfRemovingFromRoot) {
 TEST(ServerViewDrawnTrackerTest, ChangeBecauseOfRemovingAncestorFromRoot) {
   TestServerViewDelegate server_view_delegate;
   ServerView root(&server_view_delegate, ViewId());
+  server_view_delegate.set_root_view(&root);
   root.SetVisible(true);
   ServerView child(&server_view_delegate, ViewId());
   child.SetVisible(true);
@@ -118,7 +121,7 @@ TEST(ServerViewDrawnTrackerTest, ChangeBecauseOfRemovingAncestorFromRoot) {
   child.Add(&child_child);
 
   TestServerViewDrawnTrackerObserver drawn_observer;
-  ServerViewDrawnTracker tracker(&root, &child_child, &drawn_observer);
+  ServerViewDrawnTracker tracker(&child_child, &drawn_observer);
   root.Remove(&child);
   EXPECT_EQ(1u, drawn_observer.change_count());
   EXPECT_EQ(&child_child, drawn_observer.view());

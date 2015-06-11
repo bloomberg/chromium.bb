@@ -49,6 +49,7 @@ class TestFocusControllerDelegate : public FocusControllerDelegate {
 TEST(FocusControllerTest, Basic) {
   TestServerViewDelegate server_view_delegate;
   ServerView root(&server_view_delegate, ViewId());
+  server_view_delegate.set_root_view(&root);
   root.SetVisible(true);
   ServerView child(&server_view_delegate, ViewId());
   child.SetVisible(true);
@@ -58,7 +59,7 @@ TEST(FocusControllerTest, Basic) {
   child.Add(&child_child);
 
   TestFocusControllerDelegate focus_delegate;
-  FocusController focus_controller(&focus_delegate, &root);
+  FocusController focus_controller(&focus_delegate);
 
   focus_controller.SetFocusedView(&child_child);
   EXPECT_EQ(0u, focus_delegate.change_count());

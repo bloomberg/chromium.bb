@@ -194,13 +194,8 @@ void ServerView::SetProperty(const std::string& name,
                     OnViewSharedPropertyChanged(this, name, value));
 }
 
-bool ServerView::IsDrawn(const ServerView* root) const {
-  if (!root->visible_)
-    return false;
-  const ServerView* view = this;
-  while (view && view != root && view->visible_)
-    view = view->parent_;
-  return view == root;
+bool ServerView::IsDrawn() const {
+  return delegate_->IsViewDrawn(this);
 }
 
 void ServerView::SetSurfaceId(cc::SurfaceId surface_id) {

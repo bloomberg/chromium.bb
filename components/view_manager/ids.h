@@ -21,6 +21,10 @@ struct ViewId {
       : connection_id(connection_id), view_id(view_id) {}
   ViewId() : connection_id(0), view_id(0) {}
 
+  bool IsRoot() const {
+    return connection_id == kInvalidConnectionId && view_id >= 2;
+  }
+
   bool operator==(const ViewId& other) const {
     return other.connection_id == connection_id &&
         other.view_id == view_id;
@@ -42,10 +46,6 @@ inline mojo::Id ViewIdToTransportId(const ViewId& id) {
   return (id.connection_id << 16) | id.view_id;
 }
 
-inline ViewId RootViewId() {
-  return ViewId(kInvalidConnectionId, 1);
-}
-
 // Returns a ViewId that is reserved to indicate no view. That is, no view will
 // ever be created with this id.
 inline ViewId InvalidViewId() {
@@ -54,7 +54,12 @@ inline ViewId InvalidViewId() {
 
 // All cloned views use this id.
 inline ViewId ClonedViewId() {
-  return ViewId(kInvalidConnectionId, 2);
+  return ViewId(kInvalidConnectionId, 1);
+}
+
+// Returns a root view id with a given index offset.
+inline ViewId RootViewId(uint16_t index) {
+  return ViewId(kInvalidConnectionId, 2 + index);
 }
 
 }  // namespace view_manager

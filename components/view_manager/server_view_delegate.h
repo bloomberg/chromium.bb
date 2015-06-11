@@ -39,6 +39,8 @@ class ServerViewDelegate {
 
   virtual void OnScheduleViewPaint(const ServerView* view) = 0;
 
+  virtual bool IsViewDrawn(const ServerView* view) const = 0;
+
  protected:
   virtual ~ServerViewDelegate() {}
 };

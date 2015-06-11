@@ -10,9 +10,8 @@
 
 namespace view_manager {
 
-FocusController::FocusController(FocusControllerDelegate* delegate,
-                                 ServerView* root)
-    : delegate_(delegate), root_(root) {
+FocusController::FocusController(FocusControllerDelegate* delegate)
+    : delegate_(delegate) {
 }
 
 FocusController::~FocusController() {
@@ -33,10 +32,10 @@ void FocusController::SetFocusedViewImpl(ServerView* view,
                                          ChangeSource change_source) {
   ServerView* old = GetFocusedView();
 
-  DCHECK(!view || view->IsDrawn(root_));
+  DCHECK(!view || view->IsDrawn());
 
   if (view)
-    drawn_tracker_.reset(new ServerViewDrawnTracker(root_, view, this));
+    drawn_tracker_.reset(new ServerViewDrawnTracker(view, this));
   else
     drawn_tracker_.reset();
 

@@ -55,7 +55,7 @@ ViewManagerServiceImpl::ViewManagerServiceImpl(
       is_embed_root_(false) {
   CHECK(GetView(root_id));
   root_.reset(new ViewId(root_id));
-  if (root_id == RootViewId())
+  if (root_id.IsRoot())
     access_policy_.reset(new WindowManagerAccessPolicy(id_, this));
   else
     access_policy_.reset(new DefaultAccessPolicy(id_, this));
@@ -231,9 +231,8 @@ void ViewManagerServiceImpl::ProcessWillChangeViewHierarchy(
   if (originated_change)
     return;
 
-  const bool old_drawn = view->IsDrawn(connection_manager_->root());
-  const bool new_drawn = view->visible() && new_parent &&
-      new_parent->IsDrawn(connection_manager_->root());
+  const bool old_drawn = view->IsDrawn();
+  const bool new_drawn = view->visible() && new_parent && new_parent->IsDrawn();
   if (old_drawn == new_drawn)
     return;
 
@@ -340,8 +339,7 @@ void ViewManagerServiceImpl::ProcessWillChangeViewVisibility(
     view_target_drawn_state = false;
   } else {
     // View is being shown. View will be drawn if its parent is drawn.
-    view_target_drawn_state =
-        view->parent() && view->parent()->IsDrawn(connection_manager_->root());
+    view_target_drawn_state = view->parent() && view->parent()->IsDrawn();
   }
 
   NotifyDrawnStateChanged(view, view_target_drawn_state);
@@ -465,7 +463,7 @@ ViewDataPtr ViewManagerServiceImpl::ViewToViewData(const ServerView* view) {
   view_data->properties =
       mojo::Map<String, Array<uint8_t>>::From(view->properties());
   view_data->visible = view->visible();
-  view_data->drawn = view->IsDrawn(connection_manager_->root());
+  view_data->drawn = view->IsDrawn();
   view_data->viewport_metrics =
       connection_manager_->display_manager()->GetViewportMetrics().Clone();
   return view_data.Pass();
@@ -498,8 +496,7 @@ void ViewManagerServiceImpl::NotifyDrawnStateChanged(const ServerView* view,
 
   const ServerView* root = GetView(*root_);
   DCHECK(root);
-  if (view->Contains(root) &&
-      (new_drawn_value != root->IsDrawn(connection_manager_->root()))) {
+  if (view->Contains(root) && (new_drawn_value != root->IsDrawn())) {
     client()->OnViewDrawnStateChanged(ViewIdToTransportId(root->id()),
                                       new_drawn_value);
   }
@@ -733,8 +730,7 @@ void ViewManagerServiceImpl::EmbedAllowingReembed(
 void ViewManagerServiceImpl::SetFocus(uint32_t view_id,
                                       const SetFocusCallback& callback) {
   ServerView* view = GetView(ViewIdFromTransportId(view_id));
-  bool success = view && view->IsDrawn(connection_manager_->root()) &&
-                 access_policy_->CanSetFocus(view);
+  bool success = view && view->IsDrawn() && access_policy_->CanSetFocus(view);
   if (success) {
     ConnectionManager::ScopedChange change(this, connection_manager_, false);
     connection_manager_->SetFocusedView(view);

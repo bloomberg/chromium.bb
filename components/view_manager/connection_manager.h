@@ -105,6 +105,11 @@ class ConnectionManager : public ServerViewDelegate,
   ServerView* GetFocusedView();
 
   ServerView* root() { return root_.get(); }
+
+  // Returns whether |view| is a descendant of some root view but not itself a
+  // root view.
+  bool IsViewAttachedToRoot(const ServerView* view) const;
+
   DisplayManager* display_manager() { return display_manager_.get(); }
 
   bool IsProcessingChange() const { return current_change_ != NULL; }
@@ -203,6 +208,7 @@ class ConnectionManager : public ServerViewDelegate,
                                     ServerView* old_parent) override;
   void PrepareToChangeViewVisibility(ServerView* view) override;
   void OnScheduleViewPaint(const ServerView* view) override;
+  bool IsViewDrawn(const ServerView* view) const override;
 
   // Overridden from ServerViewObserver:
   void OnViewDestroyed(ServerView* view) override;

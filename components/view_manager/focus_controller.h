@@ -18,7 +18,7 @@ class ServerViewDrawnTracker;
 // of the focused view changes and the delegate is notified.
 class FocusController : public ServerViewDrawnTrackerObserver {
  public:
-  FocusController(FocusControllerDelegate* delegate, ServerView* root);
+  explicit FocusController(FocusControllerDelegate* delegate);
   ~FocusController() override;
 
   // Sets the focused view. Does nothing if |view| is currently focused. This
@@ -42,7 +42,6 @@ class FocusController : public ServerViewDrawnTrackerObserver {
                            bool is_drawn) override;
 
   FocusControllerDelegate* delegate_;
-  ServerView* root_;
   scoped_ptr<ServerViewDrawnTracker> drawn_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(FocusController);

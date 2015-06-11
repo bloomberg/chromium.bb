@@ -20,8 +20,7 @@ class ServerViewDrawnTrackerObserver;
 // NOTE: you must ensure this class is destroyed before the root.
 class ServerViewDrawnTracker : public ServerViewObserver {
  public:
-  ServerViewDrawnTracker(ServerView* root,
-                         ServerView* view,
+  ServerViewDrawnTracker(ServerView* view,
                          ServerViewDrawnTrackerObserver* observer);
   ~ServerViewDrawnTracker() override;
 
@@ -43,7 +42,6 @@ class ServerViewDrawnTracker : public ServerViewObserver {
                               ServerView* old_parent) override;
   void OnViewVisibilityChanged(ServerView* view) override;
 
-  ServerView* root_;
   ServerView* view_;
   ServerViewDrawnTrackerObserver* observer_;
   bool drawn_;

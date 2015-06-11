@@ -113,7 +113,7 @@ void ViewManagerApp::Create(ApplicationConnection* connection,
   }
 
   scoped_ptr<ViewManagerServiceImpl> service(new ViewManagerServiceImpl(
-      connection_manager_.get(), kInvalidConnectionId, RootViewId()));
+      connection_manager_.get(), kInvalidConnectionId, RootViewId(0)));
   mojo::ViewManagerClientPtr client;
   connection->ConnectToService(&client);
   scoped_ptr<ClientConnection> client_connection(
