@@ -123,7 +123,7 @@ class _BlinkPerfFullFrameMeasurement(_BlinkPerfMeasurement):
     options.AppendExtraBrowserArgs(['--expose-internals-for-testing'])
 
 # http://crbug.com/499472
-@benchmark.Disabled('reference', 'android', 'mac', 'win')
+@benchmark.Disabled()
 class BlinkPerfAnimation(perf_benchmark.PerfBenchmark):
   tag = 'animation'
   test = _BlinkPerfMeasurement
