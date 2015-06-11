@@ -14,6 +14,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.components.invalidation.SerializedInvalidation.Invalidation;
 
 import java.io.IOException;
+import java.util.Locale;
 
 import javax.annotation.Nullable;
 
@@ -129,7 +130,7 @@ public class PendingInvalidation {
 
     @Override
     public String toString() {
-        return String.format("objectSrc:%d,objectId:%s,version:%d,payload:%s", mObjectSource,
-                mObjectId, mVersion, mPayload);
+        return String.format(Locale.US, "objectSrc:%d,objectId:%s,version:%d,payload:%s",
+                mObjectSource, mObjectId, mVersion, mPayload);
     }
 }
