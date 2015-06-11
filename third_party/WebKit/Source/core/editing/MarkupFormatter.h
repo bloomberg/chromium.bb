@@ -74,7 +74,6 @@ public:
     static void appendNamespace(StringBuilder&, const AtomicString& prefix, const AtomicString& namespaceURI, Namespaces&);
     static void appendProcessingInstruction(StringBuilder&, const String& target, const String& data);
     static void appendXMLDeclaration(StringBuilder&, const Document&);
-    static size_t totalLength(const Vector<String>&);
 
     MarkupFormatter(EAbsoluteURLs, SerializationType = SerializationType::AsOwnerDocument);
     ~MarkupFormatter();

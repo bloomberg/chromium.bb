@@ -37,6 +37,18 @@
 
 namespace blink {
 
+namespace {
+
+size_t totalLength(const Vector<String>& strings)
+{
+    size_t length = 0;
+    for (const auto& string : strings)
+        length += string.length();
+    return length;
+}
+
+} // namespace
+
 using namespace HTMLNames;
 
 StyledMarkupAccumulator::StyledMarkupAccumulator(EAbsoluteURLs shouldResolveURLs, const TextOffset& start, const TextOffset& end, const PassRefPtrWillBeRawPtr<Document> document, EAnnotateForInterchange shouldAnnotate, Node* highestNodeToBeSerialized)
@@ -211,7 +223,7 @@ void StyledMarkupAccumulator::wrapWithStyleNode(StylePropertySet* style)
 String StyledMarkupAccumulator::takeResults()
 {
     StringBuilder result;
-    result.reserveCapacity(MarkupFormatter::totalLength(m_reversedPrecedingMarkup) + m_result.length());
+    result.reserveCapacity(totalLength(m_reversedPrecedingMarkup) + m_result.length());
 
     for (size_t i = m_reversedPrecedingMarkup.size(); i > 0; --i)
         result.append(m_reversedPrecedingMarkup[i - 1]);

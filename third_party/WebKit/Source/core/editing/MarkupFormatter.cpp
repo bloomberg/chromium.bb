@@ -97,14 +97,6 @@ void MarkupFormatter::appendCharactersReplacingEntities(StringBuilder& result, c
         appendCharactersReplacingEntitiesInternal(result, source.characters16() + offset, length, entityMaps, WTF_ARRAY_LENGTH(entityMaps), entityMask);
 }
 
-size_t MarkupFormatter::totalLength(const Vector<String>& strings)
-{
-    size_t length = 0;
-    for (const auto& string : strings)
-        length += string.length();
-    return length;
-}
-
 MarkupFormatter::MarkupFormatter(EAbsoluteURLs resolveUrlsMethod, SerializationType serializationType)
     : m_resolveURLsMethod(resolveUrlsMethod)
     , m_serializationType(serializationType)
