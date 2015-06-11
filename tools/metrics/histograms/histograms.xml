@@ -7143,6 +7143,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>The write size for calls to BaseFile::AppendDataTofile().</summary>
 </histogram>
 
+<histogram name="Drive.BatchUploadResponseCode" enum="HttpResponseCode">
+  <owner>hirono@chromium.org</owner>
+  <summary>Respose code of batch upload request.</summary>
+</histogram>
+
 <histogram name="Drive.CacheDBOpenStatus" enum="DriveCacheDBOpenStatus">
   <obsolete>
     Deprecated 8/2013.
@@ -7313,12 +7318,30 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Drive.TotalFileCountInBatchUpload">
+  <owner>hirono@chromium.org</owner>
+  <summary>Total file count contained in a drive batch upload request.</summary>
+</histogram>
+
+<histogram name="Drive.TotalFileSizeInBatchUpload" units="KB">
+  <owner>hirono@chromium.org</owner>
+  <summary>Total file size contained in a drive batch upload request.</summary>
+</histogram>
+
 <histogram name="Drive.TransferBlockedOnJobs" units="jobs">
   <owner>mtomasz@chromium.org</owner>
   <summary>
     Number of jobs which have to be completed before a newly added download or
     download from or to Drive is requested. Temporary histogram for gathering
     data for http://crbug.com/229650.
+  </summary>
+</histogram>
+
+<histogram name="Drive.UploadProtocol" enum="DriveUploadProtocol">
+  <owner>hirono@chromium.org</owner>
+  <summary>
+    Upload protocol for each file. e.g. Batch upload including 5 files triggers
+    the metric 5 times.
   </summary>
 </histogram>
 
@@ -52114,6 +52137,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="5" label="Broken child map"/>
   <int value="6" label="Child entry count mismatch"/>
   <int value="7" label="Iterator error"/>
+</enum>
+
+<enum name="DriveUploadProtocol" type="int">
+  <int value="0" label="Resumable"/>
+  <int value="1" label="Multipart"/>
+  <int value="2" label="Batch"/>
 </enum>
 
 <enum name="DumpOutcome" type="int">

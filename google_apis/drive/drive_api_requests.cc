@@ -8,6 +8,8 @@
 #include "base/callback.h"
 #include "base/json/json_writer.h"
 #include "base/location.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -43,6 +45,13 @@ const char kHttpBr[] = "\r\n";
 
 // Mime type of multipart mixed.
 const char kMultipartMixedMimeTypePrefix[] = "multipart/mixed; boundary=";
+
+// UMA names.
+const char kUMADriveBatchUploadResponseCode[] = "Drive.BatchUploadResponseCode";
+const char kUMADriveTotalFileCountInBatchUpload[] =
+    "Drive.TotalFileCountInBatchUpload";
+const char kUMADriveTotalFileSizeInBatchUpload[] =
+    "Drive.TotalFileSizeInBatchUpload";
 
 // Parses the JSON value to FileResource instance and runs |callback| on the
 // UI thread once parsing is done.
@@ -1314,6 +1323,7 @@ void BatchUploadRequest::MayCompletePrepare() {
   }
 
   // Build multipart body here.
+  int64 total_size = 0;
   std::vector<ContentTypeAndData> parts;
   for (auto& child : child_requests_) {
     std::string type;
@@ -1341,12 +1351,17 @@ void BatchUploadRequest::MayCompletePrepare() {
 
     child->data_offset = header.size();
     child->data_size = data.size();
+    total_size += data.size();
 
     parts.push_back(ContentTypeAndData());
     parts.back().type = kHttpContentType;
     parts.back().data = header;
     parts.back().data.append(data);
   }
+
+  UMA_HISTOGRAM_COUNTS_100(kUMADriveTotalFileCountInBatchUpload, parts.size());
+  UMA_HISTOGRAM_MEMORY_KB(kUMADriveTotalFileSizeInBatchUpload,
+                          total_size / 1024);
 
   std::vector<uint64> part_data_offset;
   GenerateMultipartBody(MULTIPART_MIXED, boundary_, parts, &upload_content_,
@@ -1385,6 +1400,8 @@ std::vector<std::string> BatchUploadRequest::GetExtraRequestHeaders() const {
 }
 
 void BatchUploadRequest::ProcessURLFetchResults(const net::URLFetcher* source) {
+  UMA_HISTOGRAM_SPARSE_SLOWLY(kUMADriveBatchUploadResponseCode, GetErrorCode());
+
   if (!IsSuccessfulDriveApiErrorCode(GetErrorCode())) {
     RunCallbackOnPrematureFailure(GetErrorCode());
     sender_->RequestFinished(this);

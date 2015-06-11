@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/drive/drive_service_interface.h"
@@ -42,6 +43,20 @@ const int64 kUploadChunkSize = (1LL << 30);  // 1GB
 // Maximum file size to be uploaded by multipart requests. The file that is
 // larger than the size is processed by resumable upload.
 const int64 kMaxMultipartUploadSize = (1LL << 20);  // 1MB
+
+// Drive upload protocol. This is used to back a histogram. Sync this with UMA
+// enum "DriveUploadProtocol" and treat this as append-only.
+enum DriveUploadProtocol {
+  UPLOAD_METHOD_RESUMABLE,
+  UPLOAD_METHOD_MULTIPART,
+  UPLOAD_METHOD_BATCH,
+  UPLOAD_METHOD_MAX_VALUE
+};
+
+void RecordDriveUploadProtocol(DriveUploadProtocol protocol) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Drive.UploadProtocol", protocol, UPLOAD_METHOD_MAX_VALUE);
+}
 }  // namespace
 
 // Refcounted helper class to manage batch request. DriveUploader uses the class
@@ -283,10 +298,15 @@ void DriveUploader::CallUploadServiceAPINewFile(
 
   UploadFileInfo* const info_ptr = upload_file_info.get();
   if (info_ptr->content_length <= kMaxMultipartUploadSize) {
-    DriveServiceBatchOperationsInterface* service = drive_service_;
+    DriveServiceBatchOperationsInterface* service;
     // If this is a batched request, calls the API on the request instead.
-    if (batch_request.get())
+    if (batch_request.get()) {
       service = batch_request->configurator();
+      RecordDriveUploadProtocol(UPLOAD_METHOD_BATCH);
+    } else {
+      service = drive_service_;
+      RecordDriveUploadProtocol(UPLOAD_METHOD_MULTIPART);
+    }
     info_ptr->cancel_callback = service->MultipartUploadNewFile(
         info_ptr->content_type, info_ptr->content_length, parent_resource_id,
         title, info_ptr->file_path, options,
@@ -295,6 +315,7 @@ void DriveUploader::CallUploadServiceAPINewFile(
                    base::Passed(&upload_file_info)),
         info_ptr->progress_callback);
   } else {
+    RecordDriveUploadProtocol(UPLOAD_METHOD_RESUMABLE);
     info_ptr->cancel_callback = drive_service_->InitiateUploadNewFile(
         info_ptr->content_type, info_ptr->content_length, parent_resource_id,
         title, options, base::Bind(&DriveUploader::OnUploadLocationReceived,
@@ -312,10 +333,15 @@ void DriveUploader::CallUploadServiceAPIExistingFile(
 
   UploadFileInfo* const info_ptr = upload_file_info.get();
   if (info_ptr->content_length <= kMaxMultipartUploadSize) {
-    DriveServiceBatchOperationsInterface* service = drive_service_;
+    DriveServiceBatchOperationsInterface* service;
     // If this is a batched request, calls the API on the request instead.
-    if (batch_request.get())
+    if (batch_request.get()) {
       service = batch_request->configurator();
+      RecordDriveUploadProtocol(UPLOAD_METHOD_BATCH);
+    } else {
+      service = drive_service_;
+      RecordDriveUploadProtocol(UPLOAD_METHOD_MULTIPART);
+    }
     info_ptr->cancel_callback = service->MultipartUploadExistingFile(
         info_ptr->content_type, info_ptr->content_length, resource_id,
         info_ptr->file_path, options,
@@ -324,6 +350,7 @@ void DriveUploader::CallUploadServiceAPIExistingFile(
                    base::Passed(&upload_file_info)),
         info_ptr->progress_callback);
   } else {
+    RecordDriveUploadProtocol(UPLOAD_METHOD_RESUMABLE);
     info_ptr->cancel_callback = drive_service_->InitiateUploadExistingFile(
         info_ptr->content_type, info_ptr->content_length, resource_id, options,
         base::Bind(&DriveUploader::OnUploadLocationReceived,
