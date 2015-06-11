@@ -433,26 +433,41 @@ TEST_F(SyncableDirectoryTest, ManageDeleteJournals) {
   AddDefaultFieldValue(BOOKMARKS, &bookmark_specifics);
   bookmark_specifics.mutable_bookmark()->set_url("url");
 
-  Id id1 = TestIdFactory::FromNumber(-1);
-  Id id2 = TestIdFactory::FromNumber(-2);
+  // The first two IDs are server IDs.
+  Id id1 = TestIdFactory::FromNumber(1);
+  Id id2 = TestIdFactory::FromNumber(2);
+  // The third one is a client ID.
+  Id id3 = TestIdFactory::FromNumber(-3);
   int64 handle1 = 0;
   int64 handle2 = 0;
+  int64 handle3 = 0;
   {
-    // Create two bookmark entries and save in database.
-    CreateEntry(BOOKMARKS, "item1", id1);
-    CreateEntry(BOOKMARKS, "item2", id2);
+    // Create 3 bookmark entries and save in database.
     {
       WriteTransaction trans(FROM_HERE, UNITTEST, dir().get());
-      MutableEntry item1(&trans, GET_BY_ID, id1);
-      ASSERT_TRUE(item1.good());
-      handle1 = item1.GetMetahandle();
+
+      MutableEntry item1(&trans, CREATE, BOOKMARKS, trans.root_id(), "item1");
+      item1.PutId(id1);
       item1.PutSpecifics(bookmark_specifics);
       item1.PutServerSpecifics(bookmark_specifics);
-      MutableEntry item2(&trans, GET_BY_ID, id2);
-      ASSERT_TRUE(item2.good());
-      handle2 = item2.GetMetahandle();
+      item1.PutIsUnappliedUpdate(true);
+      item1.PutBaseVersion(10);
+      handle1 = item1.GetMetahandle();
+
+      MutableEntry item2(&trans, CREATE, BOOKMARKS, trans.root_id(), "item2");
+      item2.PutId(id2);
       item2.PutSpecifics(bookmark_specifics);
       item2.PutServerSpecifics(bookmark_specifics);
+      item2.PutIsUnappliedUpdate(true);
+      item2.PutBaseVersion(10);
+      handle2 = item2.GetMetahandle();
+
+      MutableEntry item3(&trans, CREATE, BOOKMARKS, trans.root_id(), "item3");
+      item3.PutId(id3);
+      item3.PutSpecifics(bookmark_specifics);
+      item3.PutServerSpecifics(bookmark_specifics);
+      item3.PutIsUnsynced(true);
+      handle3 = item3.GetMetahandle();
     }
     ASSERT_EQ(OPENED, SimulateSaveAndReloadDir());
   }
@@ -466,18 +481,25 @@ TEST_F(SyncableDirectoryTest, ManageDeleteJournals) {
       ASSERT_EQ(0u, journal_entries.size());
 
       // Set SERVER_IS_DEL of the entries to true and they should be added to
-      // delete journals.
+      // delete journals, but only if the deletion is initiated in update e.g.
+      // IS_UNAPPLIED_UPDATE is also true.
       MutableEntry item1(&trans, GET_BY_ID, id1);
       ASSERT_TRUE(item1.good());
       item1.PutServerIsDel(true);
       MutableEntry item2(&trans, GET_BY_ID, id2);
       ASSERT_TRUE(item2.good());
       item2.PutServerIsDel(true);
+      MutableEntry item3(&trans, GET_BY_ID, id3);
+      ASSERT_TRUE(item3.good());
+      item3.PutServerIsDel(true);
+      // Expect only the first two items to be in the delete journal.
       EntryKernel tmp;
       tmp.put(ID, id1);
       EXPECT_TRUE(delete_journal->delete_journals_.count(&tmp));
       tmp.put(ID, id2);
       EXPECT_TRUE(delete_journal->delete_journals_.count(&tmp));
+      tmp.put(ID, id3);
+      EXPECT_FALSE(delete_journal->delete_journals_.count(&tmp));
     }
 
     // Save delete journals in database and verify memory clearing.
@@ -502,6 +524,8 @@ TEST_F(SyncableDirectoryTest, ManageDeleteJournals) {
       EXPECT_TRUE(journal_entries.count(&tmp));
       tmp.put(META_HANDLE, handle2);
       EXPECT_TRUE(journal_entries.count(&tmp));
+      tmp.put(META_HANDLE, handle3);
+      EXPECT_FALSE(journal_entries.count(&tmp));
 
       // Purge item2.
       MetahandleSet to_purge;
@@ -531,9 +555,10 @@ TEST_F(SyncableDirectoryTest, ManageDeleteJournals) {
       tmp.put(META_HANDLE, handle1);
       EXPECT_TRUE(journal_entries.count(&tmp));
 
-      // Undelete item1.
+      // Undelete item1 (IS_UNAPPLIED_UPDATE shouldn't matter in this case).
       MutableEntry item1(&trans, GET_BY_ID, id1);
       ASSERT_TRUE(item1.good());
+      item1.PutIsUnappliedUpdate(false);
       item1.PutServerIsDel(false);
       EXPECT_TRUE(delete_journal->delete_journals_.empty());
       EXPECT_EQ(1u, delete_journal->delete_journals_to_purge_.size());

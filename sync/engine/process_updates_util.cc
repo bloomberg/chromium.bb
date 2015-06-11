@@ -323,10 +323,11 @@ void ExpireEntriesByVersion(syncable::Directory* dir,
       continue;
     }
 
+    // Mark entry as unapplied update first to ensure journaling the deletion.
+    entry.PutIsUnappliedUpdate(true);
     // Mark entry as deleted by server.
     entry.PutServerIsDel(true);
     entry.PutServerVersion(version_watermark);
-    entry.PutIsUnappliedUpdate(true);
   }
 }
 

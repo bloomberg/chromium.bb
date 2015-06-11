@@ -387,6 +387,8 @@ void UpdateServerFieldsFromUpdate(
       // the version number check has a similar effect.
       return;
     }
+    // Mark entry as unapplied update first to ensure journaling the deletion.
+    target->PutIsUnappliedUpdate(true);
     // The server returns very lightweight replies for deletions, so we don't
     // clobber a bunch of fields on delete.
     target->PutServerIsDel(true);
@@ -399,7 +401,6 @@ void UpdateServerFieldsFromUpdate(
       target->PutServerVersion(
           std::max(target->GetServerVersion(), target->GetBaseVersion()) + 1);
     }
-    target->PutIsUnappliedUpdate(true);
     return;
   }
 
@@ -438,13 +439,14 @@ void UpdateServerFieldsFromUpdate(
     UpdateBookmarkPositioning(update, target);
   }
 
-  target->PutServerIsDel(update.deleted());
   // We only mark the entry as unapplied if its version is greater than the
   // local data. If we're processing the update that corresponds to one of our
   // commit we don't apply it as time differences may occur.
   if (update.version() > target->GetBaseVersion()) {
     target->PutIsUnappliedUpdate(true);
   }
+  DCHECK(!update.deleted());
+  target->PutServerIsDel(false);
 }
 
 // Creates a new Entry iff no Entry exists with the given id.

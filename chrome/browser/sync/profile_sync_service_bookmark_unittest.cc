@@ -45,6 +45,8 @@
 #include "sync/internal_api/public/write_transaction.h"
 #include "sync/internal_api/syncapi_internal.h"
 #include "sync/syncable/mutable_entry.h"
+#include "sync/syncable/syncable_id.h"
+#include "sync/syncable/syncable_util.h"
 #include "sync/syncable/syncable_write_transaction.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -67,6 +69,22 @@ static const bool kExpectMobileBookmarks = false;
 #endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
 namespace {
+
+void MakeServerUpdate(syncer::WriteTransaction* trans,
+                      syncer::WriteNode* node) {
+  syncer::syncable::ChangeEntryIDAndUpdateChildren(
+      trans->GetWrappedWriteTrans(), node->GetMutableEntryForTest(),
+      syncer::syncable::Id::CreateFromServerId(
+          base::Int64ToString(node->GetId())));
+  node->GetMutableEntryForTest()->PutBaseVersion(10);
+  node->GetMutableEntryForTest()->PutIsUnappliedUpdate(true);
+}
+
+void MakeServerUpdate(syncer::WriteTransaction* trans, int64 id) {
+  syncer::WriteNode node(trans);
+  EXPECT_EQ(BaseNode::INIT_OK, node.InitByIdLookup(id));
+  MakeServerUpdate(trans, &node);
+}
 
 // FakeServerChange constructs a list of syncer::ChangeRecords while modifying
 // the sync model, and can pass the ChangeRecord list to a
@@ -855,13 +873,15 @@ TEST_F(ProfileSyncServiceBookmarkTest, InitialModelAssociateWithDeleteJournal) {
   }
 
   // Associate the bookmark sync node with the native model one and make
-  // it deleted.
+  // it look like it was deleted by a server update.
   {
     syncer::WriteTransaction trans(FROM_HERE, test_user_share_.user_share());
     syncer::WriteNode node(&trans);
     EXPECT_EQ(BaseNode::INIT_OK, node.InitByIdLookup(bookmark_id));
 
     node.GetMutableEntryForTest()->PutLocalExternalId(bookmark->id());
+
+    MakeServerUpdate(&trans, &node);
     node.GetMutableEntryForTest()->PutServerIsDel(true);
     node.GetMutableEntryForTest()->PutIsDel(true);
   }
@@ -977,6 +997,7 @@ TEST_F(ProfileSyncServiceBookmarkTest,
     EXPECT_EQ(BaseNode::INIT_OK,
               node.InitByIdLookup(sync_bookmark_id_to_delete));
 
+    MakeServerUpdate(&trans, &node);
     node.GetMutableEntryForTest()->PutServerIsDel(true);
     node.GetMutableEntryForTest()->PutIsDel(true);
   }
@@ -1490,6 +1511,10 @@ TEST_F(ProfileSyncServiceBookmarkTest, ApplySyncDeletesFromJournal) {
   {
     // Remove all folders/bookmarks except u3 added above.
     syncer::WriteTransaction trans(FROM_HERE, test_user_share_.user_share());
+    MakeServerUpdate(&trans, f1);
+    MakeServerUpdate(&trans, u1);
+    MakeServerUpdate(&trans, f2);
+    MakeServerUpdate(&trans, u2);
     FakeServerChange dels(&trans);
     dels.Delete(u2);
     dels.Delete(f2);
