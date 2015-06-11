@@ -704,16 +704,6 @@ class OverrideForTrybotTest(GenerateChromeosConfigTestBase):
     """Override each config for remote trybot + hwtests."""
     self._testWithOptions(remote_trybot=True, hw_test=True)
 
-  def testChromeInternalOverride(self):
-    """Verify that we are not using official Chrome for local trybots."""
-    mock_options = mock.Mock()
-    mock_options.remote_trybot = False
-    mock_options.hw_test = False
-    old = self.all_configs['x86-mario-paladin']
-    new = chromeos_config.OverrideConfigForTrybot(old, mock_options)
-    self.assertTrue(constants.USE_CHROME_INTERNAL in old['useflags'])
-    self.assertFalse(constants.USE_CHROME_INTERNAL in new['useflags'])
-
   def testVmTestOverride(self):
     """Verify that vm_tests override for trybots pay heed to original config."""
     mock_options = mock.Mock()

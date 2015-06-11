@@ -38,14 +38,6 @@ def OverrideConfigForTrybot(build_config, options):
       if my_config['internal']:
         my_config['overlays'] = constants.BOTH_OVERLAYS
 
-    # Most users don't have access to the internal repositories so disable
-    # them so that we use the external chromium prebuilts.
-    useflags = my_config['useflags']
-    if not options.remote_trybot and useflags:
-      for chrome_use in [constants.USE_CHROME_INTERNAL]:
-        if chrome_use in useflags:
-          useflags.remove(chrome_use)
-
     # Use the local manifest which only requires elevated access if it's really
     # needed to build.
     if not options.remote_trybot:
