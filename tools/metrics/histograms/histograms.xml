@@ -59965,10 +59965,10 @@ To add a new entry, add it with any value and run test to compute valid value.
     chrome/browser/android/metrics/uma_bridge.cc and reference possible ways of
     completing the sign-in part of the First Run Experience.
   </summary>
-  <int value="0" label="Accept default account"/>
-  <int value="1" label="Accept another account"/>
-  <int value="2" label="Settings default account"/>
-  <int value="3" label="Settings another account"/>
+  <int value="0" label="Settings default account"/>
+  <int value="1" label="Settings another account"/>
+  <int value="2" label="Accept default account"/>
+  <int value="3" label="Accept another account"/>
   <int value="4" label="No thanks"/>
 </enum>
 
