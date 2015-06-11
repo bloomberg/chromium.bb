@@ -293,11 +293,14 @@ bool VaapiVideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile,
     return false;
   }
 
-  // TODO(posciak): add back VP8 (crbug.com/490233)
   if (profile >= media::H264PROFILE_MIN && profile <= media::H264PROFILE_MAX) {
     h264_accelerator_.reset(
         new VaapiH264Accelerator(this, vaapi_wrapper_.get()));
     decoder_.reset(new H264Decoder(h264_accelerator_.get()));
+  } else if (profile >= media::VP8PROFILE_MIN &&
+             profile <= media::VP8PROFILE_MAX) {
+    vp8_accelerator_.reset(new VaapiVP8Accelerator(this, vaapi_wrapper_.get()));
+    decoder_.reset(new VP8Decoder(vp8_accelerator_.get()));
   } else {
     DLOG(ERROR) << "Unsupported profile " << profile;
     return false;
