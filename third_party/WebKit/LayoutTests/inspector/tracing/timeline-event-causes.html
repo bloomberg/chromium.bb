@@ -67,18 +67,18 @@ function test()
 
         function testStyleRecalc(next)
         {
-            function styleRecalcFunction(callback)
+            function styleRecalcFunction()
             {
                 var element = document.getElementById("testElement");
                 element.style.backgroundColor = "papayawhip";
-                callback();
+                var forceLayout = element.offsetWidth;
             }
 
             var source = styleRecalcFunction.toString();
             source += "\n//@ sourceURL=styleRecalcFunction.js";
             InspectorTest.evaluateInPage(source);
 
-            InspectorTest.invokeAsyncWithTimeline("styleRecalcFunction", finishAndRunNextTest);
+            InspectorTest.evaluateWithTimeline("styleRecalcFunction()", finishAndRunNextTest);
             function finishAndRunNextTest()
             {
                 var linkifier = new WebInspector.Linkifier();
@@ -95,19 +95,18 @@ function test()
 
         function testLayout(next)
         {
-            function layoutFunction(callback)
+            function layoutFunction()
             {
                 var element = document.getElementById("testElement");
                 element.style.width = "200px";
                 var forceLayout = element.offsetWidth;
-                callback();
             }
 
             var source = layoutFunction.toString();
             source += "\n//@ sourceURL=layoutFunction.js";
             InspectorTest.evaluateInPage(source);
 
-            InspectorTest.invokeAsyncWithTimeline("layoutFunction", finishAndRunNextTest);
+            InspectorTest.evaluateWithTimeline("layoutFunction()", finishAndRunNextTest);
             function finishAndRunNextTest()
             {
                 var linkifier = new WebInspector.Linkifier();
