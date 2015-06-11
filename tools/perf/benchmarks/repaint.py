@@ -35,7 +35,9 @@ class _Repaint(perf_benchmark.PerfBenchmark):
   def CreatePageTest(self, options):
     return smoothness.Repaint()
 
-@benchmark.Enabled('android')
+#crbug.com/499320
+#@benchmark.Enabled('android')
+@benchmark.Disabled()
 class RepaintKeyMobileSites(_Repaint):
   """Measures repaint performance on the key mobile sites.
 
