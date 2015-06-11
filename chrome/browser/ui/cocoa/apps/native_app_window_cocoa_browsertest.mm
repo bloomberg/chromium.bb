@@ -26,6 +26,7 @@
 #include "extensions/common/constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #import "ui/base/test/nswindow_fullscreen_notification_waiter.h"
+#import "ui/gfx/mac/nswindow_frame_controls.h"
 
 using extensions::AppWindow;
 using extensions::PlatformAppBrowserTest;
@@ -244,8 +245,8 @@ IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest, Fullscreen) {
   if (!base::mac::IsOSLionOrLater())
     return;
 
-  SetUpAppWithWindows(1);
-  AppWindow* app_window = GetFirstAppWindow();
+  extensions::AppWindow* app_window =
+      CreateTestAppWindow("{\"alwaysOnTop\": true }");
   extensions::NativeAppWindow* window = app_window->GetBaseWindow();
   NSWindow* ns_window = app_window->GetNativeWindow();
   base::scoped_nsobject<ScopedNotificationWatcher> watcher;
@@ -254,6 +255,7 @@ IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest, Fullscreen) {
             app_window->fullscreen_types_for_test());
   EXPECT_FALSE(window->IsFullscreen());
   EXPECT_FALSE([ns_window styleMask] & NSFullScreenWindowMask);
+  EXPECT_TRUE(gfx::IsNSWindowAlwaysOnTop(ns_window));
 
   watcher.reset([[ScopedNotificationWatcher alloc]
       initWithNotification:NSWindowDidEnterFullScreenNotification
@@ -264,6 +266,7 @@ IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest, Fullscreen) {
               AppWindow::FULLSCREEN_TYPE_OS);
   EXPECT_TRUE(window->IsFullscreen());
   EXPECT_TRUE([ns_window styleMask] & NSFullScreenWindowMask);
+  EXPECT_FALSE(gfx::IsNSWindowAlwaysOnTop(ns_window));
 
   watcher.reset([[ScopedNotificationWatcher alloc]
       initWithNotification:NSWindowDidExitFullScreenNotification
@@ -275,6 +278,7 @@ IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest, Fullscreen) {
             app_window->fullscreen_types_for_test());
   EXPECT_FALSE(window->IsFullscreen());
   EXPECT_FALSE([ns_window styleMask] & NSFullScreenWindowMask);
+  EXPECT_TRUE(gfx::IsNSWindowAlwaysOnTop(ns_window));
 
   watcher.reset([[ScopedNotificationWatcher alloc]
       initWithNotification:NSWindowDidEnterFullScreenNotification
@@ -286,6 +290,7 @@ IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest, Fullscreen) {
               AppWindow::FULLSCREEN_TYPE_WINDOW_API);
   EXPECT_TRUE(window->IsFullscreen());
   EXPECT_TRUE([ns_window styleMask] & NSFullScreenWindowMask);
+  EXPECT_FALSE(gfx::IsNSWindowAlwaysOnTop(ns_window));
 
   watcher.reset([[ScopedNotificationWatcher alloc]
       initWithNotification:NSWindowDidExitFullScreenNotification
@@ -296,6 +301,7 @@ IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest, Fullscreen) {
             app_window->fullscreen_types_for_test());
   EXPECT_FALSE(window->IsFullscreen());
   EXPECT_FALSE([ns_window styleMask] & NSFullScreenWindowMask);
+  EXPECT_TRUE(gfx::IsNSWindowAlwaysOnTop(ns_window));
 }
 
 // Test that, in frameless windows, the web contents has the same size as the

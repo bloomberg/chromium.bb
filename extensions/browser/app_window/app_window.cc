@@ -458,17 +458,35 @@ void AppWindow::OnNativeClose() {
 }
 
 void AppWindow::OnNativeWindowChanged() {
+  // This may be called during Init before |native_app_window_| is set.
+  if (!native_app_window_)
+    return;
+
+#if defined(OS_MACOSX)
+  // On Mac the user can change the window's fullscreen state. If that has
+  // happened, update AppWindow's internal state.
+  if (native_app_window_->IsFullscreen()) {
+    if (!IsFullscreen())
+      fullscreen_types_ = FULLSCREEN_TYPE_OS;
+  } else {
+    fullscreen_types_ = FULLSCREEN_TYPE_NONE;
+  }
+
+  if (cached_always_on_top_)
+    UpdateNativeAlwaysOnTop();  // Same as in SetNativeWindowFullscreen.
+#endif
+
   SaveWindowPosition();
 
 #if defined(OS_WIN)
-  if (native_app_window_ && cached_always_on_top_ && !IsFullscreen() &&
+  if (cached_always_on_top_ && !IsFullscreen() &&
       !native_app_window_->IsMaximized() &&
       !native_app_window_->IsMinimized()) {
     UpdateNativeAlwaysOnTop();
   }
 #endif
 
-  if (app_window_contents_ && native_app_window_)
+  if (app_window_contents_)
     app_window_contents_->NativeWindowChanged(native_app_window_.get());
 }
 
@@ -964,9 +982,8 @@ WebContentsModalDialogHost* AppWindow::GetWebContentsModalDialogHost() {
 }
 
 void AppWindow::SaveWindowPosition() {
+  DCHECK(native_app_window_);
   if (window_key_.empty())
-    return;
-  if (!native_app_window_)
     return;
 
   AppWindowGeometryCache* cache =

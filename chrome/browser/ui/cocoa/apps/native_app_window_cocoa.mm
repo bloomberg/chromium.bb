@@ -763,10 +763,7 @@ void NativeAppWindowCocoa::WindowDidDeminiaturize() {
 }
 
 void NativeAppWindowCocoa::WindowDidEnterFullscreen() {
-  if (!is_fullscreen_) {
-    is_fullscreen_ = true;
-    app_window_->OSFullscreen();
-  }
+  is_fullscreen_ = true;
   app_window_->OnNativeWindowChanged();
 }
 
@@ -775,7 +772,6 @@ void NativeAppWindowCocoa::WindowDidExitFullscreen() {
   if (!shows_fullscreen_controls_)
     gfx::SetNSWindowCanFullscreen(window(), false);
 
-  app_window_->Restore();
   app_window_->OnNativeWindowChanged();
 }
 
