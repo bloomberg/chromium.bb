@@ -115,6 +115,11 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
   // context menu request has been made since the last main frame request.
   void SetLoFiShowImageRequested();
 
+  // Counts the number of requests to reload the page with images from the Lo-Fi
+  // snackbar. If the user requests the page with images a certain number of
+  // times, then Lo-Fi is disabled for the session.
+  void IncrementLoFiUserRequestsForImages();
+
   // Returns the time in microseconds that the last update was made to the
   // daily original and received content lengths.
   int64 GetDataReductionLastUpdateTime();
@@ -217,6 +222,10 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
                            TestInitDataReductionProxyOff);
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxySettingsTest,
                            CheckInitMetricsWhenNotAllowed);
+  FRIEND_TEST_ALL_PREFIXES(DataReductionProxySettingsTest,
+                           TestLoFiImplicitOptOutClicksPerSession);
+  FRIEND_TEST_ALL_PREFIXES(DataReductionProxySettingsTest,
+                           TestLoFiImplicitOptOutConsecutiveSessions);
 
   // Override of DataReductionProxyService::Observer.
   void OnServiceInitialized() override;
@@ -264,6 +273,10 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
   // True if a "Show image" context menu request has not been made since the
   // last main frame request.
   bool lo_fi_show_image_requested_;
+
+  // The number of requests to reload the page with images from the Lo-Fi
+  // snackbar until Lo-Fi is disabled.
+  int lo_fi_user_requests_for_images_per_session_;
 
   BooleanPrefMember spdy_proxy_auth_enabled_;
   BooleanPrefMember data_reduction_proxy_alternative_enabled_;

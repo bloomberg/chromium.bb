@@ -88,6 +88,9 @@ class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
   // Applies a serialized Data Reduction Proxy configuration.
   void SetDataReductionProxyConfiguration(const std::string& serialized_config);
 
+  // Sets Lo-Fi mode off in |config_|.
+  void SetLoFiModeOff();
+
   // Bridge methods to safely call to the UI thread objects.
   void UpdateContentLengths(int64 received_content_length,
                             int64 original_content_length,

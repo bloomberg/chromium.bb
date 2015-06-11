@@ -336,6 +336,120 @@ TEST_F(DataReductionProxySettingsTest, TestEnableLoFiSyntheticTrial) {
   CheckDataReductionProxyLoFiSyntheticTrial(false);
 }
 
+TEST_F(DataReductionProxySettingsTest, TestLoFiImplicitOptOutClicksPerSession) {
+  test_context_->config()->ResetLoFiStatusForTest();
+  EXPECT_EQ(0, test_context_->pref_service()->GetInteger(
+                   prefs::kLoFiLoadImagesPerSession));
+  EXPECT_EQ(LoFiStatus::LOFI_STATUS_TEMPORARILY_OFF,
+            test_context_->config()->GetLoFiStatus());
+
+  // Click "Show images" |lo_fi_user_requests_for_images_per_session_| times.
+  for (int i = 1; i <= settings_->lo_fi_user_requests_for_images_per_session_;
+       ++i) {
+    settings_->IncrementLoFiUserRequestsForImages();
+    EXPECT_EQ(i, test_context_->pref_service()->GetInteger(
+                     prefs::kLoFiLoadImagesPerSession));
+  }
+
+  test_context_->RunUntilIdle();
+  EXPECT_EQ(1, test_context_->pref_service()->GetInteger(
+                   prefs::kLoFiConsecutiveSessionDisables));
+  EXPECT_EQ(LoFiStatus::LOFI_STATUS_OFF,
+            test_context_->config()->GetLoFiStatus());
+
+  // Reset the opt out pref values and config Lo-Fi status as if we're starting
+  // a new session.
+  test_context_->config()->ResetLoFiStatusForTest();
+  settings_->data_reduction_proxy_service_->InitializeLoFiPrefs();
+  EXPECT_EQ(0, test_context_->pref_service()->GetInteger(
+                   prefs::kLoFiLoadImagesPerSession));
+  EXPECT_EQ(LoFiStatus::LOFI_STATUS_TEMPORARILY_OFF,
+            test_context_->config()->GetLoFiStatus());
+
+  // Have a session that doesn't have
+  // |lo_fi_user_requests_for_images_per_session_| so
+  // kLoFiConsecutiveSessionDisables resets.
+  for (int i = 1;
+       i <= settings_->lo_fi_user_requests_for_images_per_session_ - 1; ++i) {
+    settings_->IncrementLoFiUserRequestsForImages();
+    EXPECT_EQ(i, test_context_->pref_service()->GetInteger(
+                     prefs::kLoFiLoadImagesPerSession));
+  }
+
+  test_context_->RunUntilIdle();
+  // Still should have only one consecutive session disable and Lo-Fi status
+  // shouldn't have been set to off.
+  EXPECT_EQ(1, test_context_->pref_service()->GetInteger(
+                   prefs::kLoFiConsecutiveSessionDisables));
+  EXPECT_EQ(LoFiStatus::LOFI_STATUS_TEMPORARILY_OFF,
+            test_context_->config()->GetLoFiStatus());
+
+  // Start a new session. The consecutive session count should now be reset to
+  // zero.
+  test_context_->config()->ResetLoFiStatusForTest();
+  settings_->data_reduction_proxy_service_->InitializeLoFiPrefs();
+  EXPECT_EQ(0, test_context_->pref_service()->GetInteger(
+                   prefs::kLoFiConsecutiveSessionDisables));
+}
+
+TEST_F(DataReductionProxySettingsTest,
+       TestLoFiImplicitOptOutConsecutiveSessions) {
+  test_context_->config()->ResetLoFiStatusForTest();
+  EXPECT_EQ(0, test_context_->pref_service()->GetInteger(
+                   prefs::kLoFiLoadImagesPerSession));
+  EXPECT_EQ(0, test_context_->pref_service()->GetInteger(
+                   prefs::kLoFiConsecutiveSessionDisables));
+  EXPECT_EQ(LoFiStatus::LOFI_STATUS_TEMPORARILY_OFF,
+            test_context_->config()->GetLoFiStatus());
+
+  // Disable Lo-Fi for 3 consecutive sessions.
+  for (int i = 1; i <= 3; ++i) {
+    // Start a new session.
+    test_context_->config()->ResetLoFiStatusForTest();
+    settings_->data_reduction_proxy_service_->InitializeLoFiPrefs();
+    EXPECT_EQ(LoFiStatus::LOFI_STATUS_TEMPORARILY_OFF,
+              test_context_->config()->GetLoFiStatus());
+
+    // Click "Show images" |lo_fi_user_requests_for_images_per_session_| times
+    // for each session.
+    for (int j = 1; j <= settings_->lo_fi_user_requests_for_images_per_session_;
+         ++j) {
+      settings_->IncrementLoFiUserRequestsForImages();
+      EXPECT_EQ(j, test_context_->pref_service()->GetInteger(
+                       prefs::kLoFiLoadImagesPerSession));
+    }
+
+    test_context_->RunUntilIdle();
+    EXPECT_EQ(i, test_context_->pref_service()->GetInteger(
+                     prefs::kLoFiConsecutiveSessionDisables));
+    EXPECT_EQ(LoFiStatus::LOFI_STATUS_OFF,
+              test_context_->config()->GetLoFiStatus());
+  }
+
+  // Start a new session. Lo-Fi should be set off.
+  test_context_->config()->ResetLoFiStatusForTest();
+  settings_->data_reduction_proxy_service_->InitializeLoFiPrefs();
+  test_context_->RunUntilIdle();
+  EXPECT_EQ(3, test_context_->pref_service()->GetInteger(
+                   prefs::kLoFiConsecutiveSessionDisables));
+  EXPECT_EQ(LoFiStatus::LOFI_STATUS_OFF,
+            test_context_->config()->GetLoFiStatus());
+
+  // Set the implicit opt out version to -1 so that the default value of zero
+  // will be an increase and the opt out status will be reset.
+  test_context_->pref_service()->SetInteger(prefs::kLoFiImplicitOptOutVersion,
+                                            -1);
+
+  // Start a new session. Lo-Fi should be set on again.
+  test_context_->config()->ResetLoFiStatusForTest();
+  settings_->data_reduction_proxy_service_->InitializeLoFiPrefs();
+  test_context_->RunUntilIdle();
+  EXPECT_EQ(0, test_context_->pref_service()->GetInteger(
+                   prefs::kLoFiConsecutiveSessionDisables));
+  EXPECT_EQ(LoFiStatus::LOFI_STATUS_TEMPORARILY_OFF,
+            test_context_->config()->GetLoFiStatus());
+}
+
 TEST_F(DataReductionProxySettingsTest, TestGetDailyContentLengths) {
   ContentLengthList result =
       settings_->GetDailyContentLengths(prefs::kDailyHttpOriginalContentLength);

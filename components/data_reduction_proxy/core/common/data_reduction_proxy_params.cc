@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/values.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_client_config_parser.h"
@@ -209,6 +210,20 @@ bool DataReductionProxyParams::ShouldUseSecureProxyByDefault() {
     return false;
 
   return true;
+}
+
+// static
+int DataReductionProxyParams::GetFieldTrialParameterAsInteger(
+    const std::string& group,
+    const std::string& param_name,
+    int default_value) {
+  std::string param_value =
+      variations::GetVariationParamValue(group, param_name);
+  int value;
+  if (param_value.empty() || !base::StringToInt(param_value, &value))
+    return default_value;
+
+  return value;
 }
 
 void DataReductionProxyParams::EnableQuic(bool enable) {

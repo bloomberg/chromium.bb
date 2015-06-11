@@ -59,6 +59,9 @@ void RegisterSyncableProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
       prefs::kDailyOriginalContentLengthViaDataReductionProxy);
   registry->RegisterListPref(prefs::kDailyContentLengthViaDataReductionProxy);
   registry->RegisterInt64Pref(prefs::kDailyHttpContentLengthLastUpdateDate, 0L);
+  registry->RegisterIntegerPref(prefs::kLoFiImplicitOptOutVersion, 0);
+  registry->RegisterIntegerPref(prefs::kLoFiLoadImagesPerSession, 0);
+  registry->RegisterIntegerPref(prefs::kLoFiConsecutiveSessionDisables, 0);
   registry->RegisterInt64Pref(prefs::kSimulatedConfigRetrieveTime, 0L);
   registry->RegisterStringPref(prefs::kDataReductionProxyConfig, std::string());
 }
@@ -107,6 +110,9 @@ void RegisterPrefs(PrefRegistrySimple* registry) {
       prefs::kDailyContentLengthViaDataReductionProxy);
   registry->RegisterInt64Pref(
       prefs::kDailyHttpContentLengthLastUpdateDate, 0L);
+  registry->RegisterIntegerPref(prefs::kLoFiImplicitOptOutVersion, 0);
+  registry->RegisterIntegerPref(prefs::kLoFiLoadImagesPerSession, 0);
+  registry->RegisterIntegerPref(prefs::kLoFiConsecutiveSessionDisables, 0);
   registry->RegisterInt64Pref(prefs::kSimulatedConfigRetrieveTime, 0L);
   registry->RegisterStringPref(prefs::kDataReductionProxyConfig, std::string());
 }

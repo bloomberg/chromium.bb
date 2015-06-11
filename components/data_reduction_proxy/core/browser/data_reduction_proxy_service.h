@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_SERVICE_H_
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_SERVICE_H_
 
+#include <string>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -94,6 +96,12 @@ class DataReductionProxyService
   // Sets if Lo-Fi was active on the last main frame load in
   // DataReductionProxySettings.
   void SetLoFiModeActiveOnMainFrame(bool lo_fi_mode_active);
+
+  // Sets Lo-Fi mode off on the IO thread.
+  void SetLoFiModeOff();
+
+  // Initializes the Lo-Fi implicit opt out prefs.
+  void InitializeLoFiPrefs();
 
   // Stores an int64 value in |prefs_|.
   void SetInt64Pref(const std::string& pref_path, int64 value);

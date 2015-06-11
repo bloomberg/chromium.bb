@@ -168,10 +168,19 @@ public class DataReductionProxySettings {
     }
 
     /**
-     * Sets that a "Show image" context menu request has been made.
+     * Records that a "Show image" context menu request has been made.
      */
     public void setLoFiShowImageRequested() {
         nativeSetLoFiShowImageRequested(mNativeDataReductionProxySettings);
+    }
+
+    /**
+     * Counts the number of requests to reload the page with images from the Lo-Fi snackbar. If the
+     * user requests the page with images a certain number of times, then Lo-Fi is disabled for the
+     * session.
+     *  */
+    public void incrementLoFiUserRequestsForImages() {
+        nativeIncrementLoFiUserRequestsForImages(mNativeDataReductionProxySettings);
     }
 
     /** Returns true if the SPDY proxy is managed by an administrator's policy. */
@@ -251,6 +260,8 @@ public class DataReductionProxySettings {
     private native boolean nativeWasLoFiShowImageRequestedBefore(
             long nativeDataReductionProxySettingsAndroid);
     private native void nativeSetLoFiShowImageRequested(
+            long nativeDataReductionProxySettingsAndroid);
+    private native void nativeIncrementLoFiUserRequestsForImages(
             long nativeDataReductionProxySettingsAndroid);
     private native boolean nativeIsDataReductionProxyManaged(
             long nativeDataReductionProxySettingsAndroid);

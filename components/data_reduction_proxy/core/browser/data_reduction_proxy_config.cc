@@ -752,6 +752,11 @@ void DataReductionProxyConfig::SecureProxyCheck(
                                                      fetcher_callback);
 }
 
+void DataReductionProxyConfig::SetLoFiModeOff() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  lofi_status_ = LOFI_STATUS_OFF;
+}
+
 void DataReductionProxyConfig::UpdateLoFiStatusOnMainFrameRequest(
     bool user_temporarily_disabled_lofi,
     const net::NetworkQualityEstimator* network_quality_estimator) {

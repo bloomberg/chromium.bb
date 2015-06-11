@@ -91,6 +91,22 @@ const char kHttpReceivedContentLength[] = "http_received_content_length";
 // received over the network.
 const char kHttpOriginalContentLength[] = "http_original_content_length";
 
+// An integer pref that contains the Lo-Fi version for the implicit opt-out
+// rules. Any time this value is incremented via Finch,
+// kLoFiConsecutiveSessionDisables is reset to zero.
+const char kLoFiImplicitOptOutVersion[] =
+    "data_reduction_lo_fi.implicit_opt_out_version";
+
+// An integer pref that contains the number of times that "Load images" has been
+// requested on the Lo-Fi snackbar for the current session.
+const char kLoFiLoadImagesPerSession[] =
+    "data_reduction_lo_fi.load_images_requests_per_session";
+
+// An integer pref that contains the number of consecutive sessions that LoFi
+// has been disabled.
+const char kLoFiConsecutiveSessionDisables[] =
+    "data_reduction_lo_fi.consecutive_session_disables";
+
 // Pref to store the retrieval time of the last simulated Data Reduction Proxy
 // configuration. This is part of an experiment to see how many bytes are lost
 // if the Data Reduction Proxy is not used due to configuration being expired

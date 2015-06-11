@@ -13,6 +13,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service_observer.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 
 namespace data_reduction_proxy {
@@ -57,6 +58,8 @@ void DataReductionProxyService::SetIOData(
               io_data_, config_value));
     }
   }
+
+  InitializeLoFiPrefs();
 }
 
 void DataReductionProxyService::Shutdown() {
@@ -123,6 +126,59 @@ void DataReductionProxyService::SetLoFiModeActiveOnMainFrame(
     bool lo_fi_mode_active) {
   DCHECK(CalledOnValidThread());
   settings_->SetLoFiModeActiveOnMainFrame(lo_fi_mode_active);
+}
+
+void DataReductionProxyService::SetLoFiModeOff() {
+  DCHECK(CalledOnValidThread());
+  if (io_task_runner_->BelongsToCurrentThread()) {
+    io_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&DataReductionProxyIOData::SetLoFiModeOff, io_data_));
+    return;
+  }
+  io_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&DataReductionProxyIOData::SetLoFiModeOff, io_data_));
+}
+
+void DataReductionProxyService::InitializeLoFiPrefs() {
+  DCHECK(CalledOnValidThread());
+  if (prefs_) {
+    int lo_fi_user_requests_for_images_per_session =
+        DataReductionProxyParams::GetFieldTrialParameterAsInteger(
+            DataReductionProxyParams::GetLoFiFieldTrialName(),
+            "load_images_requests_per_session", 3);
+
+    int lo_fi_implicit_opt_out_version =
+        DataReductionProxyParams::GetFieldTrialParameterAsInteger(
+            DataReductionProxyParams::GetLoFiFieldTrialName(),
+            "implicit_opt_out_version", 0);
+
+    int lo_fi_consecutive_session_disables =
+        DataReductionProxyParams::GetFieldTrialParameterAsInteger(
+            DataReductionProxyParams::GetLoFiFieldTrialName(),
+            "consecutive_session_disables", 3);
+
+    if (prefs_->GetInteger(prefs::kLoFiImplicitOptOutVersion) <
+        lo_fi_implicit_opt_out_version) {
+      // We have a new implicit opt out version, reset the consecutive session
+      // disables count so that Lo-Fi can be enabled again.
+      prefs_->SetInteger(prefs::kLoFiConsecutiveSessionDisables, 0);
+      prefs_->SetInteger(prefs::kLoFiImplicitOptOutVersion,
+                         lo_fi_implicit_opt_out_version);
+    } else if (prefs_->GetInteger(prefs::kLoFiConsecutiveSessionDisables) >=
+               lo_fi_consecutive_session_disables) {
+      SetLoFiModeOff();
+    } else if (prefs_->GetInteger(prefs::kLoFiLoadImagesPerSession) <
+               lo_fi_user_requests_for_images_per_session) {
+      // If the last session didn't have
+      // |lo_fi_user_requests_for_images_per_session| and the number of
+      // |consecutive_session_disables| hasn't been met, reset the consecutive
+      // sessions count.
+      prefs_->SetInteger(prefs::kLoFiConsecutiveSessionDisables, 0);
+    }
+    prefs_->SetInteger(prefs::kLoFiLoadImagesPerSession, 0);
+  }
 }
 
 void DataReductionProxyService::SetInt64Pref(const std::string& pref_path,

@@ -265,6 +265,10 @@ void DataReductionProxyIOData::SetDataReductionProxyConfiguration(
     config_client_->ApplySerializedConfig(serialized_config);
 }
 
+void DataReductionProxyIOData::SetLoFiModeOff() {
+  config_->SetLoFiModeOff();
+}
+
 void DataReductionProxyIOData::UpdateContentLengths(
     int64 received_content_length,
     int64 original_content_length,

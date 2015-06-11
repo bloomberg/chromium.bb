@@ -9,6 +9,7 @@ import android.content.Context;
 import com.google.android.apps.chrome.R;
 
 import org.chromium.chrome.browser.Tab;
+import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.bandwidth.DataReductionProxyUma;
 
 /**
@@ -61,6 +62,7 @@ public class LoFiBarPopupController implements SnackbarManager.SnackbarControlle
         mSnackbarManager.dismissSnackbar(false);
         mTab.stopLoading();
         mTab.reloadIgnoringCache();
+        DataReductionProxySettings.getInstance().incrementLoFiUserRequestsForImages();
         DataReductionProxyUma.dataReductionProxyLoFiUIAction(
                 DataReductionProxyUma.ACTION_LOAD_IMAGES_SNACKBAR_CLICKED);
     }

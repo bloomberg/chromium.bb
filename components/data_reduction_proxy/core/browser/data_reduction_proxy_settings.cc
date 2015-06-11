@@ -40,6 +40,10 @@ DataReductionProxySettings::DataReductionProxySettings()
       lo_fi_show_image_requested_(false),
       prefs_(NULL),
       config_(nullptr) {
+  lo_fi_user_requests_for_images_per_session_ =
+      DataReductionProxyParams::GetFieldTrialParameterAsInteger(
+          DataReductionProxyParams::GetLoFiFieldTrialName(),
+          "load_images_requests_per_session", 3);
 }
 
 DataReductionProxySettings::~DataReductionProxySettings() {
@@ -189,6 +193,20 @@ bool DataReductionProxySettings::WasLoFiShowImageRequestedBefore() {
 
 void DataReductionProxySettings::SetLoFiShowImageRequested() {
   lo_fi_show_image_requested_ = true;
+}
+
+void DataReductionProxySettings::IncrementLoFiUserRequestsForImages() {
+  if (!prefs_)
+    return;
+  prefs_->SetInteger(prefs::kLoFiLoadImagesPerSession,
+                     prefs_->GetInteger(prefs::kLoFiLoadImagesPerSession) + 1);
+  if (prefs_->GetInteger(prefs::kLoFiLoadImagesPerSession) >=
+      lo_fi_user_requests_for_images_per_session_) {
+    data_reduction_proxy_service_->SetLoFiModeOff();
+    prefs_->SetInteger(
+        prefs::kLoFiConsecutiveSessionDisables,
+        prefs_->GetInteger(prefs::kLoFiConsecutiveSessionDisables) + 1);
+  }
 }
 
 void DataReductionProxySettings::RegisterDataReductionProxyFieldTrial() {
