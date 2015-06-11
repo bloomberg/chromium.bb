@@ -240,7 +240,14 @@ SyncerError GetUpdatesProcessor::ExecuteDownloadUpdates(
         base::Time::Now(), update_response, result);
     session->SendProtocolEvent(response_event);
 
-    LOG(ERROR) << "PostClientToServerMessage() failed during GetUpdates";
+    // Sync authorization expires every 60 mintues, so SYNC_AUTH_ERROR will
+    // appear every 60 minutes, and then sync services will refresh the
+    // authorization. Therefore SYNC_AUTH_ERROR is excluded here to reduce the
+    // ERROR messages in the log.
+    if (result != SYNC_AUTH_ERROR) {
+      LOG(ERROR) << "PostClientToServerMessage() failed during GetUpdates";
+    }
+
     return result;
   }
 
