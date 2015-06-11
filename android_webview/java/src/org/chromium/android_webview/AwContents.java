@@ -25,7 +25,6 @@ import android.os.Message;
 import android.os.SystemClock;
 import android.text.TextUtils;
 import android.util.Base64;
-import android.util.FloatMath;
 import android.util.Log;
 import android.util.Pair;
 import android.view.KeyEvent;
@@ -2580,7 +2579,6 @@ public class AwContents implements SmartClipProvider,
         client.init(mContentViewCore);
     }
 
-    @SuppressLint("NewApi") // FloatMath#hypot requires API level 17.
     @CalledByNative
     private void didOverscroll(int deltaX, int deltaY, float velocityX, float velocityY) {
         mScrollOffsetManager.overScrollBy(deltaX, deltaY);
@@ -2595,7 +2593,7 @@ public class AwContents implements SmartClipProvider,
         final int scrollRangeX = mScrollOffsetManager.computeMaximumHorizontalScrollOffset();
         final int scrollRangeY = mScrollOffsetManager.computeMaximumVerticalScrollOffset();
         mOverScrollGlow.absorbGlow(x, y, oldX, oldY, scrollRangeX, scrollRangeY,
-                FloatMath.hypot(velocityX, velocityY));
+                (float) Math.hypot(velocityX, velocityY));
 
         if (mOverScrollGlow.isAnimating()) {
             postInvalidateOnAnimation();
