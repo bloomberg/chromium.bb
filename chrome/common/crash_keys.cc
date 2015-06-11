@@ -195,19 +195,6 @@ size_t RegisterChromeCrashKeys() {
 #endif
     { kBug464926CrashKey, kSmallSize },
     { kViewCount, kSmallSize },
-    // Temporary for http://crbug.com/369661.
-    { "369661-navurl", kLargeSize },
-    { "369661-oldtype", kSmallSize },
-    { "369661-newtype", kSmallSize },
-    { "369661-naventryid", kSmallSize },
-    { "369661-oldignore", kSmallSize },
-    { "369661-newignore", kSmallSize },
-    { "369661-didcreatenew", kSmallSize },
-    { "369661-pageid", kSmallSize },
-    { "369661-maxpageid", kSmallSize },
-    { "369661-earlyreturn", kSmallSize },
-    { "369661-doubleignore", kSmallSize },
-    // End http://crbug.com/369661.
   };
 
   // This dynamic set of keys is used for sets of key value pairs when gathering
