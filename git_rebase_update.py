@@ -12,6 +12,7 @@ import collections
 import logging
 import sys
 import textwrap
+import os
 
 from fnmatch import fnmatch
 from pprint import pformat
@@ -20,21 +21,26 @@ import git_common as git
 
 
 STARTING_BRANCH_KEY = 'depot-tools.rebase-update.starting-branch'
+STARTING_WORKDIR_KEY = 'depot-tools.rebase-update.starting-workdir'
 
 
-def find_return_branch():
-  """Finds the branch which we should return to after rebase-update completes.
+def find_return_branch_workdir():
+  """Finds the branch and working directory which we should return to after
+  rebase-update completes.
 
-  This value may persist across multiple invocations of rebase-update, if
+  These values may persist across multiple invocations of rebase-update, if
   rebase-update runs into a conflict mid-way.
   """
   return_branch = git.config(STARTING_BRANCH_KEY)
+  workdir = git.config(STARTING_WORKDIR_KEY)
   if not return_branch:
+    workdir = os.getcwd()
+    git.set_config(STARTING_WORKDIR_KEY, workdir)
     return_branch = git.current_branch()
     if return_branch != 'HEAD':
       git.set_config(STARTING_BRANCH_KEY, return_branch)
 
-  return return_branch
+  return return_branch, workdir
 
 
 def fetch_remotes(branch_tree):
@@ -214,7 +220,8 @@ def main(args=None):
     )
     return 1
 
-  return_branch = find_return_branch()
+  return_branch, return_workdir = find_return_branch_workdir()
+  os.chdir(git.run('rev-parse', '--show-toplevel'))
 
   if git.current_branch() == 'HEAD':
     if git.run('status', '--porcelain'):
@@ -264,7 +271,9 @@ def main(args=None):
           % (return_branch, root_branch)
         )
       git.run('checkout', root_branch)
+    os.chdir(return_workdir)
     git.set_config(STARTING_BRANCH_KEY, '')
+    git.set_config(STARTING_WORKDIR_KEY, '')
 
   return retcode
 

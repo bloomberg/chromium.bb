@@ -525,7 +525,7 @@ def rebase(parent, start, branch, abort=False):
     return RebaseRet(True, '', '')
   except subprocess2.CalledProcessError as cpe:
     if abort:
-      run('rebase', '--abort')
+      run_with_retcode('rebase', '--abort')  # ignore failure
     return RebaseRet(False, cpe.stdout, cpe.stderr)
 
 
