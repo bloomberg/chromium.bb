@@ -942,6 +942,34 @@ using content::WebContents;
   NSView* chromeContentView = [self chromeContentView];
   BOOL autoresizesSubviews = [chromeContentView autoresizesSubviews];
   [chromeContentView setAutoresizesSubviews:NO];
+
+  // On Yosemite the toolbar can flicker when hiding or showing the bookmarks
+  // bar. Here, |chromeContentView| is set to not autoresize its subviews during
+  // the window resize. Because |chromeContentView| is not flipped, if the
+  // window is getting shorter, the toolbar will move up within the window.
+  // Soon after, a call to layoutSubviews corrects its position. Passing NO to
+  // setFrame:display: should keep the toolbarView's intermediate position
+  // hidden, as should the prior call to NSDisableScreenUpdates(). For some
+  // reason, neither prevents the toolbarView's intermediate position from
+  // becoming visible. Its subsequent appearance in its correct location causes
+  // the flicker. It may be that the Appkit assumes that updating the window
+  // immediately is not a big deal given that everything in it is layer-backed.
+  // Indeed, turning off layer backing for all ancestors of the toolbarView
+  // causes the flicker to go away.
+  //
+  // By shifting the toolbarView enough so that it's in its correct location
+  // immediately after the call to setFrame:display:, the toolbar will be in
+  // the right spot when the Appkit prematurely flushes the window contents to
+  // the screen. http://crbug.com/444080 .
+  if ([self hasToolbar]) {
+    NSView* toolbarView = [toolbarController_ view];
+    NSRect currentWindowFrame = [window frame];
+    NSRect toolbarViewFrame = [toolbarView frame];
+    toolbarViewFrame.origin.y += windowFrame.size.height -
+        currentWindowFrame.size.height;
+    [toolbarView setFrame:toolbarViewFrame];
+  }
+
   [window setFrame:windowFrame display:NO];
   [chromeContentView setAutoresizesSubviews:autoresizesSubviews];
   return YES;
