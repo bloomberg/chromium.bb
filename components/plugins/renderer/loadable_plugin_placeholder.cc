@@ -331,6 +331,10 @@ void LoadablePluginPlaceholder::RecheckSizeAndMaybeUnthrottle() {
   DCHECK(
       content::RenderThread::Get()->GetTaskRunner()->BelongsToCurrentThread());
   DCHECK(!in_size_recheck_);
+
+  if (!plugin())
+    return;
+
   in_size_recheck_ = true;
 
   // Re-check the size in case the reported size was incorrect.
