@@ -121,19 +121,27 @@ LauncherSearch.prototype.onQueryStarted_ = function(queryId, query, limit) {
               // TODO(yawano): Use filetype_folder_shared.png for a shared
               //     folder.
               // TODO(yawano): Add archive launcher filetype icon.
-              var fileType = FileType.getIcon(result.entry);
-              if (fileType === 'UNKNOWN' || fileType === 'archive')
-                fileType = 'generic';
+              var icon = FileType.getIcon(result.entry);
+              if (icon === 'UNKNOWN' || icon === 'archive')
+                icon = 'generic';
 
               var useHighDpiIcon = window.devicePixelRatio > 1.0;
               var iconUrl = chrome.runtime.getURL(
                   'foreground/images/launcher_filetypes/' +
                   (useHighDpiIcon ? '2x/' : '') + 'launcher_filetype_' +
-                  fileType + '.png');
+                  icon + '.png');
+
+              // Hide extensions for hosted files.
+              var title = FileType.isHosted(result.entry) ?
+                  result.entry.name.substr(
+                      0,
+                      result.entry.name.length -
+                          FileType.getExtension(result.entry).length) :
+                  result.entry.name;
 
               return {
                 itemId: result.entry.toURL(),
-                title: result.entry.name,
+                title: title,
                 iconUrl: iconUrl,
                 // Relevance is set as 2 for all results as a temporary
                 // implementation. 2 is the middle value.
