@@ -13,6 +13,7 @@
 #include "content/public/browser/background_tracing_config.h"
 #include "content/public/browser/background_tracing_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "url/gurl.h"
 
 namespace tracing {
 
@@ -20,6 +21,7 @@ namespace {
 
 const char kBackgroundTracingFieldTrial[] = "BackgroundTracing";
 const char kBackgroundTracingConfig[] = "config";
+const char kBackgroundTracingUploadUrl[] = "upload_url";
 
 void OnUploadProgress(int64, int64) {
   // We don't actually care about the progress, but TraceUploader::DoUpload
@@ -34,11 +36,13 @@ void OnUploadComplete(TraceCrashServiceUploader* uploader,
   done_callback.Run();
 }
 
-void UploadCallback(const scoped_refptr<base::RefCountedString>& file_contents,
+void UploadCallback(const std::string& upload_url,
+                    const scoped_refptr<base::RefCountedString>& file_contents,
                     base::Closure callback) {
   TraceCrashServiceUploader* uploader = new TraceCrashServiceUploader(
       g_browser_process->system_request_context());
 
+  uploader->SetUploadURL(upload_url);
   uploader->DoUpload(
       file_contents->data(), base::Bind(&OnUploadProgress),
       base::Bind(&OnUploadComplete, base::Owned(uploader), callback));
@@ -49,6 +53,12 @@ void UploadCallback(const scoped_refptr<base::RefCountedString>& file_contents,
 void SetupBackgroundTracingFieldTrial() {
   std::string config_text = variations::GetVariationParamValue(
       kBackgroundTracingFieldTrial, kBackgroundTracingConfig);
+  std::string upload_url = variations::GetVariationParamValue(
+      kBackgroundTracingFieldTrial, kBackgroundTracingUploadUrl);
+
+  if (!GURL(upload_url).is_valid())
+    return;
+
   if (config_text.empty())
     return;
 
@@ -66,7 +76,7 @@ void SetupBackgroundTracingFieldTrial() {
     return;
 
   content::BackgroundTracingManager::GetInstance()->SetActiveScenario(
-      config.Pass(), base::Bind(&UploadCallback),
+      config.Pass(), base::Bind(&UploadCallback, upload_url),
       content::BackgroundTracingManager::ANONYMIZE_DATA);
 }
 
