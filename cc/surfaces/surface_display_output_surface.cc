@@ -66,7 +66,10 @@ void SurfaceDisplayOutputSurface::SwapBuffers(CompositorFrame* frame) {
   display_client_->display()->SetSurfaceId(surface_id_,
                                            frame->metadata.device_scale_factor);
 
+  client_->DidSwapBuffers();
+
   inside_swap_buffers_ = 5;
+
   scoped_ptr<CompositorFrame> frame_copy(new CompositorFrame());
   inside_swap_buffers_ = 6;
   frame->AssignTo(frame_copy.get());
@@ -77,8 +80,6 @@ void SurfaceDisplayOutputSurface::SwapBuffers(CompositorFrame* frame) {
                  base::Unretained(this)));
 
   inside_swap_buffers_ = 0;
-
-  client_->DidSwapBuffers();
 }
 
 bool SurfaceDisplayOutputSurface::BindToClient(OutputSurfaceClient* client) {
