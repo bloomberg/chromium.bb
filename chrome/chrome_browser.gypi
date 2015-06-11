@@ -1619,8 +1619,6 @@
       'browser/favicon/chrome_fallback_icon_client_factory.h',
       'browser/favicon/chrome_favicon_client.cc',
       'browser/favicon/chrome_favicon_client.h',
-      'browser/favicon/chrome_favicon_client_factory.cc',
-      'browser/favicon/chrome_favicon_client_factory.h',
       'browser/favicon/fallback_icon_service_factory.cc',
       'browser/favicon/fallback_icon_service_factory.h',
       'browser/favicon/favicon_helper.cc',

@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "components/favicon_base/favicon_callback.h"
-#include "components/keyed_service/core/keyed_service.h"
 
 class GURL;
 
@@ -18,8 +17,11 @@ namespace favicon {
 
 // This class abstracts operations that depend on the embedder's environment,
 // e.g. Chrome.
-class FaviconClient : public KeyedService {
+class FaviconClient {
  public:
+  FaviconClient() {}
+  virtual ~FaviconClient() {}
+
   // Returns true if the specified URL is a native application page URL.
   // If this returns true the favicon for the page must be fetched using
   // GetFaviconForNativeApplicationURL().
@@ -34,10 +36,6 @@ class FaviconClient : public KeyedService {
       const std::vector<int>& desired_sizes_in_pixel,
       const favicon_base::FaviconResultsCallback& callback,
       base::CancelableTaskTracker* tracker) = 0;
-
- protected:
-  FaviconClient() {}
-  ~FaviconClient() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FaviconClient);

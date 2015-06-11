@@ -23,7 +23,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/favicon/chrome_fallback_icon_client_factory.h"
-#include "chrome/browser/favicon/chrome_favicon_client_factory.h"
+#include "chrome/browser/favicon/chrome_favicon_client.h"
 #include "chrome/browser/favicon/fallback_icon_service_factory.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/chrome_history_client.h"
@@ -192,7 +192,7 @@ scoped_ptr<KeyedService> CreateTestDesktopNotificationService(
 scoped_ptr<KeyedService> BuildFaviconService(content::BrowserContext* context) {
   Profile* profile = Profile::FromBrowserContext(context);
   return make_scoped_ptr(new favicon::FaviconService(
-      ChromeFaviconClientFactory::GetForProfile(profile),
+      scoped_ptr<favicon::FaviconClient>(new ChromeFaviconClient(profile)),
       HistoryServiceFactory::GetForProfile(
           profile, ServiceAccessType::EXPLICIT_ACCESS)));
 }

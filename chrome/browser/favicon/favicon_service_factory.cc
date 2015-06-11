@@ -6,7 +6,7 @@
 
 #include "base/memory/singleton.h"
 #include "base/prefs/pref_service.h"
-#include "chrome/browser/favicon/chrome_favicon_client_factory.h"
+#include "chrome/browser/favicon/chrome_favicon_client.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/favicon/core/favicon_service.h"
@@ -42,7 +42,6 @@ FaviconServiceFactory::FaviconServiceFactory()
         "FaviconService",
         BrowserContextDependencyManager::GetInstance()) {
   DependsOn(HistoryServiceFactory::GetInstance());
-  DependsOn(ChromeFaviconClientFactory::GetInstance());
 }
 
 FaviconServiceFactory::~FaviconServiceFactory() {
@@ -52,7 +51,7 @@ KeyedService* FaviconServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
   return new favicon::FaviconService(
-      ChromeFaviconClientFactory::GetForProfile(profile),
+      scoped_ptr<favicon::FaviconClient>(new ChromeFaviconClient(profile)),
       HistoryServiceFactory::GetForProfile(profile,
                                            ServiceAccessType::EXPLICIT_ACCESS));
 }
