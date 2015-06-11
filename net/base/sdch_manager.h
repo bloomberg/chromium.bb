@@ -103,11 +103,6 @@ class NET_EXPORT SdchManager {
 
   static bool sdch_enabled() { return g_sdch_enabled_; }
 
-  // Enables or disables SDCH compression over secure connection.
-  static void EnableSecureSchemeSupport(bool enabled);
-
-  static bool secure_scheme_supported() { return g_secure_scheme_supported_; }
-
   // Briefly prevent further advertising of SDCH on this domain (if SDCH is
   // enabled). After enough calls to IsInSupportedDomain() the blacklisting
   // will be removed. Additional blacklists take exponentially more calls
@@ -226,10 +221,6 @@ class NET_EXPORT SdchManager {
 
   // Support SDCH compression, by advertising in headers.
   static bool g_sdch_enabled_;
-
-  // Support SDCH compression for HTTPS requests and responses. When supported,
-  // HTTPS applicable dictionaries MUST have been acquired securely via HTTPS.
-  static bool g_secure_scheme_supported_;
 
   // A simple implementation of a RFC 3548 "URL safe" base64 encoder.
   static void UrlSafeBase64Encode(const std::string& input,

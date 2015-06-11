@@ -323,7 +323,7 @@ void URLRequestHttpJob::NotifyHeadersComplete() {
     SdchProblemCode rv = sdch_manager->IsInSupportedDomain(request()->url());
     if (rv != SDCH_OK) {
       // If SDCH is just disabled, it is not a real error.
-      if (rv != SDCH_DISABLED && rv != SDCH_SECURE_SCHEME_NOT_SUPPORTED) {
+      if (rv != SDCH_DISABLED) {
         SdchManager::SdchErrorRecovery(rv);
         request()->net_log().AddEvent(
             NetLog::TYPE_SDCH_DECODING_ERROR,
@@ -539,7 +539,7 @@ void URLRequestHttpJob::AddExtraHeaders() {
       if (rv != SDCH_OK) {
         advertise_sdch = false;
         // If SDCH is just disabled, it is not a real error.
-        if (rv != SDCH_DISABLED && rv != SDCH_SECURE_SCHEME_NOT_SUPPORTED) {
+        if (rv != SDCH_DISABLED) {
           SdchManager::SdchErrorRecovery(rv);
           request()->net_log().AddEvent(
               NetLog::TYPE_SDCH_DECODING_ERROR,

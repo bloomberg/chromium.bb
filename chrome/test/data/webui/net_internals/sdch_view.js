@@ -22,8 +22,6 @@ var BASE_PATH = 'files/sdch/base-page.html?iframe_url=';
 function checkDisplay(sdchInfo) {
   expectEquals(sdchInfo.sdch_enabled,
                $(SdchView.SDCH_ENABLED_SPAN_ID).innerText === 'true');
-  expectEquals(sdchInfo.secure_scheme_support,
-               $(SdchView.SECURE_SCHEME_SUPPORT_SPAN_ID).innerText === 'true');
   NetInternalsTest.checkTbodyRows(SdchView.BLACKLIST_TBODY_ID,
                                   sdchInfo.blacklisted.length);
   NetInternalsTest.checkTbodyRows(SdchView.DICTIONARIES_TBODY_ID,

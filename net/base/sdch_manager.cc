@@ -41,9 +41,6 @@ namespace net {
 // static
 bool SdchManager::g_sdch_enabled_ = true;
 
-// static
-bool SdchManager::g_secure_scheme_supported_ = true;
-
 SdchManager::DictionarySet::DictionarySet() {}
 
 SdchManager::DictionarySet::~DictionarySet() {}
@@ -111,11 +108,6 @@ void SdchManager::EnableSdchSupport(bool enabled) {
   g_sdch_enabled_ = enabled;
 }
 
-// static
-void SdchManager::EnableSecureSchemeSupport(bool enabled) {
-  g_secure_scheme_supported_ = enabled;
-}
-
 void SdchManager::BlacklistDomain(const GURL& url,
                                   SdchProblemCode blacklist_reason) {
   SetAllowLatencyExperiment(url, false);
@@ -180,9 +172,6 @@ SdchProblemCode SdchManager::IsInSupportedDomain(const GURL& url) {
   if (!g_sdch_enabled_ )
     return SDCH_DISABLED;
 
-  if (!secure_scheme_supported() && url.SchemeIsCryptographic())
-    return SDCH_SECURE_SCHEME_NOT_SUPPORTED;
-
   if (blacklisted_domains_.empty())
     return SDCH_OK;
 
@@ -243,9 +232,6 @@ SdchProblemCode SdchManager::CanFetchDictionary(
       referring_url.scheme() != dictionary_url.scheme())
     return SDCH_DICTIONARY_LOAD_ATTEMPT_FROM_DIFFERENT_HOST;
 
-  if (!secure_scheme_supported() && referring_url.SchemeIsCryptographic())
-    return SDCH_DICTIONARY_SELECTED_FOR_SSL;
-
   // TODO(jar): Remove this failsafe conservative hack which is more restrictive
   // than current SDCH spec when needed, and justified by security audit.
   if (!referring_url.SchemeIsHTTPOrHTTPS())
@@ -262,8 +248,6 @@ SdchManager::GetDictionarySet(const GURL& target_url) {
   int count = 0;
   scoped_ptr<SdchManager::DictionarySet> result(new DictionarySet);
   for (const auto& entry: dictionaries_) {
-    if (!secure_scheme_supported() && target_url.SchemeIsCryptographic())
-      continue;
     if (entry.second->data.CanUse(target_url) != SDCH_OK)
       continue;
     if (entry.second->data.Expired())
@@ -293,12 +277,6 @@ SdchManager::GetDictionarySetByHash(
   const auto& it = dictionaries_.find(server_hash);
   if (it == dictionaries_.end())
     return result.Pass();
-
-  if (!SdchManager::secure_scheme_supported() &&
-      target_url.SchemeIsCryptographic()) {
-    *problem_code = SDCH_DICTIONARY_FOUND_HAS_WRONG_SCHEME;
-    return result.Pass();
-  }
 
   *problem_code = it->second->data.CanUse(target_url);
   if (*problem_code != SDCH_OK)
@@ -482,7 +460,6 @@ scoped_ptr<base::Value> SdchManager::SdchInfoToValue() const {
   scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
 
   value->SetBoolean("sdch_enabled", sdch_enabled());
-  value->SetBoolean("secure_scheme_support", secure_scheme_supported());
 
   scoped_ptr<base::ListValue> entry_list(new base::ListValue());
   for (const auto& entry: dictionaries_) {
