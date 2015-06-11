@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/image_writer_private/image_writer_utility_client.h"
 #include "chrome/common/extensions/chrome_utility_extensions_messages.h"
@@ -14,7 +15,8 @@
 using content::BrowserThread;
 
 ImageWriterUtilityClient::ImageWriterUtilityClient()
-    : message_loop_proxy_(base::MessageLoopProxy::current()) {}
+    : task_runner_(base::ThreadTaskRunnerHandle::Get()) {
+}
 ImageWriterUtilityClient::~ImageWriterUtilityClient() {}
 
 void ImageWriterUtilityClient::Write(const ProgressCallback& progress_callback,
@@ -32,7 +34,7 @@ void ImageWriterUtilityClient::Write(const ProgressCallback& progress_callback,
 
   if (!Send(new ChromeUtilityMsg_ImageWriter_Write(source, target))) {
     DLOG(ERROR) << "Unable to send Write message to Utility Process.";
-    message_loop_proxy_->PostTask(
+    task_runner_->PostTask(
         FROM_HERE, base::Bind(error_callback_, "IPC communication failed"));
   }
 }
@@ -52,7 +54,7 @@ void ImageWriterUtilityClient::Verify(const ProgressCallback& progress_callback,
 
   if (!Send(new ChromeUtilityMsg_ImageWriter_Verify(source, target))) {
     DLOG(ERROR) << "Unable to send Verify message to Utility Process.";
-    message_loop_proxy_->PostTask(
+    task_runner_->PostTask(
         FROM_HERE, base::Bind(error_callback_, "IPC communication failed"));
   }
 }
@@ -62,7 +64,7 @@ void ImageWriterUtilityClient::Cancel(const CancelCallback& cancel_callback) {
 
   if (!utility_process_host_) {
     // If we haven't connected, there is nothing to cancel.
-    message_loop_proxy_->PostTask(FROM_HERE, cancel_callback);
+    task_runner_->PostTask(FROM_HERE, cancel_callback);
     return;
   }
 
@@ -89,7 +91,7 @@ void ImageWriterUtilityClient::Shutdown() {
 void ImageWriterUtilityClient::StartHost() {
   if (!utility_process_host_) {
     scoped_refptr<base::SequencedTaskRunner> task_runner =
-        base::MessageLoop::current()->message_loop_proxy();
+        base::MessageLoop::current()->task_runner();
     utility_process_host_ = content::UtilityProcessHost::Create(
                                 this, task_runner.get())->AsWeakPtr();
     utility_process_host_->SetName(l10n_util::GetStringUTF16(
@@ -105,12 +107,12 @@ void ImageWriterUtilityClient::StartHost() {
 }
 
 void ImageWriterUtilityClient::OnProcessCrashed(int exit_code) {
-  message_loop_proxy_->PostTask(
+  task_runner_->PostTask(
       FROM_HERE, base::Bind(error_callback_, "Utility process crashed."));
 }
 
 void ImageWriterUtilityClient::OnProcessLaunchFailed() {
-  message_loop_proxy_->PostTask(
+  task_runner_->PostTask(
       FROM_HERE, base::Bind(error_callback_, "Process launch failed."));
 }
 
@@ -136,26 +138,24 @@ bool ImageWriterUtilityClient::Send(IPC::Message* msg) {
 
 void ImageWriterUtilityClient::OnWriteImageSucceeded() {
   if (!success_callback_.is_null()) {
-    message_loop_proxy_->PostTask(FROM_HERE, success_callback_);
+    task_runner_->PostTask(FROM_HERE, success_callback_);
   }
 }
 
 void ImageWriterUtilityClient::OnWriteImageCancelled() {
   if (!cancel_callback_.is_null()) {
-    message_loop_proxy_->PostTask(FROM_HERE, cancel_callback_);
+    task_runner_->PostTask(FROM_HERE, cancel_callback_);
   }
 }
 
 void ImageWriterUtilityClient::OnWriteImageFailed(const std::string& message) {
   if (!error_callback_.is_null()) {
-    message_loop_proxy_->PostTask(FROM_HERE,
-                                  base::Bind(error_callback_, message));
+    task_runner_->PostTask(FROM_HERE, base::Bind(error_callback_, message));
   }
 }
 
 void ImageWriterUtilityClient::OnWriteImageProgress(int64 progress) {
   if (!progress_callback_.is_null()) {
-    message_loop_proxy_->PostTask(FROM_HERE,
-                                  base::Bind(progress_callback_, progress));
+    task_runner_->PostTask(FROM_HERE, base::Bind(progress_callback_, progress));
   }
 }

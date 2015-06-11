@@ -5,10 +5,13 @@
 #include "chrome/browser/extensions/api/gcd_private/gcd_private_api.h"
 
 #include "base/lazy_instance.h"
+#include "base/location.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/local_discovery/cloud_device_list.h"
 #include "chrome/browser/local_discovery/cloud_print_printer_list.h"
 #include "chrome/browser/local_discovery/gcd_api_flow.h"
@@ -447,9 +450,9 @@ void GcdPrivateAPIImpl::RemoveSession(int session_id) {
 }
 
 void GcdPrivateAPIImpl::RemoveSessionDelayed(int session_id) {
-  base::MessageLoop::current()->PostTask(FROM_HERE,
-    base::Bind(&GcdPrivateAPIImpl::RemoveSession,
-               weak_ptr_factory_.GetWeakPtr(), session_id));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&GcdPrivateAPIImpl::RemoveSession,
+                            weak_ptr_factory_.GetWeakPtr(), session_id));
 }
 
 scoped_ptr<base::ListValue> GcdPrivateAPIImpl::GetPrefetchedSSIDList() {

@@ -7,6 +7,8 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/gcm/gcm_api.h"
 #include "chrome/browser/profiles/profile.h"
@@ -121,10 +123,9 @@ void ExtensionGCMAppHandler::OnExtensionUnloaded(
     // the single function ExtensionService::AddExtension.
     AddDummyAppHandler();
 
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&ExtensionGCMAppHandler::RemoveDummyAppHandler,
-                   weak_factory_.GetWeakPtr()));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&ExtensionGCMAppHandler::RemoveDummyAppHandler,
+                              weak_factory_.GetWeakPtr()));
   }
 
   // When the extention is being uninstalled, it will be unloaded first. We
@@ -182,11 +183,9 @@ void ExtensionGCMAppHandler::OnDeleteIDCompleted(
   // InstanceIDDriver::RemoveInstanceID will delete the InstanceID itself.
   // Postpone to do it outside this calling context to avoid any risk to
   // the caller.
-  base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&ExtensionGCMAppHandler::RemoveInstanceID,
-                   weak_factory_.GetWeakPtr(),
-                   app_id));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&ExtensionGCMAppHandler::RemoveInstanceID,
+                            weak_factory_.GetWeakPtr(), app_id));
 }
 
 void ExtensionGCMAppHandler::RemoveInstanceID(const std::string& app_id) {

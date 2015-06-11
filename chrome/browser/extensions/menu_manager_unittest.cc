@@ -8,7 +8,6 @@
 #include "base/json/json_reader.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
-#include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -53,7 +52,7 @@ class MenuManagerTest : public testing::Test {
         profile_(new TestingProfile()),
         manager_(profile_.get(),
                  ExtensionSystem::Get(profile_.get())->state_store()),
-        prefs_(message_loop_.message_loop_proxy().get()),
+        prefs_(message_loop_.task_runner().get()),
         next_id_(1) {}
 
   void TearDown() override {

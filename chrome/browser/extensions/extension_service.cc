@@ -9,11 +9,14 @@
 #include <set>
 
 #include "base/command_line.h"
+#include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/profiler/scoped_profile.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
@@ -2264,12 +2267,9 @@ void ExtensionService::Observe(int type,
       // at all, but never half-crashed.  We do it in a PostTask so
       // that other handlers of this notification will still have
       // access to the Extension and ExtensionHost.
-      base::MessageLoop::current()->PostTask(
-          FROM_HERE,
-          base::Bind(
-              &ExtensionService::TrackTerminatedExtension,
-              AsWeakPtr(),
-              host->extension()->id()));
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::Bind(&ExtensionService::TrackTerminatedExtension,
+                                AsWeakPtr(), host->extension()->id()));
       break;
     }
     case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED: {
@@ -2310,7 +2310,7 @@ void ExtensionService::Observe(int type,
         for (std::set<std::string>::const_iterator it = extension_ids.begin();
              it != extension_ids.end(); ++it) {
           if (delayed_installs_.Contains(*it)) {
-            base::MessageLoop::current()->PostDelayedTask(
+            base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
                 FROM_HERE,
                 base::Bind(&ExtensionService::MaybeFinishDelayedInstallation,
                            AsWeakPtr(), *it),

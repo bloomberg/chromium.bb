@@ -7,8 +7,10 @@
 #include <string>
 #include <utility>
 
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
 #include "base/metrics/histogram.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -119,29 +121,23 @@ void ChromeRuntimeAPIDelegate::ReloadExtension(
     // extension function unloading the extension has to be done
     // asynchronously. Fortunately PostTask guarentees FIFO order so just
     // post both tasks.
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&ExtensionService::TerminateExtension,
-                   service->AsWeakPtr(),
-                   extension_id));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&ExtensionService::TerminateExtension,
+                              service->AsWeakPtr(), extension_id));
     extensions::WarningSet warnings;
     warnings.insert(
         extensions::Warning::CreateReloadTooFrequentWarning(
             extension_id));
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&extensions::WarningService::NotifyWarningsOnUI,
-                   browser_context_,
-                   warnings));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&extensions::WarningService::NotifyWarningsOnUI,
+                              browser_context_, warnings));
   } else {
     // We can't call ReloadExtension directly, since when this method finishes
     // it tries to decrease the reference count for the extension, which fails
     // if the extension has already been reloaded; so instead we post a task.
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&ExtensionService::ReloadExtension,
-                   service->AsWeakPtr(),
-                   extension_id));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&ExtensionService::ReloadExtension,
+                              service->AsWeakPtr(), extension_id));
   }
 }
 
@@ -159,7 +155,7 @@ bool ChromeRuntimeAPIDelegate::CheckForUpdates(
           base::Bind(&ChromeRuntimeAPIDelegate::UpdateCheckComplete,
                      base::Unretained(this),
                      extension_id))) {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(callback, UpdateCheckResult(true, kUpdateThrottled, "")));
   } else {

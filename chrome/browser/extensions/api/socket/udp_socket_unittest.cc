@@ -6,9 +6,11 @@
 
 #include <string>
 
+#include "base/location.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/test/test_timeouts.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "net/base/io_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -90,9 +92,9 @@ static void SendMulticastPacket(UDPSocket* src, int result) {
   if (result == 0) {
     scoped_refptr<net::IOBuffer> data = new net::WrappedIOBuffer(test_message);
     src->Write(data, test_message_length, base::Bind(&OnSendCompleted));
-    base::MessageLoopForIO::current()->PostDelayedTask(FROM_HERE,
-          base::Bind(&SendMulticastPacket, src, result),
-          base::TimeDelta::FromSeconds(1));
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, base::Bind(&SendMulticastPacket, src, result),
+        base::TimeDelta::FromSeconds(1));
   } else {
     QuitMessageLoop();
     FAIL() << "Failed to connect to multicast address. Error code: " << result;
@@ -126,9 +128,8 @@ TEST(UDPSocketUnitTest, TestUDPMulticastRecv) {
   src.Connect(kGroup, kPort, base::Bind(&SendMulticastPacket, &src));
 
   // If not received within the test action timeout, quit the message loop.
-  io_loop.PostDelayedTask(FROM_HERE,
-                          base::Bind(&QuitMessageLoop),
-                          TestTimeouts::action_timeout());
+  io_loop.task_runner()->PostDelayedTask(
+      FROM_HERE, base::Bind(&QuitMessageLoop), TestTimeouts::action_timeout());
 
   io_loop.Run();
 

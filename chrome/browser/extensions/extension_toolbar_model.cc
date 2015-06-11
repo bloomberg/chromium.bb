@@ -7,10 +7,12 @@
 #include <algorithm>
 #include <string>
 
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_base.h"
 #include "base/prefs/pref_service.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
@@ -135,7 +137,7 @@ void ExtensionToolbarModel::SetVisibleIconCount(size_t count) {
     // overflow menu are considered "hidden". But it so happens that the times
     // we are likely to call SetVisibleIconCount() are also those when we are
     // in flux. So wait for things to cool down before setting the prefs.
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&ExtensionToolbarModel::MaybeUpdateVisibilityPrefs,
                    weak_ptr_factory_.GetWeakPtr()));
@@ -596,10 +598,9 @@ void ExtensionToolbarModel::OnExtensionToolbarPrefChange() {
   if (last_known_positions_.size() > pref_position_size) {
     // Need to update pref because we have extra icons. But can't call
     // UpdatePrefs() directly within observation closure.
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&ExtensionToolbarModel::UpdatePrefs,
-                   weak_ptr_factory_.GetWeakPtr()));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&ExtensionToolbarModel::UpdatePrefs,
+                              weak_ptr_factory_.GetWeakPtr()));
   }
 }
 

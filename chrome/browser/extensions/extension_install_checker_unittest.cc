@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/extension_install_checker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -101,21 +103,19 @@ class ExtensionInstallCheckerAsync : public ExtensionInstallCheckerForTest {
   void CheckRequirements() override {
     requirements_check_called_ = true;
 
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&ExtensionInstallCheckerForTest::MockCheckRequirements,
-                   base::Unretained(this),
-                   current_sequence_number()));
+                   base::Unretained(this), current_sequence_number()));
   }
 
   void CheckBlacklistState() override {
     blacklist_check_called_ = true;
 
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&ExtensionInstallCheckerForTest::MockCheckBlacklistState,
-                   base::Unretained(this),
-                   current_sequence_number()));
+                   base::Unretained(this), current_sequence_number()));
   }
 };
 

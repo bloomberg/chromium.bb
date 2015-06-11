@@ -10,10 +10,13 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/extensions/api/dial/dial_device_data.h"
 #include "chrome/common/chrome_version_info.h"
@@ -110,7 +113,7 @@ std::string BuildRequest() {
 
 #if !defined(OS_CHROMEOS)
 void GetNetworkListOnFileThread(
-    const scoped_refptr<base::MessageLoopProxy>& loop,
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     const base::Callback<void(const NetworkInterfaceList& networks)>& cb) {
   NetworkInterfaceList list;
   bool success = net::GetNetworkList(
@@ -118,7 +121,7 @@ void GetNetworkListOnFileThread(
   if (!success)
     VLOG(1) << "Could not retrieve network list!";
 
-  loop->PostTask(FROM_HERE, base::Bind(cb, list));
+  task_runner->PostTask(FROM_HERE, base::Bind(cb, list));
 }
 
 #else
@@ -448,10 +451,11 @@ void DialServiceImpl::StartDiscovery() {
   DiscoverOnAddresses(chrome_os_address_list);
 
 #else
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, base::Bind(
-      &GetNetworkListOnFileThread,
-      base::MessageLoopProxy::current(), base::Bind(
-          &DialServiceImpl::SendNetworkList, AsWeakPtr())));
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&GetNetworkListOnFileThread,
+                 base::ThreadTaskRunnerHandle::Get(),
+                 base::Bind(&DialServiceImpl::SendNetworkList, AsWeakPtr())));
 #endif
 }
 

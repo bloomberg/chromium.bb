@@ -7,10 +7,12 @@
 #include "base/callback.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
 #include "base/metrics/histogram.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/processes/processes_api_constants.h"
@@ -548,8 +550,9 @@ bool GetProcessIdForTabFunction::RunAsync() {
   if (ProcessesAPI::Get(GetProfile())
           ->processes_event_router()
           ->is_task_manager_listening()) {
-    base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
-        &GetProcessIdForTabFunction::GetProcessIdForTab, this));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::Bind(&GetProcessIdForTabFunction::GetProcessIdForTab, this));
   } else {
     TaskManager::GetInstance()->model()->RegisterOnDataReadyCallback(
         base::Bind(&GetProcessIdForTabFunction::GetProcessIdForTab, this));
@@ -609,8 +612,8 @@ bool TerminateFunction::RunAsync() {
   if (ProcessesAPI::Get(GetProfile())
           ->processes_event_router()
           ->is_task_manager_listening()) {
-    base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
-        &TerminateFunction::TerminateProcess, this));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&TerminateFunction::TerminateProcess, this));
   } else {
     TaskManager::GetInstance()->model()->RegisterOnDataReadyCallback(
         base::Bind(&TerminateFunction::TerminateProcess, this));
@@ -697,8 +700,9 @@ bool GetProcessInfoFunction::RunAsync() {
   if (ProcessesAPI::Get(GetProfile())
           ->processes_event_router()
           ->is_task_manager_listening()) {
-    base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
-        &GetProcessInfoFunction::GatherProcessInfo, this));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::Bind(&GetProcessInfoFunction::GatherProcessInfo, this));
   } else {
     TaskManager::GetInstance()->model()->RegisterOnDataReadyCallback(
         base::Bind(&GetProcessInfoFunction::GatherProcessInfo, this));

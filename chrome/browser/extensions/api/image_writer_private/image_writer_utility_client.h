@@ -7,6 +7,7 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "content/public/browser/utility_process_host.h"
 #include "content/public/browser/utility_process_host_client.h"
@@ -79,7 +80,7 @@ class ImageWriterUtilityClient : public content::UtilityProcessHostClient {
 
   base::WeakPtr<content::UtilityProcessHost> utility_process_host_;
 
-  scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageWriterUtilityClient);
 };

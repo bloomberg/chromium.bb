@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
@@ -38,7 +41,7 @@ class ActivityLogPrerenderTest : public ExtensionApiTest {
       uint16 port,
       scoped_ptr<std::vector<scoped_refptr<Action> > > i) {
     // This is to exit RunLoop (base::MessageLoop::current()->Run()) below
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::MessageLoop::QuitClosure());
 
     ASSERT_TRUE(i->size());

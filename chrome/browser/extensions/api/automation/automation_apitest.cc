@@ -3,8 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/files/file_path.h"
+#include "base/location.h"
 #include "base/path_service.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/api/automation_internal/automation_util.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -373,22 +376,20 @@ class FakeAutomationInternalEnableTabFunction
     int tab_id = *params->args.tab_id;
     if (tab_id == 0) {
       // tab 0 <--> tree0
-      base::MessageLoop::current()->PostTask(
-          FROM_HERE,
-          base::Bind(&TreeSerializationState::InitializeTree0,
-                     base::Unretained(&state),
-                     base::Unretained(browser_context())));
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::Bind(&TreeSerializationState::InitializeTree0,
+                                base::Unretained(&state),
+                                base::Unretained(browser_context())));
       // TODO(aboxhall): Need to rewrite this test in terms of tree ids.
       return RespondNow(ArgumentList(
           api::automation_internal::EnableTab::Results::Create(0)));
     }
     if (tab_id == 1) {
       // tab 1 <--> tree1
-      base::MessageLoop::current()->PostTask(
-          FROM_HERE,
-          base::Bind(&TreeSerializationState::InitializeTree1,
-                     base::Unretained(&state),
-                     base::Unretained(browser_context())));
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::Bind(&TreeSerializationState::InitializeTree1,
+                                base::Unretained(&state),
+                                base::Unretained(browser_context())));
       return RespondNow(ArgumentList(
           api::automation_internal::EnableTab::Results::Create(0)));
     }
