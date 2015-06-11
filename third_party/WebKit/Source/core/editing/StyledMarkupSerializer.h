@@ -51,10 +51,9 @@ public:
 
 private:
     bool convertBlocksToInlines() const { return m_convertBlocksToInlines == ConvertBlocksToInlines::Convert; }
-
     Node* serializeNodes(Node* startNode, Node* pastEnd, StyledMarkupAccumulator*);
     Node* traverseNodesForSerialization(Node* startNode, Node* pastEnd, StyledMarkupAccumulator*);
-    void wrapWithNode(StyledMarkupAccumulator&, ContainerNode&, StyledMarkupAccumulator::RangeFullySelectsNode);
+    void wrapWithNode(StyledMarkupAccumulator&, ContainerNode&, PassRefPtrWillBeRawPtr<EditingStyle>);
 
     const PositionType m_start;
     const PositionType m_end;

@@ -172,9 +172,16 @@ String StyledMarkupSerializer<Strategy>::createMarkup()
                     markupAccumulator.wrapWithStyleNode(fullySelectedRootStyle->style());
                 }
             } else {
-                // Since this node and all the other ancestors are not in the selection we want to set RangeFullySelectsNode to DoesNotFullySelectNode
-                // so that styles that affect the exterior of the node are not included.
-                wrapWithNode(markupAccumulator, *ancestor, StyledMarkupAccumulator::DoesNotFullySelectNode);
+                RefPtrWillBeRawPtr<EditingStyle> style = nullptr;
+                if (ancestor->isElementNode())
+                    style = markupAccumulator.createInlineStyle(toElement(*ancestor), convertBlocksToInlines() && isBlock(ancestor));
+                // Since this node and all the other ancestors are not in the selection we want
+                // styles that affect the exterior of the node not to be not included.
+                // If the node is not fully selected by the range, then we don't want to keep styles that affect its relationship to the nodes around it
+                // only the ones that affect it and the nodes within it.
+                if (style && style->style())
+                    style->style()->removeProperty(CSSPropertyFloat);
+                wrapWithNode(markupAccumulator, *ancestor, style);
             }
 
             if (ancestor == m_highestNodeToBeSerialized)
@@ -280,8 +287,12 @@ Node* StyledMarkupSerializer<Strategy>::traverseNodesForSerialization(Node* star
             // or b) ancestors that we never encountered during a pre-order traversal starting at startNode:
             ASSERT(startNode);
             ASSERT(Strategy::isDescendantOf(*startNode, *parent));
-            if (markupAccumulator)
-                wrapWithNode(*markupAccumulator, *parent, StyledMarkupAccumulator::DoesFullySelectNode);
+            if (markupAccumulator) {
+                RefPtrWillBeRawPtr<EditingStyle> style = nullptr;
+                if (parent->isElementNode())
+                    style = markupAccumulator->createInlineStyle(toElement(*parent), convertBlocksToInlines() && isBlock(parent));
+                wrapWithNode(*markupAccumulator, *parent, style);
+            }
             lastClosed = parent;
         }
     }
@@ -290,11 +301,11 @@ Node* StyledMarkupSerializer<Strategy>::traverseNodesForSerialization(Node* star
 }
 
 template<typename Strategy>
-void StyledMarkupSerializer<Strategy>::wrapWithNode(StyledMarkupAccumulator& accumulator, ContainerNode& node, StyledMarkupAccumulator::RangeFullySelectsNode rangeFullySelectsNode)
+void StyledMarkupSerializer<Strategy>::wrapWithNode(StyledMarkupAccumulator& accumulator, ContainerNode& node, PassRefPtrWillBeRawPtr<EditingStyle> style)
 {
     StringBuilder markup;
     if (node.isElementNode())
-        accumulator.appendElement(markup, toElement(node), convertBlocksToInlines() && isBlock(&node), rangeFullySelectsNode);
+        accumulator.appendElement(markup, toElement(node), convertBlocksToInlines() && isBlock(&node), style);
     else
         accumulator.appendStartMarkup(markup, node);
     accumulator.pushMarkup(markup.toString());

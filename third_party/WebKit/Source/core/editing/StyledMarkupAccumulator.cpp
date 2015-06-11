@@ -63,11 +63,14 @@ void StyledMarkupAccumulator::appendStartMarkup(StringBuilder& result, Node& nod
 {
     switch (node.nodeType()) {
     case Node::TEXT_NODE:
-        appendText(result, toText(node));
+        appendText(toText(node));
         break;
-    case Node::ELEMENT_NODE:
-        appendElement(result, toElement(node));
+    case Node::ELEMENT_NODE: {
+        Element& element = toElement(node);
+        RefPtrWillBeRawPtr<EditingStyle> style = createInlineStyle(element, false);
+        appendElement(element, style);
         break;
+    }
     default:
         m_formatter.appendStartMarkup(result, node, nullptr);
         break;
@@ -77,6 +80,11 @@ void StyledMarkupAccumulator::appendStartMarkup(StringBuilder& result, Node& nod
 void StyledMarkupAccumulator::appendEndMarkup(StringBuilder& result, const Element& element)
 {
     m_formatter.appendEndMarkup(result, element);
+}
+
+void StyledMarkupAccumulator::appendText(Text& text)
+{
+    appendText(m_result, text);
 }
 
 void StyledMarkupAccumulator::appendText(StringBuilder& out, Text& text)
@@ -127,12 +135,12 @@ void StyledMarkupAccumulator::appendText(StringBuilder& out, Text& text)
         out.append("</span>");
 }
 
-void StyledMarkupAccumulator::appendElement(StringBuilder& out, Element& element)
+void StyledMarkupAccumulator::appendElement(Element& element, PassRefPtrWillBeRawPtr<EditingStyle> style)
 {
-    appendElement(out, element, false, DoesFullySelectNode);
+    appendElement(m_result, element, false, style);
 }
 
-RefPtrWillBeRawPtr<EditingStyle> StyledMarkupAccumulator::createInlineStyle(Element& element, bool addDisplayInline, StyledMarkupAccumulator::RangeFullySelectsNode rangeFullySelectsNode)
+RefPtrWillBeRawPtr<EditingStyle> StyledMarkupAccumulator::createInlineStyle(Element& element, bool addDisplayInline)
 {
     const bool shouldAnnotateOrForceInline = element.isHTMLElement() && (shouldAnnotate() || addDisplayInline);
 
@@ -158,17 +166,13 @@ RefPtrWillBeRawPtr<EditingStyle> StyledMarkupAccumulator::createInlineStyle(Elem
     if (addDisplayInline)
         inlineStyle->forceInline();
 
-    // If the node is not fully selected by the range, then we don't want to keep styles that affect its relationship to the nodes around it
-    // only the ones that affect it and the nodes within it.
-    if (rangeFullySelectsNode == DoesNotFullySelectNode && inlineStyle->style())
-        inlineStyle->style()->removeProperty(CSSPropertyFloat);
     return inlineStyle;
 }
 
-void StyledMarkupAccumulator::appendElement(StringBuilder& out, Element& element, bool addDisplayInline, StyledMarkupAccumulator::RangeFullySelectsNode rangeFullySelectsNode)
+void StyledMarkupAccumulator::appendElement(StringBuilder& out, Element& element, bool addDisplayInline, PassRefPtrWillBeRawPtr<EditingStyle> style)
 {
     const bool documentIsHTML = element.document().isHTMLDocument();
-    m_formatter.appendOpenTag(out, element, 0);
+    m_formatter.appendOpenTag(out, element, nullptr);
 
     const bool shouldOverrideStyleAttr = (element.isHTMLElement() && (shouldAnnotate() || addDisplayInline)) || shouldApplyWrappingStyle(element);
 
@@ -181,10 +185,9 @@ void StyledMarkupAccumulator::appendElement(StringBuilder& out, Element& element
     }
 
     if (shouldOverrideStyleAttr) {
-        RefPtrWillBeRawPtr<EditingStyle> inlineStyle = createInlineStyle(element, addDisplayInline, rangeFullySelectsNode);
-        if (!inlineStyle->isEmpty()) {
+        if (style && !style->isEmpty()) {
             out.appendLiteral(" style=\"");
-            MarkupFormatter::appendAttributeValue(out, inlineStyle->style()->asText(), documentIsHTML);
+            MarkupFormatter::appendAttributeValue(out, style->style()->asText(), documentIsHTML);
             out.append('\"');
         }
     }

@@ -44,13 +44,13 @@ class StyledMarkupAccumulator final {
     WTF_MAKE_NONCOPYABLE(StyledMarkupAccumulator);
     STACK_ALLOCATED();
 public:
-    enum RangeFullySelectsNode { DoesFullySelectNode, DoesNotFullySelectNode };
-
     StyledMarkupAccumulator(EAbsoluteURLs, const TextOffset& start, const TextOffset& end, const PassRefPtrWillBeRawPtr<Document>, EAnnotateForInterchange, Node*);
 
     void appendStartTag(Node&);
     void appendEndTag(const Element&);
     void appendInterchangeNewline();
+
+    void appendText(Text&);
 
     // TODO(hajimehoshi): These functions are called from the serializer, but
     // should not.
@@ -62,7 +62,9 @@ public:
     String takeResults();
 
     void pushMarkup(const String&);
-    void appendElement(StringBuilder&, Element&, bool addDisplayInline, RangeFullySelectsNode);
+    RefPtrWillBeMember<EditingStyle> createInlineStyle(Element&, bool addDisplayInline);
+
+    void appendElement(StringBuilder&, Element&, bool addDisplayInline, PassRefPtrWillBeRawPtr<EditingStyle>);
     void appendStartMarkup(StringBuilder&, Node&);
 
 private:
@@ -70,15 +72,11 @@ private:
 
     String renderedText(Text&);
     String stringValueForRange(const Text&);
-
     bool shouldApplyWrappingStyle(const Node&) const;
-
     bool shouldAnnotate() const;
 
-    void appendElement(StringBuilder&, Element&);
+    void appendElement(Element&, PassRefPtrWillBeRawPtr<EditingStyle>);
     void appendEndMarkup(StringBuilder&, const Element&);
-
-    RefPtrWillBeRawPtr<EditingStyle> createInlineStyle(Element&, bool addDisplayInline, RangeFullySelectsNode);
 
     MarkupFormatter m_formatter;
     const TextOffset m_start;
