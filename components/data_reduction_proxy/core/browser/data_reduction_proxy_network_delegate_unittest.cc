@@ -629,4 +629,24 @@ TEST_F(DataReductionProxyNetworkDelegateTest, OnResolveProxyHandler) {
   EXPECT_FALSE(other_proxy_info.is_direct());
 }
 
+// Notify network delegate with a NULL request.
+TEST_F(DataReductionProxyNetworkDelegateTest, NullRequest) {
+  net::HttpRequestHeaders headers;
+  net::ProxyInfo data_reduction_proxy_info;
+  std::string data_reduction_proxy;
+  base::TrimString(params()->DefaultOrigin(), "/", &data_reduction_proxy);
+  data_reduction_proxy_info.UsePacString(
+      "PROXY " +
+      net::ProxyServer::FromURI(params()->DefaultOrigin(),
+                                net::ProxyServer::SCHEME_HTTP)
+          .host_port_pair()
+          .ToString() +
+      "; DIRECT");
+  EXPECT_FALSE(data_reduction_proxy_info.is_empty());
+
+  data_reduction_proxy_network_delegate_->NotifyBeforeSendProxyHeaders(
+      nullptr, data_reduction_proxy_info, &headers);
+  EXPECT_TRUE(headers.HasHeader(kChromeProxyHeader));
+}
+
 }  // namespace data_reduction_proxy

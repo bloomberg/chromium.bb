@@ -175,15 +175,14 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendProxyHeadersInternal(
     const net::ProxyInfo& proxy_info,
     net::HttpRequestHeaders* headers) {
   DCHECK(data_reduction_proxy_config_);
-  DCHECK(request);
 
   // TODO(bengr): Investigate a better approach to update the network
   // quality so that state of Lo-Fi is stored per page.
   net::NetworkQualityEstimator* network_quality_estimator = nullptr;
-  if (request->context())
+  if (request && request->context())
     network_quality_estimator = request->context()->network_quality_estimator();
 
-  if (request->load_flags() & net::LOAD_MAIN_FRAME) {
+  if (request && ((request->load_flags() & net::LOAD_MAIN_FRAME) != 0)) {
     data_reduction_proxy_config_->UpdateLoFiStatusOnMainFrameRequest(
         ((request->load_flags() & net::LOAD_BYPASS_CACHE) != 0),
         network_quality_estimator);
