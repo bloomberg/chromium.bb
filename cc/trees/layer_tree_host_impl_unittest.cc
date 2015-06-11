@@ -1267,6 +1267,85 @@ TEST_F(LayerTreeHostImplTest, ScrollWithSwapPromises) {
   EXPECT_EQ(latency_info.trace_id, scroll_info->swap_promises[0]->TraceId());
 }
 
+// Test that scrolls targeting a layer with a non-null scroll_parent() bubble
+// up to the scroll_parent, rather than the stacking parent.
+TEST_F(LayerTreeHostImplTest, ScrollBubblesToScrollParent) {
+  LayerImpl* viewport_scroll =
+      SetupScrollAndContentsLayers(gfx::Size(100, 100));
+  host_impl_->SetViewportSize(gfx::Size(50, 50));
+
+  // Set up two scrolling children of the root, one of which is a scroll parent
+  // to the other. Scrolls bubbling from the child should bubble to the parent,
+  // not the viewport.
+  LayerImpl *parent;
+  LayerImpl *child;
+  LayerImpl *child_clip;
+
+  scoped_ptr<LayerImpl> scroll_parent_clip =
+      LayerImpl::Create(host_impl_->active_tree(), 6);
+  scoped_ptr<LayerImpl> scroll_parent = CreateScrollableLayer(
+      7, gfx::Size(10, 10), scroll_parent_clip.get());
+  parent = scroll_parent.get();
+  scroll_parent_clip->AddChild(scroll_parent.Pass());
+
+  viewport_scroll->AddChild(scroll_parent_clip.Pass());
+
+  scoped_ptr<LayerImpl> scroll_child_clip =
+      LayerImpl::Create(host_impl_->active_tree(), 8);
+  scoped_ptr<LayerImpl> scroll_child = CreateScrollableLayer(
+      9, gfx::Size(10, 10), scroll_child_clip.get());
+  child = scroll_child.get();
+  scroll_child->SetPosition(gfx::Point(20, 20));
+  scroll_child_clip->AddChild(scroll_child.Pass());
+
+  child_clip = scroll_child_clip.get();
+  viewport_scroll->AddChild(scroll_child_clip.Pass());
+
+  child_clip->SetScrollParent(parent);
+
+  DrawFrame();
+
+  {
+    host_impl_->ScrollBegin(gfx::Point(21, 21), InputHandler::GESTURE);
+    host_impl_->ScrollBy(gfx::Point(21, 21), gfx::Vector2d(5, 5));
+    host_impl_->ScrollBy(gfx::Point(21, 21), gfx::Vector2d(2, 1));
+    host_impl_->ScrollEnd();
+
+    // The child should be fully scrolled by the first ScrollBy.
+    EXPECT_VECTOR_EQ(gfx::Vector2dF(5, 5), child->CurrentScrollOffset());
+
+    // The scroll_parent should receive the bubbled up second ScrollBy.
+    EXPECT_VECTOR_EQ(gfx::Vector2dF(2, 1), parent->CurrentScrollOffset());
+
+    // The viewport shouldn't have been scrolled at all.
+    EXPECT_VECTOR_EQ(
+        gfx::Vector2dF(0, 0),
+        host_impl_->InnerViewportScrollLayer()->CurrentScrollOffset());
+    EXPECT_VECTOR_EQ(
+        gfx::Vector2dF(0, 0),
+        host_impl_->OuterViewportScrollLayer()->CurrentScrollOffset());
+  }
+
+  {
+    host_impl_->ScrollBegin(gfx::Point(21, 21), InputHandler::GESTURE);
+    host_impl_->ScrollBy(gfx::Point(21, 21), gfx::Vector2d(3, 4));
+    host_impl_->ScrollBy(gfx::Point(21, 21), gfx::Vector2d(2, 1));
+    host_impl_->ScrollEnd();
+
+    // The first ScrollBy should scroll the parent to its extent.
+    EXPECT_VECTOR_EQ(gfx::Vector2dF(5, 5), parent->CurrentScrollOffset());
+
+    // The viewport should now be next in bubbling order.
+    EXPECT_VECTOR_EQ(
+        gfx::Vector2dF(2, 1),
+        host_impl_->InnerViewportScrollLayer()->CurrentScrollOffset());
+    EXPECT_VECTOR_EQ(
+        gfx::Vector2dF(0, 0),
+        host_impl_->OuterViewportScrollLayer()->CurrentScrollOffset());
+  }
+}
+
+
 TEST_F(LayerTreeHostImplTest, PinchGesture) {
   SetupScrollAndContentsLayers(gfx::Size(100, 100));
   host_impl_->SetViewportSize(gfx::Size(50, 50));

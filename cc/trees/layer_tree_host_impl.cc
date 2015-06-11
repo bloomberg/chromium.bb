@@ -2653,6 +2653,13 @@ gfx::Vector2dF LayerTreeHostImpl::ScrollLayer(LayerImpl* layer_impl,
                                            delta);
 }
 
+static LayerImpl* nextLayerInScrollOrder(LayerImpl* layer) {
+  if (layer->scroll_parent())
+    return layer->scroll_parent();
+
+  return layer->parent();
+}
+
 InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
     const gfx::Point& viewport_point,
     const gfx::Vector2dF& scroll_delta) {
@@ -2675,7 +2682,7 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
 
   for (LayerImpl* layer_impl = CurrentlyScrollingLayer();
        layer_impl;
-       layer_impl = layer_impl->parent()) {
+       layer_impl = nextLayerInScrollOrder(layer_impl)) {
     // Skip the outer viewport scroll layer so that we try to scroll the
     // viewport only once. i.e. The inner viewport layer represents the
     // viewport.
