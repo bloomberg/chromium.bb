@@ -5475,7 +5475,6 @@
             "daisy_freon"
         ],
         "description": "Commit Queue (internal)",
-        "important": false,
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -12504,7 +12503,6 @@
             "nyan_freon"
         ],
         "description": "Commit Queue (internal)",
-        "important": false,
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -18838,7 +18836,6 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
-        "important": false,
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -19852,7 +19849,6 @@
             "strago"
         ],
         "description": "Commit Queue (internal)",
-        "important": false,
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -21277,7 +21273,6 @@
             "tricky"
         ],
         "description": "Commit Queue (internal)",
-        "important": false,
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -24456,7 +24451,6 @@
         ],
         "chrome_sdk": false,
         "description": "Commit Queue (internal)",
-        "important": false,
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -25285,7 +25279,6 @@
             "x86-alex_freon"
         ],
         "description": "Commit Queue (internal)",
-        "important": false,
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",

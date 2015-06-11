@@ -621,15 +621,6 @@ _waterfall_config_map = {
     ]),
 
     constants.WATERFALL_INTERNAL: frozenset([
-        # Experimental Paladins
-        'daisy_freon-paladin',
-        'nyan_freon-paladin',
-        'smaug-paladin',
-        'strago-paladin',
-        'tricky-paladin',
-        'whirlwind-paladin',
-        'x86-alex_freon-paladin',
-
         # Experimental Canaries (Group)
         'daisy-freon-release-group',
         'peach-freon-release-group',
@@ -1520,6 +1511,8 @@ def GetConfig():
       'daisy',
       'daisy_skate',
       'daisy_spring',
+      'daisy_freon',
+      'nyan_freon',
       'falco',
       'gizmo',
       'kayle',
@@ -1538,13 +1531,18 @@ def GetConfig():
       'rambi',
       'rush_ryu',
       'samus',
+      'smaug',
       'storm',
       'stout',
+      'strago',
       'stumpy',
       'stumpy_moblab',
+      'tricky',
       'veyron_pinky',
+      'whirlwind',
       'wolf',
       'x86-alex',
+      'x86-alex_freon',
       'x86-generic',
       'x86-mario',
       'x86-zgb',
