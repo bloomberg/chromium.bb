@@ -103,6 +103,7 @@
       volumeSliderShown: {
         type: Boolean,
         value: false,
+        observer: 'volumeSliderShownChanged',
         notify: true
       }
     },
@@ -114,12 +115,8 @@
     ready: function() {
       var onFocusoutBound = this.onVolumeControllerFocusout_.bind(this);
 
-      this.volumeSlider = this.$.volumeSlider;
-      this.volumeButton = this.$.volumeButton;
-      this.volumeContainer = this.$.volumeContainer;
-
-      this.volumeSlider.addEventListener('focusout', onFocusoutBound);
-      this.volumeButton.addEventListener('focusout', onFocusoutBound);
+      this.$.volumeSlider.addEventListener('focusout', onFocusoutBound);
+      this.$.volumeButton.addEventListener('focusout', onFocusoutBound);
     },
 
     /**
@@ -144,12 +141,11 @@
     },
 
     /**
-     * Invoked the volume button is clicked.
-     * @param {!Event} event The event.
+     * Invoked when the property 'volumeSliderShown' changes.
+     * @param {boolean} shown
      */
-    volumeButtonClick: function(event) {
-      this.showVolumeController_(this.volumeSliderShown);
-      event.stopPropagation();
+    volumeSliderShownChanged: function(shown) {
+      this.showVolumeController_(shown);
     },
 
     /**
@@ -161,9 +157,8 @@
       if (this.volumeSliderShown) {
         // If the focus goes out of the volume, hide the volume control.
         if (!event.relatedTarget ||
-            (event.relatedTarget !== this.volumeButton &&
-             event.relatedTarget !== this.volumeSlider)) {
-          this.showVolumeController_(false);
+            (event.relatedTarget !== this.$.volumeButton &&
+             event.relatedTarget !== this.$.volumeSlider)) {
           this.volumeSliderShown = false;
         }
       }
@@ -177,9 +172,9 @@
     showVolumeController_: function(show) {
       if (show) {
         matchBottomLine(this.$.volumeContainer, this.$.volumeButton);
-        this.volumeContainer.style.visibility = 'visible';
+        this.$.volumeContainer.style.visibility = 'visible';
       } else {
-        this.volumeContainer.style.visibility = 'hidden';
+        this.$.volumeContainer.style.visibility = 'hidden';
       }
     },
 
