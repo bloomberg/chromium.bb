@@ -138,6 +138,7 @@
           'containers/linked_list.h',
           'containers/mru_cache.h',
           'containers/scoped_ptr_hash_map.h',
+          'containers/scoped_ptr_map.h',
           'containers/small_map.h',
           'containers/stack_container.h',
           'cpu.cc',
