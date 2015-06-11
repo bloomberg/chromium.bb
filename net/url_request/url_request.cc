@@ -874,6 +874,7 @@ void URLRequest::PrepareToRestart() {
 
   status_ = URLRequestStatus();
   is_pending_ = false;
+  proxy_server_ = HostPortPair();
 }
 
 void URLRequest::OrphanJob() {
