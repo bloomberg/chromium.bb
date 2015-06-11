@@ -39,20 +39,13 @@ PaintingControlToWeb(
 
 WebContentLayerImpl::WebContentLayerImpl(blink::WebContentLayerClient* client)
     : client_(client) {
-  if (WebLayerImpl::UsingPictureLayer())
-    layer_ = make_scoped_ptr(new WebLayerImpl(
-        PictureLayer::Create(WebLayerImpl::LayerSettings(), this)));
-  else
-    layer_ = make_scoped_ptr(new WebLayerImpl(
-        ContentLayer::Create(WebLayerImpl::LayerSettings(), this)));
+  layer_ = make_scoped_ptr(new WebLayerImpl(
+      PictureLayer::Create(WebLayerImpl::LayerSettings(), this)));
   layer_->layer()->SetIsDrawable(true);
 }
 
 WebContentLayerImpl::~WebContentLayerImpl() {
-  if (WebLayerImpl::UsingPictureLayer())
-    static_cast<PictureLayer*>(layer_->layer())->ClearClient();
-  else
-    static_cast<ContentLayer*>(layer_->layer())->ClearClient();
+  static_cast<PictureLayer*>(layer_->layer())->ClearClient();
 }
 
 blink::WebLayer* WebContentLayerImpl::layer() {

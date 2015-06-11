@@ -575,11 +575,6 @@ void RenderThreadImpl::Init() {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
 
-  is_impl_side_painting_enabled_ =
-      !command_line.HasSwitch(switches::kDisableImplSidePainting);
-  cc_blink::WebLayerImpl::SetImplSidePaintingEnabled(
-      is_impl_side_painting_enabled_);
-
   cc::LayerSettings layer_settings;
   if (command_line.HasSwitch(switches::kEnableCompositorAnimationTimelines))
     layer_settings.use_compositor_animation_timelines = true;
@@ -656,41 +651,37 @@ void RenderThreadImpl::Init() {
 
   is_gather_pixel_refs_enabled_ = false;
 
-  if (is_impl_side_painting_enabled_) {
-    int num_raster_threads = 0;
-    std::string string_value =
-        command_line.GetSwitchValueASCII(switches::kNumRasterThreads);
-    bool parsed_num_raster_threads =
-        base::StringToInt(string_value, &num_raster_threads);
-    DCHECK(parsed_num_raster_threads) << string_value;
-    DCHECK_GT(num_raster_threads, 0);
+  int num_raster_threads = 0;
+  std::string string_value =
+      command_line.GetSwitchValueASCII(switches::kNumRasterThreads);
+  bool parsed_num_raster_threads =
+      base::StringToInt(string_value, &num_raster_threads);
+  DCHECK(parsed_num_raster_threads) << string_value;
+  DCHECK_GT(num_raster_threads, 0);
 
-    // Note: Currently, gathering of pixel refs when using a single
-    // raster thread doesn't provide any benefit. This might change
-    // in the future but we avoid it for now to reduce the cost of
-    // Picture::Create.
-    is_gather_pixel_refs_enabled_ = num_raster_threads > 1;
+  // Note: Currently, gathering of pixel refs when using a single
+  // raster thread doesn't provide any benefit. This might change
+  // in the future but we avoid it for now to reduce the cost of
+  // Picture::Create.
+  is_gather_pixel_refs_enabled_ = num_raster_threads > 1;
 
-    base::SimpleThread::Options thread_options;
+  base::SimpleThread::Options thread_options;
 #if defined(OS_ANDROID) || defined(OS_LINUX)
-    if (!command_line.HasSwitch(
-            switches::kUseNormalPriorityForTileTaskWorkerThreads)) {
-      thread_options.set_priority(base::ThreadPriority::BACKGROUND);
-    }
+  if (!command_line.HasSwitch(
+          switches::kUseNormalPriorityForTileTaskWorkerThreads)) {
+    thread_options.set_priority(base::ThreadPriority::BACKGROUND);
+  }
 #endif
-    while (compositor_raster_threads_.size() <
-           static_cast<size_t>(num_raster_threads)) {
-      scoped_ptr<CompositorRasterThread> raster_thread(
-          new CompositorRasterThread(
-              compositor_task_graph_runner_.get(),
-              base::StringPrintf(
-                  "CompositorTileWorker%u",
-                  static_cast<unsigned>(compositor_raster_threads_.size() + 1))
-                  .c_str(),
-              thread_options));
-      raster_thread->Start();
-      compositor_raster_threads_.push_back(raster_thread.Pass());
-    }
+  while (compositor_raster_threads_.size() <
+         static_cast<size_t>(num_raster_threads)) {
+    scoped_ptr<CompositorRasterThread> raster_thread(new CompositorRasterThread(
+        compositor_task_graph_runner_.get(),
+        base::StringPrintf("CompositorTileWorker%u",
+                           static_cast<unsigned>(
+                               compositor_raster_threads_.size() + 1)).c_str(),
+        thread_options));
+    raster_thread->Start();
+    compositor_raster_threads_.push_back(raster_thread.Pass());
   }
 
   // In single process, browser main loop set up the discardable memory
@@ -1120,12 +1111,6 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
 
   cc_blink::SetSharedBitmapAllocationFunction(AllocateSharedBitmapFunction);
 
-  // Limit use of the scaled image cache to when deferred image decoding is
-  // enabled.
-  if (!command_line.HasSwitch(switches::kEnableDeferredImageDecoding) &&
-      !is_impl_side_painting_enabled_)
-    SkGraphics::SetResourceCacheTotalByteLimit(0u);
-
   SkGraphics::SetResourceCacheSingleAllocationByteLimit(
       kImageCacheSingleAllocationByteLimit);
 
@@ -1389,10 +1374,6 @@ void RenderThreadImpl::PreCacheFontCharacters(const LOGFONT& log_font,
 
 ServiceRegistry* RenderThreadImpl::GetServiceRegistry() {
   return service_registry();
-}
-
-bool RenderThreadImpl::IsImplSidePaintingEnabled() {
-  return is_impl_side_painting_enabled_;
 }
 
 bool RenderThreadImpl::IsGpuRasterizationForced() {

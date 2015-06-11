@@ -29,7 +29,6 @@ static bool IsGpuRasterizationBlacklisted() {
 const char* kGpuCompositingFeatureName = "gpu_compositing";
 const char* kWebGLFeatureName = "webgl";
 const char* kRasterizationFeatureName = "rasterization";
-const char* kThreadedRasterizationFeatureName = "threaded_rasterization";
 const char* kMultipleRasterThreadsFeatureName = "multiple_raster_threads";
 
 const int kMinRasterThreads = 1;
@@ -145,14 +144,6 @@ const GpuFeatureInfo GetGpuFeatureInfo(size_t index, bool* eof) {
           true
       },
       {
-          kThreadedRasterizationFeatureName,
-          false,
-          !IsImplSidePaintingEnabled(),
-          "Threaded rasterization has not been enabled or"
-          " is not supported by the current system.",
-          false
-      },
-      {
           kMultipleRasterThreadsFeatureName,
           false,
           NumberOfRendererRasterThreads() == 1,
@@ -187,14 +178,6 @@ bool IsDelegatedRendererEnabled() {
   enabled |= command_line.HasSwitch(switches::kEnableDelegatedRenderer);
   enabled &= !command_line.HasSwitch(switches::kDisableDelegatedRenderer);
   return enabled;
-}
-
-bool IsImplSidePaintingEnabled() {
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kDisableImplSidePainting))
-    return false;
-  return true;
 }
 
 int NumberOfRendererRasterThreads() {
@@ -259,9 +242,6 @@ bool IsGpuRasterizationEnabled() {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
 
-  if (!IsImplSidePaintingEnabled())
-    return false;
-
   if (command_line.HasSwitch(switches::kDisableGpuRasterization))
     return false;
   else if (command_line.HasSwitch(switches::kEnableGpuRasterization))
@@ -283,10 +263,6 @@ bool IsGpuRasterizationEnabled() {
 bool IsForceGpuRasterizationEnabled() {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
-
-  if (!IsImplSidePaintingEnabled())
-    return false;
-
   return command_line.HasSwitch(switches::kForceGpuRasterization);
 }
 
@@ -350,8 +326,6 @@ base::DictionaryValue* GetFeatureStatus() {
         status += "_software";
       else
         status += "_off";
-      if (gpu_feature_info.name == kThreadedRasterizationFeatureName)
-        status += "_ok";
     } else if (gpu_feature_info.blocked ||
                gpu_access_blocked) {
       status = "unavailable";
@@ -374,8 +348,7 @@ base::DictionaryValue* GetFeatureStatus() {
         if (command_line.HasSwitch(switches::kNumRasterThreads))
           status += "_force";
       }
-      if (gpu_feature_info.name == kThreadedRasterizationFeatureName ||
-          gpu_feature_info.name == kMultipleRasterThreadsFeatureName)
+      if (gpu_feature_info.name == kMultipleRasterThreadsFeatureName)
         status += "_on";
     }
     if (gpu_feature_info.name == kWebGLFeatureName &&

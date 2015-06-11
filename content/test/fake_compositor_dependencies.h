@@ -19,7 +19,6 @@ class FakeCompositorDependencies : public CompositorDependencies {
   ~FakeCompositorDependencies() override;
 
   // CompositorDependencies implementation.
-  bool IsImplSidePaintingEnabled() override;
   bool IsGpuRasterizationForced() override;
   bool IsGpuRasterizationEnabled() override;
   int GetGpuRasterizationMSAASampleCount() override;

@@ -17,10 +17,6 @@ FakeCompositorDependencies::FakeCompositorDependencies() {
 FakeCompositorDependencies::~FakeCompositorDependencies() {
 }
 
-bool FakeCompositorDependencies::IsImplSidePaintingEnabled() {
-  return true;
-}
-
 bool FakeCompositorDependencies::IsGpuRasterizationForced() {
   return false;
 }

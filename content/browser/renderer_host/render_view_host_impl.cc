@@ -431,10 +431,9 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
   prefs.accelerated_2d_canvas_msaa_sample_count =
       atoi(command_line.GetSwitchValueASCII(
       switches::kAcceleratedCanvas2dMSAASampleCount).c_str());
-  // Text blobs rely on impl-side painting for proper LCD handling.
-  prefs.text_blobs_enabled = command_line.HasSwitch(switches::kForceTextBlobs)
-      || (content::IsImplSidePaintingEnabled() &&
-          !command_line.HasSwitch(switches::kDisableTextBlobs));
+  prefs.text_blobs_enabled =
+      command_line.HasSwitch(switches::kForceTextBlobs) ||
+      !command_line.HasSwitch(switches::kDisableTextBlobs);
 
   prefs.pinch_overlay_scrollbar_thickness = 10;
   prefs.use_solid_color_scrollbars = ui::IsOverlayScrollbarEnabled();
@@ -507,10 +506,6 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
 
   prefs.main_frame_resizes_are_orientation_changes =
       command_line.HasSwitch(switches::kMainFrameResizesAreOrientationChanges);
-
-  prefs.deferred_image_decoding_enabled =
-      command_line.HasSwitch(switches::kEnableDeferredImageDecoding) ||
-      content::IsImplSidePaintingEnabled();
 
   prefs.image_color_profiles_enabled =
       command_line.HasSwitch(switches::kEnableImageColorProfiles);

@@ -52,9 +52,6 @@ class WebLayerImpl : public blink::WebLayer, public cc::LayerClient {
   CC_BLINK_EXPORT explicit WebLayerImpl(scoped_refptr<cc::Layer>);
   virtual ~WebLayerImpl();
 
-  static bool UsingPictureLayer();
-  CC_BLINK_EXPORT static void SetImplSidePaintingEnabled(bool enabled);
-
   CC_BLINK_EXPORT static void SetLayerSettings(
       const cc::LayerSettings& settings);
   CC_BLINK_EXPORT static const cc::LayerSettings& LayerSettings();

@@ -277,7 +277,7 @@ void RenderWidgetCompositor::Initialize() {
 
   settings.gpu_rasterization_msaa_sample_count =
       compositor_deps_->GetGpuRasterizationMSAASampleCount();
-  settings.impl_side_painting = compositor_deps_->IsImplSidePaintingEnabled();
+  settings.impl_side_painting = true;
   settings.gpu_rasterization_forced =
       compositor_deps_->IsGpuRasterizationForced();
   settings.gpu_rasterization_enabled =

@@ -93,7 +93,6 @@ cr.define('gpu', function() {
         'video_encode': 'Video Encode',
         'panel_fitting': 'Panel Fitting',
         'rasterization': 'Rasterization',
-        'threaded_rasterization': 'Threaded Rasterization',
         'multiple_raster_threads': 'Multiple Raster Threads',
       };
 

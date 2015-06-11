@@ -31,7 +31,6 @@ namespace content {
 
 class CompositorDependencies {
  public:
-  virtual bool IsImplSidePaintingEnabled() = 0;
   virtual bool IsGpuRasterizationForced() = 0;
   virtual bool IsGpuRasterizationEnabled() = 0;
   virtual int GetGpuRasterizationMSAASampleCount() = 0;

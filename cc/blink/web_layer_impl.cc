@@ -46,8 +46,6 @@ using blink::WebFilterOperations;
 namespace cc_blink {
 namespace {
 
-bool g_impl_side_painting_enabled = false;
-
 base::LazyInstance<cc::LayerSettings> g_layer_settings =
     LAZY_INSTANCE_INITIALIZER;
 
@@ -68,16 +66,6 @@ WebLayerImpl::~WebLayerImpl() {
   if (animation_delegate_adapter_.get())
     layer_->set_layer_animation_delegate(nullptr);
   web_layer_client_ = nullptr;
-}
-
-// static
-bool WebLayerImpl::UsingPictureLayer() {
-  return g_impl_side_painting_enabled;
-}
-
-// static
-void WebLayerImpl::SetImplSidePaintingEnabled(bool enabled) {
-  g_impl_side_painting_enabled = enabled;
 }
 
 // static

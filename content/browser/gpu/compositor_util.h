@@ -20,10 +20,6 @@ CONTENT_EXPORT bool IsPropertyTreeVerificationEnabled();
 // Returns true if delegated-renderer is on (via flags, or platform default).
 CONTENT_EXPORT bool IsDelegatedRendererEnabled();
 
-// Returns true if impl-side painting is on (via flags, or platform default)
-// for the renderer.
-CONTENT_EXPORT bool IsImplSidePaintingEnabled();
-
 // Returns true if one-copy uploads is on (via flags, or platform default).
 // Only one of one-copy and zero-copy can be enabled at a time.
 CONTENT_EXPORT bool IsOneCopyUploadEnabled();

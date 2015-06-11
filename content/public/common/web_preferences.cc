@@ -158,7 +158,6 @@ WebPreferences::WebPreferences()
       available_hover_types(0),
       primary_hover_type(ui::HOVER_TYPE_NONE),
       sync_xhr_in_documents_enabled(true),
-      deferred_image_decoding_enabled(false),
       image_color_profiles_enabled(false),
       should_respect_image_orientation(false),
       number_of_cpu_cores(1),

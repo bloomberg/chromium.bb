@@ -1113,13 +1113,9 @@ static void AppendCompositorCommandLineFlags(base::CommandLine* command_line) {
   if (IsDelegatedRendererEnabled())
     command_line->AppendSwitch(switches::kEnableDelegatedRenderer);
 
-  if (IsImplSidePaintingEnabled()) {
-    command_line->AppendSwitchASCII(
-        switches::kNumRasterThreads,
-        base::IntToString(NumberOfRendererRasterThreads()));
-  } else {
-    command_line->AppendSwitch(switches::kDisableImplSidePainting);
-  }
+  command_line->AppendSwitchASCII(
+      switches::kNumRasterThreads,
+      base::IntToString(NumberOfRendererRasterThreads()));
 
   if (IsGpuRasterizationEnabled())
     command_line->AppendSwitch(switches::kEnableGpuRasterization);
@@ -1262,7 +1258,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableBrowserSideNavigation,
     switches::kEnableCompositorAnimationTimelines,
     switches::kEnableCredentialManagerAPI,
-    switches::kEnableDeferredImageDecoding,
     switches::kEnableDelayAgnosticAec,
     switches::kEnableDisplayList2dCanvas,
     switches::kEnableDistanceFieldText,
@@ -1414,11 +1409,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
       !browser_cmd.HasSwitch(switches::kDisableDatabases)) {
     renderer_cmd->AppendSwitch(switches::kDisableDatabases);
   }
-
-  // Enforce the extra command line flags for impl-side painting.
-  if (IsImplSidePaintingEnabled() &&
-      !browser_cmd.HasSwitch(switches::kEnableDeferredImageDecoding))
-    renderer_cmd->AppendSwitch(switches::kEnableDeferredImageDecoding);
 
   // Add kWaitForDebugger to let renderer process wait for a debugger.
   if (browser_cmd.HasSwitch(switches::kWaitForDebuggerChildren)) {

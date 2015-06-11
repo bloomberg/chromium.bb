@@ -1156,13 +1156,6 @@ const Experiment kExperiments[] = {
         password_manager::switches::kDisableAffiliationBasedMatching)
   },
   {
-    "enable-deferred-image-decoding",
-    IDS_FLAGS_ENABLE_DEFERRED_IMAGE_DECODING_NAME,
-    IDS_FLAGS_ENABLE_DEFERRED_IMAGE_DECODING_DESCRIPTION,
-    kOsMac | kOsLinux | kOsCrOS,
-    SINGLE_VALUE_TYPE(switches::kEnableDeferredImageDecoding)
-  },
-  {
     "wallet-service-use-sandbox",
     IDS_FLAGS_WALLET_SERVICE_USE_SANDBOX_NAME,
     IDS_FLAGS_WALLET_SERVICE_USE_SANDBOX_DESCRIPTION,
