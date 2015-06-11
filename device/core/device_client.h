@@ -34,6 +34,11 @@ class DeviceClient {
   // Returns the UsbService instance for this embedder.
   virtual UsbService* GetUsbService();
 
+  // Connects a USB DeviceManager client to a concrete implementation. If
+  // no such implementation is available the request is dropped.
+  virtual void ConnectToUSBDeviceManager(
+      mojo::InterfaceRequest<usb::DeviceManager> request);
+
   // Returns the HidService instance for this embedder.
   virtual HidService* GetHidService();
 

@@ -5,13 +5,11 @@
 #include "device/usb/device_manager_impl.h"
 
 #include "base/bind.h"
-#include "base/location.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/sequenced_task_runner.h"
-#include "base/thread_task_runner_handle.h"
 #include "device/core/device_client.h"
 #include "device/usb/device_impl.h"
 #include "device/usb/public/cpp/device_manager_delegate.h"
+#include "device/usb/public/cpp/device_manager_factory.h"
 #include "device/usb/public/interfaces/device.mojom.h"
 #include "device/usb/type_converters.h"
 #include "device/usb/usb_device.h"
@@ -23,123 +21,64 @@
 namespace device {
 namespace usb {
 
-namespace {
-
-void OnGetDevicesOnServiceThread(
-    const UsbService::GetDevicesCallback& callback,
-    scoped_refptr<base::TaskRunner> callback_task_runner,
-    const std::vector<scoped_refptr<UsbDevice>>& devices) {
-  callback_task_runner->PostTask(FROM_HERE, base::Bind(callback, devices));
-}
-
-void GetDevicesOnServiceThread(
-    const UsbService::GetDevicesCallback& callback,
-    scoped_refptr<base::TaskRunner> callback_task_runner) {
-  DCHECK(DeviceClient::Get());
-  UsbService* usb_service = DeviceClient::Get()->GetUsbService();
-  if (!usb_service) {
-    std::vector<scoped_refptr<UsbDevice>> no_devices;
-    callback_task_runner->PostTask(FROM_HERE, base::Bind(callback, no_devices));
-    return;
-  }
-  usb_service->GetDevices(
-      base::Bind(&OnGetDevicesOnServiceThread, callback, callback_task_runner));
-}
-
-void RunOpenDeviceCallback(const DeviceManager::OpenDeviceCallback& callback,
-                           OpenDeviceError error) {
-  callback.Run(error);
-}
-
-void OnOpenDeviceOnServiceThread(
-    mojo::InterfaceRequest<Device> device_request,
-    const DeviceManager::OpenDeviceCallback& callback,
-    scoped_refptr<base::TaskRunner> callback_task_runner,
-    scoped_refptr<UsbDeviceHandle> device_handle) {
-  if (!device_handle) {
-    callback_task_runner->PostTask(FROM_HERE,
-                                   base::Bind(&RunOpenDeviceCallback, callback,
-                                              OPEN_DEVICE_ERROR_ACCESS_DENIED));
-    return;
-  }
-
+// static
+void DeviceManagerFactory::Build(mojo::InterfaceRequest<DeviceManager> request,
+                                 scoped_ptr<DeviceManagerDelegate> delegate) {
   // Owned by its MessagePipe.
-  new DeviceImpl(device_handle, device_request.Pass());
-
-  callback_task_runner->PostTask(
-      FROM_HERE,
-      base::Bind(&RunOpenDeviceCallback, callback, OPEN_DEVICE_ERROR_OK));
+  new DeviceManagerImpl(request.Pass(), delegate.Pass());
 }
-
-void OpenDeviceOnServiceThread(
-    const std::string& guid,
-    mojo::InterfaceRequest<Device> device_request,
-    const DeviceManager::OpenDeviceCallback& callback,
-    scoped_refptr<base::TaskRunner> callback_task_runner) {
-  DCHECK(DeviceClient::Get());
-  UsbService* usb_service = DeviceClient::Get()->GetUsbService();
-  if (!usb_service) {
-    callback_task_runner->PostTask(FROM_HERE,
-                                   base::Bind(&RunOpenDeviceCallback, callback,
-                                              OPEN_DEVICE_ERROR_NOT_FOUND));
-    return;
-  }
-  scoped_refptr<UsbDevice> device = usb_service->GetDevice(guid);
-  if (!device) {
-    callback_task_runner->PostTask(FROM_HERE,
-                                   base::Bind(&RunOpenDeviceCallback, callback,
-                                              OPEN_DEVICE_ERROR_NOT_FOUND));
-    return;
-  }
-  device->Open(base::Bind(&OnOpenDeviceOnServiceThread,
-                          base::Passed(&device_request), callback,
-                          callback_task_runner));
-}
-
-}  // namespace
 
 DeviceManagerImpl::DeviceManagerImpl(
     mojo::InterfaceRequest<DeviceManager> request,
-    scoped_ptr<DeviceManagerDelegate> delegate,
-    scoped_refptr<base::SequencedTaskRunner> service_task_runner)
+    scoped_ptr<DeviceManagerDelegate> delegate)
     : binding_(this, request.Pass()),
       delegate_(delegate.Pass()),
-      service_task_runner_(service_task_runner),
       weak_factory_(this) {
 }
 
 DeviceManagerImpl::~DeviceManagerImpl() {
 }
 
-void DeviceManagerImpl::set_error_handler(mojo::ErrorHandler* error_handler) {
-  binding_.set_error_handler(error_handler);
-}
-
 void DeviceManagerImpl::GetDevices(EnumerationOptionsPtr options,
                                    const GetDevicesCallback& callback) {
-  auto get_devices_callback =
-      base::Bind(&DeviceManagerImpl::OnGetDevices, weak_factory_.GetWeakPtr(),
-                 base::Passed(&options), callback);
-  service_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&GetDevicesOnServiceThread, get_devices_callback,
-                            base::ThreadTaskRunnerHandle::Get()));
+  DCHECK(DeviceClient::Get());
+  UsbService* usb_service = DeviceClient::Get()->GetUsbService();
+  if (!usb_service) {
+    mojo::Array<DeviceInfoPtr> results(0);
+    callback.Run(results.Pass());
+    return;
+  }
+  std::vector<UsbDeviceFilter> filters =
+      options->filters.To<std::vector<UsbDeviceFilter>>();
+  usb_service->GetDevices(base::Bind(&DeviceManagerImpl::OnGetDevices,
+                                     weak_factory_.GetWeakPtr(), callback,
+                                     filters));
 }
 
 void DeviceManagerImpl::OpenDevice(
     const mojo::String& guid,
     mojo::InterfaceRequest<Device> device_request,
     const OpenDeviceCallback& callback) {
-  service_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&OpenDeviceOnServiceThread, guid,
-                            base::Passed(&device_request), callback,
-                            base::ThreadTaskRunnerHandle::Get()));
+  DCHECK(DeviceClient::Get());
+  UsbService* usb_service = DeviceClient::Get()->GetUsbService();
+  if (!usb_service) {
+    callback.Run(OPEN_DEVICE_ERROR_NOT_FOUND);
+    return;
+  }
+  scoped_refptr<UsbDevice> device = usb_service->GetDevice(guid);
+  if (!device) {
+    callback.Run(OPEN_DEVICE_ERROR_NOT_FOUND);
+    return;
+  }
+  device->Open(base::Bind(&DeviceManagerImpl::OnOpenDevice,
+                          weak_factory_.GetWeakPtr(), callback,
+                          base::Passed(&device_request)));
 }
 
 void DeviceManagerImpl::OnGetDevices(
-    EnumerationOptionsPtr options,
     const GetDevicesCallback& callback,
+    const std::vector<UsbDeviceFilter>& filters,
     const std::vector<scoped_refptr<UsbDevice>>& devices) {
-  auto filters = options->filters.To<std::vector<UsbDeviceFilter>>();
   mojo::Array<DeviceInfoPtr> device_infos(0);
   for (size_t i = 0; i < devices.size(); ++i) {
     DeviceInfoPtr device_info = DeviceInfo::From(*devices[i]);
@@ -153,6 +92,21 @@ void DeviceManagerImpl::OnGetDevices(
     }
   }
   callback.Run(device_infos.Pass());
+}
+
+void DeviceManagerImpl::OnOpenDevice(
+    const OpenDeviceCallback& callback,
+    mojo::InterfaceRequest<Device> device_request,
+    scoped_refptr<UsbDeviceHandle> device_handle) {
+  if (!device_handle) {
+    callback.Run(OPEN_DEVICE_ERROR_ACCESS_DENIED);
+    return;
+  }
+
+  // Owned by its MessagePipe.
+  new DeviceImpl(device_handle, device_request.Pass());
+
+  callback.Run(OPEN_DEVICE_ERROR_OK);
 }
 
 }  // namespace usb

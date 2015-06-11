@@ -5,6 +5,7 @@
 source_set("cpp") {
   sources = [
     "device_manager_delegate.h",
+    "device_manager_factory.h",
   ]
 
   public_deps = [

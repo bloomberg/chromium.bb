@@ -1,4 +1,0 @@
-include_rules = [
-  "+mojo/application/public",
-  "+mojo/common",
-]

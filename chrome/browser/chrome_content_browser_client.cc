@@ -19,7 +19,6 @@
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/thread_task_runner_handle.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/after_startup_task_utils.h"
 #include "chrome/browser/browser_about_handler.h"
@@ -124,7 +123,6 @@
 #include "content/public/common/service_registry.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/common/web_preferences.h"
-#include "device/devices_app/devices_app.h"
 #include "gin/v8_initializer.h"
 #include "net/base/mime_util.h"
 #include "net/cookies/canonical_cookie.h"
@@ -2364,15 +2362,6 @@ void ChromeContentBrowserClient::OverrideRenderFrameMojoServices(
   registry->AddService(
       base::Bind(&chromeos::attestation::PlatformVerificationImpl::Create,
                  render_frame_host));
-#endif
-}
-
-void ChromeContentBrowserClient::RegisterMojoApplications(
-    StaticMojoApplicationMap* apps) {
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
-  apps->insert(std::make_pair(GURL(device::kDevicesMojoAppUrl),
-                              base::Bind(&device::DevicesApp::CreateDelegate,
-                                         base::ThreadTaskRunnerHandle::Get())));
 #endif
 }
 

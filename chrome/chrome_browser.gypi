@@ -3594,7 +3594,6 @@
           'dependencies': [
             '../components/components.gyp:feedback_component',
             '../device/core/core.gyp:device_core',
-            '../device/devices_app/devices_app.gyp:devices_app_lib',
             '../device/usb/usb.gyp:device_usb',
             '../net/net.gyp:net_browser_services',
           ]

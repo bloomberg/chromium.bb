@@ -35,6 +35,10 @@ UsbService* DeviceClient::GetUsbService() {
   return NULL;
 }
 
+void DeviceClient::ConnectToUSBDeviceManager(
+    mojo::InterfaceRequest<usb::DeviceManager> request) {
+}
+
 HidService* DeviceClient::GetHidService() {
   // This should never be called by clients which do not support the HID API.
   NOTREACHED();

@@ -49,6 +49,7 @@ source_set("usb") {
     "//mojo/environment:chromium",
     "//net",
     "//third_party/libusb",
+    "//third_party/mojo/src/mojo/edk/system",
   ]
 
   public_deps = [
