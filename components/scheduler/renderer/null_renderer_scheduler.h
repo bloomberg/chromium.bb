@@ -30,6 +30,7 @@ class NullRendererScheduler : public RendererScheduler {
       const blink::WebInputEvent& web_input_event) override;
   void OnRendererHidden() override;
   void OnRendererVisible() override;
+  void OnPageLoadStarted() override;
   void DidAnimateForInputOnCompositorThread() override;
   bool IsHighPriorityWorkAnticipated() override;
   bool ShouldYieldForHighPriorityWork() override;

@@ -32,6 +32,7 @@ class FakeRendererScheduler : public scheduler::RendererScheduler {
   void DidAnimateForInputOnCompositorThread() override;
   void OnRendererHidden() override;
   void OnRendererVisible() override;
+  void OnPageLoadStarted() override;
   bool IsHighPriorityWorkAnticipated() override;
   bool CanExceedIdleDeadlineIfRequired() const override;
   bool ShouldYieldForHighPriorityWork() override;

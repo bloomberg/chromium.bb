@@ -68,6 +68,9 @@ void FakeRendererScheduler::OnRendererHidden() {
 void FakeRendererScheduler::OnRendererVisible() {
 }
 
+void FakeRendererScheduler::OnPageLoadStarted() {
+}
+
 bool FakeRendererScheduler::ShouldYieldForHighPriorityWork() {
   return false;
 }

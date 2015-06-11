@@ -71,6 +71,9 @@ void NullRendererScheduler::OnRendererHidden() {
 void NullRendererScheduler::OnRendererVisible() {
 }
 
+void NullRendererScheduler::OnPageLoadStarted() {
+}
+
 bool NullRendererScheduler::IsHighPriorityWorkAnticipated() {
   return false;
 }

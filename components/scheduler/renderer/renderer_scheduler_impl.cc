@@ -357,6 +357,9 @@ bool RendererSchedulerImpl::ShouldYieldForHighPriorityWork() {
     case Policy::TOUCHSTART_PRIORITY:
       return true;
 
+    case Policy::LOADING_PRIORITY:
+      return false;
+
     default:
       NOTREACHED();
       return false;
@@ -421,6 +424,8 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
     return;
 
   bool policy_disables_timers = false;
+  PrioritizingTaskQueueSelector::QueuePriority timer_priority =
+      PrioritizingTaskQueueSelector::NORMAL_PRIORITY;
 
   switch (new_policy) {
     case Policy::COMPOSITOR_PRIORITY:
@@ -444,6 +449,15 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
       helper_.SetQueuePriority(LOADING_TASK_QUEUE,
                                PrioritizingTaskQueueSelector::NORMAL_PRIORITY);
       break;
+    case Policy::LOADING_PRIORITY:
+      // We prioritize loading tasks by deprioritizing compositing and timers.
+      helper_.SetQueuePriority(
+          COMPOSITOR_TASK_QUEUE,
+          PrioritizingTaskQueueSelector::BEST_EFFORT_PRIORITY);
+      timer_priority = PrioritizingTaskQueueSelector::BEST_EFFORT_PRIORITY;
+      // TODO(alexclarke): See if we can safely mark the loading task queue as
+      // high priority.
+      break;
     default:
       NOTREACHED();
   }
@@ -451,8 +465,7 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
       policy_disables_timers) {
     helper_.DisableQueue(TIMER_TASK_QUEUE);
   } else {
-    helper_.SetQueuePriority(TIMER_TASK_QUEUE,
-                             PrioritizingTaskQueueSelector::NORMAL_PRIORITY);
+    helper_.SetQueuePriority(TIMER_TASK_QUEUE, timer_priority);
   }
   DCHECK(helper_.IsQueueEnabled(COMPOSITOR_TASK_QUEUE));
   if (new_policy != Policy::TOUCHSTART_PRIORITY)
@@ -485,14 +498,20 @@ RendererSchedulerImpl::Policy RendererSchedulerImpl::ComputeNewPolicy(
     base::TimeTicks now,
     base::TimeDelta* new_policy_duration) const {
   any_thread_lock_.AssertAcquired();
+  // Above all else we want to be responsive to user input.
   *new_policy_duration = TimeLeftInInputEscalatedPolicy(now);
+  if (*new_policy_duration > base::TimeDelta()) {
+    return AnyThread().awaiting_touch_start_response_
+               ? Policy::TOUCHSTART_PRIORITY
+               : Policy::COMPOSITOR_PRIORITY;
+  }
 
-  if (*new_policy_duration == base::TimeDelta())
-    return Policy::NORMAL;
+  if (AnyThread().rails_loading_priority_deadline_ > now) {
+    *new_policy_duration = AnyThread().rails_loading_priority_deadline_ - now;
+    return Policy::LOADING_PRIORITY;
+  }
 
-  return AnyThread().awaiting_touch_start_response_
-             ? Policy::TOUCHSTART_PRIORITY
-             : Policy::COMPOSITOR_PRIORITY;
+  return Policy::NORMAL;
 }
 
 base::TimeDelta RendererSchedulerImpl::TimeLeftInInputEscalatedPolicy(
@@ -572,6 +591,8 @@ const char* RendererSchedulerImpl::PolicyToString(Policy policy) {
       return "compositor";
     case Policy::TOUCHSTART_PRIORITY:
       return "touchstart";
+    case Policy::LOADING_PRIORITY:
+      return "loading";
     default:
       NOTREACHED();
       return nullptr;
@@ -604,6 +625,9 @@ RendererSchedulerImpl::AsValueLocked(base::TimeTicks optional_now) const {
   state->SetDouble("last_input_signal_time",
                    (AnyThread().last_input_signal_time_ - base::TimeTicks())
                        .InMillisecondsF());
+  state->SetDouble("rails_loading_priority_deadline",
+                   (AnyThread().rails_loading_priority_deadline_ -
+                    base::TimeTicks()).InMillisecondsF());
   state->SetInteger("pending_main_thread_input_event_count",
                     AnyThread().pending_main_thread_input_event_count_);
   state->SetBoolean("awaiting_touch_start_response",
@@ -626,6 +650,14 @@ void RendererSchedulerImpl::OnIdlePeriodStarted() {
 void RendererSchedulerImpl::OnIdlePeriodEnded() {
   MainThreadOnly().in_idle_period_ = false;
   // TODO(alexclarke): Force update the policy
+}
+
+void RendererSchedulerImpl::OnPageLoadStarted() {
+  base::AutoLock lock(any_thread_lock_);
+  AnyThread().rails_loading_priority_deadline_ =
+      helper_.Now() + base::TimeDelta::FromMilliseconds(
+                          kRailsInitialLoadingPrioritizationMillis);
+  UpdatePolicyLocked(UpdateType::MAY_EARLY_OUT_IF_POLICY_UNCHANGED);
 }
 
 }  // namespace scheduler

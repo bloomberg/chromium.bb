@@ -698,6 +698,32 @@ TEST_F(RendererSchedulerImplTest, TestTouchstartPolicy_MainThread) {
                                    std::string("L1")));
 }
 
+TEST_F(RendererSchedulerImplTest, LoadingPriorityPolicy) {
+  std::vector<std::string> run_order;
+  PostTestTasks(&run_order, "L1 I1 D1 C1 D2 C2");
+
+  scheduler_->OnPageLoadStarted();
+  EnableIdleTasks();
+  RunUntilIdle();
+  // In loading policy compositor tasks are best effort and should be run last.
+  EXPECT_THAT(run_order,
+              testing::ElementsAre(std::string("L1"), std::string("D1"),
+                                   std::string("D2"), std::string("I1"),
+                                   std::string("C1"), std::string("C2")));
+
+  // Advance 1.5s and try again, the loading policy should have ended and the
+  // task order should return to normal.
+  clock_->AdvanceNow(base::TimeDelta::FromMilliseconds(1500));
+  run_order.clear();
+  PostTestTasks(&run_order, "L1 I1 D1 C1 D2 C2");
+  EnableIdleTasks();
+  RunUntilIdle();
+  EXPECT_THAT(run_order,
+              testing::ElementsAre(std::string("L1"), std::string("D1"),
+                                   std::string("C1"), std::string("D2"),
+                                   std::string("C2"), std::string("I1")));
+}
+
 TEST_F(RendererSchedulerImplTest,
        EventConsumedOnCompositorThread_IgnoresMouseMove_WhenMouseUp) {
   std::vector<std::string> run_order;

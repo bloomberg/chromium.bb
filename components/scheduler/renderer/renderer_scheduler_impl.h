@@ -46,6 +46,7 @@ class SCHEDULER_EXPORT RendererSchedulerImpl : public RendererScheduler,
   void DidAnimateForInputOnCompositorThread() override;
   void OnRendererHidden() override;
   void OnRendererVisible() override;
+  void OnPageLoadStarted() override;
   bool IsHighPriorityWorkAnticipated() override;
   bool ShouldYieldForHighPriorityWork() override;
   bool CanExceedIdleDeadlineIfRequired() const override;
@@ -79,6 +80,7 @@ class SCHEDULER_EXPORT RendererSchedulerImpl : public RendererScheduler,
     NORMAL,
     COMPOSITOR_PRIORITY,
     TOUCHSTART_PRIORITY,
+    LOADING_PRIORITY,
     // Must be the last entry.
     POLICY_COUNT,
     FIRST_POLICY = NORMAL,
@@ -129,6 +131,10 @@ class SCHEDULER_EXPORT RendererSchedulerImpl : public RendererScheduler,
   // The amount of time which idle periods can continue being scheduled when the
   // renderer has been hidden, before going to sleep for good.
   static const int kEndIdleWhenHiddenDelayMillis = 10000;
+
+  // The amount of time for which loading tasks will be prioritized over
+  // other tasks during the initial page load.
+  static const int kRailsInitialLoadingPrioritizationMillis = 1000;
 
   // Schedules an immediate PolicyUpdate, if there isn't one already pending and
   // sets |policy_may_need_update_|. Note |any_thread_lock_| must be
@@ -207,6 +213,7 @@ class SCHEDULER_EXPORT RendererSchedulerImpl : public RendererScheduler,
     AnyThread();
 
     base::TimeTicks last_input_signal_time_;
+    base::TimeTicks rails_loading_priority_deadline_;
     int pending_main_thread_input_event_count_;
     bool awaiting_touch_start_response_;
   };
