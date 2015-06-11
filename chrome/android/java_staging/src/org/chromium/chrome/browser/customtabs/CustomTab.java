@@ -29,29 +29,18 @@ import org.chromium.ui.base.WindowAndroid;
  * A chrome tab that is only used as a custom tab.
  */
 public class CustomTab extends ChromeTab {
-    private static class LoadUrlTabObserver extends EmptyTabObserver {
+    private static class CustomTabObserver extends EmptyTabObserver {
         private CustomTabsConnection mCustomTabsConnection;
         private long mSessionId;
+
+        public CustomTabObserver(CustomTabsConnection customTabsConnection, long sessionId) {
+            mCustomTabsConnection = customTabsConnection;
+            mSessionId = sessionId;
+        }
 
         @Override
         public void onLoadUrl(Tab tab, LoadUrlParams params, int loadType) {
             mCustomTabsConnection.registerLaunch(mSessionId, params.getUrl());
-        }
-
-        public LoadUrlTabObserver(CustomTabsConnection customTabsConnection, long sessionId) {
-            mCustomTabsConnection = customTabsConnection;
-            mSessionId = sessionId;
-        }
-    }
-
-    private static class CallbackTabObserver extends EmptyTabObserver {
-        private final CustomTabsConnection mCustomTabsConnection;
-        private final long mSessionId;
-
-        public CallbackTabObserver(
-                CustomTabsConnection customTabsConnection, long sessionId) {
-            mCustomTabsConnection = customTabsConnection;
-            mSessionId = sessionId;
         }
 
         @Override
@@ -90,8 +79,7 @@ public class CustomTab extends ChromeTab {
         }
         initialize(webContents, activity.getTabContentManager(), false);
         getView().requestFocus();
-        addObserver(new LoadUrlTabObserver(customTabsConnection, sessionId));
-        addObserver(new CallbackTabObserver(customTabsConnection, sessionId));
+        addObserver(new CustomTabObserver(customTabsConnection, sessionId));
     }
 
     @Override
