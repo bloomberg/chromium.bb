@@ -375,7 +375,8 @@ var cr = function() {
    */
   function webUIListenerCallback(event) {
     var listenerCallbacks = webUIListenerMap.get(event);
-    for (var callback of listenerCallbacks) {
+    for (var i = 0; i < listenerCallbacks.length; i++) {
+      var callback = listenerCallbacks[i];
       callback.apply(null, Array.prototype.slice.call(arguments, 1));
     }
   }

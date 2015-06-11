@@ -20,6 +20,8 @@ _CR_UI_JS = os.path.join(_RESOURCES_DIR, "cr", "ui.js")
 _POLYMER_EXTERNS = os.path.join(_SRC_DIR, "third_party", "polymer", "v1_0",
                                 "components-chromium", "polymer-externs",
                                 "polymer.externs.js")
+_CHROME_SEND_EXTERNS = os.path.join(_SRC_DIR, "third_party", "closure_compiler",
+                                    "externs", "chrome_send_externs.js")
 
 
 class CompilerTest(unittest.TestCase):
@@ -41,8 +43,9 @@ class CompilerTest(unittest.TestCase):
     FileCache._cache[file_path] = source_code
     out_file, out_map = self._createOutFiles()
 
+    externs = [_POLYMER_EXTERNS, _CHROME_SEND_EXTERNS]
     found_errors, stderr = self._checker.check(file_path,
-                                               externs=[_POLYMER_EXTERNS],
+                                               externs=externs,
                                                out_file=out_file,
                                                output_wrapper=output_wrapper)
     return found_errors, stderr, out_file, out_map
