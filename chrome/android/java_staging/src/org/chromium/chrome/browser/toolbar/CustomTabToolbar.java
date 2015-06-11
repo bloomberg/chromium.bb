@@ -94,6 +94,11 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar {
     }
 
     @Override
+    protected int getToolbarHeightWithoutShadowResId() {
+        return R.dimen.custom_tabs_control_container_height;
+    }
+
+    @Override
     public void initialize(ToolbarDataProvider toolbarDataProvider,
             ToolbarTabController tabController, AppMenuButtonHelper appMenuButtonHelper) {
         super.initialize(toolbarDataProvider, tabController, appMenuButtonHelper);

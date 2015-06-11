@@ -51,5 +51,4 @@
     <!-- Omnibox suggestion list -->
     <dimen name="omnibox_suggestion_list_padding_top">8dp</dimen>
     <dimen name="omnibox_suggestion_list_padding_bottom">8dp</dimen>
-
 </resources>

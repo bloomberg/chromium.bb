@@ -65,7 +65,7 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     public ToolbarLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
         mToolbarHeightWithoutShadow = getResources().getDimensionPixelOffset(
-                R.dimen.toolbar_height_no_shadow);
+                getToolbarHeightWithoutShadowResId());
     }
 
     @Override
@@ -137,6 +137,13 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
      */
     protected FrameLayout.LayoutParams getFrameLayoutParams(View view) {
         return ((FrameLayout.LayoutParams) view.getLayoutParams());
+    }
+
+    /**
+     * @return The resource id to be used while getting the toolbar height with no shadow.
+     */
+    protected int getToolbarHeightWithoutShadowResId() {
+        return R.dimen.toolbar_height_no_shadow;
     }
 
     @Override
