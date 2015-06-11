@@ -1301,8 +1301,7 @@ bool Browser::CanDragEnter(content::WebContents* source,
   return true;
 }
 
-content::SecurityStyle Browser::GetSecurityStyle(
-    const WebContents* web_contents) {
+content::SecurityStyle Browser::GetSecurityStyle(WebContents* web_contents) {
   return ConnectionSecurityHelper::GetSecurityStyleForWebContents(web_contents);
 }
 

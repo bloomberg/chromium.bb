@@ -463,7 +463,7 @@ class Browser : public TabStripModelObserver,
                     const content::DropData& data,
                     blink::WebDragOperationsMask operations_allowed) override;
   content::SecurityStyle GetSecurityStyle(
-      const content::WebContents* web_contents) override;
+      content::WebContents* web_contents) override;
 
   bool is_type_tabbed() const { return type_ == TYPE_TABBED; }
   bool is_type_popup() const { return type_ == TYPE_POPUP; }

@@ -488,7 +488,7 @@ class CONTENT_EXPORT WebContentsDelegate {
 
   // Can be overridden by a delegate to return the security style of the given
   // |web_contents|. Returns SECURITY_STYLE_UNKNOWN if not overriden.
-  virtual SecurityStyle GetSecurityStyle(const WebContents* web_contents);
+  virtual SecurityStyle GetSecurityStyle(WebContents* web_contents);
 
  protected:
   virtual ~WebContentsDelegate();

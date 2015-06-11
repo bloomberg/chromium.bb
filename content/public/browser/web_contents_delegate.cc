@@ -226,8 +226,7 @@ bool WebContentsDelegate::SaveFrame(const GURL& url, const Referrer& referrer) {
   return false;
 }
 
-SecurityStyle WebContentsDelegate::GetSecurityStyle(
-    const WebContents* web_contents) {
+SecurityStyle WebContentsDelegate::GetSecurityStyle(WebContents* web_contents) {
   return content::SECURITY_STYLE_UNKNOWN;
 }
 
