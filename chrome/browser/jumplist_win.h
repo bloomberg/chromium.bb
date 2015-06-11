@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/jumplist_updater_win.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
@@ -125,6 +126,10 @@ class JumpList : public TabRestoreServiceObserver,
   // Helper for RunUpdate() that determines its parameters.
   void PostRunUpdate();
 
+  // Called on a timer to invoke RunUpdateOnFileThread() after requests storms
+  // have subsided.
+  void DeferredRunUpdate();
+
   // Runnable method that updates the jumplist, once all the data
   // has been fetched.
   void RunUpdateOnFileThread(
@@ -161,6 +166,9 @@ class JumpList : public TabRestoreServiceObserver,
   // Items in the "Recently Closed" category of the application JumpList,
   // protected by the list_lock_.
   ShellLinkItemList recently_closed_pages_;
+
+  // Timer for requesting delayed updates of the jumplist.
+  base::OneShotTimer<JumpList> timer_;
 
   // A list of URLs we need to retrieve their favicons,
   // protected by the list_lock_.
