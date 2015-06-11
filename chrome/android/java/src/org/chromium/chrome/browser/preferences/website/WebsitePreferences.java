@@ -94,7 +94,10 @@ public class WebsitePreferences extends PreferenceFragment
     private void getInfoForOrigins() {
         if (mFilter.showGeolocationSites(mCategoryFilter)
                 && !LocationSettings.getInstance().isSystemLocationSettingEnabled()) {
-            return;  // No need to fetch any data if we're not going to show it.
+            // No need to fetch any data if we're not going to show it, but we do need to update
+            // the global toggle to reflect updates in Android settings (e.g. Location).
+            resetList();
+            return;
         }
 
         WebsitePermissionsFetcher fetcher = new WebsitePermissionsFetcher(new ResultsPopulator());
