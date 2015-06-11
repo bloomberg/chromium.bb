@@ -51,7 +51,8 @@ TEST_F('CvoxLiveRegionsUnitTest', 'InsertNonLiveRegion', function() {
 /**
  * Test inserting an 'alert' live region.
  */
-TEST_F('CvoxLiveRegionsUnitTest', 'InsertAlertLiveRegion', function() {
+// Flaky on Chromium OS: crbug.com/498881.
+TEST_F('CvoxLiveRegionsUnitTest', 'DISABLED_InsertAlertLiveRegion', function() {
   var region = document.createElement('div');
   region.innerHTML = '<div role="alert">Alpha</div>';
   document.body.appendChild(region);
@@ -93,7 +94,8 @@ TEST_F('CvoxLiveRegionsUnitTest', 'RevealAlertLiveRegion', function() {
 /**
  * Test inserting a 'polite' live region.
  */
-TEST_F('CvoxLiveRegionsUnitTest', 'InsertPoliteLiveRegion', function() {
+// Flaky on Chromium OS: crbug.com/498881.
+TEST_F('CvoxLiveRegionsUnitTest', 'DISABLED_InsertPoliteLiveRegion', function() {
   var region = document.createElement('div');
   region.innerHTML = '<div aria-live="polite">Beta</div>';
   document.body.appendChild(region);
@@ -160,7 +162,8 @@ TEST_F('CvoxLiveRegionsUnitTest', 'AddToLiveRegion', function() {
 /**
  * Test removing elements from live regions.
  */
-TEST_F('CvoxLiveRegionsUnitTest', 'RemoveFromLiveRegion', function() {
+// Flaky on Chromium OS: crbug.com/498881.
+TEST_F('CvoxLiveRegionsUnitTest', 'DISABLED_RemoveFromLiveRegion', function() {
   this.loadDoc(function() {/*!
     <div>
       <div id="buddylist2" aria-relevant="removals">
@@ -252,7 +255,8 @@ TEST_F('CvoxLiveRegionsUnitTest', 'FocusTriggeredAlertLiveRegion', function() {
 /**
  * Test focus followed by live region change, make sure both are spoken.
  */
-TEST_F('CvoxLiveRegionsUnitTest', 'FocusThenLiveRegion', function() {
+// Flaky on Chromium OS: crbug.com/498881.
+TEST_F('CvoxLiveRegionsUnitTest', 'DISABLED_FocusThenLiveRegion', function() {
   this.loadDoc(function() {/*!
     <button id="button_to_focus">Button To Focus</button>
     <div id="live" aria-live="polite"></div>
@@ -272,7 +276,8 @@ TEST_F('CvoxLiveRegionsUnitTest', 'FocusThenLiveRegion', function() {
 /**
  * Test live region change followed by focus, make sure both are spoken.
  */
-TEST_F('CvoxLiveRegionsUnitTest', 'LiveRegionThenFocus', function() {
+// Flaky on Chromium OS: crbug.com/498881.
+TEST_F('CvoxLiveRegionsUnitTest', 'DISABLED_LiveRegionThenFocus', function() {
   this.loadDoc(function() {/*!
     <button id="button_to_focus">Button To Focus</button>
     <div id="live" aria-live="polite"></div>
@@ -295,7 +300,8 @@ TEST_F('CvoxLiveRegionsUnitTest', 'LiveRegionThenFocus', function() {
  * Two elements inside a live region. These are all combined into
  * one utterance until this bug is fixed: http://crbug.com/415679
  */
-TEST_F('CvoxLiveRegionsUnitTest', 'TwoElementsInLiveRegion', function() {
+// Flaky on Chromium OS: crbug.com/498881.
+TEST_F('CvoxLiveRegionsUnitTest', 'DISABLED_TwoElementsInLiveRegion', function() {
   this.loadDoc(function() {/*!
     <div id="live" aria-live="polite">
       <div id="hidden" style="display:none">
