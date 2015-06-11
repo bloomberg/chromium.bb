@@ -6,8 +6,10 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_change_notifier_chromeos.h"
 #include "chromeos/network/network_event_log.h"
@@ -55,7 +57,7 @@ NetworkChangeNotifierChromeos::NetworkChangeNotifierChromeos()
       max_bandwidth_mbps_(
           NetworkChangeNotifier::GetMaxBandwidthForConnectionSubtype(
               SUBTYPE_NONE)),
-      message_loop_(base::MessageLoopProxy::current()),
+      task_runner_(base::ThreadTaskRunnerHandle::Get()),
       weak_ptr_factory_(this) {
   poll_callback_ = base::Bind(&NetworkChangeNotifierChromeos::PollForState,
                               weak_ptr_factory_.GetWeakPtr());
@@ -96,7 +98,7 @@ NetworkChangeNotifierChromeos::GetCurrentConnectionType() const {
   // |this|, to allow PollForState() to modify our cached state.
   // TODO(gauravsh): Figure out why we would have missed this notification.
   if (connection_type_ == CONNECTION_NONE)
-    message_loop_->PostTask(FROM_HERE, poll_callback_);
+    task_runner_->PostTask(FROM_HERE, poll_callback_);
   return connection_type_;
 }
 

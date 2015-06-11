@@ -10,14 +10,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/login/auth/auth_attempt_state_resolver.h"
 #include "chromeos/login/auth/user_context.h"
-
-namespace base {
-// TODO(skyostil): Migrate to SingleThreadTaskRunner (crbug.com/465354).
-class MessageLoopProxy;
-}
 
 namespace net {
 class URLRequestContextGetter;
@@ -61,7 +57,7 @@ class CHROMEOS_EXPORT OnlineAttemptHost : public AuthAttemptStateResolver {
   void ResolveOnUIThread(bool success);
 
  private:
-  scoped_refptr<base::MessageLoopProxy> message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   Delegate* delegate_;
   UserContext current_attempt_user_context_;
   scoped_ptr<OnlineAttempt> online_attempt_;

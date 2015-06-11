@@ -6,8 +6,10 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_property_changed_observer.h"
@@ -71,7 +73,7 @@ void FakeShillProfileClient::GetProperties(
     entry_paths->AppendString(it.key());
   }
 
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&PassDictionary, callback, base::Owned(properties.release())));
 }
@@ -92,7 +94,7 @@ void FakeShillProfileClient::GetEntry(
     return;
   }
 
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&PassDictionary, callback, base::Owned(entry->DeepCopy())));
 }
@@ -116,7 +118,7 @@ void FakeShillProfileClient::DeleteEntry(const dbus::ObjectPath& profile_path,
                          shill::kProfileProperty,
                          profile_path_value);
 
-  base::MessageLoop::current()->PostTask(FROM_HERE, callback);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
 }
 
 ShillProfileClient::TestInterface* FakeShillProfileClient::GetTestInterface() {

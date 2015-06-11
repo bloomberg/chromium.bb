@@ -5,7 +5,9 @@
 #include "chromeos/dbus/fake_amplifier_client.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 
 namespace chromeos {
 
@@ -37,20 +39,20 @@ void FakeAmplifierClient::RemoveObserver(Observer* observer) {
 }
 
 void FakeAmplifierClient::Initialize(const BoolDBusMethodCallback& callback) {
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&OnBoolDBusMethod, callback));
 }
 
 void FakeAmplifierClient::SetStandbyMode(
     bool standby,
     const VoidDBusMethodCallback& callback) {
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&OnVoidDBusMethod, callback));
 }
 
 void FakeAmplifierClient::SetVolume(double db_spl,
                                     const VoidDBusMethodCallback& callback) {
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&OnVoidDBusMethod, callback));
 }
 

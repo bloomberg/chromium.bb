@@ -6,8 +6,9 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "chromeos/dbus/cryptohome_client.h"
 
 namespace chromeos {
@@ -83,20 +84,20 @@ void FakeSessionManagerClient::NotifyLockScreenDismissed() {
 
 void FakeSessionManagerClient::RetrieveActiveSessions(
       const ActiveSessionsCallback& callback) {
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(callback, user_sessions_, true));
 }
 
 void FakeSessionManagerClient::RetrieveDevicePolicy(
     const RetrievePolicyCallback& callback) {
-  base::MessageLoop::current()->PostTask(FROM_HERE,
-                                         base::Bind(callback, device_policy_));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(callback, device_policy_));
 }
 
 void FakeSessionManagerClient::RetrievePolicyForUser(
     const std::string& username,
     const RetrievePolicyCallback& callback) {
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(callback, user_policies_[username]));
 }
 
@@ -108,7 +109,7 @@ std::string FakeSessionManagerClient::BlockingRetrievePolicyForUser(
 void FakeSessionManagerClient::RetrieveDeviceLocalAccountPolicy(
     const std::string& account_id,
     const RetrievePolicyCallback& callback) {
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(callback, device_local_account_policy_[account_id]));
 }
@@ -117,7 +118,8 @@ void FakeSessionManagerClient::StoreDevicePolicy(
     const std::string& policy_blob,
     const StorePolicyCallback& callback) {
   device_policy_ = policy_blob;
-  base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(callback, true));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                base::Bind(callback, true));
   FOR_EACH_OBSERVER(Observer, observers_, PropertyChangeComplete(true));
 }
 
@@ -126,7 +128,8 @@ void FakeSessionManagerClient::StorePolicyForUser(
     const std::string& policy_blob,
     const StorePolicyCallback& callback) {
   user_policies_[username] = policy_blob;
-  base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(callback, true));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                base::Bind(callback, true));
 }
 
 void FakeSessionManagerClient::StoreDeviceLocalAccountPolicy(
@@ -134,7 +137,8 @@ void FakeSessionManagerClient::StoreDeviceLocalAccountPolicy(
     const std::string& policy_blob,
     const StorePolicyCallback& callback) {
   device_local_account_policy_[account_id] = policy_blob;
-  base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(callback, true));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                base::Bind(callback, true));
 }
 
 void FakeSessionManagerClient::SetFlagsForUser(
@@ -144,7 +148,7 @@ void FakeSessionManagerClient::SetFlagsForUser(
 
 void FakeSessionManagerClient::GetServerBackedStateKeys(
     const StateKeysCallback& callback) {
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(callback, server_backed_state_keys_));
 }
 

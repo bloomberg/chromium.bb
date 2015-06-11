@@ -5,10 +5,12 @@
 #include "chromeos/dbus/leadership_daemon_manager_client.h"
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/observer_list.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_manager.h"
@@ -128,7 +130,7 @@ void LeadershipDaemonManagerClientImpl::JoinGroup(
   dbus::ObjectProxy* object_proxy = object_manager_->GetObjectProxy(
       dbus::ObjectPath(leaderd::kLeaderdManagerPath));
   if (!object_proxy) {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&LeadershipDaemonManagerClientImpl::OnObjectPathDBusMethod,
                    weak_ptr_factory_.GetWeakPtr(), callback, nullptr));
@@ -152,7 +154,7 @@ void LeadershipDaemonManagerClientImpl::LeaveGroup(
   dbus::ObjectProxy* object_proxy =
       object_manager_->GetObjectProxy(dbus::ObjectPath(object_path));
   if (!object_proxy) {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&LeadershipDaemonManagerClientImpl::OnVoidDBusMethod,
                    weak_ptr_factory_.GetWeakPtr(), callback, nullptr));
@@ -175,7 +177,7 @@ void LeadershipDaemonManagerClientImpl::SetScore(
   dbus::ObjectProxy* object_proxy =
       object_manager_->GetObjectProxy(dbus::ObjectPath(object_path));
   if (!object_proxy) {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&LeadershipDaemonManagerClientImpl::OnVoidDBusMethod,
                    weak_ptr_factory_.GetWeakPtr(), callback, nullptr));
@@ -198,7 +200,7 @@ void LeadershipDaemonManagerClientImpl::PokeLeader(
   dbus::ObjectProxy* object_proxy =
       object_manager_->GetObjectProxy(dbus::ObjectPath(object_path));
   if (!object_proxy) {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&LeadershipDaemonManagerClientImpl::OnVoidDBusMethod,
                    weak_ptr_factory_.GetWeakPtr(), callback, nullptr));
@@ -219,7 +221,7 @@ void LeadershipDaemonManagerClientImpl::Ping(
   dbus::ObjectProxy* object_proxy = object_manager_->GetObjectProxy(
       dbus::ObjectPath(leaderd::kLeaderdManagerPath));
   if (!object_proxy) {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&LeadershipDaemonManagerClientImpl::OnStringDBusMethod,
                    weak_ptr_factory_.GetWeakPtr(), callback, nullptr));

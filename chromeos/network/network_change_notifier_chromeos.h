@@ -12,7 +12,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/network/network_state_handler_observer.h"
@@ -105,7 +105,7 @@ class CHROMEOS_EXPORT NetworkChangeNotifierChromeos
   base::Closure poll_callback_;
 
   // For setting up network refresh polling callbacks.
-  scoped_refptr<base::MessageLoopProxy> message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   base::WeakPtrFactory<NetworkChangeNotifierChromeos> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkChangeNotifierChromeos);

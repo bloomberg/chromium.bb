@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/thread_task_runner_handle.h"
 
 namespace chromeos {
 
@@ -21,7 +22,7 @@ StubAuthenticator::StubAuthenticator(AuthStatusConsumer* consumer,
                                      const UserContext& expected_user_context)
     : Authenticator(consumer),
       expected_user_context_(expected_user_context),
-      message_loop_(base::MessageLoopProxy::current()) {
+      task_runner_(base::ThreadTaskRunnerHandle::Get()) {
 }
 
 void StubAuthenticator::CompleteLogin(content::BrowserContext* context,
@@ -39,13 +40,13 @@ void StubAuthenticator::AuthenticateToLogin(content::BrowserContext* context,
   // during non-online re-auth |user_context| does not have a gaia id.
   if (expected_user_context_.GetUserID() == user_context.GetUserID() &&
       *expected_user_context_.GetKey() == *user_context.GetKey()) {
-    message_loop_->PostTask(
-        FROM_HERE, base::Bind(&StubAuthenticator::OnAuthSuccess, this));
+    task_runner_->PostTask(FROM_HERE,
+                           base::Bind(&StubAuthenticator::OnAuthSuccess, this));
     return;
   }
   GoogleServiceAuthError error(
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
-  message_loop_->PostTask(
+  task_runner_->PostTask(
       FROM_HERE, base::Bind(&StubAuthenticator::OnAuthFailure, this,
                             AuthFailure::FromNetworkAuthFailure(error)));
 }

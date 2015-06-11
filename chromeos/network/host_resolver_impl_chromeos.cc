@@ -4,8 +4,10 @@
 
 #include "chromeos/network/host_resolver_impl_chromeos.h"
 
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/sys_info.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/network_handler.h"
@@ -30,16 +32,17 @@ class HostResolverImplChromeOS::NetworkObserver
  public:
   static void Create(
       const base::WeakPtr<HostResolverImplChromeOS>& resolver,
-      scoped_refptr<base::MessageLoopProxy> resolver_message_loop,
+      scoped_refptr<base::SingleThreadTaskRunner> resolver_task_runner,
       NetworkStateHandler* network_state_handler) {
-    new NetworkObserver(resolver, resolver_message_loop, network_state_handler);
+    new NetworkObserver(resolver, resolver_task_runner, network_state_handler);
   }
 
-  NetworkObserver(const base::WeakPtr<HostResolverImplChromeOS>& resolver,
-                  scoped_refptr<base::MessageLoopProxy> resolver_message_loop,
-                  NetworkStateHandler* network_state_handler)
+  NetworkObserver(
+      const base::WeakPtr<HostResolverImplChromeOS>& resolver,
+      scoped_refptr<base::SingleThreadTaskRunner> resolver_task_runner,
+      NetworkStateHandler* network_state_handler)
       : resolver_(resolver),
-        resolver_message_loop_(resolver_message_loop),
+        resolver_task_runner_(resolver_task_runner),
         network_state_handler_(network_state_handler),
         weak_ptr_factory_resolver_thread_(this) {
     network_state_handler_->AddObserver(this, FROM_HERE);
@@ -96,11 +99,10 @@ class HostResolverImplChromeOS::NetworkObserver
 
   void CallResolverSetIpAddress(const std::string& ipv4_address,
                                 const std::string& ipv6_address) {
-    resolver_message_loop_->PostTask(
-        FROM_HERE,
-        base::Bind(&NetworkObserver::SetIpAddressOnResolverThread,
-                   weak_ptr_factory_resolver_thread_.GetWeakPtr(),
-                   ipv4_address, ipv6_address));
+    resolver_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&NetworkObserver::SetIpAddressOnResolverThread,
+                              weak_ptr_factory_resolver_thread_.GetWeakPtr(),
+                              ipv4_address, ipv6_address));
   }
 
   void SetIpAddressOnResolverThread(const std::string& ipv4_address,
@@ -110,7 +112,7 @@ class HostResolverImplChromeOS::NetworkObserver
   }
 
   base::WeakPtr<HostResolverImplChromeOS> resolver_;
-  scoped_refptr<base::MessageLoopProxy> resolver_message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> resolver_task_runner_;
   NetworkStateHandler* network_state_handler_;
   base::WeakPtrFactory<NetworkObserver> weak_ptr_factory_resolver_thread_;
 
@@ -120,19 +122,17 @@ class HostResolverImplChromeOS::NetworkObserver
 // HostResolverImplChromeOS
 
 HostResolverImplChromeOS::HostResolverImplChromeOS(
-    scoped_refptr<base::MessageLoopProxy> network_handler_message_loop,
+    scoped_refptr<base::SingleThreadTaskRunner> network_handler_task_runner,
     NetworkStateHandler* network_state_handler,
     const Options& options,
     net::NetLog* net_log)
     : HostResolverImpl(options, net_log),
-      network_handler_message_loop_(network_handler_message_loop),
+      network_handler_task_runner_(network_handler_task_runner),
       weak_ptr_factory_(this) {
-  network_handler_message_loop->PostTask(
+  network_handler_task_runner->PostTask(
       FROM_HERE,
-      base::Bind(&NetworkObserver::Create,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::MessageLoopProxy::current(),
-                 network_state_handler));
+      base::Bind(&NetworkObserver::Create, weak_ptr_factory_.GetWeakPtr(),
+                 base::ThreadTaskRunnerHandle::Get(), network_state_handler));
 }
 
 HostResolverImplChromeOS::~HostResolverImplChromeOS() {
@@ -192,23 +192,18 @@ scoped_ptr<net::HostResolver> HostResolverImplChromeOS::CreateSystemResolver(
     const Options& options,
     net::NetLog* net_log) {
   return scoped_ptr<net::HostResolver>(new HostResolverImplChromeOS(
-      NetworkHandler::Get()->message_loop(),
-      NetworkHandler::Get()->network_state_handler(),
-      options,
-      net_log));
+      NetworkHandler::Get()->task_runner(),
+      NetworkHandler::Get()->network_state_handler(), options, net_log));
 }
 
 // static
 scoped_ptr<net::HostResolver>
 HostResolverImplChromeOS::CreateHostResolverForTest(
-    scoped_refptr<base::MessageLoopProxy> network_handler_message_loop,
+    scoped_refptr<base::SingleThreadTaskRunner> network_handler_task_runner,
     NetworkStateHandler* network_state_handler) {
   Options options;
   return scoped_ptr<net::HostResolver>(new HostResolverImplChromeOS(
-      network_handler_message_loop,
-      network_state_handler,
-      options,
-      NULL));
+      network_handler_task_runner, network_state_handler, options, NULL));
 }
 
 }  // namespace chromeos

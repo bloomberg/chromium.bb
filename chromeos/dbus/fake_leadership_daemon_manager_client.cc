@@ -4,7 +4,8 @@
 
 #include "chromeos/dbus/fake_leadership_daemon_manager_client.h"
 
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/thread_task_runner_handle.h"
 
 namespace chromeos {
 
@@ -42,14 +43,14 @@ void FakeLeadershipDaemonManagerClient::JoinGroup(
     const std::string& group,
     const base::DictionaryValue& options,
     const ObjectPathDBusMethodCallback& callback) {
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&ObjectPathDBBusMethodCallbackThunk, callback));
 }
 
 void FakeLeadershipDaemonManagerClient::LeaveGroup(
     const std::string& object_path,
     const VoidDBusMethodCallback& callback) {
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&VoidDBBusMethodCallbackThunk, callback));
 }
 
@@ -57,20 +58,20 @@ void FakeLeadershipDaemonManagerClient::SetScore(
     const std::string& object_path,
     int score,
     const VoidDBusMethodCallback& callback) {
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&VoidDBBusMethodCallbackThunk, callback));
 }
 
 void FakeLeadershipDaemonManagerClient::PokeLeader(
     const std::string& object_path,
     const VoidDBusMethodCallback& callback) {
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&VoidDBBusMethodCallbackThunk, callback));
 }
 
 void FakeLeadershipDaemonManagerClient::Ping(
     const StringDBusMethodCallback& callback) {
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&StringDBBusMethodCallbackThunk, callback));
 }
 

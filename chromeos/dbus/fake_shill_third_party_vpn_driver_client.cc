@@ -5,7 +5,9 @@
 #include "chromeos/dbus/fake_shill_third_party_vpn_driver_client.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chromeos/dbus/shill_third_party_vpn_observer.h"
 #include "dbus/object_proxy.h"
 
@@ -44,8 +46,8 @@ void FakeShillThirdPartyVpnDriverClient::SetParameters(
     const base::DictionaryValue& parameters,
     const ShillClientHelper::StringCallback& callback,
     const ShillClientHelper::ErrorCallback& error_callback) {
-  base::MessageLoop::current()->PostTask(FROM_HERE,
-                                         base::Bind(callback, std::string()));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(callback, std::string()));
 }
 
 void FakeShillThirdPartyVpnDriverClient::UpdateConnectionState(
@@ -53,7 +55,7 @@ void FakeShillThirdPartyVpnDriverClient::UpdateConnectionState(
     const uint32_t connection_state,
     const base::Closure& callback,
     const ShillClientHelper::ErrorCallback& error_callback) {
-  base::MessageLoop::current()->PostTask(FROM_HERE, callback);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
 }
 
 void FakeShillThirdPartyVpnDriverClient::SendPacket(
@@ -61,7 +63,7 @@ void FakeShillThirdPartyVpnDriverClient::SendPacket(
     const std::vector<char>& ip_packet,
     const base::Closure& callback,
     const ShillClientHelper::ErrorCallback& error_callback) {
-  base::MessageLoop::current()->PostTask(FROM_HERE, callback);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
 }
 
 void FakeShillThirdPartyVpnDriverClient::OnPacketReceived(

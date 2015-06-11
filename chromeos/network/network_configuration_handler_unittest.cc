@@ -7,7 +7,9 @@
 
 #include "base/bind.h"
 #include "base/json/json_writer.h"
+#include "base/location.h"
 #include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/values.h"
@@ -269,7 +271,7 @@ class NetworkConfigurationHandlerTest : public testing::Test {
                      const base::Closure& callback,
                      const ShillClientHelper::ErrorCallback& error_callback) {
     // Don't run the callback immediately to emulate actual behavior.
-    message_loop_.PostTask(FROM_HERE, callback);
+    message_loop_.task_runner()->PostTask(FROM_HERE, callback);
   }
 
   bool PendingProfileEntryDeleterForTest(const std::string& service_path) {

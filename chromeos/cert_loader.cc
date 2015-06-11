@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner_util.h"
 #include "base/threading/worker_pool.h"

@@ -5,8 +5,10 @@
 #include "chromeos/dbus/fake_nfc_device_client.h"
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_nfc_adapter_client.h"
@@ -116,11 +118,9 @@ void FakeNfcDeviceClient::BeginPairingSimulation(int visibility_delay,
 
   pairing_started_ = true;
 
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&FakeNfcDeviceClient::MakeDeviceVisible,
-                 base::Unretained(this),
-                 record_push_delay),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&FakeNfcDeviceClient::MakeDeviceVisible,
+                            base::Unretained(this), record_push_delay),
       base::TimeDelta::FromMilliseconds(visibility_delay));
 }
 
@@ -195,19 +195,17 @@ void FakeNfcDeviceClient::MakeDeviceVisible(int record_push_delay) {
   if (record_push_delay < 0) {
     // Don't simulate record push. Instead, skip directly to the timeout step.
     if (simulation_timeout_ >= 0) {
-      base::MessageLoop::current()->PostDelayedTask(
-          FROM_HERE,
-          base::Bind(&FakeNfcDeviceClient::HandleSimulationTimeout,
-                     base::Unretained(this)),
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+          FROM_HERE, base::Bind(&FakeNfcDeviceClient::HandleSimulationTimeout,
+                                base::Unretained(this)),
           base::TimeDelta::FromMilliseconds(simulation_timeout_));
     }
     return;
   }
 
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&FakeNfcDeviceClient::MakeRecordsVisible,
-                 base::Unretained(this)),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&FakeNfcDeviceClient::MakeRecordsVisible,
+                            base::Unretained(this)),
       base::TimeDelta::FromMilliseconds(record_push_delay));
 }
 
@@ -225,10 +223,9 @@ void FakeNfcDeviceClient::MakeRecordsVisible() {
   if (simulation_timeout_ < 0)
     return;
 
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&FakeNfcDeviceClient::HandleSimulationTimeout,
-                 base::Unretained(this)),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&FakeNfcDeviceClient::HandleSimulationTimeout,
+                            base::Unretained(this)),
       base::TimeDelta::FromMilliseconds(simulation_timeout_));
 }
 

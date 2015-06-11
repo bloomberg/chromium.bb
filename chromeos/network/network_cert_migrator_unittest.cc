@@ -47,8 +47,7 @@ class NetworkCertMigratorTest : public testing::Test {
     test_nsscertdb_.reset(new net::NSSCertDatabaseChromeOS(
         crypto::ScopedPK11Slot(PK11_ReferenceSlot(test_nssdb_.slot())),
         crypto::ScopedPK11Slot(PK11_ReferenceSlot(test_nssdb_.slot()))));
-    test_nsscertdb_->SetSlowTaskRunnerForTest(
-        message_loop_.message_loop_proxy());
+    test_nsscertdb_->SetSlowTaskRunnerForTest(message_loop_.task_runner());
 
     DBusThreadManager::Initialize();
     service_test_ =

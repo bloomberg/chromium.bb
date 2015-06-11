@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/login/auth/authenticator.h"
 #include "chromeos/login/auth/user_context.h"
@@ -48,7 +48,7 @@ class CHROMEOS_EXPORT StubAuthenticator : public Authenticator {
 
  private:
   UserContext expected_user_context_;
-  scoped_refptr<base::MessageLoopProxy> message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(StubAuthenticator);
 };

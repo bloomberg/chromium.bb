@@ -5,7 +5,9 @@
 #include "chromeos/dbus/gsm_sms_client.h"
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/values.h"
 #include "dbus/message.h"
 #include "dbus/mock_bus.h"
@@ -118,7 +120,8 @@ class GsmSMSClientTest : public testing::Test {
     EXPECT_EQ(expected_index_, index);
     EXPECT_FALSE(reader.HasMoreData());
 
-    message_loop_.PostTask(FROM_HERE, base::Bind(callback, response_));
+    message_loop_.task_runner()->PostTask(FROM_HERE,
+                                          base::Bind(callback, response_));
   }
 
   // Handles Get method call.
@@ -134,7 +137,8 @@ class GsmSMSClientTest : public testing::Test {
     EXPECT_EQ(expected_index_, index);
     EXPECT_FALSE(reader.HasMoreData());
 
-    message_loop_.PostTask(FROM_HERE, base::Bind(callback, response_));
+    message_loop_.task_runner()->PostTask(FROM_HERE,
+                                          base::Bind(callback, response_));
   }
 
   // Handles List method call.
@@ -147,7 +151,8 @@ class GsmSMSClientTest : public testing::Test {
     dbus::MessageReader reader(method_call);
     EXPECT_FALSE(reader.HasMoreData());
 
-    message_loop_.PostTask(FROM_HERE, base::Bind(callback, response_));
+    message_loop_.task_runner()->PostTask(FROM_HERE,
+                                          base::Bind(callback, response_));
   }
 
   // Checks the results of Get and List.
@@ -182,10 +187,9 @@ class GsmSMSClientTest : public testing::Test {
       const dbus::ObjectProxy::OnConnectedCallback& on_connected_callback) {
     sms_received_callback_ = signal_callback;
     const bool success = true;
-    message_loop_.PostTask(FROM_HERE, base::Bind(on_connected_callback,
-                                                 interface_name,
-                                                 signal_name,
-                                                 success));
+    message_loop_.task_runner()->PostTask(
+        FROM_HERE, base::Bind(on_connected_callback, interface_name,
+                              signal_name, success));
   }
 };
 

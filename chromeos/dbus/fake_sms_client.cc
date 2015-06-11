@@ -9,7 +9,8 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/fake_sms_client.h"
@@ -39,12 +40,10 @@ void FakeSMSClient::GetAll(const std::string& service_name,
   // Run callback asynchronously.
   if (callback.is_null())
     return;
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&FakeSMSClient::OnGetAll,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Owned(sms),
-                 callback));
+      base::Bind(&FakeSMSClient::OnGetAll, weak_ptr_factory_.GetWeakPtr(),
+                 base::Owned(sms), callback));
 }
 
 void FakeSMSClient::OnGetAll(base::DictionaryValue* sms,

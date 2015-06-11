@@ -4,6 +4,7 @@
 
 #include "chromeos/network/network_handler.h"
 
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/worker_pool.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/auto_connect_handler.h"
@@ -26,7 +27,7 @@ namespace chromeos {
 static NetworkHandler* g_network_handler = NULL;
 
 NetworkHandler::NetworkHandler()
-    : message_loop_(base::MessageLoopProxy::current()) {
+    : task_runner_(base::ThreadTaskRunnerHandle::Get()) {
   CHECK(DBusThreadManager::IsInitialized());
 
   network_state_handler_.reset(new NetworkStateHandler());

@@ -7,7 +7,8 @@
 #include "base/bind.h"
 #include "base/containers/hash_tables.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 
 using chromeos::DBusThreadManager;
@@ -252,10 +253,9 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller {
     CallbackElement() {}
     explicit CallbackElement(const AsyncMethodCaller::Callback& callback)
         : callback(callback),
-          proxy(base::MessageLoopProxy::current()) {
-    }
+          task_runner(base::ThreadTaskRunnerHandle::Get()) {}
     AsyncMethodCaller::Callback callback;
-    scoped_refptr<base::MessageLoopProxy> proxy;
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner;
   };
 
   struct DataCallbackElement {
@@ -263,10 +263,9 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller {
     explicit DataCallbackElement(
         const AsyncMethodCaller::DataCallback& callback)
         : data_callback(callback),
-          proxy(base::MessageLoopProxy::current()) {
-    }
+          task_runner(base::ThreadTaskRunnerHandle::Get()) {}
     AsyncMethodCaller::DataCallback data_callback;
-    scoped_refptr<base::MessageLoopProxy> proxy;
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner;
   };
 
   typedef base::hash_map<int, CallbackElement> CallbackMap;
@@ -287,10 +286,9 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller {
       LOG(ERROR) << "Received signal for unknown async_id " << async_id;
       return;
     }
-    it->second.proxy->PostTask(FROM_HERE,
-        base::Bind(it->second.callback,
-                   return_status,
-                   static_cast<MountError>(return_code)));
+    it->second.task_runner->PostTask(
+        FROM_HERE, base::Bind(it->second.callback, return_status,
+                              static_cast<MountError>(return_code)));
     callback_map_.erase(it);
   }
 
@@ -303,7 +301,8 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller {
       LOG(ERROR) << "Received signal for unknown async_id " << async_id;
       return;
     }
-    it->second.proxy->PostTask(FROM_HERE,
+    it->second.task_runner->PostTask(
+        FROM_HERE,
         base::Bind(it->second.data_callback, return_status, return_data));
     data_callback_map_.erase(it);
   }
@@ -311,7 +310,7 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller {
   void RegisterAsyncCallback(
       Callback callback, const char* error, int async_id) {
     if (async_id == chromeos::CryptohomeClient::kNotReadyAsyncId) {
-      base::MessageLoopProxy::current()->PostTask(
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::Bind(callback,
                                 false,  // return status
                                 cryptohome::MOUNT_ERROR_FATAL));
@@ -332,7 +331,7 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller {
   void RegisterAsyncDataCallback(
       DataCallback callback, const char* error, int async_id) {
     if (async_id == chromeos::CryptohomeClient::kNotReadyAsyncId) {
-      base::MessageLoopProxy::current()->PostTask(
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::Bind(callback,
                                 false,  // return status
                                 std::string()));

@@ -6,8 +6,9 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -204,7 +205,7 @@ void TDLSSuccessCallback(
   if (!DBusThreadManager::Get()->GetShillDeviceClient()->GetTestInterface())
     request_delay = base::TimeDelta::FromMilliseconds(request_delay_ms);
 
-  base::MessageLoopProxy::current()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::Bind(&CallPerformTDLSOperation, device_path, new_params,
                             callback, error_callback),
       request_delay);
@@ -232,10 +233,9 @@ void TDLSErrorCallback(
     if (!DBusThreadManager::Get()->GetShillDeviceClient()->GetTestInterface())
       request_delay = base::TimeDelta::FromMilliseconds(kReRequestDelayMs);
 
-    base::MessageLoopProxy::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&CallPerformTDLSOperation,
-                   device_path, retry_params, callback, error_callback),
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, base::Bind(&CallPerformTDLSOperation, device_path,
+                              retry_params, callback, error_callback),
         request_delay);
     return;
   }

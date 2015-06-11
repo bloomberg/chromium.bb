@@ -11,9 +11,10 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_util.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread.h"
 #include "chromeos/process_proxy/process_output_watcher.h"
@@ -107,7 +108,8 @@ class ProcessOutputWatcherTest : public testing::Test {
     failed_ = !expectations_.CheckExpectations(output, type);
     if (failed_ || expectations_.IsDone()) {
       ASSERT_FALSE(test_case_done_callback_.is_null());
-      message_loop_.PostTask(FROM_HERE, test_case_done_callback_);
+      message_loop_.task_runner()->PostTask(FROM_HERE,
+                                            test_case_done_callback_);
       test_case_done_callback_.Reset();
     }
   }
@@ -130,12 +132,10 @@ class ProcessOutputWatcherTest : public testing::Test {
     ASSERT_FALSE(HANDLE_EINTR(pipe(pt_pipe)));
     ASSERT_FALSE(HANDLE_EINTR(pipe(stop_pipe)));
 
-    output_watch_thread_->message_loop()->PostTask(
+    output_watch_thread_->task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&ProcessOutputWatcherTest::StartWatch,
-                   base::Unretained(this),
-                   pt_pipe[0],
-                   stop_pipe[0]));
+                   base::Unretained(this), pt_pipe[0], stop_pipe[0]));
 
     for (size_t i = 0; i < test_cases.size(); i++) {
       expectations_.SetTestCase(test_cases[i]);

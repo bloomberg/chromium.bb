@@ -8,7 +8,8 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_manager_client.h"
@@ -124,9 +125,9 @@ void AutoConnectHandler::ScanCompleted(const DeviceState* device) {
   }
   connect_to_best_services_after_scan_ = false;
   // Request ConnectToBestServices after processing any pending DBus calls.
-  base::MessageLoopProxy::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&AutoConnectHandler::CallShillConnectToBestServices,
-                              weak_ptr_factory_.GetWeakPtr()));
+                            weak_ptr_factory_.GetWeakPtr()));
 }
 
 void AutoConnectHandler::ResolveRequestCompleted(

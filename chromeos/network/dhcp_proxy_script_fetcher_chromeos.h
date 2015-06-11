@@ -7,10 +7,13 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "chromeos/chromeos_export.h"
 #include "net/proxy/dhcp_proxy_script_fetcher.h"
 #include "url/gurl.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}
 
 namespace net {
 class URLRequestContext;
@@ -43,7 +46,7 @@ class CHROMEOS_EXPORT DhcpProxyScriptFetcherChromeos
 
   net::URLRequestContext* url_request_context_;  // Weak ptr
   scoped_ptr<net::ProxyScriptFetcher> proxy_script_fetcher_;
-  scoped_refptr<base::MessageLoopProxy> network_handler_message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> network_handler_task_runner_;
 
   GURL pac_url_;
 

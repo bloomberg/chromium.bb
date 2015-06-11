@@ -6,7 +6,9 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 
@@ -63,7 +65,7 @@ void TpmPasswordFetcher::OnTpmGetPassword(DBusMethodCallStatus call_status,
 }
 
 void TpmPasswordFetcher::RescheduleFetch() {
-  base::MessageLoop::current()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&TpmPasswordFetcher::Fetch, weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(kTpmCheckIntervalMs));

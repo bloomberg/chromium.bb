@@ -11,7 +11,7 @@
 #include "net/dns/host_resolver_impl.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace chromeos {
@@ -37,7 +37,7 @@ class CHROMEOS_EXPORT HostResolverImplChromeOS : public net::HostResolverImpl {
 
   // Creates a host resolver instance for testing.
   static scoped_ptr<net::HostResolver> CreateHostResolverForTest(
-      scoped_refptr<base::MessageLoopProxy> network_handler_message_loop,
+      scoped_refptr<base::SingleThreadTaskRunner> network_handler_task_runner,
       NetworkStateHandler* network_state_handler);
 
   ~HostResolverImplChromeOS() override;
@@ -55,7 +55,7 @@ class CHROMEOS_EXPORT HostResolverImplChromeOS : public net::HostResolverImpl {
   class NetworkObserver;
 
   HostResolverImplChromeOS(
-      scoped_refptr<base::MessageLoopProxy> network_handler_message_loop,
+      scoped_refptr<base::SingleThreadTaskRunner> network_handler_task_runner,
       NetworkStateHandler* network_state_handler,
       const Options& options,
       net::NetLog* net_log);
@@ -69,7 +69,7 @@ class CHROMEOS_EXPORT HostResolverImplChromeOS : public net::HostResolverImpl {
   std::string ipv4_address_;
   std::string ipv6_address_;
   base::ThreadChecker thread_checker_;
-  scoped_refptr<base::MessageLoopProxy> network_handler_message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> network_handler_task_runner_;
   base::WeakPtrFactory<HostResolverImplChromeOS> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HostResolverImplChromeOS);

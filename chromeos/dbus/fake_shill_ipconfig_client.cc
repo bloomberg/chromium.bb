@@ -5,8 +5,10 @@
 #include "chromeos/dbus/fake_shill_ipconfig_client.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chromeos/dbus/shill_property_changed_observer.h"
 #include "dbus/bus.h"
@@ -48,11 +50,9 @@ void FakeShillIPConfigClient::GetProperties(
   if (!ipconfigs_.GetDictionaryWithoutPathExpansion(ipconfig_path.value(),
                                                     &dict))
     return;
-  base::MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(&FakeShillIPConfigClient::PassProperties,
-                              weak_ptr_factory_.GetWeakPtr(),
-                              dict,
-                              callback));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&FakeShillIPConfigClient::PassProperties,
+                            weak_ptr_factory_.GetWeakPtr(), dict, callback));
 }
 
 void FakeShillIPConfigClient::SetProperty(
@@ -72,7 +72,7 @@ void FakeShillIPConfigClient::SetProperty(
     ipconfigs_.SetWithoutPathExpansion(ipconfig_path.value(),
                                        dvalue);
   }
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS));
 }
 
@@ -80,13 +80,13 @@ void FakeShillIPConfigClient::ClearProperty(
     const dbus::ObjectPath& ipconfig_path,
     const std::string& name,
     const VoidDBusMethodCallback& callback) {
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS));
 }
 
 void FakeShillIPConfigClient::Remove(const dbus::ObjectPath& ipconfig_path,
                                      const VoidDBusMethodCallback& callback) {
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS));
 }
 

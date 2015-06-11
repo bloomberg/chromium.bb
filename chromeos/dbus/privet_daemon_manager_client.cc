@@ -5,10 +5,12 @@
 #include "chromeos/dbus/privet_daemon_manager_client.h"
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/observer_list.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_manager.h"
@@ -103,7 +105,7 @@ void PrivetDaemonManagerClientImpl::SetDescription(
   dbus::ObjectProxy* object_proxy =
       object_manager_->GetObjectProxy(dbus::ObjectPath(kPrivetdManagerPath));
   if (!object_proxy) {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&PrivetDaemonManagerClientImpl::OnVoidDBusMethod,
                    weak_ptr_factory_.GetWeakPtr(), callback, nullptr));

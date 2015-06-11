@@ -6,6 +6,8 @@
 
 #include "base/bind.h"
 #include "base/json/json_writer.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/values.h"
 #include "chromeos/network/shill_property_util.h"
 #include "dbus/message.h"
@@ -167,7 +169,7 @@ void ShillClientUnittestBase::SetUp() {
   // Set an expectation so mock_bus's GetDBusTaskRunner will return the current
   // task runner.
   EXPECT_CALL(*mock_bus_.get(), GetDBusTaskRunner())
-      .WillRepeatedly(Return(message_loop_.message_loop_proxy().get()));
+      .WillRepeatedly(Return(message_loop_.task_runner().get()));
 
   // ShutdownAndBlock() will be called in TearDown().
   EXPECT_CALL(*mock_bus_.get(), ShutdownAndBlock()).WillOnce(Return());
@@ -415,11 +417,9 @@ void ShillClientUnittestBase::OnConnectToPlatformMessage(
     const dbus::ObjectProxy::OnConnectedCallback& on_connected_callback) {
   platform_message_handler_ = signal_callback;
   const bool success = true;
-  message_loop_.PostTask(FROM_HERE,
-                         base::Bind(on_connected_callback,
-                                    interface_name,
-                                    signal_name,
-                                    success));
+  message_loop_.task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(on_connected_callback, interface_name, signal_name, success));
 }
 
 void ShillClientUnittestBase::OnConnectToPacketReceived(
@@ -429,11 +429,9 @@ void ShillClientUnittestBase::OnConnectToPacketReceived(
     const dbus::ObjectProxy::OnConnectedCallback& on_connected_callback) {
   packet_receieved__handler_ = signal_callback;
   const bool success = true;
-  message_loop_.PostTask(FROM_HERE,
-                         base::Bind(on_connected_callback,
-                                    interface_name,
-                                    signal_name,
-                                    success));
+  message_loop_.task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(on_connected_callback, interface_name, signal_name, success));
 }
 
 void ShillClientUnittestBase::OnConnectToPropertyChanged(
@@ -443,11 +441,9 @@ void ShillClientUnittestBase::OnConnectToPropertyChanged(
     const dbus::ObjectProxy::OnConnectedCallback& on_connected_callback) {
   property_changed_handler_ = signal_callback;
   const bool success = true;
-  message_loop_.PostTask(FROM_HERE,
-                         base::Bind(on_connected_callback,
-                                    interface_name,
-                                    signal_name,
-                                    success));
+  message_loop_.task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(on_connected_callback, interface_name, signal_name, success));
 }
 
 void ShillClientUnittestBase::OnCallMethod(
@@ -458,8 +454,8 @@ void ShillClientUnittestBase::OnCallMethod(
   EXPECT_EQ(expected_method_name_, method_call->GetMember());
   dbus::MessageReader reader(method_call);
   argument_checker_.Run(&reader);
-  message_loop_.PostTask(FROM_HERE,
-                         base::Bind(response_callback, response_));
+  message_loop_.task_runner()->PostTask(
+      FROM_HERE, base::Bind(response_callback, response_));
 }
 
 void ShillClientUnittestBase::OnCallMethodWithErrorCallback(

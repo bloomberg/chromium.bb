@@ -6,10 +6,12 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/observer_list.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_manager.h"
@@ -149,7 +151,7 @@ void PeerDaemonManagerClientImpl::StartMonitoring(
   dbus::ObjectProxy* object_proxy = object_manager_->GetObjectProxy(
       dbus::ObjectPath(peerd::kPeerdManagerPath));
   if (!object_proxy) {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&PeerDaemonManagerClientImpl::OnStringDBusMethod,
                    weak_ptr_factory_.GetWeakPtr(), callback, nullptr));
@@ -173,7 +175,7 @@ void PeerDaemonManagerClientImpl::StopMonitoring(
   dbus::ObjectProxy* object_proxy = object_manager_->GetObjectProxy(
       dbus::ObjectPath(peerd::kPeerdManagerPath));
   if (!object_proxy) {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&PeerDaemonManagerClientImpl::OnVoidDBusMethod,
                    weak_ptr_factory_.GetWeakPtr(), callback, nullptr));
@@ -198,7 +200,7 @@ void PeerDaemonManagerClientImpl::ExposeService(
   dbus::ObjectProxy* object_proxy = object_manager_->GetObjectProxy(
       dbus::ObjectPath(peerd::kPeerdManagerPath));
   if (!object_proxy) {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&PeerDaemonManagerClientImpl::OnStringDBusMethod,
                    weak_ptr_factory_.GetWeakPtr(), callback, nullptr));
@@ -236,7 +238,7 @@ void PeerDaemonManagerClientImpl::RemoveExposedService(
   dbus::ObjectProxy* object_proxy = object_manager_->GetObjectProxy(
       dbus::ObjectPath(peerd::kPeerdManagerPath));
   if (!object_proxy) {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&PeerDaemonManagerClientImpl::OnVoidDBusMethod,
                    weak_ptr_factory_.GetWeakPtr(), callback, nullptr));
@@ -257,7 +259,7 @@ void PeerDaemonManagerClientImpl::Ping(
   dbus::ObjectProxy* object_proxy = object_manager_->GetObjectProxy(
       dbus::ObjectPath(peerd::kPeerdManagerPath));
   if (!object_proxy) {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&PeerDaemonManagerClientImpl::OnStringDBusMethod,
                    weak_ptr_factory_.GetWeakPtr(), callback, nullptr));

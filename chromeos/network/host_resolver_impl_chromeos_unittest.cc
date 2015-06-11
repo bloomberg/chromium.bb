@@ -4,10 +4,12 @@
 
 #include "chromeos/network/host_resolver_impl_chromeos.h"
 
+#include "base/location.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_device_client.h"
 #include "chromeos/dbus/shill_ipconfig_client.h"
@@ -75,11 +77,9 @@ class HostResolverImplChromeOSTest : public testing::Test {
  protected:
   // Run from main (UI) message loop, calls Resolve on IO message loop.
   int CallResolve(net::HostResolver::RequestInfo& info) {
-    io_message_loop_.PostTask(
-        FROM_HERE,
-        base::Bind(&HostResolverImplChromeOSTest::Resolve,
-                   base::Unretained(this),
-                   info));
+    io_message_loop_.task_runner()->PostTask(
+        FROM_HERE, base::Bind(&HostResolverImplChromeOSTest::Resolve,
+                              base::Unretained(this), info));
     io_message_loop_.RunUntilIdle();
     return result_;
   }
@@ -93,8 +93,7 @@ class HostResolverImplChromeOSTest : public testing::Test {
     net::HostResolver::Options options;
     host_resolver_ =
         chromeos::HostResolverImplChromeOS::CreateHostResolverForTest(
-            base::MessageLoopProxy::current(),
-            network_state_handler_.get());
+            base::ThreadTaskRunnerHandle::Get(), network_state_handler_.get());
   }
 
   // Run from IO message loop.

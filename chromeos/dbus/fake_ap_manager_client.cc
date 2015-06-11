@@ -4,7 +4,8 @@
 
 #include "chromeos/dbus/fake_ap_manager_client.h"
 
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/thread_task_runner_handle.h"
 
 namespace chromeos {
 
@@ -36,26 +37,26 @@ void FakeApManagerClient::RemoveObserver(Observer* observer) {
 
 void FakeApManagerClient::CreateService(
     const ObjectPathDBusMethodCallback& callback) {
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&ObjectPathDBBusMethodCallbackThunk, callback));
 }
 
 void FakeApManagerClient::RemoveService(
     const dbus::ObjectPath& object_path,
     const VoidDBusMethodCallback& callback) {
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&VoidDBBusMethodCallbackThunk, callback));
 }
 
 void FakeApManagerClient::StartService(const dbus::ObjectPath& object_path,
                                        const VoidDBusMethodCallback& callback) {
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&VoidDBBusMethodCallbackThunk, callback));
 }
 
 void FakeApManagerClient::StopService(const dbus::ObjectPath& object_path,
                                       const VoidDBusMethodCallback& callback) {
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&VoidDBBusMethodCallbackThunk, callback));
 }
 

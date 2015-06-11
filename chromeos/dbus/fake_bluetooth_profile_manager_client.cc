@@ -4,9 +4,10 @@
 
 #include "chromeos/dbus/fake_bluetooth_profile_manager_client.h"
 
-
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chromeos/dbus/fake_bluetooth_profile_service_provider.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -40,7 +41,7 @@ void FakeBluetoothProfileManagerClient::RegisterProfile(
   VLOG(1) << "RegisterProfile: " << profile_path.value() << ": " << uuid;
 
   if (uuid == kUnregisterableUuid) {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(error_callback,
                               bluetooth_profile_manager::kErrorInvalidArguments,
                               "Can't register this UUID"));
@@ -60,7 +61,7 @@ void FakeBluetoothProfileManagerClient::RegisterProfile(
                          "Profile already registered");
     } else {
       profile_map_[uuid] = profile_path;
-      base::MessageLoop::current()->PostTask(FROM_HERE, callback);
+      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
     }
   }
 }
@@ -84,7 +85,7 @@ void FakeBluetoothProfileManagerClient::UnregisterProfile(
       }
     }
 
-    base::MessageLoop::current()->PostTask(FROM_HERE, callback);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
   }
 }
 

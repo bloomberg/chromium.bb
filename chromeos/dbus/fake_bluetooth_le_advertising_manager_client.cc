@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_proxy.h"
@@ -56,7 +58,7 @@ void FakeBluetoothLEAdvertisingManagerClient::RegisterAdvertisement(
                        "Maximum advertisements reached");
   } else {
     currently_registered_ = advertisement_object_path;
-    base::MessageLoop::current()->PostTask(FROM_HERE, callback);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
   }
 }
 
@@ -82,7 +84,7 @@ void FakeBluetoothLEAdvertisingManagerClient::UnregisterAdvertisement(
                        "Does not exist");
   } else {
     currently_registered_ = dbus::ObjectPath("");
-    base::MessageLoop::current()->PostTask(FROM_HERE, callback);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
   }
 }
 

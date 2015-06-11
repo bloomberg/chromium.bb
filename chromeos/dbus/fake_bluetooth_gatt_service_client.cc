@@ -5,7 +5,9 @@
 #include "chromeos/dbus/fake_bluetooth_gatt_service_client.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_bluetooth_gatt_characteristic_client.h"
@@ -109,13 +111,12 @@ void FakeBluetoothGattServiceClient::ExposeHeartRateService(
 
   NotifyServiceAdded(dbus::ObjectPath(heart_rate_service_path_));
 
-  base::MessageLoop::current()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::Bind(
           &FakeBluetoothGattServiceClient::ExposeHeartRateCharacteristics,
           weak_ptr_factory_.GetWeakPtr()),
-          base::TimeDelta::FromMilliseconds(
-              kExposeCharacteristicsDelayIntervalMs));
+      base::TimeDelta::FromMilliseconds(kExposeCharacteristicsDelayIntervalMs));
 }
 
 void FakeBluetoothGattServiceClient::HideHeartRateService() {

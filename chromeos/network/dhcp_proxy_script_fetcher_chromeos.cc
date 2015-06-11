@@ -4,6 +4,7 @@
 
 #include "chromeos/network/dhcp_proxy_script_fetcher_chromeos.h"
 
+#include "base/location.h"
 #include "base/task_runner_util.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_handler.h"
@@ -38,7 +39,7 @@ DhcpProxyScriptFetcherChromeos::DhcpProxyScriptFetcherChromeos(
   proxy_script_fetcher_.reset(
       new net::ProxyScriptFetcherImpl(url_request_context_));
   if (NetworkHandler::IsInitialized())
-    network_handler_message_loop_ = NetworkHandler::Get()->message_loop();
+    network_handler_task_runner_ = NetworkHandler::Get()->task_runner();
 }
 
 DhcpProxyScriptFetcherChromeos::~DhcpProxyScriptFetcherChromeos() {
@@ -47,12 +48,11 @@ DhcpProxyScriptFetcherChromeos::~DhcpProxyScriptFetcherChromeos() {
 int DhcpProxyScriptFetcherChromeos::Fetch(
     base::string16* utf16_text,
     const net::CompletionCallback& callback) {
-  if (!network_handler_message_loop_.get())
+  if (!network_handler_task_runner_.get())
     return net::ERR_PAC_NOT_IN_DHCP;
   CHECK(!callback.is_null());
   base::PostTaskAndReplyWithResult(
-      network_handler_message_loop_.get(),
-      FROM_HERE,
+      network_handler_task_runner_.get(), FROM_HERE,
       base::Bind(&GetPacUrlFromDefaultNetwork),
       base::Bind(&DhcpProxyScriptFetcherChromeos::ContinueFetch,
                  weak_ptr_factory_.GetWeakPtr(), utf16_text, callback));

@@ -10,7 +10,9 @@
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/mock_shill_manager_client.h"
@@ -133,10 +135,9 @@ class ShillProfileTestClient {
     const std::string& userhash = profile_to_user_[profile_path.value()];
     result->SetStringWithoutPathExpansion(shill::kUserHashProperty, userhash);
 
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(base::Bind(&DereferenceAndCall, callback),
-                   base::Owned(result.release())));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(base::Bind(&DereferenceAndCall, callback),
+                              base::Owned(result.release())));
   }
 
   void GetEntry(const dbus::ObjectPath& profile_path,
@@ -151,10 +152,9 @@ class ShillProfileTestClient {
     base::DictionaryValue* entry = NULL;
     entries->GetDictionaryWithoutPathExpansion(entry_path, &entry);
     ASSERT_TRUE(entry);
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(base::Bind(&DereferenceAndCall, callback),
-                   base::Owned(entry->DeepCopy())));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(base::Bind(&DereferenceAndCall, callback),
+                              base::Owned(entry->DeepCopy())));
   }
 
  protected:
@@ -172,11 +172,9 @@ class ShillServiceTestClient {
 
   void GetProperties(const dbus::ObjectPath& service_path,
                      const DictionaryValueCallback& callback) {
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(callback,
-                   DBUS_METHOD_CALL_SUCCESS,
-                   base::ConstRef(service_properties_)));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS,
+                              base::ConstRef(service_properties_)));
   }
 
  protected:
@@ -957,11 +955,10 @@ class ManagedNetworkConfigurationHandlerShutdownTest
       const dbus::ObjectPath& profile_path,
       const ShillClientHelper::DictionaryValueCallbackWithoutStatus& callback,
       const ShillClientHelper::ErrorCallback& error_callback) {
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(ManagedNetworkConfigurationHandlerShutdownTest::
-                       CallbackWithEmptyDictionary,
-                   callback));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(ManagedNetworkConfigurationHandlerShutdownTest::
+                                  CallbackWithEmptyDictionary,
+                              callback));
   }
 
   static void CallbackWithEmptyDictionary(

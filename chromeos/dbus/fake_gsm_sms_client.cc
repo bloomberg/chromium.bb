@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chromeos/dbus/fake_gsm_sms_client.h"
 
 namespace chromeos {
@@ -78,10 +80,9 @@ void FakeGsmSMSClient::RequestUpdate(const std::string& service_name,
   test_index_ = 0;
   // Call PushTestMessageChain asynchronously so that the handler_ callback
   // does not get called from the update request.
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&FakeGsmSMSClient::PushTestMessageChain,
-                 weak_ptr_factory_.GetWeakPtr()));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&FakeGsmSMSClient::PushTestMessageChain,
+                            weak_ptr_factory_.GetWeakPtr()));
 }
 
 void FakeGsmSMSClient::PushTestMessageChain() {
@@ -91,10 +92,9 @@ void FakeGsmSMSClient::PushTestMessageChain() {
 
 void FakeGsmSMSClient::PushTestMessageDelayed() {
   const int kSmsMessageDelaySeconds = 5;
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&FakeGsmSMSClient::PushTestMessageChain,
-                 weak_ptr_factory_.GetWeakPtr()),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&FakeGsmSMSClient::PushTestMessageChain,
+                            weak_ptr_factory_.GetWeakPtr()),
       base::TimeDelta::FromSeconds(kSmsMessageDelaySeconds));
 }
 

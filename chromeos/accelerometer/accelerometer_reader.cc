@@ -10,12 +10,13 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/memory/singleton.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner.h"
 #include "base/task_runner_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/sequenced_worker_pool.h"
 
 namespace chromeos {
@@ -265,10 +266,9 @@ void AccelerometerReader::OnDataRead(
   }
 
   // Trigger another read after the current sampling delay.
-  base::MessageLoop::current()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&AccelerometerReader::TriggerRead,
-                 weak_factory_.GetWeakPtr()),
+      base::Bind(&AccelerometerReader::TriggerRead, weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(kDelayBetweenReadsMs));
 }
 

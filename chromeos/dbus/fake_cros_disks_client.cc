@@ -6,9 +6,11 @@
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/task_runner_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/worker_pool.h"
 
 namespace chromeos {
@@ -48,15 +50,14 @@ void DidMount(const CrosDisksClient::MountCompletedHandler&
               const base::FilePath& mounted_path,
               MountError mount_error) {
   // Tell the caller of Mount() that the mount request was accepted.
-  base::MessageLoopProxy::current()->PostTask(FROM_HERE, callback);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
 
   // Tell the caller of Mount() that the mount completed.
   if (!mount_completed_handler.is_null()) {
-    base::MessageLoopProxy::current()->PostTask(
-        FROM_HERE,
-        base::Bind(mount_completed_handler,
-                   MountEntry(mount_error, source_path, type,
-                              mounted_path.AsUTF8Unsafe())));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(mount_completed_handler,
+                              MountEntry(mount_error, source_path, type,
+                                         mounted_path.AsUTF8Unsafe())));
   }
 }
 
@@ -121,7 +122,7 @@ void FakeCrosDisksClient::Unmount(const std::string& device_path,
   unmount_call_count_++;
   last_unmount_device_path_ = device_path;
   last_unmount_options_ = options;
-  base::MessageLoopProxy::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, unmount_success_ ? callback : error_callback);
   if (!unmount_listener_.is_null())
     unmount_listener_.Run();
@@ -148,9 +149,9 @@ void FakeCrosDisksClient::Format(const std::string& device_path,
   last_format_device_path_ = device_path;
   last_format_filesystem_ = filesystem;
   if (format_success_) {
-    base::MessageLoopProxy::current()->PostTask(FROM_HERE, callback);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
   } else {
-    base::MessageLoopProxy::current()->PostTask(FROM_HERE, error_callback);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, error_callback);
   }
 }
 

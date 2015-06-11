@@ -5,19 +5,21 @@
 #include "chromeos/dbus/fake_bluetooth_device_client.h"
 
 #include <fcntl.h>
-#include <unistd.h>
-#include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include <algorithm>
 #include <string>
 #include <utility>
 
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/worker_pool.h"
 #include "base/time/time.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -517,7 +519,7 @@ void FakeBluetoothDeviceClient::BeginDiscoverySimulation(
 
   discovery_simulation_step_ = 1;
 
-  base::MessageLoop::current()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&FakeBluetoothDeviceClient::DiscoverySimulationTimer,
                  base::Unretained(this)),
@@ -536,7 +538,7 @@ void FakeBluetoothDeviceClient::BeginIncomingPairingSimulation(
 
   incoming_pairing_simulation_step_ = 1;
 
-  base::MessageLoop::current()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&FakeBluetoothDeviceClient::IncomingPairingSimulationTimer,
                  base::Unretained(this)),
@@ -777,7 +779,7 @@ void FakeBluetoothDeviceClient::DiscoverySimulationTimer() {
   }
 
   ++discovery_simulation_step_;
-  base::MessageLoop::current()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&FakeBluetoothDeviceClient::DiscoverySimulationTimer,
                  base::Unretained(this)),
@@ -838,7 +840,7 @@ void FakeBluetoothDeviceClient::IncomingPairingSimulationTimer() {
   }
 
   ++incoming_pairing_simulation_step_;
-  base::MessageLoop::current()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&FakeBluetoothDeviceClient::IncomingPairingSimulationTimer,
                  base::Unretained(this)),
@@ -865,11 +867,11 @@ void FakeBluetoothDeviceClient::SimulatePairing(
       object_path == dbus::ObjectPath(kLowEnergyPath)) {
     // No need to call anything on the pairing delegate, just wait 3 times
     // the interval before acting as if the other end accepted it.
-    base::MessageLoop::current()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&FakeBluetoothDeviceClient::CompleteSimulatedPairing,
-                   base::Unretained(this),
-                   object_path, callback, error_callback),
+                   base::Unretained(this), object_path, callback,
+                   error_callback),
         base::TimeDelta::FromMilliseconds(3 * simulation_interval_ms_));
 
   } else if (object_path == dbus::ObjectPath(kDisplayPinCodePath)) {
@@ -877,20 +879,19 @@ void FakeBluetoothDeviceClient::SimulatePairing(
     // if the other end accepted it.
     agent_service_provider->DisplayPinCode(object_path, "123456");
 
-    base::MessageLoop::current()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&FakeBluetoothDeviceClient::CompleteSimulatedPairing,
-                   base::Unretained(this),
-                   object_path, callback, error_callback),
+                   base::Unretained(this), object_path, callback,
+                   error_callback),
         base::TimeDelta::FromMilliseconds(7 * simulation_interval_ms_));
 
   } else if (object_path == dbus::ObjectPath(kVanishingDevicePath)) {
     // The vanishing device simulates being too far away, and thus times out.
-    base::MessageLoop::current()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&FakeBluetoothDeviceClient::TimeoutSimulatedPairing,
-                   base::Unretained(this),
-                   object_path, error_callback),
+                   base::Unretained(this), object_path, error_callback),
         base::TimeDelta::FromMilliseconds(4 * simulation_interval_ms_));
 
   } else if (object_path == dbus::ObjectPath(kDisplayPasskeyPath)) {
@@ -898,11 +899,10 @@ void FakeBluetoothDeviceClient::SimulatePairing(
     // for it.
     agent_service_provider->DisplayPasskey(object_path, 123456, 0);
 
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&FakeBluetoothDeviceClient::SimulateKeypress,
-                   base::Unretained(this),
-                   1, object_path, callback, error_callback),
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, base::Bind(&FakeBluetoothDeviceClient::SimulateKeypress,
+                              base::Unretained(this), 1, object_path, callback,
+                              error_callback),
         base::TimeDelta::FromMilliseconds(simulation_interval_ms_));
 
   } else if (object_path == dbus::ObjectPath(kRequestPinCodePath)) {
@@ -937,11 +937,10 @@ void FakeBluetoothDeviceClient::SimulatePairing(
 
   } else if (object_path == dbus::ObjectPath(kUnpairableDevicePath)) {
     // Fails the pairing with an org.bluez.Error.Failed error.
-    base::MessageLoop::current()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&FakeBluetoothDeviceClient::FailSimulatedPairing,
-                   base::Unretained(this),
-                   object_path, error_callback),
+                   base::Unretained(this), object_path, error_callback),
         base::TimeDelta::FromMilliseconds(simulation_interval_ms_));
 
   } else if (object_path == dbus::ObjectPath(kJustWorksPath)) {
@@ -957,13 +956,12 @@ void FakeBluetoothDeviceClient::SimulatePairing(
     } else {
       // No need to call anything on the pairing delegate, just wait 3 times
       // the interval before acting as if the other end accepted it.
-      base::MessageLoop::current()->PostDelayedTask(
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE,
           base::Bind(&FakeBluetoothDeviceClient::CompleteSimulatedPairing,
-                     base::Unretained(this),
-                     object_path, callback, error_callback),
+                     base::Unretained(this), object_path, callback,
+                     error_callback),
           base::TimeDelta::FromMilliseconds(3 * simulation_interval_ms_));
-
     }
 
   } else {
@@ -1070,29 +1068,26 @@ void FakeBluetoothDeviceClient::PinCodeCallback(
   VLOG(1) << "PinCodeCallback: " << object_path.value();
 
   if (status == BluetoothAgentServiceProvider::Delegate::SUCCESS) {
-    base::MessageLoop::current()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&FakeBluetoothDeviceClient::CompleteSimulatedPairing,
-                   base::Unretained(this),
-                   object_path, callback, error_callback),
+                   base::Unretained(this), object_path, callback,
+                   error_callback),
         base::TimeDelta::FromMilliseconds(3 * simulation_interval_ms_));
 
   } else if (status == BluetoothAgentServiceProvider::Delegate::CANCELLED) {
-    base::MessageLoop::current()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&FakeBluetoothDeviceClient::CancelSimulatedPairing,
-                   base::Unretained(this),
-                   object_path, error_callback),
+                   base::Unretained(this), object_path, error_callback),
         base::TimeDelta::FromMilliseconds(simulation_interval_ms_));
 
   } else if (status == BluetoothAgentServiceProvider::Delegate::REJECTED) {
-    base::MessageLoop::current()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&FakeBluetoothDeviceClient::RejectSimulatedPairing,
-                   base::Unretained(this),
-                   object_path, error_callback),
+                   base::Unretained(this), object_path, error_callback),
         base::TimeDelta::FromMilliseconds(simulation_interval_ms_));
-
   }
 }
 
@@ -1105,29 +1100,26 @@ void FakeBluetoothDeviceClient::PasskeyCallback(
   VLOG(1) << "PasskeyCallback: " << object_path.value();
 
   if (status == BluetoothAgentServiceProvider::Delegate::SUCCESS) {
-    base::MessageLoop::current()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&FakeBluetoothDeviceClient::CompleteSimulatedPairing,
-                   base::Unretained(this),
-                   object_path, callback, error_callback),
+                   base::Unretained(this), object_path, callback,
+                   error_callback),
         base::TimeDelta::FromMilliseconds(3 * simulation_interval_ms_));
 
   } else if (status == BluetoothAgentServiceProvider::Delegate::CANCELLED) {
-    base::MessageLoop::current()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&FakeBluetoothDeviceClient::CancelSimulatedPairing,
-                   base::Unretained(this),
-                   object_path, error_callback),
+                   base::Unretained(this), object_path, error_callback),
         base::TimeDelta::FromMilliseconds(simulation_interval_ms_));
 
   } else if (status == BluetoothAgentServiceProvider::Delegate::REJECTED) {
-    base::MessageLoop::current()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&FakeBluetoothDeviceClient::RejectSimulatedPairing,
-                   base::Unretained(this),
-                   object_path, error_callback),
+                   base::Unretained(this), object_path, error_callback),
         base::TimeDelta::FromMilliseconds(simulation_interval_ms_));
-
   }
 }
 
@@ -1139,29 +1131,26 @@ void FakeBluetoothDeviceClient::ConfirmationCallback(
   VLOG(1) << "ConfirmationCallback: " << object_path.value();
 
   if (status == BluetoothAgentServiceProvider::Delegate::SUCCESS) {
-    base::MessageLoop::current()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&FakeBluetoothDeviceClient::CompleteSimulatedPairing,
-                   base::Unretained(this),
-                   object_path, callback, error_callback),
+                   base::Unretained(this), object_path, callback,
+                   error_callback),
         base::TimeDelta::FromMilliseconds(3 * simulation_interval_ms_));
 
   } else if (status == BluetoothAgentServiceProvider::Delegate::CANCELLED) {
-    base::MessageLoop::current()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&FakeBluetoothDeviceClient::CancelSimulatedPairing,
-                   base::Unretained(this),
-                   object_path, error_callback),
+                   base::Unretained(this), object_path, error_callback),
         base::TimeDelta::FromMilliseconds(simulation_interval_ms_));
 
   } else if (status == BluetoothAgentServiceProvider::Delegate::REJECTED) {
-    base::MessageLoop::current()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&FakeBluetoothDeviceClient::RejectSimulatedPairing,
-                   base::Unretained(this),
-                   object_path, error_callback),
+                   base::Unretained(this), object_path, error_callback),
         base::TimeDelta::FromMilliseconds(simulation_interval_ms_));
-
   }
 }
 
@@ -1186,21 +1175,19 @@ void FakeBluetoothDeviceClient::SimulateKeypress(
   agent_service_provider->DisplayPasskey(object_path, 123456, entered);
 
   if (entered < 7) {
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&FakeBluetoothDeviceClient::SimulateKeypress,
-                   base::Unretained(this),
-                   entered + 1, object_path, callback, error_callback),
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, base::Bind(&FakeBluetoothDeviceClient::SimulateKeypress,
+                              base::Unretained(this), entered + 1, object_path,
+                              callback, error_callback),
         base::TimeDelta::FromMilliseconds(simulation_interval_ms_));
 
   } else {
-    base::MessageLoop::current()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&FakeBluetoothDeviceClient::CompleteSimulatedPairing,
-                   base::Unretained(this),
-                   object_path, callback, error_callback),
+                   base::Unretained(this), object_path, callback,
+                   error_callback),
         base::TimeDelta::FromMilliseconds(simulation_interval_ms_));
-
   }
 }
 

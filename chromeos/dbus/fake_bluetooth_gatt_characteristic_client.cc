@@ -5,8 +5,10 @@
 #include "chromeos/dbus/fake_bluetooth_gatt_characteristic_client.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
 #include "base/rand_util.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_bluetooth_gatt_descriptor_client.h"
@@ -291,9 +293,8 @@ void FakeBluetoothGattCharacteristicClient::StartNotify(
   ScheduleHeartRateMeasurementValueChange();
 
   // Respond asynchronously.
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      callback,
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, callback,
       base::TimeDelta::FromMilliseconds(kStartNotifyResponseIntervalMs));
 }
 
@@ -493,13 +494,12 @@ void FakeBluetoothGattCharacteristicClient::
   std::vector<uint8> measurement = GetHeartRateMeasurementValue();
   heart_rate_measurement_properties_->value.ReplaceValue(measurement);
 
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&FakeBluetoothGattCharacteristicClient::
-                     ScheduleHeartRateMeasurementValueChange,
-                 weak_ptr_factory_.GetWeakPtr()),
-                 base::TimeDelta::FromMilliseconds(
-                     kHeartRateMeasurementNotificationIntervalMs));
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&FakeBluetoothGattCharacteristicClient::
+                                ScheduleHeartRateMeasurementValueChange,
+                            weak_ptr_factory_.GetWeakPtr()),
+      base::TimeDelta::FromMilliseconds(
+          kHeartRateMeasurementNotificationIntervalMs));
 }
 
 void FakeBluetoothGattCharacteristicClient::DelayedReadValueCallback(

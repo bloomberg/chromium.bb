@@ -10,7 +10,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"

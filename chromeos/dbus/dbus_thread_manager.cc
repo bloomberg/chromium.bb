@@ -79,7 +79,7 @@ DBusThreadManager::DBusThreadManager(scoped_ptr<DBusClientBundle> client_bundle)
     dbus::Bus::Options system_bus_options;
     system_bus_options.bus_type = dbus::Bus::SYSTEM;
     system_bus_options.connection_type = dbus::Bus::PRIVATE;
-    system_bus_options.dbus_task_runner = dbus_thread_->message_loop_proxy();
+    system_bus_options.dbus_task_runner = dbus_thread_->task_runner();
     system_bus_ = new dbus::Bus(system_bus_options);
   }
 }

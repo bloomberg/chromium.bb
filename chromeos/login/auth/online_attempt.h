@@ -12,17 +12,13 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/login/auth/auth_status_consumer.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
 class GaiaAuthFetcher;
-
-namespace base {
-// TODO(skyostil): Migrate to SingleThreadTaskRunner (crbug.com/465354).
-class MessageLoopProxy;
-}
 
 namespace net {
 class URLRequestContextGetter;
@@ -64,7 +60,7 @@ class CHROMEOS_EXPORT OnlineAttempt : public GaiaAuthConsumer {
   bool HasPendingFetch();
   void CancelRequest();
 
-  scoped_refptr<base::MessageLoopProxy> message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   AuthAttemptState* const attempt_;
   AuthAttemptStateResolver* const resolver_;

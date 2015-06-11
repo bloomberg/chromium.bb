@@ -4,8 +4,10 @@
 
 #include "chromeos/dbus/fake_nfc_tag_client.h"
 
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_nfc_adapter_client.h"
@@ -122,10 +124,9 @@ void FakeNfcTagClient::BeginPairingSimulation(int visibility_delay) {
 
   pairing_started_ = true;
 
-  base::MessageLoop::current()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&FakeNfcTagClient::MakeTagVisible,
-                 base::Unretained(this)),
+      base::Bind(&FakeNfcTagClient::MakeTagVisible, base::Unretained(this)),
       base::TimeDelta::FromMilliseconds(visibility_delay));
 }
 
@@ -207,10 +208,9 @@ void FakeNfcTagClient::MakeTagVisible() {
                     TagPropertiesReceived(dbus::ObjectPath(kTagPath)));
 
   if (simulation_timeout_ >= 0) {
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&FakeNfcTagClient::HandleSimulationTimeout,
-                   base::Unretained(this)),
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, base::Bind(&FakeNfcTagClient::HandleSimulationTimeout,
+                              base::Unretained(this)),
         base::TimeDelta::FromMilliseconds(simulation_timeout_));
     return;
   }

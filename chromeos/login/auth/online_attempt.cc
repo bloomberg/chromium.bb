@@ -8,7 +8,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/thread_task_runner_handle.h"
 #include "chromeos/login/auth/auth_attempt_state.h"
 #include "chromeos/login/auth/auth_attempt_state_resolver.h"
 #include "chromeos/login/auth/key.h"
@@ -27,7 +27,7 @@ const int OnlineAttempt::kClientLoginTimeoutMs = 10000;
 
 OnlineAttempt::OnlineAttempt(AuthAttemptState* current_attempt,
                              AuthAttemptStateResolver* callback)
-    : message_loop_(base::MessageLoopProxy::current()),
+    : task_runner_(base::ThreadTaskRunnerHandle::Get()),
       attempt_(current_attempt),
       resolver_(callback),
       try_again_(true),
@@ -45,9 +45,8 @@ OnlineAttempt::~OnlineAttempt() {
 void OnlineAttempt::Initiate(net::URLRequestContextGetter* request_context) {
   client_fetcher_.reset(new GaiaAuthFetcher(
       this, GaiaConstants::kChromeOSSource, request_context));
-  message_loop_->PostTask(
-      FROM_HERE,
-      base::Bind(&OnlineAttempt::TryClientLogin, weak_factory_.GetWeakPtr()));
+  task_runner_->PostTask(FROM_HERE, base::Bind(&OnlineAttempt::TryClientLogin,
+                                               weak_factory_.GetWeakPtr()));
 }
 
 void OnlineAttempt::OnClientLoginSuccess(
@@ -109,7 +108,7 @@ void OnlineAttempt::OnClientLoginFailure(const GoogleServiceAuthError& error) {
 }
 
 void OnlineAttempt::TryClientLogin() {
-  message_loop_->PostDelayedTask(
+  task_runner_->PostDelayedTask(
       FROM_HERE,
       base::Bind(&OnlineAttempt::CancelClientLogin, weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(kClientLoginTimeoutMs));

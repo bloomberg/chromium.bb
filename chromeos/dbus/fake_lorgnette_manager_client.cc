@@ -11,7 +11,8 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 
 namespace chromeos {
 
@@ -24,8 +25,8 @@ void FakeLorgnetteManagerClient::Init(dbus::Bus* bus) {}
 void FakeLorgnetteManagerClient::ListScanners(
     const ListScannersCallback& callback) {
   std::map<std::string, ScannerTableEntry> scanners;
-  base::MessageLoop::current()->PostTask(FROM_HERE,
-                                         base::Bind(callback, false, scanners));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(callback, false, scanners));
 }
 
 void FakeLorgnetteManagerClient::ScanImageToFile(
@@ -33,17 +34,16 @@ void FakeLorgnetteManagerClient::ScanImageToFile(
     const ScanProperties& properties,
     const ScanImageToFileCallback& callback,
     base::File* file) {
-  base::MessageLoop::current()->PostTask(FROM_HERE,
-                                         base::Bind(callback, false));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                base::Bind(callback, false));
 }
 
 void FakeLorgnetteManagerClient::ScanImageToString(
     std::string device_name,
     const ScanProperties& properties,
     const ScanImageToStringCallback& callback) {
-  base::MessageLoop::current()->PostTask(FROM_HERE,
-                                         base::Bind(callback, false,
-                                                    std::string()));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(callback, false, std::string()));
 }
 
 }  // namespace chromeos
