@@ -490,19 +490,23 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance2/textures/tex-mipmap-levels.html', bug=483282)
     self.Fail('conformance2/textures/tex-new-formats.html', bug=483282)
     self.Fail('conformance2/textures/tex-storage-2d.html', bug=483282)
+    self.Fail('conformance2/textures/tex-storage-and-subimage-3d.html',
+        bug=483282)
     self.Fail('conformance2/textures/texture-npot.html', bug=483282)
     self.Fail('conformance2/transform_feedback/transform_feedback.html',
         bug=483282)
 
     # Mac only.
+    self.Fail('conformance2/glsl3/array-as-return-value.html',
+        ['mac'], bug=483282)
+    self.Fail('conformance2/glsl3/array-assign.html',
+        ['mac'], bug=483282)
+    self.Fail('conformance2/glsl3/array-equality.html',
+        ['mac'], bug=483282)
+    self.Fail('conformance2/glsl3/array-in-complex-expression.html',
+        ['mac'], bug=483282)
     self.Fail('conformance2/renderbuffers/' +
         'multisampled-renderbuffer-initialization.html',
         ['mac'], bug=483282)
     self.Fail('conformance2/rendering/instanced-arrays.html',
         ['mac'], bug=483282)
-    self.Fail('conformance2/textures/tex-storage-and-subimage-3d.html',
-        ['mac'], bug=483282)
-
-    # Win only (using OpenGL).
-    self.Fail('conformance2/textures/tex-storage-and-subimage-3d.html',
-        ['win'], bug=483282)
