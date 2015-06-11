@@ -193,12 +193,9 @@ table_files = \
 	nemeth_edit.ctb \
 	nl-BE.dis \
 	nl-BE-g0.utb \
-	nl-BE-nocaps-g0.utb \
-	nl-caps.uti \
 	nl-chardefs.uti \
 	nl-g0.utb \
 	nl-NL-g0.utb \
-	nl-NL-nocaps-g0.utb \
 	no-no.ctb \
 	no-no.dis \
 	no-no-g0.utb \
