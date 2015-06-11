@@ -2193,6 +2193,18 @@ void Element::focus(bool restorePreviousSelection, WebFocusType type)
     if (!isFocusable())
         return;
 
+    if (shadowRoot() && shadowRoot()->delegatesFocus()) {
+        if (containsIncludingShadowDOM(document().focusedElement()))
+            return;
+
+        // Slide the focus to its inner node.
+        Node* next = document().page()->focusController().findFocusableNode(WebFocusTypeForward, *this);
+        if (next && next->isElementNode() && containsIncludingShadowDOM(next)) {
+            toElement(next)->focus(false, WebFocusTypeForward);
+            return;
+        }
+    }
+
     RefPtrWillBeRawPtr<Node> protect(this);
     if (!document().page()->focusController().setFocusedElement(this, document().frame(), type))
         return;

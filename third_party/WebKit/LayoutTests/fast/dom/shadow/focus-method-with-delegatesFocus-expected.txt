@@ -1,0 +1,27 @@
+xshadow0 is not focusable without tabindex.
+PASS document.activeElement.tagName is "BODY"
+PASS xshadow0.shadowRoot.activeElement is null
+xshadow1 becomes focusable with tabindex.
+PASS document.activeElement.id is "xshadow1"
+PASS xshadow1.shadowRoot.activeElement is null
+on focus(), focusable xshadow2 with delegatesFocus=true delegates focus into its inner element.
+PASS document.activeElement.id is "xshadow2"
+PASS xshadow2.shadowRoot.activeElement.id is "one"
+if an element within shadow is focused, focusing on shadow host should not slide focus to its inner element.
+PASS document.activeElement.id is "xshadow2"
+PASS xshadow2.shadowRoot.activeElement.id is "two"
+xshadow2.focus() shouldn't move focus to #one when its inner element is already focused.
+PASS document.activeElement.id is "xshadow2"
+PASS xshadow2.shadowRoot.activeElement.id is "two"
+focus() inside shadow DOM should not focus its shadow host, nor focusable siblings.
+PASS document.activeElement.id is "input0"
+PASS document.activeElement.id is "input0"
+If any element including shadow host is not focusable, focus doesn't change.
+PASS document.activeElement.id is "input0"
+If no element is focusable within shadow root, but the shadow host is focusable, then the host gets focus regardless of delegatesFocus.
+PASS document.activeElement.id is "xshadow4"
+PASS document.activeElement.id is "xshadow5"
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
