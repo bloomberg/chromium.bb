@@ -68,13 +68,6 @@ CommandBufferImpl::CommandBufferImpl(
                             base::Unretained(this), base::Passed(&request)));
 }
 
-CommandBufferImpl::~CommandBufferImpl() {
-  if (observer_)
-    observer_->OnCommandBufferImplDestroyed();
-  driver_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&DestroyDriver, base::Passed(&driver_)));
-}
-
 void CommandBufferImpl::Initialize(
     mojo::CommandBufferSyncClientPtr sync_client,
     mojo::CommandBufferSyncPointClientPtr sync_point_client,
@@ -144,9 +137,24 @@ void CommandBufferImpl::Echo(const mojo::Callback<void()>& callback) {
                                         base::Bind(&RunCallback, callback));
 }
 
+CommandBufferImpl::~CommandBufferImpl() {
+  if (observer_)
+    observer_->OnCommandBufferImplDestroyed();
+  driver_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&DestroyDriver, base::Passed(&driver_)));
+}
+
 void CommandBufferImpl::BindToRequest(
     mojo::InterfaceRequest<mojo::CommandBuffer> request) {
   binding_.Bind(request.Pass());
+  binding_.set_error_handler(this);
+}
+
+void CommandBufferImpl::OnConnectionError() {
+  // OnConnectionError() is called on the background thread
+  // |control_task_runner| but objects we own (such as CommandBufferDriver)
+  // need to be destroyed on the thread we were created on.
+  driver_task_runner_->DeleteSoon(FROM_HERE, this);
 }
 
 void CommandBufferImpl::DidLoseContext() {

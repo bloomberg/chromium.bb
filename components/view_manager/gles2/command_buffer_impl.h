@@ -10,7 +10,7 @@
 #include "base/single_thread_task_runner.h"
 #include "components/view_manager/public/interfaces/command_buffer.mojom.h"
 #include "components/view_manager/public/interfaces/viewport_parameter_listener.mojom.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 
 namespace gpu {
 class SyncPointManager;
@@ -24,7 +24,8 @@ class CommandBufferImplObserver;
 // so that we can insert sync points without blocking on the GL driver. It
 // forwards most method calls to the CommandBufferDriver, which runs on the
 // same thread as the native viewport.
-class CommandBufferImpl : public mojo::CommandBuffer {
+class CommandBufferImpl : public mojo::CommandBuffer,
+                          public mojo::ErrorHandler {
  public:
   CommandBufferImpl(
       mojo::InterfaceRequest<CommandBuffer> request,
@@ -32,7 +33,6 @@ class CommandBufferImpl : public mojo::CommandBuffer {
       scoped_refptr<base::SingleThreadTaskRunner> control_task_runner,
       gpu::SyncPointManager* sync_point_manager,
       scoped_ptr<CommandBufferDriver> driver);
-  ~CommandBufferImpl() override;
 
   void Initialize(mojo::CommandBufferSyncClientPtr sync_client,
                   mojo::CommandBufferSyncPointClientPtr sync_point_client,
@@ -58,14 +58,21 @@ class CommandBufferImpl : public mojo::CommandBuffer {
   }
 
  private:
+  friend class base::DeleteHelper<CommandBufferImpl>;
+
+  ~CommandBufferImpl() override;
+
   void BindToRequest(mojo::InterfaceRequest<CommandBuffer> request);
+
+  // mojo::ErrorHandler:
+  void OnConnectionError() override;
 
   scoped_refptr<gpu::SyncPointManager> sync_point_manager_;
   scoped_refptr<base::SingleThreadTaskRunner> driver_task_runner_;
   scoped_ptr<CommandBufferDriver> driver_;
   mojo::CommandBufferSyncPointClientPtr sync_point_client_;
   mojo::ViewportParameterListenerPtr viewport_parameter_listener_;
-  mojo::StrongBinding<CommandBuffer> binding_;
+  mojo::Binding<CommandBuffer> binding_;
   CommandBufferImplObserver* observer_;
 
   base::WeakPtrFactory<CommandBufferImpl> weak_factory_;
