@@ -20,7 +20,7 @@ class ExpDirectivePageSet(page_set_module.PageSet):
     super(ExpDirectivePageSet, self).__init__()
 
     urls_list = [
-      'http://aws1.mdw.la/exptest/',
+      'http://check.googlezip.net/exp/',
     ]
 
     for url in urls_list:

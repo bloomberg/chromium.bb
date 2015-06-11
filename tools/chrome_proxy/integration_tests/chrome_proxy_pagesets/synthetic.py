@@ -21,7 +21,7 @@ class SyntheticPageSet(page_set_module.PageSet):
 
     urls_list = [
       'http://check.googlezip.net/test.html',
-      'http://aws1.mdw.la/static'
+      'http://check.googlezip.net/static/'
     ]
 
     for url in urls_list:

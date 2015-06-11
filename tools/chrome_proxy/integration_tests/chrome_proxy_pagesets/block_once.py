@@ -40,7 +40,7 @@ class BlockOncePageSet(page_set_module.PageSet):
 
     # Test block-once for a GET request.
     urls_list = [
-      'http://check.googlezip.net/blocksingle',
+      'http://check.googlezip.net/blocksingle/',
     ]
 
     for url in urls_list:

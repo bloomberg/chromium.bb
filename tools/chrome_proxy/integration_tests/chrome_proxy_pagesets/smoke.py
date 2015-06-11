@@ -33,7 +33,7 @@ class Page2(SmokePage):
 
   def __init__(self, page_set):
     super(Page2, self).__init__(
-      url='http://aws1.mdw.la/static/',
+      url='http://check.googlezip.net/static/',
       page_set=page_set,
       name='compression: image')
 
@@ -46,7 +46,7 @@ class Page3(SmokePage):
 
   def __init__(self, page_set):
     super(Page3, self).__init__(
-      url='http://check.googlezip.net/block',
+      url='http://check.googlezip.net/block/',
       page_set=page_set,
       name='bypass')
 
@@ -59,7 +59,7 @@ class Page4(SmokePage):
 
   def __init__(self, page_set):
     super(Page4, self).__init__(
-      url='http://aws1.mdw.la/static/',
+      url='http://check.googlezip.net/static/',
       page_set=page_set,
       name='compression: javascript')
 
@@ -72,7 +72,7 @@ class Page5(SmokePage):
 
   def __init__(self, page_set):
     super(Page5, self).__init__(
-      url='http://aws1.mdw.la/static/',
+      url='http://check.googlezip.net/static/',
       page_set=page_set,
       name='compression: css')
 

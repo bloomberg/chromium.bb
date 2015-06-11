@@ -18,8 +18,8 @@ class HTTPToDirectFallbackPageSet(page_set_module.PageSet):
     super(HTTPToDirectFallbackPageSet, self).__init__()
 
     urls_list = [
-      'http://check.googlezip.net/fallback',
-      'http://check.googlezip.net/block',
+      'http://check.googlezip.net/fallback/',
+      'http://check.googlezip.net/block/',
     ]
 
     for url in urls_list:

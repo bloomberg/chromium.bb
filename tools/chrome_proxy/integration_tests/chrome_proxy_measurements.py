@@ -272,7 +272,7 @@ class ChromeProxyExpDirective(ChromeProxyValidation):
     options.AppendExtraBrowserArgs('--data-reduction-proxy-experiment=test')
 
   def AddResults(self, tab, results):
-    self._metrics.AddResultsForBypass(tab, results, url_pattern='/exptest/')
+    self._metrics.AddResultsForBypass(tab, results, url_pattern='/exp/')
 
 class ChromeProxyPassThrough(ChromeProxyValidation):
   """Correctness measurement for Chrome-Proxy pass-through directives.

@@ -20,7 +20,7 @@ class CorsBypassPageSet(page_set_module.PageSet):
     super(CorsBypassPageSet, self).__init__()
 
     urls_list = [
-      'http://aws1.mdw.la/test/cors/',
+      'http://www.gstatic.com/chrome/googlezip/cors/',
     ]
 
     for url in urls_list:
