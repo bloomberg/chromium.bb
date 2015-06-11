@@ -60,8 +60,10 @@ public:
     typedef WebCallbacks<WebServiceWorkerRegistration, void> WebServiceWorkerGetRegistrationForReadyCallbacks;
 
     virtual void registerServiceWorker(const WebURL& pattern, const WebURL& scriptUrl, WebServiceWorkerRegistrationCallbacks*) { }
-    virtual void updateServiceWorker(const WebURL& pattern) { }
+
+    // Unregisters the ServiceWorker for a given scope.
     virtual void unregisterServiceWorker(const WebURL& pattern, WebServiceWorkerUnregistrationCallbacks*) { }
+
     virtual void getRegistration(const WebURL& documentURL, WebServiceWorkerGetRegistrationCallbacks*) { }
     virtual void getRegistrations(WebServiceWorkerGetRegistrationsCallbacks*) { }
     virtual void getRegistrationForReady(WebServiceWorkerGetRegistrationForReadyCallbacks*) { }
