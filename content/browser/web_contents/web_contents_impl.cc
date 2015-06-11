@@ -3603,6 +3603,13 @@ void WebContentsImpl::RenderViewCreated(RenderViewHost* render_view_host) {
   if (GetRenderManager()->pending_web_ui())
     GetRenderManager()->pending_web_ui()->RenderViewCreated(render_view_host);
 
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBrowserSideNavigation) &&
+      GetRenderManager()->speculative_web_ui()) {
+    GetRenderManager()->speculative_web_ui()->RenderViewCreated(
+        render_view_host);
+  }
+
   NavigationEntry* entry = controller_.GetPendingEntry();
   if (entry && entry->IsViewSourceMode()) {
     // Put the renderer in view source mode.
