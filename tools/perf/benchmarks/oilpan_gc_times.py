@@ -13,19 +13,6 @@ from telemetry import benchmark
 import page_sets
 
 
-class OilpanGCTimesBlinkPerfAnimation(perf_benchmark.PerfBenchmark):
-  tag = 'blink_perf_animation'
-  test = oilpan_gc_times.OilpanGCTimesForBlinkPerf
-
-  @classmethod
-  def Name(cls):
-    return 'oilpan_gc_times.blink_perf_animation'
-
-  def CreatePageSet(self, options):
-    path = os.path.join(blink_perf.BLINK_PERF_BASE_DIR, 'Animation')
-    return blink_perf.CreatePageSetFromPath(path, blink_perf.SKIPPED_FILE)
-
-
 @benchmark.Enabled('content-shell')
 class OilpanGCTimesBlinkPerfStress(perf_benchmark.PerfBenchmark):
   tag = 'blink_perf_stress'
