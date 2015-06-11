@@ -86,9 +86,9 @@ public:
 
     void canSetScriptSource(ErrorString*, bool* result) final { *result = true; }
 
-    void init() override final;
-    void restore() override final;
-    void disable(ErrorString*) override final;
+    void init() final;
+    void restore() override;
+    void disable(ErrorString*) final;
 
     bool isPaused();
     void addMessageToConsole(ConsoleMessage*);

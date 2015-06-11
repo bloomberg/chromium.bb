@@ -94,6 +94,12 @@ void PageDebuggerAgent::enable(ErrorString* errorString)
     InspectorDebuggerAgent::enable(errorString);
 }
 
+void PageDebuggerAgent::restore()
+{
+    if (canExecuteScripts())
+        InspectorDebuggerAgent::restore();
+}
+
 void PageDebuggerAgent::enable()
 {
     ASSERT(canExecuteScripts());
