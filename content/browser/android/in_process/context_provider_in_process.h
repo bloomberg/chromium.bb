@@ -31,10 +31,6 @@ class ContextProviderInProcess
           context3d,
       const std::string& debug_name);
 
-  // Uses default attributes for creating an offscreen context.
-  static scoped_refptr<ContextProviderInProcess> CreateOffscreen(
-      bool lose_context_when_out_of_memory);
-
  private:
   ContextProviderInProcess(
       scoped_ptr<gpu_blink::WebGraphicsContext3DInProcessCommandBufferImpl>

@@ -46,23 +46,6 @@ scoped_refptr<ContextProviderInProcess> ContextProviderInProcess::Create(
   return new ContextProviderInProcess(context3d.Pass(), debug_name);
 }
 
-// static
-scoped_refptr<ContextProviderInProcess>
-ContextProviderInProcess::CreateOffscreen(
-    bool lose_context_when_out_of_memory) {
-  blink::WebGraphicsContext3D::Attributes attributes;
-  attributes.depth = false;
-  attributes.stencil = true;
-  attributes.antialias = false;
-  attributes.shareResources = true;
-  attributes.noAutomaticFlushes = true;
-
-  return Create(
-      WebGraphicsContext3DInProcessCommandBufferImpl::CreateOffscreenContext(
-          attributes, lose_context_when_out_of_memory),
-      "Offscreen");
-}
-
 ContextProviderInProcess::ContextProviderInProcess(
     scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> context3d,
     const std::string& debug_name)
