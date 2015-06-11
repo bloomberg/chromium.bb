@@ -61,8 +61,6 @@ class AshKeyboardControllerProxy
   // content::WebContentsObserver overrides
   void RenderViewCreated(content::RenderViewHost* render_view_host) override;
 
-  keyboard::KeyboardController* keyboard_controller_;
-
   scoped_ptr<keyboard::KeyboardControllerObserver> observer_;
 
   DISALLOW_COPY_AND_ASSIGN(AshKeyboardControllerProxy);

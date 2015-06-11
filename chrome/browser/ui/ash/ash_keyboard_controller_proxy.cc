@@ -114,7 +114,7 @@ AshKeyboardControllerProxy::AshKeyboardControllerProxy(
 }
 
 AshKeyboardControllerProxy::~AshKeyboardControllerProxy() {
-  DCHECK(!keyboard_controller_);
+  DCHECK(!keyboard_controller());
 }
 
 ui::InputMethod* AshKeyboardControllerProxy::GetInputMethod() {
@@ -152,14 +152,14 @@ void AshKeyboardControllerProxy::SetController(
     keyboard::KeyboardController* controller) {
   // During KeyboardController destruction, controller can be set to null.
   if (!controller) {
-    DCHECK(keyboard_controller_);
-    keyboard_controller_->RemoveObserver(observer_.get());
-    keyboard_controller_ = nullptr;
+    DCHECK(keyboard_controller());
+    keyboard_controller()->RemoveObserver(observer_.get());
+    KeyboardControllerProxy::SetController(nullptr);
     return;
   }
-  keyboard_controller_ = controller;
+  KeyboardControllerProxy::SetController(controller);
   observer_.reset(new AshKeyboardControllerObserver(browser_context()));
-  keyboard_controller_->AddObserver(observer_.get());
+  keyboard_controller()->AddObserver(observer_.get());
 }
 
 void AshKeyboardControllerProxy::RenderViewCreated(

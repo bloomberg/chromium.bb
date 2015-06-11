@@ -106,7 +106,7 @@ class KEYBOARD_EXPORT KeyboardControllerProxy : public aura::WindowObserver {
   // KeyboardController owns KeyboardControllerProxy so KeyboardControllerProxy
   // or its subclasses should not take ownership of the |controller|.
   // |controller| can be null when KeyboardController is destroying.
-  virtual void SetController(KeyboardController* controller) {}
+  virtual void SetController(KeyboardController* controller);
 
  protected:
   // The implementation can choose to setup the WebContents before the virtual
@@ -122,6 +122,7 @@ class KEYBOARD_EXPORT KeyboardControllerProxy : public aura::WindowObserver {
   void OnWindowDestroyed(aura::Window* window) override;
 
   content::BrowserContext* browser_context() { return browser_context_; }
+  KeyboardController* keyboard_controller() { return keyboard_controller_; }
 
  private:
   friend class TestApi;
@@ -137,6 +138,7 @@ class KEYBOARD_EXPORT KeyboardControllerProxy : public aura::WindowObserver {
   content::BrowserContext* browser_context_;
 
   const GURL default_url_;
+  keyboard::KeyboardController* keyboard_controller_;
 
   scoped_ptr<content::WebContents> keyboard_contents_;
   scoped_ptr<wm::Shadow> shadow_;

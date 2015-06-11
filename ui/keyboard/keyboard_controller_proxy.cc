@@ -18,6 +18,7 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/keyboard/keyboard_constants.h"
+#include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_switches.h"
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/wm/core/shadow.h"
@@ -101,7 +102,9 @@ namespace keyboard {
 
 KeyboardControllerProxy::KeyboardControllerProxy(
     content::BrowserContext* context)
-    : browser_context_(context), default_url_(kKeyboardURL) {
+    : browser_context_(context),
+      default_url_(kKeyboardURL),
+      keyboard_controller_(nullptr) {
 }
 
 KeyboardControllerProxy::~KeyboardControllerProxy() {
@@ -187,15 +190,20 @@ void KeyboardControllerProxy::ReloadKeyboardIfNeeded() {
   if (keyboard_contents_->GetURL() != GetVirtualKeyboardUrl()) {
     if (keyboard_contents_->GetURL().GetOrigin() !=
         GetVirtualKeyboardUrl().GetOrigin()) {
-      // Sets keyboard window height to 0 before navigate to a keyboard in a
-      // different extension. This keeps the UX the same as Android.
-      gfx::Rect bounds = GetKeyboardWindow()->bounds();
-      bounds.set_y(bounds.y() + bounds.height());
-      bounds.set_height(0);
-      GetKeyboardWindow()->SetBounds(bounds);
+      // Sets keyboard window rectangle to 0 and close current page before
+      // navigate to a keyboard in a different extension. This keeps the UX the
+      // same as Android. Note we need to explicitly close current page as it
+      // might try to resize keyboard window in javascript on a resize event.
+      GetKeyboardWindow()->SetBounds(gfx::Rect());
+      keyboard_contents_->ClosePage();
+      keyboard_controller()->SetKeyboardMode(FULL_WIDTH);
     }
     LoadContents(GetVirtualKeyboardUrl());
   }
+}
+
+void KeyboardControllerProxy::SetController(KeyboardController* controller) {
+  keyboard_controller_ = controller;
 }
 
 void KeyboardControllerProxy::SetupWebContents(content::WebContents* contents) {
