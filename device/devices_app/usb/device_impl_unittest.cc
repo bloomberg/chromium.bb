@@ -12,7 +12,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
-#include "device/usb/device_impl.h"
+#include "device/devices_app/usb/device_impl.h"
 #include "device/usb/mock_usb_device.h"
 #include "device/usb/mock_usb_device_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"

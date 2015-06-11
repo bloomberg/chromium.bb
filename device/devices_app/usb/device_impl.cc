@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "device/devices_app/usb/device_impl.h"
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/stl_util.h"
-#include "device/usb/device_impl.h"
-#include "device/usb/type_converters.h"
+#include "device/devices_app/usb/type_converters.h"
 #include "device/usb/usb_descriptors.h"
 #include "device/usb/usb_device.h"
 #include "net/base/io_buffer.h"

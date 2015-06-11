@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/usb/type_converters.h"
+#include "device/devices_app/usb/type_converters.h"
 
 #include <map>
 #include <utility>

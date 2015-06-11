@@ -63,6 +63,7 @@ void UsbContext::UsbEventHandler::ThreadMain() {
 void UsbContext::UsbEventHandler::Stop() {
   base::subtle::Release_Store(&running_, 0);
   libusb_interrupt_handle_event(context_);
+  base::PlatformThread::Join(thread_handle_);
 }
 
 UsbContext::UsbContext(PlatformUsbContext context) : context_(context) {

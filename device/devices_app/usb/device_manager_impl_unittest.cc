@@ -10,14 +10,14 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "device/core/device_client.h"
-#include "device/usb/device_impl.h"
-#include "device/usb/device_manager_impl.h"
+#include "device/devices_app/usb/device_impl.h"
+#include "device/devices_app/usb/device_manager_impl.h"
+#include "device/devices_app/usb/public/cpp/device_manager_delegate.h"
 #include "device/usb/mock_usb_device.h"
 #include "device/usb/mock_usb_device_handle.h"
 #include "device/usb/mock_usb_service.h"
-#include "device/usb/public/cpp/device_manager_delegate.h"
-#include "device/usb/public/cpp/device_manager_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/error_handler.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
@@ -30,51 +30,27 @@ namespace usb {
 
 namespace {
 
-bool DefaultDelegateFilter(const DeviceInfo& device_info) {
-  return true;
-}
-
 class TestDeviceManagerDelegate : public DeviceManagerDelegate {
  public:
-  using Filter = base::Callback<bool(const DeviceInfo&)>;
-
-  TestDeviceManagerDelegate(const Filter& filter) : filter_(filter) {}
+  TestDeviceManagerDelegate() {}
   ~TestDeviceManagerDelegate() override {}
-
-  void set_filter(const Filter& filter) { filter_ = filter; }
 
  private:
   // DeviceManagerDelegate implementation:
-  bool IsDeviceAllowed(const DeviceInfo& device_info) override {
-    return filter_.Run(device_info);
-  }
-
-  Filter filter_;
+  bool IsDeviceAllowed(const DeviceInfo& device_info) override { return true; }
 };
 
 class TestDeviceClient : public DeviceClient {
  public:
-  TestDeviceClient() : delegate_filter_(base::Bind(&DefaultDelegateFilter)) {}
+  TestDeviceClient() {}
   ~TestDeviceClient() override {}
 
   MockUsbService& mock_usb_service() { return mock_usb_service_; }
-
-  void SetDelegateFilter(const TestDeviceManagerDelegate::Filter& filter) {
-    delegate_filter_ = filter;
-  }
 
  private:
   // DeviceClient implementation:
   UsbService* GetUsbService() override { return &mock_usb_service_; }
 
-  void ConnectToUSBDeviceManager(
-      mojo::InterfaceRequest<DeviceManager> request) override {
-    new DeviceManagerImpl(request.Pass(),
-                          scoped_ptr<DeviceManagerDelegate>(
-                              new TestDeviceManagerDelegate(delegate_filter_)));
-  }
-
-  TestDeviceManagerDelegate::Filter delegate_filter_;
   MockUsbService mock_usb_service_;
 };
 
@@ -90,8 +66,13 @@ class USBDeviceManagerImplTest : public testing::Test {
     return device_client_->mock_usb_service();
   }
 
-  void SetDelegateFilter(const TestDeviceManagerDelegate::Filter& filter) {
-    device_client_->SetDelegateFilter(filter);
+  DeviceManagerPtr ConnectToDeviceManager() {
+    DeviceManagerPtr device_manager;
+    new DeviceManagerImpl(
+        mojo::GetProxy(&device_manager),
+        scoped_ptr<DeviceManagerDelegate>(new TestDeviceManagerDelegate),
+        base::ThreadTaskRunnerHandle::Get());
+    return device_manager.Pass();
   }
 
  private:
@@ -175,9 +156,7 @@ TEST_F(USBDeviceManagerImplTest, GetDevices) {
   mock_usb_service().AddDevice(device1);
   mock_usb_service().AddDevice(device2);
 
-  DeviceManagerPtr device_manager;
-  DeviceClient::Get()->ConnectToUSBDeviceManager(
-      mojo::GetProxy(&device_manager));
+  DeviceManagerPtr device_manager = ConnectToDeviceManager();
 
   EnumerationOptionsPtr options = EnumerationOptions::New();
   options->filters = mojo::Array<DeviceFilterPtr>::New(1);
@@ -209,9 +188,7 @@ TEST_F(USBDeviceManagerImplTest, OpenDevice) {
 
   mock_usb_service().AddDevice(mock_device);
 
-  DeviceManagerPtr device_manager;
-  DeviceClient::Get()->ConnectToUSBDeviceManager(
-      mojo::GetProxy(&device_manager));
+  DeviceManagerPtr device_manager = ConnectToDeviceManager();
 
   // Should be called on the mock as a result of OpenDevice() below.
   EXPECT_CALL(*mock_device.get(), Open(_));

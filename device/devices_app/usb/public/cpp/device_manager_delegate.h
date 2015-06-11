@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_USB_PUBLIC_CPP_DEVICE_MANAGER_DELEGATE_H_
-#define DEVICE_USB_PUBLIC_CPP_DEVICE_MANAGER_DELEGATE_H_
+#ifndef DEVICE_DEVICES_APP_USB_PUBLIC_CPP_DEVICE_MANAGER_DELEGATE_H_
+#define DEVICE_DEVICES_APP_USB_PUBLIC_CPP_DEVICE_MANAGER_DELEGATE_H_
 
-#include "device/usb/public/interfaces/device.mojom.h"
+#include "device/devices_app/usb/public/interfaces/device.mojom.h"
 
 namespace device {
 namespace usb {
@@ -24,4 +24,4 @@ class DeviceManagerDelegate {
 }  // namespace usb
 }  // namespace device
 
-#endif  // DEVICE_USB_PUBLIC_CPP_DEVICE_MANAGER_DELEGATE_H_
+#endif  // DEVICE_DEVICES_APP_USB_PUBLIC_CPP_DEVICE_MANAGER_DELEGATE_H_

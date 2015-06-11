@@ -90,9 +90,9 @@ test("device_unittests") {
   # USB does not compile on mobile platforms.
   if (!is_android && !is_ios) {
     sources += [
+      "devices_app/usb/device_impl_unittest.cc",
+      "devices_app/usb/device_manager_impl_unittest.cc",
       "test/usb_test_gadget_impl.cc",
-      "usb/device_impl_unittest.cc",
-      "usb/device_manager_impl_unittest.cc",
       "usb/usb_context_unittest.cc",
       "usb/usb_device_filter_unittest.cc",
       "usb/usb_device_handle_unittest.cc",
@@ -101,8 +101,9 @@ test("device_unittests") {
     ]
     deps += [
       "//device/core",
-      "//device/usb/public/cpp",
-      "//device/usb/public/interfaces",
+      "//device/devices_app:lib",
+      "//device/devices_app/usb/public/cpp",
+      "//device/devices_app/usb/public/interfaces",
       "//device/usb",
       "//device/usb:mocks",
       "//third_party/libusb",

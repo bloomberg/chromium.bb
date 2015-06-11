@@ -5,12 +5,11 @@
 source_set("cpp") {
   sources = [
     "device_manager_delegate.h",
-    "device_manager_factory.h",
   ]
 
   public_deps = [
     "//base",
-    "//device/usb/public/interfaces",
+    "//device/devices_app/usb/public/interfaces",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
   ]
 }

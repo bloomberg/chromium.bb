@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "device/usb/public/interfaces/device.mojom.h"
+#include "device/devices_app/usb/public/interfaces/device.mojom.h"
 #include "device/usb/usb_device_handle.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/callback.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"

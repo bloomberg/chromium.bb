@@ -4,7 +4,7 @@
 
 # GYP version: mojo/mojo_base.gyp:mojo_application_base
 source_set("cpp") {
-  deps = [
+  public_deps = [
     ":sources",
     ":init_commandline",
   ]
@@ -13,7 +13,7 @@ source_set("cpp") {
 # Like the target above, but without special commandline initialization that
 # apps use.
 source_set("cpp_for_chromium") {
-  deps = [
+  public_deps = [
     ":sources",
   ]
 }

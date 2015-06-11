@@ -22,6 +22,7 @@
         'battery/battery.gyp:device_battery_mojo_bindings',
         'bluetooth/bluetooth.gyp:device_bluetooth',
         'bluetooth/bluetooth.gyp:device_bluetooth_mocks',
+        'devices_app/devices_app.gyp:devices_app_lib',
         'nfc/nfc.gyp:device_nfc',
         'usb/usb.gyp:device_usb',
         'usb/usb.gyp:device_usb_mocks',
@@ -52,6 +53,8 @@
         'bluetooth/bluetooth_uuid_unittest.cc',
         'bluetooth/test/test_bluetooth_adapter_observer.cc',
         'bluetooth/test/test_bluetooth_adapter_observer.h',
+        'devices_app/usb/device_impl_unittest.cc',
+        'devices_app/usb/device_manager_impl_unittest.cc',
         'hid/hid_connection_unittest.cc',
         'hid/hid_device_filter_unittest.cc',
         'hid/hid_report_descriptor_unittest.cc',
@@ -66,8 +69,6 @@
         'serial/serial_service_unittest.cc',
         'test/run_all_unittests.cc',
         'test/usb_test_gadget_impl.cc',
-        'usb/device_impl_unittest.cc',
-        'usb/device_manager_impl_unittest.cc',
         'usb/usb_context_unittest.cc',
         'usb/usb_device_filter_unittest.cc',
         'usb/usb_device_handle_unittest.cc',
@@ -89,6 +90,7 @@
         ['OS=="android"', {
           'dependencies!': [
             '../tools/usb_gadget/usb_gadget.gyp:usb_gadget',
+            'devices_app/devices_app.gyp:devices_app_lib',
             'usb/usb.gyp:device_usb',
             'usb/usb.gyp:device_usb_mocks',
             'serial/serial.gyp:device_serial',

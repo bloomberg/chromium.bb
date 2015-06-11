@@ -11,26 +11,14 @@
       'target_name': 'device_usb',
       'type': 'static_library',
       'dependencies': [
-        'device_usb_mojo_bindings_lib',
         '../../components/components.gyp:device_event_log_component',
         '../../net/net.gyp:net',
         '../../third_party/libusb/libusb.gyp:libusb',
-        '../../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
       ],
       'include_dirs': [
         '../..',
       ],
       'sources': [
-        'device_impl.cc',
-        'device_impl.h',
-        'device_manager_impl.cc',
-        'device_manager_impl.h',
-        # TODO(rockot/reillyg): Split out public sources into their own target
-        # once all device/usb consumers have transitioned to the new public API.
-        'public/cpp/device_manager_delegate.h',
-        'public/cpp/device_manager_factory.h',
-        'type_converters.cc',
-        'type_converters.h',
         'usb_context.cc',
         'usb_context.h',
         'usb_descriptors.cc',
@@ -88,26 +76,6 @@
           ],
         }],
       ]
-    },
-    {
-      'target_name': 'device_usb_mojo_bindings',
-      'type': 'none',
-      'variables': {
-        'mojom_files': [
-          'public/interfaces/device.mojom',
-          'public/interfaces/device_manager.mojom',
-        ],
-      },
-      'includes': [
-        '../../third_party/mojo/mojom_bindings_generator_explicit.gypi',
-      ],
-    },
-    {
-      'target_name': 'device_usb_mojo_bindings_lib',
-      'type': 'static_library',
-      'dependencies': [
-        'device_usb_mojo_bindings',
-      ],
     },
     {
       'target_name': 'device_usb_mocks',
