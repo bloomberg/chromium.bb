@@ -9,6 +9,7 @@
 #include "core/workers/WorkerObjectProxy.h"
 #include "core/workers/WorkerThreadStartupData.h"
 #include "modules/compositorworker/CompositorWorkerGlobalScope.h"
+#include "modules/compositorworker/CompositorWorkerManager.h"
 #include "public/platform/Platform.h"
 
 namespace blink {
@@ -37,9 +38,37 @@ PassRefPtrWillBeRawPtr<WorkerGlobalScope> CompositorWorkerThread::createWorkerGl
 
 WebThreadSupportingGC& CompositorWorkerThread::backingThread()
 {
-    if (!m_thread)
-        m_thread = WebThreadSupportingGC::create("CompositorWorker Thread");
-    return *m_thread.get();
+    return CompositorWorkerManager::instance()->compositorWorkerThread();
+}
+
+void CompositorWorkerThread::initializeBackingThread()
+{
+    CompositorWorkerManager::instance()->initializeBackingThread();
+}
+
+void CompositorWorkerThread::shutdownBackingThread()
+{
+    CompositorWorkerManager::instance()->shutdownBackingThread();
+}
+
+v8::Isolate* CompositorWorkerThread::initializeIsolate()
+{
+    return CompositorWorkerManager::instance()->initializeIsolate();
+}
+
+void CompositorWorkerThread::willDestroyIsolate()
+{
+    CompositorWorkerManager::instance()->willDestroyIsolate();
+}
+
+void CompositorWorkerThread::destroyIsolate()
+{
+    CompositorWorkerManager::instance()->destroyIsolate();
+}
+
+void CompositorWorkerThread::terminateV8Execution()
+{
+    CompositorWorkerManager::instance()->terminateV8Execution();
 }
 
 } // namespace blink

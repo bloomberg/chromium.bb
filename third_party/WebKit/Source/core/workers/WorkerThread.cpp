@@ -218,8 +218,8 @@ void WorkerThread::initialize(PassOwnPtr<WorkerThreadStartupData> startupData)
         }
 
         m_microtaskRunner = adoptPtr(new WorkerMicrotaskRunner(this));
+        initializeBackingThread();
         backingThread().addTaskObserver(m_microtaskRunner.get());
-        backingThread().initialize();
 
         m_isolate = initializeIsolate();
         m_workerGlobalScope = createWorkerGlobalScope(startupData);
@@ -273,8 +273,9 @@ void WorkerThread::shutdown()
     m_workerGlobalScope = nullptr;
 
     backingThread().removeTaskObserver(m_microtaskRunner.get());
-    backingThread().shutdown();
+    shutdownBackingThread();
     destroyIsolate();
+    m_isolate = nullptr;
 
     m_microtaskRunner = nullptr;
 
@@ -330,6 +331,7 @@ void WorkerThread::stopInternal()
     }
 
     // Ensure that tasks are being handled by thread event loop. If script execution weren't forbidden, a while(1) loop in JS could keep the thread alive forever.
+    m_workerGlobalScope->script()->willScheduleExecutionTermination();
     terminateV8Execution();
 
     InspectorInstrumentation::didKillAllExecutionContextTasks(m_workerGlobalScope.get());
@@ -399,6 +401,18 @@ void WorkerThread::postDelayedTask(const WebTraceLocation& location, PassOwnPtr<
     backingThread().postDelayedTask(location, WorkerThreadTask::create(*this, task, true).leakPtr(), delayMs);
 }
 
+void WorkerThread::initializeBackingThread()
+{
+    ASSERT(isCurrentThread());
+    backingThread().initialize();
+}
+
+void WorkerThread::shutdownBackingThread()
+{
+    ASSERT(isCurrentThread());
+    backingThread().shutdown();
+}
+
 v8::Isolate* WorkerThread::initializeIsolate()
 {
     ASSERT(isCurrentThread());
@@ -425,13 +439,11 @@ void WorkerThread::destroyIsolate()
 {
     ASSERT(isCurrentThread());
     V8PerIsolateData::destroy(m_isolate);
-    m_isolate = nullptr;
 }
 
 void WorkerThread::terminateV8Execution()
 {
     ASSERT(isMainThread());
-    m_workerGlobalScope->script()->willScheduleExecutionTermination();
     v8::V8::TerminateExecution(m_isolate);
 }
 

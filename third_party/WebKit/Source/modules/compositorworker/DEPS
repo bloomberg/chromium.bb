@@ -4,6 +4,7 @@ include_rules = [
     "+heap",
     "-modules",
     "+modules/EventTargetModules.h",
+    "+modules/ModulesExport.h",
     "+modules/compositorworker",
     "+platform",
     "+public/platform",

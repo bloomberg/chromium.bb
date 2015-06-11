@@ -6,28 +6,38 @@
 #define CompositorWorkerThread_h
 
 #include "core/workers/WorkerThread.h"
+#include "modules/ModulesExport.h"
 
 namespace blink {
 
 class WorkerObjectProxy;
 
-class CompositorWorkerThread final : public WorkerThread {
+// This class is overridden in unit-tests.
+class MODULES_EXPORT CompositorWorkerThread : public WorkerThread {
 public:
     static PassRefPtr<CompositorWorkerThread> create(PassRefPtr<WorkerLoaderProxy>, WorkerObjectProxy&, double timeOrigin);
     virtual ~CompositorWorkerThread();
 
     WorkerObjectProxy& workerObjectProxy() const { return m_workerObjectProxy; }
 
-private:
+protected:
     CompositorWorkerThread(PassRefPtr<WorkerLoaderProxy>, WorkerObjectProxy&, double timeOrigin);
 
     // WorkerThread:
     PassRefPtrWillBeRawPtr<WorkerGlobalScope> createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData>) override;
     WebThreadSupportingGC& backingThread() override;
+    void didStartRunLoop() override { }
+    void didStopRunLoop() override { }
+    void initializeBackingThread() override;
+    void shutdownBackingThread() override;
+    v8::Isolate* initializeIsolate() override;
+    void willDestroyIsolate() override;
+    void destroyIsolate() override;
+    void terminateV8Execution() override;
 
+private:
     WorkerObjectProxy& m_workerObjectProxy;
     double m_timeOrigin;
-    OwnPtr<WebThreadSupportingGC> m_thread;
 };
 
 } // namespace blink
