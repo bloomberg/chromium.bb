@@ -64,8 +64,6 @@ const char* MemoryDumpTypeToString(const MemoryDumpType& dump_type) {
 
 // Internal class used to hold details about ProcessMemoryDump requests for the
 // current process.
-// TODO(primiano): In the upcoming CLs, ProcessMemoryDump will become async.
-// and this class will be used to convey more details across PostTask()s.
 class ProcessMemoryDumpHolder
     : public RefCountedThreadSafe<ProcessMemoryDumpHolder> {
  public:

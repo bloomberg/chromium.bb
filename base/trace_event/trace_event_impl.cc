@@ -33,6 +33,9 @@
 #include "base/threading/thread_id_name_manager.h"
 #include "base/threading/worker_pool.h"
 #include "base/time/time.h"
+#include "base/trace_event/memory_dump_manager.h"
+#include "base/trace_event/memory_dump_provider.h"
+#include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_synthetic_delay.h"
 
@@ -214,6 +217,18 @@ class TraceBufferRingBuffer : public TraceBuffer {
     return cloned_buffer.Pass();
   }
 
+  void EstimateTraceMemoryOverhead(
+      TraceEventMemoryOverhead* overhead) override {
+    overhead->Add("TraceBufferRingBuffer", sizeof(*this));
+    for (size_t queue_index = queue_head_; queue_index != queue_tail_;
+         queue_index = NextQueueIndex(queue_index)) {
+      size_t chunk_index = recyclable_chunks_queue_[queue_index];
+      if (chunk_index >= chunks_.size())  // Skip uninitialized chunks.
+        continue;
+      chunks_[chunk_index]->EstimateTraceMemoryOverhead(overhead);
+    }
+  }
+
  private:
   class ClonedTraceBuffer : public TraceBuffer {
    public:
@@ -241,6 +256,10 @@ class TraceBufferRingBuffer : public TraceBuffer {
     scoped_ptr<TraceBuffer> CloneForIteration() const override {
       NOTIMPLEMENTED();
       return scoped_ptr<TraceBuffer>();
+    }
+    void EstimateTraceMemoryOverhead(
+        TraceEventMemoryOverhead* overhead) override {
+      NOTIMPLEMENTED();
     }
 
     size_t current_iteration_index_;
@@ -350,6 +369,18 @@ class TraceBufferVector : public TraceBuffer {
     return scoped_ptr<TraceBuffer>();
   }
 
+  void EstimateTraceMemoryOverhead(
+      TraceEventMemoryOverhead* overhead) override {
+    // Skip the in-flight chunks owned by the threads. They will be accounted
+    // by the per-thread-local dumper, see ThreadLocalEventBuffer::OnMemoryDump.
+    overhead->Add("TraceBufferVector", sizeof(*this));
+    for (size_t i = 0; i < chunks_.size(); ++i) {
+      TraceBufferChunk* chunk = chunks_[i];
+      if (chunk)
+        chunk->EstimateTraceMemoryOverhead(overhead);
+    }
+  }
+
  private:
   size_t in_flight_chunk_count_;
   size_t current_iteration_index_;
@@ -398,11 +429,18 @@ class AutoThreadLocalBoolean {
 
 }  // namespace
 
+TraceBufferChunk::TraceBufferChunk(uint32 seq) : next_free_(0), seq_(seq) {
+}
+
+TraceBufferChunk::~TraceBufferChunk() {
+}
+
 void TraceBufferChunk::Reset(uint32 new_seq) {
   for (size_t i = 0; i < next_free_; ++i)
     chunk_[i].Reset();
   next_free_ = 0;
   seq_ = new_seq;
+  cached_overhead_estimate_when_full_.reset();
 }
 
 TraceEvent* TraceBufferChunk::AddTraceEvent(size_t* event_index) {
@@ -417,6 +455,31 @@ scoped_ptr<TraceBufferChunk> TraceBufferChunk::Clone() const {
   for (size_t i = 0; i < next_free_; ++i)
     cloned_chunk->chunk_[i].CopyFrom(chunk_[i]);
   return cloned_chunk.Pass();
+}
+
+void TraceBufferChunk::EstimateTraceMemoryOverhead(
+    TraceEventMemoryOverhead* overhead) {
+  if (cached_overhead_estimate_when_full_) {
+    DCHECK(IsFull());
+    overhead->Update(*cached_overhead_estimate_when_full_);
+    return;
+  }
+
+  // Cache the memory overhead estimate only if the chunk is full.
+  TraceEventMemoryOverhead* estimate = overhead;
+  if (IsFull()) {
+    cached_overhead_estimate_when_full_.reset(new TraceEventMemoryOverhead);
+    estimate = cached_overhead_estimate_when_full_.get();
+  }
+
+  estimate->Add("TraceBufferChunk", sizeof(*this));
+  for (size_t i = 0; i < next_free_; ++i)
+    chunk_[i].EstimateTraceMemoryOverhead(estimate);
+
+  if (IsFull()) {
+    estimate->AddSelf();
+    overhead->Update(*estimate);
+  }
 }
 
 // A helper class that allows the lock to be acquired in the middle of the scope
@@ -610,6 +673,7 @@ void TraceEvent::Reset() {
   parameter_copy_storage_ = NULL;
   for (int i = 0; i < kTraceMaxNumArgs; ++i)
     convertable_values_[i] = NULL;
+  cached_memory_overhead_estimate_.reset();
 }
 
 void TraceEvent::UpdateDuration(const TraceTicks& now,
@@ -617,6 +681,29 @@ void TraceEvent::UpdateDuration(const TraceTicks& now,
   DCHECK_EQ(duration_.ToInternalValue(), -1);
   duration_ = now - timestamp_;
   thread_duration_ = thread_now - thread_timestamp_;
+}
+
+void TraceEvent::EstimateTraceMemoryOverhead(
+    TraceEventMemoryOverhead* overhead) {
+  if (!cached_memory_overhead_estimate_) {
+    cached_memory_overhead_estimate_.reset(new TraceEventMemoryOverhead);
+    cached_memory_overhead_estimate_->Add("TraceEvent", sizeof(*this));
+    // TODO(primiano): parameter_copy_storage_ is refcounted and, in theory,
+    // could be shared by several events and we might overcount. In practice
+    // this is unlikely but it's worth checking.
+    if (parameter_copy_storage_) {
+      cached_memory_overhead_estimate_->AddRefCountedString(
+          *parameter_copy_storage_.get());
+    }
+    for (size_t i = 0; i < kTraceMaxNumArgs; ++i) {
+      if (arg_types_[i] == TRACE_VALUE_TYPE_CONVERTABLE) {
+        convertable_values_[i]->EstimateTraceMemoryOverhead(
+            cached_memory_overhead_estimate_.get());
+      }
+    }
+    cached_memory_overhead_estimate_->AddSelf();
+  }
+  overhead->Update(*cached_memory_overhead_estimate_);
 }
 
 // static
@@ -987,7 +1074,8 @@ TraceBucketData::~TraceBucketData() {
 ////////////////////////////////////////////////////////////////////////////////
 
 class TraceLog::ThreadLocalEventBuffer
-    : public MessageLoop::DestructionObserver {
+    : public MessageLoop::DestructionObserver,
+      public MemoryDumpProvider {
  public:
   ThreadLocalEventBuffer(TraceLog* trace_log);
   ~ThreadLocalEventBuffer() override;
@@ -1010,6 +1098,9 @@ class TraceLog::ThreadLocalEventBuffer
  private:
   // MessageLoop::DestructionObserver
   void WillDestroyCurrentMessageLoop() override;
+
+  // MemoryDumpProvider implementation.
+  bool OnMemoryDump(ProcessMemoryDump* pmd) override;
 
   void FlushWhileLocked();
 
@@ -1039,6 +1130,10 @@ TraceLog::ThreadLocalEventBuffer::ThreadLocalEventBuffer(TraceLog* trace_log)
   MessageLoop* message_loop = MessageLoop::current();
   message_loop->AddDestructionObserver(this);
 
+  // This is to report the local memory usage when memory-infra is enabled.
+  MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+      this, ThreadTaskRunnerHandle::Get());
+
   AutoLock lock(trace_log->lock_);
   trace_log->thread_message_loops_.insert(message_loop);
 }
@@ -1046,6 +1141,7 @@ TraceLog::ThreadLocalEventBuffer::ThreadLocalEventBuffer(TraceLog* trace_log)
 TraceLog::ThreadLocalEventBuffer::~ThreadLocalEventBuffer() {
   CheckThisIsCurrentBuffer();
   MessageLoop::current()->RemoveDestructionObserver(this);
+  MemoryDumpManager::GetInstance()->UnregisterDumpProvider(this);
 
   // Zero event_count_ happens in either of the following cases:
   // - no event generated for the thread;
@@ -1120,6 +1216,17 @@ void TraceLog::ThreadLocalEventBuffer::ReportOverhead(
 
 void TraceLog::ThreadLocalEventBuffer::WillDestroyCurrentMessageLoop() {
   delete this;
+}
+
+bool TraceLog::ThreadLocalEventBuffer::OnMemoryDump(ProcessMemoryDump* pmd) {
+  if (!chunk_)
+    return true;
+  std::string dump_base_name = StringPrintf(
+      "tracing/thread_%d", static_cast<int>(PlatformThread::CurrentId()));
+  TraceEventMemoryOverhead overhead;
+  chunk_->EstimateTraceMemoryOverhead(&overhead);
+  overhead.DumpInto(dump_base_name.c_str(), pmd);
+  return true;
 }
 
 void TraceLog::ThreadLocalEventBuffer::FlushWhileLocked() {
@@ -1198,9 +1305,21 @@ TraceLog::TraceLog()
 #endif
 
   logged_events_.reset(CreateTraceBuffer());
+
+  MemoryDumpManager::GetInstance()->RegisterDumpProvider(this);
 }
 
 TraceLog::~TraceLog() {
+}
+
+bool TraceLog::OnMemoryDump(ProcessMemoryDump* pmd) {
+  TraceEventMemoryOverhead overhead;
+  overhead.Add("TraceLog", sizeof(*this));
+  if (logged_events_)
+    logged_events_->EstimateTraceMemoryOverhead(&overhead);
+  overhead.AddSelf();
+  overhead.DumpInto("tracing/main_trace_log", pmd);
+  return true;
 }
 
 const unsigned char* TraceLog::GetCategoryGroupEnabled(
@@ -2335,6 +2454,11 @@ void TraceLog::SetCurrentThreadBlocksMessageLoop() {
     // This will flush the thread local buffer.
     delete thread_local_event_buffer_.Get();
   }
+}
+
+void ConvertableToTraceFormat::EstimateTraceMemoryOverhead(
+    TraceEventMemoryOverhead* overhead) {
+  overhead->Add("ConvertableToTraceFormat(Unknown)", sizeof(*this));
 }
 
 }  // namespace trace_event

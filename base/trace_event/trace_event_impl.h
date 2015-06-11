@@ -24,7 +24,9 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_local.h"
+#include "base/trace_event/memory_dump_provider.h"
 #include "base/trace_event/trace_config.h"
+#include "base/trace_event/trace_event_memory_overhead.h"
 
 // Older style trace macros with explicit id and extra data
 // Only these macros result in publishing data to ETW as currently implemented.
@@ -64,6 +66,8 @@ class BASE_EXPORT ConvertableToTraceFormat
   // escaped. There is no processing applied to the content after it is
   // appended.
   virtual void AppendAsTraceFormat(std::string* out) const = 0;
+
+  virtual void EstimateTraceMemoryOverhead(TraceEventMemoryOverhead* overhead);
 
   std::string ToString() const {
     std::string result;
@@ -123,6 +127,8 @@ class BASE_EXPORT TraceEvent {
 
   void UpdateDuration(const TraceTicks& now, const ThreadTicks& thread_now);
 
+  void EstimateTraceMemoryOverhead(TraceEventMemoryOverhead*);
+
   // Serialize event data to JSON
   typedef base::Callback<bool(const char* category_group_name,
                               const char* event_name)> ArgumentFilterPredicate;
@@ -168,6 +174,7 @@ class BASE_EXPORT TraceEvent {
   TimeDelta thread_duration_;
   // id_ can be used to store phase-specific data.
   unsigned long long id_;
+  scoped_ptr<TraceEventMemoryOverhead> cached_memory_overhead_estimate_;
   TraceValue arg_values_[kTraceMaxNumArgs];
   const char* arg_names_[kTraceMaxNumArgs];
   scoped_refptr<ConvertableToTraceFormat> convertable_values_[kTraceMaxNumArgs];
@@ -185,10 +192,8 @@ class BASE_EXPORT TraceEvent {
 // TraceBufferChunk is the basic unit of TraceBuffer.
 class BASE_EXPORT TraceBufferChunk {
  public:
-  explicit TraceBufferChunk(uint32 seq)
-      : next_free_(0),
-        seq_(seq) {
-  }
+  explicit TraceBufferChunk(uint32 seq);
+  ~TraceBufferChunk();
 
   void Reset(uint32 new_seq);
   TraceEvent* AddTraceEvent(size_t* event_index);
@@ -209,10 +214,13 @@ class BASE_EXPORT TraceBufferChunk {
 
   scoped_ptr<TraceBufferChunk> Clone() const;
 
+  void EstimateTraceMemoryOverhead(TraceEventMemoryOverhead* overhead);
+
   static const size_t kTraceBufferChunkSize = 64;
 
  private:
   size_t next_free_;
+  scoped_ptr<TraceEventMemoryOverhead> cached_overhead_estimate_when_full_;
   TraceEvent chunk_[kTraceBufferChunkSize];
   uint32 seq_;
 };
@@ -235,6 +243,11 @@ class BASE_EXPORT TraceBuffer {
   virtual const TraceBufferChunk* NextChunk() = 0;
 
   virtual scoped_ptr<TraceBuffer> CloneForIteration() const = 0;
+
+  // Computes an estimate of the size of the buffer, including all the retained
+  // objects.
+  virtual void EstimateTraceMemoryOverhead(
+      TraceEventMemoryOverhead* overhead) = 0;
 };
 
 // TraceResultBuffer collects and converts trace fragments returned by TraceLog
@@ -289,7 +302,7 @@ struct BASE_EXPORT TraceLogStatus {
   size_t event_count;
 };
 
-class BASE_EXPORT TraceLog {
+class BASE_EXPORT TraceLog : public MemoryDumpProvider {
  public:
   enum Mode {
     DISABLED = 0,
@@ -364,6 +377,10 @@ class BASE_EXPORT TraceLog {
 
   TraceLogStatus GetStatus() const;
   bool BufferIsFull() const;
+
+  // Computes an estimate of the size of the TraceLog including all the retained
+  // objects.
+  void EstimateTraceMemoryOverhead(TraceEventMemoryOverhead* overhead);
 
   // Not using base::Callback because of its limited by 7 parameters.
   // Also, using primitive type allows directly passing callback from WebCore.
@@ -528,6 +545,9 @@ class BASE_EXPORT TraceLog {
   // by the Singleton class.
   friend struct DefaultSingletonTraits<TraceLog>;
 
+  // MemoryDumpProvider implementation.
+  bool OnMemoryDump(ProcessMemoryDump* pmd) override;
+
   // Enable/disable each category group based on the current mode_,
   // category_filter_, event_callback_ and event_callback_category_filter_.
   // Enable the category group in the enabled mode if category_filter_ matches
@@ -547,7 +567,7 @@ class BASE_EXPORT TraceLog {
   class OptionalAutoLock;
 
   TraceLog();
-  ~TraceLog();
+  ~TraceLog() override;
   const unsigned char* GetCategoryGroupEnabledInternal(const char* name);
   void AddMetadataEventsWhileLocked();
 

@@ -42,6 +42,8 @@ class BASE_EXPORT TracedValue : public ConvertableToTraceFormat {
 
   void AppendAsTraceFormat(std::string* out) const override;
 
+  void EstimateTraceMemoryOverhead(TraceEventMemoryOverhead* overhead) override;
+
  private:
   ~TracedValue() override;
 

@@ -5,6 +5,7 @@
 #include "base/trace_event/trace_event_argument.h"
 
 #include "base/json/json_writer.h"
+#include "base/trace_event/trace_event_memory_overhead.h"
 #include "base/values.h"
 
 namespace base {
@@ -111,6 +112,13 @@ void TracedValue::AppendAsTraceFormat(std::string* out) const {
   JSONWriter::Write(*stack_.front(), &tmp);
   *out += tmp;
   DCHECK_EQ(1u, stack_.size()) << tmp;
+}
+
+void TracedValue::EstimateTraceMemoryOverhead(
+    TraceEventMemoryOverhead* overhead) {
+  overhead->Add("TracedValue", sizeof(*this));
+  if (root_)
+    overhead->AddValue(*root_);
 }
 
 }  // namespace trace_event

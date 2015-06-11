@@ -39,6 +39,8 @@
       'trace_event/trace_event_impl_constants.cc',
       'trace_event/trace_event_memory.cc',
       'trace_event/trace_event_memory.h',
+      'trace_event/trace_event_memory_overhead.cc',
+      'trace_event/trace_event_memory_overhead.h',
       'trace_event/trace_event_synthetic_delay.cc',
       'trace_event/trace_event_synthetic_delay.h',
       'trace_event/trace_event_system_stats_monitor.cc',
