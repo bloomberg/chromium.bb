@@ -2355,18 +2355,18 @@ gl_renderer_create(struct weston_compositor *ec, EGLenum platform,
 
 	if (gr->egl_display == EGL_NO_DISPLAY) {
 		weston_log("failed to create display\n");
-		goto err_egl;
+		goto fail;
 	}
 
 	if (!eglInitialize(gr->egl_display, &major, &minor)) {
 		weston_log("failed to initialize display\n");
-		goto err_egl;
+		goto fail_with_error;
 	}
 
 	if (egl_choose_config(gr, attribs, visual_id,
 			      n_ids, &gr->egl_config) < 0) {
 		weston_log("failed to choose EGL config\n");
-		goto err_config;
+		goto fail;
 	}
 
 	ec->renderer = &gr->base;
@@ -2375,7 +2375,7 @@ gl_renderer_create(struct weston_compositor *ec, EGLenum platform,
 	ec->capabilities |= WESTON_CAP_VIEW_CLIP_MASK;
 
 	if (gl_renderer_setup_egl_extensions(ec) < 0)
-		goto err_egl;
+		goto fail_with_error;
 
 	wl_display_add_shm_format(ec->wl_display, WL_SHM_FORMAT_RGB565);
 
@@ -2383,9 +2383,9 @@ gl_renderer_create(struct weston_compositor *ec, EGLenum platform,
 
 	return 0;
 
-err_egl:
+fail_with_error:
 	gl_renderer_print_egl_error_state();
-err_config:
+fail:
 	free(gr);
 	return -1;
 }
