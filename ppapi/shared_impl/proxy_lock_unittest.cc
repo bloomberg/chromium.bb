@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/message_loop/message_loop.h"
 #include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/shared_impl/test_globals.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -65,7 +66,11 @@ void TestCallback_3(int p1, const std::string& p2, Param p3) {
 
 }  // namespace
 
-TEST(PpapiProxyLockTest, Locking) {
+class PpapiProxyLockTest : public testing::Test {
+  base::MessageLoop message_loop_;  // Required to receive callbacks.
+};
+
+TEST_F(PpapiProxyLockTest, Locking) {
   TestGlobals globals;
   expect_to_be_locked = true;
 
@@ -143,7 +148,7 @@ TEST(PpapiProxyLockTest, Locking) {
   called_num = 0;
 }
 
-TEST(PpapiProxyLockTest, Unlocking) {
+TEST_F(PpapiProxyLockTest, Unlocking) {
   TestGlobals globals;
   expect_to_be_locked = false;
   // These calls should all try to _unlock_, so we must be locked before
