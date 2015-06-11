@@ -12,11 +12,13 @@ function verify(performance, resource, description) {
     var entry = performance.getEntriesByName(resourceUrl(resource))[0];
     assert_greater_than(entry.workerStart, 0, description);
     assert_greater_than_equal(entry.workerStart, entry.startTime, description);
-    assert_less_than(entry.workerStart, entry.fetchStart, description);
-    if (resource.indexOf('redirect.php') != -1)
-        assert_less_than(entry.workerStart, entry.redirectStart, description);
-    else
+    assert_less_than_equal(entry.workerStart, entry.fetchStart, description);
+    if (resource.indexOf('redirect.php') != -1) {
+        assert_less_than_equal(entry.workerStart, entry.redirectStart,
+                               description);
+    } else {
         assert_equals(entry.redirectStart, 0, description);
+    }
 }
 
 async_test(function(t) {
