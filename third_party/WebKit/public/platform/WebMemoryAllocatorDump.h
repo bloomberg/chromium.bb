@@ -19,14 +19,19 @@ public:
     // Adds a scalar attribute to the dump.
     // Arguments:
     //   name: name of the attribute. Typical names, emitted by most allocators
-    //       dump providers are: "outer_size", "inner_size", "objects_count".
+    //       dump providers are: "size" and "objects_count".
     //   units: the units for the attribute. Gives a hint to the trace-viewer UI
     //       about the semantics of the attribute.
     //       Currently supported values are "bytes" and "objects".
     //   value: the value of the attribute.
-    virtual void AddScalar(const WebString& name, const char* units, uint64_t value) { BLINK_ASSERT_NOT_REACHED(); }
-    virtual void AddScalarF(const WebString& name, const char* units, double value) { BLINK_ASSERT_NOT_REACHED(); }
-    virtual void AddString(const WebString& name, const char* units, const WebString& value) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void AddScalar(const char* name, const char* units, uint64_t value) { }
+    virtual void AddScalarF(const char* name, const char* units, double value) { }
+    virtual void AddString(const char* name, const char* units, const WebString& value) { }
+
+    // TODO(primiano): these below will go away soon, required only to handle a multisided patch.
+    virtual void AddScalar(const WebString& name, const char* units, uint64_t value) { }
+    virtual void AddScalarF(const WebString& name, const char* units, double value) { }
+    virtual void AddString(const WebString& name, const char* units, const WebString& value) { }
 };
 
 } // namespace blink
