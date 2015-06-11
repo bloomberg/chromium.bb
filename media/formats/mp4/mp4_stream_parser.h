@@ -131,6 +131,10 @@ class MEDIA_EXPORT MP4StreamParser : public StreamParser {
   bool is_audio_track_encrypted_;
   bool is_video_track_encrypted_;
 
+  // Tracks the number of MEDIA_LOGs for skipping top level boxes. Useful to
+  // prevent log spam.
+  int num_top_level_box_skipped_;
+
   DISALLOW_COPY_AND_ASSIGN(MP4StreamParser);
 };
 

@@ -34,7 +34,8 @@ MP4StreamParser::MP4StreamParser(const std::set<int>& audio_object_types,
       audio_object_types_(audio_object_types),
       has_sbr_(has_sbr),
       is_audio_track_encrypted_(false),
-      is_video_track_encrypted_(false) {
+      is_video_track_encrypted_(false),
+      num_top_level_box_skipped_(0) {
 }
 
 MP4StreamParser::~MP4StreamParser() {}
@@ -159,8 +160,14 @@ bool MP4StreamParser::ParseBox(bool* err) {
     // before the head of the 'moof', so keeping this box around is sufficient.)
     return !(*err);
   } else {
-    MEDIA_LOG(DEBUG, log_cb_) << "Skipping unrecognized top-level box: "
-                              << FourCCToString(reader->type());
+    const int kMaxNumLogsForSkippingTopLevelBox = 5;
+
+    // TODO(wolenetz): Do not log when skipping ftyp, since strict MSE would
+    // require ftyp. See http://crbug.com/499077
+    LIMITED_MEDIA_LOG(DEBUG, log_cb_, num_top_level_box_skipped_,
+                      kMaxNumLogsForSkippingTopLevelBox)
+        << "Skipping unrecognized top-level box: "
+        << FourCCToString(reader->type());
   }
 
   queue_.Pop(reader->size());
