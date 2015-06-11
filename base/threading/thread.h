@@ -173,7 +173,7 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
   // hold on to this even after the thread is gone; in this situation, attempts
   // to PostTask() will fail.
   scoped_refptr<SingleThreadTaskRunner> task_runner() const {
-    return message_loop_->task_runner();
+    return message_loop_ ? message_loop_->task_runner() : nullptr;
   }
 
   // Returns the name of this thread (for display in debugger too).
