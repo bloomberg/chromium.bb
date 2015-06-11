@@ -126,7 +126,7 @@ class BranchMapper(object):
         include_tracking_status=self.verbosity >= 1)
     if (self.verbosity >= 2):
       # Avoid heavy import unless necessary.
-      from git_cl import get_cl_statuses
+      from git_cl import get_cl_statuses, color_for_status
 
       status_info = get_cl_statuses(self.__branches_info.keys(),
                                     fine_grained=self.verbosity > 2,
@@ -135,8 +135,8 @@ class BranchMapper(object):
       for _ in xrange(len(self.__branches_info)):
         # This is a blocking get which waits for the remote CL status to be
         # retrieved.
-        (branch, url, color) = status_info.next()
-        self.__status_info[branch] = (url, color);
+        (branch, url, status) = status_info.next()
+        self.__status_info[branch] = (url, color_for_status(status))
 
     roots = set()
 
