@@ -1327,6 +1327,20 @@ void LayerTreeHostImpl::NotifyTileStateChanged(const Tile* tile) {
 
 void LayerTreeHostImpl::SetMemoryPolicy(const ManagedMemoryPolicy& policy) {
   SetManagedMemoryPolicy(policy);
+
+  // This is short term solution to synchronously drop tile resources when
+  // using synchronous compositing to avoid memory usage regression.
+  // TODO(boliu): crbug.com/499004 to track removing this.
+  if (!policy.bytes_limit_when_visible && tile_manager_ &&
+      settings_.using_synchronous_renderer_compositor) {
+    ReleaseTreeResources();
+    // TileManager destruction will synchronoulsy wait for all tile workers to
+    // be cancelled or completed. This allows all resources to be freed
+    // synchronously.
+    DestroyTileManager();
+    CreateAndSetTileManager();
+    RecreateTreeResources();
+  }
 }
 
 void LayerTreeHostImpl::SetTreeActivationCallback(
