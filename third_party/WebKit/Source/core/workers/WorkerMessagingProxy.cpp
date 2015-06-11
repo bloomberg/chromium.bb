@@ -233,7 +233,7 @@ void WorkerMessagingProxy::terminateWorkerGlobalScope()
     m_askedToTerminate = true;
 
     if (m_workerThread)
-        m_workerThread->stop();
+        m_workerThread->terminate();
 
     terminateInternally();
 }

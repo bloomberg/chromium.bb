@@ -61,8 +61,8 @@ public:
     virtual ~WorkerThread();
 
     // Called on the main thread.
-    virtual void start(PassOwnPtr<WorkerThreadStartupData>);
-    virtual void stop();
+    void start(PassOwnPtr<WorkerThreadStartupData>);
+    void terminate();
 
     // Returns the thread this worker runs on. Some implementations can create
     // a new thread on the first call (e.g. shared, dedicated workers), whereas
@@ -76,14 +76,13 @@ public:
     v8::Isolate* isolate() const { return m_isolate; }
 
     // Can be used to wait for this worker thread to shut down.
-    // (This is signalled on the main thread, so it's assumed to be waited on the worker context thread)
+    // (This is signaled on the main thread, so it's assumed to be waited on
+    // the worker context thread)
     WebWaitableEvent* shutdownEvent() { return m_shutdownEvent.get(); }
 
-    WebWaitableEvent* terminationEvent() { return m_terminationEvent.get(); }
-
-    // Called in shutdown sequence. Internally calls stop() (or stopInternal)
-    // and wait (by *blocking* the calling thread) until the worker(s) is/are
-    // shut down.
+    // Called in shutdown sequence. Internally calls terminate() (or
+    // terminateInternal) and wait (by *blocking* the calling thread) until the
+    // worker(s) is/are shut down.
     void terminateAndWait();
     static void terminateAndWaitForAllWorkers();
 
@@ -109,8 +108,7 @@ public:
 
     WorkerGlobalScope* workerGlobalScope() const { return m_workerGlobalScope.get(); }
 
-    // Returns true once stop() (or one of the terminate* methods which
-    // internally calls stop) is called.
+    // Returns true once one of the terminate* methods is called.
     bool terminated();
 
     // Number of active worker threads.
@@ -145,7 +143,7 @@ private:
     friend class WorkerMicrotaskRunner;
 
     // Called on the main thread.
-    void stopInternal();
+    void terminateInternal();
 
     // Called on the worker thread.
     void initialize(PassOwnPtr<WorkerThreadStartupData>);

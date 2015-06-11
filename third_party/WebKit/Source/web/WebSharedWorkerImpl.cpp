@@ -77,6 +77,8 @@
 
 namespace blink {
 
+// TODO(toyoshim): Share implementation with WebEmbeddedWorkerImpl as much as
+// possible.
 // A thin wrapper for one-off script loading.
 class WebSharedWorkerImpl::Loader : public WorkerScriptLoaderClient {
 public:
@@ -183,6 +185,7 @@ WebSharedWorkerImpl::~WebSharedWorkerImpl()
         m_loaderProxy->detachProvider(this);
 }
 
+// TODO(toyoshim): Rename to terminateWorkerThread().
 void WebSharedWorkerImpl::stopWorkerThread()
 {
     if (m_askedToTerminate)
@@ -197,7 +200,7 @@ void WebSharedWorkerImpl::stopWorkerThread()
         return;
     }
     if (m_workerThread)
-        m_workerThread->stop();
+        m_workerThread->terminate();
     m_workerInspectorProxy->workerThreadTerminated();
 }
 

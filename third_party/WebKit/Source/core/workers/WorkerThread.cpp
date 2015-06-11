@@ -227,7 +227,7 @@ void WorkerThread::initialize(PassOwnPtr<WorkerThreadStartupData> startupData)
     }
     m_webScheduler = backingThread().platformThread().scheduler();
 
-    // The corresponding call to stopRunLoop() is in ~WorkerScriptController().
+    // The corresponding call to didStopRunLoop() is in ~WorkerScriptController().
     didStartRunLoop();
 
     // Notify proxy that a new WorkerGlobalScope has been created and started.
@@ -286,17 +286,16 @@ void WorkerThread::shutdown()
     m_terminationEvent->signal();
 }
 
-
-void WorkerThread::stop()
+void WorkerThread::terminate()
 {
-    // Prevent the deadlock between GC and an attempt to stop a thread.
+    // Prevent the deadlock between GC and an attempt to terminate a thread.
     SafePointScope safePointScope(ThreadState::HeapPointersOnStack);
-    stopInternal();
+    terminateInternal();
 }
 
 void WorkerThread::terminateAndWait()
 {
-    stop();
+    terminate();
     m_terminationEvent->wait();
 }
 
@@ -306,12 +305,12 @@ bool WorkerThread::terminated()
     return m_terminated;
 }
 
-void WorkerThread::stopInternal()
+void WorkerThread::terminateInternal()
 {
     // Protect against this method, initialize() or termination via the global scope racing each other.
     MutexLocker lock(m_threadStateMutex);
 
-    // If stop has already been called, just return.
+    // If terminateInternal has already been called, just return.
     if (m_terminated)
         return;
     m_terminated = true;
@@ -357,10 +356,10 @@ void WorkerThread::terminateAndWaitForAllWorkers()
     MutexLocker lock(threadSetMutex());
     HashSet<WorkerThread*> threads = workerThreads();
     for (WorkerThread* thread : threads)
-        thread->stopInternal();
+        thread->terminateInternal();
 
     for (WorkerThread* thread : threads)
-        thread->terminationEvent()->wait();
+        thread->m_terminationEvent->wait();
 }
 
 bool WorkerThread::isCurrentThread()

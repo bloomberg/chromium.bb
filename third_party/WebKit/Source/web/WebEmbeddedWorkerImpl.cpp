@@ -209,7 +209,7 @@ void WebEmbeddedWorkerImpl::terminateWorkerContext()
         return;
     }
     if (m_workerThread)
-        m_workerThread->stop();
+        m_workerThread->terminate();
     m_workerInspectorProxy->workerThreadTerminated();
 }
 
