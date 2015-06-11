@@ -27,11 +27,6 @@ public:
     virtual void AddScalar(const char* name, const char* units, uint64_t value) { }
     virtual void AddScalarF(const char* name, const char* units, double value) { }
     virtual void AddString(const char* name, const char* units, const WebString& value) { }
-
-    // TODO(primiano): these below will go away soon, required only to handle a multisided patch.
-    virtual void AddScalar(const WebString& name, const char* units, uint64_t value) { }
-    virtual void AddScalarF(const WebString& name, const char* units, double value) { }
-    virtual void AddString(const WebString& name, const char* units, const WebString& value) { }
 };
 
 } // namespace blink
