@@ -122,13 +122,30 @@ public class SnackbarManager implements OnClickListener, OnGlobalLayoutListener 
      */
     public void showSnackbar(String template, String description, String actionText,
             Object actionData, SnackbarController controller) {
-        mUIThreadHandler.removeCallbacks(mHideRunnable);
         int duration = sUndoBarShowDurationMs;
         // Duration for snackbars to show is different in normal mode and in accessibility mode.
         if (DeviceClassManager.isAccessibilityModeEnabled(mParent.getContext())) {
             duration = sAccessibilityUndoBarDurationMs;
         }
-        mUIThreadHandler.postDelayed(mHideRunnable, duration);
+        showSnackbar(template, description, actionText, actionData, controller, duration);
+    }
+
+    /**
+     * Shows a snackbar for the given timeout duration with description text and an action button.
+     * Allows overriding the default timeout of {@link #DEFAULT_SNACKBAR_SHOW_DURATION_MS} with
+     * a custom value.
+     * @param template Teamplate used to compose full description.
+     * @param description Text for description showing at start of snackbar.
+     * @param actionText Text for action button to show.
+     * @param actionData Data bound to this snackbar entry. Will be returned to listeners when
+     *                   action be clicked or snackbar be dismissed.
+     * @param controller Listener for this snackbar entry.
+     * @param timeoutMs The timeout to use in ms.
+     */
+    public void showSnackbar(String template, String description, String actionText,
+            Object actionData, SnackbarController controller, int timeoutMs) {
+        mUIThreadHandler.removeCallbacks(mHideRunnable);
+        mUIThreadHandler.postDelayed(mHideRunnable, timeoutMs);
 
         mStack.push(new SnackbarEntry(template, description, actionText, actionData, controller));
         if (mPopup == null) {

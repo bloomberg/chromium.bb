@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.preferences.bandwidth.DataReductionProxyUma;
  * When the load images button is clicked, it will reload the page without Lo-Fi.
  */
 public class LoFiBarPopupController implements SnackbarManager.SnackbarController {
+    private static final int DEFAULT_LO_FI_SNACKBAR_SHOW_DURATION_MS = 6000;
     private final SnackbarManager mSnackbarManager;
     private final Context mContext;
     private Tab mTab;
@@ -42,7 +43,7 @@ public class LoFiBarPopupController implements SnackbarManager.SnackbarControlle
         mSnackbarManager.showSnackbar(
                 null, mContext.getString(R.string.data_reduction_lo_fi_snackbar_message),
                 mContext.getString(R.string.data_reduction_lo_fi_snackbar_action),
-                tab.getId(), this);
+                tab.getId(), this, DEFAULT_LO_FI_SNACKBAR_SHOW_DURATION_MS);
         DataReductionProxyUma.dataReductionProxyLoFiUIAction(
                 DataReductionProxyUma.ACTION_LOAD_IMAGES_SNACKBAR_SHOWN);
     }
