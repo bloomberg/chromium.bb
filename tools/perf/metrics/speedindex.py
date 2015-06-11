@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from telemetry.image_processing import image_util
-from telemetry.image_processing import rgba_color
+from telemetry.util import image_util
+from telemetry.util import rgba_color
 from telemetry.value import scalar
 
 from metrics import Metric

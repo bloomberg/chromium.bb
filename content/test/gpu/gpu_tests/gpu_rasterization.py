@@ -7,7 +7,7 @@ import gpu_rasterization_expectations
 import optparse
 import page_sets
 
-from telemetry.image_processing import image_util
+from telemetry.util import image_util
 
 
 test_harness_script = r"""

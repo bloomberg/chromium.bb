@@ -7,8 +7,8 @@
 
 import unittest
 
-from telemetry.image_processing import histogram
-from telemetry.image_processing import rgba_color
+from telemetry.util import color_histogram
+from telemetry.util import rgba_color
 
 from metrics import speedindex
 
@@ -29,7 +29,7 @@ class FakeVideo(object):
 
 class FakeBitmap(object):
   def __init__(self, r, g, b):
-    self._histogram = histogram.ColorHistogram(r, g, b, rgba_color.WHITE)
+    self._histogram = color_histogram.ColorHistogram(r, g, b, rgba_color.WHITE)
 
   # pylint: disable=W0613
   def ColorHistogram(self, ignore_color=None, tolerance=None):

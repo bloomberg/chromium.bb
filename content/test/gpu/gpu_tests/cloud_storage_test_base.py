@@ -11,9 +11,9 @@ import tempfile
 
 from catapult_base import cloud_storage
 from telemetry import benchmark
-from telemetry.image_processing import image_util
-from telemetry.image_processing import rgba_color
 from telemetry.page import page_test
+from telemetry.util import image_util
+from telemetry.util import rgba_color
 
 
 test_data_dir = os.path.abspath(os.path.join(

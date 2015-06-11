@@ -8,10 +8,10 @@ import screenshot_sync_expectations as expectations
 
 from telemetry import benchmark
 from telemetry.core import util
-from telemetry.image_processing import image_util
 from telemetry.page import page
 from telemetry.page import page_set
 from telemetry.page import page_test
+from telemetry.util import image_util
 
 data_path = os.path.join(
     util.GetChromiumSrcDir(), 'content', 'test', 'data', 'gpu')
