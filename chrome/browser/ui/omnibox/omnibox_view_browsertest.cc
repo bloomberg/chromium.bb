@@ -49,6 +49,11 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/geometry/point.h"
 
+// For fine-grained suppression on flaky tests.
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
+
 using base::ASCIIToUTF16;
 using base::UTF16ToUTF8;
 using base::Time;
@@ -448,6 +453,11 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, DISABLED_BrowserAccelerators) {
 #endif
 
 IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_PopupAccelerators) {
+#if defined(OS_WIN)
+  // Flaky on XP bot. http://crbug.com/499155
+  if (base::win::GetVersion() <= base::win::VERSION_XP)
+    return;
+#endif
   // Create a popup.
   Browser* popup = CreateBrowserForPopup(browser()->profile());
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(popup));
