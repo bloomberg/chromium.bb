@@ -42,6 +42,9 @@ import gerrit_util
 import rietveld
 from third_party import upload
 
+import auth
+from third_party import httplib2
+
 try:
   from dateutil.relativedelta import relativedelta # pylint: disable=F0401
 except ImportError:
@@ -99,10 +102,6 @@ gerrit_instances = [
     'url': 'chrome-internal-review.googlesource.com',
     'shorturl': 'crosreview.com/i',
   },
-  {
-    'host': 'gerrit.chromium.org',
-    'port': 29418,
-  },
 ]
 
 google_code_projects = [
@@ -131,36 +130,6 @@ google_code_projects = [
     'name': 'skia',
   },
 ]
-
-# Uses ClientLogin to authenticate the user for Google Code issue trackers.
-def get_auth_token(email):
-  # KeyringCreds will use the system keyring on the first try, and prompt for
-  # a password on the next ones.
-  creds = upload.KeyringCreds('code.google.com', 'code.google.com', email)
-  for _ in xrange(3):
-    email, password = creds.GetUserCredentials()
-    url = 'https://www.google.com/accounts/ClientLogin'
-    data = urllib.urlencode({
-        'Email': email,
-        'Passwd': password,
-        'service': 'code',
-        'source': 'chrome-my-activity',
-        'accountType': 'GOOGLE',
-    })
-    req = urllib2.Request(url, data=data, headers={'Accept': 'text/plain'})
-    try:
-      response = urllib2.urlopen(req)
-      response_body = response.read()
-      response_dict = dict(x.split('=')
-                           for x in response_body.split('\n') if x)
-      return response_dict['Auth']
-    except urllib2.HTTPError, e:
-      print e
-
-  print 'Unable to authenticate to code.google.com.'
-  print 'Some issues may be missing.'
-  return None
-
 
 def username(email):
   """Keeps the username of an email address."""
@@ -230,31 +199,12 @@ class MyActivity(object):
   # Check the codereview cookie jar to determine which Rietveld instances to
   # authenticate to.
   def check_cookies(self):
-    cookie_file = os.path.expanduser('~/.codereview_upload_cookies')
-    if not os.path.exists(cookie_file):
-      print 'No Rietveld cookie file found.'
-      cookie_jar = []
-    else:
-      cookie_jar = cookielib.MozillaCookieJar(cookie_file)
-      try:
-        cookie_jar.load()
-        print 'Found cookie file: %s' % cookie_file
-      except (cookielib.LoadError, IOError):
-        print 'Error loading Rietveld cookie file: %s' % cookie_file
-        cookie_jar = []
-
     filtered_instances = []
 
     def has_cookie(instance):
-      for cookie in cookie_jar:
-        if cookie.name == 'SACSID' and cookie.domain == instance['url']:
-          return True
-      if self.options.auth:
-        return get_yes_or_no('No cookie found for %s. Authorize for this '
-                             'instance? (may require application-specific '
-                             'password)' % instance['url'])
-      filtered_instances.append(instance)
-      return False
+      auth_config = auth.extract_auth_config_from_options(self.options)
+      a = auth.get_authenticator_for_host(instance['url'], auth_config)
+      return a.has_cached_credentials()
 
     for instance in rietveld_instances:
       instance['auth'] = has_cookie(instance)
@@ -461,107 +411,51 @@ class MyActivity(object):
       })
     return ret
 
-  def google_code_issue_search(self, instance):
-    time_format = '%Y-%m-%dT%T'
-    # See http://code.google.com/p/support/wiki/IssueTrackerAPI
-    # q=<owner>@chromium.org does a full text search for <owner>@chromium.org.
-    # This will accept the issue if owner is the owner or in the cc list. Might
-    # have some false positives, though.
+  def project_hosting_issue_search(self, instance):
+    auth_config = auth.extract_auth_config_from_options(self.options)
+    authenticator = auth.get_authenticator_for_host(
+        "code.google.com", auth_config)
+    http = authenticator.authorize(httplib2.Http())
+    url = "https://www.googleapis.com/projecthosting/v2/projects/%s/issues" % (
+       instance["name"])
+    epoch = datetime.utcfromtimestamp(0)
+    user_str = '%s@chromium.org' % self.user
 
-    # Don't filter normally on modified_before because it can filter out things
-    # that were modified in the time period and then modified again after it.
-    gcode_url = ('https://code.google.com/feeds/issues/p/%s/issues/full' %
-                 instance['name'])
-
-    gcode_data = urllib.urlencode({
-        'alt': 'json',
-        'max-results': '100000',
-        'q': '%s' % self.user,
-        'published-max': self.modified_before.strftime(time_format),
-        'updated-min': self.modified_after.strftime(time_format),
+    query_data = urllib.urlencode({
+      'maxResults': 10000,
+      'q': user_str,
+      'publishedMax': '%d' % (self.modified_before - epoch).total_seconds(),
+      'updatedMin': '%d' % (self.modified_after - epoch).total_seconds(),
     })
-
-    opener = urllib2.build_opener()
-    if self.google_code_auth_token:
-      opener.addheaders = [('Authorization', 'GoogleLogin auth=%s' %
-                            self.google_code_auth_token)]
-    gcode_json = None
-    try:
-      gcode_get = opener.open(gcode_url + '?' + gcode_data)
-      gcode_json = json.load(gcode_get)
-      gcode_get.close()
-    except urllib2.HTTPError, _:
-      print 'Unable to access ' + instance['name'] + ' issue tracker.'
-
-    if not gcode_json or 'entry' not in gcode_json['feed']:
+    url = url + '?' + query_data
+    _, body = http.request(url)
+    content = json.loads(body)
+    if not content:
+      print "Unable to parse %s response from projecthosting." % (
+          instance["name"])
       return []
 
-    issues = gcode_json['feed']['entry']
-    issues = map(partial(self.process_google_code_issue, instance), issues)
-    issues = filter(self.filter_issue, issues)
-    issues = sorted(issues, key=lambda i: i['modified'], reverse=True)
+    issues = []
+    if 'items' in content:
+      items = content['items']
+      for item in items:
+        issue = {
+          "header": item["title"],
+          "created": item["published"],
+          "modified": item["updated"],
+          "author": item["author"]["name"],
+          "url": "https://code.google.com/p/%s/issues/detail?id=%s" % (
+              instance["name"], item["id"]),
+          "comments": []
+        }
+        if 'owner' in item:
+          issue['owner'] = item['owner']['name']
+        else:
+          issue['owner'] = 'None'
+        if issue['owner'] == user_str or issue['author'] == user_str:
+          issues.append(issue)
+
     return issues
-
-  def process_google_code_issue(self, project, issue):
-    ret = {}
-    ret['created'] = datetime_from_google_code(issue['published']['$t'])
-    ret['modified'] = datetime_from_google_code(issue['updated']['$t'])
-
-    ret['owner'] = ''
-    if 'issues$owner' in issue:
-      ret['owner'] = issue['issues$owner']['issues$username']['$t']
-    ret['author'] = issue['author'][0]['name']['$t']
-
-    if 'shorturl' in project:
-      issue_id = issue['id']['$t']
-      issue_id = issue_id[issue_id.rfind('/') + 1:]
-      ret['url'] = 'http://%s/%d' % (project['shorturl'], int(issue_id))
-    else:
-      issue_url = issue['link'][1]
-      if issue_url['rel'] != 'alternate':
-        raise RuntimeError
-      ret['url'] = issue_url['href']
-    ret['header'] = issue['title']['$t']
-
-    ret['replies'] = self.get_google_code_issue_replies(issue)
-    return ret
-
-  def get_google_code_issue_replies(self, issue):
-    """Get all the comments on the issue."""
-    replies_url = issue['link'][0]
-    if replies_url['rel'] != 'replies':
-      raise RuntimeError
-
-    replies_data = urllib.urlencode({
-        'alt': 'json',
-        'fields': 'entry(published,author,content)',
-    })
-
-    opener = urllib2.build_opener()
-    opener.addheaders = [('Authorization', 'GoogleLogin auth=%s' %
-                          self.google_code_auth_token)]
-    try:
-      replies_get = opener.open(replies_url['href'] + '?' + replies_data)
-    except urllib2.HTTPError, _:
-      return []
-
-    replies_json = json.load(replies_get)
-    replies_get.close()
-    return self.process_google_code_issue_replies(replies_json)
-
-  @staticmethod
-  def process_google_code_issue_replies(replies):
-    if 'entry' not in replies['feed']:
-      return []
-
-    ret = []
-    for entry in replies['feed']['entry']:
-      e = {}
-      e['created'] = datetime_from_google_code(entry['published']['$t'])
-      e['content'] = entry['content']['$t']
-      e['author'] = entry['author'][0]['name']['$t']
-      ret.append(e)
-    return ret
 
   def print_heading(self, heading):
     print
@@ -648,10 +542,6 @@ class MyActivity(object):
     # required.
     pass
 
-  def auth_for_issues(self):
-    self.google_code_auth_token = (
-        get_auth_token(self.options.local_user + '@chromium.org'))
-
   def get_changes(self):
     for instance in rietveld_instances:
       self.changes += self.rietveld_search(instance, owner=self.user)
@@ -682,7 +572,7 @@ class MyActivity(object):
 
   def get_issues(self):
     for project in google_code_projects:
-      self.issues += self.google_code_issue_search(project)
+      self.issues += self.project_hosting_issue_search(project)
 
   def print_issues(self):
     if self.issues:
@@ -841,17 +731,18 @@ def main():
     my_activity.auth_for_changes()
   if options.reviews:
     my_activity.auth_for_reviews()
-  if options.issues:
-    my_activity.auth_for_issues()
 
   print 'Looking up activity.....'
 
-  if options.changes:
-    my_activity.get_changes()
-  if options.reviews:
-    my_activity.get_reviews()
-  if options.issues:
-    my_activity.get_issues()
+  try:
+    if options.changes:
+      my_activity.get_changes()
+    if options.reviews:
+      my_activity.get_reviews()
+    if options.issues:
+      my_activity.get_issues()
+  except auth.AuthenticationError as e:
+    print "auth.AuthenticationError: %s" % e
 
   print '\n\n\n'
 

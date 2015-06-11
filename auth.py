@@ -48,6 +48,11 @@ OAUTH_CLIENT_SECRET = 'uBfbay2KCy9t4QveJ-dOqHtp'
 # use userinfo.email scope for authentication.
 OAUTH_SCOPES = 'https://www.googleapis.com/auth/userinfo.email'
 
+# Additional OAuth scopes.
+ADDITIONAL_SCOPES = {
+  'code.google.com': 'https://www.googleapis.com/auth/projecthosting',
+}
+
 # Path to a file with cached OAuth2 credentials used by default relative to the
 # home dir (see _get_token_cache_path). It should be a safe location accessible
 # only to a current user: knowing content of this file is roughly equivalent to
@@ -219,11 +224,15 @@ def get_authenticator_for_host(hostname, config):
   # Append some scheme, otherwise urlparse puts hostname into parsed.path.
   if '://' not in hostname:
     hostname = 'https://' + hostname
+  scopes = OAUTH_SCOPES
   parsed = urlparse.urlparse(hostname)
+  if parsed.netloc in ADDITIONAL_SCOPES:
+    scopes = "%s %s" % (scopes, ADDITIONAL_SCOPES[parsed.netloc])
+
   if parsed.path or parsed.params or parsed.query or parsed.fragment:
     raise AuthenticationError(
         'Expecting a hostname or root host URL, got %s instead' % hostname)
-  return Authenticator(parsed.netloc, config)
+  return Authenticator(parsed.netloc, config, scopes)
 
 
 class Authenticator(object):
@@ -235,7 +244,7 @@ class Authenticator(object):
     config: AuthConfig object that holds authentication configuration.
   """
 
-  def __init__(self, token_cache_key, config):
+  def __init__(self, token_cache_key, config, scopes):
     assert isinstance(config, AuthConfig)
     assert config.use_oauth2
     self._access_token = None
@@ -243,6 +252,7 @@ class Authenticator(object):
     self._lock = threading.Lock()
     self._token_cache_key = token_cache_key
     self._external_token = None
+    self._scopes = scopes
     if config.refresh_token_json:
       self._external_token = _read_refresh_token_json(config.refresh_token_json)
     logging.debug('Using auth config %r', config)
@@ -487,7 +497,7 @@ class Authenticator(object):
         logging.debug('Requesting user to login')
         raise LoginRequiredError(self._token_cache_key)
       logging.debug('Launching OAuth browser flow')
-      credentials = _run_oauth_dance(self._config)
+      credentials = _run_oauth_dance(self._config, self._scopes)
       _log_credentials_info('new token', credentials)
 
     logging.info(
@@ -560,7 +570,7 @@ def _log_credentials_info(title, credentials):
     })
 
 
-def _run_oauth_dance(config):
+def _run_oauth_dance(config, scopes):
   """Perform full 3-legged OAuth2 flow with the browser.
 
   Returns:
@@ -572,7 +582,7 @@ def _run_oauth_dance(config):
   flow = client.OAuth2WebServerFlow(
       OAUTH_CLIENT_ID,
       OAUTH_CLIENT_SECRET,
-      OAUTH_SCOPES,
+      scopes,
       approval_prompt='force')
 
   use_local_webserver = config.use_local_webserver
