@@ -7,7 +7,7 @@
 
 #include "mandoline/ui/aura/aura_init.h"
 #include "mandoline/ui/browser/browser_ui.h"
-#include "mandoline/ui/browser/omnibox.mojom.h"
+#include "mandoline/ui/browser/public/interfaces/omnibox.mojom.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/layout/layout_manager.h"
 

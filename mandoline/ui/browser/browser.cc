@@ -72,6 +72,7 @@ void Browser::Initialize(mojo::ApplicationImpl* app) {
 
 bool Browser::ConfigureIncomingConnection(
     mojo::ApplicationConnection* connection) {
+  connection->AddService<LaunchHandler>(this);
   // TODO: register embed interface here.
   return true;
 }
@@ -198,6 +199,12 @@ void Browser::Embed(mojo::URLRequestPtr request) {
   navigator_host_.RecordNavigation(gurl.spec());
 }
 
+void Browser::LaunchURL(const mojo::String& url) {
+  mojo::URLRequestPtr request(mojo::URLRequest::New());
+  request->url = url;
+  ReplaceContentWithRequest(request.Pass());
+}
+
 void Browser::Create(mojo::ApplicationConnection* connection,
                      mojo::InterfaceRequest<mojo::NavigatorHost> request) {
   navigator_host_.Bind(request.Pass());
@@ -206,6 +213,11 @@ void Browser::Create(mojo::ApplicationConnection* connection,
 void Browser::Create(mojo::ApplicationConnection* connection,
                      mojo::InterfaceRequest<ViewEmbedder> request) {
   view_embedder_bindings_.AddBinding(this, request.Pass());
+}
+
+void Browser::Create(mojo::ApplicationConnection* connection,
+                     mojo::InterfaceRequest<LaunchHandler> request) {
+  launch_handler_bindings_.AddBinding(this, request.Pass());
 }
 
 void Browser::ShowOmnibox(mojo::URLRequestPtr request) {

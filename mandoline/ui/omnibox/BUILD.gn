@@ -34,7 +34,7 @@ source_set("lib") {
     "//components/view_manager/public/cpp",
     "//mandoline/services/navigation/public/interfaces",
     "//mandoline/ui/aura",
-    "//mandoline/ui/browser:interfaces",
+    "//mandoline/ui/browser/public/interfaces",
     "//mojo/application/public/interfaces",
     "//mojo/converters/geometry",
     "//skia",

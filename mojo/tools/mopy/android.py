@@ -81,7 +81,7 @@ class AndroidShell(object):
             return
           time.sleep(1)
         on_fifo_closed()
-        raise Exception("Unable to find fifo.")
+        raise Exception("Unable to find fifo: %s" % path)
       _WaitForFifo()
       stdout_cat = subprocess.Popen(self._CreateADBCommand([
                                       'shell',
@@ -228,7 +228,12 @@ class AndroidShell(object):
     local_gdb_process.wait()
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
-  def StartShell(self, arguments, stdout, on_fifo_closed, gdb=False):
+  def StartActivity(self,
+                    activity_name,
+                    arguments,
+                    stdout,
+                    on_fifo_closed,
+                    gdb=False):
     """
     Starts the shell with the given |arguments|, directing output to |stdout|.
     |on_fifo_closed| will be run if the FIFO can't be found or when it's closed.
@@ -243,8 +248,9 @@ class AndroidShell(object):
            'start',
            '-S',
            '-a', 'android.intent.action.VIEW',
-           '-n', '%s/%s.MojoShellActivity' % (self.target_package,
-                                              'org.chromium.mojo.shell')])
+           '-n', '%s/%s.%s' % (self.target_package,
+                               self.target_package,
+                               activity_name)])
 
     logcat_process = None
     if gdb:
@@ -265,7 +271,7 @@ class AndroidShell(object):
     map_parameters = [a for a in arguments if a.startswith(MAPPING_PREFIX)]
     parameters += self._StartHttpServerForOriginMappings(map_parameters)
     parameters = [p.replace(',', '\,') for p in parameters]
-    cmd += ['--esa', 'org.chromium.mojo.shell.extras', ','.join(parameters)]
+    cmd += ['--esa', '%s.extras' % self.target_package, ','.join(parameters)]
 
     atexit.register(self.StopShell)
     with open(os.devnull, 'w') as devnull:

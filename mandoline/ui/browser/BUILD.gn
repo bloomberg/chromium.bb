@@ -33,7 +33,7 @@ source_set("lib") {
   ]
 
   deps = [
-    ":interfaces",
+    "public/interfaces",
     "//base",
     "//components/view_manager/public/cpp",
     "//mandoline/services/navigation/public/interfaces",
@@ -59,18 +59,4 @@ source_set("lib") {
       "android/android_ui.h",
     ]
   }
-}
-
-mojom("interfaces") {
-  sources = [
-    "omnibox.mojom",
-    "view_embedder.mojom",
-  ]
-
-  import_dirs = [ "//mojo/services" ]
-
-  deps = [
-    "//mojo/application/public/interfaces",
-    "//mojo/services/network/public/interfaces",
-  ]
 }

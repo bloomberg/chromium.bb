@@ -20,7 +20,7 @@
                    android:value="@integer/google_play_services_version" />
         <meta-data android:name="mojo_lib"
                    android:value="libmandoline_runner.so" />
-        <activity android:name="org.chromium.mojo.shell.MojoShellActivity"
+        <activity android:name="org.chromium.mandoline.MandolineActivity"
                   android:launchMode="singleTask"
                   android:theme="@android:style/Theme.Holo.Light.NoActionBar"
                   android:configChanges="orientation|keyboardHidden|keyboard|screenSize"

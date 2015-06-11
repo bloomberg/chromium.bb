@@ -1,0 +1,20 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
+
+mojom("interfaces") {
+  sources = [
+    "launch_handler.mojom",
+    "omnibox.mojom",
+    "view_embedder.mojom",
+  ]
+
+  import_dirs = [ "//mojo/services" ]
+
+  deps = [
+    "//mojo/application/public/interfaces",
+    "//mojo/services/network/public/interfaces",
+  ]
+}

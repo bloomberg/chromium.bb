@@ -18,6 +18,8 @@ group("android") {
 
 executable("mandoline_runner") {
   deps = [
+    ":jni_headers",
+    "//mandoline/ui/browser/public/interfaces",
     "//mojo/common",
     "//mojo/environment:chromium",
     "//mojo/runner:mojo_runner_lib",
@@ -25,6 +27,7 @@ executable("mandoline_runner") {
 
   sources = [
     "../core_services_initialization.cc",
+    "mandoline_activity.cc",
     "mandoline_context_init.cc",
   ]
 
@@ -90,6 +93,22 @@ generate_mojo_shell_assets_list("build_mandoline_assets") {
   dir = mandoline_assets_dir
 }
 
+android_library("java") {
+  java_files = [ "apk/src/org/chromium/mandoline/MandolineActivity.java" ]
+
+  deps = [
+    "//mojo/runner:java",
+    "//base:base_java",
+  ]
+}
+
+generate_jni("jni_headers") {
+  sources = [
+    "apk/src/org/chromium/mandoline/MandolineActivity.java",
+  ]
+  jni_package = "mandoline"
+}
+
 android_resources("mandoline_apk_resources") {
   custom_package = "org.chromium.mandoline"
   resource_dirs = [ "apk/res" ]
@@ -107,6 +126,7 @@ android_apk("mandoline_apk") {
   deps = [
     ":build_mandoline_assets",
     ":copy_mandoline_runner",
+    ":java",
     ":mandoline_apk_resources",
     "//mojo/runner:java",
     "//mojo/runner:resources",

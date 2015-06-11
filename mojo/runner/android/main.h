@@ -10,7 +10,11 @@
 namespace mojo {
 namespace runner {
 
+class Context;
+
 bool RegisterShellMain(JNIEnv* env);
+
+Context* GetContext();
 
 }  // namespace runner
 }  // namespace mojo

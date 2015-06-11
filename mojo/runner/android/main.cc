@@ -182,7 +182,7 @@ static void Init(JNIEnv* env,
   gfx::GLSurface::InitializeOneOff();
 }
 
-static jboolean Start(JNIEnv* env, jclass clazz) {
+static void Start(JNIEnv* env, jclass clazz) {
 #if defined(MOJO_SHELL_DEBUG_URL)
   base::CommandLine::ForCurrentProcess()->AppendArg(MOJO_SHELL_DEBUG_URL);
   // Sleep for 5 seconds to give the debugger a chance to attach.
@@ -192,7 +192,6 @@ static jboolean Start(JNIEnv* env, jclass clazz) {
   g_shell_thread.Get().reset(new base::DelegateSimpleThread(
       g_shell_runner.Get().get(), "ShellThread"));
   g_shell_thread.Get()->Start();
-  return true;
 }
 
 static void AddApplicationURL(JNIEnv* env, jclass clazz, jstring jurl) {
@@ -202,6 +201,10 @@ static void AddApplicationURL(JNIEnv* env, jclass clazz, jstring jurl) {
 
 bool RegisterShellMain(JNIEnv* env) {
   return RegisterNativesImpl(env);
+}
+
+Context* GetContext() {
+  return g_context.Get().get();
 }
 
 }  // namespace runner

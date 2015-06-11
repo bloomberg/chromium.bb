@@ -10,8 +10,9 @@
 #include "components/view_manager/public/interfaces/view_manager_root.mojom.h"
 #include "mandoline/services/navigation/public/interfaces/navigation.mojom.h"
 #include "mandoline/ui/browser/navigator_host_impl.h"
-#include "mandoline/ui/browser/omnibox.mojom.h"
-#include "mandoline/ui/browser/view_embedder.mojom.h"
+#include "mandoline/ui/browser/public/interfaces/launch_handler.mojom.h"
+#include "mandoline/ui/browser/public/interfaces/omnibox.mojom.h"
+#include "mandoline/ui/browser/public/interfaces/view_embedder.mojom.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/connect.h"
@@ -33,8 +34,10 @@ class Browser : public mojo::ApplicationDelegate,
                 public mojo::ViewManagerRootClient,
                 public OmniboxClient,
                 public ViewEmbedder,
+                public LaunchHandler,
                 public mojo::InterfaceFactory<mojo::NavigatorHost>,
-                public mojo::InterfaceFactory<ViewEmbedder> {
+                public mojo::InterfaceFactory<ViewEmbedder>,
+                public mojo::InterfaceFactory<LaunchHandler> {
  public:
   Browser();
   ~Browser() override;
@@ -70,6 +73,9 @@ class Browser : public mojo::ApplicationDelegate,
   // Overridden from ViewEmbedder:
   void Embed(mojo::URLRequestPtr request) override;
 
+  // Overridden from LaunchHandler:
+  void LaunchURL(const mojo::String& url) override;
+
   // Overridden from mojo::InterfaceFactory<mojo::NavigatorHost>:
   void Create(mojo::ApplicationConnection* connection,
               mojo::InterfaceRequest<mojo::NavigatorHost> request) override;
@@ -77,6 +83,10 @@ class Browser : public mojo::ApplicationDelegate,
   // Overridden from mojo::InterfaceFactory<ViewEmbedder>:
   void Create(mojo::ApplicationConnection* connection,
               mojo::InterfaceRequest<ViewEmbedder> request) override;
+
+  // Overridden from mojo::InterfaceFactory<LaunchHandler>:
+  void Create(mojo::ApplicationConnection* connection,
+              mojo::InterfaceRequest<LaunchHandler> request) override;
 
   void ShowOmnibox(mojo::URLRequestPtr request);
 
@@ -91,6 +101,7 @@ class Browser : public mojo::ApplicationDelegate,
   mojo::URLRequestPtr pending_request_;
 
   mojo::WeakBindingSet<ViewEmbedder> view_embedder_bindings_;
+  mojo::WeakBindingSet<LaunchHandler> launch_handler_bindings_;
 
   NavigatorHostImpl navigator_host_;
 

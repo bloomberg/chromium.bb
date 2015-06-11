@@ -1,22 +1,25 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.mojo.shell;
+package org.chromium.mandoline;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 
+import org.chromium.base.JNINamespace;
 import org.chromium.base.Log;
+import org.chromium.mojo.shell.ShellMain;
 
 /**
- * Activity for managing the Mojo Shell.
+ * Activity hosting the Mojo View Manager for Mandoline.
  */
-public class MojoShellActivity extends Activity {
-    private static final String TAG = "MojoShellActivity";
-    private static final String EXTRAS = "org.chromium.mojo.shell.extras";
+@JNINamespace("mandoline")
+public class MandolineActivity extends Activity {
+    private static final String TAG = "cr.MandolineActivity";
+    private static final String EXTRAS = "org.chromium.mandoline.extras";
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -31,7 +34,7 @@ public class MojoShellActivity extends Activity {
         if (Intent.ACTION_VIEW.equals(getIntent().getAction())) {
             Uri uri = getIntent().getData();
             if (uri != null) {
-                Log.i(TAG, "MojoShellActivity opening " + uri);
+                Log.i(TAG, "MandolineActivity opening " + uri);
                 if (parameters == null) {
                     parameters = new String[] {uri.toString()};
                 } else {
@@ -43,14 +46,22 @@ public class MojoShellActivity extends Activity {
             }
         }
 
-        // TODO(ppi): Gotcha - the call below will work only once per process lifetime, but the OS
-        // has no obligation to kill the application process between destroying and restarting the
-        // activity. If the application process is kept alive, initialization parameters sent with
-        // the intent will be stale.
-        // TODO(qsr): We should be passing application context here as required by
-        // InitApplicationContext on the native side. Currently we can't, as PlatformViewportAndroid
-        // relies on this being the activity context.
         ShellMain.ensureInitialized(this, parameters);
         ShellMain.start();
     }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+
+        if (Intent.ACTION_VIEW.equals(intent.getAction())) {
+            Uri uri = intent.getData();
+            if (uri != null) {
+                Log.i(TAG, "MandolineActivity launching new intent for uri: " + uri);
+                nativeLaunchURL(uri.toString());
+            }
+        }
+    }
+
+    private static native void nativeLaunchURL(String url);
 }

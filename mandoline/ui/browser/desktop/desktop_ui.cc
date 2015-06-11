@@ -8,7 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "mandoline/ui/aura/native_widget_view_manager.h"
 #include "mandoline/ui/browser/browser.h"
-#include "mandoline/ui/browser/omnibox.mojom.h"
+#include "mandoline/ui/browser/public/interfaces/omnibox.mojom.h"
 #include "mojo/common/common_type_converters.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "ui/views/background.h"

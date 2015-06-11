@@ -71,7 +71,7 @@ public class ShellMain {
     /**
      * Initializes the native system.
      **/
-    static void ensureInitialized(Context applicationContext, String[] parameters) {
+    public static void ensureInitialized(Context applicationContext, String[] parameters) {
         if (sInitialized) return;
         File localAppsDir = getLocalAppsDir(applicationContext);
         try {
@@ -109,11 +109,9 @@ public class ShellMain {
 
     /**
      * Starts the specified application in the specified context.
-     *
-     * @return <code>true</code> if an application has been launched.
      **/
-    static boolean start() {
-        return nativeStart();
+    public static void start() {
+        nativeStart();
     }
 
     /**
@@ -142,7 +140,7 @@ public class ShellMain {
     private static native void nativeInit(Context context, String mojoShellPath,
             String[] parameters, String cachedAppsDirectory, String tmpDir);
 
-    private static native boolean nativeStart();
+    private static native void nativeStart();
 
     private static native void nativeAddApplicationURL(String url);
 }
