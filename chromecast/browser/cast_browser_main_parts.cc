@@ -42,6 +42,7 @@
 #include "media/audio/audio_manager.h"
 #include "media/audio/audio_manager_factory.h"
 #include "media/base/browser_cdm_factory.h"
+#include "media/base/media.h"
 #include "ui/compositor/compositor_switches.h"
 
 #if defined(OS_ANDROID)
@@ -321,6 +322,7 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
       make_scoped_ptr(new RemoteDebuggingServer()));
 
   media::CastMediaShlib::Initialize(cmd_line->argv());
+  ::media::InitializeMediaLibrary();
 
   cast_browser_process_->SetCastService(CastService::Create(
       cast_browser_process_->browser_context(),
