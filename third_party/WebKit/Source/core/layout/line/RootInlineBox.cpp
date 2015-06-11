@@ -28,6 +28,7 @@
 #include "core/layout/LayoutView.h"
 #include "core/layout/VerticalPositionCache.h"
 #include "core/layout/line/EllipsisBox.h"
+#include "core/layout/line/GlyphOverflow.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/RootInlineBoxPainter.h"

@@ -760,6 +760,7 @@
             'layout/line/BreakingContext.cpp',
             'layout/line/EllipsisBox.cpp',
             'layout/line/EllipsisBox.h',
+            'layout/line/GlyphOverflow.h',
             'layout/line/InlineBox.cpp',
             'layout/line/InlineFlowBox.cpp',
             'layout/line/InlineIterator.h',

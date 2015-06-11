@@ -45,7 +45,7 @@ public:
 
 private:
     virtual bool isCombineText() const override { return true; }
-    virtual float width(unsigned from, unsigned length, const Font&, LayoutUnit xPosition, TextDirection, HashSet<const SimpleFontData*>* fallbackFonts = nullptr, GlyphOverflow* = nullptr) const override;
+    virtual float width(unsigned from, unsigned length, const Font&, LayoutUnit xPosition, TextDirection, HashSet<const SimpleFontData*>* fallbackFonts = nullptr, FloatRect* glyphBounds = nullptr) const override;
     virtual void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
     virtual void setTextInternal(PassRefPtr<StringImpl>) override;
     void updateIsCombined();

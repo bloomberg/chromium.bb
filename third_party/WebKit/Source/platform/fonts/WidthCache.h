@@ -43,7 +43,7 @@ struct WidthCacheEntry {
     }
     bool isValid() const { return !std::isnan(width); }
     float width;
-    FloatRectOutsets glyphBounds;
+    FloatRect glyphBounds;
 };
 
 class WidthCache {

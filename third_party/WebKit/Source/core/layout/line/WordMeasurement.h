@@ -46,6 +46,7 @@ public:
     int startOffset;
     int endOffset;
     HashSet<const SimpleFontData*> fallbackFonts;
+    FloatRect glyphBounds;
 };
 
 } // namespace blink

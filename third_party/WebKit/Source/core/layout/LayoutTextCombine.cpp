@@ -52,7 +52,7 @@ void LayoutTextCombine::setTextInternal(PassRefPtr<StringImpl> text)
     updateIsCombined();
 }
 
-float LayoutTextCombine::width(unsigned from, unsigned length, const Font& font, LayoutUnit xPosition, TextDirection direction, HashSet<const SimpleFontData*>* fallbackFonts, GlyphOverflow* glyphOverflow) const
+float LayoutTextCombine::width(unsigned from, unsigned length, const Font& font, LayoutUnit xPosition, TextDirection direction, HashSet<const SimpleFontData*>* fallbackFonts, FloatRect* glyphBounds) const
 {
     if (!length)
         return 0;
@@ -63,7 +63,7 @@ float LayoutTextCombine::width(unsigned from, unsigned length, const Font& font,
     if (m_isCombined)
         return font.fontDescription().computedSize();
 
-    return LayoutText::width(from, length, font, xPosition, direction, fallbackFonts, glyphOverflow);
+    return LayoutText::width(from, length, font, xPosition, direction, fallbackFonts, glyphBounds);
 }
 
 void scaleHorizontallyAndTranslate(GraphicsContext& context, float scaleX, float centerX, float offsetX, float offsetY)

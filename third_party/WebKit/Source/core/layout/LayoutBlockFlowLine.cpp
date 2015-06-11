@@ -33,6 +33,7 @@
 #include "core/layout/TextRunConstructor.h"
 #include "core/layout/VerticalPositionCache.h"
 #include "core/layout/line/BreakingContextInlineHeaders.h"
+#include "core/layout/line/GlyphOverflow.h"
 #include "core/layout/line/LayoutTextInfo.h"
 #include "core/layout/line/LineLayoutState.h"
 #include "core/layout/line/LineWidth.h"
@@ -371,17 +372,66 @@ static inline void setLogicalWidthForTextRun(RootInlineBox* lineBox, BidiRun* ru
     HashSet<const SimpleFontData*> fallbackFonts;
     GlyphOverflow glyphOverflow;
 
+    const Font& font = layoutText->style(lineInfo.isFirstLine())->font();
     // Always compute glyph overflow bounds if the block's line-box-contain value is "glyphs".
     if (lineBox->fitsToGlyphs())
         glyphOverflow.computeBounds = true;
 
     LayoutUnit hyphenWidth = 0;
-    if (toInlineTextBox(run->m_box)->hasHyphen()) {
-        const Font& font = layoutText->style(lineInfo.isFirstLine())->font();
+    if (toInlineTextBox(run->m_box)->hasHyphen())
         hyphenWidth = measureHyphenWidth(layoutText, font, run->direction());
+
+    float measuredWidth = 0;
+    FloatRect glyphBounds;
+
+    bool kerningIsEnabled = font.fontDescription().typesettingFeatures() & Kerning;
+
+#if OS(MACOSX)
+    // FIXME: Having any font feature settings enabled can lead to selection gaps on
+    // Chromium-mac. https://bugs.webkit.org/show_bug.cgi?id=113418
+    bool canUseSimpleFontCodePath = layoutText->canUseSimpleFontCodePath() && !font.fontDescription().featureSettings();
+#else
+    bool canUseSimpleFontCodePath = layoutText->canUseSimpleFontCodePath();
+#endif
+
+    if (canUseSimpleFontCodePath) {
+        int lastEndOffset = run->m_start;
+        for (size_t i = 0, size = wordMeasurements.size(); i < size && lastEndOffset < run->m_stop; ++i) {
+            const WordMeasurement& wordMeasurement = wordMeasurements[i];
+            if (wordMeasurement.width <=0 || wordMeasurement.startOffset == wordMeasurement.endOffset)
+                continue;
+            if (wordMeasurement.layoutText != layoutText || wordMeasurement.startOffset != lastEndOffset || wordMeasurement.endOffset > run->m_stop)
+                continue;
+
+            lastEndOffset = wordMeasurement.endOffset;
+            if (kerningIsEnabled && lastEndOffset == run->m_stop) {
+                int wordLength = lastEndOffset - wordMeasurement.startOffset;
+                measuredWidth += layoutText->width(wordMeasurement.startOffset, wordLength, xPos, run->direction(), lineInfo.isFirstLine());
+                if (i > 0 && wordLength == 1 && layoutText->characterAt(wordMeasurement.startOffset) == ' ')
+                    measuredWidth += layoutText->style()->wordSpacing();
+            } else {
+                FloatRect wordGlyphBounds = wordMeasurement.glyphBounds;
+                wordGlyphBounds.move(measuredWidth, 0);
+                glyphBounds.unite(wordGlyphBounds);
+                measuredWidth += wordMeasurement.width;
+            }
+            if (!wordMeasurement.fallbackFonts.isEmpty()) {
+                HashSet<const SimpleFontData*>::const_iterator end = wordMeasurement.fallbackFonts.end();
+                for (HashSet<const SimpleFontData*>::const_iterator it = wordMeasurement.fallbackFonts.begin(); it != end; ++it)
+                    fallbackFonts.add(*it);
+            }
+        }
+        if (measuredWidth && lastEndOffset != run->m_stop) {
+            // If we don't have enough cached data, we'll measure the run again.
+            measuredWidth = 0;
+            fallbackFonts.clear();
+        }
     }
 
-    float measuredWidth = layoutText->width(run->m_start, run->m_stop - run->m_start, xPos, run->direction(), lineInfo.isFirstLine(), &fallbackFonts, &glyphOverflow);
+    if (!measuredWidth)
+        measuredWidth = layoutText->width(run->m_start, run->m_stop - run->m_start, xPos, run->direction(), lineInfo.isFirstLine(), &fallbackFonts, &glyphBounds);
+
+    glyphOverflow.setFromBounds(glyphBounds, font.fontMetrics().floatAscent(), font.fontMetrics().floatDescent(), measuredWidth);
 
     run->m_box->setLogicalWidth(measuredWidth + hyphenWidth);
     if (!fallbackFonts.isEmpty()) {

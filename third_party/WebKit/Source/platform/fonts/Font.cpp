@@ -213,31 +213,13 @@ void Font::drawEmphasisMarks(SkCanvas* canvas, const TextRunPaintInfo& runInfo, 
     drawGlyphBuffer(canvas, paint, runInfo, glyphBuffer, point, deviceScaleFactor);
 }
 
-static inline void updateGlyphOverflowFromBounds(const FloatRectOutsets& glyphBounds,
-    const FontMetrics& fontMetrics, GlyphOverflow* glyphOverflow)
-{
-    glyphOverflow->top = ceilf(glyphOverflow->computeBounds ? glyphBounds.top() : std::max(0.0f, glyphBounds.top() - fontMetrics.floatAscent()));
-    glyphOverflow->bottom = ceilf(glyphOverflow->computeBounds ? glyphBounds.bottom() : std::max(0.0f, glyphBounds.bottom() - fontMetrics.floatDescent()));
-    glyphOverflow->left = ceilf(glyphBounds.left());
-    glyphOverflow->right = ceilf(glyphBounds.right());
-}
-
-float Font::width(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFonts, GlyphOverflow* glyphOverflow) const
+float Font::width(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFonts, FloatRect* glyphBounds) const
 {
     FontCachePurgePreventer purgePreventer;
 
-    CodePath codePathToUse = codePath(TextRunPaintInfo(run));
-
-    float result;
-    FloatRectOutsets glyphBounds;
-    if (codePathToUse == ComplexPath)
-        result = floatWidthForComplexText(run, fallbackFonts, &glyphBounds);
-    else
-        result = floatWidthForSimpleText(run, fallbackFonts, glyphOverflow ? &glyphBounds : 0);
-
-    if (glyphOverflow)
-        updateGlyphOverflowFromBounds(glyphBounds, fontMetrics(), glyphOverflow);
-    return result;
+    if (codePath(TextRunPaintInfo(run)) == ComplexPath)
+        return floatWidthForComplexText(run, fallbackFonts, glyphBounds);
+    return floatWidthForSimpleText(run, fallbackFonts, glyphBounds);
 }
 
 PassTextBlobPtr Font::buildTextBlob(const GlyphBuffer& glyphBuffer) const
@@ -688,7 +670,7 @@ void Font::drawTextBlob(SkCanvas* canvas, const SkPaint& paint, const SkTextBlob
     canvas->drawTextBlob(blob, origin.x(), origin.y(), paint);
 }
 
-float Font::floatWidthForComplexText(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFonts, FloatRectOutsets* glyphBounds) const
+float Font::floatWidthForComplexText(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFonts, FloatRect* outGlyphBounds) const
 {
     bool hasWordSpacingOrLetterSpacing = fontDescription().wordSpacing()
         || fontDescription().letterSpacing();
@@ -701,27 +683,25 @@ float Font::floatWidthForComplexText(const TextRun& run, HashSet<const SimpleFon
         ? m_fontFallbackList->widthCache().add(run, WidthCacheEntry())
         : 0;
     if (cacheEntry && cacheEntry->isValid()) {
-        ASSERT(glyphBounds);
-        *glyphBounds = cacheEntry->glyphBounds;
+        if (outGlyphBounds)
+            *outGlyphBounds = cacheEntry->glyphBounds;
         return cacheEntry->width;
     }
 
-    FloatRect bounds;
-    HarfBuzzShaper shaper(this, run, nullptr, fallbackFonts, glyphBounds ? &bounds : 0);
+    FloatRect glyphBounds;
+    HarfBuzzShaper shaper(this, run, nullptr, fallbackFonts, &glyphBounds);
     if (!shaper.shape())
         return 0;
 
-    glyphBounds->setTop(-bounds.y());
-    glyphBounds->setBottom(bounds.maxY());
-    glyphBounds->setLeft(std::max(0.0f, -bounds.x()));
-    glyphBounds->setRight(std::max(0.0f, bounds.maxX() - shaper.totalWidth()));
-
     float result = shaper.totalWidth();
+
     if (cacheEntry && (!fallbackFonts || fallbackFonts->isEmpty())) {
-        cacheEntry->glyphBounds = *glyphBounds;
+        cacheEntry->glyphBounds = glyphBounds;
         cacheEntry->width = result;
     }
 
+    if (outGlyphBounds)
+        *outGlyphBounds = glyphBounds;
     return result;
 }
 
@@ -780,20 +760,11 @@ void Font::drawGlyphBuffer(SkCanvas* canvas, const SkPaint& paint, const TextRun
     drawGlyphs(canvas, paint, fontData, glyphBuffer, lastFrom, nextGlyph - lastFrom, point, runInfo.bounds, deviceScaleFactor);
 }
 
-float Font::floatWidthForSimpleText(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFonts, FloatRectOutsets* glyphBounds) const
+float Font::floatWidthForSimpleText(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFonts, FloatRect* glyphBounds) const
 {
-    FloatRect bounds;
-    SimpleShaper shaper(this, run, nullptr, fallbackFonts, glyphBounds ? &bounds : 0);
+    SimpleShaper shaper(this, run, nullptr, fallbackFonts, glyphBounds);
     shaper.advance(run.length());
-    float runWidth = shaper.runWidthSoFar();
-
-    if (glyphBounds) {
-        glyphBounds->setTop(-bounds.y());
-        glyphBounds->setBottom(bounds.maxY());
-        glyphBounds->setLeft(std::max(0.0f, -bounds.x()));
-        glyphBounds->setRight(std::max(0.0f, bounds.maxX() - runWidth));
-    }
-    return runWidth;
+    return shaper.runWidthSoFar();
 }
 
 FloatRect Font::selectionRectForSimpleText(const TextRun& run, const FloatPoint& point, int h, int from, int to, bool accountForGlyphBounds) const
