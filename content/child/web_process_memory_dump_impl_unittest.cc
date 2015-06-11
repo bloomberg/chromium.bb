@@ -16,8 +16,7 @@ namespace content {
 // Tests that the Chromium<>Blink plumbing that exposes the MemoryInfra classes
 // behaves correctly, performs the right transfers of memory ownerships and
 // doesn't leak objects.
-// TODO(primiano): Temporarily disabled on 11/06/15 to unblock the blink roll.
-TEST(WebProcessMemoryDumpImplTest, DISABLED_IntegrationTest) {
+TEST(WebProcessMemoryDumpImplTest, IntegrationTest) {
   scoped_refptr<base::trace_event::TracedValue> traced_value(
       new base::trace_event::TracedValue());
 
@@ -50,19 +49,23 @@ TEST(WebProcessMemoryDumpImplTest, DISABLED_IntegrationTest) {
   ASSERT_EQ(wmad, wpmd2->getMemoryAllocatorDump("2/new"));
 
   // Check that the attributes are propagated correctly.
-  const char* attr_type = nullptr;
-  const char* attr_units = nullptr;
-  const base::Value* attr_value = nullptr;
-  bool has_attr = mad->Get("attr_name", &attr_type, &attr_units, &attr_value);
-  ASSERT_TRUE(has_attr);
-  ASSERT_STREQ(base::trace_event::MemoryAllocatorDump::kTypeScalar, attr_type);
-  ASSERT_STREQ("bytes", attr_units);
-  ASSERT_NE(static_cast<base::Value*>(nullptr), attr_value);
-  has_attr = mad->Get("attr_name_2", &attr_type, &attr_units, &attr_value);
-  ASSERT_TRUE(has_attr);
-  ASSERT_STREQ(base::trace_event::MemoryAllocatorDump::kTypeScalar, attr_type);
-  ASSERT_STREQ("rate", attr_units);
-  ASSERT_NE(static_cast<base::Value*>(nullptr), attr_value);
+  auto raw_attrs = mad->attributes_for_testing()->ToBaseValue();
+  base::DictionaryValue* attrs = nullptr;
+  ASSERT_TRUE(raw_attrs->GetAsDictionary(&attrs));
+  base::DictionaryValue* attr = nullptr;
+  ASSERT_TRUE(attrs->GetDictionary("attr_name", &attr));
+  std::string attr_value;
+  ASSERT_TRUE(attr->GetString("type", &attr_value));
+  ASSERT_EQ(base::trace_event::MemoryAllocatorDump::kTypeScalar, attr_value);
+  ASSERT_TRUE(attr->GetString("units", &attr_value));
+  ASSERT_EQ("bytes", attr_value);
+
+  ASSERT_TRUE(attrs->GetDictionary("attr_name_2", &attr));
+  ASSERT_TRUE(attr->GetString("type", &attr_value));
+  ASSERT_EQ(base::trace_event::MemoryAllocatorDump::kTypeScalar, attr_value);
+  ASSERT_TRUE(attr->GetString("units", &attr_value));
+  ASSERT_EQ("rate", attr_value);
+  ASSERT_TRUE(attr->HasKey("value"));
 
   // Check that AsValueInto() doesn't cause a crash.
   wpmd2->process_memory_dump()->AsValueInto(traced_value.get());
