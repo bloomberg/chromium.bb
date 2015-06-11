@@ -2,12 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/files/file.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/threading/worker_pool.h"
 #include "dbus/file_descriptor.h"
+
+using std::swap;
 
 namespace dbus {
 
@@ -17,9 +21,19 @@ void CHROME_DBUS_EXPORT FileDescriptor::Deleter::operator()(
       FROM_HERE, base::Bind(&base::DeletePointer<FileDescriptor>, fd), false);
 }
 
+FileDescriptor::FileDescriptor(RValue other)
+    : value_(-1), owner_(false), valid_(false) {
+  Swap(other.object);
+}
+
 FileDescriptor::~FileDescriptor() {
   if (owner_)
     base::File auto_closer(value_);
+}
+
+FileDescriptor& FileDescriptor::operator=(RValue other) {
+  Swap(other.object);
+  return *this;
 }
 
 int FileDescriptor::value() const {
@@ -39,6 +53,12 @@ void FileDescriptor::CheckValidity() {
   bool ok = file.GetInfo(&info);
   file.TakePlatformFile();  // Prevent |value_| from being closed by |file|.
   valid_ = (ok && !info.is_directory);
+}
+
+void FileDescriptor::Swap(FileDescriptor* other) {
+  swap(value_, other->value_);
+  swap(owner_, other->owner_);
+  swap(valid_, other->valid_);
 }
 
 }  // namespace dbus

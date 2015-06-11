@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/move.h"
 #include "dbus/dbus_export.h"
 
 namespace dbus {
@@ -33,6 +34,8 @@ namespace dbus {
 // also allows the caller to do this work on the File thread to conform
 // with i/o restrictions.
 class CHROME_DBUS_EXPORT FileDescriptor {
+  MOVE_ONLY_TYPE_FOR_CPP_03(FileDescriptor, RValue);
+
  public:
   // This provides a simple way to pass around file descriptors since they must
   // be closed on a thread that is allowed to perform I/O.
@@ -46,7 +49,13 @@ class CHROME_DBUS_EXPORT FileDescriptor {
   explicit FileDescriptor(int value) : value_(value), owner_(false),
       valid_(false) {}
 
+  // Move constructor for C++03 move emulation of this type.
+  FileDescriptor(RValue other);
+
   virtual ~FileDescriptor();
+
+  // Move operator= for C++03 move emulation of this type.
+  FileDescriptor& operator=(RValue other);
 
   // Retrieves value as an int without affecting ownership.
   int value() const;
@@ -70,11 +79,11 @@ class CHROME_DBUS_EXPORT FileDescriptor {
   void CheckValidity();
 
  private:
+  void Swap(FileDescriptor* other);
+
   int value_;
   bool owner_;
   bool valid_;
-
-  DISALLOW_COPY_AND_ASSIGN(FileDescriptor);
 };
 
 using ScopedFileDescriptor =
