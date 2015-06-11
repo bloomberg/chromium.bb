@@ -34,7 +34,7 @@ set -x
 set -e
 set -u
 
-declare -r GIT_BASE_URL=http://git.chromium.org/native_client
+declare -r GIT_BASE_URL=https://chromium.googlesource.com/native_client
 
 rm -f "$$.error"
 
