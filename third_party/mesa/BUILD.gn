@@ -665,7 +665,6 @@ if (!is_android) {  # TODO(GYP) enable for Android.
       "src/src/mesa/drivers/common/meta.c",
       "src/src/mesa/drivers/common/meta.h",
       "src/src/mesa/drivers/osmesa/osmesa.c",
-      "src/src/mesa/drivers/osmesa/osmesa.def",
     ]
 
     configs -= [ "//build/config/compiler:chromium_code" ]
