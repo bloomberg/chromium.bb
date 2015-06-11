@@ -68,9 +68,11 @@
                 ],
               },
               'link_settings': {
-                'libraries': [
-                  '$(SDKROOT)/usr/lib/libxml2.dylib',
-                ],
+                'xcode_settings': {
+                  'OTHER_LDFLAGS': [
+                    '-lxml2',
+                  ],
+                },
               },
             }],
           ],

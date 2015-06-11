@@ -55,8 +55,12 @@
         'libraries': [
           '$(SDKROOT)/System/Library/Frameworks/CFNetwork.framework',
           '$(SDKROOT)/System/Library/Frameworks/MobileCoreServices.framework',
-          '$(SDKROOT)/usr/lib/libz.dylib',
         ],
+        'xcode_settings': {
+          'OTHER_LDFLAGS': [
+            '-lz',
+          ],
+        },
       },
     },
   ],

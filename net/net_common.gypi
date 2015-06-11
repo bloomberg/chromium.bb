@@ -354,8 +354,12 @@
             '$(SDKROOT)/System/Library/Frameworks/MobileCoreServices.framework',
             '$(SDKROOT)/System/Library/Frameworks/Security.framework',
             '$(SDKROOT)/System/Library/Frameworks/SystemConfiguration.framework',
-            '$(SDKROOT)/usr/lib/libresolv.dylib',
           ],
+          'xcode_settings': {
+            'OTHER_LDFLAGS': [
+              '-lresolv',
+            ],
+          },
         },
       },
     ],
