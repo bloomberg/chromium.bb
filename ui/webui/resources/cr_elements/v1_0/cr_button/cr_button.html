@@ -4,7 +4,8 @@
 <dom-module id="cr-button">
   <link rel="import" type="css" href="cr_button.css">
   <template>
-    <paper-button disabled="[[disabled]]" raised="[[raised]]">
+    <paper-button active="{{active}}" disabled="[[disabled]]"
+        raised="[[raised]]" toggles="[[toggles]]" noink$="[[toggles]]">
       <content></content>
     </paper-button>
   </template>

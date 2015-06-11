@@ -10,10 +10,11 @@
 
 <dom-module id="cr-demo-element">
   <template>
-    <div>
+    <div class="layout vertical">
       <h3>cr-button</h3>
       <cr-button>Button</cr-button>
       <cr-button raised>Raised Button</cr-button>
+      <cr-button toggles>Toggle Button</cr-button>
     </div>
     <div>
       <h3>cr-checkbox</h3>
@@ -25,11 +26,23 @@
     </div>
     <div>
       <h3>cr-collapse</h3>
-      <cr-expand-button expanded="{{collapseOpened}}"></cr-expand-button>
-      <span>Toggle Collapse</span>
+      <div class="layout horizontal center">
+        <span>Collapse 1</span>
+        <cr-expand-button expanded="{{collapseOpened}}"></cr-expand-button>
+      </div>
       <cr-collapse opened="[[collapseOpened]]">
-        <div>
-          <span>Collapsable section</span>
+        <div class="layout vertical">
+          <span>Collapsable Section 1</span>
+          <cr-checkbox>Advanced option 1</cr-checkbox>
+          <cr-checkbox>Advanced option 2</cr-checkbox>
+        </div>
+      </cr-collapse>
+      <cr-button toggles active="{{collapseOpened2}}">
+        Collapse 2
+      </cr-button>
+      <cr-collapse opened="[[collapseOpened2]]">
+        <div class="layout vertical">
+          <span>Collapsable Section 2</span>
         </div>
       </cr-collapse>
     </div>

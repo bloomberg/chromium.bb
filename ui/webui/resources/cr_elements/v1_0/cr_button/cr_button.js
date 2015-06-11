@@ -38,5 +38,23 @@ Polymer({
       value: false,
       reflectToAttribute: true
     },
+
+    /**
+     * If true, clicking the button toggles the active state.
+     */
+    toggles: {
+      type: Boolean,
+      value: false
+    },
+
+    /**
+     * If true, the button is in the active state. Mostly useful when
+     * |toggles| is true.
+     */
+    active: {
+      type: Boolean,
+      value: false,
+      notify: true
+    }
   },
 });

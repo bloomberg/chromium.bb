@@ -6,3 +6,7 @@
   display: inline-block;
   vertical-align: middle;
 }
+
+paper-button[toggles][active] {
+    background-color: lightgrey;
+}
