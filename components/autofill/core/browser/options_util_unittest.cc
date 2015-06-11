@@ -23,6 +23,7 @@ class SyncServiceMock : public sync_driver::SyncService {
  public:
   MOCK_CONST_METHOD0(HasSyncSetupCompleted, bool());
   MOCK_CONST_METHOD0(IsSyncActive, bool());
+  MOCK_CONST_METHOD0(IsSyncAllowed, bool());
   MOCK_CONST_METHOD0(GetActiveDataTypes, syncer::ModelTypeSet());
   MOCK_METHOD1(AddObserver, void(sync_driver::SyncServiceObserver*));
   MOCK_METHOD1(RemoveObserver, void(sync_driver::SyncServiceObserver*));
@@ -60,6 +61,8 @@ scoped_ptr<SyncServiceMock> CreateSyncService(bool has_autofill_profile,
                                               bool has_autofill_wallet_data,
                                               bool is_enabled_and_logged_in) {
   scoped_ptr<SyncServiceMock> sync(new SyncServiceMock());
+
+  ON_CALL(*sync, IsSyncAllowed()).WillByDefault(Return(true));
 
   syncer::ModelTypeSet type_set;
   if (has_autofill_profile)

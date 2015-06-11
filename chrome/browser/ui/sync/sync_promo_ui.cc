@@ -13,8 +13,8 @@ bool SyncPromoUI::ShouldShowSyncPromo(Profile* profile) {
     return false;
   }
 
-  // Don't show if sync is disabled by policy.
-  if (!profile->IsSyncAccessible())
+  // Don't show if sync is not allowed to start.
+  if (!profile->IsSyncAllowed())
     return false;
 
   return true;

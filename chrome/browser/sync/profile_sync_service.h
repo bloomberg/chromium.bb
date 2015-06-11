@@ -275,6 +275,7 @@ class ProfileSyncService : public sync_driver::SyncService,
 
   // sync_driver::SyncService implementation
   bool HasSyncSetupCompleted() const override;
+  bool IsSyncAllowed() const override;
   bool IsSyncActive() const override;
   bool IsSyncEnabledAndLoggedIn() override;
   void DisableForUser() override;
@@ -494,7 +495,7 @@ class ProfileSyncService : public sync_driver::SyncService,
   static void SyncEvent(SyncEventCodes code);
 
   // Returns whether sync is allowed to run based on command-line switches.
-  // Profile::IsSyncAccessible() is probably a better signal than this function.
+  // Profile::IsSyncAllowed() is probably a better signal than this function.
   // This function can be called from any thread, and the implementation doesn't
   // assume it's running on the UI thread.
   static bool IsSyncAllowedByFlag();

@@ -470,7 +470,7 @@ Profile* SyncSetupHandler::GetProfile() const {
 
 ProfileSyncService* SyncSetupHandler::GetSyncService() const {
   Profile* profile = GetProfile();
-  return profile->IsSyncAccessible() ?
+  return profile->IsSyncAllowed() ?
       ProfileSyncServiceFactory::GetForProfile(GetProfile()) : NULL;
 }
 

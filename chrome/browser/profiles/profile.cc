@@ -182,9 +182,10 @@ bool Profile::IsNewProfile() {
       PrefService::INITIALIZATION_STATUS_CREATED_NEW_PREF_STORE;
 }
 
-bool Profile::IsSyncAccessible() {
-  if (ProfileSyncServiceFactory::HasProfileSyncService(this))
-    return !ProfileSyncServiceFactory::GetForProfile(this)->IsManaged();
+bool Profile::IsSyncAllowed() {
+  if (ProfileSyncServiceFactory::HasProfileSyncService(this)) {
+    return ProfileSyncServiceFactory::GetForProfile(this)->IsSyncAllowed();
+  }
 
   // No ProfileSyncService created yet - we don't want to create one, so just
   // infer the accessible state by looking at prefs/command line flags.

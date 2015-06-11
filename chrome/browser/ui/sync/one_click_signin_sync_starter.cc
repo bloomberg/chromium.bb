@@ -569,7 +569,7 @@ void OneClickSigninSyncStarter::ShowSettingsPage(bool configure_sync) {
 
 ProfileSyncService* OneClickSigninSyncStarter::GetProfileSyncService() {
   ProfileSyncService* service = NULL;
-  if (profile_->IsSyncAccessible())
+  if (profile_->IsSyncAllowed())
     service = ProfileSyncServiceFactory::GetForProfile(profile_);
   return service;
 }

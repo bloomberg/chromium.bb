@@ -118,7 +118,7 @@ const base::FilePath ExternalPrefLoader::GetBaseCrxFilePath() {
 void ExternalPrefLoader::StartLoading() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if ((options_ & DELAY_LOAD_UNTIL_PRIORITY_SYNC) &&
-      (profile_ && profile_->IsSyncAccessible())) {
+      (profile_ && profile_->IsSyncAllowed())) {
     if (!PostLoadIfPrioritySyncReady()) {
       DCHECK(profile_);
       PrefServiceSyncable* prefs = PrefServiceSyncable::FromProfile(profile_);

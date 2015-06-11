@@ -49,16 +49,15 @@ void SyncStartupTracker::CheckServiceState() {
 // static
 SyncStartupTracker::SyncServiceState SyncStartupTracker::GetSyncServiceState(
     Profile* profile) {
-  // If sync is disabled, treat this as a startup error.
-  if (!profile->IsSyncAccessible())
+  // If sync is not allowed, treat this as a startup error.
+  if (!profile->IsSyncAllowed())
     return SYNC_STARTUP_ERROR;
 
   ProfileSyncService* service =
       ProfileSyncServiceFactory::GetForProfile(profile);
 
-  // If no service exists or sync is disabled, treat as a startup error.
-  if (!profile->IsSyncAccessible() || !service ||
-      !service->IsSyncEnabledAndLoggedIn()) {
+  // If no service exists or it can't be started, treat as a startup error.
+  if (!service || !service->IsSyncEnabledAndLoggedIn()) {
     return SYNC_STARTUP_ERROR;
   }
 

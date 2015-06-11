@@ -290,8 +290,8 @@ ProfileSyncService::~ProfileSyncService() {
 }
 
 bool ProfileSyncService::IsSyncEnabledAndLoggedIn() {
-  // Exit if sync is disabled.
-  if (IsManaged() || !IsSyncRequested())
+  // Exit if sync is not allowed or not requested.
+  if (!IsSyncAllowed() || !IsSyncRequested())
     return false;
 
   return IsSignedIn();
@@ -313,8 +313,8 @@ void ProfileSyncService::Initialize() {
 
   sync_prefs_.AddSyncPrefObserver(this);
 
-  // For now, the only thing we can do through policy is to turn sync off.
-  if (IsManaged()) {
+  // If sync isn't allowed, the only thing to do is to turn it off.
+  if (!IsSyncAllowed()) {
     DisableForUser();
     return;
   }
@@ -1618,6 +1618,10 @@ void ProfileSyncService::SetSetupInProgress(bool setup_in_progress) {
   if (!setup_in_progress && backend_initialized())
     ReconfigureDatatypeManager();
   NotifyObservers();
+}
+
+bool ProfileSyncService::IsSyncAllowed() const {
+  return IsSyncAllowedByFlag() && !IsManaged();
 }
 
 bool ProfileSyncService::IsSyncActive() const {

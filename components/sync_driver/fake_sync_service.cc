@@ -16,6 +16,10 @@ bool FakeSyncService::HasSyncSetupCompleted() const {
   return false;
 }
 
+bool FakeSyncService::IsSyncAllowed() const {
+  return false;
+}
+
 bool FakeSyncService::IsSyncActive() const {
   return false;
 }

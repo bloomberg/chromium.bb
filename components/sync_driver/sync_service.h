@@ -35,6 +35,11 @@ class SyncService : public sync_driver::DataTypeEncryptionHandler {
   // is actually running.
   virtual bool HasSyncSetupCompleted() const = 0;
 
+  // Whether sync is allowed to start. Command line flags, platform-level
+  // overrides, and account-level overrides are examples of reasons this
+  // might be false.
+  virtual bool IsSyncAllowed() const = 0;
+
   // Returns true if sync is fully initialized and active. This implies that
   // an initial configuration has successfully completed, although there may
   // be datatype specific, auth, or other transient errors. To see which
@@ -69,7 +74,7 @@ class SyncService : public sync_driver::DataTypeEncryptionHandler {
   // Virtual to enable mocking in tests.
   // TODO(tim): Remove this? Nothing in ProfileSyncService uses it, and outside
   // callers use a seemingly arbitrary / redundant / bug prone combination of
-  // this method, IsSyncAccessible, and others.
+  // this method, IsSyncAllowed, and others.
   virtual bool IsSyncEnabledAndLoggedIn() = 0;
 
   // Disables sync for user. Use ShowLoginDialog to enable.
