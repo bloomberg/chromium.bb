@@ -102,7 +102,7 @@ public class Log {
      *             one is a {@link Throwable}, its trace will be printed.
      */
     private static void verbose(String tag, String messageTemplate, Object... args) {
-        if (android.util.Log.isLoggable(tag, android.util.Log.VERBOSE)) {
+        if (Log.isLoggable(tag, Log.VERBOSE)) {
             String message = formatLogWithStack(messageTemplate, args);
             Throwable tr = getThrowableToLog(args);
             if (tr != null) {
@@ -172,7 +172,7 @@ public class Log {
      *             one is a {@link Throwable}, its trace will be printed.
      */
     private static void debug(String tag, String messageTemplate, Object... args) {
-        if (android.util.Log.isLoggable(tag, android.util.Log.VERBOSE)) {
+        if (isLoggable(tag, Log.DEBUG)) {
             String message = formatLogWithStack(messageTemplate, args);
             Throwable tr = getThrowableToLog(args);
             if (tr != null) {
@@ -236,7 +236,7 @@ public class Log {
      *             one is a {@link Throwable}, its trace will be printed.
      */
     public static void i(String tag, String messageTemplate, Object... args) {
-        if (android.util.Log.isLoggable(tag, android.util.Log.INFO)) {
+        if (Log.isLoggable(tag, Log.INFO)) {
             String message = formatLog(messageTemplate, args);
             Throwable tr = getThrowableToLog(args);
             if (tr != null) {
@@ -257,7 +257,7 @@ public class Log {
      *             one is a {@link Throwable}, its trace will be printed.
      */
     public static void w(String tag, String messageTemplate, Object... args) {
-        if (android.util.Log.isLoggable(tag, android.util.Log.WARN)) {
+        if (Log.isLoggable(tag, Log.WARN)) {
             String message = formatLog(messageTemplate, args);
             Throwable tr = getThrowableToLog(args);
             if (tr != null) {
@@ -278,7 +278,7 @@ public class Log {
      *             one is a {@link Throwable}, its trace will be printed.
      */
     public static void e(String tag, String messageTemplate, Object... args) {
-        if (android.util.Log.isLoggable(tag, android.util.Log.ERROR)) {
+        if (Log.isLoggable(tag, Log.ERROR)) {
             String message = formatLog(messageTemplate, args);
             Throwable tr = getThrowableToLog(args);
             if (tr != null) {
@@ -303,7 +303,7 @@ public class Log {
      *             one is a {@link Throwable}, its trace will be printed.
      */
     public static void wtf(String tag, String messageTemplate, Object... args) {
-        if (android.util.Log.isLoggable(tag, android.util.Log.ERROR)) {
+        if (Log.isLoggable(tag, Log.ASSERT)) {
             String message = formatLog(messageTemplate, args);
             Throwable tr = getThrowableToLog(args);
             if (tr != null) {

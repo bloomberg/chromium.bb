@@ -43,6 +43,20 @@ throws a RuntimeException.
 Level here is either `VERBOSE`, `DEBUG`, `INFO`, `WARN`, `ERROR`, `ASSERT`, or `SUPPRESS`
 By default, the level for all tags is `INFO`.
 
+### An exception trace is printed when the exception is the last parameter ###
+
+As with `java.util.Log`, putting a throwable as last parameter will dump the corresponding stack
+trace:
+
+    Log.i(TAG, "An error happened: %s", e)
+
+    I/cr.YourModuleTag: ( 999): An error happened: This is the exception's message
+    I/cr.YourModuleTag: ( 999): java.lang.Exception: This is the exception's message
+    I/cr.YourModuleTag: ( 999):     at foo.bar.MyClass.test(MyClass.java:42)
+    I/cr.YourModuleTag: ( 999):     ...
+
+Having the exception as last parameter doesn't prevent it from being used for string formatting.
+
 ### Logging Best Practices
 
 #### Rule #1: Never log PII (Personal Identification Information):
