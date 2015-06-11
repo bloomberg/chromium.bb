@@ -82,28 +82,43 @@ GoogleUpdateErrorCode CanUpdateCurrentChrome(
   return GOOGLE_UPDATE_NO_ERROR;
 }
 
-// Creates an instance of a COM Local Server class using either plain vanilla
-// CoCreateInstance, or using the Elevation moniker if running on Vista.
-// hwnd must refer to a foregound window in order to get the UAC prompt
-// showing up in the foreground if running on Vista. It can also be NULL if
-// background UAC prompts are desired.
-HRESULT CoCreateInstanceAsAdmin(REFCLSID class_id,
+// Explicitly allow the Google Update service to impersonate the client since
+// some COM code elsewhere in the browser process may have previously used
+// CoInitializeSecurity to set the impersonation level to something other than
+// the default. Ignore errors since an attempt to use Google Update may succeed
+// regardless.
+void ConfigureProxyBlanket(IUnknown* interface_pointer) {
+  ::CoSetProxyBlanket(interface_pointer,
+                      RPC_C_AUTHN_DEFAULT,
+                      RPC_C_AUTHZ_DEFAULT,
+                      COLE_DEFAULT_PRINCIPAL,
+                      RPC_C_AUTHN_LEVEL_PKT_PRIVACY,
+                      RPC_C_IMP_LEVEL_IMPERSONATE,
+                      nullptr,
+                      EOAC_DYNAMIC_CLOAKING);
+}
+
+// Creates a class factory for a COM Local Server class using either plain
+// vanilla CoGetClassObject, or using the Elevation moniker if running on
+// Vista+. |hwnd| must refer to a foregound window in order to get the UAC
+// prompt to appear in the foreground if running on Vista+. It can also be NULL
+// if background UAC prompts are desired.
+HRESULT CoGetClassObjectAsAdmin(REFCLSID class_id,
                                 REFIID interface_id,
                                 gfx::AcceleratedWidget hwnd,
                                 void** interface_ptr) {
   if (!interface_ptr)
     return E_POINTER;
 
-  // For Vista, need to instantiate the COM server via the elevation
+  // For Vista+, need to instantiate the class factory via the elevation
   // moniker. This ensures that the UAC dialog shows up.
   if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
     wchar_t class_id_as_string[MAX_PATH] = {};
     StringFromGUID2(class_id, class_id_as_string,
                     arraysize(class_id_as_string));
 
-    base::string16 elevation_moniker_name =
-        base::StringPrintf(L"Elevation:Administrator!new:%ls",
-                           class_id_as_string);
+    base::string16 elevation_moniker_name = base::StringPrintf(
+        L"Elevation:Administrator!clsid:%ls", class_id_as_string);
 
     BIND_OPTS3 bind_opts;
     // An explicit memset is needed rather than relying on value initialization
@@ -113,12 +128,12 @@ HRESULT CoCreateInstanceAsAdmin(REFCLSID class_id,
     bind_opts.dwClassContext = CLSCTX_LOCAL_SERVER;
     bind_opts.hwnd = hwnd;
 
-    return CoGetObject(elevation_moniker_name.c_str(), &bind_opts, interface_id,
-                       interface_ptr);
+    return ::CoGetObject(elevation_moniker_name.c_str(), &bind_opts,
+                         interface_id, interface_ptr);
   }
 
-  return CoCreateInstance(class_id, NULL, CLSCTX_LOCAL_SERVER, interface_id,
-                          interface_ptr);
+  return ::CoGetClassObject(class_id, CLSCTX_LOCAL_SERVER, nullptr,
+                            interface_id, interface_ptr);
 }
 
 HRESULT CreateGoogleUpdate3WebClass(
@@ -129,21 +144,35 @@ HRESULT CreateGoogleUpdate3WebClass(
   if (g_google_update_factory)
     return g_google_update_factory->Run(google_update);
 
+  const CLSID& google_update_clsid = system_level_install ?
+      CLSID_GoogleUpdate3WebMachineClass :
+      CLSID_GoogleUpdate3WebUserClass;
+  base::win::ScopedComPtr<IClassFactory> class_factory;
+  HRESULT hresult = S_OK;
+
   // For a user-level install, update checks and updates can both be done by a
-  // normal user with the UserClass.
-  if (!system_level_install)
-    return google_update->CreateInstance(CLSID_GoogleUpdate3WebUserClass);
+  // normal user with the UserClass. For a system-level install, update checks
+  // can be done by a normal user with the MachineClass.
+  if (!system_level_install || !install_update_if_possible) {
+    hresult = ::CoGetClassObject(google_update_clsid, CLSCTX_ALL, nullptr,
+                                 base::win::ScopedComPtr<IClassFactory>::iid(),
+                                 class_factory.ReceiveVoid());
+  } else {
+    // For a system-level install, an update requires Admin privileges for
+    // writing to %ProgramFiles%. Elevate while instantiating the MachineClass.
+    hresult = CoGetClassObjectAsAdmin(
+        google_update_clsid, base::win::ScopedComPtr<IClassFactory>::iid(),
+        elevation_window, class_factory.ReceiveVoid());
+  }
+  if (FAILED(hresult))
+    return hresult;
 
-  // For a system-level install, update checks can be done by a normal user with
-  // the MachineClass.
-  if (!install_update_if_possible)
-    return google_update->CreateInstance(CLSID_GoogleUpdate3WebMachineClass);
+  ConfigureProxyBlanket(class_factory.get());
 
-  // For a system-level install, an update requires Admin privileges for writing
-  // to %ProgramFiles%. Elevate while instantiating the MachineClass.
-  return CoCreateInstanceAsAdmin(CLSID_GoogleUpdate3WebMachineClass,
-                                 IID_IGoogleUpdate3Web, elevation_window,
-                                 google_update->ReceiveVoid());
+  return class_factory->CreateInstance(
+      nullptr,
+      base::win::ScopedComPtr<IGoogleUpdate3Web>::iid(),
+      google_update->ReceiveVoid());
 }
 
 // UpdateCheckDriver -----------------------------------------------------------
@@ -395,6 +424,8 @@ HRESULT UpdateCheckDriver::BeginUpdateCheckInternal(
     return hresult;
   }
 
+  ConfigureProxyBlanket(google_update_.get());
+
   // The class was created, so all subsequent errors are reported as:
   *error_code = GOOGLE_UPDATE_ONDEMAND_CLASS_REPORTED_ERROR;
   base::string16 app_guid =
@@ -410,6 +441,7 @@ HRESULT UpdateCheckDriver::BeginUpdateCheckInternal(
     if (FAILED(hresult))
       return hresult;
   }
+  ConfigureProxyBlanket(app_bundle_.get());
 
   if (!locale_.empty()) {
     // Ignore the result of this since, while setting the display language is
@@ -439,6 +471,7 @@ HRESULT UpdateCheckDriver::BeginUpdateCheckInternal(
   hresult = dispatch.QueryInterface(app_.Receive());
   if (FAILED(hresult))
     return hresult;
+  ConfigureProxyBlanket(app_.get());
   return app_bundle_->checkForUpdate();
 }
 
@@ -453,6 +486,7 @@ bool UpdateCheckDriver::GetCurrentState(
   *hresult = dispatch.QueryInterface(current_state->Receive());
   if (FAILED(*hresult))
     return false;
+  ConfigureProxyBlanket(current_state->get());
   LONG value = 0;
   *hresult = (*current_state)->get_stateValue(&value);
   if (FAILED(*hresult))
