@@ -223,6 +223,8 @@
       'common/safe_browsing/download_protection_util.h',
       'common/safe_browsing/ipc_protobuf_message_macros.h',
       'common/safe_browsing/ipc_protobuf_message_null_macros.h',
+      'common/safe_browsing/mach_o_image_reader_mac.cc',
+      'common/safe_browsing/mach_o_image_reader_mac.h',
       'common/safe_browsing/pe_image_reader_win.cc',
       'common/safe_browsing/pe_image_reader_win.h',
       'common/safe_browsing/protobuf_message_log_macros.h',
