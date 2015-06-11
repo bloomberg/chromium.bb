@@ -141,7 +141,6 @@ void InvalidationServiceAndroid::Invalidate(JNIEnv* env,
   } else {
     invalidation::ObjectId object_id(
         object_source, ConvertJavaStringToUTF8(env, java_object_id));
-    syncer::ObjectIdInvalidationMap object_invalidation_map;
 
     if (version == ipc::invalidation::Constants::UNKNOWN) {
       object_invalidation_map.Insert(
