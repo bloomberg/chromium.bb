@@ -12,6 +12,5 @@ source_set("core") {
 
   public_deps = [
     "//base",
-    "//third_party/mojo/src/mojo/public/cpp/bindings",
   ]
 }

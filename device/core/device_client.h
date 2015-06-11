@@ -6,7 +6,6 @@
 #define DEVICE_CORE_DEVICE_CLIENT_H_
 
 #include "base/macros.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
 
 namespace device {
 
