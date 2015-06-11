@@ -221,6 +221,24 @@ class GitReadOnlyFunctionsTest(git_test_utils.GitRepoReadOnlyTestBase,
 
     self.repo.run(testfn)
 
+  def testStreamWithRetcode(self):
+    items = set(self.repo.commit_map.itervalues())
+
+    def testfn():
+      with self.gc.run_stream_with_retcode('log', '--format=%H') as stdout:
+        for line in stdout.xreadlines():
+          line = line.strip()
+          self.assertIn(line, items)
+          items.remove(line)
+
+    self.repo.run(testfn)
+
+  def testStreamWithRetcodeException(self):
+    import subprocess2
+    with self.assertRaises(subprocess2.CalledProcessError):
+      with self.gc.run_stream_with_retcode('checkout', 'unknown-branch'):
+        pass
+
   def testCurrentBranch(self):
     def cur_branch_out_of_git():
       os.chdir('..')

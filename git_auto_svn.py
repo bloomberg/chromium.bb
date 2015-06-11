@@ -21,7 +21,7 @@ import urlparse
 import subprocess2
 
 from git_common import run as run_git
-from git_common import run_stream as run_git_stream
+from git_common import run_stream_with_retcode as run_git_stream_with_retcode
 from git_common import set_config, root, ROOT
 from git_footers import get_footer_svn_id
 
@@ -90,8 +90,9 @@ def main(argv):
   set_config('svn-remote.svn.fetch',
              '%s:refs/remotes/%s' % (svn_path, upstream))
   print 'Configured metadata, running "git svn fetch". This may take some time.'
-  for line in run_git_stream('svn', 'fetch').xreadlines():
-    print line.strip()
+  with run_git_stream_with_retcode('svn', 'fetch') as stdout:
+    for line in stdout.xreadlines():
+      print line.strip()
   return 0
 
 

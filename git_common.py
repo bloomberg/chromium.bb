@@ -565,6 +565,28 @@ def run_stream(*cmd, **kwargs):
   return proc.stdout
 
 
+@contextlib.contextmanager
+def run_stream_with_retcode(*cmd, **kwargs):
+  """Runs a git command as context manager yielding stdout as a PIPE.
+
+  stderr is dropped to avoid races if the process outputs to both stdout and
+  stderr.
+
+  Raises subprocess2.CalledProcessError on nonzero return code.
+  """
+  kwargs.setdefault('stderr', subprocess2.VOID)
+  kwargs.setdefault('stdout', subprocess2.PIPE)
+  cmd = (GIT_EXE, '-c', 'color.ui=never') + cmd
+  try:
+    proc = subprocess2.Popen(cmd, **kwargs)
+    yield proc.stdout
+  finally:
+    retcode = proc.wait()
+    if retcode != 0:
+      raise subprocess2.CalledProcessError(retcode, cmd, os.getcwd(),
+                                           None, None)
+
+
 def run_with_stderr(*cmd, **kwargs):
   """Runs a git command.
 
