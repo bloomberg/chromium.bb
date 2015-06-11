@@ -1191,12 +1191,35 @@ static DeprecatedPaintLayer* findLayerForGraphicsLayer(DeprecatedPaintLayer* sea
 {
     *layerOffset = IntSize();
     if (searchRoot->hasCompositedDeprecatedPaintLayerMapping() && graphicsLayer == searchRoot->compositedDeprecatedPaintLayerMapping()->mainGraphicsLayer()) {
+        // If the |graphicsLayer| sets the scrollingContent layer as its
+        // scroll parent, consider it belongs to the scrolling layer and
+        // mark the layer type as "scrolling".
+        if (!searchRoot->layoutObject()->hasTransformRelatedProperty() && searchRoot->scrollParent() && searchRoot->parent() == searchRoot->scrollParent()) {
+            *layerType = "scrolling";
+            // For hit-test rect visualization to work, the hit-test rect should
+            // be relative to the scrolling layer and in this case the hit-test
+            // rect is relative to the element's own GraphicsLayer. So we will have
+            // to adjust the rect to be relative to the scrolling layer here.
+            // Only when the element's offsetParent == scroller's offsetParent we
+            // can compute the element's relative position to the scrolling content
+            // in this way.
+            if (searchRoot->layoutObject()->offsetParent() == searchRoot->parent()->layoutObject()->offsetParent()) {
+                LayoutBoxModelObject* current = searchRoot->layoutObject();
+                LayoutBoxModelObject* parent = searchRoot->parent()->layoutObject();
+                layerOffset->setWidth((parent->offsetLeft() - current->offsetLeft()).toInt());
+                layerOffset->setHeight((parent->offsetTop() - current->offsetTop()).toInt());
+                return searchRoot->parent();
+            }
+        }
+
         LayoutRect rect;
         DeprecatedPaintLayer::mapRectToPaintBackingCoordinates(searchRoot->layoutObject(), rect);
         *layerOffset = IntSize(rect.x(), rect.y());
         return searchRoot;
     }
 
+    // If the |graphicsLayer| is a scroller's scrollingContent layer,
+    // consider this is a scrolling layer.
     GraphicsLayer* layerForScrolling = searchRoot->scrollableArea() ? searchRoot->scrollableArea()->layerForScrolling() : 0;
     if (graphicsLayer == layerForScrolling) {
         *layerType = "scrolling";
