@@ -130,6 +130,10 @@ void Setup::InitIfNecessary(const gfx::Size& screen_size_in_pixels,
   // Display process ID, thread ID and timestamp in logs.
   logging::SetLogItems(true, true, true, false);
 
+  // TODO(fsamuel): Slimming paint currently crashes mandoline. Investigate.
+  // See http://crbug.com/499353.
+  blink::WebRuntimeFeatures::enableSlimmingPaint(false);
+
   if (command_line->HasSwitch(kDisableEncryptedMedia))
     blink::WebRuntimeFeatures::enableEncryptedMedia(false);
 
