@@ -391,10 +391,6 @@ extern const char kDisablePluginPowerSaver[];
 extern const char kEnablePluginPowerSaver[];
 #endif
 
-#ifndef NDEBUG
-extern const char kFileManagerExtensionPath[];
-#endif
-
 bool AboutInSettingsEnabled();
 bool MdSettingsEnabled();
 bool MediaRouterEnabled();

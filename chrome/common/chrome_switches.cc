@@ -1312,11 +1312,6 @@ const char kIpcFuzzerTestcase[]             = "ipc-fuzzer-testcase";
 const char kDebugPrint[] = "debug-print";
 #endif
 
-#ifndef NDEBUG
-// Enables overriding the path of file manager extension.
-const char kFileManagerExtensionPath[]      = "filemgr-ext-path";
-#endif
-
 bool AboutInSettingsEnabled() {
   return SettingsWindowEnabled() &&
          !base::CommandLine::ForCurrentProcess()->HasSwitch(
