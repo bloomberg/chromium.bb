@@ -6,7 +6,6 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
-        [0, 400, 800, 20],
         [0, 60, 200, 400],
         [0, 60, 100, 100],
         [0, 40, 200, 400],
@@ -15,7 +14,6 @@
         [0, 0, 800, 400]
       ],
       "paintInvalidationClients": [
-        "LayoutBlockFlow HTML",
         "LayoutBlockFlow BODY",
         "LayoutBlockFlow (relative positioned) DIV id='container'",
         "LayoutBlockFlow (relative positioned) DIV id='test'"

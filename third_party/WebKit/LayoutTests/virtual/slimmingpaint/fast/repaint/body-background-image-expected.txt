@@ -5,14 +5,13 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
+      "backgroundColor": "#FFFFFF",
       "repaintRects": [
         [8, 240, 784, 284],
-        [0, 0, 800, 600],
-        [0, 0, 800, 540]
+        [0, 0, 800, 600]
       ],
       "paintInvalidationClients": [
         "LayoutView #document",
-        "LayoutBlockFlow HTML",
         "LayoutBlockFlow BODY"
       ]
     }

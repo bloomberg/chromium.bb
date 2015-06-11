@@ -1,7 +1,7 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x518
-  LayoutBlockFlow {HTML} at (0,0) size 800x517.53 [bgcolor=#FFFFFF]
+  LayoutBlockFlow {HTML} at (0,0) size 800x517.53
 layer at (173,32) size 454x454
   LayoutBlockFlow (relative positioned) {BODY} at (173.23,32) size 453.53x453.53 [color=#FFFFFF] [bgcolor=#DD6600]
     LayoutBlockFlow {DIV} at (0,0) size 453.53x0

@@ -17,8 +17,7 @@
         [9, 331, 243, 36],
         [9, 276, 242, 36],
         [9, 132, 293, 144],
-        [9, 132, 243, 180],
-        [0, 341, 800, 36]
+        [9, 132, 243, 180]
       ],
       "paintInvalidationClients": [
         "RootInlineBox",
@@ -37,7 +36,6 @@
         "InlineTextBox 'sed, sapien. Phasellus vehicula, sem at'",
         "InlineTextBox 'posuere vehicula, augue nibh molestie nisl,'",
         "InlineTextBox 'nec ullamcorper lacus ante vulputate pede.'",
-        "LayoutBlockFlow HTML",
         "LayoutTableCell TD id='col1'",
         "LayoutBlockFlow DIV",
         "LayoutText #text",

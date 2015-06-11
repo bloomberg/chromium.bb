@@ -4,10 +4,11 @@
     {
       "bounds": [800, 600],
       "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#D3D3D3",
       "children": [
         {
           "bounds": [800, 600],
-          "contentsOpaque": true,
           "drawsContent": true,
           "backgroundColor": "#D3D3D3",
           "children": [

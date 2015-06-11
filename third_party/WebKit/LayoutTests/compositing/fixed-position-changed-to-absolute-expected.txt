@@ -5,6 +5,7 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
+      "backgroundColor": "#402B3C",
       "children": [
         {
           "shouldFlattenTransform": false,

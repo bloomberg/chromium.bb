@@ -24,6 +24,7 @@
                             {
                               "bounds": [400, 400],
                               "drawsContent": true,
+                              "backgroundColor": "#FF0000",
                               "children": [
                                 {
                                   "position": [50, 50],
@@ -59,6 +60,7 @@ Frame: '<!--framePath //<!--frame0-->-->'
     {
       "bounds": [400, 400],
       "drawsContent": true,
+      "backgroundColor": "#FF0000",
       "children": [
         {
           "position": [50, 50],

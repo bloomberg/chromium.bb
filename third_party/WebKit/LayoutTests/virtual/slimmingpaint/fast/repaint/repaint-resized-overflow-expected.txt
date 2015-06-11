@@ -8,11 +8,9 @@
       "repaintRects": [
         [132, 200, 10, 52],
         [8, 204, 134, 52],
-        [8, 200, 108, 56],
-        [0, 212, 800, 52]
+        [8, 200, 108, 56]
       ],
       "paintInvalidationClients": [
-        "LayoutBlockFlow HTML",
         "LayoutBlockFlow DIV id='s'",
         "LayoutBlockFlow DIV id='t'"
       ]

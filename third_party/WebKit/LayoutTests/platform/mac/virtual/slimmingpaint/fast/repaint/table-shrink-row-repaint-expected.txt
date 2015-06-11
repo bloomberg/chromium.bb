@@ -80,10 +80,12 @@
         [8, 120, 769, 60],
         [8, 120, 769, 60],
         [8, 115, 769, 205],
+        [0, 848, 785, 200],
         [0, 0, 785, 1048],
         [0, 0, 785, 848]
       ],
       "paintInvalidationClients": [
+        "LayoutView #document",
         "LayoutBlockFlow HTML",
         "LayoutTableCell TD id='resizeMe'",
         "LayoutTableRow TR",

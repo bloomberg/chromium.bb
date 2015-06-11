@@ -4,10 +4,7 @@
     {
       "bounds": [2008, 2008],
       "contentsOpaque": true,
-      "drawsContent": true,
-      "repaintRects": [
-        [0, 200, 200, 100]
-      ]
+      "drawsContent": true
     }
   ]
 }
@@ -31,10 +28,7 @@
     {
       "bounds": [2008, 2008],
       "contentsOpaque": true,
-      "drawsContent": true,
-      "repaintRects": [
-        [0, 250, 300, 50]
-      ]
+      "drawsContent": true
     }
   ]
 }

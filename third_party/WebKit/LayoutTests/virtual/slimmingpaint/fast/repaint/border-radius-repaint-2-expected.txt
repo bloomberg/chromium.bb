@@ -5,6 +5,7 @@
       "bounds": [874, 600],
       "contentsOpaque": true,
       "drawsContent": true,
+      "backgroundColor": "#3F3F3F",
       "repaintRects": [
         [141, 141, 600, 548],
         [138, 144, 606, 548],
@@ -13,10 +14,12 @@
         [8, 224, 784, 548],
         [8, 8, 866, 764],
         [8, 8, 866, 216],
+        [0, 600, 874, 180],
         [0, 0, 874, 780],
         [0, 0, 874, 232]
       ],
       "paintInvalidationClients": [
+        "LayoutView #document",
         "LayoutBlockFlow HTML",
         "LayoutBlockFlow BODY",
         "LayoutBlockFlow DIV",

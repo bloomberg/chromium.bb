@@ -10,11 +10,9 @@
         [14, 74, 2, 3],
         [12, 74, 100, 102],
         [11, 75, 100, 100],
-        [10, 77, 102, 99],
-        [0, 87, 808, 99]
+        [10, 77, 102, 99]
       ],
       "paintInvalidationClients": [
-        "LayoutBlockFlow HTML",
         "LayoutTableCell TD",
         "LayoutBlockFlow (floating) DIV id='target'",
         "LayoutTableCell TD",

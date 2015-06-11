@@ -4,11 +4,12 @@
     {
       "bounds": [800, 600],
       "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#0000FF",
       "children": [
         {
           "bounds": [800, 600],
           "drawsContent": true,
-          "backgroundColor": "#0000FF",
           "children": [
             {
               "position": [8, 8],

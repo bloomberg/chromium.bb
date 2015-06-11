@@ -27,6 +27,7 @@
                             {
                               "bounds": [305, 230],
                               "drawsContent": true,
+                              "backgroundColor": "#C0C0C0",
                               "children": [
                                 {
                                   "position": [18, 10],
@@ -72,6 +73,7 @@ Frame: '-->'
     {
       "bounds": [305, 230],
       "drawsContent": true,
+      "backgroundColor": "#C0C0C0",
       "children": [
         {
           "position": [18, 10],

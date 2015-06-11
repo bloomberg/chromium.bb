@@ -9,11 +9,9 @@
         [10, 75, 150, 16],
         [8, 72, 784, 22],
         [8, 72, 154, 22],
-        [8, 57, 11, 11],
-        [0, 80, 800, 22]
+        [8, 57, 11, 11]
       ],
       "paintInvalidationClients": [
-        "LayoutBlockFlow HTML",
         "LayoutDetailsMarker DIV id='details-marker'",
         "LayoutBlockFlow DIV id='details-content'",
         "LayoutTextControl INPUT",

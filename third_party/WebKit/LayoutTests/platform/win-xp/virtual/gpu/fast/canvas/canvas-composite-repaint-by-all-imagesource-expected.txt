@@ -5,6 +5,7 @@
       "bounds": [785, 933],
       "contentsOpaque": true,
       "drawsContent": true,
+      "backgroundColor": "#FFFFFF",
       "children": [
         {
           "position": [142, 64],

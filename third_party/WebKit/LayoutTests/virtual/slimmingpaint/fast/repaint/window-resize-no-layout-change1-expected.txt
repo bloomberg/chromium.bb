@@ -4,13 +4,7 @@
     {
       "bounds": [2008, 2016],
       "contentsOpaque": true,
-      "drawsContent": true,
-      "repaintRects": [
-        [0, 200, 200, 100]
-      ],
-      "paintInvalidationClients": [
-        "LayoutView #document"
-      ]
+      "drawsContent": true
     }
   ]
 }
@@ -22,11 +16,9 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
-        [200, 0, 100, 300],
         [0, 0, 300, 300]
       ],
       "paintInvalidationClients": [
-        "LayoutView #document",
         "LayoutView #document"
       ]
     }
@@ -38,13 +30,7 @@
     {
       "bounds": [2008, 2016],
       "contentsOpaque": true,
-      "drawsContent": true,
-      "repaintRects": [
-        [0, 250, 300, 50]
-      ],
-      "paintInvalidationClients": [
-        "LayoutView #document"
-      ]
+      "drawsContent": true
     }
   ]
 }
@@ -56,11 +42,9 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
-        [250, 0, 50, 250],
         [0, 0, 250, 250]
       ],
       "paintInvalidationClients": [
-        "LayoutView #document",
         "LayoutView #document"
       ]
     }

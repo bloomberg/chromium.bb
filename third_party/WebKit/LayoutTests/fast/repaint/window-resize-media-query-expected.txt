@@ -5,6 +5,7 @@
       "bounds": [200, 300],
       "contentsOpaque": true,
       "drawsContent": true,
+      "backgroundColor": "#0000FF",
       "repaintRects": [
         [0, 0, 200, 300],
         [0, 0, 200, 200]
@@ -19,6 +20,7 @@
       "bounds": [300, 300],
       "contentsOpaque": true,
       "drawsContent": true,
+      "backgroundColor": "#0000FF",
       "repaintRects": [
         [0, 0, 300, 300],
         [0, 0, 300, 300]
@@ -33,6 +35,7 @@
       "bounds": [300, 250],
       "contentsOpaque": true,
       "drawsContent": true,
+      "backgroundColor": "#0000FF",
       "repaintRects": [
         [0, 250, 300, 50]
       ]
@@ -46,6 +49,7 @@
       "bounds": [250, 250],
       "contentsOpaque": true,
       "drawsContent": true,
+      "backgroundColor": "#0000FF",
       "repaintRects": [
         [0, 0, 250, 250],
         [0, 0, 250, 250]

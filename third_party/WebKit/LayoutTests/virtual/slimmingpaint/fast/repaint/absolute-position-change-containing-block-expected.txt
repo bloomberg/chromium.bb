@@ -12,15 +12,13 @@
         [8, 5000, 100, 100],
         [8, 5000, 100, 100],
         [8, 8, 784, 2000],
-        [8, 8, 100, 100],
-        [0, 0, 800, 2016]
+        [8, 8, 100, 100]
       ],
       "paintInvalidationClients": [
         "LayoutBlockFlow (positioned) DIV id='container' class='fixed blue'",
         "LayoutBlockFlow (positioned) DIV class='absolute green'",
         "LayoutBlockFlow DIV id='container' class='fixed blue'",
         "LayoutBlockFlow (positioned) DIV class='absolute green'",
-        "LayoutBlockFlow HTML",
         "LayoutBlockFlow BODY",
         "LayoutBlockFlow DIV id='container' class='fixed blue'",
         "LayoutBlockFlow (positioned) DIV class='absolute green'"

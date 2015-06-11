@@ -11,11 +11,9 @@
         [8, 130, 784, 50],
         [8, 130, 784, 18],
         [8, 130, 784, 18],
-        [8, 130, 70, 17],
-        [0, 164, 800, 24]
+        [8, 130, 70, 17]
       ],
       "paintInvalidationClients": [
-        "LayoutBlockFlow HTML",
         "LayoutBlockFlow DIV id='allcontent'",
         "LayoutBlockFlow (relative positioned) P",
         "LayoutText #text",

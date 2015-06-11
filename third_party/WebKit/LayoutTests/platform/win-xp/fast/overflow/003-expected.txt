@@ -1,7 +1,7 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (10,10) size 780x302
-  LayoutBlockFlow {fake} at (10,10) size 780x302 [bgcolor=#FFFF00]
+  LayoutBlockFlow {fake} at (10,10) size 780x302
 layer at (10,10) size 282x302 clip at (11,11) size 265x300 scrollHeight 1274
   LayoutBlockFlow {channel} at (0,0) size 282x302 [bgcolor=#EEEEEE] [border: (1px solid #000000)]
     LayoutBlockFlow {title} at (11,11) size 255x18

@@ -12,8 +12,6 @@
         [8, 16, 784, 18],
         [8, 16, 769, 18],
         [0, 0, 2008, 2092],
-        [0, 0, 800, 600],
-        [0, 0, 785, 585],
         [0, 0, 785, 585]
       ],
       "paintInvalidationClients": [
@@ -28,7 +26,6 @@
         "InlineTextBox '.'",
         "LayoutView #document",
         "LayoutView #document",
-        "LayoutBlockFlow HTML",
         "LayoutBlockFlow BODY",
         "LayoutBlockFlow P",
         "LayoutBlockFlow P"

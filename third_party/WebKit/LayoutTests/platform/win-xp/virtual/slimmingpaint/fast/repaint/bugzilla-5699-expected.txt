@@ -12,14 +12,12 @@
         [8, 150, 4, 19],
         [8, 150, 4, 19],
         [8, 136, 784, 67],
-        [8, 136, 4, 19],
-        [0, 192, 800, 28]
+        [8, 136, 4, 19]
       ],
       "paintInvalidationClients": [
         "InlineTextBox ''",
         "InlineTextBox '\n'",
         "RootInlineBox",
-        "LayoutBlockFlow HTML",
         "LayoutBlockFlow P",
         "LayoutBlockFlow P",
         "LayoutInline SPAN id='d'",
