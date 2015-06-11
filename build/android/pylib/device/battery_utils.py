@@ -324,7 +324,9 @@ class BatteryUtils(object):
       device_errors.DeviceVersionError: If device is not L or higher.
     """
     def battery_updates_enabled():
-      return self.GetCharging() is True
+      return (self.GetCharging()
+              or not bool('UPDATES STOPPED' in self._device.RunShellCommand(
+                  ['dumpsys', 'battery'], check_return=True)))
 
     if (self._device.build_version_sdk <
         constants.ANDROID_SDK_VERSION_CODES.LOLLIPOP):
