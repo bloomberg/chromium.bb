@@ -297,16 +297,30 @@ Node* StyledMarkupSerializer<Strategy>::traverseNodesForSerialization(Node* star
 }
 
 template<typename Strategy>
+bool StyledMarkupSerializer<Strategy>::needsInlineStyle(const Element& element)
+{
+    if (!element.isHTMLElement())
+        return false;
+    if (m_shouldAnnotate == AnnotateForInterchange)
+        return true;
+    return convertBlocksToInlines() && isBlock(&element);
+}
+
+template<typename Strategy>
 void StyledMarkupSerializer<Strategy>::wrapWithNode(StyledMarkupAccumulator& accumulator, ContainerNode& node, PassRefPtrWillBeRawPtr<EditingStyle> style)
 {
     StringBuilder markup;
-    if (node.isElementNode())
-        accumulator.appendElement(markup, toElement(node), convertBlocksToInlines() && isBlock(&node), style);
-    else
+    if (!node.isElementNode()) {
         accumulator.appendStartMarkup(markup, node);
-    accumulator.pushMarkup(markup.toString());
-    if (!node.isElementNode())
+        accumulator.pushMarkup(markup.toString());
         return;
+    }
+    Element& element = toElement(node);
+    if (accumulator.shouldApplyWrappingStyle(element) || needsInlineStyle(element))
+        accumulator.appendElementWithInlineStyle(markup, element, style);
+    else
+        accumulator.appendElement(markup, element);
+    accumulator.pushMarkup(markup.toString());
     accumulator.appendEndTag(toElement(node));
 }
 

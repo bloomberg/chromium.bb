@@ -64,18 +64,20 @@ public:
     void pushMarkup(const String&);
     RefPtrWillBeRawPtr<EditingStyle> createInlineStyle(Element&);
 
-    void appendElement(StringBuilder&, Element&, bool addDisplayInline, PassRefPtrWillBeRawPtr<EditingStyle>);
+    void appendElement(StringBuilder&, const Element&);
+    void appendElementWithInlineStyle(StringBuilder&, const Element&, PassRefPtrWillBeRawPtr<EditingStyle>);
     void appendStartMarkup(StringBuilder&, Node&);
+
+    bool shouldApplyWrappingStyle(const Node&) const;
 
 private:
     void appendText(StringBuilder&, Text&);
 
     String renderedText(Text&);
     String stringValueForRange(const Text&);
-    bool shouldApplyWrappingStyle(const Node&) const;
     bool shouldAnnotate() const;
 
-    void appendElement(Element&, PassRefPtrWillBeRawPtr<EditingStyle>);
+    void appendElement(const Element&, PassRefPtrWillBeRawPtr<EditingStyle>);
     void appendEndMarkup(StringBuilder&, const Element&);
 
     MarkupFormatter m_formatter;

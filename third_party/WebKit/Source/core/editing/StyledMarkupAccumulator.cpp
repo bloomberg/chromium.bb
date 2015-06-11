@@ -135,9 +135,13 @@ void StyledMarkupAccumulator::appendText(StringBuilder& out, Text& text)
         out.append("</span>");
 }
 
-void StyledMarkupAccumulator::appendElement(Element& element, PassRefPtrWillBeRawPtr<EditingStyle> style)
+void StyledMarkupAccumulator::appendElement(const Element& element, PassRefPtrWillBeRawPtr<EditingStyle> style)
 {
-    appendElement(m_result, element, false, style);
+    if ((element.isHTMLElement() && shouldAnnotate()) || shouldApplyWrappingStyle(element)) {
+        appendElementWithInlineStyle(m_result, element, style);
+        return;
+    }
+    appendElement(m_result, element);
 }
 
 RefPtrWillBeRawPtr<EditingStyle> StyledMarkupAccumulator::createInlineStyle(Element& element)
@@ -161,29 +165,31 @@ RefPtrWillBeRawPtr<EditingStyle> StyledMarkupAccumulator::createInlineStyle(Elem
     return inlineStyle;
 }
 
-void StyledMarkupAccumulator::appendElement(StringBuilder& out, Element& element, bool addDisplayInline, PassRefPtrWillBeRawPtr<EditingStyle> style)
+void StyledMarkupAccumulator::appendElementWithInlineStyle(StringBuilder& out, const Element& element, PassRefPtrWillBeRawPtr<EditingStyle> style)
 {
     const bool documentIsHTML = element.document().isHTMLDocument();
     m_formatter.appendOpenTag(out, element, nullptr);
-
-    const bool shouldOverrideStyleAttr = (element.isHTMLElement() && (shouldAnnotate() || addDisplayInline)) || shouldApplyWrappingStyle(element);
-
     AttributeCollection attributes = element.attributes();
     for (const auto& attribute : attributes) {
         // We'll handle the style attribute separately, below.
-        if (attribute.name() == styleAttr && shouldOverrideStyleAttr)
+        if (attribute.name() == styleAttr)
             continue;
         m_formatter.appendAttribute(out, element, attribute, nullptr);
     }
-
-    if (shouldOverrideStyleAttr) {
-        if (style && !style->isEmpty()) {
-            out.appendLiteral(" style=\"");
-            MarkupFormatter::appendAttributeValue(out, style->style()->asText(), documentIsHTML);
-            out.append('\"');
-        }
+    if (style && !style->isEmpty()) {
+        out.appendLiteral(" style=\"");
+        MarkupFormatter::appendAttributeValue(out, style->style()->asText(), documentIsHTML);
+        out.append('\"');
     }
+    m_formatter.appendCloseTag(out, element);
+}
 
+void StyledMarkupAccumulator::appendElement(StringBuilder& out, const Element& element)
+{
+    m_formatter.appendOpenTag(out, element, nullptr);
+    AttributeCollection attributes = element.attributes();
+    for (const auto& attribute : attributes)
+        m_formatter.appendAttribute(out, element, attribute, nullptr);
     m_formatter.appendCloseTag(out, element);
 }
 

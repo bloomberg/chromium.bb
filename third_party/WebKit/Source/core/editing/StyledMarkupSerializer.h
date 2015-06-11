@@ -55,6 +55,7 @@ private:
     Node* traverseNodesForSerialization(Node* startNode, Node* pastEnd, StyledMarkupAccumulator*);
     void wrapWithNode(StyledMarkupAccumulator&, ContainerNode&, PassRefPtrWillBeRawPtr<EditingStyle>);
     RefPtrWillBeRawPtr<EditingStyle> createInlineStyleIfNeeded(StyledMarkupAccumulator&, Node&);
+    bool needsInlineStyle(const Element&);
 
     const PositionType m_start;
     const PositionType m_end;
