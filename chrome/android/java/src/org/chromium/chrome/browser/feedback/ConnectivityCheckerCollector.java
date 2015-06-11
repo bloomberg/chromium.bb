@@ -4,8 +4,11 @@
 
 package org.chromium.chrome.browser.feedback;
 
+import android.os.SystemClock;
+
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.profiles.Profile;
 
 import java.util.Collections;
@@ -26,18 +29,55 @@ public class ConnectivityCheckerCollector {
      * FeedbackData contains the set of information that is to be included in a feedback report.
      */
     public static final class FeedbackData {
-        private final Map<Type, Result> mConnections;
+        /**
+         * The key for the data describing the timeout that was set as a maximum for collecting
+         * the connection data. This is to better understand the connection data.
+         * This string is user visible.
+         */
+        @VisibleForTesting
+        static final String CONNECTION_CHECK_TIMEOUT_MS = "Connection check timeout (ms)";
 
-        FeedbackData(Map<Type, Result> connections) {
+        /**
+         * The key for the data describing how long time from the connection check was started,
+         * until the data was collected. This is to better understand the connection data.
+         * This string is user visible.
+         */
+        @VisibleForTesting
+        static final String CONNECTION_CHECK_ELAPSED_MS = "Connection check elapsed (ms)";
+
+        private final Map<Type, Result> mConnections;
+        private final int mTimeoutMs;
+        private final long mElapsedTimeMs;
+
+        FeedbackData(Map<Type, Result> connections, int timeoutMs, long elapsedTimeMs) {
             mConnections = connections;
+            mTimeoutMs = timeoutMs;
+            mElapsedTimeMs = elapsedTimeMs;
         }
 
         /**
          * @return a {@link Map} with information about connection status for different connection
          * types.
          */
-        public Map<Type, Result> getConnections() {
+        @VisibleForTesting
+        Map<Type, Result> getConnections() {
             return Collections.unmodifiableMap(mConnections);
+        }
+
+        /**
+         * @return the timeout that was used for data collection.
+         */
+        @VisibleForTesting
+        int getTimeoutMs() {
+            return mTimeoutMs;
+        }
+
+        /**
+         * @return the time that was used from starting the check until data was gathered.
+         */
+        @VisibleForTesting
+        long getElapsedTimeMs() {
+            return mElapsedTimeMs;
         }
 
         /**
@@ -48,6 +88,8 @@ public class ConnectivityCheckerCollector {
             for (Map.Entry<Type, Result> entry : mConnections.entrySet()) {
                 map.put(entry.getKey().name(), entry.getValue().name());
             }
+            map.put(CONNECTION_CHECK_TIMEOUT_MS, String.valueOf(mTimeoutMs));
+            map.put(CONNECTION_CHECK_ELAPSED_MS, String.valueOf(mElapsedTimeMs));
             return map;
         }
     }
@@ -65,6 +107,10 @@ public class ConnectivityCheckerCollector {
 
     private static class ConnectivityCheckerFuture implements Future<FeedbackData> {
         private final Map<Type, Result> mResult = new EnumMap<Type, Result>(Type.class);
+        // These timing values are set to -1 to signify an error until they are correctly set
+        // when starting the checks and gathering the data.
+        private int mTimeoutMs = -1;
+        private long mStartCheckTimeMs = -1;
 
         private class SingleTypeTask implements ConnectivityChecker.ConnectivityCheckerCallback {
             private final Type mType;
@@ -140,7 +186,8 @@ public class ConnectivityCheckerCollector {
                     result.put(type, Result.UNKNOWN);
                 }
             }
-            return new FeedbackData(result);
+            long elapsedTimeMs = SystemClock.elapsedRealtime() - mStartCheckTimeMs;
+            return new FeedbackData(result, mTimeoutMs, elapsedTimeMs);
         }
 
         @Override
@@ -152,6 +199,8 @@ public class ConnectivityCheckerCollector {
          * Starts a separate connectivity check for each {@link Type}.
          */
         public void startChecks(Profile profile, int timeoutMs) {
+            mTimeoutMs = timeoutMs;
+            mStartCheckTimeMs = SystemClock.elapsedRealtime();
             for (Type t : Type.values()) {
                 SingleTypeTask task = new SingleTypeTask(t);
                 task.start(profile, timeoutMs);

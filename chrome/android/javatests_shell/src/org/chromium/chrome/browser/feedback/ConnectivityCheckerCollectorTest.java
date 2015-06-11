@@ -68,6 +68,8 @@ public class ConnectivityCheckerCollectorTest extends ConnectivityCheckerTestBas
                     fail("Failed to recognize type " + re.getKey());
             }
         }
+        assertTrue("The elapsed time should be non-negative.", feedback.getElapsedTimeMs() >= 0);
+        assertEquals("The timeout value is wrong.", TIMEOUT_MS, feedback.getTimeoutMs());
     }
 
     @MediumTest
@@ -110,6 +112,8 @@ public class ConnectivityCheckerCollectorTest extends ConnectivityCheckerTestBas
                     fail("Failed to recognize type " + re.getKey());
             }
         }
+        assertTrue("The elapsed time should be non-negative.", feedback.getElapsedTimeMs() >= 0);
+        assertEquals("The timeout value is wrong.", TIMEOUT_MS, feedback.getTimeoutMs());
     }
 
     @SmallTest
@@ -120,10 +124,10 @@ public class ConnectivityCheckerCollectorTest extends ConnectivityCheckerTestBas
         connectionMap.put(Type.SYSTEM_HTTP, Result.UNKNOWN);
         connectionMap.put(Type.SYSTEM_HTTPS, Result.CONNECTED);
 
-        FeedbackData feedback = new FeedbackData(connectionMap);
+        FeedbackData feedback = new FeedbackData(connectionMap, 42, 21);
         Map<String, String> map = feedback.toMap();
 
-        assertEquals("Should have 4 entries.", 4, map.size());
+        assertEquals("Should have 6 entries.", 6, map.size());
         assertTrue(map.containsKey("CHROME_HTTP"));
         assertEquals("NOT_CONNECTED", map.get("CHROME_HTTP"));
         assertTrue(map.containsKey("CHROME_HTTPS"));
@@ -132,6 +136,10 @@ public class ConnectivityCheckerCollectorTest extends ConnectivityCheckerTestBas
         assertEquals("UNKNOWN", map.get("SYSTEM_HTTP"));
         assertTrue(map.containsKey("SYSTEM_HTTPS"));
         assertEquals("CONNECTED", map.get("SYSTEM_HTTPS"));
+        assertTrue(map.containsKey(FeedbackData.CONNECTION_CHECK_TIMEOUT_MS));
+        assertEquals("42", map.get(FeedbackData.CONNECTION_CHECK_TIMEOUT_MS));
+        assertTrue(map.containsKey(FeedbackData.CONNECTION_CHECK_ELAPSED_MS));
+        assertEquals("21", map.get(FeedbackData.CONNECTION_CHECK_ELAPSED_MS));
     }
 
     private static FeedbackData getResult(
