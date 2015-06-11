@@ -45,7 +45,6 @@ using web::NavigationManagerImpl;
 @end
 
 @interface CRWWebController (PrivateAPI)
-- (void)setPageScrollState:(const web::PageScrollState&)scrollState;
 - (void)setJsMessageQueueThrottled:(BOOL)throttle;
 - (void)removeDocumentLoadCommandsFromQueue;
 - (GURL)updateURLForHistoryNavigationFromURL:(const GURL&)startURL
@@ -936,13 +935,14 @@ WEB_TEST_F(CRWUIWebControllerPageScrollStateTest,
   float originMinimumZoomScale = scrollView.minimumZoomScale;
   float originMaximumZoomScale = scrollView.maximumZoomScale;
 
-  web::PageScrollState scrollState =
+  web::WebState* webState = [this->webController_ webState];
+  webState->GetNavigationManager()->GetLastCommittedItem()->SetPageScrollState(
       this->CreateTestScrollState(CGPointMake(1.0, 1.0),  // scroll offset
-                                  3.0,                    // relative zoom scale
-                                  1.0,   // original minimum zoom scale
-                                  5.0,   // original maximum zoom scale
-                                  1.0);  // original zoom scale
-  [this->webController_ setPageScrollState:scrollState];
+                                  3.0,    // relative zoom scale
+                                  1.0,    // original minimum zoom scale
+                                  5.0,    // original maximum zoom scale
+                                  1.0));  // original zoom scale
+  [this->webController_ restoreStateFromHistory];
 
   // setPageState: is async; wait for its completion.
   scrollView = [[[this->webController_ view] subviews][0] scrollView];
@@ -965,13 +965,15 @@ WEB_TEST_F(CRWUIWebControllerPageScrollStateTest,
                   " /></head><body>Test</body></html>");
 
   ui::test::uiview_utils::ForceViewRendering([this->webController_ view]);
-  web::PageScrollState scrollState =
+
+  web::WebState* webState = [this->webController_ webState];
+  webState->GetNavigationManager()->GetLastCommittedItem()->SetPageScrollState(
       this->CreateTestScrollState(CGPointMake(1.0, 1.0),  // scroll offset
-                                  3.0,                    // relative zoom scale
-                                  1.0,   // original minimum zoom scale
-                                  10.0,  // original maximum zoom scale
-                                  1.0);  // original zoom scale
-  [this->webController_ setPageScrollState:scrollState];
+                                  3.0,    // relative zoom scale
+                                  1.0,    // original minimum zoom scale
+                                  10.0,   // original maximum zoom scale
+                                  1.0));  // original zoom scale
+  [this->webController_ restoreStateFromHistory];
 
   // setPageState: is async; wait for its completion.
   id webView = [[this->webController_ view] subviews][0];
@@ -999,13 +1001,14 @@ WEB_TEST_F(CRWUIWebControllerPageScrollStateTest,
                   " /></head><body>Test</body></html>");
   ASSERT_TRUE(this->webController_.get().atTop);
 
-  web::PageScrollState scrollState =
+  web::WebState* webState = [this->webController_ webState];
+  webState->GetNavigationManager()->GetLastCommittedItem()->SetPageScrollState(
       this->CreateTestScrollState(CGPointMake(0.0, 30.0),  // scroll offset
-                                  5.0,   // relative zoom scale
-                                  1.0,   // original minimum zoom scale
-                                  5.0,   // original maximum zoom scale
-                                  1.0);  // original zoom scale
-  [this->webController_ setPageScrollState:scrollState];
+                                  5.0,    // relative zoom scale
+                                  1.0,    // original minimum zoom scale
+                                  5.0,    // original maximum zoom scale
+                                  1.0));  // original zoom scale
+  [this->webController_ restoreStateFromHistory];
 
   // setPageState: is async; wait for its completion.
   id webView = [[this->webController_ view] subviews][0];
