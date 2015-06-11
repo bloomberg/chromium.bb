@@ -54,15 +54,6 @@
 #include "chrome/browser/extensions/token_cache/token_cache_service_factory.h"
 #include "chrome/browser/extensions/warning_badge_service_factory.h"
 #include "chrome/browser/speech/extension_api/tts_extension_api.h"
-#include "extensions/browser/api/api_resource_manager.h"
-#include "extensions/browser/api/bluetooth/bluetooth_api.h"
-#include "extensions/browser/api/bluetooth/bluetooth_private_api.h"
-#include "extensions/browser/api/bluetooth_low_energy/bluetooth_low_energy_api.h"
-#include "extensions/browser/api/bluetooth_socket/bluetooth_socket_event_dispatcher.h"
-#include "extensions/browser/api/power/power_api.h"
-#include "extensions/browser/api/virtual_keyboard_private/virtual_keyboard_private_api.h"
-#include "extensions/browser/api/web_request/web_request_api.h"
-#include "extensions/browser/declarative_user_script_manager_factory.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/extensions/file_manager/event_router_factory.h"
@@ -84,15 +75,11 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::AutofillPrivateEventRouterFactory::GetInstance();
   extensions::BookmarksAPI::GetFactoryInstance();
   extensions::BookmarkManagerPrivateAPI::GetFactoryInstance();
-  extensions::BluetoothAPI::GetFactoryInstance();
-  extensions::BluetoothLowEnergyAPI::GetFactoryInstance();
-  extensions::BluetoothPrivateAPI::GetFactoryInstance();
   extensions::BrailleDisplayPrivateAPI::GetFactoryInstance();
   extensions::chromedirectsetting::ChromeDirectSettingAPI::GetFactoryInstance();
   extensions::CommandService::GetFactoryInstance();
   extensions::ContentSettingsService::GetFactoryInstance();
   extensions::CookiesAPI::GetFactoryInstance();
-  extensions::DeclarativeUserScriptManagerFactory::GetInstance();
   extensions::DeveloperPrivateAPI::GetFactoryInstance();
   extensions::DialAPIFactory::GetInstance();
   extensions::EasyUnlockPrivateAPI::GetFactoryInstance();
@@ -127,7 +114,6 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 #if defined(ENABLE_PLUGINS)
   extensions::PluginManager::GetFactoryInstance();
 #endif  // defined(ENABLE_PLUGINS)
-  extensions::PowerAPI::GetFactoryInstance();
   extensions::PreferenceAPI::GetFactoryInstance();
   extensions::ProcessesAPI::GetFactoryInstance();
   extensions::ScreenlockPrivateEventRouter::GetFactoryInstance();
@@ -143,12 +129,8 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::TabCaptureRegistry::GetFactoryInstance();
   extensions::TabsWindowsAPI::GetFactoryInstance();
   extensions::TtsAPI::GetFactoryInstance();
-#if defined(OS_CHROMEOS)
-  extensions::VirtualKeyboardAPI::GetFactoryInstance();
-#endif
   extensions::WarningBadgeServiceFactory::GetInstance();
   extensions::WebNavigationAPI::GetFactoryInstance();
-  extensions::WebRequestAPI::GetFactoryInstance();
   extensions::WebrtcAudioPrivateEventService::GetFactoryInstance();
   extensions::WebstoreAPI::GetFactoryInstance();
 #if defined(OS_CHROMEOS)
@@ -156,7 +138,6 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 #endif
   TokenCacheServiceFactory::GetInstance();
   extensions::ExtensionGCMAppHandler::GetFactoryInstance();
-  extensions::core_api::BluetoothSocketEventDispatcher::GetFactoryInstance();
 }
 
 }  // namespace chrome_extensions
