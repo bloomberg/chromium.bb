@@ -124,6 +124,9 @@ public:
 
     StyleSheetList* styleSheets();
 
+    void setDelegatesFocus(bool flag) { m_delegatesFocus = flag; }
+    bool delegatesFocus() const { return m_delegatesFocus; }
+
     DECLARE_VIRTUAL_TRACE();
 
 private:
@@ -155,6 +158,7 @@ private:
     unsigned m_type : 1;
     unsigned m_registeredWithParentShadowRoot : 1;
     unsigned m_descendantInsertionPointsIsValid : 1;
+    unsigned m_delegatesFocus : 1;
 };
 
 inline Element* ShadowRoot::activeElement() const

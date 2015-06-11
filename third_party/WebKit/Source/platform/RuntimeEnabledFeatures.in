@@ -132,6 +132,7 @@ ServiceWorkerClientAttributes status=stable
 ServiceWorkerNotifications status=stable
 ServiceWorkerOnFetch status=stable
 ServiceWorkerPerformanceTimeline status=experimental
+ShadowRootDelegatesFocus status=experimental
 SharedWorker status=stable
 SlimmingPaint status=stable
 SlimmingPaintCompositorLayerization depends_on=SlimmingPaint

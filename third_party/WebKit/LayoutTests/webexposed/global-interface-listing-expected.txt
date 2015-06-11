@@ -5202,6 +5202,7 @@ interface Set
     method values
 interface ShadowRoot
     getter activeElement
+    getter delegatesFocus
     getter host
     getter innerHTML
     getter olderShadowRoot

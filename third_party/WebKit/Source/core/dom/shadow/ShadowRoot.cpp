@@ -62,6 +62,7 @@ ShadowRoot::ShadowRoot(Document& document, ShadowRootType type)
     , m_type(type)
     , m_registeredWithParentShadowRoot(false)
     , m_descendantInsertionPointsIsValid(false)
+    , m_delegatesFocus(false)
 {
 }
 

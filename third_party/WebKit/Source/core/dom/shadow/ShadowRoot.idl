@@ -36,6 +36,7 @@ interface ShadowRoot : DocumentFragment {
     [ImplementedAs=olderShadowRootForBindings] readonly attribute ShadowRoot? olderShadowRoot;
     [TreatNullAs=NullString, CustomElementCallbacks, RaisesException=Setter] attribute DOMString innerHTML;
     readonly attribute StyleSheetList styleSheets;
+    [RuntimeEnabled=ShadowRootDelegatesFocus] readonly attribute boolean delegatesFocus;
 
     // TODO(philipj): The spec does not override cloneNode() on the ShadowRoot
     // interface. Here, it's used to implement "Invoking the cloneNode() method

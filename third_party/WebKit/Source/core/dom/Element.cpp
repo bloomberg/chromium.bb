@@ -1814,7 +1814,12 @@ PassRefPtrWillBeRawPtr<ShadowRoot> Element::createShadowRoot(ScriptState* script
         return nullptr;
     }
 
-    return createShadowRoot(exceptionState);
+    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = createShadowRoot(exceptionState);
+
+    if (shadowRootInitDict.hasDelegatesFocus())
+        shadowRoot->setDelegatesFocus(shadowRootInitDict.delegatesFocus());
+
+    return shadowRoot.release();
 }
 
 PassRefPtrWillBeRawPtr<ShadowRoot> Element::createShadowRoot(ExceptionState& exceptionState)
@@ -2252,6 +2257,7 @@ bool Element::supportsFocus() const
     // it won't be focusable. Furthermore, supportsFocus cannot just return true
     // always or else tabIndex() will change for all HTML elements.
     return hasElementFlag(TabIndexWasSetExplicitly) || (hasEditableStyle() && parentNode() && !parentNode()->hasEditableStyle())
+        || (isShadowHost(this) && shadowRoot() && shadowRoot()->delegatesFocus())
         || supportsSpatialNavigationFocus();
 }
 

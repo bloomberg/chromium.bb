@@ -5,7 +5,7 @@ function createShadowRoot()
         var attributes = {};
         var parameter = {};
         for (var key in children[0]) {
-            if (key == 'mode')
+            if (key == 'mode' || key == 'delegatesFocus')
                 parameter[key] = children[0][key];
             else
                 attributes[key] = children[0][key];
