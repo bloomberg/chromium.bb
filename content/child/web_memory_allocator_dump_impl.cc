@@ -16,21 +16,21 @@ WebMemoryAllocatorDumpImpl::WebMemoryAllocatorDumpImpl(
 WebMemoryAllocatorDumpImpl::~WebMemoryAllocatorDumpImpl() {
 }
 
-void WebMemoryAllocatorDumpImpl::AddScalar(const blink::WebString& name,
+void WebMemoryAllocatorDumpImpl::AddScalar(const char* name,
                                            const char* units,
                                            uint64 value) {
-  memory_allocator_dump_->AddScalar(name.utf8(), units, value);
+  memory_allocator_dump_->AddScalar(name, units, value);
 }
 
-void WebMemoryAllocatorDumpImpl::AddScalarF(const blink::WebString& name,
+void WebMemoryAllocatorDumpImpl::AddScalarF(const char* name,
                                             const char* units,
                                             double value) {
-  memory_allocator_dump_->AddScalarF(name.utf8(), units, value);
+  memory_allocator_dump_->AddScalarF(name, units, value);
 }
 
-void WebMemoryAllocatorDumpImpl::AddString(const blink::WebString& name,
+void WebMemoryAllocatorDumpImpl::AddString(const char* name,
                                            const char* units,
                                            const blink::WebString& value) {
-  memory_allocator_dump_->AddString(name.utf8(), units, value.utf8());
+  memory_allocator_dump_->AddString(name, units, value.utf8());
 }
 }  // namespace content

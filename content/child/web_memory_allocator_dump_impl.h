@@ -26,13 +26,13 @@ class WebMemoryAllocatorDumpImpl : public blink::WebMemoryAllocatorDump {
   virtual ~WebMemoryAllocatorDumpImpl();
 
   // blink::WebMemoryAllocatorDump implementation.
-  virtual void AddScalar(const blink::WebString& name,
+  virtual void AddScalar(const char* name,
                          const char* units,
                          uint64 value);
-  virtual void AddScalarF(const blink::WebString& name,
+  virtual void AddScalarF(const char* name,
                           const char* units,
                           double value);
-  virtual void AddString(const blink::WebString& name,
+  virtual void AddString(const char* name,
                          const char* units,
                          const blink::WebString& value);
 
