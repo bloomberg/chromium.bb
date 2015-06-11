@@ -18,7 +18,8 @@ BLOB_CATEGORY = 'Blob'
 TIMELINE_REQUIRED_CATEGORY = 'blink.console'
 
 
-@benchmark.Disabled('reference')  # http://crbug.com/496155
+@benchmark.Disabled('reference',  # http://crbug.com/496155
+                    'android')    # http://crbug.com/499325
 class BlobStorage(perf_benchmark.PerfBenchmark):
   """Timeline based measurement benchmark for Blob Storage."""
 
