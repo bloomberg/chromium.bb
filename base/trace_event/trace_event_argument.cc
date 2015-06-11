@@ -453,7 +453,7 @@ void TracedValue::AppendAsTraceFormat(std::string* out) const {
 
 void TracedValue::EstimateTraceMemoryOverhead(
     TraceEventMemoryOverhead* overhead) {
-  overhead->Add("TracedValue", pickle_.size());
+  overhead->Add("TracedValue", pickle_.GetTotalAllocatedSize());
 }
 
 }  // namespace trace_event
