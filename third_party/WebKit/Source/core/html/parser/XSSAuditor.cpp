@@ -710,7 +710,14 @@ String XSSAuditor::canonicalize(String snippet, TruncationKind treatment)
     String decodedSnippet = fullyDecodeString(snippet, m_encoding);
 
     if (treatment != NoTruncation) {
-        decodedSnippet.truncate(kMaximumFragmentLengthTarget);
+        if (decodedSnippet.length() > kMaximumFragmentLengthTarget) {
+            // Let the page influence the stopping point to avoid disclosing leading fragments.
+            // Stop when we hit whitespace, since that is unlikely to be part a leading fragment.
+            size_t position = kMaximumFragmentLengthTarget;
+            while (position < decodedSnippet.length() && !isHTMLSpace(decodedSnippet[position]))
+                ++position;
+            decodedSnippet.truncate(position);
+        }
         if (treatment == SrcLikeAttributeTruncation)
             truncateForSrcLikeAttribute(decodedSnippet);
         else if (treatment == ScriptLikeAttributeTruncation)
