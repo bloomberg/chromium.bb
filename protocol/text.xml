@@ -28,7 +28,7 @@
 
   <interface name="wl_text_input" version="1">
     <description summary="text input">
-      An object used for text input. Adds support for text input and input 
+      An object used for text input. Adds support for text input and input
       methods to applications. A text-input object is created from a
       wl_text_input_manager and corresponds typically to a text entry in an
       application.
@@ -51,7 +51,7 @@
 
     <request name="activate">
       <description summary="request activation">
-        Requests the text-input object to be activated (typically when the 
+        Requests the text-input object to be activated (typically when the
         text entry gets focus).
         The seat argument is a wl_seat which maintains the focus for this
         activation. The surface argument is a wl_surface assigned to the
@@ -171,7 +171,7 @@
     <request name="set_preferred_language">
       <description summary="sets preferred language">
         Sets a specific language. This allows for example a virtual keyboard to
-        show a language specific layout. The "language" argument is a RFC-3066 
+        show a language specific layout. The "language" argument is a RFC-3066
 	format language tag.
 
 	It could be used for example in a word processor to indicate language of
@@ -253,7 +253,7 @@
     <event name="preedit_styling">
       <description summary="pre-edit styling">
         Sets styling information on composing text. The style is applied for
-	length bytes from index relative to the beginning of the composing 
+	length bytes from index relative to the beginning of the composing
 	text (as byte offset). Multiple styles can
         be applied to a composing text by sending multiple preedit_styling
         events.
@@ -334,7 +334,7 @@
 
     <event name="language">
       <description summary="language">
-        Sets the language of the input text. The "language" argument is a RFC-3066 
+        Sets the language of the input text. The "language" argument is a RFC-3066
         format language tag.
       </description>
       <arg name="serial" type="uint" summary="serial of the latest known text input state"/>
