@@ -84,7 +84,8 @@ public:
     //
     // Hence, CrossThreadPersistent<> is required to allow finalization
     // to happen on a thread different than the thread creating the
-    // persistent reference.
+    // persistent reference. If the worker thread creation context
+    // supplies no extra 'clients', m_workerClients can be left as empty/null.
     OwnPtrWillBeCrossThreadPersistent<WorkerClients> m_workerClients;
 
     V8CacheOptions m_v8CacheOptions;

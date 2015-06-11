@@ -6,10 +6,10 @@
 #include "modules/compositorworker/CompositorWorkerManager.h"
 
 #include "bindings/core/v8/ScriptSourceCode.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/testing/DummyPageHolder.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerObjectProxy.h"
-#include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerThreadStartupData.h"
 #include "modules/compositorworker/CompositorWorkerThread.h"
 #include "platform/NotImplemented.h"
@@ -53,6 +53,32 @@ private:
     OwnPtr<Function<void()>> m_v8TerminationCallback;
 };
 
+// A null WorkerObjectProxy, supplied when creating CompositorWorkerThreads.
+class TestCompositorWorkerObjectProxy : public WorkerObjectProxy {
+public:
+    static PassOwnPtr<TestCompositorWorkerObjectProxy> create(ExecutionContext* context)
+    {
+        return adoptPtr(new TestCompositorWorkerObjectProxy(context));
+    }
+
+    // (Empty) WorkerReportingProxy implementation:
+    virtual void reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL, int exceptionId) { }
+    virtual void reportConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>) override { }
+    virtual void postMessageToPageInspector(const String&) override { }
+    virtual void postWorkerConsoleAgentEnabled() override { }
+
+    virtual void didEvaluateWorkerScript(bool success) override { }
+    virtual void workerGlobalScopeStarted(WorkerGlobalScope*) override { }
+    virtual void workerGlobalScopeClosed() override { }
+    virtual void workerThreadTerminated() override { }
+    virtual void willDestroyWorkerGlobalScope() override { }
+private:
+    TestCompositorWorkerObjectProxy(ExecutionContext* context)
+        : WorkerObjectProxy(context, nullptr)
+    {
+    }
+};
+
 } // namespace
 
 class CompositorWorkerManagerTest : public testing::Test {
@@ -60,7 +86,7 @@ public:
     void SetUp() override
     {
         m_page = DummyPageHolder::create();
-        m_objectProxy = WorkerObjectProxy::create(&m_page->document(), nullptr);
+        m_objectProxy = TestCompositorWorkerObjectProxy::create(&m_page->document());
         m_securityOrigin = SecurityOrigin::create(KURL(ParsedURLString, "http://fake.url/"));
     }
 
@@ -74,6 +100,7 @@ public:
     PassRefPtr<TestCompositorWorkerThread> createCompositorWorker(WebWaitableEvent* startEvent)
     {
         TestCompositorWorkerThread* workerThread = new TestCompositorWorkerThread(nullptr, *m_objectProxy, 0, startEvent);
+        OwnPtrWillBeRawPtr<WorkerClients> clients = nullptr;
         workerThread->start(WorkerThreadStartupData::create(
             KURL(ParsedURLString, "http://fake.url/"),
             "fake user agent",
@@ -82,7 +109,7 @@ public:
             DontPauseWorkerGlobalScopeOnStart,
             adoptPtr(new Vector<CSPHeaderAndType>()),
             m_securityOrigin.get(),
-            WorkerClients::create(),
+            clients.release(),
             V8CacheOptionsDefault));
         return adoptRef(workerThread);
     }

@@ -47,8 +47,7 @@ const AtomicString& CompositorWorker::interfaceName() const
 WorkerGlobalScopeProxy* CompositorWorker::createWorkerGlobalScopeProxy(ExecutionContext* worker)
 {
     ASSERT(executionContext()->isDocument());
-    OwnPtrWillBeRawPtr<WorkerClients> workerClients = WorkerClients::create();
-    return new CompositorWorkerMessagingProxy(this, workerClients.release());
+    return new CompositorWorkerMessagingProxy(this);
 }
 
 } // namespace blink

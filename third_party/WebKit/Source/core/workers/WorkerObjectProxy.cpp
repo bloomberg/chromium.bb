@@ -44,6 +44,7 @@ namespace blink {
 
 PassOwnPtr<WorkerObjectProxy> WorkerObjectProxy::create(ExecutionContext* executionContext, WorkerMessagingProxy* messagingProxy)
 {
+    ASSERT(messagingProxy);
     return adoptPtr(new WorkerObjectProxy(executionContext, messagingProxy));
 }
 

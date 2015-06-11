@@ -175,6 +175,8 @@ public:
         CSPHeaderAndType headerAndType("contentSecurityPolicy", ContentSecurityPolicyHeaderTypeReport);
         headers->append(headerAndType);
 
+        OwnPtrWillBeRawPtr<WorkerClients> clients = nullptr;
+
         m_workerThread->start(WorkerThreadStartupData::create(
             KURL(ParsedURLString, "http://fake.url/"),
             "fake user agent",
@@ -183,7 +185,7 @@ public:
             DontPauseWorkerGlobalScopeOnStart,
             headers.release(),
             m_securityOrigin.get(),
-            WorkerClients::create(),
+            clients.release(),
             V8CacheOptionsDefault));
         m_workerThread->backingThread().postTask(FROM_HERE, new SignalTask(completionEvent.get()));
         completionEvent->wait();

@@ -86,7 +86,9 @@ WorkerGlobalScope::WorkerGlobalScope(const KURL& url, const String& userAgent, W
     if (starterOrigin)
         securityOrigin()->transferPrivilegesFrom(*starterOrigin);
 
-    m_workerClients->reattachThread();
+    if (m_workerClients)
+        m_workerClients->reattachThread();
+
     m_thread->setWorkerInspectorController(m_workerInspectorController.get());
 }
 
