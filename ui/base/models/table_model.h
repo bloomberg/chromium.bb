@@ -125,12 +125,14 @@ struct UI_BASE_EXPORT TableColumn {
   float percent;
 
   // The minimum width required for all items in this column
-  // (including the header)
-  // to be visible.
+  // (including the header) to be visible.
   int min_visible_width;
 
-  // Is this column sortable? Default is false
+  // Is this column sortable? Default is false.
   bool sortable;
+
+  // Determines what sort order to apply initially. Default is true.
+  bool initial_sort_is_ascending;
 };
 
 }  // namespace ui

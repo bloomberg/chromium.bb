@@ -20,7 +20,8 @@ TableColumn::TableColumn()
       width(-1),
       percent(),
       min_visible_width(0),
-      sortable(false) {
+      sortable(false),
+      initial_sort_is_ascending(true) {
 }
 
 TableColumn::TableColumn(int id, Alignment alignment, int width, float percent)
@@ -30,7 +31,8 @@ TableColumn::TableColumn(int id, Alignment alignment, int width, float percent)
       width(width),
       percent(percent),
       min_visible_width(0),
-      sortable(false) {
+      sortable(false),
+      initial_sort_is_ascending(true) {
 }
 
 // TableModel -----------------------------------------------------------------

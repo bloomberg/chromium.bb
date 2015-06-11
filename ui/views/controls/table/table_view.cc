@@ -235,7 +235,8 @@ void TableView::ToggleSortOrder(int visible_column_index) {
   if (!sort.empty() && sort[0].column_id == column_id) {
     sort[0].ascending = !sort[0].ascending;
   } else {
-    SortDescriptor descriptor(column_id, true);
+    SortDescriptor descriptor(column_id, visible_columns_[
+        visible_column_index].column.initial_sort_is_ascending);
     sort.insert(sort.begin(), descriptor);
     // Only persist two sort descriptors.
     if (sort.size() > 2)
