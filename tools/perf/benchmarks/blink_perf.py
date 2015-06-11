@@ -122,7 +122,8 @@ class _BlinkPerfFullFrameMeasurement(_BlinkPerfMeasurement):
     assert 'content-shell' in options.browser_type
     options.AppendExtraBrowserArgs(['--expose-internals-for-testing'])
 
-
+# http://crbug.com/499472
+@benchmark.Disabled('reference', 'android', 'mac', 'win')
 class BlinkPerfAnimation(perf_benchmark.PerfBenchmark):
   tag = 'animation'
   test = _BlinkPerfMeasurement
