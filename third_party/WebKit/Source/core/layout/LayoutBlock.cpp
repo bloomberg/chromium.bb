@@ -1204,7 +1204,7 @@ static bool needsLayoutDueToStaticPosition(LayoutObject* child)
         return false;
     const ComputedStyle* style = child->style();
     bool isHorizontal = style->isHorizontalWritingMode();
-    return style->isDisplayInlineType() ? style->hasStaticInlinePosition(isHorizontal) : style->hasStaticBlockPosition(isHorizontal);
+    return style->hasStaticBlockPosition(isHorizontal) || (style->isOriginalDisplayInlineType() && style->hasStaticInlinePosition(isHorizontal));
 }
 
 void LayoutBlock::layoutPositionedObjects(bool relayoutChildren, PositionedLayoutBehavior info)
