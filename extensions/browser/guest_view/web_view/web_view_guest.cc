@@ -199,6 +199,15 @@ void WebViewGuest::CleanUp(int embedder_process_id, int view_instance_id) {
   GuestViewBase::CleanUp(embedder_process_id, view_instance_id);
 
   auto rph = content::RenderProcessHost::FromID(embedder_process_id);
+  // TODO(paulmeyer): It should be impossible for rph to be nullptr here, but
+  // this check is needed here for now as there seems to be occasional crashes
+  // because of this (http//crbug.com/499438). This should be removed once the
+  // cause is discovered and fixed.
+  DCHECK(rph != nullptr)
+      << "Cannot find RenderProcessHost for embedder process ID# "
+      << embedder_process_id;
+  if (rph == nullptr)
+    return;
   auto browser_context = rph->GetBrowserContext();
 
   // Clean up rules registries for the WebView.
