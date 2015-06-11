@@ -5,6 +5,7 @@
 package org.chromium.sync.signin;
 
 
+import android.Manifest;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.accounts.AccountManagerFuture;
@@ -13,8 +14,10 @@ import android.accounts.AuthenticatorException;
 import android.accounts.OperationCanceledException;
 import android.app.Activity;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Process;
 import android.util.Log;
 
 import org.chromium.base.ThreadUtils;
@@ -236,6 +239,11 @@ public class AccountManagerHelper {
         }
     }
 
+    private boolean hasUseCredentialsPermission() {
+        return mApplicationContext.checkPermission(Manifest.permission.USE_CREDENTIALS,
+                Process.myPid(), Process.myUid()) == PackageManager.PERMISSION_GRANTED;
+    }
+
     // Gets the auth token synchronously
     private String getAuthTokenInner(AccountManagerFuture<Bundle> future,
             AtomicBoolean errorEncountered) {
@@ -261,6 +269,11 @@ public class AccountManagerHelper {
             final String authTokenType, final GetAuthTokenCallback callback,
             final AtomicInteger numTries, final AtomicBoolean errorEncountered,
             final ConnectionRetry retry) {
+        // Return null token for no USE_CREDENTIALS permission.
+        if (!hasUseCredentialsPermission()) {
+            callback.tokenAvailable(null);
+            return;
+        }
         final AccountManagerFuture<Bundle> future = mAccountManager.getAuthToken(
                 account, authTokenType, true, null, null);
         errorEncountered.set(false);
@@ -349,6 +362,10 @@ public class AccountManagerHelper {
      * Removes an auth token from the AccountManager's cache.
      */
     public void invalidateAuthToken(String authToken) {
+        // Cancel operation for no USE_CREDENTIALS permission.
+        if (!hasUseCredentialsPermission()) {
+            return;
+        }
         if (authToken != null && !authToken.isEmpty()) {
             mAccountManager.invalidateAuthToken(GOOGLE_ACCOUNT_TYPE, authToken);
         }
