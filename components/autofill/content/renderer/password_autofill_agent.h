@@ -11,6 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "components/autofill/content/renderer/password_form_conversion_utils.h"
 #include "components/autofill/core/common/form_data_predictions.h"
 #include "components/autofill/core/common/password_form_field_prediction_map.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
@@ -114,8 +115,6 @@ class PasswordAutofillAgent : public content::RenderFrameObserver {
   typedef std::map<blink::WebElement, int> LoginToPasswordInfoKeyMap;
   typedef std::map<blink::WebInputElement, blink::WebInputElement>
       PasswordToLoginMap;
-  using FormsPredictionsMap =
-      std::map<autofill::FormData, autofill::PasswordFormFieldPredictionMap>;
 
   // This class keeps track of autofilled password input elements and makes sure
   // the autofilled password value is not accessible to JavaScript code until
@@ -238,9 +237,9 @@ class PasswordAutofillAgent : public content::RenderFrameObserver {
   void ClearPreview(blink::WebInputElement* username,
                     blink::WebInputElement* password);
 
-  // Extracts a PasswordForm from |form| and saves it as
-  // |provisionally_saved_form_|, as long as it satisfies |restriction|.
-  void ProvisionallySavePassword(const blink::WebFormElement& form,
+  // Saves |password_form| in |provisionally_saved_form_|, as long as it
+  // satisfies |restriction|.
+  void ProvisionallySavePassword(scoped_ptr<PasswordForm> password_form,
                                  ProvisionallySaveRestriction restriction);
 
   // Returns true if |provisionally_saved_form_| has enough information that
@@ -267,8 +266,7 @@ class PasswordAutofillAgent : public content::RenderFrameObserver {
   // Contains the most recent text that user typed or PasswordManager autofilled
   // in input elements. Used for storing username/password before JavaScript
   // changes them.
-  std::map<const blink::WebInputElement, blink::WebString>
-      nonscript_modified_values_;
+  ModifiedValues nonscript_modified_values_;
 
   PasswordValueGatekeeper gatekeeper_;
 

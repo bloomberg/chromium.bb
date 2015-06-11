@@ -175,6 +175,10 @@ const char kFormHTMLWithTwoTextFields[] =
     "  <INPUT type='submit' value='Login'/>"
     "</FORM>";
 
+const char kNoFormHTML[] =
+    "  <INPUT type='text' id='username'/>"
+    "  <INPUT type='password' id='password'/>";
+
 // Sets the "readonly" attribute of |element| to the value given by |read_only|.
 void SetElementReadOnly(WebInputElement& element, bool read_only) {
   element.setAttribute(WebString::fromUTF8("readonly"),
@@ -414,6 +418,22 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
     ASSERT_TRUE(message);
     base::Tuple<autofill::PasswordForm> args;
     AutofillHostMsg_PasswordFormSubmitted::Read(message, &args);
+    EXPECT_EQ(ASCIIToUTF16(username_value), base::get<0>(args).username_value);
+    EXPECT_EQ(ASCIIToUTF16(password_value), base::get<0>(args).password_value);
+    EXPECT_EQ(ASCIIToUTF16(new_password_value),
+              base::get<0>(args).new_password_value);
+  }
+
+  void ExpectInPageNavigationWithUsernameAndPasswords(
+      const std::string& username_value,
+      const std::string& password_value,
+      const std::string& new_password_value) {
+    const IPC::Message* message =
+        render_thread_->sink().GetFirstMessageMatching(
+            AutofillHostMsg_InPageNavigation::ID);
+    ASSERT_TRUE(message);
+    base::Tuple<autofill::PasswordForm> args;
+    AutofillHostMsg_InPageNavigation::Read(message, &args);
     EXPECT_EQ(ASCIIToUTF16(username_value), base::get<0>(args).username_value);
     EXPECT_EQ(ASCIIToUTF16(password_value), base::get<0>(args).password_value);
     EXPECT_EQ(ASCIIToUTF16(new_password_value),
@@ -1861,6 +1881,37 @@ TEST_F(PasswordAutofillAgentTest,
       ->WillSubmitForm(username_element_.form());
 
   ExpectFormSubmittedWithUsernameAndPasswords(kAliceUsername, "NewPass22", "");
+}
+
+TEST_F(PasswordAutofillAgentTest, NoForm_PromptForXHRSubmitWithoutNavigation) {
+  LoadHTML(kNoFormHTML);
+  UpdateUsernameAndPasswordElements();
+
+  SimulateUsernameChange("Bob");
+  SimulatePasswordChange("mypassword");
+
+  username_element_.setAttribute("style", "display:none;");
+  password_element_.setAttribute("style", "display:none;");
+
+  password_autofill_agent_->XHRSucceeded();
+
+  ExpectInPageNavigationWithUsernameAndPasswords("Bob", "mypassword", "");
+}
+
+TEST_F(PasswordAutofillAgentTest,
+       NoForm_NoPromptForXHRSubmitWithoutNavigationAndElementsVisible) {
+  LoadHTML(kNoFormHTML);
+  UpdateUsernameAndPasswordElements();
+
+  SimulateUsernameChange("Bob");
+  SimulatePasswordChange("mypassword");
+
+  password_autofill_agent_->XHRSucceeded();
+
+  const IPC::Message* message =
+      render_thread_->sink().GetFirstMessageMatching(
+          AutofillHostMsg_PasswordFormSubmitted::ID);
+  ASSERT_FALSE(message);
 }
 
 }  // namespace autofill

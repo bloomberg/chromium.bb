@@ -84,13 +84,12 @@ class PasswordFormBuilder {
   void AddHiddenField() { html_ += "<INPUT type=\"hidden\"/>"; }
 
   // Appends a new submit-type field at the end of the form with the specified
-  // |name|. If |activated| is true, the test will emulate as if this button
-  // were used to submit the form.
-  void AddSubmitButton(const char* name, bool activated) {
+  // |name|.
+  void AddSubmitButton(const char* name) {
     base::StringAppendF(
         &html_,
-        "<INPUT type=\"submit\" name=\"%s\" value=\"Submit\" %s/>",
-        name, activated ? "set-activated-submit" : "");
+        "<INPUT type=\"submit\" name=\"%s\" value=\"Submit\"/>",
+        name);
   }
 
   // Returns the HTML code for the form containing the fields that have been
@@ -135,15 +134,7 @@ class MAYBE_PasswordFormConversionUtilsTest : public content::RenderViewTest {
     frame->document().forms(forms);
     ASSERT_EQ(1U, forms.size());
 
-    WebVector<WebFormControlElement> control_elements;
-    forms[0].getFormControlElements(control_elements);
-    for (size_t i = 0; i < control_elements.size(); ++i) {
-      WebInputElement* input_element = toWebInputElement(&control_elements[i]);
-      if (input_element->hasAttribute("set-activated-submit"))
-        input_element->setActivatedSubmit(true);
-    }
-
-    *password_form = CreatePasswordForm(forms[0], nullptr, nullptr);
+    *password_form = CreatePasswordFormFromWebForm(forms[0], nullptr, nullptr);
   }
 
  private:
@@ -155,9 +146,9 @@ class MAYBE_PasswordFormConversionUtilsTest : public content::RenderViewTest {
 TEST_F(MAYBE_PasswordFormConversionUtilsTest, BasicFormAttributes) {
   PasswordFormBuilder builder(kTestFormActionURL);
   builder.AddUsernameField("username", "johnsmith", NULL);
-  builder.AddSubmitButton("inactive_submit", false);
-  builder.AddSubmitButton("active_submit", true);
-  builder.AddSubmitButton("inactive_submit2", false);
+  builder.AddSubmitButton("inactive_submit");
+  builder.AddSubmitButton("active_submit");
+  builder.AddSubmitButton("inactive_submit2");
   builder.AddPasswordField("password", "secret", NULL);
   std::string html = builder.ProduceHTML();
 
@@ -167,7 +158,6 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, BasicFormAttributes) {
 
   EXPECT_EQ("data:", password_form->signon_realm);
   EXPECT_EQ(GURL(kTestFormActionURL), password_form->action);
-  EXPECT_EQ(base::UTF8ToUTF16("active_submit"), password_form->submit_element);
   EXPECT_EQ(base::UTF8ToUTF16("username"), password_form->username_element);
   EXPECT_EQ(base::UTF8ToUTF16("johnsmith"), password_form->username_value);
   EXPECT_EQ(base::UTF8ToUTF16("password"), password_form->password_element);
@@ -185,7 +175,7 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, DisabledFieldsAreIgnored) {
   builder.AddDisabledUsernameField();
   builder.AddDisabledPasswordField();
   builder.AddPasswordField("password", "secret", NULL);
-  builder.AddSubmitButton("submit", true);
+  builder.AddSubmitButton("submit");
   std::string html = builder.ProduceHTML();
 
   scoped_ptr<PasswordForm> password_form;
@@ -255,7 +245,7 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, IdentifyingUsernameFields) {
       builder.AddPasswordField("password", "secret", NULL);
       builder.AddUsernameField("username3", names[2], cases[i].autocomplete[2]);
       builder.AddPasswordField("password2", "othersecret", NULL);
-      builder.AddSubmitButton("submit", true);
+      builder.AddSubmitButton("submit");
       std::string html = builder.ProduceHTML();
 
       scoped_ptr<PasswordForm> password_form;
@@ -313,7 +303,7 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, IdentifyingTwoPasswordFields) {
     builder.AddUsernameField("username1", "William", NULL);
     builder.AddPasswordField("password2", cases[i].password_values[1], NULL);
     builder.AddUsernameField("username2", "Smith", NULL);
-    builder.AddSubmitButton("submit", true);
+    builder.AddSubmitButton("submit");
     std::string html = builder.ProduceHTML();
 
     scoped_ptr<PasswordForm> password_form;
@@ -374,7 +364,7 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, IdentifyingThreePasswordFields) {
     builder.AddPasswordField("password2", cases[i].password_values[1], NULL);
     builder.AddUsernameField("username2", "Smith", NULL);
     builder.AddPasswordField("password3", cases[i].password_values[2], NULL);
-    builder.AddSubmitButton("submit", true);
+    builder.AddSubmitButton("submit");
     std::string html = builder.ProduceHTML();
 
     scoped_ptr<PasswordForm> password_form;
@@ -509,7 +499,7 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest,
     builder.AddPasswordField("password2", "beta", cases[i].autocomplete[1]);
     builder.AddUsernameField("username2", "Smith", NULL);
     builder.AddPasswordField("password3", "gamma", cases[i].autocomplete[2]);
-    builder.AddSubmitButton("submit", true);
+    builder.AddSubmitButton("submit");
     std::string html = builder.ProduceHTML();
 
     scoped_ptr<PasswordForm> password_form;
@@ -539,7 +529,7 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest,
 TEST_F(MAYBE_PasswordFormConversionUtilsTest, InvalidFormDueToBadActionURL) {
   PasswordFormBuilder builder("invalid_target");
   builder.AddUsernameField("username", "JohnSmith", NULL);
-  builder.AddSubmitButton("submit", true);
+  builder.AddSubmitButton("submit");
   builder.AddPasswordField("password", "secret", NULL);
   std::string html = builder.ProduceHTML();
 
@@ -553,7 +543,7 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest,
   PasswordFormBuilder builder(kTestFormActionURL);
   builder.AddUsernameField("username1", "John", NULL);
   builder.AddUsernameField("username2", "Smith", NULL);
-  builder.AddSubmitButton("submit", true);
+  builder.AddSubmitButton("submit");
   std::string html = builder.ProduceHTML();
 
   scoped_ptr<PasswordForm> password_form;
@@ -583,7 +573,7 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest,
     builder.AddPasswordField("password1", cases[i][0], NULL);
     builder.AddPasswordField("password2", cases[i][1], NULL);
     builder.AddPasswordField("password3", cases[i][2], NULL);
-    builder.AddSubmitButton("submit", true);
+    builder.AddSubmitButton("submit");
     std::string html = builder.ProduceHTML();
 
     scoped_ptr<PasswordForm> password_form;
@@ -600,7 +590,7 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest,
   builder.AddPasswordField("password2", "alpha", NULL);
   builder.AddPasswordField("password3", "alpha", NULL);
   builder.AddPasswordField("password4", "alpha", NULL);
-  builder.AddSubmitButton("submit", true);
+  builder.AddSubmitButton("submit");
   std::string html = builder.ProduceHTML();
 
   scoped_ptr<PasswordForm> password_form;
@@ -613,7 +603,7 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, LayoutClassificationLogin) {
   builder.AddHiddenField();
   builder.AddUsernameField("username", "", nullptr);
   builder.AddPasswordField("password", "", nullptr);
-  builder.AddSubmitButton("submit", false);
+  builder.AddSubmitButton("submit");
   std::string login_html = builder.ProduceHTML();
 
   scoped_ptr<PasswordForm> login_form;
@@ -629,7 +619,7 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, LayoutClassificationSignup) {
   builder.AddPasswordField("new_password", "", nullptr);
   builder.AddHiddenField();
   builder.AddPasswordField("new_password2", "", nullptr);
-  builder.AddSubmitButton("submit", false);
+  builder.AddSubmitButton("submit");
   std::string signup_html = builder.ProduceHTML();
 
   scoped_ptr<PasswordForm> signup_form;
@@ -645,7 +635,7 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, LayoutClassificationChange) {
   builder.AddHiddenField();
   builder.AddPasswordField("new_password", "", nullptr);
   builder.AddPasswordField("new_password2", "", nullptr);
-  builder.AddSubmitButton("submit", false);
+  builder.AddSubmitButton("submit");
   std::string change_html = builder.ProduceHTML();
 
   scoped_ptr<PasswordForm> change_form;
@@ -665,7 +655,7 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest,
   builder.AddPasswordField("new_password", "", nullptr);
   builder.AddPasswordField("new_password2", "", nullptr);
   builder.AddHiddenField();
-  builder.AddSubmitButton("submit", false);
+  builder.AddSubmitButton("submit");
   std::string login_plus_signup_html = builder.ProduceHTML();
 
   scoped_ptr<PasswordForm> login_plus_signup_form;
@@ -687,7 +677,7 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest,
   builder.AddPasswordField("new_password", "", nullptr);
   builder.AddUsernameField("someotherfield2", "", nullptr);
   builder.AddHiddenField();
-  builder.AddSubmitButton("submit", false);
+  builder.AddSubmitButton("submit");
   std::string login_plus_signup_html = builder.ProduceHTML();
 
   scoped_ptr<PasswordForm> login_plus_signup_form;
