@@ -114,6 +114,18 @@ NSImage* GetImageFromResourceID(int resourceId) {
   ui::DrawNinePartImage(frame, imageIds, NSCompositeSourceOver, 1.0, true);
 }
 
+- (NSRect)focusRingMaskBoundsForFrame:(NSRect)cellFrame inView:(NSView*)view {
+  // This override won't be needed once we link with 10.8+ SDK.
+  return cellFrame;
+}
+
+- (void)drawFocusRingMaskWithFrame:(NSRect)frame inView:(NSView*)view {
+  // Match the bezel's shape.
+  [[NSBezierPath bezierPathWithRoundedRect:NSInsetRect(frame, 2, 2)
+                                   xRadius:2
+                                   yRadius:2] fill];
+}
+
 - (void)setIsThemedWindow:(BOOL)isThemedWindow {
   isThemedWindow_ = isThemedWindow;
 }

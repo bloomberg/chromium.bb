@@ -75,6 +75,9 @@ enum ButtonState {
 // Draws the cell's image within |cellFrame|.
 - (void)drawImageWithFrame:(NSRect)cellFrame inView:(NSView*)controlView;
 
+// Draws |image| centered within |dstRect|.
++ (void)drawImage:(NSImage*)image inRect:(NSRect)dstRect alpha:(CGFloat)alpha;
+
 // If |controlView| is a first responder then draws a blue focus ring.
 - (void)drawFocusRingWithFrame:(NSRect)cellFrame inView:(NSView*)controlView;
 

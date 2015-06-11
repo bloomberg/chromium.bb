@@ -48,4 +48,16 @@
   return handleMiddleClick_ && [theEvent buttonNumber] == 2;
 }
 
+- (NSRect)focusRingMaskBounds {
+  // This override won't be needed once we link with 10.8+ SDK.
+  return [self bounds];
+}
+
+- (void)drawFocusRingMask {
+  // Match the hover image's bezel.
+  [[NSBezierPath bezierPathWithRoundedRect:NSInsetRect([self bounds], 2, 2)
+                                   xRadius:2
+                                   yRadius:2] fill];
+}
+
 @end

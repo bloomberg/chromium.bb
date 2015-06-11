@@ -105,7 +105,7 @@
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="760046712">
 							<int key="NSCellFlags">67108864</int>
-							<int key="NSCellFlags2">134250496</int>
+							<int key="NSCellFlags2">134217728</int>
 							<string key="NSContents"/>
 							<object class="NSFont" key="NSSupport" id="64724822">
 								<string key="NSName">LucidaGrande</string>
@@ -133,7 +133,7 @@
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="386107000">
 							<int key="NSCellFlags">67108864</int>
-							<int key="NSCellFlags2">134250496</int>
+							<int key="NSCellFlags2">134217728</int>
 							<string key="NSContents"/>
 							<reference key="NSSupport" ref="64724822"/>
 							<reference key="NSControlView" ref="458854861"/>
@@ -157,7 +157,7 @@
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="3781855">
 							<int key="NSCellFlags">-2080374784</int>
-							<int key="NSCellFlags2">134250496</int>
+							<int key="NSCellFlags2">134217728</int>
 							<string key="NSContents"/>
 							<reference key="NSSupport" ref="64724822"/>
 							<reference key="NSControlView" ref="781044416"/>
@@ -181,7 +181,7 @@
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="697431051">
 							<int key="NSCellFlags">-2080374784</int>
-							<int key="NSCellFlags2">134250496</int>
+							<int key="NSCellFlags2">134217728</int>
 							<string key="NSContents"/>
 							<reference key="NSSupport" ref="64724822"/>
 							<reference key="NSControlView" ref="634265909"/>
@@ -204,7 +204,7 @@
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="204555298">
 							<int key="NSCellFlags">67108864</int>
-							<int key="NSCellFlags2">134250496</int>
+							<int key="NSCellFlags2">134217728</int>
 							<string key="NSContents"/>
 							<reference key="NSSupport" ref="64724822"/>
 							<reference key="NSControlView" ref="602421009"/>

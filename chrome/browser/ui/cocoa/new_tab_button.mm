@@ -56,6 +56,19 @@
   return nil;
 }
 
+- (NSRect)focusRingMaskBounds {
+  // This override won't be needed once we link with 10.8+ SDK.
+  return [self bounds];
+}
+
+- (void)drawFocusRingMask {
+  // Match the button's shape.
+  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+  NSImage* image =
+      bundle.GetNativeImageNamed(IDR_NEWTAB_BUTTON_MASK).ToNSImage();
+  [ImageButtonCell drawImage:image inRect:[self bounds] alpha:1.0];
+}
+
 // ThemedWindowDrawing implementation.
 
 - (void)windowDidChangeTheme {

@@ -93,14 +93,6 @@ NSString* const kFadeOutValueKeyPath = @"fadeOutValue";
 
   switch(self.hoverState) {
     case kHoverStateMouseOver:
-      [image drawInRect:destRect
-               fromRect:imageRect
-              operation:NSCompositeSourceOver
-               fraction:1.0
-         respectFlipped:YES
-                  hints:nil];
-      break;
-
     case kHoverStateMouseDown:
       [image drawInRect:destRect
                fromRect:imageRect
@@ -135,6 +127,17 @@ NSString* const kFadeOutValueKeyPath = @"fadeOutValue";
       break;
     }
   }
+}
+
+- (NSRect)focusRingMaskBounds {
+  // This override won't be needed once we link with 10.8+ SDK.
+  return [self bounds];
+}
+
+- (void)drawFocusRingMask {
+  // Match the hover image's shape.
+  NSRect circleRect = NSInsetRect([self bounds], 2, 2);
+  [[NSBezierPath bezierPathWithOvalInRect:circleRect] fill];
 }
 
 - (void)setFadeOutValue:(CGFloat)value {
