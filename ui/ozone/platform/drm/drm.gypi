@@ -14,6 +14,7 @@
       'dri',
       'drm',
     ],
+    'use_drm_atomic%': 0,
   },
   'targets': [
     {
@@ -107,6 +108,19 @@
         'ozone_platform_drm.cc',
         'ozone_platform_drm.h',
         'scanout_buffer.h',
+      ],
+      'conditions': [
+        ['use_drm_atomic == 1', {
+          'sources': [
+            'gpu/hardware_display_plane_atomic.cc',
+            'gpu/hardware_display_plane_atomic.h',
+            'gpu/hardware_display_plane_manager_atomic.cc',
+            'gpu/hardware_display_plane_manager_atomic.h',
+          ],
+          'defines': [
+            'USE_DRM_ATOMIC=1',
+          ],
+        }],
       ],
     },
     {

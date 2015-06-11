@@ -556,7 +556,7 @@ bool DrmDevice::CommitProperties(drmModePropertySet* properties,
                                  const PageFlipCallback& callback) {
 #if defined(USE_DRM_ATOMIC)
   if (test_only)
-    flags |= DRM_MODE_TEST_ONLY;
+    flags |= DRM_MODE_ATOMIC_TEST_ONLY;
   else
     flags |= DRM_MODE_PAGE_FLIP_EVENT;
   scoped_ptr<PageFlipPayload> payload(
