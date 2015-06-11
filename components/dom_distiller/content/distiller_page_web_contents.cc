@@ -60,7 +60,8 @@ DistillerPageWebContents::DistillerPageWebContents(
     : state_(IDLE),
       source_page_handle_(nullptr),
       browser_context_(browser_context),
-      render_view_size_(render_view_size) {
+      render_view_size_(render_view_size),
+      weak_factory_(this) {
   if (optional_web_contents_handle) {
     source_page_handle_ = optional_web_contents_handle.Pass();
     if (render_view_size.IsEmpty())
@@ -183,7 +184,7 @@ void DistillerPageWebContents::ExecuteJavaScript() {
   frame->ExecuteJavaScript(
       base::UTF8ToUTF16(script_),
       base::Bind(&DistillerPageWebContents::OnWebContentsDistillationDone,
-                 base::Unretained(this),
+                 weak_factory_.GetWeakPtr(),
                  source_page_handle_->web_contents()->GetLastCommittedURL(),
                  base::TimeTicks::Now()));
 }

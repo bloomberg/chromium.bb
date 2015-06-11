@@ -366,6 +366,49 @@ void DistillerPageWebContentsTest::RunUseCurrentWebContentsTest(
   EXPECT_EQ("Test Page Title", distiller_result_->title());
 }
 
+IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest,
+                       PageDestroyedBeforeFinishDistillation) {
+
+  content::WebContents* current_web_contents = shell()->web_contents();
+
+  dom_distiller::WebContentsMainFrameObserver::CreateForWebContents(
+      current_web_contents);
+
+  base::RunLoop url_loaded_runner;
+  WebContentsMainFrameHelper main_frame_loaded(current_web_contents,
+                                               url_loaded_runner.QuitClosure(),
+                                               true);
+  current_web_contents->GetController().LoadURL(
+      embedded_test_server()->GetURL(kSimpleArticlePath),
+      content::Referrer(),
+      ui::PAGE_TRANSITION_TYPED,
+      std::string());
+  url_loaded_runner.Run();
+
+  scoped_ptr<SourcePageHandleWebContents> source_page_handle(
+      new SourcePageHandleWebContents(current_web_contents, false));
+
+  TestDistillerPageWebContents* distiller_page(
+      new TestDistillerPageWebContents(
+          current_web_contents->GetBrowserContext(),
+          current_web_contents->GetContainerBounds().size(),
+          source_page_handle.Pass(),
+          false));
+  distiller_page_ = distiller_page;
+
+  base::RunLoop run_loop;
+  DistillPage(run_loop.QuitClosure(), kSimpleArticlePath);
+
+  // It can not crash the loop when returning the result.
+  delete distiller_page_;
+
+  // Make sure the test ends when it does not crash.
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE, run_loop.QuitClosure(), base::TimeDelta::FromSeconds(2));
+
+  run_loop.Run();
+}
+
 IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest, MarkupInfo) {
   DistillerPageWebContents distiller_page(
       shell()->web_contents()->GetBrowserContext(),
