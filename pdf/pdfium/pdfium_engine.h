@@ -647,6 +647,9 @@ class PDFiumEngine : public PDFEngine,
   // Permissions bitfield.
   unsigned long permissions_;
 
+  // Permissions security handler revision number. -1 for unknown.
+  int permissions_handler_revision_;
+
   // Interface structure to provide access to document stream.
   FPDF_FILEACCESS file_access_;
   // Interface structure to check data availability in the document stream.

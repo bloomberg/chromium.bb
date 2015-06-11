@@ -592,6 +592,7 @@ PDFiumEngine::PDFiumEngine(PDFEngine::Client* client)
       last_page_to_search_(-1),
       last_character_index_to_search_(-1),
       permissions_(0),
+      permissions_handler_revision_(-1),
       fpdf_availability_(NULL),
       next_timer_id_(0),
       last_page_mouse_down_(-1),
@@ -2324,16 +2325,32 @@ bool PDFiumEngine::IsSelecting() {
 }
 
 bool PDFiumEngine::HasPermission(DocumentPermission permission) const {
+  // PDF 1.7 spec, section 3.5.2 says: "If the revision number is 2 or greater,
+  // the operations to which user access can be controlled are as follows: ..."
+  //
+  // Thus for revision numbers less than 2, permissions are ignored and this
+  // always returns true.
+  if (permissions_handler_revision_ < 2)
+    return true;
+
+  // Handle high quality printing permission separately for security handler
+  // revision 3+. See table 3.20 in the PDF 1.7 spec.
+  if (permission == PERMISSION_PRINT_HIGH_QUALITY &&
+      permissions_handler_revision_ >= 3) {
+    return (permissions_ & kPDFPermissionPrintLowQualityMask) != 0 &&
+           (permissions_ & kPDFPermissionPrintHighQualityMask) != 0;
+  }
+
   switch (permission) {
     case PERMISSION_COPY:
       return (permissions_ & kPDFPermissionCopyMask) != 0;
     case PERMISSION_COPY_ACCESSIBLE:
       return (permissions_ & kPDFPermissionCopyAccessibleMask) != 0;
     case PERMISSION_PRINT_LOW_QUALITY:
-      return (permissions_ & kPDFPermissionPrintLowQualityMask) != 0;
     case PERMISSION_PRINT_HIGH_QUALITY:
-      return (permissions_ & kPDFPermissionPrintLowQualityMask) != 0 &&
-             (permissions_ & kPDFPermissionPrintHighQualityMask) != 0;
+      // With security handler revision 2 rules, check the same bit for high
+      // and low quality. See table 3.20 in the PDF 1.7 spec.
+      return (permissions_ & kPDFPermissionPrintLowQualityMask) != 0;
     default:
       return true;
   }
@@ -2622,6 +2639,7 @@ void PDFiumEngine::ContinueLoadingDocument(
     client_->DocumentHasUnsupportedFeature("Bookmarks");
 
   permissions_ = FPDF_GetDocPermissions(doc_);
+  permissions_handler_revision_ = FPDF_GetSecurityHandlerRevision(doc_);
 
   if (!form_) {
     // Only returns 0 when data isn't available.  If form data is downloaded, or
