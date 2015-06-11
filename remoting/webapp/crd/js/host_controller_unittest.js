@@ -65,6 +65,9 @@ var startDaemonSpy;
 /** @type {sinon.Spy|Function} */
 var updateDaemonConfigSpy;
 
+/** @type {sinon.Spy|Function} */
+var clearPairedClientsSpy;
+
 /** @type {sinon.Spy} */
 var unregisterHostByIdSpy;
 
@@ -131,6 +134,8 @@ QUnit.module('host_controller', {
     startDaemonSpy = sinon.spy(mockHostDaemonFacade, 'startDaemon');
     updateDaemonConfigSpy =
         sinon.spy(mockHostDaemonFacade, 'updateDaemonConfig');
+    clearPairedClientsSpy =
+        sinon.spy(mockHostDaemonFacade, 'clearPairedClients');
 
     // Set up successful responses from mockHostDaemonFacade.
     // Individual tests override these values to create errors.
@@ -444,6 +449,7 @@ QUnit.test('updatePin where config is invalid', function(assert) {
       reject('test failed');
     }, function(/** remoting.Error */ e) {
       assert.equal(e.getTag(), remoting.Error.Tag.UNEXPECTED);
+      assert.equal(clearPairedClientsSpy.callCount, 0);
       resolve(null);
     });
   });
@@ -458,6 +464,7 @@ QUnit.test('updatePin where getDaemonConfig fails', function(assert) {
     }, function(/** remoting.Error */ e) {
       assert.equal(e.getDetail(), 'getDaemonConfig');
       assert.equal(e.getTag(), remoting.Error.Tag.UNEXPECTED);
+      assert.equal(clearPairedClientsSpy.callCount, 0);
       resolve(null);
     });
   });
@@ -474,6 +481,7 @@ QUnit.test('updatePin where updateDaemonConfig calls onError', function(
     }, function(/** remoting.Error */ e) {
       assert.equal(e.getDetail(), 'updateDaemonConfig');
       assert.equal(e.getTag(), remoting.Error.Tag.UNEXPECTED);
+      assert.equal(clearPairedClientsSpy.callCount, 0);
       resolve(null);
     });
   });
@@ -489,6 +497,7 @@ QUnit.test('updatePin where updateDaemonConfig is cancelled', function(
       reject('test failed');
     }, function(/** remoting.Error */ e) {
       assert.equal(e.getTag(), remoting.Error.Tag.CANCELLED);
+      assert.equal(clearPairedClientsSpy.callCount, 0);
       resolve(null);
     });
   });
@@ -504,6 +513,7 @@ QUnit.test('updatePin where updateDaemonConfig is returns failure', function(
       reject('test failed');
     }, function(/** remoting.Error */ e) {
       assert.equal(e.getTag(), remoting.Error.Tag.UNEXPECTED);
+      assert.equal(clearPairedClientsSpy.callCount, 0);
       resolve(null);
     });
   });
@@ -511,6 +521,7 @@ QUnit.test('updatePin where updateDaemonConfig is returns failure', function(
 
 // Check what happens when updatePin succeeds.
 QUnit.test('updatePin succeeds', function(assert) {
+  mockHostDaemonFacade.pairedClients = [];
   /** @const */
   var fakePinHash = fakePinHashFunc(FAKE_HOST_ID, FAKE_NEW_HOST_PIN);
   return new Promise(function(resolve, reject) {
@@ -523,6 +534,7 @@ QUnit.test('updatePin succeeds', function(assert) {
           updateDaemonConfigSpy.args[0][0], {
             host_secret_hash: fakePinHash
           });
+      assert.equal(clearPairedClientsSpy.callCount, 1);
       resolve(null);
     }, reject);
   });

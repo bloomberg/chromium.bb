@@ -333,7 +333,7 @@ remoting.HostController.prototype.updatePin = function(newPin, onDone,
   /** @param {remoting.HostController.AsyncResult} result */
   function onConfigUpdated(result) {
     if (result == remoting.HostController.AsyncResult.OK) {
-      onDone();
+      that.clearPairedClients(onDone, onError);
     } else if (result == remoting.HostController.AsyncResult.CANCELLED) {
       onError(new remoting.Error(remoting.Error.Tag.CANCELLED));
     } else {
