@@ -249,6 +249,11 @@ class SDKPackageToolchainOverlaysStage(generic_stages.BuilderStage):
                                     enter_chroot=True, sudo=True,
                                     extra_env=self._portage_extra_env)
 
+        # NOTE: Make sure that the overlay directory is owned root:root and has
+        # 0o755 perms; apparently, these things are preserved through
+        # tarring/untarring and might cause havoc if overlooked.
+        os.chmod(overlay_dir, 0o755)
+        cros_build_lib.SudoRunCommand(['chown', 'root:root', overlay_dir])
         CreateTarball(overlay_dir,
                       overlay_tarball_template % {'toolchains': toolchains_str})
 
