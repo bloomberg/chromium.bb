@@ -29,6 +29,7 @@
 #include "chrome/browser/drive/event_logger.h"
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "chrome/browser/drive/test_util.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/test_util.h"
@@ -141,14 +142,12 @@ class FileSystemTest : public testing::Test {
 
     const base::FilePath temp_file_dir = temp_dir_.path().AppendASCII("tmp");
     ASSERT_TRUE(base::CreateDirectory(temp_file_dir));
+    file_task_runner_ = content::BrowserThread::GetMessageLoopProxyForThread(
+        content::BrowserThread::FILE);
     file_system_.reset(new FileSystem(
-        pref_service_.get(),
-        logger_.get(),
-        cache_.get(),
-        scheduler_.get(),
-        resource_metadata_.get(),
-        base::ThreadTaskRunnerHandle::Get().get(),
-        temp_file_dir));
+        pref_service_.get(), logger_.get(), cache_.get(), scheduler_.get(),
+        resource_metadata_.get(), base::ThreadTaskRunnerHandle::Get().get(),
+        file_task_runner_.get(), temp_file_dir));
     file_system_->AddObserver(mock_directory_observer_.get());
 
     // Disable delaying so that the sync starts immediately.
@@ -325,6 +324,7 @@ class FileSystemTest : public testing::Test {
   scoped_ptr<internal::FileCache, test_util::DestroyHelperForTests> cache_;
   scoped_ptr<internal::ResourceMetadata, test_util::DestroyHelperForTests>
       resource_metadata_;
+  scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
   scoped_ptr<FileSystem> file_system_;
 };
 

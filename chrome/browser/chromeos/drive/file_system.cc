@@ -277,14 +277,14 @@ struct FileSystem::CreateDirectoryParams {
   FileOperationCallback callback;
 };
 
-FileSystem::FileSystem(
-    PrefService* pref_service,
-    EventLogger* logger,
-    internal::FileCache* cache,
-    JobScheduler* scheduler,
-    internal::ResourceMetadata* resource_metadata,
-    base::SequencedTaskRunner* blocking_task_runner,
-    const base::FilePath& temporary_file_directory)
+FileSystem::FileSystem(PrefService* pref_service,
+                       EventLogger* logger,
+                       internal::FileCache* cache,
+                       JobScheduler* scheduler,
+                       internal::ResourceMetadata* resource_metadata,
+                       base::SequencedTaskRunner* blocking_task_runner,
+                       base::SingleThreadTaskRunner* file_task_runner,
+                       const base::FilePath& temporary_file_directory)
     : pref_service_(pref_service),
       logger_(logger),
       cache_(cache),
@@ -292,6 +292,7 @@ FileSystem::FileSystem(
       resource_metadata_(resource_metadata),
       last_update_check_error_(FILE_ERROR_OK),
       blocking_task_runner_(blocking_task_runner),
+      file_task_runner_(file_task_runner),
       temporary_file_directory_(temporary_file_directory),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -399,13 +400,10 @@ void FileSystem::ResetComponents() {
       blocking_task_runner_.get(), scheduler_, resource_metadata_,
       loader_controller_.get()));
   get_file_for_saving_operation_.reset(
-      new file_system::GetFileForSavingOperation(logger_,
-                                                 blocking_task_runner_.get(),
-                                                 delegate,
-                                                 scheduler_,
-                                                 resource_metadata_,
-                                                 cache_,
-                                                 temporary_file_directory_));
+      new file_system::GetFileForSavingOperation(
+          logger_, blocking_task_runner_.get(), file_task_runner_.get(),
+          delegate, scheduler_, resource_metadata_, cache_,
+          temporary_file_directory_));
   set_property_operation_.reset(new file_system::SetPropertyOperation(
       blocking_task_runner_.get(), delegate, resource_metadata_));
 }

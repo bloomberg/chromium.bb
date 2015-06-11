@@ -29,7 +29,7 @@ const int64 kWriteEventDelayInSeconds = 5;
 // UI thread and FILE thread, and does all the main tasks in the FILE thread.
 class FileWriteWatcher::FileWriteWatcherImpl {
  public:
-  FileWriteWatcherImpl();
+  explicit FileWriteWatcherImpl(base::SingleThreadTaskRunner* file_task_runner);
 
   // Forwards the call to DestoryOnFileThread(). This method must be used to
   // destruct the instance.
@@ -70,6 +70,7 @@ class FileWriteWatcher::FileWriteWatcherImpl {
 
   base::TimeDelta delay_;
   std::map<base::FilePath, PathWatchInfo*> watchers_;
+  scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
@@ -77,8 +78,10 @@ class FileWriteWatcher::FileWriteWatcherImpl {
   DISALLOW_COPY_AND_ASSIGN(FileWriteWatcherImpl);
 };
 
-FileWriteWatcher::FileWriteWatcherImpl::FileWriteWatcherImpl()
+FileWriteWatcher::FileWriteWatcherImpl::FileWriteWatcherImpl(
+    base::SingleThreadTaskRunner* file_task_runner)
     : delay_(base::TimeDelta::FromSeconds(kWriteEventDelayInSeconds)),
+      file_task_runner_(file_task_runner),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
@@ -87,10 +90,9 @@ void FileWriteWatcher::FileWriteWatcherImpl::Destroy() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Just forwarding the call to FILE thread.
-  BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)->PostTask(
-      FROM_HERE,
-      base::Bind(&FileWriteWatcherImpl::DestroyOnFileThread,
-                 base::Unretained(this)));
+  file_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&FileWriteWatcherImpl::DestroyOnFileThread,
+                            base::Unretained(this)));
 }
 
 void FileWriteWatcher::FileWriteWatcherImpl::StartWatch(
@@ -100,23 +102,22 @@ void FileWriteWatcher::FileWriteWatcherImpl::StartWatch(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Forwarding the call to FILE thread and relaying the |callback|.
-  BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)->PostTask(
+  file_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&FileWriteWatcherImpl::StartWatchOnFileThread,
-                 base::Unretained(this),
-                 path,
+                 base::Unretained(this), path,
                  google_apis::CreateRelayCallback(on_start_callback),
                  google_apis::CreateRelayCallback(on_write_callback)));
 }
 
 FileWriteWatcher::FileWriteWatcherImpl::~FileWriteWatcherImpl() {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  DCHECK(file_task_runner_->BelongsToCurrentThread());
 
   STLDeleteContainerPairSecondPointers(watchers_.begin(), watchers_.end());
 }
 
 void FileWriteWatcher::FileWriteWatcherImpl::DestroyOnFileThread() {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  DCHECK(file_task_runner_->BelongsToCurrentThread());
 
   delete this;
 }
@@ -125,7 +126,7 @@ void FileWriteWatcher::FileWriteWatcherImpl::StartWatchOnFileThread(
     const base::FilePath& path,
     const StartWatchCallback& on_start_callback,
     const base::Closure& on_write_callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  DCHECK(file_task_runner_->BelongsToCurrentThread());
 
   std::map<base::FilePath, PathWatchInfo*>::iterator it = watchers_.find(path);
   if (it != watchers_.end()) {
@@ -149,7 +150,7 @@ void FileWriteWatcher::FileWriteWatcherImpl::StartWatchOnFileThread(
 void FileWriteWatcher::FileWriteWatcherImpl::OnWriteEvent(
     const base::FilePath& path,
     bool error) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  DCHECK(file_task_runner_->BelongsToCurrentThread());
 
   if (error)
     return;
@@ -170,7 +171,7 @@ void FileWriteWatcher::FileWriteWatcherImpl::OnWriteEvent(
 
 void FileWriteWatcher::FileWriteWatcherImpl::InvokeCallback(
     const base::FilePath& path) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  DCHECK(file_task_runner_->BelongsToCurrentThread());
 
   std::map<base::FilePath, PathWatchInfo*>::iterator it = watchers_.find(path);
   DCHECK(it != watchers_.end());
@@ -184,8 +185,9 @@ void FileWriteWatcher::FileWriteWatcherImpl::InvokeCallback(
     callbacks[i].Run();
 }
 
-FileWriteWatcher::FileWriteWatcher()
-    : watcher_impl_(new FileWriteWatcherImpl) {
+FileWriteWatcher::FileWriteWatcher(
+    base::SingleThreadTaskRunner* file_task_runner)
+    : watcher_impl_(new FileWriteWatcherImpl(file_task_runner)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 

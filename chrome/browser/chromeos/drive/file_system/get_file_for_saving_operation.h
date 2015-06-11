@@ -44,6 +44,7 @@ class GetFileForSavingOperation {
  public:
   GetFileForSavingOperation(EventLogger* logger,
                             base::SequencedTaskRunner* blocking_task_runner,
+                            base::SingleThreadTaskRunner* file_task_runner,
                             OperationDelegate* delegate,
                             JobScheduler* scheduler,
                             internal::ResourceMetadata* metadata,

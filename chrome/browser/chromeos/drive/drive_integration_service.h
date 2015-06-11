@@ -168,6 +168,7 @@ class DriveIntegrationService : public KeyedService,
   base::FilePath cache_root_directory_;
   scoped_ptr<EventLogger> logger_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
   scoped_ptr<internal::ResourceMetadataStorage,
              util::DestroyHelper> metadata_storage_;
   scoped_ptr<internal::FileCache, util::DestroyHelper> cache_;
