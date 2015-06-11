@@ -18,6 +18,15 @@
 
 namespace ui {
 
+// We can't include ui/events/keycodes/dom/dom_code.h here because of
+// conflicts with preprocessor macros in <linux/input.h>, so we use the
+// same underlying data with an additional prefix.
+#define USB_KEYMAP(usb, xkb, win, mac, code, id) DOM_CODE_ ## id = usb
+#define USB_KEYMAP_DECLARATION enum class DomCode
+#include "ui/events/keycodes/dom/keycode_converter_data.inc"
+#undef USB_KEYMAP
+#undef USB_KEYMAP_DECLARATION
+
 namespace {
 
 const int kRepeatDelayMs = 500;
@@ -35,6 +44,8 @@ int EventFlagToEvdevModifier(int flag) {
       return EVDEV_MODIFIER_ALT;
     case EF_ALTGR_DOWN:
       return EVDEV_MODIFIER_ALTGR;
+    case EF_MOD3_DOWN:
+      return EVDEV_MODIFIER_MOD3;
     case EF_LEFT_MOUSE_BUTTON:
       return EVDEV_MODIFIER_LEFT_MOUSE_BUTTON;
     case EF_MIDDLE_MOUSE_BUTTON:
@@ -200,9 +211,7 @@ void KeyboardEvdev::DispatchKey(unsigned int key,
                                 int device_id) {
   DomCode dom_code =
       KeycodeConverter::NativeKeycodeToDomCode(EvdevCodeToNativeCode(key));
-  // DomCode constants are not included here because of conflicts with
-  // evdev preprocessor macros.
-  if (!static_cast<int>(dom_code))
+  if (dom_code == DomCode::DOM_CODE_NONE)
     return;
   int flags = modifiers_->GetModifierFlags();
   DomKey dom_key;
@@ -213,8 +222,16 @@ void KeyboardEvdev::DispatchKey(unsigned int key,
                                        &key_code, &platform_keycode)) {
     return;
   }
-  if (!repeat)
-    UpdateModifier(ModifierDomKeyToEventFlag(dom_key), down);
+  if (!repeat) {
+    int flag = ModifierDomKeyToEventFlag(dom_key);
+    UpdateModifier(flag, down);
+    // X11 XKB, using the configuration as modified for ChromeOS, always sets
+    // EF_MOD3_DOWN for the physical CapsLock key, even if the layout maps
+    // it to something else, so we imitate this to make certain layouts (e.g.
+    // German Neo2) work. crbug.com/495277
+    if (dom_code == DomCode::DOM_CODE_CAPS_LOCK)
+      UpdateModifier(EF_MOD3_DOWN, down);
+  }
 
   KeyEvent event(down ? ET_KEY_PRESSED : ET_KEY_RELEASED, key_code, dom_code,
                  modifiers_->GetModifierFlags(), dom_key, character, timestamp);
@@ -223,5 +240,4 @@ void KeyboardEvdev::DispatchKey(unsigned int key,
     event.set_platform_keycode(platform_keycode);
   callback_.Run(&event);
 }
-
 }  // namespace ui

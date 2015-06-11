@@ -23,15 +23,13 @@ int ModifierDomKeyToEventFlag(DomKey key) {
       return EF_CAPS_LOCK_DOWN;
     case DomKey::CONTROL:
       return EF_CONTROL_DOWN;
-    case DomKey::HYPER:
-      return EF_MOD3_DOWN;
     case DomKey::META:
       return EF_ALT_DOWN;
     case DomKey::OS:
       return EF_COMMAND_DOWN;
     case DomKey::SHIFT:
       return EF_SHIFT_DOWN;
-    case DomKey::SUPER:
+    case DomKey::SHIFT_LEVEL5:
       return EF_MOD3_DOWN;
     default:
       return EF_NONE;
@@ -40,9 +38,10 @@ int ModifierDomKeyToEventFlag(DomKey key) {
   //   DomKey::ACCEL
   //   DomKey::FN
   //   DomKey::FN_LOCK
+  //   DomKey::HYPER
   //   DomKey::NUM_LOCK
   //   DomKey::SCROLL_LOCK
-  //   DomKey::SYMBOL
+  //   DomKey::SUPER
   //   DomKey::SYMBOL_LOCK
 }
 
