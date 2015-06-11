@@ -114,6 +114,7 @@ public class CustomTabIntentDataProvider {
     private PendingIntent mActionButtonPendingIntent;
     private List<Pair<String, PendingIntent>> mMenuEntries = new ArrayList<>();
     private Bundle mAnimationBundle;
+    // OnFinished listener for PendingIntents. Used for testing only.
     private PendingIntent.OnFinished mOnFinished;
 
     /**
@@ -213,6 +214,15 @@ public class CustomTabIntentDataProvider {
     }
 
     /**
+     * @return The {@link PendingIntent} that will be sent when the user clicks the action button.
+     *         For testing only.
+     */
+    @VisibleForTesting
+    public PendingIntent getActionButtonPendingIntentForTest() {
+        return mActionButtonPendingIntent;
+    }
+
+    /**
      * @return Titles of menu items that were passed from client app via intent.
      */
     public List<String> getMenuTitles() {
@@ -284,7 +294,7 @@ public class CustomTabIntentDataProvider {
         Intent addedIntent = new Intent();
         addedIntent.setData(Uri.parse(url));
         try {
-            mActionButtonPendingIntent.send(context, 0, addedIntent);
+            mActionButtonPendingIntent.send(context, 0, addedIntent, mOnFinished, null);
         } catch (CanceledException e) {
             Log.e(TAG, "CanceledException while sending pending intent in custom tab");
         }
@@ -298,8 +308,12 @@ public class CustomTabIntentDataProvider {
         return true;
     }
 
+    /**
+     * Set the callback object for {@link PendingIntent}s that are sent in this class. For testing
+     * purpose only.
+     */
     @VisibleForTesting
-    void setMenuSelectionOnFinishedForTesting(PendingIntent.OnFinished onFinished) {
+    void setPendingIntentOnFinishedForTesting(PendingIntent.OnFinished onFinished) {
         mOnFinished = onFinished;
     }
 }

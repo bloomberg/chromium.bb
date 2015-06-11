@@ -28,6 +28,7 @@ import android.widget.TextView;
 import com.google.android.apps.chrome.R;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ContextualMenuBar.ActionBarDelegate;
 import org.chromium.chrome.browser.CustomSelectionActionModeCallback;
 import org.chromium.chrome.browser.Tab;
@@ -139,6 +140,14 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar {
         mCustomActionButton.setImageDrawable(new BitmapDrawable(getResources(), buttonSource));
         mCustomActionButton.setOnClickListener(listener);
         mCustomActionButton.setVisibility(VISIBLE);
+    }
+
+    /**
+     * @return The custom action button. For test purpose only.
+     */
+    @VisibleForTesting
+    public ImageButton getCustomActionButtonForTest() {
+        return mCustomActionButton;
     }
 
     @Override
