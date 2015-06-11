@@ -310,14 +310,6 @@ bool NavigationScheduler::mustLockBackForwardList(LocalFrame* targetFrame)
     if (!UserGestureIndicator::processingUserGesture() && !targetFrame->document()->loadEventFinished())
         return true;
 
-    // From the HTML5 spec for location.assign():
-    //  "If the browsing context's session history contains only one Document,
-    //   and that was the about:blank Document created when the browsing context
-    //   was created, then the navigation must be done with replacement enabled."
-    if (!targetFrame->loader().stateMachine()->committedMultipleRealLoads()
-        && equalIgnoringCase(targetFrame->document()->url(), blankURL()))
-        return true;
-
     // Navigation of a subframe during loading of an ancestor frame does not create a new back/forward item.
     // The definition of "during load" is any time before all handlers for the load event have been run.
     // See https://bugs.webkit.org/show_bug.cgi?id=14957 for the original motivation for this.

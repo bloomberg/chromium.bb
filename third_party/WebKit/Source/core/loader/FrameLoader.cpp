@@ -713,7 +713,13 @@ FrameLoadType FrameLoader::determineFrameLoadType(const FrameLoadRequest& reques
         return FrameLoadTypeReload;
     if (request.resourceRequest().cachePolicy() == ReloadBypassingCache)
         return FrameLoadTypeReloadFromOrigin;
-    if (request.lockBackForwardList())
+    // From the HTML5 spec for location.assign():
+    //  "If the browsing context's session history contains only one Document,
+    //   and that was the about:blank Document created when the browsing context
+    //   was created, then the navigation must be done with replacement enabled."
+    if (request.lockBackForwardList()
+        || (!m_stateMachine.committedMultipleRealLoads()
+            && equalIgnoringCase(m_frame->document()->url(), blankURL())))
         return FrameLoadTypeRedirectWithLockedBackForwardList;
     if (!request.originDocument() && request.resourceRequest().url() == m_documentLoader->urlForHistory())
         return FrameLoadTypeSame;
@@ -1260,17 +1266,9 @@ void FrameLoader::startLoad(FrameLoadRequest& frameLoadRequest, FrameLoadType ty
     frameLoadRequest.resourceRequest().setFrameType(m_frame->isMainFrame() ? WebURLRequest::FrameTypeTopLevel : WebURLRequest::FrameTypeNested);
     ResourceRequest& request = frameLoadRequest.resourceRequest();
 
-    // The current load should replace the history item if it is the first real
-    // load of the frame.
-    bool replacesCurrentHistoryItem = false;
-    if (type == FrameLoadTypeRedirectWithLockedBackForwardList
-        || !m_stateMachine.committedFirstRealDocumentLoad()) {
-        replacesCurrentHistoryItem = true;
-    }
-
     m_policyDocumentLoader = client()->createDocumentLoader(m_frame, request, frameLoadRequest.substituteData().isValid() ? frameLoadRequest.substituteData() : defaultSubstituteDataForURL(request.url()));
     m_policyDocumentLoader->setNavigationType(navigationType);
-    m_policyDocumentLoader->setReplacesCurrentHistoryItem(replacesCurrentHistoryItem);
+    m_policyDocumentLoader->setReplacesCurrentHistoryItem(type == FrameLoadTypeRedirectWithLockedBackForwardList);
     m_policyDocumentLoader->setIsClientRedirect(frameLoadRequest.clientRedirect() == ClientRedirect);
 
     // stopAllLoaders can detach the LocalFrame, so protect it.
