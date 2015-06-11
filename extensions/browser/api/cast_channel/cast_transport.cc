@@ -274,7 +274,6 @@ int CastTransportImpl::DoWrite() {
   int rv = socket_->Write(
       request.io_buffer.get(), request.io_buffer->BytesRemaining(),
       base::Bind(&CastTransportImpl::OnWriteResult, base::Unretained(this)));
-  logger_->LogSocketEventWithRv(channel_id_, proto::SOCKET_WRITE, rv);
   return rv;
 }
 
