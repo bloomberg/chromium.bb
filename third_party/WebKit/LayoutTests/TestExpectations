@@ -103,10 +103,6 @@ crbug.com/244481 virtual/gpu/canvas/philip/tests/2d.shadow.blur.low.html [ Skip 
 
 crbug.com/9798 [ Win ] http/tests/misc/redirect-with-quotes.php [ Pass Timeout ]
 
-crbug.com/339118 fast/events/touch/compositor-touch-hit-rects-scroll.html [ NeedsRebaseline ]
-crbug.com/339118 virtual/pointerevent/fast/events/touch/compositor-touch-hit-rects-scroll.html [ NeedsRebaseline ]
-crbug.com/339118 virtual/scroll_customization/fast/events/touch/compositor-touch-hit-rects-scroll.html [ NeedsRebaseline ]
-crbug.com/339118 virtual/slimmingpaint/fast/events/touch/compositor-touch-hit-rects-scroll.html [ NeedsRebaseline ]
 crbug.com/430980 [ Mac ] fast/events/hit-test-counts.html [ Failure Pass ]
 crbug.com/430980 [ Mac ] virtual/slimmingpaint/fast/events/hit-test-counts.html [ Skip ]
 

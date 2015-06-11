@@ -4,7 +4,7 @@ scrollContent: DIV#scroll1 scrolling (1, 14, 273, 12)
 
 scrollContent5: DIV#scroll5 scrolling (1, 14, 273, 12)
 
-scrollContent6: DIV#scroll6 scrolling[-1,-14] (0, 0, 273, 12)
+scrollContent6: DIV#scrollContent6 (0, 0, 273, 12)
 
 nestedContent: DIV#scroll2b scrolling (1, 31, 256, 12)
 
