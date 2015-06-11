@@ -26,7 +26,7 @@ function test()
 
     overviewPane.update();
     InspectorTest.addResult("OverviewPane:");
-    overviewPane._overviewCalculator._setDisplayWindow(0, 450);
+    overviewPane._overviewCalculator.setDisplayWindow(450);
     dumpDividers(overviewPane._overviewCalculator);
     InspectorTest.addResult("");
 
@@ -39,7 +39,7 @@ function test()
         InspectorTest.addResult("range = " + windowLeft + " - " + windowRight);
         InspectorTest.addResult("time range = " + view._windowStartTime + " - " + view._windowEndTime);
         InspectorTest.addResult("records count: " + view._presentationModel.filteredRecords().length);
-        view._calculator.setDisplayWindow(5, 455 + WebInspector.TimelineCalculator._minWidth);
+        view._calculator.setDisplayWindow(455 + WebInspector.TimelineCalculator._minWidth, 5);
         dumpDividers(view._calculator);
         InspectorTest.addResult("");
     }
@@ -52,7 +52,7 @@ function test()
         InspectorTest.addResult("mode = " + timeline._overviewModeSetting.get());
         InspectorTest.addResult("range = " + windowLeft + " - " + windowRight);
         InspectorTest.addResult("time range = " + mainView._timeWindowLeft + " - " + mainView._timeWindowRight);
-        mainView._calculator.setDisplayWindow(5, 455 + WebInspector.TimelineCalculator._minWidth);
+        mainView._calculator.setDisplayWindow(455 + WebInspector.TimelineCalculator._minWidth, 5);
         dumpDividers(mainView._calculator);
         InspectorTest.addResult("");
     }
