@@ -147,25 +147,27 @@ void DataReductionProxyService::InitializeLoFiPrefs() {
     int lo_fi_user_requests_for_images_per_session =
         DataReductionProxyParams::GetFieldTrialParameterAsInteger(
             DataReductionProxyParams::GetLoFiFieldTrialName(),
-            "load_images_requests_per_session", 3);
+            "load_images_requests_per_session", 3, 0);
 
-    int lo_fi_implicit_opt_out_version =
+    int lo_fi_implicit_opt_out_epoch =
         DataReductionProxyParams::GetFieldTrialParameterAsInteger(
             DataReductionProxyParams::GetLoFiFieldTrialName(),
-            "implicit_opt_out_version", 0);
+            "implicit_opt_out_epoch", 0, 0);
 
     int lo_fi_consecutive_session_disables =
         DataReductionProxyParams::GetFieldTrialParameterAsInteger(
             DataReductionProxyParams::GetLoFiFieldTrialName(),
-            "consecutive_session_disables", 3);
+            "consecutive_session_disables", 3, 0);
 
-    if (prefs_->GetInteger(prefs::kLoFiImplicitOptOutVersion) <
-        lo_fi_implicit_opt_out_version) {
-      // We have a new implicit opt out version, reset the consecutive session
+    if (prefs_->GetInteger(prefs::kLoFiImplicitOptOutEpoch) <
+        lo_fi_implicit_opt_out_epoch) {
+      // We have a new implicit opt out epoch, reset the consecutive session
       // disables count so that Lo-Fi can be enabled again.
       prefs_->SetInteger(prefs::kLoFiConsecutiveSessionDisables, 0);
-      prefs_->SetInteger(prefs::kLoFiImplicitOptOutVersion,
-                         lo_fi_implicit_opt_out_version);
+      prefs_->SetInteger(prefs::kLoFiImplicitOptOutEpoch,
+                         lo_fi_implicit_opt_out_epoch);
+      settings_->RecordLoFiImplicitOptOutAction(
+          LO_FI_OPT_OUT_ACTION_NEXT_EPOCH);
     } else if (!DataReductionProxyParams::IsLoFiAlwaysOnViaFlags() &&
                (prefs_->GetInteger(prefs::kLoFiConsecutiveSessionDisables) >=
                 lo_fi_consecutive_session_disables)) {

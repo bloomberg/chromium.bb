@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/md5.h"
 #include "base/metrics/field_trial.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/mock_entropy_provider.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
@@ -402,8 +403,8 @@ TEST_F(DataReductionProxySettingsTest,
   EXPECT_EQ(LoFiStatus::LOFI_STATUS_TEMPORARILY_OFF,
             test_context_->config()->GetLoFiStatus());
 
-  // Disable Lo-Fi for 3 consecutive sessions.
-  for (int i = 1; i <= 3; ++i) {
+  // Disable Lo-Fi for |lo_fi_consecutive_session_disables_|.
+  for (int i = 1; i <= settings_->lo_fi_consecutive_session_disables_; ++i) {
     // Start a new session.
     test_context_->config()->ResetLoFiStatusForTest();
     settings_->data_reduction_proxy_service_->InitializeLoFiPrefs();
@@ -435,9 +436,9 @@ TEST_F(DataReductionProxySettingsTest,
   EXPECT_EQ(LoFiStatus::LOFI_STATUS_OFF,
             test_context_->config()->GetLoFiStatus());
 
-  // Set the implicit opt out version to -1 so that the default value of zero
-  // will be an increase and the opt out status will be reset.
-  test_context_->pref_service()->SetInteger(prefs::kLoFiImplicitOptOutVersion,
+  // Set the implicit opt out epoch to -1 so that the default value of zero will
+  // be an increase and the opt out status will be reset.
+  test_context_->pref_service()->SetInteger(prefs::kLoFiImplicitOptOutEpoch,
                                             -1);
 
   // Start a new session. Lo-Fi should be set on again.
@@ -448,6 +449,45 @@ TEST_F(DataReductionProxySettingsTest,
                    prefs::kLoFiConsecutiveSessionDisables));
   EXPECT_EQ(LoFiStatus::LOFI_STATUS_TEMPORARILY_OFF,
             test_context_->config()->GetLoFiStatus());
+}
+
+TEST_F(DataReductionProxySettingsTest, TestLoFiImplicitOptOutHistograms) {
+  const char kUMALoFiImplicitOptOutAction[] =
+      "DataReductionProxy.LoFi.ImplicitOptOutAction";
+  base::HistogramTester histogram_tester;
+
+  // Disable Lo-Fi for |lo_fi_consecutive_session_disables_|.
+  for (int i = 1; i <= settings_->lo_fi_consecutive_session_disables_; ++i) {
+    // Start a new session.
+    test_context_->config()->ResetLoFiStatusForTest();
+    settings_->data_reduction_proxy_service_->InitializeLoFiPrefs();
+
+    // Click "Show images" |lo_fi_show_images_clicks_per_session_| times for
+    // each session.
+    for (int j = 1; j <= settings_->lo_fi_user_requests_for_images_per_session_;
+         ++j) {
+      settings_->IncrementLoFiUserRequestsForImages();
+    }
+
+    test_context_->RunUntilIdle();
+    histogram_tester.ExpectBucketCount(
+        kUMALoFiImplicitOptOutAction, LO_FI_OPT_OUT_ACTION_DISABLED_FOR_SESSION,
+        i);
+  }
+
+  histogram_tester.ExpectBucketCount(
+      kUMALoFiImplicitOptOutAction,
+      LO_FI_OPT_OUT_ACTION_DISABLED_UNTIL_NEXT_EPOCH, 1);
+
+  // Set the implicit opt out epoch to -1 so that the default value of zero
+  // will be an increase and implicit opt out will be reset.
+  test_context_->pref_service()->SetInteger(prefs::kLoFiImplicitOptOutEpoch,
+                                            -1);
+  test_context_->config()->ResetLoFiStatusForTest();
+  settings_->data_reduction_proxy_service_->InitializeLoFiPrefs();
+  test_context_->RunUntilIdle();
+  histogram_tester.ExpectBucketCount(kUMALoFiImplicitOptOutAction,
+                                     LO_FI_OPT_OUT_ACTION_NEXT_EPOCH, 1);
 }
 
 TEST_F(DataReductionProxySettingsTest, TestGetDailyContentLengths) {

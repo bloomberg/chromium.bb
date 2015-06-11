@@ -145,11 +145,12 @@ class DataReductionProxyParams : public DataReductionProxyConfigValues {
   static bool ShouldUseSecureProxyByDefault();
 
   // Retrieves the int stored in |param_name| from the field trial group
-  // |group|. If the value is not present or cannot be parsed returns
-  // |default_value|.
+  // |group|. If the value is not present, cannot be parsed, or is less than
+  // |min_value|, returns |default_value|.
   static int GetFieldTrialParameterAsInteger(const std::string& group,
                                              const std::string& param_name,
-                                             int default_value);
+                                             int default_value,
+                                             int min_value);
 
   // Constructs configuration parameters. If |kAllowed|, then the standard
   // data reduction proxy configuration is allowed to be used. If

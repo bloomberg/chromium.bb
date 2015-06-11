@@ -23,6 +23,10 @@ namespace {
 const char kUMAProxyStartupStateHistogram[] =
     "DataReductionProxy.StartupState";
 
+// Key of the UMA DataReductionProxy.LoFi.ImplicitOptOutAction histogram.
+const char kUMALoFiImplicitOptOutAction[] =
+    "DataReductionProxy.LoFi.ImplicitOptOutAction";
+
 }  // namespace
 
 namespace data_reduction_proxy {
@@ -43,7 +47,11 @@ DataReductionProxySettings::DataReductionProxySettings()
   lo_fi_user_requests_for_images_per_session_ =
       DataReductionProxyParams::GetFieldTrialParameterAsInteger(
           DataReductionProxyParams::GetLoFiFieldTrialName(),
-          "load_images_requests_per_session", 3);
+          "load_images_requests_per_session", 3, 0);
+  lo_fi_consecutive_session_disables_ =
+      DataReductionProxyParams::GetFieldTrialParameterAsInteger(
+          DataReductionProxyParams::GetLoFiFieldTrialName(),
+          "consecutive_session_disables", 3, 0);
 }
 
 DataReductionProxySettings::~DataReductionProxySettings() {
@@ -206,6 +214,12 @@ void DataReductionProxySettings::IncrementLoFiUserRequestsForImages() {
     prefs_->SetInteger(
         prefs::kLoFiConsecutiveSessionDisables,
         prefs_->GetInteger(prefs::kLoFiConsecutiveSessionDisables) + 1);
+    RecordLoFiImplicitOptOutAction(LO_FI_OPT_OUT_ACTION_DISABLED_FOR_SESSION);
+    if (prefs_->GetInteger(prefs::kLoFiConsecutiveSessionDisables) >=
+        lo_fi_consecutive_session_disables_) {
+      RecordLoFiImplicitOptOutAction(
+          LO_FI_OPT_OUT_ACTION_DISABLED_UNTIL_NEXT_EPOCH);
+    }
   }
 }
 
@@ -304,6 +318,12 @@ void DataReductionProxySettings::RecordStartupState(ProxyStartupState state) {
   UMA_HISTOGRAM_ENUMERATION(kUMAProxyStartupStateHistogram,
                             state,
                             PROXY_STARTUP_STATE_COUNT);
+}
+
+void DataReductionProxySettings::RecordLoFiImplicitOptOutAction(
+    LoFiImplicitOptOutAction action) {
+  UMA_HISTOGRAM_ENUMERATION(kUMALoFiImplicitOptOutAction, action,
+                            LO_FI_OPT_OUT_ACTION_INDEX_BOUNDARY);
 }
 
 ContentLengthList

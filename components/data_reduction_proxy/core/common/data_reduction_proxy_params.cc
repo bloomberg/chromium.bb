@@ -237,12 +237,16 @@ bool DataReductionProxyParams::ShouldUseSecureProxyByDefault() {
 int DataReductionProxyParams::GetFieldTrialParameterAsInteger(
     const std::string& group,
     const std::string& param_name,
-    int default_value) {
+    int default_value,
+    int min_value) {
+  DCHECK(default_value >= min_value);
   std::string param_value =
       variations::GetVariationParamValue(group, param_name);
   int value;
-  if (param_value.empty() || !base::StringToInt(param_value, &value))
+  if (param_value.empty() || !base::StringToInt(param_value, &value) ||
+      value < min_value) {
     return default_value;
+  }
 
   return value;
 }

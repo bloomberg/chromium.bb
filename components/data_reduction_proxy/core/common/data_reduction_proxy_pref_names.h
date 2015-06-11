@@ -29,7 +29,7 @@ extern const char kDataReductionProxyAltEnabled[];
 extern const char kDataReductionProxyWasEnabledBefore[];
 extern const char kHttpOriginalContentLength[];
 extern const char kHttpReceivedContentLength[];
-extern const char kLoFiImplicitOptOutVersion[];
+extern const char kLoFiImplicitOptOutEpoch[];
 extern const char kLoFiLoadImagesPerSession[];
 extern const char kLoFiConsecutiveSessionDisables[];
 extern const char kSimulatedConfigRetrieveTime[];

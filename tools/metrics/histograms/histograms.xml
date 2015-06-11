@@ -4723,6 +4723,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="DataReductionProxy.LoFi.ImplicitOptOutAction"
+    enum="DataReductionProxyLoFiImplicitOptOutAction">
+  <owner>bengr@chromium.org</owner>
+  <owner>megjablon@chromium.org</owner>
+  <summary>
+    Counts of Lo-Fi implicit opt out actions. If the user chooses to &quot;Load
+    image&quot; for k pages in a session, LoFi is disabled for the remainder of
+    that session. If Lo-Fi is disabled for j consecutive sessions, Lo-Fi is
+    disabled for that user until the next implicit opt out epoch, which may be
+    in a later session, or never. k and j default to 3 and are assigned via the
+    DataReductionProxyLoFi field trial.
+  </summary>
+</histogram>
+
 <histogram name="DataReductionProxy.LoFi.UIAction"
     enum="DataReductionProxyLoFiUIAction">
   <owner>bengr@chromium.org</owner>
@@ -51392,6 +51406,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="8" label="Bypass because the request URI was too long"/>
   <int value="9" label="Bypass due to a 503 response"/>
   <int value="10" label="Bypass due to any network error"/>
+</enum>
+
+<enum name="DataReductionProxyLoFiImplicitOptOutAction" type="int">
+  <int value="0" label="Lo-Fi disabled for the remainder of the session"/>
+  <int value="1" label="Lo-Fi disabled until next opt out epoch"/>
+  <int value="2" label="Next implict opt out epoch, Lo-Fi re-enabled"/>
 </enum>
 
 <enum name="DataReductionProxyLoFiUIAction" type="int">

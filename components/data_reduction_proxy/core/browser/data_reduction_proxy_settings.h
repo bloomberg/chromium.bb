@@ -44,6 +44,17 @@ enum ProxyStartupState {
   PROXY_STARTUP_STATE_COUNT,
 };
 
+// Values of the UMA DataReductionProxy.LoFi.ImplicitOptOutAction histogram.
+// This enum must remain synchronized with
+// DataReductionProxyLoFiImplicitOptOutAction in
+// metrics/histograms/histograms.xml.
+enum LoFiImplicitOptOutAction {
+  LO_FI_OPT_OUT_ACTION_DISABLED_FOR_SESSION = 0,
+  LO_FI_OPT_OUT_ACTION_DISABLED_UNTIL_NEXT_EPOCH,
+  LO_FI_OPT_OUT_ACTION_NEXT_EPOCH,
+  LO_FI_OPT_OUT_ACTION_INDEX_BOUNDARY,
+};
+
 // Central point for configuring the data reduction proxy.
 // This object lives on the UI thread and all of its methods are expected to
 // be called from there.
@@ -117,8 +128,12 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
 
   // Counts the number of requests to reload the page with images from the Lo-Fi
   // snackbar. If the user requests the page with images a certain number of
-  // times, then Lo-Fi is disabled for the session.
+  // times, then Lo-Fi is disabled for the remainder of the session.
   void IncrementLoFiUserRequestsForImages();
+
+  // Records UMA for Lo-Fi implicit opt out actions.
+  void RecordLoFiImplicitOptOutAction(
+      data_reduction_proxy::LoFiImplicitOptOutAction action);
 
   // Returns the time in microseconds that the last update was made to the
   // daily original and received content lengths.
@@ -226,6 +241,8 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
                            TestLoFiImplicitOptOutClicksPerSession);
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxySettingsTest,
                            TestLoFiImplicitOptOutConsecutiveSessions);
+  FRIEND_TEST_ALL_PREFIXES(DataReductionProxySettingsTest,
+                           TestLoFiImplicitOptOutHistograms);
 
   // Override of DataReductionProxyService::Observer.
   void OnServiceInitialized() override;
@@ -275,8 +292,14 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
   bool lo_fi_show_image_requested_;
 
   // The number of requests to reload the page with images from the Lo-Fi
-  // snackbar until Lo-Fi is disabled.
+  // snackbar until Lo-Fi is disabled for the remainder of the
+  // session.
   int lo_fi_user_requests_for_images_per_session_;
+
+  // The number of consecutive sessions where Lo-Fi was disabled for
+  // Lo-Fi to be disabled until the next implicit opt out epoch, which may be in
+  // a later session, or never.
+  int lo_fi_consecutive_session_disables_;
 
   BooleanPrefMember spdy_proxy_auth_enabled_;
   BooleanPrefMember data_reduction_proxy_alternative_enabled_;

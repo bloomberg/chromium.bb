@@ -91,11 +91,11 @@ const char kHttpReceivedContentLength[] = "http_received_content_length";
 // received over the network.
 const char kHttpOriginalContentLength[] = "http_original_content_length";
 
-// An integer pref that contains the Lo-Fi version for the implicit opt-out
-// rules. Any time this value is incremented via Finch,
+// An integer pref that contains the Lo-Fi epoch for the implicit opt-out rules.
+// Any time this value is incremented via Finch,
 // kLoFiConsecutiveSessionDisables is reset to zero.
-const char kLoFiImplicitOptOutVersion[] =
-    "data_reduction_lo_fi.implicit_opt_out_version";
+const char kLoFiImplicitOptOutEpoch[] =
+    "data_reduction_lo_fi.implicit_opt_out_epoch";
 
 // An integer pref that contains the number of times that "Load images" has been
 // requested on the Lo-Fi snackbar for the current session.
