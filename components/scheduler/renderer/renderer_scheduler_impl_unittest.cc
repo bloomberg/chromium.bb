@@ -141,6 +141,39 @@ void AnticipationTestTask(RendererSchedulerImpl* scheduler,
 }
 };  // namespace
 
+class RendererSchedulerImplForTest : public RendererSchedulerImpl {
+ public:
+  using RendererSchedulerImpl::Policy;
+  using RendererSchedulerImpl::PolicyToString;
+
+  RendererSchedulerImplForTest(
+      scoped_refptr<NestableSingleThreadTaskRunner> main_task_runner)
+      : RendererSchedulerImpl(main_task_runner), update_policy_count_(0) {}
+
+  void UpdatePolicyLocked(UpdateType update_type) override {
+    update_policy_count_++;
+    RendererSchedulerImpl::UpdatePolicyLocked(update_type);
+  }
+
+  void EnsureUrgentPolicyUpdatePostedOnMainThread() {
+    base::AutoLock lock(any_thread_lock_);
+    RendererSchedulerImpl::EnsureUrgentPolicyUpdatePostedOnMainThread(
+        FROM_HERE);
+  }
+
+  void ScheduleDelayedPolicyUpdate(base::TimeTicks now, base::TimeDelta delay) {
+    delayed_update_policy_runner_.SetDeadline(FROM_HERE, delay, now);
+  }
+
+  int update_policy_count_;
+};
+
+// Lets gtest print human readable Policy values.
+::std::ostream& operator<<(::std::ostream& os,
+                           const RendererSchedulerImplForTest::Policy& policy) {
+  return os << RendererSchedulerImplForTest::PolicyToString(policy);
+}
+
 class RendererSchedulerImplTest : public testing::Test {
  public:
   using Policy = RendererSchedulerImpl::Policy;
@@ -162,11 +195,11 @@ class RendererSchedulerImplTest : public testing::Test {
       nestable_task_runner_ =
           NestableTaskRunnerForTest::Create(mock_task_runner_);
     }
-    Initialize(
-        make_scoped_ptr(new RendererSchedulerImpl(nestable_task_runner_)));
+    Initialize(make_scoped_ptr(
+        new RendererSchedulerImplForTest(nestable_task_runner_)));
   }
 
-  void Initialize(scoped_ptr<RendererSchedulerImpl> scheduler) {
+  void Initialize(scoped_ptr<RendererSchedulerImplForTest> scheduler) {
     scheduler_ = scheduler.Pass();
     default_task_runner_ = scheduler_->DefaultTaskRunner();
     compositor_task_runner_ = scheduler_->CompositorTaskRunner();
@@ -212,10 +245,12 @@ class RendererSchedulerImplTest : public testing::Test {
 
   void EnableIdleTasks() { DoMainFrame(); }
 
-  Policy CurrentPolicy() { return scheduler_->current_policy_; }
+  Policy CurrentPolicy() {
+    return scheduler_->MainThreadOnly().current_policy_;
+  }
 
   bool BeginMainFrameOnCriticalPath() {
-    return scheduler_->begin_main_frame_on_critical_path_;
+    return scheduler_->MainThreadOnly().begin_main_frame_on_critical_path_;
   }
 
   // Helper for posting several tasks of specific types. |task_descriptor| is a
@@ -306,7 +341,7 @@ class RendererSchedulerImplTest : public testing::Test {
   scoped_ptr<base::MessageLoop> message_loop_;
 
   scoped_refptr<NestableSingleThreadTaskRunner> nestable_task_runner_;
-  scoped_ptr<RendererSchedulerImpl> scheduler_;
+  scoped_ptr<RendererSchedulerImplForTest> scheduler_;
   scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner_;
@@ -315,38 +350,6 @@ class RendererSchedulerImplTest : public testing::Test {
 
   DISALLOW_COPY_AND_ASSIGN(RendererSchedulerImplTest);
 };
-
-class RendererSchedulerImplForTest : public RendererSchedulerImpl {
- public:
-  using RendererSchedulerImpl::PolicyToString;
-
-  RendererSchedulerImplForTest(
-      scoped_refptr<NestableSingleThreadTaskRunner> main_task_runner)
-      : RendererSchedulerImpl(main_task_runner), update_policy_count_(0) {}
-
-  void UpdatePolicyLocked(UpdateType update_type) override {
-    update_policy_count_++;
-    RendererSchedulerImpl::UpdatePolicyLocked(update_type);
-  }
-
-  void EnsureUrgentPolicyUpdatePostedOnMainThread() {
-    base::AutoLock lock(incoming_signals_lock_);
-    RendererSchedulerImpl::EnsureUrgentPolicyUpdatePostedOnMainThread(
-        FROM_HERE);
-  }
-
-  void ScheduleDelayedPolicyUpdate(base::TimeTicks now, base::TimeDelta delay) {
-    delayed_update_policy_runner_.SetDeadline(FROM_HERE, delay, now);
-  }
-
-  int update_policy_count_;
-};
-
-// Lets gtest print human readable Policy values.
-::std::ostream& operator<<(::std::ostream& os,
-                           const RendererSchedulerImplTest::Policy& policy) {
-  return os << RendererSchedulerImplForTest::PolicyToString(policy);
-}
 
 TEST_F(RendererSchedulerImplTest, TestPostDefaultTask) {
   std::vector<std::string> run_order;
@@ -1661,6 +1664,14 @@ TEST_F(RendererSchedulerImplTest, BeginMainFrameOnCriticalPath) {
   begin_frame_args.on_critical_path = false;
   scheduler_->WillBeginFrame(begin_frame_args);
   ASSERT_FALSE(BeginMainFrameOnCriticalPath());
+}
+
+TEST_F(RendererSchedulerImplTest, ShutdownPreventsPostingOfNewTasks) {
+  scheduler_->Shutdown();
+  std::vector<std::string> run_order;
+  PostTestTasks(&run_order, "D1 C1");
+  RunUntilIdle();
+  EXPECT_TRUE(run_order.empty());
 }
 
 }  // namespace scheduler

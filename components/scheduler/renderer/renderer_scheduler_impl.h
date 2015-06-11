@@ -130,11 +130,8 @@ class SCHEDULER_EXPORT RendererSchedulerImpl : public RendererScheduler,
   // renderer has been hidden, before going to sleep for good.
   static const int kEndIdleWhenHiddenDelayMillis = 10000;
 
-  // Returns the current scheduler policy. Must be called from the main thread.
-  Policy SchedulerPolicy() const;
-
   // Schedules an immediate PolicyUpdate, if there isn't one already pending and
-  // sets |policy_may_need_update_|. Note |incoming_signals_lock_| must be
+  // sets |policy_may_need_update_|. Note |any_thread_lock_| must be
   // locked.
   void EnsureUrgentPolicyUpdatePostedOnMainThread(
       const tracked_objects::Location& from_here);
@@ -143,7 +140,7 @@ class SCHEDULER_EXPORT RendererSchedulerImpl : public RendererScheduler,
   // thread.
   void MaybeUpdatePolicy();
 
-  // Locks |incoming_signals_lock_| and updates the scheduler policy.  May early
+  // Locks |any_thread_lock_| and updates the scheduler policy.  May early
   // out if the policy is unchanged. Must be called from the main thread.
   void UpdatePolicy();
 
@@ -166,7 +163,7 @@ class SCHEDULER_EXPORT RendererSchedulerImpl : public RendererScheduler,
   // Helper for computing the new policy. |new_policy_duration| will be filled
   // with the amount of time after which the policy should be updated again. If
   // the duration is zero, a new policy update will not be scheduled. Must be
-  // called with |incoming_signals_lock_| held. Can be called from any thread.
+  // called with |any_thread_lock_| held. Can be called from any thread.
   Policy ComputeNewPolicy(base::TimeTicks now,
                           base::TimeDelta* new_policy_duration) const;
 
@@ -181,40 +178,88 @@ class SCHEDULER_EXPORT RendererSchedulerImpl : public RendererScheduler,
   SchedulerHelper helper_;
   IdleHelper idle_helper_;
 
-  scoped_refptr<base::SingleThreadTaskRunner> control_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> timer_task_runner_;
+  const scoped_refptr<base::SingleThreadTaskRunner> control_task_runner_;
+  const scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
+  const scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner_;
+  const scoped_refptr<base::SingleThreadTaskRunner> timer_task_runner_;
 
   base::Closure update_policy_closure_;
   DeadlineTaskRunner delayed_update_policy_runner_;
   CancelableClosureHolder end_renderer_hidden_idle_period_closure_;
 
-  // Don't access current_policy_ directly, instead use SchedulerPolicy().
-  Policy current_policy_;
-  base::TimeTicks current_policy_expiration_time_;
-  bool renderer_hidden_;
-  bool was_shutdown_;
+  // We have decided to improve thread safety at the cost of some boilerplate
+  // (the accessors) for the following data members.
 
-  base::TimeTicks estimated_next_frame_begin_;
+  struct MainThreadOnly {
+    MainThreadOnly();
 
-  // The incoming_signals_lock_ mutex protects access to all variables in the
-  // (contiguous) block below.
-  mutable base::Lock incoming_signals_lock_;
-  base::TimeTicks last_input_signal_time_;
-  int pending_main_thread_input_event_count_;
-  bool awaiting_touch_start_response_;
+    Policy current_policy_;
+    base::TimeTicks current_policy_expiration_time_;
+    base::TimeTicks estimated_next_frame_begin_;
+    int timer_queue_suspend_count_;  // TIMER_TASK_QUEUE suspended if non-zero.
+    bool renderer_hidden_;
+    bool was_shutdown_;
+    bool in_idle_period_;
+    bool begin_main_frame_on_critical_path_;
+  };
 
-  bool begin_main_frame_on_critical_path_;
+  struct AnyThread {
+    AnyThread();
 
-  // Variables in this (contiguous) block are only accessed from the compositor
-  // thread.
-  blink::WebInputEvent::Type last_input_type_;
+    base::TimeTicks last_input_signal_time_;
+    int pending_main_thread_input_event_count_;
+    bool awaiting_touch_start_response_;
+  };
+
+  struct CompositorThreadOnly {
+    CompositorThreadOnly();
+    ~CompositorThreadOnly();
+
+    blink::WebInputEvent::Type last_input_type_;
+    scoped_ptr<base::ThreadChecker> compositor_thread_checker_;
+
+    void CheckOnValidThread() {
+#if DCHECK_IS_ON()
+      // We don't actually care which thread this called from, just so long as
+      // its consistent.
+      if (!compositor_thread_checker_)
+        compositor_thread_checker_.reset(new base::ThreadChecker());
+      DCHECK(compositor_thread_checker_->CalledOnValidThread());
+#endif
+    }
+  };
+
+  // Don't access main_thread_only_, instead use MainThreadOnly().
+  MainThreadOnly main_thread_only_;
+  MainThreadOnly& MainThreadOnly() {
+    helper_.CheckOnValidThread();
+    return main_thread_only_;
+  }
+  const struct MainThreadOnly& MainThreadOnly() const {
+    helper_.CheckOnValidThread();
+    return main_thread_only_;
+  }
+
+  mutable base::Lock any_thread_lock_;
+  // Don't access any_thread_, instead use AnyThread().
+  AnyThread any_thread_;
+  AnyThread& AnyThread() {
+    any_thread_lock_.AssertAcquired();
+    return any_thread_;
+  }
+  const struct AnyThread& AnyThread() const {
+    any_thread_lock_.AssertAcquired();
+    return any_thread_;
+  }
+
+  // Don't access compositor_thread_only_, instead use CompositorThreadOnly().
+  CompositorThreadOnly compositor_thread_only_;
+  CompositorThreadOnly& CompositorThreadOnly() {
+    compositor_thread_only_.CheckOnValidThread();
+    return compositor_thread_only_;
+  }
 
   PollableThreadSafeFlag policy_may_need_update_;
-  int timer_queue_suspend_count_;  // TIMER_TASK_QUEUE suspended if non-zero.
-
-  bool in_idle_period_;
   base::WeakPtrFactory<RendererSchedulerImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererSchedulerImpl);
