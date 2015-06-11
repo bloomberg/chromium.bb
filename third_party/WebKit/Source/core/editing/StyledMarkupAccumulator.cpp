@@ -67,7 +67,7 @@ void StyledMarkupAccumulator::appendStartMarkup(StringBuilder& result, Node& nod
         break;
     case Node::ELEMENT_NODE: {
         Element& element = toElement(node);
-        RefPtrWillBeRawPtr<EditingStyle> style = createInlineStyle(element, false);
+        RefPtrWillBeRawPtr<EditingStyle> style = createInlineStyle(element);
         appendElement(element, style);
         break;
     }
@@ -140,10 +140,8 @@ void StyledMarkupAccumulator::appendElement(Element& element, PassRefPtrWillBeRa
     appendElement(m_result, element, false, style);
 }
 
-RefPtrWillBeRawPtr<EditingStyle> StyledMarkupAccumulator::createInlineStyle(Element& element, bool addDisplayInline)
+RefPtrWillBeRawPtr<EditingStyle> StyledMarkupAccumulator::createInlineStyle(Element& element)
 {
-    const bool shouldAnnotateOrForceInline = element.isHTMLElement() && (shouldAnnotate() || addDisplayInline);
-
     RefPtrWillBeRawPtr<EditingStyle> inlineStyle = nullptr;
 
     if (shouldApplyWrappingStyle(element)) {
@@ -157,14 +155,8 @@ RefPtrWillBeRawPtr<EditingStyle> StyledMarkupAccumulator::createInlineStyle(Elem
     if (element.isStyledElement() && element.inlineStyle())
         inlineStyle->overrideWithStyle(element.inlineStyle());
 
-    if (!shouldAnnotateOrForceInline)
-        return inlineStyle;
-
-    if (shouldAnnotate())
+    if (element.isHTMLElement() && shouldAnnotate())
         inlineStyle->mergeStyleFromRulesForSerialization(&toHTMLElement(element));
-
-    if (addDisplayInline)
-        inlineStyle->forceInline();
 
     return inlineStyle;
 }

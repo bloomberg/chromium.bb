@@ -172,9 +172,7 @@ String StyledMarkupSerializer<Strategy>::createMarkup()
                     markupAccumulator.wrapWithStyleNode(fullySelectedRootStyle->style());
                 }
             } else {
-                RefPtrWillBeRawPtr<EditingStyle> style = nullptr;
-                if (ancestor->isElementNode())
-                    style = markupAccumulator.createInlineStyle(toElement(*ancestor), convertBlocksToInlines() && isBlock(ancestor));
+                RefPtrWillBeRawPtr<EditingStyle> style = createInlineStyleIfNeeded(markupAccumulator, *ancestor);
                 // Since this node and all the other ancestors are not in the selection we want
                 // styles that affect the exterior of the node not to be not included.
                 // If the node is not fully selected by the range, then we don't want to keep styles that affect its relationship to the nodes around it
@@ -288,9 +286,7 @@ Node* StyledMarkupSerializer<Strategy>::traverseNodesForSerialization(Node* star
             ASSERT(startNode);
             ASSERT(Strategy::isDescendantOf(*startNode, *parent));
             if (markupAccumulator) {
-                RefPtrWillBeRawPtr<EditingStyle> style = nullptr;
-                if (parent->isElementNode())
-                    style = markupAccumulator->createInlineStyle(toElement(*parent), convertBlocksToInlines() && isBlock(parent));
+                RefPtrWillBeRawPtr<EditingStyle> style = createInlineStyleIfNeeded(*markupAccumulator, *parent);
                 wrapWithNode(*markupAccumulator, *parent, style);
             }
             lastClosed = parent;
@@ -312,6 +308,17 @@ void StyledMarkupSerializer<Strategy>::wrapWithNode(StyledMarkupAccumulator& acc
     if (!node.isElementNode())
         return;
     accumulator.appendEndTag(toElement(node));
+}
+
+template<typename Strategy>
+RefPtrWillBeRawPtr<EditingStyle> StyledMarkupSerializer<Strategy>::createInlineStyleIfNeeded(StyledMarkupAccumulator& accumulator, Node& node)
+{
+    if (!node.isElementNode())
+        return nullptr;
+    RefPtrWillBeRawPtr<EditingStyle> inlineStyle = accumulator.createInlineStyle(toElement(node));
+    if (convertBlocksToInlines() && isBlock(&node))
+        inlineStyle->forceInline();
+    return inlineStyle;
 }
 
 template class StyledMarkupSerializer<EditingStrategy>;

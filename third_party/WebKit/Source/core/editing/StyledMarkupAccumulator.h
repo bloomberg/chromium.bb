@@ -62,7 +62,7 @@ public:
     String takeResults();
 
     void pushMarkup(const String&);
-    RefPtrWillBeMember<EditingStyle> createInlineStyle(Element&, bool addDisplayInline);
+    RefPtrWillBeMember<EditingStyle> createInlineStyle(Element&);
 
     void appendElement(StringBuilder&, Element&, bool addDisplayInline, PassRefPtrWillBeRawPtr<EditingStyle>);
     void appendStartMarkup(StringBuilder&, Node&);
