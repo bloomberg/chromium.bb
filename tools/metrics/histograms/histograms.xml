@@ -44470,6 +44470,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>pthammaiah@google.com</owner>
 </histogram>
 
+<histogram name="Tracing.Background.FinalizingTraceSizeInKB" units="KB">
+  <owner>oysteine@chromium.org</owner>
+  <summary>
+    The size, in kilobytes, of a finalized trace ready to be uploaded.
+  </summary>
+</histogram>
+
+<histogram name="Tracing.Background.ScenarioState"
+    enum="BackgroundTracingState">
+  <owner>oysteine@chromium.org</owner>
+  <summary>
+    Records state of the Background Tracing system, from when scenarios are
+    attempted to be activated until they're completed (successfully or failed)
+  </summary>
+</histogram>
+
 <histogram name="Translate.AlwaysTranslateLang">
   <owner>kenjibaheux@google.com</owner>
   <summary>
@@ -49573,6 +49589,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1" label="AUTO_LAUNCH_BACKGROUND"/>
   <int value="2" label="AUTO_LAUNCH_FOREGROUND"/>
   <int value="3" label="AUTO_LAUNCH_FOREGROUND_USELESS"/>
+</enum>
+
+<enum name="BackgroundTracingState" type="int">
+  <int value="0" label="Scenario activation requested"/>
+  <int value="1" label="Scenario successfully activated"/>
+  <int value="2" label="Trace recording enabled"/>
+  <int value="3" label="Running preemptive scenario triggered"/>
+  <int value="4" label="Running reactive scenario triggered"/>
+  <int value="5" label="Trace finalization allowed"/>
+  <int value="6" label="Trace finalization disallowed"/>
+  <int value="7" label="Trace finalization started"/>
+  <int value="8" label="Trace finalization complete"/>
 </enum>
 
 <enum name="BackingStoreResults" type="int">

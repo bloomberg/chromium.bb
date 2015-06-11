@@ -5,6 +5,7 @@
 #include "content/browser/tracing/background_tracing_manager_impl.h"
 
 #include "base/macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "content/public/browser/background_tracing_preemptive_config.h"
 #include "content/public/browser/background_tracing_reactive_config.h"
@@ -19,6 +20,25 @@ namespace {
 
 base::LazyInstance<BackgroundTracingManagerImpl>::Leaky g_controller =
     LAZY_INSTANCE_INITIALIZER;
+
+// These values are used for a histogram. Do not reorder.
+enum BackgroundTracingMetrics {
+  SCENARIO_ACTIVATION_REQUESTED = 0,
+  SCENARIO_ACTIVATED_SUCCESSFULLY = 1,
+  RECORDING_ENABLED = 2,
+  PREEMPTIVE_TRIGGERED = 3,
+  REACTIVE_TRIGGERED = 4,
+  FINALIZATION_ALLOWED = 5,
+  FINALIZATION_DISALLOWED = 6,
+  FINALIZATION_STARTED = 7,
+  FINALIZATION_COMPLETE = 8,
+  NUMBER_OF_BACKGROUND_TRACING_METRICS,
+};
+
+void RecordBackgroundTracingMetric(BackgroundTracingMetrics metric) {
+  UMA_HISTOGRAM_ENUMERATION("Tracing.Background.ScenarioState", metric,
+                            NUMBER_OF_BACKGROUND_TRACING_METRICS);
+}
 
 }  // namespace
 
@@ -136,6 +156,8 @@ bool BackgroundTracingManagerImpl::SetActiveScenario(
     const BackgroundTracingManager::ReceiveCallback& receive_callback,
     DataFiltering data_filtering) {
   CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  RecordBackgroundTracingMetric(SCENARIO_ACTIVATION_REQUESTED);
+
   if (is_tracing_)
     return false;
 
@@ -161,6 +183,7 @@ bool BackgroundTracingManagerImpl::SetActiveScenario(
 
   EnableRecordingIfConfigNeedsIt();
 
+  RecordBackgroundTracingMetric(SCENARIO_ACTIVATED_SUCCESSFULLY);
   return true;
 }
 
@@ -253,8 +276,10 @@ void BackgroundTracingManagerImpl::TriggerNamedEvent(
   }
 
   if (config_->mode == BackgroundTracingConfig::PREEMPTIVE_TRACING_MODE) {
+    RecordBackgroundTracingMetric(PREEMPTIVE_TRIGGERED);
     BeginFinalizing(callback);
   } else {
+    RecordBackgroundTracingMetric(REACTIVE_TRIGGERED);
     if (is_tracing_) {
       tracing_timer_->CancelTimer();
       BeginFinalizing(callback);
@@ -334,11 +359,16 @@ void BackgroundTracingManagerImpl::EnableRecording(
 
   is_tracing_ = TracingController::GetInstance()->EnableRecording(
       trace_config, tracing_enabled_callback_for_testing_);
+  RecordBackgroundTracingMetric(RECORDING_ENABLED);
 }
 
 void BackgroundTracingManagerImpl::OnFinalizeStarted(
     scoped_refptr<base::RefCountedString> file_contents) {
   CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  RecordBackgroundTracingMetric(FINALIZATION_STARTED);
+  UMA_HISTOGRAM_MEMORY_KB("Tracing.Background.FinalizingTraceSizeInKB",
+                          file_contents->size() / 1024);
 
   if (!receive_callback_.is_null())
     receive_callback_.Run(
@@ -365,6 +395,7 @@ void BackgroundTracingManagerImpl::OnFinalizeComplete() {
 
   // Now that a trace has completed, we may need to enable recording again.
   EnableRecordingIfConfigNeedsIt();
+  RecordBackgroundTracingMetric(FINALIZATION_COMPLETE);
 }
 
 void BackgroundTracingManagerImpl::BeginFinalizing(
@@ -381,6 +412,9 @@ void BackgroundTracingManagerImpl::BeginFinalizing(
   if (is_allowed_finalization) {
     trace_data_sink = content::TracingController::CreateCompressedStringSink(
         data_endpoint_wrapper_);
+    RecordBackgroundTracingMetric(FINALIZATION_ALLOWED);
+  } else {
+    RecordBackgroundTracingMetric(FINALIZATION_DISALLOWED);
   }
 
   content::TracingController::GetInstance()->DisableRecording(trace_data_sink);
