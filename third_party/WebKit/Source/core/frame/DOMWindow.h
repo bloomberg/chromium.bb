@@ -129,8 +129,6 @@ public:
 
     virtual Console* console() const  = 0;
 
-    virtual DOMWindowCSS* css() const = 0;
-
     virtual DOMSelection* getSelection() = 0;
 
     virtual void focus(ExecutionContext*) = 0;

@@ -346,6 +346,8 @@ interface Boolean
     method valueOf
 interface CDATASection
     method constructor
+interface CSS
+    method constructor
 interface CSSFontFaceRule
     getter style
     method constructor

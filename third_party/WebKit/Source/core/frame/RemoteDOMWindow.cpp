@@ -204,12 +204,6 @@ Console* RemoteDOMWindow::console() const
     return 0;
 }
 
-DOMWindowCSS* RemoteDOMWindow::css() const
-{
-    ASSERT_NOT_REACHED();
-    return 0;
-}
-
 DOMSelection* RemoteDOMWindow::getSelection()
 {
     ASSERT_NOT_REACHED();

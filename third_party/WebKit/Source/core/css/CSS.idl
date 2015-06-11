@@ -30,11 +30,9 @@
 // http://dev.w3.org/csswg/css-conditional/#the-css-interface
 
 [
-    NoInterfaceObject,
     ImplementedAs=DOMWindowCSS,
     WillBeGarbageCollected
 ] interface CSS {
-    // TODO(philipj): The supports() methods should be static. crbug.com/496369
-    boolean supports(DOMString property, DOMString value);
-    boolean supports(DOMString conditionText);
+    static boolean supports(DOMString property, DOMString value);
+    static boolean supports(DOMString conditionText);
 };

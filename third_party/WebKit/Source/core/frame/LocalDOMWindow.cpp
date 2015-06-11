@@ -1322,13 +1322,6 @@ void LocalDOMWindow::cancelAnimationFrame(int id)
         d->cancelAnimationFrame(id);
 }
 
-DOMWindowCSS* LocalDOMWindow::css() const
-{
-    if (!m_css)
-        m_css = DOMWindowCSS::create();
-    return m_css.get();
-}
-
 bool LocalDOMWindow::addEventListener(const AtomicString& eventType, PassRefPtr<EventListener> prpListener, bool useCapture)
 {
     RefPtr<EventListener> listener = prpListener;
@@ -1525,7 +1518,6 @@ DEFINE_TRACE(LocalDOMWindow)
     visitor->trace(m_navigator);
     visitor->trace(m_media);
     visitor->trace(m_applicationCache);
-    visitor->trace(m_css);
     visitor->trace(m_eventQueue);
     visitor->trace(m_postMessageTimers);
     HeapSupplementable<LocalDOMWindow>::trace(visitor);

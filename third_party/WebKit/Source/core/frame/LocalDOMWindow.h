@@ -118,7 +118,6 @@ public:
     ApplicationCache* applicationCache() const override;
     int orientation() const override;
     Console* console() const override;
-    DOMWindowCSS* css() const override;
     DOMSelection* getSelection() override;
     void focus(ExecutionContext*) override;
     void blur() override;
@@ -271,8 +270,6 @@ private:
     String m_defaultStatus;
 
     mutable RefPtrWillBeMember<ApplicationCache> m_applicationCache;
-
-    mutable RefPtrWillBeMember<DOMWindowCSS> m_css;
 
     RefPtrWillBeMember<DOMWindowEventQueue> m_eventQueue;
     RefPtr<SerializedScriptValue> m_pendingStateObject;

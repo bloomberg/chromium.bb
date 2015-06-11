@@ -37,12 +37,7 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<DOMWindowCSS> DOMWindowCSS::create()
-{
-    return adoptRefWillBeNoop(new DOMWindowCSS());
-}
-
-bool DOMWindowCSS::supports(const String& property, const String& value) const
+bool DOMWindowCSS::supports(const String& property, const String& value)
 {
     CSSPropertyID unresolvedProperty = unresolvedCSSPropertyID(property);
     if (unresolvedProperty == CSSPropertyInvalid)
@@ -54,7 +49,7 @@ bool DOMWindowCSS::supports(const String& property, const String& value) const
     return CSSParser::parseValue(dummyStyle.get(), unresolvedProperty, value, false, HTMLStandardMode, 0);
 }
 
-bool DOMWindowCSS::supports(const String& conditionText) const
+bool DOMWindowCSS::supports(const String& conditionText)
 {
     return CSSParser::parseSupportsCondition(conditionText);
 }
