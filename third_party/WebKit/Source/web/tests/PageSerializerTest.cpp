@@ -321,11 +321,11 @@ TEST_F(PageSerializerTest, DTD)
 {
     setBaseFolder("pageserializer/dtd/");
 
-    registerURL("dtd.html", "text/html");
-    serialize("dtd.html");
+    registerURL("html5.html", "text/html");
+    serialize("html5.html");
 
     String expectedStart("<!DOCTYPE html>");
-    EXPECT_TRUE(getSerializedData("dtd.html").startsWith(expectedStart));
+    EXPECT_TRUE(getSerializedData("html5.html").startsWith(expectedStart));
 }
 
 TEST_F(PageSerializerTest, Font)
