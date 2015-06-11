@@ -519,7 +519,20 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicy) {
   policy_info.defaultPolicy = blink::WebNavigationPolicyCurrentTab;
   blink::WebNavigationPolicy policy = frame()->decidePolicyForNavigation(
           policy_info);
-  EXPECT_EQ(blink::WebNavigationPolicyCurrentTab, policy);
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBrowserSideNavigation)) {
+    EXPECT_EQ(blink::WebNavigationPolicyCurrentTab, policy);
+  } else {
+    // If this is a renderer-initiated navigation that just begun, it should
+    // stop and be sent to the browser.
+    EXPECT_EQ(blink::WebNavigationPolicyIgnore, policy);
+
+    // If this a navigation that is ready to commit, it should be handled
+    // locally.
+    request.setCheckForBrowserSideNavigation(false);
+    policy = frame()->decidePolicyForNavigation(policy_info);
+    EXPECT_EQ(blink::WebNavigationPolicyCurrentTab, policy);
+  }
 
   // Verify that form posts to WebUI URLs will be sent to the browser process.
   blink::WebURLRequest form_request(GURL("chrome://foo"));
