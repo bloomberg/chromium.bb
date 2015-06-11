@@ -66722,6 +66722,11 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="5" label="Registry exit code"/>
   <int value="6" label="Reset retries"/>
   <int value="7" label="Begin SRT download"/>
+  <int value="8" label="No browser to show prompt"/>
+  <int value="9" label="No local state"/>
+  <int value="10" label="No prompt needed"/>
+  <int value="11" label="No prompt field trial"/>
+  <int value="12" label="Already prompted"/>
 </enum>
 
 <enum name="SyncAttachmentStoreResult" type="int">

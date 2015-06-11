@@ -70,6 +70,11 @@ enum SwReporterUmaValue {
   SW_REPORTER_REGISTRY_EXIT_CODE = 5,
   SW_REPORTER_RESET_RETRIES = 6,  // Deprecated.
   SW_REPORTER_DOWNLOAD_START = 7,
+  SW_REPORTER_NO_BROWSER = 8,
+  SW_REPORTER_NO_LOCAL_STATE = 9,
+  SW_REPORTER_NO_PROMPT_NEEDED = 10,
+  SW_REPORTER_NO_PROMPT_FIELD_TRIAL = 11,
+  SW_REPORTER_ALREADY_PROMPTED = 12,
   SW_REPORTER_MAX,
 };
 enum SRTCompleted {
@@ -201,8 +206,15 @@ void ReportAndClearExitCode(int exit_code, const std::string& version) {
                             KEY_SET_VALUE);
   srt_key.DeleteValue(kExitCodeValueName);
 
-  if ((exit_code != kPostRebootCleanupNeeded && exit_code != kCleanupNeeded) ||
-      !IsInSRTPromptFieldTrialGroups()) {
+  if (!IsInSRTPromptFieldTrialGroups()) {
+    // Knowing about disabled field trial is more important than reporter not
+    // finding anything to remove.
+    ReportUmaStep(SW_REPORTER_NO_PROMPT_FIELD_TRIAL);
+    return;
+  }
+
+  if (exit_code != kPostRebootCleanupNeeded && exit_code != kCleanupNeeded) {
+    ReportUmaStep(SW_REPORTER_NO_PROMPT_NEEDED);
     return;
   }
 
@@ -212,8 +224,10 @@ void ReportAndClearExitCode(int exit_code, const std::string& version) {
   // have a profile.
   chrome::HostDesktopType desktop_type = chrome::GetActiveDesktop();
   Browser* browser = chrome::FindLastActiveWithHostDesktopType(desktop_type);
-  if (!browser)
+  if (!browser) {
+    ReportUmaStep(SW_REPORTER_NO_BROWSER);
     return;
+  }
 
   Profile* profile = browser->profile();
   DCHECK(profile);
@@ -225,8 +239,10 @@ void ReportAndClearExitCode(int exit_code, const std::string& version) {
   // and for the current Finch seed.
   std::string incoming_seed = safe_browsing::GetIncomingSRTSeed();
   std::string old_seed = prefs->GetString(prefs::kSwReporterPromptSeed);
-  if (!incoming_seed.empty() && incoming_seed == old_seed)
+  if (!incoming_seed.empty() && incoming_seed == old_seed) {
+    ReportUmaStep(SW_REPORTER_ALREADY_PROMPTED);
     return;
+  }
 
   if (!incoming_seed.empty())
     prefs->SetString(prefs::kSwReporterPromptSeed, incoming_seed);
@@ -340,8 +356,10 @@ class SwReporterInstallerTraits : public ComponentInstallerTraits {
 
     // If we can't access local state, we can't see when we last ran, so
     // just exit without running.
-    if (!g_browser_process || !g_browser_process->local_state())
+    if (!g_browser_process || !g_browser_process->local_state()) {
+      ReportUmaStep(SW_REPORTER_NO_LOCAL_STATE);
       return;
+    }
 
     // Run the reporter if it hasn't been triggered in the
     // kDaysBetweenSwReporterRuns days.
