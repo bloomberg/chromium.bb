@@ -38,10 +38,10 @@ function assertExceptionCode(exception, expect, m)
 var allNSTests = [
    { args: [undefined, undefined] },
    { args: [null, undefined] },
-   { args: [undefined, null], code: 5 },
-   { args: [null, null], code: 5 },
+   { args: [undefined, null] },
+   { args: [null, null] },
    { args: [null, ""], code: 5 },
-   { args: ["", null], code: 5 },
+   { args: ["", null] },
    { args: ["", ""], code: 5 },
    { args: [null, "<div>"], code: 5 },
    { args: [null, "0div"], code: 5 },
