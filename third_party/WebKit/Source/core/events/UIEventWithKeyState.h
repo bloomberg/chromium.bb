@@ -52,8 +52,8 @@ namespace blink {
         }
 
         UIEventWithKeyState(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView> view,
-                            int detail, bool ctrlKey, bool altKey, bool shiftKey, bool metaKey)
-            : UIEvent(type, canBubble, cancelable, view, detail)
+            int detail, bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, InputDevice* sourceDevice = nullptr)
+            : UIEvent(type, canBubble, cancelable, view, detail, sourceDevice)
             , m_ctrlKey(ctrlKey)
             , m_altKey(altKey)
             , m_shiftKey(shiftKey)

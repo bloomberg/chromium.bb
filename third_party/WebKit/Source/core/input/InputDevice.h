@@ -16,6 +16,10 @@ class CORE_EXPORT InputDevice : public GarbageCollectedFinalized<InputDevice>, p
 
 public:
     ~InputDevice();
+
+    // This return a static local InputDevice pointer which has firesTouchEvents set to be true.
+    static InputDevice* touchEventInstance();
+
     static InputDevice* create(bool firesTouchEvents)
     {
         return new InputDevice(firesTouchEvents);

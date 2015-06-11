@@ -21,4 +21,10 @@ InputDevice::~InputDevice()
 {
 }
 
+InputDevice* InputDevice::touchEventInstance()
+{
+    DEFINE_STATIC_LOCAL(Persistent<InputDevice>, instance, (InputDevice::create(true)));
+    return instance;
+}
+
 } // namespace blink

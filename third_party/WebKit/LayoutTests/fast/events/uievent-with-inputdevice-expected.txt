@@ -1,14 +1,16 @@
-This tests that UIEvent will have sourceDevice set to be null by default, and it can also be passed when initialization.
+This tests that UIEvent and its subclass will have sourceDevice set to be null by default, and it can also be passed when initialization.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS event is non-null.
-PASS event.sourceDevice is null
-PASS event.sourceDevice is non-null.
-PASS event.sourceDevice.firesTouchEvents is false
-PASS event.sourceDevice is non-null.
-PASS event.sourceDevice.firesTouchEvents is true
+PASS uievent is non-null.
+PASS uievent.sourceDevice is null
+PASS uievent.sourceDevice is non-null.
+PASS uievent.sourceDevice.firesTouchEvents is false
+PASS uievent.sourceDevice is non-null.
+PASS uievent.sourceDevice.firesTouchEvents is true
+PASS touchevent is non-null.
+PASS touchevent.sourceDevice is null
 PASS successfullyParsed is true
 
 TEST COMPLETE

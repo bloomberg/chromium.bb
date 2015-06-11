@@ -77,7 +77,7 @@ public:
 
 protected:
     UIEvent();
-    UIEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView>, int detail);
+    UIEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView>, int detail, InputDevice* sourceDevice = nullptr);
     UIEvent(const AtomicString&, const UIEventInit&);
 
 private:

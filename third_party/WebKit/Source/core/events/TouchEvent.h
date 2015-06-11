@@ -39,6 +39,7 @@ class CORE_EXPORT TouchEvent final : public UIEventWithKeyState {
 public:
     virtual ~TouchEvent();
 
+    // We only initialize sourceDevice when we create TouchEvent from EventHandler, null if it is from JavaScript.
     static PassRefPtrWillBeRawPtr<TouchEvent> create()
     {
         return adoptRefWillBeNoop(new TouchEvent);

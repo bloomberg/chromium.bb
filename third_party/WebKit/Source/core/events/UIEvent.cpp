@@ -32,11 +32,12 @@ UIEvent::UIEvent()
 {
 }
 
-UIEvent::UIEvent(const AtomicString& eventType, bool canBubbleArg, bool cancelableArg, PassRefPtrWillBeRawPtr<AbstractView> viewArg, int detailArg)
+// TODO(lanwei): Will add sourceDevice to all the subclass of UIEvent later, see https://crbug.com/476530.
+UIEvent::UIEvent(const AtomicString& eventType, bool canBubbleArg, bool cancelableArg, PassRefPtrWillBeRawPtr<AbstractView> viewArg, int detailArg, InputDevice* sourceDeviceArg)
     : Event(eventType, canBubbleArg, cancelableArg)
     , m_view(viewArg)
     , m_detail(detailArg)
-    , m_sourceDevice(nullptr)
+    , m_sourceDevice(sourceDeviceArg)
 {
 }
 
