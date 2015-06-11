@@ -1284,7 +1284,10 @@ cr.define('options.internet', function() {
 
   DetailsInternetPage.configureNetwork = function() {
     var detailsPage = DetailsInternetPage.getInstance();
-    chrome.send('configureNetwork', [detailsPage.onc_.guid()]);
+    // This is an explicit request to show the configure dialog; do not show
+    // the enrollment dialog for networks missing a certificate.
+    var forceShow = true;
+    chrome.send('configureNetwork', [detailsPage.onc_.guid(), forceShow]);
     PageManager.closeOverlay();
   };
 

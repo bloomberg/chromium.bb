@@ -15,6 +15,7 @@
 #include "base/bind_helpers.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/enrollment_dialog_view.h"
 #include "chrome/browser/chromeos/mobile_config.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -303,10 +304,14 @@ void InternetOptionsHandler::AddNonVPNConnection(const base::ListValue* args) {
 
 void InternetOptionsHandler::ConfigureNetwork(const base::ListValue* args) {
   std::string guid;
-  if (args->GetSize() != 1 || !args->GetString(0, &guid)) {
+  if (args->GetSize() < 1 || !args->GetString(0, &guid)) {
     NOTREACHED();
     return;
   }
+  bool force_show = false;
+  if (args->GetSize() >= 2)
+    args->GetBoolean(1, &force_show);
+
   const std::string service_path = ServicePathFromGuid(guid);
   if (service_path.empty())
     return;
@@ -322,6 +327,12 @@ void InternetOptionsHandler::ConfigureNetwork(const base::ListValue* args) {
     VpnServiceFactory::GetForBrowserContext(GetProfileForPrimaryUser())
         ->SendShowConfigureDialogToExtension(
             network->third_party_vpn_provider_extension_id(), network->name());
+    return;
+  }
+
+  // If a network is not connectable, show the enrollment dialog if available.
+  if (!force_show && !network->connectable() &&
+      enrollment::CreateDialog(service_path, GetNativeWindow())) {
     return;
   }
 
