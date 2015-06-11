@@ -11,4 +11,5 @@ per-file sdk_forward_declarations.*=mark@chromium.org
 per-file sdk_forward_declarations.*=rohitrao@chromium.org
 per-file sdk_forward_declarations.*=rsesek@chromium.org
 per-file sdk_forward_declarations.*=shess@chromium.org
+per-file sdk_forward_declarations.*=tapted@chromium.org
 per-file sdk_forward_declarations.*=thakis@chromium.org
