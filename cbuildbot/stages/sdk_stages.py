@@ -30,6 +30,7 @@ PACKAGE_MANIFEST_VERSION = '1'
 # build root where SDK packages are being installed (e.g. /build/amd64-host).
 PACKAGE_EXCLUDED_PATHS = (
     'usr/lib/debug',
+    'usr/lib64/debug',
     constants.AUTOTEST_BUILD_PATH,
     'packages',
     'tmp'
