@@ -481,6 +481,9 @@ ChromePermissionMessageRule::GetAllRules() {
       {IDS_EXTENSION_PROMPT_WARNING_HISTORY_READ,
        {APIPermission::kWebNavigation},
        {}},
+      {IDS_EXTENSION_PROMPT_WARNING_PLATFORMKEYS,
+       {APIPermission::kPlatformKeys},
+       {}},
 
       // Permission messages for private permissions:
       {IDS_EXTENSION_PROMPT_WARNING_SCREENLOCK_PRIVATE,
