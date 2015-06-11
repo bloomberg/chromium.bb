@@ -133,11 +133,6 @@ class SK_API SkiaBitLocker {
   SkIPoint bitmapOffset_;
   SkScalar bitmapScaleFactor_;
 
-  // True if we are drawing to |canvas_|'s SkBaseDevice's bits directly through
-  // |bitmap_|. Otherwise, the bits in |bitmap_| are our allocation and need to
-  // be copied over to |canvas_|.
-  bool useDeviceBits_;
-
   // True if |bitmap_| is a dummy 1x1 bitmap allocated for the sake of creating
   // a non-NULL CGContext (it is invalid to use a NULL CGContext), and will not
   // be copied to |canvas_|. This will happen if |canvas_|'s clip region is
