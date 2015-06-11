@@ -8,12 +8,14 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "chromecast/media/cma/base/balanced_media_task_runner_factory.h"
 #include "chromecast/media/cma/base/decoder_buffer_base.h"
 #include "chromecast/media/cma/filters/demuxer_stream_adapter.h"
+#include "chromecast/media/cma/test/demuxer_stream_for_test.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/demuxer_stream.h"
@@ -22,133 +24,6 @@
 
 namespace chromecast {
 namespace media {
-
-namespace {
-
-class DummyDemuxerStream : public ::media::DemuxerStream {
- public:
-  // Creates a demuxer stream which provides frames either with a delay
-  // or instantly. The scheduling pattern is the following:
-  // - provides |delayed_frame_count| frames with a delay,
-  // - then provides the following |cycle_count| - |delayed_frame_count|
-  //   instantly,
-  // - then provides |delayed_frame_count| frames with a delay,
-  // - ... and so on.
-  // Special cases:
-  // - all frames are delayed: |delayed_frame_count| = |cycle_count|
-  // - all frames are provided instantly: |delayed_frame_count| = 0
-  // |config_idx| is a list of frame index before which there is
-  // a change of decoder configuration.
-  DummyDemuxerStream(int cycle_count,
-                     int delayed_frame_count,
-                     const std::list<int>& config_idx);
-  ~DummyDemuxerStream() override;
-
-  // ::media::DemuxerStream implementation.
-  void Read(const ReadCB& read_cb) override;
-  ::media::AudioDecoderConfig audio_decoder_config() override;
-  ::media::VideoDecoderConfig video_decoder_config() override;
-  Type type() const override;
-  bool SupportsConfigChanges() override;
-  ::media::VideoRotation video_rotation() override;
-
-  bool has_pending_read() const {
-    return has_pending_read_;
-  }
-
- private:
-  void DoRead(const ReadCB& read_cb);
-
-  // Demuxer configuration.
-  const int cycle_count_;
-  const int delayed_frame_count_;
-  std::list<int> config_idx_;
-
-  // Number of frames sent so far.
-  int frame_count_;
-
-  bool has_pending_read_;
-
-  DISALLOW_COPY_AND_ASSIGN(DummyDemuxerStream);
-};
-
-DummyDemuxerStream::DummyDemuxerStream(
-    int cycle_count,
-    int delayed_frame_count,
-    const std::list<int>& config_idx)
-  : cycle_count_(cycle_count),
-    delayed_frame_count_(delayed_frame_count),
-    config_idx_(config_idx),
-    frame_count_(0),
-    has_pending_read_(false) {
-  DCHECK_LE(delayed_frame_count, cycle_count);
-}
-
-DummyDemuxerStream::~DummyDemuxerStream() {
-}
-
-void DummyDemuxerStream::Read(const ReadCB& read_cb) {
-  has_pending_read_ = true;
-  if (!config_idx_.empty() && config_idx_.front() == frame_count_) {
-    config_idx_.pop_front();
-    has_pending_read_ = false;
-    read_cb.Run(kConfigChanged,
-                scoped_refptr<::media::DecoderBuffer>());
-    return;
-  }
-
-  if ((frame_count_ % cycle_count_) < delayed_frame_count_) {
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(&DummyDemuxerStream::DoRead,
-                              base::Unretained(this), read_cb),
-        base::TimeDelta::FromMilliseconds(20));
-    return;
-  }
-  DoRead(read_cb);
-}
-
-::media::AudioDecoderConfig DummyDemuxerStream::audio_decoder_config() {
-  LOG(FATAL) << "DummyDemuxerStream is a video DemuxerStream";
-  return ::media::AudioDecoderConfig();
-}
-
-::media::VideoDecoderConfig DummyDemuxerStream::video_decoder_config() {
-  gfx::Size coded_size(640, 480);
-  gfx::Rect visible_rect(640, 480);
-  gfx::Size natural_size(640, 480);
-  return ::media::VideoDecoderConfig(
-      ::media::kCodecH264,
-      ::media::VIDEO_CODEC_PROFILE_UNKNOWN,
-      ::media::VideoFrame::YV12,
-      coded_size,
-      visible_rect,
-      natural_size,
-      NULL, 0,
-      false);
-}
-
-::media::DemuxerStream::Type DummyDemuxerStream::type() const {
-  return VIDEO;
-}
-
-bool DummyDemuxerStream::SupportsConfigChanges() {
-  return true;
-}
-
-::media::VideoRotation DummyDemuxerStream::video_rotation() {
-  return ::media::VIDEO_ROTATION_0;
-}
-
-void DummyDemuxerStream::DoRead(const ReadCB& read_cb) {
-  has_pending_read_ = false;
-  scoped_refptr<::media::DecoderBuffer> buffer(
-      new ::media::DecoderBuffer(16));
-  buffer->set_timestamp(frame_count_ * base::TimeDelta::FromMilliseconds(40));
-  frame_count_++;
-  read_cb.Run(kOk, buffer);
-}
-
-}  // namespace
 
 class DemuxerStreamAdapterTest : public testing::Test {
  public:
@@ -181,7 +56,7 @@ class DemuxerStreamAdapterTest : public testing::Test {
   // List of expected frame indices with decoder config changes.
   std::list<int> config_idx_;
 
-  scoped_ptr<DummyDemuxerStream> demuxer_stream_;
+  scoped_ptr<DemuxerStreamForTest> demuxer_stream_;
 
   scoped_ptr<CodedFrameProvider> coded_frame_provider_;
 
@@ -284,9 +159,8 @@ TEST_F(DemuxerStreamAdapterTest, NoDelay) {
 
   int cycle_count = 1;
   int delayed_frame_count = 0;
-  demuxer_stream_.reset(
-      new DummyDemuxerStream(
-          cycle_count, delayed_frame_count, config_idx_));
+  demuxer_stream_.reset(new DemuxerStreamForTest(
+      -1, cycle_count, delayed_frame_count, config_idx_));
 
   scoped_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
   Initialize(demuxer_stream_.get());
@@ -305,9 +179,8 @@ TEST_F(DemuxerStreamAdapterTest, AllDelayed) {
 
   int cycle_count = 1;
   int delayed_frame_count = 1;
-  demuxer_stream_.reset(
-      new DummyDemuxerStream(
-          cycle_count, delayed_frame_count, config_idx_));
+  demuxer_stream_.reset(new DemuxerStreamForTest(
+      -1, cycle_count, delayed_frame_count, config_idx_));
 
   scoped_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
   Initialize(demuxer_stream_.get());
@@ -327,9 +200,8 @@ TEST_F(DemuxerStreamAdapterTest, AllDelayedEarlyFlush) {
 
   int cycle_count = 1;
   int delayed_frame_count = 1;
-  demuxer_stream_.reset(
-      new DummyDemuxerStream(
-          cycle_count, delayed_frame_count, config_idx_));
+  demuxer_stream_.reset(new DemuxerStreamForTest(
+      -1, cycle_count, delayed_frame_count, config_idx_));
 
   scoped_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
   Initialize(demuxer_stream_.get());

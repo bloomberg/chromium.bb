@@ -189,6 +189,13 @@ void BalancedMediaTaskRunnerTest::Task(
   expected_task_timestamps_.pop_front();
 
   contexts_[task_runner_id].is_pending_task = false;
+
+  // Release task runner if the task has ended
+  // otherwise, the task runner may may block other streams
+  auto& context = contexts_[task_runner_id];
+  if (context.task_index >= context.task_timestamp_list.size()) {
+    context.media_task_runner = nullptr;
+  }
 }
 
 void BalancedMediaTaskRunnerTest::OnTestTimeout() {
@@ -253,6 +260,30 @@ TEST_F(BalancedMediaTaskRunnerTest, TwoTaskRunnerUnbalanced) {
             timestamps_ms,
             scheduling_pattern,
             expected_timestamps_ms);
+  ProcessAllTasks();
+  message_loop->Run();
+  EXPECT_TRUE(expected_task_timestamps_.empty());
+}
+
+TEST_F(BalancedMediaTaskRunnerTest, TwoStreamsOfDifferentLength) {
+  scoped_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
+
+  std::vector<std::vector<int>> timestamps = {
+      // One longer stream and one shorter stream.
+      // The longer stream runs first, then the shorter stream begins.
+      // After shorter stream ends, it shouldn't block the longer one.
+      {0, 20, 40, 60, 80, 100, 120, 140, 160},
+      {51, 61, 71, 81},
+  };
+
+  std::vector<int> expected_timestamps = {
+      0, 20, 40, 60, 51, 80, 61, 71, 81, 100, 120, 140, 160};
+
+  std::vector<size_t> scheduling_pattern = {
+      0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0};
+
+  SetupTest(base::TimeDelta::FromMilliseconds(30), timestamps,
+            scheduling_pattern, expected_timestamps);
   ProcessAllTasks();
   message_loop->Run();
   EXPECT_TRUE(expected_task_timestamps_.empty());
