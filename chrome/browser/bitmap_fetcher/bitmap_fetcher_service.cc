@@ -121,11 +121,12 @@ void BitmapFetcherService::Prefetch(const GURL& url) {
 chrome::BitmapFetcher* BitmapFetcherService::CreateFetcher(const GURL& url) {
   chrome::BitmapFetcher* new_fetcher = new chrome::BitmapFetcher(url, this);
 
-  new_fetcher->Start(
+  new_fetcher->Init(
       context_->GetRequestContext(),
       std::string(),
       net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
       net::LOAD_NORMAL);
+  new_fetcher->Start();
   return new_fetcher;
 }
 

@@ -253,10 +253,11 @@ class BookmarkAppInstaller : public base::RefCounted<BookmarkAppInstaller>,
     bitmap_fetcher_.reset(
         new chrome::BitmapFetcher(urls_to_download_.back(), this));
     urls_to_download_.pop_back();
-    bitmap_fetcher_->Start(
+    bitmap_fetcher_->Init(
         service_->profile()->GetRequestContext(), std::string(),
         net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
         net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES);
+    bitmap_fetcher_->Start();
   }
 
   void FinishInstallation() {

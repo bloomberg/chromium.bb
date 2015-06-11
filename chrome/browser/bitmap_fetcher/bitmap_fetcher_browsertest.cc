@@ -113,11 +113,12 @@ IN_PROC_BROWSER_TEST_F(BitmapFetcherBrowserTest, StartTest) {
 
   // We expect that the image decoder will get called and return
   // an image in a callback to OnImageDecoded().
-  fetcher.Start(
+  fetcher.Init(
       browser()->profile()->GetRequestContext(),
       std::string(),
       net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
       net::LOAD_NORMAL);
+  fetcher.Start();
 
   // Blocks until test delegate is notified via a callback.
   delegate.Wait();
@@ -165,11 +166,12 @@ IN_PROC_BROWSER_TEST_F(BitmapFetcherBrowserTest, OnURLFetchFailureTest) {
                                         net::HTTP_INTERNAL_SERVER_ERROR,
                                         net::URLRequestStatus::FAILED);
 
-  fetcher.Start(
+  fetcher.Init(
       browser()->profile()->GetRequestContext(),
       std::string(),
       net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
       net::LOAD_NORMAL);
+  fetcher.Start();
 
   // Blocks until test delegate is notified via a callback.
   delegate.Wait();
@@ -186,11 +188,12 @@ IN_PROC_BROWSER_TEST_F(BitmapFetcherBrowserTest, HandleImageFailedTest) {
                                         net::HTTP_OK,
                                         net::URLRequestStatus::SUCCESS);
 
-  fetcher.Start(
+  fetcher.Init(
       browser()->profile()->GetRequestContext(),
       std::string(),
       net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
       net::LOAD_NORMAL);
+  fetcher.Start();
 
   // Blocks until test delegate is notified via a callback.
   delegate.Wait();

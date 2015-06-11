@@ -35,12 +35,14 @@ void ProfileAvatarDownloader::Start() {
   // In unit tests, the browser process can return a NULL request context.
   net::URLRequestContextGetter* request_context =
       g_browser_process->system_request_context();
-  if (request_context)
-    fetcher_->Start(
+  if (request_context) {
+    fetcher_->Init(
         request_context,
         std::string(),
         net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
         net::LOAD_NORMAL);
+    fetcher_->Start();
+  }
 }
 
 // BitmapFetcherDelegate overrides.

@@ -64,10 +64,11 @@ void WebstoreInstallHelper::Start() {
     CHECK(!icon_fetcher_.get());
     AddRef();  // Balanced in OnFetchComplete().
     icon_fetcher_.reset(new chrome::BitmapFetcher(icon_url_, this));
-    icon_fetcher_->Start(
+    icon_fetcher_->Init(
         context_getter_, std::string(),
         net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
         net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES);
+    icon_fetcher_->Start();
   }
 }
 

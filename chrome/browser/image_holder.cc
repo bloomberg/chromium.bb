@@ -68,11 +68,12 @@ void ImageHolder::StartFetch() {
   // Now that we have queued them all, start the fetching.
   ScopedVector<chrome::BitmapFetcher>::iterator iter;
   for (iter = fetchers_.begin(); iter != fetchers_.end(); ++iter) {
-    (*iter)->Start(
+    (*iter)->Init(
         profile_->GetRequestContext(),
         std::string(),
         net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
         net::LOAD_NORMAL);
+    (*iter)->Start();
   }
 }
 

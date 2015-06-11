@@ -614,10 +614,11 @@ ExtensionFunction::ResponseAction WebstorePrivateInstallBundleFunction::Run() {
 
     // The bitmap fetcher will call us back via OnFetchComplete.
     icon_fetcher_.reset(new chrome::BitmapFetcher(icon_url, this));
-    icon_fetcher_->Start(
+    icon_fetcher_->Init(
         browser_context()->GetRequestContext(), std::string(),
         net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
         net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES);
+    icon_fetcher_->Start();
   } else {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,

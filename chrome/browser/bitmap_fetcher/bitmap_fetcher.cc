@@ -19,10 +19,10 @@ BitmapFetcher::BitmapFetcher(const GURL& url, BitmapFetcherDelegate* delegate)
 BitmapFetcher::~BitmapFetcher() {
 }
 
-void BitmapFetcher::Start(net::URLRequestContextGetter* request_context,
-                          const std::string& referrer,
-                          net::URLRequest::ReferrerPolicy referrer_policy,
-                          int load_flags) {
+void BitmapFetcher::Init(net::URLRequestContextGetter* request_context,
+                         const std::string& referrer,
+                         net::URLRequest::ReferrerPolicy referrer_policy,
+                         int load_flags) {
   if (url_fetcher_ != NULL)
     return;
 
@@ -31,7 +31,11 @@ void BitmapFetcher::Start(net::URLRequestContextGetter* request_context,
   url_fetcher_->SetReferrer(referrer);
   url_fetcher_->SetReferrerPolicy(referrer_policy);
   url_fetcher_->SetLoadFlags(load_flags);
-  url_fetcher_->Start();
+}
+
+void BitmapFetcher::Start() {
+  if (url_fetcher_)
+    url_fetcher_->Start();
 }
 
 // Methods inherited from URLFetcherDelegate.

@@ -191,11 +191,12 @@ bool AppBannerDataFetcher::FetchIcon(const GURL& image_url) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   bitmap_fetcher_.reset(new chrome::BitmapFetcher(image_url, this));
-  bitmap_fetcher_->Start(
+  bitmap_fetcher_->Init(
       profile->GetRequestContext(),
       std::string(),
       net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
       net::LOAD_NORMAL);
+  bitmap_fetcher_->Start();
   return true;
 }
 

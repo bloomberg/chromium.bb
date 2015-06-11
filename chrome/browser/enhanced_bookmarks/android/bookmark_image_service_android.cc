@@ -274,8 +274,9 @@ void BookmarkImageServiceAndroid::BitmapFetcherHandler::Start(
   update_bookmark_ = update_bookmark;
   page_url_ = page_url;
 
-  bitmap_fetcher_.Start(browser_context->GetRequestContext(), referrer,
-                        referrer_policy, load_flags);
+  bitmap_fetcher_.Init(browser_context->GetRequestContext(), referrer,
+                       referrer_policy, load_flags);
+  bitmap_fetcher_.Start();
 }
 
 void BookmarkImageServiceAndroid::BitmapFetcherHandler::OnFetchComplete(
