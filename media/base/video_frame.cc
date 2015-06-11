@@ -252,22 +252,24 @@ scoped_refptr<VideoFrame> VideoFrame::CreateFrame(
 
 // static
 scoped_refptr<VideoFrame> VideoFrame::WrapNativeTexture(
+    Format format,
     const gpu::MailboxHolder& mailbox_holder,
     const ReleaseMailboxCB& mailbox_holder_release_cb,
     const gfx::Size& coded_size,
     const gfx::Rect& visible_rect,
     const gfx::Size& natural_size,
-    base::TimeDelta timestamp,
-    bool allow_overlay,
-    bool has_alpha) {
+    base::TimeDelta timestamp) {
+  if (format != ARGB) {
+    DLOG(ERROR) << "Only ARGB pixel format supported, got "
+                << FormatToString(format);
+    return nullptr;
+  }
   gpu::MailboxHolder mailbox_holders[kMaxPlanes];
   mailbox_holders[kARGBPlane] = mailbox_holder;
-  Format texture_format = has_alpha ? ARGB : XRGB;
   scoped_refptr<VideoFrame> frame(
-      new VideoFrame(texture_format, STORAGE_TEXTURE, coded_size, visible_rect,
+      new VideoFrame(format, STORAGE_TEXTURE, coded_size, visible_rect,
                      natural_size, mailbox_holders, timestamp));
   frame->mailbox_holders_release_cb_ = mailbox_holder_release_cb;
-  frame->allow_overlay_ = allow_overlay;
   return frame;
 }
 
@@ -280,8 +282,7 @@ scoped_refptr<VideoFrame> VideoFrame::WrapYUV420NativeTextures(
     const gfx::Size& coded_size,
     const gfx::Rect& visible_rect,
     const gfx::Size& natural_size,
-    base::TimeDelta timestamp,
-    bool allow_overlay) {
+    base::TimeDelta timestamp) {
   gpu::MailboxHolder mailbox_holders[kMaxPlanes];
   mailbox_holders[kYPlane] = y_mailbox_holder;
   mailbox_holders[kUPlane] = u_mailbox_holder;
@@ -290,7 +291,6 @@ scoped_refptr<VideoFrame> VideoFrame::WrapYUV420NativeTextures(
       new VideoFrame(I420, STORAGE_TEXTURE, coded_size, visible_rect,
                      natural_size, mailbox_holders, timestamp));
   frame->mailbox_holders_release_cb_ = mailbox_holder_release_cb;
-  frame->allow_overlay_ = allow_overlay;
   return frame;
 }
 
@@ -455,7 +455,7 @@ scoped_refptr<VideoFrame> VideoFrame::WrapVideoFrame(
   scoped_refptr<VideoFrame> wrapped_frame(new VideoFrame(
       frame->format(), frame->storage_type(), frame->coded_size(), visible_rect,
       natural_size, frame->timestamp()));
-  if (frame->IsEndOfStream())
+  if (frame->metadata()->IsTrue(VideoFrameMetadata::END_OF_STREAM))
     frame->metadata()->SetBoolean(VideoFrameMetadata::END_OF_STREAM, true);
 
   for (size_t i = 0; i < NumPlanes(frame->format()); ++i) {
@@ -613,8 +613,7 @@ VideoFrame::VideoFrame(Format format,
       shared_memory_handle_(base::SharedMemory::NULLHandle()),
       shared_memory_offset_(0),
       timestamp_(timestamp),
-      release_sync_point_(0),
-      allow_overlay_(false) {
+      release_sync_point_(0) {
   DCHECK(IsValidConfig(format_, storage_type, coded_size_, visible_rect_,
                        natural_size_));
   memset(&mailbox_holders_, 0, sizeof(mailbox_holders_));
@@ -848,13 +847,6 @@ size_t VideoFrame::shared_memory_offset() const {
 void VideoFrame::AddDestructionObserver(const base::Closure& callback) {
   DCHECK(!callback.is_null());
   done_callbacks_.push_back(callback);
-}
-
-bool VideoFrame::IsEndOfStream() const {
-  bool end_of_stream;
-  return metadata_.GetBoolean(VideoFrameMetadata::END_OF_STREAM,
-                              &end_of_stream) &&
-         end_of_stream;
 }
 
 void VideoFrame::UpdateReleaseSyncPoint(SyncPointClient* client) {

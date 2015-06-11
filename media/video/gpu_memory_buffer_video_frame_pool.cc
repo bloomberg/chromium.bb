@@ -197,13 +197,16 @@ GpuMemoryBufferVideoFramePool::PoolImpl::CreateHardwareFrame(
   }
 
   // Create the VideoFrame backed by native textures.
-  return VideoFrame::WrapYUV420NativeTextures(
+  scoped_refptr<VideoFrame> frame = VideoFrame::WrapYUV420NativeTextures(
       mailbox_holders[VideoFrame::kYPlane],
       mailbox_holders[VideoFrame::kUPlane],
       mailbox_holders[VideoFrame::kVPlane],
       base::Bind(&PoolImpl::MailboxHoldersReleased, this, frame_resources),
       size, video_frame->visible_rect(), video_frame->natural_size(),
-      video_frame->timestamp(), video_frame->allow_overlay());
+      video_frame->timestamp());
+  if (video_frame->metadata()->IsTrue(VideoFrameMetadata::ALLOW_OVERLAY))
+    frame->metadata()->SetBoolean(VideoFrameMetadata::ALLOW_OVERLAY, true);
+  return frame;
 }
 
 // Destroy all the resources posting one task per FrameResources

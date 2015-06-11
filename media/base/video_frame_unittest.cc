@@ -155,7 +155,8 @@ TEST(VideoFrame, CreateFrame) {
 
   // Test an empty frame.
   frame = VideoFrame::CreateEOSFrame();
-  EXPECT_TRUE(frame->IsEndOfStream());
+  EXPECT_TRUE(
+      frame->metadata()->IsTrue(VideoFrameMetadata::END_OF_STREAM));
 }
 
 TEST(VideoFrame, CreateBlackFrame) {
@@ -170,7 +171,8 @@ TEST(VideoFrame, CreateBlackFrame) {
 
   // Test basic properties.
   EXPECT_EQ(0, frame->timestamp().InMicroseconds());
-  EXPECT_FALSE(frame->IsEndOfStream());
+  EXPECT_FALSE(
+      frame->metadata()->IsTrue(VideoFrameMetadata::END_OF_STREAM));
 
   // Test |frame| properties.
   EXPECT_EQ(VideoFrame::YV12, frame->format());
@@ -252,14 +254,13 @@ TEST(VideoFrame, TextureNoLongerNeededCallbackIsCalled) {
 
   {
     scoped_refptr<VideoFrame> frame = VideoFrame::WrapNativeTexture(
+        VideoFrame::ARGB,
         gpu::MailboxHolder(gpu::Mailbox(), 5, 0 /* sync_point */),
         base::Bind(&TextureCallback, &called_sync_point),
         gfx::Size(10, 10),  // coded_size
         gfx::Rect(10, 10),  // visible_rect
         gfx::Size(10, 10),  // natural_size
-        base::TimeDelta(),  // timestamp
-        false,              // allow_overlay
-        true);              // has_alpha
+        base::TimeDelta()); // timestamp
     EXPECT_EQ(VideoFrame::STORAGE_TEXTURE, frame->storage_type());
     EXPECT_EQ(VideoFrame::ARGB, frame->format());
   }
@@ -307,8 +308,7 @@ TEST(VideoFrame,
         gfx::Size(10, 10),  // coded_size
         gfx::Rect(10, 10),  // visible_rect
         gfx::Size(10, 10),  // natural_size
-        base::TimeDelta(),  // timestamp
-        false);             // allow_overlay
+        base::TimeDelta()); // timestamp
 
     EXPECT_EQ(VideoFrame::STORAGE_TEXTURE, frame->storage_type());
     EXPECT_EQ(VideoFrame::I420, frame->format());

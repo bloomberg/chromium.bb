@@ -422,13 +422,18 @@ scoped_refptr<media::VideoFrame> RTCVideoDecoder::CreateVideoFrame(
   // Convert timestamp from 90KHz to ms.
   base::TimeDelta timestamp_ms = base::TimeDelta::FromInternalValue(
       base::checked_cast<uint64_t>(timestamp) * 1000 / 90);
-  return media::VideoFrame::WrapNativeTexture(
+  scoped_refptr<media::VideoFrame> frame(media::VideoFrame::WrapNativeTexture(
+      media::VideoFrame::ARGB,
       gpu::MailboxHolder(pb.texture_mailbox(), decoder_texture_target_, 0),
       media::BindToCurrentLoop(base::Bind(
           &RTCVideoDecoder::ReleaseMailbox, weak_factory_.GetWeakPtr(),
           factories_, picture.picture_buffer_id(), pb.texture_id())),
-      pb.size(), visible_rect, visible_rect.size(), timestamp_ms,
-      picture.allow_overlay(), true /* has_alpha */);
+      pb.size(), visible_rect, visible_rect.size(), timestamp_ms));
+  if (picture.allow_overlay()) {
+    frame->metadata()->SetBoolean(media::VideoFrameMetadata::ALLOW_OVERLAY,
+                                  true);
+  }
+  return frame;
 }
 
 void RTCVideoDecoder::NotifyEndOfBitstreamBuffer(int32 id) {

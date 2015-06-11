@@ -15,6 +15,12 @@ namespace media {
 class MEDIA_EXPORT VideoFrameMetadata {
  public:
   enum Key {
+    // Sources of VideoFrames use this marker to indicate that the associated
+    // VideoFrame can be overlayed, case in which its contents do not need to be
+    // further composited but displayed directly. Use Get/SetBoolean() for
+    // this Key.
+    ALLOW_OVERLAY,
+
     // Video capture begin/end timestamps.  Consumers can use these values for
     // dynamic optimizations, logging stats, etc.  Use Get/SetTimeTicks() for
     // these keys.
@@ -25,7 +31,8 @@ class MEDIA_EXPORT VideoFrameMetadata {
     // GetInteger()/SetInteger() and VideoFrame::ColorSpace enumeration.
     COLOR_SPACE,
 
-    // Indicates if the current frame is the End of its current Stream.
+    // Indicates if the current frame is the End of its current Stream. Use
+    // Get/SetBoolean() for this Key.
     END_OF_STREAM,
 
     // The estimated duration of this frame (i.e., the amount of time between
@@ -90,6 +97,9 @@ class MEDIA_EXPORT VideoFrameMetadata {
 
   // Returns null if |key| was not present.
   const base::Value* GetValue(Key key) const WARN_UNUSED_RESULT;
+
+  // Convenience method that returns true if |key| exists and is set to true.
+  bool IsTrue(Key key) const WARN_UNUSED_RESULT;
 
   // For serialization.
   void MergeInternalValuesInto(base::DictionaryValue* out) const;

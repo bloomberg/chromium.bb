@@ -285,7 +285,7 @@ void DecryptingVideoDecoder::DeliverFrame(
 
   DCHECK_EQ(status, Decryptor::kSuccess);
   // No frame returned with kSuccess should be end-of-stream frame.
-  DCHECK(!frame->IsEndOfStream());
+  DCHECK(!frame->metadata()->IsTrue(VideoFrameMetadata::END_OF_STREAM));
   output_cb_.Run(frame);
 
   if (scoped_pending_buffer_to_decode->end_of_stream()) {

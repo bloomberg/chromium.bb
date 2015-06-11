@@ -788,7 +788,7 @@ void VideoDecoderShim::DecoderImpl::OnOutputComplete(
   DCHECK(awaiting_decoder_);
 
   scoped_ptr<PendingFrame> pending_frame;
-  if (!frame->IsEndOfStream())
+  if (!frame->metadata()->IsTrue(media::VideoFrameMetadata::END_OF_STREAM))
     pending_frame.reset(new PendingFrame(decode_id_, frame));
   else
     pending_frame.reset(new PendingFrame(decode_id_));

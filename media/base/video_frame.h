@@ -134,14 +134,13 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // |mailbox_holder|, and |mailbox_holder_release_cb| will be called with
   // a syncpoint as the argument when the VideoFrame is to be destroyed.
   static scoped_refptr<VideoFrame> WrapNativeTexture(
+      Format format,
       const gpu::MailboxHolder& mailbox_holder,
       const ReleaseMailboxCB& mailbox_holder_release_cb,
       const gfx::Size& coded_size,
       const gfx::Rect& visible_rect,
       const gfx::Size& natural_size,
-      base::TimeDelta timestamp,
-      bool allow_overlay,
-      bool has_alpha);
+      base::TimeDelta timestamp);
 
   // Wraps a set of native textures representing YUV data with a VideoFrame.
   // |mailbox_holders_release_cb| will be called with a syncpoint as the
@@ -154,8 +153,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
       const gfx::Size& coded_size,
       const gfx::Rect& visible_rect,
       const gfx::Size& natural_size,
-      base::TimeDelta timestamp,
-      bool allow_overlay);
+      base::TimeDelta timestamp);
 
   // Wraps packed image data residing in a memory buffer with a VideoFrame.
   // The image data resides in |data| and is assumed to be packed tightly in a
@@ -355,8 +353,6 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   const VideoFrameMetadata* metadata() const { return &metadata_; }
   VideoFrameMetadata* metadata() { return &metadata_; }
 
-  bool allow_overlay() const { return allow_overlay_; }
-
 #if defined(OS_LINUX)
   // Returns backing dmabuf file descriptor for given |plane|, if present.
   int dmabuf_fd(size_t plane) const;
@@ -366,9 +362,6 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // Returns the backing CVPixelBuffer, if present.
   CVPixelBufferRef cv_pixel_buffer() const;
 #endif
-
-  // Returns true if this VideoFrame represents the end of the stream.
-  bool IsEndOfStream() const;
 
   base::TimeDelta timestamp() const { return timestamp_; }
   void set_timestamp(base::TimeDelta timestamp) {
@@ -497,8 +490,6 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   uint32 release_sync_point_;
 
   VideoFrameMetadata metadata_;
-
-  bool allow_overlay_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(VideoFrame);
 };

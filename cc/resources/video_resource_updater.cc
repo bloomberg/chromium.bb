@@ -418,7 +418,8 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
     external_resources.mailboxes.push_back(
         TextureMailbox(mailbox_holder.mailbox, mailbox_holder.texture_target,
                        mailbox_holder.sync_point, video_frame->coded_size(),
-                       video_frame->allow_overlay()));
+                       video_frame->metadata()->IsTrue(
+                           media::VideoFrameMetadata::ALLOW_OVERLAY)));
     external_resources.release_callbacks.push_back(
         base::Bind(&ReturnTexture, AsWeakPtr(), video_frame));
   }

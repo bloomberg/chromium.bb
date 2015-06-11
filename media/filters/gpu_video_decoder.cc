@@ -401,13 +401,15 @@ void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
   DCHECK(decoder_texture_target_);
 
   scoped_refptr<VideoFrame> frame(VideoFrame::WrapNativeTexture(
+      VideoFrame::ARGB,
       gpu::MailboxHolder(pb.texture_mailbox(), decoder_texture_target_,
                          0 /* sync_point */),
       BindToCurrentLoop(base::Bind(
           &GpuVideoDecoder::ReleaseMailbox, weak_factory_.GetWeakPtr(),
           factories_, picture.picture_buffer_id(), pb.texture_id())),
-      pb.size(), visible_rect, natural_size, timestamp, picture.allow_overlay(),
-      true /* has_alpha */));
+      pb.size(), visible_rect, natural_size, timestamp));
+  if (picture.allow_overlay())
+    frame->metadata()->SetBoolean(VideoFrameMetadata::ALLOW_OVERLAY, true);
   CHECK_GT(available_pictures_, 0);
   --available_pictures_;
   bool inserted =

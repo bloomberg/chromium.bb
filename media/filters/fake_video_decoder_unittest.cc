@@ -78,7 +78,7 @@ class FakeVideoDecoderTest
   }
 
   void FrameReady(const scoped_refptr<VideoFrame>& frame) {
-    DCHECK(!frame->IsEndOfStream());
+    DCHECK(!frame->metadata()->IsTrue(VideoFrameMetadata::END_OF_STREAM));
     last_decoded_frame_ = frame;
     num_decoded_frames_++;
   }

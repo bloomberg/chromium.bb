@@ -296,11 +296,11 @@ void VideoCaptureImpl::OnMailboxBufferReceived(
   uint32* const release_sync_point_storage =
       new uint32(0);  // Deleted in DidFinishConsumingFrame().
   scoped_refptr<media::VideoFrame> frame = media::VideoFrame::WrapNativeTexture(
+      media::VideoFrame::ARGB,
       mailbox_holder,
       base::Bind(&SaveReleaseSyncPoint, release_sync_point_storage),
       packed_frame_size, gfx::Rect(packed_frame_size), packed_frame_size,
-      timestamp - first_frame_timestamp_, false /* allow_overlay */,
-      true /* has_alpha */);
+      timestamp - first_frame_timestamp_);
   frame->AddDestructionObserver(
       base::Bind(&VideoCaptureImpl::DidFinishConsumingFrame,
                  frame->metadata(),

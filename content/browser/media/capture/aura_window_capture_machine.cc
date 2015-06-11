@@ -288,11 +288,12 @@ bool AuraWindowCaptureMachine::ProcessCopyOutputResponse(
     if (!texture_mailbox.IsTexture())
       return false;
     video_frame = media::VideoFrame::WrapNativeTexture(
+        media::VideoFrame::ARGB,
         gpu::MailboxHolder(texture_mailbox.mailbox(), texture_mailbox.target(),
                            texture_mailbox.sync_point()),
         base::Bind(&RunSingleReleaseCallback, base::Passed(&release_callback)),
         result->size(), gfx::Rect(result->size()), result->size(),
-        base::TimeDelta(), false /* allow_overlay */, true /* has_alpha */);
+        base::TimeDelta());
     capture_frame_cb.Run(video_frame, start_time, true);
     return true;
   } else {

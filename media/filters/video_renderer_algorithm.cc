@@ -353,7 +353,7 @@ size_t VideoRendererAlgorithm::EffectiveFramesQueued() const {
 void VideoRendererAlgorithm::EnqueueFrame(
     const scoped_refptr<VideoFrame>& frame) {
   DCHECK(frame);
-  DCHECK(!frame->IsEndOfStream());
+  DCHECK(!frame->metadata()->IsTrue(VideoFrameMetadata::END_OF_STREAM));
 
   ReadyFrame ready_frame(frame);
   auto it = frame_queue_.empty() ? frame_queue_.end()

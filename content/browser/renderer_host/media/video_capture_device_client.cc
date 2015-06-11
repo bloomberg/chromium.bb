@@ -28,6 +28,7 @@
 
 using media::VideoCaptureFormat;
 using media::VideoFrame;
+using media::VideoFrameMetadata;
 
 namespace content {
 
@@ -559,14 +560,15 @@ VideoCaptureDeviceClient::TextureWrapHelper::OnIncomingCapturedGpuMemoryBuffer(
 
   scoped_refptr<media::VideoFrame> video_frame =
       media::VideoFrame::WrapNativeTexture(
+          media::VideoFrame::ARGB,
           mailbox_holder,
           media::BindToCurrentLoop(base::Bind(
               &VideoCaptureDeviceClient::TextureWrapHelper::ReleaseCallback,
               this, image_id, texture_id)),
           frame_format.frame_size, gfx::Rect(frame_format.frame_size),
-          frame_format.frame_size, base::TimeDelta(), true /* allow_overlay */,
-          true /* has_alpha */);
-  video_frame->metadata()->SetDouble(media::VideoFrameMetadata::FRAME_RATE,
+          frame_format.frame_size, base::TimeDelta());
+  video_frame->metadata()->SetBoolean(VideoFrameMetadata::ALLOW_OVERLAY, true);
+  video_frame->metadata()->SetDouble(VideoFrameMetadata::FRAME_RATE,
                                      frame_format.frame_rate);
 
   BrowserThread::PostTask(

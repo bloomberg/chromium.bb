@@ -126,6 +126,11 @@ const base::Value* VideoFrameMetadata::GetValue(Key key) const {
   return result;
 }
 
+bool VideoFrameMetadata::IsTrue(Key key) const {
+  bool value = false;
+  return GetBoolean(key, &value) && value;
+}
+
 void VideoFrameMetadata::MergeInternalValuesInto(
     base::DictionaryValue* out) const {
   out->MergeDictionary(&dictionary_);
