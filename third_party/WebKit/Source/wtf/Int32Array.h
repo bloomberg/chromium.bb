@@ -37,15 +37,8 @@ public:
     static inline PassRefPtr<Int32Array> create(const int* array, unsigned length);
     static inline PassRefPtr<Int32Array> create(PassRefPtr<ArrayBuffer>, unsigned byteOffset, unsigned length);
 
-    // Should only be used when it is known the entire array will be filled. Do
-    // not return these results directly to JavaScript without filling first.
-    static inline PassRefPtr<Int32Array> createUninitialized(unsigned length);
-
     using TypedArrayBase<int>::set;
     using IntegralTypedArrayBase<int>::set;
-
-    inline PassRefPtr<Int32Array> subarray(int start) const;
-    inline PassRefPtr<Int32Array> subarray(int start, int end) const;
 
     virtual ViewType type() const override
     {
@@ -75,24 +68,9 @@ PassRefPtr<Int32Array> Int32Array::create(PassRefPtr<ArrayBuffer> buffer, unsign
     return TypedArrayBase<int>::create<Int32Array>(buffer, byteOffset, length);
 }
 
-PassRefPtr<Int32Array> Int32Array::createUninitialized(unsigned length)
-{
-    return TypedArrayBase<int>::createUninitialized<Int32Array>(length);
-}
-
 Int32Array::Int32Array(PassRefPtr<ArrayBuffer> buffer, unsigned byteOffset, unsigned length)
     : IntegralTypedArrayBase<int>(buffer, byteOffset, length)
 {
-}
-
-PassRefPtr<Int32Array> Int32Array::subarray(int start) const
-{
-    return subarray(start, length());
-}
-
-PassRefPtr<Int32Array> Int32Array::subarray(int start, int end) const
-{
-    return subarrayImpl<Int32Array>(start, end);
 }
 
 } // namespace WTF

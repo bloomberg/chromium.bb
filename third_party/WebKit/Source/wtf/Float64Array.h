@@ -51,9 +51,6 @@ public:
         TypedArrayBase<double>::data()[index] = static_cast<double>(value);
     }
 
-    inline PassRefPtr<Float64Array> subarray(int start) const;
-    inline PassRefPtr<Float64Array> subarray(int start, int end) const;
-
     virtual ViewType type() const override
     {
         return TypeFloat64;
@@ -82,24 +79,9 @@ PassRefPtr<Float64Array> Float64Array::create(PassRefPtr<ArrayBuffer> buffer, un
     return TypedArrayBase<double>::create<Float64Array>(buffer, byteOffset, length);
 }
 
-PassRefPtr<Float64Array> Float64Array::createUninitialized(unsigned length)
-{
-    return TypedArrayBase<double>::createUninitialized<Float64Array>(length);
-}
-
 Float64Array::Float64Array(PassRefPtr<ArrayBuffer> buffer, unsigned byteOffset, unsigned length)
     : TypedArrayBase<double>(buffer, byteOffset, length)
 {
-}
-
-PassRefPtr<Float64Array> Float64Array::subarray(int start) const
-{
-    return subarray(start, length());
-}
-
-PassRefPtr<Float64Array> Float64Array::subarray(int start, int end) const
-{
-    return subarrayImpl<Float64Array>(start, end);
 }
 
 } // namespace WTF

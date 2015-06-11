@@ -75,14 +75,6 @@ public:
         return TypedArrayBase<T>::data()[index];
     }
 
-    bool checkInboundData(unsigned offset, unsigned pos) const
-    {
-        return (offset <= m_length
-            && offset + pos <= m_length
-            // check overflow
-            && offset + pos >= offset);
-    }
-
 protected:
     TypedArrayBase(PassRefPtr<ArrayBuffer> buffer, unsigned byteOffset, unsigned length)
         : ArrayBufferView(buffer, byteOffset)
@@ -124,22 +116,6 @@ protected:
         if (!buffer)
             return nullptr;
         return create<Subclass>(buffer.release(), 0, length);
-    }
-
-    template <class Subclass>
-    static PassRefPtr<Subclass> createUninitialized(unsigned length)
-    {
-        RefPtr<ArrayBuffer> buffer = ArrayBuffer::createUninitialized(length, sizeof(T));
-        return create<Subclass>(buffer.release(), 0, length);
-    }
-
-    template <class Subclass>
-    PassRefPtr<Subclass> subarrayImpl(int start, int end) const
-    {
-        unsigned offset, length;
-        calculateOffsetAndLength(start, end, m_length, &offset, &length);
-        clampOffsetAndNumElements<T>(buffer(), m_byteOffset, &offset, &length);
-        return create<Subclass>(buffer(), offset, length);
     }
 
     virtual void neuter() override final

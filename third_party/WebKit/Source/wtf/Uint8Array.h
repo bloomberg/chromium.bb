@@ -39,15 +39,8 @@ public:
     static inline PassRefPtr<Uint8Array> create(const unsigned char* array, unsigned length);
     static inline PassRefPtr<Uint8Array> create(PassRefPtr<ArrayBuffer>, unsigned byteOffset, unsigned length);
 
-    // Should only be used when it is known the entire array will be filled. Do
-    // not return these results directly to JavaScript without filling first.
-    static inline PassRefPtr<Uint8Array> createUninitialized(unsigned length);
-
     using TypedArrayBase<unsigned char>::set;
     using IntegralTypedArrayBase<unsigned char>::set;
-
-    inline PassRefPtr<Uint8Array> subarray(int start) const;
-    inline PassRefPtr<Uint8Array> subarray(int start, int end) const;
 
     virtual ViewType type() const override
     {
@@ -77,24 +70,9 @@ PassRefPtr<Uint8Array> Uint8Array::create(PassRefPtr<ArrayBuffer> buffer, unsign
     return TypedArrayBase<unsigned char>::create<Uint8Array>(buffer, byteOffset, length);
 }
 
-PassRefPtr<Uint8Array> Uint8Array::createUninitialized(unsigned length)
-{
-    return TypedArrayBase<unsigned char>::createUninitialized<Uint8Array>(length);
-}
-
 Uint8Array::Uint8Array(PassRefPtr<ArrayBuffer> buffer, unsigned byteOffset, unsigned length)
 : IntegralTypedArrayBase<unsigned char>(buffer, byteOffset, length)
 {
-}
-
-PassRefPtr<Uint8Array> Uint8Array::subarray(int start) const
-{
-    return subarray(start, length());
-}
-
-PassRefPtr<Uint8Array> Uint8Array::subarray(int start, int end) const
-{
-    return subarrayImpl<Uint8Array>(start, end);
 }
 
 } // namespace WTF

@@ -38,15 +38,8 @@ public:
     static inline PassRefPtr<Int16Array> create(const short* array, unsigned length);
     static inline PassRefPtr<Int16Array> create(PassRefPtr<ArrayBuffer>, unsigned byteOffset, unsigned length);
 
-    // Should only be used when it is known the entire array will be filled. Do
-    // not return these results directly to JavaScript without filling first.
-    static inline PassRefPtr<Int16Array> createUninitialized(unsigned length);
-
     using TypedArrayBase<short>::set;
     using IntegralTypedArrayBase<short>::set;
-
-    inline PassRefPtr<Int16Array> subarray(int start) const;
-    inline PassRefPtr<Int16Array> subarray(int start, int end) const;
 
     virtual ViewType type() const override
     {
@@ -76,24 +69,9 @@ PassRefPtr<Int16Array> Int16Array::create(PassRefPtr<ArrayBuffer> buffer, unsign
     return TypedArrayBase<short>::create<Int16Array>(buffer, byteOffset, length);
 }
 
-PassRefPtr<Int16Array> Int16Array::createUninitialized(unsigned length)
-{
-    return TypedArrayBase<short>::createUninitialized<Int16Array>(length);
-}
-
 Int16Array::Int16Array(PassRefPtr<ArrayBuffer> buffer, unsigned byteOffset, unsigned length)
     : IntegralTypedArrayBase<short>(buffer, byteOffset, length)
 {
-}
-
-PassRefPtr<Int16Array> Int16Array::subarray(int start) const
-{
-    return subarray(start, length());
-}
-
-PassRefPtr<Int16Array> Int16Array::subarray(int start, int end) const
-{
-    return subarrayImpl<Int16Array>(start, end);
 }
 
 } // namespace WTF

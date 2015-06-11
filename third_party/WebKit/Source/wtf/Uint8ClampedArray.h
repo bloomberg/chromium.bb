@@ -39,20 +39,8 @@ public:
     static inline PassRefPtr<Uint8ClampedArray> create(const unsigned char* array, unsigned length);
     static inline PassRefPtr<Uint8ClampedArray> create(PassRefPtr<ArrayBuffer>, unsigned byteOffset, unsigned length);
 
-    // Should only be used when it is known the entire array will be filled. Do
-    // not return these results directly to JavaScript without filling first.
-    static inline PassRefPtr<Uint8ClampedArray> createUninitialized(unsigned length);
-
-    // It's only needed to potentially call this method if the array
-    // was created uninitialized -- the default initialization paths
-    // zero the allocated memory.
-    inline void zeroFill();
-
     using TypedArrayBase<unsigned char>::set;
     inline void set(unsigned index, double value);
-
-    inline PassRefPtr<Uint8ClampedArray> subarray(int start) const;
-    inline PassRefPtr<Uint8ClampedArray> subarray(int start, int end) const;
 
     virtual ViewType type() const override
     {
@@ -82,16 +70,6 @@ PassRefPtr<Uint8ClampedArray> Uint8ClampedArray::create(PassRefPtr<ArrayBuffer> 
     return TypedArrayBase<unsigned char>::create<Uint8ClampedArray>(buffer, byteOffset, length);
 }
 
-PassRefPtr<Uint8ClampedArray> Uint8ClampedArray::createUninitialized(unsigned length)
-{
-    return TypedArrayBase<unsigned char>::createUninitialized<Uint8ClampedArray>(length);
-}
-
-void Uint8ClampedArray::zeroFill()
-{
-    zeroRange(0, length());
-}
-
 void Uint8ClampedArray::set(unsigned index, double value)
 {
     if (index >= m_length)
@@ -106,16 +84,6 @@ void Uint8ClampedArray::set(unsigned index, double value)
 Uint8ClampedArray::Uint8ClampedArray(PassRefPtr<ArrayBuffer> buffer, unsigned byteOffset, unsigned length)
 : Uint8Array(buffer, byteOffset, length)
 {
-}
-
-PassRefPtr<Uint8ClampedArray> Uint8ClampedArray::subarray(int start) const
-{
-    return subarray(start, length());
-}
-
-PassRefPtr<Uint8ClampedArray> Uint8ClampedArray::subarray(int start, int end) const
-{
-    return subarrayImpl<Uint8ClampedArray>(start, end);
 }
 
 } // namespace WTF

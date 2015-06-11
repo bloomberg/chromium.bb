@@ -46,8 +46,7 @@ public:
 
     static inline PassRefPtr<ArrayBuffer> createOrNull(unsigned numElements, unsigned elementByteSize);
 
-    // Only for use by Uint8ClampedArray::createUninitialized,
-    // XMLHttpRequest::responseArrayBuffer and Internals::serializeObject
+    // Only for use by XMLHttpRequest::responseArrayBuffer and Internals::serializeObject
     // (through DOMArrayBuffer::createUninitialized).
     static inline PassRefPtr<ArrayBuffer> createUninitialized(unsigned numElements, unsigned elementByteSize);
 

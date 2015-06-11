@@ -32,7 +32,6 @@
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 #include "wtf/WTFExport.h"
-#include <algorithm>
 #include <limits.h>
 
 namespace WTF {
@@ -85,9 +84,6 @@ class WTF_EXPORT ArrayBufferView : public RefCounted<ArrayBufferView> {
 
     inline bool zeroRangeImpl(unsigned byteOffset, size_t rangeByteLength);
 
-    static inline void calculateOffsetAndLength(int start, int end, unsigned arraySize,
-                                         unsigned* offset, unsigned* length);
-
     // Helper to verify that a given sub-range of an ArrayBuffer is
     // within range.
     template <typename T>
@@ -105,26 +101,6 @@ class WTF_EXPORT ArrayBufferView : public RefCounted<ArrayBufferView> {
         if (numElements > remainingElements)
             return false;
         return true;
-    }
-
-    // Input offset is in number of elements from this array's view;
-    // output offset is in number of bytes from the underlying buffer's view.
-    template <typename T>
-    static void clampOffsetAndNumElements(PassRefPtr<ArrayBuffer> buffer,
-                                          unsigned arrayByteOffset,
-                                          unsigned *offset,
-                                          unsigned *numElements)
-    {
-        unsigned maxOffset = (UINT_MAX - arrayByteOffset) / sizeof(T);
-        if (*offset > maxOffset) {
-            *offset = buffer->byteLength();
-            *numElements = 0;
-            return;
-        }
-        *offset = arrayByteOffset + *offset * sizeof(T);
-        *offset = std::min(buffer->byteLength(), *offset);
-        unsigned remainingElements = (buffer->byteLength() - *offset) / sizeof(T);
-        *numElements = std::min(remainingElements, *numElements);
     }
 
     virtual void neuter();
@@ -182,25 +158,6 @@ bool ArrayBufferView::zeroRangeImpl(unsigned byteOffset, size_t rangeByteLength)
     char* base = static_cast<char*>(baseAddress());
     memset(base + byteOffset, 0, rangeByteLength);
     return true;
-}
-
-void ArrayBufferView::calculateOffsetAndLength(int start, int end, unsigned arraySize,
-                                               unsigned* offset, unsigned* length)
-{
-    if (start < 0)
-        start += arraySize;
-    if (start < 0)
-        start = 0;
-    if (end < 0)
-        end += arraySize;
-    if (end < 0)
-        end = 0;
-    if (static_cast<unsigned>(end) > arraySize)
-        end = arraySize;
-    if (end < start)
-        end = start;
-    *offset = static_cast<unsigned>(start);
-    *length = static_cast<unsigned>(end - start);
 }
 
 } // namespace WTF
