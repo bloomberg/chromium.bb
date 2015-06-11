@@ -2,9 +2,9 @@ Name: Protocol Buffers - Google's data interchange format
 Short Name: protobuf
 URL: https://android.googlesource.com/platform/external/protobuf.git
 Version: 2.2.0a
-Revision: L-preview
+Revision: M-preview
 License: BSD
-License File: src/COPYING.txt
+License File: src/LICENSE
 Security Critical: no
 
 Description:

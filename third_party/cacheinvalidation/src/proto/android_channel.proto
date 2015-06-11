@@ -35,6 +35,7 @@ import "client_protocol.proto";
 // channel version controls the expected envelope syntax and semantics of
 // http and c2dm messages sent between the client and server.
 enum MajorVersion {
+  option allow_alias = true;
 
   // The initial version of the android channel protocol.  Inbound and
   // outbound channel packets contained a single binary protocol message only.
