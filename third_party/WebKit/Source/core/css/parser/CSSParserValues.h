@@ -128,7 +128,6 @@ struct CSSParserValue {
         Operator  = 0x100000,
         Function  = 0x100001,
         ValueList = 0x100002,
-        Q_EMS     = 0x100003,
         HexColor = 0x100004,
         // Represents a dimension by a list of two values, a CSS_NUMBER and an CSS_IDENT
         DimensionList = 0x100006,

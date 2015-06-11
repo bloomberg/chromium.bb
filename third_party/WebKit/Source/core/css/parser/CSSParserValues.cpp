@@ -125,12 +125,6 @@ CSSParserValueList::CSSParserValueList(CSSParserTokenRange range, bool& usesRemU
                 return;
             }
             if (!token.unitType()) {
-                if (String(token.value()) == "__qem") {
-                    value.setFromNumber(token.numericValue(), CSSParserValue::Q_EMS);
-                    value.isInt = (token.numericValueType() == IntegerValueType);
-                    break;
-                }
-
                 // Unknown dimensions are handled as a list of two values
                 value.unit = CSSParserValue::DimensionList;
                 CSSParserValueList* list = new CSSParserValueList;

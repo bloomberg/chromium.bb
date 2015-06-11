@@ -252,7 +252,7 @@ bool CSSPropertyParser::validUnit(CSSParserValue* value, Units unitflags, CSSPar
         return false;
     case CSSPrimitiveValue::CSS_PERCENTAGE:
         return unitflags & FPercent;
-    case CSSParserValue::Q_EMS:
+    case CSSPrimitiveValue::CSS_QEM:
         if (cssParserMode != UASheetMode)
             return false;
     /* fallthrough intentional */
@@ -388,7 +388,7 @@ inline PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::parseValidPr
         return createPrimitiveNumericValue(value);
     if (value->unit >= CSSPrimitiveValue::CSS_DPPX && value->unit <= CSSPrimitiveValue::CSS_DPCM)
         return createPrimitiveNumericValue(value);
-    if (value->unit >= CSSParserValue::Q_EMS)
+    if (value->unit == CSSPrimitiveValue::CSS_QEM)
         return CSSPrimitiveValue::createAllowingMarginQuirk(value->fValue, CSSPrimitiveValue::CSS_EMS);
     if (isCalculation(value))
         return CSSPrimitiveValue::create(m_parsedCalculation.release());
@@ -7857,7 +7857,7 @@ bool CSSPropertyParser::parseSVGValue(CSSPropertyID propId, bool important)
             parsedValue = CSSPrimitiveValue::create(value->fValue, (CSSPrimitiveValue::UnitType) value->unit);
         else if (value->unit == CSSPrimitiveValue::CSS_REMS || value->unit == CSSPrimitiveValue::CSS_CHS)
             parsedValue = CSSPrimitiveValue::create(value->fValue, (CSSPrimitiveValue::UnitType)value->unit);
-        else if (value->unit >= CSSParserValue::Q_EMS)
+        else if (value->unit == CSSPrimitiveValue::CSS_QEM)
             parsedValue = CSSPrimitiveValue::createAllowingMarginQuirk(value->fValue, CSSPrimitiveValue::CSS_EMS);
         if (isCalculation(value)) {
             // FIXME calc() http://webkit.org/b/16662 : actually create a CSSPrimitiveValue here, ie

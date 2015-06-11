@@ -82,6 +82,7 @@ StringToUnitTable createStringToUnitTable()
     table.set(String("fr"), CSSPrimitiveValue::CSS_FR);
     table.set(String("turn"), CSSPrimitiveValue::CSS_TURN);
     table.set(String("ch"), CSSPrimitiveValue::CSS_CHS);
+    table.set(String("__qem"), CSSPrimitiveValue::CSS_QEM);
     return table;
 }
 
@@ -439,6 +440,7 @@ void CSSPrimitiveValue::cleanup()
     case CSS_NUMBER:
     case CSS_PERCENTAGE:
     case CSS_EMS:
+    case CSS_QEM:
     case CSS_EXS:
     case CSS_REMS:
     case CSS_CHS:
@@ -924,6 +926,7 @@ const char* CSSPrimitiveValue::unitTypeToString(UnitType type)
     case CSS_IDENT:
     case CSS_CALC_PERCENTAGE_WITH_NUMBER:
     case CSS_CALC_PERCENTAGE_WITH_LENGTH:
+    case CSS_QEM:
         break;
     };
     ASSERT_NOT_REACHED();

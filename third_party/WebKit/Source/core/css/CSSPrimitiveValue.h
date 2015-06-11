@@ -117,7 +117,8 @@ public:
         CSS_CALC_PERCENTAGE_WITH_LENGTH = 115,
         CSS_STRING = 116,
         CSS_PROPERTY_ID = 117,
-        CSS_VALUE_ID = 118
+        CSS_VALUE_ID = 118,
+        CSS_QEM = 119
     };
 
     enum LengthUnitType {
