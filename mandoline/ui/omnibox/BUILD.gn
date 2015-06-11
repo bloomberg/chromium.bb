@@ -13,6 +13,8 @@ mojo_application_package("omnibox") {
     ":lib",
     "//mandoline/services/navigation/public/interfaces",
     "//mojo/application/public/cpp",
+    "//third_party/icu:icudata",
+    "//ui/resources:ui_test_pak",
   ]
 
   resources = [
