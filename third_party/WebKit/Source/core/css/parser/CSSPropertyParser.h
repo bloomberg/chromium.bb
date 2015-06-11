@@ -74,10 +74,6 @@ public:
         CSSParserValueList*, const CSSParserContext&,
         WillBeHeapVector<CSSProperty, 256>&, StyleRule::Type);
 
-    // FIXME: This should probably move to CSSParserFastPaths
-    template<typename StringType>
-    static bool fastParseColor(RGBA32&, const StringType&, bool strict);
-
     static bool isSystemColor(int id);
 
 private:

@@ -7,6 +7,7 @@
 
 #include "core/CSSPropertyNames.h"
 #include "core/CSSValueKeywords.h"
+#include "platform/graphics/Color.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 
@@ -23,6 +24,10 @@ public:
     // Properties handled here shouldn't be explicitly handled in CSSPropertyParser
     static bool isKeywordPropertyID(CSSPropertyID);
     static bool isValidKeywordPropertyAndValue(CSSPropertyID, CSSValueID);
+
+    // Keywords like 'green' will be resolved here, unlike during regular
+    // property parsing where we'd leave it as a keyword.
+    static bool parseColorAsRGBA32(RGBA32&, const String&, bool quirksMode);
 };
 
 } // namespace blink

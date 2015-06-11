@@ -58,15 +58,12 @@
 #include "core/css/parser/CSSParserFastPaths.h"
 #include "core/css/parser/CSSParserValues.h"
 #include "core/frame/UseCounter.h"
-#include "core/html/parser/HTMLParserIdioms.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/style/GridCoordinate.h"
 #include "core/svg/SVGPathUtilities.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
-
-static const double MAX_SCALE = 1000000;
 
 template <unsigned N>
 static bool equalIgnoringCase(const CSSParserString& a, const char (&b)[N])
@@ -4866,315 +4863,6 @@ PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseFontFaceUnicodeRang
     return values.release();
 }
 
-// Returns the number of characters which form a valid double
-// and are terminated by the given terminator character
-template <typename CharacterType>
-static int checkForValidDouble(const CharacterType* string, const CharacterType* end, const char terminator)
-{
-    int length = end - string;
-    if (length < 1)
-        return 0;
-
-    bool decimalMarkSeen = false;
-    int processedLength = 0;
-
-    for (int i = 0; i < length; ++i) {
-        if (string[i] == terminator) {
-            processedLength = i;
-            break;
-        }
-        if (!isASCIIDigit(string[i])) {
-            if (!decimalMarkSeen && string[i] == '.')
-                decimalMarkSeen = true;
-            else
-                return 0;
-        }
-    }
-
-    if (decimalMarkSeen && processedLength == 1)
-        return 0;
-
-    return processedLength;
-}
-
-// Returns the number of characters consumed for parsing a valid double
-// terminated by the given terminator character
-template <typename CharacterType>
-static int parseDouble(const CharacterType* string, const CharacterType* end, const char terminator, double& value)
-{
-    int length = checkForValidDouble(string, end, terminator);
-    if (!length)
-        return 0;
-
-    int position = 0;
-    double localValue = 0;
-
-    // The consumed characters here are guaranteed to be
-    // ASCII digits with or without a decimal mark
-    for (; position < length; ++position) {
-        if (string[position] == '.')
-            break;
-        localValue = localValue * 10 + string[position] - '0';
-    }
-
-    if (++position == length) {
-        value = localValue;
-        return length;
-    }
-
-    double fraction = 0;
-    double scale = 1;
-
-    while (position < length && scale < MAX_SCALE) {
-        fraction = fraction * 10 + string[position++] - '0';
-        scale *= 10;
-    }
-
-    value = localValue + fraction / scale;
-    return length;
-}
-
-template <typename CharacterType>
-static bool parseColorIntOrPercentage(const CharacterType*& string, const CharacterType* end, const char terminator, CSSPrimitiveValue::UnitType& expect, int& value)
-{
-    const CharacterType* current = string;
-    double localValue = 0;
-    bool negative = false;
-    while (current != end && isHTMLSpace<CharacterType>(*current))
-        current++;
-    if (current != end && *current == '-') {
-        negative = true;
-        current++;
-    }
-    if (current == end || !isASCIIDigit(*current))
-        return false;
-    while (current != end && isASCIIDigit(*current)) {
-        double newValue = localValue * 10 + *current++ - '0';
-        if (newValue >= 255) {
-            // Clamp values at 255.
-            localValue = 255;
-            while (current != end && isASCIIDigit(*current))
-                ++current;
-            break;
-        }
-        localValue = newValue;
-    }
-
-    if (current == end)
-        return false;
-
-    if (expect == CSSPrimitiveValue::CSS_NUMBER && (*current == '.' || *current == '%'))
-        return false;
-
-    if (*current == '.') {
-        // We already parsed the integral part, try to parse
-        // the fraction part of the percentage value.
-        double percentage = 0;
-        int numCharactersParsed = parseDouble(current, end, '%', percentage);
-        if (!numCharactersParsed)
-            return false;
-        current += numCharactersParsed;
-        if (*current != '%')
-            return false;
-        localValue += percentage;
-    }
-
-    if (expect == CSSPrimitiveValue::CSS_PERCENTAGE && *current != '%')
-        return false;
-
-    if (*current == '%') {
-        expect = CSSPrimitiveValue::CSS_PERCENTAGE;
-        localValue = localValue / 100.0 * 256.0;
-        // Clamp values at 255 for percentages over 100%
-        if (localValue > 255)
-            localValue = 255;
-        current++;
-    } else
-        expect = CSSPrimitiveValue::CSS_NUMBER;
-
-    while (current != end && isHTMLSpace<CharacterType>(*current))
-        current++;
-    if (current == end || *current++ != terminator)
-        return false;
-    // Clamp negative values at zero.
-    value = negative ? 0 : static_cast<int>(localValue);
-    string = current;
-    return true;
-}
-
-template <typename CharacterType>
-static inline bool isTenthAlpha(const CharacterType* string, const int length)
-{
-    // "0.X"
-    if (length == 3 && string[0] == '0' && string[1] == '.' && isASCIIDigit(string[2]))
-        return true;
-
-    // ".X"
-    if (length == 2 && string[0] == '.' && isASCIIDigit(string[1]))
-        return true;
-
-    return false;
-}
-
-template <typename CharacterType>
-static inline bool parseAlphaValue(const CharacterType*& string, const CharacterType* end, const char terminator, int& value)
-{
-    while (string != end && isHTMLSpace<CharacterType>(*string))
-        string++;
-
-    bool negative = false;
-
-    if (string != end && *string == '-') {
-        negative = true;
-        string++;
-    }
-
-    value = 0;
-
-    int length = end - string;
-    if (length < 2)
-        return false;
-
-    if (string[length - 1] != terminator || !isASCIIDigit(string[length - 2]))
-        return false;
-
-    if (string[0] != '0' && string[0] != '1' && string[0] != '.') {
-        if (checkForValidDouble(string, end, terminator)) {
-            value = negative ? 0 : 255;
-            string = end;
-            return true;
-        }
-        return false;
-    }
-
-    if (length == 2 && string[0] != '.') {
-        value = !negative && string[0] == '1' ? 255 : 0;
-        string = end;
-        return true;
-    }
-
-    if (isTenthAlpha(string, length - 1)) {
-        static const int tenthAlphaValues[] = { 0, 25, 51, 76, 102, 127, 153, 179, 204, 230 };
-        value = negative ? 0 : tenthAlphaValues[string[length - 2] - '0'];
-        string = end;
-        return true;
-    }
-
-    double alpha = 0;
-    if (!parseDouble(string, end, terminator, alpha))
-        return false;
-    value = negative ? 0 : static_cast<int>(alpha * nextafter(256.0, 0.0));
-    string = end;
-    return true;
-}
-
-template <typename CharacterType>
-static inline bool mightBeRGBA(const CharacterType* characters, unsigned length)
-{
-    if (length < 5)
-        return false;
-    return characters[4] == '('
-        && isASCIIAlphaCaselessEqual(characters[0], 'r')
-        && isASCIIAlphaCaselessEqual(characters[1], 'g')
-        && isASCIIAlphaCaselessEqual(characters[2], 'b')
-        && isASCIIAlphaCaselessEqual(characters[3], 'a');
-}
-
-template <typename CharacterType>
-static inline bool mightBeRGB(const CharacterType* characters, unsigned length)
-{
-    if (length < 4)
-        return false;
-    return characters[3] == '('
-        && isASCIIAlphaCaselessEqual(characters[0], 'r')
-        && isASCIIAlphaCaselessEqual(characters[1], 'g')
-        && isASCIIAlphaCaselessEqual(characters[2], 'b');
-}
-
-template <typename CharacterType>
-static inline bool fastParseColorInternal(RGBA32& rgb, const CharacterType* characters, unsigned length, bool strict)
-{
-    CSSPrimitiveValue::UnitType expect = CSSPrimitiveValue::CSS_UNKNOWN;
-
-    if (length >= 4 && characters[0] == '#')
-        return Color::parseHexColor(characters + 1, length - 1, rgb);
-
-    if (!strict && length >= 3) {
-        if (Color::parseHexColor(characters, length, rgb))
-            return true;
-    }
-
-    // Try rgba() syntax.
-    if (mightBeRGBA(characters, length)) {
-        const CharacterType* current = characters + 5;
-        const CharacterType* end = characters + length;
-        int red;
-        int green;
-        int blue;
-        int alpha;
-
-        if (!parseColorIntOrPercentage(current, end, ',', expect, red))
-            return false;
-        if (!parseColorIntOrPercentage(current, end, ',', expect, green))
-            return false;
-        if (!parseColorIntOrPercentage(current, end, ',', expect, blue))
-            return false;
-        if (!parseAlphaValue(current, end, ')', alpha))
-            return false;
-        if (current != end)
-            return false;
-        rgb = makeRGBA(red, green, blue, alpha);
-        return true;
-    }
-
-    // Try rgb() syntax.
-    if (mightBeRGB(characters, length)) {
-        const CharacterType* current = characters + 4;
-        const CharacterType* end = characters + length;
-        int red;
-        int green;
-        int blue;
-        if (!parseColorIntOrPercentage(current, end, ',', expect, red))
-            return false;
-        if (!parseColorIntOrPercentage(current, end, ',', expect, green))
-            return false;
-        if (!parseColorIntOrPercentage(current, end, ')', expect, blue))
-            return false;
-        if (current != end)
-            return false;
-        rgb = makeRGB(red, green, blue);
-        return true;
-    }
-
-    return false;
-}
-
-template<typename StringType>
-bool CSSPropertyParser::fastParseColor(RGBA32& rgb, const StringType& name, bool strict)
-{
-    unsigned length = name.length();
-    bool parseResult;
-
-    if (!length)
-        return false;
-
-    if (name.is8Bit())
-        parseResult = fastParseColorInternal(rgb, name.characters8(), length, strict);
-    else
-        parseResult = fastParseColorInternal(rgb, name.characters16(), length, strict);
-
-    if (parseResult)
-        return true;
-
-    // Try named colors.
-    Color tc;
-    if (!tc.setNamedColor(name))
-        return false;
-    rgb = tc.rgb();
-    return true;
-}
-
-template bool CSSPropertyParser::fastParseColor(RGBA32&, const String&, bool strict);
 
 bool CSSPropertyParser::isCalculation(CSSParserValue* value)
 {
@@ -5293,15 +4981,12 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::parseColor(CSSParse
     return cssValuePool().createColorValue(c);
 }
 
-bool CSSPropertyParser::parseColorFromValue(CSSParserValue* value, RGBA32& c, bool acceptQuirkyColors)
+bool CSSPropertyParser::parseColorFromValue(CSSParserValue* value, RGBA32& result, bool acceptQuirkyColors)
 {
     if (acceptQuirkyColors && value->unit == CSSPrimitiveValue::CSS_NUMBER
-        && value->fValue >= 0. && value->fValue < 1000000.) {
-        if (!value->isInt)
-            return false;
-        String str = String::format("%06d", static_cast<int>((value->fValue+.5)));
-        if (!fastParseColor(c, str, !acceptQuirkyColors))
-            return false;
+        && value->fValue >= 0. && value->fValue < 1000000. && value->isInt) {
+        String str = String::format("%06d", static_cast<int>(value->fValue));
+        return Color::parseHexColor(str, result);
     } else if (acceptQuirkyColors && value->unit == CSSParserValue::DimensionList) {
         CSSParserValue* numberToken = value->valueList->valueAt(0);
         CSSParserValue* unitToken = value->valueList->valueAt(1);
@@ -5314,14 +4999,17 @@ bool CSSPropertyParser::parseColorFromValue(CSSParserValue* value, RGBA32& c, bo
             return false;
         while (color.length() < 6)
             color = "0" + color;
-        return fastParseColor(c, color, false);
+        return Color::parseHexColor(color, result);
     } else if (value->unit == CSSPrimitiveValue::CSS_IDENT) {
-        if (!fastParseColor(c, value->string, !acceptQuirkyColors))
-            return false;
+        Color color;
+        if (!color.setNamedColor(value->string))
+            return acceptQuirkyColors && Color::parseHexColor(value->string, result);
+        result = color.rgb();
+        return true;
     } else if (value->unit == CSSParserValue::HexColor) {
         if (value->string.is8Bit())
-            return Color::parseHexColor(value->string.characters8(), value->string.length(), c);
-        return Color::parseHexColor(value->string.characters16(), value->string.length(), c);
+            return Color::parseHexColor(value->string.characters8(), value->string.length(), result);
+        return Color::parseHexColor(value->string.characters16(), value->string.length(), result);
     } else if (value->unit == CSSParserValue::Function &&
                 value->function->args != 0 &&
                 value->function->args->size() == 5 /* rgb + two commas */ &&
@@ -5329,7 +5017,7 @@ bool CSSPropertyParser::parseColorFromValue(CSSParserValue* value, RGBA32& c, bo
         int colorValues[3];
         if (!parseColorParameters(value, colorValues, false))
             return false;
-        c = makeRGB(colorValues[0], colorValues[1], colorValues[2]);
+        result = makeRGB(colorValues[0], colorValues[1], colorValues[2]);
     } else {
         if (value->unit == CSSParserValue::Function &&
                 value->function->args != 0 &&
@@ -5338,7 +5026,7 @@ bool CSSPropertyParser::parseColorFromValue(CSSParserValue* value, RGBA32& c, bo
             int colorValues[4];
             if (!parseColorParameters(value, colorValues, true))
                 return false;
-            c = makeRGBA(colorValues[0], colorValues[1], colorValues[2], colorValues[3]);
+            result = makeRGBA(colorValues[0], colorValues[1], colorValues[2], colorValues[3]);
         } else if (value->unit == CSSParserValue::Function &&
                     value->function->args != 0 &&
                     value->function->args->size() == 5 /* hsl + two commas */ &&
@@ -5346,7 +5034,7 @@ bool CSSPropertyParser::parseColorFromValue(CSSParserValue* value, RGBA32& c, bo
             double colorValues[3];
             if (!parseHSLParameters(value, colorValues, false))
                 return false;
-            c = makeRGBAFromHSLA(colorValues[0], colorValues[1], colorValues[2], 1.0);
+            result = makeRGBAFromHSLA(colorValues[0], colorValues[1], colorValues[2], 1.0);
         } else if (value->unit == CSSParserValue::Function &&
                     value->function->args != 0 &&
                     value->function->args->size() == 7 /* hsla + three commas */ &&
@@ -5354,7 +5042,7 @@ bool CSSPropertyParser::parseColorFromValue(CSSParserValue* value, RGBA32& c, bo
             double colorValues[4];
             if (!parseHSLParameters(value, colorValues, true))
                 return false;
-            c = makeRGBAFromHSLA(colorValues[0], colorValues[1], colorValues[2], colorValues[3]);
+            result = makeRGBAFromHSLA(colorValues[0], colorValues[1], colorValues[2], colorValues[3]);
         } else
             return false;
     }

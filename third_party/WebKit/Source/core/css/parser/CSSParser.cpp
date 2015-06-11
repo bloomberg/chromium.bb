@@ -109,7 +109,7 @@ bool CSSParser::parseColor(RGBA32& color, const String& string, bool strict)
         return false;
 
     // First try creating a color specified by name, rgba(), rgb() or "#" syntax.
-    if (CSSPropertyParser::fastParseColor(color, string, strict))
+    if (CSSParserFastPaths::parseColorAsRGBA32(color, string, !strict))
         return true;
 
     // In case the fast-path parser didn't understand the color, try the full parser.
