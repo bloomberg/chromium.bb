@@ -246,10 +246,10 @@ size_t VideoRendererAlgorithm::RemoveExpiredFrames(base::TimeTicks deadline) {
   if (deadline > last_deadline_max_)
     last_deadline_max_ = deadline;
 
-  UpdateFrameStatistics();
   if (frame_queue_.size() < 2)
     return 0;
 
+  UpdateFrameStatistics();
   DCHECK_GT(average_frame_duration_, base::TimeDelta());
 
   // Finds and removes all frames which are too old to be used; I.e., the end of

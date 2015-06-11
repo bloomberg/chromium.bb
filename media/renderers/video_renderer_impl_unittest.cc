@@ -716,6 +716,38 @@ TEST_P(VideoRendererImplTest, RenderingStartedThenStopped) {
   Destroy();
 }
 
+TEST_P(VideoRendererImplTest, StartPlayingFromThenFlushThenEOS) {
+  // This test is only for the new rendering path.
+  if (!GetParam())
+    return;
+
+  Initialize();
+  QueueFrames("0 30 60 90");
+
+  WaitableMessageLoopEvent event;
+  EXPECT_CALL(mock_cb_, FrameReceived(HasTimestamp(0)));
+  EXPECT_CALL(mock_cb_, BufferingStateChange(BUFFERING_HAVE_ENOUGH))
+      .WillOnce(RunClosure(event.GetClosure()));
+  StartPlayingFrom(0);
+  event.RunAndWait();
+
+  // Cycle ticking so that we get a non-null reference time.
+  time_source_.StartTicking();
+  time_source_.StopTicking();
+
+  // Flush and simulate a seek past EOS, where some error prevents the decoder
+  // from returning any frames.
+  EXPECT_CALL(mock_cb_, BufferingStateChange(BUFFERING_HAVE_NOTHING));
+  Flush();
+
+  StartPlayingFrom(200);
+  WaitForPendingRead();
+  SatisfyPendingReadWithEndOfStream();
+  EXPECT_CALL(mock_cb_, BufferingStateChange(BUFFERING_HAVE_ENOUGH));
+  WaitForEnded();
+  Destroy();
+}
+
 INSTANTIATE_TEST_CASE_P(OldVideoRenderer,
                         VideoRendererImplTest,
                         testing::Values(false));

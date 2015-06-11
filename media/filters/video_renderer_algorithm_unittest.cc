@@ -1038,6 +1038,9 @@ TEST_F(VideoRendererAlgorithmTest, CadenceCalculations) {
 TEST_F(VideoRendererAlgorithmTest, RemoveExpiredFrames) {
   TickGenerator tg(tick_clock_->NowTicks(), 50);
 
+  // Removing expired frames before anything is enqueued should do nothing.
+  ASSERT_EQ(0u, algorithm_.RemoveExpiredFrames(tg.current()));
+
   algorithm_.EnqueueFrame(CreateFrame(tg.interval(0)));
   ASSERT_EQ(0u, algorithm_.RemoveExpiredFrames(tg.current()));
   EXPECT_EQ(1u, algorithm_.EffectiveFramesQueued());
