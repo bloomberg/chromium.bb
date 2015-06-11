@@ -1608,17 +1608,16 @@ const Experiment kExperiments[] = {
   },
 #endif
   {
-    "enable-one-copy",
-    IDS_FLAGS_ONE_COPY_NAME,
-    IDS_FLAGS_ONE_COPY_DESCRIPTION,
+    "disable-one-copy",
+    IDS_FLAGS_DISABLE_ONE_COPY_NAME,
+    IDS_FLAGS_DISABLE_ONE_COPY_DESCRIPTION,
     kOsAll,
-    ENABLE_DISABLE_VALUE_TYPE(switches::kEnableOneCopy,
-                              switches::kDisableOneCopy)
+    SINGLE_VALUE_TYPE(switches::kDisableOneCopy)
   },
   {
     "enable-zero-copy",
-    IDS_FLAGS_ZERO_COPY_NAME,
-    IDS_FLAGS_ZERO_COPY_DESCRIPTION,
+    IDS_FLAGS_ENABLE_ZERO_COPY_NAME,
+    IDS_FLAGS_ENABLE_ZERO_COPY_DESCRIPTION,
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnableZeroCopy)
   },
