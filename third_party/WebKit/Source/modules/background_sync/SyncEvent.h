@@ -15,7 +15,7 @@
 
 namespace blink {
 
-class SyncEvent final : public ExtendableEvent {
+class MODULES_EXPORT SyncEvent final : public ExtendableEvent {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<SyncEvent> create()
