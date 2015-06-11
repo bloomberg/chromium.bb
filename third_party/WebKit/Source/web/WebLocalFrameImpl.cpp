@@ -1956,12 +1956,10 @@ void WebLocalFrameImpl::loadJavaScriptURL(const KURL& url)
 
 static void ensureFrameLoaderHasCommitted(FrameLoader& frameLoader)
 {
-    // Internally, Blink uses CommittedMultipleRealLoads to track whether the
-    // next commit should create a new history item or not. Ensure we have
-    // reached that state.
-    if (frameLoader.stateMachine()->committedMultipleRealLoads())
+    if (frameLoader.stateMachine()->committedFirstRealDocumentLoad())
         return;
-    frameLoader.stateMachine()->advanceTo(FrameLoaderStateMachine::CommittedMultipleRealLoads);
+    frameLoader.stateMachine()->advanceTo(frameLoader.client()->backForwardLength() > 1 ?
+        FrameLoaderStateMachine::CommittedMultipleRealLoads : FrameLoaderStateMachine::CommittedFirstRealLoad);
 }
 
 void WebLocalFrameImpl::initializeToReplaceRemoteFrame(WebRemoteFrame* oldWebFrame, const WebString& name, WebSandboxFlags flags)

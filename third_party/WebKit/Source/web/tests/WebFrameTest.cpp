@@ -6012,9 +6012,9 @@ private:
     WebFrame* m_frame;
 };
 
-// Tests that the first navigation in an initially blank subframe will result in
-// a history entry being replaced and not a new one being added.
-TEST_P(ParameterizedWebFrameTest, FirstBlankSubframeNavigation)
+// Test which ensures that the first navigation in a subframe will always
+// result in history entry being replaced and not a new one added.
+TEST_P(ParameterizedWebFrameTest, DISABLED_FirstFrameNavigationReplacesHistory)
 {
     registerMockedHttpURLLoad("history.html");
     registerMockedHttpURLLoad("find.html");
@@ -6022,56 +6022,40 @@ TEST_P(ParameterizedWebFrameTest, FirstBlankSubframeNavigation)
     FrameTestHelpers::WebViewHelper webViewHelper(this);
     TestHistoryWebFrameClient client;
     webViewHelper.initializeAndLoad("about:blank", true, &client);
-
-    WebFrame* frame = webViewHelper.webView()->mainFrame();
-
-    frame->executeScript(WebScriptSource(WebString::fromUTF8(
-        "document.body.appendChild(document.createElement('iframe'))")));
-
-    WebFrame* iframe = frame->firstChild();
-    ASSERT_EQ(&client, toWebLocalFrameImpl(iframe)->client());
-    EXPECT_EQ(iframe, client.frame());
-
-    std::string url1 = m_baseURL + "history.html";
-    FrameTestHelpers::loadFrame(iframe, url1);
-    EXPECT_EQ(iframe, client.frame());
-    EXPECT_EQ(url1, iframe->document().url().string().utf8());
     EXPECT_TRUE(client.replacesCurrentHistoryItem());
 
-    std::string url2 = m_baseURL + "find.html";
-    FrameTestHelpers::loadFrame(iframe, url2);
-    EXPECT_EQ(iframe, client.frame());
-    EXPECT_EQ(url2, iframe->document().url().string().utf8());
-    EXPECT_FALSE(client.replacesCurrentHistoryItem());
-}
-
-// Tests that a navigation in a frame with a non-blank initial URL will create
-// a new history item, unlike the case above.
-TEST_P(ParameterizedWebFrameTest, FirstNonBlankSubframeNavigation)
-{
-    registerMockedHttpURLLoad("history.html");
-    registerMockedHttpURLLoad("find.html");
-
-    FrameTestHelpers::WebViewHelper webViewHelper(this);
-    TestHistoryWebFrameClient client;
-    webViewHelper.initializeAndLoad("about:blank", true, &client);
-
     WebFrame* frame = webViewHelper.webView()->mainFrame();
 
-    std::string url1 = m_baseURL + "history.html";
+    FrameTestHelpers::loadFrame(frame,
+        "javascript:document.body.appendChild(document.createElement('iframe'))");
+    WebFrame* iframe = frame->firstChild();
+    EXPECT_EQ(client.frame(), iframe);
+    EXPECT_TRUE(client.replacesCurrentHistoryItem());
+
+    FrameTestHelpers::loadFrame(frame,
+        "javascript:window.frames[0].location.assign('" + m_baseURL + "history.html')");
+    EXPECT_EQ(client.frame(), iframe);
+    EXPECT_TRUE(client.replacesCurrentHistoryItem());
+
+    FrameTestHelpers::loadFrame(frame,
+        "javascript:window.frames[0].location.assign('" + m_baseURL + "find.html')");
+    EXPECT_EQ(client.frame(), iframe);
+    EXPECT_FALSE(client.replacesCurrentHistoryItem());
+
+    // Repeat the test, but start out the iframe with initial URL, which is not
+    // "about:blank".
     FrameTestHelpers::loadFrame(frame,
         "javascript:var f = document.createElement('iframe'); "
-        "f.src = '" + url1 + "';"
+        "f.src = '" + m_baseURL + "history.html';"
         "document.body.appendChild(f)");
 
-    WebFrame* iframe = frame->firstChild();
-    EXPECT_EQ(iframe, client.frame());
-    EXPECT_EQ(url1, iframe->document().url().string().utf8());
+    iframe = frame->firstChild()->nextSibling();
+    EXPECT_EQ(client.frame(), iframe);
+    EXPECT_TRUE(client.replacesCurrentHistoryItem());
 
-    std::string url2 = m_baseURL + "find.html";
-    FrameTestHelpers::loadFrame(iframe, url2);
-    EXPECT_EQ(iframe, client.frame());
-    EXPECT_EQ(url2, iframe->document().url().string().utf8());
+    FrameTestHelpers::loadFrame(frame,
+        "javascript:window.frames[1].location.assign('" + m_baseURL + "find.html')");
+    EXPECT_EQ(client.frame(), iframe);
     EXPECT_FALSE(client.replacesCurrentHistoryItem());
 }
 
