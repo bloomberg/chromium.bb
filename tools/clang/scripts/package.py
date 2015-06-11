@@ -183,6 +183,7 @@ def main():
   # Set up symlinks.
   if sys.platform != 'win32':
     os.symlink('clang', os.path.join(pdir, 'bin', 'clang++'))
+    os.symlink('clang', os.path.join(pdir, 'bin', 'clang-cl'))
   if sys.platform == 'darwin':
     os.symlink('libc++.1.dylib', os.path.join(pdir, 'bin', 'libc++.dylib'))
     # Also copy libc++ headers.
