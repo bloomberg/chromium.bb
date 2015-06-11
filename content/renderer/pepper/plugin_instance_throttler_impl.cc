@@ -4,6 +4,8 @@
 
 #include "content/renderer/pepper/plugin_instance_throttler_impl.h"
 
+#include <cmath>
+
 #include "base/metrics/histogram.h"
 #include "base/time/time.h"
 #include "content/public/common/content_constants.h"
@@ -21,10 +23,17 @@ namespace content {
 
 namespace {
 
-// Maximum dimensions plugin content may have while still being considered
-// peripheral content.
-const int kPeripheralContentMaxWidth = 398;
-const int kPeripheralContentMaxHeight = 298;
+// Cross-origin plugin content must have a width and height both exceeding
+// these minimums to be considered "large", and thus not peripheral.
+const int kLargeContentMinWidth = 398;
+const int kLargeContentMinHeight = 298;
+
+// Mark some 16:9 aspect ratio plugins as essential (not peripheral). This is to
+// mark as "large" some medium sized video content that meets a minimum area
+// requirement, even if it is below the max width/height above.
+const double kEssentialVideoAspectRatio = 16.0 / 9.0;
+const double kAspectRatioEpsilon = 0.01;
+const int kEssentialVideoMinimumArea = 120000;
 
 // Threshold for 'boring' score to accept a frame as good enough to be a
 // representative keyframe. Units are the ratio of all pixels that are within
@@ -56,8 +65,17 @@ void PluginInstanceThrottler::RecordUnthrottleMethodMetric(
 
 // static
 bool PluginInstanceThrottler::IsLargeContent(int width, int height) {
-  return width >= kPeripheralContentMaxWidth &&
-         height >= kPeripheralContentMaxHeight;
+  if (width >= kLargeContentMinWidth && height >= kLargeContentMinHeight)
+    return true;
+
+  double aspect_ratio = static_cast<double>(width) / height;
+  if (std::abs(aspect_ratio - kEssentialVideoAspectRatio) <
+          kAspectRatioEpsilon &&
+      width * height >= kEssentialVideoMinimumArea) {
+    return true;
+  }
+
+  return false;
 }
 
 PluginInstanceThrottlerImpl::PluginInstanceThrottlerImpl()

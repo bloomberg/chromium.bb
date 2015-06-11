@@ -170,10 +170,14 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, SmallCrossOrigin) {
 
 IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, LargeCrossOrigin) {
   LoadHTML(
-      "<object id='plugin' data='http://otherorigin.com/fake.swf' "
+      "<object id='large' data='http://otherorigin.com/fake.swf' "
       "    type='application/x-ppapi-tests' width='400' height='500'>"
+      "</object>"
+      "<object id='medium_16_9' data='http://otherorigin.com/fake.swf' "
+      "    type='application/x-ppapi-tests' width='480' height='270'>"
       "</object>");
-  VerifyPluginMarkedEssential(GetActiveWebContents(), "plugin");
+  VerifyPluginMarkedEssential(GetActiveWebContents(), "large");
+  VerifyPluginMarkedEssential(GetActiveWebContents(), "medium_16_9");
 }
 
 IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest,
