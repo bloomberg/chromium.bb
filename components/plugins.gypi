@@ -36,14 +36,19 @@
           ],
           'sources': [
             # Note: sources list duplicated in GN build.
-            'plugins/renderer/loadable_plugin_placeholder.cc',
-            'plugins/renderer/loadable_plugin_placeholder.h',
             'plugins/renderer/plugin_placeholder.cc',
             'plugins/renderer/plugin_placeholder.h',
             'plugins/renderer/webview_plugin.cc',
             'plugins/renderer/webview_plugin.h',
           ],
           'conditions' : [
+            ['enable_plugins==1', {
+              'sources': [
+                # Note: sources list duplicated in GN build.
+                'plugins/renderer/loadable_plugin_placeholder.cc',
+                'plugins/renderer/loadable_plugin_placeholder.h',
+              ]
+            }],
             ['OS=="android"', {
               'sources': [
                 # Note: sources list duplicated in GN build.

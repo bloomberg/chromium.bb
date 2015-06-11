@@ -23,6 +23,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "components/plugins/renderer/plugin_placeholder.h"
 #include "components/test_runner/app_banner_client.h"
 #include "components/test_runner/gamepad_controller.h"
 #include "components/test_runner/mock_screen_orientation_client.h"
@@ -46,7 +47,6 @@
 #include "content/shell/renderer/layout_test/gc_controller.h"
 #include "content/shell/renderer/layout_test/layout_test_render_process_observer.h"
 #include "content/shell/renderer/layout_test/leak_detector.h"
-#include "content/shell/renderer/layout_test/test_plugin_placeholder.h"
 #include "net/base/filename_util.h"
 #include "net/base/net_errors.h"
 #include "skia/ext/platform_canvas.h"
@@ -688,10 +688,13 @@ void BlinkTestRunner::ResolveBeforeInstallPromptPromise(
 
 blink::WebPlugin* BlinkTestRunner::CreatePluginPlaceholder(
     blink::WebLocalFrame* frame, const blink::WebPluginParams& params) {
-  if (params.mimeType == "application/x-plugin-placeholder-test")
-    return (new TestPluginPlaceholder(render_view()->GetMainRenderFrame(),
-                                      frame, params))->plugin();
-  return 0;
+  if (params.mimeType != "application/x-plugin-placeholder-test")
+    return nullptr;
+
+  plugins::PluginPlaceholder* placeholder =
+      new plugins::PluginPlaceholder(render_view()->GetMainRenderFrame(), frame,
+                                     params, "<div>Test content</div>");
+  return placeholder->plugin();
 }
 
 // RenderViewObserver  --------------------------------------------------------

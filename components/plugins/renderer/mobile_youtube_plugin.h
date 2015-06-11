@@ -14,13 +14,15 @@ namespace plugins {
 // of http://www.youtube.com/v/VIDEO_ID. This placeholder replaces the url with
 // a simple html page and clicking the play image redirects the user to the
 // mobile youtube app.
-class MobileYouTubePlugin : public PluginPlaceholder {
+class MobileYouTubePlugin final : public PluginPlaceholderBase,
+                                  public gin::Wrappable<MobileYouTubePlugin> {
  public:
+  static gin::WrapperInfo kWrapperInfo;
+
   MobileYouTubePlugin(content::RenderFrame* render_frame,
                       blink::WebLocalFrame* frame,
                       const blink::WebPluginParams& params,
-                      base::StringPiece& template_html,
-                      GURL placeholderDataUrl);
+                      base::StringPiece& template_html);
 
   // Whether this is a youtube url.
   static bool IsYouTubeURL(const GURL& url, const std::string& mime_type);
@@ -31,12 +33,12 @@ class MobileYouTubePlugin : public PluginPlaceholder {
   // Opens a youtube app in the current tab.
   void OpenYoutubeUrlCallback();
 
-  // WebViewPlugin::Delegate (via PluginPlaceholder) method
-  void BindWebFrame(blink::WebFrame* frame) override;
+  // WebViewPlugin::Delegate methods:
+  v8::Local<v8::Value> GetV8Handle(v8::Isolate* isolate) override;
 
   // gin::Wrappable (via PluginPlaceholder) method
   gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
-      v8::Isolate* isolate) override;
+      v8::Isolate* isolate) final;
 
   DISALLOW_COPY_AND_ASSIGN(MobileYouTubePlugin);
 };

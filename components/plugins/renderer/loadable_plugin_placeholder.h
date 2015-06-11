@@ -10,11 +10,12 @@
 #include "components/plugins/renderer/plugin_placeholder.h"
 #include "content/public/common/webplugininfo.h"
 #include "content/public/renderer/plugin_instance_throttler.h"
+#include "content/public/renderer/render_thread.h"
 
 namespace plugins {
 // Placeholders can be used if a plugin is missing or not available
 // (blocked or disabled).
-class LoadablePluginPlaceholder : public PluginPlaceholder {
+class LoadablePluginPlaceholder : public PluginPlaceholderBase {
  public:
   void set_blocked_for_background_tab(bool blocked_for_background_tab) {
     is_blocked_for_background_tab_ = blocked_for_background_tab;
@@ -24,7 +25,6 @@ class LoadablePluginPlaceholder : public PluginPlaceholder {
     is_blocked_for_prerendering_ = blocked_for_prerendering;
   }
 
-#if defined(ENABLE_PLUGINS)
   bool power_saver_enabled() const { return power_saver_enabled_; }
 
   void set_power_saver_enabled(bool power_saver_enabled) {
@@ -36,23 +36,19 @@ class LoadablePluginPlaceholder : public PluginPlaceholder {
 
   // When we load the plugin, use this already-created plugin, not a new one.
   void SetPremadePlugin(content::PluginInstanceThrottler* throttler);
-#endif
 
-  void set_allow_loading(bool allow_loading) { allow_loading_ = allow_loading; }
+  void DisallowLoading() { allow_loading_ = false; }
 
  protected:
   LoadablePluginPlaceholder(content::RenderFrame* render_frame,
                             blink::WebLocalFrame* frame,
                             const blink::WebPluginParams& params,
-                            const std::string& html_data,
-                            GURL placeholderDataUrl);
+                            const std::string& html_data);
 
   ~LoadablePluginPlaceholder() override;
 
-#if defined(ENABLE_PLUGINS)
   void MarkPluginEssential(
       content::PluginInstanceThrottler::PowerSaverUnthrottleMethod method);
-#endif
 
   void OnLoadBlockedPlugins(const std::string& identifier);
   void OnSetIsPrerendering(bool is_prerendering);
@@ -68,42 +64,27 @@ class LoadablePluginPlaceholder : public PluginPlaceholder {
   // a placeholder again).
   void ReplacePlugin(blink::WebPlugin* new_plugin);
 
-  // Hide this placeholder.
-  void HidePlugin();
-
   // Load the blocked plugin.
   void LoadPlugin();
 
-  // WebViewPlugin::Delegate (via PluginPlaceholder) method
-  void BindWebFrame(blink::WebFrame* frame) override;
-
-  // gin::Wrappable method:
-  gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
-      v8::Isolate* isolate) override;
+  // Javascript callbacks:
+  void LoadCallback();
+  void DidFinishLoadingCallback();
 
  private:
   // WebViewPlugin::Delegate methods:
   void PluginDestroyed() override;
   v8::Local<v8::Object> GetV8ScriptableObject(
       v8::Isolate* isolate) const override;
-#if defined(ENABLE_PLUGINS)
   void OnUnobscuredSizeUpdate(const gfx::Size& unobscured_size) override;
-#endif
 
   // RenderFrameObserver methods:
   void WasShown() override;
 
-  // Javascript callbacks:
-  void LoadCallback();
-  void HideCallback();
-  void DidFinishLoadingCallback();
-
   void UpdateMessage();
 
   bool LoadingBlocked() const;
-#if defined(ENABLE_PLUGINS)
   void RecheckSizeAndMaybeUnthrottle();
-#endif
 
   // Plugin creation is embedder-specific.
   virtual blink::WebPlugin* CreatePlugin() = 0;
@@ -132,7 +113,6 @@ class LoadablePluginPlaceholder : public PluginPlaceholder {
 
   bool allow_loading_;
 
-  bool hidden_;
   bool finished_loading_;
   std::string identifier_;
 

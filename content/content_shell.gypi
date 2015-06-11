@@ -226,8 +226,6 @@
         'shell/renderer/layout_test/leak_detector.h',
         'shell/renderer/layout_test/test_media_stream_renderer_factory.cc',
         'shell/renderer/layout_test/test_media_stream_renderer_factory.h',
-        'shell/renderer/layout_test/test_plugin_placeholder.cc',
-        'shell/renderer/layout_test/test_plugin_placeholder.h',
         'shell/renderer/layout_test/test_video_frame_provider.cc',
         'shell/renderer/layout_test/test_video_frame_provider.h',
         'shell/renderer/shell_content_renderer_client.cc',

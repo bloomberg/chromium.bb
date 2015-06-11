@@ -13,6 +13,7 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/web/WebFrameClient.h"
+#include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebPlugin.h"
 #include "third_party/WebKit/public/web/WebViewClient.h"
 
@@ -42,10 +43,8 @@ class WebViewPlugin : public blink::WebPlugin,
  public:
   class Delegate {
    public:
-    // Bind |frame| to a Javascript object, enabling the delegate to receive
-    // callback methods from Javascript inside the WebFrame.
-    // This method is called from WebFrameClient::didClearWindowObject.
-    virtual void BindWebFrame(blink::WebFrame* frame) = 0;
+    // Called to get the V8 handle used to bind the lifetime to the frame.
+    virtual v8::Local<v8::Value> GetV8Handle(v8::Isolate*) = 0;
 
     // Called upon a context menu event.
     virtual void ShowContextMenu(const blink::WebMouseEvent&) = 0;

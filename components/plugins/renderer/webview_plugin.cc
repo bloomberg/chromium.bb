@@ -9,6 +9,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "content/public/common/web_preferences.h"
 #include "content/public/renderer/render_view.h"
+#include "gin/converter.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
@@ -61,6 +62,7 @@ WebViewPlugin* WebViewPlugin::Create(WebViewPlugin::Delegate* delegate,
                                      const WebPreferences& preferences,
                                      const std::string& html_data,
                                      const GURL& url) {
+  DCHECK(url.is_valid()) << "Blink requires the WebView to have a valid URL.";
   WebViewPlugin* plugin = new WebViewPlugin(delegate, preferences);
   plugin->web_view()->mainFrame()->loadHTMLString(html_data, url);
   return plugin;
@@ -264,8 +266,19 @@ void WebViewPlugin::scheduleAnimation() {
 }
 
 void WebViewPlugin::didClearWindowObject(WebLocalFrame* frame) {
-  if (delegate_)
-    delegate_->BindWebFrame(frame);
+  if (!delegate_)
+    return;
+
+  v8::Isolate* isolate = blink::mainThreadIsolate();
+  v8::HandleScope handle_scope(isolate);
+  v8::Local<v8::Context> context = frame->mainWorldScriptContext();
+  DCHECK(!context.IsEmpty());
+
+  v8::Context::Scope context_scope(context);
+  v8::Local<v8::Object> global = context->Global();
+
+  global->Set(gin::StringToV8(isolate, "plugin"),
+              delegate_->GetV8Handle(isolate));
 }
 
 void WebViewPlugin::didReceiveResponse(WebLocalFrame* frame,

@@ -3,10 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, user-scalable=no">
+<if expr="not is_android">
 <script>
-function debug(msg) {
-  document.getElementById('debug').textContent = msg;
-}
 function setMessage(msg) {
   document.getElementById('message').textContent = msg;
 }
@@ -15,6 +13,12 @@ function notifyDidFinishLoading() {
     plugin.didFinishLoading();
 }
 </script>
+</if>
+<if expr="is_android">
+<script>
+function notifyDidFinishLoading() {}
+</script>
+</if>
 <link rel="stylesheet" href="plugin_placeholders.css"></link>
 <style>
 body {
@@ -37,7 +41,6 @@ body {
   <img id="plugin_icon" src="plugin_blocked_android.png">
 </if>
 <h1 id="message" i18n-content="message"></h1>
-<p id="debug"> </p>
 </div>
 <div id="close" i18n-values="title:hide" onclick="plugin.hide();"></div>
 </div>

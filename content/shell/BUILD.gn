@@ -162,8 +162,6 @@ static_library("content_shell_lib") {
     "renderer/layout_test/leak_detector.h",
     "renderer/layout_test/test_media_stream_renderer_factory.cc",
     "renderer/layout_test/test_media_stream_renderer_factory.h",
-    "renderer/layout_test/test_plugin_placeholder.cc",
-    "renderer/layout_test/test_plugin_placeholder.h",
     "renderer/layout_test/test_video_frame_provider.cc",
     "renderer/layout_test/test_video_frame_provider.h",
     "renderer/shell_content_renderer_client.cc",

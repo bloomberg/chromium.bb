@@ -16,7 +16,6 @@
 #include "chrome/renderer/plugins/plugin_preroller.h"
 #include "chrome/renderer/plugins/plugin_uma.h"
 #include "components/content_settings/content/common/content_settings_messages.h"
-#include "content/app/strings/grit/content_strings.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
@@ -45,13 +44,11 @@ using content::RenderThread;
 using content::RenderView;
 
 namespace {
-const plugins::PluginPlaceholder* g_last_active_menu = NULL;
+const ChromePluginPlaceholder* g_last_active_menu = NULL;
 }  // namespace
 
-// The placeholder is loaded in normal web renderer processes, so it should not
-// have a chrome:// scheme that might let it be confused with a WebUI page.
-const char ChromePluginPlaceholder::kPluginPlaceholderDataURL[] =
-    "data:text/html,pluginplaceholderdata";
+gin::WrapperInfo ChromePluginPlaceholder::kWrapperInfo = {
+    gin::kEmbedderNativeGin};
 
 ChromePluginPlaceholder::ChromePluginPlaceholder(
     content::RenderFrame* render_frame,
@@ -62,8 +59,7 @@ ChromePluginPlaceholder::ChromePluginPlaceholder(
     : plugins::LoadablePluginPlaceholder(render_frame,
                                          frame,
                                          params,
-                                         html_data,
-                                         GURL(kPluginPlaceholderDataURL)),
+                                         html_data),
       status_(ChromeViewHostMsg_GetPluginInfo_Status::kAllowed),
       title_(title),
 #if defined(ENABLE_PLUGIN_INSTALLATION)
@@ -91,7 +87,7 @@ ChromePluginPlaceholder::~ChromePluginPlaceholder() {
 }
 
 // static
-ChromePluginPlaceholder* ChromePluginPlaceholder::CreateMissingPlugin(
+ChromePluginPlaceholder* ChromePluginPlaceholder::CreateLoadableMissingPlugin(
     content::RenderFrame* render_frame,
     WebLocalFrame* frame,
     const WebPluginParams& params) {
@@ -105,34 +101,9 @@ ChromePluginPlaceholder* ChromePluginPlaceholder::CreateMissingPlugin(
 
   std::string html_data = webui::GetI18nTemplateHtml(template_html, &values);
 
-  // |missing_plugin| will destroy itself when its WebViewPlugin is going away.
-  ChromePluginPlaceholder* missing_plugin = new ChromePluginPlaceholder(
-      render_frame, frame, params, html_data, params.mimeType);
-  missing_plugin->set_allow_loading(true);
-  return missing_plugin;
-}
-
-// static
-ChromePluginPlaceholder* ChromePluginPlaceholder::CreateErrorPlugin(
-    content::RenderFrame* render_frame,
-    const base::FilePath& file_path) {
-  base::DictionaryValue values;
-  values.SetString("message",
-                   l10n_util::GetStringUTF8(IDS_PLUGIN_INITIALIZATION_ERROR));
-
-  const base::StringPiece template_html(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_BLOCKED_PLUGIN_HTML));
-  std::string html_data = webui::GetI18nTemplateHtml(template_html, &values);
-
-  WebPluginParams params;
-  // |missing_plugin| will destroy itself when its WebViewPlugin is going away.
-  ChromePluginPlaceholder* plugin = new ChromePluginPlaceholder(
-      render_frame, NULL, params, html_data, params.mimeType);
-
-  RenderThread::Get()->Send(new ChromeViewHostMsg_CouldNotLoadPlugin(
-      plugin->routing_id(), file_path));
-  return plugin;
+  // Will destroy itself when its WebViewPlugin is going away.
+  return new ChromePluginPlaceholder(render_frame, frame, params, html_data,
+                                     params.mimeType);
 }
 
 // static
@@ -176,10 +147,8 @@ ChromePluginPlaceholder* ChromePluginPlaceholder::CreateBlockedPlugin(
   ChromePluginPlaceholder* blocked_plugin = new ChromePluginPlaceholder(
       render_frame, frame, params, html_data, name);
 
-#if defined(ENABLE_PLUGINS)
   if (!poster_info.poster_attribute.empty())
     blocked_plugin->BlockForPowerSaverPoster();
-#endif
   blocked_plugin->SetPluginInfo(info);
   blocked_plugin->SetIdentifier(identifier);
   return blocked_plugin;
@@ -305,10 +274,8 @@ void ChromePluginPlaceholder::OnMenuAction(int request_id, unsigned action) {
   switch (action) {
     case chrome::MENU_COMMAND_PLUGIN_RUN: {
       RenderThread::Get()->RecordAction(UserMetricsAction("Plugin_Load_Menu"));
-#if defined(ENABLE_PLUGINS)
       MarkPluginEssential(
           content::PluginInstanceThrottler::UNTHROTTLE_METHOD_BY_CLICK);
-#endif
       LoadPlugin();
       break;
     }
@@ -327,8 +294,12 @@ void ChromePluginPlaceholder::OnMenuClosed(int request_id) {
   context_menu_request_id_ = 0;
 }
 
+v8::Local<v8::Value> ChromePluginPlaceholder::GetV8Handle(
+    v8::Isolate* isolate) {
+  return gin::CreateHandle(isolate, this).ToV8();
+}
+
 void ChromePluginPlaceholder::ShowContextMenu(const WebMouseEvent& event) {
-#if !defined(OS_ANDROID)  // The context menu is not applicable on Android.
   if (context_menu_request_id_)
     return;  // Don't allow nested context menu requests.
 
@@ -364,12 +335,10 @@ void ChromePluginPlaceholder::ShowContextMenu(const WebMouseEvent& event) {
 
   context_menu_request_id_ = render_frame()->ShowContextMenu(this, params);
   g_last_active_menu = this;
-#endif  // OS_ANDROID
 }
 
 blink::WebPlugin* ChromePluginPlaceholder::CreatePlugin() {
   scoped_ptr<content::PluginInstanceThrottler> throttler;
-#if defined(ENABLE_PLUGINS)
   // If the plugin has already been marked essential in its placeholder form,
   // we shouldn't create a new throttler and start the process all over again.
   if (power_saver_enabled()) {
@@ -380,13 +349,21 @@ blink::WebPlugin* ChromePluginPlaceholder::CreatePlugin() {
                         l10n_util::GetStringFUTF16(IDS_PLUGIN_BLOCKED, title_),
                         throttler.get());
   }
-#endif
   return render_frame()->CreatePlugin(GetFrame(), GetPluginInfo(),
                                       GetPluginParams(), throttler.Pass());
 }
 
 gin::ObjectTemplateBuilder ChromePluginPlaceholder::GetObjectTemplateBuilder(
     v8::Isolate* isolate) {
-  return LoadablePluginPlaceholder::GetObjectTemplateBuilder(isolate).SetMethod(
-      "openAboutPlugins", &ChromePluginPlaceholder::OpenAboutPluginsCallback);
+  return gin::Wrappable<ChromePluginPlaceholder>::GetObjectTemplateBuilder(
+             isolate)
+      .SetMethod<void (ChromePluginPlaceholder::*)()>(
+           "hide", &ChromePluginPlaceholder::HideCallback)
+      .SetMethod<void (ChromePluginPlaceholder::*)()>(
+           "load", &ChromePluginPlaceholder::LoadCallback)
+      .SetMethod<void (ChromePluginPlaceholder::*)()>(
+           "didFinishLoading",
+           &ChromePluginPlaceholder::DidFinishLoadingCallback)
+      .SetMethod("openAboutPlugins",
+                 &ChromePluginPlaceholder::OpenAboutPluginsCallback);
 }

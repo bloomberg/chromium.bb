@@ -12,15 +12,6 @@
 
 namespace gin {
 
-namespace internal {
-
-GIN_EXPORT void* FromV8Impl(v8::Isolate* isolate,
-                            v8::Local<v8::Value> val,
-                            WrapperInfo* info);
-
-}  // namespace internal
-
-
 // Wrappable is a base class for C++ objects that have corresponding v8 wrapper
 // objects. To retain a Wrappable object on the stack, use a gin::Handle.
 //
@@ -51,8 +42,20 @@ GIN_EXPORT void* FromV8Impl(v8::Isolate* isolate,
 // wrapper for the object. If clients fail to create a wrapper for a wrappable
 // object, the object will leak because we use the weak callback from the
 // wrapper as the signal to delete the wrapped object.
-template<typename T>
-class Wrappable;
+//
+// Wrappable<T> explicitly does not support further subclassing of T.
+// Subclasses of Wrappable<T> should be declared final. Because Wrappable<T>
+// caches the object template using &T::kWrapperInfo as the key, all subclasses
+// would share a single object template. This will lead to hard to debug crashes
+// that look like use-after-free errors.
+
+namespace internal {
+
+GIN_EXPORT void* FromV8Impl(v8::Isolate* isolate,
+                            v8::Local<v8::Value> val,
+                            WrapperInfo* info);
+
+}  // namespace internal
 
 class ObjectTemplateBuilder;
 
@@ -62,6 +65,7 @@ class GIN_EXPORT WrappableBase {
   WrappableBase();
   virtual ~WrappableBase();
 
+  // Overrides of this method should be declared final and not overridden again.
   virtual ObjectTemplateBuilder GetObjectTemplateBuilder(v8::Isolate* isolate);
 
   v8::Local<v8::Object> GetWrapperImpl(v8::Isolate* isolate,
@@ -83,8 +87,6 @@ template<typename T>
 class Wrappable : public WrappableBase {
  public:
   // Retrieve (or create) the v8 wrapper object cooresponding to this object.
-  // To customize the wrapper created for a subclass, override GetWrapperInfo()
-  // instead of overriding this function.
   v8::Local<v8::Object> GetWrapper(v8::Isolate* isolate) {
     return GetWrapperImpl(isolate, &T::kWrapperInfo);
   }

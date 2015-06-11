@@ -28,11 +28,13 @@ struct PlaceholderPosterInfo {
   gfx::Size custom_poster_size;
 };
 
-class ChromePluginPlaceholder : public plugins::LoadablePluginPlaceholder,
-                                public content::RenderProcessObserver,
-                                public content::ContextMenuClient {
+class ChromePluginPlaceholder final
+    : public plugins::LoadablePluginPlaceholder,
+      public content::RenderProcessObserver,
+      public content::ContextMenuClient,
+      public gin::Wrappable<ChromePluginPlaceholder> {
  public:
-  static const char kPluginPlaceholderDataURL[];
+  static gin::WrapperInfo kWrapperInfo;
 
   static ChromePluginPlaceholder* CreateBlockedPlugin(
       content::RenderFrame* render_frame,
@@ -46,14 +48,10 @@ class ChromePluginPlaceholder : public plugins::LoadablePluginPlaceholder,
       const PlaceholderPosterInfo& poster_info);
 
   // Creates a new WebViewPlugin with a MissingPlugin as a delegate.
-  static ChromePluginPlaceholder* CreateMissingPlugin(
+  static ChromePluginPlaceholder* CreateLoadableMissingPlugin(
       content::RenderFrame* render_frame,
       blink::WebLocalFrame* frame,
       const blink::WebPluginParams& params);
-
-  static ChromePluginPlaceholder* CreateErrorPlugin(
-      content::RenderFrame* render_frame,
-      const base::FilePath& plugin_path);
 
   void SetStatus(ChromeViewHostMsg_GetPluginInfo_Status status);
 
@@ -74,12 +72,13 @@ class ChromePluginPlaceholder : public plugins::LoadablePluginPlaceholder,
 
   // gin::Wrappable (via PluginPlaceholder) method
   gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
-      v8::Isolate* isolate) override;
+      v8::Isolate* isolate) final;
 
   // content::RenderViewObserver (via PluginPlaceholder) override:
   bool OnMessageReceived(const IPC::Message& message) override;
 
   // WebViewPlugin::Delegate (via PluginPlaceholder) methods:
+  v8::Local<v8::Value> GetV8Handle(v8::Isolate* isolate) override;
   void ShowContextMenu(const blink::WebMouseEvent&) override;
 
   // content::RenderProcessObserver methods:

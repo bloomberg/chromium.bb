@@ -36,7 +36,7 @@ void WrappableBase::SecondWeakCallback(
 }
 
 v8::Local<v8::Object> WrappableBase::GetWrapperImpl(v8::Isolate* isolate,
-                                                     WrapperInfo* info) {
+                                                    WrapperInfo* info) {
   if (!wrapper_.IsEmpty()) {
     return v8::Local<v8::Object>::New(isolate, wrapper_);
   }
