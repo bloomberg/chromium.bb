@@ -54,42 +54,50 @@ class Thread : public IThread {
 #endif
   }
 
-  virtual bool GetRegister(uint32_t index, void *dst, uint32_t len) {
+  virtual bool GetRegisters(uint8_t *dst) {
     const gdb_rsp::Abi *abi = gdb_rsp::Abi::Get();
-    const gdb_rsp::Abi::RegDef *reg = abi->GetRegisterDef(index);
-    if (reg->type_ == gdb_rsp::Abi::READ_ONLY_ZERO) {
-      memset(dst, 0, len);
-    } else {
-      memcpy(dst, (char *) &context_ + reg->offset_, len);
+    for (uint32_t a = 0; a < abi->GetRegisterCount(); a++) {
+      const gdb_rsp::Abi::RegDef *reg = abi->GetRegisterDef(a);
+      if (reg->type_ == gdb_rsp::Abi::READ_ONLY_ZERO) {
+        memset(dst + reg->offset_, 0, reg->bytes_);
+      } else {
+        memcpy(dst + reg->offset_,
+               (char *) &context_ + reg->offset_,
+               reg->bytes_);
+      }
     }
     return false;
   }
 
-  virtual bool SetRegister(uint32_t index, void* src, uint32_t len) {
+  virtual bool SetRegisters(uint8_t *src) {
     const gdb_rsp::Abi *abi = gdb_rsp::Abi::Get();
-    const gdb_rsp::Abi::RegDef *reg = abi->GetRegisterDef(index);
-    if (reg->type_ == gdb_rsp::Abi::READ_ONLY ||
-        reg->type_ == gdb_rsp::Abi::READ_ONLY_ZERO) {
-      // Do not change read-only registers.
-      // TODO(eaeltsin): it is an error if new value is not equal to old value.
-      // Suppress it for now as this is used in G packet that writes all
-      // registers at once, and its failure might confuse GDB.
-      // We can start actually reporting the error when we support P packet
-      // that writes registers one at a time, as failure to write a single
-      // register should be much less confusing.
-    } else if (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 &&
-               NACL_BUILD_SUBARCH == 64 &&
-               reg->type_ == gdb_rsp::Abi::X86_64_TRUSTED_PTR) {
-      // Do not change high 32 bits.
-      // GDB should work with untrusted addresses, thus high 32 bits of new
-      // value should be 0.
-      // TODO(eaeltsin): this is not fully implemented yet, and high 32 bits
-      // of new value may also be equal to high 32 bits of old value.
-      // Other cases are definitely bogus.
-      CHECK(len == 8);
-      memcpy((char *) &context_ + reg->offset_, src, 4);
-    } else {
-      memcpy((char *) &context_ + reg->offset_, src, len);
+    for (uint32_t a = 0; a < abi->GetRegisterCount(); a++) {
+      const gdb_rsp::Abi::RegDef *reg = abi->GetRegisterDef(a);
+      if (reg->type_ == gdb_rsp::Abi::READ_ONLY ||
+          reg->type_ == gdb_rsp::Abi::READ_ONLY_ZERO) {
+        // Do not change read-only registers.
+        // TODO(eaeltsin): it is an error if new value isn't equal to old value.
+        // Suppress it for now as this is used in G packet that writes all
+        // registers at once, and its failure might confuse GDB.
+        // We can start actually reporting the error when we support P packet
+        // that writes registers one at a time, as failure to write a single
+        // register should be much less confusing.
+      } else if (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 &&
+                 NACL_BUILD_SUBARCH == 64 &&
+                 reg->type_ == gdb_rsp::Abi::X86_64_TRUSTED_PTR) {
+        // Do not change high 32 bits.
+        // GDB should work with untrusted addresses, thus high 32 bits of new
+        // value should be 0.
+        // TODO(eaeltsin): this is not fully implemented yet, and high 32 bits
+        // of new value may also be equal to high 32 bits of old value.
+        // Other cases are definitely bogus.
+        CHECK(reg->bytes_ == 8);
+        memcpy((char *) &context_ + reg->offset_,
+               src + reg->offset_, 4);
+      } else {
+        memcpy((char *) &context_ + reg->offset_,
+               src + reg->offset_, reg->bytes_);
+      }
     }
     return false;
   }

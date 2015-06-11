@@ -27,8 +27,8 @@ class IThread {
 
   virtual bool SetStep(bool on) = 0;
 
-  virtual bool GetRegister(uint32_t index, void *dst, uint32_t len) = 0;
-  virtual bool SetRegister(uint32_t index, void *src, uint32_t len) = 0;
+  virtual bool GetRegisters(uint8_t *dst) = 0;
+  virtual bool SetRegisters(uint8_t *src) = 0;
 
   virtual void CopyRegistersFromAppThread() = 0;
   virtual void CopyRegistersToAppThread() = 0;

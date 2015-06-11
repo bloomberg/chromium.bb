@@ -613,11 +613,7 @@ bool Target::ProcessPacket(Packet* pktIn, Packet* pktOut) {
         break;
       }
 
-      // Copy OS preserved registers to GDB payload
-      for (uint32_t a = 0; a < abi_->GetRegisterCount(); a++) {
-        const Abi::RegDef *def = abi_->GetRegisterDef(a);
-        thread->GetRegister(a, &ctx_[def->offset_], def->bytes_);
-      }
+      thread->GetRegisters(ctx_);
 
       pktOut->AddBlock(ctx_, abi_->GetContextSize());
       break;
@@ -634,11 +630,7 @@ bool Target::ProcessPacket(Packet* pktIn, Packet* pktOut) {
 
       pktIn->GetBlock(ctx_, abi_->GetContextSize());
 
-      // GDB payload to OS registers
-      for (uint32_t a = 0; a < abi_->GetRegisterCount(); a++) {
-        const Abi::RegDef *def = abi_->GetRegisterDef(a);
-        thread->SetRegister(a, &ctx_[def->offset_], def->bytes_);
-      }
+      thread->SetRegisters(ctx_);
 
       pktOut->AddString("OK");
       break;
