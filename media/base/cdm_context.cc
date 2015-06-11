@@ -6,9 +6,17 @@
 
 namespace media {
 
-CdmContext::CdmContext() {}
+CdmContext::CdmContext() {
+}
 
-CdmContext::~CdmContext() {}
+CdmContext::~CdmContext() {
+}
+
+CdmContextProvider::CdmContextProvider() {
+}
+
+CdmContextProvider::~CdmContextProvider() {
+}
 
 void IgnoreCdmAttached(bool success) {
 }

@@ -11,15 +11,26 @@
 #include "base/memory/weak_ptr.h"
 #include "media/base/media_keys.h"
 #include "media/mojo/interfaces/content_decryption_module.mojom.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/error_handler.h"
 
 namespace media {
 
+class MojoCdmServiceContext;
+
 // A mojo::ContentDecryptionModule implementation backed by a media::MediaKeys.
-class MojoCdmService : public mojo::ContentDecryptionModule {
+class MojoCdmService : public mojo::ContentDecryptionModule,
+                       public mojo::ErrorHandler {
  public:
-  MojoCdmService(const mojo::String& key_system,
-                 mojo::InterfaceRequest<mojo::ContentDecryptionModule> request);
+  // Creates a MojoCdmService for |key_system| and weakly binds it to the
+  // |request|. Returns null and drops the |request| if no MojoCdmService can be
+  // created for |key_system|. When connection error happens,
+  // ServiceHadConnectionError() will be called on the |context|.
+  static scoped_ptr<MojoCdmService> Create(
+      const mojo::String& key_system,
+      MojoCdmServiceContext* context,
+      mojo::InterfaceRequest<mojo::ContentDecryptionModule> request);
+
   ~MojoCdmService() final;
 
   // mojo::ContentDecryptionModule implementation.
@@ -47,10 +58,21 @@ class MojoCdmService : public mojo::ContentDecryptionModule {
   void RemoveSession(
       const mojo::String& session_id,
       const mojo::Callback<void(mojo::CdmPromiseResultPtr)>& callback) final;
+  // TODO(xhwang): Rename this to GetDecryptor in the mojom interface.
   void GetCdmContext(int32_t cdm_id,
                      mojo::InterfaceRequest<mojo::Decryptor> decryptor) final;
 
+  // Get CdmContext to be used by the media pipeline.
+  CdmContext* GetCdmContext();
+
  private:
+  MojoCdmService(const mojo::String& key_system,
+                 MojoCdmServiceContext* context,
+                 mojo::InterfaceRequest<mojo::ContentDecryptionModule> request);
+
+  // mojo::ErrorHandler implementation.
+  void OnConnectionError() override;
+
   // Callbacks for firing session events.
   void OnSessionMessage(const std::string& session_id,
                         MediaKeys::MessageType message_type,
@@ -67,8 +89,9 @@ class MojoCdmService : public mojo::ContentDecryptionModule {
                             uint32_t system_code,
                             const std::string& error_message);
 
-  mojo::StrongBinding<mojo::ContentDecryptionModule> binding_;
+  mojo::Binding<mojo::ContentDecryptionModule> binding_;
 
+  MojoCdmServiceContext* context_;
   scoped_ptr<MediaKeys> cdm_;
 
   mojo::ContentDecryptionModuleClientPtr client_;

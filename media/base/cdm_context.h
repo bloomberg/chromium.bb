@@ -15,6 +15,7 @@ class Decryptor;
 
 // An interface representing the context that a media pipeline needs from a
 // content decryption module (CDM) to decrypt (and decode) encrypted buffers.
+// Only used for implementing SetCdm().
 class MEDIA_EXPORT CdmContext {
  public:
   // Indicates an invalid CDM ID. See GetCdmId() for details.
@@ -22,16 +23,16 @@ class MEDIA_EXPORT CdmContext {
 
   virtual ~CdmContext();
 
-  // Gets the Decryptor object associated with the CDM. Returns NULL if the CDM
-  // does not support a Decryptor. The returned object is only guaranteed to be
-  // valid during the CDM's lifetime.
+  // Gets the Decryptor object associated with the CDM. Returns nullptr if the
+  // CDM does not support a Decryptor. Must not return nullptr if GetCdmId()
+  // returns kInvalidCdmId. The returned object is only guaranteed to be valid
+  // during the CDM's lifetime.
   virtual Decryptor* GetDecryptor() = 0;
 
-  // Returns an ID associated with the CDM, which can be used to locate the real
-  // CDM instance. This is useful when the CDM is hosted remotely, e.g. in a
-  // different process.
-  // Returns kInvalidCdmId if the CDM cannot be used remotely. In this case,
-  // GetDecryptor() should return a non-null Decryptor.
+  // Returns an ID that identifies a CDM, or kInvalidCdmId. The interpretation
+  // is implementation-specific; current implementations use the ID to locate a
+  // remote CDM in a different process. The return value will not be
+  // kInvalidCdmId if GetDecryptor() returns nullptr.
   virtual int GetCdmId() const = 0;
 
  protected:
@@ -39,6 +40,25 @@ class MEDIA_EXPORT CdmContext {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CdmContext);
+};
+
+// An interface for looking up CdmContext objects by the CDM ID.
+class MEDIA_EXPORT CdmContextProvider {
+ public:
+  virtual ~CdmContextProvider();
+
+  // Returns the CdmContext corresponding to |cdm_id|. Returns nullptr if no
+  // such CdmContext can be found.
+  // Note: Calling GetCdmId() on the returned CdmContext returns kInvalidCdmId
+  // (in all current cases) because the CDM will be local in the process where
+  // GetCdmContext() is called.
+  virtual CdmContext* GetCdmContext(int cdm_id) = 0;
+
+ protected:
+  CdmContextProvider();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CdmContextProvider);
 };
 
 // Callback to notify that the CdmContext has been completely attached to

@@ -156,6 +156,10 @@ media::MediaServiceProvider* MediaFactory::GetMediaServiceProvider() {
 }
 
 media::MediaPermission* MediaFactory::GetMediaPermission() {
+  // TODO(xhwang): Replace DefaultMediaPermission with something real when
+  // permissions are supported in html_viewer.
+  NOTIMPLEMENTED();
+
   if (!media_permission_)
     media_permission_.reset(new media::DefaultMediaPermission(true));
   return media_permission_.get();
