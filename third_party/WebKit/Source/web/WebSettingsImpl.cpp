@@ -48,7 +48,6 @@ WebSettingsImpl::WebSettingsImpl(Settings* settings, DevToolsEmulator* devToolsE
     , m_showPaintRects(false)
     , m_renderVSyncNotificationEnabled(false)
     , m_autoZoomFocusedNodeToLegibleScale(false)
-    , m_deferredImageDecodingEnabled(false)
     , m_supportDeprecatedTargetDensityDPI(false)
     , m_shrinksViewportContentToFit(false)
     , m_viewportMetaLayoutSizeQuirk(false)
@@ -547,8 +546,6 @@ void WebSettingsImpl::setAntialiasedClips2dCanvasEnabled(bool enabled)
 
 void WebSettingsImpl::setDeferredImageDecodingEnabled(bool enabled)
 {
-    DeferredImageDecoder::setEnabled(enabled);
-    m_deferredImageDecodingEnabled = enabled;
 }
 
 void WebSettingsImpl::setPreferCompositingToLCDTextEnabled(bool enabled)

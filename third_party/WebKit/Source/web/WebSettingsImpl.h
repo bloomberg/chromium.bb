@@ -212,7 +212,6 @@ private:
     bool m_showPaintRects;
     bool m_renderVSyncNotificationEnabled;
     bool m_autoZoomFocusedNodeToLegibleScale;
-    bool m_deferredImageDecodingEnabled;
     bool m_perTilePaintingEnabled;
     bool m_supportDeprecatedTargetDensityDPI;
     bool m_shrinksViewportContentToFit;

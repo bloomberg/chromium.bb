@@ -40,7 +40,7 @@ const char labelDiscardable[] = "discardable";
 
 } // namespace
 
-bool DeferredImageDecoder::s_enabled = false;
+bool DeferredImageDecoder::s_enabled = true;
 
 DeferredImageDecoder::DeferredImageDecoder(PassOwnPtr<ImageDecoder> actualDecoder)
     : m_allDataReceived(false)
