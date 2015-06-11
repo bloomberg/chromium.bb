@@ -15,8 +15,10 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.NativePage;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareThumbnailProvider;
+import org.chromium.chrome.browser.feedback.FeedbackCollector;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.ntp.IncognitoNewTabPageView.IncognitoNewTabPageManager;
+import org.chromium.chrome.browser.profiles.Profile;
 
 /**
  * Provides functionality when the user interacts with the Incognito NTP.
@@ -34,10 +36,9 @@ public class IncognitoNewTabPage implements NativePage, InvalidationAwareThumbna
             new IncognitoNewTabPageManager() {
         @Override
         public void loadIncognitoLearnMore() {
-            HelpAndFeedback.getInstance(mActivity).show(
-                    mActivity,
-                    mActivity.getString(R.string.help_context_incognito_learn_more),
-                    null, null);
+            HelpAndFeedback.getInstance(mActivity).show(mActivity,
+                    mActivity.getString(R.string.help_context_incognito_learn_more), null,
+                    FeedbackCollector.create(Profile.getLastUsedProfile(), null));
         }
 
         @Override

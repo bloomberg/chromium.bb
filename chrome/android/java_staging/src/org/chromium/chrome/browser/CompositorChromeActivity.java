@@ -46,6 +46,7 @@ import org.chromium.chrome.browser.dom_distiller.ReaderModeActivityDelegate;
 import org.chromium.chrome.browser.dom_distiller.ReaderModeManager;
 import org.chromium.chrome.browser.enhanced_bookmarks.EnhancedBookmarksModel;
 import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkUtils;
+import org.chromium.chrome.browser.feedback.FeedbackCollector;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
@@ -657,11 +658,13 @@ public abstract class CompositorChromeActivity extends ChromeActivity
             final String helpContextId = HelpAndFeedback.getHelpContextIdFromUrl(
                     this, currentTab.getUrl(), getCurrentTabModel().isIncognito());
             final Activity mainActivity = this;
+            final FeedbackCollector collector =
+                    FeedbackCollector.create(currentTab.getProfile(), currentTab.getUrl());
             startTakingCompositorActivityScreenshot(new GetBitmapCallback() {
                 @Override
                 public void onFinishGetBitmap(Bitmap bitmap, int response) {
-                    HelpAndFeedback.getInstance(mainActivity).show(
-                            mainActivity, helpContextId, bitmap, currentTab.getUrl());
+                    HelpAndFeedback.getInstance(mainActivity)
+                            .show(mainActivity, helpContextId, bitmap, collector);
                     RecordUserAction.record("MobileMenuFeedback");
                 }
             });

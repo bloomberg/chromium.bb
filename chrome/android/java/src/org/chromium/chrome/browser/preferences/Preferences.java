@@ -31,7 +31,9 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.feedback.FeedbackCollector;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
+import org.chromium.chrome.browser.profiles.Profile;
 
 /**
  * The Chrome settings activity.
@@ -254,8 +256,8 @@ public abstract class Preferences extends AppCompatActivity implements
             finish();
             return true;
         } else if (item.getItemId() == R.id.menu_id_help_general) {
-            HelpAndFeedback.getInstance(this).show(
-                    this, getString(R.string.help_context_settings), null, null);
+            HelpAndFeedback.getInstance(this).show(this, getString(R.string.help_context_settings),
+                    null, FeedbackCollector.create(Profile.getLastUsedProfile(), null));
             return true;
         }
         return super.onOptionsItemSelected(item);

@@ -14,7 +14,9 @@ import android.view.View.OnClickListener;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.feedback.FeedbackCollector;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
+import org.chromium.chrome.browser.profiles.Profile;
 
 /**
  * A preference that opens a HelpAndFeedback activity to learn more about the specified context.
@@ -34,8 +36,9 @@ public class LearnMorePreference extends Preference {
 
     @Override
     protected void onClick() {
-        HelpAndFeedback.getInstance(getContext()).show(
-                (Activity) getContext(), getContext().getString(mHelpContext), null, null);
+        HelpAndFeedback.getInstance(getContext())
+                .show((Activity) getContext(), getContext().getString(mHelpContext), null,
+                        FeedbackCollector.create(Profile.getLastUsedProfile(), null));
     }
 
     @Override

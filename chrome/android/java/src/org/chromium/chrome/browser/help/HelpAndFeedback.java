@@ -18,6 +18,10 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromiumApplication;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.UrlUtilities;
+import org.chromium.chrome.browser.feedback.FeedbackCollector;
+import org.chromium.chrome.browser.profiles.Profile;
+
+import javax.annotation.Nonnull;
 
 /**
  * Launches an activity that displays a relevant support page and has an option to provide feedback.
@@ -42,6 +46,18 @@ public class HelpAndFeedback {
     }
 
     /**
+     * This method is deprecated and only exists to ensure it is possible to safely roll.
+     * Use {@link #show(Activity, String, Bitmap, FeedbackCollector)}
+     * instead.
+     * TODO(nyquist): Remove this method when only the new method is in use. See crbug.com/386395.
+     */
+    @Deprecated
+    public void show(Activity activity, String helpContext, Bitmap screenshot, String url) {
+        show(activity, helpContext, screenshot,
+                FeedbackCollector.create(Profile.getLastUsedProfile(), url));
+    }
+
+    /**
      * Starts an activity showing a help page for the specified context ID.
      *
      * @param activity The activity to use for starting the help activity and to take a
@@ -51,10 +67,10 @@ public class HelpAndFeedback {
      * @param screenshot A screenshot of the current activity to include in the feedback the
      *                   user sends, if any. If null, this method will take a screenshot of the
      *                   activity (which will show a rendered page as black).
-     * @param url The URL of the current tab to include in the feedback the user sends, if any.
-     *            This parameter can be null.
+     * @param collector the {@link FeedbackCollector} to use for extra data. Must not be null.
      */
-    public void show(Activity activity, String helpContext, Bitmap screenshot, String url) {
+    public void show(Activity activity, String helpContext, Bitmap screenshot,
+            @Nonnull FeedbackCollector collector) {
         launchFallbackSupportUri(activity);
     }
 

@@ -16,6 +16,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.feedback.FeedbackCollector;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.preferences.ButtonPreference;
 import org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference;
@@ -23,6 +24,7 @@ import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegate;
 import org.chromium.chrome.browser.preferences.NetworkPredictionOptions;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.Preferences;
+import org.chromium.chrome.browser.profiles.Profile;
 
 /**
  * Fragment to keep track of the all the privacy related preferences.
@@ -273,8 +275,9 @@ public class PrivacyPreferences extends PreferenceFragment
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.menu_id_help_privacy) {
-            HelpAndFeedback.getInstance(getActivity()).show(
-                    getActivity(), getString(R.string.help_context_privacy), null, null);
+            HelpAndFeedback.getInstance(getActivity())
+                    .show(getActivity(), getString(R.string.help_context_privacy), null,
+                            FeedbackCollector.create(Profile.getLastUsedProfile(), null));
             return true;
         }
         return false;
