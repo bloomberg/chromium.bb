@@ -221,14 +221,14 @@ void XmppLoginHandler::OnParserError() {
 }
 
 void XmppLoginHandler::StartStream(const std::string& first_message) {
-  delegate_->SendMessage("<stream:stream to=\"" + server_ +
-                         "\" version=\"1.0\" xmlns=\"jabber:client\" "
-                         "xmlns:stream=\"http://etherx.jabber.org/streams\">" +
-                         first_message);
   stream_parser_.reset(new XmppStreamParser());
   stream_parser_->SetCallbacks(
       base::Bind(&XmppLoginHandler::OnStanza, base::Unretained(this)),
       base::Bind(&XmppLoginHandler::OnParserError, base::Unretained(this)));
+  delegate_->SendMessage("<stream:stream to=\"" + server_ +
+                         "\" version=\"1.0\" xmlns=\"jabber:client\" "
+                         "xmlns:stream=\"http://etherx.jabber.org/streams\">" +
+                         first_message);
 }
 
 void XmppLoginHandler::OnError(SignalStrategy::Error error) {

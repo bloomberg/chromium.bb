@@ -38,21 +38,29 @@ class XmppLoginHandlerTest : public testing::Test,
 
   void SendMessage(const std::string& message) override {
     sent_data_ += message;
+    if (delete_login_handler_from_delegate_)
+      login_handler_.reset();
   }
 
   void StartTls() override {
     start_tls_called_ = true;
+    if (delete_login_handler_from_delegate_)
+      login_handler_.reset();
   }
 
   void OnHandshakeDone(const std::string& jid,
                        scoped_ptr<XmppStreamParser> parser) override {
     jid_ = jid;
     parser_ = parser.Pass();
+    if (delete_login_handler_from_delegate_)
+      login_handler_.reset();
   }
 
   void OnLoginHandlerError(SignalStrategy::Error error) override {
     EXPECT_NE(error, SignalStrategy::OK);
     error_ = error;
+    if (delete_login_handler_from_delegate_)
+      login_handler_.reset();
   }
 
  protected:
@@ -66,6 +74,7 @@ class XmppLoginHandlerTest : public testing::Test,
   std::string jid_;
   scoped_ptr<XmppStreamParser> parser_;
   SignalStrategy::Error error_;
+  bool delete_login_handler_from_delegate_ = false;
 };
 
 void XmppLoginHandlerTest::HandshakeBase() {
@@ -127,6 +136,10 @@ TEST_F(XmppLoginHandlerTest, SuccessfulAuth) {
         "</iq>");
   sent_data_.clear();
 
+  // |login_handler_| will call OnHandshakeDone() which will delete
+  // |login_handler_|.
+  delete_login_handler_from_delegate_ = true;
+
   login_handler_->OnDataReceived(
       "<stream:stream from=\"google.com\" id=\"104FA10576E2AA80\" "
           "version=\"1.0\" "
@@ -145,6 +158,7 @@ TEST_F(XmppLoginHandlerTest, SuccessfulAuth) {
 
   EXPECT_EQ(jid_, std::string(kTestUsername) + "/chromoting52B4920E");
   EXPECT_TRUE(parser_);
+  EXPECT_FALSE(login_handler_);
 }
 
 TEST_F(XmppLoginHandlerTest, StartTlsHandshake) {
@@ -216,8 +230,35 @@ TEST_F(XmppLoginHandlerTest, NoTls) {
 
 TEST_F(XmppLoginHandlerTest, StreamParseError) {
   HandshakeBase();
+  delete_login_handler_from_delegate_ = true;
   login_handler_->OnDataReceived("BAD DATA");
   EXPECT_EQ(error_, SignalStrategy::PROTOCOL_ERROR);
+}
+
+// Verify that LoginHandler doesn't crash when destroyed from
+// Delegate::SendMessage().
+TEST_F(XmppLoginHandlerTest, DeleteInSendMessage) {
+  login_handler_.reset(
+      new XmppLoginHandler("google.com", kTestUsername, kTestToken,
+                           XmppLoginHandler::TlsMode::WITHOUT_HANDSHAKE, this));
+  login_handler_->Start();
+  EXPECT_TRUE(start_tls_called_);
+
+  delete_login_handler_from_delegate_ = true;
+  login_handler_->OnTlsStarted();
+  EXPECT_FALSE(login_handler_);
+}
+
+// Verify that LoginHandler doesn't crash when destroyed from
+// Delegate::StartTls().
+TEST_F(XmppLoginHandlerTest, DeleteInStartTls) {
+  login_handler_.reset(
+      new XmppLoginHandler("google.com", kTestUsername, kTestToken,
+                           XmppLoginHandler::TlsMode::WITHOUT_HANDSHAKE, this));
+  delete_login_handler_from_delegate_ = true;
+  login_handler_->Start();
+  EXPECT_TRUE(start_tls_called_);
+  EXPECT_FALSE(login_handler_);
 }
 
 }  // namespace remoting

@@ -35,6 +35,7 @@ class XmppLoginHandler {
    public:
     Delegate() {}
 
+    // All Delegate methods are allowed to destroy XmppLoginHandler.
     virtual void SendMessage(const std::string& message) = 0;
     virtual void StartTls() = 0;
     virtual void OnHandshakeDone(const std::string& jid,
