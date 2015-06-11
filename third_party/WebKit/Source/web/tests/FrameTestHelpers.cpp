@@ -293,9 +293,9 @@ WebFrame* TestWebFrameClient::createChildFrame(WebLocalFrame* parent, WebTreeSco
     return frame;
 }
 
-void TestWebFrameClient::frameDetached(WebFrame* frame)
+void TestWebFrameClient::frameDetached(WebFrame* frame, DetachType type)
 {
-    if (frame->parent())
+    if (type == DetachType::Remove && frame->parent())
         frame->parent()->removeChild(frame);
     frame->close();
 }
@@ -331,9 +331,9 @@ TestWebRemoteFrameClient::TestWebRemoteFrameClient()
 {
 }
 
-void TestWebRemoteFrameClient::frameDetached()
+void TestWebRemoteFrameClient::frameDetached(DetachType type)
 {
-    if (m_frame->parent())
+    if (type == DetachType::Remove && m_frame->parent())
         m_frame->parent()->removeChild(m_frame);
     m_frame->close();
 }

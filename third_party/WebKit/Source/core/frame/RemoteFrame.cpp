@@ -83,7 +83,7 @@ void RemoteFrame::reload(FrameLoadType frameLoadType, ClientRedirectPolicy clien
     remoteFrameClient()->reload(frameLoadType, clientRedirectPolicy);
 }
 
-void RemoteFrame::detach()
+void RemoteFrame::detach(FrameDetachType type)
 {
     PluginScriptForbiddenScope forbidPluginDestructorScripting;
     // Frame::detach() requires the caller to keep a reference to this, since
@@ -96,7 +96,13 @@ void RemoteFrame::detach()
     client()->willBeDetached();
     m_windowProxyManager->clearForClose();
     setView(nullptr);
-    Frame::detach();
+    Frame::detach(type);
+}
+
+bool RemoteFrame::prepareForCommit()
+{
+    detachChildren();
+    return !!host();
 }
 
 RemoteSecurityContext* RemoteFrame::securityContext() const

@@ -105,7 +105,7 @@ public:
     TestWebFrameClient();
 
     virtual WebFrame* createChildFrame(WebLocalFrame* parent, WebTreeScopeType, const WebString& frameName, WebSandboxFlags) override;
-    virtual void frameDetached(WebFrame*) override;
+    virtual void frameDetached(WebFrame*, DetachType) override;
     virtual void didStartLoading(bool) override;
     virtual void didStopLoading() override;
 
@@ -125,7 +125,7 @@ public:
     WebRemoteFrame* frame() const { return m_frame; }
 
     // WebRemoteFrameClient overrides:
-    void frameDetached() override;
+    void frameDetached(DetachType) override;
     void postMessageEvent(
         WebLocalFrame* sourceFrame,
         WebRemoteFrame* targetFrame,

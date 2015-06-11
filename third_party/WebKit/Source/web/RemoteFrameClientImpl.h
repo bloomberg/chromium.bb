@@ -17,7 +17,7 @@ public:
     // FrameClient overrides:
     virtual bool inShadowTree() const override;
     virtual void willBeDetached() override;
-    virtual void detached() override;
+    virtual void detached(FrameDetachType) override;
     virtual Frame* opener() const override;
     virtual void setOpener(Frame*) override;
     virtual Frame* parent() const override;

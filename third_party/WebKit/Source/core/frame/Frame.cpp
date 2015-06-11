@@ -80,14 +80,14 @@ DEFINE_TRACE(Frame)
     visitor->trace(m_owner);
 }
 
-void Frame::detach()
+void Frame::detach(FrameDetachType type)
 {
     ASSERT(m_client);
     domWindow()->resetLocation();
     disconnectOwnerElement();
     // After this, we must no longer talk to the client since this clears
     // its owning reference back to our owning LocalFrame.
-    m_client->detached();
+    m_client->detached(type);
     m_client = nullptr;
     m_host = nullptr;
 }
@@ -100,7 +100,7 @@ void Frame::detachChildren()
     for (Frame* child = tree().firstChild(); child; child = child->tree().nextSibling())
         childrenToDetach.append(child);
     for (const auto& child : childrenToDetach)
-        child->detach();
+        child->detach(FrameDetachType::Remove);
 }
 
 void Frame::disconnectOwnerElement()
@@ -158,14 +158,15 @@ ChromeClient& Frame::chromeClient() const
     return emptyChromeClient();
 }
 
+void Frame::prepareSwapFrom(Frame* old)
+{
+    WindowProxyManager* oldManager = old->windowProxyManager();
+    oldManager->clearForNavigation();
+}
+
 void Frame::finishSwapFrom(Frame* old)
 {
     WindowProxyManager* oldManager = old->windowProxyManager();
-    // FIXME: In the future, the Blink API layer will be calling detach() on the
-    // old frame prior to completing the swap. However, detach calls
-    // clearForClose() instead of clearForNavigation(). Make sure this doesn't
-    // become a no-op when that lands, since it's important to detach the global.
-    oldManager->clearForNavigation();
     windowProxyManager()->takeGlobalFrom(oldManager);
 }
 

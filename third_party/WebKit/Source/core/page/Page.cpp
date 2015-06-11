@@ -557,7 +557,7 @@ void Page::willBeDestroyed()
 {
     RefPtrWillBeRawPtr<Frame> mainFrame = m_mainFrame;
 
-    mainFrame->detach();
+    mainFrame->detach(FrameDetachType::Remove);
 
     if (mainFrame->isLocalFrame()) {
         toLocalFrame(mainFrame.get())->setView(nullptr);
