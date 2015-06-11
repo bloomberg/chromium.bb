@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 from telemetry.page import page as page_module
 from telemetry.page import page_set as page_set_module
+from telemetry.page import shared_page_state
+
 
 class PolymerPage(page_module.Page):
 
@@ -15,6 +17,7 @@ class PolymerPage(page_module.Page):
     """
     super(PolymerPage, self).__init__(
       url=url,
+      shared_page_state_class=shared_page_state.SharedMobilePageState,
       page_set=page_set)
     self.script_to_evaluate_on_commit = '''
       document.addEventListener("polymer-ready", function() {
@@ -216,7 +219,6 @@ class PolymerPageSet(page_set_module.PageSet):
 
   def __init__(self, run_no_page_interactions=False):
     super(PolymerPageSet, self).__init__(
-      user_agent_type='mobile',
       archive_data_file='data/polymer.json',
       bucket=page_set_module.PUBLIC_BUCKET)
 

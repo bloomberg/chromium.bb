@@ -10,7 +10,6 @@ class TopPages(page_module.Page):
     super(TopPages, self).__init__(
         url=url, page_set=page_set, name=name,
         credentials_path='data/credentials.json')
-    self.user_agent_type = 'desktop'
     self.archive_data_file = 'data/top_25.json'
     self.credentials = credentials
 

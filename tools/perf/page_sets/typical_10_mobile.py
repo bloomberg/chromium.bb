@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 from telemetry.page import page as page_module
 from telemetry.page import page_set as page_set_module
+from telemetry.page import shared_page_state
 
 
 class Typical10MobilePage(page_module.Page):
@@ -10,8 +11,8 @@ class Typical10MobilePage(page_module.Page):
   def __init__(self, url, page_set, name=''):
     super(Typical10MobilePage, self).__init__(
         url=url, page_set=page_set, name=name,
-        credentials_path = 'data/credentials.json')
-    self.user_agent_type = 'mobile'
+        credentials_path = 'data/credentials.json',
+        shared_page_state_class=shared_page_state.SharedMobilePageState)
     self.archive_data_file = 'data/typical_10_mobile.json'
 
   def RunPageInteractions(self, action_runner):
@@ -61,7 +62,6 @@ class Typical10MobilePageSet(page_set_module.PageSet):
 
   def __init__(self):
     super(Typical10MobilePageSet, self).__init__(
-        user_agent_type='mobile',
         archive_data_file='data/typical_10_mobile.json',
         bucket=page_set_module.PARTNER_BUCKET)
 
@@ -73,7 +73,6 @@ class Typical10MobileReloadPageSet(page_set_module.PageSet):
 
   def __init__(self):
     super(Typical10MobileReloadPageSet, self).__init__(
-        user_agent_type='mobile',
         archive_data_file='data/typical_10_mobile.json',
         bucket=page_set_module.PARTNER_BUCKET)
 

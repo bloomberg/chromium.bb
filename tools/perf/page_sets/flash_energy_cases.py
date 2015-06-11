@@ -3,13 +3,15 @@
 # found in the LICENSE file.
 from telemetry.page import page as page_module
 from telemetry.page import page_set as page_set_module
+from telemetry.page import shared_page_state
 
 
 class FlashEnergyCasesPage(page_module.Page):
 
   def __init__(self, url, page_set):
-    super(FlashEnergyCasesPage, self).__init__(url=url, page_set=page_set)
-    self.user_agent_type = 'desktop'
+    super(FlashEnergyCasesPage, self).__init__(
+        url=url, page_set=page_set,
+        shared_page_state_class=shared_page_state.SharedDesktopPageState)
     self.archive_data_file = 'data/flash_energy_cases.json'
 
 
@@ -19,7 +21,6 @@ class FlashEnergyCasesPageSet(page_set_module.PageSet):
 
   def __init__(self):
     super(FlashEnergyCasesPageSet, self).__init__(
-      user_agent_type='desktop',
       archive_data_file='data/flash_energy_cases.json',
       bucket=page_set_module.PARTNER_BUCKET)
 

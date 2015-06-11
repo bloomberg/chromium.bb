@@ -5,6 +5,7 @@ import time
 
 from telemetry.page import page as page_module
 from telemetry.page import page_set as page_set_module
+from telemetry.page import shared_page_state
 
 INTERACTION_NAME = 'Interaction.PageLoading'
 
@@ -18,9 +19,9 @@ class NewTabPagePage(page_module.Page):
     super(NewTabPagePage, self).__init__(
       name='newtabpagepage',
       url='chrome://newtab',
+      shared_page_state_class=shared_page_state.SharedDesktopPageState,
       page_set=page_set)
     self.archive_data_file = 'data/new_tab_page_page.json'
-    self.user_agent_type = 'desktop'
     self.script_to_evaluate_on_commit = (
         "console.time('" + INTERACTION_NAME + "');")
 
@@ -43,7 +44,6 @@ class NewTabPagePage(page_module.Page):
 class NewTabPagePageSet(page_set_module.PageSet):
   def __init__(self):
     super(NewTabPagePageSet, self).__init__(
-        user_agent_type='desktop',
         archive_data_file='data/new_tab_page_page.json',
         bucket=page_set_module.PUBLIC_BUCKET)
     self.AddUserStory(NewTabPagePage(page_set=self))

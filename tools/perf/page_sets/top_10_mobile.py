@@ -3,14 +3,14 @@
 # found in the LICENSE file.
 from telemetry.page import page as page_module
 from telemetry.page import page_set as page_set_module
-
+from telemetry.page import shared_page_state
 
 class Top10MobilePage(page_module.Page):
 
   def __init__(self, url, page_set, run_no_page_interactions):
     super(Top10MobilePage, self).__init__(
-        url=url, page_set=page_set, credentials_path = 'data/credentials.json')
-    self.user_agent_type = 'mobile'
+        url=url, page_set=page_set, credentials_path = 'data/credentials.json',
+        shared_page_state_class=shared_page_state.SharedMobilePageState)
     self.archive_data_file = 'data/top_10_mobile.json'
     self._run_no_page_interactions = run_no_page_interactions
 
@@ -27,7 +27,6 @@ class Top10MobilePageSet(page_set_module.PageSet):
 
   def __init__(self, run_no_page_interactions=False):
     super(Top10MobilePageSet, self).__init__(
-      user_agent_type='mobile',
       archive_data_file='data/top_10_mobile.json',
       bucket=page_set_module.PARTNER_BUCKET)
 
