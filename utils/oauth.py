@@ -118,8 +118,6 @@ def make_oauth_config(
     webserver_port: port to run local webserver on.
     service_account_json: path to JSON file with service account credentials.
   """
-  if disabled is None:
-    disabled = tools.is_headless()
   if tokens_cache is None:
     tokens_cache = os.environ.get(
         'SWARMING_AUTH_TOKENS_CACHE', DEFAULT_OAUTH_TOKENS_CACHE)
@@ -130,6 +128,8 @@ def make_oauth_config(
     webserver_port = 8090
   if service_account_json is None:
     service_account_json = os.environ.get('SWARMING_AUTH_SERVICE_ACCOUNT_JSON')
+  if disabled is None:
+    disabled = tools.is_headless() and not service_account_json
   return OAuthConfig(
       disabled,
       tokens_cache,
@@ -193,7 +193,9 @@ def extract_oauth_config_from_options(options):
   except BadServiceAccountCredentials as exc:
     raise ValueError('Bad service account credentials: %s' % exc)
   return make_oauth_config(
-      disabled=bool(options.auth_disabled),
+      disabled=(
+          bool(options.auth_disabled) and
+          not options.auth_service_account_json),
       tokens_cache=options.auth_tokens_cache,
       no_local_webserver=options.auth_no_local_webserver,
       webserver_port=options.auth_host_port,
