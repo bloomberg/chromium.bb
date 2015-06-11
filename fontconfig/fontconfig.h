@@ -1042,6 +1042,11 @@ FcStrListDone (FcStrList *list);
 FcPublic FcBool
 FcConfigParseAndLoad (FcConfig *config, const FcChar8 *file, FcBool complain);
 
+FcPublic FcBool
+FcConfigParseAndLoadFromMemory (FcConfig       *config,
+				const FcChar8  *buffer,
+				FcBool         complain);
+
 _FCFUNCPROTOEND
 
 #undef FC_ATTRIBUTE_SENTINEL
