@@ -14,6 +14,11 @@ import fieldtrial_util # pylint: disable=import-error
 
 
 class PerfBenchmark(benchmark.Benchmark):
+  """ Super class for all benchmarks in src/tools/perf/benchmarks directory.
+  All the perf benchmarks must subclass from this one to to make sure that
+  the field trial configs are activated for the browser during benchmark runs.
+  For more info, see: https://goo.gl/4uvaVM
+  """
 
   def SetExtraBrowserOptions(self, options):
     """ To be overridden by perf benchmarks. """
