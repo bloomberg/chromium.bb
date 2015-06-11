@@ -23,7 +23,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/favicon/chrome_fallback_icon_client_factory.h"
-#include "chrome/browser/favicon/chrome_favicon_client.h"
 #include "chrome/browser/favicon/fallback_icon_service_factory.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/chrome_history_client.h"
@@ -188,14 +187,6 @@ scoped_ptr<KeyedService> CreateTestDesktopNotificationService(
       new DesktopNotificationService(static_cast<Profile*>(profile)));
 }
 #endif
-
-scoped_ptr<KeyedService> BuildFaviconService(content::BrowserContext* context) {
-  Profile* profile = Profile::FromBrowserContext(context);
-  return make_scoped_ptr(new favicon::FaviconService(
-      scoped_ptr<favicon::FaviconClient>(new ChromeFaviconClient(profile)),
-      HistoryServiceFactory::GetForProfile(
-          profile, ServiceAccessType::EXPLICIT_ACCESS)));
-}
 
 scoped_ptr<KeyedService> BuildHistoryService(content::BrowserContext* context) {
   Profile* profile = Profile::FromBrowserContext(context);
@@ -548,7 +539,7 @@ TestingProfile::~TestingProfile() {
 void TestingProfile::CreateFaviconService() {
   // It is up to the caller to create the history service if one is needed.
   FaviconServiceFactory::GetInstance()->SetTestingFactory(
-      this, BuildFaviconService);
+      this, FaviconServiceFactory::GetDefaultFactory());
 }
 
 bool TestingProfile::CreateHistoryService(bool delete_file, bool no_db) {

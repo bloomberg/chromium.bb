@@ -25,7 +25,12 @@ class FaviconServiceFactory : public BrowserContextKeyedServiceFactory {
   static favicon::FaviconService* GetForProfile(Profile* profile,
                                                 ServiceAccessType sat);
 
+  // Returns the FaviconServiceFactory singleton.
   static FaviconServiceFactory* GetInstance();
+
+  // Returns the default factory used to build FaviconService. Can be registered
+  // with SetTestingFactory to use the FaviconService instance during testing.
+  static TestingFactoryFunction GetDefaultFactory();
 
  private:
   friend struct DefaultSingletonTraits<FaviconServiceFactory>;
