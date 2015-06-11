@@ -477,6 +477,48 @@ TEST_P(QuicNetworkTransactionTest, QuicProxy) {
   SendRequestAndExpectQuicResponseFromProxyOnPort("hello!", 70);
 }
 
+// Regression test for https://crbug.com/492458.  Test that for an HTTP
+// connection through a QUIC proxy, the certificate exhibited by the proxy is
+// checked against the proxy hostname, not the origin hostname.
+TEST_P(QuicNetworkTransactionTest, QuicProxyWithCert) {
+  const std::string origin_host = "news.example.com";
+  const std::string proxy_host = "www.example.org";
+
+  params_.enable_quic_for_proxies = true;
+  proxy_service_.reset(
+      ProxyService::CreateFixedFromPacResult("QUIC " + proxy_host + ":70"));
+
+  maker_.set_hostname(origin_host);
+  MockQuicData mock_quic_data;
+  mock_quic_data.AddWrite(
+      ConstructRequestHeadersPacket(1, kClientDataStreamId1, true, true,
+                                    GetRequestHeaders("GET", "http", "/")));
+  mock_quic_data.AddRead(ConstructResponseHeadersPacket(
+      1, kClientDataStreamId1, false, false, GetResponseHeaders("200 OK")));
+  mock_quic_data.AddRead(
+      ConstructDataPacket(2, kClientDataStreamId1, false, true, 0, "hello!"));
+  mock_quic_data.AddWrite(ConstructAckPacket(2, 1));
+  mock_quic_data.AddRead(SYNCHRONOUS, 0);
+  mock_quic_data.AddSocketDataToFactory(&socket_factory_);
+
+  scoped_refptr<X509Certificate> cert(
+      ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem"));
+  ASSERT_TRUE(cert.get());
+  // This certificate is valid for the proxy, but not for the origin.
+  bool common_name_fallback_used;
+  EXPECT_TRUE(cert->VerifyNameMatch(proxy_host, &common_name_fallback_used));
+  EXPECT_FALSE(cert->VerifyNameMatch(origin_host, &common_name_fallback_used));
+  ProofVerifyDetailsChromium verify_details;
+  verify_details.cert_verify_result.verified_cert = cert;
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+
+  request_.url = GURL("http://" + origin_host);
+  AddHangingNonAlternateProtocolSocketData();
+  CreateSessionWithNextProtos();
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::CONFIRM_HANDSHAKE);
+  SendRequestAndExpectQuicResponseFromProxyOnPort("hello!", 70);
+}
+
 TEST_P(QuicNetworkTransactionTest, ForceQuicWithErrorConnecting) {
   params_.origin_to_force_quic_on =
       HostPortPair::FromString("www.google.com:80");

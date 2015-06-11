@@ -810,13 +810,25 @@ int HttpStreamFactoryImpl::Job::DoInitConnection() {
       // TODO(rch): support QUIC proxies for HTTPS urls.
       return ERR_NOT_IMPLEMENTED;
     }
-    HostPortPair destination = proxy_info_.is_quic()
-                                   ? proxy_info_.proxy_server().host_port_pair()
-                                   : server_;
-    bool secure_quic = using_ssl_ || proxy_info_.is_quic();
+    HostPortPair destination;
+    std::string origin_host;
+    bool secure_quic;
+    if (proxy_info_.is_quic()) {
+      // A proxy's certificate is expected to be valid for the proxy hostname.
+      destination = proxy_info_.proxy_server().host_port_pair();
+      origin_host = destination.host();
+      secure_quic = true;
+    } else {
+      // The certificate of a QUIC alternative server is expected to be valid
+      // for the origin of the request (in addition to being valid for the
+      // server itself).
+      destination = server_;
+      origin_host = origin_url_.host();
+      secure_quic = using_ssl_;
+    }
     int rv = quic_request_.Request(
-        destination, secure_quic, request_info_.privacy_mode,
-        origin_url_.host(), request_info_.method, net_log_, io_callback_);
+        destination, secure_quic, request_info_.privacy_mode, origin_host,
+        request_info_.method, net_log_, io_callback_);
     if (rv == OK) {
       using_existing_quic_session_ = true;
     } else {
