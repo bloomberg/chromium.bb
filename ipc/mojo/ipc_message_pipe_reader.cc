@@ -152,14 +152,9 @@ void MessagePipeReader::ReadAvailableMessages() {
     if (read_result == MOJO_RESULT_SHOULD_WAIT)
       break;
     if (read_result != MOJO_RESULT_OK) {
-      // FAILED_PRECONDITION means that all the received messages
-      // got consumed and the peer is already closed.
-      if (read_result != MOJO_RESULT_FAILED_PRECONDITION) {
-        DLOG(WARNING)
-            << "Pipe got error from ReadMessage(). Closing: " << read_result;
-        OnPipeError(read_result);
-      }
-
+      DLOG(WARNING)
+          << "Pipe got error from ReadMessage(). Closing: " << read_result;
+      OnPipeError(read_result);
       Close();
       break;
     }
