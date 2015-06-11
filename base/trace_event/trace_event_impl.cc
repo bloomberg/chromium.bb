@@ -840,9 +840,6 @@ void TraceEvent::AppendAsJSON(
   if (flags_ & TRACE_EVENT_FLAG_HAS_ID)
     StringAppendF(out, ",\"id\":\"0x%" PRIx64 "\"", static_cast<uint64>(id_));
 
-  if (flags_ & TRACE_EVENT_FLAG_BIND_TO_ENCLOSING)
-    StringAppendF(out, ",\"bp\":\"e\"");
-
   // Instant events also output their scope.
   if (phase_ == TRACE_EVENT_PHASE_INSTANT) {
     char scope = '?';
