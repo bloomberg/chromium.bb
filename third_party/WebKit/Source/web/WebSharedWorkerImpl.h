@@ -117,7 +117,7 @@ private:
     WorkerThread* workerThread() { return m_workerThread.get(); }
 
     // Shuts down the worker thread.
-    void stopWorkerThread();
+    void terminateWorkerThread();
 
     // Creates the shadow loader used for worker network requests.
     void initializeLoader();

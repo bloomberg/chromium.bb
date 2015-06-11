@@ -185,8 +185,7 @@ WebSharedWorkerImpl::~WebSharedWorkerImpl()
         m_loaderProxy->detachProvider(this);
 }
 
-// TODO(toyoshim): Rename to terminateWorkerThread().
-void WebSharedWorkerImpl::stopWorkerThread()
+void WebSharedWorkerImpl::terminateWorkerThread()
 {
     if (m_askedToTerminate)
         return;
@@ -328,7 +327,7 @@ void WebSharedWorkerImpl::workerGlobalScopeClosedOnMainThread()
     if (client())
         client()->workerContextClosed();
 
-    stopWorkerThread();
+    terminateWorkerThread();
 }
 
 void WebSharedWorkerImpl::workerGlobalScopeStarted(WorkerGlobalScope*)
@@ -434,7 +433,7 @@ void WebSharedWorkerImpl::onScriptLoaderFinished()
 
 void WebSharedWorkerImpl::terminateWorkerContext()
 {
-    stopWorkerThread();
+    terminateWorkerThread();
 }
 
 void WebSharedWorkerImpl::clientDestroyed()
