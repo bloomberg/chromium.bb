@@ -8,7 +8,6 @@
 #include "sync/engine/net/url_translator.h"
 
 #include "base/basictypes.h"
-#include "base/port.h"
 #include "net/base/escape.h"
 
 using std::string;

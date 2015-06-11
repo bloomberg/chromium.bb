@@ -7,7 +7,6 @@
 
 #include <ctype.h>
 
-#include "base/port.h"
 #include "base/strings/string_piece.h"
 
 namespace net {

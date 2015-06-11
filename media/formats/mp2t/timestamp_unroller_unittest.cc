@@ -6,7 +6,6 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/port.h"
 #include "base/test/perf_test_suite.h"
 #include "media/formats/mp2t/timestamp_unroller.h"
 #include "testing/gtest/include/gtest/gtest.h"

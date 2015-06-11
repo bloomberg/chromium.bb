@@ -6,7 +6,6 @@
 
 #include <stdint.h>
 
-#include "base/port.h"
 #include "base/sys_byteorder.h"
 
 namespace {

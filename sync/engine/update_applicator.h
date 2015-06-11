@@ -14,7 +14,6 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/port.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "sync/syncable/syncable_id.h"
 #include "sync/sessions/status_controller.h"

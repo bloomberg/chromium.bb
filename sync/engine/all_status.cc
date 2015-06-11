@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "base/logging.h"
-#include "base/port.h"
 #include "sync/engine/net/server_connection_manager.h"
 #include "sync/engine/sync_cycle_event.h"
 #include "sync/internal_api/public/base/model_type.h"
