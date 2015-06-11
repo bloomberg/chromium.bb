@@ -72,18 +72,27 @@ const blink::WebColor kColorBlack = 0xFF000000;
 
 class CastRenderViewObserver : content::RenderViewObserver {
  public:
-  explicit CastRenderViewObserver(content::RenderView* render_view);
+  CastRenderViewObserver(CastContentRendererClient* client,
+                         content::RenderView* render_view);
   ~CastRenderViewObserver() override {}
 
   void DidClearWindowObject(blink::WebLocalFrame* frame) override;
+
+ private:
+  CastContentRendererClient* const client_;
+
+  DISALLOW_COPY_AND_ASSIGN(CastRenderViewObserver);
 };
 
-CastRenderViewObserver::CastRenderViewObserver(content::RenderView* render_view)
-    : content::RenderViewObserver(render_view) {
+CastRenderViewObserver::CastRenderViewObserver(
+    CastContentRendererClient* client,
+    content::RenderView* render_view)
+    : content::RenderViewObserver(render_view),
+      client_(client) {
 }
 
 void CastRenderViewObserver::DidClearWindowObject(blink::WebLocalFrame* frame) {
-  PlatformAddRendererNativeBindings(frame);
+  client_->AddRendererNativeBindings(frame);
 }
 
 }  // namespace
@@ -92,6 +101,15 @@ CastContentRendererClient::CastContentRendererClient() {
 }
 
 CastContentRendererClient::~CastContentRendererClient() {
+}
+
+void CastContentRendererClient::AddRendererNativeBindings(
+    blink::WebLocalFrame* frame) {
+}
+
+std::vector<scoped_refptr<IPC::MessageFilter>>
+CastContentRendererClient::GetRendererMessageFilters() {
+  return std::vector<scoped_refptr<IPC::MessageFilter>>();
 }
 
 void CastContentRendererClient::RenderThreadStarted() {
@@ -121,7 +139,7 @@ void CastContentRendererClient::RenderThreadStarted() {
   }
 
   cast_observer_.reset(
-      new CastRenderProcessObserver(PlatformGetRendererMessageFilters()));
+      new CastRenderProcessObserver(GetRendererMessageFilters()));
 
   prescient_networking_dispatcher_.reset(
       new network_hints::PrescientNetworkingDispatcher());
@@ -161,13 +179,12 @@ void CastContentRendererClient::RenderViewCreated(
   }
 
   // Note: RenderView will own the lifetime of its observer.
-  new CastRenderViewObserver(render_view);
+  new CastRenderViewObserver(this, render_view);
 }
 
 void CastContentRendererClient::AddKeySystems(
     std::vector< ::media::KeySystemInfo>* key_systems) {
   AddChromecastKeySystems(key_systems);
-  AddChromecastPlatformKeySystems(key_systems);
 }
 
 #if !defined(OS_ANDROID)

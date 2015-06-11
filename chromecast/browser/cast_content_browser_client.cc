@@ -65,11 +65,35 @@ CastContentBrowserClient::~CastContentBrowserClient() {
       url_request_context_factory_.release());
 }
 
+void CastContentBrowserClient::AppendExtraCommandLineSwitches(
+    base::CommandLine* command_line) {
+}
+
+std::vector<scoped_refptr<content::BrowserMessageFilter>>
+CastContentBrowserClient::GetBrowserMessageFilters() {
+  return std::vector<scoped_refptr<content::BrowserMessageFilter>>();
+}
+
+scoped_ptr<::media::AudioManagerFactory>
+CastContentBrowserClient::CreateAudioManagerFactory() {
+  // Return nullptr. The factory will not be set, and the statically linked
+  // implementation of AudioManager will be used.
+  return scoped_ptr<::media::AudioManagerFactory>();
+}
+
+#if !defined(OS_ANDROID)
+scoped_ptr<media::MediaPipelineDevice>
+CastContentBrowserClient::CreateMediaPipelineDevice(
+    const media::MediaPipelineDeviceParams& params) {
+  return media::CreateMediaPipelineDevice(params);
+}
+#endif
+
 content::BrowserMainParts* CastContentBrowserClient::CreateBrowserMainParts(
     const content::MainFunctionParams& parameters) {
   return new CastBrowserMainParts(parameters,
                                   url_request_context_factory_.get(),
-                                  PlatformCreateAudioManagerFactory());
+                                  CreateAudioManagerFactory());
 }
 
 void CastContentBrowserClient::RenderProcessWillLaunch(
@@ -79,7 +103,7 @@ void CastContentBrowserClient::RenderProcessWillLaunch(
       new media::CmaMessageFilterHost(
           host->GetID(),
           base::Bind(
-              &CastContentBrowserClient::PlatformCreateMediaPipelineDevice,
+              &CastContentBrowserClient::CreateMediaPipelineDevice,
               base::Unretained(this))));
   host->AddFilter(cma_message_filter.get());
 #endif  // !defined(OS_ANDROID)
@@ -94,7 +118,7 @@ void CastContentBrowserClient::RenderProcessWillLaunch(
       base::Bind(&CastContentBrowserClient::AddNetworkHintsMessageFilter,
                  base::Unretained(this), host->GetID()));
 
-  auto extra_filters = PlatformGetBrowserMessageFilters();
+  auto extra_filters = GetBrowserMessageFilters();
   for (auto const& filter : extra_filters) {
     host->AddFilter(filter.get());
   }
@@ -199,7 +223,7 @@ void CastContentBrowserClient::AppendExtraCommandLineSwitches(
   }
 #endif
 
-  PlatformAppendExtraCommandLineSwitches(command_line);
+  AppendExtraCommandLineSwitches(command_line);
 }
 
 content::AccessTokenStore* CastContentBrowserClient::CreateAccessTokenStore() {

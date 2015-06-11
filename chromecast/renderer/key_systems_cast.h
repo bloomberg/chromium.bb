@@ -22,10 +22,6 @@ void AddKeySystemWithCodecs(
 void AddChromecastKeySystems(
     std::vector<::media::KeySystemInfo>* key_systems_info);
 
-// TODO(gunsch): Remove when prefixed EME is removed.
-void AddChromecastPlatformKeySystems(
-    std::vector<::media::KeySystemInfo>* key_systems_info);
-
 }  // namespace shell
 }  // namespace chromecast
 

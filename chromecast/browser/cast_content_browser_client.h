@@ -49,17 +49,20 @@ class CastContentBrowserClient: public content::ContentBrowserClient {
   ~CastContentBrowserClient() override;
 
   // Appends extra command line arguments before launching a new process.
-  void PlatformAppendExtraCommandLineSwitches(base::CommandLine* command_line);
+  virtual void AppendExtraCommandLineSwitches(base::CommandLine* command_line);
 
-  // Returns any BrowserMessageFilters from the platform implementation that
-  // should be added when launching a new render process.
-  std::vector<scoped_refptr<content::BrowserMessageFilter>>
-  PlatformGetBrowserMessageFilters();
+  // Returns any BrowserMessageFilters that should be added when launching a
+  // new render process.
+  virtual std::vector<scoped_refptr<content::BrowserMessageFilter>>
+  GetBrowserMessageFilters();
+
+  // Provide an AudioManagerFactory instance for WebAudio playback.
+  virtual scoped_ptr<::media::AudioManagerFactory> CreateAudioManagerFactory();
 
 #if !defined(OS_ANDROID)
   // Creates a MediaPipelineDevice (CMA backend) for media playback, called
   // once per media player instance.
-  scoped_ptr<media::MediaPipelineDevice> PlatformCreateMediaPipelineDevice(
+  virtual scoped_ptr<media::MediaPipelineDevice> CreateMediaPipelineDevice(
       const media::MediaPipelineDeviceParams& params);
 #endif
 
@@ -135,8 +138,6 @@ class CastContentBrowserClient: public content::ContentBrowserClient {
   net::X509Certificate* SelectClientCertificateOnIOThread(
       GURL requesting_url,
       int render_process_id);
-
-  scoped_ptr<::media::AudioManagerFactory> PlatformCreateAudioManagerFactory();
 
 #if !defined(OS_ANDROID)
   // Returns the crash signal FD corresponding to the current process type.

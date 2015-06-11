@@ -15,13 +15,5 @@ scoped_ptr<CastContentRendererClient> CastContentRendererClient::Create() {
   return make_scoped_ptr(new CastContentRendererClient());
 }
 
-void PlatformAddRendererNativeBindings(blink::WebLocalFrame* frame) {
-}
-
-std::vector<scoped_refptr<IPC::MessageFilter>>
-CastContentRendererClient::PlatformGetRendererMessageFilters() {
-  return std::vector<scoped_refptr<IPC::MessageFilter>>();
-}
-
 }  // namespace shell
 }  // namespace chromecast

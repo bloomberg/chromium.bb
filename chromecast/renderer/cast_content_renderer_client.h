@@ -22,9 +22,6 @@ namespace chromecast {
 namespace shell {
 class CastRenderProcessObserver;
 
-// Adds any platform-specific bindings to the current frame.
-void PlatformAddRendererNativeBindings(blink::WebLocalFrame* frame);
-
 class CastContentRendererClient : public content::ContentRendererClient {
  public:
   // Creates an implementation of CastContentRendererClient. Platform should
@@ -33,10 +30,13 @@ class CastContentRendererClient : public content::ContentRendererClient {
 
   ~CastContentRendererClient() override;
 
+  // Adds any platform-specific bindings to the current frame.
+  virtual void AddRendererNativeBindings(blink::WebLocalFrame* frame);
+
   // Returns any MessageFilters from the platform implementation that should
   // be added to the render process.
-  std::vector<scoped_refptr<IPC::MessageFilter>>
-  PlatformGetRendererMessageFilters();
+  virtual std::vector<scoped_refptr<IPC::MessageFilter>>
+  GetRendererMessageFilters();
 
   // ContentRendererClient implementation:
   void RenderThreadStarted() override;

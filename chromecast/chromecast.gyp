@@ -310,7 +310,6 @@
             'browser/pref_service_helper_simple.cc',
             'common/platform_client_auth_simple.cc',
             'renderer/cast_content_renderer_client_simple.cc',
-            'renderer/key_systems_cast_simple.cc',
           ],
           'conditions': [
             ['OS=="android"', {
