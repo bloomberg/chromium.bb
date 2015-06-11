@@ -66,6 +66,14 @@ cr.define('print_preview', function() {
     this.registerPromoShownMetricRecorded_ = false;
 
     /**
+     * Child overlay used for resolving a provisional destination. The overlay
+     * is shown when the user attempts to select a provisional destination.
+     * Set only when a destination is being resolved.
+     * @private {?print_preview.ProvisionalDestinationResolver}
+     */
+    this.provisionalDestinationResolver_ = null;
+
+    /**
      * Search box used to search through the destination lists.
      * @type {!print_preview.SearchBox}
      * @private
@@ -153,6 +161,8 @@ cr.define('print_preview', function() {
         // Collapse all destination lists
         this.localList_.setIsShowAll(false);
         this.cloudList_.setIsShowAll(false);
+        if (this.provisionalDestinationResolver_)
+          this.provisionalDestinationResolver_.cancel();
         this.resetSearch_();
       }
     },
@@ -232,6 +242,11 @@ cr.define('print_preview', function() {
           this.destinationStore_,
           print_preview.DestinationStore.EventType.DESTINATION_SEARCH_DONE,
           this.onDestinationSearchDone_.bind(this));
+      this.tracker.add(
+          this.destinationStore_,
+          print_preview.DestinationStore.EventType
+              .PROVISIONAL_DESTINATION_RESOLVED,
+          this.onDestinationsInserted_.bind(this));
 
       this.tracker.add(
           this.invitationStore_,
@@ -544,14 +559,68 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * Called when a destination is selected. Clears the search and hides the
-     * widget.
+     * Handler for {@code print_preview.DestinationListItem.EventType.SELECT}
+     * event, which is called when a destinationi list item is selected.
      * @param {Event} evt Contains the selected destination.
      * @private
      */
     onDestinationSelect_: function(evt) {
+      this.handleOnDestinationSelect_(evt.destination);
+    },
+
+    /**
+     * Called when a destination is selected. Clears the search and hides the
+     * widget. If The destination is provisional, it runs provisional
+     * destination resolver first.
+     * @param {!print_preview.Destination} destination The selected destination.
+     * @private
+     */
+    handleOnDestinationSelect_: function(destination) {
+      if (destination.isProvisional) {
+        assert(!this.provisionalDestinationResolver_,
+               'Provisional destination resolver already exists.');
+        this.provisionalDestinationResolver_ =
+            print_preview.ProvisionalDestinationResolver.create(
+                this.destinationStore_, destination);
+        assert(!!this.provisionalDestinationResolver_,
+               'Unable to create provisional destination resolver');
+
+        var lastFocusedElement = document.activeElement;
+        this.addChild(this.provisionalDestinationResolver_);
+        this.provisionalDestinationResolver_.run(this.getElement())
+            .then(
+                /**
+                 * @param {!print_preview.Destination} resolvedDestination
+                 *    Destination to which the provisional destination was
+                 *    resolved.
+                 */
+                function(resolvedDestination) {
+                  this.handleOnDestinationSelect_(resolvedDestination);
+                }.bind(this))
+            .catch(
+                function() {
+                  console.log('Failed to resolve provisional destination: ' +
+                              destination.id);
+                })
+            .then(
+                function() {
+                  this.removeChild(this.provisionalDestinationResolver_);
+                  this.provisionalDestinationResolver_ = null;
+
+                  // Restore focus to the previosly focused element if it's
+                  // still shown in the search.
+                  if (lastFocusedElement &&
+                      this.getIsVisible() &&
+                      getIsVisible(lastFocusedElement) &&
+                      this.getElement().contains(lastFocusedElement)) {
+                    lastFocusedElement.focus();
+                  }
+                }.bind(this));
+        return;
+      }
+
       this.setIsVisible(false);
-      this.destinationStore_.selectDestination(evt.destination);
+      this.destinationStore_.selectDestination(destination);
       this.metrics_.record(print_preview.Metrics.DestinationSearchBucket.
           DESTINATION_CLOSED_CHANGED);
     },

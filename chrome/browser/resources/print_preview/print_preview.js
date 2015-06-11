@@ -1314,6 +1314,7 @@ cr.define('print_preview', function() {
 <include src="search/destination_list_item.js">
 <include src="search/destination_search.js">
 <include src="search/fedex_tos.js">
+<include src="search/provisional_destination_resolver.js">
 
 window.addEventListener('DOMContentLoaded', function() {
   printPreview = new print_preview.PrintPreview();

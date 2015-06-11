@@ -54,6 +54,8 @@ cr.define('print_preview', function() {
    *          lastAccessTime: (number|undefined),
    *          isTosAccepted: (boolean|undefined),
    *          cloudID: (string|undefined),
+   *          provisionalType:
+   *              (print_preview.Destination.ProvisionalType|undefined),
    *          extensionId: (string|undefined),
    *          extensionName: (string|undefined),
    *          description: (string|undefined)}=} opt_params Optional parameters
@@ -167,6 +169,23 @@ cr.define('print_preview', function() {
      * @private {string}
      */
     this.extensionName_ = (opt_params && opt_params.extensionName) || '';
+
+    /**
+     * Different from {@code Destination.ProvisionalType.NONE} if the
+     * destination is provisional. Provisional destinations cannot be selected
+     * as they are, but have to be resolved first (i.e. extra steps have to be
+     * taken to get actual destination properties, which should replace the
+     * provisional ones). Provisional destination resolvment flow will be
+     * started when the user attempts to select the destination in search UI.
+     * @private {Destination.ProvisionalType}
+     */
+    this.provisionalType_ = (opt_params && opt_params.provisionalType) ||
+                            Destination.ProvisionalType.NONE;
+
+    assert(this.provisionalType_ !=
+               Destination.ProvisionalType.NEEDS_USB_PERMISSON ||
+           this.isExtension,
+           'Provisional USB destination only supprted with extension origin.');
   };
 
   /**
@@ -223,6 +242,21 @@ cr.define('print_preview', function() {
     ONLINE: 'ONLINE',
     UNKNOWN: 'UNKNOWN',
     UNREGISTERED: 'UNREGISTERED'
+  };
+
+  /**
+   * Enumeration specifying whether a destination is provisional and the reason
+   * the destination is provisional.
+   * @enum {string
+   */
+  Destination.ProvisionalType = {
+    /** Destination is not provisional. */
+    NONE: 'NONE',
+    /**
+     * User has to grant USB access for the destination to its provider.
+     * Used for destinations with extension origin.
+     */
+    NEEDS_USB_PERMISSION: 'NEEDS_USB_PERMISSION'
   };
 
   /**
@@ -501,6 +535,22 @@ cr.define('print_preview', function() {
           this.extraPropertiesToMatch.some(function(property) {
             return property.match(query);
           });
+    },
+
+    /**
+     * Gets the destination's provisional type.
+     * @return {Destination.ProvisionalType}
+     */
+    get provisionalType() {
+      return this.provisionalType_;
+    },
+
+    /**
+     * Whether the destinaion is provisional.
+     * @return {boolean}
+     */
+    get isProvisional() {
+      return this.provisionalType_ != Destination.ProvisionalType.NONE;
     }
   };
 

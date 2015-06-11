@@ -67,6 +67,10 @@ cr.define('print_preview', function() {
         this.onEnableManipulateSettingsForTest_.bind(this);
     global.printPresetOptionsFromDocument =
         this.onPrintPresetOptionsFromDocument_.bind(this);
+    global.onProvisionalPrinterResolved =
+        this.onProvisionalDestinationResolved_.bind(this);
+    global.failedToResolveProvisionalPrinter =
+        this.failedToResolveProvisionalDestination_.bind(this);
   };
 
   /**
@@ -106,6 +110,8 @@ cr.define('print_preview', function() {
     EXTENSION_CAPABILITIES_SET:
         'print_preview.NativeLayer.EXTENSION_CAPABILITIES_SET',
     PRINT_PRESET_OPTIONS: 'print_preview.NativeLayer.PRINT_PRESET_OPTIONS',
+    PROVISIONAL_DESTINATION_RESOLVED:
+        'print_preview.NativeLayer.PROVISIONAL_DESTINATION_RESOLVED'
   };
 
   /**
@@ -211,6 +217,18 @@ cr.define('print_preview', function() {
      */
     startGetLocalDestinationCapabilities: function(destinationId) {
       chrome.send('getPrinterCapabilities', [destinationId]);
+    },
+
+    /**
+     * Requests Chrome to resolve provisional extension destination by granting
+     * the provider extension access to the printer. Chrome will respond with
+     * the resolved destination properties by calling
+     * {@code onProvisionalPrinterResolved}, or in case of an error
+     * {@code failedToResolveProvisionalPrinter}
+     * @param {string} provisionalDestinationId
+     */
+    grantExtensionPrinterAccess: function(provisionalDestinationId) {
+      chrome.send('grantExtensionPrinterAccess', [provisionalDestinationId]);
     },
 
     /**
@@ -770,7 +788,8 @@ cr.define('print_preview', function() {
      *                 extensionName: string,
      *                 id: string,
      *                 name: string,
-     *                 description: (string|undefined)}>} printers The list
+     *                 description: (string|undefined),
+     *                 provisional: (boolean|undefined)}>} printers The list
      *     containing information about printers added by an extension.
      * @param {boolean} done Whether this is the final list of extension
      *     managed printers.
@@ -794,6 +813,42 @@ cr.define('print_preview', function() {
       event.printerId = printerId;
       event.capabilities = capabilities;
       this.dispatchEvent(event);
+    },
+
+    /**
+     * Called when Chrome reports that attempt to resolve a provisional
+     * destination failed.
+     * @param {string} destinationId The provisional destination ID.
+     * @private
+     */
+    failedToResolveProvisionalDestination_: function(destinationId) {
+      var evt = new Event(
+          NativeLayer.EventType.PROVISIONAL_DESTINATION_RESOLVED);
+      evt.provisionalId = destinationId;
+      evt.destination = null;
+      this.dispatchEvent(evt);
+    },
+
+    /**
+     * Called when Chrome reports that a provisional destination has been
+     * successfully resolved.
+     * Currently used only for extension provided destinations.
+     * @param {string} provisionalDestinationId The provisional destination id.
+     * @param {!{extensionId: string,
+     *           extensionName: string,
+     *           id: string,
+     *           name: string,
+     *           description: (string|undefined)}} destinationInfo The resolved
+     *     destination info.
+     * @private
+     */
+    onProvisionalDestinationResolved_: function(provisionalDestinationId,
+                                                destinationInfo) {
+      var evt = new Event(
+          NativeLayer.EventType.PROVISIONAL_DESTINATION_RESOLVED);
+      evt.provisionalId = provisionalDestinationId;
+      evt.destination = destinationInfo;
+      this.dispatchEvent(evt);
     },
 
    /**

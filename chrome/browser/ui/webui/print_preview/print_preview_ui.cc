@@ -210,6 +210,16 @@ content::WebUIDataSource* CreatePrintPreviewUISource() {
                              IDS_PRINT_PREVIEW_PAGE_LABEL_SINGULAR);
   source->AddLocalizedString("printPreviewPageLabelPlural",
                              IDS_PRINT_PREVIEW_PAGE_LABEL_PLURAL);
+  source->AddLocalizedString("selectButton",
+                             IDS_PRINT_PREVIEW_BUTTON_SELECT);
+  source->AddLocalizedString("goBackButton",
+                             IDS_PRINT_PREVIEW_BUTTON_GO_BACK);
+  source->AddLocalizedString(
+      "resolveExtensionUSBPermissionMessage",
+      IDS_PRINT_PREVIEW_RESOLVE_EXTENSION_USB_PERMISSION_MESSAGE);
+  source->AddLocalizedString(
+      "resolveExtensionUSBErrorMessage",
+      IDS_PRINT_PREVIEW_RESOLVE_EXTENSION_USB_ERROR_MESSAGE);
   const base::string16 shortcut_text(base::UTF8ToUTF16(kBasicPrintShortcut));
 #if !defined(OS_CHROMEOS)
   source->AddString(

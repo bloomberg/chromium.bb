@@ -75,6 +75,11 @@ cr.define('print_preview', function() {
    * @return {!print_preview.Destination} Parsed destination.
    */
   ExtensionDestinationParser.parse = function(destinationInfo) {
+    var provisionalType =
+        destinationInfo.provisional ?
+            print_preview.Destination.ProvisionalType.NEEDS_USB_PERMISSION :
+            print_preview.Destination.ProvisionalType.NONE;
+
     return new print_preview.Destination(
         destinationInfo.id,
         print_preview.Destination.Type.LOCAL,
@@ -84,7 +89,8 @@ cr.define('print_preview', function() {
         print_preview.Destination.ConnectionStatus.ONLINE,
         {description: destinationInfo.description || '',
          extensionId: destinationInfo.extensionId,
-         extensionName: destinationInfo.extensionName || ''});
+         extensionName: destinationInfo.extensionName || '',
+         provisionalType: provisionalType});
   };
 
   // Export

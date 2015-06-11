@@ -12,7 +12,7 @@
   pointer-events: none;
 }
 
-#destination-search .page {
+#destination-search > .page {
   width: 640px;
 }
 

@@ -199,6 +199,8 @@ cr.define('print_preview', function() {
     DESTINATION_SELECT: 'print_preview.DestinationStore.DESTINATION_SELECT',
     DESTINATIONS_INSERTED:
         'print_preview.DestinationStore.DESTINATIONS_INSERTED',
+    PROVISIONAL_DESTINATION_RESOLVED:
+        'print_preview.DestinationStore.PROVISIONAL_DESTINATION_RESOLVED',
     CACHED_SELECTED_DESTINATION_INFO_READY:
         'print_preview.DestinationStore.CACHED_SELECTED_DESTINATION_INFO_READY',
     SELECTED_DESTINATION_CAPABILITIES_READY:
@@ -461,6 +463,10 @@ cr.define('print_preview', function() {
             this, DestinationStore.EventType.DESTINATION_SELECT);
         return;
       }
+
+      assert(!destination.isProvisional,
+             'Unable to select provisonal destinations');
+
       // Update and persist selected destination.
       this.selectedDestination_ = destination;
       this.selectedDestination_.isRecent = true;
@@ -509,6 +515,19 @@ cr.define('print_preview', function() {
             this,
             DestinationStore.EventType.SELECTED_DESTINATION_CAPABILITIES_READY);
       }
+    },
+
+    /**
+     * Attempts to resolve a provisional destination.
+     * @param {!print_preview.Destination} destinaion Provisional destination
+     *     that should be resolved.
+     */
+    resolveProvisionalDestination: function(destination) {
+      assert(
+          destination.provisionalType ==
+              print_preview.Destination.ProvisionalType.NEEDS_USB_PERMISSION,
+          'Provisional type cannot be resolved.');
+      this.nativeLayer_.grantExtensionPrinterAccess(destination.id);
     },
 
     /**
@@ -611,6 +630,53 @@ cr.define('print_preview', function() {
     waitForRegister: function(id) {
       this.nativeLayer_.startGetPrivetDestinations();
       this.waitForRegisterDestination_ = id;
+    },
+
+    /**
+     * Event handler for {@code
+     * print_preview.NativeLayer.EventType.PROVISIONAL_DESTINATION_RESOLVED}.
+     * Currently assumes the provisional destination is an extension
+     * destination.
+     * Called when a provisional destination resolvement attempt finishes.
+     * The provisional destination is removed from the store and replaced with
+     * a destination created from the resolved destination properties, if any
+     * are reported.
+     * Emits {@code DestinationStore.EventType.PROVISIONAL_DESTINATION_RESOLVED}
+     * event.
+     * @param {!Event} The event containing the provisional destination ID and
+     *     resolved destination description. If the destination was not
+     *     successfully resolved, the description will not be set.
+     * @private
+     */
+    handleProvisionalDestinationResolved_: function(evt) {
+      var provisionalDestinationIndex = -1;
+      var provisionalDestination = null;
+      for (var i = 0; i < this.destinations_.length; ++i) {
+        if (evt.provisionalId == this.destinations_[i].id) {
+          provisionalDestinationIndex = i;
+          provisionalDestination = this.destinations_[i];
+          break;
+        }
+      }
+
+      if (!provisionalDestination)
+        return;
+
+      this.destinations_.splice(provisionalDestinationIndex, 1);
+      delete this.destinationMap_[this.getKey_(provisionalDestination)];
+
+      var destination = evt.destination ?
+          print_preview.ExtensionDestinationParser.parse(evt.destination) :
+          null;
+
+      if (destination)
+        this.insertIntoStore_(destination);
+
+      var event = new Event(
+          DestinationStore.EventType.PROVISIONAL_DESTINATION_RESOLVED);
+      event.provisionalId = evt.provisionalId;
+      event.destination = destination;
+      this.dispatchEvent(event);
     },
 
     /**
@@ -782,6 +848,10 @@ cr.define('print_preview', function() {
           this.nativeLayer_,
           print_preview.NativeLayer.EventType.EXTENSION_CAPABILITIES_SET,
           this.onExtensionCapabilitiesSet_.bind(this));
+      this.tracker_.add(
+          this.nativeLayer_,
+          print_preview.NativeLayer.EventType.PROVISIONAL_DESTINATION_RESOLVED,
+          this.handleProvisionalDestinationResolved_.bind(this));
     },
 
     /**

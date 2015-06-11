@@ -21,8 +21,11 @@ cr.define('print_preview', function() {
 
     /** @override */
     getFocusParent: function() {
-      return document.querySelector('.overlay:not([hidden])') ||
-          document.body;
+      var el = document.body;
+      var newEl = null;
+      while (newEl = el.querySelector('.overlay:not([hidden])'))
+        el = newEl;
+      return el;
     }
   };
 
