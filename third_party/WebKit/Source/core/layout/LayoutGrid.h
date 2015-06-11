@@ -36,6 +36,14 @@ struct GridCoordinate;
 struct GridSpan;
 class GridTrack;
 
+enum TrackSizeComputationPhase {
+    ResolveIntrinsicMinimums,
+    ResolveMaxContentMinimums,
+    ResolveIntrinsicMaximums,
+    ResolveMaxContentMaximums,
+    MaximizeTracks,
+};
+
 class LayoutGrid final : public LayoutBlock {
 public:
     explicit LayoutGrid(Element*);
@@ -120,13 +128,11 @@ private:
     void offsetAndBreadthForPositionedChild(const LayoutBox&, GridTrackSizingDirection, bool startIsAuto, bool endIsAuto, LayoutUnit& offset, LayoutUnit& breadth);
     void populateGridPositions(const GridSizingData&);
 
-    typedef LayoutUnit (LayoutGrid::* SizingFunction)(LayoutBox&, GridTrackSizingDirection, Vector<GridTrack>&);
-    typedef const LayoutUnit& (GridTrack::* AccumulatorGetter)() const;
-    typedef bool (GridTrackSize::* FilterFunction)() const;
     typedef struct GridItemsSpanGroupRange GridItemsSpanGroupRange;
+    LayoutUnit currentItemSizeForTrackSizeComputationPhase(TrackSizeComputationPhase, LayoutBox&, GridTrackSizingDirection, Vector<GridTrack>& columnTracks);
     void resolveContentBasedTrackSizingFunctionsForNonSpanningItems(GridTrackSizingDirection, const GridCoordinate&, LayoutBox& gridItem, GridTrack&, Vector<GridTrack>& columnTracks);
-    void resolveContentBasedTrackSizingFunctionsForItems(GridTrackSizingDirection, GridSizingData&, const GridItemsSpanGroupRange&, FilterFunction, SizingFunction, AccumulatorGetter, AccumulatorGrowFunction, FilterFunction growAboveMaxBreadthFilterFunction = nullptr);
-    void distributeSpaceToTracks(Vector<GridTrack*>&, const Vector<GridTrack*>* growBeyondGrowthLimitsTracks, AccumulatorGetter, GridSizingData&, LayoutUnit& availableLogicalSpace);
+    template <TrackSizeComputationPhase> void resolveContentBasedTrackSizingFunctionsForItems(GridTrackSizingDirection, GridSizingData&, const GridItemsSpanGroupRange&);
+    template <TrackSizeComputationPhase> void distributeSpaceToTracks(Vector<GridTrack*>&, const Vector<GridTrack*>* growBeyondGrowthLimitsTracks, GridSizingData&, LayoutUnit& availableLogicalSpace);
 
     double computeNormalizedFractionBreadth(Vector<GridTrack>&, const GridSpan& tracksSpan, GridTrackSizingDirection, LayoutUnit availableLogicalSpace) const;
 
