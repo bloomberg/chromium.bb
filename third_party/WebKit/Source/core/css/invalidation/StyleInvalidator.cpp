@@ -68,10 +68,12 @@ StyleInvalidator::InvalidationList& StyleInvalidator::ensurePendingInvalidationL
     return *addResult.storedValue->value;
 }
 
-void StyleInvalidator::clearInvalidation(Node& node)
+void StyleInvalidator::clearInvalidation(Element& element)
 {
-    if (node.isElementNode() && node.needsStyleInvalidation())
-        m_pendingInvalidationMap.remove(toElement(&node));
+    if (!element.needsStyleInvalidation())
+        return;
+    m_pendingInvalidationMap.remove(&element);
+    element.clearNeedsStyleInvalidation();
 }
 
 void StyleInvalidator::clearPendingInvalidations()

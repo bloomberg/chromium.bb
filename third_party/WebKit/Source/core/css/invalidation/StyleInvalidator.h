@@ -22,9 +22,7 @@ public:
     ~StyleInvalidator();
     void invalidate(Document&);
     void scheduleInvalidation(PassRefPtrWillBeRawPtr<DescendantInvalidationSet>, Element&);
-
-    // Clears all style invalidation state for the passed node.
-    void clearInvalidation(Node&);
+    void clearInvalidation(Element&);
 
     void clearPendingInvalidations();
 

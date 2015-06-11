@@ -3374,22 +3374,21 @@ void Document::removeFocusedElementOfSubtree(Node* node, bool amongChildrenOnly)
         setFocusedElement(nullptr);
 }
 
-void Document::hoveredNodeDetached(Node* node)
+void Document::hoveredNodeDetached(Element& element)
 {
-    ASSERT(node);
     if (!m_hoverNode)
         return;
 
     m_hoverNode->updateDistribution();
-    if (node != m_hoverNode && (!m_hoverNode->isTextNode() || node != ComposedTreeTraversal::parent(*m_hoverNode)))
+    if (element != m_hoverNode && (!m_hoverNode->isTextNode() || element != ComposedTreeTraversal::parent(*m_hoverNode)))
         return;
 
-    m_hoverNode = ComposedTreeTraversal::parent(*node);
+    m_hoverNode = ComposedTreeTraversal::parent(element);
     while (m_hoverNode && !m_hoverNode->layoutObject())
         m_hoverNode = ComposedTreeTraversal::parent(*m_hoverNode);
 
     // If the mouse cursor is not visible, do not clear existing
-    // hover effects on the ancestors of |node| and do not invoke
+    // hover effects on the ancestors of |element| and do not invoke
     // new hover effects on any other element.
     if (!page()->isCursorVisible())
         return;
@@ -3398,15 +3397,15 @@ void Document::hoveredNodeDetached(Node* node)
         frame()->eventHandler().scheduleHoverStateUpdate();
 }
 
-void Document::activeChainNodeDetached(Node* node)
+void Document::activeChainNodeDetached(Element& element)
 {
     if (!m_activeHoverElement)
         return;
 
-    if (node != m_activeHoverElement)
+    if (element != m_activeHoverElement)
         return;
 
-    Node* activeNode = ComposedTreeTraversal::parent(*node);
+    Node* activeNode = ComposedTreeTraversal::parent(element);
     while (activeNode && activeNode->isElementNode() && !activeNode->layoutObject())
         activeNode = ComposedTreeTraversal::parent(*activeNode);
 

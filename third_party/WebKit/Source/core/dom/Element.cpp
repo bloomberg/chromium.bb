@@ -1503,9 +1503,20 @@ void Element::detach(const AttachContext& context)
 
     ContainerNode::detach(context);
 
-    ASSERT(needsAttach());
+    if (!context.performingReattach && isUserActionElement()) {
+        if (hovered())
+            document().hoveredNodeDetached(*this);
+        if (inActiveChain())
+            document().activeChainNodeDetached(*this);
+        document().userActionElements().didDetach(*this);
+    }
+
+    document().styleEngine().styleInvalidator().clearInvalidation(*this);
+
     if (svgFilterNeedsLayerUpdate())
         document().unscheduleSVGFilterLayerUpdateHack(*this);
+
+    ASSERT(needsAttach());
 }
 
 bool Element::pseudoStyleCacheIsInvalid(const ComputedStyle* currentStyle, ComputedStyle* newStyle)

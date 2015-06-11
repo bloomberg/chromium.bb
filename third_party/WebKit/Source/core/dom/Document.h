@@ -611,8 +611,8 @@ public:
     Node* hoverNode() const { return m_hoverNode.get(); }
 
     void removeFocusedElementOfSubtree(Node*, bool amongChildrenOnly = false);
-    void hoveredNodeDetached(Node*);
-    void activeChainNodeDetached(Node*);
+    void hoveredNodeDetached(Element&);
+    void activeChainNodeDetached(Element&);
 
     void updateHoverActiveState(const HitTestRequest&, Element*);
 

@@ -40,10 +40,10 @@ UserActionElementSet::~UserActionElementSet()
 {
 }
 
-void UserActionElementSet::didDetach(Node* node)
+void UserActionElementSet::didDetach(Element& element)
 {
-    ASSERT(node->isUserActionElement());
-    clearFlags(toElement(node), IsActiveFlag | InActiveChainFlag | IsHoveredFlag);
+    ASSERT(element.isUserActionElement());
+    clearFlags(&element, IsActiveFlag | InActiveChainFlag | IsHoveredFlag);
 }
 
 #if !ENABLE(OILPAN)

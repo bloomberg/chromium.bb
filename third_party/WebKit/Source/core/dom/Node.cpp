@@ -698,6 +698,7 @@ void Node::setIsLink(bool isLink)
 
 void Node::setNeedsStyleInvalidation()
 {
+    ASSERT(isElementNode());
     setFlag(NeedsStyleInvalidationFlag);
     markAncestorsWithChildNeedsStyleInvalidation();
 }
@@ -957,24 +958,8 @@ void Node::detach(const AttachContext& context)
         layoutObject()->destroyAndCleanupAnonymousWrappers();
     setLayoutObject(nullptr);
 
-    // Do not remove the element's hovered and active status
-    // if performing a reattach.
-    if (!context.performingReattach) {
-        Document& doc = document();
-        if (isUserActionElement()) {
-            if (hovered())
-                doc.hoveredNodeDetached(this);
-            if (inActiveChain())
-                doc.activeChainNodeDetached(this);
-            doc.userActionElements().didDetach(this);
-        }
-    }
-
     setStyleChange(NeedsReattachStyleChange);
-
-    document().styleEngine().styleInvalidator().clearInvalidation(*this);
     clearChildNeedsStyleInvalidation();
-    clearNeedsStyleInvalidation();
 
 #if ENABLE(ASSERT)
     detachingNode = nullptr;
