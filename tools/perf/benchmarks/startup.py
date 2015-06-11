@@ -65,12 +65,11 @@ class StartupWarmBlankPage(_StartupWarm):
 class StartupLargeProfileColdBlankPage(_StartupCold):
   """Measures cold startup time with a large profile."""
   tag = 'cold'
-  page_set = page_sets.BlankPageSet
+  page_set = page_sets.BlankPageSetWithLargeProfile
   options = {'pageset_repeat': 1}
 
   def __init__(self, max_failures=None):
     super(StartupLargeProfileColdBlankPage, self).__init__(max_failures)
-    self.generated_profile_archive = "large_profile.zip"
 
   def SetExtraBrowserOptions(self, options):
     options.browser_startup_timeout = 10 * 60
@@ -85,12 +84,11 @@ class StartupLargeProfileColdBlankPage(_StartupCold):
 class StartupLargeProfileWarmBlankPage(_StartupWarm):
   """Measures warm startup time with a large profile."""
   tag = 'warm'
-  page_set = page_sets.BlankPageSet
+  page_set = page_sets.BlankPageSetWithLargeProfile
   options = {'pageset_repeat': 1}
 
   def __init__(self, max_failures=None):
     super(StartupLargeProfileWarmBlankPage, self).__init__(max_failures)
-    self.generated_profile_archive = "large_profile.zip"
 
   def SetExtraBrowserOptions(self, options):
     options.browser_startup_timeout = 10 * 60
