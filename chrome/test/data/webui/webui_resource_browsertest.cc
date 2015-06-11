@@ -59,7 +59,7 @@ IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, ArrayDataModelTest) {
   RunTest(base::FilePath(FILE_PATH_LITERAL("array_data_model_test.html")));
 }
 
-IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, PropertyTest) {
+IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, CrTest) {
   AddLibrary(IDR_WEBUI_JS_CR);
   AddLibrary(IDR_WEBUI_JS_CR_EVENT_TARGET);
   RunTest(base::FilePath(FILE_PATH_LITERAL("cr_test.html")));

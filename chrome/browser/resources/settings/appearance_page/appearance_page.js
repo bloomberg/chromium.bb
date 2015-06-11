@@ -3,59 +3,6 @@
 // found in the LICENSE file.
 
 
-/**
- * A variation of chrome.send which allows the client to receive a direct
- * callback.
- * @param {string} methodName The name of the WebUI handler API.
- * @param {Function} callback A callback function which is called (indirectly)
- *     by the WebUI handler.
- */
-var ChromeSendWithCallback = function(methodName, callback) {
-  var self = ChromeSendWithCallback;
-  if (typeof self.functionCallbackMap_ == 'undefined') {
-    self.functionCallbackMap_ = new Map();
-    self.functionCallbackCounter_ = 0;
-
-    window.chromeSendWithCallback = function(id) {
-      self.functionCallbackMap_[id].apply(
-          null, Array.prototype.slice.call(arguments, 1));
-      self.functionCallbackMap_.delete(id);
-    };
-  }
-
-  var id = methodName + self.functionCallbackCounter_++;
-  self.functionCallbackMap_[id] = callback;
-  chrome.send(methodName, ['chromeSendWithCallback', id]);
-};
-
-
-/**
- * Registers an event listener for an event fired from WebUI handlers (i.e.,
- * fired from the browser).
- * @param {string} event The event to listen to.
- * @param {Function} callback The callback run when the event is fired.
- */
-var ChromeSendAddEventListener = function(event, callback) {
-  var self = ChromeSendAddEventListener;
-  if (typeof self.eventListenerMap_ == 'undefined') {
-    self.eventListenerMap_ = new Map();
-
-    window.chromeSendListenerCallback = function(event) {
-      var listenerCallbacks = self.eventListenerMap_[event];
-      for (var i = 0; i < listenerCallbacks.length; i++) {
-        listenerCallbacks[i].apply(
-          null, Array.prototype.slice.call(arguments, 1));
-      }
-    };
-  }
-
-  if (!self.eventListenerMap_.has(event)) {
-    var listenerCallbacks = [callback];
-    self.eventListenerMap_[event] = listenerCallbacks;
-  }
-};
-
-
 
 /**
  * 'cr-settings-appearance-page' is the settings page containing appearance
@@ -78,13 +25,12 @@ Polymer({
   /** @override */
   attached: function() {
     // Query the initial state.
-    ChromeSendWithCallback('getResetThemeEnabled',
-      this.setResetThemeEnabled.bind(this));
+    cr.sendWithCallback('getResetThemeEnabled', undefined,
+                        this.setResetThemeEnabled.bind(this));
 
     // Set up the change event listener.
-    ChromeSendAddEventListener(
-      'reset-theme-enabled-changed',
-      this.setResetThemeEnabled.bind(this));
+    cr.addWebUIListener('reset-theme-enabled-changed',
+                        this.setResetThemeEnabled.bind(this));
   },
 
   properties: {

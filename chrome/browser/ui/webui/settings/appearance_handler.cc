@@ -46,7 +46,7 @@ void AppearanceHandler::Observe(
       base::StringValue event("reset-theme-enabled-changed");
       base::FundamentalValue enabled(QueryResetThemeEnabledState());
       web_ui()->CallJavascriptFunction(
-          "chromeSendListenerCallback", event, enabled);
+          "cr.webUIListenerCallback", event, enabled);
       break;
     }
     default:
