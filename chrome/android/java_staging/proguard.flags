@@ -35,12 +35,14 @@
 -assumenosideeffects class * {
   @org.chromium.base.annotations.NoSideEffects <methods>;
 }
--assumenosideeffects class org.chromium.base.Log,
-                           com.google.android.apps.chrome.ILog {
+# Remove debug log calls but keep the functions themselves for use in tests.
+-assumenosideeffects class org.chromium.base.Log {
     public *** d(...);
     public *** v(...);
-    private *** debug(...);
-    private *** verbose(...);
+}
+-keep class org.chromium.base.Log {
+    public *** d(...);
+    public *** v(...);
 }
 
 # TODO(aurimas): figure out why we need to keep these classes.
