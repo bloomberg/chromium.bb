@@ -237,7 +237,7 @@ class SDKPackageToolchainOverlaysStage(generic_stages.BuilderStage):
         # NOTE: We let MountOverlayContext remove the mount point created by
         # the TempDir context below, because it has built-in retries for rmdir
         # EBUSY errors that are due to unmount lag.
-        with osutils.TempDir(prefix='amd64-host-%s.' % board,
+        with osutils.TempDir(prefix='amd64-host-%s.' % toolchains_str,
                              base_dir=tmp_dir, delete=False) as merged_dir:
           with osutils.MountOverlayContext(sdk_dir, overlay_dir, merged_dir,
                                            cleanup=True):
