@@ -335,6 +335,7 @@ _project_sdk_boards = frozenset([
 # Every board must appear in exactly 1 of the following sets.
 
 _arm_internal_release_boards = frozenset([
+    'arkham',
     'beaglebone',
     'beaglebone_servo',
     'cosmos',
@@ -524,6 +525,7 @@ _internal_boards = _all_release_boards
 
 # Board can appear in 1 or more of the following sets.
 _brillo_boards = frozenset([
+    'arkham',
     'cosmos',
     'gizmo',
     'kayle',
@@ -628,6 +630,7 @@ _waterfall_config_map = {
         'pineview-freon-release-group',
         'rambi-d-release-group',
         'rambi-e-release-group',
+        'storm-release-group',
         'strago-release-group',
         'veyron-b-release-group',
         'veyron-c-release-group',
@@ -2128,7 +2131,6 @@ def GetConfig():
 
       # Hw Lab can't test storm, yet.
       paygen_skip_testing=True,
-      important=True,
       signer_tests=False,
   )
 
@@ -2218,8 +2220,6 @@ def GetConfig():
   site_config.AddConfig(
       _release, 'whirlwind-release',
       _base_configs['whirlwind'],
-      important=True,
-      afdo_use=True,
       dev_installer_prebuilts=True,
   )
 
@@ -2508,6 +2508,15 @@ def GetConfig():
   # glados-based boards
   _AddGroupConfig(
       'glados', 'glados', (
+      ),
+      important=False,
+  )
+
+  # storm-based boards
+  _AddGroupConfig(
+      'storm', 'storm', (
+          'arkham',
+          'whirlwind',
       ),
       important=False,
   )

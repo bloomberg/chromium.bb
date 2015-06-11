@@ -1060,6 +1060,167 @@
             "-chrome_internal"
         ]
     },
+    "arkham-chrome-pfq": {
+        "_template": "chrome-pfq",
+        "boards": [
+            "arkham"
+        ],
+        "chrome_sdk": false,
+        "important": false,
+        "manifest": "official.xml",
+        "name": "arkham-chrome-pfq",
+        "sync_chrome": false,
+        "vm_tests": [],
+        "vm_tests_supported": []
+    },
+    "arkham-chromium-pfq": {
+        "_template": "chromium-pfq",
+        "boards": [
+            "arkham"
+        ],
+        "chrome_sdk": false,
+        "description": "Preflight Chromium Uprev & Build (internal)",
+        "important": false,
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "name": "arkham-chromium-pfq",
+        "overlays": "both",
+        "prebuilts": "public",
+        "sync_chrome": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": [],
+        "vm_tests_supported": []
+    },
+    "arkham-compile-only-pre-cq": {
+        "_template": "compile-only-pre-cq",
+        "boards": [
+            "arkham"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "name": "arkham-compile-only-pre-cq",
+        "overlays": "both",
+        "sync_chrome": false,
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "arkham-full": {
+        "_template": "full",
+        "boards": [
+            "arkham"
+        ],
+        "chrome_sdk": false,
+        "name": "arkham-full",
+        "prebuilts": "public",
+        "sync_chrome": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": [],
+        "vm_tests_supported": []
+    },
+    "arkham-no-vmtest-pre-cq": {
+        "_template": "no-vmtest-pre-cq",
+        "boards": [
+            "arkham"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "name": "arkham-no-vmtest-pre-cq",
+        "overlays": "both",
+        "sync_chrome": false,
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "arkham-paladin": {
+        "_template": "paladin",
+        "boards": [
+            "arkham"
+        ],
+        "chrome_sdk": false,
+        "description": "Commit Queue (internal)",
+        "important": false,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "name": "arkham-paladin",
+        "overlays": "both",
+        "prebuilts": "private",
+        "sync_chrome": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [],
+        "vm_tests_supported": []
+    },
+    "arkham-payloads": {
+        "_template": "payloads",
+        "boards": [
+            "arkham"
+        ],
+        "name": "arkham-payloads"
+    },
+    "arkham-pre-cq": {
+        "_template": "pre-cq",
+        "boards": [
+            "arkham"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "name": "arkham-pre-cq",
+        "overlays": "both",
+        "sync_chrome": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [],
+        "vm_tests_supported": []
+    },
+    "arkham-release": {
+        "_template": "release",
+        "afdo_use": false,
+        "boards": [
+            "arkham"
+        ],
+        "chrome_sdk": false,
+        "dev_installer_prebuilts": false,
+        "hw_tests": [],
+        "name": "arkham-release",
+        "sync_chrome": false,
+        "vm_tests": [],
+        "vm_tests_supported": []
+    },
+    "arkham-tot-chrome-pfq-informational": {
+        "_template": "chrome-pfq-informational",
+        "boards": [
+            "arkham"
+        ],
+        "manifest": "official.xml",
+        "name": "arkham-tot-chrome-pfq-informational",
+        "sync_chrome": false,
+        "vm_tests": [],
+        "vm_tests_supported": []
+    },
+    "arkham-tot-chromium-pfq-informational": {
+        "_template": "chromium-pfq-informational",
+        "boards": [
+            "arkham"
+        ],
+        "name": "arkham-tot-chromium-pfq-informational",
+        "sync_chrome": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": [],
+        "vm_tests_supported": []
+    },
     "arm-generic-chromium-pfq": {
         "_template": "chromium-pfq",
         "active_waterfall": "chromeos",
@@ -19527,6 +19688,78 @@
         "vm_tests": [],
         "vm_tests_supported": []
     },
+    "storm-full-group": {
+        "_template": "full",
+        "boards": [
+            "storm"
+        ],
+        "child_configs": [
+            {
+                "_template": "full",
+                "boards": [
+                    "storm"
+                ],
+                "chrome_sdk": false,
+                "grouped": true,
+                "name": "storm-full",
+                "prebuilts": "public",
+                "sync_chrome": false,
+                "useflags": [
+                    "-chrome_internal"
+                ],
+                "vm_tests": [],
+                "vm_tests_supported": []
+            },
+            {
+                "_template": "full",
+                "boards": [
+                    "arkham"
+                ],
+                "build_packages_in_background": true,
+                "chrome_sdk": false,
+                "chrome_sdk_build_chrome": false,
+                "grouped": true,
+                "name": "arkham-full",
+                "prebuilts": "public",
+                "sync_chrome": false,
+                "unittests": null,
+                "useflags": [
+                    "-chrome_internal"
+                ],
+                "vm_tests": [],
+                "vm_tests_supported": []
+            },
+            {
+                "_template": "full",
+                "boards": [
+                    "whirlwind"
+                ],
+                "build_packages_in_background": true,
+                "chrome_sdk": false,
+                "chrome_sdk_build_chrome": false,
+                "grouped": true,
+                "name": "whirlwind-full",
+                "prebuilts": "public",
+                "sync_chrome": false,
+                "unittests": null,
+                "useflags": [
+                    "-chrome_internal"
+                ],
+                "vm_tests": [],
+                "vm_tests_supported": []
+            }
+        ],
+        "chrome_sdk": false,
+        "description": "Full Builds; Group config (boards: storm, arkham, whirlwind)",
+        "name": "storm-full-group",
+        "prebuilts": "public",
+        "sync_chrome": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": [],
+        "vm_tests_supported": []
+    },
     "storm-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
         "boards": [
@@ -19589,7 +19822,6 @@
     },
     "storm-release": {
         "_template": "release",
-        "active_waterfall": "chromeos",
         "afdo_use": false,
         "boards": [
             "storm"
@@ -19597,8 +19829,79 @@
         "chrome_sdk": false,
         "dev_installer_prebuilts": false,
         "hw_tests": [],
-        "important": true,
         "name": "storm-release",
+        "paygen_skip_testing": true,
+        "signer_tests": false,
+        "sync_chrome": false,
+        "vm_tests": [],
+        "vm_tests_supported": []
+    },
+    "storm-release-group": {
+        "_template": "release",
+        "active_waterfall": "chromeos",
+        "afdo_use": false,
+        "boards": [
+            "storm"
+        ],
+        "child_configs": [
+            {
+                "_template": "release",
+                "afdo_use": false,
+                "boards": [
+                    "storm"
+                ],
+                "chrome_sdk": false,
+                "dev_installer_prebuilts": false,
+                "grouped": true,
+                "hw_tests": [],
+                "name": "storm-release",
+                "paygen_skip_testing": true,
+                "signer_tests": false,
+                "sync_chrome": false,
+                "vm_tests": [],
+                "vm_tests_supported": []
+            },
+            {
+                "_template": "release",
+                "afdo_use": false,
+                "boards": [
+                    "arkham"
+                ],
+                "build_packages_in_background": true,
+                "chrome_sdk": false,
+                "chrome_sdk_build_chrome": false,
+                "dev_installer_prebuilts": false,
+                "grouped": true,
+                "hw_tests": [],
+                "name": "arkham-release",
+                "sync_chrome": false,
+                "unittests": null,
+                "vm_tests": [],
+                "vm_tests_supported": []
+            },
+            {
+                "_template": "release",
+                "afdo_use": false,
+                "boards": [
+                    "whirlwind"
+                ],
+                "build_packages_in_background": true,
+                "chrome_sdk": false,
+                "chrome_sdk_build_chrome": false,
+                "grouped": true,
+                "hw_tests": [],
+                "name": "whirlwind-release",
+                "sync_chrome": false,
+                "unittests": null,
+                "vm_tests": [],
+                "vm_tests_supported": []
+            }
+        ],
+        "chrome_sdk": false,
+        "description": "Release Builds (canary) (internal); Group config (boards: storm, arkham, whirlwind)",
+        "dev_installer_prebuilts": false,
+        "hw_tests": [],
+        "name": "storm-release-group",
         "paygen_skip_testing": true,
         "signer_tests": false,
         "sync_chrome": false,
@@ -24820,13 +25123,12 @@
     },
     "whirlwind-release": {
         "_template": "release",
-        "active_waterfall": "chromeos",
+        "afdo_use": false,
         "boards": [
             "whirlwind"
         ],
         "chrome_sdk": false,
         "hw_tests": [],
-        "important": true,
         "name": "whirlwind-release",
         "sync_chrome": false,
         "vm_tests": [],
