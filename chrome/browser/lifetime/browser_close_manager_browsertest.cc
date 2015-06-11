@@ -601,8 +601,8 @@ IN_PROC_BROWSER_TEST_P(BrowserCloseManagerBrowserTest,
   EXPECT_TRUE(chrome::BrowserIterator().done());
 }
 
-// Test is flaky on windows, disabled. See http://crbug.com/276366
-#if defined(OS_WIN)
+// Test is flaky on Windows and Mac. See http://crbug.com/276366.
+#if defined(OS_WIN) || defined(OS_MACOSX)
 #define MAYBE_TestOpenAndCloseWindowDuringShutdown \
     DISABLED_TestOpenAndCloseWindowDuringShutdown
 #else
