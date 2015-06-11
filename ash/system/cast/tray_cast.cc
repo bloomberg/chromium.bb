@@ -230,6 +230,8 @@ void CastCastView::ButtonPressed(views::Button* sender,
                                  const ui::Event& event) {
   DCHECK(sender == stop_button_);
   cast_config_delegate_->StopCasting();
+  Shell::GetInstance()->metrics()->RecordUserMetricsAction(
+      ash::UMA_STATUS_AREA_CAST_STOP_CAST);
 }
 
 // This view by itself does very little. It acts as a front-end for managing
@@ -504,6 +506,8 @@ void CastDetailedView::OnViewClicked(views::View* sender) {
     auto it = receiver_activity_map_.find(sender);
     if (it != receiver_activity_map_.end()) {
       cast_config_delegate_->CastToReceiver(it->second);
+      Shell::GetInstance()->metrics()->RecordUserMetricsAction(
+          ash::UMA_STATUS_AREA_DETAILED_CAST_VIEW_LAUNCH_CAST);
     }
   }
 }

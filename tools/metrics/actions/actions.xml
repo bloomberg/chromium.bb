@@ -11352,6 +11352,23 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="StatusArea_Cast_Detailed_Launch_Cast">
+  <owner>jdufault@chromium.org</owner>
+  <description>
+    Counts the number of times the user has initiated a cast from the system
+    tray. This does not mean the cast has actually begun, as the user still has
+    to select what to cast (ie, the desktop or a tab) and they may cancel the
+    process.
+  </description>
+</action>
+
+<action name="StatusArea_Cast_StopCast">
+  <owner>jdufault@chromium.org</owner>
+  <description>
+    Counts the number of times the user has stopped a cast from the system tray.
+  </description>
+</action>
+
 <action name="StatusArea_Drive_CancelOperation">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

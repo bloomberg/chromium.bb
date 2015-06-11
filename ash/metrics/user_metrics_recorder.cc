@@ -364,6 +364,9 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
       base::RecordAction(
           base::UserMetricsAction("StatusArea_CapsLock_Popup"));
       break;
+    case ash::UMA_STATUS_AREA_CAST_STOP_CAST:
+      base::RecordAction(base::UserMetricsAction("StatusArea_Cast_StopCast"));
+      break;
     case ash::UMA_STATUS_AREA_CONNECT_TO_CONFIGURED_NETWORK:
       base::RecordAction(
           base::UserMetricsAction("StatusArea_Network_ConnectConfigured"));
@@ -402,6 +405,10 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
       break;
     case ash::UMA_STATUS_AREA_DETAILED_CAST_VIEW:
       base::RecordAction(base::UserMetricsAction("StatusArea_Cast_Detailed"));
+      break;
+    case ash::UMA_STATUS_AREA_DETAILED_CAST_VIEW_LAUNCH_CAST:
+      base::RecordAction(
+          base::UserMetricsAction("StatusArea_Cast_Detailed_Launch_Cast"));
       break;
     case ash::UMA_STATUS_AREA_DETAILED_DRIVE_VIEW:
       base::RecordAction(
