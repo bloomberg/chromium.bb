@@ -500,21 +500,33 @@ CSSStyleDeclaration* MutableStylePropertySet::ensureCSSStyleDeclaration()
     return m_cssomWrapper.get();
 }
 
-int MutableStylePropertySet::findPropertyIndex(CSSPropertyID propertyID) const
-{
-    // Convert here propertyID into an uint16_t to compare it with the metadata's m_propertyID to avoid
-    // the compiler converting it to an int multiple times in the loop.
-    uint16_t id = static_cast<uint16_t>(propertyID);
-    const CSSProperty* properties = m_propertyVector.data();
-    for (int n = m_propertyVector.size() - 1 ; n >= 0; --n) {
-        if (properties[n].metadata().m_propertyID == id) {
+
+class CSSPropertyIDComparer {
+public:
+    explicit CSSPropertyIDComparer(CSSPropertyID propertyID)
+        : m_propertyID(static_cast<uint16_t>(propertyID)) { }
+    bool operator()(const CSSProperty& property) const
+    {
+        if (property.metadata().m_propertyID == m_propertyID) {
             // Only enabled properties should be part of the style.
-            ASSERT(CSSPropertyMetadata::isEnabledProperty(propertyID));
-            return n;
+            ASSERT(CSSPropertyMetadata::isEnabledProperty(propertyID()));
+            return true;
         }
+        return false;
     }
 
-    return -1;
+private:
+    CSSPropertyID propertyID() const { return static_cast<CSSPropertyID>(m_propertyID); }
+    uint16_t m_propertyID; // Store as uint16_t to avoid casts while comparing.
+};
+
+int MutableStylePropertySet::findPropertyIndex(CSSPropertyID propertyID) const
+{
+    const CSSProperty* begin = m_propertyVector.data();
+    const CSSProperty* end = begin + m_propertyVector.size();
+    const CSSProperty* it = std::find_if(begin, end, CSSPropertyIDComparer(propertyID));
+
+    return (it == end) ? -1 : it - begin;
 }
 
 DEFINE_TRACE_AFTER_DISPATCH(MutableStylePropertySet)
