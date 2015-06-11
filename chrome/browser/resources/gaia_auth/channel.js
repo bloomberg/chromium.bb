@@ -6,6 +6,8 @@
  * Channel to the background script.
  */
 function Channel() {
+  this.messageCallbacks_ = {};
+  this.internalRequestCallbacks_ = {};
 }
 
 /** @const */
@@ -19,13 +21,13 @@ Channel.prototype = {
   port_: null,
 
   // Registered message callbacks.
-  messageCallbacks_: {},
+  messageCallbacks_: null,
 
   // Internal request id to track pending requests.
   nextInternalRequestId_: 0,
 
   // Pending internal request callbacks.
-  internalRequestCallbacks_: {},
+  internalRequestCallbacks_: null,
 
   /**
    * Initialize the channel with given port for the background script.

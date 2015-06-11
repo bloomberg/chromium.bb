@@ -28,13 +28,14 @@
  * the associated tab id.
  */
 function BackgroundBridgeManager() {
+  this.bridges_ = {};
 }
 
 BackgroundBridgeManager.prototype = {
   CONTINUE_URL_BASE: 'chrome-extension://mfffpogegjflfpflabcdkioaeobkgjik' +
                      '/success.html',
   // Maps a tab id to its associated BackgroundBridge.
-  bridges_: {},
+  bridges_: null,
 
   run: function() {
     chrome.runtime.onConnect.addListener(this.onConnect_.bind(this));
@@ -103,6 +104,7 @@ BackgroundBridgeManager.prototype = {
  */
 function BackgroundBridge(tabId) {
   this.tabId_ = tabId;
+  this.passwordStore_ = {};
 }
 
 BackgroundBridge.prototype = {
@@ -148,7 +150,7 @@ BackgroundBridge.prototype = {
   // Whether SAML flow is going.
   isSAML_: false,
 
-  passwordStore_: {},
+  passwordStore_: null,
 
   channelMain_: null,
   channelInjected_: null,

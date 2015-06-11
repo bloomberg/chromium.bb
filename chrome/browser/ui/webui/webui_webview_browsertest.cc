@@ -99,14 +99,8 @@ IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest, AddAndRemoveContentScripts) {
       new base::StringValue(GetTestUrl("empty.html").spec())));
 }
 
-// Flaky under MemorySanitizer: https://crbug.com/497977
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_AddContentScriptsWithNewWindowAPI DISABLED_AddContentScriptsWithNewWindowAPI
-#else
-#define MAYBE_AddContentScriptsWithNewWindowAPI AddContentScriptsWithNewWindowAPI
-#endif
 IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest,
-                       MAYBE_AddContentScriptsWithNewWindowAPI) {
+                       AddContentScriptsWithNewWindowAPI) {
   ui_test_utils::NavigateToURL(browser(), GetWebViewEnabledWebUIURL());
 
   ASSERT_TRUE(WebUIBrowserTest::RunJavascriptAsyncTest(

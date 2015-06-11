@@ -224,6 +224,9 @@ Authenticator.prototype = {
 
     window.setTimeout(function() {
       if (!this.supportChannel_) {
+        // Give up previous channel and bind its 'channelConnected' to a no-op.
+        supportChannel.registerMessage('channelConnected', function() {});
+
         // Re-initialize the channel if it is not connected properly, e.g.
         // connect may be called before background script started running.
         this.initSupportChannel_();

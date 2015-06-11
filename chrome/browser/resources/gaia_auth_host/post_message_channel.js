@@ -324,6 +324,7 @@ var PostMessageChannel = (function() {
    * @constructor
    */
   function PostMessageChannel() {
+    Channel.apply(this, arguments);
   };
 
   PostMessageChannel.prototype = {
