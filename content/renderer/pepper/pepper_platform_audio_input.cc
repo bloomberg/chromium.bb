@@ -116,7 +116,7 @@ void PepperPlatformAudioInput::OnStreamCreated(
 void PepperPlatformAudioInput::OnVolume(double volume) {}
 
 void PepperPlatformAudioInput::OnStateChanged(
-    media::AudioInputIPCDelegate::State state) {}
+    media::AudioInputIPCDelegateState state) {}
 
 void PepperPlatformAudioInput::OnIPCClosed() { ipc_.reset(); }
 

@@ -12,19 +12,18 @@
 
 namespace media {
 
+enum AudioInputIPCDelegateState {
+  AUDIO_INPUT_IPC_DELEGATE_STATE_RECORDING,
+  AUDIO_INPUT_IPC_DELEGATE_STATE_STOPPED,
+  AUDIO_INPUT_IPC_DELEGATE_STATE_ERROR,
+  AUDIO_INPUT_IPC_DELEGATE_STATE_LAST = AUDIO_INPUT_IPC_DELEGATE_STATE_ERROR,
+};
+
 // Contains IPC notifications for the state of the server side
 // (AudioInputController) audio state changes and when an AudioInputController
 // has been created.  Implemented by AudioInputDevice.
 class MEDIA_EXPORT AudioInputIPCDelegate {
  public:
-  // Valid states for the input stream.
-  enum State {
-    kRecording,
-    kStopped,
-    kError,
-    kStateLast = kError
-  };
-
   // Called when an AudioInputController has been created.
   // The shared memory |handle| points to a memory section that's used to
   // transfer data between the AudioInputDevice and AudioInputController
@@ -39,7 +38,7 @@ class MEDIA_EXPORT AudioInputIPCDelegate {
                                int total_segments) = 0;
 
   // Called when state of an audio stream has changed.
-  virtual void OnStateChanged(State state) = 0;
+  virtual void OnStateChanged(AudioInputIPCDelegateState state) = 0;
 
   // Called when the input stream volume has changed.
   virtual void OnVolume(double volume) = 0;

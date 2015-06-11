@@ -469,7 +469,7 @@ void AudioInputRendererHost::SendErrorMessage(
   LogMessage(stream_id, err_msg, true);
 
   Send(new AudioInputMsg_NotifyStreamStateChanged(
-      stream_id, media::AudioInputIPCDelegate::kError));
+      stream_id, media::AUDIO_INPUT_IPC_DELEGATE_STATE_ERROR));
 }
 
 void AudioInputRendererHost::DeleteEntries() {

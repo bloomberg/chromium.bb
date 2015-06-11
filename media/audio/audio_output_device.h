@@ -98,7 +98,7 @@ class MEDIA_EXPORT AudioOutputDevice
 
   // Methods called on IO thread ----------------------------------------------
   // AudioOutputIPCDelegate methods.
-  void OnStateChanged(AudioOutputIPCDelegate::State state) override;
+  void OnStateChanged(AudioOutputIPCDelegateState state) override;
   void OnStreamCreated(base::SharedMemoryHandle handle,
                        base::SyncSocket::Handle socket_handle,
                        int length) override;

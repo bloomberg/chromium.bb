@@ -151,7 +151,7 @@ void AudioInputDevice::OnVolume(double volume) {
 }
 
 void AudioInputDevice::OnStateChanged(
-    AudioInputIPCDelegate::State state) {
+    AudioInputIPCDelegateState state) {
   DCHECK(task_runner()->BelongsToCurrentThread());
 
   // Do nothing if the stream has been closed.
@@ -161,14 +161,14 @@ void AudioInputDevice::OnStateChanged(
   // TODO(miu): Clean-up inconsistent and incomplete handling here.
   // http://crbug.com/180640
   switch (state) {
-    case AudioInputIPCDelegate::kStopped:
+    case AUDIO_INPUT_IPC_DELEGATE_STATE_STOPPED:
       ShutDownOnIOThread();
       break;
-    case AudioInputIPCDelegate::kRecording:
+    case AUDIO_INPUT_IPC_DELEGATE_STATE_RECORDING:
       NOTIMPLEMENTED();
       break;
-    case AudioInputIPCDelegate::kError:
-      DLOG(WARNING) << "AudioInputDevice::OnStateChanged(kError)";
+    case AUDIO_INPUT_IPC_DELEGATE_STATE_ERROR:
+      DLOG(WARNING) << "AudioInputDevice::OnStateChanged(ERROR)";
       // Don't dereference the callback object if the audio thread
       // is stopped or stopping.  That could mean that the callback
       // object has been deleted.

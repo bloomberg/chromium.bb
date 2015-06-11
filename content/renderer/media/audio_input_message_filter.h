@@ -75,7 +75,7 @@ class CONTENT_EXPORT AudioInputMessageFilter : public IPC::MessageFilter {
   // Received when internal state of browser process' audio input stream has
   // changed.
   void OnStreamStateChanged(int stream_id,
-                            media::AudioInputIPCDelegate::State state);
+                            media::AudioInputIPCDelegateState state);
 
   // A map of stream ids to delegates.
   IDMap<media::AudioInputIPCDelegate> delegates_;

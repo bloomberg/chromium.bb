@@ -70,7 +70,7 @@ void PepperPlatformAudioOutput::ShutDown() {
 }
 
 void PepperPlatformAudioOutput::OnStateChanged(
-    media::AudioOutputIPCDelegate::State state) {}
+    media::AudioOutputIPCDelegateState state) {}
 
 void PepperPlatformAudioOutput::OnStreamCreated(
     base::SharedMemoryHandle handle,

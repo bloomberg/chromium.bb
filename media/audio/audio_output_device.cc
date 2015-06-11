@@ -179,7 +179,7 @@ void AudioOutputDevice::SetVolumeOnIOThread(double volume) {
     ipc_->SetVolume(volume);
 }
 
-void AudioOutputDevice::OnStateChanged(AudioOutputIPCDelegate::State state) {
+void AudioOutputDevice::OnStateChanged(AudioOutputIPCDelegateState state) {
   DCHECK(task_runner()->BelongsToCurrentThread());
 
   // Do nothing if the stream has been closed.
@@ -189,11 +189,11 @@ void AudioOutputDevice::OnStateChanged(AudioOutputIPCDelegate::State state) {
   // TODO(miu): Clean-up inconsistent and incomplete handling here.
   // http://crbug.com/180640
   switch (state) {
-    case AudioOutputIPCDelegate::kPlaying:
-    case AudioOutputIPCDelegate::kPaused:
+    case AUDIO_OUTPUT_IPC_DELEGATE_STATE_PLAYING:
+    case AUDIO_OUTPUT_IPC_DELEGATE_STATE_PAUSED:
       break;
-    case AudioOutputIPCDelegate::kError:
-      DLOG(WARNING) << "AudioOutputDevice::OnStateChanged(kError)";
+    case AUDIO_OUTPUT_IPC_DELEGATE_STATE_ERROR:
+      DLOG(WARNING) << "AudioOutputDevice::OnStateChanged(ERROR)";
       // Don't dereference the callback object if the audio thread
       // is stopped or stopping.  That could mean that the callback
       // object has been deleted.

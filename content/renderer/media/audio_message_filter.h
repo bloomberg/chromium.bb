@@ -74,7 +74,7 @@ class CONTENT_EXPORT AudioMessageFilter : public IPC::MessageFilter {
   // Received when internal state of browser process' audio output device has
   // changed.
   void OnStreamStateChanged(int stream_id,
-                            media::AudioOutputIPCDelegate::State state);
+                            media::AudioOutputIPCDelegateState state);
 
   // IPC sender for Send(); must only be accesed on |io_task_runner_|.
   IPC::Sender* sender_;

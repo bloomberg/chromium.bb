@@ -22,11 +22,11 @@
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 #define IPC_MESSAGE_START AudioMsgStart
 
-IPC_ENUM_TRAITS_MAX_VALUE(media::AudioInputIPCDelegate::State,
-                          media::AudioInputIPCDelegate::kStateLast)
+IPC_ENUM_TRAITS_MAX_VALUE(media::AudioInputIPCDelegateState,
+                          media::AUDIO_INPUT_IPC_DELEGATE_STATE_LAST)
 
-IPC_ENUM_TRAITS_MAX_VALUE(media::AudioOutputIPCDelegate::State,
-                          media::AudioOutputIPCDelegate::kStateLast)
+IPC_ENUM_TRAITS_MAX_VALUE(media::AudioOutputIPCDelegateState,
+                          media::AUDIO_OUTPUT_IPC_DELEGATE_STATE_LAST)
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::SwitchOutputDeviceResult,
                           media::SWITCH_OUTPUT_DEVICE_RESULT_LAST)
@@ -66,12 +66,12 @@ IPC_MESSAGE_CONTROL5(
 // update after the renderer has requested a Create/Start/Close.
 IPC_MESSAGE_CONTROL2(AudioMsg_NotifyStreamStateChanged,
                      int /* stream id */,
-                     media::AudioOutputIPCDelegate::State /* new state */)
+                     media::AudioOutputIPCDelegateState /* new state */)
 
 // Notification message sent from browser to renderer for state update.
 IPC_MESSAGE_CONTROL2(AudioInputMsg_NotifyStreamStateChanged,
                      int /* stream id */,
-                     media::AudioInputIPCDelegate::State /* new state */)
+                     media::AudioInputIPCDelegateState /* new state */)
 
 IPC_MESSAGE_CONTROL2(AudioInputMsg_NotifyStreamVolume,
                      int /* stream id */,

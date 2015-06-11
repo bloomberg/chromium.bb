@@ -129,15 +129,15 @@ class MockAudioRendererHost : public AudioRendererHost {
   }
 
   void OnNotifyStreamStateChanged(int stream_id,
-                                  media::AudioOutputIPCDelegate::State state) {
+                                  media::AudioOutputIPCDelegateState state) {
     switch (state) {
-      case media::AudioOutputIPCDelegate::kPlaying:
+      case media::AUDIO_OUTPUT_IPC_DELEGATE_STATE_PLAYING:
         OnStreamPlaying(stream_id);
         break;
-      case media::AudioOutputIPCDelegate::kPaused:
+      case media::AUDIO_OUTPUT_IPC_DELEGATE_STATE_PAUSED:
         OnStreamPaused(stream_id);
         break;
-      case media::AudioOutputIPCDelegate::kError:
+      case media::AUDIO_OUTPUT_IPC_DELEGATE_STATE_ERROR:
         OnStreamError(stream_id);
         break;
       default:

@@ -63,7 +63,7 @@ class PepperPlatformAudioInput
                        int length,
                        int total_segments) override;
   void OnVolume(double volume) override;
-  void OnStateChanged(media::AudioInputIPCDelegate::State state) override;
+  void OnStateChanged(media::AudioInputIPCDelegateState state) override;
   void OnIPCClosed() override;
 
  protected:

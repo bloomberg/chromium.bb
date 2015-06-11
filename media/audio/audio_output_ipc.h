@@ -26,23 +26,24 @@ enum SwitchOutputDeviceResult {
       SWITCH_OUTPUT_DEVICE_RESULT_ERROR_NOT_SUPPORTED,
 };
 
+// Current status of the audio output stream in the browser process. Browser
+// sends information about the current playback state and error to the
+// renderer process using this type.
+enum AudioOutputIPCDelegateState {
+  AUDIO_OUTPUT_IPC_DELEGATE_STATE_PLAYING,
+  AUDIO_OUTPUT_IPC_DELEGATE_STATE_PAUSED,
+  AUDIO_OUTPUT_IPC_DELEGATE_STATE_ERROR,
+  AUDIO_OUTPUT_IPC_DELEGATE_STATE_LAST = AUDIO_OUTPUT_IPC_DELEGATE_STATE_ERROR
+};
+
 // Contains IPC notifications for the state of the server side
 // (AudioOutputController) audio state changes and when an AudioOutputController
 // has been created.  Implemented by AudioOutputDevice.
 class MEDIA_EXPORT AudioOutputIPCDelegate {
  public:
-  // Current status of the audio output stream in the browser process. Browser
-  // sends information about the current playback state and error to the
-  // renderer process using this type.
-  enum State {
-    kPlaying,
-    kPaused,
-    kError,
-    kStateLast = kError
-  };
 
   // Called when state of an audio stream has changed.
-  virtual void OnStateChanged(State state) = 0;
+  virtual void OnStateChanged(AudioOutputIPCDelegateState state) = 0;
 
   // Called when an audio stream has been created.
   // The shared memory |handle| points to a memory section that's used to

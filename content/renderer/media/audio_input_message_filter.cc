@@ -157,7 +157,7 @@ void AudioInputMessageFilter::OnStreamVolume(int stream_id, double volume) {
 }
 
 void AudioInputMessageFilter::OnStreamStateChanged(
-    int stream_id, media::AudioInputIPCDelegate::State state) {
+    int stream_id, media::AudioInputIPCDelegateState state) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   media::AudioInputIPCDelegate* delegate = delegates_.Lookup(stream_id);
   if (!delegate) {

@@ -276,8 +276,8 @@ void AudioRendererHost::DoNotifyStreamStateChanged(int stream_id,
 
   Send(new AudioMsg_NotifyStreamStateChanged(
       stream_id,
-      is_playing ? media::AudioOutputIPCDelegate::kPlaying
-                 : media::AudioOutputIPCDelegate::kPaused));
+      is_playing ? media::AUDIO_OUTPUT_IPC_DELEGATE_STATE_PLAYING
+                 : media::AUDIO_OUTPUT_IPC_DELEGATE_STATE_PAUSED));
 
   if (is_playing) {
     AudioStreamMonitor::StartMonitoringStream(
@@ -581,7 +581,7 @@ void AudioRendererHost::DoOutputDeviceSwitched(int stream_id, int request_id) {
 
 void AudioRendererHost::SendErrorMessage(int stream_id) {
   Send(new AudioMsg_NotifyStreamStateChanged(
-      stream_id, media::AudioOutputIPCDelegate::kError));
+      stream_id, media::AUDIO_OUTPUT_IPC_DELEGATE_STATE_ERROR));
 }
 
 void AudioRendererHost::OnCloseStream(int stream_id) {

@@ -47,7 +47,7 @@ class PepperPlatformAudioOutput
   void ShutDown();
 
   // media::AudioOutputIPCDelegate implementation.
-  void OnStateChanged(media::AudioOutputIPCDelegate::State state) override;
+  void OnStateChanged(media::AudioOutputIPCDelegateState state) override;
   void OnStreamCreated(base::SharedMemoryHandle handle,
                        base::SyncSocket::Handle socket_handle,
                        int length) override;

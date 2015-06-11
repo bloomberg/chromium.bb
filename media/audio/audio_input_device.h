@@ -104,7 +104,7 @@ class MEDIA_EXPORT AudioInputDevice
                        int length,
                        int total_segments) override;
   void OnVolume(double volume) override;
-  void OnStateChanged(AudioInputIPCDelegate::State state) override;
+  void OnStateChanged(AudioInputIPCDelegateState state) override;
   void OnIPCClosed() override;
 
  private:

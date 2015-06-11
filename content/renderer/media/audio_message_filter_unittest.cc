@@ -18,7 +18,7 @@ class MockAudioDelegate : public media::AudioOutputIPCDelegate {
     Reset();
   }
 
-  void OnStateChanged(media::AudioOutputIPCDelegate::State state) override {
+  void OnStateChanged(media::AudioOutputIPCDelegateState state) override {
     state_changed_received_ = true;
     state_ = state;
   }
@@ -35,7 +35,7 @@ class MockAudioDelegate : public media::AudioOutputIPCDelegate {
 
   void Reset() {
     state_changed_received_ = false;
-    state_ = media::AudioOutputIPCDelegate::kError;
+    state_ = media::AUDIO_OUTPUT_IPC_DELEGATE_STATE_ERROR;
 
     created_received_ = false;
     handle_ = base::SharedMemory::NULLHandle();
@@ -46,7 +46,7 @@ class MockAudioDelegate : public media::AudioOutputIPCDelegate {
   }
 
   bool state_changed_received() { return state_changed_received_; }
-  media::AudioOutputIPCDelegate::State state() { return state_; }
+  media::AudioOutputIPCDelegateState state() { return state_; }
 
   bool created_received() { return created_received_; }
   base::SharedMemoryHandle handle() { return handle_; }
@@ -54,7 +54,7 @@ class MockAudioDelegate : public media::AudioOutputIPCDelegate {
 
  private:
   bool state_changed_received_;
-  media::AudioOutputIPCDelegate::State state_;
+  media::AudioOutputIPCDelegateState state_;
 
   bool created_received_;
   base::SharedMemoryHandle handle_;
@@ -97,9 +97,9 @@ TEST(AudioMessageFilterTest, Basic) {
   EXPECT_FALSE(delegate.state_changed_received());
   filter->OnMessageReceived(
       AudioMsg_NotifyStreamStateChanged(
-          kStreamId, media::AudioOutputIPCDelegate::kPlaying));
+          kStreamId, media::AUDIO_OUTPUT_IPC_DELEGATE_STATE_PLAYING));
   EXPECT_TRUE(delegate.state_changed_received());
-  EXPECT_EQ(media::AudioOutputIPCDelegate::kPlaying, delegate.state());
+  EXPECT_EQ(media::AUDIO_OUTPUT_IPC_DELEGATE_STATE_PLAYING, delegate.state());
   delegate.Reset();
 
   message_loop.RunUntilIdle();
@@ -134,7 +134,7 @@ TEST(AudioMessageFilterTest, Delegates) {
   EXPECT_FALSE(delegate2.state_changed_received());
   filter->OnMessageReceived(
       AudioMsg_NotifyStreamStateChanged(
-          kStreamId1, media::AudioOutputIPCDelegate::kPlaying));
+          kStreamId1, media::AUDIO_OUTPUT_IPC_DELEGATE_STATE_PLAYING));
   EXPECT_TRUE(delegate1.state_changed_received());
   EXPECT_FALSE(delegate2.state_changed_received());
   delegate1.Reset();
@@ -143,7 +143,7 @@ TEST(AudioMessageFilterTest, Delegates) {
   EXPECT_FALSE(delegate2.state_changed_received());
   filter->OnMessageReceived(
       AudioMsg_NotifyStreamStateChanged(
-          kStreamId2, media::AudioOutputIPCDelegate::kPlaying));
+          kStreamId2, media::AUDIO_OUTPUT_IPC_DELEGATE_STATE_PLAYING));
   EXPECT_FALSE(delegate1.state_changed_received());
   EXPECT_TRUE(delegate2.state_changed_received());
   delegate2.Reset();
