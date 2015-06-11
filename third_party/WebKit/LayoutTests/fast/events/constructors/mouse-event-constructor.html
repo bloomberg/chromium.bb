@@ -103,22 +103,28 @@ var MIN_CLIENT_SIZE = "-33554432";
 });
 
 // button is passed.
-// Numbers within the unsigned short range.
+// Numbers within the short range.
 shouldBe("new MouseEvent('eventType', { button: 0 }).button", "0");
 shouldBe("new MouseEvent('eventType', { button: 1 }).button", "1");
-shouldBe("new MouseEvent('eventType', { button: 65534 }).button", "65534");
+shouldBe("new MouseEvent('eventType', { button: -2 }).button", "-2");
+shouldBe("new MouseEvent('eventType', { button: -32768 }).button", "-32768");
+shouldBe("new MouseEvent('eventType', { button: 32767 }).button", "32767");
 
-// Numbers that are equal to ((unsigned short)-1) should be treated as 0.
+// Numbers that are equal to -1 should be treated as 0.
 shouldBe("new MouseEvent('eventType', { button: 65535 }).button", "0");
 shouldBe("new MouseEvent('eventType', { button: 9007199254740991 }).button", "0");
 shouldBe("new MouseEvent('eventType', { button: -1 }).button", "0");
 
-// Numbers out of the unsigned short range.
+// Numbers out of the short range.
 // 2^{64}-1
 shouldBe("new MouseEvent('eventType', { button: 18446744073709551615 }).button", "0");
 shouldBe("new MouseEvent('eventType', { button: 12345678901234567890 }).button", "2048");
 shouldBe("new MouseEvent('eventType', { button: 123.45 }).button", "123");
 shouldBe("new MouseEvent('eventType', { button: NaN }).button", "0");
+shouldBe("new MouseEvent('eventType', { button: 65534 }).button", "-2");
+shouldBe("new MouseEvent('eventType', { button: -32769 }).button", "32767");
+shouldBe("new MouseEvent('eventType', { button: 32768 }).button", "-32768");
+
 
 // Non-numeric values.
 shouldBe("new MouseEvent('eventType', { button: undefined }).button", "0");
