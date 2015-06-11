@@ -552,7 +552,7 @@ TEST_P(HttpStreamFactoryTest, PreconnectDirectWithExistingSpdySession) {
 // Verify that preconnects to unsafe ports are cancelled before they reach
 // the SocketPool.
 TEST_P(HttpStreamFactoryTest, PreconnectUnsafePort) {
-  ASSERT_FALSE(IsPortAllowedForScheme(7, "http", PORT_OVERRIDES_ALLOWED));
+  ASSERT_FALSE(IsPortAllowedForScheme(7, "http"));
 
   SpdySessionDependencies session_deps(
       GetParam(), ProxyService::CreateDirect());

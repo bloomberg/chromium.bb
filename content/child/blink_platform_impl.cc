@@ -531,8 +531,7 @@ bool BlinkPlatformImpl::portAllowed(const blink::WebURL& url) const {
   // through non-network schemes that don't go over the network.
   if (!gurl.has_port())
     return true;
-  return net::IsPortAllowedForScheme(gurl.EffectiveIntPort(), gurl.scheme(),
-                                     net::PORT_OVERRIDES_ALLOWED);
+  return net::IsPortAllowedForScheme(gurl.EffectiveIntPort(), gurl.scheme());
 }
 
 blink::WebThread* BlinkPlatformImpl::createThread(const char* name) {

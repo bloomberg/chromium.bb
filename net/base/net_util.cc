@@ -151,10 +151,6 @@ static const int kAllowedFtpPorts[] = {
 static base::LazyInstance<std::multiset<int> >::Leaky
     g_explicitly_allowed_ports = LAZY_INSTANCE_INITIALIZER;
 
-size_t GetCountOfExplicitlyAllowedPorts() {
-  return g_explicitly_allowed_ports.Get().size();
-}
-
 std::string GetSpecificHeader(const std::string& headers,
                               const std::string& name) {
   // We want to grab the Value from the "Key: Value" pairs in the headers,
@@ -276,18 +272,14 @@ bool IsWellKnownPort(int port) {
   return port >= 0 && port < 1024;
 }
 
-NET_EXPORT bool IsPortAllowedForScheme(int port,
-                                       const std::string& url_scheme,
-                                       PortOverrideMode port_override_mode) {
+bool IsPortAllowedForScheme(int port, const std::string& url_scheme) {
   // Reject invalid ports.
   if (!IsPortValid(port))
     return false;
 
   // Allow explitly allowed ports for any scheme.
-  if (port_override_mode == PORT_OVERRIDES_ALLOWED &&
-      g_explicitly_allowed_ports.Get().count(port) > 0) {
+  if (g_explicitly_allowed_ports.Get().count(port) > 0)
     return true;
-  }
 
   // FTP requests have an extra set of whitelisted schemes.
   if (base::LowerCaseEqualsASCII(url_scheme, url::kFtpScheme)) {
@@ -305,6 +297,55 @@ NET_EXPORT bool IsPortAllowedForScheme(int port,
   }
 
   return true;
+}
+
+size_t GetCountOfExplicitlyAllowedPorts() {
+  return g_explicitly_allowed_ports.Get().size();
+}
+
+// Specifies a comma separated list of port numbers that should be accepted
+// despite bans. If the string is invalid no allowed ports are stored.
+void SetExplicitlyAllowedPorts(const std::string& allowed_ports) {
+  if (allowed_ports.empty())
+    return;
+
+  std::multiset<int> ports;
+  size_t last = 0;
+  size_t size = allowed_ports.size();
+  // The comma delimiter.
+  const std::string::value_type kComma = ',';
+
+  // Overflow is still possible for evil user inputs.
+  for (size_t i = 0; i <= size; ++i) {
+    // The string should be composed of only digits and commas.
+    if (i != size && !IsAsciiDigit(allowed_ports[i]) &&
+        (allowed_ports[i] != kComma))
+      return;
+    if (i == size || allowed_ports[i] == kComma) {
+      if (i > last) {
+        int port;
+        base::StringToInt(base::StringPiece(allowed_ports.begin() + last,
+                                            allowed_ports.begin() + i),
+                          &port);
+        ports.insert(port);
+      }
+      last = i + 1;
+    }
+  }
+  g_explicitly_allowed_ports.Get() = ports;
+}
+
+ScopedPortException::ScopedPortException(int port) : port_(port) {
+  g_explicitly_allowed_ports.Get().insert(port);
+}
+
+ScopedPortException::~ScopedPortException() {
+  std::multiset<int>::iterator it =
+      g_explicitly_allowed_ports.Get().find(port_);
+  if (it != g_explicitly_allowed_ports.Get().end())
+    g_explicitly_allowed_ports.Get().erase(it);
+  else
+    NOTREACHED();
 }
 
 int SetNonBlocking(int fd) {
@@ -583,51 +624,6 @@ GURL SimplifyUrlForRequest(const GURL& url) {
   replacements.ClearPassword();
   replacements.ClearRef();
   return url.ReplaceComponents(replacements);
-}
-
-// Specifies a comma separated list of port numbers that should be accepted
-// despite bans. If the string is invalid no allowed ports are stored.
-void SetExplicitlyAllowedPorts(const std::string& allowed_ports) {
-  if (allowed_ports.empty())
-    return;
-
-  std::multiset<int> ports;
-  size_t last = 0;
-  size_t size = allowed_ports.size();
-  // The comma delimiter.
-  const std::string::value_type kComma = ',';
-
-  // Overflow is still possible for evil user inputs.
-  for (size_t i = 0; i <= size; ++i) {
-    // The string should be composed of only digits and commas.
-    if (i != size && !IsAsciiDigit(allowed_ports[i]) &&
-        (allowed_ports[i] != kComma))
-      return;
-    if (i == size || allowed_ports[i] == kComma) {
-      if (i > last) {
-        int port;
-        base::StringToInt(base::StringPiece(allowed_ports.begin() + last,
-                                            allowed_ports.begin() + i),
-                          &port);
-        ports.insert(port);
-      }
-      last = i + 1;
-    }
-  }
-  g_explicitly_allowed_ports.Get() = ports;
-}
-
-ScopedPortException::ScopedPortException(int port) : port_(port) {
-  g_explicitly_allowed_ports.Get().insert(port);
-}
-
-ScopedPortException::~ScopedPortException() {
-  std::multiset<int>::iterator it =
-      g_explicitly_allowed_ports.Get().find(port_);
-  if (it != g_explicitly_allowed_ports.Get().end())
-    g_explicitly_allowed_ports.Get().erase(it);
-  else
-    NOTREACHED();
 }
 
 bool HaveOnlyLoopbackAddresses() {

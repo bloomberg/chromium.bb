@@ -670,8 +670,7 @@ int HttpStreamFactoryImpl::Job::DoStart() {
                  &alternative_service_, priority_));
 
   // Don't connect to restricted ports.
-  if (!IsPortAllowedForScheme(server_.port(), request_info_.url.scheme(),
-                              PORT_OVERRIDES_ALLOWED)) {
+  if (!IsPortAllowedForScheme(server_.port(), request_info_.url.scheme())) {
     if (waiting_job_) {
       waiting_job_->Resume(this);
       waiting_job_ = NULL;
