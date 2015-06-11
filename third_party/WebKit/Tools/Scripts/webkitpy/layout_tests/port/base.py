@@ -223,7 +223,7 @@ class Port(object):
 
     def additional_driver_flag(self):
         if self.driver_name() == self.CONTENT_SHELL_NAME:
-            return ['--run-layout-test']
+            return ['--run-layout-test', '--disable-slimming-paint']
         return []
 
     def supports_per_test_timeout(self):
