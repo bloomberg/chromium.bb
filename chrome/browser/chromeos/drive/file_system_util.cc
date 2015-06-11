@@ -92,14 +92,16 @@ DriveIntegrationService* GetIntegrationServiceByProfile(Profile* profile) {
 }  // namespace
 
 const base::FilePath& GetDriveGrandRootPath() {
-  CR_DEFINE_STATIC_LOCAL(base::FilePath, grand_root_path,
-      (kDriveGrandRootDirName));
+  CR_DEFINE_STATIC_LOCAL(
+      base::FilePath, grand_root_path,
+      (base::FilePath::FromUTF8Unsafe(kDriveGrandRootDirName)));
   return grand_root_path;
 }
 
 const base::FilePath& GetDriveMyDriveRootPath() {
-  CR_DEFINE_STATIC_LOCAL(base::FilePath, drive_root_path,
-                         (FILE_PATH_LITERAL("drive/root")));
+  CR_DEFINE_STATIC_LOCAL(
+      base::FilePath, drive_root_path,
+      (GetDriveGrandRootPath().AppendASCII(kDriveMyDriveRootDirName)));
   return drive_root_path;
 }
 

@@ -690,9 +690,12 @@ TEST_F(FileSystemTest, ReadDirectory_Root) {
   for (size_t i = 0; i < entries->size(); ++i)
     found.insert(base::FilePath::FromUTF8Unsafe((*entries)[i].title()));
   EXPECT_EQ(3U, found.size());
-  EXPECT_EQ(1U, found.count(base::FilePath(util::kDriveMyDriveRootDirName)));
-  EXPECT_EQ(1U, found.count(base::FilePath(util::kDriveOtherDirName)));
-  EXPECT_EQ(1U, found.count(base::FilePath(util::kDriveTrashDirName)));
+  EXPECT_EQ(1U, found.count(base::FilePath::FromUTF8Unsafe(
+                    util::kDriveMyDriveRootDirName)));
+  EXPECT_EQ(1U, found.count(
+                    base::FilePath::FromUTF8Unsafe(util::kDriveOtherDirName)));
+  EXPECT_EQ(1U, found.count(
+                    base::FilePath::FromUTF8Unsafe(util::kDriveTrashDirName)));
 }
 
 TEST_F(FileSystemTest, ReadDirectory_NonRootDirectory) {

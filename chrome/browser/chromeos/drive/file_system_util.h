@@ -38,17 +38,10 @@ const char kDriveTrashDirLocalId[] = "<trash>";
 
 // The directory names used for the Google Drive file system tree. These names
 // are used in URLs for the file manager, hence user-visible.
-const base::FilePath::CharType kDriveGrandRootDirName[] =
-    FILE_PATH_LITERAL("drive");
-
-const base::FilePath::CharType kDriveMyDriveRootDirName[] =
-    FILE_PATH_LITERAL("root");
-
-const base::FilePath::CharType kDriveOtherDirName[] =
-    FILE_PATH_LITERAL("other");
-
-const base::FilePath::CharType kDriveTrashDirName[] =
-    FILE_PATH_LITERAL("trash");
+const char kDriveGrandRootDirName[] = "drive";
+const char kDriveMyDriveRootDirName[] = "root";
+const char kDriveOtherDirName[] = "other";
+const char kDriveTrashDirName[] = "trash";
 
 // Returns the path of the top root of the pseudo tree.
 const base::FilePath& GetDriveGrandRootPath();

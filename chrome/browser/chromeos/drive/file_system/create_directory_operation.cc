@@ -75,15 +75,17 @@ FileError UpdateLocalState(internal::ResourceMetadata* metadata,
   std::vector<base::FilePath::StringType> components;
   directory_path.GetComponents(&components);
 
-  if (components.empty() || components[0] != util::kDriveGrandRootDirName)
+  if (components.empty() ||
+      components[0] != util::GetDriveGrandRootPath().value())
     return FILE_ERROR_NOT_FOUND;
 
   base::FilePath existing_deepest_path(components[0]);
   std::string local_id = util::kDriveGrandRootLocalId;
   for (size_t i = 1; i < components.size(); ++i) {
+    const std::string component = base::FilePath(components[i]).AsUTF8Unsafe();
     std::string child_local_id;
     FileError error =
-        metadata->GetChildId(local_id, components[i], &child_local_id);
+        metadata->GetChildId(local_id, component, &child_local_id);
     if (error == FILE_ERROR_NOT_FOUND)
       break;
     if (error != FILE_ERROR_OK)

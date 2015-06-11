@@ -32,7 +32,7 @@ bool EnoughDiskSpaceIsAvailableForDBOperation(const base::FilePath& path) {
 // Returns a file name with a uniquifier appended. (e.g. "File (1).txt")
 std::string GetUniquifiedName(const std::string& name, int uniquifier) {
   base::FilePath name_path = base::FilePath::FromUTF8Unsafe(name);
-  name_path = name_path.InsertBeforeExtension(
+  name_path = name_path.InsertBeforeExtensionASCII(
       base::StringPrintf(" (%d)", uniquifier));
   return name_path.AsUTF8Unsafe();
 }
@@ -474,7 +474,8 @@ FileError ResourceMetadata::GetIdByPath(const base::FilePath& file_path,
   // Start from the root.
   std::vector<base::FilePath::StringType> components;
   file_path.GetComponents(&components);
-  if (components.empty() || components[0] != util::kDriveGrandRootDirName)
+  if (components.empty() ||
+      components[0] != util::GetDriveGrandRootPath().value())
     return FILE_ERROR_NOT_FOUND;
 
   // Iterate over the remaining components.
