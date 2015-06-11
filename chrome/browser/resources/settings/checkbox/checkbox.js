@@ -19,7 +19,7 @@ Polymer({
   properties: {
     /**
      * The boolean preference object to control.
-     * @type {?chrome.settingsPrivate.PrefObject}
+     * @type {?PrefObject}
      */
     pref: {
       type: Object,

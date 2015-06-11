@@ -41,7 +41,7 @@
     properties: {
       /**
        * The Preference object being tracked.
-       * @type {?chrome.settingsPrivate.PrefObject}
+       * @type {?PrefObject}
        */
       pref: {
         type: Object,

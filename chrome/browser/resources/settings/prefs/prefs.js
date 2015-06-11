@@ -44,8 +44,7 @@
 
     /**
      * Called when prefs in the underlying Chrome pref store are changed.
-     * @param {!Array<!chrome.settingsPrivate.PrefObject>} prefs The prefs that
-     *     changed.
+     * @param {!Array<!PrefObject>} prefs The prefs that changed.
      * @private
      */
     onPrefsChanged_: function(prefs) {
@@ -54,7 +53,7 @@
 
     /**
      * Called when prefs are fetched from settingsPrivate.
-     * @param {!Array<!chrome.settingsPrivate.PrefObject>} prefs
+     * @param {!Array<!PrefObject>} prefs
      * @private
      */
     onPrefsFetched_: function(prefs) {
@@ -67,7 +66,7 @@
 
     /**
      * Updates the settings model with the given prefs.
-     * @param {!Array<!chrome.settingsPrivate.PrefObject>} prefs
+     * @param {!Array<!PrefObject>} prefs
      * @param {boolean} shouldObserve Whether each of the prefs should be
      *     observed.
      * @private
@@ -93,6 +92,17 @@
         // observer fires.
         for (let objKey in prefObj) {
           let path = 'prefStore.' + prefObj.key + '.' + objKey;
+
+          // Handle lists specially. We don't want to call this.set()
+          // unconditionally upon updating a list value, since even its contents
+          // are the same as the old list, doing this set() may cause an
+          // infinite update cycle (http://crbug.com/498586).
+          if (objKey == 'value' &&
+              prefObj.type == chrome.settingsPrivate.PrefType.LIST &&
+              !this.shouldUpdateListPrefValue_(root, prefObj['value'])) {
+            continue;
+          }
+
           this.set(path, prefObj[objKey]);
         }
 
@@ -100,6 +110,29 @@
           Object.observe(root, this.propertyChangeCallback_, ['update']);
         }
       }, this);
+    },
+
+
+    /**
+     * @param {Object} root The root object for a pref that contains a list
+     *     value.
+     * @param {!Array} newValue The new list value.
+     * @return {boolean} Whether the new value is different from the one in
+     *     root, thus necessitating a pref update.
+     */
+    shouldUpdateListPrefValue_: function(root, newValue) {
+      if (root.value == null ||
+          root.value.length != newValue.length) {
+        return true;
+      }
+
+      for (let i = 0; i < newValue.length; i++) {
+        if (root.value != null && root.value[i] != newValue[i]) {
+          return true;
+        }
+      }
+
+      return false;
     },
 
     /**
