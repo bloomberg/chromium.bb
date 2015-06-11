@@ -9,6 +9,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/font.h"
+#include "ui/views/controls/styled_label.h"
 
 namespace chromeos {
 
@@ -26,10 +28,19 @@ PlatformKeysCertificateSelector::~PlatformKeysCertificateSelector() {
 }
 
 void PlatformKeysCertificateSelector::Init() {
-  const base::string16 text =
-      l10n_util::GetStringFUTF16(IDS_PLATFORM_KEYS_SELECT_CERT_DIALOG_TEXT,
-                                 base::ASCIIToUTF16(extension_name_));
-  CertificateSelector::InitWithText(text);
+  const base::string16 name = base::ASCIIToUTF16(extension_name_);
+
+  size_t offset;
+  const base::string16 text = l10n_util::GetStringFUTF16(
+      IDS_PLATFORM_KEYS_SELECT_CERT_DIALOG_TEXT, name, &offset);
+
+  scoped_ptr<views::StyledLabel> label(
+      new views::StyledLabel(text, nullptr /* no listener */));
+
+  views::StyledLabel::RangeStyleInfo bold_style;
+  bold_style.font_style = gfx::Font::BOLD;
+  label->AddStyleRange(gfx::Range(offset, offset + name.size()), bold_style);
+  CertificateSelector::InitWithText(label.Pass());
 }
 
 bool PlatformKeysCertificateSelector::Cancel() {

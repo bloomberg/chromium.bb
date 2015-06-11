@@ -18,7 +18,6 @@
 #include "ui/base/models/table_model.h"
 #include "ui/base/models/table_model_observer.h"
 #include "ui/views/controls/button/label_button.h"
-#include "ui/views/controls/label.h"
 #include "ui/views/controls/table/table_view.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
@@ -26,6 +25,9 @@
 #include "ui/views/window/dialog_client_view.h"
 
 namespace chrome {
+
+const int CertificateSelector::kTableViewWidth = 400;
+const int CertificateSelector::kTableViewHeight = 100;
 
 class CertificateSelector::CertificateTableModel : public ui::TableModel {
  public:
@@ -93,13 +95,9 @@ void CertificateSelector::Show() {
   table_->Select(0);
 }
 
-void CertificateSelector::InitWithText(const base::string16& text) {
+void CertificateSelector::InitWithText(scoped_ptr<views::View> text_label) {
   views::GridLayout* const layout = views::GridLayout::CreatePanel(this);
   SetLayoutManager(layout);
-
-  // The dimensions of the certificate selector table view, in pixels.
-  const int kTableViewWidth = 400;
-  const int kTableViewHeight = 100;
 
   const int kColumnSetId = 0;
   views::ColumnSet* const column_set = layout->AddColumnSet(kColumnSetId);
@@ -107,12 +105,7 @@ void CertificateSelector::InitWithText(const base::string16& text) {
                         views::GridLayout::USE_PREF, 0, 0);
 
   layout->StartRow(0, kColumnSetId);
-  scoped_ptr<views::Label> label(new views::Label(text));
-  label->SetMultiLine(true);
-  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  label->SetAllowCharacterBreak(true);
-  label->SizeToFit(kTableViewWidth);
-  layout->AddView(label.release());
+  layout->AddView(text_label.release());
 
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 

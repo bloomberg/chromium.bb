@@ -15,6 +15,7 @@
 #include "net/cert/x509_certificate.h"
 #include "net/test/cert_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/views/controls/label.h"
 
 namespace {
 
@@ -24,7 +25,10 @@ class TestCertificateSelector : public chrome::CertificateSelector {
                           content::WebContents* web_contents)
       : CertificateSelector(certificates, web_contents) {}
 
-  void Init() { InitWithText(base::ASCIIToUTF16("some arbitrary text")); }
+  void Init() {
+    InitWithText(make_scoped_ptr(
+        new views::Label(base::ASCIIToUTF16("some arbitrary text"))));
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestCertificateSelector);

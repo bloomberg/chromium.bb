@@ -15,6 +15,7 @@
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/widget/widget.h"
 
 #if defined(USE_NSS_CERTS)
@@ -36,9 +37,15 @@ SSLClientCertificateSelector::~SSLClientCertificateSelector() {
 
 void SSLClientCertificateSelector::Init() {
   StartObserving();
-  InitWithText(l10n_util::GetStringFUTF16(
-      IDS_CLIENT_CERT_DIALOG_TEXT,
-      base::ASCIIToUTF16(cert_request_info()->host_and_port.ToString())));
+  scoped_ptr<views::Label> text_label(
+      new views::Label(l10n_util::GetStringFUTF16(
+          IDS_CLIENT_CERT_DIALOG_TEXT,
+          base::ASCIIToUTF16(cert_request_info()->host_and_port.ToString()))));
+  text_label->SetMultiLine(true);
+  text_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  text_label->SetAllowCharacterBreak(true);
+  text_label->SizeToFit(kTableViewWidth);
+  InitWithText(text_label.Pass());
 }
 
 void SSLClientCertificateSelector::OnCertSelectedByNotification() {

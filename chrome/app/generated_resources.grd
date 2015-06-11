@@ -10047,9 +10047,9 @@ I don't think this site should be blocked!
         Connect
       </message>
 
-      <!-- Strings for the certificate selection dialog triggered by platformKeys -->
+      <!-- Strings for the certificate selection dialog triggered by chrome.platformKeys -->
       <message name="IDS_PLATFORM_KEYS_SELECT_CERT_DIALOG_TEXT" desc="The text in the dialog that prompts the user to select a certificate when an extension requests certificates through the platformKeys API.">
-        Extension '<ph name="EXTENSION_NAME">$1<ex>Better OpenVPN App</ex></ph>' has requested a certificate. Selecting a certificate will grant the extension the ability to use this identity with servers now and in the future. You should only select a certificate if you trust the extension.
+        <ph name="EXTENSION_NAME">$1<ex>My OpenVPN App</ex></ph> wants permanent access to a certificate to authenticate itself on your behalf.
       </message>
 
       <!-- Misc strings for SSL UI -->
