@@ -450,7 +450,6 @@ NSAttributedString* CreateClassifiedAttributedString(
                withContentsMaxWidth:(int*)contentsMaxWidth {
   CGFloat offset = 0.0f;
   CGFloat remainingWidth = GetContentAreaWidth(cellFrame);
-  bool isRTL = base::i18n::IsRTL();
   bool isContentsRTL = (base::i18n::RIGHT_TO_LEFT ==
       base::i18n::GetFirstStrongCharacterDirection(match_.contents));
   // Prefix may not have any characters with strong directionality, and may take
@@ -464,7 +463,7 @@ NSAttributedString* CreateClassifiedAttributedString(
   CGFloat prefixWidth = [prefix_ size].width;
 
   CGFloat prefixOffset = 0.0f;
-  if (isRTL != isContentsRTL) {
+  if (base::i18n::IsRTL() != isContentsRTL) {
     // The contents is rendered between the contents offset extending towards
     // the start edge, while prefix is rendered in opposite direction. Ideally
     // the prefix should be rendered at |contentsOffset_|. If that is not
@@ -532,7 +531,6 @@ NSAttributedString* CreateClassifiedAttributedString(
       || ((size_t)contentsStartIndex >= inputText.length())) {
     return 0;
   }
-  bool isRTL = base::i18n::IsRTL();
   bool isContentsRTL = (base::i18n::RIGHT_TO_LEFT ==
       base::i18n::GetFirstStrongCharacterDirection(match.contents));
 
@@ -583,7 +581,7 @@ NSAttributedString* CreateClassifiedAttributedString(
     glyphWidth = inputWidth - glyphOffset;
   if (isContentsRTL)
     glyphOffset += glyphWidth;
-  return isRTL ? (inputWidth - glyphOffset) : glyphOffset;
+  return base::i18n::IsRTL() ? (inputWidth - glyphOffset) : glyphOffset;
 }
 
 @end
