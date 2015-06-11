@@ -417,8 +417,6 @@ if (enable_webrtc) {
       "source/talk/media/base/constants.cc",
       "source/talk/media/base/constants.h",
       "source/talk/media/base/cryptoparams.h",
-      "source/talk/media/base/filemediaengine.cc",
-      "source/talk/media/base/filemediaengine.h",
       "source/talk/media/base/hybriddataengine.h",
       "source/talk/media/base/mediachannel.h",
       "source/talk/media/base/mediaengine.cc",

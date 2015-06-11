@@ -401,8 +401,6 @@
             '<(libjingle_source)/talk/media/base/constants.cc',
             '<(libjingle_source)/talk/media/base/constants.h',
             '<(libjingle_source)/talk/media/base/cryptoparams.h',
-            '<(libjingle_source)/talk/media/base/filemediaengine.cc',
-            '<(libjingle_source)/talk/media/base/filemediaengine.h',
             '<(libjingle_source)/talk/media/base/hybriddataengine.h',
             '<(libjingle_source)/talk/media/base/mediachannel.h',
             '<(libjingle_source)/talk/media/base/mediaengine.cc',
