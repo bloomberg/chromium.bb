@@ -6,6 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "base/run_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/leveldb_proto/proto_database.h"
 #include "components/leveldb_proto/testing/fake_db.h"
 #include "components/suggestions/image_encoder.h"
@@ -113,8 +114,9 @@ class ImageManagerTest : public testing::Test {
     EXPECT_CALL(*mock_image_fetcher_, SetImageFetcherDelegate(_));
     return new ImageManager(
         scoped_ptr<ImageFetcher>(mock_image_fetcher_),
-        scoped_ptr<leveldb_proto::ProtoDatabase<ImageData> >(fake_db),
-        FakeDB<ImageData>::DirectoryForTestDB());
+        scoped_ptr<leveldb_proto::ProtoDatabase<ImageData>>(fake_db),
+        FakeDB<ImageData>::DirectoryForTestDB(),
+        base::ThreadTaskRunnerHandle::Get());
   }
 
   EntryMap db_model_;
@@ -125,6 +127,9 @@ class ImageManagerTest : public testing::Test {
 
   int num_callback_null_called_;
   int num_callback_valid_called_;
+
+  base::MessageLoop message_loop_;
+
   // Under test.
   scoped_ptr<ImageManager> image_manager_;
 };
@@ -181,8 +186,9 @@ TEST_F(ImageManagerTest, GetImageForURLNetworkCacheHit) {
   fake_db->InitCallback(true);
   fake_db->LoadCallback(true);
   // Expect something in the cache.
-  SkBitmap* bitmap = image_manager_->GetBitmapFromCache(GURL(kTestUrl1));
-  EXPECT_FALSE(bitmap->isNull());
+  auto encoded_image =
+      image_manager_->GetEncodedImageFromCache(GURL(kTestUrl1));
+  EXPECT_NE(nullptr, encoded_image);
 
   base::RunLoop run_loop;
   image_manager_->GetImageForURL(GURL(kTestUrl1),

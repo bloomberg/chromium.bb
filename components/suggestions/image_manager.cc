@@ -5,20 +5,35 @@
 #include "components/suggestions/image_manager.h"
 
 #include "base/bind.h"
+#include "base/location.h"
+#include "base/task_runner_util.h"
 #include "components/suggestions/image_encoder.h"
 #include "components/suggestions/image_fetcher.h"
 
 using leveldb_proto::ProtoDatabase;
 
+namespace {
+
+scoped_ptr<SkBitmap> DecodeImage(
+    scoped_refptr<base::RefCountedMemory> encoded_data) {
+  return scoped_ptr<SkBitmap>(suggestions::DecodeJPEGToSkBitmap(
+      encoded_data->front(), encoded_data->size()));
+}
+
+}  // namespace
+
 namespace suggestions {
 
 ImageManager::ImageManager() : weak_ptr_factory_(this) {}
 
-ImageManager::ImageManager(scoped_ptr<ImageFetcher> image_fetcher,
-                           scoped_ptr<ProtoDatabase<ImageData> > database,
-                           const base::FilePath& database_dir)
+ImageManager::ImageManager(
+    scoped_ptr<ImageFetcher> image_fetcher,
+    scoped_ptr<ProtoDatabase<ImageData>> database,
+    const base::FilePath& database_dir,
+    scoped_refptr<base::TaskRunner> background_task_runner)
     : image_fetcher_(image_fetcher.Pass()),
       database_(database.Pass()),
+      background_task_runner_(background_task_runner),
       database_ready_(false),
       weak_ptr_factory_(this) {
   image_fetcher_->SetImageFetcherDelegate(this);
@@ -95,57 +110,68 @@ void ImageManager::QueueCacheRequest(
   }
 }
 
-void ImageManager::ServeFromCacheOrNetwork(
-    const GURL& url, const GURL& image_url,
-    base::Callback<void(const GURL&, const SkBitmap*)> callback) {
-  // If there is a image available in memory, return it.
-  if (!ServeFromCache(url, callback)) {
+void ImageManager::OnCacheImageDecoded(
+    const GURL& url,
+    const GURL& image_url,
+    base::Callback<void(const GURL&, const SkBitmap*)> callback,
+    scoped_ptr<SkBitmap> bitmap) {
+  if (bitmap.get()) {
+    callback.Run(url, bitmap.get());
+  } else {
     image_fetcher_->StartOrQueueNetworkRequest(url, image_url, callback);
   }
 }
 
-bool ImageManager::ServeFromCache(
-    const GURL& url,
-    base::Callback<void(const GURL&, const SkBitmap*)> callback) {
-  SkBitmap* bitmap = GetBitmapFromCache(url);
-  if (bitmap) {
-    callback.Run(url, bitmap);
-    return true;
-  }
-  return false;
-}
-
-SkBitmap* ImageManager::GetBitmapFromCache(const GURL& url) {
+scoped_refptr<base::RefCountedMemory> ImageManager::GetEncodedImageFromCache(
+    const GURL& url) {
   ImageMap::iterator image_iter = image_map_.find(url.spec());
   if (image_iter != image_map_.end()) {
-    return &image_iter->second;
+    return image_iter->second;
   }
-  return NULL;
+  return nullptr;
+}
+
+void ImageManager::ServeFromCacheOrNetwork(
+    const GURL& url,
+    const GURL& image_url,
+    base::Callback<void(const GURL&, const SkBitmap*)> callback) {
+  scoped_refptr<base::RefCountedMemory> encoded_data =
+      GetEncodedImageFromCache(url);
+  if (encoded_data.get()) {
+    base::PostTaskAndReplyWithResult(
+        background_task_runner_.get(), FROM_HERE,
+        base::Bind(&DecodeImage, encoded_data),
+        base::Bind(&ImageManager::OnCacheImageDecoded,
+                   weak_ptr_factory_.GetWeakPtr(), url, image_url, callback));
+  } else {
+    image_fetcher_->StartOrQueueNetworkRequest(url, image_url, callback);
+  }
 }
 
 void ImageManager::SaveImage(const GURL& url, const SkBitmap& bitmap) {
+  scoped_refptr<base::RefCountedBytes> encoded_data(
+      new base::RefCountedBytes());
+  if (!EncodeSkBitmapToJPEG(bitmap, &encoded_data->data())) {
+    return;
+  }
+
   // Update the image map.
-  image_map_.insert(std::make_pair(url.spec(), bitmap));
+  image_map_.insert({url.spec(), encoded_data});
 
   if (!database_ready_) return;
 
-  // Attempt to save a JPEG representation to the database. If not successful,
-  // the fetched bitmap will still be inserted in the cache, above.
-  std::vector<unsigned char> encoded_data;
-  if (EncodeSkBitmapToJPEG(bitmap, &encoded_data)) {
-    // Save the resulting bitmap to the database.
-    ImageData data;
-    data.set_url(url.spec());
-    data.set_data(std::string(encoded_data.begin(), encoded_data.end()));
-    scoped_ptr<ProtoDatabase<ImageData>::KeyEntryVector> entries_to_save(
-        new ProtoDatabase<ImageData>::KeyEntryVector());
-    scoped_ptr<std::vector<std::string> > keys_to_remove(
-        new std::vector<std::string>());
-    entries_to_save->push_back(std::make_pair(data.url(), data));
-    database_->UpdateEntries(entries_to_save.Pass(), keys_to_remove.Pass(),
-                             base::Bind(&ImageManager::OnDatabaseSave,
-                                        weak_ptr_factory_.GetWeakPtr()));
-  }
+  // Save the resulting bitmap to the database.
+  ImageData data;
+  data.set_url(url.spec());
+  data.set_data(encoded_data->front(), encoded_data->size());
+  scoped_ptr<ProtoDatabase<ImageData>::KeyEntryVector> entries_to_save(
+      new ProtoDatabase<ImageData>::KeyEntryVector());
+  scoped_ptr<std::vector<std::string>> keys_to_remove(
+      new std::vector<std::string>());
+  entries_to_save->push_back(std::make_pair(data.url(), data));
+  database_->UpdateEntries(entries_to_save.Pass(), keys_to_remove.Pass(),
+                           base::Bind(&ImageManager::OnDatabaseSave,
+                                      weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ImageManager::OnDatabaseInit(bool success) {
@@ -187,10 +213,8 @@ void ImageManager::LoadEntriesInCache(scoped_ptr<ImageDataVector> entries) {
     std::vector<unsigned char> encoded_data(it->data().begin(),
                                             it->data().end());
 
-    scoped_ptr<SkBitmap> bitmap(DecodeJPEGToSkBitmap(encoded_data));
-    if (bitmap.get()) {
-      image_map_.insert(std::make_pair(it->url(), *bitmap));
-    }
+    image_map_.insert(
+        {it->url(), base::RefCountedBytes::TakeVector(&encoded_data)});
   }
 }
 

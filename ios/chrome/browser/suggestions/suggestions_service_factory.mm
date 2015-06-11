@@ -68,8 +68,9 @@ KeyedService* SuggestionsServiceFactory::BuildServiceInstanceFor(
       new leveldb_proto::ProtoDatabaseImpl<ImageData>(background_task_runner));
   scoped_ptr<ImageFetcher> image_fetcher(new ImageFetcherImpl(
       browser_state->GetRequestContext(), sequenced_worker_pool));
-  scoped_ptr<ImageManager> thumbnail_manager(
-      new ImageManager(image_fetcher.Pass(), db.Pass(), database_dir));
+  scoped_ptr<ImageManager> thumbnail_manager(new ImageManager(
+      image_fetcher.Pass(), db.Pass(), database_dir,
+      web::WebThread::GetTaskRunnerForThread(web::WebThread::DB)));
   return new SuggestionsService(
       browser_state->GetRequestContext(), suggestions_store.Pass(),
       thumbnail_manager.Pass(), blacklist_store.Pass());

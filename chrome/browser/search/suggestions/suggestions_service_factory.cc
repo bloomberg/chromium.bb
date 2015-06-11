@@ -67,7 +67,9 @@ KeyedService* SuggestionsServiceFactory::BuildServiceInstanceFor(
   scoped_ptr<ImageFetcherImpl> image_fetcher(
       new ImageFetcherImpl(the_profile->GetRequestContext()));
   scoped_ptr<ImageManager> thumbnail_manager(
-      new ImageManager(image_fetcher.Pass(), db.Pass(), database_dir));
+      new ImageManager(
+          image_fetcher.Pass(), db.Pass(), database_dir,
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB)));
   return new SuggestionsService(
       the_profile->GetRequestContext(), suggestions_store.Pass(),
       thumbnail_manager.Pass(), blacklist_store.Pass());

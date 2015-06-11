@@ -12,8 +12,10 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "components/leveldb_proto/proto_database.h"
 #include "components/suggestions/image_fetcher_delegate.h"
@@ -38,8 +40,9 @@ class ImageManager : public ImageFetcherDelegate {
   typedef std::vector<ImageData> ImageDataVector;
 
   ImageManager(scoped_ptr<ImageFetcher> image_fetcher,
-               scoped_ptr<leveldb_proto::ProtoDatabase<ImageData> > database,
-               const base::FilePath& database_dir);
+               scoped_ptr<leveldb_proto::ProtoDatabase<ImageData>> database,
+               const base::FilePath& database_dir,
+               scoped_refptr<base::TaskRunner> background_task_runner);
   ~ImageManager() override;
 
   virtual void Initialize(const SuggestionsProfile& suggestions);
@@ -66,7 +69,8 @@ class ImageManager : public ImageFetcherDelegate {
 
   typedef std::vector<base::Callback<void(const GURL&, const SkBitmap*)> >
       CallbackVector;
-  typedef base::hash_map<std::string, SkBitmap> ImageMap;
+  typedef base::hash_map<std::string, scoped_refptr<base::RefCountedMemory>>
+      ImageMap;
 
   // State related to an image fetch (associated website url, image_url,
   // pending callbacks).
@@ -95,14 +99,15 @@ class ImageManager : public ImageFetcherDelegate {
       const GURL& url, const GURL& image_url,
       base::Callback<void(const GURL&, const SkBitmap*)> callback);
 
-  // Will return false if no bitmap was found corresponding to |url|, else
-  // return true and call |callback| with the found bitmap.
-  bool ServeFromCache(
+  void OnCacheImageDecoded(
       const GURL& url,
-      base::Callback<void(const GURL&, const SkBitmap*)> callback);
+      const GURL& image_url,
+      base::Callback<void(const GURL&, const SkBitmap*)> callback,
+      scoped_ptr<SkBitmap> bitmap);
 
   // Returns null if the |url| had no entry in the cache.
-  SkBitmap* GetBitmapFromCache(const GURL& url);
+  scoped_refptr<base::RefCountedMemory> GetEncodedImageFromCache(
+      const GURL& url);
 
   // Save the image bitmap in the cache and in the database.
   void SaveImage(const GURL& url, const SkBitmap& bitmap);
@@ -133,6 +138,8 @@ class ImageManager : public ImageFetcherDelegate {
   scoped_ptr<ImageFetcher> image_fetcher_;
 
   scoped_ptr<leveldb_proto::ProtoDatabase<ImageData> > database_;
+
+  scoped_refptr<base::TaskRunner> background_task_runner_;
 
   bool database_ready_;
 

@@ -11,11 +11,9 @@
 
 namespace suggestions {
 
-SkBitmap* DecodeJPEGToSkBitmap(const std::vector<unsigned char>& encoded_data) {
-  NSData* data =
-      [NSData dataWithBytes:encoded_data.data() length:encoded_data.size()];
-  UIImage* image =
-     [UIImage imageWithData:data scale:1.0];
+SkBitmap* DecodeJPEGToSkBitmap(const void* encoded_data, size_t size) {
+  NSData* data = [NSData dataWithBytes:encoded_data length:size];
+  UIImage* image = [UIImage imageWithData:data scale:1.0];
   return new SkBitmap(gfx::CGImageToSkBitmap(image.CGImage, [image size], YES));
 }
 
