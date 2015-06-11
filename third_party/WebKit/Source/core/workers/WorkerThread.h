@@ -60,6 +60,7 @@ class CORE_EXPORT WorkerThread : public RefCounted<WorkerThread> {
 public:
     virtual ~WorkerThread();
 
+    // Called on the main thread.
     virtual void start(PassOwnPtr<WorkerThreadStartupData>);
     virtual void stop();
 
@@ -79,6 +80,10 @@ public:
     WebWaitableEvent* shutdownEvent() { return m_shutdownEvent.get(); }
 
     WebWaitableEvent* terminationEvent() { return m_terminationEvent.get(); }
+
+    // Called in shutdown sequence. Internally calls stop() (or stopInternal)
+    // and wait (by *blocking* the calling thread) until the worker(s) is/are
+    // shut down.
     void terminateAndWait();
     static void terminateAndWaitForAllWorkers();
 
@@ -103,6 +108,9 @@ public:
     void didLeaveNestedLoop();
 
     WorkerGlobalScope* workerGlobalScope() const { return m_workerGlobalScope.get(); }
+
+    // Returns true once stop() (or one of the terminate* methods which
+    // internally calls stop) is called.
     bool terminated();
 
     // Number of active worker threads.
@@ -132,9 +140,10 @@ protected:
 private:
     friend class WorkerMicrotaskRunner;
 
-    void stopInShutdownSequence();
+    // Called on the main thread.
     void stopInternal();
 
+    // Called on the worker thread.
     void initialize(PassOwnPtr<WorkerThreadStartupData>);
     void shutdown();
     void performIdleWork(double deadlineSeconds);
