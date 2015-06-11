@@ -35,6 +35,7 @@
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8CacheOptions.h"
+#include "core/CoreExport.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/ThreadingPrimitives.h"
 #include "wtf/text/TextPosition.h"
@@ -48,7 +49,7 @@ class ExceptionState;
 class ScriptSourceCode;
 class WorkerGlobalScope;
 
-class WorkerScriptController {
+class CORE_EXPORT WorkerScriptController {
 public:
     WorkerScriptController(WorkerGlobalScope&, v8::Isolate*);
     ~WorkerScriptController();
