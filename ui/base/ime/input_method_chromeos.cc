@@ -113,7 +113,6 @@ bool InputMethodChromeOS::DispatchKeyEvent(const ui::KeyEvent& event) {
     }
   }
 
-  handling_key_event_ = true;
   // If |context_| is not usable, then we can only dispatch the key event as is.
   // We only dispatch the key event to input method when the |context_| is an
   // normal input field (not a password field).
@@ -134,6 +133,7 @@ bool InputMethodChromeOS::DispatchKeyEvent(const ui::KeyEvent& event) {
     return true;
   }
 
+  handling_key_event_ = true;
   if (GetEngine()->IsInterestedInKeyEvent()) {
     GetEngine()->ProcessKeyEvent(
         event,
