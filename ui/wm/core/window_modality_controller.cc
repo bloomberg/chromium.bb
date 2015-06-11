@@ -68,8 +68,11 @@ aura::Window* GetModalTransientChild(
        ++it) {
     aura::Window* transient = *it;
     if (IsModalTransientChild(transient, original)) {
-      return GetTransientChildren(transient).empty() ?
-          transient : GetModalTransientChild(transient, original);
+      if (GetTransientChildren(transient).empty())
+        return transient;
+
+      aura::Window* modal_child = GetModalTransientChild(transient, original);
+      return modal_child ? modal_child : transient;
     }
   }
   return NULL;

@@ -184,8 +184,14 @@ TEST_F(WindowModalityControllerTest, Events) {
       gfx::Rect(0, 0, 100, 100)));
   scoped_ptr<aura::Window> w11(CreateTestWindowInShellWithDelegate(&d, -11,
       gfx::Rect(20, 20, 50, 50)));
+  scoped_ptr<aura::Window> w111(
+      CreateTestWindowInShellWithDelegate(&d, -111, gfx::Rect(20, 20, 50, 50)));
 
   ::wm::AddTransientChild(w1.get(), w11.get());
+
+  // Add a non-modal child to the modal window in order to ensure modality still
+  // works in this case. This is a regression test for https://crbug.com/456697.
+  ::wm::AddTransientChild(w11.get(), w111.get());
 
   {
     // Clicking a point within w1 should activate that window.
