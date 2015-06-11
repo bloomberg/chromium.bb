@@ -8227,6 +8227,7 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
   scale_matrix.Scale(1.f, 2.f);
   grand_parent->SetTransform(scale_matrix);
   parent_raw->SetTransform(scale_matrix);
+  grand_parent->layer_tree_impl()->property_trees()->needs_rebuild = true;
   AddAnimatedTransformToLayer(parent_raw, 1.0, TransformOperations(), scale);
   ExecuteCalculateDrawProperties(grand_parent.get());
 
@@ -8245,6 +8246,7 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
   gfx::Transform perspective_matrix;
   perspective_matrix.ApplyPerspectiveDepth(2.f);
   child_raw->SetTransform(perspective_matrix);
+  grand_parent->layer_tree_impl()->property_trees()->needs_rebuild = true;
   ExecuteCalculateDrawProperties(grand_parent.get());
 
   // |child| has a transform that's neither a translation nor a scale.
@@ -8257,6 +8259,7 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
       0.f, grand_child_raw->draw_properties().maximum_animation_contents_scale);
 
   parent_raw->SetTransform(perspective_matrix);
+  grand_parent->layer_tree_impl()->property_trees()->needs_rebuild = true;
   ExecuteCalculateDrawProperties(grand_parent.get());
 
   // |parent| and |child| have transforms that are neither translations nor
@@ -8272,6 +8275,7 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
   parent_raw->SetTransform(identity_matrix);
   child_raw->SetTransform(identity_matrix);
   grand_parent->SetTransform(perspective_matrix);
+  grand_parent->layer_tree_impl()->property_trees()->needs_rebuild = true;
 
   ExecuteCalculateDrawProperties(grand_parent.get());
 
