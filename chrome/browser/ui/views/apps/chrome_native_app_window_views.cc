@@ -93,8 +93,7 @@ const std::map<ui::Accelerator, int>& GetAcceleratorTable() {
 }  // namespace
 
 ChromeNativeAppWindowViews::ChromeNativeAppWindowViews()
-    : is_fullscreen_(false),
-      has_frame_color_(false),
+    : has_frame_color_(false),
       active_frame_color_(SK_ColorBLACK),
       inactive_frame_color_(SK_ColorBLACK) {
 }
@@ -332,16 +331,12 @@ void ChromeNativeAppWindowViews::SetFullscreen(int fullscreen_types) {
   // Fullscreen not supported by panels.
   if (app_window()->window_type_is_panel())
     return;
-  is_fullscreen_ = (fullscreen_types != AppWindow::FULLSCREEN_TYPE_NONE);
-  widget()->SetFullscreen(is_fullscreen_);
 
-  // TODO(jeremya) we need to call RenderViewHost::ExitFullscreen() if we
-  // ever drop the window out of fullscreen in response to something that
-  // wasn't the app calling webkitCancelFullScreen().
+  widget()->SetFullscreen(fullscreen_types != AppWindow::FULLSCREEN_TYPE_NONE);
 }
 
 bool ChromeNativeAppWindowViews::IsFullscreenOrPending() const {
-  return is_fullscreen_;
+  return widget()->IsFullscreen();
 }
 
 void ChromeNativeAppWindowViews::UpdateShape(scoped_ptr<SkRegion> region) {

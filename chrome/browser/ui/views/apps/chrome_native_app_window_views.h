@@ -75,9 +75,6 @@ class ChromeNativeAppWindowViews
       const extensions::AppWindow::CreateParams& create_params) override;
 
  private:
-  // True if the window is fullscreen or fullscreen is pending.
-  bool is_fullscreen_;
-
   // Custom shape of the window. If this is not set then the window has a
   // default shape, usually rectangular.
   scoped_ptr<SkRegion> shape_;
