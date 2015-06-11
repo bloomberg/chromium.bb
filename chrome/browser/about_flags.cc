@@ -215,6 +215,20 @@ const Experiment::Choice kMarkNonSecureAsChoices[] = {
         switches::kMarkNonSecureAs, switches::kMarkNonSecureAsDubious}
 };
 
+const Experiment::Choice kDataReductionProxyLoFiChoices[] = {
+    { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+    { IDS_FLAGS_DATA_REDUCTION_PROXY_LO_FI_ALWAYS_ON,
+        data_reduction_proxy::switches::kDataReductionProxyLoFi,
+        data_reduction_proxy::switches::kDataReductionProxyLoFiValueAlwaysOn},
+    { IDS_FLAGS_DATA_REDUCTION_PROXY_LO_FI_CELLULAR_ONLY,
+        data_reduction_proxy::switches::kDataReductionProxyLoFi,
+        data_reduction_proxy::switches::
+            kDataReductionProxyLoFiValueCellularOnly},
+    { IDS_FLAGS_DATA_REDUCTION_PROXY_LO_FI_DISABLED,
+        data_reduction_proxy::switches::kDataReductionProxyLoFi,
+        data_reduction_proxy::switches::kDataReductionProxyLoFiValueDisabled}
+};
+
 const Experiment::Choice kShowSavedCopyChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_FLAGS_ENABLE_SHOW_SAVED_COPY_PRIMARY,
@@ -2226,12 +2240,11 @@ const Experiment kExperiments[] = {
   },
 #endif  // defined(OS_CHROMEOS)
   {
-    "enable-data-reduction-proxy-lo-fi",
-    IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_LO_FI_NAME,
-    IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_LO_FI_DESCRIPTION,
+    "data-reduction-proxy-lo-fi",
+    IDS_FLAGS_DATA_REDUCTION_PROXY_LO_FI_NAME,
+    IDS_FLAGS_DATA_REDUCTION_PROXY_LO_FI_DESCRIPTION,
     kOsAll,
-    SINGLE_VALUE_TYPE(data_reduction_proxy::switches::
-                      kEnableDataReductionProxyLoFi)
+    MULTI_VALUE_TYPE(kDataReductionProxyLoFiChoices)
   },
   {
     "clear-data-reduction-proxy-data-savings",
@@ -2552,9 +2565,9 @@ bool SkipConditionalExperiment(const Experiment& experiment,
       channel != chrome::VersionInfo::CHANNEL_DEV) {
     return true;
   }
-  // enable-data-reduction-proxy-lo-fi is only available for Chromium builds and
+  // data-reduction-proxy-lo-fi is only available for Chromium builds and
   // the Canary/Dev channel.
-  if (!strcmp("enable-data-reduction-proxy-lo-fi", experiment.internal_name) &&
+  if (!strcmp("data-reduction-proxy-lo-fi", experiment.internal_name) &&
       channel != chrome::VersionInfo::CHANNEL_DEV &&
       channel != chrome::VersionInfo::CHANNEL_CANARY &&
       channel != chrome::VersionInfo::CHANNEL_UNKNOWN) {

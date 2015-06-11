@@ -21,6 +21,7 @@
 #include "components/variations/variations_associated_data.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
+#include "net/base/network_change_notifier.h"
 #include "net/base/network_quality.h"
 #include "net/base/network_quality_estimator.h"
 #include "net/proxy/proxy_server.h"
@@ -205,6 +206,8 @@ DataReductionProxyConfig::DataReductionProxyConfig(
       lofi_status_(LOFI_STATUS_TEMPORARILY_OFF) {
   DCHECK(configurator);
   DCHECK(event_creator);
+  if (DataReductionProxyParams::IsLoFiDisabledViaFlags())
+    SetLoFiModeOff();
   // Constructed on the UI thread, but should be checked on the IO thread.
   thread_checker_.DetachFromThread();
 }
@@ -791,8 +794,18 @@ void DataReductionProxyConfig::UpdateLoFiStatusOnMainFrameRequest(
     }
   }
 
-  if (DataReductionProxyParams::IsLoFiEnabledThroughSwitch()) {
+  if (DataReductionProxyParams::IsLoFiAlwaysOnViaFlags()) {
     lofi_status_ = LOFI_STATUS_ACTIVE_FROM_FLAGS;
+    return;
+  }
+
+  if (DataReductionProxyParams::IsLoFiCellularOnlyViaFlags()) {
+    if (net::NetworkChangeNotifier::IsConnectionCellular(
+            net::NetworkChangeNotifier::GetConnectionType())) {
+      lofi_status_ = LOFI_STATUS_ACTIVE_FROM_FLAGS;
+      return;
+    }
+    lofi_status_ = LOFI_STATUS_TEMPORARILY_OFF;
     return;
   }
 

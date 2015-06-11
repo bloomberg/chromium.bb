@@ -49,6 +49,13 @@ const char kDataReductionProxyWarmupURL[] = "data-reduction-proxy-warmup-url";
 // The origin of the data reduction SSL proxy.
 const char kDataReductionSSLProxy[] = "data-reduction-ssl-proxy";
 
+// The mode for Data Reduction Proxy Lo-Fi. The various modes are always-on,
+// cellular-only, and disabled.
+const char kDataReductionProxyLoFi[] = "data-reduction-proxy-lo-fi";
+const char kDataReductionProxyLoFiValueAlwaysOn[] = "always-on";
+const char kDataReductionProxyLoFiValueCellularOnly[] = "cellular-only";
+const char kDataReductionProxyLoFiValueDisabled[] = "disabled";
+
 // Disables the origin of the data reduction proxy dev.
 const char kDisableDataReductionProxyDev[] =
     "disable-spdy-proxy-dev-auth-origin";
@@ -66,10 +73,6 @@ const char kEnableDataReductionProxy[] = "enable-spdy-proxy-auth";
 
 // Enable the alternative data reduction proxy.
 const char kEnableDataReductionProxyAlt[] = "enable-data-reduction-proxy-alt";
-
-// Enable Data Reduction Proxy Lo-Fi mode.
-const char kEnableDataReductionProxyLoFi[] =
-    "enable-data-reduction-proxy-lo-fi";
 
 // Enable the data reduction proxy bypass warning.
 const char kEnableDataReductionProxyBypassWarning[] =

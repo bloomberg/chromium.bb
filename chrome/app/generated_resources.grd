@@ -6467,11 +6467,20 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Use Data Saver with bypass warnings. The proxy must be enabled in settings for this flag to take effect.
         </message>
       </if>
-      <message name="IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_LO_FI_NAME" desc="An about::flags experiment title to enable/disable Data Saver Lo-Fi">
-         Enable Data Saver Lo-Fi mode
+      <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_LO_FI_NAME" desc="An about::flags experiment title to enable/disable Data Saver Lo-Fi">
+         Data Saver Lo-Fi mode
       </message>
-      <message name="IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_LO_FI_DESCRIPTION" desc="Describes an about::flags experiment to enable/disable Data Saver Lo-Fi">
-         Puts the Data Saver in Lo-Fi mode when enabled.
+      <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_LO_FI_DESCRIPTION" desc="Describes an about::flags experiment to enable/disable Data Saver Lo-Fi">
+         Forces Data Saver Lo-Fi mode to be always enabled, enabled only on cellular connections, or disabled. Data Saver must be enabled for Lo-Fi mode to be used.
+      </message>
+      <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_LO_FI_ALWAYS_ON" desc="Option for IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_LO_FI_NAME to enable Lo-Fi always on">
+         Always on
+      </message>
+      <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_LO_FI_CELLULAR_ONLY" desc="Option for IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_LO_FI_NAME to enable Lo-Fi only on celluar connections">
+         Cellular only
+      </message>
+      <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_LO_FI_DISABLED" desc="Option for IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_LO_FI_NAME to disable Lo-Fi">
+         Disable
       </message>
       <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_RESET_SAVINGS_NAME" desc="Title in about::flags to clear data savings obtained with data reduction proxy when Chrome restarts">
          Clear data savings on startup

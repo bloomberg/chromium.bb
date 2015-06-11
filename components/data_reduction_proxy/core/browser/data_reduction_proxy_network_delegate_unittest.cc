@@ -226,8 +226,9 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
     if (tests[i].lofi_switch_enabled) {
-      base::CommandLine::ForCurrentProcess()->AppendSwitch(
-          data_reduction_proxy::switches::kEnableDataReductionProxyLoFi);
+      base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+          switches::kDataReductionProxyLoFi,
+          switches::kDataReductionProxyLoFiValueAlwaysOn);
     }
     config()->SetIncludedInLoFiEnabledFieldTrial(tests[i].auto_lofi_enabled);
     config()->SetNetworkProhibitivelySlow(tests[i].auto_lofi_enabled);
@@ -449,8 +450,9 @@ TEST_F(DataReductionProxyNetworkDelegateTest, NetHistograms) {
     config()->SetNetworkProhibitivelySlow(tests[i].auto_lofi_enabled);
 
     if (tests[i].lofi_enabled_through_switch) {
-      base::CommandLine::ForCurrentProcess()->AppendSwitch(
-          data_reduction_proxy::switches::kEnableDataReductionProxyLoFi);
+      base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+          switches::kDataReductionProxyLoFi,
+          switches::kDataReductionProxyLoFiValueAlwaysOn);
     }
 
     config()->UpdateLoFiStatusOnMainFrameRequest(false, nullptr);

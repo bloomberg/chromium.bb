@@ -166,8 +166,12 @@ void DataReductionProxyService::InitializeLoFiPrefs() {
       prefs_->SetInteger(prefs::kLoFiConsecutiveSessionDisables, 0);
       prefs_->SetInteger(prefs::kLoFiImplicitOptOutVersion,
                          lo_fi_implicit_opt_out_version);
-    } else if (prefs_->GetInteger(prefs::kLoFiConsecutiveSessionDisables) >=
-               lo_fi_consecutive_session_disables) {
+    } else if (!DataReductionProxyParams::IsLoFiAlwaysOnViaFlags() &&
+               (prefs_->GetInteger(prefs::kLoFiConsecutiveSessionDisables) >=
+                lo_fi_consecutive_session_disables)) {
+      // If Lo-Fi isn't always on and and the number of
+      // |consecutive_session_disables| has been met, turn Lo-Fi off for this
+      // session.
       SetLoFiModeOff();
     } else if (prefs_->GetInteger(prefs::kLoFiLoadImagesPerSession) <
                lo_fi_user_requests_for_images_per_session) {

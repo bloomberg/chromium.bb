@@ -66,6 +66,36 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="AboutFlags_data-reduction-proxy-lo-fi@1">
+  <owner>bengr@chromium.org</owner>
+  <owner>megjablon@chromium.org</owner>
+  <description>
+    User enabled flag that Forces Data Saver Lo-Fi mode to be always enabled via
+    chrome://flags. The action is emitted once per startup when the flag is
+    active.
+  </description>
+</action>
+
+<action name="AboutFlags_data-reduction-proxy-lo-fi@2">
+  <owner>bengr@chromium.org</owner>
+  <owner>megjablon@chromium.org</owner>
+  <description>
+    User enabled flag that Forces Data Saver Lo-Fi mode to be enabled only on
+    cellular connection via chrome://flags. The action is emitted once per
+    startup when the flag is active.
+  </description>
+</action>
+
+<action name="AboutFlags_data-reduction-proxy-lo-fi@3">
+  <owner>bengr@chromium.org</owner>
+  <owner>megjablon@chromium.org</owner>
+  <description>
+    User enabled flag that Forces Data Saver Lo-Fi mode to be disabled via
+    chrome://flags. The action is emitted once per startup when the flag is
+    active.
+  </description>
+</action>
+
 <action name="AboutFlags_disable-chrome-to-mobile">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

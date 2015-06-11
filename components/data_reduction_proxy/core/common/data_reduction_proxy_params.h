@@ -97,8 +97,16 @@ class DataReductionProxyParams : public DataReductionProxyConfigValues {
       const char* build_fingerprint);
 
   // Returns true if this client has the command line switch to enable Lo-Fi
+  // mode always on.
+  static bool IsLoFiAlwaysOnViaFlags();
+
+  // Returns true if this client has the command line switch to enable Lo-Fi
+  // mode only on cellular connections.
+  static bool IsLoFiCellularOnlyViaFlags();
+
+  // Returns true if this client has the command line switch to disable Lo-Fi
   // mode.
-  static bool IsLoFiEnabledThroughSwitch();
+  static bool IsLoFiDisabledViaFlags();
 
   // Returns true if this client has the command line switch to show
   // interstitials for data reduction proxy bypasses.

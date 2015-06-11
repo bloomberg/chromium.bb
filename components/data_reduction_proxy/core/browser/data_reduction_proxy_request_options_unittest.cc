@@ -293,8 +293,9 @@ TEST_F(DataReductionProxyRequestOptionsTest, LoFiOnThroughCommandLineSwitch) {
 
   test_context_->config()->ResetLoFiStatusForTest();
   // Add the LoFi command line switch.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      data_reduction_proxy::switches::kEnableDataReductionProxyLoFi);
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kDataReductionProxyLoFi,
+      switches::kDataReductionProxyLoFiValueAlwaysOn);
 
   SetHeaderExpectations(kExpectedSession, kExpectedCredentials, std::string(),
                         kClientStr, std::string(), std::string(), "low",

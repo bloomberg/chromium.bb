@@ -196,7 +196,7 @@ void DataReductionProxySettings::SetLoFiShowImageRequested() {
 }
 
 void DataReductionProxySettings::IncrementLoFiUserRequestsForImages() {
-  if (!prefs_)
+  if (!prefs_ || DataReductionProxyParams::IsLoFiAlwaysOnViaFlags())
     return;
   prefs_->SetInteger(prefs::kLoFiLoadImagesPerSession,
                      prefs_->GetInteger(prefs::kLoFiLoadImagesPerSession) + 1);

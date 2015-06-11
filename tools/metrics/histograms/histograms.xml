@@ -58903,6 +58903,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1381746642" label="enable-automatic-password-saving"/>
   <int value="1382500494" label="disable-drive-apps-in-app-list"/>
   <int value="1383591631" label="enable-gesture-typing"/>
+  <int value="1389729816" label="data-reduction-proxy-lo-fi"/>
   <int value="1405459667" label="enable-fast-text-autosizing"/>
   <int value="1407625309"
       label="disable-minimize-on-second-launcher-item-click"/>

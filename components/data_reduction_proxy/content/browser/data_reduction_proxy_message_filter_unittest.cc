@@ -128,9 +128,9 @@ TEST_F(DataReductionProxyMessageFilterTest, TestOnDataReductionProxyStatus) {
     bool is_data_reduction_proxy = false;
 
     if (tests[i].lofi_on_through_switch) {
-      base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-      command_line->AppendSwitch(
-          data_reduction_proxy::switches::kEnableDataReductionProxyLoFi);
+      base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+          switches::kDataReductionProxyLoFi,
+          switches::kDataReductionProxyLoFiValueAlwaysOn);
     }
 
     EXPECT_CALL(*config(), IsDataReductionProxy(testing::_, nullptr))

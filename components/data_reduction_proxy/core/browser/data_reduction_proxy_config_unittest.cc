@@ -1158,8 +1158,9 @@ TEST_F(DataReductionProxyConfigTest, LoFiOn) {
   for (size_t i = 0; i < arraysize(tests); ++i) {
     config()->ResetLoFiStatusForTest();
     if (tests[i].lofi_switch_enabled) {
-      base::CommandLine::ForCurrentProcess()->AppendSwitch(
-          data_reduction_proxy::switches::kEnableDataReductionProxyLoFi);
+      base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+          switches::kDataReductionProxyLoFi,
+          switches::kDataReductionProxyLoFiValueAlwaysOn);
     }
 
     EXPECT_CALL(*config(), IsIncludedInLoFiEnabledFieldTrial())
@@ -1192,8 +1193,9 @@ TEST_F(DataReductionProxyConfigTest, LoFiStatusTransition) {
   for (size_t i = 0; i < arraysize(tests); ++i) {
     config()->ResetLoFiStatusForTest();
     if (tests[i].lofi_switch_enabled) {
-      base::CommandLine::ForCurrentProcess()->AppendSwitch(
-          data_reduction_proxy::switches::kEnableDataReductionProxyLoFi);
+      base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+          switches::kDataReductionProxyLoFi,
+          switches::kDataReductionProxyLoFiValueAlwaysOn);
     } else {
       EXPECT_CALL(*config(), IsIncludedInLoFiEnabledFieldTrial())
           .WillRepeatedly(testing::Return(true));

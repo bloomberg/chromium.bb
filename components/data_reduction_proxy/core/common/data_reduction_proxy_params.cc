@@ -119,9 +119,30 @@ std::string DataReductionProxyParams::GetLoFiFieldTrialName() {
 }
 
 // static
-bool DataReductionProxyParams::IsLoFiEnabledThroughSwitch() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      data_reduction_proxy::switches::kEnableDataReductionProxyLoFi);
+bool DataReductionProxyParams::IsLoFiAlwaysOnViaFlags() {
+  const std::string& lo_fi_value =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          data_reduction_proxy::switches::kDataReductionProxyLoFi);
+  return lo_fi_value ==
+         data_reduction_proxy::switches::kDataReductionProxyLoFiValueAlwaysOn;
+}
+
+// static
+bool DataReductionProxyParams::IsLoFiCellularOnlyViaFlags() {
+  const std::string& lo_fi_value =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          data_reduction_proxy::switches::kDataReductionProxyLoFi);
+  return lo_fi_value == data_reduction_proxy::switches::
+                            kDataReductionProxyLoFiValueCellularOnly;
+}
+
+// static
+bool DataReductionProxyParams::IsLoFiDisabledViaFlags() {
+  const std::string& lo_fi_value =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          data_reduction_proxy::switches::kDataReductionProxyLoFi);
+  return lo_fi_value ==
+         data_reduction_proxy::switches::kDataReductionProxyLoFiValueDisabled;
 }
 
 //static
