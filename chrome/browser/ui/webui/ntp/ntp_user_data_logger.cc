@@ -124,11 +124,14 @@ void NTPUserDataLogger::EmitNtpStatistics() {
   UMA_HISTOGRAM_NTP_TILES("NewTabPage.NumberOfExternalTileFallbacks",
                           number_of_external_tile_fallbacks_);
   number_of_external_tile_fallbacks_ = 0;
-  UMA_HISTOGRAM_CUSTOM_TIMES("NewTabPage.LoadTime",
-                             load_time_,
-                             base::TimeDelta::FromMilliseconds(1),
-                             base::TimeDelta::FromSeconds(60), 100);
-  load_time_ = base::TimeDelta::FromMilliseconds(0);
+  // LoadTime only gets update once per page, so we don't have it on reloads.
+  if (load_time_ > base::TimeDelta::FromMilliseconds(0)) {
+    UMA_HISTOGRAM_CUSTOM_TIMES("NewTabPage.LoadTime",
+                               load_time_,
+                               base::TimeDelta::FromMilliseconds(1),
+                               base::TimeDelta::FromSeconds(60), 100);
+    load_time_ = base::TimeDelta::FromMilliseconds(0);
+  }
   has_emitted_ = true;
 }
 
