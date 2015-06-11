@@ -118,12 +118,15 @@ def TargetLibCflags(bias_arch):
   flags = '-g -O2'
   if IsBCArch(bias_arch):
     flags += ' -mllvm -inline-threshold=5 -allow-asm'
-  elif bias_arch != 'arm':
-    # Newlib target libs need to be build with the LLVM assembler on x86-64
-    # because it uses the sandbox base address-hiding form of calls, which
-    # we need in the IRT. On x86-32 that doesn't matter but the LLVM assembler
-    # sometimes generates slightly better code and it's good to be consistent.
-    flags += ' -integrated-as'
+  else:
+    # Use sections for the library builds to allow better GC for the IRT.
+    flags += ' -ffunction-sections -fdata-sections'
+    if bias_arch != 'arm':
+      # Newlib target libs need to be build with the LLVM assembler on x86-64
+      # because it uses the sandbox base address-hiding form of calls, which
+      # we need in the IRT. On x86-32 that doesn't matter but the LLVM assembler
+      # sometimes generates slightly better code and it's good to be consistent.
+      flags += ' -integrated-as'
   if IsBiasedBCArch(bias_arch):
     flags += ' ' + ' '.join(BiasedBitcodeTargetFlag(bias_arch))
   return flags
