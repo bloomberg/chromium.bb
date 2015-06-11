@@ -1338,6 +1338,11 @@ public class ContextualSearchManager extends ContextualSearchObservable
     }
 
     @Override
+    public void handleSelectionDismissal() {
+        hideContextualSearch(StateChangeReason.INVALID_SELECTION);
+    }
+
+    @Override
     public void handleSelectionModification(String selection, float x, float y) {
         if (mSearchPanelDelegate.isShowing()) {
             getContextualSearchControl().setCentralText(selection);
