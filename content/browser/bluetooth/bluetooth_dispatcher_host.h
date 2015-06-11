@@ -57,6 +57,10 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
                            int request_id,
                            const std::string& device_instance_id,
                            const std::string& service_uuid);
+  void OnGetCharacteristic(int thread_id,
+                           int request_id,
+                           const std::string& service_instance_id,
+                           const std::string& characteristic_uuid);
 
   // Callbacks for BluetoothAdapter::StartDiscoverySession.
   void OnDiscoverySessionStarted(
@@ -94,6 +98,10 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
                             int request_id,
                             const std::string& device_instance_id,
                             const std::string& service_uuid);
+
+  // Maps to get the object's parent based on it's instanceID
+  // Map of service_instance_id to device_instance_id.
+  std::map<std::string, std::string> service_to_device_;
 
   // Defines how long to scan for and how long to discover services for.
   int current_delay_time_;

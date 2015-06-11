@@ -102,7 +102,7 @@ class MockBluetoothAdapter : public BluetoothAdapter {
       const ErrorCallback& error_callback);
 
   // BluetoothAdapter is supposed to manage the lifetime of BluetoothDevices.
-  // This methods takes ownership of the BluetoothDevices. This is only for
+  // This method takes ownership of the MockBluetoothDevice. This is only for
   // convenience as far testing is concerned and it's possible to write test
   // cases without using these functions.
   void AddMockDevice(scoped_ptr<MockBluetoothDevice> mock_device);

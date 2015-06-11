@@ -10,7 +10,9 @@
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "device/bluetooth/test/mock_bluetooth_device.h"
 #include "device/bluetooth/test/mock_bluetooth_discovery_session.h"
+#include "device/bluetooth/test/mock_bluetooth_gatt_characteristic.h"
 #include "device/bluetooth/test/mock_bluetooth_gatt_service.h"
+
 namespace content {
 
 // Implements fake adapters with named mock data set for use in tests as a
@@ -71,7 +73,8 @@ class LayoutTestBluetoothAdapterProvider {
   //  - |IsPaired| returns true.
   //  - |GetUUIDs| returns a list with two UUIDs: "1800" and "1801".
   //  - |GetGattServices| returns a list with two services "Generic Access" and
-  //    "Generic Attribute".
+  //    "Generic Attribute". "Generic Access" has a "Device Name" characteristic
+  //    and "Generic Attribute" has a "Service Changed" characteristic.
   static scoped_ptr<testing::NiceMock<device::MockBluetoothDevice>>
   GetEmptyDevice(device::MockBluetoothAdapter* adapter);
 
@@ -96,7 +99,18 @@ class LayoutTestBluetoothAdapterProvider {
   // - |IsPrimary| returns true.
   // - |GetDevice| returns |device|.
   static scoped_ptr<testing::NiceMock<device::MockBluetoothGattService>>
-  GetMockService(device::MockBluetoothDevice* device, const std::string& uuid);
+  GetGattService(device::MockBluetoothDevice* device, const std::string& uuid);
+
+  // Returns a fake BluetoothGattCharacteristic with the following
+  // characteristics:
+  // - |GetIdentifier| returns |uuid|.
+  // - |GetUUID| returns BluetoothUUID(|uuid|).
+  // - |IsLocal| returns false.
+  // - |GetService| returns |service|.
+  // - |IsNotifying| returns false.
+  static scoped_ptr<testing::NiceMock<device::MockBluetoothGattCharacteristic>>
+  GetGattCharacteristic(device::MockBluetoothGattService* service,
+                        const std::string& uuid);
 };
 
 }  // namespace content

@@ -49724,6 +49724,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="80" label="SWDH_GET_REGISTRATIONS_NO_HOST"/>
   <int value="81" label="SWDH_GET_REGISTRATIONS_INVALID_ORIGIN"/>
   <int value="82" label="ARH_UNAUTHORIZED_URL"/>
+  <int value="83" label="BDH_INVALID_SERVICE_ID"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions" type="int">

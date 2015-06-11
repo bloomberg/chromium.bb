@@ -21,6 +21,7 @@ namespace IPC {
 class Message;
 }
 
+struct BluetoothCharacteristicRequest;
 struct BluetoothPrimaryServiceRequest;
 
 namespace content {
@@ -57,6 +58,11 @@ class BluetoothDispatcher : public WorkerTaskRunner::Observer {
       const blink::WebString& service_uuid,
       blink::WebBluetoothGetPrimaryServiceCallbacks* callbacks);
 
+  void getCharacteristic(
+      const blink::WebString& service_instance_id,
+      const blink::WebString& characteristic_uuid,
+      blink::WebBluetoothGetCharacteristicCallbacks* callbacks);
+
   // WorkerTaskRunner::Observer implementation.
   void OnWorkerRunLoopStopped() override;
 
@@ -82,6 +88,13 @@ class BluetoothDispatcher : public WorkerTaskRunner::Observer {
   void OnGetPrimaryServiceError(int thread_id,
                                 int request_id,
                                 BluetoothError error_type);
+  void OnGetCharacteristicSuccess(
+      int thread_id,
+      int request_id,
+      const std::string& characteristic_instance_id);
+  void OnGetCharacteristicError(int thread_id,
+                                int request_id,
+                                BluetoothError error_type);
 
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
 
@@ -97,6 +110,9 @@ class BluetoothDispatcher : public WorkerTaskRunner::Observer {
   // Owns request objects.
   IDMap<BluetoothPrimaryServiceRequest, IDMapOwnPointer>
       pending_primary_service_requests_;
+  // Tracks requests to get a characteristic from a service.
+  IDMap<BluetoothCharacteristicRequest, IDMapOwnPointer>
+      pending_characteristic_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothDispatcher);
 };

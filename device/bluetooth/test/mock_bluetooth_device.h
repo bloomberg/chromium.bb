@@ -83,15 +83,16 @@ class MockBluetoothDevice : public BluetoothDevice {
   MOCK_CONST_METHOD1(GetGattService, BluetoothGattService*(const std::string&));
 
   // BluetoothDevice manages the lifetime of its BluetoothGATTServices.
-  // This methods takes ownership of the BluetoothGATTServices. This is only for
-  // convenience as far as testing is concerned, and it's possible to write test
-  // cases without using these functions.
+  // This method takes ownership of the MockBluetoothGATTServices. This is only
+  // for convenience as far as testing is concerned, and it's possible to write
+  // test cases without using these functions.
   // Example:
   // ON_CALL(*mock_device, GetGattServices))
   //   .WillByDefault(Invoke(*mock_device,
   //                         &MockBluetoothDevice::GetMockServices));
   void AddMockService(scoped_ptr<MockBluetoothGattService> mock_device);
   std::vector<BluetoothGattService*> GetMockServices() const;
+  BluetoothGattService* GetMockService(const std::string& identifier) const;
 
  private:
   uint32 bluetooth_class_;

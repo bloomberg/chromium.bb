@@ -34,6 +34,14 @@ void WebBluetoothImpl::getPrimaryService(
                                      callbacks);
 }
 
+void WebBluetoothImpl::getCharacteristic(
+    const blink::WebString& service_instance_id,
+    const blink::WebString& characteristic_uuid,
+    blink::WebBluetoothGetCharacteristicCallbacks* callbacks) {
+  GetDispatcher()->getCharacteristic(service_instance_id, characteristic_uuid,
+                                     callbacks);
+}
+
 BluetoothDispatcher* WebBluetoothImpl::GetDispatcher() {
   return BluetoothDispatcher::GetOrCreateThreadSpecificInstance(
       thread_safe_sender_.get());

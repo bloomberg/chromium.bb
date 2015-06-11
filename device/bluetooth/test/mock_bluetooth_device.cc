@@ -71,4 +71,13 @@ std::vector<BluetoothGattService*> MockBluetoothDevice::GetMockServices()
   return services;
 }
 
+BluetoothGattService* MockBluetoothDevice::GetMockService(
+    const std::string& identifier) const {
+  for (BluetoothGattService* service : mock_services_) {
+    if (service->GetIdentifier() == identifier)
+      return service;
+  }
+  return nullptr;
+}
+
 }  // namespace device

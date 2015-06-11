@@ -33,4 +33,18 @@ MockBluetoothGattService::MockBluetoothGattService(
 MockBluetoothGattService::~MockBluetoothGattService() {
 }
 
+void MockBluetoothGattService::AddMockCharacteristic(
+    scoped_ptr<MockBluetoothGattCharacteristic> mock_characteristic) {
+  mock_characteristics_.push_back(mock_characteristic.Pass());
+}
+
+std::vector<BluetoothGattCharacteristic*>
+MockBluetoothGattService::GetMockCharacteristics() const {
+  std::vector<BluetoothGattCharacteristic*> characteristics;
+  for (BluetoothGattCharacteristic* characteristic : mock_characteristics_) {
+    characteristics.push_back(characteristic);
+  }
+  return characteristics;
+}
+
 }  // namespace device

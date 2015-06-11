@@ -141,6 +141,18 @@ IPC_MESSAGE_CONTROL3(BluetoothMsg_GetPrimaryServiceError,
                      int /* request_id */,
                      content::BluetoothError /* result */)
 
+// Informs the renderer that characteristic request |request_id| succeeded.
+IPC_MESSAGE_CONTROL3(BluetoothMsg_GetCharacteristicSuccess,
+                     int /* thread_id */,
+                     int /* request_id */,
+                     std::string /* characteristic_instance_id */)
+
+// Informs the renderer that the characteristic request |request_id| failed.
+IPC_MESSAGE_CONTROL3(BluetoothMsg_GetCharacteristicError,
+                     int /* thread_id */,
+                     int /* request_id */,
+                     content::BluetoothError /* result */)
+
 // Messages sent from the renderer to the browser.
 
 // Requests a bluetooth device from the browser.
@@ -166,3 +178,10 @@ IPC_MESSAGE_CONTROL4(BluetoothHostMsg_GetPrimaryService,
                      int /* request_id */,
                      std::string /* device_instance_id */,
                      std::string /* service_uuid */)
+
+// Gets a GATT Characteristic within a GATT Service.
+IPC_MESSAGE_CONTROL4(BluetoothHostMsg_GetCharacteristic,
+                     int /* thread_id */,
+                     int /* request_id */,
+                     std::string /* service_instance_id */,
+                     std::string /* characteristic_uuid */)
