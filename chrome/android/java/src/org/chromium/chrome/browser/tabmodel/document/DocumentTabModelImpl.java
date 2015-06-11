@@ -317,9 +317,12 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
         Tab tab = getTabAt(index);
         for (TabModelObserver obs : mObservers) obs.willCloseTab(tab, false);
 
-        if (!tab.isIncognito()) tab.createHistoricalTab();
+        int tabId = tab.getId();
+        Entry entry = mEntryMap.get(tabId);
+        if (!isIncognito() && entry != null && entry.getTabState() != null) {
+            entry.getTabState().contentsState.createHistoricalTab();
+        }
 
-        int tabId = mTabIdList.get(index);
         mActivityDelegate.finishAndRemoveTask(isIncognito(), tabId);
         mTabIdList.remove(index);
         mEntryMap.remove(tabId);
