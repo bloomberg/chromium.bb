@@ -67,6 +67,9 @@ void WebRtcAudioDeviceImpl::RenderData(media::AudioBus* audio_bus,
   {
     base::AutoLock auto_lock(lock_);
     if (!playing_) {
+      // Force silence to AudioBus after stopping playout in case
+      // there is lingering audio data in AudioBus.
+      audio_bus->Zero();
       return;
     }
     DCHECK(audio_transport_callback_);
