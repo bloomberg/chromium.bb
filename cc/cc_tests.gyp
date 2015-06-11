@@ -331,8 +331,6 @@
           }
         ],
       ],
-      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-      'msvs_disabled_warnings': [ 4267, ],
     },
     {
       # GN version: //cc/cc_perftests
@@ -393,8 +391,6 @@
           }
         ],
       ],
-      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-      'msvs_disabled_warnings': [ 4267, ],
     },
     {
       'target_name': 'cc_test_support',
@@ -426,8 +422,6 @@
       'sources': [
         '<@(cc_tests_support_files)',
       ],
-      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-      'msvs_disabled_warnings': [ 4267, ],
     },
   ],
   'conditions': [

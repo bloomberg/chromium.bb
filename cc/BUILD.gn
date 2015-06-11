@@ -538,9 +538,6 @@ component("cc") {
     ]
   }
 
-  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
-
   public_deps = [
     "//cc/base",
     "//skia",
@@ -696,8 +693,6 @@ source_set("test_support") {
     "test/tiled_layer_test_common.cc",
     "test/tiled_layer_test_common.h",
   ]
-
-  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
   include_dirs = [
     ".",
@@ -872,8 +867,6 @@ test("cc_unittests") {
     "test/run_all_unittests.cc",
   ]
 
-  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
-
   deps = [
     ":cc",
     ":test_support",
@@ -913,8 +906,6 @@ test("cc_perftests") {
     "trees/layer_tree_host_perftest.cc",
     "trees/occlusion_tracker_perftest.cc",
   ]
-
-  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
   deps = [
     ":cc",
