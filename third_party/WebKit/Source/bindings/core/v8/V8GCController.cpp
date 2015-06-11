@@ -382,33 +382,19 @@ void V8GCController::majorGCPrologue(v8::Isolate* isolate, bool constructRetaine
 
 void V8GCController::gcEpilogue(v8::GCType type, v8::GCCallbackFlags flags)
 {
+    // v8::kGCCallbackFlagForced forces a Blink heap garbage collection
+    // when a garbage collection was forced from V8. This is either used
+    // for tests that force GCs from/ JavaScript to verify that objects die
+    // when expected, or when handling memory pressure notifications.
+    bool forceGC = flags & v8::kGCCallbackFlagForced;
+
     // FIXME: It would be nice if the GC callbacks passed the Isolate directly....
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     if (type == v8::kGCTypeScavenge) {
         minorGCEpilogue(isolate);
     } else if (type == v8::kGCTypeMarkSweepCompact) {
         majorGCEpilogue(isolate);
-        ThreadState::current()->didV8GC();
-    }
-
-    // Forces a Blink heap garbage collection when a garbage collection
-    // was forced from V8. This is used for tests that force GCs from
-    // JavaScript to verify that objects die when expected.
-    if (flags & v8::kGCCallbackFlagForced) {
-        // This single GC is not enough for two reasons:
-        //   (1) The GC is not precise because the GC scans on-stack pointers conservatively.
-        //   (2) One GC is not enough to break a chain of persistent handles. It's possible that
-        //       some heap allocated objects own objects that contain persistent handles
-        //       pointing to other heap allocated objects. To break the chain, we need multiple GCs.
-        //
-        // Regarding (1), we force a precise GC at the end of the current event loop. So if you want
-        // to collect all garbage, you need to wait until the next event loop.
-        // Regarding (2), it would be OK in practice to trigger only one GC per gcEpilogue, because
-        // GCController.collectAll() forces 7 V8's GC.
-        Heap::collectGarbage(ThreadState::HeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGC);
-
-        // Forces a precise GC at the end of the current event loop.
-        ThreadState::current()->setGCState(ThreadState::FullGCScheduled);
+        ThreadState::current()->didV8MajorGC(forceGC);
     }
 
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", TRACE_EVENT_SCOPE_THREAD, "data", InspectorUpdateCountersEvent::data());
@@ -429,26 +415,6 @@ void V8GCController::majorGCEpilogue(v8::Isolate* isolate)
     if (isMainThread()) {
         TRACE_EVENT_SET_NONCONST_SAMPLING_STATE(V8PerIsolateData::from(isolate)->previousSamplingState());
         ScriptForbiddenScope::exit();
-
-        // Schedule an Oilpan GC to avoid the following scenario:
-        // (1) A DOM object X holds a v8::Persistent to a V8 object.
-        //     Assume that X is small but the V8 object is huge.
-        //     The v8::Persistent is released when X is destructed.
-        // (2) X's DOM wrapper is created.
-        // (3) The DOM wrapper becomes unreachable.
-        // (4) V8 triggers a GC. The V8's GC collects the DOM wrapper.
-        //     However, X is not collected until a next Oilpan's GC is
-        //     triggered.
-        // (5) If a lot of such DOM objects are created, we end up with
-        //     a situation where V8's GC collects the DOM wrappers but
-        //     the DOM objects are not collected forever. (Note that
-        //     Oilpan's GC is not triggered unless Oilpan's heap gets full.)
-        // (6) V8 hits OOM.
-#if ENABLE(IDLE_GC)
-        ThreadState::current()->scheduleIdleGC();
-#else
-        ThreadState::current()->schedulePreciseGC();
-#endif
     }
 }
 

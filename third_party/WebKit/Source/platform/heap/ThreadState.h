@@ -319,7 +319,7 @@ public:
         return true;
     }
 
-    void didV8GC();
+    void didV8MajorGC(bool forceGC);
 
     void performIdleGC(double deadlineSeconds);
     void performIdleLazySweep(double deadlineSeconds);
@@ -656,13 +656,19 @@ private:
     // shouldSchedule{Precise,Idle}GC and shouldForceConservativeGC
     // implement the heuristics that are used to determine when to collect garbage.
     // If shouldForceConservativeGC returns true, we force the garbage
-    // collection immediately. Otherwise, if shouldGC returns true, we
+    // collection immediately. Otherwise, if should*GC() returns true, we
     // record that we should garbage collect the next time we return
     // to the event loop. If both return false, we don't need to
     // collect garbage at this point.
     bool shouldScheduleIdleGC();
     bool shouldSchedulePreciseGC();
     bool shouldForceConservativeGC();
+
+    // Internal helper for shouldForceConservativeGC() and didV8MajorGC();
+    // returns true iff an urgent conservative GC is needed to try to
+    // relieve memory pressure.
+    bool shouldForceMemoryPressureGC();
+
     void runScheduledGC(StackState);
 
     void eagerSweep();

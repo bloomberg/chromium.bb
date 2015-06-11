@@ -532,18 +532,19 @@ bool ThreadState::shouldScheduleIdleGC()
     if (gcState() != NoGCScheduled)
         return false;
 #if ENABLE(IDLE_GC)
+    // Avoid potential overflow by truncating to Kb.
+    size_t allocatedObjectSizeKb = Heap::allocatedObjectSize() >> 10;
     // The estimated size is updated when the main thread finishes lazy
     // sweeping. If this thread reaches here before the main thread finishes
     // lazy sweeping, the thread will use the estimated size of the last GC.
-    size_t estimatedLiveObjectSize = Heap::estimatedLiveObjectSize();
-    size_t allocatedObjectSize = Heap::allocatedObjectSize();
+    size_t estimatedLiveObjectSizeKb = Heap::estimatedLiveObjectSize() >> 10;
     // Heap::markedObjectSize() may be underestimated if any thread has not
     // finished completeSweep().
-    size_t currentObjectSize = allocatedObjectSize + Heap::markedObjectSize() + WTF::Partitions::totalSizeOfCommittedPages();
+    size_t currentObjectSizeKb = allocatedObjectSizeKb + ((Heap::markedObjectSize() + WTF::Partitions::totalSizeOfCommittedPages()) >> 10);
     // Schedule an idle GC if Oilpan has allocated more than 1 MB since
     // the last GC and the current memory usage is >50% larger than
     // the estimated live memory usage.
-    return allocatedObjectSize >= 1024 * 1024 && currentObjectSize > estimatedLiveObjectSize * 3 / 2;
+    return allocatedObjectSizeKb >= 1024 && currentObjectSizeKb > estimatedLiveObjectSizeKb * 3 / 2;
 #else
     return false;
 #endif
@@ -558,19 +559,33 @@ bool ThreadState::shouldSchedulePreciseGC()
 #if ENABLE(IDLE_GC)
     return false;
 #else
+    // Avoid potential overflow by truncating to Kb.
+    size_t allocatedObjectSizeKb = Heap::allocatedObjectSize() >> 10;
     // The estimated size is updated when the main thread finishes lazy
     // sweeping. If this thread reaches here before the main thread finishes
     // lazy sweeping, the thread will use the estimated size of the last GC.
-    size_t estimatedLiveObjectSize = Heap::estimatedLiveObjectSize();
-    size_t allocatedObjectSize = Heap::allocatedObjectSize();
+    size_t estimatedLiveObjectSizeKb = Heap::estimatedLiveObjectSize() >> 10;
     // Heap::markedObjectSize() may be underestimated if any thread has not
     // finished completeSweep().
-    size_t currentObjectSize = allocatedObjectSize + Heap::markedObjectSize() + WTF::Partitions::totalSizeOfCommittedPages();
+    size_t currentObjectSizeKb = allocatedObjectSizeKb + ((Heap::markedObjectSize() + WTF::Partitions::totalSizeOfCommittedPages()) >> 10);
     // Schedule a precise GC if Oilpan has allocated more than 1 MB since
     // the last GC and the current memory usage is >50% larger than
     // the estimated live memory usage.
-    return allocatedObjectSize >= 1024 * 1024 && currentObjectSize > estimatedLiveObjectSize * 3 / 2;
+    return allocatedObjectSizeKb >= 1024 && currentObjectSizeKb > estimatedLiveObjectSizeKb * 3 / 2;
 #endif
+}
+
+bool ThreadState::shouldForceMemoryPressureGC()
+{
+    // Avoid potential overflow by truncating to Kb.
+    size_t currentObjectSizeKb = (Heap::allocatedObjectSize() + Heap::markedObjectSize() + WTF::Partitions::totalSizeOfCommittedPages()) >> 10;
+    size_t estimatedLiveObjectSizeKb = (Heap::estimatedLiveObjectSize()) >> 10;
+    if (currentObjectSizeKb < 300 * 1024)
+        return false;
+
+    // If we're consuming too much memory, trigger a conservative GC
+    // aggressively. This is a safe guard to avoid OOM.
+    return currentObjectSizeKb > (estimatedLiveObjectSizeKb * 3) / 2;
 }
 
 // TODO(haraken): We should improve the GC heuristics.
@@ -580,24 +595,24 @@ bool ThreadState::shouldForceConservativeGC()
     if (UNLIKELY(isGCForbidden()))
         return false;
 
+    if (shouldForceMemoryPressureGC())
+        return true;
+
+    // Avoid potential overflow by truncating to Kb.
+    size_t allocatedObjectSizeKb = Heap::allocatedObjectSize() >> 10;
     // The estimated size is updated when the main thread finishes lazy
     // sweeping. If this thread reaches here before the main thread finishes
     // lazy sweeping, the thread will use the estimated size of the last GC.
-    size_t estimatedLiveObjectSize = Heap::estimatedLiveObjectSize();
-    size_t allocatedObjectSize = Heap::allocatedObjectSize();
+    size_t estimatedLiveObjectSizeKb = Heap::estimatedLiveObjectSize() >> 10;
     // Heap::markedObjectSize() may be underestimated if any thread has not
     // finished completeSweep().
-    size_t currentObjectSize = allocatedObjectSize + Heap::markedObjectSize() + WTF::Partitions::totalSizeOfCommittedPages();
-    if (currentObjectSize >= 300 * 1024 * 1024) {
-        // If we're consuming too much memory, trigger a conservative GC
-        // aggressively. This is a safe guard to avoid OOM.
-        return currentObjectSize > estimatedLiveObjectSize * 3 / 2;
-    }
+    size_t currentObjectSizeKb = allocatedObjectSizeKb + ((Heap::markedObjectSize() + WTF::Partitions::totalSizeOfCommittedPages()) >> 10);
+
     // Schedule a conservative GC if Oilpan has allocated more than 32 MB since
     // the last GC and the current memory usage is >400% larger than
     // the estimated live memory usage.
     // TODO(haraken): 400% is too large. Lower the heap growing factor.
-    return allocatedObjectSize >= 32 * 1024 * 1024 && currentObjectSize > 5 * estimatedLiveObjectSize;
+    return allocatedObjectSizeKb >= 32 * 1024 && currentObjectSizeKb > 5 * estimatedLiveObjectSizeKb;
 }
 
 void ThreadState::scheduleGCIfNeeded()
@@ -789,7 +804,7 @@ ThreadState::GCState ThreadState::gcState() const
     return m_gcState;
 }
 
-void ThreadState::didV8GC()
+void ThreadState::didV8MajorGC(bool forceGC)
 {
     checkThread();
     if (isMainThread()) {
@@ -797,6 +812,45 @@ void ThreadState::didV8GC()
         // expected to have collected a lot of DOM wrappers and dropped
         // references to their DOM objects.
         Heap::setEstimatedLiveObjectSize(Heap::estimatedLiveObjectSize() / 2);
+
+        if (forceGC) {
+            // This single GC is not enough for two reasons:
+            //   (1) The GC is not precise because the GC scans on-stack pointers conservatively.
+            //   (2) One GC is not enough to break a chain of persistent handles. It's possible that
+            //       some heap allocated objects own objects that contain persistent handles
+            //       pointing to other heap allocated objects. To break the chain, we need multiple GCs.
+            //
+            // Regarding (1), we force a precise GC at the end of the current event loop. So if you want
+            // to collect all garbage, you need to wait until the next event loop.
+            // Regarding (2), it would be OK in practice to trigger only one GC per gcEpilogue, because
+            // GCController.collectAll() forces 7 V8's GC.
+            Heap::collectGarbage(ThreadState::HeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGC);
+
+            // Forces a precise GC at the end of the current event loop.
+            ThreadState::current()->setGCState(ThreadState::FullGCScheduled);
+            return;
+        }
+
+        // If under memory pressure, complete sweeping before initiating
+        // the urgent conservative GC.
+        if (shouldForceMemoryPressureGC())
+            completeSweep();
+
+        // Schedule an Oilpan GC to avoid the following scenario:
+        // (1) A DOM object X holds a v8::Persistent to a V8 object.
+        //     Assume that X is small but the V8 object is huge.
+        //     The v8::Persistent is released when X is destructed.
+        // (2) X's DOM wrapper is created.
+        // (3) The DOM wrapper becomes unreachable.
+        // (4) V8 triggers a GC. The V8's GC collects the DOM wrapper.
+        //     However, X is not collected until a next Oilpan's GC is
+        //     triggered.
+        // (5) If a lot of such DOM objects are created, we end up with
+        //     a situation where V8's GC collects the DOM wrappers but
+        //     the DOM objects are not collected forever. (Note that
+        //     Oilpan's GC is not triggered unless Oilpan's heap gets full.)
+        // (6) V8 hits OOM.
+        scheduleGCIfNeeded();
     }
 }
 
