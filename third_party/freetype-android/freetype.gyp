@@ -3,6 +3,9 @@
 # found in the LICENSE file.
 
 {
+  'variables': {
+    'ft2_dir': 'src',
+  },
   'conditions': [
     [ 'OS == "android"', {
       'targets': [
@@ -13,43 +16,48 @@
           'sources': [
             # The following files are not sorted alphabetically, but in the
             # same order as in Android.mk to ease maintenance.
-            'src/src/base/ftbbox.c',
-            'src/src/base/ftbitmap.c',
-            'src/src/base/ftfstype.c',
-            'src/src/base/ftglyph.c',
-            'src/src/base/ftlcdfil.c',
-            'src/src/base/ftstroke.c',
-            'src/src/base/fttype1.c',
-            'src/src/base/ftxf86.c',
-            'src/src/base/ftbase.c',
-            'src/src/base/ftsystem.c',
-            'src/src/base/ftinit.c',
-            'src/src/base/ftgasp.c',
-            'src/src/base/ftmm.c',
-            'src/src/gzip/ftgzip.c',
-            'src/src/raster/raster.c',
-            'src/src/sfnt/sfnt.c',
-            'src/src/smooth/smooth.c',
-            'src/src/autofit/autofit.c',
-            'src/src/truetype/truetype.c',
-            'src/src/cff/cff.c',
-            'src/src/psnames/psnames.c',
-            'src/src/pshinter/pshinter.c',
+            '<(ft2_dir)/src/base/ftbbox.c',
+            '<(ft2_dir)/src/base/ftbitmap.c',
+            '<(ft2_dir)/src/base/ftfntfmt.c',
+            '<(ft2_dir)/src/base/ftfstype.c',
+            '<(ft2_dir)/src/base/ftglyph.c',
+            '<(ft2_dir)/src/base/ftlcdfil.c',
+            '<(ft2_dir)/src/base/ftstroke.c',
+            '<(ft2_dir)/src/base/fttype1.c',
+            '<(ft2_dir)/src/base/ftbase.c',
+            '<(ft2_dir)/src/base/ftsystem.c',
+            '<(ft2_dir)/src/base/ftinit.c',
+            '<(ft2_dir)/src/base/ftgasp.c',
+            '<(ft2_dir)/src/base/ftmm.c',
+            '<(ft2_dir)/src/gzip/ftgzip.c',
+            '<(ft2_dir)/src/raster/raster.c',
+            '<(ft2_dir)/src/sfnt/sfnt.c',
+            '<(ft2_dir)/src/smooth/smooth.c',
+            '<(ft2_dir)/src/autofit/autofit.c',
+            '<(ft2_dir)/src/truetype/truetype.c',
+            '<(ft2_dir)/src/cff/cff.c',
+            '<(ft2_dir)/src/psnames/psnames.c',
+            '<(ft2_dir)/src/pshinter/pshinter.c',
           ],
           'dependencies': [
             '../libpng/libpng.gyp:libpng',
             '../zlib/zlib.gyp:zlib',
           ],
           'include_dirs': [
-            'src/include',
+            'include',
+            '<(ft2_dir)/include',
           ],
           'defines': [
             'FT2_BUILD_LIBRARY',
             'DARWIN_NO_CARBON',
+            # Long directory name to avoid accidentally using wrong headers.
+            'FT_CONFIG_MODULES_H=<freetype-android-config/ftmodule.h>',
+            'FT_CONFIG_OPTIONS_H=<freetype-android-config/ftoption.h>',
           ],
           'direct_dependent_settings': {
             'include_dirs': [
-              '../../third_party/freetype-android/src/include',
+              'include',
+              '<(ft2_dir)/include',
             ],
           },
         },
