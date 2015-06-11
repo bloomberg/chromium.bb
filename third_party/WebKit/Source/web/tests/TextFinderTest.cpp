@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "config.h"
-
 #include "web/TextFinder.h"
 
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
@@ -21,14 +20,13 @@
 #include "wtf/OwnPtr.h"
 #include <gtest/gtest.h>
 
-using namespace blink;
 using blink::testing::runPendingTasks;
 
-namespace {
+namespace blink {
 
 class TextFinderTest : public ::testing::Test {
 protected:
-    virtual void SetUp() override;
+    void SetUp() override;
 
     Document& document() const;
     TextFinder& textFinder() const;
@@ -76,7 +74,7 @@ TEST_F(TextFinderTest, FindTextSimple)
     WebString searchText(String("FindMe"));
     WebFindOptions findOptions; // Default.
     bool wrapWithinFrame = true;
-    WebRect* selectionRect = 0;
+    WebRect* selectionRect = nullptr;
 
     ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame, selectionRect));
     Range* activeMatch = textFinder().activeMatch();
@@ -144,7 +142,7 @@ TEST_F(TextFinderTest, FindTextNotFound)
     WebString searchText(String("Boo"));
     WebFindOptions findOptions; // Default.
     bool wrapWithinFrame = true;
-    WebRect* selectionRect = 0;
+    WebRect* selectionRect = nullptr;
 
     EXPECT_FALSE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame, selectionRect));
     EXPECT_FALSE(textFinder().activeMatch());
@@ -163,7 +161,7 @@ TEST_F(TextFinderTest, FindTextInShadowDOM)
     WebString searchText(String("foo"));
     WebFindOptions findOptions; // Default.
     bool wrapWithinFrame = true;
-    WebRect* selectionRect = 0;
+    WebRect* selectionRect = nullptr;
 
     // TextIterator currently returns the matches in the document order, instead of the visual order. It visits
     // the shadow roots first, so in this case the matches will be returned in the order of <u> -> <b> -> <i>.
@@ -361,8 +359,8 @@ TEST_F(TextFinderTest, SequentialMatches)
 
 class TextFinderFakeTimerTest : public TextFinderTest {
 protected:
-    virtual void SetUp() override;
-    virtual void TearDown() override;
+    void SetUp() override;
+    void TearDown() override;
 
     // A simple platform that mocks out the clock.
     class TimeProxyPlatform : public Platform {
@@ -399,32 +397,32 @@ protected:
         }
 
         // From blink::Platform:
-        virtual double currentTime() override
+        double currentTime() override
         {
             return ++m_timeCounter;
         }
 
         // These blink::Platform methods must be overriden to make a usable object.
-        virtual void cryptographicallyRandomValues(unsigned char* buffer, size_t length) override
+        void cryptographicallyRandomValues(unsigned char* buffer, size_t length) override
         {
             ensureFallback().cryptographicallyRandomValues(buffer, length);
         }
 
-        virtual const unsigned char* getTraceCategoryEnabledFlag(const char* categoryName) override
+        const unsigned char* getTraceCategoryEnabledFlag(const char* categoryName) override
         {
             return ensureFallback().getTraceCategoryEnabledFlag(categoryName);
         }
 
         // These two methods allow timers to work correctly.
-        virtual double monotonicallyIncreasingTime() override
+        double monotonicallyIncreasingTime() override
         {
             return ensureFallback().monotonicallyIncreasingTime();
         }
 
-        virtual WebThread* currentThread() override { return ensureFallback().currentThread(); }
-        virtual WebUnitTestSupport* unitTestSupport() override { return ensureFallback().unitTestSupport(); }
-        virtual WebString defaultLocale() override { return ensureFallback().defaultLocale(); }
-        virtual WebCompositorSupport* compositorSupport() override { return ensureFallback().compositorSupport(); }
+        WebThread* currentThread() override { return ensureFallback().currentThread(); }
+        WebUnitTestSupport* unitTestSupport() override { return ensureFallback().unitTestSupport(); }
+        WebString defaultLocale() override { return ensureFallback().defaultLocale(); }
+        WebCompositorSupport* compositorSupport() override { return ensureFallback().compositorSupport(); }
 
         double m_timeCounter;
         Platform* m_fallbackPlatform;
@@ -473,4 +471,4 @@ TEST_F(TextFinderFakeTimerTest, ScopeWithTimeouts)
     EXPECT_EQ(4, textFinder().totalMatchCount());
 }
 
-} // namespace
+} // namespace blink

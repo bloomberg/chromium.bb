@@ -26,7 +26,6 @@
 // Tests for the ScrollAnimatorNone class.
 
 #include "config.h"
-
 #include "platform/scroll/ScrollAnimatorNone.h"
 
 #include "platform/Logging.h"
@@ -37,7 +36,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-using namespace blink;
+namespace blink {
 
 using testing::AtLeast;
 using testing::Return;
@@ -216,12 +215,12 @@ public:
     {
     }
 
-    virtual void SetUp()
+    void SetUp() override
     {
         m_currentPosition = 100;
         m_data = new ScrollAnimatorNone::PerAxisData(&m_currentPosition, 768);
     }
-    virtual void TearDown()
+    void TearDown() override
     {
         delete m_data;
     }
@@ -1054,3 +1053,5 @@ TEST_F(ScrollAnimatorNoneTest, ReverseInMiddle)
         result = result && animateScroll(t);
     EXPECT_GE(before, m_currentPosition);
 }
+
+} // namespace blink

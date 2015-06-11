@@ -29,7 +29,6 @@
  */
 
 #include "config.h"
-
 #include "public/web/WebFrame.h"
 
 #include "SkBitmap.h"
@@ -762,6 +761,8 @@ TEST_P(ParameterizedWebFrameTest, PostMessageThenDetach)
     runPendingTasks();
 }
 
+namespace {
+
 class FixedLayoutTestWebViewClient : public FrameTestHelpers::TestWebViewClient {
  public:
     virtual WebScreenInfo screenInfo() override { return m_screenInfo; }
@@ -773,7 +774,7 @@ class FakeCompositingWebViewClient : public FixedLayoutTestWebViewClient {
 };
 
 // Viewport settings need to be set before the page gets loaded
-static void enableViewportSettings(WebSettings* settings)
+void enableViewportSettings(WebSettings* settings)
 {
     settings->setViewportMetaEnabled(true);
     settings->setViewportEnabled(true);
@@ -782,7 +783,7 @@ static void enableViewportSettings(WebSettings* settings)
 }
 
 // Helper function to set autosizing multipliers on a document.
-static bool setTextAutosizingMultiplier(Document* document, float multiplier)
+bool setTextAutosizingMultiplier(Document* document, float multiplier)
 {
     bool multiplierSet = false;
     for (LayoutObject* layoutObject = document->layoutView(); layoutObject; layoutObject = layoutObject->nextInPreOrder()) {
@@ -797,7 +798,7 @@ static bool setTextAutosizingMultiplier(Document* document, float multiplier)
 }
 
 // Helper function to check autosizing multipliers on a document.
-static bool checkTextAutosizingMultiplier(Document* document, float multiplier)
+bool checkTextAutosizingMultiplier(Document* document, float multiplier)
 {
     bool multiplierChecked = false;
     for (LayoutObject* layoutObject = document->layoutView(); layoutObject; layoutObject = layoutObject->nextInPreOrder()) {
@@ -808,6 +809,8 @@ static bool checkTextAutosizingMultiplier(Document* document, float multiplier)
     }
     return multiplierChecked;
 }
+
+} // anonymous namespace
 
 TEST_P(ParameterizedWebFrameTest, ChangeInFixedLayoutResetsTextAutosizingMultipliers)
 {

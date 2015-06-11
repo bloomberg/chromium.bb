@@ -29,14 +29,11 @@
  */
 
 #include "config.h"
-
 #include "public/platform/WebURLResponse.h"
 
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 class TestExtraData : public WebURLResponse::ExtraData {
 public:
@@ -46,7 +43,7 @@ public:
         *alive = true;
     }
 
-    virtual ~TestExtraData() { *m_alive = false; }
+    ~TestExtraData() override { *m_alive = false; }
 
 private:
     bool* m_alive;
@@ -75,4 +72,4 @@ TEST(WebURLResponseTest, ExtraData)
     EXPECT_FALSE(alive);
 }
 
-} // namespace
+} // namespace blink

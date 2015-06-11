@@ -40,9 +40,7 @@
 #include "wtf/PassOwnPtr.h"
 #include <gtest/gtest.h>
 
-namespace {
-
-using namespace blink;
+namespace blink {
 
 static const size_t bufferSize = 16;
 
@@ -77,7 +75,7 @@ static void threadMain(volatile char* buffer)
     }
 }
 
-TEST(WTF_SpinLock, Torture)
+TEST(SpinLockTest, Torture)
 {
     char sharedBuffer[bufferSize];
 
@@ -91,4 +89,4 @@ TEST(WTF_SpinLock, Torture)
     thread2.clear();
 }
 
-} // namespace
+} // namespace blink

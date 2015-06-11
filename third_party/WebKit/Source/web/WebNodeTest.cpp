@@ -19,7 +19,7 @@ protected:
     Document& document() { return m_pageHolder->document(); }
 
 private:
-    virtual void SetUp() override;
+    void SetUp() override;
 
     OwnPtr<DummyPageHolder> m_pageHolder;
 };
@@ -42,4 +42,4 @@ TEST_F(WebNodeTest, GetElementsByHTMLTagName)
     EXPECT_EQ(0u, collection.length());
 }
 
-}
+} // namespace blink

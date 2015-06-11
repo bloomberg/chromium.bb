@@ -40,13 +40,10 @@
 #include "public/web/WebSettings.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/tests/FrameTestHelpers.h"
-
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 // These tests cover top controls scrolling on main-thread.
 // The animation for completing a partial show/hide is done in compositor so
@@ -62,7 +59,7 @@ public:
         registerMockedHttpURLLoad("iframe-scrolling-inner.html");
     }
 
-    ~TopControlsTest()
+    ~TopControlsTest() override
     {
         Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
     }
@@ -552,4 +549,4 @@ TEST_F(TopControlsTest, MAYBE(StateConstraints))
     EXPECT_POINT_EQ(IntPoint(0, 90), frame()->view()->scrollPosition());
 }
 
-} // namespace
+} // namespace blink

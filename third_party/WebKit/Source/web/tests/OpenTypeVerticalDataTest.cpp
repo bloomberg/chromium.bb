@@ -29,9 +29,7 @@
 #include "wtf/RefPtr.h"
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 struct TestTable : OpenType::TableBase {
     OpenType::Fixed version;
@@ -79,4 +77,4 @@ TEST(OpenTypeVerticalDataTest, ValidateOffsetTest)
     EXPECT_FALSE(table->validateOffset<uint16_t>(*buffer, sizeof(TestTable) - 1));
 }
 
-} // namespace
+} // namespace blink

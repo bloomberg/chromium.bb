@@ -47,14 +47,12 @@
 #include "web/tests/FrameTestHelpers.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
-
 #include <gtest/gtest.h>
 
-using namespace blink;
 using blink::URLTestHelpers::toKURL;
 using blink::testing::runPendingTasks;
 
-namespace {
+namespace blink {
 
 class AssociatedURLLoaderTest : public ::testing::Test,
                                 public WebURLLoaderClient {
@@ -87,7 +85,7 @@ public:
         return url;
     }
 
-    void SetUp()
+    void SetUp() override
     {
         m_helper.initialize();
 
@@ -107,7 +105,7 @@ public:
         Platform::current()->unitTestSupport()->unregisterMockedURL(url);
     }
 
-    void TearDown()
+    void TearDown() override
     {
         Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
     }
@@ -123,7 +121,7 @@ public:
     }
 
     // WebURLLoaderClient implementation.
-    void willSendRequest(WebURLLoader* loader, WebURLRequest& newRequest, const WebURLResponse& redirectResponse)
+    void willSendRequest(WebURLLoader* loader, WebURLRequest& newRequest, const WebURLResponse& redirectResponse) override
     {
         m_willSendRequest = true;
         EXPECT_EQ(m_expectedLoader, loader);
@@ -135,13 +133,13 @@ public:
         EXPECT_EQ(m_expectedRedirectResponse.mimeType(), redirectResponse.mimeType());
     }
 
-    void didSendData(WebURLLoader* loader, unsigned long long bytesSent, unsigned long long totalBytesToBeSent)
+    void didSendData(WebURLLoader* loader, unsigned long long bytesSent, unsigned long long totalBytesToBeSent) override
     {
         m_didSendData = true;
         EXPECT_EQ(m_expectedLoader, loader);
     }
 
-    void didReceiveResponse(WebURLLoader* loader, const WebURLResponse& response)
+    void didReceiveResponse(WebURLLoader* loader, const WebURLResponse& response) override
     {
         m_didReceiveResponse = true;
         m_actualResponse = WebURLResponse(response);
@@ -150,13 +148,13 @@ public:
         EXPECT_EQ(m_expectedResponse.httpStatusCode(), response.httpStatusCode());
     }
 
-    void didDownloadData(WebURLLoader* loader, int dataLength, int encodedDataLength)
+    void didDownloadData(WebURLLoader* loader, int dataLength, int encodedDataLength) override
     {
         m_didDownloadData = true;
         EXPECT_EQ(m_expectedLoader, loader);
     }
 
-    void didReceiveData(WebURLLoader* loader, const char* data, int dataLength, int encodedDataLength)
+    void didReceiveData(WebURLLoader* loader, const char* data, int dataLength, int encodedDataLength) override
     {
         m_didReceiveData = true;
         EXPECT_EQ(m_expectedLoader, loader);
@@ -164,19 +162,19 @@ public:
         EXPECT_GT(dataLength, 0);
     }
 
-    void didReceiveCachedMetadata(WebURLLoader* loader, const char* data, int dataLength)
+    void didReceiveCachedMetadata(WebURLLoader* loader, const char* data, int dataLength) override
     {
         m_didReceiveCachedMetadata = true;
         EXPECT_EQ(m_expectedLoader, loader);
     }
 
-    void didFinishLoading(WebURLLoader* loader, double finishTime, int64_t encodedDataLength)
+    void didFinishLoading(WebURLLoader* loader, double finishTime, int64_t encodedDataLength) override
     {
         m_didFinishLoading = true;
         EXPECT_EQ(m_expectedLoader, loader);
     }
 
-    void didFail(WebURLLoader* loader, const WebURLError& error)
+    void didFail(WebURLLoader* loader, const WebURLError& error) override
     {
         m_didFail = true;
         EXPECT_EQ(m_expectedLoader, loader);
@@ -266,8 +264,8 @@ public:
     WebFrame* mainFrame() const { return m_helper.webView()->mainFrame(); }
 
 protected:
-    WTF::String m_baseFilePath;
-    WTF::String m_frameFilePath;
+    String m_baseFilePath;
+    String m_frameFilePath;
     FrameTestHelpers::WebViewHelper m_helper;
 
     OwnPtr<WebURLLoader> m_expectedLoader;
@@ -717,4 +715,4 @@ TEST_F(AssociatedURLLoaderTest, CrossOriginHeaderAllowResponseHeaders)
     EXPECT_FALSE(m_actualResponse.httpHeaderField(headerNameString).isEmpty());
 }
 
-}
+} // namespace blink

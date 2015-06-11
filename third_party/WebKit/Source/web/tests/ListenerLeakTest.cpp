@@ -39,9 +39,7 @@
 #include <v8/include/v8-profiler.h>
 #include <v8/include/v8.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 const v8::HeapGraphNode* GetProperty(const v8::HeapGraphNode* node, v8::HeapGraphEdge::Type type, const char* name)
 {
@@ -53,7 +51,7 @@ const v8::HeapGraphNode* GetProperty(const v8::HeapGraphNode* node, v8::HeapGrap
                 return prop->GetToNode();
         }
     }
-    return 0;
+    return nullptr;
 }
 
 int GetNumObjects(const char* constructor)
@@ -96,7 +94,7 @@ public:
         webViewHelper.initializeAndLoad(baseURL + fileName, executeScript);
     }
 
-    virtual void TearDown() override
+    void TearDown() override
     {
         Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
     }
@@ -122,4 +120,4 @@ TEST_F(ListenerLeakTest, HiddenReferences)
     ASSERT_EQ(1, GetNumObjects("EventListenerLeakTestObject2"));
 }
 
-} // namespace
+} // namespace blink

@@ -46,21 +46,18 @@
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"
 #include "web/tests/FrameTestHelpers.h"
-
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 class TestListener : public V8AbstractEventListener {
 public:
-    virtual bool operator==(const EventListener&)
+    bool operator==(const EventListener&) override
     {
         return true;
     }
 
-    virtual void handleEvent(ScriptState* scriptState, Event* event)
+    void handleEvent(ScriptState* scriptState, Event* event) override
     {
         EXPECT_EQ(event->type(), "blah");
 
@@ -82,7 +79,7 @@ private:
     {
     }
 
-    virtual v8::Local<v8::Value> callListenerFunction(ScriptState*, v8::Local<v8::Value>, Event*)
+    v8::Local<v8::Value> callListenerFunction(ScriptState*, v8::Local<v8::Value>, Event*) override
     {
         ASSERT_NOT_REACHED();
         return v8::Local<v8::Value>();
@@ -116,4 +113,4 @@ TEST(CustomEventTest, InitWithSerializedScriptValue)
     Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
 }
 
-}
+} // namespace blink

@@ -29,7 +29,6 @@
  */
 
 #include "config.h"
-
 #include "public/web/WebSearchableFormData.h"
 
 #include "platform/testing/URLTestHelpers.h"
@@ -38,11 +37,10 @@
 #include "public/web/WebDocument.h"
 #include "public/web/WebFrame.h"
 #include "web/tests/FrameTestHelpers.h"
-
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-using namespace blink;
+namespace blink {
 
 class WebSearchableFormDataTest : public testing::Test {
 protected:
@@ -51,11 +49,10 @@ protected:
     {
     }
 
-    virtual ~WebSearchableFormDataTest()
+    ~WebSearchableFormDataTest() override
     {
         Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
     }
-
 
     FrameTestHelpers::WebViewHelper m_webViewHelper;
     std::string m_baseURL;
@@ -75,3 +72,5 @@ TEST_F(WebSearchableFormDataTest, SearchString)
     WebSearchableFormData searchableFormData(forms[0]);
     EXPECT_EQ("http://www.mock.url/search?hl=en&q={searchTerms}&btnM=Mock+Search", searchableFormData.url().string());
 }
+
+} // namespace blink

@@ -51,11 +51,9 @@
 #include "web/tests/FrameTestHelpers.h"
 #include <gtest/gtest.h>
 
-using namespace blink;
-
 using blink::URLTestHelpers::toKURL;
 
-namespace {
+namespace blink {
 
 class LineReader {
 public:
@@ -83,9 +81,6 @@ private:
     size_t m_index;
 };
 
-using blink::URLTestHelpers::toKURL;
-using namespace blink;
-
 class MHTMLTest : public testing::Test {
 public:
     MHTMLTest()
@@ -95,12 +90,12 @@ public:
     }
 
 protected:
-    virtual void SetUp()
+    void SetUp() override
     {
         m_helper.initialize();
     }
 
-    virtual void TearDown()
+    void TearDown() override
     {
         Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
     }
@@ -149,8 +144,6 @@ protected:
     {
         return MHTMLArchive::generateMHTMLData(m_resources, encodingPolicy, title, mime);
     }
-
-
 
 private:
     PassRefPtr<SharedBuffer> readFile(const char* fileName)
@@ -220,4 +213,5 @@ TEST_F(MHTMLTest, TestMHTMLEncoding)
     }
     EXPECT_EQ(12, sectionCheckedCount);
 }
-}
+
+} // namespace blink

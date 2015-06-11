@@ -17,9 +17,7 @@
 #include "web/tests/FrameTestHelpers.h"
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 class MockWebFrameClient : public WebFrameClient {
 };
@@ -31,7 +29,7 @@ public:
     {
     }
 
-    virtual void TearDown()
+    void TearDown() override
     {
         Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
     }
@@ -103,4 +101,4 @@ TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithoutScale)
     EXPECT_EQ(400, webViewImpl->mainFrameImpl()->scrollOffset().height);
 }
 
-}
+} // namespace blink

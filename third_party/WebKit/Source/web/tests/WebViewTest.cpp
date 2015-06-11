@@ -94,13 +94,12 @@
 #include "web/tests/FrameTestHelpers.h"
 #include <gtest/gtest.h>
 
-using namespace blink;
 using blink::FrameTestHelpers::loadFrame;
 using blink::URLTestHelpers::toKURL;
 using blink::URLTestHelpers::registerMockedURLLoad;
 using blink::testing::runPendingTasks;
 
-namespace {
+namespace blink {
 
 enum HorizontalScrollbarState {
     NoHorizontalScrollbar,
@@ -135,7 +134,7 @@ private:
 class AutoResizeWebViewClient : public FrameTestHelpers::TestWebViewClient {
 public:
     // WebViewClient methods
-    virtual void didAutoResize(const WebSize& newSize) { m_testData.setSize(newSize); }
+    void didAutoResize(const WebSize& newSize) override { m_testData.setSize(newSize); }
 
     // Local methods
     TestData& testData() { return m_testData; }
@@ -147,7 +146,7 @@ private:
 class SaveImageFromDataURLWebViewClient : public FrameTestHelpers::TestWebViewClient {
 public:
     // WebViewClient methods
-    virtual void saveImageFromDataURL(const WebString& dataURL) { m_dataURL = dataURL; }
+    void saveImageFromDataURL(const WebString& dataURL) override { m_dataURL = dataURL; }
 
     // Local methods
     const WebString& result() const { return m_dataURL; }
@@ -160,7 +159,7 @@ private:
 class TapHandlingWebViewClient : public FrameTestHelpers::TestWebViewClient {
 public:
     // WebViewClient methods
-    virtual void didHandleGestureEvent(const WebGestureEvent& event, bool eventCancelled)
+    void didHandleGestureEvent(const WebGestureEvent& event, bool eventCancelled) override
     {
         if (event.type == WebInputEvent::GestureTap) {
             m_tapX = event.x;
@@ -204,7 +203,7 @@ public:
     }
 
     // WebViewClient methods
-    virtual bool openDateTimeChooser(const WebDateTimeChooserParams&, WebDateTimeChooserCompletion* chooser_completion) override
+    bool openDateTimeChooser(const WebDateTimeChooserParams&, WebDateTimeChooserCompletion* chooser_completion) override
     {
         m_chooserCompletion = chooser_completion;
         return true;
@@ -222,7 +221,7 @@ public:
     {
     }
 
-    virtual void TearDown()
+    void TearDown() override
     {
         Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
     }
@@ -3050,4 +3049,4 @@ TEST_F(WebViewTest, TestRecordFrameTimingEvents)
     }
 }
 
-} // namespace
+} // namespace blink

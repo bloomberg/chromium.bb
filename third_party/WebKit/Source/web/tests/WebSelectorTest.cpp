@@ -35,9 +35,7 @@
 #include "public/platform/WebUnitTestSupport.h"
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 TEST(WebSelectorTest, Canonicalizes)
 {
@@ -57,4 +55,4 @@ TEST(WebSelectorTest, Restricts)
     EXPECT_EQ("h1, h2[style=\"foobar\"].cls", canonicalizeSelector("h1,h2[style=\"foobar\"].cls", WebSelectorTypeCompound).utf8());
 }
 
-} // namespace
+} // namespace blink

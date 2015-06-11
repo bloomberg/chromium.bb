@@ -44,12 +44,10 @@
 #include "web/tests/FrameTestHelpers.h"
 #include <gtest/gtest.h>
 
-using namespace blink;
+namespace blink {
 
 class MockWebFrameClient : public WebFrameClient {
 };
-namespace {
-
 
 class LayoutGeometryMapTest : public testing::Test {
 public:
@@ -58,7 +56,7 @@ public:
     {
     }
 
-    virtual void TearDown()
+    void TearDown() override
     {
         Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
     }
@@ -394,4 +392,5 @@ TEST_F(LayoutGeometryMapTest, ColumnTest)
     EXPECT_EQ(3.0f, rectFromQuad(rgm.mapToContainer(rect, nullptr)).height());
 
 }
-} // namespace ::
+
+} // namespace blink

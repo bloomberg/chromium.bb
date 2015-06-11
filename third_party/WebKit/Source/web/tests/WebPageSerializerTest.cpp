@@ -42,14 +42,12 @@
 #include "public/web/WebFrame.h"
 #include "public/web/WebView.h"
 #include "web/tests/FrameTestHelpers.h"
-
 #include <gtest/gtest.h>
 
-using namespace blink;
 using blink::Document;
 using blink::URLTestHelpers::toKURL;
 
-namespace {
+namespace blink {
 
 class WebPageSerializerTest : public testing::Test {
 public:
@@ -61,12 +59,12 @@ public:
     }
 
 protected:
-    virtual void SetUp()
+    void SetUp() override
     {
         m_helper.initialize();
     }
 
-    virtual void TearDown()
+    void TearDown() override
     {
         Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
     }
@@ -179,4 +177,4 @@ TEST_F(WebPageSerializerTest, MultipleFrames)
     EXPECT_TRUE(webVectorContains(resources, "http://www.test.com/embed.png"));
 }
 
-}
+} // namespace blink

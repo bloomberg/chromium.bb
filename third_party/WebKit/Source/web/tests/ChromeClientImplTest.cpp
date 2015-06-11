@@ -40,8 +40,6 @@
 #include "web/tests/FrameTestHelpers.h"
 #include <gtest/gtest.h>
 
-using namespace blink;
-
 namespace blink {
 
 void setCurrentInputEventForTest(const WebInputEvent* event)
@@ -49,16 +47,14 @@ void setCurrentInputEventForTest(const WebInputEvent* event)
     WebViewImpl::m_currentInputEvent = event;
 }
 
-}
-
 namespace {
 
 class TestWebViewClient : public FrameTestHelpers::TestWebViewClient {
 public:
     explicit TestWebViewClient(WebNavigationPolicy* target) : m_target(target) { }
-    ~TestWebViewClient() { }
+    ~TestWebViewClient() override { }
 
-    virtual void show(WebNavigationPolicy policy)
+    void show(WebNavigationPolicy policy) override
     {
         *m_target = policy;
     }
@@ -69,8 +65,10 @@ private:
 
 class TestWebFrameClient : public WebFrameClient {
 public:
-    ~TestWebFrameClient() { }
+    ~TestWebFrameClient() override { }
 };
+
+} // anonymous namespace
 
 class GetNavigationPolicyTest : public testing::Test {
 public:
@@ -81,7 +79,7 @@ public:
     }
 
 protected:
-    virtual void SetUp()
+    void SetUp() override
     {
         m_webView = toWebViewImpl(WebView::create(&m_webViewClient));
         m_mainFrame = WebLocalFrame::create(WebTreeScopeType::Document, &m_webFrameClient);
@@ -90,7 +88,7 @@ protected:
         m_result = WebNavigationPolicyIgnore;
     }
 
-    virtual void TearDown()
+    void TearDown() override
     {
         m_webView->close();
         m_mainFrame->close();
@@ -264,4 +262,4 @@ TEST_F(GetNavigationPolicyTest, NotResizableForcesPopup)
     EXPECT_FALSE(isNavigationPolicyPopup());
 }
 
-} // namespace
+} // namespace blink

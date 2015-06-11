@@ -35,9 +35,9 @@
 #include "platform/geometry/FloatPoint.h"
 #include "platform/scroll/ScrollAnimator.h"
 
-class ScrollAnimatorNoneTest;
-
 namespace blink {
+
+class ScrollAnimatorNoneTest;
 
 class PLATFORM_EXPORT ScrollAnimatorNone : public ScrollAnimator {
 public:
@@ -91,7 +91,7 @@ protected:
 
     Parameters parametersForScrollGranularity(ScrollGranularity) const;
 
-    friend class ::ScrollAnimatorNoneTest;
+    friend class ScrollAnimatorNoneTest;
 
     struct PLATFORM_EXPORT PerAxisData {
         PerAxisData(float* currentPos, int visibleLength);

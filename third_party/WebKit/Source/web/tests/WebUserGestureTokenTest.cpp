@@ -29,7 +29,6 @@
  */
 
 #include "config.h"
-
 #include "public/web/WebUserGestureToken.h"
 
 #include "platform/UserGestureIndicator.h"
@@ -37,9 +36,7 @@
 #include "public/web/WebUserGestureIndicator.h"
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 TEST(WebUserGestureTokenTest, Basic)
 {
@@ -80,4 +77,4 @@ TEST(WebUserGestureTokenTest, Basic)
     EXPECT_TRUE(UserGestureIndicator::processedUserGestureSinceLoad());
 }
 
-}
+} // namespace blink

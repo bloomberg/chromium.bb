@@ -58,9 +58,8 @@
 #include <gtest/gtest.h>
 
 using blink::testing::runPendingTasks;
-using namespace blink;
 
-namespace {
+namespace blink {
 
 class WebPluginContainerTest : public ::testing::Test {
 public:
@@ -69,7 +68,7 @@ public:
     {
     }
 
-    virtual void TearDown()
+    void TearDown() override
     {
         Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
     }
@@ -89,18 +88,19 @@ public:
         m_testClient = testClient;
     }
 
-    virtual bool hasSelection() const { return true; }
-    virtual WebString selectionAsText() const { return WebString("x"); }
-    virtual WebString selectionAsMarkup() const { return WebString("y"); }
-    virtual bool supportsPaginatedPrint() { return true; }
-    virtual int printBegin(const WebPrintParams& printParams) { return 1; }
-    virtual bool printPage(int pageNumber, WebCanvas*);
+    bool hasSelection() const override { return true; }
+    WebString selectionAsText() const override { return WebString("x"); }
+    WebString selectionAsMarkup() const override { return WebString("y"); }
+    bool supportsPaginatedPrint() override { return true; }
+    int printBegin(const WebPrintParams& printParams) override { return 1; }
+    bool printPage(int pageNumber, WebCanvas*) override;
+
 private:
     TestPluginWebFrameClient* m_testClient;
 };
 
 class TestPluginWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
-    virtual WebPlugin* createPlugin(WebLocalFrame* frame, const WebPluginParams& params) override
+    WebPlugin* createPlugin(WebLocalFrame* frame, const WebPluginParams& params) override
     {
         if (params.mimeType == WebString::fromUTF8("application/x-webkit-test-webplugin"))
             return new TestPlugin(frame, params, this);
@@ -383,4 +383,5 @@ TEST_F(WebPluginContainerTest, IsRectTopmostTest)
 
     EXPECT_FALSE(pluginContainerImpl->isRectTopmost(rect));
 }
-}
+
+} // namespace blink

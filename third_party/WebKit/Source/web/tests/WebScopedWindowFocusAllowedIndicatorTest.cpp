@@ -35,9 +35,7 @@
 #include "public/web/WebDocument.h"
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 TEST(WebScopedWindowFocusAllowedIndicatorTest, Basic)
 {
@@ -57,4 +55,4 @@ TEST(WebScopedWindowFocusAllowedIndicatorTest, Basic)
     EXPECT_FALSE(document->isWindowInteractionAllowed());
 }
 
-}
+} // namespace blink

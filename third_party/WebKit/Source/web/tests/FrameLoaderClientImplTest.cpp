@@ -29,7 +29,6 @@
  */
 
 #include "config.h"
-
 #include "web/FrameLoaderClientImpl.h"
 
 #include "core/loader/FrameLoader.h"
@@ -56,7 +55,7 @@ namespace {
 
 class MockWebFrameClient : public WebFrameClient {
 public:
-    virtual ~MockWebFrameClient() { }
+    ~MockWebFrameClient() override { }
 
     MOCK_METHOD2(userAgentOverride, WebString(WebLocalFrame*, const WebURL&));
     MOCK_METHOD2(createPluginPlaceholder, WebPluginPlaceholder*(WebLocalFrame*, const WebPluginParams&));
@@ -64,7 +63,7 @@ public:
 
 class FrameLoaderClientImplTest : public ::testing::Test {
 protected:
-    virtual void SetUp() override
+    void SetUp() override
     {
         ON_CALL(m_webFrameClient, userAgentOverride(_, _)).WillByDefault(Return(WebString()));
 
@@ -78,7 +77,7 @@ protected:
         m_frameLoaderClientImpl = toFrameLoaderClientImpl(toWebLocalFrameImpl(m_webView->mainFrame())->frame()->loader().client());
     }
 
-    virtual void TearDown() override
+    void TearDown() override
     {
         m_webView->close();
         m_mainFrame->close();

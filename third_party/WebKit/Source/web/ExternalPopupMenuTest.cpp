@@ -24,26 +24,24 @@
 #include "web/tests/FrameTestHelpers.h"
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 const size_t kListSize = 7;
 
 class TestPopupMenuClient : public PopupMenuClient {
 public:
     TestPopupMenuClient() : m_listSize(0) { }
-    virtual ~TestPopupMenuClient() { }
+    ~TestPopupMenuClient() override { }
 
-    virtual void valueChanged(unsigned listIndex, bool fireEvents = true) override { }
-    virtual void selectionChanged(unsigned listIndex, bool fireEvents = true) override { }
-    virtual void selectionCleared() override { }
+    void valueChanged(unsigned listIndex, bool fireEvents = true) override { }
+    void selectionChanged(unsigned listIndex, bool fireEvents = true) override { }
+    void selectionCleared() override { }
 
-    virtual String itemText(unsigned listIndex) const override { return emptyString(); }
-    virtual String itemToolTip(unsigned listIndex) const override { return emptyString(); }
-    virtual String itemAccessibilityText(unsigned listIndex) const override { return emptyString(); }
-    virtual bool itemIsEnabled(unsigned listIndex) const override { return true; }
-    virtual PopupMenuStyle itemStyle(unsigned listIndex) const override
+    String itemText(unsigned listIndex) const override { return emptyString(); }
+    String itemToolTip(unsigned listIndex) const override { return emptyString(); }
+    String itemAccessibilityText(unsigned listIndex) const override { return emptyString(); }
+    bool itemIsEnabled(unsigned listIndex) const override { return true; }
+    PopupMenuStyle itemStyle(unsigned listIndex) const override
     {
         FontDescription fontDescription;
         fontDescription.setComputedSize(12.0);
@@ -52,25 +50,26 @@ public:
         bool displayNone = m_displayNoneIndexSet.find(listIndex) != m_displayNoneIndexSet.end();
         return PopupMenuStyle(Color::black, Color::white, font, true, displayNone, Length(), TextDirection(), false);
     }
-    virtual PopupMenuStyle menuStyle() const override { return itemStyle(0); }
-    virtual LayoutUnit clientPaddingLeft() const override { return 0; }
-    virtual LayoutUnit clientPaddingRight() const override { return 0; }
-    virtual int listSize() const override { return m_listSize; }
-    virtual int selectedIndex() const override { return 0; }
-    virtual void popupDidHide() override { }
-    virtual void popupDidCancel() override { }
-    virtual bool itemIsSeparator(unsigned listIndex) const override { return false;}
-    virtual bool itemIsLabel(unsigned listIndex) const override { return false; }
-    virtual bool itemIsSelected(unsigned listIndex) const override { return listIndex == 0;}
-    virtual void provisionalSelectionChanged(unsigned listIndex) override { }
-    virtual bool multiple() const override { return false; }
-    virtual IntRect elementRectRelativeToViewport() const override { return IntRect(); }
-    virtual Element& ownerElement() const override { return *m_ownerElement; }
-    virtual const ComputedStyle* computedStyleForItem(Element& element) const override { return nullptr; }
+    PopupMenuStyle menuStyle() const override { return itemStyle(0); }
+    LayoutUnit clientPaddingLeft() const override { return 0; }
+    LayoutUnit clientPaddingRight() const override { return 0; }
+    int listSize() const override { return m_listSize; }
+    int selectedIndex() const override { return 0; }
+    void popupDidHide() override { }
+    void popupDidCancel() override { }
+    bool itemIsSeparator(unsigned listIndex) const override { return false;}
+    bool itemIsLabel(unsigned listIndex) const override { return false; }
+    bool itemIsSelected(unsigned listIndex) const override { return listIndex == 0;}
+    void provisionalSelectionChanged(unsigned listIndex) override { }
+    bool multiple() const override { return false; }
+    IntRect elementRectRelativeToViewport() const override { return IntRect(); }
+    Element& ownerElement() const override { return *m_ownerElement; }
+    const ComputedStyle* computedStyleForItem(Element& element) const override { return nullptr; }
 
     void setListSize(size_t size) { m_listSize = size; }
     void setDisplayNoneIndex(unsigned index) { m_displayNoneIndexSet.insert(index); }
     void setOwnerElement(PassRefPtrWillBeRawPtr<Element> element) { m_ownerElement = element; }
+
 private:
     size_t m_listSize;
     std::set<unsigned> m_displayNoneIndexSet;
@@ -152,12 +151,12 @@ public:
     ExternalPopupMenuTest() : m_baseURL("http://www.test.com") { }
 
 protected:
-    virtual void SetUp() override
+    void SetUp() override
     {
         m_helper.initialize(false, &m_webFrameClient, &m_webViewClient);
         webView()->setUseExternalPopupMenus(true);
     }
-    virtual void TearDown() override
+    void TearDown() override
     {
         Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
     }
@@ -268,4 +267,4 @@ TEST_F(ExternalPopupMenuTest, DidAcceptIndicesClearSelect)
     EXPECT_EQ(-1, select->selectedIndex());
 }
 
-} // namespace
+} // namespace blink

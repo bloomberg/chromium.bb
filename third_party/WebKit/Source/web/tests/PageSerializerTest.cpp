@@ -50,11 +50,10 @@
 #include "wtf/Vector.h"
 #include <gtest/gtest.h>
 
-using namespace blink;
 using blink::URLTestHelpers::toKURL;
 using blink::URLTestHelpers::registerMockedURLLoad;
 
-namespace {
+namespace blink {
 
 class PageSerializerTest : public testing::Test {
 public:
@@ -65,13 +64,13 @@ public:
     }
 
 protected:
-    virtual void SetUp()
+    void SetUp() override
     {
         // We want the images to load and JavaScript to be on.
         m_helper.initialize(true, 0, 0, &configureSettings);
     }
 
-    virtual void TearDown()
+    void TearDown() override
     {
         Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
     }
@@ -128,7 +127,7 @@ protected:
                 && (mime.isNull() || equalIgnoringCase(resource.mimeType, mime)))
                 return &resource;
         }
-        return 0;
+        return nullptr;
     }
 
     bool isSerialized(const char* url, const char* mimeType = 0)
@@ -407,4 +406,4 @@ TEST_F(PageSerializerTest, NamespaceElementsDontCrash)
     EXPECT_GT(getSerializedData("namespace_element.html", "text/html").length(), 0U);
 }
 
-}
+} // namespace blink

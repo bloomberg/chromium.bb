@@ -15,15 +15,14 @@
 #include <gtest/gtest.h>
 #include <v8.h>
 
-namespace {
+namespace blink {
 
 using blink::FrameTestHelpers::WebViewHelper;
 using blink::FrameTestHelpers::pumpPendingRequestsDoNotUse;
-using namespace blink;
 
 class TestActivityLogger : public V8DOMActivityLogger {
 public:
-    virtual ~TestActivityLogger() { }
+    ~TestActivityLogger() override { }
 
     void logGetter(const String& apiName) override
     {
@@ -525,4 +524,4 @@ TEST_F(ActivityLoggerTest, RequestResource)
     ASSERT_TRUE(verifyActivities(expectedActivities));
 }
 
-} // namespace
+} // namespace blink

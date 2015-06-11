@@ -30,8 +30,6 @@
 
 #include "config.h"
 
-#include <gtest/gtest.h>
-
 #include "core/editing/EditingBehavior.h"
 #include "core/editing/Editor.h"
 #include "core/events/EventTarget.h"
@@ -40,10 +38,9 @@
 #include "platform/KeyboardCodes.h"
 #include "public/web/WebInputEvent.h"
 #include "web/WebInputEventConversion.h"
+#include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 class KeyboardTest : public testing::Test {
 public:
@@ -212,4 +209,4 @@ TEST_F(KeyboardTest, TestInsertNewline4)
     EXPECT_STREQ("InsertNewline", result);
 }
 
-} // empty namespace
+} // namespace blink

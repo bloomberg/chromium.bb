@@ -38,9 +38,7 @@
 #include "public/platform/WebUnitTestSupport.h"
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 static PassRefPtr<SharedBuffer> readFile(const char* fileName)
 {
@@ -97,4 +95,4 @@ TEST(WebImageTest, BadImage)
     EXPECT_TRUE(image.getSkBitmap().isNull());
 }
 
-} // namespace
+} // namespace blink

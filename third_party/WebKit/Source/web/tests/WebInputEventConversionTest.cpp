@@ -29,7 +29,6 @@
  */
 
 #include "config.h"
-
 #include "web/WebInputEventConversion.h"
 
 #include "core/dom/Touch.h"
@@ -51,9 +50,7 @@
 #include "web/tests/FrameTestHelpers.h"
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<KeyboardEvent> createKeyboardEventWithLocation(KeyboardEvent::KeyLocationCode location)
 {
@@ -940,4 +937,4 @@ TEST(WebInputEventConversionTest, PlatformWheelEventBuilder)
     }
 }
 
-} // anonymous namespace
+} // namespace blink

@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "config.h"
-
 #include "public/web/WebDocument.h"
 
 #include "core/CSSPropertyNames.h"
@@ -22,11 +21,10 @@
 #include "web/tests/FrameTestHelpers.h"
 #include <gtest/gtest.h>
 
-namespace {
+namespace blink {
 
 using blink::FrameTestHelpers::WebViewHelper;
 using blink::URLTestHelpers::toKURL;
-using namespace blink;
 
 const char* kDefaultOrigin = "https://example.test/";
 const char* kManifestDummyFilePath = "manifest-dummy.html";
@@ -138,35 +136,37 @@ TEST_F(WebDocumentTest, ManifestUseCredentials)
 }
 
 namespace {
-    const char* baseURLOriginA = "http://example.test:0/";
-    const char* baseURLOriginSubA = "http://subdomain.example.test:0/";
-    const char* baseURLOriginB = "http://not-example.test:0/";
-    const char* emptyFile = "first_party/empty.html";
-    const char* nestedData = "first_party/nested-data.html";
-    const char* nestedOriginA = "first_party/nested-originA.html";
-    const char* nestedOriginSubA = "first_party/nested-originSubA.html";
-    const char* nestedOriginAInOriginA = "first_party/nested-originA-in-originA.html";
-    const char* nestedOriginAInOriginB = "first_party/nested-originA-in-originB.html";
-    const char* nestedOriginB = "first_party/nested-originB.html";
-    const char* nestedOriginBInOriginA = "first_party/nested-originB-in-originA.html";
-    const char* nestedOriginBInOriginB = "first_party/nested-originB-in-originB.html";
-    const char* nestedSrcDoc = "first_party/nested-srcdoc.html";
 
-    static KURL toOriginA(const char* file)
-    {
-        return toKURL(std::string(baseURLOriginA) + file);
-    }
+const char* baseURLOriginA = "http://example.test:0/";
+const char* baseURLOriginSubA = "http://subdomain.example.test:0/";
+const char* baseURLOriginB = "http://not-example.test:0/";
+const char* emptyFile = "first_party/empty.html";
+const char* nestedData = "first_party/nested-data.html";
+const char* nestedOriginA = "first_party/nested-originA.html";
+const char* nestedOriginSubA = "first_party/nested-originSubA.html";
+const char* nestedOriginAInOriginA = "first_party/nested-originA-in-originA.html";
+const char* nestedOriginAInOriginB = "first_party/nested-originA-in-originB.html";
+const char* nestedOriginB = "first_party/nested-originB.html";
+const char* nestedOriginBInOriginA = "first_party/nested-originB-in-originA.html";
+const char* nestedOriginBInOriginB = "first_party/nested-originB-in-originB.html";
+const char* nestedSrcDoc = "first_party/nested-srcdoc.html";
 
-    static KURL toOriginSubA(const char* file)
-    {
-        return toKURL(std::string(baseURLOriginSubA) + file);
-    }
-
-    static KURL toOriginB(const char* file)
-    {
-        return toKURL(std::string(baseURLOriginB) + file);
-    }
+KURL toOriginA(const char* file)
+{
+    return toKURL(std::string(baseURLOriginA) + file);
 }
+
+KURL toOriginSubA(const char* file)
+{
+    return toKURL(std::string(baseURLOriginSubA) + file);
+}
+
+KURL toOriginB(const char* file)
+{
+    return toKURL(std::string(baseURLOriginB) + file);
+}
+
+} // anonymous namespace
 
 class WebDocumentFirstPartyTest : public WebDocumentTest {
 public:
@@ -296,4 +296,4 @@ TEST_F(WebDocumentFirstPartyTest, NestedData)
     ASSERT_EQ(SecurityOrigin::urlWithUniqueSecurityOrigin(), nestedDocument()->firstPartyForCookies());
 }
 
-}
+} // namespace blink

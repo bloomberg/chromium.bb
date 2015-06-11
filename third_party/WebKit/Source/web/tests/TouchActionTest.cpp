@@ -55,13 +55,11 @@
 #include "public/web/WebWidgetClient.h"
 #include "web/WebViewImpl.h"
 #include "web/tests/FrameTestHelpers.h"
-
 #include <gtest/gtest.h>
 
-using namespace blink;
 using blink::testing::runPendingTasks;
 
-namespace {
+namespace blink {
 
 class TouchActionTrackingWebViewClient : public FrameTestHelpers::TestWebViewClient {
 public:
@@ -72,7 +70,7 @@ public:
     }
 
     // WebWidgetClient methods
-    virtual void setTouchAction(WebTouchAction touchAction)
+    void setTouchAction(WebTouchAction touchAction) override
     {
         m_actionSetCount++;
         m_action = touchAction;
@@ -111,7 +109,7 @@ public:
         URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL), "touch-action-tests.js");
     }
 
-    virtual void TearDown()
+    void TearDown() override
     {
         Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
     }
@@ -346,4 +344,4 @@ TEST_F(TouchActionTest, Pan)
     runTouchActionTest("touch-action-pan.html");
 }
 
-}
+} // namespace blink
