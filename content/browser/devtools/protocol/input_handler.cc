@@ -237,12 +237,12 @@ Response InputHandler::DispatchMouseEvent(
   if (!SetMouseEventButton(&event, button))
     return Response::InvalidParams("Invalid mouse button");
 
-  event.x = x;
-  event.y = y;
-  event.windowX = x;
-  event.windowY = y;
-  event.globalX = x;
-  event.globalY = y;
+  event.x = x * page_scale_factor_;
+  event.y = y * page_scale_factor_;
+  event.windowX = x * page_scale_factor_;
+  event.windowY = y * page_scale_factor_;
+  event.globalX = x * page_scale_factor_;
+  event.globalY = y * page_scale_factor_;
   event.clickCount = click_count ? *click_count : 0;
 
   if (!host_)
