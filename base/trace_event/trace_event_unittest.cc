@@ -2187,7 +2187,10 @@ TEST_F(TraceEventTestFixture, ArgsWhitelisting) {
   dict->GetDictionary("args", &args_dict);
   ASSERT_TRUE(args_dict);
   EXPECT_FALSE(args_dict->GetInteger("int_two", &int_value));
-  EXPECT_TRUE(args_dict->GetInteger("stripped", &int_value));
+
+  std::string args_string;
+  EXPECT_TRUE(dict->GetString("args", &args_string));
+  EXPECT_EQ(args_string, "__stripped__");
 }
 
 class TraceEventCallbackTest : public TraceEventTestFixture {

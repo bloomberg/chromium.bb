@@ -784,34 +784,34 @@ void TraceEvent::AppendAsJSON(
   DCHECK(!strchr(name_, '"'));
   StringAppendF(out, "{\"pid\":%i,\"tid\":%i,\"ts\":%" PRId64
                      ","
-                     "\"ph\":\"%c\",\"cat\":\"%s\",\"name\":\"%s\",\"args\":{",
+                     "\"ph\":\"%c\",\"cat\":\"%s\",\"name\":\"%s\",\"args\":",
                 process_id, thread_id_, time_int64, phase_, category_group_name,
                 name_);
 
   // Output argument names and values, stop at first NULL argument name.
-  if (arg_names_[0]) {
-    bool allow_args = argument_filter_predicate.is_null() ||
-                      argument_filter_predicate.Run(category_group_name, name_);
+  bool strip_args = arg_names_[0] && !argument_filter_predicate.is_null() &&
+                    !argument_filter_predicate.Run(category_group_name, name_);
 
-    if (allow_args) {
-      for (int i = 0; i < kTraceMaxNumArgs && arg_names_[i]; ++i) {
-        if (i > 0)
-          *out += ",";
-        *out += "\"";
-        *out += arg_names_[i];
-        *out += "\":";
+  if (strip_args) {
+    *out += "\"__stripped__\"";
+  } else {
+    *out += "{";
 
-        if (arg_types_[i] == TRACE_VALUE_TYPE_CONVERTABLE)
-          convertable_values_[i]->AppendAsTraceFormat(out);
-        else
-          AppendValueAsJSON(arg_types_[i], arg_values_[i], out);
-      }
-    } else {
-      *out += "\"stripped\":1";
+    for (int i = 0; i < kTraceMaxNumArgs && arg_names_[i]; ++i) {
+      if (i > 0)
+        *out += ",";
+      *out += "\"";
+      *out += arg_names_[i];
+      *out += "\":";
+
+      if (arg_types_[i] == TRACE_VALUE_TYPE_CONVERTABLE)
+        convertable_values_[i]->AppendAsTraceFormat(out);
+      else
+        AppendValueAsJSON(arg_types_[i], arg_values_[i], out);
     }
-  }
 
-  *out += "}";
+    *out += "}";
+  }
 
   if (phase_ == TRACE_EVENT_PHASE_COMPLETE) {
     int64 duration = duration_.ToInternalValue();
