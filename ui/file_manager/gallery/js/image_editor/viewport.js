@@ -487,7 +487,8 @@ Viewport.prototype.clone = function() {
  * @param {number} width Width of image.
  * @param {number} height Height of image.
  * @param {!ImageRect} screenRect Rectangle in window coordinate system. The
- *     origin of the coordinate system at the left upper of the window.
+ *     origin of the coordinate system is located at the left upper of the
+ *     window.
  */
 Viewport.prototype.getScreenRectTransformation = function(
     width, height, screenRect) {
@@ -521,14 +522,13 @@ Viewport.prototype.getCroppingTransformation = function(
       wholeWidthMax, wholeHeightMax, wholeWidthMax, wholeHeightMax);
   var wholeWidth = wholeWidthMax * fittingScale;
   var wholeHeight = wholeHeightMax * fittingScale;
-  var wholeLeft = (this.screenBounds_.width - wholeWidth) / 2;
-  var wholeTop = (this.screenBounds_.height - wholeHeight) / 2;
+  var wholeRect = this.getCenteredRect_(wholeWidth, wholeHeight, 0, 0);
   return this.getScreenRectTransformation(
       width,
       height,
       new ImageRect(
-          wholeLeft + cropRect.left * fittingScale,
-          wholeTop + cropRect.top * fittingScale,
+          wholeRect.left + cropRect.left * fittingScale,
+          wholeRect.top + cropRect.top * fittingScale,
           cropRect.width * fittingScale,
           cropRect.height * fittingScale));
 };
@@ -597,13 +597,11 @@ Viewport.prototype.getTransformationInternal_ = function(
       rotatedWidth, rotatedHeight, rotatedMaxWidth, rotatedMaxHeight);
 
   // Offset for centering.
-  var dx = (this.screenBounds_.width - width) / 2;
-  var dy = (this.screenBounds_.height - height) / 2;
-
+  var rect = this.getCenteredRect_(width, height, offsetX, offsetY);
   return formatString(
       'translate($1px,$2px) scale($3) rotate($4deg)',
-      dx + offsetX,
-      dy + offsetY,
+      rect.left,
+      rect.top,
       fittingScale * zoom,
       rotation * 90);
 };
