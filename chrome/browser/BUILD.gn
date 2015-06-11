@@ -621,6 +621,7 @@ source_set("browser") {
     deps += [
       "//components/feedback",
       "//device/core",
+      "//device/devices_app:lib",
       "//device/usb",
     ]
   }
