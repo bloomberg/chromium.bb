@@ -10,6 +10,7 @@
 #include "ash/display/display_manager.h"
 #include "ash/display/mouse_warp_controller.h"
 #include "ash/shell.h"
+#include "ui/events/event.h"
 
 namespace ash {
 

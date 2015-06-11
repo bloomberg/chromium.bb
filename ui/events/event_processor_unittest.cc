@@ -6,12 +6,14 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
+#include "ui/events/event_target_iterator.h"
 #include "ui/events/event_targeter.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/test/events_test_utils.h"
 #include "ui/events/test/test_event_handler.h"
 #include "ui/events/test/test_event_processor.h"
 #include "ui/events/test/test_event_target.h"
+#include "ui/events/test/test_event_targeter.h"
 
 typedef std::vector<std::string> HandlerSequenceRecorder;
 
@@ -23,11 +25,13 @@ class EventProcessorTest : public testing::Test {
   EventProcessorTest() {}
   ~EventProcessorTest() override {}
 
+ protected:
   // testing::Test:
   void SetUp() override {
-    processor_.SetRoot(scoped_ptr<EventTarget>(new TestEventTarget()));
+    processor_.SetRoot(make_scoped_ptr(new TestEventTarget()));
     processor_.Reset();
-    root()->SetEventTargeter(make_scoped_ptr(new EventTargeter()));
+    root()->SetEventTargeter(
+        make_scoped_ptr(new TestEventTargeter(root(), false)));
   }
 
   TestEventTarget* root() {
@@ -42,7 +46,12 @@ class EventProcessorTest : public testing::Test {
     processor_.OnEventFromSource(event);
   }
 
- protected:
+  void SetTarget(TestEventTarget* target) {
+    static_cast<TestEventTargeter*>(root()->GetEventTargeter())
+        ->set_target(target);
+  }
+
+ private:
   TestEventProcessor processor_;
 
   DISALLOW_COPY_AND_ASSIGN(EventProcessorTest);
@@ -50,6 +59,9 @@ class EventProcessorTest : public testing::Test {
 
 TEST_F(EventProcessorTest, Basic) {
   scoped_ptr<TestEventTarget> child(new TestEventTarget());
+  child->SetEventTargeter(
+      make_scoped_ptr(new TestEventTargeter(child.get(), false)));
+  SetTarget(child.get());
   root()->AddChild(child.Pass());
 
   MouseEvent mouse(ET_MOUSE_MOVED, gfx::Point(10, 10), gfx::Point(10, 10),
@@ -58,119 +70,10 @@ TEST_F(EventProcessorTest, Basic) {
   EXPECT_TRUE(root()->child_at(0)->DidReceiveEvent(ET_MOUSE_MOVED));
   EXPECT_FALSE(root()->DidReceiveEvent(ET_MOUSE_MOVED));
 
+  SetTarget(root());
   root()->RemoveChild(root()->child_at(0));
   DispatchEvent(&mouse);
   EXPECT_TRUE(root()->DidReceiveEvent(ET_MOUSE_MOVED));
-}
-
-template<typename T>
-class BoundsEventTargeter : public EventTargeter {
- public:
-  ~BoundsEventTargeter() override {}
-
- protected:
-  bool SubtreeShouldBeExploredForEvent(
-      EventTarget* target, const LocatedEvent& event) override {
-    T* t = static_cast<T*>(target);
-    return (t->bounds().Contains(event.location()));
-  }
-};
-
-class BoundsTestTarget : public TestEventTarget {
- public:
-  BoundsTestTarget() {}
-  ~BoundsTestTarget() override {}
-
-  void set_bounds(gfx::Rect rect) { bounds_ = rect; }
-  gfx::Rect bounds() const { return bounds_; }
-
-  static void ConvertPointToTarget(BoundsTestTarget* source,
-                                   BoundsTestTarget* target,
-                                   gfx::Point* location) {
-    gfx::Vector2d vector;
-    if (source->Contains(target)) {
-      for (; target && target != source;
-           target = static_cast<BoundsTestTarget*>(target->parent())) {
-        vector += target->bounds().OffsetFromOrigin();
-      }
-      *location -= vector;
-    } else if (target->Contains(source)) {
-      for (; source && source != target;
-           source = static_cast<BoundsTestTarget*>(source->parent())) {
-        vector += source->bounds().OffsetFromOrigin();
-      }
-      *location += vector;
-    } else {
-      NOTREACHED();
-    }
-  }
-
- private:
-  // EventTarget:
-  void ConvertEventToTarget(EventTarget* target, LocatedEvent* event) override {
-    event->ConvertLocationToTarget(this,
-                                   static_cast<BoundsTestTarget*>(target));
-  }
-
-  gfx::Rect bounds_;
-
-  DISALLOW_COPY_AND_ASSIGN(BoundsTestTarget);
-};
-
-TEST_F(EventProcessorTest, Bounds) {
-  scoped_ptr<BoundsTestTarget> parent(new BoundsTestTarget());
-  scoped_ptr<BoundsTestTarget> child(new BoundsTestTarget());
-  scoped_ptr<BoundsTestTarget> grandchild(new BoundsTestTarget());
-
-  parent->set_bounds(gfx::Rect(0, 0, 30, 30));
-  child->set_bounds(gfx::Rect(5, 5, 20, 20));
-  grandchild->set_bounds(gfx::Rect(5, 5, 5, 5));
-
-  child->AddChild(scoped_ptr<TestEventTarget>(grandchild.Pass()));
-  parent->AddChild(scoped_ptr<TestEventTarget>(child.Pass()));
-  root()->AddChild(scoped_ptr<TestEventTarget>(parent.Pass()));
-
-  ASSERT_EQ(1u, root()->child_count());
-  ASSERT_EQ(1u, root()->child_at(0)->child_count());
-  ASSERT_EQ(1u, root()->child_at(0)->child_at(0)->child_count());
-
-  TestEventTarget* parent_r = root()->child_at(0);
-  TestEventTarget* child_r = parent_r->child_at(0);
-  TestEventTarget* grandchild_r = child_r->child_at(0);
-
-  // Dispatch a mouse event that falls on the parent, but not on the child. When
-  // the default event-targeter used, the event will still reach |grandchild|,
-  // because the default targeter does not look at the bounds.
-  MouseEvent mouse(ET_MOUSE_MOVED, gfx::Point(1, 1), gfx::Point(1, 1),
-                   EventTimeForNow(), EF_NONE, EF_NONE);
-  DispatchEvent(&mouse);
-  EXPECT_FALSE(root()->DidReceiveEvent(ET_MOUSE_MOVED));
-  EXPECT_FALSE(parent_r->DidReceiveEvent(ET_MOUSE_MOVED));
-  EXPECT_FALSE(child_r->DidReceiveEvent(ET_MOUSE_MOVED));
-  EXPECT_TRUE(grandchild_r->DidReceiveEvent(ET_MOUSE_MOVED));
-  grandchild_r->ResetReceivedEvents();
-
-  // Now install a targeter on the parent that looks at the bounds and makes
-  // sure the event reaches the target only if the location of the event within
-  // the bounds of the target.
-  MouseEvent mouse2(ET_MOUSE_MOVED, gfx::Point(1, 1), gfx::Point(1, 1),
-                    EventTimeForNow(), EF_NONE, EF_NONE);
-  parent_r->SetEventTargeter(scoped_ptr<EventTargeter>(
-      new BoundsEventTargeter<BoundsTestTarget>()));
-  DispatchEvent(&mouse2);
-  EXPECT_FALSE(root()->DidReceiveEvent(ET_MOUSE_MOVED));
-  EXPECT_TRUE(parent_r->DidReceiveEvent(ET_MOUSE_MOVED));
-  EXPECT_FALSE(child_r->DidReceiveEvent(ET_MOUSE_MOVED));
-  EXPECT_FALSE(grandchild_r->DidReceiveEvent(ET_MOUSE_MOVED));
-  parent_r->ResetReceivedEvents();
-
-  MouseEvent second(ET_MOUSE_MOVED, gfx::Point(12, 12), gfx::Point(12, 12),
-                    EventTimeForNow(), EF_NONE, EF_NONE);
-  DispatchEvent(&second);
-  EXPECT_FALSE(root()->DidReceiveEvent(ET_MOUSE_MOVED));
-  EXPECT_FALSE(parent_r->DidReceiveEvent(ET_MOUSE_MOVED));
-  EXPECT_FALSE(child_r->DidReceiveEvent(ET_MOUSE_MOVED));
-  EXPECT_TRUE(grandchild_r->DidReceiveEvent(ET_MOUSE_MOVED));
 }
 
 // ReDispatchEventHandler is used to receive mouse events and forward them
@@ -216,14 +119,16 @@ class ReDispatchEventHandler : public TestEventHandler {
 TEST_F(EventProcessorTest, NestedEventProcessing) {
   // Add one child to the default event processor used in this test suite.
   scoped_ptr<TestEventTarget> child(new TestEventTarget());
+  SetTarget(child.get());
   root()->AddChild(child.Pass());
 
   // Define a second root target and child.
   scoped_ptr<EventTarget> second_root_scoped(new TestEventTarget());
   TestEventTarget* second_root =
       static_cast<TestEventTarget*>(second_root_scoped.get());
-  second_root->SetEventTargeter(make_scoped_ptr(new EventTargeter()));
   scoped_ptr<TestEventTarget> second_child(new TestEventTarget());
+  second_root->SetEventTargeter(
+      make_scoped_ptr(new TestEventTargeter(second_child.get(), false)));
   second_root->AddChild(second_child.Pass());
 
   // Define a second event processor which owns the second root.
@@ -267,6 +172,7 @@ TEST_F(EventProcessorTest, NestedEventProcessing) {
 TEST_F(EventProcessorTest, OnEventProcessingFinished) {
   scoped_ptr<TestEventTarget> child(new TestEventTarget());
   child->set_mark_events_as_handled(true);
+  SetTarget(child.get());
   root()->AddChild(child.Pass());
 
   // Dispatch a mouse event. We expect the event to be seen by the target,
@@ -286,6 +192,7 @@ TEST_F(EventProcessorTest, OnEventProcessingFinished) {
 // OnEventProcessingFinished() is also called in either case.
 TEST_F(EventProcessorTest, OnEventProcessingStarted) {
   scoped_ptr<TestEventTarget> child(new TestEventTarget());
+  SetTarget(child.get());
   root()->AddChild(child.Pass());
 
   // Dispatch a mouse event. We expect the event to be seen by the target,
@@ -319,77 +226,15 @@ TEST_F(EventProcessorTest, OnEventProcessingStarted) {
   EXPECT_EQ(1, processor()->num_times_processing_finished());
 }
 
-class IgnoreEventTargeter : public EventTargeter {
- public:
-  IgnoreEventTargeter() {}
-  ~IgnoreEventTargeter() override {}
-
- private:
-  // EventTargeter:
-  bool SubtreeShouldBeExploredForEvent(EventTarget* target,
-                                       const LocatedEvent& event) override {
-    return false;
-  }
-};
-
-// Verifies that the EventTargeter installed on an EventTarget can dictate
-// whether the target itself can process an event.
-TEST_F(EventProcessorTest, TargeterChecksOwningEventTarget) {
-  scoped_ptr<TestEventTarget> child(new TestEventTarget());
-  root()->AddChild(child.Pass());
-
-  MouseEvent mouse(ET_MOUSE_MOVED, gfx::Point(10, 10), gfx::Point(10, 10),
-                   EventTimeForNow(), EF_NONE, EF_NONE);
-  DispatchEvent(&mouse);
-  EXPECT_TRUE(root()->child_at(0)->DidReceiveEvent(ET_MOUSE_MOVED));
-  EXPECT_FALSE(root()->DidReceiveEvent(ET_MOUSE_MOVED));
-  root()->child_at(0)->ResetReceivedEvents();
-
-  // Install an event handler on |child| which always prevents the target from
-  // receiving event.
-  root()->child_at(0)->SetEventTargeter(
-      scoped_ptr<EventTargeter>(new IgnoreEventTargeter()));
-  MouseEvent mouse2(ET_MOUSE_MOVED, gfx::Point(10, 10), gfx::Point(10, 10),
-                    EventTimeForNow(), EF_NONE, EF_NONE);
-  DispatchEvent(&mouse2);
-  EXPECT_FALSE(root()->child_at(0)->DidReceiveEvent(ET_MOUSE_MOVED));
-  EXPECT_TRUE(root()->DidReceiveEvent(ET_MOUSE_MOVED));
-}
-
-// An EventTargeter which is used to allow a bubbling behaviour in event
-// dispatch: if an event is not handled after being dispatched to its
-// initial target, the event is dispatched to the next-best target as
-// specified by FindNextBestTarget().
-class BubblingEventTargeter : public EventTargeter {
- public:
-  explicit BubblingEventTargeter(TestEventTarget* initial_target)
-    : initial_target_(initial_target) {}
-  ~BubblingEventTargeter() override {}
-
- private:
-  // EventTargeter:
-  EventTarget* FindTargetForEvent(EventTarget* root, Event* event) override {
-    return initial_target_;
-  }
-
-  EventTarget* FindNextBestTarget(EventTarget* previous_target,
-                                  Event* event) override {
-    return previous_target->GetParentTarget();
-  }
-
-  TestEventTarget* initial_target_;
-
-  DISALLOW_COPY_AND_ASSIGN(BubblingEventTargeter);
-};
-
 // Tests that unhandled events are correctly dispatched to the next-best
-// target as decided by the BubblingEventTargeter.
+// target as decided by the TestEventTargeter.
 TEST_F(EventProcessorTest, DispatchToNextBestTarget) {
   scoped_ptr<TestEventTarget> child(new TestEventTarget());
   scoped_ptr<TestEventTarget> grandchild(new TestEventTarget());
 
+  // Install a TestEventTargeter which permits bubbling.
   root()->SetEventTargeter(
-      scoped_ptr<EventTargeter>(new BubblingEventTargeter(grandchild.get())));
+      make_scoped_ptr(new TestEventTargeter(grandchild.get(), true)));
   child->AddChild(grandchild.Pass());
   root()->AddChild(child.Pass());
 
@@ -400,8 +245,9 @@ TEST_F(EventProcessorTest, DispatchToNextBestTarget) {
   TestEventTarget* child_r = root()->child_at(0);
   TestEventTarget* grandchild_r = child_r->child_at(0);
 
-  // When the root has a BubblingEventTargeter installed, events targeted
-  // at the grandchild target should be dispatched to all three targets.
+  // When the root has a TestEventTargeter installed which permits bubbling,
+  // events targeted at the grandchild target should be dispatched to all three
+  // targets.
   KeyEvent key_event(ET_KEY_PRESSED, VKEY_ESCAPE, EF_NONE);
   DispatchEvent(&key_event);
   EXPECT_TRUE(root()->DidReceiveEvent(ET_KEY_PRESSED));
@@ -455,13 +301,14 @@ TEST_F(EventProcessorTest, DispatchToNextBestTarget) {
 
 // Tests that unhandled events are seen by the correct sequence of
 // targets, pre-target handlers, and post-target handlers when
-// a BubblingEventTargeter is installed on the root target.
+// a TestEventTargeter is installed on the root target which permits bubbling.
 TEST_F(EventProcessorTest, HandlerSequence) {
   scoped_ptr<TestEventTarget> child(new TestEventTarget());
   scoped_ptr<TestEventTarget> grandchild(new TestEventTarget());
 
+  // Install a TestEventTargeter which permits bubbling.
   root()->SetEventTargeter(
-      scoped_ptr<EventTargeter>(new BubblingEventTargeter(grandchild.get())));
+      make_scoped_ptr(new TestEventTargeter(grandchild.get(), true)));
   child->AddChild(grandchild.Pass());
   root()->AddChild(child.Pass());
 

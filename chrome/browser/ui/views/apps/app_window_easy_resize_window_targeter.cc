@@ -19,9 +19,8 @@ AppWindowEasyResizeWindowTargeter::~AppWindowEasyResizeWindowTargeter() {
 }
 
 bool AppWindowEasyResizeWindowTargeter::EventLocationInsideBounds(
-    ui::EventTarget* target,
+    aura::Window* window,
     const ui::LocatedEvent& event) const {
-  aura::Window* window = static_cast<aura::Window*>(target);
   // EasyResizeWindowTargeter intercepts events landing at the edges of the
   // window. Since maximized and fullscreen windows can't be resized anyway,
   // skip EasyResizeWindowTargeter so that the web contents receive all mouse

@@ -50,6 +50,9 @@ class TestEventTarget : public EventTarget {
     target_name_ = target_name;
   }
 
+  // EventTarget:
+  EventTargeter* GetEventTargeter() override;
+
  protected:
   bool Contains(TestEventTarget* target) const;
 
@@ -57,7 +60,6 @@ class TestEventTarget : public EventTarget {
   bool CanAcceptEvent(const ui::Event& event) override;
   EventTarget* GetParentTarget() override;
   scoped_ptr<EventTargetIterator> GetChildIterator() const override;
-  EventTargeter* GetEventTargeter() override;
 
   // EventHandler:
   void OnEvent(Event* event) override;

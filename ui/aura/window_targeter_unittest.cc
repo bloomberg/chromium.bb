@@ -14,16 +14,16 @@
 namespace aura {
 
 // Always returns the same window.
-class StaticWindowTargeter : public ui::EventTargeter {
+class StaticWindowTargeter : public WindowTargeter {
  public:
   explicit StaticWindowTargeter(aura::Window* window)
       : window_(window) {}
   ~StaticWindowTargeter() override {}
 
  private:
-  // ui::EventTargeter:
-  ui::EventTarget* FindTargetForLocatedEvent(ui::EventTarget* root,
-                                             ui::LocatedEvent* event) override {
+  // aura::WindowTargeter:
+  Window* FindTargetForLocatedEvent(Window* window,
+                                    ui::LocatedEvent* event) override {
     return window_;
   }
 
@@ -173,6 +173,123 @@ TEST_F(WindowTargeterTest, TargetTransformedWindow) {
                          ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
     EXPECT_EQ(window.get(), targeter->FindTargetForEvent(root_target, &mouse));
   }
+}
+
+class IdCheckingEventTargeter : public WindowTargeter {
+ public:
+  IdCheckingEventTargeter(int id) : id_(id) {}
+  ~IdCheckingEventTargeter() override {}
+
+ protected:
+  // WindowTargeter:
+  bool SubtreeShouldBeExploredForEvent(Window* window,
+                                       const ui::LocatedEvent& event) override {
+    return (window->id() == id_ &&
+            WindowTargeter::SubtreeShouldBeExploredForEvent(window, event));
+  }
+
+ private:
+  int id_;
+};
+
+TEST_F(WindowTargeterTest, Bounds) {
+  test::TestWindowDelegate delegate;
+  scoped_ptr<Window> parent(CreateNormalWindow(1, root_window(), &delegate));
+  scoped_ptr<Window> child(CreateNormalWindow(1, parent.get(), &delegate));
+  scoped_ptr<Window> grandchild(CreateNormalWindow(1, child.get(), &delegate));
+
+  parent->SetBounds(gfx::Rect(0, 0, 30, 30));
+  child->SetBounds(gfx::Rect(5, 5, 20, 20));
+  grandchild->SetBounds(gfx::Rect(5, 5, 5, 5));
+
+  ASSERT_EQ(1u, root_window()->children().size());
+  ASSERT_EQ(1u, root_window()->children()[0]->children().size());
+  ASSERT_EQ(1u, root_window()->children()[0]->children()[0]->children().size());
+
+  Window* parent_r = root_window()->children()[0];
+  Window* child_r = parent_r->children()[0];
+  Window* grandchild_r = child_r->children()[0];
+
+  ui::EventTarget* root_target = root_window();
+  ui::EventTargeter* targeter = root_target->GetEventTargeter();
+
+  // Dispatch a mouse event that falls on the parent, but not on the child. When
+  // the default event-targeter used, the event will still reach |grandchild|,
+  // because the default targeter does not look at the bounds.
+  ui::MouseEvent mouse(ui::ET_MOUSE_MOVED, gfx::Point(1, 1), gfx::Point(1, 1),
+                       ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
+  EXPECT_EQ(parent_r, targeter->FindTargetForEvent(root_target, &mouse));
+
+  // Install a targeter on the |child| that looks at the window id as well
+  // as the bounds and makes sure the event reaches the target only if the id of
+  // the window is equal to 2 (incorrect). This causes the event to get handled
+  // by |parent|.
+  ui::MouseEvent mouse2(ui::ET_MOUSE_MOVED, gfx::Point(8, 8), gfx::Point(8, 8),
+                        ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
+  scoped_ptr<ui::EventTargeter> original_targeter = child_r->SetEventTargeter(
+      scoped_ptr<ui::EventTargeter>(new IdCheckingEventTargeter(2)));
+  EXPECT_EQ(parent_r, targeter->FindTargetForEvent(root_target, &mouse2));
+
+  // Now install a targeter on the |child| that looks at the window id as well
+  // as the bounds and makes sure the event reaches the target only if the id of
+  // the window is equal to 1 (correct).
+  ui::MouseEvent mouse3(ui::ET_MOUSE_MOVED, gfx::Point(8, 8), gfx::Point(8, 8),
+                        ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
+  child_r->SetEventTargeter(
+      scoped_ptr<ui::EventTargeter>(new IdCheckingEventTargeter(1)));
+  EXPECT_EQ(child_r, targeter->FindTargetForEvent(root_target, &mouse3));
+
+  // restore original WindowTargeter for |child|.
+  child_r->SetEventTargeter(original_targeter.Pass());
+
+  // Target |grandchild| location.
+  ui::MouseEvent second(ui::ET_MOUSE_MOVED, gfx::Point(12, 12),
+                        gfx::Point(12, 12), ui::EventTimeForNow(), ui::EF_NONE,
+                        ui::EF_NONE);
+  EXPECT_EQ(grandchild_r, targeter->FindTargetForEvent(root_target, &second));
+
+  // Target |child| location.
+  ui::MouseEvent third(ui::ET_MOUSE_MOVED, gfx::Point(8, 8), gfx::Point(8, 8),
+                       ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
+  EXPECT_EQ(child_r, targeter->FindTargetForEvent(root_target, &third));
+}
+
+class IgnoreWindowTargeter : public WindowTargeter {
+ public:
+  IgnoreWindowTargeter() {}
+  ~IgnoreWindowTargeter() override {}
+
+ private:
+  // WindowTargeter:
+  bool SubtreeShouldBeExploredForEvent(Window* window,
+                                       const ui::LocatedEvent& event) override {
+    return false;
+  }
+};
+
+// Verifies that an EventTargeter installed on an EventTarget can dictate
+// whether the target itself can process an event.
+TEST_F(WindowTargeterTest, TargeterChecksOwningEventTarget) {
+  test::TestWindowDelegate delegate;
+  scoped_ptr<Window> child(CreateNormalWindow(1, root_window(), &delegate));
+
+  ui::EventTarget* root_target = root_window();
+  ui::EventTargeter* targeter = root_target->GetEventTargeter();
+
+  ui::MouseEvent mouse(ui::ET_MOUSE_MOVED, gfx::Point(10, 10),
+                       gfx::Point(10, 10), ui::EventTimeForNow(), ui::EF_NONE,
+                       ui::EF_NONE);
+  EXPECT_EQ(child.get(), targeter->FindTargetForEvent(root_target, &mouse));
+
+  // Install an event targeter on |child| which always prevents the target from
+  // receiving event.
+  child->SetEventTargeter(
+      scoped_ptr<ui::EventTargeter>(new IgnoreWindowTargeter()));
+
+  ui::MouseEvent mouse2(ui::ET_MOUSE_MOVED, gfx::Point(10, 10),
+                        gfx::Point(10, 10), ui::EventTimeForNow(), ui::EF_NONE,
+                        ui::EF_NONE);
+  EXPECT_EQ(root_window(), targeter->FindTargetForEvent(root_target, &mouse2));
 }
 
 }  // namespace aura

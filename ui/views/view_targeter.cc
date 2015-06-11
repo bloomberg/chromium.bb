@@ -67,20 +67,6 @@ ui::EventTarget* ViewTargeter::FindNextBestTarget(
   return previous_target->GetParentTarget();
 }
 
-bool ViewTargeter::SubtreeCanAcceptEvent(
-    ui::EventTarget* target,
-    const ui::LocatedEvent& event) const {
-  NOTREACHED();
-  return false;
-}
-
-bool ViewTargeter::EventLocationInsideBounds(
-    ui::EventTarget* target,
-    const ui::LocatedEvent& event) const {
-  NOTREACHED();
-  return false;
-}
-
 View* ViewTargeter::FindTargetForKeyEvent(View* root, const ui::KeyEvent& key) {
   if (root->GetFocusManager())
     return root->GetFocusManager()->GetFocusedView();

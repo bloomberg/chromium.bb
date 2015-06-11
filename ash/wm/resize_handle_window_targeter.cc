@@ -8,6 +8,7 @@
 #include "ash/wm/immersive_fullscreen_controller.h"
 #include "ash/wm/window_state.h"
 #include "ui/aura/window.h"
+#include "ui/events/event.h"
 
 namespace ash {
 
@@ -48,10 +49,9 @@ void ResizeHandleWindowTargeter::OnWindowDestroying(aura::Window* window) {
   window_ = NULL;
 }
 
-ui::EventTarget* ResizeHandleWindowTargeter::FindTargetForLocatedEvent(
-    ui::EventTarget* root,
+aura::Window* ResizeHandleWindowTargeter::FindTargetForLocatedEvent(
+    aura::Window* window,
     ui::LocatedEvent* event) {
-  aura::Window* window = static_cast<aura::Window*>(root);
   if (window == window_) {
     gfx::Insets insets;
     if (immersive_controller_ && immersive_controller_->IsEnabled() &&
@@ -77,23 +77,25 @@ ui::EventTarget* ResizeHandleWindowTargeter::FindTargetForLocatedEvent(
         return window_;
     }
   }
-  return aura::WindowTargeter::FindTargetForLocatedEvent(root, event);
+  return aura::WindowTargeter::FindTargetForLocatedEvent(window, event);
 }
 
 bool ResizeHandleWindowTargeter::SubtreeShouldBeExploredForEvent(
-    ui::EventTarget* target,
+    aura::Window* window,
     const ui::LocatedEvent& event) {
-  if (target == window_) {
+  if (window == window_) {
     // Defer to the parent's targeter on whether |window_| should be able to
     // receive the event.
-    ui::EventTarget* parent = target->GetParentTarget();
+    ui::EventTarget* parent =
+        static_cast<ui::EventTarget*>(window)->GetParentTarget();
     if (parent) {
-      ui::EventTargeter* targeter = parent->GetEventTargeter();
+      aura::WindowTargeter* targeter =
+          static_cast<aura::WindowTargeter*>(parent->GetEventTargeter());
       if (targeter)
-        return targeter->SubtreeShouldBeExploredForEvent(target, event);
+        return targeter->SubtreeShouldBeExploredForEvent(window, event);
     }
   }
-  return aura::WindowTargeter::SubtreeShouldBeExploredForEvent(target, event);
+  return aura::WindowTargeter::SubtreeShouldBeExploredForEvent(window, event);
 }
 
 }  // namespace ash

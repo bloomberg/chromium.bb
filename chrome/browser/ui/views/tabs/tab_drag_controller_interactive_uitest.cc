@@ -579,7 +579,7 @@ class MaskedWindowTargeter : public aura::WindowTargeter {
   ~MaskedWindowTargeter() override {}
 
   // aura::WindowTargeter:
-  bool EventLocationInsideBounds(ui::EventTarget* target,
+  bool EventLocationInsideBounds(aura::Window* target,
                                  const ui::LocatedEvent& event) const override {
     aura::Window* window = static_cast<aura::Window*>(target);
     gfx::Point local_point = event.location();

@@ -236,7 +236,7 @@ class EventGeneratorDelegateMac : public ui::EventTarget,
 
   // Overridden from ui::EventTarget:
   bool CanAcceptEvent(const ui::Event& event) override { return true; }
-  ui::EventTarget* GetParentTarget() override { return NULL; }
+  ui::EventTarget* GetParentTarget() override { return nullptr; }
   scoped_ptr<ui::EventTargetIterator> GetChildIterator() const override;
   ui::EventTargeter* GetEventTargeter() override { return this; }
 
@@ -253,6 +253,16 @@ class EventGeneratorDelegateMac : public ui::EventTarget,
 
   // Overridden from ui::EventDispatcherDelegate (via ui::EventProcessor):
   bool CanDispatchToTarget(EventTarget* target) override { return true; }
+
+  // Overridden from ui::EventTargeter:
+  ui::EventTarget* FindTargetForEvent(ui::EventTarget* root,
+                                      ui::Event* event) override {
+    return root;
+  }
+  ui::EventTarget* FindNextBestTarget(ui::EventTarget* previous_target,
+                                      ui::Event* event) override {
+    return nullptr;
+  }
 
   // Overridden from ui::test::EventGeneratorDelegate:
   void SetContext(ui::test::EventGenerator* owner,
@@ -290,7 +300,7 @@ class EventGeneratorDelegateMac : public ui::EventTarget,
   DISALLOW_COPY_AND_ASSIGN(EventGeneratorDelegateMac);
 };
 
-EventGeneratorDelegateMac::EventGeneratorDelegateMac() : owner_(NULL) {
+EventGeneratorDelegateMac::EventGeneratorDelegateMac() : owner_(nullptr) {
   DCHECK(!ui::test::EventGenerator::default_delegate);
   ui::test::EventGenerator::default_delegate = this;
   // Install a fake "edit" menu. This is normally provided by Chrome's
@@ -318,12 +328,12 @@ EventGeneratorDelegateMac::EventGeneratorDelegateMac() : owner_(NULL) {
 
 EventGeneratorDelegateMac::~EventGeneratorDelegateMac() {
   DCHECK_EQ(this, ui::test::EventGenerator::default_delegate);
-  ui::test::EventGenerator::default_delegate = NULL;
+  ui::test::EventGenerator::default_delegate = nullptr;
 }
 
 scoped_ptr<ui::EventTargetIterator>
 EventGeneratorDelegateMac::GetChildIterator() const {
-  // Return NULL to dispatch all events to the result of GetRootTarget().
+  // Return nullptr to dispatch all events to the result of GetRootTarget().
   return nullptr;
 }
 

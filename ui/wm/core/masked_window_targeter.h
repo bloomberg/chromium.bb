@@ -24,8 +24,8 @@ class WM_EXPORT MaskedWindowTargeter : public aura::WindowTargeter {
   // coordinate system). Returns whether a valid mask has been set in |mask|.
   virtual bool GetHitTestMask(aura::Window* window, gfx::Path* mask) const = 0;
 
-  // ui::EventTargeter:
-  bool EventLocationInsideBounds(ui::EventTarget* target,
+  // aura::WindowTargeter:
+  bool EventLocationInsideBounds(aura::Window* target,
                                  const ui::LocatedEvent& event) const override;
 
  private:

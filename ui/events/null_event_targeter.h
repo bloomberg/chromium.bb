@@ -3,17 +3,23 @@
 // found in the LICENSE file.
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ui/events/event_targeter.h"
 #include "ui/events/events_export.h"
 
 namespace ui {
 
+// NullEventTargeter can be installed on a root window to prevent it from
+// dispatching events such as during shutdown.
 class EVENTS_EXPORT NullEventTargeter : public EventTargeter {
  public:
   NullEventTargeter();
   ~NullEventTargeter() override;
 
+  // EventTargeter:
   EventTarget* FindTargetForEvent(EventTarget* root, Event* event) override;
+  EventTarget* FindNextBestTarget(EventTarget* previous_target,
+                                  Event* event) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NullEventTargeter);

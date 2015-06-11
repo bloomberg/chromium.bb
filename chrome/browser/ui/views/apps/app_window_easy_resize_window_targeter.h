@@ -23,8 +23,8 @@ class AppWindowEasyResizeWindowTargeter : public wm::EasyResizeWindowTargeter {
   ~AppWindowEasyResizeWindowTargeter() override;
 
  protected:
-  // ui::EventTargeter:
-  bool EventLocationInsideBounds(ui::EventTarget* target,
+  // aura::WindowTargeter:
+  bool EventLocationInsideBounds(aura::Window* window,
                                  const ui::LocatedEvent& event) const override;
 
  private:

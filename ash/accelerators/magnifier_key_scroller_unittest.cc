@@ -9,6 +9,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/test/test_window_delegate.h"
+#include "ui/events/event.h"
 #include "ui/events/test/event_generator.h"
 
 namespace ash {

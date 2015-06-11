@@ -5,8 +5,19 @@
 #ifndef UI_VIEWS_VIEW_TARGETER_H_
 #define UI_VIEWS_VIEW_TARGETER_H_
 
+#include "base/macros.h"
 #include "ui/events/event_targeter.h"
 #include "ui/views/views_export.h"
+
+namespace gfx {
+class Rect;
+}  // namespace gfx
+
+namespace ui {
+class GestureEvent;
+class KeyEvent;
+class ScrollEvent;
+}  // namespace ui
 
 namespace views {
 
@@ -36,10 +47,6 @@ class VIEWS_EXPORT ViewTargeter : public ui::EventTargeter {
                                       ui::Event* event) override;
   ui::EventTarget* FindNextBestTarget(ui::EventTarget* previous_target,
                                       ui::Event* event) override;
-  bool SubtreeCanAcceptEvent(ui::EventTarget* target,
-                             const ui::LocatedEvent& event) const override;
-  bool EventLocationInsideBounds(ui::EventTarget* target,
-                                 const ui::LocatedEvent& event) const override;
 
  private:
   View* FindTargetForKeyEvent(View* root, const ui::KeyEvent& key);

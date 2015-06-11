@@ -31,8 +31,8 @@ class WM_EXPORT EasyResizeWindowTargeter : public aura::WindowTargeter {
     touch_extend_ = touch_extend;
   }
 
-  // ui::EventTargeter:
-  bool EventLocationInsideBounds(ui::EventTarget* target,
+  // aura::WindowTargeter:
+  bool EventLocationInsideBounds(aura::Window* window,
                                  const ui::LocatedEvent& event) const override;
 
  private:

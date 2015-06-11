@@ -10,6 +10,7 @@
 #include "content/browser/renderer_host/overscroll_controller_delegate.h"
 #include "content/public/browser/overscroll_configuration.h"
 #include "ui/aura/window.h"
+#include "ui/events/event.h"
 #include "ui/gfx/image/image_png_rep.h"
 
 namespace content {

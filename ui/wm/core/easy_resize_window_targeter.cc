@@ -5,6 +5,7 @@
 #include "ui/wm/core/easy_resize_window_targeter.h"
 
 #include "ui/aura/window.h"
+#include "ui/events/event.h"
 #include "ui/gfx/geometry/insets_f.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/wm/public/transient_window_client.h"
@@ -24,9 +25,8 @@ EasyResizeWindowTargeter::~EasyResizeWindowTargeter() {
 }
 
 bool EasyResizeWindowTargeter::EventLocationInsideBounds(
-    ui::EventTarget* target,
+    aura::Window* window,
     const ui::LocatedEvent& event) const {
-  aura::Window* window = static_cast<aura::Window*>(target);
   if (ShouldUseExtendedBounds(window)) {
     // Note that |event|'s location is in |window|'s parent's coordinate system,
     // so convert it to |window|'s coordinate system first.
@@ -48,7 +48,7 @@ bool EasyResizeWindowTargeter::EventLocationInsideBounds(
 bool EasyResizeWindowTargeter::ShouldUseExtendedBounds(
     const aura::Window* window) const {
   // Use the extended bounds only for immediate child windows of |container_|.
-  // Use the default targetter otherwise.
+  // Use the default targeter otherwise.
   if (window->parent() != container_)
     return false;
 

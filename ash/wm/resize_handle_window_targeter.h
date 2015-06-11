@@ -35,9 +35,9 @@ class ResizeHandleWindowTargeter : public wm::WindowStateObserver,
   void OnWindowDestroying(aura::Window* window) override;
 
   // aura::WindowTargeter:
-  ui::EventTarget* FindTargetForLocatedEvent(ui::EventTarget* root,
-                                             ui::LocatedEvent* event) override;
-  bool SubtreeShouldBeExploredForEvent(ui::EventTarget* target,
+  aura::Window* FindTargetForLocatedEvent(aura::Window* window,
+                                          ui::LocatedEvent* event) override;
+  bool SubtreeShouldBeExploredForEvent(aura::Window* window,
                                        const ui::LocatedEvent& event) override;
 
   // The targeter does not take ownership of |window_| or
