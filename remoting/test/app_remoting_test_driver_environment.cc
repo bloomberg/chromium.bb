@@ -25,15 +25,17 @@ AppRemotingTestDriverEnvironment* AppRemotingSharedData;
 
 AppRemotingTestDriverEnvironment::AppRemotingTestDriverEnvironment(
     const std::string& user_name,
+    const base::FilePath& refresh_token_file_path,
     ServiceEnvironment service_environment)
     : user_name_(user_name),
       service_environment_(service_environment),
+      refresh_token_file_path_(refresh_token_file_path),
       test_access_token_fetcher_(nullptr),
       test_refresh_token_store_(nullptr),
       test_remote_host_info_fetcher_(nullptr),
       message_loop_(new base::MessageLoopForIO()) {
   DCHECK(!user_name_.empty());
-  DCHECK(service_environment < kUnknownEnvironment);
+  DCHECK(service_environment_ < kUnknownEnvironment);
 
   PopulateApplicationNames();
   PopulateApplicationDetailsMap();
@@ -53,7 +55,8 @@ bool AppRemotingTestDriverEnvironment::Initialize(
   scoped_ptr<RefreshTokenStore> temporary_refresh_token_store;
   RefreshTokenStore* refresh_token_store = test_refresh_token_store_;
   if (!refresh_token_store) {
-    temporary_refresh_token_store = RefreshTokenStore::OnDisk(user_name_);
+    temporary_refresh_token_store =
+        RefreshTokenStore::OnDisk(user_name_, refresh_token_file_path_);
     refresh_token_store = temporary_refresh_token_store.get();
   }
 
@@ -240,7 +243,8 @@ bool AppRemotingTestDriverEnvironment::RetrieveAccessToken(
       scoped_ptr<RefreshTokenStore> temporary_refresh_token_store;
       RefreshTokenStore* refresh_token_store = test_refresh_token_store_;
       if (!refresh_token_store) {
-        temporary_refresh_token_store = RefreshTokenStore::OnDisk(user_name_);
+        temporary_refresh_token_store =
+            RefreshTokenStore::OnDisk(user_name_, refresh_token_file_path_);
         refresh_token_store = temporary_refresh_token_store.get();
       }
 

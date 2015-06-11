@@ -4,6 +4,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/launcher/unit_test_launcher.h"
@@ -18,6 +19,7 @@ namespace switches {
 const char kAuthCodeSwitchName[] = "authcode";
 const char kHelpSwitchName[] = "help";
 const char kLoggingLevelSwitchName[] = "verbosity";
+const char kRefreshTokenFileSwitchName[] = "refresh-token-file";
 const char kServiceEnvironmentSwitchName[] = "environment";
 const char kShowHostAvailabilitySwitchName[] = "show-host-availability";
 const char kSingleProcessTestsSwitchName[] = "single-process-tests";
@@ -66,6 +68,8 @@ void PrintUsage() {
   printf("\nOptional Parameters:\n");
   printf("  %s: Exchanged for a refresh and access token for authentication\n",
          switches::kAuthCodeSwitchName);
+  printf("  %s: Path to a JSON file containing username/refresh_token KVPs\n",
+         switches::kRefreshTokenFileSwitchName);
   printf("  %s: Displays additional usage information\n",
          switches::kHelpSwitchName);
   printf("  %s: Specifies the service api to use (dev|test) [default: dev]\n",
@@ -116,6 +120,25 @@ void PrintAuthCodeInfo() {
          switches::kUserNameSwitchName, switches::kAuthCodeSwitchName);
 }
 
+void PrintJsonFileInfo() {
+  printf("\n*****************************************\n");
+  printf("*** Refresh Token File Example Usage ***\n");
+  printf("****************************************\n\n");
+
+  printf("In order to use this option, a valid JSON file must exist, be\n");
+  printf("properly formatted, and contain a username/token KVP.\n");
+  printf("Contents of example_file.json\n");
+  printf("{\n");
+  printf("  \"username1@fauxdomain.com\": \"1/3798Gsdf898shksdvfyi8sshad\",\n");
+  printf("  \"username2@fauxdomain.com\": \"1/8974sdf87asdgadfgaerhfRsAa\",\n");
+  printf("}\n\n");
+
+  printf("\nTool usage example:\n");
+  printf("ar_test_driver --%s=%s --%s=./example_file.json\n\n",
+         switches::kUserNameSwitchName, "username1@fauxdomain.com",
+         switches::kRefreshTokenFileSwitchName);
+}
+
 }  // namespace
 
 int main(int argc, char** argv) {
@@ -144,6 +167,7 @@ int main(int argc, char** argv) {
   //       help is written in parallel with our text and can appear interleaved.
   if (command_line->HasSwitch(switches::kHelpSwitchName)) {
     PrintUsage();
+    PrintJsonFileInfo();
     PrintAuthCodeInfo();
     return base::LaunchUnitTestsSerially(
         argc, argv,
@@ -157,20 +181,23 @@ int main(int argc, char** argv) {
     return -1;
   }
 
-  std::string user_name;
-  user_name = command_line->GetSwitchValueASCII(switches::kUserNameSwitchName);
+  std::string user_name(
+      command_line->GetSwitchValueASCII(switches::kUserNameSwitchName));
   DVLOG(1) << "Running tests as: " << user_name;
 
-  std::string auth_code;
   // Check to see if the user passed in a one time use auth_code for
   // refreshing their credentials.
-  auth_code = command_line->GetSwitchValueASCII(switches::kAuthCodeSwitchName);
+  std::string auth_code(
+      command_line->GetSwitchValueASCII(switches::kAuthCodeSwitchName));
+
+  base::FilePath refresh_token_file_path(
+      command_line->GetSwitchValuePath(switches::kRefreshTokenFileSwitchName));
 
   // If the user passed in a service environment, use it, otherwise set a
   // default value.
   remoting::test::ServiceEnvironment service_environment;
-  std::string service_environment_switch = command_line->GetSwitchValueASCII(
-      switches::kServiceEnvironmentSwitchName);
+  std::string service_environment_switch(command_line->GetSwitchValueASCII(
+      switches::kServiceEnvironmentSwitchName));
   if (service_environment_switch.empty() ||
       service_environment_switch == "dev") {
     service_environment =
@@ -186,9 +213,8 @@ int main(int argc, char** argv) {
   }
 
   // Update the logging verbosity level is user specified one.
-  std::string verbosity_level;
-  verbosity_level =
-      command_line->GetSwitchValueASCII(switches::kLoggingLevelSwitchName);
+  std::string verbosity_level(
+      command_line->GetSwitchValueASCII(switches::kLoggingLevelSwitchName));
   if (!verbosity_level.empty()) {
     // Turn on logging for the test_driver and remoting components.
     // This switch is parsed during logging::InitLogging.
@@ -202,10 +228,9 @@ int main(int argc, char** argv) {
   // retrieving an access token for the user and spinning up VMs.
   // The GTest framework will own the lifetime of this object once
   // it is registered below.
-  scoped_ptr<remoting::test::AppRemotingTestDriverEnvironment> shared_data;
-
-  shared_data.reset(new remoting::test::AppRemotingTestDriverEnvironment(
-      user_name, service_environment));
+  scoped_ptr<remoting::test::AppRemotingTestDriverEnvironment> shared_data(
+      new remoting::test::AppRemotingTestDriverEnvironment(
+          user_name, refresh_token_file_path, service_environment));
 
   if (!shared_data->Initialize(auth_code)) {
     // If we failed to initialize our shared data object, then bail.

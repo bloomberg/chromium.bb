@@ -4,6 +4,7 @@
 
 #include "remoting/test/app_remoting_test_driver_environment.h"
 
+#include "base/files/file_path.h"
 #include "remoting/test/fake_access_token_fetcher.h"
 #include "remoting/test/fake_remote_host_info_fetcher.h"
 #include "remoting/test/mock_access_token_fetcher.h"
@@ -75,7 +76,9 @@ class AppRemotingTestDriverEnvironmentTest : public ::testing::Test {
  public:
   AppRemotingTestDriverEnvironmentTest()
       : fake_access_token_fetcher_(nullptr),
-        environment_object_(kUserNameValue, kDeveloperEnvironment) {}
+        environment_object_(kUserNameValue,
+                            base::FilePath(),  // refresh_token_file_path
+                            kDeveloperEnvironment) {}
   ~AppRemotingTestDriverEnvironmentTest() override {}
 
   FakeAccessTokenFetcher* fake_access_token_fetcher() const {
@@ -86,7 +89,7 @@ class AppRemotingTestDriverEnvironmentTest : public ::testing::Test {
   // testing::Test interface.
   void SetUp() override {
     scoped_ptr<FakeAccessTokenFetcher> fake_access_token_fetcher(
-      new FakeAccessTokenFetcher());
+        new FakeAccessTokenFetcher());
     fake_access_token_fetcher_ = fake_access_token_fetcher.get();
     mock_access_token_fetcher_.SetAccessTokenFetcher(
         fake_access_token_fetcher.Pass());

@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "remoting/test/remote_application_details.h"
 #include "remoting/test/remote_host_info_fetcher.h"
@@ -31,6 +32,7 @@ struct RemoteHostInfo;
 class AppRemotingTestDriverEnvironment : public testing::Environment {
  public:
   AppRemotingTestDriverEnvironment(const std::string& user_name,
+                                   const base::FilePath& refresh_token_file,
                                    ServiceEnvironment service_environment);
   ~AppRemotingTestDriverEnvironment() override;
 
@@ -108,6 +110,9 @@ class AppRemotingTestDriverEnvironment : public testing::Environment {
 
   // Service API to target when retrieving remote host connection information.
   ServiceEnvironment service_environment_;
+
+  // Path to a JSON file containing refresh tokens.
+  base::FilePath refresh_token_file_path_;
 
   // Access token fetcher used by TestDriverEnvironment tests.
   remoting::test::AccessTokenFetcher* test_access_token_fetcher_;
