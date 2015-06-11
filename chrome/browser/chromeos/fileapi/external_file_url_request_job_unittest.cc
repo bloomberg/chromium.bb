@@ -163,7 +163,7 @@ class ExternalFileURLRequestJobTest : public testing::Test {
         new drive::DriveFileStreamReader(
             base::Bind(&ExternalFileURLRequestJobTest::GetFileSystem,
                        base::Unretained(this)),
-            worker_thread->message_loop_proxy().get()));
+            worker_thread->task_runner().get()));
     int error = net::ERR_FAILED;
     scoped_ptr<drive::ResourceEntry> entry;
     {

@@ -63,13 +63,10 @@ class UserCloudPolicyStoreChromeOSTest : public testing::Test {
                                   kSanitizedUsername));
 
     ASSERT_TRUE(tmp_dir_.CreateUniqueTempDir());
-    store_.reset(new UserCloudPolicyStoreChromeOS(&cryptohome_client_,
-                                                  &session_manager_client_,
-                                                  loop_.message_loop_proxy(),
-                                                  PolicyBuilder::kFakeUsername,
-                                                  user_policy_dir(),
-                                                  token_file(),
-                                                  policy_file()));
+    store_.reset(new UserCloudPolicyStoreChromeOS(
+        &cryptohome_client_, &session_manager_client_, loop_.task_runner(),
+        PolicyBuilder::kFakeUsername, user_policy_dir(), token_file(),
+        policy_file()));
     store_->AddObserver(&observer_);
 
     // Install the initial public key, so that by default the validation of

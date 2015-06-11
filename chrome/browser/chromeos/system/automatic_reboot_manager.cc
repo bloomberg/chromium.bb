@@ -184,7 +184,7 @@ AutomaticRebootManager::AutomaticRebootManager(
   }
 
   // In a regular browser, base::ThreadTaskRunnerHandle::Get() and
-  // base::MessageLoopProxy::current() return pointers to the same object.
+  // base::ThreadTaskRunnerHandle::Get() return pointers to the same object.
   // In unit tests, using base::ThreadTaskRunnerHandle::Get() has the advantage
   // that it allows a custom base::SingleThreadTaskRunner to be injected.
   base::SequencedWorkerPool* worker_pool =

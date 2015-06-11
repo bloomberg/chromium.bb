@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/file_system_provider/fake_provided_file_system.h"
 
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/thread_task_runner_handle.h"
 #include "net/base/io_buffer.h"
 
 namespace chromeos {
@@ -208,11 +208,10 @@ AbortCallback FakeProvidedFileSystem::ReadFile(
     buffer->data()[current_offset - offset] = entry->contents[current_offset];
     const bool has_more =
         (current_offset + 1 < entry->metadata->size) && (current_length - 1);
-    const int task_id = tracker_.PostTask(
-        base::MessageLoopProxy::current().get(),
-        FROM_HERE,
-        base::Bind(
-            callback, 1 /* chunk_length */, has_more, base::File::FILE_OK));
+    const int task_id =
+        tracker_.PostTask(base::ThreadTaskRunnerHandle::Get().get(), FROM_HERE,
+                          base::Bind(callback, 1 /* chunk_length */, has_more,
+                                     base::File::FILE_OK));
     task_ids.push_back(task_id);
     current_offset++;
     current_length--;
@@ -392,7 +391,7 @@ FakeProvidedFileSystem::GetWeakPtr() {
 AbortCallback FakeProvidedFileSystem::PostAbortableTask(
     const base::Closure& callback) {
   const int task_id = tracker_.PostTask(
-      base::MessageLoopProxy::current().get(), FROM_HERE, callback);
+      base::ThreadTaskRunnerHandle::Get().get(), FROM_HERE, callback);
   return base::Bind(
       &FakeProvidedFileSystem::Abort, weak_ptr_factory_.GetWeakPtr(), task_id);
 }

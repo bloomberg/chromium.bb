@@ -49,7 +49,7 @@ class LocalFileReaderTest : public ::testing::Test {
     worker_thread_.reset(new base::Thread("LocalFileReaderTest"));
     ASSERT_TRUE(worker_thread_->Start());
     file_reader_.reset(
-        new LocalFileReader(worker_thread_->message_loop_proxy().get()));
+        new LocalFileReader(worker_thread_->task_runner().get()));
   }
 
   base::MessageLoop message_loop_;

@@ -73,13 +73,10 @@ class AutoEnrollmentClientTest : public testing::Test {
     client_.reset(new AutoEnrollmentClient(
         base::Bind(&AutoEnrollmentClientTest::ProgressCallback,
                    base::Unretained(this)),
-        service_.get(),
-        local_state_,
+        service_.get(), local_state_,
         new net::TestURLRequestContextGetter(
-            base::MessageLoop::current()->message_loop_proxy()),
-        state_key,
-        power_initial,
-        power_limit));
+            base::MessageLoop::current()->task_runner()),
+        state_key, power_initial, power_limit));
   }
 
   void ProgressCallback(AutoEnrollmentState state) {
