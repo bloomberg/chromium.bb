@@ -23,14 +23,14 @@
   Class ownerClass_;
 }
 @property(nonatomic, assign) BOOL alive;
-- (id)initWithOwner:(id)owner;
+- (instancetype)initWithOwner:(id)owner;
 @end
 
 @implementation CrTrackingAreaOwnerProxy
 
 @synthesize alive = alive_;
 
-- (id)initWithOwner:(id)owner {
+- (instancetype)initWithOwner:(id)owner {
   if ((self = [super init])) {
     alive_ = YES;
     owner_ = owner;
@@ -67,7 +67,7 @@
 
 @implementation CrTrackingArea
 
-- (id)initWithRect:(NSRect)rect
+- (instancetype)initWithRect:(NSRect)rect
            options:(NSTrackingAreaOptions)options
              owner:(id)owner
           userInfo:(NSDictionary*)userInfo{

@@ -23,7 +23,7 @@ const NSInteger kMiddleButtonNumber = 2;
 
 @implementation OmniboxPopupMatrix
 
-- (id)initWithObserver:(OmniboxPopupMatrixObserver*)observer {
+- (instancetype)initWithObserver:(OmniboxPopupMatrixObserver*)observer {
   if ((self = [super initWithFrame:NSZeroRect])) {
     observer_ = observer;
     [self setCellClass:[OmniboxPopupCell class]];

@@ -33,9 +33,9 @@ class OmniboxPopupMatrixObserver {
 }
 
 // Create a zero-size matrix.
-- (id)initWithObserver:(OmniboxPopupMatrixObserver*)observer;
+- (instancetype)initWithObserver:(OmniboxPopupMatrixObserver*)observer;
 
-// Sets the delegate.
+// Sets the observer.
 - (void)setObserver:(OmniboxPopupMatrixObserver*)observer;
 
 // Return the currently highlighted row.  Returns -1 if no row is highlighted.

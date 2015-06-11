@@ -22,7 +22,7 @@ UI_BASE_EXPORT
 
 // Designated initializer. Forwards all arguments to the superclass, but wraps
 // |owner| in a proxy object.
-- (id)initWithRect:(NSRect)rect
+- (instancetype)initWithRect:(NSRect)rect
            options:(NSTrackingAreaOptions)options
              owner:(id)owner
           userInfo:(NSDictionary*)userInfo;

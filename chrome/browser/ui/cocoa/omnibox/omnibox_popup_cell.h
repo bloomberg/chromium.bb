@@ -17,9 +17,6 @@ class OmniboxPopupViewMac;
 // provides some default initialization.
 @interface OmniboxPopupCell : NSButtonCell {
  @private
-  // The popup view parent of this cell.
-  OmniboxPopupViewMac* parent_;
-
   // The match which will be rendered for this row in omnibox dropdown.
   AutocompleteMatch match_;
 
