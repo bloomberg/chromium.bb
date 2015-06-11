@@ -1834,6 +1834,12 @@ crbug.com/473632 fast/dom/Geolocation/success-clear-watch.html [ Pass Timeout ]
 
 crbug.com/473718 http/tests/navigation/beacon-cross-origin-redirect.html [ Pass Failure ]
 
+crbug.com/416425 fast/text/ellipsis-platform-font-change.html [ NeedsRebaseline ]
+crbug.com/416425 [ Mac Win ] virtual/antialiasedtext/fast/text/ellipsis-platform-font-change.html [ NeedsRebaseline ]
+crbug.com/416425 virtual/slimmingpaint/fast/text/ellipsis-platform-font-change.html [ NeedsRebaseline ]
+crbug.com/416425 fast/text/emphasis-ellipsis-complextext.html [ NeedsRebaseline ]
+crbug.com/416425 virtual/slimmingpaint/fast/text/emphasis-ellipsis-complextext.html [ NeedsRebaseline ]
+
 # Temporarily disabled due to a change in HTMLMediaElement behavior, I'll
 # update and reenable the test once the bugfix for 475244 lands in Chromium
 crbug.com/475244 media/video-durationchange-on-ended.html [ Pass Failure ]

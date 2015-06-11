@@ -1884,14 +1884,40 @@ void LayoutBlockFlow::deleteEllipsisLineBoxes()
 void LayoutBlockFlow::checkLinesForTextOverflow()
 {
     // Determine the width of the ellipsis using the current font.
-    // FIXME: CSS3 says this is configurable, also need to use 0x002E (FULL STOP) if horizontal ellipsis is "not renderable"
     const Font& font = style()->font();
+
+    const UChar fullStopString[] = {fullstopCharacter, fullstopCharacter, fullstopCharacter};
+    DEFINE_STATIC_LOCAL(AtomicString, fullstopCharacterStr, (fullStopString, 3));
     DEFINE_STATIC_LOCAL(AtomicString, ellipsisStr, (&horizontalEllipsisCharacter, 1));
+    AtomicString& selectedEllipsisStr = ellipsisStr;
+
     const Font& firstLineFont = firstLineStyle()->font();
     // FIXME: We should probably not hard-code the direction here. https://crbug.com/333004
     TextDirection ellipsisDirection = LTR;
-    float firstLineEllipsisWidth = firstLineFont.width(constructTextRun(this, firstLineFont, &horizontalEllipsisCharacter, 1, *firstLineStyle(), ellipsisDirection));
-    float ellipsisWidth = (font == firstLineFont) ? firstLineEllipsisWidth : font.width(constructTextRun(this, font, &horizontalEllipsisCharacter, 1, styleRef(), ellipsisDirection));
+    float firstLineEllipsisWidth = 0;
+    float ellipsisWidth = 0;
+
+    // As per CSS3 http://www.w3.org/TR/2003/CR-css3-text-20030514/ sequence of three
+    // Full Stops (002E) can be used.
+    ASSERT(firstLineFont.primaryFont());
+    if (firstLineFont.primaryFont()->glyphForCharacter(horizontalEllipsisCharacter)) {
+        firstLineEllipsisWidth = firstLineFont.width(constructTextRun(this, firstLineFont, &horizontalEllipsisCharacter, 1, *firstLineStyle(), ellipsisDirection));
+    } else {
+        selectedEllipsisStr = fullstopCharacterStr;
+        firstLineEllipsisWidth = firstLineFont.width(constructTextRun(this, firstLineFont, fullStopString, 1, *firstLineStyle(), ellipsisDirection));
+    }
+    ellipsisWidth = (font == firstLineFont) ? firstLineEllipsisWidth : 0;
+
+    if (!ellipsisWidth) {
+        ASSERT(font.primaryFont());
+        if (font.primaryFont()->glyphForCharacter(horizontalEllipsisCharacter)) {
+            selectedEllipsisStr = ellipsisStr;
+            ellipsisWidth = font.width(constructTextRun(this, font, &horizontalEllipsisCharacter, 1, styleRef(), ellipsisDirection));
+        } else {
+            selectedEllipsisStr = fullstopCharacterStr;
+            ellipsisWidth = font.width(constructTextRun(this, font, fullStopString, 1, styleRef(), ellipsisDirection));
+        }
+    }
 
     // For LTR text truncation, we want to get the right edge of our padding box, and then we want to see
     // if the right edge of a line box exceeds that.  For RTL, we use the left edge of the padding box and
@@ -1914,8 +1940,7 @@ void LayoutBlockFlow::checkLinesForTextOverflow()
             LayoutUnit width = firstLine ? firstLineEllipsisWidth : ellipsisWidth;
             LayoutUnit blockEdge = ltr ? blockRightEdge : blockLeftEdge;
             if (curr->lineCanAccommodateEllipsis(ltr, blockEdge, lineBoxEdge, width)) {
-                LayoutUnit totalLogicalWidth = curr->placeEllipsis(ellipsisStr, ltr, blockLeftEdge, blockRightEdge, width);
-
+                LayoutUnit totalLogicalWidth = curr->placeEllipsis(selectedEllipsisStr, ltr, blockLeftEdge, blockRightEdge, width);
                 LayoutUnit logicalLeft; // We are only interested in the delta from the base position.
                 LayoutUnit availableLogicalWidth = blockRightEdge - blockLeftEdge;
                 updateLogicalWidthForAlignment(textAlign, curr, 0, logicalLeft, totalLogicalWidth, availableLogicalWidth, 0);
