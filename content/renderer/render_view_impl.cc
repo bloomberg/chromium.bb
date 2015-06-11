@@ -1041,8 +1041,6 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->setMultiTargetTapNotificationEnabled(
       switches::IsLinkDisambiguationPopupEnabled());
 
-  // TODO(danakj): Remove this it's always true.
-  settings->setDeferredImageDecodingEnabled(true);
   WebRuntimeFeatures::enableImageColorProfiles(
       prefs.image_color_profiles_enabled);
   settings->setShouldRespectImageOrientation(
