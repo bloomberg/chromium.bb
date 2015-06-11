@@ -598,7 +598,8 @@ void RenderFrameDevToolsAgentHost::UpdateProtocolHandlers(
   dom_handler_->SetRenderFrameHost(host);
   if (emulation_handler_)
     emulation_handler_->SetRenderFrameHost(host);
-  input_handler_->SetRenderWidgetHost(host->GetRenderWidgetHost());
+  input_handler_->SetRenderWidgetHost(
+      host ? host->GetRenderWidgetHost() : nullptr);
   inspector_handler_->SetRenderFrameHost(host);
   network_handler_->SetRenderFrameHost(host);
   if (page_handler_)
