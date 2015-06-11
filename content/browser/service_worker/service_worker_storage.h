@@ -53,9 +53,11 @@ class CONTENT_EXPORT ServiceWorkerStorage
   typedef base::Callback<void(ServiceWorkerStatusCode status,
                               const scoped_refptr<ServiceWorkerRegistration>&
                                   registration)> FindRegistrationCallback;
-  typedef base::Callback<
-      void(const std::vector<ServiceWorkerRegistrationInfo>& registrations)>
-          GetRegistrationsInfosCallback;
+  typedef base::Callback<void(
+      const std::vector<scoped_refptr<ServiceWorkerRegistration>>&
+          registrations)> GetRegistrationsCallback;
+  typedef base::Callback<void(const std::vector<ServiceWorkerRegistrationInfo>&
+                                  registrations)> GetRegistrationsInfosCallback;
   typedef base::Callback<
       void(ServiceWorkerStatusCode status, bool are_equal)>
           CompareCallback;
@@ -109,13 +111,12 @@ class CONTENT_EXPORT ServiceWorkerStorage
 
   ServiceWorkerRegistration* GetUninstallingRegistration(const GURL& scope);
 
-  // Returns info about all stored and initially installing registrations for
-  // a given origin.
-  void GetRegistrationsForOrigin(
-      const GURL& origin, const GetRegistrationsInfosCallback& callback);
+  // Returns all stored registrations for a given origin.
+  void GetRegistrationsForOrigin(const GURL& origin,
+                                 const GetRegistrationsCallback& callback);
 
   // Returns info about all stored and initially installing registrations.
-  void GetAllRegistrations(const GetRegistrationsInfosCallback& callback);
+  void GetAllRegistrationsInfos(const GetRegistrationsInfosCallback& callback);
 
   // Commits |registration| with the installed but not activated |version|
   // to storage, overwritting any pre-existing registration data for the scope.
@@ -319,11 +320,15 @@ class CONTENT_EXPORT ServiceWorkerStorage
       const ServiceWorkerDatabase::RegistrationData& data,
       const ResourceList& resources,
       ServiceWorkerDatabase::Status status);
-  void DidGetRegistrations(
-      const GetRegistrationsInfosCallback& callback,
-      RegistrationList* registrations,
-      const GURL& origin_filter,
-      ServiceWorkerDatabase::Status status);
+  void DidGetRegistrations(const GetRegistrationsCallback& callback,
+                           RegistrationList* registration_data_list,
+                           std::vector<ResourceList>* resources_list,
+                           const GURL& origin_filter,
+                           ServiceWorkerDatabase::Status status);
+  void DidGetRegistrationsInfos(const GetRegistrationsInfosCallback& callback,
+                                RegistrationList* registration_data_list,
+                                const GURL& origin_filter,
+                                ServiceWorkerDatabase::Status status);
   void DidStoreRegistration(
       const StatusCallback& callback,
       const ServiceWorkerDatabase::RegistrationData& new_version,

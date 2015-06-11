@@ -101,7 +101,8 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   // successfully read or not found. Otherwise, returns an error.
   Status GetRegistrationsForOrigin(
       const GURL& origin,
-      std::vector<RegistrationData>* registrations);
+      std::vector<RegistrationData>* registrations,
+      std::vector<std::vector<ResourceRecord>>* opt_resources_list);
 
   // Reads all registrations from the database. Returns OK if successfully read
   // or not found. Otherwise, returns an error.

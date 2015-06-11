@@ -339,10 +339,9 @@ void ServiceWorkerContextWrapper::GetAllOriginsInfo(
         base::Bind(callback, std::vector<ServiceWorkerUsageInfo>()));
     return;
   }
-  context()->storage()->GetAllRegistrations(base::Bind(
+  context()->storage()->GetAllRegistrationsInfos(base::Bind(
       &ServiceWorkerContextWrapper::DidGetAllRegistrationsForGetAllOrigins,
-      this,
-      callback));
+      this, callback));
 }
 
 void ServiceWorkerContextWrapper::DidGetAllRegistrationsForGetAllOrigins(
@@ -526,7 +525,7 @@ void ServiceWorkerContextWrapper::GetAllRegistrations(
     RunSoon(base::Bind(callback, std::vector<ServiceWorkerRegistrationInfo>()));
     return;
   }
-  context_core_->storage()->GetAllRegistrations(callback);
+  context_core_->storage()->GetAllRegistrationsInfos(callback);
 }
 
 void ServiceWorkerContextWrapper::GetRegistrationUserData(

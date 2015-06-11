@@ -12,6 +12,8 @@ const char kServiceWorkerUnregisterErrorPrefix[] =
     "Failed to unregister a ServiceWorkerRegistration: ";
 const char kServiceWorkerGetRegistrationErrorPrefix[] =
     "Failed to get a ServiceWorkerRegistration: ";
+const char kServiceWorkerGetRegistrationsErrorPrefix[] =
+    "Failed to get ServiceWorkerRegistration objects: ";
 const char kFetchScriptError[] =
     "An unknown error occurred when fetching the script.";
 

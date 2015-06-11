@@ -29,6 +29,7 @@ class ServiceWorkerRegistration;
 class ServiceWorkerRegistrationHandle;
 class ServiceWorkerVersion;
 struct ServiceWorkerObjectInfo;
+struct ServiceWorkerRegistrationInfo;
 struct ServiceWorkerRegistrationObjectInfo;
 struct ServiceWorkerVersionAttributes;
 struct TransferredMessagePort;
@@ -95,6 +96,7 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
                          int request_id,
                          int provider_id,
                          const GURL& document_url);
+  void OnGetRegistrations(int thread_id, int request_id, int provider_id);
   void OnGetRegistrationForReady(int thread_id,
                                  int request_id,
                                  int provider_id);
@@ -160,6 +162,13 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
       ServiceWorkerStatusCode status,
       const scoped_refptr<ServiceWorkerRegistration>& registration);
 
+  void GetRegistrationsComplete(
+      int thread_id,
+      int provider_id,
+      int request_id,
+      const std::vector<scoped_refptr<ServiceWorkerRegistration>>&
+          registrations);
+
   void GetRegistrationForReadyComplete(
       int thread_id,
       int request_id,
@@ -178,6 +187,10 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
   void SendGetRegistrationError(int thread_id,
                                 int request_id,
                                 ServiceWorkerStatusCode status);
+
+  void SendGetRegistrationsError(int thread_id,
+                                 int request_id,
+                                 ServiceWorkerStatusCode status);
 
   ServiceWorkerContextCore* GetContext();
 

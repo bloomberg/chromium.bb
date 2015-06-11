@@ -131,6 +131,11 @@ IPC_MESSAGE_CONTROL4(ServiceWorkerHostMsg_GetRegistration,
                      int /* provider_id */,
                      GURL /* document_url */)
 
+IPC_MESSAGE_CONTROL3(ServiceWorkerHostMsg_GetRegistrations,
+                     int /* thread_id */,
+                     int /* request_id */,
+                     int /* provider_id */)
+
 IPC_MESSAGE_CONTROL3(ServiceWorkerHostMsg_GetRegistrationForReady,
                      int /* thread_id */,
                      int /* request_id */,
@@ -310,6 +315,13 @@ IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_DidGetRegistration,
                      content::ServiceWorkerRegistrationObjectInfo,
                      content::ServiceWorkerVersionAttributes)
 
+// Response to ServiceWorkerHostMsg_GetRegistrations.
+IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_DidGetRegistrations,
+                     int /* thread_id */,
+                     int /* request_id */,
+                     std::vector<content::ServiceWorkerRegistrationObjectInfo>,
+                     std::vector<content::ServiceWorkerVersionAttributes>)
+
 // Response to ServiceWorkerHostMsg_GetRegistrationForReady.
 IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_DidGetRegistrationForReady,
                      int /* thread_id */,
@@ -336,6 +348,14 @@ IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_ServiceWorkerUnregistrationError,
 // Sent when any kind of registration error occurs during a
 // GetRegistration handler above.
 IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_ServiceWorkerGetRegistrationError,
+                     int /* thread_id */,
+                     int /* request_id */,
+                     blink::WebServiceWorkerError::ErrorType /* code */,
+                     base::string16 /* message */)
+
+// Sent when any kind of registration error occurs during a
+// GetRegistrations handler above.
+IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_ServiceWorkerGetRegistrationsError,
                      int /* thread_id */,
                      int /* request_id */,
                      blink::WebServiceWorkerError::ErrorType /* code */,

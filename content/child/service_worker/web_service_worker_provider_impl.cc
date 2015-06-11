@@ -71,6 +71,12 @@ void WebServiceWorkerProviderImpl::getRegistration(
       context_->provider_id(), document_url, callbacks);
 }
 
+void WebServiceWorkerProviderImpl::getRegistrations(
+    WebServiceWorkerGetRegistrationsCallbacks* callbacks) {
+  GetDispatcher()->GetRegistrations(
+      context_->provider_id(), callbacks);
+}
+
 void WebServiceWorkerProviderImpl::getRegistrationForReady(
     WebServiceWorkerGetRegistrationForReadyCallbacks* callbacks) {
   GetDispatcher()->GetRegistrationForReady(context_->provider_id(), callbacks);

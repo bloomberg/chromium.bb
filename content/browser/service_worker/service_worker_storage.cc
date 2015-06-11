@@ -460,38 +460,40 @@ void ServiceWorkerStorage::FindRegistrationForIdOnly(
 }
 
 void ServiceWorkerStorage::GetRegistrationsForOrigin(
-    const GURL& origin, const GetRegistrationsInfosCallback& callback) {
+    const GURL& origin,
+    const GetRegistrationsCallback& callback) {
   if (!LazyInitialize(base::Bind(
           &ServiceWorkerStorage::GetRegistrationsForOrigin,
           weak_factory_.GetWeakPtr(), origin, callback))) {
     if (state_ != INITIALIZING || !context_) {
-      RunSoon(FROM_HERE, base::Bind(
-          callback, std::vector<ServiceWorkerRegistrationInfo>()));
+      RunSoon(
+          FROM_HERE,
+          base::Bind(callback,
+                     std::vector<scoped_refptr<ServiceWorkerRegistration>>()));
     }
     return;
   }
   DCHECK_EQ(INITIALIZED, state_);
 
   RegistrationList* registrations = new RegistrationList;
+  std::vector<ResourceList>* resource_lists = new std::vector<ResourceList>;
   PostTaskAndReplyWithResult(
-      database_task_manager_->GetTaskRunner(),
-      FROM_HERE,
+      database_task_manager_->GetTaskRunner(), FROM_HERE,
       base::Bind(&ServiceWorkerDatabase::GetRegistrationsForOrigin,
-                 base::Unretained(database_.get()),
-                 origin,
-                 base::Unretained(registrations)),
+                 base::Unretained(database_.get()), origin,
+                 base::Unretained(registrations),
+                 base::Unretained(resource_lists)),
       base::Bind(&ServiceWorkerStorage::DidGetRegistrations,
-                 weak_factory_.GetWeakPtr(),
-                 callback,
-                 base::Owned(registrations),
+                 weak_factory_.GetWeakPtr(), callback,
+                 base::Owned(registrations), base::Owned(resource_lists),
                  origin));
 }
 
-void ServiceWorkerStorage::GetAllRegistrations(
+void ServiceWorkerStorage::GetAllRegistrationsInfos(
     const GetRegistrationsInfosCallback& callback) {
-  if (!LazyInitialize(base::Bind(
-          &ServiceWorkerStorage::GetAllRegistrations,
-          weak_factory_.GetWeakPtr(), callback))) {
+  if (!LazyInitialize(
+          base::Bind(&ServiceWorkerStorage::GetAllRegistrationsInfos,
+                     weak_factory_.GetWeakPtr(), callback))) {
     if (state_ != INITIALIZING || !context_) {
       RunSoon(FROM_HERE, base::Bind(
           callback, std::vector<ServiceWorkerRegistrationInfo>()));
@@ -502,16 +504,13 @@ void ServiceWorkerStorage::GetAllRegistrations(
 
   RegistrationList* registrations = new RegistrationList;
   PostTaskAndReplyWithResult(
-      database_task_manager_->GetTaskRunner(),
-      FROM_HERE,
+      database_task_manager_->GetTaskRunner(), FROM_HERE,
       base::Bind(&ServiceWorkerDatabase::GetAllRegistrations,
                  base::Unretained(database_.get()),
                  base::Unretained(registrations)),
-      base::Bind(&ServiceWorkerStorage::DidGetRegistrations,
-                 weak_factory_.GetWeakPtr(),
-                 callback,
-                 base::Owned(registrations),
-                 GURL()));
+      base::Bind(&ServiceWorkerStorage::DidGetRegistrationsInfos,
+                 weak_factory_.GetWeakPtr(), callback,
+                 base::Owned(registrations), GURL()));
 }
 
 void ServiceWorkerStorage::StoreRegistration(
@@ -1106,11 +1105,51 @@ void ServiceWorkerStorage::ReturnFoundRegistration(
 }
 
 void ServiceWorkerStorage::DidGetRegistrations(
-    const GetRegistrationsInfosCallback& callback,
-    RegistrationList* registrations,
+    const GetRegistrationsCallback& callback,
+    RegistrationList* registration_data_list,
+    std::vector<ResourceList>* resources_list,
     const GURL& origin_filter,
     ServiceWorkerDatabase::Status status) {
-  DCHECK(registrations);
+  DCHECK(registration_data_list);
+  DCHECK(resources_list);
+
+  if (status != ServiceWorkerDatabase::STATUS_OK &&
+      status != ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND) {
+    ScheduleDeleteAndStartOver();
+    callback.Run(std::vector<scoped_refptr<ServiceWorkerRegistration>>());
+    return;
+  }
+
+  // Add all stored registrations.
+  std::set<int64> registration_ids;
+  std::vector<scoped_refptr<ServiceWorkerRegistration>> registrations;
+  size_t index = 0;
+  for (const auto& registration_data : *registration_data_list) {
+    registration_ids.insert(registration_data.registration_id);
+    registrations.push_back(GetOrCreateRegistration(
+        registration_data, resources_list->at(index++)));
+  }
+
+  // Add unstored registrations that are being installed.
+  for (RegistrationRefsById::const_iterator it =
+           installing_registrations_.begin();
+       it != installing_registrations_.end(); ++it) {
+    if ((!origin_filter.is_valid() ||
+         it->second->pattern().GetOrigin() == origin_filter) &&
+        registration_ids.insert(it->first).second) {
+      registrations.push_back((it->second).get());
+    }
+  }
+
+  callback.Run(registrations);
+}
+
+void ServiceWorkerStorage::DidGetRegistrationsInfos(
+    const GetRegistrationsInfosCallback& callback,
+    RegistrationList* registration_data_list,
+    const GURL& origin_filter,
+    ServiceWorkerDatabase::Status status) {
+  DCHECK(registration_data_list);
   if (status != ServiceWorkerDatabase::STATUS_OK &&
       status != ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND) {
     ScheduleDeleteAndStartOver();
@@ -1121,7 +1160,7 @@ void ServiceWorkerStorage::DidGetRegistrations(
   // Add all stored registrations.
   std::set<int64> pushed_registrations;
   std::vector<ServiceWorkerRegistrationInfo> infos;
-  for (const auto& registration_data : *registrations) {
+  for (const auto& registration_data : *registration_data_list) {
     const bool inserted =
         pushed_registrations.insert(registration_data.registration_id).second;
     DCHECK(inserted);
@@ -1576,8 +1615,8 @@ void ServiceWorkerStorage::DeleteRegistrationFromDB(
 
   // TODO(nhiroki): Add convenient method to ServiceWorkerDatabase to check the
   // unique origin list.
-  std::vector<ServiceWorkerDatabase::RegistrationData> registrations;
-  status = database->GetRegistrationsForOrigin(origin, &registrations);
+  RegistrationList registrations;
+  status = database->GetRegistrationsForOrigin(origin, &registrations, nullptr);
   if (status != ServiceWorkerDatabase::STATUS_OK) {
     original_task_runner->PostTask(
         FROM_HERE,
@@ -1622,7 +1661,7 @@ void ServiceWorkerStorage::FindForDocumentInDB(
   GURL origin = document_url.GetOrigin();
   RegistrationList registrations;
   ServiceWorkerDatabase::Status status =
-      database->GetRegistrationsForOrigin(origin, &registrations);
+      database->GetRegistrationsForOrigin(origin, &registrations, nullptr);
   if (status != ServiceWorkerDatabase::STATUS_OK) {
     original_task_runner->PostTask(
         FROM_HERE,
@@ -1659,9 +1698,9 @@ void ServiceWorkerStorage::FindForPatternInDB(
     const GURL& scope,
     const FindInDBCallback& callback) {
   GURL origin = scope.GetOrigin();
-  std::vector<ServiceWorkerDatabase::RegistrationData> registrations;
+  RegistrationList registrations;
   ServiceWorkerDatabase::Status status =
-      database->GetRegistrationsForOrigin(origin, &registrations);
+      database->GetRegistrationsForOrigin(origin, &registrations, nullptr);
   if (status != ServiceWorkerDatabase::STATUS_OK) {
     original_task_runner->PostTask(
         FROM_HERE,

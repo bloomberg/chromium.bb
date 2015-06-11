@@ -406,9 +406,12 @@ TEST(ServiceWorkerDatabaseTest, GetRegistrationsForOrigin) {
   GURL origin3("https://example.org");
 
   std::vector<RegistrationData> registrations;
+  std::vector<std::vector<Resource>> resources_list;
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
-            database->GetRegistrationsForOrigin(origin1, &registrations));
+            database->GetRegistrationsForOrigin(origin1, &registrations,
+                                                &resources_list));
   EXPECT_TRUE(registrations.empty());
+  EXPECT_TRUE(resources_list.empty());
 
   ServiceWorkerDatabase::RegistrationData deleted_version;
   std::vector<int64> newly_purgeable_resources;
@@ -425,6 +428,16 @@ TEST(ServiceWorkerDatabaseTest, GetRegistrationsForOrigin) {
             database->WriteRegistration(data1, resources1, &deleted_version,
                                         &newly_purgeable_resources));
 
+  registrations.clear();
+  resources_list.clear();
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->GetRegistrationsForOrigin(origin1, &registrations,
+                                                &resources_list));
+  EXPECT_EQ(1U, registrations.size());
+  VerifyRegistrationData(data1, registrations[0]);
+  EXPECT_EQ(1U, resources_list.size());
+  VerifyResourceRecords(resources1, resources_list[0]);
+
   RegistrationData data2;
   data2.registration_id = 200;
   data2.scope = URL(origin2, "/bar");
@@ -436,6 +449,16 @@ TEST(ServiceWorkerDatabaseTest, GetRegistrationsForOrigin) {
   ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
             database->WriteRegistration(data2, resources2, &deleted_version,
                                         &newly_purgeable_resources));
+
+  registrations.clear();
+  resources_list.clear();
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->GetRegistrationsForOrigin(origin2, &registrations,
+                                                &resources_list));
+  EXPECT_EQ(1U, registrations.size());
+  VerifyRegistrationData(data2, registrations[0]);
+  EXPECT_EQ(1U, resources_list.size());
+  VerifyResourceRecords(resources2, resources_list[0]);
 
   RegistrationData data3;
   data3.registration_id = 300;
@@ -463,11 +486,25 @@ TEST(ServiceWorkerDatabaseTest, GetRegistrationsForOrigin) {
                                         &newly_purgeable_resources));
 
   registrations.clear();
+  resources_list.clear();
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
-            database->GetRegistrationsForOrigin(origin3, &registrations));
+            database->GetRegistrationsForOrigin(origin3, &registrations,
+                                                &resources_list));
   EXPECT_EQ(2U, registrations.size());
   VerifyRegistrationData(data3, registrations[0]);
   VerifyRegistrationData(data4, registrations[1]);
+  EXPECT_EQ(2U, resources_list.size());
+  VerifyResourceRecords(resources3, resources_list[0]);
+  VerifyResourceRecords(resources4, resources_list[1]);
+
+  // The third parameter |opt_resources_list| to GetRegistrationsForOrigin()
+  // is optional. So, nullptr should be acceptable.
+  registrations.clear();
+  EXPECT_EQ(
+      ServiceWorkerDatabase::STATUS_OK,
+      database->GetRegistrationsForOrigin(origin1, &registrations, nullptr));
+  EXPECT_EQ(1U, registrations.size());
+  VerifyRegistrationData(data1, registrations[0]);
 }
 
 TEST(ServiceWorkerDatabaseTest, GetAllRegistrations) {
@@ -1471,8 +1508,9 @@ TEST(ServiceWorkerDatabaseTest, DeleteAllDataForOrigin) {
 
   // The registrations for |origin1| should be removed.
   std::vector<RegistrationData> registrations;
-  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
-            database->GetRegistrationsForOrigin(origin1, &registrations));
+  EXPECT_EQ(
+      ServiceWorkerDatabase::STATUS_OK,
+      database->GetRegistrationsForOrigin(origin1, &registrations, nullptr));
   EXPECT_TRUE(registrations.empty());
   GURL origin_out;
   EXPECT_EQ(

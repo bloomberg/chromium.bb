@@ -459,7 +459,8 @@ ServiceWorkerDatabase::GetOriginsWithRegistrations(std::set<GURL>* origins) {
 
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::GetRegistrationsForOrigin(
     const GURL& origin,
-    std::vector<RegistrationData>* registrations) {
+    std::vector<RegistrationData>* registrations,
+    std::vector<std::vector<ResourceRecord>>* opt_resources_list) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   DCHECK(registrations->empty());
 
@@ -476,6 +477,8 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::GetRegistrationsForOrigin(
     if (status != STATUS_OK) {
       HandleReadResult(FROM_HERE, status);
       registrations->clear();
+      if (opt_resources_list)
+        opt_resources_list->clear();
       return status;
     }
 
@@ -487,9 +490,23 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::GetRegistrationsForOrigin(
     if (status != STATUS_OK) {
       HandleReadResult(FROM_HERE, status);
       registrations->clear();
+      if (opt_resources_list)
+        opt_resources_list->clear();
       return status;
     }
     registrations->push_back(registration);
+
+    if (opt_resources_list) {
+      std::vector<ResourceRecord> resources;
+      status = ReadResourceRecords(registration.version_id, &resources);
+      if (status != STATUS_OK) {
+        HandleReadResult(FROM_HERE, status);
+        registrations->clear();
+        opt_resources_list->clear();
+        return status;
+      }
+      opt_resources_list->push_back(resources);
+    }
   }
 
   HandleReadResult(FROM_HERE, status);
@@ -745,7 +762,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::DeleteRegistration(
   // |registration_id| is the only one for |origin|.
   // TODO(nhiroki): Check the uniqueness by more efficient way.
   std::vector<RegistrationData> registrations;
-  status = GetRegistrationsForOrigin(origin, &registrations);
+  status = GetRegistrationsForOrigin(origin, &registrations, nullptr);
   if (status != STATUS_OK)
     return status;
 
@@ -962,7 +979,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::DeleteAllDataForOrigins(
     batch.Delete(CreateUniqueOriginKey(origin));
 
     std::vector<RegistrationData> registrations;
-    status = GetRegistrationsForOrigin(origin, &registrations);
+    status = GetRegistrationsForOrigin(origin, &registrations, nullptr);
     if (status != STATUS_OK)
       return status;
 

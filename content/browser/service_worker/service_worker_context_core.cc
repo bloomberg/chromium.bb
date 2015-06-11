@@ -296,11 +296,9 @@ void ServiceWorkerContextCore::UnregisterServiceWorkers(
     return;
   }
 
-  storage()->GetAllRegistrations(base::Bind(
+  storage()->GetAllRegistrationsInfos(base::Bind(
       &ServiceWorkerContextCore::DidGetAllRegistrationsForUnregisterForOrigin,
-      AsWeakPtr(),
-      callback,
-      origin));
+      AsWeakPtr(), callback, origin));
 }
 
 void ServiceWorkerContextCore::DidGetAllRegistrationsForUnregisterForOrigin(

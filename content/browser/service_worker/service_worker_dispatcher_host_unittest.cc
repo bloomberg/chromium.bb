@@ -129,6 +129,19 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
     dispatcher_host_->ipc_sink()->ClearMessages();
   }
 
+  void SendGetRegistrations(int64 provider_id) {
+    dispatcher_host_->OnMessageReceived(
+        ServiceWorkerHostMsg_GetRegistrations(-1, -1, provider_id));
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void GetRegistrations(int64 provider_id, uint32 expected_message) {
+    SendGetRegistrations(provider_id);
+    EXPECT_TRUE(dispatcher_host_->ipc_sink()->GetUniqueMessageMatching(
+        expected_message));
+    dispatcher_host_->ipc_sink()->ClearMessages();
+  }
+
   ServiceWorkerProviderHost* CreateServiceWorkerProviderHost(int provider_id) {
     return new ServiceWorkerProviderHost(
         kRenderProcessId, kRenderFrameId, provider_id,
@@ -177,6 +190,8 @@ TEST_F(ServiceWorkerDispatcherHostTest,
   GetRegistration(kProviderId,
                   GURL("https://www.example.com/"),
                   ServiceWorkerMsg_ServiceWorkerGetRegistrationError::ID);
+  GetRegistrations(kProviderId,
+                   ServiceWorkerMsg_ServiceWorkerGetRegistrationsError::ID);
 
   SetBrowserClientForTesting(old_browser_client);
 }
@@ -492,6 +507,37 @@ TEST_F(ServiceWorkerDispatcherHostTest, GetRegistration_EarlyContextDeletion) {
   GetRegistration(-1,
                   GURL(),
                   ServiceWorkerMsg_ServiceWorkerGetRegistrationError::ID);
+}
+
+TEST_F(ServiceWorkerDispatcherHostTest, GetRegistrations_SecureOrigin) {
+  const int64 kProviderId = 99;  // Dummy value
+  scoped_ptr<ServiceWorkerProviderHost> host(
+      CreateServiceWorkerProviderHost(kProviderId));
+  host->SetDocumentUrl(GURL("https://www.example.com/foo"));
+  context()->AddProviderHost(host.Pass());
+
+  GetRegistrations(kProviderId, ServiceWorkerMsg_DidGetRegistrations::ID);
+}
+
+TEST_F(ServiceWorkerDispatcherHostTest,
+       GetRegistrations_NonSecureOriginShouldFail) {
+  const int64 kProviderId = 99;  // Dummy value
+  scoped_ptr<ServiceWorkerProviderHost> host(
+      CreateServiceWorkerProviderHost(kProviderId));
+  host->SetDocumentUrl(GURL("http://www.example.com/foo"));
+  context()->AddProviderHost(host.Pass());
+
+  SendGetRegistrations(kProviderId);
+  EXPECT_EQ(1, dispatcher_host_->bad_messages_received_count_);
+}
+
+TEST_F(ServiceWorkerDispatcherHostTest, GetRegistrations_EarlyContextDeletion) {
+  helper_->ShutdownContext();
+
+  // Let the shutdown reach the simulated IO thread.
+  base::RunLoop().RunUntilIdle();
+
+  GetRegistrations(-1, ServiceWorkerMsg_ServiceWorkerGetRegistrationsError::ID);
 }
 
 TEST_F(ServiceWorkerDispatcherHostTest, CleanupOnRendererCrash) {

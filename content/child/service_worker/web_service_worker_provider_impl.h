@@ -41,6 +41,7 @@ class WebServiceWorkerProviderImpl
 
   virtual void getRegistration(const blink::WebURL& document_url,
                                WebServiceWorkerGetRegistrationCallbacks*);
+  virtual void getRegistrations(WebServiceWorkerGetRegistrationsCallbacks*);
   virtual void getRegistrationForReady(
       WebServiceWorkerGetRegistrationForReadyCallbacks*);
 
