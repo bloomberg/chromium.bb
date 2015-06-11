@@ -147,9 +147,18 @@ class NET_EXPORT HttpUtil {
   // 2616 defines the end-of-headers marker as a double CRLF; however, some
   // servers only send back LFs (e.g., Unix-based CGI scripts written using the
   // ASIS Apache module).  This function therefore accepts the pattern LF[CR]LF
-  // as end-of-headers (just like Mozilla).
+  // as end-of-headers (just like Mozilla). The first line of |buf| is
+  // considered the status line, even if empty.
   // The parameter |i| is the offset within |buf| to begin searching from.
   static int LocateEndOfHeaders(const char* buf, int buf_len, int i = 0);
+
+  // Same as |LocateEndOfHeaders|, but does not expect a status line, so can be
+  // used on multi-part responses or HTTP/1.x trailers.  As a result, if |buf|
+  // starts with a single [CR]LF,  it is considered an empty header list, as
+  // opposed to an empty status line above a header list.
+  static int LocateEndOfAdditionalHeaders(const char* buf,
+                                          int buf_len,
+                                          int i = 0);
 
   // Assemble "raw headers" in the format required by HttpResponseHeaders.
   // This involves normalizing line terminators, converting [CR]LF to \0 and

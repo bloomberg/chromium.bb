@@ -267,12 +267,17 @@ TEST(HttpUtilTest, LocateEndOfHeaders) {
     const char* const input;
     int expected_result;
   } tests[] = {
-    { "foo\r\nbar\r\n\r\n", 12 },
-    { "foo\nbar\n\n", 9 },
-    { "foo\r\nbar\r\n\r\njunk", 12 },
-    { "foo\nbar\n\njunk", 9 },
-    { "foo\nbar\n\r\njunk", 10 },
-    { "foo\nbar\r\n\njunk", 10 },
+      {"\r\n", -1},
+      {"\n", -1},
+      {"\r", -1},
+      {"foo", -1},
+      {"\r\n\r\n", 4},
+      {"foo\r\nbar\r\n\r\n", 12},
+      {"foo\nbar\n\n", 9},
+      {"foo\r\nbar\r\n\r\njunk", 12},
+      {"foo\nbar\n\njunk", 9},
+      {"foo\nbar\n\r\njunk", 10},
+      {"foo\nbar\r\n\njunk", 10},
   };
   for (size_t i = 0; i < arraysize(tests); ++i) {
     int input_len = static_cast<int>(strlen(tests[i].input));
@@ -281,6 +286,29 @@ TEST(HttpUtilTest, LocateEndOfHeaders) {
   }
 }
 
+TEST(HttpUtilTest, LocateEndOfAdditionalHeaders) {
+  struct {
+    const char* const input;
+    int expected_result;
+  } tests[] = {
+      {"\r\n", 2},
+      {"\n", 1},
+      {"\r", -1},
+      {"foo", -1},
+      {"\r\n\r\n", 2},
+      {"foo\r\nbar\r\n\r\n", 12},
+      {"foo\nbar\n\n", 9},
+      {"foo\r\nbar\r\n\r\njunk", 12},
+      {"foo\nbar\n\njunk", 9},
+      {"foo\nbar\n\r\njunk", 10},
+      {"foo\nbar\r\n\njunk", 10},
+  };
+  for (size_t i = 0; i < arraysize(tests); ++i) {
+    int input_len = static_cast<int>(strlen(tests[i].input));
+    int eoh = HttpUtil::LocateEndOfAdditionalHeaders(tests[i].input, input_len);
+    EXPECT_EQ(tests[i].expected_result, eoh);
+  }
+}
 TEST(HttpUtilTest, AssembleRawHeaders) {
   struct {
     const char* const input;  // with '|' representing '\0'

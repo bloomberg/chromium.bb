@@ -5,9 +5,11 @@
 #include "content/child/multipart_response_delegate.h"
 
 #include "base/logging.h"
+#include "base/memory/ref_counted.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "net/base/net_util.h"
+#include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 #include "third_party/WebKit/public/platform/WebHTTPHeaderVisitor.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -209,59 +211,47 @@ int MultipartResponseDelegate::PushOverLine(const std::string& data,
 }
 
 bool MultipartResponseDelegate::ParseHeaders() {
-  int line_feed_increment = 1;
+  int headers_end_pos = net::HttpUtil::LocateEndOfAdditionalHeaders(
+      data_.c_str(), data_.size(), 0);
 
-  // Grab the headers being liberal about line endings.
-  size_t line_start_pos = 0;
-  size_t line_end_pos = data_.find('\n');
-  while (line_end_pos != std::string::npos) {
-    // Handle CRLF
-    if (line_end_pos > line_start_pos && data_[line_end_pos - 1] == '\r') {
-      line_feed_increment = 2;
-      --line_end_pos;
-    } else {
-      line_feed_increment = 1;
-    }
-    if (line_start_pos == line_end_pos) {
-      // A blank line, end of headers
-      line_end_pos += line_feed_increment;
-      break;
-    }
-    // Find the next header line.
-    line_start_pos = line_end_pos + line_feed_increment;
-    line_end_pos = data_.find('\n', line_start_pos);
-  }
-  // Truncated in the middle of a header, stop parsing.
-  if (line_end_pos == std::string::npos)
+  if (headers_end_pos < 0)
     return false;
 
-  // Eat headers
-  std::string headers("\n");
-  headers.append(data_, 0, line_end_pos);
-  data_ = data_.substr(line_end_pos);
+  // Eat headers and prepend a status line as is required by
+  // HttpResponseHeaders.
+  std::string headers("HTTP/1.1 200 OK\r\n");
+  headers.append(data_, 0, headers_end_pos);
+  data_ = data_.substr(headers_end_pos);
+
+  scoped_refptr<net::HttpResponseHeaders> response_headers =
+      new net::HttpResponseHeaders(
+          net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
 
   // Create a WebURLResponse based on the original set of headers + the
-  // replacement headers.  We only replace the same few headers that gecko
-  // does.  See netwerk/streamconv/converters/nsMultiMixedConv.cpp.
-  std::string content_type = net::GetSpecificHeader(headers, "content-type");
-  std::string mime_type;
-  std::string charset;
-  bool has_charset = false;
-  net::HttpUtil::ParseContentType(content_type, &mime_type, &charset,
-                                  &has_charset, NULL);
+  // replacement headers. We only replace the same few headers that gecko
+  // does. See netwerk/streamconv/converters/nsMultiMixedConv.cpp.
   WebURLResponse response(original_response_.url());
+
+  std::string mime_type;
+  response_headers->GetMimeType(&mime_type);
   response.setMIMEType(WebString::fromUTF8(mime_type));
+
+  std::string charset;
+  response_headers->GetCharset(&charset);
   response.setTextEncodingName(WebString::fromUTF8(charset));
 
+  // Copy the response headers from the original response.
   HeaderCopier copier(&response);
   original_response_.visitHTTPHeaderFields(&copier);
 
+  // Replace original headers with multipart headers listed in kReplaceHeaders.
   for (size_t i = 0; i < arraysize(kReplaceHeaders); ++i) {
     std::string name(kReplaceHeaders[i]);
-    std::string value = net::GetSpecificHeader(headers, name);
-    if (!value.empty()) {
-      response.setHTTPHeaderField(WebString::fromUTF8(name),
-                                  WebString::fromUTF8(value));
+    std::string value;
+    void* iterator = nullptr;
+    while (response_headers->EnumerateHeader(&iterator, name, &value)) {
+      response.addHTTPHeaderField(WebString::fromLatin1(name),
+                                  WebString::fromLatin1(value));
     }
   }
   // To avoid recording every multipart load as a separate visit in
