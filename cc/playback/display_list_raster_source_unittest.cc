@@ -395,8 +395,9 @@ TEST(DisplayListRasterSourceTest, RasterPartialContents) {
   raster = DisplayListRasterSource::CreateFromDisplayListRecordingSource(
       recording_source.get(), false);
 
-  // We're going to playback from "everything is black" into a smaller area.
-  playback_rect.Inset(1, 2);
+  // We're going to playback from "everything is black" into a smaller area,
+  // that touches the edge pixels of the recording.
+  playback_rect.Inset(1, 2, 0, 1);
   raster->PlaybackToCanvas(&canvas, raster_full_rect, playback_rect,
                            contents_scale);
 
@@ -405,8 +406,8 @@ TEST(DisplayListRasterSourceTest, RasterPartialContents) {
   int num_white = 0;
   for (int i = 0; i < bitmap.width(); ++i) {
     for (int j = 0; j < bitmap.height(); ++j) {
-      SCOPED_TRACE(i);
       SCOPED_TRACE(j);
+      SCOPED_TRACE(i);
       bool expect_black = playback_rect.Contains(i, j);
       if (expect_black) {
         EXPECT_EQ(255u, SkColorGetA(pixels[i + j * bitmap.width()]));

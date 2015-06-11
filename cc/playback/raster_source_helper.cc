@@ -67,6 +67,7 @@ void RasterSourceHelper::PrepareForPlaybackToCanvas(
     // covered by content.
     gfx::Rect deflated_content_rect = content_rect;
     deflated_content_rect.Inset(0, 0, 1, 1);
+    deflated_content_rect.Intersect(canvas_playback_rect);
     if (!deflated_content_rect.Contains(canvas_playback_rect)) {
       if (clear_canvas_with_debug_color) {
         // Any non-painted areas outside of the content bounds are left in
@@ -87,7 +88,10 @@ void RasterSourceHelper::PrepareForPlaybackToCanvas(
       canvas->save();
       canvas->translate(-canvas_bitmap_rect.x(), -canvas_bitmap_rect.y());
       gfx::Rect inflated_content_rect = content_rect;
+      // Only clear edges that will be inside the canvas_playback_rect, else we
+      // clear things that are still valid from a previous raster.
       inflated_content_rect.Inset(0, 0, -1, -1);
+      inflated_content_rect.Intersect(canvas_playback_rect);
       canvas->clipRect(gfx::RectToSkRect(inflated_content_rect),
                        SkRegion::kReplace_Op);
       canvas->clipRect(gfx::RectToSkRect(deflated_content_rect),
