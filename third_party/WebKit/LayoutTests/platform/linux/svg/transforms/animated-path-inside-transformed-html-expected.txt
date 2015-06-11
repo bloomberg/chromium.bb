@@ -5,6 +5,7 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
+      "backgroundColor": "#FFFFFF",
       "repaintRects": [
         [355, 128, 103, 101],
         [352, 397, 98, 99],

@@ -61,25 +61,10 @@ LayoutRect BoxPainter::boundsForDrawingRecorder(const LayoutPoint& paintOffset)
     if (!RuntimeEnabledFeatures::slimmingPaintEnabled())
         return LayoutRect();
 
-    // The document element is specified to paint its background infinitely.
-    if (m_layoutBox.isDocumentElement())
-        return rootBackgroundRect();
-
     // Use the visual overflow rect here, because it will include overflow introduced by the theme.
     LayoutRect bounds = m_layoutBox.visualOverflowRect();
     bounds.moveBy(paintOffset);
     return LayoutRect(pixelSnappedIntRect(bounds));
-}
-
-LayoutRect BoxPainter::rootBackgroundRect()
-{
-    LayoutView* layoutView = m_layoutBox.view();
-    LayoutRect result = layoutView->backgroundRect(&m_layoutBox);
-    // In root-layer-scrolls mode, root background is painted in coordinates of the
-    // root scrolling contents layer, so don't need scroll offset adjustment.
-    if (layoutView->hasOverflowClip() && !layoutView->frame()->settings()->rootLayerScrolls())
-        result.move(-layoutView->scrolledContentOffset());
-    return result;
 }
 
 namespace {
@@ -149,52 +134,30 @@ void BoxPainter::paintBoxDecorationBackgroundWithRect(const PaintInfo& paintInfo
         paintInfo.context->endLayer();
 }
 
-static bool skipBodyBackground(const LayoutBox* bodyElementLayoutObject)
-{
-    ASSERT(bodyElementLayoutObject->isBody());
-    // The <body> only paints its background if the root element has defined a background independent of the body,
-    // or if the <body>'s parent is not the document element's layoutObject (e.g. inside SVG foreignObject).
-    LayoutObject* documentElementLayoutObject = bodyElementLayoutObject->document().documentElement()->layoutObject();
-    return documentElementLayoutObject
-        && !documentElementLayoutObject->hasBackground()
-        && (documentElementLayoutObject == bodyElementLayoutObject->parent());
-}
-
 void BoxPainter::paintBackground(const PaintInfo& paintInfo, const LayoutRect& paintRect, const Color& backgroundColor, BackgroundBleedAvoidance bleedAvoidance)
 {
-    if (m_layoutBox.isDocumentElement()) {
-        paintRootBoxFillLayers(paintInfo);
+    if (m_layoutBox.isDocumentElement())
         return;
-    }
-    if (m_layoutBox.isBody() && skipBodyBackground(&m_layoutBox))
+    if (m_layoutBox.backgroundStolenForBeingBody())
         return;
     if (m_layoutBox.boxDecorationBackgroundIsKnownToBeObscured())
         return;
     paintFillLayers(paintInfo, backgroundColor, m_layoutBox.style()->backgroundLayers(), paintRect, bleedAvoidance);
 }
 
-void BoxPainter::paintRootBoxFillLayers(const PaintInfo& paintInfo)
+static bool isFillLayerOpaque(const FillLayer& layer, const LayoutObject& imageClient)
 {
-    if (paintInfo.skipRootBackground())
-        return;
-
-    LayoutObject* rootBackgroundLayoutObject = m_layoutBox.layoutObjectForRootBackground();
-
-    const FillLayer& bgLayer = rootBackgroundLayoutObject->style()->backgroundLayers();
-    Color bgColor = rootBackgroundLayoutObject->resolveColor(CSSPropertyBackgroundColor);
-
-    paintFillLayers(paintInfo, bgColor, bgLayer, rootBackgroundRect(), BackgroundBleedNone, SkXfermode::kSrcOver_Mode, rootBackgroundLayoutObject);
+    return layer.hasOpaqueImage(&imageClient)
+        && layer.image()->canRender(imageClient, imageClient.style()->effectiveZoom())
+        && !layer.image()->imageSize(&imageClient, imageClient.style()->effectiveZoom()).isEmpty()
+        && layer.hasRepeatXY();
 }
 
-void BoxPainter::paintFillLayers(const PaintInfo& paintInfo, const Color& c, const FillLayer& fillLayer, const LayoutRect& rect,
-    BackgroundBleedAvoidance bleedAvoidance, SkXfermode::Mode op, LayoutObject* backgroundObject)
+bool BoxPainter::calculateFillLayerOcclusionCulling(FillLayerOcclusionOutputList &reversedPaintList, const FillLayer& fillLayer)
 {
-    Vector<const FillLayer*, 8> layers;
-    const FillLayer* curLayer = &fillLayer;
-    bool shouldDrawBackgroundInSeparateBuffer = false;
-    bool isBottomLayerOccluded = false;
-    while (curLayer) {
-        layers.append(curLayer);
+    bool isNonAssociative = false;
+    for (auto currentLayer = &fillLayer; currentLayer; currentLayer = currentLayer->next()) {
+        reversedPaintList.append(currentLayer);
         // Stop traversal when an opaque layer is encountered.
         // FIXME : It would be possible for the following occlusion culling test to be more aggressive
         // on layers with no repeat by testing whether the image covers the layout rect.
@@ -203,51 +166,62 @@ void BoxPainter::paintFillLayers(const PaintInfo& paintInfo, const Color& c, con
         // the layer recursion into paintFillLayerExtended, or to compute the layer geometry here
         // and pass it down.
 
-        if (!shouldDrawBackgroundInSeparateBuffer && curLayer->blendMode() != WebBlendModeNormal)
-            shouldDrawBackgroundInSeparateBuffer = true;
+        // TODO(trchen): Need to check compositing mode as well.
+        if (currentLayer->blendMode() != WebBlendModeNormal)
+            isNonAssociative = true;
 
-        if (curLayer->clipOccludesNextLayers()
-            && curLayer->hasOpaqueImage(&m_layoutBox)
-            && curLayer->image()->canRender(m_layoutBox, m_layoutBox.style()->effectiveZoom())
-            && curLayer->hasRepeatXY()
-            && curLayer->blendMode() == WebBlendModeNormal
-            && !m_layoutBox.boxShadowShouldBeAppliedToBackground(bleedAvoidance))
+        // TODO(trchen): A fill layer cannot paint if the calculated tile size is empty.
+        // This occlusion check can be wrong.
+        if (currentLayer->clipOccludesNextLayers()
+            && isFillLayerOpaque(*currentLayer, m_layoutBox)) {
+            if (currentLayer->clip() == BorderFillBox)
+                isNonAssociative = false;
             break;
-        curLayer = curLayer->next();
+        }
+    }
+    return isNonAssociative;
+}
+
+void BoxPainter::paintFillLayers(const PaintInfo& paintInfo, const Color& c, const FillLayer& fillLayer, const LayoutRect& rect, BackgroundBleedAvoidance bleedAvoidance, SkXfermode::Mode op, LayoutObject* backgroundObject)
+{
+    // TODO(trchen): Box shadow optimization and background color are concepts that only
+    // apply to background layers. Ideally we should refactor those out of paintFillLayer.
+    FillLayerOcclusionOutputList reversedPaintList;
+    bool shouldDrawBackgroundInSeparateBuffer = false;
+    if (!m_layoutBox.boxShadowShouldBeAppliedToBackground(bleedAvoidance)) {
+        shouldDrawBackgroundInSeparateBuffer = calculateFillLayerOcclusionCulling(reversedPaintList, fillLayer);
+    } else {
+        // If we are responsible for painting box shadow, don't perform fill layer culling.
+        // TODO(trchen): In theory we only need to make sure the last layer has border box clipping
+        // and make it paint the box shadow. Investigate optimization opportunity later.
+        for (auto currentLayer = &fillLayer; currentLayer; currentLayer = currentLayer->next()) {
+            reversedPaintList.append(currentLayer);
+            if (currentLayer->composite() != CompositeSourceOver || currentLayer->blendMode() != WebBlendModeNormal)
+                shouldDrawBackgroundInSeparateBuffer = true;
+        }
     }
 
-    if (layers.size() > 0  && (**layers.rbegin()).next())
-        isBottomLayerOccluded = true;
+    // TODO(trchen): We can optimize out isolation group if we have a non-transparent
+    // background color and the bottom layer encloses all other layers.
 
     GraphicsContext* context = paintInfo.context;
     if (!context)
         shouldDrawBackgroundInSeparateBuffer = false;
 
-    bool skipBaseColor = false;
-    if (shouldDrawBackgroundInSeparateBuffer) {
-        bool isBaseColorVisible = !isBottomLayerOccluded && c.hasAlpha();
-
-        // Paint the document's base background color outside the transparency layer,
-        // so that the background images don't blend with this color: http://crbug.com/389039.
-        if (isBaseColorVisible && isDocumentElementWithOpaqueBackground(m_layoutBox)) {
-            paintRootBackgroundColor(m_layoutBox, paintInfo, rect, Color());
-            skipBaseColor = true;
-        }
+    if (shouldDrawBackgroundInSeparateBuffer)
         context->beginLayer();
-    }
 
-    Vector<const FillLayer*>::const_reverse_iterator topLayer = layers.rend();
-    for (Vector<const FillLayer*>::const_reverse_iterator it = layers.rbegin(); it != topLayer; ++it)
-        paintFillLayer(paintInfo, c, **it, rect, bleedAvoidance, op, backgroundObject, skipBaseColor);
+    for (auto it = reversedPaintList.rbegin(); it != reversedPaintList.rend(); ++it)
+        paintFillLayer(paintInfo, c, **it, rect, bleedAvoidance, op, backgroundObject);
 
     if (shouldDrawBackgroundInSeparateBuffer)
         context->endLayer();
 }
 
 void BoxPainter::paintFillLayer(const PaintInfo& paintInfo, const Color& c, const FillLayer& fillLayer, const LayoutRect& rect,
-    BackgroundBleedAvoidance bleedAvoidance, SkXfermode::Mode op, LayoutObject* backgroundObject, bool skipBaseColor)
+    BackgroundBleedAvoidance bleedAvoidance, SkXfermode::Mode op, LayoutObject* backgroundObject)
 {
-    BoxPainter::paintFillLayerExtended(m_layoutBox, paintInfo, c, fillLayer, rect, bleedAvoidance, 0, LayoutSize(), op, backgroundObject, skipBaseColor);
+    BoxPainter::paintFillLayerExtended(m_layoutBox, paintInfo, c, fillLayer, rect, bleedAvoidance, 0, LayoutSize(), op, backgroundObject);
 }
 
 void BoxPainter::applyBoxShadowForBackground(GraphicsContext* context, LayoutObject& obj)
@@ -321,8 +295,7 @@ FloatRoundedRect BoxPainter::backgroundRoundedRectAdjustedForBleedAvoidance(Layo
     return getBackgroundRoundedRect(obj, borderRect, box, boxSize.width(), boxSize.height(), includeLogicalLeftEdge, includeLogicalRightEdge);
 }
 
-void BoxPainter::paintFillLayerExtended(LayoutBoxModelObject& obj, const PaintInfo& paintInfo, const Color& color, const FillLayer& bgLayer, const LayoutRect& rect,
-    BackgroundBleedAvoidance bleedAvoidance, InlineFlowBox* box, const LayoutSize& boxSize, SkXfermode::Mode op, LayoutObject* backgroundObject, bool skipBaseColor)
+void BoxPainter::paintFillLayerExtended(LayoutBoxModelObject& obj, const PaintInfo& paintInfo, const Color& color, const FillLayer& bgLayer, const LayoutRect& rect, BackgroundBleedAvoidance bleedAvoidance, InlineFlowBox* box, const LayoutSize& boxSize, SkXfermode::Mode op, LayoutObject* backgroundObject)
 {
     GraphicsContext* context = paintInfo.context;
     if (rect.isEmpty())
@@ -334,12 +307,10 @@ void BoxPainter::paintFillLayerExtended(LayoutBoxModelObject& obj, const PaintIn
     bool hasRoundedBorder = obj.style()->hasBorderRadius() && (includeLeftEdge || includeRightEdge);
     bool clippedWithLocalScrolling = obj.hasOverflowClip() && bgLayer.attachment() == LocalBackgroundAttachment;
     bool isBorderFill = bgLayer.clip() == BorderFillBox;
-    bool isDocumentElementLayoutObject = obj.isDocumentElement();
     bool isBottomLayer = !bgLayer.next();
 
     Color bgColor = color;
     StyleImage* bgImage = bgLayer.image();
-    bool shouldPaintBackgroundImage = bgImage && bgImage->canRender(obj, obj.style()->effectiveZoom());
 
     bool forceBackgroundToWhite = false;
     if (obj.document().printing()) {
@@ -359,17 +330,15 @@ void BoxPainter::paintFillLayerExtended(LayoutBoxModelObject& obj, const PaintIn
     if (forceBackgroundToWhite) {
         // Note that we can't reuse this variable below because the bgColor might be changed
         bool shouldPaintBackgroundColor = isBottomLayer && bgColor.alpha();
-        if (shouldPaintBackgroundImage || shouldPaintBackgroundColor) {
+        if (bgImage || shouldPaintBackgroundColor) {
             bgColor = Color::white;
-            shouldPaintBackgroundImage = false;
+            bgImage = nullptr;
         }
     }
 
-    bool colorVisible = bgColor.alpha();
-
     // Fast path for drawing simple color backgrounds.
-    if (!isDocumentElementLayoutObject && !clippedWithLocalScrolling && !shouldPaintBackgroundImage && isBorderFill && isBottomLayer) {
-        if (!colorVisible)
+    if (!clippedWithLocalScrolling && !bgImage && isBorderFill && isBottomLayer) {
+        if (!bgColor.alpha())
             return;
 
         bool boxShadowShouldBeAppliedToBackground = obj.boxShadowShouldBeAppliedToBackground(bleedAvoidance, box);
@@ -479,14 +448,19 @@ void BoxPainter::paintFillLayerExtended(LayoutBoxModelObject& obj, const PaintIn
         break;
     }
 
+    BackgroundImageGeometry geometry;
+    if (bgImage)
+        calculateBackgroundImageGeometry(obj, paintInfo.paintContainer(), bgLayer, scrolledPaintRect, geometry, backgroundObject);
+    bool shouldPaintBackgroundImage = bgImage && bgImage->canRender(obj, obj.style()->effectiveZoom());
+
     // Paint the color first underneath all images, culled if background image occludes it.
-    // FIXME: In the bgLayer->hasFiniteBounds() case, we could improve the culling test
-    // by verifying whether the background image covers the entire layout rect.
+    // TODO(trchen): In the !bgLayer.hasRepeatXY() case, we could improve the culling test
+    // by verifying whether the background image covers the entire painting area.
     if (isBottomLayer) {
         IntRect backgroundRect(pixelSnappedIntRect(scrolledPaintRect));
         bool boxShadowShouldBeAppliedToBackground = obj.boxShadowShouldBeAppliedToBackground(bleedAvoidance, box);
-        bool isOpaqueRoot = (isDocumentElementLayoutObject && !bgColor.hasAlpha()) || isDocumentElementWithOpaqueBackground(obj);
-        if (boxShadowShouldBeAppliedToBackground || !shouldPaintBackgroundImage || !bgLayer.hasOpaqueImage(&obj) || !bgLayer.hasRepeatXY() || (isOpaqueRoot && !toLayoutBox(&obj)->size().height()))  {
+        bool backgroundImageOccludesBackgroundColor = shouldPaintBackgroundImage && isFillLayerOpaque(bgLayer, obj);
+        if (boxShadowShouldBeAppliedToBackground || !backgroundImageOccludesBackgroundColor)  {
             if (!RuntimeEnabledFeatures::slimmingPaintEnabled() && !boxShadowShouldBeAppliedToBackground)
                 backgroundRect.intersect(paintInfo.rect);
 
@@ -494,18 +468,13 @@ void BoxPainter::paintFillLayerExtended(LayoutBoxModelObject& obj, const PaintIn
             if (boxShadowShouldBeAppliedToBackground)
                 BoxPainter::applyBoxShadowForBackground(context, obj);
 
-            if (isOpaqueRoot && !skipBaseColor) {
-                paintRootBackgroundColor(obj, paintInfo, rect, bgColor);
-            } else if (bgColor.alpha()) {
+            if (bgColor.alpha())
                 context->fillRect(backgroundRect, bgColor);
-            }
         }
     }
 
     // no progressive loading of the background image
     if (shouldPaintBackgroundImage) {
-        BackgroundImageGeometry geometry;
-        calculateBackgroundImageGeometry(obj, paintInfo.paintContainer(), bgLayer, scrolledPaintRect, geometry, backgroundObject);
         if (!geometry.destRect().isEmpty()) {
             SkXfermode::Mode bgOp = WebCoreCompositeToSkiaComposite(bgLayer.composite(), bgLayer.blendMode());
             // if op != SkXfermode::kSrcOver_Mode, a mask is being painted.
@@ -607,68 +576,6 @@ void BoxPainter::paintClippingMask(const PaintInfo& paintInfo, const LayoutPoint
     paintInfo.context->fillRect(paintRect, Color::black);
 }
 
-void BoxPainter::paintRootBackgroundColor(LayoutObject& obj, const PaintInfo& paintInfo, const LayoutRect& rootBackgroundRect, const Color& bgColor)
-{
-    if (rootBackgroundRect.isEmpty())
-        return;
-
-    ASSERT(obj.isDocumentElement());
-
-    IntRect backgroundRect(pixelSnappedIntRect(rootBackgroundRect));
-    if (!RuntimeEnabledFeatures::slimmingPaintEnabled())
-        backgroundRect.intersect(paintInfo.rect);
-
-    Color baseColor = obj.view()->frameView()->baseBackgroundColor();
-    bool shouldClearDocumentBackground = obj.document().settings() && obj.document().settings()->shouldClearDocumentBackground();
-    SkXfermode::Mode operation = shouldClearDocumentBackground ?
-        SkXfermode::kSrc_Mode : SkXfermode::kSrcOver_Mode;
-
-    GraphicsContext* context = paintInfo.context;
-
-    // If we have an alpha go ahead and blend with the base background color.
-    if (baseColor.alpha()) {
-        if (bgColor.alpha())
-            baseColor = baseColor.blend(bgColor);
-        context->fillRect(backgroundRect, baseColor, operation);
-    } else if (bgColor.alpha()) {
-        context->fillRect(backgroundRect, bgColor, operation);
-    } else if (shouldClearDocumentBackground) {
-        context->clearRect(backgroundRect);
-    }
-}
-
-bool BoxPainter::isDocumentElementWithOpaqueBackground(LayoutObject& obj)
-{
-    if (!obj.isDocumentElement())
-        return false;
-
-    // The background is opaque only if we're the root document, since iframes with
-    // no background in the child document should show the parent's background.
-    bool isOpaque = true;
-    Element* ownerElement = obj.document().ownerElement();
-    if (ownerElement) {
-        if (!isHTMLFrameElement(*ownerElement)) {
-            // Locate the <body> element using the DOM. This is easier than trying
-            // to crawl around a layout tree with potential :before/:after content and
-            // anonymous blocks created by inline <body> tags etc. We can locate the <body>
-            // layout object very easily via the DOM.
-            HTMLElement* body = obj.document().body();
-            if (body) {
-                // Can't scroll a frameset document anyway.
-                isOpaque = body->hasTagName(HTMLNames::framesetTag);
-            } else {
-                // FIXME: SVG specific behavior should be in the SVG code.
-                // SVG documents and XML documents with SVG root nodes are transparent.
-                isOpaque = !obj.document().hasSVGRootNode();
-            }
-        }
-    } else if (obj.view()->frameView()) {
-        isOpaque = !obj.view()->frameView()->isTransparent();
-    }
-
-    return isOpaque;
-}
-
 // Return the amount of space to leave between image tiles for the background-repeat: space property.
 static inline int getSpaceBetweenImageTiles(int areaSize, int tileSize)
 {
@@ -690,6 +597,17 @@ void BoxPainter::calculateBackgroundImageGeometry(LayoutBoxModelObject& obj, con
     LayoutUnit top = 0;
     IntSize positioningAreaSize;
     IntRect snappedPaintRect = pixelSnappedIntRect(paintRect);
+    bool isLayoutView = obj.isLayoutView();
+    const LayoutBox* rootBox = nullptr;
+    if (isLayoutView) {
+        // It is only possible reach here when root element has a box.
+        Element* documentElement = obj.document().documentElement();
+        ASSERT(documentElement);
+        ASSERT(documentElement->layoutObject());
+        ASSERT(documentElement->layoutObject()->isBox());
+        rootBox = toLayoutBox(documentElement->layoutObject());
+    }
+    const LayoutBoxModelObject& positioningBox = isLayoutView ? static_cast<const LayoutBoxModelObject&>(*rootBox) : obj;
 
     // Determine the background positioning area and set destRect to the background painting area.
     // destRect will be adjusted later if the background is non-repeating.
@@ -711,29 +629,28 @@ void BoxPainter::calculateBackgroundImageGeometry(LayoutBoxModelObject& obj, con
         LayoutUnit bottom = 0;
         // Scroll and Local.
         if (fillLayer.origin() != BorderFillBox) {
-            left = obj.borderLeft();
-            right = obj.borderRight();
-            top = obj.borderTop();
-            bottom = obj.borderBottom();
+            left = positioningBox.borderLeft();
+            right = positioningBox.borderRight();
+            top = positioningBox.borderTop();
+            bottom = positioningBox.borderBottom();
             if (fillLayer.origin() == ContentFillBox) {
-                left += obj.paddingLeft();
-                right += obj.paddingRight();
-                top += obj.paddingTop();
-                bottom += obj.paddingBottom();
+                left += positioningBox.paddingLeft();
+                right += positioningBox.paddingRight();
+                top += positioningBox.paddingTop();
+                bottom += positioningBox.paddingBottom();
             }
         }
 
-        // The background of the box generated by the root element covers the entire canvas including
-        // its margins. Since those were added in already, we have to factor them out when computing
-        // the background positioning area.
-        if (obj.isDocumentElement()) {
-            positioningAreaSize = pixelSnappedIntSize(toLayoutBox(&obj)->size() - LayoutSize(left + right, top + bottom), toLayoutBox(&obj)->location());
-            // The positioning area is right aligned in paintRect if RightToLeftWritingMode, or left aligned otherwise.
-            if (obj.style()->writingMode() == RightToLeftWritingMode)
-                left = paintRect.width() - positioningAreaSize.width() - right - obj.marginRight();
-            else
-                left += obj.marginLeft();
-            top += obj.marginTop();
+        if (isLayoutView) {
+            // The background of the box generated by the root element covers the entire canvas and will
+            // be painted by the view object, but the we should still use the root element box for
+            // positioning.
+            positioningAreaSize = pixelSnappedIntSize(rootBox->size() - LayoutSize(left + right, top + bottom), rootBox->location());
+            // The input paint rect is specified in root element local coordinate (i.e. a transform
+            // is applied on the context for painting), and is expanded to cover the whole canvas.
+            // Since left/top is relative to the paint rect, we need to offset them back.
+            left -= paintRect.x();
+            top -= paintRect.y();
         } else {
             positioningAreaSize = pixelSnappedIntSize(paintRect.size() - LayoutSize(left + right, top + bottom), paintRect.location());
         }
@@ -756,7 +673,7 @@ void BoxPainter::calculateBackgroundImageGeometry(LayoutBoxModelObject& obj, con
     }
 
     const LayoutObject* clientForBackgroundImage = backgroundObject ? backgroundObject : &obj;
-    IntSize fillTileSize = calculateFillTileSize(obj, fillLayer, positioningAreaSize);
+    IntSize fillTileSize = calculateFillTileSize(positioningBox, fillLayer, positioningAreaSize);
     fillLayer.image()->setContainerSizeForLayoutObject(clientForBackgroundImage, fillTileSize, obj.style()->effectiveZoom());
     geometry.setTileSize(fillTileSize);
 
@@ -854,13 +771,15 @@ InterpolationQuality BoxPainter::chooseInterpolationQuality(LayoutObject& obj, G
 
 bool BoxPainter::fixedBackgroundPaintsInLocalCoordinates(const LayoutObject& obj)
 {
-    if (!obj.isDocumentElement())
+    if (!obj.isLayoutView())
         return false;
 
-    if (obj.view()->frameView() && obj.view()->frameView()->paintBehavior() & PaintBehaviorFlattenCompositingLayers)
+    const LayoutView& view = toLayoutView(obj);
+
+    if (view.frameView() && view.frameView()->paintBehavior() & PaintBehaviorFlattenCompositingLayers)
         return false;
 
-    DeprecatedPaintLayer* rootLayer = obj.view()->layer();
+    DeprecatedPaintLayer* rootLayer = view.layer();
     if (!rootLayer || rootLayer->compositingState() == NotComposited)
         return false;
 

@@ -26,6 +26,8 @@
 #include "config.h"
 #include "core/layout/LayoutBoxModelObject.h"
 
+#include "core/dom/NodeComputedStyle.h"
+#include "core/html/HTMLBodyElement.h"
 #include "core/layout/ImageQualityController.h"
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutFlowThread.h"
@@ -247,6 +249,23 @@ void LayoutBoxModelObject::styleDidChange(StyleDifference diff, const ComputedSt
         bool oldStyleIsFixedPosition = oldStyle->position() == FixedPosition;
         if (newStyleIsFixedPosition != oldStyleIsFixedPosition)
             invalidateDisplayItemClientForNonCompositingDescendants();
+    }
+
+    // The used style for body background may change due to computed style change
+    // on the document element because of background stealing.
+    // Refer to backgroundStolenForBeingBody() and
+    // http://www.w3.org/TR/css3-background/#body-background for more info.
+    if (isDocumentElement()) {
+        HTMLBodyElement* body = document().firstBodyElement();
+        LayoutObject* bodyLayout = body ? body->layoutObject() : nullptr;
+        if (bodyLayout && bodyLayout->isBoxModelObject()) {
+            bool newStoleBodyBackground = toLayoutBoxModelObject(bodyLayout)->backgroundStolenForBeingBody(style());
+            bool oldStoleBodyBackground = oldStyle && toLayoutBoxModelObject(bodyLayout)->backgroundStolenForBeingBody(oldStyle);
+            if (newStoleBodyBackground != oldStoleBodyBackground
+                && bodyLayout->style() && bodyLayout->style()->hasBackground()) {
+                bodyLayout->setShouldDoFullPaintInvalidation();
+            }
+        }
     }
 
     if (FrameView *frameView = view()->frameView()) {
@@ -935,6 +954,29 @@ void LayoutBoxModelObject::moveChildrenTo(LayoutBoxModelObject* toBoxModelObject
         moveChildTo(toBoxModelObject, child, beforeChild, fullRemoveInsert);
         child = nextSibling;
     }
+}
+
+bool LayoutBoxModelObject::backgroundStolenForBeingBody(const ComputedStyle* rootElementStyle) const
+{
+    // http://www.w3.org/TR/css3-background/#body-background
+    // If the root element is <html> with no background, and a <body> child element exists,
+    // the root element steals the first <body> child element's background.
+    if (!isBody())
+        return false;
+
+    Element* rootElement = document().documentElement();
+    if (!isHTMLHtmlElement(rootElement))
+        return false;
+
+    if (!rootElementStyle)
+        rootElementStyle = rootElement->ensureComputedStyle();
+    if (rootElementStyle->hasBackground())
+        return false;
+
+    if (node() != document().firstBodyElement())
+        return false;
+
+    return true;
 }
 
 } // namespace blink

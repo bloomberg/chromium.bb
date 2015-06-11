@@ -91,7 +91,6 @@ TEST_F(DisplayItemListPaintTest, FullDocumentPaintingWithCaret)
     document().page()->focusController().setFocused(true);
     LayoutView& layoutView = *document().layoutView();
     DeprecatedPaintLayer& rootLayer = *layoutView.layer();
-    LayoutObject& htmlLayoutObject = *document().documentElement()->layoutObject();
     Element& div = *toElement(document().body()->firstChild());
     LayoutObject& divLayoutObject = *document().body()->firstChild()->layoutObject();
     InlineTextBox& textInlineBox = *toLayoutText(div.firstChild()->layoutObject())->firstTextBox();
@@ -102,19 +101,19 @@ TEST_F(DisplayItemListPaintTest, FullDocumentPaintingWithCaret)
     rootDisplayItemList().commitNewDisplayItems();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 2,
-        TestDisplayItem(htmlLayoutObject, DisplayItem::BoxDecorationBackground),
+        TestDisplayItem(layoutView, DisplayItem::BoxDecorationBackground),
         TestDisplayItem(textInlineBox, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
 
     div.focus();
     document().view()->updateLayoutAndStyleForPainting();
-    EXPECT_TRUE(rootDisplayItemList().clientCacheIsValid(htmlLayoutObject.displayItemClient()));
+    EXPECT_TRUE(rootDisplayItemList().clientCacheIsValid(layoutView.displayItemClient()));
     EXPECT_FALSE(rootDisplayItemList().clientCacheIsValid(divLayoutObject.displayItemClient()));
     EXPECT_TRUE(rootDisplayItemList().clientCacheIsValid(textInlineBox.displayItemClient()));
     DeprecatedPaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
     rootDisplayItemList().commitNewDisplayItems();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 3,
-        TestDisplayItem(htmlLayoutObject, DisplayItem::BoxDecorationBackground),
+        TestDisplayItem(layoutView, DisplayItem::BoxDecorationBackground),
         TestDisplayItem(textInlineBox, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
         TestDisplayItem(divLayoutObject, DisplayItem::Caret)); // New!
 }
@@ -124,7 +123,6 @@ TEST_F(DisplayItemListPaintTest, InlineRelayout)
     setBodyInnerHTML("<div id='div' style='width:100px; height: 200px'>AAAAAAAAAA BBBBBBBBBB</div>");
     LayoutView& layoutView = *document().layoutView();
     DeprecatedPaintLayer& rootLayer = *layoutView.layer();
-    LayoutObject& htmlObject = *document().documentElement()->layoutObject();
     Element& div = *toElement(document().body()->firstChild());
     LayoutBlock& divBlock = *toLayoutBlock(document().body()->firstChild()->layoutObject());
     LayoutText& text = *toLayoutText(divBlock.firstChild());
@@ -137,12 +135,12 @@ TEST_F(DisplayItemListPaintTest, InlineRelayout)
     rootDisplayItemList().commitNewDisplayItems();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 2,
-        TestDisplayItem(htmlObject, DisplayItem::BoxDecorationBackground),
+        TestDisplayItem(layoutView, DisplayItem::BoxDecorationBackground),
         TestDisplayItem(firstTextBox, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
 
     div.setAttribute(HTMLNames::styleAttr, "width: 10px; height: 200px");
     document().view()->updateLayoutAndStyleForPainting();
-    EXPECT_TRUE(rootDisplayItemList().clientCacheIsValid(htmlObject.displayItemClient()));
+    EXPECT_TRUE(rootDisplayItemList().clientCacheIsValid(layoutView.displayItemClient()));
     EXPECT_FALSE(rootDisplayItemList().clientCacheIsValid(divBlock.displayItemClient()));
     EXPECT_FALSE(rootDisplayItemList().clientCacheIsValid(firstTextBoxDisplayItemClient));
     DeprecatedPaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
@@ -153,7 +151,7 @@ TEST_F(DisplayItemListPaintTest, InlineRelayout)
     InlineTextBox& secondTextBox = *newText.firstTextBox()->nextTextBox();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 3,
-        TestDisplayItem(htmlObject, DisplayItem::BoxDecorationBackground),
+        TestDisplayItem(layoutView, DisplayItem::BoxDecorationBackground),
         TestDisplayItem(newFirstTextBox, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
         TestDisplayItem(secondTextBox, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
 }

@@ -167,16 +167,14 @@ bool LayoutView::shouldDoFullPaintInvalidationForNextLayout() const
         return true;
 
     if (size().height() != viewLogicalHeightForBoxSizing()) {
-        if (LayoutObject* backgroundLayoutObject = this->backgroundLayoutObject()) {
-            // When background-attachment is 'fixed', we treat the viewport (instead of the 'root'
-            // i.e. html or body) as the background positioning area, and we should full paint invalidation
-            // viewport resize if the background image is not composited and needs full paint invalidation on
-            // background positioning area resize.
-            if (!m_compositor || !m_compositor->needsFixedRootBackgroundLayer(layer())) {
-                if (backgroundLayoutObject->style()->hasFixedBackgroundImage()
-                    && mustInvalidateFillLayersPaintOnHeightChange(backgroundLayoutObject->style()->backgroundLayers()))
-                    return true;
-            }
+        // When background-attachment is 'fixed', we treat the viewport (instead of the 'root'
+        // i.e. html or body) as the background positioning area, and we should full paint invalidation
+        // viewport resize if the background image is not composited and needs full paint invalidation on
+        // background positioning area resize.
+        if (!m_compositor || !m_compositor->needsFixedRootBackgroundLayer(layer())) {
+            if (style()->hasFixedBackgroundImage()
+                && mustInvalidateFillLayersPaintOnHeightChange(style()->backgroundLayers()))
+                return true;
         }
     }
 
@@ -240,6 +238,23 @@ void LayoutView::layout()
     checkLayoutState();
 #endif
     clearNeedsLayout();
+}
+
+LayoutRect LayoutView::visualOverflowRect() const
+{
+    // In root layer scrolling mode, the LayoutView performs overflow clipping
+    // like a regular scrollable div.
+    if (document().settings() && document().settings()->rootLayerScrolls())
+        return LayoutBlockFlow::visualOverflowRect();
+
+    // Ditto when not in compositing mode.
+    if (!usesCompositing())
+        return LayoutBlockFlow::visualOverflowRect();
+
+    // In normal compositing mode, LayoutView doesn't actually apply clipping
+    // on its descendants. Instead their visual overflow is propagated to
+    // compositor()->m_rootContentLayer for accelerated scrolling.
+    return LayoutRect(unscaledDocumentRect());
 }
 
 void LayoutView::mapLocalToContainer(const LayoutBoxModelObject* paintInvalidationContainer, TransformState& transformState, MapCoordinatesFlags mode, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
@@ -816,18 +831,7 @@ IntRect LayoutView::unscaledDocumentRect() const
 
 bool LayoutView::rootBackgroundIsEntirelyFixed() const
 {
-    if (LayoutObject* backgroundLayoutObject = this->backgroundLayoutObject())
-        return backgroundLayoutObject->style()->hasEntirelyFixedBackground();
-    return false;
-}
-
-LayoutObject* LayoutView::backgroundLayoutObject() const
-{
-    if (Element* documentElement = document().documentElement()) {
-        if (LayoutObject* rootObject = documentElement->layoutObject())
-            return rootObject->layoutObjectForRootBackground();
-    }
-    return nullptr;
+    return style()->hasEntirelyFixedBackground();
 }
 
 LayoutRect LayoutView::backgroundRect(LayoutBox* backgroundLayoutObject) const

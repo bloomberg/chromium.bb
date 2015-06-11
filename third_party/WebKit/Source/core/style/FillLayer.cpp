@@ -368,6 +368,7 @@ bool FillLayer::hasOpaqueImage(const LayoutObject* layoutObject) const
     if (!m_image)
         return false;
 
+    // TODO(trchen): Should check blend mode before composite mode.
     if (m_composite == CompositeClear || m_composite == CompositeCopy)
         return true;
 

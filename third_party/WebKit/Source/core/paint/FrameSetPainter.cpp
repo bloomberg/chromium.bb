@@ -41,8 +41,8 @@ void FrameSetPainter::paintColumnBorder(const PaintInfo& paintInfo, const IntRec
     // Now stroke the edges but only if we have enough room to paint both edges with a little
     // bit of the fill color showing through.
     if (borderRect.width() >= 3) {
-        context->fillRect(IntRect(borderRect.location(), IntSize(1, m_layoutFrameSet.size().height())), borderStartEdgeColor());
-        context->fillRect(IntRect(IntPoint(borderRect.maxX() - 1, borderRect.y()), IntSize(1, m_layoutFrameSet.size().height())), borderEndEdgeColor());
+        context->fillRect(IntRect(borderRect.location(), IntSize(1, borderRect.height())), borderStartEdgeColor());
+        context->fillRect(IntRect(IntPoint(borderRect.maxX() - 1, borderRect.y()), IntSize(1, borderRect.height())), borderEndEdgeColor());
     }
 }
 
@@ -57,8 +57,8 @@ void FrameSetPainter::paintRowBorder(const PaintInfo& paintInfo, const IntRect& 
     // Now stroke the edges but only if we have enough room to paint both edges with a little
     // bit of the fill color showing through.
     if (borderRect.height() >= 3) {
-        context->fillRect(IntRect(borderRect.location(), IntSize(m_layoutFrameSet.size().width(), 1)), borderStartEdgeColor());
-        context->fillRect(IntRect(IntPoint(borderRect.x(), borderRect.maxY() - 1), IntSize(m_layoutFrameSet.size().width(), 1)), borderEndEdgeColor());
+        context->fillRect(IntRect(borderRect.location(), IntSize(borderRect.width(), 1)), borderStartEdgeColor());
+        context->fillRect(IntRect(IntPoint(borderRect.x(), borderRect.maxY() - 1), IntSize(borderRect.width(), 1)), borderEndEdgeColor());
     }
 }
 
@@ -89,7 +89,7 @@ void FrameSetPainter::paintBorders(const PaintInfo& paintInfo, const LayoutPoint
             xPos += m_layoutFrameSet.columns().m_sizes[c];
             if (shouldPaintBorderAfter(m_layoutFrameSet.columns(), c)) {
                 paintColumnBorder(paintInfo, pixelSnappedIntRect(
-                    LayoutRect(adjustedPaintOffset.x() + xPos, adjustedPaintOffset.y() + yPos, borderThickness, m_layoutFrameSet.size().height())));
+                    LayoutRect(adjustedPaintOffset.x() + xPos, adjustedPaintOffset.y() + yPos, borderThickness, m_layoutFrameSet.size().height() - yPos)));
                 xPos += borderThickness;
             }
             child = child->nextSibling();

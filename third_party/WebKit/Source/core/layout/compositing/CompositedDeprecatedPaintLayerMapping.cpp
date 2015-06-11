@@ -1738,11 +1738,7 @@ float CompositedDeprecatedPaintLayerMapping::compositingOpacity(float layoutObje
 
 Color CompositedDeprecatedPaintLayerMapping::layoutObjectBackgroundColor() const
 {
-    LayoutObject* backgroundLayoutObject = layoutObject();
-    if (backgroundLayoutObject->isDocumentElement())
-        backgroundLayoutObject = backgroundLayoutObject->layoutObjectForRootBackground();
-
-    return backgroundLayoutObject->resolveColor(CSSPropertyBackgroundColor);
+    return layoutObject()->resolveColor(CSSPropertyBackgroundColor);
 }
 
 void CompositedDeprecatedPaintLayerMapping::updateBackgroundColor()

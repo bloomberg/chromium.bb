@@ -1005,9 +1005,6 @@ public:
     // Compute a list of hit-test rectangles per layer rooted at this layoutObject.
     virtual void computeLayerHitTestRects(LayerHitTestRects&) const;
 
-    // Return the layoutObject whose background style is used to paint the root background. Should only be called on the layoutObject for which isDocumentElement() is true.
-    LayoutObject* layoutObjectForRootBackground();
-
     RespectImageOrientationEnum shouldRespectImageOrientation() const;
 
     bool isRelayoutBoundaryForInspector() const;

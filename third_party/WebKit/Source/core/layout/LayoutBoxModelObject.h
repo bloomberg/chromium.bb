@@ -204,6 +204,11 @@ public:
 
     void invalidateDisplayItemClientOnBacking(const DisplayItemClientWrapper&) const;
 
+    // http://www.w3.org/TR/css3-background/#body-background
+    // <html> root element with no background steals background from its first <body> child.
+    // The used background for such body element should be the initial value. (i.e. transparent)
+    bool backgroundStolenForBeingBody(const ComputedStyle* rootElementStyle = nullptr) const;
+
 protected:
     virtual void willBeDestroyed() override;
 

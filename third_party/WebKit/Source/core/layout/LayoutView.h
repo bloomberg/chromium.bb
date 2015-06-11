@@ -143,6 +143,8 @@ public:
     DeprecatedPaintLayerCompositor* compositor();
     bool usesCompositing() const;
 
+    // TODO(trchen): All pinch-zoom implementation should now use compositor raster scale based zooming,
+    // instead of LayoutView transform. Check whether we can now unify unscaledDocumentRect and documentRect.
     IntRect unscaledDocumentRect() const;
     LayoutRect backgroundRect(LayoutBox* backgroundLayoutObject) const;
 
@@ -173,6 +175,8 @@ public:
     void popLayoutState() { ASSERT(m_layoutState); m_layoutState = m_layoutState->next(); }
     virtual void invalidateTreeIfNeeded(PaintInvalidationState&) override final;
 
+    virtual LayoutRect visualOverflowRect() const override;
+
 private:
     virtual void mapLocalToContainer(const LayoutBoxModelObject* paintInvalidationContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = nullptr, const PaintInvalidationState* = nullptr) const override;
     virtual const LayoutObject* pushMappingToContainer(const LayoutBoxModelObject* ancestorToStopAt, LayoutGeometryMap&) const override;
@@ -187,8 +191,6 @@ private:
     friend class ForceHorriblySlowRectMapping;
 
     bool shouldUsePrintingLayout() const;
-
-    LayoutObject* backgroundLayoutObject() const;
 
     int viewLogicalWidthForBoxSizing() const;
     int viewLogicalHeightForBoxSizing() const;

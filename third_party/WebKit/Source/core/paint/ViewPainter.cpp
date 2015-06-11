@@ -6,9 +6,12 @@
 #include "core/paint/ViewPainter.h"
 
 #include "core/frame/FrameView.h"
+#include "core/frame/Settings.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutView.h"
 #include "core/paint/BlockPainter.h"
+#include "core/paint/BoxPainter.h"
+#include "core/paint/DeprecatedPaintLayer.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/PaintInfo.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -26,69 +29,109 @@ void ViewPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffs
     BlockPainter(m_layoutView).paintOverflowControlsIfNeeded(paintInfo, paintOffset);
 }
 
-static inline bool layoutObjectObscuresBackground(LayoutBox* rootBox)
-{
-    ASSERT(rootBox);
-    const ComputedStyle& style = rootBox->styleRef();
-    if (style.visibility() != VISIBLE
-        || style.opacity() != 1
-        || style.hasFilter()
-        || style.hasTransform())
-        return false;
-
-    if (rootBox->compositingState() == PaintsIntoOwnBacking)
-        return false;
-
-    const LayoutObject* rootLayoutObject = rootBox->layoutObjectForRootBackground();
-    if (rootLayoutObject->style()->backgroundClip() == TextFillBox)
-        return false;
-
-    return true;
-}
-
 void ViewPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo)
 {
-    if (m_layoutView.document().ownerElement() || !m_layoutView.view())
-        return;
-
     if (paintInfo.skipRootBackground())
         return;
 
-    bool shouldPaintBackground = true;
-    Node* documentElement = m_layoutView.document().documentElement();
-    if (LayoutBox* rootBox = documentElement ? toLayoutBox(documentElement->layoutObject()) : 0)
-        shouldPaintBackground = !rootFillsViewportBackground(rootBox) || !layoutObjectObscuresBackground(rootBox);
+    // This function overrides background painting for the LayoutView.
+    // View background painting is special in the following ways:
+    // 1. The view paints background for the root element, the background positioning respects
+    //    the positioning and transformation of the root element.
+    // 2. CSS background-clip is ignored, the background layers always expand to cover the whole
+    //    canvas. None of the stacking context effects (except transformation) on the root element
+    //    affects the background.
+    // 3. The main frame is also responsible for painting the user-agent-defined base background
+    //    color. Conceptually it should be painted by the embedder but painting it here allows
+    //    culling and pre-blending optimization when possible.
 
-    // If painting will entirely fill the view, no need to fill the background.
-    if (!shouldPaintBackground)
+    GraphicsContext& context = *paintInfo.context;
+    IntRect documentRect = m_layoutView.unscaledDocumentRect();
+    const Document& document = m_layoutView.document();
+    const FrameView& frameView = *m_layoutView.frameView();
+    bool isMainFrame = !document.ownerElement();
+    bool paintsBaseBackground = isMainFrame && !frameView.isTransparent();
+    bool shouldClearCanvas = paintsBaseBackground && (document.settings() && document.settings()->shouldClearDocumentBackground());
+    Color baseBackgroundColor = paintsBaseBackground ? frameView.baseBackgroundColor() : Color();
+    const LayoutObject* rootObject = document.documentElement() ? document.documentElement()->layoutObject() : nullptr;
+
+    LayoutObjectDrawingRecorder recorder(context, m_layoutView, DisplayItem::BoxDecorationBackground, documentRect);
+    if (recorder.canUseCachedDrawing())
         return;
 
-    // This code typically only executes if the root element's visibility has been set to hidden,
-    // if there is a transform on the <html>, or if there is a page scale factor less than 1.
-    // Only fill with the base background color (typically white) if we're the root document,
-    // since iframes/frames with no background in the child document should show the parent's background.
-    if (!m_layoutView.frameView()->isTransparent()) {
-        LayoutRect paintRect(paintInfo.rect);
-        if (RuntimeEnabledFeatures::slimmingPaintEnabled())
-            paintRect = m_layoutView.viewRect();
+    // Compute the enclosing rect of the view, in root element space.
+    //
+    // For background colors we can simply paint the document rect in the default space.
+    // However for background image, the root element transform applies. The strategy is to apply
+    // root element transform on the context and issue draw commands in the local space, therefore
+    // we need to apply inverse transform on the document rect to get to the root element space.
+    bool backgroundRenderable = true;
+    TransformationMatrix transform;
+    IntRect paintRect = documentRect;
+    if (!rootObject || !rootObject->isBox()) {
+        backgroundRenderable = false;
+    } else if (rootObject->hasLayer()) {
+        const DeprecatedPaintLayer& rootLayer = *toLayoutBoxModelObject(rootObject)->layer();
+        LayoutPoint offset;
+        rootLayer.convertToLayerCoords(nullptr, offset);
+        transform.translate(offset.x(), offset.y());
+        transform.multiply(rootLayer.renderableTransform(paintInfo.paintBehavior));
 
-        LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutView, DisplayItem::BoxDecorationBackground, m_layoutView.viewRect());
-        if (!recorder.canUseCachedDrawing()) {
-            Color baseColor = m_layoutView.frameView()->baseBackgroundColor();
-            paintInfo.context->fillRect(paintRect, baseColor, baseColor.alpha() ?
-                SkXfermode::kSrc_Mode : SkXfermode::kClear_Mode);
+        if (!transform.isInvertible()) {
+            backgroundRenderable = false;
+        } else {
+            bool isClamped;
+            paintRect = transform.inverse().projectQuad(FloatQuad(documentRect), &isClamped).enclosingBoundingBox();
+            backgroundRenderable = !isClamped;
         }
     }
-}
 
-bool ViewPainter::rootFillsViewportBackground(LayoutBox* rootBox) const
-{
-    ASSERT(rootBox);
-    // CSS Boxes always fill the viewport background (see paintRootBoxFillLayers)
-    if (!rootBox->isSVG())
-        return true;
+    if (!backgroundRenderable) {
+        if (baseBackgroundColor.alpha())
+            context.fillRect(documentRect, baseBackgroundColor, shouldClearCanvas ? SkXfermode::kSrc_Mode : SkXfermode::kSrcOver_Mode);
+        else if (shouldClearCanvas)
+            context.fillRect(documentRect, Color(), SkXfermode::kClear_Mode);
+        return;
+    }
 
-    return rootBox->frameRect().contains(m_layoutView.frameRect());
+    BoxPainter::FillLayerOcclusionOutputList reversedPaintList;
+    bool shouldDrawBackgroundInSeparateBuffer = BoxPainter(m_layoutView).calculateFillLayerOcclusionCulling(reversedPaintList, m_layoutView.style()->backgroundLayers());
+    ASSERT(reversedPaintList.size());
+    Color rootBackgroundColor = m_layoutView.style()->visitedDependentColor(CSSPropertyBackgroundColor);
+
+    // If the root background color is opaque, isolation group can be skipped because the canvas
+    // will be cleared by root background color.
+    if (!rootBackgroundColor.hasAlpha())
+        shouldDrawBackgroundInSeparateBuffer = false;
+
+    // We are going to clear the canvas with transparent pixels, isolation group can be skipped.
+    if (!baseBackgroundColor.alpha() && shouldClearCanvas)
+        shouldDrawBackgroundInSeparateBuffer = false;
+
+    if (shouldDrawBackgroundInSeparateBuffer) {
+        if (baseBackgroundColor.alpha())
+            context.fillRect(documentRect, baseBackgroundColor, shouldClearCanvas ? SkXfermode::kSrc_Mode : SkXfermode::kSrcOver_Mode);
+        context.beginLayer();
+    }
+
+    Color combinedBackgroundColor = shouldDrawBackgroundInSeparateBuffer ? rootBackgroundColor : baseBackgroundColor.blend(rootBackgroundColor);
+    if (combinedBackgroundColor.alpha())
+        context.fillRect(documentRect, combinedBackgroundColor, (shouldDrawBackgroundInSeparateBuffer || shouldClearCanvas) ? SkXfermode::kSrc_Mode : SkXfermode::kSrcOver_Mode);
+    else if (shouldClearCanvas && !shouldDrawBackgroundInSeparateBuffer)
+        context.fillRect(documentRect, Color(), SkXfermode::kClear_Mode);
+
+    context.save();
+    // TODO(trchen): We should be able to handle 3D-transformed root
+    // background with slimming paint by using transform display items.
+    context.concatCTM(transform.toAffineTransform());
+    for (auto it = reversedPaintList.rbegin(); it != reversedPaintList.rend(); ++it) {
+        ASSERT((*it)->clip() == BorderFillBox);
+        BoxPainter::paintFillLayerExtended(m_layoutView, paintInfo, Color(), **it, LayoutRect(paintRect), BackgroundBleedNone);
+    }
+    context.restore();
+
+    if (shouldDrawBackgroundInSeparateBuffer)
+        context.endLayer();
 }
 
 } // namespace blink

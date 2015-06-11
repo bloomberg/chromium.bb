@@ -786,7 +786,7 @@ private:
     LayoutUnit shrinkToFitLogicalWidth(LayoutUnit availableLogicalWidth, LayoutUnit bordersPlusPadding) const;
 
     // Returns true if we queued up a paint invalidation.
-    bool paintInvalidationLayerRectsForImage(WrappedImagePtr, const FillLayer&, bool drawingBackground);
+    bool invalidatePaintOfLayerRectsForImage(WrappedImagePtr, const FillLayer&, bool drawingBackground);
 
     bool skipContainingBlockForPercentHeightCalculation(const LayoutBox* containingBlock) const;
 

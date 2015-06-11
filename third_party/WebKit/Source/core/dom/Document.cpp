@@ -1613,13 +1613,34 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
         rootDirection = bodyStyle->direction();
     }
 
-    RefPtr<ComputedStyle> overflowStyle;
+    const ComputedStyle* backgroundStyle = documentElementStyle.get();
+    // http://www.w3.org/TR/css3-background/#body-background
+    // <html> root element with no background steals background from its first <body> child.
+    // Also see LayoutBoxModelObject::backgroundStolenForBeingBody()
+    if (isHTMLHtmlElement(documentElement()) && isHTMLBodyElement(body) && !backgroundStyle->hasBackground())
+        backgroundStyle = bodyStyle.get();
+    Color backgroundColor = backgroundStyle->visitedDependentColor(CSSPropertyBackgroundColor);
+    FillLayer backgroundLayers = backgroundStyle->backgroundLayers();
+    for (auto currentLayer = &backgroundLayers; currentLayer; currentLayer = currentLayer->next()) {
+        // http://www.w3.org/TR/css3-background/#root-background
+        // The root element background always have painting area of the whole canvas.
+        currentLayer->setClip(BorderFillBox);
+
+        // The root element doesn't scroll. It always propagates its layout overflow
+        // to the viewport. Positioning background against either box is equivalent to
+        // positioning against the scrolled box of the viewport.
+        if (currentLayer->attachment() == ScrollBackgroundAttachment)
+            currentLayer->setAttachment(LocalBackgroundAttachment);
+    }
+    EImageRendering imageRendering = backgroundStyle->imageRendering();
+
+    const ComputedStyle* overflowStyle = nullptr;
     if (Element* element = viewportDefiningElement(documentElementStyle.get())) {
         if (element == body) {
-            overflowStyle = bodyStyle;
+            overflowStyle = bodyStyle.get();
         } else {
             ASSERT(element == documentElement());
-            overflowStyle = documentElementStyle;
+            overflowStyle = documentElementStyle.get();
         }
     }
 
@@ -1656,6 +1677,9 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
     RefPtr<ComputedStyle> documentStyle = layoutView()->mutableStyle();
     if (documentStyle->writingMode() != rootWritingMode
         || documentStyle->direction() != rootDirection
+        || documentStyle->visitedDependentColor(CSSPropertyBackgroundColor) != backgroundColor
+        || documentStyle->backgroundLayers() != backgroundLayers
+        || documentStyle->imageRendering() != imageRendering
         || documentStyle->overflowX() != overflowX
         || documentStyle->overflowY() != overflowY
         || documentStyle->columnGap() != columnGap
@@ -1663,9 +1687,12 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
         RefPtr<ComputedStyle> newStyle = ComputedStyle::clone(*documentStyle);
         newStyle->setWritingMode(rootWritingMode);
         newStyle->setDirection(rootDirection);
-        newStyle->setColumnGap(columnGap);
+        newStyle->setBackgroundColor(backgroundColor);
+        newStyle->accessBackgroundLayers() = backgroundLayers;
+        newStyle->setImageRendering(imageRendering);
         newStyle->setOverflowX(overflowX);
         newStyle->setOverflowY(overflowY);
+        newStyle->setColumnGap(columnGap);
         newStyle->setScrollBlocksOn(scrollBlocksOn);
         layoutView()->setStyle(newStyle);
         setupFontBuilder(*newStyle);

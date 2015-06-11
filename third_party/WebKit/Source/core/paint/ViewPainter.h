@@ -20,8 +20,6 @@ public:
     void paintBoxDecorationBackground(const PaintInfo&);
 
 private:
-    bool rootFillsViewportBackground(LayoutBox* rootBox) const;
-
     LayoutView& m_layoutView;
 };
 

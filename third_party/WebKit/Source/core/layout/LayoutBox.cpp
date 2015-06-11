@@ -89,17 +89,6 @@ static OverrideSizeMap* gExtraBlockOffsetMap = nullptr;
 static const int autoscrollBeltSize = 20;
 static const unsigned backgroundObscurationTestMaxDepth = 4;
 
-static bool skipBodyBackground(const LayoutBox* bodyElementLayoutObject)
-{
-    ASSERT(bodyElementLayoutObject->isBody());
-    // The <body> only paints its background if the root element has defined a background independent of the body,
-    // or if the <body>'s parent is not the document element's layoutObject (e.g. inside SVG foreignObject).
-    LayoutObject* documentElementLayoutObject = bodyElementLayoutObject->document().documentElement()->layoutObject();
-    return documentElementLayoutObject
-        && !documentElementLayoutObject->hasBackground()
-        && (documentElementLayoutObject == bodyElementLayoutObject->parent());
-}
-
 LayoutBox::LayoutBox(ContainerNode* node)
     : LayoutBoxModelObject(node)
     , m_intrinsicContentLogicalHeight(-1)
@@ -304,12 +293,11 @@ void LayoutBox::updateFromStyle()
     LayoutBoxModelObject::updateFromStyle();
 
     const ComputedStyle& styleToUse = styleRef();
-    bool isRootObject = isDocumentElement();
     bool isViewObject = isLayoutView();
     bool rootLayerScrolls = document().settings() && document().settings()->rootLayerScrolls();
 
-    // The root and the LayoutView always paint their backgrounds/borders.
-    if (isRootObject || isViewObject)
+    // LayoutView of the main frame is resposible from painting base background.
+    if (isViewObject && !document().ownerElement())
         setHasBoxDecorationBackground(true);
 
     setFloating(!isOutOfFlowPositioned() && styleToUse.isFloating());
@@ -1180,7 +1168,7 @@ bool LayoutBox::getBackgroundPaintedExtent(LayoutRect& paintedExtent)
 
 bool LayoutBox::backgroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect) const
 {
-    if (isBody() && skipBodyBackground(this))
+    if (isDocumentElement() || backgroundStolenForBeingBody())
         return false;
 
     Color backgroundColor = resolveColor(CSSPropertyBackgroundColor);
@@ -1321,9 +1309,6 @@ void LayoutBox::paintMask(const PaintInfo& paintInfo, const LayoutPoint& paintOf
 
 void LayoutBox::imageChanged(WrappedImagePtr image, const IntRect*)
 {
-    if (!parent())
-        return;
-
     // TODO(chrishtr): support PaintInvalidationDelayedFull for animated border images.
     if ((style()->borderImage().image() && style()->borderImage().image()->data() == image)
         || (style()->maskBoxImage().image() && style()->maskBoxImage().image()->data() == image)) {
@@ -1340,35 +1325,21 @@ void LayoutBox::imageChanged(WrappedImagePtr image, const IntRect*)
         }
     }
 
-    if (!paintInvalidationLayerRectsForImage(image, style()->backgroundLayers(), true))
-        paintInvalidationLayerRectsForImage(image, style()->maskLayers(), false);
+    if (!invalidatePaintOfLayerRectsForImage(image, style()->backgroundLayers(), true))
+        invalidatePaintOfLayerRectsForImage(image, style()->maskLayers(), false);
 }
 
-bool LayoutBox::paintInvalidationLayerRectsForImage(WrappedImagePtr image, const FillLayer& layers, bool drawingBackground)
+bool LayoutBox::invalidatePaintOfLayerRectsForImage(WrappedImagePtr image, const FillLayer& layers, bool drawingBackground)
 {
-    Vector<LayoutObject*> layerLayoutObjects;
-
-    // A background of the body or document must extend to the total visible size of the document. This means the union of the
-    // view and document bounds, since it can be the case that the view is larger than the document and vice-versa.
-    // http://dev.w3.org/csswg/css-backgrounds/#the-background
-    if (drawingBackground && (isDocumentElement() || (isBody() && !document().documentElement()->layoutObject()->hasBackground()))) {
-        layerLayoutObjects.append(document().documentElement()->layoutObject());
-        layerLayoutObjects.append(view());
-        if (view()->frameView())
-            view()->frameView()->setNeedsFullPaintInvalidation();
-    } else {
-        layerLayoutObjects.append(this);
-    }
+    if (drawingBackground && (isDocumentElement() || backgroundStolenForBeingBody()))
+        return false;
     for (const FillLayer* curLayer = &layers; curLayer; curLayer = curLayer->next()) {
-        if (curLayer->image() && image == curLayer->image()->data() && curLayer->image()->canRender(*this, style()->effectiveZoom())) {
-            for (LayoutObject* layerLayoutObject : layerLayoutObjects) {
-                // For now, only support delayed paint invalidation for animated background images.
-                bool maybeAnimated = curLayer->image()->cachedImage() && curLayer->image()->cachedImage()->image() && curLayer->image()->cachedImage()->image()->maybeAnimated();
-                if (maybeAnimated && drawingBackground)
-                    layerLayoutObject->setShouldDoFullPaintInvalidation(PaintInvalidationDelayedFull);
-                else
-                    layerLayoutObject->setShouldDoFullPaintInvalidation(PaintInvalidationFull);
-            }
+        if (curLayer->image() && image == curLayer->image()->data()) {
+            bool maybeAnimated = curLayer->image()->cachedImage() && curLayer->image()->cachedImage()->image() && curLayer->image()->cachedImage()->image()->maybeAnimated();
+            if (maybeAnimated && drawingBackground)
+                setShouldDoFullPaintInvalidation(PaintInvalidationDelayedFull);
+            else
+                setShouldDoFullPaintInvalidation();
             return true;
         }
     }
@@ -3943,6 +3914,17 @@ PaintInvalidationReason LayoutBox::paintInvalidationReason(const LayoutBoxModelO
     if (isFullPaintInvalidationReason(invalidationReason))
         return invalidationReason;
 
+    if (isLayoutView()) {
+        const LayoutView* layoutView = toLayoutView(this);
+        // In normal compositing mode, root background doesn't need to be invalidated for
+        // box changes, because the background always covers the whole document rect
+        // and clipping is done by compositor()->m_containerLayer. Also the scrollbars
+        // are always composited. There are no other box decoration on the LayoutView thus
+        // we can safely exit here.
+        if (layoutView->usesCompositing() && (!document().settings() || !document().settings()->rootLayerScrolls()))
+            return invalidationReason;
+    }
+
     // If the transform is not identity or translation, incremental invalidation is not applicable
     // because the difference between oldBounds and newBounds doesn't cover all area needing invalidation.
     // FIXME: Should also consider ancestor transforms since paintInvalidationContainer. crbug.com/426111.
@@ -4647,7 +4629,8 @@ bool LayoutBox::needToSavePreviousBoxSizes()
         return false;
 
     // We need the old box sizes only when the box has background, decorations, or masks.
-    if (!style()->hasBackground() && !style()->hasBoxDecorations() && !style()->hasMask())
+    // Main LayoutView paints base background, thus interested in box size.
+    if (!isLayoutView() && !style()->hasBackground() && !style()->hasBoxDecorations() && !style()->hasMask())
         return false;
 
     // No need to save old border box size if we can use size of the old paint
