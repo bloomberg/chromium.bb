@@ -233,11 +233,19 @@ int NumberOfRendererRasterThreads() {
 }
 
 bool IsOneCopyUploadEnabled() {
+  if (IsZeroCopyUploadEnabled())
+    return false;
+
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kEnableOneCopy))
+    return true;
   if (command_line.HasSwitch(switches::kDisableOneCopy))
     return false;
 
+#if defined(OS_ANDROID)
+  return false;
+#endif
   return true;
 }
 
