@@ -472,7 +472,7 @@ var ScrollableMixinAttributes = {
 var EditableTextMixinAttributes = {
   textSelStart: defaultIntAttribute(-1),
   textSelEnd: defaultIntAttribute(-1),
-  textInputType: defaultStringAttribute()
+  type: defaultHtmlAttribute()
 };
 
 var RangeMixinAttributes = {

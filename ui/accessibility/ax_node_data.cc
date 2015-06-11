@@ -499,9 +499,6 @@ std::string AXNodeData::ToString() const {
       case AX_ATTR_DISPLAY:
         result += " display=" + value;
         break;
-      case AX_ATTR_DROPEFFECT:
-        result += " dropeffect=" + value;
-        break;
       case AX_ATTR_HELP:
         result += " help=" + value;
         break;
@@ -531,9 +528,6 @@ std::string AXNodeData::ToString() const {
         break;
       case AX_ATTR_SHORTCUT:
         result += " shortcut=" + value;
-        break;
-     case AX_ATTR_TEXT_INPUT_TYPE:
-        result += " text_input_type=" + value;
         break;
       case AX_ATTR_URL:
         result += " url=" + value;
@@ -607,9 +601,6 @@ std::string AXNodeData::ToString() const {
         break;
       case AX_ATTR_IS_AX_TREE_HOST:
         result += " is_ax_tree_host=" + value;
-        break;
-      case AX_ATTR_GRABBED:
-        result += " grabbed=" + value;
         break;
       case AX_BOOL_ATTRIBUTE_NONE:
         break;

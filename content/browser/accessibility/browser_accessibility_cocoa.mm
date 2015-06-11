@@ -623,8 +623,11 @@ bool InitializeAccessibilityTreeSearch(
 }
 
 - (NSString*)dropeffect {
-  return NSStringForStringAttribute(
-      browserAccessibility_, ui::AX_ATTR_DROPEFFECT);
+  std::string dropEffect;
+  if (browserAccessibility_->GetHtmlAttribute("aria-dropeffect", &dropEffect))
+    return base::SysUTF8ToNSString(dropEffect);
+
+  return nil;
 }
 
 - (NSNumber*)enabled {
@@ -645,8 +648,12 @@ bool InitializeAccessibilityTreeSearch(
 }
 
 - (NSNumber*)grabbed {
-  bool boolValue = browserAccessibility_->GetBoolAttribute(ui::AX_ATTR_GRABBED);
-  return [NSNumber numberWithBool:boolValue];
+  std::string grabbed;
+  if (browserAccessibility_->GetHtmlAttribute("aria-grabbed", &grabbed) &&
+      grabbed == "true")
+    return [NSNumber numberWithBool:YES];
+
+  return [NSNumber numberWithBool:NO];
 }
 
 - (id)header {
@@ -1784,15 +1791,15 @@ bool InitializeAccessibilityTreeSearch(
         nil]];
   }
 
-  if (browserAccessibility_->HasStringAttribute(
-          ui::AX_ATTR_DROPEFFECT)) {
+  std::string dropEffect;
+  if (browserAccessibility_->GetHtmlAttribute("aria-dropeffect", &dropEffect)) {
     [ret addObjectsFromArray:[NSArray arrayWithObjects:
         @"AXDropEffects",
         nil]];
   }
 
-  // Add aria-grabbed attribute only if it has true.
-  if (browserAccessibility_->HasBoolAttribute(ui::AX_ATTR_GRABBED)) {
+  std::string grabbed;
+  if (browserAccessibility_->GetHtmlAttribute("aria-grabbed", &grabbed)) {
     [ret addObjectsFromArray:[NSArray arrayWithObjects:
         @"AXGrabbed",
         nil]];

@@ -436,7 +436,7 @@ Output.RULES = {
     },
     textField: {
       speak: '$name $value $if(' +
-          '$textInputType, @input_type_+$textInputType, @input_type_text)',
+          '$type, @input_type_+$type, @input_type_text)',
       braille: ''
     },
     toolbar: {

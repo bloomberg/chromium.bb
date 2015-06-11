@@ -3173,8 +3173,6 @@ void BrowserAccessibilityWin::UpdateStep1ComputeWinAttributes() {
 
   // Expose the "display" and "tag" attributes.
   StringAttributeToIA2(ui::AX_ATTR_DISPLAY, "display");
-  StringAttributeToIA2(ui::AX_ATTR_DROPEFFECT, "dropeffect");
-  StringAttributeToIA2(ui::AX_ATTR_TEXT_INPUT_TYPE, "text-input-type");
   StringAttributeToIA2(ui::AX_ATTR_HTML_TAG, "tag");
   StringAttributeToIA2(ui::AX_ATTR_ROLE, "xml-roles");
 
@@ -3198,9 +3196,6 @@ void BrowserAccessibilityWin::UpdateStep1ComputeWinAttributes() {
   StringAttributeToIA2(ui::AX_ATTR_LIVE_RELEVANT, "relevant");
   BoolAttributeToIA2(ui::AX_ATTR_LIVE_ATOMIC, "atomic");
   BoolAttributeToIA2(ui::AX_ATTR_LIVE_BUSY, "busy");
-
-  // Expose aria-grabbed attributes.
-  BoolAttributeToIA2(ui::AX_ATTR_GRABBED, "grabbed");
 
   // Expose container live region attributes.
   StringAttributeToIA2(ui::AX_ATTR_CONTAINER_LIVE_STATUS,
@@ -3406,6 +3401,28 @@ void BrowserAccessibilityWin::UpdateStep1ComputeWinAttributes() {
       ia_role() == ROLE_SYSTEM_SLIDER) {
     win_attributes_->ia2_attributes.push_back(L"valuetext:" + GetValueText());
   }
+
+  // Expose dropeffect attribute.
+  base::string16 dropEffect;
+  if (GetHtmlAttribute("aria-dropeffect", &dropEffect))
+    win_attributes_->ia2_attributes.push_back(L"dropeffect:" + dropEffect);
+
+  // Expose grabbed attribute.
+  base::string16 grabbed;
+  if (GetHtmlAttribute("aria-grabbed", &grabbed))
+    win_attributes_->ia2_attributes.push_back(L"grabbed:" + grabbed);
+
+  // Expose datetime attribute.
+  base::string16 datetime;
+  if (GetRole() == ui::AX_ROLE_TIME &&
+      GetHtmlAttribute("datetime", &datetime))
+    win_attributes_->ia2_attributes.push_back(L"datetime:" + datetime);
+
+  // Expose input-text type attribute.
+  base::string16 type;
+  if (GetRole() == ui::AX_ROLE_TEXT_FIELD &&
+      GetHtmlAttribute("type", &type))
+    win_attributes_->ia2_attributes.push_back(L"text-input-type:" + type);
 
   // If this is a web area for a presentational iframe, give it a role of
   // something other than DOCUMENT so that the fact that it's a separate doc
@@ -4285,6 +4302,7 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       ia2_state |= IA2_STATE_SELECTABLE_TEXT;
       break;
     case ui::AX_ROLE_TIME:
+      role_name = html_tag;
       ia_role = ROLE_SYSTEM_TEXT;
       ia2_role = IA2_ROLE_TEXT_FRAME;
       break;
