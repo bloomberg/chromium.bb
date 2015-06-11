@@ -163,6 +163,7 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   ~ChunkDemuxer() override;
 
   // Demuxer implementation.
+  std::string GetDisplayName() const override;
   void Initialize(DemuxerHost* host,
                   const PipelineStatusCB& cb,
                   bool enable_text_tracks) override;

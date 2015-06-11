@@ -275,10 +275,16 @@ LogHelper::LogHelper(MediaLog::MediaLogLevel level, const LogCB& log_cb)
     : level_(level), log_cb_(log_cb) {
 }
 
+LogHelper::LogHelper(MediaLog::MediaLogLevel level,
+                     const scoped_refptr<MediaLog>& media_log)
+    : level_(level), media_log_(media_log) {
+}
+
 LogHelper::~LogHelper() {
-  if (log_cb_.is_null())
-    return;
-  log_cb_.Run(level_, stream_.str());
+  if (!log_cb_.is_null())
+    log_cb_.Run(level_, stream_.str());
+  else if (media_log_)
+    media_log_->AddLogEvent(level_, stream_.str());
 }
 
 }  //namespace media

@@ -56,6 +56,9 @@ class MEDIA_EXPORT Demuxer : public DemuxerStreamProvider {
   Demuxer();
   ~Demuxer() override;
 
+  // Returns the name of the demuxer for logging purpose.
+  virtual std::string GetDisplayName() const = 0;
+
   // Completes initialization of the demuxer.
   //
   // The demuxer does not own |host| as it is guaranteed to outlive the

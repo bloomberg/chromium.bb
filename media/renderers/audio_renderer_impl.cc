@@ -21,6 +21,7 @@
 #include "media/base/audio_splicer.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/demuxer_stream.h"
+#include "media/base/media_log.h"
 #include "media/filters/audio_clock.h"
 #include "media/filters/decrypting_demuxer_stream.h"
 
@@ -53,6 +54,7 @@ AudioRendererImpl::AudioRendererImpl(
       audio_buffer_stream_(
           new AudioBufferStream(task_runner, decoders.Pass(), media_log)),
       hardware_config_(hardware_config),
+      media_log_(media_log),
       tick_clock_(new base::DefaultTickClock()),
       playback_rate_(0.0),
       state_(kUninitialized),
@@ -733,6 +735,9 @@ void AudioRendererImpl::OnRenderError() {
   // OnRenderError() should be removed and the audio stack handle errors without
   // notifying clients. See http://crbug.com/234708 for details.
   HistogramRendererEvent(RENDER_ERROR);
+
+  MEDIA_LOG(ERROR, media_log_) << "audio render error";
+
   // Post to |task_runner_| as this is called on the audio callback thread.
   task_runner_->PostTask(FROM_HERE,
                          base::Bind(error_cb_, PIPELINE_ERROR_DECODE));
@@ -755,14 +760,17 @@ void AudioRendererImpl::HandleAbortedReadOrDecodeError(bool is_decode_error) {
         return;
       }
 
+      MEDIA_LOG(ERROR, media_log_) << "audio decode error during flushing";
       error_cb_.Run(status);
       base::ResetAndReturn(&flush_cb_).Run();
       return;
 
     case kFlushed:
     case kPlaying:
-      if (status != PIPELINE_OK)
+      if (status != PIPELINE_OK) {
+        MEDIA_LOG(ERROR, media_log_) << "audio decode error during playing";
         error_cb_.Run(status);
+      }
       return;
   }
 }

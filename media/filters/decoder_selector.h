@@ -23,6 +23,7 @@ namespace media {
 class DecoderBuffer;
 class DecryptingDemuxerStream;
 class Decryptor;
+class MediaLog;
 
 // DecoderSelector (creates if necessary and) initializes the proper
 // Decoder for a given DemuxerStream. If the given DemuxerStream is
@@ -52,7 +53,8 @@ class MEDIA_EXPORT DecoderSelector {
   // |decoders| contains the Decoders to use when initializing.
   DecoderSelector(
       const scoped_refptr<base::SingleThreadTaskRunner>& message_loop,
-      ScopedVector<Decoder> decoders);
+      ScopedVector<Decoder> decoders,
+      const scoped_refptr<MediaLog>& media_log);
 
   // Aborts pending Decoder selection and fires |select_decoder_cb| with
   // NULL and NULL immediately if it's pending.
@@ -82,6 +84,7 @@ class MEDIA_EXPORT DecoderSelector {
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   ScopedVector<Decoder> decoders_;
+  scoped_refptr<MediaLog> media_log_;
 
   DemuxerStream* input_stream_;
   SetDecryptorReadyCB set_decryptor_ready_cb_;

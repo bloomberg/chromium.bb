@@ -21,6 +21,7 @@ class SingleThreadTaskRunner;
 namespace media {
 
 class DecoderBuffer;
+class MediaLog;
 
 // Decryptor-based DemuxerStream implementation that converts a potentially
 // encrypted demuxer stream to a clear demuxer stream.
@@ -30,6 +31,7 @@ class MEDIA_EXPORT DecryptingDemuxerStream : public DemuxerStream {
  public:
   DecryptingDemuxerStream(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+      const scoped_refptr<MediaLog>& media_log,
       const SetDecryptorReadyCB& set_decryptor_ready_cb,
       const base::Closure& waiting_for_decryption_key_cb);
 
@@ -44,6 +46,9 @@ class MEDIA_EXPORT DecryptingDemuxerStream : public DemuxerStream {
   // operation to finish before satisfying |closure|. Sets the state to
   // kUninitialized if |this| hasn't been initialized, or to kIdle otherwise.
   void Reset(const base::Closure& closure);
+
+  // Returns the name of this class for logging purpose.
+  std::string GetDisplayName() const;
 
   // DemuxerStream implementation.
   void Read(const ReadCB& read_cb) override;
@@ -99,6 +104,8 @@ class MEDIA_EXPORT DecryptingDemuxerStream : public DemuxerStream {
   void InitializeDecoderConfig();
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
+  scoped_refptr<MediaLog> media_log_;
 
   State state_;
 

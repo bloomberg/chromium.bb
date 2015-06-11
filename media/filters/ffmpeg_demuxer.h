@@ -169,6 +169,7 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   ~FFmpegDemuxer() override;
 
   // Demuxer implementation.
+  std::string GetDisplayName() const override;
   void Initialize(DemuxerHost* host,
                   const PipelineStatusCB& status_cb,
                   bool enable_text_tracks) override;

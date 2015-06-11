@@ -77,7 +77,7 @@ struct MediaLogEvent {
     //         "buffer_end": <last buffered byte>.
     BUFFERED_EXTENTS_CHANGED,
 
-    // Error log reported by media code such as details of an MSE parse error.
+    // Error log reported by media code such as reasons of playback error.
     MEDIA_ERROR_LOG_ENTRY,
     // params: "error": Error string describing the error detected.
 

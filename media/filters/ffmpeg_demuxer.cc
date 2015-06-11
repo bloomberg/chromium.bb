@@ -666,6 +666,10 @@ void FFmpegDemuxer::Seek(base::TimeDelta time, const PipelineStatusCB& cb) {
           &FFmpegDemuxer::OnSeekFrameDone, weak_factory_.GetWeakPtr(), cb));
 }
 
+std::string FFmpegDemuxer::GetDisplayName() const {
+  return "FFmpegDemuxer";
+}
+
 void FFmpegDemuxer::Initialize(DemuxerHost* host,
                                const PipelineStatusCB& status_cb,
                                bool enable_text_tracks) {
@@ -783,11 +787,13 @@ void FFmpegDemuxer::OnOpenContextDone(const PipelineStatusCB& status_cb,
                                       bool result) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   if (!blocking_thread_.IsRunning()) {
+    MEDIA_LOG(ERROR, media_log_) << GetDisplayName() << ": bad state";
     status_cb.Run(PIPELINE_ERROR_ABORT);
     return;
   }
 
   if (!result) {
+    MEDIA_LOG(ERROR, media_log_) << GetDisplayName() << ": open context failed";
     status_cb.Run(DEMUXER_ERROR_COULD_NOT_OPEN);
     return;
   }
@@ -808,11 +814,14 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
                                          int result) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   if (!blocking_thread_.IsRunning() || !data_source_) {
+    MEDIA_LOG(ERROR, media_log_) << GetDisplayName() << ": bad state";
     status_cb.Run(PIPELINE_ERROR_ABORT);
     return;
   }
 
   if (result < 0) {
+    MEDIA_LOG(ERROR, media_log_) << GetDisplayName()
+                                 << ": find stream info failed";
     status_cb.Run(DEMUXER_ERROR_COULD_NOT_PARSE);
     return;
   }
@@ -930,6 +939,8 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
   }
 
   if (!audio_stream && !video_stream) {
+    MEDIA_LOG(ERROR, media_log_) << GetDisplayName()
+                                 << ": no supported streams";
     status_cb.Run(DEMUXER_ERROR_NO_SUPPORTED_STREAMS);
     return;
   }
@@ -1083,6 +1094,7 @@ void FFmpegDemuxer::OnSeekFrameDone(const PipelineStatusCB& cb, int result) {
   pending_seek_ = false;
 
   if (!blocking_thread_.IsRunning()) {
+    MEDIA_LOG(ERROR, media_log_) << GetDisplayName() << ": bad state";
     cb.Run(PIPELINE_ERROR_ABORT);
     return;
   }
@@ -1285,6 +1297,7 @@ void FFmpegDemuxer::NotifyBufferingChanged() {
 }
 
 void FFmpegDemuxer::OnDataSourceError() {
+  MEDIA_LOG(ERROR, media_log_) << GetDisplayName() << ": data source error";
   host_->OnDemuxerError(PIPELINE_ERROR_READ);
 }
 

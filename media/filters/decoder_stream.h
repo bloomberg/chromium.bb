@@ -57,6 +57,9 @@ class MEDIA_EXPORT DecoderStream {
       const scoped_refptr<MediaLog>& media_log);
   virtual ~DecoderStream();
 
+  // Returns the string representation of the StreamType for logging purpose.
+  std::string GetStreamTypeString();
+
   // Initializes the DecoderStream and returns the initialization result
   // through |init_cb|. Note that |init_cb| is always called asynchronously.
   void Initialize(DemuxerStream* stream,

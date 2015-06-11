@@ -11,6 +11,7 @@
 #include "media/base/audio_decoder.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/demuxer_stream.h"
+#include "media/base/media_log.h"
 #include "media/base/pipeline.h"
 #include "media/base/video_decoder.h"
 #include "media/filters/decoder_stream_traits.h"
@@ -51,9 +52,11 @@ static bool IsStreamEncrypted(DemuxerStream* stream) {
 template <DemuxerStream::Type StreamType>
 DecoderSelector<StreamType>::DecoderSelector(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-    ScopedVector<Decoder> decoders)
+    ScopedVector<Decoder> decoders,
+    const scoped_refptr<MediaLog>& media_log)
     : task_runner_(task_runner),
       decoders_(decoders.Pass()),
+      media_log_(media_log),
       input_stream_(NULL),
       weak_ptr_factory_(this) {
 }
@@ -109,7 +112,8 @@ void DecoderSelector<StreamType>::SelectDecoder(
   }
 
   decoder_.reset(new typename StreamTraits::DecryptingDecoderType(
-      task_runner_, set_decryptor_ready_cb_, waiting_for_decryption_key_cb_));
+      task_runner_, media_log_, set_decryptor_ready_cb_,
+      waiting_for_decryption_key_cb_));
 
   DecoderStreamTraits<StreamType>::InitializeDecoder(
       decoder_.get(), input_stream_,
@@ -132,7 +136,8 @@ void DecoderSelector<StreamType>::DecryptingDecoderInitDone(bool success) {
   decoder_.reset();
 
   decrypted_stream_.reset(new DecryptingDemuxerStream(
-      task_runner_, set_decryptor_ready_cb_, waiting_for_decryption_key_cb_));
+      task_runner_, media_log_, set_decryptor_ready_cb_,
+      waiting_for_decryption_key_cb_));
 
   decrypted_stream_->Initialize(
       input_stream_,

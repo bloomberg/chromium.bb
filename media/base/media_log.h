@@ -18,7 +18,6 @@
 
 namespace media {
 
-
 class MEDIA_EXPORT MediaLog : public base::RefCountedThreadSafe<MediaLog> {
  public:
   enum MediaLogLevel {
@@ -87,10 +86,12 @@ class MEDIA_EXPORT MediaLog : public base::RefCountedThreadSafe<MediaLog> {
 // Second parameter - The string to add to the log.
 typedef base::Callback<void(MediaLog::MediaLogLevel, const std::string&)> LogCB;
 
-// Helper class to make it easier to use log_cb like DVLOG().
+// Helper class to make it easier to use LogCB or MediaLog like DVLOG().
 class LogHelper {
  public:
   LogHelper(MediaLog::MediaLogLevel level, const LogCB& log_cb);
+  LogHelper(MediaLog::MediaLogLevel level,
+            const scoped_refptr<MediaLog>& media_log);
   ~LogHelper();
 
   std::ostream& stream() { return stream_; }
@@ -98,18 +99,19 @@ class LogHelper {
  private:
   MediaLog::MediaLogLevel level_;
   LogCB log_cb_;
+  const scoped_refptr<MediaLog> media_log_;
   std::stringstream stream_;
 };
 
 // Provides a stringstream to collect a log entry to pass to the provided
-// LogCB at the requested level.
-#define MEDIA_LOG(level, log_cb) \
-  LogHelper((MediaLog::MEDIALOG_##level), (log_cb)).stream()
+// logger (LogCB or MediaLog) at the requested level.
+#define MEDIA_LOG(level, logger) \
+  LogHelper((MediaLog::MEDIALOG_##level), (logger)).stream()
 
 // Logs only while count < max. Increments count for each log. Use LAZY_STREAM
 // to avoid wasteful evaluation of subsequent stream arguments.
-#define LIMITED_MEDIA_LOG(level, log_cb, count, max) \
-  LAZY_STREAM(MEDIA_LOG(level, log_cb), (count) < (max) && ((count)++ || true))
+#define LIMITED_MEDIA_LOG(level, logger, count, max) \
+  LAZY_STREAM(MEDIA_LOG(level, logger), (count) < (max) && ((count)++ || true))
 
 }  // namespace media
 

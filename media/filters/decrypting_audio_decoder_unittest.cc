@@ -61,6 +61,7 @@ class DecryptingAudioDecoderTest : public testing::Test {
   DecryptingAudioDecoderTest()
       : decoder_(new DecryptingAudioDecoder(
             message_loop_.message_loop_proxy(),
+            new MediaLog(),
             base::Bind(
                 &DecryptingAudioDecoderTest::RequestDecryptorNotification,
                 base::Unretained(this)),

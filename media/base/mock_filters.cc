@@ -18,6 +18,10 @@ MockDemuxer::MockDemuxer() {}
 
 MockDemuxer::~MockDemuxer() {}
 
+std::string MockDemuxer::GetDisplayName() const {
+  return "MockDemuxer";
+}
+
 MockDemuxerStream::MockDemuxerStream(DemuxerStream::Type type)
     : type_(type), liveness_(LIVENESS_UNKNOWN) {
 }

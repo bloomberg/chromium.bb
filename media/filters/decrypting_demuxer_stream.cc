@@ -11,6 +11,7 @@
 #include "base/single_thread_task_runner.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/decoder_buffer.h"
+#include "media/base/media_log.h"
 #include "media/base/pipeline.h"
 
 namespace media {
@@ -26,9 +27,11 @@ static bool IsStreamValidAndEncrypted(DemuxerStream* stream) {
 
 DecryptingDemuxerStream::DecryptingDemuxerStream(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+    const scoped_refptr<MediaLog>& media_log,
     const SetDecryptorReadyCB& set_decryptor_ready_cb,
     const base::Closure& waiting_for_decryption_key_cb)
     : task_runner_(task_runner),
+      media_log_(media_log),
       state_(kUninitialized),
       waiting_for_decryption_key_cb_(waiting_for_decryption_key_cb),
       demuxer_stream_(NULL),
@@ -36,6 +39,10 @@ DecryptingDemuxerStream::DecryptingDemuxerStream(
       decryptor_(NULL),
       key_added_while_decrypt_pending_(false),
       weak_factory_(this) {
+}
+
+std::string DecryptingDemuxerStream::GetDisplayName() const {
+  return "DecryptingDemuxerStream";
 }
 
 void DecryptingDemuxerStream::Initialize(DemuxerStream* stream,
@@ -176,6 +183,7 @@ void DecryptingDemuxerStream::SetDecryptor(
   set_decryptor_ready_cb_.Reset();
 
   if (!decryptor) {
+    MEDIA_LOG(DEBUG, media_log_) << GetDisplayName() << ": decryptor not set";
     state_ = kUninitialized;
     base::ResetAndReturn(&init_cb_).Run(DECODER_ERROR_NOT_SUPPORTED);
     decryptor_attached_cb.Run(false);
@@ -295,6 +303,7 @@ void DecryptingDemuxerStream::DeliverBuffer(
 
   if (status == Decryptor::kError) {
     DVLOG(2) << "DoDeliverBuffer() - kError";
+    MEDIA_LOG(ERROR, media_log_) << GetDisplayName() << ": decrypt error";
     pending_buffer_to_decrypt_ = NULL;
     state_ = kIdle;
     base::ResetAndReturn(&read_cb_).Run(kAborted, NULL);
@@ -303,6 +312,7 @@ void DecryptingDemuxerStream::DeliverBuffer(
 
   if (status == Decryptor::kNoKey) {
     DVLOG(2) << "DoDeliverBuffer() - kNoKey";
+    MEDIA_LOG(DEBUG, media_log_) << GetDisplayName() << ": no key";
     if (need_to_try_again_if_nokey) {
       // The |state_| is still kPendingDecrypt.
       DecryptPendingBuffer();

@@ -1123,6 +1123,10 @@ ChunkDemuxer::ChunkDemuxer(
   DCHECK(!encrypted_media_init_data_cb_.is_null());
 }
 
+std::string ChunkDemuxer::GetDisplayName() const {
+  return "ChunkDemuxer";
+}
+
 void ChunkDemuxer::Initialize(
     DemuxerHost* host,
     const PipelineStatusCB& cb,

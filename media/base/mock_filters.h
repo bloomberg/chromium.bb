@@ -32,6 +32,7 @@ class MockDemuxer : public Demuxer {
   virtual ~MockDemuxer();
 
   // Demuxer implementation.
+  virtual std::string GetDisplayName() const;
   MOCK_METHOD3(Initialize,
                void(DemuxerHost* host, const PipelineStatusCB& cb, bool));
   MOCK_METHOD1(SetPlaybackRate, void(double playback_rate));

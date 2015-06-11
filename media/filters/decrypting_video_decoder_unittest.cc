@@ -55,6 +55,7 @@ class DecryptingVideoDecoderTest : public testing::Test {
   DecryptingVideoDecoderTest()
       : decoder_(new DecryptingVideoDecoder(
             message_loop_.message_loop_proxy(),
+            new MediaLog(),
             base::Bind(
                 &DecryptingVideoDecoderTest::RequestDecryptorNotification,
                 base::Unretained(this)),
@@ -64,10 +65,9 @@ class DecryptingVideoDecoderTest : public testing::Test {
         num_decrypt_and_decode_calls_(0),
         num_frames_in_decryptor_(0),
         encrypted_buffer_(CreateFakeEncryptedBuffer()),
-        decoded_video_frame_(VideoFrame::CreateBlackFrame(
-            TestVideoConfig::NormalCodedSize())),
-        null_video_frame_(scoped_refptr<VideoFrame>()) {
-  }
+        decoded_video_frame_(
+            VideoFrame::CreateBlackFrame(TestVideoConfig::NormalCodedSize())),
+        null_video_frame_(scoped_refptr<VideoFrame>()) {}
 
   virtual ~DecryptingVideoDecoderTest() {
     Destroy();

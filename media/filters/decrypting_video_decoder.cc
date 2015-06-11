@@ -12,6 +12,7 @@
 #include "base/trace_event/trace_event.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/decoder_buffer.h"
+#include "media/base/media_log.h"
 #include "media/base/pipeline.h"
 #include "media/base/video_frame.h"
 
@@ -21,9 +22,11 @@ const char DecryptingVideoDecoder::kDecoderName[] = "DecryptingVideoDecoder";
 
 DecryptingVideoDecoder::DecryptingVideoDecoder(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+    const scoped_refptr<MediaLog>& media_log,
     const SetDecryptorReadyCB& set_decryptor_ready_cb,
     const base::Closure& waiting_for_decryption_key_cb)
     : task_runner_(task_runner),
+      media_log_(media_log),
       state_(kUninitialized),
       waiting_for_decryption_key_cb_(waiting_for_decryption_key_cb),
       set_decryptor_ready_cb_(set_decryptor_ready_cb),
@@ -164,6 +167,7 @@ void DecryptingVideoDecoder::SetDecryptor(
   set_decryptor_ready_cb_.Reset();
 
   if (!decryptor) {
+    MEDIA_LOG(DEBUG, media_log_) << GetDisplayName() << ": no decryptor set";
     base::ResetAndReturn(&init_cb_).Run(false);
     state_ = kError;
     decryptor_attached_cb.Run(false);
@@ -189,6 +193,8 @@ void DecryptingVideoDecoder::FinishInitialization(bool success) {
   DCHECK(decode_cb_.is_null());  // No Decode() before initialization finished.
 
   if (!success) {
+    MEDIA_LOG(DEBUG, media_log_) << GetDisplayName()
+                                 << ": failed to init decoder on decryptor";
     base::ResetAndReturn(&init_cb_).Run(false);
     decryptor_ = NULL;
     state_ = kError;
@@ -253,6 +259,7 @@ void DecryptingVideoDecoder::DeliverFrame(
 
   if (status == Decryptor::kError) {
     DVLOG(2) << "DeliverFrame() - kError";
+    MEDIA_LOG(ERROR, media_log_) << GetDisplayName() << ": decode error";
     state_ = kError;
     base::ResetAndReturn(&decode_cb_).Run(kDecodeError);
     return;
@@ -260,6 +267,8 @@ void DecryptingVideoDecoder::DeliverFrame(
 
   if (status == Decryptor::kNoKey) {
     DVLOG(2) << "DeliverFrame() - kNoKey";
+    MEDIA_LOG(DEBUG, media_log_) << GetDisplayName() << ": no key";
+
     // Set |pending_buffer_to_decode_| back as we need to try decoding the
     // pending buffer again when new key is added to the decryptor.
     pending_buffer_to_decode_ = scoped_pending_buffer_to_decode;

@@ -19,6 +19,7 @@ namespace media {
 
 class DecoderBuffer;
 class Decryptor;
+class MediaLog;
 
 // Decryptor-based VideoDecoder implementation that can decrypt and decode
 // encrypted video buffers and return decrypted and decompressed video frames.
@@ -28,6 +29,7 @@ class MEDIA_EXPORT DecryptingVideoDecoder : public VideoDecoder {
  public:
   DecryptingVideoDecoder(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+      const scoped_refptr<MediaLog>& media_log,
       const SetDecryptorReadyCB& set_decryptor_ready_cb,
       const base::Closure& waiting_for_decryption_key_cb);
   ~DecryptingVideoDecoder() override;
@@ -82,6 +84,8 @@ class MEDIA_EXPORT DecryptingVideoDecoder : public VideoDecoder {
   void DoReset();
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
+  scoped_refptr<MediaLog> media_log_;
 
   State state_;
 

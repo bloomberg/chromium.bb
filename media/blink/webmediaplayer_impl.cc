@@ -899,7 +899,6 @@ void WebMediaPlayerImpl::StartPipeline() {
   UMA_HISTOGRAM_BOOLEAN("Media.MSE.Playback",
                         (load_type_ == LoadTypeMediaSource));
 
-  LogCB mse_log_cb;
   Demuxer::EncryptedMediaInitDataCB encrypted_media_init_data_cb =
       BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnEncryptedMediaInitData);
 
@@ -914,11 +913,10 @@ void WebMediaPlayerImpl::StartPipeline() {
     DCHECK(!chunk_demuxer_);
     DCHECK(!data_source_);
 
-    mse_log_cb = base::Bind(&MediaLog::AddLogEvent, media_log_);
-
     chunk_demuxer_ = new ChunkDemuxer(
         BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnDemuxerOpened),
-        encrypted_media_init_data_cb, mse_log_cb, media_log_, true);
+        encrypted_media_init_data_cb,
+        base::Bind(&MediaLog::AddLogEvent, media_log_), media_log_, true);
     demuxer_.reset(chunk_demuxer_);
   }
 

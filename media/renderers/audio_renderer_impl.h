@@ -206,6 +206,8 @@ class MEDIA_EXPORT AudioRendererImpl
   // Interface to the hardware audio params.
   const AudioHardwareConfig& hardware_config_;
 
+  scoped_refptr<MediaLog> media_log_;
+
   // Cached copy of hardware params from |hardware_config_|.
   AudioParameters audio_parameters_;
 
