@@ -139,6 +139,13 @@ def IsGitVersionAtLeast(min_version):
       LooseVersion(version[len(prefix):]) >= LooseVersion(min_version))
 
 
+def BranchExists(branch):
+  """Return True if specified branch exists."""
+  code, _ = RunGitWithCode(['rev-parse', '--verify', branch],
+                           suppress_stderr=True)
+  return not code
+
+
 def ask_for_data(prompt):
   try:
     return raw_input(prompt)
@@ -719,8 +726,12 @@ or verify this branch is set up to track another (via the --track argument to
     return remote, upstream_branch
 
   def GetCommonAncestorWithUpstream(self):
+    upstream_branch = self.GetUpstreamBranch()
+    if not BranchExists(upstream_branch):
+      DieWithError('The upstream for the current branch (%s) does not exist '
+                   'anymore.\nPlease fix it and try again.' % self.GetBranch())
     return git_common.get_or_create_merge_base(self.GetBranch(),
-                                               self.GetUpstreamBranch())
+                                               upstream_branch)
 
   def GetUpstreamBranch(self):
     if self.upstream_branch is None:

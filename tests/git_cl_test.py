@@ -86,6 +86,7 @@ class TestGitCl(TestCase):
     self.mock(git_common, 'get_or_create_merge_base',
               lambda *a: (
                   self._mocked_call(['get_or_create_merge_base']+list(a))))
+    self.mock(git_cl, 'BranchExists', lambda _: True)
     self.mock(git_cl, 'FindCodereviewSettingsFile', lambda: '')
     self.mock(git_cl, 'ask_for_data', self._mocked_call)
     self.mock(git_cl.breakpad, 'post', self._mocked_call)
