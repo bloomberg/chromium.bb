@@ -7,7 +7,7 @@
 
 #include "base/strings/string16.h"
 #include "content/public/common/manifest.h"
-#include "third_party/WebKit/public/platform/WebScreenOrientationLockType.h"
+#include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationLockType.h"
 #include "url/gurl.h"
 
 // Information needed to create a shortcut via ShortcutHelper.

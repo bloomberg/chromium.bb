@@ -22,7 +22,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/manifest.h"
-#include "third_party/WebKit/public/platform/WebScreenOrientationLockType.h"
+#include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationLockType.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/screen.h"
