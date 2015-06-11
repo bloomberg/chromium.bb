@@ -126,6 +126,12 @@ public:
     SecurityOrigin* targetOrigin() const { return m_targetOrigin.get(); }
     ScriptCallStack* stackTrace() const { return m_stackTrace.get(); }
     UserGestureToken* userGestureToken() const { return m_userGestureToken.get(); }
+    virtual void stop() override
+    {
+        SuspendableTimer::stop();
+        // Will destroy this object
+        m_window->removePostMessageTimer(this);
+    }
 
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
@@ -140,7 +146,8 @@ private:
     {
         InspectorInstrumentationCookie cookie = InspectorInstrumentation::traceAsyncOperationCompletedCallbackStarting(executionContext(), m_asyncOperationId);
         m_window->postMessageTimerFired(this);
-        // This object is deleted now.
+        // Will destroy this object
+        m_window->removePostMessageTimer(this);
         InspectorInstrumentation::traceAsyncCallbackCompleted(cookie);
     }
 
@@ -660,7 +667,6 @@ void LocalDOMWindow::schedulePostMessage(PassRefPtrWillBeRawPtr<MessageEvent> ev
 void LocalDOMWindow::postMessageTimerFired(PostMessageTimer* timer)
 {
     if (!isCurrentlyDisplayedInFrame()) {
-        m_postMessageTimers.remove(timer);
         return;
     }
 
@@ -670,6 +676,10 @@ void LocalDOMWindow::postMessageTimerFired(PostMessageTimer* timer)
 
     event->entangleMessagePorts(document());
     dispatchMessageEventWithOriginCheck(timer->targetOrigin(), event, timer->stackTrace());
+}
+
+void LocalDOMWindow::removePostMessageTimer(PostMessageTimer* timer)
+{
     m_postMessageTimers.remove(timer);
 }
 
