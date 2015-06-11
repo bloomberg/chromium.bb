@@ -416,11 +416,14 @@ bool BookmarkManagerPrivatePasteFunction::RunOnReady() {
 }
 
 bool BookmarkManagerPrivateCanPasteFunction::RunOnReady() {
-  if (!EditBookmarksEnabled())
-    return false;
-
   scoped_ptr<CanPaste::Params> params(CanPaste::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
+
+  PrefService* prefs = user_prefs::UserPrefs::Get(GetProfile());
+  if (!prefs->GetBoolean(bookmarks::prefs::kEditBookmarksEnabled)) {
+    SetResult(new base::FundamentalValue(false));
+    return true;
+  }
 
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(GetProfile());
   const BookmarkNode* parent_node = GetNodeFromString(model, params->parent_id);
@@ -649,6 +652,9 @@ bool BookmarkManagerPrivateRecordLaunchFunction::RunOnReady() {
 }
 
 bool BookmarkManagerPrivateCreateWithMetaInfoFunction::RunOnReady() {
+  if (!EditBookmarksEnabled())
+    return false;
+
   scoped_ptr<CreateWithMetaInfo::Params> params(
       CreateWithMetaInfo::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -719,6 +725,9 @@ bool BookmarkManagerPrivateGetMetaInfoFunction::RunOnReady() {
 }
 
 bool BookmarkManagerPrivateSetMetaInfoFunction::RunOnReady() {
+  if (!EditBookmarksEnabled())
+    return false;
+
   scoped_ptr<SetMetaInfo::Params> params(SetMetaInfo::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -740,6 +749,9 @@ bool BookmarkManagerPrivateSetMetaInfoFunction::RunOnReady() {
 }
 
 bool BookmarkManagerPrivateUpdateMetaInfoFunction::RunOnReady() {
+  if (!EditBookmarksEnabled())
+    return false;
+
   scoped_ptr<UpdateMetaInfo::Params> params(
       UpdateMetaInfo::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -775,6 +787,9 @@ bool BookmarkManagerPrivateCanOpenNewWindowsFunction::RunOnReady() {
 }
 
 bool BookmarkManagerPrivateRemoveTreesFunction::RunOnReady() {
+  if (!EditBookmarksEnabled())
+    return false;
+
   scoped_ptr<RemoveTrees::Params> params(RemoveTrees::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -793,12 +808,18 @@ bool BookmarkManagerPrivateRemoveTreesFunction::RunOnReady() {
 }
 
 bool BookmarkManagerPrivateUndoFunction::RunOnReady() {
+  if (!EditBookmarksEnabled())
+    return false;
+
   BookmarkUndoServiceFactory::GetForProfile(GetProfile())->undo_manager()->
       Undo();
   return true;
 }
 
 bool BookmarkManagerPrivateRedoFunction::RunOnReady() {
+  if (!EditBookmarksEnabled())
+    return false;
+
   BookmarkUndoServiceFactory::GetForProfile(GetProfile())->undo_manager()->
       Redo();
   return true;

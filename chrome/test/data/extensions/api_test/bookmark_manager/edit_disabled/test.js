@@ -69,7 +69,9 @@ var tests = [
   },
 
   function canPasteDisabled() {
-    bookmarkManager.canPaste(folder.id, fail(ERROR));
+    bookmarkManager.canPaste(folder.id, pass(function(result) {
+      assertFalse(result, 'Should not be able to paste bookmarks');
+    }));
   },
 
   function pasteDisabled() {
