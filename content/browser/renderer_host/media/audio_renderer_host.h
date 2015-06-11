@@ -38,6 +38,7 @@
 #define CONTENT_BROWSER_RENDERER_HOST_MEDIA_AUDIO_RENDERER_HOST_H_
 
 #include <map>
+#include <string>
 
 #include "base/atomic_ref_count.h"
 #include "base/gtest_prod_util.h"
@@ -49,10 +50,12 @@
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/resource_context.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_logging.h"
 #include "media/audio/audio_output_controller.h"
 #include "media/audio/simple_sources.h"
+#include "url/gurl.h"
 
 namespace media {
 class AudioManager;
@@ -64,6 +67,7 @@ namespace content {
 class AudioMirroringManager;
 class MediaInternals;
 class MediaStreamManager;
+class MediaStreamUIProxy;
 class ResourceContext;
 
 class CONTENT_EXPORT AudioRendererHost : public BrowserMessageFilter {
@@ -73,7 +77,8 @@ class CONTENT_EXPORT AudioRendererHost : public BrowserMessageFilter {
                     media::AudioManager* audio_manager,
                     AudioMirroringManager* mirroring_manager,
                     MediaInternals* media_internals,
-                    MediaStreamManager* media_stream_manager);
+                    MediaStreamManager* media_stream_manager,
+                    const ResourceContext::SaltCallback& salt_callback);
 
   // Calls |callback| with the list of AudioOutputControllers for this object.
   void GetOutputControllers(
@@ -135,6 +140,38 @@ class CONTENT_EXPORT AudioRendererHost : public BrowserMessageFilter {
   // Set the volume of the audio stream referenced by |stream_id|.
   void OnSetVolume(int stream_id, double volume);
 
+  // Set the output device of the audio stream referenced by |stream_id|.
+  void OnSwitchOutputDevice(int stream_id,
+                            int render_frame_id,
+                            const std::string& device_id,
+                            const GURL& security_origin,
+                            int request_id);
+
+  void OutputDeviceAccessChecked(scoped_ptr<MediaStreamUIProxy> ui_proxy,
+                                 int stream_id,
+                                 const std::string& device_id,
+                                 const GURL& security_origin,
+                                 int render_frame_id,
+                                 int request_id,
+                                 bool have_access);
+
+  void StartTranslateOutputDeviceName(int stream_id,
+                                      const std::string& device_id,
+                                      const GURL& security_origin,
+                                      int request_id);
+
+  void FinishTranslateOutputDeviceName(int stream_id,
+                                       const std::string& device_id,
+                                       const GURL& security_origin,
+                                       int request_id,
+                                       media::AudioDeviceNames*);
+
+  void DoSwitchOutputDevice(int stream_id,
+                            const std::string& raw_device_id,
+                            int request_id);
+
+  void DoOutputDeviceSwitched(int stream_id, int request_id);
+
   // Complete the process of creating an audio stream. This will set up the
   // shared memory or shared socket in low latency mode and send the
   // NotifyStreamCreated message to the peer.
@@ -163,6 +200,9 @@ class CONTENT_EXPORT AudioRendererHost : public BrowserMessageFilter {
   // ResourceScheduler when the renderer starts or stops playing an audiostream.
   void UpdateNumPlayingStreams(AudioEntry* entry, bool is_playing);
 
+  // Checks that the renderer process supplies a URL it is allowed to use
+  bool IsURLAllowed(const GURL& url);
+
   // ID of the RenderProcessHost that owns this instance.
   const int render_process_id_;
 
@@ -178,6 +218,9 @@ class CONTENT_EXPORT AudioRendererHost : public BrowserMessageFilter {
 
   // The number of streams in the playing state.
   base::AtomicRefCount num_playing_streams_;
+
+  // Salt required to translate renderer device IDs to raw device IDs
+  ResourceContext::SaltCallback salt_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRendererHost);
 };

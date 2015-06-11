@@ -43,6 +43,11 @@ class AudioLog {
 
   // Called when an audio component changes volume.  |volume| is the new volume.
   virtual void OnSetVolume(int component_id, double volume) = 0;
+
+  // Called when an audio component switches output device. |device_id| is the
+  // new audio output device.
+  virtual void OnSwitchOutputDevice(int component_id,
+                                    const std::string& device_id) = 0;
 };
 
 // AudioLogFactory dispenses AudioLog instances to owning classes for tracking

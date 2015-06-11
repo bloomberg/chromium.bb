@@ -5,12 +5,26 @@
 #ifndef MEDIA_AUDIO_AUDIO_OUTPUT_IPC_H_
 #define MEDIA_AUDIO_AUDIO_OUTPUT_IPC_H_
 
+#include <string>
+
 #include "base/memory/shared_memory.h"
 #include "base/sync_socket.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/media_export.h"
+#include "url/gurl.h"
 
 namespace media {
+
+// Result of an audio output device switch operation
+enum SwitchOutputDeviceResult {
+  SWITCH_OUTPUT_DEVICE_RESULT_SUCCESS = 0,
+  SWITCH_OUTPUT_DEVICE_RESULT_ERROR_NOT_FOUND,
+  SWITCH_OUTPUT_DEVICE_RESULT_ERROR_NOT_AUTHORIZED,
+  SWITCH_OUTPUT_DEVICE_RESULT_ERROR_OBSOLETE,
+  SWITCH_OUTPUT_DEVICE_RESULT_ERROR_NOT_SUPPORTED,
+  SWITCH_OUTPUT_DEVICE_RESULT_LAST =
+      SWITCH_OUTPUT_DEVICE_RESULT_ERROR_NOT_SUPPORTED,
+};
 
 // Contains IPC notifications for the state of the server side
 // (AudioOutputController) audio state changes and when an AudioOutputController

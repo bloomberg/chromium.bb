@@ -4,6 +4,8 @@
 
 #include "media/audio/fake_audio_log_factory.h"
 
+#include <string>
+
 namespace media {
 
 class FakeAudioLogImpl : public AudioLog {
@@ -18,6 +20,8 @@ class FakeAudioLogImpl : public AudioLog {
   void OnClosed(int component_id) override {}
   void OnError(int component_id) override {}
   void OnSetVolume(int component_id, double volume) override {}
+  void OnSwitchOutputDevice(int component_id,
+                            const std::string& device_id) override {}
 };
 
 FakeAudioLogFactory::FakeAudioLogFactory() {}

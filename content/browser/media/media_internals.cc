@@ -102,6 +102,8 @@ class AudioLogImpl : public media::AudioLog {
   void OnClosed(int component_id) override;
   void OnError(int component_id) override;
   void OnSetVolume(int component_id, double volume) override;
+  void OnSwitchOutputDevice(int component_id,
+                            const std::string& device_id) override;
 
   // Called by MediaInternals to update the WebContents title for a stream.
   void SendWebContentsTitle(int component_id,
@@ -182,6 +184,16 @@ void AudioLogImpl::OnSetVolume(int component_id, double volume) {
   base::DictionaryValue dict;
   StoreComponentMetadata(component_id, &dict);
   dict.SetDouble("volume", volume);
+  media_internals_->SendAudioLogUpdate(MediaInternals::UPDATE_IF_EXISTS,
+                                       FormatCacheKey(component_id),
+                                       kAudioLogUpdateFunction, &dict);
+}
+
+void AudioLogImpl::OnSwitchOutputDevice(int component_id,
+                                        const std::string& device_id) {
+  base::DictionaryValue dict;
+  StoreComponentMetadata(component_id, &dict);
+  dict.SetString("device_id", device_id);
   media_internals_->SendAudioLogUpdate(MediaInternals::UPDATE_IF_EXISTS,
                                        FormatCacheKey(component_id),
                                        kAudioLogUpdateFunction, &dict);

@@ -105,6 +105,8 @@ enum BadMessageReason {
   RMF_GET_COOKIES_BAD_ORIGIN = 79,
   SWDH_GET_REGISTRATIONS_NO_HOST = 80,
   SWDH_GET_REGISTRATIONS_INVALID_ORIGIN = 81,
+  ARH_UNAUTHORIZED_URL = 82,
+
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. RenderFrameHost becomes RFH) plus a unique description of the
   // reason.

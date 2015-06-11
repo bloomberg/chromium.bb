@@ -5,6 +5,8 @@
 // IPC messages for the audio.
 // Multiply-included message file, hence no include guard.
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/memory/shared_memory.h"
 #include "base/sync_socket.h"
@@ -14,6 +16,7 @@
 #include "media/audio/audio_input_ipc.h"
 #include "media/audio/audio_output_ipc.h"
 #include "media/audio/audio_parameters.h"
+#include "url/gurl.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
@@ -24,6 +27,9 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::AudioInputIPCDelegate::State,
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::AudioOutputIPCDelegate::State,
                           media::AudioOutputIPCDelegate::kStateLast)
+
+IPC_ENUM_TRAITS_MAX_VALUE(media::SwitchOutputDeviceResult,
+                          media::SWITCH_OUTPUT_DEVICE_RESULT_LAST)
 
 IPC_STRUCT_BEGIN(AudioInputHostMsg_CreateStream_Config)
   IPC_STRUCT_MEMBER(media::AudioParameters, params)
@@ -70,6 +76,13 @@ IPC_MESSAGE_CONTROL2(AudioInputMsg_NotifyStreamStateChanged,
 IPC_MESSAGE_CONTROL2(AudioInputMsg_NotifyStreamVolume,
                      int /* stream id */,
                      double /* volume */)
+
+// Notification message sent from AudioRendererHost to renderer for state
+// update after the renderer has requested a SwitchOutputDevice.
+IPC_MESSAGE_CONTROL3(AudioMsg_NotifyOutputDeviceSwitched,
+                     int /* stream id */,
+                     int /* request id */,
+                     media::SwitchOutputDeviceResult /* result */)
 
 // Messages sent from the renderer to the browser.
 
@@ -121,3 +134,11 @@ IPC_MESSAGE_CONTROL2(AudioHostMsg_SetVolume,
 IPC_MESSAGE_CONTROL2(AudioInputHostMsg_SetVolume,
                      int /* stream_id */,
                      double /* volume */)
+
+// Switch the output device of the stream specified by stream_id.
+IPC_MESSAGE_CONTROL5(AudioHostMsg_SwitchOutputDevice,
+                     int /* stream_id */,
+                     int /* render_frame_id */,
+                     std::string /* device_id */,
+                     GURL /* security_origin */,
+                     int /* request_id */)
