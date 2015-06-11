@@ -9,9 +9,9 @@
 #include "core/frame/PlatformEventController.h"
 #include "modules/ModulesExport.h"
 #include "platform/Supplementable.h"
-#include "public/platform/WebLockOrientationCallback.h"
-#include "public/platform/WebScreenOrientationLockType.h"
-#include "public/platform/WebScreenOrientationType.h"
+#include "public/platform/modules/screen_orientation/WebLockOrientationCallback.h"
+#include "public/platform/modules/screen_orientation/WebScreenOrientationLockType.h"
+#include "public/platform/modules/screen_orientation/WebScreenOrientationType.h"
 
 namespace blink {
 

@@ -9,7 +9,7 @@
 #include "core/events/EventTarget.h"
 #include "core/frame/DOMWindowProperty.h"
 #include "platform/heap/Handle.h"
-#include "public/platform/WebScreenOrientationType.h"
+#include "public/platform/modules/screen_orientation/WebScreenOrientationType.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/WTFString.h"
 

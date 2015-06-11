@@ -17,7 +17,7 @@
 #include "modules/screen_orientation/ScreenOrientationDispatcher.h"
 #include "platform/LayoutTestSupport.h"
 #include "public/platform/WebScreenInfo.h"
-#include "public/platform/WebScreenOrientationClient.h"
+#include "public/platform/modules/screen_orientation/WebScreenOrientationClient.h"
 
 namespace blink {
 
