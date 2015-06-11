@@ -20,6 +20,7 @@
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
+#include "third_party/WebKit/public/web/WebPluginScriptForbiddenScope.h"
 #include "third_party/WebKit/public/web/WebScopedUserGesture.h"
 
 using ppapi::V8ObjectVar;
@@ -56,7 +57,8 @@ class ObjectAccessor {
     if (exception && exception->type != PP_VARTYPE_UNDEFINED)
       return false;
     if (instance_)
-      return true;
+      return !instance_->is_deleted() ||
+             !blink::WebPluginScriptForbiddenScope::isForbidden();
     if (exception)
       *exception = ppapi::StringVar::StringToPPVar(kInvalidObjectException);
     return false;

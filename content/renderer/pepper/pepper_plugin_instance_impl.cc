@@ -110,6 +110,7 @@
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
+#include "third_party/WebKit/public/web/WebPluginScriptForbiddenScope.h"
 #include "third_party/WebKit/public/web/WebPrintParams.h"
 #include "third_party/WebKit/public/web/WebPrintPresetOptions.h"
 #include "third_party/WebKit/public/web/WebPrintScalingOption.h"
@@ -2363,6 +2364,8 @@ PP_Var PepperPluginInstanceImpl::ExecuteScript(PP_Instance instance,
                                                PP_Var script_var,
                                                PP_Var* exception) {
   if (!container_)
+    return PP_MakeUndefined();
+  if (is_deleted_ && blink::WebPluginScriptForbiddenScope::isForbidden())
     return PP_MakeUndefined();
   RecordFlashJavaScriptUse();
 
