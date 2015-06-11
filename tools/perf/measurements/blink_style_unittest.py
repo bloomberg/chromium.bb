@@ -27,11 +27,12 @@ class BlinkStyleTest(page_test_test_case.PageTestTestCase):
     results = self.RunMeasurement(measurement, ps, options=self._options)
     self.assertEquals(0, len(results.failures))
 
-    def getMetric(results, name):
+    def getMetric(results, name, count=1):
       metrics = results.FindAllPageSpecificValuesNamed(name)
-      self.assertEquals(1, len(metrics))
+      self.assertEquals(count, len(metrics))
       return metrics[0].value
 
     self.assertGreater(getMetric(results, 'parse_css_regular'), 0)
     self.assertGreater(getMetric(results, 'tokenize_css_regular'), 0)
-    self.assertGreater(getMetric(results, 'update_style'), 0)
+    self.assertGreater(getMetric(results, 'update_style', 5), 0)
+    self.assertGreater(getMetric(results, 'update_style_cold', 5), 0)

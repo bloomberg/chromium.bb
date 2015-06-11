@@ -40,25 +40,36 @@ class BlinkStyle(page_test.PageTest):
         # state on every run.
         pass
 
-    tab.ExecuteJavaScript(
-        'console.time("style-update");'
-        # Occasionally documents will break the APIs we need.
-        'try {'
-        # Invalidate style for the whole document.
-        '  document && (document.documentElement.lang += "z");'
-        # Force a style update (but not layout).
-        '  getComputedStyle(document.documentElement).color;'
-        '} catch (e) {}'
-        'console.timeEnd("style-update");'
-        )
+    tab.ExecuteJavaScript('''
+        for (var i = 0; i < 11; i++) {
+          var cold = i % 2 == 0;
+          var name = "update_style";
+          if (cold) name += "_cold";
+          console.time(name);
+          // Occasionally documents will break the APIs we need
+          try {
+            // On cold runs, force a new StyleResolver
+            if (cold) {
+              var style = document.createElement("style");
+              document.head.appendChild(style);
+              style.remove();
+            }
+            // Invalidate style for the whole document
+            document.documentElement.lang += "z";
+            // Force a style update (but not layout)
+            getComputedStyle(document.documentElement).color;
+          } catch (e) {}
+          console.timeEnd(name);
+        }''')
 
     self._controller.Stop(tab, results)
     renderer = self._controller.model.GetRendererThreadFromTabId(tab.id)
     markers = [event for event in renderer.async_slices
-               if event.name == 'style-update'
+               if event.name.startswith('update_style')
                   and event.category == 'blink.console']
-    assert len(markers) == 1
-    marker = markers[0]
+    # Drop the first run.
+    markers = markers[1:]
+    assert len(markers) == 10
 
     def duration(event):
       if event.has_thread_timestamps:
@@ -66,20 +77,21 @@ class BlinkStyle(page_test.PageTest):
       else:
         return event.duration
 
-    for event in renderer.all_slices:
-      if (event.name == 'Document::updateStyle'
-          and event.start >= marker.start
-          and event.end <= marker.end):
-        access_count = event.args.get('resolverAccessCount')
-        if access_count is None:
-          # absent in earlier versions
-          continue
-        min_access_count = 50
+    for marker in markers:
+      for event in renderer.all_slices:
+        if (event.name == 'Document::updateStyle'
+            and event.start >= marker.start
+            and event.end <= marker.end):
+          access_count = event.args.get('resolverAccessCount')
+          if access_count is None:
+            # absent in earlier versions
+            continue
+          min_access_count = 50
 
-        if access_count >= min_access_count:
-          result = 1000 * (duration(event) / access_count)
-          results.AddValue(scalar.ScalarValue(
-              page, 'update_style', 'ms/1000 elements', result))
+          if access_count >= min_access_count:
+            result = 1000 * (duration(event) / access_count)
+            results.AddValue(scalar.ScalarValue(
+                page, marker.name, 'ms/1000 elements', result))
 
     class ParserEvent(object):
       def __init__(self, summary_event, tokenize_event, parse_event):
