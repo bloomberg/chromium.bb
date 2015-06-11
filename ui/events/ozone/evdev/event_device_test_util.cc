@@ -363,6 +363,36 @@ const DeviceCapabilities kLogitechTouchKeyboardK400 = {
     arraysize(kLogitechTouchKeyboardK400AbsAxes),
 };
 
+// Captured from Elo TouchSystems 2700 touchscreen.
+const DeviceAbsoluteAxis kElo_TouchSystems_2700AbsAxes[] = {
+    {ABS_X, {0, 0, 4095, 0, 0, 0}},
+    {ABS_Y, {0, 0, 4095, 0, 0, 0}},
+    {ABS_MISC, {0, 0, 256, 0, 0, 0}},
+};
+const DeviceCapabilities kElo_TouchSystems_2700 = {
+    /* path */ "/sys/devices/pci0000:00/0000:00:1d.0/usb2/2-1/2-1.3/2-1.3:1.0/"
+               "input/input9/event9",
+    /* name */ "Elo TouchSystems, Inc. Elo TouchSystems 2700 IntelliTouch(r) "
+               "USB Touchmonitor Interface",
+    /* phys */ "usb-0000:00:1d.0-1.3/input0",
+    /* uniq */ "20A01347",
+    /* bustype */ "0003",
+    /* vendor */ "04e7",
+    /* product */ "0020",
+    /* version */ "0100",
+    /* prop */ "0",
+    /* ev */ "1b",
+    /* key */ "10000 0 0 0 0",
+    /* rel */ "0",
+    /* abs */ "10000000003",
+    /* msc */ "10",
+    /* sw */ "0",
+    /* led */ "0",
+    /* ff */ "0",
+    kElo_TouchSystems_2700AbsAxes,
+    arraysize(kElo_TouchSystems_2700AbsAxes),
+};
+
 bool CapabilitiesToDeviceInfo(const DeviceCapabilities& capabilities,
                               EventDeviceInfo* devinfo) {
   std::vector<unsigned long> ev_bits;

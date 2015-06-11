@@ -83,6 +83,9 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
   // Device has multitouch capability.
   bool has_mt_;
 
+  // Use BTN_LEFT instead of BT_TOUCH.
+  bool quirk_left_mouse_button_ = false;
+
   // Pressure values.
   int pressure_min_;
   int pressure_max_;  // Used to normalize pressure values.

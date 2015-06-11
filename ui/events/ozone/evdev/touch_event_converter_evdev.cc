@@ -137,6 +137,9 @@ void TouchEventConverterEvdev::Initialize(const EventDeviceInfo& info) {
     current_slot_ = 0;
   }
 
+  quirk_left_mouse_button_ =
+      !has_mt_ && !info.HasKeyEvent(BTN_TOUCH) && info.HasKeyEvent(BTN_LEFT);
+
   // Apply --touch-calibration.
   if (type() == INPUT_DEVICE_INTERNAL) {
     TouchCalibration cal = {};
@@ -178,6 +181,7 @@ void TouchEventConverterEvdev::Initialize(const EventDeviceInfo& info) {
     }
   } else {
     // TODO(spang): Add key state to EventDeviceInfo to allow initial contact.
+    // (and make sure to take into account quirk_left_mouse_button_)
     events_[0].x = 0;
     events_[0].y = 0;
     events_[0].tracking_id = kTrackingIdForUnusedSlot;
@@ -259,6 +263,8 @@ void TouchEventConverterEvdev::ProcessMultitouchEvent(
     }
   } else if (input.type == EV_KEY) {
     ProcessKey(input);
+  } else if (input.type == EV_MSC) {
+    // Ignored.
   } else {
     NOTIMPLEMENTED() << "invalid type: " << input.type;
   }
@@ -272,18 +278,22 @@ void TouchEventConverterEvdev::EmulateMultitouchEvent(
     emulated_event.code = AbsCodeToMtCode(event.code);
     if (emulated_event.code >= 0)
       ProcessMultitouchEvent(emulated_event);
-  } else if (event.type == EV_KEY && event.code == BTN_TOUCH) {
-    emulated_event.type = EV_ABS;
-    emulated_event.code = ABS_MT_TRACKING_ID;
-    emulated_event.value =
-        event.value ? NextTrackingId() : kTrackingIdForUnusedSlot;
-    ProcessMultitouchEvent(emulated_event);
+  } else if (event.type == EV_KEY) {
+    if (event.code == BTN_TOUCH ||
+        (quirk_left_mouse_button_ && event.code == BTN_LEFT)) {
+      emulated_event.type = EV_ABS;
+      emulated_event.code = ABS_MT_TRACKING_ID;
+      emulated_event.value =
+          event.value ? NextTrackingId() : kTrackingIdForUnusedSlot;
+      ProcessMultitouchEvent(emulated_event);
+    }
   }
 }
 
 void TouchEventConverterEvdev::ProcessKey(const input_event& input) {
   switch (input.code) {
     case BTN_TOUCH:
+    case BTN_LEFT:
       break;
     default:
       NOTIMPLEMENTED() << "invalid code for EV_KEY: " << input.code;

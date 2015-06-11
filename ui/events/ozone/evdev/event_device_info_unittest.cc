@@ -136,4 +136,16 @@ TEST_F(EventDeviceInfoTest, HybridKeyboardWithMouse) {
   EXPECT_FALSE(devinfo.HasTablet());
 }
 
+TEST_F(EventDeviceInfoTest, AbsoluteMouseTouchscreen) {
+  EventDeviceInfo devinfo;
+  EXPECT_TRUE(CapabilitiesToDeviceInfo(kElo_TouchSystems_2700, &devinfo));
+
+  // This touchscreen uses BTN_LEFT for touch contact.
+  EXPECT_FALSE(devinfo.HasKeyboard());
+  EXPECT_FALSE(devinfo.HasMouse());
+  EXPECT_FALSE(devinfo.HasTouchpad());
+  EXPECT_TRUE(devinfo.HasTouchscreen());
+  EXPECT_FALSE(devinfo.HasTablet());
+}
+
 }  // namespace ui
