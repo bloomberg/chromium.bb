@@ -621,7 +621,8 @@ bool WebMediaPlayerImpl::copyVideoTextureToPlatformTexture(
   scoped_refptr<VideoFrame> video_frame = GetCurrentFrameFromCompositor();
 
   if (!video_frame.get() ||
-      video_frame->storage_type() != VideoFrame::STORAGE_TEXTURE) {
+      video_frame->storage_type() != VideoFrame::STORAGE_TEXTURE ||
+      media::VideoFrame::NumPlanes(video_frame->format()) != 1) {
     return false;
   }
 
@@ -630,7 +631,7 @@ bool WebMediaPlayerImpl::copyVideoTextureToPlatformTexture(
   gpu::gles2::GLES2Interface* gl =
       static_cast<gpu_blink::WebGraphicsContext3DImpl*>(web_graphics_context)
           ->GetGLInterface();
-  SkCanvasVideoRenderer::CopyVideoFrameTextureToGLTexture(
+  SkCanvasVideoRenderer::CopyVideoFrameSingleTextureToGLTexture(
       gl, video_frame.get(), texture, internal_format, type, premultiply_alpha,
       flip_y);
   return true;

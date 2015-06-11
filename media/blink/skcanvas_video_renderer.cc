@@ -12,9 +12,13 @@
 #include "skia/ext/refptr.h"
 #include "third_party/libyuv/include/libyuv.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkImageGenerator.h"
 #include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/GrPaint.h"
+#include "third_party/skia/include/gpu/GrTexture.h"
 #include "third_party/skia/include/gpu/GrTextureProvider.h"
+#include "third_party/skia/include/gpu/SkGr.h"
 #include "third_party/skia/include/gpu/SkGrPixelRef.h"
 #include "ui/gfx/skbitmap_operations.h"
 
@@ -84,32 +88,6 @@ bool AllocateSkBitmapTexture(GrContext* gr,
   return true;
 }
 
-bool CopyVideoFrameTextureToSkBitmapTexture(VideoFrame* video_frame,
-                                            SkBitmap* bitmap,
-                                            const Context3D& context_3d) {
-  // Check if we could reuse existing texture based bitmap.
-  // Otherwise, release existing texture based bitmap and allocate
-  // a new one based on video size.
-  if (!IsSkBitmapProperlySizedTexture(bitmap,
-                                      video_frame->visible_rect().size())) {
-    if (!AllocateSkBitmapTexture(context_3d.gr_context, bitmap,
-                                 video_frame->visible_rect().size())) {
-      return false;
-    }
-  }
-
-  unsigned texture_id =
-      static_cast<unsigned>((bitmap->getTexture())->getTextureHandle());
-  // If CopyVideoFrameTextureToGLTexture() changes the state of the
-  // |texture_id|, it's needed to invalidate the state cached in skia,
-  // but currently the state isn't changed.
-  SkCanvasVideoRenderer::CopyVideoFrameTextureToGLTexture(
-      context_3d.gl, video_frame, texture_id, GL_RGBA, GL_UNSIGNED_BYTE, true,
-      false);
-  bitmap->notifyPixelsChanged();
-  return true;
-}
-
 class SyncPointClientImpl : public VideoFrame::SyncPointClient {
  public:
   explicit SyncPointClientImpl(gpu::gles2::GLES2Interface* gl) : gl_(gl) {}
@@ -124,6 +102,84 @@ class SyncPointClientImpl : public VideoFrame::SyncPointClient {
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(SyncPointClientImpl);
 };
+
+scoped_ptr<SkImage> CreateSkImageFromVideoFrameYUVTextures(
+    VideoFrame* video_frame,
+    const Context3D& context_3d) {
+  // Support only TEXTURE_YUV_420.
+  DCHECK(video_frame->storage_type() == VideoFrame::STORAGE_TEXTURE);
+  DCHECK_EQ(media::VideoFrame::I420, video_frame->format());
+  DCHECK_EQ(3u, media::VideoFrame::NumPlanes(video_frame->format()));
+
+  gpu::gles2::GLES2Interface* gl = context_3d.gl;
+  DCHECK(gl);
+  gfx::Size ya_tex_size = video_frame->coded_size();
+  gfx::Size uv_tex_size((ya_tex_size.width() + 1) / 2,
+                        (ya_tex_size.height() + 1) / 2);
+
+  unsigned source_textures[3] = {0};
+  for (size_t i = 0; i < media::VideoFrame::NumPlanes(video_frame->format());
+       ++i) {
+    // Get the texture from the mailbox and wrap it in a GrTexture.
+    const gpu::MailboxHolder& mailbox_holder = video_frame->mailbox_holder(i);
+    DCHECK(mailbox_holder.texture_target == GL_TEXTURE_2D ||
+           mailbox_holder.texture_target == GL_TEXTURE_EXTERNAL_OES ||
+           mailbox_holder.texture_target == GL_TEXTURE_RECTANGLE_ARB);
+    gl->WaitSyncPointCHROMIUM(mailbox_holder.sync_point);
+    source_textures[i] = gl->CreateAndConsumeTextureCHROMIUM(
+        mailbox_holder.texture_target, mailbox_holder.mailbox.name);
+  }
+  GrBackendObject handles[3] = {
+      source_textures[0], source_textures[1], source_textures[2]};
+
+  SkISize yuvSizes[] = {
+      {ya_tex_size.width(), ya_tex_size.height()},
+      {uv_tex_size.width(), uv_tex_size.height()},
+      {uv_tex_size.width(), uv_tex_size.height()},
+  };
+
+  // TODO(dcastagna): Skia currently doesn't support Rec709 YUV conversion.
+  DCHECK(!CheckColorSpace(video_frame, VideoFrame::COLOR_SPACE_HD_REC709));
+  SkYUVColorSpace color_space = kRec601_SkYUVColorSpace;
+  if (CheckColorSpace(video_frame, VideoFrame::COLOR_SPACE_JPEG))
+    color_space = kJPEG_SkYUVColorSpace;
+
+  SkImage* img = SkImage::NewFromYUVTexturesCopy(context_3d.gr_context,
+                                                 color_space, handles, yuvSizes,
+                                                 kTopLeft_GrSurfaceOrigin);
+  DCHECK(img);
+  gl->DeleteTextures(3, source_textures);
+  SyncPointClientImpl client(gl);
+  video_frame->UpdateReleaseSyncPoint(&client);
+  return make_scoped_ptr(img);
+}
+
+bool CopyVideoFrameSingleTextureToSkBitmap(VideoFrame* video_frame,
+                                           SkBitmap* bitmap,
+                                           const Context3D& context_3d) {
+  // Check if we could reuse existing texture based bitmap.
+  // Otherwise, release existing texture based bitmap and allocate
+  // a new one based on video size.
+  if (!IsSkBitmapProperlySizedTexture(bitmap,
+                                      video_frame->visible_rect().size())) {
+    if (!AllocateSkBitmapTexture(context_3d.gr_context, bitmap,
+                                 video_frame->visible_rect().size())) {
+      return false;
+    }
+  }
+
+  unsigned texture_id =
+      static_cast<unsigned>((bitmap->getTexture())->getTextureHandle());
+  // If CopyVideoFrameSingleTextureToGLTexture() changes the state of the
+  // |texture_id|, it's needed to invalidate the state cached in skia,
+  // but currently the state isn't changed.
+
+  SkCanvasVideoRenderer::CopyVideoFrameSingleTextureToGLTexture(
+      context_3d.gl, video_frame, texture_id, GL_RGBA, GL_UNSIGNED_BYTE, true,
+      false);
+  bitmap->notifyPixelsChanged();
+  return true;
+}
 
 }  // anonymous namespace
 
@@ -290,16 +346,23 @@ void SkCanvasVideoRenderer::Paint(const scoped_refptr<VideoFrame>& video_frame,
         accelerated_last_frame_.reset();
         accelerated_generator_ = nullptr;
       }
-      if (!CopyVideoFrameTextureToSkBitmapTexture(
-              video_frame.get(), &accelerated_last_frame_, context_3d)) {
-        NOTREACHED();
-        return;
-      }
-      DCHECK(video_frame->visible_rect().width() ==
-                 accelerated_last_frame_.width() &&
-             video_frame->visible_rect().height() ==
-                 accelerated_last_frame_.height());
 
+      if (media::VideoFrame::NumPlanes(video_frame->format()) == 1) {
+        accelerated_last_image_.reset();
+        if (!CopyVideoFrameSingleTextureToSkBitmap(
+                video_frame.get(), &accelerated_last_frame_, context_3d)) {
+          NOTREACHED();
+          return;
+        }
+        DCHECK(video_frame->visible_rect().width() ==
+                   accelerated_last_frame_.width() &&
+               video_frame->visible_rect().height() ==
+                   accelerated_last_frame_.height());
+      } else {
+        accelerated_last_image_ = CreateSkImageFromVideoFrameYUVTextures(
+            video_frame.get(), context_3d);
+        DCHECK(accelerated_last_image_);
+      }
       accelerated_last_frame_timestamp_ = video_frame->timestamp();
     }
     target_frame = &accelerated_last_frame_;
@@ -395,7 +458,11 @@ void SkCanvasVideoRenderer::Paint(const scoped_refptr<VideoFrame>& video_frame,
     canvas->translate(-SkFloatToScalar(target_frame->width() * 0.5f),
                       -SkFloatToScalar(target_frame->height() * 0.5f));
   }
-  canvas->drawBitmap(*target_frame, 0, 0, &paint);
+  if (accelerated_last_image_) {
+    canvas->drawImage(accelerated_last_image_.get(), 0, 0, &paint);
+  } else {
+    canvas->drawBitmap(*target_frame, 0, 0, &paint);
+  }
   if (need_transform)
     canvas->restore();
   canvas->flush();
@@ -548,7 +615,7 @@ void SkCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
 }
 
 // static
-void SkCanvasVideoRenderer::CopyVideoFrameTextureToGLTexture(
+void SkCanvasVideoRenderer::CopyVideoFrameSingleTextureToGLTexture(
     gpu::gles2::GLES2Interface* gl,
     VideoFrame* video_frame,
     unsigned int texture,
@@ -595,6 +662,7 @@ void SkCanvasVideoRenderer::ResetLastFrame() {
 }
 
 void SkCanvasVideoRenderer::ResetAcceleratedLastFrame() {
+  accelerated_last_image_.reset();
   accelerated_last_frame_.reset();
   accelerated_generator_ = nullptr;
   accelerated_last_frame_timestamp_ = media::kNoTimestamp();

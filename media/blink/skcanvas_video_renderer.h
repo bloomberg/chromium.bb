@@ -12,6 +12,7 @@
 #include "media/base/video_rotation.h"
 #include "media/filters/context_3d.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkXfermode.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -61,13 +62,14 @@ class MEDIA_EXPORT SkCanvasVideoRenderer {
   // Copy the contents of texture of |video_frame| to texture |texture|.
   // |level|, |internal_format|, |type| specify target texture |texture|.
   // The format of |video_frame| must be VideoFrame::NATIVE_TEXTURE.
-  static void CopyVideoFrameTextureToGLTexture(gpu::gles2::GLES2Interface* gl,
-                                               VideoFrame* video_frame,
-                                               unsigned int texture,
-                                               unsigned int internal_format,
-                                               unsigned int type,
-                                               bool premultiply_alpha,
-                                               bool flip_y);
+  static void CopyVideoFrameSingleTextureToGLTexture(
+      gpu::gles2::GLES2Interface* gl,
+      VideoFrame* video_frame,
+      unsigned int texture,
+      unsigned int internal_format,
+      unsigned int type,
+      bool premultiply_alpha,
+      bool flip_y);
 
  private:
   void ResetLastFrame();
@@ -84,6 +86,7 @@ class MEDIA_EXPORT SkCanvasVideoRenderer {
   // |accelerated_generator_|.
   // It's used when |canvas| parameter in Paint() is Ganesh canvas.
   // Note: all GrContext in SkCanvas instances are same.
+  scoped_ptr<SkImage> accelerated_last_image_;
   SkBitmap accelerated_last_frame_;
   VideoImageGenerator* accelerated_generator_;
   base::TimeDelta accelerated_last_frame_timestamp_;
