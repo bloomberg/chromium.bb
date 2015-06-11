@@ -58,10 +58,8 @@ enum BinaryType { "blob", "arraybuffer" };
     attribute EventHandler onopen;
     attribute EventHandler onerror;
     attribute EventHandler onclose;
-    // FIXME: Per spec and impl, should never return undefined. Verify and remove extended attribute.
-    [TreatReturnedNullStringAs=Undefined] readonly attribute DOMString extensions;
-    // FIXME: Per spec and impl, should never return undefined. Verify and remove extended attribute.
-    [TreatReturnedNullStringAs=Undefined] readonly attribute DOMString protocol;
+    readonly attribute DOMString extensions;
+    readonly attribute DOMString protocol;
     [RaisesException] void close([Clamp] optional unsigned short code, optional USVString reason);
 
     // messaging
