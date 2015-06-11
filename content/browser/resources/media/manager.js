@@ -73,8 +73,9 @@ var Manager = (function() {
      * @param id The ID of the player to remove.
      */
     removePlayer: function(id) {
+      var playerRemoved = this.players_[id];
       delete this.players_[id];
-      this.clientRenderer_.playerRemoved(this.players_, this.players_[id]);
+      this.clientRenderer_.playerRemoved(this.players_, playerRemoved);
     },
 
     updatePlayerInfoNoRecord: function(id, timestamp, key, value) {

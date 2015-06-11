@@ -137,11 +137,17 @@ var ClientRenderer = (function() {
     },
 
     /**
-     * Called when a playre is removed from the collection.
+     * Called when a player is removed from the collection.
      * @param players The entire map of id -> player.
-     * @param player_added The player that was removed.
+     * @param playerRemoved The player that was removed.
      */
     playerRemoved: function(players, playerRemoved) {
+      if (playerRemoved === this.selectedPlayer) {
+        removeChildren(this.playerPropertiesTable);
+        removeChildren(this.logTable);
+        removeChildren(this.graphElement);
+        document.body.classList.add(ClientRenderer.Css_.NO_PLAYERS_SELECTED);
+      }
       this.redrawPlayerList_(players);
     },
 
