@@ -488,7 +488,7 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
   // Experimental options provided at creation.
   webrtc::Config config;
   if (goog_experimental_aec)
-    config.Set<webrtc::DelayCorrection>(new webrtc::DelayCorrection(true));
+    config.Set<webrtc::ExtendedFilter>(new webrtc::ExtendedFilter(true));
   if (goog_experimental_ns)
     config.Set<webrtc::ExperimentalNs>(new webrtc::ExperimentalNs(true));
   if (IsDelayAgnosticAecEnabled())
