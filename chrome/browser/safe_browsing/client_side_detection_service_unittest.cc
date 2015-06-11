@@ -11,10 +11,13 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/field_trial.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
 #include "chrome/common/safe_browsing/client_model.pb.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
+#include "components/variations/variations_associated_data.h"
 #include "content/public/test/test_browser_thread.h"
 #include "crypto/sha2.h"
 #include "net/http/http_status_code.h"
@@ -62,7 +65,15 @@ ACTION(QuitCurrentMessageLoop) {
 
 class ClientSideDetectionServiceTest : public testing::Test {
  protected:
+  ClientSideDetectionServiceTest() {
+    // Needed to set the singlton.
+    field_trials_.reset(new base::FieldTrialList(NULL));
+  }
+
   void SetUp() override {
+    variations::testing::ClearAllVariationIDs();
+    variations::testing::ClearAllVariationParams();
+
     file_thread_.reset(new content::TestBrowserThread(BrowserThread::FILE,
                                                       &msg_loop_));
 
@@ -106,11 +117,35 @@ class ClientSideDetectionServiceTest : public testing::Test {
     return is_malware_;
   }
 
+  std::string MakeModelUrl() {
+    return ClientSideDetectionService::kClientModelUrlPrefix +
+           ClientSideDetectionService::MakeModelName();
+  }
+
+  // Set up the finch experiment to control the model number
+  // used in the model URL.
+  void SetFinchModelNumber(int model_number) {
+    variations::testing::ClearAllVariationIDs();
+    variations::testing::ClearAllVariationParams();
+
+    const std::string group_name = "ModelFoo";  // Not used in CSD code.
+    base::FieldTrialList::CreateFieldTrial(
+        ClientSideDetectionService::kClientModelFinchExperiment, group_name);
+
+    std::map<std::string, std::string> params;
+    params[ClientSideDetectionService::kClientModelFinchParam] =
+        base::IntToString(model_number);
+
+    variations::AssociateVariationParams(
+        ClientSideDetectionService::kClientModelFinchExperiment, group_name,
+        params);
+  }
+
   void SetModelFetchResponse(std::string response_data,
                              net::HttpStatusCode response_code,
                              net::URLRequestStatus::Status status) {
-    factory_->SetFakeResponse(GURL(ClientSideDetectionService::kClientModelUrl),
-                              response_data, response_code, status);
+    factory_->SetFakeResponse(GURL(MakeModelUrl()), response_data,
+                              response_code, status);
   }
 
   void SetClientReportPhishingResponse(std::string response_data,
@@ -244,6 +279,7 @@ class ClientSideDetectionServiceTest : public testing::Test {
 
   scoped_ptr<content::TestBrowserThread> browser_thread_;
   scoped_ptr<content::TestBrowserThread> file_thread_;
+  scoped_ptr<base::FieldTrialList> field_trials_;
 
   GURL phishing_url_;
   GURL confirmed_malware_url_;
@@ -366,6 +402,49 @@ TEST_F(ClientSideDetectionServiceTest, FetchModelTest) {
                         net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(service, EndFetchModel(
       ClientSideDetectionService::MODEL_NOT_CHANGED))
+      .WillOnce(QuitCurrentMessageLoop());
+  service.StartFetchModel();
+  msg_loop_.Run();  // EndFetchModel will quit the message loop.
+  Mock::VerifyAndClearExpectations(&service);
+}
+
+TEST_F(ClientSideDetectionServiceTest, ModelNamesTest) {
+  // Test the name-templating.
+  EXPECT_EQ(ClientSideDetectionService::FillInModelName(true, 3),
+            "client_model_v5_ext_variation_3.pb");
+  EXPECT_EQ(ClientSideDetectionService::FillInModelName(false, 5),
+            "client_model_v5_variation_5.pb");
+
+  // Use Finch.  Should default to 0.
+  EXPECT_EQ(ClientSideDetectionService::MakeModelName(),
+            "client_model_v5_variation_0.pb");
+
+  SetFinchModelNumber(2);
+  EXPECT_EQ(ClientSideDetectionService::MakeModelName(),
+            "client_model_v5_variation_2.pb");
+
+  SetFinchModelNumber(0);
+  EXPECT_EQ(ClientSideDetectionService::MakeModelName(),
+            "client_model_v5_variation_0.pb");
+}
+
+// Like FetchModelTest, but we vary the finch params.
+TEST_F(ClientSideDetectionServiceTest, FetchExperimentalModelTest) {
+  MockClientSideDetectionService service;
+  EXPECT_CALL(service, ScheduleFetchModel(_)).Times(1);
+  service.SetEnabledAndRefreshState(true);
+
+  ClientSideModel model;
+  model.set_max_words_per_term(0);
+  model.set_version(10);
+  model.add_hashes("bla");
+  model.add_page_term(0);
+
+  SetFinchModelNumber(1);
+  SetModelFetchResponse(model.SerializeAsString(), net::HTTP_OK,
+                        net::URLRequestStatus::SUCCESS);
+  EXPECT_CALL(service, EndFetchModel(
+      ClientSideDetectionService::MODEL_SUCCESS))
       .WillOnce(QuitCurrentMessageLoop());
   service.StartFetchModel();
   msg_loop_.Run();  // EndFetchModel will quit the message loop.

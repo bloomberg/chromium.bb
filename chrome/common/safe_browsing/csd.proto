@@ -15,6 +15,18 @@ option optimize_for = LITE_RUNTIME;
 
 package safe_browsing;
 
+// Protocol buffer describing the Chrome user population of the user reporting
+// data.
+message ChromeUserPopulation {
+  enum UserPopulation {
+    UNKNOWN_USER_POPULATION = 0;
+    SAFE_BROWSING = 1;
+    EXTENDED_REPORTING = 2;
+  }
+  optional UserPopulation user_population = 1;
+}
+
+
 message ClientPhishingRequest {
   // URL that the client visited.  The CGI parameters are stripped by the
   // client.
@@ -71,6 +83,12 @@ message ClientPhishingRequest {
 
   // List of shingle hashes we extracted.
   repeated uint32 shingle_hashes = 12 [packed = true];
+
+  // The model filename (basename) that was used by the client.
+  optional string model_filename = 13;
+
+  // Population that the reporting user is part of.
+  optional ChromeUserPopulation population = 14;
 }
 
 message ClientPhishingResponse {
@@ -117,6 +135,9 @@ message ClientMalwareRequest {
 
   // List of resource urls that match the malware IP list.
   repeated UrlInfo bad_ip_url_info = 7;
+
+  // Population that the reporting user is part of.
+  optional ChromeUserPopulation population = 9;
 }
 
 message ClientMalwareResponse {
@@ -278,6 +299,9 @@ message ClientDownloadRequest {
   }
 
   repeated ArchivedBinary archived_binary = 22;
+
+  // Population that the reporting user is part of.
+  optional ChromeUserPopulation population = 24;
 }
 
 message ClientDownloadResponse {
@@ -490,6 +514,9 @@ message ClientIncidentReport {
   }
 
   optional EnvironmentData environment = 3;
+
+  // Population that the reporting user is part of.
+  optional ChromeUserPopulation population = 7;
 }
 
 message ClientIncidentResponse {

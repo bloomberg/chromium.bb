@@ -180,6 +180,9 @@ class ClientSideDetectionService : public net::URLFetcherDelegate,
   FRIEND_TEST_ALL_PREFIXES(ClientSideDetectionServiceTest, IsBadIpAddress);
   FRIEND_TEST_ALL_PREFIXES(ClientSideDetectionServiceTest,
                            ModelHasValidHashIds);
+  FRIEND_TEST_ALL_PREFIXES(ClientSideDetectionServiceTest, ModelNamesTest);
+  FRIEND_TEST_ALL_PREFIXES(ClientSideDetectionServiceTest,
+                           FetchExperimentalModelTest);
 
   // CacheState holds all information necessary to respond to a caller without
   // actually making a HTTP request.
@@ -202,7 +205,10 @@ class ClientSideDetectionService : public net::URLFetcherDelegate,
 
   static const char kClientReportMalwareUrl[];
   static const char kClientReportPhishingUrl[];
-  static const char kClientModelUrl[];
+  static const char kClientModelUrlPrefix[];
+  static const char kClientModelNamePattern[];
+  static const char kClientModelFinchExperiment[];
+  static const char kClientModelFinchParam[];
   static const size_t kMaxModelSizeBytes;
   static const int kMaxReportsPerInterval;
   static const int kClientModelFetchIntervalMs;
@@ -281,6 +287,13 @@ class ClientSideDetectionService : public net::URLFetcherDelegate,
   // Returns the URL that will be used for phishing requests.
   static GURL GetClientReportUrl(const std::string& report_url);
 
+  // Construct a model name from parameters.
+  static std::string FillInModelName(bool is_extended_reporting,
+                                     int model_number);
+
+  // Construct a model name from client state.
+  static std::string MakeModelName();
+
   // Whether the service is running or not.  When the service is not running,
   // it won't download the model nor report detected phishing URLs.
   bool enabled_;
@@ -289,6 +302,11 @@ class ClientSideDetectionService : public net::URLFetcherDelegate,
   scoped_ptr<ClientSideModel> model_;
   scoped_ptr<base::TimeDelta> model_max_age_;
   scoped_ptr<net::URLFetcher> model_fetcher_;
+
+  // Name of the model in model_.  This is the last component of the URL path.
+  std::string model_name_;
+  // Name of the model currently being fetched.
+  std::string fetching_model_name_;
 
   // Map of client report phishing request to the corresponding callback that
   // has to be invoked when the request is done.

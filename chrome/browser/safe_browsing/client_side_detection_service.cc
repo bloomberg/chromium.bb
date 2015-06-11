@@ -15,6 +15,7 @@
 #include "base/metrics/sparse_histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
@@ -24,6 +25,7 @@
 #include "chrome/common/safe_browsing/client_model.pb.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome/common/safe_browsing/safebrowsing_messages.h"
+#include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -79,8 +81,17 @@ const char ClientSideDetectionService::kClientReportPhishingUrl[] =
     "https://sb-ssl.google.com/safebrowsing/clientreport/phishing";
 const char ClientSideDetectionService::kClientReportMalwareUrl[] =
     "https://sb-ssl.google.com/safebrowsing/clientreport/malware-check";
-const char ClientSideDetectionService::kClientModelUrl[] =
-    "https://ssl.gstatic.com/safebrowsing/csd/client_model_v5.pb";
+const char ClientSideDetectionService::kClientModelUrlPrefix[] =
+    "https://ssl.gstatic.com/safebrowsing/csd/";
+const char ClientSideDetectionService::kClientModelNamePattern[] =
+    "client_model_v5%s_variation_%d.pb";
+
+// Finch names
+const char ClientSideDetectionService::kClientModelFinchExperiment[] =
+    "ClientSideDetectionModel";
+const char ClientSideDetectionService::kClientModelFinchParam[] =
+    "ModelNum";
+
 
 struct ClientSideDetectionService::ClientReportInfo {
   ClientReportPhishingRequestCallback callback;
@@ -269,12 +280,37 @@ void ClientSideDetectionService::ScheduleFetchModel(int64 delay_ms) {
       base::TimeDelta::FromMilliseconds(delay_ms));
 }
 
+// static
+std::string ClientSideDetectionService::MakeModelName() {
+  std::string num_str = variations::GetVariationParamValue(
+      kClientModelFinchExperiment, kClientModelFinchParam);
+  int model_number = 0;
+  if (!base::StringToInt(num_str, &model_number)) {
+    model_number = 0;  // Default model
+  }
+
+  // TODO(nparker): Factor out the model-fetching so we can have
+  // up to two models: One for extended reporting, and one for not.
+  // Until then, we'll use the non-extended reporting model.
+  return FillInModelName(false /* is_extended_reporting */, model_number);
+}
+
+// static
+std::string ClientSideDetectionService::FillInModelName(
+    bool is_extended_reporting,
+    int model_number) {
+  return base::StringPrintf(kClientModelNamePattern,
+                            is_extended_reporting ? "_ext" : "", model_number);
+}
+
 void ClientSideDetectionService::StartFetchModel() {
   if (enabled_) {
     // Start fetching the model either from the cache or possibly from the
     // network if the model isn't in the cache.
+    fetching_model_name_ = MakeModelName();
+    std::string model_url = kClientModelUrlPrefix + fetching_model_name_;
     model_fetcher_ = net::URLFetcher::Create(0 /* ID used for testing */,
-                                             GURL(kClientModelUrl),
+                                             GURL(model_url),
                                              net::URLFetcher::GET, this);
     model_fetcher_->SetRequestContext(request_context_getter_.get());
     model_fetcher_->Start();
@@ -316,6 +352,8 @@ void ClientSideDetectionService::StartClientReportPhishingRequest(
       callback.Run(GURL(request->url()), false);
     return;
   }
+
+  request->set_model_filename(model_name_);
 
   std::string request_data;
   if (!request->SerializeToString(&request_data)) {
@@ -429,6 +467,8 @@ void ClientSideDetectionService::HandleModelResponse(
     // The model is valid => replace the existing model with the new one.
     model_str_.assign(data);
     model_.swap(model);
+    model_name_ = fetching_model_name_;
+    fetching_model_name_ = "";
     model_status = MODEL_SUCCESS;
   }
   EndFetchModel(model_status);
