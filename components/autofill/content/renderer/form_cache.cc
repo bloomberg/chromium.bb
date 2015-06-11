@@ -142,7 +142,7 @@ std::vector<FormData> FormCache::ExtractNewForms() {
     return forms;
 
   FormData synthetic_form;
-  if (!UnownedCheckoutFormElementsAndFieldSetsToFormData(
+  if (!UnownedFormElementsAndFieldSetsToFormData(
           fieldsets, control_elements, nullptr, document, extract_mask,
           &synthetic_form, nullptr)) {
     return forms;

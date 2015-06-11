@@ -118,20 +118,7 @@ GetUnownedAutofillableFormFieldElements(
 // representation for |element|.
 // |extract_mask| usage and the return value are the same as
 // WebFormElementToFormData() above.
-// This function will return false and not perform any extraction if
-// |document| does not pertain to checkout.
-bool UnownedCheckoutFormElementsAndFieldSetsToFormData(
-    const std::vector<blink::WebElement>& fieldsets,
-    const std::vector<blink::WebFormControlElement>& control_elements,
-    const blink::WebFormControlElement* element,
-    const blink::WebDocument& document,
-    ExtractMask extract_mask,
-    FormData* form,
-    FormFieldData* field);
-
-// Same as above, but without the requirement that the elements only be
-// related to checkout.
-bool UnownedPasswordFormElementsAndFieldSetsToFormData(
+bool UnownedFormElementsAndFieldSetsToFormData(
     const std::vector<blink::WebElement>& fieldsets,
     const std::vector<blink::WebFormControlElement>& control_elements,
     const blink::WebFormControlElement* element,

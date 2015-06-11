@@ -61,60 +61,62 @@ typedef std::map<base::string16, blink::WebInputElement> FormInputElementMap;
 // already.
 typedef SavePasswordProgressLogger Logger;
 
-typedef std::vector<FormInputElementMap> FormElementsList;
+// Utility struct for form lookup and autofill. When we parse the DOM to look up
+// a form, in addition to action and origin URL's we have to compare all
+// necessary form elements. To avoid having to look these up again when we want
+// to fill the form, the FindFormElements function stores the pointers
+// in a FormElements* result, referenced to ensure they are safe to use.
+struct FormElements {
+  blink::WebFormElement form_element;
+  FormInputElementMap input_elements;
+};
+
+typedef std::vector<FormElements*> FormElementsList;
 
 bool FillDataContainsUsername(const PasswordFormFillData& fill_data) {
   return !fill_data.username_field.name.empty();
 }
 
-// Returns true if |control_elements| contains an element named |name| and is
-// visible.
-bool IsNamedElementVisible(
-    const std::vector<blink::WebFormControlElement>& control_elements,
-    const base::string16& name) {
-  for (size_t i = 0; i < control_elements.size(); ++i) {
-    if (control_elements[i].nameForAutofill() == name) {
-      return IsWebNodeVisible(control_elements[i]);
-    }
-  }
-  return false;
-}
-
-// Utility function to find the unique entry of |control_elements| for the
+// Utility function to find the unique entry of the |form_element| for the
 // specified input |field|. On successful find, adds it to |result| and returns
 // |true|. Otherwise clears the references from each |HTMLInputElement| from
 // |result| and returns |false|.
-bool FindFormInputElement(
-    const std::vector<blink::WebFormControlElement>& control_elements,
-    const FormFieldData& field,
-    FormInputElementMap* result) {
+bool FindFormInputElement(blink::WebFormElement* form_element,
+                          const FormFieldData& field,
+                          FormElements* result) {
+  blink::WebVector<blink::WebNode> temp_elements;
+  form_element->getNamedElements(field.name, temp_elements);
+
   // Match the first input element, if any.
+  // |getNamedElements| may return non-input elements where the names match,
+  // so the results are filtered for input elements.
   // If more than one match is made, then we have ambiguity (due to misuse
   // of "name" attribute) so is it considered not found.
   bool found_input = false;
-  for (size_t i = 0; i < control_elements.size(); ++i) {
-    if (control_elements[i].nameForAutofill() != field.name)
-      continue;
+  for (size_t i = 0; i < temp_elements.size(); ++i) {
+    if (temp_elements[i].to<blink::WebElement>().hasHTMLTagName("input")) {
+      // Check for a non-unique match.
+      if (found_input) {
+        found_input = false;
+        break;
+      }
 
-    if (!control_elements[i].hasHTMLTagName("input"))
-      continue;
+      // Only fill saved passwords into password fields and usernames into
+      // text fields.
+      blink::WebInputElement input_element =
+          temp_elements[i].to<blink::WebInputElement>();
+      if (input_element.isPasswordField() !=
+          (field.form_control_type == "password"))
+        continue;
 
-    // Check for a non-unique match.
-    if (found_input) {
-      found_input = false;
-      break;
+      // This element matched, add it to our temporary result. It's possible
+      // there are multiple matches, but for purposes of identifying the form
+      // one suffices and if some function needs to deal with multiple
+      // matching elements it can get at them through the FormElement*.
+      // Note: This assignment adds a reference to the InputElement.
+      result->input_elements[field.name] = input_element;
+      found_input = true;
     }
-
-    // Only fill saved passwords into password fields and usernames into
-    // text fields.
-    const blink::WebInputElement input_element =
-        control_elements[i].toConst<blink::WebInputElement>();
-    if (input_element.isPasswordField() !=
-        (field.form_control_type == "password"))
-      continue;
-
-    (*result)[field.name] = input_element;
-    found_input = true;
   }
 
   // A required element was not found. This is not the right form.
@@ -122,7 +124,7 @@ bool FindFormInputElement(
   // iteration remain in the result set.
   // Note: clear will remove a reference from each InputElement.
   if (!found_input) {
-    result->clear();
+    result->input_elements.clear();
     return false;
   }
 
@@ -170,15 +172,14 @@ bool ShouldHighlightFields() {
          kFillOnAccountSelectFieldTrialEnabledWithNoHighlightGroup;
 }
 
-// Helper to search through |control_elements| for the specified input elements
-// in |data|, and add results to |result|.
-bool FindFormInputElements(
-    const std::vector<blink::WebFormControlElement>& control_elements,
-    const PasswordFormFillData& data,
-    FormInputElementMap* result) {
-  return FindFormInputElement(control_elements, data.password_field, result) &&
+// Helper to search the given form element for the specified input elements in
+// |data|, and add results to |result|.
+bool FindFormInputElements(blink::WebFormElement* form_element,
+                           const PasswordFormFillData& data,
+                           FormElements* result) {
+  return FindFormInputElement(form_element, data.password_field, result) &&
          (!FillDataContainsUsername(data) ||
-          FindFormInputElement(control_elements, data.username_field, result));
+          FindFormInputElement(form_element, data.username_field, result));
 }
 
 // Helper to locate form elements identified by |data|.
@@ -204,22 +205,15 @@ void FindFormElements(content::RenderFrame* render_frame,
     if (data.action != GetCanonicalActionForForm(fe))
       continue;
 
-    std::vector<blink::WebFormControlElement> control_elements =
-        ExtractAutofillableElementsInForm(fe);
-    FormInputElementMap cur_map;
-    if (FindFormInputElements(control_elements, data, &cur_map))
-      results->push_back(cur_map);
-  }
-  // If the element to be filled are not in a <form> element, the "action" and
-  // origin should be the same.
-  if (data.action != data.origin)
-    return;
+    scoped_ptr<FormElements> curr_elements(new FormElements);
+    if (!FindFormInputElements(&fe, data, curr_elements.get()))
+      continue;
 
-  std::vector<blink::WebFormControlElement> control_elements =
-      GetUnownedAutofillableFormFieldElements(doc.all(), nullptr);
-  FormInputElementMap unowned_elements_map;
-  if (FindFormInputElements(control_elements, data, &unowned_elements_map))
-    results->push_back(unowned_elements_map);
+    // We found the right element.
+    // Note: this assignment adds a reference to |fe|.
+    curr_elements->form_element = fe;
+    results->push_back(curr_elements.release());
+  }
 }
 
 bool IsElementEditable(const blink::WebInputElement& element) {
@@ -239,13 +233,36 @@ bool IsElementAutocompletable(const blink::WebInputElement& element) {
   return IsElementEditable(element);
 }
 
+// Returns true if the password specified in |form| is a default value.
+bool PasswordValueIsDefault(const base::string16& password_element,
+                            const base::string16& password_value,
+                            blink::WebFormElement form_element) {
+  blink::WebVector<blink::WebNode> temp_elements;
+  form_element.getNamedElements(password_element, temp_elements);
+
+  // We are loose in our definition here and will return true if any of the
+  // appropriately named elements match the element to be saved. Currently
+  // we ignore filling passwords where naming is ambigious anyway.
+  for (size_t i = 0; i < temp_elements.size(); ++i) {
+    if (temp_elements[i].to<blink::WebElement>().getAttribute("value") ==
+        password_value)
+      return true;
+  }
+  return false;
+}
+
 // Return true if either password_value or new_password_value is not empty and
 // not default.
-bool FormContainsNonDefaultPasswordValue(const PasswordForm& password_form) {
+bool FormContainsNonDefaultPasswordValue(const PasswordForm& password_form,
+                                         blink::WebFormElement form_element) {
   return (!password_form.password_value.empty() &&
-          !password_form.password_value_is_default) ||
+          !PasswordValueIsDefault(password_form.password_element,
+                                  password_form.password_value,
+                                  form_element)) ||
       (!password_form.new_password_value.empty() &&
-       !password_form.new_password_value_is_default);
+       !PasswordValueIsDefault(password_form.new_password_element,
+                               password_form.new_password_value,
+                               form_element));
 }
 
 // Log a message including the name, method and action of |form|.
@@ -516,12 +533,10 @@ bool ContainsNonNullEntryForNonNullKey(
 
 
 // Helper function to check if there exist any form on |frame| where its action
-// equals |action| or input elements outside a <form> tag if |action| equals
-// the current url. Return true if so.
+// equals |action|. Return true if so.
 bool IsFormVisible(
     blink::WebFrame* frame,
-    const GURL& action,
-    const FormsPredictionsMap& form_predictions) {
+    GURL& action) {
   blink::WebVector<blink::WebFormElement> forms;
   frame->document().forms(forms);
 
@@ -532,20 +547,6 @@ bool IsFormVisible(
 
     if (action == GetCanonicalActionForForm(form))
       return true; // Form still exists
-  }
-
-  scoped_ptr<PasswordForm> unowned_password_form(
-      CreatePasswordFormFromUnownedInputElements(
-          *frame, nullptr, &form_predictions));
-  std::vector<blink::WebFormControlElement> control_elements =
-      GetUnownedAutofillableFormFieldElements(frame->document().all(), nullptr);
-  if (unowned_password_form &&
-      action == unowned_password_form->action &&
-      IsNamedElementVisible(control_elements,
-                            unowned_password_form->username_element) &&
-      IsNamedElementVisible(control_elements,
-                            unowned_password_form->password_element)) {
-    return true;
   }
 
   return false;
@@ -730,16 +731,7 @@ void PasswordAutofillAgent::UpdateStateForTextChange(
     // handlers run, so save away a copy of the password in case it gets lost.
     // To honor the user having explicitly cleared the password, even an empty
     // password will be saved here.
-    scoped_ptr<PasswordForm> password_form;
-    if (element.form().isNull()) {
-      password_form = CreatePasswordFormFromUnownedInputElements(
-          *element.document().frame(), &nonscript_modified_values_,
-          &form_predictions_);
-    } else {
-      password_form = CreatePasswordFormFromWebForm(
-          element.form(), &nonscript_modified_values_, &form_predictions_);
-    }
-    ProvisionallySavePassword(password_form.Pass(), RESTRICTION_NONE);
+    ProvisionallySavePassword(element.form(), RESTRICTION_NONE);
 
     PasswordToLoginMap::iterator iter = password_to_username_.find(element);
     if (iter != password_to_username_.end()) {
@@ -891,12 +883,11 @@ void PasswordAutofillAgent::OnDynamicFormsSeen() {
 void PasswordAutofillAgent::XHRSucceeded() {
   if (!ProvisionallySavedPasswordIsValid())
     return;
+  blink::WebFrame* frame = render_frame()->GetWebFrame();
 
   // Prompt to save only if the form is now gone, either invisible or
   // removed from the DOM.
-  blink::WebFrame* frame = render_frame()->GetWebFrame();
-  if (IsFormVisible(frame, provisionally_saved_form_->action,
-                    form_predictions_))
+  if (IsFormVisible(frame, provisionally_saved_form_->action))
     return;
 
   Send(new AutofillHostMsg_InPageNavigation(routing_id(),
@@ -960,28 +951,14 @@ void PasswordAutofillAgent::SendPasswordForms(bool only_visible) {
     }
 
     scoped_ptr<PasswordForm> password_form(
-        CreatePasswordFormFromWebForm(form, nullptr, &form_predictions_));
-    if (password_form) {
+        CreatePasswordForm(form, nullptr, &form_predictions_));
+    if (password_form.get()) {
       if (logger) {
         logger->LogPasswordForm(Logger::STRING_FORM_IS_PASSWORD,
                                 *password_form);
       }
       password_forms.push_back(*password_form);
     }
-  }
-
-  // See if there are any unattached input elements that could be used for
-  // password submission.
-  scoped_ptr<PasswordForm> password_form(
-      CreatePasswordFormFromUnownedInputElements(*frame,
-                                                 nullptr,
-                                                 &form_predictions_));
-  if (password_form) {
-    if (logger) {
-      logger->LogPasswordForm(Logger::STRING_FORM_IS_PASSWORD,
-                              *password_form);
-    }
-    password_forms.push_back(*password_form);
   }
 
   if (password_forms.empty() && !only_visible) {
@@ -1044,8 +1021,7 @@ void PasswordAutofillAgent::DidCommitProvisionalLoad(
     return; // Not a top-level navigation.
 
   // Prompt to save only if the form disappeared.
-  if (IsFormVisible(frame, provisionally_saved_form_->action,
-                    form_predictions_))
+  if (IsFormVisible(frame, provisionally_saved_form_->action))
     return;
 
   if (is_same_page_navigation) {
@@ -1095,10 +1071,7 @@ void PasswordAutofillAgent::WillSendSubmitEvent(
   // cleared by some scripts (http://crbug.com/28910, http://crbug.com/391693).
   // Had the user cleared the password, |provisionally_saved_form_| would
   // already have been updated in TextDidChangeInTextField.
-  scoped_ptr<PasswordForm> password_form = CreatePasswordFormFromWebForm(
-      form, &nonscript_modified_values_, &form_predictions_);
-  ProvisionallySavePassword(password_form.Pass(),
-                            RESTRICTION_NON_EMPTY_PASSWORD);
+  ProvisionallySavePassword(form, RESTRICTION_NON_EMPTY_PASSWORD);
 }
 
 void PasswordAutofillAgent::WillSubmitForm(const blink::WebFormElement& form) {
@@ -1110,8 +1083,7 @@ void PasswordAutofillAgent::WillSubmitForm(const blink::WebFormElement& form) {
   }
 
   scoped_ptr<PasswordForm> submitted_form =
-      CreatePasswordFormFromWebForm(form, &nonscript_modified_values_,
-                                    &form_predictions_);
+      CreatePasswordForm(form, &nonscript_modified_values_, &form_predictions_);
 
   // If there is a provisionally saved password, copy over the previous
   // password value so we get the user's typed password, not the value that
@@ -1184,7 +1156,6 @@ void PasswordAutofillAgent::LegacyDidStartProvisionalLoad(
           routing_id(), *provisionally_saved_form_));
       provisionally_saved_form_.reset();
     } else {
-      ScopedVector<PasswordForm> possible_submitted_forms;
       // Loop through the forms on the page looking for one that has been
       // filled out. If one exists, try and save the credentials.
       blink::WebVector<blink::WebFormElement> forms;
@@ -1197,19 +1168,10 @@ void PasswordAutofillAgent::LegacyDidStartProvisionalLoad(
           LogHTMLForm(logger.get(), Logger::STRING_FORM_FOUND_ON_PAGE,
                       form_element);
         }
-        possible_submitted_forms.push_back(CreatePasswordFormFromWebForm(
+        scoped_ptr<PasswordForm> password_form(CreatePasswordForm(
             form_element, &nonscript_modified_values_, &form_predictions_));
-      }
-
-      possible_submitted_forms.push_back(
-          CreatePasswordFormFromUnownedInputElements(
-              *render_frame()->GetWebFrame(),
-              &nonscript_modified_values_,
-              &form_predictions_));
-
-      for (const PasswordForm* password_form : possible_submitted_forms) {
-        if (password_form && !password_form->username_value.empty() &&
-            FormContainsNonDefaultPasswordValue(*password_form)) {
+        if (password_form.get() && !password_form->username_value.empty() &&
+            FormContainsNonDefaultPasswordValue(*password_form, form_element)) {
           password_forms_found = true;
           if (logger) {
             logger->LogPasswordForm(Logger::STRING_PASSWORD_FORM_FOUND_ON_PAGE,
@@ -1217,10 +1179,8 @@ void PasswordAutofillAgent::LegacyDidStartProvisionalLoad(
           }
           Send(new AutofillHostMsg_PasswordFormSubmitted(routing_id(),
                                                          *password_form));
-          break;
         }
       }
-
       if (!password_forms_found && logger)
         logger->LogMessage(Logger::STRING_PASSWORD_FORM_NOT_FOUND_ON_PAGE);
     }
@@ -1242,16 +1202,20 @@ void PasswordAutofillAgent::OnFillPasswordForm(
   }
 
   FormElementsList forms;
+  // We own the FormElements* in forms.
   FindFormElements(render_frame(), form_data, &forms);
   FormElementsList::iterator iter;
   for (iter = forms.begin(); iter != forms.end(); ++iter) {
+    scoped_ptr<FormElements> form_elements(*iter);
+
     // Attach autocomplete listener to enable selecting alternate logins.
     blink::WebInputElement username_element, password_element;
 
     // Check whether the password form has a username input field.
     bool form_contains_username_field = FillDataContainsUsername(form_data);
     if (form_contains_username_field) {
-      username_element = (*iter)[form_data.username_field.name];
+      username_element =
+          form_elements->input_elements[form_data.username_field.name];
     }
 
     // No password field, bail out.
@@ -1266,7 +1230,8 @@ void PasswordAutofillAgent::OnFillPasswordForm(
 
     // Get pointer to password element. (We currently only support single
     // password forms).
-    password_element = (*iter)[form_data.password_field.name];
+    password_element =
+        form_elements->input_elements[form_data.password_field.name];
 
     // If wait_for_username is true, we don't want to initially fill the form
     // until the user types in a valid username.
@@ -1306,23 +1271,12 @@ void PasswordAutofillAgent::OnFindFocusedPasswordForm() {
   if (!element.isNull() && element.hasHTMLTagName("input")) {
     blink::WebInputElement input = element.to<blink::WebInputElement>();
     if (input.isPasswordField() && !input.form().isNull()) {
-      if (!input.form().isNull()) {
-        password_form = CreatePasswordFormFromWebForm(
-            input.form(), &nonscript_modified_values_, &form_predictions_);
-      } else {
-        password_form = CreatePasswordFormFromUnownedInputElements(
-            *render_frame()->GetWebFrame(),
-            &nonscript_modified_values_, &form_predictions_);
-        // Only try to use this form if |input| is one of the password elements
-        // for |password_form|.
-        if (password_form->password_element != input.nameForAutofill() &&
-            password_form->new_password_element != input.nameForAutofill())
-          password_form.reset();
-      }
+      password_form = CreatePasswordForm(
+          input.form(), &nonscript_modified_values_, &form_predictions_);
     }
   }
 
-  if (!password_form)
+  if (!password_form.get())
     password_form.reset(new PasswordForm());
 
   Send(new AutofillHostMsg_FocusedPasswordFormFound(
@@ -1476,8 +1430,10 @@ void PasswordAutofillAgent::ClearPreview(
 }
 
 void PasswordAutofillAgent::ProvisionallySavePassword(
-    scoped_ptr<PasswordForm> password_form,
+    const blink::WebFormElement& form,
     ProvisionallySaveRestriction restriction) {
+  scoped_ptr<PasswordForm> password_form(CreatePasswordForm(
+      form, &nonscript_modified_values_, &form_predictions_));
   if (!password_form || (restriction == RESTRICTION_NON_EMPTY_PASSWORD &&
                          password_form->password_value.empty() &&
                          password_form->new_password_value.empty())) {

@@ -3958,7 +3958,7 @@ TEST_F(FormAutofillTest,
   ASSERT_EQ(2U, fieldsets.size());
 
   FormData form;
-  EXPECT_TRUE(UnownedCheckoutFormElementsAndFieldSetsToFormData(
+  EXPECT_TRUE(UnownedFormElementsAndFieldSetsToFormData(
       fieldsets, control_elements, nullptr, frame->document(), extract_mask,
       &form, nullptr));
 
@@ -4018,7 +4018,7 @@ TEST_F(FormAutofillTest,
   ASSERT_EQ(1U, fieldsets.size());
 
   FormData form;
-  EXPECT_TRUE(UnownedCheckoutFormElementsAndFieldSetsToFormData(
+  EXPECT_TRUE(UnownedFormElementsAndFieldSetsToFormData(
       fieldsets, control_elements, nullptr, frame->document(), extract_mask,
       &form, nullptr));
 
@@ -4067,7 +4067,7 @@ TEST_F(FormAutofillTest, UnownedFormElementsAndFieldSetsToFormDataWithForm) {
   ASSERT_TRUE(fieldsets.empty());
 
   FormData form;
-  EXPECT_FALSE(UnownedCheckoutFormElementsAndFieldSetsToFormData(
+  EXPECT_FALSE(UnownedFormElementsAndFieldSetsToFormData(
       fieldsets, control_elements, nullptr, frame->document(), extract_mask,
       &form, nullptr));
 }

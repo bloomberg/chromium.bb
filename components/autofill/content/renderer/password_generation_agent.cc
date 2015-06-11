@@ -195,7 +195,7 @@ void PasswordGenerationAgent::FindPossibleGenerationForm() {
     // If we can't get a valid PasswordForm, we skip this form because the
     // the password won't get saved even if we generate it.
     scoped_ptr<PasswordForm> password_form(
-        CreatePasswordFormFromWebForm(forms[i], nullptr, nullptr));
+        CreatePasswordForm(forms[i], nullptr, nullptr));
     if (!password_form.get()) {
       VLOG(2) << "Skipping form as it would not be saved";
       continue;

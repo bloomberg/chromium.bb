@@ -31,12 +31,8 @@ void PasswordFormToJSON(const PasswordForm& form,
   target->SetString("username_value", form.username_value);
   target->SetString("password_elem", form.password_element);
   target->SetString("password_value", form.password_value);
-  target->SetBoolean("password_value_is_default",
-                     form.password_value_is_default);
   target->SetString("new_password_element", form.new_password_element);
   target->SetString("new_password_value", form.new_password_value);
-  target->SetBoolean("new_password_value_is_default",
-                     form.new_password_value_is_default);
   target->SetBoolean("new_password_marked_by_site",
                      form.new_password_marked_by_site);
   target->SetString("other_possible_usernames",
@@ -70,9 +66,7 @@ void PasswordFormToJSON(const PasswordForm& form,
 PasswordForm::PasswordForm()
     : scheme(SCHEME_HTML),
       username_marked_by_site(false),
-      password_value_is_default(false),
       password_autocomplete_set(true),
-      new_password_value_is_default(false),
       new_password_marked_by_site(false),
       ssl_valid(false),
       preferred(false),

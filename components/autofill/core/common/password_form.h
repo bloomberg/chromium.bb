@@ -164,10 +164,6 @@ struct PasswordForm {
   // When parsing an HTML form, this is typically empty.
   base::string16 password_value;
 
-  // Whether the password value is the same as specified in the "value"
-  // attribute of the input element. Only used in the renderer.
-  bool password_value_is_default;
-
   // False if autocomplete is set to "off" for the password input element;
   // True otherwise.
   bool password_autocomplete_set;
@@ -178,10 +174,6 @@ struct PasswordForm {
 
   // The new password. Optional, and not persisted.
   base::string16 new_password_value;
-
-  // Whether the password value is the same as specified in the "value"
-  // attribute of the input element. Only used in the renderer.
-  bool new_password_value_is_default;
 
   // Whether the |new_password_element| has an autocomplete=new-password
   // attribute. This is only used in parsed HTML forms.
