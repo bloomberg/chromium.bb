@@ -19,8 +19,6 @@
 #include "chrome/browser/devtools/devtools_targets_ui.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_frontend_host.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -34,8 +32,7 @@ class WebContents;
 }
 
 // Base implementation of DevTools bindings around front-end.
-class DevToolsUIBindings : public content::NotificationObserver,
-                           public content::DevToolsFrontendHost::Delegate,
+class DevToolsUIBindings :public content::DevToolsFrontendHost::Delegate,
                            public DevToolsEmbedderMessageDispatcher::Delegate,
                            public DevToolsAndroidBridge::DeviceCountListener,
                            public content::DevToolsAgentHostClient,
@@ -43,7 +40,6 @@ class DevToolsUIBindings : public content::NotificationObserver,
  public:
   static DevToolsUIBindings* ForWebContents(
       content::WebContents* web_contents);
-  static GURL ApplyThemeToURL(Profile* profile, const GURL& base_url);
 
   class Delegate {
    public:
@@ -81,10 +77,6 @@ class DevToolsUIBindings : public content::NotificationObserver,
   bool IsAttachedTo(content::DevToolsAgentHost* agent_host);
 
  private:
-  // content::NotificationObserver overrides.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
 
   // content::DevToolsFrontendHost::Delegate implementation.
   void HandleMessageFromDevToolsFrontend(const std::string& message) override;
@@ -188,8 +180,7 @@ class DevToolsUIBindings : public content::NotificationObserver,
   void ShowDevToolsConfirmInfoBar(const base::string16& message,
                                   const InfoBarCallback& callback);
 
-  // Theme and extensions support.
-  void UpdateTheme();
+  // Extensions support.
   void AddDevToolsExtensionsToClient();
 
   class FrontendWebContentsObserver;
@@ -201,7 +192,6 @@ class DevToolsUIBindings : public content::NotificationObserver,
   content::WebContents* web_contents_;
   scoped_ptr<Delegate> delegate_;
   scoped_refptr<content::DevToolsAgentHost> agent_host_;
-  content::NotificationRegistrar registrar_;
   scoped_ptr<content::DevToolsFrontendHost> frontend_host_;
   scoped_ptr<DevToolsFileHelper> file_helper_;
   scoped_refptr<DevToolsFileSystemIndexer> file_system_indexer_;

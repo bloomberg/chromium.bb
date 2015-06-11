@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/scoped_user_pref_update.h"
@@ -171,6 +172,23 @@ BrowserWindow* DevToolsToolboxDelegate::GetInspectedBrowserWindow() {
     return browser->window();
   return NULL;
 }
+
+// static
+GURL DecorateFrontendURL(const GURL& base_url) {
+  std::string frontend_url = base_url.spec();
+  std::string url_string(
+      frontend_url +
+      ((frontend_url.find("?") == std::string::npos) ? "?" : "&") +
+      "dockSide=undocked"); // TODO(dgozman): remove this support in M38.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableDevToolsExperiments))
+    url_string += "&experiments=true";
+#if defined(DEBUG_DEVTOOLS)
+  url_string += "&debugFrontend=true";
+#endif  // defined(DEBUG_DEVTOOLS)
+  return GURL(url_string);
+}
+
 }  // namespace
 
 // DevToolsEventForwarder -----------------------------------------------------
@@ -732,7 +750,7 @@ DevToolsWindow* DevToolsWindow::Create(
   scoped_ptr<WebContents> main_web_contents(
       WebContents::Create(WebContents::CreateParams(profile)));
   main_web_contents->GetController().LoadURL(
-      DevToolsUIBindings::ApplyThemeToURL(profile, url), content::Referrer(),
+      DecorateFrontendURL(url), content::Referrer(),
       ui::PAGE_TRANSITION_AUTO_TOPLEVEL, std::string());
   DevToolsUIBindings* bindings =
       DevToolsUIBindings::ForWebContents(main_web_contents.get());

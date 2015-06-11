@@ -4,7 +4,6 @@
 
 #include "chrome/browser/devtools/devtools_ui_bindings.h"
 
-#include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/metrics/histogram.h"
@@ -20,9 +19,6 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/themes/theme_properties.h"
-#include "chrome/browser/themes/theme_service.h"
-#include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -83,15 +79,6 @@ const size_t kMaxMessageChunkSize = IPC::Channel::kMaximumMessageSize / 4;
 typedef std::vector<DevToolsUIBindings*> DevToolsUIBindingsList;
 base::LazyInstance<DevToolsUIBindingsList>::Leaky g_instances =
     LAZY_INSTANCE_INITIALIZER;
-
-std::string SkColorToRGBAString(SkColor color) {
-  // We avoid StringPrintf because it will use locale specific formatters for
-  // the double (e.g. ',' instead of '.' in German).
-  return "rgba(" + base::IntToString(SkColorGetR(color)) + "," +
-      base::IntToString(SkColorGetG(color)) + "," +
-      base::IntToString(SkColorGetB(color)) + "," +
-      base::DoubleToString(SkColorGetA(color) / 255.0) + ")";
-}
 
 base::DictionaryValue* CreateFileSystemValue(
     DevToolsFileHelper::FileSystem file_system) {
@@ -387,29 +374,6 @@ DevToolsUIBindings* DevToolsUIBindings::ForWebContents(
  return NULL;
 }
 
-// static
-GURL DevToolsUIBindings::ApplyThemeToURL(Profile* profile,
-                                         const GURL& base_url) {
-  std::string frontend_url = base_url.spec();
-  ThemeService* tp = ThemeServiceFactory::GetForProfile(profile);
-  DCHECK(tp);
-  std::string url_string(
-      frontend_url +
-      ((frontend_url.find("?") == std::string::npos) ? "?" : "&") +
-      "dockSide=undocked" + // TODO(dgozman): remove this support in M38.
-      "&toolbarColor=" +
-      SkColorToRGBAString(tp->GetColor(ThemeProperties::COLOR_TOOLBAR)) +
-      "&textColor=" +
-      SkColorToRGBAString(tp->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT)));
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableDevToolsExperiments))
-    url_string += "&experiments=true";
-#if defined(DEBUG_DEVTOOLS)
-  url_string += "&debugFrontend=true";
-#endif  // defined(DEBUG_DEVTOOLS)
-  return GURL(url_string);
-}
-
 DevToolsUIBindings::DevToolsUIBindings(content::WebContents* web_contents)
     : profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
       android_bridge_(DevToolsAndroidBridge::Factory::GetForProfile(profile_)),
@@ -434,11 +398,6 @@ DevToolsUIBindings::DevToolsUIBindings(content::WebContents* web_contents)
   entry->GetFavicon().valid = true;
 
   // Register on-load actions.
-  registrar_.Add(
-      this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
-      content::Source<ThemeService>(
-          ThemeServiceFactory::GetForProfile(profile_)));
-
   embedder_message_dispatcher_.reset(
       DevToolsEmbedderMessageDispatcher::CreateForDevToolsFrontend(this));
 
@@ -466,14 +425,6 @@ DevToolsUIBindings::~DevToolsUIBindings() {
       std::find(instances->begin(), instances->end(), this));
   DCHECK(it != instances->end());
   instances->erase(it);
-}
-
-// content::NotificationObserver overrides ------------------------------------
-void DevToolsUIBindings::Observe(int type,
-                                 const content::NotificationSource& source,
-                                 const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_BROWSER_THEME_CHANGED, type);
-  UpdateTheme();
 }
 
 // content::DevToolsFrontendHost::Delegate implementation ---------------------
@@ -945,18 +896,6 @@ void DevToolsUIBindings::ShowDevToolsConfirmInfoBar(
       callback, message);
 }
 
-void DevToolsUIBindings::UpdateTheme() {
-  ThemeService* tp = ThemeServiceFactory::GetForProfile(profile_);
-  DCHECK(tp);
-
-  std::string command("DevToolsAPI.setToolbarColors(\"" +
-      SkColorToRGBAString(tp->GetColor(ThemeProperties::COLOR_TOOLBAR)) +
-      "\", \"" +
-      SkColorToRGBAString(tp->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT)) +
-      "\")");
-  web_contents_->GetMainFrame()->ExecuteJavaScript(base::ASCIIToUTF16(command));
-}
-
 void DevToolsUIBindings::AddDevToolsExtensionsToClient() {
   const extensions::ExtensionRegistry* registry =
       extensions::ExtensionRegistry::Get(profile_->GetOriginalProfile());
@@ -1057,6 +996,5 @@ void DevToolsUIBindings::FrontendLoaded() {
   // Call delegate first - it seeds importants bit of information.
   delegate_->OnLoadCompleted();
 
-  UpdateTheme();
   AddDevToolsExtensionsToClient();
 }
