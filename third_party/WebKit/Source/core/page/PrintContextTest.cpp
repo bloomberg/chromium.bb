@@ -334,7 +334,7 @@ TEST_F(PrintContextFrameTest, WithSubframe)
     EXPECT_EQ(MockCanvas::DrawRect, operations[1].type);
     EXPECT_SKRECT_EQ(350, 360, 270, 280, operations[1].rect);
 
-    subframe->detach(FrameDetachType::Remove);
+    subframe->detach();
     static_cast<SingleChildFrameLoaderClient*>(document().frame()->client())->setChild(nullptr);
     document().frame()->host()->decrementSubframeCount();
 }
@@ -377,7 +377,7 @@ TEST_F(PrintContextFrameTest, WithScrolledSubframe)
     EXPECT_EQ(MockCanvas::DrawRect, operations[2].type);
     EXPECT_SKRECT_EQ(250, 260, 270, 280, operations[2].rect);
 
-    subframe->detach(FrameDetachType::Remove);
+    subframe->detach();
     static_cast<SingleChildFrameLoaderClient*>(document().frame()->client())->setChild(nullptr);
     document().frame()->host()->decrementSubframeCount();
 }

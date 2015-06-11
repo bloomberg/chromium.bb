@@ -35,7 +35,7 @@ void RemoteFrameClientImpl::willBeDetached()
 {
 }
 
-void RemoteFrameClientImpl::detached(FrameDetachType type)
+void RemoteFrameClientImpl::detached()
 {
     // Alert the client that the frame is being detached.
     RefPtrWillBeRawPtr<WebRemoteFrameImpl> protector(m_webFrame);
@@ -44,7 +44,7 @@ void RemoteFrameClientImpl::detached(FrameDetachType type)
     if (!client)
         return;
 
-    client->frameDetached(static_cast<WebRemoteFrameClient::DetachType>(type));
+    client->frameDetached();
     // Clear our reference to RemoteFrame at the very end, in case the client
     // refers to it.
     m_webFrame->setCoreFrame(nullptr);

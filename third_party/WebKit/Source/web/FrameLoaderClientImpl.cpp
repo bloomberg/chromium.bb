@@ -315,7 +315,7 @@ void FrameLoaderClientImpl::willBeDetached()
     m_webFrame->willBeDetached();
 }
 
-void FrameLoaderClientImpl::detached(FrameDetachType type)
+void FrameLoaderClientImpl::detached()
 {
     // Alert the client that the frame is being detached. This is the last
     // chance we have to communicate with the client.
@@ -331,7 +331,7 @@ void FrameLoaderClientImpl::detached(FrameDetachType type)
     // place at this point since we are no longer associated with the Page.
     m_webFrame->setClient(0);
 
-    client->frameDetached(m_webFrame, static_cast<WebFrameClient::DetachType>(type));
+    client->frameDetached(m_webFrame);
     // Clear our reference to LocalFrame at the very end, in case the client
     // refers to it.
     m_webFrame->setCoreFrame(nullptr);

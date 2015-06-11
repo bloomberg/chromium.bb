@@ -273,7 +273,7 @@ void LocalFrame::reload(FrameLoadType loadType, ClientRedirectPolicy clientRedir
     }
 }
 
-void LocalFrame::detach(FrameDetachType type)
+void LocalFrame::detach()
 {
     PluginScriptForbiddenScope forbidPluginDestructorScripting;
     // A lot of the following steps can result in the current frame being
@@ -300,18 +300,13 @@ void LocalFrame::detach(FrameDetachType type)
     setView(nullptr);
     willDetachFrameHost();
     InspectorInstrumentation::frameDetachedFromParent(this);
-    Frame::detach(type);
+    Frame::detach();
 
     // Signal frame destruction here rather than in the destructor.
     // Main motivation is to avoid being dependent on its exact timing (Oilpan.)
     LocalFrameLifecycleNotifier::notifyContextDestroyed();
     m_supplements.clear();
     WeakIdentifierMap<LocalFrame>::notifyObjectDestroyed(this);
-}
-
-bool LocalFrame::prepareForCommit()
-{
-    return loader().prepareForCommit();
 }
 
 SecurityContext* LocalFrame::securityContext() const

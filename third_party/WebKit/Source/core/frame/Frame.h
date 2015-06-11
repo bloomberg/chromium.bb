@@ -55,8 +55,6 @@ class WindowProxy;
 class WindowProxyManager;
 struct FrameLoadRequest;
 
-enum class FrameDetachType { Remove, Swap };
-
 // Status of user gesture.
 enum class UserGestureStatus { Active, None };
 
@@ -78,7 +76,7 @@ public:
     virtual void navigate(const FrameLoadRequest&) = 0;
     virtual void reload(FrameLoadType, ClientRedirectPolicy) = 0;
 
-    virtual void detach(FrameDetachType);
+    virtual void detach();
     void detachChildren();
     virtual void disconnectOwnerElement();
 
@@ -105,12 +103,6 @@ public:
     Frame* findFrameForNavigation(const AtomicString& name, Frame& activeFrame);
     Frame* findUnsafeParentScrollPropagationBoundary();
 
-    // This prepares the Frame for the next commit. It will detach children,
-    // dispatch unload events, abort XHR requests and detach the document.
-    // Returns true if the frame is ready to receive the next commit, or false
-    // otherwise.
-    virtual bool prepareForCommit() = 0;
-    void prepareSwapFrom(Frame*);
     void finishSwapFrom(Frame*);
 
     bool canNavigate(const Frame&);

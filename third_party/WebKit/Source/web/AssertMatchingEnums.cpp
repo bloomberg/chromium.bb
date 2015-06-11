@@ -41,7 +41,6 @@
 #include "core/editing/SelectionType.h"
 #include "core/editing/TextAffinity.h"
 #include "core/fileapi/FileError.h"
-#include "core/frame/Frame.h"
 #include "core/frame/Settings.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/HTMLFormElement.h"
@@ -127,7 +126,6 @@
 #include "public/web/WebInputEvent.h"
 #include "public/web/WebNavigationPolicy.h"
 #include "public/web/WebNavigatorContentUtilsClient.h"
-#include "public/web/WebRemoteFrameClient.h"
 #include "public/web/WebSandboxFlags.h"
 #include "public/web/WebSecurityPolicy.h"
 #include "public/web/WebSelection.h"
@@ -735,9 +733,4 @@ STATIC_ASSERT_MATCHING_ENUM(WebFrameLoadType::RedirectWithLockedBackForwardList,
 STATIC_ASSERT_MATCHING_ENUM(WebFrameLoadType::InitialInChildFrame, FrameLoadTypeInitialInChildFrame);
 STATIC_ASSERT_MATCHING_ENUM(WebFrameLoadType::InitialHistoryLoad, FrameLoadTypeInitialHistoryLoad);
 STATIC_ASSERT_MATCHING_ENUM(WebFrameLoadType::ReloadFromOrigin, FrameLoadTypeReloadFromOrigin);
-
-STATIC_ASSERT_MATCHING_ENUM(FrameDetachType::Remove, WebFrameClient::DetachType::Remove);
-STATIC_ASSERT_MATCHING_ENUM(FrameDetachType::Swap, WebFrameClient::DetachType::Swap);
-STATIC_ASSERT_MATCHING_ENUM(FrameDetachType::Remove, WebRemoteFrameClient::DetachType::Remove);
-STATIC_ASSERT_MATCHING_ENUM(FrameDetachType::Swap, WebRemoteFrameClient::DetachType::Swap);
 } // namespace blink

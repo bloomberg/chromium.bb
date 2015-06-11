@@ -1000,10 +1000,18 @@ void FrameLoader::notifyIfInitialDocumentAccessed()
     }
 }
 
-bool FrameLoader::prepareForCommit()
+void FrameLoader::commitProvisionalLoad()
 {
+    ASSERT(client()->hasWebView());
     PluginScriptForbiddenScope forbidPluginDestructorScripting;
     RefPtr<DocumentLoader> pdl = m_provisionalDocumentLoader;
+    RefPtrWillBeRawPtr<LocalFrame> protect(m_frame.get());
+
+    // Check if the destination page is allowed to access the previous page's timing information.
+    if (m_frame->document()) {
+        RefPtr<SecurityOrigin> securityOrigin = SecurityOrigin::create(pdl->request().url());
+        pdl->timing().setHasSameOriginAsPreviousDocument(securityOrigin->canRequest(m_frame->document()->url()));
+    }
 
     if (m_documentLoader) {
         client()->dispatchWillClose();
@@ -1015,7 +1023,7 @@ bool FrameLoader::prepareForCommit()
     // script intiates a new load or causes the current frame to be detached,
     // we need to abandon the current load.
     if (pdl != m_provisionalDocumentLoader)
-        return false;
+        return;
     if (m_documentLoader) {
         FrameNavigationDisabler navigationDisabler(m_frame);
         m_documentLoader->detachFromFrame();
@@ -1026,28 +1034,11 @@ bool FrameLoader::prepareForCommit()
     // TODO(dcheng): Investigate if this can be moved above the check that
     // m_provisionalDocumentLoader hasn't changed.
     if (!m_frame->client())
-        return false;
+        return;
     // No more events will be dispatched so detach the Document.
     if (m_frame->document())
         m_frame->document()->detach();
     m_documentLoader = m_provisionalDocumentLoader.release();
-
-    return true;
-}
-
-void FrameLoader::commitProvisionalLoad()
-{
-    ASSERT(client()->hasWebView());
-    RefPtrWillBeRawPtr<LocalFrame> protect(m_frame.get());
-
-    // Check if the destination page is allowed to access the previous page's timing information.
-    if (m_frame->document()) {
-        RefPtr<SecurityOrigin> securityOrigin = SecurityOrigin::create(m_provisionalDocumentLoader->request().url());
-        m_provisionalDocumentLoader->timing().setHasSameOriginAsPreviousDocument(securityOrigin->canRequest(m_frame->document()->url()));
-    }
-
-    if (!prepareForCommit())
-        return;
 
     if (isLoadingMainFrame())
         m_frame->page()->chromeClient().needTouchEvents(false);

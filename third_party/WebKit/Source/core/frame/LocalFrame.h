@@ -89,11 +89,10 @@ namespace blink {
         void navigate(Document& originDocument, const KURL&, bool lockBackForwardList, UserGestureStatus) override;
         void navigate(const FrameLoadRequest&) override;
         void reload(FrameLoadType, ClientRedirectPolicy) override;
-        void detach(FrameDetachType) override;
+        void detach() override;
         void disconnectOwnerElement() override;
         SecurityContext* securityContext() const override;
         void printNavigationErrorMessage(const Frame&, const char* reason) override;
-        bool prepareForCommit() override;
 
         void willDetachFrameHost();
 

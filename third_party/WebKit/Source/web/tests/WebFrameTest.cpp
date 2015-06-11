@@ -7025,6 +7025,19 @@ TEST_F(WebFrameSwapTest, SwapPreservesGlobalContext)
     WebRemoteFrame* remoteFrame = remoteClient.frame();
     WebFrame* targetFrame = mainFrame()->firstChild()->nextSibling();
     targetFrame->swap(remoteFrame);
+    // FIXME: This cleanup should be unnecessary, but the interaction between frame detach
+    // and swap is completely broken atm. swap() calls detachChildren() on the frame being
+    // swapped out, and frame B has a child. When the child of B is detached, it schedules a
+    // FrameLoader timer to check for load completion in its parent.
+    // Other tests end up spinning the message loop (e.g. to wait for load completion of
+    // another test page, so this timer callback is processed before FrameHost and Page are
+    // destroyed by the reset() at the end of the test case. However, this test does not spin
+    // the event loop in its body, so the timer task remains in the queue and ends up running
+    // in the setup for the following test. Since the FrameHost/Page for the associated
+    // FrameLoader have already been destroyed, this leads to crashes/use-after-frees. To
+    // prevent that, manually call detach() on the Frame to release its resources and cancel
+    // pending callbacks.
+    toCoreFrame(targetFrame)->detach();
     remoteFrame->setReplicatedOrigin(SecurityOrigin::createUnique());
     v8::Local<v8::Value> remoteWindow = mainFrame()->executeScriptAndReturnValue(WebScriptSource(
         "document.querySelector('#frame2').contentWindow;"));
@@ -7049,6 +7062,7 @@ TEST_F(WebFrameSwapTest, SwapPreservesGlobalContext)
     // Manually reset to break WebViewHelper's dependency on the stack allocated
     // TestWebFrameClient.
     reset();
+    remoteFrame->close();
 }
 
 TEST_F(WebFrameSwapTest, SwapInitializesGlobal)

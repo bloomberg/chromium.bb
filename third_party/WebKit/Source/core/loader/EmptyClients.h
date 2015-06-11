@@ -182,7 +182,7 @@ public:
     virtual Frame* firstChild() const override { return 0; }
     virtual Frame* lastChild() const override { return 0; }
     virtual void willBeDetached() override { }
-    virtual void detached(FrameDetachType) override { }
+    virtual void detached() override { }
 
     virtual void dispatchWillSendRequest(DocumentLoader*, unsigned long, ResourceRequest&, const ResourceResponse&) override { }
     virtual void dispatchDidReceiveResponse(DocumentLoader*, unsigned long, const ResourceResponse&) override { }
