@@ -673,7 +673,6 @@ struct weston_compositor {
 
 	void (*destroy)(struct weston_compositor *ec);
 	void (*restore)(struct weston_compositor *ec);
-	int (*authenticate)(struct weston_compositor *c, uint32_t id);
 
 	struct weston_launcher *launcher;
 
