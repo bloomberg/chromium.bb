@@ -352,16 +352,16 @@ int WebPluginContainerImpl::printBegin(const WebPrintParams& printParams) const
     return m_webPlugin->printBegin(printParams);
 }
 
-bool WebPluginContainerImpl::printPage(int pageNumber, GraphicsContext* gc, const IntRect& printRect)
+void WebPluginContainerImpl::printPage(int pageNumber, GraphicsContext* gc, const IntRect& printRect)
 {
     LayoutObjectDrawingRecorder drawingRecorder(*gc, *m_element->layoutObject(), DisplayItem::Type::WebPlugin, printRect);
     if (drawingRecorder.canUseCachedDrawing())
-        return true;
+        return;
     gc->save();
     WebCanvas* canvas = gc->canvas();
-    bool ret = m_webPlugin->printPage(pageNumber, canvas);
+    // TODO: Remove third parameter when both blink and chromium changes land for bug496765
+    m_webPlugin->printPage(pageNumber, canvas, false);
     gc->restore();
-    return ret;
 }
 
 void WebPluginContainerImpl::printEnd()
