@@ -737,10 +737,10 @@ void DataReductionProxyCompressionStats::RecordUserVisibleDataSavings() {
   int user_visible_savings_percent =
       user_visible_savings_bytes * 100 / original_content_length;
   UMA_HISTOGRAM_PERCENTAGE(
-      "Net.DailyUserVisibleSavingsPercent_DataRedictionProxyEnabled",
+      "Net.DailyUserVisibleSavingsPercent_DataReductionProxyEnabled",
       user_visible_savings_percent);
   UMA_HISTOGRAM_COUNTS(
-      "Net.DailyUserVisibleSavingsSize_DataRedictionProxyEnabled",
+      "Net.DailyUserVisibleSavingsSize_DataReductionProxyEnabled",
       user_visible_savings_bytes >> 10);
 }
 

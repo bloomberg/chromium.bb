@@ -19721,7 +19721,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Net.DailyUserVisibleSavingsPercent_DataRedictionProxyEnabled"
+<histogram name="Net.DailyUserVisibleSavingsPercent_DataReductionProxyEnabled"
     units="Percent">
   <owner>kundaji@chromium.org</owner>
   <owner>bengr@chromium.org</owner>
@@ -19732,7 +19732,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Net.DailyUserVisibleSavingsSize_DataRedictionProxyEnabled"
+<histogram name="Net.DailyUserVisibleSavingsSize_DataReductionProxyEnabled"
     units="KB">
   <owner>kundaji@chromium.org</owner>
   <owner>bengr@chromium.org</owner>
