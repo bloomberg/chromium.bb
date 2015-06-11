@@ -62,7 +62,7 @@ When 'ordering="prefix"' is present in the histogram_suffixes tag, the suffix
 will be inserted after the first dot separator of the affected-histogram name.
 Therefore, the affected-histogram name has to have at least one dot in it.
 
-Goolgers: There are also a small number of private internal histograms found at
+Googlers: There are also a small number of private internal histograms found at
 http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 -->
 
