@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/memory/scoped_vector.h"
 #include "components/autofill/core/common/password_form.h"
 #include "ui/views/view.h"
 
@@ -36,7 +37,7 @@ class ManagePasswordItemsView : public views::View {
   // Changes the views according to the state of |password_forms_rows_|.
   void Refresh();
 
-  std::vector<PasswordFormRow> password_forms_rows_;
+  ScopedVector<PasswordFormRow> password_forms_rows_;
   ManagePasswordsBubbleModel* model_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagePasswordItemsView);
