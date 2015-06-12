@@ -39,9 +39,9 @@ class TrayCast : public SystemTrayItem, public ShellObserver {
   // Returns true if the cast extension was detected.
   bool HasCastExtension();
 
-  // Callback used to enable/disable the "Select cast device" view depending on
+  // Callback used to enable/disable the begin casting view depending on
   // if we have any cast receivers.
-  void TryActivateSelectViewCallback(
+  void UpdateCachedReceiverState(
       const CastConfigDelegate::ReceiversAndActivites& receivers_activities);
 
   // This makes sure that the current view displayed in the tray is the correct
@@ -57,6 +57,7 @@ class TrayCast : public SystemTrayItem, public ShellObserver {
   tray::CastDetailedView* detailed_ = nullptr;
   CastConfigDelegate* cast_config_delegate_;
 
+  bool has_cast_receivers_ = false;
   bool is_casting_ = false;
   base::WeakPtrFactory<TrayCast> weak_ptr_factory_;
 

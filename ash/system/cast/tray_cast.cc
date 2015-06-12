@@ -588,32 +588,38 @@ bool TrayCast::HasCastExtension() {
          cast_config_delegate_->HasCastExtension();
 }
 
-void TrayCast::TryActivateSelectViewCallback(
+void TrayCast::UpdateCachedReceiverState(
     const CastConfigDelegate::ReceiversAndActivites& receivers_activities) {
-  default_->SetVisible(!receivers_activities.empty());
+  has_cast_receivers_ = !receivers_activities.empty();
+  default_->SetVisible(has_cast_receivers_);
 }
 
 void TrayCast::UpdatePrimaryView() {
-  if (HasCastExtension() == false) {
-    if (default_)
-      default_->SetVisible(false);
-    if (tray_)
-      tray_->SetVisible(false);
-  } else {
+  if (HasCastExtension()) {
     if (default_) {
       if (is_casting_) {
         default_->ActivateCastView();
       } else {
         default_->ActivateSelectView();
-        // We only want to show the Select view if we have a device to cast to.
+
+        // We only want to show the select view if we have a receiver we can
+        // cast to. To prevent showing the tray item and then hiding it some
+        // short time after, we cache if we have any receivers. We set our
+        // default visibility to true if we do have a receiver, false otherwise.
+        default_->SetVisible(has_cast_receivers_);
         cast_config_delegate_->GetReceiversAndActivities(
-            base::Bind(&TrayCast::TryActivateSelectViewCallback,
+            base::Bind(&TrayCast::UpdateCachedReceiverState,
                        weak_ptr_factory_.GetWeakPtr()));
       }
     }
 
     if (tray_)
       tray_->SetVisible(is_casting_);
+  } else {
+    if (default_)
+      default_->SetVisible(false);
+    if (tray_)
+      tray_->SetVisible(false);
   }
 }
 
