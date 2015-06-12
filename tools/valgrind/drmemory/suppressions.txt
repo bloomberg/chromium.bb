@@ -772,27 +772,3 @@ system call NtCreateEvent
 ntdll.dll!RtlDosPathNameToNtPathName_U_WithStatus
 ntdll.dll!RtlDosPathNameToNtPathName_U_WithStatus
 ntdll.dll!RtlIntegerToUnicodeString
-
-UNINITIALIZED READ
-name=http://crbug.com/498519_a
-blink_web.dll!blink::Element::styleForLayoutObject
-blink_web.dll!blink::LayoutTreeBuilderForElement::style
-blink_web.dll!blink::LayoutTreeBuilderForElement::shouldCreateLayoutObject
-
-UNINITIALIZED READ
-name=http://crbug.com/498519_b
-blink_web.dll!blink::Element::styleForLayoutObject
-blink_web.dll!blink::Element::recalcOwnStyle
-blink_web.dll!blink::Element::recalcStyle
-
-UNINITIALIZED READ
-name=http://crbug.com/498519_c
-webcore_shared.dll!blink::Element::styleForLayoutObject
-webcore_shared.dll!blink::Element::recalcOwnStyle
-webcore_shared.dll!blink::Element::recalcStyle
-
-UNINITIALIZED READ
-name=http://crbug.com/498519_d
-webcore_shared.dll!blink::Element::styleForLayoutObject
-webcore_shared.dll!blink::LayoutTreeBuilderForElement::style
-webcore_shared.dll!blink::LayoutTreeBuilderForElement::shouldCreateLayoutObject
