@@ -110,7 +110,6 @@ public:
     // Returns true if the frame is ready to receive the next commit, or false
     // otherwise.
     virtual bool prepareForCommit() = 0;
-    void prepareSwapFrom(Frame*);
     void finishSwapFrom(Frame*);
 
     bool canNavigate(const Frame&);

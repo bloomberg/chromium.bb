@@ -44,21 +44,13 @@ bool WebFrame::swap(WebFrame* frame)
     RefPtrWillBeRawPtr<WebRemoteFrameImpl> protectWebRemoteFrame = isWebRemoteFrame() ? toWebRemoteFrameImpl(this) : nullptr;
 #endif
 
-    // If the frame has been detached during detaching by any JS code, we should
-    // cancel the swap.
+    // Unload the current Document in this frame: this calls unload handlers,
+    // detaches child frames, etc. Since this runs script, make sure this frame
+    // wasn't detached before continuing with the swap.
     // FIXME: There is no unit test for this condition, so one needs to be
     // written.
     if (!oldFrame->prepareForCommit())
         return false;
-
-    FrameOwner* owner = oldFrame->owner();
-    FrameHost* host = oldFrame->host();
-
-    // Frame::detach will call clearForClose(), we need to call
-    // clearForNavigate() before detaching.
-    oldFrame->prepareSwapFrom(oldFrame.get());
-
-    oldFrame->detach(FrameDetachType::Swap);
 
     if (m_parent) {
         if (m_parent->m_firstChild == this)
@@ -70,7 +62,6 @@ bool WebFrame::swap(WebFrame* frame)
         // an actual page or something else, like a download. The PlzNavigate
         // project will remove the need for provisional local frames.
         frame->m_parent = m_parent;
-        m_parent = nullptr;
     }
 
     if (m_previousSibling) {
@@ -96,6 +87,8 @@ bool WebFrame::swap(WebFrame* frame)
     // the type of the passed in WebFrame.
     // FIXME: This is a bit clunky; this results in pointless decrements and
     // increments of connected subframes.
+    FrameOwner* owner = oldFrame->owner();
+    oldFrame->disconnectOwnerElement();
     if (frame->isWebLocalFrame()) {
         LocalFrame& localFrame = *toWebLocalFrameImpl(frame)->frame();
         ASSERT(owner == localFrame.owner());
@@ -111,9 +104,14 @@ bool WebFrame::swap(WebFrame* frame)
             localFrame.page()->setMainFrame(&localFrame);
         }
     } else {
-        toWebRemoteFrameImpl(frame)->initializeCoreFrame(host, owner, oldFrame->tree().name());
+        toWebRemoteFrameImpl(frame)->initializeCoreFrame(oldFrame->host(), owner, oldFrame->tree().name());
     }
     toCoreFrame(frame)->finishSwapFrom(oldFrame.get());
+
+    // Although the Document in this frame is now unloaded, many resources
+    // associated with the frame itself have not yet been freed yet.
+    oldFrame->detach(FrameDetachType::Swap);
+    m_parent = nullptr;
 
     return true;
 }

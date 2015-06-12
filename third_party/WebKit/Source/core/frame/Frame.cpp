@@ -158,15 +158,10 @@ ChromeClient& Frame::chromeClient() const
     return emptyChromeClient();
 }
 
-void Frame::prepareSwapFrom(Frame* old)
-{
-    WindowProxyManager* oldManager = old->windowProxyManager();
-    oldManager->clearForNavigation();
-}
-
 void Frame::finishSwapFrom(Frame* old)
 {
     WindowProxyManager* oldManager = old->windowProxyManager();
+    oldManager->clearForNavigation();
     windowProxyManager()->takeGlobalFrom(oldManager);
 }
 
