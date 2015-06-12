@@ -320,8 +320,8 @@ llvm-sb-configure() {
       subzero_targets=ARM32
       ;;
     universal)
-      targets=x86,arm
-      subzero_targets=X8632,ARM32
+      targets=x86,arm,mips
+      subzero_targets=X8632,ARM32,MIPS32
       ;;
   esac
 
