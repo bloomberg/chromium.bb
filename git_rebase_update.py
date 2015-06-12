@@ -271,7 +271,8 @@ def main(args=None):
           % (return_branch, root_branch)
         )
       git.run('checkout', root_branch)
-    os.chdir(return_workdir)
+    if return_workdir:
+      os.chdir(return_workdir)
     git.set_config(STARTING_BRANCH_KEY, '')
     git.set_config(STARTING_WORKDIR_KEY, '')
 
