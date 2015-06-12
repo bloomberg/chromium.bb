@@ -44,12 +44,12 @@
 #include "hash.h"
 
 struct wm_size_hints {
-    	uint32_t flags;
+	uint32_t flags;
 	int32_t x, y;
 	int32_t width, height;	/* should set so old wm's don't mess up */
 	int32_t min_width, min_height;
 	int32_t max_width, max_height;
-    	int32_t width_inc, height_inc;
+	int32_t width_inc, height_inc;
 	struct {
 		int32_t x;
 		int32_t y;
@@ -928,7 +928,7 @@ weston_wm_window_create_frame(struct weston_wm_window *window)
  */
 static void
 weston_wm_window_set_virtual_desktop(struct weston_wm_window *window,
-                                     int desktop)
+				     int desktop)
 {
 	if (desktop >= 0) {
 		xcb_change_property(window->wm->conn,
