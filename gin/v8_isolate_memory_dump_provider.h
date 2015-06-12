@@ -27,14 +27,10 @@ class V8IsolateMemoryDumpProvider
       base::trace_event::ProcessMemoryDump* process_memory_dump) override;
 
  private:
-  IsolateHolder* isolate_holder_;  // Not owned.
+  void DumpHeapStatistics(
+      base::trace_event::ProcessMemoryDump* process_memory_dump);
 
-  void DumpHeapSpacesStatistics(
-      base::trace_event::ProcessMemoryDump* process_memory_dump,
-      const std::string& dump_base_name);
-  void DumpHeapObjectStatistics(
-      base::trace_event::ProcessMemoryDump* process_memory_dump,
-      const std::string& dump_base_name);
+  IsolateHolder* isolate_holder_;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(V8IsolateMemoryDumpProvider);
 };

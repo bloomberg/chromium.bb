@@ -13,12 +13,6 @@
 
 namespace gin {
 
-namespace {
-const char kHeapSpacesDumpName[] = "heap_spaces";
-const char kHeapObjectsDumpName[] = "heap_objects";
-const char kAvailableSizeAttribute[] = "available_size_in_bytes";
-}  // namespace
-
 V8IsolateMemoryDumpProvider::V8IsolateMemoryDumpProvider(
     IsolateHolder* isolate_holder)
     : isolate_holder_(isolate_holder) {
@@ -35,34 +29,27 @@ V8IsolateMemoryDumpProvider::~V8IsolateMemoryDumpProvider() {
 // for the current isolate.
 bool V8IsolateMemoryDumpProvider::OnMemoryDump(
     base::trace_event::ProcessMemoryDump* process_memory_dump) {
-  std::string dump_base_name =
-      base::StringPrintf("v8/isolate_%p", isolate_holder_->isolate());
-  std::string space_dump_name = dump_base_name + "/" + kHeapSpacesDumpName;
-  std::string object_dump_name = dump_base_name + "/" + kHeapObjectsDumpName;
-  process_memory_dump->AddOwnershipEdge(
-      process_memory_dump->CreateAllocatorDump(object_dump_name)->guid(),
-      process_memory_dump->CreateAllocatorDump(space_dump_name)->guid());
-
   if (isolate_holder_->access_mode() == IsolateHolder::kUseLocker) {
     v8::Locker locked(isolate_holder_->isolate());
-    DumpHeapSpacesStatistics(process_memory_dump, space_dump_name);
-    DumpHeapObjectStatistics(process_memory_dump, object_dump_name);
+    DumpHeapStatistics(process_memory_dump);
   } else {
-    DumpHeapSpacesStatistics(process_memory_dump, space_dump_name);
-    DumpHeapObjectStatistics(process_memory_dump, object_dump_name);
+    DumpHeapStatistics(process_memory_dump);
   }
   return true;
 }
 
-void V8IsolateMemoryDumpProvider::DumpHeapSpacesStatistics(
-    base::trace_event::ProcessMemoryDump* process_memory_dump,
-    const std::string& dump_base_name) {
+void V8IsolateMemoryDumpProvider::DumpHeapStatistics(
+    base::trace_event::ProcessMemoryDump* process_memory_dump) {
+  std::string dump_base_name =
+      base::StringPrintf("v8/isolate_%p", isolate_holder_->isolate());
+
+  // Dump statistics of the heap's spaces.
+  std::string space_name_prefix = dump_base_name + "/heap_spaces";
   v8::HeapStatistics heap_statistics;
   isolate_holder_->isolate()->GetHeapStatistics(&heap_statistics);
 
   size_t known_spaces_used_size = 0;
   size_t known_spaces_size = 0;
-  size_t known_spaces_available_size = 0;
   size_t number_of_spaces = isolate_holder_->isolate()->NumberOfHeapSpaces();
   for (size_t space = 0; space < number_of_spaces; space++) {
     v8::HeapSpaceStatistics space_statistics;
@@ -70,48 +57,41 @@ void V8IsolateMemoryDumpProvider::DumpHeapSpacesStatistics(
                                                        space);
     const size_t space_size = space_statistics.space_size();
     const size_t space_used_size = space_statistics.space_used_size();
-    const size_t space_available_size = space_statistics.space_available_size();
 
     known_spaces_size += space_size;
     known_spaces_used_size += space_used_size;
-    known_spaces_available_size += space_available_size;
 
-    base::trace_event::MemoryAllocatorDump* space_dump =
-        process_memory_dump->CreateAllocatorDump(dump_base_name + "/" +
-                                                 space_statistics.space_name());
-    space_dump->AddScalar(
-        base::trace_event::MemoryAllocatorDump::kNameOuterSize,
-        base::trace_event::MemoryAllocatorDump::kUnitsBytes, space_size);
-    space_dump->AddScalar(
-        base::trace_event::MemoryAllocatorDump::kNameInnerSize,
-        base::trace_event::MemoryAllocatorDump::kUnitsBytes, space_used_size);
-    space_dump->AddScalar(kAvailableSizeAttribute,
+    std::string space_dump_name =
+        space_name_prefix + "/" + space_statistics.space_name();
+    auto space_dump = process_memory_dump->CreateAllocatorDump(space_dump_name);
+    space_dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
                           base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-                          space_available_size);
+                          space_size);
+
+    auto space_allocated_dump = process_memory_dump->CreateAllocatorDump(
+        space_dump_name + "/allocated_objects");
+    space_allocated_dump->AddScalar(
+        base::trace_event::MemoryAllocatorDump::kNameSize,
+        base::trace_event::MemoryAllocatorDump::kUnitsBytes, space_used_size);
   }
 
   // Compute the rest of the memory, not accounted by the spaces above.
-  base::trace_event::MemoryAllocatorDump* other_spaces_dump =
-      process_memory_dump->CreateAllocatorDump(dump_base_name +
-                                               "/other_spaces");
-  other_spaces_dump->AddScalar(
-      base::trace_event::MemoryAllocatorDump::kNameOuterSize,
-      base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-      heap_statistics.total_heap_size() - known_spaces_size);
-  other_spaces_dump->AddScalar(
-      base::trace_event::MemoryAllocatorDump::kNameInnerSize,
+  std::string other_spaces_name = space_name_prefix + "/other_spaces";
+  auto other_dump = process_memory_dump->CreateAllocatorDump(other_spaces_name);
+  other_dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                        base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                        heap_statistics.total_heap_size() - known_spaces_size);
+
+  auto other_allocated_dump = process_memory_dump->CreateAllocatorDump(
+      other_spaces_name + "/allocated_objects");
+  other_allocated_dump->AddScalar(
+      base::trace_event::MemoryAllocatorDump::kNameSize,
       base::trace_event::MemoryAllocatorDump::kUnitsBytes,
       heap_statistics.used_heap_size() - known_spaces_used_size);
 
-  other_spaces_dump->AddScalar(
-      kAvailableSizeAttribute,
-      base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-      heap_statistics.total_available_size() - known_spaces_available_size);
-}
-
-void V8IsolateMemoryDumpProvider::DumpHeapObjectStatistics(
-    base::trace_event::ProcessMemoryDump* process_memory_dump,
-    const std::string& dump_base_name) {
+  // Dump statistics of the heap's live objects from last GC.
+  std::string object_name_prefix = dump_base_name + "/heap_objects";
+  bool did_dump_object_stats = false;
   const size_t object_types =
       isolate_holder_->isolate()->NumberOfTrackedHeapObjectTypes();
   for (size_t type_index = 0; type_index < object_types; type_index++) {
@@ -121,27 +101,36 @@ void V8IsolateMemoryDumpProvider::DumpHeapObjectStatistics(
       continue;
 
     std::string dump_name =
-        dump_base_name + "/" + object_statistics.object_type();
+        object_name_prefix + "/" + object_statistics.object_type();
     if (object_statistics.object_sub_type()[0] != '\0')
       dump_name += std::string("/") + object_statistics.object_sub_type();
-    base::trace_event::MemoryAllocatorDump* object_dump =
-        process_memory_dump->CreateAllocatorDump(dump_name);
+    auto object_dump = process_memory_dump->CreateAllocatorDump(dump_name);
 
     object_dump->AddScalar(
         base::trace_event::MemoryAllocatorDump::kNameObjectsCount,
         base::trace_event::MemoryAllocatorDump::kUnitsObjects,
         object_statistics.object_count());
-    object_dump->AddScalar(
-        base::trace_event::MemoryAllocatorDump::kNameInnerSize,
-        base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-        object_statistics.object_size());
+    object_dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                           base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                           object_statistics.object_size());
+    did_dump_object_stats = true;
   }
 
-  process_memory_dump->AddOwnershipEdge(
-      process_memory_dump->CreateAllocatorDump(dump_base_name +
-                                               "/CODE_TYPE/CODE_KIND")->guid(),
-      process_memory_dump->CreateAllocatorDump(dump_base_name +
-                                               "/CODE_TYPE/CODE_AGE")->guid());
+  if (process_memory_dump->GetAllocatorDump(object_name_prefix +
+                                            "/CODE_TYPE")) {
+    auto code_kind_dump = process_memory_dump->CreateAllocatorDump(
+        object_name_prefix + "/CODE_TYPE/CODE_KIND");
+    auto code_age_dump = process_memory_dump->CreateAllocatorDump(
+        object_name_prefix + "/CODE_TYPE/CODE_AGE");
+    process_memory_dump->AddOwnershipEdge(code_kind_dump->guid(),
+                                          code_age_dump->guid());
+  }
+
+  if (did_dump_object_stats) {
+    process_memory_dump->AddOwnershipEdge(
+        process_memory_dump->CreateAllocatorDump(object_name_prefix)->guid(),
+        process_memory_dump->CreateAllocatorDump(space_name_prefix)->guid());
+  }
 }
 
 }  // namespace gin
