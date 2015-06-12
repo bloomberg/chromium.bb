@@ -149,6 +149,9 @@ Ribbon.prototype.disable = function() {
  * @private
  */
 Ribbon.prototype.onSplice_ = function(event) {
+  if (event.removed.length === 0 && event.added.length === 0)
+    return;
+
   if (event.removed.length > 0 && event.added.length > 0) {
     console.error('Replacing is not implemented.');
     return;
