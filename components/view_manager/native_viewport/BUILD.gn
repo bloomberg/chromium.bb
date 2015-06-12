@@ -9,10 +9,13 @@ source_set("native_viewport") {
     "onscreen_context_provider.cc",
     "onscreen_context_provider.h",
     "platform_viewport.h",
-    "platform_viewport_common.cc",
+    "platform_viewport_android.cc",
+    "platform_viewport_android.h",
     "platform_viewport_headless.cc",
     "platform_viewport_headless.h",
     "platform_viewport_stub.cc",
+    "platform_viewport_win.cc",
+    "platform_viewport_x11.cc",
   ]
 
   if (!is_ios) {
@@ -34,6 +37,20 @@ source_set("native_viewport") {
     "//ui/gfx/geometry",
     "//ui/gl",
     "//ui/mojo/geometry:interfaces",
-    "//ui/platform_window:platform_impls",
+    "//ui/platform_window",
   ]
+
+  if (is_android) {
+    deps += [ "//components/view_manager:jni_headers" ]
+  }
+
+  if (use_x11) {
+    deps += [ "//ui/platform_window/x11" ]
+  } else {
+    sources -= [ "platform_viewport_x11.cc" ]
+  }
+
+  if (is_win) {
+    deps += [ "//ui/platform_window/win" ]
+  }
 }

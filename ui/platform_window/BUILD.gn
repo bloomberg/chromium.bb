@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/ui.gni")
-
 source_set("platform_window") {
   sources = [
     "platform_window.h",
@@ -15,21 +13,4 @@ source_set("platform_window") {
     "//ui/base",
     "//ui/gfx",
   ]
-}
-
-component("platform_impls") {
-  if (is_android) {
-    deps = [
-      "//ui/platform_window/android",
-      "//ui/platform_window/android:jni_headers",
-    ]
-  } else if (use_x11) {
-    deps = [
-      "//ui/platform_window/x11",
-    ]
-  } else if (is_win) {
-    deps = [
-      "//ui/platform_window/win",
-    ]
-  }
 }
