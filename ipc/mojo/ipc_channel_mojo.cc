@@ -237,8 +237,9 @@ void ChannelMojo::ChannelInfoDeleter::operator()(
 
 // static
 bool ChannelMojo::ShouldBeUsed() {
-  // TODO(morrita): Remove this if it sticks.
-  return true;
+  // TODO(rockot): Investigate performance bottlenecks and hopefully reenable
+  // this at some point. http://crbug.com/500019
+  return false;
 }
 
 // static
