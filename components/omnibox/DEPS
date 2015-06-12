@@ -3,6 +3,7 @@ include_rules = [
   "+components/metrics/proto",
   "+components/search",
   "+components/search_engines",
+  "+components/sessions",
   "+components/url_fixer",
   "+components/variations",
   "+grit",

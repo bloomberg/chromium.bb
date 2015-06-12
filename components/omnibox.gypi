@@ -56,6 +56,8 @@
         'omnibox/keyword_provider.h',
         'omnibox/omnibox_field_trial.cc',
         'omnibox/omnibox_field_trial.h',
+        'omnibox/omnibox_log.cc',
+        'omnibox/omnibox_log.h',
         'omnibox/omnibox_switches.cc',
         'omnibox/omnibox_switches.h',
         'omnibox/search_provider.cc',

@@ -597,8 +597,6 @@
       'browser/native_window_notification_source.h',
       'browser/net/predictor_tab_helper.cc',
       'browser/net/predictor_tab_helper.h',
-      'browser/omnibox/omnibox_log.cc',
-      'browser/omnibox/omnibox_log.h',
       'browser/performance_monitor/performance_monitor.cc',
       'browser/performance_monitor/performance_monitor.h',
       'browser/performance_monitor/process_metrics_history.cc',

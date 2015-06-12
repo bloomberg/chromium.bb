@@ -27,6 +27,8 @@ static_library("omnibox") {
     "keyword_provider.h",
     "omnibox_field_trial.cc",
     "omnibox_field_trial.h",
+    "omnibox_log.cc",
+    "omnibox_log.h",
     "omnibox_switches.cc",
     "omnibox_switches.h",
     "search_provider.cc",
