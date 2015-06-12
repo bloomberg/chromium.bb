@@ -279,7 +279,7 @@ public:
 
     bool visibleToHitTestRequest(const HitTestRequest& request) const { return layoutObject().visibleToHitTestRequest(request); }
 
-    EVerticalAlign verticalAlign() const { return layoutObject().style(m_bitfields.firstLine())->verticalAlign(); }
+    EVerticalAlign verticalAlign() const { return layoutObject().isText() ? ComputedStyle::initialVerticalAlign() : layoutObject().style(m_bitfields.firstLine())->verticalAlign(); }
 
     // Use with caution! The type is not checked!
     LayoutBoxModelObject* boxModelObject() const

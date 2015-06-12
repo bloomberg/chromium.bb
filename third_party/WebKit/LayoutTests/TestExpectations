@@ -1955,3 +1955,5 @@ crbug.com/495523 fast/text/international/text-spliced-font.html [ Pass Failure ]
 crbug.com/495523 [ XP ] svg/W3C-SVG-1.1/animate-elem-52-t.svg [ Failure ]
 crbug.com/495523 [ XP ] svg/W3C-SVG-1.1/extend-namespace-01-f.svg [ Failure ]
 crbug.com/495523 svg/wicd/test-rightsizing-b.xhtml [ Pass Failure ]
+
+crbug.com/496850 tables/mozilla/bugs/bug14323.html [ NeedsRebaseline ]
