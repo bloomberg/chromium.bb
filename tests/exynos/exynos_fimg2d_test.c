@@ -150,14 +150,9 @@ static int drm_set_crtc(struct exynos_device *dev, struct connector *c,
 
 	ret = drmModeSetCrtc(dev->fd, c->crtc,
 			fb_id, 0, 0, &c->id, 1, c->mode);
-	if (ret) {
+	if (ret)
 		drmMsg("failed to set mode: %s\n", strerror(errno));
-		goto err;
-	}
 
-	return 0;
-
-err:
 	return ret;
 }
 
