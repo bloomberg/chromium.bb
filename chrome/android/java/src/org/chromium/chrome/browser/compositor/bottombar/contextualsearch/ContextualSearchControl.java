@@ -21,6 +21,13 @@ import org.chromium.ui.resources.dynamics.ViewResourceAdapter;
  * Based on ToolbarControlContainer.
  */
 public class ContextualSearchControl extends LinearLayout {
+    /**
+     * Object Replacement Character that is used in place of HTML objects that cannot be represented
+     * as text (e.g. images). Contextual search panel should not be displaying such characters as
+     * they get shown as [obj] character.
+     */
+    private static final String OBJ_CHARACTER = "\uFFFC";
+
     private static final float RESOLVED_SEARCH_TERM_SIDE_PADDING_DP = 40.f;
     private final int mSidePaddingPx;
 
@@ -106,9 +113,9 @@ public class ContextualSearchControl extends LinearLayout {
      */
     public void setSearchContext(String selection, String start, String end) {
         mSelectionText.setPadding(0, 0, 0, 0);
-        mSelectionText.setText(selection);
-        mStartText.setText(start);
-        mEndText.setText(end);
+        mSelectionText.setText(sanitizeText(selection));
+        mStartText.setText(sanitizeText(start));
+        mEndText.setText(sanitizeText(end));
         mIsDirty = true;
     }
 
@@ -122,5 +129,10 @@ public class ContextualSearchControl extends LinearLayout {
         mStartText.setText("");
         mEndText.setText("");
         mIsDirty = true;
+    }
+
+    private String sanitizeText(String text) {
+        if (text == null) return null;
+        return text.replace(OBJ_CHARACTER, " ");
     }
 }
