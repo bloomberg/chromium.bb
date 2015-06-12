@@ -333,30 +333,38 @@ reconstruct_glyph(struct glyph *cursor, struct glyph *mask, char *name,
 	}
 }
 
-/* From http://cgit.freedesktop.org/xorg/lib/libXfont/tree/src/builtins/fonts.c */
+/* 
+ * Originally from
+ * http://cgit.freedesktop.org/xorg/lib/libXfont/tree/src/builtins/fonts.c
+ * Changed to the MIT "Expat" style license for Wayland..
+ */
 static const char cursor_licence[] =
 	"/*\n"
- 	"* Copyright 1999 SuSE, Inc.\n"
- 	"*\n"
- 	"* Permission to use, copy, modify, distribute, and sell this software and its\n"
- 	"* documentation for any purpose is hereby granted without fee, provided that\n"
- 	"* the above copyright notice appear in all copies and that both that\n"
- 	"* copyright notice and this permission notice appear in supporting\n"
- 	"* documentation, and that the name of SuSE not be used in advertising or\n"
- 	"* publicity pertaining to distribution of the software without specific,\n"
- 	"* written prior permission.  SuSE makes no representations about the\n"
- 	"* suitability of this software for any purpose.  It is provided \"as is\"\n"
- 	"* without express or implied warranty.\n"
- 	"*\n"
- 	"* SuSE DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL\n"
- 	"* IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL SuSE\n"
- 	"* BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES\n"
- 	"* WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION\n"
- 	"* OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN\n"
- 	"* CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.\n"
- 	"*\n"
- 	"* Author:  Keith Packard, SuSE, Inc.\n"
- 	"*/\n";
+	"* Copyright 1999 SuSE, Inc.\n"
+	"*\n"
+	"* Permission is hereby granted, free of charge, to any person obtaining\n"
+	"* a copy of this software and associated documentation files (the\n"
+	"* \"Software\"), to deal in the Software without restriction, including\n"
+	"* without limitation the rights to use, copy, modify, merge, publish,\n"
+	"* distribute, sublicense, and/or sell copies of the Software, and to\n"
+	"* permit persons to whom the Software is furnished to do so, subject to\n"
+	"* the following conditions:\n"
+	"*\n"
+	"* The above copyright notice and this permission notice (including the\n"
+	"* next paragraph) shall be included in all copies or substantial\n"
+	"* portions of the Software.\n"
+	"*\n"
+	"* THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND,\n"
+	"* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF\n"
+	"* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND\n"
+	"* NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS\n"
+	"* BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN\n"
+	"* ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN\n"
+	"* CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\n"
+	"* SOFTWARE.\n"
+	"*\n"
+	"* Author:  Keith Packard, SuSE, Inc.\n"
+	"*/\n";
 
 static void
 write_output_file(struct reconstructed_glyph *glyphs, int n)
