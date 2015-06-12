@@ -310,11 +310,13 @@ template<typename Strategy>
 void StyledMarkupSerializer<Strategy>::wrapWithNode(StyledMarkupAccumulator& accumulator, ContainerNode& node, PassRefPtrWillBeRawPtr<EditingStyle> style)
 {
     StringBuilder markup;
-    if (!node.isElementNode()) {
-        accumulator.appendStartMarkup(markup, node);
+    if (node.isDocumentNode()) {
+        MarkupFormatter::appendXMLDeclaration(markup, toDocument(node));
         accumulator.pushMarkup(markup.toString());
         return;
     }
+    if (!node.isElementNode())
+        return;
     Element& element = toElement(node);
     if (accumulator.shouldApplyWrappingStyle(element) || needsInlineStyle(element))
         accumulator.appendElementWithInlineStyle(markup, element, style);

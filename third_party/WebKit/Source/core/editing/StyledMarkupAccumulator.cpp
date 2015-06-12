@@ -63,7 +63,7 @@ StyledMarkupAccumulator::StyledMarkupAccumulator(EAbsoluteURLs shouldResolveURLs
 
 void StyledMarkupAccumulator::appendStartTag(Node& node)
 {
-    appendStartMarkup(m_result, node);
+    appendStartMarkup(node);
 }
 
 void StyledMarkupAccumulator::appendEndTag(const Element& element)
@@ -71,7 +71,7 @@ void StyledMarkupAccumulator::appendEndTag(const Element& element)
     appendEndMarkup(m_result, element);
 }
 
-void StyledMarkupAccumulator::appendStartMarkup(StringBuilder& result, Node& node)
+void StyledMarkupAccumulator::appendStartMarkup(Node& node)
 {
     switch (node.nodeType()) {
     case Node::TEXT_NODE:
@@ -84,7 +84,7 @@ void StyledMarkupAccumulator::appendStartMarkup(StringBuilder& result, Node& nod
         break;
     }
     default:
-        m_formatter.appendStartMarkup(result, node, nullptr);
+        m_formatter.appendStartMarkup(m_result, node, nullptr);
         break;
     }
 }

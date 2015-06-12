@@ -66,7 +66,7 @@ public:
 
     void appendElement(StringBuilder&, const Element&);
     void appendElementWithInlineStyle(StringBuilder&, const Element&, PassRefPtrWillBeRawPtr<EditingStyle>);
-    void appendStartMarkup(StringBuilder&, Node&);
+    void appendStartMarkup(Node&);
 
     bool shouldApplyWrappingStyle(const Node&) const;
 
