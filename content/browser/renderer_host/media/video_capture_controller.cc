@@ -320,7 +320,7 @@ void VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread(
       else
         copy_of_metadata.reset(metadata->DeepCopy());
 
-      if (frame->storage_type() == VideoFrame::STORAGE_TEXTURE) {
+      if (frame->HasTextures()) {
         DCHECK(frame->coded_size() == frame->visible_rect().size())
             << "Textures are always supposed to be tightly packed.";
         DCHECK_EQ(1u, VideoFrame::NumPlanes(frame->format()));
@@ -343,7 +343,7 @@ void VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread(
             frame->visible_rect(), timestamp, copy_of_metadata.Pass());
       } else {
         // VideoFrame format not supported.
-        NOTREACHED();
+        NOTREACHED() << media::VideoFrame::FormatToString(frame->format());
         break;
       }
 

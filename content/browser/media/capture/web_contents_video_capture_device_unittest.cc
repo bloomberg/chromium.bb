@@ -418,6 +418,9 @@ class StubClient : public media::VideoCaptureDevice::Client {
       return gfx::SHARED_MEMORY_BUFFER;
     }
     ClientBuffer AsClientBuffer() override { return nullptr; }
+    base::PlatformFile AsPlatformFile() override {
+      return base::PlatformFile();
+    }
 
    private:
     ~AutoReleaseBuffer() override { pool_->RelinquishProducerReservation(id_); }

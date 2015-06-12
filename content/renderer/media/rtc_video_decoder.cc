@@ -422,6 +422,10 @@ scoped_refptr<media::VideoFrame> RTCVideoDecoder::CreateVideoFrame(
   // Convert timestamp from 90KHz to ms.
   base::TimeDelta timestamp_ms = base::TimeDelta::FromInternalValue(
       base::checked_cast<uint64_t>(timestamp) * 1000 / 90);
+  // TODO(mcasas): The incoming data is actually a YUV format, but is labelled
+  // as ARGB. This prevents the compositor from messing with it, since the
+  // underlying platform can handle the former format natively. Make sure the
+  // correct format is used and everyone down the line understands it.
   scoped_refptr<media::VideoFrame> frame(media::VideoFrame::WrapNativeTexture(
       media::VideoFrame::ARGB,
       gpu::MailboxHolder(pb.texture_mailbox(), decoder_texture_target_, 0),

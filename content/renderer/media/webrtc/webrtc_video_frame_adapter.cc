@@ -53,9 +53,7 @@ int WebRtcVideoFrameAdapter::stride(webrtc::PlaneType type) const {
 }
 
 void* WebRtcVideoFrameAdapter::native_handle() const {
-  return frame_->storage_type() == media::VideoFrame::STORAGE_TEXTURE
-             ? frame_.get()
-             : nullptr;
+  return frame_->HasTextures() ? frame_.get() : nullptr;
 }
 
 rtc::scoped_refptr<webrtc::VideoFrameBuffer>

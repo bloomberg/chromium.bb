@@ -24,8 +24,8 @@ using base::MD5DigestToBase16;
 // frame will be black, if 1 then the entire frame will be white.
 void InitializeYV12Frame(VideoFrame* frame, double white_to_black) {
   EXPECT_EQ(VideoFrame::YV12, frame->format());
-  int first_black_row = static_cast<int>(frame->coded_size().height() *
-                                         white_to_black);
+  const int first_black_row =
+      static_cast<int>(frame->coded_size().height() * white_to_black);
   uint8* y_plane = frame->data(VideoFrame::kYPlane);
   for (int row = 0; row < frame->coded_size().height(); ++row) {
     int color = (row < first_black_row) ? 0xFF : 0x00;
@@ -168,6 +168,7 @@ TEST(VideoFrame, CreateBlackFrame) {
   scoped_refptr<media::VideoFrame> frame =
       VideoFrame::CreateBlackFrame(gfx::Size(kWidth, kHeight));
   ASSERT_TRUE(frame.get());
+  EXPECT_TRUE(frame->IsMappable());
 
   // Test basic properties.
   EXPECT_EQ(0, frame->timestamp().InMicroseconds());
@@ -255,14 +256,15 @@ TEST(VideoFrame, TextureNoLongerNeededCallbackIsCalled) {
   {
     scoped_refptr<VideoFrame> frame = VideoFrame::WrapNativeTexture(
         VideoFrame::ARGB,
-        gpu::MailboxHolder(gpu::Mailbox(), 5, 0 /* sync_point */),
+        gpu::MailboxHolder(gpu::Mailbox::Generate(), 5, 0 /* sync_point */),
         base::Bind(&TextureCallback, &called_sync_point),
         gfx::Size(10, 10),  // coded_size
         gfx::Rect(10, 10),  // visible_rect
         gfx::Size(10, 10),  // natural_size
         base::TimeDelta()); // timestamp
-    EXPECT_EQ(VideoFrame::STORAGE_TEXTURE, frame->storage_type());
     EXPECT_EQ(VideoFrame::ARGB, frame->format());
+    EXPECT_EQ(VideoFrame::STORAGE_OPAQUE, frame->storage_type());
+    EXPECT_TRUE(frame->HasTextures());
   }
   // Nobody set a sync point to |frame|, so |frame| set |called_sync_point| to 0
   // as default value.
@@ -310,11 +312,11 @@ TEST(VideoFrame,
         gfx::Size(10, 10),  // natural_size
         base::TimeDelta()); // timestamp
 
-    EXPECT_EQ(VideoFrame::STORAGE_TEXTURE, frame->storage_type());
+    EXPECT_EQ(VideoFrame::STORAGE_OPAQUE, frame->storage_type());
     EXPECT_EQ(VideoFrame::I420, frame->format());
     EXPECT_EQ(3u, VideoFrame::NumPlanes(frame->format()));
-    for (size_t i = 0; i < VideoFrame::NumPlanes(frame->format());
-         ++i) {
+    EXPECT_TRUE(frame->HasTextures());
+    for (size_t i = 0; i < VideoFrame::NumPlanes(frame->format()); ++i) {
       const gpu::MailboxHolder& mailbox_holder = frame->mailbox_holder(i);
       EXPECT_EQ(mailbox[i].name[0], mailbox_holder.mailbox.name[0]);
       EXPECT_EQ(target, mailbox_holder.texture_target);

@@ -43,6 +43,9 @@ class MockBuffer : public VideoCaptureDevice::Client::Buffer {
     return gfx::SHARED_MEMORY_BUFFER;
   }
   ClientBuffer AsClientBuffer() override { return nullptr; }
+  base::PlatformFile AsPlatformFile() override {
+    return base::PlatformFile();
+  }
 
  private:
   const int id_;

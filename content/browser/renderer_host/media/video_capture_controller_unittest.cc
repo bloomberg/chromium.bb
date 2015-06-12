@@ -484,7 +484,6 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   int mailbox_buffers = 0;
 #else
   int mailbox_buffers = kPoolSize / 2;
-  GLHelper* gl_helper = ImageTransportFactory::GetInstance()->GetGLHelper();
 #endif
   int shm_buffers = kPoolSize - mailbox_buffers;
   if (shm_buffers == mailbox_buffers) {
@@ -510,14 +509,15 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
                                      capture_resolution);
     ASSERT_TRUE(buffer.get());
 #if !defined(OS_ANDROID)
-    mailbox_syncpoints[i] = gl_helper->InsertSyncPoint();
+    mailbox_syncpoints[i] =
+        ImageTransportFactory::GetInstance()->GetGLHelper()->InsertSyncPoint();
 #endif
     device_->OnIncomingCapturedVideoFrame(
         buffer.Pass(),
-        WrapMailboxBuffer(
-            gpu::MailboxHolder(gpu::Mailbox(), 0, mailbox_syncpoints[i]),
-            base::Bind(&CacheSyncPoint, &release_syncpoints[i]),
-            capture_resolution),
+        WrapMailboxBuffer(gpu::MailboxHolder(gpu::Mailbox::Generate(), 0,
+                                             mailbox_syncpoints[i]),
+                          base::Bind(&CacheSyncPoint, &release_syncpoints[i]),
+                          capture_resolution),
         base::TimeTicks());
   }
   // ReserveOutputBuffers ought to fail now regardless of buffer format, because
@@ -529,6 +529,9 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   EXPECT_CALL(*client_b_, DoBufferReady(client_b_route_2,_)).Times(shm_buffers);
   EXPECT_CALL(*client_b_, DoMailboxBufferReady(client_b_route_2))
       .Times(mailbox_buffers);
+#if !defined(OS_ANDROID)
+  EXPECT_CALL(*client_b_, DoBufferDestroyed(client_b_route_2));
+#endif
   base::RunLoop().RunUntilIdle();
   for (size_t i = 0; i < mailbox_syncpoints.size(); ++i) {
     // A new release sync point must be inserted when the video frame is

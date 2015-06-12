@@ -139,8 +139,8 @@ VideoFrameExternalResources VideoResourceUpdater::
         const scoped_refptr<media::VideoFrame>& video_frame) {
   if (video_frame->format() == media::VideoFrame::UNKNOWN)
     return VideoFrameExternalResources();
-
-  if (video_frame->storage_type() == media::VideoFrame::STORAGE_TEXTURE)
+  DCHECK(video_frame->HasTextures() || video_frame->IsMappable());
+  if (video_frame->HasTextures())
     return CreateForHardwarePlanes(video_frame);
   else
     return CreateForSoftwarePlanes(video_frame);
@@ -366,7 +366,7 @@ void VideoResourceUpdater::ReturnTexture(
 VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
     const scoped_refptr<media::VideoFrame>& video_frame) {
   TRACE_EVENT0("cc", "VideoResourceUpdater::CreateForHardwarePlanes");
-  DCHECK_EQ(video_frame->storage_type(), media::VideoFrame::STORAGE_TEXTURE);
+  DCHECK(video_frame->HasTextures());
   if (!context_provider_)
     return VideoFrameExternalResources();
 

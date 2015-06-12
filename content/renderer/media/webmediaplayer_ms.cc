@@ -54,7 +54,7 @@ scoped_refptr<media::VideoFrame> CopyFrameToYV12(
                                      frame->natural_size(),
                                      frame->timestamp());
 
-  if (frame->storage_type() == media::VideoFrame::STORAGE_TEXTURE) {
+  if (frame->HasTextures()) {
     DCHECK(frame->format() == media::VideoFrame::ARGB ||
            frame->format() == media::VideoFrame::XRGB);
     SkBitmap bitmap;
@@ -78,7 +78,7 @@ scoped_refptr<media::VideoFrame> CopyFrameToYV12(
                                frame->visible_rect(),
                                new_frame.get());
   } else {
-    DCHECK(media::VideoFrame::IsMappable(frame->storage_type()));
+    DCHECK(frame->IsMappable());
     DCHECK(frame->format() == media::VideoFrame::YV12 ||
            frame->format() == media::VideoFrame::I420);
     for (size_t i = 0; i < media::VideoFrame::NumPlanes(frame->format()); ++i) {
@@ -340,8 +340,7 @@ void WebMediaPlayerMS::paint(blink::WebCanvas* canvas,
   DCHECK(thread_checker_.CalledOnValidThread());
 
   media::Context3D context_3d;
-  if (current_frame_.get() &&
-      current_frame_->storage_type() == media::VideoFrame::STORAGE_TEXTURE) {
+  if (current_frame_.get() && current_frame_->HasTextures()) {
     cc::ContextProvider* provider =
         RenderThreadImpl::current()->SharedMainThreadContextProvider().get();
     // GPU Process crashed.
@@ -428,8 +427,7 @@ bool WebMediaPlayerMS::copyVideoTextureToPlatformTexture(
     video_frame = current_frame_;
   }
 
-  if (!video_frame.get() ||
-      video_frame->storage_type() != media::VideoFrame::STORAGE_TEXTURE ||
+  if (!video_frame.get() || video_frame->HasTextures() ||
       media::VideoFrame::NumPlanes(video_frame->format()) != 1) {
     return false;
   }

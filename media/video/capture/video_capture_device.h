@@ -15,6 +15,7 @@
 #include <list>
 #include <string>
 
+#include "base/files/file.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -204,6 +205,7 @@ class MEDIA_EXPORT VideoCaptureDevice {
       virtual void* data() = 0;
       virtual gfx::GpuMemoryBufferType GetType() = 0;
       virtual ClientBuffer AsClientBuffer() = 0;
+      virtual base::PlatformFile AsPlatformFile() = 0;
     };
 
     virtual ~Client() {}

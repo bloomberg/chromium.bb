@@ -31,10 +31,31 @@ static inline size_t RoundDown(size_t value, size_t alignment) {
   return value & ~(alignment - 1);
 }
 
+// Returns true if |plane| is a valid plane index for the given |format|.
+static bool IsValidPlane(size_t plane, VideoFrame::Format format) {
+  DCHECK_LE(VideoFrame::NumPlanes(format),
+            static_cast<size_t>(VideoFrame::kMaxPlanes));
+  return (plane < VideoFrame::NumPlanes(format));
+}
+
+// Returns true if |frame| is accesible mapped in the VideoFrame memory space.
+//static
+static bool IsStorageTypeMappable(VideoFrame::StorageType storage_type) {
+  return
+#if defined(OS_LINUX)
+      // This is not strictly needed but makes it explicit that, at VideoFrame
+      // level, DmaBufs are not mappable from userspace.
+      storage_type != VideoFrame::STORAGE_DMABUFS &&
+#endif
+      (storage_type == VideoFrame::STORAGE_UNOWNED_MEMORY ||
+       storage_type == VideoFrame::STORAGE_OWNED_MEMORY ||
+       storage_type == VideoFrame::STORAGE_SHMEM);
+}
+
 // Returns the pixel size per element for given |plane| and |format|. E.g. 2x2
 // for the U-plane in I420.
 static gfx::Size SampleSize(VideoFrame::Format format, size_t plane) {
-  DCHECK(VideoFrame::IsValidPlane(plane, format));
+  DCHECK(IsValidPlane(plane, format));
 
   switch (plane) {
     case VideoFrame::kYPlane:
@@ -83,7 +104,7 @@ static gfx::Size CommonAlignment(VideoFrame::Format format) {
 
 // Returns the number of bytes per element for given |plane| and |format|.
 static int BytesPerElement(VideoFrame::Format format, size_t plane) {
-  DCHECK(VideoFrame::IsValidPlane(plane, format));
+  DCHECK(IsValidPlane(plane, format));
   if (format == VideoFrame::ARGB || format == VideoFrame::XRGB)
     return 4;
 
@@ -128,13 +149,6 @@ bool VideoFrame::IsYuvPlanar(Format format) {
       return false;
   }
   return false;
-}
-
-//static
-bool VideoFrame::IsMappable(StorageType storage_type) {
-  return storage_type == STORAGE_SHMEM ||
-         storage_type == STORAGE_OWNED_MEMORY ||
-         storage_type == STORAGE_UNOWNED_MEMORY;
 }
 
 // static
@@ -183,13 +197,9 @@ bool VideoFrame::IsValidConfig(Format format,
       natural_size.height() > limits::kMaxDimension)
     return false;
 
-// TODO(mcasas): Remove parameter |storage_type| when STORAGE_HOLE and
-// STORAGE_TEXTURE comply with the checks below. Right now we skip them.
-#if defined(VIDEO_HOLE)
-  if (storage_type == STORAGE_HOLE)
-    return true;
-#endif
-  if(storage_type == STORAGE_TEXTURE)
+  // TODO(mcasas): Remove parameter |storage_type| when the opaque storage types
+  // comply with the checks below. Right now we skip them.
+  if (!IsStorageTypeMappable(storage_type))
     return true;
 
   // Check format-specific width/height requirements.
@@ -225,12 +235,11 @@ bool VideoFrame::IsValidConfig(Format format,
 }
 
 // static
-scoped_refptr<VideoFrame> VideoFrame::CreateFrame(
-    Format format,
-    const gfx::Size& coded_size,
-    const gfx::Rect& visible_rect,
-    const gfx::Size& natural_size,
-    base::TimeDelta timestamp) {
+scoped_refptr<VideoFrame> VideoFrame::CreateFrame(Format format,
+                                                  const gfx::Size& coded_size,
+                                                  const gfx::Rect& visible_rect,
+                                                  const gfx::Size& natural_size,
+                                                  base::TimeDelta timestamp) {
   if (!IsYuvPlanar(format)) {
     NOTIMPLEMENTED();
     return nullptr;
@@ -266,11 +275,9 @@ scoped_refptr<VideoFrame> VideoFrame::WrapNativeTexture(
   }
   gpu::MailboxHolder mailbox_holders[kMaxPlanes];
   mailbox_holders[kARGBPlane] = mailbox_holder;
-  scoped_refptr<VideoFrame> frame(
-      new VideoFrame(format, STORAGE_TEXTURE, coded_size, visible_rect,
-                     natural_size, mailbox_holders, timestamp));
-  frame->mailbox_holders_release_cb_ = mailbox_holder_release_cb;
-  return frame;
+  return new VideoFrame(format, STORAGE_OPAQUE, coded_size,
+                        visible_rect, natural_size, mailbox_holders,
+                        mailbox_holder_release_cb, timestamp);
 }
 
 // static
@@ -287,11 +294,9 @@ scoped_refptr<VideoFrame> VideoFrame::WrapYUV420NativeTextures(
   mailbox_holders[kYPlane] = y_mailbox_holder;
   mailbox_holders[kUPlane] = u_mailbox_holder;
   mailbox_holders[kVPlane] = v_mailbox_holder;
-  scoped_refptr<VideoFrame> frame(
-      new VideoFrame(I420, STORAGE_TEXTURE, coded_size, visible_rect,
-                     natural_size, mailbox_holders, timestamp));
-  frame->mailbox_holders_release_cb_ = mailbox_holder_release_cb;
-  return frame;
+  return new VideoFrame(I420, STORAGE_OPAQUE, coded_size, visible_rect,
+                        natural_size, mailbox_holders,
+                        mailbox_holder_release_cb, timestamp);
 }
 
 // static
@@ -360,42 +365,23 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalDmabufs(
     const gfx::Size& coded_size,
     const gfx::Rect& visible_rect,
     const gfx::Size& natural_size,
-    const std::vector<int> dmabuf_fds,
+    const std::vector<int>& dmabuf_fds,
     base::TimeDelta timestamp) {
-  if (!IsValidConfig(format, STORAGE_DMABUFS, coded_size, visible_rect,
-                     natural_size)) {
-    return NULL;
-  }
-
-  // TODO(posciak): This is not exactly correct, it's possible for one
-  // buffer to contain more than one plane.
-  if (dmabuf_fds.size() != NumPlanes(format)) {
-    LOG(FATAL) << "Not enough dmabuf fds provided!";
-    return NULL;
-  }
-
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
   DCHECK_EQ(format, NV12);
 #endif
-  scoped_refptr<VideoFrame> frame(new VideoFrame(format, STORAGE_DMABUFS,
-                                                 coded_size, visible_rect,
-                                                 natural_size, timestamp));
 
-  for (size_t i = 0; i < dmabuf_fds.size(); ++i) {
-    int duped_fd = HANDLE_EINTR(dup(dmabuf_fds[i]));
-    if (duped_fd == -1) {
-      // The already-duped in previous iterations fds will be closed when
-      // the partially-created frame drops out of scope here.
-      DLOG(ERROR) << "Failed duplicating a dmabuf fd";
-      return NULL;
-    }
-
-    frame->dmabuf_fds_[i].reset(duped_fd);
-    // Data is accessible only via fds.
-    frame->data_[i] = NULL;
-    frame->strides_[i] = 0;
+  if (!IsValidConfig(format, STORAGE_DMABUFS, coded_size, visible_rect,
+                     natural_size)) {
+    return nullptr;
   }
-
+  gpu::MailboxHolder mailbox_holders[kMaxPlanes];
+  scoped_refptr<VideoFrame> frame =
+      new VideoFrame(format, STORAGE_DMABUFS, coded_size, visible_rect,
+                     natural_size, mailbox_holders, ReleaseMailboxCB(),
+                     timestamp);
+  if (!frame || !frame->DuplicateFileDescriptors(dmabuf_fds))
+    return nullptr;
   return frame;
 }
 #endif
@@ -428,8 +414,8 @@ scoped_refptr<VideoFrame> VideoFrame::WrapCVPixelBuffer(
   const gfx::Rect visible_rect(CVImageBufferGetCleanRect(cv_pixel_buffer));
   const gfx::Size natural_size(CVImageBufferGetDisplaySize(cv_pixel_buffer));
 
-  if (!IsValidConfig(format, STORAGE_UNOWNED_MEMORY, coded_size, visible_rect,
-                     natural_size)) {
+  if (!IsValidConfig(format, STORAGE_UNOWNED_MEMORY,
+                     coded_size, visible_rect, natural_size)) {
     return NULL;
   }
 
@@ -447,30 +433,43 @@ scoped_refptr<VideoFrame> VideoFrame::WrapVideoFrame(
       const scoped_refptr<VideoFrame>& frame,
       const gfx::Rect& visible_rect,
       const gfx::Size& natural_size) {
-  // STORAGE_TEXTURE frames need mailbox info propagated, and there's no support
+  // Frames with textures need mailbox info propagated, and there's no support
   // for that here yet, see http://crbug/362521.
-  CHECK_NE(frame->storage_type(), STORAGE_TEXTURE);
+  CHECK(!frame->HasTextures());
 
   DCHECK(frame->visible_rect().Contains(visible_rect));
-  scoped_refptr<VideoFrame> wrapped_frame(new VideoFrame(
+  scoped_refptr<VideoFrame> wrapping_frame(new VideoFrame(
       frame->format(), frame->storage_type(), frame->coded_size(), visible_rect,
       natural_size, frame->timestamp()));
-  if (frame->metadata()->IsTrue(VideoFrameMetadata::END_OF_STREAM))
-    frame->metadata()->SetBoolean(VideoFrameMetadata::END_OF_STREAM, true);
-
-  for (size_t i = 0; i < NumPlanes(frame->format()); ++i) {
-    wrapped_frame->strides_[i] = frame->stride(i);
-    wrapped_frame->data_[i] = frame->data(i);
+  if (frame->metadata()->IsTrue(VideoFrameMetadata::END_OF_STREAM)) {
+    wrapping_frame->metadata()->SetBoolean(VideoFrameMetadata::END_OF_STREAM,
+                                          true);
   }
 
-  return wrapped_frame;
+  for (size_t i = 0; i < NumPlanes(frame->format()); ++i) {
+    wrapping_frame->strides_[i] = frame->stride(i);
+    wrapping_frame->data_[i] = frame->data(i);
+  }
+
+#if defined(OS_LINUX)
+  // If there are any |dmabuf_fds_| plugged in, we should duplicate them.
+  if (frame->storage_type() == STORAGE_DMABUFS) {
+    std::vector<int> original_fds;
+    for (size_t i = 0; i < kMaxPlanes; ++i)
+      original_fds.push_back(frame->dmabuf_fd(i));
+    if (!wrapping_frame->DuplicateFileDescriptors(original_fds))
+      return nullptr;
+  }
+#endif
+
+  return wrapping_frame;
 }
 
 // static
 scoped_refptr<VideoFrame> VideoFrame::CreateEOSFrame() {
   scoped_refptr<VideoFrame> frame =
-      new VideoFrame(UNKNOWN, STORAGE_UNKNOWN, gfx::Size(), gfx::Rect(),
-                     gfx::Size(), kNoTimestamp());
+      new VideoFrame(UNKNOWN, STORAGE_UNKNOWN, gfx::Size(),
+                     gfx::Rect(), gfx::Size(), kNoTimestamp());
   frame->metadata()->SetBoolean(VideoFrameMetadata::END_OF_STREAM, true);
   return frame;
 }
@@ -635,8 +634,8 @@ VideoFrame::VideoFrame(Format format,
                  visible_rect,
                  natural_size,
                  timestamp) {
-  shared_memory_handle_ = handle;
-  shared_memory_offset_ = shared_memory_offset;
+  DCHECK_EQ(storage_type, STORAGE_SHMEM);
+  AddSharedMemoryHandle(handle, shared_memory_offset);
 }
 
 VideoFrame::VideoFrame(Format format,
@@ -645,6 +644,7 @@ VideoFrame::VideoFrame(Format format,
                        const gfx::Rect& visible_rect,
                        const gfx::Size& natural_size,
                        const gpu::MailboxHolder(&mailbox_holders)[kMaxPlanes],
+                       const ReleaseMailboxCB& mailbox_holder_release_cb,
                        base::TimeDelta timestamp)
     : VideoFrame(format,
                  storage_type,
@@ -653,6 +653,7 @@ VideoFrame::VideoFrame(Format format,
                  natural_size,
                  timestamp) {
   memcpy(&mailbox_holders_, mailbox_holders, sizeof(mailbox_holders_));
+  mailbox_holders_release_cb_ = mailbox_holder_release_cb;
 }
 
 VideoFrame::~VideoFrame() {
@@ -683,25 +684,27 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalStorage(
     base::TimeDelta timestamp,
     base::SharedMemoryHandle handle,
     size_t data_offset) {
-  const gfx::Size new_coded_size = AdjustCodedSize(format, coded_size);
+  DCHECK(IsStorageTypeMappable(storage_type));
 
+  const gfx::Size new_coded_size = AdjustCodedSize(format, coded_size);
   if (!IsValidConfig(format, storage_type, new_coded_size, visible_rect,
                      natural_size) ||
       data_size < AllocationSize(format, new_coded_size)) {
     return NULL;
   }
   DLOG_IF(ERROR, format != I420) << "Only I420 format supported: "
-      << FormatToString(format);
+                                 << FormatToString(format);
   if (format != I420)
     return NULL;
 
   scoped_refptr<VideoFrame> frame;
   if (storage_type == STORAGE_SHMEM) {
-    frame = new VideoFrame(format, storage_type, new_coded_size, visible_rect,
-                           natural_size, timestamp, handle, data_offset);
+    frame = new VideoFrame(format, storage_type, new_coded_size,
+                           visible_rect, natural_size, timestamp, handle,
+                           data_offset);
   } else {
-    frame = new VideoFrame(format, storage_type, new_coded_size, visible_rect,
-                           natural_size, timestamp);
+    frame = new VideoFrame(format, storage_type, new_coded_size,
+                           visible_rect, natural_size, timestamp);
   }
   frame->strides_[kYPlane] = new_coded_size.width();
   frame->strides_[kUPlane] = new_coded_size.width() / 2;
@@ -748,11 +751,6 @@ void VideoFrame::AllocateYUV() {
   AddDestructionObserver(base::Bind(&ReleaseData, data));
 }
 
-// static
-bool VideoFrame::IsValidPlane(size_t plane, Format format) {
-  return (plane < NumPlanes(format));
-}
-
 int VideoFrame::stride(size_t plane) const {
   DCHECK(IsValidPlane(plane, format_));
   return strides_[plane];
@@ -786,21 +784,29 @@ int VideoFrame::rows(size_t plane) const {
   return Rows(plane, format_, coded_size_.height());
 }
 
+bool VideoFrame::HasTextures() const {
+  return !mailbox_holders_[0].mailbox.IsZero();
+}
+
+bool VideoFrame::IsMappable() const {
+  return IsStorageTypeMappable(storage_type_);
+}
+
 const uint8* VideoFrame::data(size_t plane) const {
   DCHECK(IsValidPlane(plane, format_));
-  DCHECK(IsMappable(storage_type_));
+  DCHECK(IsMappable());
   return data_[plane];
 }
 
 uint8* VideoFrame::data(size_t plane) {
   DCHECK(IsValidPlane(plane, format_));
-  DCHECK(IsMappable(storage_type_));
+  DCHECK(IsMappable());
   return data_[plane];
 }
 
 const uint8* VideoFrame::visible_data(size_t plane) const {
   DCHECK(IsValidPlane(plane, format_));
-  DCHECK(IsMappable(storage_type_));
+  DCHECK(IsMappable());
 
   // Calculate an offset that is properly aligned for all planes.
   const gfx::Size alignment = CommonAlignment(format_);
@@ -823,12 +829,8 @@ uint8* VideoFrame::visible_data(size_t plane) {
 
 const gpu::MailboxHolder&
 VideoFrame::mailbox_holder(size_t texture_index) const {
-#if defined(OS_LINUX)
-  DCHECK(storage_type_ == STORAGE_TEXTURE || storage_type_ == STORAGE_DMABUFS);
-#else
-  DCHECK(storage_type_ == STORAGE_TEXTURE);
-#endif
-  DCHECK_LT(texture_index, NumPlanes(format_));
+  DCHECK(HasTextures());
+  DCHECK(IsValidPlane(texture_index, format_));
   return mailbox_holders_[texture_index];
 }
 
@@ -844,17 +846,61 @@ size_t VideoFrame::shared_memory_offset() const {
   return shared_memory_offset_;
 }
 
+#if defined(OS_LINUX)
+int VideoFrame::dmabuf_fd(size_t plane) const {
+  DCHECK_EQ(storage_type_, STORAGE_DMABUFS);
+  DCHECK(IsValidPlane(plane, format_));
+  return dmabuf_fds_[plane].get();
+}
+
+bool VideoFrame::DuplicateFileDescriptors(const std::vector<int>& in_fds) {
+  // TODO(mcasas): Support offsets for e.g. multiplanar inside a single |in_fd|.
+
+  storage_type_ = STORAGE_DMABUFS;
+  // TODO(posciak): This is not exactly correct, it's possible for one
+  // buffer to contain more than one plane.
+  if (in_fds.size() != NumPlanes(format_)) {
+    LOG(FATAL) << "Not enough dmabuf fds provided, got: " <<  in_fds.size()
+               << ", expected: " << NumPlanes(format_);
+    return false;
+  }
+
+  // Make sure that all fds are closed if any dup() fails,
+  base::ScopedFD temp_dmabuf_fds[kMaxPlanes];
+  for (size_t i = 0; i < in_fds.size(); ++i) {
+    temp_dmabuf_fds[i] = base::ScopedFD(HANDLE_EINTR(dup(in_fds[i])));
+    if (!temp_dmabuf_fds[i].is_valid()) {
+      DPLOG(ERROR) << "Failed duplicating a dmabuf fd";
+      return false;
+    }
+  }
+  for (size_t i = 0; i < kMaxPlanes; ++i)
+    dmabuf_fds_[i].reset(temp_dmabuf_fds[i].release());
+
+  return true;
+}
+#endif
+
+void VideoFrame::AddSharedMemoryHandle(base::SharedMemoryHandle handle,
+                                       size_t shared_memory_offset) {
+  storage_type_ = STORAGE_SHMEM;
+  shared_memory_handle_ = handle;
+  shared_memory_offset_ = shared_memory_offset;
+}
+
+#if defined(OS_MACOSX)
+CVPixelBufferRef VideoFrame::cv_pixel_buffer() const {
+  return cv_pixel_buffer_.get();
+}
+#endif
+
 void VideoFrame::AddDestructionObserver(const base::Closure& callback) {
   DCHECK(!callback.is_null());
   done_callbacks_.push_back(callback);
 }
 
 void VideoFrame::UpdateReleaseSyncPoint(SyncPointClient* client) {
-#if defined(OS_LINUX)
-  DCHECK(storage_type_ == STORAGE_TEXTURE || storage_type_ == STORAGE_DMABUFS);
-#else
-  DCHECK(storage_type_ == STORAGE_TEXTURE);
-#endif
+  DCHECK(HasTextures());
   base::AutoLock locker(release_sync_point_lock_);
   // Must wait on the previous sync point before inserting a new sync point so
   // that |mailbox_holders_release_cb_| guarantees the previous sync point
@@ -863,19 +909,6 @@ void VideoFrame::UpdateReleaseSyncPoint(SyncPointClient* client) {
     client->WaitSyncPoint(release_sync_point_);
   release_sync_point_ = client->InsertSyncPoint();
 }
-
-#if defined(OS_LINUX)
-int VideoFrame::dmabuf_fd(size_t plane) const {
-  DCHECK_EQ(storage_type_, STORAGE_DMABUFS);
-  return dmabuf_fds_[plane].get();
-}
-#endif
-
-#if defined(OS_MACOSX)
-CVPixelBufferRef VideoFrame::cv_pixel_buffer() const {
-  return cv_pixel_buffer_.get();
-}
-#endif
 
 void VideoFrame::HashFrameForTesting(base::MD5Context* context) {
   for (size_t plane = 0; plane < NumPlanes(format_); ++plane) {

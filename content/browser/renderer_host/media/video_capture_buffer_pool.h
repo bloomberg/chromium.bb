@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/basictypes.h"
+#include "base/files/file.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory.h"
 #include "base/process/process.h"
@@ -53,6 +54,7 @@ class CONTENT_EXPORT VideoCaptureBufferPool
     virtual void* data() = 0;
     virtual gfx::GpuMemoryBufferType GetType() = 0;
     virtual ClientBuffer AsClientBuffer() = 0;
+    virtual base::PlatformFile AsPlatformFile() = 0;
   };
 
   explicit VideoCaptureBufferPool(int count);

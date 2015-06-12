@@ -540,8 +540,7 @@ void WebMediaPlayerImpl::paint(blink::WebCanvas* canvas,
 
   gfx::Rect gfx_rect(rect);
   Context3D context_3d;
-  if (video_frame.get() &&
-      video_frame->storage_type() == VideoFrame::STORAGE_TEXTURE) {
+  if (video_frame.get() && video_frame->HasTextures()) {
     if (!context_3d_cb_.is_null())
       context_3d = context_3d_cb_.Run();
     // GPU Process crashed.
@@ -620,8 +619,7 @@ bool WebMediaPlayerImpl::copyVideoTextureToPlatformTexture(
 
   scoped_refptr<VideoFrame> video_frame = GetCurrentFrameFromCompositor();
 
-  if (!video_frame.get() ||
-      video_frame->storage_type() != VideoFrame::STORAGE_TEXTURE ||
+  if (!video_frame.get() || !video_frame->HasTextures() ||
       media::VideoFrame::NumPlanes(video_frame->format()) != 1) {
     return false;
   }

@@ -235,7 +235,7 @@ void VideoLayerImpl::AppendQuads(RenderPass* render_pass,
       const gfx::Size ya_tex_size = coded_size;
       gfx::Size uv_tex_size;
 
-      if (frame_->storage_type() == media::VideoFrame::STORAGE_TEXTURE) {
+      if (frame_->HasTextures()) {
         DCHECK_EQ(media::VideoFrame::I420, frame_->format());
         DCHECK_EQ(3u, frame_resources_.size());  // Alpha is not supported yet.
         DCHECK(visible_rect.origin().IsOrigin());

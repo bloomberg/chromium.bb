@@ -211,12 +211,12 @@ void VideoTrackAdapter::VideoFrameResolutionAdapter::DeliverFrame(
 
   // TODO(perkj): Allow cropping / scaling of textures once
   // http://crbug/362521 is fixed.
-  if (frame->storage_type() == media::VideoFrame::STORAGE_TEXTURE) {
+  if (frame->HasTextures()) {
     DoDeliverFrame(frame, estimated_capture_time);
     return;
   }
   scoped_refptr<media::VideoFrame> video_frame(frame);
-  double input_ratio =
+  const double input_ratio =
       static_cast<double>(frame->natural_size().width()) /
       frame->natural_size().height();
 
@@ -259,10 +259,8 @@ void VideoTrackAdapter::VideoFrameResolutionAdapter::DeliverFrame(
     const gfx::Rect region_in_frame =
         media::ComputeLetterboxRegion(frame->visible_rect(), desired_size);
 
-    video_frame = media::VideoFrame::WrapVideoFrame(
-        frame,
-        region_in_frame,
-        desired_size);
+    video_frame =
+        media::VideoFrame::WrapVideoFrame(frame, region_in_frame, desired_size);
     video_frame->AddDestructionObserver(
         base::Bind(&ReleaseOriginalFrame, frame));
 

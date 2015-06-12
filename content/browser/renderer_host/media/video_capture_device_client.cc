@@ -124,6 +124,9 @@ class AutoReleaseBuffer : public media::VideoCaptureDevice::Client::Buffer {
   ClientBuffer AsClientBuffer() override {
     return buffer_handle_->AsClientBuffer();
   }
+  base::PlatformFile AsPlatformFile() override {
+    return buffer_handle_->AsPlatformFile();
+  }
 
  private:
   ~AutoReleaseBuffer() override { pool_->RelinquishProducerReservation(id_); }
@@ -544,7 +547,7 @@ VideoCaptureDeviceClient::TextureWrapHelper::OnIncomingCapturedGpuMemoryBuffer(
                                             GL_BGRA_EXT);
   DCHECK(image_id);
 
-  GLuint texture_id = gl_helper_->CreateTexture();
+  const GLuint texture_id = gl_helper_->CreateTexture();
   DCHECK(texture_id);
   {
     content::ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(gl, texture_id);
@@ -570,6 +573,13 @@ VideoCaptureDeviceClient::TextureWrapHelper::OnIncomingCapturedGpuMemoryBuffer(
   video_frame->metadata()->SetBoolean(VideoFrameMetadata::ALLOW_OVERLAY, true);
   video_frame->metadata()->SetDouble(VideoFrameMetadata::FRAME_RATE,
                                      frame_format.frame_rate);
+#if defined(OS_LINUX)
+  if (buffer->GetType() == gfx::OZONE_NATIVE_BUFFER) {
+    video_frame->DuplicateFileDescriptors(
+        std::vector<int>(buffer->AsPlatformFile()));
+  }
+#endif
+  //TODO(mcasas): use AddSharedMemoryHandle() for gfx::SHARED_MEMORY_BUFFER.
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,

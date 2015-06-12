@@ -660,8 +660,7 @@ bool WebMediaPlayerAndroid::copyVideoTextureToPlatformTexture(
     video_frame = current_frame_;
   }
 
-  if (!video_frame.get() ||
-      video_frame->storage_type() != media::VideoFrame::STORAGE_TEXTURE)
+  if (!video_frame.get() || !video_frame->HasTextures())
     return false;
   DCHECK_EQ(1u, media::VideoFrame::NumPlanes(video_frame->format()));
   const gpu::MailboxHolder& mailbox_holder = video_frame->mailbox_holder(0);
@@ -1239,7 +1238,7 @@ void WebMediaPlayerAndroid::ReallocateVideoFrame() {
     GLuint texture_mailbox_sync_point = gl->InsertSyncPointCHROMIUM();
 
     scoped_refptr<VideoFrame> new_frame = VideoFrame::WrapNativeTexture(
-        VideoFrame::ARGB,
+        media::VideoFrame::ARGB,
         gpu::MailboxHolder(texture_mailbox_, texture_target,
                            texture_mailbox_sync_point),
         media::BindToCurrentLoop(base::Bind(
