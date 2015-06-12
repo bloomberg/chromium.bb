@@ -1076,7 +1076,8 @@ String LayoutObject::decoratedName() const
 
     if (isAnonymous())
         name.append(" (anonymous)");
-    if (isOutOfFlowPositioned())
+    // FIXME: Remove the special case for LayoutView here (requires rebaseline of all tests).
+    if (isOutOfFlowPositioned() && !isLayoutView())
         name.append(" (positioned)");
     if (isRelPositioned())
         name.append(" (relative positioned)");

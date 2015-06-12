@@ -467,6 +467,7 @@ PassRefPtr<ComputedStyle> StyleResolver::styleForDocument(Document& document)
     // Document::inheritHtmlAndBodyElementStyles.
     documentStyle->setDisplay(BLOCK);
     documentStyle->setScrollBlocksOn(WebScrollBlocksOnStartTouch | WebScrollBlocksOnWheelEvent);
+    documentStyle->setPosition(AbsolutePosition);
 
     document.setupFontBuilder(*documentStyle);
 

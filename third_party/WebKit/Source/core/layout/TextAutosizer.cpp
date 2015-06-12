@@ -227,7 +227,7 @@ static bool blockHeightConstrained(const LayoutBlock* block)
         if (style.height().isSpecified() || style.maxHeight().isSpecified() || block->isOutOfFlowPositioned()) {
             // Some sites (e.g. wikipedia) set their html and/or body elements to height:100%,
             // without intending to constrain the height of the content within them.
-            return !block->isDocumentElement() && !block->isBody();
+            return !block->isDocumentElement() && !block->isBody() && !block->isLayoutView();
         }
         if (block->isFloating())
             return false;
