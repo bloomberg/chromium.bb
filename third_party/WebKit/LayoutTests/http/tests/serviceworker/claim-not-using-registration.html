@@ -78,7 +78,7 @@ promise_test(function(t) {
     var scope = 'resources/blank.html?longer-matched';
     var claim_scope = 'resources/blank.html?longer';
     var claim_worker_url = 'resources/claim-worker.js';
-    var installing_worker_url = 'resources/wait-forever-in-install-worker.js';
+    var installing_worker_url = 'resources/empty-worker.js';
     var frame, claim_worker;
     return with_iframe(scope)
       .then(function(f) {
@@ -112,7 +112,10 @@ promise_test(function(t) {
               'Frame should not be claimed when a longer-matched ' +
               'registration exists');
           frame.remove();
-          return service_worker_unregister_and_done(t, claim_scope);
+          return service_worker_unregister(t, claim_scope);
+        })
+      .then(function() {
+          return service_worker_unregister_and_done(t, scope);
         });
   }, 'Test claim client when there\'s a longer-matched registration not ' +
      'already used by the page');
