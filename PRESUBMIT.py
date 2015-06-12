@@ -1311,9 +1311,13 @@ def _CheckAndroidCrLogUsage(input_api, output_api):
     - Are using a tag that is shorter than 23 characters (error)
   """
   cr_log_import_pattern = input_api.re.compile(
-      r'^import org\.chromium\.base\.Log;$', input_api.re.MULTILINE);
+      r'^import org\.chromium\.base\.Log;$', input_api.re.MULTILINE)
+  class_in_base_pattern = input_api.re.compile(
+      r'^package org\.chromium\.base;$', input_api.re.MULTILINE)
+  has_some_log_import_pattern = input_api.re.compile(
+      r'^import .*\.Log;$', input_api.re.MULTILINE)
   # Extract the tag from lines like `Log.d(TAG, "*");` or `Log.d("TAG", "*");`
-  cr_log_pattern = input_api.re.compile(r'^\s*Log\.\w\((?P<tag>\"?\w+\"?)\,')
+  log_call_pattern = input_api.re.compile(r'^\s*Log\.\w\((?P<tag>\"?\w+\"?)\,')
   log_decl_pattern = input_api.re.compile(
       r'^\s*private static final String TAG = "(?P<name>(.*)")',
       input_api.re.MULTILINE)
@@ -1322,26 +1326,36 @@ def _CheckAndroidCrLogUsage(input_api, output_api):
   REF_MSG = ('See base/android/java/src/org/chromium/base/README_logging.md '
             'or contact dgn@chromium.org for more info.')
   sources = lambda x: input_api.FilterSourceFile(x, white_list=(r'.*\.java$',))
-  tag_errors = []
+
   tag_decl_errors = []
   tag_length_errors = []
+  tag_errors = []
+  util_log_errors = []
 
   for f in input_api.AffectedSourceFiles(sources):
     file_content = input_api.ReadFile(f)
     has_modified_logs = False
 
     # Per line checks
-    if cr_log_import_pattern.search(file_content):
+    if (cr_log_import_pattern.search(file_content) or
+        (class_in_base_pattern.search(file_content) and
+            not has_some_log_import_pattern.search(file_content))):
+      # Checks to run for files using cr log
       for line_num, line in f.ChangedContents():
 
         # Check if the new line is doing some logging
-        match = cr_log_pattern.search(line)
+        match = log_call_pattern.search(line)
         if match:
           has_modified_logs = True
 
           # Make sure it uses "TAG"
           if not match.group('tag') == 'TAG':
             tag_errors.append("%s:%d" % (f.LocalPath(), line_num))
+    else:
+      # Report non cr Log function calls in changed lines
+      for line_num, line in f.ChangedContents():
+        if log_call_pattern.search(line):
+          util_log_errors.append("%s:%d" % (f.LocalPath(), line_num))
 
     # Per file checks
     if has_modified_logs:
@@ -1371,36 +1385,11 @@ def _CheckAndroidCrLogUsage(input_api, output_api):
         'Please use a variable named "TAG" for your log tags.\n' + REF_MSG,
         tag_errors))
 
-  return results
-
-
-# TODO(dgn): refactor with _CheckAndroidCrLogUsage
-def _CheckNoNewUtilLogUsage(input_api, output_api):
-  """Checks that new logs are using org.chromium.base.Log."""
-
-  chromium_log_import_pattern = input_api.re.compile(
-      r'^import org\.chromium\.base\.Log;$', input_api.re.MULTILINE);
-  log_pattern = input_api.re.compile(r'^\s*(android\.util\.)?Log\.\w')
-  sources = lambda x: input_api.FilterSourceFile(x, white_list=(r'.*\.java$',))
-
-  errors = []
-
-  for f in input_api.AffectedSourceFiles(sources):
-    if chromium_log_import_pattern.search(input_api.ReadFile(f)) is not None:
-      # Uses org.chromium.base.Log already
-      continue
-
-    for line_num, line in f.ChangedContents():
-      if log_pattern.search(line):
-        errors.append("%s:%d" % (f.LocalPath(), line_num))
-
-  results = []
-  if len(errors):
+  if util_log_errors:
     results.append(output_api.PresubmitPromptWarning(
-        'Please use org.chromium.base.Log for new logs.\n' +
-        'See base/android/java/src/org/chromium/base/README_logging.md ' +
-        'or contact dgn@chromium.org for more info.',
-        errors))
+        'Please use org.chromium.base.Log for new logs.\n' + REF_MSG,
+        util_log_errors))
+
   return results
 
 
@@ -1532,7 +1521,6 @@ def _CheckNoDeprecatedJS(input_api, output_api):
 def _AndroidSpecificOnUploadChecks(input_api, output_api):
   """Groups checks that target android code."""
   results = []
-  results.extend(_CheckNoNewUtilLogUsage(input_api, output_api))
   results.extend(_CheckAndroidCrLogUsage(input_api, output_api))
   return results
 
