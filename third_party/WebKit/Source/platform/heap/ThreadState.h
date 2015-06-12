@@ -313,11 +313,7 @@ public:
     }
 
     bool isMainThread() const { return this == mainThreadState(); }
-    bool checkThread() const
-    {
-        ASSERT(m_thread == currentThread());
-        return true;
-    }
+    void checkThread() const { ASSERT(m_thread == currentThread()); }
 
     void didV8MajorGC(bool forceGC);
 
