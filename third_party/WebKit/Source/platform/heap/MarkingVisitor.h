@@ -15,12 +15,6 @@ public:
     using Impl = MarkingVisitorImpl<MarkingVisitor<Mode>>;
     friend class MarkingVisitorImpl<MarkingVisitor<Mode>>;
 
-#if ENABLE(GC_PROFILING)
-    using LiveObjectSet = HashSet<uintptr_t>;
-    using LiveObjectMap = HashMap<String, LiveObjectSet>;
-    using ObjectGraph = HashMap<uintptr_t, std::pair<uintptr_t, String>>;
-#endif
-
     MarkingVisitor()
         : Visitor(Mode)
     {
@@ -62,115 +56,6 @@ public:
     {
         return Impl::ensureMarked(objectPointer);
     }
-
-#if ENABLE(GC_PROFILING)
-    virtual void recordObjectGraphEdge(const void* objectPointer) override
-    {
-        MutexLocker locker(objectGraphMutex());
-        String className(classOf(objectPointer));
-        {
-            LiveObjectMap::AddResult result = currentlyLive().add(className, LiveObjectSet());
-            result.storedValue->value.add(reinterpret_cast<uintptr_t>(objectPointer));
-        }
-        ObjectGraph::AddResult result = objectGraph().add(reinterpret_cast<uintptr_t>(objectPointer), std::make_pair(reinterpret_cast<uintptr_t>(m_hostObject), m_hostName));
-        ASSERT(result.isNewEntry);
-        // fprintf(stderr, "%s[%p] -> %s[%p]\n", m_hostName.ascii().data(), m_hostObject, className.ascii().data(), objectPointer);
-    }
-
-    void reportStats()
-    {
-        fprintf(stderr, "\n---------- AFTER MARKING -------------------\n");
-        for (LiveObjectMap::iterator it = currentlyLive().begin(), end = currentlyLive().end(); it != end; ++it) {
-            fprintf(stderr, "%s %u", it->key.ascii().data(), it->value.size());
-
-            if (it->key == "blink::Document")
-                reportStillAlive(it->value, previouslyLive().get(it->key));
-
-            fprintf(stderr, "\n");
-        }
-
-        previouslyLive().swap(currentlyLive());
-        currentlyLive().clear();
-
-        for (uintptr_t object : objectsToFindPath()) {
-            dumpPathToObjectFromObjectGraph(objectGraph(), object);
-        }
-    }
-
-    static void reportStillAlive(LiveObjectSet current, LiveObjectSet previous)
-    {
-        int count = 0;
-
-        fprintf(stderr, " [previously %u]", previous.size());
-        for (uintptr_t object : current) {
-            if (previous.find(object) == previous.end())
-                continue;
-            count++;
-        }
-
-        if (!count)
-            return;
-
-        fprintf(stderr, " {survived 2GCs %d: ", count);
-        for (uintptr_t object : current) {
-            if (previous.find(object) == previous.end())
-                continue;
-            fprintf(stderr, "%ld", object);
-            if (--count)
-                fprintf(stderr, ", ");
-        }
-        ASSERT(!count);
-        fprintf(stderr, "}");
-    }
-
-    static void dumpPathToObjectFromObjectGraph(const ObjectGraph& graph, uintptr_t target)
-    {
-        ObjectGraph::const_iterator it = graph.find(target);
-        if (it == graph.end())
-            return;
-        fprintf(stderr, "Path to %lx of %s\n", target, classOf(reinterpret_cast<const void*>(target)).ascii().data());
-        while (it != graph.end()) {
-            fprintf(stderr, "<- %lx of %s\n", it->value.first, it->value.second.utf8().data());
-            it = graph.find(it->value.first);
-        }
-        fprintf(stderr, "\n");
-    }
-
-    static void dumpPathToObjectOnNextGC(void* p)
-    {
-        objectsToFindPath().add(reinterpret_cast<uintptr_t>(p));
-    }
-
-    static Mutex& objectGraphMutex()
-    {
-        AtomicallyInitializedStaticReference(Mutex, mutex, new Mutex);
-        return mutex;
-    }
-
-    static LiveObjectMap& previouslyLive()
-    {
-        DEFINE_STATIC_LOCAL(LiveObjectMap, map, ());
-        return map;
-    }
-
-    static LiveObjectMap& currentlyLive()
-    {
-        DEFINE_STATIC_LOCAL(LiveObjectMap, map, ());
-        return map;
-    }
-
-    static ObjectGraph& objectGraph()
-    {
-        DEFINE_STATIC_LOCAL(ObjectGraph, graph, ());
-        return graph;
-    }
-
-    static HashSet<uintptr_t>& objectsToFindPath()
-    {
-        DEFINE_STATIC_LOCAL(HashSet<uintptr_t>, set, ());
-        return set;
-    }
-#endif
 
 protected:
     virtual void registerWeakCellWithCallback(void** cell, WeakCallback callback) override

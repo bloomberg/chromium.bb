@@ -415,7 +415,11 @@ void ThreadState::snapshot()
         json->endDictionary();                                     \
     }
     json->beginArray("heaps");
-    SNAPSHOT_HEAP(NormalPage);
+    SNAPSHOT_HEAP(EagerSweep);
+    SNAPSHOT_HEAP(NormalPage1);
+    SNAPSHOT_HEAP(NormalPage2);
+    SNAPSHOT_HEAP(NormalPage3);
+    SNAPSHOT_HEAP(NormalPage4);
     SNAPSHOT_HEAP(Vector1);
     SNAPSHOT_HEAP(Vector2);
     SNAPSHOT_HEAP(Vector3);
@@ -1425,8 +1429,15 @@ void ThreadState::snapshotFreeList()
     }
 
     json->beginArray("heaps");
-    SNAPSHOT_FREE_LIST(NormalPage);
-    SNAPSHOT_FREE_LIST(Vector);
+    SNAPSHOT_FREE_LIST(EagerSweep);
+    SNAPSHOT_FREE_LIST(NormalPage1);
+    SNAPSHOT_FREE_LIST(NormalPage2);
+    SNAPSHOT_FREE_LIST(NormalPage3);
+    SNAPSHOT_FREE_LIST(NormalPage4);
+    SNAPSHOT_FREE_LIST(Vector1);
+    SNAPSHOT_FREE_LIST(Vector2);
+    SNAPSHOT_FREE_LIST(Vector3);
+    SNAPSHOT_FREE_LIST(Vector4);
     SNAPSHOT_FREE_LIST(InlineVector);
     SNAPSHOT_FREE_LIST(HashTable);
     SNAPSHOT_FREE_LIST(LargeObject);

@@ -215,9 +215,6 @@ public:
     {
         static_assert(sizeof(T), "T must be fully defined");
         static_assert(IsGarbageCollectedType<T>::value, "T needs to be a garbage collected object");
-#if ENABLE(GC_PROFILING)
-        visitor->setHostInfo(this, m_tracingName.isEmpty() ? "Persistent" : m_tracingName);
-#endif
         visitor->mark(m_raw);
     }
 
@@ -416,9 +413,6 @@ public:
     {
         static_assert(sizeof(T), "T must be fully defined");
         static_assert(IsGarbageCollectedType<T>::value, "T needs to be a garbage collected object");
-#if ENABLE(GC_PROFILING)
-        visitor->setHostInfo(this, m_tracingName.isEmpty() ? "CrossThreadPersistent" : m_tracingName);
-#endif
         visitor->mark(m_raw);
     }
 
@@ -578,9 +572,6 @@ public:
     void trace(VisitorDispatcher visitor)
     {
         static_assert(sizeof(Collection), "Collection must be fully defined");
-#if ENABLE(GC_PROFILING)
-        visitor->setHostInfo(this, "PersistentHeapCollectionBase");
-#endif
         visitor->trace(*static_cast<Collection*>(this));
     }
 

@@ -1427,9 +1427,6 @@ void NormalPage::checkAndMarkPointer(Visitor* visitor, Address address)
     HeapObjectHeader* header = findHeaderFromAddress(address);
     if (!header || header->isDead())
         return;
-#if ENABLE(GC_PROFILING)
-    visitor->setHostInfo(&address, "stack");
-#endif
     markPointer(visitor, header);
 }
 
@@ -1612,9 +1609,6 @@ void LargeObjectPage::checkAndMarkPointer(Visitor* visitor, Address address)
     ASSERT(contains(address));
     if (!containedInObjectPayload(address) || heapObjectHeader()->isDead())
         return;
-#if ENABLE(GC_PROFILING)
-    visitor->setHostInfo(&address, "stack");
-#endif
     markPointer(visitor, heapObjectHeader());
 }
 
@@ -1841,12 +1835,6 @@ const GCInfo* Heap::findGCInfo(Address address)
 #endif
 
 #if ENABLE(GC_PROFILING)
-void Heap::dumpPathToObjectOnNextGC(void* p)
-{
-    MarkingVisitor<Visitor::GlobalMarking> visitor;
-    visitor->dumpPathToObjectOnNextGC(p);
-}
-
 String Heap::createBacktraceString()
 {
     int framesToShow = 3;
@@ -1898,10 +1886,6 @@ bool Heap::popAndInvokeTraceCallback(Visitor* visitor)
     CallbackStack::Item* item = s_markingStack->pop();
     if (!item)
         return false;
-
-#if ENABLE(GC_PROFILING)
-    visitor->setHostInfo(item->object(), classOf(item->object()));
-#endif
     item->call(visitor);
     return true;
 }
@@ -2025,9 +2009,6 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::GCTyp
         "gcReason", gcReasonString(reason));
     TRACE_EVENT_SCOPED_SAMPLING_STATE("blink_gc", "BlinkGC");
     double timeStamp = WTF::currentTimeMS();
-#if ENABLE(GC_PROFILING)
-    gcScope.visitor()->objectGraph().clear();
-#endif
 
     // Disallow allocation during garbage collection (but not during the
     // finalization that happens when the gcScope is torn down).
@@ -2059,10 +2040,6 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::GCTyp
     orphanedPagePool()->decommitOrphanedPages();
 
     postGC(gcType);
-
-#if ENABLE(GC_PROFILING)
-    gcScope.visitor()->reportStats();
-#endif
 
     double markingTimeInMilliseconds = WTF::currentTimeMS() - timeStamp;
     s_estimatedMarkingTimePerByte = totalObjectSize ? (markingTimeInMilliseconds / 1000 / totalObjectSize) : 0;

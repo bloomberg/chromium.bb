@@ -394,14 +394,6 @@ public:
 
     virtual bool ensureMarked(const void*) = 0;
 
-#if ENABLE(GC_PROFILING)
-    void setHostInfo(void* object, const String& name)
-    {
-        m_hostObject = object;
-        m_hostName = name;
-    }
-#endif
-
     inline MarkingMode markingMode() const { return m_markingMode; }
 
 protected:
@@ -410,12 +402,6 @@ protected:
     { }
 
     virtual void registerWeakCellWithCallback(void**, WeakCallback) = 0;
-#if ENABLE(GC_PROFILING)
-    virtual void recordObjectGraphEdge(const void*) = 0;
-
-    void* m_hostObject;
-    String m_hostName;
-#endif
 
 private:
     static Visitor* fromHelper(VisitorHelper<Visitor>* helper) { return static_cast<Visitor*>(helper); }

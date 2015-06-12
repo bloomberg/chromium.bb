@@ -77,11 +77,13 @@ private:
 };
 static_assert(WTF::NeedsTracing<IntWrapper>::value, "NeedsTracing macro failed to recognize trace method.");
 
+#if !ENABLE(GC_PROFILING)
 struct SameSizeAsPersistent {
     void* m_pointer[4];
 };
 
 static_assert(sizeof(Persistent<IntWrapper>) <= sizeof(SameSizeAsPersistent), "Persistent handle should stay small");
+#endif
 
 class ThreadMarker {
 public:
@@ -299,9 +301,6 @@ public:
     virtual bool weakTableRegistered(const void*) override { return false; }
 #endif
     virtual void registerWeakCellWithCallback(void**, WeakCallback) override { }
-#if ENABLE(GC_PROFILING)
-    virtual void recordObjectGraphEdge(const void*) override { }
-#endif
     virtual bool ensureMarked(const void* objectPointer) override
     {
         if (!objectPointer || HeapObjectHeader::fromPayload(objectPointer)->isMarked())

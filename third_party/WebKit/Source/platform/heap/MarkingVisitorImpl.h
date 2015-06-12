@@ -45,10 +45,6 @@ protected:
 #endif
         header->mark();
 
-#if ENABLE(GC_PROFILING)
-        toDerived()->recordObjectGraphEdge(objectPointer);
-#endif
-
         if (callback)
             Heap::pushTraceCallback(const_cast<void*>(objectPointer), callback);
     }

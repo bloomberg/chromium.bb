@@ -63,13 +63,6 @@ protected:
         return m_visitor->markingMode();
     }
 
-#if ENABLE(GC_PROFILING)
-    inline void recordObjectGraphEdge(const void* objectPointer)
-    {
-        m_visitor->recordObjectGraphEdge(objectPointer);
-    }
-#endif
-
 private:
     static InlinedGlobalMarkingVisitor fromHelper(Helper* helper)
     {
