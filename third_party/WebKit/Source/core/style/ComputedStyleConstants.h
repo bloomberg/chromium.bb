@@ -248,6 +248,7 @@ enum EListStyleType {
     EthiopicHalehameTiEt,
     Hangul,
     HangulConsonant,
+    KoreanHangulFormal,
     Hebrew,
     Armenian,
     LowerArmenian,

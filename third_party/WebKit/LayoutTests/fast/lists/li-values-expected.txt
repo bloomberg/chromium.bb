@@ -3,6 +3,7 @@
 0 The list marker should show 0.
 1 The list marker should show 1 (invalid values are ignored).
 -5 The list marker should show -5 (updated programmatically).
+마이너스 일 The list marker should show -1 (negative values are allowed).
 -1 The list marker should fall back to decimal -1 (hebrew: 1-infinite).
 0 The list marker should fall back to decimal 0 (simple-upper-roman: 1-4999).
 0 The list marker should fall back to decimal 0 (simple-lower-roman: 1-4999).
@@ -15,7 +16,6 @@
 0 The list marker should fall back to decimal 0 (ancient-tamil: 1-9999).
 -1 The list marker should fall back to cjk-decimal -1 (japanese-informal: 0-9999).
 -1 The list marker should fall back to cjk-decimal -1 (japanese-formal: 0-9999).
--1 The list marker should fall back to decimal -1 (korean-hangul-formal: 0-9999).
 -1 The list marker should fall back to decimal -1 (korean-hanja-informal: 0-9999).
 -1 The list marker should fall back to decimal -1 (korean-hanja-formal: 0-9999).
 0 The list marker should fall back to decimal 0 (greek: 1-999).

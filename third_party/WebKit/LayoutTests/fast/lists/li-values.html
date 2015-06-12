@@ -28,6 +28,7 @@ function init()
     <li>The list marker should show 0.</li>
     <li value="invalid">The list marker should show 1 (invalid values are ignored).</li>
     <li value="2" id="changeMyValue">The list marker should show -5 (updated programmatically).</li>
+    <li value="-1" style="list-style-type: korean-hangul-formal;">The list marker should show -1 (negative values are allowed).</li>
 
     <!-- For the following styles the values are out-of-range, and should fall-back to decimal -->
     <li value="-1" style="list-style-type: hebrew;">The list marker should fall back to decimal -1 (hebrew: 1-infinite).</li>
@@ -44,7 +45,6 @@ function init()
     <li value="-1" style="list-style-type: japanese-informal;">The list marker should fall back to cjk-decimal -1 (japanese-informal: 0-9999).</li>
     <!-- FIXME: We don't currently support this list-style-type -> fall back to decimal -->
     <li value="-1" style="list-style-type: japanese-formal;">The list marker should fall back to cjk-decimal -1 (japanese-formal: 0-9999).</li>
-    <li value="-1" style="list-style-type: korean-hangul-formal;">The list marker should fall back to decimal -1 (korean-hangul-formal: 0-9999).</li>
     <li value="-1" style="list-style-type: korean-hanja-informal;">The list marker should fall back to decimal -1 (korean-hanja-informal: 0-9999).</li>
     <li value="-1" style="list-style-type: korean-hanja-formal;">The list marker should fall back to decimal -1 (korean-hanja-formal: 0-9999).</li>
     <li value="0" style="list-style-type: greek;">The list marker should fall back to decimal 0 (greek: 1-999).</li>

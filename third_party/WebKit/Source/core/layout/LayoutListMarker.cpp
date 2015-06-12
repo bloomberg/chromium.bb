@@ -318,21 +318,31 @@ static String toGeorgian(int number)
 }
 
 // The table uses the order from the CSS3 specification:
-// first 3 group markers, then 3 digit markers, then ten digits.
-static String toCJKIdeographic(int number, const UChar table[16])
+// first 3 group markers, then 3 digit markers, then ten digits, then negative symbols.
+static String toCJKIdeographic(int number, const UChar table[23])
 {
-    ASSERT(number >= 0);
-
     enum AbstractCJKChar {
-        NoChar,
+        NoChar = 0,
+        Lang = 0,
         SecondGroupMarker, ThirdGroupMarker, FourthGroupMarker,
         SecondDigitMarker, ThirdDigitMarker, FourthDigitMarker,
         Digit0, Digit1, Digit2, Digit3, Digit4,
-        Digit5, Digit6, Digit7, Digit8, Digit9
+        Digit5, Digit6, Digit7, Digit8, Digit9,
+        Neg1, Neg2, Neg3, Neg4, Neg5
+    };
+
+    enum CJKLang {
+        Chinese = 1,
+        Korean,
+        Japanese
     };
 
     if (number == 0)
-        return String(&table[Digit0 - 1], 1);
+        return String(&table[Digit0], 1);
+
+    const bool negative = number < 0;
+    if (negative)
+        number = -number;
 
     const int groupLength = 8; // 4 digits, 3 digit markers, and a group marker
     const int bufferLength = 4 * groupLength;
@@ -371,7 +381,7 @@ static String toCJKIdeographic(int number, const UChar table[16])
 
         // Remove the tens digit, but leave the marker, for any group that has
         // a value of less than 20.
-        if (groupValue < 20) {
+        if (table[Lang] == Chinese && groupValue < 20) {
             ASSERT(group[4] == NoChar || group[4] == Digit0 || group[4] == Digit1);
             group[4] = NoChar;
         }
@@ -383,17 +393,25 @@ static String toCJKIdeographic(int number, const UChar table[16])
     // Convert into characters, omitting consecutive runs of Digit0 and
     // any trailing Digit0.
     int length = 0;
-    UChar characters[bufferLength];
+    const int maxLengthForNegativeSymbols = 5;
+    UChar characters[bufferLength + maxLengthForNegativeSymbols];
     AbstractCJKChar last = NoChar;
+    if (negative) {
+        while (UChar a = table[Neg1 + length])
+            characters[length++] = a;
+    }
     for (int i = 0; i < bufferLength; ++i) {
         AbstractCJKChar a = buffer[i];
         if (a != NoChar) {
-            if (a != Digit0 || last != Digit0)
-                characters[length++] = table[a - 1];
+            if (a != Digit0 || (table[Lang] == Chinese && last != Digit0)) {
+                characters[length++] = table[a];
+                if (table[Lang] == Korean && a >= SecondGroupMarker && a <= FourthGroupMarker)
+                    characters[length++] = ' ';
+            }
             last = a;
         }
     }
-    if (last == Digit0)
+    if ((table[Lang] == Chinese && last == Digit0) || characters[length - 1] == ' ')
         --length;
 
     return String(characters, length);
@@ -428,6 +446,7 @@ static EListStyleType effectiveListMarkerType(EListStyleType type, int value)
     case Thai:
     case Tibetan:
     case Urdu:
+    case KoreanHangulFormal:
         return type; // Can represent all ordinals.
     case Armenian:
         return (value < 1 || value > 99999999) ? DecimalListStyle : type;
@@ -527,6 +546,8 @@ UChar LayoutListMarker::listMarkerSuffix(EListStyleType type, int value)
     case UpperRoman:
     case Urdu:
         return '.';
+    case KoreanHangulFormal:
+        return ',';
     }
 
     ASSERT_NOT_REACHED();
@@ -801,12 +822,25 @@ String listMarkerText(EListStyleType type, int value)
         };
         return toAlphabetic(value, ethiopicHalehameTiEtAlphabet);
     }
+    case KoreanHangulFormal: {
+        static const UChar koreanHangulFormalTable[23] = {
+            0x2,
+            0xB9CC, 0xC5B5, 0xC870,
+            0xC2ED, 0xBC31, 0xCC9C,
+            0xC601, 0xC77C, 0xC774, 0xC0BC, 0xC0AC,
+            0xC624, 0xC721, 0xCE60, 0xD314, 0xAD6C,
+            0xB9C8, 0xC774, 0xB108, 0xC2A4, 0x0020, 0x0000
+        };
+        return toCJKIdeographic(value, koreanHangulFormalTable);
+    }
     case CJKIdeographic: {
-        static const UChar traditionalChineseInformalTable[16] = {
+        static const UChar traditionalChineseInformalTable[19] = {
+            0x1,
             0x842C, 0x5104, 0x5146,
             0x5341, 0x767E, 0x5343,
             0x96F6, 0x4E00, 0x4E8C, 0x4E09, 0x56DB,
-            0x4E94, 0x516D, 0x4E03, 0x516B, 0x4E5D
+            0x4E94, 0x516D, 0x4E03, 0x516B, 0x4E5D,
+            0x8CA0, 0x0000
         };
         return toCJKIdeographic(value, traditionalChineseInformalTable);
     }
@@ -1004,6 +1038,7 @@ void LayoutListMarker::updateContent()
     case Gurmukhi:
     case Hangul:
     case HangulConsonant:
+    case KoreanHangulFormal:
     case Hebrew:
     case Hiragana:
     case HiraganaIroha:
@@ -1079,6 +1114,7 @@ void LayoutListMarker::computePreferredLogicalWidths()
     case Gurmukhi:
     case Hangul:
     case HangulConsonant:
+    case KoreanHangulFormal:
     case Hebrew:
     case Hiragana:
     case HiraganaIroha:
@@ -1249,6 +1285,7 @@ IntRect LayoutListMarker::getRelativeMarkerRect()
     case Gujarati:
     case Gurmukhi:
     case Hangul:
+    case KoreanHangulFormal:
     case HangulConsonant:
     case Hebrew:
     case Hiragana:
