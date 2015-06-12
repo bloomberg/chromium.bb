@@ -12536,6 +12536,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="GPU.ANGLE.Renderer11InitializeDLLsMS" units="milliseconds">
+  <owner>jmadill@chromium.org</owner>
+  <summary>
+    Time ANGLE spends loading system DLLs, such as the D3D compiler DLL, and the
+    D3D11 and DXGI DLLs. Probably unavoidable startup costs, though very useful
+    to keep track of.
+  </summary>
+</histogram>
+
 <histogram name="GPU.ANGLE.SupportsDXGI1_2" enum="BooleanSupported">
   <owner>jmadill@chromium.org</owner>
   <summary>
