@@ -85,7 +85,7 @@ TEST(WalletServiceSandboxUrl, CheckProdUrls) {
 }
 
 TEST(WalletServiceUrl, DefaultsToProd) {
-#if defined(GOOGLE_CHROME_BUILD)
+#if defined(ENABLE_PROD_WALLET_SERVICE)
   EXPECT_TRUE(IsUsingProd());
 #else
   EXPECT_FALSE(IsUsingProd());
