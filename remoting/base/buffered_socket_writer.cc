@@ -25,8 +25,7 @@ struct BufferedSocketWriterBase::PendingPacket {
 };
 
 BufferedSocketWriterBase::BufferedSocketWriterBase()
-    : buffer_size_(0),
-      socket_(nullptr),
+    : socket_(nullptr),
       write_pending_(false),
       closed_(false),
       destroyed_flag_(nullptr) {
@@ -51,7 +50,6 @@ bool BufferedSocketWriterBase::Write(
     return false;
 
   queue_.push_back(new PendingPacket(data, done_task));
-  buffer_size_ += data->size();
 
   DoWrite();
 
@@ -142,14 +140,6 @@ void BufferedSocketWriterBase::HandleError(int result) {
   OnError(result);
 }
 
-int BufferedSocketWriterBase::GetBufferSize() {
-  return buffer_size_;
-}
-
-int BufferedSocketWriterBase::GetBufferChunks() {
-  return queue_.size();
-}
-
 void BufferedSocketWriterBase::Close() {
   DCHECK(CalledOnValidThread());
   closed_ = true;
@@ -188,7 +178,6 @@ void BufferedSocketWriter::GetNextPacket(
 }
 
 base::Closure BufferedSocketWriter::AdvanceBufferPosition(int written) {
-  buffer_size_ -= written;
   current_buf_->DidConsume(written);
 
   if (current_buf_->BytesRemaining() == 0) {
@@ -220,7 +209,6 @@ void BufferedDatagramWriter::GetNextPacket(
 
 base::Closure BufferedDatagramWriter::AdvanceBufferPosition(int written) {
   DCHECK_EQ(written, queue_.front()->data->size());
-  buffer_size_ -= queue_.front()->data->size();
   return PopQueue();
 }
 

@@ -46,12 +46,8 @@ class BufferedSocketWriterBase : public base::NonThreadSafe {
   bool Write(scoped_refptr<net::IOBufferWithSize> buffer,
              const base::Closure& done_task);
 
-  // Returns current size of the buffer. Can be called on any thread.
-  int GetBufferSize();
-
-  // Returns number of chunks that are currently in the buffer waiting
-  // to be written. Can be called on any thread.
-  int GetBufferChunks();
+  // Returns true when there is data waiting to be written.
+  bool has_data_pending() { return !queue_.empty(); }
 
   // Stops writing and drops current buffers. Must be called on the
   // network thread.
@@ -62,7 +58,6 @@ class BufferedSocketWriterBase : public base::NonThreadSafe {
   typedef std::list<PendingPacket*> DataQueue;
 
   DataQueue queue_;
-  int buffer_size_;
 
   // Removes element from the front of the queue and returns |done_task| for
   // that element. Called from AdvanceBufferPosition() implementation, which

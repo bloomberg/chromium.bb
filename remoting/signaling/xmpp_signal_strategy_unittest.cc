@@ -24,6 +24,12 @@ class XmppSocketDataProvider: public net::SocketDataProvider {
 
   net::MockWriteResult OnWrite(const std::string& data) override {
     written_data_.append(data);
+
+    if (use_async_write_) {
+      pending_write_size_ = data.size();
+      return net::MockWriteResult(net::ASYNC, net::ERR_IO_PENDING);
+    }
+
     return net::MockWriteResult(net::SYNCHRONOUS, data.size());
   }
 
@@ -57,14 +63,43 @@ class XmppSocketDataProvider: public net::SocketDataProvider {
     return data;
   }
 
+  void set_use_async_write(bool use_async_write) {
+    use_async_write_ = use_async_write;
+  }
+
+  void CompletePendingWrite() {
+    socket()->OnWriteComplete(pending_write_size_);
+  }
+
  private:
   std::string written_data_;
+  bool use_async_write_ = false;
+  int pending_write_size_ = 0;
+};
+
+class MockClientSocketFactory : public net::MockClientSocketFactory {
+ public:
+  scoped_ptr<net::SSLClientSocket> CreateSSLClientSocket(
+      scoped_ptr<net::ClientSocketHandle> transport_socket,
+      const net::HostPortPair& host_and_port,
+      const net::SSLConfig& ssl_config,
+      const net::SSLClientSocketContext& context) override {
+    ssl_socket_created_ = true;
+    return net::MockClientSocketFactory::CreateSSLClientSocket(
+        transport_socket.Pass(), host_and_port, ssl_config, context);
+  }
+
+  bool ssl_socket_created() const { return ssl_socket_created_; }
+
+ private:
+  bool ssl_socket_created_ = false;
 };
 
 }  // namespace
 
 const char kTestUsername[] = "test_username@example.com";
 const char kTestAuthToken[] = "test_auth_token";
+const int kDefaultPort = 443;
 
 class XmppSignalStrategyTest : public testing::Test,
                                public SignalStrategy::Listener {
@@ -76,10 +111,12 @@ class XmppSignalStrategyTest : public testing::Test,
         new net::TestURLRequestContext());
     request_context_getter_ = new net::TestURLRequestContextGetter(
         message_loop_.task_runner(), context.Pass());
+  }
 
+  void CreateSignalStrategy(int port) {
     XmppSignalStrategy::XmppServerConfig config;
     config.host = "talk.google.com";
-    config.port = 443;
+    config.port = port;
     config.username = kTestUsername;
     config.auth_token = kTestAuthToken;
     signal_strategy_.reset(new XmppSignalStrategy(
@@ -108,7 +145,7 @@ class XmppSignalStrategyTest : public testing::Test,
  protected:
   base::MessageLoop message_loop_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
-  net::MockClientSocketFactory client_socket_factory_;
+  MockClientSocketFactory client_socket_factory_;
   scoped_ptr<XmppSocketDataProvider> socket_data_provider_;
   scoped_ptr<net::SSLSocketDataProvider> ssl_socket_data_provider_;
   scoped_ptr<XmppSignalStrategy> signal_strategy_;
@@ -223,6 +260,7 @@ void XmppSignalStrategyTest::Connect(bool success) {
 }
 
 TEST_F(XmppSignalStrategyTest, SendAndReceive) {
+  CreateSignalStrategy(kDefaultPort);
   Connect(true);
 
   EXPECT_TRUE(signal_strategy_->SendStanza(make_scoped_ptr(
@@ -235,10 +273,12 @@ TEST_F(XmppSignalStrategyTest, SendAndReceive) {
 }
 
 TEST_F(XmppSignalStrategyTest, AuthError) {
+  CreateSignalStrategy(kDefaultPort);
   Connect(false);
 }
 
 TEST_F(XmppSignalStrategyTest, ConnectionClosed) {
+  CreateSignalStrategy(kDefaultPort);
   Connect(true);
 
   socket_data_provider_->Close();
@@ -257,6 +297,7 @@ TEST_F(XmppSignalStrategyTest, ConnectionClosed) {
 }
 
 TEST_F(XmppSignalStrategyTest, NetworkError) {
+  CreateSignalStrategy(kDefaultPort);
   Connect(true);
 
   socket_data_provider_->SimulateNetworkError();
@@ -273,4 +314,42 @@ TEST_F(XmppSignalStrategyTest, NetworkError) {
   Connect(true);
 }
 
-}  // namespace remoting
+TEST_F(XmppSignalStrategyTest, StartTlsWithPendingWrite) {
+  // Use port 5222 so that XmppLoginHandler uses starttls/proceed handshake
+  // before starting TLS.
+  CreateSignalStrategy(5222);
+
+  socket_data_provider_.reset(new XmppSocketDataProvider());
+  socket_data_provider_->set_connect_data(
+      net::MockConnect(net::SYNCHRONOUS, net::OK));
+  client_socket_factory_.AddSocketDataProvider(socket_data_provider_.get());
+
+  ssl_socket_data_provider_.reset(
+      new net::SSLSocketDataProvider(net::ASYNC, net::OK));
+  client_socket_factory_.AddSSLSocketDataProvider(
+      ssl_socket_data_provider_.get());
+
+  // Make sure write is handled asynchronously.
+  socket_data_provider_->set_use_async_write(true);
+
+  signal_strategy_->Connect();
+  base::RunLoop().RunUntilIdle();
+
+  socket_data_provider_->ReceiveData(
+      "<stream:stream from=\"google.com\" id=\"104FA10576E2AA80\" "
+          "version=\"1.0\" "
+          "xmlns:stream=\"http://etherx.jabber.org/streams\" "
+          "xmlns=\"jabber:client\">"
+        "<stream:features>"
+          "<starttls xmlns=\"urn:ietf:params:xml:ns:xmpp-tls\"/>"
+        "</stream:features>"
+        "<proceed xmlns=\"urn:ietf:params:xml:ns:xmpp-tls\"/>");
+
+  // Verify that SSL is connected only after write is finished.
+  EXPECT_FALSE(client_socket_factory_.ssl_socket_created());
+  socket_data_provider_->CompletePendingWrite();
+  EXPECT_TRUE(client_socket_factory_.ssl_socket_created());
+}
+
+
+  }  // namespace remoting
