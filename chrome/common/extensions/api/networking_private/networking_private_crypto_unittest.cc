@@ -6,7 +6,14 @@
 #include "base/base64.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
+#include "extensions/common/cast/cast_cert_validator.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace {
+
+namespace cast_crypto = ::extensions::core_api::cast_crypto;
+
+}  // namespace
 
 // Tests of networking_private_crypto support for Networking Private API.
 class NetworkingPrivateCryptoTest : public testing::Test {
@@ -26,6 +33,28 @@ class NetworkingPrivateCryptoTest : public testing::Test {
 
 // Test that networking_private_crypto::VerifyCredentials behaves as expected.
 TEST_F(NetworkingPrivateCryptoTest, VerifyCredentials) {
+  std::string keys =
+      "CrMCCiBSnZzWf+XraY5w3SbX2PEmWfHm5SNIv2pc9xbhP0EOcxKOAjCCAQoCggEBALwigL2A"
+      "9johADuudl41fz3DZFxVlIY0LwWHKM33aYwXs1CnuIL638dDLdZ+q6BvtxNygKRHFcEgmVDN"
+      "7BRiCVukmM3SQbY2Tv/oLjIwSoGoQqNsmzNuyrL1U2bgJ1OGGoUepzk/SneO+1RmZvtYVMBe"
+      "Ocf1UAYL4IrUzuFqVR+LFwDmaaMn5gglaTwSnY0FLNYuojHetFJQ1iBJ3nGg+a0gQBLx3SXr"
+      "1ea4NvTWj3/KQ9zXEFvmP1GKhbPz//YDLcsjT5ytGOeTBYysUpr3TOmZer5ufk0K48YcqZP6"
+      "OqWRXRy9ZuvMYNyGdMrP+JIcmH1X+mFHnquAt+RIgCqSxRsCAwEAAQqzAgogmNZt6BxWR4RN"
+      "lkNNN8SNws5/CHJQGee26JJ/VtaBqhgSjgIwggEKAoIBAQC8IoC9gPY6IQA7rnZeNX89w2Rc"
+      "VZSGNC8FhyjN92mMF7NQp7iC+t/HQy3Wfqugb7cTcoCkRxXBIJlQzewUYglbpJjN0kG2Nk7/"
+      "6C4yMEqBqEKjbJszbsqy9VNm4CdThhqFHqc5P0p3jvtUZmb7WFTAXjnH9VAGC+CK1M7halUf"
+      "ixcA5mmjJ+YIJWk8Ep2NBSzWLqIx3rRSUNYgSd5xoPmtIEAS8d0l69XmuDb01o9/ykPc1xBb"
+      "5j9RioWz8//2Ay3LI0+crRjnkwWMrFKa90zpmXq+bn5NCuPGHKmT+jqlkV0cvWbrzGDchnTK"
+      "z/iSHJh9V/phR56rgLfkSIAqksUbAgMBAAE=";
+  std::string signature =
+      "eHMoa7dP2ByNtDnxM/Q6yV3ZyUyihBFgOthq937yuiu2uwW2X/i8h1YrJFaWrA0iTTfSLAa6"
+      "PBAN1hhnwXlWYy8MvViJ9eJqf5FfCCkOjdRN0QIFPpmIJm/EcIv91bNMWnOGANgSW1Hons+s"
+      "C0/kROPbPABPLLwfgGizBDSZNapxgj8G+iDvi1JRRvvNdmjUs2AUIPNrSp3Knt3FyZ5F2Smk"
+      "Khpo7XVTWgSuWOzUJu6zNHn2krm64Ymd2HxRDyKTm1DBzy1MoXv4/8mbLYdj+KAvhqKJfRcr"
+      "GkUXVK++wCHERwxcvfk7e6lN6adcCVYP9pZPMhE/UyAJY6/uE1X0cw==";
+  EXPECT_TRUE(
+      cast_crypto::SetTrustedCertificateAuthoritiesForTest(keys, signature));
+
   static const char kCertData[] =
       "-----BEGIN CERTIFICATE-----"
       "MIIDhzCCAm8CBFE2SCMwDQYJKoZIhvcNAQEFBQAwfTELMAkGA1UEBhMCVVMxEzARBgNVBAgM"

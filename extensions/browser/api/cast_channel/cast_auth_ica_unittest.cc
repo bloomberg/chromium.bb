@@ -61,7 +61,8 @@ void CastChannelAuthorityKeysTest::ExpectKeysLoaded() {
 }
 
 TEST_F(CastChannelAuthorityKeysTest, TestDefaultKeys) {
-  ExpectKeysLoaded();
+  base::StringPiece key = authority_keys_store_.GetDefaultICAPublicKey();
+  EXPECT_TRUE(key.empty());
 }
 
 TEST_F(CastChannelAuthorityKeysTest, TestInvalidProtobuf) {

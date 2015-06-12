@@ -89,6 +89,10 @@ VerificationResult VerifyDeviceCert(
     const std::vector<std::string>& ica_certs,
     scoped_ptr<CertVerificationContext>* context);
 
+// Sets trusted certificate authorities. Only exposed for tests.
+bool SetTrustedCertificateAuthoritiesForTest(const std::string& keys,
+                                             const std::string& signature);
+
 }  // namespace cast_crypto
 }  // namespace core_api
 }  // namespace extensions

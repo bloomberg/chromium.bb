@@ -4,6 +4,8 @@
 
 #include "extensions/common/cast/cast_cert_validator.h"
 
+#include "extensions/browser/api/cast_channel/cast_auth_ica.h"
+
 namespace extensions {
 namespace core_api {
 namespace cast_crypto {
@@ -23,6 +25,12 @@ VerificationResult::VerificationResult(const std::string& in_error_message,
     : error_type(in_error_type),
       error_message(in_error_message),
       library_error_code(in_error_code) {
+}
+
+bool SetTrustedCertificateAuthoritiesForTest(const std::string& keys,
+                                             const std::string& signature) {
+  return extensions::core_api::cast_channel::SetTrustedCertificateAuthorities(
+      keys, signature);
 }
 
 }  // namespace cast_crypto

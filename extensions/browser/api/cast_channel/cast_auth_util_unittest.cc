@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "extensions/browser/api/cast_channel/cast_auth_ica.h"
 #include "extensions/common/api/cast_channel/cast_channel.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -318,6 +319,27 @@ class CastAuthUtilTest : public testing::Test {
 
  protected:
   static AuthResponse CreateAuthResponse() {
+    std::string keys =
+        "CrMCCiBSnZzWf+XraY5w3SbX2PEmWfHm5SNIv2pc9xbhP0EOcxKOAjCCAQoCggEBALwigL"
+        "2A9johADuudl41fz3DZFxVlIY0LwWHKM33aYwXs1CnuIL638dDLdZ+q6BvtxNygKRHFcEg"
+        "mVDN7BRiCVukmM3SQbY2Tv/oLjIwSoGoQqNsmzNuyrL1U2bgJ1OGGoUepzk/SneO+1RmZv"
+        "tYVMBeOcf1UAYL4IrUzuFqVR+LFwDmaaMn5gglaTwSnY0FLNYuojHetFJQ1iBJ3nGg+a0g"
+        "QBLx3SXr1ea4NvTWj3/KQ9zXEFvmP1GKhbPz//YDLcsjT5ytGOeTBYysUpr3TOmZer5ufk"
+        "0K48YcqZP6OqWRXRy9ZuvMYNyGdMrP+JIcmH1X+mFHnquAt+RIgCqSxRsCAwEAAQqzAgog"
+        "mNZt6BxWR4RNlkNNN8SNws5/CHJQGee26JJ/VtaBqhgSjgIwggEKAoIBAQC8IoC9gPY6IQ"
+        "A7rnZeNX89w2RcVZSGNC8FhyjN92mMF7NQp7iC+t/HQy3Wfqugb7cTcoCkRxXBIJlQzewU"
+        "YglbpJjN0kG2Nk7/6C4yMEqBqEKjbJszbsqy9VNm4CdThhqFHqc5P0p3jvtUZmb7WFTAXj"
+        "nH9VAGC+CK1M7halUfixcA5mmjJ+YIJWk8Ep2NBSzWLqIx3rRSUNYgSd5xoPmtIEAS8d0l"
+        "69XmuDb01o9/ykPc1xBb5j9RioWz8//2Ay3LI0+crRjnkwWMrFKa90zpmXq+bn5NCuPGHK"
+        "mT+jqlkV0cvWbrzGDchnTKz/iSHJh9V/phR56rgLfkSIAqksUbAgMBAAE=";
+    std::string signature =
+        "eHMoa7dP2ByNtDnxM/Q6yV3ZyUyihBFgOthq937yuiu2uwW2X/i8h1YrJFaWrA0iTTfSLA"
+        "a6PBAN1hhnwXlWYy8MvViJ9eJqf5FfCCkOjdRN0QIFPpmIJm/EcIv91bNMWnOGANgSW1Ho"
+        "ns+sC0/kROPbPABPLLwfgGizBDSZNapxgj8G+iDvi1JRRvvNdmjUs2AUIPNrSp3Knt3FyZ"
+        "5F2SmkKhpo7XVTWgSuWOzUJu6zNHn2krm64Ymd2HxRDyKTm1DBzy1MoXv4/8mbLYdj+KAv"
+        "hqKJfRcrGkUXVK++wCHERwxcvfk7e6lN6adcCVYP9pZPMhE/UyAJY6/uE1X0cw==";
+    EXPECT_TRUE(SetTrustedCertificateAuthorities(keys, signature));
+
     AuthResponse response;
     response.add_intermediate_certificate(
         std::string(reinterpret_cast<const char*>(kIntermediateCertificate),
