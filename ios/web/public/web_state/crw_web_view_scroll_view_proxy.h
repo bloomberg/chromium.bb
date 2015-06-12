@@ -75,6 +75,8 @@
         (CRWWebViewScrollViewProxy*)webViewScrollViewProxy;
 - (BOOL)webViewScrollViewShouldScrollToTop:
         (CRWWebViewScrollViewProxy*)webViewScrollViewProxy;
+- (void)webViewScrollViewDidZoom:
+        (CRWWebViewScrollViewProxy*)webViewScrollViewProxy;
 @end
 
 // A protocol to be implemented by objects to listen for changes to the

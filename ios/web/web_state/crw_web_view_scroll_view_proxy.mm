@@ -214,4 +214,9 @@
   return shouldScrollToTop;
 }
 
+- (void)scrollViewDidZoom:(UIScrollView*)scrollView {
+  DCHECK_EQ(_scrollView, scrollView);
+  [_observers webViewScrollViewDidZoom:self];
+}
+
 @end

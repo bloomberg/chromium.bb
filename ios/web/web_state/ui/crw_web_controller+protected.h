@@ -156,13 +156,6 @@ struct NewWindowInfo {
 // |command|. Subclasses may override to handle class-specific messages.
 - (SEL)selectorToHandleJavaScriptCommand:(const std::string&)command;
 
-// Extracts the absolute zoom scale of content displayed with |scrollState|,
-// given the differing ways in which UIWebView and WKWebView use UIScrollView's
-// zoom scale properties.  See comments in
-// |applyWebViewScrollZoomScaleFromScrollState:| implementations for details.
-- (CGFloat)absoluteZoomScaleForScrollState:
-    (const web::PageScrollState&)scrollState;
-
 // Sets zoom scale value for webview scroll view from |scrollState|.
 - (void)applyWebViewScrollZoomScaleFromScrollState:
     (const web::PageScrollState&)scrollState;

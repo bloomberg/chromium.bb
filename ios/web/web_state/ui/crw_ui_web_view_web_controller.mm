@@ -781,18 +781,6 @@ const size_t kMaxMessageQueueSize = 262144;
   [super webPageChanged];
 }
 
-- (CGFloat)absoluteZoomScaleForScrollState:
-    (const web::PageScrollState&)scrollState {
-  CGFloat zoomScale = NAN;
-  if (scrollState.IsZoomScaleValid()) {
-    if (scrollState.IsZoomScaleLegacyFormat())
-      zoomScale = scrollState.zoom_scale();
-    else
-      zoomScale = scrollState.zoom_scale() / scrollState.minimum_zoom_scale();
-  }
-  return zoomScale;
-}
-
 - (void)applyWebViewScrollZoomScaleFromScrollState:
     (const web::PageScrollState&)scrollState {
   // A UIWebView's scroll view uses zoom scales in a non-standard way.  The

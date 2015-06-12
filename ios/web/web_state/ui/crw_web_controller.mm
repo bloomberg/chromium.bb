@@ -152,7 +152,8 @@ void CancelAllTouches(UIScrollView* web_scroll_view) {
 
 }  // namespace
 
-@interface CRWWebController () <CRWNativeContentDelegate> {
+@interface CRWWebController () <CRWNativeContentDelegate,
+                                CRWWebViewScrollViewProxyObserver> {
   base::WeakNSProtocol<id<CRWWebDelegate>> _delegate;
   base::WeakNSProtocol<id<CRWWebUserInterfaceDelegate>> _UIDelegate;
   base::WeakNSProtocol<id<CRWNativeContentProvider>> _nativeProvider;
@@ -189,6 +190,9 @@ void CancelAllTouches(UIScrollView* web_scroll_view) {
   web::LoadPhase _loadPhase;
   // The web::PageScrollState recorded when the page starts loading.
   web::PageScrollState _scrollStateOnStartLoading;
+  // Whether or not the page has zoomed since the current navigation has been
+  // committed, either by user interaction or via |-restoreStateFromHistory|.
+  BOOL _pageHasZoomed;
   // Actions to execute once the page load is complete.
   base::scoped_nsobject<NSMutableArray> _pendingLoadCompleteActions;
   // UIGestureRecognizers to add to the web view.
@@ -594,6 +598,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     _lastSeenWindowID.reset();
     _webViewProxy.reset(
         [[CRWWebViewProxyImpl alloc] initWithWebController:self]);
+    [[_webViewProxy scrollViewProxy] addObserver:self];
     _gestureRecognizers.reset([[NSMutableArray alloc] init]);
     _webViewToolbars.reset([[NSMutableArray alloc] init]);
     _pendingLoadCompleteActions.reset([[NSMutableArray alloc] init]);
@@ -700,6 +705,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   DCHECK(_isBeingDestroyed);  // 'close' must have been called already.
   DCHECK(!self.webView);
   _touchTrackingRecognizer.get().touchTrackingDelegate = nil;
+  [[_webViewProxy scrollViewProxy] removeObserver:self];
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   [super dealloc];
 }
@@ -2594,6 +2600,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   _scrollStateOnStartLoading = self.pageScrollState;
 
   _userInteractionRegistered = NO;
+  _pageHasZoomed = NO;
 
   [[self sessionController] commitPendingEntry];
   _webStateImpl->GetRequestTracker()->StartPageLoad(
@@ -3298,6 +3305,14 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 #pragma mark -
+#pragma mark CRWWebViewScrollViewProxyObserver
+
+- (void)webViewScrollViewDidZoom:
+        (CRWWebViewScrollViewProxy*)webViewScrollViewProxy {
+  _pageHasZoomed = YES;
+}
+
+#pragma mark -
 #pragma mark Page State
 
 - (void)recordStateInHistory {
@@ -3335,16 +3350,13 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   if (self.webView) {
     // Page state is restored after a page load completes.  If the user has
     // scrolled or changed the zoom scale while the page is still loading, don't
-    // restore any state since it will confuse the user.  Since the web view's
-    // zoom scale range may have changed during rendering, check the absolute
-    // zoom scale rather than doing a simple equality comparison.
+    // restore any state since it will confuse the user.
     web::PageScrollState currentScrollState = self.pageScrollState;
     if (currentScrollState.scroll_offset_x() ==
             _scrollStateOnStartLoading.scroll_offset_x() &&
         currentScrollState.scroll_offset_y() ==
             _scrollStateOnStartLoading.scroll_offset_y() &&
-        [self absoluteZoomScaleForScrollState:currentScrollState] ==
-            [self absoluteZoomScaleForScrollState:_scrollStateOnStartLoading]) {
+        !_pageHasZoomed) {
       [self applyPageScrollState:pageScrollState];
     }
   }

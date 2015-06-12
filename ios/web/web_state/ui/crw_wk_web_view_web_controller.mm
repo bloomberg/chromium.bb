@@ -397,11 +397,6 @@ NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
   [self evaluateJavaScript:script stringResultHandler:nil];
 }
 
-- (CGFloat)absoluteZoomScaleForScrollState:
-    (const web::PageScrollState&)scrollState {
-  return scrollState.zoom_scale();
-}
-
 - (void)applyWebViewScrollZoomScaleFromScrollState:
     (const web::PageScrollState&)scrollState {
   // After rendering a web page, WKWebView keeps the |minimumZoomScale| and
