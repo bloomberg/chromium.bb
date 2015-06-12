@@ -372,8 +372,8 @@ inline void BreakingContext::handleFloat()
     // If it does, position it now, otherwise, position
     // it after moving to next line (in newLine() func)
     // FIXME: Bug 110372: Properly position multiple stacked floats with non-rectangular shape outside.
-    if (m_floatsFitOnLine && m_width.fitsOnLine(m_block->logicalWidthForFloat(floatingObject).toFloat(), ExcludeWhitespace)) {
-        m_block->positionNewFloatOnLine(floatingObject, m_lastFloatFromPreviousLine, m_lineInfo, m_width);
+    if (m_floatsFitOnLine && m_width.fitsOnLine(m_block->logicalWidthForFloat(*floatingObject).toFloat(), ExcludeWhitespace)) {
+        m_block->positionNewFloatOnLine(*floatingObject, m_lastFloatFromPreviousLine, m_lineInfo, m_width);
         if (m_lineBreak.object() == m_current.object()) {
             ASSERT(!m_lineBreak.offset());
             m_lineBreak.increment();

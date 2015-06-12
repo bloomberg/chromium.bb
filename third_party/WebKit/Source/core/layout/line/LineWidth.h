@@ -61,7 +61,7 @@ public:
     float trailingWhitespaceWidth() const { return m_trailingWhitespaceWidth; }
 
     void updateAvailableWidth(LayoutUnit minimumHeight = 0);
-    void shrinkAvailableWidthForNewFloatIfNeeded(FloatingObject*);
+    void shrinkAvailableWidthForNewFloatIfNeeded(const FloatingObject&);
     void addUncommittedWidth(float delta) { m_uncommittedWidth += delta; }
     void commit();
     void applyOverhang(LayoutRubyRun*, LayoutObject* startLayoutObject, LayoutObject* endLayoutObject);

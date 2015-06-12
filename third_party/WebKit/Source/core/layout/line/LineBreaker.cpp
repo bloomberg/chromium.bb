@@ -39,7 +39,7 @@ void LineBreaker::skipLeadingWhitespace(InlineBidiResolver& resolver, LineInfo& 
                 lineInfo.incrementRunsFromLeadingWhitespace();
             }
         } else if (object->isFloating()) {
-            m_block->positionNewFloatOnLine(m_block->insertFloatingObject(*toLayoutBox(object)), lastFloatFromPreviousLine, lineInfo, width);
+            m_block->positionNewFloatOnLine(*m_block->insertFloatingObject(*toLayoutBox(object)), lastFloatFromPreviousLine, lineInfo, width);
         }
         resolver.position().increment(&resolver);
     }

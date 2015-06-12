@@ -22,26 +22,26 @@ void BlockFlowPainter::paintFloats(const PaintInfo& paintInfo, const LayoutPoint
     const FloatingObjectSet& floatingObjectSet = m_layoutBlockFlow.floatingObjects()->set();
     FloatingObjectSetIterator end = floatingObjectSet.end();
     for (FloatingObjectSetIterator it = floatingObjectSet.begin(); it != end; ++it) {
-        FloatingObject* floatingObject = it->get();
+        const FloatingObject& floatingObject = *it->get();
         // Only paint the object if our m_shouldPaint flag is set.
-        if (floatingObject->shouldPaint() && !floatingObject->layoutObject()->hasSelfPaintingLayer()) {
+        if (floatingObject.shouldPaint() && !floatingObject.layoutObject()->hasSelfPaintingLayer()) {
             PaintInfo currentPaintInfo(paintInfo);
             currentPaintInfo.phase = preservePhase ? paintInfo.phase : PaintPhaseBlockBackground;
             // FIXME: LayoutPoint version of xPositionForFloatIncludingMargin would make this much cleaner.
             LayoutPoint childPoint = m_layoutBlockFlow.flipFloatForWritingModeForChild(
                 floatingObject, LayoutPoint(paintOffset.x()
-                + m_layoutBlockFlow.xPositionForFloatIncludingMargin(floatingObject) - floatingObject->layoutObject()->location().x(), paintOffset.y()
-                + m_layoutBlockFlow.yPositionForFloatIncludingMargin(floatingObject) - floatingObject->layoutObject()->location().y()));
-            floatingObject->layoutObject()->paint(currentPaintInfo, childPoint);
+                + m_layoutBlockFlow.xPositionForFloatIncludingMargin(floatingObject) - floatingObject.layoutObject()->location().x(), paintOffset.y()
+                + m_layoutBlockFlow.yPositionForFloatIncludingMargin(floatingObject) - floatingObject.layoutObject()->location().y()));
+            floatingObject.layoutObject()->paint(currentPaintInfo, childPoint);
             if (!preservePhase) {
                 currentPaintInfo.phase = PaintPhaseChildBlockBackgrounds;
-                floatingObject->layoutObject()->paint(currentPaintInfo, childPoint);
+                floatingObject.layoutObject()->paint(currentPaintInfo, childPoint);
                 currentPaintInfo.phase = PaintPhaseFloat;
-                floatingObject->layoutObject()->paint(currentPaintInfo, childPoint);
+                floatingObject.layoutObject()->paint(currentPaintInfo, childPoint);
                 currentPaintInfo.phase = PaintPhaseForeground;
-                floatingObject->layoutObject()->paint(currentPaintInfo, childPoint);
+                floatingObject.layoutObject()->paint(currentPaintInfo, childPoint);
                 currentPaintInfo.phase = PaintPhaseOutline;
-                floatingObject->layoutObject()->paint(currentPaintInfo, childPoint);
+                floatingObject.layoutObject()->paint(currentPaintInfo, childPoint);
             }
         }
     }

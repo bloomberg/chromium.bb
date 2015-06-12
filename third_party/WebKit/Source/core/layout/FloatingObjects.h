@@ -145,8 +145,8 @@ public:
     void moveAllToFloatInfoMap(LayoutBoxToFloatInfoMap&);
     FloatingObject* add(PassOwnPtr<FloatingObject>);
     void remove(FloatingObject*);
-    void addPlacedObject(FloatingObject*);
-    void removePlacedObject(FloatingObject*);
+    void addPlacedObject(FloatingObject&);
+    void removePlacedObject(FloatingObject&);
     void setHorizontalWritingMode(bool b = true) { m_horizontalWritingMode = b; }
 
     bool hasLeftObjects() const { return m_leftObjectsCount > 0; }
@@ -178,7 +178,7 @@ private:
     }
     void increaseObjectsCount(FloatingObject::Type);
     void decreaseObjectsCount(FloatingObject::Type);
-    FloatingObjectInterval intervalForFloatingObject(FloatingObject*);
+    FloatingObjectInterval intervalForFloatingObject(FloatingObject&);
 
     FloatingObjectSet m_set;
     FloatingObjectTree m_placedFloatsTree;

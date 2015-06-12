@@ -286,12 +286,12 @@ ShapeOutsideDeltas ShapeOutsideInfo::computeDeltasForContainingBlockLine(const L
 {
     ASSERT(lineHeight >= 0);
 
-    LayoutUnit borderBoxTop = containingBlock.logicalTopForFloat(&floatingObject) + containingBlock.marginBeforeForChild(m_layoutBox);
+    LayoutUnit borderBoxTop = containingBlock.logicalTopForFloat(floatingObject) + containingBlock.marginBeforeForChild(m_layoutBox);
     LayoutUnit borderBoxLineTop = lineTop - borderBoxTop;
 
     if (isShapeDirty() || !m_shapeOutsideDeltas.isForLine(borderBoxLineTop, lineHeight)) {
         LayoutUnit referenceBoxLineTop = borderBoxLineTop - logicalTopOffset();
-        LayoutUnit floatMarginBoxWidth = std::max(containingBlock.logicalWidthForFloat(&floatingObject), LayoutUnit());
+        LayoutUnit floatMarginBoxWidth = std::max(containingBlock.logicalWidthForFloat(floatingObject), LayoutUnit());
 
         if (computedShape().lineOverlapsShapeMarginBounds(referenceBoxLineTop, lineHeight)) {
             LineSegment segment = computedShape().getExcludedInterval((borderBoxLineTop - logicalTopOffset()), std::min(lineHeight, shapeLogicalBottom() - borderBoxLineTop));

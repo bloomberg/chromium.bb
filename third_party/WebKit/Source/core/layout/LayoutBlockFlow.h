@@ -119,42 +119,42 @@ public:
 
     bool generatesLineBoxesForInlineChild(LayoutObject*);
 
-    LayoutUnit logicalTopForFloat(const FloatingObject* floatingObject) const { return isHorizontalWritingMode() ? floatingObject->y() : floatingObject->x(); }
-    LayoutUnit logicalBottomForFloat(const FloatingObject* floatingObject) const { return isHorizontalWritingMode() ? floatingObject->maxY() : floatingObject->maxX(); }
-    LayoutUnit logicalLeftForFloat(const FloatingObject* floatingObject) const { return isHorizontalWritingMode() ? floatingObject->x() : floatingObject->y(); }
-    LayoutUnit logicalRightForFloat(const FloatingObject* floatingObject) const { return isHorizontalWritingMode() ? floatingObject->maxX() : floatingObject->maxY(); }
-    LayoutUnit logicalWidthForFloat(const FloatingObject* floatingObject) const { return isHorizontalWritingMode() ? floatingObject->width() : floatingObject->height(); }
+    LayoutUnit logicalTopForFloat(const FloatingObject& floatingObject) const { return isHorizontalWritingMode() ? floatingObject.y() : floatingObject.x(); }
+    LayoutUnit logicalBottomForFloat(const FloatingObject& floatingObject) const { return isHorizontalWritingMode() ? floatingObject.maxY() : floatingObject.maxX(); }
+    LayoutUnit logicalLeftForFloat(const FloatingObject& floatingObject) const { return isHorizontalWritingMode() ? floatingObject.x() : floatingObject.y(); }
+    LayoutUnit logicalRightForFloat(const FloatingObject& floatingObject) const { return isHorizontalWritingMode() ? floatingObject.maxX() : floatingObject.maxY(); }
+    LayoutUnit logicalWidthForFloat(const FloatingObject& floatingObject) const { return isHorizontalWritingMode() ? floatingObject.width() : floatingObject.height(); }
 
-    int pixelSnappedLogicalTopForFloat(const FloatingObject* floatingObject) const { return isHorizontalWritingMode() ? floatingObject->frameRect().pixelSnappedY() : floatingObject->frameRect().pixelSnappedX(); }
-    int pixelSnappedLogicalBottomForFloat(const FloatingObject* floatingObject) const { return isHorizontalWritingMode() ? floatingObject->frameRect().pixelSnappedMaxY() : floatingObject->frameRect().pixelSnappedMaxX(); }
+    int pixelSnappedLogicalTopForFloat(const FloatingObject& floatingObject) const { return isHorizontalWritingMode() ? floatingObject.frameRect().pixelSnappedY() : floatingObject.frameRect().pixelSnappedX(); }
+    int pixelSnappedLogicalBottomForFloat(const FloatingObject& floatingObject) const { return isHorizontalWritingMode() ? floatingObject.frameRect().pixelSnappedMaxY() : floatingObject.frameRect().pixelSnappedMaxX(); }
 
-    void setLogicalTopForFloat(FloatingObject* floatingObject, LayoutUnit logicalTop)
+    void setLogicalTopForFloat(FloatingObject& floatingObject, LayoutUnit logicalTop)
     {
         if (isHorizontalWritingMode())
-            floatingObject->setY(logicalTop);
+            floatingObject.setY(logicalTop);
         else
-            floatingObject->setX(logicalTop);
+            floatingObject.setX(logicalTop);
     }
-    void setLogicalLeftForFloat(FloatingObject* floatingObject, LayoutUnit logicalLeft)
+    void setLogicalLeftForFloat(FloatingObject& floatingObject, LayoutUnit logicalLeft)
     {
         if (isHorizontalWritingMode())
-            floatingObject->setX(logicalLeft);
+            floatingObject.setX(logicalLeft);
         else
-            floatingObject->setY(logicalLeft);
+            floatingObject.setY(logicalLeft);
     }
-    void setLogicalHeightForFloat(FloatingObject* floatingObject, LayoutUnit logicalHeight)
+    void setLogicalHeightForFloat(FloatingObject& floatingObject, LayoutUnit logicalHeight)
     {
         if (isHorizontalWritingMode())
-            floatingObject->setHeight(logicalHeight);
+            floatingObject.setHeight(logicalHeight);
         else
-            floatingObject->setWidth(logicalHeight);
+            floatingObject.setWidth(logicalHeight);
     }
-    void setLogicalWidthForFloat(FloatingObject* floatingObject, LayoutUnit logicalWidth)
+    void setLogicalWidthForFloat(FloatingObject& floatingObject, LayoutUnit logicalWidth)
     {
         if (isHorizontalWritingMode())
-            floatingObject->setWidth(logicalWidth);
+            floatingObject.setWidth(logicalWidth);
         else
-            floatingObject->setHeight(logicalWidth);
+            floatingObject.setHeight(logicalWidth);
     }
 
     LayoutUnit startAlignedOffsetForLine(LayoutUnit position, bool shouldIndentText);
@@ -208,34 +208,34 @@ public:
     using LayoutBoxModelObject::moveChildrenTo;
     virtual void moveChildrenTo(LayoutBoxModelObject* toBoxModelObject, LayoutObject* startChild, LayoutObject* endChild, LayoutObject* beforeChild, bool fullRemoveInsert = false) override;
 
-    LayoutUnit xPositionForFloatIncludingMargin(const FloatingObject* child) const
+    LayoutUnit xPositionForFloatIncludingMargin(const FloatingObject& child) const
     {
         if (isHorizontalWritingMode())
-            return child->x() + child->layoutObject()->marginLeft();
+            return child.x() + child.layoutObject()->marginLeft();
 
-        return child->x() + marginBeforeForChild(*(child->layoutObject()));
+        return child.x() + marginBeforeForChild(*child.layoutObject());
     }
 
-    LayoutUnit yPositionForFloatIncludingMargin(const FloatingObject* child) const
+    LayoutUnit yPositionForFloatIncludingMargin(const FloatingObject& child) const
     {
         if (isHorizontalWritingMode())
-            return child->y() + marginBeforeForChild(*(child->layoutObject()));
+            return child.y() + marginBeforeForChild(*child.layoutObject());
 
-        return child->y() + child->layoutObject()->marginTop();
+        return child.y() + child.layoutObject()->marginTop();
     }
 
-    LayoutSize positionForFloatIncludingMargin(const FloatingObject* child) const
+    LayoutSize positionForFloatIncludingMargin(const FloatingObject& child) const
     {
         if (isHorizontalWritingMode()) {
-            return LayoutSize(child->x() + child->layoutObject()->marginLeft(),
-                child->y() + marginBeforeForChild(*(child->layoutObject())));
+            return LayoutSize(child.x() + child.layoutObject()->marginLeft(),
+                child.y() + marginBeforeForChild(*child.layoutObject()));
         }
 
-        return LayoutSize(child->x() + marginBeforeForChild(*(child->layoutObject())),
-            child->y() + child->layoutObject()->marginTop());
+        return LayoutSize(child.x() + marginBeforeForChild(*child.layoutObject()),
+            child.y() + child.layoutObject()->marginTop());
     }
 
-    LayoutPoint flipFloatForWritingModeForChild(const FloatingObject*, const LayoutPoint&) const;
+    LayoutPoint flipFloatForWritingModeForChild(const FloatingObject&, const LayoutPoint&) const;
 
     virtual const char* name() const override { return "LayoutBlockFlow"; }
 
@@ -277,7 +277,7 @@ private:
     void adjustPositionedBlock(LayoutBox& child, const MarginInfo&);
     void adjustFloatingBlock(const MarginInfo&);
 
-    LayoutPoint computeLogicalLocationForFloat(const FloatingObject*, LayoutUnit logicalTopOffset) const;
+    LayoutPoint computeLogicalLocationForFloat(const FloatingObject&, LayoutUnit logicalTopOffset) const;
 
     FloatingObject* insertFloatingObject(LayoutBox&);
     void removeFloatingObject(LayoutBox*);
@@ -514,7 +514,7 @@ private:
     BidiRun* computeInlineDirectionPositionsForSegment(RootInlineBox*, const LineInfo&, ETextAlign, LayoutUnit& logicalLeft,
         LayoutUnit& availableLogicalWidth, BidiRun* firstRun, BidiRun* trailingSpaceRun, GlyphOverflowAndFallbackFontsMap& textBoxDataMap, VerticalPositionCache&, WordMeasurements&);
     void computeBlockDirectionPositionsForLine(RootInlineBox*, BidiRun*, GlyphOverflowAndFallbackFontsMap&, VerticalPositionCache&);
-    void appendFloatingObjectToLastLine(FloatingObject*);
+    void appendFloatingObjectToLastLine(FloatingObject&);
     // Helper function for layoutInlineChildren()
     RootInlineBox* createLineBoxesFromBidiRuns(unsigned bidiLevel, BidiRunList<BidiRun>&, const InlineIterator& end, LineInfo&, VerticalPositionCache&, BidiRun* trailingSpaceRun, WordMeasurements&);
     void layoutRunsAndFloats(LineLayoutState&);
@@ -532,7 +532,7 @@ private:
     void checkLinesForTextOverflow();
     // Positions new floats and also adjust all floats encountered on the line if any of them
     // have to move to the next page/column.
-    bool positionNewFloatOnLine(FloatingObject* newFloat, FloatingObject* lastFloatFromPreviousLine, LineInfo&, LineWidth&);
+    bool positionNewFloatOnLine(FloatingObject& newFloat, FloatingObject* lastFloatFromPreviousLine, LineInfo&, LineWidth&);
     void positionDialog();
 
 // END METHODS DEFINED IN LayoutBlockFlowLine

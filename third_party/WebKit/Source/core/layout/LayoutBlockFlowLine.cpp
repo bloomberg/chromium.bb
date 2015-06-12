@@ -661,11 +661,11 @@ void LayoutBlockFlow::computeBlockDirectionPositionsForLine(RootInlineBox* lineB
     }
 }
 
-void LayoutBlockFlow::appendFloatingObjectToLastLine(FloatingObject* floatingObject)
+void LayoutBlockFlow::appendFloatingObjectToLastLine(FloatingObject& floatingObject)
 {
-    ASSERT(!floatingObject->originatingLine());
-    floatingObject->setOriginatingLine(lastRootBox());
-    lastRootBox()->appendFloat(floatingObject->layoutObject());
+    ASSERT(!floatingObject.originatingLine());
+    floatingObject.setOriginatingLine(lastRootBox());
+    lastRootBox()->appendFloat(floatingObject.layoutObject());
 }
 
 // This function constructs line boxes for all of the text runs in the resolver and computes their position.
@@ -904,11 +904,11 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState,
                     it = lastFloatIterator;
                 }
                 for (; it != end; ++it) {
-                    FloatingObject* f = it->get();
-                    appendFloatingObjectToLastLine(f);
-                    ASSERT(f->layoutObject() == layoutState.floats()[layoutState.floatIndex()].object);
+                    FloatingObject& floatingObject = *it->get();
+                    appendFloatingObjectToLastLine(floatingObject);
+                    ASSERT(floatingObject.layoutObject() == layoutState.floats()[layoutState.floatIndex()].object);
                     // If a float's geometry has changed, give up on syncing with clean lines.
-                    if (layoutState.floats()[layoutState.floatIndex()].rect != f->frameRect())
+                    if (layoutState.floats()[layoutState.floatIndex()].rect != floatingObject.frameRect())
                         checkForEndLineMatch = false;
                     layoutState.setFloatIndex(layoutState.floatIndex() + 1);
                 }
@@ -1052,7 +1052,7 @@ void LayoutBlockFlow::linkToEndLineIfNeeded(LineLayoutState& layoutState)
         }
 
         for (; it != end; ++it)
-            appendFloatingObjectToLastLine(it->get());
+            appendFloatingObjectToLastLine(*it->get());
     }
 }
 
@@ -1830,7 +1830,7 @@ bool LayoutBlockFlow::checkPaginationAndFloatsAtEndLine(LineLayoutState& layoutS
     const FloatingObjectSet& floatingObjectSet = m_floatingObjects->set();
     FloatingObjectSetIterator end = floatingObjectSet.end();
     for (FloatingObjectSetIterator it = floatingObjectSet.begin(); it != end; ++it) {
-        FloatingObject* floatingObject = it->get();
+        const FloatingObject& floatingObject = *it->get();
         if (logicalBottomForFloat(floatingObject) >= logicalTop && logicalBottomForFloat(floatingObject) < logicalBottom)
             return false;
     }
@@ -2004,7 +2004,7 @@ void LayoutBlockFlow::checkLinesForTextOverflow()
     }
 }
 
-bool LayoutBlockFlow::positionNewFloatOnLine(FloatingObject* newFloat, FloatingObject* lastFloatFromPreviousLine, LineInfo& lineInfo, LineWidth& width)
+bool LayoutBlockFlow::positionNewFloatOnLine(FloatingObject& newFloat, FloatingObject* lastFloatFromPreviousLine, LineInfo& lineInfo, LineWidth& width)
 {
     if (!positionNewFloats(&width))
         return false;
@@ -2012,14 +2012,14 @@ bool LayoutBlockFlow::positionNewFloatOnLine(FloatingObject* newFloat, FloatingO
     // We only connect floats to lines for pagination purposes if the floats occur at the start of
     // the line and the previous line had a hard break (so this line is either the first in the block
     // or follows a <br>).
-    if (!newFloat->paginationStrut() || !lineInfo.previousLineBrokeCleanly() || !lineInfo.isEmpty())
+    if (!newFloat.paginationStrut() || !lineInfo.previousLineBrokeCleanly() || !lineInfo.isEmpty())
         return true;
 
     const FloatingObjectSet& floatingObjectSet = m_floatingObjects->set();
-    ASSERT(floatingObjectSet.last() == newFloat);
+    ASSERT(floatingObjectSet.last() == &newFloat);
 
     LayoutUnit floatLogicalTop = logicalTopForFloat(newFloat);
-    int paginationStrut = newFloat->paginationStrut();
+    int paginationStrut = newFloat.paginationStrut();
 
     if (floatLogicalTop - paginationStrut != logicalHeight() + lineInfo.floatPaginationStrut())
         return true;
@@ -2029,12 +2029,12 @@ bool LayoutBlockFlow::positionNewFloatOnLine(FloatingObject* newFloat, FloatingO
     FloatingObjectSetIterator begin = floatingObjectSet.begin();
     while (it != begin) {
         --it;
-        FloatingObject* floatingObject = it->get();
-        if (floatingObject == lastFloatFromPreviousLine)
+        FloatingObject& floatingObject = *it->get();
+        if (&floatingObject == lastFloatFromPreviousLine)
             break;
         if (logicalTopForFloat(floatingObject) == logicalHeight() + lineInfo.floatPaginationStrut()) {
-            floatingObject->setPaginationStrut(paginationStrut + floatingObject->paginationStrut());
-            LayoutBox* floatBox = floatingObject->layoutObject();
+            floatingObject.setPaginationStrut(paginationStrut + floatingObject.paginationStrut());
+            LayoutBox* floatBox = floatingObject.layoutObject();
             setLogicalTopForChild(*floatBox, logicalTopForChild(*floatBox) + marginBeforeForChild(*floatBox) + paginationStrut);
             if (floatBox->isLayoutBlock())
                 floatBox->forceChildLayout();

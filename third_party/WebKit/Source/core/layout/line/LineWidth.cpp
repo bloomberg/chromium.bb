@@ -60,19 +60,19 @@ void LineWidth::updateAvailableWidth(LayoutUnit replacedHeight)
     computeAvailableWidthFromLeftAndRight();
 }
 
-void LineWidth::shrinkAvailableWidthForNewFloatIfNeeded(FloatingObject* newFloat)
+void LineWidth::shrinkAvailableWidthForNewFloatIfNeeded(const FloatingObject& newFloat)
 {
     LayoutUnit height = m_block.logicalHeight();
     if (height < m_block.logicalTopForFloat(newFloat) || height >= m_block.logicalBottomForFloat(newFloat))
         return;
 
     ShapeOutsideDeltas shapeDeltas;
-    if (ShapeOutsideInfo* shapeOutsideInfo = newFloat->layoutObject()->shapeOutsideInfo()) {
+    if (ShapeOutsideInfo* shapeOutsideInfo = newFloat.layoutObject()->shapeOutsideInfo()) {
         LayoutUnit lineHeight = m_block.lineHeight(m_isFirstLine, m_block.isHorizontalWritingMode() ? HorizontalLine : VerticalLine, PositionOfInteriorLineBoxes);
-        shapeDeltas = shapeOutsideInfo->computeDeltasForContainingBlockLine(m_block, *newFloat, m_block.logicalHeight(), lineHeight);
+        shapeDeltas = shapeOutsideInfo->computeDeltasForContainingBlockLine(m_block, newFloat, m_block.logicalHeight(), lineHeight);
     }
 
-    if (newFloat->type() == FloatingObject::FloatLeft) {
+    if (newFloat.type() == FloatingObject::FloatLeft) {
         float newLeft = m_block.logicalRightForFloat(newFloat).toFloat();
         if (shapeDeltas.isValid()) {
             if (shapeDeltas.lineOverlapsShape())
