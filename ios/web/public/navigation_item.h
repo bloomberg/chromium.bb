@@ -8,7 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
-#include "ios/web/public/web_state/page_scroll_state.h"
+#include "ios/web/public/web_state/page_display_state.h"
 #include "ui/base/page_transition_types.h"
 
 class GURL;
@@ -76,8 +76,8 @@ class NavigationItem {
   virtual int32 GetPageID() const = 0;
 
   // Stores the NavigationItem's last recorded scroll offset and zoom scale.
-  virtual void SetPageScrollState(const PageScrollState& scroll_state) = 0;
-  virtual const PageScrollState& GetPageScrollState() const = 0;
+  virtual void SetPageDisplayState(const PageDisplayState& page_state) = 0;
+  virtual const PageDisplayState& GetPageDisplayState() const = 0;
 
   // Page-related helpers ------------------------------------------------------
 

@@ -188,8 +188,8 @@ void CancelAllTouches(UIScrollView* web_scroll_view) {
   GURL _URLOnStartLoading;
   // Page loading phase.
   web::LoadPhase _loadPhase;
-  // The web::PageScrollState recorded when the page starts loading.
-  web::PageScrollState _scrollStateOnStartLoading;
+  // The web::PageDisplayState recorded when the page starts loading.
+  web::PageDisplayState _displayStateOnStartLoading;
   // Whether or not the page has zoomed since the current navigation has been
   // committed, either by user interaction or via |-restoreStateFromHistory|.
   BOOL _pageHasZoomed;
@@ -261,7 +261,7 @@ void CancelAllTouches(UIScrollView* web_scroll_view) {
 
 // The current page state of the web view. Writing to this property
 // asynchronously applies the passed value to the current web view.
-@property(nonatomic, readwrite) web::PageScrollState pageScrollState;
+@property(nonatomic, readwrite) web::PageDisplayState pageDisplayState;
 // Resets any state that is associated with a specific document object (e.g.,
 // page interaction tracking).
 - (void)resetDocumentSpecificState;
@@ -316,12 +316,12 @@ void CancelAllTouches(UIScrollView* web_scroll_view) {
 // Called by NSNotificationCenter upon orientation changes.
 - (void)orientationDidChange;
 // Queries the web view for the user-scalable meta tag and calls
-// |-applyPageScrollState:userScalable:| with the result.
-- (void)applyPageScrollState:(const web::PageScrollState&)scrollState;
+// |-applyPageDisplayState:userScalable:| with the result.
+- (void)applyPageDisplayState:(const web::PageDisplayState&)displayState;
 // Restores state of the web view's scroll view from |scrollState|.
 // |isUserScalable| represents the value of user-scalable meta tag.
-- (void)applyPageScrollState:(const web::PageScrollState&)scrollState
-                userScalable:(BOOL)isUserScalable;
+- (void)applyPageDisplayState:(const web::PageDisplayState&)displayState
+                 userScalable:(BOOL)isUserScalable;
 // Calls the zoom-preparation UIScrollViewDelegate callbacks on the web view.
 // This is called before |-applyWebViewScrollZoomScaleFromScrollState:|.
 - (void)prepareToApplyWebViewScrollZoomScale;
@@ -2597,7 +2597,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 - (void)didStartLoadingURL:(const GURL&)url updateHistory:(BOOL)updateHistory {
   _loadPhase = web::PAGE_LOADING;
   _URLOnStartLoading = url;
-  _scrollStateOnStartLoading = self.pageScrollState;
+  _displayStateOnStartLoading = self.pageDisplayState;
 
   _userInteractionRegistered = NO;
   _pageHasZoomed = NO;
@@ -3319,45 +3319,47 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // Check that the url in the web view matches the url in the history entry.
   CRWSessionEntry* current = [self currentSessionEntry];
   if (current && [current navigationItem]->GetURL() == [self currentURL])
-    [current navigationItem]->SetPageScrollState(self.pageScrollState);
+    [current navigationItem]->SetPageDisplayState(self.pageDisplayState);
 }
 
 - (void)restoreStateFromHistory {
   CRWSessionEntry* current = [self currentSessionEntry];
   if ([current navigationItem])
-    self.pageScrollState = [current navigationItem]->GetPageScrollState();
+    self.pageDisplayState = [current navigationItem]->GetPageDisplayState();
 }
 
-- (web::PageScrollState)pageScrollState {
-  web::PageScrollState scrollState;
+- (web::PageDisplayState)pageDisplayState {
+  web::PageDisplayState displayState;
   if (self.webView) {
     CGPoint scrollOffset = [self scrollPosition];
-    scrollState.set_scroll_offset_x(std::floor(scrollOffset.x));
-    scrollState.set_scroll_offset_y(std::floor(scrollOffset.y));
+    displayState.scroll_state().set_offset_x(std::floor(scrollOffset.x));
+    displayState.scroll_state().set_offset_y(std::floor(scrollOffset.y));
     UIScrollView* scrollView = self.webScrollView;
-    scrollState.set_minimum_zoom_scale(scrollView.minimumZoomScale);
-    scrollState.set_maximum_zoom_scale(scrollView.maximumZoomScale);
-    scrollState.set_zoom_scale(scrollView.zoomScale);
+    displayState.zoom_state().set_minimum_zoom_scale(
+        scrollView.minimumZoomScale);
+    displayState.zoom_state().set_maximum_zoom_scale(
+        scrollView.maximumZoomScale);
+    displayState.zoom_state().set_zoom_scale(scrollView.zoomScale);
   } else {
     // TODO(kkhorimoto): Handle native views.
   }
-  return scrollState;
+  return displayState;
 }
 
-- (void)setPageScrollState:(web::PageScrollState)pageScrollState {
-  if (!pageScrollState.IsValid())
+- (void)setPageDisplayState:(web::PageDisplayState)displayState {
+  if (!displayState.IsValid())
     return;
   if (self.webView) {
     // Page state is restored after a page load completes.  If the user has
     // scrolled or changed the zoom scale while the page is still loading, don't
     // restore any state since it will confuse the user.
-    web::PageScrollState currentScrollState = self.pageScrollState;
-    if (currentScrollState.scroll_offset_x() ==
-            _scrollStateOnStartLoading.scroll_offset_x() &&
-        currentScrollState.scroll_offset_y() ==
-            _scrollStateOnStartLoading.scroll_offset_y() &&
+    web::PageDisplayState currentPageDisplayState = self.pageDisplayState;
+    if (currentPageDisplayState.scroll_state().offset_x() ==
+            _displayStateOnStartLoading.scroll_state().offset_x() &&
+        currentPageDisplayState.scroll_state().offset_y() ==
+            _displayStateOnStartLoading.scroll_state().offset_y() &&
         !_pageHasZoomed) {
-      [self applyPageScrollState:pageScrollState];
+      [self applyPageDisplayState:displayState];
     }
   }
 }
@@ -3376,48 +3378,50 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   web::NavigationItem* currentItem = self.currentNavItem;
   if (!currentItem)
     return;
-  web::PageScrollState scrollState = currentItem->GetPageScrollState();
-  if (!scrollState.IsValid())
+  web::PageDisplayState displayState = currentItem->GetPageDisplayState();
+  if (!displayState.IsValid())
     return;
-  CGFloat zoomPercentage =
-      (scrollState.zoom_scale() - scrollState.minimum_zoom_scale()) /
-      scrollState.GetMinMaxZoomDifference();
-  scrollState.set_minimum_zoom_scale(self.webScrollView.minimumZoomScale);
-  scrollState.set_maximum_zoom_scale(self.webScrollView.maximumZoomScale);
-  scrollState.set_zoom_scale(scrollState.minimum_zoom_scale() +
-                             zoomPercentage *
-                                 scrollState.GetMinMaxZoomDifference());
-  currentItem->SetPageScrollState(scrollState);
-  [self applyPageScrollState:currentItem->GetPageScrollState()];
+  CGFloat zoomPercentage = (displayState.zoom_state().zoom_scale() -
+                            displayState.zoom_state().minimum_zoom_scale()) /
+                           displayState.zoom_state().GetMinMaxZoomDifference();
+  displayState.zoom_state().set_minimum_zoom_scale(
+      self.webScrollView.minimumZoomScale);
+  displayState.zoom_state().set_maximum_zoom_scale(
+      self.webScrollView.maximumZoomScale);
+  displayState.zoom_state().set_zoom_scale(
+      displayState.zoom_state().minimum_zoom_scale() +
+      zoomPercentage * displayState.zoom_state().GetMinMaxZoomDifference());
+  currentItem->SetPageDisplayState(displayState);
+  [self applyPageDisplayState:currentItem->GetPageDisplayState()];
 }
 
-- (void)applyPageScrollState:(const web::PageScrollState&)scrollState {
-  if (!scrollState.IsValid())
+- (void)applyPageDisplayState:(const web::PageDisplayState&)displayState {
+  if (!displayState.IsValid())
     return;
   base::WeakNSObject<CRWWebController> weakSelf(self);
-  web::PageScrollState scrollStateCopy = scrollState;
+  web::PageDisplayState displayStateCopy = displayState;
   [self queryUserScalableProperty:^(BOOL isUserScalable) {
     base::scoped_nsobject<CRWWebController> strongSelf([weakSelf retain]);
-    [strongSelf applyPageScrollState:scrollStateCopy
-                        userScalable:isUserScalable];
+    [strongSelf applyPageDisplayState:displayStateCopy
+                         userScalable:isUserScalable];
   }];
 }
 
-- (void)applyPageScrollState:(const web::PageScrollState&)scrollState
-                userScalable:(BOOL)isUserScalable {
+- (void)applyPageDisplayState:(const web::PageDisplayState&)displayState
+                 userScalable:(BOOL)isUserScalable {
   // Early return if |scrollState| doesn't match the current NavigationItem.
   // This can sometimes occur in tests, as navigation occurs programmatically
   // and |-applyPageScrollState:| is asynchronous.
   web::NavigationItem* currentItem = [self currentSessionEntry].navigationItem;
-  if (currentItem && currentItem->GetPageScrollState() != scrollState)
+  if (currentItem && currentItem->GetPageDisplayState() != displayState)
     return;
-  DCHECK(scrollState.IsValid());
+  DCHECK(displayState.IsValid());
   if (isUserScalable) {
     [self prepareToApplyWebViewScrollZoomScale];
-    [self applyWebViewScrollZoomScaleFromScrollState:scrollState];
+    [self applyWebViewScrollZoomScaleFromZoomState:displayState.zoom_state()];
     [self finishApplyingWebViewScrollZoomScale];
   }
-  [self applyWebViewScrollOffsetFromScrollState:scrollState];
+  [self applyWebViewScrollOffsetFromScrollState:displayState.scroll_state()];
 }
 
 - (void)prepareToApplyWebViewScrollZoomScale {
@@ -3452,8 +3456,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   }
 }
 
-- (void)applyWebViewScrollZoomScaleFromScrollState:
-    (const web::PageScrollState&)scrollState {
+- (void)applyWebViewScrollZoomScaleFromZoomState:
+    (const web::PageZoomState&)zoomState {
   // Subclasses must implement this method.
   NOTREACHED();
 }
@@ -3462,7 +3466,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     (const web::PageScrollState&)scrollState {
   DCHECK(scrollState.IsValid());
   CGPoint scrollOffset =
-      CGPointMake(scrollState.scroll_offset_x(), scrollState.scroll_offset_y());
+      CGPointMake(scrollState.offset_x(), scrollState.offset_y());
   if (_loadPhase == web::PAGE_LOADED) {
     // If the page is loaded, update the scroll immediately.
     [self.webScrollView setContentOffset:scrollOffset];

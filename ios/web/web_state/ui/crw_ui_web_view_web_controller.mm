@@ -781,8 +781,8 @@ const size_t kMaxMessageQueueSize = 262144;
   [super webPageChanged];
 }
 
-- (void)applyWebViewScrollZoomScaleFromScrollState:
-    (const web::PageScrollState&)scrollState {
+- (void)applyWebViewScrollZoomScaleFromZoomState:
+    (const web::PageZoomState&)zoomState {
   // A UIWebView's scroll view uses zoom scales in a non-standard way.  The
   // scroll view's |zoomScale| property is always equal to 1.0, and the
   // |minimumZoomScale| and |maximumZoomScale| properties are adjusted
@@ -791,11 +791,11 @@ const size_t kMaxMessageQueueSize = 262144;
   // 2.0 will update the zoom to twice its initial scale). The maximum-scale or
   // minimum-scale meta tags of a page may have changed since the state was
   // recorded, so clamp the zoom scale to the current range if necessary.
-  DCHECK(scrollState.IsZoomScaleValid());
-  CGFloat zoomScale = scrollState.IsZoomScaleLegacyFormat()
-                          ? scrollState.zoom_scale()
+  DCHECK(zoomState.IsValid());
+  CGFloat zoomScale = zoomState.IsLegacyFormat()
+                          ? zoomState.zoom_scale()
                           : self.webScrollView.minimumZoomScale /
-                                scrollState.minimum_zoom_scale();
+                                zoomState.minimum_zoom_scale();
   if (zoomScale < self.webScrollView.minimumZoomScale)
     zoomScale = self.webScrollView.minimumZoomScale;
   if (zoomScale > self.webScrollView.maximumZoomScale)

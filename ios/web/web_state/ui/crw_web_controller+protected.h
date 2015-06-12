@@ -9,7 +9,7 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "ios/web/public/referrer.h"
-#include "ios/web/public/web_state/page_scroll_state.h"
+#include "ios/web/public/web_state/page_display_state.h"
 
 @class CRWSessionController;
 namespace web {
@@ -156,9 +156,9 @@ struct NewWindowInfo {
 // |command|. Subclasses may override to handle class-specific messages.
 - (SEL)selectorToHandleJavaScriptCommand:(const std::string&)command;
 
-// Sets zoom scale value for webview scroll view from |scrollState|.
-- (void)applyWebViewScrollZoomScaleFromScrollState:
-    (const web::PageScrollState&)scrollState;
+// Sets zoom scale value for webview scroll view from |zoomState|.
+- (void)applyWebViewScrollZoomScaleFromZoomState:
+    (const web::PageZoomState&)zoomState;
 
 // Returns YES if load should be aborted when NSURLCancelledError is
 // encountered for |cancelledURL|.

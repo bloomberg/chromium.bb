@@ -880,15 +880,15 @@ WEB_TEST_F(CRWUIWebControllerPageDialogsOpenPolicyTest,
 // is needed;
 class CRWUIWebControllerPageScrollStateTest : public web::UIWebViewWebTest {
  protected:
-  // Returns a web::PageScrollState that will scroll a UIWebView to
+  // Returns a web::PageDisplayState that will scroll a UIWebView to
   // |scrollOffset| and zoom the content by |relativeZoomScale|.
-  inline web::PageScrollState CreateTestScrollState(
+  inline web::PageDisplayState CreateTestPageDisplayState(
       CGPoint scroll_offset,
       CGFloat relative_zoom_scale,
       CGFloat original_minimum_zoom_scale,
       CGFloat original_maximum_zoom_scale,
       CGFloat original_zoom_scale) const {
-    return web::PageScrollState(
+    return web::PageDisplayState(
         scroll_offset.x, scroll_offset.y,
         original_minimum_zoom_scale / relative_zoom_scale,
         original_maximum_zoom_scale / relative_zoom_scale, 1.0);
@@ -899,15 +899,15 @@ class CRWUIWebControllerPageScrollStateTest : public web::UIWebViewWebTest {
 // is needed;
 class CRWWKWebControllerPageScrollStateTest : public web::WKWebViewWebTest {
  protected:
-  // Returns a web::PageScrollState that will scroll a WKWebView to
+  // Returns a web::PageDisplayState that will scroll a WKWebView to
   // |scrollOffset| and zoom the content by |relativeZoomScale|.
-  inline web::PageScrollState CreateTestScrollState(
+  inline web::PageDisplayState CreateTestPageDisplayState(
       CGPoint scroll_offset,
       CGFloat relative_zoom_scale,
       CGFloat original_minimum_zoom_scale,
       CGFloat original_maximum_zoom_scale,
       CGFloat original_zoom_scale) const {
-    return web::PageScrollState(
+    return web::PageDisplayState(
         scroll_offset.x, scroll_offset.y, original_minimum_zoom_scale,
         original_maximum_zoom_scale,
         relative_zoom_scale * original_minimum_zoom_scale);
@@ -917,7 +917,7 @@ class CRWWKWebControllerPageScrollStateTest : public web::WKWebViewWebTest {
 // TODO(iOS): Flaky on the bots. crbug/493427
 WEB_TEST_F(CRWUIWebControllerPageScrollStateTest,
            CRWWKWebControllerPageScrollStateTest,
-           FLAKY_SetPageStateWithUserScalableDisabled) {
+           FLAKY_SetPageDisplayStateWithUserScalableDisabled) {
 #if !TARGET_IPHONE_SIMULATOR
   // This test fails flakily on device with WKWebView, so skip it there.
   // crbug.com/453530
@@ -936,15 +936,15 @@ WEB_TEST_F(CRWUIWebControllerPageScrollStateTest,
   float originMaximumZoomScale = scrollView.maximumZoomScale;
 
   web::WebState* webState = [this->webController_ webState];
-  webState->GetNavigationManager()->GetLastCommittedItem()->SetPageScrollState(
-      this->CreateTestScrollState(CGPointMake(1.0, 1.0),  // scroll offset
-                                  3.0,    // relative zoom scale
-                                  1.0,    // original minimum zoom scale
-                                  5.0,    // original maximum zoom scale
-                                  1.0));  // original zoom scale
+  webState->GetNavigationManager()->GetLastCommittedItem()->SetPageDisplayState(
+      this->CreateTestPageDisplayState(CGPointMake(1.0, 1.0),  // scroll offset
+                                       3.0,    // relative zoom scale
+                                       1.0,    // original minimum zoom scale
+                                       5.0,    // original maximum zoom scale
+                                       1.0));  // original zoom scale
   [this->webController_ restoreStateFromHistory];
 
-  // setPageState: is async; wait for its completion.
+  // |-restoreStateFromHistory| is async; wait for its completion.
   scrollView = [[[this->webController_ view] subviews][0] scrollView];
   base::test::ios::WaitUntilCondition(^bool() {
     return [scrollView contentOffset].x == 1.0f;
@@ -958,7 +958,7 @@ WEB_TEST_F(CRWUIWebControllerPageScrollStateTest,
 // TODO(iOS): Flaky on the bots. crbug/493427
 WEB_TEST_F(CRWUIWebControllerPageScrollStateTest,
            CRWWKWebControllerPageScrollStateTest,
-           FLAKY_SetPageStateWithUserScalableEnabled) {
+           FLAKY_SetPageDisplayStateWithUserScalableEnabled) {
   this->LoadHtml(@"<html><head>"
                   "<meta name='viewport' content="
                   "'width=device-width,maximum-scale=10,initial-scale=1.0'"
@@ -967,15 +967,15 @@ WEB_TEST_F(CRWUIWebControllerPageScrollStateTest,
   ui::test::uiview_utils::ForceViewRendering([this->webController_ view]);
 
   web::WebState* webState = [this->webController_ webState];
-  webState->GetNavigationManager()->GetLastCommittedItem()->SetPageScrollState(
-      this->CreateTestScrollState(CGPointMake(1.0, 1.0),  // scroll offset
-                                  3.0,    // relative zoom scale
-                                  1.0,    // original minimum zoom scale
-                                  10.0,   // original maximum zoom scale
-                                  1.0));  // original zoom scale
+  webState->GetNavigationManager()->GetLastCommittedItem()->SetPageDisplayState(
+      this->CreateTestPageDisplayState(CGPointMake(1.0, 1.0),  // scroll offset
+                                       3.0,    // relative zoom scale
+                                       1.0,    // original minimum zoom scale
+                                       10.0,   // original maximum zoom scale
+                                       1.0));  // original zoom scale
   [this->webController_ restoreStateFromHistory];
 
-  // setPageState: is async; wait for its completion.
+  // |-restoreStateFromHistory| is async; wait for its completion.
   id webView = [[this->webController_ view] subviews][0];
   UIScrollView* scrollView = [webView scrollView];
   base::test::ios::WaitUntilCondition(^bool() {
@@ -1002,15 +1002,15 @@ WEB_TEST_F(CRWUIWebControllerPageScrollStateTest,
   ASSERT_TRUE(this->webController_.get().atTop);
 
   web::WebState* webState = [this->webController_ webState];
-  webState->GetNavigationManager()->GetLastCommittedItem()->SetPageScrollState(
-      this->CreateTestScrollState(CGPointMake(0.0, 30.0),  // scroll offset
-                                  5.0,    // relative zoom scale
-                                  1.0,    // original minimum zoom scale
-                                  5.0,    // original maximum zoom scale
-                                  1.0));  // original zoom scale
+  webState->GetNavigationManager()->GetLastCommittedItem()->SetPageDisplayState(
+      this->CreateTestPageDisplayState(CGPointMake(0.0, 30.0),  // scroll offset
+                                       5.0,    // relative zoom scale
+                                       1.0,    // original minimum zoom scale
+                                       5.0,    // original maximum zoom scale
+                                       1.0));  // original zoom scale
   [this->webController_ restoreStateFromHistory];
 
-  // setPageState: is async; wait for its completion.
+  // |-restoreStateFromHistory| is async; wait for its completion.
   id webView = [[this->webController_ view] subviews][0];
   base::test::ios::WaitUntilCondition(^bool() {
     return [[webView scrollView] contentOffset].y == 30.0f;

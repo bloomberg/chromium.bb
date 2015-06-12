@@ -50,7 +50,7 @@ NavigationItemImpl::NavigationItemImpl(const NavigationItemImpl& item)
       virtual_url_(item.virtual_url_),
       title_(item.title_),
       page_id_(item.page_id_),
-      page_scroll_state_(item.page_scroll_state_),
+      page_display_state_(item.page_display_state_),
       transition_type_(item.transition_type_),
       favicon_(item.favicon_),
       ssl_(item.ssl_),
@@ -124,13 +124,13 @@ int32 NavigationItemImpl::GetPageID() const {
   return page_id_;
 }
 
-void NavigationItemImpl::SetPageScrollState(
-    const web::PageScrollState& scroll_state) {
-  page_scroll_state_ = scroll_state;
+void NavigationItemImpl::SetPageDisplayState(
+    const web::PageDisplayState& display_state) {
+  page_display_state_ = display_state;
 }
 
-const PageScrollState& NavigationItemImpl::GetPageScrollState() const {
-  return page_scroll_state_;
+const PageDisplayState& NavigationItemImpl::GetPageDisplayState() const {
+  return page_display_state_;
 }
 
 const base::string16& NavigationItemImpl::GetTitleForDisplay(

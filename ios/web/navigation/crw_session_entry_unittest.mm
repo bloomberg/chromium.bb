@@ -19,9 +19,9 @@
 #include "ui/base/page_transition_types.h"
 
 @interface CRWSessionEntry (ExposedForTesting)
-+ (web::PageScrollState)scrollStateFromDictionary:(NSDictionary*)dictionary;
-+ (NSDictionary*)dictionaryFromScrollState:
-    (const web::PageScrollState&)scrollState;
++ (web::PageScrollState)pageStateFromDictionary:(NSDictionary*)dictionary;
++ (NSDictionary*)dictionaryFromPageDisplayState:
+    (const web::PageDisplayState&)displayState;
 @end
 
 class CRWSessionEntryTest : public PlatformTest {
@@ -78,7 +78,7 @@ void CRWSessionEntryTest::expectEqualSessionEntries(
   EXPECT_EQ(navItem1->GetReferrer().url, navItem2->GetReferrer().url);
   EXPECT_EQ(navItem1->GetTimestamp(), navItem2->GetTimestamp());
   EXPECT_EQ(navItem1->GetTitle(), navItem2->GetTitle());
-  EXPECT_EQ(navItem1->GetPageScrollState(), navItem2->GetPageScrollState());
+  EXPECT_EQ(navItem1->GetPageDisplayState(), navItem2->GetPageDisplayState());
   EXPECT_EQ(navItem1->ShouldSkipResubmitDataConfirmation(),
             navItem2->ShouldSkipResubmitDataConfirmation());
   EXPECT_EQ(navItem1->IsOverridingUserAgent(),
@@ -94,7 +94,7 @@ TEST_F(CRWSessionEntryTest, Description) {
   [sessionEntry_ navigationItem]->SetTitle(base::SysNSStringToUTF16(@"Title"));
   EXPECT_NSEQ([sessionEntry_ description],
               @"url:http://init.test/ originalurl:http://init.test/ "
-              @"title:Title transition:2 scrollState:{ scrollOffset:(nan, "
+              @"title:Title transition:2 displayState:{ scrollOffset:(nan, "
               @"nan), zoomScaleRange:(nan, nan), zoomScale:nan } desktopUA:0");
 }
 
@@ -128,11 +128,11 @@ TEST_F(CRWSessionEntryTest, InitWithCoder) {
       decodeObjectForKey:web::kSessionEntryReferrerURLDeprecatedKey];
   [[[decoder expect] andReturn:title]
       decodeObjectForKey:web::kSessionEntryTitleKey];
-  const web::PageScrollState& scrollState =
-      [sessionEntry_ navigationItem]->GetPageScrollState();
-  NSDictionary* serializedScrollState =
-      [CRWSessionEntry dictionaryFromScrollState:scrollState];
-  [[[decoder expect] andReturn:serializedScrollState]
+  const web::PageDisplayState& pageState =
+      [sessionEntry_ navigationItem]->GetPageDisplayState();
+  NSDictionary* serializedPageDisplayState =
+      [CRWSessionEntry dictionaryFromPageDisplayState:pageState];
+  [[[decoder expect] andReturn:serializedPageDisplayState]
       decodeObjectForKey:web::kSessionEntryPageScrollStateKey];
   BOOL useDesktopUserAgent =
       [sessionEntry_ navigationItem]->IsOverridingUserAgent();
@@ -199,11 +199,11 @@ TEST_F(CRWSessionEntryTest, InitWithCoderNewStyle) {
       decodeInt64ForKey:web::kSessionEntryTimestampKey];
   [[[decoder expect] andReturn:title]
       decodeObjectForKey:web::kSessionEntryTitleKey];
-  const web::PageScrollState& scrollState =
-      [sessionEntry_ navigationItem]->GetPageScrollState();
-  NSDictionary* serializedScrollState =
-      [CRWSessionEntry dictionaryFromScrollState:scrollState];
-  [[[decoder expect] andReturn:serializedScrollState]
+  const web::PageDisplayState& pageState =
+      [sessionEntry_ navigationItem]->GetPageDisplayState();
+  NSDictionary* serializedPageDisplayState =
+      [CRWSessionEntry dictionaryFromPageDisplayState:pageState];
+  [[[decoder expect] andReturn:serializedPageDisplayState]
       decodeObjectForKey:web::kSessionEntryPageScrollStateKey];
   BOOL useDesktopUserAgent =
       [sessionEntry_ navigationItem]->IsOverridingUserAgent();
@@ -268,11 +268,11 @@ TEST_F(CRWSessionEntryTest, EncodeWithCoder) {
   [[coder expect] encodeInt64:item->GetTimestamp().ToInternalValue()
                        forKey:web::kSessionEntryTimestampKey];
   [[coder expect] encodeObject:title forKey:web::kSessionEntryTitleKey];
-  const web::PageScrollState& scrollState =
-      [sessionEntry_ navigationItem]->GetPageScrollState();
-  NSDictionary* serializedScrollState =
-      [CRWSessionEntry dictionaryFromScrollState:scrollState];
-  [[coder expect] encodeObject:serializedScrollState
+  const web::PageDisplayState& pageState =
+      [sessionEntry_ navigationItem]->GetPageDisplayState();
+  NSDictionary* serializedPageDisplayState =
+      [CRWSessionEntry dictionaryFromPageDisplayState:pageState];
+  [[coder expect] encodeObject:serializedPageDisplayState
                         forKey:web::kSessionEntryPageScrollStateKey];
   BOOL useDesktopUserAgent =
       [sessionEntry_ navigationItem]->IsOverridingUserAgent();

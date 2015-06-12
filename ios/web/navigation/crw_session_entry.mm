@@ -11,7 +11,7 @@
 #include "ios/web/navigation/navigation_item_impl.h"
 #include "ios/web/navigation/nscoder_util.h"
 #include "ios/web/public/navigation_item.h"
-#include "ios/web/public/web_state/page_scroll_state.h"
+#include "ios/web/public/web_state/page_display_state.h"
 #import "net/base/mac/url_conversions.h"
 
 namespace web {
@@ -53,13 +53,15 @@ NSString* const kSessionEntryUseDesktopUserAgentKey = @"useDesktopUserAgent";
 // Redefine originalUrl to be read-write.
 @property(nonatomic, readwrite) const GURL& originalUrl;
 
-// Converts a serialized NSDictionary to a web::PageScrollState.
-+ (web::PageScrollState)scrollStateFromDictionary:(NSDictionary*)dictionary;
-// Serializes a web::PageScrollState to an NSDictionary.
-+ (NSDictionary*)dictionaryFromScrollState:
-    (const web::PageScrollState&)scrollState;
-// Returns a readable description of |scrollState|.
-+ (NSString*)scrollStateDescription:(const web::PageScrollState&)scrollState;
+// Converts a serialized NSDictionary to a web::PageDisplayState.
++ (web::PageDisplayState)pageDisplayStateFromDictionary:
+        (NSDictionary*)dictionary;
+// Serializes a web::PageDisplayState to an NSDictionary.
++ (NSDictionary*)dictionaryFromPageDisplayState:
+        (const web::PageDisplayState&)displayState;
+// Returns a readable description of |displayState|.
++ (NSString*)descriptionForPageDisplayState:
+        (const web::PageDisplayState&)displayState;
 @end
 
 @implementation CRWSessionEntry
@@ -123,8 +125,8 @@ NSString* const kSessionEntryUseDesktopUserAgentKey = @"useDesktopUserAgent";
     _navigationItem->SetPageID(-1);
     _navigationItem->SetTitle(base::SysNSStringToUTF16(title));
     _navigationItem->SetTransitionType(ui::PAGE_TRANSITION_RELOAD);
-    _navigationItem->SetPageScrollState([[self class]
-        scrollStateFromDictionary:
+    _navigationItem->SetPageDisplayState([[self class]
+        pageDisplayStateFromDictionary:
             [aDecoder
                 decodeObjectForKey:web::kSessionEntryPageScrollStateKey]]);
     _navigationItem->SetShouldSkipResubmitDataConfirmation([aDecoder
@@ -153,8 +155,8 @@ NSString* const kSessionEntryUseDesktopUserAgentKey = @"useDesktopUserAgent";
 
   [aCoder encodeObject:base::SysUTF16ToNSString(_navigationItem->GetTitle())
                 forKey:web::kSessionEntryTitleKey];
-  [aCoder encodeObject:[[self class] dictionaryFromScrollState:
-                                         _navigationItem->GetPageScrollState()]
+  [aCoder encodeObject:[[self class] dictionaryFromPageDisplayState:
+                                         _navigationItem->GetPageDisplayState()]
                 forKey:web::kSessionEntryPageScrollStateKey];
   [aCoder encodeBool:_navigationItem->ShouldSkipResubmitDataConfirmation()
               forKey:web::kSessionEntrySkipResubmitConfirmationKey];
@@ -180,14 +182,14 @@ NSString* const kSessionEntryUseDesktopUserAgentKey = @"useDesktopUserAgent";
 - (NSString*)description {
   return [NSString
       stringWithFormat:
-          @"url:%@ originalurl:%@ title:%@ transition:%d scrollState:%@ "
+          @"url:%@ originalurl:%@ title:%@ transition:%d displayState:%@ "
           @"desktopUA:%d",
           base::SysUTF8ToNSString(_navigationItem->GetURL().spec()),
           base::SysUTF8ToNSString(self.originalUrl.spec()),
           base::SysUTF16ToNSString(_navigationItem->GetTitle()),
           _navigationItem->GetTransitionType(),
-          [[self class]
-              scrollStateDescription:_navigationItem->GetPageScrollState()],
+          [[self class] descriptionForPageDisplayState:
+                            _navigationItem->GetPageDisplayState()],
           _navigationItem->IsOverridingUserAgent()];
 }
 
@@ -201,43 +203,52 @@ NSString* const kSessionEntryUseDesktopUserAgentKey = @"useDesktopUserAgent";
 
 #pragma mark - Serialization helpers
 
-+ (web::PageScrollState)scrollStateFromDictionary:(NSDictionary*)dictionary {
-  web::PageScrollState scrollState;
++ (web::PageDisplayState)pageDisplayStateFromDictionary:
+    (NSDictionary*)dictionary {
   NSNumber* serializedValue = nil;
+  web::PageScrollState scrollState;
   if ((serializedValue = dictionary[web::kSessionEntryScrollOffsetXKey]))
-    scrollState.set_scroll_offset_x([serializedValue doubleValue]);
+    scrollState.set_offset_x([serializedValue doubleValue]);
   if ((serializedValue = dictionary[web::kSessionEntryScrollOffsetYKey]))
-    scrollState.set_scroll_offset_y([serializedValue doubleValue]);
+    scrollState.set_offset_y([serializedValue doubleValue]);
+  web::PageZoomState zoomState;
   if ((serializedValue = dictionary[web::kSessionEntryMinimumZoomScaleKey]))
-    scrollState.set_minimum_zoom_scale([serializedValue doubleValue]);
+    zoomState.set_minimum_zoom_scale([serializedValue doubleValue]);
   if ((serializedValue = dictionary[web::kSessionEntryMaximumZoomScaleKey]))
-    scrollState.set_maximum_zoom_scale([serializedValue doubleValue]);
+    zoomState.set_maximum_zoom_scale([serializedValue doubleValue]);
   if ((serializedValue = dictionary[web::kSessionEntryZoomScaleKey]))
-    scrollState.set_zoom_scale([serializedValue doubleValue]);
-  return scrollState;
+    zoomState.set_zoom_scale([serializedValue doubleValue]);
+  return web::PageDisplayState(scrollState, zoomState);
 }
 
-+ (NSDictionary*)dictionaryFromScrollState:
-    (const web::PageScrollState&)scrollState {
++ (NSDictionary*)dictionaryFromPageDisplayState:
+    (const web::PageDisplayState&)displayState {
   return @{
-    web::kSessionEntryScrollOffsetXKey : @(scrollState.scroll_offset_x()),
-    web::kSessionEntryScrollOffsetYKey : @(scrollState.scroll_offset_y()),
-    web::kSessionEntryMinimumZoomScaleKey : @(scrollState.minimum_zoom_scale()),
-    web::kSessionEntryMaximumZoomScaleKey : @(scrollState.maximum_zoom_scale()),
-    web::kSessionEntryZoomScaleKey : @(scrollState.zoom_scale()),
+    web::kSessionEntryScrollOffsetXKey :
+        @(displayState.scroll_state().offset_x()),
+    web::kSessionEntryScrollOffsetYKey :
+        @(displayState.scroll_state().offset_y()),
+    web::kSessionEntryMinimumZoomScaleKey :
+        @(displayState.zoom_state().minimum_zoom_scale()),
+    web::kSessionEntryMaximumZoomScaleKey :
+        @(displayState.zoom_state().maximum_zoom_scale()),
+    web::kSessionEntryZoomScaleKey :
+        @(displayState.zoom_state().zoom_scale())
   };
 }
 
-+ (NSString*)scrollStateDescription:(const web::PageScrollState&)scrollState {
++ (NSString*)descriptionForPageDisplayState:
+        (const web::PageDisplayState&)displayState {
   NSString* const kPageScrollStateDescriptionFormat =
       @"{ scrollOffset:(%0.2f, %0.2f), zoomScaleRange:(%0.2f, %0.2f), "
       @"zoomScale:%0.2f }";
-  return [NSString stringWithFormat:kPageScrollStateDescriptionFormat,
-                                    scrollState.scroll_offset_x(),
-                                    scrollState.scroll_offset_y(),
-                                    scrollState.minimum_zoom_scale(),
-                                    scrollState.maximum_zoom_scale(),
-                                    scrollState.zoom_scale()];
+  return
+      [NSString stringWithFormat:kPageScrollStateDescriptionFormat,
+                                 displayState.scroll_state().offset_x(),
+                                 displayState.scroll_state().offset_y(),
+                                 displayState.zoom_state().minimum_zoom_scale(),
+                                 displayState.zoom_state().maximum_zoom_scale(),
+                                 displayState.zoom_state().zoom_scale()];
 }
 
 @end

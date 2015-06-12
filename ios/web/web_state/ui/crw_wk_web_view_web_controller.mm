@@ -397,18 +397,18 @@ NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
   [self evaluateJavaScript:script stringResultHandler:nil];
 }
 
-- (void)applyWebViewScrollZoomScaleFromScrollState:
-    (const web::PageScrollState&)scrollState {
+- (void)applyWebViewScrollZoomScaleFromZoomState:
+    (const web::PageZoomState&)zoomState {
   // After rendering a web page, WKWebView keeps the |minimumZoomScale| and
   // |maximumZoomScale| properties of its scroll view constant while adjusting
   // the |zoomScale| property accordingly.  The maximum-scale or minimum-scale
   // meta tags of a page may have changed since the state was recorded, so clamp
   // the zoom scale to the current range if necessary.
-  DCHECK(scrollState.IsZoomScaleValid());
+  DCHECK(zoomState.IsValid());
   // Legacy-format scroll states cannot be applied to WKWebViews.
-  if (scrollState.IsZoomScaleLegacyFormat())
+  if (zoomState.IsLegacyFormat())
     return;
-  CGFloat zoomScale = scrollState.zoom_scale();
+  CGFloat zoomScale = zoomState.zoom_scale();
   if (zoomScale < self.webScrollView.minimumZoomScale)
     zoomScale = self.webScrollView.minimumZoomScale;
   if (zoomScale > self.webScrollView.maximumZoomScale)
