@@ -430,9 +430,9 @@ WebViewInternalAddContentScriptsFunction::Run() {
       WebViewContentScriptManager::Get(browser_context());
   DCHECK(manager);
 
-  manager->AddContentScripts(sender_web_contents,
-                             render_view_host()->GetRoutingID(),
-                             params->instance_id, host_id, result);
+  manager->AddContentScripts(
+      sender_web_contents->GetRenderProcessHost()->GetID(),
+      render_view_host()->GetRoutingID(), params->instance_id, host_id, result);
 
   return RespondNow(NoArguments());
 }
@@ -464,8 +464,9 @@ WebViewInternalRemoveContentScriptsFunction::Run() {
   std::vector<std::string> script_name_list;
   if (params->script_name_list)
     script_name_list.swap(*params->script_name_list);
-  manager->RemoveContentScripts(GetSenderWebContents(), params->instance_id,
-                                host_id, script_name_list);
+  manager->RemoveContentScripts(
+      sender_web_contents->GetRenderProcessHost()->GetID(),
+      params->instance_id, host_id, script_name_list);
   return RespondNow(NoArguments());
 }
 

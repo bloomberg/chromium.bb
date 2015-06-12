@@ -229,6 +229,10 @@ void WebViewGuest::CleanUp(int embedder_process_id, int view_instance_id) {
           browser_context,
           embedder_process_id,
           view_instance_id));
+
+  // Clean up content scripts for the WebView.
+  auto csm = WebViewContentScriptManager::Get(browser_context);
+  csm->RemoveAllContentScriptsForWebView(embedder_process_id, view_instance_id);
 }
 
 // static

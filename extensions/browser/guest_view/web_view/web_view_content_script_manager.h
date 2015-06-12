@@ -38,25 +38,30 @@ class WebViewContentScriptManager : public base::SupportsUserData::Data,
   static WebViewContentScriptManager* Get(
       content::BrowserContext* browser_context);
 
-  // Adds content scripts for the guest specified by the |embedder_web_contents,
-  // view_instance_id|.
-  void AddContentScripts(content::WebContents* embedder_web_contents,
+  // Adds content scripts for the WebView specified by
+  // |embedder_process_id| and |view_instance_id|.
+  void AddContentScripts(int embedder_process_id,
                          int embedder_routing_id,
                          int view_instance_id,
                          const HostID& host_id,
                          const std::set<UserScript>& user_scripts);
 
+  // Removes all content scripts for the WebView identified by
+  // |embedder_process_id| and |view_instance_id|.
+  void RemoveAllContentScriptsForWebView(int embedder_process_id,
+                                         int view_instance_id);
+
   // Removes contents scipts whose names are in the |script_name_list| for the
-  // guest specified by |embedder_web_contents, view_instance_id|.
+  // WebView specified by |embedder_process_id| and |view_instance_id|.
   // If the |script_name_list| is empty, removes all the content scripts added
-  // for this guest.
-  void RemoveContentScripts(content::WebContents* embedder_web_contents,
+  // for this WebView.
+  void RemoveContentScripts(int embedder_process_id,
                             int view_instance_id,
                             const HostID& host_id,
                             const std::vector<std::string>& script_name_list);
 
-  // Returns the content script IDs added by the guest specified by
-  // |embedder_process_id, view_instance_id|.
+  // Returns the content script IDs added by the WebView specified by
+  // |embedder_process_id| and |view_instance_id|.
   std::set<int> GetContentScriptIDSet(int embedder_process_id,
                                       int view_instance_id);
 
@@ -67,29 +72,23 @@ class WebViewContentScriptManager : public base::SupportsUserData::Data,
   void SignalOnScriptsLoaded(const base::Closure& callback);
 
  private:
-  class OwnerWebContentsObserver;
-
   using GuestMapKey = std::pair<int, int>;
   using ContentScriptMap = std::map<std::string, extensions::UserScript>;
   using GuestContentScriptMap = std::map<GuestMapKey, ContentScriptMap>;
-
-  using OwnerWebContentsObserverMap =
-      std::map<content::WebContents*, linked_ptr<OwnerWebContentsObserver>>;
 
   // UserScriptLoader::Observer implementation:
   void OnScriptsLoaded(UserScriptLoader* loader) override;
   void OnUserScriptLoaderDestroyed(UserScriptLoader* loader) override;
 
-  // Called by OwnerWebContentsObserver when the observer sees a main frame
-  // navigation or sees the process has went away or the |embedder_web_contents|
-  // is being destroyed.
-  void RemoveObserver(content::WebContents* embedder_web_contents);
-
   // If |user_script_loader_observer_| doesn't observe any source, we will run
   // all the remaining callbacks in |pending_scripts_loading_callbacks_|.
   void RunCallbacksIfReady();
 
-  OwnerWebContentsObserverMap owner_web_contents_observer_map_;
+  // A map from embedder process ID and view instance ID (uniquely identifying
+  // one webview) to that webview's host ID. All webviews that have content
+  // scripts registered through this WebViewContentScriptManager will have an
+  // entry in this map.
+  std::map<GuestMapKey, HostID> webview_host_id_map_;
 
   GuestContentScriptMap guest_content_script_map_;
 

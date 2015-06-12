@@ -4,90 +4,23 @@
 
 #include "extensions/browser/guest_view/web_view/web_view_content_script_manager.h"
 
-#include "base/lazy_instance.h"
-#include "base/memory/linked_ptr.h"
-#include "components/guest_view/browser/guest_view_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_observer.h"
 #include "extensions/browser/declarative_user_script_manager.h"
 #include "extensions/browser/declarative_user_script_master.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/guest_view/web_view/web_view_constants.h"
-#include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 
 using content::BrowserThread;
 
 namespace extensions {
 
-// This observer ensures that the content scripts added by the guest are removed
-// when its embedder goes away.
-// The OwnerWebContentsObserver object will be destroyed when the embedder web
-// contents it observed is gone.
-class WebViewContentScriptManager::OwnerWebContentsObserver
-    : public content::WebContentsObserver {
- public:
-  OwnerWebContentsObserver(content::WebContents* embedder_web_contents,
-                           const HostID& host_id,
-                           WebViewContentScriptManager* manager)
-      : WebContentsObserver(embedder_web_contents),
-        host_id_(host_id),
-        web_view_content_script_manager_(manager) {}
-  ~OwnerWebContentsObserver() override {}
-
-  // WebContentsObserver:
-  void WebContentsDestroyed() override {
-    // If the embedder is destroyed then remove all the content scripts of the
-    // guest.
-    RemoveContentScripts();
-  }
-  void DidNavigateMainFrame(
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) override {
-    // If the embedder navigates to a different page then remove all the content
-    // scripts of the guest.
-    if (details.is_navigation_to_different_page())
-      RemoveContentScripts();
-  }
-  void RenderProcessGone(base::TerminationStatus status) override {
-    // If the embedder crashes, then remove all the content scripts of the
-    // guest.
-    RemoveContentScripts();
-  }
-
-  void add_view_instance_id(int view_instance_id) {
-    view_instance_ids_.insert(view_instance_id);
-  }
-
- private:
-  void RemoveContentScripts() {
-    DCHECK(web_view_content_script_manager_);
-
-    // Step 1: removes content scripts of all the guests embedded.
-    for (int view_instance_id : view_instance_ids_) {
-      web_view_content_script_manager_->RemoveContentScripts(
-          web_contents(), view_instance_id, host_id_,
-          std::vector<std::string>());
-    }
-    // Step 2: removes this observer.
-    // This object can be deleted after this line.
-    web_view_content_script_manager_->RemoveObserver(web_contents());
-  }
-
-  HostID host_id_;
-  std::set<int> view_instance_ids_;
-  WebViewContentScriptManager* web_view_content_script_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(OwnerWebContentsObserver);
-};
-
 WebViewContentScriptManager::WebViewContentScriptManager(
     content::BrowserContext* browser_context)
-    : user_script_loader_observer_(this), browser_context_(browser_context) {
+    : user_script_loader_observer_(this), browser_context_(browser_context)  {
 }
 
 WebViewContentScriptManager::~WebViewContentScriptManager() {
@@ -108,13 +41,12 @@ WebViewContentScriptManager* WebViewContentScriptManager::Get(
 }
 
 void WebViewContentScriptManager::AddContentScripts(
-    content::WebContents* embedder_web_contents,
+    int embedder_process_id,
     int embedder_routing_id,
     int view_instance_id,
     const HostID& host_id,
     const std::set<UserScript>& scripts) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(embedder_web_contents);
 
   DeclarativeUserScriptMaster* master =
       DeclarativeUserScriptManager::Get(browser_context_)
@@ -124,8 +56,6 @@ void WebViewContentScriptManager::AddContentScripts(
   // We need to update WebViewRenderState in the IO thread if the guest exists.
   std::set<int> ids_to_add;
 
-  int embedder_process_id =
-      embedder_web_contents->GetRenderProcessHost()->GetID();
   GuestMapKey key = std::pair<int, int>(embedder_process_id, view_instance_id);
   GuestContentScriptMap::iterator iter = guest_content_script_map_.find(key);
 
@@ -167,18 +97,11 @@ void WebViewContentScriptManager::AddContentScripts(
   // Step 4: adds new scripts to the master.
   master->AddScripts(scripts, embedder_process_id, embedder_routing_id);
 
-  // Step 5: creates owner web contents observer for the given
-  // |embedder_web_contents| if it doesn't exist.
-  auto observer_iter =
-      owner_web_contents_observer_map_.find(embedder_web_contents);
-  if (observer_iter == owner_web_contents_observer_map_.end()) {
-    linked_ptr<OwnerWebContentsObserver> observer(
-        new OwnerWebContentsObserver(embedder_web_contents, host_id, this));
-    observer->add_view_instance_id(view_instance_id);
-    owner_web_contents_observer_map_[embedder_web_contents] = observer;
-  } else {
-    observer_iter->second->add_view_instance_id(view_instance_id);
-  }
+  // Step 5: creates an entry in |webview_host_id_map_| for the given
+  // |embedder_process_id| and |view_instance_id| if it doesn't exist.
+  auto host_it = webview_host_id_map_.find(key);
+  if (host_it == webview_host_id_map_.end())
+    webview_host_id_map_.insert(std::make_pair(key, host_id));
 
   // Step 6: updates WebViewRenderState in the IO thread.
   // It is safe to use base::Unretained(WebViewRendererState::GetInstance())
@@ -193,15 +116,31 @@ void WebViewContentScriptManager::AddContentScripts(
   }
 }
 
+void WebViewContentScriptManager::RemoveAllContentScriptsForWebView(
+    int embedder_process_id,
+    int view_instance_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  // Look up the host ID for the WebView.
+  GuestMapKey key = std::make_pair(embedder_process_id, view_instance_id);
+  auto host_it = webview_host_id_map_.find(key);
+  // If no entry exists, then this WebView has no content scripts.
+  if (host_it == webview_host_id_map_.end())
+    return;
+
+  // Remove all content scripts for the WebView.
+  RemoveContentScripts(embedder_process_id, view_instance_id, host_it->second,
+                       std::vector<std::string>());
+  webview_host_id_map_.erase(host_it);
+}
+
 void WebViewContentScriptManager::RemoveContentScripts(
-    content::WebContents* embedder_web_contents,
+    int embedder_process_id,
     int view_instance_id,
     const HostID& host_id,
     const std::vector<std::string>& script_name_list) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  int embedder_process_id =
-      embedder_web_contents->GetRenderProcessHost()->GetID();
   GuestMapKey key = std::pair<int, int>(embedder_process_id, view_instance_id);
   GuestContentScriptMap::iterator script_map_iter =
       guest_content_script_map_.find(key);
@@ -260,11 +199,6 @@ void WebViewContentScriptManager::RemoveContentScripts(
                    base::Unretained(WebViewRendererState::GetInstance()),
                    embedder_process_id, view_instance_id, ids_to_delete));
   }
-}
-
-void WebViewContentScriptManager::RemoveObserver(
-    content::WebContents* embedder_web_contents) {
-  owner_web_contents_observer_map_.erase(embedder_web_contents);
 }
 
 std::set<int> WebViewContentScriptManager::GetContentScriptIDSet(
