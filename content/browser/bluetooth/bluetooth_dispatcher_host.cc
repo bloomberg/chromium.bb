@@ -58,6 +58,7 @@ bool BluetoothDispatcherHost::OnMessageReceived(const IPC::Message& message) {
   IPC_MESSAGE_HANDLER(BluetoothHostMsg_ConnectGATT, OnConnectGATT)
   IPC_MESSAGE_HANDLER(BluetoothHostMsg_GetPrimaryService, OnGetPrimaryService)
   IPC_MESSAGE_HANDLER(BluetoothHostMsg_GetCharacteristic, OnGetCharacteristic)
+  IPC_MESSAGE_HANDLER(BluetoothHostMsg_ReadValue, OnReadValue)
   IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -194,15 +195,87 @@ void BluetoothDispatcherHost::OnGetCharacteristic(
   for (BluetoothGattCharacteristic* characteristic :
        service->GetCharacteristics()) {
     if (characteristic->GetUUID().canonical_value() == characteristic_uuid) {
+      const std::string& characteristic_instance_id =
+          characteristic->GetIdentifier();
+
+      auto insert_result = characteristic_to_service_.insert(
+          make_pair(characteristic_instance_id, service_instance_id));
+
+      // If  value is already in map, DCHECK it's valid.
+      if (!insert_result.second)
+        DCHECK(insert_result.first->second == service_instance_id);
+
       // TODO(ortuno): Use generated instance ID instead.
       // https://crbug.com/495379
       Send(new BluetoothMsg_GetCharacteristicSuccess(
-          thread_id, request_id, characteristic->GetIdentifier()));
+          thread_id, request_id, characteristic_instance_id));
       return;
     }
   }
   Send(new BluetoothMsg_GetCharacteristicError(thread_id, request_id,
                                                BluetoothError::NOT_FOUND));
+}
+
+void BluetoothDispatcherHost::OnReadValue(
+    int thread_id,
+    int request_id,
+    const std::string& characteristic_instance_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  auto characteristic_iter =
+      characteristic_to_service_.find(characteristic_instance_id);
+  // A characteristic_instance_id not in the map implies a hostile renderer
+  // because a renderer obtains the characteristic id from this class and
+  // it will be added to the map at that time.
+  if (characteristic_iter == characteristic_to_service_.end()) {
+    // Kill the renderer
+    bad_message::ReceivedBadMessage(this,
+                                    bad_message::BDH_INVALID_CHARACTERISTIC_ID);
+    return;
+  }
+  const std::string& service_instance_id = characteristic_iter->second;
+
+  auto device_iter = service_to_device_.find(service_instance_id);
+
+  DCHECK(device_iter != service_to_device_.end());
+  if (device_iter == service_to_device_.end()) {
+    // Change to InvalidStateError:
+    // http://crbug.com/499014
+    Send(new BluetoothMsg_ReadCharacteristicValueError(
+        thread_id, request_id, BluetoothError::NETWORK_ERROR));
+    return;
+  }
+
+  device::BluetoothDevice* device =
+      adapter_->GetDevice(device_iter->second /* device_instance_id */);
+  if (device == nullptr) {
+    Send(new BluetoothMsg_ReadCharacteristicValueError(
+        thread_id, request_id, BluetoothError::NETWORK_ERROR));
+    return;
+  }
+
+  BluetoothGattService* service = device->GetGattService(service_instance_id);
+  if (service == nullptr) {
+    // TODO(ortuno): Change to InvalidStateError once implemented:
+    // http://crbug.com/499014
+    Send(new BluetoothMsg_ReadCharacteristicValueError(
+        thread_id, request_id, BluetoothError::NETWORK_ERROR));
+    return;
+  }
+
+  BluetoothGattCharacteristic* characteristic =
+      service->GetCharacteristic(characteristic_instance_id);
+  if (characteristic == nullptr) {
+    Send(new BluetoothMsg_ReadCharacteristicValueError(
+        thread_id, request_id, BluetoothError::NETWORK_ERROR));
+    return;
+  }
+
+  characteristic->ReadRemoteCharacteristic(
+      base::Bind(&BluetoothDispatcherHost::OnCharacteristicValueRead,
+                 weak_ptr_factory_.GetWeakPtr(), thread_id, request_id),
+      base::Bind(&BluetoothDispatcherHost::OnCharacteristicReadValueError,
+                 weak_ptr_factory_.GetWeakPtr(), thread_id, request_id));
 }
 
 void BluetoothDispatcherHost::OnDiscoverySessionStarted(
@@ -315,8 +388,7 @@ void BluetoothDispatcherHost::OnServicesDiscovered(
       auto insert_result = service_to_device_.insert(
           make_pair(service_identifier, device_instance_id));
 
-      // If the service existed already check that device_instance_id is the
-      // same.
+      // If a value is already in map, DCHECK it's valid.
       if (!insert_result.second)
         DCHECK(insert_result.first->second == device_instance_id);
 
@@ -327,6 +399,24 @@ void BluetoothDispatcherHost::OnServicesDiscovered(
   }
   Send(new BluetoothMsg_GetPrimaryServiceError(thread_id, request_id,
                                                BluetoothError::NOT_FOUND));
+}
+
+void BluetoothDispatcherHost::OnCharacteristicValueRead(
+    int thread_id,
+    int request_id,
+    const std::vector<uint8>& value) {
+  Send(new BluetoothMsg_ReadCharacteristicValueSuccess(thread_id, request_id,
+                                                       value));
+}
+
+void BluetoothDispatcherHost::OnCharacteristicReadValueError(
+    int thread_id,
+    int request_id,
+    device::BluetoothGattService::GattErrorCode) {
+  // TODO(ortuno): Send a different Error based on the GattErrorCode.
+  // http://crbug.com/499542
+  Send(new BluetoothMsg_ReadCharacteristicValueError(
+      thread_id, request_id, BluetoothError::NETWORK_ERROR));
 }
 
 }  // namespace content

@@ -11,6 +11,7 @@
 #include "content/public/browser/browser_message_filter.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_gatt_connection.h"
+#include "device/bluetooth/bluetooth_gatt_service.h"
 
 namespace content {
 
@@ -61,6 +62,9 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
                            int request_id,
                            const std::string& service_instance_id,
                            const std::string& characteristic_uuid);
+  void OnReadValue(int thread_id,
+                   int request_id,
+                   const std::string& characteristic_instance_id);
 
   // Callbacks for BluetoothAdapter::StartDiscoverySession.
   void OnDiscoverySessionStarted(
@@ -79,7 +83,7 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
   void OnDiscoverySessionStopped(int thread_id, int request_id);
   void OnDiscoverySessionStoppedError(int thread_id, int request_id);
 
-  // Callbacks for BluetoothDevice::CreateGattConnection
+  // Callbacks for BluetoothDevice::CreateGattConnection.
   void OnGATTConnectionCreated(
       int thread_id,
       int request_id,
@@ -99,9 +103,20 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
                             const std::string& device_instance_id,
                             const std::string& service_uuid);
 
+  // Callbacks for BluetoothGattCharacteristic::ReadRemoteCharacteristic.
+  void OnCharacteristicValueRead(int thread_id,
+                                 int request_id,
+                                 const std::vector<uint8>& value);
+  void OnCharacteristicReadValueError(
+      int thread_id,
+      int request_id,
+      device::BluetoothGattService::GattErrorCode);
+
   // Maps to get the object's parent based on it's instanceID
   // Map of service_instance_id to device_instance_id.
   std::map<std::string, std::string> service_to_device_;
+  // Map of characteristic_instance_id to service_instance_id.
+  std::map<std::string, std::string> characteristic_to_service_;
 
   // Defines how long to scan for and how long to discover services for.
   int current_delay_time_;

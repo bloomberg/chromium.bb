@@ -56,6 +56,8 @@ class MockBluetoothGattService : public BluetoothGattService {
   void AddMockCharacteristic(
       scoped_ptr<MockBluetoothGattCharacteristic> mock_characteristic);
   std::vector<BluetoothGattCharacteristic*> GetMockCharacteristics() const;
+  BluetoothGattCharacteristic* GetMockCharacteristic(
+      const std::string& identifier) const;
 
  private:
   ScopedVector<MockBluetoothGattCharacteristic> mock_characteristics_;

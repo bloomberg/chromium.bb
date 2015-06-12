@@ -153,6 +153,18 @@ IPC_MESSAGE_CONTROL3(BluetoothMsg_GetCharacteristicError,
                      int /* request_id */,
                      content::BluetoothError /* result */)
 
+// Informs the renderer that the value has been read.
+IPC_MESSAGE_CONTROL3(BluetoothMsg_ReadCharacteristicValueSuccess,
+                     int /* thread_id */,
+                     int /* request_id */,
+                     std::vector<uint8_t> /* value */)
+
+// Informs the renderer that an error occurred while reading the value.
+IPC_MESSAGE_CONTROL3(BluetoothMsg_ReadCharacteristicValueError,
+                     int /* thread_id */,
+                     int /* request_id */,
+                     content::BluetoothError /* result */)
+
 // Messages sent from the renderer to the browser.
 
 // Requests a bluetooth device from the browser.
@@ -185,3 +197,9 @@ IPC_MESSAGE_CONTROL4(BluetoothHostMsg_GetCharacteristic,
                      int /* request_id */,
                      std::string /* service_instance_id */,
                      std::string /* characteristic_uuid */)
+
+// Reads the characteristics value from a bluetooth device.
+IPC_MESSAGE_CONTROL3(BluetoothHostMsg_ReadValue,
+                     int /* thread_id */,
+                     int /* request_id */,
+                     std::string /* characteristic_instance_id */)

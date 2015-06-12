@@ -178,16 +178,27 @@ LayoutTestBluetoothAdapterProvider::GetEmptyDevice(
 
   scoped_ptr<NiceMock<MockBluetoothGattService>> generic_access(
       GetGattService(empty_device.get(), "1800" /* Generic Access */));
-  generic_access->AddMockCharacteristic(
+  scoped_ptr<NiceMock<MockBluetoothGattCharacteristic>> device_name(
       GetGattCharacteristic(generic_access.get(), "2A00" /* Device Name */));
 
-  scoped_ptr<NiceMock<MockBluetoothGattService>> generic_attribute(
-      GetGattService(empty_device.get(), "1801" /* Generic Attribute */));
-  generic_attribute->AddMockCharacteristic(GetGattCharacteristic(
-      generic_attribute.get(), "2A05" /* Service Changed */));
+  std::string value_str("Empty Mock Device name");
+  std::vector<uint8_t> value(value_str.begin(), value_str.end());
+  ON_CALL(*device_name, ReadRemoteCharacteristic(_, _))
+      .WillByDefault(RunCallback<0>(value));
+
+  generic_access->AddMockCharacteristic(device_name.Pass());
+
+  scoped_ptr<NiceMock<MockBluetoothGattCharacteristic>> reconnection_address(
+      GetGattCharacteristic(generic_access.get(),
+                            "2A03" /* Reconnection Address */));
+
+  ON_CALL(*reconnection_address, ReadRemoteCharacteristic(_, _))
+      .WillByDefault(
+          RunCallback<1>(BluetoothGattService::GATT_ERROR_NOT_PERMITTED));
+
+  generic_access->AddMockCharacteristic(reconnection_address.Pass());
 
   empty_device->AddMockService(generic_access.Pass());
-  empty_device->AddMockService(generic_attribute.Pass());
 
   // Using Invoke allows the device returned from this method to be futher
   // modified and have more services added to it. The call to ::GetGattServices
@@ -250,6 +261,11 @@ LayoutTestBluetoothAdapterProvider::GetGattService(MockBluetoothDevice* device,
   ON_CALL(*service, GetCharacteristics())
       .WillByDefault(Invoke(service.get(),
                             &MockBluetoothGattService::GetMockCharacteristics));
+
+  ON_CALL(*service, GetCharacteristic(_))
+      .WillByDefault(Invoke(service.get(),
+                            &MockBluetoothGattService::GetMockCharacteristic));
+
   return service.Pass();
 }
 

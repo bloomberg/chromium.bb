@@ -47,4 +47,14 @@ MockBluetoothGattService::GetMockCharacteristics() const {
   return characteristics;
 }
 
+BluetoothGattCharacteristic* MockBluetoothGattService::GetMockCharacteristic(
+    const std::string& identifier) const {
+  for (BluetoothGattCharacteristic* characteristic : mock_characteristics_) {
+    if (characteristic->GetIdentifier() == identifier) {
+      return characteristic;
+    }
+  }
+  return nullptr;
+}
+
 }  // namespace device

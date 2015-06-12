@@ -22,6 +22,7 @@ using blink::WebBluetoothError;
 using blink::WebBluetoothGATTCharacteristic;
 using blink::WebBluetoothGATTRemoteServer;
 using blink::WebBluetoothGATTService;
+using blink::WebBluetoothReadValueCallbacks;
 using blink::WebBluetoothRequestDeviceCallbacks;
 using blink::WebString;
 using blink::WebVector;
@@ -144,6 +145,10 @@ void BluetoothDispatcher::OnMessageReceived(const IPC::Message& msg) {
                       OnGetCharacteristicSuccess);
   IPC_MESSAGE_HANDLER(BluetoothMsg_GetCharacteristicError,
                       OnGetCharacteristicError);
+  IPC_MESSAGE_HANDLER(BluetoothMsg_ReadCharacteristicValueSuccess,
+                      OnReadValueSuccess);
+  IPC_MESSAGE_HANDLER(BluetoothMsg_ReadCharacteristicValueError,
+                      OnReadValueError);
   IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   DCHECK(handled) << "Unhandled message:" << msg.type();
@@ -185,6 +190,14 @@ void BluetoothDispatcher::getCharacteristic(
   Send(new BluetoothHostMsg_GetCharacteristic(CurrentWorkerId(), request_id,
                                               service_instance_id.utf8(),
                                               characteristic_uuid.utf8()));
+}
+
+void BluetoothDispatcher::readValue(
+    const blink::WebString& characteristic_instance_id,
+    blink::WebBluetoothReadValueCallbacks* callbacks) {
+  int request_id = pending_read_value_requests_.Add(callbacks);
+  Send(new BluetoothHostMsg_ReadValue(CurrentWorkerId(), request_id,
+                                      characteristic_instance_id.utf8()));
 }
 
 void BluetoothDispatcher::OnWorkerRunLoopStopped() {
@@ -315,6 +328,34 @@ void BluetoothDispatcher::OnGetCharacteristicError(int thread_id,
             WebBluetoothErrorFromBluetoothError(error_type), ""));
   }
   pending_characteristic_requests_.Remove(request_id);
+}
+
+void BluetoothDispatcher::OnReadValueSuccess(
+    int thread_id,
+    int request_id,
+    const std::vector<uint8_t>& value) {
+  DCHECK(pending_read_value_requests_.Lookup(request_id)) << request_id;
+
+  // WebArrayBuffer is not accessible from Source/modules so we pass a
+  // WebVector instead.
+  pending_read_value_requests_.Lookup(request_id)
+      ->onSuccess(new WebVector<uint8_t>(value));
+
+  pending_read_value_requests_.Remove(request_id);
+}
+
+void BluetoothDispatcher::OnReadValueError(int thread_id,
+                                           int request_id,
+                                           BluetoothError error_type) {
+  DCHECK(pending_read_value_requests_.Lookup(request_id)) << request_id;
+
+  pending_read_value_requests_.Lookup(request_id)
+      ->onError(new WebBluetoothError(
+          // TODO(ortuno): Return more descriptive error messages.
+          // http://crbug.com/490419
+          WebBluetoothErrorFromBluetoothError(error_type), ""));
+
+  pending_read_value_requests_.Remove(request_id);
 }
 
 }  // namespace content
