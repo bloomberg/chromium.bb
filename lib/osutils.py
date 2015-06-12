@@ -721,11 +721,14 @@ def UmountDir(path, lazy=True, sudo=True, cleanup=True):
       # that rm failed.  Assume it's this issue as -rf will ignore most things.
       if isinstance(e, cros_build_lib.RunCommandError):
         return True
-      else:
+      elif isinstance(e, OSError):
         # When we aren't using sudo, we do the unlink ourselves, so the exact
         # errno is bubbled up to us and we can detect it specifically without
         # potentially ignoring all other possible failures.
         return e.errno == errno.EBUSY
+      else:
+        # Something else, we don't know so do not retry.
+        return False
     retry_util.GenericRetry(_retry, 60, RmDir, path, sudo=sudo, sleep=1)
 
 
