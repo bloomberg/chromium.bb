@@ -135,6 +135,14 @@ components/rappor/rappor_service.cc.
   </summary>
 </rappor-metric>
 
+<rappor-metric name="ContentSettings.MixedScript.RanMixedScript"
+    type="ETLD_PLUS_ONE">
+  <owner>lgarron@chromium.org</owner>
+  <summary>
+    The eTLD+1 of a URL that when mixed script actually ran.
+  </summary>
+</rappor-metric>
+
 <rappor-metric name="ContentSettings.PermissionActions_Camera.Revoked.Url"
     type="ETLD_PLUS_ONE">
   <owner>jialiul@chromium.org</owner>

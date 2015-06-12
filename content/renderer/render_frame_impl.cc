@@ -3382,6 +3382,9 @@ void RenderFrameImpl::didRunInsecureContent(
       render_view_->GetRoutingID(),
       origin.toString().utf8(),
       target));
+  GetContentClient()->renderer()->RecordRapporURL(
+      "ContentSettings.MixedScript.RanMixedScript",
+      GURL(origin.toString().utf8()));
 }
 
 void RenderFrameImpl::didAbortLoading(blink::WebLocalFrame* frame) {
