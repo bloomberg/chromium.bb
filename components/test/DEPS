@@ -7,6 +7,7 @@ include_rules = [
   "+content/public/app/content_main.h",
   "+content/public/common/content_switches.h",
   "+content/public/test",
+  "+content/shell/android/browsertests",
   "+content/shell/android/java/src/org/chromium/content_shell",
   "+content/shell/android/shell_jni_registrar.h",
   "+content/shell/app/shell_main_delegate.h",

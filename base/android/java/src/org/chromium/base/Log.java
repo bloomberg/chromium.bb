@@ -235,6 +235,7 @@ public class Log {
      * @param args Arguments referenced by the format specifiers in the format string. If the last
      *             one is a {@link Throwable}, its trace will be printed.
      */
+    @VisibleForTesting
     public static void i(String tag, String messageTemplate, Object... args) {
         if (Log.isLoggable(tag, Log.INFO)) {
             String message = formatLog(messageTemplate, args);
@@ -256,6 +257,7 @@ public class Log {
      * @param args Arguments referenced by the format specifiers in the format string. If the last
      *             one is a {@link Throwable}, its trace will be printed.
      */
+    @VisibleForTesting
     public static void w(String tag, String messageTemplate, Object... args) {
         if (Log.isLoggable(tag, Log.WARN)) {
             String message = formatLog(messageTemplate, args);
@@ -277,6 +279,7 @@ public class Log {
      * @param args Arguments referenced by the format specifiers in the format string. If the last
      *             one is a {@link Throwable}, its trace will be printed.
      */
+    @VisibleForTesting
     public static void e(String tag, String messageTemplate, Object... args) {
         if (Log.isLoggable(tag, Log.ERROR)) {
             String message = formatLog(messageTemplate, args);
@@ -302,6 +305,7 @@ public class Log {
      * @param args Arguments referenced by the format specifiers in the format string. If the last
      *             one is a {@link Throwable}, its trace will be printed.
      */
+    @VisibleForTesting
     public static void wtf(String tag, String messageTemplate, Object... args) {
         if (Log.isLoggable(tag, Log.ASSERT)) {
             String message = formatLog(messageTemplate, args);

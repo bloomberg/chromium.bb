@@ -1814,6 +1814,21 @@
           'includes': [ '../build/apk_test.gypi' ],
         },
         {
+          'target_name': 'content_shell_browsertests_java',
+          'type': 'none',
+          'dependencies': [
+            'content.gyp:content_java',
+            'content_shell_java',
+            '../base/base.gyp:base_java',
+            '../testing/android/native_test.gyp:native_test_java',
+            '../ui/android/ui_android.gyp:ui_java',
+          ],
+          'variables': {
+            'java_in_dir': 'shell/android/browsertests',
+          },
+          'includes': [ '../build/java.gypi' ],
+        },
+        {
           # TODO(GN)
           'target_name': 'content_browsertests_manifest',
           'type': 'none',
@@ -1832,6 +1847,7 @@
             'content.gyp:content_java',
             'content.gyp:content_v8_external_data',
             'content_browsertests',
+            'content_shell_browsertests_java',
             'content_java_test_support',
             'content_shell_java',
           ],

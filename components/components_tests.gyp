@@ -1236,6 +1236,7 @@
             '../content/content.gyp:content_java',
             '../content/content.gyp:content_v8_external_data',
             '../content/content_shell_and_tests.gyp:content_java_test_support',
+            '../content/content_shell_and_tests.gyp:content_shell_browsertests_java',
             '../content/content_shell_and_tests.gyp:content_shell_java',
             'components_browsertests_paks_copy',
             'components_browsertests',
