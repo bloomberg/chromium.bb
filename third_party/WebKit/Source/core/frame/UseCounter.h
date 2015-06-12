@@ -734,6 +734,8 @@ public:
         TextInputFired = 830,
         V8TextEvent_Data_AttributeGetter = 831,
         V8TextEvent_InitTextEvent_Method = 832,
+        V8SVGSVGElement_UseCurrentView_AttributeGetter = 833,
+        V8SVGSVGElement_CurrentView_AttributeGetter = 834,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
