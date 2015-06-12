@@ -41,3 +41,6 @@ PluginTest.VerifyPluginWindowRect
 
 # http://crbug.com/484852
 PluginTest.NPObjectIdentity
+
+# http://crbug.com/500070
+DumpAccessibilityEventsTest.AccessibilityEventsListboxNext
