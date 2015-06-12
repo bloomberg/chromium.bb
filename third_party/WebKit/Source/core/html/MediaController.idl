@@ -23,29 +23,35 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://www.whatwg.org/specs/web-apps/current-work/multipage/the-video-element.html#mediacontroller
+// https://html.spec.whatwg.org/#media-controllers
+
+enum MediaControllerPlaybackState { "waiting", "playing", "ended" };
 
 [
     Constructor,
     ConstructorCallWith=ExecutionContext,
     RuntimeEnabled=MediaController,
 ] interface MediaController : EventTarget {
+    // TODO(philipj): Expose readyState.
+    // readonly attribute unsigned short readyState; // uses HTMLMediaElement.readyState's values
+
     readonly attribute TimeRanges buffered;
     readonly attribute TimeRanges seekable;
-
     readonly attribute unrestricted double duration;
     attribute double currentTime;
 
     readonly attribute boolean paused;
+    readonly attribute MediaControllerPlaybackState playbackState;
     readonly attribute TimeRanges played;
-    readonly attribute DOMString playbackState;
-    void play();
     void pause();
     void unpause();
+    void play(); // calls play() on all media elements as well
 
     attribute double defaultPlaybackRate;
     attribute double playbackRate;
 
     [RaisesException=Setter] attribute double volume;
     attribute boolean muted;
+
+    // TODO(philipj): Expose the on* event handler attributes.
 };

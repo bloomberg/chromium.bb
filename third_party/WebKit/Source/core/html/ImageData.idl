@@ -26,16 +26,19 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://www.whatwg.org/specs/web-apps/current-work/multipage/the-canvas-element.html#imagedata
+// https://html.spec.whatwg.org/#dom-imagedata
 
 [
     TypeChecking=Interface,
-    Constructor(unsigned long width, unsigned long height),
-    Constructor(Uint8ClampedArray data, unsigned long width, optional unsigned long height),
+    Constructor(unsigned long sw, unsigned long sh),
+    Constructor(Uint8ClampedArray data, unsigned long sw, optional unsigned long sh),
     Exposed=(Window,Worker),
     RaisesException=Constructor,
     GarbageCollected,
 ] interface ImageData {
+    // TODO(philipj): width/height should be unsigned long.
     readonly attribute long width;
     readonly attribute long height;
+    // TODO(philipj): Expose data.
+    // readonly attribute Uint8ClampedArray data;
 };

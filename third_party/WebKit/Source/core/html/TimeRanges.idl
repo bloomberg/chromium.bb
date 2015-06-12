@@ -23,6 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// https://html.spec.whatwg.org/#time-ranges
+
 [
     WillBeGarbageCollected,
     RuntimeEnabled=Media
@@ -31,4 +33,3 @@
     [RaisesException] double start(unsigned long index);
     [RaisesException] double end(unsigned long index);
 };
-

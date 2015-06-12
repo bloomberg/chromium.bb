@@ -23,6 +23,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// TODO(philipj): This callback interface was added for HTMLMediaElement's
+// addCuePoint() and removeCuePoint(), which briefly existed in 2007. It is no
+// longer used in HTML and should be moved to where it is used.
+
 callback interface VoidCallback {
     void handleEvent();
 };
