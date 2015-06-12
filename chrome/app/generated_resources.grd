@@ -8492,16 +8492,18 @@ I don't think this site should be blocked!
       </message>
 
       <!-- SRT bubble messages -->
-      <message name="IDS_SRT_BUBBLE_DOWNLOAD_BUTTON_TEXT" desc="Download button of the software removal tool bubble">
-        Get the Software Removal Tool
+      <message name="IDS_SRT_BUBBLE_DOWNLOAD_BUTTON_TEXT" desc="Download button of the Chrome Cleanup Tool bubble">
+        Get the Chrome Cleanup Tool
       </message>
-      <message name="IDS_SRT_BUBBLE_RUN_BUTTON_TEXT" desc="Run button of the software removal tool bubble">
-        Run the Software Removal Tool
+      <message name="IDS_SRT_BUBBLE_DISMISS" desc="Dismiss button text of the Chrome Cleanup Tool bubble">
+        Dismiss
       </message>
-      <message name="IDS_SRT_BUBBLE_TEXT" desc="Text for the software removal tool bubble view full description.">
-          For example, causing crashes, unusual startup pages or toolbars, unexpected ads you can't get rid of, or otherwise changing your browsing experience? You may be able to fix the problem by running the Software Removal Tool.
+      <message name="IDS_SRT_BUBBLE_RUN_BUTTON_TEXT" desc="Run button of the Chrome Cleanup Tool bubble">
+        Run Chrome Cleanup Tool
       </message>
-
+      <message name="IDS_SRT_BUBBLE_TEXT" desc="Text for the Chrome Cleanup Tool bubble view full description.">
+          Is Chrome crashing, showing unusual startup pages, toolbars, or unexpected ads you can't get rid of, or otherwise changing your browsing experience? You may be able to fix the problem by running the Chrome Cleanup Tool.
+      </message>
       <!-- Upgrade bubble messages -->
       <message name="IDS_REENABLE_UPDATES" desc="Text for the button the user clicks to re-enable automatic updates.">
         Enable autoupdate

@@ -854,16 +854,16 @@ Signing in anyway will merge Chrome information like bookmarks, history, and oth
       <if expr="is_win">
         <if expr="use_titlecase">
           <message name="IDS_SRT_MENU_ITEM" desc="In Title Case: Text for the Chrome menu option replacing Update required.">
-            Chrome Behaving Strangely?
+            Chrome Has Detected Unusual Behavior
           </message>
         </if>
         <if expr="not use_titlecase">
           <message name="IDS_SRT_MENU_ITEM" desc="Text for the Chrome menu option replacing Update required.">
-            Chrome behaving strangely?
+            Chrome has detected unusual behavior
           </message>
         </if>
         <message name="IDS_SRT_BUBBLE_TITLE" desc="Text for the title of the software removal tool bubble view.">
-            Chrome behaving strangely?
+            Chrome has detected unusual behavior
         </message>
       </if>
       <!-- Sync/sign-in error messages -->
