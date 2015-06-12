@@ -57,8 +57,8 @@ namespace chromecast {
 void CrashHandler::Initialize(const std::string& process_type,
                               const base::FilePath& log_file_path) {
   DCHECK(!g_crash_handler);
-  g_crash_handler = new CrashHandler(log_file_path);
-  g_crash_handler->Initialize(process_type);
+  g_crash_handler = new CrashHandler(process_type, log_file_path);
+  g_crash_handler->Initialize();
 }
 
 // static
@@ -73,9 +73,11 @@ bool CrashHandler::RegisterCastCrashJni(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-CrashHandler::CrashHandler(const base::FilePath& log_file_path)
+CrashHandler::CrashHandler(const std::string& process_type,
+                           const base::FilePath& log_file_path)
     : log_file_path_(log_file_path),
-      crash_reporter_client_(new CastCrashReporterClientAndroid) {
+      process_type_(process_type),
+      crash_reporter_client_(new CastCrashReporterClientAndroid(process_type)) {
   if (!crash_reporter_client_->GetCrashDumpLocation(&crash_dump_path_)) {
     LOG(ERROR) << "Could not get crash dump location";
   }
@@ -87,8 +89,8 @@ CrashHandler::~CrashHandler() {
   g_crash_handler = NULL;
 }
 
-void CrashHandler::Initialize(const std::string& process_type) {
-  if (process_type.empty()) {
+void CrashHandler::Initialize() {
+  if (process_type_.empty()) {
     InitializeUploader();
 
     // ExceptionHandlers are called on crash in reverse order of
@@ -100,13 +102,13 @@ void CrashHandler::Initialize(const std::string& process_type) {
     crash_uploader_.reset(new google_breakpad::ExceptionHandler(
         dummy, &HandleCrash, NULL, NULL, true, -1));
 
-    breakpad::InitCrashReporter(process_type);
+    breakpad::InitCrashReporter(process_type_);
 
     return;
   }
 
-  if (process_type != switches::kZygoteProcess) {
-    breakpad::InitNonBrowserCrashReporterForAndroid(process_type);
+  if (process_type_ != switches::kZygoteProcess) {
+    breakpad::InitNonBrowserCrashReporterForAndroid(process_type_);
   }
 }
 

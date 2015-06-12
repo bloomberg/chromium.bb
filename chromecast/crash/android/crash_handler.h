@@ -39,10 +39,11 @@ class CrashHandler {
   void UploadCrashDumps();
 
  private:
-  CrashHandler(const base::FilePath& log_file_path);
+  CrashHandler(const std::string& process_type,
+               const base::FilePath& log_file_path);
   ~CrashHandler();
 
-  void Initialize(const std::string& process_type);
+  void Initialize();
 
   // Starts a thread to periodically check for uploads
   void InitializeUploader();
@@ -52,6 +53,8 @@ class CrashHandler {
 
   // Location to which crash dumps should be written.
   base::FilePath crash_dump_path_;
+
+  std::string process_type_;
 
   scoped_ptr<CastCrashReporterClientAndroid> crash_reporter_client_;
   scoped_ptr<google_breakpad::ExceptionHandler> crash_uploader_;

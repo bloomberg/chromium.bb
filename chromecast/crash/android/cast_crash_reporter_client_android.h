@@ -13,7 +13,7 @@ namespace chromecast {
 class CastCrashReporterClientAndroid
     : public crash_reporter::CrashReporterClient {
  public:
-  CastCrashReporterClientAndroid();
+  explicit CastCrashReporterClientAndroid(const std::string& process_type);
   ~CastCrashReporterClientAndroid() override;
 
   // crash_reporter::CrashReporterClient implementation:
@@ -28,6 +28,8 @@ class CastCrashReporterClientAndroid
   size_t RegisterCrashKeys() override;
 
  private:
+  std::string process_type_;
+
   DISALLOW_COPY_AND_ASSIGN(CastCrashReporterClientAndroid);
 };
 

@@ -16,7 +16,9 @@
 
 namespace chromecast {
 
-CastCrashReporterClientAndroid::CastCrashReporterClientAndroid() {
+CastCrashReporterClientAndroid::CastCrashReporterClientAndroid(
+    const std::string& process_type)
+    : process_type_(process_type) {
 }
 
 CastCrashReporterClientAndroid::~CastCrashReporterClientAndroid() {
@@ -45,9 +47,12 @@ bool CastCrashReporterClientAndroid::GetCrashDumpLocation(
   }
   crash_dir_local = crash_dir_local.Append("crashes");
 
-  if (!base::DirectoryExists(crash_dir_local)) {
-    if (!base::CreateDirectory(crash_dir_local)) {
-      return false;
+  // Only try to create the directory in the browser process (empty value).
+  if (process_type_.empty()) {
+    if (!base::DirectoryExists(crash_dir_local)) {
+      if (!base::CreateDirectory(crash_dir_local)) {
+        return false;
+      }
     }
   }
 
