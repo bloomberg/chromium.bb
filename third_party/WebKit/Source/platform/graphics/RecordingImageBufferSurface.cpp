@@ -90,7 +90,6 @@ void RecordingImageBufferSurface::fallBackToRasterCanvas()
 
     if (m_imageBuffer) {
         m_imageBuffer->resetCanvas(m_fallbackSurface->canvas());
-        m_imageBuffer->context()->setAccelerated(m_fallbackSurface->isAccelerated());
     }
 
 }
@@ -195,10 +194,10 @@ void RecordingImageBufferSurface::willDrawVideo()
         fallBackToRasterCanvas();
 }
 
-void RecordingImageBufferSurface::draw(GraphicsContext* context, const FloatRect& destRect, const FloatRect& srcRect, SkXfermode::Mode op, bool needsCopy)
+void RecordingImageBufferSurface::draw(GraphicsContext* context, const FloatRect& destRect, const FloatRect& srcRect, SkXfermode::Mode op)
 {
     if (m_fallbackSurface) {
-        m_fallbackSurface->draw(context, destRect, srcRect, op, needsCopy);
+        m_fallbackSurface->draw(context, destRect, srcRect, op);
         return;
     }
 
@@ -206,7 +205,7 @@ void RecordingImageBufferSurface::draw(GraphicsContext* context, const FloatRect
     if (picture) {
         context->compositePicture(picture.get(), destRect, srcRect, op);
     } else {
-        ImageBufferSurface::draw(context, destRect, srcRect, op, needsCopy);
+        ImageBufferSurface::draw(context, destRect, srcRect, op);
     }
 }
 

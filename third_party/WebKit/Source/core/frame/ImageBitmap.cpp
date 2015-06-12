@@ -11,8 +11,8 @@
 #include "platform/graphics/BitmapImage.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/ImageBuffer.h"
-#include "platform/graphics/paint/DisplayItemListContextRecorder.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
+#include "platform/graphics/paint/SkPictureBuilder.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {
@@ -73,16 +73,8 @@ ImageBitmap::ImageBitmap(HTMLVideoElement* video, const IntRect& cropRect)
     if (!buffer)
         return;
 
-    {
-        DisplayItemListContextRecorder contextRecorder(*buffer->context());
-        GraphicsContext& paintContext = contextRecorder.context();
-
-        DrawingRecorder recorder(paintContext, *buffer, DisplayItem::VideoBitmap, videoRect);
-        if (!recorder.canUseCachedDrawing()) {
-            paintContext.clip(dstRect);
-            paintContext.translate(-srcRect.x(), -srcRect.y());
-        }
-    }
+    buffer->canvas()->clipRect(dstRect);
+    buffer->canvas()->translate(-srcRect.x(), -srcRect.y());
 
     video->paintCurrentFrame(buffer->canvas(), videoRect, nullptr);
     m_bitmap = buffer->copyImage(DontCopyBackingStore);

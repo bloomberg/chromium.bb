@@ -153,9 +153,6 @@ public:
     bool printing() const { return m_printing; }
     void setPrinting(bool printing) { m_printing = printing; }
 
-    bool isAccelerated() const { return m_accelerated; }
-    void setAccelerated(bool accelerated) { m_accelerated = accelerated; }
-
     SkColorFilter* colorFilter() const;
     void setColorFilter(ColorFilter);
     // ---------- End state management methods -----------------
@@ -408,7 +405,6 @@ private:
 
     float m_deviceScaleFactor;
 
-    unsigned m_accelerated : 1;
     unsigned m_printing : 1;
     unsigned m_hasMetaData : 1;
 };

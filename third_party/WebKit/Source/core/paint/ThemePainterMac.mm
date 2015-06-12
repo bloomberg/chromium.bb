@@ -245,7 +245,7 @@ bool ThemePainterMac::paintProgressBar(LayoutObject* layoutObject, const PaintIn
         return true;
 
     IntRect clipRect = IntRect(IntPoint(), inflatedRect.size());
-    LocalCurrentGraphicsContext localContext(imageBuffer->context(), &clipRect, clipRect);
+    LocalCurrentGraphicsContext localContext(imageBuffer->canvas(), 1, &clipRect, clipRect);
     CGContextRef cgContext = localContext.cgContext();
     HIThemeDrawTrack(&trackInfo, 0, cgContext, kHIThemeOrientationNormal);
 

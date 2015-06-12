@@ -79,23 +79,11 @@ ImageBuffer::ImageBuffer(PassOwnPtr<ImageBufferSurface> surface)
     : m_surface(surface)
     , m_client(0)
 {
-    if (m_surface->canvas()) {
-        m_context = GraphicsContext::deprecatedCreateWithCanvas(m_surface->canvas());
-        m_context->setAccelerated(m_surface->isAccelerated());
-    }
     m_surface->setImageBuffer(this);
 }
 
 ImageBuffer::~ImageBuffer()
 {
-}
-
-GraphicsContext* ImageBuffer::context() const
-{
-    if (!isSurfaceValid())
-        return nullptr;
-    ASSERT(m_context.get());
-    return m_context.get();
 }
 
 SkCanvas* ImageBuffer::canvas() const
@@ -145,8 +133,6 @@ void ImageBuffer::notifySurfaceInvalid()
 
 void ImageBuffer::resetCanvas(SkCanvas* canvas)
 {
-    ASSERT(context()->canvas());
-    context()->resetCanvas(canvas);
     if (m_client)
         m_client->restoreCanvasMatrixClipStack();
 }
@@ -232,12 +218,6 @@ bool ImageBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, Platform3
     return true;
 }
 
-static bool drawNeedsCopy(GraphicsContext* src, GraphicsContext* dst)
-{
-    ASSERT(dst);
-    return (src == dst);
-}
-
 Platform3DObject ImageBuffer::getBackingTexture()
 {
     return m_surface->getBackingTexture();
@@ -277,7 +257,7 @@ void ImageBuffer::draw(GraphicsContext* context, const FloatRect& destRect, cons
         return;
 
     FloatRect srcRect = srcPtr ? *srcPtr : FloatRect(FloatPoint(), size());
-    m_surface->draw(context, destRect, srcRect, op, drawNeedsCopy(m_context.get(), context));
+    m_surface->draw(context, destRect, srcRect, op);
 }
 
 void ImageBuffer::flush()
@@ -351,7 +331,7 @@ void ImageBuffer::putByteArray(Multiply multiplied, const unsigned char* source,
 
     m_surface->willAccessPixels();
 
-    context()->writePixels(info, srcAddr, srcBytesPerRow, destX, destY);
+    canvas()->writePixels(info, srcAddr, srcBytesPerRow, destX, destY);
 }
 
 template <typename T>

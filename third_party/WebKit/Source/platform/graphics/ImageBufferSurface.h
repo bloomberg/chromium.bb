@@ -81,7 +81,7 @@ public:
     virtual void willDrawVideo() { }
     virtual void willOverwriteCanvas() { }
     virtual PassRefPtr<SkImage> newImageSnapshot() const;
-    virtual void draw(GraphicsContext*, const FloatRect& destRect, const FloatRect& srcRect, SkXfermode::Mode, bool needsCopy);
+    virtual void draw(GraphicsContext*, const FloatRect& destRect, const FloatRect& srcRect, SkXfermode::Mode);
     virtual void setHasExpensiveOp() { }
 
     OpacityMode opacityMode() const { return m_opacityMode; }

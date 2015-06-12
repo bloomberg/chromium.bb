@@ -112,7 +112,7 @@ TEST(GraphicsContextTest, trackImageMask)
 
     OwnPtr<ImageBuffer> alphaImage = ImageBuffer::create(IntSize(100, 100));
     EXPECT_FALSE(!alphaImage);
-    alphaImage->context()->fillRect(IntRect(0, 0, 100, 100), alpha);
+    alphaImage->canvas()->drawColor(alpha.rgb());
 
     context->drawImageBuffer(alphaImage.get(), FloatRect(10, 10, 10, 10));
 
@@ -145,7 +145,7 @@ TEST(GraphicsContextTest, trackImageMaskWithOpaqueRect)
 
     OwnPtr<ImageBuffer> alphaImage = ImageBuffer::create(IntSize(100, 100));
     EXPECT_FALSE(!alphaImage);
-    alphaImage->context()->fillRect(IntRect(0, 0, 100, 100), alpha);
+    alphaImage->canvas()->drawColor(alpha.rgb());
 
     context->drawImageBuffer(alphaImage.get(), FloatRect(10, 10, 10, 10));
 

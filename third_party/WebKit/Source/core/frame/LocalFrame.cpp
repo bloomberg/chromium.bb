@@ -71,7 +71,7 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/paint/ClipRecorder.h"
-#include "platform/graphics/paint/DisplayItemListContextRecorder.h"
+#include "platform/graphics/paint/SkPictureBuilder.h"
 #include "platform/text/TextStream.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/StdLibExtras.h"
@@ -588,9 +588,9 @@ PassOwnPtr<DragImage> LocalFrame::paintIntoDragImage(
     if (!buffer)
         return nullptr;
 
+    SkPictureBuilder pictureBuilder(paintingRect);
     {
-        DisplayItemListContextRecorder contextRecorder(*buffer->context());
-        GraphicsContext& paintContext = contextRecorder.context();
+        GraphicsContext& paintContext = pictureBuilder.context();
 
         AffineTransform transform;
         transform.scale(deviceScaleFactor, deviceScaleFactor);
@@ -601,7 +601,10 @@ PassOwnPtr<DragImage> LocalFrame::paintIntoDragImage(
             LayoutRect(0, 0, paintingRect.maxX(), paintingRect.maxY()));
 
         m_view->paintContents(&paintContext, paintingRect);
+
     }
+    RefPtr<const SkPicture> recording = pictureBuilder.endRecording();
+    buffer->canvas()->drawPicture(recording.get());
 
     RefPtr<Image> image = buffer->copyImage();
     return DragImage::create(image.get(), shouldRespectImageOrientation, deviceScaleFactor);

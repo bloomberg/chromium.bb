@@ -29,26 +29,32 @@
 namespace blink {
 
 LocalCurrentGraphicsContext::LocalCurrentGraphicsContext(GraphicsContext* graphicsContext, const IntRect& dirtyRect)
-  : LocalCurrentGraphicsContext(graphicsContext, nullptr, dirtyRect)
+    : LocalCurrentGraphicsContext(graphicsContext->canvas(), graphicsContext->deviceScaleFactor(), nullptr, dirtyRect)
 {
 }
 
 LocalCurrentGraphicsContext::LocalCurrentGraphicsContext(GraphicsContext* graphicsContext, const IntRect* interestRect,
                                                          const IntRect& dirtyRect)
+    : LocalCurrentGraphicsContext(graphicsContext->canvas(), graphicsContext->deviceScaleFactor(), interestRect, dirtyRect)
+{
+}
+
+LocalCurrentGraphicsContext::LocalCurrentGraphicsContext(SkCanvas* canvas, float deviceScaleFactor, const IntRect* interestRect,
+                                                         const IntRect& dirtyRect)
     : m_didSetGraphicsContext(false)
     , m_inflatedDirtyRect(ThemeMac::inflateRectForAA(dirtyRect))
-    , m_skiaBitLocker(graphicsContext->canvas(),
+    , m_skiaBitLocker(canvas,
                       m_inflatedDirtyRect,
-                      graphicsContext->deviceScaleFactor())
+                      deviceScaleFactor)
 {
-    m_savedGraphicsContext = graphicsContext;
-    graphicsContext->save();
+    m_savedCanvas = canvas;
+    canvas->save();
 
     bool clipToInterest = interestRect && RuntimeEnabledFeatures::slimmingPaintEnabled() && !interestRect->contains(m_inflatedDirtyRect);
     if (clipToInterest) {
-      IntRect clippedBounds(m_inflatedDirtyRect);
-      clippedBounds.intersect(*interestRect);
-      graphicsContext->clipRect(clippedBounds, NotAntiAliased, SkRegion::kIntersect_Op);
+        IntRect clippedBounds(m_inflatedDirtyRect);
+        clippedBounds.intersect(*interestRect);
+        canvas->clipRect(clippedBounds, SkRegion::kIntersect_Op);
     }
 
     CGContextRef cgContext = this->cgContext();
@@ -70,7 +76,7 @@ LocalCurrentGraphicsContext::~LocalCurrentGraphicsContext()
         [m_savedNSGraphicsContext release];
     }
 
-    m_savedGraphicsContext->restore();
+    m_savedCanvas->restore();
 }
 
 CGContextRef LocalCurrentGraphicsContext::cgContext()

@@ -102,7 +102,6 @@ public:
 
     void willDrawVideo() { m_surface->willDrawVideo(); }
 
-    GraphicsContext* context() const; // Deprecated: use canvas()
     SkCanvas* canvas() const;
 
     // Called at the end of a task that rendered a whole frame
@@ -158,7 +157,6 @@ private:
     friend class SkiaImageFilterBuilder;
 
     OwnPtr<ImageBufferSurface> m_surface;
-    OwnPtr<GraphicsContext> m_context;
     ImageBufferClient* m_client;
 };
 

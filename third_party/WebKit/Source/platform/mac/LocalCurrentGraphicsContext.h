@@ -24,6 +24,8 @@
 
 OBJC_CLASS NSGraphicsContext;
 
+class SkCanvas;
+
 namespace blink {
 
 class GraphicsContext;
@@ -36,11 +38,12 @@ public:
     LocalCurrentGraphicsContext(GraphicsContext*, const IntRect& dirtyRect);
     // Allows specifying an interest rect to which we clip if slimming paint is enabled and performance would benefit.
     LocalCurrentGraphicsContext(GraphicsContext*, const IntRect* interestRect, const IntRect& dirtyRect);
+    LocalCurrentGraphicsContext(SkCanvas*, float deviceScaleFactor, const IntRect* interestRect, const IntRect& dirtyRect);
     ~LocalCurrentGraphicsContext();
     CGContextRef cgContext();
 private:
 
-    GraphicsContext* m_savedGraphicsContext;
+    SkCanvas* m_savedCanvas;
     NSGraphicsContext* m_savedNSGraphicsContext;
     bool m_didSetGraphicsContext;
     IntRect m_inflatedDirtyRect;

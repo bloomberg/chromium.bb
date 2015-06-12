@@ -29,6 +29,8 @@
 #include "platform/mac/NSScrollerImpDetails.h"
 #include "platform/scroll/ScrollbarTheme.h"
 
+class SkCanvas;
+
 namespace blink {
 
 class Pattern;
@@ -60,7 +62,7 @@ protected:
 
     virtual void updateButtonPlacement() { }
 
-    void paintGivenTickmarks(GraphicsContext*, ScrollbarThemeClient*, const IntRect&, const Vector<IntRect>&);
+    void paintGivenTickmarks(SkCanvas*, ScrollbarThemeClient*, const IntRect&, const Vector<IntRect>&);
 
     RefPtr<Pattern> m_overhangPattern;
 };

@@ -87,26 +87,17 @@ PassRefPtr<SkImage> ImageBufferSurface::newImageSnapshot() const
     return nullptr;
 }
 
-static SkBitmap deepSkBitmapCopy(const SkBitmap& bitmap)
-{
-    SkBitmap tmp;
-    if (!bitmap.deepCopyTo(&tmp))
-        bitmap.copyTo(&tmp, bitmap.colorType());
-
-    return tmp;
-}
-
-void ImageBufferSurface::draw(GraphicsContext* context, const FloatRect& destRect, const FloatRect& srcRect, SkXfermode::Mode op, bool needsCopy)
+void ImageBufferSurface::draw(GraphicsContext* context, const FloatRect& destRect, const FloatRect& srcRect, SkXfermode::Mode op)
 {
     SkBitmap bmp = bitmap();
     // For ImageBufferSurface that enables cachedBitmap, Use the cached bitmap for CPU side usage
     // if it is available, otherwise generate and use it.
-    if (!context->isAccelerated() && isAccelerated() && cachedBitmapEnabled() && isValid()) {
+    if (isAccelerated() && cachedBitmapEnabled() && isValid()) {
         updateCachedBitmapIfNeeded();
         bmp = cachedBitmap();
     }
 
-    RefPtr<Image> image = BitmapImage::create(needsCopy ? deepSkBitmapCopy(bmp) : bmp);
+    RefPtr<Image> image = BitmapImage::create(bmp);
 
     context->drawImage(image.get(), destRect, srcRect, op, DoNotRespectImageOrientation);
 }

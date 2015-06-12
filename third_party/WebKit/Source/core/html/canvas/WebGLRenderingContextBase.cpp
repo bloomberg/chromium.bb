@@ -3748,7 +3748,8 @@ PassRefPtr<Image> WebGLRenderingContextBase::drawImageIntoBuffer(Image* image, i
 
     IntRect srcRect(IntPoint(), image->size());
     IntRect destRect(0, 0, size.width(), size.height());
-    buf->context()->drawImage(image, destRect, srcRect);
+    SkPaint paint;
+    image->draw(buf->canvas(), paint, destRect, srcRect, DoNotRespectImageOrientation, Image::DoNotClampImageToSourceRect);
     return buf->copyImage(ImageBuffer::fastCopyImageMode());
 }
 
@@ -3938,7 +3939,7 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum in
                 // we enable the WebMediaPlayer implementation to do any necessary color space conversion on the GPU (though it
                 // may still do a CPU conversion and upload the results).
                 video->paintCurrentFrame(imageBuffer->canvas(), IntRect(0, 0, video->videoWidth(), video->videoHeight()), nullptr);
-                imageBuffer->context()->canvas()->flush();
+                imageBuffer->canvas()->flush();
 
                 // This is a straight GPU-GPU copy, any necessary color space conversion was handled in the paintCurrentFrameInContext() call.
                 if (imageBuffer->copyToPlatformTexture(webContext(), texture->object(), internalformat, type,

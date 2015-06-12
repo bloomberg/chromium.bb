@@ -43,7 +43,6 @@
 #include "platform/LengthFunctions.h"
 #include "platform/geometry/FloatRoundedRect.h"
 #include "platform/geometry/FloatSize.h"
-#include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "wtf/ArrayBufferContents.h"
@@ -199,12 +198,14 @@ PassOwnPtr<Shape> Shape::createRasterShape(Image* image, float threshold, const 
     OwnPtr<ImageBuffer> imageBuffer = ImageBuffer::create(imageRect.size());
 
     if (image && imageBuffer) {
-        GraphicsContext* graphicsContext = imageBuffer->context();
         // FIXME: This is not totally correct but it is needed to prevent shapes
         // that loads SVG Images during paint invalidations to mark layoutObjects for
         // layout, which is not allowed. See https://crbug.com/429346
         ImageObserverDisabler disabler(image);
-        graphicsContext->drawImage(image, IntRect(IntPoint(), imageRect.size()));
+        SkPaint paint;
+        IntRect imageSourceRect(IntPoint(), image->size());
+        IntRect imageDestRect(IntPoint(), imageRect.size());
+        image->draw(imageBuffer->canvas(), paint, imageDestRect, imageSourceRect, DoNotRespectImageOrientation, Image::DoNotClampImageToSourceRect);
 
         WTF::ArrayBufferContents contents;
         imageBuffer->getImageData(Unmultiplied, IntRect(IntPoint(), imageRect.size()), contents);

@@ -101,7 +101,6 @@ GraphicsContext::GraphicsContext(SkCanvas* canvas, DisplayItemList* displayItemL
 #endif
     , m_disabledState(disableContextOrPainting)
     , m_deviceScaleFactor(1.0f)
-    , m_accelerated(false)
     , m_printing(false)
     , m_hasMetaData(!!metaData)
 {
