@@ -1043,6 +1043,13 @@ bool LayoutBlock::createsNewFormattingContext() const
 
 void LayoutBlock::updateBlockChildDirtyBitsBeforeLayout(bool relayoutChildren, LayoutBox& child)
 {
+    if (child.isOutOfFlowPositioned()) {
+        // It's rather useless to mark out-of-flow children at this point. We may not be their
+        // containing block (and if we are, it's just pure luck), so this would be the wrong place
+        // for it. Furthermore, it would cause trouble for out-of-flow descendants of column
+        // spanners, if the containing block is outside the spanner but inside the multicol container.
+        return;
+    }
     // FIXME: Technically percentage height objects only need a relayout if their percentage isn't going to be turned into
     // an auto value. Add a method to determine this, so that we can avoid the relayout.
     bool hasRelativeLogicalHeight = child.hasRelativeLogicalHeight()

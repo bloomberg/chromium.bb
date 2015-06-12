@@ -606,6 +606,19 @@ LayoutUnit LayoutMultiColumnFlowThread::skipColumnSpanner(LayoutBox* layoutObjec
         m_lastSetWorkedOn = nextSet;
         nextSet->beginFlow(logicalTopInFlowThread);
     }
+
+    // We'll lay out of spanners after flow thread layout has finished (during layout of the spanner
+    // placeholders). There may be containing blocks for out-of-flow positioned descendants of the
+    // spanner in the flow thread, so that out-of-flow objects inside the spanner will be laid out
+    // as part of flow thread layout (even if the spanner itself won't). We need to add such
+    // out-of-flow positioned objects to their containing blocks now, or they'll never get laid
+    // out. Since it's non-trivial to determine if we need this, and where such out-of-flow objects
+    // might be, just go through the whole subtree.
+    for (LayoutObject* descendant = layoutObject->slowFirstChild(); descendant; descendant = descendant->nextInPreOrder()) {
+        if (descendant->isBox() && descendant->isOutOfFlowPositioned())
+            descendant->containingBlock()->insertPositionedObject(toLayoutBox(descendant));
+    }
+
     return adjustment;
 }
 
