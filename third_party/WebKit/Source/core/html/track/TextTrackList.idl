@@ -23,14 +23,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// https://html.spec.whatwg.org/#texttracklist
+
 [
     SetWrapperReferenceFrom=owner,
 ] interface TextTrackList : EventTarget {
     readonly attribute unsigned long length;
-    getter TextTrack item(unsigned long index);
+    // TODO(philipj): This getter should be anonymous.
+    [Measure] getter TextTrack item(unsigned long index);
     TextTrack? getTrackById(DOMString id);
 
-    attribute EventHandler onaddtrack;
     attribute EventHandler onchange;
+    attribute EventHandler onaddtrack;
     attribute EventHandler onremovetrack;
 };

@@ -23,6 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// https://html.spec.whatwg.org/#texttrack
+
 enum TextTrackMode { "disabled",  "hidden",  "showing" };
 enum TextTrackKind { "subtitles",  "captions",  "descriptions",  "chapters",  "metadata" };
 
@@ -35,17 +37,20 @@ enum TextTrackKind { "subtitles",  "captions",  "descriptions",  "chapters",  "m
     readonly attribute DOMString language;
 
     readonly attribute DOMString id;
+    // readonly attribute DOMString inBandMetadataTrackDispatchType;
 
-             attribute TextTrackMode mode;
+    attribute TextTrackMode mode;
 
-    readonly attribute TextTrackCueList cues;
-    readonly attribute TextTrackCueList activeCues;
+    readonly attribute TextTrackCueList? cues;
+    readonly attribute TextTrackCueList? activeCues;
 
     void addCue(TextTrackCue cue);
     [RaisesException] void removeCue(TextTrackCue cue);
 
-             attribute EventHandler oncuechange;
+    attribute EventHandler oncuechange;
 
+    // TODO(philipj): These WebVTT extensions have been removed from the spec:
+    // https://www.w3.org/Bugs/Public/show_bug.cgi?id=24380
     [RuntimeEnabled=WebVTTRegions] readonly attribute VTTRegionList regions;
     [RuntimeEnabled=WebVTTRegions] void addRegion(VTTRegion region);
     [RaisesException, RuntimeEnabled=WebVTTRegions] void removeRegion(VTTRegion region);

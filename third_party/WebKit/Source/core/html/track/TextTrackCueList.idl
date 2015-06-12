@@ -23,11 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// https://html.spec.whatwg.org/#texttrackcuelist
+
 [
     WillBeGarbageCollected,
 ] interface TextTrackCueList {
     readonly attribute unsigned long length;
-    getter TextTrackCue item(unsigned long index);
-    TextTrackCue getCueById(DOMString id);
+    // TODO(philipj): This getter should be anonymous.
+    [Measure] getter TextTrackCue item(unsigned long index);
+    TextTrackCue? getCueById(DOMString id);
 };
-

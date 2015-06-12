@@ -729,6 +729,8 @@ public:
         V8IDBObjectStore_IndexNames_AttributeGetter = 825,
         V8IDBTransaction_ObjectStoreNames_AttributeGetter = 826,
         V8Navigator_GetStorageUpdates_Method = 827,
+        V8TextTrackCueList_Item_Method = 828,
+        V8TextTrackList_Item_Method = 829,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

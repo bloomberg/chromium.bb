@@ -23,6 +23,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// TODO(philipj): The VTTRegionList interface has been removed from the spec:
+// https://www.w3.org/Bugs/Public/show_bug.cgi?id=24380
+
 [
     RuntimeEnabled=WebVTTRegions,
     WillBeGarbageCollected,
@@ -31,4 +34,3 @@
     getter VTTRegion item(unsigned long index);
     VTTRegion getRegionById(DOMString id);
 };
-
