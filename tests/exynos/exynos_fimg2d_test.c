@@ -65,17 +65,9 @@ struct fimg2d_test_case {
 struct connector {
 	uint32_t id;
 	char mode_str[64];
-	char format_str[5];
-	unsigned int fourcc;
 	drmModeModeInfo *mode;
 	drmModeEncoder *encoder;
 	int crtc;
-	int pipe;
-	int plane_zpos;
-	unsigned int fb_id[2], current_fb_id;
-	struct timeval start;
-
-	int swap_count;
 };
 
 static void connector_find_mode(int fd, struct connector *c,
@@ -749,8 +741,6 @@ int main(int argc, char **argv)
 				pitches, offsets, &fb_id, 0);
 	if (ret < 0)
 		goto err_destroy_buffer;
-
-	con.plane_zpos = -1;
 
 	memset(bo->vaddr, 0xff, screen_width * screen_height * 4);
 
