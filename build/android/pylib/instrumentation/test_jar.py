@@ -65,7 +65,8 @@ class TestJar(object):
       try:
         with open(self._pickled_proguard_name, 'r') as r:
           d = pickle.loads(r.read())
-        jar_md5 = md5sum.CalculateHostMd5Sums(self._jar_path)[self._jar_path]
+        jar_md5 = md5sum.CalculateHostMd5Sums(
+          self._jar_path)[os.path.realpath(self._jar_path)]
         if (d['JAR_MD5SUM'] == jar_md5 and
             d['VERSION'] == PICKLE_FORMAT_VERSION):
           self._test_methods = d['TEST_METHODS']
@@ -106,7 +107,8 @@ class TestJar(object):
     d = {'VERSION': PICKLE_FORMAT_VERSION,
          'TEST_METHODS': self._test_methods,
          'JAR_MD5SUM':
-              md5sum.CalculateHostMd5Sums(self._jar_path)[self._jar_path]}
+              md5sum.CalculateHostMd5Sums(
+                self._jar_path)[os.path.realpath(self._jar_path)]}
     with open(self._pickled_proguard_name, 'w') as f:
       f.write(pickle.dumps(d))
 
