@@ -2101,10 +2101,10 @@ bool EventHandler::slideFocusOnShadowHostIfNecessary(const Element& element)
         // If the host has a focusable inner element, focus it. Otherwise, the host takes focus.
         Page* page = m_frame->page();
         ASSERT(page);
-        Node* next = page->focusController().findFocusableNode(WebFocusTypeForward, *element.shadowRoot());
-        if (next && next->isElementNode() && element.containsIncludingShadowDOM(next)) {
+        Element* next = page->focusController().findFocusableElement(WebFocusTypeForward, *element.shadowRoot());
+        if (next && element.containsIncludingShadowDOM(next)) {
             // Use WebFocusTypeForward instead of WebFocusTypeMouse here to mean the focus has slided.
-            toElement(next)->focus(false, WebFocusTypeForward);
+            next->focus(false, WebFocusTypeForward);
             return true;
         }
     }

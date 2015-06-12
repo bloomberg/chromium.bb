@@ -58,7 +58,7 @@ public:
 
     bool setInitialFocus(WebFocusType);
     bool advanceFocus(WebFocusType type) { return advanceFocus(type, false); }
-    Node* findFocusableNode(WebFocusType, Node&);
+    Element* findFocusableElement(WebFocusType, Node&);
 
     bool setFocusedElement(Element*, PassRefPtrWillBeRawPtr<Frame>, WebFocusType = WebFocusTypeNone);
 
@@ -81,9 +81,9 @@ private:
     Node* findFocusableNodeAcrossFocusScopesForward(const FocusNavigationScope&, Node*);
     Node* findFocusableNodeAcrossFocusScopesBackward(const FocusNavigationScope&, Node*);
 
-    Node* findFocusableNodeRecursively(WebFocusType, const FocusNavigationScope&, Node*);
-    Node* findFocusableNodeRecursivelyForward(const FocusNavigationScope&, Node*);
-    Node* findFocusableNodeRecursivelyBackward(const FocusNavigationScope&, Node*);
+    Element* findFocusableElementRecursively(WebFocusType, const FocusNavigationScope&, Node*);
+    Element* findFocusableElementRecursivelyForward(const FocusNavigationScope&, Node*);
+    Element* findFocusableElementRecursivelyBackward(const FocusNavigationScope&, Node*);
 
     Node* findFocusableNodeDecendingDownIntoFrameDocument(WebFocusType, Node*);
 
@@ -100,7 +100,7 @@ private:
     //
     // [1] https://html.spec.whatwg.org/multipage/interaction.html#sequential-focus-navigation
     // [2] https://w3c.github.io/webcomponents/spec/shadow/#focus-navigation
-    inline Node* findFocusableNode(WebFocusType, const FocusNavigationScope&, Node* start);
+    inline Element* findFocusableElement(WebFocusType, const FocusNavigationScope&, Node* start);
 
     bool advanceFocusDirectionallyInContainer(Node* container, const LayoutRect& startingRect, WebFocusType);
     void findFocusCandidateInContainer(Node& container, const LayoutRect& startingRect, WebFocusType, FocusCandidate& closest);

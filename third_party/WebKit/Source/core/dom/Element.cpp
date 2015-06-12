@@ -2210,9 +2210,9 @@ void Element::focus(bool restorePreviousSelection, WebFocusType type)
             return;
 
         // Slide the focus to its inner node.
-        Node* next = document().page()->focusController().findFocusableNode(WebFocusTypeForward, *this);
-        if (next && next->isElementNode() && containsIncludingShadowDOM(next)) {
-            toElement(next)->focus(false, WebFocusTypeForward);
+        Element* next = document().page()->focusController().findFocusableElement(WebFocusTypeForward, *this);
+        if (next && containsIncludingShadowDOM(next)) {
+            next->focus(false, WebFocusTypeForward);
             return;
         }
     }

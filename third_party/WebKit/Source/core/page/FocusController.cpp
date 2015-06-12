@@ -360,11 +360,11 @@ Node* FocusController::findFocusableNodeDecendingDownIntoFrameDocument(WebFocusT
         if (!owner.contentFrame() || !owner.contentFrame()->isLocalFrame())
             break;
         toLocalFrame(owner.contentFrame())->document()->updateLayoutIgnorePendingStylesheets();
-        Node* foundNode = findFocusableNode(type, FocusNavigationScope::ownedByIFrame(owner), nullptr);
-        if (!foundNode)
+        Element* foundElement = findFocusableElement(type, FocusNavigationScope::ownedByIFrame(owner), nullptr);
+        if (!foundElement)
             break;
-        ASSERT(node != foundNode);
-        node = foundNode;
+        ASSERT(node != foundElement);
+        node = foundElement;
     }
     return node;
 }
@@ -436,7 +436,7 @@ bool FocusController::advanceFocusInDocumentOrder(WebFocusType type, bool initia
         // Chrome doesn't want focus, so we should wrap focus.
         if (!m_page->mainFrame()->isLocalFrame())
             return false;
-        node = findFocusableNodeRecursively(type, FocusNavigationScope::focusNavigationScopeOf(*m_page->deprecatedLocalMainFrame()->document()), nullptr);
+        node = findFocusableElementRecursively(type, FocusNavigationScope::focusNavigationScopeOf(*m_page->deprecatedLocalMainFrame()->document()), nullptr);
         node = findFocusableNodeDecendingDownIntoFrameDocument(type, node.get());
 
         if (!node)
@@ -501,10 +501,10 @@ Node* FocusController::findFocusableNodeAcrossFocusScopesForward(const FocusNavi
     Node* found;
     if (currentNode && isShadowHostWithoutCustomFocusLogic(*currentNode)) {
         FocusNavigationScope innerScope = FocusNavigationScope::ownedByShadowHost(*currentNode);
-        Node* foundInInnerFocusScope = findFocusableNodeRecursivelyForward(innerScope, nullptr);
-        found = foundInInnerFocusScope ? foundInInnerFocusScope : findFocusableNodeRecursivelyForward(scope, currentNode);
+        Node* foundInInnerFocusScope = findFocusableElementRecursivelyForward(innerScope, nullptr);
+        found = foundInInnerFocusScope ? foundInInnerFocusScope : findFocusableElementRecursivelyForward(scope, currentNode);
     } else {
-        found = findFocusableNodeRecursivelyForward(scope, currentNode);
+        found = findFocusableElementRecursivelyForward(scope, currentNode);
     }
 
     // If there's no focusable node to advance to, move up the focus scopes until we find one.
@@ -514,7 +514,7 @@ Node* FocusController::findFocusableNodeAcrossFocusScopesForward(const FocusNavi
         if (!owner)
             break;
         currentScope = FocusNavigationScope::focusNavigationScopeOf(*owner);
-        found = findFocusableNodeRecursivelyForward(currentScope, owner);
+        found = findFocusableElementRecursivelyForward(currentScope, owner);
     }
     return findFocusableNodeDecendingDownIntoFrameDocument(WebFocusTypeForward, found);
 }
@@ -522,7 +522,7 @@ Node* FocusController::findFocusableNodeAcrossFocusScopesForward(const FocusNavi
 Node* FocusController::findFocusableNodeAcrossFocusScopesBackward(const FocusNavigationScope& scope, Node* currentNode)
 {
     ASSERT(!currentNode || !isNonFocusableShadowHost(*currentNode));
-    Node* found = findFocusableNodeRecursivelyBackward(scope, currentNode);
+    Node* found = findFocusableElementRecursivelyBackward(scope, currentNode);
 
     // If there's no focusable node to advance to, move up the focus scopes until we find one.
     FocusNavigationScope currentScope = scope;
@@ -535,33 +535,33 @@ Node* FocusController::findFocusableNodeAcrossFocusScopesBackward(const FocusNav
             found = owner;
             break;
         }
-        found = findFocusableNodeRecursivelyBackward(currentScope, owner);
+        found = findFocusableElementRecursivelyBackward(currentScope, owner);
     }
     return findFocusableNodeDecendingDownIntoFrameDocument(WebFocusTypeBackward, found);
 }
 
-Node* FocusController::findFocusableNodeRecursively(WebFocusType type, const FocusNavigationScope& scope, Node* start)
+Element* FocusController::findFocusableElementRecursively(WebFocusType type, const FocusNavigationScope& scope, Node* start)
 {
     return (type == WebFocusTypeForward) ?
-        findFocusableNodeRecursivelyForward(scope, start) :
-        findFocusableNodeRecursivelyBackward(scope, start);
+        findFocusableElementRecursivelyForward(scope, start) :
+        findFocusableElementRecursivelyBackward(scope, start);
 }
 
-Node* FocusController::findFocusableNodeRecursivelyForward(const FocusNavigationScope& scope, Node* start)
+Element* FocusController::findFocusableElementRecursivelyForward(const FocusNavigationScope& scope, Node* start)
 {
     // Starting node is exclusive.
-    Node* found = findFocusableNode(WebFocusTypeForward, scope, start);
+    Element* found = findFocusableElement(WebFocusTypeForward, scope, start);
     if (!found)
         return nullptr;
     if (isShadowHostDelegatesFocus(*found)) {
         if (isShadowHostWithoutCustomFocusLogic(*found)) {
             FocusNavigationScope innerScope = FocusNavigationScope::ownedByShadowHost(*found);
-            Node* foundInInnerFocusScope = findFocusableNodeRecursivelyForward(innerScope, nullptr);
-            return foundInInnerFocusScope ? foundInInnerFocusScope : findFocusableNodeRecursivelyForward(scope, found);
+            Element* foundInInnerFocusScope = findFocusableElementRecursivelyForward(innerScope, nullptr);
+            return foundInInnerFocusScope ? foundInInnerFocusScope : findFocusableElementRecursivelyForward(scope, found);
         }
         // Skip to the next node.
         if (!isNonFocusableFocusScopeOwner(*found))
-            found = findFocusableNodeRecursivelyForward(scope, found);
+            found = findFocusableElementRecursivelyForward(scope, found);
     }
     if (!found || !isNonFocusableFocusScopeOwner(*found))
         return found;
@@ -570,14 +570,14 @@ Node* FocusController::findFocusableNodeRecursivelyForward(const FocusNavigation
     // Find inside the inward scope and return it if found. Otherwise continue searching in the same
     // scope.
     FocusNavigationScope innerScope = FocusNavigationScope::ownedByNonFocusableFocusScopeOwner(*found);
-    Node* foundInInnerFocusScope = findFocusableNodeRecursivelyForward(innerScope, nullptr);
-    return foundInInnerFocusScope ? foundInInnerFocusScope : findFocusableNodeRecursivelyForward(scope, found);
+    Element* foundInInnerFocusScope = findFocusableElementRecursivelyForward(innerScope, nullptr);
+    return foundInInnerFocusScope ? foundInInnerFocusScope : findFocusableElementRecursivelyForward(scope, found);
 }
 
-Node* FocusController::findFocusableNodeRecursivelyBackward(const FocusNavigationScope& scope, Node* start)
+Element* FocusController::findFocusableElementRecursivelyBackward(const FocusNavigationScope& scope, Node* start)
 {
     // Starting node is exclusive.
-    Node* found = findFocusableNode(WebFocusTypeBackward, scope, start);
+    Element* found = findFocusableElement(WebFocusTypeBackward, scope, start);
     if (!found)
         return nullptr;
 
@@ -586,11 +586,11 @@ Node* FocusController::findFocusableNodeRecursivelyBackward(const FocusNavigatio
     // the host itself.
     if (isKeyboardFocusableShadowHost(*found)) {
         FocusNavigationScope innerScope = FocusNavigationScope::ownedByShadowHost(*found);
-        Node* foundInInnerFocusScope = findFocusableNodeRecursivelyBackward(innerScope, nullptr);
+        Element* foundInInnerFocusScope = findFocusableElementRecursivelyBackward(innerScope, nullptr);
         if (foundInInnerFocusScope)
             return foundInInnerFocusScope;
         if (isShadowHostDelegatesFocus(*found))
-            found = findFocusableNodeRecursivelyBackward(scope, found);
+            found = findFocusableElementRecursivelyBackward(scope, found);
         return found;
     }
 
@@ -599,11 +599,11 @@ Node* FocusController::findFocusableNodeRecursivelyBackward(const FocusNavigatio
     // current scope.
     if (isNonFocusableFocusScopeOwner(*found)) {
         FocusNavigationScope innerScope = FocusNavigationScope::ownedByNonFocusableFocusScopeOwner(*found);
-        Node* foundInInnerFocusScope = findFocusableNodeRecursivelyBackward(innerScope, nullptr);
-        return foundInInnerFocusScope ? foundInInnerFocusScope : findFocusableNodeRecursivelyBackward(scope, found);
+        Element* foundInInnerFocusScope = findFocusableElementRecursivelyBackward(innerScope, nullptr);
+        return foundInInnerFocusScope ? foundInInnerFocusScope : findFocusableElementRecursivelyBackward(scope, found);
     }
 
-    return found->isElementNode() && !isShadowHostDelegatesFocus(*found) ? found : findFocusableNodeRecursivelyBackward(scope, found);
+    return !isShadowHostDelegatesFocus(*found) ? found : findFocusableElementRecursivelyBackward(scope, found);
 }
 
 static Node* findNodeWithExactTabIndex(Node* start, int tabIndex, WebFocusType type)
@@ -716,16 +716,20 @@ static Node* previousFocusableNode(const FocusNavigationScope& scope, Node* star
     return previousNodeWithLowerTabIndex(last, startingTabIndex);
 }
 
-Node* FocusController::findFocusableNode(WebFocusType type, Node& node)
+Element* FocusController::findFocusableElement(WebFocusType type, Node& node)
 {
     // FIXME: No spacial navigation code yet.
     ASSERT(type == WebFocusTypeForward || type == WebFocusTypeBackward);
-    return findFocusableNodeAcrossFocusScopes(type, FocusNavigationScope::focusNavigationScopeOf(node), &node);
+    Node* found = findFocusableNodeAcrossFocusScopes(type, FocusNavigationScope::focusNavigationScopeOf(node), &node);
+    ASSERT(!found || found->isElementNode());
+    return toElement(found);
 }
 
-Node* FocusController::findFocusableNode(WebFocusType type, const FocusNavigationScope& scope, Node* node)
+Element* FocusController::findFocusableElement(WebFocusType type, const FocusNavigationScope& scope, Node* node)
 {
-    return type == WebFocusTypeForward ? nextFocusableNode(scope, node) : previousFocusableNode(scope, node);
+    Node* found = (type == WebFocusTypeForward) ? nextFocusableNode(scope, node) : previousFocusableNode(scope, node);
+    ASSERT(!found || found->isElementNode());
+    return toElement(found);
 }
 
 static bool relinquishesEditingFocus(const Element& element)
