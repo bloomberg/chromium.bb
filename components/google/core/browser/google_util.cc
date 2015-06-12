@@ -57,7 +57,7 @@ bool IsValidHostName(const std::string& host,
   if (base::LowerCaseEqualsASCII(host_minus_tld, domain_in_lower_case.c_str()))
     return true;
   if (subdomain_permission == google_util::ALLOW_SUBDOMAIN)
-    return EndsWith(host_minus_tld, "." + domain_in_lower_case, false);
+    return base::EndsWith(host_minus_tld, "." + domain_in_lower_case, false);
   return base::LowerCaseEqualsASCII(host_minus_tld,
                                     ("www." + domain_in_lower_case).c_str());
 }

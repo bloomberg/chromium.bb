@@ -286,7 +286,7 @@ bool MimeUtil::MatchesMimeType(const std::string& mime_type_pattern,
   if (!base::StartsWithASCII(base_type, left, false))
     return false;
 
-  if (!right.empty() && !EndsWith(base_type, right, false))
+  if (!right.empty() && !base::EndsWith(base_type, right, false))
     return false;
 
   return MatchesMimeTypeParameters(mime_type_pattern, mime_type);
@@ -521,7 +521,7 @@ void GetExtensionsForMimeType(
   const std::string mime_type = base::StringToLowerASCII(unsafe_mime_type);
   base::hash_set<base::FilePath::StringType> unique_extensions;
 
-  if (EndsWith(mime_type, "/*", false)) {
+  if (base::EndsWith(mime_type, "/*", false)) {
     std::string leading_mime_type = mime_type.substr(0, mime_type.length() - 1);
 
     // Find the matching StandardType from within kStandardTypes, or fall

@@ -199,7 +199,7 @@ bool IsLocalHost(const std::string& host) {
 }
 
 bool IsTestHost(const std::string& host) {
-  return EndsWith(host, ".test", false);
+  return base::EndsWith(host, ".test", false);
 }
 
 bool HostIsUsedBySomeTestsToGenerateError(const std::string& host) {

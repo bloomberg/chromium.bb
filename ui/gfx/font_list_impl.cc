@@ -44,7 +44,7 @@ FontListImpl::FontListImpl(const std::string& font_description_string)
       font_size_(-1) {
   DCHECK(!font_description_string.empty());
   // DCHECK description string ends with "px" for size in pixel.
-  DCHECK(EndsWith(font_description_string, "px", true));
+  DCHECK(base::EndsWith(font_description_string, "px", true));
 }
 
 FontListImpl::FontListImpl(const std::vector<std::string>& font_names,

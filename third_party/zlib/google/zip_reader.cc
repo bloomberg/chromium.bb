@@ -131,7 +131,7 @@ ZipReader::EntryInfo::EntryInfo(const std::string& file_name_in_zip,
   original_size_ = raw_file_info.uncompressed_size;
 
   // Directory entries in zip files end with "/".
-  is_directory_ = EndsWith(file_name_in_zip, "/", false);
+  is_directory_ = base::EndsWith(file_name_in_zip, "/", false);
 
   // Check the file name here for directory traversal issues.
   is_unsafe_ = file_path_.ReferencesParent();

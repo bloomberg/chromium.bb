@@ -1152,7 +1152,7 @@ DWORD WiFiServiceImpl::FindAdapterIndexMapByGUID(
     error = GetInterfaceInfo(interface_info, &buffer_length);
     if (error == ERROR_SUCCESS) {
       for (int adapter = 0; adapter < interface_info->NumAdapters; ++adapter) {
-        if (EndsWith(
+        if (base::EndsWith(
                 interface_info->Adapter[adapter].Name, guid_string, false)) {
           *adapter_index_map = interface_info->Adapter[adapter];
           break;

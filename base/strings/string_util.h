@@ -330,12 +330,24 @@ BASE_EXPORT bool LowerCaseEqualsASCII(const char16* a_begin,
 BASE_EXPORT bool EqualsASCII(const string16& a, const StringPiece& b);
 
 // Returns true if str starts with search, or false otherwise.
+// TODO(brettw) the case sensitive flag makes callsites difficult to read.
+// Consider splitting this out in two variants (few callers want
+// case-insensitive compares) or use an enum that makes this more explicit.
 BASE_EXPORT bool StartsWithASCII(const std::string& str,
                                  const std::string& search,
                                  bool case_sensitive);
 BASE_EXPORT bool StartsWith(const base::string16& str,
                             const base::string16& search,
                             bool case_sensitive);
+
+// Returns true if str ends with search, or false otherwise.
+// TODO(brettw) case sensitive flag confusion, see StartsWith above.
+BASE_EXPORT bool EndsWith(const std::string& str,
+                          const std::string& search,
+                          bool case_sensitive);
+BASE_EXPORT bool EndsWith(const base::string16& str,
+                          const base::string16& search,
+                          bool case_sensitive);
 
 }  // namespace base
 
@@ -346,15 +358,6 @@ BASE_EXPORT bool StartsWith(const base::string16& str,
 #else
 #error Define string operations appropriately for your platform
 #endif
-
-// Returns true if str ends with search, or false otherwise.
-BASE_EXPORT bool EndsWith(const std::string& str,
-                          const std::string& search,
-                          bool case_sensitive);
-BASE_EXPORT bool EndsWith(const base::string16& str,
-                          const base::string16& search,
-                          bool case_sensitive);
-
 
 // Determines the type of ASCII character, independent of locale (the C
 // library versions will change based on locale).

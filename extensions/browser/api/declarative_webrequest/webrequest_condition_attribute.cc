@@ -424,7 +424,7 @@ bool HeaderMatcher::StringMatchTest::Matches(
     case kPrefix:
       return base::StartsWithASCII(str, data_, case_sensitive_);
     case kSuffix:
-      return EndsWith(str, data_, case_sensitive_);
+      return base::EndsWith(str, data_, case_sensitive_);
     case kEquals:
       return str.size() == data_.size() &&
              base::StartsWithASCII(str, data_, case_sensitive_);

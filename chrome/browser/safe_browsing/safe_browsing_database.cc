@@ -1792,7 +1792,7 @@ void SafeBrowsingDatabaseNew::RecordFileSizeHistogram(
 
   // Default to logging DB sizes unless |file_path| points at PrefixSet storage.
   std::string histogram_name("SB2.DatabaseSizeKilobytes");
-  if (EndsWith(filename, kPrefixSetFileSuffix, true)) {
+  if (base::EndsWith(filename, kPrefixSetFileSuffix, true)) {
     histogram_name = "SB2.PrefixSetSizeKilobytes";
     // Clear the PrefixSet suffix to have the histogram suffix selector below
     // work the same for PrefixSet-based storage as it does for simple safe
@@ -1805,21 +1805,21 @@ void SafeBrowsingDatabaseNew::RecordFileSizeHistogram(
 
   // Changes to histogram suffixes below need to be mirrored in the
   // SafeBrowsingLists suffix enum in histograms.xml.
-  if (EndsWith(filename, kBrowseDBFile, true))
+  if (base::EndsWith(filename, kBrowseDBFile, true))
     histogram_name.append(".Browse");
-  else if (EndsWith(filename, kDownloadDBFile, true))
+  else if (base::EndsWith(filename, kDownloadDBFile, true))
     histogram_name.append(".Download");
-  else if (EndsWith(filename, kCsdWhitelistDBFile, true))
+  else if (base::EndsWith(filename, kCsdWhitelistDBFile, true))
     histogram_name.append(".CsdWhitelist");
-  else if (EndsWith(filename, kDownloadWhitelistDBFile, true))
+  else if (base::EndsWith(filename, kDownloadWhitelistDBFile, true))
     histogram_name.append(".DownloadWhitelist");
-  else if (EndsWith(filename, kInclusionWhitelistDBFile, true))
+  else if (base::EndsWith(filename, kInclusionWhitelistDBFile, true))
     histogram_name.append(".InclusionWhitelist");
-  else if (EndsWith(filename, kExtensionBlacklistDBFile, true))
+  else if (base::EndsWith(filename, kExtensionBlacklistDBFile, true))
     histogram_name.append(".ExtensionBlacklist");
-  else if (EndsWith(filename, kIPBlacklistDBFile, true))
+  else if (base::EndsWith(filename, kIPBlacklistDBFile, true))
     histogram_name.append(".IPBlacklist");
-  else if (EndsWith(filename, kUnwantedSoftwareDBFile, true))
+  else if (base::EndsWith(filename, kUnwantedSoftwareDBFile, true))
     histogram_name.append(".UnwantedSoftware");
   else
     NOTREACHED();  // Add support for new lists above.

@@ -1084,7 +1084,7 @@ void HostProcess::ApplyHostDomainPolicy() {
       ShutdownHost(kInvalidHostDomainExitCode);
     }
 
-    if (!EndsWith(host_owner_, std::string("@") + host_domain_, false)) {
+    if (!base::EndsWith(host_owner_, std::string("@") + host_domain_, false)) {
       LOG(ERROR) << "The host domain does not match the policy.";
       ShutdownHost(kInvalidHostDomainExitCode);
     }

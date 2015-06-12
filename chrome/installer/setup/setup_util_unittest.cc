@@ -503,5 +503,5 @@ TEST(SetupUtilTest, GetRegistrationDataCommandKey) {
   UpdatingAppRegistrationData reg_data(app_guid);
   base::string16 key =
       installer::GetRegistrationDataCommandKey(reg_data, L"test_name");
-  EXPECT_TRUE(EndsWith(key, app_guid + L"\\Commands\\test_name", true));
+  EXPECT_TRUE(base::EndsWith(key, app_guid + L"\\Commands\\test_name", true));
 }

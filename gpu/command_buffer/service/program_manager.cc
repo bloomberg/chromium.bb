@@ -841,7 +841,7 @@ void Program::GetCorrectedUniformData(
       found = uniform->findInfoByMappedName(name, &info, original_name);
     if (found) {
       const std::string kArraySpec("[0]");
-      if (info->arraySize > 0 && !EndsWith(name, kArraySpec, true)) {
+      if (info->arraySize > 0 && !base::EndsWith(name, kArraySpec, true)) {
         *corrected_name = name + kArraySpec;
         *original_name += kArraySpec;
       } else {

@@ -299,7 +299,7 @@ TEST_F(ExtensionProtocolTest, ResourceRequestResponseHeaders) {
     std::string etag;
     request->GetResponseHeaderByName("ETag", &etag);
     EXPECT_TRUE(base::StartsWithASCII(etag, "\"", false));
-    EXPECT_TRUE(EndsWith(etag, "\"", false));
+    EXPECT_TRUE(base::EndsWith(etag, "\"", false));
 
     std::string revalidation_header;
     request->GetResponseHeaderByName("cache-control", &revalidation_header);

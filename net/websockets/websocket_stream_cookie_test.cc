@@ -35,7 +35,7 @@ class TestBase : public WebSocketStreamCreateTestBase {
     // We assume cookie_header ends with CRLF if not empty, as
     // WebSocketStandardRequestWithCookies requires. Use AddCRLFIfNotEmpty
     // in a call site.
-    CHECK(cookie_header.empty() || EndsWith(cookie_header, "\r\n", true));
+    CHECK(cookie_header.empty() || base::EndsWith(cookie_header, "\r\n", true));
 
     url_request_context_host_.SetExpectations(
         WebSocketStandardRequestWithCookies(url.path(), url.host(), origin,

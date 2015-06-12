@@ -1101,7 +1101,7 @@ base::string16 ExtractShortcutNameFromProperties(
         dist->GetShortcutName(BrowserDistribution::SHORTCUT_CHROME);
   }
 
-  if (!EndsWith(shortcut_name, installer::kLnkExt, false))
+  if (!base::EndsWith(shortcut_name, installer::kLnkExt, false))
     shortcut_name.append(installer::kLnkExt);
 
   return shortcut_name;

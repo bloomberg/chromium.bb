@@ -1444,7 +1444,7 @@ void HttpNetworkTransaction::RecordSSLFallbackMetrics(int result) {
     return;
 
   const std::string& host = request_->url.host();
-  bool is_google = EndsWith(host, "google.com", true) &&
+  bool is_google = base::EndsWith(host, "google.com", true) &&
                    (host.size() == 10 || host[host.size() - 11] == '.');
   if (is_google) {
     // Some fraction of successful connections use the fallback, but only due to

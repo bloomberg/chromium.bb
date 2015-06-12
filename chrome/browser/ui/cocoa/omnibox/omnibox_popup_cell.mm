@@ -527,7 +527,7 @@ NSAttributedString* CreateClassifiedAttributedString(
       &contentsStartIndex);
   // Ignore invalid state.
   if (!base::StartsWith(match.fill_into_edit, inputText, true) ||
-      !EndsWith(match.fill_into_edit, match.contents, true) ||
+      !base::EndsWith(match.fill_into_edit, match.contents, true) ||
       ((size_t)contentsStartIndex >= inputText.length())) {
     return 0;
   }

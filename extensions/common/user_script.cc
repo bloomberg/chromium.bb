@@ -51,8 +51,8 @@ int UserScript::GenerateUserScriptID() {
 
 bool UserScript::IsURLUserScript(const GURL& url,
                                  const std::string& mime_type) {
-  return EndsWith(url.ExtractFileName(), kFileExtension, false) &&
-      mime_type != "text/html";
+  return base::EndsWith(url.ExtractFileName(), kFileExtension, false) &&
+         mime_type != "text/html";
 }
 
 // static

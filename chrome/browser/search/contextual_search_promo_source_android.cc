@@ -90,13 +90,13 @@ std::string ContextualSearchPromoSourceAndroid::GetSource() const {
 std::string ContextualSearchPromoSourceAndroid::GetMimeType(
     const std::string& path_and_query) const {
   std::string path(GURL("chrome://host/" + path_and_query).path());
-  if (EndsWith(path, ".js", false)) return "application/javascript";
-  if (EndsWith(path, ".png", false)) return "image/png";
-  if (EndsWith(path, ".css", false)) return "text/css";
-  if (EndsWith(path, ".html", false)) return "text/html";
-  if (EndsWith(path, ".woff", false)) return "font/woff";
-  if (EndsWith(path, ".woff2", false)) return "font/woff2";
-  return "";
+  if (base::EndsWith(path, ".js", false)) return "application/javascript";
+  if (base::EndsWith(path, ".png", false)) return "image/png";
+  if (base::EndsWith(path, ".css", false)) return "text/css";
+  if (base::EndsWith(path, ".html", false)) return "text/html";
+  if (base::EndsWith(path, ".woff", false)) return "font/woff";
+  if (base::EndsWith(path, ".woff2", false)) return "font/woff2";
+  return std::string();
 }
 
 bool ContextualSearchPromoSourceAndroid::ShouldDenyXFrameOptions() const {

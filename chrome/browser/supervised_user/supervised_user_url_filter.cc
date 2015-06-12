@@ -239,7 +239,7 @@ bool SupervisedUserURLFilter::HostMatchesPattern(const std::string& host,
                                                  const std::string& pattern) {
   std::string trimmed_pattern = pattern;
   std::string trimmed_host = host;
-  if (EndsWith(pattern, ".*", true)) {
+  if (base::EndsWith(pattern, ".*", true)) {
     size_t registry_length = GetRegistryLength(
         trimmed_host, EXCLUDE_UNKNOWN_REGISTRIES, EXCLUDE_PRIVATE_REGISTRIES);
     // A host without a known registry part does not match.
@@ -258,7 +258,7 @@ bool SupervisedUserURLFilter::HostMatchesPattern(const std::string& host,
     // pattern.
     if (trimmed_pattern.empty() ||
         trimmed_pattern.find('*') != std::string::npos ||
-        !EndsWith(trimmed_host, trimmed_pattern, true)) {
+        !base::EndsWith(trimmed_host, trimmed_pattern, true)) {
       return false;
     }
 

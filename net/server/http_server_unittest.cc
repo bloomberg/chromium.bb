@@ -443,7 +443,7 @@ TEST_F(HttpServerTest, Send200) {
   std::string response;
   ASSERT_TRUE(client.ReadResponse(&response));
   ASSERT_TRUE(base::StartsWithASCII(response, "HTTP/1.1 200 OK", true));
-  ASSERT_TRUE(EndsWith(response, "Response!", true));
+  ASSERT_TRUE(base::EndsWith(response, "Response!", true));
 }
 
 TEST_F(HttpServerTest, SendRaw) {
@@ -592,7 +592,7 @@ TEST_F(HttpServerTest, MultipleRequestsOnSameConnection) {
   std::string response1;
   ASSERT_TRUE(client.ReadResponse(&response1));
   ASSERT_TRUE(base::StartsWithASCII(response1, "HTTP/1.1 200 OK", true));
-  ASSERT_TRUE(EndsWith(response1, "Content for /test", true));
+  ASSERT_TRUE(base::EndsWith(response1, "Content for /test", true));
 
   client.Send("GET /test2 HTTP/1.1\r\n\r\n");
   ASSERT_TRUE(RunUntilRequestsReceived(2));
@@ -613,7 +613,7 @@ TEST_F(HttpServerTest, MultipleRequestsOnSameConnection) {
   std::string response3;
   ASSERT_TRUE(client.ReadResponse(&response3));
   ASSERT_TRUE(base::StartsWithASCII(response3, "HTTP/1.1 200 OK", true));
-  ASSERT_TRUE(EndsWith(response3, "Content for /test3", true));
+  ASSERT_TRUE(base::EndsWith(response3, "Content for /test3", true));
 }
 
 class CloseOnConnectHttpServerTest : public HttpServerTest {

@@ -42,8 +42,8 @@ bool ContainsDataReductionProxyDefaultHostSuffix(
     const net::ProxyList& proxy_list) {
   for (const net::ProxyServer& proxy : proxy_list.GetAll()) {
     if (proxy.is_valid() && !proxy.is_direct() &&
-        EndsWith(proxy.host_port_pair().host(),
-                 kDataReductionProxyDefaultHostSuffix, true)) {
+        base::EndsWith(proxy.host_port_pair().host(),
+                       kDataReductionProxyDefaultHostSuffix, true)) {
       return true;
     }
   }

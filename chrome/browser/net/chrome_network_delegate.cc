@@ -189,7 +189,7 @@ bool CanRequestBeDeltaEncoded(const net::URLRequest* request) {
     const char *suffix = kEligibleMasks[i].suffix;
     if (prefix && !base::StartsWithASCII(mime_type, prefix, kCaseSensitive))
       continue;
-    if (suffix && !EndsWith(mime_type, suffix, kCaseSensitive))
+    if (suffix && !base::EndsWith(mime_type, suffix, kCaseSensitive))
       continue;
     return true;
   }

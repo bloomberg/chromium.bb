@@ -196,8 +196,8 @@ void It2MeHost::FinishConnect() {
 
   // Check the host domain policy.
   if (!required_host_domain_.empty() &&
-      !EndsWith(xmpp_server_config_.username,
-                std::string("@") + required_host_domain_, false)) {
+      !base::EndsWith(xmpp_server_config_.username,
+                      std::string("@") + required_host_domain_, false)) {
     SetState(kInvalidDomainError);
     return;
   }

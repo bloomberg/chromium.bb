@@ -115,7 +115,7 @@ void BuiltinProvider::Start(const AutocompleteInput& input,
                            false) &&
           base::StartsWith(blank_host, host, false) &&
           (url.path().length() <= 1) &&
-          !EndsWith(text, base::ASCIIToUTF16("/"), false)) {
+          !base::EndsWith(text, base::ASCIIToUTF16("/"), false)) {
         ACMatchClassifications styles;
         styles.push_back(ACMatchClassification(0, kMatch));
         base::string16 match = base::ASCIIToUTF16(url::kAboutBlankURL);

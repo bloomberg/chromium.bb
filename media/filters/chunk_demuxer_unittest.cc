@@ -449,7 +449,7 @@ class ChunkDemuxerTest : public ::testing::Test {
       block_info.flags = 0;
       block_info.duration = 0;
 
-      if (EndsWith(timestamp_str, "K", true)) {
+      if (base::EndsWith(timestamp_str, "K", true)) {
         block_info.flags = kWebMFlagKeyframe;
         // Remove the "K" off of the token.
         timestamp_str = timestamp_str.substr(0, timestamps[i].length() - 1);
@@ -1082,7 +1082,7 @@ class ChunkDemuxerTest : public ::testing::Test {
         ss << "K";
 
       // Handle preroll buffers.
-      if (EndsWith(timestamps[i], "P", true)) {
+      if (base::EndsWith(timestamps[i], "P", true)) {
         ASSERT_EQ(kInfiniteDuration(), buffer->discard_padding().first);
         ASSERT_EQ(base::TimeDelta(), buffer->discard_padding().second);
         ss << "P";

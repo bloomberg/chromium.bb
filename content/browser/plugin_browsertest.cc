@@ -526,9 +526,9 @@ class TestResourceDispatcherHostDelegate
                          ResourceResponse* response,
                          IPC::Sender* sender) override {
     // The URL below comes from plugin_geturl_test.cc.
-    if (!EndsWith(request->url().spec(),
-                 "npapi/plugin_ref_target_page.html",
-                 true)) {
+    if (!base::EndsWith(request->url().spec(),
+                        "npapi/plugin_ref_target_page.html",
+                        true)) {
       return;
     }
     net::HttpRequestHeaders headers;

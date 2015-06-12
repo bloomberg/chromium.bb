@@ -109,19 +109,19 @@ std::string WebUIIOSDataSourceImpl::GetSource() const {
 }
 
 std::string WebUIIOSDataSourceImpl::GetMimeType(const std::string& path) const {
-  if (EndsWith(path, ".js", false))
+  if (base::EndsWith(path, ".js", false))
     return "application/javascript";
 
-  if (EndsWith(path, ".json", false))
+  if (base::EndsWith(path, ".json", false))
     return "application/json";
 
-  if (EndsWith(path, ".pdf", false))
+  if (base::EndsWith(path, ".pdf", false))
     return "application/pdf";
 
-  if (EndsWith(path, ".css", false))
+  if (base::EndsWith(path, ".css", false))
     return "text/css";
 
-  if (EndsWith(path, ".svg", false))
+  if (base::EndsWith(path, ".svg", false))
     return "image/svg+xml";
 
   return "text/html";

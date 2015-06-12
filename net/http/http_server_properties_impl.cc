@@ -89,7 +89,7 @@ void HttpServerPropertiesImpl::InitializeAlternativeServiceServers(
       for (AlternativeServiceMap::const_iterator it =
                alternative_service_map_.begin();
            it != alternative_service_map_.end(); ++it) {
-        if (EndsWith(it->first.host(), canonical_suffixes_[i], false)) {
+        if (base::EndsWith(it->first.host(), canonical_suffixes_[i], false)) {
           canonical_host_to_origin_map_[canonical_host] = it->first;
           break;
         }
@@ -226,7 +226,7 @@ std::string HttpServerPropertiesImpl::GetCanonicalSuffix(
   // suffix.
   for (size_t i = 0; i < canonical_suffixes_.size(); ++i) {
     std::string canonical_suffix = canonical_suffixes_[i];
-    if (EndsWith(host, canonical_suffixes_[i], false)) {
+    if (base::EndsWith(host, canonical_suffixes_[i], false)) {
       return canonical_suffix;
     }
   }
@@ -315,7 +315,7 @@ void HttpServerPropertiesImpl::SetAlternativeService(
   // canonical host.
   for (size_t i = 0; i < canonical_suffixes_.size(); ++i) {
     std::string canonical_suffix = canonical_suffixes_[i];
-    if (EndsWith(origin.host(), canonical_suffixes_[i], false)) {
+    if (base::EndsWith(origin.host(), canonical_suffixes_[i], false)) {
       HostPortPair canonical_host(canonical_suffix, origin.port());
       canonical_host_to_origin_map_[canonical_host] = origin;
       break;
@@ -557,7 +557,7 @@ HttpServerPropertiesImpl::CanonicalHostMap::const_iterator
 HttpServerPropertiesImpl::GetCanonicalHost(HostPortPair server) const {
   for (size_t i = 0; i < canonical_suffixes_.size(); ++i) {
     std::string canonical_suffix = canonical_suffixes_[i];
-    if (EndsWith(server.host(), canonical_suffixes_[i], false)) {
+    if (base::EndsWith(server.host(), canonical_suffixes_[i], false)) {
       HostPortPair canonical_host(canonical_suffix, server.port());
       return canonical_host_to_origin_map_.find(canonical_host);
     }

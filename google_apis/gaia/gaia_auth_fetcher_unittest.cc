@@ -594,7 +594,8 @@ TEST_F(GaiaAuthFetcherTest, OAuthLoginTokenWithCookies) {
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   EXPECT_TRUE(NULL != fetcher);
   EXPECT_EQ(net::LOAD_NORMAL, fetcher->GetLoadFlags());
-  EXPECT_FALSE(EndsWith(fetcher->upload_data(), "device_type=chrome", true));
+  EXPECT_FALSE(base::EndsWith(fetcher->upload_data(), "device_type=chrome",
+                              true));
 }
 
 TEST_F(GaiaAuthFetcherTest, OAuthLoginTokenWithCookies_DeviceId) {
@@ -607,7 +608,8 @@ TEST_F(GaiaAuthFetcherTest, OAuthLoginTokenWithCookies_DeviceId) {
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   EXPECT_TRUE(NULL != fetcher);
   EXPECT_EQ(net::LOAD_NORMAL, fetcher->GetLoadFlags());
-  EXPECT_TRUE(EndsWith(fetcher->upload_data(), "device_type=chrome", true));
+  EXPECT_TRUE(base::EndsWith(fetcher->upload_data(), "device_type=chrome",
+                             true));
   net::HttpRequestHeaders extra_request_headers;
   fetcher->GetExtraRequestHeaders(&extra_request_headers);
   std::string device_id;

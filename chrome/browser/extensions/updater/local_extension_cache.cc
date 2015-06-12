@@ -420,7 +420,8 @@ void LocalExtensionCache::BackendCheckCacheContentsInternal(
     std::string id;
     std::string version;
     std::string expected_hash;
-    if (EndsWith(basename, kCRXFileExtension, false /* case-sensitive */)) {
+    if (base::EndsWith(basename, kCRXFileExtension,
+                       false /* case-sensitive */)) {
       size_t n = basename.find('-');
       if (n != std::string::npos && n + 1 < basename.size() - 4) {
         id = basename.substr(0, n);

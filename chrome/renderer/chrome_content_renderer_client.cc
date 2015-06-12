@@ -1019,8 +1019,8 @@ bool ChromeContentRendererClient::IsNaClAllowed(
   bool is_photo_app =
       // Whitelisted apps must be served over https.
       app_url.SchemeIsCryptographic() && manifest_url.SchemeIsCryptographic() &&
-      (EndsWith(app_url_host, "plus.google.com", false) ||
-       EndsWith(app_url_host, "plus.sandbox.google.com", false)) &&
+      (base::EndsWith(app_url_host, "plus.google.com", false) ||
+       base::EndsWith(app_url_host, "plus.sandbox.google.com", false)) &&
       manifest_url.DomainIs("ssl.gstatic.com") &&
       (manifest_url_path.find("s2/oz/nacl/") == 1 ||
        manifest_url_path.find("photos/nacl/") == 1);
@@ -1033,9 +1033,9 @@ bool ChromeContentRendererClient::IsNaClAllowed(
       // Whitelisted apps must be served over secure scheme.
       app_url.SchemeIsCryptographic() && manifest_url.SchemeIsFileSystem() &&
       manifest_url.inner_url()->SchemeIsCryptographic() &&
-      (EndsWith(app_url_host, "talkgadget.google.com", false) ||
-       EndsWith(app_url_host, "plus.google.com", false) ||
-       EndsWith(app_url_host, "plus.sandbox.google.com", false)) &&
+      (base::EndsWith(app_url_host, "talkgadget.google.com", false) ||
+       base::EndsWith(app_url_host, "plus.google.com", false) ||
+       base::EndsWith(app_url_host, "plus.sandbox.google.com", false)) &&
       // The manifest must be loaded from the host's FileSystem.
       (manifest_fs_host == app_url_host);
 
@@ -1509,9 +1509,9 @@ bool ChromeContentRendererClient::AllowPepperMediaStreamAPI(
   // these APIs are public and stable.
   std::string url_host = url.host();
   if (url.SchemeIs("https") &&
-      (EndsWith(url_host, "talkgadget.google.com", false) ||
-       EndsWith(url_host, "plus.google.com", false) ||
-       EndsWith(url_host, "plus.sandbox.google.com", false)) &&
+      (base::EndsWith(url_host, "talkgadget.google.com", false) ||
+       base::EndsWith(url_host, "plus.google.com", false) ||
+       base::EndsWith(url_host, "plus.sandbox.google.com", false)) &&
       base::StartsWithASCII(url.path(), "/hangouts/", false)) {
     return true;
   }

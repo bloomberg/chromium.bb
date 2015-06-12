@@ -359,17 +359,17 @@ static std::string PathWithoutParams(const std::string& path) {
 }
 
 static std::string GetMimeType(const std::string& filename) {
-  if (EndsWith(filename, ".html", false)) {
+  if (base::EndsWith(filename, ".html", false)) {
     return "text/html";
-  } else if (EndsWith(filename, ".css", false)) {
+  } else if (base::EndsWith(filename, ".css", false)) {
     return "text/css";
-  } else if (EndsWith(filename, ".js", false)) {
+  } else if (base::EndsWith(filename, ".js", false)) {
     return "application/javascript";
-  } else if (EndsWith(filename, ".png", false)) {
+  } else if (base::EndsWith(filename, ".png", false)) {
     return "image/png";
-  } else if (EndsWith(filename, ".gif", false)) {
+  } else if (base::EndsWith(filename, ".gif", false)) {
     return "image/gif";
-  } else if (EndsWith(filename, ".json", false)) {
+  } else if (base::EndsWith(filename, ".json", false)) {
     return "application/json";
   }
   LOG(ERROR) << "GetMimeType doesn't know mime type for: "

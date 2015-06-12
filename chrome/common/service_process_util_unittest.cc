@@ -63,7 +63,7 @@ TEST(ServiceProcessUtilTest, ScopedVersionedName) {
   std::string test_str = "test";
   std::string scoped_name = GetServiceProcessScopedVersionedName(test_str);
   chrome::VersionInfo version_info;
-  EXPECT_TRUE(EndsWith(scoped_name, test_str, true));
+  EXPECT_TRUE(base::EndsWith(scoped_name, test_str, true));
   EXPECT_NE(std::string::npos, scoped_name.find(version_info.Version()));
 }
 

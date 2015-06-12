@@ -65,7 +65,7 @@ bool VerifyCredentials(
   std::string common_name = verification_context->GetCommonName();
   std::string translated_mac;
   base::RemoveChars(connected_mac, ":", &translated_mac);
-  if (!EndsWith(common_name, translated_mac, false)) {
+  if (!base::EndsWith(common_name, translated_mac, false)) {
     LOG(ERROR) << kErrorPrefix << "MAC addresses don't match.";
     return false;
   }

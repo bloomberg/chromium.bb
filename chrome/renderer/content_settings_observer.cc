@@ -107,7 +107,7 @@ static const char kDotHTML[] = ".html";
 static const char kGoogleDotCom[] = "google.com";
 
 static bool IsHostInDomain(const std::string& host, const std::string& domain) {
-  return (EndsWith(host, domain, false) &&
+  return (base::EndsWith(host, domain, false) &&
           (host.length() == domain.length() ||
            (host.length() > domain.length() &&
             host[host.length() - domain.length() - 1] == '.')));
@@ -509,7 +509,7 @@ bool ContentSettingsObserver::allowDisplayingInsecureContent(
   }
 
   GURL resource_gurl(resource_url);
-  if (EndsWith(resource_gurl.path(), kDotHTML, false))
+  if (base::EndsWith(resource_gurl.path(), kDotHTML, false))
     SendInsecureContentSignal(INSECURE_CONTENT_DISPLAY_HTML);
 
   if (allowed_per_settings || allow_displaying_insecure_content_)
@@ -564,7 +564,7 @@ bool ContentSettingsObserver::allowRunningInsecureContent(
     SendInsecureContentSignal(INSECURE_CONTENT_RUN_HOST_MAPS_GOOGLE);
   } else if (origin_host == kWWWDotYoutubeDotCom) {
     SendInsecureContentSignal(INSECURE_CONTENT_RUN_HOST_YOUTUBE);
-  } else if (EndsWith(origin_host, kDotGoogleUserContentDotCom, false)) {
+  } else if (base::EndsWith(origin_host, kDotGoogleUserContentDotCom, false)) {
     SendInsecureContentSignal(INSECURE_CONTENT_RUN_HOST_GOOGLEUSERCONTENT);
   }
 
@@ -572,11 +572,11 @@ bool ContentSettingsObserver::allowRunningInsecureContent(
   if (resource_gurl.host() == kWWWDotYoutubeDotCom)
     SendInsecureContentSignal(INSECURE_CONTENT_RUN_TARGET_YOUTUBE);
 
-  if (EndsWith(resource_gurl.path(), kDotJS, false))
+  if (base::EndsWith(resource_gurl.path(), kDotJS, false))
     SendInsecureContentSignal(INSECURE_CONTENT_RUN_JS);
-  else if (EndsWith(resource_gurl.path(), kDotCSS, false))
+  else if (base::EndsWith(resource_gurl.path(), kDotCSS, false))
     SendInsecureContentSignal(INSECURE_CONTENT_RUN_CSS);
-  else if (EndsWith(resource_gurl.path(), kDotSWF, false))
+  else if (base::EndsWith(resource_gurl.path(), kDotSWF, false))
     SendInsecureContentSignal(INSECURE_CONTENT_RUN_SWF);
 
   if (!allow_running_insecure_content_ && !allowed_per_settings) {

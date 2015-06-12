@@ -25,15 +25,15 @@ IframeSource::~IframeSource() {
 std::string IframeSource::GetMimeType(
     const std::string& path_and_query) const {
   std::string path(GURL("chrome-search://host/" + path_and_query).path());
-  if (EndsWith(path, ".js", false))
+  if (base::EndsWith(path, ".js", false))
     return "application/javascript";
-  if (EndsWith(path, ".png", false))
+  if (base::EndsWith(path, ".png", false))
     return "image/png";
-  if (EndsWith(path, ".css", false))
+  if (base::EndsWith(path, ".css", false))
     return "text/css";
-  if (EndsWith(path, ".html", false))
+  if (base::EndsWith(path, ".html", false))
     return "text/html";
-  return "";
+  return std::string();
 }
 
 bool IframeSource::ShouldServiceRequest(

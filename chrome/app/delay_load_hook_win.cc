@@ -28,7 +28,7 @@ FARPROC OnPreLoadLibrary(DelayLoadInfo* info) {
   // and bind to the real DLL.
   std::string dll_name(info->szDll);
   const char kDelaySuffix[] = "-delay.dll";
-  if (EndsWith(dll_name, kDelaySuffix, false)) {
+  if (base::EndsWith(dll_name, kDelaySuffix, false)) {
     // Trim the "-delay.dll" suffix from the string.
     dll_name.resize(dll_name.length() - (sizeof(kDelaySuffix) - 1));
     dll_name.append(".dll");

@@ -96,9 +96,9 @@ base::string16 CombineExperimentLabels(const base::string16& variation_labels,
                                        const base::string16& other_labels) {
   const base::string16 separator(1, google_update::kExperimentLabelSeparator);
   DCHECK(!base::StartsWith(variation_labels, separator, false));
-  DCHECK(!EndsWith(variation_labels, separator, false));
+  DCHECK(!base::EndsWith(variation_labels, separator, false));
   DCHECK(!base::StartsWith(other_labels, separator, false));
-  DCHECK(!EndsWith(other_labels, separator, false));
+  DCHECK(!base::EndsWith(other_labels, separator, false));
   // Note that if either label is empty, a separator is not necessary.
   base::string16 combined_labels = other_labels;
   if (!other_labels.empty() && !variation_labels.empty())

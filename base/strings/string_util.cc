@@ -528,8 +528,6 @@ bool StartsWith(const string16& str,
                     CaseInsensitiveCompare<char16>());
 }
 
-}  // namespace base
-
 template <typename STR>
 bool EndsWithT(const STR& str, const STR& search, bool case_sensitive) {
   size_t str_length = str.length();
@@ -552,6 +550,8 @@ bool EndsWith(const string16& str, const string16& search,
               bool case_sensitive) {
   return EndsWithT(str, search, case_sensitive);
 }
+
+}  // namespace base
 
 static const char* const kByteStringsUnlocalized[] = {
   " B",

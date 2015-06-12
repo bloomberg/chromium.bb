@@ -39,7 +39,7 @@ bool IsValidObjectPath(const std::string& value) {
   }
 
   // A trailing '/' character is not allowed unless the path is the root path.
-  if (value.size() > 1 && EndsWith(value, "/", kCaseSensitive))
+  if (value.size() > 1 && base::EndsWith(value, "/", kCaseSensitive))
     return false;
 
   return true;

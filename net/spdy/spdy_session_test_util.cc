@@ -28,9 +28,9 @@ void SpdySessionTestTaskObserver::WillProcessTask(
 
 void SpdySessionTestTaskObserver::DidProcessTask(
     const base::PendingTask& pending_task) {
-  if (EndsWith(pending_task.posted_from.file_name(), file_name_, true) &&
-      EndsWith(pending_task.posted_from.function_name(), function_name_,
-               true)) {
+  if (base::EndsWith(pending_task.posted_from.file_name(), file_name_, true) &&
+      base::EndsWith(pending_task.posted_from.function_name(), function_name_,
+                     true)) {
     ++executed_count_;
   }
 }

@@ -794,7 +794,7 @@ bool HasGoogleHost(const GURL& url) {
   };
   const std::string& host = url.host();
   for (const char* suffix : kGoogleHostSuffixes) {
-    if (EndsWith(host, suffix, false))
+    if (base::EndsWith(host, suffix, false))
       return true;
   }
   return false;

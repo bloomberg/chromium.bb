@@ -347,7 +347,7 @@ std::string ChromeExtensionsClient::GetWebstoreBaseURL() const {
     gallery_prefix =
         base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
             switches::kAppsGalleryURL);
-  if (EndsWith(gallery_prefix, "/", true))
+  if (base::EndsWith(gallery_prefix, "/", true))
     gallery_prefix = gallery_prefix.substr(0, gallery_prefix.length() - 1);
   return gallery_prefix;
 }

@@ -68,12 +68,12 @@ std::string GetMultiPartBoundary(const std::string& headers) {
 }
 
 bool IsValidContentType(const std::string& type) {
-  return (EndsWith(type, "/pdf", false) ||
-          EndsWith(type, ".pdf", false) ||
-          EndsWith(type, "/x-pdf", false) ||
-          EndsWith(type, "/*", false) ||
-          EndsWith(type, "/acrobat", false) ||
-          EndsWith(type, "/unknown", false));
+  return (base::EndsWith(type, "/pdf", false) ||
+          base::EndsWith(type, ".pdf", false) ||
+          base::EndsWith(type, "/x-pdf", false) ||
+          base::EndsWith(type, "/*", false) ||
+          base::EndsWith(type, "/acrobat", false) ||
+          base::EndsWith(type, "/unknown", false));
 }
 
 }  // namespace

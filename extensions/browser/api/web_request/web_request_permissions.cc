@@ -30,7 +30,7 @@ bool IsSensitiveURL(const GURL& url) {
   const std::string host = url.host();
   const char kGoogleCom[] = ".google.com";
   const char kClient[] = "clients";
-  if (EndsWith(host, kGoogleCom, true)) {
+  if (base::EndsWith(host, kGoogleCom, true)) {
     // Check for "clients[0-9]*.google.com" hosts.
     // This protects requests to several internal services such as sync,
     // extension update pings, captive portal detection, fraudulent certificate
@@ -50,7 +50,7 @@ bool IsSensitiveURL(const GURL& url) {
     // others.
     sensitive_chrome_url =
         sensitive_chrome_url ||
-        EndsWith(url.host(), ".clients.google.com", true) ||
+        base::EndsWith(url.host(), ".clients.google.com", true) ||
         url.host() == "sb-ssl.google.com" ||
         (url.host() == "chrome.google.com" &&
          base::StartsWithASCII(url.path(), "/webstore", true));

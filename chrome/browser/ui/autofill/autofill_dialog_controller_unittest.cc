@@ -1401,15 +1401,15 @@ TEST_F(AutofillDialogControllerTest, BillingVsShippingStreetAddress) {
   EXPECT_TRUE(base::StartsWith(form_structure()->field(0)->value,
                                shipping_profile.GetRawInfo(ADDRESS_HOME_LINE1),
                                true));
-  EXPECT_TRUE(EndsWith(form_structure()->field(0)->value,
-                       shipping_profile.GetRawInfo(ADDRESS_HOME_LINE2),
-                       true));
+  EXPECT_TRUE(base::EndsWith(form_structure()->field(0)->value,
+                             shipping_profile.GetRawInfo(ADDRESS_HOME_LINE2),
+                             true));
   EXPECT_TRUE(base::StartsWith(form_structure()->field(1)->value,
                                billing_profile.GetRawInfo(ADDRESS_HOME_LINE1),
                                true));
-  EXPECT_TRUE(EndsWith(form_structure()->field(1)->value,
-                       billing_profile.GetRawInfo(ADDRESS_HOME_LINE2),
-                       true));
+  EXPECT_TRUE(base::EndsWith(form_structure()->field(1)->value,
+                             billing_profile.GetRawInfo(ADDRESS_HOME_LINE2),
+                             true));
   // The textareas should be an exact match.
   EXPECT_EQ(shipping_profile.GetRawInfo(ADDRESS_HOME_STREET_ADDRESS),
             form_structure()->field(2)->value);

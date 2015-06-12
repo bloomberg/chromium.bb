@@ -124,7 +124,7 @@ bool HandleRequestCallback(
     const content::WebUIDataSource::GotDataCallback& callback) {
   // ChromeWebUIDataSource handles most requests except for the print preview
   // data.
-  if (!EndsWith(path, "/print.pdf", true))
+  if (!base::EndsWith(path, "/print.pdf", true))
     return false;
 
   // Print Preview data.

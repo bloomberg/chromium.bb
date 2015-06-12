@@ -204,7 +204,7 @@ void MemoryCache::ReadAndStoreFileContents(const char* filename) {
 
 FileData* MemoryCache::GetFileData(const std::string& filename) {
   Files::iterator fi = files_.end();
-  if (EndsWith(filename, ".html", true)) {
+  if (base::EndsWith(filename, ".html", true)) {
     fi = files_.find(filename.substr(0, filename.size() - 5) + ".http");
   }
   if (fi == files_.end())

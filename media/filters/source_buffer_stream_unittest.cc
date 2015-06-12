@@ -305,7 +305,7 @@ class SourceBufferStreamTest : public testing::Test {
       }
 
       // Handle preroll buffers.
-      if (EndsWith(timestamps[i], "P", true)) {
+      if (base::EndsWith(timestamps[i], "P", true)) {
         ASSERT_TRUE(buffer->is_key_frame());
         scoped_refptr<StreamParserBuffer> preroll_buffer;
         preroll_buffer.swap(buffer);
@@ -507,34 +507,34 @@ class SourceBufferStreamTest : public testing::Test {
         // Remove the "S(" off of the token.
         timestamps[i] = timestamps[i].substr(2, timestamps[i].length());
       }
-      if (splice_frame && EndsWith(timestamps[i], ")", true)) {
+      if (splice_frame && base::EndsWith(timestamps[i], ")", true)) {
         splice_frame = false;
         last_splice_frame = true;
         // Remove the ")" off of the token.
         timestamps[i] = timestamps[i].substr(0, timestamps[i].length() - 1);
       }
       // Handle config changes within the splice frame.
-      if (splice_frame && EndsWith(timestamps[i], "C", true)) {
+      if (splice_frame && base::EndsWith(timestamps[i], "C", true)) {
         splice_config_id++;
         CHECK(splice_config_id < stream_->audio_configs_.size() ||
               splice_config_id < stream_->video_configs_.size());
         // Remove the "C" off of the token.
         timestamps[i] = timestamps[i].substr(0, timestamps[i].length() - 1);
       }
-      if (EndsWith(timestamps[i], "K", true)) {
+      if (base::EndsWith(timestamps[i], "K", true)) {
         is_keyframe = true;
         // Remove the "K" off of the token.
         timestamps[i] = timestamps[i].substr(0, timestamps[i].length() - 1);
       }
       // Handle preroll buffers.
-      if (EndsWith(timestamps[i], "P", true)) {
+      if (base::EndsWith(timestamps[i], "P", true)) {
         is_keyframe = true;
         has_preroll = true;
         // Remove the "P" off of the token.
         timestamps[i] = timestamps[i].substr(0, timestamps[i].length() - 1);
       }
 
-      if (EndsWith(timestamps[i], "E", true)) {
+      if (base::EndsWith(timestamps[i], "E", true)) {
         is_duration_estimated = true;
         // Remove the "E" off of the token.
         timestamps[i] = timestamps[i].substr(0, timestamps[i].length() - 1);

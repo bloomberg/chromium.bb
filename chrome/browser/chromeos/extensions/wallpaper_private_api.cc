@@ -919,7 +919,7 @@ void WallpaperPrivateGetOfflineWallpaperListFunction::GetList() {
          current = files.Next()) {
       std::string file_name = current.BaseName().RemoveExtension().value();
       // Do not add file name of small resolution wallpaper to the list.
-      if (!EndsWith(file_name, wallpaper::kSmallWallpaperSuffix, true))
+      if (!base::EndsWith(file_name, wallpaper::kSmallWallpaperSuffix, true))
         file_list.push_back(current.BaseName().value());
     }
   }

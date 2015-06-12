@@ -50,7 +50,7 @@ bool FontList::ParseDescription(const std::string& description,
   // The size takes the form "<INT>px".
   std::string size_string = styles.back();
   styles.pop_back();
-  if (!EndsWith(size_string, "px", true /* case_sensitive */))
+  if (!base::EndsWith(size_string, "px", true /* case_sensitive */))
     return false;
   size_string.resize(size_string.size() - 2);
   if (!base::StringToInt(size_string, size_pixels_out) ||
@@ -100,7 +100,7 @@ void FontList::SetDefaultFontDescription(const std::string& font_description) {
   // The description string must end with "px" for size in pixel, or must be
   // the empty string, which specifies to use a single default font.
   DCHECK(font_description.empty() ||
-         EndsWith(font_description, "px", true));
+         base::EndsWith(font_description, "px", true));
 
   g_default_font_description.Get() = font_description;
   g_default_impl_initialized = false;

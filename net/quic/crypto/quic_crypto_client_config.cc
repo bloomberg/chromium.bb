@@ -904,7 +904,7 @@ bool QuicCryptoClientConfig::PopulateFromCanonicalConfig(
   DCHECK(server_state->IsEmpty());
   size_t i = 0;
   for (; i < canonical_suffixes_.size(); ++i) {
-    if (EndsWith(server_id.host(), canonical_suffixes_[i], false)) {
+    if (base::EndsWith(server_id.host(), canonical_suffixes_[i], false)) {
       break;
     }
   }
