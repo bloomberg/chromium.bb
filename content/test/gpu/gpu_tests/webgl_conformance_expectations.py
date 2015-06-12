@@ -598,3 +598,7 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['mac'], bug=483282)
     self.Fail('conformance2/rendering/instanced-arrays.html',
         ['mac'], bug=483282)
+
+    # Skip all WebGL 2 tests on Win AMD & Intel.
+    self.Skip('conformance2/*', ['win', 'amd'], bug=483282)
+    self.Skip('deqp/data/gles3/*', ['win', 'intel'], bug=483282)
