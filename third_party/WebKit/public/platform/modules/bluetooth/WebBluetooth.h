@@ -7,6 +7,7 @@
 
 #include "public/platform/WebCallbacks.h"
 #include "public/platform/WebString.h"
+#include "public/platform/WebVector.h"
 
 namespace blink {
 
@@ -31,6 +32,10 @@ typedef WebCallbacks<WebBluetoothGATTService, WebBluetoothError> WebBluetoothGet
 // Success and failure callbacks for getCharacteristic.
 // WebBluetoothCharacteristic and WebBluetoothError object ownership is transferred.
 typedef WebCallbacks<WebBluetoothGATTCharacteristic, WebBluetoothError> WebBluetoothGetCharacteristicCallbacks;
+
+// Success and failure callbacks for readValue.
+// WebVector and WebBluetoothError object ownership is transferred.
+typedef WebCallbacks<WebVector<uint8_t>, WebBluetoothError> WebBluetoothReadValueCallbacks;
 
 class WebBluetooth {
 public:
@@ -60,6 +65,11 @@ public:
     virtual void getCharacteristic(const WebString& serviceInstanceID,
         const WebString& characteristicUUID,
         WebBluetoothGetCharacteristicCallbacks*) { }
+
+    // BluetoothGATTCharacteristic methods:
+    // See https://webbluetoothcg.github.io/web-bluetooth/#bluetoothgattcharacteristic
+    virtual void readValue(const WebString& characteristicInstanceID,
+        WebBluetoothReadValueCallbacks*) { }
 };
 
 } // namespace blink
