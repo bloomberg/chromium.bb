@@ -3370,6 +3370,12 @@ TEST_P(ResourceProviderTest, Image_GLTexture) {
   id = resource_provider->CreateResource(
       size, GL_CLAMP_TO_EDGE, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format);
 
+  EXPECT_CALL(*context, NextTextureId())
+      .WillOnce(Return(kTextureId))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, kTextureId))
+      .Times(1)
+      .RetiresOnSaturation();
   EXPECT_CALL(*context, createImageCHROMIUM(_, kWidth, kHeight, GL_RGBA))
       .WillOnce(Return(kImageId))
       .RetiresOnSaturation();
@@ -3379,11 +3385,8 @@ TEST_P(ResourceProviderTest, Image_GLTexture) {
     EXPECT_TRUE(lock.GetGpuMemoryBuffer());
   }
 
-  EXPECT_CALL(*context, NextTextureId())
-      .WillOnce(Return(kTextureId))
-      .RetiresOnSaturation();
-  // Once in CreateTextureId and once in BindForSampling
-  EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, kTextureId)).Times(2)
+  EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, kTextureId))
+      .Times(1)
       .RetiresOnSaturation();
   EXPECT_CALL(*context, bindTexImage2DCHROMIUM(GL_TEXTURE_2D, kImageId))
       .Times(1)
@@ -3452,6 +3455,12 @@ TEST_P(ResourceProviderTest, CopyResource_GLTexture) {
   source_id = resource_provider->CreateResource(
       size, GL_CLAMP_TO_EDGE, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format);
 
+  EXPECT_CALL(*context, NextTextureId())
+      .WillOnce(Return(kSourceTextureId))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, kSourceTextureId))
+      .Times(1)
+      .RetiresOnSaturation();
   EXPECT_CALL(*context, createImageCHROMIUM(_, kWidth, kHeight, GL_RGBA))
       .WillOnce(Return(kImageId))
       .RetiresOnSaturation();
@@ -3475,11 +3484,8 @@ TEST_P(ResourceProviderTest, CopyResource_GLTexture) {
                                    GL_UNSIGNED_BYTE, nullptr))
       .Times(1)
       .RetiresOnSaturation();
-  EXPECT_CALL(*context, NextTextureId())
-      .WillOnce(Return(kSourceTextureId))
-      .RetiresOnSaturation();
   EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, kSourceTextureId))
-      .Times(2)
+      .Times(1)
       .RetiresOnSaturation();
   EXPECT_CALL(*context, bindTexImage2DCHROMIUM(GL_TEXTURE_2D, kImageId))
       .Times(1)

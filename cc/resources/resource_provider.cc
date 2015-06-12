@@ -1051,6 +1051,8 @@ ResourceProvider::ScopedWriteLockGpuMemoryBuffer::
   if (!gpu_memory_buffer_)
     return;
 
+  resource_provider_->LazyCreate(resource_);
+
   if (!resource_->image_id) {
     GLES2Interface* gl = resource_provider_->ContextGL();
     DCHECK(gl);
@@ -1900,21 +1902,20 @@ void ResourceProvider::LazyAllocate(Resource* resource) {
   resource->allocated = true;
   GLES2Interface* gl = ContextGL();
   gfx::Size& size = resource->size;
-  DCHECK_EQ(resource->target, static_cast<GLenum>(GL_TEXTURE_2D));
   ResourceFormat format = resource->format;
-  gl->BindTexture(GL_TEXTURE_2D, resource->gl_id);
+  gl->BindTexture(resource->target, resource->gl_id);
   if (use_texture_storage_ext_ &&
       IsFormatSupportedForStorage(format, use_texture_format_bgra_) &&
       (resource->hint & TEXTURE_HINT_IMMUTABLE)) {
     GLenum storage_format = TextureToStorageFormat(format);
-    gl->TexStorage2DEXT(GL_TEXTURE_2D, 1, storage_format, size.width(),
+    gl->TexStorage2DEXT(resource->target, 1, storage_format, size.width(),
                         size.height());
   } else {
     // ETC1 does not support preallocation.
     if (format != ETC1) {
-      gl->TexImage2D(GL_TEXTURE_2D, 0, GLInternalFormat(format), size.width(),
-                     size.height(), 0, GLDataFormat(format), GLDataType(format),
-                     NULL);
+      gl->TexImage2D(resource->target, 0, GLInternalFormat(format),
+                     size.width(), size.height(), 0, GLDataFormat(format),
+                     GLDataType(format), NULL);
     }
   }
 }
@@ -1942,8 +1943,7 @@ void ResourceProvider::CopyResource(ResourceId source_id,
   DCHECK(source_resource->origin == Resource::INTERNAL);
   DCHECK_EQ(source_resource->exported_count, 0);
   DCHECK_EQ(RESOURCE_TYPE_GL_TEXTURE, source_resource->type);
-  DCHECK(source_resource->allocated);
-  LazyCreate(source_resource);
+  LazyAllocate(source_resource);
 
   Resource* dest_resource = GetResource(dest_id);
   DCHECK(!dest_resource->locked_for_write);

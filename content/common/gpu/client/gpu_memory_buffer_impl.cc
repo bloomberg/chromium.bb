@@ -68,7 +68,7 @@ scoped_ptr<GpuMemoryBufferImpl> GpuMemoryBufferImpl::CreateFromHandle(
 #endif
     default:
       NOTREACHED();
-      return scoped_ptr<GpuMemoryBufferImpl>();
+      return nullptr;
   }
 }
 
