@@ -1741,15 +1741,15 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
       # - Make .INTERMEDIATE depend on the intermediate.
       # - The intermediate file depends on the inputs and executes the
       #   actual command.
-      #
-      # For an explanation of the problem and several solutions that don't
-      # work, see this:
-      # http://www.gnu.org/software/hello/manual/automake/Multiple-Outputs.html
+      # - The intermediate recipe will 'touch' the intermediate file.
+      # - The multi-output rule will have an do-nothing recipe.
       intermediate = "%s.intermediate" % (command if command else self.target)
       self.WriteLn('%s: %s' % (' '.join(outputs), intermediate))
+      self.WriteLn('\t%s' % '@:');
       self.WriteLn('%s: %s' % ('.INTERMEDIATE', intermediate))
       self.WriteLn('%s: %s%s' %
                    (intermediate, ' '.join(inputs), force_append))
+      actions.insert(0, '$(call do_cmd,touch)')
 
     if actions:
       for action in actions:
