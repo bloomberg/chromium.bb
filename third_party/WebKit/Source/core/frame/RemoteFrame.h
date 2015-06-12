@@ -33,10 +33,11 @@ public:
     void navigate(Document& originDocument, const KURL&, bool lockBackForwardList, UserGestureStatus) override;
     void navigate(const FrameLoadRequest& passedRequest) override;
     void reload(FrameLoadType, ClientRedirectPolicy) override;
-    void detach() override;
+    void detach(FrameDetachType) override;
     RemoteSecurityContext* securityContext() const override;
     void printNavigationErrorMessage(const Frame&, const char* reason) override { }
     void disconnectOwnerElement() override;
+    bool prepareForCommit() override;
 
     // FIXME: Remove this method once we have input routing in the browser
     // process. See http://crbug.com/339659.

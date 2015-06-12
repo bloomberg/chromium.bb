@@ -39,16 +39,26 @@ bool WebFrame::swap(WebFrame* frame)
 {
     using std::swap;
     RefPtrWillBeRawPtr<Frame> oldFrame = toCoreFrame(this);
+#if !ENABLE(OILPAN)
+    RefPtrWillBeRawPtr<WebLocalFrameImpl> protectWebLocalFrame = isWebLocalFrame() ? toWebLocalFrameImpl(this) : nullptr;
+    RefPtrWillBeRawPtr<WebRemoteFrameImpl> protectWebRemoteFrame = isWebRemoteFrame() ? toWebRemoteFrameImpl(this) : nullptr;
+#endif
 
-    // All child frames must be detached first.
-    oldFrame->detachChildren();
-
-    // If the frame has been detached during detaching its children, return
-    // immediately.
+    // If the frame has been detached during detaching by any JS code, we should
+    // cancel the swap.
     // FIXME: There is no unit test for this condition, so one needs to be
     // written.
-    if (!oldFrame->host())
+    if (!oldFrame->prepareForCommit())
         return false;
+
+    FrameOwner* owner = oldFrame->owner();
+    FrameHost* host = oldFrame->host();
+
+    // Frame::detach will call clearForClose(), we need to call
+    // clearForNavigate() before detaching.
+    oldFrame->prepareSwapFrom(oldFrame.get());
+
+    oldFrame->detach(FrameDetachType::Swap);
 
     if (m_parent) {
         if (m_parent->m_firstChild == this)
@@ -86,8 +96,6 @@ bool WebFrame::swap(WebFrame* frame)
     // the type of the passed in WebFrame.
     // FIXME: This is a bit clunky; this results in pointless decrements and
     // increments of connected subframes.
-    FrameOwner* owner = oldFrame->owner();
-    oldFrame->disconnectOwnerElement();
     if (frame->isWebLocalFrame()) {
         LocalFrame& localFrame = *toWebLocalFrameImpl(frame)->frame();
         ASSERT(owner == localFrame.owner());
@@ -103,7 +111,7 @@ bool WebFrame::swap(WebFrame* frame)
             localFrame.page()->setMainFrame(&localFrame);
         }
     } else {
-        toWebRemoteFrameImpl(frame)->initializeCoreFrame(oldFrame->host(), owner, oldFrame->tree().name());
+        toWebRemoteFrameImpl(frame)->initializeCoreFrame(host, owner, oldFrame->tree().name());
     }
     toCoreFrame(frame)->finishSwapFrom(oldFrame.get());
 
@@ -112,7 +120,7 @@ bool WebFrame::swap(WebFrame* frame)
 
 void WebFrame::detach()
 {
-    toCoreFrame(this)->detach();
+    toCoreFrame(this)->detach(FrameDetachType::Remove);
 }
 
 WebSecurityOrigin WebFrame::securityOrigin() const
