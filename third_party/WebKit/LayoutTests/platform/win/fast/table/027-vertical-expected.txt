@@ -36,7 +36,7 @@ layer at (0,0) size 785x809 backgroundClip at (0,0) size 785x600 clip at (0,0) s
               LayoutText {#text} at (4,604) size 17x186
                 text run at (4,604) width 8: "  "
                 text run at (4,612) width 92: "   My Links:   "
-                text run at (4,704) width 86: "  Lite \x{2022} Email"
+                text run at (4,703) width 86: "  Lite \x{2022} Email"
           LayoutTableRow {TR} at (0,26) size 312x793
             LayoutTableCell {TD} at (26,152) size 312x-82 [border: (1px solid #008000)] [r=1 c=0 rs=1 cs=1]
             LayoutTableCell {TD} at (26,222) size 312x349 [border: (1px solid #008000)] [r=1 c=1 rs=1 cs=1]

@@ -176,9 +176,9 @@ layer at (0,0) size 440x600
         LayoutBlockFlow {UL} at (212,0) size 120x584
           LayoutListItem {LI} at (0,40) size 20x544
             LayoutListMarker (anonymous) at (0,292.39) size 19x7: bullet
-            LayoutInline {A} at (0,0) size 19x87 [color=#0000EE]
-              LayoutText {#text} at (0,457) size 19x87
-                text run at (0,457) width 87: "RSS Validator"
+            LayoutInline {A} at (0,0) size 19x86 [color=#0000EE]
+              LayoutText {#text} at (0,458) size 19x86
+                text run at (0,458) width 86: "RSS Validator"
           LayoutListItem {LI} at (20,40) size 20x544
             LayoutListMarker (anonymous) at (0,292.39) size 19x7: bullet
             LayoutInline {A} at (0,0) size 19x135 [color=#0000EE]

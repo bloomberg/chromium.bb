@@ -28,15 +28,15 @@ layer at (0,0) size 785x772 backgroundClip at (0,0) size 785x600 clip at (0,0) s
               LayoutInline {A} at (0,0) size 19x108
                 LayoutText {#text} at (4,407) size 19x108
                   text run at (4,407) width 108: "Colors & Themes"
-              LayoutText {#text} at (4,515) size 19x14
-                text run at (4,515) width 14: " \x{2022} "
-              LayoutInline {A} at (0,0) size 19x42
-                LayoutText {#text} at (4,529) size 19x42
-                  text run at (4,529) width 42: "Sign In"
-              LayoutText {#text} at (4,571) size 19x171
-                text run at (4,571) width 8: "  "
-                text run at (4,579) width 85: "   My Links:   "
-                text run at (4,664) width 78: "  Lite \x{2022} Email"
+              LayoutText {#text} at (4,514) size 19x15
+                text run at (4,514) width 14: " \x{2022} "
+              LayoutInline {A} at (0,0) size 19x43
+                LayoutText {#text} at (4,528) size 19x43
+                  text run at (4,528) width 42: "Sign In"
+              LayoutText {#text} at (4,570) size 19x172
+                text run at (4,570) width 8: "  "
+                text run at (4,578) width 85: "   My Links:   "
+                text run at (4,663) width 78: "  Lite \x{2022} Email"
           LayoutTableRow {TR} at (0,28) size 344x756
             LayoutTableCell {TD} at (28,168) size 344x-128 [border: (1px solid #008000)] [r=1 c=0 rs=1 cs=1]
             LayoutTableCell {TD} at (28,208) size 344x328 [border: (1px solid #008000)] [r=1 c=1 rs=1 cs=1]

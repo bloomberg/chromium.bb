@@ -27,5 +27,5 @@ layer at (0,0) size 800x203
                 LayoutText {#text} at (0,0) size 18x55
                   text run at (0,0) width 55: "Div One"
               LayoutBlockFlow {DIV} at (19,1) size 18x57 [color=#FFFFFF] [bgcolor=#800080]
-                LayoutText {#text} at (0,0) size 18x57
-                  text run at (0,0) width 57: "Div Two"
+                LayoutText {#text} at (0,0) size 18x56
+                  text run at (0,0) width 56: "Div Two"
