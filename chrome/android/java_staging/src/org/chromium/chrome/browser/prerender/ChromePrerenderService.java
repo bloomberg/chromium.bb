@@ -78,7 +78,7 @@ public class ChromePrerenderService extends Service {
         try {
             new LauncherWarmUpTask().execute(getApplicationContext());
             ((ChromiumApplication) getApplication())
-                    .startBrowserProcessesAndLoadLibrariesSync(getApplicationContext(), true);
+                    .startBrowserProcessesAndLoadLibrariesSync(true);
 
             ApplicationInitialization.enableFullscreenFlags(
                     getApplicationContext().getResources(),

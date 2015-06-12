@@ -184,8 +184,7 @@ class CustomTabsConnection extends ICustomTabsConnectionService.Stub {
                 try {
                     // TODO(lizeb): Warm up more of the browser.
                     ChromiumApplication app = (ChromiumApplication) mApplication;
-                    app.startBrowserProcessesAndLoadLibrariesSync(
-                            app.getApplicationContext(), true);
+                    app.startBrowserProcessesAndLoadLibrariesSync(true);
                     final Context context = app.getApplicationContext();
                     new AsyncTask<Void, Void, Void>() {
                         @Override

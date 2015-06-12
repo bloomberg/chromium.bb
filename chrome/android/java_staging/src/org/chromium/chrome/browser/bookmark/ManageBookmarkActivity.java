@@ -82,7 +82,7 @@ public class ManageBookmarkActivity extends FragmentActivity {
         try {
             if (getApplication() instanceof ChromiumApplication) {
                 ((ChromiumApplication) getApplication())
-                        .startBrowserProcessesAndLoadLibrariesSync(this, true);
+                        .startBrowserProcessesAndLoadLibrariesSync(true);
             }
         } catch (ProcessInitException e) {
             Log.e(TAG, "Unable to load native library.", e);

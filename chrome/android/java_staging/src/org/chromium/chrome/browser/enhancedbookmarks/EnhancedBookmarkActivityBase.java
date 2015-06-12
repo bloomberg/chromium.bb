@@ -24,7 +24,7 @@ abstract class EnhancedBookmarkActivityBase extends AppCompatActivity {
         // Ensure that native library is loaded.
         try {
             ((ChromiumApplication) getApplication())
-                    .startBrowserProcessesAndLoadLibrariesSync(this, true);
+                    .startBrowserProcessesAndLoadLibrariesSync(true);
         } catch (ProcessInitException e) {
             Log.e(TAG, "Failed to start browser process.", e);
             ChromiumApplication.reportStartupErrorAndExit(e);

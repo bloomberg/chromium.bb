@@ -45,7 +45,7 @@ public class PassphraseActivity extends FragmentActivity implements
         // process and this wouldn't be necessary.
         try {
             ((ChromiumApplication) getApplication())
-                    .startBrowserProcessesAndLoadLibrariesSync(this, true);
+                    .startBrowserProcessesAndLoadLibrariesSync(true);
         } catch (ProcessInitException e) {
             Log.e(TAG, "Failed to start browser process.", e);
             ChromiumApplication.reportStartupErrorAndExit(e);

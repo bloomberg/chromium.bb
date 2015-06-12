@@ -21,8 +21,7 @@ public class PreferencesStaging extends Preferences {
 
     @Override
     protected void startBrowserProcessSync() throws ProcessInitException {
-        ((ChromiumApplication) getApplication())
-                .startBrowserProcessesAndLoadLibrariesSync(this, true);
+        ((ChromiumApplication) getApplication()).startBrowserProcessesAndLoadLibrariesSync(true);
     }
 
     @Override

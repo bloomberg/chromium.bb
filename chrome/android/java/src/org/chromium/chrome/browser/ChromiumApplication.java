@@ -22,7 +22,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
-import org.chromium.base.library_loader.LoaderErrors;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.browser.child_accounts.ChildAccountFeedbackReporter;
 import org.chromium.chrome.browser.child_accounts.ChildAccountService;
@@ -44,8 +43,6 @@ import org.chromium.chrome.browser.services.AndroidEduOwnerCheckCallback;
 import org.chromium.chrome.browser.smartcard.PKCS11AuthenticationManager;
 import org.chromium.content.app.ContentApplication;
 import org.chromium.content.browser.BrowserStartupController;
-
-import java.util.concurrent.Callable;
 
 /**
  * Basic application functionality that should be shared among all browser applications that use
@@ -157,53 +154,26 @@ public abstract class ChromiumApplication extends ContentApplication {
 
     /**
      * Loads native Libraries synchronously and starts Chrome browser processes.
-     * Must be called on the main thread.
+     * Must be called on the main thread. Makes sure the process is initialized as a
+     * Browser process instead of a ContentView process.
      *
      * @param initGoogleServicesManager when true the GoogleServicesManager is initialized.
      */
-    public void startBrowserProcessesAndLoadLibrariesSync(
-            Context context, boolean initGoogleServicesManager)
+    public void startBrowserProcessesAndLoadLibrariesSync(boolean initGoogleServicesManager)
             throws ProcessInitException {
         ThreadUtils.assertOnUiThread();
         initCommandLine();
         LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized(this, true);
-        startChromeBrowserProcessesSync(initGoogleServicesManager);
-    }
-
-    /**
-     * Make sure the process is initialized as Browser process instead of
-     * ContentView process. If this is not called from the main thread, an event
-     * will be posted and return will be blocked waiting for that event to
-     * complete.
-     * @param initGoogleServicesManager when true the GoogleServicesManager is initialized.
-     */
-    public void startChromeBrowserProcessesSync(final boolean initGoogleServicesManager)
-            throws ProcessInitException {
         final Context context = getApplicationContext();
-        int loadError = ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Integer>() {
-            @Override
-            public Integer call() {
-                try {
-                    // Kick off checking for a child account with an empty callback.
-                    ChildAccountService.getInstance(context).checkHasChildAccount(
-                            new ChildAccountService.HasChildAccountCallback() {
-                                @Override
-                                public void onChildAccountChecked(boolean hasChildAccount) {
-                                }
-                            });
-                    BrowserStartupController.get(context, LibraryProcessType.PROCESS_BROWSER)
-                            .startBrowserProcessesSync(false);
-                    if (initGoogleServicesManager) initializeGoogleServicesManager();
-                    return LoaderErrors.LOADER_ERROR_NORMAL_COMPLETION;
-                } catch (ProcessInitException e) {
-                    Log.e(TAG, "Unable to load native library.", e);
-                    return e.getErrorCode();
-                }
-            }
-        });
-        if (loadError != LoaderErrors.LOADER_ERROR_NORMAL_COMPLETION) {
-            throw new ProcessInitException(loadError);
-        }
+        // Kick off checking for a child account with an empty callback.
+        ChildAccountService.getInstance(context).checkHasChildAccount(
+                new ChildAccountService.HasChildAccountCallback() {
+                    @Override
+                    public void onChildAccountChecked(boolean hasChildAccount) {}
+                });
+        BrowserStartupController.get(context, LibraryProcessType.PROCESS_BROWSER)
+                .startBrowserProcessesSync(false);
+        if (initGoogleServicesManager) initializeGoogleServicesManager();
     }
 
     /**

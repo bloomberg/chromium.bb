@@ -378,7 +378,7 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
         // and a fragment might depend on the native library.
         try {
             ((ChromiumApplication) getApplication())
-                    .startBrowserProcessesAndLoadLibrariesSync(this, true);
+                    .startBrowserProcessesAndLoadLibrariesSync(true);
             mNativeSideIsInitialized = true;
         } catch (ProcessInitException e) {
             Log.e(TAG, "Unable to load native library.", e);

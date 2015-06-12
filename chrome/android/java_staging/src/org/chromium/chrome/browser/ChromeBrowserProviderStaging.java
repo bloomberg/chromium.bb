@@ -31,6 +31,7 @@ public class ChromeBrowserProviderStaging extends ChromeBrowserProvider {
                         new BrowserStartupController.StartupCallback() {
                             @Override
                             public void onSuccess(boolean alreadyStarted) {
+                                // TODO(knn): Investigate why this is required.
                                 ensureNativeChromeLoadedOnUIThread();
                             }
 
@@ -52,7 +53,7 @@ public class ChromeBrowserProviderStaging extends ChromeBrowserProvider {
         boolean shouldStartGoogleServicesManager = mContentProviderApiCalled;
         try {
             ((ChromiumApplication) getContext().getApplicationContext())
-                    .startChromeBrowserProcessesSync(shouldStartGoogleServicesManager);
+                    .startBrowserProcessesAndLoadLibrariesSync(shouldStartGoogleServicesManager);
         } catch (ProcessInitException e) {
             // Chrome browser runs in the background, so exit silently; but do exit, since
             // otherwise the next attempt to use Chrome will find a broken JNI.

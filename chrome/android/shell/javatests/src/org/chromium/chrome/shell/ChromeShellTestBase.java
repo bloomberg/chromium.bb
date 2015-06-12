@@ -44,7 +44,7 @@ public class ChromeShellTestBase extends BaseActivityInstrumentationTestCase<Chr
             public void run() {
                 try {
                     ((ChromeShellApplication) context.getApplicationContext())
-                            .startBrowserProcessesAndLoadLibrariesSync(context, true);
+                            .startBrowserProcessesAndLoadLibrariesSync(true);
                 } catch (ProcessInitException e) {
                     Log.e(TAG, "Unable to load native library.", e);
                 }
