@@ -343,9 +343,9 @@ class CONTENT_EXPORT IndexedDBBackingStore
                       const IndexedDBKey* primary_key,
                       IteratorState state,
                       leveldb::Status*);
-    // For cursors with direction Prev or PrevNoDuplicate.
-    // The PrevNoDuplicate case has additional complexity of not
-    // being symmetric with NextNoDuplicate.
+    // For cursors with direction Prev or PrevNoDuplicate. The PrevNoDuplicate
+    // case has additional complexity of not being symmetric with
+    // NextNoDuplicate.
     bool ContinuePrevious(const IndexedDBKey* key,
                           const IndexedDBKey* primary_key,
                           IteratorState state,
