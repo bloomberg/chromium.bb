@@ -6,3 +6,5 @@ AutoclickTest.SynthesizedMouseMovesIgnored
 SystemGestureEventFilterTest.TwoFingerDragDelayed
 # http://crbug.com/421888
 WebNotificationTrayTest.*TouchFeedback*
+# http://crbug.com/499970
+AshWindowTreeHostX11Test.DispatchTouchEventToOneRootWindow
