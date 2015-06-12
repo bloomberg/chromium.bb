@@ -8,8 +8,45 @@
 #include "bindings/core/v8/DOMDataStore.h"
 #include "bindings/core/v8/V8ArrayBuffer.h"
 #include "bindings/core/v8/V8DOMWrapper.h"
+#include "platform/CheckedInt.h"
+#include "wtf/ArrayBufferView.h"
 
 namespace blink {
+
+namespace {
+
+class DataView final : public ArrayBufferView {
+public:
+    static PassRefPtr<DataView> create(PassRefPtr<ArrayBuffer> buffer, unsigned byteOffset, unsigned byteLength)
+    {
+        RELEASE_ASSERT(byteOffset <= buffer->byteLength());
+        CheckedInt<uint32_t> checkedOffset(byteOffset);
+        CheckedInt<uint32_t> checkedLength(byteLength);
+        CheckedInt<uint32_t> checkedMax = checkedOffset + checkedLength;
+        RELEASE_ASSERT(checkedMax.isValid());
+        RELEASE_ASSERT(checkedMax.value() <= buffer->byteLength());
+        return adoptRef(new DataView(buffer, byteOffset, byteLength));
+    }
+
+    virtual unsigned byteLength() const override { return m_byteLength; }
+    virtual ViewType type() const override { return TypeDataView; }
+
+protected:
+    virtual void neuter() override
+    {
+        ArrayBufferView::neuter();
+        m_byteLength = 0;
+    }
+
+private:
+    DataView(PassRefPtr<ArrayBuffer> buffer, unsigned byteOffset, unsigned byteLength)
+        : ArrayBufferView(buffer, byteOffset)
+        , m_byteLength(byteLength) { }
+
+    unsigned m_byteLength;
+};
+
+} // anonymous namespace
 
 PassRefPtr<DOMDataView> DOMDataView::create(PassRefPtr<DOMArrayBuffer> prpBuffer, unsigned byteOffset, unsigned byteLength)
 {

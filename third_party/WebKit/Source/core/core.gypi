@@ -2806,8 +2806,6 @@
             'html/canvas/ContextAttributeHelpers.h',
             'html/canvas/ClipList.cpp',
             'html/canvas/ClipList.h',
-            'html/canvas/DataView.cpp',
-            'html/canvas/DataView.h',
             'html/canvas/EXTBlendMinMax.cpp',
             'html/canvas/EXTBlendMinMax.h',
             'html/canvas/EXTFragDepth.cpp',

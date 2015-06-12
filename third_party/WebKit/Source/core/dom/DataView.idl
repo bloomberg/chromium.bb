@@ -29,26 +29,4 @@
     ImplementedAs=DOMDataView,
     TypeChecking=Interface,
 ] interface DataView : ArrayBufferView {
-    // All these methods raise an exception if they would read or write beyond the end of the view.
-
-    [RaisesException] byte getInt8(unsigned long byteOffset);
-    [RaisesException] octet getUint8(unsigned long byteOffset);
-
-    [RaisesException] short getInt16(unsigned long byteOffset, optional boolean littleEndian);
-    [RaisesException] unsigned short getUint16(unsigned long byteOffset, optional boolean littleEndian);
-    [RaisesException] long getInt32(unsigned long byteOffset, optional boolean littleEndian);
-    [RaisesException] unsigned long getUint32(unsigned long byteOffset, optional boolean littleEndian);
-
-    [RaisesException] float getFloat32(unsigned long byteOffset, optional boolean littleEndian);
-    [RaisesException] double getFloat64(unsigned long byteOffset, optional boolean littleEndian);
-
-    [RaisesException] void setInt8(unsigned long byteOffset, byte value);
-    [RaisesException] void setUint8(unsigned long byteOffset, octet value);
-
-    [RaisesException] void setInt16(unsigned long byteOffset, short value, optional boolean littleEndian);
-    [RaisesException] void setUint16(unsigned long byteOffset, unsigned short value, optional boolean littleEndian);
-    [RaisesException] void setInt32(unsigned long byteOffset, long value, optional boolean littleEndian);
-    [RaisesException] void setUint32(unsigned long byteOffset, unsigned long value, optional boolean littleEndian);
-    [RaisesException] void setFloat32(unsigned long byteOffset, unrestricted float value, optional boolean littleEndian);
-    [RaisesException] void setFloat64(unsigned long byteOffset, unrestricted double value, optional boolean littleEndian);
 };
