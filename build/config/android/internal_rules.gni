@@ -86,14 +86,6 @@ template("findbugs") {
 
     rebased_build_config = rebase_path(build_config, root_build_dir)
 
-    if (defined(invoker.deps)) {
-      deps = invoker.deps
-    }
-
-    if (defined(invoker.testonly)) {
-      testonly = invoker.testonly
-    }
-
     inputs = [
       "//build/android/pylib/utils/findbugs.py",
       exclusions_file,

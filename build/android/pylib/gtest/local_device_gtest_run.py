@@ -16,6 +16,7 @@ from pylib.gtest import gtest_test_instance
 from pylib.local import local_test_server_spawner
 from pylib.local.device import local_device_environment
 from pylib.local.device import local_device_test_run
+from pylib.utils import apk_helper
 from pylib.utils import device_temp_file
 
 _COMMAND_LINE_FLAGS_SUPPORTED = True
@@ -24,9 +25,9 @@ _EXTRA_COMMAND_LINE_FILE = (
     'org.chromium.native_test.NativeTestActivity.CommandLineFile')
 _EXTRA_COMMAND_LINE_FLAGS = (
     'org.chromium.native_test.NativeTestActivity.CommandLineFlags')
-_EXTRA_TEST_LIST = (
+_EXTRA_NATIVE_TEST_ACTIVITY = (
     'org.chromium.native_test.NativeTestInstrumentationTestRunner'
-        '.TestList')
+        '.NativeTestActivity')
 
 _MAX_SHARD_SIZE = 256
 
@@ -52,32 +53,30 @@ def PullAppFilesImpl(device, package, files, directory):
     device.PullFile(device_file, host_file)
 
 class _ApkDelegate(object):
-  def __init__(self, test_instance):
-    self._activity = test_instance.activity
-    self._apk = test_instance.apk
-    self._package = test_instance.package
-    self._runner = test_instance.runner
+  def __init__(self, apk):
+    self._apk = apk
 
+    helper = apk_helper.ApkHelper(self._apk)
+    self._activity = helper.GetActivityName()
+    self._package = helper.GetPackageName()
+    self._runner = helper.GetInstrumentationName()
     self._component = '%s/%s' % (self._package, self._runner)
-    self._extras = test_instance.extras
+    self._enable_test_server_spawner = False
 
   def Install(self, device):
     device.Install(self._apk)
 
-  def Run(self, test, device, flags=None, **kwargs):
-    extras = dict(self._extras)
-
+  def RunWithFlags(self, device, flags, **kwargs):
     with device_temp_file.DeviceTempFile(device.adb) as command_line_file:
-      device.WriteFile(command_line_file.name, '_ %s' % flags if flags else '_')
-      extras[_EXTRA_COMMAND_LINE_FILE] = command_line_file.name
+      device.WriteFile(command_line_file.name, '_ %s' % flags)
 
-      with device_temp_file.DeviceTempFile(device.adb) as test_list_file:
-        if test:
-          device.WriteFile(test_list_file.name, '\n'.join(test))
-          extras[_EXTRA_TEST_LIST] = test_list_file.name
+      extras = {
+        _EXTRA_COMMAND_LINE_FILE: command_line_file.name,
+        _EXTRA_NATIVE_TEST_ACTIVITY: self._activity,
+      }
 
-        return device.StartInstrumentation(
-            self._component, extras=extras, raw=False, **kwargs)
+      return device.StartInstrumentation(
+          self._component, extras=extras, raw=False, **kwargs)
 
   def PullAppFiles(self, device, files, directory):
     PullAppFilesImpl(device, self._package, files, directory)
@@ -87,7 +86,7 @@ class _ApkDelegate(object):
 
 
 class _ExeDelegate(object):
-  def __init__(self, tr, exe):
+  def __init__(self, exe, tr):
     self._exe_host_path = exe
     self._exe_file_name = os.path.split(exe)[-1]
     self._exe_device_path = '%s/%s' % (
@@ -108,15 +107,12 @@ class _ExeDelegate(object):
       host_device_tuples.append((self._deps_host_path, self._deps_device_path))
     device.PushChangedFiles(host_device_tuples)
 
-  def Run(self, test, device, flags=None, **kwargs):
+  def RunWithFlags(self, device, flags, **kwargs):
     cmd = [
         self._test_run.GetTool(device).GetTestWrapper(),
         self._exe_device_path,
+        flags,
     ]
-    if test:
-      cmd.append('--gtest_filter=%s' % ':'.join(test))
-    if flags:
-      cmd.append(flags)
     cwd = constants.TEST_EXECUTABLE_DIR
 
     env = {
@@ -156,7 +152,7 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
     super(LocalDeviceGtestRun, self).__init__(env, test_instance)
 
     if self._test_instance.apk:
-      self._delegate = _ApkDelegate(self._test_instance)
+      self._delegate = _ApkDelegate(self._test_instance.apk)
     elif self._test_instance.exe:
       self._delegate = _ExeDelegate(self, self._test_instance.exe)
 
@@ -198,18 +194,21 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
 
   #override
   def _CreateShards(self, tests):
-    device_count = len(self._env.devices)
-    shards = []
-    for i in xrange(0, device_count):
-      unbounded_shard = tests[i::device_count]
-      shards += [unbounded_shard[j:j+_MAX_SHARD_SIZE]
-                 for j in xrange(0, len(unbounded_shard), _MAX_SHARD_SIZE)]
-    return shards
+    if self._test_instance.suite in gtest_test_instance.BROWSER_TEST_SUITES:
+      return tests
+    else:
+      device_count = len(self._env.devices)
+      shards = []
+      for i in xrange(0, device_count):
+        unbounded_shard = tests[i::device_count]
+        shards += [unbounded_shard[j:j+_MAX_SHARD_SIZE]
+                   for j in xrange(0, len(unbounded_shard), _MAX_SHARD_SIZE)]
+      return [':'.join(s) for s in shards]
 
   #override
   def _GetTests(self):
-    tests = self._delegate.Run(
-        None, self._env.devices[0], flags='--gtest_list_tests')
+    tests = self._delegate.RunWithFlags(
+        self._env.devices[0], '--gtest_list_tests')
     tests = gtest_test_instance.ParseGTestListTests(tests)
     tests = self._test_instance.FilterTests(tests)
     return tests
@@ -217,8 +216,8 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
   #override
   def _RunTest(self, device, test):
     # Run the test.
-    output = self._delegate.Run(
-        test, device, timeout=900, retries=0)
+    output = self._delegate.RunWithFlags(
+        device, '--gtest_filter=%s' % test, timeout=900, retries=0)
     for s in self._servers[str(device)]:
       s.Reset()
     if self._test_instance.app_files:

@@ -24,14 +24,8 @@ public class TestStatusReporter {
             "org.chromium.test.reporter.TestStatusReporter.TEST_PASSED";
     public static final String ACTION_TEST_FAILED =
             "org.chromium.test.reporter.TestStatusReporter.TEST_FAILED";
-    public static final String ACTION_TEST_RUN_STARTED =
-            "org.chromium.test.reporter.TestStatusReporter.TEST_RUN_STARTED";
-    public static final String ACTION_TEST_RUN_FINISHED =
-            "org.chromium.test.reporter.TestStatusReporter.TEST_RUN_FINISHED";
     public static final String DATA_TYPE_HEARTBEAT = "org.chromium.test.reporter/heartbeat";
     public static final String DATA_TYPE_RESULT = "org.chromium.test.reporter/result";
-    public static final String EXTRA_PID =
-            "org.chromium.test.reporter.TestStatusReporter.PID";
     public static final String EXTRA_TEST_CLASS =
             "org.chromium.test.reporter.TestStatusReporter.TEST_CLASS";
     public static final String EXTRA_TEST_METHOD =
@@ -63,42 +57,27 @@ public class TestStatusReporter {
     }
 
     public void testStarted(String testClass, String testMethod) {
-        sendTestBroadcast(testClass, testMethod, ACTION_TEST_STARTED);
+        sendBroadcast(testClass, testMethod, ACTION_TEST_STARTED);
     }
 
     public void testPassed(String testClass, String testMethod) {
-        sendTestBroadcast(testClass, testMethod, ACTION_TEST_PASSED);
+        sendBroadcast(testClass, testMethod, ACTION_TEST_PASSED);
     }
 
     public void testFailed(String testClass, String testMethod) {
-        sendTestBroadcast(testClass, testMethod, ACTION_TEST_FAILED);
+        sendBroadcast(testClass, testMethod, ACTION_TEST_FAILED);
     }
 
-    private void sendTestBroadcast(String action, String testClass, String testMethod) {
+    public void stopHeartbeat() {
+        mKeepBeating.set(false);
+    }
+
+    private void sendBroadcast(String testClass, String testMethod, String action) {
         Intent i = new Intent(action);
         i.setType(DATA_TYPE_RESULT);
         i.putExtra(EXTRA_TEST_CLASS, testClass);
         i.putExtra(EXTRA_TEST_METHOD, testMethod);
         mContext.sendBroadcast(i);
-    }
-
-    public void testRunStarted(int pid) {
-        sendTestRunBroadcast(ACTION_TEST_RUN_STARTED, pid);
-    }
-
-    public void testRunFinished(int pid) {
-        sendTestRunBroadcast(ACTION_TEST_RUN_FINISHED, pid);
-    }
-
-    private void sendTestRunBroadcast(String action, int pid) {
-        Intent i = new Intent(action);
-        i.setType(DATA_TYPE_RESULT);
-        i.putExtra(EXTRA_PID, pid);
-        mContext.sendBroadcast(i);
-    }
-
-    public void stopHeartbeat() {
-        mKeepBeating.set(false);
     }
 
 }

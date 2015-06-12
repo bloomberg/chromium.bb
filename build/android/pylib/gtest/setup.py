@@ -26,8 +26,27 @@ sys.path.insert(0,
 import unittest_util # pylint: disable=F0401
 
 
-ISOLATE_FILE_PATHS = gtest_test_instance._DEFAULT_ISOLATE_FILE_PATHS
-
+ISOLATE_FILE_PATHS = {
+    'base_unittests': 'base/base_unittests.isolate',
+    'blink_heap_unittests':
+      'third_party/WebKit/Source/platform/heap/BlinkHeapUnitTests.isolate',
+    'breakpad_unittests': 'breakpad/breakpad_unittests.isolate',
+    'cc_perftests': 'cc/cc_perftests.isolate',
+    'components_browsertests': 'components/components_browsertests.isolate',
+    'components_unittests': 'components/components_unittests.isolate',
+    'content_browsertests': 'content/content_browsertests.isolate',
+    'content_unittests': 'content/content_unittests.isolate',
+    'media_perftests': 'media/media_perftests.isolate',
+    'media_unittests': 'media/media_unittests.isolate',
+    'midi_unittests': 'media/midi/midi_unittests.isolate',
+    'net_unittests': 'net/net_unittests.isolate',
+    'sql_unittests': 'sql/sql_unittests.isolate',
+    'sync_unit_tests': 'sync/sync_unit_tests.isolate',
+    'ui_base_unittests': 'ui/base/ui_base_tests.isolate',
+    'unit_tests': 'chrome/unit_tests.isolate',
+    'webkit_unit_tests':
+      'third_party/WebKit/Source/web/WebKitUnitTests.isolate',
+}
 
 # Used for filtering large data deps at a finer grain than what's allowed in
 # isolate files since pushing deps to devices is expensive.

@@ -55,7 +55,6 @@
           'type': 'none',
           'dependencies': [
             'appurify_support.gyp:appurify_support_java',
-            'on_device_instrumentation.gyp:reporter_java',
             '../../base/base.gyp:base_native_libraries_gen',
             '../../base/base.gyp:base_java',
           ],

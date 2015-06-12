@@ -27,8 +27,6 @@ from pylib.base import test_run_factory
 from pylib.device import device_errors
 from pylib.device import device_utils
 from pylib.gtest import gtest_config
-# TODO(jbudorick): Remove this once we stop selectively enabling platform mode.
-from pylib.gtest import gtest_test_instance
 from pylib.gtest import setup as gtest_setup
 from pylib.gtest import test_options as gtest_test_options
 from pylib.linker import setup as linker_setup
@@ -921,8 +919,6 @@ def RunTestsCommand(args, parser):
     raise Exception('Failed to reset test server port.')
 
   if command == 'gtest':
-    if args.suite_name[0] in gtest_test_instance.BROWSER_TEST_SUITES:
-      return RunTestsInPlatformMode(args, parser)
     return _RunGTests(args, devices)
   elif command == 'linker':
     return _RunLinkerTests(args, devices)
