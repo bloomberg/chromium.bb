@@ -23,7 +23,7 @@ void MojoCdmServiceContext::CreateCdmService(
   DVLOG(1) << __FUNCTION__ << ": " << key_system;
 
   // TODO(xhwang): pass |security_origin| down because CdmFactory needs it.
-  scopted_ptr<MojoCdmService> cdm_service =
+  scoped_ptr<MojoCdmService> cdm_service =
       MojoCdmService::Create(key_system, this, request.Pass());
   if (cdm_service)
     services_.add(cdm_id, cdm_service.Pass());

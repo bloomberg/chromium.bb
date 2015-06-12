@@ -20,7 +20,7 @@ namespace media {
 typedef MojoCdmPromise<> SimpleMojoCdmPromise;
 typedef MojoCdmPromise<std::string> NewSessionMojoCdmPromise;
 
-scopted_ptr<MojoCdmService> MojoCdmService::Create(
+scoped_ptr<MojoCdmService> MojoCdmService::Create(
     const mojo::String& key_system,
     MojoCdmServiceContext* context,
     mojo::InterfaceRequest<mojo::ContentDecryptionModule> request) {
