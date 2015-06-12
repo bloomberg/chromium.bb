@@ -50,6 +50,9 @@ class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdev {
   // Stop reading & close an unplugged input device.
   void RemoveInputDevice(const base::FilePath& path);
 
+  // Device thread handler for initial scan completion.
+  void OnStartupScanComplete();
+
   // Disables the internal touchpad.
   void DisableInternalTouchpad();
 
@@ -118,14 +121,20 @@ class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdev {
   scoped_ptr<DeviceEventDispatcherEvdev> dispatcher_;
 
   // Number of pending device additions & device classes.
-  int pending_device_changes_;
-  bool touchscreen_list_dirty_;
-  bool keyboard_list_dirty_;
-  bool mouse_list_dirty_;
-  bool touchpad_list_dirty_;
+  int pending_device_changes_ = 0;
+  bool touchscreen_list_dirty_ = true;
+  bool keyboard_list_dirty_ = true;
+  bool mouse_list_dirty_ = true;
+  bool touchpad_list_dirty_ = true;
+
+  // Whether we have a list of devices that were present at startup.
+  bool startup_devices_enumerated_ = false;
+
+  // Whether devices that were present at startup are open.
+  bool startup_devices_opened_ = false;
 
   // LEDs.
-  bool caps_lock_led_enabled_;
+  bool caps_lock_led_enabled_ = false;
 
   // Device settings. These primarily affect libgestures behavior.
   InputDeviceSettingsEvdev input_device_settings_;

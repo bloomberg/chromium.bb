@@ -102,6 +102,11 @@ class ProxyDeviceEventDispatcher : public DeviceEventDispatcherEvdev {
         base::Bind(&EventFactoryEvdev::DispatchTouchpadDevicesUpdated,
                    event_factory_evdev_, devices));
   }
+  void DispatchDeviceListsComplete() override {
+    ui_thread_runner_->PostTask(
+        FROM_HERE, base::Bind(&EventFactoryEvdev::DispatchDeviceListsComplete,
+                              event_factory_evdev_));
+  }
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> ui_thread_runner_;
@@ -310,6 +315,11 @@ void EventFactoryEvdev::DispatchTouchpadDevicesUpdated(
   observer->OnTouchpadDevicesUpdated(devices);
 }
 
+void EventFactoryEvdev::DispatchDeviceListsComplete() {
+  TRACE_EVENT0("evdev", "EventFactoryEvdev::DispatchDeviceListsComplete");
+  DeviceHotplugEventObserver* observer = DeviceDataManager::GetInstance();
+  observer->OnDeviceListsComplete();
+}
 
 void EventFactoryEvdev::OnDeviceEvent(const DeviceEvent& event) {
   if (event.device_type() != DeviceEvent::INPUT)
@@ -377,6 +387,9 @@ void EventFactoryEvdev::OnThreadStarted(
   // Scan & monitor devices.
   device_manager_->AddObserver(this);
   device_manager_->ScanDevices(this);
+
+  // Notify device thread that initial scan is done.
+  input_device_factory_proxy_->OnStartupScanComplete();
 }
 
 }  // namespace ui

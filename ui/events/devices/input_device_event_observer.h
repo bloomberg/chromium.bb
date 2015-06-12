@@ -18,6 +18,7 @@ class EVENTS_DEVICES_EXPORT InputDeviceEventObserver {
   virtual void OnTouchscreenDeviceConfigurationChanged() {}
   virtual void OnMouseDeviceConfigurationChanged() {}
   virtual void OnTouchpadDeviceConfigurationChanged() {}
+  virtual void OnDeviceListsComplete() {}
 
  protected:
   InputDeviceEventObserver() {}

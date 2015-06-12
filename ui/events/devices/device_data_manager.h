@@ -53,6 +53,8 @@ class EVENTS_DEVICES_EXPORT DeviceDataManager
     return keyboard_devices_;
   }
 
+  bool device_lists_complete() const { return device_lists_complete_; }
+
   void AddObserver(InputDeviceEventObserver* observer);
   void RemoveObserver(InputDeviceEventObserver* observer);
 
@@ -70,6 +72,7 @@ class EVENTS_DEVICES_EXPORT DeviceDataManager
       const std::vector<InputDevice>& devices) override;
   void OnTouchpadDevicesUpdated(
       const std::vector<InputDevice>& devices) override;
+  void OnDeviceListsComplete() override;
 
  private:
   static DeviceDataManager* instance_;
@@ -87,6 +90,7 @@ class EVENTS_DEVICES_EXPORT DeviceDataManager
   std::vector<KeyboardDevice> keyboard_devices_;
   std::vector<InputDevice> mouse_devices_;
   std::vector<InputDevice> touchpad_devices_;
+  bool device_lists_complete_ = false;
 
   base::ObserverList<InputDeviceEventObserver> observers_;
 

@@ -143,6 +143,7 @@ class EVENTS_OZONE_EVDEV_EXPORT DeviceEventDispatcherEvdev {
       const std::vector<InputDevice>& devices) = 0;
   virtual void DispatchTouchpadDevicesUpdated(
       const std::vector<InputDevice>& devices) = 0;
+  virtual void DispatchDeviceListsComplete() = 0;
 };
 
 }  // namespace ui

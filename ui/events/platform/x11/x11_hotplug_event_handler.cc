@@ -85,6 +85,7 @@ struct UiCallbacks {
   TouchscreenDeviceCallback touchscreen_callback;
   InputDeviceCallback mouse_callback;
   InputDeviceCallback touchpad_callback;
+  base::Closure hotplug_finished_callback;
 };
 
 // Stores a copy of the XIValuatorClassInfo values so X11 device processing can
@@ -375,6 +376,7 @@ void HandleHotplugEventInWorker(
   HandleMouseDevicesInWorker(devices, reply_runner, callbacks.mouse_callback);
   HandleTouchpadDevicesInWorker(devices, reply_runner,
                                 callbacks.touchpad_callback);
+  reply_runner->PostTask(FROM_HERE, callbacks.hotplug_finished_callback);
 }
 
 DeviceHotplugEventObserver* GetHotplugEventObserver() {
@@ -395,6 +397,10 @@ void OnMouseDevices(const std::vector<InputDevice>& devices) {
 
 void OnTouchpadDevices(const std::vector<InputDevice>& devices) {
   GetHotplugEventObserver()->OnTouchpadDevicesUpdated(devices);
+}
+
+void OnHotplugFinished() {
+  GetHotplugEventObserver()->OnDeviceListsComplete();
 }
 
 }  // namespace
@@ -481,6 +487,7 @@ void X11HotplugEventHandler::OnHotplugEvent() {
   callbacks.touchscreen_callback = base::Bind(&OnTouchscreenDevices);
   callbacks.mouse_callback = base::Bind(&OnMouseDevices);
   callbacks.touchpad_callback = base::Bind(&OnTouchpadDevices);
+  callbacks.hotplug_finished_callback = base::Bind(&OnHotplugFinished);
 
   // Parsing the device information may block, so delegate the operation to a
   // worker thread. Once the device information is extracted the parsed devices

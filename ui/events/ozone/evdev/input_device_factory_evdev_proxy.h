@@ -40,6 +40,7 @@ class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdevProxy {
   // that object on another thread.
   void AddInputDevice(int id, const base::FilePath& path);
   void RemoveInputDevice(const base::FilePath& path);
+  void OnStartupScanComplete();
   void DisableInternalTouchpad();
   void EnableInternalTouchpad();
   void DisableInternalKeyboardExceptKeys(

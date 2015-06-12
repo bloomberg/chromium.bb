@@ -176,6 +176,14 @@ void DeviceDataManager::OnTouchpadDevicesUpdated(
                     OnTouchpadDeviceConfigurationChanged());
 }
 
+void DeviceDataManager::OnDeviceListsComplete() {
+  if (!device_lists_complete_) {
+    device_lists_complete_ = true;
+    FOR_EACH_OBSERVER(InputDeviceEventObserver, observers_,
+                      OnDeviceListsComplete());
+  }
+}
+
 void DeviceDataManager::AddObserver(InputDeviceEventObserver* observer) {
   observers_.AddObserver(observer);
 }

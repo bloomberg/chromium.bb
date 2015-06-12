@@ -185,12 +185,6 @@ InputDeviceFactoryEvdev::InputDeviceFactoryEvdev(
       gesture_property_provider_(new GesturePropertyProvider),
 #endif
       dispatcher_(dispatcher.Pass()),
-      pending_device_changes_(0),
-      touchscreen_list_dirty_(false),
-      keyboard_list_dirty_(false),
-      mouse_list_dirty_(false),
-      touchpad_list_dirty_(false),
-      caps_lock_led_enabled_(false),
       weak_ptr_factory_(this) {
 }
 
@@ -225,6 +219,11 @@ void InputDeviceFactoryEvdev::AddInputDevice(int id,
 
 void InputDeviceFactoryEvdev::RemoveInputDevice(const base::FilePath& path) {
   DetachInputDevice(path);
+}
+
+void InputDeviceFactoryEvdev::OnStartupScanComplete() {
+  startup_devices_enumerated_ = true;
+  NotifyDevicesUpdated();
 }
 
 void InputDeviceFactoryEvdev::AttachInputDevice(
@@ -405,8 +404,8 @@ void InputDeviceFactoryEvdev::UpdateDirtyFlags(
 }
 
 void InputDeviceFactoryEvdev::NotifyDevicesUpdated() {
-  if (pending_device_changes_)
-    return;  // No update until pending opens complete.
+  if (!startup_devices_enumerated_ || pending_device_changes_)
+    return;  // No update until full scan done and no pending operations.
   if (touchscreen_list_dirty_)
     NotifyTouchscreensUpdated();
   if (keyboard_list_dirty_)
@@ -415,6 +414,10 @@ void InputDeviceFactoryEvdev::NotifyDevicesUpdated() {
     NotifyMouseDevicesUpdated();
   if (touchpad_list_dirty_)
     NotifyTouchpadDevicesUpdated();
+  if (!startup_devices_opened_) {
+    dispatcher_->DispatchDeviceListsComplete();
+    startup_devices_opened_ = true;
+  }
   touchscreen_list_dirty_ = false;
   keyboard_list_dirty_ = false;
   mouse_list_dirty_ = false;

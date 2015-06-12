@@ -110,6 +110,7 @@ class MockDeviceEventDispatcherEvdev : public DeviceEventDispatcherEvdev {
       const std::vector<InputDevice>& devices) override {}
   void DispatchTouchpadDevicesUpdated(
       const std::vector<InputDevice>& devices) override {}
+  void DispatchDeviceListsComplete() override {}
 
  private:
   base::Callback<void(const TouchEventParams& params)> callback_;

@@ -54,6 +54,12 @@ void InputDeviceFactoryEvdevProxy::RemoveInputDevice(
                                     input_device_factory_, path));
 }
 
+void InputDeviceFactoryEvdevProxy::OnStartupScanComplete() {
+  task_runner_->PostTask(
+      FROM_HERE, base::Bind(&InputDeviceFactoryEvdev::OnStartupScanComplete,
+                            input_device_factory_));
+}
+
 void InputDeviceFactoryEvdevProxy::DisableInternalTouchpad() {
   task_runner_->PostTask(
       FROM_HERE, base::Bind(&InputDeviceFactoryEvdev::DisableInternalTouchpad,

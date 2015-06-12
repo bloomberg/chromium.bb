@@ -39,6 +39,10 @@ class EVENTS_DEVICES_EXPORT DeviceHotplugEventObserver {
   // set of touchpads may not have changed.
   virtual void OnTouchpadDevicesUpdated(
       const std::vector<InputDevice>& devices) = 0;
+
+  // On completion of the initial startup scan. This means all of the above
+  // OnDevicesUpdated() methods have been called with a complete list.
+  virtual void OnDeviceListsComplete() = 0;
 };
 
 }  // namespace ui
