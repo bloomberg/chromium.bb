@@ -18930,8 +18930,7 @@
         ],
         "important": false,
         "manifest": "official.xml",
-        "name": "strago-chrome-pfq",
-        "vm_tests": []
+        "name": "strago-chrome-pfq"
     },
     "strago-chromium-pfq": {
         "_template": "chromium-pfq",
@@ -18947,8 +18946,7 @@
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "strago-compile-only-pre-cq": {
         "_template": "compile-only-pre-cq",
@@ -19001,8 +18999,7 @@
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "strago-full-group": {
         "_template": "full",
@@ -19020,8 +19017,7 @@
                 "prebuilts": "public",
                 "useflags": [
                     "-chrome_internal"
-                ],
-                "vm_tests": []
+                ]
             },
             {
                 "_template": "full",
@@ -19045,8 +19041,7 @@
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "strago-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
@@ -19078,8 +19073,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [],
-        "vm_tests_override": null
+        "vm_tests": []
     },
     "strago-payloads": {
         "_template": "payloads",
@@ -19100,16 +19094,14 @@
         "overlays": "both",
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "strago-release": {
         "_template": "release",
         "boards": [
             "strago"
         ],
-        "name": "strago-release",
-        "vm_tests": []
+        "name": "strago-release"
     },
     "strago-release-afdo": {
         "_template": "release-afdo-generate",
@@ -19123,8 +19115,7 @@
                     "strago"
                 ],
                 "grouped": true,
-                "name": "strago-release-afdo-generate",
-                "vm_tests": []
+                "name": "strago-release-afdo-generate"
             },
             {
                 "_template": "release-afdo-use",
@@ -19132,28 +19123,24 @@
                     "strago"
                 ],
                 "grouped": true,
-                "name": "strago-release-afdo-use",
-                "vm_tests": []
+                "name": "strago-release-afdo-use"
             }
         ],
-        "name": "strago-release-afdo",
-        "vm_tests": []
+        "name": "strago-release-afdo"
     },
     "strago-release-afdo-generate": {
         "_template": "release-afdo-generate",
         "boards": [
             "strago"
         ],
-        "name": "strago-release-afdo-generate",
-        "vm_tests": []
+        "name": "strago-release-afdo-generate"
     },
     "strago-release-afdo-use": {
         "_template": "release-afdo-use",
         "boards": [
             "strago"
         ],
-        "name": "strago-release-afdo-use",
-        "vm_tests": []
+        "name": "strago-release-afdo-use"
     },
     "strago-release-group": {
         "_template": "release",
@@ -19168,8 +19155,7 @@
                     "strago"
                 ],
                 "grouped": true,
-                "name": "strago-release",
-                "vm_tests": []
+                "name": "strago-release"
             },
             {
                 "_template": "release",
@@ -19185,8 +19171,8 @@
             }
         ],
         "description": "Release Builds (canary) (internal); Group config (boards: strago, cyan)",
-        "name": "strago-release-group",
-        "vm_tests": []
+        "important": true,
+        "name": "strago-release-group"
     },
     "strago-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -19194,8 +19180,7 @@
             "strago"
         ],
         "manifest": "official.xml",
-        "name": "strago-tot-chrome-pfq-informational",
-        "vm_tests": []
+        "name": "strago-tot-chrome-pfq-informational"
     },
     "strago-tot-chromium-pfq-informational": {
         "_template": "chromium-pfq-informational",
@@ -19205,8 +19190,7 @@
         "name": "strago-tot-chromium-pfq-informational",
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "stumpy-chrome-pfq": {
         "_template": "chrome-pfq",

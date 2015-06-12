@@ -573,11 +573,7 @@ _upload_gce_images_boards = frozenset([
     'lakitu',
 ])
 
-# TODO(akeshet): Temporary workaround to vmtest failing on strage-pre-cq, to
-# allow already-screened changes to work through the pipeline.
-_no_vmtest_boards = _arm_boards | _mips_boards | _brillo_boards | frozenset((
-    'strago',
-))
+_no_vmtest_boards = _arm_boards | _mips_boards | _brillo_boards
 
 
 # This is a list of configs that should be included on the main waterfall, but
@@ -623,7 +619,6 @@ _waterfall_config_map = {
         'rambi-d-release-group',
         'rambi-e-release-group',
         'storm-release-group',
-        'strago-release-group',
         'veyron-b-release-group',
         'veyron-c-release-group',
         'veyron-d-release-group',
@@ -2496,8 +2491,6 @@ def GetConfig():
       'strago', 'strago', (
           'cyan',
       ),
-      important=False,
-      vm_tests=[],
   )
 
   # oak-based boards
