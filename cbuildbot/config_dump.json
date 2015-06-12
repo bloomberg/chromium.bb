@@ -77,7 +77,6 @@
         "profile": null,
         "push_image": false,
         "push_overlays": null,
-        "quick_unit": false,
         "rootfs_verification": true,
         "sanity_check_slaves": null,
         "separate_debug_symbols": true,

@@ -58,7 +58,6 @@ class UnitTestStage(generic_stages.BoardSpecificBuilderStage):
     with timeout_util.Timeout(self.UNIT_TEST_TIMEOUT):
       commands.RunUnitTests(self._build_root,
                             self._current_board,
-                            full=(not self._run.config.quick_unit),
                             blacklist=self._run.config.unittest_blacklist,
                             extra_env=extra_env)
 

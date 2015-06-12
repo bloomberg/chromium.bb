@@ -431,10 +431,6 @@ def DefaultSettings():
       # Runs unittests for packages.
       unittests=True,
 
-      # If unittests is true, only run the unit tests for packages which have
-      # changed since the previous build.
-      quick_unit=False,
-
       # A list of the packages to blacklist from unittests.
       unittest_blacklist=[],
 

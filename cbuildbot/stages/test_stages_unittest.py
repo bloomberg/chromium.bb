@@ -100,44 +100,15 @@ class UnitTestStageTest(generic_stages_unittest.AbstractStageTestCase):
   def ConstructStage(self):
     return test_stages.UnitTestStage(self._run, self._current_board)
 
-  def testQuickTests(self):
-    exists_mock = self.PatchObject(os.path, 'exists', return_value=True)
-    self._run.config['quick_unit'] = True
-
-    self.RunStage()
-
-    # Verify the calls.
-    exists_mock.assert_called_once_with(
-        os.path.join(self.image_dir, 'au-generator.zip'))
-    self.rununittests_mock.assert_called_once_with(
-        self.build_root, self._current_board, full=False,
-        blacklist=[], extra_env=mock.ANY)
-    self.testauzip_mock.assert_called_once_with(self.build_root, self.image_dir)
-
-  def testQuickTestsAuGeneratorZipMissing(self):
-    exists_mock = self.PatchObject(os.path, 'exists', return_value=False)
-    self._run.config['quick_unit'] = True
-
-    self.RunStage()
-
-    exists_mock.assert_called_once_with(
-        os.path.join(self.image_dir, 'au-generator.zip'))
-    self.testauzip_mock.side_effect = Exception('should not be called')
-    self.rununittests_mock.assert_called_once_with(
-        self.build_root, self._current_board, full=False,
-        blacklist=[], extra_env=mock.ANY)
-
   def testFullTests(self):
     """Tests if full unit and cros_au_test_harness tests are run correctly."""
     exists_mock = self.PatchObject(os.path, 'exists', return_value=True)
-    self._run.config['quick_unit'] = False
 
     self.RunStage()
     exists_mock.assert_called_once_with(
         os.path.join(self.image_dir, 'au-generator.zip'))
     self.rununittests_mock.assert_called_once_with(
-        self.build_root, self._current_board, full=True,
-        blacklist=[], extra_env=mock.ANY)
+        self.build_root, self._current_board, blacklist=[], extra_env=mock.ANY)
     self.testauzip_mock.assert_called_once_with(self.build_root, self.image_dir)
 
 

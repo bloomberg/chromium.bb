@@ -597,15 +597,8 @@ def RunSignerTests(buildroot, board):
   RunBuildScript(buildroot, cmd, enter_chroot=True)
 
 
-def RunUnitTests(buildroot, board, full, blacklist=None, extra_env=None):
+def RunUnitTests(buildroot, board, blacklist=None, extra_env=None):
   cmd = ['cros_run_unit_tests', '--board=%s' % board]
-
-  # If we aren't running ALL tests, then restrict to just the packages
-  #   uprev noticed were changed.
-  if not full:
-    package_file = _PACKAGE_FILE % {'buildroot': buildroot}
-    cmd += ['--package_file=%s' %
-            path_util.ToChrootPath(package_file)]
 
   if blacklist:
     cmd += ['--blacklist_packages=%s' % ' '.join(blacklist)]

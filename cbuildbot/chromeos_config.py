@@ -73,7 +73,6 @@ def OverrideConfigForTrybot(build_config, options):
         all(x not in _arm_boards for x in my_config['boards']) and
         all(x not in _brillo_boards for x in my_config['boards'])):
       my_config['vm_tests'] = my_config['vm_tests_supported']
-      my_config['quick_unit'] = False
 
   return copy_config
 
