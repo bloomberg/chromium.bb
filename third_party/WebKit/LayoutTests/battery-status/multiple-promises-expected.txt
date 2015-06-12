@@ -3,7 +3,7 @@ Test multiple promise resolution.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS promise1 === promise2 is false
+PASS promise1 === promise2 is true
 first resolution
 PASS batteryInfo is defined.
 PASS mockBatteryInfo is defined.

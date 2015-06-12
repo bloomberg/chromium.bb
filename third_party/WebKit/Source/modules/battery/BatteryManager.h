@@ -6,7 +6,8 @@
 #define BatteryManager_h
 
 #include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/ScriptPromiseResolver.h"
+#include "bindings/core/v8/ScriptPromiseProperty.h"
+#include "core/dom/ActiveDOMObject.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/frame/PlatformEventController.h"
 #include "modules/EventTargetModules.h"
@@ -56,17 +57,11 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    enum State {
-        NotStarted,
-        Pending,
-        Resolved,
-    };
-
     explicit BatteryManager(ExecutionContext*);
 
-    RefPtrWillBeMember<ScriptPromiseResolver> m_resolver;
+    using BatteryProperty = ScriptPromiseProperty<Member<BatteryManager>, Member<BatteryManager>, Member<DOMException>>;
+    Member<BatteryProperty> m_batteryProperty;
     Member<BatteryStatus> m_batteryStatus;
-    State m_state;
 };
 
 } // namespace blink

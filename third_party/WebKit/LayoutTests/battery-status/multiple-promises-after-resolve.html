@@ -13,6 +13,7 @@ gc();
 jsTestIsAsync = true;
 testRunner.waitUntilDone();
 
+var promise1;
 var mockBatteryInfo;
 function setAndFireMockBatteryInfo(charging, chargingTime, dischargingTime, level) {
     mockBatteryInfo = { charging: charging,
@@ -42,15 +43,18 @@ function batteryStatusSuccess(battery) {
     debug('resolution number 1');
     checkBatteryInfo(battery);
 
-    navigator.getBattery().then(
+    promise2 = navigator.getBattery();
+    promise2.then(
         function(battery) {
             debug('resolution number 2');
             checkBatteryInfo(battery);
             setTimeout(finishJSTest, 0);
         }, batteryStatusFailure);
+    shouldBeTrue('promise1 === promise2');
 }
 
-navigator.getBattery().then(batteryStatusSuccess, batteryStatusFailure);
+promise1 = navigator.getBattery();
+promise1.then(batteryStatusSuccess, batteryStatusFailure);
 setAndFireMockBatteryInfo(false, 10, 20, 0.5);
 </script>
 </body>

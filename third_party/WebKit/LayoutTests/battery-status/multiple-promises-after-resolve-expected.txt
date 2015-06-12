@@ -10,6 +10,7 @@ PASS batteryInfo.charging is mockBatteryInfo.charging
 PASS batteryInfo.chargingTime is mockBatteryInfo.chargingTime
 PASS batteryInfo.dischargingTime is mockBatteryInfo.dischargingTime
 PASS batteryInfo.level is mockBatteryInfo.level
+PASS promise1 === promise2 is true
 resolution number 2
 PASS batteryInfo is defined.
 PASS mockBatteryInfo is defined.
