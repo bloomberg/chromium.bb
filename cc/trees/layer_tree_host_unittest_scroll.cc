@@ -680,84 +680,84 @@ TEST_F(LayerTreeHostScrollTestCaseWithChild,
        DeviceScaleFactor1_ScrollChild_DirectRenderer) {
   device_scale_factor_ = 1.f;
   scroll_child_layer_ = true;
-  RunTest(true, false, true);
+  RunTest(true, false);
 }
 
 TEST_F(LayerTreeHostScrollTestCaseWithChild,
        DeviceScaleFactor1_ScrollChild_DelegatingRenderer) {
   device_scale_factor_ = 1.f;
   scroll_child_layer_ = true;
-  RunTest(true, true, true);
+  RunTest(true, true);
 }
 
 TEST_F(LayerTreeHostScrollTestCaseWithChild,
        DeviceScaleFactor15_ScrollChild_DirectRenderer) {
   device_scale_factor_ = 1.5f;
   scroll_child_layer_ = true;
-  RunTest(true, false, true);
+  RunTest(true, false);
 }
 
 TEST_F(LayerTreeHostScrollTestCaseWithChild,
        DeviceScaleFactor15_ScrollChild_DelegatingRenderer) {
   device_scale_factor_ = 1.5f;
   scroll_child_layer_ = true;
-  RunTest(true, true, true);
+  RunTest(true, true);
 }
 
 TEST_F(LayerTreeHostScrollTestCaseWithChild,
        DeviceScaleFactor2_ScrollChild_DirectRenderer) {
   device_scale_factor_ = 2.f;
   scroll_child_layer_ = true;
-  RunTest(true, false, true);
+  RunTest(true, false);
 }
 
 TEST_F(LayerTreeHostScrollTestCaseWithChild,
        DeviceScaleFactor2_ScrollChild_DelegatingRenderer) {
   device_scale_factor_ = 2.f;
   scroll_child_layer_ = true;
-  RunTest(true, true, true);
+  RunTest(true, true);
 }
 
 TEST_F(LayerTreeHostScrollTestCaseWithChild,
        DeviceScaleFactor1_ScrollRootScrollLayer_DirectRenderer) {
   device_scale_factor_ = 1.f;
   scroll_child_layer_ = false;
-  RunTest(true, false, true);
+  RunTest(true, false);
 }
 
 TEST_F(LayerTreeHostScrollTestCaseWithChild,
        DeviceScaleFactor1_ScrollRootScrollLayer_DelegatingRenderer) {
   device_scale_factor_ = 1.f;
   scroll_child_layer_ = false;
-  RunTest(true, true, true);
+  RunTest(true, true);
 }
 
 TEST_F(LayerTreeHostScrollTestCaseWithChild,
        DeviceScaleFactor15_ScrollRootScrollLayer_DirectRenderer) {
   device_scale_factor_ = 1.5f;
   scroll_child_layer_ = false;
-  RunTest(true, false, true);
+  RunTest(true, false);
 }
 
 TEST_F(LayerTreeHostScrollTestCaseWithChild,
        DeviceScaleFactor15_ScrollRootScrollLayer_DelegatingRenderer) {
   device_scale_factor_ = 1.5f;
   scroll_child_layer_ = false;
-  RunTest(true, true, true);
+  RunTest(true, true);
 }
 
 TEST_F(LayerTreeHostScrollTestCaseWithChild,
        DeviceScaleFactor2_ScrollRootScrollLayer_DirectRenderer) {
   device_scale_factor_ = 2.f;
   scroll_child_layer_ = false;
-  RunTest(true, false, true);
+  RunTest(true, false);
 }
 
 TEST_F(LayerTreeHostScrollTestCaseWithChild,
        DeviceScaleFactor2_ScrollRootScrollLayer_DelegatingRenderer) {
   device_scale_factor_ = 2.f;
   scroll_child_layer_ = false;
-  RunTest(true, true, true);
+  RunTest(true, true);
 }
 
 class ImplSidePaintingScrollTest : public LayerTreeHostScrollTest {
@@ -1245,12 +1245,12 @@ class LayerTreeHostScrollTestLayerStructureChange
 };
 
 TEST_F(LayerTreeHostScrollTestLayerStructureChange, ScrollDestroyLayer) {
-  RunTest(true, false, true);
+  RunTest(true, false);
 }
 
 TEST_F(LayerTreeHostScrollTestLayerStructureChange, ScrollDestroyWholeTree) {
   scroll_destroy_whole_tree_ = true;
-  RunTest(true, false, true);
+  RunTest(true, false);
 }
 
 }  // namespace

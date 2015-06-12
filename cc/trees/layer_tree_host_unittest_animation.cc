@@ -923,7 +923,8 @@ class LayerTreeHostAnimationTestAnimationsAddedToNewAndExistingLayers
   int frame_count_with_pending_tree_;
 };
 
-SINGLE_AND_MULTI_THREAD_BLOCKNOTIFY_TEST_F(
+// This test blocks activation which is not supported for single thread mode.
+MULTI_THREAD_BLOCKNOTIFY_TEST_F(
     LayerTreeHostAnimationTestAnimationsAddedToNewAndExistingLayers);
 
 // When a layer with an animation is removed from the tree and later re-added,

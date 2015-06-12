@@ -409,7 +409,8 @@ class MultipleCompositeDoesNotCreateOutputSurface
   int request_count_;
 };
 
-SINGLE_THREAD_NOIMPL_TEST_F(MultipleCompositeDoesNotCreateOutputSurface);
+// This test uses Composite() which only exists for single thread.
+SINGLE_THREAD_TEST_F(MultipleCompositeDoesNotCreateOutputSurface);
 
 // This test makes sure that once a SingleThreadProxy issues a
 // DidFailToInitializeOutputSurface, that future Composite calls will not
@@ -464,7 +465,8 @@ class FailedCreateDoesNotCreateExtraOutputSurface
   bool has_failed_;
 };
 
-SINGLE_THREAD_NOIMPL_TEST_F(FailedCreateDoesNotCreateExtraOutputSurface);
+// This test uses Composite() which only exists for single thread.
+SINGLE_THREAD_TEST_F(FailedCreateDoesNotCreateExtraOutputSurface);
 
 class LayerTreeHostContextTestCommitAfterDelayedOutputSurface
     : public LayerTreeHostContextTest {
@@ -505,8 +507,8 @@ class LayerTreeHostContextTestCommitAfterDelayedOutputSurface
   bool creating_output_;
 };
 
-SINGLE_THREAD_NOIMPL_TEST_F(
-    LayerTreeHostContextTestCommitAfterDelayedOutputSurface);
+// This test uses Composite() which only exists for single thread.
+SINGLE_THREAD_TEST_F(LayerTreeHostContextTestCommitAfterDelayedOutputSurface);
 
 class LayerTreeHostContextTestAvoidUnnecessaryComposite
     : public LayerTreeHostContextTest {
@@ -538,8 +540,10 @@ class LayerTreeHostContextTestAvoidUnnecessaryComposite
   bool in_composite_;
 };
 
-SINGLE_THREAD_NOIMPL_TEST_F(LayerTreeHostContextTestAvoidUnnecessaryComposite);
+// This test uses Composite() which only exists for single thread.
+SINGLE_THREAD_TEST_F(LayerTreeHostContextTestAvoidUnnecessaryComposite);
 
+// This test uses PictureLayer to check for a working context.
 class LayerTreeHostContextTestLostContextSucceedsWithContent
     : public LayerTreeHostContextTestLostContextSucceeds {
  public:
@@ -586,8 +590,7 @@ class LayerTreeHostContextTestLostContextSucceedsWithContent
   scoped_refptr<Layer> layer_;
 };
 
-// This test uses PictureLayer to check for a working context.
-SINGLE_AND_MULTI_THREAD_IMPL_TEST_F(
+SINGLE_AND_MULTI_THREAD_TEST_F(
     LayerTreeHostContextTestLostContextSucceedsWithContent);
 
 class LayerTreeHostContextTestCreateOutputSurfaceFailsOnce
@@ -709,49 +712,49 @@ class LayerTreeHostContextTestLostContextAndEvictTextures
 TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
        LoseAfterEvict_SingleThread_DirectRenderer) {
   lose_after_evict_ = true;
-  RunTest(false, false, true);
+  RunTest(false, false);
 }
 
 TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
        LoseAfterEvict_SingleThread_DelegatingRenderer) {
   lose_after_evict_ = true;
-  RunTest(false, true, true);
+  RunTest(false, true);
 }
 
 TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
        LoseAfterEvict_MultiThread_DirectRenderer) {
   lose_after_evict_ = true;
-  RunTest(true, false, true);
+  RunTest(true, false);
 }
 
 TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
        LoseAfterEvict_MultiThread_DelegatingRenderer) {
   lose_after_evict_ = true;
-  RunTest(true, true, true);
+  RunTest(true, true);
 }
 
 TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
        LoseBeforeEvict_SingleThread_DirectRenderer) {
   lose_after_evict_ = false;
-  RunTest(false, false, true);
+  RunTest(false, false);
 }
 
 TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
        LoseBeforeEvict_SingleThread_DelegatingRenderer) {
   lose_after_evict_ = false;
-  RunTest(false, true, true);
+  RunTest(false, true);
 }
 
 TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
        LoseBeforeEvict_MultiThread_DirectRenderer) {
   lose_after_evict_ = false;
-  RunTest(true, false, true);
+  RunTest(true, false);
 }
 
 TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
        LoseBeforeEvict_MultiThread_DelegatingRenderer) {
   lose_after_evict_ = false;
-  RunTest(true, true, true);
+  RunTest(true, true);
 }
 
 class LayerTreeHostContextTestLayersNotified : public LayerTreeHostContextTest {
@@ -951,15 +954,12 @@ class LayerTreeHostContextTestDontUseLostResources
     hw_frame_provider_.set_frame(hw_video_frame_);
     scaled_hw_frame_provider_.set_frame(scaled_hw_video_frame_);
 
-    if (!delegating_renderer()) {
-      // TODO(danakj): IOSurface layer can not be transported. crbug.com/239335
-      scoped_refptr<IOSurfaceLayer> io_surface =
-          IOSurfaceLayer::Create(layer_settings_);
-      io_surface->SetBounds(gfx::Size(10, 10));
-      io_surface->SetIsDrawable(true);
-      io_surface->SetIOSurfaceProperties(1, gfx::Size(10, 10));
-      root->AddChild(io_surface);
-    }
+    scoped_refptr<IOSurfaceLayer> io_surface =
+        IOSurfaceLayer::Create(layer_settings_);
+    io_surface->SetBounds(gfx::Size(10, 10));
+    io_surface->SetIsDrawable(true);
+    io_surface->SetIOSurfaceProperties(1, gfx::Size(10, 10));
+    root->AddChild(io_surface);
 
     // Enable the hud.
     LayerTreeDebugState debug_state;
@@ -1083,7 +1083,7 @@ class LayerTreeHostContextTestImplSidePainting
   FakeContentLayerClient client_;
 };
 
-SINGLE_AND_MULTI_THREAD_IMPL_TEST_F(LayerTreeHostContextTestImplSidePainting);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostContextTestImplSidePainting);
 
 class ScrollbarLayerLostContext : public LayerTreeHostContextTest {
  public:
@@ -1437,15 +1437,7 @@ class UIResourceLostBeforeActivateTree : public UIResourceLostTest {
   UIResourceId test_id_;
 };
 
-TEST_F(UIResourceLostBeforeActivateTree,
-       RunMultiThread_DirectRenderer_ImplSidePaint) {
-  RunTest(true, false, true);
-}
-
-TEST_F(UIResourceLostBeforeActivateTree,
-       RunMultiThread_DelegatingRenderer_ImplSidePaint) {
-  RunTest(true, true, true);
-}
+SINGLE_AND_MULTI_THREAD_TEST_F(UIResourceLostBeforeActivateTree);
 
 // Resources evicted explicitly and by visibility changes.
 class UIResourceLostEviction : public UIResourceLostTestSimple {

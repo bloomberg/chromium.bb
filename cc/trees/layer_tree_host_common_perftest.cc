@@ -77,48 +77,9 @@ class LayerTreeHostCommonPerfTest : public LayerTreeTest {
   std::string json_;
 };
 
-class CalcDrawPropsMainTest : public LayerTreeHostCommonPerfTest {
+class CalcDrawPropsTest : public LayerTreeHostCommonPerfTest {
  public:
-  void RunCalcDrawProps() { RunTest(false, false, false); }
-
-  void BeginTest() override {
-    timer_.Reset();
-
-    do {
-      bool can_render_to_separate_surface = true;
-      bool verify_property_trees = false;
-      int max_texture_size = 8096;
-      RenderSurfaceLayerList update_list;
-      PropertyTrees property_trees;
-      LayerTreeHostCommon::CalcDrawPropsMainInputs inputs(
-          layer_tree_host()->root_layer(),
-          layer_tree_host()->device_viewport_size(), gfx::Transform(),
-          layer_tree_host()->device_scale_factor(),
-          layer_tree_host()->page_scale_factor(),
-          layer_tree_host()->overscroll_elasticity_layer(),
-          layer_tree_host()->elastic_overscroll(),
-          layer_tree_host()->page_scale_layer(), max_texture_size,
-          layer_tree_host()->settings().can_use_lcd_text,
-          layer_tree_host()->settings().layers_always_allowed_lcd_text,
-          can_render_to_separate_surface,
-          layer_tree_host()
-              ->settings()
-              .layer_transforms_should_scale_layer_contents,
-          verify_property_trees, &update_list, 0, &property_trees);
-      LayerTreeHostCommon::CalculateDrawProperties(&inputs);
-
-      timer_.NextLap();
-    } while (!timer_.HasTimeLimitExpired());
-
-    EndTest();
-  }
-};
-
-class CalcDrawPropsImplTest : public LayerTreeHostCommonPerfTest {
- public:
-  void RunCalcDrawProps() {
-    RunTestWithImplSidePainting();
-  }
+  void RunCalcDrawProps() { RunTest(false, false); }
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
@@ -163,10 +124,10 @@ class CalcDrawPropsImplTest : public LayerTreeHostCommonPerfTest {
   }
 };
 
-class BspTreePerfTest : public CalcDrawPropsImplTest {
+class BspTreePerfTest : public CalcDrawPropsTest {
  public:
   BspTreePerfTest() : num_duplicates_(1) {}
-  void RunSortLayers() { RunTest(false, false, false); }
+  void RunSortLayers() { RunTest(false, false); }
 
   void SetNumberOfDuplicates(int num_duplicates) {
     num_duplicates_ = num_duplicates;
@@ -230,49 +191,25 @@ class BspTreePerfTest : public CalcDrawPropsImplTest {
   int num_duplicates_;
 };
 
-TEST_F(CalcDrawPropsMainTest, TenTen) {
-  SetTestName("10_10_main_thread");
-  ReadTestFile("10_10_layer_tree");
-  RunCalcDrawProps();
-}
-
-TEST_F(CalcDrawPropsMainTest, HeavyPage) {
-  SetTestName("heavy_page_main_thread");
-  ReadTestFile("heavy_layer_tree");
-  RunCalcDrawProps();
-}
-
-TEST_F(CalcDrawPropsMainTest, TouchRegionLight) {
-  SetTestName("touch_region_light_main_thread");
-  ReadTestFile("touch_region_light");
-  RunCalcDrawProps();
-}
-
-TEST_F(CalcDrawPropsMainTest, TouchRegionHeavy) {
-  SetTestName("touch_region_heavy_main_thread");
-  ReadTestFile("touch_region_heavy");
-  RunCalcDrawProps();
-}
-
-TEST_F(CalcDrawPropsImplTest, TenTen) {
+TEST_F(CalcDrawPropsTest, TenTen) {
   SetTestName("10_10");
   ReadTestFile("10_10_layer_tree");
   RunCalcDrawProps();
 }
 
-TEST_F(CalcDrawPropsImplTest, HeavyPage) {
+TEST_F(CalcDrawPropsTest, HeavyPage) {
   SetTestName("heavy_page");
   ReadTestFile("heavy_layer_tree");
   RunCalcDrawProps();
 }
 
-TEST_F(CalcDrawPropsImplTest, TouchRegionLight) {
+TEST_F(CalcDrawPropsTest, TouchRegionLight) {
   SetTestName("touch_region_light");
   ReadTestFile("touch_region_light");
   RunCalcDrawProps();
 }
 
-TEST_F(CalcDrawPropsImplTest, TouchRegionHeavy) {
+TEST_F(CalcDrawPropsTest, TouchRegionHeavy) {
   SetTestName("touch_region_heavy");
   ReadTestFile("touch_region_heavy");
   RunCalcDrawProps();

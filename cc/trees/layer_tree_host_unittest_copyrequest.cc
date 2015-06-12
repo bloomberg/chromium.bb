@@ -123,25 +123,25 @@ class LayerTreeHostCopyRequestTestMultipleRequests
 TEST_F(LayerTreeHostCopyRequestTestMultipleRequests,
        DISABLED_GLRenderer_RunSingleThread) {
   use_gl_renderer_ = true;
-  RunTest(false, false, false);
+  RunTest(false, false);
 }
 
 TEST_F(LayerTreeHostCopyRequestTestMultipleRequests,
-       GLRenderer_RunMultiThread_MainThreadPainting) {
+       GLRenderer_RunMultiThread) {
   use_gl_renderer_ = true;
-  RunTest(true, false, false);
+  RunTest(true, false);
 }
 
 TEST_F(LayerTreeHostCopyRequestTestMultipleRequests,
        SoftwareRenderer_RunSingleThread) {
   use_gl_renderer_ = false;
-  RunTest(false, false, false);
+  RunTest(false, false);
 }
 
 TEST_F(LayerTreeHostCopyRequestTestMultipleRequests,
-       SoftwareRenderer_RunMultiThread_MainThreadPainting) {
+       SoftwareRenderer_RunMultiThread) {
   use_gl_renderer_ = false;
-  RunTest(true, false, false);
+  RunTest(true, false);
 }
 
 class LayerTreeHostCopyRequestTestLayerDestroyed
@@ -332,7 +332,7 @@ class LayerTreeHostCopyRequestTestInHiddenSubtree
   scoped_refptr<FakePictureLayer> copy_layer_;
 };
 
-SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_IMPL_TEST_F(
+SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(
     LayerTreeHostCopyRequestTestInHiddenSubtree);
 
 class LayerTreeHostTestHiddenSurfaceNotAllocatedForSubtreeCopyRequest
@@ -529,7 +529,7 @@ class LayerTreeHostTestAsyncTwoReadbacksWithoutDraw
   scoped_refptr<FakePictureLayer> copy_layer_;
 };
 
-SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_IMPL_TEST_F(
+SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(
     LayerTreeHostTestAsyncTwoReadbacksWithoutDraw);
 
 class LayerTreeHostCopyRequestTestLostOutputSurface
@@ -657,7 +657,7 @@ class LayerTreeHostCopyRequestTestLostOutputSurface
   scoped_ptr<CopyOutputResult> result_;
 };
 
-SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_IMPL_TEST_F(
+SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(
     LayerTreeHostCopyRequestTestLostOutputSurface);
 
 class LayerTreeHostCopyRequestTestCountTextures
@@ -765,7 +765,7 @@ class LayerTreeHostCopyRequestTestCreatesTexture
   }
 };
 
-SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_IMPL_TEST_F(
+SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(
     LayerTreeHostCopyRequestTestCreatesTexture);
 
 class LayerTreeHostCopyRequestTestProvideTexture
@@ -818,7 +818,7 @@ class LayerTreeHostCopyRequestTestProvideTexture
   unsigned sync_point_;
 };
 
-SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_IMPL_TEST_F(
+SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(
     LayerTreeHostCopyRequestTestProvideTexture);
 
 class LayerTreeHostCopyRequestTestDestroyBeforeCopy

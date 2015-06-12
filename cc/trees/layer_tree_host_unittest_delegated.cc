@@ -430,7 +430,7 @@ class LayerTreeHostDelegatedTestDontUseLostChildIdAfterCommit
   }
 };
 
-MULTI_THREAD_IMPL_TEST_F(
+SINGLE_AND_MULTI_THREAD_TEST_F(
     LayerTreeHostDelegatedTestDontUseLostChildIdAfterCommit);
 
 // Test that we can gracefully handle invalid frames after the context was lost.
@@ -2286,7 +2286,8 @@ class LayerTreeHostDelegatedTestActiveFrameIsValid
   bool drew_with_pending_tree_;
 };
 
-MULTI_THREAD_IMPL_TEST_F(LayerTreeHostDelegatedTestActiveFrameIsValid);
+// This test blocks activation which is not supported for single thread mode.
+MULTI_THREAD_BLOCKNOTIFY_TEST_F(LayerTreeHostDelegatedTestActiveFrameIsValid);
 
 }  // namespace
 }  // namespace cc

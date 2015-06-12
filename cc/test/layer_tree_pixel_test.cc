@@ -30,8 +30,7 @@ namespace cc {
 LayerTreePixelTest::LayerTreePixelTest()
     : pixel_comparator_(new ExactPixelComparator(true)),
       test_type_(PIXEL_TEST_GL),
-      pending_texture_mailbox_callbacks_(0),
-      impl_side_painting_(true) {
+      pending_texture_mailbox_callbacks_(0) {
 }
 
 LayerTreePixelTest::~LayerTreePixelTest() {}
@@ -203,7 +202,7 @@ void LayerTreePixelTest::RunPixelTest(
   readback_target_ = NULL;
   ref_file_ = file_name;
   bool threaded = true;
-  RunTest(threaded, false, impl_side_painting_);
+  RunTest(threaded, false);
 }
 
 void LayerTreePixelTest::RunSingleThreadedPixelTest(
@@ -215,7 +214,7 @@ void LayerTreePixelTest::RunSingleThreadedPixelTest(
   readback_target_ = NULL;
   ref_file_ = file_name;
   bool threaded = false;
-  RunTest(threaded, false, impl_side_painting_);
+  RunTest(threaded, false);
 }
 
 void LayerTreePixelTest::RunPixelTestWithReadbackTarget(
@@ -227,7 +226,7 @@ void LayerTreePixelTest::RunPixelTestWithReadbackTarget(
   content_root_ = content_root;
   readback_target_ = target;
   ref_file_ = file_name;
-  RunTest(true, false, impl_side_painting_);
+  RunTest(true, false);
 }
 
 void LayerTreePixelTest::SetupTree() {

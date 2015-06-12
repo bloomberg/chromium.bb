@@ -128,7 +128,7 @@ class LayerTreeHostPictureTestTwinLayer
 };
 
 // There is no pending layers in single thread mode.
-MULTI_THREAD_IMPL_TEST_F(LayerTreeHostPictureTestTwinLayer);
+MULTI_THREAD_TEST_F(LayerTreeHostPictureTestTwinLayer);
 
 class LayerTreeHostPictureTestResizeViewportWithGpuRaster
     : public LayerTreeHostPictureTest {
@@ -191,7 +191,7 @@ class LayerTreeHostPictureTestResizeViewportWithGpuRaster
   scoped_refptr<FakePictureLayer> picture_;
 };
 
-SINGLE_AND_MULTI_THREAD_IMPL_TEST_F(
+SINGLE_AND_MULTI_THREAD_TEST_F(
     LayerTreeHostPictureTestResizeViewportWithGpuRaster);
 
 class LayerTreeHostPictureTestChangeLiveTilesRectWithRecycleTree
@@ -294,8 +294,7 @@ class LayerTreeHostPictureTestChangeLiveTilesRectWithRecycleTree
 };
 
 // Multi-thread only since there is no recycle tree in single thread.
-MULTI_THREAD_IMPL_TEST_F(
-    LayerTreeHostPictureTestChangeLiveTilesRectWithRecycleTree);
+MULTI_THREAD_TEST_F(LayerTreeHostPictureTestChangeLiveTilesRectWithRecycleTree);
 
 class LayerTreeHostPictureTestRSLLMembership : public LayerTreeHostPictureTest {
   void SetupTree() override {
@@ -383,7 +382,7 @@ class LayerTreeHostPictureTestRSLLMembership : public LayerTreeHostPictureTest {
   scoped_refptr<FakePictureLayer> picture_;
 };
 
-SINGLE_AND_MULTI_THREAD_IMPL_TEST_F(LayerTreeHostPictureTestRSLLMembership);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostPictureTestRSLLMembership);
 
 class LayerTreeHostPictureTestRSLLMembershipWithScale
     : public LayerTreeHostPictureTest {
@@ -534,7 +533,7 @@ class LayerTreeHostPictureTestRSLLMembershipWithScale
 // Multi-thread only because in single thread you can't pinch zoom on the
 // compositor thread.
 // Disabled due to flakiness. See http://crbug.com/460581
-// MULTI_THREAD_IMPL_TEST_F(LayerTreeHostPictureTestRSLLMembershipWithScale);
+// MULTI_THREAD_TEST_F(LayerTreeHostPictureTestRSLLMembershipWithScale);
 
 }  // namespace
 }  // namespace cc

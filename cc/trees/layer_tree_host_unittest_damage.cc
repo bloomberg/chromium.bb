@@ -236,7 +236,7 @@ class LayerTreeHostDamageTestNoDamageDoesNotSwap
   int did_swap_and_succeed_;
 };
 
-SINGLE_AND_MULTI_THREAD_IMPL_TEST_F(LayerTreeHostDamageTestNoDamageDoesNotSwap);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostDamageTestNoDamageDoesNotSwap);
 
 class LayerTreeHostDamageTestForcedFullDamage : public LayerTreeHostDamageTest {
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
@@ -332,7 +332,7 @@ class LayerTreeHostDamageTestForcedFullDamage : public LayerTreeHostDamageTest {
   gfx::Rect child_damage_rect_;
 };
 
-SINGLE_AND_MULTI_THREAD_IMPL_TEST_F(LayerTreeHostDamageTestForcedFullDamage);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostDamageTestForcedFullDamage);
 
 class LayerTreeHostScrollbarDamageTest : public LayerTreeHostDamageTest {
   void SetupTree() override {

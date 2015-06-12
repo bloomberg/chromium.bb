@@ -319,7 +319,6 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
   }
 
   void BlockNotifyReadyToActivateForTesting(bool block) override {
-    CHECK(settings().impl_side_painting);
     CHECK(proxy()->ImplThreadTaskRunner())
         << "Not supported for single-threaded mode.";
     block_notify_ready_to_activate_for_testing_ = block;
@@ -786,9 +785,7 @@ void LayerTreeTest::DispatchCompositeImmediately() {
     layer_tree_host_->Composite(base::TimeTicks::Now());
 }
 
-void LayerTreeTest::RunTest(bool threaded,
-                            bool delegating_renderer,
-                            bool impl_side_painting) {
+void LayerTreeTest::RunTest(bool threaded, bool delegating_renderer) {
   if (threaded) {
     impl_thread_.reset(new base::Thread("Compositor"));
     ASSERT_TRUE(impl_thread_->Start());
@@ -806,9 +803,10 @@ void LayerTreeTest::RunTest(bool threaded,
   // mocked out.
   settings_.renderer_settings.refresh_rate = 200.0;
   settings_.background_animation_rate = 200.0;
-  settings_.impl_side_painting = impl_side_painting;
+  settings_.impl_side_painting = true;
   settings_.verify_property_trees = verify_property_trees_;
   InitializeSettings(&settings_);
+  DCHECK(settings_.impl_side_painting);
   InitializeLayerSettings(&layer_settings_);
 
   main_task_runner_->PostTask(
@@ -835,10 +833,6 @@ void LayerTreeTest::RunTest(bool threaded,
     return;
   }
   AfterTest();
-}
-
-void LayerTreeTest::RunTestWithImplSidePainting() {
-  RunTest(true, false, true);
 }
 
 void LayerTreeTest::RequestNewOutputSurface() {
