@@ -52,9 +52,11 @@ class QuicServerSessionVisitor {
 
 class QuicServerSession : public QuicSession {
  public:
+  // |crypto_config| must outlive the session.
   QuicServerSession(const QuicConfig& config,
                     QuicConnection* connection,
-                    QuicServerSessionVisitor* visitor);
+                    QuicServerSessionVisitor* visitor,
+                    const QuicCryptoServerConfig* crypto_config);
 
   // Override the base class to notify the owner of the connection close.
   void OnConnectionClosed(QuicErrorCode error, bool from_peer) override;
@@ -66,8 +68,7 @@ class QuicServerSession : public QuicSession {
 
   ~QuicServerSession() override;
 
-  // |crypto_config| must outlive the session.
-  virtual void InitializeSession(const QuicCryptoServerConfig* crypto_config);
+  void Initialize() override;
 
   const QuicCryptoServerStream* crypto_stream() const {
     return crypto_stream_.get();
@@ -118,6 +119,7 @@ class QuicServerSession : public QuicSession {
  private:
   friend class test::QuicServerSessionPeer;
 
+  const QuicCryptoServerConfig* crypto_config_;
   scoped_ptr<QuicCryptoServerStream> crypto_stream_;
   QuicServerSessionVisitor* visitor_;
 

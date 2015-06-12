@@ -135,15 +135,6 @@ QuicSequenceNumberLength ReadSequenceNumberLength(uint8 flags) {
 
 }  // namespace
 
-bool QuicFramerVisitorInterface::OnWindowUpdateFrame(
-    const QuicWindowUpdateFrame& frame) {
-  return true;
-}
-
-bool QuicFramerVisitorInterface::OnBlockedFrame(const QuicBlockedFrame& frame) {
-  return true;
-}
-
 QuicFramer::QuicFramer(const QuicVersionVector& supported_versions,
                        QuicTime creation_time,
                        Perspective perspective)

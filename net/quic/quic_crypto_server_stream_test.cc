@@ -96,33 +96,34 @@ class QuicCryptoServerStreamTest : public ::testing::TestWithParam<bool> {
   // called multiple times.
   void InitializeServer() {
     TestServerSession* server_session = nullptr;
-    QuicCryptoServerStream* server_stream = nullptr;
-    SetupCryptoServerStreamForTest(server_id_,
-                                   QuicTime::Delta::FromSeconds(100000),
-                                   &server_crypto_config_, &server_connection_,
-                                   &server_session, &server_stream);
+    CreateServerSessionForTest(server_id_, QuicTime::Delta::FromSeconds(100000),
+                               &server_crypto_config_, &server_connection_,
+                               &server_session);
     CHECK(server_session);
-    CHECK(server_stream);
     server_session_.reset(server_session);
-    server_stream_.reset(server_stream);
     CryptoTestUtils::SetupCryptoServerConfigForTest(
         server_connection_->clock(), server_connection_->random_generator(),
         server_session_->config(), &server_crypto_config_);
+  }
+
+  QuicCryptoServerStream* server_stream() {
+    return server_session_->GetCryptoStream();
+  }
+
+  QuicCryptoClientStream* client_stream() {
+    return client_session_->GetCryptoStream();
   }
 
   // Initializes a fake client, and all its associated state, for
   // testing.  May be called multiple times.
   void InitializeFakeClient(bool supports_stateless_rejects) {
     TestClientSession* client_session = nullptr;
-    QuicCryptoClientStream* client_stream = nullptr;
-    SetupCryptoClientStreamForTest(server_id_, supports_stateless_rejects,
-                                   QuicTime::Delta::FromSeconds(100000),
-                                   &client_crypto_config_, &client_connection_,
-                                   &client_session, &client_stream);
+    CreateClientSessionForTest(server_id_, supports_stateless_rejects,
+                               QuicTime::Delta::FromSeconds(100000),
+                               &client_crypto_config_, &client_connection_,
+                               &client_session);
     CHECK(client_session);
-    CHECK(client_stream);
     client_session_.reset(client_session);
-    client_stream_.reset(client_stream);
   }
 
   bool AsyncStrikeRegisterVerification() {
@@ -136,24 +137,21 @@ class QuicCryptoServerStreamTest : public ::testing::TestWithParam<bool> {
 
   int CompleteCryptoHandshake() {
     CHECK(server_connection_);
-    CHECK(server_stream_ != nullptr);
+    CHECK(server_session_ != nullptr);
     return CryptoTestUtils::HandshakeWithFakeClient(
-        server_connection_, server_stream_.get(), client_options_);
+        server_connection_, server_stream(), client_options_);
   }
 
   // Performs a single round of handshake message-exchange between the
   // client and server.
   void AdvanceHandshakeWithFakeClient() {
     CHECK(server_connection_);
-    CHECK(server_stream_ != nullptr);
     CHECK(client_session_ != nullptr);
-    CHECK(client_stream_ != nullptr);
 
     EXPECT_CALL(*client_session_, OnProofValid(_)).Times(testing::AnyNumber());
-    client_stream_->CryptoConnect();
-    CryptoTestUtils::AdvanceHandshake(client_connection_, client_stream_.get(),
-                                      0, server_connection_,
-                                      server_stream_.get(), 0);
+    client_stream()->CryptoConnect();
+    CryptoTestUtils::AdvanceHandshake(client_connection_, client_stream(), 0,
+                                      server_connection_, server_stream(), 0);
   }
 
  protected:
@@ -161,14 +159,12 @@ class QuicCryptoServerStreamTest : public ::testing::TestWithParam<bool> {
   PacketSavingConnection* server_connection_;
   scoped_ptr<TestServerSession> server_session_;
   QuicCryptoServerConfig server_crypto_config_;
-  scoped_ptr<QuicCryptoServerStream> server_stream_;
   QuicServerId server_id_;
 
   // Client state
   PacketSavingConnection* client_connection_;
   QuicCryptoClientConfig client_crypto_config_;
   scoped_ptr<TestClientSession> client_session_;
-  scoped_ptr<QuicCryptoClientStream> client_stream_;
 
   CryptoHandshakeMessage message_;
   scoped_ptr<QuicData> message_data_;
@@ -179,13 +175,13 @@ class QuicCryptoServerStreamTest : public ::testing::TestWithParam<bool> {
 INSTANTIATE_TEST_CASE_P(Tests, QuicCryptoServerStreamTest, testing::Bool());
 
 TEST_P(QuicCryptoServerStreamTest, NotInitiallyConected) {
-  EXPECT_FALSE(server_stream_->encryption_established());
-  EXPECT_FALSE(server_stream_->handshake_confirmed());
+  EXPECT_FALSE(server_stream()->encryption_established());
+  EXPECT_FALSE(server_stream()->handshake_confirmed());
 }
 
 TEST_P(QuicCryptoServerStreamTest, NotInitiallySendingStatelessRejects) {
-  EXPECT_FALSE(server_stream_->use_stateless_rejects_if_peer_supported());
-  EXPECT_FALSE(server_stream_->peer_supports_stateless_rejects());
+  EXPECT_FALSE(server_stream()->use_stateless_rejects_if_peer_supported());
+  EXPECT_FALSE(server_stream()->peer_supports_stateless_rejects());
 }
 
 TEST_P(QuicCryptoServerStreamTest, ConnectedAfterCHLO) {
@@ -194,21 +190,21 @@ TEST_P(QuicCryptoServerStreamTest, ConnectedAfterCHLO) {
   //   * One to get a source-address token and certificates.
   //   * One to complete the handshake.
   EXPECT_EQ(2, CompleteCryptoHandshake());
-  EXPECT_TRUE(server_stream_->encryption_established());
-  EXPECT_TRUE(server_stream_->handshake_confirmed());
+  EXPECT_TRUE(server_stream()->encryption_established());
+  EXPECT_TRUE(server_stream()->handshake_confirmed());
 }
 
 TEST_P(QuicCryptoServerStreamTest, StatelessRejectAfterCHLO) {
   ValueRestore<bool> old_flag(&FLAGS_enable_quic_stateless_reject_support,
                               true);
-  server_stream_->set_use_stateless_rejects_if_peer_supported(true);
+  server_stream()->set_use_stateless_rejects_if_peer_supported(true);
 
   InitializeFakeClient(/* supports_stateless_rejects= */ true);
   AdvanceHandshakeWithFakeClient();
 
   // Check the server to make the sure the handshake did not succeed.
-  EXPECT_FALSE(server_stream_->encryption_established());
-  EXPECT_FALSE(server_stream_->handshake_confirmed());
+  EXPECT_FALSE(server_stream()->encryption_established());
+  EXPECT_FALSE(server_stream()->handshake_confirmed());
 
   // Check the client state to make sure that it received a server-designated
   // connection id.
@@ -233,16 +229,16 @@ TEST_P(QuicCryptoServerStreamTest, StatelessRejectAfterCHLO) {
 TEST_P(QuicCryptoServerStreamTest, ConnectedAfterStatelessHandshake) {
   ValueRestore<bool> old_flag(&FLAGS_enable_quic_stateless_reject_support,
                               true);
-  server_stream_->set_use_stateless_rejects_if_peer_supported(true);
+  server_stream()->set_use_stateless_rejects_if_peer_supported(true);
 
   InitializeFakeClient(/* supports_stateless_rejects= */ true);
   AdvanceHandshakeWithFakeClient();
 
   // On the first round, encryption will not be established.
-  EXPECT_FALSE(server_stream_->encryption_established());
-  EXPECT_FALSE(server_stream_->handshake_confirmed());
-  EXPECT_EQ(1, server_stream_->num_handshake_messages());
-  EXPECT_EQ(0, server_stream_->num_handshake_messages_with_server_nonces());
+  EXPECT_FALSE(server_stream()->encryption_established());
+  EXPECT_FALSE(server_stream()->handshake_confirmed());
+  EXPECT_EQ(1, server_stream()->num_handshake_messages());
+  EXPECT_EQ(0, server_stream()->num_handshake_messages_with_server_nonces());
 
   // Now check the client state.
   QuicCryptoClientConfig::CachedState* client_state =
@@ -261,11 +257,11 @@ TEST_P(QuicCryptoServerStreamTest, ConnectedAfterStatelessHandshake) {
   // Now create new client and server streams with the existing config
   // and try the handshake again (0-RTT handshake).
   InitializeServer();
-  server_stream_->set_use_stateless_rejects_if_peer_supported(true);
+  server_stream()->set_use_stateless_rejects_if_peer_supported(true);
 
   InitializeFakeClient(/* supports_stateless_rejects= */ true);
 
-  client_stream_->CryptoConnect();
+  client_stream()->CryptoConnect();
 
   // In the stateless case, the second handshake contains a server-nonce, so the
   // AsyncStrikeRegisterVerification() case will still succeed (unlike a 0-RTT
@@ -273,16 +269,16 @@ TEST_P(QuicCryptoServerStreamTest, ConnectedAfterStatelessHandshake) {
   AdvanceHandshakeWithFakeClient();
 
   // On the second round, encryption will be established.
-  EXPECT_TRUE(server_stream_->encryption_established());
-  EXPECT_TRUE(server_stream_->handshake_confirmed());
-  EXPECT_EQ(2, server_stream_->num_handshake_messages());
-  EXPECT_EQ(1, server_stream_->num_handshake_messages_with_server_nonces());
+  EXPECT_TRUE(server_stream()->encryption_established());
+  EXPECT_TRUE(server_stream()->handshake_confirmed());
+  EXPECT_EQ(2, server_stream()->num_handshake_messages());
+  EXPECT_EQ(1, server_stream()->num_handshake_messages_with_server_nonces());
 }
 
 TEST_P(QuicCryptoServerStreamTest, NoStatelessRejectIfNoClientSupport) {
   ValueRestore<bool> old_flag(&FLAGS_enable_quic_stateless_reject_support,
                               true);
-  server_stream_->set_use_stateless_rejects_if_peer_supported(true);
+  server_stream()->set_use_stateless_rejects_if_peer_supported(true);
 
   // The server is configured to use stateless rejects, but the client does not
   // support it.
@@ -290,8 +286,8 @@ TEST_P(QuicCryptoServerStreamTest, NoStatelessRejectIfNoClientSupport) {
   AdvanceHandshakeWithFakeClient();
 
   // Check the server to make the sure the handshake did not succeed.
-  EXPECT_FALSE(server_stream_->encryption_established());
-  EXPECT_FALSE(server_stream_->handshake_confirmed());
+  EXPECT_FALSE(server_stream()->encryption_established());
+  EXPECT_FALSE(server_stream()->handshake_confirmed());
 
   // Check the client state to make sure that it did not receive a
   // server-designated connection id.
@@ -314,42 +310,42 @@ TEST_P(QuicCryptoServerStreamTest, ZeroRTT) {
   InitializeFakeClient(/* supports_stateless_rejects= */ false);
   InitializeServer();
 
-  client_stream_->CryptoConnect();
+  client_stream()->CryptoConnect();
 
   if (AsyncStrikeRegisterVerification()) {
-    EXPECT_FALSE(client_stream_->handshake_confirmed());
-    EXPECT_FALSE(server_stream_->handshake_confirmed());
+    EXPECT_FALSE(client_stream()->handshake_confirmed());
+    EXPECT_FALSE(server_stream()->handshake_confirmed());
 
     // Advance the handshake.  Expect that the server will be stuck waiting for
     // client nonce verification to complete.
     pair<size_t, size_t> messages_moved = CryptoTestUtils::AdvanceHandshake(
-        client_connection_, client_stream_.get(), 0, server_connection_,
-        server_stream_.get(), 0);
+        client_connection_, client_stream(), 0, server_connection_,
+        server_stream(), 0);
     EXPECT_EQ(1u, messages_moved.first);
     EXPECT_EQ(0u, messages_moved.second);
     EXPECT_EQ(1, strike_register_client_->PendingVerifications());
-    EXPECT_FALSE(client_stream_->handshake_confirmed());
-    EXPECT_FALSE(server_stream_->handshake_confirmed());
+    EXPECT_FALSE(client_stream()->handshake_confirmed());
+    EXPECT_FALSE(server_stream()->handshake_confirmed());
 
     // The server handshake completes once the nonce verification completes.
     strike_register_client_->RunPendingVerifications();
-    EXPECT_FALSE(client_stream_->handshake_confirmed());
-    EXPECT_TRUE(server_stream_->handshake_confirmed());
+    EXPECT_FALSE(client_stream()->handshake_confirmed());
+    EXPECT_TRUE(server_stream()->handshake_confirmed());
 
     messages_moved = CryptoTestUtils::AdvanceHandshake(
-        client_connection_, client_stream_.get(), messages_moved.first,
-        server_connection_, server_stream_.get(), messages_moved.second);
+        client_connection_, client_stream(), messages_moved.first,
+        server_connection_, server_stream(), messages_moved.second);
     EXPECT_EQ(1u, messages_moved.first);
     EXPECT_EQ(1u, messages_moved.second);
-    EXPECT_TRUE(client_stream_->handshake_confirmed());
-    EXPECT_TRUE(server_stream_->handshake_confirmed());
+    EXPECT_TRUE(client_stream()->handshake_confirmed());
+    EXPECT_TRUE(server_stream()->handshake_confirmed());
   } else {
     CryptoTestUtils::CommunicateHandshakeMessages(
-        client_connection_, client_stream_.get(), server_connection_,
-        server_stream_.get());
+        client_connection_, client_stream(), server_connection_,
+        server_stream());
   }
 
-  EXPECT_EQ(1, client_stream_->num_sent_client_hellos());
+  EXPECT_EQ(1, client_stream()->num_sent_client_hellos());
 }
 
 TEST_P(QuicCryptoServerStreamTest, MessageAfterHandshake) {
@@ -359,8 +355,8 @@ TEST_P(QuicCryptoServerStreamTest, MessageAfterHandshake) {
       SendConnectionClose(QUIC_CRYPTO_MESSAGE_AFTER_HANDSHAKE_COMPLETE));
   message_.set_tag(kCHLO);
   ConstructHandshakeMessage();
-  server_stream_->ProcessRawData(message_data_->data(),
-                                 message_data_->length());
+  server_stream()->ProcessRawData(message_data_->data(),
+                                  message_data_->length());
 }
 
 TEST_P(QuicCryptoServerStreamTest, BadMessageType) {
@@ -368,8 +364,8 @@ TEST_P(QuicCryptoServerStreamTest, BadMessageType) {
   ConstructHandshakeMessage();
   EXPECT_CALL(*server_connection_,
               SendConnectionClose(QUIC_INVALID_CRYPTO_MESSAGE_TYPE));
-  server_stream_->ProcessRawData(message_data_->data(),
-                                 message_data_->length());
+  server_stream()->ProcessRawData(message_data_->data(),
+                                  message_data_->length());
 }
 
 TEST_P(QuicCryptoServerStreamTest, WithoutCertificates) {
@@ -379,34 +375,34 @@ TEST_P(QuicCryptoServerStreamTest, WithoutCertificates) {
   // Only 2 client hellos need to be sent in the no-certs case: one to get the
   // source-address token and the second to finish.
   EXPECT_EQ(2, CompleteCryptoHandshake());
-  EXPECT_TRUE(server_stream_->encryption_established());
-  EXPECT_TRUE(server_stream_->handshake_confirmed());
+  EXPECT_TRUE(server_stream()->encryption_established());
+  EXPECT_TRUE(server_stream()->handshake_confirmed());
 }
 
 TEST_P(QuicCryptoServerStreamTest, ChannelID) {
   client_options_.channel_id_enabled = true;
   client_options_.channel_id_source_async = false;
   // CompleteCryptoHandshake verifies
-  // server_stream_->crypto_negotiated_params().channel_id is correct.
+  // server_stream()->crypto_negotiated_params().channel_id is correct.
   EXPECT_EQ(2, CompleteCryptoHandshake());
-  EXPECT_TRUE(server_stream_->encryption_established());
-  EXPECT_TRUE(server_stream_->handshake_confirmed());
+  EXPECT_TRUE(server_stream()->encryption_established());
+  EXPECT_TRUE(server_stream()->handshake_confirmed());
 }
 
 TEST_P(QuicCryptoServerStreamTest, ChannelIDAsync) {
   client_options_.channel_id_enabled = true;
   client_options_.channel_id_source_async = true;
   // CompleteCryptoHandshake verifies
-  // server_stream_->crypto_negotiated_params().channel_id is correct.
+  // server_stream()->crypto_negotiated_params().channel_id is correct.
   EXPECT_EQ(2, CompleteCryptoHandshake());
-  EXPECT_TRUE(server_stream_->encryption_established());
-  EXPECT_TRUE(server_stream_->handshake_confirmed());
+  EXPECT_TRUE(server_stream()->encryption_established());
+  EXPECT_TRUE(server_stream()->handshake_confirmed());
 }
 
 TEST_P(QuicCryptoServerStreamTest, OnlySendSCUPAfterHandshakeComplete) {
   // An attempt to send a SCUP before completing handshake should fail.
-  server_stream_->SendServerConfigUpdate(nullptr);
-  EXPECT_EQ(0, server_stream_->num_server_config_update_messages_sent());
+  server_stream()->SendServerConfigUpdate(nullptr);
+  EXPECT_EQ(0, server_stream()->num_server_config_update_messages_sent());
 }
 
 TEST_P(QuicCryptoServerStreamTest, DoesPeerSupportStatelessRejects) {

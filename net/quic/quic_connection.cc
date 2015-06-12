@@ -907,7 +907,7 @@ void QuicConnection::OnPacketComplete() {
 
   if (!last_stream_frames_.empty()) {
     visitor_->OnStreamFrames(last_stream_frames_);
-    if (!connected_ && !FLAGS_quic_stop_early) {
+    if (!connected_ && FLAGS_quic_stop_early_2) {
       return;
     }
   }
@@ -919,44 +919,44 @@ void QuicConnection::OnPacketComplete() {
   // feedback.
   if (!last_window_update_frames_.empty()) {
     visitor_->OnWindowUpdateFrames(last_window_update_frames_);
-    if (!connected_ && !FLAGS_quic_stop_early) {
+    if (!connected_ && FLAGS_quic_stop_early_2) {
       return;
     }
   }
   if (!last_blocked_frames_.empty()) {
     visitor_->OnBlockedFrames(last_blocked_frames_);
-    if (!connected_ && !FLAGS_quic_stop_early) {
+    if (!connected_ && FLAGS_quic_stop_early_2) {
       return;
     }
   }
   for (size_t i = 0; i < last_goaway_frames_.size(); ++i) {
     visitor_->OnGoAway(last_goaway_frames_[i]);
-    if (!connected_ && !FLAGS_quic_stop_early) {
+    if (!connected_ && FLAGS_quic_stop_early_2) {
       return;
     }
   }
   for (size_t i = 0; i < last_rst_frames_.size(); ++i) {
     visitor_->OnRstStream(last_rst_frames_[i]);
-    if (!connected_ && !FLAGS_quic_stop_early) {
+    if (!connected_ && FLAGS_quic_stop_early_2) {
       return;
     }
   }
   for (size_t i = 0; i < last_ack_frames_.size(); ++i) {
     ProcessAckFrame(last_ack_frames_[i]);
-    if (!connected_ && !FLAGS_quic_stop_early) {
+    if (!connected_ && FLAGS_quic_stop_early_2) {
       return;
     }
   }
   for (size_t i = 0; i < last_stop_waiting_frames_.size(); ++i) {
     ProcessStopWaitingFrame(last_stop_waiting_frames_[i]);
-    if (!connected_ && !FLAGS_quic_stop_early) {
+    if (!connected_ && FLAGS_quic_stop_early_2) {
       return;
     }
   }
   if (!last_close_frames_.empty()) {
     CloseConnection(last_close_frames_[0].error_code, true);
     DCHECK(!connected_);
-    if (!FLAGS_quic_stop_early) {
+    if (FLAGS_quic_stop_early_2) {
       return;
     }
   }

@@ -45,10 +45,11 @@ class ToolsQuicClientSessionTest
   ToolsQuicClientSessionTest()
       : connection_(new PacketSavingConnection(Perspective::IS_CLIENT,
                                                SupportedVersions(GetParam()))) {
-    session_.reset(new QuicClientSession(DefaultQuicConfig(), connection_));
-    session_->InitializeSession(
+    session_.reset(new QuicClientSession(
+        DefaultQuicConfig(), connection_,
         QuicServerId(kServerHostname, kPort, false, PRIVACY_MODE_DISABLED),
-        &crypto_config_);
+        &crypto_config_));
+    session_->Initialize();
     // Advance the time, because timers do not like uninitialized times.
     connection_->AdvanceTime(QuicTime::Delta::FromSeconds(1));
   }

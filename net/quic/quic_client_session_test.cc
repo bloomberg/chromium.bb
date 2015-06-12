@@ -46,18 +46,21 @@ class QuicClientSessionTest : public ::testing::TestWithParam<QuicVersion> {
                                                SupportedVersions(GetParam()))),
         session_(connection_,
                  GetSocket().Pass(),
-                 nullptr,
+                 /*stream_factory=*/nullptr,
+                 /*crypto_client_stream_factory=*/nullptr,
                  &transport_security_state_,
                  make_scoped_ptr((QuicServerInfo*)nullptr),
+                 QuicServerId(kServerHostname,
+                              kServerPort,
+                              /*is_secure=*/false,
+                              PRIVACY_MODE_DISABLED),
                  DefaultQuicConfig(),
+                 &crypto_config_,
                  "CONNECTION_UNKNOWN",
                  base::TimeTicks::Now(),
                  base::ThreadTaskRunnerHandle::Get().get(),
                  &net_log_) {
-    session_.InitializeSession(QuicServerId(kServerHostname, kServerPort,
-                                            /*is_secure=*/false,
-                                            PRIVACY_MODE_DISABLED),
-        &crypto_config_, nullptr);
+    session_.Initialize();
     // Advance the time, because timers do not like uninitialized times.
     connection_->AdvanceTime(QuicTime::Delta::FromSeconds(1));
   }

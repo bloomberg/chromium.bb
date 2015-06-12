@@ -33,6 +33,9 @@ class QuicFlowControllerPeer {
 
   static QuicByteCount ReceiveWindowSize(QuicFlowController* flow_controller);
 
+  static QuicByteCount WindowUpdateThreshold(
+      QuicFlowController* flow_controller);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicFlowControllerPeer);
 };

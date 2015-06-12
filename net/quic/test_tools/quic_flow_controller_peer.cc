@@ -30,7 +30,7 @@ void QuicFlowControllerPeer::SetReceiveWindowOffset(
 void QuicFlowControllerPeer::SetMaxReceiveWindow(
   QuicFlowController* flow_controller,
   QuicByteCount window_size) {
-  flow_controller->max_receive_window_ = window_size;
+  flow_controller->receive_window_size_ = window_size;
 }
 
 // static
@@ -56,6 +56,12 @@ QuicByteCount QuicFlowControllerPeer::ReceiveWindowSize(
     QuicFlowController* flow_controller) {
   return flow_controller->receive_window_offset_ -
          flow_controller->highest_received_byte_offset_;
+}
+
+// static
+QuicByteCount QuicFlowControllerPeer::WindowUpdateThreshold(
+    QuicFlowController* flow_controller) {
+  return flow_controller->WindowUpdateThreshold();
 }
 
 }  // namespace test

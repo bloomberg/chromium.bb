@@ -157,14 +157,18 @@ QuicClientSession::QuicClientSession(
     QuicConnection* connection,
     scoped_ptr<DatagramClientSocket> socket,
     QuicStreamFactory* stream_factory,
+    QuicCryptoClientStreamFactory* crypto_client_stream_factory,
     TransportSecurityState* transport_security_state,
     scoped_ptr<QuicServerInfo> server_info,
+    const QuicServerId& server_id,
     const QuicConfig& config,
+    QuicCryptoClientConfig* crypto_config,
     const char* const connection_description,
     base::TimeTicks dns_resolution_end_time,
     base::TaskRunner* task_runner,
     NetLog* net_log)
     : QuicClientSessionBase(connection, config),
+      server_id_(server_id),
       require_confirmation_(false),
       stream_factory_(stream_factory),
       socket_(socket.Pass()),
@@ -178,20 +182,6 @@ QuicClientSession::QuicClientSession(
       logger_(new QuicConnectionLogger(this, connection_description, net_log_)),
       going_away_(false),
       weak_factory_(this) {
-  connection->set_debug_visitor(logger_.get());
-  IPEndPoint address;
-  if (socket && socket->GetLocalAddress(&address) == OK &&
-      address.GetFamily() == ADDRESS_FAMILY_IPV6) {
-    connection->set_max_packet_length(
-        connection->max_packet_length() - kAdditionalOverheadForIPv6);
-  }
-}
-
-void QuicClientSession::InitializeSession(
-    const QuicServerId& server_id,
-    QuicCryptoClientConfig* crypto_config,
-    QuicCryptoClientStreamFactory* crypto_client_stream_factory) {
-  server_id_ = server_id;
   crypto_stream_.reset(
       crypto_client_stream_factory ?
           crypto_client_stream_factory->CreateQuicCryptoClientStream(
@@ -199,12 +189,17 @@ void QuicClientSession::InitializeSession(
           new QuicCryptoClientStream(server_id, this,
                                      new ProofVerifyContextChromium(net_log_),
                                      crypto_config));
-  QuicClientSessionBase::InitializeSession();
-  // TODO(rch): pass in full host port proxy pair
+  connection->set_debug_visitor(logger_.get());
   net_log_.BeginEvent(NetLog::TYPE_QUIC_SESSION,
                       base::Bind(NetLogQuicClientSessionCallback,
                                  &server_id,
                                  require_confirmation_));
+  IPEndPoint address;
+  if (socket && socket->GetLocalAddress(&address) == OK &&
+      address.GetFamily() == ADDRESS_FAMILY_IPV6) {
+    connection->set_max_packet_length(connection->max_packet_length() -
+                                      kAdditionalOverheadForIPv6);
+  }
 }
 
 QuicClientSession::~QuicClientSession() {

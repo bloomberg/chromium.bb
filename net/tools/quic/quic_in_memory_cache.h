@@ -44,9 +44,6 @@ class QuicInMemoryCache {
     const SpdyHeaderBlock& headers() const { return headers_; }
     const StringPiece body() const { return StringPiece(body_); }
 
-   private:
-    friend class QuicInMemoryCache;
-
     void set_response_type(SpecialResponseType response_type) {
       response_type_ = response_type;
     }
@@ -57,6 +54,7 @@ class QuicInMemoryCache {
       body.CopyToString(&body_);
     }
 
+   private:
     SpecialResponseType response_type_;
     SpdyHeaderBlock headers_;
     std::string body_;
@@ -91,6 +89,10 @@ class QuicInMemoryCache {
                           base::StringPiece path,
                           SpecialResponseType response_type);
 
+  // Sets a default response in case of cache misses.  Takes ownership of
+  // 'response'.
+  void AddDefaultResponse(Response* response);
+
   // |cache_cirectory| can be generated using `wget -p --save-headers <url>`.
   void InitializeFromDirectory(const std::string& cache_directory);
 
@@ -115,6 +117,9 @@ class QuicInMemoryCache {
 
   // Cached responses.
   ResponseMap responses_;
+
+  // The default response for cache misses, if set.
+  scoped_ptr<Response> default_response_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicInMemoryCache);
 };

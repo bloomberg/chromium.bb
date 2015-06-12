@@ -40,24 +40,6 @@ static const uint32 kInitialSessionFlowControlWindowForTest =
 QuicAckFrame MakeAckFrameWithNackRanges(size_t num_nack_ranges,
                                         QuicPacketSequenceNumber least_unacked);
 
-class TestSession : public QuicSession {
- public:
-  TestSession(QuicConnection* connection, const QuicConfig& config);
-  ~TestSession() override;
-
-  MOCK_METHOD1(CreateIncomingDataStream, QuicDataStream*(QuicStreamId id));
-  MOCK_METHOD0(CreateOutgoingDataStream, QuicDataStream*());
-
-  void SetCryptoStream(QuicCryptoStream* stream);
-
-  QuicCryptoStream* GetCryptoStream() override;
-
- private:
-  QuicCryptoStream* crypto_stream_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestSession);
-};
-
 class MockPacketWriter : public QuicPacketWriter {
  public:
   MockPacketWriter();

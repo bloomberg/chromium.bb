@@ -6,9 +6,11 @@
 
 #include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
+#include "net/quic/quic_flags.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
 #include "net/quic/test_tools/quic_flow_controller_peer.h"
+#include "net/quic/test_tools/quic_sent_packet_manager_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/test/gtest_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -16,26 +18,27 @@
 namespace net {
 namespace test {
 
+// Receive window auto-tuning uses RTT in its logic.
+const int64 kRtt = 100;
+
 class QuicFlowControllerTest : public ::testing::Test {
  public:
   QuicFlowControllerTest()
       : stream_id_(1234),
         send_window_(kInitialSessionFlowControlWindowForTest),
         receive_window_(kInitialSessionFlowControlWindowForTest),
-        max_receive_window_(kInitialSessionFlowControlWindowForTest),
         connection_(Perspective::IS_CLIENT) {}
 
   void Initialize() {
-    flow_controller_.reset(new QuicFlowController(
-        &connection_, stream_id_, Perspective::IS_CLIENT, send_window_,
-        receive_window_, max_receive_window_));
+    flow_controller_.reset(
+        new QuicFlowController(&connection_, stream_id_, Perspective::IS_CLIENT,
+                               send_window_, receive_window_, false));
   }
 
  protected:
   QuicStreamId stream_id_;
   QuicByteCount send_window_;
   QuicByteCount receive_window_;
-  QuicByteCount max_receive_window_;
   scoped_ptr<QuicFlowController> flow_controller_;
   MockConnection connection_;
 };
@@ -145,6 +148,226 @@ TEST_F(QuicFlowControllerTest, OnlySendBlockedFrameOncePerOffset) {
 
   // BLOCKED frame should get sent as send offset has changed.
   flow_controller_->MaybeSendBlocked();
+}
+
+TEST_F(QuicFlowControllerTest, ReceivingBytesFastIncreasesFlowWindow) {
+  ValueRestore<bool> old_flag(&FLAGS_quic_auto_tune_receive_window, true);
+  // This test will generate two WINDOW_UPDATE frames.
+  EXPECT_CALL(connection_, SendWindowUpdate(stream_id_, ::testing::_)).Times(2);
+
+  Initialize();
+  flow_controller_->set_auto_tune_receive_window(true);
+
+  // Make sure clock is inititialized.
+  connection_.AdvanceTime(QuicTime::Delta::FromMilliseconds(1));
+
+  QuicSentPacketManager* manager =
+      QuicConnectionPeer::GetSentPacketManager(&connection_);
+
+  RttStats* rtt_stats = QuicSentPacketManagerPeer::GetRttStats(manager);
+  rtt_stats->UpdateRtt(QuicTime::Delta::FromMilliseconds(kRtt),
+                       QuicTime::Delta::Zero(), QuicTime::Zero());
+
+  EXPECT_FALSE(flow_controller_->IsBlocked());
+  EXPECT_FALSE(flow_controller_->FlowControlViolation());
+  EXPECT_EQ(kInitialSessionFlowControlWindowForTest,
+            QuicFlowControllerPeer::ReceiveWindowSize(flow_controller_.get()));
+
+  QuicByteCount threshold =
+      QuicFlowControllerPeer::WindowUpdateThreshold(flow_controller_.get());
+
+  QuicStreamOffset receive_offset = threshold + 1;
+  // Receive some bytes, updating highest received offset, but not enough to
+  // fill flow control receive window.
+  EXPECT_TRUE(flow_controller_->UpdateHighestReceivedOffset(receive_offset));
+  EXPECT_FALSE(flow_controller_->FlowControlViolation());
+  EXPECT_EQ(kInitialSessionFlowControlWindowForTest - receive_offset,
+            QuicFlowControllerPeer::ReceiveWindowSize(flow_controller_.get()));
+
+  // Consume enough bytes to send a WINDOW_UPDATE frame.
+  flow_controller_->AddBytesConsumed(threshold + 1);
+  // Result is that once again we have a fully open receive window.
+  EXPECT_FALSE(flow_controller_->FlowControlViolation());
+  EXPECT_EQ(kInitialSessionFlowControlWindowForTest,
+            QuicFlowControllerPeer::ReceiveWindowSize(flow_controller_.get()));
+
+  // Move time forward, but by less than two RTTs.  Then receive and consume
+  // some more, forcing a second WINDOW_UPDATE with an increased max window
+  // size.
+  connection_.AdvanceTime(QuicTime::Delta::FromMilliseconds(2 * kRtt - 1));
+  receive_offset += threshold + 1;
+  EXPECT_TRUE(flow_controller_->UpdateHighestReceivedOffset(receive_offset));
+  flow_controller_->AddBytesConsumed(threshold + 1);
+  EXPECT_FALSE(flow_controller_->FlowControlViolation());
+  QuicByteCount new_threshold =
+      QuicFlowControllerPeer::WindowUpdateThreshold(flow_controller_.get());
+  EXPECT_GT(new_threshold, threshold);
+}
+
+TEST_F(QuicFlowControllerTest, ReceivingBytesFastStatusQuo) {
+  ValueRestore<bool> old_flag(&FLAGS_quic_auto_tune_receive_window, false);
+  // This test will generate two WINDOW_UPDATE frames.
+  EXPECT_CALL(connection_, SendWindowUpdate(stream_id_, ::testing::_)).Times(2);
+
+  Initialize();
+  flow_controller_->set_auto_tune_receive_window(true);
+
+  // Make sure clock is inititialized.
+  connection_.AdvanceTime(QuicTime::Delta::FromMilliseconds(1));
+
+  QuicSentPacketManager* manager =
+      QuicConnectionPeer::GetSentPacketManager(&connection_);
+
+  RttStats* rtt_stats = QuicSentPacketManagerPeer::GetRttStats(manager);
+  rtt_stats->UpdateRtt(QuicTime::Delta::FromMilliseconds(kRtt),
+                       QuicTime::Delta::Zero(), QuicTime::Zero());
+
+  EXPECT_FALSE(flow_controller_->IsBlocked());
+  EXPECT_FALSE(flow_controller_->FlowControlViolation());
+  EXPECT_EQ(kInitialSessionFlowControlWindowForTest,
+            QuicFlowControllerPeer::ReceiveWindowSize(flow_controller_.get()));
+
+  QuicByteCount threshold =
+      QuicFlowControllerPeer::WindowUpdateThreshold(flow_controller_.get());
+
+  QuicStreamOffset receive_offset = threshold + 1;
+  // Receive some bytes, updating highest received offset, but not enough to
+  // fill flow control receive window.
+  EXPECT_TRUE(flow_controller_->UpdateHighestReceivedOffset(receive_offset));
+  EXPECT_FALSE(flow_controller_->FlowControlViolation());
+  EXPECT_EQ(kInitialSessionFlowControlWindowForTest - receive_offset,
+            QuicFlowControllerPeer::ReceiveWindowSize(flow_controller_.get()));
+
+  // Consume enough bytes to send a WINDOW_UPDATE frame.
+  flow_controller_->AddBytesConsumed(threshold + 1);
+  // Result is that once again we have a fully open receive window.
+  EXPECT_FALSE(flow_controller_->FlowControlViolation());
+  EXPECT_EQ(kInitialSessionFlowControlWindowForTest,
+            QuicFlowControllerPeer::ReceiveWindowSize(flow_controller_.get()));
+
+  // Move time forward, but by less than two RTTs.  Then receive and consume
+  // some more, forcing a second WINDOW_UPDATE with an increased max window
+  // size.
+  connection_.AdvanceTime(QuicTime::Delta::FromMilliseconds(2 * kRtt - 1));
+  receive_offset += threshold + 1;
+  EXPECT_TRUE(flow_controller_->UpdateHighestReceivedOffset(receive_offset));
+  flow_controller_->AddBytesConsumed(threshold + 1);
+  EXPECT_FALSE(flow_controller_->FlowControlViolation());
+  QuicByteCount new_threshold =
+      QuicFlowControllerPeer::WindowUpdateThreshold(flow_controller_.get());
+  EXPECT_EQ(new_threshold, threshold);
+}
+
+TEST_F(QuicFlowControllerTest, ReceivingBytesNormalStableFlowWindow) {
+  ValueRestore<bool> old_flag(&FLAGS_quic_auto_tune_receive_window, true);
+  // This test will generate two WINDOW_UPDATE frames.
+  EXPECT_CALL(connection_, SendWindowUpdate(stream_id_, ::testing::_)).Times(2);
+
+  Initialize();
+  flow_controller_->set_auto_tune_receive_window(true);
+
+  // Make sure clock is inititialized.
+  connection_.AdvanceTime(QuicTime::Delta::FromMilliseconds(1));
+
+  QuicSentPacketManager* manager =
+      QuicConnectionPeer::GetSentPacketManager(&connection_);
+  RttStats* rtt_stats = QuicSentPacketManagerPeer::GetRttStats(manager);
+  rtt_stats->UpdateRtt(QuicTime::Delta::FromMilliseconds(kRtt),
+                       QuicTime::Delta::Zero(), QuicTime::Zero());
+
+  EXPECT_FALSE(flow_controller_->IsBlocked());
+  EXPECT_FALSE(flow_controller_->FlowControlViolation());
+  EXPECT_EQ(kInitialSessionFlowControlWindowForTest,
+            QuicFlowControllerPeer::ReceiveWindowSize(flow_controller_.get()));
+
+  QuicByteCount threshold =
+      QuicFlowControllerPeer::WindowUpdateThreshold(flow_controller_.get());
+
+  QuicStreamOffset receive_offset = threshold + 1;
+  // Receive some bytes, updating highest received offset, but not enough to
+  // fill flow control receive window.
+  EXPECT_TRUE(flow_controller_->UpdateHighestReceivedOffset(receive_offset));
+  EXPECT_FALSE(flow_controller_->FlowControlViolation());
+  EXPECT_EQ(kInitialSessionFlowControlWindowForTest - receive_offset,
+            QuicFlowControllerPeer::ReceiveWindowSize(flow_controller_.get()));
+
+  flow_controller_->AddBytesConsumed(threshold + 1);
+
+  // Result is that once again we have a fully open receive window.
+  EXPECT_FALSE(flow_controller_->FlowControlViolation());
+  EXPECT_EQ(kInitialSessionFlowControlWindowForTest,
+            QuicFlowControllerPeer::ReceiveWindowSize(flow_controller_.get()));
+
+  // Move time forward, but by more than two RTTs.  Then receive and consume
+  // some more, forcing a second WINDOW_UPDATE with unchanged max window size.
+  connection_.AdvanceTime(QuicTime::Delta::FromMilliseconds(2 * kRtt + 1));
+
+  receive_offset += threshold + 1;
+  EXPECT_TRUE(flow_controller_->UpdateHighestReceivedOffset(receive_offset));
+
+  flow_controller_->AddBytesConsumed(threshold + 1);
+  EXPECT_FALSE(flow_controller_->FlowControlViolation());
+
+  QuicByteCount new_threshold =
+      QuicFlowControllerPeer::WindowUpdateThreshold(flow_controller_.get());
+
+  EXPECT_EQ(new_threshold, threshold);
+}
+
+TEST_F(QuicFlowControllerTest, ReceivingBytesNormalStatusQuo) {
+  ValueRestore<bool> old_flag(&FLAGS_quic_auto_tune_receive_window, false);
+  // This test will generate two WINDOW_UPDATE frames.
+  EXPECT_CALL(connection_, SendWindowUpdate(stream_id_, ::testing::_)).Times(2);
+
+  Initialize();
+  flow_controller_->set_auto_tune_receive_window(true);
+
+  // Make sure clock is inititialized.
+  connection_.AdvanceTime(QuicTime::Delta::FromMilliseconds(1));
+
+  QuicSentPacketManager* manager =
+      QuicConnectionPeer::GetSentPacketManager(&connection_);
+  RttStats* rtt_stats = QuicSentPacketManagerPeer::GetRttStats(manager);
+  rtt_stats->UpdateRtt(QuicTime::Delta::FromMilliseconds(kRtt),
+                       QuicTime::Delta::Zero(), QuicTime::Zero());
+
+  EXPECT_FALSE(flow_controller_->IsBlocked());
+  EXPECT_FALSE(flow_controller_->FlowControlViolation());
+  EXPECT_EQ(kInitialSessionFlowControlWindowForTest,
+            QuicFlowControllerPeer::ReceiveWindowSize(flow_controller_.get()));
+
+  QuicByteCount threshold =
+      QuicFlowControllerPeer::WindowUpdateThreshold(flow_controller_.get());
+
+  QuicStreamOffset receive_offset = threshold + 1;
+  // Receive some bytes, updating highest received offset, but not enough to
+  // fill flow control receive window.
+  EXPECT_TRUE(flow_controller_->UpdateHighestReceivedOffset(receive_offset));
+  EXPECT_FALSE(flow_controller_->FlowControlViolation());
+  EXPECT_EQ(kInitialSessionFlowControlWindowForTest - receive_offset,
+            QuicFlowControllerPeer::ReceiveWindowSize(flow_controller_.get()));
+
+  flow_controller_->AddBytesConsumed(threshold + 1);
+
+  // Result is that once again we have a fully open receive window.
+  EXPECT_FALSE(flow_controller_->FlowControlViolation());
+  EXPECT_EQ(kInitialSessionFlowControlWindowForTest,
+            QuicFlowControllerPeer::ReceiveWindowSize(flow_controller_.get()));
+
+  // Move time forward, but by more than two RTTs.  Then receive and consume
+  // some more, forcing a second WINDOW_UPDATE with unchanged max window size.
+  connection_.AdvanceTime(QuicTime::Delta::FromMilliseconds(2 * kRtt + 1));
+
+  receive_offset += threshold + 1;
+  EXPECT_TRUE(flow_controller_->UpdateHighestReceivedOffset(receive_offset));
+
+  flow_controller_->AddBytesConsumed(threshold + 1);
+  EXPECT_FALSE(flow_controller_->FlowControlViolation());
+
+  QuicByteCount new_threshold =
+      QuicFlowControllerPeer::WindowUpdateThreshold(flow_controller_.get());
+
+  EXPECT_EQ(new_threshold, threshold);
 }
 
 }  // namespace test

@@ -189,6 +189,12 @@ class QuicSimpleClient : public QuicDataStream::Visitor,
   virtual QuicConnectionHelper* CreateQuicConnectionHelper();
   virtual QuicPacketWriter* CreateQuicPacketWriter();
 
+  virtual QuicClientSession* CreateQuicClientSession(
+      const QuicConfig& config,
+      QuicConnection* connection,
+      const QuicServerId& server_id,
+      QuicCryptoClientConfig* crypto_config);
+
  private:
   friend class net::tools::test::QuicClientPeer;
 

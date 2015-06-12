@@ -25,11 +25,11 @@ namespace tools {
 
 class QuicClientSession : public QuicClientSessionBase {
  public:
-  QuicClientSession(const QuicConfig& config, QuicConnection* connection);
+  QuicClientSession(const QuicConfig& config,
+                    QuicConnection* connection,
+                    const QuicServerId& server_id,
+                    QuicCryptoClientConfig* crypto_config);
   ~QuicClientSession() override;
-
-  void InitializeSession(const QuicServerId& server_id,
-                         QuicCryptoClientConfig* config);
 
   // QuicSession methods:
   QuicSpdyClientStream* CreateOutgoingDataStream() override;

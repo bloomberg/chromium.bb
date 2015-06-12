@@ -78,12 +78,13 @@ class QuicServerSessionTest : public ::testing::TestWithParam<QuicVersion> {
 
     connection_ = new StrictMock<MockConnection>(Perspective::IS_SERVER,
                                                  SupportedVersions(GetParam()));
-    session_.reset(new QuicServerSession(config_, connection_, &owner_));
+    session_.reset(
+        new QuicServerSession(config_, connection_, &owner_, &crypto_config_));
     MockClock clock;
     handshake_message_.reset(crypto_config_.AddDefaultConfig(
         QuicRandom::GetInstance(), &clock,
         QuicCryptoServerConfig::ConfigOptions()));
-    session_->InitializeSession(&crypto_config_);
+    session_->Initialize();
     visitor_ = QuicConnectionPeer::GetVisitor(connection_);
   }
 
@@ -266,7 +267,7 @@ TEST_P(QuicServerSessionTest, GetEvenIncomingError) {
 TEST_P(QuicServerSessionTest, GetStreamDisconnected) {
   // Don't create new streams if the connection is disconnected.
   QuicConnectionPeer::CloseConnection(connection_);
-  EXPECT_DFATAL(QuicServerSessionPeer::GetIncomingDataStream(session_.get(), 4),
+  EXPECT_DFATAL(QuicServerSessionPeer::GetIncomingDataStream(session_.get(), 5),
                 "ShouldCreateIncomingDataStream called when disconnected");
 }
 

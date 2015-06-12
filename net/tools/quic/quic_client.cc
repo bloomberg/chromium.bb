@@ -195,6 +195,14 @@ bool QuicClient::Connect() {
   return session_->connection()->connected();
 }
 
+QuicClientSession* QuicClient::CreateQuicClientSession(
+    const QuicConfig& config,
+    QuicConnection* connection,
+    const QuicServerId& server_id,
+    QuicCryptoClientConfig* crypto_config) {
+  return new QuicClientSession(config, connection, server_id_, &crypto_config_);
+}
+
 void QuicClient::StartConnect() {
   DCHECK(initialized_);
   DCHECK(!connected());
@@ -203,19 +211,20 @@ void QuicClient::StartConnect() {
 
   DummyPacketWriterFactory factory(writer);
 
-  session_.reset(new QuicClientSession(
+  session_.reset(CreateQuicClientSession(
       config_,
       new QuicConnection(GenerateConnectionId(), server_address_, helper_.get(),
                          factory,
                          /* owns_writer= */ false, Perspective::IS_CLIENT,
-                         server_id_.is_https(), supported_versions_)));
+                         server_id_.is_https(), supported_versions_),
+      server_id_, &crypto_config_));
 
   // Reset |writer_| after |session_| so that the old writer outlives the old
   // session.
   if (writer_.get() != writer) {
     writer_.reset(writer);
   }
-  session_->InitializeSession(server_id_, &crypto_config_);
+  session_->Initialize();
   session_->CryptoConnect();
 }
 

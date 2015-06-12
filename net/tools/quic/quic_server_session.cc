@@ -14,10 +14,13 @@
 namespace net {
 namespace tools {
 
-QuicServerSession::QuicServerSession(const QuicConfig& config,
-                                     QuicConnection* connection,
-                                     QuicServerSessionVisitor* visitor)
+QuicServerSession::QuicServerSession(
+    const QuicConfig& config,
+    QuicConnection* connection,
+    QuicServerSessionVisitor* visitor,
+    const QuicCryptoServerConfig* crypto_config)
     : QuicSession(connection, config),
+      crypto_config_(crypto_config),
       visitor_(visitor),
       bandwidth_resumption_enabled_(false),
       bandwidth_estimate_sent_to_client_(QuicBandwidth::Zero()),
@@ -27,10 +30,9 @@ QuicServerSession::QuicServerSession(const QuicConfig& config,
 
 QuicServerSession::~QuicServerSession() {}
 
-void QuicServerSession::InitializeSession(
-    const QuicCryptoServerConfig* crypto_config) {
-  QuicSession::InitializeSession();
-  crypto_stream_.reset(CreateQuicCryptoServerStream(crypto_config));
+void QuicServerSession::Initialize() {
+  crypto_stream_.reset(CreateQuicCryptoServerStream(crypto_config_));
+  QuicSession::Initialize();
 }
 
 QuicCryptoServerStream* QuicServerSession::CreateQuicCryptoServerStream(

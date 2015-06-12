@@ -625,10 +625,10 @@ struct NET_EXPORT_PRIVATE QuicPacketHeader {
       std::ostream& os, const QuicPacketHeader& s);
 
   QuicPacketPublicHeader public_header;
+  QuicPacketSequenceNumber packet_sequence_number;
   bool fec_flag;
   bool entropy_flag;
   QuicPacketEntropyHash entropy_hash;
-  QuicPacketSequenceNumber packet_sequence_number;
   InFecGroup is_in_fec_group;
   QuicFecGroupNumber fec_group;
 };
@@ -1023,11 +1023,11 @@ struct NET_EXPORT_PRIVATE SerializedPacket {
                    RetransmittableFrames* retransmittable_frames);
   ~SerializedPacket();
 
+  QuicEncryptedPacket* packet;
+  RetransmittableFrames* retransmittable_frames;
   QuicPacketSequenceNumber sequence_number;
   QuicSequenceNumberLength sequence_number_length;
-  QuicEncryptedPacket* packet;
   QuicPacketEntropyHash entropy_hash;
-  RetransmittableFrames* retransmittable_frames;
   bool is_fec_packet;
 
   // Optional notifiers which will be informed when this packet has been ACKed.

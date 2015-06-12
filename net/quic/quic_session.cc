@@ -110,13 +110,16 @@ QuicSession::QuicSession(QuicConnection* connection, const QuicConfig& config)
                        perspective(),
                        kMinimumFlowControlSendWindow,
                        config_.GetInitialSessionFlowControlWindowToSend(),
-                       config_.GetInitialSessionFlowControlWindowToSend()),
+                       false),
       goaway_received_(false),
       goaway_sent_(false),
       has_pending_handshake_(false) {
 }
 
-void QuicSession::InitializeSession() {
+void QuicSession::Initialize() {
+  // Crypto stream must exist when Initialize is called.
+  DCHECK(GetCryptoStream());
+
   connection_->set_visitor(visitor_shim_.get());
   connection_->SetFromConfig(config_);
   headers_stream_.reset(new QuicHeadersStream(this));
@@ -467,6 +470,11 @@ void QuicSession::OnConfigNegotiated() {
     max_streams =
         max(max_streams + kMaxStreamsMinimumIncrement,
             static_cast<uint32>(max_streams * kMaxStreamsMultiplier));
+
+    if (config_.HasReceivedConnectionOptions() &&
+        ContainsQuicTag(config_.ReceivedConnectionOptions(), kAFCW)) {
+      EnableAutoTuneReceiveWindow();
+    }
   }
   set_max_open_streams(max_streams);
 
@@ -479,6 +487,16 @@ void QuicSession::OnConfigNegotiated() {
   if (config_.HasReceivedInitialSessionFlowControlWindowBytes()) {
     OnNewSessionFlowControlWindow(
         config_.ReceivedInitialSessionFlowControlWindowBytes());
+  }
+}
+
+void QuicSession::EnableAutoTuneReceiveWindow() {
+  flow_controller_.set_auto_tune_receive_window(true);
+  // Inform all existing streams about the new window.
+  GetCryptoStream()->flow_controller()->set_auto_tune_receive_window(true);
+  headers_stream_->flow_controller()->set_auto_tune_receive_window(true);
+  for (auto const& kv : stream_map_) {
+    kv.second->flow_controller()->set_auto_tune_receive_window(true);
   }
 }
 
@@ -496,9 +514,8 @@ void QuicSession::OnNewStreamFlowControlWindow(QuicStreamOffset new_window) {
   // Inform all existing streams about the new window.
   GetCryptoStream()->UpdateSendWindowOffset(new_window);
   headers_stream_->UpdateSendWindowOffset(new_window);
-  for (DataStreamMap::iterator it = stream_map_.begin();
-       it != stream_map_.end(); ++it) {
-    it->second->UpdateSendWindowOffset(new_window);
+  for (auto const& kv : stream_map_) {
+    kv.second->UpdateSendWindowOffset(new_window);
   }
 }
 
@@ -729,9 +746,8 @@ bool QuicSession::IsStreamFlowControlBlocked() {
       GetCryptoStream()->flow_controller()->IsBlocked()) {
     return true;
   }
-  for (DataStreamMap::iterator it = stream_map_.begin();
-       it != stream_map_.end(); ++it) {
-    if (it->second->flow_controller()->IsBlocked()) {
+  for (auto const& kv : stream_map_) {
+    if (kv.second->flow_controller()->IsBlocked()) {
       return true;
     }
   }

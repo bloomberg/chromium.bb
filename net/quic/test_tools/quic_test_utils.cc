@@ -17,6 +17,7 @@
 #include "net/quic/quic_framer.h"
 #include "net/quic/quic_packet_creator.h"
 #include "net/quic/quic_utils.h"
+#include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
 #include "net/spdy/spdy_frame_builder.h"
 #include "net/tools/quic/quic_per_connection_packet_writer.h"
@@ -339,7 +340,8 @@ void PacketSavingConnection::SendOrQueuePacket(QueuedPacket packet) {
 
 MockSession::MockSession(QuicConnection* connection)
     : QuicSession(connection, DefaultQuicConfig()) {
-  InitializeSession();
+  crypto_stream_.reset(new QuicCryptoStream(this));
+  Initialize();
   ON_CALL(*this, WritevData(_, _, _, _, _, _))
       .WillByDefault(testing::Return(QuicConsumedData(0, false)));
 }
@@ -347,46 +349,37 @@ MockSession::MockSession(QuicConnection* connection)
 MockSession::~MockSession() {
 }
 
-TestSession::TestSession(QuicConnection* connection, const QuicConfig& config)
-    : QuicSession(connection, config),
-      crypto_stream_(nullptr) {
-  InitializeSession();
+TestServerSession::TestServerSession(
+    QuicConnection* connection,
+    const QuicConfig& config,
+    const QuicCryptoServerConfig* crypto_config)
+    : QuicSession(connection, config) {
+  crypto_stream_.reset(new QuicCryptoServerStream(crypto_config, this));
+  Initialize();
 }
 
-TestSession::~TestSession() {}
-
-void TestSession::SetCryptoStream(QuicCryptoStream* stream) {
-  crypto_stream_ = stream;
+TestServerSession::~TestServerSession() {
 }
 
-QuicCryptoStream* TestSession::GetCryptoStream() {
-  return crypto_stream_;
+QuicCryptoServerStream* TestServerSession::GetCryptoStream() {
+  return crypto_stream_.get();
 }
 
 TestClientSession::TestClientSession(QuicConnection* connection,
-                                     const QuicConfig& config)
-    : QuicClientSessionBase(connection, config),
-      crypto_stream_(nullptr) {
-  EXPECT_CALL(*this, OnProofValid(_)).Times(AnyNumber());
-  InitializeSession();
+                                     const QuicConfig& config,
+                                     const QuicServerId& server_id,
+                                     QuicCryptoClientConfig* crypto_config)
+    : QuicClientSessionBase(connection, config) {
+  crypto_stream_.reset(new QuicCryptoClientStream(
+      server_id, this, CryptoTestUtils::ProofVerifyContextForTesting(),
+      crypto_config));
+  Initialize();
 }
 
 TestClientSession::~TestClientSession() {}
 
-void TestClientSession::SetCryptoStream(QuicCryptoStream* stream) {
-  crypto_stream_ = stream;
-}
-
-QuicCryptoStream* TestClientSession::GetCryptoStream() {
-  return crypto_stream_;
-}
-
-TestServerSession::TestServerSession(const QuicConfig& config,
-                                     QuicConnection* connection)
-    : QuicServerSession(config, connection, nullptr) {
-}
-
-TestServerSession::~TestServerSession() {
+QuicCryptoClientStream* TestClientSession::GetCryptoStream() {
+  return crypto_stream_.get();
 }
 
 MockPacketWriter::MockPacketWriter() {
@@ -795,18 +788,15 @@ MockQuicConnectionDebugVisitor::MockQuicConnectionDebugVisitor() {
 MockQuicConnectionDebugVisitor::~MockQuicConnectionDebugVisitor() {
 }
 
-void SetupCryptoClientStreamForTest(
-    QuicServerId server_id,
-    bool supports_stateless_rejects,
-    QuicTime::Delta connection_start_time,
-    QuicCryptoClientConfig* crypto_client_config,
-    PacketSavingConnection** client_connection,
-    TestClientSession** client_session,
-    QuicCryptoClientStream** client_stream) {
+void CreateClientSessionForTest(QuicServerId server_id,
+                                bool supports_stateless_rejects,
+                                QuicTime::Delta connection_start_time,
+                                QuicCryptoClientConfig* crypto_client_config,
+                                PacketSavingConnection** client_connection,
+                                TestClientSession** client_session) {
   CHECK(crypto_client_config);
   CHECK(client_connection);
   CHECK(client_session);
-  CHECK(client_stream);
   CHECK(!connection_start_time.IsZero())
       << "Connections must start at non-zero times, otherwise the "
       << "strike-register will be unhappy.";
@@ -815,35 +805,26 @@ void SetupCryptoClientStreamForTest(
                           ? DefaultQuicConfigStatelessRejects()
                           : DefaultQuicConfig();
   *client_connection = new PacketSavingConnection(Perspective::IS_CLIENT);
-  *client_session = new TestClientSession(*client_connection, config);
-  *client_stream = new QuicCryptoClientStream(server_id, *client_session,
-                                              nullptr, crypto_client_config);
-  (*client_session)->SetCryptoStream(*client_stream);
+  *client_session = new TestClientSession(*client_connection, config, server_id,
+                                          crypto_client_config);
   (*client_connection)->AdvanceTime(connection_start_time);
 }
 
-// Setup or create?
-void SetupCryptoServerStreamForTest(
-    QuicServerId server_id,
-    QuicTime::Delta connection_start_time,
-    QuicCryptoServerConfig* server_crypto_config,
-    PacketSavingConnection** server_connection,
-    TestServerSession** server_session,
-    QuicCryptoServerStream** server_stream) {
+void CreateServerSessionForTest(QuicServerId server_id,
+                                QuicTime::Delta connection_start_time,
+                                QuicCryptoServerConfig* server_crypto_config,
+                                PacketSavingConnection** server_connection,
+                                TestServerSession** server_session) {
   CHECK(server_crypto_config);
   CHECK(server_connection);
   CHECK(server_session);
-  CHECK(server_stream);
   CHECK(!connection_start_time.IsZero())
       << "Connections must start at non-zero times, otherwise the "
       << "strike-register will be unhappy.";
 
   *server_connection = new PacketSavingConnection(Perspective::IS_SERVER);
-  *server_session =
-      new TestServerSession(DefaultQuicConfig(), *server_connection);
-  *server_stream =
-      new QuicCryptoServerStream(server_crypto_config, *server_session);
-  (*server_session)->InitializeSession(server_crypto_config);
+  *server_session = new TestServerSession(
+      *server_connection, DefaultQuicConfig(), server_crypto_config);
 
   // We advance the clock initially because the default time is zero and the
   // strike register worries that we've just overflowed a uint32 time.

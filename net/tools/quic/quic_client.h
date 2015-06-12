@@ -199,6 +199,12 @@ class QuicClient : public EpollCallbackInterface,
                          IPEndPoint* server_address,
                          IPAddressNumber* client_ip);
 
+  virtual QuicClientSession* CreateQuicClientSession(
+      const QuicConfig& config,
+      QuicConnection* connection,
+      const QuicServerId& server_id,
+      QuicCryptoClientConfig* crypto_config);
+
   EpollServer* epoll_server() { return epoll_server_; }
 
   // If the socket has been created, then unregister and close() the FD.

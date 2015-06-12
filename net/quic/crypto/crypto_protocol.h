@@ -53,6 +53,8 @@ const QuicTag kSRBF = TAG('S', 'R', 'B', 'F');   // Socket receive buffer
 const QuicTag kQBIC = TAG('Q', 'B', 'I', 'C');   // TCP cubic
 
 // Connection options (COPT) values
+const QuicTag kAFCW = TAG('A', 'F', 'C', 'W');   // Auto-tune flow control
+                                                 // receive windows.
 const QuicTag kTBBR = TAG('T', 'B', 'B', 'R');   // Reduced Buffer Bloat TCP
 const QuicTag kRENO = TAG('R', 'E', 'N', 'O');   // Reno Congestion Control
 const QuicTag kBYTE = TAG('B', 'Y', 'T', 'E');   // TCP cubic or reno in bytes

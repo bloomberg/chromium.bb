@@ -56,7 +56,7 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   };
 
   QuicSession(QuicConnection* connection, const QuicConfig& config);
-  void InitializeSession();
+  virtual void Initialize();
 
   ~QuicSession() override;
 
@@ -283,6 +283,10 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   // Called in OnConfigNegotiated when we receive a new session level flow
   // control window in a negotiated config. Closes the connection if invalid.
   void OnNewSessionFlowControlWindow(QuicStreamOffset new_window);
+
+  // Called in OnConfigNegotiated when auto-tuning is enabled for flow
+  // control receive windows.
+  void EnableAutoTuneReceiveWindow();
 
   // Keep track of highest received byte offset of locally closed streams, while
   // waiting for a definitive final highest offset from the peer.

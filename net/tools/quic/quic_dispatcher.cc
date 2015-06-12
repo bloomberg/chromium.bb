@@ -470,8 +470,9 @@ QuicServerSession* QuicDispatcher::CreateQuicSession(
       /* owns_writer= */ true, Perspective::IS_SERVER,
       crypto_config_->HasProofSource(), supported_versions_);
 
-  QuicServerSession* session = new QuicServerSession(config_, connection, this);
-  session->InitializeSession(crypto_config_);
+  QuicServerSession* session =
+      new QuicServerSession(config_, connection, this, crypto_config_);
+  session->Initialize();
   if (FLAGS_quic_session_map_threshold_for_stateless_rejects != -1 &&
       session_map_.size() >=
           static_cast<size_t>(

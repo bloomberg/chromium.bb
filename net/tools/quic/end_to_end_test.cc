@@ -657,8 +657,7 @@ TEST_P(EndToEndTest, LargePostZeroRTTFailure) {
   string body;
   GenerateBody(&body, 20480);
 
-  HTTPMessage request(HttpConstants::HTTP_1_1,
-                      HttpConstants::POST, "/foo");
+  HTTPMessage request(HttpConstants::HTTP_1_1, HttpConstants::POST, "/foo");
   request.AddBody(body, true);
 
   EXPECT_EQ(kFooResponseBody, client_->SendCustomSynchronousRequest(request));

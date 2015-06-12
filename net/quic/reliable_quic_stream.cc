@@ -133,7 +133,7 @@ ReliableQuicStream::ReliableQuicStream(QuicStreamId id, QuicSession* session)
                        perspective_,
                        GetReceivedFlowControlWindow(session),
                        GetInitialStreamFlowControlWindowToSend(session),
-                       GetInitialStreamFlowControlWindowToSend(session)),
+                       session_->flow_controller()->auto_tune_receive_window()),
       connection_flow_controller_(session_->flow_controller()),
       stream_contributes_to_connection_flow_control_(true) {
 }

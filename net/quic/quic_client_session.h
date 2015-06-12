@@ -95,20 +95,17 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicClientSessionBase,
   QuicClientSession(QuicConnection* connection,
                     scoped_ptr<DatagramClientSocket> socket,
                     QuicStreamFactory* stream_factory,
+                    QuicCryptoClientStreamFactory* crypto_client_stream_factory,
                     TransportSecurityState* transport_security_state,
                     scoped_ptr<QuicServerInfo> server_info,
+                    const QuicServerId& server_id,
                     const QuicConfig& config,
+                    QuicCryptoClientConfig* crypto_config,
                     const char* const connection_description,
                     base::TimeTicks dns_resolution_end_time,
                     base::TaskRunner* task_runner,
                     NetLog* net_log);
   ~QuicClientSession() override;
-
-  // Initialize session's connection to |server_id|.
-  void InitializeSession(
-      const QuicServerId& server_id,
-      QuicCryptoClientConfig* config,
-      QuicCryptoClientStreamFactory* crypto_client_stream_factory);
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);

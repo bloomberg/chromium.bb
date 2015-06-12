@@ -426,9 +426,11 @@ class MockSession : public QuicSession {
  public:
   explicit MockSession(QuicConnection* connection);
   ~MockSession() override;
+
+  QuicCryptoStream* GetCryptoStream() { return crypto_stream_.get(); }
+
   MOCK_METHOD2(OnConnectionClosed, void(QuicErrorCode error, bool from_peer));
   MOCK_METHOD1(CreateIncomingDataStream, QuicDataStream*(QuicStreamId id));
-  MOCK_METHOD0(GetCryptoStream, QuicCryptoStream*());
   MOCK_METHOD0(CreateOutgoingDataStream, QuicDataStream*());
   MOCK_METHOD6(WritevData,
                QuicConsumedData(QuicStreamId id,
@@ -452,30 +454,35 @@ class MockSession : public QuicSession {
   using QuicSession::ActivateStream;
 
  private:
+  scoped_ptr<QuicCryptoStream> crypto_stream_;
+
   DISALLOW_COPY_AND_ASSIGN(MockSession);
 };
 
-class TestSession : public QuicSession {
+class TestServerSession : public QuicSession {
  public:
-  TestSession(QuicConnection* connection, const QuicConfig& config);
-  ~TestSession() override;
+  TestServerSession(QuicConnection* connection,
+                    const QuicConfig& config,
+                    const QuicCryptoServerConfig* crypto_config);
+  ~TestServerSession() override;
 
   MOCK_METHOD1(CreateIncomingDataStream, QuicDataStream*(QuicStreamId id));
   MOCK_METHOD0(CreateOutgoingDataStream, QuicDataStream*());
 
-  void SetCryptoStream(QuicCryptoStream* stream);
-
-  QuicCryptoStream* GetCryptoStream() override;
+  QuicCryptoServerStream* GetCryptoStream() override;
 
  private:
-  QuicCryptoStream* crypto_stream_;
+  scoped_ptr<QuicCryptoServerStream> crypto_stream_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestSession);
+  DISALLOW_COPY_AND_ASSIGN(TestServerSession);
 };
 
 class TestClientSession : public QuicClientSessionBase {
  public:
-  TestClientSession(QuicConnection* connection, const QuicConfig& config);
+  TestClientSession(QuicConnection* connection,
+                    const QuicConfig& config,
+                    const QuicServerId& server_id,
+                    QuicCryptoClientConfig* crypto_config);
   ~TestClientSession() override;
 
   // QuicClientSessionBase
@@ -488,12 +495,10 @@ class TestClientSession : public QuicClientSessionBase {
   MOCK_METHOD1(CreateIncomingDataStream, QuicDataStream*(QuicStreamId id));
   MOCK_METHOD0(CreateOutgoingDataStream, QuicDataStream*());
 
-  void SetCryptoStream(QuicCryptoStream* stream);
-
-  QuicCryptoStream* GetCryptoStream() override;
+  QuicCryptoClientStream* GetCryptoStream() override;
 
  private:
-  QuicCryptoStream* crypto_stream_;
+  scoped_ptr<QuicCryptoClientStream> crypto_stream_;
 
   DISALLOW_COPY_AND_ASSIGN(TestClientSession);
 };
@@ -715,17 +720,7 @@ class MockQuicConnectionDebugVisitor : public QuicConnectionDebugVisitor {
                void(const QuicPacketHeader&, StringPiece payload));
 };
 
-class TestServerSession : public tools::QuicServerSession {
- public:
-  TestServerSession(const QuicConfig& config, QuicConnection* connection);
-  ~TestServerSession() override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestServerSession);
-};
-
-// Creates and sets up a QuicCryptoClientStream for testing, and all
-// its associated state.
+// Creates a client session for testing.
 //
 // server_id: The server id associated with this stream.
 // supports_stateless_rejects:  Does this client support stateless rejects.
@@ -739,19 +734,14 @@ class TestServerSession : public tools::QuicServerSession {
 //   client_session.
 // client_session: Pointer reference for the newly created client
 //   session.  The new object will be owned by the caller.
-// client_stream: Pointer reference for the newly created crypto
-//   client stream.  The new object will be owned by the caller.
-void SetupCryptoClientStreamForTest(
-    QuicServerId server_id,
-    bool supports_stateless_rejects,
-    QuicTime::Delta connection_start_time,
-    QuicCryptoClientConfig* crypto_client_config,
-    PacketSavingConnection** client_connection,
-    TestClientSession** client_session,
-    QuicCryptoClientStream** client_stream);
+void CreateClientSessionForTest(QuicServerId server_id,
+                                bool supports_stateless_rejects,
+                                QuicTime::Delta connection_start_time,
+                                QuicCryptoClientConfig* crypto_client_config,
+                                PacketSavingConnection** client_connection,
+                                TestClientSession** client_session);
 
-// Creates and sets up a QuicCryptoServerStream for testing, and all
-// its associated state.
+// Creates a server session for testing.
 //
 // server_id: The server id associated with this stream.
 // connection_start_time: The time to set for the connection clock.
@@ -764,15 +754,11 @@ void SetupCryptoClientStreamForTest(
 //   server_session.
 // server_session: Pointer reference for the newly created server
 //   session.  The new object will be owned by the caller.
-// server_stream: Pointer reference for the newly created crypto
-//   server stream.  The new object will be owned by the caller.
-void SetupCryptoServerStreamForTest(
-    QuicServerId server_id,
-    QuicTime::Delta connection_start_time,
-    QuicCryptoServerConfig* crypto_server_config,
-    PacketSavingConnection** server_connection,
-    TestServerSession** server_session,
-    QuicCryptoServerStream** server_stream);
+void CreateServerSessionForTest(QuicServerId server_id,
+                                QuicTime::Delta connection_start_time,
+                                QuicCryptoServerConfig* crypto_server_config,
+                                PacketSavingConnection** server_connection,
+                                TestServerSession** server_session);
 
 }  // namespace test
 }  // namespace net

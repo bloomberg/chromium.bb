@@ -1109,15 +1109,15 @@ int QuicStreamFactory::CreateSession(const QuicServerId& server_id,
   }
 
   *session = new QuicClientSession(
-      connection, socket.Pass(), this, transport_security_state_,
-      server_info.Pass(), config, network_connection_.GetDescription(),
+      connection, socket.Pass(), this, quic_crypto_client_stream_factory_,
+      transport_security_state_, server_info.Pass(), server_id, config,
+      &crypto_config_, network_connection_.GetDescription(),
       dns_resolution_end_time, base::ThreadTaskRunnerHandle::Get().get(),
       net_log.net_log());
 
   all_sessions_[*session] = server_id;  // owning pointer
 
-  (*session)->InitializeSession(server_id,  &crypto_config_,
-                                quic_crypto_client_stream_factory_);
+  (*session)->Initialize();
   bool closed_during_initialize =
       !ContainsKey(all_sessions_, *session) ||
       !(*session)->connection()->connected();

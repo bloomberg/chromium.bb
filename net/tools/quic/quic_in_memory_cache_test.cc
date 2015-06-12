@@ -10,6 +10,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
+#include "net/spdy/spdy_framer.h"
 #include "net/tools/balsa/balsa_headers.h"
 #include "net/tools/quic/quic_in_memory_cache.h"
 #include "net/tools/quic/test_tools/quic_in_memory_cache_peer.h"
@@ -92,6 +93,43 @@ TEST_F(QuicInMemoryCacheTest, UsesOriginalUrl) {
   ASSERT_TRUE(ContainsKey(response->headers(), "connection"));
   EXPECT_EQ("close", response->headers().find("connection")->second);
   EXPECT_LT(0U, response->body().length());
+}
+
+TEST_F(QuicInMemoryCacheTest, DefaultResponse) {
+  // Verify GetResponse returns nullptr when no default is set.
+  QuicInMemoryCache* cache = QuicInMemoryCache::GetInstance();
+  const QuicInMemoryCache::Response* response =
+      cache->GetResponse("www.google.com", "/");
+  ASSERT_FALSE(response);
+
+  // Add a default response.
+  SpdyHeaderBlock response_headers;
+  response_headers[":version"] = "HTTP/1.1";
+  response_headers[":status"] = "200 OK";
+  response_headers["content-length"] = "0";
+  QuicInMemoryCache::Response* default_response =
+      new QuicInMemoryCache::Response;
+  default_response->set_headers(response_headers);
+  cache->AddDefaultResponse(default_response);
+
+  // Now we should get the default response for the original request.
+  response = cache->GetResponse("www.google.com", "/");
+  ASSERT_TRUE(response);
+  ASSERT_TRUE(ContainsKey(response->headers(), ":status"));
+  EXPECT_EQ("200 OK", response->headers().find(":status")->second);
+
+  // Now add a set response for / and make sure it is returned
+  cache->AddSimpleResponse("www.google.com", "/", 302, "foo", "");
+  response = cache->GetResponse("www.google.com", "/");
+  ASSERT_TRUE(response);
+  ASSERT_TRUE(ContainsKey(response->headers(), ":status"));
+  EXPECT_EQ("302 foo", response->headers().find(":status")->second);
+
+  // We should get the default response for other requests.
+  response = cache->GetResponse("www.google.com", "/asd");
+  ASSERT_TRUE(response);
+  ASSERT_TRUE(ContainsKey(response->headers(), ":status"));
+  EXPECT_EQ("200 OK", response->headers().find(":status")->second);
 }
 
 }  // namespace test
