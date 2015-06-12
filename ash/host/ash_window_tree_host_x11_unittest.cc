@@ -82,10 +82,17 @@ class AshWindowTreeHostX11Test : public aura::test::AuraTestBase {
   }
 };
 
+// Fails on ChromeOS valgrind bot. http://crbug.com/499997
+#if defined(OS_CHROMEOS)
+#define MAYBE_DispatchTouchEventToOneRootWindow DISABLED_DispatchTouchEventToOneRootWindow
+#else
+#define MAYBE_DispatchTouchEventToOneRootWindow DispatchTouchEventToOneRootWindow
+#endif
+
 // Send X touch events to one WindowTreeHost. The WindowTreeHost's
 // delegate will get corresponding ui::TouchEvent if the touch events
 // are targeting this WindowTreeHost.
-TEST_F(AshWindowTreeHostX11Test, DispatchTouchEventToOneRootWindow) {
+TEST_F(AshWindowTreeHostX11Test, MAYBE_DispatchTouchEventToOneRootWindow) {
   scoped_ptr<aura::WindowTreeHostX11> window_tree_host(
       new AshWindowTreeHostX11(gfx::Rect(0, 0, 2560, 1700)));
   window_tree_host->InitHost();
