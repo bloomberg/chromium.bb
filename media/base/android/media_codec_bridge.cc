@@ -246,10 +246,10 @@ bool MediaCodecBridge::IsKnownUnaccelerated(const std::string& mime_type,
   // devices while HW decoder video freezes and distortions are
   // investigated - http://crbug.com/446974.
   if (codec_name.length() > 0) {
-    return (StartsWithASCII(codec_name, "OMX.google.", true) ||
-        StartsWithASCII(codec_name, "OMX.SEC.", true) ||
-        StartsWithASCII(codec_name, "OMX.MTK.", true) ||
-        StartsWithASCII(codec_name, "OMX.Exynos.", true));
+    return (base::StartsWithASCII(codec_name, "OMX.google.", true) ||
+            base::StartsWithASCII(codec_name, "OMX.SEC.", true) ||
+            base::StartsWithASCII(codec_name, "OMX.MTK.", true) ||
+            base::StartsWithASCII(codec_name, "OMX.Exynos.", true));
   }
   return true;
 }

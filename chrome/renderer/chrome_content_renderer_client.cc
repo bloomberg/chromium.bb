@@ -1512,7 +1512,7 @@ bool ChromeContentRendererClient::AllowPepperMediaStreamAPI(
       (EndsWith(url_host, "talkgadget.google.com", false) ||
        EndsWith(url_host, "plus.google.com", false) ||
        EndsWith(url_host, "plus.sandbox.google.com", false)) &&
-      StartsWithASCII(url.path(), "/hangouts/", false)) {
+      base::StartsWithASCII(url.path(), "/hangouts/", false)) {
     return true;
   }
   // Allow access for tests.

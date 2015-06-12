@@ -102,8 +102,8 @@ bool ShouldUpdateHeader(const std::string::const_iterator& name_begin,
       return false;
   }
   for (size_t i = 0; i < arraysize(kNonUpdatedHeaderPrefixes); ++i) {
-    if (StartsWithASCII(std::string(name_begin, name_end),
-                        kNonUpdatedHeaderPrefixes[i], false))
+    if (base::StartsWithASCII(std::string(name_begin, name_end),
+                              kNonUpdatedHeaderPrefixes[i], false))
       return false;
   }
   return true;

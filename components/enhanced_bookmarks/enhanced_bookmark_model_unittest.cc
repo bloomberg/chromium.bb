@@ -369,7 +369,7 @@ TEST_F(EnhancedBookmarkModelTest, TestDoubleEncodeDecode) {
 TEST_F(EnhancedBookmarkModelTest, TestRemoteId) {
   const BookmarkNode* node = AddBookmark();
   // Verify that the remote id starts with the correct prefix.
-  EXPECT_TRUE(StartsWithASCII(model_->GetRemoteId(node), "ebc_", true));
+  EXPECT_TRUE(base::StartsWithASCII(model_->GetRemoteId(node), "ebc_", true));
 
   // Getting the remote id for nodes that don't have them should return the
   // empty string.

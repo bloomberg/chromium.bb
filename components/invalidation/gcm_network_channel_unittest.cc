@@ -232,7 +232,7 @@ void TestNetworkChannelURLFetcher::AddExtraRequestHeader(
   net::FakeURLFetcher::AddExtraRequestHeader(header_line);
   std::string header_name("echo-token: ");
   std::string echo_token;
-  if (StartsWithASCII(header_line, header_name, false)) {
+  if (base::StartsWithASCII(header_line, header_name, false)) {
     echo_token = header_line;
     ReplaceFirstSubstringAfterOffset(
         &echo_token, 0, header_name, std::string());

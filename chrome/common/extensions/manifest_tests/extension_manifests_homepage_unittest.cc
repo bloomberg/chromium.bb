@@ -39,10 +39,9 @@ TEST_F(HomepageURLManifestTest, GetHomepageURL) {
   // The Google Gallery URL ends with the id, which depends on the path, which
   // can be different in testing, so we just check the part before id.
   extension = LoadAndExpectSuccess("homepage_google_hosted.json");
-  EXPECT_TRUE(StartsWithASCII(
+  EXPECT_TRUE(base::StartsWithASCII(
       extensions::ManifestURL::GetHomepageURL(extension.get()).spec(),
-      "https://chrome.google.com/webstore/detail/",
-      false));
+      "https://chrome.google.com/webstore/detail/", false));
 
   extension = LoadAndExpectSuccess("homepage_externally_hosted.json");
   EXPECT_EQ(GURL(), extensions::ManifestURL::GetHomepageURL(extension.get()));

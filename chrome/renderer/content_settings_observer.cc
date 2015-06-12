@@ -474,18 +474,19 @@ bool ContentSettingsObserver::allowDisplayingInsecureContent(
   GURL frame_gurl(frame->document().url());
   if (IsHostInDomain(origin_host, kGoogleDotCom)) {
     SendInsecureContentSignal(INSECURE_CONTENT_DISPLAY_HOST_GOOGLE);
-    if (StartsWithASCII(frame_gurl.path(), kGoogleSupportPathPrefix, false)) {
+    if (base::StartsWithASCII(frame_gurl.path(), kGoogleSupportPathPrefix,
+                              false)) {
       SendInsecureContentSignal(INSECURE_CONTENT_DISPLAY_HOST_GOOGLE_SUPPORT);
-    } else if (StartsWithASCII(frame_gurl.path(),
-                               kGoogleIntlPathPrefix,
-                               false)) {
+    } else if (base::StartsWithASCII(frame_gurl.path(), kGoogleIntlPathPrefix,
+                                     false)) {
       SendInsecureContentSignal(INSECURE_CONTENT_DISPLAY_HOST_GOOGLE_INTL);
     }
   }
 
   if (origin_host == kWWWDotGoogleDotCom) {
     SendInsecureContentSignal(INSECURE_CONTENT_DISPLAY_HOST_WWW_GOOGLE);
-    if (StartsWithASCII(frame_gurl.path(), kGoogleReaderPathPrefix, false))
+    if (base::StartsWithASCII(frame_gurl.path(), kGoogleReaderPathPrefix,
+                              false))
       SendInsecureContentSignal(INSECURE_CONTENT_DISPLAY_HOST_GOOGLE_READER);
   } else if (origin_host == kMailDotGoogleDotCom) {
     SendInsecureContentSignal(INSECURE_CONTENT_DISPLAY_HOST_MAIL_GOOGLE);
@@ -531,18 +532,19 @@ bool ContentSettingsObserver::allowRunningInsecureContent(
   bool is_google = IsHostInDomain(origin_host, kGoogleDotCom);
   if (is_google) {
     SendInsecureContentSignal(INSECURE_CONTENT_RUN_HOST_GOOGLE);
-    if (StartsWithASCII(frame_gurl.path(), kGoogleSupportPathPrefix, false)) {
+    if (base::StartsWithASCII(frame_gurl.path(), kGoogleSupportPathPrefix,
+                              false)) {
       SendInsecureContentSignal(INSECURE_CONTENT_RUN_HOST_GOOGLE_SUPPORT);
-    } else if (StartsWithASCII(frame_gurl.path(),
-                               kGoogleIntlPathPrefix,
-                               false)) {
+    } else if (base::StartsWithASCII(frame_gurl.path(), kGoogleIntlPathPrefix,
+                                     false)) {
       SendInsecureContentSignal(INSECURE_CONTENT_RUN_HOST_GOOGLE_INTL);
     }
   }
 
   if (origin_host == kWWWDotGoogleDotCom) {
     SendInsecureContentSignal(INSECURE_CONTENT_RUN_HOST_WWW_GOOGLE);
-    if (StartsWithASCII(frame_gurl.path(), kGoogleReaderPathPrefix, false))
+    if (base::StartsWithASCII(frame_gurl.path(), kGoogleReaderPathPrefix,
+                              false))
       SendInsecureContentSignal(INSECURE_CONTENT_RUN_HOST_GOOGLE_READER);
   } else if (origin_host == kMailDotGoogleDotCom) {
     SendInsecureContentSignal(INSECURE_CONTENT_RUN_HOST_MAIL_GOOGLE);

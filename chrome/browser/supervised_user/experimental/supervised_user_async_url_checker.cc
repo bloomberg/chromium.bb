@@ -50,7 +50,7 @@ GURL GetNormalizedURL(const GURL& url) {
   // Strip leading "www." (if any).
   const std::string www("www.");
   const std::string host(url.host());
-  if (StartsWithASCII(host, www, true))
+  if (base::StartsWithASCII(host, www, true))
     replacements.SetHostStr(base::StringPiece(host).substr(www.size()));
   // Strip trailing slash (if any).
   const std::string path(url.path());

@@ -225,7 +225,7 @@ bool DoUsernamesMatch(const base::string16& username1,
                       bool exact_match) {
   if (exact_match)
     return username1 == username2;
-  return StartsWith(username1, username2, true);
+  return base::StartsWith(username1, username2, true);
 }
 
 // Returns |true| if the given element is editable. Otherwise, returns |false|.
@@ -288,21 +288,21 @@ bool GetSuggestionsStats(const PasswordFormFillData& fill_data,
   for (const auto& usernames : fill_data.other_possible_usernames) {
     for (size_t i = 0; i < usernames.second.size(); ++i) {
       if (show_all ||
-          StartsWith(usernames.second[i], current_username, false)) {
+          base::StartsWith(usernames.second[i], current_username, false)) {
         *suggestions_present = true;
         return true;
       }
     }
   }
 
-  if (show_all ||
-      StartsWith(fill_data.username_field.value, current_username, false)) {
+  if (show_all || base::StartsWith(fill_data.username_field.value,
+                                   current_username, false)) {
     *suggestions_present = true;
     return false;
   }
 
   for (const auto& login : fill_data.additional_logins) {
-    if (show_all || StartsWith(login.first, current_username, false)) {
+    if (show_all || base::StartsWith(login.first, current_username, false)) {
       *suggestions_present = true;
       return false;
     }

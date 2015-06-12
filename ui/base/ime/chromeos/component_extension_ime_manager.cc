@@ -65,12 +65,12 @@ const char* kLoginLayoutWhitelist[] = {
 int GetInputMethodCategory(const std::string& id) {
   const std::string engine_id =
       chromeos::extension_ime_util::GetComponentIDByInputMethodID(id);
-  if (StartsWithASCII(engine_id, "xkb:", true))
+  if (base::StartsWithASCII(engine_id, "xkb:", true))
     return 0;
-  if (StartsWithASCII(engine_id, "vkd_", true))
+  if (base::StartsWithASCII(engine_id, "vkd_", true))
     return 1;
   if (engine_id.find("-t-i0-") != std::string::npos &&
-      !StartsWithASCII(engine_id, "zh-", true)) {
+      !base::StartsWithASCII(engine_id, "zh-", true)) {
     return 2;
   }
   return 3;

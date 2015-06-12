@@ -207,9 +207,8 @@ bool IsSignInContinueUrl(const GURL& url, size_t* user_index) {
 bool IsSignInRelatedUrl(const GURL& url) {
   size_t unused;
   return url.GetOrigin() == GetAddAccountUrl().GetOrigin() ||
-         StartsWith(base::UTF8ToUTF16(url.GetOrigin().host()),
-                    base::ASCIIToUTF16("accounts."),
-                    false) ||
+         base::StartsWith(base::UTF8ToUTF16(url.GetOrigin().host()),
+                          base::ASCIIToUTF16("accounts."), false) ||
          IsSignInContinueUrl(url, &unused);
 }
 

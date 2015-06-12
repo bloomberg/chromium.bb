@@ -58,8 +58,8 @@ class InstantExtendedManualTest : public InProcessBrowserTest,
   void SetUpOnMainThread() override {
     const testing::TestInfo* const test_info =
         testing::UnitTest::GetInstance()->current_test_info();
-    ASSERT_TRUE(StartsWithASCII(test_info->name(), "MANUAL_", true) ||
-                StartsWithASCII(test_info->name(), "DISABLED_", true));
+    ASSERT_TRUE(base::StartsWithASCII(test_info->name(), "MANUAL_", true) ||
+                base::StartsWithASCII(test_info->name(), "DISABLED_", true));
     // Make IsOffline() return false so we don't try to use the local NTP.
     disable_network_change_notifier_.reset(
         new net::NetworkChangeNotifier::DisableForTest());

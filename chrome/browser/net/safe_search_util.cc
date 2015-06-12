@@ -38,7 +38,7 @@ bool HasSameParameterKey(const std::string& first_parameter,
   // Prefix for "foo=bar" is "foo=".
   std::string parameter_prefix = second_parameter.substr(
       0, second_parameter.find("=") + 1);
-  return StartsWithASCII(first_parameter, parameter_prefix, false);
+  return base::StartsWithASCII(first_parameter, parameter_prefix, false);
 }
 
 // Examines the query string containing parameters and adds the necessary ones

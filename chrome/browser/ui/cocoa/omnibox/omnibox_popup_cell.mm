@@ -526,9 +526,9 @@ NSAttributedString* CreateClassifiedAttributedString(
       match.GetAdditionalInfo(kACMatchPropertyContentsStartIndex),
       &contentsStartIndex);
   // Ignore invalid state.
-  if (!StartsWith(match.fill_into_edit, inputText, true)
-      || !EndsWith(match.fill_into_edit, match.contents, true)
-      || ((size_t)contentsStartIndex >= inputText.length())) {
+  if (!base::StartsWith(match.fill_into_edit, inputText, true) ||
+      !EndsWith(match.fill_into_edit, match.contents, true) ||
+      ((size_t)contentsStartIndex >= inputText.length())) {
     return 0;
   }
   bool isContentsRTL = (base::i18n::RIGHT_TO_LEFT ==

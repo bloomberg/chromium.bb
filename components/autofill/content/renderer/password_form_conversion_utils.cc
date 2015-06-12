@@ -376,7 +376,7 @@ void GetPasswordForm(
         nonscript_modified_values->find(username_element);
       if (username_iterator != nonscript_modified_values->end()) {
         base::string16 typed_username_value = username_iterator->second;
-        if (!StartsWith(username_value, typed_username_value, false)) {
+        if (!base::StartsWith(username_value, typed_username_value, false)) {
           // We check that |username_value| was not obtained by autofilling
           // |typed_username_value|. In case when it was, |typed_username_value|
           // is incomplete, so we should leave autofilled value.

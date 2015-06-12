@@ -97,7 +97,7 @@ bool VariationsHttpHeaderProvider::SetDefaultVariationIds(
       default_trigger_id_set_.clear();
       return false;
     }
-    bool trigger_id = StartsWithASCII(*it, "t", true);
+    bool trigger_id = base::StartsWithASCII(*it, "t", true);
     // Remove the "t" prefix if it's there.
     std::string entry = trigger_id ? it->substr(1) : *it;
 

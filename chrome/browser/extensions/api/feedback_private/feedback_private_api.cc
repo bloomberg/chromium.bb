@@ -31,7 +31,7 @@ namespace {
 // This is undesirable, strip it if it exists.
 std::string StripFakepath(const std::string& path) {
   const char kFakePathStr[] = "C:\\fakepath\\";
-  if (StartsWithASCII(path, kFakePathStr, false))
+  if (base::StartsWithASCII(path, kFakePathStr, false))
     return path.substr(arraysize(kFakePathStr) - 1);
   return path;
 }

@@ -302,7 +302,7 @@ bool IsAffiliationBasedMatchingEnabled(const base::CommandLine& command_line) {
     return false;
   if (command_line.HasSwitch(switches::kEnableAffiliationBasedMatching))
     return true;
-  return StartsWithASCII(group_name, "Enabled", /*case_sensitive=*/false);
+  return base::StartsWithASCII(group_name, "Enabled", /*case_sensitive=*/false);
 }
 
 bool IsPropagatingPasswordChangesToWebCredentialsEnabled(

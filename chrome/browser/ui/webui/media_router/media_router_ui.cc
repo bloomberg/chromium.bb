@@ -37,7 +37,7 @@ namespace {
 
 std::string GetHostFromURL(const GURL& gurl) {
   std::string host = gurl.host();
-  if (StartsWithASCII(host, "www.", false))
+  if (base::StartsWithASCII(host, "www.", false))
     host = host.substr(4);
   return host;
 }

@@ -137,7 +137,7 @@ void RegisterFontFamilyMapObserver(
     PrefChangeRegistrar* registrar,
     const char* map_name,
     const PrefChangeRegistrar::NamedChangeCallback& obs) {
-  DCHECK(StartsWithASCII(map_name, "webkit.webprefs.", true));
+  DCHECK(base::StartsWithASCII(map_name, "webkit.webprefs.", true));
 
   for (size_t i = 0; i < prefs::kWebKitScriptsForFontFamilyMapsLength; ++i) {
     const char* script = prefs::kWebKitScriptsForFontFamilyMaps[i];
@@ -149,7 +149,7 @@ void RegisterFontFamilyMapObserver(
 // On Windows with antialising we want to use an alternate fixed font like
 // Consolas, which looks much better than Courier New.
 bool ShouldUseAlternateDefaultFixedFont(const std::string& script) {
-  if (!StartsWithASCII(script, "courier", false))
+  if (!base::StartsWithASCII(script, "courier", false))
     return false;
   UINT smooth_type = 0;
   SystemParametersInfo(SPI_GETFONTSMOOTHINGTYPE, 0, &smooth_type, 0);

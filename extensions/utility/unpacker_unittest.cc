@@ -168,8 +168,8 @@ TEST_F(UnpackerTest, BadPathError) {
       static_cast<TestExtensionsClient*>(ExtensionsClient::Get()));
 
   EXPECT_FALSE(unpacker_->Run());
-  EXPECT_TRUE(
-      StartsWith(unpacker_->error_message(), ASCIIToUTF16(kExpected), false))
+  EXPECT_TRUE(base::StartsWith(unpacker_->error_message(),
+                               ASCIIToUTF16(kExpected), false))
       << "Expected prefix: \"" << kExpected << "\", actual error: \""
       << unpacker_->error_message() << "\"";
 }
@@ -178,8 +178,8 @@ TEST_F(UnpackerTest, ImageDecodingError) {
   const char kExpected[] = "Could not decode image: ";
   SetupUnpacker("bad_image.crx");
   EXPECT_FALSE(unpacker_->Run());
-  EXPECT_TRUE(
-      StartsWith(unpacker_->error_message(), ASCIIToUTF16(kExpected), false))
+  EXPECT_TRUE(base::StartsWith(unpacker_->error_message(),
+                               ASCIIToUTF16(kExpected), false))
       << "Expected prefix: \"" << kExpected << "\", actual error: \""
       << unpacker_->error_message() << "\"";
 }

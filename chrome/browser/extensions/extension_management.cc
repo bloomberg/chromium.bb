@@ -374,8 +374,8 @@ void ExtensionManagement::Refresh() {
         continue;
       if (!iter.value().GetAsDictionary(&subdict))
         continue;
-      if (StartsWithASCII(iter.key(), schema_constants::kUpdateUrlPrefix,
-                          true)) {
+      if (base::StartsWithASCII(iter.key(), schema_constants::kUpdateUrlPrefix,
+                                true)) {
         const std::string& update_url =
             iter.key().substr(strlen(schema_constants::kUpdateUrlPrefix));
         if (!GURL(update_url).is_valid()) {

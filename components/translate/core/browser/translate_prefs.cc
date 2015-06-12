@@ -509,8 +509,8 @@ void TranslatePrefs::CreateBlockedLanguages(
   const std::string& app_locale =
       TranslateDownloadManager::GetInstance()->application_locale();
   std::string ui_lang = TranslateDownloadManager::GetLanguageCode(app_locale);
-  bool is_ui_english = ui_lang == "en" ||
-      StartsWithASCII(ui_lang, "en-", false);
+  bool is_ui_english =
+      ui_lang == "en" || base::StartsWithASCII(ui_lang, "en-", false);
 
   for (std::vector<std::string>::const_iterator it = accept_languages.begin();
        it != accept_languages.end(); ++it) {

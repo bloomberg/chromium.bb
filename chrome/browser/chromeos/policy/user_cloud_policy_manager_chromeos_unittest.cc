@@ -212,9 +212,8 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
     if (!fetcher)
       return NULL;
     EXPECT_TRUE(fetcher->delegate());
-    EXPECT_TRUE(StartsWithASCII(fetcher->GetOriginalURL().spec(),
-                                expected_url.spec(),
-                                true));
+    EXPECT_TRUE(base::StartsWithASCII(fetcher->GetOriginalURL().spec(),
+                                      expected_url.spec(), true));
     fetcher->set_url(fetcher->GetOriginalURL());
     fetcher->set_response_code(200);
     fetcher->set_status(net::URLRequestStatus());

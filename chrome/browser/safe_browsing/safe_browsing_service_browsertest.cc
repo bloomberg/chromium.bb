@@ -1303,7 +1303,7 @@ class SafeBrowsingDatabaseManagerCookieTest : public InProcessBrowserTest {
  private:
   static scoped_ptr<net::test_server::HttpResponse> HandleRequest(
       const net::test_server::HttpRequest& request) {
-    if (!StartsWithASCII(request.relative_url, "/testpath/", true)) {
+    if (!base::StartsWithASCII(request.relative_url, "/testpath/", true)) {
       ADD_FAILURE() << "bad path";
       return nullptr;
     }

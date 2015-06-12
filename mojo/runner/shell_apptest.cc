@@ -42,7 +42,7 @@ class GetHandler : public http_server::HttpHandler {
       http_server::HttpRequestPtr request,
       const Callback<void(http_server::HttpResponsePtr)>& callback) override {
     http_server::HttpResponsePtr response;
-    if (StartsWithASCII(request->relative_url, "/app", true)) {
+    if (base::StartsWithASCII(request->relative_url, "/app", true)) {
       response = http_server::CreateHttpResponse(
           200, std::string(kPingable.data, kPingable.size));
       response->content_type = "application/octet-stream";

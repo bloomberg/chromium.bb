@@ -321,7 +321,8 @@ TEST_F(AutocompleteActionPredictorTest, DeleteOldIdsFromCaches) {
     std::string row_id = AddRow(test_url_db[i]);
     all_ids.push_back(row_id);
 
-    bool exclude_url = StartsWithASCII(test_url_db[i].url.path(), "/d", true) ||
+    bool exclude_url =
+        base::StartsWithASCII(test_url_db[i].url.path(), "/d", true) ||
         (test_url_db[i].days_from_now > maximum_days_to_keep_entry());
 
     if (exclude_url)

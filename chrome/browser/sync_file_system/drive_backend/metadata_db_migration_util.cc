@@ -46,22 +46,24 @@ SyncStatusCode MigrateDatabaseFromV4ToV3(leveldb::DB* db) {
     std::string key = itr->key().ToString();
 
     // Do nothing for valid entries in both versions.
-    if (StartsWithASCII(key, kServiceMetadataKey, true) ||
-        StartsWithASCII(key, kFileMetadataKeyPrefix, true) ||
-        StartsWithASCII(key, kFileTrackerKeyPrefix, true)) {
+    if (base::StartsWithASCII(key, kServiceMetadataKey, true) ||
+        base::StartsWithASCII(key, kFileMetadataKeyPrefix, true) ||
+        base::StartsWithASCII(key, kFileTrackerKeyPrefix, true)) {
       continue;
     }
 
     // Drop entries used in version 4 only.
-    if (StartsWithASCII(key, kAppRootIDByAppIDKeyPrefix, true) ||
-        StartsWithASCII(key, kActiveTrackerIDByFileIDKeyPrefix, true) ||
-        StartsWithASCII(key, kTrackerIDByFileIDKeyPrefix, true) ||
-        StartsWithASCII(key, kMultiTrackerByFileIDKeyPrefix, true) ||
-        StartsWithASCII(key, kActiveTrackerIDByParentAndTitleKeyPrefix, true) ||
-        StartsWithASCII(key, kTrackerIDByParentAndTitleKeyPrefix, true) ||
-        StartsWithASCII(key, kMultiBackingParentAndTitleKeyPrefix, true) ||
-        StartsWithASCII(key, kDirtyIDKeyPrefix, true) ||
-        StartsWithASCII(key, kDemotedDirtyIDKeyPrefix, true)) {
+    if (base::StartsWithASCII(key, kAppRootIDByAppIDKeyPrefix, true) ||
+        base::StartsWithASCII(key, kActiveTrackerIDByFileIDKeyPrefix, true) ||
+        base::StartsWithASCII(key, kTrackerIDByFileIDKeyPrefix, true) ||
+        base::StartsWithASCII(key, kMultiTrackerByFileIDKeyPrefix, true) ||
+        base::StartsWithASCII(key, kActiveTrackerIDByParentAndTitleKeyPrefix,
+                              true) ||
+        base::StartsWithASCII(key, kTrackerIDByParentAndTitleKeyPrefix, true) ||
+        base::StartsWithASCII(key, kMultiBackingParentAndTitleKeyPrefix,
+                              true) ||
+        base::StartsWithASCII(key, kDirtyIDKeyPrefix, true) ||
+        base::StartsWithASCII(key, kDemotedDirtyIDKeyPrefix, true)) {
       write_batch.Delete(key);
       continue;
     }

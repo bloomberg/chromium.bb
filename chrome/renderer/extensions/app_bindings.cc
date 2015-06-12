@@ -39,7 +39,7 @@ bool IsCheckoutURL(const std::string& url_spec) {
   if (checkout_url_prefix.empty())
     checkout_url_prefix = "https://checkout.google.com/";
 
-  return StartsWithASCII(url_spec, checkout_url_prefix, false);
+  return base::StartsWithASCII(url_spec, checkout_url_prefix, false);
 }
 
 bool CheckAccessToAppDetails(WebFrame* frame, v8::Isolate* isolate) {

@@ -91,7 +91,7 @@ bool PicasaAlbumTableReader::Init() {
     if (category == kAlbumCategoryAlbum) {
       std::string token;
       if (!token_column.ReadString(i, &token) || token.empty() ||
-          !StartsWithASCII(token, kAlbumTokenPrefix, false)) {
+          !base::StartsWithASCII(token, kAlbumTokenPrefix, false)) {
         continue;
       }
 

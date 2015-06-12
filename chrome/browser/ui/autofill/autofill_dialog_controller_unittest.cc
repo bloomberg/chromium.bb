@@ -1398,15 +1398,15 @@ TEST_F(AutofillDialogControllerTest, BillingVsShippingStreetAddress) {
   EXPECT_EQ(ADDRESS_BILLING, form_structure()->field(1)->Type().group());
   // Inexact matching; single-line inputs get the address data concatenated but
   // separated by commas.
-  EXPECT_TRUE(StartsWith(form_structure()->field(0)->value,
-                         shipping_profile.GetRawInfo(ADDRESS_HOME_LINE1),
-                         true));
+  EXPECT_TRUE(base::StartsWith(form_structure()->field(0)->value,
+                               shipping_profile.GetRawInfo(ADDRESS_HOME_LINE1),
+                               true));
   EXPECT_TRUE(EndsWith(form_structure()->field(0)->value,
                        shipping_profile.GetRawInfo(ADDRESS_HOME_LINE2),
                        true));
-  EXPECT_TRUE(StartsWith(form_structure()->field(1)->value,
-                         billing_profile.GetRawInfo(ADDRESS_HOME_LINE1),
-                         true));
+  EXPECT_TRUE(base::StartsWith(form_structure()->field(1)->value,
+                               billing_profile.GetRawInfo(ADDRESS_HOME_LINE1),
+                               true));
   EXPECT_TRUE(EndsWith(form_structure()->field(1)->value,
                        billing_profile.GetRawInfo(ADDRESS_HOME_LINE2),
                        true));

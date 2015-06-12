@@ -281,7 +281,7 @@ bool ConfigureAsyncDnsNoFallbackFieldTrial() {
   // otherwise (trial absent): return default.
   std::string group_name = base::FieldTrialList::FindFullName("AsyncDns");
   if (!group_name.empty())
-    return StartsWithASCII(group_name, "AsyncDnsNoFallback", false);
+    return base::StartsWithASCII(group_name, "AsyncDnsNoFallback", false);
   return kDefault;
 }
 

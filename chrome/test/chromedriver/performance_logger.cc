@@ -52,7 +52,8 @@ bool ShouldRequestTraceEvents(const std::string& command) {
 // Returns whether the event belongs to one of kDomains.
 bool ShouldLogEvent(const std::string& method) {
   for (size_t i_domain = 0; i_domain < arraysize(kDomains); ++i_domain) {
-    if (StartsWithASCII(method, kDomains[i_domain], true /* case_sensitive */))
+    if (base::StartsWithASCII(method, kDomains[i_domain],
+                              true /* case_sensitive */))
       return true;
   }
   return false;

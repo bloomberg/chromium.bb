@@ -792,7 +792,7 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
       continue;
     base::string16 value_canon =
         AutofillProfile::CanonicalizeProfileString(value);
-    if (StartsWith(value_canon, field_contents_canon, true)) {
+    if (base::StartsWith(value_canon, field_contents_canon, true)) {
       // Prefix match, add suggestion.
       matched_profiles.push_back(profile);
       suggestions.push_back(Suggestion(value));
@@ -866,7 +866,8 @@ std::vector<Suggestion> PersonalDataManager::GetCreditCardSuggestions(
            field_contents.size() >= 6)) {
         continue;
       }
-    } else if (!StartsWith(creditcard_field_value, field_contents, false)) {
+    } else if (!base::StartsWith(creditcard_field_value, field_contents,
+                                 false)) {
       continue;
     }
 

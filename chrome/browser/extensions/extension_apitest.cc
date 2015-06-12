@@ -41,7 +41,7 @@ const char kSpawnedTestServerPort[] = "spawnedTestServer.port";
 
 scoped_ptr<net::test_server::HttpResponse> HandleServerRedirectRequest(
     const net::test_server::HttpRequest& request) {
-  if (!StartsWithASCII(request.relative_url, "/server-redirect?", true))
+  if (!base::StartsWithASCII(request.relative_url, "/server-redirect?", true))
     return nullptr;
 
   size_t query_string_pos = request.relative_url.find('?');
@@ -57,7 +57,7 @@ scoped_ptr<net::test_server::HttpResponse> HandleServerRedirectRequest(
 
 scoped_ptr<net::test_server::HttpResponse> HandleEchoHeaderRequest(
     const net::test_server::HttpRequest& request) {
-  if (!StartsWithASCII(request.relative_url, "/echoheader?", true))
+  if (!base::StartsWithASCII(request.relative_url, "/echoheader?", true))
     return nullptr;
 
   size_t query_string_pos = request.relative_url.find('?');
@@ -79,7 +79,7 @@ scoped_ptr<net::test_server::HttpResponse> HandleEchoHeaderRequest(
 
 scoped_ptr<net::test_server::HttpResponse> HandleSetCookieRequest(
     const net::test_server::HttpRequest& request) {
-  if (!StartsWithASCII(request.relative_url, "/set-cookie?", true))
+  if (!base::StartsWithASCII(request.relative_url, "/set-cookie?", true))
     return nullptr;
 
   scoped_ptr<net::test_server::BasicHttpResponse> http_response(
@@ -101,7 +101,7 @@ scoped_ptr<net::test_server::HttpResponse> HandleSetCookieRequest(
 
 scoped_ptr<net::test_server::HttpResponse> HandleSetHeaderRequest(
     const net::test_server::HttpRequest& request) {
-  if (!StartsWithASCII(request.relative_url, "/set-header?", true))
+  if (!base::StartsWithASCII(request.relative_url, "/set-header?", true))
     return nullptr;
 
   size_t query_string_pos = request.relative_url.find('?');

@@ -291,8 +291,8 @@ bool SandboxOriginDatabase::ListAllOrigins(
   std::string origin_key_prefix = OriginToOriginKey(std::string());
   iter->Seek(origin_key_prefix);
   origins->clear();
-  while (iter->Valid() &&
-      StartsWithASCII(iter->key().ToString(), origin_key_prefix, true)) {
+  while (iter->Valid() && base::StartsWithASCII(iter->key().ToString(),
+                                                origin_key_prefix, true)) {
     std::string origin =
       iter->key().ToString().substr(origin_key_prefix.length());
     base::FilePath path = StringToFilePath(iter->value().ToString());

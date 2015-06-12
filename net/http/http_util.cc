@@ -353,8 +353,8 @@ const char* const kForbiddenHeaderFields[] = {
 // static
 bool HttpUtil::IsSafeHeader(const std::string& name) {
   std::string lower_name(base::StringToLowerASCII(name));
-  if (StartsWithASCII(lower_name, "proxy-", true) ||
-      StartsWithASCII(lower_name, "sec-", true))
+  if (base::StartsWithASCII(lower_name, "proxy-", true) ||
+      base::StartsWithASCII(lower_name, "sec-", true))
     return false;
   for (size_t i = 0; i < arraysize(kForbiddenHeaderFields); ++i) {
     if (lower_name == kForbiddenHeaderFields[i])

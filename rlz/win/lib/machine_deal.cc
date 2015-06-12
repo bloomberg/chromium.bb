@@ -103,7 +103,7 @@ bool GetResponseValue(const std::string& response_line,
 
   value->clear();
 
-  if (!StartsWithASCII(response_line, response_key, true))
+  if (!base::StartsWithASCII(response_line, response_key, true))
     return false;
 
   std::vector<std::string> tokens;

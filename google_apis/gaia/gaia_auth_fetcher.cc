@@ -539,8 +539,8 @@ bool GaiaAuthFetcher::ParseClientLoginToOAuth2Cookie(const std::string& cookie,
   std::vector<std::string>::const_iterator iter;
   for (iter = parts.begin(); iter != parts.end(); ++iter) {
     const std::string& part = *iter;
-    if (StartsWithASCII(
-        part, kClientLoginToOAuth2CookiePartCodePrefix, false)) {
+    if (base::StartsWithASCII(part, kClientLoginToOAuth2CookiePartCodePrefix,
+                              false)) {
       auth_code->assign(part.substr(
           kClientLoginToOAuth2CookiePartCodePrefixLength));
       return true;

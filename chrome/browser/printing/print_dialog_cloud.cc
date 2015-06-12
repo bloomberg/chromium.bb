@@ -126,7 +126,7 @@ const int kDefaultHeight = 633;
 
 bool IsSimilarUrl(const GURL& url, const GURL& cloud_print_url) {
   return url.host() == cloud_print_url.host() &&
-         StartsWithASCII(url.path(), cloud_print_url.path(), false) &&
+         base::StartsWithASCII(url.path(), cloud_print_url.path(), false) &&
          url.scheme() == cloud_print_url.scheme();
 }
 

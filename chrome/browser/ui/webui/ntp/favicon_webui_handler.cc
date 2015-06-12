@@ -84,7 +84,7 @@ void FaviconWebUIHandler::HandleGetFaviconDominantColor(
   std::string path;
   CHECK(args->GetString(0, &path));
   std::string prefix = "chrome://favicon/size/";
-  DCHECK(StartsWithASCII(path, prefix, false)) << "path is " << path;
+  DCHECK(base::StartsWithASCII(path, prefix, false)) << "path is " << path;
   size_t slash = path.find("/", prefix.length());
   path = path.substr(slash + 1);
 

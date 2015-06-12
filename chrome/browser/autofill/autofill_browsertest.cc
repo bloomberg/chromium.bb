@@ -246,7 +246,7 @@ class AutofillTest : public InProcessBrowserTest {
     base::SplitString(data, '\n', &lines);
     int parsed_profiles = 0;
     for (size_t i = 0; i < lines.size(); ++i) {
-      if (StartsWithASCII(lines[i], "#", false))
+      if (base::StartsWithASCII(lines[i], "#", false))
         continue;
 
       std::vector<std::string> fields;

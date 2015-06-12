@@ -147,11 +147,11 @@ void ParsePartitionParam(const base::DictionaryValue& create_params,
     return;
   }
 
-  // Since the "persist:" prefix is in ASCII, StartsWith will work fine on
+  // Since the "persist:" prefix is in ASCII, base::StartsWith will work fine on
   // UTF-8 encoded |partition_id|. If the prefix is a match, we can safely
   // remove the prefix without splicing in the middle of a multi-byte codepoint.
   // We can use the rest of the string as UTF-8 encoded one.
-  if (StartsWithASCII(partition_str, "persist:", true)) {
+  if (base::StartsWithASCII(partition_str, "persist:", true)) {
     size_t index = partition_str.find(":");
     CHECK(index != std::string::npos);
     // It is safe to do index + 1, since we tested for the full prefix above.

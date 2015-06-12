@@ -271,7 +271,7 @@ scoped_ptr<PromptObserver> PromptObserver::Create(
 // serves a Basic Auth challenge.
 scoped_ptr<net::test_server::HttpResponse> HandleTestAuthRequest(
     const net::test_server::HttpRequest& request) {
-  if (!StartsWithASCII(request.relative_url, "/basic_auth", true))
+  if (!base::StartsWithASCII(request.relative_url, "/basic_auth", true))
     return scoped_ptr<net::test_server::HttpResponse>();
 
   if (ContainsKey(request.headers, "Authorization")) {

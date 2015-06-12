@@ -598,8 +598,8 @@ void FileAPIMessageFilter::OnStartBuildingStream(
     const GURL& url, const std::string& content_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // Only an internal Blob URL is expected here. See the BlobURL of the Blink.
-  if (!StartsWithASCII(
-          url.path(), "blobinternal%3A///", true /* case_sensitive */)) {
+  if (!base::StartsWithASCII(url.path(), "blobinternal%3A///",
+                             true /* case_sensitive */)) {
     NOTREACHED() << "Malformed Stream URL: " << url.spec();
     bad_message::ReceivedBadMessage(this,
                                     bad_message::FAMF_MALFORMED_STREAM_URL);

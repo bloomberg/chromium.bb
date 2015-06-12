@@ -539,8 +539,8 @@ static bool ParseH264CodecID(const std::string& codec_id,
                              bool* is_ambiguous) {
   // Make sure we have avc1.xxxxxx or avc3.xxxxxx
   if (codec_id.size() != 11 ||
-      (!StartsWithASCII(codec_id, "avc1.", true) &&
-       !StartsWithASCII(codec_id, "avc3.", true))) {
+      (!base::StartsWithASCII(codec_id, "avc1.", true) &&
+       !base::StartsWithASCII(codec_id, "avc3.", true))) {
     return false;
   }
 

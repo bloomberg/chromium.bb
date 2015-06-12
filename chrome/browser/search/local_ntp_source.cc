@@ -94,7 +94,7 @@ bool IsIconNTPEnabled() {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableIconNtp))
     return true;
 
-  return StartsWithASCII(group_name, "Enabled", true);
+  return base::StartsWithASCII(group_name, "Enabled", true);
 }
 
 // Adds a localized string keyed by resource id to the dictionary.

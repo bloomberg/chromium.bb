@@ -244,7 +244,7 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
   if (!input.prevent_inline_autocomplete() &&
       !suggestion.received_after_last_keystroke() &&
       (!in_keyword_mode || suggestion.from_keyword_provider()) &&
-      StartsWith(suggestion.suggestion(), input.text(), false)) {
+      base::StartsWith(suggestion.suggestion(), input.text(), false)) {
     match.inline_autocompletion =
         suggestion.suggestion().substr(input.text().length());
     match.allowed_to_be_default_match = true;

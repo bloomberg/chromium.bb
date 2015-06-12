@@ -81,8 +81,8 @@ void BuiltinProvider::Start(const AutocompleteInput& input,
   const int kMatch = kUrl | ACMatchClassification::MATCH;
 
   base::string16 text = input.text();
-  bool starting_chrome = StartsWith(kChrome, text, false);
-  if (starting_chrome || StartsWith(kAbout, text, false)) {
+  bool starting_chrome = base::StartsWith(kChrome, text, false);
+  if (starting_chrome || base::StartsWith(kAbout, text, false)) {
     ACMatchClassifications styles;
     // Highlight the input portion matching "chrome://"; or if the user has
     // input "about:" (with optional slashes), highlight the whole "chrome://".
@@ -111,8 +111,10 @@ void BuiltinProvider::Start(const AutocompleteInput& input,
       // Chrome does not support trailing slashes or paths for about:blank.
       const base::string16 blank_host = base::ASCIIToUTF16("blank");
       const base::string16 host = base::UTF8ToUTF16(url.host());
-      if (StartsWith(text, base::ASCIIToUTF16(url::kAboutScheme), false) &&
-          StartsWith(blank_host, host, false) && (url.path().length() <= 1) &&
+      if (base::StartsWith(text, base::ASCIIToUTF16(url::kAboutScheme),
+                           false) &&
+          base::StartsWith(blank_host, host, false) &&
+          (url.path().length() <= 1) &&
           !EndsWith(text, base::ASCIIToUTF16("/"), false)) {
         ACMatchClassifications styles;
         styles.push_back(ACMatchClassification(0, kMatch));
@@ -130,7 +132,7 @@ void BuiltinProvider::Start(const AutocompleteInput& input,
       size_t match_length = kChrome.length() + host_and_path.length();
       for (Builtins::const_iterator i(builtins_.begin());
           (i != builtins_.end()) && (matches_.size() < kMaxMatches); ++i) {
-        if (StartsWith(*i, host_and_path, false)) {
+        if (base::StartsWith(*i, host_and_path, false)) {
           ACMatchClassifications styles;
           // Highlight the "chrome://" scheme, even for input "about:foo".
           styles.push_back(ACMatchClassification(0, kMatch));

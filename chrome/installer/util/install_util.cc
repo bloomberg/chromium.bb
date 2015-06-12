@@ -379,7 +379,7 @@ bool InstallUtil::IsPerUserInstall(const base::FilePath& exe_path) {
     NOTREACHED();
     return true;
   }
-  return !StartsWith(exe_path.value(), program_files_path.value(), false);
+  return !base::StartsWith(exe_path.value(), program_files_path.value(), false);
 }
 
 bool InstallUtil::IsMultiInstall(BrowserDistribution* dist,

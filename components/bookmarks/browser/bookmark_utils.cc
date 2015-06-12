@@ -262,7 +262,7 @@ void MakeTitleUnique(const BookmarkModel* model,
   for (int i = 0; i < parent->child_count(); i++) {
     const BookmarkNode* node = parent->GetChild(i);
     if (node->is_url() && (url == node->url()) &&
-        StartsWith(node->GetTitle(), *title, false)) {
+        base::StartsWith(node->GetTitle(), *title, false)) {
       titles.insert(node->GetTitle());
     }
   }

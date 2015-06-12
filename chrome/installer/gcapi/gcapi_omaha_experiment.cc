@@ -50,7 +50,7 @@ bool SetExperimentLabel(const wchar_t* brand_code,
   base::string16 new_labels;
   for (std::vector<base::string16>::const_iterator it = entries.begin();
        it != entries.end(); ++it) {
-    if (!it->empty() && !StartsWith(*it, label + L"=", true)) {
+    if (!it->empty() && !base::StartsWith(*it, label + L"=", true)) {
       new_labels += *it;
       new_labels += google_update::kExperimentLabelSeparator;
     }

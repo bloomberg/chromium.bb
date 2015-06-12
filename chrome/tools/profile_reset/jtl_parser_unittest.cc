@@ -43,7 +43,7 @@ void ExpectNextOperationToFail(JtlParser* parser,
   EXPECT_FALSE(parser->ParseNextOperation(
       &actual_name, &actual_args, &actual_ends_sentence));
   EXPECT_THAT(parser->GetLastContext(),
-              testing::StartsWith(expected_context_prefix));
+              testing::base::StartsWith(expected_context_prefix));
   EXPECT_EQ(expected_line_number, parser->GetLastLineNumber());
 }
 

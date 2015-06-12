@@ -21,7 +21,7 @@ BlobReader::BlobReader(Profile* profile,
     : callback_(callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   GURL blob_url;
-  if (StartsWithASCII(blob_uuid, "blob:blobinternal", true)) {
+  if (base::StartsWithASCII(blob_uuid, "blob:blobinternal", true)) {
     // TODO(michaeln): remove support for deprecated blob urls
     blob_url = GURL(blob_uuid);
   } else {

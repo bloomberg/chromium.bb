@@ -71,7 +71,7 @@ bool IsWKWebViewEnabled() {
   }
 
   // Check if the finch experiment is turned on.
-  return StartsWithASCII(group_name, "Enabled", false);
+  return base::StartsWithASCII(group_name, "Enabled", false);
 }
 
 size_t MemoryWedgeSizeInMB() {

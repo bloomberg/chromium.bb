@@ -39,7 +39,7 @@ void HttpStreamFactory::ProcessAlternateProtocol(
   bool is_valid = true;
   for (size_t i = 0; i < alternate_protocol_values.size(); ++i) {
     const std::string& alternate_protocol_str = alternate_protocol_values[i];
-    if (StartsWithASCII(alternate_protocol_str, "p=", true)) {
+    if (base::StartsWithASCII(alternate_protocol_str, "p=", true)) {
       if (!base::StringToDouble(alternate_protocol_str.substr(2),
                                 &probability) ||
           probability < 0 || probability > 1) {

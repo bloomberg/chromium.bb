@@ -161,8 +161,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
     WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
     ASSERT_TRUE(web_contents);
-    EXPECT_TRUE(StartsWithASCII(web_contents->GetURL().spec(),
-                                "chrome://newtab/", false));
+    EXPECT_TRUE(base::StartsWithASCII(web_contents->GetURL().spec(),
+                                      "chrome://newtab/", false));
   } else {
     // TODO(xiyuan): Figure out how to test extension installed bubble?
   }
@@ -187,8 +187,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
     WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
     ASSERT_TRUE(web_contents);
-    EXPECT_TRUE(StartsWithASCII(web_contents->GetURL().spec(),
-                                "chrome://newtab/", false));
+    EXPECT_TRUE(base::StartsWithASCII(web_contents->GetURL().spec(),
+                                      "chrome://newtab/", false));
   } else {
     // TODO(xiyuan): Figure out how to test extension installed bubble?
   }

@@ -56,9 +56,9 @@ bool IsBlacklistedPlugin(const WebPluginInfo& info) {
 
   // Versions of Flip4Mac 2.3 before 2.3.6 often hang the renderer, so don't
   // load them.
-  if (StartsWith(info.name,
-                 base::ASCIIToUTF16("Flip4Mac Windows Media"), false) &&
-      StartsWith(info.version, base::ASCIIToUTF16("2.3"), false)) {
+  if (base::StartsWith(info.name, base::ASCIIToUTF16("Flip4Mac Windows Media"),
+                       false) &&
+      base::StartsWith(info.version, base::ASCIIToUTF16("2.3"), false)) {
     std::vector<base::string16> components;
     base::SplitString(info.version, '.', &components);
     int bugfix_version = 0;
@@ -144,7 +144,8 @@ bool ReadPlistPluginInfo(const base::FilePath& filename, CFBundleRef bundle,
     // Remove PDF from the list of types handled by QuickTime, since it provides
     // a worse experience than just downloading the PDF.
     if (mime.mime_type == "application/pdf" &&
-        StartsWithASCII(filename.BaseName().value(), "QuickTime", false)) {
+        base::StartsWithASCII(filename.BaseName().value(), "QuickTime",
+                              false)) {
       continue;
     }
 

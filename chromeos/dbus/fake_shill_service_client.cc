@@ -408,15 +408,15 @@ bool FakeShillServiceClient::SetServiceProperty(const std::string& service_path,
   base::DictionaryValue new_properties;
   std::string changed_property;
   bool case_sensitive = true;
-  if (StartsWithASCII(property, "Provider.", case_sensitive) ||
-      StartsWithASCII(property, "OpenVPN.", case_sensitive) ||
-      StartsWithASCII(property, "L2TPIPsec.", case_sensitive)) {
+  if (base::StartsWithASCII(property, "Provider.", case_sensitive) ||
+      base::StartsWithASCII(property, "OpenVPN.", case_sensitive) ||
+      base::StartsWithASCII(property, "L2TPIPsec.", case_sensitive)) {
     // These properties are only nested within the Provider dictionary if read
     // from Shill. Properties that start with "Provider" need to have that
     // stripped off, other properties are nested in the "Provider" dictionary
     // as-is.
     std::string key = property;
-    if (StartsWithASCII(property, "Provider.", case_sensitive))
+    if (base::StartsWithASCII(property, "Provider.", case_sensitive))
       key = property.substr(strlen("Provider."));
     base::DictionaryValue* provider = new base::DictionaryValue;
     provider->SetWithoutPathExpansion(key, value.DeepCopy());

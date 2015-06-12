@@ -166,8 +166,8 @@ MediaMetadataParser::MediaMetadataParser(media::DataSource* source,
 MediaMetadataParser::~MediaMetadataParser() {}
 
 void MediaMetadataParser::Start(const MetadataCallback& callback) {
-  if (StartsWithASCII(mime_type_, "audio/", true) ||
-      StartsWithASCII(mime_type_, "video/", true)) {
+  if (base::StartsWithASCII(mime_type_, "audio/", true) ||
+      base::StartsWithASCII(mime_type_, "video/", true)) {
     MediaMetadata* metadata = new MediaMetadata;
     metadata->mime_type = mime_type_;
     std::vector<AttachedImage>* attached_images =
@@ -183,7 +183,7 @@ void MediaMetadataParser::Start(const MetadataCallback& callback) {
     return;
   }
 
-  if (StartsWithASCII(mime_type_, "image/", true)) {
+  if (base::StartsWithASCII(mime_type_, "image/", true)) {
     ImageMetadataExtractor* extractor = new ImageMetadataExtractor;
     extractor->Extract(
         source_,

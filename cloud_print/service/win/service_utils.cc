@@ -28,7 +28,7 @@ base::string16 GetLocalComputerName() {
 
 base::string16 ReplaceLocalHostInName(const base::string16& user_name) {
   static const wchar_t kLocalDomain[] = L".\\";
-  if (StartsWith(user_name, kLocalDomain, true)) {
+  if (base::StartsWith(user_name, kLocalDomain, true)) {
     return GetLocalComputerName() +
            user_name.substr(arraysize(kLocalDomain) - 2);
   }

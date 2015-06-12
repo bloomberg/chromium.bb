@@ -191,7 +191,8 @@ std::string Action::SerializePageUrl() const {
 }
 
 void Action::ParsePageUrl(const std::string& url) {
-  set_page_incognito(StartsWithASCII(url, constants::kIncognitoUrl, true));
+  set_page_incognito(
+      base::StartsWithASCII(url, constants::kIncognitoUrl, true));
   if (page_incognito())
     set_page_url(GURL(url.substr(strlen(constants::kIncognitoUrl))));
   else
@@ -203,7 +204,7 @@ std::string Action::SerializeArgUrl() const {
 }
 
 void Action::ParseArgUrl(const std::string& url) {
-  set_arg_incognito(StartsWithASCII(url, constants::kIncognitoUrl, true));
+  set_arg_incognito(base::StartsWithASCII(url, constants::kIncognitoUrl, true));
   if (arg_incognito())
     set_arg_url(GURL(url.substr(strlen(constants::kIncognitoUrl))));
   else

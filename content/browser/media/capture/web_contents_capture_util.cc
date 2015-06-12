@@ -22,7 +22,7 @@ bool WebContentsCaptureUtil::ExtractTabCaptureTarget(
     int* render_process_id,
     int* main_render_frame_id) {
   static const char kDeviceScheme[] = "web-contents-media-stream://";
-  if (!StartsWithASCII(device_id_param, kDeviceScheme, true))
+  if (!base::StartsWithASCII(device_id_param, kDeviceScheme, true))
     return false;
 
   const std::string device_id = device_id_param.substr(

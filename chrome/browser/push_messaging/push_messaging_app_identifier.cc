@@ -75,8 +75,8 @@ PushMessagingAppIdentifier PushMessagingAppIdentifier::Generate(
 // static
 PushMessagingAppIdentifier PushMessagingAppIdentifier::FindByAppId(
     Profile* profile, const std::string& app_id) {
-  if (!StartsWithASCII(app_id, kPushMessagingAppIdentifierPrefix,
-                       false /* case_sensitive */)) {
+  if (!base::StartsWithASCII(app_id, kPushMessagingAppIdentifierPrefix,
+                             false /* case_sensitive */)) {
     return PushMessagingAppIdentifier();
   }
 

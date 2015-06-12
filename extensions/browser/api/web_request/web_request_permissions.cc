@@ -35,7 +35,7 @@ bool IsSensitiveURL(const GURL& url) {
     // This protects requests to several internal services such as sync,
     // extension update pings, captive portal detection, fraudulent certificate
     // reporting, autofill and others.
-    if (StartsWithASCII(host, kClient, true)) {
+    if (base::StartsWithASCII(host, kClient, true)) {
       bool match = true;
       for (std::string::const_iterator i = host.begin() + strlen(kClient),
                end = host.end() - strlen(kGoogleCom); i != end; ++i) {
@@ -48,11 +48,12 @@ bool IsSensitiveURL(const GURL& url) {
     }
     // This protects requests to safe browsing, link doctor, and possibly
     // others.
-    sensitive_chrome_url = sensitive_chrome_url ||
+    sensitive_chrome_url =
+        sensitive_chrome_url ||
         EndsWith(url.host(), ".clients.google.com", true) ||
         url.host() == "sb-ssl.google.com" ||
-        (url.host() ==  "chrome.google.com" &&
-             StartsWithASCII(url.path(), "/webstore", true));
+        (url.host() == "chrome.google.com" &&
+         base::StartsWithASCII(url.path(), "/webstore", true));
   }
   GURL::Replacements replacements;
   replacements.ClearQuery();

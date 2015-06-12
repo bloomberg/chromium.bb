@@ -272,9 +272,9 @@ void AutofillDownloadManager::OnURLFetchComplete(
       case kHttpBadGateway:
         if (!source->GetResponseHeaders()->EnumerateHeader(NULL, "server",
                                                            &server_header) ||
-            StartsWithASCII(server_header.c_str(),
-                            kAutofillQueryServerNameStartInHeader,
-                            false) != 0)
+            base::StartsWithASCII(server_header.c_str(),
+                                  kAutofillQueryServerNameStartInHeader,
+                                  false) != 0)
           break;
         // Bad gateway was received from Autofill servers. Fall through to back
         // off.

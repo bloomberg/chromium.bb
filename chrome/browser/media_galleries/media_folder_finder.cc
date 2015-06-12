@@ -98,8 +98,8 @@ bool ShouldIgnoreScanRoot(const base::FilePath& path) {
   return mount_point.IsParent(path);
 #elif defined(OS_LINUX)
   // /media and /mnt are likely the only places with interesting mount points.
-  if (StartsWithASCII(path.value(), "/media", true) ||
-      StartsWithASCII(path.value(), "/mnt", true)) {
+  if (base::StartsWithASCII(path.value(), "/media", true) ||
+      base::StartsWithASCII(path.value(), "/mnt", true)) {
     return false;
   }
   return true;

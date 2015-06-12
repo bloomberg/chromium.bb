@@ -298,7 +298,7 @@ TEST_F(ExtensionProtocolTest, ResourceRequestResponseHeaders) {
     // Check that cache-related headers are set.
     std::string etag;
     request->GetResponseHeaderByName("ETag", &etag);
-    EXPECT_TRUE(StartsWithASCII(etag, "\"", false));
+    EXPECT_TRUE(base::StartsWithASCII(etag, "\"", false));
     EXPECT_TRUE(EndsWith(etag, "\"", false));
 
     std::string revalidation_header;

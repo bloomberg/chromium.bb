@@ -153,7 +153,7 @@ SyncStatusCode DriveApiErrorCodeToSyncStatusCode(
 
 bool RemovePrefix(const std::string& str, const std::string& prefix,
                   std::string* out) {
-  if (!StartsWithASCII(str, prefix, true)) {
+  if (!base::StartsWithASCII(str, prefix, true)) {
     if (out)
       *out = str;
     return false;

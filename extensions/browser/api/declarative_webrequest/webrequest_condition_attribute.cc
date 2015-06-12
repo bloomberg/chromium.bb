@@ -422,12 +422,12 @@ bool HeaderMatcher::StringMatchTest::Matches(
     const std::string& str) const {
   switch (type_) {
     case kPrefix:
-      return StartsWithASCII(str, data_, case_sensitive_);
+      return base::StartsWithASCII(str, data_, case_sensitive_);
     case kSuffix:
       return EndsWith(str, data_, case_sensitive_);
     case kEquals:
       return str.size() == data_.size() &&
-             StartsWithASCII(str, data_, case_sensitive_);
+             base::StartsWithASCII(str, data_, case_sensitive_);
     case kContains:
       if (!case_sensitive_) {
         return std::search(str.begin(), str.end(), data_.begin(), data_.end(),

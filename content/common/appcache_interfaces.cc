@@ -107,7 +107,7 @@ bool AppCacheNamespace::IsMatch(const GURL& url) const {
       ReplaceSubstringsAfterOffset(&pattern, 0, "?", "\\?");
     return MatchPattern(url.spec(), pattern);
   }
-  return StartsWithASCII(url.spec(), namespace_url.spec(), true);
+  return base::StartsWithASCII(url.spec(), namespace_url.spec(), true);
 }
 
 bool IsSchemeSupportedForAppCache(const GURL& url) {

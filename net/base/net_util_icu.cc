@@ -679,7 +679,8 @@ base::string16 FormatUrlWithAdjustments(
   // Reject "view-source:view-source:..." to avoid deep recursion.
   const char kViewSourceTwice[] = "view-source:view-source:";
   if (url.SchemeIs(kViewSource) &&
-      !StartsWithASCII(url.possibly_invalid_spec(), kViewSourceTwice, false)) {
+      !base::StartsWithASCII(url.possibly_invalid_spec(), kViewSourceTwice,
+                             false)) {
     return FormatViewSourceUrl(url, languages, format_types,
                                unescape_rules, new_parsed, prefix_end,
                                adjustments);
@@ -705,7 +706,7 @@ base::string16 FormatUrlWithAdjustments(
   // we avoid stripping "http://" in this case.
   bool omit_http = (format_types & kFormatUrlOmitHTTP) &&
                    base::EqualsASCII(url_string, kHTTP) &&
-                   !StartsWithASCII(url.host(), kFTP, true);
+                   !base::StartsWithASCII(url.host(), kFTP, true);
   new_parsed->scheme = parsed.scheme;
 
   // Username & password.
@@ -792,7 +793,8 @@ base::string16 FormatUrlWithAdjustments(
                            &url_string, &new_parsed->ref, adjustments);
 
   // If we need to strip out http do it after the fact.
-  if (omit_http && StartsWith(url_string, base::ASCIIToUTF16(kHTTP), true)) {
+  if (omit_http &&
+      base::StartsWith(url_string, base::ASCIIToUTF16(kHTTP), true)) {
     const size_t kHTTPSize = arraysize(kHTTP) - 1;
     url_string = url_string.substr(kHTTPSize);
     // Because offsets in the |adjustments| are already calculated with respect

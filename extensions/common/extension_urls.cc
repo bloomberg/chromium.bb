@@ -20,9 +20,8 @@ const char kSchemaUtils[] = "schemaUtils";
 
 bool IsSourceFromAnExtension(const base::string16& source) {
   return GURL(source).SchemeIs(kExtensionScheme) ||
-         StartsWith(source,
-                    base::ASCIIToUTF16("extensions::"),
-                    true /* case-sensitive */);
+         base::StartsWith(source, base::ASCIIToUTF16("extensions::"),
+                          true /* case-sensitive */);
 }
 
 }  // namespace extensions

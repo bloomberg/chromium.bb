@@ -801,7 +801,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   func->set_mint_token_result(TestOAuth2MintTokenFlow::MINT_TOKEN_FAILURE);
   std::string error =
       utils::RunFunctionAndReturnError(func.get(), "[{}]", browser());
-  EXPECT_TRUE(StartsWithASCII(error, errors::kAuthFailure, false));
+  EXPECT_TRUE(base::StartsWithASCII(error, errors::kAuthFailure, false));
   EXPECT_FALSE(func->login_ui_shown());
   EXPECT_FALSE(func->scope_ui_shown());
 }
@@ -814,7 +814,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   func->set_login_access_token_result(false);
   std::string error = utils::RunFunctionAndReturnError(
       func.get(), "[{}]", browser());
-  EXPECT_TRUE(StartsWithASCII(error, errors::kAuthFailure, false));
+  EXPECT_TRUE(base::StartsWithASCII(error, errors::kAuthFailure, false));
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -843,7 +843,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
       TestOAuth2MintTokenFlow::MINT_TOKEN_BAD_CREDENTIALS);
   std::string error =
       utils::RunFunctionAndReturnError(func.get(), "[{}]", browser());
-  EXPECT_TRUE(StartsWithASCII(error, errors::kAuthFailure, false));
+  EXPECT_TRUE(base::StartsWithASCII(error, errors::kAuthFailure, false));
   EXPECT_FALSE(func->login_ui_shown());
   EXPECT_FALSE(func->scope_ui_shown());
 }
@@ -857,7 +857,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
       TestOAuth2MintTokenFlow::MINT_TOKEN_SERVICE_ERROR);
   std::string error =
       utils::RunFunctionAndReturnError(func.get(), "[{}]", browser());
-  EXPECT_TRUE(StartsWithASCII(error, errors::kAuthFailure, false));
+  EXPECT_TRUE(base::StartsWithASCII(error, errors::kAuthFailure, false));
   EXPECT_FALSE(func->login_ui_shown());
   EXPECT_FALSE(func->scope_ui_shown());
 }
@@ -959,7 +959,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   func->set_mint_token_result(TestOAuth2MintTokenFlow::MINT_TOKEN_FAILURE);
   std::string error = utils::RunFunctionAndReturnError(
       func.get(), "[{\"interactive\": true}]", browser());
-  EXPECT_TRUE(StartsWithASCII(error, errors::kAuthFailure, false));
+  EXPECT_TRUE(base::StartsWithASCII(error, errors::kAuthFailure, false));
   EXPECT_TRUE(func->login_ui_shown());
   EXPECT_FALSE(func->scope_ui_shown());
 }
@@ -972,7 +972,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   func->set_login_access_token_result(false);
   std::string error = utils::RunFunctionAndReturnError(
       func.get(), "[{\"interactive\": true}]", browser());
-  EXPECT_TRUE(StartsWithASCII(error, errors::kAuthFailure, false));
+  EXPECT_TRUE(base::StartsWithASCII(error, errors::kAuthFailure, false));
   EXPECT_TRUE(func->login_ui_shown());
   EXPECT_FALSE(func->scope_ui_shown());
 }
@@ -1076,7 +1076,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   func->set_scope_ui_failure(GaiaWebAuthFlow::SERVICE_AUTH_ERROR);
   std::string error = utils::RunFunctionAndReturnError(
       func.get(), "[{\"interactive\": true}]", browser());
-  EXPECT_TRUE(StartsWithASCII(error, errors::kAuthFailure, false));
+  EXPECT_TRUE(base::StartsWithASCII(error, errors::kAuthFailure, false));
   EXPECT_FALSE(func->login_ui_shown());
   EXPECT_TRUE(func->scope_ui_shown());
 }
@@ -1498,7 +1498,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   func->set_mint_token_result(TestOAuth2MintTokenFlow::MINT_TOKEN_FAILURE);
   std::string error = utils::RunFunctionAndReturnError(
       func.get(), "[{\"account\": { \"id\": \"2\" } }]", browser());
-  EXPECT_TRUE(StartsWithASCII(error, errors::kAuthFailure, false));
+  EXPECT_TRUE(base::StartsWithASCII(error, errors::kAuthFailure, false));
   EXPECT_FALSE(func->login_ui_shown());
   EXPECT_FALSE(func->scope_ui_shown());
 }
@@ -1515,7 +1515,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   func->set_login_access_token_result(false);
   std::string error = utils::RunFunctionAndReturnError(
       func.get(), "[{\"account\": { \"id\": \"2\" } }]", browser());
-  EXPECT_TRUE(StartsWithASCII(error, errors::kAuthFailure, false));
+  EXPECT_TRUE(base::StartsWithASCII(error, errors::kAuthFailure, false));
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,

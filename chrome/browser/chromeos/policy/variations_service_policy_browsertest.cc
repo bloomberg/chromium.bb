@@ -44,7 +44,7 @@ IN_PROC_BROWSER_TEST_F(VariationsServiceDevicePolicyTest, VariationsURLValid) {
   // Device policy has updated the cros settings.
   const GURL url = chrome_variations::VariationsService::GetVariationsServerURL(
       g_browser_process->local_state(), std::string());
-  EXPECT_TRUE(StartsWithASCII(url.spec(), default_variations_url, true));
+  EXPECT_TRUE(base::StartsWithASCII(url.spec(), default_variations_url, true));
   std::string value;
   EXPECT_TRUE(net::GetValueForKeyInQuery(url, "restrict", &value));
   EXPECT_EQ("restricted", value);

@@ -98,9 +98,8 @@ class ExitCodeWatcherTest : public testing::Test {
                           KEY_QUERY_VALUE);
 
     // The value name should encode the process id at the start.
-    EXPECT_TRUE(StartsWith(it.Name(),
-                           base::StringPrintf(L"%d-", proc_id),
-                           false));
+    EXPECT_TRUE(base::StartsWith(it.Name(), base::StringPrintf(L"%d-", proc_id),
+                                 false));
     DWORD value = 0;
     ASSERT_EQ(ERROR_SUCCESS, key.ReadValueDW(it.Name(), &value));
     ASSERT_EQ(exit_code, value);

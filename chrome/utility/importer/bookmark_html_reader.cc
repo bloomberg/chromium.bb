@@ -119,7 +119,7 @@ void ImportBookmarksFile(
     // multiple "<HR>" tags at the beginning of a single line.
     // See http://crbug.com/257474.
     static const char kHrTag[] = "<HR>";
-    while (StartsWithASCII(line, kHrTag, false)) {
+    while (base::StartsWithASCII(line, kHrTag, false)) {
       line.erase(0, arraysize(kHrTag) - 1);
       base::TrimString(line, " ", &line);
     }
@@ -205,7 +205,7 @@ void ImportBookmarksFile(
     }
 
     // Bookmarks in sub-folder are encapsulated with <DL> tag.
-    if (StartsWithASCII(line, "<DL>", false)) {
+    if (base::StartsWithASCII(line, "<DL>", false)) {
       has_subfolder = true;
       if (!last_folder.empty()) {
         path.push_back(last_folder);
@@ -216,7 +216,7 @@ void ImportBookmarksFile(
 
       // Mark next folder empty as initial state.
       last_folder_is_empty = true;
-    } else if (StartsWithASCII(line, "</DL>", false)) {
+    } else if (base::StartsWithASCII(line, "</DL>", false)) {
       if (path.empty())
         break;  // Mismatch <DL>.
 
@@ -278,9 +278,9 @@ namespace internal {
 
 bool ParseCharsetFromLine(const std::string& line, std::string* charset) {
   const char kCharset[] = "charset=";
-  if (StartsWithASCII(line, "<META", false) &&
+  if (base::StartsWithASCII(line, "<META", false) &&
       (line.find("CONTENT=\"") != std::string::npos ||
-          line.find("content=\"") != std::string::npos)) {
+       line.find("content=\"") != std::string::npos)) {
     size_t begin = line.find(kCharset);
     if (begin == std::string::npos)
       return false;
@@ -302,7 +302,7 @@ bool ParseFolderNameFromLine(const std::string& line,
   const char kToolbarFolderAttribute[] = "PERSONAL_TOOLBAR_FOLDER";
   const char kAddDateAttribute[] = "ADD_DATE";
 
-  if (!StartsWithASCII(line, kFolderOpen, true))
+  if (!base::StartsWithASCII(line, kFolderOpen, true))
     return false;
 
   size_t end = line.find(kFolderClose);
@@ -361,7 +361,7 @@ bool ParseBookmarkFromLine(const std::string& line,
   post_data->clear();
   *add_date = base::Time();
 
-  if (!StartsWithASCII(line, kItemOpen, true))
+  if (!base::StartsWithASCII(line, kItemOpen, true))
     return false;
 
   size_t end = line.find(kItemClose);
@@ -437,7 +437,7 @@ bool ParseMinimumBookmarkFromLine(const std::string& line,
   *url = GURL();
 
   // Case-insensitive check of open tag.
-  if (!StartsWithASCII(line, kItemOpen, false))
+  if (!base::StartsWithASCII(line, kItemOpen, false))
     return false;
 
   // Find any close tag.

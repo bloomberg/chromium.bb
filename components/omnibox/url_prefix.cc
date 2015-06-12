@@ -71,7 +71,7 @@ const URLPrefix* URLPrefix::BestURLPrefix(const base::string16& text,
 bool URLPrefix::PrefixMatch(const URLPrefix& prefix,
                             const base::string16& text,
                             const base::string16& prefix_suffix) {
-  return StartsWith(text, prefix.prefix + prefix_suffix, false);
+  return base::StartsWith(text, prefix.prefix + prefix_suffix, false);
 }
 
 // static

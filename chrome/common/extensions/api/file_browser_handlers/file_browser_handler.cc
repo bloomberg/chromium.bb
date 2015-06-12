@@ -200,9 +200,8 @@ FileBrowserHandler* LoadFileBrowserHandler(
         return NULL;
       }
       base::StringToLowerASCII(&filter);
-      if (!StartsWithASCII(filter,
-                           std::string(url::kFileSystemScheme) + ':',
-                           true)) {
+      if (!base::StartsWithASCII(
+              filter, std::string(url::kFileSystemScheme) + ':', true)) {
         *error = extensions::ErrorUtils::FormatErrorMessageUTF16(
             errors::kInvalidURLPatternError, filter);
         return NULL;

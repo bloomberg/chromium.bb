@@ -179,7 +179,7 @@ WebString GetSubResourceLinkFromElement(const WebElement& element) {
   // If value has content and not start with "javascript:" then return it,
   // otherwise return NULL.
   if (!value.isNull() && !value.isEmpty() &&
-      !StartsWithASCII(value.utf8(), "javascript:", false))
+      !base::StartsWithASCII(value.utf8(), "javascript:", false))
     return value;
 
   return WebString();

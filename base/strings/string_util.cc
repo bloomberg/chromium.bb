@@ -482,8 +482,6 @@ bool EqualsASCII(const string16& a, const StringPiece& b) {
   return std::equal(b.begin(), b.end(), a.begin());
 }
 
-}  // namespace base
-
 bool StartsWithASCII(const std::string& str,
                      const std::string& search,
                      bool case_sensitive) {
@@ -493,22 +491,19 @@ bool StartsWithASCII(const std::string& str,
     return base::strncasecmp(str.c_str(), search.c_str(), search.length()) == 0;
 }
 
-template <typename STR>
-bool StartsWithT(const STR& str, const STR& search, bool case_sensitive) {
+bool StartsWith(const string16& str,
+                const string16& search,
+                bool case_sensitive) {
   if (case_sensitive) {
     return str.compare(0, search.length(), search) == 0;
-  } else {
-    if (search.size() > str.size())
-      return false;
-    return std::equal(search.begin(), search.end(), str.begin(),
-                      base::CaseInsensitiveCompare<typename STR::value_type>());
   }
+  if (search.size() > str.size())
+    return false;
+  return std::equal(search.begin(), search.end(), str.begin(),
+                    CaseInsensitiveCompare<char16>());
 }
 
-bool StartsWith(const string16& str, const string16& search,
-                bool case_sensitive) {
-  return StartsWithT(str, search, case_sensitive);
-}
+}  // namespace base
 
 template <typename STR>
 bool EndsWithT(const STR& str, const STR& search, bool case_sensitive) {

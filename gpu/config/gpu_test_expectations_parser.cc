@@ -131,9 +131,9 @@ const char* kErrorMessage[] = {
 };
 
 Token ParseToken(const std::string& word) {
-  if (StartsWithASCII(word, "//", false))
+  if (base::StartsWithASCII(word, "//", false))
     return kTokenComment;
-  if (StartsWithASCII(word, "0x", false))
+  if (base::StartsWithASCII(word, "0x", false))
     return kConfigGPUDeviceID;
 
   for (int32 i = 0; i < kNumberOfExactMatchTokens; ++i) {

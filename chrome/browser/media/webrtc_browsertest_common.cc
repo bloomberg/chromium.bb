@@ -40,7 +40,7 @@ static const char kAdviseOnGclientSolution[] =
 const int kDefaultPollIntervalMsec = 250;
 
 bool IsErrorResult(const std::string& result) {
-  return StartsWithASCII(result, "failed-", false);
+  return base::StartsWithASCII(result, "failed-", false);
 }
 
 base::FilePath GetReferenceFilesDir() {

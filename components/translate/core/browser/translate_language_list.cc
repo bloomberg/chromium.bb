@@ -264,9 +264,9 @@ void TranslateLanguageList::SetSupportedLanguages(
   // })
   // Where "sl(" is set in kLanguageListCallbackName, "tl" is
   // kTargetLanguagesKey and "al" kAlphaLanguagesKey.
-  if (!StartsWithASCII(language_list,
-                       TranslateLanguageList::kLanguageListCallbackName,
-                       false) ||
+  if (!base::StartsWithASCII(language_list,
+                             TranslateLanguageList::kLanguageListCallbackName,
+                             false) ||
       !EndsWith(language_list, ")", false)) {
     // We don't have a NOTREACHED here since this can happen in ui_tests, even
     // though the the BrowserMain function won't call us with parameters.ui_task

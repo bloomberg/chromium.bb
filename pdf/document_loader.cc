@@ -29,7 +29,7 @@ bool GetByteRange(const std::string& headers, uint32_t* start, uint32_t* end) {
   while (it.GetNext()) {
     if (base::LowerCaseEqualsASCII(it.name(), "content-range")) {
       std::string range = it.values().c_str();
-      if (StartsWithASCII(range, "bytes", false)) {
+      if (base::StartsWithASCII(range, "bytes", false)) {
         range = range.substr(strlen("bytes"));
         std::string::size_type pos = range.find('-');
         std::string range_end;
@@ -53,7 +53,7 @@ std::string GetMultiPartBoundary(const std::string& headers) {
   while (it.GetNext()) {
     if (base::LowerCaseEqualsASCII(it.name(), "content-type")) {
       std::string type = base::StringToLowerASCII(it.values());
-      if (StartsWithASCII(type, "multipart/", true)) {
+      if (base::StartsWithASCII(type, "multipart/", true)) {
         const char* boundary = strstr(type.c_str(), "boundary=");
         if (!boundary) {
           NOTREACHED();
@@ -118,8 +118,8 @@ bool DocumentLoader::Init(const pp::URLLoader& loader,
 
   // This happens for PDFs not loaded from http(s) sources.
   if (response_headers == "Content-Type: text/plain") {
-    if (!StartsWithASCII(url, "http://", false) &&
-        !StartsWithASCII(url, "https://", false)) {
+    if (!base::StartsWithASCII(url, "http://", false) &&
+        !base::StartsWithASCII(url, "https://", false)) {
       type = "application/pdf";
     }
   }
@@ -147,7 +147,7 @@ bool DocumentLoader::Init(const pp::URLLoader& loader,
   }
   if (!type.empty() && !IsValidContentType(type))
     return false;
-  if (StartsWithASCII(disposition, "attachment", false))
+  if (base::StartsWithASCII(disposition, "attachment", false))
     return false;
 
   if (content_length > 0)

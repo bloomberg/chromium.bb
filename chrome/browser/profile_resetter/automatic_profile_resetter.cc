@@ -85,14 +85,14 @@ const uint32 kCombinedStatusMaskMaximumValue =
 
 // Returns whether or not a dry-run shall be performed.
 bool ShouldPerformDryRun() {
-  return StartsWithASCII(
+  return base::StartsWithASCII(
       base::FieldTrialList::FindFullName(kAutomaticProfileResetStudyName),
       kAutomaticProfileResetStudyDryRunGroupName, true);
 }
 
 // Returns whether or not a live-run shall be performed.
 bool ShouldPerformLiveRun() {
-  return StartsWithASCII(
+  return base::StartsWithASCII(
       base::FieldTrialList::FindFullName(kAutomaticProfileResetStudyName),
       kAutomaticProfileResetStudyEnabledGroupName, true);
 }

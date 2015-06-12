@@ -70,7 +70,7 @@ const int kNumberOfMismatchesThreshold = 3;
 bool IsAutofillFieldMetadataEnabled() {
   const std::string group_name =
       base::FieldTrialList::FindFullName("AutofillFieldMetadata");
-  return StartsWithASCII(group_name, "Enabled", true);
+  return base::StartsWithASCII(group_name, "Enabled", true);
 }
 
 // Helper for |EncodeUploadRequest()| that creates a bit field corresponding to
@@ -1145,7 +1145,7 @@ void FormStructure::ParseFieldTypesFromAutocompleteAttributes(
     // The preceding token, if any, may be a named section.
     const std::string kSectionPrefix = "section-";
     if (!tokens.empty() &&
-        StartsWithASCII(tokens.back(), kSectionPrefix, true)) {
+        base::StartsWithASCII(tokens.back(), kSectionPrefix, true)) {
       // Prepend this section name to the suffix set in the preceding block.
       section = tokens.back().substr(kSectionPrefix.size()) + section;
       tokens.pop_back();

@@ -131,9 +131,10 @@ void ShortcutsBackend::AddOrUpdateShortcut(const base::string16& text,
   const base::string16 text_lowercase(base::i18n::ToLower(text));
   const base::Time now(base::Time::Now());
   for (ShortcutMap::const_iterator it(
-       shortcuts_map_.lower_bound(text_lowercase));
+           shortcuts_map_.lower_bound(text_lowercase));
        it != shortcuts_map_.end() &&
-           StartsWith(it->first, text_lowercase, true); ++it) {
+           base::StartsWith(it->first, text_lowercase, true);
+       ++it) {
     if (match.destination_url == it->second.match_core.destination_url) {
       UpdateShortcut(ShortcutsDatabase::Shortcut(
           it->second.id, text, MatchToMatchCore(match, profile_), now,
@@ -315,10 +316,10 @@ bool ShortcutsBackend::DeleteShortcutsWithURL(const GURL& url,
   const std::string& url_spec = url.spec();
   ShortcutsDatabase::ShortcutIDs shortcut_ids;
   for (GuidMap::iterator it(guid_map_.begin()); it != guid_map_.end(); ) {
-    if (exact_match ?
-        (it->second->second.match_core.destination_url == url) :
-        StartsWithASCII(it->second->second.match_core.destination_url.spec(),
-                        url_spec, true)) {
+    if (exact_match ? (it->second->second.match_core.destination_url == url)
+                    : base::StartsWithASCII(
+                          it->second->second.match_core.destination_url.spec(),
+                          url_spec, true)) {
       shortcut_ids.push_back(it->first);
       shortcuts_map_.erase(it->second);
       guid_map_.erase(it++);

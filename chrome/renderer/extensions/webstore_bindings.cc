@@ -160,8 +160,8 @@ bool WebstoreBindings::GetWebstoreItemIdFromFrame(
 
     if (webstore_url.scheme() != webstore_base_url.scheme() ||
         webstore_url.host() != webstore_base_url.host() ||
-        !StartsWithASCII(
-            webstore_url.path(), webstore_base_url.path(), true)) {
+        !base::StartsWithASCII(webstore_url.path(), webstore_base_url.path(),
+                               true)) {
       *error = kInvalidWebstoreItemUrlError;
       return false;
     }

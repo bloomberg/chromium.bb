@@ -505,7 +505,7 @@ bool IsMatchTypeSupported(const std::string& match_type) {
 
 // Check if a match criteria is a device type one.
 bool IsMatchDeviceType(const std::string& match_type) {
-  return StartsWithASCII(match_type, "MatchIs", true);
+  return base::StartsWithASCII(match_type, "MatchIs", true);
 }
 
 // Parse a boolean value keyword (e.g., on/off, true/false).

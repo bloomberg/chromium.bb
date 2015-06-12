@@ -344,7 +344,7 @@ void AutocompleteActionPredictor::OnOmniboxOpenedUrl(const OmniboxLog& log) {
   for (std::vector<TransitionalMatch>::const_iterator it =
         transitional_matches_.begin(); it != transitional_matches_.end();
         ++it) {
-    if (!StartsWith(lower_user_text, it->user_text, true))
+    if (!base::StartsWith(lower_user_text, it->user_text, true))
       continue;
 
     // Add entries to the database for those matches.

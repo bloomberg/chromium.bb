@@ -37,7 +37,7 @@ struct PublicGeneratedPair {
 SourceFile RemoveRootGenDirFromFile(const Target* target,
                                     const SourceFile& file) {
   const SourceDir& gen = target->settings()->toolchain_gen_dir();
-  if (!gen.is_null() && StartsWithASCII(file.value(), gen.value(), true))
+  if (!gen.is_null() && base::StartsWithASCII(file.value(), gen.value(), true))
     return SourceFile("//" + file.value().substr(gen.value().size()));
   return file;
 }

@@ -228,7 +228,7 @@ bool ParseTaskID(const std::string& task_id, TaskDescriptor* task) {
   // identified by a prefix "drive-app:" on the extension ID. The legacy task
   // IDs can be stored in preferences.
   if (count == 2) {
-    if (StartsWithASCII(result[0], kDriveTaskExtensionPrefix, true)) {
+    if (base::StartsWithASCII(result[0], kDriveTaskExtensionPrefix, true)) {
       task->task_type = TASK_TYPE_DRIVE_APP;
       task->app_id = result[0].substr(kDriveTaskExtensionPrefixLength);
     } else {

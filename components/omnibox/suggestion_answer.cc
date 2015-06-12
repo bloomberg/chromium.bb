@@ -106,11 +106,11 @@ bool SuggestionAnswer::ImageLine::ParseImageLine(
     // "//host/path", which is web-speak for "use the enclosing page's scheme",
     // but not a valid path of an URL.  The GWS frontend commonly (always?)
     // redirects to HTTPS so we just default to that here.
-    image_line->image_url_ = GURL(
-        StartsWith(url_string, base::ASCIIToUTF16("//"), false) ?
-            (base::ASCIIToUTF16(url::kHttpsScheme) + base::ASCIIToUTF16(":") +
-                url_string) :
-            url_string);
+    image_line->image_url_ =
+        GURL(base::StartsWith(url_string, base::ASCIIToUTF16("//"), false)
+                 ? (base::ASCIIToUTF16(url::kHttpsScheme) +
+                    base::ASCIIToUTF16(":") + url_string)
+                 : url_string);
 
     if (!image_line->image_url_.is_valid())
       return false;

@@ -19,7 +19,8 @@ TEST_F(ShellContentClientTest, UserAgentFormat) {
   std::string user_agent = client.GetUserAgent();
 
   // Must start with the usual Mozilla-compatibility string.
-  EXPECT_TRUE(StartsWithASCII(user_agent, "Mozilla/5.0", false)) << user_agent;
+  EXPECT_TRUE(base::StartsWithASCII(user_agent, "Mozilla/5.0", false))
+      << user_agent;
 
   // Must contain a substring like "Chrome/1.2.3.4".
   EXPECT_TRUE(MatchPattern(user_agent, "*Chrome/*.*.*.*")) << user_agent;

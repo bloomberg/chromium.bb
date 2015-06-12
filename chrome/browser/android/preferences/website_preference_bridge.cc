@@ -74,11 +74,11 @@ static void GetOrigins(JNIEnv* env,
     const char* kHttpPortSuffix = ":80";
     const char* kHttpsPortSuffix = ":443";
     ScopedJavaLocalRef<jstring> jorigin;
-    if (StartsWithASCII(origin, url::kHttpsScheme, false) &&
+    if (base::StartsWithASCII(origin, url::kHttpsScheme, false) &&
         EndsWith(origin, kHttpsPortSuffix, false)) {
       jorigin = ConvertUTF8ToJavaString(
           env, origin.substr(0, origin.size() - strlen(kHttpsPortSuffix)));
-    } else if (StartsWithASCII(origin, url::kHttpScheme, false) &&
+    } else if (base::StartsWithASCII(origin, url::kHttpScheme, false) &&
                EndsWith(origin, kHttpPortSuffix, false)) {
       jorigin = ConvertUTF8ToJavaString(
           env, origin.substr(0, origin.size() - strlen(kHttpPortSuffix)));

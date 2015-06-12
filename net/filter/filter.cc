@@ -267,7 +267,7 @@ void Filter::FixupEncodingTypes(
   // supported server side on paths that only send HTML content, this mode has
   // never surfaced in the wild (and is unlikely to).
   // We will gather a lot of stats as we perform the fixups
-  if (StartsWithASCII(mime_type, kTextHtml, false)) {
+  if (base::StartsWithASCII(mime_type, kTextHtml, false)) {
     // Suspicious case: Advertised dictionary, but server didn't use sdch, and
     // we're HTML tagged.
     if (encoding_types->empty()) {

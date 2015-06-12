@@ -79,7 +79,7 @@ bool IsDefaultImageString(const std::string& s,
                           const std::string& prefix,
                           int* image_id) {
   DCHECK(image_id);
-  if (!StartsWithASCII(s, prefix, true))
+  if (!base::StartsWithASCII(s, prefix, true))
     return false;
 
   int image_index = -1;

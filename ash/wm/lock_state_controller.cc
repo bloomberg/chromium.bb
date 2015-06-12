@@ -493,9 +493,9 @@ void LockStateController::PreLockAnimationFinished(bool request_lock) {
   // Increase lock timeout for slower hardware, see http://crbug.com/350628
   const std::string board = base::SysInfo::GetLsbReleaseBoard();
   if (board == "x86-mario" ||
-      StartsWithASCII(board, "x86-alex", true /* case_sensitive */) ||
-      StartsWithASCII(board, "x86-zgb", true /* case_sensitive */) ||
-      StartsWithASCII(board, "daisy", true /* case_sensitive */)) {
+      base::StartsWithASCII(board, "x86-alex", true /* case_sensitive */) ||
+      base::StartsWithASCII(board, "x86-zgb", true /* case_sensitive */) ||
+      base::StartsWithASCII(board, "daisy", true /* case_sensitive */)) {
     timeout *= 2;
   }
 // Times out on ASAN bots.

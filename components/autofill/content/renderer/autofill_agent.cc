@@ -97,9 +97,8 @@ void GetDataListSuggestions(const WebInputElement& element,
   }
   for (WebOptionElement option = options.firstItem().to<WebOptionElement>();
        !option.isNull(); option = options.nextItem().to<WebOptionElement>()) {
-    if (!StartsWith(option.value(), prefix, false) ||
-        option.value() == prefix ||
-        !element.isValidValue(option.value()))
+    if (!base::StartsWith(option.value(), prefix, false) ||
+        option.value() == prefix || !element.isValidValue(option.value()))
       continue;
 
     values->push_back(option.value());

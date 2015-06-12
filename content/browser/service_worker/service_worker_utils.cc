@@ -36,7 +36,7 @@ bool PathContainsDisallowedCharacter(const GURL& url) {
 bool ServiceWorkerUtils::ScopeMatches(const GURL& scope, const GURL& url) {
   DCHECK(!scope.has_ref());
   DCHECK(!url.has_ref());
-  return StartsWithASCII(url.spec(), scope.spec(), true);
+  return base::StartsWithASCII(url.spec(), scope.spec(), true);
 }
 
 // static
@@ -69,7 +69,7 @@ bool ServiceWorkerUtils::IsPathRestrictionSatisfied(
   }
 
   std::string scope_string = scope.path();
-  if (!StartsWithASCII(scope_string, max_scope_string, true)) {
+  if (!base::StartsWithASCII(scope_string, max_scope_string, true)) {
     *error_message = "The path of the provided scope ('";
     error_message->append(scope_string);
     error_message->append("') is not under the max scope allowed (");

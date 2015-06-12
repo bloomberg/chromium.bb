@@ -301,7 +301,7 @@ bool IsMassStoragePortableDevice(const base::string16& pnp_device_id,
                                  const base::string16& device_name) {
   // Based on testing, if the pnp device id starts with "\\?\wpdbusenumroot#",
   // then the attached device belongs to a mass storage class.
-  if (StartsWith(pnp_device_id, L"\\\\?\\wpdbusenumroot#", false))
+  if (base::StartsWith(pnp_device_id, L"\\\\?\\wpdbusenumroot#", false))
     return true;
 
   // If the device is a volume mounted device, |device_name| will be

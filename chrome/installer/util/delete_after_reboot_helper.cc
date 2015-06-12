@@ -330,7 +330,7 @@ bool MatchPendingDeletePath(const base::FilePath& short_form_needle,
 
   // First chomp the prefix since that will mess up GetShortPathName.
   std::wstring prefix(L"\\??\\");
-  if (StartsWith(match_path, prefix, false))
+  if (base::StartsWith(match_path, prefix, false))
     match_path = match_path.substr(4);
 
   // Get the short path name of the entry.
@@ -338,7 +338,8 @@ bool MatchPendingDeletePath(const base::FilePath& short_form_needle,
 
   // Now compare the paths. If it isn't one we're looking for, add it
   // to the list to keep.
-  return StartsWith(short_match_path.value(), short_form_needle.value(), false);
+  return base::StartsWith(short_match_path.value(), short_form_needle.value(),
+                          false);
 }
 
 // Removes all pending moves for the given |directory| and any contained

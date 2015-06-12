@@ -30,7 +30,7 @@ static const char kServerRedirectUrl[] = "/server-redirect";
 
 scoped_ptr<net::test_server::HttpResponse> HandleTestRequest(
     const net::test_server::HttpRequest& request) {
-  if (StartsWithASCII(request.relative_url, kServerRedirectUrl, true)) {
+  if (base::StartsWithASCII(request.relative_url, kServerRedirectUrl, true)) {
     // Extract the target URL and redirect there.
     size_t query_string_pos = request.relative_url.find('?');
     std::string redirect_target =

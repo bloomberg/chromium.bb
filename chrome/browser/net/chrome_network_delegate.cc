@@ -187,7 +187,7 @@ bool CanRequestBeDeltaEncoded(const net::URLRequest* request) {
   for (size_t i = 0; i < arraysize(kEligibleMasks); i++) {
     const char *prefix = kEligibleMasks[i].prefix;
     const char *suffix = kEligibleMasks[i].suffix;
-    if (prefix && !StartsWithASCII(mime_type, prefix, kCaseSensitive))
+    if (prefix && !base::StartsWithASCII(mime_type, prefix, kCaseSensitive))
       continue;
     if (suffix && !EndsWith(mime_type, suffix, kCaseSensitive))
       continue;

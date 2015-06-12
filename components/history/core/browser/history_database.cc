@@ -209,7 +209,7 @@ TopHostsList HistoryDatabase::TopHosts(int num_hosts) {
 
     int64 visit_count = url_sql.ColumnInt64(1);
     std::string host = url.host();
-    if (StartsWithASCII(host, "www.", true))
+    if (base::StartsWithASCII(host, "www.", true))
       host.assign(host, 4, std::string::npos);
     host_count[host] += visit_count;
 

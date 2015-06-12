@@ -200,7 +200,7 @@ bool DatabaseCheckHelper::ScanDatabase() {
   scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
   for (itr->SeekToFirst(); itr->Valid(); itr->Next()) {
     std::string key = itr->key().ToString();
-    if (StartsWithASCII(key, kChildLookupPrefix, true)) {
+    if (base::StartsWithASCII(key, kChildLookupPrefix, true)) {
       // key: "CHILD_OF:<parent_id>:<name>"
       // value: "<child_id>"
       ++num_hierarchy_links_in_db_;
@@ -475,8 +475,8 @@ bool SandboxDirectoryDatabase::ListChildren(
   scoped_ptr<leveldb::Iterator> iter(db_->NewIterator(leveldb::ReadOptions()));
   iter->Seek(child_key_prefix);
   children->clear();
-  while (iter->Valid() &&
-      StartsWithASCII(iter->key().ToString(), child_key_prefix, true)) {
+  while (iter->Valid() && base::StartsWithASCII(iter->key().ToString(),
+                                                child_key_prefix, true)) {
     std::string child_id_string = iter->value().ToString();
     FileId child_id;
     if (!base::StringToInt64(child_id_string, &child_id)) {

@@ -154,7 +154,7 @@ GURL Extension::GetResourceURL(const GURL& extension_url,
     path = relative_path.substr(1);
 
   GURL ret_val = GURL(extension_url.spec() + path);
-  DCHECK(StartsWithASCII(ret_val.spec(), extension_url.spec(), false));
+  DCHECK(base::StartsWithASCII(ret_val.spec(), extension_url.spec(), false));
 
   return ret_val;
 }
@@ -205,7 +205,7 @@ bool Extension::ParsePEMKeyBytes(const std::string& input,
     return false;
 
   std::string working = input;
-  if (StartsWithASCII(working, kKeyBeginHeaderMarker, true)) {
+  if (base::StartsWithASCII(working, kKeyBeginHeaderMarker, true)) {
     working = base::CollapseWhitespaceASCII(working, true);
     size_t header_pos = working.find(kKeyInfoEndMarker,
       sizeof(kKeyBeginHeaderMarker) - 1);

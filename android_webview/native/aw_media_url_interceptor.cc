@@ -19,7 +19,7 @@ bool AwMediaUrlInterceptor::Intercept(const std::string& url,
       std::string(url::kStandardSchemeSeparator) +
       android_webview::kAndroidAssetPath);
 
-  if (StartsWithASCII(url, asset_file_prefix, true)) {
+  if (base::StartsWithASCII(url, asset_file_prefix, true)) {
     std::string filename(url);
     ReplaceFirstSubstringAfterOffset(
         &filename, 0, asset_file_prefix, "assets/");

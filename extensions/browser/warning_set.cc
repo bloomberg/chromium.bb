@@ -195,7 +195,7 @@ std::string Warning::GetLocalizedMessage(const ExtensionSet* extensions) const {
   std::vector<base::string16> final_parameters;
   for (size_t i = 0; i < message_parameters_.size(); ++i) {
     std::string message = message_parameters_[i];
-    if (StartsWithASCII(message, kTranslate, true)) {
+    if (base::StartsWithASCII(message, kTranslate, true)) {
       std::string extension_id = message.substr(sizeof(kTranslate) - 1);
       const extensions::Extension* extension =
           extensions->GetByID(extension_id);

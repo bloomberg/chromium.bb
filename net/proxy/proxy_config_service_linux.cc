@@ -55,7 +55,7 @@ namespace {
 std::string FixupProxyHostScheme(ProxyServer::Scheme scheme,
                                  std::string host) {
   if (scheme == ProxyServer::SCHEME_SOCKS5 &&
-      StartsWithASCII(host, "socks4://", false)) {
+      base::StartsWithASCII(host, "socks4://", false)) {
     // We default to socks 5, but if the user specifically set it to
     // socks4://, then use that.
     scheme = ProxyServer::SCHEME_SOCKS4;

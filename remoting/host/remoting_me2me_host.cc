@@ -1119,9 +1119,9 @@ void HostProcess::ApplyUsernamePolicy() {
     }
 
     std::string username = GetUsername();
-    bool shutdown = username.empty() ||
-        !StartsWithASCII(host_owner_, username + std::string("@"),
-                         false);
+    bool shutdown =
+        username.empty() ||
+        !base::StartsWithASCII(host_owner_, username + std::string("@"), false);
 
 #if defined(OS_MACOSX)
     // On Mac, we run as root at the login screen, so the username won't match.

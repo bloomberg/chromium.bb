@@ -126,8 +126,8 @@ TEST_F(CldComponentInstallerTest, ComponentReady) {
   const base::Version version("1.2.3.4");
   traits_.ComponentReady(version, install_dir, manifest.Pass());
   base::FilePath result = CldComponentInstallerTraits::GetLatestCldDataFile();
-  ASSERT_TRUE(
-      StartsWith(result.AsUTF16Unsafe(), install_dir.AsUTF16Unsafe(), true));
+  ASSERT_TRUE(base::StartsWith(result.AsUTF16Unsafe(),
+                               install_dir.AsUTF16Unsafe(), true));
   ASSERT_TRUE(EndsWith(result.value(), kTestCldDataFileName, true));
 }
 

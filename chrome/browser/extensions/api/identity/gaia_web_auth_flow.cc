@@ -179,7 +179,7 @@ void GaiaWebAuthFlow::OnAuthFlowURLChange(const GURL& url) {
   // interpreted as a path, including the fragment.
 
   if (url.scheme() == redirect_scheme_ && !url.has_host() && !url.has_port() &&
-      StartsWithASCII(url.GetContent(), redirect_path_prefix_, true)) {
+      base::StartsWithASCII(url.GetContent(), redirect_path_prefix_, true)) {
     web_flow_.release()->DetachDelegateAndDelete();
 
     std::string fragment = url.GetContent().substr(
@@ -223,7 +223,7 @@ void GaiaWebAuthFlow::OnAuthFlowTitleChange(const std::string& title) {
   const char kRedirectPrefix[] = "Loading ";
   std::string prefix(kRedirectPrefix);
 
-  if (StartsWithASCII(title, prefix, true)) {
+  if (base::StartsWithASCII(title, prefix, true)) {
     GURL url(title.substr(prefix.length(), std::string::npos));
     if (url.is_valid())
       OnAuthFlowURLChange(url);

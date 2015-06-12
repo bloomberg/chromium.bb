@@ -422,7 +422,7 @@ bool IsPingResponseValid(const char* response, int* checksum_idx) {
       return false;
   } else {
     checksum_param = "crc32: ";  // Empty response case.
-    if (!StartsWithASCII(response_string, checksum_param, true))
+    if (!base::StartsWithASCII(response_string, checksum_param, true))
       return false;
 
     checksum_index = 0;
@@ -534,7 +534,8 @@ bool ParsePingResponse(Product product, const char* response) {
     std::string response_line;
     response_line = response_string.substr(line_begin, line_end - line_begin);
 
-    if (StartsWithASCII(response_line, kRlzCgiVariable, true)) {  // An RLZ.
+    if (base::StartsWithASCII(response_line, kRlzCgiVariable,
+                              true)) {  // An RLZ.
       int separator_index = -1;
       if ((separator_index = response_line.find(": ")) < 0)
         continue;  // Not a valid key-value pair.
@@ -560,7 +561,7 @@ bool ParsePingResponse(Product product, const char* response) {
 
       if (IsAccessPointSupported(point))
         SetAccessPointRlz(point, rlz_value.substr(0, rlz_length).c_str());
-    } else if (StartsWithASCII(response_line, events_variable, true)) {
+    } else if (base::StartsWithASCII(response_line, events_variable, true)) {
       // Clear events which server parsed.
       std::vector<ReturnedEvent> event_array;
       GetEventsFromResponseString(response_line, events_variable, &event_array);
@@ -568,7 +569,8 @@ bool ParsePingResponse(Product product, const char* response) {
         ClearProductEvent(product, event_array[i].access_point,
                           event_array[i].event_type);
       }
-    } else if (StartsWithASCII(response_line, stateful_events_variable, true)) {
+    } else if (base::StartsWithASCII(response_line, stateful_events_variable,
+                                     true)) {
       // Record any stateful events the server send over.
       std::vector<ReturnedEvent> event_array;
       GetEventsFromResponseString(response_line, stateful_events_variable,

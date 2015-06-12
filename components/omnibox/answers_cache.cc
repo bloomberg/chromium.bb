@@ -23,7 +23,7 @@ AnswersQueryData AnswersCache::GetTopAnswerEntry(const base::string16& query) {
   base::string16 collapsed_query = base::CollapseWhitespace(query, false);
   for (Cache::iterator it = cache_.begin(); it != cache_.end(); ++it) {
     // If the query text starts with trimmed input, this is valid prefetch data.
-    if (StartsWith(it->full_query_text, collapsed_query, false)) {
+    if (base::StartsWith(it->full_query_text, collapsed_query, false)) {
       // Move the touched item to the front of the list.
       cache_.splice(cache_.begin(), cache_, it);
       return cache_.front();

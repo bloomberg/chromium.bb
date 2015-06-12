@@ -2822,7 +2822,7 @@ void ReportCustomFlags(const std::string& uma_histogram_hame,
                        const std::set<std::string>& command_line_difference) {
   for (const std::string& flag : command_line_difference) {
     int uma_id = about_flags::testing::kBadSwitchFormatHistogramId;
-    if (StartsWithASCII(flag, "--", true /* case_sensitive */)) {
+    if (base::StartsWithASCII(flag, "--", true /* case_sensitive */)) {
       // Skip '--' before switch name.
       std::string switch_name(flag.substr(2));
 

@@ -137,8 +137,8 @@ int GetFrameId(bool is_main_frame, int frame_id) {
 
 bool IsWebRequestEvent(const std::string& event_name) {
   std::string web_request_event_name(event_name);
-  if (StartsWithASCII(
-          web_request_event_name, webview::kWebViewEventPrefix, true)) {
+  if (base::StartsWithASCII(web_request_event_name,
+                            webview::kWebViewEventPrefix, true)) {
     web_request_event_name.replace(
         0, strlen(webview::kWebViewEventPrefix), kWebRequestEventPrefix);
   }

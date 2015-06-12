@@ -168,7 +168,8 @@ void It2MeNativeMessagingHost::ProcessConnect(
   // the authServiceWithToken field. But auth service part is always expected to
   // be set to oauth2.
   const char kOAuth2ServicePrefix[] = "oauth2:";
-  if (!StartsWithASCII(auth_service_with_token, kOAuth2ServicePrefix, true)) {
+  if (!base::StartsWithASCII(auth_service_with_token, kOAuth2ServicePrefix,
+                             true)) {
     SendErrorAndExit(response.Pass(), "Invalid 'authServiceWithToken': " +
                                           auth_service_with_token);
     return;

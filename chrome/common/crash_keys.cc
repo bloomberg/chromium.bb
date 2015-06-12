@@ -339,11 +339,11 @@ static bool IsBoringSwitch(const std::string& flag) {
 
 #if defined(OS_WIN)
   // Just about everything has this, don't bother.
-  if (StartsWithASCII(flag, "/prefetch:", true))
+  if (base::StartsWithASCII(flag, "/prefetch:", true))
     return true;
 #endif
 
-  if (!StartsWithASCII(flag, "--", true))
+  if (!base::StartsWithASCII(flag, "--", true))
     return false;
   size_t end = flag.find("=");
   size_t len = (end == std::string::npos) ? flag.length() - 2 : end - 2;

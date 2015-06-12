@@ -79,7 +79,7 @@ base::string16 ExtractNonVariationLabels(const base::string16& labels) {
   for (std::vector<base::string16>::const_iterator it = entries.begin();
        it != entries.end(); ++it) {
     if (it->empty() ||
-        StartsWith(*it, base::ASCIIToUTF16(kVariationPrefix), false)) {
+        base::StartsWith(*it, base::ASCIIToUTF16(kVariationPrefix), false)) {
       continue;
     }
 
@@ -95,9 +95,9 @@ base::string16 ExtractNonVariationLabels(const base::string16& labels) {
 base::string16 CombineExperimentLabels(const base::string16& variation_labels,
                                        const base::string16& other_labels) {
   const base::string16 separator(1, google_update::kExperimentLabelSeparator);
-  DCHECK(!StartsWith(variation_labels, separator, false));
+  DCHECK(!base::StartsWith(variation_labels, separator, false));
   DCHECK(!EndsWith(variation_labels, separator, false));
-  DCHECK(!StartsWith(other_labels, separator, false));
+  DCHECK(!base::StartsWith(other_labels, separator, false));
   DCHECK(!EndsWith(other_labels, separator, false));
   // Note that if either label is empty, a separator is not necessary.
   base::string16 combined_labels = other_labels;

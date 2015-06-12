@@ -32,13 +32,16 @@
 #include "base/win/scoped_propvariant.h"
 #include "base/win/windows_version.h"
 
+namespace base {
+namespace win {
+
 namespace {
 
 // Sets the value of |property_key| to |property_value| in |property_store|.
 bool SetPropVariantValueForPropertyStore(
     IPropertyStore* property_store,
     const PROPERTYKEY& property_key,
-    const base::win::ScopedPropVariant& property_value) {
+    const ScopedPropVariant& property_value) {
   DCHECK(property_store);
 
   HRESULT result = property_store->SetValue(property_key, property_value.get());
@@ -62,7 +65,7 @@ const wchar_t kWindows8OSKRegPath[] =
 // are attached to the machine.
 bool IsKeyboardPresentOnSlate() {
   // This function is only supported for Windows 8 and up.
-  DCHECK(base::win::GetVersion() >= base::win::VERSION_WIN8);
+  DCHECK(GetVersion() >= VERSION_WIN8);
 
   // This function should be only invoked for machines with touch screens.
   if ((GetSystemMetrics(SM_DIGITIZER) & NID_INTEGRATED_TOUCH)
@@ -160,9 +163,6 @@ bool IsKeyboardPresentOnSlate() {
 
 }  // namespace
 
-namespace base {
-namespace win {
-
 static bool g_crash_on_process_detach = false;
 
 void GetNonClientMetrics(NONCLIENTMETRICS_XP* metrics) {
@@ -181,7 +181,7 @@ bool GetUserSidString(std::wstring* user_sid) {
   HANDLE token = NULL;
   if (!::OpenProcessToken(::GetCurrentProcess(), TOKEN_QUERY, &token))
     return false;
-  base::win::ScopedHandle token_scoped(token);
+  ScopedHandle token_scoped(token);
 
   DWORD size = sizeof(TOKEN_USER) + SECURITY_MAX_SID_SIZE;
   scoped_ptr<BYTE[]> user_bytes(new BYTE[size]);
@@ -226,11 +226,11 @@ bool UserAccountControlIsEnabled() {
   // This can be slow if Windows ends up going to disk.  Should watch this key
   // for changes and only read it once, preferably on the file thread.
   //   http://code.google.com/p/chromium/issues/detail?id=61644
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  ThreadRestrictions::ScopedAllowIO allow_io;
 
-  base::win::RegKey key(HKEY_LOCAL_MACHINE,
-      L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System",
-      KEY_READ);
+  RegKey key(HKEY_LOCAL_MACHINE,
+             L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System",
+             KEY_READ);
   DWORD uac_enabled;
   if (key.ReadValueDW(L"EnableLUA", &uac_enabled) != ERROR_SUCCESS)
     return true;
@@ -284,20 +284,20 @@ static const char16 kAutoRunKeyPath[] =
 
 bool AddCommandToAutoRun(HKEY root_key, const string16& name,
                          const string16& command) {
-  base::win::RegKey autorun_key(root_key, kAutoRunKeyPath, KEY_SET_VALUE);
+  RegKey autorun_key(root_key, kAutoRunKeyPath, KEY_SET_VALUE);
   return (autorun_key.WriteValue(name.c_str(), command.c_str()) ==
       ERROR_SUCCESS);
 }
 
 bool RemoveCommandFromAutoRun(HKEY root_key, const string16& name) {
-  base::win::RegKey autorun_key(root_key, kAutoRunKeyPath, KEY_SET_VALUE);
+  RegKey autorun_key(root_key, kAutoRunKeyPath, KEY_SET_VALUE);
   return (autorun_key.DeleteValue(name.c_str()) == ERROR_SUCCESS);
 }
 
 bool ReadCommandFromAutoRun(HKEY root_key,
                             const string16& name,
                             string16* command) {
-  base::win::RegKey autorun_key(root_key, kAutoRunKeyPath, KEY_QUERY_VALUE);
+  RegKey autorun_key(root_key, kAutoRunKeyPath, KEY_QUERY_VALUE);
   return (autorun_key.ReadValue(name.c_str(), command) == ERROR_SUCCESS);
 }
 
@@ -326,8 +326,8 @@ bool IsTabletDevice() {
   if (GetSystemMetrics(SM_MAXIMUMTOUCHES) == 0)
     return false;
 
-  base::win::Version version = base::win::GetVersion();
-  if (version == base::win::VERSION_XP)
+  Version version = GetVersion();
+  if (version == VERSION_XP)
     return (GetSystemMetrics(SM_TABLETPC) != 0);
 
   // If the device is docked, the user is treating the device as a PC.
@@ -339,7 +339,7 @@ bool IsTabletDevice() {
   POWER_PLATFORM_ROLE role = PowerDeterminePlatformRole();
   bool mobile_power_profile = (role == PlatformRoleMobile);
   bool slate_power_profile = false;
-  if (version >= base::win::VERSION_WIN8)
+  if (version >= VERSION_WIN8)
     slate_power_profile = (role == PlatformRoleSlate);
 
   if (mobile_power_profile || slate_power_profile)
@@ -349,14 +349,13 @@ bool IsTabletDevice() {
 }
 
 bool DisplayVirtualKeyboard() {
-  if (base::win::GetVersion() < base::win::VERSION_WIN8)
+  if (GetVersion() < VERSION_WIN8)
     return false;
 
   if (IsKeyboardPresentOnSlate())
     return false;
 
-  static base::LazyInstance<string16>::Leaky osk_path =
-      LAZY_INSTANCE_INITIALIZER;
+  static LazyInstance<string16>::Leaky osk_path = LAZY_INSTANCE_INITIALIZER;
 
   if (osk_path.Get().empty()) {
     // We need to launch TabTip.exe from the location specified under the
@@ -367,9 +366,8 @@ bool DisplayVirtualKeyboard() {
     // We don't want to launch TabTip.exe from
     // c:\program files (x86)\common files\microsoft shared\ink. This path is
     // normally found on 64 bit Windows.
-    base::win::RegKey key(HKEY_LOCAL_MACHINE,
-                          kWindows8OSKRegPath,
-                          KEY_READ | KEY_WOW64_64KEY);
+    RegKey key(HKEY_LOCAL_MACHINE, kWindows8OSKRegPath,
+               KEY_READ | KEY_WOW64_64KEY);
     DWORD osk_path_length = 1024;
     if (key.ReadValue(NULL,
                       WriteInto(&osk_path.Get(), osk_path_length),
@@ -410,7 +408,7 @@ bool DisplayVirtualKeyboard() {
         common_program_files_path = common_program_files_wow6432.get();
         DCHECK(!common_program_files_path.empty());
       } else {
-        base::win::ScopedCoMem<wchar_t> common_program_files;
+        ScopedCoMem<wchar_t> common_program_files;
         if (FAILED(SHGetKnownFolderPath(FOLDERID_ProgramFilesCommon, 0, NULL,
                                         &common_program_files))) {
           return false;
@@ -432,7 +430,7 @@ bool DisplayVirtualKeyboard() {
 }
 
 bool DismissVirtualKeyboard() {
-  if (base::win::GetVersion() < base::win::VERSION_WIN8)
+  if (GetVersion() < VERSION_WIN8)
     return false;
 
   // We dismiss the virtual keyboard by generating the ESC keystroke
@@ -474,21 +472,21 @@ void SetDomainStateForTesting(bool state) {
 }
 
 bool MaybeHasSHA256Support() {
-  const base::win::OSInfo* os_info = base::win::OSInfo::GetInstance();
+  const OSInfo* os_info = OSInfo::GetInstance();
 
-  if (os_info->version() == base::win::VERSION_PRE_XP)
+  if (os_info->version() == VERSION_PRE_XP)
     return false;  // Too old to have it and this OS is not supported anyway.
 
-  if (os_info->version() == base::win::VERSION_XP)
+  if (os_info->version() == VERSION_XP)
     return os_info->service_pack().major >= 3;  // Windows XP SP3 has it.
 
   // Assume it is missing in this case, although it may not be. This category
   // includes Windows XP x64, and Windows Server, where a hotfix could be
   // deployed.
-  if (os_info->version() == base::win::VERSION_SERVER_2003)
+  if (os_info->version() == VERSION_SERVER_2003)
     return false;
 
-  DCHECK(os_info->version() >= base::win::VERSION_VISTA);
+  DCHECK(os_info->version() >= VERSION_VISTA);
   return true;  // New enough to have SHA-256 support.
 }
 

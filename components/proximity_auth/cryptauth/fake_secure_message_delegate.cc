@@ -76,7 +76,7 @@ bool Verify(const std::string& signature,
     signing_key = key;
   } else {
     std::string prefix = kPrivateKeyPrefix;
-    bool is_private_key = StartsWithASCII(key, prefix, true);
+    bool is_private_key = base::StartsWithASCII(key, prefix, true);
     signing_key = is_private_key ? key.substr(prefix.size()) : prefix + key;
   }
 
@@ -113,7 +113,7 @@ void FakeSecureMessageDelegate::DeriveKey(const std::string& private_key,
   // private key so it is equal to its corresponding public key.
   std::string prefix(kPrivateKeyPrefix);
   std::string normalized_private_key =
-      StartsWithASCII(private_key, prefix, true)
+      base::StartsWithASCII(private_key, prefix, true)
           ? private_key.substr(prefix.size())
           : private_key;
 

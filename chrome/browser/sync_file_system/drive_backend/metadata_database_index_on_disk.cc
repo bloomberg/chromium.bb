@@ -522,7 +522,8 @@ bool MetadataDatabaseIndexOnDisk::HasDemotedDirtyTracker() const {
   itr->Seek(kDemotedDirtyIDKeyPrefix);
   if (!itr->Valid())
     return false;
-  return StartsWithASCII(itr->key().ToString(), kDemotedDirtyIDKeyPrefix, true);
+  return base::StartsWithASCII(itr->key().ToString(), kDemotedDirtyIDKeyPrefix,
+                               true);
 }
 
 bool MetadataDatabaseIndexOnDisk::IsDemotedDirtyTracker(
@@ -570,7 +571,8 @@ size_t MetadataDatabaseIndexOnDisk::CountFileMetadata() const {
   size_t count = 0;
   scoped_ptr<LevelDBWrapper::Iterator> itr(db_->NewIterator());
   for (itr->Seek(kFileMetadataKeyPrefix); itr->Valid(); itr->Next()) {
-    if (!StartsWithASCII(itr->key().ToString(), kFileMetadataKeyPrefix, true))
+    if (!base::StartsWithASCII(itr->key().ToString(), kFileMetadataKeyPrefix,
+                               true))
       break;
     ++count;
   }
@@ -582,7 +584,8 @@ size_t MetadataDatabaseIndexOnDisk::CountFileTracker() const {
   size_t count = 0;
   scoped_ptr<LevelDBWrapper::Iterator> itr(db_->NewIterator());
   for (itr->Seek(kFileTrackerKeyPrefix); itr->Valid(); itr->Next()) {
-    if (!StartsWithASCII(itr->key().ToString(), kFileTrackerKeyPrefix, true))
+    if (!base::StartsWithASCII(itr->key().ToString(), kFileTrackerKeyPrefix,
+                               true))
       break;
     ++count;
   }
@@ -1143,7 +1146,7 @@ size_t MetadataDatabaseIndexOnDisk::CountDirtyTrackerInternal() const {
 
   scoped_ptr<LevelDBWrapper::Iterator> itr(db_->NewIterator());
   for (itr->Seek(kDirtyIDKeyPrefix); itr->Valid(); itr->Next()) {
-    if (!StartsWithASCII(itr->key().ToString(), kDirtyIDKeyPrefix, true))
+    if (!base::StartsWithASCII(itr->key().ToString(), kDirtyIDKeyPrefix, true))
       break;
     ++num_dirty_trackers;
   }
@@ -1178,7 +1181,7 @@ void MetadataDatabaseIndexOnDisk::DeleteKeyStartsWith(
   scoped_ptr<LevelDBWrapper::Iterator> itr(db_->NewIterator());
   for (itr->Seek(prefix); itr->Valid();) {
     const std::string key = itr->key().ToString();
-    if (!StartsWithASCII(key, prefix, true))
+    if (!base::StartsWithASCII(key, prefix, true))
       break;
     itr->Delete();
   }

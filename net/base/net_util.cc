@@ -256,7 +256,7 @@ bool IsCanonicalizedHostCompliant(const std::string& host) {
 
 base::string16 StripWWW(const base::string16& text) {
   const base::string16 www(base::ASCIIToUTF16("www."));
-  return StartsWith(text, www, true) ? text.substr(www.length()) : text;
+  return base::StartsWith(text, www, true) ? text.substr(www.length()) : text;
 }
 
 base::string16 StripWWWFromHost(const GURL& url) {

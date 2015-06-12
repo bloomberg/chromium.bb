@@ -162,10 +162,10 @@ scoped_ptr<DeviceEvent> DeviceManagerUdev::ProcessMessage(udev_device* device) {
 
   DeviceEvent::DeviceType device_type;
   if (!strcmp(subsystem, "input") &&
-      StartsWithASCII(path, "/dev/input/event", true))
+      base::StartsWithASCII(path, "/dev/input/event", true))
     device_type = DeviceEvent::INPUT;
   else if (!strcmp(subsystem, "drm") &&
-           StartsWithASCII(path, "/dev/dri/card", true))
+           base::StartsWithASCII(path, "/dev/dri/card", true))
     device_type = DeviceEvent::DISPLAY;
   else
     return nullptr;

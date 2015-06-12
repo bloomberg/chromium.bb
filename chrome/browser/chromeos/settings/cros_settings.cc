@@ -86,7 +86,7 @@ CrosSettings::~CrosSettings() {
 }
 
 bool CrosSettings::IsCrosSettings(const std::string& path) {
-  return StartsWithASCII(path, kCrosSettingsPrefix, true);
+  return base::StartsWithASCII(path, kCrosSettingsPrefix, true);
 }
 
 void CrosSettings::Set(const std::string& path, const base::Value& in_value) {

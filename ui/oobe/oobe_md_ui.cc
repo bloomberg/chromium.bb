@@ -21,7 +21,7 @@ void SetUpDataSource(content::WebUIDataSource* source) {
   const size_t prefix_length = arraysize(prefix) - 1;
   for (size_t i = 0; i < kOobeResourcesSize; ++i) {
     std::string name = kOobeResources[i].name;
-    DCHECK(StartsWithASCII(name, prefix, true));
+    DCHECK(base::StartsWithASCII(name, prefix, true));
     source->AddResourcePath(name.substr(prefix_length),
                             kOobeResources[i].value);
   }

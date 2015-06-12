@@ -210,7 +210,7 @@ bool ParseFtpDirectoryListingVms(
     if (lines[i].empty())
       continue;
 
-    if (StartsWith(lines[i], base::ASCIIToUTF16("Total of "), true)) {
+    if (base::StartsWith(lines[i], base::ASCIIToUTF16("Total of "), true)) {
       // After the "total" line, all following lines must be empty.
       for (size_t j = i + 1; j < lines.size(); j++)
         if (!lines[j].empty())

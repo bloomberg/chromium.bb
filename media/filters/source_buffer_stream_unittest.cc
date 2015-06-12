@@ -501,7 +501,7 @@ class SourceBufferStreamTest : public testing::Test {
       bool is_duration_estimated = false;
 
       // Handle splice frame starts.
-      if (StartsWithASCII(timestamps[i], "S(", true)) {
+      if (base::StartsWithASCII(timestamps[i], "S(", true)) {
         CHECK(!splice_frame);
         splice_frame = true;
         // Remove the "S(" off of the token.

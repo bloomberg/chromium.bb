@@ -112,7 +112,7 @@ net::ProxyServer CreateProxyServerFromPort(
 namespace proxy_cros_settings_parser {
 
 bool IsProxyPref(const std::string& path) {
-  return StartsWithASCII(path, kProxyPrefsPrefix, true);
+  return base::StartsWithASCII(path, kProxyPrefsPrefix, true);
 }
 
 void SetProxyPrefValue(const std::string& path,
@@ -247,11 +247,10 @@ void SetProxyPrefValue(const std::string& path,
     if (in_value->GetAsString(&val)) {
       config.SetProxyForScheme(
           "socks", CreateProxyServerFromHost(
-              val,
-              config.socks_proxy,
-              StartsWithASCII(val, "socks5://", false) ?
-              net::ProxyServer::SCHEME_SOCKS5 :
-              net::ProxyServer::SCHEME_SOCKS4));
+                       val, config.socks_proxy,
+                       base::StartsWithASCII(val, "socks5://", false)
+                           ? net::ProxyServer::SCHEME_SOCKS5
+                           : net::ProxyServer::SCHEME_SOCKS4));
     }
   } else if (path == kProxySocksPort) {
     int val;
@@ -259,11 +258,10 @@ void SetProxyPrefValue(const std::string& path,
       std::string host = config.socks_proxy.server.host_port_pair().host();
       config.SetProxyForScheme(
           "socks", CreateProxyServerFromPort(
-              val,
-              config.socks_proxy,
-              StartsWithASCII(host, "socks5://", false) ?
-              net::ProxyServer::SCHEME_SOCKS5 :
-              net::ProxyServer::SCHEME_SOCKS4));
+                       val, config.socks_proxy,
+                       base::StartsWithASCII(host, "socks5://", false)
+                           ? net::ProxyServer::SCHEME_SOCKS5
+                           : net::ProxyServer::SCHEME_SOCKS4));
     }
   } else if (path == kProxyIgnoreList) {
     net::ProxyBypassRules bypass_rules;

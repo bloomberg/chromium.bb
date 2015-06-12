@@ -690,7 +690,7 @@ void ModuleEnumerator::CollapsePath(Module* entry) {
   for (PathMapping::const_iterator mapping = path_mapping_.begin();
        mapping != path_mapping_.end(); ++mapping) {
     base::string16 prefix = mapping->first;
-    if (StartsWith(location, prefix, false)) {
+    if (base::StartsWith(location, prefix, false)) {
       base::string16 new_location = mapping->second +
                               location.substr(prefix.length() - 1);
       size_t length = new_location.length() - mapping->second.length();
@@ -734,8 +734,8 @@ void ModuleEnumerator::MatchAgainstBlacklist() {
     // for blacklisting individually. Mark them as suspicious if we haven't
     // classified them as bad yet.
     if (module->status == NOT_MATCHED || module->status == GOOD) {
-      if (StartsWith(module->location, L"%temp%", false) ||
-          StartsWith(module->location, L"%tmp%", false)) {
+      if (base::StartsWith(module->location, L"%temp%", false) ||
+          base::StartsWith(module->location, L"%tmp%", false)) {
         module->status = SUSPECTED_BAD;
       }
     }

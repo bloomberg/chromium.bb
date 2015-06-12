@@ -99,9 +99,9 @@ class SupervisedUserSettingsServiceTest : public ::testing::Test {
     if (supervised_user_setting.name() == kAtomicItemName) {
       expected_value = atomic_setting_value_.get();
     } else {
-      EXPECT_TRUE(StartsWithASCII(supervised_user_setting.name(),
-                                  std::string(kSplitItemName) + ':',
-                                  true));
+      EXPECT_TRUE(base::StartsWithASCII(supervised_user_setting.name(),
+                                        std::string(kSplitItemName) + ':',
+                                        true));
       std::string key =
           supervised_user_setting.name().substr(strlen(kSplitItemName) + 1);
       EXPECT_TRUE(split_items_.GetWithoutPathExpansion(key, &expected_value));

@@ -315,6 +315,14 @@ BASE_EXPORT bool LowerCaseEqualsASCII(const char16* a_begin,
 // strings are not ASCII.
 BASE_EXPORT bool EqualsASCII(const string16& a, const StringPiece& b);
 
+// Returns true if str starts with search, or false otherwise.
+BASE_EXPORT bool StartsWithASCII(const std::string& str,
+                                 const std::string& search,
+                                 bool case_sensitive);
+BASE_EXPORT bool StartsWith(const base::string16& str,
+                            const base::string16& search,
+                            bool case_sensitive);
+
 }  // namespace base
 
 #if defined(OS_WIN)
@@ -324,14 +332,6 @@ BASE_EXPORT bool EqualsASCII(const string16& a, const StringPiece& b);
 #else
 #error Define string operations appropriately for your platform
 #endif
-
-// Returns true if str starts with search, or false otherwise.
-BASE_EXPORT bool StartsWithASCII(const std::string& str,
-                                 const std::string& search,
-                                 bool case_sensitive);
-BASE_EXPORT bool StartsWith(const base::string16& str,
-                            const base::string16& search,
-                            bool case_sensitive);
 
 // Returns true if str ends with search, or false otherwise.
 BASE_EXPORT bool EndsWith(const std::string& str,

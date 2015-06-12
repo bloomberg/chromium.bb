@@ -328,12 +328,12 @@ bool ProxyBypassRules::AddRuleFromStringInternal(
 
   // Special-case hostnames that begin with a period.
   // For example, we remap ".google.com" --> "*.google.com".
-  if (StartsWithASCII(raw, ".", false))
+  if (base::StartsWithASCII(raw, ".", false))
     raw = "*" + raw;
 
   // If suffix matching was asked for, make sure the pattern starts with a
   // wildcard.
-  if (use_hostname_suffix_matching && !StartsWithASCII(raw, "*", false))
+  if (use_hostname_suffix_matching && !base::StartsWithASCII(raw, "*", false))
     raw = "*" + raw;
 
   return AddRuleForHostname(scheme, raw, port);

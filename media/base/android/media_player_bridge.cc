@@ -161,7 +161,7 @@ void MediaPlayerBridge::SetDataSource(const std::string& url) {
     DCHECK(j_context);
 
     const std::string data_uri_prefix("data:");
-    if (StartsWithASCII(url, data_uri_prefix, true)) {
+    if (base::StartsWithASCII(url, data_uri_prefix, true)) {
       if (!Java_MediaPlayerBridge_setDataUriDataSource(
           env, j_media_player_bridge_.obj(), j_context, j_url_string.obj())) {
         OnMediaError(MEDIA_ERROR_FORMAT);

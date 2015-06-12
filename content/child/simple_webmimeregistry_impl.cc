@@ -42,7 +42,7 @@ WebMimeRegistry::SupportsType
     const WebString& mime_type) {
     std::string ascii_mime_type = ToASCIIOrEmpty(mime_type);
     return (mime_util::IsSupportedImageMimeType(ascii_mime_type) ||
-            (StartsWithASCII(ascii_mime_type, "image/", true) &&
+            (base::StartsWithASCII(ascii_mime_type, "image/", true) &&
              mime_util::IsSupportedNonImageMimeType(ascii_mime_type)))
                ? WebMimeRegistry::IsSupported
                : WebMimeRegistry::IsNotSupported;

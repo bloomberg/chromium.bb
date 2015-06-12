@@ -65,7 +65,7 @@ std::string GetEventLogListOfOnePrefix(
   std::string log_list;
   for (size_t i = 0; i < log_paths.size(); ++i) {
     const std::string basename = log_paths[i].BaseName().value();
-    if (StartsWithASCII(basename, prefix, true)) {
+    if (base::StartsWithASCII(basename, prefix, true)) {
       log_list.append(" " + log_paths[i].value());
 
       // Limit the max number of collected logs to shorten the log collection

@@ -19,7 +19,7 @@ std::string GetValueByName(const std::vector<std::string>& metadata,
                            const std::string& name) {
   std::string prefix(name + "=");
   for (const std::string& record : metadata) {
-    if (StartsWithASCII(record, prefix, false)) {
+    if (base::StartsWithASCII(record, prefix, false)) {
       return record.substr(prefix.size());
     }
   }

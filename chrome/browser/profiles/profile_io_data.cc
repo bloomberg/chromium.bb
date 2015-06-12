@@ -159,7 +159,7 @@ bool IsSupportedDevToolsURL(const GURL& url, base::FilePath* path) {
 
   if (!url.SchemeIs(content::kChromeDevToolsScheme) ||
       url.host() != chrome::kChromeUIDevToolsHost ||
-      !StartsWithASCII(url.path(), bundled_path_prefix, false)) {
+      !base::StartsWithASCII(url.path(), bundled_path_prefix, false)) {
     return false;
   }
 

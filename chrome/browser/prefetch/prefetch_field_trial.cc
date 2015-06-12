@@ -14,7 +14,7 @@ namespace prefetch {
 
 bool DisableForFieldTrial() {
   std::string experiment = base::FieldTrialList::FindFullName("Prefetch");
-  return StartsWithASCII(experiment, "ExperimentDisable", false);
+  return base::StartsWithASCII(experiment, "ExperimentDisable", false);
 }
 
 }  // namespace prefetch

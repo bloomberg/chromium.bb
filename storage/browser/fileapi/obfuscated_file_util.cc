@@ -901,7 +901,7 @@ void ObfuscatedFileUtil::CloseFileSystemForOriginAndType(
   const std::string key_prefix = GetDirectoryDatabaseKey(origin, type_string);
   for (DirectoryMap::iterator iter = directories_.lower_bound(key_prefix);
        iter != directories_.end();) {
-    if (!StartsWithASCII(iter->first, key_prefix, true))
+    if (!base::StartsWithASCII(iter->first, key_prefix, true))
       break;
     DCHECK(type_string.empty() || iter->first == key_prefix);
     scoped_ptr<SandboxDirectoryDatabase> database(iter->second);
@@ -925,7 +925,7 @@ void ObfuscatedFileUtil::DestroyDirectoryDatabase(
   const std::string key_prefix = GetDirectoryDatabaseKey(origin, type_string);
   for (DirectoryMap::iterator iter = directories_.lower_bound(key_prefix);
        iter != directories_.end();) {
-    if (!StartsWithASCII(iter->first, key_prefix, true))
+    if (!base::StartsWithASCII(iter->first, key_prefix, true))
       break;
     DCHECK(type_string.empty() || iter->first == key_prefix);
     scoped_ptr<SandboxDirectoryDatabase> database(iter->second);

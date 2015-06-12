@@ -3917,7 +3917,7 @@ bool PDFiumEngineExports::RenderPDFPageToDC(const void* pdf_buffer,
         doc, "Creator", WriteInto(&creator, buffer_bytes + 1), buffer_bytes);
   }
   bool use_bitmap = false;
-  if (StartsWith(creator, L"cairo", false))
+  if (base::StartsWith(creator, L"cairo", false))
     use_bitmap = true;
 
   // Another temporary hack. Some PDFs seems to render very slowly if

@@ -79,8 +79,8 @@ bool ConfigureAsyncDnsFieldTrial() {
   // otherwise (trial absent): return default.
   std::string group_name = base::FieldTrialList::FindFullName("AsyncDns");
   if (!group_name.empty()) {
-    const bool enabled = StartsWithASCII(
-        group_name, "AsyncDns", false /* case_sensitive */);
+    const bool enabled = base::StartsWithASCII(group_name, "AsyncDns",
+                                               false /* case_sensitive */);
     HistogramPrefDefaultSource(FIELD_TRIAL, enabled);
     return enabled;
   }

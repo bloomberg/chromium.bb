@@ -559,7 +559,8 @@ IN_PROC_BROWSER_TEST_F(PolicyPrefsTest, PolicyToPrefsMapping) {
            ++pref_mapping) {
         // Skip Chrome OS preferences that use a different backend and cannot be
         // retrieved through the prefs mechanism.
-        if (StartsWithASCII((*pref_mapping)->pref(), kCrosSettingsPrefix, true))
+        if (base::StartsWithASCII((*pref_mapping)->pref(), kCrosSettingsPrefix,
+                                  true))
           continue;
 
         // Skip preferences that should not be checked when the policy is set to

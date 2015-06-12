@@ -201,7 +201,7 @@ bool IsDuplicateName(const std::string& locale_name) {
   };
 
   // Skip all the es_Foo other than es_419 for now.
-  if (StartsWithASCII(locale_name, "es_", false))
+  if (base::StartsWithASCII(locale_name, "es_", false))
     return !EndsWith(locale_name, "419", true);
 
   for (size_t i = 0; i < arraysize(kDuplicateNames); ++i) {
@@ -539,7 +539,7 @@ base::string16 GetDisplayNameForLocale(const std::string& locale,
   // zh-Hant because the current Android Java API doesn't support scripts.
   // TODO(wangxianzhu): remove the special handling of zh-Hans and zh-Hant once
   // Android Java API supports scripts.
-  if (!StartsWithASCII(locale_code, "zh-Han", true)) {
+  if (!base::StartsWithASCII(locale_code, "zh-Han", true)) {
     display_name = GetDisplayNameForLocale(locale_code, display_locale);
   } else
 #endif

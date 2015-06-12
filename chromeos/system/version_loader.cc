@@ -78,7 +78,7 @@ std::string ParseFirmware(const std::string& contents) {
   std::vector<std::string> lines;
   base::SplitString(contents, '\n', &lines);
   for (size_t i = 0; i < lines.size(); ++i) {
-    if (StartsWithASCII(lines[i], kFirmwarePrefix, false)) {
+    if (base::StartsWithASCII(lines[i], kFirmwarePrefix, false)) {
       std::string str = lines[i].substr(std::string(kFirmwarePrefix).size());
       size_t found = str.find_first_not_of("| ");
       if (found != std::string::npos)

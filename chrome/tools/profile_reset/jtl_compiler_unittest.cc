@@ -113,7 +113,8 @@ TEST(JtlCompiler, InvalidOperationName) {
   JtlCompiler::CompileError error;
   EXPECT_FALSE(
       JtlCompiler::Compile(kSourceCode, kTestHashSeed, &bytecode, &error));
-  EXPECT_THAT(error.context, testing::StartsWith("non_existent_instruction"));
+  EXPECT_THAT(error.context,
+              testing::base::StartsWith("non_existent_instruction"));
   EXPECT_EQ(2u, error.line_number);
   EXPECT_EQ(JtlCompiler::CompileError::INVALID_OPERATION_NAME,
             error.error_code);
@@ -130,7 +131,7 @@ TEST(JtlCompiler, InvalidArgumentsCount) {
     JtlCompiler::CompileError error;
     EXPECT_FALSE(JtlCompiler::Compile(
         kSourceCodes[i], kTestHashSeed, &bytecode, &error));
-    EXPECT_THAT(error.context, testing::StartsWith("store_bool"));
+    EXPECT_THAT(error.context, testing::base::StartsWith("store_bool"));
     EXPECT_EQ(1u, error.line_number);
     EXPECT_EQ(JtlCompiler::CompileError::INVALID_ARGUMENT_COUNT,
               error.error_code);
@@ -162,7 +163,7 @@ TEST(JtlCompiler, InvalidArgumentType) {
     EXPECT_FALSE(JtlCompiler::Compile(
         cases[i].source_code, kTestHashSeed, &bytecode, &error));
     EXPECT_THAT(error.context,
-                testing::StartsWith(cases[i].expected_context_prefix));
+                testing::base::StartsWith(cases[i].expected_context_prefix));
     EXPECT_EQ(2u, error.line_number);
     EXPECT_EQ(JtlCompiler::CompileError::INVALID_ARGUMENT_TYPE,
               error.error_code);
@@ -183,7 +184,7 @@ TEST(JtlCompiler, InvalidArgumentValue) {
     EXPECT_FALSE(JtlCompiler::Compile(
         cases[i].source_code, kTestHashSeed, &bytecode, &error));
     EXPECT_THAT(error.context,
-                testing::StartsWith(cases[i].expected_context_prefix));
+                testing::base::StartsWith(cases[i].expected_context_prefix));
     EXPECT_EQ(0u, error.line_number);
     EXPECT_EQ(JtlCompiler::CompileError::INVALID_ARGUMENT_VALUE,
               error.error_code);
@@ -209,7 +210,7 @@ TEST(JtlCompiler, ParsingError) {
   JtlCompiler::CompileError error;
   EXPECT_FALSE(
       JtlCompiler::Compile(kSourceCode, kTestHashSeed, &bytecode, &error));
-  EXPECT_THAT(error.context, testing::StartsWith("go"));
+  EXPECT_THAT(error.context, testing::base::StartsWith("go"));
   EXPECT_EQ(1u, error.line_number);
   EXPECT_EQ(JtlCompiler::CompileError::PARSING_ERROR, error.error_code);
 }

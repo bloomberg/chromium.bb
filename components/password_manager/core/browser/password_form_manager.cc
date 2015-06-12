@@ -168,7 +168,7 @@ PasswordFormManager::MatchResultMask PasswordFormManager::DoesManage(
     origins_match =
         observed_form_.origin.host() == form.origin.host() &&
         observed_form_.origin.port() == form.origin.port() &&
-        StartsWithASCII(new_path, old_path, /*case_sensitive=*/true);
+        base::StartsWithASCII(new_path, old_path, /*case_sensitive=*/true);
   }
 
   if (!origins_match)
@@ -392,7 +392,7 @@ void PasswordFormManager::OnRequestDone(
       // instead of explicitly handling empty path matches.
       bool is_credential_protected =
           observed_form_.scheme == PasswordForm::SCHEME_HTML &&
-          StartsWithASCII("/", login->origin.path(), true) &&
+          base::StartsWithASCII("/", login->origin.path(), true) &&
           credential_scores[i] > 0 && !login->blacklisted_by_user;
       // Passwords generated on a signup form must show on a login form even if
       // there are better-matching saved credentials. TODO(gcasto): We don't

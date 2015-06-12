@@ -610,7 +610,7 @@ std::string PnaclComponentURLToFilename(const std::string& url) {
   // generated from ManifestResolveKey or PnaclResources::ReadResourceInfo.
   // So, it's safe to just use string parsing operations here instead of
   // URL-parsing ones.
-  DCHECK(StartsWithASCII(url, kPNaClTranslatorBaseUrl, true));
+  DCHECK(base::StartsWithASCII(url, kPNaClTranslatorBaseUrl, true));
   std::string r = url.substr(std::string(kPNaClTranslatorBaseUrl).length());
 
   // Use white-listed-chars.

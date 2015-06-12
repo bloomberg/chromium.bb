@@ -253,7 +253,8 @@ class Config {
     return name == kTraceImplName || name == kTraceAfterDispatchImplName;
   }
 
-  static bool StartsWith(const std::string& str, const std::string& prefix) {
+  static bool base::StartsWith(const std::string& str,
+                               const std::string& prefix) {
     if (prefix.size() > str.size())
       return false;
     return str.compare(0, prefix.size(), prefix) == 0;

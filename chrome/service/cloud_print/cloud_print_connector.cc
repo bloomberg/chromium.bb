@@ -418,7 +418,8 @@ void CloudPrintConnector::InitJobHandlerForPrinter(
     for (size_t index = 0; index < tags_list->GetSize(); index++) {
       std::string tag;
       if (tags_list->GetString(index, &tag) &&
-          StartsWithASCII(tag, kCloudPrintServiceTagsHashTagName, false)) {
+          base::StartsWithASCII(tag, kCloudPrintServiceTagsHashTagName,
+                                false)) {
         std::vector<std::string> tag_parts;
         base::SplitStringDontTrim(tag, '=', &tag_parts);
         DCHECK_EQ(tag_parts.size(), 2U);

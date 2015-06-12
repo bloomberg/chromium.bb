@@ -429,8 +429,8 @@ bool InputMethodUtil::IsValidInputMethodId(
 
 // static
 bool InputMethodUtil::IsKeyboardLayout(const std::string& input_method_id) {
-  return StartsWithASCII(input_method_id, "xkb:", false) ||
-      extension_ime_util::IsKeyboardLayoutExtension(input_method_id);
+  return base::StartsWithASCII(input_method_id, "xkb:", false) ||
+         extension_ime_util::IsKeyboardLayoutExtension(input_method_id);
 }
 
 std::string InputMethodUtil::GetKeyboardLayoutName(

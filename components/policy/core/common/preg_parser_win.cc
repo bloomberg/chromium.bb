@@ -176,7 +176,7 @@ void HandleRecord(const base::string16& key_name,
     return;
 
   std::string value_name(base::UTF16ToUTF8(value));
-  if (!StartsWithASCII(value_name, kActionTriggerPrefix, true)) {
+  if (!base::StartsWithASCII(value_name, kActionTriggerPrefix, true)) {
     scoped_ptr<base::Value> value;
     if (DecodePRegValue(type, data, &value))
       dict->SetValue(value_name, value.Pass());
@@ -192,22 +192,25 @@ void HandleRecord(const base::string16& key_name,
          value != values.end(); ++value) {
       dict->RemoveValue(*value);
     }
-  } else if (StartsWithASCII(action_trigger, kActionTriggerDeleteKeys, true)) {
+  } else if (base::StartsWithASCII(action_trigger, kActionTriggerDeleteKeys,
+                                   true)) {
     std::vector<std::string> keys;
     Tokenize(DecodePRegStringValue(data), ";", &keys);
     for (std::vector<std::string>::const_iterator key(keys.begin());
          key != keys.end(); ++key) {
       dict->RemoveKey(*key);
     }
-  } else if (StartsWithASCII(action_trigger, kActionTriggerDel, true)) {
+  } else if (base::StartsWithASCII(action_trigger, kActionTriggerDel, true)) {
     dict->RemoveValue(
         value_name.substr(arraysize(kActionTriggerPrefix) - 1 +
                           arraysize(kActionTriggerDel) - 1));
-  } else if (StartsWithASCII(action_trigger, kActionTriggerDelVals, true)) {
+  } else if (base::StartsWithASCII(action_trigger, kActionTriggerDelVals,
+                                   true)) {
     // Delete all values.
     dict->ClearValues();
-  } else if (StartsWithASCII(action_trigger, kActionTriggerSecureKey, true) ||
-             StartsWithASCII(action_trigger, kActionTriggerSoft, true)) {
+  } else if (base::StartsWithASCII(action_trigger, kActionTriggerSecureKey,
+                                   true) ||
+             base::StartsWithASCII(action_trigger, kActionTriggerSoft, true)) {
     // Doesn't affect values.
   } else {
     LOG(ERROR) << "Bad action trigger " << value_name;
@@ -295,7 +298,7 @@ bool ReadFile(const base::FilePath& file_path,
       break;
 
     // Process the record if it is within the |root| subtree.
-    if (StartsWith(key_name, root, false))
+    if (base::StartsWith(key_name, root, false))
       HandleRecord(key_name.substr(root.size()), value, type, data, dict);
   }
 

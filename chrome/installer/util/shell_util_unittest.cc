@@ -979,7 +979,7 @@ TEST(ShellUtilTest, BuildAppModelIdLongEverything) {
 TEST(ShellUtilTest, GetUserSpecificRegistrySuffix) {
   base::string16 suffix;
   ASSERT_TRUE(ShellUtil::GetUserSpecificRegistrySuffix(&suffix));
-  ASSERT_TRUE(StartsWith(suffix, L".", true));
+  ASSERT_TRUE(base::StartsWith(suffix, L".", true));
   ASSERT_EQ(27, suffix.length());
   ASSERT_TRUE(base::ContainsOnlyChars(suffix.substr(1),
                                       L"ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"));
@@ -988,7 +988,7 @@ TEST(ShellUtilTest, GetUserSpecificRegistrySuffix) {
 TEST(ShellUtilTest, GetOldUserSpecificRegistrySuffix) {
   base::string16 suffix;
   ASSERT_TRUE(ShellUtil::GetOldUserSpecificRegistrySuffix(&suffix));
-  ASSERT_TRUE(StartsWith(suffix, L".", true));
+  ASSERT_TRUE(base::StartsWith(suffix, L".", true));
 
   wchar_t user_name[256];
   DWORD size = arraysize(user_name);

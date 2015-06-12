@@ -467,14 +467,14 @@ void RecordDownloadMimeType(const std::string& mime_type_string) {
 
   // Do partial matches.
   if (download_content == DOWNLOAD_CONTENT_UNRECOGNIZED) {
-    if (StartsWithASCII(mime_type_string, "text/", true)) {
+    if (base::StartsWithASCII(mime_type_string, "text/", true)) {
       download_content = DOWNLOAD_CONTENT_TEXT;
-    } else if (StartsWithASCII(mime_type_string, "image/", true)) {
+    } else if (base::StartsWithASCII(mime_type_string, "image/", true)) {
       download_content = DOWNLOAD_CONTENT_IMAGE;
       RecordDownloadImageType(mime_type_string);
-    } else if (StartsWithASCII(mime_type_string, "audio/", true)) {
+    } else if (base::StartsWithASCII(mime_type_string, "audio/", true)) {
       download_content = DOWNLOAD_CONTENT_AUDIO;
-    } else if (StartsWithASCII(mime_type_string, "video/", true)) {
+    } else if (base::StartsWithASCII(mime_type_string, "video/", true)) {
       download_content = DOWNLOAD_CONTENT_VIDEO;
     }
   }

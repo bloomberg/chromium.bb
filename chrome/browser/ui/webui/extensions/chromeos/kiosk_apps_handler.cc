@@ -75,8 +75,8 @@ bool ExtractsAppIdFromInput(const std::string& input,
 
   if (webstore_url.scheme() != webstore_base_url.scheme() ||
       webstore_url.host() != webstore_base_url.host() ||
-      !StartsWithASCII(
-          webstore_url.path(), webstore_base_url.path(), true)) {
+      !base::StartsWithASCII(webstore_url.path(), webstore_base_url.path(),
+                             true)) {
     return false;
   }
 

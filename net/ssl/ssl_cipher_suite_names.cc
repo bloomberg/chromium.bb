@@ -349,7 +349,8 @@ bool ParseSSLCipherString(const std::string& cipher_string,
                           uint16* cipher_suite) {
   int value = 0;
   if (cipher_string.size() == 6 &&
-      StartsWithASCII(cipher_string, "0x", false /* case insensitive */) &&
+      base::StartsWithASCII(cipher_string, "0x",
+                            false /* case insensitive */) &&
       base::HexStringToInt(cipher_string, &value)) {
     *cipher_suite = static_cast<uint16>(value);
     return true;

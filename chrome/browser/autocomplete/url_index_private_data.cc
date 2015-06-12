@@ -564,7 +564,7 @@ HistoryIDSet URLIndexPrivateData::HistoryIDsForTerm(
     SearchTermCacheMap::iterator best_prefix(search_term_cache_.end());
     for (SearchTermCacheMap::iterator cache_iter = search_term_cache_.begin();
          cache_iter != search_term_cache_.end(); ++cache_iter) {
-      if (StartsWith(term, cache_iter->first, false) &&
+      if (base::StartsWith(term, cache_iter->first, false) &&
           (best_prefix == search_term_cache_.end() ||
            cache_iter->first.length() > best_prefix->first.length()))
         best_prefix = cache_iter;
