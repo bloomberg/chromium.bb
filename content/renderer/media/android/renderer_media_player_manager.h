@@ -141,7 +141,6 @@ class RendererMediaPlayerManager : public RenderFrameObserver {
   void OnDidEnterFullscreen(int player_id);
   void OnPlayerPlay(int player_id);
   void OnPlayerPause(int player_id);
-  void OnRequestFullscreen(int player_id);
   void OnRemoteRouteAvailabilityChanged(int player_id, bool routes_available);
 
   // Release all video player resources.

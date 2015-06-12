@@ -335,19 +335,6 @@ MediaPlayerAndroid* BrowserMediaPlayerManager::GetPlayer(int player_id) {
   return NULL;
 }
 
-void BrowserMediaPlayerManager::RequestFullScreen(int player_id) {
-  if (fullscreen_player_id_ == player_id)
-    return;
-
-  if (fullscreen_player_id_ != kInvalidMediaPlayerId) {
-    // TODO(qinmin): Determine the correct error code we should report to WMPA.
-    OnError(player_id, MediaPlayerAndroid::MEDIA_ERROR_DECODE);
-    return;
-  }
-
-  Send(new MediaPlayerMsg_RequestFullscreen(RoutingID(), player_id));
-}
-
 bool BrowserMediaPlayerManager::RequestPlay(int player_id) {
   MediaPlayerAndroid* player = GetPlayer(player_id);
   DCHECK(player);

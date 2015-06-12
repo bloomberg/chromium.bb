@@ -81,7 +81,6 @@ class MockMediaPlayerManager : public MediaPlayerManager {
   void OnWaitingForDecryptionKey(int player_id) override {}
   MediaPlayerAndroid* GetFullscreenPlayer() override { return NULL; }
   MediaPlayerAndroid* GetPlayer(int player_id) override { return NULL; }
-  void RequestFullScreen(int player_id) override {}
 
   bool RequestPlay(int player_id) override {
     return allow_play_;

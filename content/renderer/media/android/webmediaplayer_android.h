@@ -212,7 +212,6 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   void OnDidExitFullscreen();
   void OnMediaPlayerPlay();
   void OnMediaPlayerPause();
-  void OnRequestFullscreen();
   void OnRemoteRouteAvailabilityChanged(bool routes_available);
 
   // StreamTextureFactoryContextObserver implementation.

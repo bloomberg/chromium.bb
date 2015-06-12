@@ -76,9 +76,6 @@ class MEDIA_EXPORT MediaPlayerManager {
   // Returns the player with the specified id.
   virtual MediaPlayerAndroid* GetPlayer(int player_id) = 0;
 
-  // Called by the player to get a hardware protected surface.
-  virtual void RequestFullScreen(int player_id) = 0;
-
   // Called by the player to request to play. The manager should use this
   // opportunity to check if the current context is appropriate for a media to
   // play.

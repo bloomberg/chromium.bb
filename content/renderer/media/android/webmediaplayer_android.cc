@@ -981,10 +981,6 @@ void WebMediaPlayerAndroid::OnMediaPlayerPause() {
   client_->playbackStateChanged();
 }
 
-void WebMediaPlayerAndroid::OnRequestFullscreen() {
-  client_->requestFullscreen();
-}
-
 void WebMediaPlayerAndroid::OnRemoteRouteAvailabilityChanged(
     bool routes_available) {
   client_->remoteRouteAvailabilityChanged(routes_available);

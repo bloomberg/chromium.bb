@@ -98,7 +98,6 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   media::MediaUrlInterceptor* GetMediaUrlInterceptor() override;
   media::MediaPlayerAndroid* GetFullscreenPlayer() override;
   media::MediaPlayerAndroid* GetPlayer(int player_id) override;
-  void RequestFullScreen(int player_id) override;
   bool RequestPlay(int player_id) override;
 #if defined(VIDEO_HOLE)
   void AttachExternalVideoSurface(int player_id, jobject surface);
