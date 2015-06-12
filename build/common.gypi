@@ -1012,7 +1012,7 @@
         }],
 
         ['sysroot!=""', {
-          'pkg-config': '<(DEPTH)/build/linux/pkg-config-wrapper "<(sysroot)" "<(target_arch)" "<(system_libdir)"',
+          'pkg-config': '<(chroot_cmd) <(DEPTH)/build/linux/pkg-config-wrapper "<(sysroot)" "<(target_arch)" "<(system_libdir)"',
         }, {
           'pkg-config': 'pkg-config'
         }],
