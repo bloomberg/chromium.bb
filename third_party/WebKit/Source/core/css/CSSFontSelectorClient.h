@@ -39,7 +39,7 @@ namespace blink {
 class CSSFontSelector;
 class Visitor;
 
-class CORE_EXPORT CSSFontSelectorClient : public NoBaseWillBeGarbageCollectedFinalized<CSSFontSelectorClient> {
+class CORE_EXPORT CSSFontSelectorClient : public WillBeGarbageCollectedMixin {
 public:
     virtual ~CSSFontSelectorClient() { }
 

@@ -29,6 +29,7 @@
 namespace blink {
 
 class PopupMenuCSSFontSelector : public CSSFontSelector, private CSSFontSelectorClient {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PopupMenuCSSFontSelector);
 public:
     static PassRefPtrWillBeRawPtr<PopupMenuCSSFontSelector> create(Document* document, CSSFontSelector* ownerFontSelector)
     {

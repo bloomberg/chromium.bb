@@ -15,9 +15,14 @@ namespace blink {
 
 class CanvasStyle;
 
-class CanvasRenderingContext2DState final : public CSSFontSelectorClient {
+class CanvasRenderingContext2DState final : public NoBaseWillBeGarbageCollectedFinalized<CanvasRenderingContext2DState>, public CSSFontSelectorClient {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(CanvasRenderingContext2DState);
 public:
-    CanvasRenderingContext2DState();
+    static PassOwnPtrWillBeRawPtr<CanvasRenderingContext2DState> create()
+    {
+        return adoptPtrWillBeNoop(new CanvasRenderingContext2DState);
+    }
+
     virtual ~CanvasRenderingContext2DState();
 
     DECLARE_VIRTUAL_TRACE();
@@ -33,7 +38,10 @@ public:
         ImagePaintType,
     };
 
-    CanvasRenderingContext2DState(const CanvasRenderingContext2DState&, ClipListCopyMode = CopyClipList);
+    static PassOwnPtrWillBeRawPtr<CanvasRenderingContext2DState> create(const CanvasRenderingContext2DState& other, ClipListCopyMode mode)
+    {
+        return adoptPtrWillBeNoop(new CanvasRenderingContext2DState(other, mode));
+    }
     CanvasRenderingContext2DState& operator=(const CanvasRenderingContext2DState&);
 
     // CSSFontSelectorClient implementation
@@ -142,6 +150,9 @@ public:
     const SkPaint* getPaint(PaintType, ShadowMode, ImageType = NoImage) const;
 
 private:
+    CanvasRenderingContext2DState();
+    CanvasRenderingContext2DState(const CanvasRenderingContext2DState&, ClipListCopyMode = CopyClipList);
+
     void updateLineDash() const;
     void updateStrokeStyle() const;
     void updateFillStyle() const;

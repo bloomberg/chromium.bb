@@ -131,7 +131,7 @@ CanvasRenderingContext2D::CanvasRenderingContext2D(HTMLCanvasElement* canvas, co
 {
     if (document.settings() && document.settings()->antialiasedClips2dCanvasEnabled())
         m_clipAntialiasing = AntiAliased;
-    m_stateStack.append(adoptPtrWillBeNoop(new CanvasRenderingContext2DState()));
+    m_stateStack.append(CanvasRenderingContext2DState::create());
     setShouldAntialias(true);
 }
 
@@ -283,7 +283,7 @@ void CanvasRenderingContext2D::reset()
     validateStateStack();
     unwindStateStack();
     m_stateStack.resize(1);
-    m_stateStack.first() = adoptPtrWillBeNoop(new CanvasRenderingContext2DState());
+    m_stateStack.first() = CanvasRenderingContext2DState::create();
     m_path.clear();
     SkCanvas* c = canvas()->existingDrawingCanvas();
     if (c) {
@@ -317,7 +317,7 @@ void CanvasRenderingContext2D::realizeSaves()
         // Reduce the current state's unrealized count by one now,
         // to reflect the fact we are saving one state.
         m_stateStack.last()->restore();
-        m_stateStack.append(adoptPtrWillBeNoop(new CanvasRenderingContext2DState(state(), CanvasRenderingContext2DState::DontCopyClipList)));
+        m_stateStack.append(CanvasRenderingContext2DState::create(state(), CanvasRenderingContext2DState::DontCopyClipList));
         // Set the new state's unrealized count to 0, because it has no outstanding saves.
         // We need to do this explicitly because the copy constructor and operator= used
         // by the Vector operations copy the unrealized count from the previous state (in
