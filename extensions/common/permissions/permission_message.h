@@ -109,9 +109,7 @@ class PermissionMessage {
     kAutofillPrivate,
     kPasswordsPrivate,
     kUsersPrivate,
-    // Last entry: Add new entries above and ensure to update the
-    // "ExtensionPermission2" enum in tools/metrics/histograms/histograms.xml
-    // (by running update_extension_permission.py).
+    // Last entry: Add new entries above.
     kEnumBoundary,
   };
   static_assert(PermissionMessage::kNone > PermissionMessage::kUnknown,

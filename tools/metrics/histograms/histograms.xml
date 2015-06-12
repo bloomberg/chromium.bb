@@ -10657,15 +10657,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when it is automatically disabled
-    due to a permission increase (e.g., after an extension upgrade). To find
-    places where this histogram may be emitted, look for calls to
-    ExtensionService::RecordPermissionMessagesHistogram with the argument
-    AutoDisable.
+    due to a permission increase (e.g., after an extension upgrade).
   </summary>
 </histogram>
 
 <histogram name="Extensions.Permissions_AutoDisable2"
     enum="ExtensionPermission2">
+  <obsolete>
+    Deprecated as of 6/2015, replaced by Extensions.Permissions_AutoDisable3.
+  </obsolete>
   <owner>kalman@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
@@ -10695,14 +10695,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>kalman@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
-    The permissions present in an extension when it was installed. To find
-    places where this histogram may be emitted, look for calls to
-    ExtensionService::RecordPermissionMessagesHistogram with the argument
-    Install.
+    The permissions present in an extension when it was installed.
   </summary>
 </histogram>
 
 <histogram name="Extensions.Permissions_Install2" enum="ExtensionPermission2">
+  <obsolete>
+    Deprecated as of 6/2015, replaced by Extensions.Permissions_Install3.
+  </obsolete>
   <owner>kalman@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
@@ -10730,15 +10730,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when installation was aborted, not
-    including installation errors and user cancels. To find places where this
-    histogram may be emitted, look for calls to
-    ExtensionService::RecordPermissionMessagesHistogram with the argument
-    InstallAbort.
+    including installation errors and user cancels.
   </summary>
 </histogram>
 
 <histogram name="Extensions.Permissions_InstallAbort2"
     enum="ExtensionPermission2">
+  <obsolete>
+    Deprecated as of 6/2015, replaced by Extensions.Permissions_InstallAbort3.
+  </obsolete>
   <owner>kalman@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
@@ -10769,15 +10769,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>kalman@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
-    The permissions present in an extension when installation was canceled. To
-    find places where this histogram may be emitted, look for calls to
-    ExtensionService::RecordPermissionMessagesHistogram with the argument
-    InstallCancel.
+    The permissions present in an extension when installation was canceled.
   </summary>
 </histogram>
 
 <histogram name="Extensions.Permissions_InstallCancel2"
     enum="ExtensionPermission2">
+  <obsolete>
+    Deprecated as of 6/2015, replaced by Extensions.Permissions_InstallCancel3.
+  </obsolete>
   <owner>kalman@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
@@ -10807,13 +10807,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.Permissions_Load2" enum="ExtensionPermission2">
+  <obsolete>
+    Deprecated as of 6/2015, replaced by Extensions.Permissions_Load3.
+  </obsolete>
   <owner>kalman@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
-  <summary>
-    The permissions present in an extension when it was loaded. To find places
-    where this histogram may be emitted, look for calls to
-    ExtensionService::RecordPermissionMessagesHistogram with the argument Load.
-  </summary>
+  <summary>The permissions present in an extension when it was loaded.</summary>
 </histogram>
 
 <histogram name="Extensions.Permissions_Load3" enum="ExtensionPermission3">
@@ -10835,13 +10834,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when it was re-enabled from a
-    confirmation prompt. To find places where this histogram may be emitted,
-    look for calls to ExtensionService::RecordPermissionMessagesHistogram with
-    the argument ReEnable.
+    confirmation prompt.
   </summary>
 </histogram>
 
 <histogram name="Extensions.Permissions_ReEnable2" enum="ExtensionPermission2">
+  <obsolete>
+    Deprecated as of 6/2015, replaced by Extensions.Permissions_ReEnable3.
+  </obsolete>
   <owner>kalman@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
@@ -10870,15 +10870,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when the re-enable prompt was
-    aborted, not including installation errors and manual user cancels. To find
-    places where this histogram may be emitted, look for calls to
-    ExtensionService::RecordPermissionMessagesHistogram with the argument
-    ReEnableAbort.
+    aborted, not including installation errors and manual user cancels.
   </summary>
 </histogram>
 
 <histogram name="Extensions.Permissions_ReEnableAbort2"
     enum="ExtensionPermission2">
+  <obsolete>
+    Deprecated as of 6/2015, replaced by Extensions.Permissions_ReEnableAbort3.
+  </obsolete>
   <owner>kalman@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
@@ -10910,14 +10910,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when the re-enable was canceled from
-    the confirmation prompt. To find places where this histogram may be emitted,
-    look for calls to ExtensionService::RecordPermissionMessagesHistogram with
-    the argument ReEnableCancel.
+    the confirmation prompt.
   </summary>
 </histogram>
 
 <histogram name="Extensions.Permissions_ReEnableCancel2"
     enum="ExtensionPermission2">
+  <obsolete>
+    Deprecated as of 6/2015, replaced by Extensions.Permissions_ReEnableCancel3.
+  </obsolete>
   <owner>kalman@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
@@ -10945,14 +10946,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>kalman@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
-    The permissions present in an extension when it was uninstalled. To find
-    places where this histogram may be emitted, look for calls to
-    ExtensionService::RecordPermissionMessagesHistogram with the argument
-    Uninstall.
+    The permissions present in an extension when it was uninstalled.
   </summary>
 </histogram>
 
 <histogram name="Extensions.Permissions_Uninstall2" enum="ExtensionPermission2">
+  <obsolete>
+    Deprecated as of 6/2015, replaced by Extensions.Permissions_Uninstall3.
+  </obsolete>
   <owner>kalman@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
@@ -10981,14 +10982,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when it was installed through the
-    web store. To find places where this histogram may be emitted, look for
-    calls to ExtensionService::RecordPermissionMessagesHistogram with the
-    argument WebStoreInstall.
+    web store.
   </summary>
 </histogram>
 
 <histogram name="Extensions.Permissions_WebStoreInstall2"
     enum="ExtensionPermission2">
+  <obsolete>
+    Deprecated as of 6/2015, replaced by
+    Extensions.Permissions_WebStoreInstall3.
+  </obsolete>
   <owner>kalman@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
@@ -11020,15 +11023,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when installation from the web store
-    was aborted, not including installation errors and user cancels. To find
-    places where this histogram may be emitted, look for calls to
-    ExtensionService::RecordPermissionMessagesHistogram with the argument
-    WebStoreInstallAbort.
+    was aborted, not including installation errors and user cancels.
   </summary>
 </histogram>
 
 <histogram name="Extensions.Permissions_WebStoreInstallAbort2"
     enum="ExtensionPermission2">
+  <obsolete>
+    Deprecated as of 6/2015, replaced by
+    Extensions.Permissions_WebStoreInstallAbort3.
+  </obsolete>
   <owner>kalman@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
@@ -11061,14 +11065,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when installation from the web store
-    was canceled. To find places where this histogram may be emitted, look for
-    calls to ExtensionService::RecordPermissionMessagesHistogram with the
-    argument WebStoreInstallCancel.
+    was canceled.
   </summary>
 </histogram>
 
 <histogram name="Extensions.Permissions_WebStoreInstallCancel2"
     enum="ExtensionPermission2">
+  <obsolete>
+    Deprecated as of 6/2015, replaced by
+    Extensions.Permissions_WebStoreInstallCancel3.
+  </obsolete>
   <owner>kalman@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>

@@ -12,7 +12,7 @@ import sys
 def GetPreferredTrySlaves():
   return ['linux_chromeos']
 
-def _CreatePermissionMessageEnumChecker(input_api, output_api):
+def _CreateAPIPermissionIDChecker(input_api, output_api):
   original_sys_path = sys.path
 
   try:
@@ -24,9 +24,12 @@ def _CreatePermissionMessageEnumChecker(input_api, output_api):
     sys.path = original_sys_path
 
   return StrictEnumValueChecker(input_api, output_api,
-      start_marker='  enum ID {', end_marker='    kEnumBoundary',
-      path='extensions/common/permissions/permission_message.h')
+      start_marker='  enum ID {', end_marker='    // Last entry:',
+      path='extensions/common/permissions/api_permission.h')
 
 def CheckChangeOnUpload(input_api, output_api):
-    return _CreatePermissionMessageEnumChecker(input_api, output_api).Run()
+  return _CreateAPIPermissionIDChecker(input_api, output_api).Run()
+
+def CheckChangeOnCommit(input_api, output_api):
+  return _CreateAPIPermissionIDChecker(input_api, output_api).Run()
 

@@ -10,26 +10,5 @@ for more details on the presubmit API built into depot_tools.
 
 import sys
 
-def _CreateAPIPermissionIDChecker(input_api, output_api):
-  original_sys_path = sys.path
-
-  try:
-    sys.path.append(input_api.os_path.join(
-        input_api.PresubmitLocalPath(), '..', '..', 'tools',
-        'strict_enum_value_checker'))
-    from strict_enum_value_checker import StrictEnumValueChecker
-  finally:
-    sys.path = original_sys_path
-
-  return StrictEnumValueChecker(input_api, output_api,
-      start_marker='  enum ID {', end_marker='    // Last entry:',
-      path='extensions/common/permissions/api_permission.h')
-
 def CheckChangeOnUpload(input_api, output_api):
-  results = []
-  results += _CreateAPIPermissionIDChecker(input_api, output_api).Run()
-  results += input_api.canned_checks.CheckPatchFormatted(input_api, output_api)
-  return results
-
-def CheckChangeOnCommit(input_api, output_api):
-  return _CreateAPIPermissionIDChecker(input_api, output_api).Run()
+  return input_api.canned_checks.CheckPatchFormatted(input_api, output_api)
