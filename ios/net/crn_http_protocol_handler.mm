@@ -866,13 +866,58 @@ void HttpProtocolHandlerCore::PushClients(NSArray* clients) {
 @end
 
 #pragma mark -
+#pragma mark DeferredCancellation
+
+// An object of class |DeferredCancellation| represents a deferred cancellation
+// of a request. In principle this is a block posted to a thread's runloop, but
+// since there is no performBlock:onThread:, this class wraps the desired
+// behavior in an object.
+@interface DeferredCancellation : NSObject
+
+- (instancetype)initWithCore:(scoped_refptr<net::HttpProtocolHandlerCore>)core;
+- (void)cancel;
+
+@end
+
+@implementation DeferredCancellation {
+  scoped_refptr<net::HttpProtocolHandlerCore> _core;
+}
+
+- (instancetype)initWithCore:(scoped_refptr<net::HttpProtocolHandlerCore>)core {
+  if ((self = [super init])) {
+    _core = core;
+  }
+  return self;
+}
+
+- (void)cancel {
+  g_protocol_handler_delegate->GetDefaultURLRequestContext()
+      ->GetNetworkTaskRunner()
+      ->PostTask(FROM_HERE,
+                 base::Bind(&net::HttpProtocolHandlerCore::Cancel, _core));
+}
+
+@end
+
+#pragma mark -
 #pragma mark HttpProtocolHandler
+
+@interface CRNHTTPProtocolHandler (Private)
+
+- (id<CRNHTTPProtocolHandlerProxy>)getProtocolHandlerProxy;
+- (scoped_refptr<net::HttpProtocolHandlerCore>)getCore;
+- (NSThread*)getClientThread;
+- (void)cancelRequest;
+
+@end
 
 // The HttpProtocolHandler is called by the iOS system to handle the
 // NSURLRequest.
 @implementation CRNHTTPProtocolHandler {
   scoped_refptr<net::HttpProtocolHandlerCore> _core;
   base::scoped_nsprotocol<id<CRNHTTPProtocolHandlerProxy>> _protocolProxy;
+  NSThread* _clientThread;
+  NSString* _clientRunLoopMode;
   BOOL _supportedURL;
 }
 
@@ -930,23 +975,119 @@ void HttpProtocolHandlerCore::PushClients(NSArray* clients) {
     return;
   }
 
-  _protocolProxy.reset([[CRNHTTPProtocolHandlerProxyWithClientThread alloc]
-      initWithProtocol:self
-          clientThread:[NSThread currentThread]
-           runLoopMode:[[NSRunLoop currentRunLoop] currentMode]]);
+  _clientThread = [NSThread currentThread];
+
   g_protocol_handler_delegate->GetDefaultURLRequestContext()
       ->GetNetworkTaskRunner()
       ->PostTask(FROM_HERE, base::Bind(&net::HttpProtocolHandlerCore::Start,
-                                       _core, _protocolProxy));
+                                       _core, [self getProtocolHandlerProxy]));
 }
 
-- (void)stopLoading {
+- (id<CRNHTTPProtocolHandlerProxy>)getProtocolHandlerProxy {
+  DCHECK_EQ([NSThread currentThread], _clientThread);
+  if (!_protocolProxy.get()) {
+    _protocolProxy.reset([[CRNHTTPProtocolHandlerProxyWithClientThread alloc]
+        initWithProtocol:self
+            clientThread:_clientThread
+             runLoopMode:[[NSRunLoop currentRunLoop] currentMode]]);
+  }
+  return _protocolProxy.get();
+}
+
+- (scoped_refptr<net::HttpProtocolHandlerCore>)getCore {
+  return _core;
+}
+
+- (NSThread*)getClientThread {
+  return _clientThread;
+}
+
+- (void)cancelRequest {
   g_protocol_handler_delegate->GetDefaultURLRequestContext()
       ->GetNetworkTaskRunner()
       ->PostTask(FROM_HERE,
                  base::Bind(&net::HttpProtocolHandlerCore::Cancel, _core));
   [_protocolProxy invalidate];
+}
+
+- (void)stopLoading {
+  [self cancelRequest];
   _protocolProxy.reset();
+}
+
+@end
+
+#pragma mark -
+#pragma mark PauseableHttpProtocolHandler
+
+// The HttpProtocolHandler is called by the iOS system to handle the
+// NSURLRequest. This HttpProtocolHandler conforms to the observed semantics of
+// NSURLProtocol when used with NSURLSession on iOS 8 - i.e., |-startLoading|
+// means "start or resume request" and |-stopLoading| means "pause request".
+// Since there is no way to actually pause a request in the network stack, this
+// is implemented using a subclass of CRNHTTPProtocolHandlerProxy that knows how
+// to defer callbacks.
+//
+// Note that this class conforms to somewhat complex threading rules:
+// 1) |initWithRequest:cachedResponse:client:| and |dealloc| can be called on
+//    any thread.
+// 2) |startLoading| and |stopLoading| are always called on the client thread.
+// 3) |stopLoading| is called before |dealloc| is called.
+//
+// The main wrinkle is that |dealloc|, which may be called on any thread, needs
+// to clean up a running network request. To do this, |dealloc| needs to run
+// |cancelRequest|, which needs to be run on the client thread. Since it is
+// guaranteed that |startLoading| is called before |dealloc| is called, the
+// |startLoading| method stores a pointer to the client thread, then |dealloc|
+// asks that client thread to perform the |cancelRequest| selector via
+// |scheduleCancelRequest|.
+//
+// Some of the above logic is implemented in the parent class
+// (CRNHTTPProtocolHandler) because it is convenient.
+@implementation CRNPauseableHTTPProtocolHandler {
+  BOOL _started;
+  dispatch_queue_t _queue;
+}
+
+#pragma mark NSURLProtocol methods
+
+- (void)dealloc {
+  [self scheduleCancelRequest];
+  [super dealloc];
+}
+
+#pragma mark NSURLProtocol overrides.
+
+- (void)startLoading {
+  if (_started) {
+    [[self getProtocolHandlerProxy] resume];
+    return;
+  }
+
+  _started = YES;
+  [super startLoading];
+}
+
+- (void)stopLoading {
+  [[self getProtocolHandlerProxy] pause];
+}
+
+// This method has unusual concurrency properties. It can be called on any
+// thread, but it must be called from |-dealloc|, which guarantees that no other
+// method of this object is running concurrently (since |-dealloc| is only
+// called when the last reference to the object drops).
+//
+// This method takes a reference to _core to ensure that _core lives long enough
+// to have the request cleanly cancelled.
+- (void)scheduleCancelRequest {
+  DeferredCancellation* cancellation =
+      [[DeferredCancellation alloc] initWithCore:[self getCore]];
+  NSArray* modes = @[ [[NSRunLoop currentRunLoop] currentMode] ];
+  [cancellation performSelector:@selector(cancel)
+                       onThread:[self getClientThread]
+                     withObject:nil
+                  waitUntilDone:NO
+                          modes:modes];
 }
 
 @end

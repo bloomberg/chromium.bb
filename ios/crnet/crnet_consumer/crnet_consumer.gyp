@@ -24,7 +24,7 @@
             'crnet_consumer_app_delegate.mm',
             'crnet_consumer_view_controller.h',
             'crnet_consumer_view_controller.m',
-            'main.m',
+            'main.mm',
           ],
           'mac_bundle_resources': [
             '../../../third_party/icu/source/data/in/icudtl.dat',

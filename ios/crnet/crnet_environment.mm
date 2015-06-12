@@ -286,7 +286,7 @@ void CrNetEnvironment::Install() {
 
 void CrNetEnvironment::InstallIntoSessionConfiguration(
     NSURLSessionConfiguration* config) {
-  config.protocolClasses = @[ [CRNHTTPProtocolHandler class] ];
+  config.protocolClasses = @[ [CRNPauseableHTTPProtocolHandler class] ];
 }
 
 CrNetEnvironment::~CrNetEnvironment() {
@@ -303,14 +303,15 @@ void CrNetEnvironment::SetHTTPProtocolHandlerRegistered(bool registered) {
     // Disable the default cache.
     [NSURLCache setSharedURLCache:[EmptyNSURLCache emptyNSURLCache]];
     // Register the chrome http protocol handler to replace the default one.
-    BOOL success = [NSURLProtocol registerClass:[CRNHTTPProtocolHandler class]];
+    BOOL success =
+        [NSURLProtocol registerClass:[CRNPauseableHTTPProtocolHandler class]];
     DCHECK(success);
   } else {
     // Set up an empty default cache, with default size.
     // TODO(droger): If the NSURLCache is to be used, its size should most
     // likely be changed. On an iPod2 with iOS4, the default size is 512k.
     [NSURLCache setSharedURLCache:[[[NSURLCache alloc] init] autorelease]];
-    [NSURLProtocol unregisterClass:[CRNHTTPProtocolHandler class]];
+    [NSURLProtocol unregisterClass:[CRNPauseableHTTPProtocolHandler class]];
   }
 }
 

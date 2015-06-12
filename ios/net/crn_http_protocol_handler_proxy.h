@@ -13,10 +13,18 @@
 // NSURLProtocol and its client.
 @protocol CRNHTTPProtocolHandlerProxy<CRNNetworkClientProtocol>
 
+// All of the methods defined below must be called on the client thread. Methods
+// defined by |CRNNetworkClientProtocol| can be called on any thread.
+
 // Invalidates any reference to the protocol handler: the handler will never
 // be called after this.
-// Called from the client thread.
 - (void)invalidate;
+
+// Pauses notifications from this protocol handler.
+- (void)pause;
+
+// Resumes notifications from this protocol handler.
+- (void)resume;
 
 @end
 
