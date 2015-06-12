@@ -43,8 +43,10 @@ ComponentToolbarActionsFactory::GetComponentToolbarActions() {
   // (since each will have an action in the toolbar or overflow menu), this
   // should be okay. If this changes, we should rethink this design to have,
   // e.g., RegisterChromeAction().
+#if defined(ENABLE_MEDIA_ROUTER)
   if (media_router_ui_enabled_)
     component_actions.push_back(new MediaRouterAction());
+#endif  // defined(ENABLE_MEDIA_ROUTER)
 
   return component_actions.Pass();
 }
