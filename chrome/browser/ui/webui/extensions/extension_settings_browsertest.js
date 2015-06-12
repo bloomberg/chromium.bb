@@ -286,8 +286,17 @@ ErrorConsoleExtensionSettingsWebUITest.prototype = {
   },
 };
 
+// Flaky on ChromeOS. http://crbug.com/499884
+GEN('#if defined(OS_CHROMEOS)');
+GEN('#define MAYBE_testErrorListButtonVisibility ' +
+    'DISABLED_testErrorListButtonVisibility');
+GEN('#else');
+GEN('#define MAYBE_testErrorListButtonVisibility ' +
+    'testErrorListButtonVisibility');
+GEN('#endif');
+
 TEST_F('ErrorConsoleExtensionSettingsWebUITest',
-       'testErrorListButtonVisibility', function() {
+       'MAYBE_testErrorListButtonVisibility', function() {
   var testButtonVisibility = function() {
     var extensionList = $('extension-list-wrapper');
 
