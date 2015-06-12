@@ -223,6 +223,17 @@ public abstract class CompositorChromeActivity extends ChromeActivity
                         && DataReductionProxySettings.getInstance().wasLoFiModeActiveOnMainFrame()
                         && DataReductionProxySettings.getInstance().canUseDataReductionProxy(
                                 url)) {
+                    if (tab.isHidden()) {
+                        TabObserver tabObserver = new EmptyTabObserver() {
+                            @Override
+                            public void onShown(Tab tab) {
+                                mLoFiBarPopupController.showLoFiBar(tab);
+                                tab.removeObserver(this);
+                            }
+                        };
+                        tab.addObserver(tabObserver);
+                        return;
+                    }
                     mLoFiBarPopupController.showLoFiBar(tab);
                 }
             }
