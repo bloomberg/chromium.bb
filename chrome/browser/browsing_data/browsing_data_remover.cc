@@ -263,7 +263,7 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
 
   // All the UI entry points into the BrowsingDataRemover should be disabled,
   // but this will fire if something was missed or added.
-  DCHECK(may_delete_history ||
+  DCHECK(may_delete_history || (remove_mask & REMOVE_NOCHECKS) ||
       (!(remove_mask & REMOVE_HISTORY) && !(remove_mask & REMOVE_DOWNLOADS)));
 
   if (origin_set_mask_ & BrowsingDataHelper::UNPROTECTED_WEB) {

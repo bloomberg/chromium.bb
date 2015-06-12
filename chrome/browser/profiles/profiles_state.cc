@@ -233,7 +233,7 @@ void RemoveBrowsingDataForProfile(const base::FilePath& profile_path) {
     profile = profile->GetOffTheRecordProfile();
 
   BrowsingDataRemover::CreateForUnboundedRange(profile)->Remove(
-      BrowsingDataRemover::REMOVE_ALL, BrowsingDataHelper::ALL);
+      BrowsingDataRemover::REMOVE_WIPE_PROFILE, BrowsingDataHelper::ALL);
   // BrowsingDataRemover deletes itself.
 }
 
