@@ -360,6 +360,9 @@ class WebGLConformanceExpectations(GpuTestExpectations):
               ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
     self.Fail('conformance/extensions/oes-texture-float-with-video.html',
               ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
+    self.Fail('conformance/more/functions/bindFramebufferLeaveNonZero.html',
+              ['android', 'android-webview-shell',
+               ('qualcomm', 'Adreno (TM) 420')], bug=499874)
     self.Fail('conformance/rendering/gl-scissor-test.html',
               ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
     self.Fail('conformance/textures/' +
@@ -418,6 +421,13 @@ class WebGLConformanceExpectations(GpuTestExpectations):
               ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
     self.Fail('conformance/textures/texture-npot-video.html',
               ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
+    # Nexus 9 failures
+    self.Fail('conformance/extensions/oes-texture-float-with-video.html',
+              ['android', 'nvidia'], bug=499555) # flaky
+    # The entire android_webview_webgl_conformance_tests step is
+    # failing on the Nexus 9.
+    self.Fail('conformance/*',
+              ['android', 'android-webview-shell', 'nvidia'], bug=499928)
 
     # The following test is very slow and therefore times out on Android bot.
     self.Skip('conformance/rendering/multisample-corruption.html',
