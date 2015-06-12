@@ -1044,7 +1044,6 @@ FreeList::FreeList()
 {
 }
 
-NO_SANITIZE_ADDRESS
 void FreeList::addToFreeList(Address address, size_t size)
 {
     ASSERT(size < blinkPagePayloadSize());
@@ -1113,7 +1112,6 @@ void FreeList::addToFreeList(Address address, size_t size)
 }
 
 #if ENABLE(ASSERT) || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER)
-NO_SANITIZE_ADDRESS
 void FreeList::zapFreedMemory(Address address, size_t size)
 {
     for (size_t i = 0; i < size; i++) {
