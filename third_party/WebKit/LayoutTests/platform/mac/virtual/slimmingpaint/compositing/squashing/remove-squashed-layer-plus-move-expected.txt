@@ -9,13 +9,11 @@
         [8, 116, 1410, 54],
         [8, 62, 1410, 54],
         [8, 62, 769, 54],
-        [8, 8, 769, 108],
-        [0, 124, 1418, 54]
+        [8, 8, 769, 108]
       ],
       "paintInvalidationClients": [
         "RootInlineBox",
         "RootInlineBox",
-        "LayoutBlockFlow HTML",
         "LayoutBlockFlow DIV id='container'",
         "LayoutBlockFlow DIV id='container'",
         "LayoutBlockFlow (anonymous)",

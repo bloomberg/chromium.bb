@@ -20,8 +20,7 @@
         [139, 128, 653, 100],
         [139, 128, 650, 99],
         [139, 128, 9, 100],
-        [8, 228, 392, 60],
-        [0, 236, 800, 60]
+        [8, 228, 392, 60]
       ],
       "paintInvalidationClients": [
         "RootInlineBox",
@@ -40,7 +39,6 @@
         "InlineTextBox 'tellus vel varius vestibulum, purus quam mollis sapien, in'",
         "InlineTextBox 'condimentum leo neque sed nulla. Nunc quis porta elit.'",
         "InlineTextBox 'Pellentesque erat lectus, ultricies a lobortis id, faucibus id quam.'",
-        "LayoutBlockFlow HTML",
         "LayoutBlockFlow DIV id='left'",
         "LayoutBlockFlow DIV id='content'",
         "LayoutBlockFlow P",

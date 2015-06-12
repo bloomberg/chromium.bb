@@ -17,15 +17,13 @@
         [8, 112, 784, 100],
         [8, 8, 784, 203],
         [8, 8, 25, 25],
-        [8, 8, 5, 5],
-        [0, 120, 800, 100]
+        [8, 8, 5, 5]
       ],
       "paintInvalidationClients": [
         "LayoutSVGEllipse svg:circle id='circle'",
         "LayoutSVGViewportContainer svg id='symbol'",
         "InlineBox",
         "RootInlineBox",
-        "LayoutBlockFlow html",
         "LayoutBlockFlow body",
         "LayoutBlockFlow body",
         "LayoutSVGRoot svg:svg id='svg'",

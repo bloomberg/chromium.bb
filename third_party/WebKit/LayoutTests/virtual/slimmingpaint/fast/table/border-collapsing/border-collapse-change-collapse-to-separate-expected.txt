@@ -15,11 +15,9 @@
         [8, 8, 220, 112],
         [8, 8, 220, 112],
         [8, 8, 212, 108],
-        [8, 8, 107, 108],
-        [0, 124, 800, 4]
+        [8, 8, 107, 108]
       ],
       "paintInvalidationClients": [
-        "LayoutBlockFlow HTML",
         "LayoutTable TABLE id='table'",
         "LayoutTableCell TD",
         "LayoutTableCell TD",

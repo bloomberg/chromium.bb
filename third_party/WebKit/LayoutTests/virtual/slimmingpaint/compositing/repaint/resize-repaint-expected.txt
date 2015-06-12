@@ -5,12 +5,6 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [0, 121, 800, 102]
-      ],
-      "paintInvalidationClients": [
-        "LayoutBlockFlow HTML"
-      ],
       "children": [
         {
           "position": [8, 8],
