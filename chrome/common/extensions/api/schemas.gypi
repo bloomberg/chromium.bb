@@ -79,7 +79,6 @@
       'tab_capture.idl',
       'tabs.json',
       'types.json',
-      'users_private.idl',
       'web_navigation.json',
       # Despite the name, this API does not rely on any
       # WebRTC-specific bits and as such does not belong in
@@ -121,6 +120,7 @@
       'platform_keys.idl',
       'platform_keys_internal.idl',
       'terminal_private.json',
+      'users_private.idl',
       'wallpaper.json',
       'wallpaper_private.json',
     ],

@@ -493,8 +493,6 @@
       'browser/extensions/api/tabs/windows_util.h',
       'browser/extensions/api/top_sites/top_sites_api.cc',
       'browser/extensions/api/top_sites/top_sites_api.h',
-      'browser/extensions/api/users_private/users_private_api.cc',
-      'browser/extensions/api/users_private/users_private_api.h',
       'browser/extensions/api/web_navigation/frame_navigation_state.cc',
       'browser/extensions/api/web_navigation/frame_navigation_state.h',
       'browser/extensions/api/web_navigation/web_navigation_api.cc',

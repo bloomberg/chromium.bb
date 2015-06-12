@@ -39,13 +39,13 @@ class PrefsUtil {
   virtual bool SetPref(const std::string& name, const base::Value* value);
 
   // Appends the given |value| to the list setting specified by the path in
-  // |setting|.
-  virtual bool AppendToListCrosSetting(const std::string& setting,
+  // |pref_name|.
+  virtual bool AppendToListCrosSetting(const std::string& pref_name,
                                        const base::Value& value);
 
   // Removes the given |value| from the list setting specified by the path in
-  // |setting|.
-  virtual bool RemoveFromListCrosSetting(const std::string& setting,
+  // |pref_name|.
+  virtual bool RemoveFromListCrosSetting(const std::string& pref_name,
                                          const base::Value& value);
 
   // Returns a pointer to the appropriate PrefService instance for the given

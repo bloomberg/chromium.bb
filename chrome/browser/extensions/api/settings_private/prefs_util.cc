@@ -69,6 +69,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)["cros.accounts.allowGuest"] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)["cros.accounts.users"] =
+      settings_private::PrefType::PREF_TYPE_LIST;
   (*s_whitelist)["settings.accessibility"] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)["settings.a11y.autoclick"] =
@@ -263,27 +265,39 @@ bool PrefsUtil::SetCrosSettingsPref(const std::string& pref_name,
 #endif
 }
 
-bool PrefsUtil::AppendToListCrosSetting(const std::string& setting,
+bool PrefsUtil::AppendToListCrosSetting(const std::string& pref_name,
                                         const base::Value& value) {
 #if defined(OS_CHROMEOS)
   chromeos::OwnerSettingsServiceChromeOS* service =
       chromeos::OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(
           profile_);
-  DCHECK(service);
-  return service->AppendToList(setting, value);
+
+  // Returns false if not the owner, for settings requiring owner.
+  if (service && service->HandlesSetting(pref_name)) {
+    return service->AppendToList(pref_name, value);
+  }
+
+  chromeos::CrosSettings::Get()->AppendToList(pref_name, &value);
+  return true;
 #else
   return false;
 #endif
 }
 
-bool PrefsUtil::RemoveFromListCrosSetting(const std::string& setting,
+bool PrefsUtil::RemoveFromListCrosSetting(const std::string& pref_name,
                                           const base::Value& value) {
 #if defined(OS_CHROMEOS)
   chromeos::OwnerSettingsServiceChromeOS* service =
       chromeos::OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(
           profile_);
-  DCHECK(service);
-  return service->RemoveFromList(setting, value);
+
+  // Returns false if not the owner, for settings requiring owner.
+  if (service && service->HandlesSetting(pref_name)) {
+    return service->RemoveFromList(pref_name, value);
+  }
+
+  chromeos::CrosSettings::Get()->RemoveFromList(pref_name, &value);
+  return true;
 #else
   return false;
 #endif

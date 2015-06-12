@@ -159,13 +159,17 @@ bool ProfileHelper::IsSigninProfile(const Profile* profile) {
 
 // static
 bool ProfileHelper::IsOwnerProfile(Profile* profile) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kStubCrosSettings)) {
+    return true;
+  }
+
   if (!profile)
     return false;
   const user_manager::User* user =
       ProfileHelper::Get()->GetUserByProfile(profile);
   if (!user)
     return false;
-
   return user->email() == user_manager::UserManager::Get()->GetOwnerEmail();
 }
 

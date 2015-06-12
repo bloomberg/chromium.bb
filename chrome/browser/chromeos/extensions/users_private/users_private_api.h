@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_USERS_PRIVATE_USERS_PRIVATE_API_H_
-#define CHROME_BROWSER_EXTENSIONS_API_USERS_PRIVATE_USERS_PRIVATE_API_H_
+#ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_USERS_PRIVATE_USERS_PRIVATE_API_H_
+#define CHROME_BROWSER_CHROMEOS_EXTENSIONS_USERS_PRIVATE_USERS_PRIVATE_API_H_
 
 #include <string>
 
 #include "base/macros.h"
+#include "chrome/browser/extensions/api/settings_private/prefs_util.h"
+#include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "extensions/browser/extension_function.h"
 
 namespace extensions {
@@ -27,6 +29,8 @@ class UsersPrivateGetWhitelistedUsersFunction
   ResponseAction Run() override;
 
  private:
+  ChromeExtensionFunctionDetails chrome_details_;
+
   DISALLOW_COPY_AND_ASSIGN(UsersPrivateGetWhitelistedUsersFunction);
 };
 
@@ -45,6 +49,8 @@ class UsersPrivateAddWhitelistedUserFunction
   ResponseAction Run() override;
 
  private:
+  ChromeExtensionFunctionDetails chrome_details_;
+
   DISALLOW_COPY_AND_ASSIGN(UsersPrivateAddWhitelistedUserFunction);
 };
 
@@ -63,6 +69,8 @@ class UsersPrivateRemoveWhitelistedUserFunction
   ResponseAction Run() override;
 
  private:
+  ChromeExtensionFunctionDetails chrome_details_;
+
   DISALLOW_COPY_AND_ASSIGN(UsersPrivateRemoveWhitelistedUserFunction);
 };
 
@@ -81,6 +89,8 @@ class UsersPrivateIsCurrentUserOwnerFunction
   ResponseAction Run() override;
 
  private:
+  ChromeExtensionFunctionDetails chrome_details_;
+
   DISALLOW_COPY_AND_ASSIGN(UsersPrivateIsCurrentUserOwnerFunction);
 };
 
@@ -104,4 +114,4 @@ class UsersPrivateIsWhitelistManagedFunction
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_USERS_PRIVATE_USERS_PRIVATE_API_H_
+#endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_USERS_PRIVATE_USERS_PRIVATE_API_H_
