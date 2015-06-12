@@ -25,7 +25,7 @@
         'rand_util.cc',
       ],
       'conditions': [
-        ['asan==1', {
+        ['asan==1 and chromeos==1', {
           'cflags!': [
             # Compiling fuzzer.cc with ASan takes too long, see
             # http://crbug.com/360158.
