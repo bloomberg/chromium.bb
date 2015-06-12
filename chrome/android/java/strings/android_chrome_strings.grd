@@ -1747,10 +1747,10 @@ Just open Chrome on your computer, go to the menu, and select “Sign in to Chro
         Sign in
       </message>
       <message name="IDS_ENHANCED_BOOKMARK_PAGE_SAVED" desc="Message shown after user adds a new bookmark. [CHAR-LIMIT=32]">
-        Page saved.
+        Bookmarked
       </message>
       <message name="IDS_ENHANCED_BOOKMARK_DRAWER_ALL_ITEMS" desc="Menu item for showing all bookmark items in the enhanced bookmarks UI [CHAR-LIMIT=24]">
-        All items
+        All Bookmarks
       </message>
       <message name="IDS_ENHANCED_BOOKMARK_DRAWER_AUTO_FOLDERS" desc="Title for the list of auto folders in the drawer view. [CHAR-LIMIT=32]">
         Auto Folders
@@ -2123,8 +2123,8 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
       <message name="IDS_UNDO_BAR_DELETE_MESSAGE" desc="Message shown when you can undo a delete action.">
         Deleted <ph name="BOOKMARK_TITLE">%1$s<ex>YouTube</ex></ph>
       </message>
-      <message name="IDS_UNDO_BAR_MULTIPLE_DELETE_MESSAGE" desc="Message shown when you can undo several delete actions.">
-        Deleted <ph name="NUMBER_OF_BOOKMARKS">%1$s<ex>3</ex></ph> items.
+      <message name="IDS_UNDO_BAR_MULTIPLE_DELETE_MESSAGE" desc="Message shown when you can undo several bookmark delete actions.">
+        <ph name="NUMBER_OF_BOOKMARKS">%1$s<ex>3</ex></ph> bookmarks deleted
       </message>
       <message name="IDS_UNDO_BAR_BUTTON_TEXT" desc="Button text to undo closing a tab.">
         Undo
