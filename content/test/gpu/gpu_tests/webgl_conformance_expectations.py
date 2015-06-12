@@ -329,7 +329,95 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['android', 'android-webview-shell'], bug=352645)
     self.Fail('conformance/textures/texture-npot-video.html',
         ['android', 'android-webview-shell'], bug=352645)
-
+    # Recent regressions have caused these to fail on multiple devices
+    self.Fail('conformance/textures/tex-image-and-sub-image-2d-with-video.html',
+        ['android', 'android-content-shell'], bug=499555)
+    self.Fail('conformance/textures/' +
+        'tex-image-and-sub-image-2d-with-video-rgb565.html',
+        ['android', 'android-content-shell'], bug=499555)
+    self.Fail('conformance/textures/' +
+        'tex-image-and-sub-image-2d-with-video-rgba4444.html',
+        ['android', 'android-content-shell'], bug=499555)
+    self.Fail('conformance/textures/' +
+        'tex-image-and-sub-image-2d-with-video-rgba5551.html',
+        ['android', 'android-content-shell'], bug=499555)
+    # These are failing on the Nexus 5 and 6
+    self.Fail('conformance/extensions/oes-texture-float-with-canvas.html',
+              ['android', 'qualcomm'], bug=499555)
+    self.Fail('conformance/extensions/oes-texture-float-with-video.html',
+              ['android', 'qualcomm'], bug=499555)
+    # Nexus 6 failures only
+    self.Fail('conformance/context/' +
+              'context-attributes-alpha-depth-stencil-antialias.html',
+              ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
+    self.Fail('conformance/context/premultiplyalpha-test.html',
+              ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
+    self.Fail('conformance/extensions/oes-texture-float-with-canvas.html',
+              ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
+    self.Fail('conformance/extensions/oes-texture-float-with-image-data.html',
+              ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
+    self.Fail('conformance/extensions/oes-texture-float-with-image.html',
+              ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
+    self.Fail('conformance/extensions/oes-texture-float-with-video.html',
+              ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
+    self.Fail('conformance/rendering/gl-scissor-test.html',
+              ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
+    self.Fail('conformance/textures/' +
+              'copy-tex-image-and-sub-image-2d.html',
+              ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
+    self.Fail('conformance/textures/' +
+              'tex-image-and-sub-image-2d-with-array-buffer-view.html',
+              ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
+    self.Fail('conformance/textures/' +
+              'tex-image-and-sub-image-2d-with-canvas.html',
+              ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
+    self.Fail('conformance/textures/' +
+              'tex-image-and-sub-image-2d-with-canvas-rgb565.html',
+              ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
+    self.Fail('conformance/textures/' +
+              'tex-image-and-sub-image-2d-with-canvas-rgba4444.html',
+              ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
+    self.Fail('conformance/textures/' +
+              'tex-image-and-sub-image-2d-with-canvas-rgba5551.html',
+              ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
+    self.Fail('conformance/textures/' +
+              'tex-image-and-sub-image-2d-with-image-data.html',
+              ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
+    self.Fail('conformance/textures/' +
+              'tex-image-and-sub-image-2d-with-image-data-rgb565.html',
+              ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
+    self.Fail('conformance/textures/' +
+              'tex-image-and-sub-image-2d-with-image-data-rgba4444.html',
+              ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
+    self.Fail('conformance/textures/' +
+              'tex-image-and-sub-image-2d-with-image-data-rgba5551.html',
+              ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
+    self.Fail('conformance/textures/' +
+              'tex-image-and-sub-image-2d-with-image.html',
+              ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
+    self.Fail('conformance/textures/' +
+              'tex-image-and-sub-image-2d-with-image-rgb565.html',
+              ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
+    self.Fail('conformance/textures/' +
+              'tex-image-and-sub-image-2d-with-image-rgba4444.html',
+              ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
+    self.Fail('conformance/textures/' +
+              'tex-image-and-sub-image-2d-with-image-rgba5551.html',
+              ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
+    self.Fail('conformance/textures/' +
+              'tex-image-and-sub-image-2d-with-webgl-canvas.html',
+              ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
+    self.Fail('conformance/textures/' +
+              'tex-image-and-sub-image-2d-with-webgl-canvas-rgb565.html',
+              ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
+    self.Fail('conformance/textures/' +
+              'tex-image-and-sub-image-2d-with-webgl-canvas-rgba4444.html',
+              ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
+    self.Fail('conformance/textures/' +
+              'tex-image-and-sub-image-2d-with-webgl-canvas-rgba5551.html',
+              ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
+    self.Fail('conformance/textures/texture-npot-video.html',
+              ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
 
     # The following test is very slow and therefore times out on Android bot.
     self.Skip('conformance/rendering/multisample-corruption.html',

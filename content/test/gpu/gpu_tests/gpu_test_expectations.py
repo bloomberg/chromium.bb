@@ -15,7 +15,7 @@ from telemetry.page import test_expectations
 #     vivante
 #
 # Browser types:
-#     android-webview-shell
+#     android-webview-shell, android-content-shell
 #
 # ANGLE renderer:
 #     d3d9, d3d11, opengl
@@ -30,7 +30,7 @@ from telemetry.page import test_expectations
 
 ANGLE_MODIFIERS = ['d3d9', 'd3d11', 'opengl']
 
-BROWSER_TYPE_MODIFIERS = ['android-webview-shell']
+BROWSER_TYPE_MODIFIERS = ['android-webview-shell', 'android-content-shell']
 
 class GpuTestExpectations(test_expectations.TestExpectations):
   def IsValidUserDefinedCondition(self, condition):
