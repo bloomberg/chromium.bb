@@ -1750,7 +1750,7 @@ Just open Chrome on your computer, go to the menu, and select “Sign in to Chro
         Bookmarked
       </message>
       <message name="IDS_ENHANCED_BOOKMARK_DRAWER_ALL_ITEMS" desc="Menu item for showing all bookmark items in the enhanced bookmarks UI [CHAR-LIMIT=24]">
-        All Bookmarks
+        All bookmarks
       </message>
       <message name="IDS_ENHANCED_BOOKMARK_DRAWER_AUTO_FOLDERS" desc="Title for the list of auto folders in the drawer view. [CHAR-LIMIT=32]">
         Auto Folders
