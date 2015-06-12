@@ -9,6 +9,7 @@
 
 namespace blink {
 
+class WebServiceWorkerProvider;
 class WebServiceWorkerRegistrationProxy;
 
 class WebServiceWorkerRegistration {
@@ -20,6 +21,7 @@ public:
     virtual void proxyStopped() { }
 
     virtual WebURL scope() const { return WebURL(); }
+    virtual void update(WebServiceWorkerProvider*) { }
 };
 
 } // namespace blink

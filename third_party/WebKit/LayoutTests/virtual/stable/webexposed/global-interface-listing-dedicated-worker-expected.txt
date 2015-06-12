@@ -658,6 +658,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method getNotifications
 [Worker]     method showNotification
 [Worker]     method unregister
+[Worker]     method update
 [Worker]     setter onupdatefound
 [Worker] interface Set
 [Worker]     getter size
