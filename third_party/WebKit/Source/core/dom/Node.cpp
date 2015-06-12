@@ -922,6 +922,7 @@ void Node::reattach(const AttachContext& context)
 void Node::attach(const AttachContext&)
 {
     ASSERT(document().inStyleRecalc() || isDocumentNode());
+    ASSERT(!document().lifecycle().inDetach());
     ASSERT(needsAttach());
     ASSERT(!layoutObject() || (layoutObject()->style() && (layoutObject()->parent() || layoutObject()->isLayoutView())));
 

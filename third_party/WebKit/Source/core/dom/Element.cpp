@@ -1601,6 +1601,7 @@ PassRefPtr<ComputedStyle> Element::originalStyleForLayoutObject()
 void Element::recalcStyle(StyleRecalcChange change, Text* nextTextSibling)
 {
     ASSERT(document().inStyleRecalc());
+    ASSERT(!document().lifecycle().inDetach());
     ASSERT(!parentOrShadowHostNode()->needsStyleRecalc());
     ASSERT(inActiveDocument());
 
