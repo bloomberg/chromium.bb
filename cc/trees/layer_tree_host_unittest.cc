@@ -2669,14 +2669,7 @@ class LayerTreeHostTestNumFramesPending : public LayerTreeHostTest {
   int frame_;
 };
 
-// Flaky on all platforms: http://crbug.com/327498
-TEST_F(LayerTreeHostTestNumFramesPending, DISABLED_DelegatingRenderer) {
-  RunTest(true, true, true);
-}
-
-TEST_F(LayerTreeHostTestNumFramesPending, DISABLED_GLRenderer) {
-  RunTest(true, false, true);
-}
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestNumFramesPending);
 
 class LayerTreeHostTestResourcelessSoftwareDraw : public LayerTreeHostTest {
  public:
