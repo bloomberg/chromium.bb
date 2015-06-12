@@ -112,37 +112,6 @@ static void connector_find_mode(int fd, struct connector *c,
 		c->crtc = c->encoder->crtc_id;
 }
 
-static int connector_find_plane(int fd, unsigned int *plane_id)
-{
-	drmModePlaneRes *plane_resources;
-	drmModePlane *ovr;
-	int i;
-
-	plane_resources = drmModeGetPlaneResources(fd);
-	if (!plane_resources) {
-		fprintf(stderr, "drmModeGetPlaneResources failed: %s\n",
-			strerror(errno));
-		return -1;
-	}
-
-	for (i = 0; i < plane_resources->count_planes; i++) {
-		plane_id[i] = 0;
-
-		ovr = drmModeGetPlane(fd, plane_resources->planes[i]);
-		if (!ovr) {
-			fprintf(stderr, "drmModeGetPlane failed: %s\n",
-				strerror(errno));
-			continue;
-		}
-
-		if (ovr->possible_crtcs & (1 << 0))
-			plane_id[i] = ovr->plane_id;
-		drmModeFreePlane(ovr);
-	}
-
-	return 0;
-}
-
 static int drm_set_crtc(struct exynos_device *dev, struct connector *c,
 			unsigned int fb_id)
 {
