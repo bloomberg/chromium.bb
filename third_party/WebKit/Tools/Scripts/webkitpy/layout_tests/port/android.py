@@ -479,6 +479,11 @@ class AndroidPort(base.Port):
             raise test_run_results.TestRunException(test_run_results.NO_DEVICES_EXIT_STATUS, "Unable to find any attached Android devices.")
         return len(usable_devices)
 
+    def max_drivers_per_process(self):
+        # Android falls over when we try to run multiple content_shells per worker.
+        # See https://codereview.chromium.org/1158323009/
+        return 1
+
     def check_wdiff(self, logging=True):
         return self._host_port.check_wdiff(logging)
 

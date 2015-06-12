@@ -269,8 +269,12 @@ class Port(object):
         return None
 
     def default_child_processes(self):
-        """Return the number of drivers to use for this port."""
+        """Return the number of child processes to use for this port."""
         return self._executive.cpu_count()
+
+    def max_drivers_per_process(self):
+        """The maximum number of drivers a child process can use for this port."""
+        return 2
 
     def default_max_locked_shards(self):
         """Return the number of "locked" shards to run in parallel (like the http tests)."""

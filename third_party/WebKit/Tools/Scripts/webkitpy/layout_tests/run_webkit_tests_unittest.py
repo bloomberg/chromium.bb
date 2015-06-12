@@ -777,6 +777,19 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
     def test_reftest_with_virtual_reference(self):
         _, err, _ = logging_run(['--details', 'virtual/virtual_passes/passes/reftest.html'], tests_included=True)
         self.assertTrue('ref: virtual/virtual_passes/passes/reftest-expected.html' in err.getvalue())
+        self.assertTrue(
+            re.search('args: --virtual-arg\s*reference_args: --virtual-arg\s*ref:', err.getvalue()))
+
+    def test_reftest_virtual_references_use_default_args(self):
+        test_name = 'virtual/references_use_default_args/passes/reftest.html'
+        run_details, err, _ = logging_run(['--details', test_name], tests_included=True)
+        self.assertEqual(run_details.exit_code, 0)
+        self.assertEqual(run_details.initial_results.total, 1)
+        test_result = run_details.initial_results.all_results[0]
+        self.assertEqual(test_result.test_name, test_name)
+        self.assertEqual(test_result.references[0], 'passes/reftest-expected.html')
+        # reference_args should be empty since we are using the default flags.
+        self.assertTrue(re.search('reference_args:\s*ref:', err.getvalue()))
 
     def test_additional_platform_directory(self):
         self.assertTrue(passing_run(['--additional-platform-directory', '/tmp/foo']))

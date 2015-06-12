@@ -28,7 +28,6 @@
 
 import logging
 import math
-import threading
 import time
 
 from webkitpy.common import message_pool
@@ -208,6 +207,7 @@ class LayoutTestRunner(object):
         if remaining_tests:
             self._shards_to_redo.append(TestShard(list_name, remaining_tests))
 
+
 class Worker(object):
     def __init__(self, caller, results_directory, options):
         self._caller = caller
@@ -222,7 +222,8 @@ class Worker(object):
         self._batch_size = None
         self._batch_count = None
         self._filesystem = None
-        self._driver = None
+        self._primary_driver = None
+        self._secondary_driver = None
         self._num_tests = 0
 
     def __del__(self):
@@ -235,6 +236,10 @@ class Worker(object):
         self._host = self._caller.host
         self._filesystem = self._host.filesystem
         self._port = self._host.port_factory.get(self._options.platform, self._options)
+        self._primary_driver = self._port.create_driver(self._worker_number)
+
+        if self._port.max_drivers_per_process() > 1:
+            self._secondary_driver = self._port.create_driver(self._worker_number)
 
         self._batch_count = 0
         self._batch_size = self._options.batch_size or 0
@@ -247,6 +252,9 @@ class Worker(object):
                 self._caller.post('device_failed', test_list_name, test_inputs[i:])
                 self._caller.stop_running()
                 return
+
+        # Kill the secondary driver at the end of each test shard.
+        self._kill_driver(self._secondary_driver, 'secondary')
 
         self._caller.post('finished_test_list', test_list_name)
 
@@ -272,21 +280,12 @@ class Worker(object):
         start = time.time()
         device_failed = False
 
-        if self._driver and self._driver.has_crashed():
-            self._kill_driver()
-        if not self._driver:
-            self._driver = self._port.create_driver(self._worker_number)
-
-        if not self._driver:
-            # FIXME: Is this the best way to handle a device crashing in the middle of the test, or should we create
-            # a new failure type?
-            device_failed = True
-            return device_failed
-
         _log.debug("%s %s started" % (self._name, test_input.test_name))
         self._caller.post('started_test', test_input, test_timeout_sec)
-        result = single_test_runner.run_single_test(self._port, self._options, self._results_directory,
-            self._name, self._driver, test_input, stop_when_done)
+        result = single_test_runner.run_single_test(
+            self._port, self._options, self._results_directory, self._name,
+            self._primary_driver, self._secondary_driver, test_input,
+            stop_when_done)
 
         result.shard_name = shard_name
         result.worker_name = self._name
@@ -299,7 +298,8 @@ class Worker(object):
 
     def stop(self):
         _log.debug("%s cleaning up" % self._name)
-        self._kill_driver()
+        self._kill_driver(self._primary_driver, "primary")
+        self._kill_driver(self._secondary_driver, "secondary")
 
     def _timeout(self, test_input):
         """Compute the appropriate timeout value for a test."""
@@ -313,15 +313,12 @@ class Worker(object):
         # FIXME: Can we just return the test_input.timeout now?
         driver_timeout_sec = 3.0 * float(test_input.timeout) / 1000.0
 
-    def _kill_driver(self):
+    def _kill_driver(self, driver, label):
         # Be careful about how and when we kill the driver; if driver.stop()
         # raises an exception, this routine may get re-entered via __del__.
-        driver = self._driver
-        self._driver = None
         if driver:
-            _log.debug("%s killing driver" % self._name)
+            _log.debug("%s killing %s driver" % (self._name, label))
             driver.stop()
-
 
     def _clean_up_after_test(self, test_input, result):
         test_name = test_input.test_name
@@ -329,7 +326,12 @@ class Worker(object):
         if result.failures:
             # Check and kill the driver if we need to.
             if any([f.driver_needs_restart() for f in result.failures]):
-                self._kill_driver()
+                # FIXME: Need more information in failure reporting so
+                # we know which driver needs to be restarted. For now
+                # we kill both drivers.
+                self._kill_driver(self._primary_driver, "primary")
+                self._kill_driver(self._secondary_driver, "secondary")
+
                 # Reset the batch count since the shell just bounced.
                 self._batch_count = 0
 

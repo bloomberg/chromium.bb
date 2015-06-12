@@ -43,8 +43,12 @@ from webkitpy.layout_tests.models import testharness_results
 _log = logging.getLogger(__name__)
 
 
-def run_single_test(port, options, results_directory, worker_name, driver, test_input, stop_when_done):
-    runner = SingleTestRunner(port, options, results_directory, worker_name, driver, test_input, stop_when_done)
+def run_single_test(
+        port, options, results_directory, worker_name, primary_driver,
+        secondary_driver, test_input, stop_when_done):
+    runner = SingleTestRunner(
+        port, options, results_directory, worker_name, primary_driver,
+        secondary_driver, test_input, stop_when_done)
     try:
         return runner.run()
     except DeviceFailure as e:
@@ -55,12 +59,14 @@ def run_single_test(port, options, results_directory, worker_name, driver, test_
 class SingleTestRunner(object):
     (ALONGSIDE_TEST, PLATFORM_DIR, VERSION_DIR, UPDATE) = ('alongside', 'platform', 'version', 'update')
 
-    def __init__(self, port, options, results_directory, worker_name, driver, test_input, stop_when_done):
+    def __init__(self, port, options, results_directory, worker_name,
+                 primary_driver, secondary_driver, test_input, stop_when_done):
         self._port = port
         self._filesystem = port.host.filesystem
         self._options = options
         self._results_directory = results_directory
-        self._driver = driver
+        self._driver = primary_driver
+        self._reference_driver = primary_driver
         self._timeout = test_input.timeout
         self._worker_name = worker_name
         self._test_name = test_input.test_name
@@ -68,6 +74,14 @@ class SingleTestRunner(object):
         self._reference_files = test_input.reference_files
         self._should_add_missing_baselines = test_input.should_add_missing_baselines
         self._stop_when_done = stop_when_done
+
+        # If this is a virtual test that uses the default flags instead of the
+        # virtual flags for it's references, run it on the secondary driver so
+        # that the primary driver does not need to be restarted.
+        if (secondary_driver and
+                self._port.is_virtual_test(self._test_name) and
+                not self._port.lookup_virtual_reference_args(self._test_name)):
+            self._reference_driver = secondary_driver
 
         if self._reference_files:
             # Detect and report a test which has a wrong combination of expectation files.
@@ -372,7 +386,7 @@ class SingleTestRunner(object):
             reference_test_name = self._port.relative_test_filename(reference_filename)
             reference_test_names.append(reference_test_name)
             driver_input = DriverInput(reference_test_name, self._timeout, image_hash=None, should_run_pixel_test=True, args=args)
-            reference_output = self._driver.run_test(driver_input, self._stop_when_done)
+            reference_output = self._reference_driver.run_test(driver_input, self._stop_when_done)
             test_result = self._compare_output_with_reference(reference_output, test_output, reference_filename, expectation == '!=')
 
             if (expectation == '!=' and test_result.failures) or (expectation == '==' and not test_result.failures):
