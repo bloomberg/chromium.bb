@@ -100,8 +100,7 @@ public class ChromeTab extends Tab {
     // URL didFailLoad error code. Should match the value in net_error_list.h.
     public static final int BLOCKED_BY_ADMINISTRATOR = -22;
 
-    public static final String PAGESPEED_PASSTHROUGH_HEADER =
-            "X-PSA-Client-Options: v=1,m=1\nCache-Control: no-cache";
+    public static final String PAGESPEED_PASSTHROUGH_HEADER = "Chrome-Proxy: pass-through";
 
     private static final int MSG_ID_ENABLE_FULLSCREEN_AFTER_LOAD = 1;
 
