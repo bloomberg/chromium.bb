@@ -45,7 +45,7 @@ LayoutFieldset::LayoutFieldset(Element* element)
 void LayoutFieldset::computePreferredLogicalWidths()
 {
     LayoutBlockFlow::computePreferredLogicalWidths();
-    if (LayoutBox* legend = findLegend()) {
+    if (LayoutBox* legend = findInFlowLegend()) {
         int legendMinWidth = legend->minPreferredLogicalWidth();
 
         Length legendMarginLeft = legend->style()->marginLeft();
@@ -63,7 +63,7 @@ void LayoutFieldset::computePreferredLogicalWidths()
 
 LayoutObject* LayoutFieldset::layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope&)
 {
-    LayoutBox* legend = findLegend();
+    LayoutBox* legend = findInFlowLegend();
     if (legend) {
         if (relayoutChildren)
             legend->setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::FieldsetChanged);
@@ -125,10 +125,10 @@ LayoutObject* LayoutFieldset::layoutSpecialExcludedChild(bool relayoutChildren, 
     return legend;
 }
 
-LayoutBox* LayoutFieldset::findLegend(FindLegendOption option) const
+LayoutBox* LayoutFieldset::findInFlowLegend() const
 {
     for (LayoutObject* legend = firstChild(); legend; legend = legend->nextSibling()) {
-        if (option == IgnoreFloatingOrOutOfFlow && legend->isFloatingOrOutOfFlowPositioned())
+        if (legend->isFloatingOrOutOfFlowPositioned())
             continue;
 
         if (isHTMLLegendElement(legend->node()))

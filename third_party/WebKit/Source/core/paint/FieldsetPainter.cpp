@@ -19,7 +19,7 @@ void FieldsetPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo, c
         return;
 
     LayoutRect paintRect(paintOffset, m_layoutFieldset.size());
-    LayoutBox* legend = m_layoutFieldset.findLegend();
+    LayoutBox* legend = m_layoutFieldset.findInFlowLegend();
     if (!legend)
         return BoxPainter(m_layoutFieldset).paintBoxDecorationBackground(paintInfo, paintOffset);
 
@@ -76,7 +76,7 @@ void FieldsetPainter::paintMask(const PaintInfo& paintInfo, const LayoutPoint& p
         return;
 
     LayoutRect paintRect = LayoutRect(paintOffset, m_layoutFieldset.size());
-    LayoutBox* legend = m_layoutFieldset.findLegend();
+    LayoutBox* legend = m_layoutFieldset.findInFlowLegend();
     if (!legend)
         return BoxPainter(m_layoutFieldset).paintMask(paintInfo, paintOffset);
 

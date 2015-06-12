@@ -32,8 +32,7 @@ class LayoutFieldset final : public LayoutBlockFlow {
 public:
     explicit LayoutFieldset(Element*);
 
-    enum FindLegendOption { IgnoreFloatingOrOutOfFlow, IncludeFloatingOrOutOfFlow };
-    LayoutBox* findLegend(FindLegendOption = IgnoreFloatingOrOutOfFlow) const;
+    LayoutBox* findInFlowLegend() const;
 
     virtual const char* name() const override { return "LayoutFieldset"; }
 
