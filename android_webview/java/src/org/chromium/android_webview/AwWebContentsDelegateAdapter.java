@@ -83,6 +83,7 @@ class AwWebContentsDelegateAdapter extends AwWebContentsDelegate {
         mContentsClient.onUnhandledKeyEvent(event);
     }
 
+    @SuppressLint("NewApi") // AudioManager#dispatchMediaKeyEvent requires API level 19.
     /**
      * Redispatches unhandled media keys. This allows bluetooth headphones with play/pause or
      * other buttons to function correctly.
