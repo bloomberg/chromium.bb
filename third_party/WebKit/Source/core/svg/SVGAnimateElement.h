@@ -28,6 +28,7 @@
 #include "core/svg/SVGAnimationElement.h"
 #include "platform/heap/Handle.h"
 #include "wtf/OwnPtr.h"
+#include <base/gtest_prod_util.h>
 
 namespace blink {
 
@@ -40,6 +41,8 @@ public:
     virtual ~SVGAnimateElement();
 
     DECLARE_VIRTUAL_TRACE();
+
+    virtual bool isSVGAnimationAttributeSettingJavaScriptURL(const Attribute&) const override;
 
     AnimatedPropertyType animatedPropertyType();
     bool animatedPropertyTypeSupportsAddition();
@@ -62,6 +65,8 @@ protected:
 
     virtual void setTargetElement(SVGElement*) override final;
     virtual void setAttributeName(const QualifiedName&) override final;
+
+    FRIEND_TEST_ALL_PREFIXES(UnsafeSVGAttributeSanitizationTest, stringsShouldNotSupportAddition);
 
 private:
     void resetAnimatedPropertyType();

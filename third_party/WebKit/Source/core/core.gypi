@@ -3933,6 +3933,7 @@
             'style/ComputedStyleTest.cpp',
             'style/OutlineValueTest.cpp',
             'style/SVGComputedStyleTest.cpp',
+            'svg/UnsafeSVGAttributeSanitizationTest.cpp',
             'testing/PrivateScriptTestTest.cpp',
             'timing/MemoryInfoTest.cpp',
             'workers/WorkerThreadTest.cpp',

@@ -1245,9 +1245,14 @@ static inline bool isEventHandlerAttribute(const Attribute& attribute)
     return attribute.name().namespaceURI().isNull() && attribute.name().localName().startsWith("on");
 }
 
+bool Element::attributeValueIsJavaScriptURL(const Attribute& attribute)
+{
+    return protocolIsJavaScript(stripLeadingAndTrailingHTMLSpaces(attribute.value()));
+}
+
 bool Element::isJavaScriptURLAttribute(const Attribute& attribute) const
 {
-    return isURLAttribute(attribute) && protocolIsJavaScript(stripLeadingAndTrailingHTMLSpaces(attribute.value()));
+    return isURLAttribute(attribute) && attributeValueIsJavaScriptURL(attribute);
 }
 
 void Element::stripScriptingAttributes(Vector<Attribute>& attributeVector) const
@@ -1256,7 +1261,8 @@ void Element::stripScriptingAttributes(Vector<Attribute>& attributeVector) const
     for (size_t source = 0; source < attributeVector.size(); ++source) {
         if (isEventHandlerAttribute(attributeVector[source])
             || isJavaScriptURLAttribute(attributeVector[source])
-            || isHTMLContentAttribute(attributeVector[source]))
+            || isHTMLContentAttribute(attributeVector[source])
+            || isSVGAnimationAttributeSettingJavaScriptURL(attributeVector[source]))
             continue;
 
         if (source != destination)

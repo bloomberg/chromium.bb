@@ -29,6 +29,7 @@
 #include "core/svg/animation/SVGSMILElement.h"
 #include "platform/animation/UnitBezier.h"
 #include "wtf/Functional.h"
+#include "wtf/Vector.h"
 
 namespace blink {
 
@@ -167,6 +168,13 @@ protected:
     virtual void updateAnimationMode();
     void setAnimationMode(AnimationMode animationMode) { m_animationMode = animationMode; }
     void setCalcMode(CalcMode calcMode) { m_calcMode = calcMode; }
+
+    // Parses a list of values as specified by SVG, stripping leading
+    // and trailing whitespace, and places them in result. If the
+    // format of the string is not valid, parseValues empties result
+    // and returns false. See
+    // http://www.w3.org/TR/SVG/animate.html#ValuesAttribute .
+    static bool parseValues(const String&, Vector<String>& result);
 
 private:
     virtual bool isValid() const override final { return SVGTests::isValid(document()); }

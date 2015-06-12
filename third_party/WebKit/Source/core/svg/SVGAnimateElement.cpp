@@ -49,6 +49,26 @@ SVGAnimateElement::~SVGAnimateElement()
 {
 }
 
+bool SVGAnimateElement::isSVGAnimationAttributeSettingJavaScriptURL(const Attribute& attribute) const
+{
+    if ((attribute.name() == SVGNames::fromAttr || attribute.name() == SVGNames::toAttr) && attributeValueIsJavaScriptURL(attribute))
+        return true;
+
+    if (attribute.name() == SVGNames::valuesAttr) {
+        Vector<String> parts;
+        if (!parseValues(attribute.value(), parts)) {
+            // Assume the worst.
+            return true;
+        }
+        for (const auto& part : parts) {
+            if (protocolIsJavaScript(part))
+                return true;
+        }
+    }
+
+    return SVGSMILElement::isSVGAnimationAttributeSettingJavaScriptURL(attribute);
+}
+
 AnimatedPropertyType SVGAnimateElement::animatedPropertyType()
 {
     if (!targetElement())

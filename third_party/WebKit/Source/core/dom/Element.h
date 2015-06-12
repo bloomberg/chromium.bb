@@ -354,6 +354,8 @@ public:
 
     virtual bool isURLAttribute(const Attribute&) const { return false; }
     virtual bool isHTMLContentAttribute(const Attribute&) const { return false; }
+    bool isJavaScriptURLAttribute(const Attribute&) const;
+    virtual bool isSVGAnimationAttributeSettingJavaScriptURL(const Attribute&) const { return false; }
 
     virtual bool isLiveLink() const { return false; }
     KURL hrefURL() const;
@@ -539,6 +541,8 @@ protected:
     // svgAttributeChanged (called when element.className.baseValue is set)
     void classAttributeChanged(const AtomicString& newClassString);
 
+    static bool attributeValueIsJavaScriptURL(const Attribute&);
+
     PassRefPtr<ComputedStyle> originalStyleForLayoutObject();
 
     Node* insertAdjacent(const String& where, Node* newChild, ExceptionState&);
@@ -640,8 +644,6 @@ private:
     void detachAllAttrNodesFromElement();
     void detachAttrNodeFromElementWithValue(Attr*, const AtomicString& value);
     void detachAttrNodeAtIndex(Attr*, size_t index);
-
-    bool isJavaScriptURLAttribute(const Attribute&) const;
 
     v8::Local<v8::Object> wrapCustomElement(v8::Isolate*, v8::Local<v8::Object> creationContext);
 

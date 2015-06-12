@@ -52,7 +52,7 @@ SVGAnimationElement::SVGAnimationElement(const QualifiedName& tagName, Document&
     UseCounter::count(document, UseCounter::SVGAnimationElement);
 }
 
-static bool parseValues(const String& value, Vector<String>& result)
+bool SVGAnimationElement::parseValues(const String& value, Vector<String>& result)
 {
     // Per the SMIL specification, leading and trailing white space,
     // and white space before and after semicolon separators, is allowed and will be ignored.
