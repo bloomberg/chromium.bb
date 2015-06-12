@@ -4,7 +4,35 @@
 
 'use strict';
 
+/** Idle time in ms before the UI is hidden. */
 var HIDE_TIMEOUT = 2000;
+/** Velocity required in a mousemove to reveal the UI (pixels/sample). */
+var SHOW_VELOCITY = 20;
+/** Distance from the top or right of the screen required to reveal the UI. */
+var EDGE_REVEAL = 100;
+
+/**
+ * Whether a mousemove event is high enough velocity to reveal the toolbars.
+ * @param {MouseEvent} e Event to test.
+ * @return {boolean} true if the event is a high velocity mousemove, false
+ * otherwise.
+ */
+function isHighVelocityMouseMove(e) {
+  return e.type == 'mousemove' &&
+         e.movementX * e.movementX + e.movementY * e.movementY >
+             SHOW_VELOCITY * SHOW_VELOCITY;
+}
+
+/**
+ * Whether the mouse is close enough to the edge of the screen to keep the
+ * toolbars open.
+ * @param {Event} e Event to test.
+ * @return {boolean} true if the mouse is close to the top or right of the
+ * screen.
+ */
+function shouldKeepUiOpen(e) {
+  return (e.y < EDGE_REVEAL || e.x > window.innerWidth - EDGE_REVEAL);
+}
 
 /**
  * Creates a UI Manager to handle transitioning of toolbars.
@@ -19,13 +47,20 @@ function UiManager(window, toolbar, zoomToolbar) {
   this.zoomToolbar_ = zoomToolbar;
 
   this.uiTimeout_ = null;
+  this.keepOpen_ = false;
 
-  var userInputs = ['click', 'keydown', 'mousemove', 'scroll'];
+  var userInputs = ['keydown', 'mousemove'];
   for (var i = 0; i < userInputs.length; i++)
-    this.window_.addEventListener(userInputs[i], this.showUi_.bind(this));
+    this.window_.addEventListener(userInputs[i], this.handleEvent.bind(this));
 }
 
 UiManager.prototype = {
+  handleEvent: function(e) {
+    this.keepOpen_ = shouldKeepUiOpen(e);
+    if (e.type != 'mousemove' || this.keepOpen_ || isHighVelocityMouseMove(e))
+      this.showUi_();
+  },
+
   /**
    * @private
    * Display the toolbar and any pane that was previously opened.
@@ -33,7 +68,6 @@ UiManager.prototype = {
   showUi_: function() {
     this.toolbar_.show();
     this.zoomToolbar_.show();
-
     this.hideUiAfterTimeout();
   },
 
@@ -42,8 +76,10 @@ UiManager.prototype = {
    * Hide the toolbar and any pane that was previously opened.
    */
   hideUi_: function() {
-    this.toolbar_.hide();
-    this.zoomToolbar_.hide();
+    if (!this.keepOpen_) {
+      this.toolbar_.hide();
+      this.zoomToolbar_.hide();
+    }
   },
 
   /**

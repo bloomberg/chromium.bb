@@ -2,12 +2,6 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-/* We introduce a wrapper animatable element and set the overflow since
- * core-transition interferes with the box-shadow from paper-shadow. */
-#animatable {
-  overflow: visible;
-}
-
 /* We introduce a wrapper aligner element as setting the relevant attributes
  * (horizontal justified layout center) have no effect on the core-toolbar. */
 #aligner {

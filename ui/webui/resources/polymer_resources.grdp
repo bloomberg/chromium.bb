@@ -632,6 +632,56 @@
              file="../../../third_party/polymer/v1_0/components-chromium/iron-validatable-behavior/iron-validatable-behavior-extracted.js"
              type="chrome_html" />
 
+  <structure name="IDR_POLYMER_1_0_NEON_ANIMATION_ANIMATIONS_OPAQUE_ANIMATION_EXTRACTED_JS"
+             file="../../../third_party/polymer/v1_0/components-chromium/neon-animation/animations/opaque-animation-extracted.js"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_1_0_NEON_ANIMATION_ANIMATIONS_OPAQUE_ANIMATION_HTML"
+
+             file="../../../third_party/polymer/v1_0/components-chromium/neon-animation/animations/opaque-animation.html"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_1_0_NEON_ANIMATION_ANIMATIONS_SLIDE_DOWN_ANIMATION_EXTRACTED_JS"
+             file="../../../third_party/polymer/v1_0/components-chromium/neon-animation/animations/slide-down-animation-extracted.js"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_1_0_NEON_ANIMATION_ANIMATIONS_SLIDE_DOWN_ANIMATION_HTML"
+
+             file="../../../third_party/polymer/v1_0/components-chromium/neon-animation/animations/slide-down-animation.html"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_1_0_NEON_ANIMATION_ANIMATIONS_SLIDE_UP_ANIMATION_EXTRACTED_JS"
+             file="../../../third_party/polymer/v1_0/components-chromium/neon-animation/animations/slide-up-animation-extracted.js"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_1_0_NEON_ANIMATION_ANIMATIONS_SLIDE_UP_ANIMATION_HTML"
+
+             file="../../../third_party/polymer/v1_0/components-chromium/neon-animation/animations/slide-up-animation.html"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_1_0_NEON_ANIMATION_ANIMATIONS_TRANSFORM_ANIMATION_EXTRACTED_JS"
+             file="../../../third_party/polymer/v1_0/components-chromium/neon-animation/animations/transform-animation-extracted.js"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_1_0_NEON_ANIMATION_ANIMATIONS_TRANSFORM_ANIMATION_HTML"
+
+             file="../../../third_party/polymer/v1_0/components-chromium/neon-animation/animations/transform-animation.html"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_1_0_NEON_ANIMATION_NEON_ANIMATABLE_BEHAVIOR_EXTRACTED_JS"
+             file="../../../third_party/polymer/v1_0/components-chromium/neon-animation/neon-animatable-behavior-extracted.js"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_1_0_NEON_ANIMATION_NEON_ANIMATABLE_BEHAVIOR_HTML"
+             file="../../../third_party/polymer/v1_0/components-chromium/neon-animation/neon-animatable-behavior.html"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_1_0_NEON_ANIMATION_NEON_ANIMATION_BEHAVIOR_EXTRACTED_JS"
+             file="../../../third_party/polymer/v1_0/components-chromium/neon-animation/neon-animation-behavior-extracted.js"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_1_0_NEON_ANIMATION_NEON_ANIMATION_BEHAVIOR_HTML"
+             file="../../../third_party/polymer/v1_0/components-chromium/neon-animation/neon-animation-behavior.html"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_1_0_NEON_ANIMATION_NEON_ANIMATION_RUNNER_BEHAVIOR_EXTRACTED_JS"
+             file="../../../third_party/polymer/v1_0/components-chromium/neon-animation/neon-animation-runner-behavior-extracted.js"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_1_0_NEON_ANIMATION_NEON_ANIMATION_RUNNER_BEHAVIOR_HTML"
+             file="../../../third_party/polymer/v1_0/components-chromium/neon-animation/neon-animation-runner-behavior.html"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_1_0_NEON_ANIMATION_WEB_ANIMATIONS_HTML"
+             file="../../../third_party/polymer/v1_0/components-chromium/neon-animation/web-animations.html"
+             type="chrome_html" />
+
   <structure name="IDR_POLYMER_1_0_PAPER_BEHAVIORS_PAPER_BUTTON_BEHAVIOR_HTML"
              file="../../../third_party/polymer/v1_0/components-chromium/paper-behaviors/paper-button-behavior.html"
              type="chrome_html" />
@@ -808,6 +858,9 @@
              type="chrome_html" />
   <structure name="IDR_POLYMER_08_PAPER_RADIO_GROUP_PAPER_RADIO_GROUP_HTML"
              file="../../../third_party/polymer/v1_0/components-chromium/paper-radio-group/paper-radio-group.html"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_1_0_WEB_ANIMATIONS_JS_WEB_ANIMATIONS_NEXT_LITE_MIN_JS"
+             file="../../../third_party/polymer/v1_0/components-chromium/web-animations-js/web-animations-next-lite.min.js"
              type="chrome_html" />
 
   <!-- more-routing and deps -->

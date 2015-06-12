@@ -5,6 +5,10 @@
   Polymer({
     is: 'viewer-pdf-toolbar',
 
+    behaviors: [
+      Polymer.NeonAnimationRunnerBehavior
+    ],
+
     properties: {
       /**
        * The current loading progress of the PDF document (0 - 100).
@@ -33,16 +37,46 @@
        * The number of pages in the PDF document.
        */
       docLength: Number,
+
+      /**
+       * Whether the toolbar is opened and visible.
+       */
+      opened: {
+        type: Boolean,
+        value: true
+      },
+
+      animationConfig: {
+        value: function() {
+          return {
+            'entry': {
+              name: 'slide-down-animation',
+              node: this,
+              timing: {
+                easing: 'cubic-bezier(0, 0, 0.2, 1)',
+                duration: 250
+              }
+            },
+            'exit': {
+              name: 'slide-up-animation',
+              node: this,
+              timing: {
+                easing: 'cubic-bezier(0.4, 0, 1, 1)',
+                duration: 250
+              }
+            }
+          };
+        }
+      }
     },
 
-    ready: function() {
-      /**
-       * @type {Object}
-       * Used in core-transition to determine whether the animatable is open.
-       * TODO(tsergeant): Add core-transition back in once it is in Polymer 0.8.
-       */
-      this.state_ = { opened: false };
-      this.show();
+    listeners: {
+      'neon-animation-finish': '_onAnimationFinished'
+    },
+
+    _onAnimationFinished: function() {
+      if (!this.opened)
+        this.style.visibility = 'hidden';
     },
 
     loadProgressChanged: function() {
@@ -54,17 +88,21 @@
     },
 
     hide: function() {
-      if (this.state_.opened)
+      if (this.opened)
         this.toggleVisibility();
     },
 
     show: function() {
-      if (!this.state_.opened)
+      if (!this.opened) {
         this.toggleVisibility();
+        this.style.visibility = 'initial';
+      }
     },
 
     toggleVisibility: function() {
-      this.state_.opened = !this.state_.opened;
+      this.opened = !this.opened;
+      this.cancelAnimation();
+      this.playAnimation(this.opened ? 'entry' : 'exit');
     },
 
     selectPageNumber: function() {

@@ -2,6 +2,9 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-shadow-flex-layout.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/image-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/animations/slide-down-animation.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/animations/slide-up-animation.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animation-runner-behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-material/paper-material.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-progress/paper-progress.html">
@@ -11,36 +14,34 @@
 <dom-module id="viewer-pdf-toolbar">
   <link rel="import" type="css" href="viewer-pdf-toolbar.css">
   <template>
-    <div id="animatable">
-      <paper-material class="fit"></paper-material>
+    <paper-material class="fit"></paper-material>
 
-      <paper-progress value="{{loadProgress}}"></paper-progress>
+    <paper-progress value="{{loadProgress}}"></paper-progress>
 
-      <paper-toolbar class="core-narrow">
-        <div id="aligner" class="horizontal layout center">
-          <span id="title" class="invisible flex-5" title="{{docTitle}}">
-            <span>{{docTitle}}</span>
-          </span>
+    <paper-toolbar class="core-narrow">
+      <div id="aligner" class="horizontal layout center">
+        <span id="title" class="invisible flex-5" title="{{docTitle}}">
+          <span>{{docTitle}}</span>
+        </span>
 
-          <div class="flex-1" id="pageselector-container">
-            <viewer-page-selector id="pageselector" class="invisible"
-                doc-length="{{docLength}}" page-no="{{pageNo}}">
-            </viewer-page-selector>
-          </div>
-
-          <div id="buttons" class="invisible flex-5">
-            <paper-icon-button icon="image:rotate-right"
-                on-click="rotateRight"></paper-icon-button>
-            <paper-icon-button icon="bookmark-outline"
-                on-click="toggleBookmarks" hidden></paper-icon-button>
-            <paper-icon-button icon="save"
-                on-click="save"></paper-icon-button>
-            <paper-icon-button icon="print"
-                on-click="print"></paper-icon-button>
-          </div>
+        <div class="flex-1" id="pageselector-container">
+          <viewer-page-selector id="pageselector" class="invisible"
+              doc-length="{{docLength}}" page-no="{{pageNo}}">
+          </viewer-page-selector>
         </div>
-      </paper-toolbar>
-    </div>
+
+        <div id="buttons" class="invisible flex-5">
+          <paper-icon-button icon="image:rotate-right"
+              on-click="rotateRight"></paper-icon-button>
+          <paper-icon-button icon="bookmark-outline"
+              on-click="toggleBookmarks" hidden></paper-icon-button>
+          <paper-icon-button icon="save"
+              on-click="save"></paper-icon-button>
+          <paper-icon-button icon="print"
+              on-click="print"></paper-icon-button>
+        </div>
+      </div>
+    </paper-toolbar>
   </template>
 </dom-module>
 <script src="viewer-pdf-toolbar.js"></script>

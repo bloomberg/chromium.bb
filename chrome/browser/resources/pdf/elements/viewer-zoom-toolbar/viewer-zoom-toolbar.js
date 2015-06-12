@@ -22,7 +22,7 @@ Polymer({
   },
 
   ready: function() {
-    this.visible_ = false;
+    this.visible_ = true;
   },
 
   zoomValueChanged: function() {
@@ -41,7 +41,7 @@ Polymer({
     if (!this.visible) {
       this.visible_ = true;
       this.$['fit-to-width-button'].show();
-      this.$['fit-to-page-button'].show(ANIMATION_INTERVAL);
+      this.$['fit-to-page-button'].show();
     }
   },
 
@@ -49,7 +49,7 @@ Polymer({
     if (this.visible) {
       this.visible_ = false;
       this.$['fit-to-page-button'].hide();
-      this.$['fit-to-width-button'].hide(ANIMATION_INTERVAL);
+      this.$['fit-to-width-button'].hide();
     }
   },
 });
