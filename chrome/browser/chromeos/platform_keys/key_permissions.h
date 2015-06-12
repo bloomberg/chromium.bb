@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_PLATFORM_KEYS_KEY_PERMISSIONS_H_
 
 #include <string>
+#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
