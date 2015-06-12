@@ -131,7 +131,7 @@ android_apk("mandoline_apk") {
     "//mojo/runner:java",
     "//mojo/runner:resources",
     "//base:base_java",
-    "//components/view_manager:view_manager_java",
     "//third_party/android_tools:google_play_services_default_resources",
+    "//ui/platform_window/android:platform_window_java",
   ]
 }

@@ -12,28 +12,10 @@ if (is_android) {
 
   group("view_manager") {
     deps = [
-      ":jni_headers",
       ":lib",
       ":loader",
-      ":view_manager_java",
       "native_viewport",
     ]
-  }
-
-  android_library("view_manager_java") {
-    java_files = [ "native_viewport/android/src/org/chromium/mojo/PlatformViewportAndroid.java" ]
-
-    deps = [
-      "//base:base_java",
-    ]
-  }
-
-  generate_jni("jni_headers") {
-    sources = [
-      "native_viewport/android/src/org/chromium/mojo/PlatformViewportAndroid.java",
-    ]
-
-    jni_package = "mojo"
   }
 
   source_set("loader") {

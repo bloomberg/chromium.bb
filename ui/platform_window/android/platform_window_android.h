@@ -2,32 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_VIEW_MANAGER_NATIVE_VIEWPORT_PLATFORM_VIEWPORT_ANDROID_H_
-#define COMPONENTS_VIEW_MANAGER_NATIVE_VIEWPORT_PLATFORM_VIEWPORT_ANDROID_H_
+#ifndef UI_PLATFORM_WINDOW_ANDROID_PLATFORM_WINDOW_ANDROID_H_
+#define UI_PLATFORM_WINDOW_ANDROID_PLATFORM_WINDOW_ANDROID_H_
 
 #include "base/android/jni_weak_ref.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "components/view_manager/native_viewport/platform_viewport.h"
 #include "ui/events/event_constants.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/sequential_id_generator.h"
-
-namespace gpu {
-class GLInProcessContext;
-}
+#include "ui/platform_window/platform_window.h"
 
 struct ANativeWindow;
 
-namespace native_viewport {
+namespace ui {
 
-class PlatformViewportAndroid : public PlatformViewport {
+class PlatformWindowAndroid : public PlatformWindow {
  public:
   static bool Register(JNIEnv* env);
 
-  explicit PlatformViewportAndroid(Delegate* delegate);
-  ~PlatformViewportAndroid() override;
+  explicit PlatformWindowAndroid(PlatformWindowDelegate* delegate);
+  ~PlatformWindowAndroid() override;
 
   void Destroy(JNIEnv* env, jobject obj);
   void SurfaceCreated(JNIEnv* env,
@@ -58,30 +54,38 @@ class PlatformViewportAndroid : public PlatformViewport {
                 bool pressed,
                 jint key_code,
                 jint unicode_character);
-
  private:
-  // Overridden from PlatformViewport:
-  void Init(const gfx::Rect& bounds) override;
+  void ReleaseWindow();
+
+  // Overridden from PlatformWindow:
   void Show() override;
   void Hide() override;
   void Close() override;
-  gfx::Size GetSize() override;
   void SetBounds(const gfx::Rect& bounds) override;
+  gfx::Rect GetBounds() override;
+  void SetCapture() override;
+  void ReleaseCapture() override;
+  void ToggleFullscreen() override;
+  void Maximize() override;
+  void Minimize() override;
+  void Restore() override;
+  void SetCursor(PlatformCursor cursor) override;
+  void MoveCursorTo(const gfx::Point& location) override;
+  void ConfineCursorToBounds(const gfx::Rect& bounds) override;
 
-  void ReleaseWindow();
+  PlatformWindowDelegate* delegate_;
 
-  Delegate* const delegate_;
-  JavaObjectWeakGlobalRef java_platform_viewport_android_;
+  JavaObjectWeakGlobalRef java_platform_window_android_;
   ANativeWindow* window_;
   ui::SequentialIDGenerator id_generator_;
 
-  gfx::Size size_;
+  gfx::Size size_;  // Origin is always (0,0)
 
-  base::WeakPtrFactory<PlatformViewportAndroid> weak_factory_;
+  base::WeakPtrFactory<PlatformWindowAndroid> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(PlatformViewportAndroid);
+  DISALLOW_COPY_AND_ASSIGN(PlatformWindowAndroid);
 };
 
-}  // namespace native_viewport
+}  // namespace ui
 
-#endif  // COMPONENTS_VIEW_MANAGER_NATIVE_VIEWPORT_PLATFORM_VIEWPORT_ANDROID_H_
+#endif  // UI_PLATFORM_WINDOW_ANDROID_PLATFORM_WINDOW_ANDROID_H_

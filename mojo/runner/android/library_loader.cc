@@ -7,16 +7,15 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
 #include "base/bind.h"
-#include "components/view_manager/native_viewport/platform_viewport_android.h"
 #include "mojo/runner/android/android_handler.h"
 #include "mojo/runner/android/main.h"
+#include "ui/platform_window/android/platform_window_android.h"
 
 namespace {
 
 base::android::RegistrationMethod kMojoRegisteredMethods[] = {
     {"AndroidHandler", mojo::runner::RegisterAndroidHandlerJni},
-    {"PlatformViewportAndroid",
-     native_viewport::PlatformViewportAndroid::Register},
+    {"PlatformWindowAndroid", ui::PlatformWindowAndroid::Register},
     {"ShellMain", mojo::runner::RegisterShellMain},
 };
 
