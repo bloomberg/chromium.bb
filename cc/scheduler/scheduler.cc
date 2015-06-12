@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "base/auto_reset.h"
-#include "base/debug/stack_trace.h"
 #include "base/logging.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/single_thread_task_runner.h"
@@ -227,8 +226,7 @@ void Scheduler::DidSwapBuffers() {
 }
 
 void Scheduler::DidSwapBuffersComplete() {
-  DCHECK_GT(state_machine_.pending_swaps(), 0)
-      << AsValue()->ToString() << base::debug::StackTrace().ToString();
+  DCHECK_GT(state_machine_.pending_swaps(), 0) << AsValue()->ToString();
   state_machine_.DidSwapBuffersComplete();
   ProcessScheduledActions();
 }

@@ -54,9 +54,6 @@ class CC_SURFACES_EXPORT SurfaceDisplayOutputSurface
   SurfaceId surface_id_;
   SurfaceIdAllocator* allocator_;
 
-  // TODO(brianderson): Remove this after solving crbug.com/495650
-  int inside_swap_buffers_;
-
   DISALLOW_COPY_AND_ASSIGN(SurfaceDisplayOutputSurface);
 };
 
