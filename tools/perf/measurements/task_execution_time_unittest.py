@@ -4,8 +4,8 @@
 
 from telemetry.core import wpr_modes
 from telemetry import decorators
+from telemetry.internal.results import page_test_results
 from telemetry.page import page as page_module
-from telemetry.results import page_test_results
 from telemetry.timeline import model as model_module
 from telemetry.timeline import slice as slice_data
 from telemetry.unittest_util import options_for_unittests
