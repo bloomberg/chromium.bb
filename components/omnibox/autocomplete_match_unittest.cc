@@ -127,3 +127,39 @@ TEST(AutocompleteMatchTest, SupportsDeletion) {
       NULL, 0, true, AutocompleteMatchType::URL_WHAT_YOU_TYPED));
   EXPECT_TRUE(m.SupportsDeletion());
 }
+
+TEST(AutocompleteMatchTest, Duplicates) {
+  struct DuplicateCases {
+    std::string url1;
+    std::string url2;
+    bool expected_duplicate;
+  } cases[] = {
+    { "http://www.google.com/",  "https://www.google.com/",    true },
+    { "http://www.google.com/",  "http://www.google.com",      true },
+    { "http://google.com/",      "http://www.google.com/",     true },
+    { "http://www.google.com/",  "HTTP://www.GOOGLE.com/",     true },
+    { "http://www.google.com/1", "http://www.google.com/1/",   true },
+    { "http://www.google.com/",  "http://www.google.com",      true },
+    { "https://www.google.com/", "http://google.com",          true },
+    { "http://www.google.com/",  "wss://www.google.com/",      false },
+    { "http://www.google.com/",  "http://www.google.com/1",    false },
+    { "http://www.google.com/",  "http://www.goo.com/",        false },
+    { "http://www.google.com/",  "http://w2.google.com/",      false },
+    { "http://www.google.com/",  "http://m.google.com/",       false },
+    { "http://www.google.com/",  "http://www.google.com/?foo", false },
+  };
+
+  for (size_t i = 0; i < arraysize(cases); ++i) {
+    SCOPED_TRACE("url1=" + cases[i].url1 + " url2=" + cases[i].url2);
+    AutocompleteMatch m1(NULL, 100, false,
+                         AutocompleteMatchType::URL_WHAT_YOU_TYPED);
+    m1.destination_url = GURL(cases[i].url1);
+    m1.ComputeStrippedDestinationURL(NULL);
+    AutocompleteMatch m2(NULL, 100, false,
+                         AutocompleteMatchType::URL_WHAT_YOU_TYPED);
+    m2.destination_url = GURL(cases[i].url2);
+    m2.ComputeStrippedDestinationURL(NULL);
+    EXPECT_EQ(cases[i].expected_duplicate,
+              AutocompleteMatch::DestinationsEqual(m1, m2));
+  }
+}

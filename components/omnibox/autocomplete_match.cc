@@ -417,6 +417,21 @@ GURL AutocompleteMatch::GURLToStrippedGURL(
     needs_replacement = true;
   }
 
+  // Remove any trailing slash (if it's not a lone slash), or add a slash (to
+  // make a lone slash) if the path is empty.  (We can't unconditionally
+  // remove even lone slashes because for some schemes the path must consist
+  // of at least a slash.)
+  const std::string& path = stripped_destination_url.path();
+  if ((path.length() > 1) && (path[path.length() - 1] == '/')) {
+    replacements.SetPathStr(
+        base::StringPiece(path).substr(0, path.length() - 1));
+    needs_replacement = true;
+  } else if (path.empty()) {
+    static const char slash[] = "/";
+    replacements.SetPathStr(base::StringPiece(slash));
+    needs_replacement = true;
+  }
+
   // Replace https protocol with http protocol.
   if (stripped_destination_url.SchemeIs(url::kHttpsScheme)) {
     replacements.SetScheme(url::kHttpScheme,

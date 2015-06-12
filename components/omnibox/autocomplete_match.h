@@ -176,15 +176,15 @@ struct AutocompleteMatch {
       const std::string& host);
 
   // Returns |url| altered by stripping off "www.", converting https protocol
-  // to http, and stripping excess query parameters.  These conversions are
-  // merely to allow comparisons to remove likely duplicates; these URLs are
-  // not used as actual destination URLs.  If |template_url_service| is not
-  // NULL, it is used to get a template URL corresponding to this match.  If
-  // the match's keyword is known, it can be passed in.  Otherwise, it can be
-  // left empty and the template URL (if any) is determined from the
-  // destination's hostname.  The template URL is used to strip off query args
-  // other than the search terms themselves that would otherwise prevent doing
-  // proper deduping.
+  // to http, normalizing trailing slashes, and stripping excess query
+  // parameters.  These conversions are merely to allow comparisons to remove
+  // likely duplicates; these URLs are not used as actual destination URLs.
+  // If |template_url_service| is not NULL, it is used to get a template URL
+  // corresponding to this match.  If the match's keyword is known, it can be
+  // passed in.  Otherwise, it can be left empty and the template URL (if any)
+  // is determined from the destination's hostname.  The template URL is used
+  // to strip off query args other than the search terms themselves that would
+  // otherwise prevent doing proper deduping.
   static GURL GURLToStrippedGURL(const GURL& url,
                                  TemplateURLService* template_url_service,
                                  const base::string16& keyword);
@@ -316,7 +316,7 @@ struct AutocompleteMatch {
   // It may be empty if there is no possible navigation.
   GURL destination_url;
 
-  // The destination URL with "www." stripped off for better dupe finding.
+  // The destination URL, somewhat normalized for better dupe finding.
   GURL stripped_destination_url;
 
   // The main text displayed in the address bar dropdown.
