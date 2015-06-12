@@ -6,25 +6,35 @@
 #define CONTENT_BROWSER_DEVTOOLS_PROTOCOL_SECURITY_HANDLER_H_
 
 #include "content/browser/devtools/devtools_protocol_handler.h"
-#include "content/browser/devtools/protocol/devtools_protocol_client.h"
+#include "content/browser/devtools/protocol/devtools_protocol_dispatcher.h"
+#include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/security_style.h"
 
 namespace content {
 namespace devtools {
 namespace security {
 
-class SecurityHandler {
+class SecurityHandler : public WebContentsObserver {
  public:
   typedef DevToolsProtocolClient::Response Response;
 
   SecurityHandler();
-  virtual ~SecurityHandler();
+  ~SecurityHandler() override;
 
-  void SetClient(scoped_ptr<DevToolsProtocolClient> client);
+  void SetClient(scoped_ptr<Client> client);
+  void SetRenderFrameHost(RenderFrameHost* host);
 
   Response Enable();
   Response Disable();
 
  private:
+
+  // WebContentsObserver overrides
+  void SecurityStyleChanged(SecurityStyle security_style) override;
+
+  scoped_ptr<Client> client_;
+  bool enabled_;
+  RenderFrameHost* host_;
 
   DISALLOW_COPY_AND_ASSIGN(SecurityHandler);
 };

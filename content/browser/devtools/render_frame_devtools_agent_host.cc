@@ -17,6 +17,7 @@
 #include "content/browser/devtools/protocol/network_handler.h"
 #include "content/browser/devtools/protocol/page_handler.h"
 #include "content/browser/devtools/protocol/power_handler.h"
+#include "content/browser/devtools/protocol/security_handler.h"
 #include "content/browser/devtools/protocol/service_worker_handler.h"
 #include "content/browser/devtools/protocol/tracing_handler.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
@@ -295,6 +296,7 @@ RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(
       network_handler_(new devtools::network::NetworkHandler()),
       page_handler_(nullptr),
       power_handler_(new devtools::power::PowerHandler()),
+      security_handler_(nullptr),
       service_worker_handler_(
           new devtools::service_worker::ServiceWorkerHandler()),
       tracing_handler_(new devtools::tracing::TracingHandler(
@@ -315,9 +317,11 @@ RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(
   dispatcher->SetTracingHandler(tracing_handler_.get());
 
   if (!host->GetParent()) {
+    security_handler_.reset(new devtools::security::SecurityHandler());
     page_handler_.reset(new devtools::page::PageHandler());
     emulation_handler_.reset(
         new devtools::emulation::EmulationHandler(page_handler_.get()));
+    dispatcher->SetSecurityHandler(security_handler_.get());
     dispatcher->SetPageHandler(page_handler_.get());
     dispatcher->SetEmulationHandler(emulation_handler_.get());
   }
@@ -605,6 +609,8 @@ void RenderFrameDevToolsAgentHost::UpdateProtocolHandlers(
   if (page_handler_)
     page_handler_->SetRenderFrameHost(host);
   service_worker_handler_->SetRenderFrameHost(host);
+  if (security_handler_)
+    security_handler_->SetRenderFrameHost(host);
 }
 
 void RenderFrameDevToolsAgentHost::DisconnectWebContents() {
