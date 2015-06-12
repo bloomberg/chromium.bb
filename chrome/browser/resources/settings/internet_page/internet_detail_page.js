@@ -93,8 +93,7 @@ Polymer({
      */
     networkState: {
       type: Object,
-      value: null,
-      observer: 'networkStateChanged_'
+      value: null
     },
   },
 
