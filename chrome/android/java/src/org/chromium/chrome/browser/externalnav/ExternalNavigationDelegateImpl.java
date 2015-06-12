@@ -51,6 +51,13 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     /**
+     * @return The activity that this delegate is associated with.
+     */
+    protected final Activity getActivity() {
+        return mActivity;
+    }
+
+    /**
      * Retrieve the best activity for the given intent. If a default activity is provided,
      * choose the default one. Otherwise, return the Intent picker if there are more than one
      * capable activities. If the intent is pdf type, return the platform pdf viewer if

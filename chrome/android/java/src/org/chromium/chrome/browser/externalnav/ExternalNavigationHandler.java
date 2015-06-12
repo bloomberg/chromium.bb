@@ -63,7 +63,10 @@ public class ExternalNavigationHandler {
         this(new ExternalNavigationDelegateImpl(activity));
     }
 
-    @VisibleForTesting
+    /**
+     * Constructs a new instance of {@link ExternalNavigationHandler}, using the injected
+     * {@link ExternalNavigationDelegate}.
+     */
     public ExternalNavigationHandler(ExternalNavigationDelegate delegate) {
         mDelegate = delegate;
     }

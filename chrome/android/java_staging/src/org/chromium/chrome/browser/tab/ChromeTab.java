@@ -989,7 +989,7 @@ public class ChromeTab extends Tab {
             mDownloadDelegate = new ChromeDownloadDelegate(mActivity,
                     mActivity.getTabModelSelector(), this);
             cvc.setDownloadDelegate(mDownloadDelegate);
-            setInterceptNavigationDelegate(new InterceptNavigationDelegateImpl());
+            setInterceptNavigationDelegate(createInterceptNavigationDelegate());
 
             if (mGestureStateListener == null) mGestureStateListener = createGestureStateListener();
             cvc.addGestureStateListener(mGestureStateListener);
@@ -1163,13 +1163,26 @@ public class ChromeTab extends Tab {
         return mTabRedirectHandler;
     }
 
-    private class InterceptNavigationDelegateImpl implements InterceptNavigationDelegate {
+    /**
+     * Delegate that handles intercepting top-level navigation.
+     */
+    protected class InterceptNavigationDelegateImpl implements InterceptNavigationDelegate {
         final ExternalNavigationHandler mExternalNavHandler;
         final AuthenticatorNavigationInterceptor mAuthenticatorHelper;
 
-        InterceptNavigationDelegateImpl() {
-            mExternalNavHandler = new ExternalNavigationHandler(mActivity);
+        /**
+         * Defualt constructor of {@link InterceptNavigationDelegateImpl}.
+         */
+        public InterceptNavigationDelegateImpl() {
+            this(new ExternalNavigationHandler(mActivity));
+        }
 
+        /**
+         * Constructs a new instance of {@link InterceptNavigationDelegateImpl} with the given
+         * {@link ExternalNavigationHandler}.
+         */
+        public InterceptNavigationDelegateImpl(ExternalNavigationHandler externalNavHandler) {
+            mExternalNavHandler = externalNavHandler;
             mAuthenticatorHelper = ((ChromeMobileApplication) getApplicationContext())
                     .createAuthenticatorNavigationInterceptor(ChromeTab.this);
         }
@@ -1316,6 +1329,15 @@ public class ChromeTab extends Tab {
     @Override
     protected InterceptNavigationDelegateImpl getInterceptNavigationDelegate() {
         return (InterceptNavigationDelegateImpl) super.getInterceptNavigationDelegate();
+    }
+
+    /**
+     * Factory method for {@link InterceptNavigationDelegateImpl}. Meant to be overridden by
+     * subclasses.
+     * @return A new instance of {@link InterceptNavigationDelegateImpl}.
+     */
+    protected InterceptNavigationDelegateImpl createInterceptNavigationDelegate() {
+        return new InterceptNavigationDelegateImpl();
     }
 
     @Override

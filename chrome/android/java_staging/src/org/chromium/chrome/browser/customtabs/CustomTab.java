@@ -4,13 +4,19 @@
 
 package org.chromium.chrome.browser.customtabs;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
+import android.content.pm.ResolveInfo;
+import android.os.TransactionTooLargeException;
 import android.text.TextUtils;
 import android.view.ContextMenu;
 import android.view.Menu;
 
 import com.google.android.apps.chrome.R;
 
+import org.chromium.base.Log;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.CompositorChromeActivity;
 import org.chromium.chrome.browser.EmptyTabObserver;
 import org.chromium.chrome.browser.Tab;
@@ -19,6 +25,8 @@ import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
 import org.chromium.chrome.browser.contextmenu.ContextMenuParams;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
+import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
+import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
 import org.chromium.chrome.browser.tab.ChromeTab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -54,6 +62,8 @@ public class CustomTab extends ChromeTab {
         }
     }
 
+    private ExternalNavigationHandler mNavigationHandler;
+    private CustomTabNavigationDelegate mNavigationDelegate;
     private TabChromeContextMenuItemDelegate
             mContextMenuDelegate = new TabChromeContextMenuItemDelegate() {
                 @Override
@@ -80,6 +90,29 @@ public class CustomTab extends ChromeTab {
         initialize(webContents, activity.getTabContentManager(), false);
         getView().requestFocus();
         addObserver(new CustomTabObserver(customTabsConnection, sessionId));
+    }
+
+    @Override
+    protected InterceptNavigationDelegateImpl createInterceptNavigationDelegate() {
+        mNavigationDelegate = new CustomTabNavigationDelegate(mActivity);
+        mNavigationHandler = new ExternalNavigationHandler(mNavigationDelegate);
+        return new InterceptNavigationDelegateImpl(mNavigationHandler);
+    }
+
+    /**
+     * @return The {@link ExternalNavigationHandler} in this tab. For test purpose only.
+     */
+    @VisibleForTesting
+    ExternalNavigationHandler getExternalNavigationHandler() {
+        return mNavigationHandler;
+    }
+
+    /**
+     * @return The {@link CustomTabNavigationDelegate} in this tab. For test purpose only.
+     */
+    @VisibleForTesting
+    CustomTabNavigationDelegate getExternalNavigationDelegate() {
+        return mNavigationDelegate;
     }
 
     @Override
@@ -118,4 +151,84 @@ public class CustomTab extends ChromeTab {
             }
         };
     }
+
+    /**
+     * A custom external navigation delegate that forbids the intent picker from showing up.
+     */
+    static class CustomTabNavigationDelegate extends ExternalNavigationDelegateImpl {
+        private static final String TAG = "cr.customtabs";
+        private boolean mHasActivityStarted;
+
+        /**
+         * Constructs a new instance of {@link CustomTabNavigationDelegate}.
+         */
+        public CustomTabNavigationDelegate(Activity activity) {
+            super(activity);
+        }
+
+        @Override
+        public void startActivity(Intent intent) {
+            super.startActivity(intent);
+            mHasActivityStarted = true;
+        }
+
+        @Override
+        public boolean startActivityIfNeeded(Intent intent) {
+            try {
+                if (resolveDefaultHandlerForIntent(intent)) {
+                    if (getActivity().startActivityIfNeeded(intent, -1)) {
+                        mHasActivityStarted = true;
+                        return true;
+                    } else {
+                        return false;
+                    }
+                } else {
+                    // If we failed to find the default handler of the intent, fall back to chrome.
+                    return false;
+                }
+            } catch (RuntimeException e) {
+                logTransactionTooLargeOrRethrow(e, intent);
+                return false;
+            }
+        }
+
+        /**
+         * Resolve the default external handler of an intent.
+         * @return Whether the default external handler is found: if chrome turns out to be the
+         *         default handler, this method will return false.
+         */
+        private boolean resolveDefaultHandlerForIntent(Intent intent) {
+            try {
+                ResolveInfo info = getActivity().getPackageManager().resolveActivity(intent, 0);
+                if (info != null) {
+                    final String chromePackage = getActivity().getPackageName();
+                    // If a default handler is found and it is not chrome itself, fire the intent.
+                    if (info.match != 0 && !chromePackage.equals(info.activityInfo.packageName)) {
+                        return true;
+                    }
+                }
+            } catch (RuntimeException e) {
+                logTransactionTooLargeOrRethrow(e, intent);
+            }
+            return false;
+        }
+
+        /**
+         * @return Whether an external activity has started to handle a url. For testing only.
+         */
+        @VisibleForTesting
+        public boolean hasExternalActivityStarted() {
+            return mHasActivityStarted;
+        }
+
+        private static void logTransactionTooLargeOrRethrow(RuntimeException e, Intent intent) {
+            // See http://crbug.com/369574.
+            if (e.getCause() != null && e.getCause() instanceof TransactionTooLargeException) {
+                Log.e(TAG, "Could not resolve Activity for intent " + intent.toString(), e);
+            } else {
+                throw e;
+            }
+        }
+    }
+
 }

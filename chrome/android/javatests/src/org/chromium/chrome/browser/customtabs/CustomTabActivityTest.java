@@ -4,18 +4,15 @@
 
 package org.chromium.chrome.browser.customtabs;
 
-import android.app.Activity;
 import android.app.Instrumentation;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.test.suitebuilder.annotation.SmallTest;
@@ -29,14 +26,11 @@ import com.google.android.apps.chrome.R;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.CompositorChromeActivity;
-import org.chromium.chrome.browser.DeferredStartupHandler;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.document.BrandColorUtils;
-import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.document.DocumentActivity;
 import org.chromium.chrome.browser.toolbar.CustomTabToolbar;
 import org.chromium.chrome.browser.util.FeatureUtilities;
-import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.chrome.test.util.browser.contextmenu.ContextMenuUtils;
 import org.chromium.content.browser.test.util.Criteria;
@@ -47,9 +41,9 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Instrumentation tests for {@link CustomTabActivity}.
+ * Instrumentation tests for app menu, context menu, and toolbar of a {@link CustomTabActivity}.
  */
-public class CustomTabActivityTest extends ChromeActivityTestCaseBase<CustomTabActivity> {
+public class CustomTabActivityTest extends CustomTabActivityTestBase {
 
     /**
      * An empty {@link BroadcastReceiver} that exists only to make the PendingIntent to carry an
@@ -78,62 +72,17 @@ public class CustomTabActivityTest extends ChromeActivityTestCaseBase<CustomTabA
 
     private CustomTabActivity mActivity;
 
-    public CustomTabActivityTest() {
-        super(CustomTabActivity.class);
-    }
-
-    @Override
-    public void startMainActivity() throws InterruptedException {
-    }
-
     @Override
     protected void startActivityCompletely(Intent intent) {
-        Instrumentation.ActivityMonitor monitor = getInstrumentation().addMonitor(
-                CustomTabActivity.class.getName(), null, false);
-        Activity activity = getInstrumentation().startActivitySync(intent);
-        assertNotNull("Main activity did not start", activity);
-        CustomTabActivity customTabActivity =
-                (CustomTabActivity) monitor.waitForActivityWithTimeout(
-                ACTIVITY_START_TIMEOUT_MS);
-        assertNotNull("CustomTabActivity did not start", customTabActivity);
-        setActivity(customTabActivity);
-        mActivity = customTabActivity;
-    }
-
-    private void startCustomTabActivityWithIntent(Intent intent) throws InterruptedException {
-        startActivityCompletely(intent);
-        assertTrue("Tab never selected/initialized.",
-                CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
-                    @Override
-                    public boolean isSatisfied() {
-                        return getActivity().getActivityTab() != null;
-                    }
-                }));
-        Tab tab = getActivity().getActivityTab();
-
-        assertTrue("Deferred startup never completed",
-                CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
-                    @Override
-                    public boolean isSatisfied() {
-                        return DeferredStartupHandler.getInstance().isDeferredStartupComplete();
-                    }
-                }));
-
-        assertNotNull(tab);
-        assertNotNull(tab.getView());
+        super.startActivityCompletely(intent);
+        mActivity = getActivity();
     }
 
     /**
-     * Creates the simplest intent that is sufficient to let {@link ChromeLauncherActivity} launch
-     * the {@link CustomTabActivity}.
+     * @see CustomTabActivityTestBase#createMinimalCustomTabIntent(String)
      */
     private Intent createMinimalCustomTabIntent() {
-        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(TEST_PAGE));
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.setComponent(new ComponentName(getInstrumentation().getTargetContext(),
-                ChromeLauncherActivity.class));
-        intent.putExtra(CustomTabIntentDataProvider.EXTRA_CUSTOM_TABS_SESSION_ID, -1);
-        return intent;
+        return createMinimalCustomTabIntent(TEST_PAGE);
     }
 
     /**
