@@ -135,6 +135,7 @@ per-file login*=antrim@chromium.org
 per-file login*=dpolukhin@chromium.org
 per-file login*=dzhioev@chromium.org
 per-file login*=nkostylev@chromium.org
+per-file login*=achuith@chromium.org
 
 per-file metrics*=asvitkine@chromium.org
 per-file metrics*=mpearson@chromium.org
