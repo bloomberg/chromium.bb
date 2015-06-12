@@ -1761,6 +1761,20 @@ TEST_F(DisplayManagerFontTest,
   DisplayInfo::SetUse125DSFForUIScaling(false);
 }
 
+TEST_F(DisplayManagerTest, CheckInitializationOfRotationProperty) {
+  int64_t id = display_manager()->GetDisplayAt(0).id();
+  display_manager()->RegisterDisplayProperty(id, gfx::Display::ROTATE_90, 1.0f,
+                                             nullptr, gfx::Size(), 1.0f,
+                                             ui::COLOR_PROFILE_STANDARD);
+
+  const DisplayInfo& info = display_manager()->GetDisplayInfo(id);
+
+  EXPECT_EQ(gfx::Display::ROTATE_90,
+            info.GetRotation(gfx::Display::ROTATION_SOURCE_USER));
+  EXPECT_EQ(gfx::Display::ROTATE_90,
+            info.GetRotation(gfx::Display::ROTATION_SOURCE_ACTIVE));
+}
+
 #endif  // OS_CHROMEOS
 
 }  // namespace ash

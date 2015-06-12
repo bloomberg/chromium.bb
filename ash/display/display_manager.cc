@@ -468,6 +468,8 @@ void DisplayManager::RegisterDisplayProperty(
     display_info_[display_id] = DisplayInfo(display_id, std::string(), false);
 
   display_info_[display_id].SetRotation(rotation,
+                                        gfx::Display::ROTATION_SOURCE_USER);
+  display_info_[display_id].SetRotation(rotation,
                                         gfx::Display::ROTATION_SOURCE_ACTIVE);
   display_info_[display_id].SetColorProfile(color_profile);
   // Just in case the preference file was corrupted.
