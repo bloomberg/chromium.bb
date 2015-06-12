@@ -189,7 +189,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar {
     @Override
     protected void onNavigatedToDifferentPage() {
         super.onNavigatedToDifferentPage();
-        mTitleBar.setText("");
+        setTitleToPageTitle();
     }
 
     @Override
