@@ -689,7 +689,7 @@ int main(int argc, char **argv)
 			break;
 		default:
 			usage(argv[0]);
-			return -EINVAL;
+			break;
 		}
 	}
 
