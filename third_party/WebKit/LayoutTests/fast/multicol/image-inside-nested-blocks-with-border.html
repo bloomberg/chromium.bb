@@ -1,44 +1,25 @@
-<html>
-<body>
-<div id="tests" style="-webkit-column-count:2; -webkit-column-gap:0; column-count:2; column-gap:0; column-fill:auto; height:300px; width:600px;">
-<div style="height:280px"></div>
-<div id="f1" style="border:5px solid black; float:left">
-<img style="display:block;width:140px;height:80px;">
-</div>
-</div>
-<div id="result"></div>
+<!DOCTYPE html>
+<script src="../../resources/js-test.js"></script>
 <script>
+    description("Test that getBoundingClientRect works as expected on a float in the second column");
+</script>
+<body>
+    <div id="multicol" style="-webkit-column-count:2; -webkit-column-gap:0; column-fill:auto; height:300px; width:600px;">
+        <div style="height:280px;"></div>
+        <div id="f1" style="border:5px solid black; float:left;">
+            <img style="display:block; width:140px; height:80px;">
+        </div>
+    </div>
+    <script>
     function floatOffset(float)
     {
-        var parentRect = document.getElementById('tests').getBoundingClientRect();
+        var parentRect = document.getElementById("multicol").getBoundingClientRect();
         var rect = float.getBoundingClientRect();
-        return { width: rect.left - parentRect.left, height: rect.top - parentRect.top  };
+        return { left: rect.left - parentRect.left, top: rect.top - parentRect.top  };
     }
 
-    var tests = [
-        ["f1", 300, 0]
-    ];
-
-    var test;
-    var failures = 0;
-    while (test = tests.shift()) {
-        var float = document.getElementById(test[0]);
-        var result = floatOffset(float);
-        var passed = result.width === test[1] && result.height === test[2]
-        float.style.backgroundColor = passed ? "green" : "red";
-        if (!passed)
-            failures++
-    }
-
-    if (window.testRunner) {
-        testRunner.dumpAsText();
-        document.getElementById("tests").style.display = "none";
-    }
-
-    document.getElementById("result").innerText = failures ? "FAIL: " + failures + " cases failed" : "PASS";
-</script>
-
-
-
+    var result = floatOffset(document.getElementById("f1"));
+    shouldBe("result.left", "300");
+    shouldBe("result.top", "0");
+    </script>
 </body>
-</html>
