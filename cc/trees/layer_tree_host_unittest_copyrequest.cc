@@ -513,11 +513,24 @@ class LayerTreeHostTestAsyncTwoReadbacksWithoutDraw
 
   void CopyOutputCallback(scoped_ptr<CopyOutputResult> result) {
     EXPECT_TRUE(layer_tree_host()->proxy()->IsMainThread());
-    EXPECT_EQ(copy_layer_->bounds().ToString(), result->size().ToString());
-    ++callback_count_;
 
-    if (callback_count_ == 2)
-      EndTest();
+    // The first frame can't be drawn.
+    switch (callback_count_) {
+      case 0:
+        EXPECT_TRUE(result->IsEmpty());
+        EXPECT_EQ(gfx::Size(), result->size());
+        break;
+      case 1:
+        EXPECT_FALSE(result->IsEmpty());
+        EXPECT_EQ(copy_layer_->bounds().ToString(), result->size().ToString());
+        EndTest();
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+
+    ++callback_count_;
   }
 
   void AfterTest() override { EXPECT_TRUE(saw_copy_request_); }

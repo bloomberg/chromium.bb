@@ -228,8 +228,19 @@ void LayerImpl::SetOpacityTreeIndex(int index) {
 }
 
 void LayerImpl::PassCopyRequests(ScopedPtrVector<CopyOutputRequest>* requests) {
+  // In the case that a layer still has a copy request, this means that there's
+  // a commit to the active tree without a draw.  This only happens in some
+  // edge cases during lost context or visibility changes, so don't try to
+  // handle preserving these output requests (and their surface).
+  if (!copy_requests_.empty()) {
+    layer_tree_impl()->RemoveLayerWithCopyOutputRequest(this);
+    // Destroying these will abort them.
+    copy_requests_.clear();
+  }
+
   if (requests->empty())
     return;
+
   DCHECK(render_surface());
   bool was_empty = copy_requests_.empty();
   copy_requests_.insert_and_take(copy_requests_.end(), requests);
@@ -533,7 +544,7 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
       draw_checkerboard_for_missing_tiles_);
   layer->SetDrawsContent(DrawsContent());
   layer->SetHideLayerAndSubtree(hide_layer_and_subtree_);
-  layer->SetHasRenderSurface(!!render_surface() || layer->HasCopyRequest());
+  layer->SetHasRenderSurface(!!render_surface());
   layer->SetFilters(filters());
   layer->SetBackgroundFilters(background_filters());
   layer->SetMasksToBounds(masks_to_bounds_);
