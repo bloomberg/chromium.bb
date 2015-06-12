@@ -16,10 +16,6 @@ const char kDisableNewVideoRenderer[] = "disable-new-video-renderer";
 const char kVideoThreads[] = "video-threads";
 
 #if defined(OS_ANDROID)
-// Disables the infobar popup for accessing protected media identifier.
-const char kDisableInfobarForProtectedMediaIdentifier[] =
-    "disable-infobar-for-protected-media-identifier";
-
 // Sets the MediaSource player that uses the separate media thread
 const char kEnableMediaThreadForMediaPlayback[] =
     "enable-media-thread-for-media-playback";

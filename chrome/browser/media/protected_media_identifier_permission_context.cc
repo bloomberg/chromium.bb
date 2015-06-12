@@ -22,9 +22,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/user_prefs/user_prefs.h"
 #include "ui/views/widget/widget.h"
-#elif defined(OS_ANDROID)
-#include "media/base/media_switches.h"
-#else
+#elif !defined(OS_ANDROID)
 #error This file currently only supports Chrome OS and Android.
 #endif
 
@@ -94,8 +92,6 @@ void ProtectedMediaIdentifierPermissionContext::RequestPermission(
   pending_requests_.insert(
       std::make_pair(web_contents, std::make_pair(widget, id)));
 #else
-  DCHECK(!base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableInfobarForProtectedMediaIdentifier));
   PermissionContextBase::RequestPermission(web_contents, id, requesting_origin,
                                            user_gesture, callback);
 #endif
@@ -117,16 +113,6 @@ ContentSetting ProtectedMediaIdentifierPermissionContext::GetPermissionStatus(
   DCHECK(content_setting == CONTENT_SETTING_ALLOW ||
          content_setting == CONTENT_SETTING_BLOCK ||
          content_setting == CONTENT_SETTING_ASK);
-
-#if defined(OS_ANDROID)
-  // When kDisableInfobarForProtectedMediaIdentifier is enabled, do not "ask"
-  // the user and always "allow".
-  if (content_setting == CONTENT_SETTING_ASK &&
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableInfobarForProtectedMediaIdentifier)) {
-    content_setting = CONTENT_SETTING_ALLOW;
-  }
-#endif
 
   return content_setting;
 }

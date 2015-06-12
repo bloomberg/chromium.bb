@@ -716,13 +716,6 @@ const Experiment kExperiments[] = {
      IDS_FLAGS_DISABLE_PREFIXED_ENCRYPTED_MEDIA_DESCRIPTION,
      kOsAll,
      SINGLE_VALUE_TYPE(switches::kDisablePrefixedEncryptedMedia)},
-#if defined(OS_ANDROID)
-    {"disable-infobar-for-protected-media-identifier",
-     IDS_FLAGS_DISABLE_INFOBAR_FOR_PROTECTED_MEDIA_IDENTIFIER_NAME,
-     IDS_FLAGS_DISABLE_INFOBAR_FOR_PROTECTED_MEDIA_IDENTIFIER_DESCRIPTION,
-     kOsAndroid,
-     SINGLE_VALUE_TYPE(switches::kDisableInfobarForProtectedMediaIdentifier)},
-#endif  // defined(OS_ANDROID)
     {"disable-javascript-harmony-shipping",
      IDS_FLAGS_DISABLE_JAVASCRIPT_HARMONY_SHIPPING_NAME,
      IDS_FLAGS_DISABLE_JAVASCRIPT_HARMONY_SHIPPING_DESCRIPTION,
