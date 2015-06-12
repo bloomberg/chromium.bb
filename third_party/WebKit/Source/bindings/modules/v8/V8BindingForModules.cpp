@@ -69,10 +69,7 @@ v8::Local<v8::Value> toV8(const IDBKeyPath& value, v8::Local<v8::Object> creatio
     case IDBKeyPath::StringType:
         return v8String(isolate, value.string());
     case IDBKeyPath::ArrayType:
-        RefPtrWillBeRawPtr<DOMStringList> keyPaths = DOMStringList::create();
-        for (Vector<String>::const_iterator it = value.array().begin(); it != value.array().end(); ++it)
-            keyPaths->append(*it);
-        return toV8(keyPaths.release(), creationContext, isolate);
+        return toV8(value.array(), creationContext, isolate);
     }
     ASSERT_NOT_REACHED();
     return v8::Undefined(isolate);

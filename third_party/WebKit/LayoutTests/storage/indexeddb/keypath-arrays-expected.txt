@@ -9,7 +9,9 @@ dbname = "keypath-arrays.html"
 indexedDB.deleteDatabase(dbname)
 indexedDB.open(dbname)
 store = db.createObjectStore('store', {keyPath: ['a', 'b']})
-store.createIndex('index', ['c', 'd'])
+index = store.createIndex('index', ['c', 'd'])
+PASS areArraysEqual(index.keyPath, ['c', 'd']) is true
+PASS index.keyPath instanceof DOMStringList is false
 Expecting exception from db.createObjectStore('store-with-generator', {keyPath: ['a', 'b'], autoIncrement: true})
 PASS Exception was thrown.
 PASS code is DOMException.INVALID_ACCESS_ERR

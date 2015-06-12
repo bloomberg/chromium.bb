@@ -11,7 +11,10 @@ function prepareDatabase()
     db = event.target.result;
     event.target.transaction.onabort = unexpectedAbortCallback;
     evalAndLog("store = db.createObjectStore('store', {keyPath: ['a', 'b']})");
-    evalAndLog("store.createIndex('index', ['c', 'd'])");
+    evalAndLog("index = store.createIndex('index', ['c', 'd'])");
+
+    shouldBeTrue("areArraysEqual(index.keyPath, ['c', 'd'])");
+    shouldBeFalse("index.keyPath instanceof DOMStringList");
 
     evalAndExpectException("db.createObjectStore('store-with-generator', {keyPath: ['a', 'b'], autoIncrement: true})", "DOMException.INVALID_ACCESS_ERR");
     evalAndExpectException("store.createIndex('index-multientry', ['e', 'f'], {multiEntry: true})", "DOMException.INVALID_ACCESS_ERR");
