@@ -731,6 +731,9 @@ public:
         V8Navigator_GetStorageUpdates_Method = 827,
         V8TextTrackCueList_Item_Method = 828,
         V8TextTrackList_Item_Method = 829,
+        TextInputFired = 830,
+        V8TextEvent_Data_AttributeGetter = 831,
+        V8TextEvent_InitTextEvent_Method = 832,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

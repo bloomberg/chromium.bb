@@ -327,6 +327,9 @@ void EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventList
     } else if (event->type() == EventTypeNames::focusin || event->type() == EventTypeNames::focusout) {
         if (LocalDOMWindow* executingWindow = this->executingWindow())
             UseCounter::count(executingWindow->document(), UseCounter::FocusInOutEvent);
+    } else if (event->type() == EventTypeNames::textInput) {
+        if (LocalDOMWindow* executingWindow = this->executingWindow())
+            UseCounter::count(executingWindow->document(), UseCounter::TextInputFired);
     }
 
     size_t i = 0;

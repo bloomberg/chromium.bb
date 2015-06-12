@@ -23,16 +23,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// Introduced in DOM Level 3:
+// http://www.w3.org/TR/2011/WD-DOM-Level-3-Events-20110531/#webidl-events-TextEvent
+
+// TODO(philipj): Remove the textinput event and the TextEvent interface. They
+// were removed from the spec in 2012:
+// https://www.w3.org/Bugs/Public/show_bug.cgi?id=12958
+// https://github.com/w3c/uievents/commit/1a2aa02b474fd4feaf43fdced06e6fd7214196a4
+
 interface TextEvent : UIEvent {
 
-    readonly attribute DOMString data;
+    [Measure] readonly attribute DOMString data;
 
-    void initTextEvent([Default=Undefined] optional DOMString typeArg,
-                       [Default=Undefined] optional boolean canBubbleArg,
-                       [Default=Undefined] optional boolean cancelableArg,
-                       [Default=Undefined] optional Window viewArg,
-                       [Default=Undefined] optional DOMString dataArg);
+    [Measure] void initTextEvent([Default=Undefined] optional DOMString typeArg,
+                                 [Default=Undefined] optional boolean canBubbleArg,
+                                 [Default=Undefined] optional boolean cancelableArg,
+                                 [Default=Undefined] optional Window viewArg,
+                                 [Default=Undefined] optional DOMString dataArg);
 
 };
-
