@@ -115,18 +115,6 @@ bool ChromeVirtualKeyboardDelegate::LockKeyboard(bool state) {
   return true;
 }
 
-bool ChromeVirtualKeyboardDelegate::MoveCursor(int swipe_direction,
-                                               int modifier_flags) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          keyboard::switches::kEnableSwipeSelection)) {
-    return false;
-  }
-  aura::Window* window = GetKeyboardContainer();
-  return window && keyboard::MoveCursor(
-                       swipe_direction, modifier_flags, window->GetHost());
-}
-
 bool ChromeVirtualKeyboardDelegate::SendKeyEvent(const std::string& type,
                                                  int char_value,
                                                  int key_code,

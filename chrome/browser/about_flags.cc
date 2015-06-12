@@ -1180,11 +1180,6 @@ const Experiment kExperiments[] = {
      ENABLE_DISABLE_VALUE_TYPE(
          keyboard::switches::kEnableVirtualKeyboardOverscroll,
          keyboard::switches::kDisableVirtualKeyboardOverscroll)},
-    {"enable-swipe-selection",
-     IDS_FLAGS_ENABLE_SWIPE_SELECTION_NAME,
-     IDS_FLAGS_ENABLE_SWIPE_SELECTION_DESCRIPTION,
-     kOsCrOS,
-     SINGLE_VALUE_TYPE(keyboard::switches::kEnableSwipeSelection)},
     {"enable-input-view",
      IDS_FLAGS_ENABLE_INPUT_VIEW_NAME,
      IDS_FLAGS_ENABLE_INPUT_VIEW_DESCRIPTION,

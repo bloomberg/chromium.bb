@@ -44,19 +44,6 @@ bool VirtualKeyboardPrivateInsertTextFunction::RunSync() {
   return false;
 }
 
-bool VirtualKeyboardPrivateMoveCursorFunction::RunSync() {
-  VirtualKeyboardDelegate* delegate = GetDelegate(this);
-  if (delegate) {
-    int swipe_direction;
-    int modifier_flags;
-    EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &swipe_direction));
-    EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(1, &modifier_flags));
-    return delegate->MoveCursor(swipe_direction, modifier_flags);
-  }
-  error_ = kNotYetImplementedError;
-  return false;
-}
-
 bool VirtualKeyboardPrivateSendKeyEventFunction::RunSync() {
   VirtualKeyboardDelegate* delegate = GetDelegate(this);
   if (delegate) {

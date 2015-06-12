@@ -70,27 +70,6 @@
         ]
       },
       {
-        "name": "moveCursor",
-        "type": "function",
-        "description": "Move cursor on the current focused textfield by swipe.",
-        "parameters": [
-          { "name": "swipe_direction",
-            "type": "integer",
-            "discription": "The direction of the cursor movement."
-          },
-          { "name": "modifier_flags",
-            "type": "integer",
-            "description": "Bitmask representing the state of the system modifier keys."
-          },
-          { "type": "function",
-            "name": "callback",
-            "optional": true,
-            "decription": "called when the swipe movement is completed.",
-            "parameters": []
-          }
-        ]
-      },
-      {
         "name": "sendKeyEvent",
         "type": "function",
         "description": "Sends a fabricated key event to the focused input field.",

@@ -14348,13 +14348,6 @@ After you create a new supervised user, you can manage their settings at any tim
           Enable virtual keyboard overscroll support.
         </message>
 
-        <message name="IDS_FLAGS_ENABLE_SWIPE_SELECTION_NAME" desc="Name of about:flags option to turn on swipe selection for the virtual keyboard">
-          Swipe Selection
-        </message>
-        <message name="IDS_FLAGS_ENABLE_SWIPE_SELECTION_DESCRIPTION" desc="Description of about:flags option to turn on swipe selection for the virtual keyboard">
-          Enable Swipe Selection support for the virtual keyboard. Unless the virtual keyboard is also enabled, this will do nothing.
-        </message>
-
         <message name="IDS_FLAGS_ENABLE_INPUT_VIEW_NAME" desc="Name of about::flags option to enable IME extensions to override the virtual keyboard view">
           Enable input views.
         </message>

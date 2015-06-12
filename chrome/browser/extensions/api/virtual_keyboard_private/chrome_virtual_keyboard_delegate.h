@@ -19,7 +19,6 @@ class ChromeVirtualKeyboardDelegate : public VirtualKeyboardDelegate {
   bool InsertText(const base::string16& text) override;
   bool OnKeyboardLoaded() override;
   bool LockKeyboard(bool state) override;
-  bool MoveCursor(int swipe_direction, int modifier_flags) override;
   bool SendKeyEvent(const std::string& type,
                     int char_value,
                     int key_code,

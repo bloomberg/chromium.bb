@@ -41,12 +41,6 @@ class VirtualKeyboardDelegate {
   // hotkeys without the need for text focus. Returns true if successful.
   virtual bool LockKeyboard(bool state) = 0;
 
-  // Moves the text caret. |swipe_direction| indicates the direction to move the
-  // caret. Swipes can be in one or 4 directions denoted by an enumerated value.
-  // |modifier_flags| indicates which keyboard modifier keys (e.g. shift or alt)
-  // are being held during the swipe. Returns true if successful.
-  virtual bool MoveCursor(int swipe_direction, int modifier_flags) = 0;
-
   // Dispatches a virtual key event. |type| indicates if the event is a keydown
   // or keyup event. |char_value| is the unicode value for the key. |key_code|
   // is the code assigned to the key, which is independent of the state of
