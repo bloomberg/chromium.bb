@@ -6,7 +6,8 @@
 
 #include "base/lazy_instance.h"  // For testing purposes only.
 #include "base/logging.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_local.h"  // For testing purposes only.
 
 namespace ppapi {
@@ -23,12 +24,12 @@ PpapiGlobals* ppapi_globals = NULL;
 PpapiGlobals::PpapiGlobals() {
   DCHECK(!ppapi_globals);
   ppapi_globals = this;
-  main_loop_proxy_ = base::MessageLoopProxy::current();
+  main_task_runner_ = base::ThreadTaskRunnerHandle::Get();
 }
 
 PpapiGlobals::PpapiGlobals(PerThreadForTest) {
   DCHECK(!ppapi_globals);
-  main_loop_proxy_ = base::MessageLoopProxy::current();
+  main_task_runner_ = base::ThreadTaskRunnerHandle::Get();
 }
 
 PpapiGlobals::~PpapiGlobals() {
@@ -53,12 +54,12 @@ void PpapiGlobals::SetPpapiGlobalsOnThreadForTest(PpapiGlobals* ptr) {
   tls_ppapi_globals_for_test.Pointer()->Set(ptr);
 }
 
-base::MessageLoopProxy* PpapiGlobals::GetMainThreadMessageLoop() {
-  return main_loop_proxy_.get();
+base::SingleThreadTaskRunner* PpapiGlobals::GetMainThreadMessageLoop() {
+  return main_task_runner_.get();
 }
 
 void PpapiGlobals::ResetMainThreadMessageLoopForTesting() {
-  main_loop_proxy_ = base::MessageLoopProxy::current();
+  main_task_runner_ = base::ThreadTaskRunnerHandle::Get();
 }
 
 bool PpapiGlobals::IsHostGlobals() const { return false; }

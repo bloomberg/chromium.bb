@@ -5,7 +5,9 @@
 #include "ppapi/proxy/plugin_message_filter.h"
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
+#include "base/single_thread_task_runner.h"
 #include "ipc/ipc_channel.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/resource_message_params.h"
@@ -91,7 +93,7 @@ void PluginMessageFilter::OnMsgResourceReply(
     if (filter_ptr->OnResourceReplyReceived(reply_params, nested_msg))
       return;
   }
-  scoped_refptr<base::MessageLoopProxy> target =
+  scoped_refptr<base::SingleThreadTaskRunner> target =
       resource_reply_thread_registrar_->GetTargetThread(reply_params,
                                                         nested_msg);
   target->PostTask(

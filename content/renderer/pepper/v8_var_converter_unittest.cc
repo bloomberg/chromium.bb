@@ -234,9 +234,9 @@ class V8VarConverterTest : public testing::Test {
   scoped_ptr<V8VarConverter> converter_;
 
  private:
-  TestGlobals globals_;
+  base::MessageLoop message_loop_;  // Required to receive callbacks.
 
-  base::MessageLoop message_loop_;
+  TestGlobals globals_;
 };
 
 }  // namespace

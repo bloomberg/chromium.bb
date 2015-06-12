@@ -4,6 +4,8 @@
 
 #include "ppapi/proxy/message_handler.h"
 
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "ipc/ipc_message.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/ppapi_messages.h"
@@ -90,38 +92,32 @@ scoped_ptr<MessageHandler> MessageHandler::Create(
 MessageHandler::~MessageHandler() {
   // It's possible the message_loop_proxy is NULL if that loop has been quit.
   // In that case, we unfortunately just can't call Destroy.
-  if (message_loop_->message_loop_proxy().get()) {
+  if (message_loop_->task_runner().get()) {
     // The posted task won't have the proxy lock, but that's OK, it doesn't
     // touch any internal state; it's a direct call on the plugin's function.
-    message_loop_->message_loop_proxy()->PostTask(FROM_HERE,
-        base::Bind(handler_if_->Destroy,
-                   instance_,
-                   user_data_));
+    message_loop_->task_runner()->PostTask(
+        FROM_HERE, base::Bind(handler_if_->Destroy, instance_, user_data_));
   }
 }
 
 bool MessageHandler::LoopIsValid() const {
-  return !!message_loop_->message_loop_proxy().get();
+  return !!message_loop_->task_runner().get();
 }
 
 void MessageHandler::HandleMessage(ScopedPPVar var) {
-  message_loop_->message_loop_proxy()->PostTask(FROM_HERE,
-      RunWhileLocked(base::Bind(&HandleMessageWrapper,
-                                handler_if_->HandleMessage,
-                                instance_,
-                                user_data_,
-                                var)));
+  message_loop_->task_runner()->PostTask(
+      FROM_HERE, RunWhileLocked(base::Bind(&HandleMessageWrapper,
+                                           handler_if_->HandleMessage,
+                                           instance_, user_data_, var)));
 }
 
 void MessageHandler::HandleBlockingMessage(ScopedPPVar var,
                                            scoped_ptr<IPC::Message> reply_msg) {
-  message_loop_->message_loop_proxy()->PostTask(FROM_HERE,
-      RunWhileLocked(base::Bind(&HandleBlockingMessageWrapper,
-                                handler_if_->HandleBlockingMessage,
-                                instance_,
-                                user_data_,
-                                var,
-                                base::Passed(reply_msg.Pass()))));
+  message_loop_->task_runner()->PostTask(
+      FROM_HERE,
+      RunWhileLocked(base::Bind(
+          &HandleBlockingMessageWrapper, handler_if_->HandleBlockingMessage,
+          instance_, user_data_, var, base::Passed(reply_msg.Pass()))));
 }
 
 MessageHandler::MessageHandler(

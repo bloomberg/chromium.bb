@@ -5,7 +5,7 @@
 #include "ppapi/proxy/resource_reply_thread_registrar.h"
 
 #include "base/logging.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "ipc/ipc_message.h"
 #include "ppapi/proxy/resource_message_params.h"
 #include "ppapi/shared_impl/proxy_lock.h"
@@ -15,7 +15,7 @@ namespace ppapi {
 namespace proxy {
 
 ResourceReplyThreadRegistrar::ResourceReplyThreadRegistrar(
-    scoped_refptr<base::MessageLoopProxy> main_thread)
+    scoped_refptr<base::SingleThreadTaskRunner> main_thread)
     : main_thread_(main_thread) {
 }
 
@@ -33,8 +33,8 @@ void ResourceReplyThreadRegistrar::Register(
     return;
 
   DCHECK(reply_thread_hint->target_loop());
-  scoped_refptr<base::MessageLoopProxy> reply_thread(
-      reply_thread_hint->target_loop()->GetMessageLoopProxy());
+  scoped_refptr<base::SingleThreadTaskRunner> reply_thread(
+      reply_thread_hint->target_loop()->GetTaskRunner());
   {
     base::AutoLock auto_lock(lock_);
 
@@ -50,7 +50,7 @@ void ResourceReplyThreadRegistrar::Unregister(PP_Resource resource) {
   map_.erase(resource);
 }
 
-scoped_refptr<base::MessageLoopProxy>
+scoped_refptr<base::SingleThreadTaskRunner>
 ResourceReplyThreadRegistrar::GetTargetThread(
     const ResourceMessageReplyParams& reply_params,
     const IPC::Message& nested_msg) {
@@ -60,7 +60,7 @@ ResourceReplyThreadRegistrar::GetTargetThread(
     SequenceThreadMap::iterator sequence_thread_iter =
         resource_iter->second.find(reply_params.sequence());
     if (sequence_thread_iter != resource_iter->second.end()) {
-      scoped_refptr<base::MessageLoopProxy> target =
+      scoped_refptr<base::SingleThreadTaskRunner> target =
           sequence_thread_iter->second;
       resource_iter->second.erase(sequence_thread_iter);
       return target;

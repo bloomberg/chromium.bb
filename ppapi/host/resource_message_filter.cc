@@ -5,9 +5,10 @@
 #include "ppapi/host/resource_message_filter.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "ipc/ipc_message.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/host/ppapi_host.h"
@@ -21,10 +22,10 @@ namespace internal {
 // static
 void ResourceMessageFilterDeleteTraits::Destruct(
     const ResourceMessageFilter* filter) {
-  if (!filter->deletion_message_loop_proxy_->BelongsToCurrentThread()) {
+  if (!filter->deletion_task_runner_->BelongsToCurrentThread()) {
     // During shutdown the object may not be deleted, but it should be okay to
     // leak in that case.
-    filter->deletion_message_loop_proxy_->DeleteSoon(FROM_HERE, filter);
+    filter->deletion_task_runner_->DeleteSoon(FROM_HERE, filter);
   } else {
     delete filter;
   }
@@ -33,18 +34,15 @@ void ResourceMessageFilterDeleteTraits::Destruct(
 }  // namespace internal
 
 ResourceMessageFilter::ResourceMessageFilter()
-    : deletion_message_loop_proxy_(
-          base::MessageLoop::current()->message_loop_proxy()),
-      reply_thread_message_loop_proxy_(
-          base::MessageLoop::current()->message_loop_proxy()),
+    : deletion_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      reply_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       resource_host_(NULL) {
 }
 
 ResourceMessageFilter::ResourceMessageFilter(
-    scoped_refptr<base::MessageLoopProxy> reply_thread_message_loop_proxy)
-    : deletion_message_loop_proxy_(
-          base::MessageLoop::current()->message_loop_proxy()),
-      reply_thread_message_loop_proxy_(reply_thread_message_loop_proxy),
+    scoped_refptr<base::SingleThreadTaskRunner> reply_thread_task_runner)
+    : deletion_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      reply_thread_task_runner_(reply_thread_task_runner),
       resource_host_(NULL) {
 }
 
@@ -81,8 +79,9 @@ bool ResourceMessageFilter::HandleMessage(const IPC::Message& msg,
 
 void ResourceMessageFilter::SendReply(const ReplyMessageContext& context,
                                       const IPC::Message& msg) {
-  if (!reply_thread_message_loop_proxy_->BelongsToCurrentThread()) {
-    reply_thread_message_loop_proxy_->PostTask(FROM_HERE,
+  if (!reply_thread_task_runner_->BelongsToCurrentThread()) {
+    reply_thread_task_runner_->PostTask(
+        FROM_HERE,
         base::Bind(&ResourceMessageFilter::SendReply, this, context, msg));
     return;
   }

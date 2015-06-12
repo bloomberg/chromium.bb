@@ -8,8 +8,8 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
-#include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/location.h"
+#include "base/thread_task_runner_handle.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_message_loop.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
@@ -55,7 +55,7 @@ MessageLoopResource::MessageLoopResource(ForMainThread for_main_thread)
 
   slot->Set(this);
 
-  loop_proxy_ = base::MessageLoopProxy::current();
+  task_runner_ = base::ThreadTaskRunnerHandle::Get();
 }
 
 
@@ -89,7 +89,7 @@ int32_t MessageLoopResource::AttachToCurrentThread() {
   slot->Set(this);
 
   loop_.reset(new base::MessageLoop);
-  loop_proxy_ = base::MessageLoopProxy::current();
+  task_runner_ = base::ThreadTaskRunnerHandle::Get();
 
   // Post all pending work to the message loop.
   for (size_t i = 0; i < pending_tasks_.size(); i++) {
@@ -113,7 +113,7 @@ int32_t MessageLoopResource::Run() {
   nested_invocations_--;
 
   if (should_destroy_ && nested_invocations_ == 0) {
-    loop_proxy_ = NULL;
+    task_runner_ = NULL;
     loop_.reset();
     destroyed_ = true;
   }
@@ -159,7 +159,7 @@ MessageLoopResource* MessageLoopResource::GetCurrent() {
 void MessageLoopResource::DetachFromThread() {
   // Note that the message loop must be destroyed on the thread it was created
   // on.
-  loop_proxy_ = NULL;
+  task_runner_ = NULL;
   loop_.reset();
 
   // Cancel out the AddRef in AttachToCurrentThread().
@@ -179,9 +179,9 @@ void MessageLoopResource::PostClosure(
     const tracked_objects::Location& from_here,
     const base::Closure& closure,
     int64 delay_ms) {
-  if (loop_proxy_.get()) {
-    loop_proxy_->PostDelayedTask(
-        from_here, closure, base::TimeDelta::FromMilliseconds(delay_ms));
+  if (task_runner_.get()) {
+    task_runner_->PostDelayedTask(from_here, closure,
+                                  base::TimeDelta::FromMilliseconds(delay_ms));
   } else {
     TaskInfo info;
     info.from_here = FROM_HERE;
@@ -191,8 +191,8 @@ void MessageLoopResource::PostClosure(
   }
 }
 
-base::MessageLoopProxy* MessageLoopResource::GetMessageLoopProxy() {
-  return loop_proxy_.get();
+base::SingleThreadTaskRunner* MessageLoopResource::GetTaskRunner() {
+  return task_runner_.get();
 }
 
 bool MessageLoopResource::CurrentlyHandlingBlockingMessage() {

@@ -3,9 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/simple_thread.h"
 #include "ppapi/c/pp_completion_callback.h"
@@ -245,9 +246,9 @@ class CallbackMockResource : public Resource {
     ProxyAutoLock acquire;
     // |thread_checker_| will bind to the background thread.
     thread_checker_.DetachFromThread();
-    loop_resource->message_loop_proxy()->PostTask(FROM_HERE,
-        RunWhileLocked(
-            base::Bind(&CallbackMockResource::CreateCallbacks, this)));
+    loop_resource->task_runner()->PostTask(
+        FROM_HERE, RunWhileLocked(base::Bind(
+                       &CallbackMockResource::CreateCallbacks, this)));
   }
 
   int32_t CompletionTask(CallbackRunInfo* info, int32_t result) {

@@ -20,7 +20,7 @@
 #include "ui/events/latency_info.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 class TaskRunner;
 }
 
@@ -101,9 +101,9 @@ class PPAPI_SHARED_EXPORT PpapiGlobals {
   // failure.
   virtual PP_Module GetModuleForInstance(PP_Instance instance) = 0;
 
-  // Returns the base::MessageLoopProxy for the main thread. This is set in the
-  // constructor, so PpapiGlobals must be created on the main thread.
-  base::MessageLoopProxy* GetMainThreadMessageLoop();
+  // Returns the base::SingleThreadTaskRunner for the main thread. This is set
+  // in the constructor, so PpapiGlobals must be created on the main thread.
+  base::SingleThreadTaskRunner* GetMainThreadMessageLoop();
 
   // In tests, the PpapiGlobals object persists across tests but the MLP pointer
   // it hangs on will go stale and the next PPAPI test will crash because of
@@ -150,7 +150,7 @@ class PPAPI_SHARED_EXPORT PpapiGlobals {
   // threads to have distinct "globals".
   static PpapiGlobals* GetThreadLocalPointer();
 
-  scoped_refptr<base::MessageLoopProxy> main_loop_proxy_;
+  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
 
   // If an input event is believed to have caused rendering damage, its latency
   // info is cached in |latency_info_for_frame_| indexed by instance. These

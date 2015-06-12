@@ -14,7 +14,7 @@
 #include "ppapi/thunk/ppb_message_loop_api.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace tracked_objects {
@@ -48,7 +48,7 @@ class PPAPI_SHARED_EXPORT MessageLoopShared
                            const base::Closure& closure,
                            int64 delay_ms) = 0;
 
-  virtual base::MessageLoopProxy* GetMessageLoopProxy() = 0;
+  virtual base::SingleThreadTaskRunner* GetTaskRunner() = 0;
 
   // Returns whether this MessageLoop is currently handling a blocking message
   // from JavaScript. This is used to make it illegal to use blocking callbacks

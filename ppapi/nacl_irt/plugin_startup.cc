@@ -6,7 +6,9 @@
 
 #include "base/bind.h"
 #include "base/file_descriptor_posix.h"
+#include "base/location.h"
 #include "base/logging.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "ipc/ipc_channel_handle.h"
@@ -37,10 +39,9 @@ void StartUpManifestServiceOnIOThread(base::WaitableEvent* event) {
   DCHECK(g_shutdown_event);
 
   g_manifest_service = new ManifestService(
-      IPC::ChannelHandle(
-          "NaCl IPC", base::FileDescriptor(g_manifest_service_fd, false)),
-      g_io_thread->message_loop_proxy(),
-      g_shutdown_event);
+      IPC::ChannelHandle("NaCl IPC",
+                         base::FileDescriptor(g_manifest_service_fd, false)),
+      g_io_thread->task_runner(), g_shutdown_event);
   event->Signal();
 }
 
@@ -75,9 +76,8 @@ void StartUpPlugin() {
     // usage. Once a better approach is made, replace this by that way.
     // (crbug.com/364241).
     base::WaitableEvent event(true, false);
-    g_io_thread->message_loop_proxy()->PostTask(
-        FROM_HERE,
-        base::Bind(StartUpManifestServiceOnIOThread, &event));
+    g_io_thread->task_runner()->PostTask(
+        FROM_HERE, base::Bind(StartUpManifestServiceOnIOThread, &event));
     event.Wait();
   }
 

@@ -10,7 +10,6 @@
 // IPC_MESSAGE_MACROS_LOG_ENABLED so ppapi_messages.h will generate the
 // ViewMsgLog et al. functions.
 
-#include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
 #include "ipc/ipc_logging.h"
 #include "ppapi/nacl_irt/plugin_startup.h"
@@ -28,12 +27,10 @@ void PpapiPluginRegisterThreadCreator(
 int PpapiPluginMain() {
   base::MessageLoop loop;
   ppapi::proxy::PluginGlobals plugin_globals(
-      scoped_refptr<base::TaskRunner>(
-          ppapi::GetIOThread()->message_loop_proxy()));
+      scoped_refptr<base::TaskRunner>(ppapi::GetIOThread()->task_runner()));
 
   ppapi::PpapiDispatcher ppapi_dispatcher(
-      ppapi::GetIOThread()->message_loop_proxy(),
-      ppapi::GetShutdownEvent(),
+      ppapi::GetIOThread()->task_runner(), ppapi::GetShutdownEvent(),
       ppapi::GetBrowserIPCFileDescriptor(),
       ppapi::GetRendererIPCFileDescriptor());
   plugin_globals.SetPluginProxyDelegate(&ppapi_dispatcher);

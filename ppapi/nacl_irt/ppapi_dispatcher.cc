@@ -9,7 +9,7 @@
 
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "build/build_config.h"
 #include "components/tracing/child_trace_message_filter.h"
@@ -29,12 +29,13 @@
 
 namespace ppapi {
 
-PpapiDispatcher::PpapiDispatcher(scoped_refptr<base::MessageLoopProxy> io_loop,
-                                 base::WaitableEvent* shutdown_event,
-                                 int browser_ipc_fd,
-                                 int renderer_ipc_fd)
+PpapiDispatcher::PpapiDispatcher(
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+    base::WaitableEvent* shutdown_event,
+    int browser_ipc_fd,
+    int renderer_ipc_fd)
     : next_plugin_dispatcher_id_(0),
-      message_loop_(io_loop),
+      task_runner_(io_task_runner),
       shutdown_event_(shutdown_event),
       renderer_ipc_fd_(renderer_ipc_fd) {
   IPC::ChannelHandle channel_handle(
@@ -52,13 +53,12 @@ PpapiDispatcher::PpapiDispatcher(scoped_refptr<base::MessageLoopProxy> io_loop,
   channel_->AddFilter(plugin_filter.get());
   globals->RegisterResourceMessageFilters(plugin_filter.get());
 
-  channel_->AddFilter(
-      new tracing::ChildTraceMessageFilter(message_loop_.get()));
+  channel_->AddFilter(new tracing::ChildTraceMessageFilter(task_runner_.get()));
   channel_->Init(channel_handle, IPC::Channel::MODE_SERVER, true);
 }
 
 base::SingleThreadTaskRunner* PpapiDispatcher::GetIPCTaskRunner() {
-  return message_loop_.get();
+  return task_runner_.get();
 }
 
 base::WaitableEvent* PpapiDispatcher::GetShutdownEvent() {

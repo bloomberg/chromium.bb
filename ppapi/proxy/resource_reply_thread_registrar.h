@@ -16,7 +16,7 @@
 
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace IPC {
@@ -38,7 +38,7 @@ class PPAPI_PROXY_EXPORT ResourceReplyThreadRegistrar
     : public base::RefCountedThreadSafe<ResourceReplyThreadRegistrar> {
  public:
   explicit ResourceReplyThreadRegistrar(
-      scoped_refptr<base::MessageLoopProxy> main_thread);
+      scoped_refptr<base::SingleThreadTaskRunner> main_thread);
 
   // This method can only be called while holding the Pepper proxy lock; the
   // other methods can be called with/without the Pepper proxy lock.
@@ -47,14 +47,14 @@ class PPAPI_PROXY_EXPORT ResourceReplyThreadRegistrar
                 scoped_refptr<TrackedCallback> reply_thread_hint);
   void Unregister(PP_Resource resource);
 
-  scoped_refptr<base::MessageLoopProxy> GetTargetThread(
+  scoped_refptr<base::SingleThreadTaskRunner> GetTargetThread(
       const ResourceMessageReplyParams& reply_params,
       const IPC::Message& nested_msg);
 
  private:
   friend class base::RefCountedThreadSafe<ResourceReplyThreadRegistrar>;
 
-  typedef std::map<int32_t, scoped_refptr<base::MessageLoopProxy> >
+  typedef std::map<int32_t, scoped_refptr<base::SingleThreadTaskRunner>>
       SequenceThreadMap;
   typedef std::map<PP_Resource, SequenceThreadMap> ResourceMap;
 
@@ -65,7 +65,7 @@ class PPAPI_PROXY_EXPORT ResourceReplyThreadRegistrar
   // holding |lock_|, otherwise we will cause deadlock.
   base::Lock lock_;
   ResourceMap map_;
-  scoped_refptr<base::MessageLoopProxy> main_thread_;
+  scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceReplyThreadRegistrar);
 };

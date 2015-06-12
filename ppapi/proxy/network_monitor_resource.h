@@ -12,10 +12,6 @@
 #include "ppapi/shared_impl/scoped_pp_resource.h"
 #include "ppapi/thunk/ppb_network_monitor_api.h"
 
-namespace base {
-class MessageLoopProxy;
-}  // namespace base
-
 namespace ppapi {
 namespace proxy {
 

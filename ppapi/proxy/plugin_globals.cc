@@ -4,6 +4,8 @@
 
 #include "ppapi/proxy/plugin_globals.h"
 
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/task_runner.h"
 #include "base/threading/thread.h"
 #include "ipc/ipc_message.h"
@@ -180,7 +182,7 @@ base::TaskRunner* PluginGlobals::GetFileTaskRunner() {
     options.message_loop_type = base::MessageLoop::TYPE_IO;
     file_thread_->StartWithOptions(options);
   }
-  return file_thread_->message_loop_proxy().get();
+  return file_thread_->task_runner().get();
 }
 
 void PluginGlobals::MarkPluginIsActive() {

@@ -11,7 +11,7 @@
 #include "base/synchronization/lock.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 class WaitableEvent;
 }  // namespace base
 
@@ -26,7 +26,7 @@ namespace ppapi {
 class ManifestService {
  public:
   ManifestService(const IPC::ChannelHandle& handle,
-                  scoped_refptr<base::MessageLoopProxy> io_message_loop,
+                  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
                   base::WaitableEvent* shutdown_event);
   ~ManifestService();
 

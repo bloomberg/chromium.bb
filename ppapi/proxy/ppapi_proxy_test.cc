@@ -8,10 +8,12 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/location.h"
 #include "base/observer_list.h"
 #include "base/process/process_handle.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/message_filter.h"
 #include "ppapi/c/pp_errors.h"
@@ -79,11 +81,11 @@ const void* MockGetInterface(const char* name) {
 
 void SetUpRemoteHarness(ProxyTestHarnessBase* harness,
                         const IPC::ChannelHandle& handle,
-                        base::MessageLoopProxy* ipc_message_loop_proxy,
+                        base::SingleThreadTaskRunner* ipc_task_runner,
                         base::WaitableEvent* shutdown_event,
                         base::WaitableEvent* harness_set_up) {
-  harness->SetUpHarnessWithChannel(handle, ipc_message_loop_proxy,
-                                   shutdown_event, false);
+  harness->SetUpHarnessWithChannel(handle, ipc_task_runner, shutdown_event,
+                                   false);
   harness_set_up->Signal();
 }
 
@@ -188,17 +190,16 @@ void PluginProxyTestHarness::SetUpHarness() {
 
 void PluginProxyTestHarness::SetUpHarnessWithChannel(
     const IPC::ChannelHandle& channel_handle,
-    base::MessageLoopProxy* ipc_message_loop,
+    base::SingleThreadTaskRunner* ipc_task_runner,
     base::WaitableEvent* shutdown_event,
     bool is_client) {
   // These must be first since the dispatcher set-up uses them.
-  scoped_refptr<base::TaskRunner> ipc_task_runner(ipc_message_loop);
-  CreatePluginGlobals(ipc_message_loop);
+  CreatePluginGlobals(ipc_task_runner);
   // Some of the methods called during set-up check that the lock is held.
   ProxyAutoLock lock;
 
   resource_tracker().DidCreateInstance(pp_instance());
-  plugin_delegate_mock_.Init(ipc_message_loop, shutdown_event);
+  plugin_delegate_mock_.Init(ipc_task_runner, shutdown_event);
 
   plugin_dispatcher_.reset(new PluginDispatcher(
       &MockGetInterface,
@@ -239,7 +240,7 @@ void PluginProxyTestHarness::CreatePluginGlobals(
 
 base::SingleThreadTaskRunner*
 PluginProxyTestHarness::PluginDelegateMock::GetIPCTaskRunner() {
-  return ipc_message_loop_;
+  return ipc_task_runner_;
 }
 
 base::WaitableEvent*
@@ -327,10 +328,9 @@ PluginProxyMultiThreadTest::~PluginProxyMultiThreadTest() {
 }
 
 void PluginProxyMultiThreadTest::RunTest() {
-  main_thread_message_loop_proxy_ =
-      PpapiGlobals::Get()->GetMainThreadMessageLoop();
-  ASSERT_EQ(main_thread_message_loop_proxy_.get(),
-            base::MessageLoopProxy::current().get());
+  main_thread_task_runner_ = PpapiGlobals::Get()->GetMainThreadMessageLoop();
+  ASSERT_EQ(main_thread_task_runner_.get(),
+            base::ThreadTaskRunnerHandle::Get().get());
   nested_main_thread_message_loop_.reset(new base::RunLoop());
 
   secondary_thread_.reset(new base::DelegateSimpleThread(
@@ -366,7 +366,7 @@ void PluginProxyMultiThreadTest::RunTest() {
 
   secondary_thread_.reset(NULL);
   nested_main_thread_message_loop_.reset(NULL);
-  main_thread_message_loop_proxy_ = NULL;
+  main_thread_task_runner_ = NULL;
 }
 
 void PluginProxyMultiThreadTest::CheckOnThread(ThreadType thread_type) {
@@ -380,10 +380,9 @@ void PluginProxyMultiThreadTest::CheckOnThread(ThreadType thread_type) {
 }
 
 void PluginProxyMultiThreadTest::PostQuitForMainThread() {
-  main_thread_message_loop_proxy_->PostTask(
-      FROM_HERE,
-      base::Bind(&PluginProxyMultiThreadTest::QuitNestedLoop,
-                 base::Unretained(this)));
+  main_thread_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&PluginProxyMultiThreadTest::QuitNestedLoop,
+                            base::Unretained(this)));
 }
 
 void PluginProxyMultiThreadTest::PostQuitForSecondaryThread() {
@@ -444,13 +443,13 @@ void HostProxyTestHarness::SetUpHarness() {
 
 void HostProxyTestHarness::SetUpHarnessWithChannel(
     const IPC::ChannelHandle& channel_handle,
-    base::MessageLoopProxy* ipc_message_loop,
+    base::SingleThreadTaskRunner* ipc_task_runner,
     base::WaitableEvent* shutdown_event,
     bool is_client) {
   // These must be first since the dispatcher set-up uses them.
   CreateHostGlobals();
 
-  delegate_mock_.Init(ipc_message_loop, shutdown_event);
+  delegate_mock_.Init(ipc_task_runner, shutdown_event);
 
   host_dispatcher_.reset(new HostDispatcher(
       pp_module(),
@@ -479,8 +478,9 @@ void HostProxyTestHarness::CreateHostGlobals() {
   }
 }
 
-base::MessageLoopProxy* HostProxyTestHarness::DelegateMock::GetIPCTaskRunner() {
-  return ipc_message_loop_;
+base::SingleThreadTaskRunner*
+HostProxyTestHarness::DelegateMock::GetIPCTaskRunner() {
+  return ipc_task_runner_;
 }
 
 base::WaitableEvent* HostProxyTestHarness::DelegateMock::GetShutdownEvent() {
@@ -557,28 +557,21 @@ void TwoWayTest::SetUp() {
   handle_name << "TwoWayTestChannel" << base::GetCurrentProcId();
   IPC::ChannelHandle handle(handle_name.str());
   base::WaitableEvent remote_harness_set_up(true, false);
-  plugin_thread_.message_loop_proxy()->PostTask(
-      FROM_HERE,
-      base::Bind(&SetUpRemoteHarness,
-                 remote_harness_,
-                 handle,
-                 io_thread_.message_loop_proxy(),
-                 &shutdown_event_,
-                 &remote_harness_set_up));
+  plugin_thread_.task_runner()->PostTask(
+      FROM_HERE, base::Bind(&SetUpRemoteHarness, remote_harness_, handle,
+                            io_thread_.task_runner(), &shutdown_event_,
+                            &remote_harness_set_up));
   remote_harness_set_up.Wait();
-  local_harness_->SetUpHarnessWithChannel(handle,
-                                          io_thread_.message_loop_proxy().get(),
-                                          &shutdown_event_,
-                                          true);  // is_client
+  local_harness_->SetUpHarnessWithChannel(
+      handle, io_thread_.task_runner().get(), &shutdown_event_,
+      true);  // is_client
 }
 
 void TwoWayTest::TearDown() {
   base::WaitableEvent remote_harness_torn_down(true, false);
-  plugin_thread_.message_loop_proxy()->PostTask(
-      FROM_HERE,
-      base::Bind(&TearDownRemoteHarness,
-                 remote_harness_,
-                 &remote_harness_torn_down));
+  plugin_thread_.task_runner()->PostTask(
+      FROM_HERE, base::Bind(&TearDownRemoteHarness, remote_harness_,
+                            &remote_harness_torn_down));
   remote_harness_torn_down.Wait();
 
   local_harness_->TearDownHarness();
@@ -588,10 +581,8 @@ void TwoWayTest::TearDown() {
 
 void TwoWayTest::PostTaskOnRemoteHarness(const base::Closure& task) {
   base::WaitableEvent task_complete(true, false);
-  plugin_thread_.message_loop_proxy()->PostTask(FROM_HERE,
-      base::Bind(&RunTaskOnRemoteHarness,
-                 task,
-                 &task_complete));
+  plugin_thread_.task_runner()->PostTask(
+      FROM_HERE, base::Bind(&RunTaskOnRemoteHarness, task, &task_complete));
   task_complete.Wait();
 }
 

@@ -12,7 +12,7 @@
 #include "ppapi/host/resource_message_handler.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 class TaskRunner;
 }
 
@@ -86,7 +86,7 @@ class PPAPI_HOST_EXPORT ResourceMessageFilter
   // Test constructor. Allows you to specify the message loop which will be used
   // to dispatch replies on.
   ResourceMessageFilter(
-      scoped_refptr<base::MessageLoopProxy> reply_thread_message_loop_proxy);
+      scoped_refptr<base::SingleThreadTaskRunner> reply_thread_task_runner);
 
   // Called when a filter is added to a ResourceHost.
   void OnFilterAdded(ResourceHost* resource_host);
@@ -124,12 +124,12 @@ class PPAPI_HOST_EXPORT ResourceMessageFilter
   void DispatchMessage(const IPC::Message& msg,
                        HostMessageContext context);
 
-  scoped_refptr<base::MessageLoopProxy> deletion_message_loop_proxy_;
+  scoped_refptr<base::SingleThreadTaskRunner> deletion_task_runner_;
 
   // Message loop to send resource message replies on. This will be the message
   // loop proxy of the IO thread for the browser process or the main thread for
   // the renderer process.
-  scoped_refptr<base::MessageLoopProxy> reply_thread_message_loop_proxy_;
+  scoped_refptr<base::SingleThreadTaskRunner> reply_thread_task_runner_;
 
   // Non-owning pointer to the resource host owning this filter. Should only be
   // accessed from the thread which sends messages to the plugin resource (i.e.

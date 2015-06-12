@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
 #include "ppapi/shared_impl/ppb_message_loop_shared.h"
@@ -43,8 +44,8 @@ class PPAPI_PROXY_EXPORT MessageLoopResource : public MessageLoopShared {
     return is_main_thread_loop_;
   }
 
-  const scoped_refptr<base::MessageLoopProxy>& message_loop_proxy() {
-    return loop_proxy_;
+  const scoped_refptr<base::SingleThreadTaskRunner>& task_runner() {
+    return task_runner_;
   }
 
   void set_currently_handling_blocking_message(bool handling_blocking_message) {
@@ -71,7 +72,7 @@ class PPAPI_PROXY_EXPORT MessageLoopResource : public MessageLoopShared {
   void PostClosure(const tracked_objects::Location& from_here,
                    const base::Closure& closure,
                    int64 delay_ms) override;
-  base::MessageLoopProxy* GetMessageLoopProxy() override;
+  base::SingleThreadTaskRunner* GetTaskRunner() override;
   bool CurrentlyHandlingBlockingMessage() override;
 
   // TLS destructor function.
@@ -80,9 +81,9 @@ class PPAPI_PROXY_EXPORT MessageLoopResource : public MessageLoopShared {
   // Created when we attach to the current thread, since MessageLoop assumes
   // that it's created on the thread it will run on. NULL for the main thread
   // loop, since that's owned by somebody else. This is needed for Run and Quit.
-  // Any time we post tasks, we should post them using loop_proxy_.
+  // Any time we post tasks, we should post them using task_runner_.
   scoped_ptr<base::MessageLoop> loop_;
-  scoped_refptr<base::MessageLoopProxy> loop_proxy_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   // Number of invocations of Run currently on the stack.
   int nested_invocations_;

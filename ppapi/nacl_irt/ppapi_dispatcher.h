@@ -24,7 +24,7 @@
 struct PP_BrowserFont_Trusted_Description;
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 class WaitableEvent;
 }  // namespace base
 
@@ -46,7 +46,7 @@ class PpapiDispatcher : public proxy::PluginDispatcher::PluginDelegate,
                         public IPC::Listener,
                         public IPC::Sender {
  public:
-  PpapiDispatcher(scoped_refptr<base::MessageLoopProxy> io_loop,
+  PpapiDispatcher(scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
                   base::WaitableEvent* shutdown_event,
                   int browser_ipc_fd,
                   int renderer_ipc_fd);
@@ -90,7 +90,7 @@ class PpapiDispatcher : public proxy::PluginDispatcher::PluginDelegate,
   std::map<uint32, proxy::PluginDispatcher*> plugin_dispatchers_;
   uint32 next_plugin_dispatcher_id_;
 
-  scoped_refptr<base::MessageLoopProxy> message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   base::WaitableEvent* shutdown_event_;
   int renderer_ipc_fd_;
   scoped_ptr<IPC::SyncChannel> channel_;
