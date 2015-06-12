@@ -10,17 +10,17 @@ import android.media.MediaCodec.BufferInfo;
 import android.media.MediaExtractor;
 import android.media.MediaFormat;
 import android.os.ParcelFileDescriptor;
-import android.util.Log;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+import org.chromium.base.Log;
 
 import java.io.File;
 import java.nio.ByteBuffer;
 
 @JNINamespace("media")
 class WebAudioMediaCodecBridge {
-    static final String LOG_TAG = "WebAudioMediaCodec";
+    private static final String TAG = "cr.media";
     // TODO(rtoy): What is the correct timeout value for reading
     // from a file in memory?
     static final long TIMEOUT_MICROSECONDS = 500;
@@ -73,7 +73,7 @@ class WebAudioMediaCodecBridge {
             try {
                 durationMicroseconds = format.getLong(MediaFormat.KEY_DURATION);
             } catch (Exception e) {
-                Log.d(LOG_TAG, "Cannot get duration");
+                Log.d(TAG, "Cannot get duration");
             }
         }
 
@@ -85,14 +85,14 @@ class WebAudioMediaCodecBridge {
             durationMicroseconds = 0;
         }
 
-        Log.d(LOG_TAG, "Initial: Tracks: " + extractor.getTrackCount() + " Format: " + format);
+        Log.d(TAG, "Initial: Tracks: %d Format: %s", extractor.getTrackCount(), format);
 
         // Create decoder
         MediaCodec codec;
         try {
             codec = MediaCodec.createDecoderByType(mime);
         } catch (Exception e) {
-            Log.w(LOG_TAG, "Failed to create MediaCodec for mime type: " + mime);
+            Log.w(TAG, "Failed to create MediaCodec for mime type: %s", mime);
             encodedFD.detachFd();
             return false;
         }
@@ -100,13 +100,13 @@ class WebAudioMediaCodecBridge {
         try {
             codec.configure(format, null /* surface */, null /* crypto */, 0 /* flags */);
         } catch (Exception e) {
-            Log.w(LOG_TAG, "Unable to configure codec for format " + format, e);
+            Log.w(TAG, "Unable to configure codec for format " + format, e);
             return false;
         }
         try {
             codec.start();
         } catch (Exception e) {
-            Log.w(LOG_TAG, "Unable to start()", e);
+            Log.w(TAG, "Unable to start()", e);
             return false;
         }
 
@@ -114,14 +114,14 @@ class WebAudioMediaCodecBridge {
         try {
             codecInputBuffers = codec.getInputBuffers();
         } catch (Exception e) {
-            Log.w(LOG_TAG, "getInputBuffers() failed", e);
+            Log.w(TAG, "getInputBuffers() failed", e);
             return false;
         }
         ByteBuffer[] codecOutputBuffers;
         try {
             codecOutputBuffers = codec.getOutputBuffers();
         } catch (Exception e) {
-            Log.w(LOG_TAG, "getOutputBuffers() failed", e);
+            Log.w(TAG, "getOutputBuffers() failed", e);
             return false;
         }
 
@@ -141,7 +141,7 @@ class WebAudioMediaCodecBridge {
                 try {
                     inputBufIndex = codec.dequeueInputBuffer(TIMEOUT_MICROSECONDS);
                 } catch (Exception e) {
-                    Log.w(LOG_TAG, "dequeueInputBuffer(" + TIMEOUT_MICROSECONDS + ") failed.", e);
+                    Log.w(TAG, "dequeueInputBuffer(%d) failed.", TIMEOUT_MICROSECONDS, e);
                     decodedSuccessfully = false;
                     break;
                 }
@@ -165,12 +165,9 @@ class WebAudioMediaCodecBridge {
                                 presentationTimeMicroSec,
                                 sawInputEOS ? MediaCodec.BUFFER_FLAG_END_OF_STREAM : 0);
                     } catch (Exception e) {
-                        Log.w(LOG_TAG, "queueInputBuffer("
-                                + inputBufIndex + ", 0, "
-                                + sampleSize + ", "
-                                + presentationTimeMicroSec + ", "
-                                + (sawInputEOS ? MediaCodec.BUFFER_FLAG_END_OF_STREAM : 0)
-                                + ") failed.", e);
+                        Log.w(TAG, "queueInputBuffer(%d, 0, %d, %d, %d) failed.",
+                                inputBufIndex, sampleSize, presentationTimeMicroSec,
+                                (sawInputEOS ? MediaCodec.BUFFER_FLAG_END_OF_STREAM : 0), e);
                         decodedSuccessfully = false;
                         break;
                     }
@@ -188,9 +185,7 @@ class WebAudioMediaCodecBridge {
             try {
                 outputBufIndex = codec.dequeueOutputBuffer(info, TIMEOUT_MICROSECONDS);
             } catch (Exception e) {
-                Log.w(LOG_TAG, "dequeueOutputBuffer(" + info
-                        + ", " + TIMEOUT_MICROSECONDS
-                        + ") failed");
+                Log.w(TAG, "dequeueOutputBuffer(%s, %d) failed", info, TIMEOUT_MICROSECONDS);
                 e.printStackTrace();
                 decodedSuccessfully = false;
                 break;
@@ -204,10 +199,8 @@ class WebAudioMediaCodecBridge {
                     // catch any changes in format. But be sure to
                     // initialize it BEFORE we send any decoded audio,
                     // and only initialize once.
-                    Log.d(LOG_TAG, "Final:  Rate: " + sampleRate
-                            + " Channels: " + inputChannelCount
-                            + " Mime: " + mime
-                            + " Duration: " + durationMicroseconds + " microsec");
+                    Log.d(TAG, "Final:  Rate: %d Channels: %d Mime: %s Duration: %d microsec",
+                            sampleRate, inputChannelCount, mime, durationMicroseconds);
 
                     nativeInitializeDestination(nativeMediaCodecBridge,
                                                 inputChannelCount,
@@ -233,7 +226,7 @@ class WebAudioMediaCodecBridge {
                 MediaFormat newFormat = codec.getOutputFormat();
                 outputChannelCount = newFormat.getInteger(MediaFormat.KEY_CHANNEL_COUNT);
                 sampleRate = newFormat.getInteger(MediaFormat.KEY_SAMPLE_RATE);
-                Log.d(LOG_TAG, "output format changed to " + newFormat);
+                Log.d(TAG, "output format changed to " + newFormat);
             }
         }
 

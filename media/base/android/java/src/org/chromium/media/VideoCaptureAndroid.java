@@ -6,7 +6,8 @@ package org.chromium.media;
 
 import android.content.Context;
 import android.graphics.ImageFormat;
-import android.util.Log;
+
+import org.chromium.base.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +42,7 @@ public class VideoCaptureAndroid extends VideoCaptureCamera {
 
     private int mExpectedFrameSize;
     private static final int NUM_CAPTURE_BUFFERS = 3;
-    private static final String TAG = "VideoCaptureAndroid";
+    private static final String TAG = "cr.media";
 
     static int getNumberOfCameras() {
         return android.hardware.Camera.getNumberOfCameras();
@@ -67,7 +68,7 @@ public class VideoCaptureAndroid extends VideoCaptureCamera {
         try {
             camera = android.hardware.Camera.open(id);
         } catch (RuntimeException ex) {
-            Log.e(TAG, "Camera.open: " + ex);
+            Log.e(TAG, "Camera.open: ", ex);
             return null;
         }
         android.hardware.Camera.Parameters parameters = getCameraParameters(camera);

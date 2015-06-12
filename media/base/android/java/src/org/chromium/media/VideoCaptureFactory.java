@@ -7,10 +7,10 @@ package org.chromium.media;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Build;
-import android.util.Log;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+import org.chromium.base.Log;
 // Needed for jni_generator.py to guess correctly the origin of
 // VideoCapture.CaptureFormat.
 import org.chromium.media.VideoCapture;
@@ -37,7 +37,7 @@ class VideoCaptureFactory {
             {"Peanut", "peanut"},
         };
         private static int sNumberOfSystemCameras = -1;
-        private static final String TAG = "ChromiumCameraInfo";
+        private static final String TAG = "cr.media";
 
         private static boolean isSpecialDevice() {
             for (String[] device : SPECIAL_DEVICE_LIST) {
@@ -74,7 +74,7 @@ class VideoCaptureFactory {
                     } else {
                         sNumberOfSystemCameras = VideoCaptureAndroid.getNumberOfCameras();
                         if (isSpecialDevice()) {
-                            Log.d(TAG, "Special device: " + android.os.Build.MODEL);
+                            Log.d(TAG, "Special device: %s", android.os.Build.MODEL);
                             sNumberOfSystemCameras += VideoCaptureTango.numberOfCameras();
                         }
                     }

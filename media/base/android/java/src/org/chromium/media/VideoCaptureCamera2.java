@@ -20,11 +20,11 @@ import android.media.ImageReader;
 import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.util.Log;
 import android.util.Size;
 import android.view.Surface;
 
 import org.chromium.base.JNINamespace;
+import org.chromium.base.Log;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -103,8 +103,8 @@ public class VideoCaptureCamera2 extends VideoCapture {
                 if (image == null) return;
                 if (image.getFormat() != ImageFormat.YUV_420_888
                         || image.getPlanes().length != 3) {
-                    Log.e(TAG, "Unexpected image format: " + image.getFormat()
-                            + " or #planes: " + image.getPlanes().length);
+                    Log.e(TAG, "Unexpected image format: %d or #planes: %d",
+                            image.getFormat(), image.getPlanes().length);
                     return;
                 }
 
@@ -140,7 +140,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
     private ImageReader mImageReader = null;
 
     private static final double kNanoSecondsToFps = 1.0E-9;
-    private static final String TAG = "VideoCaptureCamera2";
+    private static final String TAG = "cr.media";
 
     // Service function to grab CameraCharacteristics and handle exceptions.
     private static CameraCharacteristics getCameraCharacteristics(Context appContext, int id) {
@@ -382,7 +382,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
 
     @Override
     public boolean allocate(int width, int height, int frameRate) {
-        Log.d(TAG, "allocate: requested (" + width + "x" + height + ")@" + frameRate + "fps");
+        Log.d(TAG, "allocate: requested (%d x %d) @%dfps", width, height, frameRate);
         if (mOpeningCamera || mConfiguringCamera) {
             Log.e(TAG, "allocate() invoked while Camera is busy opening/configuring.");
             return false;

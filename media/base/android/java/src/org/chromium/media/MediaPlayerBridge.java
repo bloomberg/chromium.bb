@@ -13,11 +13,11 @@ import android.os.ParcelFileDescriptor;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Base64InputStream;
-import android.util.Log;
 import android.view.Surface;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+import org.chromium.base.Log;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -35,7 +35,7 @@ import java.util.HashMap;
 @JNINamespace("media")
 public class MediaPlayerBridge {
 
-    private static final String TAG = "MediaPlayerBridge";
+    private static final String TAG = "cr.media";
 
     // Local player to forward this to. We don't initialize it here since the subclass might not
     // want it.

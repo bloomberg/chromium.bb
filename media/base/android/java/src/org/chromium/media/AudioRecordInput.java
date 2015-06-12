@@ -12,10 +12,10 @@ import android.media.audiofx.AcousticEchoCanceler;
 import android.media.audiofx.AudioEffect;
 import android.media.audiofx.AudioEffect.Descriptor;
 import android.os.Process;
-import android.util.Log;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+import org.chromium.base.Log;
 
 import java.nio.ByteBuffer;
 
@@ -23,7 +23,7 @@ import java.nio.ByteBuffer;
 // that class for general comments.
 @JNINamespace("media")
 class AudioRecordInput {
-    private static final String TAG = "AudioRecordInput";
+    private static final String TAG = "cr.media";
     // Set to true to enable debug logs. Always check in as false.
     private static final boolean DEBUG = false;
     // We are unable to obtain a precise measurement of the hardware delay on
@@ -65,7 +65,7 @@ class AudioRecordInput {
                     nativeOnData(mNativeAudioRecordInputStream, bytesRead,
                                  mHardwareDelayBytes);
                 } else {
-                    Log.e(TAG, "read failed: " + bytesRead);
+                    Log.e(TAG, "read failed: %d", bytesRead);
                     if (bytesRead == AudioRecord.ERROR_INVALID_OPERATION) {
                         // This can happen if there is already an active
                         // AudioRecord (e.g. in another tab).
@@ -138,7 +138,7 @@ class AudioRecordInput {
         } else if (mChannels == 2) {
             channelConfig = AudioFormat.CHANNEL_IN_STEREO;
         } else {
-            Log.e(TAG, "Unsupported number of channels: " + mChannels);
+            Log.e(TAG, "Unsupported number of channels: %d", mChannels);
             return false;
         }
 
@@ -148,7 +148,7 @@ class AudioRecordInput {
         } else if (mBitsPerSample == 16) {
             audioFormat = AudioFormat.ENCODING_PCM_16BIT;
         } else {
-            Log.e(TAG, "Unsupported bits per sample: " + mBitsPerSample);
+            Log.e(TAG, "Unsupported bits per sample: %d", mBitsPerSample);
             return false;
         }
 
@@ -157,7 +157,7 @@ class AudioRecordInput {
         // recording under load".
         int minBufferSize = AudioRecord.getMinBufferSize(mSampleRate, channelConfig, audioFormat);
         if (minBufferSize < 0) {
-            Log.e(TAG, "getMinBufferSize error: " + minBufferSize);
+            Log.e(TAG, "getMinBufferSize error: %d", minBufferSize);
             return false;
         }
 
@@ -184,16 +184,14 @@ class AudioRecordInput {
             }
             int ret = mAEC.setEnabled(mUsePlatformAEC);
             if (ret != AudioEffect.SUCCESS) {
-                Log.e(TAG, "setEnabled error: " + ret);
+                Log.e(TAG, "setEnabled error: %d", ret);
                 return false;
             }
 
             if (DEBUG) {
                 Descriptor descriptor = mAEC.getDescriptor();
-                Log.d(TAG, "AcousticEchoCanceler "
-                        + "name: " + descriptor.name + ", "
-                        + "implementor: " + descriptor.implementor + ", "
-                        + "uuid: " + descriptor.uuid);
+                Log.d(TAG, "AcousticEchoCanceler name: %s, implementor: %s, uuid: %s",
+                            descriptor.name, descriptor.implementor, descriptor.uuid);
             }
         }
         return true;

@@ -6,7 +6,8 @@ package org.chromium.media;
 
 import android.content.Context;
 import android.graphics.ImageFormat;
-import android.util.Log;
+
+import org.chromium.base.Log;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -61,7 +62,7 @@ public class VideoCaptureTango extends VideoCaptureCamera {
     private static final int SF_OFFSET_4MP_CHROMA = 112;
 
     private static final byte CHROMA_ZERO_LEVEL = 127;
-    private static final String TAG = "VideoCaptureTango";
+    private static final String TAG = "cr.media";
 
     static int numberOfCameras() {
         return CAM_PARAMS.length;
@@ -180,7 +181,7 @@ public class VideoCaptureTango extends VideoCaptureCamera {
                     ByteBuffer.wrap(data, startV, sizeV)
                               .get(mFrameBuffer.array(), sizeY + sizeU, sizeV);
                 } else {
-                    Log.e(TAG, "Unknown camera, #id: " + mTangoCameraId);
+                    Log.e(TAG, "Unknown camera, #id: %d", mTangoCameraId);
                     return;
                 }
                 mFrameBuffer.rewind();  // Important!

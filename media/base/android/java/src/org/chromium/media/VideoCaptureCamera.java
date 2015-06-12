@@ -9,9 +9,9 @@ import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.opengl.GLES20;
 import android.os.Build;
-import android.util.Log;
 
 import org.chromium.base.JNINamespace;
+import org.chromium.base.Log;
 
 import java.io.IOException;
 import java.util.List;
@@ -39,7 +39,7 @@ public abstract class VideoCaptureCamera extends VideoCapture
     protected SurfaceTexture mSurfaceTexture = null;
     protected static final int GL_TEXTURE_EXTERNAL_OES = 0x8D65;
 
-    private static final String TAG = "VideoCaptureCamera";
+    private static final String TAG = "cr.media";
 
     protected static android.hardware.Camera.CameraInfo getCameraInfo(int id) {
         android.hardware.Camera.CameraInfo cameraInfo =
@@ -74,8 +74,7 @@ public abstract class VideoCaptureCamera extends VideoCapture
 
     @Override
     public boolean allocate(int width, int height, int frameRate) {
-        Log.d(TAG, "allocate: requested (" + width + "x" + height + ")@"
-                + frameRate + "fps");
+        Log.d(TAG, "allocate: requested (%d x %d) @%dfps", width, height, frameRate);
         try {
             mCamera = android.hardware.Camera.open(mId);
         } catch (RuntimeException ex) {
@@ -93,8 +92,8 @@ public abstract class VideoCaptureCamera extends VideoCapture
         // For Camera API, the readings of back-facing camera need to be inverted.
         mInvertDeviceOrientationReadings =
                 (cameraInfo.facing == android.hardware.Camera.CameraInfo.CAMERA_FACING_BACK);
-        Log.d(TAG, "allocate: Rotation dev=" + getDeviceRotation() + ", cam="
-                + mCameraNativeOrientation + ", facing back? " + mInvertDeviceOrientationReadings);
+        Log.d(TAG, "allocate: Rotation dev=%d, cam=%d, facing back? %s", getDeviceRotation(),
+                mCameraNativeOrientation, mInvertDeviceOrientationReadings);
 
         android.hardware.Camera.Parameters parameters = getCameraParameters(mCamera);
         if (parameters == null) {
@@ -126,8 +125,8 @@ public abstract class VideoCaptureCamera extends VideoCapture
                 fpsRangeSize = fpsRange[1] - fpsRange[0];
             }
         }
-        Log.d(TAG, "allocate: fps set to " + chosenFrameRate + ", ["
-                + chosenFpsRange[0] + "-" + chosenFpsRange[1] + "]");
+        Log.d(TAG, "allocate: fps set to %d, [%d-%d]", chosenFrameRate,
+                chosenFpsRange[0], chosenFpsRange[1]);
 
         // Calculate size.
         List<android.hardware.Camera.Size> listCameraSize =
@@ -138,8 +137,7 @@ public abstract class VideoCaptureCamera extends VideoCapture
         for (android.hardware.Camera.Size size : listCameraSize) {
             int diff = Math.abs(size.width - width)
                        + Math.abs(size.height - height);
-            Log.d(TAG, "allocate: supported ("
-                    + size.width + ", " + size.height + "), diff=" + diff);
+            Log.d(TAG, "allocate: supported (%d, %d), diff=%d", size.width, size.height, diff);
             // TODO(wjia): Remove this hack (forcing width to be multiple
             // of 32) by supporting stride in video frame buffer.
             // Right now, VideoCaptureController requires compact YV12
@@ -154,7 +152,7 @@ public abstract class VideoCaptureCamera extends VideoCapture
             Log.e(TAG, "allocate: can not find a multiple-of-32 resolution");
             return false;
         }
-        Log.d(TAG, "allocate: matched (" + matchedWidth + "x" + matchedHeight + ")");
+        Log.d(TAG, "allocate: matched (%d x %d)", matchedWidth, matchedHeight);
 
         if (parameters.isVideoStabilizationSupported()) {
             Log.d(TAG, "Image stabilization supported, currently: "
