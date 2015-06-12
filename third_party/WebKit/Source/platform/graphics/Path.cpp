@@ -174,14 +174,6 @@ FloatPoint Path::pointAtLength(float length, bool& ok) const
     return point;
 }
 
-float Path::normalAngleAtLength(float length, bool& ok) const
-{
-    FloatPoint point;
-    float normal;
-    ok = pointAndNormalAtLength(length, point, normal);
-    return normal;
-}
-
 static bool calculatePointAndNormalOnPath(SkPathMeasure& measure, SkScalar length, FloatPoint& point, float& normalAngle, SkScalar* accumulatedLength = 0)
 {
     do {
@@ -277,13 +269,6 @@ FloatPoint Path::currentPoint() const
     // FIXME: Why does this return quietNaN? Other ports return 0,0.
     float quietNaN = std::numeric_limits<float>::quiet_NaN();
     return FloatPoint(quietNaN, quietNaN);
-}
-
-WindRule Path::windRule() const
-{
-    return m_path.getFillType() == SkPath::kEvenOdd_FillType
-        ? RULE_EVENODD
-        : RULE_NONZERO;
 }
 
 void Path::setWindRule(const WindRule rule)
@@ -498,11 +483,6 @@ void Path::translate(const FloatSize& size)
 bool Path::subtractPath(const Path& other)
 {
     return Op(m_path, other.m_path, kDifference_SkPathOp, &m_path);
-}
-
-bool Path::intersectPath(const Path& other)
-{
-    return Op(m_path, other.m_path, kIntersect_SkPathOp, &m_path);
 }
 
 bool Path::unionPath(const Path& other)
