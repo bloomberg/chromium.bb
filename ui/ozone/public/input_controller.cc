@@ -56,12 +56,10 @@ StubInputController::~StubInputController() {
 }
 
 bool StubInputController::HasMouse() {
-  NOTIMPLEMENTED();
   return false;
 }
 
 bool StubInputController::HasTouchpad() {
-  NOTIMPLEMENTED();
   return false;
 }
 
@@ -70,11 +68,9 @@ bool StubInputController::IsCapsLockEnabled() {
 }
 
 void StubInputController::SetCapsLockEnabled(bool enabled) {
-  NOTIMPLEMENTED();
 }
 
 void StubInputController::SetNumLockEnabled(bool enabled) {
-  NOTIMPLEMENTED();
 }
 
 bool StubInputController::IsAutoRepeatEnabled() {
@@ -82,49 +78,38 @@ bool StubInputController::IsAutoRepeatEnabled() {
 }
 
 void StubInputController::SetAutoRepeatEnabled(bool enabled) {
-  NOTIMPLEMENTED();
 }
 
 void StubInputController::SetAutoRepeatRate(const base::TimeDelta& delay,
                                             const base::TimeDelta& interval) {
-  NOTIMPLEMENTED();
 }
 
 void StubInputController::GetAutoRepeatRate(base::TimeDelta* delay,
                                             base::TimeDelta* interval) {
-  NOTIMPLEMENTED();
 }
 
 void StubInputController::SetTouchpadSensitivity(int value) {
-  NOTIMPLEMENTED();
 }
 
 void StubInputController::SetTapToClick(bool enabled) {
-  NOTIMPLEMENTED();
 }
 
 void StubInputController::SetThreeFingerClick(bool enabled) {
-  NOTIMPLEMENTED();
 }
 
 void StubInputController::SetTapDragging(bool enabled) {
-  NOTIMPLEMENTED();
 }
 
 void StubInputController::SetNaturalScroll(bool enabled) {
-  NOTIMPLEMENTED();
 }
 
 void StubInputController::SetMouseSensitivity(int value) {
-  NOTIMPLEMENTED();
 }
 
 void StubInputController::SetPrimaryButtonRight(bool right) {
-  NOTIMPLEMENTED();
 }
 
 void StubInputController::SetTapToClickPaused(bool state) {
-  NOTIMPLEMENTED();
 }
 
 void StubInputController::GetTouchDeviceStatus(
@@ -134,25 +119,20 @@ void StubInputController::GetTouchDeviceStatus(
 
 void StubInputController::GetTouchEventLog(const base::FilePath& out_dir,
                                            const GetTouchEventLogReply& reply) {
-  reply.Run(
-      scoped_ptr<std::vector<base::FilePath>>(new std::vector<base::FilePath>));
+  reply.Run(make_scoped_ptr(new std::vector<base::FilePath>));
 }
 
 void StubInputController::DisableInternalTouchpad() {
-  NOTIMPLEMENTED();
 }
 
 void StubInputController::EnableInternalTouchpad() {
-  NOTIMPLEMENTED();
 }
 
 void StubInputController::DisableInternalKeyboardExceptKeys(
     scoped_ptr<std::set<DomCode>> excepted_keys) {
-  NOTIMPLEMENTED();
 }
 
 void StubInputController::EnableInternalKeyboard() {
-  NOTIMPLEMENTED();
 }
 
 }  // namespace
