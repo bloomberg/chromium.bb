@@ -484,7 +484,8 @@ void AutofillAgent::AcceptDataListSuggestion(
   if (input_element->isMultiple() && input_element->isEmailField()) {
     std::vector<base::string16> parts;
 
-    base::SplitStringDontTrim(input_element->editingValue(), ',', &parts);
+    base::SplitStringDontTrim(
+        base::StringPiece16(input_element->editingValue()), ',', &parts);
     if (parts.size() == 0)
       parts.push_back(base::string16());
 
