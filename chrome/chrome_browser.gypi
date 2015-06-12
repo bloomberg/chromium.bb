@@ -411,6 +411,8 @@
       'browser/download/download_service.h',
       'browser/download/download_service_factory.cc',
       'browser/download/download_service_factory.h',
+      'browser/download/download_service_impl.cc',
+      'browser/download/download_service_impl.h',
       'browser/download/download_started_animation.h',
       'browser/download/download_stats.cc',
       'browser/download/download_stats.h',

@@ -1,0 +1,85 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_DOWNLOAD_DOWNLOAD_SERVICE_IMPL_H_
+#define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_SERVICE_IMPL_H_
+
+#include "base/basictypes.h"
+#include "base/callback_forward.h"
+#include "base/memory/scoped_ptr.h"
+#include "chrome/browser/download/download_service.h"
+#include "components/keyed_service/core/keyed_service.h"
+
+class ChromeDownloadManagerDelegate;
+class DownloadHistory;
+class DownloadUIController;
+class ExtensionDownloadsEventRouter;
+class Profile;
+
+namespace content {
+class DownloadManager;
+}
+
+namespace extensions {
+class ExtensionDownloadsEventRouter;
+}
+
+// Owning class for ChromeDownloadManagerDelegate.
+class DownloadServiceImpl : public DownloadService {
+ public:
+  explicit DownloadServiceImpl(Profile* profile);
+  ~DownloadServiceImpl() override;
+
+  // DownloadService
+  ChromeDownloadManagerDelegate* GetDownloadManagerDelegate() override;
+  DownloadHistory* GetDownloadHistory() override;
+#if defined(ENABLE_EXTENSIONS)
+  extensions::ExtensionDownloadsEventRouter* GetExtensionEventRouter() override;
+#endif
+  bool HasCreatedDownloadManager() override;
+  int NonMaliciousDownloadCount() const override;
+  void CancelDownloads() override;
+  void SetDownloadManagerDelegateForTesting(
+      scoped_ptr<ChromeDownloadManagerDelegate> delegate) override;
+  bool IsShelfEnabled() override;
+
+  // KeyedService
+  void Shutdown() override;
+
+ private:
+  bool download_manager_created_;
+  Profile* profile_;
+
+  // ChromeDownloadManagerDelegate may be the target of callbacks from
+  // the history service/DB thread and must be kept alive for those
+  // callbacks.
+  scoped_ptr<ChromeDownloadManagerDelegate> manager_delegate_;
+
+  scoped_ptr<DownloadHistory> download_history_;
+
+  // The UI controller is responsible for observing the download manager and
+  // notifying the UI of any new downloads. Its lifetime matches that of the
+  // associated download manager.
+  // Note on destruction order: download_ui_ depends on download_history_ and
+  // should be destroyed before the latter.
+  scoped_ptr<DownloadUIController> download_ui_;
+
+// On Android, GET downloads are not handled by the DownloadManager.
+// Once we have extensions on android, we probably need the EventRouter
+// in ContentViewDownloadDelegate which knows about both GET and POST
+// downloads.
+#if defined(ENABLE_EXTENSIONS)
+  // The ExtensionDownloadsEventRouter dispatches download creation, change, and
+  // erase events to extensions. Like ChromeDownloadManagerDelegate, it's a
+  // chrome-level concept and its lifetime should match DownloadManager. There
+  // should be a separate EDER for on-record and off-record managers.
+  // There does not appear to be a separate ExtensionSystem for on-record and
+  // off-record profiles, so ExtensionSystem cannot own the EDER.
+  scoped_ptr<extensions::ExtensionDownloadsEventRouter> extension_event_router_;
+#endif
+
+  DISALLOW_COPY_AND_ASSIGN(DownloadServiceImpl);
+};
+
+#endif  // CHROME_BROWSER_DOWNLOAD_DOWNLOAD_SERVICE_IMPL_H_

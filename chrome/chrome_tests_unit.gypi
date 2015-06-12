@@ -1511,6 +1511,7 @@
       'browser/ui/autofill/test_generated_credit_card_bubble_view.h',
       'browser/ui/bookmarks/bookmark_context_menu_controller_unittest.cc',
       'browser/ui/bookmarks/bookmark_unittest.cc',
+      'browser/ui/browser_close_unittest.cc',
       'browser/ui/browser_command_controller_unittest.cc',
       'browser/ui/browser_instant_controller_unittest.cc',
       'browser/ui/browser_iterator_unittest.cc',

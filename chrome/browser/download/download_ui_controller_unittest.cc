@@ -10,8 +10,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/download/download_history.h"
-#include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
+#include "chrome/browser/download/download_service_impl.h"
 #include "chrome/browser/download/download_ui_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -56,7 +56,7 @@ void TestDelegate::OnNewDownloadReady(content::DownloadItem* item) {
 }
 
 // A DownloadService that returns a custom DownloadHistory.
-class TestDownloadService : public DownloadService {
+class TestDownloadService : public DownloadServiceImpl {
  public:
   explicit TestDownloadService(Profile* profile);
   ~TestDownloadService() override;
@@ -71,7 +71,7 @@ class TestDownloadService : public DownloadService {
 };
 
 TestDownloadService::TestDownloadService(Profile* profile)
-    : DownloadService(profile) {
+    : DownloadServiceImpl(profile) {
 }
 
 TestDownloadService::~TestDownloadService() {

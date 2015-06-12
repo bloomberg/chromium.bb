@@ -447,7 +447,6 @@
       'browser/ui/blocked_content/popup_blocker_browsertest.cc',
       'browser/ui/bookmarks/bookmark_browsertest.cc',
       'browser/ui/browser_browsertest.cc',
-      'browser/ui/browser_close_browsertest.cc',
       'browser/ui/browser_command_controller_browsertest.cc',
       'browser/ui/browser_navigator_browsertest.cc',
       'browser/ui/browser_navigator_browsertest.h',

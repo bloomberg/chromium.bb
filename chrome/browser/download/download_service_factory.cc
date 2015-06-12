@@ -4,7 +4,7 @@
 
 #include "chrome/browser/download/download_service_factory.h"
 
-#include "chrome/browser/download/download_service.h"
+#include "chrome/browser/download/download_service_impl.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -35,7 +35,7 @@ DownloadServiceFactory::~DownloadServiceFactory() {
 KeyedService* DownloadServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   DownloadService* service =
-      new DownloadService(static_cast<Profile*>(profile));
+      new DownloadServiceImpl(static_cast<Profile*>(profile));
 
   // No need for initialization; initialization can be done on first
   // use of service.
