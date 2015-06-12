@@ -63,8 +63,9 @@ class MediaRouterMojoImpl : public MediaRouter,
                    const MediaSink::Id& sink_id,
                    const MediaRouteResponseCallback& callback) override;
   void CloseRoute(const MediaRoute::Id& route_id) override;
-  void PostMessage(const MediaRoute::Id& route_id,
-                   const std::string& message) override;
+  void SendRouteMessage(const MediaRoute::Id& route_id,
+                        const std::string& message,
+                        const SendRouteMessageCallback& callback) override;
   void ClearIssue(const Issue::Id& issue_id) override;
   void RegisterMediaSinksObserver(MediaSinksObserver* observer) override;
   void UnregisterMediaSinksObserver(MediaSinksObserver* observer) override;
@@ -111,8 +112,9 @@ class MediaRouterMojoImpl : public MediaRouter,
                      const MediaSink::Id& sink_id,
                      const MediaRouteResponseCallback& callback);
   void DoCloseRoute(const MediaRoute::Id& route_id);
-  void DoPostMessage(const MediaRoute::Id& route_id,
-                     const std::string& message);
+  void DoSendSessionMessage(const MediaRoute::Id& route_id,
+                            const std::string& message,
+                            const SendRouteMessageCallback& callback);
   void DoClearIssue(const Issue::Id& issue_id);
   void DoStartObservingMediaSinks(const std::string& source_id);
   void DoStopObservingMediaSinks(const std::string& source_id);

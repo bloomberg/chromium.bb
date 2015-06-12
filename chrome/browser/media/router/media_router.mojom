@@ -94,9 +94,9 @@ interface MediaRouter {
   // Closes the route specified by |route_id|.
   CloseRoute(string route_id);
 
-  // Sends |message| with optional |extra_info_json| via the media route
-  // |media_route_id|.
-  PostMessage(string media_route_id, string message);
+  // Sends |message| via the media route |media_route_id|.
+  // If the operation was successful, |sent| is true; otherwise it is false.
+  SendRouteMessage(string media_route_id, string message) => (bool sent);
 
   // Starts querying for sinks capable of displaying |media_source|.
   StartObservingMediaSinks(string media_source);

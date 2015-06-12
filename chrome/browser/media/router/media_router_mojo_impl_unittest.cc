@@ -60,6 +60,11 @@ class RouteResponseCallbackHandler {
                void(MediaRoute* route, const std::string& error_text));
 };
 
+class SendMessageCallbackHandler {
+ public:
+  MOCK_METHOD1(Invoke, void(bool));
+};
+
 template <typename T>
 void StoreAndRun(T* result, const base::Closure& closure, const T& result_val) {
   *result = result_val;
@@ -273,10 +278,21 @@ TEST_F(MediaRouterMojoImplTest, RegisterAndUnregisterMediaRoutesObserver) {
   ProcessEventLoop();
 }
 
-TEST_F(MediaRouterMojoImplTest, PostMessage) {
-  EXPECT_CALL(mock_mojo_media_router_service_,
-              PostMessage(mojo::String(kRouteId), mojo::String(kMessage)));
-  router()->PostMessage(kRouteId, kMessage);
+TEST_F(MediaRouterMojoImplTest, SendRouteMessage) {
+  EXPECT_CALL(
+      mock_mojo_media_router_service_,
+      SendRouteMessage(mojo::String(kRouteId), mojo::String(kMessage), _))
+      .WillOnce(Invoke(
+          [](const MediaRoute::Id& route_id, const std::string& message,
+             const interfaces::MediaRouter::SendRouteMessageCallback& cb) {
+            cb.Run(true);
+          }));
+
+  SendMessageCallbackHandler handler;
+  EXPECT_CALL(handler, Invoke(true));
+  router()->SendRouteMessage(kRouteId, kMessage,
+                             base::Bind(&SendMessageCallbackHandler::Invoke,
+                                        base::Unretained(&handler)));
   ProcessEventLoop();
 }
 

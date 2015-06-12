@@ -35,6 +35,8 @@ using MediaRouteResponseCallback =
 // posting messages or closing).
 class MediaRouter {
  public:
+  using SendRouteMessageCallback = base::Callback<void(bool sent)>;
+
   virtual ~MediaRouter() {}
 
   // Creates a media route from |source_id| to |sink_id|.
@@ -49,8 +51,9 @@ class MediaRouter {
   // Posts |message| to a MediaSink connected via MediaRoute with |route_id|.
   // TODO(imcheng): Support additional data types: Blob, ArrayBuffer,
   // ArrayBufferView.
-  virtual void PostMessage(const MediaRoute::Id& route_id,
-                           const std::string& message) = 0;
+  virtual void SendRouteMessage(const MediaRoute::Id& route_id,
+                                const std::string& message,
+                                const SendRouteMessageCallback& callback) = 0;
 
   // Clears the issue with the id |issue_id|.
   virtual void ClearIssue(const Issue::Id& issue_id) = 0;

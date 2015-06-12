@@ -48,9 +48,10 @@ class MockMojoMediaRouterService : public interfaces::MediaRouter {
   MOCK_METHOD1(CloseRoute, void(const mojo::String& route_id));
   MOCK_METHOD1(StartObservingMediaSinks, void(const mojo::String& source));
   MOCK_METHOD1(StopObservingMediaSinks, void(const mojo::String& source));
-  MOCK_METHOD2(PostMessage,
+  MOCK_METHOD3(SendRouteMessage,
                void(const mojo::String& media_route_id,
-                    const mojo::String& message));
+                    const mojo::String& message,
+                    const SendRouteMessageCallback& callback));
   MOCK_METHOD1(ClearIssue, void(const mojo::String& issue_id));
   MOCK_METHOD0(StartObservingMediaRoutes, void());
   MOCK_METHOD0(StopObservingMediaRoutes, void());

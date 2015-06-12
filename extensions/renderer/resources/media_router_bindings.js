@@ -304,9 +304,9 @@ define('media_router_bindings', [
     this.stopObservingMediaSinks = null;
 
     /**
-     * @type {function(string, string, string)}
+     * @type {function(string, string)}
      */
-    this.postMessage = null;
+    this.sendRouteMessage = null;
 
     /**
      * @type {function()}
@@ -353,7 +353,7 @@ define('media_router_bindings', [
     var requiredHandlers = [
       'stopObservingMediaRoutes',
       'startObservingMediaRoutes',
-      'postMessage',
+      'sendRouteMessage',
       'closeRoute',
       'joinRoute',
       'createRoute',
@@ -448,12 +448,17 @@ define('media_router_bindings', [
    * Posts a message to the route designated by |routeId|.
    * @param {!string} routeId
    * @param {!string} message
-   * @param {string} extraInfoJson
+   * @return {!Promise.<boolean>} Resolved with true if the message was sent,
+   *    or false on failure.
    */
-  MediaRouter.prototype.postMessage = function(
-      routeId, message, extraInfoJson) {
-    // TODO(mfoltz): Remove extraInfoJson if no longer needed.
-    this.handlers_.postMessage(routeId, message, JSON.parse(extraInfoJson));
+  MediaRouter.prototype.sendRouteMessage = function(
+      routeId, message) {
+    this.handlers_.sendRouteMessage(routeId, message)
+        .then(function() {
+          return true;
+        }, function() {
+          return false;
+        });
   };
 
   /**

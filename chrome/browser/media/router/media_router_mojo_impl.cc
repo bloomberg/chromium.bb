@@ -174,12 +174,14 @@ void MediaRouterMojoImpl::CloseRoute(const MediaRoute::Id& route_id) {
                         base::Unretained(this), route_id));
 }
 
-void MediaRouterMojoImpl::PostMessage(const MediaRoute::Id& route_id,
-                                      const std::string& message) {
+void MediaRouterMojoImpl::SendRouteMessage(
+    const MediaRoute::Id& route_id,
+    const std::string& message,
+    const SendRouteMessageCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  RunOrDefer(base::Bind(&MediaRouterMojoImpl::DoPostMessage,
-                        base::Unretained(this), route_id, message));
+  RunOrDefer(base::Bind(&MediaRouterMojoImpl::DoSendSessionMessage,
+                        base::Unretained(this), route_id, message, callback));
 }
 
 void MediaRouterMojoImpl::ClearIssue(const Issue::Id& issue_id) {
@@ -281,10 +283,12 @@ void MediaRouterMojoImpl::DoCloseRoute(const MediaRoute::Id& route_id) {
   mojo_media_router_->CloseRoute(route_id);
 }
 
-void MediaRouterMojoImpl::DoPostMessage(const MediaRoute::Id& route_id,
-                                        const std::string& message) {
-  DVLOG_WITH_INSTANCE(1) << "PostMessage " << route_id;
-  mojo_media_router_->PostMessage(route_id, message);
+void MediaRouterMojoImpl::DoSendSessionMessage(
+    const MediaRoute::Id& route_id,
+    const std::string& message,
+    const SendRouteMessageCallback& callback) {
+  DVLOG_WITH_INSTANCE(1) << "SendRouteMessage " << route_id;
+  mojo_media_router_->SendRouteMessage(route_id, message, callback);
 }
 
 void MediaRouterMojoImpl::DoClearIssue(const Issue::Id& issue_id) {
