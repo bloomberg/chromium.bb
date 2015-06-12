@@ -165,8 +165,7 @@ WebSharedWorkerImpl::WebSharedWorkerImpl(WebSharedWorkerClient* client)
     , m_mainFrame(0)
     , m_askedToTerminate(false)
     , m_workerInspectorProxy(WorkerInspectorProxy::create())
-    , m_client(WeakReference<WebSharedWorkerClient>::create(client))
-    , m_clientWeakPtr(WeakPtr<WebSharedWorkerClient>(m_client))
+    , m_client(client)
     , m_pauseWorkerContextOnStart(false)
     , m_isPausedOnStart(false)
 {
@@ -193,8 +192,7 @@ void WebSharedWorkerImpl::terminateWorkerThread()
     if (m_mainScriptLoader) {
         m_mainScriptLoader->cancel();
         m_mainScriptLoader.clear();
-        if (client())
-            client()->workerScriptLoadFailed();
+        m_client->workerScriptLoadFailed();
         delete this;
         return;
     }
@@ -220,7 +218,7 @@ void WebSharedWorkerImpl::initializeLoader()
     m_mainFrame->setDevToolsAgentClient(this);
 
     // If we were asked to pause worker context on start and wait for debugger then it is the good time to do that.
-    client()->workerReadyForInspection();
+    m_client->workerReadyForInspection();
     if (m_pauseWorkerContextOnStart) {
         m_isPausedOnStart = true;
         return;
@@ -230,9 +228,7 @@ void WebSharedWorkerImpl::initializeLoader()
 
 WebApplicationCacheHost* WebSharedWorkerImpl::createApplicationCacheHost(WebLocalFrame*, WebApplicationCacheHostClient* appcacheHostClient)
 {
-    if (client())
-        return client()->createApplicationCacheHost(appcacheHostClient);
-    return 0;
+    return m_client->createApplicationCacheHost(appcacheHostClient);
 }
 
 void WebSharedWorkerImpl::loadShadowPage()
@@ -256,7 +252,7 @@ void WebSharedWorkerImpl::didFinishDocumentLoad(WebLocalFrame* frame)
 {
     ASSERT(!m_loadingDocument);
     ASSERT(!m_mainScriptLoader);
-    m_networkProvider = adoptPtr(client()->createServiceWorkerNetworkProvider(frame->dataSource()));
+    m_networkProvider = adoptPtr(m_client->createServiceWorkerNetworkProvider(frame->dataSource()));
     m_mainScriptLoader = Loader::create();
     m_loadingDocument = toWebLocalFrameImpl(frame)->frame()->document();
     m_mainScriptLoader->load(
@@ -280,7 +276,7 @@ int64_t WebSharedWorkerImpl::serviceWorkerID(WebDataSource& dataSource)
 
 void WebSharedWorkerImpl::sendProtocolMessage(int callId, const WebString& message, const WebString& state)
 {
-    client()->sendDevToolsMessage(callId, message, state);
+    m_client->sendDevToolsMessage(callId, message, state);
 }
 
 void WebSharedWorkerImpl::resumeStartup()
@@ -324,8 +320,7 @@ void WebSharedWorkerImpl::workerGlobalScopeClosed()
 
 void WebSharedWorkerImpl::workerGlobalScopeClosedOnMainThread()
 {
-    if (client())
-        client()->workerContextClosed();
+    m_client->workerContextClosed();
 
     terminateWorkerThread();
 }
@@ -341,8 +336,7 @@ void WebSharedWorkerImpl::workerThreadTerminated()
 
 void WebSharedWorkerImpl::workerThreadTerminatedOnMainThread()
 {
-    if (client())
-        client()->workerContextDestroyed();
+    m_client->workerContextDestroyed();
     // The lifetime of this proxy is controlled by the worker context.
     delete this;
 }
@@ -386,8 +380,7 @@ void WebSharedWorkerImpl::startWorkerContext(const WebURL& url, const WebString&
 void WebSharedWorkerImpl::didReceiveScriptLoaderResponse()
 {
     InspectorInstrumentation::didReceiveScriptResponse(m_loadingDocument.get(), m_mainScriptLoader->identifier());
-    if (client())
-        client()->selectAppCacheID(m_mainScriptLoader->appCacheID());
+    m_client->selectAppCacheID(m_mainScriptLoader->appCacheID());
 }
 
 void WebSharedWorkerImpl::onScriptLoaderFinished()
@@ -398,8 +391,7 @@ void WebSharedWorkerImpl::onScriptLoaderFinished()
         return;
     if (m_mainScriptLoader->failed()) {
         m_mainScriptLoader->cancel();
-        if (client())
-            client()->workerScriptLoadFailed();
+        m_client->workerScriptLoadFailed();
 
         // The SharedWorker was unable to load the initial script, so
         // shut it down right here.
@@ -418,7 +410,7 @@ void WebSharedWorkerImpl::onScriptLoaderFinished()
     OwnPtrWillBeRawPtr<WorkerClients> workerClients = WorkerClients::create();
     provideLocalFileSystemToWorker(workerClients.get(), LocalFileSystemClient::create());
     WebSecurityOrigin webSecurityOrigin(m_loadingDocument->securityOrigin());
-    provideContentSettingsClientToWorker(workerClients.get(), adoptPtr(client()->createWorkerContentSettingsClientProxy(webSecurityOrigin)));
+    provideContentSettingsClientToWorker(workerClients.get(), adoptPtr(m_client->createWorkerContentSettingsClientProxy(webSecurityOrigin)));
     OwnPtr<WorkerThreadStartupData> startupData = WorkerThreadStartupData::create(m_url, m_loadingDocument->userAgent(m_url), m_mainScriptLoader->script(), nullptr, startMode, m_mainScriptLoader->contentSecurityPolicy()->headers(), starterOrigin, workerClients.release());
     m_loaderProxy = WorkerLoaderProxy::create(this);
     setWorkerThread(SharedWorkerThread::create(m_name, m_loaderProxy, *this));
@@ -427,18 +419,12 @@ void WebSharedWorkerImpl::onScriptLoaderFinished()
 
     workerThread()->start(startupData.release());
     m_workerInspectorProxy->workerThreadCreated(m_loadingDocument.get(), workerThread(), m_url);
-    if (client())
-        client()->workerScriptLoaded();
+    m_client->workerScriptLoaded();
 }
 
 void WebSharedWorkerImpl::terminateWorkerContext()
 {
     terminateWorkerThread();
-}
-
-void WebSharedWorkerImpl::clientDestroyed()
-{
-    m_client.clear();
 }
 
 void WebSharedWorkerImpl::pauseWorkerContextOnStart()

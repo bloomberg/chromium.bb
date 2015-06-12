@@ -44,7 +44,9 @@ class WebURL;
 // This is the interface to a SharedWorker thread.
 class WebSharedWorker {
 public:
-    // Invoked from the worker thread to instantiate a WebSharedWorker that interacts with the WebKit worker components.
+    // Instantiate a WebSharedWorker that interacts with the shared worker.
+    // WebSharedWorkerClient given here must outlive or have the identical
+    // lifetime as this instance.
     BLINK_EXPORT static WebSharedWorker* create(WebSharedWorkerClient*);
 
     virtual void startWorkerContext(
@@ -56,11 +58,8 @@ public:
     // Sends a connect event to the SharedWorker context.
     virtual void connect(WebMessagePortChannel*) = 0;
 
-    // Invoked to shutdown the worker when there are no more associated documents.
+    // Invoked to shutdown the worker when there are no more associated documents. This eventually deletes this instance.
     virtual void terminateWorkerContext() = 0;
-
-    // Notification when the WebCommonWorkerClient is destroyed.
-    virtual void clientDestroyed() = 0;
 
     virtual void pauseWorkerContextOnStart() = 0;
     virtual void attachDevTools(const WebString& hostId) = 0;

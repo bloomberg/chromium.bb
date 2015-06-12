@@ -48,6 +48,9 @@ class WebWorkerContentSettingsClientProxy;
 // Provides an interface back to the in-page script object for a worker.
 // All functions are expected to be called back on the thread that created
 // the Worker object, unless noted.
+// An instance of this class must outlive or must have the identical lifetime
+// as WebSharedWorker (i.e. must be kept alive until workerScriptLoadFailed()
+// or workerContextDestroyed() is called).
 class WebSharedWorkerClient {
 public:
     virtual void workerContextClosed() = 0;

@@ -98,7 +98,6 @@ public:
     virtual void startWorkerContext(const WebURL&, const WebString& name, const WebString& contentSecurityPolicy, WebContentSecurityPolicyType) override;
     virtual void connect(WebMessagePortChannel*) override;
     virtual void terminateWorkerContext() override;
-    virtual void clientDestroyed() override;
 
     virtual void pauseWorkerContextOnStart() override;
     virtual void attachDevTools(const WebString& hostId) override;
@@ -110,8 +109,6 @@ private:
     class Loader;
 
     virtual ~WebSharedWorkerImpl();
-
-    WebSharedWorkerClient* client() { return m_client->get(); }
 
     void setWorkerThread(PassRefPtr<WorkerThread> thread) { m_workerThread = thread; }
     WorkerThread* workerThread() { return m_workerThread.get(); }
@@ -150,13 +147,7 @@ private:
 
     RefPtr<WorkerThread> m_workerThread;
 
-    // This one's initialized and bound to the main thread.
-    RefPtr<WeakReference<WebSharedWorkerClient>> m_client;
-
-    // Usually WeakPtr is created by WeakPtrFactory exposed by Client
-    // class itself, but here it's implemented by Chrome so we create
-    // our own WeakPtr.
-    WeakPtr<WebSharedWorkerClient> m_clientWeakPtr;
+    WebSharedWorkerClient* m_client;
 
     bool m_pauseWorkerContextOnStart;
     bool m_isPausedOnStart;
