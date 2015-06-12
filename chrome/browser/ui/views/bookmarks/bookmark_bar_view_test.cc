@@ -1338,7 +1338,8 @@ class BookmarkBarViewTest12 : public BookmarkBarViewEventTestBase {
   }
 };
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// Times out on Win. http://crbug.com/499858
+#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 // TODO(erg): linux_aura bringup: http://crbug.com/163931
 #define MAYBE_CloseWithModalDialog DISABLED_CloseWithModalDialog
 #else
