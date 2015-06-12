@@ -11,6 +11,8 @@
 
 namespace blink {
 
+namespace {
+
 class TestCustomFontData : public CustomFontData {
 public:
     static PassRefPtr<TestCustomFontData> create() { return adoptRef(new TestCustomFontData()); }
@@ -60,7 +62,9 @@ private:
     UChar32 m_to;
 };
 
-TEST(GlyphPageTreeNode, rootChild)
+} // anonymous namespace
+
+TEST(GlyphPageTreeNodeTest, rootChild)
 {
     const unsigned kPageNumber = 0;
     size_t pageCountBeforeTest = GlyphPageTreeNode::treeGlyphPageCount();
@@ -77,7 +81,7 @@ TEST(GlyphPageTreeNode, rootChild)
     EXPECT_EQ(pageCountBeforeTest, GlyphPageTreeNode::treeGlyphPageCount());
 }
 
-TEST(GlyphPageTreeNode, level2)
+TEST(GlyphPageTreeNodeTest, level2)
 {
     const unsigned kPageNumber = 0;
     size_t pageCountBeforeTest = GlyphPageTreeNode::treeGlyphPageCount();
@@ -96,7 +100,7 @@ TEST(GlyphPageTreeNode, level2)
     EXPECT_EQ(pageCountBeforeTest, GlyphPageTreeNode::treeGlyphPageCount());
 }
 
-TEST(GlyphPageTreeNode, segmentedData)
+TEST(GlyphPageTreeNodeTest, segmentedData)
 {
     const unsigned kPageNumber = 0;
     size_t pageCountBeforeTest = GlyphPageTreeNode::treeGlyphPageCount();
@@ -117,7 +121,7 @@ TEST(GlyphPageTreeNode, segmentedData)
     EXPECT_EQ(pageCountBeforeTest, GlyphPageTreeNode::treeGlyphPageCount());
 }
 
-TEST(GlyphPageTreeNode, outsideBMP)
+TEST(GlyphPageTreeNodeTest, outsideBMP)
 {
     const unsigned kPageNumber = 0x1f300 / GlyphPage::size;
     size_t pageCountBeforeTest = GlyphPageTreeNode::treeGlyphPageCount();
@@ -133,7 +137,7 @@ TEST(GlyphPageTreeNode, outsideBMP)
     EXPECT_EQ(pageCountBeforeTest, GlyphPageTreeNode::treeGlyphPageCount());
 }
 
-TEST(GlyphPageTreeNode, customData)
+TEST(GlyphPageTreeNodeTest, customData)
 {
     const unsigned kPageNumber = 0;
     size_t pageCountBeforeTest = GlyphPageTreeNode::treeGlyphPageCount();
@@ -162,7 +166,7 @@ TEST(GlyphPageTreeNode, customData)
     EXPECT_EQ(pageCountBeforeTest, GlyphPageTreeNode::treeGlyphPageCount());
 }
 
-TEST(GlyphPageTreeNode, customDataWithMultiplePages)
+TEST(GlyphPageTreeNodeTest, customDataWithMultiplePages)
 {
     const unsigned kPageNumber = 0;
     size_t pageCountBeforeTest = GlyphPageTreeNode::treeGlyphPageCount();
@@ -195,7 +199,7 @@ TEST(GlyphPageTreeNode, customDataWithMultiplePages)
     EXPECT_EQ(pageCountBeforeTest, GlyphPageTreeNode::treeGlyphPageCount());
 }
 
-TEST(GlyphPageTreeNode, systemFallback)
+TEST(GlyphPageTreeNodeTest, systemFallback)
 {
     const unsigned kPageNumber = 0;
     size_t pageCountBeforeTest = GlyphPageTreeNode::treeGlyphPageCount();
@@ -223,7 +227,7 @@ TEST(GlyphPageTreeNode, systemFallback)
     EXPECT_EQ(pageCountBeforeTest, GlyphPageTreeNode::treeGlyphPageCount());
 }
 
-TEST(GlyphPageTreeNode, systemFallbackScriptIsolation)
+TEST(GlyphPageTreeNodeTest, systemFallbackScriptIsolation)
 {
     const unsigned kPageNumber = 0;
     RefPtr<TestSimpleFontData> defaultData = TestSimpleFontData::create('A', 'B');

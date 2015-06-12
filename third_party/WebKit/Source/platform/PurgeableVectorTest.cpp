@@ -34,15 +34,11 @@
 #include "platform/TestingPlatformSupport.h"
 #include "public/platform/WebDiscardableMemory.h"
 #include "wtf/Vector.h"
-
 #include <algorithm>
 #include <cstdlib>
-
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 const size_t kTestSize = 32 * 1024;
 
@@ -333,5 +329,4 @@ TEST_P(PurgeableVectorTestWithPlatformSupport, lockingUsesACounter)
 INSTANTIATE_TEST_CASE_P(testsWithPlatformSetUp, PurgeableVectorTestWithPlatformSupport,
     ::testing::Values(DontSupportDiscardableMemory, SupportDiscardableMemory));
 
-} // namespace
-
+} // namespace blink

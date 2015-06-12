@@ -28,12 +28,9 @@
  */
 
 #include "config.h"
-
 #include "platform/geometry/FloatRoundedRect.h"
 
 #include <gtest/gtest.h>
-
-using namespace blink;
 
 namespace blink {
 
@@ -68,10 +65,6 @@ void PrintTo(const FloatRoundedRect& roundedRect, std::ostream* os)
         << ::testing::PrintToString(roundedRect.rect()) << ", "
         << ::testing::PrintToString(roundedRect.radii()) << ")";
 }
-
-} // namespace blink
-
-namespace {
 
 #define TEST_INTERCEPTS(roundedRect, yCoordinate, expectedMinXIntercept, expectedMaxXIntercept) \
 {                                                                                               \
@@ -213,5 +206,5 @@ TEST(FloatRoundedRectTest, radiusCenterRect)
     EXPECT_TRUE(r2.radiusCenterRect().isEmpty());
 }
 
-} // namespace
+} // namespace blink
 

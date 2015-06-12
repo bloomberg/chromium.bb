@@ -23,14 +23,11 @@
  */
 
 #include "config.h"
-
 #include "platform/animation/UnitBezier.h"
 
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 TEST(UnitBezierTest, BasicUse)
 {
@@ -92,4 +89,4 @@ TEST(UnitBezierTest, InputOutOfRangeDistinctEndpoints)
     EXPECT_EQ(2.0, bezier.solve(2.0, 0.005));
 }
 
-} // namespace
+} // namespace blink

@@ -39,9 +39,7 @@
 #include <cstdlib>
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 TEST(SharedBufferTest, getAsBytes)
 {
@@ -155,4 +153,4 @@ TEST(SharedBufferTest, createPurgeable)
     ASSERT_EQ(0, memcmp(data, testData.data(), length));
 }
 
-} // namespace
+} // namespace blink

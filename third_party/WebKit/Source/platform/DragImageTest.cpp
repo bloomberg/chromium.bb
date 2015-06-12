@@ -29,7 +29,6 @@
  */
 
 #include "config.h"
-
 #include "platform/DragImage.h"
 
 #include "platform/fonts/FontDescription.h"
@@ -45,12 +44,9 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
-
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 class TestImage : public Image {
 public:
@@ -97,9 +93,7 @@ public:
     }
 
 private:
-
     IntSize m_size;
-
     SkBitmap m_bitmap;
 };
 
@@ -246,4 +240,4 @@ TEST(DragImageTest, InterpolationNone)
     }
 }
 
-} // anonymous namespace
+} // namespace blink

@@ -29,10 +29,7 @@
 #include "platform/LifecycleNotifier.h"
 #include "platform/LifecycleObserver.h"
 #include "platform/heap/Handle.h"
-
 #include <gtest/gtest.h>
-
-using namespace blink;
 
 namespace blink {
 
@@ -59,7 +56,7 @@ public:
         return adoptPtrWillBeNoop(new TestingObserver(context));
     }
 
-    virtual void contextDestroyed() override
+    void contextDestroyed() override
     {
         LifecycleObserver::contextDestroyed();
         if (m_observerToRemoveOnDestruct) {

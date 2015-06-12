@@ -23,14 +23,11 @@
  */
 
 #include "config.h"
-
 #include "platform/geometry/Region.h"
 
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 #define TEST_INSIDE_RECT(r, x, y, w, h)                      \
     EXPECT_TRUE(r.contains(IntPoint(x, y)));                 \
@@ -391,4 +388,4 @@ TEST(RegionTest, unite)
     EXPECT_EQ(Region(IntRect(0, 0, 500, 500)), r);
 }
 
-} // namespace
+} // namespace blink

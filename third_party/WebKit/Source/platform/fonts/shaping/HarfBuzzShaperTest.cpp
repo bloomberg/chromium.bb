@@ -13,21 +13,18 @@
 #include <gtest/gtest.h>
 #include <unicode/uscript.h>
 
-namespace {
-
-using namespace blink;
-using namespace WTF;
+namespace blink {
 
 class HarfBuzzShaperTest : public ::testing::Test {
 protected:
-    virtual void SetUp()
+    void SetUp() override
     {
         fontDescription.setComputedSize(12.0);
         font = new Font(fontDescription);
         font->update(nullptr);
     }
 
-    virtual void TearDown()
+    void TearDown() override
     {
         delete font;
     }
@@ -47,11 +44,11 @@ TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsLatin)
     HarfBuzzShaper shaper(font, latinCommon);
     shaper.shape();
 
-    ASSERT_EQ(shaper.numberOfRunsForTesting(), 1u);
-    ASSERT_EQ(shaper.runInfoForTesting(0, startIndex, numGlyphs, script), true);
-    ASSERT_EQ(startIndex, 0u);
-    ASSERT_EQ(numGlyphs, 8u);
-    ASSERT_EQ(script, HB_SCRIPT_LATIN);
+    EXPECT_EQ(1u, shaper.numberOfRunsForTesting());
+    ASSERT_TRUE(shaper.runInfoForTesting(0, startIndex, numGlyphs, script));
+    EXPECT_EQ(0u, startIndex);
+    EXPECT_EQ(8u, numGlyphs);
+    EXPECT_EQ(HB_SCRIPT_LATIN, script);
 }
 
 TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsLeadingCommon)
@@ -60,11 +57,11 @@ TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsLeadingCommon)
     HarfBuzzShaper shaper(font, leadingCommon);
     shaper.shape();
 
-    ASSERT_EQ(shaper.numberOfRunsForTesting(), 1u);
-    ASSERT_EQ(shaper.runInfoForTesting(0, startIndex, numGlyphs, script), true);
-    ASSERT_EQ(startIndex, 0u);
-    ASSERT_EQ(numGlyphs, 8u);
-    ASSERT_EQ(script, HB_SCRIPT_LATIN);
+    EXPECT_EQ(1u, shaper.numberOfRunsForTesting());
+    ASSERT_TRUE(shaper.runInfoForTesting(0, startIndex, numGlyphs, script));
+    EXPECT_EQ(0u, startIndex);
+    EXPECT_EQ(8u, numGlyphs);
+    EXPECT_EQ(HB_SCRIPT_LATIN, script);
 }
 
 TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsUnicodeVariants)
@@ -101,16 +98,16 @@ TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsDevanagariCommon)
     HarfBuzzShaper shaper(font, devanagariCommonLatin);
     shaper.shape();
 
-    ASSERT_EQ(shaper.numberOfRunsForTesting(), 2u);
-    ASSERT_EQ(shaper.runInfoForTesting(0, startIndex, numGlyphs, script), true);
-    ASSERT_EQ(startIndex, 0u);
-    ASSERT_EQ(numGlyphs, 1u);
-    ASSERT_EQ(script, HB_SCRIPT_DEVANAGARI);
+    EXPECT_EQ(2u, shaper.numberOfRunsForTesting());
+    ASSERT_TRUE(shaper.runInfoForTesting(0, startIndex, numGlyphs, script));
+    EXPECT_EQ(0u, startIndex);
+    EXPECT_EQ(1u, numGlyphs);
+    EXPECT_EQ(HB_SCRIPT_DEVANAGARI, script);
 
-    ASSERT_EQ(shaper.runInfoForTesting(1, startIndex, numGlyphs, script), true);
-    ASSERT_EQ(startIndex, 3u);
-    ASSERT_EQ(numGlyphs, 3u);
-    ASSERT_EQ(script, HB_SCRIPT_DEVANAGARI);
+    ASSERT_TRUE(shaper.runInfoForTesting(1, startIndex, numGlyphs, script));
+    EXPECT_EQ(3u, startIndex);
+    EXPECT_EQ(3u, numGlyphs);
+    EXPECT_EQ(HB_SCRIPT_DEVANAGARI, script);
 }
 
 TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsDevanagariCommonLatinCommon)
@@ -120,21 +117,21 @@ TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsDevanagariCommonLatinCommon)
     HarfBuzzShaper shaper(font, devanagariCommonLatin);
     shaper.shape();
 
-    ASSERT_EQ(shaper.numberOfRunsForTesting(), 3u);
-    ASSERT_EQ(shaper.runInfoForTesting(0, startIndex, numGlyphs, script), true);
-    ASSERT_EQ(startIndex, 0u);
-    ASSERT_EQ(numGlyphs, 1u);
-    ASSERT_EQ(script, HB_SCRIPT_DEVANAGARI);
+    EXPECT_EQ(3u, shaper.numberOfRunsForTesting());
+    ASSERT_TRUE(shaper.runInfoForTesting(0, startIndex, numGlyphs, script));
+    EXPECT_EQ(0u, startIndex);
+    EXPECT_EQ(1u, numGlyphs);
+    EXPECT_EQ(HB_SCRIPT_DEVANAGARI, script);
 
-    ASSERT_EQ(shaper.runInfoForTesting(1, startIndex, numGlyphs, script), true);
-    ASSERT_EQ(startIndex, 3u);
-    ASSERT_EQ(numGlyphs, 1u);
-    ASSERT_EQ(script, HB_SCRIPT_DEVANAGARI);
+    ASSERT_TRUE(shaper.runInfoForTesting(1, startIndex, numGlyphs, script));
+    EXPECT_EQ(3u, startIndex);
+    EXPECT_EQ(1u, numGlyphs);
+    EXPECT_EQ(HB_SCRIPT_DEVANAGARI, script);
 
-    ASSERT_EQ(shaper.runInfoForTesting(2, startIndex, numGlyphs, script), true);
-    ASSERT_EQ(startIndex, 4u);
-    ASSERT_EQ(numGlyphs, 3u);
-    ASSERT_EQ(script, HB_SCRIPT_LATIN);
+    ASSERT_TRUE(shaper.runInfoForTesting(2, startIndex, numGlyphs, script));
+    EXPECT_EQ(4u, startIndex);
+    EXPECT_EQ(3u, numGlyphs);
+    EXPECT_EQ(HB_SCRIPT_LATIN, script);
 }
 
 TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsArabicThaiHanLatin)
@@ -144,26 +141,26 @@ TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsArabicThaiHanLatin)
     HarfBuzzShaper shaper(font, mixed);
     shaper.shape();
 
-    ASSERT_EQ(shaper.numberOfRunsForTesting(), 4u);
-    ASSERT_EQ(shaper.runInfoForTesting(0, startIndex, numGlyphs, script), true);
-    ASSERT_EQ(startIndex, 0u);
-    ASSERT_EQ(numGlyphs, 3u);
-    ASSERT_EQ(script, HB_SCRIPT_ARABIC);
+    EXPECT_EQ(4u, shaper.numberOfRunsForTesting());
+    ASSERT_TRUE(shaper.runInfoForTesting(0, startIndex, numGlyphs, script));
+    EXPECT_EQ(0u, startIndex);
+    EXPECT_EQ(3u, numGlyphs);
+    EXPECT_EQ(HB_SCRIPT_ARABIC, script);
 
-    ASSERT_EQ(shaper.runInfoForTesting(1, startIndex, numGlyphs, script), true);
-    ASSERT_EQ(startIndex, 3u);
-    ASSERT_EQ(numGlyphs, 1u);
-    ASSERT_EQ(script, HB_SCRIPT_THAI);
+    ASSERT_TRUE(shaper.runInfoForTesting(1, startIndex, numGlyphs, script));
+    EXPECT_EQ(3u, startIndex);
+    EXPECT_EQ(1u, numGlyphs);
+    EXPECT_EQ(HB_SCRIPT_THAI, script);
 
-    ASSERT_EQ(shaper.runInfoForTesting(2, startIndex, numGlyphs, script), true);
-    ASSERT_EQ(startIndex, 4u);
-    ASSERT_EQ(numGlyphs, 1u);
-    ASSERT_EQ(script, HB_SCRIPT_HAN);
+    ASSERT_TRUE(shaper.runInfoForTesting(2, startIndex, numGlyphs, script));
+    EXPECT_EQ(4u, startIndex);
+    EXPECT_EQ(1u, numGlyphs);
+    EXPECT_EQ(HB_SCRIPT_HAN, script);
 
-    ASSERT_EQ(shaper.runInfoForTesting(3, startIndex, numGlyphs, script), true);
-    ASSERT_EQ(startIndex, 5u);
-    ASSERT_EQ(numGlyphs, 1u);
-    ASSERT_EQ(script, HB_SCRIPT_LATIN);
+    ASSERT_TRUE(shaper.runInfoForTesting(3, startIndex, numGlyphs, script));
+    EXPECT_EQ(5u, startIndex);
+    EXPECT_EQ(1u, numGlyphs);
+    EXPECT_EQ(HB_SCRIPT_LATIN, script);
 }
 
 TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsArabic)
@@ -173,11 +170,11 @@ TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsArabic)
     HarfBuzzShaper shaper(font, arabic);
     shaper.shape();
 
-    ASSERT_EQ(shaper.numberOfRunsForTesting(), 1u);
-    ASSERT_EQ(shaper.runInfoForTesting(0, startIndex, numGlyphs, script), true);
-    ASSERT_EQ(startIndex, 0u);
-    ASSERT_EQ(numGlyphs, 3u);
-    ASSERT_EQ(script, HB_SCRIPT_ARABIC);
+    EXPECT_EQ(1u, shaper.numberOfRunsForTesting());
+    ASSERT_TRUE(shaper.runInfoForTesting(0, startIndex, numGlyphs, script));
+    EXPECT_EQ(0u, startIndex);
+    EXPECT_EQ(3u, numGlyphs);
+    EXPECT_EQ(HB_SCRIPT_ARABIC, script);
 }
 
-}
+} // namespace blink

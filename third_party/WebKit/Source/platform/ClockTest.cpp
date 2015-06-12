@@ -32,12 +32,9 @@
 #include "platform/Clock.h"
 
 #include "wtf/OwnPtr.h"
-
 #include <gtest/gtest.h>
 
-using blink::Clock;
-
-namespace {
+namespace blink {
 
 TEST(Clock, StartStop)
 {
@@ -58,4 +55,4 @@ TEST(Clock, SetCurrentTimeThenStartStop)
     EXPECT_TRUE(clock->currentTime() >= 10.0);
 }
 
-} // namespace
+} // namespace blink

@@ -26,12 +26,9 @@
 #include "platform/geometry/FloatBox.h"
 
 #include "platform/geometry/FloatBoxTestHelpers.h"
-
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 TEST(FloatBoxTest, SimpleCreationTest)
 {
@@ -118,4 +115,4 @@ TEST(FloatBoxTest, EmptyBoxTest)
     EXPECT_FALSE(box.isEmpty());
 }
 
-}
+} // namespace blink

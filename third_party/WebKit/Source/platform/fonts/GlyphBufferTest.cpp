@@ -10,7 +10,7 @@
 #include "wtf/RefPtr.h"
 #include <gtest/gtest.h>
 
-using namespace blink;
+namespace blink {
 
 namespace {
 
@@ -31,6 +31,8 @@ private:
         return false;
     }
 };
+
+} // anonymous namespace
 
 TEST(GlyphBufferTest, StartsEmpty)
 {
@@ -221,4 +223,4 @@ TEST(GlyphBufferTest, ReverseForSimpleRTL)
     EXPECT_EQ(85, glyphBuffer.xOffsetAt(2));
 }
 
-} // namespace
+} // namespace blink

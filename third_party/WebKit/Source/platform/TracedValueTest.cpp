@@ -3,14 +3,11 @@
 // found in the LICENSE file.
 
 #include "config.h"
-
 #include "platform/TracedValue.h"
 
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 TEST(TracedValueTest, FlatDictionary)
 {
@@ -48,4 +45,4 @@ TEST(TracedValueTest, Hierarchy)
     EXPECT_EQ("{\"i0\":2014,\"dict1\":{\"i1\":2014,\"dict2\":{\"b2\":false},\"s1\":\"foo\"},\"d0\":0,\"b0\":true,\"a1\":[1,true,{\"i2\":3}],\"s0\":\"foo\"}", json);
 }
 
-}
+} // namespace blink

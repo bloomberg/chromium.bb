@@ -34,229 +34,227 @@
 #include <gtest/gtest.h>
 #include <limits.h>
 
-using namespace blink;
+namespace blink {
 
-namespace {
-
-TEST(WebCoreLayoutUnit, LayoutUnitInt)
+TEST(LayoutUnitTest, LayoutUnitInt)
 {
-    ASSERT_EQ(LayoutUnit(INT_MIN).toInt(), intMinForLayoutUnit);
-    ASSERT_EQ(LayoutUnit(INT_MIN / 2).toInt(), intMinForLayoutUnit);
-    ASSERT_EQ(LayoutUnit(intMinForLayoutUnit - 1).toInt(), intMinForLayoutUnit);
-    ASSERT_EQ(LayoutUnit(intMinForLayoutUnit).toInt(), intMinForLayoutUnit);
-    ASSERT_EQ(LayoutUnit(intMinForLayoutUnit + 1).toInt(), intMinForLayoutUnit + 1);
-    ASSERT_EQ(LayoutUnit(intMinForLayoutUnit / 2).toInt(), intMinForLayoutUnit / 2);
-    ASSERT_EQ(LayoutUnit(-10000).toInt(), -10000);
-    ASSERT_EQ(LayoutUnit(-1000).toInt(), -1000);
-    ASSERT_EQ(LayoutUnit(-100).toInt(), -100);
-    ASSERT_EQ(LayoutUnit(-10).toInt(), -10);
-    ASSERT_EQ(LayoutUnit(-1).toInt(), -1);
-    ASSERT_EQ(LayoutUnit(0).toInt(), 0);
-    ASSERT_EQ(LayoutUnit(1).toInt(), 1);
-    ASSERT_EQ(LayoutUnit(100).toInt(), 100);
-    ASSERT_EQ(LayoutUnit(1000).toInt(), 1000);
-    ASSERT_EQ(LayoutUnit(10000).toInt(), 10000);
-    ASSERT_EQ(LayoutUnit(intMaxForLayoutUnit / 2).toInt(), intMaxForLayoutUnit / 2);
-    ASSERT_EQ(LayoutUnit(intMaxForLayoutUnit - 1).toInt(), intMaxForLayoutUnit - 1);
-    ASSERT_EQ(LayoutUnit(intMaxForLayoutUnit).toInt(), intMaxForLayoutUnit);
-    ASSERT_EQ(LayoutUnit(intMaxForLayoutUnit + 1).toInt(), intMaxForLayoutUnit);
-    ASSERT_EQ(LayoutUnit(INT_MAX / 2).toInt(), intMaxForLayoutUnit);
-    ASSERT_EQ(LayoutUnit(INT_MAX).toInt(), intMaxForLayoutUnit);
+    EXPECT_EQ(intMinForLayoutUnit, LayoutUnit(INT_MIN).toInt());
+    EXPECT_EQ(intMinForLayoutUnit, LayoutUnit(INT_MIN / 2).toInt());
+    EXPECT_EQ(intMinForLayoutUnit, LayoutUnit(intMinForLayoutUnit - 1).toInt());
+    EXPECT_EQ(intMinForLayoutUnit, LayoutUnit(intMinForLayoutUnit).toInt());
+    EXPECT_EQ(intMinForLayoutUnit + 1, LayoutUnit(intMinForLayoutUnit + 1).toInt());
+    EXPECT_EQ(intMinForLayoutUnit / 2, LayoutUnit(intMinForLayoutUnit / 2).toInt());
+    EXPECT_EQ(-10000, LayoutUnit(-10000).toInt());
+    EXPECT_EQ(-1000, LayoutUnit(-1000).toInt());
+    EXPECT_EQ(-100, LayoutUnit(-100).toInt());
+    EXPECT_EQ(-10, LayoutUnit(-10).toInt());
+    EXPECT_EQ(-1, LayoutUnit(-1).toInt());
+    EXPECT_EQ(0, LayoutUnit(0).toInt());
+    EXPECT_EQ(1, LayoutUnit(1).toInt());
+    EXPECT_EQ(100, LayoutUnit(100).toInt());
+    EXPECT_EQ(1000, LayoutUnit(1000).toInt());
+    EXPECT_EQ(10000, LayoutUnit(10000).toInt());
+    EXPECT_EQ(intMaxForLayoutUnit / 2, LayoutUnit(intMaxForLayoutUnit / 2).toInt());
+    EXPECT_EQ(intMaxForLayoutUnit - 1, LayoutUnit(intMaxForLayoutUnit - 1).toInt());
+    EXPECT_EQ(intMaxForLayoutUnit, LayoutUnit(intMaxForLayoutUnit).toInt());
+    EXPECT_EQ(intMaxForLayoutUnit, LayoutUnit(intMaxForLayoutUnit + 1).toInt());
+    EXPECT_EQ(intMaxForLayoutUnit, LayoutUnit(INT_MAX / 2).toInt());
+    EXPECT_EQ(intMaxForLayoutUnit, LayoutUnit(INT_MAX).toInt());
 }
 
-TEST(WebCoreLayoutUnit, LayoutUnitFloat)
+TEST(LayoutUnitTest, LayoutUnitFloat)
 {
     const float tolerance = 1.0f / kFixedPointDenominator;
-    ASSERT_FLOAT_EQ(LayoutUnit(1.0f).toFloat(), 1.0f);
-    ASSERT_FLOAT_EQ(LayoutUnit(1.25f).toFloat(), 1.25f);
-    ASSERT_NEAR(LayoutUnit(1.1f).toFloat(), 1.1f, tolerance);
-    ASSERT_NEAR(LayoutUnit(1.33f).toFloat(), 1.33f, tolerance);
-    ASSERT_NEAR(LayoutUnit(1.3333f).toFloat(), 1.3333f, tolerance);
-    ASSERT_NEAR(LayoutUnit(1.53434f).toFloat(), 1.53434f, tolerance);
-    ASSERT_NEAR(LayoutUnit(345634).toFloat(), 345634.0f, tolerance);
-    ASSERT_NEAR(LayoutUnit(345634.12335f).toFloat(), 345634.12335f, tolerance);
-    ASSERT_NEAR(LayoutUnit(-345634.12335f).toFloat(), -345634.12335f, tolerance);
-    ASSERT_NEAR(LayoutUnit(-345634).toFloat(), -345634.0f, tolerance);
+    EXPECT_FLOAT_EQ(1.0f, LayoutUnit(1.0f).toFloat());
+    EXPECT_FLOAT_EQ(1.25f, LayoutUnit(1.25f).toFloat());
+    EXPECT_NEAR(LayoutUnit(1.1f).toFloat(), 1.1f, tolerance);
+    EXPECT_NEAR(LayoutUnit(1.33f).toFloat(), 1.33f, tolerance);
+    EXPECT_NEAR(LayoutUnit(1.3333f).toFloat(), 1.3333f, tolerance);
+    EXPECT_NEAR(LayoutUnit(1.53434f).toFloat(), 1.53434f, tolerance);
+    EXPECT_NEAR(LayoutUnit(345634).toFloat(), 345634.0f, tolerance);
+    EXPECT_NEAR(LayoutUnit(345634.12335f).toFloat(), 345634.12335f, tolerance);
+    EXPECT_NEAR(LayoutUnit(-345634.12335f).toFloat(), -345634.12335f, tolerance);
+    EXPECT_NEAR(LayoutUnit(-345634).toFloat(), -345634.0f, tolerance);
 }
 
-TEST(WebCoreLayoutUnit, LayoutUnitRounding)
+TEST(LayoutUnitTest, LayoutUnitRounding)
 {
-    ASSERT_EQ(LayoutUnit(-1.9f).round(), -2);
-    ASSERT_EQ(LayoutUnit(-1.6f).round(), -2);
-    ASSERT_EQ(LayoutUnit::fromFloatRound(-1.51f).round(), -2);
-    ASSERT_EQ(LayoutUnit::fromFloatRound(-1.5f).round(), -1);
-    ASSERT_EQ(LayoutUnit::fromFloatRound(-1.49f).round(), -1);
-    ASSERT_EQ(LayoutUnit(-1.0f).round(), -1);
-    ASSERT_EQ(LayoutUnit::fromFloatRound(-0.99f).round(), -1);
-    ASSERT_EQ(LayoutUnit::fromFloatRound(-0.51f).round(), -1);
-    ASSERT_EQ(LayoutUnit::fromFloatRound(-0.50f).round(), 0);
-    ASSERT_EQ(LayoutUnit::fromFloatRound(-0.49f).round(), 0);
-    ASSERT_EQ(LayoutUnit(-0.1f).round(), 0);
-    ASSERT_EQ(LayoutUnit(0.0f).round(), 0);
-    ASSERT_EQ(LayoutUnit(0.1f).round(), 0);
-    ASSERT_EQ(LayoutUnit::fromFloatRound(0.49f).round(), 0);
-    ASSERT_EQ(LayoutUnit::fromFloatRound(0.50f).round(), 1);
-    ASSERT_EQ(LayoutUnit::fromFloatRound(0.51f).round(), 1);
-    ASSERT_EQ(LayoutUnit(0.99f).round(), 1);
-    ASSERT_EQ(LayoutUnit(1.0f).round(), 1);
-    ASSERT_EQ(LayoutUnit::fromFloatRound(1.49f).round(), 1);
-    ASSERT_EQ(LayoutUnit::fromFloatRound(1.5f).round(), 2);
-    ASSERT_EQ(LayoutUnit::fromFloatRound(1.51f).round(), 2);
+    EXPECT_EQ(-2, LayoutUnit(-1.9f).round());
+    EXPECT_EQ(-2, LayoutUnit(-1.6f).round());
+    EXPECT_EQ(-2, LayoutUnit::fromFloatRound(-1.51f).round());
+    EXPECT_EQ(-1, LayoutUnit::fromFloatRound(-1.5f).round());
+    EXPECT_EQ(-1, LayoutUnit::fromFloatRound(-1.49f).round());
+    EXPECT_EQ(-1, LayoutUnit(-1.0f).round());
+    EXPECT_EQ(-1, LayoutUnit::fromFloatRound(-0.99f).round());
+    EXPECT_EQ(-1, LayoutUnit::fromFloatRound(-0.51f).round());
+    EXPECT_EQ(0, LayoutUnit::fromFloatRound(-0.50f).round());
+    EXPECT_EQ(0, LayoutUnit::fromFloatRound(-0.49f).round());
+    EXPECT_EQ(0, LayoutUnit(-0.1f).round());
+    EXPECT_EQ(0, LayoutUnit(0.0f).round());
+    EXPECT_EQ(0, LayoutUnit(0.1f).round());
+    EXPECT_EQ(0, LayoutUnit::fromFloatRound(0.49f).round());
+    EXPECT_EQ(1, LayoutUnit::fromFloatRound(0.50f).round());
+    EXPECT_EQ(1, LayoutUnit::fromFloatRound(0.51f).round());
+    EXPECT_EQ(1, LayoutUnit(0.99f).round());
+    EXPECT_EQ(1, LayoutUnit(1.0f).round());
+    EXPECT_EQ(1, LayoutUnit::fromFloatRound(1.49f).round());
+    EXPECT_EQ(2, LayoutUnit::fromFloatRound(1.5f).round());
+    EXPECT_EQ(2, LayoutUnit::fromFloatRound(1.51f).round());
 }
 
-TEST(WebCoreLayoutUnit, LayoutUnitSnapSizeToPixel)
+TEST(LayoutUnitTest, LayoutUnitSnapSizeToPixel)
 {
-    ASSERT_EQ(snapSizeToPixel(LayoutUnit(1), LayoutUnit(0)), 1);
-    ASSERT_EQ(snapSizeToPixel(LayoutUnit(1), LayoutUnit(0.5)), 1);
-    ASSERT_EQ(snapSizeToPixel(LayoutUnit(1.5), LayoutUnit(0)), 2);
-    ASSERT_EQ(snapSizeToPixel(LayoutUnit(1.5), LayoutUnit(0.49)), 2);
-    ASSERT_EQ(snapSizeToPixel(LayoutUnit(1.5), LayoutUnit(0.5)), 1);
-    ASSERT_EQ(snapSizeToPixel(LayoutUnit(1.5), LayoutUnit(0.75)), 1);
-    ASSERT_EQ(snapSizeToPixel(LayoutUnit(1.5), LayoutUnit(0.99)), 1);
-    ASSERT_EQ(snapSizeToPixel(LayoutUnit(1.5), LayoutUnit(1)), 2);
+    EXPECT_EQ(1, snapSizeToPixel(LayoutUnit(1), LayoutUnit(0)));
+    EXPECT_EQ(1, snapSizeToPixel(LayoutUnit(1), LayoutUnit(0.5)));
+    EXPECT_EQ(2, snapSizeToPixel(LayoutUnit(1.5), LayoutUnit(0)));
+    EXPECT_EQ(2, snapSizeToPixel(LayoutUnit(1.5), LayoutUnit(0.49)));
+    EXPECT_EQ(1, snapSizeToPixel(LayoutUnit(1.5), LayoutUnit(0.5)));
+    EXPECT_EQ(1, snapSizeToPixel(LayoutUnit(1.5), LayoutUnit(0.75)));
+    EXPECT_EQ(1, snapSizeToPixel(LayoutUnit(1.5), LayoutUnit(0.99)));
+    EXPECT_EQ(2, snapSizeToPixel(LayoutUnit(1.5), LayoutUnit(1)));
 
-    ASSERT_EQ(snapSizeToPixel(LayoutUnit(0.5), LayoutUnit(1.5)), 0);
-    ASSERT_EQ(snapSizeToPixel(LayoutUnit(0.99), LayoutUnit(1.5)), 0);
-    ASSERT_EQ(snapSizeToPixel(LayoutUnit(1.0), LayoutUnit(1.5)), 1);
-    ASSERT_EQ(snapSizeToPixel(LayoutUnit(1.49), LayoutUnit(1.5)), 1);
-    ASSERT_EQ(snapSizeToPixel(LayoutUnit(1.5), LayoutUnit(1.5)), 1);
+    EXPECT_EQ(0, snapSizeToPixel(LayoutUnit(0.5), LayoutUnit(1.5)));
+    EXPECT_EQ(0, snapSizeToPixel(LayoutUnit(0.99), LayoutUnit(1.5)));
+    EXPECT_EQ(1, snapSizeToPixel(LayoutUnit(1.0), LayoutUnit(1.5)));
+    EXPECT_EQ(1, snapSizeToPixel(LayoutUnit(1.49), LayoutUnit(1.5)));
+    EXPECT_EQ(1, snapSizeToPixel(LayoutUnit(1.5), LayoutUnit(1.5)));
 
-    ASSERT_EQ(snapSizeToPixel(LayoutUnit(100.5), LayoutUnit(100)), 101);
-    ASSERT_EQ(snapSizeToPixel(LayoutUnit(intMaxForLayoutUnit), LayoutUnit(0.3)), intMaxForLayoutUnit);
-    ASSERT_EQ(snapSizeToPixel(LayoutUnit(intMinForLayoutUnit), LayoutUnit(-0.3)), intMinForLayoutUnit);
+    EXPECT_EQ(101, snapSizeToPixel(LayoutUnit(100.5), LayoutUnit(100)));
+    EXPECT_EQ(intMaxForLayoutUnit, snapSizeToPixel(LayoutUnit(intMaxForLayoutUnit), LayoutUnit(0.3)));
+    EXPECT_EQ(intMinForLayoutUnit, snapSizeToPixel(LayoutUnit(intMinForLayoutUnit), LayoutUnit(-0.3)));
 }
 
-TEST(WebCoreLayoutUnit, LayoutUnitMultiplication)
+TEST(LayoutUnitTest, LayoutUnitMultiplication)
 {
-    ASSERT_EQ((LayoutUnit(1) * LayoutUnit(1)).toInt(), 1);
-    ASSERT_EQ((LayoutUnit(1) * LayoutUnit(2)).toInt(), 2);
-    ASSERT_EQ((LayoutUnit(2) * LayoutUnit(1)).toInt(), 2);
-    ASSERT_EQ((LayoutUnit(2) * LayoutUnit(0.5)).toInt(), 1);
-    ASSERT_EQ((LayoutUnit(0.5) * LayoutUnit(2)).toInt(), 1);
-    ASSERT_EQ((LayoutUnit(100) * LayoutUnit(1)).toInt(), 100);
+    EXPECT_EQ(1, (LayoutUnit(1) * LayoutUnit(1)).toInt());
+    EXPECT_EQ(2, (LayoutUnit(1) * LayoutUnit(2)).toInt());
+    EXPECT_EQ(2, (LayoutUnit(2) * LayoutUnit(1)).toInt());
+    EXPECT_EQ(1, (LayoutUnit(2) * LayoutUnit(0.5)).toInt());
+    EXPECT_EQ(1, (LayoutUnit(0.5) * LayoutUnit(2)).toInt());
+    EXPECT_EQ(100, (LayoutUnit(100) * LayoutUnit(1)).toInt());
 
-    ASSERT_EQ((LayoutUnit(-1) * LayoutUnit(1)).toInt(), -1);
-    ASSERT_EQ((LayoutUnit(-1) * LayoutUnit(2)).toInt(), -2);
-    ASSERT_EQ((LayoutUnit(-2) * LayoutUnit(1)).toInt(), -2);
-    ASSERT_EQ((LayoutUnit(-2) * LayoutUnit(0.5)).toInt(), -1);
-    ASSERT_EQ((LayoutUnit(-0.5) * LayoutUnit(2)).toInt(), -1);
-    ASSERT_EQ((LayoutUnit(-100) * LayoutUnit(1)).toInt(), -100);
+    EXPECT_EQ(-1, (LayoutUnit(-1) * LayoutUnit(1)).toInt());
+    EXPECT_EQ(-2, (LayoutUnit(-1) * LayoutUnit(2)).toInt());
+    EXPECT_EQ(-2, (LayoutUnit(-2) * LayoutUnit(1)).toInt());
+    EXPECT_EQ(-1, (LayoutUnit(-2) * LayoutUnit(0.5)).toInt());
+    EXPECT_EQ(-1, (LayoutUnit(-0.5) * LayoutUnit(2)).toInt());
+    EXPECT_EQ(-100, (LayoutUnit(-100) * LayoutUnit(1)).toInt());
 
-    ASSERT_EQ((LayoutUnit(-1) * LayoutUnit(-1)).toInt(), 1);
-    ASSERT_EQ((LayoutUnit(-1) * LayoutUnit(-2)).toInt(), 2);
-    ASSERT_EQ((LayoutUnit(-2) * LayoutUnit(-1)).toInt(), 2);
-    ASSERT_EQ((LayoutUnit(-2) * LayoutUnit(-0.5)).toInt(), 1);
-    ASSERT_EQ((LayoutUnit(-0.5) * LayoutUnit(-2)).toInt(), 1);
-    ASSERT_EQ((LayoutUnit(-100) * LayoutUnit(-1)).toInt(), 100);
+    EXPECT_EQ(1, (LayoutUnit(-1) * LayoutUnit(-1)).toInt());
+    EXPECT_EQ(2, (LayoutUnit(-1) * LayoutUnit(-2)).toInt());
+    EXPECT_EQ(2, (LayoutUnit(-2) * LayoutUnit(-1)).toInt());
+    EXPECT_EQ(1, (LayoutUnit(-2) * LayoutUnit(-0.5)).toInt());
+    EXPECT_EQ(1, (LayoutUnit(-0.5) * LayoutUnit(-2)).toInt());
+    EXPECT_EQ(100, (LayoutUnit(-100) * LayoutUnit(-1)).toInt());
 
-    ASSERT_EQ((LayoutUnit(100) * LayoutUnit(3.33)).round(), 333);
-    ASSERT_EQ((LayoutUnit(-100) * LayoutUnit(3.33)).round(), -333);
-    ASSERT_EQ((LayoutUnit(-100) * LayoutUnit(-3.33)).round(), 333);
+    EXPECT_EQ(333, (LayoutUnit(100) * LayoutUnit(3.33)).round());
+    EXPECT_EQ(-333, (LayoutUnit(-100) * LayoutUnit(3.33)).round());
+    EXPECT_EQ(333, (LayoutUnit(-100) * LayoutUnit(-3.33)).round());
 
     size_t aHundredSizeT = 100;
-    ASSERT_EQ((LayoutUnit(aHundredSizeT) * LayoutUnit(1)).toInt(), 100);
-    ASSERT_EQ((aHundredSizeT * LayoutUnit(4)).toInt(), 400);
-    ASSERT_EQ((LayoutUnit(4) * aHundredSizeT).toInt(), 400);
+    EXPECT_EQ(100, (LayoutUnit(aHundredSizeT) * LayoutUnit(1)).toInt());
+    EXPECT_EQ(400, (aHundredSizeT * LayoutUnit(4)).toInt());
+    EXPECT_EQ(400, (LayoutUnit(4) * aHundredSizeT).toInt());
 
     int quarterMax = intMaxForLayoutUnit / 4;
-    ASSERT_EQ((LayoutUnit(quarterMax) * LayoutUnit(2)).toInt(), quarterMax * 2);
-    ASSERT_EQ((LayoutUnit(quarterMax) * LayoutUnit(3)).toInt(), quarterMax * 3);
-    ASSERT_EQ((LayoutUnit(quarterMax) * LayoutUnit(4)).toInt(), quarterMax * 4);
-    ASSERT_EQ((LayoutUnit(quarterMax) * LayoutUnit(5)).toInt(), intMaxForLayoutUnit);
+    EXPECT_EQ(quarterMax * 2, (LayoutUnit(quarterMax) * LayoutUnit(2)).toInt());
+    EXPECT_EQ(quarterMax * 3, (LayoutUnit(quarterMax) * LayoutUnit(3)).toInt());
+    EXPECT_EQ(quarterMax * 4, (LayoutUnit(quarterMax) * LayoutUnit(4)).toInt());
+    EXPECT_EQ(intMaxForLayoutUnit, (LayoutUnit(quarterMax) * LayoutUnit(5)).toInt());
 
     size_t overflowIntSizeT = intMaxForLayoutUnit * 4;
-    ASSERT_EQ((LayoutUnit(overflowIntSizeT) * LayoutUnit(2)).toInt(), intMaxForLayoutUnit);
-    ASSERT_EQ((overflowIntSizeT * LayoutUnit(4)).toInt(), intMaxForLayoutUnit);
-    ASSERT_EQ((LayoutUnit(4) * overflowIntSizeT).toInt(), intMaxForLayoutUnit);
+    EXPECT_EQ(intMaxForLayoutUnit, (LayoutUnit(overflowIntSizeT) * LayoutUnit(2)).toInt());
+    EXPECT_EQ(intMaxForLayoutUnit, (overflowIntSizeT * LayoutUnit(4)).toInt());
+    EXPECT_EQ(intMaxForLayoutUnit, (LayoutUnit(4) * overflowIntSizeT).toInt());
 }
 
-TEST(WebCoreLayoutUnit, LayoutUnitDivision)
+TEST(LayoutUnitTest, LayoutUnitDivision)
 {
-    ASSERT_EQ((LayoutUnit(1) / LayoutUnit(1)).toInt(), 1);
-    ASSERT_EQ((LayoutUnit(1) / LayoutUnit(2)).toInt(), 0);
-    ASSERT_EQ((LayoutUnit(2) / LayoutUnit(1)).toInt(), 2);
-    ASSERT_EQ((LayoutUnit(2) / LayoutUnit(0.5)).toInt(), 4);
-    ASSERT_EQ((LayoutUnit(0.5) / LayoutUnit(2)).toInt(), 0);
-    ASSERT_EQ((LayoutUnit(100) / LayoutUnit(10)).toInt(), 10);
-    ASSERT_FLOAT_EQ((LayoutUnit(1) / LayoutUnit(2)).toFloat(), 0.5f);
-    ASSERT_FLOAT_EQ((LayoutUnit(0.5) / LayoutUnit(2)).toFloat(), 0.25f);
+    EXPECT_EQ(1, (LayoutUnit(1) / LayoutUnit(1)).toInt());
+    EXPECT_EQ(0, (LayoutUnit(1) / LayoutUnit(2)).toInt());
+    EXPECT_EQ(2, (LayoutUnit(2) / LayoutUnit(1)).toInt());
+    EXPECT_EQ(4, (LayoutUnit(2) / LayoutUnit(0.5)).toInt());
+    EXPECT_EQ(0, (LayoutUnit(0.5) / LayoutUnit(2)).toInt());
+    EXPECT_EQ(10, (LayoutUnit(100) / LayoutUnit(10)).toInt());
+    EXPECT_FLOAT_EQ(0.5f, (LayoutUnit(1) / LayoutUnit(2)).toFloat());
+    EXPECT_FLOAT_EQ(0.25f, (LayoutUnit(0.5) / LayoutUnit(2)).toFloat());
 
-    ASSERT_EQ((LayoutUnit(-1) / LayoutUnit(1)).toInt(), -1);
-    ASSERT_EQ((LayoutUnit(-1) / LayoutUnit(2)).toInt(), 0);
-    ASSERT_EQ((LayoutUnit(-2) / LayoutUnit(1)).toInt(), -2);
-    ASSERT_EQ((LayoutUnit(-2) / LayoutUnit(0.5)).toInt(), -4);
-    ASSERT_EQ((LayoutUnit(-0.5) / LayoutUnit(2)).toInt(), 0);
-    ASSERT_EQ((LayoutUnit(-100) / LayoutUnit(10)).toInt(), -10);
-    ASSERT_FLOAT_EQ((LayoutUnit(-1) / LayoutUnit(2)).toFloat(), -0.5f);
-    ASSERT_FLOAT_EQ((LayoutUnit(-0.5) / LayoutUnit(2)).toFloat(), -0.25f);
+    EXPECT_EQ(-1, (LayoutUnit(-1) / LayoutUnit(1)).toInt());
+    EXPECT_EQ(0, (LayoutUnit(-1) / LayoutUnit(2)).toInt());
+    EXPECT_EQ(-2, (LayoutUnit(-2) / LayoutUnit(1)).toInt());
+    EXPECT_EQ(-4, (LayoutUnit(-2) / LayoutUnit(0.5)).toInt());
+    EXPECT_EQ(0, (LayoutUnit(-0.5) / LayoutUnit(2)).toInt());
+    EXPECT_EQ(-10, (LayoutUnit(-100) / LayoutUnit(10)).toInt());
+    EXPECT_FLOAT_EQ(-0.5f, (LayoutUnit(-1) / LayoutUnit(2)).toFloat());
+    EXPECT_FLOAT_EQ(-0.25f, (LayoutUnit(-0.5) / LayoutUnit(2)).toFloat());
 
-    ASSERT_EQ((LayoutUnit(-1) / LayoutUnit(-1)).toInt(), 1);
-    ASSERT_EQ((LayoutUnit(-1) / LayoutUnit(-2)).toInt(), 0);
-    ASSERT_EQ((LayoutUnit(-2) / LayoutUnit(-1)).toInt(), 2);
-    ASSERT_EQ((LayoutUnit(-2) / LayoutUnit(-0.5)).toInt(), 4);
-    ASSERT_EQ((LayoutUnit(-0.5) / LayoutUnit(-2)).toInt(), 0);
-    ASSERT_EQ((LayoutUnit(-100) / LayoutUnit(-10)).toInt(), 10);
-    ASSERT_FLOAT_EQ((LayoutUnit(-1) / LayoutUnit(-2)).toFloat(), 0.5f);
-    ASSERT_FLOAT_EQ((LayoutUnit(-0.5) / LayoutUnit(-2)).toFloat(), 0.25f);
+    EXPECT_EQ(1, (LayoutUnit(-1) / LayoutUnit(-1)).toInt());
+    EXPECT_EQ(0, (LayoutUnit(-1) / LayoutUnit(-2)).toInt());
+    EXPECT_EQ(2, (LayoutUnit(-2) / LayoutUnit(-1)).toInt());
+    EXPECT_EQ(4, (LayoutUnit(-2) / LayoutUnit(-0.5)).toInt());
+    EXPECT_EQ(0, (LayoutUnit(-0.5) / LayoutUnit(-2)).toInt());
+    EXPECT_EQ(10, (LayoutUnit(-100) / LayoutUnit(-10)).toInt());
+    EXPECT_FLOAT_EQ(0.5f, (LayoutUnit(-1) / LayoutUnit(-2)).toFloat());
+    EXPECT_FLOAT_EQ(0.25f, (LayoutUnit(-0.5) / LayoutUnit(-2)).toFloat());
 
     size_t aHundredSizeT = 100;
-    ASSERT_EQ((LayoutUnit(aHundredSizeT) / LayoutUnit(2)).toInt(), 50);
-    ASSERT_EQ((aHundredSizeT / LayoutUnit(4)).toInt(), 25);
-    ASSERT_EQ((LayoutUnit(400) / aHundredSizeT).toInt(), 4);
+    EXPECT_EQ(50, (LayoutUnit(aHundredSizeT) / LayoutUnit(2)).toInt());
+    EXPECT_EQ(25, (aHundredSizeT / LayoutUnit(4)).toInt());
+    EXPECT_EQ(4, (LayoutUnit(400) / aHundredSizeT).toInt());
 
-    ASSERT_EQ((LayoutUnit(intMaxForLayoutUnit) / LayoutUnit(2)).toInt(), intMaxForLayoutUnit / 2);
-    ASSERT_EQ((LayoutUnit(intMaxForLayoutUnit) / LayoutUnit(0.5)).toInt(), intMaxForLayoutUnit);
+    EXPECT_EQ(intMaxForLayoutUnit / 2, (LayoutUnit(intMaxForLayoutUnit) / LayoutUnit(2)).toInt());
+    EXPECT_EQ(intMaxForLayoutUnit, (LayoutUnit(intMaxForLayoutUnit) / LayoutUnit(0.5)).toInt());
 }
 
-TEST(WebCoreLayoutUnit, LayoutUnitCeil)
+TEST(LayoutUnitTest, LayoutUnitCeil)
 {
-    ASSERT_EQ(LayoutUnit(0).ceil(), 0);
-    ASSERT_EQ(LayoutUnit(0.1).ceil(), 1);
-    ASSERT_EQ(LayoutUnit(0.5).ceil(), 1);
-    ASSERT_EQ(LayoutUnit(0.9).ceil(), 1);
-    ASSERT_EQ(LayoutUnit(1.0).ceil(), 1);
-    ASSERT_EQ(LayoutUnit(1.1).ceil(), 2);
+    EXPECT_EQ(0, LayoutUnit(0).ceil());
+    EXPECT_EQ(1, LayoutUnit(0.1).ceil());
+    EXPECT_EQ(1, LayoutUnit(0.5).ceil());
+    EXPECT_EQ(1, LayoutUnit(0.9).ceil());
+    EXPECT_EQ(1, LayoutUnit(1.0).ceil());
+    EXPECT_EQ(2, LayoutUnit(1.1).ceil());
 
-    ASSERT_EQ(LayoutUnit(-0.1).ceil(), 0);
-    ASSERT_EQ(LayoutUnit(-0.5).ceil(), 0);
-    ASSERT_EQ(LayoutUnit(-0.9).ceil(), 0);
-    ASSERT_EQ(LayoutUnit(-1.0).ceil(), -1);
+    EXPECT_EQ(0, LayoutUnit(-0.1).ceil());
+    EXPECT_EQ(0, LayoutUnit(-0.5).ceil());
+    EXPECT_EQ(0, LayoutUnit(-0.9).ceil());
+    EXPECT_EQ(-1, LayoutUnit(-1.0).ceil());
 
-    ASSERT_EQ(LayoutUnit(intMaxForLayoutUnit).ceil(), intMaxForLayoutUnit);
-    ASSERT_EQ((LayoutUnit(intMaxForLayoutUnit) - LayoutUnit(0.5)).ceil(), intMaxForLayoutUnit);
-    ASSERT_EQ((LayoutUnit(intMaxForLayoutUnit) - LayoutUnit(1)).ceil(), intMaxForLayoutUnit - 1);
+    EXPECT_EQ(intMaxForLayoutUnit, LayoutUnit(intMaxForLayoutUnit).ceil());
+    EXPECT_EQ(intMaxForLayoutUnit, (LayoutUnit(intMaxForLayoutUnit) - LayoutUnit(0.5)).ceil());
+    EXPECT_EQ(intMaxForLayoutUnit - 1, (LayoutUnit(intMaxForLayoutUnit) - LayoutUnit(1)).ceil());
 
-    ASSERT_EQ(LayoutUnit(intMinForLayoutUnit).ceil(), intMinForLayoutUnit);
+    EXPECT_EQ(intMinForLayoutUnit, LayoutUnit(intMinForLayoutUnit).ceil());
 }
 
-TEST(WebCoreLayoutUnit, LayoutUnitFloor)
+TEST(LayoutUnitTest, LayoutUnitFloor)
 {
-    ASSERT_EQ(LayoutUnit(0).floor(), 0);
-    ASSERT_EQ(LayoutUnit(0.1).floor(), 0);
-    ASSERT_EQ(LayoutUnit(0.5).floor(), 0);
-    ASSERT_EQ(LayoutUnit(0.9).floor(), 0);
-    ASSERT_EQ(LayoutUnit(1.0).floor(), 1);
-    ASSERT_EQ(LayoutUnit(1.1).floor(), 1);
+    EXPECT_EQ(0, LayoutUnit(0).floor());
+    EXPECT_EQ(0, LayoutUnit(0.1).floor());
+    EXPECT_EQ(0, LayoutUnit(0.5).floor());
+    EXPECT_EQ(0, LayoutUnit(0.9).floor());
+    EXPECT_EQ(1, LayoutUnit(1.0).floor());
+    EXPECT_EQ(1, LayoutUnit(1.1).floor());
 
-    ASSERT_EQ(LayoutUnit(-0.1).floor(), -1);
-    ASSERT_EQ(LayoutUnit(-0.5).floor(), -1);
-    ASSERT_EQ(LayoutUnit(-0.9).floor(), -1);
-    ASSERT_EQ(LayoutUnit(-1.0).floor(), -1);
+    EXPECT_EQ(-1, LayoutUnit(-0.1).floor());
+    EXPECT_EQ(-1, LayoutUnit(-0.5).floor());
+    EXPECT_EQ(-1, LayoutUnit(-0.9).floor());
+    EXPECT_EQ(-1, LayoutUnit(-1.0).floor());
 
-    ASSERT_EQ(LayoutUnit(intMaxForLayoutUnit).floor(), intMaxForLayoutUnit);
+    EXPECT_EQ(intMaxForLayoutUnit, LayoutUnit(intMaxForLayoutUnit).floor());
 
-    ASSERT_EQ(LayoutUnit(intMinForLayoutUnit).floor(), intMinForLayoutUnit);
-    ASSERT_EQ((LayoutUnit(intMinForLayoutUnit) + LayoutUnit(0.5)).floor(), intMinForLayoutUnit);
-    ASSERT_EQ((LayoutUnit(intMinForLayoutUnit) + LayoutUnit(1)).floor(), intMinForLayoutUnit + 1);
+    EXPECT_EQ(intMinForLayoutUnit, LayoutUnit(intMinForLayoutUnit).floor());
+    EXPECT_EQ(intMinForLayoutUnit, (LayoutUnit(intMinForLayoutUnit) + LayoutUnit(0.5)).floor());
+    EXPECT_EQ(intMinForLayoutUnit + 1, (LayoutUnit(intMinForLayoutUnit) + LayoutUnit(1)).floor());
 }
 
-TEST(WebCoreLayoutUnit, LayoutUnitFloatOverflow)
+TEST(LayoutUnitTest, LayoutUnitFloatOverflow)
 {
     // These should overflow to the max/min according to their sign.
-    ASSERT_EQ(intMaxForLayoutUnit, LayoutUnit(176972000.0f).toInt());
-    ASSERT_EQ(intMinForLayoutUnit, LayoutUnit(-176972000.0f).toInt());
-    ASSERT_EQ(intMaxForLayoutUnit, LayoutUnit(176972000.0).toInt());
-    ASSERT_EQ(intMinForLayoutUnit, LayoutUnit(-176972000.0).toInt());
+    EXPECT_EQ(intMaxForLayoutUnit, LayoutUnit(176972000.0f).toInt());
+    EXPECT_EQ(intMinForLayoutUnit, LayoutUnit(-176972000.0f).toInt());
+    EXPECT_EQ(intMaxForLayoutUnit, LayoutUnit(176972000.0).toInt());
+    EXPECT_EQ(intMinForLayoutUnit, LayoutUnit(-176972000.0).toInt());
 }
 
-} // namespace
+} // namespace blink

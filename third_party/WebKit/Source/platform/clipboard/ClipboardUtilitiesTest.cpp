@@ -33,12 +33,9 @@
 
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/WTFString.h"
-
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 #if OS(WIN)
 const char invalidCharacters[] = "\x00/\\:*?\"<>|";
@@ -88,4 +85,4 @@ TEST(ClipboardUtilitiesTest, NamePlusExtensionTooLong)
     EXPECT_EQ(254u, name.length() + extension.length());
 }
 
-} // anonymous namespace
+} // namespace blink

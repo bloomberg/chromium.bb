@@ -6,12 +6,9 @@
 #include "platform/geometry/FloatPoint.h"
 
 #include "platform/geometry/GeometryTestHelpers.h"
-
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 TEST(FloatPointTest, LengthTest)
 {
@@ -31,4 +28,4 @@ TEST(FloatPointTest, LengthTest)
     EXPECT_PRED_FORMAT2(GeometryTest::AssertAlmostEqual, p4.length(), .707106781186548e20f);
 }
 
-}
+} // namespace blink

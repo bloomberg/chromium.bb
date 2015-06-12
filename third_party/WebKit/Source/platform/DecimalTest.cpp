@@ -48,10 +48,6 @@ std::ostream& operator<<(std::ostream& os, const Decimal& decimal)
         << ")=" << decimal.toString().ascii().data();
 }
 
-} // namespace blink
-
-using namespace blink;
-
 // Simulate WebCore/html/StepRange
 class DecimalStepRange {
 public:
@@ -76,21 +72,21 @@ public:
 
 class DecimalTest : public ::testing::Test {
 protected:
-    typedef Decimal::Sign Sign;
-    protected: static const Sign Positive = Decimal::Positive;
-    protected: static const Sign Negative = Decimal::Negative;
+    using Sign = Decimal::Sign;
+    static const Sign Positive = Decimal::Positive;
+    static const Sign Negative = Decimal::Negative;
 
     Decimal encode(uint64_t coefficient, int exponent, Sign sign)
     {
         return Decimal(sign, exponent, coefficient);
     }
 
-    protected: Decimal fromString(const String& string)
+    Decimal fromString(const String& string)
     {
         return Decimal::fromString(string);
     }
 
-    protected: Decimal stepDown(const String& minimum, const String& maximum, const String& step, const String& valueString, int numberOfStepTimes)
+    Decimal stepDown(const String& minimum, const String& maximum, const String& step, const String& valueString, int numberOfStepTimes)
     {
         DecimalStepRange stepRange(fromString(minimum), fromString(maximum), fromString(step));
         Decimal value = fromString(valueString);
@@ -101,7 +97,7 @@ protected:
         return value;
     }
 
-    protected: Decimal stepUp(const String& minimum, const String& maximum, const String& step, const String& valueString, int numberOfStepTimes)
+    Decimal stepUp(const String& minimum, const String& maximum, const String& step, const String& valueString, int numberOfStepTimes)
     {
         DecimalStepRange stepRange(fromString(minimum), fromString(maximum), fromString(step));
         Decimal value = fromString(valueString);
@@ -1123,3 +1119,5 @@ TEST_F(DecimalTest, ToStringSpecialValues)
     EXPECT_DECIMAL_STREQ("-Infinity", Decimal::infinity(Negative));
     EXPECT_DECIMAL_STREQ("NaN", Decimal::nan());
 }
+
+} // namespace blink
