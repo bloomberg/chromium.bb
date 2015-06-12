@@ -128,18 +128,18 @@ public class ConnectivityCheckerCollectorTest extends ConnectivityCheckerTestBas
         Map<String, String> map = feedback.toMap();
 
         assertEquals("Should have 6 entries.", 6, map.size());
-        assertTrue(map.containsKey("CHROME_HTTP"));
-        assertEquals("NOT_CONNECTED", map.get("CHROME_HTTP"));
-        assertTrue(map.containsKey("CHROME_HTTPS"));
-        assertEquals("CONNECTED", map.get("CHROME_HTTPS"));
-        assertTrue(map.containsKey("SYSTEM_HTTP"));
-        assertEquals("UNKNOWN", map.get("SYSTEM_HTTP"));
-        assertTrue(map.containsKey("SYSTEM_HTTPS"));
-        assertEquals("CONNECTED", map.get("SYSTEM_HTTPS"));
-        assertTrue(map.containsKey(FeedbackData.CONNECTION_CHECK_TIMEOUT_MS));
-        assertEquals("42", map.get(FeedbackData.CONNECTION_CHECK_TIMEOUT_MS));
-        assertTrue(map.containsKey(FeedbackData.CONNECTION_CHECK_ELAPSED_MS));
-        assertEquals("21", map.get(FeedbackData.CONNECTION_CHECK_ELAPSED_MS));
+        assertTrue(map.containsKey(ConnectivityCheckerCollector.CHROME_HTTP_KEY));
+        assertEquals("NOT_CONNECTED", map.get(ConnectivityCheckerCollector.CHROME_HTTP_KEY));
+        assertTrue(map.containsKey(ConnectivityCheckerCollector.CHROME_HTTPS_KEY));
+        assertEquals("CONNECTED", map.get(ConnectivityCheckerCollector.CHROME_HTTPS_KEY));
+        assertTrue(map.containsKey(ConnectivityCheckerCollector.SYSTEM_HTTP_KEY));
+        assertEquals("UNKNOWN", map.get(ConnectivityCheckerCollector.SYSTEM_HTTP_KEY));
+        assertTrue(map.containsKey(ConnectivityCheckerCollector.SYSTEM_HTTPS_KEY));
+        assertEquals("CONNECTED", map.get(ConnectivityCheckerCollector.SYSTEM_HTTPS_KEY));
+        assertTrue(map.containsKey(ConnectivityCheckerCollector.CONNECTION_CHECK_TIMEOUT_MS));
+        assertEquals("42", map.get(ConnectivityCheckerCollector.CONNECTION_CHECK_TIMEOUT_MS));
+        assertTrue(map.containsKey(ConnectivityCheckerCollector.CONNECTION_CHECK_ELAPSED_MS));
+        assertEquals("21", map.get(ConnectivityCheckerCollector.CONNECTION_CHECK_ELAPSED_MS));
     }
 
     private static FeedbackData getResult(

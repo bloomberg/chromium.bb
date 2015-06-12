@@ -26,28 +26,75 @@ public class ConnectivityCheckerCollector {
     private static final String TAG = "Feedback";
 
     /**
+     * The key for the data describing the timeout that was set as a maximum for collecting
+     * the connection data. This is to better understand the connection data.
+     * This string is user visible.
+     */
+    @VisibleForTesting
+    static final String CONNECTION_CHECK_TIMEOUT_MS = "Connection check timeout (ms)";
+
+    /**
+     * The key for the data describing how long time from the connection check was started,
+     * until the data was collected. This is to better understand the connection data.
+     * This string is user visible.
+     */
+    @VisibleForTesting
+    static final String CONNECTION_CHECK_ELAPSED_MS = "Connection check elapsed (ms)";
+
+    /**
+     * The key for the data describing whether Chrome was able to successfully connect to the
+     * HTTP connection check URL using the Chrome network stack.
+     * This string is user visible.
+     */
+    @VisibleForTesting
+    static final String CHROME_HTTP_KEY = "HTTP connection check (Chrome network stack)";
+
+    /**
+     * The key for the data describing whether Chrome was able to successfully connect to the
+     * HTTPS connection check URL using the Chrome network stack.
+     * This string is user visible.
+     */
+    @VisibleForTesting
+    static final String CHROME_HTTPS_KEY = "HTTPS connection check (Chrome network stack)";
+
+    /**
+     * The key for the data describing whether Chrome was able to successfully connect to the
+     * HTTP connection check URL using the Android network stack.
+     * This string is user visible.
+     */
+    @VisibleForTesting
+    static final String SYSTEM_HTTP_KEY = "HTTP connection check (Android network stack)";
+
+    /**
+     * The key for the data describing whether Chrome was able to successfully connect to the
+     * HTTPS connection check URL using the Android network stack.
+     * This string is user visible.
+     */
+    @VisibleForTesting
+    static final String SYSTEM_HTTPS_KEY = "HTTPS connection check (Android network stack)";
+
+    /**
      * FeedbackData contains the set of information that is to be included in a feedback report.
      */
     public static final class FeedbackData {
-        /**
-         * The key for the data describing the timeout that was set as a maximum for collecting
-         * the connection data. This is to better understand the connection data.
-         * This string is user visible.
-         */
-        @VisibleForTesting
-        static final String CONNECTION_CHECK_TIMEOUT_MS = "Connection check timeout (ms)";
-
-        /**
-         * The key for the data describing how long time from the connection check was started,
-         * until the data was collected. This is to better understand the connection data.
-         * This string is user visible.
-         */
-        @VisibleForTesting
-        static final String CONNECTION_CHECK_ELAPSED_MS = "Connection check elapsed (ms)";
-
         private final Map<Type, Result> mConnections;
         private final int mTimeoutMs;
         private final long mElapsedTimeMs;
+
+        private static String getHumanReadableString(Type type) {
+            switch (type) {
+                case CHROME_HTTP:
+                    return CHROME_HTTP_KEY;
+                case CHROME_HTTPS:
+                    return CHROME_HTTPS_KEY;
+                case SYSTEM_HTTP:
+                    return SYSTEM_HTTP_KEY;
+                case SYSTEM_HTTPS:
+                    return SYSTEM_HTTPS_KEY;
+                default:
+                    throw new IllegalArgumentException("Unknown connection type: " + type);
+            }
+        }
 
         FeedbackData(Map<Type, Result> connections, int timeoutMs, long elapsedTimeMs) {
             mConnections = connections;
@@ -86,7 +133,7 @@ public class ConnectivityCheckerCollector {
         public Map<String, String> toMap() {
             Map<String, String> map = new HashMap<>();
             for (Map.Entry<Type, Result> entry : mConnections.entrySet()) {
-                map.put(entry.getKey().name(), entry.getValue().name());
+                map.put(getHumanReadableString(entry.getKey()), entry.getValue().name());
             }
             map.put(CONNECTION_CHECK_TIMEOUT_MS, String.valueOf(mTimeoutMs));
             map.put(CONNECTION_CHECK_ELAPSED_MS, String.valueOf(mElapsedTimeMs));
