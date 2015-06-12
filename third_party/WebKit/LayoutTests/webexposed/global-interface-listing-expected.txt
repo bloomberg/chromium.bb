@@ -331,6 +331,7 @@ interface BluetoothDevice
     method connectGATT
     method constructor
 interface BluetoothGATTCharacteristic
+    getter uuid
     method constructor
 interface BluetoothGATTRemoteServer
     getter connected
@@ -340,6 +341,7 @@ interface BluetoothGATTService
     getter isPrimary
     getter uuid
     method constructor
+    method getCharacteristic
 interface Boolean
     method constructor
     method toString

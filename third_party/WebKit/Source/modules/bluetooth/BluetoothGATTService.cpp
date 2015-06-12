@@ -5,7 +5,15 @@
 #include "config.h"
 #include "modules/bluetooth/BluetoothGATTService.h"
 
-#include "public/platform/modules/bluetooth/WebBluetoothGATTRemoteServer.h"
+#include "bindings/core/v8/CallbackPromiseAdapter.h"
+#include "bindings/core/v8/ScriptPromise.h"
+#include "bindings/core/v8/ScriptPromiseResolver.h"
+#include "core/dom/DOMException.h"
+#include "core/dom/ExceptionCode.h"
+#include "modules/bluetooth/BluetoothError.h"
+#include "modules/bluetooth/BluetoothGATTCharacteristic.h"
+#include "public/platform/Platform.h"
+#include "public/platform/modules/bluetooth/WebBluetooth.h"
 #include "wtf/OwnPtr.h"
 
 namespace blink {
@@ -26,6 +34,18 @@ BluetoothGATTService* BluetoothGATTService::take(ScriptPromiseResolver*, WebBlue
 void BluetoothGATTService::dispose(WebBluetoothGATTService* webService)
 {
     delete webService;
+}
+
+ScriptPromise BluetoothGATTService::getCharacteristic(ScriptState* scriptState,
+    String characteristicUUID)
+{
+    WebBluetooth* webbluetooth = Platform::current()->bluetooth();
+
+    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromise promise = resolver->promise();
+    webbluetooth->getCharacteristic(m_webService->serviceInstanceID, characteristicUUID, new CallbackPromiseAdapter<BluetoothGATTCharacteristic, BluetoothError>(resolver));
+
+    return promise;
 }
 
 } // namespace blink

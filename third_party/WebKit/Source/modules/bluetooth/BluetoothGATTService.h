@@ -12,7 +12,9 @@
 
 namespace blink {
 
+class ScriptPromise;
 class ScriptPromiseResolver;
+class ScriptState;
 
 // Represents a GATT Service within a Bluetooth Peripheral, a collection of
 // characteristics and relationships to other services that encapsulate the
@@ -40,6 +42,7 @@ public:
     // IDL exposed interface:
     String uuid() { return m_webService->uuid; }
     bool isPrimary() { return m_webService->isPrimary; }
+    ScriptPromise getCharacteristic(ScriptState*, String characteristicUUID);
 
 private:
     OwnPtr<WebBluetoothGATTService> m_webService;

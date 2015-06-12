@@ -615,6 +615,7 @@
       'bluetooth/BluetoothDevice.h',
       'bluetooth/BluetoothError.cpp',
       'bluetooth/BluetoothError.h',
+      'bluetooth/BluetoothGATTCharacteristic.cpp',
       'bluetooth/BluetoothGATTCharacteristic.h',
       'bluetooth/BluetoothGATTService.h',
       'bluetooth/BluetoothGATTService.cpp',

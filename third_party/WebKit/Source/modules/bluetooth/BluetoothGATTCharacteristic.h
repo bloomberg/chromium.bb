@@ -7,19 +7,41 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
+#include "public/platform/modules/bluetooth/WebBluetoothGATTCharacteristic.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
+
+class ScriptPromiseResolver;
 
 // BluetoothGATTCharacteristic represents a GATT Characteristic, which is a
 // basic data element that provides further information about a peripheral's
 // service.
+//
+// Callbacks providing WebBluetoothGATTCharacteristic objects are handled by
+// CallbackPromiseAdapter templatized with this class. See this class's
+// "Interface required by CallbackPromiseAdapter" section and the
+// CallbackPromiseAdapter class comments.
 class BluetoothGATTCharacteristic final
-    : public GarbageCollected<BluetoothGATTCharacteristic>
+    : public GarbageCollectedFinalized<BluetoothGATTCharacteristic>
     , public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
+    explicit BluetoothGATTCharacteristic(PassOwnPtr<WebBluetoothGATTCharacteristic>);
+
+    // Interface required by CallbackPromiseAdapter.
+    typedef WebBluetoothGATTCharacteristic WebType;
+    static BluetoothGATTCharacteristic* take(ScriptPromiseResolver* , WebBluetoothGATTCharacteristic*);
+    static void dispose(WebBluetoothGATTCharacteristic*);
+
     // Interface required by garbage collection.
     DEFINE_INLINE_TRACE() { }
+
+    // IDL exposed interface:
+    String uuid() { return m_webCharacteristic->uuid; }
+
+private:
+    OwnPtr<WebBluetoothGATTCharacteristic> m_webCharacteristic;
 };
 
 } // namespace blink

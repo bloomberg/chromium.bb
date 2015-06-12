@@ -26,6 +26,7 @@ struct WebBluetoothGATTCharacteristic {
     const WebString serviceInstanceID;
     const WebString uuid;
     // TODO(ortuno): Add 'properties' once CharacteristicProperties is implemented.
+    // https://crbug.com/483345
     // const WebCharacteristicProperties properties;
     const WebArrayBuffer value;
 };
