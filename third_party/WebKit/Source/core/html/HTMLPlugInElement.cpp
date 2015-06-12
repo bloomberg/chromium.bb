@@ -501,7 +501,7 @@ bool HTMLPlugInElement::requestObject(const String& url, const String& mimeType,
     if (protocolIsJavaScript(url))
         return false;
 
-    KURL completedURL = document().completeURL(url);
+    KURL completedURL = url.isEmpty() ? KURL() : document().completeURL(url);
     if (!pluginIsLoadable(completedURL, mimeType))
         return false;
 
