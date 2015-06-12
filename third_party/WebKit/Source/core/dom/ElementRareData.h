@@ -129,7 +129,9 @@ public:
 
 private:
     short m_tabindex;
-    unsigned short m_proxyCount : 10;
+    // As m_proxyCount usually doesn't exceed 10bits (1024), if you want to add some booleans you
+    // can steal some bits from m_proxyCount by using bitfields to prevent ElementRareData bloat.
+    unsigned short m_proxyCount;
 
     LayoutSize m_minimumSizeForResizing;
     IntSize m_savedLayerScrollOffset;
