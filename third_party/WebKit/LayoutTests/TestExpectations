@@ -43,8 +43,6 @@ crbug.com/382491 virtual/slimmingpaint/fast/backgrounds/transformed-body-html-ba
 
 crbug.com/497874 virtual/slimmingpaint/fast/multicol/span/positioned-child-not-removed-crash.html [ Crash ]
 
-crbug.com/481515 http/tests/webfont/popup-menu-load-webfont-after-open.html [ NeedsRebaseline ]
-
 crbug.com/427606 virtual/gpu/fast/canvas/canvas-shadow-source-in.html [ Pass ImageOnlyFailure NeedsManualRebaseline ]
 
 crbug.com/452967 [ Mac ] svg/batik/text/xmlSpace.svg [ Pass Failure ImageOnlyFailure ]
