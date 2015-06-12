@@ -27,7 +27,6 @@
 #define EventHandler_h
 
 #include "core/CoreExport.h"
-#include "core/editing/TextGranularity.h"
 #include "core/events/TextEventInputType.h"
 #include "core/layout/HitTestRequest.h"
 #include "core/page/DragActions.h"
@@ -76,12 +75,11 @@ class LayoutObject;
 class ScrollableArea;
 class Scrollbar;
 class ScrollState;
+class SelectionController;
 class TextEvent;
-class VisibleSelection;
 class WheelEvent;
 class Widget;
 
-enum AppendTrailingWhitespace { ShouldAppendTrailingWhitespace, DontAppendTrailingWhitespace };
 enum class DragInitiator;
 
 class CORE_EXPORT EventHandler : public NoBaseWillBeGarbageCollectedFinalized<EventHandler> {
@@ -198,30 +196,19 @@ public:
     PassRefPtr<UserGestureToken> takeLastMouseDownGestureToken() { return m_lastMouseDownUserGestureToken.release(); }
 
     int clickCount() { return m_clickCount; }
-    bool mouseDownWasSingleClickInSelection() { return m_mouseDownWasSingleClickInSelection; }
+
+    SelectionController& selectionController() const { return *m_selectionController; }
 
 private:
     static DragState& dragState();
 
     DataTransfer* createDraggingDataTransfer() const;
 
-    bool updateSelectionForMouseDownDispatchingSelectStart(Node*, const VisibleSelection&, TextGranularity);
-    void selectClosestWordFromHitTestResult(const HitTestResult&, AppendTrailingWhitespace);
-    void selectClosestMisspellingFromHitTestResult(const HitTestResult&, AppendTrailingWhitespace);
-    void selectClosestWordFromMouseEvent(const MouseEventWithHitTestResults&);
-    void selectClosestMisspellingFromMouseEvent(const MouseEventWithHitTestResults&);
-    void selectClosestWordOrLinkFromMouseEvent(const MouseEventWithHitTestResults&);
-
     bool handleMouseMoveOrLeaveEvent(const PlatformMouseEvent&, HitTestResult* hoveredNode = nullptr, bool onlyUpdateScrollbars = false, bool forceLeave = false);
     bool handleMousePressEvent(const MouseEventWithHitTestResults&);
-    bool handleMousePressEventSingleClick(const MouseEventWithHitTestResults&);
-    bool handleMousePressEventDoubleClick(const MouseEventWithHitTestResults&);
-    bool handleMousePressEventTripleClick(const MouseEventWithHitTestResults&);
     bool handleMouseFocus(const MouseEventWithHitTestResults&);
     bool handleMouseDraggedEvent(const MouseEventWithHitTestResults&);
     bool handleMouseReleaseEvent(const MouseEventWithHitTestResults&);
-
-    bool handlePasteGlobalSelection(const PlatformMouseEvent&);
 
     HitTestRequest::HitTestRequestType getHitTypeForGestureType(PlatformEvent::Type);
     void applyTouchAdjustment(PlatformGestureEvent*, HitTestResult*);
@@ -240,8 +227,6 @@ private:
     void hoverTimerFired(Timer<EventHandler>*);
     void cursorUpdateTimerFired(Timer<EventHandler>*);
     void activeIntervalTimerFired(Timer<EventHandler>*);
-
-    bool mouseDownMayStartSelect() const { return m_mouseDownMayStartSelect; }
 
     void fakeMouseMoveEventTimerFired(Timer<EventHandler>*);
     void cancelFakeMouseMoveEvent();
@@ -308,8 +293,6 @@ private:
     void defaultEscapeEventHandler(KeyboardEvent*);
     void defaultArrowEventHandler(WebFocusType, KeyboardEvent*);
 
-    void updateSelectionForMouseDrag(const HitTestResult&);
-
     void updateLastScrollbarUnderMouse(Scrollbar*, bool);
 
     void setFrameWasScrolledByUser();
@@ -342,11 +325,8 @@ private:
     bool m_capturesDragging;
     RefPtrWillBeMember<Node> m_mousePressNode;
 
-    bool m_mouseDownMayStartSelect;
     bool m_mouseDownMayStartDrag;
-    bool m_mouseDownWasSingleClickInSelection;
-    enum SelectionInitiationState { HaveNotStartedSelection, PlacedCaret, ExtendedSelection };
-    SelectionInitiationState m_selectionInitiationState;
+    const OwnPtrWillBeMember<SelectionController> m_selectionController;
 
     LayoutPoint m_dragStartPos;
 
