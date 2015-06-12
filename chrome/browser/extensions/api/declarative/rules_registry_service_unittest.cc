@@ -10,6 +10,9 @@
 #include "content/public/test/test_browser_thread.h"
 #include "extensions/browser/api/declarative/test_rules_registry.h"
 #include "extensions/browser/api/declarative_webrequest/webrequest_constants.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/extension_builder.h"
+#include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -96,8 +99,16 @@ TEST_F(RulesRegistryServiceTest, TestConstructionAndMultiThreading) {
   message_loop_.RunUntilIdle();
 
   // Test extension uninstalling.
-
-  registry_service.SimulateExtensionUninstalled(kExtensionId);
+  scoped_ptr<base::DictionaryValue> manifest = DictionaryBuilder()
+                                                   .Set("name", "Extension")
+                                                   .Set("version", "1.0")
+                                                   .Set("manifest_version", 2)
+                                                   .Build();
+  scoped_refptr<Extension> extension = ExtensionBuilder()
+                                           .SetManifest(manifest.Pass())
+                                           .SetID(kExtensionId)
+                                           .Build();
+  registry_service.SimulateExtensionUninstalled(extension.get());
 
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,

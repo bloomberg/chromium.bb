@@ -44,6 +44,7 @@ const char kExcludeGlobs[] = "exclude_globs";
 const char kExcludeMatches[] = "exclude_matches";
 const char kExport[] = "export";
 const char kExternallyConnectable[] = "externally_connectable";
+const char kEventRules[] = "event_rules";
 const char kFileAccessList[] = "file_access";
 const char kFileFilters[] = "file_filters";
 const char kFileBrowserHandlers[] = "file_browser_handlers";

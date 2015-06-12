@@ -101,6 +101,7 @@
       'browser/value_store/value_store_unittest.h',
       'browser/verified_contents_unittest.cc',
       'browser/warning_service_unittest.cc',
+      'common/api/declarative/declarative_manifest_unittest.cc',
       'common/api/printer_provider/usb_printer_manifest_unittest.cc',
       'common/api/sockets/sockets_manifest_permission_unittest.cc',
       'common/csp_validator_unittest.cc',

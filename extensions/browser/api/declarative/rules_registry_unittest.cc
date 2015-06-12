@@ -7,9 +7,13 @@
 #include <algorithm>
 
 #include "base/message_loop/message_loop.h"
+#include "base/values.h"
 #include "content/public/test/test_browser_thread.h"
 #include "extensions/browser/api/declarative/rules_registry_service.h"
 #include "extensions/browser/api/declarative/test_rules_registry.h"
+#include "extensions/browser/api_test_utils.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/extension_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -19,6 +23,8 @@ const int key = extensions::RulesRegistryService::kDefaultRulesRegistryID;
 }  // namespace
 
 namespace extensions {
+
+using api_test_utils::ParseDictionary;
 
 TEST(RulesRegistryTest, FillOptionalIdentifiers) {
   base::MessageLoopForUI message_loop;
@@ -120,7 +126,17 @@ TEST(RulesRegistryTest, FillOptionalIdentifiers) {
   ASSERT_TRUE(get_rules_4b[0]->id.get());
   EXPECT_EQ(kRuleId, *get_rules_4b[0]->id);
 
-  registry->OnExtensionUninstalled(kExtensionId);
+  // Create extension
+  scoped_ptr<base::DictionaryValue> manifest = ParseDictionary(
+      "{"
+      "  \"name\": \"Test\","
+      "  \"version\": \"1\""
+      "}");
+  scoped_refptr<Extension> extension = ExtensionBuilder()
+                                           .SetManifest(manifest.Pass())
+                                           .SetID(kExtensionId)
+                                           .Build();
+  registry->OnExtensionUninstalled(extension.get());
   EXPECT_EQ(0u /*extensions*/ + 0u /*rules*/,
             registry->GetNumberOfUsedRuleIdentifiersForTesting());
 
@@ -163,6 +179,165 @@ TEST(RulesRegistryTest, FillOptionalPriority) {
   // Make sure that deletion traits of registry are executed.
   registry = NULL;
   message_loop.RunUntilIdle();
+}
+
+// Test verifies 2 rules defined in the manifest appear in the registry.
+TEST(RulesRegistryTest, TwoRulesInManifest) {
+  base::MessageLoopForUI message_loop;
+  content::TestBrowserThread thread(content::BrowserThread::UI, &message_loop);
+
+  // Create extension
+  scoped_ptr<base::DictionaryValue> manifest = ParseDictionary(
+      "{"
+      "  \"name\": \"Test\","
+      "  \"version\": \"1\","
+      "  \"event_rules\": ["
+      "    {"
+      "      \"id\": \"000\","
+      "      \"priority\": 200,"
+      "      \"tags\": [\"tagged\"],"
+      "      \"event\": \"declarativeContent.onPageChanged\","
+      "      \"actions\": [{"
+      "        \"type\": \"declarativeContent.ShowPageAction\""
+      "      }],"
+      "      \"conditions\" : [{"
+      "        \"css\": [\"video\"],"
+      "        \"type\" : \"declarativeContent.PageStateMatcher\""
+      "      }]"
+      "    },"
+      "    {"
+      "      \"event\": \"declarativeContent.onPageChanged\","
+      "      \"actions\": [{"
+      "        \"type\": \"declarativeContent.ShowPageAction\""
+      "      }],"
+      "      \"conditions\" : [{"
+      "        \"css\": [\"input[type='password']\"],"
+      "        \"type\" : \"declarativeContent.PageStateMatcher\""
+      "      }]"
+      "    }"
+      "  ]"
+      "}");
+  scoped_refptr<Extension> extension = ExtensionBuilder()
+                                           .SetManifest(manifest.Pass())
+                                           .SetID(kExtensionId)
+                                           .Build();
+
+  scoped_refptr<RulesRegistry> registry = new TestRulesRegistry(
+      content::BrowserThread::UI, "declarativeContent.onPageChanged", key);
+  // Simulate what RulesRegistryService would do on extension load.
+  registry->OnExtensionLoaded(extension.get());
+
+  std::vector<linked_ptr<RulesRegistry::Rule>> get_rules;
+  registry->GetAllRules(kExtensionId, &get_rules);
+
+  ASSERT_EQ(2u, get_rules.size());
+  scoped_ptr<base::DictionaryValue> expected_rule_0 = ParseDictionary(
+      "{"
+      "  \"id\": \"000\","
+      "  \"priority\": 200,"
+      "  \"tags\": [\"tagged\"],"
+      "  \"actions\": [{"
+      "    \"instanceType\": \"declarativeContent.ShowPageAction\""
+      "  }],"
+      "  \"conditions\" : [{"
+      "    \"css\": [\"video\"],"
+      "    \"instanceType\" : \"declarativeContent.PageStateMatcher\""
+      "  }]"
+      "}");
+  EXPECT_TRUE(expected_rule_0->Equals(get_rules[0]->ToValue().get()));
+
+  scoped_ptr<base::DictionaryValue> expected_rule_1 = ParseDictionary(
+      "{"
+      "  \"id\": \"_0_\","
+      "  \"priority\": 100,"
+      "  \"actions\": [{"
+      "    \"instanceType\": \"declarativeContent.ShowPageAction\""
+      "  }],"
+      "  \"conditions\" : [{"
+      "    \"css\": [\"input[type='password']\"],"
+      "    \"instanceType\" : \"declarativeContent.PageStateMatcher\""
+      "  }]"
+      "}");
+  EXPECT_TRUE(expected_rule_1->Equals(get_rules[1]->ToValue().get()));
+}
+
+// Tests verifies that rules defined in the manifest cannot be deleted but
+// programmatically added rules still can be deleted.
+TEST(RulesRegistryTest, DeleteRuleInManifest) {
+  base::MessageLoopForUI message_loop;
+  content::TestBrowserThread thread(content::BrowserThread::UI, &message_loop);
+
+  // Create extension
+  scoped_ptr<base::DictionaryValue> manifest = ParseDictionary(
+      "{"
+      "  \"name\": \"Test\","
+      "  \"version\": \"1\","
+      "  \"event_rules\": [{"
+      "    \"id\":  \"manifest_rule_0\","
+      "    \"event\": \"declarativeContent.onPageChanged\","
+      "    \"actions\": [{"
+      "      \"type\": \"declarativeContent.ShowPageAction\""
+      "    }],"
+      "    \"conditions\" : [{"
+      "      \"css\": [\"video\"],"
+      "      \"type\" : \"declarativeContent.PageStateMatcher\""
+      "    }]"
+      "  }]"
+      "}");
+  scoped_refptr<Extension> extension = ExtensionBuilder()
+                                           .SetManifest(manifest.Pass())
+                                           .SetID(kExtensionId)
+                                           .Build();
+
+  scoped_refptr<RulesRegistry> registry = new TestRulesRegistry(
+      content::BrowserThread::UI, "declarativeContent.onPageChanged", key);
+  // Simulate what RulesRegistryService would do on extension load.
+  registry->OnExtensionLoaded(extension.get());
+  // Add some extra rules outside of the manifest.
+  std::vector<linked_ptr<RulesRegistry::Rule>> add_rules;
+  linked_ptr<RulesRegistry::Rule> rule_1 =
+      make_linked_ptr(new RulesRegistry::Rule);
+  rule_1->id.reset(new std::string("rule_1"));
+  linked_ptr<RulesRegistry::Rule> rule_2 =
+      make_linked_ptr(new RulesRegistry::Rule);
+  rule_2->id.reset(new std::string("rule_2"));
+  add_rules.push_back(rule_1);
+  add_rules.push_back(rule_2);
+  registry->AddRules(kExtensionId, add_rules);
+
+  std::vector<linked_ptr<RulesRegistry::Rule>> get_rules;
+  registry->GetAllRules(kExtensionId, &get_rules);
+  ASSERT_EQ(3u, get_rules.size());
+  EXPECT_EQ("manifest_rule_0", *(get_rules[0]->id));
+  EXPECT_EQ("rule_1", *(get_rules[1]->id));
+  EXPECT_EQ("rule_2", *(get_rules[2]->id));
+
+  // Remove a rule from outside the manifest.
+  std::vector<std::string> remove_ids;
+  remove_ids.push_back("rule_1");
+  EXPECT_TRUE(registry->RemoveRules(kExtensionId, remove_ids).empty());
+  get_rules.clear();
+  registry->GetAllRules(kExtensionId, &get_rules);
+  EXPECT_EQ(2u, get_rules.size());
+  EXPECT_EQ("manifest_rule_0", *(get_rules[0]->id));
+  EXPECT_EQ("rule_2", *(get_rules[1]->id));
+
+  // Attempt to remove rule in manifest.
+  remove_ids.clear();
+  remove_ids.push_back("manifest_rule_0");
+  EXPECT_FALSE(registry->RemoveRules(kExtensionId, remove_ids).empty());
+  get_rules.clear();
+  registry->GetAllRules(kExtensionId, &get_rules);
+  ASSERT_EQ(2u, get_rules.size());
+  EXPECT_EQ("manifest_rule_0", *(get_rules[0]->id));
+  EXPECT_EQ("rule_2", *(get_rules[1]->id));
+
+  // Remove all rules.
+  registry->RemoveAllRules(kExtensionId);
+  get_rules.clear();
+  registry->GetAllRules(kExtensionId, &get_rules);
+  ASSERT_EQ(1u, get_rules.size());
+  EXPECT_EQ("manifest_rule_0", *(get_rules[0]->id));
 }
 
 }  // namespace extensions

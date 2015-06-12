@@ -218,7 +218,7 @@ TEST_F(RulesRegistryWithCacheTest, OnExtensionUninstalled) {
   EXPECT_EQ("", AddRule(extension2_->id(), kRuleId));
 
   // Check that the correct rules are removed.
-  registry_->OnExtensionUninstalled(extension1_->id());
+  registry_->OnExtensionUninstalled(extension1_.get());
   EXPECT_EQ(0, GetNumberOfRules(extension1_->id()));
   EXPECT_EQ(1, GetNumberOfRules(extension2_->id()));
 }

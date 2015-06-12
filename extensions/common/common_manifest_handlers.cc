@@ -5,6 +5,7 @@
 #include "extensions/common/common_manifest_handlers.h"
 
 #include "extensions/common/api/bluetooth/bluetooth_manifest_handler.h"
+#include "extensions/common/api/declarative/declarative_manifest_handler.h"
 #include "extensions/common/api/printer_provider/usb_printer_manifest_handler.h"
 #include "extensions/common/api/sockets/sockets_manifest_handler.h"
 #include "extensions/common/manifest_handler.h"
@@ -36,6 +37,7 @@ void RegisterCommonManifestHandlers() {
   (new ContentCapabilitiesHandler)->Register();
   (new CSPHandler(false))->Register();
   (new CSPHandler(true))->Register();
+  (new DeclarativeManifestHandler)->Register();
   (new DefaultLocaleHandler)->Register();
   (new ExternallyConnectableHandler)->Register();
   (new FileHandlersParser)->Register();

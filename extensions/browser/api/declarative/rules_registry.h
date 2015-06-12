@@ -31,6 +31,7 @@ class Value;
 
 namespace extensions {
 
+class Extension;
 class RulesCacheDelegate;
 
 // A base class for RulesRegistries that takes care of storing the
@@ -110,9 +111,9 @@ class RulesRegistry : public base::RefCountedThreadSafe<RulesRegistry> {
 
   // Called to notify the RulesRegistry that the extension availability has
   // changed, so that the registry can update which rules are active.
-  void OnExtensionUnloaded(const std::string& extension_id);
-  void OnExtensionUninstalled(const std::string& extension_id);
-  void OnExtensionLoaded(const std::string& extension_id);
+  void OnExtensionUnloaded(const Extension* extension);
+  void OnExtensionUninstalled(const Extension* extension);
+  void OnExtensionLoaded(const Extension* extension);
 
   // Returns the number of entries in used_rule_identifiers_ for leak detection.
   // Every ExtensionId counts as one entry, even if it contains no rules.
@@ -138,17 +139,6 @@ class RulesRegistry : public base::RefCountedThreadSafe<RulesRegistry> {
 
  protected:
   virtual ~RulesRegistry();
-
-  // The precondition for calling this method is that all rules have unique IDs.
-  // AddRules establishes this precondition and calls into this method.
-  // Stored rules already meet this precondition and so they avoid calling
-  // CheckAndFillInOptionalRules for improved performance.
-  //
-  // Returns an empty string if the function is successful or an error
-  // message otherwise.
-  std::string AddRulesNoFill(
-      const std::string& extension_id,
-      const std::vector<linked_ptr<RulesRegistry::Rule> >& rules);
 
   // These functions need to apply the rules to the browser, while the base
   // class will handle defaulting empty fields before calling *Impl, and will
@@ -187,6 +177,31 @@ class RulesRegistry : public base::RefCountedThreadSafe<RulesRegistry> {
     return weak_ptr_factory_.GetWeakPtr();
   }
 
+  // Internal implementation of the AddRules interface which adds
+  // |from_manifest| which is true when the source is the manifest.
+  std::string AddRulesInternal(
+      const std::string& extension_id,
+      const std::vector<linked_ptr<RulesRegistry::Rule>>& rules,
+      RulesDictionary* out);
+
+  // The precondition for calling this method is that all rules have unique IDs.
+  // AddRules establishes this precondition and calls into this method.
+  // Stored rules already meet this precondition and so they avoid calling
+  // CheckAndFillInOptionalRules for improved performance.
+  //
+  // Returns an empty string if the function is successful or an error
+  // message otherwise.
+  std::string AddRulesNoFill(
+      const std::string& extension_id,
+      const std::vector<linked_ptr<RulesRegistry::Rule>>& rules,
+      RulesDictionary* out);
+
+  // Same as GetRules but returns all rules owned by |extension_id| for a given
+  // |rules| dictionary.
+  void GetRules(const std::string& extension_id,
+                RulesDictionary& rules,
+                std::vector<linked_ptr<RulesRegistry::Rule>>* out);
+
   // Common processing after extension's rules have changed.
   void ProcessChangedRules(const std::string& extension_id);
 
@@ -199,7 +214,10 @@ class RulesRegistry : public base::RefCountedThreadSafe<RulesRegistry> {
   // calling MaybeProcessChangedRules. That way updating the rules store and
   // extension prefs is avoided. This method is called when an extension is
   // uninstalled, that way there is no clash with the preferences being wiped.
-  std::string RemoveAllRulesNoStoreUpdate(const std::string& extension_id);
+  // Set |remove_manifest_rules| to true if |manifest_rules_| should be cleared
+  // along with |rules_|.
+  std::string RemoveAllRulesNoStoreUpdate(const std::string& extension_id,
+                                          bool remove_manifest_rules);
 
   void MarkReady(base::Time storage_init_time);
 
@@ -221,6 +239,8 @@ class RulesRegistry : public base::RefCountedThreadSafe<RulesRegistry> {
   int id_;
 
   RulesDictionary rules_;
+
+  RulesDictionary manifest_rules_;
 
   // Signaled when we have finished reading from storage for all extensions that
   // are loaded on startup.

@@ -314,6 +314,48 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest, RulesEvaluatedOnAddRemove) {
   EXPECT_FALSE(page_action->GetIsVisible(tab_id));
 }
 
+// Tests that rules from manifest are added and evaluated properly.
+IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest, RulesAddedFromManifest) {
+  const char manifest[] =
+      "{\n"
+      "  \"name\": \"Declarative Content apitest\",\n"
+      "  \"version\": \"0.1\",\n"
+      "  \"manifest_version\": 2,\n"
+      "  \"page_action\": {},\n"
+      "  \"permissions\": [\n"
+      "    \"declarativeContent\"\n"
+      "  ],\n"
+      "  \"event_rules\": [{\n"
+      "    \"event\": \"declarativeContent.onPageChanged\",\n"
+      "    \"actions\": [{\n"
+      "      \"type\": \"declarativeContent.ShowPageAction\"\n"
+      "    }],\n"
+      "    \"conditions\": [{\n"
+      "      \"type\": \"declarativeContent.PageStateMatcher\",\n"
+      "      \"pageUrl\": {\"hostPrefix\": \"test1\"}\n"
+      "    }]\n"
+      "  }]\n"
+      "}\n";
+  ext_dir_.WriteManifest(manifest);
+  const Extension* extension = LoadExtension(ext_dir_.unpacked_path());
+  ASSERT_TRUE(extension);
+  const ExtensionAction* page_action =
+      ExtensionActionManager::Get(browser()->profile())
+          ->GetPageAction(*extension);
+  ASSERT_TRUE(page_action);
+
+  content::WebContents* const tab =
+      browser()->tab_strip_model()->GetWebContentsAt(0);
+  const int tab_id = ExtensionTabUtil::GetTabId(tab);
+
+  NavigateInRenderer(tab, GURL("http://blank/"));
+  EXPECT_FALSE(page_action->GetIsVisible(tab_id));
+  NavigateInRenderer(tab, GURL("http://test1/"));
+  EXPECT_TRUE(page_action->GetIsVisible(tab_id));
+  NavigateInRenderer(tab, GURL("http://test2/"));
+  EXPECT_FALSE(page_action->GetIsVisible(tab_id));
+}
+
 // Tests that rules are not evaluated in incognito browser windows when the
 // extension specifies spanning incognito mode but is not enabled for incognito.
 IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,

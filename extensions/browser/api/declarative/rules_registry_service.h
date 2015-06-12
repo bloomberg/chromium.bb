@@ -88,7 +88,7 @@ class RulesRegistryService : public BrowserContextKeyedAPI,
   }
 
   // For testing.
-  void SimulateExtensionUninstalled(const std::string& extension_id);
+  void SimulateExtensionUninstalled(const Extension* extension);
 
  private:
   friend class BrowserContextKeyedAPIFactory<RulesRegistryService>;
@@ -109,12 +109,12 @@ class RulesRegistryService : public BrowserContextKeyedAPI,
                               extensions::UninstallReason reason) override;
 
   // Iterates over all registries, and calls |notification_callback| on them
-  // with |extension_id| as the argument. If a registry lives on a different
+  // with |extension| as the argument. If a registry lives on a different
   // thread, the call is posted to that thread, so no guarantee of synchronous
   // processing.
   void NotifyRegistriesHelper(
-      void (RulesRegistry::*notification_callback)(const std::string&),
-      const std::string& extension_id);
+      void (RulesRegistry::*notification_callback)(const Extension*),
+      const Extension* extension);
 
   // BrowserContextKeyedAPI implementation.
   static const char* service_name() {

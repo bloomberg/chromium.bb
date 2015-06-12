@@ -96,6 +96,13 @@
     ],
     "no_doc": true
   },
+  "event_rules": {
+    "channel": "stable",
+    // "event_rules" does not grant any capabilities, it's just
+    // an optimisation for any API which uses events, so it's safe
+    // to expose to all extension types.
+    "extension_types": "all"
+  },
   "devtools_page": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"]

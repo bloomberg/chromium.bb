@@ -47,6 +47,7 @@ extern const char kExcludeGlobs[];
 extern const char kExcludeMatches[];
 extern const char kExport[];
 extern const char kExternallyConnectable[];
+extern const char kEventRules[];
 extern const char kFileAccessList[];
 extern const char kFileHandlers[];
 extern const char kFileHandlerExtensions[];

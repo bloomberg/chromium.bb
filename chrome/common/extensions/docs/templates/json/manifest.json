@@ -70,6 +70,10 @@
     "documentation": "devtools",
     "example": "devtools.html"
   },
+  "event_rules": {
+    "documentation": "manifest/event_rules",
+    "example": [{}]
+  },
   "export": {
     "documentation": "shared_modules",
     "example": {}

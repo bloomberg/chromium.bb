@@ -32,6 +32,13 @@ void RegisterToExtensionWebRequestEventRouterOnIO(
       browser_context, rules_registry_id, web_request_rules_registry);
 }
 
+void NotifyWithExtensionSafe(
+    scoped_refptr<const Extension> extension,
+    void (RulesRegistry::*notification_callback)(const Extension*),
+    scoped_refptr<RulesRegistry> registry) {
+  (registry.get()->*notification_callback)(extension.get());
+}
+
 }  // namespace
 
 const int RulesRegistryService::kDefaultRulesRegistryID = 0;
@@ -169,23 +176,23 @@ void RulesRegistryService::RemoveRulesRegistriesByID(int rules_registry_id) {
 }
 
 void RulesRegistryService::SimulateExtensionUninstalled(
-    const std::string& extension_id) {
-  NotifyRegistriesHelper(&RulesRegistry::OnExtensionUninstalled, extension_id);
+    const Extension* extension) {
+  NotifyRegistriesHelper(&RulesRegistry::OnExtensionUninstalled, extension);
 }
 
 void RulesRegistryService::NotifyRegistriesHelper(
-    void (RulesRegistry::*notification_callback)(const std::string&),
-    const std::string& extension_id) {
+    void (RulesRegistry::*notification_callback)(const Extension*),
+    const Extension* extension) {
   RulesRegistryMap::iterator i;
   for (i = rule_registries_.begin(); i != rule_registries_.end(); ++i) {
     scoped_refptr<RulesRegistry> registry = i->second;
     if (content::BrowserThread::CurrentlyOn(registry->owner_thread())) {
-      (registry.get()->*notification_callback)(extension_id);
+      (registry.get()->*notification_callback)(extension);
     } else {
       content::BrowserThread::PostTask(
-          registry->owner_thread(),
-          FROM_HERE,
-          base::Bind(notification_callback, registry, extension_id));
+          registry->owner_thread(), FROM_HERE,
+          base::Bind(&NotifyWithExtensionSafe, make_scoped_refptr(extension),
+                     notification_callback, registry));
     }
   }
 }
@@ -193,22 +200,21 @@ void RulesRegistryService::NotifyRegistriesHelper(
 void RulesRegistryService::OnExtensionLoaded(
     content::BrowserContext* browser_context,
     const Extension* extension) {
-  NotifyRegistriesHelper(&RulesRegistry::OnExtensionLoaded, extension->id());
+  NotifyRegistriesHelper(&RulesRegistry::OnExtensionLoaded, extension);
 }
 
 void RulesRegistryService::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const Extension* extension,
     UnloadedExtensionInfo::Reason reason) {
-  NotifyRegistriesHelper(&RulesRegistry::OnExtensionUnloaded, extension->id());
+  NotifyRegistriesHelper(&RulesRegistry::OnExtensionUnloaded, extension);
 }
 
 void RulesRegistryService::OnExtensionUninstalled(
     content::BrowserContext* browser_context,
     const Extension* extension,
     extensions::UninstallReason reason) {
-  NotifyRegistriesHelper(&RulesRegistry::OnExtensionUninstalled,
-                         extension->id());
+  NotifyRegistriesHelper(&RulesRegistry::OnExtensionUninstalled, extension);
 }
 
 }  // namespace extensions
