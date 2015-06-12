@@ -233,7 +233,8 @@ void RenderWidgetCompositor::Initialize() {
       !compositor_deps_->IsElasticOverscrollEnabled();
   settings.accelerated_animation_enabled =
       !cmd->HasSwitch(cc::switches::kDisableThreadedAnimation);
-  settings.use_display_lists = cmd->HasSwitch(switches::kEnableSlimmingPaint);
+  settings.use_display_lists = cmd->HasSwitch(switches::kEnableSlimmingPaint) ||
+      !cmd->HasSwitch(switches::kDisableSlimmingPaint);
   if (cmd->HasSwitch(switches::kEnableCompositorAnimationTimelines)) {
     settings.use_compositor_animation_timelines = true;
     blink::WebRuntimeFeatures::enableCompositorAnimationTimelines(true);
