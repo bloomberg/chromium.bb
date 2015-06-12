@@ -628,6 +628,15 @@ void ThreadState::scheduleGCIfNeeded()
         return;
     ASSERT(!sweepForbidden());
 
+#if ENABLE(GC_PROFILING)
+    // These values are divided by 1024 to avoid overflow in practical cases (TRACE_COUNTER values are 32-bit ints).
+    // They are capped to INT_MAX just in case.
+    TRACE_COUNTER1("blink_gc", "Heap::estimatedLiveObjectSizeKB", std::min(Heap::estimatedLiveObjectSize() / 1024, static_cast<size_t>(INT_MAX)));
+    TRACE_COUNTER1("blink_gc", "Heap::allocatedObjectSizeKB", std::min(Heap::allocatedObjectSize() / 1024, static_cast<size_t>(INT_MAX)));
+    TRACE_COUNTER1("blink_gc", "Heap::markedObjectSizeKB", std::min(Heap::markedObjectSize() / 1024, static_cast<size_t>(INT_MAX)));
+    TRACE_COUNTER1("blink_gc", "Partitions::totalSizeOfCommittedPagesKB", std::min(WTF::Partitions::totalSizeOfCommittedPages() / 1024, static_cast<size_t>(INT_MAX)));
+#endif
+
     if (shouldForceConservativeGC()) {
         Heap::collectGarbage(HeapPointersOnStack, GCWithoutSweep, Heap::ConservativeGC);
         return;
