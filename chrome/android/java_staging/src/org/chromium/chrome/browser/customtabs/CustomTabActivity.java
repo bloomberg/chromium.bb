@@ -17,8 +17,11 @@ import com.google.android.apps.chrome.R;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.CompositorChromeActivity;
 import org.chromium.chrome.browser.IntentHandler;
+import org.chromium.chrome.browser.IntentHandler.ExternalAppId;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.appmenu.AppMenuObserver;
@@ -51,6 +54,8 @@ public class CustomTabActivity extends CompositorChromeActivity {
     // TODO(ianwen, yusufo): Figure out a solution to extract external resources without having to
     // change the package name.
     private boolean mShouldOverridePackage;
+
+    private boolean mRecordedStartupUma;
 
     /**
      * Sets the currently active {@link CustomTabContentHandler} in focus.
@@ -123,6 +128,7 @@ public class CustomTabActivity extends CompositorChromeActivity {
                         public void onClick(View v) {
                             mIntentDataProvider.sendButtonPendingIntentWithUrl(
                                     getApplicationContext(), mTab.getUrl());
+                            RecordUserAction.record("CustomTabsCustomActionButtonClick");
                         }
                     });
         }
@@ -180,6 +186,14 @@ public class CustomTabActivity extends CompositorChromeActivity {
     public void onStartWithNative() {
         super.onStartWithNative();
         setActiveContentHandler(mCustomTabContentHandler);
+
+        if (!mRecordedStartupUma) {
+            mRecordedStartupUma = true;
+            ExternalAppId externalId =
+                    IntentHandler.determineExternalIntentSource(getPackageName(), getIntent());
+            RecordHistogram.recordEnumeratedHistogram("CustomTabs.ClientAppId",
+                    externalId.ordinal(), ExternalAppId.INDEX_BOUNDARY.ordinal());
+        }
     }
 
     @Override
@@ -271,6 +285,7 @@ public class CustomTabActivity extends CompositorChromeActivity {
         if (menuIndex >= 0) {
             mIntentDataProvider.clickMenuItemWithUrl(getApplicationContext(), menuIndex,
                     getTabModelSelector().getCurrentTab().getUrl());
+            RecordUserAction.record("CustomTabsMenuCustomMenuItem");
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -289,9 +304,11 @@ public class CustomTabActivity extends CompositorChromeActivity {
             chromeIntent.setPackage(getApplicationContext().getPackageName());
             chromeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(chromeIntent);
+            RecordUserAction.record("CustomTabsMenuOpenInChrome");
             return true;
         } else if (id == R.id.find_in_page_id) {
             mFindToolbarManager.showToolbar();
+            RecordUserAction.record("CustomTabsMenuFindInPage");
             return true;
         }
         return super.onMenuOrKeyboardAction(id, fromMenu);

@@ -8,6 +8,7 @@
 
 namespace {
 bool document_mode_enabled = false;
+bool custom_tab_visible = false;
 } // namespace
 
 namespace chrome {
@@ -18,6 +19,11 @@ RunningModeHistogram GetDocumentModeValue() {
       RUNNING_MODE_TABBED_MODE;
 }
 
+CustomTabsVisibilityHistogram GetCustomTabsVisibleValue() {
+  return custom_tab_visible ? VISIBLE_CUSTOM_TAB :
+      VISIBLE_CHROME_TAB;
+}
+
 } // namespace android
 } // namespace chrome
 
@@ -26,6 +32,12 @@ static void SetDocumentModeEnabled(JNIEnv* env,
                                    jclass clazz,
                                    jboolean enabled) {
   document_mode_enabled = enabled;
+}
+
+static void SetCustomTabVisible(JNIEnv* env,
+                                jclass clazz,
+                                jboolean visible) {
+  custom_tab_visible = visible;
 }
 
 bool RegisterFeatureUtilities(JNIEnv* env) {

@@ -16,7 +16,15 @@ enum RunningModeHistogram {
   RUNNING_MODE_MAX
 };
 
+enum CustomTabsVisibilityHistogram {
+  VISIBLE_CUSTOM_TAB,
+  VISIBLE_CHROME_TAB,
+  CUSTOM_TABS_VISIBILITY_MAX
+};
+
 RunningModeHistogram GetDocumentModeValue();
+
+CustomTabsVisibilityHistogram GetCustomTabsVisibleValue();
 
 } // namespace android
 } // namespace chrome

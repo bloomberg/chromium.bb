@@ -4467,6 +4467,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="CustomTabs.Visible" enum="VisibleTab">
+  <owner>yusufo@chromium.org</owner>
+  <summary>
+    Recorded only for Android. Records on every metrics upload whether the
+    currently visible tab is a custom tab. The custom tab is launched by a
+    client app with customized UI. Some metrics like page load time will behave
+    differently for these tabs since it will be possible to warm up the browser
+    process and prepare resources for specific urls ahead of time via a service
+    connection. This histogram can be used to cluster these metric differently.
+  </summary>
+</histogram>
+
 <histogram name="DataReductionProxy.AutoLoFiRequestHeaderState"
     enum="DataReductionProxyAutoLoFiRequestHeaderState">
   <owner>tbansal@chromium.org</owner>
@@ -67951,6 +67963,11 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="57" label=".torrent"/>
   <int value="58" label=".txt"/>
   <int value="59" label=".zip"/>
+</enum>
+
+<enum name="VisibleTab" type="int">
+  <int value="0" label="Custom Tab"/>
+  <int value="1" label="Chrome Tab"/>
 </enum>
 
 <enum name="VPNDriver" type="int">

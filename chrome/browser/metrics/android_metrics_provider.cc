@@ -49,6 +49,10 @@ void AndroidMetricsProvider::ProvideGeneralMetrics(
       "DocumentActivity.Enabled",
       chrome::android::GetDocumentModeValue(),
       chrome::android::RUNNING_MODE_MAX);
+  UMA_HISTOGRAM_ENUMERATION(
+      "CustomTabs.Visible",
+      chrome::android::GetCustomTabsVisibleValue(),
+      chrome::android::CUSTOM_TABS_VISIBILITY_MAX);
 }
 
 void AndroidMetricsProvider::OnForegroundActivityChanged(
