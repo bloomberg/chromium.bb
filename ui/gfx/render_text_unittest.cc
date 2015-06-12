@@ -2730,15 +2730,43 @@ TEST_F(RenderTextTest, HarfBuzz_SubglyphGraphemePartition) {
 
 TEST_F(RenderTextTest, HarfBuzz_RunDirection) {
   RenderTextHarfBuzz render_text;
-  const base::string16 mixed =
-      WideToUTF16(L"\x05D0\x05D1" L"1234" L"\x05D2\x05D3");
+  const base::string16 mixed = WideToUTF16(
+      L"\x05D0\x05D1"
+      L"1234"
+      L"\x05D2\x05D3"
+      L"abc");
   render_text.SetText(mixed);
+
+  // Get the run list for both display directions.
+  render_text.SetDirectionalityMode(DIRECTIONALITY_FORCE_LTR);
   render_text.EnsureLayout();
   internal::TextRunList* run_list = render_text.GetRunList();
-  ASSERT_EQ(3U, run_list->size());
+  ASSERT_EQ(4U, run_list->size());
   EXPECT_TRUE(run_list->runs()[0]->is_rtl);
   EXPECT_FALSE(run_list->runs()[1]->is_rtl);
   EXPECT_TRUE(run_list->runs()[2]->is_rtl);
+  EXPECT_FALSE(run_list->runs()[3]->is_rtl);
+
+  // The Latin letters should appear to the right of the other runs.
+  EXPECT_EQ(2U, run_list->logical_to_visual(0));
+  EXPECT_EQ(1U, run_list->logical_to_visual(1));
+  EXPECT_EQ(0U, run_list->logical_to_visual(2));
+  EXPECT_EQ(3U, run_list->logical_to_visual(3));
+
+  render_text.SetDirectionalityMode(DIRECTIONALITY_FORCE_RTL);
+  render_text.EnsureLayout();
+  run_list = render_text.GetRunList();
+  ASSERT_EQ(4U, run_list->size());
+  EXPECT_TRUE(run_list->runs()[0]->is_rtl);
+  EXPECT_FALSE(run_list->runs()[1]->is_rtl);
+  EXPECT_TRUE(run_list->runs()[2]->is_rtl);
+  EXPECT_FALSE(run_list->runs()[3]->is_rtl);
+
+  // The Latin letters should appear to the left of the other runs.
+  EXPECT_EQ(3U, run_list->logical_to_visual(0));
+  EXPECT_EQ(2U, run_list->logical_to_visual(1));
+  EXPECT_EQ(1U, run_list->logical_to_visual(2));
+  EXPECT_EQ(0U, run_list->logical_to_visual(3));
 }
 
 TEST_F(RenderTextTest, HarfBuzz_BreakRunsByUnicodeBlocks) {

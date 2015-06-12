@@ -1209,14 +1209,13 @@ SelectionModel RenderTextHarfBuzz::LastSelectionModelInsideRun(
 void RenderTextHarfBuzz::ItemizeTextToRuns(
     const base::string16& text,
     internal::TextRunList* run_list_out) {
-  const bool is_text_rtl = GetTextDirection(text) == base::i18n::RIGHT_TO_LEFT;
   DCHECK_NE(0U, text.length());
 
   // If ICU fails to itemize the text, we create a run that spans the entire
   // text. This is needed because leaving the runs set empty causes some clients
   // to misbehave since they expect non-zero text metrics from a non-empty text.
   base::i18n::BiDiLineIterator bidi_iterator;
-  if (!bidi_iterator.Open(text, is_text_rtl)) {
+  if (!bidi_iterator.Open(text, GetTextDirection(text))) {
     internal::TextRunHarfBuzz* run = new internal::TextRunHarfBuzz;
     run->range = Range(0, text.length());
     run_list_out->add(run);
