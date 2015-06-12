@@ -127,6 +127,7 @@ class View {
 
   // Focus.
   void SetFocus();
+  bool HasFocus() const;
 
   // Embedding. See view_manager.mojom for details.
   void Embed(ViewManagerClientPtr client);

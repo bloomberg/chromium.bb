@@ -127,6 +127,8 @@ class HTMLDocument : public blink::WebViewClient,
       const mojo::ViewportMetrics& new_metrics) override;
   void OnViewDestroyed(mojo::View* view) override;
   void OnViewInputEvent(mojo::View* view, const mojo::EventPtr& event) override;
+  void OnViewFocusChanged(mojo::View* gained_focus,
+                          mojo::View* lost_focus) override;
 
   // mojo::InterfaceFactory<mojo::AxProvider>
   void Create(mojo::ApplicationConnection* connection,
@@ -142,6 +144,9 @@ class HTMLDocument : public blink::WebViewClient,
   // Converts a WebLocalFrame to a WebRemoteFrame. Used once we know the
   // url of a frame to trigger the navigation.
   void ConvertLocalFrameToRemoteFrame(blink::WebLocalFrame* frame);
+
+  // Updates the focus state of |web_view_| based on the focus state of |root_|.
+  void UpdateFocus();
 
   scoped_ptr<mojo::AppRefCount> app_refcount_;
   mojo::ApplicationImpl* html_document_app_;

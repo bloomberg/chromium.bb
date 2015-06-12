@@ -188,6 +188,7 @@ void HTMLDocument::OnEmbed(View* root) {
   DCHECK(!setup_->is_headless());
   root_ = root;
   root_->AddObserver(this);
+  UpdateFocus();
 
   InitSetupAndLoadIfNecessary();
 }
@@ -246,6 +247,7 @@ void HTMLDocument::Load(URLResponsePtr response) {
   web_request.setExtraData(extra_data);
 
   web_view_->mainFrame()->loadRequest(web_request);
+  UpdateFocus();
 }
 
 void HTMLDocument::ConvertLocalFrameToRemoteFrame(blink::WebLocalFrame* frame) {
@@ -465,6 +467,19 @@ void HTMLDocument::OnViewInputEvent(View* view, const mojo::EventPtr& event) {
       event.To<scoped_ptr<blink::WebInputEvent>>();
   if (web_event)
     web_view_->handleInputEvent(*web_event);
+}
+
+void HTMLDocument::OnViewFocusChanged(mojo::View* gained_focus,
+                                      mojo::View* lost_focus) {
+  UpdateFocus();
+}
+
+void HTMLDocument::UpdateFocus() {
+  if (!web_view_)
+    return;
+  bool is_focused = root_ && root_->HasFocus();
+  web_view_->setFocus(is_focused);
+  web_view_->setIsActive(is_focused);
 }
 
 }  // namespace html_viewer

@@ -366,6 +366,10 @@ void View::SetFocus() {
     static_cast<ViewManagerClientImpl*>(manager_)->SetFocus(id_);
 }
 
+bool View::HasFocus() const {
+  return manager_ && manager_->GetFocusedView() == this;
+}
+
 void View::Embed(ViewManagerClientPtr client) {
   if (PrepareForEmbed())
     static_cast<ViewManagerClientImpl*>(manager_)->Embed(id_, client.Pass());
