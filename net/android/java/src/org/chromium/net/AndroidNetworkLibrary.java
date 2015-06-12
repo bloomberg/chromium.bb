@@ -155,6 +155,8 @@ class AndroidNetworkLibrary {
             return new AndroidCertVerifyResult(CertVerifyStatusAndroid.FAILED);
         } catch (NoSuchAlgorithmException e) {
             return new AndroidCertVerifyResult(CertVerifyStatusAndroid.FAILED);
+        } catch (IllegalArgumentException e) {
+            return new AndroidCertVerifyResult(CertVerifyStatusAndroid.FAILED);
         }
     }
 
