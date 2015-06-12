@@ -71,6 +71,7 @@ class GuestViewContainer : public content::BrowserPluginDelegate {
   void Ready() final;
   void SetElementInstanceID(int element_instance_id) final;
   void DidDestroyElement() final;
+  base::WeakPtr<BrowserPluginDelegate> GetWeakPtr() final;
 
   int element_instance_id_;
   content::RenderFrame* render_frame_;
@@ -81,6 +82,8 @@ class GuestViewContainer : public content::BrowserPluginDelegate {
 
   std::deque<linked_ptr<GuestViewRequest> > pending_requests_;
   linked_ptr<GuestViewRequest> pending_response_;
+
+  base::WeakPtrFactory<GuestViewContainer> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GuestViewContainer);
 };

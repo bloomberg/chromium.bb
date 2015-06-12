@@ -144,7 +144,7 @@ class CONTENT_EXPORT BrowserPlugin :
   // uniquely identifies a guest WebContents that's hosted by this
   // BrowserPlugin.
   BrowserPlugin(RenderFrame* render_frame,
-                BrowserPluginDelegate* delegate);
+                const base::WeakPtr<BrowserPluginDelegate>& delegate);
 
   ~BrowserPlugin() override;
 
@@ -202,7 +202,7 @@ class CONTENT_EXPORT BrowserPlugin :
 
   // We call lifetime managing methods on |delegate_|, but we do not directly
   // own this. The delegate destroys itself.
-  BrowserPluginDelegate* delegate_;
+  base::WeakPtr<BrowserPluginDelegate> delegate_;
 
   // Weak factory used in v8 |MakeWeak| callback, since the v8 callback might
   // get called after BrowserPlugin has been destroyed.

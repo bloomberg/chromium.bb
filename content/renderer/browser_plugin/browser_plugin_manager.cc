@@ -68,7 +68,7 @@ void BrowserPluginManager::Detach(int browser_plugin_instance_id) {
 
 BrowserPlugin* BrowserPluginManager::CreateBrowserPlugin(
     RenderFrame* render_frame,
-    BrowserPluginDelegate* delegate) {
+    const base::WeakPtr<BrowserPluginDelegate>& delegate) {
   return new BrowserPlugin(render_frame, delegate);
 }
 

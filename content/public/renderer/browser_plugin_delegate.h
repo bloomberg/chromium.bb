@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_RENDERER_BROWSER_PLUGIN_DELEGATE_H_
 #define CONTENT_PUBLIC_RENDERER_BROWSER_PLUGIN_DELEGATE_H_
 
+#include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 
 namespace gfx {
@@ -46,8 +47,11 @@ class CONTENT_EXPORT BrowserPluginDelegate {
   // Called when the plugin is about to be destroyed.
   virtual void DidDestroyElement() {}
 
-  // Return a scriptable object for the plugin.
+  // Returns a scriptable object for the plugin.
   virtual v8::Local<v8::Object> V8ScriptableObject(v8::Isolate* isolate);
+
+  // Returns a weak pointer to this delegate.
+  virtual base::WeakPtr<BrowserPluginDelegate> GetWeakPtr() = 0;
 
  protected:
   virtual ~BrowserPluginDelegate() {}

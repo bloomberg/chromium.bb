@@ -50,7 +50,8 @@ GuestViewContainer::GuestViewContainer(content::RenderFrame* render_frame)
     : element_instance_id_(guest_view::kInstanceIDNone),
       render_frame_(render_frame),
       ready_(false),
-      in_destruction_(false) {
+      in_destruction_(false),
+      weak_ptr_factory_(this) {
   render_frame_lifetime_observer_.reset(
       new RenderFrameLifetimeObserver(this, render_frame_));
 }
@@ -85,6 +86,10 @@ void GuestViewContainer::Destroy(bool embedder_frame_destroyed) {
   // Give our derived class an opportunity to perform some cleanup prior to
   // destruction.
   OnDestroy(embedder_frame_destroyed);
+
+  // Invalidate weak references to us to avoid late arriving tasks from running
+  // during destruction
+  weak_ptr_factory_.InvalidateWeakPtrs();
 
   if (element_instance_id() != guest_view::kInstanceIDNone)
     g_guest_view_container_map.Get().erase(element_instance_id());
@@ -174,6 +179,10 @@ void GuestViewContainer::SetElementInstanceID(int element_instance_id) {
 
 void GuestViewContainer::DidDestroyElement() {
   Destroy(false);
+}
+
+base::WeakPtr<content::BrowserPluginDelegate> GuestViewContainer::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 }  // namespace guest_view

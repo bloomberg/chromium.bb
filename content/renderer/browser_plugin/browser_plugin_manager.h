@@ -6,7 +6,7 @@
 #define CONTENT_RENDERER_BROWSER_PLUGIN_BROWSER_PLUGIN_MANAGER_H_
 
 #include "base/id_map.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "content/public/renderer/render_process_observer.h"
 #include "ipc/ipc_sender.h"
 
@@ -37,8 +37,9 @@ class CONTENT_EXPORT BrowserPluginManager : public RenderProcessObserver {
   // The |delegate| is expected to manage its own lifetime.
   // Generally BrowserPlugin calls DidDestroyElement() on the delegate and
   // right now the delegate destroys itself once it hears that callback.
-  BrowserPlugin* CreateBrowserPlugin(RenderFrame* render_frame,
-                                     BrowserPluginDelegate* delegate);
+  BrowserPlugin* CreateBrowserPlugin(
+      RenderFrame* render_frame,
+      const base::WeakPtr<BrowserPluginDelegate>& delegate);
 
   void Attach(int browser_plugin_instance_id);
 
