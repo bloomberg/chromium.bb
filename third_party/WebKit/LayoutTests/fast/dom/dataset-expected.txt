@@ -65,7 +65,6 @@ PASS testDelete('data-r-2', 'r-2') is true
 PASS testDelete('data--r-2-', 'R-2-') is true
 PASS testDelete('data--r-2r', 'R-2r') is true
 PASS testDelete('data--r-2-----r', 'R-2----R') is true
-PASS testNativeDelete('-r-2-', false) is true
 PASS testNativeDelete('foo', true) is true
 
 PASS testDelete('dummy', '-foo') is false
