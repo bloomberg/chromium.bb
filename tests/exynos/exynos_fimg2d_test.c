@@ -270,9 +270,10 @@ static int g2d_copy_test(struct exynos_device *dev, struct exynos_bo *src,
 		src_img.user_ptr[0].userptr = userptr;
 		src_img.user_ptr[0].size = size;
 		break;
+	case G2D_IMGBUF_COLOR:
 	default:
-		type = G2D_IMGBUF_GEM;
-		break;
+		ret = -EFAULT;
+		goto fail;
 	}
 
 	printf("copy test with %s.\n",
@@ -306,6 +307,7 @@ err_free_userptr:
 		if (userptr)
 			free((void *)userptr);
 
+fail:
 	g2d_fini(ctx);
 
 	return ret;
@@ -349,9 +351,10 @@ static int g2d_copy_with_scale_test(struct exynos_device *dev,
 		src_img.user_ptr[0].userptr = userptr;
 		src_img.user_ptr[0].size = size;
 		break;
+	case G2D_IMGBUF_COLOR:
 	default:
-		type = G2D_IMGBUF_GEM;
-		break;
+		ret = -EFAULT;
+		goto fail;
 	}
 
 	printf("copy and scale test with %s.\n",
@@ -390,6 +393,7 @@ err_free_userptr:
 		if (userptr)
 			free((void *)userptr);
 
+fail:
 	g2d_fini(ctx);
 
 	return 0;
@@ -435,9 +439,10 @@ static int g2d_blend_test(struct exynos_device *dev,
 		src_img.user_ptr[0].userptr = userptr;
 		src_img.user_ptr[0].size = size;
 		break;
+	case G2D_IMGBUF_COLOR:
 	default:
-		type = G2D_IMGBUF_GEM;
-		break;
+		ret = -EFAULT;
+		goto fail;
 	}
 
 	printf("blend test with %s.\n",
@@ -487,6 +492,7 @@ err_free_userptr:
 		if (userptr)
 			free((void *)userptr);
 
+fail:
 	g2d_fini(ctx);
 
 	return 0;
@@ -532,6 +538,7 @@ static int g2d_checkerboard_test(struct exynos_device *dev,
 		src_img.user_ptr[0].userptr = (unsigned long)checkerboard;
 		src_img.user_ptr[0].size = img_w * img_h * 4;
 		break;
+	case G2D_IMGBUF_COLOR:
 	default:
 		ret = -EFAULT;
 		goto fail;
