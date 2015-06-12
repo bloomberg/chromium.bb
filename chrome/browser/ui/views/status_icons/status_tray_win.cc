@@ -7,7 +7,9 @@
 #include <commctrl.h>
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/profiler/scoped_tracker.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/threading/thread.h"
 #include "base/win/wrapped_window_proc.h"
@@ -76,12 +78,11 @@ class StatusTrayStateChangerProxyImpl : public StatusTrayStateChangerProxy,
       worker_thread_.Start();
 
     ++pending_requests_;
-    worker_thread_.message_loop_proxy()->PostTaskAndReply(
+    worker_thread_.task_runner()->PostTaskAndReply(
         FROM_HERE,
         base::Bind(
             &StatusTrayStateChangerProxyImpl::EnqueueChangeOnWorkerThread,
-            icon_id,
-            window),
+            icon_id, window),
         base::Bind(&StatusTrayStateChangerProxyImpl::ChangeDone,
                    weak_factory_.GetWeakPtr()));
   }

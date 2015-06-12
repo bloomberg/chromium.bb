@@ -8,9 +8,11 @@
 
 #include "base/bind.h"
 #include "base/i18n/rtl.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/elide_url.h"
 #include "net/base/net_util.h"
@@ -242,10 +244,9 @@ void StatusBubbleViews::StatusView::StartTimer(base::TimeDelta time) {
   if (timer_factory_.HasWeakPtrs())
     timer_factory_.InvalidateWeakPtrs();
 
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&StatusBubbleViews::StatusView::OnTimer,
-                 timer_factory_.GetWeakPtr()),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&StatusBubbleViews::StatusView::OnTimer,
+                            timer_factory_.GetWeakPtr()),
       time);
 }
 
@@ -699,10 +700,9 @@ void StatusBubbleViews::SetURL(const GURL& url, const std::string& languages) {
     if (is_expanded_ && !url.is_empty()) {
       ExpandBubble();
     } else if (net::FormatUrl(url, languages).length() > url_text_.length()) {
-      base::MessageLoop::current()->PostDelayedTask(
-          FROM_HERE,
-          base::Bind(&StatusBubbleViews::ExpandBubble,
-                     expand_timer_factory_.GetWeakPtr()),
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+          FROM_HERE, base::Bind(&StatusBubbleViews::ExpandBubble,
+                                expand_timer_factory_.GetWeakPtr()),
           base::TimeDelta::FromMilliseconds(kExpandHoverDelayMS));
     }
   }

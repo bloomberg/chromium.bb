@@ -4,7 +4,10 @@
 
 #include "chrome/browser/ui/views/extensions/extension_message_bubble_view.h"
 
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/extension_message_bubble_controller.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/grit/locale_settings.h"
@@ -65,10 +68,9 @@ void ExtensionMessageBubbleView::Show() {
   // bubbles into the focus cycle). Another benefit of delaying the show is
   // that fade-in works (the fade-in isn't apparent if the the bubble appears at
   // startup).
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&ExtensionMessageBubbleView::ShowBubble,
-                 weak_factory_.GetWeakPtr()),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&ExtensionMessageBubbleView::ShowBubble,
+                            weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromSeconds(kBubbleAppearanceWaitTime));
 }
 

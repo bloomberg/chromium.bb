@@ -6,7 +6,9 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
@@ -389,11 +391,9 @@ void FullscreenController::ExitExclusiveAccessIfNecessary() {
 
 void FullscreenController::PostFullscreenChangeNotification(
     bool is_fullscreen) {
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&FullscreenController::NotifyFullscreenChange,
-                 ptr_factory_.GetWeakPtr(),
-                 is_fullscreen));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&FullscreenController::NotifyFullscreenChange,
+                            ptr_factory_.GetWeakPtr(), is_fullscreen));
 }
 
 void FullscreenController::NotifyFullscreenChange(bool is_fullscreen) {

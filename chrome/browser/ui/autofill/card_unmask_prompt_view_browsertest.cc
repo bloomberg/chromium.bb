@@ -136,7 +136,7 @@ IN_PROC_BROWSER_TEST_F(CardUnmaskPromptViewBrowserTest,
   // Simulate the user clicking [x] before the "Success!" message disappears.
   CardUnmaskPromptViewTester::For(controller()->view())->Close();
   // Wait a little while; there should be no crash.
-  base::MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->task_runner()->PostDelayedTask(
       FROM_HERE, base::Bind(&content::MessageLoopRunner::Quit,
                             base::Unretained(runner_.get())),
       2 * controller()->GetSuccessMessageDuration());

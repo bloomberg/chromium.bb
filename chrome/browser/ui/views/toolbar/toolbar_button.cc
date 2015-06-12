@@ -5,6 +5,9 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 
 #include "base/bind.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -64,11 +67,10 @@ bool ToolbarButton::OnMousePressed(const ui::MouseEvent& event) {
 
     // Schedule a task that will show the menu.
     const int kMenuTimerDelay = 500;
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&ToolbarButton::ShowDropDownMenu,
-                   show_menu_factory_.GetWeakPtr(),
-                   ui::GetMenuSourceTypeForEvent(event)),
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, base::Bind(&ToolbarButton::ShowDropDownMenu,
+                              show_menu_factory_.GetWeakPtr(),
+                              ui::GetMenuSourceTypeForEvent(event)),
         base::TimeDelta::FromMilliseconds(kMenuTimerDelay));
   }
   return LabelButton::OnMousePressed(event);

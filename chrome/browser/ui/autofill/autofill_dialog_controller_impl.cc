@@ -12,14 +12,17 @@
 #include "base/bind_helpers.h"
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/rtl.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/rand_util.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/autofill/risk_util.h"
@@ -2482,9 +2485,9 @@ void AutofillDialogControllerImpl::Observe(
 
     // NOTE: |HideSignIn()| may delete the WebContents which doesn't expect to
     // be deleted while committing a nav entry. Just call |HideSignIn()| later.
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-        base::Bind(&AutofillDialogControllerImpl::HideSignIn,
-                   base::Unretained(this)));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&AutofillDialogControllerImpl::HideSignIn,
+                              base::Unretained(this)));
   }
 }
 

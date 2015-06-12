@@ -8,7 +8,9 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
+#include "base/location.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
@@ -204,7 +206,7 @@ void CloseWindowCallback(Browser* browser) {
 // menu.
 void RunCloseWithAppMenuCallback(Browser* browser) {
   // ShowAppMenu is modal under views. Schedule a task that closes the window.
-  base::MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->task_runner()->PostTask(
       FROM_HERE, base::Bind(&CloseWindowCallback, browser));
   chrome::ShowAppMenu(browser);
 }
@@ -918,8 +920,8 @@ class BeforeUnloadAtQuitWithTwoWindows : public InProcessBrowserTest {
 
     // Run the application event loop to completion, which will cycle the
     // native MessagePump on all platforms.
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-                                           base::MessageLoop::QuitClosure());
+    base::MessageLoop::current()->task_runner()->PostTask(
+        FROM_HERE, base::MessageLoop::QuitClosure());
     base::MessageLoop::current()->Run();
 
     // Take care of any remaining Cocoa work.
@@ -1591,7 +1593,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CloseWithAppMenuOpen) {
     return;
 
   // We need a message loop running for menus on windows.
-  base::MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->task_runner()->PostTask(
       FROM_HERE, base::Bind(&RunCloseWithAppMenuCallback, browser()));
 }
 

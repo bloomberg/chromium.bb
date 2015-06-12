@@ -6,7 +6,9 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 
 HoverTabSelector::HoverTabSelector(
@@ -35,10 +37,9 @@ void HoverTabSelector::StartTabTransition(int index) {
     const base::TimeDelta kHoverTransitionDelay =
         base::TimeDelta::FromMilliseconds(500);
     tab_transition_tab_index_ = index;
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&HoverTabSelector::PerformTabTransition,
-                   weak_factory_.GetWeakPtr()),
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, base::Bind(&HoverTabSelector::PerformTabTransition,
+                              weak_factory_.GetWeakPtr()),
         kHoverTransitionDelay);
   }
 }

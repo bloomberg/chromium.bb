@@ -7,12 +7,15 @@
 #include <math.h>
 
 #include <algorithm>
+#include <queue>
 #include <vector>
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/panels/panel_drag_controller.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
@@ -538,7 +541,7 @@ void DockedPanelCollection::BringUpOrDownTitlebars(bool bring_up) {
   // should always 'reset' the delays so cancel any tasks that haven't run yet
   // and post a new one.
   titlebar_action_factory_.InvalidateWeakPtrs();
-  base::MessageLoop::current()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&DockedPanelCollection::DelayedBringUpOrDownTitlebarsCheck,
                  titlebar_action_factory_.GetWeakPtr()),
@@ -751,10 +754,9 @@ void DockedPanelCollection::UpdatePanelOnCollectionChange(Panel* panel) {
 
 void DockedPanelCollection::ScheduleLayoutRefresh() {
   refresh_action_factory_.InvalidateWeakPtrs();
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&DockedPanelCollection::RefreshLayout,
-                 refresh_action_factory_.GetWeakPtr()),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&DockedPanelCollection::RefreshLayout,
+                            refresh_action_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(PanelManager::AdjustTimeInterval(
           kRefreshLayoutAfterActivePanelChangeDelayMs)));
 }

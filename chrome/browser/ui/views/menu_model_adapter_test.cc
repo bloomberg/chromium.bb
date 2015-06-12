@@ -3,7 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/callback.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/base/view_event_test_base.h"
@@ -228,7 +231,7 @@ class MenuModelAdapterTest : public ViewEventTestBase,
 
     menu_model_adapter_.BuildMenu(menu_);
 
-    base::MessageLoopForUI::current()->PostTask(
+    base::MessageLoopForUI::current()->task_runner()->PostTask(
         FROM_HERE, CreateEventTask(this, &MenuModelAdapterTest::Step3));
   }
 

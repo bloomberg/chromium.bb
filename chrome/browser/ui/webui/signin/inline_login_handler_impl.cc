@@ -8,11 +8,14 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/location.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
@@ -331,11 +334,10 @@ void InlineSigninHelper::OnClientOAuthSuccess(const ClientOAuthResult& result) {
     if (signin::IsAutoCloseEnabledInURL(current_url_)) {
       // Close the gaia sign in tab via a task to make sure we aren't in the
       // middle of any webui handler code.
-      base::MessageLoop::current()->PostTask(
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
-          base::Bind(&InlineLoginHandlerImpl::CloseTab,
-          handler_,
-          signin::ShouldShowAccountManagement(current_url_)));
+          base::Bind(&InlineLoginHandlerImpl::CloseTab, handler_,
+                     signin::ShouldShowAccountManagement(current_url_)));
     }
 
     if (source == signin_metrics::SOURCE_REAUTH)
@@ -390,7 +392,7 @@ void InlineSigninHelper::OnClientOAuthSuccess(const ClientOAuthResult& result) {
           confirmation_required,
           signin::GetNextPageURLForPromoURL(current_url_),
           base::Bind(&InlineLoginHandlerImpl::SyncStarterCallback, handler_));
-      base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+      base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
     }
   }
 }
@@ -458,7 +460,7 @@ void InlineSigninHelper::ConfirmEmailAction(
     default:
       DCHECK(false) << "Invalid action";
   }
-  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }
 
 void InlineSigninHelper::OnClientOAuthFailure(
@@ -470,7 +472,7 @@ void InlineSigninHelper::OnClientOAuthFailure(
     AboutSigninInternalsFactory::GetForProfile(profile_);
   about_signin_internals->OnRefreshTokenReceived("Failure");
 
-  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }
 
 }  // namespace
@@ -757,7 +759,7 @@ void InlineLoginHandlerImpl::SyncStarterCallback(
   if (result == OneClickSigninSyncStarter::SYNC_SETUP_FAILURE) {
     RedirectToNtpOrAppsPage(contents, source);
   } else if (auto_close) {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&InlineLoginHandlerImpl::CloseTab,
                    weak_factory_.GetWeakPtr(),

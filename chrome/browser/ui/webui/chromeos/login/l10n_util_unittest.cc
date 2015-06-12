@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/customization/customization_document.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
@@ -34,8 +35,8 @@ class MachineStatisticsInitializer {
 
 MachineStatisticsInitializer::MachineStatisticsInitializer() {
   base::MessageLoop loop;
-  chromeos::system::StatisticsProvider::GetInstance()->
-      StartLoadingMachineStatistics(loop.message_loop_proxy(), false);
+  chromeos::system::StatisticsProvider::GetInstance()
+      ->StartLoadingMachineStatistics(loop.task_runner(), false);
   loop.RunUntilIdle();
 }
 

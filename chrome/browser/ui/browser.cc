@@ -15,15 +15,18 @@
 #include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/process/process_info.h"
 #include "base/profiler/scoped_tracker.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
@@ -1160,7 +1163,7 @@ void Browser::TabStripEmpty() {
   // Note: This will be called several times if TabStripEmpty is called several
   //       times. This is because it does not close the window if tabs are
   //       still present.
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&Browser::CloseFrame, weak_factory_.GetWeakPtr()));
 
   // Instant may have visible WebContents that need to be detached before the
@@ -2190,10 +2193,9 @@ void Browser::ScheduleUIUpdate(WebContents* source,
 
   if (!chrome_updater_factory_.HasWeakPtrs()) {
     // No task currently scheduled, start another.
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&Browser::ProcessPendingUIUpdates,
-                   chrome_updater_factory_.GetWeakPtr()),
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, base::Bind(&Browser::ProcessPendingUIUpdates,
+                              chrome_updater_factory_.GetWeakPtr()),
         base::TimeDelta::FromMilliseconds(kUIUpdateCoalescingTimeMS));
   }
 }

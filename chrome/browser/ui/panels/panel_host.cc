@@ -5,8 +5,10 @@
 #include "chrome/browser/ui/panels/panel_host.h"
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/extensions/window_controller.h"
@@ -217,7 +219,7 @@ void PanelHost::WebContentsDestroyed() {
   // Close the panel after we return to the message loop (not immediately,
   // otherwise, it may destroy this object before the stack has a chance
   // to cleanly unwind.)
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&PanelHost::ClosePanel, weak_factory_.GetWeakPtr()));
 }

@@ -5,8 +5,10 @@
 #include "chrome/browser/ui/views/importer/import_lock_dialog_view.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/importer/importer_lock_dialog.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -73,13 +75,13 @@ base::string16 ImportLockDialogView::GetWindowTitle() const {
 }
 
 bool ImportLockDialogView::Accept() {
-  base::MessageLoop::current()->PostTask(FROM_HERE,
-                                         base::Bind(callback_, true));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                base::Bind(callback_, true));
   return true;
 }
 
 bool ImportLockDialogView::Cancel() {
-  base::MessageLoop::current()->PostTask(FROM_HERE,
-                                         base::Bind(callback_, false));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                base::Bind(callback_, false));
   return true;
 }

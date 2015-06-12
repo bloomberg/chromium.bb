@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/i18n/break_iterator.h"
 #include "base/i18n/rtl.h"
+#include "base/location.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
@@ -350,7 +351,7 @@ void DownloadItemView::OnDownloadDestroyed(DownloadItem* download) {
 void DownloadItemView::OnDownloadOpened(DownloadItem* download) {
   disabled_while_opening_ = true;
   SetEnabled(false);
-  base::MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->task_runner()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&DownloadItemView::Reenable, weak_ptr_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(kDisabledOnOpenDuration));
@@ -1014,10 +1015,9 @@ void DownloadItemView::ShowContextMenuImpl(const gfx::Point& p,
   // Post a task to release the button.  When we call the Run method on the menu
   // below, it runs an inner message loop that might cause us to be deleted.
   // Posting a task with a WeakPtr lets us safely handle the button release.
-  base::MessageLoop::current()->PostNonNestableTask(
-      FROM_HERE,
-      base::Bind(&DownloadItemView::ReleaseDropDown,
-                 weak_ptr_factory_.GetWeakPtr()));
+  base::MessageLoop::current()->task_runner()->PostNonNestableTask(
+      FROM_HERE, base::Bind(&DownloadItemView::ReleaseDropDown,
+                            weak_ptr_factory_.GetWeakPtr()));
   views::View::ConvertPointToScreen(this, &point);
 
   if (!context_menu_.get())

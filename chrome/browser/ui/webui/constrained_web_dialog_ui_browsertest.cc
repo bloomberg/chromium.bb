@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/callback.h"
+#include "base/location.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
@@ -75,9 +76,8 @@ class ConstrainedWebDialogBrowserTest : public InProcessBrowserTest {
         return false;
       }
 
-      base::MessageLoop::current()->PostDelayedTask(
-          FROM_HERE,
-          base::MessageLoop::QuitClosure(),
+      base::MessageLoop::current()->task_runner()->PostDelayedTask(
+          FROM_HERE, base::MessageLoop::QuitClosure(),
           base::TimeDelta::FromMilliseconds(20));
       content::RunMessageLoop();
     }

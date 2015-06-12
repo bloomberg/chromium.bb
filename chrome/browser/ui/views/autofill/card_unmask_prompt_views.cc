@@ -5,7 +5,10 @@
 #include "chrome/browser/ui/views/autofill/card_unmask_prompt_views.h"
 
 #include "base/basictypes.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 #include "chrome/browser/ui/autofill/create_card_unmask_prompt_view.h"
 #include "chrome/browser/ui/views/autofill/decorated_textfield.h"
@@ -104,7 +107,7 @@ void CardUnmaskPromptViews::GotVerificationResult(
     progress_label_->SetText(l10n_util::GetStringUTF16(
         IDS_AUTOFILL_CARD_UNMASK_VERIFICATION_SUCCESS));
     progress_throbber_->SetChecked(true);
-    base::MessageLoop::current()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, base::Bind(&CardUnmaskPromptViews::ClosePrompt,
                               weak_ptr_factory_.GetWeakPtr()),
         controller_->GetSuccessMessageDuration());

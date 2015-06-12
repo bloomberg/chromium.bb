@@ -4,6 +4,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/location.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -54,7 +55,7 @@ class TestWebDialogView : public views::WebDialogView {
       // Schedule message loop quit because we could be called while
       // the bounds change call is on the stack and not in the nested message
       // loop.
-      base::MessageLoop::current()->PostTask(
+      base::MessageLoop::current()->task_runner()->PostTask(
           FROM_HERE,
           base::Bind(&base::MessageLoop::Quit,
                      base::Unretained(base::MessageLoop::current())));

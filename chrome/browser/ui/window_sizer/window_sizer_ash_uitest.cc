@@ -7,6 +7,7 @@
 #include "ash/shell.h"
 #include "ash/test/shelf_test_api.h"
 #include "base/command_line.h"
+#include "base/location.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/browser.h"
@@ -141,9 +142,8 @@ class WindowSizerContextMenuTest : public WindowSizerTest {
   }
 
   static void QuitLoop() {
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::MessageLoop::QuitWhenIdleClosure());
+    base::MessageLoop::current()->task_runner()->PostTask(
+        FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
   }
 
  private:

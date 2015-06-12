@@ -4,8 +4,10 @@
 
 #include "chrome/browser/ui/fast_unload_controller.h"
 
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/ui/browser.h"
@@ -473,10 +475,9 @@ void FastUnloadController::ClearUnloadState(content::WebContents* contents) {
 }
 
 void FastUnloadController::PostTaskForProcessPendingTabs() {
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&FastUnloadController::ProcessPendingTabs,
-                 weak_factory_.GetWeakPtr()));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&FastUnloadController::ProcessPendingTabs,
+                            weak_factory_.GetWeakPtr()));
 }
 
 }  // namespace chrome

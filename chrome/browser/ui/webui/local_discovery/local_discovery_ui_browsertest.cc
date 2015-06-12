@@ -7,6 +7,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/local_discovery/test_service_discovery_client.h"
@@ -438,7 +439,7 @@ class LocalDiscoveryUITest : public WebUIBrowserTest {
     base::CancelableCallback<void()> callback(base::Bind(
         &base::MessageLoop::Quit, base::Unretained(
             base::MessageLoop::current())));
-    base::MessageLoop::current()->PostDelayedTask(
+    base::MessageLoop::current()->task_runner()->PostDelayedTask(
         FROM_HERE, callback.callback(), time_period);
 
     base::MessageLoop::current()->Run();

@@ -5,7 +5,10 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/location.h"
+#include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -315,7 +318,7 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
     base::MessageLoopForUI* loop = base::MessageLoopForUI::current();
     base::MessageLoopForUI::ScopedNestableTaskAllower allow_nested(loop);
     base::RunLoop run_loop;
-    loop->PostTask(FROM_HERE, run_loop.QuitClosure());
+    loop->task_runner()->PostTask(FROM_HERE, run_loop.QuitClosure());
     run_loop.Run();
 
     ViewEventTestBase::TearDown();
@@ -584,7 +587,7 @@ class BookmarkContextMenuNotificationObserver
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override {
-    base::MessageLoop::current()->PostTask(FROM_HERE, task_);
+    base::MessageLoop::current()->task_runner()->PostTask(FROM_HERE, task_);
   }
 
   // Sets the task that is posted when the context menu is shown.
@@ -1015,9 +1018,8 @@ class BookmarkBarViewTest9 : public BookmarkBarViewEventTestBase {
   }
 
   void Step3() {
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&BookmarkBarViewTest9::Step4, this),
+    base::MessageLoop::current()->task_runner()->PostDelayedTask(
+        FROM_HERE, base::Bind(&BookmarkBarViewTest9::Step4, this),
         base::TimeDelta::FromMilliseconds(200));
   }
 
@@ -1032,7 +1034,7 @@ class BookmarkBarViewTest9 : public BookmarkBarViewEventTestBase {
     // On linux, Cancelling menu will call Quit on the message loop,
     // which can interfere with Done. We need to run Done in the
     // next execution loop.
-    base::MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->task_runner()->PostTask(
         FROM_HERE, base::Bind(&ViewEventTestBase::Done, this));
   }
 
@@ -1315,10 +1317,9 @@ class BookmarkBarViewTest12 : public BookmarkBarViewEventTestBase {
     tab_waiter.WaitForTab();
 
     // For some reason return isn't processed correctly unless we delay.
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(
-            &BookmarkBarViewTest12::Step5, this, base::Unretained(dialog)),
+    base::MessageLoop::current()->task_runner()->PostDelayedTask(
+        FROM_HERE, base::Bind(&BookmarkBarViewTest12::Step5, this,
+                              base::Unretained(dialog)),
         base::TimeDelta::FromSeconds(1));
   }
 
@@ -1581,7 +1582,7 @@ class BookmarkBarViewTest16 : public BookmarkBarViewEventTestBase {
     window_->Close();
     window_ = NULL;
 
-    base::MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->task_runner()->PostTask(
         FROM_HERE, CreateEventTask(this, &BookmarkBarViewTest16::Done));
   }
 };

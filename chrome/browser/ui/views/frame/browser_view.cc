@@ -9,11 +9,14 @@
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
+#include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/profiler/scoped_tracker.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
@@ -1633,10 +1636,9 @@ bool BrowserView::CanActivate() const {
   // has to be done in a post task, otherwise if the user clicked on a window
   // that doesn't have the modal dialog the windows keep trying to get the focus
   // from each other on Windows. http://crbug.com/141650.
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&BrowserView::ActivateAppModalDialog,
-                 activate_modal_dialog_factory_.GetWeakPtr()));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&BrowserView::ActivateAppModalDialog,
+                            activate_modal_dialog_factory_.GetWeakPtr()));
 #endif
   return false;
 }

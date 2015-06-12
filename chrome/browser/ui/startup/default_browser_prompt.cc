@@ -4,11 +4,13 @@
 
 #include "chrome/browser/ui/startup/default_browser_prompt.h"
 
+#include "base/location.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/first_run/first_run.h"
@@ -120,10 +122,9 @@ DefaultBrowserInfoBarDelegate::DefaultBrowserInfoBarDelegate(
       weak_factory_(this) {
   // We want the info-bar to stick-around for few seconds and then be hidden
   // on the next navigation after that.
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&DefaultBrowserInfoBarDelegate::AllowExpiry,
-                 weak_factory_.GetWeakPtr()),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&DefaultBrowserInfoBarDelegate::AllowExpiry,
+                            weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromSeconds(8));
 }
 

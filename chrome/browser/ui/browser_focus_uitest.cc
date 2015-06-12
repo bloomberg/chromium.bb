@@ -197,9 +197,8 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_ClickingMovesFocus) {
 #if defined(OS_POSIX)
   // It seems we have to wait a little bit for the widgets to spin up before
   // we can start clicking on them.
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::MessageLoop::QuitClosure(),
+  base::MessageLoop::current()->task_runner()->PostDelayedTask(
+      FROM_HERE, base::MessageLoop::QuitClosure(),
       base::TimeDelta::FromMilliseconds(kActionDelayMs));
   content::RunMessageLoop();
 #endif  // defined(OS_POSIX)

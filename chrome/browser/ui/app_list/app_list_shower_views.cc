@@ -5,8 +5,10 @@
 #include "chrome/browser/ui/app_list/app_list_shower_views.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
 #include "base/profiler/scoped_tracker.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/apps/scoped_keep_alive.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_shower_delegate.h"
@@ -142,8 +144,8 @@ void AppListShower::Hide() {
 }
 
 void AppListShower::ResetKeepAliveSoon() {
-  if (base::MessageLoop::current()) {  // NULL in tests.
-    base::MessageLoop::current()->PostTask(
+  if (base::ThreadTaskRunnerHandle::IsSet()) {  // Not set in tests.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&AppListShower::ResetKeepAlive, base::Unretained(this)));
     return;

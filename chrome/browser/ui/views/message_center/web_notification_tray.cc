@@ -5,9 +5,12 @@
 #include "chrome/browser/ui/views/message_center/web_notification_tray.h"
 
 #include "base/i18n/number_formatting.h"
+#include "base/location.h"
 #include "base/prefs/pref_service.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/status_icons/status_icon.h"
 #include "chrome/browser/status_icons/status_icon_menu_model.h"
@@ -255,7 +258,7 @@ void WebNotificationTray::OnMessageCenterTrayChanged() {
   // See the comments in ash/system/web_notification/web_notification_tray.cc
   // for why PostTask.
   should_update_tray_content_ = true;
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&WebNotificationTray::UpdateStatusIcon, AsWeakPtr()));
 }

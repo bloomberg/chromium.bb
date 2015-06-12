@@ -11,10 +11,13 @@
 
 #include "base/bind.h"
 #include "base/i18n/rtl.h"
+#include "base/location.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/chrome_bookmark_client.h"
 #include "chrome/browser/bookmarks/chrome_bookmark_client_factory.h"
@@ -1829,11 +1832,9 @@ void BookmarkBarView::StartShowFolderDropMenuTimer(const BookmarkNode* node) {
     return;
   }
   show_folder_method_factory_.InvalidateWeakPtrs();
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&BookmarkBarView::ShowDropFolderForNode,
-                 show_folder_method_factory_.GetWeakPtr(),
-                 node),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&BookmarkBarView::ShowDropFolderForNode,
+                            show_folder_method_factory_.GetWeakPtr(), node),
       base::TimeDelta::FromMilliseconds(views::GetMenuShowDelay()));
 }
 

@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/location.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -98,11 +100,9 @@ void ToolbarViewInteractiveUITest::DoDragAndDrop(const gfx::Point& start,
     dnd_thread_->Start();
   }
 
-  dnd_thread_->message_loop()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(base::IgnoreResult(&ui_controls::SendMouseMove),
-                 end.x(),
-                 end.y()),
+  dnd_thread_->task_runner()->PostDelayedTask(
+      FROM_HERE, base::Bind(base::IgnoreResult(&ui_controls::SendMouseMove),
+                            end.x(), end.y()),
       base::TimeDelta::FromMilliseconds(200));
   runner->Run();
 }

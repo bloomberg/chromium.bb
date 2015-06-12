@@ -4,7 +4,9 @@
 
 #include "chrome/browser/ui/unload_controller.h"
 
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/ui/browser.h"
@@ -356,10 +358,9 @@ void UnloadController::ClearUnloadState(content::WebContents* web_contents,
     if (process_now) {
       ProcessPendingTabs();
     } else {
-      base::MessageLoop::current()->PostTask(
-          FROM_HERE,
-          base::Bind(&UnloadController::ProcessPendingTabs,
-                     weak_factory_.GetWeakPtr()));
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::Bind(&UnloadController::ProcessPendingTabs,
+                                weak_factory_.GetWeakPtr()));
     }
   }
 }

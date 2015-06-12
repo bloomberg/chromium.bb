@@ -7,8 +7,10 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/clock.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_ui_util.h"
@@ -173,10 +175,9 @@ void AppSearchProvider::OnExtensionLoaded(
     const extensions::Extension* extension) {
   RefreshApps();
   if (!update_results_factory_.HasWeakPtrs()) {
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&AppSearchProvider::UpdateResults,
-                   update_results_factory_.GetWeakPtr()));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&AppSearchProvider::UpdateResults,
+                              update_results_factory_.GetWeakPtr()));
   }
 }
 
@@ -186,10 +187,9 @@ void AppSearchProvider::OnExtensionUninstalled(
     extensions::UninstallReason reason) {
   RefreshApps();
   if (!update_results_factory_.HasWeakPtrs()) {
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&AppSearchProvider::UpdateResults,
-                   update_results_factory_.GetWeakPtr()));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&AppSearchProvider::UpdateResults,
+                              update_results_factory_.GetWeakPtr()));
   }
 }
 

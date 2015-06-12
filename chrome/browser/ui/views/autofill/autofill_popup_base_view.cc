@@ -6,7 +6,8 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/ui/autofill/popup_constants.h"
 #include "ui/views/border.h"
 #include "ui/views/focus/focus_manager.h"
@@ -136,10 +137,9 @@ void AutofillPopupBaseView::OnMouseExited(const ui::MouseEvent& event) {
   // Pressing return causes the cursor to hide, which will generate an
   // OnMouseExited event. Pressing return should activate the current selection
   // via AcceleratorPressed, so we need to let that run first.
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&AutofillPopupBaseView::ClearSelection,
-                 weak_ptr_factory_.GetWeakPtr()));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&AutofillPopupBaseView::ClearSelection,
+                            weak_ptr_factory_.GetWeakPtr()));
 }
 
 void AutofillPopupBaseView::OnMouseMoved(const ui::MouseEvent& event) {

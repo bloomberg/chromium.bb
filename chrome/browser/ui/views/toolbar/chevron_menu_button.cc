@@ -4,9 +4,11 @@
 
 #include "chrome/browser/ui/views/toolbar/chevron_menu_button.h"
 
+#include "base/location.h"
 #include "base/memory/scoped_vector.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_icon_factory.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
@@ -197,10 +199,9 @@ void ChevronMenuButton::MenuController::RunMenu(views::Widget* window) {
   if (!for_drop_) {
     // Give the context menu (if any) a chance to execute the user-selected
     // command.
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&ChevronMenuButton::MenuDone,
-                   owner_->weak_factory_.GetWeakPtr()));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&ChevronMenuButton::MenuDone,
+                              owner_->weak_factory_.GetWeakPtr()));
   }
 }
 
@@ -395,11 +396,9 @@ bool ChevronMenuButton::CanDrop(const OSExchangeData& data) {
 void ChevronMenuButton::OnDragEntered(const ui::DropTargetEvent& event) {
   DCHECK(!weak_factory_.HasWeakPtrs());
   if (!menu_controller_) {
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&ChevronMenuButton::ShowOverflowMenu,
-                   weak_factory_.GetWeakPtr(),
-                   true),
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, base::Bind(&ChevronMenuButton::ShowOverflowMenu,
+                              weak_factory_.GetWeakPtr(), true),
         base::TimeDelta::FromMilliseconds(views::GetMenuShowDelay()));
   }
 }

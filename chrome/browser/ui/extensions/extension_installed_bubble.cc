@@ -7,8 +7,10 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
@@ -131,10 +133,9 @@ void ExtensionInstalledBubble::ShowInternal() {
   if (delegate_->MaybeShowNow())
     return;
   if (animation_wait_retries_++ < kAnimationWaitRetries) {
-    base::MessageLoopForUI::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&ExtensionInstalledBubble::ShowInternal,
-                   weak_factory_.GetWeakPtr()),
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, base::Bind(&ExtensionInstalledBubble::ShowInternal,
+                              weak_factory_.GetWeakPtr()),
         base::TimeDelta::FromMilliseconds(kAnimationWaitMs));
   }
 }
@@ -148,10 +149,9 @@ void ExtensionInstalledBubble::OnExtensionLoaded(
 
     animation_wait_retries_ = 0;
     // PostTask to ourself to allow all EXTENSION_LOADED Observers to run.
-    base::MessageLoopForUI::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&ExtensionInstalledBubble::ShowInternal,
-                   weak_factory_.GetWeakPtr()));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&ExtensionInstalledBubble::ShowInternal,
+                              weak_factory_.GetWeakPtr()));
   }
 }
 

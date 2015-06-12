@@ -36,9 +36,8 @@ bool RunLoopUntil(const base::Callback<bool()>& condition) {
       return false;
     }
 
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::MessageLoop::QuitClosure(),
+    base::MessageLoop::current()->task_runner()->PostDelayedTask(
+        FROM_HERE, base::MessageLoop::QuitClosure(),
         base::TimeDelta::FromMilliseconds(20));
     content::RunMessageLoop();
   }

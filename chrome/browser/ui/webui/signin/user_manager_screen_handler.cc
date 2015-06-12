@@ -5,9 +5,12 @@
 #include "chrome/browser/ui/webui/signin/user_manager_screen_handler.h"
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/prefs/pref_service.h"
 #include "base/profiler/scoped_tracker.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/value_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -826,7 +829,7 @@ void UserManagerScreenHandler::OnBrowserWindowReady(Browser* browser) {
   }
 
   if (!url_hash_.empty()) {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&UrlHashHelper::ExecuteUrlHash,
                    base::Owned(new UrlHashHelper(browser, url_hash_))));

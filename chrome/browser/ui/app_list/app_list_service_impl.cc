@@ -8,9 +8,12 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/location.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
@@ -177,11 +180,9 @@ void RecordAppListDiscoverability(PrefService* local_state,
         base::TimeDelta::FromMinutes(kDiscoverabilityTimeoutMinutes) -
         base::Time::Now();
     if (time_remaining > base::TimeDelta()) {
-      base::MessageLoop::current()->PostDelayedTask(
-          FROM_HERE,
-          base::Bind(&RecordAppListDiscoverability,
-                     base::Unretained(local_state),
-                     false),
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+          FROM_HERE, base::Bind(&RecordAppListDiscoverability,
+                                base::Unretained(local_state), false),
           time_remaining);
       return;
     }
@@ -417,14 +418,12 @@ void AppListServiceImpl::EnableAppList(Profile* initial_profile,
   local_state_->SetInt64(prefs::kAppListEnableTime,
                          base::Time::Now().ToInternalValue());
   local_state_->SetInteger(prefs::kAppListEnableMethod, enable_source);
-  if (base::MessageLoop::current()) {
+  if (base::ThreadTaskRunnerHandle::IsSet()) {
     // Ensure a value is recorded if the user "never" shows the app list. Note
     // there is no message loop in unit tests.
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&RecordAppListDiscoverability,
-                   base::Unretained(local_state_),
-                   false),
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, base::Bind(&RecordAppListDiscoverability,
+                              base::Unretained(local_state_), false),
         base::TimeDelta::FromMinutes(kDiscoverabilityTimeoutMinutes));
   }
 }
@@ -444,13 +443,12 @@ void AppListServiceImpl::PerformStartupChecks(Profile* initial_profile) {
   if (command_line_.HasSwitch(switches::kEnableAppList))
     EnableAppList(initial_profile, ENABLE_VIA_COMMAND_LINE);
 
-  if (!base::MessageLoop::current())
+  if (!base::ThreadTaskRunnerHandle::IsSet())
     return;  // In a unit test.
 
   // Send app list usage stats after a delay.
   const int kSendUsageStatsDelay = 5;
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&AppListServiceImpl::SendAppListStats),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&AppListServiceImpl::SendAppListStats),
       base::TimeDelta::FromSeconds(kSendUsageStatsDelay));
 }

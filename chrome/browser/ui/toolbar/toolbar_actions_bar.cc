@@ -5,7 +5,10 @@
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 
 #include "base/auto_reset.h"
+#include "base/location.h"
 #include "base/profiler/scoped_tracker.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_message_bubble_controller.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -376,11 +379,10 @@ void ToolbarActionsBar::CreateActions() {
     scoped_ptr<extensions::ExtensionMessageBubbleController> controller =
         ExtensionMessageBubbleFactory(browser_->profile()).GetController();
     if (controller) {
-      base::MessageLoop::current()->PostTask(
-          FROM_HERE,
-          base::Bind(&ToolbarActionsBar::MaybeShowExtensionBubble,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     base::Passed(controller.Pass())));
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::Bind(&ToolbarActionsBar::MaybeShowExtensionBubble,
+                                weak_ptr_factory_.GetWeakPtr(),
+                                base::Passed(controller.Pass())));
     }
   }
 }
@@ -474,7 +476,7 @@ void ToolbarActionsBar::PopOutAction(ToolbarActionViewController* controller,
   ResizeDelegate(gfx::Tween::LINEAR, false);
   if (!delegate_->IsAnimating()) {
     // Don't call the closure re-entrantly.
-    base::MessageLoop::current()->PostTask(FROM_HERE, closure);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, closure);
   } else {
     popped_out_closure_ = closure;
   }
