@@ -4,9 +4,12 @@
 
 #include "content/browser/service_worker/service_worker_disk_cache_migrator.h"
 
+#include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
+#include "content/browser/service_worker/service_worker_context_core.h"
+#include "content/browser/service_worker/service_worker_storage.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -51,29 +54,61 @@ class ServiceWorkerDiskCacheMigratorTest : public testing::Test {
 
   void SetUp() override {
     ASSERT_TRUE(user_data_directory_.CreateUniqueTempDir());
-    const base::FilePath kSrcDiskCachePath =
-        user_data_directory_.path().AppendASCII("SrcCache");
-    const base::FilePath kDestDiskCachePath =
-        user_data_directory_.path().AppendASCII("DestCache");
+    scoped_ptr<ServiceWorkerDatabaseTaskManager> database_task_manager(
+        new MockServiceWorkerDatabaseTaskManager(
+            base::ThreadTaskRunnerHandle::Get()));
 
-    // Initialize the src BlockFile diskcache.
-    src_ = ServiceWorkerDiskCache::CreateWithBlockFileBackend();
-    net::TestCompletionCallback cb1;
-    src_->InitWithDiskBackend(
-        kSrcDiskCachePath, kMaxDiskCacheSize, false /* force */,
-        base::ThreadTaskRunnerHandle::Get(), cb1.callback());
-    ASSERT_EQ(net::OK, cb1.WaitForResult());
+    context_.reset(new ServiceWorkerContextCore(
+        user_data_directory_.path(), database_task_manager.Pass(),
+        base::ThreadTaskRunnerHandle::Get(), nullptr, nullptr, nullptr,
+        nullptr));
+  }
 
-    // Initialize the dest Simple diskcache.
-    dest_ = ServiceWorkerDiskCache::CreateWithSimpleBackend();
-    net::TestCompletionCallback cb2;
-    dest_->InitWithDiskBackend(
-        kDestDiskCachePath, kMaxDiskCacheSize, false /* force */,
-        base::ThreadTaskRunnerHandle::Get(), cb2.callback());
-    ASSERT_EQ(net::OK, cb2.WaitForResult());
+  void TearDown() override {
+    context_.reset();
+    base::RunLoop().RunUntilIdle();
+  }
 
-    migrator_.reset(
-        new ServiceWorkerDiskCacheMigrator(src_.get(), dest_.get()));
+  base::FilePath GetOldDiskCachePath() {
+    return user_data_directory_.path().AppendASCII("SrcCache");
+  }
+  base::FilePath GetDiskCachePath() {
+    return user_data_directory_.path().AppendASCII("DestCache");
+  }
+
+  scoped_ptr<ServiceWorkerDiskCache> CreateSrcDiskCache() {
+#if defined(OS_ANDROID)
+    // Android has already used the Simple backend.
+    scoped_ptr<ServiceWorkerDiskCache> src(
+        ServiceWorkerDiskCache::CreateWithSimpleBackend());
+#else
+    scoped_ptr<ServiceWorkerDiskCache> src(
+        ServiceWorkerDiskCache::CreateWithBlockFileBackend());
+#endif  // defined(OS_ANDROID)
+
+    net::TestCompletionCallback cb;
+    src->InitWithDiskBackend(
+        GetOldDiskCachePath(), kMaxDiskCacheSize, false /* force */,
+        base::ThreadTaskRunnerHandle::Get(), cb.callback());
+    EXPECT_EQ(net::OK, cb.WaitForResult());
+    return src.Pass();
+  }
+
+  scoped_ptr<ServiceWorkerDiskCache> CreateDestDiskCache() {
+    scoped_ptr<ServiceWorkerDiskCache> dest(
+        ServiceWorkerDiskCache::CreateWithSimpleBackend());
+    net::TestCompletionCallback cb;
+    dest->InitWithDiskBackend(
+        GetDiskCachePath(), kMaxDiskCacheSize, false /* force */,
+        base::ThreadTaskRunnerHandle::Get(), cb.callback());
+    EXPECT_EQ(net::OK, cb.WaitForResult());
+    return dest.Pass();
+  }
+
+  scoped_ptr<ServiceWorkerDiskCacheMigrator> CreateMigrator() {
+    return make_scoped_ptr(new ServiceWorkerDiskCacheMigrator(
+        GetOldDiskCachePath(), GetDiskCachePath(), kMaxDiskCacheSize,
+        base::ThreadTaskRunnerHandle::Get()));
   }
 
   bool WriteResponse(ServiceWorkerDiskCache* disk_cache,
@@ -159,29 +194,18 @@ class ServiceWorkerDiskCacheMigratorTest : public testing::Test {
     EXPECT_EQ(0, memcmp(expected.body.data(), body_buffer->data(), rv));
   }
 
-  void Migrate() {
-    base::RunLoop run_loop;
-    migrator_->Start(base::Bind(&OnDiskCacheMigrated, run_loop.QuitClosure()));
-    run_loop.Run();
-  }
-
   int32 GetEntryCount(ServiceWorkerDiskCache* disk_cache) {
     return disk_cache->disk_cache()->GetEntryCount();
   }
 
-  void SetMaxNumberOfInflightTasks(size_t max_number) {
-    migrator_->set_max_number_of_inflight_tasks(max_number);
-  }
-
- protected:
+ private:
   TestBrowserThreadBundle browser_thread_bundle_;
   base::ScopedTempDir user_data_directory_;
-  scoped_ptr<ServiceWorkerDiskCache> src_;
-  scoped_ptr<ServiceWorkerDiskCache> dest_;
-  scoped_ptr<ServiceWorkerDiskCacheMigrator> migrator_;
+
+  scoped_ptr<ServiceWorkerContextCore> context_;
 };
 
-TEST_F(ServiceWorkerDiskCacheMigratorTest, Basic) {
+TEST_F(ServiceWorkerDiskCacheMigratorTest, MigrateDiskCache) {
   std::vector<ResponseData> responses;
   responses.push_back(ResponseData(1, "HTTP/1.1 200 OK\0\0", "Hello", ""));
   responses.push_back(ResponseData(2, "HTTP/1.1 200 OK\0\0", "Service", ""));
@@ -194,24 +218,84 @@ TEST_F(ServiceWorkerDiskCacheMigratorTest, Basic) {
       20, "HTTP/1.1 200 OK\0\0", std::string(256, 'a'), std::string(128, 'b')));
 
   // Populate initial data in the src diskcache.
+  scoped_ptr<ServiceWorkerDiskCache> src(CreateSrcDiskCache());
   for (const ResponseData& response : responses) {
-    ASSERT_TRUE(WriteResponse(src_.get(), response));
-    VerifyResponse(src_.get(), response);
+    ASSERT_TRUE(WriteResponse(src.get(), response));
+    VerifyResponse(src.get(), response);
   }
-  ASSERT_EQ(static_cast<int>(responses.size()), GetEntryCount(src_.get()));
+  ASSERT_EQ(static_cast<int>(responses.size()), GetEntryCount(src.get()));
+  src.reset();
 
-  Migrate();
+  // Start the migrator.
+  base::RunLoop run_loop;
+  scoped_ptr<ServiceWorkerDiskCacheMigrator> migrator(CreateMigrator());
+  migrator->Start(base::Bind(&OnDiskCacheMigrated, run_loop.QuitClosure()));
+  run_loop.Run();
 
   // Verify the migrated contents in the dest diskcache.
+  scoped_ptr<ServiceWorkerDiskCache> dest(CreateDestDiskCache());
   for (const ResponseData& response : responses)
-    VerifyResponse(dest_.get(), response);
-  EXPECT_EQ(static_cast<int>(responses.size()), GetEntryCount(dest_.get()));
+    VerifyResponse(dest.get(), response);
+  EXPECT_EQ(static_cast<int>(responses.size()), GetEntryCount(dest.get()));
 }
 
 TEST_F(ServiceWorkerDiskCacheMigratorTest, MigrateEmptyDiskCache) {
-  ASSERT_EQ(0, GetEntryCount(src_.get()));
-  Migrate();
-  EXPECT_EQ(0, GetEntryCount(dest_.get()));
+  scoped_ptr<ServiceWorkerDiskCache> src(CreateSrcDiskCache());
+  ASSERT_EQ(0, GetEntryCount(src.get()));
+  src.reset();
+
+  // Start the migrator.
+  base::RunLoop run_loop;
+  scoped_ptr<ServiceWorkerDiskCacheMigrator> migrator(CreateMigrator());
+  migrator->Start(base::Bind(&OnDiskCacheMigrated, run_loop.QuitClosure()));
+  run_loop.Run();
+
+  scoped_ptr<ServiceWorkerDiskCache> dest(CreateDestDiskCache());
+  ASSERT_EQ(0, GetEntryCount(dest.get()));
+}
+
+// Tests that the migrator properly removes existing resources in the dest
+// diskcache before starting the migration.
+TEST_F(ServiceWorkerDiskCacheMigratorTest, RemoveExistingResourcesFromDest) {
+  std::vector<ResponseData> responses1;
+  responses1.push_back(ResponseData(1, "HTTP/1.1 200 OK\0\0", "Hello", ""));
+  responses1.push_back(ResponseData(3, "HTTP/1.1 200 OK\0\0", "World", ""));
+
+  std::vector<ResponseData> responses2;
+  responses2.push_back(ResponseData(10, "HTTP/1.1 200 OK\0\0", "Hello", ""));
+  responses2.push_back(ResponseData(11, "HTTP/1.1 200 OK\0\0", "Service", ""));
+  responses2.push_back(ResponseData(12, "HTTP/1.1 200 OK\0\0", "", "Worker"));
+
+  // Populate initial resources in the src diskcache.
+  scoped_ptr<ServiceWorkerDiskCache> src(CreateSrcDiskCache());
+  for (const ResponseData& response : responses1) {
+    ASSERT_TRUE(WriteResponse(src.get(), response));
+    VerifyResponse(src.get(), response);
+  }
+  ASSERT_EQ(static_cast<int>(responses1.size()), GetEntryCount(src.get()));
+  src.reset();
+
+  // Populate different resources in the dest diskcache in order to simulate
+  // a previous partial migration.
+  scoped_ptr<ServiceWorkerDiskCache> dest(CreateDestDiskCache());
+  for (const ResponseData& response : responses2) {
+    ASSERT_TRUE(WriteResponse(dest.get(), response));
+    VerifyResponse(dest.get(), response);
+  }
+  ASSERT_EQ(static_cast<int>(responses2.size()), GetEntryCount(dest.get()));
+  dest.reset();
+
+  // Start the migrator.
+  base::RunLoop run_loop;
+  scoped_ptr<ServiceWorkerDiskCacheMigrator> migrator(CreateMigrator());
+  migrator->Start(base::Bind(&OnDiskCacheMigrated, run_loop.QuitClosure()));
+  run_loop.Run();
+
+  // Verify that only newly migrated resources exist in the dest diskcache.
+  dest = CreateDestDiskCache();
+  for (const ResponseData& response : responses1)
+    VerifyResponse(dest.get(), response);
+  EXPECT_EQ(static_cast<int>(responses1.size()), GetEntryCount(dest.get()));
 }
 
 TEST_F(ServiceWorkerDiskCacheMigratorTest, ThrottleInflightTasks) {
@@ -220,22 +304,29 @@ TEST_F(ServiceWorkerDiskCacheMigratorTest, ThrottleInflightTasks) {
     responses.push_back(ResponseData(i, "HTTP/1.1 200 OK\0\0", "foo", "bar"));
 
   // Populate initial data in the src diskcache.
+  scoped_ptr<ServiceWorkerDiskCache> src(CreateSrcDiskCache());
   for (const ResponseData& response : responses) {
-    ASSERT_TRUE(WriteResponse(src_.get(), response));
-    VerifyResponse(src_.get(), response);
+    ASSERT_TRUE(WriteResponse(src.get(), response));
+    VerifyResponse(src.get(), response);
   }
-  ASSERT_EQ(static_cast<int>(responses.size()), GetEntryCount(src_.get()));
+  ASSERT_EQ(static_cast<int>(responses.size()), GetEntryCount(src.get()));
+  src.reset();
+
+  scoped_ptr<ServiceWorkerDiskCacheMigrator> migrator(CreateMigrator());
 
   // Tighten the max number of inflight tasks.
-  SetMaxNumberOfInflightTasks(2);
+  migrator->set_max_number_of_inflight_tasks(2);
 
   // Migration should hit the limit, but should successfully complete.
-  Migrate();
+  base::RunLoop run_loop;
+  migrator->Start(base::Bind(&OnDiskCacheMigrated, run_loop.QuitClosure()));
+  run_loop.Run();
 
   // Verify the migrated contents in the dest diskcache.
+  scoped_ptr<ServiceWorkerDiskCache> dest(CreateDestDiskCache());
   for (const ResponseData& response : responses)
-    VerifyResponse(dest_.get(), response);
-  EXPECT_EQ(static_cast<int>(responses.size()), GetEntryCount(dest_.get()));
+    VerifyResponse(dest.get(), response);
+  EXPECT_EQ(static_cast<int>(responses.size()), GetEntryCount(dest.get()));
 }
 
 }  // namespace content

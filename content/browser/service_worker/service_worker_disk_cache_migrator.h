@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_DISK_CACHE_MIGRATOR_H_
+#define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_DISK_CACHE_MIGRATOR_H_
+
 #include "content/browser/service_worker/service_worker_disk_cache.h"
 
 #include "base/id_map.h"
@@ -22,8 +25,11 @@ class CONTENT_EXPORT ServiceWorkerDiskCacheMigrator {
  public:
   using StatusCallback = base::Callback<void(ServiceWorkerStatusCode)>;
 
-  ServiceWorkerDiskCacheMigrator(ServiceWorkerDiskCache* src,
-                                 ServiceWorkerDiskCache* dest);
+  ServiceWorkerDiskCacheMigrator(
+      const base::FilePath& src_path,
+      const base::FilePath& dest_path,
+      int max_disk_cache_size,
+      const scoped_refptr<base::SingleThreadTaskRunner>& disk_cache_thread);
   ~ServiceWorkerDiskCacheMigrator();
 
   // Returns SERVICE_WORKER_OK if all resources are successfully migrated. The
@@ -31,11 +37,19 @@ class CONTENT_EXPORT ServiceWorkerDiskCacheMigrator {
   void Start(const StatusCallback& callback);
 
  private:
-  friend class ServiceWorkerDiskCacheMigratorTest;
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDiskCacheMigratorTest,
+                           ThrottleInflightTasks);
+
   class Task;
   class WrappedEntry;
 
   using InflightTaskMap = IDMap<Task, IDMapOwnPointer>;
+
+  void DidDeleteDestDirectory(bool deleted);
+  void DidInitializeDiskCache(bool* is_failed,
+                              const base::Closure& barrier_closure,
+                              int result);
+  void DidInitializeAllDiskCaches(bool* is_failed);
 
   void OpenNextEntry();
   void OnNextEntryOpened(scoped_ptr<WrappedEntry> entry, int result);
@@ -51,8 +65,12 @@ class CONTENT_EXPORT ServiceWorkerDiskCacheMigrator {
   scoped_ptr<disk_cache::Backend::Iterator> iterator_;
   bool is_iterating_ = false;
 
-  ServiceWorkerDiskCache* src_;
-  ServiceWorkerDiskCache* dest_;
+  base::FilePath src_path_;
+  base::FilePath dest_path_;
+  scoped_ptr<ServiceWorkerDiskCache> src_;
+  scoped_ptr<ServiceWorkerDiskCache> dest_;
+  const int max_disk_cache_size_;
+  scoped_refptr<base::SingleThreadTaskRunner> disk_cache_thread_;
 
   InflightTaskMap::KeyType next_task_id_ = 0;
   InflightTaskMap inflight_tasks_;
@@ -67,3 +85,5 @@ class CONTENT_EXPORT ServiceWorkerDiskCacheMigrator {
 };
 
 }  // namespace content
+
+#endif  // CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_DISK_CACHE_MIGRATOR_H_
