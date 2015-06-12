@@ -37,30 +37,6 @@
 
 static unsigned int screen_width, screen_height;
 
-/*
- * A structure to test fimg2d hw.
- *
- * @solid_fill: fill given color data to source buffer.
- * @copy: copy source to destination buffer.
- * @copy_with_scale: copy source to destination buffer scaling up or
- *	down properly.
- * @blend: blend source to destination buffer.
- */
-struct fimg2d_test_case {
-	int (*solid_fill)(struct exynos_device *dev, struct exynos_bo *dst);
-	int (*copy)(struct exynos_device *dev, struct exynos_bo *src,
-			struct exynos_bo *dst, enum e_g2d_buf_type);
-	int (*copy_with_scale)(struct exynos_device *dev,
-				struct exynos_bo *src, struct exynos_bo *dst,
-				enum e_g2d_buf_type);
-	int (*blend)(struct exynos_device *dev,
-				struct exynos_bo *src, struct exynos_bo *dst,
-				enum e_g2d_buf_type);
-	int (*checkerboard)(struct exynos_device *dev,
-				struct exynos_bo *src, struct exynos_bo *dst,
-				enum e_g2d_buf_type);
-};
-
 struct connector {
 	uint32_t id;
 	char mode_str[64];
@@ -630,14 +606,6 @@ fail:
 	return ret;
 }
 
-static struct fimg2d_test_case test_case = {
-	.solid_fill = &g2d_solid_fill_test,
-	.copy = &g2d_copy_test,
-	.copy_with_scale = &g2d_copy_with_scale_test,
-	.blend = &g2d_blend_test,
-	.checkerboard = &g2d_checkerboard_test,
-};
-
 static void usage(char *name)
 {
 	fprintf(stderr, "usage: %s [-s]\n", name);
@@ -747,7 +715,7 @@ int main(int argc, char **argv)
 	if (ret < 0)
 		goto err_rm_fb;
 
-	ret = test_case.solid_fill(dev, bo);
+	ret = g2d_solid_fill_test(dev, bo);
 	if (ret < 0) {
 		fprintf(stderr, "failed to solid fill operation.\n");
 		goto err_rm_fb;
@@ -761,7 +729,7 @@ int main(int argc, char **argv)
 		goto err_rm_fb;
 	}
 
-	ret = test_case.copy(dev, src, bo, G2D_IMGBUF_GEM);
+	ret = g2d_copy_test(dev, src, bo, G2D_IMGBUF_GEM);
 	if (ret < 0) {
 		fprintf(stderr, "failed to test copy operation.\n");
 		goto err_free_src;
@@ -769,7 +737,7 @@ int main(int argc, char **argv)
 
 	wait_for_user_input(0);
 
-	ret = test_case.copy_with_scale(dev, src, bo, G2D_IMGBUF_GEM);
+	ret = g2d_copy_with_scale_test(dev, src, bo, G2D_IMGBUF_GEM);
 	if (ret < 0) {
 		fprintf(stderr, "failed to test copy and scale operation.\n");
 		goto err_free_src;
@@ -777,7 +745,7 @@ int main(int argc, char **argv)
 
 	wait_for_user_input(0);
 
-	ret = test_case.checkerboard(dev, src, bo, G2D_IMGBUF_GEM);
+	ret = g2d_checkerboard_test(dev, src, bo, G2D_IMGBUF_GEM);
 	if (ret < 0) {
 		fprintf(stderr, "failed to issue checkerboard test.\n");
 		goto err_free_src;
@@ -794,7 +762,7 @@ int main(int argc, char **argv)
 	 * Disable the test for now, until the kernel code has been sanitized.
 	 */
 #if 0
-	ret  = test_case.blend(dev, src, bo, G2D_IMGBUF_USERPTR);
+	ret  = g2d_blend_test(dev, src, bo, G2D_IMGBUF_USERPTR);
 	if (ret < 0)
 		fprintf(stderr, "failed to test blend operation.\n");
 
