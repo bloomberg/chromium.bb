@@ -43104,6 +43104,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Sync.InvalidationSessionsAndroid" enum="BooleanHit">
+  <owner>pkotwicz@chromium.org</owner>
+  <summary>
+    Count of the number of session sync invalidations. The goal of the metric is
+    to track how the number of session sync invalidations changes over time.
+  </summary>
+</histogram>
+
 <histogram name="Sync.KeystoreDecryptionFailed"
     enum="SyncKeystoreDecryptionFailure">
   <owner>zea@chromium.org</owner>
