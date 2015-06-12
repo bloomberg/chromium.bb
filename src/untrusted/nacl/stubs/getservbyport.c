@@ -8,7 +8,7 @@
  * Stub routine for `getservbyport' for porting support.
  */
 
-#include <errno.h>
+#include <stddef.h>
 
 struct servent *getservbyport(int port, const char *proto) {
   return NULL;

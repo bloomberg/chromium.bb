@@ -125,6 +125,7 @@
       'stubs/getpwuid_r.c',
       'stubs/getrlimit.c',
       'stubs/getrusage.c',
+      'stubs/getservbyname.c',
       'stubs/getservbyport.c',
       'stubs/getsockname.c',
       'stubs/getsockopt.c',
