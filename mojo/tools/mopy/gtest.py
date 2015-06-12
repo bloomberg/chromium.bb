@@ -117,5 +117,5 @@ def _run_test(config, shell, args, apptest):
   (r, w) = os.pipe()
   with os.fdopen(r, "r") as rf:
     with os.fdopen(w, "w") as wf:
-      shell.StartShell(args + [apptest], wf, wf.close)
+      shell.StartActivity('MojoShellActivity', args + [apptest], wf, wf.close)
       return rf.read()
