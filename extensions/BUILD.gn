@@ -59,6 +59,7 @@ grit("extensions_renderer_resources") {
   ]
 
   deps = [
+    "//chrome/browser/media/router:mojo_bindings__generator",
     "//device/serial:serial_mojo__generator",
     "//extensions/common:mojo__generator",
     "//extensions/common/api:mojom__generator",
