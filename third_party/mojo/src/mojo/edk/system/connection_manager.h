@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "mojo/edk/system/connection_identifier.h"
+#include "mojo/edk/system/process_identifier.h"
 #include "mojo/edk/system/system_impl_export.h"
 
 namespace mojo {
@@ -17,10 +18,6 @@ class ScopedPlatformHandle;
 }  // namespace embedder
 
 namespace system {
-
-// Identifiers for processes (note that these are not OS process IDs):
-using ProcessIdentifier = uint64_t;
-const ProcessIdentifier kInvalidProcessIdentifier = 0;
 
 // |ConnectionManager| is an interface for the system that allows "connections"
 // (i.e., native "pipes") to be established between different processes.

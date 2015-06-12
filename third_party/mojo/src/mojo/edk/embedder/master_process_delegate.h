@@ -8,12 +8,11 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "mojo/edk/embedder/process_delegate.h"
+#include "mojo/edk/embedder/slave_info.h"
 #include "mojo/edk/system/system_impl_export.h"
 
 namespace mojo {
 namespace embedder {
-
-using SlaveInfo = void*;
 
 // An interface for the master process delegate (which lives in the master
 // process).

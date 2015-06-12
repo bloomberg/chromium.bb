@@ -7,6 +7,7 @@
 
 #include <algorithm>  // For |std::swap()|.
 
+#include "mojo/public/cpp/bindings/callback.h"
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/lib/control_message_proxy.h"
 #include "mojo/public/cpp/bindings/lib/filter_chain.h"
@@ -111,11 +112,11 @@ class InterfacePtrState {
     return router_ ? router_->encountered_error() : false;
   }
 
-  void set_error_handler(ErrorHandler* error_handler) {
+  void set_connection_error_handler(const Closure& error_handler) {
     ConfigureProxyIfNecessary();
 
     MOJO_DCHECK(router_);
-    router_->set_error_handler(error_handler);
+    router_->set_connection_error_handler(error_handler);
   }
 
   Router* router_for_testing() {

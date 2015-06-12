@@ -1,78 +1,7 @@
 {#--- Begin #}
 
-{%- macro encode(variable, kind, offset, bit, level=0, check_for_null=True) %}
-{%- if kind|is_pointer_array_kind %}
-{%- set sub_kind = kind.kind %}
-{%-   if check_for_null %}
-if ({{variable}} == null) {
-  encoder{{level}}.encodeNullPointer({{offset}}, {{kind|is_nullable_kind|dart_true_false}});
-} else {
-{%-   else %}
-{
-{%-   endif %}
-  var encoder{{level + 1}} = encoder{{level}}.encodePointerArray({{variable}}.length, {{offset}}, {{kind|array_expected_length}});
-  for (int i{{level}} = 0; i{{level}} < {{variable}}.length; ++i{{level}}) {
-    {{encode(variable~'[i'~level~']', sub_kind, 'bindings.ArrayDataHeader.kHeaderSize + bindings.kPointerSize * i'~level, 0, level+1)|indent(4)}}
-  }
-}
-{%- elif kind|is_map_kind %}
-if ({{variable}} == null) {
-  encoder{{level}}.encodeNullPointer({{offset}}, {{kind|is_nullable_kind|dart_true_false}});
-} else {
-  var encoder{{level + 1}} = encoder{{level}}.encoderForMap({{offset}});
-  int size{{level}} = {{variable}}.length;
-  var keys{{level}} = {{variable}}.keys.toList();
-  var values{{level}} = {{variable}}.values.toList();
-  {{encode('keys'~level, kind.key_kind|array, 'bindings.ArrayDataHeader.kHeaderSize', 0, level+1, False)|indent(2)}}
-  {{encode('values'~level, kind.value_kind|array, 'bindings.ArrayDataHeader.kHeaderSize + bindings.kPointerSize', 0, level+1, False)|indent(2)}}
-}
-{%- else %}
-encoder{{level}}.{{kind|encode_method(variable, offset, bit)}};
-{%- endif %}
-{%- endmacro %}
+{%- import "encoding_macros.tmpl" as encoding_macros %}
 
-
-{%- macro decode(variable, kind, offset, bit, level=0) %}
-{%- if kind|is_struct_kind or
-       kind|is_union_kind or
-       kind|is_pointer_array_kind or
-       kind|is_map_kind %}
-var decoder{{level+1}} = decoder{{level}}.decodePointer({{offset}}, {{kind|is_nullable_kind|dart_true_false}});
-{%-   if kind|is_struct_kind or kind|is_union_kind %}
-{{variable}} = {{kind|dart_type}}.decode(decoder{{level+1}});
-{%-   else %}{# kind|is_pointer_array_kind or is_map_kind #}
-{%-     if kind|is_nullable_kind %}
-if (decoder{{level+1}} == null) {
-  {{variable}} = null;
-} else {
-{%-     else %}
-{
-{%-     endif %}
-{%-     if kind|is_map_kind %}
-  decoder{{level+1}}.decodeDataHeaderForMap();
-  List<{{kind.key_kind|dart_type}}> keys{{level}};
-  List<{{kind.value_kind|dart_type}}> values{{level}};
-  {
-    {{decode('keys'~level, kind.key_kind|array, 'bindings.ArrayDataHeader.kHeaderSize', 0, level+1)|indent(4)}}
-  }
-  {
-    {{decode('values'~level, kind.value_kind|array('keys'~level~'.length'), 'bindings.ArrayDataHeader.kHeaderSize + bindings.kPointerSize', 0, level+1)|indent(4)}}
-  }
-  {{variable}} = new Map<{{kind.key_kind|dart_type}}, {{kind.value_kind|dart_type}}>.fromIterables(
-      keys{{level}}, values{{level}});
-{%-     else %}
-  var si{{level+1}} = decoder{{level+1}}.decodeDataHeaderForPointerArray({{kind|array_expected_length}});
-  {{variable}} = new {{kind|dart_type}}(si{{level+1}}.numElements);
-  for (int i{{level+1}} = 0; i{{level+1}} < si{{level+1}}.numElements; ++i{{level+1}}) {
-    {{decode(variable~'[i'~(level+1)~']', kind.kind, 'bindings.ArrayDataHeader.kHeaderSize + bindings.kPointerSize * i'~(level+1), 0, level+1)|indent(4)}}
-  }
-{%-     endif %}
-}
-{%-   endif %}
-{%- else %}
-{{variable}} = decoder{{level}}.{{kind|decode_method(offset, bit)}};
-{%- endif %}
-{%- endmacro %}
 
 
 {%- macro struct_def(struct) %}
@@ -137,7 +66,7 @@ class {{struct|name}} extends bindings.Struct {
 {%- for byte in struct.bytes %}
 {%-   for packed_field in byte.packed_fields %}
     if (mainDataHeader.version >= {{packed_field.min_version}}) {
-      {{decode('result.' ~ packed_field.field|name, packed_field.field.kind, 8+packed_field.offset, packed_field.bit)|indent(6)}}
+      {{encoding_macros.decode('result.' ~ packed_field.field|name, packed_field.field.kind, 8+packed_field.offset, packed_field.bit)|indent(6)}}
     }
 {%-   endfor %}
 {%- endfor %}
@@ -152,7 +81,7 @@ class {{struct|name}} extends bindings.Struct {
 {%- endif %}
 {%- for byte in struct.bytes %}
 {%-   for packed_field in byte.packed_fields %}
-    {{encode(packed_field.field|name, packed_field.field.kind, 8+packed_field.offset, packed_field.bit)|indent(4)}}
+    {{encoding_macros.encode(packed_field.field|name, packed_field.field.kind, 8+packed_field.offset, packed_field.bit)|indent(4)}}
 {%-   endfor %}
 {%- endfor %}
   }

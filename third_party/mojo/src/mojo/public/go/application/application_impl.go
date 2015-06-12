@@ -55,7 +55,7 @@ type Context interface {
 // ApplicationImpl is an utility class for communicating with the Shell, and
 // providing Services to clients.
 type ApplicationImpl struct {
-	shell *shell.ShellProxy
+	shell *shell.Shell_Proxy
 	args  []string
 	url   string
 	// Pointer to the stub that runs this instance of ApplicationImpl.
@@ -73,7 +73,7 @@ type ApplicationImpl struct {
 // until the application is terminated.
 func Run(delegate Delegate, applicationRequest system.MojoHandle) {
 	messagePipe := system.GetCore().AcquireNativeHandle(applicationRequest).ToMessagePipeHandle()
-	appRequest := application.ApplicationRequest{bindings.NewMessagePipeHandleOwner(messagePipe)}
+	appRequest := application.Application_Request{bindings.NewMessagePipeHandleOwner(messagePipe)}
 	impl := &ApplicationImpl{
 		delegate: delegate,
 	}
@@ -92,7 +92,7 @@ func Run(delegate Delegate, applicationRequest system.MojoHandle) {
 }
 
 // Mojo application implementation.
-func (impl *ApplicationImpl) Initialize(shellPointer shell.ShellPointer, args *[]string, url string) error {
+func (impl *ApplicationImpl) Initialize(shellPointer shell.Shell_Pointer, args *[]string, url string) error {
 	impl.shell = shell.NewShellProxy(shellPointer, bindings.GetAsyncWaiter())
 	if args != nil {
 		impl.args = *args
@@ -103,7 +103,7 @@ func (impl *ApplicationImpl) Initialize(shellPointer shell.ShellPointer, args *[
 }
 
 // Mojo application implementation.
-func (impl *ApplicationImpl) AcceptConnection(requestorURL string, services *sp.ServiceProviderRequest, exposedServices *sp.ServiceProviderPointer, resolvedURL string) error {
+func (impl *ApplicationImpl) AcceptConnection(requestorURL string, services *sp.ServiceProvider_Request, exposedServices *sp.ServiceProvider_Pointer, resolvedURL string) error {
 	connection := newConnection(requestorURL, services, exposedServices, resolvedURL)
 	impl.delegate.AcceptConnection(connection)
 	impl.addConnection(connection)
@@ -119,7 +119,7 @@ func (impl *ApplicationImpl) RequestQuit() error {
 			c.Close()
 		}
 		impl.mu.Unlock()
-		impl.shell.Close_proxy()
+		impl.shell.Close_Proxy()
 		impl.runner.Close()
 	})
 	return nil

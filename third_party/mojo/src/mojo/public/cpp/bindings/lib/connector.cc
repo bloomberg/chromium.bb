@@ -14,8 +14,7 @@ namespace internal {
 
 Connector::Connector(ScopedMessagePipeHandle message_pipe,
                      const MojoAsyncWaiter* waiter)
-    : error_handler_(nullptr),
-      waiter_(waiter),
+    : waiter_(waiter),
       message_pipe_(message_pipe.Pass()),
       incoming_receiver_(nullptr),
       async_wait_id_(0),
@@ -198,8 +197,7 @@ void Connector::CancelWait() {
 void Connector::NotifyError() {
   error_ = true;
   CloseMessagePipe();
-  if (error_handler_)
-    error_handler_->OnConnectionError();
+  connection_error_handler_.Run();
 }
 
 }  // namespace internal

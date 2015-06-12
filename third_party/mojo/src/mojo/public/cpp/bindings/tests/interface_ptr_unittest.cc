@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/error_handler.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/utility/run_loop.h"
@@ -15,18 +14,6 @@
 namespace mojo {
 namespace test {
 namespace {
-
-class ErrorObserver : public ErrorHandler {
- public:
-  ErrorObserver() : encountered_error_(false) {}
-
-  bool encountered_error() const { return encountered_error_; }
-
-  void OnConnectionError() override { encountered_error_ = true; }
-
- private:
-  bool encountered_error_;
-};
 
 template <typename Method, typename Class>
 class RunnableImpl {
@@ -319,8 +306,9 @@ TEST_F(InterfacePtrTest, EncounteredErrorCallback) {
   math::CalculatorPtr proxy;
   MathCalculatorImpl calc_impl(GetProxy(&proxy));
 
-  ErrorObserver error_observer;
-  proxy.set_error_handler(&error_observer);
+  bool encountered_error = false;
+  proxy.set_connection_error_handler(
+      [&encountered_error]() { encountered_error = true; });
 
   MathCalculatorUI calculator_ui(proxy.Pass());
 
@@ -343,9 +331,9 @@ TEST_F(InterfacePtrTest, EncounteredErrorCallback) {
   // OK, now we see the error.
   EXPECT_TRUE(calculator_ui.encountered_error());
 
-  // We should have also been able to observe the error through the
-  // ErrorHandler interface.
-  EXPECT_TRUE(error_observer.encountered_error());
+  // We should have also been able to observe the error through the error
+  // handler.
+  EXPECT_TRUE(encountered_error);
 }
 
 TEST_F(InterfacePtrTest, DestroyInterfacePtrOnMethodResponse) {
@@ -439,7 +427,7 @@ TEST_F(InterfacePtrTest, RequireVersion) {
   EXPECT_EQ(456, impl.integer());
 }
 
-class StrongMathCalculatorImpl : public math::Calculator, public ErrorHandler {
+class StrongMathCalculatorImpl : public math::Calculator {
  public:
   StrongMathCalculatorImpl(ScopedMessagePipeHandle handle,
                            bool* error_received,
@@ -447,7 +435,8 @@ class StrongMathCalculatorImpl : public math::Calculator, public ErrorHandler {
       : error_received_(error_received),
         destroyed_(destroyed),
         binding_(this, handle.Pass()) {
-    binding_.set_error_handler(this);
+    binding_.set_connection_error_handler(
+        [this]() { *error_received_ = true; });
   }
   ~StrongMathCalculatorImpl() override { *destroyed_ = true; }
 
@@ -463,9 +452,6 @@ class StrongMathCalculatorImpl : public math::Calculator, public ErrorHandler {
     total_ *= value;
     callback.Run(total_);
   }
-
-  // ErrorHandler implementation.
-  void OnConnectionError() override { *error_received_ = true; }
 
  private:
   double total_ = 0.0;
@@ -511,7 +497,7 @@ TEST(StrongConnectorTest, Math) {
   EXPECT_TRUE(destroyed);
 }
 
-class WeakMathCalculatorImpl : public math::Calculator, public ErrorHandler {
+class WeakMathCalculatorImpl : public math::Calculator {
  public:
   WeakMathCalculatorImpl(ScopedMessagePipeHandle handle,
                          bool* error_received,
@@ -519,7 +505,8 @@ class WeakMathCalculatorImpl : public math::Calculator, public ErrorHandler {
       : error_received_(error_received),
         destroyed_(destroyed),
         binding_(this, handle.Pass()) {
-    binding_.set_error_handler(this);
+    binding_.set_connection_error_handler(
+        [this]() { *error_received_ = true; });
   }
   ~WeakMathCalculatorImpl() override { *destroyed_ = true; }
 
@@ -534,9 +521,6 @@ class WeakMathCalculatorImpl : public math::Calculator, public ErrorHandler {
     total_ *= value;
     callback.Run(total_);
   }
-
-  // ErrorHandler implementation.
-  void OnConnectionError() override { *error_received_ = true; }
 
  private:
   double total_ = 0.0;

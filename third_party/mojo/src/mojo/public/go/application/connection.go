@@ -56,7 +56,7 @@ type ServiceFactory interface {
 type Connection struct {
 	connectionInfo
 	// Request for local services. Is valid until ProvideServices is called.
-	servicesRequest *sp.ServiceProviderRequest
+	servicesRequest *sp.ServiceProvider_Request
 	// Indicates that ProvideServices function was already called.
 	servicesProvided   bool
 	localServices      *bindings.Stub
@@ -64,12 +64,12 @@ type Connection struct {
 	isClosed           bool
 }
 
-func newConnection(requestorURL string, services *sp.ServiceProviderRequest, exposedServices *sp.ServiceProviderPointer, resolvedURL string) *Connection {
+func newConnection(requestorURL string, services *sp.ServiceProvider_Request, exposedServices *sp.ServiceProvider_Pointer, resolvedURL string) *Connection {
 	info := connectionInfo{
 		requestorURL,
 		resolvedURL,
 	}
-	var remoteServices *sp.ServiceProviderProxy
+	var remoteServices *sp.ServiceProvider_Proxy
 	if exposedServices != nil {
 		remoteServices = sp.NewServiceProviderProxy(*exposedServices, bindings.GetAsyncWaiter())
 	}
@@ -131,7 +131,7 @@ func (c *Connection) Close() {
 		c.localServices.Close()
 	}
 	if c.outgoingConnection.remoteServices != nil {
-		c.outgoingConnection.remoteServices.Close_proxy()
+		c.outgoingConnection.remoteServices.Close_Proxy()
 	}
 	c.isClosed = true
 }
@@ -141,7 +141,7 @@ func (c *Connection) Close() {
 // this |OutgoingConnection|.
 type OutgoingConnection struct {
 	connectionInfo
-	remoteServices *sp.ServiceProviderProxy
+	remoteServices *sp.ServiceProvider_Proxy
 }
 
 // ConnectToService asks remote application to provide a service through the

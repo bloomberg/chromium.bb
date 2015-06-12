@@ -10,6 +10,7 @@ const int kAlignment = 8;
 const int kSerializedHandleSize = 4;
 const int kSerializedInterfaceSize = 8; // 4-byte handle + 4-byte version
 const int kPointerSize = 8;
+const int kUnionSize = 16;
 const StructDataHeader kMapStructHeader = const StructDataHeader(24, 0);
 const int kUnspecifiedArrayLength = -1;
 const int kNothingNullable = 0;
@@ -270,8 +271,31 @@ class Encoder {
     value.encode(this);
   }
 
+  void encodeUnion(Union value, int offset, bool nullable) {
+    if (value == null) {
+      if (!nullable) {
+        throw new MojoCodecError(
+            'Trying to encode a non-nullable null union.');
+      }
+      encodeUint64(0, offset);
+      encodeUint64(0, offset + 8);
+      return;
+    }
+    value.encode(this, offset);
+  }
+
+  void encodeNestedUnion(Union value, int offset, bool nullable) {
+    _buffer.claimMemory(align(kUnionSize));
+    encodePointerToNextUnclaimed(offset);
+    var encoder = new Encoder._fromBuffer(_buffer);
+    encoder.encodeUnion(value, 0, nullable);
+  }
+
   Encoder encodePointerArray(int length, int offset, int expectedLength) =>
       encoderForArray(kPointerSize, length, offset, expectedLength);
+
+  Encoder encodeUnionArray(int length, int offset, int expectedLength) =>
+      encoderForArray(kUnionSize, length, offset, expectedLength);
 
   Encoder encoderForArray(
       int elementSize, int length, int offset, int expectedLength) {
@@ -713,6 +737,9 @@ class Decoder {
 
   ArrayDataHeader decodeDataHeaderForPointerArray(int expectedLength) =>
       decodeDataHeaderForArray(kPointerSize, expectedLength);
+
+  ArrayDataHeader decodeDataHeaderForUnionArray(int expectedLength) =>
+      decodeDataHeaderForArray(kUnionSize, expectedLength);
 
   List decodeArray(Function arrayViewer, int elementSize, int offset,
       int nullability, int expectedLength) {

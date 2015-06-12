@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
 
 namespace content {
@@ -29,11 +30,10 @@ mojo::ScopedMessagePipeHandle ChannelInit::Init(
       mojo::embedder::CreateChannel(
           mojo::embedder::ScopedPlatformHandle(
               mojo::embedder::PlatformHandle(file)),
-          io_thread_task_runner,
           base::Bind(&ChannelInit::OnCreatedChannel,
                      weak_factory_.GetWeakPtr(),
                      base::Passed(&ipc_support)),
-          base::MessageLoop::current()->task_runner()).Pass();
+          base::ThreadTaskRunnerHandle::Get()).Pass();
   return message_pipe.Pass();
 }
 

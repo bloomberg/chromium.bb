@@ -47,4 +47,12 @@ public class InterfaceRequest<P extends Interface> implements HandleOwner<Messag
         mHandle.close();
     }
 
+    /**
+     * Returns an {@link InterfaceRequest} that wraps the given handle. This method is not type safe
+     * and should be avoided unless absolutely necessary.
+     */
+    @SuppressWarnings("rawtypes")
+    public static InterfaceRequest asInterfaceRequestUnsafe(MessagePipeHandle handle) {
+        return new InterfaceRequest(handle);
+    }
 }

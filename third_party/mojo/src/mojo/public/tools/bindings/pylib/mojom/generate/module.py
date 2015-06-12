@@ -180,6 +180,8 @@ class Constant(object):
 class Field(object):
   def __init__(self, name=None, kind=None, ordinal=None, default=None,
                attributes=None):
+    if self.__class__.__name__ == 'Field':
+      raise Exception()
     self.name = name
     self.kind = kind
     self.ordinal = ordinal
@@ -190,6 +192,12 @@ class Field(object):
   def min_version(self):
     return self.attributes.get(ATTRIBUTE_MIN_VERSION) \
         if self.attributes else None
+
+
+class StructField(Field): pass
+
+
+class UnionField(Field): pass
 
 
 class Struct(ReferenceKind):
@@ -212,7 +220,7 @@ class Struct(ReferenceKind):
     self.attributes = attributes
 
   def AddField(self, name, kind, ordinal=None, default=None, attributes=None):
-    field = Field(name, kind, ordinal, default, attributes)
+    field = StructField(name, kind, ordinal, default, attributes)
     self.fields.append(field)
     return field
 
@@ -237,7 +245,7 @@ class Union(ReferenceKind):
     self.attributes = attributes
 
   def AddField(self, name, kind, ordinal=None, attributes=None):
-    field = Field(name, kind, ordinal, None, attributes)
+    field = UnionField(name, kind, ordinal, None, attributes)
     self.fields.append(field)
     return field
 
@@ -512,8 +520,12 @@ def IsMapKind(kind):
 
 
 def IsObjectKind(kind):
+  return IsPointerKind(kind) or IsUnionKind(kind)
+
+
+def IsPointerKind(kind):
   return (IsStructKind(kind) or IsArrayKind(kind) or IsStringKind(kind) or
-          IsMapKind(kind) or IsUnionKind(kind))
+          IsMapKind(kind))
 
 
 # Please note that interface is not considered as handle kind, since it is an

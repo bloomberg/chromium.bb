@@ -5,8 +5,6 @@
 library application;
 
 import 'dart:async';
-import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:mojo/bindings.dart' as bindings;
 import 'package:mojo/core.dart' as core;

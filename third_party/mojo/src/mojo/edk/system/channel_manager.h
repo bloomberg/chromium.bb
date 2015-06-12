@@ -13,7 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
-#include "mojo/edk/system/channel_info.h"
+#include "mojo/edk/system/channel_id.h"
 
 namespace base {
 class TaskRunner;
@@ -31,12 +31,6 @@ class Channel;
 class ChannelEndpoint;
 class ConnectionManager;
 class MessagePipeDispatcher;
-
-// IDs for |Channel|s managed by a |ChannelManager|. (IDs should be thought of
-// as specific to a given |ChannelManager|.) 0 is never a valid ID.
-using ChannelId = uint64_t;
-
-const ChannelId kInvalidChannelId = 0;
 
 // This class manages and "owns" |Channel|s (which typically connect to other
 // processes) for a given process. This class is thread-safe, except as
@@ -79,17 +73,12 @@ class MOJO_SYSTEM_IMPL_EXPORT ChannelManager {
       embedder::ScopedPlatformHandle platform_handle);
 
   // Like |CreateChannelOnIOThread()|, but may be called from any thread. On
-  // completion, will call |callback| ("on" |io_thread_task_runner| if
-  // |callback_thread_task_runner| is null else by posted using
-  // |callback_thread_task_runner|). Note: This will always post a task to the
-  // I/O thread, even if |io_thread_task_runner| is the task runner for the
-  // current thread.
-  // TODO(vtl): The |io_thread_task_runner| argument is temporary (we should use
-  // the channel manager's I/O thread).
+  // completion, will call |callback| (using |callback_thread_task_runner| if it
+  // is non-null, else on the I/O thread). Note: This will always post a task to
+  // the I/O thread, even if called from that thread.
   scoped_refptr<MessagePipeDispatcher> CreateChannel(
       ChannelId channel_id,
       embedder::ScopedPlatformHandle platform_handle,
-      scoped_refptr<base::TaskRunner> io_thread_task_runner,
       const base::Closure& callback,
       scoped_refptr<base::TaskRunner> callback_thread_task_runner);
 
@@ -106,15 +95,13 @@ class MOJO_SYSTEM_IMPL_EXPORT ChannelManager {
   // Shuts down the channel specified by the given ID. This, or
   // |ShutdownChannel()|, should be called once per channel (created using
   // |CreateChannelOnIOThread()| or |CreateChannel()|). This must be called from
-  // the channel's "channel thread", and completes synchronously.
-  // TODO(vtl): "channel thread" will become "this object's I/O thread".
+  // the I/O thread.
   void ShutdownChannelOnIOThread(ChannelId channel_id);
 
   // Like |ShutdownChannelOnIOThread()|, but may be called from any thread. It
-  // will always post a task to the channel's "channel thread", and post
-  // |callback| to |callback_thread_task_runner| (or execute it directly on the
-  // "channel thread" if |callback_thread_task_runner| is null) on completion.
-  // TODO(vtl): "channel thread" will become "this object's I/O thread".
+  // will always post a task to the I/O thread, and post |callback| to
+  // |callback_thread_task_runner| (or execute it directly on the I/O thread if
+  // |callback_thread_task_runner| is null) on completion.
   void ShutdownChannel(
       ChannelId channel_id,
       const base::Closure& callback,
@@ -151,9 +138,9 @@ class MOJO_SYSTEM_IMPL_EXPORT ChannelManager {
   // Note: |Channel| methods should not be called under |lock_|.
   mutable base::Lock lock_;  // Protects the members below.
 
-  // TODO(vtl): Once we give the |ChannelManager| one single I/O thread, we can
-  // get rid of |ChannelInfo| (and just have ref pointers to |Channel|s).
-  base::hash_map<ChannelId, ChannelInfo> channel_infos_;
+  using ChannelIdToChannelMap =
+      base::hash_map<ChannelId, scoped_refptr<Channel>>;
+  ChannelIdToChannelMap channels_;
 
   DISALLOW_COPY_AND_ASSIGN(ChannelManager);
 };

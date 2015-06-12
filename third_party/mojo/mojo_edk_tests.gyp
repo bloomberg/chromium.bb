@@ -165,6 +165,7 @@
         'src/mojo/edk/system/data_pipe_unittest.cc',
         'src/mojo/edk/system/dispatcher_unittest.cc',
         'src/mojo/edk/system/endpoint_relayer_unittest.cc',
+        'src/mojo/edk/system/ipc_support_unittest.cc',
         'src/mojo/edk/system/memory_unittest.cc',
         'src/mojo/edk/system/message_in_transit_queue_unittest.cc',
         'src/mojo/edk/system/message_in_transit_test_utils.cc',
@@ -196,6 +197,7 @@
         ['OS=="ios"', {
           'sources!': [
             'src/mojo/edk/embedder/embedder_unittest.cc',
+            'src/mojo/edk/system/ipc_support_unittest.cc',
             'src/mojo/edk/system/multiprocess_message_pipe_unittest.cc',
             'src/mojo/edk/test/multiprocess_test_helper_unittest.cc',
           ],

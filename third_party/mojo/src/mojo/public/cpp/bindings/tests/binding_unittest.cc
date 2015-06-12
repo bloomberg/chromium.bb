@@ -41,37 +41,24 @@ class IntegerAccessorImpl : public sample::IntegerAccessor {
   void SetInteger(int64_t data, sample::Enum type) override {}
 };
 
-class RecordingErrorHandler : public ErrorHandler {
- public:
-  RecordingErrorHandler() : error_(false) {}
-  ~RecordingErrorHandler() override {}
-
-  bool encountered_error() const { return error_; }
-
- private:
-  // ErrorHandler implementation.
-  void OnConnectionError() override { error_ = true; }
-
-  bool error_;
-};
-
 class BindingTest : public testing::Test {
  public:
   BindingTest() {}
   ~BindingTest() override {}
 
  protected:
-  RecordingErrorHandler handler_;
   Environment env_;
   RunLoop loop_;
 };
 
 // Tests that destroying a mojo::Binding closes the bound message pipe handle.
 TEST_F(BindingTest, DestroyClosesMessagePipe) {
+  bool encountered_error = false;
   ServiceImpl impl;
   sample::ServicePtr ptr;
   auto request = GetProxy(&ptr);
-  ptr.set_error_handler(&handler_);
+  ptr.set_connection_error_handler(
+      [&encountered_error]() { encountered_error = true; });
   bool called = false;
   auto called_cb = [&called](int32_t result) { called = true; };
   {
@@ -80,12 +67,12 @@ TEST_F(BindingTest, DestroyClosesMessagePipe) {
                    called_cb);
     loop_.RunUntilIdle();
     EXPECT_TRUE(called);
-    EXPECT_FALSE(handler_.encountered_error());
+    EXPECT_FALSE(encountered_error);
   }
   // Now that the Binding is out of scope we should detect an error on the other
   // end of the pipe.
   loop_.RunUntilIdle();
-  EXPECT_TRUE(handler_.encountered_error());
+  EXPECT_TRUE(encountered_error);
 
   // And calls should fail.
   called = false;

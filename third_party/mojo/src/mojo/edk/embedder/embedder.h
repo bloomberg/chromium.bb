@@ -14,6 +14,7 @@
 #include "mojo/edk/embedder/channel_info_forward.h"
 #include "mojo/edk/embedder/process_type.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
+#include "mojo/edk/embedder/slave_info.h"
 #include "mojo/edk/system/system_impl_export.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
@@ -23,7 +24,6 @@ namespace embedder {
 struct Configuration;
 class PlatformSupport;
 class ProcessDelegate;
-using SlaveInfo = void*;
 
 // Basic configuration/initialization ------------------------------------------
 
@@ -117,23 +117,27 @@ MOJO_SYSTEM_IMPL_EXPORT void ShutdownIPCSupport();
 // This should typically be called *before* the slave process is even created.
 // It requires an OS "pipe" to be established between the master and slave
 // processes, with |platform_handle| being a handle to the end that remains on
-// the master. This will create a second OS "pipe" (returned in
-// |*platform_connection_handle|), and an ID string (returned in
-// |*platform_connection_id|) that must be passed to the slave, e.g., on the
-// command line.
+// the master.
 //
-// The slave should call |InitIPCSupport()| with |ProcessType::SLAVE| and the
-// handle to the other end of the first "pipe" above. Then it should call
-// |ConnectToMaster()| with the ID string |*platform_connection_id|.
+// This will establish a channel and an initial message pipe (to which it
+// returns a handle), an ID string (returned in |*platform_connection_id|) that
+// must be passed to the slave (e.g., on the command line), and a
+// |ChannelInfo*| (in |*channel_info|) which should eventually be given to
+// |DestroyChannel()|/|DestroyChannelOnIOThread()|, but only after |callback|
+// has been run.
 //
-// |slave_info| is caller-dependent slave information, which should typically
-// remain alive until the master process delegate's |OnSlaveDisconnect()| is
-// called. (It may, however, be null.)
-MOJO_SYSTEM_IMPL_EXPORT void ConnectToSlave(
-    SlaveInfo slave_info,
-    ScopedPlatformHandle platform_handle,
-    ScopedPlatformHandle* platform_connection_handle,
-    std::string* platform_connection_id);
+// |callback| will be run either using |callback_thread_task_runner| (if
+// non-null) or on the I/O thread, once the |ChannelInfo*| is valid.
+//
+// TODO(vtl): The API is a little crazy with respect to the |ChannelInfo*|.
+using DidConnectToSlaveCallback = base::Closure;
+MOJO_SYSTEM_IMPL_EXPORT ScopedMessagePipeHandle
+ConnectToSlave(SlaveInfo slave_info,
+               ScopedPlatformHandle platform_handle,
+               const DidConnectToSlaveCallback& callback,
+               scoped_refptr<base::TaskRunner> callback_thread_task_runner,
+               std::string* platform_connection_id,
+               ChannelInfo** channel_info);
 
 // Called in a slave process to connect it to the IPC system. (This should only
 // be called in a process initialized (using |InitIPCSupport()|) with process
@@ -142,10 +146,16 @@ MOJO_SYSTEM_IMPL_EXPORT void ConnectToSlave(
 //
 // See |ConnectToSlave()| for details. (Note that if this fails in any way,
 // e.g., if |platform_connection_id| is invalid, this will CHECK-fail and
-// terminate the process.)
-MOJO_SYSTEM_IMPL_EXPORT void ConnectToMaster(
-    const std::string& platform_connection_id,
-    ScopedPlatformHandle* platform_connection_handle);
+// terminate the process.) |channel_info|, |callback|, and
+// |callback_thread_task_runner| are as in |ConnectToSlave()|.
+//
+// TODO(vtl): The API is a little crazy with respect to the |ChannelInfo*|.
+using DidConnectToMasterCallback = base::Closure;
+MOJO_SYSTEM_IMPL_EXPORT ScopedMessagePipeHandle
+ConnectToMaster(const std::string& platform_connection_id,
+                const DidConnectToMasterCallback& callback,
+                scoped_refptr<base::TaskRunner> callback_thread_task_runner,
+                ChannelInfo** channel_info);
 
 // A "channel" is a connection on top of an OS "pipe", on top of which Mojo
 // message pipes (etc.) can be multiplexed. It must "live" on some I/O thread.
@@ -194,23 +204,23 @@ CreateChannelOnIOThread(ScopedPlatformHandle platform_handle,
 using DidCreateChannelCallback = base::Callback<void(ChannelInfo*)>;
 // Creates a channel asynchronously; may be called from any thread.
 // |platform_handle| should be a handle to a connected OS "pipe".
-// |io_thread_task_runner| should be the |TaskRunner| for the I/O thread.
 // |callback| should be the callback to call with the |ChannelInfo*|, which
 // should eventually be passed to |DestroyChannel()| to tear down the channel;
 // the callback will be called using |callback_thread_task_runner| if that is
-// non-null, or otherwise it will be called using |io_thread_task_runner|.
-// Returns a handle to the bootstrap message pipe.
+// non-null, or otherwise it will be posted to the I/O thread. Returns a handle
+// to the bootstrap message pipe.
+//
+// Note: This should only be used to establish a channel with a process of type
+// |ProcessType::NONE|. This function may be removed in the future.
 MOJO_SYSTEM_IMPL_EXPORT ScopedMessagePipeHandle
 CreateChannel(ScopedPlatformHandle platform_handle,
-              scoped_refptr<base::TaskRunner> io_thread_task_runner,
               const DidCreateChannelCallback& callback,
               scoped_refptr<base::TaskRunner> callback_thread_task_runner);
 
-// Destroys a channel that was created using |CreateChannel()| (or
-// |CreateChannelOnIOThread()|); must be called from the channel's I'O thread.
-// |channel_info| should be the value provided to the callback to
-// |CreateChannel()| (or returned by |CreateChannelOnIOThread()|). Completes
-// synchronously (and posts no tasks).
+// Destroys a channel that was created using |ConnectToMaster()|,
+// |ConnectToSlave()|, |CreateChannel()|, or |CreateChannelOnIOThread()|; must
+// be called from the channel's I'O thread. Completes synchronously (and posts
+// no tasks).
 MOJO_SYSTEM_IMPL_EXPORT void DestroyChannelOnIOThread(
     ChannelInfo* channel_info);
 

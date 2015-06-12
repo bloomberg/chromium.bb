@@ -6,6 +6,7 @@
 #define MOJO_PUBLIC_CPP_BINDINGS_LIB_CONNECTOR_H_
 
 #include "mojo/public/c/environment/async_waiter.h"
+#include "mojo/public/cpp/bindings/callback.h"
 #include "mojo/public/cpp/bindings/lib/message_queue.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/environment/environment.h"
@@ -47,8 +48,8 @@ class Connector : public MessageReceiver {
 
   // Sets the error handler to receive notifications when an error is
   // encountered while reading from the pipe or waiting to read from the pipe.
-  void set_error_handler(ErrorHandler* error_handler) {
-    error_handler_ = error_handler;
+  void set_connection_error_handler(const Closure& error_handler) {
+    connection_error_handler_ = error_handler;
   }
 
   // Returns true if an error was encountered while reading from the pipe or
@@ -93,7 +94,7 @@ class Connector : public MessageReceiver {
   // Cancels any calls made to |waiter_|.
   void CancelWait();
 
-  ErrorHandler* error_handler_;
+  Closure connection_error_handler_;
   const MojoAsyncWaiter* waiter_;
 
   ScopedMessagePipeHandle message_pipe_;

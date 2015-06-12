@@ -20,6 +20,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
+#include "base/thread_task_runner_handle.h"
 #include "mojo/common/message_pump_mojo.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
@@ -192,7 +193,7 @@ class ChildControllerImpl : public ChildController, public ErrorHandler {
         new ChildControllerImpl(app_context, unblocker));
 
     ScopedMessagePipeHandle host_message_pipe(embedder::CreateChannel(
-        platform_channel.Pass(), app_context->io_runner(),
+        platform_channel.Pass(),
         base::Bind(&ChildControllerImpl::DidCreateChannel,
                    base::Unretained(impl.get())),
         base::ThreadTaskRunnerHandle::Get()));

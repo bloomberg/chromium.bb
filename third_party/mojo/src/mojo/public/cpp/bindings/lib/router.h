@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "mojo/public/cpp/bindings/callback.h"
 #include "mojo/public/cpp/bindings/lib/connector.h"
 #include "mojo/public/cpp/bindings/lib/filter_chain.h"
 #include "mojo/public/cpp/bindings/lib/shared_data.h"
@@ -30,8 +31,8 @@ class Router : public MessageReceiverWithResponder {
 
   // Sets the error handler to receive notifications when an error is
   // encountered while reading from the pipe or waiting to read from the pipe.
-  void set_error_handler(ErrorHandler* error_handler) {
-    connector_.set_error_handler(error_handler);
+  void set_connection_error_handler(const Closure& error_handler) {
+    connector_.set_connection_error_handler(error_handler);
   }
 
   // Returns true if an error was encountered while reading from the pipe or

@@ -158,7 +158,7 @@ void CommandBufferImpl::OnConnectionError() {
 }
 
 void CommandBufferImpl::DidLoseContext() {
-  binding_.OnConnectionError();
+  OnConnectionError();
 }
 
 void CommandBufferImpl::UpdateVSyncParameters(base::TimeTicks timebase,

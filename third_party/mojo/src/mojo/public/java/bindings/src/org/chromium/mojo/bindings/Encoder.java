@@ -4,7 +4,7 @@
 
 package org.chromium.mojo.bindings;
 
-import org.chromium.mojo.bindings.Interface.AbstractProxy.HandlerImpl;
+import org.chromium.mojo.bindings.Interface.Proxy.Handler;
 import org.chromium.mojo.system.Core;
 import org.chromium.mojo.system.Handle;
 import org.chromium.mojo.system.MessagePipeHandle;
@@ -275,15 +275,11 @@ public class Encoder {
                     "The encoder has been created without a Core. It can't encode an interface.");
         }
         // If the instance is a proxy, pass the proxy's handle instead of creating a new stub.
-        if (v instanceof Interface.AbstractProxy) {
-            HandlerImpl handler = ((Interface.AbstractProxy) v).getProxyHandler();
-            if (handler.getMessageReceiver() instanceof HandleOwner) {
-                encode(((HandleOwner<?>) handler.getMessageReceiver()).passHandle(), offset,
-                        nullable);
-                encode(handler.getVersion(), offset + BindingsHelper.SERIALIZED_HANDLE_SIZE);
-                return;
-            }
-            // If the proxy is not over a message pipe, the default case applies.
+        if (v instanceof Interface.Proxy) {
+            Handler handler = ((Interface.Proxy) v).getProxyHandler();
+            encode(handler.passHandle(), offset, nullable);
+            encode(handler.getVersion(), offset + BindingsHelper.SERIALIZED_HANDLE_SIZE);
+            return;
         }
         Pair<MessagePipeHandle, MessagePipeHandle> handles =
                 mEncoderState.core.createMessagePipe(null);

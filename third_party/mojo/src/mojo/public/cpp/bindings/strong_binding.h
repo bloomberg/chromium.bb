@@ -9,6 +9,7 @@
 
 #include "mojo/public/c/environment/async_waiter.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/callback.h"
 #include "mojo/public/cpp/bindings/error_handler.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -44,12 +45,12 @@ namespace mojo {
 //     }
 //   };
 template <typename Interface>
-class StrongBinding : public ErrorHandler {
+class StrongBinding {
   MOJO_MOVE_ONLY_TYPE(StrongBinding)
 
  public:
   explicit StrongBinding(Interface* impl) : binding_(impl) {
-    binding_.set_error_handler(this);
+    binding_.set_connection_error_handler([this]() { OnConnectionError(); });
   }
 
   StrongBinding(
@@ -76,7 +77,7 @@ class StrongBinding : public ErrorHandler {
     binding_.Bind(request.Pass(), waiter);
   }
 
-  ~StrongBinding() override {}
+  ~StrongBinding() {}
 
   void Bind(
       ScopedMessagePipeHandle handle,
@@ -103,23 +104,32 @@ class StrongBinding : public ErrorHandler {
     return binding_.WaitForIncomingMethodCall();
   }
 
+  void set_connection_error_handler(const Closure& error_handler) {
+    connection_error_handler_ = error_handler;
+  }
+
+  // NOTE: Deprecated. Please use the method above.
+  // TODO(yzshen): Remove this method once all callsites are converted.
   void set_error_handler(ErrorHandler* error_handler) {
-    error_handler_ = error_handler;
+    if (error_handler) {
+      set_connection_error_handler(
+          [error_handler]() { error_handler->OnConnectionError(); });
+    } else {
+      set_connection_error_handler(Closure());
+    }
   }
 
   Interface* impl() { return binding_.impl(); }
   // Exposed for testing, should not generally be used.
   internal::Router* internal_router() { return binding_.internal_router(); }
 
-  // ErrorHandler implementation
-  void OnConnectionError() override {
-    if (error_handler_)
-      error_handler_->OnConnectionError();
+  void OnConnectionError() {
+    connection_error_handler_.Run();
     delete binding_.impl();
   }
 
  private:
-  ErrorHandler* error_handler_ = nullptr;
+  Closure connection_error_handler_;
   Binding<Interface> binding_;
 };
 

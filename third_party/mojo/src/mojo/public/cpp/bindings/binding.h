@@ -6,6 +6,7 @@
 #define MOJO_PUBLIC_CPP_BINDINGS_BINDING_H_
 
 #include "mojo/public/c/environment/async_waiter.h"
+#include "mojo/public/cpp/bindings/callback.h"
 #include "mojo/public/cpp/bindings/error_handler.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
@@ -57,7 +58,7 @@ namespace mojo {
 // types of threads callers may need to provide different waiter
 // implementations.
 template <typename Interface>
-class Binding : public ErrorHandler {
+class Binding {
  public:
   // Constructs an incomplete binding that will use the implementation |impl|.
   // The binding may be completed with a subsequent call to the |Bind| method.
@@ -100,7 +101,7 @@ class Binding : public ErrorHandler {
 
   // Tears down the binding, closing the message pipe and leaving the interface
   // implementation unbound.
-  ~Binding() override {
+  ~Binding() {
     if (internal_router_) {
       Close();
     }
@@ -120,7 +121,8 @@ class Binding : public ErrorHandler {
     internal_router_ =
         new internal::Router(handle.Pass(), filters.Pass(), waiter);
     internal_router_->set_incoming_receiver(&stub_);
-    internal_router_->set_error_handler(this);
+    internal_router_->set_connection_error_handler(
+        [this]() { connection_error_handler_.Run(); });
   }
 
   // Completes a binding that was constructed with only an interface
@@ -181,14 +183,21 @@ class Binding : public ErrorHandler {
 
   // Sets an error handler that will be called if a connection error occurs on
   // the bound message pipe.
-  void set_error_handler(ErrorHandler* error_handler) {
-    error_handler_ = error_handler;
+  void set_connection_error_handler(const Closure& error_handler) {
+    connection_error_handler_ = error_handler;
   }
 
-  // Implements the |Binding|'s response to a connection error.
-  void OnConnectionError() override {
-    if (error_handler_)
-      error_handler_->OnConnectionError();
+  // Similar to the method above but uses the ErrorHandler interface instead of
+  // a callback.
+  // NOTE: Deprecated. Please use the method above.
+  // TODO(yzshen): Remove this method once all callsites are converted.
+  void set_error_handler(ErrorHandler* error_handler) {
+    if (error_handler) {
+      set_connection_error_handler(
+          [error_handler]() { error_handler->OnConnectionError(); });
+    } else {
+      set_connection_error_handler(Closure());
+    }
   }
 
   // Returns the interface implementation that was previously specified. Caller
@@ -213,7 +222,7 @@ class Binding : public ErrorHandler {
 
  private:
   void DestroyRouter() {
-    internal_router_->set_error_handler(nullptr);
+    internal_router_->set_connection_error_handler(Closure());
     delete internal_router_;
     internal_router_ = nullptr;
   }
@@ -221,7 +230,7 @@ class Binding : public ErrorHandler {
   internal::Router* internal_router_ = nullptr;
   typename Interface::Stub_ stub_;
   Interface* impl_;
-  ErrorHandler* error_handler_ = nullptr;
+  Closure connection_error_handler_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(Binding);
 };

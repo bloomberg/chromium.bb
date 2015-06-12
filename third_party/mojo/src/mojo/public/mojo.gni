@@ -34,6 +34,12 @@ if (defined(mojo_disable_application_in_sdk) &&
   mojo_use_application_in_sdk = false
 }
 
+# Embedder uses Mojo network interfaces.
+mojo_use_network_in_sdk = true
+if (defined(mojo_disable_network_in_sdk) && mojo_disable_network_in_sdk) {
+  mojo_use_network_in_sdk = false
+}
+
 # The absolute path to the directory containing the mojo public SDK (i.e., the
 # directory containing mojo/public). The build files within the Mojo public
 # SDK use this variable to allow themselves to be parameterized by the location

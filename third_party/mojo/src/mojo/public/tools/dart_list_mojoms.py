@@ -25,9 +25,11 @@ def main(args):
   source_directory = args.source_directory
   # Prefix to chop off output.
   root_prefix = os.path.abspath(args.relative_directory_root)
-  for dirname, _, filenames in os.walk(source_directory):
+  for dirname, dirnames, filenames in os.walk(source_directory):
     # filter for .mojom files.
     filenames = [f for f in filenames if f.endswith('.mojom')]
+    # Skip any directories that start with 'test'.
+    dirnames[:] = [d for d in dirnames if not d.startswith('test')]
     for f in filenames:
       path = os.path.abspath(os.path.join(dirname, f))
       path = os.path.relpath(path, root_prefix)

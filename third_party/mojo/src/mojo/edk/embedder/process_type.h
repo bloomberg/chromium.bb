@@ -5,6 +5,10 @@
 #ifndef MOJO_EDK_EMBEDDER_PROCESS_TYPE_H_
 #define MOJO_EDK_EMBEDDER_PROCESS_TYPE_H_
 
+#include <ostream>
+
+#include "mojo/edk/system/system_impl_export.h"
+
 namespace mojo {
 namespace embedder {
 
@@ -19,6 +23,13 @@ enum class ProcessType {
   // Slave process.
   SLAVE,
 };
+
+// So logging macros and |DCHECK_EQ()|, etc. work.
+MOJO_SYSTEM_IMPL_EXPORT inline std::ostream& operator<<(
+    std::ostream& out,
+    ProcessType process_type) {
+  return out << static_cast<int>(process_type);
+}
 
 }  // namespace embedder
 }  // namespace mojo

@@ -15,6 +15,7 @@
 #include "base/process/launch.h"
 #include "base/task_runner.h"
 #include "base/task_runner_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
 #include "mojo/public/cpp/system/core.h"
@@ -45,9 +46,9 @@ void ChildProcessHost::Start() {
   DCHECK(platform_channel_.is_valid());
 
   ScopedMessagePipeHandle handle(embedder::CreateChannel(
-      platform_channel_.Pass(), context_->task_runners()->io_runner(),
+      platform_channel_.Pass(),
       base::Bind(&ChildProcessHost::DidCreateChannel, base::Unretained(this)),
-      base::MessageLoop::current()->message_loop_proxy()));
+      base::ThreadTaskRunnerHandle::Get()));
 
   controller_.Bind(InterfacePtrInfo<ChildController>(handle.Pass(), 0u));
 

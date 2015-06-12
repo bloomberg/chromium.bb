@@ -30,9 +30,6 @@ using SlaveInfo = void*;
 
 namespace system {
 
-// The master process will always have this "process identifier".
-const ProcessIdentifier kMasterProcessIdentifier = 1;
-
 // The |ConnectionManager| implementation for the master process.
 //
 // This class is thread-safe (except that no public methods may be called from
@@ -61,22 +58,21 @@ class MOJO_SYSTEM_IMPL_EXPORT MasterConnectionManager
   // |embedder::MasterProcessDelegate| to track this process. It must remain
   // alive until the delegate's |OnSlaveDisconnect()| is called with it as the
   // argument. |OnSlaveDisconnect()| will always be called for each slave,
-  // assuming proper shutdown. |*slave_process_identifier| will be set to the
-  // process identifier for the newly-added slave.
-  void AddSlave(embedder::SlaveInfo slave_info,
-                embedder::ScopedPlatformHandle platform_handle,
-                ProcessIdentifier* slave_process_identifier);
+  // assuming proper shutdown. Returns the process identifier for the
+  // newly-added slave.
+  ProcessIdentifier AddSlave(embedder::SlaveInfo slave_info,
+                             embedder::ScopedPlatformHandle platform_handle);
 
   // Like |AddSlave()|, but allows a connection to be bootstrapped: both the
   // master and slave may call |Connect()| with |connection_id| immediately (as
-  // if both had already called |AllowConnect()|). Returns false if |Connect()|
-  // will not be possible.
+  // if both had already called |AllowConnect()|). |connection_id| must be
+  // unique (i.e., not previously used).
   // TODO(vtl): Is |AddSlave()| really needed? (It's probably mostly useful for
   // tests.)
-  bool AddSlaveAndBootstrap(embedder::SlaveInfo slave_info,
-                            embedder::ScopedPlatformHandle platform_handle,
-                            const ConnectionIdentifier& connection_id,
-                            ProcessIdentifier* slave_process_identifier);
+  ProcessIdentifier AddSlaveAndBootstrap(
+      embedder::SlaveInfo slave_info,
+      embedder::ScopedPlatformHandle platform_handle,
+      const ConnectionIdentifier& connection_id);
 
   // |ConnectionManager| methods:
   void Shutdown() override;

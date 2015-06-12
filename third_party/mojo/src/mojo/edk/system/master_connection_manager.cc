@@ -251,19 +251,18 @@ void MasterConnectionManager::Init(
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0)));
 }
 
-void MasterConnectionManager::AddSlave(
+ProcessIdentifier MasterConnectionManager::AddSlave(
     embedder::SlaveInfo slave_info,
-    embedder::ScopedPlatformHandle platform_handle,
-    ProcessIdentifier* slave_process_identifier) {
+    embedder::ScopedPlatformHandle platform_handle) {
   // We don't really care if |slave_info| is non-null or not.
   DCHECK(platform_handle.is_valid());
-  DCHECK(slave_process_identifier);
   AssertNotOnPrivateThread();
 
+  ProcessIdentifier slave_process_identifier;
   {
     base::AutoLock locker(lock_);
     CHECK_NE(next_process_identifier_, kMasterProcessIdentifier);
-    *slave_process_identifier = next_process_identifier_;
+    slave_process_identifier = next_process_identifier_;
     next_process_identifier_++;
   }
 
@@ -274,30 +273,30 @@ void MasterConnectionManager::AddSlave(
       FROM_HERE,
       base::Bind(&MasterConnectionManager::AddSlaveOnPrivateThread,
                  base::Unretained(this), base::Unretained(slave_info),
-                 base::Passed(&platform_handle), *slave_process_identifier,
+                 base::Passed(&platform_handle), slave_process_identifier,
                  base::Unretained(&event)));
   event.Wait();
+
+  return slave_process_identifier;
 }
 
-bool MasterConnectionManager::AddSlaveAndBootstrap(
+ProcessIdentifier MasterConnectionManager::AddSlaveAndBootstrap(
     embedder::SlaveInfo slave_info,
     embedder::ScopedPlatformHandle platform_handle,
-    const ConnectionIdentifier& connection_id,
-    ProcessIdentifier* slave_process_identifier) {
-  AddSlave(slave_info, platform_handle.Pass(), slave_process_identifier);
+    const ConnectionIdentifier& connection_id) {
+  ProcessIdentifier slave_process_identifier =
+      AddSlave(slave_info, platform_handle.Pass());
 
   base::AutoLock locker(lock_);
-
-  auto it = pending_connections_.find(connection_id);
-  if (it != pending_connections_.end())
-    return false;
-
+  DCHECK(pending_connections_.find(connection_id) ==
+         pending_connections_.end());
   PendingConnectionInfo* info =
       new PendingConnectionInfo(kMasterProcessIdentifier);
   info->state = PendingConnectionInfo::AWAITING_CONNECTS_FROM_BOTH;
-  info->second = *slave_process_identifier;
+  info->second = slave_process_identifier;
   pending_connections_[connection_id] = info;
-  return true;
+
+  return slave_process_identifier;
 }
 
 void MasterConnectionManager::Shutdown() {

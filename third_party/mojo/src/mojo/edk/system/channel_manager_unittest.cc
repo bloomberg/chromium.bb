@@ -7,9 +7,9 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
 #include "base/task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/simple_thread.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/simple_platform_support.h"
@@ -159,8 +159,8 @@ TEST_F(ChannelManagerTest, CallsFromOtherThread) {
           id, channel_pair.PassServerHandle());
 
   base::RunLoop run_loop;
-  OtherThread thread(base::MessageLoopProxy::current(), &channel_manager(), id,
-                     run_loop.QuitClosure());
+  OtherThread thread(base::ThreadTaskRunnerHandle::Get(), &channel_manager(),
+                     id, run_loop.QuitClosure());
   thread.Start();
   run_loop.Run();
   thread.Join();

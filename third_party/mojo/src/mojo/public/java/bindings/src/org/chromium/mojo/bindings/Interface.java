@@ -42,6 +42,12 @@ public interface Interface extends ConnectionErrorHandler, Closeable {
             public void setErrorHandler(ConnectionErrorHandler errorHandler);
 
             /**
+             * Unbinds the proxy and passes the handle. Can return null if the proxy is not bound or
+             * if the proxy is not over a message pipe.
+             */
+            public MessagePipeHandle passHandle();
+
+            /**
              * Returns the version number of the interface that the remote side supports.
              */
             public int getVersion();
@@ -156,6 +162,17 @@ public interface Interface extends ConnectionErrorHandler, Closeable {
             }
 
             /**
+             * @see Interface.Proxy.Handler#passHandle()
+             */
+            @Override
+            public MessagePipeHandle passHandle() {
+                @SuppressWarnings("unchecked")
+                HandleOwner<MessagePipeHandle> handleOwner =
+                        (HandleOwner<MessagePipeHandle>) mMessageReceiver;
+                return handleOwner.passHandle();
+            }
+
+            /**
              * @see Handler#getVersion()
              */
             @Override
@@ -173,8 +190,8 @@ public interface Interface extends ConnectionErrorHandler, Closeable {
                 message.reserved1 = 0;
                 message.queryVersion = new QueryVersion();
 
-                InterfaceControlMessagesHelper.sendRunMessage(getCore(), getMessageReceiver(),
-                        message, new Callback1<RunResponseMessageParams>() {
+                InterfaceControlMessagesHelper.sendRunMessage(getCore(), mMessageReceiver, message,
+                        new Callback1<RunResponseMessageParams>() {
                             @Override
                             public void call(RunResponseMessageParams response) {
                                 mVersion = response.queryVersionResult.version;
@@ -198,7 +215,7 @@ public interface Interface extends ConnectionErrorHandler, Closeable {
                 message.requireVersion = new RequireVersion();
                 message.requireVersion.version = version;
                 InterfaceControlMessagesHelper.sendRunOrClosePipeMessage(
-                        getCore(), getMessageReceiver(), message);
+                        getCore(), mMessageReceiver, message);
             }
         }
 
@@ -352,6 +369,10 @@ public interface Interface extends ConnectionErrorHandler, Closeable {
             Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe(null);
             P proxy = attachProxy(handles.first, 0);
             return Pair.create(proxy, new InterfaceRequest<I>(handles.second));
+        }
+
+        public final InterfaceRequest<I> asInterfaceRequest(MessagePipeHandle handle) {
+            return new InterfaceRequest<I>(handle);
         }
 
         /**

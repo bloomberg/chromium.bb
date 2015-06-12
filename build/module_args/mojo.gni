@@ -16,8 +16,9 @@ mojo_disable_dart_apptest_framework = true
 # Points to the directory network_service is built from.
 mojo_network_service_root = "//mojo/services"
 
-# We use our own custom application code. Don't build Mojo's.
+# We use our own custom application and network code. Don't build Mojo's.
 mojo_disable_application_in_sdk = true
+mojo_disable_network_in_sdk = true
 
 declare_args() {
   # The mojo shell is forked and built in the chromium repo.

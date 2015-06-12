@@ -44,59 +44,59 @@ type {{interface|name}} interface {
 
 var {{interface|name(False)}}_Name = "{{interface.module.namespace|replace(".","::")}}::{{interface.name}}"
 
-type {{interface|name}}Request bindings.InterfaceRequest
+type {{interface|name}}_Request bindings.InterfaceRequest
 
-func (r *{{interface|name}}Request) Name() string {
+func (r *{{interface|name}}_Request) Name() string {
 	return {{interface|name(False)}}_Name
 }
 
-type {{interface|name}}Pointer bindings.InterfacePointer
+type {{interface|name}}_Pointer bindings.InterfacePointer
 
-func (p *{{interface|name}}Pointer) Name() string {
+func (p *{{interface|name}}_Pointer) Name() string {
 	return {{interface|name(False)}}_Name
 }
 
-type {{interface|name}}ServiceFactory struct{
-	Delegate {{interface|name}}Factory
+type {{interface|name}}_ServiceFactory struct{
+	Delegate {{interface|name}}_Factory
 }
 
-type {{interface|name}}Factory interface {
-	Create(request {{interface|name}}Request)
+type {{interface|name}}_Factory interface {
+	Create(request {{interface|name}}_Request)
 }
 
-func (f *{{interface|name}}ServiceFactory) Name() string {
+func (f *{{interface|name}}_ServiceFactory) Name() string {
 	return {{interface|name(False)}}_Name
 }
 
-func (f *{{interface|name}}ServiceFactory) Create(messagePipe system.MessagePipeHandle) {
-	request := {{interface|name}}Request{bindings.NewMessagePipeHandleOwner(messagePipe)}
+func (f *{{interface|name}}_ServiceFactory) Create(messagePipe system.MessagePipeHandle) {
+	request := {{interface|name}}_Request{bindings.NewMessagePipeHandleOwner(messagePipe)}
 	f.Delegate.Create(request)
 }
 
 // CreateMessagePipeFor{{interface|name}} creates a message pipe for use with the
-// {{interface|name}} interface with a {{interface|name}}Request on one end and a {{interface|name}}Pointer on the other.
-func CreateMessagePipeFor{{interface|name}}() ({{interface|name}}Request, {{interface|name}}Pointer) {
+// {{interface|name}} interface with a {{interface|name}}_Request on one end and a {{interface|name}}_Pointer on the other.
+func CreateMessagePipeFor{{interface|name}}() ({{interface|name}}_Request, {{interface|name}}_Pointer) {
         r, p := bindings.CreateMessagePipeForMojoInterface()
-        return {{interface|name}}Request(r), {{interface|name}}Pointer(p)
+        return {{interface|name}}_Request(r), {{interface|name}}_Pointer(p)
 }
 
 {% for method in interface.methods %}
 const {{interface|name(False)}}_{{method|name}}_Name uint32 = {{method.ordinal}}
 {% endfor %}
 
-type {{interface|name}}Proxy struct {
+type {{interface|name}}_Proxy struct {
 	router *bindings.Router
 	ids bindings.Counter
 }
 
-func New{{interface|name}}Proxy(p {{interface|name}}Pointer, waiter bindings.AsyncWaiter) *{{interface|name}}Proxy {
-	return &{{interface|name}}Proxy{
+func New{{interface|name}}Proxy(p {{interface|name}}_Pointer, waiter bindings.AsyncWaiter) *{{interface|name}}_Proxy {
+	return &{{interface|name}}_Proxy{
 		bindings.NewRouter(p.PassMessagePipe(), waiter),
 		bindings.NewCounter(),
 	}
 }
 
-func (p *{{interface|name}}Proxy) Close_proxy() {
+func (p *{{interface|name}}_Proxy) Close_Proxy() {
 	p.router.Close()
 }
 
@@ -105,7 +105,7 @@ func (p *{{interface|name}}Proxy) Close_proxy() {
 {%-  if method.response_parameters %}
 {{struct_macros.define(method.response_param_struct, False)}}
 {%-   endif %}
-func (p *{{interface|name}}Proxy) {{method|name}}{{declare_request_params(method)}} {
+func (p *{{interface|name}}_Proxy) {{method|name}}{{declare_request_params(method)}} {
 	payload := &{{method.param_struct|name(False)}}{
 {%   for field in (method.param_struct).fields %}
 		{{field|name(False)}},
@@ -121,13 +121,13 @@ func (p *{{interface|name}}Proxy) {{method|name}}{{declare_request_params(method
 	var message *bindings.Message
 	if message, err = bindings.EncodeMessage(header, payload); err != nil {
 		err = fmt.Errorf("can't encode request: %v", err.Error())
-		p.Close_proxy()
+		p.Close_Proxy()
 		return
 	}
 {% if method.response_parameters %}
 	readResult := <-p.router.AcceptWithResponse(message)
 	if err = readResult.Error; err != nil {
-		p.Close_proxy()
+		p.Close_Proxy()
 		return
 	}
 	if readResult.Message.Header.Flags != bindings.MessageIsResponseFlag {
@@ -144,7 +144,7 @@ func (p *{{interface|name}}Proxy) {{method|name}}{{declare_request_params(method
 	}
 	var response {{method.response_param_struct|name(False)}}
 	if err = readResult.Message.DecodePayload(&response); err != nil {
-		p.Close_proxy()
+		p.Close_Proxy()
 		return
 	}
 {%   for field in (method.response_param_struct).fields %}
@@ -152,7 +152,7 @@ func (p *{{interface|name}}Proxy) {{method|name}}{{declare_request_params(method
 {%   endfor %}
 {% else %}
 	if err = p.router.Accept(message); err != nil {
-		p.Close_proxy()
+		p.Close_Proxy()
 		return
 	}
 {% endif %}
@@ -160,17 +160,17 @@ func (p *{{interface|name}}Proxy) {{method|name}}{{declare_request_params(method
 }
 
 {% endfor %}
-type {{interface|name(False)}}Stub struct {
+type {{interface|name(False)}}_Stub struct {
 	connector *bindings.Connector
 	impl {{interface|name}}
 }
 
-func New{{interface|name}}Stub(r {{interface|name}}Request, impl {{interface|name}}, waiter bindings.AsyncWaiter) *bindings.Stub {
+func New{{interface|name}}Stub(r {{interface|name}}_Request, impl {{interface|name}}, waiter bindings.AsyncWaiter) *bindings.Stub {
 	connector := bindings.NewConnector(r.PassMessagePipe(), waiter)
-	return bindings.NewStub(connector, &{{interface|name(False)}}Stub{connector, impl})
+	return bindings.NewStub(connector, &{{interface|name(False)}}_Stub{connector, impl})
 }
 
-func (s *{{interface|name(False)}}Stub) Accept(message *bindings.Message) (err error) {
+func (s *{{interface|name(False)}}_Stub) Accept(message *bindings.Message) (err error) {
 	switch message.Header.Type {
 {% for method in interface.methods %}
 	case {{interface|name(False)}}_{{method|name}}_Name:

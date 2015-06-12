@@ -52,6 +52,10 @@ group("sdk") {
       "interfaces/application",
     ]
   }
+
+  if (mojo_use_network_in_sdk) {
+    deps += [ "interfaces/network" ]
+  }
 }
 
 static_library("libmojo_sdk") {

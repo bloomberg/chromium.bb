@@ -213,11 +213,6 @@ def main():
     lib_path = os.path.join(target_dir, "lib")
     lib_mojom_path = os.path.join(lib_path, "mojom")
 
-    # Copy mojom sources
-    for mojom_source_path in args.mojom_sources:
-        path = mojom_path(mojom_source_path)
-        copy(mojom_source_path, os.path.join(lib_mojom_path, path))
-
     # Copy generated mojom.dart files.
     generated_mojom_lib_path = os.path.join(args.gen_directory, "mojom/lib")
     for mojom_source_path in args.mojom_sources:

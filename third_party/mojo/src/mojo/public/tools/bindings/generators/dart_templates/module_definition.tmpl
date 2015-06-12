@@ -15,6 +15,12 @@ const {{constant.name}} = {{constant.value|expression_to_text}};
 {{ struct_def(struct) }}
 {%- endfor -%}
 
+{#--- Union definitions #}
+{%- from "union_definition.tmpl" import union_def %}
+{%  for union in unions %}
+{{ union_def(union) }}
+{%- endfor -%}
+
 {#--- Interface definitions #}
 {%- for interface in interfaces -%}
 {%-   include "interface_definition.tmpl" %}

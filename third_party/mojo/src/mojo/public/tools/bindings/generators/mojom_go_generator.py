@@ -91,9 +91,9 @@ def GetNonNullableGoType(kind):
   if mojom.IsMapKind(kind):
     return 'map[%s]%s' % (GetGoType(kind.key_kind), GetGoType(kind.value_kind))
   if mojom.IsInterfaceKind(kind):
-    return '%sPointer' % GetFullName(kind)
+    return '%s_Pointer' % GetFullName(kind)
   if mojom.IsInterfaceRequestKind(kind):
-    return '%sRequest' % GetFullName(kind.kind)
+    return '%s_Request' % GetFullName(kind.kind)
   if mojom.IsEnumKind(kind):
     return GetNameForNestedElement(kind)
   return _kind_infos[kind].go_type

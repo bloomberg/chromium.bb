@@ -215,6 +215,9 @@ template("dartzip_packaged_application") {
 #   sources
 #       List of sources to include in the package.
 #
+#   pkg_dir (optional)
+#       Directory containing the package sources. This overrides sources.
+#
 #   deps (optional)
 #       Note: this can only contain mojom targets.
 #
@@ -224,7 +227,11 @@ template("dartzip_packaged_application") {
 #       Directory containing sdk-ext .dart sources.
 #
 template("dart_pkg") {
-  pubspec_yaml_path = rebase_path("pubspec.yaml")
+  if (defined(invoker.pkg_dir)) {
+    pubspec_yaml_path = rebase_path("pubspec.yaml", "", invoker.pkg_dir)
+  } else {
+    pubspec_yaml_path = rebase_path("pubspec.yaml")
+  }
   dart_package_name_script =
       rebase_path("mojo/public/tools/dart_package_name.py", ".", mojo_sdk_root)
   package_name = exec_script(dart_package_name_script,
@@ -239,7 +246,7 @@ template("dart_pkg") {
   package_root = rebase_path("$root_gen_dir/dart-pkg/packages")
   stamp_file = "$root_gen_dir/dart-pkg/${package_name}.stamp"
 
-  assert(defined(invoker.sources))
+  assert(defined(invoker.sources) || defined(invoker.pkg_dir))
 
   action(target_name) {
     deps = []
@@ -276,10 +283,23 @@ template("dart_pkg") {
       stamp_file,
     ]
 
+    if (defined(invoker.sources)) {
+      sources = invoker.sources
+    } else {
+      assert(defined(invoker.pkg_dir))
+      list_script = rebase_path("build/ls.py", ".", mojo_sdk_root)
+      sources = exec_script(list_script,
+                            [
+                              "--target-directory",
+                              rebase_path(invoker.pkg_dir),
+                            ],
+                            "list lines")
+    }
+
     inputs = [
                list_mojoms_script,
                script,
-             ] + rebase_path(invoker.sources)
+             ] + rebase_path(sources)
 
     args = [
              "--package-name",
@@ -293,7 +313,7 @@ template("dart_pkg") {
              "--stamp-file",
              rebase_path(stamp_file),
              "--package-sources",
-           ] + rebase_path(invoker.sources) + [ "--mojom-sources" ] +
+           ] + rebase_path(sources) + [ "--mojom-sources" ] +
            rebase_path(mojom_sources, "", mojo_sdk_root) +
            [ "--sdk-ext-directories" ] + rebase_path(sdk_ext_directory)
   }

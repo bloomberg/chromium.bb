@@ -17,3 +17,4 @@ part 'src/message.dart';
 part 'src/proxy.dart';
 part 'src/struct.dart';
 part 'src/stub.dart';
+part 'src/union.dart';

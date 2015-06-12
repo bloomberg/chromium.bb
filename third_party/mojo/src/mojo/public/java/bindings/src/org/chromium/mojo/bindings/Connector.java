@@ -134,7 +134,9 @@ public class Connector implements MessageReceiver, HandleOwner<MessagePipeHandle
         cancelIfActive();
         mMessagePipeHandle.close();
         if (mIncomingMessageReceiver != null) {
-            mIncomingMessageReceiver.close();
+            MessageReceiver incomingMessageReceiver = mIncomingMessageReceiver;
+            mIncomingMessageReceiver = null;
+            incomingMessageReceiver.close();
         }
     }
 

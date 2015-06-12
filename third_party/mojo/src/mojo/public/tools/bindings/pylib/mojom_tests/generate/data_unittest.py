@@ -41,7 +41,7 @@ class DataTest(unittest.TestCase):
 
     struct = data.StructFromData(module, struct_data)
     struct.fields = map(lambda field:
-        data.FieldFromData(module, field, struct), struct.fields_data)
+        data.StructFieldFromData(module, field, struct), struct.fields_data)
     self.assertEquals(struct_data, data.StructToData(struct))
 
   def testUnionDataConversion(self):
@@ -55,7 +55,7 @@ class DataTest(unittest.TestCase):
 
     union = data.UnionFromData(module, union_data)
     union.fields = map(lambda field:
-        data.FieldFromData(module, field, union), union.fields_data)
+        data.UnionFieldFromData(module, field, union), union.fields_data)
     self.assertEquals(union_data, data.UnionToData(union))
 
   def testImportFromDataNoMissingImports(self):

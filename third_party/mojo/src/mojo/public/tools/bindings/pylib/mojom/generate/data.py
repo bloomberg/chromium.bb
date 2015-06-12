@@ -242,16 +242,24 @@ def FieldToData(field):
   AddOptional(data, istr(4, 'attributes'), field.attributes)
   return data
 
-def FieldFromData(module, data, struct):
-  field = mojom.Field()
+def StructFieldFromData(module, data, struct):
+  field = mojom.StructField()
+  PopulateField(field, module, data, struct)
+  return field
+
+def UnionFieldFromData(module, data, union):
+  field = mojom.UnionField()
+  PopulateField(field, module, data, union)
+  return field
+
+def PopulateField(field, module, data, parent):
   field.name = data['name']
   field.kind = KindFromData(
-      module.kinds, data['kind'], (module.namespace, struct.name))
+      module.kinds, data['kind'], (module.namespace, parent.name))
   field.ordinal = data.get('ordinal')
   field.default = FixupExpression(
-      module, data.get('default'), (module.namespace, struct.name), field.kind)
+      module, data.get('default'), (module.namespace, parent.name), field.kind)
   field.attributes = data.get('attributes')
-  return field
 
 def ParameterToData(parameter):
   data = {
@@ -422,11 +430,11 @@ def ModuleFromData(data):
   # to refer to kinds defined anywhere in the mojom.
   for struct in module.structs:
     struct.fields = map(lambda field:
-        FieldFromData(module, field, struct), struct.fields_data)
+        StructFieldFromData(module, field, struct), struct.fields_data)
     del struct.fields_data
   for union in module.unions:
     union.fields = map(lambda field:
-        FieldFromData(module, field, union), union.fields_data)
+        UnionFieldFromData(module, field, union), union.fields_data)
     del union.fields_data
   for interface in module.interfaces:
     interface.methods = map(lambda method:

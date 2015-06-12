@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/task_runner.h"
 #include "mojo/edk/system/channel.h"
 #include "mojo/edk/system/channel_endpoint.h"
@@ -19,12 +18,10 @@ namespace system {
 namespace {
 
 void ShutdownChannelHelper(
-    const ChannelInfo& channel_info,
+    scoped_refptr<Channel> channel,
     const base::Closure& callback,
     scoped_refptr<base::TaskRunner> callback_thread_task_runner) {
-  DCHECK(base::MessageLoopProxy::current() ==
-         channel_info.channel_thread_task_runner);
-  channel_info.channel->Shutdown();
+  channel->Shutdown();
   if (callback_thread_task_runner) {
     bool ok = callback_thread_task_runner->PostTask(FROM_HERE, callback);
     DCHECK(ok);
@@ -52,24 +49,20 @@ ChannelManager::~ChannelManager() {
   // TODO(vtl): This doesn't verify the above condition very strictly at all
   // (e.g., we may never have had any channels, or we may have manually shut all
   // the channels down).
-  DCHECK(channel_infos_.empty());
+  DCHECK(channels_.empty());
 }
 
 void ChannelManager::ShutdownOnIOThread() {
   // Taking this lock really shouldn't be necessary, but we do it for
   // consistency.
-  base::hash_map<ChannelId, ChannelInfo> channel_infos;
+  ChannelIdToChannelMap channels;
   {
     base::AutoLock locker(lock_);
-    channel_infos.swap(channel_infos_);
+    channels.swap(channels_);
   }
 
-  for (const auto& map_elem : channel_infos) {
-    const ChannelInfo& channel_info = map_elem.second;
-    DCHECK(base::MessageLoopProxy::current() ==
-           channel_info.channel_thread_task_runner);
-    channel_info.channel->Shutdown();
-  }
+  for (auto& channel : channels)
+    channel.second->Shutdown();
 }
 
 void ChannelManager::Shutdown(
@@ -97,11 +90,8 @@ scoped_refptr<MessagePipeDispatcher> ChannelManager::CreateChannelOnIOThread(
 scoped_refptr<MessagePipeDispatcher> ChannelManager::CreateChannel(
     ChannelId channel_id,
     embedder::ScopedPlatformHandle platform_handle,
-    scoped_refptr<base::TaskRunner> io_thread_task_runner,
     const base::Closure& callback,
     scoped_refptr<base::TaskRunner> callback_thread_task_runner) {
-  // TODO(vtl): Remove |io_thread_task_runner| argument.
-  DCHECK_EQ(io_thread_task_runner, io_thread_task_runner_);
   DCHECK(!callback.is_null());
   // (|callback_thread_task_runner| may be null.)
 
@@ -121,9 +111,9 @@ scoped_refptr<MessagePipeDispatcher> ChannelManager::CreateChannel(
 
 scoped_refptr<Channel> ChannelManager::GetChannel(ChannelId channel_id) const {
   base::AutoLock locker(lock_);
-  auto it = channel_infos_.find(channel_id);
-  DCHECK(it != channel_infos_.end());
-  return it->second.channel;
+  auto it = channels_.find(channel_id);
+  DCHECK(it != channels_.end());
+  return it->second;
 }
 
 void ChannelManager::WillShutdownChannel(ChannelId channel_id) {
@@ -131,34 +121,32 @@ void ChannelManager::WillShutdownChannel(ChannelId channel_id) {
 }
 
 void ChannelManager::ShutdownChannelOnIOThread(ChannelId channel_id) {
-  ChannelInfo channel_info;
+  scoped_refptr<Channel> channel;
   {
     base::AutoLock locker(lock_);
-    auto it = channel_infos_.find(channel_id);
-    DCHECK(it != channel_infos_.end());
-    channel_info.Swap(&it->second);
-    channel_infos_.erase(it);
+    auto it = channels_.find(channel_id);
+    DCHECK(it != channels_.end());
+    channel.swap(it->second);
+    channels_.erase(it);
   }
-  DCHECK(base::MessageLoopProxy::current() ==
-         channel_info.channel_thread_task_runner);
-  channel_info.channel->Shutdown();
+  channel->Shutdown();
 }
 
 void ChannelManager::ShutdownChannel(
     ChannelId channel_id,
     const base::Closure& callback,
     scoped_refptr<base::TaskRunner> callback_thread_task_runner) {
-  ChannelInfo channel_info;
+  scoped_refptr<Channel> channel;
   {
     base::AutoLock locker(lock_);
-    auto it = channel_infos_.find(channel_id);
-    DCHECK(it != channel_infos_.end());
-    channel_info.Swap(&it->second);
-    channel_infos_.erase(it);
+    auto it = channels_.find(channel_id);
+    DCHECK(it != channels_.end());
+    channel.swap(it->second);
+    channels_.erase(it);
   }
-  channel_info.channel->WillShutdownSoon();
-  bool ok = channel_info.channel_thread_task_runner->PostTask(
-      FROM_HERE, base::Bind(&ShutdownChannelHelper, channel_info, callback,
+  channel->WillShutdownSoon();
+  bool ok = io_thread_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&ShutdownChannelHelper, channel, callback,
                             callback_thread_task_runner));
   DCHECK(ok);
 }
@@ -191,9 +179,8 @@ void ChannelManager::CreateChannelOnIOThreadHelper(
 
   {
     base::AutoLock locker(lock_);
-    CHECK(channel_infos_.find(channel_id) == channel_infos_.end());
-    channel_infos_[channel_id] =
-        ChannelInfo(channel, base::MessageLoopProxy::current());
+    CHECK(channels_.find(channel_id) == channels_.end());
+    channels_[channel_id] = channel;
   }
   channel->SetChannelManager(this);
 }
