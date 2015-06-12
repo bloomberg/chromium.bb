@@ -199,9 +199,14 @@ class PlatformKeysTest : public ExtensionApiTest,
 class TestSelectDelegate
     : public chromeos::PlatformKeysService::SelectDelegate {
  public:
-  explicit TestSelectDelegate(
-      scoped_refptr<net::X509Certificate> cert_to_select)
-      : cert_to_select_(cert_to_select) {}
+  // On each Select call, selects the next entry in |cert_to_select| from back
+  // to front. Once the first entry is reached, that one will be selected
+  // repeatedly.
+  // Entries of |certs_to_select| can be null in which case no certificate will
+  // be selected.
+  explicit TestSelectDelegate(net::CertificateList certs_to_select)
+      : certs_to_select_(certs_to_select) {}
+
   ~TestSelectDelegate() override {}
 
   void Select(const std::string& extension_id,
@@ -211,45 +216,51 @@ class TestSelectDelegate
               content::BrowserContext* context) override {
     ASSERT_TRUE(web_contents);
     ASSERT_TRUE(context);
-    if (!cert_to_select_) {
-      callback.Run(nullptr /* no cert */);
-      return;
-    }
+    ASSERT_FALSE(certs_to_select_.empty());
     scoped_refptr<net::X509Certificate> selection;
-    for (scoped_refptr<net::X509Certificate> cert : certs) {
-      if (cert->Equals(cert_to_select_.get())) {
-        selection = cert;
-        break;
+    if (certs_to_select_.back()) {
+      for (scoped_refptr<net::X509Certificate> cert : certs) {
+        if (cert->Equals(certs_to_select_.back().get())) {
+          selection = cert;
+          break;
+        }
       }
     }
+    if (certs_to_select_.size() > 1)
+      certs_to_select_.pop_back();
     callback.Run(selection);
   }
 
  private:
-  scoped_refptr<net::X509Certificate> cert_to_select_;
+  net::CertificateList certs_to_select_;
 };
 
 }  // namespace
 
-// Basic tests that start with already granted permissions for both client_cert1
-// and client_cert2.
-// On interactive calls, the simulated user does not select any cert.
+// At first interactively selects |client_cert1_| and |client_cert2_| to grant
+// permissions and afterwards runs more basic tests.
+// After the initial two interactive calls, the simulated user does not select
+// any cert.
 IN_PROC_BROWSER_TEST_P(PlatformKeysTest, Basic) {
+  net::CertificateList certs;
+  certs.push_back(nullptr);
+  certs.push_back(client_cert2_);
+  certs.push_back(client_cert1_);
+
   GetPlatformKeysService()->SetSelectDelegate(
-      make_scoped_ptr(new TestSelectDelegate(nullptr /* select no cert */)));
-  GetPlatformKeysService()->GrantUnlimitedSignPermission(extension_->id(),
-                                                         client_cert1_);
-  GetPlatformKeysService()->GrantUnlimitedSignPermission(extension_->id(),
-                                                         client_cert2_);
+      make_scoped_ptr(new TestSelectDelegate(certs)));
 
   ASSERT_TRUE(RunExtensionTest("basicTests")) << message_;
 }
 
-// This permission test starts without any granted permissions.
-// On interactive calls, the simulated user selects client_1, if matching.
+// On interactive calls, the simulated user always selects |client_cert1_| if
+// matching.
 IN_PROC_BROWSER_TEST_P(PlatformKeysTest, Permissions) {
+  net::CertificateList certs;
+  certs.push_back(client_cert1_);
+
   GetPlatformKeysService()->SetSelectDelegate(
-      make_scoped_ptr(new TestSelectDelegate(client_cert1_)));
+      make_scoped_ptr(new TestSelectDelegate(certs)));
 
   ASSERT_TRUE(RunExtensionTest("permissionTests")) << message_;
 }

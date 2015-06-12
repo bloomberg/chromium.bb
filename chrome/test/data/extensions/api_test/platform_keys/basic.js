@@ -252,6 +252,13 @@ function testInteractiveSelectClient1() {
                       [data.client_1]);
 }
 
+function testInteractiveSelectClient2() {
+  var expectedCerts = [];
+  if (systemTokenEnabled)
+    expectedCerts.push(data.client_2);
+  assertCertsSelected({interactive: true, request: requestAll}, expectedCerts);
+}
+
 function testMatchResultCA1() {
   chrome.platformKeys.selectClientCertificates(
       {interactive: false, request: requestCA1()},
@@ -508,13 +515,20 @@ function testVerifyUntrusted() {
 }
 
 var testSuites = {
-  // These tests assume already granted permissions for client_1 and client_2.
   // On interactive selectClientCertificates calls, the simulated user does not
   // select any cert.
   basicTests: function() {
     var tests = [
       testStaticMethods,
+
+      // Interactively select client_1 and client_2 to grant permissions for
+      // these certificates.
+      testInteractiveSelectClient1,
+      testInteractiveSelectClient2,
+
+      // In non-interactive calls both certs must be returned now.
       testSelectAllCerts,
+
       testBackgroundNoninteractiveSelect,
       testBackgroundInteractiveSelect,
       testSelectCA1Certs,
@@ -536,7 +550,6 @@ var testSuites = {
     chrome.test.runTests(tests);
   },
 
-  // This test suite starts without any granted permissions.
   // On interactive selectClientCertificates calls, the simulated user selects
   // client_1, if matching.
   permissionTests: function() {
@@ -549,7 +562,7 @@ var testSuites = {
       testSelectAllReturnsNoCerts,
 
       testInteractiveSelectClient1,
-      // Now that the permission for client_1 is granted.
+      // Now the permission for client_1 is granted.
 
       // Verify that signing with client_1 is possible and with client_2 still
       // fails.

@@ -14,6 +14,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/platform_keys/key_permissions.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys.h"
 #include "components/keyed_service/core/keyed_service.h"
 
@@ -40,9 +41,6 @@ namespace chromeos {
 
 class PlatformKeysService : public KeyedService {
  public:
-  struct KeyEntry;
-  using KeyEntries = std::vector<KeyEntry>;
-
   // The SelectDelegate is used to select a single certificate from all
   // certificates matching a request (see SelectClientCertificates). E.g. this
   // can happen by exposing UI to let the user select.
@@ -74,24 +72,16 @@ class PlatformKeysService : public KeyedService {
   };
 
   // Stores registration information in |state_store|, i.e. for each extension
-  // the list of public keys that are valid to be used for signing. Each key can
-  // be used for signing at most once.
-  // The format written to |state_store| is:
-  //   kStateStorePlatformKeys maps to a list of strings.
-  //   Each string is the base64 encoding of the DER representation of a public
-  //   key's SPKI.
+  // the list of public keys that are valid to be used for signing. See
+  // |KeyPermissions| for details.
   explicit PlatformKeysService(content::BrowserContext* browser_context,
                                extensions::StateStore* state_store);
+
   ~PlatformKeysService() override;
 
   // Sets the delegate which will be used for interactive
   // SelectClientCertificates calls.
   void SetSelectDelegate(scoped_ptr<SelectDelegate> delegate);
-
-  // Grants unlimited sign permission for |cert| to the extension with the ID
-  // |extension_id|.
-  void GrantUnlimitedSignPermission(const std::string& extension_id,
-                                    scoped_refptr<net::X509Certificate> cert);
 
   // If the generation was successful, |public_key_spki_der| will contain the
   // DER encoding of the SubjectPublicKeyInfo of the generated key and
@@ -178,12 +168,7 @@ class PlatformKeysService : public KeyedService {
       content::WebContents* web_contents);
 
  private:
-  using GetPlatformKeysCallback =
-      base::Callback<void(scoped_ptr<KeyEntries> platform_keys)>;
-
-  enum SignPermission { ONCE, UNLIMITED };
-
-  class PermissionUpdateTask;
+  class GenerateRSAKeyTask;
   class SelectTask;
   class SignTask;
   class Task;
@@ -197,17 +182,6 @@ class PlatformKeysService : public KeyedService {
   // other tasks are queued (see StartOrQueueTask()), it will start the next
   // one.
   void TaskFinished(Task* task);
-
-  // Reads the list of public keys currently registered for |extension_id| from
-  // StateStore. Calls |callback| with the read list, or a new empty list if
-  // none existed. If an error occurred, calls |callback| with NULL.
-  void GetPlatformKeysOfExtension(const std::string& extension_id,
-                                  const GetPlatformKeysCallback& callback);
-
-  // Writes |platform_keys| to the state store of the extension with id
-  // |extension_id|.
-  void SetPlatformKeysOfExtension(const std::string& extension_id,
-                                  const KeyEntries& platform_keys);
 
   // Callback used by |GenerateRSAKey|.
   // If the key generation was successful, registers the generated public key
@@ -227,16 +201,8 @@ class PlatformKeysService : public KeyedService {
                               const std::string& public_key_spki_der,
                               Task* task);
 
-  // Callback used by |GetPlatformKeysOfExtension|.
-  // Is called with |value| set to the PlatformKeys value read from the
-  // StateStore, which it forwards to |callback|. On error, calls |callback|
-  // with NULL; if no value existed, with an empty list.
-  void GotPlatformKeysOfExtension(const std::string& extension_id,
-                                  const GetPlatformKeysCallback& callback,
-                                  scoped_ptr<base::Value> value);
-
   content::BrowserContext* browser_context_;
-  extensions::StateStore* state_store_;
+  KeyPermissions key_permissions_;
   scoped_ptr<SelectDelegate> select_delegate_;
   std::queue<linked_ptr<Task>> tasks_;
   base::WeakPtrFactory<PlatformKeysService> weak_factory_;
