@@ -52,9 +52,9 @@ TEST(VideoCaptureOracleTest, EnforcesEventTimeMonotonicity) {
   }
 }
 
-// Tests that VideoCaptureOracle is enforcing the requirement that captured
-// frames are delivered in order.  Otherwise, downstream consumers could be
-// tripped-up by out-of-order frames or frame timestamps.
+// Tests that VideoCaptureOracle is enforcing the requirement that
+// successfully captured frames are delivered in order.  Otherwise, downstream
+// consumers could be tripped-up by out-of-order frames or frame timestamps.
 TEST(VideoCaptureOracleTest, EnforcesFramesDeliveredInOrder) {
   const base::TimeDelta min_capture_period =
       base::TimeDelta::FromSeconds(1) / 30;
@@ -93,7 +93,8 @@ TEST(VideoCaptureOracleTest, EnforcesFramesDeliveredInOrder) {
     }
   }
 
-  // Pipelined scenario with out-of-order delivery attempts rejected.
+  // Pipelined scenario with successful out-of-order delivery attempts
+  // rejected.
   for (int i = 0; i < 50; ++i) {
     const int num_in_flight = 1 + i % 3;
     for (int j = 0; j < num_in_flight; ++j) {
@@ -108,6 +109,26 @@ TEST(VideoCaptureOracleTest, EnforcesFramesDeliveredInOrder) {
       ASSERT_FALSE(
           oracle.CompleteCapture(last_frame_number - j, true, &ignored));
     }
+  }
+
+  // Pipelined scenario with successful delivery attempts accepted after an
+  // unsuccessful out of order delivery attempt.
+  for (int i = 0; i < 50; ++i) {
+    const int num_in_flight = 1 + i % 3;
+    for (int j = 0; j < num_in_flight; ++j) {
+      t += event_increment;
+      ASSERT_TRUE(oracle.ObserveEventAndDecideCapture(
+          VideoCaptureOracle::kCompositorUpdate,
+          damage_rect, t));
+      last_frame_number = oracle.RecordCapture();
+    }
+    // Report the last frame as an out of order failure.
+    ASSERT_FALSE(oracle.CompleteCapture(last_frame_number, false, &ignored));
+    for (int j = 1; j < num_in_flight - 1; ++j) {
+      ASSERT_TRUE(
+          oracle.CompleteCapture(last_frame_number - j, true, &ignored));
+    }
+
   }
 }
 

@@ -85,8 +85,11 @@ class CONTENT_EXPORT VideoCaptureOracle {
   // returned false.
   base::TimeDelta duration_of_next_frame_;
 
-  // Stores the frame number from the last delivered frame.
-  int last_delivered_frame_number_;
+  // Stores the frame number from the last successfully delivered frame.
+  int last_successfully_delivered_frame_number_;
+
+  // Stores the number of pending frame captures.
+  int num_frames_pending_;
 
   // These track present/paint history and propose whether to sample each event
   // for capture.  |smoothing_sampler_| uses a "works for all" heuristic, while
