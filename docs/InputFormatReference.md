@@ -929,14 +929,14 @@ platform-specific files.
     'platform_util_mac.mm',
   ],
   'sources/': [
-    [['exclude', '_win\\.cc$']],
+    ['exclude', '_win\\.cc$'],
   ],
   'conditions': [
     ['OS!="linux"', {'sources/': [['exclude', '_linux\\.cc$']]}],
     ['OS!="mac"', {'sources/': [['exclude', '_mac\\.cc|mm?$']]}],
     ['OS=="win"', {'sources/': [
-      [['include', '_win\\.cc$']],
-      [['exclude', '_posix\\.cc$']],
+      ['include', '_win\\.cc$'],
+      ['exclude', '_posix\\.cc$'],
     ]}],
   ],
 }
