@@ -41,6 +41,8 @@ public:
         RealOrIndistinguishable,
         // Mouse events derived from touch input
         FromTouch,
+        // Mouse events created from script or dispatched from script
+        FromScript
     };
 
     PlatformMouseEvent()

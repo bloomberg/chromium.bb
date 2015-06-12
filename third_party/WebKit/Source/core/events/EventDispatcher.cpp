@@ -206,7 +206,13 @@ inline void EventDispatcher::dispatchEventPostProcess(void* preDispatchEventHand
     // Call default event handlers. While the DOM does have a concept of preventing
     // default handling, the detail of which handlers are called is an internal
     // implementation detail and not part of the DOM.
-    if (!m_event->defaultPrevented() && !m_event->defaultHandled()) {
+
+    // The DOM Events spec says that events dispatched by JS (other than "click")
+    // should not have their default handlers invoked. (issue #423975)
+    // To begin with, only apply to mouse events.
+    bool isScriptedMouseEventOtherThanClick = m_event->isMouseEvent() && toMouseEvent(*m_event).fromScript() && toMouseEvent(*m_event).type() != EventTypeNames::click;
+
+    if (!m_event->defaultPrevented() && !m_event->defaultHandled() && !isScriptedMouseEventOtherThanClick) {
         // Non-bubbling events call only one default event handler, the one for the target.
         m_node->willCallDefaultEventHandler(*m_event);
         m_node->defaultEventHandler(m_event.get());

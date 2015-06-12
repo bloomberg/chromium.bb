@@ -1,0 +1,11 @@
+Tests to ensure that default action does not occur for mouse events from script.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+
+mousedown event is fired.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

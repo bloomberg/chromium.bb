@@ -122,34 +122,46 @@
             
             function mouseDownOnSelect(selId, index, shift, metaOrCtrl)
             {
-                var meta = false;
-                var ctrl = false;
+                modifiers = [];
+                if (shift)
+                    modifiers[0] = "shiftKey";
                 if (metaOrCtrl) {
                     if (navigator.userAgent.search(/\bMac OS X\b/) != -1)
-                        meta = true;
+                        modifiers[modifiers.length] = "metaKey";
                     else
-                        ctrl = true;
+                        modifiers[modifiers.length] = "ctrlKey";
                 }
+
                 var sl = document.getElementById(selId);
-                var event = document.createEvent("MouseEvent");
-                event.initMouseEvent("mousedown", true, true, document.defaultView, 1, 0, 0, 0, 0, ctrl, false, shift, meta, 0, document);
-                sl.options[index].dispatchEvent(event);
+                var rect = sl.options[index].getBoundingClientRect();
+                if (window.eventSender) {
+                    eventSender.mouseMoveTo(rect.left + 1, rect.top + 1);
+                    eventSender.mouseDown(0, modifiers);
+                } else {
+                    debug("FAIL: This test requires window.eventSender.");
+                }
             }
 
             function mouseUpOnSelect(selId, index, shift, metaOrCtrl)
             {
-                var meta = false;
-                var ctrl = false;
+                modifiers = [];
+                if (shift)
+                    modifiers[0] = "shiftKey";
                 if (metaOrCtrl) {
                     if (navigator.userAgent.search(/\bMac OS X\b/) != -1)
-                        meta = true;
+                        modifiers[modifiers.length] = "metaKey";
                     else
-                        ctrl = true;
+                        modifiers[modifiers.length] = "ctrlKey";
                 }
+
                 var sl = document.getElementById(selId);
-                var event = document.createEvent("MouseEvent");
-                event.initMouseEvent("mouseup", true, true, document.defaultView, 1, 0, 0, 0, 0, ctrl, false, shift, meta, 0, document);
-                sl.options[index].dispatchEvent(event);
+                var rect = sl.options[index].getBoundingClientRect();
+                if (window.eventSender) {
+                    eventSender.mouseMoveTo(rect.left + 1, rect.top + 1);
+                    eventSender.mouseUp(0, modifiers);
+                } else {
+                    debug("FAIL: This test requires window.eventSender.");
+                }
             }
 
             function keyDownOnSelect(selId, identifier, shift, metaOrCtrl)
@@ -161,7 +173,7 @@
                     if (navigator.userAgent.search(/\bMac OS X\b/) != -1)
                         modifiers[modifiers.length] = "metaKey";
                     else
-                        modifiers[modifiers.length] = "controlKey";
+                        modifiers[modifiers.length] = "ctrlKey";
                 }
 
                 document.getElementById(selId).focus();

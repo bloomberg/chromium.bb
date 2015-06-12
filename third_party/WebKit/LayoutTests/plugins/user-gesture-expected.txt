@@ -8,9 +8,5 @@ Plugin received event: MouseUp
 * handling user gesture
 Plugin received event: MouseUp
 * handling user gesture
-Plugin received event: MouseDown
-* not handling user gesture
-Plugin received event: MouseUp
-* not handling user gesture
 
-Test that the user gesture indicator is correctly set for events forwarded through the WebPluginContainer. The tests succeeds if the first mousedown/mouseup event pair is a user gesture, and the second is not.
+Test that the user gesture indicator is correctly set for events forwarded through the WebPluginContainer. The tests succeeds if the first mousedown/mouseup event pair is a user gesture, and the second is not. Issue 894913002 has changed this behavior so that the second mousedown/mouseup are not delivered to the plugin.
