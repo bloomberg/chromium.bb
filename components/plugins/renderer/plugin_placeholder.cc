@@ -144,4 +144,8 @@ gin::ObjectTemplateBuilder PluginPlaceholder::GetObjectTemplateBuilder(
           "hide", &PluginPlaceholder::HideCallback);
 }
 
+void PluginPlaceholder::HideCallback() {
+  PluginPlaceholderBase::HideCallback();
+}
+
 }  // namespace plugins
