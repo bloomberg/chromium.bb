@@ -79,7 +79,6 @@ public:
     virtual void setDefaultFontSize(int) override;
     virtual void setDefaultTextEncodingName(const WebString&) override;
     virtual void setDefaultVideoPosterURL(const WebString&) override;
-    virtual void setDeferredImageDecodingEnabled(bool) override;
     virtual void setDeviceScaleAdjustment(float) override;
 
     // FIXME: Replace these two with pointer/hover queries? crbug.com/441813

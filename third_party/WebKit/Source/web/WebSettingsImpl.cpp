@@ -544,10 +544,6 @@ void WebSettingsImpl::setAntialiasedClips2dCanvasEnabled(bool enabled)
     m_settings->setAntialiasedClips2dCanvasEnabled(enabled);
 }
 
-void WebSettingsImpl::setDeferredImageDecodingEnabled(bool enabled)
-{
-}
-
 void WebSettingsImpl::setPreferCompositingToLCDTextEnabled(bool enabled)
 {
     m_devToolsEmulator->setPreferCompositingToLCDTextEnabled(enabled);
