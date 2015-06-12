@@ -660,7 +660,7 @@ const struct nacl_irt_icache nacl_irt_icache = {
 
 static int g_allow_dev_interfaces = 0;
 
-void nacl_irt_allow_dev_interfaces() {
+void nacl_irt_nonsfi_allow_dev_interfaces() {
   g_allow_dev_interfaces = 1;
 }
 
@@ -742,7 +742,7 @@ int nacl_irt_nonsfi_entry(int argc, char **argv, char **environ,
 
 #if defined(DEFINE_MAIN)
 int main(int argc, char **argv, char **environ) {
-  nacl_irt_allow_dev_interfaces();
+  nacl_irt_nonsfi_allow_dev_interfaces();
   /*
    * On Linux, we rename _start() to _user_start() to avoid a clash
    * with the "_start" routine in the host toolchain.  On Mac OS X,
