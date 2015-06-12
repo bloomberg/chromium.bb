@@ -80,7 +80,17 @@ KeyedServiceBaseFactory* KeyedServiceProvider::GetSyncServiceFactory() {
 }
 
 sync_driver::SyncService* KeyedServiceProvider::GetSyncServiceForBrowserState(
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
+  return nullptr;
+}
+
+KeyedServiceBaseFactory* KeyedServiceProvider::GetHistoryServiceFactory() {
+  return nullptr;
+}
+
+history::HistoryService* KeyedServiceProvider::GetHistoryServiceForBrowserState(
+    ChromeBrowserState* browser_state,
+    ServiceAccessType access_type) {
   return nullptr;
 }
 

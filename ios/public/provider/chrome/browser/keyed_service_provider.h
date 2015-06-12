@@ -24,6 +24,10 @@ namespace bookmarks {
 class BookmarkModel;
 }
 
+namespace history {
+class HistoryService;
+}
+
 namespace sync_driver {
 class SyncService;
 }
@@ -93,6 +97,14 @@ class KeyedServiceProvider {
   // Returns an instance of sync_driver::SyncService tied to |browser_state|.
   virtual sync_driver::SyncService* GetSyncServiceForBrowserState(
       ChromeBrowserState* browser_state);
+
+  // Returns the history::HistoryService factory for dependencies.
+  virtual KeyedServiceBaseFactory* GetHistoryServiceFactory();
+
+  // Returns an instance of history::HistoryService tied to |browser_state|.
+  virtual history::HistoryService* GetHistoryServiceForBrowserState(
+      ChromeBrowserState* browser_state,
+      ServiceAccessType access_type);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(KeyedServiceProvider);
