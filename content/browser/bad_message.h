@@ -107,6 +107,7 @@ enum BadMessageReason {
   SWDH_GET_REGISTRATIONS_INVALID_ORIGIN = 81,
   ARH_UNAUTHORIZED_URL = 82,
   BDH_INVALID_SERVICE_ID = 83,
+  RFH_COMMIT_DESERIALIZATION_FAILED = 84,
 
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. RenderFrameHost becomes RFH) plus a unique description of the
