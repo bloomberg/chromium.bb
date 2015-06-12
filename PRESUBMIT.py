@@ -1404,8 +1404,8 @@ def _CheckForCopyrightedCode(input_api, output_api):
   original_sys_path = sys.path
   try:
     sys.path = sys.path + [input_api.os_path.join(
-        input_api.PresubmitLocalPath(), 'android_webview', 'tools')]
-    import copyright_scanner
+        input_api.PresubmitLocalPath(), 'tools')]
+    from copyright_scanner import copyright_scanner
   finally:
     # Restore sys.path to what it was before.
     sys.path = original_sys_path

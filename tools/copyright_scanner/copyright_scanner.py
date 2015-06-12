@@ -277,7 +277,7 @@ def FindCopyrightViolations(input_api, root_dir, files_to_scan):
 
 def _GetWhitelistFileName(input_api):
   return input_api.os_path.join(
-    'android_webview', 'tools', 'third_party_files_whitelist.txt')
+    'tools', 'copyright_scanner', 'third_party_files_whitelist.txt')
 
 def _ProcessWhitelistedFilesList(input_api, lines):
   whitelisted_files = []

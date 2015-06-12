@@ -12,8 +12,6 @@
 # Please always use forward slashes '/' as path separators, even if you are
 # on Windows.
 
-# Contains test strings that look like copyrights.
-android_webview/tools/copyright_scanner_unittest.py
 # Copyright IBM; MIT license. This third-party code is taken from ICU, the
 # license for which we already pick up from third_party/icu/.
 base/i18n/icu_string_conversions.cc
@@ -148,6 +146,8 @@ ppapi/lib/gl/include/KHR/khrplatform.h
 skia/config/SkUserConfig.h
 # Generates copyright headers for Chromium.
 tools/boilerplate.py
+# Contains test strings that look like copyrights.
+tools/copyright_scanner/copyright_scanner_unittest.py
 # Contains word 'copyright' in comments.
 tools/gen_keyboard_overlay_data/gen_keyboard_overlay_data.py
 # This third-party code is taken from Mozilla, but is copyright Google and has

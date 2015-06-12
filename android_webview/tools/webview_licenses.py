@@ -39,9 +39,9 @@ third_party = \
 sys.path.append(os.path.join(REPOSITORY_ROOT, 'third_party'))
 import jinja2
 sys.path.append(os.path.join(REPOSITORY_ROOT, 'tools'))
+from copyright_scanner import copyright_scanner
 import licenses
 
-import copyright_scanner
 
 class InputApi(object):
   def __init__(self):
