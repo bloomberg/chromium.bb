@@ -85,11 +85,6 @@ remoting.BufferedSignalStrategy.prototype.connect =
   base.debug.assert(false);
 };
 
-remoting.BufferedSignalStrategy.prototype.sendConnectionSetupResults =
-    function(logToServer) {
-  base.debug.assert(false);
-};
-
 remoting.BufferedSignalStrategy.prototype.getState = function() {
   base.debug.assert(false);
 };
