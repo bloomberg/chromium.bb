@@ -785,6 +785,9 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
       <message desc="Help link, displayed in the top-left (assuming ltr layout) corner of the main screen. Clicking this takes the user to our FAQ." name="IDS_HELP">
         Help
       </message>
+      <message desc="Credits link, displayed in the top-left (assuming ltr layout) corner of the main screen. Clicking this takes the user to our acknowledgements screen." name="IDS_CREDITS">
+        Credits
+      </message>
       <message desc="Clicking this button starts the desktop access process." name="IDS_HOME_ACCESS_BUTTON">
         Access
       </message>
