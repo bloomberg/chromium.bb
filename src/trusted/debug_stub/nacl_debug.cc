@@ -29,7 +29,7 @@
 #include "native_client/src/trusted/service_runtime/thread_suspension.h"
 
 using port::IPlatform;
-using port::IThread;
+using port::Thread;
 using port::ITransport;
 using port::SocketBinding;
 

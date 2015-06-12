@@ -48,7 +48,7 @@ class Target {
     FAILED = 3
   };
 
-  typedef std::map<uint32_t, port::IThread*> ThreadMap_t;
+  typedef std::map<uint32_t, port::Thread*> ThreadMap_t;
   typedef std::map<std::string, std::string> PropertyMap_t;
   typedef std::map<uint32_t, uint8_t*> BreakpointMap_t;
 
@@ -102,13 +102,13 @@ class Target {
   bool GetFirstThreadId(uint32_t *id);
   bool GetNextThreadId(uint32_t *id);
 
-  port::IThread *GetRegThread();
-  port::IThread *GetRunThread();
-  port::IThread *GetThread(uint32_t id);
+  port::Thread *GetRegThread();
+  port::Thread *GetRunThread();
+  port::Thread *GetThread(uint32_t id);
 
   bool AddBreakpoint(uint32_t user_address);
   bool RemoveBreakpoint(uint32_t user_address);
-  void CopyFaultSignalFromAppThread(port::IThread *thread);
+  void CopyFaultSignalFromAppThread(port::Thread *thread);
   void RemoveInitialBreakpoint();
   bool IsInitialBreakpointActive();
   void EraseBreakpointsFromCopyOfMemory(uint32_t user_address,

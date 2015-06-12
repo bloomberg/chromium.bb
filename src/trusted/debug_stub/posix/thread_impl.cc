@@ -7,14 +7,14 @@
 #include "native_client/src/trusted/debug_stub/thread.h"
 
 /*
- * Define the OS specific portions of IThread interface.
+ * Define the OS specific portions of Thread.
  */
 
 namespace port {
 
-int IThread::ExceptionToSignal(int exception_code) {
+int Thread::ExceptionToSignal(int exception_code) {
   return exception_code;
 }
 
-}  // End of port namespace
+}  // namespace port
 

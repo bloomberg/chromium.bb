@@ -10,24 +10,24 @@
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
 
 /*
- * Define the OS specific portions of IThread interface.
+ * Define the OS specific portions of Thread.
  */
 
 namespace port {
 
 enum PosixSignals {
-  SIGINT  = 2,
-  SIGQUIT = 3,
-  SIGILL  = 4,
-  SIGTRACE= 5,
-  SIGBUS  = 7,
-  SIGFPE  = 8,
-  SIGKILL = 9,
-  SIGSEGV = 11,
+  SIGINT    = 2,
+  SIGQUIT   = 3,
+  SIGILL    = 4,
+  SIGTRACE  = 5,
+  SIGBUS    = 7,
+  SIGFPE    = 8,
+  SIGKILL   = 9,
+  SIGSEGV   = 11,
   SIGSTKFLT = 16,
 };
 
-int IThread::ExceptionToSignal(int ex) {
+int Thread::ExceptionToSignal(int ex) {
   switch (static_cast<DWORD>(ex)) {
     case EXCEPTION_GUARD_PAGE:
     case EXCEPTION_ARRAY_BOUNDS_EXCEEDED:

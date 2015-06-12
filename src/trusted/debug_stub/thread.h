@@ -13,39 +13,47 @@
 #define NATIVE_CLIENT_PORT_THREAD_H_ 1
 
 #include "native_client/src/include/portability.h"
+#include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
+#include "native_client/src/trusted/service_runtime/nacl_signal.h"
 
 struct NaClAppThread;
 struct NaClSignalContext;
 
 namespace port {
 
-class IThread {
+class Thread {
  public:
-  virtual ~IThread() {}
+  Thread(uint32_t id, struct NaClAppThread *natp);
+  ~Thread();
 
-  virtual uint32_t GetId() = 0;
+  uint32_t GetId();
 
-  virtual bool SetStep(bool on) = 0;
+  bool SetStep(bool on);
 
-  virtual bool GetRegisters(uint8_t *dst) = 0;
-  virtual bool SetRegisters(uint8_t *src) = 0;
+  bool GetRegisters(uint8_t *dst);
+  bool SetRegisters(uint8_t *src);
 
-  virtual void CopyRegistersFromAppThread() = 0;
-  virtual void CopyRegistersToAppThread() = 0;
+  void CopyRegistersFromAppThread();
+  void CopyRegistersToAppThread();
 
-  virtual void SuspendThread() = 0;
-  virtual void ResumeThread() = 0;
-  virtual bool HasThreadFaulted() = 0;
-  virtual void UnqueueFaultedThread() = 0;
+  void SuspendThread();
+  void ResumeThread();
+  bool HasThreadFaulted();
+  void UnqueueFaultedThread();
 
-  virtual struct NaClSignalContext *GetContext() = 0;
-  virtual struct NaClAppThread *GetAppThread() = 0;
+  struct NaClSignalContext *GetContext();
+  struct NaClAppThread *GetAppThread();
 
-  virtual int GetFaultSignal() = 0;
-  virtual void SetFaultSignal(int signal) = 0;
+  int GetFaultSignal();
+  void SetFaultSignal(int signal);
 
-  static IThread *Create(uint32_t id, struct NaClAppThread *natp);
   static int ExceptionToSignal(int exception_code);
+
+ private:
+  uint32_t id_;
+  struct NaClAppThread *natp_;
+  struct NaClSignalContext context_;
+  int fault_signal_;
 };
 
 }  // namespace port
