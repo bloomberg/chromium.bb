@@ -66,6 +66,7 @@ class RemoteHostInfoFetcherTest : public ::testing::Test {
 
   std::string dev_service_environment_url_;
   std::string test_service_environment_url_;
+  std::string staging_service_environment_url_;
 
  private:
   net::FakeURLFetcherFactory url_fetcher_factory_;
@@ -88,9 +89,22 @@ void RemoteHostInfoFetcherTest::SetUp() {
 
   dev_service_environment_url_ =
       base::StringPrintf(kDevServiceEnvironmentUrlFormat, kTestApplicationId);
+  SetFakeResponse(GURL(dev_service_environment_url_),
+                  kRemoteHostInfoEmptyResponse, net::HTTP_NOT_FOUND,
+                  net::URLRequestStatus::FAILED);
 
   test_service_environment_url_ =
       base::StringPrintf(kTestServiceEnvironmentUrlFormat, kTestApplicationId);
+  SetFakeResponse(GURL(test_service_environment_url_),
+                  kRemoteHostInfoEmptyResponse, net::HTTP_NOT_FOUND,
+                  net::URLRequestStatus::FAILED);
+
+  staging_service_environment_url_ =
+      base::StringPrintf(kStagingServiceEnvironmentUrlFormat,
+                         kTestApplicationId);
+  SetFakeResponse(GURL(staging_service_environment_url_),
+                  kRemoteHostInfoEmptyResponse, net::HTTP_NOT_FOUND,
+                  net::URLRequestStatus::FAILED);
 }
 
 void RemoteHostInfoFetcherTest::SetFakeResponse(
@@ -105,10 +119,6 @@ TEST_F(RemoteHostInfoFetcherTest, RetrieveRemoteHostInfoFromDev) {
   SetFakeResponse(GURL(dev_service_environment_url_),
                   kRemoteHostInfoReadyResponse, net::HTTP_OK,
                   net::URLRequestStatus::SUCCESS);
-
-  SetFakeResponse(GURL(test_service_environment_url_),
-                  kRemoteHostInfoEmptyResponse, net::HTTP_NOT_FOUND,
-                  net::URLRequestStatus::FAILED);
 
   base::RunLoop run_loop;
   RemoteHostInfoCallback remote_host_info_callback =
@@ -136,10 +146,6 @@ TEST_F(RemoteHostInfoFetcherTest, RetrieveRemoteHostInfoFromTest) {
                   kRemoteHostInfoReadyResponse, net::HTTP_OK,
                   net::URLRequestStatus::SUCCESS);
 
-  SetFakeResponse(GURL(dev_service_environment_url_),
-                  kRemoteHostInfoEmptyResponse, net::HTTP_NOT_FOUND,
-                  net::URLRequestStatus::FAILED);
-
   base::RunLoop run_loop;
   RemoteHostInfoCallback remote_host_info_callback =
       base::Bind(&RemoteHostInfoFetcherTest::OnRemoteHostInfoRetrieved,
@@ -148,6 +154,32 @@ TEST_F(RemoteHostInfoFetcherTest, RetrieveRemoteHostInfoFromTest) {
   RemoteHostInfoFetcher remote_host_info_fetcher;
   bool request_started = remote_host_info_fetcher.RetrieveRemoteHostInfo(
       kTestApplicationId, kAccessTokenValue, kTestingEnvironment,
+      remote_host_info_callback);
+
+  run_loop.Run();
+
+  EXPECT_TRUE(request_started);
+  EXPECT_TRUE(remote_host_info_.IsReadyForConnection());
+  EXPECT_EQ(remote_host_info_.application_id.compare(kTestApplicationId), 0);
+  EXPECT_TRUE(!remote_host_info_.host_id.empty());
+  EXPECT_TRUE(!remote_host_info_.host_jid.empty());
+  EXPECT_TRUE(!remote_host_info_.authorization_code.empty());
+  EXPECT_TRUE(!remote_host_info_.shared_secret.empty());
+}
+
+TEST_F(RemoteHostInfoFetcherTest, RetrieveRemoteHostInfoFromStaging) {
+  SetFakeResponse(GURL(staging_service_environment_url_),
+                  kRemoteHostInfoReadyResponse, net::HTTP_OK,
+                  net::URLRequestStatus::SUCCESS);
+
+  base::RunLoop run_loop;
+  RemoteHostInfoCallback remote_host_info_callback =
+      base::Bind(&RemoteHostInfoFetcherTest::OnRemoteHostInfoRetrieved,
+                 base::Unretained(this), run_loop.QuitClosure());
+
+  RemoteHostInfoFetcher remote_host_info_fetcher;
+  bool request_started = remote_host_info_fetcher.RetrieveRemoteHostInfo(
+      kTestApplicationId, kAccessTokenValue, kStagingEnvironment,
       remote_host_info_callback);
 
   run_loop.Run();
@@ -176,10 +208,6 @@ TEST_F(RemoteHostInfoFetcherTest, RetrieveRemoteHostInfoInvalidEnvironment) {
 }
 
 TEST_F(RemoteHostInfoFetcherTest, RetrieveRemoteHostInfoNetworkError) {
-  SetFakeResponse(GURL(dev_service_environment_url_),
-                  kRemoteHostInfoReadyResponse, net::HTTP_NOT_FOUND,
-                  net::URLRequestStatus::FAILED);
-
   base::RunLoop run_loop;
   RemoteHostInfoCallback remote_host_info_callback =
       base::Bind(&RemoteHostInfoFetcherTest::OnRemoteHostInfoRetrieved,
@@ -268,10 +296,6 @@ TEST_F(RemoteHostInfoFetcherTest, MultipleRetrieveRemoteHostInfoRequests) {
                   kRemoteHostInfoReadyResponse, net::HTTP_OK,
                   net::URLRequestStatus::SUCCESS);
 
-  SetFakeResponse(GURL(test_service_environment_url_),
-                  kRemoteHostInfoEmptyResponse, net::HTTP_NOT_FOUND,
-                  net::URLRequestStatus::FAILED);
-
   base::RunLoop dev_run_loop;
   RemoteHostInfoCallback dev_remote_host_info_callback =
       base::Bind(&RemoteHostInfoFetcherTest::OnRemoteHostInfoRetrieved,
@@ -296,10 +320,6 @@ TEST_F(RemoteHostInfoFetcherTest, MultipleRetrieveRemoteHostInfoRequests) {
   SetFakeResponse(GURL(test_service_environment_url_),
                   kRemoteHostInfoReadyResponse, net::HTTP_OK,
                   net::URLRequestStatus::SUCCESS);
-
-  SetFakeResponse(GURL(dev_service_environment_url_),
-                  kRemoteHostInfoEmptyResponse, net::HTTP_NOT_FOUND,
-                  net::URLRequestStatus::FAILED);
 
   base::RunLoop test_run_loop;
   RemoteHostInfoCallback test_remote_host_info_callback =

@@ -205,6 +205,9 @@ int main(int argc, char** argv) {
   } else if (service_environment_switch == "test") {
     service_environment =
         remoting::test::ServiceEnvironment::kTestingEnvironment;
+  } else if (service_environment_switch == "staging") {
+    service_environment =
+        remoting::test::ServiceEnvironment::kStagingEnvironment;
   } else {
     LOG(ERROR) << "Invalid " << switches::kServiceEnvironmentSwitchName
                << " argument passed in.";

@@ -57,6 +57,12 @@ bool RemoteHostInfoFetcher::RetrieveRemoteHostInfo(
                                        application_id.c_str());
       break;
 
+    case kStagingEnvironment:
+      DVLOG(1) << "Configuring service request for staging environment";
+      service_url = base::StringPrintf(kStagingServiceEnvironmentUrlFormat,
+                                       application_id.c_str());
+      break;
+
     default:
       LOG(ERROR) << "Unrecognized service type: " << service_environment;
       return false;

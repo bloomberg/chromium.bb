@@ -31,6 +31,9 @@ const char kDevServiceEnvironmentUrlFormat[] =
 const char kTestServiceEnvironmentUrlFormat[] =
     "https://www-googleapis-test.sandbox.google.com/appremoting/v1beta1/"
     "applications/%s/run";
+const char kStagingServiceEnvironmentUrlFormat[] =
+    "https://www-googleapis-test.sandbox.google.com/appremoting/"
+    "v1beta1_staging/applications/%s/run";
 
 // Specifies the service API to call for app remoting host information.
 // Note: When adding new environments, add them before kUnknownEnvironment as
@@ -38,6 +41,7 @@ const char kTestServiceEnvironmentUrlFormat[] =
 enum ServiceEnvironment {
   kDeveloperEnvironment,
   kTestingEnvironment,
+  kStagingEnvironment,
   kUnknownEnvironment
 };
 
