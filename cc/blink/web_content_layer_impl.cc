@@ -5,7 +5,6 @@
 #include "cc/blink/web_content_layer_impl.h"
 
 #include "cc/blink/web_display_item_list_impl.h"
-#include "cc/layers/content_layer.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/playback/display_item_list_settings.h"
 #include "third_party/WebKit/public/platform/WebContentLayerClient.h"
@@ -15,7 +14,6 @@
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/skia/include/utils/SkMatrix44.h"
 
-using cc::ContentLayer;
 using cc::PictureLayer;
 
 namespace cc_blink {
