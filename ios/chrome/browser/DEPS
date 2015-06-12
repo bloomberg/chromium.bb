@@ -18,6 +18,7 @@ include_rules = [
   "+components/search_engines",
   "+components/suggestions",
   "+components/signin/core/browser",
+  "+components/signin/ios/browser",
   "+components/sync_driver",
   "+components/translate/core",
   "+components/translate/ios",
