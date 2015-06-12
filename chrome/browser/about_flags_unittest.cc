@@ -32,10 +32,12 @@ const char kFlags2[] = "flag2";
 const char kFlags3[] = "flag3";
 const char kFlags4[] = "flag4";
 const char kFlags5[] = "flag5";
+const char kFlags6[] = "flag6";
 
 const char kSwitch1[] = "switch";
 const char kSwitch2[] = "switch2";
 const char kSwitch3[] = "switch3";
+const char kSwitch6[] = "switch6";
 const char kValueForSwitch2[] = "value_for_switch2";
 
 const char kMultiSwitch1[] = "multi_switch1";
@@ -194,7 +196,8 @@ std::set<std::string> GetAllSwitchesForTesting() {
 
   for (size_t i = 0; i < num_experiments; ++i) {
     const Experiment& experiment = experiments[i];
-    if (experiment.type == Experiment::SINGLE_VALUE) {
+    if (experiment.type == Experiment::SINGLE_VALUE ||
+        experiment.type == Experiment::SINGLE_DISABLE_VALUE) {
       result.insert(experiment.command_line_switch);
     } else if (experiment.type == Experiment::MULTI_VALUE) {
       for (int j = 0; j < experiment.num_choices; ++j) {
@@ -285,6 +288,19 @@ static Experiment kExperiments[] = {
     NULL,
     3
   },
+  {
+    kFlags6,
+    IDS_PRODUCT_NAME,
+    IDS_PRODUCT_NAME,
+    0,
+    Experiment::SINGLE_DISABLE_VALUE,
+    kSwitch6,
+    "",
+    NULL,
+    NULL,
+    NULL,
+    0
+  },
 };
 
 class AboutFlagsTest : public ::testing::Test {
@@ -317,11 +333,22 @@ TEST_F(AboutFlagsTest, NoChangeNoRestart) {
   EXPECT_FALSE(IsRestartNeededToCommitChanges());
   SetExperimentEnabled(&flags_storage_, kFlags1, false);
   EXPECT_FALSE(IsRestartNeededToCommitChanges());
+
+  // kFlags6 is enabled by default, so enabling should not require a restart.
+  SetExperimentEnabled(&flags_storage_, kFlags6, true);
+  EXPECT_FALSE(IsRestartNeededToCommitChanges());
 }
 
 TEST_F(AboutFlagsTest, ChangeNeedsRestart) {
   EXPECT_FALSE(IsRestartNeededToCommitChanges());
   SetExperimentEnabled(&flags_storage_, kFlags1, true);
+  EXPECT_TRUE(IsRestartNeededToCommitChanges());
+}
+
+// Tests that disabling a default enabled experiment requires a restart.
+TEST_F(AboutFlagsTest, DisableChangeNeedsRestart) {
+  EXPECT_FALSE(IsRestartNeededToCommitChanges());
+  SetExperimentEnabled(&flags_storage_, kFlags6, false);
   EXPECT_TRUE(IsRestartNeededToCommitChanges());
 }
 
@@ -616,6 +643,32 @@ TEST_F(AboutFlagsTest, MultiValues) {
     ConvertFlagsToSwitches(&flags_storage_, &command_line, kAddSentinels);
     EXPECT_FALSE(command_line.HasSwitch(kMultiSwitch1));
     EXPECT_FALSE(command_line.HasSwitch(kMultiSwitch2));
+  }
+}
+
+// Tests that disable flags are added when an experiment is disabled.
+TEST_F(AboutFlagsTest, DisableFlagCommandLine) {
+  // Nothing selected.
+  {
+    base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+    ConvertFlagsToSwitches(&flags_storage_, &command_line, kAddSentinels);
+    EXPECT_FALSE(command_line.HasSwitch(kSwitch6));
+  }
+
+  // Disable the experiment 6.
+  SetExperimentEnabled(&flags_storage_, kFlags6, false);
+  {
+    base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+    ConvertFlagsToSwitches(&flags_storage_, &command_line, kAddSentinels);
+    EXPECT_TRUE(command_line.HasSwitch(kSwitch6));
+  }
+
+  // Enable experiment 6.
+  SetExperimentEnabled(&flags_storage_, kFlags6, true);
+  {
+    base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+    ConvertFlagsToSwitches(&flags_storage_, &command_line, kAddSentinels);
+    EXPECT_FALSE(command_line.HasSwitch(kSwitch6));
   }
 }
 

@@ -33,6 +33,12 @@ struct Experiment {
     // An experiment with a single value. This is typically what you want.
     SINGLE_VALUE,
 
+    // A default enabled experiment with a single value to disable it. This is
+    // for default enabled SINGLE_VALUE experiments. Please consider whether
+    // you really need a flag to disable the experiment, and even if so remove
+    // the disable flag as soon as it is no longer needed.
+    SINGLE_DISABLE_VALUE,
+
     // The experiment has multiple values only one of which is ever enabled.
     // The first of the values should correspond to a deactivated state for this
     // lab (i.e. no command line option). For MULTI_VALUE experiments the

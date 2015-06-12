@@ -110,8 +110,12 @@ function resetAllFlags() {
  *         internal_name: 'Experiment ID string',
  *         name: 'Experiment Name',
  *         description: 'description',
- *         // enabled is only set if the experiment is single valued.
+ *         // enabled and default are only set if the experiment is single
+ *         // valued.
+ *         // enabled is true if the experiment is currently enabled.
+ *         // is_default is true if the experiment is in its default state.
  *         enabled: true,
+ *         is_default: false,
  *         // choices is only set if the experiment has multiple values.
  *         choices: [
  *           {

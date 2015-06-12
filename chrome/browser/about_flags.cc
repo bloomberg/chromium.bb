@@ -81,6 +81,11 @@ namespace about_flags {
     command_line_switch, switch_value, NULL, NULL, NULL, 0
 #define SINGLE_VALUE_TYPE(command_line_switch) \
     SINGLE_VALUE_TYPE_AND_VALUE(command_line_switch, "")
+#define SINGLE_DISABLE_VALUE_TYPE_AND_VALUE(command_line_switch, switch_value) \
+    Experiment::SINGLE_DISABLE_VALUE, \
+    command_line_switch, switch_value, NULL, NULL, NULL, 0
+#define SINGLE_DISABLE_VALUE_TYPE(command_line_switch) \
+    SINGLE_DISABLE_VALUE_TYPE_AND_VALUE(command_line_switch, "")
 #define ENABLE_DISABLE_VALUE_TYPE_AND_VALUE(enable_switch, enable_value, \
                                             disable_switch, disable_value) \
     Experiment::ENABLE_DISABLE_VALUE, enable_switch, enable_value, \
@@ -2034,7 +2039,8 @@ class FlagsState {
 
 // Adds the internal names for the specified experiment to |names|.
 void AddInternalName(const Experiment& e, std::set<std::string>* names) {
-  if (e.type == Experiment::SINGLE_VALUE) {
+  if (e.type == Experiment::SINGLE_VALUE ||
+      e.type == Experiment::SINGLE_DISABLE_VALUE) {
     names->insert(e.internal_name);
   } else {
     DCHECK(e.type == Experiment::MULTI_VALUE ||
@@ -2049,6 +2055,7 @@ void AddInternalName(const Experiment& e, std::set<std::string>* names) {
 bool ValidateExperiment(const Experiment& e) {
   switch (e.type) {
     case Experiment::SINGLE_VALUE:
+    case Experiment::SINGLE_DISABLE_VALUE:
       DCHECK_EQ(0, e.num_choices);
       DCHECK(!e.choices);
       break;
@@ -2285,12 +2292,21 @@ void GetFlagsExperimentsData(FlagsStorage* flags_storage,
     base::ListValue* supported_platforms = new base::ListValue();
     AddOsStrings(experiment.supported_platforms, supported_platforms);
     data->Set("supported_platforms", supported_platforms);
+    // True if the switch is not currently passed.
+    bool is_default_value =
+        enabled_experiments.count(experiment.internal_name) == 0;
 
     switch (experiment.type) {
       case Experiment::SINGLE_VALUE:
+      case Experiment::SINGLE_DISABLE_VALUE:
+        data->SetBoolean("is_default", is_default_value);
+
         data->SetBoolean(
             "enabled",
-            enabled_experiments.count(experiment.internal_name) > 0);
+            (!is_default_value &&
+             experiment.type == Experiment::SINGLE_VALUE) ||
+            (is_default_value &&
+             experiment.type == Experiment::SINGLE_DISABLE_VALUE));
         break;
       case Experiment::MULTI_VALUE:
       case Experiment::ENABLE_DISABLE_VALUE:
@@ -2426,7 +2442,8 @@ void FlagsState::ConvertFlagsToSwitches(FlagsStorage* flags_storage,
   NameToSwitchAndValueMap name_to_switch_map;
   for (size_t i = 0; i < num_experiments; ++i) {
     const Experiment& e = experiments[i];
-    if (e.type == Experiment::SINGLE_VALUE) {
+    if (e.type == Experiment::SINGLE_VALUE ||
+        e.type == Experiment::SINGLE_DISABLE_VALUE) {
       SetFlagToSwitchMapping(e.internal_name, e.command_line_switch,
                              e.command_line_value, &name_to_switch_map);
     } else if (e.type == Experiment::MULTI_VALUE) {
@@ -2517,6 +2534,11 @@ void FlagsState::SetExperimentEnabled(FlagsStorage* flags_storage,
 
   if (e->type == Experiment::SINGLE_VALUE) {
     if (enable)
+      needs_restart_ |= enabled_experiments.insert(internal_name).second;
+    else
+      needs_restart_ |= (enabled_experiments.erase(internal_name) > 0);
+  } else if (e->type == Experiment::SINGLE_DISABLE_VALUE) {
+    if (!enable)
       needs_restart_ |= enabled_experiments.insert(internal_name).second;
     else
       needs_restart_ |= (enabled_experiments.erase(internal_name) > 0);

@@ -62,8 +62,8 @@
         <table width="100%" cellpadding="2" cellspacing="0">
         <!-- TODO(mkwst): This doesn't work exactly as expected for multivalue
                           experiments.  See http://crbug.com/73730 -->
-        <tr jsvalues="class: enabled ? 'experiment-enabled'
-                                     : 'experiment-disabled'">
+        <tr jsvalues="class: is_default ? 'experiment-default'
+                                        : 'experiment-switched'">
         <td valign="top">
           <div class="experiment-text">
             <div>
