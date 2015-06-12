@@ -76,6 +76,11 @@ assertInterpolation({
   {at: 1, is: '-4'},
   {at: 1.5, is: '-5'},
 ]);
+assertNoInterpolation({
+  property: 'z-index',
+  from: 'auto',
+  to: '10',
+});
 
 afterTest(function() {
   if (window.testRunner) {

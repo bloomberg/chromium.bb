@@ -322,7 +322,7 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const ComputedStyl
     case CSSPropertyRy:
         return a.svgStyle().ry() == b.svgStyle().ry();
     case CSSPropertyZIndex:
-        return a.zIndex() == b.zIndex();
+        return a.hasAutoZIndex() == b.hasAutoZIndex() && (a.hasAutoZIndex() || a.zIndex() == b.zIndex());
     default:
         ASSERT_NOT_REACHED();
         return true;

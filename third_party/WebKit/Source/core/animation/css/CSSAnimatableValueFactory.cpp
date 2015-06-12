@@ -562,6 +562,8 @@ PassRefPtrWillBeRawPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPro
     case CSSPropertyRy:
         return createFromLength(style.svgStyle().ry(), style);
     case CSSPropertyZIndex:
+        if (style.hasAutoZIndex())
+            return AnimatableUnknown::create(CSSValueAuto);
         return createFromDouble(style.zIndex());
     default:
         ASSERT_NOT_REACHED();
