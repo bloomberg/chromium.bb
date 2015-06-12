@@ -41,11 +41,12 @@ void prefetchDNS(const String& hostname)
 void preconnect(const KURL& url, const CrossOriginAttributeValue crossOrigin)
 {
     if (WebPrescientNetworking* prescientNetworking = Platform::current()->prescientNetworking()) {
+        bool allowCredentials = (crossOrigin != CrossOriginAttributeAnonymous);
         // TODO(yoav): Call only the crossorigin interface once everything is hooked up.
         if (crossOrigin == CrossOriginAttributeNotSet)
             prescientNetworking->preconnect(url);
         else
-            prescientNetworking->preconnect(url, crossOrigin);
+            prescientNetworking->preconnect(url, allowCredentials);
     }
 }
 

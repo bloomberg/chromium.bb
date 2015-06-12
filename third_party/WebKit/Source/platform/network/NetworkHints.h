@@ -27,9 +27,9 @@
 #ifndef NetworkHints_h
 #define NetworkHints_h
 
+#include "platform/CrossOriginAttributeValue.h"
 #include "platform/PlatformExport.h"
 #include "platform/weborigin/KURL.h"
-#include "public/platform/WebCrossOriginAttribute.h"
 #include "wtf/Forward.h"
 
 namespace blink {

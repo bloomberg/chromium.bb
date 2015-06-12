@@ -5,7 +5,7 @@
 #ifndef CrossOriginAttribute_h
 #define CrossOriginAttribute_h
 
-#include "public/platform/WebCrossOriginAttribute.h"
+#include "platform/CrossOriginAttributeValue.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
