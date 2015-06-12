@@ -427,14 +427,12 @@ _x86_internal_release_boards = frozenset([
     'parry',
     'peppy',
     'quawks',
-    'quawks_freon',
     'rambi',
     'rikku',
     'samus',
     'slippy',
     'squawks',
     'stout',
-    'stout_freon',
     'strago',
     'stumpy',
     'stumpy_freon',
@@ -2044,20 +2042,6 @@ def GetConfig():
       important=True,
   )
 
-  # Builder for non-freon 'stout' for test coverage (crbug.com/474713).
-  site_config.AddConfig(
-      _release, 'stout-release',
-      _base_configs['stout'],
-      important=True,
-  )
-
-  # Builder for non-freon 'quawks' for test coverage.
-  site_config.AddConfig(
-      _release, 'quawks-release',
-      _base_configs['quawks'],
-      important=True,
-  )
-
   ### Arm release configs.
 
   site_config.AddConfig(
@@ -2321,7 +2305,7 @@ def GetConfig():
 
   # ivybridge chipset boards
   _AddGroupConfig(
-      'ivybridge-freon', 'stout_freon', (
+      'ivybridge-freon', 'stout', (
           'link',
       ), (
           'parrot_ivb',
@@ -2374,7 +2358,7 @@ def GetConfig():
       'rambi-b', 'glimmer', (
           'gnawty',
           'kip',
-          'quawks_freon',
+          'quawks',
       )
   )
 
