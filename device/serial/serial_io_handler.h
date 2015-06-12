@@ -83,6 +83,14 @@ class SerialIoHandler : public base::NonThreadSafe,
   // successfully retrieved.
   virtual serial::ConnectionInfoPtr GetPortInfo() const = 0;
 
+  // Initiates a BREAK signal. Places the transmission line in a break state
+  // until the |ClearBreak| is called.
+  virtual bool SetBreak() = 0;
+
+  // Terminates the BREAK signal. Places the transmission line in a nonbreak
+  // state.
+  virtual bool ClearBreak() = 0;
+
  protected:
   explicit SerialIoHandler(
       scoped_refptr<base::SingleThreadTaskRunner> file_thread_task_runner,

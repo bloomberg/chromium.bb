@@ -239,6 +239,38 @@ class SerialSetControlSignalsFunction : public SerialAsyncApiFunction {
   scoped_ptr<serial::SetControlSignals::Params> params_;
 };
 
+class SerialSetBreakFunction : public SerialAsyncApiFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("serial.setBreak", SERIAL_SETBREAK)
+  SerialSetBreakFunction();
+
+ protected:
+  ~SerialSetBreakFunction() override;
+
+  // AsyncApiFunction:
+  bool Prepare() override;
+  void Work() override;
+
+ private:
+  scoped_ptr<serial::SetBreak::Params> params_;
+};
+
+class SerialClearBreakFunction : public SerialAsyncApiFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("serial.clearBreak", SERIAL_CLEARBREAK)
+  SerialClearBreakFunction();
+
+ protected:
+  ~SerialClearBreakFunction() override;
+
+  // AsyncApiFunction:
+  bool Prepare() override;
+  void Work() override;
+
+ private:
+  scoped_ptr<serial::ClearBreak::Params> params_;
+};
+
 }  // namespace core_api
 
 }  // namespace extensions

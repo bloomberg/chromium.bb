@@ -391,6 +391,22 @@ serial::ConnectionInfoPtr SerialIoHandlerWin::GetPortInfo() const {
   return info.Pass();
 }
 
+bool SerialIoHandlerWin::SetBreak() {
+  if (!SetCommBreak(file().GetPlatformFile())) {
+    VPLOG(1) << "Failed to set break";
+    return false;
+  }
+  return true;
+}
+
+bool SerialIoHandlerWin::ClearBreak() {
+  if (!ClearCommBreak(file().GetPlatformFile())) {
+    VPLOG(1) << "Failed to clear break";
+    return false;
+  }
+  return true;
+}
+
 std::string SerialIoHandler::MaybeFixUpPortName(const std::string& port_name) {
   // For COM numbers less than 9, CreateFile is called with a string such as
   // "COM1". For numbers greater than 9, a prefix of "\\\\.\\" must be added.

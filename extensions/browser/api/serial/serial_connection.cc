@@ -360,6 +360,14 @@ bool SerialConnection::SetControlSignals(
       *device::serial::HostControlSignals::From(control_signals));
 }
 
+bool SerialConnection::SetBreak() {
+  return io_handler_->SetBreak();
+}
+
+bool SerialConnection::ClearBreak() {
+  return io_handler_->ClearBreak();
+}
+
 void SerialConnection::OnReceiveTimeout() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   io_handler_->CancelRead(device::serial::RECEIVE_ERROR_TIMEOUT);

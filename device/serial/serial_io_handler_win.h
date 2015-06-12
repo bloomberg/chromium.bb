@@ -27,6 +27,8 @@ class SerialIoHandlerWin : public SerialIoHandler,
   bool SetControlSignals(
       const serial::HostControlSignals& control_signals) override;
   serial::ConnectionInfoPtr GetPortInfo() const override;
+  bool SetBreak() override;
+  bool ClearBreak() override;
   bool PostOpen() override;
 
  private:

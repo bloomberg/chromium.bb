@@ -32,6 +32,8 @@ class TestSerialIoHandler : public SerialIoHandler {
   serial::ConnectionInfoPtr GetPortInfo() const override;
   bool Flush() const override;
   bool SetControlSignals(const serial::HostControlSignals& signals) override;
+  bool SetBreak() override;
+  bool ClearBreak() override;
 
   serial::ConnectionInfo* connection_info() { return &info_; }
   serial::DeviceControlSignals* device_control_signals() {

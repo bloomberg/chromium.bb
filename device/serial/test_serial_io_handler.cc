@@ -101,6 +101,14 @@ bool TestSerialIoHandler::SetControlSignals(
   return true;
 }
 
+bool TestSerialIoHandler::SetBreak() {
+  return true;
+}
+
+bool TestSerialIoHandler::ClearBreak() {
+  return true;
+}
+
 TestSerialIoHandler::~TestSerialIoHandler() {
 }
 

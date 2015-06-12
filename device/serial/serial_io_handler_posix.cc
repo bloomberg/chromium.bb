@@ -472,6 +472,23 @@ serial::ConnectionInfoPtr SerialIoHandlerPosix::GetPortInfo() const {
   return info.Pass();
 }
 
+bool SerialIoHandlerPosix::SetBreak() {
+  if (ioctl(file().GetPlatformFile(), TIOCSBRK, 0) != 0) {
+    VPLOG(1) << "Failed to set break";
+    return false;
+  }
+
+  return true;
+}
+
+bool SerialIoHandlerPosix::ClearBreak() {
+  if (ioctl(file().GetPlatformFile(), TIOCCBRK, 0) != 0) {
+    VPLOG(1) << "Failed to clear break";
+    return false;
+  }
+  return true;
+}
+
 std::string SerialIoHandler::MaybeFixUpPortName(const std::string& port_name) {
   return port_name;
 }

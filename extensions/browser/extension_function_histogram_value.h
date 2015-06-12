@@ -1111,6 +1111,8 @@ enum HistogramValue {
   PRINTERPROVIDERINTERNAL_REPORTUSBPRINTERINFO,
   WEBCAMPRIVATE_OPENSERIALWEBCAM,
   WEBCAMPRIVATE_CLOSEWEBCAM,
+  SERIAL_SETBREAK,
+  SERIAL_CLEARBREAK,
   // Last entry: Add new entries above and ensure to update
   // tools/metrics/histograms/histograms.xml.
   ENUM_BOUNDARY

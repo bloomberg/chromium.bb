@@ -54360,6 +54360,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1050" label="PRINTERPROVIDERINTERNAL_REPORTUSBPRINTERINFO"/>
   <int value="1051" label="WEBCAMPRIVATE_OPENSERIALWEBCAM"/>
   <int value="1052" label="WEBCAMPRIVATE_CLOSEWEBCAM"/>
+  <int value="1053" label="SERIAL_SETBREAK"/>
+  <int value="1054" label="SERIAL_CLEARBREAK"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

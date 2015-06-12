@@ -112,6 +112,12 @@ class SerialConnection : public ApiResource,
   bool SetControlSignals(
       const core_api::serial::HostControlSignals& control_signals);
 
+  // Suspend character transmission. Known as setting/sending 'Break' signal.
+  bool SetBreak();
+
+  // Restore character transmission. Known as clear/stop sending 'Break' signal.
+  bool ClearBreak();
+
   // Overrides |io_handler_| for testing.
   void SetIoHandlerForTest(scoped_refptr<device::SerialIoHandler> handler);
 
