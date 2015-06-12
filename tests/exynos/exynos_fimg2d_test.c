@@ -34,7 +34,6 @@
 #include "exynos_fimg2d.h"
 
 #define DRM_MODULE_NAME		"exynos"
-#define MAX_TEST_CASE		8
 
 static unsigned int screen_width, screen_height;
 
