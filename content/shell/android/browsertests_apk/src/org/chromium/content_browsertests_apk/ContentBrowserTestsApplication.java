@@ -21,7 +21,7 @@ public class ContentBrowserTestsApplication extends BaseChromiumApplication {
         "natives_blob.bin",
         "snapshot_blob.bin"
     };
-    private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "content_shell";
+    static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "content_shell";
 
     @Override
     public void onCreate() {
