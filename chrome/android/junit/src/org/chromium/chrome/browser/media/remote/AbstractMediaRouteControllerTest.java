@@ -29,6 +29,8 @@ import android.support.v7.media.MediaRouter.Callback;
 import android.support.v7.media.MediaRouter.ProviderInfo;
 import android.support.v7.media.MediaRouter.RouteInfo;
 
+import org.chromium.base.ApplicationStatus;
+import org.chromium.base.BaseChromiumApplication;
 import org.chromium.base.CommandLine;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.media.remote.MediaRouteController.MediaStateListener;
@@ -41,6 +43,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -48,14 +51,19 @@ import org.robolectric.internal.ReflectionHelpers;
 
 /** Tests for {@link AbstractMediaRouteController}. */
 @RunWith(LocalRobolectricTestRunner.class)
-@Config(manifest = Config.NONE, shadows = AbstractMediaRouteControllerTest.ShadowMediaRouter.class)
+@Config(manifest = Config.NONE, shadows = AbstractMediaRouteControllerTest.ShadowMediaRouter.class,
+        application = BaseChromiumApplication.class)
 public class AbstractMediaRouteControllerTest {
+
     /** Reset the environment before each test. */
     @Before
     public void beforeTest() {
         // TODO(dgn): Remove when command line flags are not used anymore to detect debug
         // see http://crbug.com/469649
         CommandLine.init(new String[] {});
+
+        // We need to initialize the ApplicationStatus to avoid DCHECKs
+        ApplicationStatus.initialize((BaseChromiumApplication) Robolectric.application);
 
         ShadowMediaRouter.sMediaRouter = null;
         ShadowMediaRouter.sCallback = null;
