@@ -119,28 +119,72 @@ class GCCallback : public base::SupportsWeakPtr<GCCallback> {
   DISALLOW_COPY_AND_ASSIGN(GCCallback);
 };
 
-struct ExtensionData {
-  struct PortData {
-    int ref_count;  // how many contexts have a handle to this port
-    PortData() : ref_count(0) {}
-  };
-  std::map<int, PortData> ports;  // port ID -> data
+// Tracks every reference between ScriptContexts and Ports, by ID.
+class PortTracker {
+ public:
+  PortTracker() {}
+  ~PortTracker() {}
+
+  // Returns true if |context| references |port_id|.
+  bool HasReference(ScriptContext* context, int port_id) const {
+    auto ports = contexts_to_ports_.find(context);
+    return ports != contexts_to_ports_.end() &&
+           ports->second.count(port_id) > 0;
+  }
+
+  // Marks |context| and |port_id| as referencing each other.
+  void AddReference(ScriptContext* context, int port_id) {
+    contexts_to_ports_[context].insert(port_id);
+  }
+
+  // Removes the references between |context| and |port_id|.
+  // Returns true if a reference was removed, false if the reference didn't
+  // exist to be removed.
+  bool RemoveReference(ScriptContext* context, int port_id) {
+    auto ports = contexts_to_ports_.find(context);
+    if (ports == contexts_to_ports_.end() ||
+        ports->second.erase(port_id) == 0) {
+      return false;
+    }
+    if (ports->second.empty())
+      contexts_to_ports_.erase(context);
+    return true;
+  }
+
+  // Returns true if this tracker has any reference to |port_id|.
+  bool HasPort(int port_id) const {
+    for (auto it : contexts_to_ports_) {
+      if (it.second.count(port_id) > 0)
+        return true;
+    }
+    return false;
+  }
+
+  // Deletes all references to |port_id|.
+  void DeletePort(int port_id) {
+    for (auto it = contexts_to_ports_.begin();
+         it != contexts_to_ports_.end();) {
+      if (it->second.erase(port_id) > 0 && it->second.empty())
+        contexts_to_ports_.erase(it++);
+      else
+        ++it;
+    }
+  }
+
+  // Gets every port ID that has a reference to |context|.
+  std::set<int> GetPortsForContext(ScriptContext* context) const {
+    auto ports = contexts_to_ports_.find(context);
+    return ports == contexts_to_ports_.end() ? std::set<int>() : ports->second;
+  }
+
+ private:
+  // Maps ScriptContexts to the port IDs that have a reference to it.
+  std::map<ScriptContext*, std::set<int>> contexts_to_ports_;
+
+  DISALLOW_COPY_AND_ASSIGN(PortTracker);
 };
 
-base::LazyInstance<ExtensionData> g_extension_data = LAZY_INSTANCE_INITIALIZER;
-
-bool HasPortData(int port_id) {
-  return g_extension_data.Get().ports.find(port_id) !=
-         g_extension_data.Get().ports.end();
-}
-
-ExtensionData::PortData& GetPortData(int port_id) {
-  return g_extension_data.Get().ports[port_id];
-}
-
-void ClearPortData(int port_id) {
-  g_extension_data.Get().ports.erase(port_id);
-}
+base::LazyInstance<PortTracker> g_port_tracker = LAZY_INSTANCE_INITIALIZER;
 
 const char kPortClosedError[] = "Attempting to use a disconnected port object";
 const char kReceivingEndDoesntExistError[] =
@@ -167,13 +211,22 @@ class ExtensionImpl : public ObjectBackedNativeHandler {
     // TODO(fsamuel, kalman): Move BindToGC out of messaging natives.
     RouteFunction("BindToGC",
                   base::Bind(&ExtensionImpl::BindToGC, base::Unretained(this)));
+
+    // Observe |context| so that port references to it can be cleared.
+    context->AddInvalidationObserver(base::Bind(
+        &ExtensionImpl::OnContextInvalidated, weak_ptr_factory_.GetWeakPtr()));
   }
 
   ~ExtensionImpl() override {}
 
  private:
+  void OnContextInvalidated() {
+    for (int port_id : g_port_tracker.Get().GetPortsForContext(context()))
+      ReleasePort(port_id);
+  }
+
   void ClearPortDataAndNotifyDispatcher(int port_id) {
-    ClearPortData(port_id);
+    g_port_tracker.Get().DeletePort(port_id);
     dispatcher_->ClearPortData(port_id);
   }
 
@@ -187,7 +240,7 @@ class ExtensionImpl : public ObjectBackedNativeHandler {
     CHECK(args.Length() == 2 && args[0]->IsInt32() && args[1]->IsString());
 
     int port_id = args[0]->Int32Value();
-    if (!HasPortData(port_id)) {
+    if (!g_port_tracker.Get().HasPort(port_id)) {
       args.GetIsolate()->ThrowException(v8::Exception::Error(
           v8::String::NewFromUtf8(args.GetIsolate(), kPortClosedError)));
       return;
@@ -207,7 +260,7 @@ class ExtensionImpl : public ObjectBackedNativeHandler {
     CHECK(args[1]->IsBoolean());
 
     int port_id = args[0]->Int32Value();
-    if (!HasPortData(port_id))
+    if (!g_port_tracker.Get().HasPort(port_id))
       return;
 
     // Send via the RenderThread because the RenderFrame might be closing.
@@ -228,7 +281,7 @@ class ExtensionImpl : public ObjectBackedNativeHandler {
     CHECK(args[0]->IsInt32());
 
     int port_id = args[0]->Int32Value();
-    ++GetPortData(port_id).ref_count;
+    g_port_tracker.Get().AddReference(context(), port_id);
   }
 
   // The frame a port lived in has been destroyed.  When there are no more
@@ -240,10 +293,11 @@ class ExtensionImpl : public ObjectBackedNativeHandler {
     ReleasePort(args[0]->Int32Value());
   }
 
-  // Implementation of both the PortRelease native handler call, and callback
-  // when contexts are invalidated to release their ports.
+  // Releases the reference to |port_id| for this context, and clears all port
+  // data if there are no more references.
   void ReleasePort(int port_id) {
-    if (HasPortData(port_id) && --GetPortData(port_id).ref_count == 0) {
+    if (g_port_tracker.Get().RemoveReference(context(), port_id) &&
+        !g_port_tracker.Get().HasPort(port_id)) {
       // Send via the RenderThread because the RenderFrame might be closing.
       content::RenderThread::Get()->Send(
           new ExtensionHostMsg_CloseChannel(port_id, std::string()));

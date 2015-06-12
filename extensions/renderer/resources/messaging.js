@@ -12,7 +12,6 @@
   var logging = requireNative('logging');
   var messagingNatives = requireNative('messaging_natives');
   var processNatives = requireNative('process');
-  var unloadEvent = require('unload_event');
   var utils = require('utils');
   var messagingUtils = require('messaging_utils');
 
@@ -24,10 +23,6 @@
 
   // Map of port IDs to port object.
   var ports = {};
-
-  // Map of port IDs to unloadEvent listeners. Keep track of these to free the
-  // unloadEvent listeners when ports are closed.
-  var portReleasers = {};
 
   // Change even to odd and vice versa, to get the other side of a given
   // channel.
@@ -77,18 +72,12 @@
   };
 
   PortImpl.prototype.destroy_ = function() {
-    var portId = this.portId_;
-
     if (this.onDestroy_)
       this.onDestroy_();
     privates(this.onDisconnect).impl.destroy_();
     privates(this.onMessage).impl.destroy_();
-
-    messagingNatives.PortRelease(portId);
-    unloadEvent.removeListener(portReleasers[portId]);
-
-    delete ports[portId];
-    delete portReleasers[portId];
+    messagingNatives.PortRelease(this.portId_);
+    delete ports[this.portId_];
   };
 
   // Returns true if the specified port id is in this context. This is used by
@@ -105,10 +94,6 @@
       throw new Error("Port '" + portId + "' already exists.");
     var port = new Port(portId, opt_name);
     ports[portId] = port;
-    portReleasers[portId] = $Function.bind(messagingNatives.PortRelease,
-                                           this,
-                                           portId);
-    unloadEvent.addListener(portReleasers[portId]);
     messagingNatives.PortAddRef(portId);
     return port;
   };
