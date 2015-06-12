@@ -20,7 +20,7 @@
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/quads/tile_draw_quad.h"
-#include "skia/ext/opacity_draw_filter.h"
+#include "skia/ext/opacity_filter_canvas.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
@@ -387,23 +387,26 @@ void SoftwareRenderer::DrawPictureQuad(const DrawingFrame* frame,
       SkMatrix::kFill_ScaleToFit);
   current_canvas_->concat(content_matrix);
 
-  // TODO(aelias): This isn't correct in all cases. We should detect these
-  // cases and fall back to a persistent bitmap backing
-  // (http://crbug.com/280374).
-  skia::RefPtr<SkDrawFilter> opacity_filter = skia::AdoptRef(
-      new skia::OpacityDrawFilter(quad->shared_quad_state->opacity,
-                                  frame->disable_picture_quad_image_filtering ||
-                                      quad->nearest_neighbor));
-  DCHECK(!current_canvas_->getDrawFilter());
-  current_canvas_->setDrawFilter(opacity_filter.get());
+  const bool needs_transparency =
+      SkScalarRoundToInt(quad->shared_quad_state->opacity * 255) < 255;
+  const bool disable_image_filtering =
+      frame->disable_picture_quad_image_filtering || quad->nearest_neighbor;
 
-  TRACE_EVENT0("cc",
-               "SoftwareRenderer::DrawPictureQuad");
+  TRACE_EVENT0("cc", "SoftwareRenderer::DrawPictureQuad");
 
-  quad->raster_source->PlaybackToSharedCanvas(
-      current_canvas_, quad->content_rect, quad->contents_scale);
-
-  current_canvas_->setDrawFilter(NULL);
+  if (needs_transparency || disable_image_filtering) {
+    // TODO(aelias): This isn't correct in all cases. We should detect these
+    // cases and fall back to a persistent bitmap backing
+    // (http://crbug.com/280374).
+    skia::OpacityFilterCanvas filtered_canvas(current_canvas_,
+                                              quad->shared_quad_state->opacity,
+                                              disable_image_filtering);
+    quad->raster_source->PlaybackToSharedCanvas(
+        &filtered_canvas, quad->content_rect, quad->contents_scale);
+  } else {
+    quad->raster_source->PlaybackToSharedCanvas(
+        current_canvas_, quad->content_rect, quad->contents_scale);
+  }
 }
 
 void SoftwareRenderer::DrawSolidColorQuad(const DrawingFrame* frame,
