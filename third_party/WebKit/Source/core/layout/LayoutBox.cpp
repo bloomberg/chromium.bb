@@ -1917,10 +1917,6 @@ void LayoutBox::computeLogicalWidth(LogicalExtentComputedValues& computedValues)
         return;
     }
 
-    // If layout is limited to a subtree, the subtree root's logical width does not change.
-    if (node() && view()->frameView() && view()->frameView()->isLayoutRoot(*this))
-        return;
-
     // The parent box is flexing us, so it has increased or decreased our
     // width.  Use the width from the style context.
     // FIXME: Account for writing-mode in flexible boxes.
