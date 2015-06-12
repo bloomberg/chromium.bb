@@ -4,7 +4,6 @@
 
 #include "chrome/browser/android/compositor/layer/throbber_layer.h"
 
-#include "cc/layers/image_layer.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/ui_resource_layer.h"
