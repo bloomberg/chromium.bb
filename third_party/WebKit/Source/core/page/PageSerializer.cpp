@@ -248,8 +248,10 @@ void PageSerializer::serializeFrame(LocalFrame* frame)
 
         Element& element = toElement(*node);
         // We have to process in-line style as it might contain some resources (typically background images).
-        if (element.isStyledElement())
+        if (element.isStyledElement()) {
             retrieveResourcesForProperties(element.inlineStyle(), document);
+            retrieveResourcesForProperties(element.presentationAttributeStyle(), document);
+        }
 
         if (isHTMLImageElement(element)) {
             HTMLImageElement& imageElement = toHTMLImageElement(element);

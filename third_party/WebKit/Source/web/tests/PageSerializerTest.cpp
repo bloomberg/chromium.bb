@@ -157,18 +157,45 @@ private:
     Vector<SerializedResource> m_resources;
 };
 
-TEST_F(PageSerializerTest, InputImage)
+TEST_F(PageSerializerTest, HTMLElements)
 {
-    setBaseFolder("pageserializer/input-image/");
+    setBaseFolder("pageserializer/elements/");
 
-    registerURL("input-image.html", "text/html");
-    registerURL("button.png", "image/png");
-    registerErrorURL("non-existing-button.png", 404);
+    registerURL("elements.html", "text/html");
+    registerURL("style.css", "style.css", "text/css");
+    registerURL("copyright.html", "empty.txt", "text/html");
+    registerURL("script.js", "empty.txt", "text/javascript");
 
-    serialize("input-image.html");
+    registerURL("bodyBackground.png", "image.png", "image/png");
 
-    EXPECT_TRUE(isSerialized("button.png", "image/png"));
-    EXPECT_FALSE(isSerialized("non-existing-button.png", "image/png"));
+    registerURL("imageSrc.png", "image.png", "image/png");
+
+    registerURL("inputImage.png", "image.png", "image/png");
+
+    registerURL("tableBackground.png", "image.png", "image/png");
+    registerURL("trBackground.png", "image.png", "image/png");
+    registerURL("tdBackground.png", "image.png", "image/png");
+
+    registerURL("blockquoteCite.html", "empty.txt", "text/html");
+    registerURL("qCite.html", "empty.txt", "text/html");
+    registerURL("delCite.html", "empty.txt", "text/html");
+    registerURL("insCite.html", "empty.txt", "text/html");
+
+    registerErrorURL("nonExisting.png", 404);
+
+    serialize("elements.html");
+
+    EXPECT_EQ(8U, getResources().size());
+
+    EXPECT_TRUE(isSerialized("elements.html", "text/html"));
+    EXPECT_TRUE(isSerialized("style.css", "text/css"));
+    EXPECT_TRUE(isSerialized("bodyBackground.png", "image/png"));
+    EXPECT_TRUE(isSerialized("imageSrc.png", "image/png"));
+    EXPECT_TRUE(isSerialized("inputImage.png", "image/png"));
+    EXPECT_TRUE(isSerialized("tableBackground.png", "image/png"));
+    EXPECT_TRUE(isSerialized("trBackground.png", "image/png"));
+    EXPECT_TRUE(isSerialized("tdBackground.png", "image/png"));
+    EXPECT_FALSE(isSerialized("nonExisting.png", "image/png"));
 }
 
 TEST_F(PageSerializerTest, Frames)
