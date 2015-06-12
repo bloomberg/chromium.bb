@@ -231,12 +231,11 @@ void PaintedScrollbarLayer::UpdateInternalContentScale() {
   }
 }
 
-bool PaintedScrollbarLayer::Update(ResourceUpdateQueue* queue,
-                                   const OcclusionTracker<Layer>* occlusion) {
+bool PaintedScrollbarLayer::Update(ResourceUpdateQueue* queue) {
   {
     base::AutoReset<bool> ignore_set_needs_commit(&ignore_set_needs_commit_,
                                                   true);
-    Layer::Update(queue, occlusion);
+    Layer::Update(queue);
     UpdateInternalContentScale();
   }
 

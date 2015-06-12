@@ -37,8 +37,7 @@ class CC_EXPORT PaintedScrollbarLayer : public ScrollbarLayerInterface,
   ScrollbarOrientation orientation() const override;
 
   // Layer interface
-  bool Update(ResourceUpdateQueue* queue,
-              const OcclusionTracker<Layer>* occlusion) override;
+  bool Update(ResourceUpdateQueue* queue) override;
   void SetLayerTreeHost(LayerTreeHost* host) override;
   void PushPropertiesTo(LayerImpl* layer) override;
   void PushScrollClipPropertiesTo(LayerImpl* layer) override;

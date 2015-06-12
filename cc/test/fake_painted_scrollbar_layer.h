@@ -23,8 +23,7 @@ class FakePaintedScrollbarLayer : public PaintedScrollbarLayer {
   int update_count() const { return update_count_; }
   void reset_update_count() { update_count_ = 0; }
 
-  bool Update(ResourceUpdateQueue* queue,
-              const OcclusionTracker<Layer>* occlusion) override;
+  bool Update(ResourceUpdateQueue* queue) override;
 
   void PushPropertiesTo(LayerImpl* layer) override;
 

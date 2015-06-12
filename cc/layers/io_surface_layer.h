@@ -18,8 +18,7 @@ class CC_EXPORT IOSurfaceLayer : public Layer {
 
   scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
   void PushPropertiesTo(LayerImpl* layer) override;
-  bool Update(ResourceUpdateQueue* queue,
-              const OcclusionTracker<Layer>* occlusion) override;
+  bool Update(ResourceUpdateQueue* queue) override;
 
  protected:
   bool HasDrawableContent() const override;

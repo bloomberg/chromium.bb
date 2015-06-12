@@ -13,7 +13,6 @@
 #include "cc/test/fake_picture_layer_impl.h"
 #include "cc/test/fake_proxy.h"
 #include "cc/test/impl_side_painting_settings.h"
-#include "cc/trees/occlusion_tracker.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -46,9 +45,8 @@ TEST(PictureLayerTest, NoTilesIfEmptyBounds) {
   layer->SetIsDrawable(true);
   layer->SavePaintProperties();
 
-  OcclusionTracker<Layer> occlusion(gfx::Rect(0, 0, 1000, 1000));
   scoped_ptr<ResourceUpdateQueue> queue(new ResourceUpdateQueue);
-  layer->Update(queue.get(), &occlusion);
+  layer->Update(queue.get());
 
   EXPECT_EQ(0, host->source_frame_number());
   host->CommitComplete();

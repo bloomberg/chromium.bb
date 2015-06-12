@@ -9,7 +9,6 @@
 #include "cc/debug/devtools_instrumentation.h"
 #include "cc/debug/micro_benchmark_controller.h"
 #include "cc/layers/layer.h"
-#include "cc/trees/occlusion_tracker.h"
 
 namespace cc {
 
@@ -31,8 +30,7 @@ class CC_EXPORT PictureLayer : public Layer {
   void SetLayerTreeHost(LayerTreeHost* host) override;
   void PushPropertiesTo(LayerImpl* layer) override;
   void SetNeedsDisplayRect(const gfx::Rect& layer_rect) override;
-  bool Update(ResourceUpdateQueue* queue,
-              const OcclusionTracker<Layer>* occlusion) override;
+  bool Update(ResourceUpdateQueue* queue) override;
   void SetIsMask(bool is_mask) override;
   skia::RefPtr<SkPicture> GetPicture() const override;
   bool IsSuitableForGpuRasterization() const override;

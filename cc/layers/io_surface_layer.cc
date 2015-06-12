@@ -44,9 +44,8 @@ void IOSurfaceLayer::PushPropertiesTo(LayerImpl* layer) {
   io_surface_layer->SetIOSurfaceProperties(io_surface_id_, io_surface_size_);
 }
 
-bool IOSurfaceLayer::Update(ResourceUpdateQueue* queue,
-                            const OcclusionTracker<Layer>* occlusion) {
-  bool updated = Layer::Update(queue, occlusion);
+bool IOSurfaceLayer::Update(ResourceUpdateQueue* queue) {
+  bool updated = Layer::Update(queue);
 
   // This layer doesn't update any resources from the main thread side,
   // but repaint rects need to be sent to the layer impl via commit.

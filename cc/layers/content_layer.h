@@ -41,8 +41,7 @@ class CC_EXPORT ContentLayer : public TiledLayer {
 
   void SetLayerTreeHost(LayerTreeHost* layer_tree_host) override;
   void SetTexturePriorities(const PriorityCalculator& priority_calc) override;
-  bool Update(ResourceUpdateQueue* queue,
-              const OcclusionTracker<Layer>* occlusion) override;
+  bool Update(ResourceUpdateQueue* queue) override;
   bool NeedMoreUpdates() override;
 
   void SetContentsOpaque(bool contents_opaque) override;

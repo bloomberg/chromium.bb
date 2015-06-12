@@ -42,11 +42,10 @@ scoped_ptr<LayerImpl> FakePictureLayer::CreateLayerImpl(
   return FakePictureLayerImpl::Create(tree_impl, layer_id_);
 }
 
-bool FakePictureLayer::Update(ResourceUpdateQueue* queue,
-                              const OcclusionTracker<Layer>* occlusion) {
+bool FakePictureLayer::Update(ResourceUpdateQueue* queue) {
   if (disable_lcd_text_)
     draw_properties().can_use_lcd_text = false;
-  bool updated = PictureLayer::Update(queue, occlusion);
+  bool updated = PictureLayer::Update(queue);
   update_count_++;
   return updated || always_update_resources_;
 }

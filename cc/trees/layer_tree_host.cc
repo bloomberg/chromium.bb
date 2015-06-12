@@ -43,7 +43,6 @@
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/layer_tree_impl.h"
-#include "cc/trees/occlusion_tracker.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "cc/trees/thread_proxy.h"
 #include "cc/trees/tree_synchronizer.h"
@@ -828,7 +827,7 @@ bool LayerTreeHost::UpdateLayers(Layer* root_layer,
       // TODO(enne): temporarily clobber draw properties visible rect.
       layer->draw_properties().visible_content_rect =
           layer->visible_rect_from_property_trees();
-      did_paint_content |= layer->Update(queue, nullptr);
+      did_paint_content |= layer->Update(queue);
       content_is_suitable_for_gpu_rasterization_ &=
           layer->IsSuitableForGpuRasterization();
     }
@@ -964,7 +963,7 @@ void LayerTreeHost::PaintMasksForRenderSurface(Layer* render_surface_layer,
 
   Layer* mask_layer = render_surface_layer->mask_layer();
   if (mask_layer) {
-    *did_paint_content |= mask_layer->Update(queue, NULL);
+    *did_paint_content |= mask_layer->Update(queue);
     *need_more_updates |= mask_layer->NeedMoreUpdates();
   }
 
@@ -972,7 +971,7 @@ void LayerTreeHost::PaintMasksForRenderSurface(Layer* render_surface_layer,
       render_surface_layer->replica_layer() ?
       render_surface_layer->replica_layer()->mask_layer() : NULL;
   if (replica_mask_layer) {
-    *did_paint_content |= replica_mask_layer->Update(queue, NULL);
+    *did_paint_content |= replica_mask_layer->Update(queue);
     *need_more_updates |= replica_mask_layer->NeedMoreUpdates();
   }
 }
@@ -982,31 +981,22 @@ void LayerTreeHost::PaintLayerContents(
     ResourceUpdateQueue* queue,
     bool* did_paint_content,
     bool* need_more_updates) {
-  OcclusionTracker<Layer> occlusion_tracker(
-      root_layer_->render_surface()->content_rect());
-  occlusion_tracker.set_minimum_tracking_size(
-      settings_.minimum_occlusion_tracking_size);
-
   PrioritizeTextures(render_surface_layer_list);
 
   in_paint_layer_contents_ = true;
 
-  // Iterates front-to-back to allow for testing occlusion and performing
-  // culling during the tree walk.
   typedef LayerIterator<Layer> LayerIteratorType;
   LayerIteratorType end = LayerIteratorType::End(&render_surface_layer_list);
   for (LayerIteratorType it =
            LayerIteratorType::Begin(&render_surface_layer_list);
        it != end;
        ++it) {
-    occlusion_tracker.EnterLayer(it);
-
     if (it.represents_target_render_surface()) {
       PaintMasksForRenderSurface(
           *it, queue, did_paint_content, need_more_updates);
     } else if (it.represents_itself()) {
       DCHECK(!it->paint_properties().bounds.IsEmpty());
-      *did_paint_content |= it->Update(queue, &occlusion_tracker);
+      *did_paint_content |= it->Update(queue);
       *need_more_updates |= it->NeedMoreUpdates();
       // Note the '&&' with previous is-suitable state.
       // This means that once the layer-tree becomes unsuitable for gpu
@@ -1018,8 +1008,6 @@ void LayerTreeHost::PaintLayerContents(
       content_is_suitable_for_gpu_rasterization_ &=
           it->IsSuitableForGpuRasterization();
     }
-
-    occlusion_tracker.LeaveLayer(it);
   }
 
   in_paint_layer_contents_ = false;

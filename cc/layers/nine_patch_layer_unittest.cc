@@ -15,7 +15,6 @@
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/trees/layer_tree_host.h"
-#include "cc/trees/occlusion_tracker.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -59,9 +58,8 @@ TEST_F(NinePatchLayerTest, SetLayerProperties) {
 
   ResourceUpdateQueue queue;
   gfx::Rect screen_space_clip_rect;
-  OcclusionTracker<Layer> occlusion_tracker(screen_space_clip_rect);
   test_layer->SavePaintProperties();
-  test_layer->Update(&queue, &occlusion_tracker);
+  test_layer->Update(&queue);
 
   EXPECT_FALSE(test_layer->DrawsContent());
 
@@ -73,7 +71,7 @@ TEST_F(NinePatchLayerTest, SetLayerProperties) {
   test_layer->SetAperture(aperture);
   test_layer->SetUIResourceId(resource->id());
   test_layer->SetFillCenter(fill_center);
-  test_layer->Update(&queue, &occlusion_tracker);
+  test_layer->Update(&queue);
 
   EXPECT_TRUE(test_layer->DrawsContent());
 }

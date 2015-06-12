@@ -15,7 +15,6 @@
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/trees/layer_tree_host.h"
-#include "cc/trees/occlusion_tracker.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -81,10 +80,8 @@ TEST_F(UIResourceLayerTest, SetBitmap) {
   EXPECT_EQ(test_layer->layer_tree_host(), layer_tree_host_.get());
 
   ResourceUpdateQueue queue;
-  gfx::Rect screen_space_clip_rect;
-  OcclusionTracker<Layer> occlusion_tracker(screen_space_clip_rect);
   test_layer->SavePaintProperties();
-  test_layer->Update(&queue, &occlusion_tracker);
+  test_layer->Update(&queue);
 
   EXPECT_FALSE(test_layer->DrawsContent());
 
@@ -93,7 +90,7 @@ TEST_F(UIResourceLayerTest, SetBitmap) {
   bitmap.setImmutable();
 
   test_layer->SetBitmap(bitmap);
-  test_layer->Update(&queue, &occlusion_tracker);
+  test_layer->Update(&queue);
 
   EXPECT_TRUE(test_layer->DrawsContent());
 }
@@ -109,10 +106,8 @@ TEST_F(UIResourceLayerTest, SetUIResourceId) {
   EXPECT_EQ(test_layer->layer_tree_host(), layer_tree_host_.get());
 
   ResourceUpdateQueue queue;
-  gfx::Rect screen_space_clip_rect;
-  OcclusionTracker<Layer> occlusion_tracker(screen_space_clip_rect);
   test_layer->SavePaintProperties();
-  test_layer->Update(&queue, &occlusion_tracker);
+  test_layer->Update(&queue);
 
   EXPECT_FALSE(test_layer->DrawsContent());
 
@@ -120,7 +115,7 @@ TEST_F(UIResourceLayerTest, SetUIResourceId) {
   scoped_ptr<ScopedUIResource> resource = ScopedUIResource::Create(
       layer_tree_host_.get(), UIResourceBitmap(gfx::Size(10, 10), is_opaque));
   test_layer->SetUIResourceId(resource->id());
-  test_layer->Update(&queue, &occlusion_tracker);
+  test_layer->Update(&queue);
 
   EXPECT_TRUE(test_layer->DrawsContent());
 

@@ -1390,9 +1390,8 @@ class ContentLayerWithUpdateTracking : public ContentLayer {
   int PaintContentsCount() { return paint_contents_count_; }
   void ResetPaintContentsCount() { paint_contents_count_ = 0; }
 
-  bool Update(ResourceUpdateQueue* queue,
-              const OcclusionTracker<Layer>* occlusion) override {
-    bool updated = ContentLayer::Update(queue, occlusion);
+  bool Update(ResourceUpdateQueue* queue) override {
+    bool updated = ContentLayer::Update(queue);
     paint_contents_count_++;
     return updated;
   }
@@ -1589,7 +1588,7 @@ class EvictionTestLayer : public Layer {
     return make_scoped_refptr(new EvictionTestLayer(settings));
   }
 
-  bool Update(ResourceUpdateQueue*, const OcclusionTracker<Layer>*) override;
+  bool Update(ResourceUpdateQueue* queue) override;
   bool DrawsContent() const override { return true; }
 
   scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
@@ -1647,8 +1646,7 @@ void EvictionTestLayer::SetTexturePriorities(const PriorityCalculator&) {
   texture_->set_request_priority(PriorityCalculator::UIPriority(true));
 }
 
-bool EvictionTestLayer::Update(ResourceUpdateQueue* queue,
-                               const OcclusionTracker<Layer>* occlusion) {
+bool EvictionTestLayer::Update(ResourceUpdateQueue* queue) {
   CreateTextureIfNeeded();
   if (!texture_)
     return false;

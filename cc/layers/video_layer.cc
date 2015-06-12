@@ -30,9 +30,8 @@ scoped_ptr<LayerImpl> VideoLayer::CreateLayerImpl(LayerTreeImpl* tree_impl) {
   return impl.Pass();
 }
 
-bool VideoLayer::Update(ResourceUpdateQueue* queue,
-                        const OcclusionTracker<Layer>* occlusion) {
-  bool updated = Layer::Update(queue, occlusion);
+bool VideoLayer::Update(ResourceUpdateQueue* queue) {
+  bool updated = Layer::Update(queue);
 
   // Video layer doesn't update any resources from the main thread side,
   // but repaint rects need to be sent to the VideoLayerImpl via commit.

@@ -115,10 +115,9 @@ void PictureLayer::SetNeedsDisplayRect(const gfx::Rect& layer_rect) {
   Layer::SetNeedsDisplayRect(layer_rect);
 }
 
-bool PictureLayer::Update(ResourceUpdateQueue* queue,
-                          const OcclusionTracker<Layer>* occlusion) {
+bool PictureLayer::Update(ResourceUpdateQueue* queue) {
   update_source_frame_number_ = layer_tree_host()->source_frame_number();
-  bool updated = Layer::Update(queue, occlusion);
+  bool updated = Layer::Update(queue);
 
   gfx::Rect visible_layer_rect = gfx::ScaleToEnclosingRect(
       visible_content_rect(), 1.f / contents_scale_x());

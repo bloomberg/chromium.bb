@@ -37,10 +37,8 @@ FakePaintedScrollbarLayer::FakePaintedScrollbarLayer(
 
 FakePaintedScrollbarLayer::~FakePaintedScrollbarLayer() {}
 
-bool FakePaintedScrollbarLayer::Update(
-    ResourceUpdateQueue* queue,
-    const OcclusionTracker<Layer>* occlusion) {
-  bool updated = PaintedScrollbarLayer::Update(queue, occlusion);
+bool FakePaintedScrollbarLayer::Update(ResourceUpdateQueue* queue) {
+  bool updated = PaintedScrollbarLayer::Update(queue);
   ++update_count_;
   return updated;
 }

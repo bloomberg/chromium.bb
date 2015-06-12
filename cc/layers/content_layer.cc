@@ -66,8 +66,7 @@ void ContentLayer::SetTexturePriorities(
   TiledLayer::SetTexturePriorities(priority_calc);
 }
 
-bool ContentLayer::Update(ResourceUpdateQueue* queue,
-                          const OcclusionTracker<Layer>* occlusion) {
+bool ContentLayer::Update(ResourceUpdateQueue* queue) {
   {
     base::AutoReset<bool> ignore_set_needs_commit(&ignore_set_needs_commit_,
                                                   true);
@@ -75,7 +74,7 @@ bool ContentLayer::Update(ResourceUpdateQueue* queue,
     CreateUpdaterIfNeeded();
   }
 
-  bool updated = TiledLayer::Update(queue, occlusion);
+  bool updated = TiledLayer::Update(queue);
   return updated;
 }
 

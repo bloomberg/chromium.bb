@@ -83,9 +83,8 @@ void DelegatedRendererLayer::ProviderHasNewFrame() {
   SetNextCommitWaitsForActivation();
 }
 
-bool DelegatedRendererLayer::Update(ResourceUpdateQueue* queue,
-                                    const OcclusionTracker<Layer>* occlusion) {
-  bool updated = Layer::Update(queue, occlusion);
+bool DelegatedRendererLayer::Update(ResourceUpdateQueue* queue) {
+  bool updated = Layer::Update(queue);
   if (!should_collect_new_frame_)
     return updated;
 

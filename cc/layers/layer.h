@@ -69,8 +69,6 @@ class ResourceUpdateQueue;
 class ScrollbarLayerInterface;
 class SimpleEnclosedRegion;
 struct AnimationEvent;
-template <typename LayerType>
-class OcclusionTracker;
 
 // Base class for composited layers. Special layer types are derived from
 // this class.
@@ -377,8 +375,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   // This methods typically need to be overwritten by derived classes.
   virtual void SavePaintProperties();
   // Returns true iff any resources were updated that need to be committed.
-  virtual bool Update(ResourceUpdateQueue* queue,
-                      const OcclusionTracker<Layer>* occlusion);
+  virtual bool Update(ResourceUpdateQueue* queue);
   virtual bool NeedMoreUpdates();
   virtual void SetIsMask(bool is_mask) {}
   virtual void ReduceMemoryUsage() {}

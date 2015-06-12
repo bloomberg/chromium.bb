@@ -32,8 +32,7 @@ class CC_EXPORT TiledLayer : public ContentsScalingLayer {
   void SetLayerTreeHost(LayerTreeHost* layer_tree_host) override;
   void SetTexturePriorities(const PriorityCalculator& priority_calc) override;
   SimpleEnclosedRegion VisibleContentOpaqueRegion() const override;
-  bool Update(ResourceUpdateQueue* queue,
-              const OcclusionTracker<Layer>* occlusion) override;
+  bool Update(ResourceUpdateQueue* queue) override;
   void OnOutputSurfaceCreated() override;
 
  protected:
@@ -84,40 +83,28 @@ class CC_EXPORT TiledLayer : public ContentsScalingLayer {
   bool TileOnlyNeedsPartialUpdate(UpdatableTile* tile);
   bool TileNeedsBufferedUpdate(UpdatableTile* tile);
 
-  void MarkOcclusionsAndRequestTextures(
-      int left,
-      int top,
-      int right,
-      int bottom,
-      const OcclusionTracker<Layer>* occlusion);
+  void RequestTextures(int left, int top, int right, int bottom);
 
   bool UpdateTiles(int left,
                    int top,
                    int right,
                    int bottom,
                    ResourceUpdateQueue* queue,
-                   const OcclusionTracker<Layer>* occlusion,
                    bool* did_paint);
-  bool HaveTexturesForTiles(int left,
-                            int top,
-                            int right,
-                            int bottom,
-                            bool ignore_occlusions);
+  bool HaveTexturesForTiles(int left, int top, int right, int bottom);
   void MarkTilesForUpdate(gfx::Rect* update_rect,
                           gfx::Rect* paint_rect,
                           int left,
                           int top,
                           int right,
-                          int bottom,
-                          bool ignore_occlusions);
+                          int bottom);
   void UpdateTileTextures(const gfx::Rect& update_rect,
                           const gfx::Rect& paint_rect,
                           int left,
                           int top,
                           int right,
                           int bottom,
-                          ResourceUpdateQueue* queue,
-                          const OcclusionTracker<Layer>* occlusion);
+                          ResourceUpdateQueue* queue);
   void UpdateScrollPrediction();
 
   UpdatableTile* TileAt(int i, int j) const;

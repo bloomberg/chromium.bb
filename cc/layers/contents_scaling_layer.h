@@ -19,8 +19,7 @@ class CC_EXPORT ContentsScalingLayer : public Layer {
                               float* contents_scale_y,
                               gfx::Size* content_bounds) override;
 
-  bool Update(ResourceUpdateQueue* queue,
-              const OcclusionTracker<Layer>* occlusion) override;
+  bool Update(ResourceUpdateQueue* queue) override;
 
  protected:
   explicit ContentsScalingLayer(const LayerSettings& settings);
