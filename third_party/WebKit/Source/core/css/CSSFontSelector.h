@@ -82,10 +82,9 @@ public:
 protected:
     explicit CSSFontSelector(Document*);
 
-private:
-
     void dispatchInvalidationCallbacks();
 
+private:
     // FIXME: Oilpan: Ideally this should just be a traced Member but that will
     // currently leak because ComputedStyle and its data are not on the heap.
     // See crbug.com/383860 for details.

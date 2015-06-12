@@ -1,0 +1,38 @@
+<html>
+<head>
+<script>
+window.enablePixelTesting = true;
+</script>
+<script src="../../js-test-resources/js-test.js"></script>
+<script src="../../forms-test-resources/picker-common.js"></script>
+<style>
+@font-face {
+    font-family: 'TestFont';
+    src: url(slow-ahem-loading.cgi);
+}
+option {
+    font-family: TestFont;
+}
+</style>
+<select id="menu">
+    <option>foo</option>
+    <option>bar</option>
+</select>
+<script>
+description('Test that fonts loaded after a popup menu is opened triggers a style recalc.');
+
+document.fonts.ready.then(onFontsReady);
+
+openPicker(menu, function() {}, function () {
+    testFailed('picker didn\'t open')
+    finishJSTest();
+});
+
+function onFontsReady() {
+    finishJSTest();
+}
+</script>
+</head>
+<body>
+</body>
+</html>

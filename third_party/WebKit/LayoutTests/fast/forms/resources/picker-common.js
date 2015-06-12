@@ -68,5 +68,9 @@ function setPopupOpenCallback(callback) {
         rootWindow().moveTo(window.screenX, window.screenY);
         callback();
     }).bind(this, callback);
-    popupWindow.addEventListener("didOpenPicker", popupOpenCallbackWrapper, false);
+    try {
+        popupWindow.addEventListener("didOpenPicker", popupOpenCallbackWrapper, false);
+    } catch(e) {
+        debug(e.name);
+    }
 }

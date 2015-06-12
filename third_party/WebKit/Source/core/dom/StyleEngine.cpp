@@ -609,7 +609,13 @@ void StyleEngine::fontsNeedUpdate(CSSFontSelector*)
 
 void StyleEngine::setFontSelector(PassRefPtrWillBeRawPtr<CSSFontSelector> fontSelector)
 {
+#if !ENABLE(OILPAN)
+    if (m_fontSelector)
+        m_fontSelector->unregisterForInvalidationCallbacks(this);
+#endif
     m_fontSelector = fontSelector;
+    if (m_fontSelector)
+        m_fontSelector->registerForInvalidationCallbacks(this);
 }
 
 void StyleEngine::platformColorsChanged()

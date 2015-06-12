@@ -58,6 +58,7 @@ class ApacheHTTP(server_base.ServerBase):
         test_dir = self._port_obj.layout_tests_dir()
         document_root = self._filesystem.join(test_dir, "http", "tests")
         js_test_resources_dir = self._filesystem.join(test_dir, "resources")
+        forms_test_resources_dir = self._filesystem.join(test_dir, "fast", "forms", "resources")
         media_resources_dir = self._filesystem.join(test_dir, "media")
         mime_types_path = self._filesystem.join(test_dir, "http", "conf", "mime.types")
         cert_file = self._filesystem.join(test_dir, "http", "conf", "webkit-httpd.pem")
@@ -74,6 +75,7 @@ class ApacheHTTP(server_base.ServerBase):
             '-C', 'ServerRoot "%s"' % server_root,
             '-C', 'DocumentRoot "%s"' % document_root,
             '-c', 'Alias /js-test-resources "%s"' % js_test_resources_dir,
+            '-c', 'Alias /forms-test-resources "%s"' % forms_test_resources_dir,
             '-c', 'Alias /media-resources "%s"' % media_resources_dir,
             '-c', 'TypesConfig "%s"' % mime_types_path,
             '-c', 'CustomLog "%s" common' % self._access_log_path,

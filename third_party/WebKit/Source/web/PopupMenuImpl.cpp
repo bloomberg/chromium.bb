@@ -28,12 +28,14 @@
 
 namespace blink {
 
-class PopupMenuCSSFontSelector : public CSSFontSelector {
+class PopupMenuCSSFontSelector : public CSSFontSelector, private CSSFontSelectorClient {
 public:
     static PassRefPtrWillBeRawPtr<PopupMenuCSSFontSelector> create(Document* document, CSSFontSelector* ownerFontSelector)
     {
         return adoptRefWillBeNoop(new PopupMenuCSSFontSelector(document, ownerFontSelector));
     }
+
+    ~PopupMenuCSSFontSelector();
 
     // We don't override willUseFontData() for now because the old PopupListBox
     // only worked with fonts loaded when opening the popup.
@@ -42,23 +44,42 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    PopupMenuCSSFontSelector(Document* document, CSSFontSelector* ownerFontSelector)
-        : CSSFontSelector(document)
-        , m_ownerFontSelector(ownerFontSelector)
-    {
-    }
+    PopupMenuCSSFontSelector(Document*, CSSFontSelector*);
+
+    virtual void fontsNeedUpdate(CSSFontSelector*) override;
+
     RefPtrWillBeMember<CSSFontSelector> m_ownerFontSelector;
 };
+
+PopupMenuCSSFontSelector::PopupMenuCSSFontSelector(Document* document, CSSFontSelector* ownerFontSelector)
+    : CSSFontSelector(document)
+    , m_ownerFontSelector(ownerFontSelector)
+{
+    m_ownerFontSelector->registerForInvalidationCallbacks(this);
+}
+
+PopupMenuCSSFontSelector::~PopupMenuCSSFontSelector()
+{
+#if !ENABLE(OILPAN)
+    m_ownerFontSelector->unregisterForInvalidationCallbacks(this);
+#endif
+}
 
 PassRefPtr<FontData> PopupMenuCSSFontSelector::getFontData(const FontDescription& description, const AtomicString& name)
 {
     return m_ownerFontSelector->getFontData(description, name);
 }
 
+void PopupMenuCSSFontSelector::fontsNeedUpdate(CSSFontSelector* fontSelector)
+{
+    dispatchInvalidationCallbacks();
+}
+
 DEFINE_TRACE(PopupMenuCSSFontSelector)
 {
     visitor->trace(m_ownerFontSelector);
     CSSFontSelector::trace(visitor);
+    CSSFontSelectorClient::trace(visitor);
 }
 
 PassRefPtrWillBeRawPtr<PopupMenuImpl> PopupMenuImpl::create(ChromeClientImpl* chromeClient, PopupMenuClient* client)
