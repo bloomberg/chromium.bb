@@ -45,6 +45,12 @@ namespace blink {
 
 void V8MessageEvent::dataAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
+    v8::Local<v8::Value> cachedData = V8HiddenValue::getHiddenValue(info.GetIsolate(), info.Holder(), V8HiddenValue::data(info.GetIsolate()));
+    if (!cachedData.IsEmpty()) {
+        v8SetReturnValue(info, cachedData);
+        return;
+    }
+
     MessageEvent* event = V8MessageEvent::toImpl(info.Holder());
 
     v8::Local<v8::Value> result;
@@ -84,16 +90,9 @@ void V8MessageEvent::dataAttributeGetterCustom(const v8::PropertyCallbackInfo<v8
         break;
     }
 
-    // Overwrite the data attribute so it returns the cached result in future invocations.
-    // This custom getter handler will not be called again.
-    // TODO(bashi): We use ForceSet() here, and we use hidden values in other
-    // places (e.g. V8CustomEventCustom.cpp). We should use the same way to
-    // handle "any" attributes.
-    v8::PropertyAttribute dataAttr = static_cast<v8::PropertyAttribute>(v8::DontDelete | v8::ReadOnly);
-    if (!v8CallBoolean(info.Holder()->ForceSet(info.GetIsolate()->GetCurrentContext(), v8AtomicString(info.GetIsolate(), "data"), result, dataAttr))) {
-        v8SetReturnValue(info, v8::Null(info.GetIsolate()));
-        return;
-    }
+    // Store the result as a hidden value so this callback returns the cached
+    // result in future invocations.
+    V8HiddenValue::setHiddenValue(info.GetIsolate(),  info.Holder(), V8HiddenValue::data(info.GetIsolate()), result);
     v8SetReturnValue(info, result);
 }
 
