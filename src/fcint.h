@@ -794,6 +794,9 @@ FcSubstPrint (const FcSubst *subst);
 FcPrivate void
 FcCharSetPrint (const FcCharSet *c);
 
+FcPrivate void
+FcPatternPrint2 (FcPattern *p1, FcPattern *p2, const FcObjectSet *os);
+
 extern FcPrivate int FcDebugVal;
 
 #define FcDebug() (FcDebugVal)

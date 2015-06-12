@@ -518,9 +518,6 @@ FcPublic void
 FcPatternPrint (const FcPattern *p);
 
 FcPublic void
-FcPatternPrint2 (FcPattern *p1, FcPattern *p2, const FcObjectSet *os);
-
-FcPublic void
 FcFontSetPrint (const FcFontSet *s);
 
 /* fcdefault.c */
