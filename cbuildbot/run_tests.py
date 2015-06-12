@@ -66,6 +66,7 @@ SPECIAL_TESTS = {
     'lib/chroot_util_unittest': INSIDE,
     'lib/filetype_unittest': INSIDE,
     'lib/upgrade_table_unittest': INSIDE,
+    'mobmonitor/checkfile/manager_unittest': INSIDE,
     'scripts/cros_install_debug_syms_unittest': INSIDE,
     'scripts/cros_list_modified_packages_unittest': INSIDE,
     'scripts/cros_mark_as_stable_unittest': INSIDE,
