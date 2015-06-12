@@ -11,6 +11,7 @@
 #include "base/id_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
+#include "base/threading/thread_checker.h"
 #include "chrome/browser/chromeos/drive/job_list.h"
 #include "chrome/browser/chromeos/drive/job_queue.h"
 #include "chrome/browser/drive/drive_service_interface.h"
@@ -239,6 +240,8 @@ class JobScheduler
     // The callback to notify an error to the client of JobScheduler.
     // This is used to notify cancel of a job that is not running yet.
     base::Callback<void(google_apis::DriveApiErrorCode)> abort_callback;
+
+    base::ThreadChecker thread_checker_;
   };
 
   // Parameters for DriveUploader::ResumeUploadFile.
@@ -394,6 +397,8 @@ class JobScheduler
   scoped_ptr<DriveUploaderInterface> uploader_;
 
   PrefService* pref_service_;
+
+  base::ThreadChecker thread_checker_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

@@ -6,10 +6,7 @@
 
 #include "base/callback.h"
 #include "base/logging.h"
-#include "content/public/browser/browser_thread.h"
 #include "google_apis/drive/task_util.h"
-
-using content::BrowserThread;
 
 namespace drive {
 
@@ -68,7 +65,7 @@ DebugInfoCollector::~DebugInfoCollector() {
 void DebugInfoCollector::GetResourceEntry(
     const base::FilePath& file_path,
     const GetResourceEntryCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
   scoped_ptr<ResourceEntry> entry(new ResourceEntry);
@@ -86,7 +83,7 @@ void DebugInfoCollector::GetResourceEntry(
 void DebugInfoCollector::ReadDirectory(
     const base::FilePath& file_path,
     const ReadDirectoryCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
   scoped_ptr<ResourceEntryVector> entries(new ResourceEntryVector);
@@ -104,7 +101,7 @@ void DebugInfoCollector::ReadDirectory(
 void DebugInfoCollector::IterateFileCache(
     const IterateFileCacheCallback& iteration_callback,
     const base::Closure& completion_callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!iteration_callback.is_null());
   DCHECK(!completion_callback.is_null());
 
@@ -118,7 +115,7 @@ void DebugInfoCollector::IterateFileCache(
 
 void DebugInfoCollector::GetMetadata(
     const GetFilesystemMetadataCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
   // Currently, this is just a proxy to the FileSystem.

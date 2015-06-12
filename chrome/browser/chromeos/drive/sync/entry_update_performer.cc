@@ -18,10 +18,7 @@
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "chrome/browser/chromeos/drive/sync/entry_revert_performer.h"
 #include "chrome/browser/chromeos/drive/sync/remove_performer.h"
-#include "content/public/browser/browser_thread.h"
 #include "google_apis/drive/drive_api_parser.h"
-
-using content::BrowserThread;
 
 namespace drive {
 namespace internal {
@@ -243,17 +240,16 @@ EntryUpdatePerformer::EntryUpdatePerformer(
                                                        scheduler,
                                                        metadata)),
       weak_ptr_factory_(this) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 EntryUpdatePerformer::~EntryUpdatePerformer() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
 }
 
 void EntryUpdatePerformer::UpdateEntry(const std::string& local_id,
                                        const ClientContext& context,
                                        const FileOperationCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
   scoped_ptr<LocalState> local_state(new LocalState);
@@ -272,7 +268,7 @@ void EntryUpdatePerformer::UpdateEntryAfterPrepare(
     const FileOperationCallback& callback,
     scoped_ptr<LocalState> local_state,
     FileError error) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
   if (error != FILE_ERROR_OK) {
@@ -411,7 +407,7 @@ void EntryUpdatePerformer::UpdateEntryAfterUpdateResource(
     scoped_ptr<base::ScopedClosureRunner> loader_lock,
     google_apis::DriveApiErrorCode status,
     scoped_ptr<google_apis::FileResource> entry) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
   if (status == google_apis::HTTP_FORBIDDEN) {
@@ -441,7 +437,7 @@ void EntryUpdatePerformer::UpdateEntryAfterFinish(
     const FileOperationCallback& callback,
     const FileChange* changed_files,
     FileError error) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
   delegate_->OnFileChangedByOperation(*changed_files);

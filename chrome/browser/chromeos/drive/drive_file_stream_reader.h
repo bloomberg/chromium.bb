@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/threading/thread_checker.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "google_apis/drive/drive_api_error_codes.h"
 #include "net/base/completion_callback.h"
@@ -78,6 +79,8 @@ class LocalReaderProxy : public ReaderProxy {
   // The number of remaining bytes to be read.
   int64 remaining_length_;
 
+  base::ThreadChecker thread_checker_;
+
   // This should remain the last member so it'll be destroyed first and
   // invalidate its weak pointers before other members are destroyed.
   base::WeakPtrFactory<LocalReaderProxy> weak_ptr_factory_;
@@ -124,6 +127,8 @@ class NetworkReaderProxy : public ReaderProxy {
   scoped_refptr<net::IOBuffer> buffer_;
   int buffer_length_;
   net::CompletionCallback callback_;
+
+  base::ThreadChecker thread_checker_;
 
   // Keeps the closure to cancel downloading job if necessary.
   // Will be reset when the job is completed (regardless whether the job is
@@ -213,6 +218,8 @@ class DriveFileStreamReader {
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
   base::Closure cancel_download_closure_;
   scoped_ptr<internal::ReaderProxy> reader_proxy_;
+
+  base::ThreadChecker thread_checker_;
 
   // This should remain the last member so it'll be destroyed first and
   // invalidate its weak pointers before other members are destroyed.

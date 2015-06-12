@@ -12,10 +12,7 @@
 #include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "chrome/browser/drive/drive_api_util.h"
-#include "content/public/browser/browser_thread.h"
 #include "google_apis/drive/drive_api_parser.h"
-
-using content::BrowserThread;
 
 namespace drive {
 namespace internal {
@@ -93,17 +90,16 @@ EntryRevertPerformer::EntryRevertPerformer(
       scheduler_(scheduler),
       metadata_(metadata),
       weak_ptr_factory_(this) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 EntryRevertPerformer::~EntryRevertPerformer() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
 }
 
 void EntryRevertPerformer::RevertEntry(const std::string& local_id,
                                        const ClientContext& context,
                                        const FileOperationCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
   scoped_ptr<ResourceEntry> entry(new ResourceEntry);
@@ -123,7 +119,7 @@ void EntryRevertPerformer::RevertEntryAfterPrepare(
     const FileOperationCallback& callback,
     scoped_ptr<ResourceEntry> entry,
     FileError error) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
   if (error == FILE_ERROR_OK && entry->resource_id().empty())
@@ -146,7 +142,7 @@ void EntryRevertPerformer::RevertEntryAfterGetFileResource(
     const std::string& local_id,
     google_apis::DriveApiErrorCode status,
     scoped_ptr<google_apis::FileResource> entry) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
   FileChange* changed_files = new FileChange;
@@ -169,7 +165,7 @@ void EntryRevertPerformer::RevertEntryAfterFinishRevert(
     const FileOperationCallback& callback,
     const FileChange* changed_files,
     FileError error) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
   delegate_->OnFileChangedByOperation(*changed_files);

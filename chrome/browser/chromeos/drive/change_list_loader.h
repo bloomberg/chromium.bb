@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
+#include "base/threading/thread_checker.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "google_apis/drive/drive_api_error_codes.h"
 #include "google_apis/drive/drive_common_callbacks.h"
@@ -69,6 +70,8 @@ class LoaderController {
   int lock_count_;
   std::vector<base::Closure> pending_tasks_;
 
+  base::ThreadChecker thread_checker_;
+
   base::WeakPtrFactory<LoaderController> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(LoaderController);
 };
@@ -117,6 +120,8 @@ class AboutResourceLoader {
   // when GetAboutResource is called before the task completes.
   std::map<int, std::vector<google_apis::AboutResourceCallback> >
       pending_callbacks_;
+
+  base::ThreadChecker thread_checker_;
 
   base::WeakPtrFactory<AboutResourceLoader> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(AboutResourceLoader);
@@ -229,6 +234,8 @@ class ChangeListLoader {
   // True if the full resource list is loaded (i.e. the resource metadata is
   // stored locally).
   bool loaded_;
+
+  base::ThreadChecker thread_checker_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

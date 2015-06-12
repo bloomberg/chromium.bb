@@ -12,10 +12,7 @@
 #include "base/files/file_path_watcher.h"
 #include "base/stl_util.h"
 #include "base/timer/timer.h"
-#include "content/public/browser/browser_thread.h"
 #include "google_apis/drive/task_util.h"
-
-using content::BrowserThread;
 
 namespace drive {
 namespace internal {
@@ -72,6 +69,8 @@ class FileWriteWatcher::FileWriteWatcherImpl {
   std::map<base::FilePath, PathWatchInfo*> watchers_;
   scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
 
+  base::ThreadChecker thread_checker_;
+
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
   base::WeakPtrFactory<FileWriteWatcherImpl> weak_ptr_factory_;
@@ -83,11 +82,10 @@ FileWriteWatcher::FileWriteWatcherImpl::FileWriteWatcherImpl(
     : delay_(base::TimeDelta::FromSeconds(kWriteEventDelayInSeconds)),
       file_task_runner_(file_task_runner),
       weak_ptr_factory_(this) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 void FileWriteWatcher::FileWriteWatcherImpl::Destroy() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   // Just forwarding the call to FILE thread.
   file_task_runner_->PostTask(
@@ -99,7 +97,7 @@ void FileWriteWatcher::FileWriteWatcherImpl::StartWatch(
     const base::FilePath& path,
     const StartWatchCallback& on_start_callback,
     const base::Closure& on_write_callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   // Forwarding the call to FILE thread and relaying the |callback|.
   file_task_runner_->PostTask(
@@ -188,17 +186,16 @@ void FileWriteWatcher::FileWriteWatcherImpl::InvokeCallback(
 FileWriteWatcher::FileWriteWatcher(
     base::SingleThreadTaskRunner* file_task_runner)
     : watcher_impl_(new FileWriteWatcherImpl(file_task_runner)) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 FileWriteWatcher::~FileWriteWatcher() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
 }
 
 void FileWriteWatcher::StartWatch(const base::FilePath& file_path,
                                   const StartWatchCallback& on_start_callback,
                                   const base::Closure& on_write_callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
   watcher_impl_->StartWatch(file_path, on_start_callback, on_write_callback);
 }
 

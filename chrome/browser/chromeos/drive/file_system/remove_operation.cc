@@ -12,9 +12,6 @@
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
-#include "content/public/browser/browser_thread.h"
-
-using content::BrowserThread;
 
 namespace drive {
 namespace file_system {
@@ -70,17 +67,16 @@ RemoveOperation::RemoveOperation(
       metadata_(metadata),
       cache_(cache),
       weak_ptr_factory_(this) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 RemoveOperation::~RemoveOperation() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
 }
 
 void RemoveOperation::Remove(const base::FilePath& path,
                              bool is_recursive,
                              const FileOperationCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
   std::string* local_id = new std::string;
@@ -111,7 +107,7 @@ void RemoveOperation::RemoveAfterUpdateLocalState(
     const ResourceEntry* entry,
     const base::FilePath* changed_path,
     FileError error) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
   if (!changed_path->empty()) {

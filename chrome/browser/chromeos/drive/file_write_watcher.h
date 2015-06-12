@@ -7,6 +7,7 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/threading/thread_checker.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 
 namespace base {
@@ -53,6 +54,8 @@ class FileWriteWatcher {
  private:
   class FileWriteWatcherImpl;
   scoped_ptr<FileWriteWatcherImpl, util::DestroyHelper> watcher_impl_;
+
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(FileWriteWatcher);
 };

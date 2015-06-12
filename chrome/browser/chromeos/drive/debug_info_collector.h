@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
+#include "base/threading/thread_checker.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 
 namespace drive {
@@ -56,6 +57,8 @@ class DebugInfoCollector {
   internal::ResourceMetadata* metadata_;  // No owned.
   FileSystemInterface* file_system_;  // Not owned.
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
+
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(DebugInfoCollector);
 };

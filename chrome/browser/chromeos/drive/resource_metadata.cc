@@ -4,7 +4,10 @@
 
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/guid.h"
+#include "base/location.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -13,9 +16,6 @@
 #include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/resource_metadata_storage.h"
-#include "content/public/browser/browser_thread.h"
-
-using content::BrowserThread;
 
 namespace drive {
 namespace internal {
@@ -72,7 +72,6 @@ ResourceMetadata::ResourceMetadata(
     : blocking_task_runner_(blocking_task_runner),
       storage_(storage),
       cache_(cache) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 FileError ResourceMetadata::Initialize() {
@@ -81,7 +80,7 @@ FileError ResourceMetadata::Initialize() {
 }
 
 void ResourceMetadata::Destroy() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   blocking_task_runner_->PostTask(
       FROM_HERE,

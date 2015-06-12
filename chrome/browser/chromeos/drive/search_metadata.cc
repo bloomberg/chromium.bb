@@ -14,10 +14,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/drive/drive_api_util.h"
-#include "content/public/browser/browser_thread.h"
 #include "net/base/escape.h"
-
-using content::BrowserThread;
 
 namespace drive {
 namespace internal {
@@ -265,7 +262,6 @@ void SearchMetadata(
     const SearchMetadataPredicate& predicate,
     size_t at_most_num_matches,
     const SearchMetadataCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   const base::TimeTicks start_time = base::TimeTicks::Now();

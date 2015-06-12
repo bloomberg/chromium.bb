@@ -19,11 +19,8 @@
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "chrome/browser/drive/event_logger.h"
-#include "content/public/browser/browser_thread.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "url/gurl.h"
-
-using content::BrowserThread;
 
 namespace drive {
 namespace internal {
@@ -50,7 +47,7 @@ class FullFeedFetcher : public ChangeListLoader::FeedFetcher {
   ~FullFeedFetcher() override {}
 
   void Run(const FeedFetcherCallback& callback) override {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    DCHECK(thread_checker_.CalledOnValidThread());
     DCHECK(!callback.is_null());
 
     // Remember the time stamp for usage stats.
@@ -66,7 +63,7 @@ class FullFeedFetcher : public ChangeListLoader::FeedFetcher {
   void OnFileListFetched(const FeedFetcherCallback& callback,
                          google_apis::DriveApiErrorCode status,
                          scoped_ptr<google_apis::FileList> file_list) {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    DCHECK(thread_checker_.CalledOnValidThread());
     DCHECK(!callback.is_null());
 
     FileError error = GDataToFileError(status);
@@ -99,6 +96,7 @@ class FullFeedFetcher : public ChangeListLoader::FeedFetcher {
   JobScheduler* scheduler_;
   ScopedVector<ChangeList> change_lists_;
   base::TimeTicks start_time_;
+  base::ThreadChecker thread_checker_;
   base::WeakPtrFactory<FullFeedFetcher> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(FullFeedFetcher);
 };
@@ -115,7 +113,7 @@ class DeltaFeedFetcher : public ChangeListLoader::FeedFetcher {
   ~DeltaFeedFetcher() override {}
 
   void Run(const FeedFetcherCallback& callback) override {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    DCHECK(thread_checker_.CalledOnValidThread());
     DCHECK(!callback.is_null());
 
     scheduler_->GetChangeList(
@@ -128,7 +126,7 @@ class DeltaFeedFetcher : public ChangeListLoader::FeedFetcher {
   void OnChangeListFetched(const FeedFetcherCallback& callback,
                            google_apis::DriveApiErrorCode status,
                            scoped_ptr<google_apis::ChangeList> change_list) {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    DCHECK(thread_checker_.CalledOnValidThread());
     DCHECK(!callback.is_null());
 
     FileError error = GDataToFileError(status);
@@ -158,6 +156,7 @@ class DeltaFeedFetcher : public ChangeListLoader::FeedFetcher {
   JobScheduler* scheduler_;
   int64 start_change_id_;
   ScopedVector<ChangeList> change_lists_;
+  base::ThreadChecker thread_checker_;
   base::WeakPtrFactory<DeltaFeedFetcher> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(DeltaFeedFetcher);
 };
@@ -167,15 +166,14 @@ class DeltaFeedFetcher : public ChangeListLoader::FeedFetcher {
 LoaderController::LoaderController()
     : lock_count_(0),
       weak_ptr_factory_(this) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 LoaderController::~LoaderController() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
 }
 
 scoped_ptr<base::ScopedClosureRunner> LoaderController::GetLock() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   ++lock_count_;
   return make_scoped_ptr(new base::ScopedClosureRunner(
@@ -184,7 +182,7 @@ scoped_ptr<base::ScopedClosureRunner> LoaderController::GetLock() {
 }
 
 void LoaderController::ScheduleRun(const base::Closure& task) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!task.is_null());
 
   if (lock_count_ > 0) {
@@ -195,7 +193,7 @@ void LoaderController::ScheduleRun(const base::Closure& task) {
 }
 
 void LoaderController::Unlock() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_LT(0, lock_count_);
 
   if (--lock_count_ > 0)
@@ -217,7 +215,7 @@ AboutResourceLoader::~AboutResourceLoader() {}
 
 void AboutResourceLoader::GetAboutResource(
     const google_apis::AboutResourceCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
   // If the latest UpdateAboutResource task is still running. Wait for it,
@@ -241,7 +239,7 @@ void AboutResourceLoader::GetAboutResource(
 
 void AboutResourceLoader::UpdateAboutResource(
     const google_apis::AboutResourceCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
   ++current_update_task_id_;
@@ -257,7 +255,7 @@ void AboutResourceLoader::UpdateAboutResourceAfterGetAbout(
     int task_id,
     google_apis::DriveApiErrorCode status,
     scoped_ptr<google_apis::AboutResource> about_resource) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
   FileError error = GDataToFileError(status);
 
   const std::vector<google_apis::AboutResourceCallback> callbacks =
@@ -319,17 +317,17 @@ bool ChangeListLoader::IsRefreshing() const {
 }
 
 void ChangeListLoader::AddObserver(ChangeListLoaderObserver* observer) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
   observers_.AddObserver(observer);
 }
 
 void ChangeListLoader::RemoveObserver(ChangeListLoaderObserver* observer) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
   observers_.RemoveObserver(observer);
 }
 
 void ChangeListLoader::CheckForUpdates(const FileOperationCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
   // We only start to check for updates iff the load is done.
@@ -356,7 +354,7 @@ void ChangeListLoader::CheckForUpdates(const FileOperationCallback& callback) {
 }
 
 void ChangeListLoader::LoadIfNeeded(const FileOperationCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
   // If the metadata is not yet loaded, start loading.
@@ -365,7 +363,7 @@ void ChangeListLoader::LoadIfNeeded(const FileOperationCallback& callback) {
 }
 
 void ChangeListLoader::Load(const FileOperationCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
   // Check if this is the first time this ChangeListLoader do loading.
@@ -397,7 +395,7 @@ void ChangeListLoader::LoadAfterGetLargestChangestamp(
     bool is_initial_load,
     const int64* local_changestamp,
     FileError error) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   if (error != FILE_ERROR_OK) {
     OnChangeListLoadComplete(error);
@@ -424,7 +422,7 @@ void ChangeListLoader::LoadAfterGetAboutResource(
     int64 local_changestamp,
     google_apis::DriveApiErrorCode status,
     scoped_ptr<google_apis::AboutResource> about_resource) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   FileError error = GDataToFileError(status);
   if (error != FILE_ERROR_OK) {
@@ -452,7 +450,7 @@ void ChangeListLoader::LoadAfterGetAboutResource(
 }
 
 void ChangeListLoader::OnChangeListLoadComplete(FileError error) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!loaded_ && error == FILE_ERROR_OK) {
     loaded_ = true;
@@ -478,7 +476,7 @@ void ChangeListLoader::OnChangeListLoadComplete(FileError error) {
 void ChangeListLoader::OnAboutResourceUpdated(
     google_apis::DriveApiErrorCode error,
     scoped_ptr<google_apis::AboutResource> resource) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   if (drive::GDataToFileError(error) != drive::FILE_ERROR_OK) {
     logger_->Log(logging::LOG_ERROR,
@@ -492,7 +490,7 @@ void ChangeListLoader::OnAboutResourceUpdated(
 }
 
 void ChangeListLoader::LoadChangeListFromServer(int64 start_changestamp) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!change_feed_fetcher_);
   DCHECK(about_resource_loader_->cached_about_resource());
 
@@ -521,7 +519,7 @@ void ChangeListLoader::LoadChangeListFromServerAfterLoadChangeList(
     bool is_delta_update,
     FileError error,
     ScopedVector<ChangeList> change_lists) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(about_resource);
 
   // Delete the fetcher first.
@@ -563,7 +561,7 @@ void ChangeListLoader::LoadChangeListFromServerAfterUpdate(
     bool should_notify_changed_directories,
     const base::Time& start_time,
     FileError error) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   const base::TimeDelta elapsed = base::Time::Now() - start_time;
   logger_->Log(logging::LOG_INFO,

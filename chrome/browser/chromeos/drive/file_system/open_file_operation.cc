@@ -18,9 +18,6 @@
 #include "chrome/browser/chromeos/drive/file_system/download_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_delegate.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
-#include "content/public/browser/browser_thread.h"
-
-using content::BrowserThread;
 
 namespace drive {
 namespace file_system {
@@ -50,7 +47,7 @@ void OpenFileOperation::OpenFile(const base::FilePath& file_path,
                                  OpenMode open_mode,
                                  const std::string& mime_type,
                                  const OpenFileCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
   switch (open_mode) {
@@ -83,7 +80,7 @@ void OpenFileOperation::OpenFileAfterCreateFile(
     const base::FilePath& file_path,
     const OpenFileCallback& callback,
     FileError error) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
   if (error != FILE_ERROR_OK) {
@@ -106,7 +103,7 @@ void OpenFileOperation::OpenFileAfterFileDownloaded(
     FileError error,
     const base::FilePath& local_file_path,
     scoped_ptr<ResourceEntry> entry) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
   if (error == FILE_ERROR_OK) {
@@ -145,7 +142,7 @@ void OpenFileOperation::OpenFileAfterOpenForWrite(
     const OpenFileCallback& callback,
     scoped_ptr<base::ScopedClosureRunner>* file_closer,
     FileError error) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
   if (error != FILE_ERROR_OK) {
@@ -164,7 +161,7 @@ void OpenFileOperation::OpenFileAfterOpenForWrite(
 void OpenFileOperation::CloseFile(
     const std::string& local_id,
     scoped_ptr<base::ScopedClosureRunner> file_closer) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_GT(open_files_[local_id], 0);
 
   if (--open_files_[local_id] == 0) {

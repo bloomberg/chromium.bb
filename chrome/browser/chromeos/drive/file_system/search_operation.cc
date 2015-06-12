@@ -17,11 +17,8 @@
 #include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "chrome/browser/drive/drive_api_util.h"
-#include "content/public/browser/browser_thread.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "url/gurl.h"
-
-using content::BrowserThread;
 
 namespace drive {
 namespace file_system {
@@ -98,7 +95,7 @@ SearchOperation::~SearchOperation() {
 void SearchOperation::Search(const std::string& search_query,
                              const GURL& next_link,
                              const SearchCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
   if (next_link.is_empty()) {
@@ -120,7 +117,7 @@ void SearchOperation::SearchAfterGetFileList(
     const SearchCallback& callback,
     google_apis::DriveApiErrorCode gdata_error,
     scoped_ptr<google_apis::FileList> file_list) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
   FileError error = GDataToFileError(gdata_error);
@@ -167,7 +164,7 @@ void SearchOperation::SearchAfterResolveSearchResult(
     const GURL& next_link,
     scoped_ptr<std::vector<SearchResultInfo> > result,
     FileError error) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
   DCHECK(result);
 

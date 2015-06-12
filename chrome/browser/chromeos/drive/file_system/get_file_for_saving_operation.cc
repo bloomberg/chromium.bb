@@ -16,8 +16,6 @@
 #include "chrome/browser/drive/event_logger.h"
 #include "content/public/browser/browser_thread.h"
 
-using content::BrowserThread;
-
 namespace drive {
 namespace file_system {
 
@@ -69,7 +67,7 @@ GetFileForSavingOperation::~GetFileForSavingOperation() {
 void GetFileForSavingOperation::GetFileForSaving(
     const base::FilePath& file_path,
     const GetFileCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
   create_file_operation_->CreateFile(
@@ -86,7 +84,7 @@ void GetFileForSavingOperation::GetFileForSavingAfterCreate(
     const base::FilePath& file_path,
     const GetFileCallback& callback,
     FileError error) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
   if (error != FILE_ERROR_OK) {
@@ -109,7 +107,7 @@ void GetFileForSavingOperation::GetFileForSavingAfterDownload(
     FileError error,
     const base::FilePath& cache_path,
     scoped_ptr<ResourceEntry> entry) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
   if (error != FILE_ERROR_OK) {
@@ -144,7 +142,7 @@ void GetFileForSavingOperation::GetFileForSavingAfterOpenForWrite(
     scoped_ptr<ResourceEntry> entry,
     scoped_ptr<base::ScopedClosureRunner>* file_closer,
     FileError error) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
   if (error != FILE_ERROR_OK) {
@@ -171,7 +169,7 @@ void GetFileForSavingOperation::GetFileForSavingAfterWatch(
     const base::FilePath& cache_path,
     scoped_ptr<ResourceEntry> entry,
     bool success) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
   logger_->Log(logging::LOG_INFO, "Started watching modification to %s [%s].",
