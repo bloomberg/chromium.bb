@@ -1,0 +1,10 @@
+{
+  "name": "Platform API Test: Storage Persistence",
+  "version": "1.0",
+  "permissions": ["webview"],
+  "app": {
+    "background": {
+      "scripts": ["window.js"]
+    }
+  }
+}

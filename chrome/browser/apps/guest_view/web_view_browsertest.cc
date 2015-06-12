@@ -368,175 +368,6 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
     extensions::PlatformAppBrowserTest::SetUpCommandLine(command_line);
   }
 
-  // This method is responsible for initializing a packaged app, which contains
-  // multiple webview tags. The tags have different partition identifiers and
-  // their WebContent objects are returned as output. The method also verifies
-  // the expected process allocation and storage partition assignment.
-  // The |navigate_to_url| parameter is used to navigate the main browser
-  // window.
-  //
-  // TODO(ajwong): This function is getting to be too large. Either refactor it
-  // so the test can specify a configuration of WebView tags that we will
-  // dynamically inject JS to generate, or move this test wholesale into
-  // something that RunPlatformAppTest() can execute purely in Javascript. This
-  // won't let us do a white-box examination of the StoragePartition equivalence
-  // directly, but we will be able to view the black box effects which is good
-  // enough.  http://crbug.com/160361
-  void NavigateAndOpenAppForIsolation(
-      GURL navigate_to_url,
-      content::WebContents** default_tag_contents1,
-      content::WebContents** default_tag_contents2,
-      content::WebContents** named_partition_contents1,
-      content::WebContents** named_partition_contents2,
-      content::WebContents** persistent_partition_contents1,
-      content::WebContents** persistent_partition_contents2,
-      content::WebContents** persistent_partition_contents3) {
-    GURL::Replacements replace_host;
-    replace_host.SetHostStr("localhost");
-
-    navigate_to_url = navigate_to_url.ReplaceComponents(replace_host);
-
-    GURL tag_url1 = embedded_test_server()->GetURL(
-        "/extensions/platform_apps/web_view/isolation/cookie.html");
-    tag_url1 = tag_url1.ReplaceComponents(replace_host);
-    GURL tag_url2 = embedded_test_server()->GetURL(
-        "/extensions/platform_apps/web_view/isolation/cookie2.html");
-    tag_url2 = tag_url2.ReplaceComponents(replace_host);
-    GURL tag_url3 = embedded_test_server()->GetURL(
-        "/extensions/platform_apps/web_view/isolation/storage1.html");
-    tag_url3 = tag_url3.ReplaceComponents(replace_host);
-    GURL tag_url4 = embedded_test_server()->GetURL(
-        "/extensions/platform_apps/web_view/isolation/storage2.html");
-    tag_url4 = tag_url4.ReplaceComponents(replace_host);
-    GURL tag_url5 = embedded_test_server()->GetURL(
-        "/extensions/platform_apps/web_view/isolation/storage1.html#p1");
-    tag_url5 = tag_url5.ReplaceComponents(replace_host);
-    GURL tag_url6 = embedded_test_server()->GetURL(
-        "/extensions/platform_apps/web_view/isolation/storage1.html#p2");
-    tag_url6 = tag_url6.ReplaceComponents(replace_host);
-    GURL tag_url7 = embedded_test_server()->GetURL(
-        "/extensions/platform_apps/web_view/isolation/storage1.html#p3");
-    tag_url7 = tag_url7.ReplaceComponents(replace_host);
-
-    ui_test_utils::NavigateToURL(browser(), navigate_to_url);
-
-    ui_test_utils::UrlLoadObserver observer1(
-        tag_url1, content::NotificationService::AllSources());
-    ui_test_utils::UrlLoadObserver observer2(
-        tag_url2, content::NotificationService::AllSources());
-    ui_test_utils::UrlLoadObserver observer3(
-        tag_url3, content::NotificationService::AllSources());
-    ui_test_utils::UrlLoadObserver observer4(
-        tag_url4, content::NotificationService::AllSources());
-    ui_test_utils::UrlLoadObserver observer5(
-        tag_url5, content::NotificationService::AllSources());
-    ui_test_utils::UrlLoadObserver observer6(
-        tag_url6, content::NotificationService::AllSources());
-    ui_test_utils::UrlLoadObserver observer7(
-        tag_url7, content::NotificationService::AllSources());
-    LoadAndLaunchPlatformApp("web_view/isolation", "Launched");
-    observer1.Wait();
-    observer2.Wait();
-    observer3.Wait();
-    observer4.Wait();
-    observer5.Wait();
-    observer6.Wait();
-    observer7.Wait();
-
-    content::Source<content::NavigationController> source1 = observer1.source();
-    EXPECT_TRUE(source1->GetWebContents()->GetRenderProcessHost()->
-        IsIsolatedGuest());
-    content::Source<content::NavigationController> source2 = observer2.source();
-    EXPECT_TRUE(source2->GetWebContents()->GetRenderProcessHost()->
-        IsIsolatedGuest());
-    content::Source<content::NavigationController> source3 = observer3.source();
-    EXPECT_TRUE(source3->GetWebContents()->GetRenderProcessHost()->
-        IsIsolatedGuest());
-    content::Source<content::NavigationController> source4 = observer4.source();
-    EXPECT_TRUE(source4->GetWebContents()->GetRenderProcessHost()->
-        IsIsolatedGuest());
-    content::Source<content::NavigationController> source5 = observer5.source();
-    EXPECT_TRUE(source5->GetWebContents()->GetRenderProcessHost()->
-        IsIsolatedGuest());
-    content::Source<content::NavigationController> source6 = observer6.source();
-    EXPECT_TRUE(source6->GetWebContents()->GetRenderProcessHost()->
-        IsIsolatedGuest());
-    content::Source<content::NavigationController> source7 = observer7.source();
-    EXPECT_TRUE(source7->GetWebContents()->GetRenderProcessHost()->
-        IsIsolatedGuest());
-
-    // Check that the first two tags use the same process and it is different
-    // than the process used by the other two.
-    EXPECT_EQ(source1->GetWebContents()->GetRenderProcessHost()->GetID(),
-              source2->GetWebContents()->GetRenderProcessHost()->GetID());
-    EXPECT_EQ(source3->GetWebContents()->GetRenderProcessHost()->GetID(),
-              source4->GetWebContents()->GetRenderProcessHost()->GetID());
-    EXPECT_NE(source1->GetWebContents()->GetRenderProcessHost()->GetID(),
-              source3->GetWebContents()->GetRenderProcessHost()->GetID());
-
-    // The two sets of tags should also be isolated from the main browser.
-    EXPECT_NE(source1->GetWebContents()->GetRenderProcessHost()->GetID(),
-              browser()->tab_strip_model()->GetWebContentsAt(0)->
-                  GetRenderProcessHost()->GetID());
-    EXPECT_NE(source3->GetWebContents()->GetRenderProcessHost()->GetID(),
-              browser()->tab_strip_model()->GetWebContentsAt(0)->
-                  GetRenderProcessHost()->GetID());
-
-    // Check that the storage partitions of the first two tags match and are
-    // different than the other two.
-    EXPECT_EQ(
-        source1->GetWebContents()->GetRenderProcessHost()->
-            GetStoragePartition(),
-        source2->GetWebContents()->GetRenderProcessHost()->
-            GetStoragePartition());
-    EXPECT_EQ(
-        source3->GetWebContents()->GetRenderProcessHost()->
-            GetStoragePartition(),
-        source4->GetWebContents()->GetRenderProcessHost()->
-            GetStoragePartition());
-    EXPECT_NE(
-        source1->GetWebContents()->GetRenderProcessHost()->
-            GetStoragePartition(),
-        source3->GetWebContents()->GetRenderProcessHost()->
-            GetStoragePartition());
-
-    // Ensure the persistent storage partitions are different.
-    EXPECT_EQ(
-        source5->GetWebContents()->GetRenderProcessHost()->
-            GetStoragePartition(),
-        source6->GetWebContents()->GetRenderProcessHost()->
-            GetStoragePartition());
-    EXPECT_NE(
-        source5->GetWebContents()->GetRenderProcessHost()->
-            GetStoragePartition(),
-        source7->GetWebContents()->GetRenderProcessHost()->
-            GetStoragePartition());
-    EXPECT_NE(
-        source1->GetWebContents()->GetRenderProcessHost()->
-            GetStoragePartition(),
-        source5->GetWebContents()->GetRenderProcessHost()->
-            GetStoragePartition());
-    EXPECT_NE(
-        source1->GetWebContents()->GetRenderProcessHost()->
-            GetStoragePartition(),
-        source7->GetWebContents()->GetRenderProcessHost()->
-            GetStoragePartition());
-
-    *default_tag_contents1 = source1->GetWebContents();
-    *default_tag_contents2 = source2->GetWebContents();
-    *named_partition_contents1 = source3->GetWebContents();
-    *named_partition_contents2 = source4->GetWebContents();
-    if (persistent_partition_contents1) {
-      *persistent_partition_contents1 = source5->GetWebContents();
-    }
-    if (persistent_partition_contents2) {
-      *persistent_partition_contents2 = source6->GetWebContents();
-    }
-    if (persistent_partition_contents3) {
-      *persistent_partition_contents3 = source7->GetWebContents();
-    }
-  }
-
   // Handles |request| by serving a redirect response if the |User-Agent| is
   // foobar.
   static scoped_ptr<net::test_server::HttpResponse> UserAgentResponseHandler(
@@ -1553,152 +1384,36 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, CookieIsolation) {
 // but persistent ones maintain state for cookies and HTML5 storage.
 IN_PROC_BROWSER_TEST_F(WebViewTest, PRE_StoragePersistence) {
   ASSERT_TRUE(StartEmbeddedTestServer());
-  const std::string kExpire =
-      "var expire = new Date(Date.now() + 24 * 60 * 60 * 1000);";
-  std::string cookie_script1(kExpire);
-  cookie_script1.append(
-      "document.cookie = 'inmemory=true; path=/; expires=' + expire + ';';");
-  std::string cookie_script2(kExpire);
-  cookie_script2.append(
-      "document.cookie = 'persist1=true; path=/; expires=' + expire + ';';");
-  std::string cookie_script3(kExpire);
-  cookie_script3.append(
-      "document.cookie = 'persist2=true; path=/; expires=' + expire + ';';");
-
   // We don't care where the main browser is on this test.
-  GURL blank_url("about:blank");
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+  // Start the app for the pre-test.
+  LoadAndLaunchPlatformApp("web_view/storage_persistence",
+                           "WebViewTest.LAUNCHED");
 
-  // The first two partitions will be used to set cookies and ensure they are
-  // shared. The named partition is used to ensure that cookies are isolated
-  // between partitions within the same app.
-  content::WebContents* cookie_contents1;
-  content::WebContents* cookie_contents2;
-  content::WebContents* named_partition_contents1;
-  content::WebContents* named_partition_contents2;
-  content::WebContents* persistent_partition_contents1;
-  content::WebContents* persistent_partition_contents2;
-  content::WebContents* persistent_partition_contents3;
-  NavigateAndOpenAppForIsolation(blank_url, &cookie_contents1,
-                                 &cookie_contents2, &named_partition_contents1,
-                                 &named_partition_contents2,
-                                 &persistent_partition_contents1,
-                                 &persistent_partition_contents2,
-                                 &persistent_partition_contents3);
+  // Send a message to run the PRE_StoragePersistence part of the test.
+  SendMessageToEmbedder("run-pre-test");
 
-  // Set the inmemory=true cookie for tags with inmemory partitions.
-  EXPECT_TRUE(content::ExecuteScript(cookie_contents1, cookie_script1));
-  EXPECT_TRUE(content::ExecuteScript(named_partition_contents1,
-                                     cookie_script1));
-
-  // For the two different persistent storage partitions, set the
-  // two different cookies so we can check that they aren't comingled below.
-  EXPECT_TRUE(content::ExecuteScript(persistent_partition_contents1,
-                                     cookie_script2));
-
-  EXPECT_TRUE(content::ExecuteScript(persistent_partition_contents3,
-                                     cookie_script3));
-
-  int cookie_size;
-  std::string cookie_value;
-
-  // Check that all in-memory partitions have a cookie set.
-  ui_test_utils::GetCookies(GURL("http://localhost"),
-                            cookie_contents1,
-                            &cookie_size, &cookie_value);
-  EXPECT_EQ("inmemory=true", cookie_value);
-  ui_test_utils::GetCookies(GURL("http://localhost"),
-                            cookie_contents2,
-                            &cookie_size, &cookie_value);
-  EXPECT_EQ("inmemory=true", cookie_value);
-  ui_test_utils::GetCookies(GURL("http://localhost"),
-                            named_partition_contents1,
-                            &cookie_size, &cookie_value);
-  EXPECT_EQ("inmemory=true", cookie_value);
-  ui_test_utils::GetCookies(GURL("http://localhost"),
-                            named_partition_contents2,
-                            &cookie_size, &cookie_value);
-  EXPECT_EQ("inmemory=true", cookie_value);
-
-  // Check that all persistent partitions kept their state.
-  ui_test_utils::GetCookies(GURL("http://localhost"),
-                            persistent_partition_contents1,
-                            &cookie_size, &cookie_value);
-  EXPECT_EQ("persist1=true", cookie_value);
-  ui_test_utils::GetCookies(GURL("http://localhost"),
-                            persistent_partition_contents2,
-                            &cookie_size, &cookie_value);
-  EXPECT_EQ("persist1=true", cookie_value);
-  ui_test_utils::GetCookies(GURL("http://localhost"),
-                            persistent_partition_contents3,
-                            &cookie_size, &cookie_value);
-  EXPECT_EQ("persist2=true", cookie_value);
+  ExtensionTestMessageListener test_passed_listener("WebViewTest.PASSED",
+                                                    false);
+  EXPECT_TRUE(test_passed_listener.WaitUntilSatisfied());
 }
 
 // This is the post-reset portion of the StoragePersistence test.  See
 // PRE_StoragePersistence for main comment.
-#if defined(OS_CHROMEOS)
-// http://crbug.com/223888
-#define MAYBE_StoragePersistence DISABLED_StoragePersistence
-#else
-#define MAYBE_StoragePersistence StoragePersistence
-#endif
-IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_StoragePersistence) {
+IN_PROC_BROWSER_TEST_F(WebViewTest, StoragePersistence) {
   ASSERT_TRUE(StartEmbeddedTestServer());
-
   // We don't care where the main browser is on this test.
-  GURL blank_url("about:blank");
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+  // Start the app for the pre-test.
+  LoadAndLaunchPlatformApp("web_view/storage_persistence",
+                           "WebViewTest.LAUNCHED");
 
-  // The first two partitions will be used to set cookies and ensure they are
-  // shared. The named partition is used to ensure that cookies are isolated
-  // between partitions within the same app.
-  content::WebContents* cookie_contents1;
-  content::WebContents* cookie_contents2;
-  content::WebContents* named_partition_contents1;
-  content::WebContents* named_partition_contents2;
-  content::WebContents* persistent_partition_contents1;
-  content::WebContents* persistent_partition_contents2;
-  content::WebContents* persistent_partition_contents3;
-  NavigateAndOpenAppForIsolation(blank_url, &cookie_contents1,
-                                 &cookie_contents2, &named_partition_contents1,
-                                 &named_partition_contents2,
-                                 &persistent_partition_contents1,
-                                 &persistent_partition_contents2,
-                                 &persistent_partition_contents3);
+  // Send a message to run the StoragePersistence part of the test.
+  SendMessageToEmbedder("run-test");
 
-  int cookie_size;
-  std::string cookie_value;
-
-  // Check that all in-memory partitions lost their state.
-  ui_test_utils::GetCookies(GURL("http://localhost"),
-                            cookie_contents1,
-                            &cookie_size, &cookie_value);
-  EXPECT_EQ("", cookie_value);
-  ui_test_utils::GetCookies(GURL("http://localhost"),
-                            cookie_contents2,
-                            &cookie_size, &cookie_value);
-  EXPECT_EQ("", cookie_value);
-  ui_test_utils::GetCookies(GURL("http://localhost"),
-                            named_partition_contents1,
-                            &cookie_size, &cookie_value);
-  EXPECT_EQ("", cookie_value);
-  ui_test_utils::GetCookies(GURL("http://localhost"),
-                            named_partition_contents2,
-                            &cookie_size, &cookie_value);
-  EXPECT_EQ("", cookie_value);
-
-  // Check that all persistent partitions kept their state.
-  ui_test_utils::GetCookies(GURL("http://localhost"),
-                            persistent_partition_contents1,
-                            &cookie_size, &cookie_value);
-  EXPECT_EQ("persist1=true", cookie_value);
-  ui_test_utils::GetCookies(GURL("http://localhost"),
-                            persistent_partition_contents2,
-                            &cookie_size, &cookie_value);
-  EXPECT_EQ("persist1=true", cookie_value);
-  ui_test_utils::GetCookies(GURL("http://localhost"),
-                            persistent_partition_contents3,
-                            &cookie_size, &cookie_value);
-  EXPECT_EQ("persist2=true", cookie_value);
+  ExtensionTestMessageListener test_passed_listener("WebViewTest.PASSED",
+                                                    false);
+  EXPECT_TRUE(test_passed_listener.WaitUntilSatisfied());
 }
 
 // This tests DOM storage isolation for packaged apps with webview tags. It
