@@ -44,16 +44,6 @@ public:
         return setImpl(array, offset * sizeof(T));
     }
 
-    bool setRange(const T* data, size_t dataLength, unsigned offset)
-    {
-        return setRangeImpl(reinterpret_cast<const char*>(data), dataLength * sizeof(T), offset * sizeof(T));
-    }
-
-    bool zeroRange(unsigned offset, size_t length)
-    {
-        return zeroRangeImpl(offset * sizeof(T), length * sizeof(T));
-    }
-
     // Overridden from ArrayBufferView. This must be public because of
     // rules about inheritance of members in template classes, and
     // because it is accessed via pointers to subclasses.

@@ -56,14 +56,6 @@ public:
 
     ValueType* data() const { return view()->data(); }
     unsigned length() const { return view()->length(); }
-    bool setRange(const ValueType* data, size_t dataLength, unsigned offset)
-    {
-        return view()->setRange(data, dataLength, offset);
-    }
-    bool zeroRange(unsigned offset, size_t length)
-    {
-        return view()->zeroRange(offset, length);
-    }
     // Invoked by the indexed getter. Does not perform range checks; caller
     // is responsible for doing so and returning undefined as necessary.
     ValueType item(unsigned index) const { return view()->item(index); }

@@ -80,10 +80,6 @@ class WTF_EXPORT ArrayBufferView : public RefCounted<ArrayBufferView> {
 
     inline bool setImpl(ArrayBufferView*, unsigned byteOffset);
 
-    inline bool setRangeImpl(const char* data, size_t dataByteLength, unsigned byteOffset);
-
-    inline bool zeroRangeImpl(unsigned byteOffset, size_t rangeByteLength);
-
     // Helper to verify that a given sub-range of an ArrayBuffer is
     // within range.
     template <typename T>
@@ -129,34 +125,6 @@ bool ArrayBufferView::setImpl(ArrayBufferView* array, unsigned byteOffset)
 
     char* base = static_cast<char*>(baseAddress());
     memmove(base + byteOffset, array->baseAddress(), array->byteLength());
-    return true;
-}
-
-bool ArrayBufferView::setRangeImpl(const char* data, size_t dataByteLength, unsigned byteOffset)
-{
-    if (byteOffset > byteLength()
-        || byteOffset + dataByteLength > byteLength()
-        || byteOffset + dataByteLength < byteOffset) {
-        // Out of range offset or overflow
-        return false;
-    }
-
-    char* base = static_cast<char*>(baseAddress());
-    memmove(base + byteOffset, data, dataByteLength);
-    return true;
-}
-
-bool ArrayBufferView::zeroRangeImpl(unsigned byteOffset, size_t rangeByteLength)
-{
-    if (byteOffset > byteLength()
-        || byteOffset + rangeByteLength > byteLength()
-        || byteOffset + rangeByteLength < byteOffset) {
-        // Out of range offset or overflow
-        return false;
-    }
-
-    char* base = static_cast<char*>(baseAddress());
-    memset(base + byteOffset, 0, rangeByteLength);
     return true;
 }
 

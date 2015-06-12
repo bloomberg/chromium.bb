@@ -176,7 +176,9 @@ AudioBuffer::AudioBuffer(AudioBus* bus)
             return;
 
         channelDataArray->setNeuterable(false);
-        channelDataArray->setRange(bus->channel(i)->data(), m_length, 0);
+        const float* src = bus->channel(i)->data();
+        float* dst = channelDataArray->data();
+        memmove(dst, src, m_length * sizeof(*dst));
         m_channels.append(channelDataArray);
     }
 }
@@ -317,8 +319,10 @@ void AudioBuffer::copyToChannel(DOMFloat32Array* source, long channelNumber, uns
 void AudioBuffer::zero()
 {
     for (unsigned i = 0; i < m_channels.size(); ++i) {
-        if (getChannelData(i))
-            getChannelData(i)->zeroRange(0, length());
+        if (DOMFloat32Array* array = getChannelData(i)) {
+            float* data = array->data();
+            memset(data, 0, length() * sizeof(*data));
+        }
     }
 }
 
