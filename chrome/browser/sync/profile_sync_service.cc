@@ -17,9 +17,9 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/profiler/scoped_tracker.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
@@ -827,8 +827,8 @@ void ProfileSyncService::ShutdownImpl(syncer::ShutdownReason reason) {
     if (reason == syncer::ShutdownReason::DISABLE_SYNC && sync_thread_) {
       // If the backend is already shut down when a DISABLE_SYNC happens,
       // the data directory needs to be cleaned up here.
-      sync_thread_->message_loop()->PostTask(FROM_HERE,
-          base::Bind(&DeleteSyncDataFolder, directory_path_));
+      sync_thread_->task_runner()->PostTask(
+          FROM_HERE, base::Bind(&DeleteSyncDataFolder, directory_path_));
     }
     return;
   }
@@ -889,7 +889,7 @@ void ProfileSyncService::ShutdownImpl(syncer::ShutdownReason reason) {
   if ((backend_mode_ == ROLLBACK || backend_mode_ == BACKUP) &&
       reason != syncer::SWITCH_MODE_SYNC &&
       reason != syncer::BROWSER_SHUTDOWN) {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&ProfileSyncService::TryStartSyncAfterBackup,
                               startup_controller_weak_factory_.GetWeakPtr()));
   }
@@ -989,11 +989,11 @@ void ProfileSyncService::OnUnrecoverableErrorImpl(
       << " -- ProfileSyncService unusable: " << message;
 
   // Shut all data types down.
-  base::MessageLoop::current()->PostTask(FROM_HERE,
-      base::Bind(&ProfileSyncService::ShutdownImpl,
-                 weak_factory_.GetWeakPtr(),
-                 delete_sync_database ?
-                     syncer::DISABLE_SYNC : syncer::STOP_SYNC));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::Bind(
+          &ProfileSyncService::ShutdownImpl, weak_factory_.GetWeakPtr(),
+          delete_sync_database ? syncer::DISABLE_SYNC : syncer::STOP_SYNC));
 }
 
 void ProfileSyncService::ReenableDatatype(syncer::ModelType type) {
@@ -1139,9 +1139,9 @@ void ProfileSyncService::OnSyncCycleCompleted() {
   if (IsDataTypeControllerRunning(syncer::SESSIONS)) {
     // Trigger garbage collection of old sessions now that we've downloaded
     // any new session data.
-    base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
-        &SessionsSyncManager::DoGarbageCollection,
-            base::AsWeakPtr(sessions_sync_manager_.get())));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&SessionsSyncManager::DoGarbageCollection,
+                              base::AsWeakPtr(sessions_sync_manager_.get())));
   }
   DVLOG(2) << "Notifying observers sync cycle completed";
   NotifySyncCycleCompleted();
@@ -1426,7 +1426,7 @@ void ProfileSyncService::OnConfigureDone(
         backup_finished_ = true;
 
       // Asynchronously check whether sync needs to start.
-      base::MessageLoop::current()->PostTask(
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::Bind(&ProfileSyncService::TryStartSyncAfterBackup,
                                 startup_controller_weak_factory_.GetWeakPtr()));
     } else if (!expect_sync_configuration_aborted_) {
@@ -2645,7 +2645,7 @@ void ProfileSyncService::CheckSyncBackupIfNeeded() {
     // If sync thread is set, need to serialize check on sync thread after
     // closing backup DB.
     if (sync_thread_) {
-      sync_thread_->message_loop_proxy()->PostTask(
+      sync_thread_->task_runner()->PostTask(
           FROM_HERE,
           base::Bind(syncer::CheckSyncDbLastModifiedTime,
                      profile_->GetPath().Append(kSyncBackupDataFolderName),

@@ -4,8 +4,11 @@
 
 #include "chrome/browser/local_discovery/service_discovery_client_mdns.h"
 
+#include "base/location.h"
 #include "base/memory/scoped_vector.h"
 #include "base/metrics/histogram.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/common/local_discovery/service_discovery_client_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/dns/mdns_client.h"
@@ -367,12 +370,11 @@ void ServiceDiscoveryClientMdns::ScheduleStartNewClient() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   OnBeforeMdnsDestroy();
   if (restart_attempts_ < kMaxRestartAttempts) {
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&ServiceDiscoveryClientMdns::StartNewClient,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::TimeDelta::FromSeconds(
-            kRestartDelayOnNetworkChangeSeconds * (1 << restart_attempts_)));
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, base::Bind(&ServiceDiscoveryClientMdns::StartNewClient,
+                              weak_ptr_factory_.GetWeakPtr()),
+        base::TimeDelta::FromSeconds(kRestartDelayOnNetworkChangeSeconds *
+                                     (1 << restart_attempts_)));
   } else {
     ReportSuccess();
   }

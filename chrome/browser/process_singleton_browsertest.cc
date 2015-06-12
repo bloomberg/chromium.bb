@@ -14,11 +14,13 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/process/process.h"
 #include "base/process/process_iterator.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread.h"
@@ -253,11 +255,10 @@ IN_PROC_BROWSER_TEST_F(ProcessSingletonTest, MAYBE_StartupRaceCondition) {
       ASSERT_NE(static_cast<base::MessageLoop*>(NULL),
                 chrome_starter_threads_[i]->message_loop());
 
-      chrome_starter_threads_[i]->message_loop()->PostTask(
-          FROM_HERE, base::Bind(&ChromeStarter::StartChrome,
-                                chrome_starters_[i].get(),
-                                &threads_waker_,
-                                first_run));
+      chrome_starter_threads_[i]->task_runner()->PostTask(
+          FROM_HERE,
+          base::Bind(&ChromeStarter::StartChrome, chrome_starters_[i].get(),
+                     &threads_waker_, first_run));
     }
 
     // Wait for all the starters to be ready.

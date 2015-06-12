@@ -5,9 +5,11 @@
 #include "chrome/browser/banners/app_banner_data_fetcher.h"
 
 #include "base/command_line.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/banners/app_banner_data_fetcher_desktop.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -34,13 +36,13 @@ class TestObserver : public AppBannerDataFetcher::Observer {
 
   void OnDecidedWhetherToShow(AppBannerDataFetcher* fetcher,
                               bool will_show) override {
-    base::MessageLoop::current()->PostTask(FROM_HERE, quit_closure_);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, quit_closure_);
     ASSERT_FALSE(will_show_.get());
     will_show_.reset(new bool(will_show));
   }
 
   void OnFetcherDestroyed(AppBannerDataFetcher* fetcher) override {
-    base::MessageLoop::current()->PostTask(FROM_HERE, quit_closure_);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, quit_closure_);
     fetcher_ = nullptr;
   }
 
@@ -66,7 +68,7 @@ class AppBannerDataFetcherBrowserTest : public InProcessBrowserTest,
   bool HandleNonWebApp(const std::string& platform,
                        const GURL& url,
                        const std::string& id) override {
-    base::MessageLoop::current()->PostTask(FROM_HERE, quit_closure_);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, quit_closure_);
     non_web_platform_ = platform;
     return false;
   }

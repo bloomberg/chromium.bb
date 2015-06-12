@@ -4,9 +4,12 @@
 
 #include "chrome/browser/download/download_target_determiner.h"
 
+#include "base/location.h"
 #include "base/prefs/pref_service.h"
 #include "base/rand_util.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_crx_util.h"
@@ -733,7 +736,7 @@ void DownloadTargetDeterminer::ScheduleCallbackAndDeleteSelf() {
   target_info->mime_type = mime_type_;
   target_info->is_filetype_handled_safely = is_filetype_handled_safely_;
 
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(completion_callback_, base::Passed(&target_info)));
   completion_callback_.Reset();
   delete this;

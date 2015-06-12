@@ -3,9 +3,12 @@
 // found in the LICENSE file.
 
 #include "base/bind_helpers.h"
+#include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/printing/print_preview_dialog_controller.h"
@@ -54,7 +57,7 @@ class RequestPrintPreviewObserver : public WebContentsObserver {
 
   void OnRequestPrintPreview(
       const PrintHostMsg_RequestPrintPreview_Params& /* params */) {
-    base::MessageLoop::current()->PostTask(FROM_HERE, quit_closure_);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, quit_closure_);
   }
 
   base::Closure quit_closure_;
@@ -314,7 +317,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
   int frame_count;
   do {
     base::RunLoop run_loop;
-    base::MessageLoop::current()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, run_loop.QuitClosure(), base::TimeDelta::FromSeconds(1));
     run_loop.Run();
 

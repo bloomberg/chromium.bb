@@ -4,7 +4,10 @@
 
 #include "chrome/browser/local_discovery/service_discovery_client_utility.h"
 
+#include "base/location.h"
 #include "base/metrics/histogram.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/local_discovery/service_discovery_host_client.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -69,10 +72,9 @@ void ServiceDiscoveryClientUtility::ScheduleStartNewClient() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   host_client_->Shutdown();
   weak_ptr_factory_.InvalidateWeakPtrs();
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&ServiceDiscoveryClientUtility::StartNewClient,
-                 weak_ptr_factory_.GetWeakPtr()),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&ServiceDiscoveryClientUtility::StartNewClient,
+                            weak_ptr_factory_.GetWeakPtr()),
       base::TimeDelta::FromSeconds(kRestartDelayOnNetworkChangeSeconds));
 }
 
@@ -85,10 +87,9 @@ void ServiceDiscoveryClientUtility::StartNewClient() {
         base::Bind(&ServiceDiscoveryClientUtility::ScheduleStartNewClient,
                    weak_ptr_factory_.GetWeakPtr()));
 
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&ServiceDiscoveryClientUtility::ReportSuccess,
-                   weak_ptr_factory_.GetWeakPtr()),
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, base::Bind(&ServiceDiscoveryClientUtility::ReportSuccess,
+                              weak_ptr_factory_.GetWeakPtr()),
         base::TimeDelta::FromSeconds(kReportSuccessAfterSeconds));
   } else {
     restart_attempts_ = -1;

@@ -5,7 +5,9 @@
 #include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/location.h"
 #include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/local_discovery/privet_http_impl.h"
 #include "net/base/host_port_pair.h"
@@ -328,7 +330,7 @@ class PrivetHTTPTest : public ::testing::Test {
   void RunFor(base::TimeDelta time_period) {
     base::CancelableCallback<void()> callback(base::Bind(
         &PrivetHTTPTest::Stop, base::Unretained(this)));
-    base::MessageLoop::current()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, callback.callback(), time_period);
 
     base::MessageLoop::current()->Run();

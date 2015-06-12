@@ -13,10 +13,10 @@
 #include "base/containers/hash_tables.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/observer_list.h"
 #include "base/prefs/persistent_pref_store.h"
 #include "base/prefs/pref_value_map.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
 
 namespace base {

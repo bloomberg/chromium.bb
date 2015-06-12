@@ -11,8 +11,11 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/values.h"
@@ -122,7 +125,8 @@ class PrerenderManager::OnCloseWebContentsDeleter
         tab_(tab),
         suppressed_dialog_(false) {
     tab_->SetDelegate(this);
-    base::MessageLoop::current()->PostDelayedTask(FROM_HERE,
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
         base::Bind(&OnCloseWebContentsDeleter::ScheduleWebContentsForDeletion,
                    AsWeakPtr(), true),
         base::TimeDelta::FromSeconds(kDeleteWithExtremePrejudiceSeconds));
@@ -1041,9 +1045,8 @@ void PrerenderManager::PeriodicCleanup() {
 
 void PrerenderManager::PostCleanupTask() {
   DCHECK(CalledOnValidThread());
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&PrerenderManager::PeriodicCleanup, AsWeakPtr()));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&PrerenderManager::PeriodicCleanup, AsWeakPtr()));
 }
 
 base::TimeTicks PrerenderManager::GetExpiryTimeForNewPrerender(

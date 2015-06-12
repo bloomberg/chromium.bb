@@ -5,9 +5,12 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/media/webrtc_rtp_dump_handler.h"
 #include "chrome/browser/media/webrtc_rtp_dump_writer.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -47,7 +50,7 @@ class FakeDumpWriter : public WebRtcRtpDumpWriter {
     else if (type == RTP_DUMP_OUTGOING)
       incoming_sucess = false;
 
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(finished_callback, incoming_sucess, outgoing_success));
   }

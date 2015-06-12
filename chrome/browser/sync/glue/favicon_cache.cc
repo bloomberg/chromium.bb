@@ -4,8 +4,10 @@
 
 #include "chrome/browser/sync/glue/favicon_cache.h"
 
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
 #include "base/metrics/histogram.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "components/favicon/core/favicon_service.h"
@@ -533,13 +535,10 @@ void FaviconCache::OnReceivedSyncFavicon(const GURL& page_url,
 
   // Post a task to do the actual association because this method may have been
   // called while in a transaction.
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&FaviconCache::OnReceivedSyncFaviconImpl,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 icon_url,
-                 icon_bytes,
-                 visit_time_ms));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&FaviconCache::OnReceivedSyncFaviconImpl,
+                            weak_ptr_factory_.GetWeakPtr(), icon_url,
+                            icon_bytes, visit_time_ms));
 }
 
 void FaviconCache::OnReceivedSyncFaviconImpl(

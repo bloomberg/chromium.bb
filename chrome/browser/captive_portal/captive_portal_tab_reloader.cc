@@ -6,7 +6,9 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/captive_portal/captive_portal_service.h"
 #include "chrome/browser/captive_portal/captive_portal_service_factory.h"
 #include "content/public/browser/interstitial_page.h"
@@ -100,10 +102,9 @@ void CaptivePortalTabReloader::OnLoadCommitted(int net_error) {
   // If the tab needs to reload, do so asynchronously, to avoid reentrancy
   // issues.
   if (state_ == STATE_NEEDS_RELOAD) {
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&CaptivePortalTabReloader::ReloadTabIfNeeded,
-                   weak_factory_.GetWeakPtr()));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&CaptivePortalTabReloader::ReloadTabIfNeeded,
+                              weak_factory_.GetWeakPtr()));
   }
 }
 

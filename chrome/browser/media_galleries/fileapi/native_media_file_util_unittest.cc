@@ -10,8 +10,8 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/format_macros.h"
 #include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #include "chrome/browser/media_galleries/fileapi/native_media_file_util.h"
@@ -124,17 +124,14 @@ class NativeMediaFileUtilTest : public testing::Test {
 
     ScopedVector<storage::FileSystemBackend> additional_providers;
     additional_providers.push_back(new MediaFileSystemBackend(
-        data_dir_.path(), base::MessageLoopProxy::current().get()));
+        data_dir_.path(), base::ThreadTaskRunnerHandle::Get().get()));
 
     file_system_context_ = new storage::FileSystemContext(
-        base::MessageLoopProxy::current().get(),
-        base::MessageLoopProxy::current().get(),
+        base::ThreadTaskRunnerHandle::Get().get(),
+        base::ThreadTaskRunnerHandle::Get().get(),
         storage::ExternalMountPoints::CreateRefCounted().get(),
-        storage_policy.get(),
-        NULL,
-        additional_providers.Pass(),
-        std::vector<storage::URLRequestAutoMountHandler>(),
-        data_dir_.path(),
+        storage_policy.get(), NULL, additional_providers.Pass(),
+        std::vector<storage::URLRequestAutoMountHandler>(), data_dir_.path(),
         content::CreateAllowFileAccessOptions());
 
     filesystem_id_ = isolated_context()->RegisterFileSystemForPath(

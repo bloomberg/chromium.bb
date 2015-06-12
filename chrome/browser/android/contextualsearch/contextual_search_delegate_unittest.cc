@@ -26,8 +26,8 @@ class ContextualSearchDelegateTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    request_context_ = new net::TestURLRequestContextGetter(
-        io_message_loop_.message_loop_proxy());
+    request_context_ =
+        new net::TestURLRequestContextGetter(io_message_loop_.task_runner());
     template_url_service_.reset(CreateTemplateURLService());
     delegate_.reset(new ContextualSearchDelegate(
         request_context_.get(), template_url_service_.get(),

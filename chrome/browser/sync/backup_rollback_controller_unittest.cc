@@ -5,9 +5,10 @@
 #include "chrome/browser/sync/backup_rollback_controller.h"
 
 #include "base/command_line.h"
+#include "base/location.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "chrome/browser/sync/supervised_user_signin_manager_wrapper.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/sync_driver/sync_prefs.h"
@@ -68,7 +69,7 @@ class BackupRollbackControllerTest : public testing::Test {
 
   void PumpLoop() {
     base::RunLoop run_loop;
-    loop_.PostTask(FROM_HERE, run_loop.QuitClosure());
+    loop_.task_runner()->PostTask(FROM_HERE, run_loop.QuitClosure());
     run_loop.Run();
   }
 
@@ -92,7 +93,7 @@ TEST_F(BackupRollbackControllerTest, NoBackupIfDisabled) {
 
   base::RunLoop run_loop;
   EXPECT_FALSE(controller_->StartBackup());
-  loop_.PostTask(FROM_HERE, run_loop.QuitClosure());
+  loop_.task_runner()->PostTask(FROM_HERE, run_loop.QuitClosure());
   run_loop.Run();
   EXPECT_FALSE(backup_started_);
 }

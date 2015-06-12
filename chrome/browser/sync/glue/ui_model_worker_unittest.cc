@@ -5,9 +5,10 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/sync/glue/ui_model_worker.h"
@@ -88,7 +89,8 @@ TEST_F(SyncUIModelWorkerTest, ScheduledWorkRunsOnUILoop) {
   scoped_ptr<UIModelWorkerVisitor> v(
       new UIModelWorkerVisitor(&v_was_run, true));
 
-  syncer_thread()->message_loop()->PostTask(FROM_HERE,
+  syncer_thread()->task_runner()->PostTask(
+      FROM_HERE,
       base::Bind(&Syncer::SyncShare, base::Unretained(syncer()), v.get()));
 
   // We are on the UI thread, so run our loop to process the

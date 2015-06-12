@@ -11,9 +11,12 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/debug/leak_tracker.h"
+#include "base/location.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
@@ -1109,9 +1112,9 @@ void LocalSafeBrowsingDatabaseManager::StartSafeBrowsingCheck(
       safe_browsing_task_runner_.get(), FROM_HERE, task,
       base::Bind(&LocalSafeBrowsingDatabaseManager::OnAsyncCheckDone,
                  check->weak_ptr_factory_->GetWeakPtr(), check));
-  base::MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      base::Bind(&LocalSafeBrowsingDatabaseManager::TimeoutCallback,
-                 check->weak_ptr_factory_->GetWeakPtr(), check),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&LocalSafeBrowsingDatabaseManager::TimeoutCallback,
+                            check->weak_ptr_factory_->GetWeakPtr(), check),
       check_timeout_);
 }
 

@@ -6,9 +6,11 @@
 
 #include <string.h>
 
+#include "base/location.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/socket/stream_socket.h"
@@ -34,32 +36,31 @@ static const char kWebSocketUpgradeRequest[] = "GET %s HTTP/1.1\r\n"
     "\r\n";
 
 static void PostDeviceInfoCallback(
-    scoped_refptr<base::MessageLoopProxy> response_message_loop,
+    scoped_refptr<base::SingleThreadTaskRunner> response_task_runner,
     const AndroidDeviceManager::DeviceInfoCallback& callback,
     const AndroidDeviceManager::DeviceInfo& device_info) {
-  response_message_loop->PostTask(FROM_HERE, base::Bind(callback, device_info));
+  response_task_runner->PostTask(FROM_HERE, base::Bind(callback, device_info));
 }
 
 static void PostCommandCallback(
-    scoped_refptr<base::MessageLoopProxy> response_message_loop,
+    scoped_refptr<base::SingleThreadTaskRunner> response_task_runner,
     const AndroidDeviceManager::CommandCallback& callback,
     int result,
     const std::string& response) {
-  response_message_loop->PostTask(FROM_HERE,
-                                  base::Bind(callback, result, response));
+  response_task_runner->PostTask(FROM_HERE,
+                                 base::Bind(callback, result, response));
 }
 
 static void PostHttpUpgradeCallback(
-    scoped_refptr<base::MessageLoopProxy> response_message_loop,
+    scoped_refptr<base::SingleThreadTaskRunner> response_task_runner,
     const AndroidDeviceManager::HttpUpgradeCallback& callback,
     int result,
     const std::string& extensions,
     const std::string& body_head,
     scoped_ptr<net::StreamSocket> socket) {
-  response_message_loop->PostTask(
-      FROM_HERE,
-      base::Bind(callback, result, extensions, body_head,
-                 base::Passed(&socket)));
+  response_task_runner->PostTask(
+      FROM_HERE, base::Bind(callback, result, extensions, body_head,
+                            base::Passed(&socket)));
 }
 
 class HttpRequest {
@@ -267,36 +268,34 @@ class DevicesRequest : public base::RefCountedThreadSafe<DevicesRequest> {
   typedef base::Callback<void(scoped_ptr<DeviceDescriptors>)>
       DescriptorsCallback;
 
-  static void Start(scoped_refptr<base::MessageLoopProxy> device_message_loop,
-                    const DeviceProviders& providers,
-                    const DescriptorsCallback& callback) {
+  static void Start(
+      scoped_refptr<base::SingleThreadTaskRunner> device_task_runner,
+      const DeviceProviders& providers,
+      const DescriptorsCallback& callback) {
     // Don't keep counted reference on calling thread;
     DevicesRequest* request = new DevicesRequest(callback);
     // Avoid destruction while sending requests
     request->AddRef();
     for (DeviceProviders::const_iterator it = providers.begin();
          it != providers.end(); ++it) {
-      device_message_loop->PostTask(
-          FROM_HERE,
-          base::Bind(
-              &DeviceProvider::QueryDevices,
-              *it,
-              base::Bind(&DevicesRequest::ProcessSerials, request, *it)));
+      device_task_runner->PostTask(
+          FROM_HERE, base::Bind(&DeviceProvider::QueryDevices, *it,
+                                base::Bind(&DevicesRequest::ProcessSerials,
+                                           request, *it)));
     }
-    device_message_loop->ReleaseSoon(FROM_HERE, request);
+    device_task_runner->ReleaseSoon(FROM_HERE, request);
   }
 
  private:
   explicit DevicesRequest(const DescriptorsCallback& callback)
-      : response_message_loop_(base::MessageLoopProxy::current()),
+      : response_task_runner_(base::ThreadTaskRunnerHandle::Get()),
         callback_(callback),
-        descriptors_(new DeviceDescriptors()) {
-  }
+        descriptors_(new DeviceDescriptors()) {}
 
   friend class base::RefCountedThreadSafe<DevicesRequest>;
   ~DevicesRequest() {
-    response_message_loop_->PostTask(FROM_HERE,
-        base::Bind(callback_, base::Passed(&descriptors_)));
+    response_task_runner_->PostTask(
+        FROM_HERE, base::Bind(callback_, base::Passed(&descriptors_)));
   }
 
   typedef std::vector<std::string> Serials;
@@ -311,7 +310,7 @@ class DevicesRequest : public base::RefCountedThreadSafe<DevicesRequest> {
     }
   }
 
-  scoped_refptr<base::MessageLoopProxy> response_message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> response_task_runner_;
   DescriptorsCallback callback_;
   scoped_ptr<DeviceDescriptors> descriptors_;
 };
@@ -384,41 +383,30 @@ AndroidDeviceManager::DeviceProvider::~DeviceProvider() {
 
 void AndroidDeviceManager::Device::QueryDeviceInfo(
     const DeviceInfoCallback& callback) {
-  message_loop_proxy_->PostTask(
+  task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&DeviceProvider::QueryDeviceInfo,
-                 provider_,
-                 serial_,
+      base::Bind(&DeviceProvider::QueryDeviceInfo, provider_, serial_,
                  base::Bind(&PostDeviceInfoCallback,
-                            base::MessageLoopProxy::current(),
-                            callback)));
+                            base::ThreadTaskRunnerHandle::Get(), callback)));
 }
 
 void AndroidDeviceManager::Device::OpenSocket(const std::string& socket_name,
                                               const SocketCallback& callback) {
-  message_loop_proxy_->PostTask(
-      FROM_HERE,
-      base::Bind(&DeviceProvider::OpenSocket,
-                 provider_,
-                 serial_,
-                 socket_name,
-                 callback));
+  task_runner_->PostTask(
+      FROM_HERE, base::Bind(&DeviceProvider::OpenSocket, provider_, serial_,
+                            socket_name, callback));
 }
 
 void AndroidDeviceManager::Device::SendJsonRequest(
     const std::string& socket_name,
     const std::string& request,
     const CommandCallback& callback) {
-  message_loop_proxy_->PostTask(
+  task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&DeviceProvider::SendJsonRequest,
-                 provider_,
-                 serial_,
-                 socket_name,
-                 request,
+      base::Bind(&DeviceProvider::SendJsonRequest, provider_, serial_,
+                 socket_name, request,
                  base::Bind(&PostCommandCallback,
-                            base::MessageLoopProxy::current(),
-                            callback)));
+                            base::ThreadTaskRunnerHandle::Get(), callback)));
 }
 
 void AndroidDeviceManager::Device::HttpUpgrade(
@@ -426,24 +414,19 @@ void AndroidDeviceManager::Device::HttpUpgrade(
     const std::string& url,
     const std::string& extensions,
     const HttpUpgradeCallback& callback) {
-  message_loop_proxy_->PostTask(
+  task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&DeviceProvider::HttpUpgrade,
-                 provider_,
-                 serial_,
-                 socket_name,
-                 url,
-                 extensions,
+      base::Bind(&DeviceProvider::HttpUpgrade, provider_, serial_, socket_name,
+                 url, extensions,
                  base::Bind(&PostHttpUpgradeCallback,
-                            base::MessageLoopProxy::current(),
-                            callback)));
+                            base::ThreadTaskRunnerHandle::Get(), callback)));
 }
 
 AndroidDeviceManager::Device::Device(
-    scoped_refptr<base::MessageLoopProxy> device_message_loop,
+    scoped_refptr<base::SingleThreadTaskRunner> device_task_runner,
     scoped_refptr<DeviceProvider> provider,
     const std::string& serial)
-    : message_loop_proxy_(device_message_loop),
+    : task_runner_(device_task_runner),
       provider_(provider),
       serial_(serial),
       weak_factory_(this) {
@@ -457,11 +440,9 @@ AndroidDeviceManager::Device::~Device() {
   provider_->AddRef();
   DeviceProvider* raw_ptr = provider_.get();
   provider_ = NULL;
-  message_loop_proxy_->PostTask(
-      FROM_HERE,
-      base::Bind(&ReleaseDeviceAndProvider,
-                 base::Unretained(raw_ptr),
-                 serial_));
+  task_runner_->PostTask(FROM_HERE,
+                         base::Bind(&ReleaseDeviceAndProvider,
+                                    base::Unretained(raw_ptr), serial_));
 }
 
 AndroidDeviceManager::HandlerThread*
@@ -488,9 +469,9 @@ AndroidDeviceManager::HandlerThread::HandlerThread() {
   }
 }
 
-scoped_refptr<base::MessageLoopProxy>
+scoped_refptr<base::SingleThreadTaskRunner>
 AndroidDeviceManager::HandlerThread::message_loop() {
-  return thread_ ? thread_->message_loop_proxy() : NULL;
+  return thread_ ? thread_->task_runner() : NULL;
 }
 
 // static
@@ -528,11 +509,9 @@ void AndroidDeviceManager::SetDeviceProviders(
 }
 
 void AndroidDeviceManager::QueryDevices(const DevicesCallback& callback) {
-  DevicesRequest::Start(handler_thread_->message_loop(),
-                        providers_,
+  DevicesRequest::Start(handler_thread_->message_loop(), providers_,
                         base::Bind(&AndroidDeviceManager::UpdateDevices,
-                                   weak_factory_.GetWeakPtr(),
-                                   callback));
+                                   weak_factory_.GetWeakPtr(), callback));
 }
 
 AndroidDeviceManager::AndroidDeviceManager()
@@ -556,8 +535,8 @@ void AndroidDeviceManager::UpdateDevices(
     scoped_refptr<Device> device;
     if (found == devices_.end() || !found->second ||
         found->second->provider_.get() != it->provider.get()) {
-      device = new Device(handler_thread_->message_loop(),
-          it->provider, it->serial);
+      device =
+          new Device(handler_thread_->message_loop(), it->provider, it->serial);
     } else {
       device = found->second.get();
     }

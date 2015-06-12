@@ -5,9 +5,11 @@
 #include "chrome/browser/sync/startup_controller.h"
 
 #include "base/command_line.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
 #include "base/metrics/histogram.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/sync/supervised_user_signin_manager_wrapper.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
@@ -92,10 +94,11 @@ bool StartupController::StartUp(StartUpDeferredOption deferred_option) {
       sync_prefs_->GetPreferredDataTypes(registered_types_)
           .Has(syncer::SESSIONS)) {
     if (first_start) {
-      base::MessageLoop::current()->PostDelayedTask(
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE,
           base::Bind(&StartupController::OnFallbackStartupTimerExpired,
-                     weak_factory_.GetWeakPtr()), fallback_timeout_);
+                     weak_factory_.GetWeakPtr()),
+          fallback_timeout_);
     }
     return false;
   }

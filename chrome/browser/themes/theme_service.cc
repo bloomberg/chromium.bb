@@ -7,12 +7,14 @@
 #include <algorithm>
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/sequenced_task_runner.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -495,10 +497,9 @@ void ThemeService::ClearAllThemeData() {
   // http://crbug.com/62154
   // RemoveUnusedThemes is called on a task because ClearAllThemeData() may
   // be called as a result of NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED.
-  base::MessageLoop::current()->PostTask(FROM_HERE,
-      base::Bind(&ThemeService::RemoveUnusedThemes,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 true));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&ThemeService::RemoveUnusedThemes,
+                            weak_ptr_factory_.GetWeakPtr(), true));
 }
 
 void ThemeService::LoadThemePrefs() {
@@ -586,10 +587,9 @@ void ThemeService::OnExtensionServiceReady() {
                  extensions::NOTIFICATION_EXTENSION_ENABLED,
                  content::Source<Profile>(profile_));
 
-  base::MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      base::Bind(&ThemeService::RemoveUnusedThemes,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 false),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&ThemeService::RemoveUnusedThemes,
+                            weak_ptr_factory_.GetWeakPtr(), false),
       base::TimeDelta::FromSeconds(kRemoveUnusedThemesStartupDelay));
 }
 

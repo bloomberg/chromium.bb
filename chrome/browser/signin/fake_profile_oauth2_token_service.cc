@@ -5,7 +5,9 @@
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 
 FakeProfileOAuth2TokenService::PendingRequest::PendingRequest() {
 }
@@ -190,12 +192,11 @@ void FakeProfileOAuth2TokenService::FetchOAuth2Token(
   pending_requests_.push_back(pending_request);
 
   if (auto_post_fetch_response_on_message_loop_) {
-    base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
-        &FakeProfileOAuth2TokenService::IssueAllTokensForAccount,
-        weak_ptr_factory_.GetWeakPtr(),
-        account_id,
-        "access_token",
-        base::Time::Max()));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::Bind(&FakeProfileOAuth2TokenService::IssueAllTokensForAccount,
+                   weak_ptr_factory_.GetWeakPtr(), account_id, "access_token",
+                   base::Time::Max()));
   }
 }
 

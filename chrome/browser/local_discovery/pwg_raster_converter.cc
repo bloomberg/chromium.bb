@@ -11,7 +11,9 @@
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/location.h"
 #include "base/logging.h"
+#include "base/single_thread_task_runner.h"
 #include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/chrome_utility_printing_messages.h"
 #include "chrome/grit/generated_resources.h"
@@ -226,8 +228,7 @@ void PwgUtilityProcessHostClient::StartProcessOnIOThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   utility_process_host_ =
       content::UtilityProcessHost::Create(
-          this,
-          base::MessageLoop::current()->message_loop_proxy())->AsWeakPtr();
+          this, base::MessageLoop::current()->task_runner())->AsWeakPtr();
   utility_process_host_->SetName(l10n_util::GetStringUTF16(
       IDS_UTILITY_PROCESS_PWG_RASTER_CONVERTOR_NAME));
   utility_process_host_->Send(new ChromeUtilityMsg_StartupPing);

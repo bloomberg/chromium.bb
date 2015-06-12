@@ -4,10 +4,13 @@
 
 #include "chrome/browser/devtools/device/adb/mock_adb_server.h"
 
+#include "base/location.h"
 #include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/non_thread_safe.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_test.h"
@@ -314,9 +317,8 @@ void SimpleHttpServer::Connection::OnDataRead(int count) {
     }
   } while (bytes_processed);
   // Posting to avoid deep recursion in case of synchronous IO
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&Connection::ReadData, weak_factory_.GetWeakPtr()));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&Connection::ReadData, weak_factory_.GetWeakPtr()));
 }
 
 void SimpleHttpServer::Connection::WriteData() {
@@ -348,7 +350,7 @@ void SimpleHttpServer::Connection::OnDataWritten(int count) {
 
   if (bytes_to_write_ != 0)
     // Posting to avoid deep recursion in case of synchronous IO
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&Connection::WriteData, weak_factory_.GetWeakPtr()));
   else if (read_closed_)
@@ -362,11 +364,9 @@ void SimpleHttpServer::AcceptConnection() {
       base::Bind(&SimpleHttpServer::OnAccepted, base::Unretained(this)));
 
   if (accept_result != net::ERR_IO_PENDING)
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&SimpleHttpServer::OnAccepted,
-                   weak_factory_.GetWeakPtr(),
-                   accept_result));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&SimpleHttpServer::OnAccepted,
+                              weak_factory_.GetWeakPtr(), accept_result));
 }
 
 void SimpleHttpServer::OnAccepted(int result) {

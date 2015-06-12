@@ -4,9 +4,12 @@
 
 #include "components/favicon/content/content_favicon_driver.h"
 
+#include "base/location.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/browser.h"
@@ -150,7 +153,7 @@ class PendingTaskWaiter : public content::NotificationObserver,
       // We stop waiting based on changes in state to FaviconHandler which occur
       // immediately after OnFaviconUpdated() is called. Post a task to check if
       // we can stop waiting.
-      base::MessageLoopForUI::current()->PostTask(
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::Bind(&PendingTaskWaiter::EndLoopIfCanStopWaiting,
                                 weak_factory_.GetWeakPtr()));
     }

@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/chrome_content_browser_client.h"
@@ -341,7 +344,7 @@ class WebViewInteractiveTest
 
    private:
     void ScheduleWait() {
-      base::MessageLoop::current()->PostDelayedTask(
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE,
           base::Bind(&PopupCreatedObserver::Wait, base::Unretained(this)),
           base::TimeDelta::FromMilliseconds(200));
@@ -421,10 +424,9 @@ class WebViewInteractiveTest
     MoveMouseInsideWindow(gfx::Point(78, 12));
 
     // Now wait a bit before moving mouse to initiate drag/drop.
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&WebViewInteractiveTest::DragTestStep2,
-                   base::Unretained(this)),
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, base::Bind(&WebViewInteractiveTest::DragTestStep2,
+                              base::Unretained(this)),
         base::TimeDelta::FromMilliseconds(200));
   }
 

@@ -8,7 +8,9 @@
 
 #include "base/command_line.h"
 #include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "storage/browser/fileapi/file_observers.h"
 #include "storage/browser/fileapi/file_system_context.h"
@@ -109,7 +111,7 @@ base::FilePath GetSyncFileSystemDir(const base::FilePath& profile_base_dir) {
 
 void RunSoon(const tracked_objects::Location& from_here,
              const base::Closure& callback) {
-  base::MessageLoop::current()->PostTask(from_here, callback);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(from_here, callback);
 }
 
 base::Closure NoopClosure() {

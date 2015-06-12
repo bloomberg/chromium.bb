@@ -9,9 +9,11 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/location.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -667,8 +669,8 @@ void HistoryURLProvider::ExecuteWithDB(HistoryURLProviderParams* params,
   }
 
   // Return the results (if any) to the main thread.
-  params->message_loop->PostTask(FROM_HERE, base::Bind(
-      &HistoryURLProvider::QueryComplete, this, params));
+  params->message_loop->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&HistoryURLProvider::QueryComplete, this, params));
 }
 
 HistoryURLProvider::~HistoryURLProvider() {

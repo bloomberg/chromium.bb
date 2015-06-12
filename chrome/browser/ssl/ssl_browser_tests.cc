@@ -6,11 +6,14 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/location.h"
 #include "base/metrics/field_trial.h"
 #include "base/prefs/pref_service.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
@@ -260,9 +263,8 @@ class SSLUITest
         break;
 
       // Wait a bit.
-      base::MessageLoop::current()->PostDelayedTask(
-          FROM_HERE,
-          base::MessageLoop::QuitClosure(),
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+          FROM_HERE, base::MessageLoop::QuitClosure(),
           base::TimeDelta::FromMilliseconds(kTimeoutMS));
       content::RunMessageLoop();
     }
@@ -1532,9 +1534,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestCloseTabWithUnsafePopup) {
   for (int i = 0; i < 10; i++) {
     if (IsShowingWebContentsModalDialog())
       break;
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::MessageLoop::QuitClosure(),
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, base::MessageLoop::QuitClosure(),
         base::TimeDelta::FromSeconds(1));
     content::RunMessageLoop();
   }

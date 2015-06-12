@@ -4,9 +4,10 @@
 
 #include "base/command_line.h"
 #include "base/files/file_util.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
 #include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/test/test_timeouts.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
@@ -94,10 +95,8 @@ class SyncBackendStoppedChecker : public sync_driver::SyncServiceObserver {
     pss_->AddObserver(this);
     if (ProfileSyncService::IDLE == pss_->backend_mode())
       return true;
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        run_loop_.QuitClosure(),
-        timeout_);
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop_.QuitClosure(), timeout_);
     run_loop_.Run();
     pss_->RemoveObserver(this);
     return done_;
@@ -141,10 +140,8 @@ class SyncRollbackChecker : public sync_driver::SyncServiceObserver,
   bool Wait() {
     pss_->AddObserver(this);
     pss_->SetBrowsingDataRemoverObserverForTesting(this);
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        run_loop_.QuitClosure(),
-        timeout_);
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop_.QuitClosure(), timeout_);
     run_loop_.Run();
     pss_->RemoveObserver(this);
     return rollback_started_ && clear_done_;

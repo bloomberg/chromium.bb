@@ -6,11 +6,14 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/location.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/rand_util.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -33,9 +36,9 @@ IntranetRedirectDetector::IntranetRedirectDetector()
   // browser is starting up, and if so, come back later", but there is currently
   // no function to do this.
   static const int kStartFetchDelaySeconds = 7;
-  base::MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      base::Bind(&IntranetRedirectDetector::FinishSleep,
-                 weak_ptr_factory_.GetWeakPtr()),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&IntranetRedirectDetector::FinishSleep,
+                            weak_ptr_factory_.GetWeakPtr()),
       base::TimeDelta::FromSeconds(kStartFetchDelaySeconds));
 
   net::NetworkChangeNotifier::AddIPAddressObserver(this);
@@ -158,8 +161,8 @@ void IntranetRedirectDetector::OnIPAddressChanged() {
   // delay this a little bit.
   in_sleep_ = true;
   static const int kNetworkSwitchDelayMS = 1000;
-  base::MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      base::Bind(&IntranetRedirectDetector::FinishSleep,
-                 weak_ptr_factory_.GetWeakPtr()),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&IntranetRedirectDetector::FinishSleep,
+                            weak_ptr_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(kNetworkSwitchDelayMS));
 }

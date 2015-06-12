@@ -51,8 +51,8 @@ class TestResourcePrefetcher : public ResourcePrefetcher {
 class TestResourcePrefetcherDelegate : public ResourcePrefetcher::Delegate {
  public:
   explicit TestResourcePrefetcherDelegate(base::MessageLoop* loop)
-      : request_context_getter_(new net::TestURLRequestContextGetter(
-          loop->message_loop_proxy())) { }
+      : request_context_getter_(
+            new net::TestURLRequestContextGetter(loop->task_runner())) {}
   ~TestResourcePrefetcherDelegate() { }
 
   net::URLRequestContext* GetURLRequestContext() override {

@@ -5,7 +5,10 @@
 #include "chrome/browser/status_icons/desktop_notification_balloon.h"
 
 #include "base/bind.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
@@ -39,10 +42,9 @@ class DummyNotificationDelegate : public NotificationDelegate {
       : id_(kNotificationPrefix + id), profile_(profile) {}
 
   void Display() override {
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(
-            &CloseBalloon, id(), NotificationUIManager::GetProfileID(profile_)),
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, base::Bind(&CloseBalloon, id(),
+                              NotificationUIManager::GetProfileID(profile_)),
         base::TimeDelta::FromSeconds(kTimeoutSeconds));
   }
   std::string id() const override { return id_; }

@@ -7,7 +7,8 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/error_handler.h"
 
 class ProcessResourceUsage::ErrorHandler : public mojo::ErrorHandler {
@@ -38,9 +39,9 @@ ProcessResourceUsage::~ProcessResourceUsage() {
 
 void ProcessResourceUsage::RunPendingRefreshCallbacks() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  auto message_loop = base::MessageLoopProxy::current();
+  auto task_runner = base::ThreadTaskRunnerHandle::Get();
   for (const auto& callback : refresh_callbacks_)
-    message_loop->PostTask(FROM_HERE, callback);
+    task_runner->PostTask(FROM_HERE, callback);
   refresh_callbacks_.clear();
 }
 
@@ -48,7 +49,7 @@ void ProcessResourceUsage::Refresh(const base::Closure& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!service_ || service_.encountered_error()) {
     if (!callback.is_null())
-      base::MessageLoopProxy::current()->PostTask(FROM_HERE, callback);
+      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
     return;
   }
 

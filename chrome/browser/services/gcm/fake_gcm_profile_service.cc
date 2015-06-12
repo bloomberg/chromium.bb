@@ -6,9 +6,11 @@
 
 #include "base/bind.h"
 #include "base/format_macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/gcm_driver/fake_gcm_client_factory.h"
 #include "components/gcm_driver/fake_gcm_driver.h"
@@ -58,32 +60,24 @@ CustomFakeGCMDriver::~CustomFakeGCMDriver() {
 void CustomFakeGCMDriver::RegisterImpl(
     const std::string& app_id,
     const std::vector<std::string>& sender_ids) {
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&FakeGCMProfileService::RegisterFinished,
-                 base::Unretained(service_),
-                 app_id,
-                 sender_ids));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&FakeGCMProfileService::RegisterFinished,
+                            base::Unretained(service_), app_id, sender_ids));
 }
 
 void CustomFakeGCMDriver::UnregisterImpl(const std::string& app_id) {
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE, base::Bind(
-          &FakeGCMProfileService::UnregisterFinished,
-          base::Unretained(service_),
-          app_id));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&FakeGCMProfileService::UnregisterFinished,
+                            base::Unretained(service_), app_id));
 }
 
 void CustomFakeGCMDriver::SendImpl(const std::string& app_id,
                                    const std::string& receiver_id,
                                    const GCMClient::OutgoingMessage& message) {
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&FakeGCMProfileService::SendFinished,
-                 base::Unretained(service_),
-                 app_id,
-                 receiver_id,
-                 message));
+                 base::Unretained(service_), app_id, receiver_id, message));
 }
 
 void CustomFakeGCMDriver::OnRegisterFinished(

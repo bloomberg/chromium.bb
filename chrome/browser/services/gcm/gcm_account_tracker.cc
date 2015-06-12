@@ -8,7 +8,9 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -91,10 +93,9 @@ void GCMAccountTracker::ScheduleReportTokens() {
            << GetTimeToNextTokenReporting().InSeconds() << " seconds.";
 
   reporting_weak_ptr_factory_.InvalidateWeakPtrs();
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&GCMAccountTracker::ReportTokens,
-                 reporting_weak_ptr_factory_.GetWeakPtr()),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&GCMAccountTracker::ReportTokens,
+                            reporting_weak_ptr_factory_.GetWeakPtr()),
       GetTimeToNextTokenReporting());
 }
 

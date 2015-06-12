@@ -35,10 +35,13 @@
 #include "base/command_line.h"
 #include "base/hash.h"
 #include "base/json/json_writer.h"
+#include "base/location.h"
 #include "base/metrics/field_trial.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/spellchecker/word_trimmer.h"
 #include "chrome/common/chrome_switches.h"
@@ -374,12 +377,9 @@ void FeedbackSender::RequestDocumentMarkers() {
   for (std::vector<int>::const_iterator it = dead_renderers.begin();
        it != dead_renderers.end();
        ++it) {
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&FeedbackSender::OnReceiveDocumentMarkers,
-                   AsWeakPtr(),
-                   *it,
-                   std::vector<uint32>()));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&FeedbackSender::OnReceiveDocumentMarkers,
+                              AsWeakPtr(), *it, std::vector<uint32>()));
   }
 }
 

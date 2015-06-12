@@ -4,8 +4,10 @@
 
 #include "chrome/browser/sync/backend_migrator.h"
 
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/tracked_objects.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -115,10 +117,9 @@ void BackendMigrator::OnConfigureDone(
   // |manager_|'s methods aren't re-entrant, and we're notified from
   // them, so post a task to avoid problems.
   SDVLOG(1) << "Posting OnConfigureDoneImpl";
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&BackendMigrator::OnConfigureDoneImpl,
-                 weak_ptr_factory_.GetWeakPtr(), result));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&BackendMigrator::OnConfigureDoneImpl,
+                            weak_ptr_factory_.GetWeakPtr(), result));
 }
 
 namespace {

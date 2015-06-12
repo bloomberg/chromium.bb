@@ -5,8 +5,10 @@
 #include "chrome/browser/profiles/profile_destroyer.h"
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/render_process_host.h"
@@ -142,9 +144,9 @@ void ProfileDestroyer::RenderProcessHostDestroyed(
   if (num_hosts_ == 0) {
     // Delay the destruction one step further in case other observers need to
     // look at the profile attached to the host.
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(
-            &ProfileDestroyer::DestroyProfile, weak_ptr_factory_.GetWeakPtr()));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&ProfileDestroyer::DestroyProfile,
+                              weak_ptr_factory_.GetWeakPtr()));
   }
 }
 

@@ -4,8 +4,11 @@
 
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/location.h"
 #include "base/prefs/pref_service.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/devtools/device/devtools_android_bridge.h"
 #include "chrome/browser/devtools/device/self_device_provider.h"
 #include "chrome/browser/devtools/remote_debugging_server.h"
@@ -58,7 +61,7 @@ class PortForwardingTest: public InProcessBrowserTest {
     void PortStatusChanged(const ForwardingStatus& status) override {
       if (status.empty() && skip_empty_devices_)
         return;
-      base::MessageLoop::current()->PostTask(
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::MessageLoop::QuitClosure());
     }
 

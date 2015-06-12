@@ -6,13 +6,16 @@
 #include "base/cancelable_callback.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_timeouts.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/devtools/device/self_device_provider.h"
 #include "chrome/browser/devtools/devtools_window_testing.h"
@@ -329,7 +332,7 @@ class DevToolsExtensionTest : public DevToolsSanityTest,
                     content::NotificationService::AllSources());
       base::CancelableClosure timeout(
           base::Bind(&TimeoutCallback, "Extension load timed out."));
-      base::MessageLoop::current()->PostDelayedTask(
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE, timeout.callback(), TestTimeouts::action_timeout());
       extensions::UnpackedInstaller::Create(service)->Load(path);
       content::RunMessageLoop();
@@ -353,7 +356,7 @@ class DevToolsExtensionTest : public DevToolsSanityTest,
                   content::NotificationService::AllSources());
     base::CancelableClosure timeout(
         base::Bind(&TimeoutCallback, "Extension host load timed out."));
-    base::MessageLoop::current()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, timeout.callback(), TestTimeouts::action_timeout());
 
     extensions::ProcessManager* manager =

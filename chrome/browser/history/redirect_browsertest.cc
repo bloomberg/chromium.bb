@@ -10,13 +10,16 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/location.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/test/test_timeouts.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/platform_thread.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -60,8 +63,8 @@ class RedirectTest : public InProcessBrowserTest {
   void OnRedirectQueryComplete(std::vector<GURL>* rv,
                                const history::RedirectList* redirects) {
     rv->insert(rv->end(), redirects->begin(), redirects->end());
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-                                           base::MessageLoop::QuitClosure());
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::MessageLoop::QuitClosure());
   }
 
   // Tracker for asynchronous history queries.

@@ -8,11 +8,14 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/location.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_delta_serialization.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
@@ -363,7 +366,7 @@ void ServiceProcessControl::Launcher::DoDetectLaunched() {
 
   // If the service process is not launched yet then check again in 2 seconds.
   const base::TimeDelta kDetectLaunchRetry = base::TimeDelta::FromSeconds(2);
-  base::MessageLoop::current()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::Bind(&Launcher::DoDetectLaunched, this),
       kDetectLaunchRetry);
 }

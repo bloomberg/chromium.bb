@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
@@ -37,7 +39,7 @@ void SignalEvent(base::WaitableEvent* e) {
 
 bool WaitForExistingTasksOnLoop(base::MessageLoop* loop) {
   base::WaitableEvent e(true, false);
-  loop->PostTask(FROM_HERE, base::Bind(&SignalEvent, &e));
+  loop->task_runner()->PostTask(FROM_HERE, base::Bind(&SignalEvent, &e));
   // Timeout stolen from StatusChangeChecker::GetTimeoutDuration().
   return e.TimedWait(base::TimeDelta::FromSeconds(45));
 }
@@ -68,7 +70,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientDirectorySyncTest,
 
   // Wait for StartupController::StartUp()'s tasks to finish.
   base::RunLoop run_loop;
-  base::MessageLoop::current()->PostTask(FROM_HERE, run_loop.QuitClosure());
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                run_loop.QuitClosure());
   run_loop.Run();
   // Wait for the directory deletion to finish.
   base::MessageLoop* sync_loop = sync_service->GetSyncLoopForTest();

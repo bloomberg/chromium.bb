@@ -4,9 +4,12 @@
 
 #include "chrome/browser/devtools/devtools_targets_ui.h"
 
+#include "base/location.h"
 #include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/devtools/device/devtools_android_bridge.h"
@@ -69,10 +72,9 @@ class CancelableTimer {
   CancelableTimer(base::Closure callback, base::TimeDelta delay)
       : callback_(callback),
         weak_factory_(this) {
-    base::MessageLoop::current()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&CancelableTimer::Fire, weak_factory_.GetWeakPtr()),
-        delay);
+        base::Bind(&CancelableTimer::Fire, weak_factory_.GetWeakPtr()), delay);
   }
 
  private:

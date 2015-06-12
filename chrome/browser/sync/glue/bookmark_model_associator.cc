@@ -10,12 +10,13 @@
 #include "base/format_macros.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/bookmark_change_processor.h"
 #include "chrome/browser/undo/bookmark_undo_service_factory.h"
@@ -976,11 +977,9 @@ void BookmarkModelAssociator::PostPersistAssociationsTask() {
   // No need to post a task if a task is already pending.
   if (weak_factory_.HasWeakPtrs())
     return;
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(
-          &BookmarkModelAssociator::PersistAssociations,
-          weak_factory_.GetWeakPtr()));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&BookmarkModelAssociator::PersistAssociations,
+                            weak_factory_.GetWeakPtr()));
 }
 
 void BookmarkModelAssociator::PersistAssociations() {

@@ -10,8 +10,10 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
@@ -181,11 +183,10 @@ void DownloadShelf::AddDownload(DownloadItem* download) {
     // If we are going to remove the download from the shelf upon completion,
     // wait a few seconds to see if it completes quickly. If it's a small
     // download, then the user won't have time to interact with it.
-    base::MessageLoop::current()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&DownloadShelf::ShowDownloadById,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   download->GetId()),
+                   weak_ptr_factory_.GetWeakPtr(), download->GetId()),
         GetTransientDownloadShowDelay());
   } else {
     ShowDownload(download);

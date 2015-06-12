@@ -10,8 +10,11 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/format_macros.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -236,12 +239,10 @@ void BrowserFeatureExtractor::ExtractFeatures(const BrowseInfo* info,
   scoped_ptr<ClientPhishingRequest> req(request);
 
   ExtractBrowseInfoFeatures(*info, request);
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&BrowserFeatureExtractor::StartExtractFeatures,
-                 weak_factory_.GetWeakPtr(),
-                 base::Passed(&req),
-                 callback));
+                 weak_factory_.GetWeakPtr(), base::Passed(&req), callback));
 }
 
 void BrowserFeatureExtractor::ExtractMalwareFeatures(

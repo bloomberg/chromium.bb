@@ -8,15 +8,17 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/prefs/pref_service.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
@@ -179,7 +181,7 @@ void ClientSideDetectionService::SendClientReportPhishingRequest(
     ClientPhishingRequest* verdict,
     const ClientReportPhishingRequestCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&ClientSideDetectionService::StartClientReportPhishingRequest,
                  weak_factory_.GetWeakPtr(), verdict, callback));
@@ -189,7 +191,7 @@ void ClientSideDetectionService::SendClientReportMalwareRequest(
     ClientMalwareRequest* verdict,
     const ClientReportMalwareRequestCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&ClientSideDetectionService::StartClientReportMalwareRequest,
                  weak_factory_.GetWeakPtr(), verdict, callback));
@@ -273,10 +275,9 @@ void ClientSideDetectionService::ScheduleFetchModel(int64 delay_ms) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSbDisableAutoUpdate))
     return;
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&ClientSideDetectionService::StartFetchModel,
-                 weak_factory_.GetWeakPtr()),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&ClientSideDetectionService::StartFetchModel,
+                            weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(delay_ms));
 }
 

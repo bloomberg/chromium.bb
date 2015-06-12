@@ -8,7 +8,6 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/sample_map.h"
@@ -214,7 +213,7 @@ CloudPolicyInvalidatorTest::CloudPolicyInvalidatorTest()
     : core_(dm_protocol::kChromeUserPolicyType,
             std::string(),
             &store_,
-            loop_.message_loop_proxy()),
+            loop_.task_runner()),
       client_(nullptr),
       task_runner_(new base::TestSimpleTaskRunner()),
       clock_(new base::SimpleTestClock()),

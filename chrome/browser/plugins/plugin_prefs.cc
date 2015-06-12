@@ -8,12 +8,14 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/location.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -158,8 +160,8 @@ void PluginPrefs::EnablePlugin(
   }
 
   if (!can_enable) {
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-                                           base::Bind(callback, false));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  base::Bind(callback, false));
     return;
   }
 

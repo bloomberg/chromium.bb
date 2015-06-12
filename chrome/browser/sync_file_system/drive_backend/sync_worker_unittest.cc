@@ -5,7 +5,9 @@
 #include "chrome/browser/sync_file_system/drive_backend/sync_worker.h"
 
 #include "base/files/scoped_temp_dir.h"
+#include "base/location.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/drive/drive_uploader.h"
@@ -34,8 +36,8 @@ namespace {
 const char kAppID[] = "app_id";
 
 void EmptyTask(SyncStatusCode status, const SyncStatusCallback& callback) {
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE, base::Bind(callback, status));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                base::Bind(callback, status));
 }
 
 }  // namespace

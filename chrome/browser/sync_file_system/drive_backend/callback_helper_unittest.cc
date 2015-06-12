@@ -4,8 +4,9 @@
 
 #include "chrome/browser/sync_file_system/drive_backend/callback_helper.h"
 
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -68,7 +69,7 @@ TEST(DriveBackendCallbackHelperTest, RunOnOtherThreadTest) {
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner =
       base::ThreadTaskRunnerHandle::Get();
   scoped_refptr<base::SequencedTaskRunner> worker_task_runner =
-      thread.message_loop_proxy();
+      thread.task_runner();
 
   bool called = false;
   base::RunLoop run_loop;

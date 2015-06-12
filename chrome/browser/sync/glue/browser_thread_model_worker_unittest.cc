@@ -4,10 +4,13 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/test/test_timeouts.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/sync/glue/browser_thread_model_worker.h"
@@ -89,9 +92,9 @@ class SyncBrowserThreadModelWorkerTest : public testing::Test {
 };
 
 TEST_F(SyncBrowserThreadModelWorkerTest, DoesWorkOnDatabaseThread) {
-  base::MessageLoop::current()->PostTask(FROM_HERE,
-      base::Bind(&SyncBrowserThreadModelWorkerTest::ScheduleWork,
-                 factory()->GetWeakPtr()));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&SyncBrowserThreadModelWorkerTest::ScheduleWork,
+                            factory()->GetWeakPtr()));
   base::MessageLoop::current()->Run();
   EXPECT_TRUE(did_do_work());
 }

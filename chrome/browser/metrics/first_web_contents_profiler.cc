@@ -6,9 +6,11 @@
 
 #include "chrome/browser/metrics/first_web_contents_profiler.h"
 
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/process/process_info.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_iterator.h"
@@ -54,7 +56,7 @@ void RecordUIResponsiveness(base::HistogramBase* responsiveness_histogram,
     // Records elapsed time to execute last task.
     unresponsiveness_histogram->AddTime(elapsed);
   } else {
-    base::MessageLoop::current()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&DelayedRecordUIResponsiveness, responsiveness_histogram,
                    unresponsiveness_histogram, start_recording_time,
@@ -71,7 +73,7 @@ void DelayedRecordUIResponsiveness(
     base::HistogramBase* unresponsiveness_histogram,
     base::Time start_recording_time,
     base::TimeDelta next_task_delay) {
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&RecordUIResponsiveness, responsiveness_histogram,
                             unresponsiveness_histogram, start_recording_time,
                             base::Time::Now(), next_task_delay));
@@ -80,7 +82,7 @@ void DelayedRecordUIResponsiveness(
 // Sends the first task for measuring UI Responsiveness.
 void MeasureUIResponsiveness(base::HistogramBase* responsiveness_histogram,
                              base::HistogramBase* unresponsiveness_histogram) {
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&RecordUIResponsiveness, responsiveness_histogram,
                  unresponsiveness_histogram, base::Time::Now(),
@@ -146,13 +148,13 @@ void FirstWebContentsProfiler::DidFirstVisuallyNonEmptyPaint() {
   // after the first paint but get overloaded shortly thereafter, here we
   // measures responsiveness after 1 second and 10 seconds to observe the
   // possible effect of those late tasks.
-  base::MessageLoop::current()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&MeasureUIResponsiveness, responsiveness_1sec_histogram_,
                  unresponsiveness_1sec_histogram_),
       base::TimeDelta::FromSeconds(1));
 
-  base::MessageLoop::current()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&MeasureUIResponsiveness, responsiveness_10sec_histogram_,
                  unresponsiveness_10sec_histogram_),

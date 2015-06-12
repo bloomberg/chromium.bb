@@ -4,6 +4,8 @@
 
 #include "chrome/browser/local_discovery/service_discovery_host_client.h"
 
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/common/local_discovery/local_discovery_messages.h"
 #include "chrome/grit/generated_resources.h"
@@ -174,7 +176,7 @@ class ServiceDiscoveryHostClient::LocalDomainResolverProxy
 };
 
 ServiceDiscoveryHostClient::ServiceDiscoveryHostClient() : current_id_(0) {
-  callback_runner_ = base::MessageLoop::current()->message_loop_proxy();
+  callback_runner_ = base::MessageLoop::current()->task_runner();
   io_runner_ = BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
 }
 

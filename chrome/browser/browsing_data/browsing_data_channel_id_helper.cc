@@ -5,9 +5,11 @@
 #include "chrome/browser/browsing_data/browsing_data_channel_id_helper.h"
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/url_request/url_request_context.h"
@@ -192,10 +194,9 @@ void CannedBrowsingDataChannelIDHelper::StartFetching(
     return;
   // We post a task to emulate async fetching behavior.
   completion_callback_ = callback;
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&CannedBrowsingDataChannelIDHelper::FinishFetching,
-                 this));
+      base::Bind(&CannedBrowsingDataChannelIDHelper::FinishFetching, this));
 }
 
 void CannedBrowsingDataChannelIDHelper::FinishFetching() {

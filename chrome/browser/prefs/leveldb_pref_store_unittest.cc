@@ -7,7 +7,6 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/values.h"
@@ -43,8 +42,8 @@ class LevelDBPrefStoreTest : public testing::Test {
   void TearDown() override { Close(); }
 
   void Open() {
-    pref_store_ = new LevelDBPrefStore(
-        temp_dir_.path(), message_loop_.message_loop_proxy().get());
+    pref_store_ = new LevelDBPrefStore(temp_dir_.path(),
+                                       message_loop_.task_runner().get());
     EXPECT_EQ(LevelDBPrefStore::PREF_READ_ERROR_NONE, pref_store_->ReadPrefs());
   }
 
@@ -93,8 +92,8 @@ TEST_F(LevelDBPrefStoreTest, PutAndGetPersistent) {
 }
 
 TEST_F(LevelDBPrefStoreTest, BasicObserver) {
-  scoped_refptr<LevelDBPrefStore> pref_store = new LevelDBPrefStore(
-      temp_dir_.path(), message_loop_.message_loop_proxy().get());
+  scoped_refptr<LevelDBPrefStore> pref_store =
+      new LevelDBPrefStore(temp_dir_.path(), message_loop_.task_runner().get());
   MockPrefStoreObserver mock_observer;
   pref_store->AddObserver(&mock_observer);
   EXPECT_CALL(mock_observer, OnInitializationCompleted(true)).Times(1);
@@ -199,7 +198,7 @@ TEST_F(LevelDBPrefStoreTest, OpenAsync) {
   Close();
 
   scoped_refptr<LevelDBPrefStore> pref_store(new LevelDBPrefStore(
-      temp_dir_.path(), message_loop_.message_loop_proxy().get()));
+      temp_dir_.path(), message_loop_.task_runner().get()));
   MockReadErrorDelegate* delegate = new MockReadErrorDelegate;
   pref_store->ReadPrefsAsync(delegate);
 
@@ -224,7 +223,7 @@ TEST_F(LevelDBPrefStoreTest, OpenAsyncError) {
 
   // Try to open an async connection to the same database.
   scoped_refptr<LevelDBPrefStore> pref_store(new LevelDBPrefStore(
-      temp_dir_.path(), message_loop_.message_loop_proxy().get()));
+      temp_dir_.path(), message_loop_.task_runner().get()));
   MockReadErrorDelegate* delegate = new MockReadErrorDelegate;
   pref_store->ReadPrefsAsync(delegate);
 
@@ -251,8 +250,7 @@ TEST_F(LevelDBPrefStoreTest, RepairCorrupt) {
   base::FilePath dest = temp_dir_.path().AppendASCII("corrupted_leveldb");
   const bool kRecursive = true;
   ASSERT_TRUE(CopyDirectory(corrupted_dir, dest, kRecursive));
-  pref_store_ =
-      new LevelDBPrefStore(dest, message_loop_.message_loop_proxy().get());
+  pref_store_ = new LevelDBPrefStore(dest, message_loop_.task_runner().get());
   EXPECT_EQ(LevelDBPrefStore::PREF_READ_ERROR_LEVELDB_CORRUPTION,
             pref_store_->ReadPrefs());
 }

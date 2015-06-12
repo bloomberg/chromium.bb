@@ -12,9 +12,11 @@
 #include "base/process/kill.h"
 #include "base/process/process.h"
 #include "base/rand_util.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/test_timeouts.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "chrome/browser/chrome_content_browser_client.h"
@@ -103,8 +105,8 @@ class TestServiceProcess : public ServiceProcess {
   bool Initialize(base::MessageLoopForUI* message_loop,
                   ServiceProcessState* state);
 
-  base::MessageLoopProxy* IOMessageLoopProxy() {
-    return io_thread_->message_loop_proxy().get();
+  base::SingleThreadTaskRunner* IOMessageLoopProxy() {
+    return io_thread_->task_runner().get();
   }
 };
 
@@ -462,7 +464,7 @@ base::Process CloudPrintProxyPolicyStartupTest::Launch(
 void CloudPrintProxyPolicyStartupTest::WaitForConnect() {
   observer_.Wait();
   EXPECT_TRUE(CheckServiceProcessReady());
-  EXPECT_TRUE(base::MessageLoopProxy::current().get());
+  EXPECT_TRUE(base::ThreadTaskRunnerHandle::Get().get());
   ServiceProcessControl::GetInstance()->SetChannel(
       IPC::ChannelProxy::Create(GetServiceProcessChannel(),
                                 IPC::Channel::MODE_NAMED_CLIENT,

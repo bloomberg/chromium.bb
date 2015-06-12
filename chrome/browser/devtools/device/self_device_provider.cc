@@ -4,8 +4,11 @@
 
 #include "chrome/browser/devtools/device/self_device_provider.h"
 
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "net/socket/tcp_client_socket.h"
 
 namespace {
@@ -46,7 +49,7 @@ void SelfAsDeviceProvider::QueryDeviceInfo(const std::string& serial,
 
   device_info.browser_info.push_back(browser_info);
 
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(callback, device_info));
 }
 

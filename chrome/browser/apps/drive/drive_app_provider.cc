@@ -8,9 +8,11 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/apps/drive/drive_app_converter.h"
 #include "chrome/browser/apps/drive/drive_app_mapping.h"
 #include "chrome/browser/apps/drive/drive_app_uninstall_sync_service.h"
@@ -74,10 +76,9 @@ void DriveAppProvider::AddUninstalledDriveAppFromSync(
   // Decouple the operation because this function could be called during
   // sync processing and UpdateDriveApps could trigger another sync change.
   // See http://crbug.com/429205
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&DriveAppProvider::UpdateDriveApps,
-                 weak_ptr_factory_.GetWeakPtr()));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&DriveAppProvider::UpdateDriveApps,
+                            weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DriveAppProvider::RemoveUninstalledDriveAppFromSync(
@@ -87,10 +88,9 @@ void DriveAppProvider::RemoveUninstalledDriveAppFromSync(
   // Decouple the operation because this function could be called during
   // sync processing and UpdateDriveApps could trigger another sync change.
   // See http://crbug.com/429205
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&DriveAppProvider::UpdateDriveApps,
-                 weak_ptr_factory_.GetWeakPtr()));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&DriveAppProvider::UpdateDriveApps,
+                            weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DriveAppProvider::UpdateMappingAndExtensionSystem(
@@ -299,11 +299,10 @@ void DriveAppProvider::OnExtensionInstalled(
       // Defer the processing because it touches the extensions system and
       // it is better to let the current task finish to avoid unexpected
       // incomplete status.
-      base::MessageLoop::current()->PostTask(
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
           base::Bind(&DriveAppProvider::ProcessDeferredOnExtensionInstalled,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     drive_apps_[i].app_id,
+                     weak_ptr_factory_.GetWeakPtr(), drive_apps_[i].app_id,
                      extension->id()));
       return;
     }

@@ -9,11 +9,14 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/pickle.h"
 #include "base/prefs/pref_service.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/password_manager/native_backend_kwallet_x.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/core/common/password_form.h"
@@ -356,8 +359,8 @@ void NativeBackendKWalletTest::SetUp() {
 }
 
 void NativeBackendKWalletTest::TearDown() {
-  base::MessageLoop::current()->PostTask(FROM_HERE,
-                                         base::MessageLoop::QuitClosure());
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::MessageLoop::QuitClosure());
   base::MessageLoop::current()->Run();
   db_thread_.Stop();
 }

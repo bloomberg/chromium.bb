@@ -8,8 +8,10 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/net/certificate_error_reporter.h"
@@ -172,21 +174,21 @@ TEST(ChromeFraudulentCertificateReporterTest, GoodBadInfo) {
 TEST(ChromeFraudulentCertificateReporterTest, ReportIsSent) {
   base::MessageLoopForIO loop;
   content::TestBrowserThread io_thread(BrowserThread::IO, &loop);
-  loop.PostTask(FROM_HERE, base::Bind(&DoReportIsSent));
+  loop.task_runner()->PostTask(FROM_HERE, base::Bind(&DoReportIsSent));
   loop.RunUntilIdle();
 }
 
 TEST(ChromeFraudulentCertificateReporterTest, MockReportIsSent) {
   base::MessageLoopForIO loop;
   content::TestBrowserThread io_thread(BrowserThread::IO, &loop);
-  loop.PostTask(FROM_HERE, base::Bind(&DoMockReportIsSent));
+  loop.task_runner()->PostTask(FROM_HERE, base::Bind(&DoMockReportIsSent));
   loop.RunUntilIdle();
 }
 
 TEST(ChromeFraudulentCertificateReporterTest, ReportIsNotSent) {
   base::MessageLoopForIO loop;
   content::TestBrowserThread io_thread(BrowserThread::IO, &loop);
-  loop.PostTask(FROM_HERE, base::Bind(&DoReportIsNotSent));
+  loop.task_runner()->PostTask(FROM_HERE, base::Bind(&DoReportIsNotSent));
   loop.RunUntilIdle();
 }
 

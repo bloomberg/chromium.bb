@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/location.h"
 #include "base/path_service.h"
 #include "base/process/process.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/chrome_content_browser_client.h"
@@ -147,7 +150,7 @@ class ContextMenuCallCountObserver {
                    const content::NotificationDetails& details) {
     ++num_times_shown_;
     auto context_menu = content::Source<RenderViewContextMenu>(source).ptr();
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&RenderViewContextMenuBase::Cancel,
                               base::Unretained(context_menu)));
     return true;
@@ -1940,7 +1943,7 @@ static bool ContextMenuNotificationCallback(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   auto context_menu = content::Source<RenderViewContextMenu>(source).ptr();
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&RenderViewContextMenuBase::Cancel,
                             base::Unretained(context_menu)));
   return true;

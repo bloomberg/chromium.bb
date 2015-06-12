@@ -7,9 +7,11 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/chrome_switches.h"
@@ -106,12 +108,12 @@ bool HandleNonNavigationAboutURL(const GURL& url) {
   if (base::LowerCaseEqualsASCII(spec, chrome::kChromeUIRestartURL)) {
     // Call AttemptRestart after chrome::Navigate() completes to avoid access of
     // gtk objects after they are destroyed by BrowserWindowGtk::Close().
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-        base::Bind(&chrome::AttemptRestart));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&chrome::AttemptRestart));
     return true;
   } else if (base::LowerCaseEqualsASCII(spec, chrome::kChromeUIQuitURL)) {
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-        base::Bind(&chrome::AttemptExit));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&chrome::AttemptExit));
     return true;
   }
 

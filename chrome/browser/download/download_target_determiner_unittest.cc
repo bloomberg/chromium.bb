@@ -5,12 +5,14 @@
 #include "base/at_exit.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
 #include "base/observer_list.h"
 #include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/value_conversions.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_extensions.h"
@@ -78,12 +80,13 @@ class NullWebContentsDelegate : public content::WebContentsDelegate {
 //   EXPECT_CALL(mock_fooclass_instance, Foo(callback))
 //     .WillOnce(ScheduleCallback(false));
 ACTION_P(ScheduleCallback, result0) {
-  base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(arg0, result0));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                base::Bind(arg0, result0));
 }
 
 // Similar to ScheduleCallback, but binds 2 arguments.
 ACTION_P2(ScheduleCallback2, result0, result1) {
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(arg0, result0, result1));
 }
 
@@ -376,7 +379,7 @@ void CompletionCallbackWrapper(
     scoped_ptr<DownloadTargetInfo>* target_info_receiver,
     scoped_ptr<DownloadTargetInfo> target_info) {
   target_info_receiver->swap(target_info);
-  base::MessageLoop::current()->PostTask(FROM_HERE, closure);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, closure);
 }
 
 scoped_ptr<DownloadTargetInfo>

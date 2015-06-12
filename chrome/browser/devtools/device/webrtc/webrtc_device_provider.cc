@@ -4,6 +4,9 @@
 
 #include "chrome/browser/devtools/device/webrtc/webrtc_device_provider.h"
 
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/devtools/device/webrtc/devtools_bridge_client.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_ui.h"
@@ -84,6 +87,6 @@ void WebRTCDeviceProvider::OpenSocket(const std::string& serial,
                  client_, socket_name));
   // TODO(serya): Implement
   scoped_ptr<net::StreamSocket> socket;
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(callback, net::ERR_FAILED, base::Passed(&socket)));
 }

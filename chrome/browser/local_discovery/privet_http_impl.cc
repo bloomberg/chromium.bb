@@ -8,10 +8,12 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
 #include "base/rand_util.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/local_discovery/privet_constants.h"
 #include "net/base/url_util.h"
 #include "url/gurl.h"
@@ -146,7 +148,7 @@ void PrivetRegisterOperationImpl::Cancel() {
     // Owned by the message loop.
     Cancelation* cancelation = new Cancelation(privet_client_, user_);
 
-    base::MessageLoop::current()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&PrivetRegisterOperationImpl::Cancelation::Cleanup,
                    base::Owned(cancelation)),
@@ -573,7 +575,7 @@ void PrivetLocalPrintOperationImpl::OnSubmitdocResponse(
 
       timeout = std::max(timeout, kPrivetMinimumTimeout);
 
-      base::MessageLoop::current()->PostDelayedTask(
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE, base::Bind(&PrivetLocalPrintOperationImpl::DoCreatejob,
                                 weak_factory_.GetWeakPtr()),
           base::TimeDelta::FromSeconds(timeout));

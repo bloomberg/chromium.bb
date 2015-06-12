@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/location.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/fake_account_tracker_service.h"
@@ -34,13 +37,11 @@ class CustomFakeGCMDriver : public gcm::FakeGCMDriver {
   // FakeGCMDriver override:
   void RegisterImpl(const std::string& app_id,
                     const std::vector<std::string>& sender_ids) override {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&CustomFakeGCMDriver::RegisterFinished,
-                   base::Unretained(this),
-                   app_id,
-                   std::string("registration.id"),
-                   gcm::GCMClient::SUCCESS));
+                   base::Unretained(this), app_id,
+                   std::string("registration.id"), gcm::GCMClient::SUCCESS));
   }
 
  private:

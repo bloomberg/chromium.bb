@@ -9,6 +9,9 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/common/chrome_utility_messages.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/component_updater/component_updater_service.h"
@@ -55,7 +58,7 @@ void PatchHost::StartProcess(scoped_ptr<IPC::Message> message) {
   // The DeltaUpdateOpPatchHost is not responsible for deleting the
   // UtilityProcessHost object.
   content::UtilityProcessHost* host = content::UtilityProcessHost::Create(
-      this, base::MessageLoopProxy::current().get());
+      this, base::ThreadTaskRunnerHandle::Get().get());
   host->SetName(l10n_util::GetStringUTF16(
       IDS_UTILITY_PROCESS_COMPONENT_PATCHER_NAME));
   host->DisableSandbox();

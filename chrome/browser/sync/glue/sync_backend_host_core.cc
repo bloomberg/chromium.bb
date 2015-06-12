@@ -5,7 +5,9 @@
 #include "chrome/browser/sync/glue/sync_backend_host_core.h"
 
 #include "base/files/file_util.h"
+#include "base/location.h"
 #include "base/metrics/histogram.h"
+#include "base/single_thread_task_runner.h"
 #include "chrome/browser/sync/glue/invalidation_adapter.h"
 #include "chrome/browser/sync/glue/local_device_info_provider_impl.h"
 #include "chrome/browser/sync/glue/sync_backend_registrar.h"
@@ -157,9 +159,9 @@ void SyncBackendHostCore::OnInitializationComplete(
 
   // Sync manager initialization is complete, so we can schedule recurring
   // SaveChanges.
-  sync_loop_->PostTask(FROM_HERE,
-                       base::Bind(&SyncBackendHostCore::StartSavingChanges,
-                                  weak_ptr_factory_.GetWeakPtr()));
+  sync_loop_->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&SyncBackendHostCore::StartSavingChanges,
+                            weak_ptr_factory_.GetWeakPtr()));
 
   // Hang on to these for a while longer.  We're not ready to hand them back to
   // the UI thread yet.

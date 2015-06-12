@@ -7,9 +7,10 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/location.h"
 #include "base/path_service.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/test/browser_test.h"
@@ -109,9 +110,9 @@ class MediaFileValidatorTest : public InProcessBrowserTest {
 
     ScopedVector<storage::FileSystemBackend> additional_providers;
     additional_providers.push_back(new content::TestFileSystemBackend(
-        base::MessageLoopProxy::current().get(), src_path));
+        base::ThreadTaskRunnerHandle::Get().get(), src_path));
     additional_providers.push_back(new MediaFileSystemBackend(
-        base, base::MessageLoopProxy::current().get()));
+        base, base::ThreadTaskRunnerHandle::Get().get()));
     file_system_context_ =
         content::CreateFileSystemContextWithAdditionalProvidersForTesting(
             NULL, additional_providers.Pass(), base);

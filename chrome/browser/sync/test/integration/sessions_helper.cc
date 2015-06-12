@@ -8,9 +8,12 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/location.h"
 #include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/test/test_timeouts.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/open_tabs_ui_delegate.h"
@@ -130,7 +133,7 @@ namespace {
 class TabEventHandler : public browser_sync::LocalSessionEventHandler {
  public:
   TabEventHandler() : weak_factory_(this) {
-    base::MessageLoop::current()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&TabEventHandler::QuitLoop, weak_factory_.GetWeakPtr()),
         TestTimeouts::action_max_timeout());
@@ -139,7 +142,7 @@ class TabEventHandler : public browser_sync::LocalSessionEventHandler {
   void OnLocalTabModified(
       browser_sync::SyncedTabDelegate* modified_tab) override {
     // Unwind to ensure SessionsSyncManager has processed the event.
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&TabEventHandler::QuitLoop, weak_factory_.GetWeakPtr()));
   }
@@ -147,7 +150,7 @@ class TabEventHandler : public browser_sync::LocalSessionEventHandler {
   void OnFaviconPageUrlsUpdated(
       const std::set<GURL>& updated_page_urls) override {
     // Unwind to ensure SessionsSyncManager has processed the event.
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&TabEventHandler::QuitLoop, weak_factory_.GetWeakPtr()));
   }

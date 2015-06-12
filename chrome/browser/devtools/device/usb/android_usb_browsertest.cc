@@ -5,7 +5,10 @@
 #include <algorithm>
 
 #include "base/containers/scoped_ptr_hash_map.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/devtools/device/adb/mock_adb_server.h"
 #include "chrome/browser/devtools/device/devtools_android_bridge.h"
 #include "chrome/browser/devtools/device/usb/android_usb_device.h"
@@ -140,8 +143,8 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
       success = true;
     }
 
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-                                           base::Bind(callback, success));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(callback, success));
   }
 
   bool ReleaseInterface(int interface_number) override {
@@ -205,7 +208,7 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
 
       device::UsbTransferStatus status =
           broken_ ? device::USB_TRANSFER_ERROR : device::USB_TRANSFER_COMPLETED;
-      base::MessageLoop::current()->PostTask(
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::Bind(callback, status, nullptr, 0));
       ProcessQueries();
     } else if (direction == device::USB_DIRECTION_INBOUND) {
@@ -314,12 +317,9 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
       return;
     Query query = queries_.front();
     if (broken_) {
-      base::MessageLoop::current()->PostTask(
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
-          base::Bind(query.callback,
-                     device::USB_TRANSFER_ERROR,
-                     nullptr,
-                     0));
+          base::Bind(query.callback, device::USB_TRANSFER_ERROR, nullptr, 0));
     }
 
     if (query.size > output_buffer_.size())
@@ -331,13 +331,9 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
               query.buffer->data());
     output_buffer_.erase(output_buffer_.begin(),
                          output_buffer_.begin() + query.size);
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(query.callback,
-                   device::USB_TRANSFER_COMPLETED,
-                   query.buffer,
-                   query.size));
-
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(query.callback, device::USB_TRANSFER_COMPLETED,
+                              query.buffer, query.size));
   }
 
   void InterruptTransfer(UsbEndpointDirection direction,
@@ -414,7 +410,7 @@ class MockUsbDevice : public UsbDevice {
   }
 
   void Open(const OpenCallback& callback) override {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(callback, make_scoped_refptr(
                                             new MockUsbDeviceHandle<T>(this))));
   }
@@ -668,10 +664,9 @@ class MockCountListenerWithReAddWhileQueued : public MockCountListener {
     ++invoked_;
     if (!readded_) {
       readded_ = true;
-      base::MessageLoop::current()->PostTask(
-          FROM_HERE,
-          base::Bind(&MockCountListenerWithReAddWhileQueued::ReAdd,
-                     base::Unretained(this)));
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::Bind(&MockCountListenerWithReAddWhileQueued::ReAdd,
+                                base::Unretained(this)));
     } else {
       adb_bridge_->RemoveDeviceCountListener(this);
       Shutdown();

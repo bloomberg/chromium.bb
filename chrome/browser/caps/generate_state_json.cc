@@ -11,11 +11,13 @@
 #include "base/cpu.h"
 #include "base/files/file.h"
 #include "base/json/json_writer.h"
+#include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -74,9 +76,8 @@ class TaskManagerDataDumper :
     // Some data (for example V8 memory) has not yet arrived, so we wait.
     // TODO(cpu): Figure out how to make this reliable.
     static base::TimeDelta delay = base::TimeDelta::FromMilliseconds(250);
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&TaskManagerDataDumper::OnDataReadyDelayed, this),
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, base::Bind(&TaskManagerDataDumper::OnDataReadyDelayed, this),
         delay);
   }
 

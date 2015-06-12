@@ -4,7 +4,9 @@
 
 #include "chrome/browser/local_discovery/privet_traffic_detector.h"
 
+#include "base/location.h"
 #include "base/metrics/histogram.h"
+#include "base/single_thread_task_runner.h"
 #include "base/sys_byteorder.h"
 #include "net/base/dns_util.h"
 #include "net/base/net_errors.h"
@@ -59,7 +61,7 @@ PrivetTrafficDetector::PrivetTrafficDetector(
     net::AddressFamily address_family,
     const base::Closure& on_traffic_detected)
     : on_traffic_detected_(on_traffic_detected),
-      callback_runner_(base::MessageLoop::current()->message_loop_proxy()),
+      callback_runner_(base::MessageLoop::current()->task_runner()),
       address_family_(address_family),
       io_buffer_(
           new net::IOBufferWithSize(net::dns_protocol::kMaxMulticastSize)),

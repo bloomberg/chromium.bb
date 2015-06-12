@@ -19,8 +19,9 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
@@ -96,13 +97,13 @@ class ProcessSingletonPosixTest : public testing::Test {
     // Destruct the ProcessSingleton object before the IO thread so that its
     // internals are destructed properly.
     if (process_singleton_on_thread_) {
-      worker_thread_->message_loop()->PostTask(
+      worker_thread_->task_runner()->PostTask(
           FROM_HERE,
           base::Bind(&ProcessSingletonPosixTest::DestructProcessSingleton,
                      base::Unretained(this)));
 
-      scoped_refptr<base::ThreadTestHelper> helper(new base::ThreadTestHelper(
-          worker_thread_->message_loop_proxy().get()));
+      scoped_refptr<base::ThreadTestHelper> helper(
+          new base::ThreadTestHelper(worker_thread_->task_runner().get()));
       ASSERT_TRUE(helper->Run());
     }
 
@@ -115,14 +116,13 @@ class ProcessSingletonPosixTest : public testing::Test {
     worker_thread_.reset(new base::Thread("BlockingThread"));
     worker_thread_->Start();
 
-    worker_thread_->message_loop()->PostTask(
-       FROM_HERE,
-       base::Bind(&ProcessSingletonPosixTest::
-                      CreateProcessSingletonInternal,
-                  base::Unretained(this)));
+    worker_thread_->task_runner()->PostTask(
+        FROM_HERE,
+        base::Bind(&ProcessSingletonPosixTest::CreateProcessSingletonInternal,
+                   base::Unretained(this)));
 
     scoped_refptr<base::ThreadTestHelper> helper(
-        new base::ThreadTestHelper(worker_thread_->message_loop_proxy().get()));
+        new base::ThreadTestHelper(worker_thread_->task_runner().get()));
     ASSERT_TRUE(helper->Run());
   }
 
@@ -207,10 +207,9 @@ class ProcessSingletonPosixTest : public testing::Test {
   }
 
   void BlockWorkerThread() {
-    worker_thread_->message_loop()->PostTask(
-        FROM_HERE,
-        base::Bind(&ProcessSingletonPosixTest::BlockThread,
-                   base::Unretained(this)));
+    worker_thread_->task_runner()->PostTask(
+        FROM_HERE, base::Bind(&ProcessSingletonPosixTest::BlockThread,
+                              base::Unretained(this)));
   }
 
   void UnblockWorkerThread() {

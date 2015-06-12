@@ -197,9 +197,9 @@ GCMAccountTrackerTest::GCMAccountTrackerTest() {
       new FakeIdentityProvider(fake_token_service_.get()));
 
   scoped_ptr<gaia::AccountTracker> gaia_account_tracker(
-      new gaia::AccountTracker(fake_identity_provider_.get(),
-                               new net::TestURLRequestContextGetter(
-                                   message_loop_.message_loop_proxy())));
+      new gaia::AccountTracker(
+          fake_identity_provider_.get(),
+          new net::TestURLRequestContextGetter(message_loop_.task_runner())));
 
   tracker_.reset(new GCMAccountTracker(gaia_account_tracker.Pass(), &driver_));
 }

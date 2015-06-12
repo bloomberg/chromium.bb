@@ -5,8 +5,10 @@
 #include "chrome/browser/sync/backup_rollback_controller.h"
 
 #include "base/command_line.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
 #include "base/metrics/field_trial.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/sync/supervised_user_signin_manager_wrapper.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/sync_driver/sync_prefs.h"
@@ -43,7 +45,7 @@ bool BackupRollbackController::StartBackup() {
   // Disable rollback to previous backup DB because it will be overwritten by
   // new backup.
   sync_prefs_->SetRemainingRollbackTries(0);
-  base::MessageLoop::current()->PostTask(FROM_HERE, start_backup_);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, start_backup_);
   return true;
 }
 
@@ -64,7 +66,7 @@ bool BackupRollbackController::StartRollback() {
     return false;   // No pending rollback.
 
   sync_prefs_->SetRemainingRollbackTries(rollback_tries - 1);
-  base::MessageLoop::current()->PostTask(FROM_HERE, start_rollback_);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, start_rollback_);
   return true;
 }
 

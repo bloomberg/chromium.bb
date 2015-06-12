@@ -6,9 +6,11 @@
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -1002,9 +1004,8 @@ void OnGotPreviousSession(ScopedVector<sessions::SessionWindow> windows,
 
 void PostBackToThread(base::MessageLoop* message_loop,
                       base::RunLoop* run_loop) {
-  message_loop->PostTask(FROM_HERE,
-                         base::Bind(&base::RunLoop::Quit,
-                                    base::Unretained(run_loop)));
+  message_loop->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&base::RunLoop::Quit, base::Unretained(run_loop)));
 }
 
 }  // namespace

@@ -7,11 +7,14 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/location.h"
 #include "base/path_service.h"
 #include "base/process/kill.h"
 #include "base/process/process.h"
 #include "base/process/process_iterator.h"
+#include "base/single_thread_task_runner.h"
 #include "base/test/test_timeouts.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_version_info.h"
@@ -103,15 +106,15 @@ class ServiceProcessControlBrowserTest
     // Quit the current message. Post a QuitTask instead of just calling Quit()
     // because this can get invoked in the context of a Launch() call and we
     // may not be in Run() yet.
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-                                           base::MessageLoop::QuitClosure());
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::MessageLoop::QuitClosure());
   }
 
   void ProcessControlLaunchFailed() {
     ADD_FAILURE();
     // Quit the current message.
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-                                           base::MessageLoop::QuitClosure());
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::MessageLoop::QuitClosure());
   }
 
  private:
@@ -186,8 +189,8 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, LaunchTwice) {
 static void DecrementUntilZero(int* count) {
   (*count)--;
   if (!(*count))
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-                                           base::MessageLoop::QuitClosure());
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::MessageLoop::QuitClosure());
 }
 
 // Invoke multiple Launch calls in succession and ensure that all the tasks

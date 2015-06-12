@@ -10,10 +10,12 @@
 #include "base/compiler_specific.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/lazy_instance.h"
+#include "base/location.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -90,10 +92,9 @@ void ThreadWatcher::ActivateThreadWatching() {
   active_ = true;
   ping_count_ = unresponsive_threshold_;
   ResetHangCounters();
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&ThreadWatcher::PostPingMessage,
-                 weak_ptr_factory_.GetWeakPtr()));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&ThreadWatcher::PostPingMessage,
+                            weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ThreadWatcher::DeActivateThreadWatching() {
@@ -182,10 +183,9 @@ void ThreadWatcher::OnPongMessage(uint64 ping_sequence_number) {
   if (!active_ || --ping_count_ <= 0)
     return;
 
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&ThreadWatcher::PostPingMessage,
-                 weak_ptr_factory_.GetWeakPtr()),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&ThreadWatcher::PostPingMessage,
+                            weak_ptr_factory_.GetWeakPtr()),
       sleep_time_);
 }
 
@@ -211,7 +211,7 @@ void ThreadWatcher::OnCheckResponsiveness(uint64 ping_sequence_number) {
   GotNoResponse();
 
   // Post a task to check the responsiveness of watched thread.
-  base::MessageLoop::current()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&ThreadWatcher::OnCheckResponsiveness,
                  weak_ptr_factory_.GetWeakPtr(), ping_sequence_number_),
@@ -763,7 +763,7 @@ bool WatchDogThread::PostTaskHelper(
     base::MessageLoop* message_loop = g_watchdog_thread ?
         g_watchdog_thread->message_loop() : NULL;
     if (message_loop) {
-      message_loop->PostDelayedTask(from_here, task, delay);
+      message_loop->task_runner()->PostDelayedTask(from_here, task, delay);
       return true;
     }
   }
@@ -884,10 +884,9 @@ void StartupTimeBomb::DeleteStartupWatchdog() {
     startup_watchdog_ = NULL;
     return;
   }
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&StartupTimeBomb::DeleteStartupWatchdog,
-                 base::Unretained(this)),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&StartupTimeBomb::DeleteStartupWatchdog,
+                            base::Unretained(this)),
       base::TimeDelta::FromSeconds(10));
 }
 

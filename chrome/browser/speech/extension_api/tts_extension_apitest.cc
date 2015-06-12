@@ -6,8 +6,10 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/location.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -88,11 +90,11 @@ class MockTtsPlatformImpl : public TtsPlatformImpl {
   }
 
   void SendEndEventOnSavedUtteranceId() {
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE, base::Bind(
-            &MockTtsPlatformImpl::SendEvent,
-            ptr_factory_.GetWeakPtr(),
-            false, g_saved_utterance_id, TTS_EVENT_END, 0, std::string()),
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&MockTtsPlatformImpl::SendEvent, ptr_factory_.GetWeakPtr(),
+                   false, g_saved_utterance_id, TTS_EVENT_END, 0,
+                   std::string()),
         base::TimeDelta());
   }
 
@@ -101,12 +103,10 @@ class MockTtsPlatformImpl : public TtsPlatformImpl {
                     const std::string& lang,
                     const VoiceData& voice,
                     const UtteranceContinuousParameters& params) {
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE, base::Bind(
-            &MockTtsPlatformImpl::SendEvent,
-            ptr_factory_.GetWeakPtr(),
-            false, utterance_id, TTS_EVENT_END, utterance.size(),
-            std::string()),
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, base::Bind(&MockTtsPlatformImpl::SendEvent,
+                              ptr_factory_.GetWeakPtr(), false, utterance_id,
+                              TTS_EVENT_END, utterance.size(), std::string()),
         base::TimeDelta());
   }
 
@@ -116,11 +116,10 @@ class MockTtsPlatformImpl : public TtsPlatformImpl {
       const std::string& lang,
       const VoiceData& voice,
       const UtteranceContinuousParameters& params) {
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE, base::Bind(
-            &MockTtsPlatformImpl::SendEvent,
-            ptr_factory_.GetWeakPtr(),
-            true, utterance_id, TTS_EVENT_END, utterance.size(), std::string()),
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, base::Bind(&MockTtsPlatformImpl::SendEvent,
+                              ptr_factory_.GetWeakPtr(), true, utterance_id,
+                              TTS_EVENT_END, utterance.size(), std::string()),
         base::TimeDelta());
   }
 
@@ -131,12 +130,11 @@ class MockTtsPlatformImpl : public TtsPlatformImpl {
                       const UtteranceContinuousParameters& params) {
     for (int i = 0; i < static_cast<int>(utterance.size()); i++) {
       if (i == 0 || utterance[i - 1] == ' ') {
-        base::MessageLoop::current()->PostDelayedTask(
-            FROM_HERE, base::Bind(
-                &MockTtsPlatformImpl::SendEvent,
-                ptr_factory_.GetWeakPtr(),
-                false, utterance_id, TTS_EVENT_WORD, i,
-                std::string()),
+        base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+            FROM_HERE,
+            base::Bind(&MockTtsPlatformImpl::SendEvent,
+                       ptr_factory_.GetWeakPtr(), false, utterance_id,
+                       TTS_EVENT_WORD, i, std::string()),
             base::TimeDelta());
       }
     }
@@ -149,11 +147,10 @@ class MockTtsPlatformImpl : public TtsPlatformImpl {
                  const std::string& message) {
     TtsController* controller = TtsController::GetInstance();
     if (wait_for_non_empty_queue && controller->QueueSize() == 0) {
-      base::MessageLoop::current()->PostDelayedTask(
-          FROM_HERE, base::Bind(
-              &MockTtsPlatformImpl::SendEvent,
-              ptr_factory_.GetWeakPtr(),
-              true, utterance_id, event_type, char_index, message),
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+          FROM_HERE,
+          base::Bind(&MockTtsPlatformImpl::SendEvent, ptr_factory_.GetWeakPtr(),
+                     true, utterance_id, event_type, char_index, message),
           base::TimeDelta::FromMilliseconds(100));
       return;
     }

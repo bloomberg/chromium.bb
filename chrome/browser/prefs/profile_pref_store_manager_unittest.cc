@@ -12,7 +12,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/prefs/json_pref_store.h"
 #include "base/prefs/persistent_pref_store.h"
 #include "base/prefs/pref_service.h"
@@ -169,7 +168,7 @@ class ProfilePrefStoreManagerTest : public testing::Test {
     // actually a SegregatedPrefStore backed by two underlying pref stores.
     scoped_refptr<PersistentPrefStore> pref_store =
         manager_->CreateProfilePrefStore(
-            main_message_loop_.message_loop_proxy(),
+            main_message_loop_.task_runner(),
             base::Bind(&ProfilePrefStoreManagerTest::RecordReset,
                        base::Unretained(this)),
             &mock_validation_delegate_);
@@ -197,7 +196,7 @@ class ProfilePrefStoreManagerTest : public testing::Test {
   void InitializeDeprecatedCombinedProfilePrefStore() {
     scoped_refptr<PersistentPrefStore> pref_store =
         manager_->CreateDeprecatedCombinedProfilePrefStore(
-            main_message_loop_.message_loop_proxy());
+            main_message_loop_.task_runner());
     InitializePrefStore(pref_store.get());
     pref_store = NULL;
     base::RunLoop().RunUntilIdle();
@@ -221,7 +220,7 @@ class ProfilePrefStoreManagerTest : public testing::Test {
   void LoadExistingPrefs() {
     DestroyPrefStore();
     pref_store_ = manager_->CreateProfilePrefStore(
-        main_message_loop_.message_loop_proxy(),
+        main_message_loop_.task_runner(),
         base::Bind(&ProfilePrefStoreManagerTest::RecordReset,
                    base::Unretained(this)),
         NULL);

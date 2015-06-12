@@ -8,12 +8,15 @@
 
 #include "base/command_line.h"
 #include "base/i18n/case_conversion.h"
+#include "base/location.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/hotword_private/hotword_private_api.h"
@@ -370,17 +373,15 @@ HotwordService::HotwordService(Profile* profile)
     // for the hotword extension to be installed.
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     if (command_line->HasSwitch(switches::kEnableExperimentalHotwordHardware)) {
-      base::MessageLoop::current()->PostDelayedTask(
-          FROM_HERE,
-          base::Bind(&HotwordService::ShowHotwordNotification,
-                     weak_factory_.GetWeakPtr()),
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+          FROM_HERE, base::Bind(&HotwordService::ShowHotwordNotification,
+                                weak_factory_.GetWeakPtr()),
           base::TimeDelta::FromSeconds(5));
     } else if (!profile_->GetPrefs()->GetBoolean(
                    prefs::kHotwordAlwaysOnNotificationSeen)) {
-      base::MessageLoop::current()->PostDelayedTask(
-          FROM_HERE,
-          base::Bind(&HotwordService::ShowHotwordNotification,
-                     weak_factory_.GetWeakPtr()),
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+          FROM_HERE, base::Bind(&HotwordService::ShowHotwordNotification,
+                                weak_factory_.GetWeakPtr()),
           base::TimeDelta::FromMinutes(10));
     }
   }

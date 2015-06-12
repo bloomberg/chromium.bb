@@ -5,7 +5,9 @@
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_browsertest_util.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
@@ -31,11 +33,10 @@ void ContextMenuNotificationObserver::Observe(
     case chrome::NOTIFICATION_RENDER_VIEW_CONTEXT_MENU_SHOWN: {
       RenderViewContextMenu* context_menu =
           content::Source<RenderViewContextMenu>(source).ptr();
-      base::MessageLoop::current()->PostTask(
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
           base::Bind(&ContextMenuNotificationObserver::ExecuteCommand,
-                     base::Unretained(this),
-                     context_menu));
+                     base::Unretained(this), context_menu));
       break;
     }
 
@@ -67,7 +68,7 @@ void ContextMenuWaiter::Observe(int type,
       menu_visible_ = true;
       RenderViewContextMenu* context_menu =
           content::Source<RenderViewContextMenu>(source).ptr();
-      base::MessageLoop::current()->PostTask(
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::Bind(&ContextMenuWaiter::Cancel,
                                 base::Unretained(this), context_menu));
       break;

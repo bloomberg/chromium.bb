@@ -7,9 +7,11 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_task.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_task_manager.h"
@@ -29,8 +31,8 @@ namespace {
 
 void DumbTask(SyncStatusCode status,
               const SyncStatusCallback& callback) {
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE, base::Bind(callback, status));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                base::Bind(callback, status));
 }
 
 void IncrementAndAssign(int expected_before_counter,
@@ -113,7 +115,7 @@ class TaskManagerClient
     ++task_scheduled_count_;
     if (is_idle_task)
       ++idle_task_scheduled_count_;
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(callback, status_to_return));
   }
 
@@ -144,7 +146,7 @@ class MultihopSyncTask : public ExclusiveTask {
   void RunExclusive(const SyncStatusCallback& callback) override {
     DCHECK(!*task_started_);
     *task_started_ = true;
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&MultihopSyncTask::CompleteTask,
                               weak_ptr_factory_.GetWeakPtr(), callback));
   }
@@ -205,11 +207,10 @@ class BackgroundTask : public SyncTask {
     if (stats_->max_parallel_task < stats_->running_background_task)
       stats_->max_parallel_task = stats_->running_background_task;
 
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&BackgroundTask::CompleteTask,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   base::Passed(&token)));
+                   weak_ptr_factory_.GetWeakPtr(), base::Passed(&token)));
   }
 
   void CompleteTask(scoped_ptr<SyncTaskToken> token) {
@@ -277,7 +278,7 @@ class BlockerUpdateTestHelper : public SyncTask {
   void UpdateBlockerSoon(const std::string& updated_to,
                          scoped_ptr<SyncTaskToken> token) {
     log_->push_back(name_ + ": updated to " + updated_to);
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&BlockerUpdateTestHelper::UpdateBlocker,
                    weak_ptr_factory_.GetWeakPtr(), base::Passed(&token)));

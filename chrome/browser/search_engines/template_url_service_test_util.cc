@@ -4,8 +4,8 @@
 
 #include "chrome/browser/search_engines/template_url_service_test_util.h"
 
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/search_engines/chrome_template_url_service_client.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
@@ -50,14 +50,14 @@ TemplateURLServiceTestUtil::TemplateURLServiceTestUtil()
 
   scoped_refptr<WebDatabaseService> web_database_service =
       new WebDatabaseService(temp_dir_.path().AppendASCII("webdata"),
-                             base::MessageLoopProxy::current(),
-                             base::MessageLoopProxy::current());
+                             base::ThreadTaskRunnerHandle::Get(),
+                             base::ThreadTaskRunnerHandle::Get());
   web_database_service->AddTable(
       scoped_ptr<WebDatabaseTable>(new KeywordTable()));
   web_database_service->LoadDatabase();
 
-  web_data_service_ =  new KeywordWebDataService(
-      web_database_service.get(), base::MessageLoopProxy::current(),
+  web_data_service_ = new KeywordWebDataService(
+      web_database_service.get(), base::ThreadTaskRunnerHandle::Get(),
       KeywordWebDataService::ProfileErrorCallback());
   web_data_service_->Init();
 

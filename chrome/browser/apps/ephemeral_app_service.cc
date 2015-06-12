@@ -6,7 +6,9 @@
 
 #include "apps/app_lifetime_monitor_factory.h"
 #include "base/command_line.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/apps/ephemeral_app_service_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -148,11 +150,9 @@ void EphemeralAppService::OnAppStop(Profile* profile,
   if (!extensions::util::IsEphemeralApp(app_id, profile_))
     return;
 
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&EphemeralAppService::DisableEphemeralApp,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 app_id),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&EphemeralAppService::DisableEphemeralApp,
+                            weak_ptr_factory_.GetWeakPtr(), app_id),
       base::TimeDelta::FromSeconds(disable_idle_app_delay_));
 }
 
@@ -178,10 +178,9 @@ void EphemeralAppService::Init() {
   TriggerGarbageCollect(
       base::TimeDelta::FromSeconds(kGarbageCollectAppsStartupDelay));
 
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&EphemeralAppService::DisableEphemeralAppsOnStartup,
-                 weak_ptr_factory_.GetWeakPtr()),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&EphemeralAppService::DisableEphemeralAppsOnStartup,
+                            weak_ptr_factory_.GetWeakPtr()),
       base::TimeDelta::FromSeconds(kDisableAppsOnStartupDelay));
 }
 

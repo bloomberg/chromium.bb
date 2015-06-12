@@ -5,10 +5,13 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
 #include "chrome/browser/service_process/service_process_control.h"
@@ -88,7 +91,7 @@ void CallTask(const base::Closure& task) {
 
 void PostTask(const base::Closure& task) {
   if (!task.is_null())
-    base::MessageLoop::current()->PostTask(FROM_HERE, task);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, task);
 }
 
 void MockServiceProcessControl::SetConnectSuccessMockExpectations(

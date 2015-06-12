@@ -10,10 +10,13 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_util.h"
+#include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/history/chrome_history_client.h"
 #include "chrome/browser/history/chrome_history_client_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -336,9 +339,8 @@ TEST_F(LastDownloadFinderTest, AddProfileAfterStarting) {
   base::RunLoop run_loop;
 
   // Post a task that will create a second profile once the main loop is run.
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&LastDownloadFinderTest::CreateProfileWithDownload,
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&LastDownloadFinderTest::CreateProfileWithDownload,
                  base::Unretained(this)));
 
   // Create a finder that we expect will find a download in the second profile.

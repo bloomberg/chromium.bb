@@ -4,7 +4,10 @@
 
 #include "chrome/browser/sync/test_profile_sync_service.h"
 
+#include "base/location.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -87,7 +90,7 @@ void SyncBackendHostForProfileSyncTest::RequestConfigureSyncer(
   // send back the list of newly configured types instead and hope it doesn't
   // break anything.
   // Posted to avoid re-entrancy issues.
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&SyncBackendHostForProfileSyncTest::
                      FinishConfigureDataTypesOnFrontendLoop,

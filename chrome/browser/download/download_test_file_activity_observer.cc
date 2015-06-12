@@ -5,7 +5,9 @@
 #include "chrome/browser/download/download_test_file_activity_observer.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
@@ -53,9 +55,10 @@ class DownloadTestFileActivityObserver::MockDownloadManagerDelegate
       const base::FilePath& suggested_path,
       const FileSelectedCallback& callback) override {
     file_chooser_displayed_ = true;
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(callback, (file_chooser_enabled_ ? suggested_path
-                                         : base::FilePath())));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, (file_chooser_enabled_ ? suggested_path
+                                                    : base::FilePath())));
   }
 
   void OpenDownload(content::DownloadItem* item) override {}

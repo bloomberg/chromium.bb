@@ -6,11 +6,12 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
@@ -700,9 +701,8 @@ TEST_F(ThreadWatcherListTest, Restart) {
   // g_thread_watcher_list_ later on.
   ThreadWatcherList::StartWatchingAll(*base::CommandLine::ForCurrentProcess());
   ThreadWatcherList::StopWatchingAll();
-  message_loop_for_ui.PostDelayedTask(
-      FROM_HERE,
-      message_loop_for_ui.QuitClosure(),
+  message_loop_for_ui.task_runner()->PostDelayedTask(
+      FROM_HERE, message_loop_for_ui.QuitClosure(),
       base::TimeDelta::FromSeconds(
           ThreadWatcherList::g_initialize_delay_seconds));
   message_loop_for_ui.Run();
@@ -713,9 +713,8 @@ TEST_F(ThreadWatcherListTest, Restart) {
 
   // Proceed with just |StartWatchingAll| and ensure it'll be started.
   ThreadWatcherList::StartWatchingAll(*base::CommandLine::ForCurrentProcess());
-  message_loop_for_ui.PostDelayedTask(
-      FROM_HERE,
-      message_loop_for_ui.QuitClosure(),
+  message_loop_for_ui.task_runner()->PostDelayedTask(
+      FROM_HERE, message_loop_for_ui.QuitClosure(),
       base::TimeDelta::FromSeconds(
           ThreadWatcherList::g_initialize_delay_seconds + 1));
   message_loop_for_ui.Run();
@@ -726,9 +725,8 @@ TEST_F(ThreadWatcherListTest, Restart) {
 
   // Finally, StopWatchingAll() must stop.
   ThreadWatcherList::StopWatchingAll();
-  message_loop_for_ui.PostDelayedTask(
-      FROM_HERE,
-      message_loop_for_ui.QuitClosure(),
+  message_loop_for_ui.task_runner()->PostDelayedTask(
+      FROM_HERE, message_loop_for_ui.QuitClosure(),
       base::TimeDelta::FromSeconds(
           ThreadWatcherList::g_initialize_delay_seconds));
   message_loop_for_ui.Run();

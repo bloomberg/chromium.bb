@@ -6,7 +6,9 @@
 
 #include "base/bind.h"
 #include "base/debug/debugger.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "content/public/browser/browser_thread.h"
@@ -26,9 +28,8 @@ const int kWaitForUIThreadSeconds = 10;
 
 int BrowserX11ErrorHandler(Display* d, XErrorEvent* error) {
   if (!g_in_x11_io_error_handler)
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&ui::LogErrorEventDescription, d, *error));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&ui::LogErrorEventDescription, d, *error));
   return 0;
 }
 

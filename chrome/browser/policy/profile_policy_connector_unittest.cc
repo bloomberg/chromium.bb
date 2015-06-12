@@ -4,7 +4,6 @@
 
 #include "chrome/browser/policy/profile_policy_connector.h"
 
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -40,13 +39,9 @@ class ProfilePolicyConnectorTest : public testing::Test {
         .WillRepeatedly(Return(true));
 
     cloud_policy_store_.NotifyStoreLoaded();
-    cloud_policy_manager_.reset(
-        new CloudPolicyManager(std::string(),
-                               std::string(),
-                               &cloud_policy_store_,
-                               loop_.message_loop_proxy(),
-                               loop_.message_loop_proxy(),
-                               loop_.message_loop_proxy()));
+    cloud_policy_manager_.reset(new CloudPolicyManager(
+        std::string(), std::string(), &cloud_policy_store_, loop_.task_runner(),
+        loop_.task_runner(), loop_.task_runner()));
   }
 
   void TearDown() override {

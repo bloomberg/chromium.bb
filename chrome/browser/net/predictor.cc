@@ -13,16 +13,19 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/containers/mru_cache.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/profiler/scoped_tracker.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -1142,10 +1145,9 @@ void Predictor::PostIncrementalTrimTask() {
     return;
   const TimeDelta kDurationBetweenTrimmingIncrements =
       TimeDelta::FromSeconds(kDurationBetweenTrimmingIncrementsSeconds);
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&Predictor::IncrementalTrimReferrers,
-                 weak_factory_->GetWeakPtr(), false),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&Predictor::IncrementalTrimReferrers,
+                            weak_factory_->GetWeakPtr(), false),
       kDurationBetweenTrimmingIncrements);
 }
 

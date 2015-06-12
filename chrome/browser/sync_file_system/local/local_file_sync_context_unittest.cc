@@ -10,7 +10,9 @@
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/location.h"
 #include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "chrome/browser/sync_file_system/local/canned_syncable_file_system.h"
 #include "chrome/browser/sync_file_system/local/local_file_change_tracker.h"
@@ -65,7 +67,7 @@ class LocalFileSyncContextTest : public testing::Test {
     ASSERT_TRUE(dir_.CreateUniqueTempDir());
     in_memory_env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
 
-    ui_task_runner_ = base::MessageLoop::current()->message_loop_proxy();
+    ui_task_runner_ = base::MessageLoop::current()->task_runner();
     io_task_runner_ = BrowserThread::GetMessageLoopProxyForThread(
         BrowserThread::IO);
     file_task_runner_ = BrowserThread::GetMessageLoopProxyForThread(

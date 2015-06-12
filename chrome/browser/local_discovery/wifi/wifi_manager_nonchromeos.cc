@@ -5,6 +5,7 @@
 #include "chrome/browser/local_discovery/wifi/wifi_manager_nonchromeos.h"
 
 #include "base/cancelable_callback.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread.h"
 #include "components/onc/onc_constants.h"
@@ -120,7 +121,7 @@ class WifiManagerNonChromeos::WifiServiceWrapper
   // SSID of network we are connecting to.
   std::string connecting_network_guid_;
 
-  scoped_refptr<base::MessageLoopProxy> callback_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> callback_runner_;
 
 #if defined(OS_WIN)
   scoped_refptr<CredentialGetterWin> credential_getter_;
@@ -134,7 +135,7 @@ class WifiManagerNonChromeos::WifiServiceWrapper
 WifiManagerNonChromeos::WifiServiceWrapper::WifiServiceWrapper(
     base::WeakPtr<WifiManagerNonChromeos> wifi_manager)
     : wifi_manager_(wifi_manager),
-      callback_runner_(base::MessageLoopProxy::current()),
+      callback_runner_(base::ThreadTaskRunnerHandle::Get()),
       weak_factory_(this) {
 }
 
@@ -146,10 +147,10 @@ void WifiManagerNonChromeos::WifiServiceWrapper::Start() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
   wifi_service_.reset(WiFiService::Create());
 
-  wifi_service_->Initialize(base::MessageLoopProxy::current());
+  wifi_service_->Initialize(base::ThreadTaskRunnerHandle::Get());
 
   wifi_service_->SetEventObservers(
-      base::MessageLoopProxy::current(),
+      base::ThreadTaskRunnerHandle::Get(),
       base::Bind(&WifiServiceWrapper::OnNetworksChangedEvent, AsWeakPtr()),
       base::Bind(&WifiServiceWrapper::OnNetworkListChangedEvent, AsWeakPtr()));
 

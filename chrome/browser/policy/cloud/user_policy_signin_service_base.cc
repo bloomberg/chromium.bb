@@ -5,7 +5,9 @@
 #include "chrome/browser/policy/cloud/user_policy_signin_service_base.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -118,7 +120,7 @@ void UserPolicySigninServiceBase::OnClientError(CloudPolicyClient* client) {
 
       // Can't shutdown now because we're in the middle of a callback from
       // the CloudPolicyClient, so queue up a task to do the shutdown.
-      base::MessageLoop::current()->PostTask(
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
           base::Bind(
               &UserPolicySigninServiceBase::ShutdownUserCloudPolicyManager,

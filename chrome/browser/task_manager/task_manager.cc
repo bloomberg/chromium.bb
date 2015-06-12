@@ -7,14 +7,17 @@
 #include "base/bind.h"
 #include "base/i18n/number_formatting.h"
 #include "base/i18n/rtl.h"
+#include "base/location.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/process/process_metrics.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_window.h"
@@ -1022,9 +1025,8 @@ void TaskManagerModel::StartUpdating() {
   // If update_state_ is STOPPING, it means a task is still pending.  Setting
   // it to TASK_PENDING ensures the tasks keep being posted (by Refresh()).
   if (update_state_ == IDLE) {
-      base::MessageLoop::current()->PostTask(
-          FROM_HERE,
-          base::Bind(&TaskManagerModel::RefreshCallback, this));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&TaskManagerModel::RefreshCallback, this));
   }
   update_state_ = TASK_PENDING;
 
@@ -1239,9 +1241,8 @@ void TaskManagerModel::NotifyBytesRead(const net::URLRequest& request,
     origin_pid = info->GetOriginPID();
 
   if (bytes_read_buffer_.empty()) {
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&TaskManagerModel::NotifyMultipleBytesRead, this),
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, base::Bind(&TaskManagerModel::NotifyMultipleBytesRead, this),
         base::TimeDelta::FromSeconds(1));
   }
 
@@ -1281,9 +1282,8 @@ void TaskManagerModel::RefreshCallback() {
   Refresh();
 
   // Schedule the next update.
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&TaskManagerModel::RefreshCallback, this),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&TaskManagerModel::RefreshCallback, this),
       base::TimeDelta::FromMilliseconds(kUpdateTimeMs));
 }
 
