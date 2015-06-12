@@ -4,13 +4,15 @@
 
 #include "ui/base/ime/mock_input_method.h"
 
+#include "ui/base/ime/input_method_delegate.h"
 #include "ui/base/ime/text_input_focus_manager.h"
 #include "ui/base/ui_base_switches_util.h"
+#include "ui/events/event.h"
 
 namespace ui {
 
 MockInputMethod::MockInputMethod(internal::InputMethodDelegate* delegate)
-    : text_input_client_(NULL) {
+    : text_input_client_(NULL), delegate_(delegate) {
 }
 
 MockInputMethod::~MockInputMethod() {
@@ -19,6 +21,7 @@ MockInputMethod::~MockInputMethod() {
 }
 
 void MockInputMethod::SetDelegate(internal::InputMethodDelegate* delegate) {
+  delegate_ = delegate;
 }
 
 void MockInputMethod::SetFocusedTextInputClient(TextInputClient* client) {
@@ -46,7 +49,7 @@ TextInputClient* MockInputMethod::GetTextInputClient() const {
 }
 
 bool MockInputMethod::DispatchKeyEvent(const ui::KeyEvent& event) {
-  return false;
+  return delegate_->DispatchKeyEventPostIME(event);
 }
 
 void MockInputMethod::OnFocus() {
