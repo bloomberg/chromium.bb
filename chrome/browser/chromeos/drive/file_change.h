@@ -19,22 +19,22 @@ class ResourceEntry;
 class FileChange {
  public:
   enum FileType {
-    FILE_TYPE_UNKNOWN,
+    FILE_TYPE_NO_INFO,
     FILE_TYPE_FILE,
     FILE_TYPE_DIRECTORY,
   };
 
   enum ChangeType {
-    ADD_OR_UPDATE,
-    DELETE,
+    CHANGE_TYPE_ADD_OR_UPDATE,
+    CHANGE_TYPE_DELETE,
   };
 
   class Change {
    public:
     Change(ChangeType change, FileType file_type);
 
-    bool IsAddOrUpdate() const { return change_ == ADD_OR_UPDATE; }
-    bool IsDelete() const { return change_ == DELETE; }
+    bool IsAddOrUpdate() const { return change_ == CHANGE_TYPE_ADD_OR_UPDATE; }
+    bool IsDelete() const { return change_ == CHANGE_TYPE_DELETE; }
 
     bool IsFile() const { return file_type_ == FILE_TYPE_FILE; }
     bool IsDirectory() const { return file_type_ == FILE_TYPE_DIRECTORY; }

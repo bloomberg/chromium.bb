@@ -491,8 +491,9 @@ void ChangeListProcessor::UpdateChangedDirs(const ResourceEntry& entry) {
     resource_metadata_->GetFilePath(local_id, &file_path);
 
   if (!file_path.empty()) {
-    FileChange::ChangeType type =
-        entry.deleted() ? FileChange::DELETE : FileChange::ADD_OR_UPDATE;
+    FileChange::ChangeType type = entry.deleted()
+                                      ? FileChange::CHANGE_TYPE_DELETE
+                                      : FileChange::CHANGE_TYPE_ADD_OR_UPDATE;
     changed_files_->Update(file_path, entry, type);
   }
 }

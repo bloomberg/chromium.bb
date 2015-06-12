@@ -336,9 +336,8 @@ void CopyOperation::CopyAfterTryToCopyLocally(
   if (*directory_changed) {
     FileChange changed_file;
     DCHECK(!params->src_entry.file_info().is_directory());
-    changed_file.Update(params->dest_file_path,
-                        FileChange::FILE_TYPE_FILE,
-                        FileChange::ADD_OR_UPDATE);
+    changed_file.Update(params->dest_file_path, FileChange::FILE_TYPE_FILE,
+                        FileChange::CHANGE_TYPE_ADD_OR_UPDATE);
     delegate_->OnFileChangedByOperation(changed_file);
   }
 
@@ -511,7 +510,7 @@ void CopyOperation::TransferJsonGdocFileAfterLocalWork(
       changed_file.Update(
           params->changed_path,
           FileChange::FILE_TYPE_FILE,  // This must be a hosted document.
-          FileChange::ADD_OR_UPDATE);
+          FileChange::CHANGE_TYPE_ADD_OR_UPDATE);
       delegate_->OnFileChangedByOperation(changed_file);
       params->callback.Run(error);
       break;
@@ -590,7 +589,8 @@ void CopyOperation::UpdateAfterLocalStateUpdate(
 
   if (error == FILE_ERROR_OK) {
     FileChange changed_file;
-    changed_file.Update(*file_path, *entry, FileChange::ADD_OR_UPDATE);
+    changed_file.Update(*file_path, *entry,
+                        FileChange::CHANGE_TYPE_ADD_OR_UPDATE);
     delegate_->OnFileChangedByOperation(changed_file);
   }
   callback.Run(error);
@@ -657,7 +657,8 @@ void CopyOperation::ScheduleTransferRegularFileAfterUpdateLocalState(
 
   if (error == FILE_ERROR_OK) {
     FileChange changed_file;
-    changed_file.Update(remote_dest_path, *entry, FileChange::ADD_OR_UPDATE);
+    changed_file.Update(remote_dest_path, *entry,
+                        FileChange::CHANGE_TYPE_ADD_OR_UPDATE);
     delegate_->OnFileChangedByOperation(changed_file);
     // Syncing for copy should be done in background, so pass the BACKGROUND
     // context. See: crbug.com/420278.

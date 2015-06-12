@@ -53,10 +53,10 @@ FileError FinishRevert(ResourceMetadata* metadata,
 
     changed_files->Update(
         original_path,
-        FileChange::FILE_TYPE_UNKNOWN,  // Undetermined type for deleted file.
-        FileChange::DELETE);
+        FileChange::FILE_TYPE_NO_INFO,  // Undetermined type for deleted file.
+        FileChange::CHANGE_TYPE_DELETE);
   } else {
-    changed_files->Update(original_path, entry, FileChange::DELETE);
+    changed_files->Update(original_path, entry, FileChange::CHANGE_TYPE_DELETE);
 
     error = ChangeListProcessor::SetParentLocalIdOfEntry(metadata, &entry,
                                                          parent_resource_id);
@@ -73,7 +73,8 @@ FileError FinishRevert(ResourceMetadata* metadata,
     if (error != FILE_ERROR_OK)
       return error;
 
-    changed_files->Update(new_path, entry, FileChange::ADD_OR_UPDATE);
+    changed_files->Update(new_path, entry,
+                          FileChange::CHANGE_TYPE_ADD_OR_UPDATE);
   }
   return FILE_ERROR_OK;
 }

@@ -19,14 +19,14 @@ FileChange::Change::Change(ChangeType change, FileType file_type)
 std::string FileChange::Change::DebugString() const {
   const char* change_string = NULL;
   switch (change()) {
-    case ADD_OR_UPDATE:
+    case CHANGE_TYPE_ADD_OR_UPDATE:
       change_string = "ADD_OR_UPDATE";
       break;
-    case DELETE:
+    case CHANGE_TYPE_DELETE:
       change_string = "DELETE";
       break;
   }
-  const char* type_string = "UNKNOWN";
+  const char* type_string = "NO_INFO";
   switch (file_type()) {
     case FileChange::FILE_TYPE_FILE:
       type_string = "FILE";
@@ -34,8 +34,8 @@ std::string FileChange::Change::DebugString() const {
     case FileChange::FILE_TYPE_DIRECTORY:
       type_string = "DIRECTORY";
       break;
-    case FILE_TYPE_UNKNOWN:
-      // Keeps it as "unknown".
+    case FILE_TYPE_NO_INFO:
+      // Keeps it as "no_info".
       break;
   }
   return base::StringPrintf("%s:%s", change_string, type_string);
@@ -116,7 +116,7 @@ void FileChange::Update(const base::FilePath file_path,
                         const ResourceEntry& entry,
                         FileChange::ChangeType change) {
   FileType type = !entry.has_file_info()
-                      ? FILE_TYPE_UNKNOWN
+                      ? FILE_TYPE_NO_INFO
                       : entry.file_info().is_directory() ? FILE_TYPE_DIRECTORY
                                                          : FILE_TYPE_FILE;
 

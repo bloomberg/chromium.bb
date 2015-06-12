@@ -525,8 +525,8 @@ void DownloadOperation::EnsureFileDownloadedAfterUpdateLocalState(
   DCHECK(!entry_after_update->file_info().is_directory());
 
   FileChange changed_files;
-  changed_files.Update(
-      file_path, FileChange::FILE_TYPE_FILE, FileChange::ADD_OR_UPDATE);
+  changed_files.Update(file_path, FileChange::FILE_TYPE_FILE,
+                       FileChange::CHANGE_TYPE_ADD_OR_UPDATE);
   // Storing to cache changes the "offline available" status, hence notify.
   delegate_->OnFileChangedByOperation(changed_files);
   params->OnDownloadCompleted(*cache_file_path, entry_after_update.Pass());

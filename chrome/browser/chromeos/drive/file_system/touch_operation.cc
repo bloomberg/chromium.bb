@@ -79,11 +79,10 @@ void TouchOperation::TouchFileAfterUpdateLocalState(
   DCHECK(!callback.is_null());
 
   FileChange changed_files;
-  changed_files.Update(
-      file_path,
-      entry->file_info().is_directory() ?
-          FileChange::FILE_TYPE_DIRECTORY : FileChange::FILE_TYPE_FILE,
-      FileChange::ADD_OR_UPDATE);
+  changed_files.Update(file_path, entry->file_info().is_directory()
+                                      ? FileChange::FILE_TYPE_DIRECTORY
+                                      : FileChange::FILE_TYPE_FILE,
+                       FileChange::CHANGE_TYPE_ADD_OR_UPDATE);
 
   if (error == FILE_ERROR_OK) {
     delegate_->OnFileChangedByOperation(changed_files);

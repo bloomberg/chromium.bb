@@ -9,7 +9,7 @@
 namespace drive {
 
 TEST(ChangeListTest, FileChange_Change) {
-  FileChange::ChangeType change_type = FileChange::ADD_OR_UPDATE;
+  FileChange::ChangeType change_type = FileChange::CHANGE_TYPE_ADD_OR_UPDATE;
   FileChange::FileType file_type = FileChange::FILE_TYPE_FILE;
 
   FileChange::Change change1(change_type, file_type);
@@ -32,7 +32,7 @@ TEST(ChangeListTest, FileChangeChangeList) {
   EXPECT_TRUE(changes.empty());
   EXPECT_EQ(0u, changes.size());
 
-  changes.Update(FileChange::Change(FileChange::ADD_OR_UPDATE,
+  changes.Update(FileChange::Change(FileChange::CHANGE_TYPE_ADD_OR_UPDATE,
                                     FileChange::FILE_TYPE_FILE));
   EXPECT_EQ(1u, changes.size());
 }
@@ -44,14 +44,14 @@ TEST(ChangeListTest, FileChange) {
   base::FilePath change_dir(FILE_PATH_LITERAL("a/b/c"));
 
   FileChange changed_files;
-  changed_files.Update(
-      change_path1, FileChange::FILE_TYPE_FILE, FileChange::ADD_OR_UPDATE);
-  changed_files.Update(
-      change_path2, FileChange::FILE_TYPE_FILE, FileChange::ADD_OR_UPDATE);
-  changed_files.Update(
-      change_path2, FileChange::FILE_TYPE_FILE, FileChange::ADD_OR_UPDATE);
-  changed_files.Update(
-      change_path3, FileChange::FILE_TYPE_FILE, FileChange::ADD_OR_UPDATE);
+  changed_files.Update(change_path1, FileChange::FILE_TYPE_FILE,
+                       FileChange::CHANGE_TYPE_ADD_OR_UPDATE);
+  changed_files.Update(change_path2, FileChange::FILE_TYPE_FILE,
+                       FileChange::CHANGE_TYPE_ADD_OR_UPDATE);
+  changed_files.Update(change_path2, FileChange::FILE_TYPE_FILE,
+                       FileChange::CHANGE_TYPE_ADD_OR_UPDATE);
+  changed_files.Update(change_path3, FileChange::FILE_TYPE_FILE,
+                       FileChange::CHANGE_TYPE_ADD_OR_UPDATE);
 
   ASSERT_EQ(3u, changed_files.size());
   ASSERT_EQ(2u, changed_files.CountDirectory(change_dir));

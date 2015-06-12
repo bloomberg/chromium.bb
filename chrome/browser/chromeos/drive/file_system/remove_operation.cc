@@ -112,7 +112,7 @@ void RemoveOperation::RemoveAfterUpdateLocalState(
 
   if (!changed_path->empty()) {
     FileChange changed_file;
-    changed_file.Update(*changed_path, *entry, FileChange::DELETE);
+    changed_file.Update(*changed_path, *entry, FileChange::CHANGE_TYPE_DELETE);
     if (error == FILE_ERROR_OK) {
       delegate_->OnFileChangedByOperation(changed_file);
       delegate_->OnEntryUpdatedByOperation(ClientContext(USER_INITIATED),

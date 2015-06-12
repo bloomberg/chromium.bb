@@ -36,7 +36,7 @@ FileError UpdateLocalState(internal::ResourceMetadata* metadata,
   if (!parent_entry.file_info().is_directory())
     return FILE_ERROR_NOT_A_DIRECTORY;
 
-  changed_files->Update(src_path, entry, FileChange::DELETE);
+  changed_files->Update(src_path, entry, FileChange::CHANGE_TYPE_DELETE);
 
   // Strip the extension for a hosted document if necessary.
   const std::string new_extension =
@@ -58,7 +58,8 @@ FileError UpdateLocalState(internal::ResourceMetadata* metadata,
   if (error != FILE_ERROR_OK)
     return error;
 
-  changed_files->Update(dest_path, entry, FileChange::ADD_OR_UPDATE);
+  changed_files->Update(dest_path, entry,
+                        FileChange::CHANGE_TYPE_ADD_OR_UPDATE);
   return FILE_ERROR_OK;
 }
 

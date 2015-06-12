@@ -158,7 +158,8 @@ FileError FinishUpdate(ResourceMetadata* metadata,
         error = metadata->RemoveEntry(existing_local_id);
         if (error != FILE_ERROR_OK)
           return error;
-        changed_files->Update(existing_entry_path, entry, FileChange::DELETE);
+        changed_files->Update(existing_entry_path, entry,
+                              FileChange::CHANGE_TYPE_DELETE);
       }
       break;
     case FILE_ERROR_NOT_FOUND:
@@ -203,7 +204,8 @@ FileError FinishUpdate(ResourceMetadata* metadata,
   error = metadata->GetFilePath(local_state->entry.local_id(), &entry_path);
   if (error != FILE_ERROR_OK)
     return error;
-  changed_files->Update(entry_path, entry, FileChange::ADD_OR_UPDATE);
+  changed_files->Update(entry_path, entry,
+                        FileChange::CHANGE_TYPE_ADD_OR_UPDATE);
 
   // Clear dirty bit unless the file has been edited during update.
   if (entry.file_specific_info().cache_state().is_dirty() &&

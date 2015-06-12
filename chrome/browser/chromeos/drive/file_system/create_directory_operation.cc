@@ -51,8 +51,8 @@ FileError CreateDirectoryRecursively(internal::ResourceMetadata* metadata,
 
   updated_local_ids->insert(local_id);
   DCHECK(changed_files);
-  changed_files->Update(
-      path, FileChange::FILE_TYPE_DIRECTORY, FileChange::ADD_OR_UPDATE);
+  changed_files->Update(path, FileChange::FILE_TYPE_DIRECTORY,
+                        FileChange::CHANGE_TYPE_ADD_OR_UPDATE);
 
   if (remaining_path.empty())  // All directories are created successfully.
     return FILE_ERROR_OK;

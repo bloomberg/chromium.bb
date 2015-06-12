@@ -125,8 +125,8 @@ void CreateFileOperation::CreateFileAfterUpdateLocalState(
 
     // Notify delegate if the file was newly created.
     FileChange changed_file;
-    changed_file.Update(
-        file_path, FileChange::FILE_TYPE_FILE, FileChange::ADD_OR_UPDATE);
+    changed_file.Update(file_path, FileChange::FILE_TYPE_FILE,
+                        FileChange::CHANGE_TYPE_ADD_OR_UPDATE);
     delegate_->OnFileChangedByOperation(changed_file);
     // Synchronize in the background.
     delegate_->OnEntryUpdatedByOperation(ClientContext(BACKGROUND),
