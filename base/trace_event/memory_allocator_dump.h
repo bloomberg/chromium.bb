@@ -5,6 +5,8 @@
 #ifndef BASE_TRACE_EVENT_MEMORY_ALLOCATOR_DUMP_H_
 #define BASE_TRACE_EVENT_MEMORY_ALLOCATOR_DUMP_H_
 
+#include <string>
+
 #include "base/base_export.h"
 #include "base/basictypes.h"
 #include "base/logging.h"
@@ -32,14 +34,6 @@ class BASE_EXPORT MemoryAllocatorDump {
 
   // Standard attribute name to model allocated space.
   static const char kNameSize[];
-
-  // Standard attribute name to model total space requested by the allocator
-  // (e.g., amount of pages requested to the system).
-  static const char kNameOuterSize[];
-
-  // Standard attribute name to model space for allocated objects, without
-  // taking into account allocator metadata or fragmentation.
-  static const char kNameInnerSize[];
 
   // Standard attribute name to model the number of objects allocated.
   static const char kNameObjectsCount[];
@@ -80,6 +74,10 @@ class BASE_EXPORT MemoryAllocatorDump {
   ProcessMemoryDump* const process_memory_dump_;  // Not owned (PMD owns this).
   scoped_refptr<TracedValue> attributes_;
   MemoryAllocatorDumpGuid guid_;
+
+  // A local buffer for Sprintf conversion on fastpath. Avoids allocating
+  // temporary strings on each AddScalar() call.
+  std::string string_conversion_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(MemoryAllocatorDump);
 };

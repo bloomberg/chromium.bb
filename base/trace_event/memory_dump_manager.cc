@@ -40,12 +40,17 @@ namespace {
 // trace event synthetic delays.
 const char kTraceCategory[] = TRACE_DISABLED_BY_DEFAULT("memory-infra");
 
-MemoryDumpManager* g_instance_for_testing = nullptr;
-const int kDumpIntervalSeconds = 2;
+// Throttle mmaps at a rate of once every kHeavyMmapsDumpsRate standard dumps.
+const int kHeavyMmapsDumpsRate = 8;  // 250 ms * 8 = 2000 ms.
+const int kDumpIntervalMs = 250;
 const int kTraceEventNumArgs = 1;
 const char* kTraceEventArgNames[] = {"dumps"};
 const unsigned char kTraceEventArgTypes[] = {TRACE_VALUE_TYPE_CONVERTABLE};
+
 StaticAtomicSequenceNumber g_next_guid;
+uint32 g_periodic_dumps_count = 0;
+MemoryDumpManager* g_instance_for_testing = nullptr;
+MemoryDumpProvider* g_mmaps_dump_provider = nullptr;
 
 const char* MemoryDumpTypeToString(const MemoryDumpType& dump_type) {
   switch (dump_type) {
@@ -55,6 +60,8 @@ const char* MemoryDumpTypeToString(const MemoryDumpType& dump_type) {
       return "TASK_END";
     case MemoryDumpType::PERIODIC_INTERVAL:
       return "PERIODIC_INTERVAL";
+    case MemoryDumpType::PERIODIC_INTERVAL_WITH_MMAPS:
+      return "PERIODIC_INTERVAL_WITH_MMAPS";
     case MemoryDumpType::EXPLICITLY_TRIGGERED:
       return "EXPLICITLY_TRIGGERED";
   }
@@ -126,8 +133,13 @@ void FinalizeDumpAndAddToTrace(
 }
 
 void RequestPeriodicGlobalDump() {
-  MemoryDumpManager::GetInstance()->RequestGlobalDump(
-      MemoryDumpType::PERIODIC_INTERVAL);
+  MemoryDumpType dump_type = g_periodic_dumps_count == 0
+                                 ? MemoryDumpType::PERIODIC_INTERVAL_WITH_MMAPS
+                                 : MemoryDumpType::PERIODIC_INTERVAL;
+  if (++g_periodic_dumps_count == kHeavyMmapsDumpsRate)
+    g_periodic_dumps_count = 0;
+
+  MemoryDumpManager::GetInstance()->RequestGlobalDump(dump_type);
 }
 
 }  // namespace
@@ -175,7 +187,8 @@ void MemoryDumpManager::Initialize() {
 #endif
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
-  RegisterDumpProvider(ProcessMemoryMapsDumpProvider::GetInstance());
+  g_mmaps_dump_provider = ProcessMemoryMapsDumpProvider::GetInstance();
+  RegisterDumpProvider(g_mmaps_dump_provider);
   RegisterDumpProvider(MallocDumpProvider::GetInstance());
 #endif
 
@@ -286,6 +299,13 @@ void MemoryDumpManager::CreateProcessDump(const MemoryDumpRequestArgs& args,
     for (auto it = dump_providers_.begin(); it != dump_providers_.end(); ++it) {
       MemoryDumpProvider* mdp = it->first;
       MemoryDumpProviderInfo* mdp_info = &it->second;
+      // Mmaps dumping is very heavyweight and cannot be performed at the same
+      // rate of other dumps. TODO(primiano): this is a hack and should be
+      // cleaned up as part of crbug.com/499731.
+      if (mdp == g_mmaps_dump_provider &&
+          args.dump_type != MemoryDumpType::PERIODIC_INTERVAL_WITH_MMAPS) {
+        continue;
+      }
       if (mdp_info->disabled)
         continue;
       if (mdp_info->task_runner) {
@@ -379,8 +399,9 @@ void MemoryDumpManager::OnTraceLogEnabled() {
   subtle::NoBarrier_Store(&memory_tracing_enabled_, 1);
 
   if (delegate_->IsCoordinatorProcess()) {
+    g_periodic_dumps_count = 0;
     periodic_dump_timer_.Start(FROM_HERE,
-                               TimeDelta::FromSeconds(kDumpIntervalSeconds),
+                               TimeDelta::FromMilliseconds(kDumpIntervalMs),
                                base::Bind(&RequestPeriodicGlobalDump));
   }
 }

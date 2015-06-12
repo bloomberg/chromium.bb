@@ -27,22 +27,34 @@ TraceEventMemoryOverhead::TraceEventMemoryOverhead() {
 TraceEventMemoryOverhead::~TraceEventMemoryOverhead() {
 }
 
-void TraceEventMemoryOverhead::AddOrCreateInternal(const char* object_type,
-                                                   size_t count,
-                                                   size_t size_in_bytes) {
+void TraceEventMemoryOverhead::AddOrCreateInternal(
+    const char* object_type,
+    size_t count,
+    size_t allocated_size_in_bytes,
+    size_t resident_size_in_bytes) {
   auto it = allocated_objects_.find(object_type);
   if (it == allocated_objects_.end()) {
     allocated_objects_.insert(std::make_pair(
-        object_type, ObjectCountAndSize({count, size_in_bytes})));
+        object_type,
+        ObjectCountAndSize(
+            {count, allocated_size_in_bytes, resident_size_in_bytes})));
     return;
   }
   it->second.count += count;
-  it->second.size_in_bytes += size_in_bytes;
+  it->second.allocated_size_in_bytes += allocated_size_in_bytes;
+  it->second.resident_size_in_bytes += resident_size_in_bytes;
 }
 
 void TraceEventMemoryOverhead::Add(const char* object_type,
-                                   size_t size_in_bytes) {
-  AddOrCreateInternal(object_type, 1 /* count */, size_in_bytes);
+                                   size_t allocated_size_in_bytes) {
+  Add(object_type, allocated_size_in_bytes, allocated_size_in_bytes);
+}
+
+void TraceEventMemoryOverhead::Add(const char* object_type,
+                                   size_t allocated_size_in_bytes,
+                                   size_t resident_size_in_bytes) {
+  AddOrCreateInternal(object_type, 1, allocated_size_in_bytes,
+                      resident_size_in_bytes);
 }
 
 void TraceEventMemoryOverhead::AddString(const std::string& str) {
@@ -107,17 +119,19 @@ void TraceEventMemoryOverhead::AddValue(const Value& value) {
 }
 
 void TraceEventMemoryOverhead::AddSelf() {
-  const size_t num_buckets = allocated_objects_.UsingFullMap()
-                                 ? (allocated_objects_.size() + 1)
-                                 : TRACE_EVENT_MEMORY_OVERHEAD_MAP_SIZE;
   size_t estimated_size = sizeof(*this);
-  estimated_size += sizeof(map_type::value_type) * num_buckets;
+  // If the SmallMap did overflow its static capacity, its elements will be
+  // allocated on the heap and have to be accounted separately.
+  if (allocated_objects_.UsingFullMap())
+    estimated_size += sizeof(map_type::value_type) * allocated_objects_.size();
   Add("TraceEventMemoryOverhead", estimated_size);
 }
 
 void TraceEventMemoryOverhead::Update(const TraceEventMemoryOverhead& other) {
   for (const auto& it : other.allocated_objects_) {
-    AddOrCreateInternal(it.first, it.second.count, it.second.size_in_bytes);
+    AddOrCreateInternal(it.first, it.second.count,
+                        it.second.allocated_size_in_bytes,
+                        it.second.resident_size_in_bytes);
   }
 }
 
@@ -127,7 +141,10 @@ void TraceEventMemoryOverhead::DumpInto(const char* base_name,
     std::string dump_name = StringPrintf("%s/%s", base_name, it.first);
     MemoryAllocatorDump* mad = pmd->CreateAllocatorDump(dump_name);
     mad->AddScalar(MemoryAllocatorDump::kNameSize,
-                   MemoryAllocatorDump::kUnitsBytes, it.second.size_in_bytes);
+                   MemoryAllocatorDump::kUnitsBytes,
+                   it.second.allocated_size_in_bytes);
+    mad->AddScalar("resident_size", MemoryAllocatorDump::kUnitsBytes,
+                   it.second.resident_size_in_bytes);
     mad->AddScalar(MemoryAllocatorDump::kNameObjectsCount,
                    MemoryAllocatorDump::kUnitsObjects, it.second.count);
   }

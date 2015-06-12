@@ -15,11 +15,7 @@
 namespace base {
 namespace trace_event {
 
-// TODO(primiano): remove kName{Inner,Outer}Size below after all the existing
-// dump providers have been rewritten.
 const char MemoryAllocatorDump::kNameSize[] = "size";
-const char MemoryAllocatorDump::kNameInnerSize[] = "inner_size";
-const char MemoryAllocatorDump::kNameOuterSize[] = "outer_size";
 const char MemoryAllocatorDump::kNameObjectsCount[] = "objects_count";
 const char MemoryAllocatorDump::kTypeScalar[] = "scalar";
 const char MemoryAllocatorDump::kTypeString[] = "string";
@@ -57,6 +53,7 @@ MemoryAllocatorDump::MemoryAllocatorDump(const std::string& absolute_name,
                               "%d:%s",
                               TraceLog::GetInstance()->process_id(),
                               absolute_name.c_str()))) {
+  string_conversion_buffer_.reserve(16);
 }
 
 MemoryAllocatorDump::~MemoryAllocatorDump() {
@@ -65,10 +62,11 @@ MemoryAllocatorDump::~MemoryAllocatorDump() {
 void MemoryAllocatorDump::AddScalar(const char* name,
                                     const char* units,
                                     uint64 value) {
+  SStringPrintf(&string_conversion_buffer_, "%" PRIx64, value);
   attributes_->BeginDictionary(name);
   attributes_->SetString("type", kTypeScalar);
   attributes_->SetString("units", units);
-  attributes_->SetString("value", StringPrintf("%" PRIx64, value));
+  attributes_->SetString("value", string_conversion_buffer_);
   attributes_->EndDictionary();
 }
 

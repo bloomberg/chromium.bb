@@ -24,7 +24,17 @@ class BASE_EXPORT TraceEventMemoryOverhead {
   TraceEventMemoryOverhead();
   ~TraceEventMemoryOverhead();
 
-  void Add(const char* object_type, size_t size_in_bytes);
+  // Use this method to account the overhead of an object for which an estimate
+  // is known for both the allocated and resident memory.
+  void Add(const char* object_type,
+           size_t allocated_size_in_bytes,
+           size_t resident_size_in_bytes);
+
+  // Similar to Add() above, but assumes that
+  // |resident_size_in_bytes| == |allocated_size_in_bytes|.
+  void Add(const char* object_type, size_t allocated_size_in_bytes);
+
+  // Specialized profiling functions for commonly used object types.
   void AddString(const std::string& str);
   void AddValue(const Value& value);
   void AddRefCountedString(const RefCountedString& str);
@@ -41,16 +51,16 @@ class BASE_EXPORT TraceEventMemoryOverhead {
  private:
   struct ObjectCountAndSize {
     size_t count;
-    size_t size_in_bytes;
+    size_t allocated_size_in_bytes;
+    size_t resident_size_in_bytes;
   };
-#define TRACE_EVENT_MEMORY_OVERHEAD_MAP_SIZE 16
-  using map_type = SmallMap<hash_map<const char*, ObjectCountAndSize>,
-                            TRACE_EVENT_MEMORY_OVERHEAD_MAP_SIZE>;
+  using map_type = SmallMap<hash_map<const char*, ObjectCountAndSize>, 16>;
   map_type allocated_objects_;
 
   void AddOrCreateInternal(const char* object_type,
                            size_t count,
-                           size_t size_in_bytes);
+                           size_t allocated_size_in_bytes,
+                           size_t resident_size_in_bytes);
 
   DISALLOW_COPY_AND_ASSIGN(TraceEventMemoryOverhead);
 };
