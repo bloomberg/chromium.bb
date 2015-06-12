@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.document;
 
 import android.graphics.Bitmap;
 import android.graphics.Rect;
-import android.util.Pair;
 
 import org.chromium.base.ObserverList.RewindableIterator;
 import org.chromium.base.VisibleForTesting;
@@ -239,8 +238,6 @@ public class DocumentTab extends ChromeTab {
      */
     public class DocumentTabChromeWebContentsDelegateAndroidImpl
             extends TabChromeWebContentsDelegateAndroidImpl {
-        private Pair<WebContents, String> mContentsToUrlMapping = null;
-
         @Override
         public void webContentsCreated(WebContents sourceWebContents, long openerRenderFrameId,
                 String frameName, String targetUrl, WebContents newWebContents) {
@@ -248,35 +245,17 @@ public class DocumentTab extends ChromeTab {
             //                    WebContentsDelegateAndroidImpl.
             super.webContentsCreated(sourceWebContents, openerRenderFrameId, frameName,
                     targetUrl, newWebContents);
-
-            // Save the URL for the WebContents for use in addNewContents().
-            assert mContentsToUrlMapping == null;
-            mContentsToUrlMapping = Pair.create(newWebContents, targetUrl);
             DocumentWebContentsDelegate.getInstance().attachDelegate(newWebContents);
         }
 
         @Override
         public boolean addNewContents(WebContents sourceWebContents, WebContents webContents,
                 int disposition, Rect initialPosition, boolean userGesture) {
-            // TODO(dfalcantara): Set TabCreators on DocumentActivity, replace with super method.
             if (isClosing()) return false;
+            mActivity.getTabCreator(isIncognito()).createTabWithWebContents(
+                    webContents, getId(), TabLaunchType.FROM_LONGPRESS_FOREGROUND);
 
-            // Grab the URL from the WebContents set in webContentsCreated().
-            assert mContentsToUrlMapping != null && mContentsToUrlMapping.first == webContents;
-            String url = mContentsToUrlMapping.second;
-            mContentsToUrlMapping = null;
-
-            if (url == null) url = "";
-            PendingDocumentData data = new PendingDocumentData();
-            data.webContents = webContents;
-            data.webContentsPaused = true;
-            ChromeLauncherActivity.launchDocumentInstance(
-                    getWindowAndroid().getActivity().get(), isIncognito(),
-                    ChromeLauncherActivity.LAUNCH_MODE_AFFILIATED, url,
-                    DocumentMetricIds.STARTED_BY_WINDOW_OPEN,
-                    PageTransition.AUTO_TOPLEVEL,
-                    false, data);
-
+            // Returns true because Tabs are created asynchronously.
             return true;
         }
 

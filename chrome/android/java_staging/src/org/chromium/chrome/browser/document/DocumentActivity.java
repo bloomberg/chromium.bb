@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.document;
 
 import android.annotation.TargetApi;
-import android.app.Activity;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
@@ -156,30 +155,14 @@ public class DocumentActivity extends CompositorChromeActivity {
             @Override
             public Tab openNewTab(LoadUrlParams loadUrlParams, TabLaunchType type, Tab parent,
                     boolean incognito) {
-                PendingDocumentData params = null;
-                if (loadUrlParams.getPostData() != null
-                        || loadUrlParams.getVerbatimHeaders() != null
-                        || loadUrlParams.getReferrer() != null) {
-                    params = new PendingDocumentData();
-                    params.postData = loadUrlParams.getPostData();
-                    params.extraHeaders = loadUrlParams.getVerbatimHeaders();
-                    params.referrer = loadUrlParams.getReferrer();
-                }
-
-                // Incognito never opens in the background.
-                int launchMode = type == TabLaunchType.FROM_LONGPRESS_BACKGROUND && !incognito
-                        ? ChromeLauncherActivity.LAUNCH_MODE_AFFILIATED
-                        : ChromeLauncherActivity.LAUNCH_MODE_FOREGROUND;
-                Activity parentActivity =
-                        parent == null ? null : parent.getWindowAndroid().getActivity().get();
-                ChromeLauncherActivity.launchDocumentInstance(parentActivity, incognito,
-                        launchMode, loadUrlParams.getUrl(),
-                        DocumentMetricIds.STARTED_BY_WINDOW_OPEN,
-                        loadUrlParams.getTransitionType(), false, params);
-                return null;
+                // Triggered via open in new tab context menu on NTP.
+                return ChromeMobileApplication.getDocumentTabModelSelector().openNewTab(
+                        loadUrlParams, type, parent, incognito);
             }
         };
         setTabModelSelector(selector);
+        setTabCreators(ChromeMobileApplication.getDocumentTabModelSelector().getTabCreator(false),
+                ChromeMobileApplication.getDocumentTabModelSelector().getTabCreator(true));
 
         super.preInflationStartup();
 

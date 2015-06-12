@@ -7,9 +7,9 @@ package org.chromium.chrome.test.util.browser.tabmodel.document;
 import android.app.Activity;
 
 import org.chromium.chrome.browser.Tab;
-import org.chromium.chrome.browser.document.PendingDocumentData;
+import org.chromium.chrome.browser.TabState;
+import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.document.ActivityDelegate;
-import org.chromium.chrome.browser.tabmodel.document.DocumentTabModel.Entry;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
@@ -19,26 +19,38 @@ import org.chromium.content_public.browser.WebContents;
  */
 public class MockTabDelegate implements TabDelegate {
     @Override
-    public Tab getActivityTab(boolean incognito, ActivityDelegate delgate, Activity activity) {
+    public Tab getActivityTab(ActivityDelegate delgate, Activity activity) {
         return null;
     }
 
     @Override
-    public void createTabInForeground(Activity parentActivity, boolean incognito,
-            LoadUrlParams loadUrlParams, PendingDocumentData documentParams) {
-    }
-
-    @Override
-    public Tab createFrozenTab(Entry entry) {
+    public Tab createNewTab(LoadUrlParams loadUrlParams, TabLaunchType type, Tab parent) {
         return null;
     }
 
     @Override
-    public void createTabWithWebContents(boolean isIncognito, WebContents webContents,
-            int parentTabId) {
+    public Tab createFrozenTab(TabState state, int id, int index) {
+        return null;
     }
 
     @Override
-    public void createTabForDevTools(String url) {
+    public Tab createTabWithWebContents(WebContents webContents, int parentId, TabLaunchType type) {
+        return null;
+    }
+
+    @Override
+    public Tab createTabWithWebContents(
+            WebContents webContents, int parentId, TabLaunchType type, int startedBy) {
+        return null;
+    }
+
+    @Override
+    public Tab launchUrl(String url, TabLaunchType type) {
+        return null;
+    }
+
+    @Override
+    public Tab launchNTP() {
+        return null;
     }
 }

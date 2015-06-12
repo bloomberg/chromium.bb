@@ -55,10 +55,11 @@ public class TabPersistentStoreTest extends ChromeShellTestBase {
         }
 
         @Override
-        public void createFrozenTab(TabState state, int id, int index) {
+        public Tab createFrozenTab(TabState state, int id, int index) {
             if (created.size() == 0) idOfFirstCreatedTab = id;
             created.put(id, state);
             notifyCalled();
+            return null;
         }
 
         @Override

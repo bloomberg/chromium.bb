@@ -51,6 +51,7 @@ import org.chromium.content.app.SandboxedProcessService;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.PageTransition;
@@ -69,6 +70,7 @@ import java.util.concurrent.Callable;
 @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
 @DisableInTabbedMode
 public class DocumentModeTest extends MultiActivityTestBase {
+    private static final float FLOAT_EPSILON = 0.001f;
 
     private static final int ACTIVITY_START_TIMEOUT = 1000;
     private static final String URL_1 = "data:text/html;charset=utf-8,Page%201";
@@ -76,11 +78,48 @@ public class DocumentModeTest extends MultiActivityTestBase {
     private static final String URL_3 = "data:text/html;charset=utf-8,Page%203";
     private static final String URL_4 = "data:text/html;charset=utf-8,Page%204";
 
-    private static final String HTML_LINK = "<html><head><meta "
-            + "name='viewport' content='width=device-width initial-scale=0.5, maximum-scale=0.5'>"
-            + "<style>body {margin: 0em;} div {width: 100%; height: 100%; background: #011684;}"
-            + "</style></head><body><a href='data:text/html;charset=utf-8,white' target='_blank'>"
-            + "<div></div></a></body></html>";
+    private static final String LANDING_PAGE = UrlUtils.encodeHtmlDataUri(
+            "<html>"
+            + "  <head>"
+            + "    <meta name='viewport' content='width=device-width "
+            + "        initial-scale=1.0, maximum-scale=1.0'>"
+            + "    <style>"
+            + "        body {margin: 0em;} div {width: 100%; height: 100%; background: #ff00ff;}"
+            + "    </style>"
+            + "  </head>"
+            + "  <body>Second page</body>"
+            + "</html>");
+    private static final float LANDING_PAGE_SCALE = 1.0f;
+
+    // Defines one gigantic link spanning the whole page that creates a new window.
+    private static final String HREF_LINK = UrlUtils.encodeHtmlDataUri(
+            "<html>"
+            + "  <head>"
+            + "    <meta name='viewport'"
+            + "        content='width=device-width initial-scale=0.5, maximum-scale=0.5'>"
+            + "    <style>"
+            + "      body {margin: 0em;} div {width: 100%; height: 100%; background: #011684;}"
+            + "    </style>"
+            + "  </head>"
+            + "  <body>"
+            + "    <a href='" + LANDING_PAGE + "' target='_blank'><div></div></a>"
+            + "  </body>"
+            + "</html>");
+
+    // Clicking the body triggers a window.open() call.
+    private static final String ONCLICK_LINK = UrlUtils.encodeHtmlDataUri(
+            "<html>"
+            + "  <head>"
+            + "    <meta name='viewport'"
+            + "        content='width=device-width initial-scale=0.5, maximum-scale=0.5'>"
+            + "    <style>"
+            + "      body {margin: 0em;} div {width: 100%; height: 100%; background: #011684;}"
+            + "    </style>"
+            + "  </head>"
+            + "  <body id='body'>"
+            + "    <div onclick='window.open(\"" + LANDING_PAGE + "\")'></div></a>"
+            + "  </body>"
+            + "</html>");
     private static final float HTML_SCALE = 0.5f;
 
     private boolean mInitializationCompleted;
@@ -764,7 +803,7 @@ public class DocumentModeTest extends MultiActivityTestBase {
      */
     @MediumTest
     public void testIncognitoOpensInForegroundViaLinkContextMenu() throws Exception {
-        launchLinkDocument();
+        launchTestPageDocument(HREF_LINK);
 
         // Save the current tab info.
         final DocumentActivity regularActivity =
@@ -818,11 +857,60 @@ public class DocumentModeTest extends MultiActivityTestBase {
     }
 
     /**
+     * Tests that tabs opened via window.open() load properly.
+     */
+    @MediumTest
+    public void testWindowOpen() throws Exception {
+        launchTestPageDocument(ONCLICK_LINK);
+
+        final DocumentActivity firstActivity =
+                (DocumentActivity) ApplicationStatus.getLastTrackedFocusedActivity();
+
+        // Save the current tab ID.
+        final DocumentTabModelSelector selector =
+                ChromeMobileApplication.getDocumentTabModelSelector();
+        final TabModel tabModel = selector.getModel(false);
+        final int firstTabId = selector.getCurrentTabId();
+        final int firstTabIndex = tabModel.index();
+
+        // Do a plain click to make the link open in a new foreground Document via a window.open().
+        Runnable fgTrigger = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    DOMUtils.clickNode(null, firstActivity.getCurrentContentViewCore(), "body");
+                } catch (Exception e) {
+
+                }
+            }
+        };
+
+        // The WebContents gets paused because of the window.open.  Checking that the page scale
+        // factor is set correctly both checks that the page loaded and that the WebContents was
+        // when the new Activity starts.
+        ChromeActivity secondActivity = (ChromeActivity) ActivityUtils.waitForActivity(
+                getInstrumentation(), DocumentActivity.class, fgTrigger);
+        assertWaitForPageScaleFactorMatch(secondActivity, LANDING_PAGE_SCALE);
+
+        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                if (2 != tabModel.getCount()) return false;
+                if (firstTabIndex == tabModel.index()) return false;
+                if (firstTabId == selector.getCurrentTabId()) return false;
+                return true;
+            }
+        }));
+        MoreAsserts.assertNotEqual(
+                firstActivity, ApplicationStatus.getLastTrackedFocusedActivity());
+    }
+
+    /**
      * Tests that tab ID is properly set when tabs change.
      */
     @MediumTest
     public void testLastTabIdUpdates() throws Exception {
-        launchLinkDocument();
+        launchTestPageDocument(HREF_LINK);
 
         final DocumentActivity firstActivity =
                 (DocumentActivity) ApplicationStatus.getLastTrackedFocusedActivity();
@@ -866,7 +954,7 @@ public class DocumentModeTest extends MultiActivityTestBase {
     @Restriction(RESTRICTION_TYPE_LOW_END_DEVICE)
     @MediumTest
     public void testNewTabLoadLowEnd() throws Exception {
-        launchLinkDocument();
+        launchTestPageDocument(HREF_LINK);
 
         final CallbackHelper tabCreatedCallback = new CallbackHelper();
         final CallbackHelper tabLoadStartedCallback = new CallbackHelper();
@@ -908,7 +996,7 @@ public class DocumentModeTest extends MultiActivityTestBase {
     @Restriction(RESTRICTION_TYPE_LOW_END_DEVICE)
     @MediumTest
     public void testNewTabRenderersLowEnd() throws Exception {
-        launchLinkDocument();
+        launchTestPageDocument(HREF_LINK);
 
         // Ignore any side effects that the first background tab might produce.
         openLinkInBackgroundTab();
@@ -1010,19 +1098,25 @@ public class DocumentModeTest extends MultiActivityTestBase {
     }
 
     /**
-     * Launches DocumentActivity with the special URL suitable for openLinkInBackgroundTab()
-     * invocations.
+     * Launches DocumentActivity with a page that can be used to create a second page.
      */
-    private void launchLinkDocument() throws Exception {
-        // Load HTML that defines one gigantic link spanning the whole page.
-        launchViaLaunchDocumentInstance(false, UrlUtils.encodeHtmlDataUri(HTML_LINK));
+    private void launchTestPageDocument(String link) throws Exception {
+        launchViaLaunchDocumentInstance(false, link);
         final DocumentActivity activity =
                 (DocumentActivity) ApplicationStatus.getLastTrackedFocusedActivity();
+        assertWaitForPageScaleFactorMatch(activity, HTML_SCALE);
+    }
+
+    // TODO(dfalcantara): Combine this one and ChromeActivityTestCaseBase's.
+    private void assertWaitForPageScaleFactorMatch(
+            final ChromeActivity activity, final float expectedScale) throws Exception {
         assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return Float.compare(
-                        activity.getCurrentContentViewCore().getScale(), HTML_SCALE) == 0;
+                if (activity.getCurrentContentViewCore() == null) return false;
+
+                return Math.abs(activity.getCurrentContentViewCore().getScale() - expectedScale)
+                        < FLOAT_EPSILON;
             }
         }));
     }
@@ -1082,7 +1176,7 @@ public class DocumentModeTest extends MultiActivityTestBase {
         activity.getActivityTab().removeObserver(observer);
 
         // Select the "open in new tab" option to open a tab in the background.
-        ActivityUtils.waitForActivity(getInstrumentation(),
+        ChromeActivity newActivity = ActivityUtils.waitForActivity(getInstrumentation(),
                 incognito ? IncognitoDocumentActivity.class : DocumentActivity.class,
                 new Runnable() {
                     @Override
@@ -1097,6 +1191,7 @@ public class DocumentModeTest extends MultiActivityTestBase {
                     }
                 }
         );
+        assertWaitForPageScaleFactorMatch(newActivity, LANDING_PAGE_SCALE);
     }
 
     /**

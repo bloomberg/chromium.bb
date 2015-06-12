@@ -34,7 +34,7 @@ public interface TabCreatorManager {
          * @param id       The id to give the new tab.
          * @param index    The index for where to place the tab.
          */
-        void createFrozenTab(TabState state, int id, int index);
+        Tab createFrozenTab(TabState state, int id, int index);
 
         /**
          * Creates a tab around the native web contents pointer.

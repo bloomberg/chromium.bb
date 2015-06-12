@@ -16,8 +16,8 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tabmodel.OffTheRecordTabModel.OffTheRecordTabModelDelegate;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.test.util.browser.tabmodel.document.MockActivityDelegate;
+import org.chromium.chrome.test.util.browser.tabmodel.document.MockDocumentTabCreatorManager;
 import org.chromium.chrome.test.util.browser.tabmodel.document.MockStorageDelegate;
-import org.chromium.chrome.test.util.browser.tabmodel.document.MockTabDelegate;
 import org.chromium.chrome.test.util.browser.tabmodel.document.TestInitializationObserver;
 import org.chromium.content.browser.test.NativeLibraryTestBase;
 
@@ -31,7 +31,7 @@ import org.chromium.content.browser.test.NativeLibraryTestBase;
 public class OffTheRecordDocumentTabModelTest extends NativeLibraryTestBase {
     private MockActivityDelegate mActivityDelegate;
     private MockStorageDelegate mStorageDelegate;
-    private MockTabDelegate mTabDelegate;
+    private MockDocumentTabCreatorManager mTabCreatorManager;
 
     private OffTheRecordDocumentTabModel mTabModel;
     private Profile mProfile;
@@ -48,7 +48,7 @@ public class OffTheRecordDocumentTabModelTest extends NativeLibraryTestBase {
         mContext = getInstrumentation().getTargetContext();
         mStorageDelegate = new MockStorageDelegate(mContext.getCacheDir());
         mActivityDelegate = new MockActivityDelegate();
-        mTabDelegate = new MockTabDelegate();
+        mTabCreatorManager = new MockDocumentTabCreatorManager();
     }
 
     private void createTabModel() {
@@ -57,8 +57,8 @@ public class OffTheRecordDocumentTabModelTest extends NativeLibraryTestBase {
 
             @Override
             public TabModel createTabModel() {
-                mModel = new DocumentTabModelImpl(mActivityDelegate, mStorageDelegate, mTabDelegate,
-                        true, Tab.INVALID_TAB_ID, mContext);
+                mModel = new DocumentTabModelImpl(mActivityDelegate, mStorageDelegate,
+                        mTabCreatorManager, true, Tab.INVALID_TAB_ID, mContext);
                 return mModel;
             }
 

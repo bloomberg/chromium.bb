@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.document.DocumentUtils;
 import org.chromium.chrome.browser.document.PendingDocumentData;
 import org.chromium.chrome.browser.tabmodel.OffTheRecordTabModel.OffTheRecordTabModelDelegate;
+import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorBase;
@@ -35,7 +36,7 @@ import org.chromium.content_public.browser.LoadUrlParams;
  */
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
 public class DocumentTabModelSelector extends TabModelSelectorBase
-        implements ActivityStateListener {
+        implements ActivityStateListener, TabCreatorManager {
     public static final String PREF_PACKAGE = "com.google.android.apps.chrome.document";
     public static final String PREF_IS_INCOGNITO_SELECTED = "is_incognito_selected";
 
@@ -52,7 +53,8 @@ public class DocumentTabModelSelector extends TabModelSelectorBase
     /**
      * Creates new Tabs.
      */
-    private final TabDelegate mTabDelegate;
+    private final TabDelegate mRegularTabDelegate;
+    private final TabDelegate mIncognitoTabDelegate;
 
     /**
      * TabModel that keeps track of regular tabs. This is always not null.
@@ -78,17 +80,19 @@ public class DocumentTabModelSelector extends TabModelSelectorBase
         sPrioritizedTabId = prioritizedTabId;
     }
 
-    public DocumentTabModelSelector(ActivityDelegate activityDelegate, TabDelegate tabDelegate) {
+    public DocumentTabModelSelector(ActivityDelegate activityDelegate,
+            TabDelegate regularTabDelegate, TabDelegate incognitoTabDelegate) {
         mActivityDelegate = activityDelegate;
-        mTabDelegate = tabDelegate;
+        mRegularTabDelegate = regularTabDelegate;
+        mIncognitoTabDelegate = incognitoTabDelegate;
 
         mRegularTabModel = new DocumentTabModelImpl(
-                activityDelegate, tabDelegate, false, sPrioritizedTabId);
+                activityDelegate, this, false, sPrioritizedTabId);
         mIncognitoTabModel = new OffTheRecordDocumentTabModel(new OffTheRecordTabModelDelegate() {
             @Override
             public TabModel createTabModel() {
                 DocumentTabModel incognitoModel = new DocumentTabModelImpl(
-                        mActivityDelegate, mTabDelegate, true, sPrioritizedTabId);
+                        mActivityDelegate, DocumentTabModelSelector.this, true, sPrioritizedTabId);
                 if (mRegularTabModel.isNativeInitialized()) {
                     incognitoModel.initializeNative();
                 }
@@ -111,6 +115,11 @@ public class DocumentTabModelSelector extends TabModelSelectorBase
         initialize(startIncognito, mRegularTabModel, mIncognitoTabModel);
 
         ApplicationStatus.registerStateListenerForAllActivities(this);
+    }
+
+    @Override
+    public TabDelegate getTabCreator(boolean incognito) {
+        return incognito ? mIncognitoTabDelegate : mRegularTabDelegate;
     }
 
     private void initializeTabIdCounter() {
@@ -168,7 +177,10 @@ public class DocumentTabModelSelector extends TabModelSelectorBase
 
         Activity parentActivity =
                 parent == null ? null : parent.getWindowAndroid().getActivity().get();
-        mTabDelegate.createTabInForeground(parentActivity, incognito, loadUrlParams, params);
+
+        TabDelegate delegate = getTabCreator(incognito);
+        Tab parentTab = delegate.getActivityTab(mActivityDelegate, parentActivity);
+        delegate.createNewTab(loadUrlParams, type, parentTab);
         return null;
     }
 

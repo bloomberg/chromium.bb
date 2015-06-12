@@ -583,7 +583,7 @@ public class ChromeMobileApplication extends ChromiumApplication {
         if (sDocumentTabModelSelector == null) {
             sDocumentTabModelSelector = new DocumentTabModelSelector(
                     new ActivityDelegate(DocumentActivity.class, IncognitoDocumentActivity.class),
-                    new TabDelegateImpl());
+                    new TabDelegateImpl(false), new TabDelegateImpl(true));
         }
         return sDocumentTabModelSelector;
     }

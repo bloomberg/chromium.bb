@@ -25,7 +25,9 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.TabState;
+import org.chromium.chrome.browser.document.DocumentMetricIds;
 import org.chromium.chrome.browser.document.IncognitoNotificationManager;
+import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelJniBridge;
@@ -34,6 +36,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelInfo.DocumentEntry;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelInfo.DocumentList;
 import org.chromium.chrome.browser.util.MathUtils;
+import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 
 import java.io.File;
@@ -117,7 +120,7 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
     private final StorageDelegate mStorageDelegate;
 
     /** Delegate that provides Tabs to the DocumentTabModel. */
-    private final TabDelegate mTabDelegate;
+    private final TabCreatorManager mTabCreatorManager;
 
     /** ID of a Tab whose state should be loaded immediately, if it belongs to this TabList. */
     private final int mPrioritizedTabId;
@@ -140,13 +143,13 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
     /**
      * Construct a DocumentTabModelImpl.
      * @param activityDelegate Used to interact with DocumentActivities.
-     * @param tabDelegate Used to create/get Tabs.
+     * @param tabCreatorManager Used to create/get Tabs.
      * @param isIncognito Whether or not the TabList is managing incognito tabs.
      * @param prioritizedTabId ID of the tab to prioritize when loading.
      */
-    public DocumentTabModelImpl(ActivityDelegate activityDelegate, TabDelegate tabDelegate,
-            boolean isIncognito, int prioritizedTabId) {
-        this(activityDelegate, new StorageDelegate(), tabDelegate, isIncognito,
+    public DocumentTabModelImpl(ActivityDelegate activityDelegate,
+            TabCreatorManager tabCreatorManager, boolean isIncognito, int prioritizedTabId) {
+        this(activityDelegate, new StorageDelegate(), tabCreatorManager, isIncognito,
                 prioritizedTabId, ApplicationStatus.getApplicationContext());
     }
 
@@ -162,11 +165,12 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
      * TODO(dfalcantara): Reduce visibility once DocumentMigrationHelper is upstreamed.
      */
     public DocumentTabModelImpl(ActivityDelegate activityDelegate, StorageDelegate storageDelegate,
-            TabDelegate tabDelegate, boolean isIncognito, int prioritizedTabId, Context context) {
+            TabCreatorManager tabCreatorManager, boolean isIncognito, int prioritizedTabId,
+            Context context) {
         super(isIncognito);
         mActivityDelegate = activityDelegate;
         mStorageDelegate = storageDelegate;
-        mTabDelegate = tabDelegate;
+        mTabCreatorManager = tabCreatorManager;
         mPrioritizedTabId = prioritizedTabId;
         mContext = context;
 
@@ -271,8 +275,8 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
         int tabId = mTabIdList.get(index);
         List<WeakReference<Activity>> activities = ApplicationStatus.getRunningActivities();
         for (WeakReference<Activity> activityRef : activities) {
-            Tab tab = mTabDelegate.getActivityTab(
-                    isIncognito(), mActivityDelegate, activityRef.get());
+            Tab tab = getTabDelegate(isIncognito()).getActivityTab(
+                    mActivityDelegate, activityRef.get());
             int documentId = tab == null ? Tab.INVALID_TAB_ID : tab.getId();
             if (documentId == tabId) return tab;
         }
@@ -289,7 +293,8 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
         // Create a frozen Tab if we are capable, or if the previous Tab is just a placeholder.
         if (entry.getTabState() != null && isNativeInitialized()
                 && (entry.placeholderTab == null || !entry.placeholderTab.isInitialized())) {
-            entry.placeholderTab = mTabDelegate.createFrozenTab(entry);
+            entry.placeholderTab = getTabDelegate(isIncognito()).createFrozenTab(
+                    entry.getTabState(), entry.tabId, TabModel.INVALID_TAB_INDEX);
             entry.placeholderTab.initializeNative();
         }
 
@@ -345,14 +350,20 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
     @Override
     protected Tab createTabWithWebContents(
             boolean isIncognito, WebContents webContents, int parentTabId) {
-        mTabDelegate.createTabWithWebContents(isIncognito, webContents, parentTabId);
-        return null;
+        // Tabs created along this pathway are currently only created via JNI, which includes
+        // session restore tabs.  Differs from TabModelImpl because we explicitly open tabs in the
+        // foreground -- opening tabs in affiliated mode is disallowed by ChromeLauncherActivity
+        // when a WebContents has already been created.
+        return getTabDelegate(isIncognito).createTabWithWebContents(
+                webContents, parentTabId, TabLaunchType.FROM_LONGPRESS_FOREGROUND,
+                DocumentMetricIds.STARTED_BY_CHROME_HOME_RECENT_TABS);
     }
 
     @Override
     protected Tab createNewTabForDevTools(String url) {
-        mTabDelegate.createTabForDevTools(url);
-        return null;
+        // TODO(dfalcantara): Move upwards once we delete ChromeShellTabModel.
+        return getTabDelegate(false).createNewTab(new LoadUrlParams(url),
+                TabModel.TabLaunchType.FROM_MENU_OR_OVERVIEW, null);
     }
 
     @Override
@@ -957,5 +968,9 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
             if (entries.get(i).tabId == tabId) return true;
         }
         return false;
+    }
+
+    private TabDelegate getTabDelegate(boolean incognito) {
+        return (TabDelegate) mTabCreatorManager.getTabCreator(incognito);
     }
 }

@@ -18,8 +18,8 @@ import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.test.util.browser.tabmodel.document.MockActivityDelegate;
+import org.chromium.chrome.test.util.browser.tabmodel.document.MockDocumentTabCreatorManager;
 import org.chromium.chrome.test.util.browser.tabmodel.document.MockStorageDelegate;
-import org.chromium.chrome.test.util.browser.tabmodel.document.MockTabDelegate;
 import org.chromium.chrome.test.util.browser.tabmodel.document.TestInitializationObserver;
 import org.chromium.content.browser.test.NativeLibraryTestBase;
 
@@ -78,7 +78,7 @@ public class DocumentTabModelImplTest extends NativeLibraryTestBase {
 
     private MockActivityDelegate mActivityDelegate;
     private MockStorageDelegate mStorageDelegate;
-    private MockTabDelegate mTabDelegate;
+    private MockDocumentTabCreatorManager mTabCreatorManager;
     private DocumentTabModel mTabModel;
     private AdvancedMockContext mContext;
 
@@ -89,7 +89,7 @@ public class DocumentTabModelImplTest extends NativeLibraryTestBase {
         loadNativeLibraryAndInitBrowserProcess();
 
         mActivityDelegate = new MockActivityDelegate();
-        mTabDelegate = new MockTabDelegate();
+        mTabCreatorManager = new MockDocumentTabCreatorManager();
         mContext = new AdvancedMockContext(getInstrumentation().getTargetContext());
         mStorageDelegate = new MockStorageDelegate(mContext.getCacheDir());
     }
@@ -112,8 +112,8 @@ public class DocumentTabModelImplTest extends NativeLibraryTestBase {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mTabModel = new DocumentTabModelImpl(
-                        mActivityDelegate, mStorageDelegate, mTabDelegate, false, 1010, mContext);
+                mTabModel = new DocumentTabModelImpl(mActivityDelegate, mStorageDelegate,
+                        mTabCreatorManager, false, 1010, mContext);
                 mTabModel.startTabStateLoad();
             }
         });

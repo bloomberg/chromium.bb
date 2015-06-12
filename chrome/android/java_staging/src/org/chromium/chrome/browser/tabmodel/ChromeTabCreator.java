@@ -261,7 +261,7 @@ public class ChromeTabCreator implements TabCreatorManager.TabCreator {
     }
 
     @Override
-    public void createFrozenTab(TabState state, int id, int index) {
+    public Tab createFrozenTab(TabState state, int id, int index) {
         ChromeTab tab = ChromeTab.createFrozenTabFromState(
                 id, mActivity, state.isIncognito(), mNativeWindow, state.parentId, state);
         boolean selectTab = mOrderController.willOpenInForeground(TabLaunchType.FROM_RESTORE,
@@ -269,6 +269,7 @@ public class ChromeTabCreator implements TabCreatorManager.TabCreator {
         tab.initialize(null, mTabContentManager, !selectTab);
         assert state.isIncognito() == mIncognito;
         mTabModel.addTab(tab, index, TabLaunchType.FROM_RESTORE);
+        return tab;
     }
 
     /**
