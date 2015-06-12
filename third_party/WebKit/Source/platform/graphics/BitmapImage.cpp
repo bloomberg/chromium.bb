@@ -300,8 +300,6 @@ void BitmapImage::draw(SkCanvas* canvas, const SkPaint& paint, const FloatRect& 
 {
     TRACE_EVENT0("skia", "BitmapImage::draw");
 
-    ASSERT(dstRect.width() >= 0 && dstRect.height() >= 0);
-    ASSERT(srcRect.width() >= 0 && srcRect.height() >= 0);
     SkBitmap bitmap;
     if (!bitmapForCurrentFrame(&bitmap))
         return; // It's too early and we don't have an image yet.
