@@ -628,7 +628,7 @@ public:
 
     Element* offsetParent() const;
 
-    void markContainerChainForLayout(bool scheduleRelayout = true, LayoutObject* newRoot = nullptr, SubtreeLayoutScope* = nullptr);
+    void markContainerChainForLayout(bool scheduleRelayout = true, SubtreeLayoutScope* = nullptr);
     void setNeedsLayout(LayoutInvalidationReasonForTracing, MarkingBehavior = MarkContainerChain, SubtreeLayoutScope* = nullptr);
     void setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReasonForTracing, MarkingBehavior = MarkContainerChain, SubtreeLayoutScope* = nullptr);
     void clearNeedsLayout();
@@ -1507,7 +1507,7 @@ inline void LayoutObject::setNeedsLayout(LayoutInvalidationReasonForTracing reas
             "data",
             InspectorLayoutInvalidationTrackingEvent::data(this, reason));
         if (markParents == MarkContainerChain && (!layouter || layouter->root() != this))
-            markContainerChainForLayout(true, 0, layouter);
+            markContainerChainForLayout(true, layouter);
     }
 }
 
@@ -1540,7 +1540,7 @@ inline void LayoutObject::setChildNeedsLayout(MarkingBehavior markParents, Subtr
     setNormalChildNeedsLayout(true);
     // FIXME: Replace MarkOnlyThis with the SubtreeLayoutScope code path and remove the MarkingBehavior argument entirely.
     if (!alreadyNeededLayout && markParents == MarkContainerChain && (!layouter || layouter->root() != this))
-        markContainerChainForLayout(true, 0, layouter);
+        markContainerChainForLayout(true, layouter);
 }
 
 inline void LayoutObject::setNeedsPositionedMovementLayout()

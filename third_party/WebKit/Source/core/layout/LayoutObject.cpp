@@ -746,9 +746,8 @@ static inline bool objectIsRelayoutBoundary(const LayoutObject* object)
     return true;
 }
 
-void LayoutObject::markContainerChainForLayout(bool scheduleRelayout, LayoutObject* newRoot, SubtreeLayoutScope* layouter)
+void LayoutObject::markContainerChainForLayout(bool scheduleRelayout, SubtreeLayoutScope* layouter)
 {
-    ASSERT(!scheduleRelayout || !newRoot);
     ASSERT(!isSetNeedsLayoutForbidden());
     ASSERT(!layouter || this != layouter->root());
 
@@ -795,9 +794,6 @@ void LayoutObject::markContainerChainForLayout(bool scheduleRelayout, LayoutObje
             if (object == layouter->root())
                 return;
         }
-
-        if (object == newRoot)
-            return;
 
         last = object;
         if (scheduleRelayout && objectIsRelayoutBoundary(last))
