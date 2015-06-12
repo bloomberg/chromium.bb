@@ -1427,165 +1427,24 @@ void LayoutGrid::populateGridPositions(const GridSizingData& sizingData)
         m_rowPositions[i + 1] = m_rowPositions[i] + sizingData.rowsDistributionOffset + sizingData.rowTracks[i].baseSize();
 }
 
-static LayoutUnit computeOverflowAlignmentOffset(OverflowAlignment overflow, LayoutUnit startOfTrack, LayoutUnit endOfTrack, LayoutUnit childBreadth)
+static LayoutUnit computeOverflowAlignmentOffset(OverflowAlignment overflow, LayoutUnit trackBreadth, LayoutUnit childBreadth)
 {
-    LayoutUnit trackBreadth = endOfTrack - startOfTrack;
     LayoutUnit offset = trackBreadth - childBreadth;
-
-    // If overflow is 'safe', we have to make sure we don't overflow the 'start'
-    // edge (potentially cause some data loss as the overflow is unreachable).
-    if (overflow == OverflowAlignmentSafe)
-        offset = std::max<LayoutUnit>(0, offset);
-
-    // If we overflow our alignment container and overflow is 'true' (default), we
-    // ignore the overflow and just return the value regardless (which may cause data
-    // loss as we overflow the 'start' edge).
-    return offset;
-}
-
-LayoutUnit LayoutGrid::startOfColumnForChild(const LayoutBox& child) const
-{
-    const GridCoordinate& coordinate = cachedGridCoordinate(child);
-    LayoutUnit startOfColumn = m_columnPositions[coordinate.columns.resolvedInitialPosition.toInt()];
-    // The grid items should be inside the grid container's border box, that's why they need to be shifted.
-    return startOfColumn + marginStartForChild(child);
-}
-
-LayoutUnit LayoutGrid::endOfColumnForChild(const LayoutBox& child) const
-{
-    const GridCoordinate& coordinate = cachedGridCoordinate(child);
-    LayoutUnit startOfColumn = m_columnPositions[coordinate.columns.resolvedInitialPosition.toInt()];
-    // The grid items should be inside the grid container's border box, that's why they need to be shifted.
-    LayoutUnit columnPosition = startOfColumn + marginStartForChild(child);
-
-    LayoutUnit endOfColumn = m_columnPositions[coordinate.columns.resolvedFinalPosition.next().toInt()];
-    // FIXME: This might not work as expected with orthogonal writing-modes.
-    LayoutUnit offsetFromColumnPosition = computeOverflowAlignmentOffset(child.style()->justifySelfOverflowAlignment(), startOfColumn, endOfColumn, child.logicalWidth() + child.marginLogicalWidth());
-
-    return columnPosition + offsetFromColumnPosition;
-}
-
-LayoutUnit LayoutGrid::columnPositionLeft(const LayoutBox& child) const
-{
-    if (style()->isLeftToRightDirection())
-        return startOfColumnForChild(child);
-
-    return endOfColumnForChild(child);
-}
-
-LayoutUnit LayoutGrid::columnPositionRight(const LayoutBox& child) const
-{
-    if (!style()->isLeftToRightDirection())
-        return startOfColumnForChild(child);
-
-    return endOfColumnForChild(child);
-}
-
-LayoutUnit LayoutGrid::centeredColumnPositionForChild(const LayoutBox& child) const
-{
-    const GridCoordinate& coordinate = cachedGridCoordinate(child);
-    LayoutUnit startOfColumn = m_columnPositions[coordinate.columns.resolvedInitialPosition.toInt()];
-    LayoutUnit endOfColumn = m_columnPositions[coordinate.columns.resolvedFinalPosition.next().toInt()];
-    LayoutUnit columnPosition = startOfColumn + marginStartForChild(child);
-    // FIXME: This might not work as expected with orthogonal writing-modes.
-    LayoutUnit offsetFromColumnPosition = computeOverflowAlignmentOffset(child.style()->justifySelfOverflowAlignment(), startOfColumn, endOfColumn, child.logicalWidth() + child.marginLogicalWidth());
-
-    return columnPosition + offsetFromColumnPosition / 2;
-}
-
-LayoutUnit LayoutGrid::columnPositionForChild(const LayoutBox& child) const
-{
-    bool hasOrthogonalWritingMode = child.isHorizontalWritingMode() != isHorizontalWritingMode();
-
-    switch (ComputedStyle::resolveJustification(styleRef(), child.styleRef(), ItemPositionStretch)) {
-    case ItemPositionSelfStart:
-        // For orthogonal writing-modes, this computes to 'start'
-        // FIXME: grid track sizing and positioning do not support orthogonal modes yet.
-        if (hasOrthogonalWritingMode)
-            return startOfColumnForChild(child);
-
-        // self-start is based on the child's direction. That's why we need to check against the grid container's direction.
-        if (child.style()->direction() != style()->direction())
-            return endOfColumnForChild(child);
-
-        return startOfColumnForChild(child);
-    case ItemPositionSelfEnd:
-        // For orthogonal writing-modes, this computes to 'start'
-        // FIXME: grid track sizing and positioning do not support orthogonal modes yet.
-        if (hasOrthogonalWritingMode)
-            return endOfColumnForChild(child);
-
-        // self-end is based on the child's direction. That's why we need to check against the grid container's direction.
-        if (child.style()->direction() != style()->direction())
-            return startOfColumnForChild(child);
-
-        return endOfColumnForChild(child);
-    case ItemPositionFlexStart:
-        // Only used in flex layout, for other layout, it's equivalent to 'start'.
-        return startOfColumnForChild(child);
-    case ItemPositionFlexEnd:
-        // Only used in flex layout, for other layout, it's equivalent to 'end'.
-        return endOfColumnForChild(child);
-    case ItemPositionLeft:
-        return columnPositionLeft(child);
-    case ItemPositionRight:
-        return columnPositionRight(child);
-    case ItemPositionCenter:
-        return centeredColumnPositionForChild(child);
-    case ItemPositionStart:
-        return startOfColumnForChild(child);
-    case ItemPositionEnd:
-        return endOfColumnForChild(child);
-    case ItemPositionAuto:
-        break;
-    case ItemPositionStretch:
-        return startOfColumnForChild(child);
-    case ItemPositionBaseline:
-    case ItemPositionLastBaseline:
-        // FIXME: Implement the previous values. For now, we always 'start' align the child.
-        return startOfColumnForChild(child);
+    switch (overflow) {
+    case OverflowAlignmentSafe:
+        // If overflow is 'safe', we have to make sure we don't overflow the 'start'
+        // edge (potentially cause some data loss as the overflow is unreachable).
+        return std::max<LayoutUnit>(0, offset);
+    case OverflowAlignmentTrue:
+    case OverflowAlignmentDefault:
+        // If we overflow our alignment container and overflow is 'true' (default), we
+        // ignore the overflow and just return the value regardless (which may cause data
+        // loss as we overflow the 'start' edge).
+        return offset;
     }
 
     ASSERT_NOT_REACHED();
     return 0;
-}
-
-LayoutUnit LayoutGrid::endOfRowForChild(const LayoutBox& child) const
-{
-    const GridCoordinate& coordinate = cachedGridCoordinate(child);
-
-    LayoutUnit startOfRow = m_rowPositions[coordinate.rows.resolvedInitialPosition.toInt()];
-    // The grid items should be inside the grid container's border box, that's why they need to be shifted.
-    LayoutUnit rowPosition = startOfRow + marginBeforeForChild(child);
-
-    LayoutUnit endOfRow = m_rowPositions[coordinate.rows.resolvedFinalPosition.next().toInt()];
-    LayoutUnit offsetFromRowPosition = computeOverflowAlignmentOffset(child.style()->alignSelfOverflowAlignment(), startOfRow, endOfRow, child.logicalHeight() + child.marginLogicalHeight());
-
-    return rowPosition + offsetFromRowPosition;
-}
-
-LayoutUnit LayoutGrid::startOfRowForChild(const LayoutBox& child) const
-{
-    const GridCoordinate& coordinate = cachedGridCoordinate(child);
-
-    LayoutUnit startOfRow = m_rowPositions[coordinate.rows.resolvedInitialPosition.toInt()];
-    // The grid items should be inside the grid container's border box, that's why they need to be shifted.
-    LayoutUnit rowPosition = startOfRow + marginBeforeForChild(child);
-
-    return rowPosition;
-}
-
-LayoutUnit LayoutGrid::centeredRowPositionForChild(const LayoutBox& child) const
-{
-    const GridCoordinate& coordinate = cachedGridCoordinate(child);
-
-    // The grid items should be inside the grid container's border box, that's why they need to be shifted.
-    LayoutUnit startOfRow = m_rowPositions[coordinate.rows.resolvedInitialPosition.toInt()];
-    LayoutUnit endOfRow = m_rowPositions[coordinate.rows.resolvedFinalPosition.next().toInt()];
-    LayoutUnit rowPosition = startOfRow + marginBeforeForChild(child);
-    LayoutUnit offsetFromRowPosition = computeOverflowAlignmentOffset(child.style()->alignSelfOverflowAlignment(), startOfRow, endOfRow, child.logicalHeight() + child.marginLogicalHeight());
-
-    return rowPosition + offsetFromRowPosition / 2;
 }
 
 static inline LayoutUnit constrainedChildIntrinsicContentLogicalHeight(const LayoutBox& child)
@@ -1689,68 +1548,134 @@ void LayoutGrid::applyStretchAlignmentToChildIfNeeded(LayoutBox& child, LayoutUn
     }
 }
 
-LayoutUnit LayoutGrid::rowPositionForChild(const LayoutBox& child) const
+GridAxisPosition LayoutGrid::columnAxisPositionForChild(const LayoutBox& child) const
 {
     bool hasOrthogonalWritingMode = child.isHorizontalWritingMode() != isHorizontalWritingMode();
+    bool hasSameWritingMode = child.styleRef().writingMode() == styleRef().writingMode();
+
     switch (ComputedStyle::resolveAlignment(styleRef(), child.styleRef(), ItemPositionStretch)) {
     case ItemPositionSelfStart:
         // If orthogonal writing-modes, this computes to 'start'.
         // FIXME: grid track sizing and positioning do not support orthogonal modes yet.
-        if (hasOrthogonalWritingMode)
-            return startOfRowForChild(child);
-
         // self-start is based on the child's block axis direction. That's why we need to check against the grid container's block flow.
-        if (child.style()->writingMode() != style()->writingMode())
-            return endOfRowForChild(child);
-
-        return startOfRowForChild(child);
+        return (hasOrthogonalWritingMode || hasSameWritingMode) ? GridAxisStart : GridAxisEnd;
     case ItemPositionSelfEnd:
         // If orthogonal writing-modes, this computes to 'end'.
         // FIXME: grid track sizing and positioning do not support orthogonal modes yet.
-        if (hasOrthogonalWritingMode)
-            return endOfRowForChild(child);
-
         // self-end is based on the child's block axis direction. That's why we need to check against the grid container's block flow.
-        if (child.style()->writingMode() != style()->writingMode())
-            return startOfRowForChild(child);
-
-        return endOfRowForChild(child);
+        return (hasOrthogonalWritingMode || hasSameWritingMode) ? GridAxisEnd : GridAxisStart;
     case ItemPositionLeft:
         // The alignment axis (column axis) and the inline axis are parallell in
-        // orthogonal writing mode.
+        // orthogonal writing mode. Otherwise this this is equivalent to 'start'.
         // FIXME: grid track sizing and positioning do not support orthogonal modes yet.
-        if (hasOrthogonalWritingMode)
-            return startOfRowForChild(child);
-
-        // Otherwise this this is equivalent to 'start'.
-        return startOfRowForChild(child);
+        return GridAxisStart;
     case ItemPositionRight:
         // The alignment axis (column axis) and the inline axis are parallell in
-        // orthogonal writing mode.
+        // orthogonal writing mode. Otherwise this this is equivalent to 'start'.
         // FIXME: grid track sizing and positioning do not support orthogonal modes yet.
-        if (hasOrthogonalWritingMode)
-            return endOfRowForChild(child);
-
-        // Otherwise this this is equivalent to 'start'.
-        return startOfRowForChild(child);
+        return hasOrthogonalWritingMode ? GridAxisEnd : GridAxisStart;
     case ItemPositionCenter:
-        return centeredRowPositionForChild(child);
-        // Only used in flex layout, for other layout, it's equivalent to 'start'.
-    case ItemPositionFlexStart:
+        return GridAxisCenter;
+    case ItemPositionFlexStart: // Only used in flex layout, otherwise equivalent to 'start'.
     case ItemPositionStart:
-        return startOfRowForChild(child);
-        // Only used in flex layout, for other layout, it's equivalent to 'end'.
-    case ItemPositionFlexEnd:
+        return GridAxisStart;
+    case ItemPositionFlexEnd: // Only used in flex layout, otherwise equivalent to 'end'.
     case ItemPositionEnd:
-        return endOfRowForChild(child);
+        return GridAxisEnd;
     case ItemPositionStretch:
-        return startOfRowForChild(child);
+        return GridAxisStart;
     case ItemPositionBaseline:
     case ItemPositionLastBaseline:
-        // FIXME: Implement the ItemPositionBaseline value. For now, we always 'start' align the child.
-        return startOfRowForChild(child);
+        // FIXME: These two require implementing Baseline Alignment. For now, we always 'start' align the child.
+        // crbug.com/234191
+        return GridAxisStart;
     case ItemPositionAuto:
         break;
+    }
+
+    ASSERT_NOT_REACHED();
+    return GridAxisStart;
+}
+
+GridAxisPosition LayoutGrid::rowAxisPositionForChild(const LayoutBox& child) const
+{
+    bool hasOrthogonalWritingMode = child.isHorizontalWritingMode() != isHorizontalWritingMode();
+    bool hasSameDirection = child.styleRef().direction() == styleRef().direction();
+    bool isLTR = styleRef().isLeftToRightDirection();
+
+    switch (ComputedStyle::resolveJustification(styleRef(), child.styleRef(), ItemPositionStretch)) {
+    case ItemPositionSelfStart:
+        // For orthogonal writing-modes, this computes to 'start'
+        // FIXME: grid track sizing and positioning do not support orthogonal modes yet.
+        // self-start is based on the child's direction. That's why we need to check against the grid container's direction.
+        return (hasOrthogonalWritingMode || hasSameDirection) ? GridAxisStart : GridAxisEnd;
+    case ItemPositionSelfEnd:
+        // For orthogonal writing-modes, this computes to 'start'
+        // FIXME: grid track sizing and positioning do not support orthogonal modes yet.
+        return (hasOrthogonalWritingMode || hasSameDirection) ? GridAxisEnd : GridAxisStart;
+    case ItemPositionLeft:
+        return isLTR ? GridAxisStart : GridAxisEnd;
+    case ItemPositionRight:
+        return isLTR ? GridAxisEnd : GridAxisStart;
+    case ItemPositionCenter:
+        return GridAxisCenter;
+    case ItemPositionFlexStart: // Only used in flex layout, otherwise equivalent to 'start'.
+    case ItemPositionStart:
+        return GridAxisStart;
+    case ItemPositionFlexEnd: // Only used in flex layout, otherwise equivalent to 'end'.
+    case ItemPositionEnd:
+        return GridAxisEnd;
+    case ItemPositionStretch:
+        return GridAxisStart;
+    case ItemPositionBaseline:
+    case ItemPositionLastBaseline:
+        // FIXME: These two require implementing Baseline Alignment. For now, we always 'start' align the child.
+        // crbug.com/234191
+        return GridAxisStart;
+    case ItemPositionAuto:
+        break;
+    }
+
+    ASSERT_NOT_REACHED();
+    return GridAxisStart;
+}
+
+LayoutUnit LayoutGrid::rowPositionForChild(const LayoutBox& child) const
+{
+    const GridCoordinate& coordinate = cachedGridCoordinate(child);
+    LayoutUnit startOfRow = m_rowPositions[coordinate.rows.resolvedInitialPosition.toInt()];
+    LayoutUnit endOfRow = m_rowPositions[coordinate.rows.resolvedFinalPosition.next().toInt()];
+    LayoutUnit startPosition = startOfRow + marginBeforeForChild(child);
+    LayoutUnit offsetFromStartPosition = computeOverflowAlignmentOffset(child.styleRef().alignSelfOverflowAlignment(), endOfRow - startOfRow, child.logicalHeight() + child.marginLogicalHeight());
+
+    switch (columnAxisPositionForChild(child)) {
+    case GridAxisStart:
+        return startPosition;
+    case GridAxisEnd:
+        return startPosition + offsetFromStartPosition;
+    case GridAxisCenter:
+        return startPosition + offsetFromStartPosition / 2;
+    }
+
+    ASSERT_NOT_REACHED();
+    return 0;
+}
+
+LayoutUnit LayoutGrid::columnPositionForChild(const LayoutBox& child) const
+{
+    const GridCoordinate& coordinate = cachedGridCoordinate(child);
+    LayoutUnit startOfColumn = m_columnPositions[coordinate.columns.resolvedInitialPosition.toInt()];
+    LayoutUnit endOfColumn = m_columnPositions[coordinate.columns.resolvedFinalPosition.next().toInt()];
+    LayoutUnit startPosition = startOfColumn + marginStartForChild(child);
+    LayoutUnit offsetFromStartPosition = computeOverflowAlignmentOffset(child.styleRef().justifySelfOverflowAlignment(), endOfColumn - startOfColumn, child.logicalWidth() + child.marginLogicalWidth());
+
+    switch (rowAxisPositionForChild(child)) {
+    case GridAxisStart:
+        return startPosition;
+    case GridAxisEnd:
+        return startPosition + offsetFromStartPosition;
+    case GridAxisCenter:
+        return startPosition + offsetFromStartPosition / 2;
     }
 
     ASSERT_NOT_REACHED();
@@ -1861,7 +1786,7 @@ void LayoutGrid::computeContentPositionAndDistributionColumnOffset(LayoutUnit av
         return;
     case ContentPositionBaseline:
     case ContentPositionLastBaseline:
-        // FIXME: Implement the previous values. For now, we always 'start' align.
+        // FIXME: These two require implementing Baseline Alignment. For now, we always 'start' align the child.
         // crbug.com/234191
         sizingData.columnsPositionOffset = offsetToStartEdge(style()->isLeftToRightDirection(), availableFreeSpace);
         return;
@@ -1909,7 +1834,7 @@ void LayoutGrid::computeContentPositionAndDistributionRowOffset(LayoutUnit avail
         return;
     case ContentPositionBaseline:
     case ContentPositionLastBaseline:
-        // FIXME: Implement the previous values. For now, we always start align.
+        // FIXME: These two require implementing Baseline Alignment. For now, we always 'start' align the child.
         // crbug.com/234191
         sizingData.rowsPositionOffset = 0;
         return;

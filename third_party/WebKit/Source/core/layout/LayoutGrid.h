@@ -43,6 +43,7 @@ enum TrackSizeComputationPhase {
     ResolveMaxContentMaximums,
     MaximizeTracks,
 };
+enum GridAxisPosition {GridAxisStart, GridAxisEnd, GridAxisCenter};
 
 class LayoutGrid final : public LayoutBlock {
 public:
@@ -141,15 +142,9 @@ private:
     LayoutUnit logicalHeightForChild(LayoutBox&, Vector<GridTrack>&);
     LayoutUnit minContentForChild(LayoutBox&, GridTrackSizingDirection, Vector<GridTrack>& columnTracks);
     LayoutUnit maxContentForChild(LayoutBox&, GridTrackSizingDirection, Vector<GridTrack>& columnTracks);
-    LayoutUnit startOfColumnForChild(const LayoutBox& child) const;
-    LayoutUnit endOfColumnForChild(const LayoutBox& child) const;
-    LayoutUnit columnPositionLeft(const LayoutBox&) const;
-    LayoutUnit columnPositionRight(const LayoutBox&) const;
-    LayoutUnit centeredColumnPositionForChild(const LayoutBox&) const;
+    GridAxisPosition columnAxisPositionForChild(const LayoutBox&) const;
+    GridAxisPosition rowAxisPositionForChild(const LayoutBox&) const;
     LayoutUnit columnPositionForChild(const LayoutBox&) const;
-    LayoutUnit startOfRowForChild(const LayoutBox& child) const;
-    LayoutUnit endOfRowForChild(const LayoutBox& child) const;
-    LayoutUnit centeredRowPositionForChild(const LayoutBox&) const;
     LayoutUnit rowPositionForChild(const LayoutBox&) const;
     void computeContentPositionAndDistributionRowOffset(LayoutUnit availableFreeSpace, GridSizingData&) const;
     void computeContentPositionAndDistributionColumnOffset(LayoutUnit availableFreeSpace, GridSizingData&) const;
