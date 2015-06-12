@@ -168,7 +168,6 @@ public:
     void printErrorMessage(const String&);
 
     void postMessageTimerFired(PostMessageTimer*);
-    void removePostMessageTimer(PostMessageTimer*);
     void dispatchMessageEventWithOriginCheck(SecurityOrigin* intendedTargetOrigin, PassRefPtrWillBeRawPtr<Event>, PassRefPtrWillBeRawPtr<ScriptCallStack>);
 
     // Events
