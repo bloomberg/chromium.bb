@@ -259,6 +259,8 @@
         'base/cdm_context.h',
         'base/cdm_factory.cc',
         'base/cdm_factory.h',
+        'base/cdm_initialized_promise.cc',
+        'base/cdm_initialized_promise.h',        
         'base/cdm_key_information.cc',
         'base/cdm_key_information.h',
         'base/cdm_promise.cc',

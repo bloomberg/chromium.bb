@@ -11,10 +11,10 @@
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
-#include "content/renderer/media/crypto/cdm_initialized_promise.h"
 #include "content/renderer/pepper/content_decryptor_delegate.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "media/base/audio_decoder_config.h"
+#include "media/base/cdm_initialized_promise.h"
 #include "media/base/cdm_key_information.h"
 #include "media/base/data_buffer.h"
 #include "media/base/decoder_buffer.h"
@@ -56,8 +56,8 @@ void PpapiDecryptor::Create(
   // PpapiDecryptor ownership passed to the promise, but keep a copy in order
   // to call InitializeCdm().
   PpapiDecryptor* ppapi_decryptor_copy = ppapi_decryptor.get();
-  scoped_ptr<CdmInitializedPromise> promise(
-      new CdmInitializedPromise(cdm_created_cb, ppapi_decryptor.Pass()));
+  scoped_ptr<media::CdmInitializedPromise> promise(
+      new media::CdmInitializedPromise(cdm_created_cb, ppapi_decryptor.Pass()));
   ppapi_decryptor_copy->InitializeCdm(key_system, allow_distinctive_identifier,
                                       allow_persistent_state, promise.Pass());
 }

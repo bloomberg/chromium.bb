@@ -68,6 +68,8 @@ source_set("base") {
     "cdm_context.h",
     "cdm_factory.cc",
     "cdm_factory.h",
+    "cdm_initialized_promise.cc",
+    "cdm_initialized_promise.h",
     "cdm_key_information.cc",
     "cdm_key_information.h",
     "cdm_promise.cc",

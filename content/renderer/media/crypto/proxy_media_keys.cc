@@ -9,8 +9,8 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "content/renderer/media/crypto/cdm_initialized_promise.h"
 #include "content/renderer/media/crypto/renderer_cdm_manager.h"
+#include "media/base/cdm_initialized_promise.h"
 #include "media/base/cdm_key_information.h"
 #include "media/base/cdm_promise.h"
 #include "media/base/key_systems.h"
@@ -36,8 +36,9 @@ void ProxyMediaKeys::Create(
   // ProxyMediaKeys ownership passed to the promise, but keep a copy in order
   // to call InitializeCdm().
   ProxyMediaKeys* proxy_media_keys_copy = proxy_media_keys.get();
-  scoped_ptr<CdmInitializedPromise> promise(
-      new CdmInitializedPromise(cdm_created_cb, proxy_media_keys.Pass()));
+  scoped_ptr<media::CdmInitializedPromise> promise(
+      new media::CdmInitializedPromise(cdm_created_cb,
+                                       proxy_media_keys.Pass()));
   proxy_media_keys_copy->InitializeCdm(key_system, security_origin,
                                        use_hw_secure_codecs, promise.Pass());
 }
