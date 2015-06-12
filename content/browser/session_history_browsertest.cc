@@ -178,8 +178,7 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, BasicBackForward) {
 
 // Test that back/forward works when navigating in subframes.
 // If this flakes, use http://crbug.com/48833
-// TODO(wkorman): Re-enable after fix for http://crbug.com/498938 is in.
-IN_PROC_BROWSER_TEST_F(SessionHistoryTest, DISABLED_FrameBackForward) {
+IN_PROC_BROWSER_TEST_F(SessionHistoryTest, FrameBackForward) {
   ASSERT_FALSE(CanGoBack());
 
   ASSERT_NO_FATAL_FAILURE(NavigateAndCheckTitle("frames.html", "bot1"));
@@ -236,8 +235,7 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, DISABLED_FrameBackForward) {
 
 // Test that back/forward preserves POST data and document state in subframes.
 // If this flakes use http://crbug.com/61619
-// TODO(wkorman): Re-enable after fix for http://crbug.com/498938 is in.
-IN_PROC_BROWSER_TEST_F(SessionHistoryTest, DISABLED_FrameFormBackForward) {
+IN_PROC_BROWSER_TEST_F(SessionHistoryTest, FrameFormBackForward) {
   ASSERT_FALSE(CanGoBack());
 
   ASSERT_NO_FATAL_FAILURE(NavigateAndCheckTitle("frames.html", "bot1"));
