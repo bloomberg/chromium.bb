@@ -338,6 +338,19 @@ var renderTile = function(data) {
 
   tile.href = data.url;
   tile.title = data.title;
+  if (data.pingUrl) {
+    tile.addEventListener('click', function(ev) {
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon(data.pingUrl);
+      } else {
+        // if sendBeacon is not enabled, we fallback to "a ping".
+        var a = document.createElement('a');
+        a.href = '#';
+        a.ping = data.pingUrl;
+        a.click();
+      }
+    });
+  }
   tile.addEventListener('keydown', function(event) {
     if (event.keyCode == 46 /* DELETE */ ||
         event.keyCode == 8 /* BACKSPACE */) {
