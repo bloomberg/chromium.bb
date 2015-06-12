@@ -76,7 +76,6 @@ class ServiceRuntime {
 
   void ReportLoadError(const ErrorInfo& error_info);
 
-  NaClSrpcChannel command_channel_;
   Plugin* plugin_;
   PP_Instance pp_instance_;
   bool main_service_runtime_;

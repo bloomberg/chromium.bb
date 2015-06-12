@@ -9,6 +9,15 @@ import xml.etree.ElementTree
 import gdb_rsp
 
 
+def AssertRaises(exc_class, func):
+  try:
+    func()
+  except exc_class:
+    pass
+  else:
+    raise AssertionError('Function did not raise %r' % exc_class)
+
+
 def GetTargetArch(connection):
   """Get the CPU architecture of the NaCl application."""
   reply = connection.RspRequest('qXfer:features:read:target.xml:0,fff')
@@ -46,11 +55,11 @@ def GetProgCtrString(connection, arch):
 
 
 def TestContinue(connection):
-  result = connection.RspRequest('vCont;c')
   # Once the NaCl test module reports that the test passed, the NaCl <embed>
-  # element is removed from the page and so the NaCl module is killed by
-  # the browser what is reported as exit due to SIGKILL (X09).
-  assert result == 'X09', result
+  # element is removed from the page.  The NaCl module will be killed by the
+  # browser which will appear as EOF (end-of-file) on the debug stub socket.
+  AssertRaises(gdb_rsp.EofOnReplyException,
+               lambda: connection.RspRequest('vCont;c'))
 
 
 def TestBreakpoint(connection):
@@ -78,8 +87,8 @@ def TestBreakpoint(connection):
   assert result == 'T05thread:%s;' % thread, result
   assert pc != GetProgCtrString(connection, arch)
   # Check that we terminate normally
-  result = connection.RspRequest('vCont;c')
-  assert result == 'X09', result
+  AssertRaises(gdb_rsp.EofOnReplyException,
+               lambda: connection.RspRequest('vCont;c'))
 
 
 def Main(args):

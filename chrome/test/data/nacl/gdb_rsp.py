@@ -16,6 +16,11 @@ def RspChecksum(data):
   return checksum
 
 
+class EofOnReplyException(Exception):
+
+  pass
+
+
 class GdbRspConnection(object):
 
   def __init__(self, addr):
@@ -47,6 +52,8 @@ class GdbRspConnection(object):
     while True:
       data = self._socket.recv(1024)
       if len(data) == 0:
+        if reply == '+':
+          raise EofOnReplyException()
         raise AssertionError('EOF on socket reached with '
                              'incomplete reply message: %r' % reply)
       reply += data

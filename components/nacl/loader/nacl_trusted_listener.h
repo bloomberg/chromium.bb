@@ -25,7 +25,6 @@ class NaClTrustedListener : public base::RefCounted<NaClTrustedListener>,
 
   // Listener implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
-  void OnChannelError() override;
 
   bool Send(IPC::Message* msg);
 

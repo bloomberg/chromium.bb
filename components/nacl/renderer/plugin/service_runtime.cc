@@ -42,7 +42,6 @@ ServiceRuntime::ServiceRuntime(Plugin* plugin,
       main_service_runtime_(main_service_runtime),
       uses_nonsfi_mode_(uses_nonsfi_mode),
       bootstrap_channel_(NACL_INVALID_HANDLE) {
-  NaClSrpcChannelInitialize(&command_channel_);
 }
 
 bool ServiceRuntime::SetupCommandChannel() {
@@ -58,10 +57,17 @@ bool ServiceRuntime::SetupCommandChannel() {
     return true;
   }
 
-  if (!subprocess_->SetupCommand(&command_channel_)) {
+  if (!subprocess_->ConnectBootstrapSocket()) {
     ErrorInfo error_info;
     error_info.SetReport(PP_NACL_ERROR_SEL_LDR_COMMUNICATION_CMD_CHANNEL,
-                         "ServiceRuntime: command channel creation failed");
+                         "ServiceRuntime: ConnectBootstrapSocket() failed");
+    ReportLoadError(error_info);
+    return false;
+  }
+  if (!subprocess_->RetrieveSockAddr()) {
+    ErrorInfo error_info;
+    error_info.SetReport(PP_NACL_ERROR_SEL_LDR_COMMUNICATION_CMD_CHANNEL,
+                         "ServiceRuntime: RetrieveSockAddr() failed");
     ReportLoadError(error_info);
     return false;
   }
@@ -138,8 +144,6 @@ void ServiceRuntime::Shutdown() {
 
   // Note that this does waitpid() to get rid of any zombie subprocess.
   subprocess_.reset(NULL);
-
-  NaClSrpcDtor(&command_channel_);
 }
 
 ServiceRuntime::~ServiceRuntime() {
