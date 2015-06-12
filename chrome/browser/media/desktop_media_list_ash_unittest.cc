@@ -98,7 +98,14 @@ TEST_F(DesktopMediaListAshTest, ScreenOnly) {
   base::MessageLoop::current()->Run();
 }
 
-TEST_F(DesktopMediaListAshTest, WindowOnly) {
+// Times out on Win DrMemory bot. http://crbug.com/493187
+#if defined(OS_WIN)
+#define MAYBE_WindowOnly DISABLED_WindowOnly
+#else
+#define MAYBE_WindowOnly WindowOnly
+#endif
+
+TEST_F(DesktopMediaListAshTest, MAYBE_WindowOnly) {
   CreateList(DesktopMediaListAsh::WINDOWS);
 
   scoped_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
