@@ -62,7 +62,6 @@ class HTMLInputElement;
 class HTMLQualifiedName;
 class IntRect;
 class KeyboardEvent;
-class MouseEvent;
 class NSResolver;
 class NameNodeList;
 class NamedNodeMap;
@@ -635,7 +634,6 @@ public:
     virtual void postDispatchEventHandler(Event*, void* /*dataFromPreDispatch*/) { }
 
     using EventTarget::dispatchEvent;
-    // This dispatchEvent override is intended to only be used for events dispatched from script
     virtual bool dispatchEvent(PassRefPtrWillBeRawPtr<Event>) override;
 
     void dispatchScopedEvent(PassRefPtrWillBeRawPtr<Event>);
@@ -649,7 +647,6 @@ public:
     bool dispatchKeyEvent(const PlatformKeyboardEvent&);
     bool dispatchWheelEvent(const PlatformWheelEvent&);
     bool dispatchMouseEvent(const PlatformMouseEvent&, const AtomicString& eventType, int clickCount = 0, Node* relatedTarget = nullptr);
-    bool dispatchMouseEvent(PassRefPtrWillBeRawPtr<MouseEvent>);
     bool dispatchGestureEvent(const PlatformGestureEvent&);
     bool dispatchTouchEvent(PassRefPtrWillBeRawPtr<TouchEvent>);
 

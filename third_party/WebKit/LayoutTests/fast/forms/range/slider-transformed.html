@@ -16,14 +16,20 @@
   <script type="text/javascript" charset="utf-8">
     if (window.testRunner)
         testRunner.dumpAsText();
+
+    function dispatchEvent(eventType, clientX, clientY)
+    {
+      var ev = document.createEvent("MouseEvent");
+      ev.initMouseEvent(eventType, true, true, window, 1, 1, 1, clientX, clientY, false, false, false, false, 0, document);
+      var target = document.elementFromPoint(ev.clientX, ev.clientY);
+      target.dispatchEvent(ev);
+    }
     
     function test()
     {
       // For some reason the slider needs mouseup/mousedown, not just a "click"
-      eventSender.mouseMoveTo(61, 71);
-      eventSender.mouseDown(0);
-      eventSender.mouseUp(0);
-
+      dispatchEvent("mousedown", 61, 71);
+      dispatchEvent("mouseup", 61, 71);
 
       const expectedValue = 39;
       var val = document.getElementById('slider').value;

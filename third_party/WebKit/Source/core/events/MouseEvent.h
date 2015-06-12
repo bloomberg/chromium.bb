@@ -79,9 +79,6 @@ public:
 
     bool fromTouch() const { return m_syntheticEventType == PlatformMouseEvent::FromTouch; }
 
-    bool fromScript() const { return m_syntheticEventType == PlatformMouseEvent::FromScript; }
-    void setFromScript() { m_syntheticEventType = PlatformMouseEvent::FromScript; }
-
     virtual const AtomicString& interfaceName() const override;
 
     virtual bool isMouseEvent() const override;
@@ -123,13 +120,16 @@ private:
 
 class MouseEventDispatchMediator final : public EventDispatchMediator {
 public:
-    static PassRefPtrWillBeRawPtr<MouseEventDispatchMediator> create(PassRefPtrWillBeRawPtr<MouseEvent>);
+    enum MouseEventType { SyntheticMouseEvent, NonSyntheticMouseEvent};
+    static PassRefPtrWillBeRawPtr<MouseEventDispatchMediator> create(PassRefPtrWillBeRawPtr<MouseEvent>, MouseEventType = NonSyntheticMouseEvent);
 
 private:
-    explicit MouseEventDispatchMediator(PassRefPtrWillBeRawPtr<MouseEvent>);
+    explicit MouseEventDispatchMediator(PassRefPtrWillBeRawPtr<MouseEvent>, MouseEventType);
     MouseEvent& event() const;
 
     virtual bool dispatchEvent(EventDispatcher&) const override;
+    bool isSyntheticMouseEvent() const { return m_mouseEventType == SyntheticMouseEvent; }
+    MouseEventType m_mouseEventType;
 };
 
 DEFINE_EVENT_TYPE_CASTS(MouseEvent);

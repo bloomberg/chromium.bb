@@ -108,7 +108,7 @@ MouseEvent::MouseEvent(const AtomicString& eventType, const MouseEventInit& init
     , m_buttons(initializer.buttons())
     , m_relatedTarget(initializer.relatedTarget())
     , m_dataTransfer(nullptr)
-    , m_syntheticEventType(PlatformMouseEvent::FromScript)
+    , m_syntheticEventType(PlatformMouseEvent::RealOrIndistinguishable)
 {
     initCoordinates(IntPoint(initializer.clientX(), initializer.clientY()));
 }
@@ -152,7 +152,6 @@ void MouseEvent::initMouseEvent(ScriptState* scriptState, const AtomicString& ty
     m_button = button;
     m_buttons = buttons;
     m_relatedTarget = relatedTarget;
-    m_syntheticEventType = PlatformMouseEvent::FromScript;
 
     initCoordinates(IntPoint(clientX, clientY));
 
@@ -243,13 +242,13 @@ DEFINE_TRACE(SimulatedMouseEvent)
     MouseEvent::trace(visitor);
 }
 
-PassRefPtrWillBeRawPtr<MouseEventDispatchMediator> MouseEventDispatchMediator::create(PassRefPtrWillBeRawPtr<MouseEvent> mouseEvent)
+PassRefPtrWillBeRawPtr<MouseEventDispatchMediator> MouseEventDispatchMediator::create(PassRefPtrWillBeRawPtr<MouseEvent> mouseEvent, MouseEventType mouseEventType)
 {
-    return adoptRefWillBeNoop(new MouseEventDispatchMediator(mouseEvent));
+    return adoptRefWillBeNoop(new MouseEventDispatchMediator(mouseEvent, mouseEventType));
 }
 
-MouseEventDispatchMediator::MouseEventDispatchMediator(PassRefPtrWillBeRawPtr<MouseEvent> mouseEvent)
-    : EventDispatchMediator(mouseEvent)
+MouseEventDispatchMediator::MouseEventDispatchMediator(PassRefPtrWillBeRawPtr<MouseEvent> mouseEvent, MouseEventType mouseEventType)
+    : EventDispatchMediator(mouseEvent), m_mouseEventType(mouseEventType)
 {
 }
 
@@ -260,7 +259,7 @@ MouseEvent& MouseEventDispatchMediator::event() const
 
 bool MouseEventDispatchMediator::dispatchEvent(EventDispatcher& dispatcher) const
 {
-    if (event().fromScript()) {
+    if (isSyntheticMouseEvent()) {
         event().eventPath().adjustForRelatedTarget(dispatcher.node(), event().relatedTarget());
         return dispatcher.dispatch();
     }

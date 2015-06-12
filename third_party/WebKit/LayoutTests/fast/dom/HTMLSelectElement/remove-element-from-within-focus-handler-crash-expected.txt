@@ -1,3 +1,3 @@
 Layout test for bug 23858
 
-If the select can be clicked without crashing then the test has passed.
+If this page is displayed without crashing then the test has passed.

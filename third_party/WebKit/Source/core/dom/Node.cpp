@@ -2066,10 +2066,8 @@ void Node::dispatchScopedEventDispatchMediator(PassRefPtrWillBeRawPtr<EventDispa
 
 bool Node::dispatchEvent(PassRefPtrWillBeRawPtr<Event> event)
 {
-    if (event->isMouseEvent()) {
-        toMouseEvent(*event).setFromScript();
-        return dispatchMouseEvent(static_pointer_cast<MouseEvent>(event));
-    }
+    if (event->isMouseEvent())
+        return EventDispatcher::dispatchEvent(*this, MouseEventDispatchMediator::create(static_pointer_cast<MouseEvent>(event), MouseEventDispatchMediator::SyntheticMouseEvent));
     if (event->isTouchEvent())
         return dispatchTouchEvent(static_pointer_cast<TouchEvent>(event));
     return EventDispatcher::dispatchEvent(*this, EventDispatchMediator::create(event));
@@ -2106,11 +2104,6 @@ bool Node::dispatchMouseEvent(const PlatformMouseEvent& event, const AtomicStrin
     int detail, Node* relatedTarget)
 {
     return EventDispatcher::dispatchEvent(*this, MouseEventDispatchMediator::create(MouseEvent::create(eventType, document().domWindow(), event, detail, relatedTarget)));
-}
-
-bool Node::dispatchMouseEvent(PassRefPtrWillBeRawPtr<MouseEvent> event)
-{
-    return EventDispatcher::dispatchEvent(*this, MouseEventDispatchMediator::create(event));
 }
 
 bool Node::dispatchGestureEvent(const PlatformGestureEvent& event)
