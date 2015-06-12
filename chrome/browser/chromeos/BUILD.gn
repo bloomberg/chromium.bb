@@ -98,7 +98,6 @@ source_set("chromeos") {
     "//third_party/libjingle",
     "//third_party/libusb",
     "//third_party/libxml",
-    "//third_party/npapi",
     "//third_party/protobuf:protobuf_lite",
     "//third_party/protobuf:protoc($host_toolchain)",
     "//third_party/re2",

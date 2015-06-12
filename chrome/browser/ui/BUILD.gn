@@ -101,7 +101,6 @@ source_set("ui") {
       "//third_party/expat",
       "//third_party/leveldatabase",
       "//third_party/mojo/src/mojo/edk/system",
-      "//third_party/npapi",
       "//third_party/libjingle",
       "//third_party/re2",
       "//ui/base/ime",

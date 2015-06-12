@@ -3245,7 +3245,6 @@
             '../third_party/mojo/mojo_edk.gyp:mojo_system_impl',
             '../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
             '../third_party/mojo/mojo_public.gyp:mojo_js_bindings',
-            '../third_party/npapi/npapi.gyp:npapi',
             '../third_party/smhasher/smhasher.gyp:cityhash',
             '../third_party/webrtc/modules/modules.gyp:desktop_capture',
             '../ui/base/ime/ui_base_ime.gyp:ui_base_ime',

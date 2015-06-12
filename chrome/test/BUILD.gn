@@ -242,7 +242,6 @@ if (!is_android) {
       "//third_party/hunspell",
       "//third_party/icu",
       "//third_party/libpng",
-      "//third_party/npapi",
       "//third_party/zlib",
       "//ui/base:test_support",
       "//ui/resources:ui_test_pak",
@@ -1066,7 +1065,6 @@ if (!is_android) {
       "//testing/gtest",
       "//third_party/icu",
       "//third_party/leveldatabase",
-      "//third_party/npapi",
       "//third_party/WebKit/public:blink",
     ]
 

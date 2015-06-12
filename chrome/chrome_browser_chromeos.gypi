@@ -1186,7 +1186,6 @@
         '../third_party/libjingle/libjingle.gyp:libjingle',
         '../third_party/libusb/libusb.gyp:libusb',
         '../third_party/libxml/libxml.gyp:libxml',
-        '../third_party/npapi/npapi.gyp:npapi',
         '../third_party/protobuf/protobuf.gyp:protobuf_lite',
         '../third_party/protobuf/protobuf.gyp:protoc#host',
         '../third_party/re2/re2.gyp:re2',
