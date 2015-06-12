@@ -123,8 +123,10 @@ class CastCastView : public views::View, public views::ButtonListener {
       const CastConfigDelegate::ReceiversAndActivites& receivers_activities);
 
   // Overridden from views::View.
+  int GetHeightForWidth(int width) const override;
   void Layout() override;
-  // Overridden from views::ButtonListener
+
+  // Overridden from views::ButtonListener.
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   CastConfigDelegate* cast_config_delegate_;
@@ -171,6 +173,18 @@ CastCastView::CastCastView(CastConfigDelegate* cast_config_delegate)
 }
 
 CastCastView::~CastCastView() {
+}
+
+int CastCastView::GetHeightForWidth(int width) const {
+  // We are reusing the cached label_->bounds() calculation which was
+  // done inside of Layout(). Due to the way this object is initialized,
+  // Layout() will always get initially invoked with the dummy text
+  // (which will compute the proper label width) and then when we know
+  // the cast receiver we will update the label text, which will cause
+  // this method to get invoked.
+  return std::max(views::View::GetHeightForWidth(width),
+                  GetInsets().height() +
+                      label_->GetHeightForWidth(label_->bounds().width()));
 }
 
 void CastCastView::Layout() {
@@ -220,6 +234,8 @@ void CastCastView::UpdateLabelCallback(
         label_->SetText(
             l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_CAST_CAST_UNKNOWN));
       }
+
+      PreferredSizeChanged();
       Layout();
       break;
     }
@@ -253,6 +269,7 @@ class CastDuplexView : public views::View {
 
  private:
   // Overridden from views::View.
+  void ChildPreferredSizeChanged(views::View* child) override;
   void Layout() override;
 
   // Only one of |select_view_| or |cast_view_| will be displayed at any given
@@ -297,6 +314,10 @@ void CastDuplexView::ActivateSelectView() {
   RemoveChildView(cast_view_);
   AddChildView(select_view_);
   InvalidateLayout();
+}
+
+void CastDuplexView::ChildPreferredSizeChanged(views::View* child) {
+  PreferredSizeChanged();
 }
 
 void CastDuplexView::Layout() {
