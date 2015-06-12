@@ -19,7 +19,6 @@ import org.chromium.chrome.browser.ChromiumApplication;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.UrlUtilities;
 import org.chromium.chrome.browser.feedback.FeedbackCollector;
-import org.chromium.chrome.browser.profiles.Profile;
 
 import javax.annotation.Nonnull;
 
@@ -43,18 +42,6 @@ public class HelpAndFeedback {
                     .createHelpAndFeedback();
         }
         return sInstance;
-    }
-
-    /**
-     * This method is deprecated and only exists to ensure it is possible to safely roll.
-     * Use {@link #show(Activity, String, Bitmap, FeedbackCollector)}
-     * instead.
-     * TODO(nyquist): Remove this method when only the new method is in use. See crbug.com/386395.
-     */
-    @Deprecated
-    public void show(Activity activity, String helpContext, Bitmap screenshot, String url) {
-        show(activity, helpContext, screenshot,
-                FeedbackCollector.create(Profile.getLastUsedProfile(), url));
     }
 
     /**
