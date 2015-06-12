@@ -190,11 +190,9 @@ void BookmarkModel::EndGroupedChanges() {
 }
 
 void BookmarkModel::Remove(const BookmarkNode* node) {
+  DCHECK(loaded_);
   DCHECK(node);
-  if (!loaded_ || is_root_node(node)) {
-    NOTREACHED();
-    return;
-  }
+  DCHECK(!is_root_node(node));
   RemoveAndDeleteNode(AsMutable(node));
 }
 
