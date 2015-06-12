@@ -79,27 +79,46 @@ ExternalMetadataProvider.prototype.convertResults_ =
     function(requests, nameMap, propertiesList) {
   var results = [];
   for (var i = 0; i < propertiesList.length; i++) {
-    var properties = propertiesList[i];
+    var prop = propertiesList[i];
     var item = new MetadataItem();
-    item.availableOffline = properties.availableOffline;
-    item.availableWhenMetered = properties.availableWhenMetered;
-    item.contentMimeType = properties.contentMimeType || '';
-    item.croppedThumbnailUrl = properties.croppedThumbnailUrl;
-    item.customIconUrl = properties.customIconUrl || '';
-    item.dirty = properties.dirty;
-    item.externalFileUrl = properties.externalFileUrl;
-    item.hosted = properties.hosted;
-    item.imageHeight = properties.imageHeight;
-    item.imageRotation = properties.imageRotation;
-    item.imageWidth = properties.imageWidth;
-    item.modificationTime = new Date(properties.modificationTime);
-    item.pinned = properties.pinned;
-    item.present = properties.present;
-    item.shared = properties.shared;
-    item.sharedWithMe = properties.sharedWithMe;
-    item.size = requests[i].entry.isFile ? (properties.size || 0) : -1;
-    if (properties.thumbnailUrl || nameMap['thumbnailUrl'])
-      item.thumbnailUrl = properties.thumbnailUrl;
+    if (prop.availableOffline !== undefined || nameMap['availableOffline'])
+      item.availableOffline = prop.availableOffline;
+    if (prop.availableWhenMetered !== undefined ||
+        nameMap['availableWhenMetered'])
+      item.availableWhenMetered = prop.availableWhenMetered;
+    if (prop.contentMimeType !== undefined || nameMap['contentMimeType'])
+      item.contentMimeType = prop.contentMimeType || '';
+    if (prop.croppedThumbnailUrl !== undefined ||
+        nameMap['croppedThumbnailUrl'])
+      item.croppedThumbnailUrl = prop.croppedThumbnailUrl;
+    if (prop.customIconUrl !== undefined || nameMap['customIconUrl'])
+      item.customIconUrl = prop.customIconUrl || '';
+    if (prop.dirty !== undefined || nameMap['dirty'])
+      item.dirty = prop.dirty;
+    if (prop.externalFileUrl !== undefined || nameMap['externalFileUrl'])
+      item.externalFileUrl = prop.externalFileUrl;
+    if (prop.hosted !== undefined || nameMap['hosted'])
+      item.hosted = prop.hosted;
+    if (prop.imageHeight !== undefined || nameMap['imageHeight'])
+      item.imageHeight = prop.imageHeight;
+    if (prop.imageRotation !== undefined || nameMap['imageRotation'])
+      item.imageRotation = prop.imageRotation;
+    if (prop.imageWidth !== undefined || nameMap['imageWidth'])
+      item.imageWidth = prop.imageWidth;
+    if (prop.modificationTime !== undefined || nameMap['modificationTime'])
+      item.modificationTime = new Date(prop.modificationTime);
+    if (prop.pinned !== undefined || nameMap['pinned'])
+      item.pinned = prop.pinned;
+    if (prop.present !== undefined || nameMap['present'])
+      item.present = prop.present;
+    if (prop.shared !== undefined || nameMap['shared'])
+      item.shared = prop.shared;
+    if (prop.sharedWithMe !== undefined || nameMap['sharedWithMe'])
+      item.sharedWithMe = prop.sharedWithMe;
+    if (prop.size !== undefined || nameMap['size'])
+      item.size = requests[i].entry.isFile ? (prop.size || 0) : -1;
+    if (prop.thumbnailUrl !== undefined || nameMap['thumbnailUrl'])
+      item.thumbnailUrl = prop.thumbnailUrl;
     results.push(item);
   }
   return results;
