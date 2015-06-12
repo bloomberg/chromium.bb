@@ -31,9 +31,8 @@
 [
     GarbageCollected
 ] interface DataTransfer {
-    // TODO(philipj): Remove [TreatReturnedNullStringAs=Undefined].
-    [TreatReturnedNullStringAs=Undefined] attribute DOMString dropEffect;
-    [TreatReturnedNullStringAs=Undefined] attribute DOMString effectAllowed;
+    attribute DOMString dropEffect;
+    attribute DOMString effectAllowed;
 
     [SameObject] readonly attribute DataTransferItemList items;
 
