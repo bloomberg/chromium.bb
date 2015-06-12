@@ -1183,17 +1183,15 @@ class InputApiUnittest(PresubmitTestsBase):
     self.mox.ReplayAll()
     members = [
       'AbsoluteLocalPaths', 'AffectedFiles', 'AffectedSourceFiles',
-      'AffectedTextFiles',
-      'DEFAULT_BLACK_LIST', 'DEFAULT_WHITE_LIST',
-      'DepotToLocalPath', 'FilterSourceFile', 'LocalPaths',
-      'LocalToDepotPath', 'Command', 'RunTests',
-      'PresubmitLocalPath', 'ReadFile', 'RightHandSideLines', 'ServerPaths',
-      'basename', 'cPickle', 'cpplint', 'cStringIO', 'canned_checks', 'change',
-      'environ', 'glob', 'host_url', 'is_committing', 'json', 'logging',
-      'marshal', 'os_listdir', 'os_walk', 'os_path', 'os_stat', 'owners_db',
-      'pickle', 'platform', 'python_executable', 're', 'rietveld', 'subprocess',
-      'tbr', 'tempfile', 'time', 'traceback', 'unittest', 'urllib2', 'version',
-      'verbose',
+      'AffectedTextFiles', 'DEFAULT_BLACK_LIST', 'DEFAULT_WHITE_LIST',
+      'DepotToLocalPath', 'FilterSourceFile', 'LocalPaths', 'LocalToDepotPath',
+      'Command', 'RunTests', 'PresubmitLocalPath', 'ReadFile',
+      'RightHandSideLines', 'ServerPaths', 'basename', 'cPickle', 'cpplint',
+      'cStringIO', 'canned_checks', 'change', 'cpu_count', 'environ', 'glob',
+      'host_url', 'is_committing', 'json', 'logging', 'marshal', 'os_listdir',
+      'os_walk', 'os_path', 'os_stat', 'owners_db', 'pickle', 'platform',
+      'python_executable', 're', 'rietveld', 'subprocess', 'tbr', 'tempfile',
+      'time', 'traceback', 'unittest', 'urllib2', 'version', 'verbose',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(
@@ -1852,6 +1850,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
     input_api.tbr = False
     input_api.python_executable = 'pyyyyython'
     input_api.platform = sys.platform
+    input_api.cpu_count = 2
     input_api.time = time
     input_api.canned_checks = presubmit_canned_checks
     input_api.Command = presubmit.CommandData
@@ -2525,7 +2524,12 @@ class CannedChecksUnittest(PresubmitTestsBase):
     pylintrc = os.path.join(_ROOT, 'pylintrc')
 
     CommHelper(input_api,
-        ['pyyyyython', pylint, '--args-on-stdin'],
+        ['pyyyyython', pylint, '--args-on-stdin', '--disable=cyclic-import',
+         '--jobs=2'],
+        env=mox.IgnoreArg(), stdin='file1.py\n--rcfile=%s' % pylintrc)
+    CommHelper(input_api,
+        ['pyyyyython', pylint, '--args-on-stdin', '--disable=all',
+         '--enable=cyclic-import'],
         env=mox.IgnoreArg(), stdin='file1.py\n--rcfile=%s' % pylintrc)
     self.mox.ReplayAll()
 

@@ -311,6 +311,8 @@ class InputApi(object):
     # InputApi.platform is the platform you're currently running on.
     self.platform = sys.platform
 
+    self.cpu_count = multiprocessing.cpu_count()
+
     # The local path of the currently-being-processed presubmit script.
     self._current_presubmit_path = os.path.dirname(presubmit_path)
 

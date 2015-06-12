@@ -771,20 +771,28 @@ def GetPylint(input_api, output_api, white_list=None, black_list=None,
   env['PYTHONPATH'] = input_api.os_path.pathsep.join(
       extra_paths_list + sys.path).encode('utf8')
 
-  def GetPylintCmd(files):
+  def GetPylintCmd(files, extra, parallel):
     # Windows needs help running python files so we explicitly specify
     # the interpreter to use. It also has limitations on the size of
     # the command-line, so we pass arguments via a pipe.
+    cmd = [input_api.python_executable,
+           input_api.os_path.join(_HERE, 'third_party', 'pylint.py'),
+           '--args-on-stdin']
     if len(files) == 1:
       description = files[0]
     else:
       description = '%s files' % len(files)
 
+    if extra:
+      cmd.extend(extra)
+      description += ' using %s' % (extra,)
+    if parallel:
+      cmd.append('--jobs=%s' % input_api.cpu_count)
+      description += ' on %d cores' % input_api.cpu_count
+
     return input_api.Command(
         name='Pylint (%s)' % description,
-        cmd=[input_api.python_executable,
-             input_api.os_path.join(_HERE, 'third_party', 'pylint.py'),
-             '--args-on-stdin'],
+        cmd=cmd,
         kwargs={'env': env, 'stdin': '\n'.join(files + extra_args)},
         message=error_type)
 
@@ -797,9 +805,14 @@ def GetPylint(input_api, output_api, white_list=None, black_list=None,
   # a quick local edit to diagnose pylint issues more
   # easily.
   if True:
-    return [GetPylintCmd(files)]
+    # pylint's cycle detection doesn't work in parallel, so spawn a second,
+    # single-threaded job for just that check.
+    return [
+      GetPylintCmd(files, ["--disable=cyclic-import"], True),
+      GetPylintCmd(files, ["--disable=all", "--enable=cyclic-import"], False)
+    ]
   else:
-    return map(lambda x: GetPylintCmd([x]), files)
+    return map(lambda x: GetPylintCmd([x], extra_args, 1), files)
 
 
 def RunPylint(input_api, *args, **kwargs):
