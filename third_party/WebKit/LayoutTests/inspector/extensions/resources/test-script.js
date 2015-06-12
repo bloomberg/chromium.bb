@@ -1,4 +1,5 @@
-function __test_function()
+function logMessage()
 {
+    console.log("don't panic!");
 }
 

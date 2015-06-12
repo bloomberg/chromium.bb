@@ -48,6 +48,11 @@ function evaluateOnFrontend(expression, callback)
     window._extensionServerForTests.sendRequest({ command: "evaluateForTestInFrontEnd", expression: expression }, callback);
 }
 
+function invokePageFunctionAsync(functionName, callback)
+{
+    evaluateOnFrontend("InspectorTest.invokePageFunctionAsync('" + functionName + "', reply)", callback);
+}
+
 function output(message)
 {
     evaluateOnFrontend("InspectorTest.addResult(unescape('" + escape(message) + "'));");

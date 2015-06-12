@@ -4,13 +4,19 @@
 <script src="../../http/tests/inspector/console-test.js"></script>
 <script src="../../http/tests/inspector/extensions-test.js"></script>
 <script src="../../http/tests/inspector/debugger-test.js"></script>
-<link rel="stylesheet" href="resources/audits-style1.css" type="text/css">
-<script type="text/javascript" src="resources/test-script.js"></script>
 
 <script type="text/javascript">
+function loadFrame(callback)
+{
+    var iframe = document.createElement("iframe");
+    iframe.src = "resources/subframe.html";
+    iframe.addEventListener("load", callback);
+    document.body.appendChild(iframe);
+}
+
 function logMessage()
 {
-    console.log("don't panic!");
+    frames[0].logMessage();
 }
 
 function initialize_ExtensionResourceTests()
@@ -19,7 +25,7 @@ function initialize_ExtensionResourceTests()
 InspectorTest.clickOnURL = function()
 {
     WebInspector.ConsolePanel.show();
-    var xpathResult = document.evaluate("//a[starts-with(., 'extensions-resources.html')]",
+    var xpathResult = document.evaluate("//a[starts-with(., 'test-script.js')]",
                                         WebInspector.panels.console.element, null, XPathResult.ANY_UNORDERED_NODE_TYPE, null);
     var click = document.createEvent("MouseEvent");
     click.initMouseEvent("click", true, true);
@@ -51,7 +57,7 @@ function extension_testGetAllResources(nextTest)
     function callback(resources)
     {
         // For some reason scripts from tests previously run in the same test shell sometimes appear, so we need to filter them out.
-        var resourceURLsWhiteList = ["abe.png", "audits-style1.css", "extensions-resources.html", "extensions-test.js", "inspector-test.js", "test-script.js"];
+        var resourceURLsWhiteList = ["subframe.html", "abe.png", "audits-style1.css", "test-script.js"];
         function filter(resource)
         {
             for (var i = 0; i < resourceURLsWhiteList.length; ++i) {
@@ -72,7 +78,9 @@ function extension_testGetAllResources(nextTest)
         output("page resources:");
         dumpObject(Array.prototype.slice.call(arguments), { url: "url" });
     }
-    webInspector.inspectedWindow.getResources(callbackAndNextTest(callback, nextTest));
+    invokePageFunctionAsync("loadFrame", function() {
+        webInspector.inspectedWindow.getResources(callbackAndNextTest(callback, nextTest));
+    });
 }
 
 function extension_runWithResource(regexp, callback)
@@ -111,7 +119,7 @@ function extension_testSetResourceContent(nextTest)
 
     function step2()
     {
-        webInspector.inspectedWindow.eval("document.getElementById('test-div').clientWidth", function(result) {
+        webInspector.inspectedWindow.eval("frames[0].document.getElementById('test-div').clientWidth", function(result) {
             output("div.test width after stylesheet edited (should be 126): " + result);
             nextTest();
         });
@@ -198,7 +206,5 @@ function addResource()
 </head>
 <body onload="runTest()">
 <p>Tests resource-related methods of WebInspector extension API</p>
-<img src="resources/abe.png">
-<div id="test-div" class="test"></div>
 </body>
 </html>

@@ -1,4 +1,4 @@
-CONSOLE MESSAGE: line 13: don't panic!
+CONSOLE MESSAGE: line 3: don't panic!
 Tests resource-related methods of WebInspector extension API
 
 
@@ -24,21 +24,9 @@ page resources:
             getContent : <function>
             setContent : <function>
             type : "document"
-            url : .../extensions-resources.html
+            url : .../subframe.html
         }
         3 : {
-            getContent : <function>
-            setContent : <function>
-            type : "script"
-            url : .../extensions-test.js
-        }
-        4 : {
-            getContent : <function>
-            setContent : <function>
-            type : "script"
-            url : .../inspector-test.js
-        }
-        5 : {
             getContent : <function>
             setContent : <function>
             type : "script"
@@ -48,8 +36,9 @@ page resources:
 }
 RUNNING TEST: extension_testGetResourceContent
 {
-    0 : "function __test_function()
+    0 : "function logMessage()
 {
+    console.log("don't panic!");
 }
 
 "
@@ -75,10 +64,10 @@ handleOpenResource() invoked [this should only appear once!]:
     0 : {
         getContent : <function>
         setContent : <function>
-        type : "document"
-        url : .../extensions-resources.html
+        type : "script"
+        url : .../test-script.js
     }
-    1 : 13
+    1 : 3
 }
 RUNNING TEST: extension_testSetResourceContent
 div.test width after stylesheet edited (should be 126): 126
