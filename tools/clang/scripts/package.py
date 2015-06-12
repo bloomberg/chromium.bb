@@ -76,9 +76,9 @@ def main():
     TeeCmd(['svn', 'diff', os.path.join(LLVM_DIR, 'tools', 'clang')],
            log, fail_hard=False)
     Tee('Diff in llvm/compiler-rt:\n', log)
-    TeeCmd(['svn', 'stat', os.path.join(LLVM_DIR, 'compiler-rt')],
+    TeeCmd(['svn', 'stat', os.path.join(LLVM_DIR, 'projects', 'compiler-rt')],
            log, fail_hard=False)
-    TeeCmd(['svn', 'diff', os.path.join(LLVM_DIR, 'compiler-rt')],
+    TeeCmd(['svn', 'diff', os.path.join(LLVM_DIR, 'projects', 'compiler-rt')],
            log, fail_hard=False)
     Tee('Diff in llvm/projects/libcxx:\n', log)
     TeeCmd(['svn', 'stat', os.path.join(LLVM_DIR, 'projects', 'libcxx')],
