@@ -1149,7 +1149,8 @@ class MountOverlayContext(object):
         MountDir('overlay', self._mount_dir, fs_type='overlay', makedirs=False,
                  mount_opts=('lowerdir=%s' % self._lower_dir,
                              'upperdir=%s' % self._upper_dir,
-                             'workdir=%s' % self.tempdir))
+                             'workdir=%s' % self.tempdir),
+                 quiet=True)
       except cros_build_lib.RunCommandError as e_overlay:
         if e_overlay.result.returncode not in self.OVERLAY_FS_MOUNT_ERRORS:
           raise
@@ -1162,7 +1163,8 @@ class MountOverlayContext(object):
         MountDir('overlayfs', self._mount_dir, fs_type='overlayfs',
                  makedirs=False,
                  mount_opts=('lowerdir=%s' % self._lower_dir,
-                             'upperdir=%s' % self._upper_dir))
+                             'upperdir=%s' % self._upper_dir),
+                 quiet=True)
       except cros_build_lib.RunCommandError as e_overlayfs:
         logging.error('All attempts at mounting overlay filesystem failed.')
         if stashed_e_overlay_str is not None:

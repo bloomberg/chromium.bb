@@ -646,7 +646,8 @@ class MountOverlayTest(cros_test_lib.MockTempDirTestCase):
             'overlay', self.mergeddir, fs_type='overlay', makedirs=False,
             mount_opts=('lowerdir=%s' % self.lowerdir,
                         'upperdir=%s' % self.upperdir,
-                        mock.ANY))
+                        mock.ANY),
+            quiet=mock.ANY)
       umount_call.assert_any_call(self.mergeddir, cleanup=cleanup)
 
   def testMountFailFallback(self):
@@ -667,11 +668,13 @@ class MountOverlayTest(cros_test_lib.MockTempDirTestCase):
             'overlay', self.mergeddir, fs_type='overlay', makedirs=False,
             mount_opts=('lowerdir=%s' % self.lowerdir,
                         'upperdir=%s' % self.upperdir,
-                        mock.ANY))
+                        mock.ANY),
+            quiet=mock.ANY)
         mount_call.assert_any_call(
             'overlayfs', self.mergeddir, fs_type='overlayfs', makedirs=False,
             mount_opts=('lowerdir=%s' % self.lowerdir,
-                        'upperdir=%s' % self.upperdir))
+                        'upperdir=%s' % self.upperdir),
+            quiet=mock.ANY)
       umount_call.assert_any_call(self.mergeddir, cleanup=cleanup)
 
   def testNoValidWorkdirFallback(self):
@@ -690,7 +693,8 @@ class MountOverlayTest(cros_test_lib.MockTempDirTestCase):
         mount_call.assert_any_call(
             'overlayfs', self.mergeddir, fs_type='overlayfs', makedirs=False,
             mount_opts=('lowerdir=%s' % self.lowerdir,
-                        'upperdir=%s' % self.upperdir))
+                        'upperdir=%s' % self.upperdir),
+            quiet=mock.ANY)
       umount_call.assert_any_call(self.mergeddir, cleanup=cleanup)
 
 
