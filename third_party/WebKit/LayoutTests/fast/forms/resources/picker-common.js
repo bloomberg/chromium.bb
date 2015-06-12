@@ -28,7 +28,7 @@ function rootWindow() {
 }
 
 function openPicker(element, callback, errorCallback) {
-    rootWindow().moveTo();
+    rootWindow().moveTo(window.screenX, window.screenY);
     element.offsetTop; // Force to lay out
     if (element.tagName === "SELECT") {
         sendKey(element, "Down", false, true);
@@ -48,7 +48,7 @@ function openPicker(element, callback, errorCallback) {
 }
 
 function clickToOpenPicker(x, y, callback, errorCallback) {
-    rootWindow().moveTo();
+    rootWindow().moveTo(window.screenX, window.screenY);
     eventSender.mouseMoveTo(x, y);
     eventSender.mouseDown();
     eventSender.mouseUp();
@@ -65,7 +65,7 @@ function setPopupOpenCallback(callback) {
         // We need to move the window to the top left of available space
         // because the window will move back to (0, 0) when the
         // ShellViewMsg_SetTestConfiguration IPC arrives.
-        rootWindow().moveTo();
+        rootWindow().moveTo(window.screenX, window.screenY);
         callback();
     }).bind(this, callback);
     popupWindow.addEventListener("didOpenPicker", popupOpenCallbackWrapper, false);

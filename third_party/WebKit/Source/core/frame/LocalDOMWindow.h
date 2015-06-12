@@ -136,10 +136,10 @@ public:
     void scrollTo(double x, double y) const override;
     void scrollTo(const ScrollToOptions&) const override;
 
-    void moveBy(int x, int y, bool hasX, bool hasY) const override;
-    void moveTo(int x, int y, bool hasX, bool hasY) const override;
-    void resizeBy(int x, int y, bool hasX, bool hasY) const override;
-    void resizeTo(int width, int height, bool hasWidth, bool hasHeight) const override;
+    void moveBy(int x, int y) const override;
+    void moveTo(int x, int y) const override;
+    void resizeBy(int x, int y) const override;
+    void resizeTo(int width, int height) const override;
     PassRefPtrWillBeRawPtr<MediaQueryList> matchMedia(const String&) override;
     PassRefPtrWillBeRawPtr<CSSStyleDeclaration> getComputedStyle(Element*, const String& pseudoElt) const override;
     PassRefPtrWillBeRawPtr<CSSRuleList> getMatchedCSSRules(Element*, const String& pseudoElt) const override;

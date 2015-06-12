@@ -101,11 +101,10 @@
     [SameObject, Replaceable] readonly attribute Screen screen;
 
     // browsing context
-    // FIXME: The x and y arguments should not be optional. crbug.com/453421
-    void moveTo(optional long x, optional long y);
-    void moveBy(optional long x, optional long y);
-    void resizeTo(optional long x, optional long y);
-    void resizeBy(optional long x, optional long y);
+    void moveTo(long x, long y);
+    void moveBy(long x, long y);
+    void resizeTo(long x, long y);
+    void resizeBy(long x, long y);
 
     // viewport
     [Replaceable] readonly attribute long innerWidth;

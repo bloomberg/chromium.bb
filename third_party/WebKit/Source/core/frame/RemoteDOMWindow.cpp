@@ -278,22 +278,22 @@ void RemoteDOMWindow::scrollTo(const ScrollToOptions&) const
     ASSERT_NOT_REACHED();
 }
 
-void RemoteDOMWindow::moveBy(int x, int y, bool hasX, bool hasY) const
+void RemoteDOMWindow::moveBy(int x, int y) const
 {
     ASSERT_NOT_REACHED();
 }
 
-void RemoteDOMWindow::moveTo(int x, int y, bool hasX, bool hasY) const
+void RemoteDOMWindow::moveTo(int x, int y) const
 {
     ASSERT_NOT_REACHED();
 }
 
-void RemoteDOMWindow::resizeBy(int x, int y, bool hasX, bool hasY) const
+void RemoteDOMWindow::resizeBy(int x, int y) const
 {
     ASSERT_NOT_REACHED();
 }
 
-void RemoteDOMWindow::resizeTo(int width, int height, bool hasWidth, bool hasHeight) const
+void RemoteDOMWindow::resizeTo(int width, int height) const
 {
     ASSERT_NOT_REACHED();
 }

@@ -1218,11 +1218,8 @@ void LocalDOMWindow::scrollTo(const ScrollToOptions& scrollToOptions) const
     view->scrollableArea()->setScrollPosition(DoublePoint(scaledX, scaledY), ProgrammaticScroll, scrollBehavior);
 }
 
-void LocalDOMWindow::moveBy(int x, int y, bool hasX, bool hasY) const
+void LocalDOMWindow::moveBy(int x, int y) const
 {
-    if (!hasX || !hasY)
-        UseCounter::count(document(), UseCounter::WindowMoveResizeMissingArguments);
-
     if (!frame() || !frame()->isMainFrame())
         return;
 
@@ -1236,11 +1233,8 @@ void LocalDOMWindow::moveBy(int x, int y, bool hasX, bool hasY) const
     host->chromeClient().setWindowRectWithAdjustment(windowRect);
 }
 
-void LocalDOMWindow::moveTo(int x, int y, bool hasX, bool hasY) const
+void LocalDOMWindow::moveTo(int x, int y) const
 {
-    if (!hasX || !hasY)
-        UseCounter::count(document(), UseCounter::WindowMoveResizeMissingArguments);
-
     if (!frame() || !frame()->isMainFrame())
         return;
 
@@ -1249,16 +1243,13 @@ void LocalDOMWindow::moveTo(int x, int y, bool hasX, bool hasY) const
         return;
 
     IntRect windowRect = host->chromeClient().windowRect();
-    windowRect.setLocation(IntPoint(hasX ? x : windowRect.x(), hasY ? y : windowRect.y()));
+    windowRect.setLocation(IntPoint(x, y));
     // Security check (the spec talks about UniversalBrowserWrite to disable this check...)
     host->chromeClient().setWindowRectWithAdjustment(windowRect);
 }
 
-void LocalDOMWindow::resizeBy(int x, int y, bool hasX, bool hasY) const
+void LocalDOMWindow::resizeBy(int x, int y) const
 {
-    if (!hasX || !hasY)
-        UseCounter::count(document(), UseCounter::WindowMoveResizeMissingArguments);
-
     if (!frame() || !frame()->isMainFrame())
         return;
 
@@ -1272,11 +1263,8 @@ void LocalDOMWindow::resizeBy(int x, int y, bool hasX, bool hasY) const
     host->chromeClient().setWindowRectWithAdjustment(update);
 }
 
-void LocalDOMWindow::resizeTo(int width, int height, bool hasWidth, bool hasHeight) const
+void LocalDOMWindow::resizeTo(int width, int height) const
 {
-    if (!hasWidth || !hasHeight)
-        UseCounter::count(document(), UseCounter::WindowMoveResizeMissingArguments);
-
     if (!frame() || !frame()->isMainFrame())
         return;
 
@@ -1285,7 +1273,7 @@ void LocalDOMWindow::resizeTo(int width, int height, bool hasWidth, bool hasHeig
         return;
 
     IntRect fr = host->chromeClient().windowRect();
-    IntSize dest = IntSize(hasWidth ? width : fr.width(), hasHeight ? height : fr.height());
+    IntSize dest = IntSize(width, height);
     IntRect update(fr.location(), dest);
     host->chromeClient().setWindowRectWithAdjustment(update);
 }
