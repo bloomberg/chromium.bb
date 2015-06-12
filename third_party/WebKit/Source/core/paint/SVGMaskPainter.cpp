@@ -74,10 +74,15 @@ void SVGMaskPainter::drawMaskForLayoutObject(GraphicsContext* context, const Lay
     RefPtr<const SkPicture> maskContentPicture = m_mask.createContentPicture(contentTransformation, targetBoundingBox);
 
     TransformRecorder recorder(*context, layoutObject, contentTransformation);
-
-    LayoutObjectDrawingRecorder drawingRecorder(*context, layoutObject, DisplayItem::SVGMask, LayoutRect::infiniteIntRect());
-    if (!drawingRecorder.canUseCachedDrawing())
-        context->drawPicture(maskContentPicture.get());
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+        ASSERT(context->displayItemList());
+        if (context->displayItemList()->displayItemConstructionIsDisabled())
+            return;
+        context->displayItemList()->add(DrawingDisplayItem::create(layoutObject, DisplayItem::SVGMask, maskContentPicture));
+    } else {
+        DrawingDisplayItem maskPicture(layoutObject, DisplayItem::SVGClip, maskContentPicture);
+        maskPicture.replay(*context);
+    }
 }
 
 }
