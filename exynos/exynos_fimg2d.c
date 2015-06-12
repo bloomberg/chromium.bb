@@ -254,8 +254,7 @@ struct g2d_context *g2d_init(int fd)
 
 void g2d_fini(struct g2d_context *ctx)
 {
-	if (ctx)
-		free(ctx);
+	free(ctx);
 }
 
 /**
