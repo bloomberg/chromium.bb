@@ -41330,6 +41330,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SSL.MarkNonSecureAsStatus" enum="MarkNonSecureAsStatus">
+  <owner>palmer@chromium.org</owner>
+  <summary>
+    Reports whether the user has selected to mark non-secure origins as Neutral
+    (the status quo), Dubious, or Non-Secure.
+  </summary>
+</histogram>
+
 <histogram name="Stability.BadMessageTerminated.Chrome"
     enum="BadMessageReasonChrome">
   <owner>nick@chromium.org</owner>
@@ -59869,6 +59877,12 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="137" label="Yank"/>
   <int value="138" label="YankAndSelect"/>
   <int value="139" label="AlignCenter"/>
+</enum>
+
+<enum name="MarkNonSecureAsStatus" type="int">
+  <int value="0" label="Neutral"/>
+  <int value="1" label="Dubious"/>
+  <int value="2" label="non-Secure"/>
 </enum>
 
 <enum name="MediaContainers" type="int">

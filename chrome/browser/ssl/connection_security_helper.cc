@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/ssl_error_info.h"
@@ -35,22 +36,40 @@ GetSecurityLevelForNonSecureFieldTrial() {
   std::string choice =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kMarkNonSecureAs);
-  if (choice == switches::kMarkNonSecureAsNeutral)
-    return ConnectionSecurityHelper::NONE;
-  if (choice == switches::kMarkNonSecureAsDubious)
-    return ConnectionSecurityHelper::SECURITY_WARNING;
-  if (choice == switches::kMarkNonSecureAsNonSecure)
-    return ConnectionSecurityHelper::SECURITY_ERROR;
-
   std::string group = base::FieldTrialList::FindFullName("MarkNonSecureAs");
-  if (group == switches::kMarkNonSecureAsNeutral)
-    return ConnectionSecurityHelper::NONE;
-  if (group == switches::kMarkNonSecureAsDubious)
-    return ConnectionSecurityHelper::SECURITY_WARNING;
-  if (group == switches::kMarkNonSecureAsNonSecure)
-    return ConnectionSecurityHelper::SECURITY_ERROR;
 
-  return ConnectionSecurityHelper::NONE;
+  // Do not change this enum. It is used in the histogram.
+  enum MarkNonSecureStatus { NEUTRAL, DUBIOUS, NON_SECURE, LAST_STATUS };
+  const char kEnumeration[] = "MarkNonSecureAs";
+
+  ConnectionSecurityHelper::SecurityLevel level;
+  MarkNonSecureStatus status;
+
+  if (choice == switches::kMarkNonSecureAsNeutral) {
+    status = NEUTRAL;
+    level = ConnectionSecurityHelper::NONE;
+  } else if (choice == switches::kMarkNonSecureAsDubious) {
+    status = DUBIOUS;
+    level = ConnectionSecurityHelper::SECURITY_WARNING;
+  } else if (choice == switches::kMarkNonSecureAsNonSecure) {
+    status = NON_SECURE;
+    level = ConnectionSecurityHelper::SECURITY_ERROR;
+  } else if (group == switches::kMarkNonSecureAsNeutral) {
+    status = NEUTRAL;
+    level = ConnectionSecurityHelper::NONE;
+  } else if (group == switches::kMarkNonSecureAsDubious) {
+    status = DUBIOUS;
+    level = ConnectionSecurityHelper::SECURITY_WARNING;
+  } else if (group == switches::kMarkNonSecureAsNonSecure) {
+    status = NON_SECURE;
+    level = ConnectionSecurityHelper::SECURITY_ERROR;
+  } else {
+    status = NEUTRAL;
+    level = ConnectionSecurityHelper::NONE;
+  }
+
+  UMA_HISTOGRAM_ENUMERATION(kEnumeration, status, LAST_STATUS);
+  return level;
 }
 
 }  // namespace
