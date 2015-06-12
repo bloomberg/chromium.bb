@@ -65,8 +65,6 @@ public:
     virtual String getPropertyValueInternal(CSSPropertyID) = 0;
     virtual void setPropertyInternal(CSSPropertyID, const String& value, bool important, ExceptionState&) = 0;
 
-    virtual PassRefPtrWillBeRawPtr<MutableStylePropertySet> copyProperties() const = 0;
-
     virtual bool cssPropertyMatches(CSSPropertyID, const CSSValue*) const = 0;
     virtual CSSStyleSheet* parentStyleSheet() const { return 0; }
 

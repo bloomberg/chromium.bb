@@ -60,7 +60,7 @@ public:
     String getPropertyValue(CSSPropertyID) const;
     bool getPropertyPriority(CSSPropertyID) const;
 
-    virtual PassRefPtrWillBeRawPtr<MutableStylePropertySet> copyProperties() const override;
+    PassRefPtrWillBeRawPtr<MutableStylePropertySet> copyProperties() const;
 
     PassRefPtrWillBeRawPtr<CSSValue> getPropertyCSSValue(CSSPropertyID) const;
     PassRefPtrWillBeRawPtr<CSSValue> getFontSizeCSSValuePreferringKeyword() const;

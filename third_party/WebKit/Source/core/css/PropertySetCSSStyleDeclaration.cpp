@@ -268,11 +268,6 @@ StyleSheetContents* AbstractPropertySetCSSStyleDeclaration::contextStyleSheet() 
     return cssStyleSheet ? cssStyleSheet->contents() : 0;
 }
 
-PassRefPtrWillBeRawPtr<MutableStylePropertySet> AbstractPropertySetCSSStyleDeclaration::copyProperties() const
-{
-    return propertySet().mutableCopy();
-}
-
 bool AbstractPropertySetCSSStyleDeclaration::cssPropertyMatches(CSSPropertyID propertyID, const CSSValue* propertyValue) const
 {
     return propertySet().propertyMatches(propertyID, propertyValue);
