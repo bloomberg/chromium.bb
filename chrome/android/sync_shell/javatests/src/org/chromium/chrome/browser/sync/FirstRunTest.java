@@ -34,7 +34,7 @@ public class FirstRunTest extends SyncTestBase {
         SyncTestUtil.verifySyncIsSignedOut(mContext);
         assertFalse(AndroidSyncSettings.isChromeSyncEnabled(mContext));
         processFirstRun(testAccount.name, ShowSyncSettings.NO);
-        SyncTestUtil.verifySyncIsSignedIn(mContext, testAccount);
+        SyncTestUtil.verifySyncIsActiveForAccount(mContext, testAccount);
         assertTrue(AndroidSyncSettings.isChromeSyncEnabled(mContext));
     }
 

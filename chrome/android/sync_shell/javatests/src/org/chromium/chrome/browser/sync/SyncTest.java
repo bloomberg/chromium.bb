@@ -133,7 +133,7 @@ public class SyncTest extends SyncTestBase {
 
         // Signing back in should re-enable sync.
         signIn(account);
-        SyncTestUtil.verifySyncIsSignedIn(mContext, account);
+        SyncTestUtil.verifySyncIsActiveForAccount(mContext, account);
     }
 
     @LargeTest
@@ -143,18 +143,18 @@ public class SyncTest extends SyncTestBase {
         Account account =
                 AccountManagerHelper.createAccountFromName(SyncTestUtil.DEFAULT_TEST_ACCOUNT);
 
-        SyncTestUtil.verifySyncIsSignedIn(mContext, account);
+        SyncTestUtil.verifySyncIsActiveForAccount(mContext, account);
         stopSync();
         SyncTestUtil.verifySyncIsDisabled(mContext, account);
         startSync();
-        SyncTestUtil.verifySyncIsSignedIn(mContext, account);
+        SyncTestUtil.verifySyncIsActiveForAccount(mContext, account);
     }
 
     @LargeTest
     @Feature({"Sync"})
     public void testDisableAndEnableSyncThroughAndroid() throws InterruptedException {
         setupTestAccountAndSignInToSync(CLIENT_ID);
-        SyncTestUtil.ensureSyncInitialized(mContext);
+        SyncTestUtil.waitForSyncActive(mContext);
 
         Account account =
                 AccountManagerHelper.createAccountFromName(SyncTestUtil.DEFAULT_TEST_ACCOUNT);
@@ -166,8 +166,7 @@ public class SyncTest extends SyncTestBase {
 
         // Enabling Android sync should turn Chrome sync engine on.
         mSyncContentResolver.setSyncAutomatically(account, authority, true);
-        SyncTestUtil.ensureSyncInitialized(mContext);
-        SyncTestUtil.verifySignedInWithAccount(mContext, account);
+        SyncTestUtil.verifySyncIsActiveForAccount(mContext, account);
     }
 
     private static ContentViewCore getContentViewCore(ChromeShellActivity activity) {

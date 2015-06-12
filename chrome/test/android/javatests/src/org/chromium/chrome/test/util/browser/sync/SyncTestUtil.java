@@ -239,10 +239,10 @@ public final class SyncTestUtil {
     }
 
     /**
-     * Waits for a possible async initialization of the sync backend.
+     * Waits for sync to become active.
      */
-    public static void ensureSyncInitialized(final Context context) throws InterruptedException {
-        Assert.assertTrue("Timed out waiting for syncing to be initialized.",
+    public static void waitForSyncActive(final Context context) throws InterruptedException {
+        Assert.assertTrue("Timed out waiting for sync to become active.",
                 CriteriaHelper.pollForCriteria(new Criteria() {
                     @Override
                     public boolean isSatisfied() {
@@ -250,9 +250,7 @@ public final class SyncTestUtil {
                                 new Callable<Boolean>() {
                                     @Override
                                     public Boolean call() throws Exception {
-                                        return ProfileSyncService.get(context)
-                                                .isSyncInitialized();
-
+                                        return ProfileSyncService.get(context).isSyncActive();
                                     }
                                 });
                     }
@@ -260,11 +258,11 @@ public final class SyncTestUtil {
     }
 
     /**
-     * Verifies that the sync status is "READY" and sync is signed in with the account.
+     * Verifies that the sync is active and signed in with the given account.
      */
-    public static void verifySyncIsSignedIn(Context context, Account account)
+    public static void verifySyncIsActiveForAccount(Context context, Account account)
             throws InterruptedException {
-        ensureSyncInitialized(context);
+        waitForSyncActive(context);
         triggerSyncAndWaitForCompletion(context);
         verifySignedInWithAccount(context, account);
     }

@@ -15,15 +15,11 @@ import org.chromium.chrome.browser.signin.AccountIdProvider;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.sync.AndroidSyncSettings;
 import org.chromium.sync.signin.AccountManagerHelper;
 import org.chromium.sync.signin.ChromeSigninController;
 import org.chromium.sync.test.util.MockAccountManager;
 import org.chromium.sync.test.util.MockSyncContentResolverDelegate;
-
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Base class for common functionality between sync tests.
@@ -145,7 +141,7 @@ public class SyncTestBase extends ChromeShellTestBase {
             throws InterruptedException {
         Account defaultTestAccount = setupTestAccount(syncClientIdentifier);
         signIn(defaultTestAccount);
-        SyncTestUtil.verifySyncIsSignedIn(mContext, defaultTestAccount);
+        SyncTestUtil.verifySyncIsActiveForAccount(mContext, defaultTestAccount);
         assertTrue("Sync everything should be enabled",
                 SyncTestUtil.isSyncEverythingEnabled(mContext));
     }
@@ -157,7 +153,7 @@ public class SyncTestBase extends ChromeShellTestBase {
                 SyncController.get(mContext).start();
             }
         });
-        waitForSyncInitialized();
+        SyncTestUtil.waitForSyncActive(mContext);
     }
 
     protected void stopSync() {
@@ -186,21 +182,5 @@ public class SyncTestBase extends ChromeShellTestBase {
                 SigninManager.get(mContext).signOut(getActivity(), null);
             }
         });
-    }
-
-    protected void waitForSyncInitialized() throws InterruptedException {
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                final AtomicBoolean isInitialized = new AtomicBoolean(false);
-                ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-                    @Override
-                    public void run() {
-                        isInitialized.set(mProfileSyncService.isSyncInitialized());
-                    }
-                });
-                return isInitialized.get();
-            }
-        }));
     }
 }

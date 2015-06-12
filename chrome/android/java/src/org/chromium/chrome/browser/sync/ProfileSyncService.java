@@ -467,6 +467,12 @@ public class ProfileSyncService {
         return nativeIsSyncRequested(mNativeProfileSyncServiceAndroid);
     }
 
+    // TODO(maxbogue): Remove this annotation once this method is used outside of tests.
+    @VisibleForTesting
+    public boolean isSyncActive() {
+        return nativeIsSyncActive(mNativeProfileSyncServiceAndroid);
+    }
+
     /**
      * Notifies sync whether sync setup is in progress - this tells sync whether it should start
      * syncing data types when it starts up, or if it should just stay in "configuration mode".
@@ -672,6 +678,7 @@ public class ProfileSyncService {
     private native void nativeSetSyncSetupCompleted(long nativeProfileSyncServiceAndroid);
     private native boolean nativeHasSyncSetupCompleted(long nativeProfileSyncServiceAndroid);
     private native boolean nativeIsSyncRequested(long nativeProfileSyncServiceAndroid);
+    private native boolean nativeIsSyncActive(long nativeProfileSyncServiceAndroid);
     private native boolean nativeHasKeepEverythingSynced(long nativeProfileSyncServiceAndroid);
     private native boolean nativeHasUnrecoverableError(long nativeProfileSyncServiceAndroid);
     private native boolean nativeIsPassphrasePrompted(long nativeProfileSyncServiceAndroid);

@@ -448,6 +448,11 @@ jboolean ProfileSyncServiceAndroid::IsSyncRequested(
   return sync_service_->IsSyncRequested();
 }
 
+jboolean ProfileSyncServiceAndroid::IsSyncActive(JNIEnv* env, jobject obj) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return sync_service_->IsSyncActive();
+}
+
 void ProfileSyncServiceAndroid::EnableEncryptEverything(
     JNIEnv* env, jobject obj) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

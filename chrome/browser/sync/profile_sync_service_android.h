@@ -177,6 +177,9 @@ class ProfileSyncServiceAndroid : public sync_driver::SyncServiceObserver {
   // See ProfileSyncService::IsSyncRequested().
   jboolean IsSyncRequested(JNIEnv* env, jobject obj);
 
+  // See ProfileSyncService::IsSyncActive().
+  jboolean IsSyncActive(JNIEnv* env, jobject obj);
+
   // Returns true if sync is configured to "sync everything".
   jboolean HasKeepEverythingSynced(JNIEnv* env, jobject obj);
 
