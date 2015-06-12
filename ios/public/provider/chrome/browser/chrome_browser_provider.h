@@ -21,10 +21,6 @@ namespace net {
 class URLRequestContextGetter;
 }
 
-namespace web {
-class WebState;
-}
-
 // TODO(ios): Determine the best way to interface with Obj-C code through
 // the ChromeBrowserProvider. crbug/298181
 #ifdef __OBJC__
@@ -83,9 +79,8 @@ class ChromeBrowserProvider {
   virtual void SetUIViewAlphaWithAnimation(UIView* view, float alpha);
   // Returns an instance of a CardUnmaskPromptView used to unmask Wallet cards.
   // The view is responsible for its own lifetime.
-  virtual autofill::CardUnmaskPromptView*
-      CreateCardUnmaskPromptView(
-          autofill::CardUnmaskPromptController* controller);
+  virtual autofill::CardUnmaskPromptView* CreateCardUnmaskPromptView(
+      autofill::CardUnmaskPromptController* controller);
   // Returns risk data used in Wallet requests.
   virtual std::string GetRiskData();
   // Returns product version with prefix.
