@@ -4,6 +4,7 @@
 
 #include "net/disk_cache/blockfile/trace.h"
 
+#include <stdarg.h>
 #include <stdio.h>
 #if defined(OS_WIN)
 #include <windows.h>
