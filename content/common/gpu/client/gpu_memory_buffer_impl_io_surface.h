@@ -19,6 +19,7 @@ class GpuMemoryBufferImplIOSurface : public GpuMemoryBufferImpl {
       const gfx::GpuMemoryBufferHandle& handle,
       const gfx::Size& size,
       Format format,
+      Usage usage,
       const DestructionCallback& callback);
 
   // Overridden from gfx::GpuMemoryBuffer:
@@ -32,10 +33,12 @@ class GpuMemoryBufferImplIOSurface : public GpuMemoryBufferImpl {
                                const gfx::Size& size,
                                Format format,
                                const DestructionCallback& callback,
-                               IOSurfaceRef io_surface);
+                               IOSurfaceRef io_surface,
+                               uint32_t lock_flags);
   ~GpuMemoryBufferImplIOSurface() override;
 
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface_;
+  uint32_t lock_flags_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuMemoryBufferImplIOSurface);
 };

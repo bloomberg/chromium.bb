@@ -70,7 +70,9 @@ int32 PixelFormat(gfx::GpuMemoryBuffer::Format format) {
 }
 
 const GpuMemoryBufferFactory::Configuration kSupportedConfigurations[] = {
+    {gfx::GpuMemoryBuffer::R_8, gfx::GpuMemoryBuffer::PERSISTENT_MAP},
     {gfx::GpuMemoryBuffer::R_8, gfx::GpuMemoryBuffer::MAP},
+    {gfx::GpuMemoryBuffer::BGRA_8888, gfx::GpuMemoryBuffer::PERSISTENT_MAP},
     {gfx::GpuMemoryBuffer::BGRA_8888, gfx::GpuMemoryBuffer::MAP}};
 
 }  // namespace

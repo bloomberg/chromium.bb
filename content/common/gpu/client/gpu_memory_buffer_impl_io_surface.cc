@@ -8,14 +8,34 @@
 #include "content/common/mac/io_surface_manager.h"
 
 namespace content {
+namespace {
+
+uint32_t LockFlags(gfx::GpuMemoryBuffer::Usage usage) {
+  switch (usage) {
+    case gfx::GpuMemoryBuffer::MAP:
+      return kIOSurfaceLockAvoidSync;
+    case gfx::GpuMemoryBuffer::PERSISTENT_MAP:
+      return 0;
+    case gfx::GpuMemoryBuffer::SCANOUT:
+      NOTREACHED();
+      return 0;
+  }
+  NOTREACHED();
+  return 0;
+}
+
+}  // namespace
 
 GpuMemoryBufferImplIOSurface::GpuMemoryBufferImplIOSurface(
     gfx::GpuMemoryBufferId id,
     const gfx::Size& size,
     Format format,
     const DestructionCallback& callback,
-    IOSurfaceRef io_surface)
-    : GpuMemoryBufferImpl(id, size, format, callback), io_surface_(io_surface) {
+    IOSurfaceRef io_surface,
+    uint32_t lock_flags)
+    : GpuMemoryBufferImpl(id, size, format, callback),
+      io_surface_(io_surface),
+      lock_flags_(lock_flags) {
 }
 
 GpuMemoryBufferImplIOSurface::~GpuMemoryBufferImplIOSurface() {
@@ -26,19 +46,22 @@ scoped_ptr<GpuMemoryBufferImpl> GpuMemoryBufferImplIOSurface::CreateFromHandle(
     const gfx::GpuMemoryBufferHandle& handle,
     const gfx::Size& size,
     Format format,
+    Usage usage,
     const DestructionCallback& callback) {
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface(
       IOSurfaceManager::GetInstance()->AcquireIOSurface(handle.id));
   if (!io_surface)
-    return scoped_ptr<GpuMemoryBufferImpl>();
+    return nullptr;
 
-  return make_scoped_ptr<GpuMemoryBufferImpl>(new GpuMemoryBufferImplIOSurface(
-      handle.id, size, format, callback, io_surface.release()));
+  return make_scoped_ptr<GpuMemoryBufferImpl>(
+      new GpuMemoryBufferImplIOSurface(handle.id, size, format, callback,
+                                       io_surface.release(), LockFlags(usage)));
 }
 
 bool GpuMemoryBufferImplIOSurface::Map(void** data) {
   DCHECK(!mapped_);
-  IOSurfaceLock(io_surface_, 0, NULL);
+  IOReturn status = IOSurfaceLock(io_surface_, lock_flags_, NULL);
+  DCHECK_NE(status, kIOReturnCannotLock);
   mapped_ = true;
   *data = IOSurfaceGetBaseAddress(io_surface_);
   return true;
@@ -46,7 +69,7 @@ bool GpuMemoryBufferImplIOSurface::Map(void** data) {
 
 void GpuMemoryBufferImplIOSurface::Unmap() {
   DCHECK(mapped_);
-  IOSurfaceUnlock(io_surface_, 0, NULL);
+  IOSurfaceUnlock(io_surface_, lock_flags_, NULL);
   mapped_ = false;
 }
 
