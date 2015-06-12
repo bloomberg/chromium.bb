@@ -132,6 +132,9 @@ public:
     unsigned updateStyleAndReturnAffectedElementCount(ExceptionState&) const;
     unsigned needsLayoutCount(ExceptionState&) const;
     unsigned hitTestCount(Document*, ExceptionState&) const;
+    unsigned hitTestCacheHits(Document*, ExceptionState&) const;
+    Element* elementFromPointNoCache(Document*, double, double, ExceptionState&) const;
+    void clearHitTestCache(Document*, ExceptionState&) const;
 
     String visiblePlaceholder(Element*);
     void selectColorInColorChooser(Element*, const String& colorValue);

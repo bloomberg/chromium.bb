@@ -262,13 +262,12 @@ static bool pointWithScrollAndZoomIfPossible(const Document& document, IntPoint&
     return true;
 }
 
-HitTestResult hitTestInDocument(const Document* document, int x, int y)
+HitTestResult hitTestInDocument(const Document* document, int x, int y, const HitTestRequest& request)
 {
     IntPoint hitPoint(x, y);
     if (!pointWithScrollAndZoomIfPossible(*document, hitPoint))
         return HitTestResult();
 
-    HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::Active);
     HitTestResult result(request, hitPoint);
     document->layoutView()->hitTest(result);
     return result;
@@ -276,7 +275,17 @@ HitTestResult hitTestInDocument(const Document* document, int x, int y)
 
 Element* TreeScope::elementFromPoint(int x, int y) const
 {
-    HitTestResult result = hitTestInDocument(&rootNode().document(), x, y);
+    return hitTestPoint(x, y, HitTestRequest::ReadOnly | HitTestRequest::Active);
+}
+
+Element* TreeScope::elementFromPointNoCache(int x, int y) const
+{
+    return hitTestPoint(x, y, HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::AvoidCache);
+}
+
+Element* TreeScope::hitTestPoint(int x, int y, const HitTestRequest& request) const
+{
+    HitTestResult result = hitTestInDocument(&rootNode().document(), x, y, request);
     Node* node = result.innerNode();
     if (!node || node->isDocumentNode())
         return 0;

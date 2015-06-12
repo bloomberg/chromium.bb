@@ -236,6 +236,10 @@ inline IntRect pixelSnappedIntRect(const LayoutRect& rect)
 PLATFORM_EXPORT IntRect enclosingIntRect(const LayoutRect&);
 PLATFORM_EXPORT LayoutRect enclosingLayoutRect(const FloatRect&);
 
+// Returns a layout rect with minimum size for width and height that contains
+// |point|.
+PLATFORM_EXPORT LayoutRect boundingRect(const LayoutPoint&);
+
 inline IntRect pixelSnappedIntRect(LayoutUnit left, LayoutUnit top, LayoutUnit width, LayoutUnit height)
 {
     return IntRect(left.round(), top.round(), snapSizeToPixel(width, left), snapSizeToPixel(height, top));

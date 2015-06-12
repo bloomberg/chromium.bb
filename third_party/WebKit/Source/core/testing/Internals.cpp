@@ -317,6 +317,41 @@ unsigned Internals::hitTestCount(Document* doc, ExceptionState& exceptionState) 
     return doc->layoutView()->hitTestCount();
 }
 
+unsigned Internals::hitTestCacheHits(Document* doc, ExceptionState& exceptionState) const
+{
+    if (!doc) {
+        exceptionState.throwDOMException(InvalidAccessError, "Must supply document to check");
+        return 0;
+    }
+
+    return doc->layoutView()->hitTestCacheHits();
+}
+
+Element* Internals::elementFromPointNoCache(Document* doc, double x, double y, ExceptionState& exceptionState) const
+{
+    if (!doc) {
+        exceptionState.throwDOMException(InvalidAccessError, "Must supply document to check");
+        return 0;
+    }
+
+    if (!doc->layoutView())
+        return 0;
+
+    return doc->elementFromPointNoCache(x, y);
+}
+
+void Internals::clearHitTestCache(Document* doc, ExceptionState& exceptionState) const
+{
+    if (!doc) {
+        exceptionState.throwDOMException(InvalidAccessError, "Must supply document to check");
+        return;
+    }
+
+    if (!doc->layoutView())
+        return;
+
+    doc->layoutView()->clearHitTestCache();
+}
 
 bool Internals::isPreloaded(const String& url)
 {

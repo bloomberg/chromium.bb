@@ -274,6 +274,7 @@ HTMLMapElement* LayoutImage::imageMap() const
 bool LayoutImage::nodeAtPoint(HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction hitTestAction)
 {
     HitTestResult tempResult(result.hitTestRequest(), result.hitTestLocation());
+    tempResult.setValidityRect(result.validityRect());
     bool inside = LayoutReplaced::nodeAtPoint(tempResult, locationInContainer, accumulatedOffset, hitTestAction);
 
     if (!inside && result.hitTestRequest().listBased())

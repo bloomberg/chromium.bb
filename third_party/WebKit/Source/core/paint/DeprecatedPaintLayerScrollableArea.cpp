@@ -435,6 +435,7 @@ void DeprecatedPaintLayerScrollableArea::setScrollOffset(const DoublePoint& newS
 
     if (AXObjectCache* cache = box().document().existingAXObjectCache())
         cache->handleScrollPositionChanged(&box());
+    box().view()->clearHitTestCache();
 }
 
 IntPoint DeprecatedPaintLayerScrollableArea::scrollPosition() const

@@ -957,6 +957,7 @@ void FrameView::layout()
     // to clear the roots and do the layout from the layoutView.
     if (layoutView()->needsLayout())
         clearLayoutSubtreeRootsAndMarkContainingBlocks();
+    layoutView()->clearHitTestCache();
 
     bool inSubtreeLayout = isSubtreeLayout();
 

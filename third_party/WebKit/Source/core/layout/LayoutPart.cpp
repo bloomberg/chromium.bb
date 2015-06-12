@@ -169,8 +169,9 @@ bool LayoutPart::nodeAtPoint(HitTestResult& result, const HitTestLocation& locat
         HitTestLocation newHitTestLocation(locationInContainer, -adjustedLocation - contentOffset);
         HitTestRequest newHitTestRequest(result.hitTestRequest().type() | HitTestRequest::ChildFrameHitTest);
         HitTestResult childFrameResult(newHitTestRequest, newHitTestLocation);
+        childFrameResult.setValidityRect(result.validityRect());
 
-        bool isInsideChildFrame = childRoot->hitTest(newHitTestRequest, newHitTestLocation, childFrameResult);
+        bool isInsideChildFrame = childRoot->hitTest(childFrameResult);
 
         if (result.hitTestRequest().listBased())
             result.append(childFrameResult);

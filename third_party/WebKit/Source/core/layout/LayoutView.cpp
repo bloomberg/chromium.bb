@@ -44,6 +44,7 @@
 #include "platform/TracedValue.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/TransformState.h"
+#include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/DisplayItemList.h"
 #include <inttypes.h>
 
@@ -62,6 +63,7 @@ LayoutView::LayoutView(Document* document)
     , m_layoutQuoteHead(nullptr)
     , m_layoutCounterCount(0)
     , m_hitTestCount(0)
+    , m_hitTestCacheHits(0)
     , m_pendingSelection(PendingSelection::create())
 {
     // init LayoutObject attributes
@@ -81,15 +83,10 @@ LayoutView::~LayoutView()
 
 bool LayoutView::hitTest(HitTestResult& result)
 {
-    return hitTest(result.hitTestRequest(), result.hitTestLocation(), result);
-}
-
-bool LayoutView::hitTest(const HitTestRequest& request, const HitTestLocation& location, HitTestResult& result)
-{
     TRACE_EVENT_BEGIN0("blink,devtools.timeline", "HitTest");
     m_hitTestCount++;
 
-    ASSERT(!location.isRectBasedTest() || request.listBased());
+    ASSERT(!result.hitTestLocation().isRectBasedTest() || result.hitTestRequest().listBased());
 
     // We have to recursively update layout/style here because otherwise, when the hit test recurses
     // into a child document, it could trigger a layout on the parent document, which can destroy DeprecatedPaintLayer
@@ -99,16 +96,32 @@ bool LayoutView::hitTest(const HitTestRequest& request, const HitTestLocation& l
     frameView()->updateLayoutAndStyleForPainting();
     commitPendingSelection();
 
-    bool hitLayer = layer()->hitTest(request, location, result);
+    uint64_t domTreeVersion = document().domTreeVersion();
+    HitTestResult cacheResult = result;
+    bool cacheHit = m_hitTestCache.lookupCachedResult(cacheResult, domTreeVersion);
+    bool hitLayer = layer()->hitTest(result);
 
     // FrameView scrollbars are not the same as Layer scrollbars tested by Layer::hitTestOverflowControls,
     // so we need to test FrameView scrollbars separately here. Note that it's important we do this after
     // the hit test above, because that may overwrite the entire HitTestResult when it finds a hit.
-    IntPoint framePoint = frameView()->contentsToFrame(location.roundedPoint());
+    IntPoint framePoint = frameView()->contentsToFrame(result.hitTestLocation().roundedPoint());
     if (Scrollbar* frameScrollbar = frameView()->scrollbarAtFramePoint(framePoint))
         result.setScrollbar(frameScrollbar);
 
-    TRACE_EVENT_END1("blink,devtools.timeline", "HitTest", "endData", InspectorHitTestEvent::endData(request, location, result));
+    if (cacheHit) {
+        m_hitTestCacheHits++;
+        m_hitTestCache.verifyCachedResult(result, cacheResult);
+    }
+
+    if (hitLayer) {
+        m_hitTestCache.addCachedResult(result, domTreeVersion);
+
+        if (layer()->graphicsLayerBacking()) {
+            layer()->graphicsLayerBacking()->platformLayer()->setHitTestCacheRect(enclosingIntRect(result.validityRect()));
+        }
+    }
+
+    TRACE_EVENT_END1("blink,devtools.timeline", "HitTest", "endData", InspectorHitTestEvent::endData(result.hitTestRequest(), result.hitTestLocation(), result));
     return hitLayer;
 }
 

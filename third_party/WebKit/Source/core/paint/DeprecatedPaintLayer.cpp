@@ -1580,21 +1580,20 @@ static inline LayoutRect frameVisibleRect(LayoutObject* layoutObject)
 
 bool DeprecatedPaintLayer::hitTest(HitTestResult& result)
 {
-    return hitTest(result.hitTestRequest(), result.hitTestLocation(), result);
-}
-
-bool DeprecatedPaintLayer::hitTest(const HitTestRequest& request, const HitTestLocation& hitTestLocation, HitTestResult& result)
-{
     ASSERT(isSelfPaintingLayer() || hasSelfPaintingLayerDescendant());
 
     // LayoutView should make sure to update layout before entering hit testing
     ASSERT(!layoutObject()->frame()->view()->layoutPending());
     ASSERT(!layoutObject()->document().layoutView()->needsLayout());
 
+    const HitTestRequest& request = result.hitTestRequest();
+    const HitTestLocation& hitTestLocation = result.hitTestLocation();
+
     // Start with frameVisibleRect to ensure we include the scrollbars.
     LayoutRect hitTestArea = frameVisibleRect(layoutObject());
     if (request.ignoreClipping())
         hitTestArea.unite(LayoutRect(layoutObject()->view()->documentRect()));
+    result.setValidityRect(boundingRect(hitTestLocation.point()));
 
     DeprecatedPaintLayer* insideLayer = hitTestLayer(this, 0, result, hitTestArea, hitTestLocation, false);
     if (!insideLayer) {
@@ -1607,6 +1606,9 @@ bool DeprecatedPaintLayer::hitTest(const HitTestRequest& request, const HitTestL
         if (!request.isChildFrameHitTest() && ((request.active() || request.release()) || (request.move() && hitTestArea.contains(hitPoint.x(), hitPoint.y()))) && isRootLayer()) {
             layoutObject()->updateHitTestResult(result, toLayoutView(layoutObject())->flipForWritingMode(hitTestLocation.point()));
             insideLayer = this;
+
+            // Don't cache this result since it really wasn't a true hit.
+            result.setValidityRect(LayoutRect());
         }
     }
 
@@ -1830,6 +1832,7 @@ DeprecatedPaintLayer* DeprecatedPaintLayer::hitTestLayer(DeprecatedPaintLayer* r
     if (isSelfPaintingLayer()) {
         // Hit test with a temporary HitTestResult, because we only want to commit to 'result' if we know we're frontmost.
         HitTestResult tempResult(result.hitTestRequest(), result.hitTestLocation());
+        tempResult.setValidityRect(result.validityRect());
         bool insideFragmentForegroundRect = false;
         if (hitTestContentsForFragments(layerFragments, tempResult, hitTestLocation, HitTestDescendants, insideFragmentForegroundRect)
             && isHitCandidate(this, false, zOffsetForContentsPtr, unflattenedTransformState.get())) {
@@ -1861,6 +1864,7 @@ DeprecatedPaintLayer* DeprecatedPaintLayer::hitTestLayer(DeprecatedPaintLayer* r
 
     if (isSelfPaintingLayer()) {
         HitTestResult tempResult(result.hitTestRequest(), result.hitTestLocation());
+        tempResult.setValidityRect(result.validityRect());
         bool insideFragmentBackgroundRect = false;
         if (hitTestContentsForFragments(layerFragments, tempResult, hitTestLocation, HitTestSelf, insideFragmentBackgroundRect)
             && isHitCandidate(this, false, zOffsetForContentsPtr, unflattenedTransformState.get())) {
@@ -2015,6 +2019,7 @@ DeprecatedPaintLayer* DeprecatedPaintLayer::hitTestChildren(ChildrenIteration ch
         DeprecatedPaintLayer* childLayer = child->layer();
         DeprecatedPaintLayer* hitLayer = 0;
         HitTestResult tempResult(result.hitTestRequest(), result.hitTestLocation());
+        tempResult.setValidityRect(result.validityRect());
         hitLayer = childLayer->hitTestLayer(rootLayer, this, tempResult, hitTestRect, hitTestLocation, false, transformState, zOffsetForDescendants);
 
         // If it is a list-based test, we can safely append the temporary result since it might had hit
