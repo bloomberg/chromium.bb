@@ -133,6 +133,7 @@ public:
     void advanceTo(State);
     void ensureStateAtMost(State);
 
+    bool inDetach() const { return m_detachCount; }
     void incrementDetachCount() { m_detachCount++; }
     void decrementDetachCount()
     {

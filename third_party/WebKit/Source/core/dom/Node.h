@@ -545,10 +545,6 @@ public:
     // the node's layout object from the layout tree and delete it.
     virtual void detach(const AttachContext& = AttachContext());
 
-#if ENABLE(ASSERT)
-    bool inDetach() const;
-#endif
-
     void reattach(const AttachContext& = AttachContext());
     void lazyReattachIfAttached();
 

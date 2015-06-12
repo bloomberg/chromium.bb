@@ -931,28 +931,10 @@ void Node::attach(const AttachContext&)
         cache->updateCacheAfterNodeIsAttached(this);
 }
 
-#if ENABLE(ASSERT)
-static Node* detachingNode;
-
-bool Node::inDetach() const
-{
-    return detachingNode == this;
-}
-#endif
-
 void Node::detach(const AttachContext& context)
 {
     ASSERT(document().lifecycle().stateAllowsDetach());
     DocumentLifecycle::DetachScope willDetach(document().lifecycle());
-
-#if ENABLE(ASSERT)
-    // The detaching might trigger destruction of a popup menu window,
-    // with ensuing detachment of its Nodes. In a separate document, so
-    // don't assert for these, but do set detachingNode to the most recent
-    // Node being detached.
-    ASSERT(!detachingNode || detachingNode->document() != document());
-    detachingNode = this;
-#endif
 
     if (layoutObject())
         layoutObject()->destroyAndCleanupAnonymousWrappers();
@@ -960,10 +942,6 @@ void Node::detach(const AttachContext& context)
 
     setStyleChange(NeedsReattachStyleChange);
     clearChildNeedsStyleInvalidation();
-
-#if ENABLE(ASSERT)
-    detachingNode = nullptr;
-#endif
 }
 
 void Node::reattachWhitespaceSiblingsIfNeeded(Text* start)

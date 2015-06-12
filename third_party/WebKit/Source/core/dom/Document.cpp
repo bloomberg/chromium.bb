@@ -3425,6 +3425,8 @@ void Document::setAnnotatedRegions(const Vector<AnnotatedRegionValue>& regions)
 
 bool Document::setFocusedElement(PassRefPtrWillBeRawPtr<Element> prpNewFocusedElement, WebFocusType type)
 {
+    ASSERT(!m_lifecycle.inDetach());
+
     m_clearFocusedElementTimer.stop();
 
     RefPtrWillBeRawPtr<Element> newFocusedElement = prpNewFocusedElement;
@@ -3445,8 +3447,6 @@ bool Document::setFocusedElement(PassRefPtrWillBeRawPtr<Element> prpNewFocusedEl
 
     // Remove focus from the existing focus node (if any)
     if (oldFocusedElement) {
-        ASSERT(!oldFocusedElement->inDetach());
-
         if (oldFocusedElement->active())
             oldFocusedElement->setActive(false);
 
