@@ -7,8 +7,10 @@
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/ui/chrome_style.h"
 #include "chrome/browser/ui/cocoa/infobars/infobar_cocoa.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
+#include "skia/ext/skia_utils_mac.h"
 #include "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #import "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/cocoa/controls/hyperlink_text_view.h"
@@ -121,9 +123,11 @@
   HyperlinkTextView* view = (HyperlinkTextView*)label_.get();
   [view setMessage:message withFont:font messageColor:[NSColor blackColor]];
   if (linkLength != 0) {
+    NSColor* linkColor =
+        gfx::SkColorToCalibratedNSColor(chrome_style::GetLinkColor());
     [view addLinkRange:NSMakeRange(linkOffset, linkLength)
               withName:@""
-             linkColor:[NSColor blueColor]];
+             linkColor:linkColor];
   }
 }
 

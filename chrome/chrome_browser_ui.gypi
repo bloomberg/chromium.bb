@@ -1066,6 +1066,8 @@
       'browser/ui/cocoa/infobars/infobar_gradient_view.mm',
       'browser/ui/cocoa/infobars/infobar_utilities.h',
       'browser/ui/cocoa/infobars/infobar_utilities.mm',
+      'browser/ui/cocoa/infobars/save_password_infobar_controller.h',
+      'browser/ui/cocoa/infobars/save_password_infobar_controller.mm',
       'browser/ui/cocoa/infobars/translate_infobar_base.h',
       'browser/ui/cocoa/infobars/translate_infobar_base.mm',
       'browser/ui/cocoa/infobars/translate_message_infobar_controller.h',

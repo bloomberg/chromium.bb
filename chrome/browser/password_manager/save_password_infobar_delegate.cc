@@ -22,6 +22,10 @@
 #include "chrome/browser/ui/android/infobars/save_password_infobar.h"
 #endif
 
+#if defined(OS_MACOSX)
+#import "chrome/browser/ui/cocoa/infobars/save_password_infobar_controller.h"
+#endif
+
 namespace {
 
 int GetCancelButtonText(password_manager::CredentialSourceType source_type) {
@@ -54,6 +58,9 @@ void SavePasswordInfoBarDelegate::Create(
   scoped_ptr<infobars::InfoBar> infobar =
       make_scoped_ptr(new SavePasswordInfoBar(
           scoped_ptr<SavePasswordInfoBarDelegate>(infobar_delegate)));
+#elif defined(OS_MACOSX)
+  scoped_ptr<infobars::InfoBar> infobar(
+      CreateSavePasswordInfoBar(make_scoped_ptr(infobar_delegate)));
 #else
   // For desktop we'll keep using the ConfirmInfobar.
   scoped_ptr<infobars::InfoBar> infobar(infobar_service->CreateConfirmInfoBar(
