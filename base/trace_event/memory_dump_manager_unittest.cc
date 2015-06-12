@@ -191,11 +191,18 @@ TEST_F(MemoryDumpManagerTest, MultipleDumpers) {
   DisableTracing();
 }
 
+// Fails on Linux TSan. http://crbug.com/499983
+#if defined(OS_LINUX)
+#define MAYBE_RespectTaskRunnerAffinity DISABLED_RespectTaskRunnerAffinity
+#else
+#define MAYBE_RespectTaskRunnerAffinity RespectTaskRunnerAffinity
+#endif
+
 // Checks that the MemoryDumpManager respects the thread affinity when a
 // MemoryDumpProvider specifies a task_runner(). The test starts creating 8
 // threads and registering a MemoryDumpProvider on each of them. At each
 // iteration, one thread is removed, to check the live unregistration logic.
-TEST_F(MemoryDumpManagerTest, RespectTaskRunnerAffinity) {
+TEST_F(MemoryDumpManagerTest, MAYBE_RespectTaskRunnerAffinity) {
   const uint32 kNumInitialThreads = 8;
 
   ScopedVector<Thread> threads;
