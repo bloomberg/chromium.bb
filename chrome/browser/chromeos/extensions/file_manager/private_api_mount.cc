@@ -60,7 +60,7 @@ bool FileManagerPrivateAddMountFunction::RunAsync() {
   set_log_on_completion(true);
 
   const base::FilePath path = file_manager::util::GetLocalPathFromURL(
-      render_view_host(), GetProfile(), GURL(params->source));
+      render_frame_host(), GetProfile(), GURL(params->source));
 
   if (path.empty())
     return false;

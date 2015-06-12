@@ -12,7 +12,7 @@
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/file_chooser_file_info.h"
@@ -418,10 +418,10 @@ storage::FileSystemContext* GetFileSystemContextForExtensionId(
       GetFileSystemContext();
 }
 
-storage::FileSystemContext* GetFileSystemContextForRenderViewHost(
+storage::FileSystemContext* GetFileSystemContextForRenderFrameHost(
     Profile* profile,
-    content::RenderViewHost* render_view_host) {
-  content::SiteInstance* site_instance = render_view_host->GetSiteInstance();
+    content::RenderFrameHost* render_frame_host) {
+  content::SiteInstance* site_instance = render_frame_host->GetSiteInstance();
   return content::BrowserContext::GetStoragePartition(profile, site_instance)->
       GetFileSystemContext();
 }

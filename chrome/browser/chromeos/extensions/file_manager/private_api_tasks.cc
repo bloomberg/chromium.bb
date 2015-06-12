@@ -80,8 +80,8 @@ bool FileManagerPrivateExecuteTaskFunction::RunAsync() {
   }
 
   const scoped_refptr<storage::FileSystemContext> file_system_context =
-      file_manager::util::GetFileSystemContextForRenderViewHost(
-          GetProfile(), render_view_host());
+      file_manager::util::GetFileSystemContextForRenderFrameHost(
+          GetProfile(), render_frame_host());
 
   std::vector<FileSystemURL> file_urls;
   for (size_t i = 0; i < params->file_urls.size(); i++) {
@@ -135,8 +135,8 @@ bool FileManagerPrivateGetFileTasksFunction::RunAsync() {
     return false;
 
   const scoped_refptr<storage::FileSystemContext> file_system_context =
-      file_manager::util::GetFileSystemContextForRenderViewHost(
-          GetProfile(), render_view_host());
+      file_manager::util::GetFileSystemContextForRenderFrameHost(
+          GetProfile(), render_frame_host());
 
   // Collect all the URLs, convert them to GURLs, and crack all the urls into
   // file paths.
@@ -201,8 +201,8 @@ bool FileManagerPrivateSetDefaultTaskFunction::RunSync() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
   const scoped_refptr<storage::FileSystemContext> file_system_context =
-      file_manager::util::GetFileSystemContextForRenderViewHost(
-          GetProfile(), render_view_host());
+      file_manager::util::GetFileSystemContextForRenderFrameHost(
+          GetProfile(), render_frame_host());
 
   const std::set<std::string> suffixes =
       GetUniqueSuffixes(params->file_urls, file_system_context.get());

@@ -27,6 +27,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/file_chooser_file_info.h"
 #include "content/public/common/file_chooser_params.h"
@@ -253,9 +254,12 @@ void FileSelectHelper::NotifyRenderViewHostAndEnd(
     }
     // Converts |files| into FileChooserFileInfo with handling of non-native
     // files.
+    storage::FileSystemContext* file_system_context =
+        content::BrowserContext::GetStoragePartition(
+            profile_, render_view_host_->GetSiteInstance())->
+                GetFileSystemContext();
     file_manager::util::ConvertSelectedFileInfoListToFileChooserFileInfoList(
-        file_manager::util::GetFileSystemContextForRenderViewHost(
-            profile_, render_view_host_),
+        file_system_context,
         web_contents_->GetSiteInstance()->GetSiteURL(),
         files,
         base::Bind(

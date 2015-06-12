@@ -143,16 +143,19 @@ void AppWindowRegistry::CloseAllAppWindowsForApp(const std::string& app_id) {
   }
 }
 
+AppWindow* AppWindowRegistry::GetAppWindowForWebContents(
+    content::WebContents* web_contents) const {
+  for (AppWindow* window : app_windows_) {
+    if (window->web_contents() == web_contents)
+      return window;
+  }
+  return nullptr;
+}
+
 AppWindow* AppWindowRegistry::GetAppWindowForRenderViewHost(
     content::RenderViewHost* render_view_host) const {
-  for (AppWindowList::const_iterator i = app_windows_.begin();
-       i != app_windows_.end();
-       ++i) {
-    if ((*i)->web_contents()->GetRenderViewHost() == render_view_host)
-      return *i;
-  }
-
-  return NULL;
+  return GetAppWindowForWebContents(
+      content::WebContents::FromRenderViewHost(render_view_host));
 }
 
 AppWindow* AppWindowRegistry::GetAppWindowForNativeWindow(

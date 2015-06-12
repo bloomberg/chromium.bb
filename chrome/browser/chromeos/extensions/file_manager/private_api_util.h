@@ -19,7 +19,7 @@ class FilePath;
 }
 
 namespace content {
-class RenderViewHost;
+class RenderFrameHost;
 }
 
 namespace drive {
@@ -53,12 +53,12 @@ void VolumeToVolumeMetadata(
 
 // Returns the local FilePath associated with |url|. If the file isn't of the
 // type FileSystemBackend handles, returns an empty
-// FilePath. |render_view_host| and |profile| are needed to obtain the
+// FilePath. |render_frame_host| and |profile| are needed to obtain the
 // FileSystemContext currently in use.
 //
 // Local paths will look like "/home/chronos/user/Downloads/foo/bar.txt" or
 // "/special/drive/foo/bar.txt".
-base::FilePath GetLocalPathFromURL(content::RenderViewHost* render_view_host,
+base::FilePath GetLocalPathFromURL(content::RenderFrameHost* render_frame_host,
                                    Profile* profile,
                                    const GURL& url);
 
@@ -82,7 +82,7 @@ enum GetSelectedFileInfoLocalPathOption {
 };
 
 // Gets the information for |file_urls|.
-void GetSelectedFileInfo(content::RenderViewHost* render_view_host,
+void GetSelectedFileInfo(content::RenderFrameHost* render_frame_host,
                          Profile* profile,
                          const std::vector<GURL>& file_urls,
                          GetSelectedFileInfoLocalPathOption local_path_option,

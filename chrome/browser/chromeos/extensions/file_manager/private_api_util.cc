@@ -301,14 +301,14 @@ void VolumeToVolumeMetadata(
   }
 }
 
-base::FilePath GetLocalPathFromURL(content::RenderViewHost* render_view_host,
+base::FilePath GetLocalPathFromURL(content::RenderFrameHost* render_frame_host,
                                    Profile* profile,
                                    const GURL& url) {
-  DCHECK(render_view_host);
+  DCHECK(render_frame_host);
   DCHECK(profile);
 
   scoped_refptr<storage::FileSystemContext> file_system_context =
-      util::GetFileSystemContextForRenderViewHost(profile, render_view_host);
+      util::GetFileSystemContextForRenderFrameHost(profile, render_frame_host);
 
   const storage::FileSystemURL filesystem_url(
       file_system_context->CrackURL(url));
@@ -318,12 +318,12 @@ base::FilePath GetLocalPathFromURL(content::RenderViewHost* render_view_host,
   return filesystem_url.path();
 }
 
-void GetSelectedFileInfo(content::RenderViewHost* render_view_host,
+void GetSelectedFileInfo(content::RenderFrameHost* render_frame_host,
                          Profile* profile,
                          const std::vector<GURL>& file_urls,
                          GetSelectedFileInfoLocalPathOption local_path_option,
                          GetSelectedFileInfoCallback callback) {
-  DCHECK(render_view_host);
+  DCHECK(render_frame_host);
   DCHECK(profile);
 
   scoped_ptr<GetSelectedFileInfoParams> params(new GetSelectedFileInfoParams);
@@ -333,7 +333,7 @@ void GetSelectedFileInfo(content::RenderViewHost* render_view_host,
   for (size_t i = 0; i < file_urls.size(); ++i) {
     const GURL& file_url = file_urls[i];
     const base::FilePath path = GetLocalPathFromURL(
-        render_view_host, profile, file_url);
+        render_frame_host, profile, file_url);
     if (!path.empty()) {
       DVLOG(1) << "Selected: file path: " << path.value();
       params->file_paths.push_back(path);

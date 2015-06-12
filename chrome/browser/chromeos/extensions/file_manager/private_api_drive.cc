@@ -500,8 +500,8 @@ bool FileManagerPrivateGetEntryPropertiesFunction::RunAsync() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
   scoped_refptr<storage::FileSystemContext> file_system_context =
-      file_manager::util::GetFileSystemContextForRenderViewHost(
-          GetProfile(), render_view_host());
+      file_manager::util::GetFileSystemContextForRenderFrameHost(
+          GetProfile(), render_frame_host());
 
   properties_list_.resize(params->file_urls.size());
   const std::set<EntryPropertyName> names_as_set(params->names.begin(),
@@ -575,7 +575,7 @@ bool FileManagerPrivatePinDriveFileFunction::RunAsync() {
 
   const base::FilePath drive_path =
       drive::util::ExtractDrivePath(file_manager::util::GetLocalPathFromURL(
-          render_view_host(), GetProfile(), GURL(params->file_url)));
+          render_frame_host(), GetProfile(), GURL(params->file_url)));
   if (params->pin) {
     file_system->Pin(drive_path,
                      base::Bind(&FileManagerPrivatePinDriveFileFunction::
@@ -632,7 +632,7 @@ bool FileManagerPrivateCancelFileTransfersFunction::RunAsync() {
 
     for (size_t i = 0; i < file_urls.size(); ++i) {
       base::FilePath file_path = file_manager::util::GetLocalPathFromURL(
-          render_view_host(), GetProfile(), GURL(file_urls[i]));
+          render_frame_host(), GetProfile(), GURL(file_urls[i]));
       if (file_path.empty())
         continue;
 
@@ -906,7 +906,7 @@ bool FileManagerPrivateGetShareUrlFunction::RunAsync() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
   const base::FilePath path = file_manager::util::GetLocalPathFromURL(
-      render_view_host(), GetProfile(), GURL(params->url));
+      render_frame_host(), GetProfile(), GURL(params->url));
   DCHECK(drive::util::IsUnderDriveMountPoint(path));
 
   const base::FilePath drive_path = drive::util::ExtractDrivePath(path);
@@ -944,7 +944,7 @@ bool FileManagerPrivateRequestDriveShareFunction::RunAsync() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
   const base::FilePath path = file_manager::util::GetLocalPathFromURL(
-      render_view_host(), GetProfile(), GURL(params->url));
+      render_frame_host(), GetProfile(), GURL(params->url));
   const base::FilePath drive_path = drive::util::ExtractDrivePath(path);
   Profile* const owner_profile = drive::util::ExtractProfileFromPath(path);
 
@@ -1017,7 +1017,7 @@ bool FileManagerPrivateGetDownloadUrlFunction::RunAsync() {
   }
 
   const base::FilePath path = file_manager::util::GetLocalPathFromURL(
-      render_view_host(), GetProfile(), GURL(params->url));
+      render_frame_host(), GetProfile(), GURL(params->url));
   if (!drive::util::IsUnderDriveMountPoint(path)) {
     SetError("The given file is not in Drive.");
     SetResult(new base::StringValue(""));  // Intentionally returns a blank.

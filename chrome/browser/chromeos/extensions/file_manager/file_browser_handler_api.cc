@@ -42,8 +42,8 @@
 #include "chrome/common/extensions/api/file_browser_handler_internal.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "storage/browser/fileapi/file_system_backend.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/common/fileapi/file_system_info.h"
@@ -317,8 +317,8 @@ void FileBrowserHandlerInternalSelectFileFunction::OnFilePathSelected(
   }
 
   storage::ExternalFileSystemBackend* external_backend =
-      file_manager::util::GetFileSystemContextForRenderViewHost(
-          GetProfile(), render_view_host())->external_backend();
+      file_manager::util::GetFileSystemContextForRenderFrameHost(
+          GetProfile(), render_frame_host())->external_backend();
   DCHECK(external_backend);
 
   FileDefinition file_definition;
@@ -335,7 +335,7 @@ void FileBrowserHandlerInternalSelectFileFunction::OnFilePathSelected(
 
   // Grant access to the selected file to target extensions render view process.
   content::ChildProcessSecurityPolicy::GetInstance()->GrantCreateReadWriteFile(
-      render_view_host()->GetProcess()->GetID(), full_path);
+      render_frame_host()->GetProcess()->GetID(), full_path);
 
   file_manager::util::ConvertFileDefinitionToEntryDefinition(
       GetProfile(),

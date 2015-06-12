@@ -19,7 +19,7 @@ class Profile;
 
 namespace content {
 struct FileChooserFileInfo;
-class RenderViewHost;
+class RenderFrameHost;
 }
 
 namespace storage {
@@ -84,9 +84,9 @@ storage::FileSystemContext* GetFileSystemContextForExtensionId(
 
 // Returns a file system context associated with the given profile and the
 // render view host.
-storage::FileSystemContext* GetFileSystemContextForRenderViewHost(
+storage::FileSystemContext* GetFileSystemContextForRenderFrameHost(
     Profile* profile,
-    content::RenderViewHost* render_view_host);
+    content::RenderFrameHost* render_frame_host);
 
 // Converts DrivePath (e.g., "drive/root", which always starts with the fixed
 // "drive" directory) to a RelativeFileSystemPathrelative (e.g.,

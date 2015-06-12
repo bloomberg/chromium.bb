@@ -49,7 +49,7 @@ bool FileManagerPrivateSelectFileFunction::RunAsync() {
   }
 
   file_manager::util::GetSelectedFileInfo(
-      render_view_host(),
+      render_frame_host(),
       GetProfile(),
       file_paths,
       option,
@@ -83,7 +83,7 @@ bool FileManagerPrivateSelectFilesFunction::RunAsync() {
     file_urls.push_back(GURL(params->selected_paths[i]));
 
   file_manager::util::GetSelectedFileInfo(
-      render_view_host(),
+      render_frame_host(),
       GetProfile(),
       file_urls,
       params->should_return_local_path ?

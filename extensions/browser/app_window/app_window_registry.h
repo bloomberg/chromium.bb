@@ -21,6 +21,7 @@ namespace content {
 class BrowserContext;
 class DevToolsAgentHost;
 class RenderViewHost;
+class WebContents;
 }
 
 namespace extensions {
@@ -81,6 +82,10 @@ class AppWindowRegistry : public KeyedService {
   void CloseAllAppWindowsForApp(const std::string& app_id);
 
   // Helper functions to find app windows with particular attributes.
+  AppWindow* GetAppWindowForWebContents(
+      content::WebContents* web_contents) const;
+  // TODO(devlin): Remove this when callers have been updated to use the
+  // above.
   AppWindow* GetAppWindowForRenderViewHost(
       content::RenderViewHost* render_view_host) const;
   AppWindow* GetAppWindowForNativeWindow(gfx::NativeWindow window) const;
