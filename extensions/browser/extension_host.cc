@@ -156,9 +156,12 @@ void ExtensionHost::CreateRenderViewNow() {
             "464206 ExtensionHost::CreateRenderViewNow2"));
     DCHECK(IsRenderViewLive());
     if (extension_) {
-      if (extensions::BackgroundInfo::HasPersistentBackgroundPage(extension_) &&
-          base::FieldTrialList::FindFullName(
-              "ThrottleExtensionBackgroundPages") != "Disabled") {
+      std::string group_name = base::FieldTrialList::FindFullName(
+          "ThrottleExtensionBackgroundPages");
+      if ((group_name == "ThrottlePersistent" &&
+           extensions::BackgroundInfo::HasPersistentBackgroundPage(
+               extension_)) ||
+          group_name == "ThrottleAll") {
         host_contents_->WasHidden();
       }
     }
