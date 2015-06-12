@@ -2907,7 +2907,6 @@
           'sources': [ '<@(chrome_browser_ui_views_sources)' ],
           'dependencies': [
             '<(DEPTH)/components/components.gyp:constrained_window',
-            '<(DEPTH)/extensions/components/extensions_components.gyp:native_app_window',
           ],
           'conditions': [
             ['chromeos == 0 and (OS!="mac" or mac_views_browser==1)', {
@@ -2921,10 +2920,12 @@
               'conditions': [
                 ['enable_extensions==1', {
                   'sources': [ '<@(chrome_browser_ui_views_extensions_non_mac_sources)' ],
-                  'dependencies': [
-                    '<(DEPTH)/extensions/components/extensions_components.gyp:native_app_window',
-                  ],
                 }],
+              ],
+            }],
+            ['enable_extensions==1', {
+              'dependencies': [
+                '<(DEPTH)/extensions/components/extensions_components.gyp:native_app_window',
               ],
             }],
           ],
