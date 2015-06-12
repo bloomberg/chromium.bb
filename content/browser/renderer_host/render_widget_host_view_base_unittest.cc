@@ -81,7 +81,8 @@ TEST(RenderWidgetHostViewBaseTest, OrientationTypeForMobile) {
   }
 }
 
-TEST(RenderWidgetHostViewBaseTest, OrientationTypeForDesktop) {
+// Fails on memory bots on all platforms. http://crbug.com/499914
+TEST(RenderWidgetHostViewBaseTest, DISABLED_OrientationTypeForDesktop) {
   // On Desktop, the primary orientation is the first computed one so a test
   // similar to OrientationTypeForMobile is not possible.
   // Instead this test will only check one configuration and verify that the
