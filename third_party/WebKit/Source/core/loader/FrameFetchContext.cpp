@@ -580,9 +580,6 @@ String FrameFetchContext::charset() const
 
 void FrameFetchContext::upgradeInsecureRequest(FetchRequest& fetchRequest)
 {
-    if (!m_document)
-        return;
-
     KURL url = fetchRequest.resourceRequest().url();
 
     // Tack an 'HTTPS' header to outgoing navigational requests, as described in
@@ -590,7 +587,7 @@ void FrameFetchContext::upgradeInsecureRequest(FetchRequest& fetchRequest)
     if (fetchRequest.resourceRequest().frameType() != WebURLRequest::FrameTypeNone)
         fetchRequest.mutableResourceRequest().addHTTPHeaderField("HTTPS", "1");
 
-    if (m_document->insecureRequestsPolicy() == SecurityContext::InsecureRequestsUpgrade && url.protocolIs("http")) {
+    if (m_document && m_document->insecureRequestsPolicy() == SecurityContext::InsecureRequestsUpgrade && url.protocolIs("http")) {
         ASSERT(m_document->insecureNavigationsToUpgrade());
 
         // We always upgrade requests that meet any of the following criteria:

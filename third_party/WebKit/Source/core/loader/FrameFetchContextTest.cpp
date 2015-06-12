@@ -132,9 +132,10 @@ TEST_F(FrameFetchContextUpgradeTest, UpgradeInsecureResourceRequests)
         { "ftp://example.test:1212/image.png", "ftp://example.test:1212/image.png" },
     };
 
+    FrameFetchContext::provideDocumentToContext(*fetchContext, document.get());
     document->setInsecureRequestsPolicy(SecurityContext::InsecureRequestsUpgrade);
 
-    for (auto test : tests) {
+    for (const auto& test : tests) {
         document->insecureNavigationsToUpgrade()->clear();
 
         // We always upgrade for FrameTypeNone and FrameTypeNested.
@@ -158,6 +159,7 @@ TEST_F(FrameFetchContextUpgradeTest, UpgradeInsecureResourceRequests)
 
 TEST_F(FrameFetchContextUpgradeTest, DoNotUpgradeInsecureResourceRequests)
 {
+    FrameFetchContext::provideDocumentToContext(*fetchContext, document.get());
     document->setSecurityOrigin(secureOrigin);
     document->setInsecureRequestsPolicy(SecurityContext::InsecureRequestsDoNotUpgrade);
 
@@ -174,7 +176,7 @@ TEST_F(FrameFetchContextUpgradeTest, DoNotUpgradeInsecureResourceRequests)
     expectUpgrade("ftp://example.test:1212/image.png", "ftp://example.test:1212/image.png");
 }
 
-TEST_F(FrameFetchContextUpgradeTest, SendPreferHeader)
+TEST_F(FrameFetchContextUpgradeTest, SendHTTPSHeader)
 {
     struct TestCase {
         const char* toRequest;
@@ -191,7 +193,20 @@ TEST_F(FrameFetchContextUpgradeTest, SendPreferHeader)
         { "https://example.test/page.html", WebURLRequest::FrameTypeTopLevel, true }
     };
 
-    for (auto test : tests) {
+    // This should work correctly both when the FrameFetchContext has a Document, and
+    // when it doesn't (e.g. during main frame navigations), so run through the tests
+    // both before and after providing a document to the context.
+    for (const auto& test : tests) {
+        document->setInsecureRequestsPolicy(SecurityContext::InsecureRequestsDoNotUpgrade);
+        expectHTTPSHeader(test.toRequest, test.frameType, test.shouldPrefer);
+
+        document->setInsecureRequestsPolicy(SecurityContext::InsecureRequestsUpgrade);
+        expectHTTPSHeader(test.toRequest, test.frameType, test.shouldPrefer);
+    }
+
+    FrameFetchContext::provideDocumentToContext(*fetchContext, document.get());
+
+    for (const auto& test : tests) {
         document->setInsecureRequestsPolicy(SecurityContext::InsecureRequestsDoNotUpgrade);
         expectHTTPSHeader(test.toRequest, test.frameType, test.shouldPrefer);
 
