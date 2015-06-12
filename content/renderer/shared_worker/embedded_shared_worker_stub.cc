@@ -122,9 +122,7 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
     int route_id)
     : route_id_(route_id),
       name_(name),
-      runing_(false),
-      url_(url),
-      app_cache_host_(nullptr) {
+      url_(url) {
   RenderThreadImpl::current()->AddEmbeddedWorkerRoute(route_id_, this);
   impl_ = blink::WebSharedWorker::create(this);
   if (pause_on_start) {
@@ -140,6 +138,7 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
 
 EmbeddedSharedWorkerStub::~EmbeddedSharedWorkerStub() {
   RenderThreadImpl::current()->RemoveEmbeddedWorkerRoute(route_id_);
+  DCHECK(!impl_);
 }
 
 bool EmbeddedSharedWorkerStub::OnMessageReceived(
@@ -166,7 +165,7 @@ void EmbeddedSharedWorkerStub::workerReadyForInspection() {
 
 void EmbeddedSharedWorkerStub::workerScriptLoaded() {
   Send(new WorkerHostMsg_WorkerScriptLoaded(route_id_));
-  runing_ = true;
+  running_ = true;
   // Process any pending connections.
   for (PendingChannelList::const_iterator iter = pending_channels_.begin();
        iter != pending_channels_.end();
@@ -258,6 +257,9 @@ void EmbeddedSharedWorkerStub::sendDevToolsMessage(
 }
 
 void EmbeddedSharedWorkerStub::Shutdown() {
+  // WebSharedWorker must be already deleted in the blink side
+  // when this is called.
+  impl_ = nullptr;
   delete this;
 }
 
@@ -278,7 +280,7 @@ void EmbeddedSharedWorkerStub::OnConnect(int sent_message_port_id,
   port.id = sent_message_port_id;
   WebMessagePortChannelImpl* channel = new WebMessagePortChannelImpl(
       routing_id, port, base::ThreadTaskRunnerHandle::Get().get());
-  if (runing_) {
+  if (running_) {
     ConnectToChannel(channel);
   } else {
     // If two documents try to load a SharedWorker at the same time, the
@@ -290,7 +292,8 @@ void EmbeddedSharedWorkerStub::OnConnect(int sent_message_port_id,
 }
 
 void EmbeddedSharedWorkerStub::OnTerminateWorkerContext() {
-  runing_ = false;
+  // After this we wouldn't get any IPC for this stub.
+  running_ = false;
   impl_->terminateWorkerContext();
 }
 

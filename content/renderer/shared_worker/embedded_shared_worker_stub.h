@@ -30,6 +30,16 @@ class SharedWorkerDevToolsAgent;
 class WebApplicationCacheHostImpl;
 class WebMessagePortChannelImpl;
 
+// A stub class to receive IPC from browser process and talk to
+// blink::WebSharedWorker. Implements blink::WebSharedWorkerClient.
+// This class is self-destruct (no one explicitly owns this), and
+// deletes itself (via private Shutdown() method) when either one of
+// following methods is called by blink::WebSharedWorker:
+// - workerScriptLoadFailed() or
+// - workerContextDestroyed()
+//
+// In either case the corresponding blink::WebSharedWorker also deletes
+// itself.
 class EmbeddedSharedWorkerStub : public IPC::Listener,
                                  public blink::WebSharedWorkerClient {
  public:
@@ -79,16 +89,16 @@ class EmbeddedSharedWorkerStub : public IPC::Listener,
 
   int route_id_;
   base::string16 name_;
-  bool runing_;
+  bool running_ = false;
   GURL url_;
-  blink::WebSharedWorker* impl_;
+  blink::WebSharedWorker* impl_ = nullptr;
   scoped_ptr<SharedWorkerDevToolsAgent> worker_devtools_agent_;
 
   typedef std::vector<WebMessagePortChannelImpl*> PendingChannelList;
   PendingChannelList pending_channels_;
 
   ScopedChildProcessReference process_ref_;
-  WebApplicationCacheHostImpl* app_cache_host_;
+  WebApplicationCacheHostImpl* app_cache_host_ = nullptr;
   DISALLOW_COPY_AND_ASSIGN(EmbeddedSharedWorkerStub);
 };
 
