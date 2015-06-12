@@ -79,6 +79,7 @@ class SCHEDULER_EXPORT RendererSchedulerImpl : public RendererScheduler,
   enum class Policy {
     NORMAL,
     COMPOSITOR_PRIORITY,
+    COMPOSITOR_PRIORITY_WITHOUT_TIMERS,
     TOUCHSTART_PRIORITY,
     LOADING_PRIORITY,
     // Must be the last entry.
@@ -136,6 +137,11 @@ class SCHEDULER_EXPORT RendererSchedulerImpl : public RendererScheduler,
   // other tasks during the initial page load.
   static const int kRailsInitialLoadingPrioritizationMillis = 1000;
 
+  // For the purposes of deciding whether or not it's safe to turn timers on
+  // only in idle periods, we regard the system as being as being "idle period"
+  // starved if there hasn't been an idle period in the last 100 ms.
+  static const int kIdlePeriodStarvationThresholdMillis = 100;
+
   // Schedules an immediate PolicyUpdate, if there isn't one already pending and
   // sets |policy_may_need_update_|. Note |any_thread_lock_| must be
   // locked.
@@ -181,6 +187,10 @@ class SCHEDULER_EXPORT RendererSchedulerImpl : public RendererScheduler,
   void UpdateForInputEventOnCompositorThread(blink::WebInputEvent::Type type,
                                              InputEventState input_event_state);
 
+  // Returns true if there has been at least one idle period in the last
+  // |kIdlePeriodStarvationThresholdMillis|.
+  bool HadAnIdlePeriodRecently(base::TimeTicks now) const;
+
   SchedulerHelper helper_;
   IdleHelper idle_helper_;
 
@@ -205,17 +215,18 @@ class SCHEDULER_EXPORT RendererSchedulerImpl : public RendererScheduler,
     int timer_queue_suspend_count_;  // TIMER_TASK_QUEUE suspended if non-zero.
     bool renderer_hidden_;
     bool was_shutdown_;
-    bool in_idle_period_;
-    bool begin_main_frame_on_critical_path_;
   };
 
   struct AnyThread {
     AnyThread();
 
     base::TimeTicks last_input_signal_time_;
+    base::TimeTicks last_idle_period_end_time_;
     base::TimeTicks rails_loading_priority_deadline_;
     int pending_main_thread_input_event_count_;
     bool awaiting_touch_start_response_;
+    bool in_idle_period_;
+    bool begin_main_frame_on_critical_path_;
   };
 
   struct CompositorThreadOnly {

@@ -143,6 +143,8 @@ void AnticipationTestTask(RendererSchedulerImpl* scheduler,
 
 class RendererSchedulerImplForTest : public RendererSchedulerImpl {
  public:
+  using RendererSchedulerImpl::OnIdlePeriodEnded;
+  using RendererSchedulerImpl::OnIdlePeriodStarted;
   using RendererSchedulerImpl::Policy;
   using RendererSchedulerImpl::PolicyToString;
 
@@ -163,6 +165,11 @@ class RendererSchedulerImplForTest : public RendererSchedulerImpl {
 
   void ScheduleDelayedPolicyUpdate(base::TimeTicks now, base::TimeDelta delay) {
     delayed_update_policy_runner_.SetDeadline(FROM_HERE, delay, now);
+  }
+
+  bool BeginMainFrameOnCriticalPath() {
+    base::AutoLock lock(any_thread_lock_);
+    return AnyThread().begin_main_frame_on_critical_path_;
   }
 
   int update_policy_count_;
@@ -249,10 +256,6 @@ class RendererSchedulerImplTest : public testing::Test {
     return scheduler_->MainThreadOnly().current_policy_;
   }
 
-  bool BeginMainFrameOnCriticalPath() {
-    return scheduler_->MainThreadOnly().begin_main_frame_on_critical_path_;
-  }
-
   // Helper for posting several tasks of specific types. |task_descriptor| is a
   // string with space delimited task identifiers. The first letter of each
   // task identifier specifies the task type:
@@ -309,6 +312,11 @@ class RendererSchedulerImplTest : public testing::Test {
   static base::TimeDelta end_idle_when_hidden_delay() {
     return base::TimeDelta::FromMilliseconds(
         RendererSchedulerImpl::kEndIdleWhenHiddenDelayMillis);
+  }
+
+  static base::TimeDelta idle_period_starvation_threshold() {
+    return base::TimeDelta::FromMilliseconds(
+        RendererSchedulerImpl::kIdlePeriodStarvationThresholdMillis);
   }
 
   template <typename E>
@@ -613,6 +621,88 @@ TEST_F(RendererSchedulerImplTest, TestCompositorPolicy_DidAnimateForInput) {
                                    std::string("I1")));
 }
 
+TEST_F(RendererSchedulerImplTest,
+       TestCompositorPolicy_TimersOnlyRunWhenIdle_MainThreadOnCriticalPath) {
+  std::vector<std::string> run_order;
+  PostTestTasks(&run_order, "C1 T1");
+
+  scheduler_->DidAnimateForInputOnCompositorThread();
+  scheduler_->WillBeginFrame(cc::BeginFrameArgs::Create(
+      BEGINFRAME_FROM_HERE, clock_->Now(), base::TimeTicks(),
+      base::TimeDelta::FromMilliseconds(16), cc::BeginFrameArgs::NORMAL));
+  scheduler_->DidCommitFrameToCompositor();  // Starts Idle Period
+  RunUntilIdle();
+
+  EXPECT_THAT(run_order,
+              testing::ElementsAre(std::string("C1"), std::string("T1")));
+
+  // End the idle period.
+  clock_->AdvanceNow(base::TimeDelta::FromMilliseconds(500));
+  scheduler_->DidAnimateForInputOnCompositorThread();
+  scheduler_->WillBeginFrame(cc::BeginFrameArgs::Create(
+      BEGINFRAME_FROM_HERE, clock_->Now(), base::TimeTicks(),
+      base::TimeDelta::FromMilliseconds(16), cc::BeginFrameArgs::NORMAL));
+
+  run_order.clear();
+  PostTestTasks(&run_order, "C1 T1");
+  RunUntilIdle();
+
+  EXPECT_THAT(run_order, testing::ElementsAre(std::string("C1")));
+}
+
+TEST_F(RendererSchedulerImplTest,
+       TestCompositorPolicy_TimersAlwaysRunIfNoRecentIdlePeriod) {
+  std::vector<std::string> run_order;
+  PostTestTasks(&run_order, "C1 T1");
+
+  // Simulate no recent idle period.
+  clock_->AdvanceNow(idle_period_starvation_threshold() * 2);
+
+  scheduler_->DidAnimateForInputOnCompositorThread();
+  scheduler_->WillBeginFrame(cc::BeginFrameArgs::Create(
+      BEGINFRAME_FROM_HERE, clock_->Now(), base::TimeTicks(),
+      base::TimeDelta::FromMilliseconds(16), cc::BeginFrameArgs::NORMAL));
+
+  RunUntilIdle();
+
+  EXPECT_THAT(run_order,
+              testing::ElementsAre(std::string("C1"), std::string("T1")));
+}
+
+TEST_F(RendererSchedulerImplTest,
+       TestCompositorPolicy_TimersAlwaysRun_MainThreadNotOnCriticalPath) {
+  std::vector<std::string> run_order;
+  PostTestTasks(&run_order, "C1 T1");
+
+  scheduler_->DidAnimateForInputOnCompositorThread();
+  cc::BeginFrameArgs begin_frame_args1 = cc::BeginFrameArgs::Create(
+      BEGINFRAME_FROM_HERE, clock_->Now(), base::TimeTicks(),
+      base::TimeDelta::FromMilliseconds(1000), cc::BeginFrameArgs::NORMAL);
+  begin_frame_args1.on_critical_path = false;
+  scheduler_->WillBeginFrame(begin_frame_args1);
+  scheduler_->DidCommitFrameToCompositor();  // Starts Idle Period
+  RunUntilIdle();
+
+  EXPECT_THAT(run_order,
+              testing::ElementsAre(std::string("C1"), std::string("T1")));
+
+  // End the idle period.
+  clock_->AdvanceNow(base::TimeDelta::FromMilliseconds(500));
+  scheduler_->DidAnimateForInputOnCompositorThread();
+  cc::BeginFrameArgs begin_frame_args2 = cc::BeginFrameArgs::Create(
+      BEGINFRAME_FROM_HERE, clock_->Now(), base::TimeTicks(),
+      base::TimeDelta::FromMilliseconds(1000), cc::BeginFrameArgs::NORMAL);
+  begin_frame_args2.on_critical_path = false;
+  scheduler_->WillBeginFrame(begin_frame_args2);
+
+  run_order.clear();
+  PostTestTasks(&run_order, "C1 T1");
+  RunUntilIdle();
+
+  EXPECT_THAT(run_order,
+              testing::ElementsAre(std::string("C1"), std::string("T1")));
+}
+
 TEST_F(RendererSchedulerImplTest, TestTouchstartPolicy_Compositor) {
   std::vector<std::string> run_order;
   PostTestTasks(&run_order, "L1 D1 C1 D2 C2 T1 T2");
@@ -640,7 +730,7 @@ TEST_F(RendererSchedulerImplTest, TestTouchstartPolicy_Compositor) {
   EXPECT_TRUE(run_order.empty());
 
   // Action events like ScrollBegin will kick us back into compositor priority,
-  // allowing service of the loading and idle queues.
+  // allowing service of the timer, loading and idle queues.
   run_order.clear();
   scheduler_->DidHandleInputEventOnCompositorThread(
       FakeInputEvent(blink::WebInputEvent::GestureScrollBegin),
@@ -656,7 +746,8 @@ TEST_F(RendererSchedulerImplTest, TestTouchstartPolicy_MainThread) {
   std::vector<std::string> run_order;
   PostTestTasks(&run_order, "L1 D1 C1 D2 C2 T1 T2");
 
-  // Observation of touchstart should defer execution of idle and loading tasks.
+  // Observation of touchstart should defer execution of timer, idle and loading
+  // tasks.
   scheduler_->DidHandleInputEventOnCompositorThread(
       FakeInputEvent(blink::WebInputEvent::TouchStart),
       RendererScheduler::InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
@@ -1679,17 +1770,17 @@ TEST_F(RendererSchedulerImplTest, MismatchedDidHandleInputEventOnMainThread) {
 }
 
 TEST_F(RendererSchedulerImplTest, BeginMainFrameOnCriticalPath) {
-  ASSERT_FALSE(BeginMainFrameOnCriticalPath());
+  ASSERT_FALSE(scheduler_->BeginMainFrameOnCriticalPath());
 
   cc::BeginFrameArgs begin_frame_args = cc::BeginFrameArgs::Create(
       BEGINFRAME_FROM_HERE, clock_->Now(), base::TimeTicks(),
       base::TimeDelta::FromMilliseconds(1000), cc::BeginFrameArgs::NORMAL);
   scheduler_->WillBeginFrame(begin_frame_args);
-  ASSERT_TRUE(BeginMainFrameOnCriticalPath());
+  ASSERT_TRUE(scheduler_->BeginMainFrameOnCriticalPath());
 
   begin_frame_args.on_critical_path = false;
   scheduler_->WillBeginFrame(begin_frame_args);
-  ASSERT_FALSE(BeginMainFrameOnCriticalPath());
+  ASSERT_FALSE(scheduler_->BeginMainFrameOnCriticalPath());
 }
 
 TEST_F(RendererSchedulerImplTest, ShutdownPreventsPostingOfNewTasks) {

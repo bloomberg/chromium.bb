@@ -66,14 +66,14 @@ RendererSchedulerImpl::MainThreadOnly::MainThreadOnly()
     : current_policy_(Policy::NORMAL),
       timer_queue_suspend_count_(0),
       renderer_hidden_(false),
-      was_shutdown_(false),
-      in_idle_period_(false),
-      begin_main_frame_on_critical_path_(false) {
+      was_shutdown_(false) {
 }
 
 RendererSchedulerImpl::AnyThread::AnyThread()
     : pending_main_thread_input_event_count_(0),
-      awaiting_touch_start_response_(false) {
+      awaiting_touch_start_response_(false),
+      in_idle_period_(false),
+      begin_main_frame_on_critical_path_(false) {
 }
 
 RendererSchedulerImpl::CompositorThreadOnly::CompositorThreadOnly()
@@ -140,7 +140,10 @@ void RendererSchedulerImpl::WillBeginFrame(const cc::BeginFrameArgs& args) {
   EndIdlePeriod();
   MainThreadOnly().estimated_next_frame_begin_ =
       args.frame_time + args.interval;
-  MainThreadOnly().begin_main_frame_on_critical_path_ = args.on_critical_path;
+  {
+    base::AutoLock lock(any_thread_lock_);
+    AnyThread().begin_main_frame_on_critical_path_ = args.on_critical_path;
+  }
 }
 
 void RendererSchedulerImpl::DidCommitFrameToCompositor() {
@@ -333,6 +336,8 @@ bool RendererSchedulerImpl::IsHighPriorityWorkAnticipated() {
   // The touchstart and compositor policies indicate a strong likelihood of
   // high-priority work in the near future.
   return MainThreadOnly().current_policy_ == Policy::COMPOSITOR_PRIORITY ||
+         MainThreadOnly().current_policy_ ==
+             Policy::COMPOSITOR_PRIORITY_WITHOUT_TIMERS ||
          MainThreadOnly().current_policy_ == Policy::TOUCHSTART_PRIORITY;
 }
 
@@ -352,6 +357,9 @@ bool RendererSchedulerImpl::ShouldYieldForHighPriorityWork() {
       return false;
 
     case Policy::COMPOSITOR_PRIORITY:
+      return !helper_.IsQueueEmpty(COMPOSITOR_TASK_QUEUE);
+
+    case Policy::COMPOSITOR_PRIORITY_WITHOUT_TIMERS:
       return !helper_.IsQueueEmpty(COMPOSITOR_TASK_QUEUE);
 
     case Policy::TOUCHSTART_PRIORITY:
@@ -423,8 +431,8 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
       new_policy == MainThreadOnly().current_policy_)
     return;
 
-  bool policy_disables_timers = false;
-  PrioritizingTaskQueueSelector::QueuePriority timer_priority =
+  bool policy_disables_timer_queue = false;
+  PrioritizingTaskQueueSelector::QueuePriority timer_queue_priority =
       PrioritizingTaskQueueSelector::NORMAL_PRIORITY;
 
   switch (new_policy) {
@@ -437,11 +445,21 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
           LOADING_TASK_QUEUE,
           PrioritizingTaskQueueSelector::BEST_EFFORT_PRIORITY);
       break;
+    case Policy::COMPOSITOR_PRIORITY_WITHOUT_TIMERS:
+      helper_.SetQueuePriority(COMPOSITOR_TASK_QUEUE,
+                               PrioritizingTaskQueueSelector::HIGH_PRIORITY);
+      // TODO(scheduler-dev): Add a task priority between HIGH and BEST_EFFORT
+      // that still has some guarantee of running.
+      helper_.SetQueuePriority(
+          LOADING_TASK_QUEUE,
+          PrioritizingTaskQueueSelector::BEST_EFFORT_PRIORITY);
+      policy_disables_timer_queue = true;
+      break;
     case Policy::TOUCHSTART_PRIORITY:
       helper_.SetQueuePriority(COMPOSITOR_TASK_QUEUE,
                                PrioritizingTaskQueueSelector::HIGH_PRIORITY);
       helper_.DisableQueue(LOADING_TASK_QUEUE);
-      policy_disables_timers = true;
+      policy_disables_timer_queue = true;
       break;
     case Policy::NORMAL:
       helper_.SetQueuePriority(COMPOSITOR_TASK_QUEUE,
@@ -454,7 +472,8 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
       helper_.SetQueuePriority(
           COMPOSITOR_TASK_QUEUE,
           PrioritizingTaskQueueSelector::BEST_EFFORT_PRIORITY);
-      timer_priority = PrioritizingTaskQueueSelector::BEST_EFFORT_PRIORITY;
+      timer_queue_priority =
+          PrioritizingTaskQueueSelector::BEST_EFFORT_PRIORITY;
       // TODO(alexclarke): See if we can safely mark the loading task queue as
       // high priority.
       break;
@@ -462,10 +481,10 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
       NOTREACHED();
   }
   if (MainThreadOnly().timer_queue_suspend_count_ != 0 ||
-      policy_disables_timers) {
+      policy_disables_timer_queue) {
     helper_.DisableQueue(TIMER_TASK_QUEUE);
   } else {
-    helper_.SetQueuePriority(TIMER_TASK_QUEUE, timer_priority);
+    helper_.SetQueuePriority(TIMER_TASK_QUEUE, timer_queue_priority);
   }
   DCHECK(helper_.IsQueueEnabled(COMPOSITOR_TASK_QUEUE));
   if (new_policy != Policy::TOUCHSTART_PRIORITY)
@@ -486,6 +505,7 @@ bool RendererSchedulerImpl::InputSignalsSuggestCompositorPriority(
   switch (ComputeNewPolicy(now, &unused_policy_duration)) {
     case Policy::TOUCHSTART_PRIORITY:
     case Policy::COMPOSITOR_PRIORITY:
+    case Policy::COMPOSITOR_PRIORITY_WITHOUT_TIMERS:
       return true;
 
     default:
@@ -501,9 +521,23 @@ RendererSchedulerImpl::Policy RendererSchedulerImpl::ComputeNewPolicy(
   // Above all else we want to be responsive to user input.
   *new_policy_duration = TimeLeftInInputEscalatedPolicy(now);
   if (*new_policy_duration > base::TimeDelta()) {
-    return AnyThread().awaiting_touch_start_response_
-               ? Policy::TOUCHSTART_PRIORITY
-               : Policy::COMPOSITOR_PRIORITY;
+    if (AnyThread().awaiting_touch_start_response_)
+      return Policy::TOUCHSTART_PRIORITY;
+    // If BeginMainFrame is on the critical path, we want to try and prevent
+    // timers from running shortly before BeginMainFrame is likely to be
+    // posted from the compositor, because they can delay BeginMainFrame's
+    // execution. We do this by limiting execution of timers to idle periods,
+    // provided there has been at least one idle period recently.
+    //
+    // TODO(alexclarke): It's a shame in_idle_period_,
+    // begin_main_frame_on_critical_path_ and last_idle_period_end_time_ are in
+    // the AnyThread struct.  Find a way to migrate them to MainThreadOnly.
+    if (!AnyThread().in_idle_period_ &&
+        AnyThread().begin_main_frame_on_critical_path_ &&
+        HadAnIdlePeriodRecently(now)) {
+      return Policy::COMPOSITOR_PRIORITY_WITHOUT_TIMERS;
+    }
+    return Policy::COMPOSITOR_PRIORITY;
   }
 
   if (AnyThread().rails_loading_priority_deadline_ > now) {
@@ -589,6 +623,8 @@ const char* RendererSchedulerImpl::PolicyToString(Policy policy) {
       return "normal";
     case Policy::COMPOSITOR_PRIORITY:
       return "compositor";
+    case Policy::COMPOSITOR_PRIORITY_WITHOUT_TIMERS:
+      return "compositor_without_timers";
     case Policy::TOUCHSTART_PRIORITY:
       return "touchstart";
     case Policy::LOADING_PRIORITY:
@@ -628,28 +664,34 @@ RendererSchedulerImpl::AsValueLocked(base::TimeTicks optional_now) const {
   state->SetDouble("rails_loading_priority_deadline",
                    (AnyThread().rails_loading_priority_deadline_ -
                     base::TimeTicks()).InMillisecondsF());
+  state->SetDouble("last_idle_period_end_time",
+                   (AnyThread().last_idle_period_end_time_ - base::TimeTicks())
+                       .InMillisecondsF());
   state->SetInteger("pending_main_thread_input_event_count",
                     AnyThread().pending_main_thread_input_event_count_);
   state->SetBoolean("awaiting_touch_start_response",
                     AnyThread().awaiting_touch_start_response_);
   state->SetBoolean("begin_main_frame_on_critical_path",
-                    MainThreadOnly().begin_main_frame_on_critical_path_);
+                    AnyThread().begin_main_frame_on_critical_path_);
   state->SetDouble("estimated_next_frame_begin",
                    (MainThreadOnly().estimated_next_frame_begin_ -
                     base::TimeTicks()).InMillisecondsF());
-  state->SetBoolean("in_idle_period", MainThreadOnly().in_idle_period_);
+  state->SetBoolean("in_idle_period", AnyThread().in_idle_period_);
 
   return state;
 }
 
 void RendererSchedulerImpl::OnIdlePeriodStarted() {
-  MainThreadOnly().in_idle_period_ = true;
-  // TODO(alexclarke): Force update the policy
+  base::AutoLock lock(any_thread_lock_);
+  AnyThread().in_idle_period_ = true;
+  UpdatePolicyLocked(UpdateType::MAY_EARLY_OUT_IF_POLICY_UNCHANGED);
 }
 
 void RendererSchedulerImpl::OnIdlePeriodEnded() {
-  MainThreadOnly().in_idle_period_ = false;
-  // TODO(alexclarke): Force update the policy
+  base::AutoLock lock(any_thread_lock_);
+  AnyThread().last_idle_period_end_time_ = helper_.Now();
+  AnyThread().in_idle_period_ = false;
+  UpdatePolicyLocked(UpdateType::MAY_EARLY_OUT_IF_POLICY_UNCHANGED);
 }
 
 void RendererSchedulerImpl::OnPageLoadStarted() {
@@ -658,6 +700,12 @@ void RendererSchedulerImpl::OnPageLoadStarted() {
       helper_.Now() + base::TimeDelta::FromMilliseconds(
                           kRailsInitialLoadingPrioritizationMillis);
   UpdatePolicyLocked(UpdateType::MAY_EARLY_OUT_IF_POLICY_UNCHANGED);
+}
+
+bool RendererSchedulerImpl::HadAnIdlePeriodRecently(base::TimeTicks now) const {
+  return (now - AnyThread().last_idle_period_end_time_) <=
+         base::TimeDelta::FromMilliseconds(
+             kIdlePeriodStarvationThresholdMillis);
 }
 
 }  // namespace scheduler
