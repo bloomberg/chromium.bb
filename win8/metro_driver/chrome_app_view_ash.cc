@@ -14,6 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
+#include "base/single_thread_task_runner.h"
 #include "base/win/metro.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
@@ -143,8 +144,7 @@ void SendKeySequence(
 class ChromeChannelListener : public IPC::Listener {
  public:
   ChromeChannelListener(base::MessageLoop* ui_loop, ChromeAppViewAsh* app_view)
-      : ui_proxy_(ui_loop->message_loop_proxy()),
-        app_view_(app_view) {}
+      : ui_task_runner_(ui_loop->task_runner()), app_view_(app_view) {}
 
   bool OnMessageReceived(const IPC::Message& message) override {
     IPC_BEGIN_MESSAGE_MAP(ChromeChannelListener, message)
@@ -172,13 +172,15 @@ class ChromeChannelListener : public IPC::Listener {
 
   void OnChannelError() override {
     DVLOG(1) << "Channel error. Exiting.";
-    ui_proxy_->PostTask(FROM_HERE,
+    ui_task_runner_->PostTask(
+        FROM_HERE,
         base::Bind(&ChromeAppViewAsh::OnMetroExit, base::Unretained(app_view_),
                    TERMINATE_USING_KEY_SEQUENCE));
 
     // In early Windows 8 versions the code above sometimes fails so we call
     // it a second time with a NULL window which just calls Exit().
-    ui_proxy_->PostDelayedTask(FROM_HERE,
+    ui_task_runner_->PostDelayedTask(
+        FROM_HERE,
         base::Bind(&ChromeAppViewAsh::OnMetroExit, base::Unretained(app_view_),
                    TERMINATE_USING_PROCESS_EXIT),
         base::TimeDelta::FromMilliseconds(100));
@@ -186,91 +188,78 @@ class ChromeChannelListener : public IPC::Listener {
 
  private:
   void OnActivateDesktop(const base::FilePath& shortcut, bool ash_exit) {
-    ui_proxy_->PostTask(FROM_HERE,
-        base::Bind(&ChromeAppViewAsh::OnActivateDesktop,
-        base::Unretained(app_view_),
-        shortcut, ash_exit));
+    ui_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&ChromeAppViewAsh::OnActivateDesktop,
+                              base::Unretained(app_view_), shortcut, ash_exit));
   }
 
   void OnMetroExit() {
-    ui_proxy_->PostTask(FROM_HERE,
-        base::Bind(&ChromeAppViewAsh::OnMetroExit,
-        base::Unretained(app_view_), TERMINATE_USING_KEY_SEQUENCE));
+    ui_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&ChromeAppViewAsh::OnMetroExit, base::Unretained(app_view_),
+                   TERMINATE_USING_KEY_SEQUENCE));
   }
 
   void OnOpenURLOnDesktop(const base::FilePath& shortcut,
                           const base::string16& url) {
-    ui_proxy_->PostTask(FROM_HERE,
-        base::Bind(&ChromeAppViewAsh::OnOpenURLOnDesktop,
-        base::Unretained(app_view_),
-        shortcut, url));
+    ui_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&ChromeAppViewAsh::OnOpenURLOnDesktop,
+                              base::Unretained(app_view_), shortcut, url));
   }
 
   void OnSetCursor(int64 cursor) {
-    ui_proxy_->PostTask(FROM_HERE,
-                        base::Bind(&ChromeAppViewAsh::OnSetCursor,
-                                   base::Unretained(app_view_),
-                                   reinterpret_cast<HCURSOR>(cursor)));
+    ui_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&ChromeAppViewAsh::OnSetCursor, base::Unretained(app_view_),
+                   reinterpret_cast<HCURSOR>(cursor)));
   }
 
   void OnDisplayFileOpenDialog(const base::string16& title,
                                const base::string16& filter,
                                const base::FilePath& default_path,
                                bool allow_multiple_files) {
-    ui_proxy_->PostTask(FROM_HERE,
-                        base::Bind(&ChromeAppViewAsh::OnDisplayFileOpenDialog,
-                                   base::Unretained(app_view_),
-                                   title,
-                                   filter,
-                                   default_path,
-                                   allow_multiple_files));
+    ui_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&ChromeAppViewAsh::OnDisplayFileOpenDialog,
+                              base::Unretained(app_view_), title, filter,
+                              default_path, allow_multiple_files));
   }
 
   void OnDisplayFileSaveAsDialog(
     const MetroViewerHostMsg_SaveAsDialogParams& params) {
-    ui_proxy_->PostTask(
-        FROM_HERE,
-        base::Bind(&ChromeAppViewAsh::OnDisplayFileSaveAsDialog,
-                   base::Unretained(app_view_),
-                   params));
+    ui_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&ChromeAppViewAsh::OnDisplayFileSaveAsDialog,
+                              base::Unretained(app_view_), params));
   }
 
   void OnDisplayFolderPicker(const base::string16& title) {
-    ui_proxy_->PostTask(
-        FROM_HERE,
-        base::Bind(&ChromeAppViewAsh::OnDisplayFolderPicker,
-                   base::Unretained(app_view_),
-                   title));
+    ui_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&ChromeAppViewAsh::OnDisplayFolderPicker,
+                              base::Unretained(app_view_), title));
   }
 
   void OnSetCursorPos(int x, int y) {
     VLOG(1) << "In IPC OnSetCursorPos: " << x << ", " << y;
-    ui_proxy_->PostTask(
-        FROM_HERE,
-        base::Bind(&ChromeAppViewAsh::OnSetCursorPos,
-                   base::Unretained(app_view_),
-                   x, y));
+    ui_task_runner_->PostTask(FROM_HERE,
+                              base::Bind(&ChromeAppViewAsh::OnSetCursorPos,
+                                         base::Unretained(app_view_), x, y));
   }
 
   void OnImeCancelComposition() {
-    ui_proxy_->PostTask(
-        FROM_HERE,
-        base::Bind(&ChromeAppViewAsh::OnImeCancelComposition,
-                   base::Unretained(app_view_)));
+    ui_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&ChromeAppViewAsh::OnImeCancelComposition,
+                              base::Unretained(app_view_)));
   }
 
   void OnImeTextInputClientChanged(
       const std::vector<int32>& input_scopes,
       const std::vector<metro_viewer::CharacterBounds>& character_bounds) {
-    ui_proxy_->PostTask(
-        FROM_HERE,
-        base::Bind(&ChromeAppViewAsh::OnImeUpdateTextInputClient,
-                   base::Unretained(app_view_),
-                   input_scopes,
-                   character_bounds));
+    ui_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&ChromeAppViewAsh::OnImeUpdateTextInputClient,
+                              base::Unretained(app_view_), input_scopes,
+                              character_bounds));
   }
 
-  scoped_refptr<base::MessageLoopProxy> ui_proxy_;
+  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
   ChromeAppViewAsh* app_view_;
 };
 

@@ -162,7 +162,7 @@ struct Globals {
   bool is_initial_activation;
   // This message loop lives in the app view's thread. Some operations have
   // to be initiated from that thread, notably spawning file pickers.
-  base::MessageLoopProxy* appview_msg_loop;
+  base::SingleThreadTaskRunner* appview_task_runner;
   winapp::Core::ICoreApplicationExit* app_exit;
   base::string16 metro_command_line_switches;
 };

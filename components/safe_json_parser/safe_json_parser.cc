@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/tuple.h"
 #include "base/values.h"
 #include "components/safe_json_parser/safe_json_parser_messages.h"
@@ -41,8 +42,8 @@ SafeJsonParser::~SafeJsonParser() {
 
 void SafeJsonParser::StartWorkOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  UtilityProcessHost* host =
-      UtilityProcessHost::Create(this, base::MessageLoopProxy::current().get());
+  UtilityProcessHost* host = UtilityProcessHost::Create(
+      this, base::ThreadTaskRunnerHandle::Get().get());
   host->SetName(
       l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_JSON_PARSER_NAME));
   host->Send(new SafeJsonParserMsg_ParseJSON(unsafe_json_));

@@ -56,9 +56,9 @@ MATCHER_P(HasValidDelay, value, "") {
 }
 
 // Used to terminate a loop from a different thread than the loop belongs to.
-// |loop| should be a MessageLoopProxy.
-ACTION_P(QuitLoop, loop) {
-  loop->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
+// |task_runner| should be a SingleThreadTaskRunner.
+ACTION_P(QuitLoop, task_runner) {
+  task_runner->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
 }
 
 // This audio source implementation should be used for manual tests only since
@@ -381,9 +381,8 @@ TEST(WASAPIAudioOutputStreamTest, ValidPacketSize) {
 
   // Wait for the first callback and verify its parameters.
   EXPECT_CALL(source, OnMoreData(NotNull(), HasValidDelay(bytes_per_packet)))
-      .WillOnce(DoAll(
-          QuitLoop(loop.message_loop_proxy()),
-          Return(aosw.samples_per_packet())));
+      .WillOnce(DoAll(QuitLoop(loop.task_runner()),
+                      Return(aosw.samples_per_packet())));
 
   aos->Start(&source);
   loop.PostDelayedTask(FROM_HERE, base::MessageLoop::QuitClosure(),
@@ -575,9 +574,8 @@ TEST(WASAPIAudioOutputStreamTest, DISABLED_ExclusiveModeMinBufferSizeAt48kHz) {
 
  // Wait for the first callback and verify its parameters.
   EXPECT_CALL(source, OnMoreData(NotNull(), HasValidDelay(bytes_per_packet)))
-      .WillOnce(DoAll(
-          QuitLoop(loop.message_loop_proxy()),
-          Return(aosw.samples_per_packet())))
+      .WillOnce(DoAll(QuitLoop(loop.task_runner()),
+                      Return(aosw.samples_per_packet())))
       .WillRepeatedly(Return(aosw.samples_per_packet()));
 
   aos->Start(&source);
@@ -610,10 +608,9 @@ TEST(WASAPIAudioOutputStreamTest, DISABLED_ExclusiveModeMinBufferSizeAt44kHz) {
 
   // Wait for the first callback and verify its parameters.
   EXPECT_CALL(source, OnMoreData(NotNull(), HasValidDelay(bytes_per_packet)))
-    .WillOnce(DoAll(
-        QuitLoop(loop.message_loop_proxy()),
-        Return(aosw.samples_per_packet())))
-    .WillRepeatedly(Return(aosw.samples_per_packet()));
+      .WillOnce(DoAll(QuitLoop(loop.task_runner()),
+                      Return(aosw.samples_per_packet())))
+      .WillRepeatedly(Return(aosw.samples_per_packet()));
 
   aos->Start(&source);
   loop.PostDelayedTask(FROM_HERE, base::MessageLoop::QuitClosure(),

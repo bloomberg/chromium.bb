@@ -14,7 +14,7 @@
 #include "v8/include/v8.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace gin {
@@ -65,9 +65,7 @@ class GIN_EXPORT PerIsolateData {
 
   v8::Isolate* isolate() { return isolate_; }
   v8::ArrayBuffer::Allocator* allocator() { return allocator_; }
-  base::MessageLoopProxy* message_loop_proxy() {
-    return message_loop_proxy_.get();
-  }
+  base::SingleThreadTaskRunner* task_runner() { return task_runner_.get(); }
 
  private:
   typedef std::map<
@@ -87,7 +85,7 @@ class GIN_EXPORT PerIsolateData {
   FunctionTemplateMap function_templates_;
   IndexedPropertyInterceptorMap indexed_interceptors_;
   NamedPropertyInterceptorMap named_interceptors_;
-  scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(PerIsolateData);
 };

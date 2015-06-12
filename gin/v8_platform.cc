@@ -35,7 +35,7 @@ void V8Platform::CallOnBackgroundThread(
 }
 
 void V8Platform::CallOnForegroundThread(v8::Isolate* isolate, v8::Task* task) {
-  PerIsolateData::From(isolate)->message_loop_proxy()->PostTask(
+  PerIsolateData::From(isolate)->task_runner()->PostTask(
       FROM_HERE, base::Bind(&v8::Task::Run, base::Owned(task)));
 }
 

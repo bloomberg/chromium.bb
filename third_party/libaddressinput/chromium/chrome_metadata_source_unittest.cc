@@ -4,7 +4,7 @@
 
 #include "third_party/libaddressinput/chromium/chrome_metadata_source.h"
 
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/thread_task_runner_handle.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,7 +34,7 @@ class ChromeMetadataSourceTest : public testing::Test {
   void Get() {
     scoped_refptr<net::TestURLRequestContextGetter> getter(
         new net::TestURLRequestContextGetter(
-            base::MessageLoopProxy::current()));
+            base::ThreadTaskRunnerHandle::Get()));
     ChromeMetadataSource impl(std::string(), getter.get());
     scoped_ptr< ::i18n::addressinput::Source::Callback> callback(
         ::i18n::addressinput::BuildCallback(

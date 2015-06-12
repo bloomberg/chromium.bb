@@ -8,8 +8,8 @@
 #include "base/callback.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/task_runner.h"
+#include "base/thread_task_runner_handle.h"
 
 namespace storage {
 
@@ -41,7 +41,7 @@ void ScopedFile::AddScopeOutCallback(
     const ScopeOutCallback& callback,
     base::TaskRunner* callback_runner) {
   if (!callback_runner)
-    callback_runner = base::MessageLoopProxy::current().get();
+    callback_runner = base::ThreadTaskRunnerHandle::Get().get();
   scope_out_callbacks_.push_back(std::make_pair(callback, callback_runner));
 }
 

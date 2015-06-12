@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/thread_task_runner_handle.h"
 
 #define RUN_ON_MEDIA_THREAD(METHOD, ...)                                      \
   do {                                                                        \
@@ -49,7 +50,7 @@ MediaCodecPlayer::MediaCodecPlayer(
                          manager,
                          request_media_resources_cb,
                          frame_url),
-      ui_task_runner_(base::MessageLoopProxy::current()),
+      ui_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       demuxer_(demuxer.Pass()),
       weak_factory_(this) {
   // UI thread

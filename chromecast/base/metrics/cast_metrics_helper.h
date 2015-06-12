@@ -112,8 +112,8 @@ class CastMetricsHelper {
   virtual void SetRecordActionCallback(const RecordActionCallback& callback);
 
  protected:
-  // Creates a CastMetricsHelper instance with no MessageLoopProxy. This should
-  // only be used by tests, since invoking any non-overridden methods on this
+  // Creates a CastMetricsHelper instance with no task runner. This should only
+  // be used by tests, since invoking any non-overridden methods on this
   // instance will cause a failure.
   CastMetricsHelper();
 

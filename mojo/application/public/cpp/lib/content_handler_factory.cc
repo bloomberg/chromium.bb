@@ -9,6 +9,8 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/platform_thread.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_delegate.h"
@@ -25,7 +27,7 @@ namespace {
 class ApplicationThread : public base::PlatformThread::Delegate {
  public:
   ApplicationThread(
-      scoped_refptr<base::MessageLoopProxy> handler_thread,
+      scoped_refptr<base::SingleThreadTaskRunner> handler_thread,
       const base::Callback<void(ApplicationThread*)>& termination_callback,
       ContentHandlerFactory::Delegate* handler_delegate,
       InterfaceRequest<Application> application_request,
@@ -44,7 +46,7 @@ class ApplicationThread : public base::PlatformThread::Delegate {
                               base::Bind(termination_callback_, this));
   }
 
-  scoped_refptr<base::MessageLoopProxy> handler_thread_;
+  scoped_refptr<base::SingleThreadTaskRunner> handler_thread_;
   base::Callback<void(ApplicationThread*)> termination_callback_;
   ContentHandlerFactory::Delegate* handler_delegate_;
   InterfaceRequest<Application> application_request_;
@@ -77,7 +79,7 @@ class ContentHandlerImpl : public ContentHandler {
   void StartApplication(InterfaceRequest<Application> application_request,
                         URLResponsePtr response) override {
     ApplicationThread* thread = new ApplicationThread(
-        base::MessageLoopProxy::current(),
+        base::ThreadTaskRunnerHandle::Get(),
         base::Bind(&ContentHandlerImpl::OnThreadEnd,
                    weak_factory_.GetWeakPtr()),
         delegate_, application_request.Pass(), response.Pass());

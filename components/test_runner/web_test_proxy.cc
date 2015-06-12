@@ -12,6 +12,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "components/test_runner/accessibility_controller.h"
 #include "components/test_runner/event_sender.h"
@@ -629,11 +630,9 @@ void WebTestProxyBase::CapturePixelsAsync(
   }
 
   if (test_interfaces_->GetTestRunner()->isPrinting()) {
-    base::MessageLoopProxy::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&WebTestProxyBase::CapturePixelsForPrinting,
-                   base::Unretained(this),
-                   callback));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&WebTestProxyBase::CapturePixelsForPrinting,
+                              base::Unretained(this), callback));
     return;
   }
 

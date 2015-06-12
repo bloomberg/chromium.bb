@@ -29,8 +29,8 @@
 #include "ui/gfx/native_widget_types.h"
 
 namespace base {
-class MessageLoopProxy;
 class RunLoop;
+class SingleThreadTaskRunner;
 }
 
 namespace cc {

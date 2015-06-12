@@ -59,9 +59,9 @@ ACTION_P2(SendPendingBytes, socket, pending_bytes) {
 }
 
 // Used to terminate a loop from a different thread than the loop belongs to.
-// |loop| should be a MessageLoopProxy.
-ACTION_P(QuitLoop, loop) {
-  loop->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
+// |task_runner| should be a SingleThreadTaskRunner.
+ACTION_P(QuitLoop, task_runner) {
+  task_runner->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
 }
 
 }  // namespace.
@@ -112,7 +112,7 @@ AudioOutputDeviceTest::AudioOutputDeviceTest() {
   audio_output_ipc_ = new MockAudioOutputIPC();
   audio_device_ = new AudioOutputDevice(
       scoped_ptr<AudioOutputIPC>(audio_output_ipc_),
-      io_loop_.message_loop_proxy());
+      io_loop_.task_runner());
 
   audio_device_->Initialize(default_audio_parameters_,
                             &callback_);
@@ -177,7 +177,7 @@ void AudioOutputDeviceTest::ExpectRenderCallback() {
   const int kNumberOfFramesToProcess = 0;
   EXPECT_CALL(callback_, Render(_, _))
       .WillOnce(DoAll(
-          QuitLoop(io_loop_.message_loop_proxy()),
+          QuitLoop(io_loop_.task_runner()),
           Return(kNumberOfFramesToProcess)));
 }
 

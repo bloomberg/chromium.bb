@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/proximity_auth/ble/bluetooth_low_energy_connection.h"
 #include "components/proximity_auth/ble/bluetooth_low_energy_connection_finder.h"
 #include "components/proximity_auth/ble/fake_wire_message.h"
@@ -183,7 +183,7 @@ void ProximityAuthBleSystem::StartPollingScreenState() {
         make_scoped_ptr(new FakeWireMessage(kPollScreenState)));
 
     // Schedules the next message in |kPollingIntervalSeconds| ms.
-    base::MessageLoopProxy::current()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, base::Bind(&ProximityAuthBleSystem::StartPollingScreenState,
                               weak_ptr_factory_.GetWeakPtr()),
         base::TimeDelta::FromSeconds(kPollingIntervalSeconds));

@@ -157,7 +157,7 @@ void MetroExit(bool send_alt_f4_mnemonic) {
     DWORD core_window_thread_id = GetWindowThreadProcessId(
         globals.view->core_window_hwnd(), &core_window_process_id);
     if (core_window_thread_id != ::GetCurrentThreadId()) {
-      globals.appview_msg_loop->PostDelayedTask(
+      globals.appview_task_runner->PostDelayedTask(
         FROM_HERE,
         base::Bind(&MetroExit, false),
         base::TimeDelta::FromMilliseconds(100));
@@ -428,7 +428,7 @@ void UnsnapHelper() {
 extern "C" __declspec(dllexport)
 void MetroUnsnap() {
   DVLOG(1) << __FUNCTION__;
-  globals.appview_msg_loop->PostTask(
+  globals.appview_task_runner->PostTask(
       FROM_HERE, base::Bind(&UnsnapHelper));
 }
 
@@ -441,7 +441,7 @@ HWND GetRootWindow() {
 extern "C" __declspec(dllexport)
 void SetFrameWindow(HWND hwnd) {
   DVLOG(1) << __FUNCTION__ << ", hwnd=" << LONG_PTR(hwnd);
-  globals.appview_msg_loop->PostTask(
+  globals.appview_task_runner->PostTask(
       FROM_HERE, base::Bind(&SetFrameWindowInternal, hwnd));
 }
 
@@ -454,7 +454,7 @@ extern "C" __declspec(dllexport)
 
   // This is a hack to ensure that the BrowserViewLayout code layout happens
   // just at the right time to hide the switcher button if it is visible.
-  globals.appview_msg_loop->PostDelayedTask(
+  globals.appview_task_runner->PostDelayedTask(
     FROM_HERE, base::Bind(&CloseFrameWindowInternal, hwnd),
         base::TimeDelta::FromMilliseconds(50));
 }
@@ -504,7 +504,7 @@ base::win::MetroLaunchType GetLaunchType(
 extern "C" __declspec(dllexport)
 void FlipFrameWindows() {
   DVLOG(1) << __FUNCTION__;
-  globals.appview_msg_loop->PostTask(
+  globals.appview_task_runner->PostTask(
       FROM_HERE, base::Bind(&FlipFrameWindowsInternal));
 }
 
@@ -527,7 +527,7 @@ void DisplayNotification(const char* origin_url, const char* icon_url,
                                                              notification_id,
                                                              handler,
                                                              handler_context);
-  globals.appview_msg_loop->PostTask(
+  globals.appview_task_runner->PostTask(
       FROM_HERE, base::Bind(&ChromeAppView::DisplayNotification,
                             globals.view, notification));
 }
@@ -543,7 +543,7 @@ bool CancelNotification(const char* notification_id) {
     return false;
   }
 
-  globals.appview_msg_loop->PostTask(
+  globals.appview_task_runner->PostTask(
       FROM_HERE, base::Bind(&ChromeAppView::CancelNotification,
                             globals.view, std::string(notification_id)));
   return true;
@@ -585,7 +585,7 @@ void ShowDialogBox(
   dialog_box_info.button1_handler = button1_handler;
   dialog_box_info.button2_handler = button2_handler;
 
-  globals.appview_msg_loop->PostTask(
+  globals.appview_task_runner->PostTask(
       FROM_HERE, base::Bind(
           &ChromeAppView::ShowDialogBox, globals.view, dialog_box_info));
 }
@@ -596,7 +596,7 @@ extern "C" __declspec(dllexport)
 void DismissDialogBox() {
   VLOG(1) << __FUNCTION__;
 
-  globals.appview_msg_loop->PostTask(
+  globals.appview_task_runner->PostTask(
       FROM_HERE, base::Bind(
           &ChromeAppView::DismissDialogBox,
           globals.view));
@@ -606,7 +606,7 @@ extern "C" __declspec(dllexport)
 void SetFullscreen(bool fullscreen) {
   VLOG(1) << __FUNCTION__;
 
-  globals.appview_msg_loop->PostTask(
+  globals.appview_task_runner->PostTask(
       FROM_HERE, base::Bind(
           &ChromeAppView::SetFullscreen,
           globals.view, fullscreen));
@@ -821,8 +821,8 @@ ChromeAppView::Run() {
   // Create a message loop to allow message passing into this thread.
   base::MessageLoopForUI msg_loop;
 
-  // Announce our message loop to the world.
-  globals.appview_msg_loop = msg_loop.message_loop_proxy();
+  // Announce our message loop task runner to the world.
+  globals.appview_task_runner = msg_loop.task_runner();
 
   // And post the task that'll do the inner Metro message pumping to it.
   msg_loop.PostTask(FROM_HERE, base::Bind(&RunMessageLoop, dispatcher.Get()));
@@ -840,7 +840,7 @@ ChromeAppView::Run() {
 
   msg_loop.Run();
 
-  globals.appview_msg_loop = NULL;
+  globals.appview_task_runner = NULL;
 
   DVLOG(0) << "ProcessEvents done, hr=" << hr;
 
