@@ -1277,6 +1277,9 @@ crbug.com/374936 [ Linux Win Debug ] svg/dynamic-updates/SVGImageElement-dom-pre
 crbug.com/374936 [ Linux Win Debug ] svg/dynamic-updates/SVGImageElement-dom-height-attr.html [ ImageOnlyFailure Pass ]
 crbug.com/374936 [ Linux Win Debug ] svg/dynamic-updates/SVGImageElement-dom-width-attr.html [ ImageOnlyFailure Pass ]
 
+crbug.com/497950 virtual/display_list_2d_canvas/fast/canvas/canvas-composite-repaint-by-all-imagesource.html [ NeedsRebaseline ]
+crbug.com/497950 virtual/display_list_2d_canvas/fast/canvas/setWidthResetAfterForcedRender.html [ NeedsRebaseline ]
+
 crbug.com/313438 svg/custom/relative-sized-use-on-symbol.xhtml [ NeedsManualRebaseline ]
 crbug.com/313438 svg/custom/relative-sized-use-without-attributes-on-symbol.xhtml [ NeedsManualRebaseline ]
 

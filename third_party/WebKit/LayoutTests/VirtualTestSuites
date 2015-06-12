@@ -14,12 +14,14 @@
   {
     "prefix": "display_list_2d_canvas",
     "base": "fast/canvas",
-    "args": ["--force-display-list-2d-canvas"]
+    "args": ["--force-display-list-2d-canvas",
+             "--enable-slimming-paint"]
   },
   {
     "prefix": "display_list_2d_canvas",
     "base": "canvas/philip",
-    "args": ["--force-display-list-2d-canvas"]
+    "args": ["--force-display-list-2d-canvas",
+             "--enable-slimming-paint"]
   },
   {
     "prefix": "threaded",
