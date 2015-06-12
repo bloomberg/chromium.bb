@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/tracing/background_tracing_field_trial.h"
+
 #include <string>
 
 #include "base/json/json_reader.h"
@@ -23,6 +25,8 @@ const char kBackgroundTracingFieldTrial[] = "BackgroundTracing";
 const char kBackgroundTracingConfig[] = "config";
 const char kBackgroundTracingUploadUrl[] = "upload_url";
 
+ConfigTextFilterForTesting g_config_text_filter_for_testing = nullptr;
+
 void OnUploadProgress(int64, int64) {
   // We don't actually care about the progress, but TraceUploader::DoUpload
   // requires we pass something valid.
@@ -42,7 +46,9 @@ void UploadCallback(const std::string& upload_url,
   TraceCrashServiceUploader* uploader = new TraceCrashServiceUploader(
       g_browser_process->system_request_context());
 
-  uploader->SetUploadURL(upload_url);
+  if (GURL(upload_url).is_valid())
+    uploader->SetUploadURL(upload_url);
+
   uploader->DoUpload(
       file_contents->data(), base::Bind(&OnUploadProgress),
       base::Bind(&OnUploadComplete, base::Owned(uploader), callback));
@@ -50,17 +56,21 @@ void UploadCallback(const std::string& upload_url,
 
 }  // namespace
 
+void SetConfigTextFilterForTesting(ConfigTextFilterForTesting predicate) {
+  g_config_text_filter_for_testing = predicate;
+}
+
 void SetupBackgroundTracingFieldTrial() {
   std::string config_text = variations::GetVariationParamValue(
       kBackgroundTracingFieldTrial, kBackgroundTracingConfig);
   std::string upload_url = variations::GetVariationParamValue(
       kBackgroundTracingFieldTrial, kBackgroundTracingUploadUrl);
 
-  if (!GURL(upload_url).is_valid())
-    return;
-
   if (config_text.empty())
     return;
+
+  if (g_config_text_filter_for_testing)
+    (*g_config_text_filter_for_testing)(&config_text);
 
   scoped_ptr<base::Value> value = base::JSONReader::Read(config_text);
   if (!value)

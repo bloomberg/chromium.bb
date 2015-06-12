@@ -163,11 +163,21 @@ bool BackgroundTracingManagerImpl::SetActiveScenario(
 
   bool requires_anonymized_data = (data_filtering == ANONYMIZE_DATA);
 
-  // TODO(oysteine): Retry when time_until_allowed has elapsed.
-  if (config && delegate_ &&
-      !delegate_->IsAllowedToBeginBackgroundScenario(
-          *config.get(), requires_anonymized_data)) {
-    return false;
+  // If the I/O thread isn't running, this is a startup scenario and
+  // we have to wait until initialization is finished to validate that the
+  // scenario can run.
+  if (BrowserThread::IsThreadInitialized(BrowserThread::IO)) {
+    // TODO(oysteine): Retry when time_until_allowed has elapsed.
+    if (config && delegate_ &&
+        !delegate_->IsAllowedToBeginBackgroundScenario(
+            *config.get(), requires_anonymized_data)) {
+      return false;
+    }
+  } else {
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&BackgroundTracingManagerImpl::ValidateStartupScenario,
+                   base::Unretained(this)));
   }
 
   if (!IsSupportedConfig(config.get()))
@@ -187,16 +197,23 @@ bool BackgroundTracingManagerImpl::SetActiveScenario(
   return true;
 }
 
+bool BackgroundTracingManagerImpl::HasActiveScenarioForTesting() {
+  return config_;
+}
+
+void BackgroundTracingManagerImpl::ValidateStartupScenario() {
+  if (!config_ || !delegate_)
+    return;
+
+  if (!delegate_->IsAllowedToBeginBackgroundScenario(
+          *config_.get(), requires_anonymized_data_)) {
+    AbortScenario();
+  }
+}
+
 void BackgroundTracingManagerImpl::EnableRecordingIfConfigNeedsIt() {
   if (!config_)
     return;
-
-  // TODO(oysteine): Retry later.
-  if (delegate_ &&
-      !delegate_->IsAllowedToBeginBackgroundScenario(
-          *config_.get(), requires_anonymized_data_)) {
-    return;
-  }
 
   if (config_->mode == BackgroundTracingConfig::PREEMPTIVE_TRACING_MODE) {
     EnableRecording(GetCategoryFilterStringForCategoryPreset(
@@ -394,7 +411,13 @@ void BackgroundTracingManagerImpl::OnFinalizeComplete() {
     idle_callback_.Run();
 
   // Now that a trace has completed, we may need to enable recording again.
-  EnableRecordingIfConfigNeedsIt();
+  // TODO(oysteine): Retry later if IsAllowedToBeginBackgroundScenario fails.
+  if (!delegate_ ||
+      delegate_->IsAllowedToBeginBackgroundScenario(
+          *config_.get(), requires_anonymized_data_)) {
+    EnableRecordingIfConfigNeedsIt();
+  }
+
   RecordBackgroundTracingMetric(FINALIZATION_COMPLETE);
 }
 
@@ -421,6 +444,13 @@ void BackgroundTracingManagerImpl::BeginFinalizing(
 
   if (!callback.is_null())
     callback.Run(is_allowed_finalization);
+}
+
+void BackgroundTracingManagerImpl::AbortScenario() {
+  is_tracing_ = false;
+  config_.reset();
+
+  content::TracingController::GetInstance()->DisableRecording(nullptr);
 }
 
 std::string
