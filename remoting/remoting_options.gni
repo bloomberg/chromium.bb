@@ -2,8 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# Set this to run the jscompile checks after building the webapp.
-run_jscompile = false
+# These arguments can be overridden from the command line (see "gn help args").
+declare_args() {
+  # Set this to run the jscompile checks after building the webapp.
+  enable_remoting_jscompile = false
+}
 
 # Set this to enable cast mode on the android client.
 enable_cast = 0

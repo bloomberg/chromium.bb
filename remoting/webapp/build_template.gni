@@ -49,7 +49,7 @@ template("build_locales_listfile") {
 template("build_webapp_html") {
   target_jscompile = ""
 
-  if (run_jscompile) {
+  if (enable_remoting_jscompile) {
     target_jscompile = "${target_name}_jscompile"
     target_jscompile_stamp = "$target_gen_dir/${target_jscompile}.stamp"
     action(target_jscompile) {
