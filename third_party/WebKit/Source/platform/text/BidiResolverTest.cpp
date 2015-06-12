@@ -37,10 +37,7 @@
 #include <fstream>
 #include <gtest/gtest.h>
 
-namespace {
-
-using namespace WTF;
-using namespace blink;
+namespace blink {
 
 TEST(BidiResolver, Basic)
 {
@@ -291,4 +288,4 @@ TEST(BidiResolver, BidiTest_txt)
     EXPECT_EQ(19151u, runner.m_orderFailures);
 }
 
-}
+} // namespace blink

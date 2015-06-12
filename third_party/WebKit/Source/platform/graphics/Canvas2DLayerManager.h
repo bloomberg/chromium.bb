@@ -28,9 +28,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "platform/graphics/Canvas2DLayerBridge.h"
 #include "public/platform/WebThread.h"
 
-class Canvas2DLayerManagerTest;
-
 namespace blink {
+
+class Canvas2DLayerManagerTest;
 
 class PLATFORM_EXPORT Canvas2DLayerManager : public WebThread::TaskObserver {
 public:
@@ -58,7 +58,7 @@ private:
     bool m_taskObserverActive;
     DoublyLinkedList<Canvas2DLayerBridge> m_layerList;
 
-    friend class ::Canvas2DLayerManagerTest; // for unit testing
+    friend class Canvas2DLayerManagerTest; // for unit testing
 };
 
 } // namespace blink

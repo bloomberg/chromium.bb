@@ -7,8 +7,7 @@
 
 #include <gtest/gtest.h>
 
-using namespace blink;
-namespace {
+namespace blink {
 
 TEST(TransformationMatrixTest, NonInvertableBlendTest)
 {
@@ -59,4 +58,4 @@ TEST(TransformationMatrixTest, To2DTranslation)
     EXPECT_EQ(FloatSize(30, -40), matrix.to2DTranslation());
 }
 
-} // namespace
+} // namespace blink

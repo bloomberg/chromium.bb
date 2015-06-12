@@ -29,27 +29,23 @@
  */
 
 #include "config.h"
-#include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/SecurityPolicy.h"
 
 #include "platform/weborigin/KURL.h"
+#include "platform/weborigin/SecurityOrigin.h"
 #include <gtest/gtest.h>
 
-using blink::KURL;
-using blink::SecurityOrigin;
-using blink::SecurityPolicy;
-
-namespace {
+namespace blink {
 
 TEST(SecurityPolicyTest, ReferrerIsAlwaysAWebURL)
 {
-    EXPECT_TRUE(String() == SecurityPolicy::generateReferrer(blink::ReferrerPolicyAlways, KURL(blink::ParsedURLString, "http://example.com/"), String::fromUTF8("chrome://somepage/")).referrer);
+    EXPECT_TRUE(String() == SecurityPolicy::generateReferrer(ReferrerPolicyAlways, KURL(ParsedURLString, "http://example.com/"), String::fromUTF8("chrome://somepage/")).referrer);
 }
 
 TEST(SecurityPolicyTest, GenerateReferrer)
 {
     struct TestCase {
-        blink::ReferrerPolicy policy;
+        ReferrerPolicy policy;
         const char* referrer;
         const char* destination;
         const char* expected;
@@ -68,63 +64,63 @@ TEST(SecurityPolicyTest, GenerateReferrer)
 
     TestCase inputs[] = {
         // HTTP -> HTTP: Same Origin
-        { blink::ReferrerPolicyAlways, insecureURLA, insecureURLA, insecureURLA },
-        { blink::ReferrerPolicyDefault, insecureURLA, insecureURLA, insecureURLA },
-        { blink::ReferrerPolicyNoReferrerWhenDowngrade, insecureURLA, insecureURLA, insecureURLA },
-        { blink::ReferrerPolicyNever, insecureURLA, insecureURLA, 0 },
-        { blink::ReferrerPolicyOrigin, insecureURLA, insecureURLA, insecureOriginA },
-        { blink::ReferrerPolicyOriginWhenCrossOrigin, insecureURLA, insecureURLA, insecureURLA },
+        { ReferrerPolicyAlways, insecureURLA, insecureURLA, insecureURLA },
+        { ReferrerPolicyDefault, insecureURLA, insecureURLA, insecureURLA },
+        { ReferrerPolicyNoReferrerWhenDowngrade, insecureURLA, insecureURLA, insecureURLA },
+        { ReferrerPolicyNever, insecureURLA, insecureURLA, 0 },
+        { ReferrerPolicyOrigin, insecureURLA, insecureURLA, insecureOriginA },
+        { ReferrerPolicyOriginWhenCrossOrigin, insecureURLA, insecureURLA, insecureURLA },
 
         // HTTP -> HTTP: Cross Origin
-        { blink::ReferrerPolicyAlways, insecureURLA, insecureURLB, insecureURLA },
-        { blink::ReferrerPolicyDefault, insecureURLA, insecureURLB, insecureURLA },
-        { blink::ReferrerPolicyNoReferrerWhenDowngrade, insecureURLA, insecureURLB, insecureURLA },
-        { blink::ReferrerPolicyNever, insecureURLA, insecureURLB, 0 },
-        { blink::ReferrerPolicyOrigin, insecureURLA, insecureURLB, insecureOriginA },
-        { blink::ReferrerPolicyOriginWhenCrossOrigin, insecureURLA, insecureURLB, insecureOriginA },
+        { ReferrerPolicyAlways, insecureURLA, insecureURLB, insecureURLA },
+        { ReferrerPolicyDefault, insecureURLA, insecureURLB, insecureURLA },
+        { ReferrerPolicyNoReferrerWhenDowngrade, insecureURLA, insecureURLB, insecureURLA },
+        { ReferrerPolicyNever, insecureURLA, insecureURLB, 0 },
+        { ReferrerPolicyOrigin, insecureURLA, insecureURLB, insecureOriginA },
+        { ReferrerPolicyOriginWhenCrossOrigin, insecureURLA, insecureURLB, insecureOriginA },
 
         // HTTPS -> HTTPS: Same Origin
-        { blink::ReferrerPolicyAlways, secureURLA, secureURLA, secureURLA },
-        { blink::ReferrerPolicyDefault, secureURLA, secureURLA, secureURLA },
-        { blink::ReferrerPolicyNoReferrerWhenDowngrade, secureURLA, secureURLA, secureURLA },
-        { blink::ReferrerPolicyNever, secureURLA, secureURLA, 0 },
-        { blink::ReferrerPolicyOrigin, secureURLA, secureURLA, secureOriginA },
-        { blink::ReferrerPolicyOriginWhenCrossOrigin, secureURLA, secureURLA, secureURLA },
+        { ReferrerPolicyAlways, secureURLA, secureURLA, secureURLA },
+        { ReferrerPolicyDefault, secureURLA, secureURLA, secureURLA },
+        { ReferrerPolicyNoReferrerWhenDowngrade, secureURLA, secureURLA, secureURLA },
+        { ReferrerPolicyNever, secureURLA, secureURLA, 0 },
+        { ReferrerPolicyOrigin, secureURLA, secureURLA, secureOriginA },
+        { ReferrerPolicyOriginWhenCrossOrigin, secureURLA, secureURLA, secureURLA },
 
         // HTTPS -> HTTPS: Cross Origin
-        { blink::ReferrerPolicyAlways, secureURLA, secureURLB, secureURLA },
-        { blink::ReferrerPolicyDefault, secureURLA, secureURLB, secureURLA },
-        { blink::ReferrerPolicyNoReferrerWhenDowngrade, secureURLA, secureURLB, secureURLA },
-        { blink::ReferrerPolicyNever, secureURLA, secureURLB, 0 },
-        { blink::ReferrerPolicyOrigin, secureURLA, secureURLB, secureOriginA },
-        { blink::ReferrerPolicyOriginWhenCrossOrigin, secureURLA, secureURLB, secureOriginA },
+        { ReferrerPolicyAlways, secureURLA, secureURLB, secureURLA },
+        { ReferrerPolicyDefault, secureURLA, secureURLB, secureURLA },
+        { ReferrerPolicyNoReferrerWhenDowngrade, secureURLA, secureURLB, secureURLA },
+        { ReferrerPolicyNever, secureURLA, secureURLB, 0 },
+        { ReferrerPolicyOrigin, secureURLA, secureURLB, secureOriginA },
+        { ReferrerPolicyOriginWhenCrossOrigin, secureURLA, secureURLB, secureOriginA },
 
         // HTTP -> HTTPS
-        { blink::ReferrerPolicyAlways, insecureURLA, secureURLB, insecureURLA },
-        { blink::ReferrerPolicyDefault, insecureURLA, secureURLB, insecureURLA },
-        { blink::ReferrerPolicyNoReferrerWhenDowngrade, insecureURLA, secureURLB, insecureURLA },
-        { blink::ReferrerPolicyNever, insecureURLA, secureURLB, 0 },
-        { blink::ReferrerPolicyOrigin, insecureURLA, secureURLB, insecureOriginA },
-        { blink::ReferrerPolicyOriginWhenCrossOrigin, insecureURLA, secureURLB, insecureOriginA },
+        { ReferrerPolicyAlways, insecureURLA, secureURLB, insecureURLA },
+        { ReferrerPolicyDefault, insecureURLA, secureURLB, insecureURLA },
+        { ReferrerPolicyNoReferrerWhenDowngrade, insecureURLA, secureURLB, insecureURLA },
+        { ReferrerPolicyNever, insecureURLA, secureURLB, 0 },
+        { ReferrerPolicyOrigin, insecureURLA, secureURLB, insecureOriginA },
+        { ReferrerPolicyOriginWhenCrossOrigin, insecureURLA, secureURLB, insecureOriginA },
 
         // HTTPS -> HTTP
-        { blink::ReferrerPolicyAlways, secureURLA, insecureURLB, secureURLA },
-        { blink::ReferrerPolicyDefault, secureURLA, insecureURLB, 0 },
-        { blink::ReferrerPolicyNoReferrerWhenDowngrade, secureURLA, insecureURLB, 0 },
-        { blink::ReferrerPolicyNever, secureURLA, insecureURLB, 0 },
-        { blink::ReferrerPolicyOrigin, secureURLA, insecureURLB, secureOriginA },
-        { blink::ReferrerPolicyOriginWhenCrossOrigin, secureURLA, secureURLB, secureOriginA },
+        { ReferrerPolicyAlways, secureURLA, insecureURLB, secureURLA },
+        { ReferrerPolicyDefault, secureURLA, insecureURLB, 0 },
+        { ReferrerPolicyNoReferrerWhenDowngrade, secureURLA, insecureURLB, 0 },
+        { ReferrerPolicyNever, secureURLA, insecureURLB, 0 },
+        { ReferrerPolicyOrigin, secureURLA, insecureURLB, secureOriginA },
+        { ReferrerPolicyOriginWhenCrossOrigin, secureURLA, secureURLB, secureOriginA },
 
         // blob and filesystem URL handling
-        { blink::ReferrerPolicyAlways, insecureURLA, blobURL, 0 },
-        { blink::ReferrerPolicyAlways, blobURL, insecureURLA, 0 },
-        { blink::ReferrerPolicyAlways, insecureURLA, filesystemURL, 0 },
-        { blink::ReferrerPolicyAlways, filesystemURL, insecureURLA, 0 },
+        { ReferrerPolicyAlways, insecureURLA, blobURL, 0 },
+        { ReferrerPolicyAlways, blobURL, insecureURLA, 0 },
+        { ReferrerPolicyAlways, insecureURLA, filesystemURL, 0 },
+        { ReferrerPolicyAlways, filesystemURL, insecureURLA, 0 },
     };
 
     for (TestCase test : inputs) {
-        KURL destination(blink::ParsedURLString, test.destination);
-        blink::Referrer result = SecurityPolicy::generateReferrer(test.policy, destination, String::fromUTF8(test.referrer));
+        KURL destination(ParsedURLString, test.destination);
+        Referrer result = SecurityPolicy::generateReferrer(test.policy, destination, String::fromUTF8(test.referrer));
         if (test.expected) {
             EXPECT_EQ(String::fromUTF8(test.expected), result.referrer)
                 << "'" << test.referrer << "' to '" << test.destination
@@ -192,4 +188,4 @@ TEST(SecurityPolicyTest, TrustworthyWhiteList)
     }
 }
 
-} // namespace
+} // namespace blink

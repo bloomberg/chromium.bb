@@ -7,12 +7,9 @@
 
 #include <gtest/gtest.h>
 
-using blink::CancellableTaskFactory;
-using blink::WebThread;
+namespace blink {
 
-namespace {
-
-typedef testing::Test CancellableTaskFactoryTest;
+using CancellableTaskFactoryTest = testing::Test;
 
 TEST_F(CancellableTaskFactoryTest, IsPending_TaskNotCreated)
 {
@@ -168,4 +165,4 @@ TEST_F(CancellableTaskFactoryTest, CreatingANewTaskCancelsPreviousOnes)
     EXPECT_EQ(1, executionCount);
 }
 
-} // namespace
+} // namespace blink

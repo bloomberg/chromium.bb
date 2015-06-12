@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "config.h"
-
 #include "platform/graphics/RecordingImageBufferSurface.h"
 
 #include "platform/graphics/GraphicsContext.h"
@@ -18,14 +17,12 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
-
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-using namespace blink;
 using testing::Test;
 
-namespace {
+namespace blink {
 
 class FakeImageBufferClient : public ImageBufferClient, public WebThread::TaskObserver {
 public:
@@ -35,12 +32,12 @@ public:
         , m_frameCount(0)
     { }
 
-    virtual ~FakeImageBufferClient() { }
+    ~FakeImageBufferClient() override { }
 
     // ImageBufferClient implementation
-    virtual void notifySurfaceInvalid() override { }
-    virtual bool isDirty() override { return m_isDirty; };
-    virtual void didFinalizeFrame() override
+    void notifySurfaceInvalid() override { }
+    bool isDirty() override { return m_isDirty; };
+    void didFinalizeFrame() override
     {
         if (m_isDirty) {
             Platform::current()->currentThread()->removeTaskObserver(this);
@@ -50,15 +47,15 @@ public:
     }
 
     // TaskObserver implementation
-    virtual void willProcessTask() override { ASSERT_NOT_REACHED(); }
-    virtual void didProcessTask() override
+    void willProcessTask() override { ASSERT_NOT_REACHED(); }
+    void didProcessTask() override
     {
         ASSERT_TRUE(m_isDirty);
         FloatRect dirtyRect(0, 0, 1, 1);
         m_imageBuffer->finalizeFrame(dirtyRect);
         ASSERT_FALSE(m_isDirty);
     }
-    virtual void restoreCanvasMatrixClipStack() override { };
+    void restoreCanvasMatrixClipStack() override { };
 
     void fakeDraw()
     {
@@ -93,8 +90,6 @@ public:
 private:
     int m_createSurfaceCount;
 };
-
-} // unnamed namespace
 
 class RecordingImageBufferSurfaceTest : public Test {
 protected:
@@ -332,6 +327,7 @@ private:
     Platform* m_oldPlatform;
 };
 
+} // anonymous namespace
 
 #define DEFINE_TEST_TASK_WRAPPER_CLASS(TEST_METHOD)                                               \
 class TestWrapperTask_ ## TEST_METHOD : public WebThread::Task {                           \
@@ -397,4 +393,4 @@ TEST_F(RecordingImageBufferSurfaceTest, testClearRect)
     expectDisplayListEnabled(true);
 }
 
-} // namespace
+} // namespace blink

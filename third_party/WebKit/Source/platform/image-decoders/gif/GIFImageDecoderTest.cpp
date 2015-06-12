@@ -29,7 +29,6 @@
  */
 
 #include "config.h"
-
 #include "platform/image-decoders/gif/GIFImageDecoder.h"
 
 #include "platform/SharedBuffer.h"
@@ -43,7 +42,7 @@
 #include "wtf/Vector.h"
 #include <gtest/gtest.h>
 
-using namespace blink;
+namespace blink {
 
 namespace {
 
@@ -140,7 +139,7 @@ void testRandomDecodeAfterClearFrameBufferCache(const char* dir, const char* gif
     }
 }
 
-} // namespace
+} // anonymous namespace
 
 TEST(GIFImageDecoderTest, decodeTwoFrames)
 {
@@ -530,3 +529,5 @@ TEST(GIFImageDecoderTest, firstFrameHasGreaterSizeThanScreenSize)
         ASSERT_EQ(frameSize.height(), decoder->decodedSize().height());
     }
 }
+
+} // namespace blink

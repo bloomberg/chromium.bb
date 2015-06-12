@@ -31,11 +31,11 @@
 #include "wtf/text/StringBuilder.h"
 #include <gtest/gtest.h>
 
-using namespace blink;
+namespace blink {
 
 class DateTimeFormatTest : public ::testing::Test {
 public:
-    typedef DateTimeFormat::FieldType FieldType;
+    using FieldType = DateTimeFormat::FieldType;
 
     struct Token {
         String string;
@@ -183,7 +183,7 @@ protected:
 private:
     class TokenHandler : public DateTimeFormat::TokenHandler {
     public:
-        virtual ~TokenHandler() { }
+        ~TokenHandler() override { }
 
         FieldType fieldType(int index) const
         {
@@ -193,7 +193,7 @@ private:
         Tokens tokens() const { return Tokens(m_tokens); }
 
     private:
-        virtual void visitField(FieldType fieldType, int count) override
+        void visitField(FieldType fieldType, int count) override
         {
             m_tokens.append(Token(fieldType, count));
         }
@@ -333,5 +333,7 @@ TEST_F(DateTimeFormatTest, SingleUpperCaseInvalid)
     EXPECT_EQ(DateTimeFormat::FieldTypeInvalid, single('V'));
     EXPECT_EQ(DateTimeFormat::FieldTypeInvalid, single('X'));
 }
+
+} // namespace blink
 
 #endif

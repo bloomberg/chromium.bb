@@ -35,7 +35,8 @@
 #include <gtest/gtest.h>
 
 using testing::Test;
-using namespace blink;
+
+namespace blink {
 
 class ImageFilterBuilderTest : public Test {
 protected:
@@ -115,11 +116,9 @@ protected:
     }
 };
 
-namespace {
-
 TEST_F(ImageFilterBuilderTest, testColorSpace)
 {
     colorSpaceTest();
 }
 
-} // namespace
+} // namespace blink

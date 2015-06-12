@@ -34,14 +34,9 @@
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/testing/WTFTestHelpers.h"
-
 #include <gtest/gtest.h>
 
-using blink::SecurityOrigin;
-using blink::createDatabaseIdentifierFromSecurityOrigin;
-using blink::createSecurityOriginFromDatabaseIdentifier;
-
-namespace {
+namespace blink {
 
 TEST(DatabaseIdentifierTest, CreateIdentifierFromSecurityOrigin)
 {
@@ -258,5 +253,4 @@ TEST(DatabaseIdentifierTest, CreateSecurityOriginFromIdentifier)
     }
 }
 
-} // namespace
-
+} // namespace blink

@@ -38,8 +38,7 @@
 #include "wtf/text/CString.h"
 #include <gtest/gtest.h>
 
-using namespace blink;
-using namespace std;
+namespace blink {
 
 class LocaleWinTest : public ::testing::Test {
 protected:
@@ -303,3 +302,5 @@ TEST_F(LocaleWinTest, localizedNumberRoundTrip)
     testNumbers(ChineseHK);
     testNumbers(ChineseTW);
 }
+
+} // namespace blink

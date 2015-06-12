@@ -23,7 +23,6 @@
  */
 
 #include "config.h"
-
 #include "platform/graphics/Canvas2DLayerManager.h"
 
 #include "SkDevice.h"
@@ -34,14 +33,14 @@
 #include "public/platform/WebThread.h"
 #include "public/platform/WebTraceLocation.h"
 #include "public/platform/WebUnitTestSupport.h"
-
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-using namespace blink;
 using testing::InSequence;
 using testing::Return;
 using testing::Test;
+
+namespace blink {
 
 namespace {
 
@@ -50,12 +49,12 @@ public:
     MockWebGraphicsContext3DProvider(WebGraphicsContext3D* context3d)
         : m_context3d(context3d) { }
 
-    WebGraphicsContext3D* context3d()
+    WebGraphicsContext3D* context3d() override
     {
         return m_context3d;
     }
 
-    GrContext* grContext()
+    GrContext* grContext() override
     {
         return 0;
     }
@@ -74,7 +73,7 @@ public:
     {
     }
 
-    virtual size_t storageAllocatedForRecording() override
+    size_t storageAllocatedForRecording() override
     {
         // Because the fake layer has no canvas to query, just
         // return status quo. Allocation changes that would normally be
@@ -88,7 +87,7 @@ public:
         m_freeableBytes = size;
     }
 
-    virtual size_t freeMemoryIfPossible(size_t size) override
+    size_t freeMemoryIfPossible(size_t size) override
     {
         m_freeMemoryIfPossibleCount++;
         size_t bytesFreed = size < m_freeableBytes ? size : m_freeableBytes;
@@ -98,7 +97,7 @@ public:
         return bytesFreed;
     }
 
-    virtual void flush() override
+    void flush() override
     {
         flushedDrawCommands();
         m_freeableBytes = bytesAllocated();
@@ -128,7 +127,7 @@ private:
     RefPtr<FakeCanvas2DLayerBridge> m_layerBridge;
 };
 
-} // unnamed namespace
+} // anonymous namespace
 
 class Canvas2DLayerManagerTest : public Test {
 protected:
@@ -260,10 +259,11 @@ protected:
             m_skipCommands = skipCommands;
         }
 
-        virtual void run() override
+        void run() override
         {
             m_test->doDeferredFrameTestTask(m_layer, m_skipCommands);
         }
+
     private:
         Canvas2DLayerManagerTest* m_test;
         FakeCanvas2DLayerBridge* m_layer;
@@ -308,8 +308,6 @@ protected:
     }
 };
 
-namespace {
-
 TEST_F(Canvas2DLayerManagerTest, testStorageAllocationTracking)
 {
     storageAllocationTrackingTest();
@@ -340,5 +338,4 @@ TEST_F(Canvas2DLayerManagerTest, testAddRemoveLayer)
     addRemoveLayerTest();
 }
 
-} // unnamed namespace
-
+} // namespace blink

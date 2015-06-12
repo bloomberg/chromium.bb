@@ -35,11 +35,9 @@
 #include "platform/transforms/ScaleTransformOperation.h"
 #include "platform/transforms/SkewTransformOperation.h"
 #include "platform/transforms/TranslateTransformOperation.h"
-
 #include <gtest/gtest.h>
 
-using namespace blink;
-namespace {
+namespace blink {
 
 static const TransformOperations identityOperations;
 
@@ -490,4 +488,4 @@ TEST(TransformOperationsTest, AbsoluteSequenceBoundsTest)
     EXPECT_PRED_FORMAT2(FloatBoxTest::AssertAlmostEqual, FloatBox(-7, -3, 2, 15, 23, 20), bounds);
 }
 
-} // namespace
+} // namespace blink

@@ -41,10 +41,9 @@
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 
-class Canvas2DLayerBridgeTest;
-
 namespace blink {
 
+class Canvas2DLayerBridgeTest;
 class ImageBuffer;
 class WebGraphicsContext3D;
 class WebGraphicsContext3DProvider;
@@ -116,7 +115,7 @@ protected:
     bool m_isHidden;
 
     friend class WTF::DoublyLinkedListNode<Canvas2DLayerBridge>;
-    friend class ::Canvas2DLayerBridgeTest;
+    friend class Canvas2DLayerBridgeTest;
     Canvas2DLayerBridge* m_next;
     Canvas2DLayerBridge* m_prev;
 

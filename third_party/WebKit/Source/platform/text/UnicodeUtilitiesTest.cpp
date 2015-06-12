@@ -37,9 +37,7 @@
 #include <gtest/gtest.h>
 #include <unicode/uchar.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 static const UChar32 kMaxLatinCharCount = 256;
 
@@ -58,7 +56,7 @@ UBool U_CALLCONV testFirstAndLastCharsInCategory(const void *context, UChar32 st
     return 1;
 }
 
-TEST(WebCoreUnicodeUnit, Separators)
+TEST(UnicodeUtilitiesTest, Separators)
 {
     static const bool latinSeparatorTable[kMaxLatinCharCount] = {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -88,7 +86,7 @@ TEST(WebCoreUnicodeUnit, Separators)
     EXPECT_FALSE(isTestFirstAndLastCharsInCategoryFailed);
 }
 
-TEST(WebCoreUnicodeUnit, KanaLetters)
+TEST(UnicodeUtilitiesTest, KanaLetters)
 {
     // Non Kana symbols
     for (UChar character = 0; character < 0x3041; ++character)
@@ -103,7 +101,7 @@ TEST(WebCoreUnicodeUnit, KanaLetters)
         EXPECT_TRUE(isKanaLetter(character));
 }
 
-TEST(WebCoreUnicodeUnit, ContainsKanaLetters)
+TEST(UnicodeUtilitiesTest, ContainsKanaLetters)
 {
     // Non Kana symbols
     String nonKanaString;
@@ -126,7 +124,7 @@ TEST(WebCoreUnicodeUnit, ContainsKanaLetters)
     }
 }
 
-TEST(WebCoreUnicodeUnit, FoldQuoteMarkOrSoftHyphenTest)
+TEST(UnicodeUtilitiesTest, FoldQuoteMarkOrSoftHyphenTest)
 {
     const UChar charactersToFold[] = {
         hebrewPunctuationGershayimCharacter, leftDoubleQuotationMarkCharacter, rightDoubleQuotationMarkCharacter,
@@ -147,7 +145,7 @@ TEST(WebCoreUnicodeUnit, FoldQuoteMarkOrSoftHyphenTest)
     EXPECT_EQ(String(buffer), foldedString);
 }
 
-TEST(WebCoreUnicodeUnit, OnlyKanaLettersEqualityTest)
+TEST(UnicodeUtilitiesTest, OnlyKanaLettersEqualityTest)
 {
     const UChar nonKanaString1[] = { 'a', 'b', 'c', 'd' };
     const UChar nonKanaString2[] = { 'e', 'f', 'g' };
@@ -187,7 +185,7 @@ TEST(WebCoreUnicodeUnit, OnlyKanaLettersEqualityTest)
         voicedKanaString2, WTF_ARRAY_LENGTH(voicedKanaString2)));
 }
 
-TEST(WebCoreUnicodeUnit, StringsWithKanaLettersTest)
+TEST(UnicodeUtilitiesTest, StringsWithKanaLettersTest)
 {
     const UChar nonKanaString1[] = { 'a', 'b', 'c' };
     const UChar nonKanaString2[] = { 'a', 'b', 'c' };
@@ -245,4 +243,4 @@ TEST(WebCoreUnicodeUnit, StringsWithKanaLettersTest)
         voicedKanaString2, WTF_ARRAY_LENGTH(voicedKanaString2)));
 }
 
-} // namespace
+} // namespace blink

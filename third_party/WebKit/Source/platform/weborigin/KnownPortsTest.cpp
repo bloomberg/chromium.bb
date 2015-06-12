@@ -7,9 +7,7 @@
 
 #include <gtest/gtest.h>
 
-using blink::isDefaultPortForProtocol;
-
-namespace {
+namespace blink {
 
 TEST(KnownPortsTest, IsDefaultPortForProtocol)
 {
@@ -44,4 +42,4 @@ TEST(KnownPortsTest, IsDefaultPortForProtocol)
     }
 }
 
-}
+} // namespace blink

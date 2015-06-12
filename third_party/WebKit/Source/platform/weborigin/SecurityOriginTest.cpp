@@ -37,8 +37,6 @@
 #include "wtf/text/WTFString.h"
 #include <gtest/gtest.h>
 
-using blink::SecurityOrigin;
-
 namespace blink {
 
 const int MaxAllowedPort = 65535;
@@ -166,14 +164,14 @@ TEST_F(SecurityOriginTest, IsSecure)
     };
 
     for (auto test : inputs)
-        EXPECT_EQ(test.isSecure, SecurityOrigin::isSecure(blink::KURL(blink::ParsedURLString, test.url))) << "URL: '" << test.url << "'";
+        EXPECT_EQ(test.isSecure, SecurityOrigin::isSecure(KURL(ParsedURLString, test.url))) << "URL: '" << test.url << "'";
 
-    EXPECT_FALSE(SecurityOrigin::isSecure(blink::KURL()));
+    EXPECT_FALSE(SecurityOrigin::isSecure(KURL()));
 }
 
 TEST_F(SecurityOriginTest, Suborigins)
 {
-    blink::RuntimeEnabledFeatures::setSuboriginsEnabled(true);
+    RuntimeEnabledFeatures::setSuboriginsEnabled(true);
 
     RefPtr<SecurityOrigin> origin = SecurityOrigin::createFromString("https://test.com");
     EXPECT_FALSE(origin->hasSuborigin());
@@ -205,7 +203,7 @@ TEST_F(SecurityOriginTest, Suborigins)
 
 TEST_F(SecurityOriginTest, SuboriginsParsing)
 {
-    blink::RuntimeEnabledFeatures::setSuboriginsEnabled(true);
+    RuntimeEnabledFeatures::setSuboriginsEnabled(true);
     String host, realHost, suborigin;
     host = "test.com";
     EXPECT_FALSE(SecurityOrigin::deserializeSuboriginAndHost(host, suborigin, realHost));
@@ -229,4 +227,4 @@ TEST_F(SecurityOriginTest, SuboriginsParsing)
     EXPECT_EQ("https://foobar_test.com", builder.toString());
 }
 
-} // namespace
+} // namespace blink

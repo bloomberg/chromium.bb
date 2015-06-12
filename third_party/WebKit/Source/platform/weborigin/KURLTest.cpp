@@ -39,7 +39,7 @@
 #include "wtf/text/WTFString.h"
 #include <gtest/gtest.h>
 
-namespace {
+namespace blink {
 
 struct ComponentCase {
     const char* url;
@@ -77,7 +77,7 @@ TEST(KURLTest, SameGetters)
 
     for (size_t i = 0; i < arraysize(cases); i++) {
         // UTF-8
-        blink::KURL kurl(blink::ParsedURLString, cases[i].url);
+        KURL kurl(ParsedURLString, cases[i].url);
 
         EXPECT_EQ(cases[i].protocol, kurl.protocol());
         EXPECT_EQ(cases[i].host, kurl.host());
@@ -90,8 +90,8 @@ TEST(KURLTest, SameGetters)
         EXPECT_EQ(cases[i].hasRef, kurl.hasFragmentIdentifier());
 
         // UTF-16
-        WTF::String utf16(cases[i].url);
-        kurl = blink::KURL(blink::ParsedURLString, utf16);
+        String utf16(cases[i].url);
+        kurl = KURL(ParsedURLString, utf16);
 
         EXPECT_EQ(cases[i].protocol, kurl.protocol());
         EXPECT_EQ(cases[i].host, kurl.host());
@@ -128,7 +128,7 @@ TEST(KURLTest, DISABLED_DifferentGetters)
     };
 
     for (size_t i = 0; i < arraysize(cases); i++) {
-        blink::KURL kurl(blink::ParsedURLString, cases[i].url);
+        KURL kurl(ParsedURLString, cases[i].url);
 
         EXPECT_EQ(cases[i].protocol, kurl.protocol());
         EXPECT_EQ(cases[i].host, kurl.host());
@@ -139,7 +139,7 @@ TEST(KURLTest, DISABLED_DifferentGetters)
         EXPECT_EQ(cases[i].query, kurl.query());
         // Want to compare UCS-16 refs (or to null).
         if (cases[i].ref)
-            EXPECT_EQ(WTF::String::fromUTF8(cases[i].ref), kurl.fragmentIdentifier());
+            EXPECT_EQ(String::fromUTF8(cases[i].ref), kurl.fragmentIdentifier());
         else
             EXPECT_TRUE(kurl.fragmentIdentifier().isNull());
     }
@@ -150,24 +150,24 @@ TEST(KURLTest, DISABLED_DifferentGetters)
 TEST(KURLTest, DISABLED_UTF8)
 {
     const char asciiURL[] = "http://foo/bar#baz";
-    blink::KURL asciiKURL(blink::ParsedURLString, asciiURL);
-    EXPECT_TRUE(asciiKURL.string() == WTF::String(asciiURL));
+    KURL asciiKURL(ParsedURLString, asciiURL);
+    EXPECT_TRUE(asciiKURL.string() == String(asciiURL));
 
     // When the result is ASCII, we should get an ASCII String. Some
     // code depends on being able to compare the result of the .string()
     // getter with another String, and the isASCIIness of the two
     // strings must match for these functions (like equalIgnoringCase).
-    EXPECT_TRUE(WTF::equalIgnoringCase(asciiKURL, WTF::String(asciiURL)));
+    EXPECT_TRUE(equalIgnoringCase(asciiKURL, String(asciiURL)));
 
     // Reproduce code path in FrameLoader.cpp -- equalIgnoringCase implicitly
     // expects gkurl.protocol() to have been created as ascii.
-    blink::KURL mailto(blink::ParsedURLString, "mailto:foo@foo.com");
-    EXPECT_TRUE(WTF::equalIgnoringCase(mailto.protocol(), "mailto"));
+    KURL mailto(ParsedURLString, "mailto:foo@foo.com");
+    EXPECT_TRUE(equalIgnoringCase(mailto.protocol(), "mailto"));
 
     const char utf8URL[] = "http://foo/bar#\xe4\xbd\xa0\xe5\xa5\xbd";
-    blink::KURL utf8KURL(blink::ParsedURLString, utf8URL);
+    KURL utf8KURL(ParsedURLString, utf8URL);
 
-    EXPECT_TRUE(utf8KURL.string() == WTF::String::fromUTF8(utf8URL));
+    EXPECT_TRUE(utf8KURL.string() == String::fromUTF8(utf8URL));
 }
 
 TEST(KURLTest, Setters)
@@ -239,7 +239,7 @@ TEST(KURLTest, Setters)
     };
 
     for (size_t i = 0; i < arraysize(cases); i++) {
-        blink::KURL kurl(blink::ParsedURLString, cases[i].url);
+        KURL kurl(ParsedURLString, cases[i].url);
 
         kurl.setProtocol(cases[i].protocol);
         EXPECT_STREQ(cases[i].expectedProtocol, kurl.string().utf8().data());
@@ -288,20 +288,19 @@ TEST(KURLTest, Decode)
     };
 
     for (size_t i = 0; i < arraysize(decodeCases); i++) {
-        WTF::String input(decodeCases[i].input);
-        WTF::String str = blink::decodeURLEscapeSequences(input);
+        String input(decodeCases[i].input);
+        String str = decodeURLEscapeSequences(input);
         EXPECT_STREQ(decodeCases[i].output, str.utf8().data());
     }
 
     // Our decode should decode %00
-    WTF::String zero = blink::decodeURLEscapeSequences("%00");
+    String zero = decodeURLEscapeSequences("%00");
     EXPECT_STRNE("%00", zero.utf8().data());
 
     // Test the error behavior for invalid UTF-8 (we differ from WebKit here).
-    WTF::String invalid = blink::decodeURLEscapeSequences(
-        "%e4%a0%e5%a5%bd");
+    String invalid = decodeURLEscapeSequences("%e4%a0%e5%a5%bd");
     UChar invalidExpectedHelper[4] = { 0x00e4, 0x00a0, 0x597d, 0 };
-    WTF::String invalidExpected(
+    String invalidExpected(
         reinterpret_cast<const ::UChar*>(invalidExpectedHelper),
         3);
     EXPECT_EQ(invalidExpected, invalid);
@@ -332,43 +331,41 @@ TEST(KURLTest, Encode)
     };
 
     for (size_t i = 0; i < arraysize(encode_cases); i++) {
-        WTF::String input(encode_cases[i].input);
-        WTF::String expectedOutput(encode_cases[i].output);
-        WTF::String output = blink::encodeWithURLEscapeSequences(input);
+        String input(encode_cases[i].input);
+        String expectedOutput(encode_cases[i].output);
+        String output = encodeWithURLEscapeSequences(input);
         EXPECT_EQ(expectedOutput, output);
     }
 
     // Our encode escapes NULLs for safety, so we need to check that too.
-    WTF::String input("\x00\x01", 2);
-    WTF::String reference("%00%01");
+    String input("\x00\x01", 2);
+    String reference("%00%01");
 
-    WTF::String output = blink::encodeWithURLEscapeSequences(input);
+    String output = encodeWithURLEscapeSequences(input);
     EXPECT_EQ(reference, output);
 
     // Also test that it gets converted to UTF-8 properly.
     UChar wideInputHelper[3] = { 0x4f60, 0x597d, 0 };
-    WTF::String wideInput(
-        reinterpret_cast<const ::UChar*>(wideInputHelper), 2);
-    WTF::String wideReference("%E4%BD%A0%E5%A5%BD");
-    WTF::String wideOutput =
-        blink::encodeWithURLEscapeSequences(wideInput);
+    String wideInput(reinterpret_cast<const ::UChar*>(wideInputHelper), 2);
+    String wideReference("%E4%BD%A0%E5%A5%BD");
+    String wideOutput = encodeWithURLEscapeSequences(wideInput);
     EXPECT_EQ(wideReference, wideOutput);
 }
 
 TEST(KURLTest, ResolveEmpty)
 {
-    blink::KURL emptyBase;
+    KURL emptyBase;
 
     // WebKit likes to be able to resolve absolute input agains empty base URLs,
     // which would normally be invalid since the base URL is invalid.
     const char abs[] = "http://www.google.com/";
-    blink::KURL resolveAbs(emptyBase, abs);
+    KURL resolveAbs(emptyBase, abs);
     EXPECT_TRUE(resolveAbs.isValid());
     EXPECT_STREQ(abs, resolveAbs.string().utf8().data());
 
     // Resolving a non-relative URL agains the empty one should still error.
     const char rel[] = "foo.html";
-    blink::KURL resolveErr(emptyBase, rel);
+    KURL resolveErr(emptyBase, rel);
     EXPECT_FALSE(resolveErr.isValid());
 }
 
@@ -376,7 +373,7 @@ TEST(KURLTest, ResolveEmpty)
 // replacements on invalid URLs, but here we do.
 TEST(KURLTest, ReplaceInvalid)
 {
-    blink::KURL kurl;
+    KURL kurl;
 
     EXPECT_FALSE(kurl.isValid());
     EXPECT_TRUE(kurl.isEmpty());
@@ -415,10 +412,10 @@ TEST(KURLTest, ReplaceInvalid)
 TEST(KURLTest, Path)
 {
     const char initial[] = "http://www.google.com/path/foo";
-    blink::KURL kurl(blink::ParsedURLString, initial);
+    KURL kurl(ParsedURLString, initial);
 
     // Clear by setting a null string.
-    WTF::String nullString;
+    String nullString;
     EXPECT_TRUE(nullString.isNull());
     kurl.setPath(nullString);
     EXPECT_STREQ("http://www.google.com/", kurl.string().utf8().data());
@@ -429,17 +426,17 @@ TEST(KURLTest, Path)
 TEST(KURLTest, Query)
 {
     const char initial[] = "http://www.google.com/search?q=awesome";
-    blink::KURL kurl(blink::ParsedURLString, initial);
+    KURL kurl(ParsedURLString, initial);
 
     // Clear by setting a null string.
-    WTF::String nullString;
+    String nullString;
     EXPECT_TRUE(nullString.isNull());
     kurl.setQuery(nullString);
     EXPECT_STREQ("http://www.google.com/search", kurl.string().utf8().data());
 
     // Clear by setting an empty string.
-    kurl = blink::KURL(blink::ParsedURLString, initial);
-    WTF::String emptyString("");
+    kurl = KURL(ParsedURLString, initial);
+    String emptyString("");
     EXPECT_FALSE(emptyString.isNull());
     kurl.setQuery(emptyString);
     EXPECT_STREQ("http://www.google.com/search?", kurl.string().utf8().data());
@@ -459,10 +456,10 @@ TEST(KURLTest, Query)
 
 TEST(KURLTest, Ref)
 {
-    blink::KURL kurl(blink::ParsedURLString, "http://foo/bar#baz");
+    KURL kurl(ParsedURLString, "http://foo/bar#baz");
 
     // Basic ref setting.
-    blink::KURL cur(blink::ParsedURLString, "http://foo/bar");
+    KURL cur(ParsedURLString, "http://foo/bar");
     cur.setFragmentIdentifier("asdf");
     EXPECT_STREQ("http://foo/bar#asdf", cur.string().utf8().data());
     cur = kurl;
@@ -470,7 +467,7 @@ TEST(KURLTest, Ref)
     EXPECT_STREQ("http://foo/bar#asdf", cur.string().utf8().data());
 
     // Setting a ref to the empty string will set it to "#".
-    cur = blink::KURL(blink::ParsedURLString, "http://foo/bar");
+    cur = KURL(ParsedURLString, "http://foo/bar");
     cur.setFragmentIdentifier("");
     EXPECT_STREQ("http://foo/bar#", cur.string().utf8().data());
     cur = kurl;
@@ -478,17 +475,17 @@ TEST(KURLTest, Ref)
     EXPECT_STREQ("http://foo/bar#", cur.string().utf8().data());
 
     // Setting the ref to the null string will clear it altogether.
-    cur = blink::KURL(blink::ParsedURLString, "http://foo/bar");
-    cur.setFragmentIdentifier(WTF::String());
+    cur = KURL(ParsedURLString, "http://foo/bar");
+    cur.setFragmentIdentifier(String());
     EXPECT_STREQ("http://foo/bar", cur.string().utf8().data());
     cur = kurl;
-    cur.setFragmentIdentifier(WTF::String());
+    cur.setFragmentIdentifier(String());
     EXPECT_STREQ("http://foo/bar", cur.string().utf8().data());
 }
 
 TEST(KURLTest, Empty)
 {
-    blink::KURL kurl;
+    KURL kurl;
 
     // First test that regular empty URLs are the same.
     EXPECT_TRUE(kurl.isEmpty());
@@ -498,7 +495,7 @@ TEST(KURLTest, Empty)
     EXPECT_TRUE(kurl.string().isEmpty());
 
     // Test resolving a null URL on an empty string.
-    blink::KURL kurl2(kurl, "");
+    KURL kurl2(kurl, "");
     EXPECT_FALSE(kurl2.isNull());
     EXPECT_TRUE(kurl2.isEmpty());
     EXPECT_FALSE(kurl2.isValid());
@@ -508,7 +505,7 @@ TEST(KURLTest, Empty)
     EXPECT_TRUE(kurl2.string().isEmpty());
 
     // Resolve the null URL on a null string.
-    blink::KURL kurl22(kurl, WTF::String());
+    KURL kurl22(kurl, String());
     EXPECT_FALSE(kurl22.isNull());
     EXPECT_TRUE(kurl22.isEmpty());
     EXPECT_FALSE(kurl22.isValid());
@@ -520,21 +517,20 @@ TEST(KURLTest, Empty)
     // Test non-hierarchical schemes resolving. The actual URLs will be different.
     // WebKit's one will set the string to "something.gif" and we'll set it to an
     // empty string. I think either is OK, so we just check our behavior.
-    blink::KURL kurl3(blink::KURL(blink::ParsedURLString, "data:foo"),
-                        "something.gif");
+    KURL kurl3(KURL(ParsedURLString, "data:foo"), "something.gif");
     EXPECT_TRUE(kurl3.isEmpty());
     EXPECT_FALSE(kurl3.isValid());
 
     // Test for weird isNull string input,
     // see: http://bugs.webkit.org/show_bug.cgi?id=16487
-    blink::KURL kurl4(blink::ParsedURLString, kurl.string());
+    KURL kurl4(ParsedURLString, kurl.string());
     EXPECT_TRUE(kurl4.isEmpty());
     EXPECT_FALSE(kurl4.isValid());
     EXPECT_TRUE(kurl4.string().isNull());
     EXPECT_TRUE(kurl4.string().isEmpty());
 
     // Resolving an empty URL on an invalid string.
-    blink::KURL kurl5(blink::KURL(), "foo.js");
+    KURL kurl5(KURL(), "foo.js");
     // We'll be empty in this case, but KURL won't be. Should be OK.
     // EXPECT_EQ(kurl5.isEmpty(), kurl5.isEmpty());
     // EXPECT_EQ(kurl5.string().isEmpty(), kurl5.string().isEmpty());
@@ -542,14 +538,14 @@ TEST(KURLTest, Empty)
     EXPECT_FALSE(kurl5.string().isNull());
 
     // Empty string as input
-    blink::KURL kurl6(blink::ParsedURLString, "");
+    KURL kurl6(ParsedURLString, "");
     EXPECT_TRUE(kurl6.isEmpty());
     EXPECT_FALSE(kurl6.isValid());
     EXPECT_FALSE(kurl6.string().isNull());
     EXPECT_TRUE(kurl6.string().isEmpty());
 
     // Non-empty but invalid C string as input.
-    blink::KURL kurl7(blink::ParsedURLString, "foo.js");
+    KURL kurl7(ParsedURLString, "foo.js");
     // WebKit will actually say this URL has the string "foo.js" but is invalid.
     // We don't do that.
     // EXPECT_EQ(kurl7.isEmpty(), kurl7.isEmpty());
@@ -560,14 +556,14 @@ TEST(KURLTest, Empty)
 TEST(KURLTest, UserPass)
 {
     const char* src = "http://user:pass@google.com/";
-    blink::KURL kurl(blink::ParsedURLString, src);
+    KURL kurl(ParsedURLString, src);
 
     // Clear just the username.
     kurl.setUser("");
     EXPECT_EQ("http://:pass@google.com/", kurl.string());
 
     // Clear just the password.
-    kurl = blink::KURL(blink::ParsedURLString, src);
+    kurl = KURL(ParsedURLString, src);
     kurl.setPass("");
     EXPECT_EQ("http://user@google.com/", kurl.string());
 
@@ -579,7 +575,7 @@ TEST(KURLTest, UserPass)
 TEST(KURLTest, Offsets)
 {
     const char* src1 = "http://user:pass@google.com/foo/bar.html?baz=query#ref";
-    blink::KURL kurl1(blink::ParsedURLString, src1);
+    KURL kurl1(ParsedURLString, src1);
 
     EXPECT_EQ(17u, kurl1.hostStart());
     EXPECT_EQ(27u, kurl1.hostEnd());
@@ -588,7 +584,7 @@ TEST(KURLTest, Offsets)
     EXPECT_EQ(32u, kurl1.pathAfterLastSlash());
 
     const char* src2 = "http://google.com/foo/";
-    blink::KURL kurl2(blink::ParsedURLString, src2);
+    KURL kurl2(ParsedURLString, src2);
 
     EXPECT_EQ(7u, kurl2.hostStart());
     EXPECT_EQ(17u, kurl2.hostEnd());
@@ -597,7 +593,7 @@ TEST(KURLTest, Offsets)
     EXPECT_EQ(22u, kurl2.pathAfterLastSlash());
 
     const char* src3 = "javascript:foobar";
-    blink::KURL kurl3(blink::ParsedURLString, src3);
+    KURL kurl3(ParsedURLString, src3);
 
     EXPECT_EQ(11u, kurl3.hostStart());
     EXPECT_EQ(11u, kurl3.hostEnd());
@@ -609,9 +605,9 @@ TEST(KURLTest, Offsets)
 TEST(KURLTest, DeepCopy)
 {
     const char url[] = "http://www.google.com/";
-    blink::KURL src(blink::ParsedURLString, url);
+    KURL src(ParsedURLString, url);
     EXPECT_TRUE(src.string() == url); // This really just initializes the cache.
-    blink::KURL dest = src.copy();
+    KURL dest = src.copy();
     EXPECT_TRUE(dest.string() == url); // This really just initializes the cache.
 
     // The pointers should be different for both UTF-8 and UTF-16.
@@ -622,61 +618,61 @@ TEST(KURLTest, DeepCopyInnerURL)
 {
     const char url[] = "filesystem:http://www.google.com/temporary/test.txt";
     const char innerURL[] = "http://www.google.com/temporary";
-    blink::KURL src(blink::ParsedURLString, url);
+    KURL src(ParsedURLString, url);
     EXPECT_TRUE(src.string() == url);
     EXPECT_TRUE(src.innerURL()->string() == innerURL);
-    blink::KURL dest = src.copy();
+    KURL dest = src.copy();
     EXPECT_TRUE(dest.string() == url);
     EXPECT_TRUE(dest.innerURL()->string() == innerURL);
 }
 
 TEST(KURLTest, LastPathComponent)
 {
-    blink::KURL url1(blink::ParsedURLString, "http://host/path/to/file.txt");
+    KURL url1(ParsedURLString, "http://host/path/to/file.txt");
     EXPECT_EQ("file.txt", url1.lastPathComponent());
 
-    blink::KURL invalidUTF8(blink::ParsedURLString, "http://a@9%aa%:/path/to/file.txt");
+    KURL invalidUTF8(ParsedURLString, "http://a@9%aa%:/path/to/file.txt");
     EXPECT_EQ(String(), invalidUTF8.lastPathComponent());
 }
 
 TEST(KURLTest, IsHierarchical)
 {
-    blink::KURL url1(blink::ParsedURLString, "http://host/path/to/file.txt");
+    KURL url1(ParsedURLString, "http://host/path/to/file.txt");
     EXPECT_TRUE(url1.isHierarchical());
 
-    blink::KURL invalidUTF8(blink::ParsedURLString, "http://a@9%aa%:/path/to/file.txt");
+    KURL invalidUTF8(ParsedURLString, "http://a@9%aa%:/path/to/file.txt");
     EXPECT_FALSE(invalidUTF8.isHierarchical());
 }
 
 TEST(KURLTest, PathAfterLastSlash)
 {
-    blink::KURL url1(blink::ParsedURLString, "http://host/path/to/file.txt");
+    KURL url1(ParsedURLString, "http://host/path/to/file.txt");
     EXPECT_EQ(20u, url1.pathAfterLastSlash());
 
-    blink::KURL invalidUTF8(blink::ParsedURLString, "http://a@9%aa%:/path/to/file.txt");
+    KURL invalidUTF8(ParsedURLString, "http://a@9%aa%:/path/to/file.txt");
     EXPECT_EQ(0u, invalidUTF8.pathAfterLastSlash());
 }
 
 TEST(KURLTest, ProtocolIsInHTTPFamily)
 {
-    blink::KURL url1(blink::ParsedURLString, "http://host/path/to/file.txt");
+    KURL url1(ParsedURLString, "http://host/path/to/file.txt");
     EXPECT_TRUE(url1.protocolIsInHTTPFamily());
 
-    blink::KURL invalidUTF8(blink::ParsedURLString, "http://a@9%aa%:/path/to/file.txt");
+    KURL invalidUTF8(ParsedURLString, "http://a@9%aa%:/path/to/file.txt");
     EXPECT_FALSE(invalidUTF8.protocolIsInHTTPFamily());
 }
 
 TEST(KURLTest, ProtocolIs)
 {
-    blink::KURL url1(blink::ParsedURLString, "foo://bar");
+    KURL url1(ParsedURLString, "foo://bar");
     EXPECT_TRUE(url1.protocolIs("foo"));
     EXPECT_FALSE(url1.protocolIs("foo-bar"));
 
-    blink::KURL url2(blink::ParsedURLString, "foo-bar:");
+    KURL url2(ParsedURLString, "foo-bar:");
     EXPECT_TRUE(url2.protocolIs("foo-bar"));
     EXPECT_FALSE(url2.protocolIs("foo"));
 
-    blink::KURL invalidUTF8(blink::ParsedURLString, "http://a@9%aa%:");
+    KURL invalidUTF8(ParsedURLString, "http://a@9%aa%:");
     EXPECT_FALSE(invalidUTF8.protocolIs("http"));
     EXPECT_TRUE(invalidUTF8.protocolIs(""));
 }
@@ -700,10 +696,10 @@ TEST(KURLTest, strippedForUseAsReferrer)
     };
 
     for (size_t i = 0; i < arraysize(referrerCases); i++) {
-        blink::KURL kurl(blink::ParsedURLString, referrerCases[i].input);
-        WTF::String referrer = kurl.strippedForUseAsReferrer();
+        KURL kurl(ParsedURLString, referrerCases[i].input);
+        String referrer = kurl.strippedForUseAsReferrer();
         EXPECT_STREQ(referrerCases[i].output, referrer.utf8().data());
     }
 }
 
-} // namespace
+} // namespace blink

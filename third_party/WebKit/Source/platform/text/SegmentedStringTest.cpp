@@ -33,9 +33,7 @@
 
 #include <gtest/gtest.h>
 
-using blink::SegmentedString;
-
-namespace {
+namespace blink {
 
 TEST(SegmentedStringTest, CurrentChar)
 {
@@ -83,4 +81,4 @@ TEST(SegmentedStringTest, CurrentChar)
     }
 }
 
-} // namespace
+} // namespace blink

@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FormDataTest_h
-#define FormDataTest_h
-
 #include "config.h"
 #include "platform/network/FormData.h"
 
@@ -117,5 +114,3 @@ TEST_F(FormDataTest, DeepCopy)
 } // namespace
 
 } // namespace blink
-
-#endif

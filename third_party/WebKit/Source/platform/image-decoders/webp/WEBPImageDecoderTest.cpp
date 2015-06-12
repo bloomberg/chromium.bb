@@ -29,7 +29,6 @@
  */
 
 #include "config.h"
-
 #include "platform/image-decoders/webp/WEBPImageDecoder.h"
 
 #include "platform/RuntimeEnabledFeatures.h"
@@ -45,7 +44,7 @@
 #include "wtf/dtoa/utils.h"
 #include <gtest/gtest.h>
 
-using namespace blink;
+namespace blink {
 
 namespace {
 
@@ -309,7 +308,7 @@ void testAlphaBlending(const char* webpFile)
         verifyFramesMatch(webpFile, decoderA->frameBufferAtIndex(i), decoderB->frameBufferAtIndex(i));
 }
 
-} // namespace
+} // anonymous namespace
 
 TEST(AnimatedWebPTests, uniqueGenerationIDs)
 {
@@ -740,3 +739,5 @@ TEST(StaticWebPTests, notAnimated)
     EXPECT_EQ(1u, decoder->frameCount());
     EXPECT_EQ(cAnimationNone, decoder->repetitionCount());
 }
+
+} // namespace blink

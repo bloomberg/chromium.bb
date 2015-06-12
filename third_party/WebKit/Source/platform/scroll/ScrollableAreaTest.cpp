@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "config.h"
-
 #include "platform/scroll/ScrollableArea.h"
 
 #include "platform/TestingPlatformSupport.h"
@@ -13,9 +12,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 class MockScrollableArea : public ScrollableArea {
 public:
@@ -36,15 +33,15 @@ public:
     MOCK_CONST_METHOD0(scrollbarsCanBeActive, bool());
     MOCK_CONST_METHOD0(scrollableAreaBoundingBox, IntRect());
 
-    virtual bool userInputScrollable(ScrollbarOrientation) const override { return true; }
-    virtual bool shouldPlaceVerticalScrollbarOnLeft() const override { return false; }
-    virtual void setScrollOffset(const IntPoint& offset, ScrollType) override { m_scrollPosition = offset.shrunkTo(m_maximumScrollPosition); }
-    virtual IntPoint scrollPosition() const override { return m_scrollPosition; }
-    virtual IntPoint maximumScrollPosition() const override { return m_maximumScrollPosition; }
-    virtual int visibleHeight() const override { return 768; }
-    virtual int visibleWidth() const override { return 1024; }
-    virtual bool scrollAnimatorEnabled() const override { return false; }
-    virtual int pageStep(ScrollbarOrientation) const override { return 0; }
+    bool userInputScrollable(ScrollbarOrientation) const override { return true; }
+    bool shouldPlaceVerticalScrollbarOnLeft() const override { return false; }
+    void setScrollOffset(const IntPoint& offset, ScrollType) override { m_scrollPosition = offset.shrunkTo(m_maximumScrollPosition); }
+    IntPoint scrollPosition() const override { return m_scrollPosition; }
+    IntPoint maximumScrollPosition() const override { return m_maximumScrollPosition; }
+    int visibleHeight() const override { return 768; }
+    int visibleWidth() const override { return 1024; }
+    bool scrollAnimatorEnabled() const override { return false; }
+    int pageStep(ScrollbarOrientation) const override { return 0; }
 
 private:
     IntPoint m_scrollPosition;
@@ -121,4 +118,4 @@ TEST_F(ScrollableAreaTest, ScrollAnimatorCurrentPositionShouldBeSync)
     EXPECT_EQ(100.0, scrollableArea.scrollAnimator()->currentPosition().y());
 }
 
-} // unnamed namespace
+} // namespace blink

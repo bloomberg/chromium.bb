@@ -29,7 +29,6 @@
  */
 
 #include "config.h"
-
 #include "platform/graphics/gpu/DrawingBuffer.h"
 
 #include "platform/RuntimeEnabledFeatures.h"
@@ -40,15 +39,13 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebExternalTextureMailbox.h"
 #include "wtf/RefPtr.h"
-
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-using namespace blink;
 using testing::Test;
 using testing::_;
 
-namespace {
+namespace blink {
 
 class WebGraphicsContext3DForTests : public MockWebGraphicsContext3D {
 public:
@@ -59,28 +56,28 @@ public:
         , m_mostRecentlyWaitedSyncPoint(0)
         , m_currentImageId(1) { }
 
-    virtual void bindTexture(WGC3Denum target, WebGLId texture)
+    void bindTexture(WGC3Denum target, WebGLId texture) override
     {
         if (target == GL_TEXTURE_2D) {
             m_boundTexture = texture;
         }
     }
 
-    virtual void texImage2D(WGC3Denum target, WGC3Dint level, WGC3Denum internalformat, WGC3Dsizei width, WGC3Dsizei height, WGC3Dint border, WGC3Denum format, WGC3Denum type, const void* pixels)
+    void texImage2D(WGC3Denum target, WGC3Dint level, WGC3Denum internalformat, WGC3Dsizei width, WGC3Dsizei height, WGC3Dint border, WGC3Denum format, WGC3Denum type, const void* pixels) override
     {
         if (target == GL_TEXTURE_2D && !level) {
             m_textureSizes.set(m_boundTexture, IntSize(width, height));
         }
     }
 
-    virtual void genMailboxCHROMIUM(WGC3Dbyte* mailbox)
+    void genMailboxCHROMIUM(WGC3Dbyte* mailbox) override
     {
         ++m_currentMailboxByte;
         WebExternalTextureMailbox temp;
         memset(mailbox, m_currentMailboxByte, sizeof(temp.name));
     }
 
-    virtual void produceTextureDirectCHROMIUM(WebGLId texture, WGC3Denum target, const WGC3Dbyte* mailbox)
+    void produceTextureDirectCHROMIUM(WebGLId texture, WGC3Denum target, const WGC3Dbyte* mailbox) override
     {
         ASSERT_EQ(target, static_cast<WGC3Denum>(GL_TEXTURE_2D));
         ASSERT_TRUE(m_textureSizes.contains(texture));
@@ -92,18 +89,18 @@ public:
         return m_mostRecentlyProducedSize;
     }
 
-    virtual unsigned insertSyncPoint()
+    unsigned insertSyncPoint() override
     {
         static unsigned syncPointGenerator = 0;
         return ++syncPointGenerator;
     }
 
-    virtual void waitSyncPoint(unsigned syncPoint)
+    void waitSyncPoint(unsigned syncPoint) override
     {
         m_mostRecentlyWaitedSyncPoint = syncPoint;
     }
 
-    virtual WGC3Duint createGpuMemoryBufferImageCHROMIUM(WGC3Dsizei width, WGC3Dsizei height, WGC3Denum internalformat, WGC3Denum usage)
+    WGC3Duint createGpuMemoryBufferImageCHROMIUM(WGC3Dsizei width, WGC3Dsizei height, WGC3Denum internalformat, WGC3Denum usage) override
     {
         m_imageSizes.set(m_currentImageId, IntSize(width, height));
         return m_currentImageId++;
@@ -187,7 +184,7 @@ public:
         , m_live(0)
     { }
 
-    virtual ~DrawingBufferForTests()
+    ~DrawingBufferForTests() override
     {
         if (m_live)
             *m_live = false;
@@ -198,7 +195,7 @@ public:
 
 class DrawingBufferTest : public Test {
 protected:
-    virtual void SetUp()
+    void SetUp() override
     {
         OwnPtr<WebGraphicsContext3DForTests> context = adoptPtr(new WebGraphicsContext3DForTests);
         m_context = context.get();
@@ -666,4 +663,4 @@ TEST_F(DrawingBufferTest, verifySetIsHiddenProperlyAffectsMailboxes)
     m_drawingBuffer->beginDestruction();
 }
 
-} // namespace
+} // namespace blink

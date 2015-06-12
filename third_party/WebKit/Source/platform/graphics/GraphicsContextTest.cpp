@@ -23,7 +23,6 @@
  */
 
 #include "config.h"
-
 #include "platform/graphics/GraphicsContext.h"
 
 #include "platform/RuntimeEnabledFeatures.h"
@@ -36,12 +35,9 @@
 #include "third_party/skia/include/effects/SkBlurDrawLooper.h"
 #include "third_party/skia/include/effects/SkBlurImageFilter.h"
 #include "third_party/skia/include/effects/SkBlurMaskFilter.h"
-
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 #define EXPECT_EQ_RECT(a, b) \
     EXPECT_EQ(a.x(), b.x()); \
@@ -283,4 +279,4 @@ TEST(GraphicsContextTest, RecordingCanvas)
     context->endRecording();
 }
 
-} // namespace
+} // namespace blink

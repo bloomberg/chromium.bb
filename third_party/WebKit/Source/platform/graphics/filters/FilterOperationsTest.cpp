@@ -28,9 +28,7 @@
 
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 TEST(FilterOperationsTest, getOutsetsBlur)
 {
@@ -56,5 +54,4 @@ TEST(FilterOperationsTest, getOutsetsDropShadow)
     EXPECT_EQ(54, outsets.left());
 }
 
-}
-
+} // namespace blink

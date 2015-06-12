@@ -23,7 +23,6 @@
  */
 
 #include "config.h"
-
 #include "platform/graphics/Canvas2DLayerBridge.h"
 
 #include "SkDeferredCanvas.h"
@@ -36,14 +35,14 @@
 #include "public/platform/WebThread.h"
 #include "third_party/skia/include/core/SkDevice.h"
 #include "wtf/RefPtr.h"
-
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-using namespace blink;
 using testing::InSequence;
 using testing::Return;
 using testing::Test;
+
+namespace blink {
 
 namespace {
 
@@ -59,12 +58,12 @@ public:
     MockWebGraphicsContext3DProvider(WebGraphicsContext3D* context3d)
         : m_context3d(context3d) { }
 
-    WebGraphicsContext3D* context3d()
+    WebGraphicsContext3D* context3d() override
     {
         return m_context3d;
     }
 
-    GrContext* grContext()
+    GrContext* grContext() override
     {
         return 0;
     }
@@ -92,22 +91,22 @@ private:
 
 class NullWebExternalBitmap : public WebExternalBitmap {
 public:
-    virtual WebSize size()
+    WebSize size() override
     {
         return WebSize();
     }
 
-    virtual void setSize(WebSize)
+    void setSize(WebSize) override
     {
     }
 
-    virtual uint8* pixels()
+    uint8* pixels() override
     {
-        return 0;
+        return nullptr;
     }
 };
 
-} // namespace
+} // anonymous namespace
 
 class Canvas2DLayerBridgeTest : public Test {
 protected:
@@ -217,8 +216,6 @@ protected:
     }
 };
 
-namespace {
-
 TEST_F(Canvas2DLayerBridgeTest, testFullLifecycleSingleThreaded)
 {
     fullLifecycleTest();
@@ -239,4 +236,4 @@ TEST_F(Canvas2DLayerBridgeTest, testPrepareMailboxAndLoseResource)
     prepareMailboxAndLoseResourceTest();
 }
 
-} // namespace
+} // namespace blink

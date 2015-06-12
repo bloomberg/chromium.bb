@@ -24,15 +24,12 @@
  */
 
 #include "config.h"
-
 #include "platform/graphics/ThreadSafeDataTransport.h"
 
 #include "platform/SharedBuffer.h"
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 TEST(ThreadSafeDataTransportTest, hasNewData)
 {
@@ -76,4 +73,4 @@ TEST(ThreadSafeDataTransportTest, setData)
     EXPECT_FALSE(memcmp(testString3, tempBuffer->data(), tempBuffer->size()));
 }
 
-} // namespace
+} // namespace blink

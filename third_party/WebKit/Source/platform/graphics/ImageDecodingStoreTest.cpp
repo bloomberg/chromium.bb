@@ -24,7 +24,6 @@
  */
 
 #include "config.h"
-
 #include "platform/graphics/ImageDecodingStore.h"
 
 #include "platform/SharedBuffer.h"
@@ -32,13 +31,11 @@
 #include "platform/graphics/test/MockImageDecoder.h"
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 class ImageDecodingStoreTest : public ::testing::Test, public MockImageDecoderClient {
 public:
-    virtual void SetUp()
+    void SetUp() override
     {
         ImageDecodingStore::instance().setCacheLimitInBytes(1024 * 1024);
         m_data = SharedBuffer::create();
@@ -46,30 +43,30 @@ public:
         m_decodersDestroyed = 0;
     }
 
-    virtual void TearDown()
+    void TearDown() override
     {
         ImageDecodingStore::instance().clear();
     }
 
-    virtual void decoderBeingDestroyed()
+    void decoderBeingDestroyed() override
     {
         ++m_decodersDestroyed;
     }
 
-    virtual void decodeRequested()
+    void decodeRequested() override
     {
         // Decoder is never used by ImageDecodingStore.
         ASSERT_TRUE(false);
     }
 
-    virtual ImageFrame::Status status()
+    ImageFrame::Status status() override
     {
         return ImageFrame::FramePartial;
     }
 
-    virtual size_t frameCount() { return 1; }
-    virtual int repetitionCount() const { return cAnimationNone; }
-    virtual float frameDuration() const { return 0; }
+    size_t frameCount() override { return 1; }
+    int repetitionCount() const override { return cAnimationNone; }
+    float frameDuration() const override { return 0; }
 
 protected:
     void evictOneCache()
@@ -179,4 +176,4 @@ TEST_F(ImageDecodingStoreTest, removeDecoder)
     EXPECT_FALSE(ImageDecodingStore::instance().lockDecoder(m_generator.get(), size, &testDecoder));
 }
 
-} // namespace
+} // namespace blink

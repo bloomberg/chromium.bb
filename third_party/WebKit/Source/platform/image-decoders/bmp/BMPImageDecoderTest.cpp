@@ -3,15 +3,13 @@
 // found in the LICENSE file.
 
 #include "config.h"
-
 #include "platform/image-decoders/bmp/BMPImageDecoder.h"
 
 #include "platform/SharedBuffer.h"
 #include "public/platform/WebUnitTestSupport.h"
-
 #include <gtest/gtest.h>
 
-using namespace blink;
+namespace blink {
 
 namespace {
 
@@ -28,7 +26,7 @@ PassOwnPtr<BMPImageDecoder> createDecoder()
     return adoptPtr(new BMPImageDecoder(ImageSource::AlphaNotPremultiplied, ImageSource::GammaAndColorProfileApplied, ImageDecoder::noDecodedImageByteLimit));
 }
 
-} // namespace
+} // anonymous namespace
 
 TEST(BMPImageDecoderTest, isSizeAvailable)
 {
@@ -75,3 +73,5 @@ TEST(BMPImageDecoderTest, emptyImage)
     EXPECT_EQ(ImageFrame::FrameEmpty, frame->status());
     EXPECT_TRUE(decoder->failed());
 }
+
+} // namespace blink

@@ -36,7 +36,7 @@
 #include <gtest/gtest.h>
 #include <unicode/uvernum.h>
 
-using namespace blink;
+namespace blink {
 
 class LocaleICUTest : public ::testing::Test {
 public:
@@ -295,3 +295,5 @@ TEST_F(LocaleICUTest, reversible)
     testNumbers("zh_HK");
     testNumbers("zh_TW");
 }
+
+} // namespace blink

@@ -29,7 +29,6 @@
  */
 
 #include "config.h"
-
 #include "platform/image-decoders/jpeg/JPEGImageDecoder.h"
 
 #include "platform/SharedBuffer.h"
@@ -40,10 +39,9 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/StringHasher.h"
-
 #include <gtest/gtest.h>
 
-using namespace blink;
+namespace blink {
 
 static const size_t LargeEnoughSize = 1000 * 1000;
 
@@ -62,7 +60,7 @@ PassOwnPtr<JPEGImageDecoder> createDecoder(size_t maxDecodedBytes)
     return adoptPtr(new JPEGImageDecoder(ImageSource::AlphaNotPremultiplied, ImageSource::GammaAndColorProfileApplied, maxDecodedBytes));
 }
 
-} // namespace
+} // anonymous namespace
 
 void downsample(size_t maxDecodedBytes, unsigned* outputWidth, unsigned* outputHeight, const char* imageFilePath)
 {
@@ -236,3 +234,5 @@ TEST(JPEGImageDecoderTest, yuv)
     ASSERT_TRUE(decoder->isSizeAvailable());
     ASSERT_FALSE(decoder->canDecodeToYUV());
 }
+
+} // namespace blink

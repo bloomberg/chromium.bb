@@ -23,7 +23,6 @@
  */
 
 #include "config.h"
-
 #include "platform/graphics/GraphicsLayer.h"
 
 #include "platform/scroll/ScrollableArea.h"
@@ -38,17 +37,16 @@
 #include "public/platform/WebLayerTreeView.h"
 #include "public/platform/WebUnitTestSupport.h"
 #include "wtf/PassOwnPtr.h"
-
 #include <gtest/gtest.h>
 
-using namespace blink;
+namespace blink {
 
 namespace {
 
 class MockGraphicsLayerClient : public GraphicsLayerClient {
 public:
-    virtual void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& inClip) override { }
-    virtual String debugName(const GraphicsLayer*) override { return String(); }
+    void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& inClip) override { }
+    String debugName(const GraphicsLayer*) override { return String(); }
 };
 
 class GraphicsLayerForTesting : public GraphicsLayer {
@@ -56,8 +54,10 @@ public:
     explicit GraphicsLayerForTesting(GraphicsLayerClient* client)
         : GraphicsLayer(client) { };
 
-    virtual WebLayer* contentsLayer() const { return GraphicsLayer::contentsLayer(); }
+    WebLayer* contentsLayer() const override { return GraphicsLayer::contentsLayer(); }
 };
+
+} // anonymous namespace
 
 class GraphicsLayerTest : public testing::Test {
 public:
@@ -79,7 +79,7 @@ public:
         m_layerTreeView->setViewportSize(WebSize(1, 1));
     }
 
-    virtual ~GraphicsLayerTest()
+    ~GraphicsLayerTest() override
     {
         m_graphicsLayer.clear();
         m_layerTreeView.clear();
@@ -127,30 +127,30 @@ TEST_F(GraphicsLayerTest, updateLayerShouldFlattenTransformWithAnimations)
 
 class FakeScrollableArea : public ScrollableArea {
 public:
-    virtual bool isActive() const override { return false; }
-    virtual int scrollSize(ScrollbarOrientation) const override { return 100; }
-    virtual bool isScrollCornerVisible() const override { return false; }
-    virtual IntRect scrollCornerRect() const override { return IntRect(); }
-    virtual int visibleWidth() const override { return 10; }
-    virtual int visibleHeight() const override { return 10; }
-    virtual IntSize contentsSize() const override { return IntSize(100, 100); }
-    virtual bool scrollbarsCanBeActive() const override { return false; }
-    virtual IntRect scrollableAreaBoundingBox() const override { return IntRect(); }
-    virtual void invalidateScrollbarRect(Scrollbar*, const IntRect&) override { }
-    virtual void invalidateScrollCornerRect(const IntRect&) override { }
-    virtual bool userInputScrollable(ScrollbarOrientation) const override { return true; }
-    virtual bool shouldPlaceVerticalScrollbarOnLeft() const override { return false; }
-    virtual int pageStep(ScrollbarOrientation) const override { return 0; }
-    virtual IntPoint minimumScrollPosition() const override { return IntPoint(); }
-    virtual IntPoint maximumScrollPosition() const override
+    bool isActive() const override { return false; }
+    int scrollSize(ScrollbarOrientation) const override { return 100; }
+    bool isScrollCornerVisible() const override { return false; }
+    IntRect scrollCornerRect() const override { return IntRect(); }
+    int visibleWidth() const override { return 10; }
+    int visibleHeight() const override { return 10; }
+    IntSize contentsSize() const override { return IntSize(100, 100); }
+    bool scrollbarsCanBeActive() const override { return false; }
+    IntRect scrollableAreaBoundingBox() const override { return IntRect(); }
+    void invalidateScrollbarRect(Scrollbar*, const IntRect&) override { }
+    void invalidateScrollCornerRect(const IntRect&) override { }
+    bool userInputScrollable(ScrollbarOrientation) const override { return true; }
+    bool shouldPlaceVerticalScrollbarOnLeft() const override { return false; }
+    int pageStep(ScrollbarOrientation) const override { return 0; }
+    IntPoint minimumScrollPosition() const override { return IntPoint(); }
+    IntPoint maximumScrollPosition() const override
     {
         return IntPoint(contentsSize().width() - visibleWidth(), contentsSize().height() - visibleHeight());
     }
 
-    virtual void setScrollOffset(const IntPoint& scrollOffset, ScrollType) override { m_scrollPosition = scrollOffset; }
-    virtual void setScrollOffset(const DoublePoint& scrollOffset, ScrollType) override { m_scrollPosition = scrollOffset; }
-    virtual DoublePoint scrollPositionDouble() const override { return m_scrollPosition; }
-    virtual IntPoint scrollPosition() const override { return flooredIntPoint(m_scrollPosition); }
+    void setScrollOffset(const IntPoint& scrollOffset, ScrollType) override { m_scrollPosition = scrollOffset; }
+    void setScrollOffset(const DoublePoint& scrollOffset, ScrollType) override { m_scrollPosition = scrollOffset; }
+    DoublePoint scrollPositionDouble() const override { return m_scrollPosition; }
+    IntPoint scrollPosition() const override { return flooredIntPoint(m_scrollPosition); }
 
 private:
     DoublePoint m_scrollPosition;
@@ -169,4 +169,4 @@ TEST_F(GraphicsLayerTest, applyScrollToScrollableArea)
     EXPECT_FLOAT_EQ(scrollPosition.y, scrollableArea.scrollPositionDouble().y());
 }
 
-} // namespace
+} // namespace blink

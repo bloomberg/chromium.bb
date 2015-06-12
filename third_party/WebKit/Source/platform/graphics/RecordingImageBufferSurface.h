@@ -15,11 +15,11 @@
 
 class SkPicture;
 class SkPictureRecorder;
-class RecordingImageBufferSurfaceTest;
 
 namespace blink {
 
 class ImageBuffer;
+class RecordingImageBufferSurfaceTest;
 
 class RecordingImageBufferFallbackSurfaceFactory {
 public:
@@ -62,7 +62,7 @@ public:
     void setIsHidden(bool) override;
 
 private:
-    friend class ::RecordingImageBufferSurfaceTest; // for unit testing
+    friend class RecordingImageBufferSurfaceTest; // for unit testing
     void fallBackToRasterCanvas();
     bool initializeCurrentFrame();
     bool finalizeFrameInternal();

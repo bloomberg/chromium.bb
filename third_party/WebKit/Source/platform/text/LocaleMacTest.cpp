@@ -35,7 +35,7 @@
 #include "wtf/text/CString.h"
 #include <gtest/gtest.h>
 
-using namespace blink;
+namespace blink {
 
 class LocalePlatformSupport : public TestingPlatformSupport {
 public:
@@ -399,3 +399,5 @@ TEST_F(LocaleMacTest, localizedNumberRoundTrip)
     testNumbers("zh_HK");
     testNumbers("zh_TW");
 }
+
+} // namespace blink
