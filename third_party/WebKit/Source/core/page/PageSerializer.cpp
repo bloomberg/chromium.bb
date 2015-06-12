@@ -135,11 +135,11 @@ SerializerMarkupAccumulator::~SerializerMarkupAccumulator()
 {
 }
 
-void SerializerMarkupAccumulator::appendText(StringBuilder& out, Text& text)
+void SerializerMarkupAccumulator::appendText(StringBuilder& result, Text& text)
 {
     Element* parent = text.parentElement();
     if (parent && !shouldIgnoreElement(*parent))
-        MarkupAccumulator::appendText(out, text);
+        MarkupAccumulator::appendText(result, text);
 }
 
 bool SerializerMarkupAccumulator::shouldIgnoreAttribute(const Attribute& attribute)
@@ -151,21 +151,27 @@ bool SerializerMarkupAccumulator::shouldIgnoreAttribute(const Attribute& attribu
     return MarkupAccumulator::shouldIgnoreAttribute(attribute);
 }
 
-void SerializerMarkupAccumulator::appendElement(StringBuilder& out, Element& element, Namespaces* namespaces)
+void SerializerMarkupAccumulator::appendElement(StringBuilder& result, Element& element, Namespaces* namespaces)
 {
     if (!shouldIgnoreElement(element))
-        MarkupAccumulator::appendElement(out, element, namespaces);
+        MarkupAccumulator::appendElement(result, element, namespaces);
 
+    // TODO(tiger): Refactor MarkupAccumulator so it is easier to append an element like this, without special cases for XHTML
     if (isHTMLHeadElement(element)) {
-        out.appendLiteral("<meta charset=\"");
-        out.append(m_document->charset());
-        out.appendLiteral("\">");
+        result.appendLiteral("<meta http-equiv=\"Content-Type\" content=\"");
+        MarkupFormatter::appendAttributeValue(result, m_document->suggestedMIMEType(), m_document->isHTMLDocument());
+        result.appendLiteral("; charset=");
+        MarkupFormatter::appendAttributeValue(result, m_document->charset(), m_document->isHTMLDocument());
+        if (m_document->isXHTMLDocument())
+            result.appendLiteral("\" />");
+        else
+            result.appendLiteral("\">");
     }
 
     // FIXME: For object (plugins) tags and video tag we could replace them by an image of their current contents.
 }
 
-void SerializerMarkupAccumulator::appendCustomAttributes(StringBuilder& out, const Element& element, Namespaces* namespaces)
+void SerializerMarkupAccumulator::appendCustomAttributes(StringBuilder& result, const Element& element, Namespaces* namespaces)
 {
     if (!element.isFrameOwnerElement())
         return;
@@ -182,7 +188,7 @@ void SerializerMarkupAccumulator::appendCustomAttributes(StringBuilder& out, con
 
     // We need to give a fake location to blank frames so they can be referenced by the serialized frame.
     url = m_serializer->urlForBlankFrame(toLocalFrame(frame));
-    appendAttribute(out, element, Attribute(frameOwnerURLAttributeName(frameOwner), AtomicString(url.string())), namespaces);
+    appendAttribute(result, element, Attribute(frameOwnerURLAttributeName(frameOwner), AtomicString(url.string())), namespaces);
 }
 
 void SerializerMarkupAccumulator::appendStartTag(Node& node, Namespaces* namespaces)
