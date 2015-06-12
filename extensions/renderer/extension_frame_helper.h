@@ -12,6 +12,10 @@
 struct ExtensionMsg_ExternalConnectionInfo;
 struct ExtensionMsg_TabConnectionInfo;
 
+namespace base {
+class ListValue;
+}
+
 namespace extensions {
 
 class Dispatcher;
@@ -54,6 +58,10 @@ class ExtensionFrameHelper
                                        const std::string& error_message);
   void OnExtensionSetTabId(int tab_id);
   void OnSetTabExtensionOwner(const std::string& extension_id);
+  void OnExtensionResponse(int request_id,
+                           bool success,
+                           const base::ListValue& response,
+                           const std::string& error);
 
   // The id of the tab the render frame is attached to.
   int tab_id_;

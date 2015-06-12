@@ -56,7 +56,8 @@ class ExtensionWebContentsObserver
   void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
 
   // Subclasses should call this first before doing their own message handling.
-  bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message,
+                         content::RenderFrameHost* render_frame_host) override;
 
   // Per the documentation in WebContentsObserver, these two methods are
   // appropriate to track the set of current RenderFrameHosts.
@@ -82,7 +83,8 @@ class ExtensionWebContentsObserver
   static std::string GetExtensionId(content::RenderViewHost* render_view_host);
 
  private:
-  void OnRequest(const ExtensionHostMsg_Request_Params& params);
+  void OnRequest(content::RenderFrameHost* render_frame_host,
+                 const ExtensionHostMsg_Request_Params& params);
 
   // The BrowserContext associated with the WebContents being observed.
   content::BrowserContext* browser_context_;

@@ -26,6 +26,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/extensions/api/log_private.h"
 #include "chrome/common/logging_chrome.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function.h"
@@ -528,7 +529,7 @@ void LogPrivateDumpLogsFunction::OnStoreLogsCompleted(
       extensions::app_file_handler_util::CreateFileEntry(
           Profile::FromBrowserContext(browser_context()),
           extension(),
-          render_view_host_->GetProcess()->GetID(),
+          render_frame_host()->GetProcess()->GetID(),
           log_path,
           false);
 

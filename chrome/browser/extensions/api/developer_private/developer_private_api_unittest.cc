@@ -336,7 +336,7 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateChoosePath) {
   choose_args.AppendString("LOAD");
   scoped_refptr<UIThreadExtensionFunction> function(
       new api::DeveloperPrivateChoosePathFunction());
-  function->SetRenderViewHost(web_contents->GetRenderViewHost());
+  function->SetRenderFrameHost(web_contents->GetMainFrame());
   EXPECT_TRUE(RunFunction(function, choose_args)) << function->GetError();
   std::string path;
   EXPECT_TRUE(function->GetResultList() &&
@@ -351,7 +351,7 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateChoosePath) {
   choose_args.AppendString("FILE");
   choose_args.AppendString("PEM");
   function = new api::DeveloperPrivateChoosePathFunction();
-  function->SetRenderViewHost(web_contents->GetRenderViewHost());
+  function->SetRenderFrameHost(web_contents->GetMainFrame());
   EXPECT_TRUE(RunFunction(function, choose_args)) << function->GetError();
   EXPECT_TRUE(function->GetResultList() &&
               function->GetResultList()->GetString(0, &path));
@@ -360,7 +360,7 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateChoosePath) {
   // Try canceling the file dialog.
   api::EntryPicker::SkipPickerAndAlwaysCancelForTest();
   function = new api::DeveloperPrivateChoosePathFunction();
-  function->SetRenderViewHost(web_contents->GetRenderViewHost());
+  function->SetRenderFrameHost(web_contents->GetMainFrame());
   EXPECT_FALSE(RunFunction(function, choose_args));
   EXPECT_EQ(std::string("File selection was canceled."), function->GetError());
 }
@@ -379,7 +379,7 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateLoadUnpacked) {
   // be added).
   scoped_refptr<UIThreadExtensionFunction> function(
       new api::DeveloperPrivateLoadUnpackedFunction());
-  function->SetRenderViewHost(web_contents->GetRenderViewHost());
+  function->SetRenderFrameHost(web_contents->GetMainFrame());
   ExtensionIdSet current_ids = registry()->enabled_extensions().GetIDs();
   EXPECT_TRUE(RunFunction(function, base::ListValue())) << function->GetError();
   // We should have added one new extension.
@@ -396,7 +396,7 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateLoadUnpacked) {
 
   // Try loading a bad extension (it should fail, and we should get an error).
   function = new api::DeveloperPrivateLoadUnpackedFunction();
-  function->SetRenderViewHost(web_contents->GetRenderViewHost());
+  function->SetRenderFrameHost(web_contents->GetMainFrame());
   base::ListValue unpacked_args;
   scoped_ptr<base::DictionaryValue> options(new base::DictionaryValue());
   options->SetBoolean("failQuietly", true);

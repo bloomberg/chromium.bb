@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -177,7 +178,7 @@ bool AppWindowCreateFunction::RunAsync() {
           content::RenderViewHost* created_view =
               window->web_contents()->GetRenderViewHost();
           int view_id = MSG_ROUTING_NONE;
-          if (render_view_host_->GetProcess()->GetID() ==
+          if (render_frame_host()->GetProcess()->GetID() ==
               created_view->GetProcess()->GetID()) {
             view_id = created_view->GetRoutingID();
           }
@@ -332,7 +333,7 @@ bool AppWindowCreateFunction::RunAsync() {
   }
 
   create_params.creator_process_id =
-      render_view_host_->GetProcess()->GetID();
+      render_frame_host()->GetProcess()->GetID();
 
   AppWindow* app_window =
       AppWindowClient::Get()->CreateAppWindow(browser_context(), extension());

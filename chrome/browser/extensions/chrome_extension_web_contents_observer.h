@@ -34,7 +34,6 @@ class ChromeExtensionWebContentsObserver
   void RenderViewCreated(content::RenderViewHost* render_view_host) override;
 
   // Silence a warning about hiding a virtual function.
-  using ExtensionWebContentsObserver::OnMessageReceived;
   bool OnMessageReceived(const IPC::Message& message,
                          content::RenderFrameHost* render_frame_host) override;
 

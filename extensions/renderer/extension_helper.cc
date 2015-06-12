@@ -132,7 +132,6 @@ ExtensionHelper::~ExtensionHelper() {
 bool ExtensionHelper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ExtensionHelper, message)
-    IPC_MESSAGE_HANDLER(ExtensionMsg_Response, OnExtensionResponse)
     IPC_MESSAGE_HANDLER(ExtensionMsg_MessageInvoke, OnExtensionMessageInvoke)
     IPC_MESSAGE_HANDLER(ExtensionMsg_SetFrameName, OnSetFrameName)
     IPC_MESSAGE_HANDLER(ExtensionMsg_UpdateBrowserWindowId,
@@ -171,16 +170,6 @@ void ExtensionHelper::DidMatchCSS(
     const blink::WebVector<blink::WebString>& stopped_matching_selectors) {
   dispatcher_->DidMatchCSS(
       frame, newly_matching_selectors, stopped_matching_selectors);
-}
-
-void ExtensionHelper::OnExtensionResponse(int request_id,
-                                          bool success,
-                                          const base::ListValue& response,
-                                          const std::string& error) {
-  dispatcher_->OnExtensionResponse(request_id,
-                                   success,
-                                   response,
-                                   error);
 }
 
 void ExtensionHelper::OnExtensionMessageInvoke(const std::string& extension_id,

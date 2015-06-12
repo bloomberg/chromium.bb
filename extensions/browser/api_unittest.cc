@@ -68,7 +68,7 @@ scoped_ptr<base::Value> ApiUnitTest::RunFunctionAndReturnValue(
     const std::string& args) {
   function->set_extension(extension());
   if (contents_)
-    function->SetRenderViewHost(contents_->GetRenderViewHost());
+    function->SetRenderFrameHost(contents_->GetMainFrame());
   return scoped_ptr<base::Value>(utils::RunFunctionAndReturnSingleResult(
       function, args, browser_context()));
 }
@@ -108,7 +108,7 @@ std::string ApiUnitTest::RunFunctionAndReturnError(
     const std::string& args) {
   function->set_extension(extension());
   if (contents_)
-    function->SetRenderViewHost(contents_->GetRenderViewHost());
+    function->SetRenderFrameHost(contents_->GetMainFrame());
   return utils::RunFunctionAndReturnError(function, args, browser_context());
 }
 

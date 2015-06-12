@@ -580,7 +580,7 @@ class DownloadExtensionTest : public ExtensionApiTest {
           extension_->GetResourceURL("empty.html"),
           ui::PAGE_TRANSITION_LINK);
       function->set_extension(extension_);
-      function->SetRenderViewHost(tab->GetRenderViewHost());
+      function->SetRenderFrameHost(tab->GetMainFrame());
     }
   }
 

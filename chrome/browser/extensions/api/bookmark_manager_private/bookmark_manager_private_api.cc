@@ -537,6 +537,11 @@ bool BookmarkManagerPrivateStartDragFunction::RunOnReady() {
   if (!EditBookmarksEnabled())
     return false;
 
+  if (GetViewType(GetSenderWebContents()) != VIEW_TYPE_TAB_CONTENTS) {
+    NOTREACHED();
+    return false;
+  }
+
   scoped_ptr<StartDrag::Params> params(StartDrag::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -545,25 +550,18 @@ bool BookmarkManagerPrivateStartDragFunction::RunOnReady() {
   EXTENSION_FUNCTION_VALIDATE(
       GetNodesFromVector(model, params->id_list, &nodes));
 
-  WebContents* web_contents =
-      WebContents::FromRenderViewHost(render_view_host_);
-  if (GetViewType(web_contents) == VIEW_TYPE_TAB_CONTENTS) {
-    WebContents* web_contents = GetAssociatedWebContents();
-    CHECK(web_contents);
+  content::WebContents* web_contents = GetAssociatedWebContents();
+  CHECK(web_contents);
 
-    ui::DragDropTypes::DragEventSource source =
-        ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE;
-    if (params->is_from_touch)
-      source = ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH;
+  ui::DragDropTypes::DragEventSource source =
+      ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE;
+  if (params->is_from_touch)
+    source = ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH;
 
-    chrome::DragBookmarks(
-        GetProfile(), nodes, web_contents->GetNativeView(), source);
+  chrome::DragBookmarks(
+      GetProfile(), nodes, web_contents->GetNativeView(), source);
 
-    return true;
-  } else {
-    NOTREACHED();
-    return false;
-  }
+  return true;
 }
 
 bool BookmarkManagerPrivateDropFunction::RunOnReady() {
@@ -579,39 +577,37 @@ bool BookmarkManagerPrivateDropFunction::RunOnReady() {
   if (!CanBeModified(drop_parent))
     return false;
 
+  if (GetViewType(GetSenderWebContents()) != VIEW_TYPE_TAB_CONTENTS) {
+    NOTREACHED();
+    return false;
+  }
+
   int drop_index;
   if (params->index)
     drop_index = *params->index;
   else
     drop_index = drop_parent->child_count();
 
-  WebContents* web_contents =
-      WebContents::FromRenderViewHost(render_view_host_);
-  if (GetViewType(web_contents) == VIEW_TYPE_TAB_CONTENTS) {
-    WebContents* web_contents = GetAssociatedWebContents();
-    CHECK(web_contents);
-    ExtensionWebUI* web_ui =
-        static_cast<ExtensionWebUI*>(web_contents->GetWebUI()->GetController());
-    CHECK(web_ui);
-    BookmarkManagerPrivateDragEventRouter* router =
-        web_ui->bookmark_manager_private_drag_event_router();
+  WebContents* web_contents = GetAssociatedWebContents();
+  CHECK(web_contents);
+  ExtensionWebUI* web_ui =
+      static_cast<ExtensionWebUI*>(web_contents->GetWebUI()->GetController());
+  CHECK(web_ui);
+  BookmarkManagerPrivateDragEventRouter* router =
+      web_ui->bookmark_manager_private_drag_event_router();
 
-    DCHECK(router);
-    const BookmarkNodeData* drag_data = router->GetBookmarkNodeData();
-    if (drag_data == NULL) {
-      NOTREACHED() <<"Somehow we're dropping null bookmark data";
-      return false;
-    }
-    const bool copy = false;
-    chrome::DropBookmarks(
-        GetProfile(), *drag_data, drop_parent, drop_index, copy);
-
-    router->ClearBookmarkNodeData();
-    return true;
-  } else {
-    NOTREACHED();
+  DCHECK(router);
+  const BookmarkNodeData* drag_data = router->GetBookmarkNodeData();
+  if (drag_data == NULL) {
+    NOTREACHED() <<"Somehow we're dropping null bookmark data";
     return false;
   }
+  const bool copy = false;
+  chrome::DropBookmarks(
+      GetProfile(), *drag_data, drop_parent, drop_index, copy);
+
+  router->ClearBookmarkNodeData();
+  return true;
 }
 
 bool BookmarkManagerPrivateGetSubtreeFunction::RunOnReady() {

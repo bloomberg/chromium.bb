@@ -33,6 +33,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/storage_partition.h"
@@ -493,7 +494,7 @@ bool FileSystemGetDisplayPathFunction::RunSync() {
   base::FilePath file_path;
   if (!app_file_handler_util::ValidateFileEntryAndGetPath(filesystem_name,
                                                           filesystem_path,
-                                                          render_view_host_,
+                                                          render_view_host(),
                                                           &file_path,
                                                           &error_))
     return false;
@@ -524,7 +525,7 @@ void FileSystemEntryFunction::PrepareFilesForWritableApp(
 void FileSystemEntryFunction::RegisterFileSystemsAndSendResponse(
     const std::vector<base::FilePath>& paths) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (!render_view_host_)
+  if (!render_view_host())
     return;
 
   CreateResponse();
@@ -551,7 +552,7 @@ void FileSystemEntryFunction::AddEntryToResponse(
   GrantedFileEntry file_entry = app_file_handler_util::CreateFileEntry(
       GetProfile(),
       extension(),
-      render_view_host_->GetProcess()->GetID(),
+      render_frame_host()->GetProcess()->GetID(),
       path,
       is_directory_);
   base::ListValue* entries;
@@ -590,7 +591,7 @@ bool FileSystemGetWritableEntryFunction::RunAsync() {
 
   if (!app_file_handler_util::ValidateFileEntryAndGetPath(filesystem_name,
                                                           filesystem_path,
-                                                          render_view_host_,
+                                                          render_view_host(),
                                                           &path_,
                                                           &error_))
     return false;
@@ -641,7 +642,7 @@ bool FileSystemIsWritableEntryFunction::RunSync() {
 
   content::ChildProcessSecurityPolicy* policy =
       content::ChildProcessSecurityPolicy::GetInstance();
-  int renderer_id = render_view_host_->GetProcess()->GetID();
+  int renderer_id = render_frame_host()->GetProcess()->GetID();
   bool is_writable = policy->CanReadWriteFileSystem(renderer_id,
                                                     filesystem_id);
 
@@ -1138,7 +1139,7 @@ bool FileSystemRetainEntryFunction::RunAsync() {
     EXTENSION_FUNCTION_VALIDATE(args_->GetString(2, &filesystem_path));
     if (!app_file_handler_util::ValidateFileEntryAndGetPath(filesystem_name,
                                                             filesystem_path,
-                                                            render_view_host_,
+                                                            render_view_host(),
                                                             &path,
                                                             &error_)) {
       return false;

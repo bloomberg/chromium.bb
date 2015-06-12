@@ -149,25 +149,26 @@ class ExtensionFunctionDispatcher::UIThreadResponseCallbackWrapper
  public:
   UIThreadResponseCallbackWrapper(
       const base::WeakPtr<ExtensionFunctionDispatcher>& dispatcher,
-      RenderViewHost* render_view_host)
+      content::RenderFrameHost* render_frame_host)
       : content::WebContentsObserver(
-            content::WebContents::FromRenderViewHost(render_view_host)),
+            content::WebContents::FromRenderFrameHost(render_frame_host)),
         dispatcher_(dispatcher),
-        render_view_host_(render_view_host),
+        render_frame_host_(render_frame_host),
         weak_ptr_factory_(this) {
   }
 
   ~UIThreadResponseCallbackWrapper() override {}
 
   // content::WebContentsObserver overrides.
-  void RenderViewDeleted(RenderViewHost* render_view_host) override {
+  void RenderFrameDeleted(
+      content::RenderFrameHost* render_frame_host) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    if (render_view_host != render_view_host_)
+    if (render_frame_host != render_frame_host_)
       return;
 
     if (dispatcher_.get()) {
       dispatcher_->ui_thread_response_callback_wrappers_
-          .erase(render_view_host);
+          .erase(render_frame_host);
     }
 
     delete this;
@@ -190,14 +191,15 @@ class ExtensionFunctionDispatcher::UIThreadResponseCallbackWrapper
         content::RenderProcessHost::run_renderer_in_process()
             ? base::Process::Current()
             : base::Process::DeprecatedGetProcessFromHandle(
-                  render_view_host_->GetProcess()->GetHandle());
-    CommonResponseCallback(render_view_host_, render_view_host_->GetRoutingID(),
+                  render_frame_host_->GetProcess()->GetHandle());
+    CommonResponseCallback(render_frame_host_,
+                           render_frame_host_->GetRoutingID(),
                            process, request_id, type, results, error,
                            histogram_value);
   }
 
   base::WeakPtr<ExtensionFunctionDispatcher> dispatcher_;
-  content::RenderViewHost* render_view_host_;
+  content::RenderFrameHost* render_frame_host_;
   base::WeakPtrFactory<UIThreadResponseCallbackWrapper> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(UIThreadResponseCallbackWrapper);
@@ -310,29 +312,28 @@ ExtensionFunctionDispatcher::~ExtensionFunctionDispatcher() {
 
 void ExtensionFunctionDispatcher::Dispatch(
     const ExtensionHostMsg_Request_Params& params,
-    RenderViewHost* render_view_host) {
+    content::RenderFrameHost* render_frame_host) {
   UIThreadResponseCallbackWrapperMap::const_iterator
-      iter = ui_thread_response_callback_wrappers_.find(render_view_host);
-  UIThreadResponseCallbackWrapper* callback_wrapper = NULL;
+      iter = ui_thread_response_callback_wrappers_.find(render_frame_host);
+  UIThreadResponseCallbackWrapper* callback_wrapper = nullptr;
   if (iter == ui_thread_response_callback_wrappers_.end()) {
     callback_wrapper = new UIThreadResponseCallbackWrapper(AsWeakPtr(),
-                                                           render_view_host);
-    ui_thread_response_callback_wrappers_[render_view_host] = callback_wrapper;
+                                                           render_frame_host);
+    ui_thread_response_callback_wrappers_[render_frame_host] = callback_wrapper;
   } else {
     callback_wrapper = iter->second;
   }
 
   DispatchWithCallbackInternal(
-      params, render_view_host, NULL,
+      params, render_frame_host,
       callback_wrapper->CreateCallback(params.request_id));
 }
 
 void ExtensionFunctionDispatcher::DispatchWithCallbackInternal(
     const ExtensionHostMsg_Request_Params& params,
-    RenderViewHost* render_view_host,
     content::RenderFrameHost* render_frame_host,
     const ExtensionFunction::ResponseCallback& callback) {
-  DCHECK(render_view_host || render_frame_host);
+  DCHECK(render_frame_host);
   // TODO(yzshen): There is some shared logic between this method and
   // DispatchOnIOThread(). It is nice to deduplicate.
   ProcessMap* process_map = ProcessMap::Get(browser_context_);
@@ -347,8 +348,7 @@ void ExtensionFunctionDispatcher::DispatchWithCallbackInternal(
         registry->enabled_extensions().GetHostedAppByURL(params.source_url);
   }
 
-  int process_id = render_view_host ? render_view_host->GetProcess()->GetID() :
-                                      render_frame_host->GetProcess()->GetID();
+  int process_id = render_frame_host->GetProcess()->GetID();
   scoped_refptr<ExtensionFunction> function(
       CreateExtensionFunction(params,
                               extension,
@@ -366,11 +366,7 @@ void ExtensionFunctionDispatcher::DispatchWithCallbackInternal(
     NOTREACHED();
     return;
   }
-  if (render_view_host) {
-    function_ui->SetRenderViewHost(render_view_host);
-  } else {
-    function_ui->SetRenderFrameHost(render_frame_host);
-  }
+  function_ui->SetRenderFrameHost(render_frame_host);
   function_ui->set_dispatcher(AsWeakPtr());
   function_ui->set_browser_context(browser_context_);
   if (extension &&

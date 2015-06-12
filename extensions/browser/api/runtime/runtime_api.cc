@@ -15,8 +15,8 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "extensions/browser/api/runtime/runtime_api_delegate.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_host.h"
@@ -515,7 +515,7 @@ RuntimeGetPackageDirectoryEntryFunction::Run() {
   std::string filesystem_id = isolated_context->RegisterFileSystemForPath(
       storage::kFileSystemTypeNativeLocal, std::string(), path, &relative_path);
 
-  int renderer_id = render_view_host_->GetProcess()->GetID();
+  int renderer_id = render_frame_host()->GetProcess()->GetID();
   content::ChildProcessSecurityPolicy* policy =
       content::ChildProcessSecurityPolicy::GetInstance();
   policy->GrantReadFileSystem(renderer_id, filesystem_id);

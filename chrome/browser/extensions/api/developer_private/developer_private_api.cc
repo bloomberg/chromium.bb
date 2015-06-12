@@ -884,7 +884,7 @@ bool DeveloperPrivateLoadDirectoryFunction::RunAsync() {
     // Check if the DirecotryEntry is the instance of chrome filesystem.
     if (!app_file_handler_util::ValidateFileEntryAndGetPath(filesystem_name,
                                                             filesystem_path,
-                                                            render_view_host_,
+                                                            render_view_host(),
                                                             &project_base_path_,
                                                             &error_)) {
       SetError("DirectoryEntry of unsupported filesystem.");

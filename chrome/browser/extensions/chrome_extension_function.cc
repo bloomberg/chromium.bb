@@ -63,9 +63,10 @@ Browser* ChromeUIThreadExtensionFunction::GetCurrentBrowser() {
   // |include_incognito|. Look only for browsers on the active desktop as it is
   // preferable to pretend no browser is open then to return a browser on
   // another desktop.
-  if (render_view_host_) {
-    Profile* profile = Profile::FromBrowserContext(
-        render_view_host_->GetProcess()->GetBrowserContext());
+  content::WebContents* web_contents = GetSenderWebContents();
+  if (web_contents) {
+    Profile* profile =
+        Profile::FromBrowserContext(web_contents->GetBrowserContext());
     Browser* browser = chrome::FindAnyBrowser(
         profile, include_incognito_, chrome::GetActiveDesktop());
     if (browser)

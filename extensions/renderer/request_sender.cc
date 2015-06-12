@@ -5,7 +5,7 @@
 #include "extensions/renderer/request_sender.h"
 
 #include "base/values.h"
-#include "content/public/renderer/render_view.h"
+#include "content/public/renderer/render_frame.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/script_context.h"
@@ -78,10 +78,10 @@ void RequestSender::StartRequest(Source* source,
   if (!context)
     return;
 
-  // Get the current RenderView so that we can send a routed IPC message from
+  // Get the current RenderFrame so that we can send a routed IPC message from
   // the correct source.
-  content::RenderView* renderview = context->GetRenderView();
-  if (!renderview)
+  content::RenderFrame* render_frame = context->GetRenderFrame();
+  if (!render_frame)
     return;
 
   const std::set<std::string>& function_names = dispatcher_->function_names();
@@ -114,11 +114,11 @@ void RequestSender::StartRequest(Source* source,
   params.user_gesture =
       blink::WebUserGestureIndicator::isProcessingUserGesture();
   if (for_io_thread) {
-    renderview->Send(new ExtensionHostMsg_RequestForIOThread(
-        renderview->GetRoutingID(), params));
+    render_frame->Send(new ExtensionHostMsg_RequestForIOThread(
+        render_frame->GetRoutingID(), params));
   } else {
-    renderview->Send(
-        new ExtensionHostMsg_Request(renderview->GetRoutingID(), params));
+    render_frame->Send(
+        new ExtensionHostMsg_Request(render_frame->GetRoutingID(), params));
   }
 }
 

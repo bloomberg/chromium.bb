@@ -474,10 +474,11 @@ class UIThreadExtensionFunction : public ExtensionFunction {
   }
   content::BrowserContext* browser_context() const { return context_; }
 
-  void SetRenderViewHost(content::RenderViewHost* render_view_host);
-  content::RenderViewHost* render_view_host() const {
-    return render_view_host_;
-  }
+  // DEPRECATED: Please use render_frame_host().
+  // TODO(devlin): Remove this once all callers are updated to use
+  // render_frame_host().
+  content::RenderViewHost* render_view_host() const;
+
   void SetRenderFrameHost(content::RenderFrameHost* render_frame_host);
   content::RenderFrameHost* render_frame_host() const {
     return render_frame_host_;
@@ -497,7 +498,7 @@ class UIThreadExtensionFunction : public ExtensionFunction {
   // probably want to use GetSenderWebContents().
   virtual content::WebContents* GetAssociatedWebContents();
 
-  // Returns the web contents associated with the sending |render_view_host_|.
+  // Returns the web contents associated with the sending |render_frame_host_|.
   // This can be null.
   content::WebContents* GetSenderWebContents();
 
@@ -517,35 +518,29 @@ class UIThreadExtensionFunction : public ExtensionFunction {
   // Sets the Blob UUIDs whose ownership is being transferred to the renderer.
   void SetTransferredBlobUUIDs(const std::vector<std::string>& blob_uuids);
 
-  // The dispatcher that will service this extension function call.
-  base::WeakPtr<extensions::ExtensionFunctionDispatcher> dispatcher_;
-
-  // The RenderViewHost we will send responses to.
-  content::RenderViewHost* render_view_host_;
-
-  // The RenderFrameHost we will send responses to.
-  // NOTE: either render_view_host_ or render_frame_host_ will be set, as we
-  // port code to use RenderFrames for OOPIF. See http://crbug.com/304341.
-  content::RenderFrameHost* render_frame_host_;
-
-  // The content::BrowserContext of this function's extension.
+  // The BrowserContext of this function's extension.
+  // TODO(devlin): Grr... protected members. Move this to be private.
   content::BrowserContext* context_;
 
  private:
-  class RenderHostTracker;
+  class RenderFrameHostTracker;
 
   void Destruct() const override;
 
-  // TODO(tommycli): Remove once RenderViewHost is gone.
-  IPC::Sender* GetIPCSender();
-  int GetRoutingID();
+  // The dispatcher that will service this extension function call.
+  base::WeakPtr<extensions::ExtensionFunctionDispatcher> dispatcher_;
 
-  scoped_ptr<RenderHostTracker> tracker_;
+  // The RenderFrameHost we will send responses to.
+  content::RenderFrameHost* render_frame_host_;
+
+  scoped_ptr<RenderFrameHostTracker> tracker_;
 
   DelegateForTests* delegate_;
 
   // The blobs transferred to the renderer process.
   std::vector<std::string> transferred_blob_uuids_;
+
+  DISALLOW_COPY_AND_ASSIGN(UIThreadExtensionFunction);
 };
 
 // Extension functions that run on the IO thread. This type of function avoids
@@ -597,6 +592,8 @@ class IOThreadExtensionFunction : public ExtensionFunction {
   int routing_id_;
 
   scoped_refptr<const extensions::InfoMap> extension_info_map_;
+
+  DISALLOW_COPY_AND_ASSIGN(IOThreadExtensionFunction);
 };
 
 // Base class for an extension function that runs asynchronously *relative to
@@ -623,6 +620,8 @@ class AsyncExtensionFunction : public UIThreadExtensionFunction {
   // doing the right thing, you just need to extend UIThreadExtensionFunction
   // instead of AsyncExtensionFunction.
   ResponseAction Run() final;
+
+  DISALLOW_COPY_AND_ASSIGN(AsyncExtensionFunction);
 };
 
 // A SyncExtensionFunction is an ExtensionFunction that runs synchronously
@@ -653,6 +652,8 @@ class SyncExtensionFunction : public UIThreadExtensionFunction {
   // doing the right thing, you just need to extend UIThreadExtensionFunction
   // instead of SyncExtensionFunction.
   ResponseAction Run() final;
+
+  DISALLOW_COPY_AND_ASSIGN(SyncExtensionFunction);
 };
 
 class SyncIOThreadExtensionFunction : public IOThreadExtensionFunction {
@@ -677,6 +678,8 @@ class SyncIOThreadExtensionFunction : public IOThreadExtensionFunction {
   // doing the right thing, you just need to extend IOThreadExtensionFunction
   // instead of SyncIOExtensionFunction.
   ResponseAction Run() final;
+
+  DISALLOW_COPY_AND_ASSIGN(SyncIOThreadExtensionFunction);
 };
 
 #endif  // EXTENSIONS_BROWSER_EXTENSION_FUNCTION_H_

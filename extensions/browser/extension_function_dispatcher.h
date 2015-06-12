@@ -18,7 +18,6 @@ struct ExtensionHostMsg_Request_Params;
 namespace content {
 class BrowserContext;
 class RenderFrameHost;
-class RenderViewHost;
 class WebContents;
 }
 
@@ -35,11 +34,11 @@ class WindowController;
 typedef ExtensionFunction* (*ExtensionFunctionFactory)();
 
 // ExtensionFunctionDispatcher receives requests to execute functions from
-// Chrome extensions running in a RenderViewHost and dispatches them to the
+// Chrome extensions running in a RenderFrameHost and dispatches them to the
 // appropriate handler. It lives entirely on the UI thread.
 //
 // ExtensionFunctionDispatcher should be a member of some class that hosts
-// RenderViewHosts and wants them to be able to display extension content.
+// RenderFrameHosts and wants them to be able to display extension content.
 // This class should also implement ExtensionFunctionDispatcher::Delegate.
 //
 // Note that a single ExtensionFunctionDispatcher does *not* correspond to a
@@ -90,7 +89,7 @@ class ExtensionFunctionDispatcher
       const ExtensionHostMsg_Request_Params& params);
 
   // Public constructor. Callers must ensure that:
-  // - This object outlives any RenderViewHost's passed to created
+  // - This object outlives any RenderFrameHost's passed to created
   //   ExtensionFunctions.
   explicit ExtensionFunctionDispatcher(
       content::BrowserContext* browser_context);
@@ -99,9 +98,8 @@ class ExtensionFunctionDispatcher
   // Message handlers.
   // The response is sent to the corresponding render view in an
   // ExtensionMsg_Response message.
-  // TODO (jam): convert all callers to use RenderFrameHost.
   void Dispatch(const ExtensionHostMsg_Request_Params& params,
-                content::RenderViewHost* render_view_host);
+                content::RenderFrameHost* render_frame_host);
 
   // Called when an ExtensionFunction is done executing, after it has sent
   // a response (if any) to the extension.
@@ -120,10 +118,10 @@ class ExtensionFunctionDispatcher
   void set_delegate(Delegate* delegate) { delegate_ = delegate; }
 
  private:
-  // For a given RenderViewHost instance, UIThreadResponseCallbackWrapper
+  // For a given RenderFrameHost instance, UIThreadResponseCallbackWrapper
   // creates ExtensionFunction::ResponseCallback instances which send responses
   // to the corresponding render view in ExtensionMsg_Response messages.
-  // This class tracks the lifespan of the RenderViewHost instance, and will be
+  // This class tracks the lifespan of the RenderFrameHost instance, and will be
   // destroyed automatically when it goes away.
   class UIThreadResponseCallbackWrapper;
 
@@ -156,7 +154,6 @@ class ExtensionFunctionDispatcher
 
   void DispatchWithCallbackInternal(
       const ExtensionHostMsg_Request_Params& params,
-      content::RenderViewHost* render_view_host,
       content::RenderFrameHost* render_frame_host,
       const ExtensionFunction::ResponseCallback& callback);
 
@@ -164,10 +161,10 @@ class ExtensionFunctionDispatcher
 
   Delegate* delegate_;
 
-  // This map doesn't own either the keys or the values. When a RenderViewHost
+  // This map doesn't own either the keys or the values. When a RenderFrameHost
   // instance goes away, the corresponding entry in this map (if exists) will be
   // removed.
-  typedef std::map<content::RenderViewHost*, UIThreadResponseCallbackWrapper*>
+  typedef std::map<content::RenderFrameHost*, UIThreadResponseCallbackWrapper*>
       UIThreadResponseCallbackWrapperMap;
   UIThreadResponseCallbackWrapperMap ui_thread_response_callback_wrappers_;
 };

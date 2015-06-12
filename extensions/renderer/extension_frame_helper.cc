@@ -53,6 +53,7 @@ bool ExtensionFrameHelper::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ExtensionMsg_SetTabId, OnExtensionSetTabId)
     IPC_MESSAGE_HANDLER(ExtensionMsg_SetTabExtensionOwner,
                         OnSetTabExtensionOwner)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_Response, OnExtensionResponse)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -104,6 +105,16 @@ void ExtensionFrameHelper::OnExtensionSetTabId(int tab_id) {
 void ExtensionFrameHelper::OnSetTabExtensionOwner(
     const std::string& extension_id) {
   tab_extension_owner_id_ = extension_id;
+}
+
+void ExtensionFrameHelper::OnExtensionResponse(int request_id,
+                                               bool success,
+                                               const base::ListValue& response,
+                                               const std::string& error) {
+  extension_dispatcher_->OnExtensionResponse(request_id,
+                                             success,
+                                             response,
+                                             error);
 }
 
 }  // namespace extensions

@@ -37,6 +37,11 @@ void ChromeExtensionWebContentsObserver::RenderViewCreated(
 bool ChromeExtensionWebContentsObserver::OnMessageReceived(
     const IPC::Message& message,
     content::RenderFrameHost* render_frame_host) {
+  if (ExtensionWebContentsObserver::OnMessageReceived(message,
+                                                      render_frame_host)) {
+    return true;
+  }
+
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ChromeExtensionWebContentsObserver, message)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_DetailedConsoleMessageAdded,
