@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_AUTOCOMPLETE_IN_MEMORY_URL_INDEX_TYPES_H_
-#define CHROME_BROWSER_AUTOCOMPLETE_IN_MEMORY_URL_INDEX_TYPES_H_
+#ifndef COMPONENTS_OMNIBOX_IN_MEMORY_URL_INDEX_TYPES_H_
+#define COMPONENTS_OMNIBOX_IN_MEMORY_URL_INDEX_TYPES_H_
 
 #include <map>
 #include <set>
@@ -168,4 +168,4 @@ struct RowWordStarts {
 };
 typedef std::map<HistoryID, RowWordStarts> WordStartsMap;
 
-#endif  // CHROME_BROWSER_AUTOCOMPLETE_IN_MEMORY_URL_INDEX_TYPES_H_
+#endif  // COMPONENTS_OMNIBOX_IN_MEMORY_URL_INDEX_TYPES_H_

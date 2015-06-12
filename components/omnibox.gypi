@@ -48,6 +48,8 @@
         'omnibox/autocomplete_scheme_classifier.h',
         'omnibox/base_search_provider.cc',
         'omnibox/base_search_provider.h',
+        'omnibox/in_memory_url_index_types.cc',
+        'omnibox/in_memory_url_index_types.h',
         'omnibox/keyword_extensions_delegate.cc',
         'omnibox/keyword_extensions_delegate.h',
         'omnibox/keyword_provider.cc',

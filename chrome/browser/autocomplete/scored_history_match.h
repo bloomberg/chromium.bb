@@ -10,9 +10,9 @@
 
 #include "base/strings/string16.h"
 #include "base/time/time.h"
-#include "chrome/browser/autocomplete/in_memory_url_index_types.h"
 #include "components/history/core/browser/history_match.h"
 #include "components/history/core/browser/history_types.h"
+#include "components/omnibox/in_memory_url_index_types.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
 class ScoredHistoryMatchTest;
