@@ -1927,6 +1927,8 @@ crbug.com/499231 [ Mac ] virtual/prefer_compositing_to_lcd_text/compositing/over
 
 crbug.com/495523 fast/text/international/text-spliced-font.html [ Pass Failure ]
 
+crbug.com/446406 [ Win ] fast/repaint/quotes.html [ Pass Failure ]
+
 crbug.com/495523 [ XP ] svg/W3C-SVG-1.1/animate-elem-52-t.svg [ Failure ]
 crbug.com/495523 [ XP ] svg/W3C-SVG-1.1/extend-namespace-01-f.svg [ Failure ]
 crbug.com/495523 svg/wicd/test-rightsizing-b.xhtml [ Pass Failure ]
