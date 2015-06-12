@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/logging.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -322,7 +323,6 @@ void ContentSettingsHandler::GetLocalizedValues(
     {"pluginsTabLabel", IDS_PLUGIN_TAB_LABEL},
     {"pluginsHeader", IDS_PLUGIN_HEADER},
     {"pluginsAllow", IDS_PLUGIN_ALLOW_RADIO},
-    {"pluginsDetect", IDS_PLUGIN_DETECT_RADIO},
     {"pluginsBlock", IDS_PLUGIN_BLOCK_RADIO},
     {"manageIndividualPlugins", IDS_PLUGIN_MANAGE_INDIVIDUAL},
     // Pop-ups filter.
@@ -406,6 +406,21 @@ void ContentSettingsHandler::GetLocalizedValues(
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
+
+  PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
+  const base::Value* default_pref =
+      prefs->GetDefaultPrefValue(prefs::kDefaultPluginsSetting);
+
+  int default_value = CONTENT_SETTING_DEFAULT;
+  bool success = default_pref->GetAsInteger(&default_value);
+  DCHECK(success);
+  DCHECK_NE(default_value, CONTENT_SETTING_DEFAULT);
+
+  int plugin_ids = default_value == CONTENT_SETTING_DETECT_IMPORTANT_CONTENT ?
+      IDS_PLUGIN_DETECT_RECOMMENDED_RADIO : IDS_PLUGIN_DETECT_RADIO;
+  localized_strings->SetString("pluginsDetect",
+                               l10n_util::GetStringUTF16(plugin_ids));
+
   RegisterTitle(localized_strings, "contentSettingsPage",
                 IDS_CONTENT_SETTINGS_TITLE);
 
