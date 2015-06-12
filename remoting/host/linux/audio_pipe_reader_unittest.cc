@@ -31,7 +31,7 @@ class AudioPipeReaderTest : public testing::Test,
     audio_thread_.reset(new base::Thread("TestAudioThread"));
     audio_thread_->StartWithOptions(
         base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
-    reader_ = AudioPipeReader::Create(audio_thread_->message_loop_proxy(),
+    reader_ = AudioPipeReader::Create(audio_thread_->task_runner(),
                                       pipe_path_);
     reader_->AddObserver(this);
   }

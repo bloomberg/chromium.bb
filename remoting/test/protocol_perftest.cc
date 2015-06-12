@@ -90,9 +90,9 @@ class ProtocolPerfTest
   }
 
   virtual ~ProtocolPerfTest() {
-    host_thread_.message_loop_proxy()->DeleteSoon(FROM_HERE, host_.release());
-    host_thread_.message_loop_proxy()->DeleteSoon(FROM_HERE,
-                                                  host_signaling_.release());
+    host_thread_.task_runner()->DeleteSoon(FROM_HERE, host_.release());
+    host_thread_.task_runner()->DeleteSoon(FROM_HERE,
+                                           host_signaling_.release());
     message_loop_.RunUntilIdle();
   }
 
@@ -209,13 +209,13 @@ class ProtocolPerfTest
         protocol::ChannelConfig(
             protocol::ChannelConfig::TRANSPORT_STREAM, 2, video_codec));
 
-    host_thread_.message_loop_proxy()->PostTask(
+    host_thread_.task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&ProtocolPerfTest::StartHost, base::Unretained(this)));
   }
 
   void StartHost() {
-    DCHECK(host_thread_.message_loop_proxy()->BelongsToCurrentThread());
+    DCHECK(host_thread_.task_runner()->BelongsToCurrentThread());
 
     jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
 
@@ -246,12 +246,12 @@ class ProtocolPerfTest
     host_.reset(new ChromotingHost(host_signaling_.get(),
                                    &desktop_environment_factory_,
                                    session_manager.Pass(),
-                                   host_thread_.message_loop_proxy(),
-                                   host_thread_.message_loop_proxy(),
-                                   capture_thread_.message_loop_proxy(),
-                                   encode_thread_.message_loop_proxy(),
-                                   host_thread_.message_loop_proxy(),
-                                   host_thread_.message_loop_proxy()));
+                                   host_thread_.task_runner(),
+                                   host_thread_.task_runner(),
+                                   capture_thread_.task_runner(),
+                                   encode_thread_.task_runner(),
+                                   host_thread_.task_runner(),
+                                   host_thread_.task_runner()));
 
     base::FilePath certs_dir(net::GetTestCertsDirectory());
 

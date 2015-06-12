@@ -18,7 +18,7 @@ TEST(ChromotingHostContextTest, StartAndStop) {
 
   scoped_ptr<ChromotingHostContext> context =
       ChromotingHostContext::Create(new AutoThreadTaskRunner(
-          message_loop.message_loop_proxy(), run_loop.QuitClosure()));
+          message_loop.task_runner(), run_loop.QuitClosure()));
 
   EXPECT_TRUE(context);
   if (!context)

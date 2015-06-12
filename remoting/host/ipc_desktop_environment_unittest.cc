@@ -242,7 +242,7 @@ IpcDesktopEnvironmentTest::~IpcDesktopEnvironmentTest() {
 void IpcDesktopEnvironmentTest::SetUp() {
   // Arrange to run |message_loop_| until no components depend on it.
   task_runner_ = new AutoThreadTaskRunner(
-      message_loop_.message_loop_proxy(), main_run_loop_.QuitClosure());
+      message_loop_.task_runner(), main_run_loop_.QuitClosure());
 
   io_task_runner_ = AutoThread::CreateWithType(
       "IPC thread", task_runner_, base::MessageLoop::TYPE_IO);

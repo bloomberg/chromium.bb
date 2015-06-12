@@ -68,7 +68,7 @@ void ClipboardAuraTest::SetUp() {
 
   // Setup the clipboard.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      message_loop_.message_loop_proxy();
+      message_loop_.task_runner();
   client_clipboard_ = new ClientClipboard();
   clipboard_.reset(new ClipboardAura());
 

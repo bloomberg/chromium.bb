@@ -72,7 +72,7 @@ class ChromotingHostTest : public testing::Test {
 
   void SetUp() override {
     task_runner_ = new AutoThreadTaskRunner(
-        message_loop_.message_loop_proxy(),
+        message_loop_.task_runner(),
         base::Bind(&ChromotingHostTest::QuitMainMessageLoop,
                    base::Unretained(this)));
 

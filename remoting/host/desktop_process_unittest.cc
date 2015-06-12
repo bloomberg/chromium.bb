@@ -237,10 +237,10 @@ void DesktopProcessTest::RunDesktopProcess() {
   base::RunLoop run_loop;
   base::Closure quit_ui_task_runner = base::Bind(
       base::IgnoreResult(&base::SingleThreadTaskRunner::PostTask),
-      message_loop_.message_loop_proxy(),
+      message_loop_.task_runner(),
       FROM_HERE, run_loop.QuitClosure());
   scoped_refptr<AutoThreadTaskRunner> ui_task_runner = new AutoThreadTaskRunner(
-      message_loop_.message_loop_proxy(), quit_ui_task_runner);
+      message_loop_.task_runner(), quit_ui_task_runner);
 
   io_task_runner_ = AutoThread::CreateWithType(
       "IPC thread", ui_task_runner, base::MessageLoop::TYPE_IO);

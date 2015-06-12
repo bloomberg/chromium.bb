@@ -56,7 +56,7 @@ LocalInputMonitorTest::LocalInputMonitorTest()
 void LocalInputMonitorTest::SetUp() {
   // Arrange to run |message_loop_| until no components depend on it.
   task_runner_ = new AutoThreadTaskRunner(
-      message_loop_.message_loop_proxy(), run_loop_.QuitClosure());
+      message_loop_.task_runner(), run_loop_.QuitClosure());
 }
 
 

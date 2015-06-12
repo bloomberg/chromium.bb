@@ -34,7 +34,7 @@ int DesktopProcessMain() {
   base::MessageLoopForUI message_loop;
   base::RunLoop run_loop;
   scoped_refptr<AutoThreadTaskRunner> ui_task_runner =
-      new AutoThreadTaskRunner(message_loop.message_loop_proxy(),
+      new AutoThreadTaskRunner(message_loop.task_runner(),
                                run_loop.QuitClosure());
 
   // Launch the input thread.

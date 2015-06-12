@@ -158,7 +158,7 @@ DaemonProcessTest::~DaemonProcessTest() {
 
 void DaemonProcessTest::SetUp() {
   scoped_refptr<AutoThreadTaskRunner> task_runner = new AutoThreadTaskRunner(
-      message_loop_.message_loop_proxy(),
+      message_loop_.task_runner(),
       base::Bind(&DaemonProcessTest::QuitMessageLoop,
                  base::Unretained(this)));
   daemon_process_.reset(

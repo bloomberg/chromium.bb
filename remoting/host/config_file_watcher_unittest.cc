@@ -76,7 +76,7 @@ void ConfigFileWatcherTest::SetUp() {
 
   // Arrange to run |message_loop_| until no components depend on it.
   scoped_refptr<AutoThreadTaskRunner> task_runner = new AutoThreadTaskRunner(
-      message_loop_.message_loop_proxy(), run_loop_.QuitClosure());
+      message_loop_.task_runner(), run_loop_.QuitClosure());
 
   scoped_refptr<AutoThreadTaskRunner> io_task_runner =
       AutoThread::CreateWithType(

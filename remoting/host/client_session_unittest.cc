@@ -198,7 +198,7 @@ class ClientSessionTest : public testing::Test {
 void ClientSessionTest::SetUp() {
   // Arrange to run |message_loop_| until no components depend on it.
   task_runner_ = new AutoThreadTaskRunner(
-      message_loop_.message_loop_proxy(), run_loop_.QuitClosure());
+      message_loop_.task_runner(), run_loop_.QuitClosure());
 
   desktop_environment_factory_.reset(new MockDesktopEnvironmentFactory());
   EXPECT_CALL(*desktop_environment_factory_, CreatePtr())

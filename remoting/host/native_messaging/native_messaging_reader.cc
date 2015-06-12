@@ -134,7 +134,7 @@ NativeMessagingReader::NativeMessagingReader(base::File file)
     : reader_thread_("Reader"),
       weak_factory_(this) {
   reader_thread_.Start();
-  read_task_runner_ = reader_thread_.message_loop_proxy();
+  read_task_runner_ = reader_thread_.task_runner();
   core_.reset(new Core(file.Pass(), base::ThreadTaskRunnerHandle::Get(),
                        read_task_runner_, weak_factory_.GetWeakPtr()));
 }

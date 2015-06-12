@@ -120,7 +120,7 @@ bool ChromotingModule::Run() {
   base::MessageLoopForUI message_loop;
   base::RunLoop run_loop;
   g_module_task_runner.Get() = new AutoThreadTaskRunner(
-      message_loop.message_loop_proxy(), run_loop.QuitClosure());
+      message_loop.task_runner(), run_loop.QuitClosure());
 
   // Start accepting activations.
   result = CoResumeClassObjects();

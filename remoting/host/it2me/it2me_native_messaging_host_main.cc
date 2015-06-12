@@ -120,7 +120,7 @@ int StartIt2MeNativeMessagingHost() {
 
   scoped_ptr<ChromotingHostContext> context =
       ChromotingHostContext::Create(new remoting::AutoThreadTaskRunner(
-          message_loop.message_loop_proxy(), run_loop.QuitClosure()));
+          message_loop.task_runner(), run_loop.QuitClosure()));
   scoped_ptr<extensions::NativeMessageHost> host(
       new It2MeNativeMessagingHost(context.Pass(), factory.Pass()));
 

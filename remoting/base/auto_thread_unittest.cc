@@ -74,7 +74,7 @@ class AutoThreadTest : public testing::Test {
 
   void SetUp() override {
     main_task_runner_ = new AutoThreadTaskRunner(
-        message_loop_.message_loop_proxy(),
+        message_loop_.task_runner(),
         base::Bind(&AutoThreadTest::QuitMainMessageLoop,
                    base::Unretained(this)));
   }

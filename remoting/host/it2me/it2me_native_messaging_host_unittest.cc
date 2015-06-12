@@ -224,7 +224,7 @@ void It2MeNativeMessagingHostTest::SetUp() {
   host_thread_->Start();
 
   host_task_runner_ = new AutoThreadTaskRunner(
-      host_thread_->message_loop_proxy(),
+      host_thread_->task_runner(),
       base::Bind(&It2MeNativeMessagingHostTest::ExitTest,
                  base::Unretained(this)));
 
@@ -449,13 +449,13 @@ void It2MeNativeMessagingHostTest::StartHost() {
   pipe_->Start(it2me_host.Pass(), channel.Pass());
 
   // Notify the test that the host has finished starting up.
-  test_message_loop_->message_loop_proxy()->PostTask(
+  test_message_loop_->task_runner()->PostTask(
       FROM_HERE, test_run_loop_->QuitClosure());
 }
 
 void It2MeNativeMessagingHostTest::ExitTest() {
-  if (!test_message_loop_->message_loop_proxy()->RunsTasksOnCurrentThread()) {
-    test_message_loop_->message_loop_proxy()->PostTask(
+  if (!test_message_loop_->task_runner()->RunsTasksOnCurrentThread()) {
+    test_message_loop_->task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&It2MeNativeMessagingHostTest::ExitTest,
                    base::Unretained(this)));

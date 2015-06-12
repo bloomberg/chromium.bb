@@ -1617,7 +1617,7 @@ int HostProcessMain() {
   base::MessageLoopForUI message_loop;
   scoped_ptr<ChromotingHostContext> context =
       ChromotingHostContext::Create(new AutoThreadTaskRunner(
-          message_loop.message_loop_proxy(), base::MessageLoop::QuitClosure()));
+          message_loop.task_runner(), base::MessageLoop::QuitClosure()));
   if (!context)
     return kInitializationFailed;
 
