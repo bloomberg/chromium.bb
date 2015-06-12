@@ -170,6 +170,15 @@ class BaseGpuTest : public GpuServiceTest {
     }
   }
 
+  void ExpectDisjointOutputMocks(MockOutputter* outputter,
+                                 int64 expect_start_time,
+                                 int64 expect_end_time) {
+    EXPECT_CALL(*outputter,
+                TraceDevice(kTraceDisjoint, "DisjointEvent", _,
+                            expect_start_time, expect_end_time))
+          .Times(Exactly(1));
+  }
+
   void ExpectOutputterMocks(MockOutputter* outputter,
                             bool tracing_service,
                             bool tracing_device,
@@ -459,6 +468,9 @@ class BaseGpuTracerTest : public BaseGpuTest {
     ASSERT_FALSE(disjoint_client->CheckAndResetTimerErrors());
     gl_fake_queries_.SetDisjoint();
     ASSERT_TRUE(disjoint_client->CheckAndResetTimerErrors());
+
+    ExpectDisjointOutputMocks(outputter_ref_.get(),
+                              expect_start_time, expect_end_time);
 
     ExpectOutputterEndMocks(outputter_ref_.get(), tracer_source,
                             category_name, trace_name,

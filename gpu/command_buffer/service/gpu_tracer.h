@@ -33,9 +33,10 @@ class GPUTrace;
 enum GpuTracerSource {
   kTraceGroupInvalid = -1,
 
-  kTraceGroupMarker = 0,
-  kTraceCHROMIUM = 1,
-  kTraceDecoder = 2,
+  kTraceGroupMarker,
+  kTraceCHROMIUM,
+  kTraceDecoder,
+  kTraceDisjoint, // Used internally.
 
   NUM_TRACER_SOURCES
 };
@@ -86,7 +87,8 @@ class GPU_EXPORT GPUTracer
 
   void Process();
   void ProcessTraces();
-  void ClearFinishedTraces(bool have_context);
+  bool CheckDisjointStatus();
+  void ClearOngoingTraces(bool have_context);
 
   void IssueProcessTask();
 
@@ -98,9 +100,10 @@ class GPU_EXPORT GPUTracer
   const unsigned char* gpu_trace_srv_category;
   const unsigned char* gpu_trace_dev_category;
   gles2::GLES2Decoder* decoder_;
+  int64 disjoint_time_ = 0;
 
-  bool gpu_executing_;
-  bool process_posted_;
+  bool gpu_executing_ = false;
+  bool process_posted_ = false;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GPUTracer);
