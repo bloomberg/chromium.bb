@@ -27,23 +27,23 @@
 
 namespace cc {
 
-// BeginFrameObserverMixIn -----------------------------------------------
-BeginFrameObserverMixIn::BeginFrameObserverMixIn()
+// BeginFrameObserverBase -----------------------------------------------
+BeginFrameObserverBase::BeginFrameObserverBase()
     : last_begin_frame_args_(), dropped_begin_frame_args_(0) {
 }
 
-const BeginFrameArgs BeginFrameObserverMixIn::LastUsedBeginFrameArgs() const {
+const BeginFrameArgs BeginFrameObserverBase::LastUsedBeginFrameArgs() const {
   return last_begin_frame_args_;
 }
-void BeginFrameObserverMixIn::OnBeginFrame(const BeginFrameArgs& args) {
-  DEBUG_FRAMES("BeginFrameObserverMixIn::OnBeginFrame",
+void BeginFrameObserverBase::OnBeginFrame(const BeginFrameArgs& args) {
+  DEBUG_FRAMES("BeginFrameObserverBase::OnBeginFrame",
                "last args",
                last_begin_frame_args_.AsValue(),
                "new args",
                args.AsValue());
   DCHECK(args.IsValid());
   DCHECK(args.frame_time >= last_begin_frame_args_.frame_time);
-  bool used = OnBeginFrameMixInDelegate(args);
+  bool used = OnBeginFrameDerivedImpl(args);
   if (used) {
     last_begin_frame_args_ = args;
   } else {
@@ -51,7 +51,7 @@ void BeginFrameObserverMixIn::OnBeginFrame(const BeginFrameArgs& args) {
   }
 }
 
-void BeginFrameObserverMixIn::AsValueInto(
+void BeginFrameObserverBase::AsValueInto(
     base::trace_event::TracedValue* dict) const {
   dict->BeginDictionary("last_begin_frame_args_");
   last_begin_frame_args_.AsValueInto(dict);
@@ -59,8 +59,8 @@ void BeginFrameObserverMixIn::AsValueInto(
   dict->SetInteger("dropped_begin_frame_args_", dropped_begin_frame_args_);
 }
 
-// BeginFrameSourceMixIn ------------------------------------------------------
-BeginFrameSourceMixIn::BeginFrameSourceMixIn()
+// BeginFrameSourceBase ------------------------------------------------------
+BeginFrameSourceBase::BeginFrameSourceBase()
     : observer_(NULL),
       needs_begin_frames_(false),
       inside_as_value_into_(false) {
@@ -68,12 +68,12 @@ BeginFrameSourceMixIn::BeginFrameSourceMixIn()
   DCHECK_EQ(inside_as_value_into_, false);
 }
 
-bool BeginFrameSourceMixIn::NeedsBeginFrames() const {
+bool BeginFrameSourceBase::NeedsBeginFrames() const {
   return needs_begin_frames_;
 }
 
-void BeginFrameSourceMixIn::SetNeedsBeginFrames(bool needs_begin_frames) {
-  DEBUG_FRAMES("BeginFrameSourceMixIn::SetNeedsBeginFrames",
+void BeginFrameSourceBase::SetNeedsBeginFrames(bool needs_begin_frames) {
+  DEBUG_FRAMES("BeginFrameSourceBase::SetNeedsBeginFrames",
                "current state",
                needs_begin_frames_,
                "new state",
@@ -84,8 +84,8 @@ void BeginFrameSourceMixIn::SetNeedsBeginFrames(bool needs_begin_frames) {
   }
 }
 
-void BeginFrameSourceMixIn::AddObserver(BeginFrameObserver* obs) {
-  DEBUG_FRAMES("BeginFrameSourceMixIn::AddObserver",
+void BeginFrameSourceBase::AddObserver(BeginFrameObserver* obs) {
+  DEBUG_FRAMES("BeginFrameSourceBase::AddObserver",
                "current observer",
                observer_,
                "to add observer",
@@ -94,8 +94,8 @@ void BeginFrameSourceMixIn::AddObserver(BeginFrameObserver* obs) {
   observer_ = obs;
 }
 
-void BeginFrameSourceMixIn::RemoveObserver(BeginFrameObserver* obs) {
-  DEBUG_FRAMES("BeginFrameSourceMixIn::RemoveObserver",
+void BeginFrameSourceBase::RemoveObserver(BeginFrameObserver* obs) {
+  DEBUG_FRAMES("BeginFrameSourceBase::RemoveObserver",
                "current observer",
                observer_,
                "to remove observer",
@@ -104,8 +104,8 @@ void BeginFrameSourceMixIn::RemoveObserver(BeginFrameObserver* obs) {
   observer_ = NULL;
 }
 
-void BeginFrameSourceMixIn::CallOnBeginFrame(const BeginFrameArgs& args) {
-  DEBUG_FRAMES("BeginFrameSourceMixIn::CallOnBeginFrame",
+void BeginFrameSourceBase::CallOnBeginFrame(const BeginFrameArgs& args) {
+  DEBUG_FRAMES("BeginFrameSourceBase::CallOnBeginFrame",
                "current observer",
                observer_,
                "args",
@@ -116,7 +116,7 @@ void BeginFrameSourceMixIn::CallOnBeginFrame(const BeginFrameArgs& args) {
 }
 
 // Tracing support
-void BeginFrameSourceMixIn::AsValueInto(
+void BeginFrameSourceBase::AsValueInto(
     base::trace_event::TracedValue* dict) const {
   // As the observer might try to trace the source, prevent an infinte loop
   // from occuring.
@@ -137,7 +137,7 @@ void BeginFrameSourceMixIn::AsValueInto(
   dict->SetBoolean("needs_begin_frames", NeedsBeginFrames());
 }
 
-// BackToBackBeginFrameSourceMixIn --------------------------------------------
+// BackToBackBeginFrameSource --------------------------------------------
 scoped_ptr<BackToBackBeginFrameSource> BackToBackBeginFrameSource::Create(
     base::SingleThreadTaskRunner* task_runner) {
   return make_scoped_ptr(new BackToBackBeginFrameSource(task_runner));
@@ -145,7 +145,7 @@ scoped_ptr<BackToBackBeginFrameSource> BackToBackBeginFrameSource::Create(
 
 BackToBackBeginFrameSource::BackToBackBeginFrameSource(
     base::SingleThreadTaskRunner* task_runner)
-    : BeginFrameSourceMixIn(),
+    : BeginFrameSourceBase(),
       task_runner_(task_runner),
       send_begin_frame_posted_(false),
       weak_factory_(this) {
@@ -200,7 +200,7 @@ void BackToBackBeginFrameSource::DidFinishFrame(size_t remaining_frames) {
 void BackToBackBeginFrameSource::AsValueInto(
     base::trace_event::TracedValue* dict) const {
   dict->SetString("type", "BackToBackBeginFrameSource");
-  BeginFrameSourceMixIn::AsValueInto(dict);
+  BeginFrameSourceBase::AsValueInto(dict);
   dict->SetBoolean("send_begin_frame_posted_", send_begin_frame_posted_);
 }
 
@@ -217,7 +217,7 @@ scoped_ptr<SyntheticBeginFrameSource> SyntheticBeginFrameSource::Create(
 
 SyntheticBeginFrameSource::SyntheticBeginFrameSource(
     scoped_refptr<DelayBasedTimeSource> time_source)
-    : BeginFrameSourceMixIn(), time_source_(time_source) {
+    : BeginFrameSourceBase(), time_source_(time_source) {
   time_source_->SetActive(false);
   time_source_->SetClient(this);
 }
@@ -247,7 +247,7 @@ void SyntheticBeginFrameSource::OnTimerTick() {
                                         BeginFrameArgs::NORMAL));
 }
 
-// BeginFrameSourceMixIn support
+// BeginFrameSourceBase support
 void SyntheticBeginFrameSource::OnNeedsBeginFramesChange(
     bool needs_begin_frames) {
   base::TimeTicks missed_tick_time =
@@ -262,7 +262,7 @@ void SyntheticBeginFrameSource::OnNeedsBeginFramesChange(
 void SyntheticBeginFrameSource::AsValueInto(
     base::trace_event::TracedValue* dict) const {
   dict->SetString("type", "SyntheticBeginFrameSource");
-  BeginFrameSourceMixIn::AsValueInto(dict);
+  BeginFrameSourceBase::AsValueInto(dict);
 
   dict->BeginDictionary("time_source");
   time_source_->AsValueInto(dict);
@@ -275,7 +275,7 @@ scoped_ptr<BeginFrameSourceMultiplexer> BeginFrameSourceMultiplexer::Create() {
 }
 
 BeginFrameSourceMultiplexer::BeginFrameSourceMultiplexer()
-    : BeginFrameSourceMixIn(),
+    : BeginFrameSourceBase(),
       minimum_interval_(base::TimeDelta()),
       active_source_(NULL),
       source_list_() {
@@ -283,7 +283,7 @@ BeginFrameSourceMultiplexer::BeginFrameSourceMultiplexer()
 
 BeginFrameSourceMultiplexer::BeginFrameSourceMultiplexer(
     base::TimeDelta minimum_interval)
-    : BeginFrameSourceMixIn(),
+    : BeginFrameSourceBase(),
       minimum_interval_(minimum_interval),
       active_source_(NULL),
       source_list_() {

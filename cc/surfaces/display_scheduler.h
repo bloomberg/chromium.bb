@@ -26,7 +26,7 @@ class CC_SURFACES_EXPORT DisplaySchedulerClient {
   virtual bool DrawAndSwap() = 0;
 };
 
-class CC_SURFACES_EXPORT DisplayScheduler : public BeginFrameObserverMixIn {
+class CC_SURFACES_EXPORT DisplayScheduler : public BeginFrameObserverBase {
  public:
   DisplayScheduler(DisplaySchedulerClient* client,
                    BeginFrameSource* begin_frame_source,
@@ -44,8 +44,8 @@ class CC_SURFACES_EXPORT DisplayScheduler : public BeginFrameObserverMixIn {
 
   void OutputSurfaceLost();
 
-  // BeginFrameObserverMixIn implementation
-  bool OnBeginFrameMixInDelegate(const BeginFrameArgs& args) override;
+  // BeginFrameObserverBase implementation
+  bool OnBeginFrameDerivedImpl(const BeginFrameArgs& args) override;
 
  protected:
   base::TimeTicks DesiredBeginFrameDeadlineTime();

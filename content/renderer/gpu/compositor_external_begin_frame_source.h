@@ -21,7 +21,7 @@ namespace content {
 // This class can be created only on the main thread, but then becomes pinned
 // to a fixed thread where cc::Scheduler is running.
 class CompositorExternalBeginFrameSource
-    : public cc::BeginFrameSourceMixIn,
+    : public cc::BeginFrameSourceBase,
       public NON_EXPORTED_BASE(base::NonThreadSafe) {
  public:
   explicit CompositorExternalBeginFrameSource(
@@ -30,7 +30,7 @@ class CompositorExternalBeginFrameSource
       int routing_id);
   ~CompositorExternalBeginFrameSource() override;
 
-  // cc::BeginFrameSourceMixIn implementation.
+  // cc::BeginFrameSourceBase implementation.
   void OnNeedsBeginFramesChange(bool needs_begin_frames) override;
   void SetClientReady() override;
 

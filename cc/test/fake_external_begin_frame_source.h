@@ -11,7 +11,7 @@
 namespace cc {
 
 class FakeExternalBeginFrameSource
-    : public BeginFrameSourceMixIn,
+    : public BeginFrameSourceBase,
       public NON_EXPORTED_BASE(base::NonThreadSafe) {
  public:
   explicit FakeExternalBeginFrameSource(double refresh_rate);
@@ -22,7 +22,7 @@ class FakeExternalBeginFrameSource
   // BeginFrameSource implementation.
   void SetClientReady() override;
 
-  // BeginFrameSourceMixIn overrides.
+  // BeginFrameSourceBase overrides.
   void OnNeedsBeginFramesChange(bool needs_begin_frames) override;
 
   void TestOnBeginFrame();

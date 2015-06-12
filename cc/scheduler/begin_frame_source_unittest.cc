@@ -170,16 +170,16 @@ const BeginFrameArgs MockBeginFrameObserver::kDefaultBeginFrameArgs =
         -1,
         -1);
 
-// BeginFrameObserverMixIn testing ---------------------------------------
-class MockMinimalBeginFrameObserverMixIn : public BeginFrameObserverMixIn {
+// BeginFrameObserverBase testing ---------------------------------------
+class MockMinimalBeginFrameObserverBase : public BeginFrameObserverBase {
  public:
-  MOCK_METHOD1(OnBeginFrameMixInDelegate, bool(const BeginFrameArgs&));
+  MOCK_METHOD1(OnBeginFrameDerivedImpl, bool(const BeginFrameArgs&));
   int64_t dropped_begin_frame_args() const { return dropped_begin_frame_args_; }
 };
 
-TEST(BeginFrameObserverMixInTest, OnBeginFrameImplementation) {
+TEST(BeginFrameObserverBaseTest, OnBeginFrameImplementation) {
   using ::testing::Return;
-  MockMinimalBeginFrameObserverMixIn obs;
+  MockMinimalBeginFrameObserverBase obs;
   ::testing::InSequence ordered;  // These calls should be ordered
 
   // Initial conditions
@@ -192,7 +192,7 @@ TEST(BeginFrameObserverMixInTest, OnBeginFrameImplementation) {
 
   BeginFrameArgs args1 =
       CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 100, 200, 300);
-  EXPECT_CALL(obs, OnBeginFrameMixInDelegate(args1)).WillOnce(Return(true));
+  EXPECT_CALL(obs, OnBeginFrameDerivedImpl(args1)).WillOnce(Return(true));
   obs.OnBeginFrame(args1);
   EXPECT_EQ(args1, obs.LastUsedBeginFrameArgs());
   EXPECT_EQ(0, obs.dropped_begin_frame_args());
@@ -208,21 +208,21 @@ TEST(BeginFrameObserverMixInTest, OnBeginFrameImplementation) {
   // Returning false shouldn't update the LastUsedBeginFrameArgs value.
   BeginFrameArgs args2 =
       CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 200, 300, 400);
-  EXPECT_CALL(obs, OnBeginFrameMixInDelegate(args2)).WillOnce(Return(false));
+  EXPECT_CALL(obs, OnBeginFrameDerivedImpl(args2)).WillOnce(Return(false));
   obs.OnBeginFrame(args2);
   EXPECT_EQ(args1, obs.LastUsedBeginFrameArgs());
   EXPECT_EQ(1, obs.dropped_begin_frame_args());
 
   BeginFrameArgs args3 =
       CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 150, 300, 400);
-  EXPECT_CALL(obs, OnBeginFrameMixInDelegate(args3)).WillOnce(Return(true));
+  EXPECT_CALL(obs, OnBeginFrameDerivedImpl(args3)).WillOnce(Return(true));
   obs.OnBeginFrame(args3);
   EXPECT_EQ(args3, obs.LastUsedBeginFrameArgs());
   EXPECT_EQ(1, obs.dropped_begin_frame_args());
 }
 
 // BeginFrameSource testing ----------------------------------------------
-TEST(BeginFrameSourceMixInTest, ObserverManipulation) {
+TEST(BeginFrameSourceBaseTest, ObserverManipulation) {
   MockBeginFrameObserver obs;
   MockBeginFrameObserver otherObs;
   FakeBeginFrameSource source;
@@ -251,7 +251,7 @@ TEST(BeginFrameSourceMixInTest, ObserverManipulation) {
   source.RemoveObserver(&otherObs);
 }
 
-TEST(BeginFrameSourceMixInTest, Observer) {
+TEST(BeginFrameSourceBaseTest, Observer) {
   FakeBeginFrameSource source;
   MockBeginFrameObserver obs;
   source.AddObserver(&obs);
@@ -266,12 +266,12 @@ TEST(BeginFrameSourceMixInTest, Observer) {
   SEND_BEGIN_FRAME_USED(source, 700, 900, 300);
 }
 
-TEST(BeginFrameSourceMixInTest, NoObserver) {
+TEST(BeginFrameSourceBaseTest, NoObserver) {
   FakeBeginFrameSource source;
   SEND_BEGIN_FRAME_DROP(source, 100, 200, 300);
 }
 
-TEST(BeginFrameSourceMixInTest, NeedsBeginFrames) {
+TEST(BeginFrameSourceBaseTest, NeedsBeginFrames) {
   FakeBeginFrameSource source;
   EXPECT_FALSE(source.NeedsBeginFrames());
   source.SetNeedsBeginFrames(true);
@@ -280,7 +280,7 @@ TEST(BeginFrameSourceMixInTest, NeedsBeginFrames) {
   EXPECT_FALSE(source.NeedsBeginFrames());
 }
 
-class LoopingBeginFrameObserver : public BeginFrameObserverMixIn {
+class LoopingBeginFrameObserver : public BeginFrameObserverBase {
  public:
   BeginFrameSource* source_;
 
@@ -292,13 +292,13 @@ class LoopingBeginFrameObserver : public BeginFrameObserverMixIn {
   }
 
  protected:
-  // BeginFrameObserverMixIn
-  bool OnBeginFrameMixInDelegate(const BeginFrameArgs& args) override {
+  // BeginFrameObserverBase
+  bool OnBeginFrameDerivedImpl(const BeginFrameArgs& args) override {
     return true;
   }
 };
 
-TEST(BeginFrameSourceMixInTest, DetectAsValueIntoLoop) {
+TEST(BeginFrameSourceBaseTest, DetectAsValueIntoLoop) {
   LoopingBeginFrameObserver obs;
   FakeBeginFrameSource source;
 

@@ -53,23 +53,23 @@ class CC_EXPORT BeginFrameObserver {
   virtual void AsValueInto(base::trace_event::TracedValue* dict) const = 0;
 };
 
-// Simple mix in which implements a BeginFrameObserver which checks the
+// Simple base class which implements a BeginFrameObserver which checks the
 // incoming values meet the BeginFrameObserver requirements and implements the
 // required LastUsedBeginFrameArgs behaviour.
 //
-// Users of this mix in should;
-//  - Implement the OnBeginFrameMixInDelegate function.
+// Users of this class should;
+//  - Implement the OnBeginFrameDerivedImpl function.
 //  - Recommended (but not required) to call
-//    BeginFrameObserverMixIn::OnValueInto in their overridden OnValueInto
+//    BeginFrameObserverBase::OnValueInto in their overridden OnValueInto
 //    function.
-class CC_EXPORT BeginFrameObserverMixIn : public BeginFrameObserver {
+class CC_EXPORT BeginFrameObserverBase : public BeginFrameObserver {
  public:
-  BeginFrameObserverMixIn();
+  BeginFrameObserverBase();
 
   // BeginFrameObserver
 
   // Traces |args| and DCHECK |args| satisfies pre-conditions then calls
-  // OnBeginFrameMixInDelegate and updates the last_begin_frame_args_ value on
+  // OnBeginFrameDerivedImpl and updates the last_begin_frame_args_ value on
   // true.
   void OnBeginFrame(const BeginFrameArgs& args) override;
   const BeginFrameArgs LastUsedBeginFrameArgs() const override;
@@ -80,7 +80,7 @@ class CC_EXPORT BeginFrameObserverMixIn : public BeginFrameObserver {
  protected:
   // Subclasses should override this method!
   // Return true if the given argument is (or will be) used.
-  virtual bool OnBeginFrameMixInDelegate(const BeginFrameArgs& args) = 0;
+  virtual bool OnBeginFrameDerivedImpl(const BeginFrameArgs& args) = 0;
 
   BeginFrameArgs last_begin_frame_args_;
   int64_t dropped_begin_frame_args_;
@@ -125,16 +125,16 @@ class CC_EXPORT BeginFrameSource {
   virtual void AsValueInto(base::trace_event::TracedValue* dict) const = 0;
 };
 
-// Simple mix in which implements a BeginFrameSource.
+// Simple base class which implements a BeginFrameSource.
 // Implementation classes should:
 //  - Implement the pure virtual (Set)NeedsBeginFrames methods from
 //    BeginFrameSource.
 //  - Use the CallOnBeginFrame method to call to the observer(s).
-//  - Recommended (but not required) to call BeginFrameSourceMixIn::AsValueInto
+//  - Recommended (but not required) to call BeginFrameSourceBase::AsValueInto
 //    in their own AsValueInto implementation.
-class CC_EXPORT BeginFrameSourceMixIn : public BeginFrameSource {
+class CC_EXPORT BeginFrameSourceBase : public BeginFrameSource {
  public:
-  ~BeginFrameSourceMixIn() override {}
+  ~BeginFrameSourceBase() override {}
 
   // BeginFrameSource
   bool NeedsBeginFrames() const final;
@@ -149,7 +149,7 @@ class CC_EXPORT BeginFrameSourceMixIn : public BeginFrameSource {
   void AsValueInto(base::trace_event::TracedValue* dict) const override;
 
  protected:
-  BeginFrameSourceMixIn();
+  BeginFrameSourceBase();
 
   // These methods should be used by subclasses to make the call to the
   // observers.
@@ -168,7 +168,7 @@ class CC_EXPORT BeginFrameSourceMixIn : public BeginFrameSource {
 
 // A frame source which calls BeginFrame (at the next possible time) as soon as
 // remaining frames reaches zero.
-class CC_EXPORT BackToBackBeginFrameSource : public BeginFrameSourceMixIn {
+class CC_EXPORT BackToBackBeginFrameSource : public BeginFrameSourceBase {
  public:
   static scoped_ptr<BackToBackBeginFrameSource> Create(
       base::SingleThreadTaskRunner* task_runner);
@@ -189,7 +189,7 @@ class CC_EXPORT BackToBackBeginFrameSource : public BeginFrameSourceMixIn {
 
   bool send_begin_frame_posted_;
 
-  // BeginFrameSourceMixIn
+  // BeginFrameSourceBase
   void OnNeedsBeginFramesChange(bool needs_begin_frames) override;
 
   void BeginFrame();
@@ -200,7 +200,7 @@ class CC_EXPORT BackToBackBeginFrameSource : public BeginFrameSourceMixIn {
 
 // A frame source which is locked to an external parameters provides from a
 // vsync source and generates BeginFrameArgs for it.
-class CC_EXPORT SyntheticBeginFrameSource : public BeginFrameSourceMixIn,
+class CC_EXPORT SyntheticBeginFrameSource : public BeginFrameSourceBase,
                                             public VSyncParameterObserver,
                                             public TimeSourceClient {
  public:
@@ -227,7 +227,7 @@ class CC_EXPORT SyntheticBeginFrameSource : public BeginFrameSourceMixIn,
   BeginFrameArgs CreateBeginFrameArgs(base::TimeTicks frame_time,
                                       BeginFrameArgs::BeginFrameArgsType type);
 
-  // BeginFrameSourceMixIn
+  // BeginFrameSourceBase
   void OnNeedsBeginFramesChange(bool needs_begin_frames) override;
 
   scoped_refptr<DelayBasedTimeSource> time_source_;
@@ -236,7 +236,7 @@ class CC_EXPORT SyntheticBeginFrameSource : public BeginFrameSourceMixIn,
 // A "virtual" frame source which lets you switch between multiple other frame
 // sources while making sure the BeginFrameArgs stays increasing (possibly
 // enforcing minimum boundry between BeginFrameArgs messages).
-class CC_EXPORT BeginFrameSourceMultiplexer : public BeginFrameSourceMixIn,
+class CC_EXPORT BeginFrameSourceMultiplexer : public BeginFrameSourceBase,
                                               public BeginFrameObserver {
  public:
   static scoped_ptr<BeginFrameSourceMultiplexer> Create();
@@ -259,7 +259,7 @@ class CC_EXPORT BeginFrameSourceMultiplexer : public BeginFrameSourceMixIn,
   // BeginFrameSource
   void DidFinishFrame(size_t remaining_frames) override;
 
-  // BeginFrameSourceMixIn
+  // BeginFrameSourceBase
   void OnNeedsBeginFramesChange(bool needs_begin_frames) override;
 
   // Tracing

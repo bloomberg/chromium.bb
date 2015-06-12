@@ -229,7 +229,7 @@ class SchedulerClientWithFixedEstimates : public FakeSchedulerClient {
   base::TimeDelta commit_to_activate_duration_;
 };
 
-class FakeExternalBeginFrameSource : public BeginFrameSourceMixIn {
+class FakeExternalBeginFrameSource : public BeginFrameSourceBase {
  public:
   explicit FakeExternalBeginFrameSource(FakeSchedulerClient* client)
       : client_(client) {}

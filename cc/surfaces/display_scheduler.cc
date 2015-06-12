@@ -122,7 +122,7 @@ void DisplayScheduler::DrawAndSwap() {
   root_surface_damaged_ = false;
 }
 
-bool DisplayScheduler::OnBeginFrameMixInDelegate(const BeginFrameArgs& args) {
+bool DisplayScheduler::OnBeginFrameDerivedImpl(const BeginFrameArgs& args) {
   base::TimeTicks now = base::TimeTicks::Now();
   TRACE_EVENT2("cc", "DisplayScheduler::BeginFrame", "args", args.AsValue(),
                "now", now);

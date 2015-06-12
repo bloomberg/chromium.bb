@@ -345,7 +345,7 @@ void Scheduler::SetupPollingMechanisms() {
 // making a frame. Usually this means that user input for the frame is complete.
 // If the scheduler is busy, we queue the BeginFrame to be handled later as
 // a BeginRetroFrame.
-bool Scheduler::OnBeginFrameMixInDelegate(const BeginFrameArgs& args) {
+bool Scheduler::OnBeginFrameDerivedImpl(const BeginFrameArgs& args) {
   TRACE_EVENT1("cc,benchmark", "Scheduler::BeginFrame", "args", args.AsValue());
 
   // Trace this begin frame time through the Chrome stack

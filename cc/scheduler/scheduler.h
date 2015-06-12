@@ -73,7 +73,7 @@ class CC_EXPORT SchedulerFrameSourcesConstructor {
   friend class Scheduler;
 };
 
-class CC_EXPORT Scheduler : public BeginFrameObserverMixIn {
+class CC_EXPORT Scheduler : public BeginFrameObserverBase {
  public:
   static scoped_ptr<Scheduler> Create(
       SchedulerClient* client,
@@ -92,8 +92,8 @@ class CC_EXPORT Scheduler : public BeginFrameObserverMixIn {
 
   ~Scheduler() override;
 
-  // BeginFrameObserverMixin
-  bool OnBeginFrameMixInDelegate(const BeginFrameArgs& args) override;
+  // BeginFrameObserverBase
+  bool OnBeginFrameDerivedImpl(const BeginFrameArgs& args) override;
 
   void OnDrawForOutputSurface();
 

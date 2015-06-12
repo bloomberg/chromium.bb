@@ -15,7 +15,7 @@ class SynchronousCompositorImpl;
 // Make sure that this is initialized and set to compositor before output
 // surface is bound to compositor.
 class SynchronousCompositorExternalBeginFrameSource
-    : public cc::BeginFrameSourceMixIn {
+    : public cc::BeginFrameSourceBase {
  public:
   explicit SynchronousCompositorExternalBeginFrameSource(int routing_id);
   ~SynchronousCompositorExternalBeginFrameSource() override;
@@ -23,7 +23,7 @@ class SynchronousCompositorExternalBeginFrameSource
   void BeginFrame(const cc::BeginFrameArgs& args);
   void SetCompositor(SynchronousCompositorImpl* compositor);
 
-  // cc::BeginFrameSourceMixIn implementation.
+  // cc::BeginFrameSourceBase implementation.
   void OnNeedsBeginFramesChange(bool needs_begin_frames) override;
   void SetClientReady() override;
 

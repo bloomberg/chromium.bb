@@ -40,7 +40,7 @@ void FakeBeginFrameSource::DidFinishFrame(size_t remaining_frames) {
 void FakeBeginFrameSource::AsValueInto(
     base::trace_event::TracedValue* dict) const {
   dict->SetString("type", "FakeBeginFrameSource");
-  BeginFrameSourceMixIn::AsValueInto(dict);
+  BeginFrameSourceBase::AsValueInto(dict);
 }
 
 TestBackToBackBeginFrameSource::TestBackToBackBeginFrameSource(

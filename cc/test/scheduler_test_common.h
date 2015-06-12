@@ -73,7 +73,7 @@ class TestDelayBasedTimeSource : public DelayBasedTimeSource {
   scoped_refptr<TestNowSource> now_src_;
 };
 
-struct FakeBeginFrameSource : public BeginFrameSourceMixIn {
+struct FakeBeginFrameSource : public BeginFrameSourceBase {
   bool remaining_frames_ = false;
 
   BeginFrameObserver* GetObserver() { return observer_; }
