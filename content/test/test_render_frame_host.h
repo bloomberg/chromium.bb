@@ -70,39 +70,17 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   void SendBeforeUnloadACK(bool proceed) override;
   void SimulateSwapOutACK() override;
 
-  void SendNavigateWithTransitionAndResponseCode(int page_id,
-                                                 int nav_entry_id,
-                                                 bool did_create_new_entry,
-                                                 const GURL& url,
-                                                 ui::PageTransition transition,
-                                                 int response_code);
-  void SendNavigateWithOriginalRequestURL(int page_id,
-                                          int nav_entry_id,
-                                          bool did_create_new_entry,
-                                          const GURL& url,
-                                          const GURL& original_request_url);
-  void SendNavigateWithFile(int page_id,
-                            int nav_entry_id,
-                            bool did_create_new_entry,
-                            const GURL& url,
-                            const base::FilePath& file_path);
-  void SendNavigateWithParams(
-      FrameHostMsg_DidCommitProvisionalLoad_Params* params);
-  void SendNavigateWithRedirects(int page_id,
-                                 int nav_entry_id,
-                                 bool did_create_new_entry,
-                                 const GURL& url,
-                                 const std::vector<GURL>& redirects);
-  void SendNavigateWithParameters(
+  using ModificationCallback =
+      base::Callback<void(FrameHostMsg_DidCommitProvisionalLoad_Params*)>;
+
+  void SendNavigateWithModificationCallback(
       int page_id,
       int nav_entry_id,
       bool did_create_new_entry,
       const GURL& url,
-      ui::PageTransition transition,
-      const GURL& original_request_url,
-      int response_code,
-      const base::FilePath* file_path_for_history_item,
-      const std::vector<GURL>& redirects);
+      const ModificationCallback& callback);
+  void SendNavigateWithParams(
+      FrameHostMsg_DidCommitProvisionalLoad_Params* params);
 
   // Simulate a renderer-initiated navigation up until commit.
   void NavigateAndCommitRendererInitiated(int page_id,
@@ -142,6 +120,14 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   bool pending_commit() const { return pending_commit_; }
 
  private:
+  void SendNavigateWithParameters(int page_id,
+                                  int nav_entry_id,
+                                  bool did_create_new_entry,
+                                  const GURL& url,
+                                  ui::PageTransition transition,
+                                  int response_code,
+                                  const ModificationCallback& callback);
+
   TestRenderFrameHostCreationObserver child_creation_observer_;
 
   std::string contents_mime_type_;

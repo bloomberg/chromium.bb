@@ -9,6 +9,7 @@
 #include "content/browser/renderer_host/render_message_filter.h"
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
+#include "content/common/frame_messages.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
@@ -227,22 +228,35 @@ TEST_F(RenderViewHostTest, MessageWithBadHistoryItemFiles) {
   EXPECT_EQ(1, process()->bad_msg_count());
 }
 
+namespace {
+void SetBadFilePath(const GURL& url,
+                    const base::FilePath& file_path,
+                    FrameHostMsg_DidCommitProvisionalLoad_Params* params) {
+  params->page_state =
+      PageState::CreateForTesting(url, false, "data", &file_path);
+}
+}
+
 TEST_F(RenderViewHostTest, NavigationWithBadHistoryItemFiles) {
   GURL url("http://www.google.com");
   base::FilePath file_path;
   EXPECT_TRUE(PathService::Get(base::DIR_TEMP, &file_path));
   file_path = file_path.AppendASCII("bar");
+  auto set_bad_file_path_callback = base::Bind(SetBadFilePath, url, file_path);
+
   EXPECT_EQ(0, process()->bad_msg_count());
   main_test_rfh()->SendRendererInitiatedNavigationRequest(url, false);
   main_test_rfh()->PrepareForCommit();
-  contents()->GetMainFrame()->SendNavigateWithFile(1, 1, true, url, file_path);
+  contents()->GetMainFrame()->SendNavigateWithModificationCallback(
+      1, 1, true, url, set_bad_file_path_callback);
   EXPECT_EQ(1, process()->bad_msg_count());
 
   ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFile(
       process()->GetID(), file_path);
   main_test_rfh()->SendRendererInitiatedNavigationRequest(url, false);
   main_test_rfh()->PrepareForCommit();
-  contents()->GetMainFrame()->SendNavigateWithFile(2, 2, true, url, file_path);
+  contents()->GetMainFrame()->SendNavigateWithModificationCallback(
+      2, 2, true, url, set_bad_file_path_callback);
   EXPECT_EQ(1, process()->bad_msg_count());
 }
 

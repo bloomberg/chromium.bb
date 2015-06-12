@@ -103,17 +103,18 @@ void TestRenderFrameHost::SendNavigate(int page_id,
                                        int nav_entry_id,
                                        bool did_create_new_entry,
                                        const GURL& url) {
-  SendNavigateWithTransition(page_id, nav_entry_id, did_create_new_entry, url,
-                             ui::PAGE_TRANSITION_LINK);
+  SendNavigateWithParameters(page_id, nav_entry_id, did_create_new_entry, url,
+                             ui::PAGE_TRANSITION_LINK, 200,
+                             ModificationCallback());
 }
 
 void TestRenderFrameHost::SendFailedNavigate(int page_id,
                                              int nav_entry_id,
                                              bool did_create_new_entry,
                                              const GURL& url) {
-  SendNavigateWithTransitionAndResponseCode(page_id, nav_entry_id,
-                                            did_create_new_entry, url,
-                                            ui::PAGE_TRANSITION_RELOAD, 500);
+  SendNavigateWithParameters(page_id, nav_entry_id, did_create_new_entry, url,
+                             ui::PAGE_TRANSITION_RELOAD, 500,
+                             ModificationCallback());
 }
 
 void TestRenderFrameHost::SendNavigateWithTransition(
@@ -122,63 +123,18 @@ void TestRenderFrameHost::SendNavigateWithTransition(
     bool did_create_new_entry,
     const GURL& url,
     ui::PageTransition transition) {
-  SendNavigateWithTransitionAndResponseCode(
-      page_id, nav_entry_id, did_create_new_entry, url, transition, 200);
-}
-
-void TestRenderFrameHost::SendNavigateWithTransitionAndResponseCode(
-    int page_id,
-    int nav_entry_id,
-    bool did_create_new_entry,
-    const GURL& url,
-    ui::PageTransition transition,
-    int response_code) {
-  // DidStartProvisionalLoad may delete the pending entry that holds |url|,
-  // so we keep a copy of it to use in SendNavigateWithParameters.
-  GURL url_copy(url);
-  OnDidStartProvisionalLoadForFrame(url_copy);
-  SendNavigateWithParameters(page_id, nav_entry_id, did_create_new_entry,
-                             url_copy, transition, url_copy, response_code, 0,
-                             std::vector<GURL>());
-}
-
-void TestRenderFrameHost::SendNavigateWithOriginalRequestURL(
-    int page_id,
-    int nav_entry_id,
-    bool did_create_new_entry,
-    const GURL& url,
-    const GURL& original_request_url) {
-  OnDidStartProvisionalLoadForFrame(url);
   SendNavigateWithParameters(page_id, nav_entry_id, did_create_new_entry, url,
-                             ui::PAGE_TRANSITION_LINK, original_request_url,
-                             200, 0, std::vector<GURL>());
+                             transition, 200, ModificationCallback());
 }
 
-void TestRenderFrameHost::SendNavigateWithFile(
+void TestRenderFrameHost::SendNavigateWithModificationCallback(
     int page_id,
     int nav_entry_id,
     bool did_create_new_entry,
     const GURL& url,
-    const base::FilePath& file_path) {
+    const ModificationCallback& callback) {
   SendNavigateWithParameters(page_id, nav_entry_id, did_create_new_entry, url,
-                             ui::PAGE_TRANSITION_LINK, url, 200, &file_path,
-                             std::vector<GURL>());
-}
-
-void TestRenderFrameHost::SendNavigateWithParams(
-    FrameHostMsg_DidCommitProvisionalLoad_Params* params) {
-  FrameHostMsg_DidCommitProvisionalLoad msg(GetRoutingID(), *params);
-  OnDidCommitProvisionalLoad(msg);
-}
-
-void TestRenderFrameHost::SendNavigateWithRedirects(
-    int page_id,
-    int nav_entry_id,
-    bool did_create_new_entry,
-    const GURL& url,
-    const std::vector<GURL>& redirects) {
-  SendNavigateWithParameters(page_id, nav_entry_id, did_create_new_entry, url,
-                             ui::PAGE_TRANSITION_LINK, url, 200, 0, redirects);
+                             ui::PAGE_TRANSITION_LINK, 200, callback);
 }
 
 void TestRenderFrameHost::SendNavigateWithParameters(
@@ -187,22 +143,20 @@ void TestRenderFrameHost::SendNavigateWithParameters(
     bool did_create_new_entry,
     const GURL& url,
     ui::PageTransition transition,
-    const GURL& original_request_url,
     int response_code,
-    const base::FilePath* file_path_for_history_item,
-    const std::vector<GURL>& redirects) {
+    const ModificationCallback& callback) {
+  // DidStartProvisionalLoad may delete the pending entry that holds |url|,
+  // so we keep a copy of it to use below.
+  GURL url_copy(url);
+  OnDidStartProvisionalLoadForFrame(url_copy);
+
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
   params.page_id = page_id;
   params.nav_entry_id = nav_entry_id;
-  params.url = url;
-  params.referrer = Referrer();
+  params.url = url_copy;
   params.transition = transition;
-  params.redirects = redirects;
   params.should_update_history = true;
-  params.searchable_form_url = GURL();
-  params.searchable_form_encoding = std::string();
   params.did_create_new_entry = did_create_new_entry;
-  params.security_info = std::string();
   params.gesture = NavigationGestureUser;
   params.contents_mime_type = contents_mime_type_;
   params.is_post = false;
@@ -210,22 +164,28 @@ void TestRenderFrameHost::SendNavigateWithParameters(
   params.socket_address.set_host("2001:db8::1");
   params.socket_address.set_port(80);
   params.history_list_was_cleared = simulate_history_list_was_cleared_;
-  params.original_request_url = original_request_url;
+  params.original_request_url = url_copy;
 
   url::Replacements<char> replacements;
   replacements.ClearRef();
-  params.was_within_same_page = transition != ui::PAGE_TRANSITION_RELOAD &&
+  params.was_within_same_page =
+      transition != ui::PAGE_TRANSITION_RELOAD &&
       transition != ui::PAGE_TRANSITION_TYPED &&
-      url.ReplaceComponents(replacements) ==
+      url_copy.ReplaceComponents(replacements) ==
           GetLastCommittedURL().ReplaceComponents(replacements);
 
-  params.page_state = PageState::CreateForTesting(
-      url,
-      false,
-      file_path_for_history_item ? "data" : NULL,
-      file_path_for_history_item);
+  params.page_state =
+      PageState::CreateForTesting(url_copy, false, nullptr, nullptr);
 
-  FrameHostMsg_DidCommitProvisionalLoad msg(GetRoutingID(), params);
+  if (!callback.is_null())
+    callback.Run(&params);
+
+  SendNavigateWithParams(&params);
+}
+
+void TestRenderFrameHost::SendNavigateWithParams(
+    FrameHostMsg_DidCommitProvisionalLoad_Params* params) {
+  FrameHostMsg_DidCommitProvisionalLoad msg(GetRoutingID(), *params);
   OnDidCommitProvisionalLoad(msg);
 }
 

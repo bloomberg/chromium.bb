@@ -1332,6 +1332,13 @@ TEST_F(NavigationControllerTest, ReloadWithGuest) {
 }
 
 #if !defined(OS_ANDROID)  // http://crbug.com/157428
+namespace {
+void SetOriginalURL(const GURL& url,
+                    FrameHostMsg_DidCommitProvisionalLoad_Params* params) {
+  params->original_request_url = url;
+}
+}
+
 TEST_F(NavigationControllerTest, ReloadOriginalRequestURL) {
   NavigationControllerImpl& controller = controller_impl();
   TestNotificationTracker notifications;
@@ -1339,6 +1346,7 @@ TEST_F(NavigationControllerTest, ReloadOriginalRequestURL) {
 
   const GURL original_url("http://foo1");
   const GURL final_url("http://foo2");
+  auto set_original_url_callback = base::Bind(SetOriginalURL, original_url);
 
   // Load up the original URL, but get redirected.
   controller.LoadURL(
@@ -1346,8 +1354,8 @@ TEST_F(NavigationControllerTest, ReloadOriginalRequestURL) {
   int entry_id = controller.GetPendingEntry()->GetUniqueID();
   EXPECT_EQ(0U, notifications.size());
   main_test_rfh()->PrepareForCommitWithServerRedirect(final_url);
-  main_test_rfh()->SendNavigateWithOriginalRequestURL(0, entry_id, true,
-                                                      final_url, original_url);
+  main_test_rfh()->SendNavigateWithModificationCallback(
+      0, entry_id, true, final_url, set_original_url_callback);
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
   entry_id = controller.GetLastCommittedEntry()->GetUniqueID();
@@ -1453,6 +1461,13 @@ TEST_F(NavigationControllerTest, ResetEntryValuesAfterCommit) {
   EXPECT_FALSE(committed_entry->should_clear_history_list());
 }
 
+namespace {
+void SetRedirects(const std::vector<GURL>& redirects,
+                  FrameHostMsg_DidCommitProvisionalLoad_Params* params) {
+  params->redirects = redirects;
+}
+}
+
 // Test that Redirects are preserved after a commit.
 TEST_F(NavigationControllerTest, RedirectsAreNotResetByCommit) {
   NavigationControllerImpl& controller = controller_impl();
@@ -1465,6 +1480,7 @@ TEST_F(NavigationControllerTest, RedirectsAreNotResetByCommit) {
   // Set up some redirect values.
   std::vector<GURL> redirects;
   redirects.push_back(url2);
+  auto set_redirects_callback = base::Bind(SetRedirects, redirects);
 
   // Set redirects on the pending entry.
   NavigationEntryImpl* pending_entry = controller.GetPendingEntry();
@@ -1474,8 +1490,8 @@ TEST_F(NavigationControllerTest, RedirectsAreNotResetByCommit) {
 
   // Normal navigation will preserve redirects in the committed entry.
   main_test_rfh()->PrepareForCommitWithServerRedirect(url2);
-  main_test_rfh()->SendNavigateWithRedirects(0, entry_id, true, url1,
-                                             redirects);
+  main_test_rfh()->SendNavigateWithModificationCallback(0, entry_id, true, url1,
+                                                        set_redirects_callback);
   NavigationEntryImpl* committed_entry = controller.GetLastCommittedEntry();
   ASSERT_EQ(1U, committed_entry->GetRedirectChain().size());
   EXPECT_EQ(url2, committed_entry->GetRedirectChain()[0]);
