@@ -236,14 +236,15 @@ class CBuildBotTest(GenerateChromeosConfigTestBase):
             config['chrome_sdk'],
             'Config %s: has chrome_sdk but not sync_chrome.' % build_name)
 
-  def testSupportedVmTestsOnly(self):
+  def testOverrideVmTestsOnly(self):
     """VM/unit tests listed should also be supported."""
     for build_name, config in self.all_configs.iteritems():
-      for test in config.vm_tests:
-        self.assertIn(
-            test, config.vm_tests_supported,
-            'Config %s: has %s VM test, without support (%s, %s).' % \
-            (build_name, test, config.vm_tests, config.vm_tests_supported))
+      if config.vm_tests_override is not None:
+        for test in config.vm_tests:
+          self.assertIn(
+              test, config.vm_tests_override,
+              'Config %s: has %s VM test, not in override (%s, %s).' % \
+              (build_name, test, config.vm_tests, config.vm_tests_override))
 
   def testHWTestsIFFArchivingHWTestArtifacts(self):
     """Make sure all configs upload artifacts that need them for hw testing."""

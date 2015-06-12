@@ -69,10 +69,8 @@ def OverrideConfigForTrybot(build_config, options):
 
     # In trybots, we want to always run VM tests and all unit tests, so that
     # developers will get better testing for their changes.
-    if (my_config['build_type'] == constants.PALADIN_TYPE and
-        all(x not in _arm_boards for x in my_config['boards']) and
-        all(x not in _brillo_boards for x in my_config['boards'])):
-      my_config['vm_tests'] = my_config['vm_tests_supported']
+    if my_config['vm_tests_override'] is not None:
+      my_config['vm_tests'] = my_config['vm_tests_override']
 
   return copy_config
 
@@ -584,7 +582,7 @@ _upload_gce_images_boards = frozenset([
 
 # TODO(akeshet): Temporary workaround to vmtest failing on strage-pre-cq, to
 # allow already-screened changes to work through the pipeline.
-_no_vmtest_boards = _arm_boards | _mips_boards | frozenset((
+_no_vmtest_boards = _arm_boards | _mips_boards | _brillo_boards | frozenset((
     'strago',
 ))
 
@@ -682,7 +680,7 @@ def GetConfig():
 
   no_vmtest_builder = config_lib.BuildConfig(
       vm_tests=[],
-      vm_tests_supported=[],
+      vm_tests_override=None,
   )
 
   # Builder-specific mixins
@@ -727,6 +725,9 @@ def GetConfig():
       trybot_list=True,
       doc='http://www.chromium.org/chromium-os/build/builder-overview#'
           'TOC-Chrome-PFQ',
+      vm_tests=[constants.SMOKE_SUITE_TEST_TYPE,
+                constants.SIMPLE_AU_TEST_TYPE],
+      vm_tests_override=TRADITIONAL_VM_TESTS_SUPPORTED,
   )
 
   paladin = site_config.AddTemplate(
@@ -747,7 +748,7 @@ def GetConfig():
       doc='http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ',
 
       vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
-      vm_tests_supported=TRADITIONAL_VM_TESTS_SUPPORTED,
+      vm_tests_override=TRADITIONAL_VM_TESTS_SUPPORTED,
   )
 
   # Incremental builders are intended to test the developer workflow.
@@ -854,7 +855,7 @@ def GetConfig():
       # memory limits. Remove the following lines once crbug.com/329248 is
       # fixed.
       vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
-      vm_tests_supported=[constants.SMOKE_SUITE_TEST_TYPE],
+      vm_tests_override=None,
       doc='http://www.chromium.org/chromium-os/build/builder-overview#'
           'TOC-ASAN',
   )
@@ -871,7 +872,6 @@ def GetConfig():
       uprev=False,
       overlays=constants.PUBLIC_OVERLAYS,
       vm_tests=[constants.TELEMETRY_SUITE_TEST_TYPE],
-      vm_tests_supported=[constants.TELEMETRY_SUITE_TEST_TYPE],
       description='Telemetry Builds',
   )
 
@@ -885,6 +885,9 @@ def GetConfig():
       chrome_rev=constants.CHROME_REV_LATEST,
       chrome_sdk=True,
       description='Preflight Chromium Uprev & Build (public)',
+      vm_tests=[constants.SMOKE_SUITE_TEST_TYPE,
+                constants.SIMPLE_AU_TEST_TYPE],
+      vm_tests_override=None,
   )
 
   # TODO(davidjames): Convert this to an external config once the unified master
@@ -931,8 +934,6 @@ def GetConfig():
       'chromium-pfq-informational',
       chromium_pfq,
       chrome_try,
-      vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
-      vm_tests_supported=TRADITIONAL_VM_TESTS_SUPPORTED,
       chrome_sdk=False,
       description='Informational Chromium Uprev & Build (public)',
   )
@@ -1376,7 +1377,7 @@ def GetConfig():
       prebuilts=False,
       cpe_export=False,
       vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
-      vm_tests_supported=TRADITIONAL_VM_TESTS_SUPPORTED,
+      vm_tests_override=None,
       description='Verifies compilation, building an image, and vm/unit tests '
                   'if supported.',
       doc='http://www.chromium.org/chromium-os/build/builder-overview#'
@@ -1387,20 +1388,18 @@ def GetConfig():
 
   # Pre-CQ targets that only check compilation and unit tests.
   unittest_only_pre_cq = pre_cq.derive(
+      no_vmtest_builder,
       description='Verifies compilation and unit tests only',
       compilecheck=True,
-      vm_tests=[],
-      vm_tests_supported=[],
   )
 
   # Pre-CQ targets that don't run VMTests.
   no_vmtest_pre_cq = site_config.AddTemplate(
       'no-vmtest-pre-cq',
       pre_cq,
+      no_vmtest_builder,
       description='Verifies compilation, building an image, and unit tests '
                   'if supported.',
-      vm_tests=[],
-      vm_tests_supported=[],
   )
 
   # Pre-CQ targets that only check compilation.
@@ -1639,15 +1638,14 @@ def GetConfig():
           vm_tests.append(constants.SMOKE_SUITE_TEST_TYPE)
         customizations.update(vm_tests=vm_tests)
 
-      # Supported VM Tests is the paladin list + any new tests.
-      # If the board doesn't support them, base_config will disable.
-      if 'vm_tests' in customizations:
-        supported = paladin.vm_tests_supported[:]
-        for test in customizations.vm_tests:
-          if test not in supported:
-            supported.append(test)
+        if paladin.vm_tests_override is not None:
+          # Make sure any new tests are also in override.
+          override = paladin.vm_tests_override[:]
+          for test in vm_tests:
+            if test not in override:
+              override.append(test)
 
-        customizations.update(vm_tests_supported=supported)
+          customizations.update(vm_tests_override=override)
 
       if base_config.get('internal'):
         customizations.update(
@@ -1820,7 +1818,6 @@ def GetConfig():
       internal_incremental, 'lakitu-incremental',
       _base_configs['lakitu'],
       vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
-      vm_tests_supported=TRADITIONAL_VM_TESTS_SUPPORTED,
   )
 
   site_config.AddConfigWithoutTemplate(
@@ -1862,9 +1859,6 @@ def GetConfig():
       vm_tests=[constants.SMOKE_SUITE_TEST_TYPE,
                 constants.DEV_MODE_TEST_TYPE,
                 constants.CROS_VM_TEST_TYPE],
-      vm_tests_supported=[constants.SMOKE_SUITE_TEST_TYPE,
-                          constants.DEV_MODE_TEST_TYPE,
-                          constants.CROS_VM_TEST_TYPE],
       hw_tests=HWTestList.SharedPoolCanary(),
       paygen=True,
       signer_tests=True,
