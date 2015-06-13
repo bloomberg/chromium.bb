@@ -1816,12 +1816,6 @@ void Internals::setIsCursorVisible(Document* document, bool isVisible, Exception
     document->page()->setIsCursorVisible(isVisible);
 }
 
-void Internals::mediaPlayerRequestFullscreen(HTMLMediaElement* mediaElement)
-{
-    ASSERT(mediaElement);
-    mediaElement->mediaPlayerRequestFullscreen();
-}
-
 double Internals::effectiveMediaVolume(HTMLMediaElement* mediaElement)
 {
     ASSERT(mediaElement);

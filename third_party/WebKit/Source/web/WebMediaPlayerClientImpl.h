@@ -82,7 +82,6 @@ public:
     virtual void addTextTrack(WebInbandTextTrack*) override;
     virtual void removeTextTrack(WebInbandTextTrack*) override;
     virtual void mediaSourceOpened(WebMediaSource*) override;
-    virtual void requestFullscreen() override;
     virtual void requestSeek(double) override;
     virtual void remoteRouteAvailabilityChanged(bool) override;
     virtual void connectedToRemoteDevice() override;

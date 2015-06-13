@@ -1,6 +1,0 @@
-Test mediaPlayerRequestFullscreen() without a user gesture.
-
-EVENT(loadedmetadata)
-EVENT(webkitfullscreenchange)
-END OF TEST
-

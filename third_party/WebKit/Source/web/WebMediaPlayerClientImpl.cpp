@@ -167,11 +167,6 @@ void WebMediaPlayerClientImpl::mediaSourceOpened(WebMediaSource* webMediaSource)
     m_client->mediaPlayerMediaSourceOpened(webMediaSource);
 }
 
-void WebMediaPlayerClientImpl::requestFullscreen()
-{
-    m_client->mediaPlayerRequestFullscreen();
-}
-
 void WebMediaPlayerClientImpl::requestSeek(double time)
 {
     m_client->mediaPlayerRequestSeek(time);

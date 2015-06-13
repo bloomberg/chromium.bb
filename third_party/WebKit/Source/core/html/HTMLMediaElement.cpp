@@ -2778,17 +2778,6 @@ void HTMLMediaElement::mediaPlayerPlaybackStateChanged()
         playInternal();
 }
 
-void HTMLMediaElement::mediaPlayerRequestFullscreen()
-{
-    WTF_LOG(Media, "HTMLMediaElement::mediaPlayerRequestFullscreen(%p)", this);
-
-    // The player is responsible for only invoking this callback in response to
-    // user interaction or when it is technically required to play the video.
-    UserGestureIndicator gestureIndicator(DefinitelyProcessingNewUserGesture);
-
-    enterFullscreen();
-}
-
 void HTMLMediaElement::mediaPlayerRequestSeek(double time)
 {
     // The player is the source of this seek request.

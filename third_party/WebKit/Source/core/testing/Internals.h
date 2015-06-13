@@ -259,7 +259,6 @@ public:
 
     void setIsCursorVisible(Document*, bool, ExceptionState&);
 
-    void mediaPlayerRequestFullscreen(HTMLMediaElement*);
     double effectiveMediaVolume(HTMLMediaElement*);
 
     void mediaPlayerRemoteRouteAvailabilityChanged(HTMLMediaElement*, bool);

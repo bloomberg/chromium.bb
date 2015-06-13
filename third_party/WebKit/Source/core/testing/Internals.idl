@@ -209,7 +209,6 @@
 
     [RaisesException, TypeChecking=Interface] void setIsCursorVisible(Document document, boolean isVisible);
 
-    [TypeChecking=Interface] void mediaPlayerRequestFullscreen(HTMLMediaElement mediaElement);
     [TypeChecking=Interface] double effectiveMediaVolume(HTMLMediaElement mediaElement);
     [TypeChecking=Interface] void mediaPlayerRemoteRouteAvailabilityChanged(HTMLMediaElement mediaElement, boolean available);
     [TypeChecking=Interface] void mediaPlayerPlayingRemotelyChanged(HTMLMediaElement mediaElement, boolean remote);

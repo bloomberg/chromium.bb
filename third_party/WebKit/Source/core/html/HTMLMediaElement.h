@@ -337,7 +337,6 @@ private:
     virtual void mediaPlayerTimeChanged() override final;
     virtual void mediaPlayerDurationChanged() override final;
     virtual void mediaPlayerPlaybackStateChanged() override final;
-    virtual void mediaPlayerRequestFullscreen() override final;
     virtual void mediaPlayerRequestSeek(double) override final;
     virtual void mediaPlayerRepaint() override final;
     virtual void mediaPlayerSizeChanged() override final;
