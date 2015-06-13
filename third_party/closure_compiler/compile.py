@@ -425,8 +425,11 @@ if __name__ == "__main__":
   checker = Checker(verbose=opts.verbose, strict=opts.strict)
   if opts.single_file:
     for source in opts.sources:
+      # Normalize source to the current directory.
+      source = os.path.normpath(os.path.join(os.getcwd(), source))
       depends, externs = build.inputs.resolve_recursive_dependencies(
           source, depends, externs)
+
       found_errors, _ = checker.check(source, out_file=opts.out_file,
                                       depends=depends, externs=externs,
                                       output_wrapper=opts.output_wrapper)

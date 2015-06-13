@@ -8,7 +8,7 @@
       'variables': {
         'depends': [
           '../../assert.js',
-          '../../cr.js',
+          '../../compiled_resources.gyp:cr',
         ],
       },
       'includes': ['../../../../../../third_party/closure_compiler/compile_js.gypi'],

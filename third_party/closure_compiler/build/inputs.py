@@ -81,7 +81,7 @@ def GetInputs(args):
 
   source = opts.source[0]
   depends, externs = resolve_recursive_dependencies(
-      source,
+      os.path.normpath(os.path.join(os.getcwd(), source)),
       opts.depends,
       opts.externs)
 

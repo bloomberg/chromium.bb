@@ -346,17 +346,15 @@ var cr = function() {
    * JS internal method names or state. The callback will be removed from the
    * mapping once it has fired.
    * @param {string} methodName The name of the WebUI handler API.
-   * @param {Array=} opt_args Arguments for the method call sent to the WebUI
-   *     handler.
+   * @param {Array|undefined} args Arguments for the method call sent to the
+   *     WebUI handler. Pass undefined if no args should be sent to the handler.
    * @param {Function} callback A callback function which is called (indirectly)
    *     by the WebUI handler.
    */
-  function sendWithCallback(methodName, opt_args, callback) {
+  function sendWithCallback(methodName, args, callback) {
     var id = methodName + createUid();
     chromeSendCallbackMap.set(id, callback);
-    var methodArgs = ['cr.webUIResponse', id];
-    if (opt_args) methodArgs = methodArgs.concat(opt_args);
-    chrome.send(methodName, methodArgs);
+    chrome.send(methodName, ['cr.webUIResponse', id].concat(args || []));
   }
 
   /**

@@ -7,7 +7,7 @@
       'target_name': 'ui_account_tweaks',
       'variables': {
         'depends': [
-          '../cr.js',
+          '../compiled_resources.gyp:cr',
           '../compiled_resources.gyp:load_time_data',
         ],
       },
