@@ -74,12 +74,22 @@ int CurrentWorkerId() {
 WebBluetoothError::ErrorType WebBluetoothErrorFromBluetoothError(
     BluetoothError error_type) {
   switch (error_type) {
-    case BluetoothError::NETWORK_ERROR:
+    case BluetoothError::ABORT:
+      return WebBluetoothError::AbortError;
+    case BluetoothError::INVALID_MODIFICATION:
+      return WebBluetoothError::InvalidModificationError;
+    case BluetoothError::INVALID_STATE:
+      return WebBluetoothError::InvalidStateError;
+    case BluetoothError::NETWORK:
       return WebBluetoothError::NetworkError;
     case BluetoothError::NOT_FOUND:
       return WebBluetoothError::NotFoundError;
+    case BluetoothError::NOT_SUPPORTED:
+      return WebBluetoothError::NotSupportedError;
     case BluetoothError::SECURITY:
       return WebBluetoothError::SecurityError;
+    case BluetoothError::SYNTAX:
+      return WebBluetoothError::SyntaxError;
   }
   NOTIMPLEMENTED();
   return WebBluetoothError::NotFoundError;

@@ -10,10 +10,15 @@ namespace content {
 // Error enumerations corresponding to blink::WebBluetoothError::ErrorType
 // used to create DOMExceptions.
 enum class BluetoothError {
+  ABORT,
+  INVALID_MODIFICATION,
+  INVALID_STATE,
+  NETWORK,
   NOT_FOUND,
-  NETWORK_ERROR,
+  NOT_SUPPORTED,
   SECURITY,
-  ENUM_MAX_VALUE = SECURITY
+  SYNTAX,
+  ENUM_MAX_VALUE = SYNTAX
 };
 
 }  // namespace content

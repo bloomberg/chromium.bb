@@ -122,7 +122,7 @@ void BluetoothDispatcherHost::OnConnectGATT(
     // reject with NetworkError.
     // https://webbluetoothcg.github.io/web-bluetooth/#dom-bluetoothdevice-connectgatt
     Send(new BluetoothMsg_ConnectGATTError(thread_id, request_id,
-                                           BluetoothError::NETWORK_ERROR));
+                                           BluetoothError::NETWORK));
     return;
   }
   device->CreateGattConnection(
@@ -177,8 +177,8 @@ void BluetoothDispatcherHost::OnGetCharacteristic(
       adapter_->GetDevice(device_iter->second /* device_instance_id */);
 
   if (device == NULL) {
-    Send(new BluetoothMsg_GetCharacteristicError(
-        thread_id, request_id, BluetoothError::NETWORK_ERROR));
+    Send(new BluetoothMsg_GetCharacteristicError(thread_id, request_id,
+                                                 BluetoothError::NETWORK));
     return;
   }
 
@@ -188,7 +188,7 @@ void BluetoothDispatcherHost::OnGetCharacteristic(
       device->GetGattService(service_instance_id);
   if (!service) {
     Send(new BluetoothMsg_GetCharacteristicError(
-        thread_id, request_id, BluetoothError::NETWORK_ERROR));
+        thread_id, request_id, BluetoothError::INVALID_STATE));
     return;
   }
 
@@ -242,7 +242,7 @@ void BluetoothDispatcherHost::OnReadValue(
     // Change to InvalidStateError:
     // http://crbug.com/499014
     Send(new BluetoothMsg_ReadCharacteristicValueError(
-        thread_id, request_id, BluetoothError::NETWORK_ERROR));
+        thread_id, request_id, BluetoothError::NETWORK));
     return;
   }
 
@@ -250,16 +250,14 @@ void BluetoothDispatcherHost::OnReadValue(
       adapter_->GetDevice(device_iter->second /* device_instance_id */);
   if (device == nullptr) {
     Send(new BluetoothMsg_ReadCharacteristicValueError(
-        thread_id, request_id, BluetoothError::NETWORK_ERROR));
+        thread_id, request_id, BluetoothError::NETWORK));
     return;
   }
 
   BluetoothGattService* service = device->GetGattService(service_instance_id);
   if (service == nullptr) {
-    // TODO(ortuno): Change to InvalidStateError once implemented:
-    // http://crbug.com/499014
     Send(new BluetoothMsg_ReadCharacteristicValueError(
-        thread_id, request_id, BluetoothError::NETWORK_ERROR));
+        thread_id, request_id, BluetoothError::INVALID_STATE));
     return;
   }
 
@@ -267,7 +265,7 @@ void BluetoothDispatcherHost::OnReadValue(
       service->GetCharacteristic(characteristic_instance_id);
   if (characteristic == nullptr) {
     Send(new BluetoothMsg_ReadCharacteristicValueError(
-        thread_id, request_id, BluetoothError::NETWORK_ERROR));
+        thread_id, request_id, BluetoothError::INVALID_STATE));
     return;
   }
 
@@ -364,7 +362,7 @@ void BluetoothDispatcherHost::OnCreateGATTConnectionError(
   // NetworkError.
   // https://webbluetoothcg.github.io/web-bluetooth/#dom-bluetoothdevice-connectgatt
   Send(new BluetoothMsg_ConnectGATTError(thread_id, request_id,
-                                         BluetoothError::NETWORK_ERROR));
+                                         BluetoothError::NETWORK));
 }
 
 void BluetoothDispatcherHost::OnServicesDiscovered(
@@ -376,8 +374,8 @@ void BluetoothDispatcherHost::OnServicesDiscovered(
 
   device::BluetoothDevice* device = adapter_->GetDevice(device_instance_id);
   if (device == NULL) {
-    Send(new BluetoothMsg_GetPrimaryServiceError(
-        thread_id, request_id, BluetoothError::NETWORK_ERROR));
+    Send(new BluetoothMsg_GetPrimaryServiceError(thread_id, request_id,
+                                                 BluetoothError::NETWORK));
     return;
   }
   for (BluetoothGattService* service : device->GetGattServices()) {
@@ -415,8 +413,8 @@ void BluetoothDispatcherHost::OnCharacteristicReadValueError(
     device::BluetoothGattService::GattErrorCode) {
   // TODO(ortuno): Send a different Error based on the GattErrorCode.
   // http://crbug.com/499542
-  Send(new BluetoothMsg_ReadCharacteristicValueError(
-      thread_id, request_id, BluetoothError::NETWORK_ERROR));
+  Send(new BluetoothMsg_ReadCharacteristicValueError(thread_id, request_id,
+                                                     BluetoothError::NETWORK));
 }
 
 }  // namespace content
