@@ -2060,6 +2060,49 @@ TEST_F(ProfileSyncServiceBookmarkTestWithData, MergeModelsWithSomeExtras) {
   ExpectBookmarkModelMatchesTestData();
 }
 
+// Tests the optimistic bookmark association case where some nodes are moved
+// and untracked by the sync before the association.
+TEST_F(ProfileSyncServiceBookmarkTestWithData, OptimisticMergeWithMoves) {
+  // TODO(stanisc): crbug.com/456876: Remove this once the optimistic
+  // association experiment has ended.
+  base::FieldTrialList field_trial_list(new base::MockEntropyProvider());
+  base::FieldTrialList::CreateFieldTrial("SyncOptimisticBookmarkAssociation",
+                                         "Enabled");
+
+  LoadBookmarkModel(DELETE_EXISTING_STORAGE, DONT_SAVE_TO_STORAGE);
+  WriteTestDataToBookmarkModel();
+
+  int num_bookmarks = model_->root_node()->GetTotalNodeCount();
+
+  StartSync();
+  ExpectModelMatch();
+  StopSync();
+
+  EXPECT_EQ(num_bookmarks, model_->root_node()->GetTotalNodeCount());
+
+  // Move one folder into another
+  const BookmarkNode* bookmark_bar_node = model_->bookmark_bar_node();
+  const BookmarkNode* f1 = bookmark_bar_node->GetChild(1);
+  ASSERT_TRUE(f1->is_folder());
+  const BookmarkNode* f2 = bookmark_bar_node->GetChild(3);
+  ASSERT_TRUE(f2->is_folder());
+  model_->Move(f2, f1, 0);
+
+  StartSync();
+  ExpectModelMatch();
+  StopSync();
+
+  // Expect folders to not duplicate.
+  EXPECT_EQ(num_bookmarks, model_->root_node()->GetTotalNodeCount());
+
+  // Perform one more cycle and make sure that the number of nodes stays
+  // the same.
+  StartSync();
+  ExpectModelMatch();
+  StopSync();
+  EXPECT_EQ(num_bookmarks, model_->root_node()->GetTotalNodeCount());
+}
+
 // Tests that when persisted model associations are used, things work fine.
 TEST_F(ProfileSyncServiceBookmarkTestWithData, ModelAssociationPersistence) {
   LoadBookmarkModel(DELETE_EXISTING_STORAGE, DONT_SAVE_TO_STORAGE);

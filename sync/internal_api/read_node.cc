@@ -77,6 +77,10 @@ const BaseTransaction* ReadNode::GetTransaction() const {
   return transaction_;
 }
 
+int64 ReadNode::GetTransactionVersion() const {
+  return GetEntry()->GetTransactionVersion();
+}
+
 BaseNode::InitByLookupResult ReadNode::InitByTagLookupForBookmarks(
     const std::string& tag) {
   DCHECK(!entry_) << "Init called twice";

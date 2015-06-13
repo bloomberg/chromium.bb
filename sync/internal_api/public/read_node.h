@@ -48,6 +48,10 @@ class SYNC_EXPORT ReadNode : public BaseNode {
   // nodes, which should be looked up with InitTypeRoot().
   InitByLookupResult InitByTagLookupForBookmarks(const std::string& tag);
 
+  // Returns transaction version of the last transaction where this node has
+  // been modified.
+  int64 GetTransactionVersion() const;
+
   // Implementation of BaseNode's abstract virtual accessors.
   const syncable::Entry* GetEntry() const override;
   const BaseTransaction* GetTransaction() const override;
