@@ -33,7 +33,6 @@
 #include "chrome/browser/chromeos/dbus/chrome_console_service_provider_delegate.h"
 #include "chrome/browser/chromeos/dbus/chrome_display_power_service_provider_delegate.h"
 #include "chrome/browser/chromeos/dbus/chrome_proxy_resolver_delegate.h"
-#include "chrome/browser/chromeos/dbus/printer_service_provider.h"
 #include "chrome/browser/chromeos/dbus/screen_lock_service_provider.h"
 #include "chrome/browser/chromeos/events/event_rewriter.h"
 #include "chrome/browser/chromeos/events/event_rewriter_controller.h"
@@ -174,7 +173,6 @@ class DBusServices {
         make_scoped_ptr(new ChromeProxyResolverDelegate())));
     service_providers.push_back(new DisplayPowerServiceProvider(
         make_scoped_ptr(new ChromeDisplayPowerServiceProviderDelegate)));
-    service_providers.push_back(new PrinterServiceProvider);
     service_providers.push_back(new LivenessServiceProvider);
     service_providers.push_back(new ScreenLockServiceProvider);
     service_providers.push_back(new ConsoleServiceProvider(

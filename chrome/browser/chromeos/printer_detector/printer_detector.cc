@@ -1,21 +1,16 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/dbus/printer_service_provider.h"
+#include "chrome/browser/chromeos/printer_detector/printer_detector.h"
 
 #include <stdint.h>
 
-#include <limits>
-
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -25,22 +20,23 @@
 #include "chrome/common/extensions/api/webstore_widget_private.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/chromeos_switches.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
-#include "dbus/bus.h"
-#include "dbus/exported_object.h"
-#include "dbus/message.h"
+#include "device/core/device_client.h"
+#include "device/usb/usb_device.h"
+#include "device/usb/usb_device_filter.h"
 #include "device/usb/usb_ids.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system.h"
+#include "extensions/common/api/printer_provider/usb_printer_manifest_data.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
+#include "extensions/common/one_shot_event.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/permissions/usb_device_permission.h"
 #include "grit/theme_resources.h"
-#include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -49,13 +45,15 @@ namespace webstore_widget_private_api =
 
 namespace {
 
-const char kPrinterAdded[] = "PrinterAdded";
-
 const char kPrinterProviderFoundNotificationID[] =
     "chrome://settings/printer/printer_app_found";
 
 const char kNoPrinterProviderNotificationID[] =
     "chrome://settings/printer/no_printer_app";
+
+// Base class used for printer USB interfaces
+// (https://www.usb.org/developers/defined_class).
+const uint8 kPrinterInterfaceClass = 7;
 
 enum PrinterServiceEvent {
   PRINTER_ADDED,
@@ -65,15 +63,6 @@ enum PrinterServiceEvent {
   WEBSTORE_WIDGET_APP_LAUNCHED,
   PRINTER_SERVICE_EVENT_MAX,
 };
-
-bool HexStringToUInt16(const std::string& input, uint16* output) {
-  uint32 output_uint = 0;
-  if (!base::HexStringToUInt(input, &output_uint) ||
-      output_uint > std::numeric_limits<uint16>::max())
-    return false;
-  *output = static_cast<uint16>(output_uint);
-  return true;
-}
 
 base::string16 GetNotificationTitle(uint16 vendor_id, uint16 product_id) {
   const char* vendor_name = device::UsbIds::GetVendorName(vendor_id);
@@ -94,8 +83,7 @@ std::string GetNotificationTag(const std::string& vendor_id,
 // Checks if there is an enabled extension with printerProvider permission and
 // usbDevices persmission for the USB (vendor_id, product_id) pair.
 bool HasAppThatSupportsPrinter(Profile* profile,
-                               uint16 vendor_id,
-                               uint16 product_id) {
+                               const scoped_refptr<device::UsbDevice>& device) {
   const extensions::ExtensionSet& enabled_extensions =
       extensions::ExtensionRegistry::Get(profile)->enabled_extensions();
   for (const auto& extension : enabled_extensions) {
@@ -107,8 +95,14 @@ bool HasAppThatSupportsPrinter(Profile* profile,
       continue;
     }
 
+    const extensions::UsbPrinterManifestData* manifest_data =
+        extensions::UsbPrinterManifestData::Get(extension.get());
+    if (manifest_data && manifest_data->SupportsDevice(device)) {
+      return true;
+    }
+
     extensions::UsbDevicePermission::CheckParam param(
-        vendor_id, product_id,
+        device->vendor_id(), device->product_id(),
         extensions::UsbDevicePermissionData::UNSPECIFIED_INTERFACE);
     if (extension->permissions_data()->CheckAPIPermissionWithParam(
             extensions::APIPermission::kUsbDevice, &param)) {
@@ -201,48 +195,32 @@ class SearchPrinterAppNotificationDelegate : public NotificationDelegate {
 // to be used, otherwise it offers the user to search the Chrome Web Store for
 // an app that can handle the printer.
 void ShowPrinterPluggedNotification(
+    Profile* profile,
     NotificationUIManager* notification_ui_manager,
-    const std::string& vendor_id_str,
-    const std::string& product_id_str) {
-  uint16 vendor_id = 0;
-  uint16 product_id = 0;
-  if (!HexStringToUInt16(vendor_id_str, &vendor_id) ||
-      !HexStringToUInt16(product_id_str, &product_id)) {
-    LOG(WARNING) << "Invalid USB ID " << vendor_id_str << ":" << product_id_str;
-    return;
-  }
-
-  const user_manager::User* user =
-      user_manager::UserManager::Get()
-          ? user_manager::UserManager::Get()->GetActiveUser()
-          : nullptr;
-  if (!user || !user->HasGaiaAccount())
-    return;
-
-  Profile* profile = chromeos::ProfileHelper::Get()->GetProfileByUser(user);
-  if (!profile)
-    return;
-
+    const scoped_refptr<device::UsbDevice>& device) {
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   scoped_ptr<Notification> notification;
 
-  if (HasAppThatSupportsPrinter(profile, vendor_id, product_id)) {
+  const std::string kVendorIdStr = base::IntToString(device->vendor_id());
+  const std::string kProductIdStr = base::IntToString(device->product_id());
+
+  if (HasAppThatSupportsPrinter(profile, device)) {
     UMA_HISTOGRAM_ENUMERATION("PrinterService.PrinterServiceEvent",
                               NOTIFICATION_SHOWN_PRINTER_SUPPORTED,
                               PRINTER_SERVICE_EVENT_MAX);
     notification.reset(new Notification(
         message_center::NOTIFICATION_TYPE_SIMPLE,
         GURL(kPrinterProviderFoundNotificationID),
-        GetNotificationTitle(vendor_id, product_id),
+        GetNotificationTitle(device->vendor_id(), device->product_id()),
         l10n_util::GetStringUTF16(
             IDS_PRINTER_DETECTED_NOTIFICATION_PRINT_APP_FOUND_BODY),
         bundle.GetImageNamed(IDR_PRINTER_NOTIFICATION),
         message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
                                    kPrinterProviderFoundNotificationID),
-        base::string16(), GetNotificationTag(vendor_id_str, product_id_str),
+        base::string16(), GetNotificationTag(kVendorIdStr, kProductIdStr),
         message_center::RichNotificationData(),
-        new PrinterProviderExistsNotificationDelegate(vendor_id_str,
-                                                      product_id_str)));
+        new PrinterProviderExistsNotificationDelegate(kVendorIdStr,
+                                                      kProductIdStr)));
   } else {
     UMA_HISTOGRAM_ENUMERATION("PrinterService.PrinterServiceEvent",
                               NOTIFICATION_SHOWN_PRINTER_NOT_SUPPORTED,
@@ -252,16 +230,16 @@ void ShowPrinterPluggedNotification(
     notification.reset(new Notification(
         message_center::NOTIFICATION_TYPE_SIMPLE,
         GURL(kNoPrinterProviderNotificationID),
-        GetNotificationTitle(vendor_id, product_id),
+        GetNotificationTitle(device->vendor_id(), device->product_id()),
         l10n_util::GetStringUTF16(
             IDS_PRINTER_DETECTED_NOTIFICATION_NO_PRINT_APP_BODY),
         bundle.GetImageNamed(IDR_PRINTER_NOTIFICATION),
         message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
                                    kNoPrinterProviderNotificationID),
-        base::string16(), GetNotificationTag(vendor_id_str, product_id_str),
-        options,
-        new SearchPrinterAppNotificationDelegate(
-            profile, vendor_id, vendor_id_str, product_id, product_id_str)));
+        base::string16(), GetNotificationTag(kVendorIdStr, kProductIdStr),
+        options, new SearchPrinterAppNotificationDelegate(
+                     profile, device->vendor_id(), kVendorIdStr,
+                     device->product_id(), kProductIdStr)));
   }
 
   notification->SetSystemPriority();
@@ -272,73 +250,53 @@ void ShowPrinterPluggedNotification(
 
 namespace chromeos {
 
-PrinterServiceProvider::PrinterServiceProvider()
-    : notification_ui_manager_(nullptr), weak_ptr_factory_(this) {
+PrinterDetector::PrinterDetector(Profile* profile)
+    : profile_(profile),
+      notification_ui_manager_(nullptr),
+      weak_ptr_factory_(this) {
+  extensions::ExtensionSystem::Get(profile)->ready().Post(
+      FROM_HERE,
+      base::Bind(&PrinterDetector::Initialize, weak_ptr_factory_.GetWeakPtr()));
 }
 
-PrinterServiceProvider::~PrinterServiceProvider() {
+PrinterDetector::~PrinterDetector() {
 }
 
-void PrinterServiceProvider::Start(
-    scoped_refptr<dbus::ExportedObject> exported_object) {
-  exported_object_ = exported_object;
-
-  DVLOG(1) << "PrinterServiceProvider started";
-  exported_object_->ExportMethod(
-      kLibCrosServiceInterface,
-      kPrinterAdded,
-      base::Bind(&PrinterServiceProvider::PrinterAdded,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&PrinterServiceProvider::OnExported,
-                 weak_ptr_factory_.GetWeakPtr()));
+void PrinterDetector::Shutdown() {
+  device::DeviceClient::Get()->GetUsbService()->RemoveObserver(this);
 }
 
-void PrinterServiceProvider::SetNotificationUIManagerForTesting(
-    NotificationUIManager* manager) {
-  notification_ui_manager_ = manager;
+void PrinterDetector::Initialize() {
+  device::DeviceClient::Get()->GetUsbService()->AddObserver(this);
 }
 
-void PrinterServiceProvider::OnExported(
-    const std::string& interface_name,
-    const std::string& method_name,
-    bool success) {
-  if (!success) {
-    LOG(ERROR) << "Failed to export " << interface_name << "."
-               << method_name;
+void PrinterDetector::OnDeviceAdded(scoped_refptr<device::UsbDevice> device) {
+  const user_manager::User* user =
+      ProfileHelper::Get()->GetUserByProfile(profile_);
+  if (!user || !user->HasGaiaAccount() || !user_manager::UserManager::Get() ||
+      user != user_manager::UserManager::Get()->GetActiveUser()) {
+    return;
   }
-  DVLOG(1) << "Method exported: " << interface_name << "." << method_name;
-}
 
-void PrinterServiceProvider::PrinterAdded(
-    dbus::MethodCall* method_call,
-    dbus::ExportedObject::ResponseSender response_sender) {
-  DVLOG(1) << "PrinterAdded " << method_call->ToString();
-  dbus::MessageReader reader(method_call);
-
-  std::string vendor_id;
-  reader.PopString(&vendor_id);
-  base::StringToUpperASCII(&vendor_id);
-
-  std::string product_id;
-  reader.PopString(&product_id);
-  base::StringToUpperASCII(&product_id);
-
-  // Send an empty response.
-  response_sender.Run(dbus::Response::FromMethodCall(method_call));
+  device::UsbDeviceFilter printer_filter;
+  printer_filter.SetInterfaceClass(kPrinterInterfaceClass);
+  if (!printer_filter.Matches(device)) {
+    return;
+  }
 
   UMA_HISTOGRAM_ENUMERATION("PrinterService.PrinterServiceEvent", PRINTER_ADDED,
                             PRINTER_SERVICE_EVENT_MAX);
 
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnablePrinterAppSearch)) {
-    return;
-  }
-
   ShowPrinterPluggedNotification(
+      profile_,
       notification_ui_manager_ ? notification_ui_manager_
                                : g_browser_process->notification_ui_manager(),
-      vendor_id, product_id);
+      device);
+}
+
+void PrinterDetector::SetNotificationUIManagerForTesting(
+    NotificationUIManager* manager) {
+  notification_ui_manager_ = manager;
 }
 
 }  // namespace chromeos
-
