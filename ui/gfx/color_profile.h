@@ -13,9 +13,6 @@
 
 namespace gfx {
 
-static const size_t kMinProfileLength = 128;
-static const size_t kMaxProfileLength = 4 * 1024 * 1024;
-
 class GFX_EXPORT ColorProfile {
  public:
   // On Windows, this reads a file from disk so it should not be run on the UI
@@ -32,25 +29,11 @@ class GFX_EXPORT ColorProfile {
 };
 
 inline bool InvalidColorProfileLength(size_t length) {
+  const size_t kMinProfileLength = 128;
+  const size_t kMaxProfileLength = 4 * 1024 * 1024;
   return (length < kMinProfileLength) || (length > kMaxProfileLength);
 }
 
-// Return the color profile of the display nearest the screen bounds. On Win32,
-// this may read a file from disk so it should not be run on the UI/IO threads.
-// If the given bounds are empty, or are off-screen, return false meaning there
-// is no color profile associated with the bounds.  Otherwise return true after
-// storing the display's color profile in |profile|, which will be empty if the
-// standard sRGB color profile should be assumed.
-GFX_EXPORT bool GetDisplayColorProfile(const gfx::Rect& bounds,
-                                       std::vector<char>* profile);
-#if defined(OS_MACOSX)
-// Return the color profile of the native window. If the window is null, or has
-// empty bounds, return false meaning there is no color profile associated with
-// the window.  Otherwise return true after storing the window color profile in
-// |profile|, which will be empty if the sRGB color profile should be assumed.
-GFX_EXPORT bool GetDisplayColorProfile(gfx::NativeWindow window,
-                                       std::vector<char>* profile);
-#endif
 }  // namespace gfx
 
 #endif  // UI_GFX_COLOR_PROFILE_H_

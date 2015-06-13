@@ -39,7 +39,6 @@
         'codec/jpeg_codec_unittest.cc',
         'codec/png_codec_unittest.cc',
         'color_analysis_unittest.cc',
-        'color_profile_mac_unittest.mm',
         'color_utils_unittest.cc',
         'display_change_notifier_unittest.cc',
         'display_unittest.cc',
@@ -131,7 +130,6 @@
         }],
         ['OS == "win"', {
           'sources': [
-            'color_profile_win_unittest.cc',
             'font_fallback_win_unittest.cc',
             'icon_util_unittest.cc',
             'icon_util_unittests.rc',
