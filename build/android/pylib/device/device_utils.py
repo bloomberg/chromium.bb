@@ -579,8 +579,8 @@ class DeviceUtils(object):
       if large_output_mode:
         with device_temp_file.DeviceTempFile(self.adb) as large_output_file:
           cmd = '%s > %s' % (cmd, large_output_file.name)
-          logging.info('Large output mode enabled. Will write output to device '
-                       'and read results from file.')
+          logging.debug('Large output mode enabled. Will write output to '
+                        'device and read results from file.')
           handle_large_command(cmd)
           return self.ReadFile(large_output_file.name, force_pull=True)
       else:
@@ -736,7 +736,7 @@ class DeviceUtils(object):
     for k, v in extras.iteritems():
       cmd.extend(['-e', str(k), str(v)])
     cmd.append(component)
-    return self.RunShellCommand(cmd, check_return=True)
+    return self.RunShellCommand(cmd, check_return=True, large_output=True)
 
   @decorators.WithTimeoutAndRetriesFromInstance()
   def BroadcastIntent(self, intent_obj, timeout=None, retries=None):

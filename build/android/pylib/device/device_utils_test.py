@@ -991,7 +991,7 @@ class DeviceUtilsStartInstrumentationTest(DeviceUtilsTest):
     with self.assertCalls(
         self.call.device.RunShellCommand(
             ['am', 'instrument', 'test.package/.TestInstrumentation'],
-            check_return=True)):
+            check_return=True, large_output=True)):
       self.device.StartInstrumentation(
           'test.package/.TestInstrumentation',
           finish=False, raw=False, extras=None)
@@ -1000,7 +1000,7 @@ class DeviceUtilsStartInstrumentationTest(DeviceUtilsTest):
     with self.assertCalls(
         (self.call.device.RunShellCommand(
             ['am', 'instrument', '-w', 'test.package/.TestInstrumentation'],
-            check_return=True),
+            check_return=True, large_output=True),
          ['OK (1 test)'])):
       output = self.device.StartInstrumentation(
           'test.package/.TestInstrumentation',
@@ -1011,7 +1011,7 @@ class DeviceUtilsStartInstrumentationTest(DeviceUtilsTest):
     with self.assertCalls(
         self.call.device.RunShellCommand(
             ['am', 'instrument', '-r', 'test.package/.TestInstrumentation'],
-            check_return=True)):
+            check_return=True, large_output=True)):
       self.device.StartInstrumentation(
           'test.package/.TestInstrumentation',
           finish=False, raw=True, extras=None)
@@ -1021,7 +1021,7 @@ class DeviceUtilsStartInstrumentationTest(DeviceUtilsTest):
         self.call.device.RunShellCommand(
             ['am', 'instrument', '-e', 'foo', 'Foo', '-e', 'bar', 'Bar',
              'test.package/.TestInstrumentation'],
-            check_return=True)):
+            check_return=True, large_output=True)):
       self.device.StartInstrumentation(
           'test.package/.TestInstrumentation',
           finish=False, raw=False, extras={'foo': 'Foo', 'bar': 'Bar'})
