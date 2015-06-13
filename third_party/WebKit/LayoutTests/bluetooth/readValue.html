@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="bluetooth-helpers.js"></script>
+<script>
+test(function(t) { assert_exists(window, 'testRunner'); t.done(); },
+     'window.testRunner is required for the following tests.');
+
+// Generic Access Service.
+var serviceUUID = '00001800-0000-1000-8000-00805f9b34fb';
+// Device Name Characteristic. Belongs to Generic Access.
+var includedCharacteristicUUID = '00002a00-0000-1000-8000-00805f9b34fb';
+// Reconnection Address. Belongs to Generic Access.
+var unreadableCharacteristicUUID = '00002a03-0000-1000-8000-00805f9b34fb';
+
+sequential_promise_test(function() {
+  testRunner.setBluetoothMockDataSet('ConnectableDeviceAdapter');
+  return navigator.bluetooth.requestDevice().then(function(device) {
+    return device.connectGATT();
+  }).then(function(gattServer) {
+    return gattServer.getPrimaryService(serviceUUID);
+  }).then(function(service) {
+    return service.getCharacteristic(includedCharacteristicUUID);
+  }).then(function(characteristic) {
+    testRunner.setBluetoothMockDataSet('EmptyAdapter');
+    return characteristic.readValue().then(function() {
+      assert_unreached('Device went out of range, should fail.');
+    }, function(e) {
+      assert_equals(e.name, 'NetworkError');
+    });
+  });
+}, 'Device goes out of range. Reject with NetworkError.');
+
+sequential_promise_test(function() {
+  testRunner.setBluetoothMockDataSet('ConnectableDeviceAdapter');
+  return navigator.bluetooth.requestDevice().then(function(device) {
+    return device.connectGATT();
+  }).then(function(gattServer) {
+    return gattServer.getPrimaryService(serviceUUID);
+  }).then(function(service) {
+    return service.getCharacteristic(unreadableCharacteristicUUID);
+  }).then(function(characteristic) {
+    return characteristic.readValue().then(function() {
+      assert_unreached('Characteristic is unreadable. Should fail.');
+    }, function(e) {
+      // TODO(ortuno): Should be NotSupportedError when implemented.
+      // https://crbug.com/436283
+      assert_equals(e.name, 'NetworkError');
+    });
+  });
+}, 'Characteristic is not readable. Reject with NetworkError.');
+
+// TODO(ortuno): Add a test for when a characterstics gets removed.
+// http://crbug.com/499552
+
+sequential_promise_test(function() {
+  testRunner.setBluetoothMockDataSet('ConnectableDeviceAdapter');
+  return navigator.bluetooth.requestDevice().then(function(device) {
+    return device.connectGATT();
+  }).then(function(gattServer) {
+    return gattServer.getPrimaryService(serviceUUID);
+  }).then(function(service) {
+    return service.getCharacteristic(includedCharacteristicUUID);
+  }).then(function(characteristic) {
+    return characteristic.readValue();
+  }).then(function(value) {
+    var decoder = new TextDecoder('utf-8');
+    var value_str = decoder.decode(value);
+    assert_equals(value_str, 'Empty Mock Device name');
+  });
+}, 'Request for characteristic. Should return right characteristic');
+</script>

@@ -333,6 +333,7 @@ interface BluetoothDevice
 interface BluetoothGATTCharacteristic
     getter uuid
     method constructor
+    method readValue
 interface BluetoothGATTRemoteServer
     getter connected
     method constructor

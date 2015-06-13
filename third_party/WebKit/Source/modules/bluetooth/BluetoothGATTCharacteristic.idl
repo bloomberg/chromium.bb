@@ -19,7 +19,7 @@ typedef DOMString UUID;
     // readonly    attribute ArrayBuffer?             value;
     // Promise<BluetoothGATTDescriptor>           getDescriptor(BluetoothDescriptorUUID descriptor);
     // Promise<sequence<BluetoothGATTDescriptor>> getDescriptors(optional BluetoothDescriptorUUID descriptor);
-    // Promise<ArrayBuffer>                       readValue();
+    [CallWith=ScriptState] Promise<ArrayBuffer>    readValue();
     // Promise<void>                              writeValue(BufferSource value);
     // Promise<void>                              startNotifications();
     // Promise<void>                              stopNotifications();

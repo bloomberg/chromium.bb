@@ -11,6 +11,7 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/bluetooth/BluetoothError.h"
+#include "modules/bluetooth/ConvertWebVectorToArrayBuffer.h"
 #include "public/platform/Platform.h"
 #include "public/platform/modules/bluetooth/WebBluetooth.h"
 #include "wtf/OwnPtr.h"
@@ -33,6 +34,17 @@ BluetoothGATTCharacteristic* BluetoothGATTCharacteristic::take(ScriptPromiseReso
 void BluetoothGATTCharacteristic::dispose(WebBluetoothGATTCharacteristic* webCharacteristic)
 {
     delete webCharacteristic;
+}
+
+ScriptPromise BluetoothGATTCharacteristic::readValue(ScriptState* scriptState)
+{
+    WebBluetooth* webbluetooth = Platform::current()->bluetooth();
+
+    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromise promise = resolver->promise();
+    webbluetooth->readValue(m_webCharacteristic->characteristicInstanceID, new CallbackPromiseAdapter<ConvertWebVectorToArrayBuffer, BluetoothError>(resolver));
+
+    return promise;
 }
 
 } // namespace blink

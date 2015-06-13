@@ -610,6 +610,8 @@
       'beacon/NavigatorBeacon.cpp',
       'beacon/NavigatorBeacon.h',
       'bluetooth/Bluetooth.h',
+      'bluetooth/ConvertWebVectorToArrayBuffer.cpp',
+      'bluetooth/ConvertWebVectorToArrayBuffer.h',
       'bluetooth/Bluetooth.cpp',
       'bluetooth/BluetoothDevice.cpp',
       'bluetooth/BluetoothDevice.h',

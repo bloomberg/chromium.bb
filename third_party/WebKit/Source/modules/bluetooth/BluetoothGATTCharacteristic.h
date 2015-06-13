@@ -12,7 +12,9 @@
 
 namespace blink {
 
+class ScriptPromise;
 class ScriptPromiseResolver;
+class ScriptState;
 
 // BluetoothGATTCharacteristic represents a GATT Characteristic, which is a
 // basic data element that provides further information about a peripheral's
@@ -39,6 +41,7 @@ public:
 
     // IDL exposed interface:
     String uuid() { return m_webCharacteristic->uuid; }
+    ScriptPromise readValue(ScriptState*);
 
 private:
     OwnPtr<WebBluetoothGATTCharacteristic> m_webCharacteristic;
