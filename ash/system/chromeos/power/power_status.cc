@@ -193,6 +193,10 @@ bool PowerStatus::IsUsbChargerConnected() const {
       power_manager::PowerSupplyProperties_ExternalPower_USB;
 }
 
+bool PowerStatus::SupportsDualRoleDevices() const {
+  return proto_.supports_dual_role_devices();
+}
+
 gfx::ImageSkia PowerStatus::GetBatteryImage(IconSet icon_set) const {
   gfx::Image all;
   if (IsUsbChargerConnected()) {

@@ -16,7 +16,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/web_ui_util.h"
-#include "ui/gfx/image/image_skia.h"
 
 using ash::PowerStatus;
 
@@ -24,10 +23,13 @@ namespace chromeos {
 namespace options {
 
 PowerHandler::PowerHandler() {
+  this->show_power_status_ = switches::PowerOverlayEnabled() ||
+      (PowerStatus::Get()->IsBatteryPresent() &&
+       PowerStatus::Get()->SupportsDualRoleDevices());
 }
 
 PowerHandler::~PowerHandler() {
-  if (switches::PowerOverlayEnabled())
+  if (this->show_power_status_)
     PowerStatus::Get()->RemoveObserver(this);
 }
 
@@ -39,30 +41,24 @@ void PowerHandler::GetLocalizedValues(
   localized_strings->SetString(
       "batteryStatusLabel",
       l10n_util::GetStringUTF16(IDS_OPTIONS_BATTERY_STATUS_LABEL));
+  localized_strings->SetBoolean(
+      "showPowerStatus", this->show_power_status_);
 }
 
 void PowerHandler::InitializePage() {
-  if (switches::PowerOverlayEnabled())
+  if (this->show_power_status_)
     PowerStatus::Get()->RequestStatusUpdate();
 }
 
 void PowerHandler::RegisterMessages() {
-  if (switches::PowerOverlayEnabled())
+  if (this->show_power_status_)
     PowerStatus::Get()->AddObserver(this);
-
-  // Callback to fetch the battery icon data.
-  web_ui()->RegisterMessageCallback(
-      "requestBatteryIcon",
-      base::Bind(&PowerHandler::GetBatteryIcon, base::Unretained(this)));
 }
 
 void PowerHandler::OnPowerStatusChanged() {
   web_ui()->CallJavascriptFunction(
       "options.PowerOverlay.setBatteryStatusText",
       base::StringValue(GetStatusValue()));
-  web_ui()->CallJavascriptFunction(
-      "options.BrowserOptions.setBatteryStatusText",
-      base::StringValue(GetFullStatusText()));
 }
 
 base::string16 PowerHandler::GetStatusValue() const {
@@ -98,24 +94,6 @@ base::string16 PowerHandler::GetStatusValue() const {
         base::IntToString16(hour),
         minute_text);
   }
-}
-
-base::string16 PowerHandler::GetFullStatusText() const {
-  base::string16 status = GetStatusValue();
-  if (status.empty())
-    return base::string16();
-  return l10n_util::GetStringFUTF16(
-      IDS_OPTIONS_DEVICE_GROUP_BATTERY_STATUS_LABEL, status);
-}
-
-void PowerHandler::GetBatteryIcon(const base::ListValue* args) {
-  gfx::ImageSkia icon = PowerStatus::Get()->GetBatteryImage(
-      ash::PowerStatus::ICON_DARK);
-  gfx::ImageSkiaRep image_rep = icon.GetRepresentation(
-      web_ui()->GetDeviceScaleFactor());
-  web_ui()->CallJavascriptFunction(
-      "options.BrowserOptions.setBatteryIcon",
-      base::StringValue(webui::GetBitmapDataUrl(image_rep.sk_bitmap())));
 }
 
 }  // namespace options

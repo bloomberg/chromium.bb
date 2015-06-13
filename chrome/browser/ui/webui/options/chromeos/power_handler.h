@@ -33,13 +33,8 @@ private:
   // calculated. Returns an empty string if there is no battery.
   base::string16 GetStatusValue() const;
 
-  // Helper function to get the battery status text, including the 'Battery'
-  // label at the beginning. Wraps GetStatusValue(). Returns an empty string if
-  // there is no battery.
-  base::string16 GetFullStatusText() const;
-
-  // Handler for the battery icon request.
-  void GetBatteryIcon(const base::ListValue* args);
+  // Whether the UI should show the power status.
+  bool show_power_status_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerHandler);
 };

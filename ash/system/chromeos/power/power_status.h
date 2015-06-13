@@ -122,6 +122,10 @@ class ASH_EXPORT PowerStatus : public chromeos::PowerManagerClient::Observer {
   // charging rate) is connected.
   bool IsUsbChargerConnected() const;
 
+  // Returns true if the system allows some connected devices to function as
+  // either power sources or sinks.
+  bool SupportsDualRoleDevices() const;
+
   // Returns the image that should be shown for the battery's current state.
   gfx::ImageSkia GetBatteryImage(IconSet icon_set) const;
 
