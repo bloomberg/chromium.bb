@@ -726,7 +726,7 @@ void DesktopNativeWidgetAura::StackAtTop() {
 void DesktopNativeWidgetAura::StackBelow(gfx::NativeView native_view) {
 }
 
-void DesktopNativeWidgetAura::SetShape(gfx::NativeRegion shape) {
+void DesktopNativeWidgetAura::SetShape(SkRegion* shape) {
   if (content_window_)
     desktop_window_tree_host_->SetShape(shape);
 }

@@ -309,7 +309,7 @@ void NativeWidgetMac::StackBelow(gfx::NativeView native_view) {
   NOTIMPLEMENTED();
 }
 
-void NativeWidgetMac::SetShape(gfx::NativeRegion shape) {
+void NativeWidgetMac::SetShape(SkRegion* shape) {
   NOTIMPLEMENTED();
 }
 

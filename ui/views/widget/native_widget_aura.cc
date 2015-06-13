@@ -431,7 +431,7 @@ void NativeWidgetAura::StackBelow(gfx::NativeView native_view) {
     window_->parent()->StackChildBelow(window_, native_view);
 }
 
-void NativeWidgetAura::SetShape(gfx::NativeRegion region) {
+void NativeWidgetAura::SetShape(SkRegion* region) {
   if (window_)
     window_->layer()->SetAlphaShape(make_scoped_ptr(region));
   else

@@ -1165,7 +1165,7 @@ void HWNDMessageHandler::ResetWindowRegion(bool force, bool redraw) {
   const bool has_new_region = new_region != 0;
   if (has_current_region != has_new_region ||
       (has_current_region && !EqualRgn(current_rgn, new_region))) {
-    // SetWindowRgn takes ownership of the HRGN created by CreateNativeRegion.
+    // SetWindowRgn takes ownership of the HRGN.
     SetWindowRgn(hwnd(), new_region.release(), redraw);
   }
 }

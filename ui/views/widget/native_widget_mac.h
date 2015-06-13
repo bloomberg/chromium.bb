@@ -75,7 +75,7 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
   void StackAbove(gfx::NativeView native_view) override;
   void StackAtTop() override;
   void StackBelow(gfx::NativeView native_view) override;
-  void SetShape(gfx::NativeRegion shape) override;
+  void SetShape(SkRegion* shape) override;
   void Close() override;
   void CloseNow() override;
   void Show() override;

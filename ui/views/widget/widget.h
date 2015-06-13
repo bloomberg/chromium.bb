@@ -458,7 +458,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
   // Sets a shape on the widget. Passing a NULL |shape| reverts the widget to
   // be rectangular. Takes ownership of |shape|.
-  void SetShape(gfx::NativeRegion shape);
+  void SetShape(SkRegion* shape);
 
   // Hides the widget then closes it after a return to the message loop.
   virtual void Close();

@@ -546,7 +546,7 @@ gfx::Rect DesktopWindowTreeHostX11::GetWorkAreaBoundsInScreen() const {
   return ToDIPRect(GetWorkAreaBoundsInPixels());
 }
 
-void DesktopWindowTreeHostX11::SetShape(gfx::NativeRegion native_region) {
+void DesktopWindowTreeHostX11::SetShape(SkRegion* native_region) {
   custom_window_shape_ = false;
   window_shape_.reset();
 

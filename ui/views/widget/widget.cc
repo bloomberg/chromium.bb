@@ -562,7 +562,7 @@ void Widget::StackBelow(gfx::NativeView native_view) {
   native_widget_->StackBelow(native_view);
 }
 
-void Widget::SetShape(gfx::NativeRegion shape) {
+void Widget::SetShape(SkRegion* shape) {
   native_widget_->SetShape(shape);
 }
 

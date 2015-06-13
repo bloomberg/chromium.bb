@@ -291,11 +291,11 @@ gfx::Rect DesktopWindowTreeHostWin::GetWorkAreaBoundsInScreen() const {
   return gfx::win::ScreenToDIPRect(pixel_bounds);
 }
 
-void DesktopWindowTreeHostWin::SetShape(gfx::NativeRegion native_region) {
+void DesktopWindowTreeHostWin::SetShape(SkRegion* native_region) {
   if (native_region) {
     // TODO(wez): This would be a lot simpler if we were passed an SkPath.
     // See crbug.com/410593.
-    gfx::NativeRegion shape = native_region;
+    SkRegion* shape = native_region;
     SkRegion device_region;
     if (gfx::GetDPIScale() > 1.0) {
       shape = &device_region;

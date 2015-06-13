@@ -94,7 +94,7 @@ class VIEWS_EXPORT DesktopWindowTreeHost {
 
   // Sets the shape of the root window. If |native_region| is NULL then the
   // window reverts to rectangular. Takes ownership of |native_region|.
-  virtual void SetShape(gfx::NativeRegion native_region) = 0;
+  virtual void SetShape(SkRegion* native_region) = 0;
 
   virtual void Activate() = 0;
   virtual void Deactivate() = 0;
