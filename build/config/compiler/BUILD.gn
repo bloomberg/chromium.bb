@@ -1207,10 +1207,11 @@ config("optimize_max") {
   if (is_win) {
     cflags -= [ "/Os" ]
     cflags += [ "/Ot" ]  # Favor speed over size.
-    if (is_official_build) {
+    if (is_official_build && !is_clang) {
       # TODO(GYP): TODO(dpranke): Should these only be on in an official
       # build, or on all the time? For now we'll require official build so
       # that the compile is clean.
+      # TODO(hans): Remove Clang special-case when it rolls past r239656.
       cflags += [
         "/GL",  # Whole program optimization.
 
