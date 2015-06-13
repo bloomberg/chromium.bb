@@ -103,7 +103,6 @@ remoting.ApplicationContextMenu.prototype.onClicked_ = function(info) {
         var onLoad = function() {
           var message = {
             method: 'init',
-            appId: remoting.app.getApplicationId(),
             hostId: that.hostId_,
             connectionStats: JSON.stringify(that.stats_.mostRecent()),
             sessionId: that.clientSession_.getLogger().getSessionId()

@@ -121,24 +121,13 @@ remoting.MessageWindow = function(options) {
   };
 
   var htmlFile = options.htmlFile || 'message_window.html';
-  chrome.app.window.create(
-      remoting.MessageWindow.htmlFilePrefix + htmlFile,
-      windowAttributes, onCreate);
+  chrome.app.window.create(htmlFile, windowAttributes, onCreate);
 
   if (duration != 0) {
     this.timer_ = window.setTimeout(this.onTimeoutHandler_.bind(this),
                                     duration);
   }
 };
-
-/**
- * This string is prepended to the htmlFile when message windows are created.
- * Normally, this should be left empty, but the shared module needs to specify
- * this so that the shared HTML files can be found when running in the
- * context of the app stub.
- * @type {string}
- */
-remoting.MessageWindow.htmlFilePrefix = "";
 
 /**
  * Called when the timer runs out. This in turn calls the window's

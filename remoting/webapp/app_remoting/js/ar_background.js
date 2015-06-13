@@ -55,10 +55,7 @@ function createWindow(opt_launchData) {
     appWindow.onClosed.addListener(onClosed);
   };
 
-  // TODO(garykac) Add code to switch between dev and prod shared modules.
-  chrome.app.window.create(
-      '_modules/koejkfhmphamcgafjmkellhnekdkopod/main.html',
-      windowAttributes, onCreate);
+  chrome.app.window.create('main.html', windowAttributes, onCreate);
 };
 
 /** @param {Event} event */

@@ -108,11 +108,6 @@ remoting.Application.prototype.getExtensionInfo = function() {
  */
 
 /** @return {string} */
-remoting.Application.prototype.getApplicationId = function() {
-  base.debug.assert(false, 'Subclass must override');
-};
-
-/** @return {string} */
 remoting.Application.prototype.getApplicationName = function() {
   base.debug.assert(false, 'Subclass must override');
 };
@@ -157,11 +152,6 @@ remoting.Application.prototype.exitApplication_ = function() {
  * @interface
  */
 remoting.ApplicationInterface = function() {};
-
-/**
- * @return {string} Application Id.
- */
-remoting.ApplicationInterface.prototype.getApplicationId = function() {};
 
 /**
  * @return {string} Application product name to be used in UI.

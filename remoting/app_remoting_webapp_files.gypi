@@ -57,6 +57,7 @@
       'webapp/app_remoting/js/app_remoting.js',
       'webapp/app_remoting/js/app_remoting_activity.js',
       'webapp/app_remoting/js/ar_auth_dialog.js',
+      'webapp/app_remoting/js/ar_main.js',
       'webapp/app_remoting/js/context_menu_adapter.js',
       'webapp/app_remoting/js/context_menu_chrome.js',
       'webapp/app_remoting/js/context_menu_dom.js',
@@ -68,6 +69,8 @@
       'webapp/app_remoting/js/loading_window.js',
       'webapp/app_remoting/js/submenu_manager.js',
       'webapp/app_remoting/js/window_activation_menu.js',
+      'webapp/base/js/application.js',
+      'webapp/base/js/base.js',
       'webapp/base/js/message_window_helper.js',
       'webapp/base/js/message_window_manager.js',
       '<@(remoting_webapp_shared_js_auth_google_files)',
@@ -79,22 +82,9 @@
       '<@(remoting_webapp_shared_js_ui_files)',
     ],
 
-    # Variables for ar_background.html.
-    'ar_background_template':
-      '<(DEPTH)/remoting/webapp/app_remoting/html/template_background.html',
-    'ar_background_html_js_files': [
+    'ar_background_js_files': [
       'webapp/app_remoting/js/ar_background.js',
       'webapp/base/js/platform.js',
-    ],
-
-    'ar_vendor_js_files': [
-      'webapp/app_remoting/vendor/arv_main.js',
-    ],
-
-    'ar_vendor_html_files': [
-      'webapp/app_remoting/vendor/arv_background.html',
-      'webapp/app_remoting/vendor/arv_main.html',
-      'webapp/app_remoting/vendor/arv_wcs_sandbox.html',
     ],
 
     'ar_all_js_files': [
@@ -102,7 +92,8 @@
       '<@(ar_feedback_consent_html_js_files)',
       '<@(remoting_webapp_message_window_html_js_files)',
       '<@(remoting_webapp_wcs_sandbox_html_js_files)',
-      '<@(ar_background_html_js_files)',
+      # Referenced from the manifest.
+      '<@(ar_background_js_files)',
     ],
 
     # Files that contain localizable strings.
