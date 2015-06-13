@@ -250,7 +250,7 @@ class ChromeProxyLoFi(ChromeProxyValidation):
 
   def CustomizeBrowserOptions(self, options):
     super(ChromeProxyLoFi, self).CustomizeBrowserOptions(options)
-    options.AppendExtraBrowserArgs('--enable-data-reduction-proxy-lo-fi')
+    options.AppendExtraBrowserArgs('--data-reduction-proxy-lo-fi=always-on')
 
   def AddResults(self, tab, results):
     self._metrics.AddResultsForLoFi(tab, results)
