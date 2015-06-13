@@ -80,6 +80,16 @@ function loggingStop(callback) {
   sendMessage({'method': 'logging.stop'}, callback);
 }
 
+// Will call |callback()| on completion.
+function loggingStore(logId, callback) {
+  sendMessage({'method': 'logging.store', 'logId': logId}, callback);
+}
+
+// Will call |callback()| on completion.
+function loggingUploadStored(logId, callback) {
+  sendMessage({'method': 'logging.uploadStored', 'logId': logId}, callback);
+}
+
 // Will call |callback(uploadResult)| on completion.
 function loggingUpload(callback) {
   sendMessage({'method': 'logging.upload'}, callback);
@@ -144,6 +154,7 @@ var TESTS = [
   testGetAssociatedSink,
   testIsExtensionEnabled,
   testSendingToInvalidExtension,
+  testStoreLog,
 
   // Uncomment to manually test timeout logic.
   //testTimeout,
@@ -208,10 +219,11 @@ function runAllTests(callback) {
     }
 
     ++testIndex;
-    if (testIndex == TESTS.length)
+    if (testIndex == TESTS.length) {
       callback(results);
-    else
+    } else {
       startTest(TESTS[testIndex]);
+    }
   }
 
   startTest(TESTS[testIndex]);
@@ -221,10 +233,11 @@ function testCpuGetInfo(callback) {
   cpuGetInfo(function(info) {
       if (info.numOfProcessors != 0 &&
           info.archName != '' &&
-          info.modelName != '')
+          info.modelName != '') {
         callback('');
-      else
+      } else {
         callback('Missing information in CpuInfo');
+      }
     });
 }
 
@@ -271,10 +284,11 @@ function testDisabledLoggingButUpload(callback) {
   loggingStart(function() {
       loggingStop(function() {
           loggingUpload(function(loggingResult) {
-              if (loggingResult != '')
+              if (loggingResult != '') {
                 callback('');
-              else
+              } else {
                 callback('Got empty upload result.');
+              }
             });
         });
     });
@@ -286,10 +300,11 @@ function testDisabledLoggingWithStopAndUpload(callback) {
   loggingNoUploadOnRenderClose();
   loggingStart(function() {
       loggingStopAndUpload(function(loggingResult) {
-          if (loggingResult != '')
+          if (loggingResult != '') {
             callback('');
-          else
+          } else {
             callback('Got empty upload result.');
+          }
       });
   });
 }
@@ -317,10 +332,11 @@ function testGetSinks(callback) {
 
 function testGetActiveSink(callback) {
   getActiveSink(function(sinkId) {
-      if (sinkId == '')
+      if (sinkId == '') {
         callback('Got empty sink ID.');
-      else
+      } else {
         callback('');
+      }
     });
 }
 
@@ -367,6 +383,26 @@ function testSendingToInvalidExtension(callback) {
             callback('');
           }
         });
+}
+
+function testStoreLog(callback) {
+  var logId = "mylog_id";
+  // Start by logging something.
+  loggingSetMetadata([{'bingos': 'bongos', 'smurfs': 'geburfs'}], function() {
+      loggingStart(function() {
+          loggingStop(function() {
+              loggingStore(logId, function() {
+                  loggingUploadStored(logId, function(loggingResult) {
+                    if (loggingResult != '') {
+                      callback('');
+                    } else {
+                      callback('Got empty upload result.');
+                    }
+                  });
+              });
+            });
+        });
+    });
 }
 
 function testTimeout(callback) {

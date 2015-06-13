@@ -90,6 +90,11 @@ chrome.runtime.onMessageExternal.addListener(
           chrome.webrtcLoggingPrivate.upload(
               requestInfo, origin, doSendResponse);
           return true;
+        } else if (method == 'logging.uploadStored') {
+          var logId = message['logId'];
+          chrome.webrtcLoggingPrivate.uploadStored(
+              requestInfo, origin, logId, doSendResponse);
+          return true;
         } else if (method == 'logging.stopAndUpload') {
           stopAllRtpDump(requestInfo, origin, function() {
             chrome.webrtcLoggingPrivate.stop(requestInfo, origin, function() {
@@ -97,6 +102,11 @@ chrome.runtime.onMessageExternal.addListener(
                   requestInfo, origin, doSendResponse);
             });
           });
+          return true;
+        } else if (method == 'logging.store') {
+          var logId = message['logId'];
+          chrome.webrtcLoggingPrivate.store(
+              requestInfo, origin, logId, doSendResponse);
           return true;
         } else if (method == 'logging.discard') {
           chrome.webrtcLoggingPrivate.discard(
