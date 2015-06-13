@@ -160,8 +160,16 @@ SadTabView::SadTabView(WebContents* web_contents, chrome::SadTabKind kind)
   const SkColor text_color = GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_LabelDisabledColor);
 
-  message_ = CreateLabel(l10n_util::GetStringUTF16(
-      is_crashed_type ? IDS_SAD_TAB_MESSAGE : IDS_KILLED_TAB_MESSAGE));
+  int message_id =
+      is_crashed_type ? IDS_SAD_TAB_MESSAGE : IDS_KILLED_TAB_MESSAGE;
+
+#if defined(OS_CHROMEOS)
+  if (kind_ == chrome::SAD_TAB_KIND_KILLED_BY_OOM)
+    message_id = IDS_KILLED_TAB_BY_OOM_MESSAGE;
+#endif
+
+  message_ = CreateLabel(l10n_util::GetStringUTF16(message_id));
+
   message_->SetMultiLine(true);
   message_->SetEnabledColor(text_color);
   message_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
