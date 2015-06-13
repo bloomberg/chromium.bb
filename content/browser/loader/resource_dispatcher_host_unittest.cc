@@ -2154,11 +2154,11 @@ TEST_F(ResourceDispatcherHostTest, IgnoreCancelForDownloads) {
                           "Content-disposition: attachment; filename=foo\n\n");
   std::string response_data("01234567890123456789\x01foobar");
 
-  // Get past sniffing metrics in the BufferedResourceHandler.  Note that
+  // Get past sniffing metrics in the MimeTypeResourceHandler.  Note that
   // if we don't get past the sniffing metrics, the result will be that
-  // the BufferedResourceHandler won't have figured out that it's a download,
-  // won't have constructed a DownloadResourceHandler, and and the request
-  // will be successfully canceled below, failing the test.
+  // the MimeTypeResourceHandler won't have figured out that it's a download,
+  // won't have constructed a DownloadResourceHandler, and and the request will
+  // be successfully canceled below, failing the test.
   response_data.resize(1025, ' ');
 
   SetResponse(raw_headers, response_data);
@@ -2331,7 +2331,7 @@ TEST_F(ResourceDispatcherHostTest, TransferNavigationHtml) {
   base::MessageLoop::current()->RunUntilIdle();
 
   // Flush all the pending requests to get the response through the
-  // BufferedResourceHandler.
+  // MimeTypeResourceHandler.
   while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
 
   // Restore, now that we've set up a transfer.
@@ -2401,7 +2401,7 @@ TEST_F(ResourceDispatcherHostTest, TransferTwoNavigationsHtml) {
                                   RESOURCE_TYPE_MAIN_FRAME);
 
   // Flush all the pending requests to get the response through the
-  // BufferedResourceHandler.
+  // MimeTypeResourceHandler.
   while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
 
   // Restore, now that we've set up a transfer.
@@ -2446,8 +2446,8 @@ TEST_F(ResourceDispatcherHostTest, TransferTwoNavigationsHtml) {
 }
 
 // Test transferred navigations with text/plain, which causes
-// BufferedResourceHandler to buffer the response to sniff the content
-// before the transfer occurs.
+// MimeTypeResourceHandler to buffer the response to sniff the content before
+// the transfer occurs.
 TEST_F(ResourceDispatcherHostTest, TransferNavigationText) {
   // This test expects the cross site request to be leaked, so it can transfer
   // the request directly.
@@ -2475,7 +2475,7 @@ TEST_F(ResourceDispatcherHostTest, TransferNavigationText) {
 
   // Now that we're blocked on the redirect, update the response and unblock by
   // telling the AsyncResourceHandler to follow the redirect.  Use a text/plain
-  // MIME type, which causes BufferedResourceHandler to buffer it before the
+  // MIME type, which causes MimeTypeResourceHandler to buffer it before the
   // transfer occurs.
   const std::string kResponseBody = "hello world";
   SetResponse("HTTP/1.1 200 OK\n"
@@ -2486,7 +2486,7 @@ TEST_F(ResourceDispatcherHostTest, TransferNavigationText) {
   base::MessageLoop::current()->RunUntilIdle();
 
   // Flush all the pending requests to get the response through the
-  // BufferedResourceHandler.
+  // MimeTypeResourceHandler.
   while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
 
   // Restore, now that we've set up a transfer.
@@ -2565,7 +2565,7 @@ TEST_F(ResourceDispatcherHostTest, TransferNavigationWithProcessCrash) {
     base::MessageLoop::current()->RunUntilIdle();
 
     // Flush all the pending requests to get the response through the
-    // BufferedResourceHandler.
+    // MimeTypeResourceHandler.
     while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
   }
   // The first filter is now deleted, as if the child process died.
@@ -2638,7 +2638,7 @@ TEST_F(ResourceDispatcherHostTest, TransferNavigationWithTwoRedirects) {
 
   // Now that we're blocked on the second redirect, update the response and
   // unblock by telling the AsyncResourceHandler to follow the redirect.
-  // Again, use text/plain to force BufferedResourceHandler to buffer before
+  // Again, use text/plain to force MimeTypeResourceHandler to buffer before
   // the transfer.
   const std::string kResponseBody = "hello world";
   SetResponse("HTTP/1.1 200 OK\n"
@@ -2649,7 +2649,7 @@ TEST_F(ResourceDispatcherHostTest, TransferNavigationWithTwoRedirects) {
   base::MessageLoop::current()->RunUntilIdle();
 
   // Flush all the pending requests to get the response through the
-  // BufferedResourceHandler.
+  // MimeTypeResourceHandler.
   while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
 
   // Restore.

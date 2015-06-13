@@ -50,7 +50,7 @@ class StreamWriter : public StreamWriteObserver {
   // is not -1, it is the minimum size of the returned buffer.
   //
   // OnWillRead may be called before the stream is initialized. This is to
-  // support BufferedResourceHandler which reads the initial chunk of data
+  // support MimeTypeResourceHandler which reads the initial chunk of data
   // early.
   void OnWillRead(scoped_refptr<net::IOBuffer>* buf,
                   int* buf_size,

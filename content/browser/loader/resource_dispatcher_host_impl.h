@@ -434,7 +434,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       ResourceContext* resource_context);
 
   // Wraps |handler| in the standard resource handlers for normal resource
-  // loading and navigation requests. This adds BufferedResourceHandler and
+  // loading and navigation requests. This adds MimeTypeResourceHandler and
   // ResourceThrottles.
   scoped_ptr<ResourceHandler> AddStandardHandlers(
       net::URLRequest* request,

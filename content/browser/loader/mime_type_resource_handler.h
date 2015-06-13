@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_LOADER_BUFFERED_RESOURCE_HANDLER_H_
-#define CONTENT_BROWSER_LOADER_BUFFERED_RESOURCE_HANDLER_H_
+#ifndef CONTENT_BROWSER_LOADER_MIME_TYPE_RESOURCE_HANDLER_H_
+#define CONTENT_BROWSER_LOADER_MIME_TYPE_RESOURCE_HANDLER_H_
 
 #include <string>
 #include <vector>
@@ -22,17 +22,27 @@ class PluginService;
 class ResourceDispatcherHostImpl;
 struct WebPluginInfo;
 
-// Used to buffer a request until enough data has been received.
-class CONTENT_EXPORT BufferedResourceHandler
+// ResourceHandler that, if necessary, buffers a response body without passing
+// it to the next ResourceHandler until it can perform mime sniffing on it.
+// Once a response's MIME type is known, initiates special handling of the
+// response if needed (starts downloads, sends data to some plugin types via a
+// special channel).
+//
+// Uses the buffer provided by the original event handler for buffering, and
+// continues to reuses it until it can determine the MIME type
+// subsequent reads until it's done buffering.  As a result, the buffer
+// returned by the next ResourceHandler must have a capacity of at least
+// net::kMaxBytesToSniff * 2.
+class CONTENT_EXPORT MimeTypeResourceHandler
     : public LayeredResourceHandler,
       public ResourceController {
  public:
   // If ENABLE_PLUGINS is defined, |plugin_service| must not be NULL.
-  BufferedResourceHandler(scoped_ptr<ResourceHandler> next_handler,
+  MimeTypeResourceHandler(scoped_ptr<ResourceHandler> next_handler,
                           ResourceDispatcherHostImpl* host,
                           PluginService* plugin_service,
                           net::URLRequest* request);
-  ~BufferedResourceHandler() override;
+  ~MimeTypeResourceHandler() override;
 
  private:
   // ResourceHandler implementation:
@@ -104,11 +114,11 @@ class CONTENT_EXPORT BufferedResourceHandler
   bool must_download_;
   bool must_download_is_set_;
 
-  base::WeakPtrFactory<BufferedResourceHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<MimeTypeResourceHandler> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(BufferedResourceHandler);
+  DISALLOW_COPY_AND_ASSIGN(MimeTypeResourceHandler);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_LOADER_BUFFERED_RESOURCE_HANDLER_H_
+#endif  // CONTENT_BROWSER_LOADER_MIME_TYPE_RESOURCE_HANDLER_H_

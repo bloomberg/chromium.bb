@@ -22,8 +22,8 @@ using storage::ShareableFileReference;
 namespace {
 
 // This class is similar to identically named classes in AsyncResourceHandler
-// and BufferedResourceHandler, but not quite.
-// TODO(ncbray) generalize and unify these cases?
+// and MimeTypeResourceHandler, but not quite.
+// TODO(ncbray): generalize and unify these cases?
 // In general, it's a bad idea to point to a subbuffer (particularly with
 // GrowableIOBuffer) because the backing IOBuffer may realloc its data.  In this
 // particular case we know RedirectToFileResourceHandler will not realloc its
@@ -351,7 +351,7 @@ bool RedirectToFileResourceHandler::WriteMore() {
 }
 
 bool RedirectToFileResourceHandler::BufIsFull() const {
-  // This is a hack to workaround BufferedResourceHandler's inability to
+  // This is a hack to workaround MimeTypeResourceHandler's inability to
   // deal with a ResourceHandler that returns a buffer size of less than
   // 2 * net::kMaxBytesToSniff from its OnWillRead method.
   // TODO(darin): Fix this retardation!

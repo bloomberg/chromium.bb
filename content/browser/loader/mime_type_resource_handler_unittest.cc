@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/loader/buffered_resource_handler.h"
+#include "content/browser/loader/mime_type_resource_handler.h"
 
 #include "base/logging.h"
 #include "base/macros.h"
@@ -151,9 +151,9 @@ class TestResourceController : public ResourceController {
   }
 };
 
-class BufferedResourceHandlerTest : public testing::Test {
+class MimeTypeResourceHandlerTest : public testing::Test {
  public:
-  BufferedResourceHandlerTest() : stream_has_handler_(false) {}
+  MimeTypeResourceHandlerTest() : stream_has_handler_(false) {}
 
   void set_stream_has_handler(bool stream_has_handler) {
     stream_has_handler_ = stream_has_handler;
@@ -170,7 +170,7 @@ class BufferedResourceHandlerTest : public testing::Test {
   TestBrowserThreadBundle thread_bundle_;
 };
 
-bool BufferedResourceHandlerTest::TestStreamIsIntercepted(
+bool MimeTypeResourceHandlerTest::TestStreamIsIntercepted(
     bool allow_download,
     bool must_download,
     ResourceType request_resource_type) {
@@ -195,21 +195,21 @@ bool BufferedResourceHandlerTest::TestStreamIsIntercepted(
   host.SetDelegate(&host_delegate);
 
   FakePluginService plugin_service;
-  scoped_ptr<ResourceHandler> buffered_handler(
-      new BufferedResourceHandler(
+  scoped_ptr<ResourceHandler> mime_sniffing_handler(
+      new MimeTypeResourceHandler(
           scoped_ptr<ResourceHandler>(new TestResourceHandler()).Pass(),
           &host,
           &plugin_service,
           request.get()));
   TestResourceController resource_controller;
-  buffered_handler->SetController(&resource_controller);
+  mime_sniffing_handler->SetController(&resource_controller);
 
   scoped_refptr<ResourceResponse> response(new ResourceResponse);
   // The MIME type isn't important but it shouldn't be empty.
   response->head.mime_type = "application/pdf";
 
   bool defer = false;
-  buffered_handler->OnResponseStarted(response.get(), &defer);
+  mime_sniffing_handler->OnResponseStarted(response.get(), &defer);
 
   content::RunAllPendingInMessageLoop();
 
@@ -218,7 +218,7 @@ bool BufferedResourceHandlerTest::TestStreamIsIntercepted(
 
 // Test that stream requests are correctly intercepted under the right
 // circumstances.
-TEST_F(BufferedResourceHandlerTest, StreamHandling) {
+TEST_F(MimeTypeResourceHandlerTest, StreamHandling) {
   bool allow_download;
   bool must_download;
   ResourceType resource_type;

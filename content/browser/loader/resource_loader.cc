@@ -184,8 +184,8 @@ void ResourceLoader::MarkAsTransferring() {
 void ResourceLoader::CompleteTransfer() {
   // Although CrossSiteResourceHandler defers at OnResponseStarted
   // (DEFERRED_READ), it may be seeing a replay of events via
-  // BufferedResourceHandler, and so the request itself is actually deferred at
-  // a later read stage.
+  // MimeTypeResourceHandler, and so the request itself is actually deferred
+  // at a later read stage.
   DCHECK(DEFERRED_READ == deferred_stage_ ||
          DEFERRED_RESPONSE_COMPLETE == deferred_stage_);
   DCHECK(is_transferring_);

@@ -49,7 +49,7 @@ void DetachableResourceHandler::Detach() {
     DCHECK(!defer_ignored);
     // If |next_handler_| were to defer its shutdown in OnResponseCompleted,
     // this would destroy it anyway. Fortunately, AsyncResourceHandler never
-    // does this anyway, so DCHECK it. BufferedResourceHandler and RVH shutdown
+    // does this anyway, so DCHECK it. MimeTypeResourceHandler and RVH shutdown
     // already ignore deferred ResourceHandler shutdown, but
     // DetachableResourceHandler and the detach-on-renderer-cancel logic
     // introduces a case where this occurs when the renderer cancels a resource.

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/loader/buffered_resource_handler.h"
+#include "content/browser/loader/mime_type_resource_handler.h"
 
 #include <vector>
 
@@ -81,7 +81,7 @@ class DependentIOBuffer : public net::WrappedIOBuffer {
 
 }  // namespace
 
-BufferedResourceHandler::BufferedResourceHandler(
+MimeTypeResourceHandler::MimeTypeResourceHandler(
     scoped_ptr<ResourceHandler> next_handler,
     ResourceDispatcherHostImpl* host,
     PluginService* plugin_service,
@@ -97,10 +97,10 @@ BufferedResourceHandler::BufferedResourceHandler(
       weak_ptr_factory_(this) {
 }
 
-BufferedResourceHandler::~BufferedResourceHandler() {
+MimeTypeResourceHandler::~MimeTypeResourceHandler() {
 }
 
-void BufferedResourceHandler::SetController(ResourceController* controller) {
+void MimeTypeResourceHandler::SetController(ResourceController* controller) {
   ResourceHandler::SetController(controller);
 
   // Downstream handlers see us as their ResourceController, which allows us to
@@ -110,7 +110,7 @@ void BufferedResourceHandler::SetController(ResourceController* controller) {
   next_handler_->SetController(this);
 }
 
-bool BufferedResourceHandler::OnResponseStarted(ResourceResponse* response,
+bool MimeTypeResourceHandler::OnResponseStarted(ResourceResponse* response,
                                                 bool* defer) {
   response_ = response;
 
@@ -142,9 +142,7 @@ bool BufferedResourceHandler::OnResponseStarted(ResourceResponse* response,
   return ProcessResponse(defer);
 }
 
-// We'll let the original event handler provide a buffer, and reuse it for
-// subsequent reads until we're done buffering.
-bool BufferedResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
+bool MimeTypeResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
                                          int* buf_size,
                                          int min_size) {
   if (state_ == STATE_STREAMING)
@@ -167,7 +165,7 @@ bool BufferedResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
   return true;
 }
 
-bool BufferedResourceHandler::OnReadCompleted(int bytes_read, bool* defer) {
+bool MimeTypeResourceHandler::OnReadCompleted(int bytes_read, bool* defer) {
   if (state_ == STATE_STREAMING)
     return next_handler_->OnReadCompleted(bytes_read, defer);
 
@@ -181,7 +179,7 @@ bool BufferedResourceHandler::OnReadCompleted(int bytes_read, bool* defer) {
   return ProcessResponse(defer);
 }
 
-void BufferedResourceHandler::OnResponseCompleted(
+void MimeTypeResourceHandler::OnResponseCompleted(
     const net::URLRequestStatus& status,
     const std::string& security_info,
     bool* defer) {
@@ -192,7 +190,7 @@ void BufferedResourceHandler::OnResponseCompleted(
   next_handler_->OnResponseCompleted(status, security_info, defer);
 }
 
-void BufferedResourceHandler::Resume() {
+void MimeTypeResourceHandler::Resume() {
   switch (state_) {
     case STATE_BUFFERING:
     case STATE_PROCESSING:
@@ -201,7 +199,7 @@ void BufferedResourceHandler::Resume() {
     case STATE_REPLAYING:
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
-          base::Bind(&BufferedResourceHandler::CallReplayReadCompleted,
+          base::Bind(&MimeTypeResourceHandler::CallReplayReadCompleted,
                      weak_ptr_factory_.GetWeakPtr()));
       break;
     case STATE_STARTING:
@@ -211,19 +209,19 @@ void BufferedResourceHandler::Resume() {
   }
 }
 
-void BufferedResourceHandler::Cancel() {
+void MimeTypeResourceHandler::Cancel() {
   controller()->Cancel();
 }
 
-void BufferedResourceHandler::CancelAndIgnore() {
+void MimeTypeResourceHandler::CancelAndIgnore() {
   controller()->CancelAndIgnore();
 }
 
-void BufferedResourceHandler::CancelWithError(int error_code) {
+void MimeTypeResourceHandler::CancelWithError(int error_code) {
   controller()->CancelWithError(error_code);
 }
 
-bool BufferedResourceHandler::ProcessResponse(bool* defer) {
+bool MimeTypeResourceHandler::ProcessResponse(bool* defer) {
   DCHECK_EQ(STATE_PROCESSING, state_);
 
   // TODO(darin): Stop special-casing 304 responses.
@@ -251,7 +249,7 @@ bool BufferedResourceHandler::ProcessResponse(bool* defer) {
   return true;
 }
 
-bool BufferedResourceHandler::ShouldSniffContent() {
+bool MimeTypeResourceHandler::ShouldSniffContent() {
   const std::string& mime_type = response_->head.mime_type;
 
   std::string content_type_options;
@@ -276,7 +274,7 @@ bool BufferedResourceHandler::ShouldSniffContent() {
   return false;
 }
 
-bool BufferedResourceHandler::DetermineMimeType() {
+bool MimeTypeResourceHandler::DetermineMimeType() {
   DCHECK_EQ(STATE_BUFFERING, state_);
 
   const std::string& type_hint = response_->head.mime_type;
@@ -294,7 +292,7 @@ bool BufferedResourceHandler::DetermineMimeType() {
   return made_final_decision;
 }
 
-bool BufferedResourceHandler::SelectNextHandler(bool* defer) {
+bool MimeTypeResourceHandler::SelectNextHandler(bool* defer) {
   DCHECK(!response_->head.mime_type.empty());
 
   ResourceRequestInfoImpl* info = GetRequestInfo();
@@ -347,9 +345,9 @@ bool BufferedResourceHandler::SelectNextHandler(bool* defer) {
     if (stale) {
       // Refresh the plugins asynchronously.
       plugin_service_->GetPlugins(
-          base::Bind(&BufferedResourceHandler::OnPluginsLoaded,
+          base::Bind(&MimeTypeResourceHandler::OnPluginsLoaded,
                      weak_ptr_factory_.GetWeakPtr()));
-      request()->LogBlockedBy("BufferedResourceHandler");
+      request()->LogBlockedBy("MimeTypeResourceHandler");
       *defer = true;
       return true;
     }
@@ -371,7 +369,7 @@ bool BufferedResourceHandler::SelectNextHandler(bool* defer) {
   return UseAlternateNextHandler(handler.Pass(), std::string());
 }
 
-bool BufferedResourceHandler::UseAlternateNextHandler(
+bool MimeTypeResourceHandler::UseAlternateNextHandler(
     scoped_ptr<ResourceHandler> new_handler,
     const std::string& payload_for_old_handler) {
   if (response_->head.headers.get() &&  // Can be NULL if FTP.
@@ -426,7 +424,7 @@ bool BufferedResourceHandler::UseAlternateNextHandler(
   return CopyReadBufferToNextHandler();
 }
 
-bool BufferedResourceHandler::ReplayReadCompleted(bool* defer) {
+bool MimeTypeResourceHandler::ReplayReadCompleted(bool* defer) {
   DCHECK(read_buffer_.get());
 
   bool result = next_handler_->OnReadCompleted(bytes_read_, defer);
@@ -440,7 +438,7 @@ bool BufferedResourceHandler::ReplayReadCompleted(bool* defer) {
   return result;
 }
 
-void BufferedResourceHandler::CallReplayReadCompleted() {
+void MimeTypeResourceHandler::CallReplayReadCompleted() {
   bool defer = false;
   if (!ReplayReadCompleted(&defer)) {
     controller()->Cancel();
@@ -450,7 +448,7 @@ void BufferedResourceHandler::CallReplayReadCompleted() {
   }
 }
 
-bool BufferedResourceHandler::MustDownload() {
+bool MimeTypeResourceHandler::MustDownload() {
   if (must_download_is_set_)
     return must_download_;
 
@@ -472,7 +470,7 @@ bool BufferedResourceHandler::MustDownload() {
   return must_download_;
 }
 
-bool BufferedResourceHandler::HasSupportingPlugin(bool* stale) {
+bool MimeTypeResourceHandler::HasSupportingPlugin(bool* stale) {
 #if defined(ENABLE_PLUGINS)
   ResourceRequestInfoImpl* info = GetRequestInfo();
 
@@ -489,7 +487,7 @@ bool BufferedResourceHandler::HasSupportingPlugin(bool* stale) {
 #endif
 }
 
-bool BufferedResourceHandler::CopyReadBufferToNextHandler() {
+bool MimeTypeResourceHandler::CopyReadBufferToNextHandler() {
   if (!read_buffer_.get())
     return true;
 
@@ -503,7 +501,7 @@ bool BufferedResourceHandler::CopyReadBufferToNextHandler() {
   return true;
 }
 
-void BufferedResourceHandler::OnPluginsLoaded(
+void MimeTypeResourceHandler::OnPluginsLoaded(
     const std::vector<WebPluginInfo>& plugins) {
   request()->LogUnblocked();
   bool defer = false;

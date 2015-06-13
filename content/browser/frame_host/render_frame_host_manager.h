@@ -70,7 +70,7 @@ struct FrameReplicationState;
 //   CrossSiteResourceHandler to check whether a process transfer is needed when
 //   the request is ready to commit.
 //
-// - When RDH receives a response, the BufferedResourceHandler determines
+// - When RDH receives a response, the MimeTypeResourceHandler determines
 //   whether it is a navigation type that doesn't commit (e.g. download, 204 or
 //   error page). If so, it sends a message to the new renderer causing it to
 //   cancel the request, and the request (e.g. the download) proceeds. In this

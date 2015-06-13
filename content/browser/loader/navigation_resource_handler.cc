@@ -72,11 +72,11 @@ bool NavigationResourceHandler::OnResponseStarted(ResourceResponse* response,
 
   ResourceRequestInfoImpl* info = GetRequestInfo();
 
-  // If the BufferedResourceHandler intercepted this request and converted it
+  // If the MimeTypeResourceHandler intercepted this request and converted it
   // into a download, it will still call OnResponseStarted and immediately
   // cancel. Ignore the call; OnReadCompleted will happen shortly.
   //
-  // TODO(davidben): Move the dispatch out of BufferedResourceHandler. Perhaps
+  // TODO(davidben): Move the dispatch out of MimeTypeResourceHandler. Perhaps
   // all the way to the UI thread. Downloads, user certificates, etc., should be
   // dispatched at the navigation layer.
   if (info->IsDownload() || info->is_stream())
