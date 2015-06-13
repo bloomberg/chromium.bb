@@ -399,6 +399,8 @@ class StubClient : public media::VideoCaptureDevice::Client {
 
   void OnError(const std::string& reason) override { error_callback_.Run(); }
 
+  double GetBufferPoolUtilization() const override { return 0.0; }
+
  private:
   class AutoReleaseBuffer : public media::VideoCaptureDevice::Client::Buffer {
    public:

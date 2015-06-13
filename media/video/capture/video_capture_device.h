@@ -270,6 +270,10 @@ class MEDIA_EXPORT VideoCaptureDevice {
 
     // VideoCaptureDevice requests the |message| to be logged.
     virtual void OnLog(const std::string& message) {}
+
+    // Returns the current buffer pool utilization, in the range 0.0 (no buffers
+    // are in use by producers or consumers) to 1.0 (all buffers are in use).
+    virtual double GetBufferPoolUtilization() const = 0;
   };
 
   virtual ~VideoCaptureDevice();

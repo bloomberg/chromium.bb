@@ -94,6 +94,8 @@ class MockDeviceClient : public media::VideoCaptureDevice::Client {
       const base::TimeTicks& timestamp) override {
     DoOnIncomingCapturedVideoFrame();
   }
+
+  double GetBufferPoolUtilization() const override { return 0.0; }
 };
 
 // Creates a DesktopFrame that has the first pixel bytes set to

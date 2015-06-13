@@ -327,10 +327,12 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   // Now, simulate an incoming captured buffer from the capture device. As a
   // side effect this will cause the first buffer to be shared with clients.
   uint8 buffer_no = 1;
+  ASSERT_EQ(0.0, device_->GetBufferPoolUtilization());
   scoped_ptr<media::VideoCaptureDevice::Client::Buffer> buffer(
       device_->ReserveOutputBuffer(media::PIXEL_FORMAT_I420,
                                    capture_resolution));
   ASSERT_TRUE(buffer.get());
+  ASSERT_EQ(1.0 / kPoolSize, device_->GetBufferPoolUtilization());
   memset(buffer->data(), buffer_no++, buffer->size());
   {
     InSequence s;

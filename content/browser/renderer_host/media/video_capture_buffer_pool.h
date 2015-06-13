@@ -101,6 +101,10 @@ class CONTENT_EXPORT VideoCaptureBufferPool
   // done, a buffer is returned to the pool for reuse.
   void RelinquishConsumerHold(int buffer_id, int num_clients);
 
+  // Returns a snapshot of the current number of buffers in-use divided by the
+  // maximum |count_|.
+  double GetBufferPoolUtilization() const;
+
  private:
   class GpuMemoryBufferTracker;
   class SharedMemTracker;
@@ -166,7 +170,7 @@ class CONTENT_EXPORT VideoCaptureBufferPool
   const int count_;
 
   // Protects everything below it.
-  base::Lock lock_;
+  mutable base::Lock lock_;
 
   // The ID of the next buffer.
   int next_buffer_id_;

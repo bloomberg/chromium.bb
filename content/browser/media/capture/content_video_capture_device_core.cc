@@ -76,12 +76,18 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
   scoped_ptr<media::VideoCaptureDevice::Client::Buffer> output_buffer(
       client_->ReserveOutputBuffer(params_.requested_format.pixel_format,
                                    coded_size));
+  // TODO(miu): Use current buffer pool utilization to drive automatic video
+  // resolution changes.  http://crbug.com/156767.
+  VLOG(2) << "Current buffer pool utilization is "
+          << (client_->GetBufferPoolUtilization() * 100.0) << '%';
+
   const bool should_capture =
       oracle_.ObserveEventAndDecideCapture(event, damage_rect, event_time);
+
   const char* event_name =
       (event == VideoCaptureOracle::kTimerPoll ? "poll" :
        (event == VideoCaptureOracle::kCompositorUpdate ? "gpu" :
-       "paint"));
+       "unknown"));
 
   // Consider the various reasons not to initiate a capture.
   if (should_capture && !output_buffer.get()) {

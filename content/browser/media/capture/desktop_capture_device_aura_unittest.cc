@@ -73,6 +73,8 @@ class MockDeviceClient : public media::VideoCaptureDevice::Client {
       const base::TimeTicks& timestamp) override {
     DoOnIncomingCapturedVideoFrame();
   }
+
+  double GetBufferPoolUtilization() const override { return 0.0; }
 };
 
 // Test harness that sets up a minimal environment with necessary stubs.

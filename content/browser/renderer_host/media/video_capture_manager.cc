@@ -76,7 +76,9 @@ void ConsolidateCaptureFormats(media::VideoCaptureFormats* formats) {
 // The maximum number of buffers in the capture pipeline. See
 // VideoCaptureController ctor comments for more details.
 const int kMaxNumberOfBuffers = 3;
-const int kMaxNumberOfBuffersForTabCapture = 5;
+// TODO(miu): The value for tab capture should be determined programmatically.
+// http://crbug.com/460318
+const int kMaxNumberOfBuffersForTabCapture = 10;
 
 // Used for logging capture events.
 // Elements in this enum should not be deleted or rearranged; the only

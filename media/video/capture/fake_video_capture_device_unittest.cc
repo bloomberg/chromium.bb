@@ -103,6 +103,8 @@ class MockClient : public VideoCaptureDevice::Client {
     frame_cb_.Run(format);
   }
 
+  double GetBufferPoolUtilization() const override { return 0.0; }
+
  private:
   base::Callback<void(const VideoCaptureFormat&)> frame_cb_;
 };

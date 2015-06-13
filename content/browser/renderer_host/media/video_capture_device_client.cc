@@ -517,6 +517,11 @@ void VideoCaptureDeviceClient::OnLog(
                                      controller_, message));
 }
 
+double VideoCaptureDeviceClient::GetBufferPoolUtilization() const {
+  // VideoCaptureBufferPool::GetBufferPoolUtilization() is thread-safe.
+  return buffer_pool_->GetBufferPoolUtilization();
+}
+
 VideoCaptureDeviceClient::TextureWrapHelper::TextureWrapHelper(
     const base::WeakPtr<VideoCaptureController>& controller,
     const scoped_refptr<base::SingleThreadTaskRunner>& capture_task_runner)

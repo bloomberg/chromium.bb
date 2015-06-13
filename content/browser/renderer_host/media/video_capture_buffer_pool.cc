@@ -332,6 +332,17 @@ void VideoCaptureBufferPool::RelinquishConsumerHold(int buffer_id,
                                    num_clients);
 }
 
+double VideoCaptureBufferPool::GetBufferPoolUtilization() const {
+  base::AutoLock lock(lock_);
+  int num_buffers_held = 0;
+  for (const auto& entry : trackers_) {
+    Tracker* const tracker = entry.second;
+    if (tracker->held_by_producer() || tracker->consumer_hold_count() > 0)
+      ++num_buffers_held;
+  }
+  return static_cast<double>(num_buffers_held) / count_;
+}
+
 int VideoCaptureBufferPool::ReserveForProducerInternal(
     media::VideoPixelFormat format,
     const gfx::Size& dimensions,

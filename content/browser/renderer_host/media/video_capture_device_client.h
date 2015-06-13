@@ -64,6 +64,7 @@ class CONTENT_EXPORT VideoCaptureDeviceClient
       const base::TimeTicks& timestamp) override;
   void OnError(const std::string& reason) override;
   void OnLog(const std::string& message) override;
+  double GetBufferPoolUtilization() const override;
 
  private:
   // The controller to which we post events.

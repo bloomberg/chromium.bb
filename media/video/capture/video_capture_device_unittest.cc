@@ -82,6 +82,7 @@ class MockClient : public VideoCaptureDevice::Client {
   MOCK_METHOD0(DoOnIncomingCapturedBuffer, void(void));
   MOCK_METHOD0(DoOnIncomingCapturedVideoFrame, void(void));
   MOCK_METHOD1(OnError, void(const std::string& reason));
+  MOCK_CONST_METHOD0(GetBufferPoolUtilization, double(void));
 
   explicit MockClient(base::Callback<void(const VideoCaptureFormat&)> frame_cb)
       : main_thread_(base::ThreadTaskRunnerHandle::Get()),
