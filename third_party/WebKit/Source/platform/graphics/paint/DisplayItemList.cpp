@@ -260,8 +260,12 @@ void DisplayItemList::commitNewDisplayItems()
                 updatedList.appendByMoving(currentIt);
             } else {
                 DisplayItems::Iterator foundIt = findOutOfOrderCachedItem(currentIt, newDisplayItem.id(), matchingType, displayItemIndicesByClient);
-                ASSERT(foundIt != currentEnd);
                 isSynchronized = (foundIt == currentIt);
+
+                // TODO(chrishtr): downgrade to ASSERT as this goes to beta users, and replace with bailing out of the rest of the merge.
+                // This assert hits if we couldn't find the cached display item in our cache, which should be impossible.
+                RELEASE_ASSERT(foundIt != currentEnd);
+
                 updatedList.appendByMoving(foundIt);
             }
         } else {
