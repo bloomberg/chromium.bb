@@ -89,6 +89,8 @@ void ThemeSource::StartDataRequest(
   webui::ParsePathAndScale(GURL(GetThemePath() + path),
                            &uncached_path,
                            &scale_factor);
+  scale_factor =
+      ui::GetScaleForScaleFactor(ui::GetSupportedScaleFactor(scale_factor));
 
   if (uncached_path == kNewTabCSSPath ||
       uncached_path == kNewIncognitoTabCSSPath) {

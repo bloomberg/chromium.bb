@@ -35,7 +35,7 @@ class NavigationNotificationObserver : public content::NotificationObserver {
   int http_status_code() const { return http_status_code_; }
   bool got_navigation() const { return got_navigation_; }
 
-  private:
+ private:
   content::NotificationRegistrar registrar_;
   int got_navigation_;
   int http_status_code_;
@@ -54,4 +54,13 @@ IN_PROC_BROWSER_TEST_F(ChromeURLDataManagerTest, 200) {
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
   EXPECT_TRUE(observer.got_navigation());
   EXPECT_EQ(200, observer.http_status_code());
+}
+
+// Makes sure browser does not crash when the resource scale is very large.
+IN_PROC_BROWSER_TEST_F(ChromeURLDataManagerTest, ResourceScaleTest) {
+  ui_test_utils::NavigateToURL(
+      browser(), GURL("chrome://theme/IDR_SETTINGS_FAVICON@2x"));
+
+  ui_test_utils::NavigateToURL(
+      browser(), GURL("chrome://theme/IDR_SETTINGS_FAVICON@99999x"));
 }
