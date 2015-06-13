@@ -75,7 +75,6 @@ void SubtractRectanglesFromRegion(HRGN hrgn,
 }
 
 HRGN ConvertPathToHRGN(const gfx::Path& path) {
-#if defined(USE_AURA)
   int point_count = path.getPoints(NULL, 0);
   scoped_ptr<SkPoint[]> points(new SkPoint[point_count]);
   path.getPoints(points.get(), point_count);
@@ -86,9 +85,6 @@ HRGN ConvertPathToHRGN(const gfx::Path& path) {
   }
 
   return ::CreatePolygonRgn(windows_points.get(), point_count, ALTERNATE);
-#elif defined(OS_WIN)
-  return path.CreateNativeRegion();
-#endif
 }
 
 

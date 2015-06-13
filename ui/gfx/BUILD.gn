@@ -146,7 +146,6 @@ component("gfx") {
     "paint_throbber.h",
     "path.cc",
     "path.h",
-    "path_aura.cc",
     "path_win.cc",
     "path_win.h",
     "path_x11.cc",
@@ -351,10 +350,7 @@ component("gfx") {
   }
 
   if (!use_aura) {
-    sources -= [
-      "path_aura.cc",
-      "screen_aura.cc",
-    ]
+    sources -= [ "screen_aura.cc" ]
     if (!toolkit_views) {
       sources -= [
         "nine_image_painter.cc",

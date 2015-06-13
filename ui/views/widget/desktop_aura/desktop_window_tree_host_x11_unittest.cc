@@ -286,9 +286,12 @@ TEST_F(DesktopWindowTreeHostX11Test, Shape) {
   shape2.lineTo(100, 0);
   shape2.close();
 
+  SkRegion* shape_region = new SkRegion;
+  shape_region->setPath(shape2, SkRegion(shape2.getBounds().round()));
+
   scoped_ptr<Widget> widget2(CreateWidget(NULL));
   widget2->Show();
-  widget2->SetShape(shape2.CreateNativeRegion());
+  widget2->SetShape(shape_region);
   ui::X11EventSource::GetInstance()->DispatchXEvents();
 
   XID xid2 = widget2->GetNativeWindow()->GetHost()->GetAcceleratedWidget();

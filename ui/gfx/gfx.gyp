@@ -225,7 +225,6 @@
         'paint_throbber.h',
         'path.cc',
         'path.h',
-        'path_aura.cc',
         'path_win.cc',
         'path_win.h',
         'path_x11.cc',
