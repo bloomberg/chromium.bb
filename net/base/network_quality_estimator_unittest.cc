@@ -4,6 +4,8 @@
 
 #include "net/base/network_quality_estimator.h"
 
+#include <limits>
+
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -14,30 +16,28 @@
 #include "build/build_config.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/network_quality.h"
-#include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 namespace net {
 
-// SpawnedTestServer not supported on iOS (see http://crbug.com/148666).
-#if !defined(OS_IOS)
 TEST(NetworkQualityEstimatorTest, TestPeakKbpsFastestRTTUpdates) {
-  SpawnedTestServer test_server_(
-      SpawnedTestServer::TYPE_HTTP, SpawnedTestServer::kLocalhost,
+  net::test_server::EmbeddedTestServer embedded_test_server;
+  embedded_test_server.ServeFilesFromDirectory(
       base::FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest")));
-  ASSERT_TRUE(test_server_.Start());
+  ASSERT_TRUE(embedded_test_server.InitializeAndWaitUntilReady());
 
   // Enable requests to local host to be used for network quality estimation.
   NetworkQualityEstimator estimator(true);
   {
-    NetworkQuality network_quality = estimator.GetEstimate();
-    EXPECT_EQ(network_quality.fastest_rtt_confidence, 0);
-    EXPECT_EQ(network_quality.peak_throughput_kbps_confidence, 0);
+    NetworkQuality network_quality = estimator.GetPeakEstimate();
+    EXPECT_EQ(network_quality.rtt(), base::TimeDelta::Max());
+    EXPECT_EQ(network_quality.downstream_throughput_kbps(), 0);
   }
 
-  TestDelegate d;
+  TestDelegate test_delegate;
   TestURLRequestContext context(false);
 
   uint64_t min_transfer_size_in_bytes =
@@ -45,38 +45,38 @@ TEST(NetworkQualityEstimatorTest, TestPeakKbpsFastestRTTUpdates) {
   base::TimeDelta request_duration = base::TimeDelta::FromMicroseconds(
       NetworkQualityEstimator::kMinRequestDurationMicroseconds);
 
-  scoped_ptr<URLRequest> request(context.CreateRequest(
-      test_server_.GetURL("echo.html"), DEFAULT_PRIORITY, &d));
+  scoped_ptr<URLRequest> request(
+      context.CreateRequest(embedded_test_server.GetURL("/echo.html"),
+                            DEFAULT_PRIORITY, &test_delegate));
   request->Start();
 
   base::RunLoop().Run();
 
   base::PlatformThread::Sleep(request_duration);
 
-  // With smaller transfer, |fastest_rtt| will be updated but not
-  // |peak_throughput_kbps|.
-  estimator.NotifyDataReceived(*(request.get()),
+  // With smaller transfer, RTT will be updated but not the downstream
+  // throughput.
+  estimator.NotifyDataReceived(*request, min_transfer_size_in_bytes - 1,
                                min_transfer_size_in_bytes - 1);
   {
-    NetworkQuality network_quality = estimator.GetEstimate();
-    EXPECT_GT(network_quality.fastest_rtt_confidence, 0);
-    EXPECT_EQ(network_quality.peak_throughput_kbps_confidence, 0);
+    NetworkQuality network_quality = estimator.GetPeakEstimate();
+    EXPECT_GT(network_quality.rtt(), base::TimeDelta());
+    EXPECT_EQ(network_quality.downstream_throughput_kbps(), 0);
   }
 
-  // With large transfer, both |fastest_rtt| and |peak_throughput_kbps| will be
-  // updated.
-  estimator.NotifyDataReceived(*(request.get()), min_transfer_size_in_bytes);
+  // With large transfer, both RTT and downlink throughput will be updated.
+  estimator.NotifyDataReceived(*request, min_transfer_size_in_bytes,
+                               min_transfer_size_in_bytes);
   {
-    NetworkQuality network_quality = estimator.GetEstimate();
-    EXPECT_GT(network_quality.fastest_rtt_confidence, 0);
-    EXPECT_GT(network_quality.peak_throughput_kbps_confidence, 0);
-    EXPECT_GE(network_quality.fastest_rtt, request_duration);
-    EXPECT_GT(network_quality.peak_throughput_kbps, uint32_t(0));
+    NetworkQuality network_quality = estimator.GetPeakEstimate();
+    EXPECT_GE(network_quality.rtt(), request_duration);
+    EXPECT_GT(network_quality.downstream_throughput_kbps(), 0);
     EXPECT_LE(
-        network_quality.peak_throughput_kbps,
+        network_quality.downstream_throughput_kbps(),
         min_transfer_size_in_bytes * 8.0 / request_duration.InMilliseconds());
   }
-  EXPECT_EQ(estimator.bytes_read_since_last_connection_change_, true);
+  EXPECT_LT(estimator.fastest_rtt_since_last_connection_change_,
+            base::TimeDelta::Max());
 
   // Check UMA histograms.
   base::HistogramTester histogram_tester;
@@ -88,13 +88,66 @@ TEST(NetworkQualityEstimatorTest, TestPeakKbpsFastestRTTUpdates) {
   histogram_tester.ExpectTotalCount("NQE.PeakKbps.Unknown", 1);
   histogram_tester.ExpectTotalCount("NQE.FastestRTT.Unknown", 1);
   {
-    NetworkQuality network_quality = estimator.GetEstimate();
+    NetworkQuality network_quality = estimator.GetPeakEstimate();
     EXPECT_EQ(estimator.current_connection_type_,
               NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI);
-    EXPECT_EQ(network_quality.fastest_rtt_confidence, 0);
-    EXPECT_EQ(network_quality.peak_throughput_kbps_confidence, 0);
+    EXPECT_EQ(network_quality.rtt(), base::TimeDelta::Max());
+    EXPECT_EQ(network_quality.downstream_throughput_kbps(), 0);
   }
 }
-#endif  // !defined(OS_IOS)
+
+TEST(NetworkQualityEstimatorTest, StoreObservations) {
+  net::test_server::EmbeddedTestServer embedded_test_server;
+  embedded_test_server.ServeFilesFromDirectory(
+      base::FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest")));
+  ASSERT_TRUE(embedded_test_server.InitializeAndWaitUntilReady());
+
+  NetworkQualityEstimator estimator(true);
+  TestDelegate test_delegate;
+  TestURLRequestContext context(false);
+
+  uint64 min_transfer_size_in_bytes =
+      NetworkQualityEstimator::kMinTransferSizeInBytes;
+  base::TimeDelta request_duration = base::TimeDelta::FromMicroseconds(
+      NetworkQualityEstimator::kMinRequestDurationMicroseconds);
+
+  // Push 10 more observations than the maximum buffer size.
+  for (size_t i = 0;
+       i < estimator.GetMaximumObservationBufferSizeForTests() + 10U; ++i) {
+    scoped_ptr<URLRequest> request(
+        context.CreateRequest(embedded_test_server.GetURL("/echo.html"),
+                              DEFAULT_PRIORITY, &test_delegate));
+    request->Start();
+    base::RunLoop().Run();
+    base::PlatformThread::Sleep(request_duration);
+
+    estimator.NotifyDataReceived(*request, min_transfer_size_in_bytes,
+                                 min_transfer_size_in_bytes);
+  }
+
+  EXPECT_TRUE(estimator.VerifyBufferSizeForTests(
+      estimator.GetMaximumObservationBufferSizeForTests()));
+
+  // Verify that the stored observations are cleared on network change.
+  estimator.OnConnectionTypeChanged(
+      NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI);
+  EXPECT_TRUE(estimator.VerifyBufferSizeForTests(0U));
+
+  scoped_ptr<URLRequest> request(
+      context.CreateRequest(embedded_test_server.GetURL("/echo.html"),
+                            DEFAULT_PRIORITY, &test_delegate));
+
+  // Verify that overflow protection works.
+  request->Start();
+  base::RunLoop().Run();
+  base::PlatformThread::Sleep(request_duration);
+  estimator.NotifyDataReceived(*request, std::numeric_limits<int64_t>::max(),
+                               std::numeric_limits<int64_t>::max());
+  {
+    NetworkQuality network_quality = estimator.GetPeakEstimate();
+    EXPECT_EQ(std::numeric_limits<int32_t>::max() - 1,
+              network_quality.downstream_throughput_kbps());
+  }
+}
 
 }  // namespace net

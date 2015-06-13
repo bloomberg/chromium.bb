@@ -819,7 +819,7 @@ void URLRequestJob::RecordBytesRead(int bytes_read) {
   // Service Worker jobs twice.
   if (request_ && request_->context()->network_quality_estimator()) {
     request_->context()->network_quality_estimator()->NotifyDataReceived(
-        *request_, prefilter_bytes_read_);
+        *request_, prefilter_bytes_read_, bytes_read);
   }
 
   if (!filter_.get())

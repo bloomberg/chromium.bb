@@ -4103,12 +4103,10 @@ TEST_F(URLRequestTestHTTP, NetworkQualityEstimator) {
   base::RunLoop().Run();
 
   NetworkQuality network_quality =
-      context.network_quality_estimator()->GetEstimate();
-  EXPECT_GE(network_quality.fastest_rtt,
+      context.network_quality_estimator()->GetPeakEstimate();
+  EXPECT_GE(network_quality.rtt(),
             base::TimeDelta::FromMilliseconds(sleep_duration_milliseconds));
-  EXPECT_GT(network_quality.fastest_rtt_confidence, 0);
-  EXPECT_GT(network_quality.peak_throughput_kbps, uint64_t(0));
-  EXPECT_GT(network_quality.peak_throughput_kbps_confidence, 0);
+  EXPECT_GT(network_quality.downstream_throughput_kbps(), 0);
 
   // Verify that histograms are not populated. They should populate only when
   // there is a change in ConnectionType.

@@ -198,7 +198,7 @@ DataReductionProxyConfig::DataReductionProxyConfig(
       configurator_(configurator),
       event_creator_(event_creator),
       auto_lofi_minimum_rtt_(base::TimeDelta::Max()),
-      auto_lofi_maximum_kbps_(UINT64_MAX),
+      auto_lofi_maximum_kbps_(0),
       auto_lofi_hysteresis_(base::TimeDelta::Max()),
       network_quality_last_updated_(base::TimeTicks()),
       network_prohibitively_slow_(false),
@@ -400,17 +400,17 @@ bool DataReductionProxyConfig::IsNetworkQualityProhibitivelySlow(
 
   network_quality_last_updated_ = base::TimeTicks::Now();
 
+  // TODO(tbansal): Set |network_prohibitively_slow| based on medians.
   net::NetworkQuality network_quality =
-      network_quality_estimator->GetEstimate();
-  // TODO(tbansal): Set |network_prohibitively_slow| based on medians
-  // provided by NetworkQualityEstimator API and field trial parameters.
+      network_quality_estimator->GetPeakEstimate();
 
   // Network is prohibitvely slow if either the downlink bandwidth is too low
   // or the RTT is too high.
-  if ((network_quality.peak_throughput_kbps > 0 &&
-       network_quality.peak_throughput_kbps <= auto_lofi_maximum_kbps_) ||
-      (network_quality.fastest_rtt > base::TimeDelta() &&
-       network_quality.fastest_rtt >= auto_lofi_minimum_rtt_)) {
+  if ((network_quality.downstream_throughput_kbps() > 0 &&
+       network_quality.downstream_throughput_kbps() <
+           auto_lofi_maximum_kbps_) ||
+      (network_quality.rtt() != base::TimeDelta::Max() &&
+       network_quality.rtt() > auto_lofi_minimum_rtt_)) {
     network_prohibitively_slow_ = true;
   } else {
     network_prohibitively_slow_ = false;
@@ -475,14 +475,16 @@ void DataReductionProxyConfig::PopulateAutoLoFiParams() {
     auto_lofi_minimum_rtt_ =
         base::TimeDelta::FromMilliseconds(auto_lofi_minimum_rtt_msec);
   }
+  DCHECK_GE(auto_lofi_minimum_rtt_, base::TimeDelta());
 
-  uint64_t auto_lofi_maximum_kbps;
+  int32_t auto_lofi_maximum_kbps;
   variation_value = variations::GetVariationParamValue(
       DataReductionProxyParams::GetLoFiFieldTrialName(), "kbps");
   if (!variation_value.empty() &&
-      base::StringToUint64(variation_value, &auto_lofi_maximum_kbps)) {
+      base::StringToInt(variation_value, &auto_lofi_maximum_kbps)) {
     auto_lofi_maximum_kbps_ = auto_lofi_maximum_kbps;
   }
+  DCHECK_GE(auto_lofi_maximum_kbps_, 0);
 
   uint32_t auto_lofi_hysteresis_period_seconds;
   variation_value = variations::GetVariationParamValue(
@@ -494,6 +496,7 @@ void DataReductionProxyConfig::PopulateAutoLoFiParams() {
     auto_lofi_hysteresis_ =
         base::TimeDelta::FromSeconds(auto_lofi_hysteresis_period_seconds);
   }
+  DCHECK_GE(auto_lofi_hysteresis_, base::TimeDelta());
 }
 
 bool DataReductionProxyConfig::IsProxyBypassed(

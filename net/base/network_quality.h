@@ -8,42 +8,36 @@
 #include <stdint.h>
 
 #include "base/time/time.h"
+#include "net/base/net_export.h"
 
 namespace net {
 
-// API that is used to report the current network quality as estimated by the
-// NetworkQualityEstimator.
-struct NET_EXPORT_PRIVATE NetworkQuality {
-  NetworkQuality(const base::TimeDelta& fastest_rtt,
-                 double fastest_rtt_confidence,
-                 uint64_t peak_throughput_kbps,
-                 double peak_throughput_kbps_confidence)
-      : fastest_rtt(fastest_rtt),
-        fastest_rtt_confidence(fastest_rtt_confidence),
-        peak_throughput_kbps(peak_throughput_kbps),
-        peak_throughput_kbps_confidence(peak_throughput_kbps_confidence) {}
+// API that is used to report the network quality of a network connection as
+// estimated by the NetworkQualityEstimator.
+class NET_EXPORT_PRIVATE NetworkQuality {
+ public:
+  // |rtt| is the estimate of the round trip time.
+  // |downstream_throughput_kbps| is the estimate of the downstream throughput.
+  NetworkQuality(const base::TimeDelta& rtt,
+                 int32_t downstream_throughput_kbps);
 
-  ~NetworkQuality() {}
+  ~NetworkQuality();
 
-  // The fastest round trip time observed for the current connection.
-  const base::TimeDelta fastest_rtt;
+  // Returns the estimate of the round trip time.
+  const base::TimeDelta& rtt() const { return rtt_; }
 
-  // Confidence of the |fastest_rtt| estimate. Value lies between 0.0 and 1.0
-  // with 0.0 being no confidence and 1.0 implying that estimates are same as
-  // ground truth.
-  // TODO(tbansal): Define units so values intermediate between 0.0 and 1.0 are
-  // meaningful.
-  const double fastest_rtt_confidence;
+  // Returns the estimate of the downstream throughput in Kbps (Kilo bits per
+  // second).
+  int32_t downstream_throughput_kbps() const {
+    return downstream_throughput_kbps_;
+  }
 
-  // Peak throughput in Kbps observed for the current connection.
-  const uint64_t peak_throughput_kbps;
+ private:
+  // Estimated round trip time.
+  const base::TimeDelta rtt_;
 
-  // Confidence of the |peak_throughput_kbps| estimate. Value lies between 0.0
-  // and 1.0 with 0.0 being no confidence and 1.0 implying that estimates are
-  // same as ground truth.
-  // TODO(tbansal): Define units so values intermediate between 0.0 and 1.0 are
-  // meaningful.
-  const double peak_throughput_kbps_confidence;
+  // Estimated downstream throughput in Kbps.
+  const int32_t downstream_throughput_kbps_;
 };
 
 }  // namespace net
