@@ -10,6 +10,36 @@
 #import "ui/base/cocoa/tracking_area.h"
 #include "ui/base/window_open_disposition.h"
 
+class AutocompleteResult;
+@class OmniboxPopupCell;
+@class OmniboxPopupMatrix;
+class OmniboxPopupViewMac;
+
+@interface OmniboxPopupTableController
+    : NSViewController<NSTableViewDelegate, NSTableViewDataSource> {
+ @private
+  base::scoped_nsobject<NSArray> array_;
+  NSInteger hoveredIndex_;
+};
+
+// Setup the information used by the NSTableView data source.
+- (instancetype)initWithMatchResults:(const AutocompleteResult&)result
+                           tableView:(OmniboxPopupMatrix*)tableView
+                           popupView:(const OmniboxPopupViewMac&)popupView
+                         answerImage:(NSImage*)answerImage;
+
+// Set the hovered highlight.
+- (void)setHighlightedRow:(NSInteger)rowIndex;
+
+// Which row has the hovered highlight.
+- (NSInteger)highlightedRow;
+
+@end
+
+@interface OmniboxPopupTableController (TestingAPI)
+- (instancetype)initWithArray:(NSArray*)array;
+@end
+
 @class OmniboxPopupMatrix;
 
 class OmniboxPopupMatrixObserver {
@@ -27,10 +57,18 @@ class OmniboxPopupMatrixObserver {
 
 // Sets up a tracking area to implement hover by highlighting the cell the mouse
 // is over.
-@interface OmniboxPopupMatrix : NSMatrix {
+@interface OmniboxPopupMatrix : NSTableView {
+  base::scoped_nsobject<OmniboxPopupTableController> matrixController_;
   OmniboxPopupMatrixObserver* observer_;  // weak
   ui::ScopedCrTrackingArea trackingArea_;
+  NSAttributedString* separator_;
+
+  // The width of widest match contents in a set of infinite suggestions.
+  CGFloat maxMatchContentsWidth_;
 }
+
+@property(retain, nonatomic) NSAttributedString* separator;
+@property(nonatomic) CGFloat maxMatchContentsWidth;
 
 // Create a zero-size matrix.
 - (instancetype)initWithObserver:(OmniboxPopupMatrixObserver*)observer;
@@ -40,6 +78,12 @@ class OmniboxPopupMatrixObserver {
 
 // Return the currently highlighted row.  Returns -1 if no row is highlighted.
 - (NSInteger)highlightedRow;
+
+// Move the selection to |rowIndex|.
+- (void)selectRowIndex:(NSInteger)rowIndex;
+
+// Setup the NSTableView data source.
+- (void)setController:(OmniboxPopupTableController*)controller;
 
 @end
 

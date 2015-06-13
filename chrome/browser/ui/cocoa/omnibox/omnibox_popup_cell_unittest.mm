@@ -6,6 +6,7 @@
 
 #include "base/json/json_reader.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "components/omnibox/suggestion_answer.h"
@@ -20,32 +21,43 @@ class OmniboxPopupCellTest : public CocoaTest {
 
   void SetUp() override {
     CocoaTest::SetUp();
-    cell_.reset([[OmniboxPopupCell alloc] initTextCell:@""]);
-    button_.reset([[NSButton alloc] initWithFrame:NSMakeRect(0, 0, 200, 20)]);
-    [button_ setCell:cell_];
-    [[test_window() contentView] addSubview:button_];
+    control_.reset([[NSControl alloc] initWithFrame:NSMakeRect(0, 0, 200, 20)]);
+    [control_ setCell:cell_];
+    [[test_window() contentView] addSubview:control_];
   };
 
  protected:
+  base::scoped_nsobject<OmniboxPopupCellData> cellData_;
   base::scoped_nsobject<OmniboxPopupCell> cell_;
-  base::scoped_nsobject<NSButton> button_;
+  base::scoped_nsobject<NSControl> control_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(OmniboxPopupCellTest);
 };
 
-TEST_VIEW(OmniboxPopupCellTest, button_);
+TEST_VIEW(OmniboxPopupCellTest, control_);
 
 TEST_F(OmniboxPopupCellTest, Image) {
-  [cell_ setImage:[NSImage imageNamed:NSImageNameInfo]];
-  [button_ display];
+  AutocompleteMatch match;
+  cellData_.reset([[OmniboxPopupCellData alloc]
+       initWithMatch:match
+      contentsOffset:0
+               image:[NSImage imageNamed:NSImageNameInfo]
+         answerImage:nil]);
+  [cell_ setObjectValue:cellData_];
+  [control_ display];
 }
 
 TEST_F(OmniboxPopupCellTest, Title) {
-  base::scoped_nsobject<NSAttributedString> text([[NSAttributedString alloc]
-      initWithString:@"The quick brown fox jumps over the lazy dog."]);
-  [cell_ setAttributedTitle:text];
-  [button_ display];
+  AutocompleteMatch match;
+  match.contents =
+      base::ASCIIToUTF16("The quick brown fox jumps over the lazy dog.");
+  cellData_.reset([[OmniboxPopupCellData alloc] initWithMatch:match
+                                               contentsOffset:0
+                                                        image:nil
+                                                  answerImage:nil]);
+  [cell_ setObjectValue:cellData_];
+  [control_ display];
 }
 
 TEST_F(OmniboxPopupCellTest, AnswerStyle) {
@@ -66,17 +78,20 @@ TEST_F(OmniboxPopupCellTest, AnswerStyle) {
   AutocompleteMatch match;
   match.answer = SuggestionAnswer::ParseAnswer(dictionary);
   EXPECT_TRUE(match.answer);
-  [cell_ setMatch:match];
-  EXPECT_NSEQ([[cell_ description] string], finalString);
-  size_t length = [[cell_ description] length];
+  cellData_.reset([[OmniboxPopupCellData alloc] initWithMatch:match
+                                               contentsOffset:0
+                                                        image:nil
+                                                  answerImage:nil]);
+  EXPECT_NSEQ([[cellData_ description] string], finalString);
+  size_t length = [[[cellData_ description] string] length];
   const NSRange checkValues[] = {{0, 2}, {2, 2}, {4, 4}};
   EXPECT_EQ(length, 8UL);
   NSDictionary* lastAttributes = nil;
   for (const NSRange& value : checkValues) {
     NSRange range;
     NSDictionary* currentAttributes =
-        [[cell_ description] attributesAtIndex:value.location
-                                effectiveRange:&range];
+        [[cellData_ description] attributesAtIndex:value.location
+                                    effectiveRange:&range];
     EXPECT_TRUE(NSEqualRanges(value, range));
     EXPECT_FALSE([currentAttributes isEqualToDictionary:lastAttributes]);
     lastAttributes = currentAttributes;

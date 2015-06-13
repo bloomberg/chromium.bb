@@ -46,6 +46,9 @@ class OmniboxPopupViewMac : public OmniboxPopupView,
   void OnMatrixRowMiddleClicked(OmniboxPopupMatrix* matrix,
                                 size_t row) override;
 
+  // Returns the NSImage that should be used as an icon for the given match.
+  NSImage* ImageForMatch(const AutocompleteMatch& match) const;
+
   OmniboxPopupMatrix* matrix() { return matrix_; }
 
  protected:
@@ -64,9 +67,6 @@ class OmniboxPopupViewMac : public OmniboxPopupView,
   // allows existing animations to continue if the size doesn't
   // change.
   void PositionPopup(const CGFloat matrixHeight);
-
-  // Returns the NSImage that should be used as an icon for the given match.
-  NSImage* ImageForMatch(const AutocompleteMatch& match) const;
 
   // Opens the URL at the given row.
   void OpenURLForRow(size_t row, WindowOpenDisposition disposition);

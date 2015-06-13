@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import "chrome/browser/ui/cocoa/omnibox/omnibox_popup_cell.h"
 #import "chrome/browser/ui/cocoa/omnibox/omnibox_popup_matrix.h"
 
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
@@ -9,8 +10,10 @@
 
 namespace {
 
-NSEvent* MouseEventInRow(NSMatrix* matrix, NSEventType type, NSInteger row) {
-  NSRect cell_rect = [matrix cellFrameAtRow:row column:0];
+NSEvent* MouseEventInRow(OmniboxPopupMatrix* matrix,
+                         NSEventType type,
+                         NSInteger row) {
+  NSRect cell_rect = [matrix rectOfRow:row];
   NSPoint point_in_view = NSMakePoint(NSMidX(cell_rect), NSMidY(cell_rect));
   NSPoint point_in_window = [matrix convertPoint:point_in_view toView:nil];
   return cocoa_test_event_utils::MouseEventAtPoint(
@@ -21,20 +24,24 @@ class OmniboxPopupMatrixTest : public CocoaTest,
                                public OmniboxPopupMatrixObserver {
  public:
   OmniboxPopupMatrixTest()
-      : selected_row_(0),
-        clicked_row_(0),
-        middle_clicked_row_(0) {
-  }
+      : selected_row_(0), clicked_row_(0), middle_clicked_row_(0) {}
 
   void SetUp() override {
     CocoaTest::SetUp();
     matrix_.reset([[OmniboxPopupMatrix alloc] initWithObserver:this]);
     [[test_window() contentView] addSubview:matrix_];
+
+    NSMutableArray* array = [NSMutableArray array];
+    for (size_t i = 0; i < 3; ++i)
+      [array addObject:[[[OmniboxPopupCellData alloc] init] autorelease]];
+
+    matrixController_.reset(
+        [[OmniboxPopupTableController alloc] initWithArray:array]);
+    [matrix_ setController:matrixController_];
   };
 
   void OnMatrixRowSelected(OmniboxPopupMatrix* matrix, size_t row) override {
     selected_row_ = row;
-    [matrix_ selectCellAtRow:row column:0];
   }
 
   void OnMatrixRowClicked(OmniboxPopupMatrix* matrix, size_t row) override {
@@ -48,6 +55,7 @@ class OmniboxPopupMatrixTest : public CocoaTest,
 
  protected:
   base::scoped_nsobject<OmniboxPopupMatrix> matrix_;
+  base::scoped_nsobject<OmniboxPopupTableController> matrixController_;
   size_t selected_row_;
   size_t clicked_row_;
   size_t middle_clicked_row_;
@@ -59,7 +67,6 @@ class OmniboxPopupMatrixTest : public CocoaTest,
 TEST_VIEW(OmniboxPopupMatrixTest, matrix_);
 
 TEST_F(OmniboxPopupMatrixTest, HighlightedRow) {
-  [matrix_ renewRows:3 columns:1];
   EXPECT_EQ(-1, [matrix_ highlightedRow]);
 
   [matrix_ mouseEntered:MouseEventInRow(matrix_, NSMouseMoved, 0)];
@@ -72,8 +79,6 @@ TEST_F(OmniboxPopupMatrixTest, HighlightedRow) {
 }
 
 TEST_F(OmniboxPopupMatrixTest, SelectedRow) {
-  [matrix_ renewRows:3 columns:1];
-
   [NSApp postEvent:MouseEventInRow(matrix_, NSLeftMouseUp, 2) atStart:YES];
   [matrix_ mouseDown:MouseEventInRow(matrix_, NSLeftMouseDown, 2)];
 
