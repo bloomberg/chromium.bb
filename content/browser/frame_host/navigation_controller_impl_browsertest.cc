@@ -41,6 +41,33 @@ class NavigationControllerBrowserTest : public ContentBrowserTest {
   }
 };
 
+// Ensure that tests can navigate subframes cross-site in both default mode and
+// --site-per-process, but that they only go cross-process in the latter.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, LoadCrossSiteSubframe) {
+  // Load a main frame with a subframe.
+  GURL main_url(embedded_test_server()->GetURL(
+      "/navigation_controller/page_with_iframe.html"));
+  NavigateToURL(shell(), main_url);
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  ASSERT_EQ(1U, root->child_count());
+  ASSERT_NE(nullptr, root->child_at(0));
+
+  // Use NavigateFrameToURL to go cross-site in the subframe.
+  GURL foo_url(embedded_test_server()->GetURL(
+      "foo.com", "/navigation_controller/simple_page_1.html"));
+  NavigateFrameToURL(root->child_at(0), foo_url);
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  // We should only have swapped processes in --site-per-process.
+  bool cross_process = root->current_frame_host()->GetProcess() !=
+                       root->child_at(0)->current_frame_host()->GetProcess();
+  EXPECT_EQ(base::CommandLine::ForCurrentProcess()->HasSwitch(
+                switches::kSitePerProcess),
+            cross_process);
+}
+
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, LoadDataWithBaseURL) {
   const GURL base_url("http://baseurl");
   const GURL history_url("http://historyurl");

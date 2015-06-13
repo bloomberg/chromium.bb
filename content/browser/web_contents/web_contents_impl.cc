@@ -1995,7 +1995,8 @@ bool WebContentsImpl::NavigateToPendingEntry(
   FrameTreeNode* node = frame_tree_.root();
 
   // Navigate in the FrameTreeNode specified in the pending entry, if any.  This
-  // is currently only used in --site-per-process and tests.
+  // is currently only used in --site-per-process and tests
+  // (e.g., NavigateFrameToURL).
   // TODO(creis): Remove this method and NavigationEntryImpl::frame_tree_node_id
   // by using FrameNavigationEntries instead.  See https://crbug.com/236848.
   NavigationEntryImpl* pending_entry = controller_.GetPendingEntry();

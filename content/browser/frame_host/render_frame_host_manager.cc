@@ -1958,6 +1958,13 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
     bool dest_is_view_source_mode,
     const GlobalRequestID& transferred_request_id,
     int bindings) {
+  // Don't swap for subframes unless we are in --site-per-process.  We can get
+  // here in tests for subframes (e.g., NavigateFrameToURL).
+  if (!frame_tree_node_->IsMainFrame() &&
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess))
+    return render_frame_host_.get();
+
   // If we are currently navigating cross-process, we want to get back to normal
   // and then navigate as usual.
   if (pending_render_frame_host_)
