@@ -251,6 +251,11 @@ loadsImagesAutomatically initial=false, invalidate=ImageLoading
 imagesEnabled initial=true, invalidate=ImageLoading
 imageAnimationPolicy type=ImageAnimationPolicy, initial=ImageAnimationPolicyAllowed
 
+# Number of outstanding and pending tokens allowed in the background HTML
+# parser. A value of 0 indicates the parser should use its default value.
+backgroundHtmlParserOutstandingTokenLimit type=unsigned, initial=0
+backgroundHtmlParserPendingTokenLimit type=unsigned, initial=0
+
 javaEnabled initial=false
 pluginsEnabled initial=false
 

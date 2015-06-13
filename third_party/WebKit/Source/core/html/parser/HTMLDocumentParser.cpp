@@ -783,6 +783,12 @@ void HTMLDocumentParser::startBackgroundParser()
     config->xssAuditor->init(document(), &m_xssAuditorDelegate);
     config->preloadScanner = adoptPtr(new TokenPreloadScanner(document()->url().copy(), CachedDocumentParameters::create(document())));
     config->decoder = takeDecoder();
+    if (document()->settings()) {
+        if (document()->settings()->backgroundHtmlParserOutstandingTokenLimit())
+            config->outstandingTokenLimit = document()->settings()->backgroundHtmlParserOutstandingTokenLimit();
+        if (document()->settings()->backgroundHtmlParserPendingTokenLimit())
+            config->pendingTokenLimit = document()->settings()->backgroundHtmlParserPendingTokenLimit();
+    }
 
     ASSERT(config->xssAuditor->isSafeToSendToAnotherThread());
     ASSERT(config->preloadScanner->isSafeToSendToAnotherThread());
