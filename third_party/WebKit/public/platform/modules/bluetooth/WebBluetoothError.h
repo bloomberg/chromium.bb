@@ -13,9 +13,14 @@ namespace blink {
 // DOMExceptions.
 struct WebBluetoothError {
     enum ErrorType {
+        AbortError,
+        InvalidModificationError,
+        InvalidStateError,
         NetworkError,
         NotFoundError,
-        SecurityError
+        NotSupportedError,
+        SecurityError,
+        SyntaxError
     };
 
     WebBluetoothError(ErrorType errorType, const WebString& message)

@@ -16,12 +16,22 @@ DOMException* BluetoothError::take(ScriptPromiseResolver*, WebBluetoothError* we
 {
     OwnPtr<WebBluetoothError> webError = adoptPtr(webErrorRawPointer);
     switch (webError->errorType) {
+    case WebBluetoothError::AbortError:
+        return DOMException::create(AbortError, webError->message);
+    case WebBluetoothError::InvalidModificationError:
+        return DOMException::create(InvalidModificationError, webError->message);
+    case WebBluetoothError::InvalidStateError:
+        return DOMException::create(InvalidStateError, webError->message);
     case WebBluetoothError::NetworkError:
         return DOMException::create(NetworkError, webError->message);
-    case WebBluetoothError::SecurityError:
-        return DOMException::create(SecurityError, webError->message);
     case WebBluetoothError::NotFoundError:
         return DOMException::create(NotFoundError, webError->message);
+    case WebBluetoothError::NotSupportedError:
+        return DOMException::create(NotSupportedError, webError->message);
+    case WebBluetoothError::SecurityError:
+        return DOMException::create(SecurityError, webError->message);
+    case WebBluetoothError::SyntaxError:
+        return DOMException::create(SyntaxError, webError->message);
     }
     ASSERT_NOT_REACHED();
     return DOMException::create(UnknownError);
