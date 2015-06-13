@@ -52,8 +52,23 @@ public class ContextMenuUtils {
      * @throws TimeoutException
      */
     public static ContextMenu openContextMenu(ActivityInstrumentationTestCase2 testCase,
-            Tab tab, String openerDOMNodeId)
-                    throws InterruptedException, TimeoutException {
+            Tab tab, String openerDOMNodeId) throws InterruptedException, TimeoutException {
+        String jsCode = "document.getElementById('" + openerDOMNodeId + "')";
+        return openContextMenuByJs(testCase, tab, jsCode);
+    }
+
+    /**
+     * Opens a context menu.
+     * @param testCase              The test harness.
+     * @param tab                   The tab to open a context menu for.
+     * @param jsCode                The javascript to get the DOM node to long press to
+     *                              open the context menu for.
+     * @return                      The {@link ContextMenu} that was opened.
+     * @throws InterruptedException
+     * @throws TimeoutException
+     */
+    public static ContextMenu openContextMenuByJs(ActivityInstrumentationTestCase2 testCase,
+            Tab tab, String jsCode) throws InterruptedException, TimeoutException {
         final OnContextMenuShownHelper helper = new OnContextMenuShownHelper();
         tab.addObserver(new EmptyTabObserver() {
             @Override
@@ -62,7 +77,7 @@ public class ContextMenuUtils {
             }
         });
         int callCount = helper.getCallCount();
-        DOMUtils.longPressNode(testCase, tab.getContentViewCore(), openerDOMNodeId);
+        DOMUtils.longPressNodeByJs(testCase, tab.getContentViewCore(), jsCode);
 
         helper.waitForCallback(callCount);
         return helper.getContextMenu();
@@ -78,9 +93,26 @@ public class ContextMenuUtils {
      * @throws TimeoutException
      */
     public static void selectContextMenuItem(ActivityInstrumentationTestCase2 testCase,
-            Tab tab, String openerDOMNodeId,
-            final int itemId) throws InterruptedException, TimeoutException {
-        ContextMenu menu = openContextMenu(testCase, tab, openerDOMNodeId);
+            Tab tab, String openerDOMNodeId, final int itemId) throws InterruptedException,
+            TimeoutException {
+        String jsCode = "document.getElementById('" + openerDOMNodeId + "')";
+        selectContextMenuItemByJs(testCase, tab, jsCode, itemId);
+    }
+
+    /**
+     * Long presses to open and selects an item from a context menu.
+     * @param testCase              The test harness.
+     * @param tab                   The tab to open a context menu for.
+     * @param jsCode                The javascript to get the DOM node to long press
+     *                              to open the context menu for.
+     * @param itemId                The context menu item ID to select.
+     * @throws InterruptedException
+     * @throws TimeoutException
+     */
+    public static void selectContextMenuItemByJs(ActivityInstrumentationTestCase2 testCase,
+            Tab tab, String jsCode, final int itemId) throws InterruptedException,
+            TimeoutException {
+        ContextMenu menu = openContextMenuByJs(testCase, tab, jsCode);
         Assert.assertNotNull("Failed to open context menu", menu);
 
         selectOpenContextMenuItem(testCase, menu, itemId);
@@ -98,7 +130,6 @@ public class ContextMenuUtils {
     public static void selectContextMenuItemByTitle(ActivityInstrumentationTestCase2 testCase,
             Tab tab, String openerDOMNodeId,
             String itemTitle) throws InterruptedException, TimeoutException {
-
         ContextMenu menu = openContextMenu(testCase, tab, openerDOMNodeId);
         Assert.assertNotNull("Failed to open context menu", menu);
 

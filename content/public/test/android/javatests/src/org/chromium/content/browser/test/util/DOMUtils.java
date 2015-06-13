@@ -150,44 +150,8 @@ public class DOMUtils {
      */
     public static Rect getNodeBounds(final WebContents webContents, String nodeId)
             throws InterruptedException, TimeoutException {
-        StringBuilder sb = new StringBuilder();
-        sb.append("(function() {");
-        sb.append("  var node = document.getElementById('" + nodeId + "');");
-        sb.append("  if (!node) return null;");
-        sb.append("  var width = Math.round(node.offsetWidth);");
-        sb.append("  var height = Math.round(node.offsetHeight);");
-        sb.append("  var x = -window.scrollX;");
-        sb.append("  var y = -window.scrollY;");
-        sb.append("  do {");
-        sb.append("    x += node.offsetLeft;");
-        sb.append("    y += node.offsetTop;");
-        sb.append("  } while (node = node.offsetParent);");
-        sb.append("  return [ Math.round(x), Math.round(y), width, height ];");
-        sb.append("})();");
-
-        String jsonText = JavaScriptUtils.executeJavaScriptAndWaitForResult(
-                webContents, sb.toString());
-
-        Assert.assertFalse("Failed to retrieve bounds for " + nodeId,
-                jsonText.trim().equalsIgnoreCase("null"));
-
-        JsonReader jsonReader = new JsonReader(new StringReader(jsonText));
-        int[] bounds = new int[4];
-        try {
-            jsonReader.beginArray();
-            int i = 0;
-            while (jsonReader.hasNext()) {
-                bounds[i++] = jsonReader.nextInt();
-            }
-            jsonReader.endArray();
-            Assert.assertEquals("Invalid bounds returned.", 4, i);
-
-            jsonReader.close();
-        } catch (IOException exception) {
-            Assert.fail("Failed to evaluate JavaScript: " + jsonText + "\n" + exception);
-        }
-
-        return new Rect(bounds[0], bounds[1], bounds[0] + bounds[2], bounds[1] + bounds[3]);
+        String jsCode = "document.getElementById('" + nodeId + "')";
+        return getNodeBoundsByJs(webContents, jsCode);
     }
 
     /**
@@ -251,7 +215,20 @@ public class DOMUtils {
     public static void longPressNode(ActivityInstrumentationTestCase2 activityTestCase,
             final ContentViewCore viewCore, String nodeId)
             throws InterruptedException, TimeoutException {
-        int[] clickTarget = getClickTargetForNode(viewCore, nodeId);
+        String jsCode = "document.getElementById('" + nodeId + "')";
+        longPressNodeByJs(activityTestCase, viewCore, jsCode);
+    }
+
+    /**
+     * Long-press a DOM node by its id.
+     * @param activityTestCase The ActivityInstrumentationTestCase2 to instrument.
+     * @param viewCore The ContentViewCore in which the node lives.
+     * @param nodeId The id of the node.
+     */
+    public static void longPressNodeByJs(ActivityInstrumentationTestCase2 activityTestCase,
+            final ContentViewCore viewCore, String jsCode)
+            throws InterruptedException, TimeoutException {
+        int[] clickTarget = getClickTargetForNodeByJs(viewCore, jsCode);
         TouchCommon.longPressView(viewCore.getContainerView(), clickTarget[0], clickTarget[1]);
     }
 
@@ -400,14 +377,85 @@ public class DOMUtils {
      */
     private static int[] getClickTargetForNode(ContentViewCore viewCore, String nodeId)
             throws InterruptedException, TimeoutException {
-        Rect bounds = getNodeBounds(viewCore.getWebContents(), nodeId);
-        Assert.assertNotNull("Failed to get DOM element bounds of '" + nodeId + "'.", bounds);
+        String jsCode = "document.getElementById('" + nodeId + "')";
+        return getClickTargetForNodeByJs(viewCore, jsCode);
+    }
 
+    /**
+     * Returns click target for a given DOM node.
+     * @param viewCore The ContentViewCore in which the node lives.
+     * @param jsCode The javascript to get the node.
+     * @return the click target of the node in the form of a [ x, y ] array.
+     */
+    private static int[] getClickTargetForNodeByJs(ContentViewCore viewCore, String jsCode)
+            throws InterruptedException, TimeoutException {
+        Rect bounds = getNodeBoundsByJs(viewCore.getWebContents(), jsCode);
+        Assert.assertNotNull(
+                "Failed to get DOM element bounds of element='" + jsCode + "'.", bounds);
+
+        return getClickTargetForBounds(viewCore, bounds);
+    }
+
+    /**
+     * Returns click target for the DOM node specified by the rect boundaries.
+     * @param viewCore The ContentViewCore in which the node lives.
+     * @param bounds The rect boundaries of a DOM node.
+     * @return the click target of the node in the form of a [ x, y ] array.
+     */
+    private static int[] getClickTargetForBounds(ContentViewCore viewCore, Rect bounds) {
         int topControlsLayoutHeight = viewCore.doTopControlsShrinkBlinkSize()
                 ? viewCore.getTopControlsHeightPix() : 0;
         int clickX = (int) viewCore.getRenderCoordinates().fromLocalCssToPix(bounds.exactCenterX());
         int clickY = (int) viewCore.getRenderCoordinates().fromLocalCssToPix(bounds.exactCenterY())
                 + topControlsLayoutHeight;
         return new int[] { clickX, clickY };
+    }
+
+    /**
+     * Returns the rect boundaries for a node by the javascript to get the node.
+     * @param webContents The WebContents in which the node lives.
+     * @param jsCode The javascript to get the node.
+     * @return The rect boundaries for the node.
+     */
+    private static Rect getNodeBoundsByJs(final WebContents webContents, String jsCode)
+            throws InterruptedException, TimeoutException {
+        StringBuilder sb = new StringBuilder();
+        sb.append("(function() {");
+        sb.append("  var node = " + jsCode + ";");
+        sb.append("  if (!node) return null;");
+        sb.append("  var width = Math.round(node.offsetWidth);");
+        sb.append("  var height = Math.round(node.offsetHeight);");
+        sb.append("  var x = -window.scrollX;");
+        sb.append("  var y = -window.scrollY;");
+        sb.append("  do {");
+        sb.append("    x += node.offsetLeft;");
+        sb.append("    y += node.offsetTop;");
+        sb.append("  } while (node = node.offsetParent);");
+        sb.append("  return [ Math.round(x), Math.round(y), width, height ];");
+        sb.append("})();");
+
+        String jsonText = JavaScriptUtils.executeJavaScriptAndWaitForResult(
+                webContents, sb.toString());
+
+        Assert.assertFalse("Failed to retrieve bounds for element: " + jsCode,
+                jsonText.trim().equalsIgnoreCase("null"));
+
+        JsonReader jsonReader = new JsonReader(new StringReader(jsonText));
+        int[] bounds = new int[4];
+        try {
+            jsonReader.beginArray();
+            int i = 0;
+            while (jsonReader.hasNext()) {
+                bounds[i++] = jsonReader.nextInt();
+            }
+            jsonReader.endArray();
+            Assert.assertEquals("Invalid bounds returned.", 4, i);
+
+            jsonReader.close();
+        } catch (IOException exception) {
+            Assert.fail("Failed to evaluate JavaScript: " + jsonText + "\n" + exception);
+        }
+
+        return new Rect(bounds[0], bounds[1], bounds[0] + bounds[2], bounds[1] + bounds[3]);
     }
 }
