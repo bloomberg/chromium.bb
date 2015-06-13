@@ -121,6 +121,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <map>
+#include <stdarg.h>
 #include <v8.h>
 
 using blink::URLTestHelpers::toKURL;
