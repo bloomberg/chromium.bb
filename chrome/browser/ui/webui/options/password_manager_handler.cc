@@ -184,6 +184,8 @@ void PasswordManagerHandler::HandleRequestShowPassword(
 
 void PasswordManagerHandler::ShowPassword(
     size_t index,
+    const std::string& origin_url,
+    const std::string& username,
     const base::string16& password_value) {
   // Call back the front end to reveal the password.
   web_ui()->CallJavascriptFunction(

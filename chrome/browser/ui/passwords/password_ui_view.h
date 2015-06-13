@@ -24,10 +24,15 @@ class PasswordUIView {
   // Returns the profile associated with the currently active profile.
   virtual Profile* GetProfile() = 0;
 
-  // Reveals the password for the saved password entry at |index| in the UI.
+  // Reveals the password for the saved password entry.
   // |index| the index of the saved password entry.
+  // |origin_url| the URL of the saved password entry; obtained via
+  //     GetHumanReadableOrigin().
+  // |username| the username of the saved password entry.
   // |password_value| the value of saved password entry at |index|.
   virtual void ShowPassword(size_t index,
+                            const std::string& origin_url,
+                            const std::string& username,
                             const base::string16& password_value) = 0;
 
   // Updates the list of passwords in the UI.

@@ -26,6 +26,7 @@
 #include "chrome/browser/extensions/api/location/location_manager.h"
 #include "chrome/browser/extensions/api/mdns/mdns_api.h"
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
+#include "chrome/browser/extensions/api/passwords_private/passwords_private_event_router_factory.h"
 #include "chrome/browser/extensions/api/preference/chrome_direct_setting_api.h"
 #include "chrome/browser/extensions/api/preference/preference_api.h"
 #include "chrome/browser/extensions/api/processes/processes_api.h"
@@ -111,6 +112,7 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 #endif
   extensions::MenuManagerFactory::GetInstance();
   extensions::OmniboxAPI::GetFactoryInstance();
+  extensions::PasswordsPrivateEventRouterFactory::GetInstance();
 #if defined(ENABLE_PLUGINS)
   extensions::PluginManager::GetFactoryInstance();
 #endif  // defined(ENABLE_PLUGINS)

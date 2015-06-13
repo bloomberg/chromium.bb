@@ -132,6 +132,9 @@ class PasswordManagerPresenter
   // UI view that owns this presenter.
   PasswordUIView* password_view_;
 
+  // User pref for storing accept languages.
+  std::string languages_;
+
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerPresenter);
 };
 

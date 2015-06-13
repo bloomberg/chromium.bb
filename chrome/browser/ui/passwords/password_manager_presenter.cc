@@ -14,10 +14,13 @@
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/password_manager/sync_metrics.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/passwords/password_ui_view.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/affiliation_utils.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "content/public/browser/user_metrics.h"
@@ -60,6 +63,9 @@ void PasswordManagerPresenter::Initialize() {
   PasswordStore* store = GetPasswordStore();
   if (store)
     store->AddObserver(this);
+
+  languages_ = password_view_->GetProfile()->GetPrefs()->
+      GetString(prefs::kAcceptLanguages);
 }
 
 void PasswordManagerPresenter::OnLoginsChanged(
@@ -141,7 +147,13 @@ void PasswordManagerPresenter::RequestShowPassword(size_t index) {
   }
 
   // Call back the front end to reveal the password.
-  password_view_->ShowPassword(index, password_list_[index]->password_value);
+  std::string origin_url = password_manager::GetHumanReadableOrigin(
+      *password_list_[index], languages_);
+  password_view_->ShowPassword(
+      index,
+      origin_url,
+      base::UTF16ToUTF8(password_list_[index]->username_value),
+      password_list_[index]->password_value);
 #endif
 }
 

@@ -181,6 +181,7 @@
       'browser/extensions/api/notification_provider/notification_provider_apitest.cc',
       'browser/extensions/api/omnibox/omnibox_api_browsertest.cc',
       'browser/extensions/api/page_capture/page_capture_apitest.cc',
+      'browser/extensions/api/passwords_private/passwords_private_apitest.cc',
       'browser/extensions/api/permissions/permissions_apitest.cc',
       'browser/extensions/api/platform_keys/platform_keys_apitest_nss.cc',
       'browser/extensions/api/preference/preference_apitest.cc',

@@ -29,6 +29,15 @@ var LoginPair;
 var PasswordUiEntry;
 
 /**
+ * @typedef {{
+ *   loginPair: LoginPair,
+ *   plaintextPassword: string
+ * }}
+ * @see https://developer.chrome.com/extensions/passwordsPrivate#type-PlaintextPasswordEventParameters
+ */
+var PlaintextPasswordEventParameters;
+
+/**
  * Determines whether account's passwords can be managed via
  * https://passwords.google.com/settings/passwords.
  * @param {function(boolean):void} callback Callback which will be passed the
@@ -58,13 +67,13 @@ chrome.passwordsPrivate.removePasswordException = function(exceptionUrl) {};
 /**
  * Returns the plaintext password corresponding to |loginPair|. Note that on
  * some operating systems, this call may result in an OS-level reauthentication.
+ * Once the password has been fetched, it will be returned via the
+ * onPlaintextPasswordRetrieved event.
  * @param {LoginPair} loginPair The LoginPair corresponding to the entry whose
  *     password     is to be returned.
- * @param {function(string):void} callback Callback which will be passed the
- *     plaintext password.
- * @see https://developer.chrome.com/extensions/passwordsPrivate#method-getPlaintextPassword
+ * @see https://developer.chrome.com/extensions/passwordsPrivate#method-requestPlaintextPassword
  */
-chrome.passwordsPrivate.getPlaintextPassword = function(loginPair, callback) {};
+chrome.passwordsPrivate.requestPlaintextPassword = function(loginPair) {};
 
 /**
  * Fired when the saved passwords list has changed, meaning that an entry has
@@ -77,11 +86,17 @@ chrome.passwordsPrivate.onSavedPasswordsListChanged;
 
 /**
  * Fired when the password exceptions list has changed, meaning that an entry
- * has been added or removed. Note that this event fires as soon as a  listener
+ * has been added or removed. Note that this event fires as soon as a listener
  * is added.
  * @type {!ChromeEvent}
  * @see https://developer.chrome.com/extensions/passwordsPrivate#event-onPasswordExceptionsListChanged
  */
 chrome.passwordsPrivate.onPasswordExceptionsListChanged;
 
-
+/**
+ * Fired when a plaintext password has been fetched in response to a call to
+ * chrome.passwordsPrivate.requestPlaintextPassword().
+ * @type {!ChromeEvent}
+ * @see https://developer.chrome.com/extensions/passwordsPrivate#event-onPlaintextPasswordRetrieved
+ */
+chrome.passwordsPrivate.onPlaintextPasswordRetrieved;

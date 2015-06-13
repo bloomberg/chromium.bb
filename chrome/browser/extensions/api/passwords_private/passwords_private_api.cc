@@ -5,7 +5,10 @@
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_api.h"
 
 #include "base/values.h"
+#include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate_factory.h"
 #include "chrome/common/extensions/api/passwords_private.h"
+#include "components/password_manager/core/common/experiments.h"
+#include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_function_registry.h"
 
 namespace extensions {
@@ -18,9 +21,9 @@ PasswordsPrivateCanPasswordAccountBeManagedFunction::
 
 ExtensionFunction::ResponseAction
     PasswordsPrivateCanPasswordAccountBeManagedFunction::Run() {
-  // TODO(khorimoto): Implement.
-
-  return RespondNow(NoArguments());
+  scoped_ptr<base::FundamentalValue> visible(new base::FundamentalValue(
+      password_manager::ManageAccountLinkExperimentEnabled()));
+  return RespondNow(OneArgument(visible.Pass()));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -36,7 +39,11 @@ ExtensionFunction::ResponseAction
           Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
-  // TODO(khorimoto): Implement.
+  PasswordsPrivateDelegate* delegate =
+      PasswordsPrivateDelegateFactory::GetForBrowserContext(browser_context());
+  delegate->RemoveSavedPassword(
+      parameters->login_pair.origin_url,
+      parameters->login_pair.username);
 
   return RespondNow(NoArguments());
 }
@@ -54,26 +61,36 @@ ExtensionFunction::ResponseAction
           Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
-  // TODO(khorimoto): Implement.
+  PasswordsPrivateDelegate* delegate =
+      PasswordsPrivateDelegateFactory::GetForBrowserContext(browser_context());
+  delegate->RemovePasswordException(parameters->exception_url);
 
   return RespondNow(NoArguments());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// PasswordsPrivateGetPlaintextPasswordFunction
+// PasswordsPrivateRequestPlaintextPasswordFunction
 
-PasswordsPrivateGetPlaintextPasswordFunction::
-    ~PasswordsPrivateGetPlaintextPasswordFunction() {}
+PasswordsPrivateRequestPlaintextPasswordFunction::
+    ~PasswordsPrivateRequestPlaintextPasswordFunction() {}
 
 ExtensionFunction::ResponseAction
-    PasswordsPrivateGetPlaintextPasswordFunction::Run() {
-  scoped_ptr<api::passwords_private::GetPlaintextPassword::Params>
-      parameters = api::passwords_private::GetPlaintextPassword::Params::
+    PasswordsPrivateRequestPlaintextPasswordFunction::Run() {
+  scoped_ptr<api::passwords_private::RequestPlaintextPassword::Params>
+      parameters = api::passwords_private::RequestPlaintextPassword::Params::
           Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
-  // TODO(khorimoto): Implement.
+  PasswordsPrivateDelegate* delegate =
+      PasswordsPrivateDelegateFactory::GetForBrowserContext(browser_context());
 
+  delegate->RequestShowPassword(
+      parameters->login_pair.origin_url,
+      parameters->login_pair.username,
+      render_view_host());
+
+  // No response given from this API function; instead, listeners wait for the
+  // chrome.passwordsPrivate.onPlaintextPasswordRetrieved event to fire.
   return RespondNow(NoArguments());
 }
 

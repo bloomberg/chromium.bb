@@ -30,8 +30,11 @@ class PasswordManagerHandler : public OptionsPageUIHandler,
 
   // PasswordUIView implementation.
   Profile* GetProfile() override;
-  void ShowPassword(size_t index,
-                    const base::string16& password_value) override;
+  void ShowPassword(
+      size_t index,
+      const std::string& origin_url,
+      const std::string& username,
+      const base::string16& password_value) override;
   void SetPasswordList(
       const ScopedVector<autofill::PasswordForm>& password_list,
       bool show_passwords) override;

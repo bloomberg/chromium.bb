@@ -8,6 +8,8 @@
 #include <string>
 
 #include "base/macros.h"
+#include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate.h"
+#include "chrome/browser/ui/passwords/password_manager_presenter.h"
 #include "extensions/browser/extension_function.h"
 
 namespace extensions {
@@ -63,21 +65,21 @@ class PasswordsPrivateRemovePasswordExceptionFunction :
   DISALLOW_COPY_AND_ASSIGN(PasswordsPrivateRemovePasswordExceptionFunction);
 };
 
-class PasswordsPrivateGetPlaintextPasswordFunction :
+class PasswordsPrivateRequestPlaintextPasswordFunction :
     public UIThreadExtensionFunction {
  public:
-  PasswordsPrivateGetPlaintextPasswordFunction() {}
-  DECLARE_EXTENSION_FUNCTION("passwordsPrivate.GetPlaintextPassword",
-                             PASSWORDSPRIVATE_GETPLAINTEXTPASSWORD);
+  PasswordsPrivateRequestPlaintextPasswordFunction() {}
+  DECLARE_EXTENSION_FUNCTION("passwordsPrivate.requestPlaintextPassword",
+                             PASSWORDSPRIVATE_REQUESTPLAINTEXTPASSWORD);
 
  protected:
-  ~PasswordsPrivateGetPlaintextPasswordFunction() override;
+  ~PasswordsPrivateRequestPlaintextPasswordFunction() override;
 
   // ExtensionFunction overrides.
   ResponseAction Run() override;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(PasswordsPrivateGetPlaintextPasswordFunction);
+  DISALLOW_COPY_AND_ASSIGN(PasswordsPrivateRequestPlaintextPasswordFunction);
 };
 
 }  // namespace extensions
