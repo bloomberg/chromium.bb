@@ -645,15 +645,26 @@ void InProcessCommandBuffer::SetGetBuffer(int32 shm_id) {
   if (last_state_.error != gpu::error::kNoError)
     return;
 
-  {
-    base::AutoLock lock(command_buffer_lock_);
-    command_buffer_->SetGetBuffer(shm_id);
-    last_put_offset_ = 0;
-  }
+  base::WaitableEvent completion(true, false);
+  base::Closure task =
+      base::Bind(&InProcessCommandBuffer::SetGetBufferOnGpuThread,
+                 base::Unretained(this), shm_id, &completion);
+  QueueTask(task);
+  completion.Wait();
+
   {
     base::AutoLock lock(state_after_last_flush_lock_);
     state_after_last_flush_ = command_buffer_->GetLastState();
   }
+}
+
+void InProcessCommandBuffer::SetGetBufferOnGpuThread(
+    int32 shm_id,
+    base::WaitableEvent* completion) {
+  base::AutoLock lock(command_buffer_lock_);
+  command_buffer_->SetGetBuffer(shm_id);
+  last_put_offset_ = 0;
+  completion->Signal();
 }
 
 scoped_refptr<Buffer> InProcessCommandBuffer::CreateTransferBuffer(size_t size,

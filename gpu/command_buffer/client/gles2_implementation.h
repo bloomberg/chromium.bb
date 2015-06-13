@@ -599,6 +599,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   IdAllocator* GetIdAllocator(int id_namespace) const;
 
   void FinishHelper();
+  void FlushHelper();
 
   void RunIfContextNotLost(const base::Closure& callback);
 
@@ -811,6 +812,9 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   GpuControl* gpu_control_;
 
   Capabilities capabilities_;
+
+  // Flag to indicate whether the last surface visible state set.
+  bool visible_;
 
   base::WeakPtrFactory<GLES2Implementation> weak_ptr_factory_;
 

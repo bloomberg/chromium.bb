@@ -113,6 +113,7 @@ GLES2Implementation::GLES2Implementation(
       current_trace_stack_(0),
       gpu_control_(gpu_control),
       capabilities_(gpu_control->GetCapabilities()),
+      visible_(true),
       weak_ptr_factory_(this) {
   DCHECK(helper);
   DCHECK(transfer_buffer);
@@ -320,6 +321,7 @@ void GLES2Implementation::SetSurfaceVisible(bool visible) {
   // TODO(piman): This probably should be ShallowFlushCHROMIUM().
   Flush();
   gpu_control_->SetSurfaceVisible(visible);
+  visible_ = visible;
   if (!visible)
     FreeEverything();
 }
@@ -1153,18 +1155,22 @@ void GLES2Implementation::Flush() {
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glFlush()");
   // Insert the cmd to call glFlush
   helper_->Flush();
-  // Flush our command buffer
-  // (tell the service to execute up to the flush cmd.)
-  helper_->CommandBufferHelper::Flush();
+  FlushHelper();
 }
 
 void GLES2Implementation::ShallowFlushCHROMIUM() {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glShallowFlushCHROMIUM()");
+  FlushHelper();
+}
+
+void GLES2Implementation::FlushHelper() {
   // Flush our command buffer
   // (tell the service to execute up to the flush cmd.)
   helper_->CommandBufferHelper::Flush();
-  // TODO(piman): Add the FreeEverything() logic here.
+  // If visibility is false, then agressively clean everything up.
+  if (!visible_)
+    FreeEverything();
 }
 
 void GLES2Implementation::OrderingBarrierCHROMIUM() {
@@ -1185,6 +1191,9 @@ void GLES2Implementation::ShallowFinishCHROMIUM() {
   // Flush our command buffer (tell the service to execute up to the flush cmd
   // and don't return until it completes).
   helper_->CommandBufferHelper::Finish();
+  // If visibility is false, then agressively clean everything up.
+  if (!visible_)
+    FreeEverything();
 }
 
 void GLES2Implementation::FinishHelper() {
@@ -1196,6 +1205,9 @@ void GLES2Implementation::FinishHelper() {
   // (tell the service to execute up to the Finish cmd and wait for it to
   // execute.)
   helper_->CommandBufferHelper::Finish();
+  // If visibility is false, then agressively clean everything up.
+  if (!visible_)
+    FreeEverything();
 }
 
 void GLES2Implementation::SwapBuffers() {
