@@ -592,7 +592,8 @@ TEST_F(DisplayItemListTest, Scope)
     EXPECT_NE(picture1, picture2);
 
     // Draw again with nothing invalidated.
-    drawRect(context, multicol, backgroundDrawingType, FloatRect(100, 100, 100, 100));
+    EXPECT_TRUE(displayItemList().clientCacheIsValid(multicol.displayItemClient()));
+    drawRect(context, multicol, backgroundDrawingType, FloatRect(100, 200, 100, 100));
     displayItemList().beginScope(multicol.displayItemClient());
     drawRect(context, content, foregroundDrawingType, rect1);
     displayItemList().endScope(multicol.displayItemClient());
@@ -602,20 +603,19 @@ TEST_F(DisplayItemListTest, Scope)
     displayItemList().endScope(multicol.displayItemClient());
 
     EXPECT_TRUE(isCached(newPaintListBeforeUpdate()[0]));
-    EXPECT_TRUE(isCached(newPaintListBeforeUpdate()[1]));
-    EXPECT_TRUE(isCached(newPaintListBeforeUpdate()[2]));
+    EXPECT_TRUE(isDrawing(newPaintListBeforeUpdate()[1]));
+    EXPECT_TRUE(isDrawing(newPaintListBeforeUpdate()[2]));
     displayItemList().commitNewDisplayItems();
 
     EXPECT_DISPLAY_LIST(displayItemList().displayItems(), 3,
         TestDisplayItem(multicol, backgroundDrawingType),
         TestDisplayItem(content, foregroundDrawingType),
         TestDisplayItem(content, foregroundDrawingType));
-    EXPECT_EQ(picture1, displayItemList().displayItems()[1].picture());
-    EXPECT_EQ(picture2, displayItemList().displayItems()[2].picture());
+    EXPECT_NE(picture1, displayItemList().displayItems()[1].picture());
+    EXPECT_NE(picture2, displayItemList().displayItems()[2].picture());
 
     // Now the multicol becomes 3 columns and repaints.
     displayItemList().invalidate(multicol.displayItemClient());
-    displayItemList().invalidate(content.displayItemClient());
     drawRect(context, multicol, backgroundDrawingType, FloatRect(100, 100, 100, 100));
 
     displayItemList().beginScope(multicol.displayItemClient());

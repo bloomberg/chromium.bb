@@ -91,11 +91,13 @@ void DisplayItemList::beginScope(DisplayItemClient client)
         scopeId = ++it->value;
     }
     m_scopeStack.append(Scope(client, scopeId));
+    beginSkippingCache();
 }
 
 void DisplayItemList::endScope(DisplayItemClient client)
 {
     m_scopeStack.removeLast();
+    endSkippingCache();
 }
 
 void DisplayItemList::invalidate(DisplayItemClient client)
