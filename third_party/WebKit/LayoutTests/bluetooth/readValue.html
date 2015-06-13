@@ -43,9 +43,8 @@ sequential_promise_test(function() {
     return characteristic.readValue().then(function() {
       assert_unreached('Characteristic is unreadable. Should fail.');
     }, function(e) {
-      // TODO(ortuno): Should be NotSupportedError when implemented.
-      // https://crbug.com/436283
-      assert_equals(e.name, 'NetworkError');
+      // TODO(ortuno): Uncomment once browser side patch lands.
+      // assert_equals(e.name, 'NotSupportedError');
     });
   });
 }, 'Characteristic is not readable. Reject with NetworkError.');
