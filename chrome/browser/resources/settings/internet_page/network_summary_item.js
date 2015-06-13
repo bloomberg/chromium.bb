@@ -45,7 +45,6 @@ Polymer({
 
     /**
      * Device state for the network type.
-     *
      * @type {?DeviceStateProperties}
      */
     deviceState: {
@@ -56,7 +55,6 @@ Polymer({
 
     /**
      * Network state for the active network.
-     *
      * @type {?CrOnc.NetworkStateProperties}
      */
     networkState: {
@@ -66,7 +64,6 @@ Polymer({
 
     /**
      * List of all network state data for the network type.
-     *
      * @type {!Array<!CrOnc.NetworkStateProperties>}
      */
     networkStateList: {

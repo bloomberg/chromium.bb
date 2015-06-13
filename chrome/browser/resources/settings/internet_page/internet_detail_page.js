@@ -10,7 +10,6 @@
  * @group Chrome Settings Elements
  * @element cr-settings-internet-detail
  */
-(function() {
 
 Polymer({
   is: 'cr-settings-internet-detail-page',
@@ -18,7 +17,6 @@ Polymer({
   properties: {
     /**
      * ID of the page.
-     *
      * @attribute PAGE_ID
      * @const {string}
      */
@@ -68,6 +66,22 @@ Polymer({
     },
 
     /**
+     * True if the Advanced section is expanded.
+     */
+    advancedExpanded: {
+      type: Boolean,
+      value: false
+    },
+
+    /**
+     * True if the device section is expanded.
+     */
+    deviceExpanded: {
+      type: Boolean,
+      value: false
+    },
+
+    /**
      * Name of the 'core-icon' to show. TODO(stevenjb): Update this with the
      * icon for the active internet connection.
      */
@@ -88,12 +102,21 @@ Polymer({
 
     /**
      * The current state for the network matching |guid|.
-     *
      * @type {?CrOnc.NetworkStateProperties}
      */
     networkState: {
       type: Object,
-      value: null
+      value: null,
+      observer: 'networkStateChanged_'
+    },
+
+    /**
+     * The network AutoConnect state.
+     */
+    autoConnect: {
+      type: Boolean,
+      value: false,
+      observer: 'autoConnectChanged_'
     },
   },
 
@@ -136,6 +159,30 @@ Polymer({
     var idx = href.lastIndexOf('/');
     var guid = href.slice(idx + 1);
     this.guid = guid;
+  },
+
+  /**
+   * Polymer networkState changed method.
+   */
+  networkStateChanged_: function() {
+    if (!this.networkState)
+      return;
+    // Update the autoConnect property if it has changed.
+    var autoConnect =
+        CrOnc.getActiveTypeValue(this.networkState, 'AutoConnect');
+    if (autoConnect != this.autoConnect)
+      this.autoConnect = autoConnect;
+  },
+
+  /**
+   * Polymer autoConnect changed method.
+   */
+  autoConnectChanged_: function() {
+    if (!this.networkState || !this.guid)
+      return;
+    var onc = { Type: this.networkState.Type };
+    CrOnc.setTypeProperty(onc, 'AutoConnect', this.autoConnect);
+    chrome.networkingPrivate.setProperties(this.guid, onc);
   },
 
   /**
@@ -198,20 +245,6 @@ Polymer({
 
   /**
    * @param {?CrOnc.NetworkStateProperties} state The network state properties.
-   * @param {string} property The property name.
-   * @return {string} The text to display for the property, including the label.
-   * @private
-   */
-  getProperty_: function(state, property) {
-    if (!state)
-      return '';
-    var value = this.get(property, state) || '';
-    // TODO(stevenjb): Localize.
-    return property + ': ' + value;
-  },
-
-  /**
-   * @param {?CrOnc.NetworkStateProperties} state The network state properties.
    * @return {boolean} True if the state is connected.
    * @private
    */
@@ -240,16 +273,6 @@ Polymer({
   },
 
   /**
-   * @param {?CrOnc.NetworkStateProperties} state The network state properties.
-   * @param {string} type The network type to match.
-   * @return {boolean} Whether or not the type of 'state' matches 'type'.
-   * @private
-   */
-  isType_: function(state, type) {
-    return state && state.Type == type;
-  },
-
-  /**
    * Callback when the Connect button is clicked.
    * @private
    */
@@ -264,5 +287,105 @@ Polymer({
   onDisconnectClicked_: function() {
     chrome.networkingPrivate.startDisconnect(this.guid);
   },
+
+  /**
+   * @param {?CrOnc.NetworkStateProperties} state The network state properties.
+   * @return {!Array<string>} The fields to display in the info section.
+   * @private
+   */
+  getInfoFields_: function(state) {
+    /** @type {!Array<string>} */ var fields = [];
+    if (!state)
+      return fields;
+    if (state.Type == 'Cellular') {
+      fields = fields.concat([
+        'Cellular.ActivationState',
+        'Cellular.RoamingState',
+        'RestrictedConnectivity',
+        'Cellular.ServingOperator.Name',
+      ]);
+    }
+    return fields;
+  },
+
+  /**
+   * @param {?CrOnc.NetworkStateProperties} state The network state properties.
+   * @return {!Array<string>} The fields to display in the Advanced section.
+   * @private
+   */
+  getAdvancedFields_: function(state) {
+    /** @type {!Array<string>} */ var fields = [];
+    if (!state)
+      return fields;
+    fields.push('MacAddress');
+    if (state.Type == 'Cellular') {
+      fields = fields.concat([
+        'Cellular.Carrier',
+        'Cellular.Family',
+        'Cellular.NetworkTechnology',
+        'Cellular.ServingOperator.Code'
+      ]);
+    }
+
+    if (state.Type == 'WiFi') {
+      fields = fields.concat([
+        'WiFi.SSID',
+        'WiFi.BSSID',
+        'WiFi.Security',
+        'WiFi.SignalStrength',
+        'WiFi.Frequency'
+      ]);
+    }
+    return fields;
+  },
+
+  /**
+   * @param {?CrOnc.NetworkStateProperties} state The network state properties.
+   * @return {!Array<string>} The fields to display in the device section.
+   * @private
+   */
+  getDeviceFields_: function(state) {
+    /** @type {!Array<string>} */ var fields = [];
+    if (!state)
+      return fields;
+    if (state.Type == 'Cellular') {
+      fields = fields.concat([
+        'Cellular.HomeProvider.Name',
+        'Cellular.HomeProvider.Country',
+        'Cellular.HomeProvider.Code',
+        'Cellular.Manufacturer',
+        'Cellular.ModelID',
+        'Cellular.FirmwareRevision',
+        'Cellular.HardwareRevision',
+        'Cellular.ESN',
+        'Cellular.ICCID',
+        'Cellular.IMEI',
+        'Cellular.IMSI',
+        'Cellular.MDN',
+        'Cellular.MEID',
+        'Cellular.MIN',
+        'Cellular.PRLVersion',
+      ]);
+    }
+    return fields;
+  },
+
+  /**
+   * @param {?CrOnc.NetworkStateProperties} state The network state properties.
+   * @return {boolean} True if there are any advanced fields to display.
+   * @private
+   */
+  hasAdvancedOrDeviceFields_: function(state) {
+    return this.getAdvancedFields_(state).length > 0 || this.hasDeviceFields_();
+  },
+
+  /**
+   * @param {?CrOnc.NetworkStateProperties} state The network state properties.
+   * @return {boolean} True if there are any device fields to display.
+   * @private
+   */
+  hasDeviceFields_: function(state) {
+    var fields = this.getDeviceFields_(state);
+    return fields.length > 0;
+  }
 });
-})();

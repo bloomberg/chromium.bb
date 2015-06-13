@@ -1,0 +1,28 @@
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/cr_elements/v1_0/cr_onc/cr_onc_types.html">
+
+<dom-module name="cr-network-property-list">
+  <link rel="import" type="css" href="cr_network_property_list.css">
+  <template>
+    <div class="layout horizontal">
+      <div class="layout vertical">
+        <template is="dom-repeat" items="[[fields]]">
+          <div class="layout horizontal"
+              hidden$="[[!hasPropertyValue_(networkState, item)]]">
+            <span>[[getPropertyLabel_(item)]]</span>
+            <span class="flex fill"></span>
+          </div>
+        </template>
+      </div>
+      <div class="layout vertical">
+        <template is="dom-repeat" items="[[fields]]">
+          <div class="layout horizontal"
+              hidden$="[[!hasPropertyValue_(networkState, item)]]">
+            <span>[[getPropertyValue_(networkState, item)]]</span>
+          </div>
+        </template>
+      </div>
+    </div>
+  </template>
+  <script src="cr_network_property_list.js"></script>
+</dom-module>

@@ -39,6 +39,9 @@ CrOnc.ManagedProperty;
 /** @typedef {CrOnc.NetworkStateProperty|!CrOnc.ManagedProperty} */
 CrOnc.ManagedNetworkStateProperty;
 
+/** @typedef {chrome.networkingPrivate.IPConfigProperties} */
+CrOnc.IPConfigProperties;
+
 /** @enum {string} */
 CrOnc.Type = {
   CELLULAR: 'Cellular',
@@ -53,6 +56,18 @@ CrOnc.ConnectionState = {
   CONNECTED: 'Connected',
   CONNECTING: 'Connecting',
   NOT_CONNECTED: 'NotConnected',
+};
+
+/** @enum {string} */
+CrOnc.IPConfigType = {
+  DHCP: 'DHCP',
+  STATIC: 'Static',
+};
+
+/** @enum {string} */
+CrOnc.IPType = {
+  IPV4: 'IPv4',
+  IPV6: 'IPv6',
 };
 
 /** @enum {string} */
@@ -94,7 +109,7 @@ CrOnc.Security = {
  * @return {!CrOnc.NetworkStateProperty|undefined} The active property value
  *     if it exists, otherwise undefined.
  */
-CrOnc.getActiveValue = function(property) {
+CrOnc.getActivePropertyValue = function(property) {
   // If this is not a dictionary, return the value.
   if (Array.isArray(property) || typeof property != 'object')
     return /** @type {!CrOnc.NetworkStateProperty} */ (property);
@@ -110,7 +125,8 @@ CrOnc.getActiveValue = function(property) {
       return property[effective];
   }
 
-  console.error('getActiveValue called on invalid ONC object: ' + property);
+  console.error('getActivePropertyValue called on invalid ONC object: ' +
+                property);
   return undefined;
 };
 
@@ -120,7 +136,7 @@ CrOnc.getActiveValue = function(property) {
  * @param {!CrOnc.NetworkStateProperties} state The ONC network state.
  * @param {string} key The property key which may be nested, e.g. 'Foo.Bar'.
  * @return {!CrOnc.ManagedNetworkStateProperty|undefined} The property value or
- *   dictionary if it exists, otherwise undefined.
+ *     dictionary if it exists, otherwise undefined.
  */
 CrOnc.getProperty = function(state, key) {
   while (true) {
@@ -146,6 +162,33 @@ CrOnc.getProperty = function(state, key) {
 CrOnc.getTypeProperty = function(state, key) {
   var typeKey = state.Type + '.' + key;
   return CrOnc.getProperty(state, typeKey);
+};
+
+/**
+ * Returns either the active value of a managed property dictionary or the
+ * unmanaged value associated with a key.
+ * @param {!CrOnc.NetworkStateProperties} state The ONC network state.
+ * @param {string} key The property key which may be nested, e.g. 'Foo.Bar'.
+ * @return {!CrOnc.ManagedNetworkStateProperty|undefined} The active property
+ *     value if it exists, otherwise undefined.
+ */
+CrOnc.getActiveValue = function(state, key) {
+  var property = CrOnc.getProperty(state, key);
+  if (property == undefined)
+    return undefined;
+  return CrOnc.getActivePropertyValue(property);
+};
+
+/**
+ * Calls getActiveValue with '{state.Type}.key', e.g. WiFi.AutoConnect.
+ * @param {!CrOnc.NetworkStateProperties} state The ONC network state.
+ * @param {string} key The type property key, e.g. 'AutoConnect'.
+ * @return {!CrOnc.ManagedNetworkStateProperty|undefined} The active property
+ *     value if it exists, otherwise undefined.
+ */
+CrOnc.getActiveTypeValue = function(state, key) {
+  var typeKey = state.Type + '.' + key;
+  return CrOnc.getActiveValue(state, typeKey);
 };
 
 /**
@@ -177,4 +220,32 @@ CrOnc.setProperty = function(state, key, value) {
 CrOnc.setTypeProperty = function(state, key, value) {
   var typeKey = state.Type + '.' + key;
   CrOnc.setProperty(state, typeKey, value);
+};
+
+/**
+ * Returns the routing prefix as a string for a given prefix length.
+ * @param {number} prefixLength The ONC routing prefix length.
+ * @return {string} The corresponding netmask.
+ */
+CrOnc.getRoutingPrefixAsAddress = function(prefixLength) {
+  // Return the empty string for invalid inputs.
+  if (prefixLength < 0 || prefixLength > 32)
+    return '';
+  var netmask = '';
+  for (var i = 0; i < 4; ++i) {
+    var remainder = 8;
+    if (prefixLength >= 8) {
+      prefixLength -= 8;
+    } else {
+      remainder = prefixLength;
+      prefixLength = 0;
+    }
+    if (i > 0)
+      netmask += '.';
+    var value = 0;
+    if (remainder != 0)
+      value = ((2 << (remainder - 1)) - 1) << (8 - remainder);
+    netmask += value.toString();
+  }
+  return netmask;
 };

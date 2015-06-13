@@ -53,7 +53,6 @@ Polymer({
   properties: {
     /**
      * The device state for each network device type.
-     *
      * @type {DeviceStateObject}
      */
     deviceStates: {
@@ -63,7 +62,6 @@ Polymer({
 
     /**
      * Network state data for each network type.
-     *
      * @type {NetworkStateObject}
      */
     networkStates: {
@@ -73,7 +71,6 @@ Polymer({
 
     /**
      * List of network state data for each network type.
-     *
      * @type {NetworkStateListObject}
      */
     networkStateLists: {

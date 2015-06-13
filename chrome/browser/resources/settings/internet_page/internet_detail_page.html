@@ -1,13 +1,18 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/cr_elements/v1_0/cr_checkbox/cr_checkbox.html">
+<link rel="import" href="chrome://resources/cr_elements/v1_0/cr_collapse/cr_collapse.html">
+<link rel="import" href="chrome://resources/cr_elements/v1_0/cr_expand_button/cr_expand_button.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_onc/cr_onc_types.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_network_icon/cr_network_icon.html">
+<link rel="import" href="chrome://resources/cr_elements/v1_0/cr_network_ip_config/cr_network_ip_config.html">
+<link rel="import" href="chrome://resources/cr_elements/v1_0/cr_network_property_list/cr_network_property_list.html">
 
 <dom-module id="cr-settings-internet-detail-page">
   <link rel="import" type="css" href="chrome://md-settings/settings_page/settings_page.css">
   <link rel="import" type="css" href="internet_detail_page.css">
   <template>
     <paper-material class="layout vertical">
-      <div class="layout vertical">
+      <div id="outerDiv" class="layout vertical">
         <div id="titleDiv" class="layout horizontal">
           <div class="layout center horizontal flex">
             <cr-network-icon id="networkIcon" network-state="[[networkState]]">
@@ -16,8 +21,27 @@
             <span id="networkState" class="[[getStateClass_(networkState)]]"
                 >[[getStateText_(networkState)]]</span>
           </div>
-          <div class="layout center horizontal center-justified"
-              id="connectionButtonDiv">
+        </div>
+
+        <div id="infoDiv" class="layout vertical">
+          <cr-checkbox id="autoconnect" checked="{{autoConnect}}">
+            Automatically connect to this network
+          </cr-checkbox>
+
+          <cr-network-ip-config network-state="[[networkState]]">
+          </cr-network-ip-config>
+
+          <cr-network-property-list
+              fields="[[getInfoFields_(networkState)]]"
+              network-state="[[networkState]]">
+          </cr-network-property-list>
+
+          <div class="layout horizontal center">
+            <cr-button toggles active="{{advancedExpanded}}"
+                hidden$="[[!hasAdvancedOrDeviceFields_(networkState)]]">
+              Advanced
+            </cr-button>
+            <span class="flex"></span>
             <cr-button hidden$="[[!canDisconnect_(networkState)]]"
                 on-click="onDisconnectClicked_">
               Disconnect
@@ -27,19 +51,28 @@
               Connect
             </cr-button>
           </div>
-        </div>
-        <div id="detailDiv" class="layout vertical">
-          <div class="layout vertical"
-              hidden$="[[!isConnectedState_(networkState)]]">
-            <span>[[getProperty_(networkState, 'MacAddress')]]</span>
-          </div>
-          <div class="layout vertical"
-              hidden$="[[!isType_(networkState, 'WiFi')]]">
-            <span>[[getProperty_(networkState, 'WiFi.Security')]]</span>
-            <span>[[getProperty_(networkState, 'WiFi.SSID')]]</span>
-            <span>[[getProperty_(networkState, 'WiFi.BSSID')]]</span>
-            <span>[[getProperty_(networkState, 'WiFi.SignalStrength')]]</span>
-            <span>[[getProperty_(networkState, 'WiFi.Frequency')]]</span>
+
+          <div id="advancedDiv" class="layout vertical"
+              hidden$="[[!hasAdvancedOrDeviceFields_(networkState)]]">
+            <cr-collapse opened="[[advancedExpanded]]">
+              <cr-network-property-list
+                  fields="[[getAdvancedFields_(networkState)]]"
+                  network-state="[[networkState]]">
+              </cr-network-property-list>
+
+              <div id="deviceDiv" class="layout vertical"
+                  hidden$="[[!hasDeviceFields_(networkState)]]">
+                <cr-button toggles active="{{deviceExpanded}}">
+                  Device
+                </cr-button>
+                <cr-collapse opened="[[deviceExpanded]]">
+                  <cr-network-property-list
+                      fields="[[getDeviceFields_(networkState)]]"
+                      network-state="[[networkState]]">
+                  </cr-network-property-list>
+                </cr-collapse>
+              </div>
+            </cr-collapse>
           </div>
         </div>
       </div>

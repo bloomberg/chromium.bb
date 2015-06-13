@@ -1,0 +1,14 @@
+/* Copyright 2015 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+span {
+  margin-bottom: 10px;
+}
+
+span.fill {
+  border-bottom-color: grey;
+  border-bottom-style: dotted;
+  border-width: thin;
+  min-width: 20px;
+}

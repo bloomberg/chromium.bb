@@ -2,6 +2,10 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
+#outerDiv {
+  -webkit-margin-end: 40px;
+}
+
 #networkIcon {
   height: 32px;
   width: 32px;
@@ -22,14 +26,14 @@
   color: green;
 }
 
-#connectionButtonDiv {
-  -webkit-margin-end: 30px;
-}
-
-#detailDiv {
+#infoDiv {
   margin: 10px 0 0 45px;
 }
 
-#detailDiv span {
+#infoDiv cr-checkbox {
   margin-bottom: 10px;
+}
+
+#advancedDiv {
+  margin: 6px;
 }
