@@ -6,23 +6,21 @@
 #define COMPONENTS_SCHEDULER_CHILD_TEST_TIME_SOURCE_H_
 
 #include "base/memory/ref_counted.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "base/time/tick_clock.h"
-
-namespace cc {
-class TestNowSource;
-}
 
 namespace scheduler {
 
 class TestTimeSource : public base::TickClock {
  public:
-  explicit TestTimeSource(scoped_refptr<cc::TestNowSource> time_source);
+  explicit TestTimeSource(base::SimpleTestTickClock* time_source);
   ~TestTimeSource() override;
 
   base::TimeTicks NowTicks() override;
 
  private:
-  scoped_refptr<cc::TestNowSource> time_source_;
+  // Not owned.
+  base::SimpleTestTickClock* time_source_;
 
   DISALLOW_COPY_AND_ASSIGN(TestTimeSource);
 };

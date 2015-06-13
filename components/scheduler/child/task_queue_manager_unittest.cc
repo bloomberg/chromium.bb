@@ -6,13 +6,14 @@
 
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "base/threading/thread.h"
 #include "cc/test/ordered_simple_task_runner.h"
-#include "cc/test/test_now_source.h"
 #include "components/scheduler/child/nestable_task_runner_for_test.h"
 #include "components/scheduler/child/scheduler_message_loop_delegate.h"
 #include "components/scheduler/child/task_queue_selector.h"
 #include "components/scheduler/child/test_time_source.h"
+#include "components/scheduler/test/test_always_fail_time_source.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using testing::ElementsAre;
@@ -117,15 +118,16 @@ class TaskQueueManagerTest : public testing::Test {
   };
 
   void Initialize(size_t num_queues, SelectorType type) {
-    now_src_ = cc::TestNowSource::Create(1000);
-    test_task_runner_ =
-        make_scoped_refptr(new cc::OrderedSimpleTaskRunner(now_src_, false));
+    now_src_.reset(new base::SimpleTestTickClock());
+    now_src_->Advance(base::TimeDelta::FromMicroseconds(1000));
+    test_task_runner_ = make_scoped_refptr(
+        new cc::OrderedSimpleTaskRunner(now_src_.get(), false));
     selector_ = make_scoped_ptr(createSelectorForTest(type));
     manager_ = make_scoped_ptr(new TaskQueueManager(
         num_queues, NestableTaskRunnerForTest::Create(test_task_runner_.get()),
         selector_.get(), "test.scheduler"));
     manager_->SetTimeSourceForTesting(
-        make_scoped_ptr(new TestTimeSource(now_src_)));
+        make_scoped_ptr(new TestTimeSource(now_src_.get())));
 
     EXPECT_EQ(num_queues, selector_->work_queues().size());
   }
@@ -175,7 +177,7 @@ class TaskQueueManagerTest : public testing::Test {
         &TaskQueueManager::WakeupPolicyToString);
   }
 
-  scoped_refptr<cc::TestNowSource> now_src_;
+  scoped_ptr<base::SimpleTestTickClock> now_src_;
   scoped_refptr<cc::OrderedSimpleTaskRunner> test_task_runner_;
   scoped_ptr<SelectorForTest> selector_;
   scoped_ptr<TaskQueueManager> manager_;
@@ -251,9 +253,8 @@ void NopTask() {
 TEST_F(TaskQueueManagerTest, NowNotCalledWhenThereAreNoDelayedTasks) {
   Initialize(3u, SelectorType::Explicit);
 
-  scoped_refptr<cc::TestNowSource> now_src = cc::TestNowSource::Create(1000);
   manager_->SetTimeSourceForTesting(
-      make_scoped_ptr(new TestTimeSource(now_src)));
+      make_scoped_ptr(new TestAlwaysFailTimeSource()));
 
   scoped_refptr<base::SingleThreadTaskRunner> runners[3] = {
       manager_->TaskRunnerForQueue(0),
@@ -275,8 +276,6 @@ TEST_F(TaskQueueManagerTest, NowNotCalledWhenThereAreNoDelayedTasks) {
   runners[2]->PostTask(FROM_HERE, base::Bind(&NopTask));
 
   test_task_runner_->RunUntilIdle();
-
-  EXPECT_EQ(0, now_src->NumNowCalls());
 }
 
 TEST_F(TaskQueueManagerTest, NonNestableTaskPosting) {
@@ -572,7 +571,7 @@ TEST_F(TaskQueueManagerTest, ManualPumpingWithDelayedTask) {
   EXPECT_TRUE(run_order.empty());
 
   // Once the delay has expired, pumping causes the task to run.
-  now_src_->AdvanceNow(base::TimeDelta::FromMilliseconds(5));
+  now_src_->Advance(base::TimeDelta::FromMilliseconds(5));
   manager_->PumpQueue(0);
   EXPECT_TRUE(test_task_runner_->HasPendingTasks());
   test_task_runner_->RunPendingTasks();
@@ -599,7 +598,7 @@ TEST_F(TaskQueueManagerTest, ManualPumpingWithMultipleDelayedTasks) {
   runner->PostDelayedTask(FROM_HERE, base::Bind(&TestTask, 3, &run_order),
                           delay3);
 
-  now_src_->AdvanceNow(base::TimeDelta::FromMilliseconds(15));
+  now_src_->Advance(base::TimeDelta::FromMilliseconds(15));
   test_task_runner_->RunUntilIdle();
   EXPECT_TRUE(run_order.empty());
 
@@ -1044,9 +1043,11 @@ TEST_F(TaskQueueManagerTest, ThreadCheckAfterTermination) {
 }
 
 TEST_F(TaskQueueManagerTest, NextPendingDelayedTaskRunTime) {
-  scoped_refptr<cc::TestNowSource> clock(cc::TestNowSource::Create());
+  scoped_ptr<base::SimpleTestTickClock> clock(new base::SimpleTestTickClock());
+  clock->Advance(base::TimeDelta::FromMicroseconds(10000));
   Initialize(2u, SelectorType::Explicit);
-  manager_->SetTimeSourceForTesting(make_scoped_ptr(new TestTimeSource(clock)));
+  manager_->SetTimeSourceForTesting(
+      make_scoped_ptr(new TestTimeSource(clock.get())));
 
   scoped_refptr<base::SingleThreadTaskRunner> runners[2] = {
       manager_->TaskRunnerForQueue(0), manager_->TaskRunnerForQueue(1)};
@@ -1061,30 +1062,30 @@ TEST_F(TaskQueueManagerTest, NextPendingDelayedTaskRunTime) {
   // With a delayed task.
   base::TimeDelta expected_delay = base::TimeDelta::FromMilliseconds(50);
   runners[0]->PostDelayedTask(FROM_HERE, base::Bind(&NopTask), expected_delay);
-  EXPECT_EQ(clock->Now() + expected_delay,
+  EXPECT_EQ(clock->NowTicks() + expected_delay,
             manager_->NextPendingDelayedTaskRunTime());
 
   // With another delayed task in the same queue with a longer delay.
   runners[0]->PostDelayedTask(FROM_HERE, base::Bind(&NopTask),
                               base::TimeDelta::FromMilliseconds(100));
-  EXPECT_EQ(clock->Now() + expected_delay,
+  EXPECT_EQ(clock->NowTicks() + expected_delay,
             manager_->NextPendingDelayedTaskRunTime());
 
   // With another delayed task in the same queue with a shorter delay.
   expected_delay = base::TimeDelta::FromMilliseconds(20);
   runners[0]->PostDelayedTask(FROM_HERE, base::Bind(&NopTask), expected_delay);
-  EXPECT_EQ(clock->Now() + expected_delay,
+  EXPECT_EQ(clock->NowTicks() + expected_delay,
             manager_->NextPendingDelayedTaskRunTime());
 
   // With another delayed task in a different queue with a shorter delay.
   expected_delay = base::TimeDelta::FromMilliseconds(10);
   runners[1]->PostDelayedTask(FROM_HERE, base::Bind(&NopTask), expected_delay);
-  EXPECT_EQ(clock->Now() + expected_delay,
+  EXPECT_EQ(clock->NowTicks() + expected_delay,
             manager_->NextPendingDelayedTaskRunTime());
 
   // Test it updates as time progresses
-  clock->AdvanceNow(expected_delay);
-  EXPECT_EQ(clock->Now(), manager_->NextPendingDelayedTaskRunTime());
+  clock->Advance(expected_delay);
+  EXPECT_EQ(clock->NowTicks(), manager_->NextPendingDelayedTaskRunTime());
 }
 
 TEST_F(TaskQueueManagerTest, NextPendingDelayedTaskRunTime_MultipleQueues) {
@@ -1102,7 +1103,7 @@ TEST_F(TaskQueueManagerTest, NextPendingDelayedTaskRunTime_MultipleQueues) {
   runners[1]->PostDelayedTask(FROM_HERE, base::Bind(&NopTask), delay2);
   runners[2]->PostDelayedTask(FROM_HERE, base::Bind(&NopTask), delay3);
 
-  EXPECT_EQ(now_src_->Now() + delay2,
+  EXPECT_EQ(now_src_->NowTicks() + delay2,
             manager_->NextPendingDelayedTaskRunTime());
 }
 

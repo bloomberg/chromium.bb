@@ -6,11 +6,11 @@
 
 #include "base/logging.h"
 #include "base/test/null_task_runner.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/surfaces/display.h"
 #include "cc/test/scheduler_test_common.h"
-#include "cc/test/test_now_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
@@ -68,9 +68,9 @@ class TestDisplayScheduler : public DisplayScheduler {
 
 class DisplaySchedulerTest : public testing::Test {
  public:
-  DisplaySchedulerTest() {
+  DisplaySchedulerTest() : now_src_(new base::SimpleTestTickClock()) {
     const int max_pending_swaps = 1;
-    now_src_ = TestNowSource::Create();
+    now_src_->Advance(base::TimeDelta::FromMicroseconds(10000));
     null_task_runner_ = make_scoped_refptr(new base::NullTaskRunner);
     client_ = make_scoped_ptr(new FakeDisplaySchedulerClient);
     scheduler_ = make_scoped_ptr(
@@ -83,7 +83,7 @@ class DisplaySchedulerTest : public testing::Test {
   void SetUp() override { scheduler_->SetRootSurfaceResourcesLocked(false); }
 
   void BeginFrameForTest() {
-    base::TimeTicks frame_time = now_src_->Now();
+    base::TimeTicks frame_time = now_src_->NowTicks();
     base::TimeDelta interval = BeginFrameArgs::DefaultInterval();
     base::TimeTicks deadline = frame_time + interval;
     fake_begin_frame_source_.TestOnBeginFrame(
@@ -92,11 +92,11 @@ class DisplaySchedulerTest : public testing::Test {
   }
 
  protected:
-  TestNowSource& now_src() { return *now_src_; }
+  base::SimpleTestTickClock& now_src() { return *now_src_; }
   FakeDisplaySchedulerClient& client() { return *client_; }
   DisplayScheduler& scheduler() { return *scheduler_; }
 
-  scoped_refptr<TestNowSource> now_src_;
+  scoped_ptr<base::SimpleTestTickClock> now_src_;
   scoped_refptr<base::NullTaskRunner> null_task_runner_;
 
   FakeBeginFrameSource fake_begin_frame_source_;
@@ -107,10 +107,10 @@ class DisplaySchedulerTest : public testing::Test {
 TEST_F(DisplaySchedulerTest, EntireDisplayDamagedDrawsImmediately) {
   SurfaceId root_surface_id(1);
   BeginFrameForTest();
-  EXPECT_LT(now_src().Now(),
+  EXPECT_LT(now_src().NowTicks(),
             scheduler_->DesiredBeginFrameDeadlineTimeForTest());
   scheduler_->EntireDisplayDamaged(root_surface_id);
-  EXPECT_GE(now_src().Now(),
+  EXPECT_GE(now_src().NowTicks(),
             scheduler_->DesiredBeginFrameDeadlineTimeForTest());
 }
 
@@ -134,12 +134,12 @@ TEST_F(DisplaySchedulerTest, SurfaceDamaged) {
   // Damage only from surface 2 (inactive) does not trigger deadline early.
   BeginFrameForTest();
   scheduler_->SurfaceDamaged(sid2);
-  EXPECT_LT(now_src().Now(),
+  EXPECT_LT(now_src().NowTicks(),
             scheduler_->DesiredBeginFrameDeadlineTimeForTest());
 
   // Damage from surface 1 triggers deadline early.
   scheduler_->SurfaceDamaged(sid1);
-  EXPECT_GE(now_src().Now(),
+  EXPECT_GE(now_src().NowTicks(),
             scheduler_->DesiredBeginFrameDeadlineTimeForTest());
   scheduler_->BeginFrameDeadlineForTest();
 
@@ -151,13 +151,13 @@ TEST_F(DisplaySchedulerTest, SurfaceDamaged) {
 
   // Deadline doesn't trigger early until surface 1 and 2 are both damaged.
   BeginFrameForTest();
-  EXPECT_LT(now_src().Now(),
+  EXPECT_LT(now_src().NowTicks(),
             scheduler_->DesiredBeginFrameDeadlineTimeForTest());
   scheduler_->SurfaceDamaged(sid1);
-  EXPECT_LT(now_src().Now(),
+  EXPECT_LT(now_src().NowTicks(),
             scheduler_->DesiredBeginFrameDeadlineTimeForTest());
   scheduler_->SurfaceDamaged(sid2);
-  EXPECT_GE(now_src().Now(),
+  EXPECT_GE(now_src().NowTicks(),
             scheduler_->DesiredBeginFrameDeadlineTimeForTest());
   scheduler_->BeginFrameDeadlineForTest();
 
@@ -170,10 +170,10 @@ TEST_F(DisplaySchedulerTest, SurfaceDamaged) {
   // Deadline should trigger early if child surfaces are idle and
   // we get damage on the root surface.
   BeginFrameForTest();
-  EXPECT_LT(now_src().Now(),
+  EXPECT_LT(now_src().NowTicks(),
             scheduler_->DesiredBeginFrameDeadlineTimeForTest());
   scheduler_->SurfaceDamaged(root_surface_id);
-  EXPECT_GE(now_src().Now(),
+  EXPECT_GE(now_src().NowTicks(),
             scheduler_->DesiredBeginFrameDeadlineTimeForTest());
   scheduler_->BeginFrameDeadlineForTest();
 }
@@ -183,7 +183,7 @@ TEST_F(DisplaySchedulerTest, OutputSurfaceLost) {
 
   // DrawAndSwap normally.
   BeginFrameForTest();
-  EXPECT_LT(now_src().Now(),
+  EXPECT_LT(now_src().NowTicks(),
             scheduler_->DesiredBeginFrameDeadlineTimeForTest());
   EXPECT_EQ(0, client_->draw_and_swap_count());
   scheduler_->SurfaceDamaged(sid1);
@@ -192,10 +192,10 @@ TEST_F(DisplaySchedulerTest, OutputSurfaceLost) {
 
   // Deadline triggers immediately on OutputSurfaceLost.
   BeginFrameForTest();
-  EXPECT_LT(now_src().Now(),
+  EXPECT_LT(now_src().NowTicks(),
             scheduler_->DesiredBeginFrameDeadlineTimeForTest());
   scheduler_->OutputSurfaceLost();
-  EXPECT_GE(now_src().Now(),
+  EXPECT_GE(now_src().NowTicks(),
             scheduler_->DesiredBeginFrameDeadlineTimeForTest());
 
   // Deadline does not DrawAndSwap after OutputSurfaceLost.
@@ -211,7 +211,7 @@ TEST_F(DisplaySchedulerTest, RootSurfaceResourcesLocked) {
 
   // DrawAndSwap normally.
   BeginFrameForTest();
-  EXPECT_LT(now_src().Now(),
+  EXPECT_LT(now_src().NowTicks(),
             scheduler_->DesiredBeginFrameDeadlineTimeForTest());
   EXPECT_EQ(0, client_->draw_and_swap_count());
   scheduler_->SurfaceDamaged(sid1);
@@ -219,7 +219,7 @@ TEST_F(DisplaySchedulerTest, RootSurfaceResourcesLocked) {
   EXPECT_EQ(1, client_->draw_and_swap_count());
 
   // Deadline triggers late while root resources are locked.
-  late_deadline = now_src().Now() + BeginFrameArgs::DefaultInterval();
+  late_deadline = now_src().NowTicks() + BeginFrameArgs::DefaultInterval();
   BeginFrameForTest();
   scheduler_->SurfaceDamaged(sid1);
   EXPECT_GT(late_deadline, scheduler_->DesiredBeginFrameDeadlineTimeForTest());
@@ -233,7 +233,7 @@ TEST_F(DisplaySchedulerTest, RootSurfaceResourcesLocked) {
   EXPECT_EQ(1, client_->draw_and_swap_count());
 
   //  Deadline triggers normally when root resources are unlocked.
-  late_deadline = now_src().Now() + BeginFrameArgs::DefaultInterval();
+  late_deadline = now_src().NowTicks() + BeginFrameArgs::DefaultInterval();
   BeginFrameForTest();
   scheduler_->SurfaceDamaged(sid1);
   EXPECT_EQ(late_deadline, scheduler_->DesiredBeginFrameDeadlineTimeForTest());
@@ -263,7 +263,7 @@ TEST_F(DisplaySchedulerTest, DidSwapBuffers) {
 
   // DrawAndSwap normally.
   BeginFrameForTest();
-  EXPECT_LT(now_src().Now(),
+  EXPECT_LT(now_src().NowTicks(),
             scheduler_->DesiredBeginFrameDeadlineTimeForTest());
   EXPECT_EQ(2, client_->draw_and_swap_count());
   scheduler_->SurfaceDamaged(sid1);

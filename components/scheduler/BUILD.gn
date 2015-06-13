@@ -51,6 +51,8 @@ source_set("unit_tests") {
     "renderer/deadline_task_runner_unittest.cc",
     "renderer/renderer_scheduler_impl_unittest.cc",
     "renderer/webthread_impl_for_renderer_scheduler_unittest.cc",
+    "test/test_always_fail_time_source.cc",
+    "test/test_always_fail_time_source.h",
   ]
 
   deps = [

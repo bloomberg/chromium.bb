@@ -254,11 +254,13 @@ class FakeExternalBeginFrameSource : public BeginFrameSourceBase {
 class SchedulerTest : public testing::Test {
  public:
   SchedulerTest()
-      : now_src_(TestNowSource::Create()),
-        task_runner_(new OrderedSimpleTaskRunner(now_src_, true)),
+      : now_src_(new base::SimpleTestTickClock()),
+        task_runner_(new OrderedSimpleTaskRunner(now_src_.get(), true)),
         fake_external_begin_frame_source_(nullptr) {
-    // A bunch of tests require Now() to be > BeginFrameArgs::DefaultInterval()
-    now_src_->AdvanceNow(base::TimeDelta::FromMilliseconds(100));
+    now_src_->Advance(base::TimeDelta::FromMicroseconds(10000));
+    // A bunch of tests require NowTicks()
+    // to be > BeginFrameArgs::DefaultInterval()
+    now_src_->Advance(base::TimeDelta::FromMilliseconds(100));
     // Fail if we need to run 100 tasks in a row.
     task_runner_->SetRunTaskLimit(100);
   }
@@ -274,7 +276,7 @@ class SchedulerTest : public testing::Test {
       fake_external_begin_frame_source_ =
           fake_external_begin_frame_source.get();
     }
-    scheduler_ = TestScheduler::Create(now_src_, client_.get(),
+    scheduler_ = TestScheduler::Create(now_src_.get(), client_.get(),
                                        scheduler_settings_, 0, task_runner_,
                                        fake_external_begin_frame_source.Pass());
     DCHECK(scheduler_);
@@ -301,7 +303,7 @@ class SchedulerTest : public testing::Test {
   }
 
   OrderedSimpleTaskRunner& task_runner() { return *task_runner_; }
-  TestNowSource* now_src() { return now_src_.get(); }
+  base::SimpleTestTickClock* now_src() { return now_src_.get(); }
 
   // As this function contains EXPECT macros, to allow debugging it should be
   // called inside EXPECT_SCOPED like so;
@@ -405,7 +407,7 @@ class SchedulerTest : public testing::Test {
     DCHECK(scheduler_->settings().use_external_begin_frame_source);
     // Creep the time forward so that any BeginFrameArgs is not equal to the
     // last one otherwise we violate the BeginFrameSource contract.
-    now_src_->AdvanceNow(BeginFrameArgs::DefaultInterval());
+    now_src_->Advance(BeginFrameArgs::DefaultInterval());
     BeginFrameArgs args =
         CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, now_src());
     fake_external_begin_frame_source_->TestOnBeginFrame(args);
@@ -430,7 +432,7 @@ class SchedulerTest : public testing::Test {
       bool impl_side_painting);
   void DidLoseOutputSurfaceAfterReadyToCommit(bool impl_side_painting);
 
-  scoped_refptr<TestNowSource> now_src_;
+  scoped_ptr<base::SimpleTestTickClock> now_src_;
   scoped_refptr<OrderedSimpleTaskRunner> task_runner_;
   FakeExternalBeginFrameSource* fake_external_begin_frame_source_;
   SchedulerSettings scheduler_settings_;
@@ -1819,9 +1821,9 @@ TEST_F(SchedulerTest, BeginRetroFrame_SwapThrottled) {
 
   // Let time pass sufficiently beyond the regular deadline but not beyond the
   // late deadline.
-  now_src()->AdvanceNow(BeginFrameArgs::DefaultInterval() -
-                        base::TimeDelta::FromMicroseconds(1));
-  task_runner().RunUntilTime(now_src()->Now());
+  now_src()->Advance(BeginFrameArgs::DefaultInterval() -
+                     base::TimeDelta::FromMicroseconds(1));
+  task_runner().RunUntilTime(now_src()->NowTicks());
   EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
 
   // Take us out of a swap throttled state.
@@ -1832,7 +1834,7 @@ TEST_F(SchedulerTest, BeginRetroFrame_SwapThrottled) {
   client_->Reset();
 
   // Verify that the deadline was rescheduled.
-  task_runner().RunUntilTime(now_src()->Now());
+  task_runner().RunUntilTime(now_src()->NowTicks());
   EXPECT_SINGLE_ACTION("ScheduledActionDrawAndSwapIfPossible", client_);
   EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
   EXPECT_TRUE(client_->needs_begin_frames());
@@ -1882,7 +1884,7 @@ TEST_F(SchedulerTest, RetroFrameDoesNotExpireTooEarly) {
   EXPECT_NO_ACTION(client_);
 
   // Let's advance to the retro frame's deadline.
-  now_src()->AdvanceNow(retro_frame_args.deadline - now_src()->Now());
+  now_src()->Advance(retro_frame_args.deadline - now_src()->NowTicks());
 
   // The retro frame hasn't expired yet.
   task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(false));
@@ -1940,8 +1942,8 @@ TEST_F(SchedulerTest, RetroFrameExpiresOnTime) {
   EXPECT_NO_ACTION(client_);
 
   // Let's advance sufficiently past the retro frame's deadline.
-  now_src()->AdvanceNow(retro_frame_args.deadline - now_src()->Now() +
-                        base::TimeDelta::FromMicroseconds(1));
+  now_src()->Advance(retro_frame_args.deadline - now_src()->NowTicks() +
+                     base::TimeDelta::FromMicroseconds(1));
 
   // The retro frame should've expired.
   EXPECT_NO_ACTION(client_);
@@ -1960,7 +1962,7 @@ TEST_F(SchedulerTest, MissedFrameDoesNotExpireTooEarly) {
   missed_frame_args.type = BeginFrameArgs::MISSED;
 
   // Advance to the deadline.
-  now_src()->AdvanceNow(missed_frame_args.deadline - now_src()->Now());
+  now_src()->Advance(missed_frame_args.deadline - now_src()->NowTicks());
 
   // Missed frame is handled because it's on time.
   client_->Reset();
@@ -1985,8 +1987,8 @@ TEST_F(SchedulerTest, MissedFrameExpiresOnTime) {
   missed_frame_args.type = BeginFrameArgs::MISSED;
 
   // Advance sufficiently past the deadline.
-  now_src()->AdvanceNow(missed_frame_args.deadline - now_src()->Now() +
-                        base::TimeDelta::FromMicroseconds(1));
+  now_src()->Advance(missed_frame_args.deadline - now_src()->NowTicks() +
+                     base::TimeDelta::FromMicroseconds(1));
 
   // Missed frame is dropped because it's too late.
   client_->Reset();
@@ -2132,9 +2134,9 @@ void SchedulerTest::BeginFramesNotFromClient_SwapThrottled(
 
   // Let time pass sufficiently beyond the regular deadline but not beyond the
   // late deadline.
-  now_src()->AdvanceNow(BeginFrameArgs::DefaultInterval() -
-                        base::TimeDelta::FromMicroseconds(1));
-  task_runner().RunUntilTime(now_src()->Now());
+  now_src()->Advance(BeginFrameArgs::DefaultInterval() -
+                     base::TimeDelta::FromMicroseconds(1));
+  task_runner().RunUntilTime(now_src()->NowTicks());
   EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
 
   // Take us out of a swap throttled state.
@@ -2146,9 +2148,9 @@ void SchedulerTest::BeginFramesNotFromClient_SwapThrottled(
   // Verify that the deadline was rescheduled.
   // We can't use RunUntilTime(now) here because the next frame is also
   // scheduled if throttle_frame_production = false.
-  base::TimeTicks before_deadline = now_src()->Now();
+  base::TimeTicks before_deadline = now_src()->NowTicks();
   task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(true));
-  base::TimeTicks after_deadline = now_src()->Now();
+  base::TimeTicks after_deadline = now_src()->NowTicks();
   EXPECT_EQ(after_deadline, before_deadline);
   EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
   client_->Reset();
@@ -2257,7 +2259,7 @@ void SchedulerTest::DidLoseOutputSurfaceAfterBeginFrameStartedWithHighLatency(
 
   // BeginImplFrame is not started.
   client_->Reset();
-  task_runner().RunUntilTime(now_src()->Now() +
+  task_runner().RunUntilTime(now_src()->NowTicks() +
                              base::TimeDelta::FromMilliseconds(10));
   EXPECT_NO_ACTION(client_);
   EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());

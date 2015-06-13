@@ -5,8 +5,8 @@
 #include "components/scheduler/child/scheduler_helper.h"
 
 #include "base/callback.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "cc/test/ordered_simple_task_runner.h"
-#include "cc/test/test_now_source.h"
 #include "components/scheduler/child/nestable_task_runner_for_test.h"
 #include "components/scheduler/child/scheduler_message_loop_delegate.h"
 #include "components/scheduler/child/test_time_source.h"
@@ -44,8 +44,8 @@ void AppendToVectorReentrantTask(base::SingleThreadTaskRunner* task_runner,
 class SchedulerHelperTest : public testing::Test {
  public:
   SchedulerHelperTest()
-      : clock_(cc::TestNowSource::Create(5000)),
-        mock_task_runner_(new cc::OrderedSimpleTaskRunner(clock_, false)),
+      : clock_(new base::SimpleTestTickClock()),
+        mock_task_runner_(new cc::OrderedSimpleTaskRunner(clock_.get(), false)),
         nestable_task_runner_(
             NestableTaskRunnerForTest::Create(mock_task_runner_)),
         scheduler_helper_(
@@ -54,10 +54,11 @@ class SchedulerHelperTest : public testing::Test {
                                 TRACE_DISABLED_BY_DEFAULT("test.scheduler"),
                                 SchedulerHelper::TASK_QUEUE_COUNT)),
         default_task_runner_(scheduler_helper_->DefaultTaskRunner()) {
+    clock_->Advance(base::TimeDelta::FromMicroseconds(5000));
     scheduler_helper_->SetTimeSourceForTesting(
-        make_scoped_ptr(new TestTimeSource(clock_)));
+        make_scoped_ptr(new TestTimeSource(clock_.get())));
     scheduler_helper_->GetTaskQueueManagerForTesting()->SetTimeSourceForTesting(
-        make_scoped_ptr(new TestTimeSource(clock_)));
+        make_scoped_ptr(new TestTimeSource(clock_.get())));
   }
 
   ~SchedulerHelperTest() override {}
@@ -88,7 +89,7 @@ class SchedulerHelperTest : public testing::Test {
   }
 
  protected:
-  scoped_refptr<cc::TestNowSource> clock_;
+  scoped_ptr<base::SimpleTestTickClock> clock_;
   scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
 
   scoped_refptr<NestableSingleThreadTaskRunner> nestable_task_runner_;

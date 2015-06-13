@@ -488,6 +488,8 @@
       'scheduler/renderer/deadline_task_runner_unittest.cc',
       'scheduler/renderer/renderer_scheduler_impl_unittest.cc',
       'scheduler/renderer/webthread_impl_for_renderer_scheduler_unittest.cc',
+      'scheduler/test/test_always_fail_time_source.cc',
+      'scheduler/test/test_always_fail_time_source.h',
     ],
     'search_unittest_sources': [
       'search/search_android_unittest.cc',

@@ -56,14 +56,13 @@ TEST(TestOrderablePendingTask, Ordering) {
 class OrderedSimpleTaskRunnerTest : public testing::Test {
  public:
   OrderedSimpleTaskRunnerTest()
-      : now_src_(TestNowSource::Create(base::TimeTicks())) {
-    task_runner_ = new OrderedSimpleTaskRunner(now_src_, true);
-  }
+      : now_src_(new base::SimpleTestTickClock()),
+        task_runner_(new OrderedSimpleTaskRunner(now_src_.get(), true)) {}
   ~OrderedSimpleTaskRunnerTest() override {}
 
  protected:
   std::string executed_tasks_;
-  scoped_refptr<TestNowSource> now_src_;
+  scoped_ptr<base::SimpleTestTickClock> now_src_;
   scoped_refptr<OrderedSimpleTaskRunner> task_runner_;
 
   void PostTask(int task_num, base::TimeDelta delay) {
@@ -113,11 +112,9 @@ class OrderedSimpleTaskRunnerTest : public testing::Test {
   void Task(int task_num) {
     if (!executed_tasks_.empty())
       executed_tasks_ += " ";
-    executed_tasks_ +=
-        base::StringPrintf("%d(%" PRId64 "ms)",
-                           task_num,
-                           now_src_->Now().ToInternalValue() /
-                               base::Time::kMicrosecondsPerMillisecond);
+    executed_tasks_ += base::StringPrintf(
+        "%d(%" PRId64 "ms)", task_num,
+        (now_src_->NowTicks() - base::TimeTicks()).InMilliseconds());
   }
 
   void TaskWhichPostsInstantTask(int task_num) {
@@ -276,10 +273,10 @@ TEST_F(OrderedSimpleTaskRunnerTest, OrderingTestWithDelayedTasksManualNow) {
   RUN_AND_CHECK_RESULT(EXPECT_TRUE, RunPendingTasks(), "");
   EXPECT_EQ(task_runner_->DelayToNextTaskTime(),
             base::TimeDelta::FromMilliseconds(8));
-  now_src_->SetNow(base::TimeTicks::FromInternalValue(5000));
+  now_src_->Advance(base::TimeDelta::FromMicroseconds(5000));
   EXPECT_EQ(task_runner_->DelayToNextTaskTime(),
             base::TimeDelta::FromMilliseconds(3));
-  now_src_->SetNow(base::TimeTicks::FromInternalValue(25000));
+  now_src_->Advance(base::TimeDelta::FromMicroseconds(20000));
   EXPECT_EQ(task_runner_->DelayToNextTaskTime(), base::TimeDelta());
   RUN_AND_CHECK_RESULT(EXPECT_FALSE, RunPendingTasks(), "4(25ms) 2(25ms)");
   RUN_AND_CHECK_RESULT(EXPECT_FALSE, RunPendingTasks(), "");
@@ -303,15 +300,15 @@ TEST_F(OrderedSimpleTaskRunnerTest, RunUntilTimeAutoNow) {
   run_at += base::TimeDelta::FromMilliseconds(2);
   RUN_AND_CHECK_RESULT(
       EXPECT_TRUE, RunUntilTime(run_at), "1(0ms) -1(0ms) 2(2ms) -2(2ms)");
-  EXPECT_EQ(run_at, now_src_->Now());
+  EXPECT_EQ(run_at, now_src_->NowTicks());
 
   run_at += base::TimeDelta::FromMilliseconds(1);
   RUN_AND_CHECK_RESULT(EXPECT_FALSE, RunUntilTime(run_at), "3(3ms) -3(3ms)");
-  EXPECT_EQ(run_at, now_src_->Now());
+  EXPECT_EQ(run_at, now_src_->NowTicks());
 
   run_at += base::TimeDelta::FromMilliseconds(1);
   RUN_AND_CHECK_RESULT(EXPECT_FALSE, RunUntilTime(run_at), "");
-  EXPECT_EQ(run_at, now_src_->Now());
+  EXPECT_EQ(run_at, now_src_->NowTicks());
 }
 
 TEST_F(OrderedSimpleTaskRunnerTest, RunUntilTimeManualNow) {
@@ -326,15 +323,15 @@ TEST_F(OrderedSimpleTaskRunnerTest, RunUntilTimeManualNow) {
   run_at += base::TimeDelta::FromMilliseconds(2);
   RUN_AND_CHECK_RESULT(
       EXPECT_TRUE, RunUntilTime(run_at), "1(2ms) 2(2ms) -1(2ms) -2(2ms)");
-  EXPECT_EQ(run_at, now_src_->Now());
+  EXPECT_EQ(run_at, now_src_->NowTicks());
 
   run_at += base::TimeDelta::FromMilliseconds(1);
   RUN_AND_CHECK_RESULT(EXPECT_FALSE, RunUntilTime(run_at), "3(3ms) -3(3ms)");
-  EXPECT_EQ(run_at, now_src_->Now());
+  EXPECT_EQ(run_at, now_src_->NowTicks());
 
   run_at += base::TimeDelta::FromMilliseconds(1);
   RUN_AND_CHECK_RESULT(EXPECT_FALSE, RunUntilTime(run_at), "");
-  EXPECT_EQ(run_at, now_src_->Now());
+  EXPECT_EQ(run_at, now_src_->NowTicks());
 }
 
 TEST_F(OrderedSimpleTaskRunnerTest, RunForPeriod) {
@@ -346,18 +343,18 @@ TEST_F(OrderedSimpleTaskRunnerTest, RunForPeriod) {
                        RunForPeriod(base::TimeDelta::FromMilliseconds(2)),
                        "1(0ms) -1(0ms) 2(2ms) -2(2ms)");
   EXPECT_EQ(base::TimeTicks() + base::TimeDelta::FromMilliseconds(2),
-            now_src_->Now());
+            now_src_->NowTicks());
 
   RUN_AND_CHECK_RESULT(EXPECT_FALSE,
                        RunForPeriod(base::TimeDelta::FromMilliseconds(1)),
                        "3(3ms) -3(3ms)");
   EXPECT_EQ(base::TimeTicks() + base::TimeDelta::FromMilliseconds(3),
-            now_src_->Now());
+            now_src_->NowTicks());
 
   RUN_AND_CHECK_RESULT(
       EXPECT_FALSE, RunForPeriod(base::TimeDelta::FromMilliseconds(1)), "");
   EXPECT_EQ(base::TimeTicks() + base::TimeDelta::FromMilliseconds(4),
-            now_src_->Now());
+            now_src_->NowTicks());
 }
 
 TEST_F(OrderedSimpleTaskRunnerTest, RunTasksWhileWithCallback) {
@@ -374,15 +371,15 @@ TEST_F(OrderedSimpleTaskRunnerTest, EmptyTaskList) {
   RUN_AND_CHECK_RESULT(EXPECT_FALSE, RunPendingTasks(), "");
   RUN_AND_CHECK_RESULT(EXPECT_FALSE, RunUntilIdle(), "");
 
-  ASSERT_EQ(base::TimeTicks(), now_src_->Now());
+  ASSERT_EQ(base::TimeTicks(), now_src_->NowTicks());
 
   RUN_AND_CHECK_RESULT(
       EXPECT_FALSE, RunUntilTime(base::TimeTicks::FromInternalValue(100)), "");
-  EXPECT_EQ(base::TimeTicks::FromInternalValue(100), now_src_->Now());
+  EXPECT_EQ(base::TimeTicks::FromInternalValue(100), now_src_->NowTicks());
 
   RUN_AND_CHECK_RESULT(
       EXPECT_FALSE, RunForPeriod(base::TimeDelta::FromInternalValue(100)), "");
-  EXPECT_EQ(base::TimeTicks::FromInternalValue(200), now_src_->Now());
+  EXPECT_EQ(base::TimeTicks::FromInternalValue(200), now_src_->NowTicks());
 
   base::Callback<bool(void)> return_true = base::Bind(&ReturnTrue);
   RUN_AND_CHECK_RESULT(EXPECT_FALSE, RunTasksWhile(return_true), "");
@@ -428,19 +425,19 @@ TEST_F(OrderedSimpleTaskRunnerTest, RunUntilTimeout) {
   PostTask(4, base::TimeDelta::FromMilliseconds(4));
   PostTask(5, base::TimeDelta::FromMilliseconds(5));
 
-  EXPECT_EQ(base::TimeTicks(), now_src_->Now());
+  EXPECT_EQ(base::TimeTicks(), now_src_->NowTicks());
   task_runner_->SetRunTaskLimit(3);
   RUN_AND_CHECK_RESULT(
       EXPECT_TRUE, RunUntilTime(run_to), "1(1ms) 2(2ms) 3(3ms)");
   EXPECT_EQ(base::TimeTicks() + base::TimeDelta::FromMilliseconds(3),
-            now_src_->Now());
+            now_src_->NowTicks());
 
   task_runner_->SetRunTaskLimit(0);
   RUN_AND_CHECK_RESULT(EXPECT_TRUE, RunUntilTime(run_to), "");
 
   task_runner_->SetRunTaskLimit(100);
   RUN_AND_CHECK_RESULT(EXPECT_FALSE, RunUntilTime(run_to), "4(4ms) 5(5ms)");
-  EXPECT_EQ(run_to, now_src_->Now());
+  EXPECT_EQ(run_to, now_src_->NowTicks());
 }
 
 }  // namespace cc

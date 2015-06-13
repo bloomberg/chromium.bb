@@ -4,11 +4,9 @@
 
 #include "components/scheduler/child/test_time_source.h"
 
-#include "cc/test/test_now_source.h"
-
 namespace scheduler {
 
-TestTimeSource::TestTimeSource(scoped_refptr<cc::TestNowSource> time_source)
+TestTimeSource::TestTimeSource(base::SimpleTestTickClock* time_source)
     : time_source_(time_source) {
 }
 
@@ -16,7 +14,7 @@ TestTimeSource::~TestTimeSource() {
 }
 
 base::TimeTicks TestTimeSource::NowTicks() {
-  return time_source_->Now();
+  return time_source_->NowTicks();
 }
 
 }  // namespace scheduler

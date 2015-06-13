@@ -56,8 +56,8 @@ BeginFrameArgs CreateExpiredBeginFrameArgsForTesting(
 
 BeginFrameArgs CreateBeginFrameArgsForTesting(
     BeginFrameArgs::CreationLocation location,
-    scoped_refptr<TestNowSource> now_src) {
-  base::TimeTicks now = now_src->Now();
+    base::SimpleTestTickClock* now_src) {
+  base::TimeTicks now = now_src->NowTicks();
   return BeginFrameArgs::Create(
       location, now, now + (BeginFrameArgs::DefaultInterval() / 2),
       BeginFrameArgs::DefaultInterval(), BeginFrameArgs::NORMAL);
@@ -65,8 +65,8 @@ BeginFrameArgs CreateBeginFrameArgsForTesting(
 
 BeginFrameArgs CreateExpiredBeginFrameArgsForTesting(
     BeginFrameArgs::CreationLocation location,
-    scoped_refptr<TestNowSource> now_src) {
-  base::TimeTicks now = now_src->Now();
+    base::SimpleTestTickClock* now_src) {
+  base::TimeTicks now = now_src->NowTicks();
   return BeginFrameArgs::Create(
       location, now, now - BeginFrameArgs::DefaultInterval(),
       BeginFrameArgs::DefaultInterval(), BeginFrameArgs::NORMAL);

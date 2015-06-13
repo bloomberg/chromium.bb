@@ -47,7 +47,8 @@ class FakeOnscreenDisplayClient : public OnscreenDisplayClient {
 class SurfaceDisplayOutputSurfaceTest : public testing::Test {
  public:
   SurfaceDisplayOutputSurfaceTest()
-      : task_runner_(new OrderedSimpleTaskRunner()),
+      : now_src_(new base::SimpleTestTickClock()),
+        task_runner_(new OrderedSimpleTaskRunner(now_src_.get(), true)),
         allocator_(0),
         display_size_(1920, 1080),
         display_rect_(display_size_),
@@ -98,6 +99,7 @@ class SurfaceDisplayOutputSurfaceTest : public testing::Test {
   }
 
  protected:
+  scoped_ptr<base::SimpleTestTickClock> now_src_;
   scoped_refptr<OrderedSimpleTaskRunner> task_runner_;
   SurfaceIdAllocator allocator_;
 

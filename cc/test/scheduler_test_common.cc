@@ -17,14 +17,14 @@ void FakeTimeSourceClient::OnTimerTick() {
 base::TimeTicks FakeDelayBasedTimeSource::Now() const { return now_; }
 
 TestDelayBasedTimeSource::TestDelayBasedTimeSource(
-    scoped_refptr<TestNowSource> now_src,
+    base::SimpleTestTickClock* now_src,
     base::TimeDelta interval,
     OrderedSimpleTaskRunner* task_runner)
     : DelayBasedTimeSource(interval, task_runner), now_src_(now_src) {
 }
 
 base::TimeTicks TestDelayBasedTimeSource::Now() const {
-  return now_src_->Now();
+  return now_src_->NowTicks();
 }
 
 std::string TestDelayBasedTimeSource::TypeString() const {
@@ -44,7 +44,7 @@ void FakeBeginFrameSource::AsValueInto(
 }
 
 TestBackToBackBeginFrameSource::TestBackToBackBeginFrameSource(
-    scoped_refptr<TestNowSource> now_src,
+    base::SimpleTestTickClock* now_src,
     base::SingleThreadTaskRunner* task_runner)
     : BackToBackBeginFrameSource(task_runner), now_src_(now_src) {
 }
@@ -53,7 +53,7 @@ TestBackToBackBeginFrameSource::~TestBackToBackBeginFrameSource() {
 }
 
 base::TimeTicks TestBackToBackBeginFrameSource::Now() {
-  return now_src_->Now();
+  return now_src_->NowTicks();
 }
 
 TestSyntheticBeginFrameSource::TestSyntheticBeginFrameSource(
@@ -66,7 +66,7 @@ TestSyntheticBeginFrameSource::~TestSyntheticBeginFrameSource() {
 
 TestSchedulerFrameSourcesConstructor::TestSchedulerFrameSourcesConstructor(
     OrderedSimpleTaskRunner* test_task_runner,
-    TestNowSource* now_src)
+    base::SimpleTestTickClock* now_src)
     : test_task_runner_(test_task_runner), now_src_(now_src) {
 }
 TestSchedulerFrameSourcesConstructor::~TestSchedulerFrameSourcesConstructor() {
@@ -111,7 +111,7 @@ TestSchedulerFrameSourcesConstructor::ConstructUnthrottledFrameSource(
 }
 
 TestScheduler::TestScheduler(
-    scoped_refptr<TestNowSource> now_src,
+    base::SimpleTestTickClock* now_src,
     SchedulerClient* client,
     const SchedulerSettings& scheduler_settings,
     int layer_tree_host_id,
@@ -128,7 +128,7 @@ TestScheduler::TestScheduler(
 }
 
 base::TimeTicks TestScheduler::Now() const {
-  return now_src_->Now();
+  return now_src_->NowTicks();
 }
 
 TestScheduler::~TestScheduler() {

@@ -6,8 +6,8 @@
 
 #include "base/callback.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "cc/test/ordered_simple_task_runner.h"
-#include "cc/test/test_now_source.h"
 #include "components/scheduler/child/nestable_task_runner_for_test.h"
 #include "components/scheduler/child/scheduler_message_loop_delegate.h"
 #include "components/scheduler/child/test_time_source.h"
@@ -27,9 +27,9 @@ int TimeTicksToIntMs(const base::TimeTicks& time) {
 }
 
 void RecordTimelineTask(std::vector<std::string>* timeline,
-                        cc::TestNowSource* clock) {
+                        base::SimpleTestTickClock* clock) {
   timeline->push_back(base::StringPrintf("run RecordTimelineTask @ %d",
-                                         TimeTicksToIntMs(clock->Now())));
+                                         TimeTicksToIntMs(clock->NowTicks())));
 }
 
 void AppendToVectorTestTask(std::vector<std::string>* vector,
@@ -55,7 +55,7 @@ class WorkerSchedulerImplForTest : public WorkerSchedulerImpl {
  public:
   WorkerSchedulerImplForTest(
       scoped_refptr<NestableSingleThreadTaskRunner> main_task_runner,
-      scoped_refptr<cc::TestNowSource> clock_)
+      base::SimpleTestTickClock* clock_)
       : WorkerSchedulerImpl(main_task_runner),
         clock_(clock_),
         timeline_(nullptr) {}
@@ -78,31 +78,33 @@ class WorkerSchedulerImplForTest : public WorkerSchedulerImpl {
 
   void IsNotQuiescent() override {
     if (timeline_) {
-      timeline_->push_back(base::StringPrintf("IsNotQuiescent @ %d",
-                                              TimeTicksToIntMs(clock_->Now())));
+      timeline_->push_back(base::StringPrintf(
+          "IsNotQuiescent @ %d", TimeTicksToIntMs(clock_->NowTicks())));
     }
     WorkerSchedulerImpl::IsNotQuiescent();
   }
 
-  scoped_refptr<cc::TestNowSource> clock_;
+  base::SimpleTestTickClock* clock_;    // NOT OWNED
   std::vector<std::string>* timeline_;  // NOT OWNED
 };
 
 class WorkerSchedulerImplTest : public testing::Test {
  public:
   WorkerSchedulerImplTest()
-      : clock_(cc::TestNowSource::Create(5000)),
-        mock_task_runner_(new cc::OrderedSimpleTaskRunner(clock_, true)),
+      : clock_(new base::SimpleTestTickClock()),
+        mock_task_runner_(new cc::OrderedSimpleTaskRunner(clock_.get(), true)),
         nestable_task_runner_(
             NestableTaskRunnerForTest::Create(mock_task_runner_)),
-        scheduler_(
-            new WorkerSchedulerImplForTest(nestable_task_runner_, clock_)),
+        scheduler_(new WorkerSchedulerImplForTest(nestable_task_runner_,
+                                                  clock_.get())),
         timeline_(nullptr) {
+    clock_->Advance(base::TimeDelta::FromMicroseconds(5000));
     scheduler_->GetSchedulerHelperForTesting()->SetTimeSourceForTesting(
-        make_scoped_ptr(new TestTimeSource(clock_)));
+        make_scoped_ptr(new TestTimeSource(clock_.get())));
     scheduler_->GetSchedulerHelperForTesting()
         ->GetTaskQueueManagerForTesting()
-        ->SetTimeSourceForTesting(make_scoped_ptr(new TestTimeSource(clock_)));
+        ->SetTimeSourceForTesting(
+            make_scoped_ptr(new TestTimeSource(clock_.get())));
   }
 
   ~WorkerSchedulerImplTest() override {}
@@ -127,13 +129,13 @@ class WorkerSchedulerImplTest : public testing::Test {
 
   void RunUntilIdle() {
     if (timeline_) {
-      timeline_->push_back(base::StringPrintf("RunUntilIdle begin @ %d",
-                                              TimeTicksToIntMs(clock_->Now())));
+      timeline_->push_back(base::StringPrintf(
+          "RunUntilIdle begin @ %d", TimeTicksToIntMs(clock_->NowTicks())));
     }
     mock_task_runner_->RunUntilIdle();
     if (timeline_) {
-      timeline_->push_back(base::StringPrintf("RunUntilIdle end @ %d",
-                                              TimeTicksToIntMs(clock_->Now())));
+      timeline_->push_back(base::StringPrintf(
+          "RunUntilIdle end @ %d", TimeTicksToIntMs(clock_->NowTicks())));
     }
   }
 
@@ -170,7 +172,7 @@ class WorkerSchedulerImplTest : public testing::Test {
   }
 
  protected:
-  scoped_refptr<cc::TestNowSource> clock_;
+  scoped_ptr<base::SimpleTestTickClock> clock_;
   // Only one of mock_task_runner_ or message_loop_ will be set.
   scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
 
@@ -344,7 +346,7 @@ TEST_F(WorkerSchedulerImplTest, TestLongIdlePeriodTimeline) {
   // idle period.
   base::TimeTicks idle_period_deadline =
       scheduler_->CurrentIdleTaskDeadlineForTesting();
-  clock_->AdvanceNow(maximum_idle_period_duration());
+  clock_->Advance(maximum_idle_period_duration());
   RunUntilIdle();
 
   base::TimeTicks new_idle_period_deadline =

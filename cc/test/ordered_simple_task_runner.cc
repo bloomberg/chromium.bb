@@ -76,15 +76,8 @@ void TestOrderablePendingTask::AsValueInto(
   state->SetString("posted_from", location.ToString());
 }
 
-OrderedSimpleTaskRunner::OrderedSimpleTaskRunner()
-    : advance_now_(true),
-      now_src_(TestNowSource::Create(0)),
-      max_tasks_(kAbsoluteMaxTasks),
-      inside_run_tasks_until_(false) {
-}
-
 OrderedSimpleTaskRunner::OrderedSimpleTaskRunner(
-    scoped_refptr<TestNowSource> now_src,
+    base::SimpleTestTickClock* now_src,
     bool advance_now)
     : advance_now_(advance_now),
       now_src_(now_src),
@@ -94,14 +87,20 @@ OrderedSimpleTaskRunner::OrderedSimpleTaskRunner(
 
 OrderedSimpleTaskRunner::~OrderedSimpleTaskRunner() {}
 
+// static
+base::TimeTicks OrderedSimpleTaskRunner::AbsoluteMaxNow() {
+  return base::TimeTicks::FromInternalValue(
+      std::numeric_limits<int64_t>::max());
+}
+
 // base::TestSimpleTaskRunner implementation
 bool OrderedSimpleTaskRunner::PostDelayedTask(
     const tracked_objects::Location& from_here,
     const base::Closure& task,
     base::TimeDelta delay) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  TestOrderablePendingTask pt(
-      from_here, task, now_src_->Now(), delay, base::TestPendingTask::NESTABLE);
+  TestOrderablePendingTask pt(from_here, task, now_src_->NowTicks(), delay,
+                              base::TestPendingTask::NESTABLE);
 
   TRACE_TASK("OrderedSimpleTaskRunner::PostDelayedTask", pt);
   pending_tasks_.insert(pt);
@@ -113,10 +112,7 @@ bool OrderedSimpleTaskRunner::PostNonNestableDelayedTask(
     const base::Closure& task,
     base::TimeDelta delay) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  TestOrderablePendingTask pt(from_here,
-                              task,
-                              now_src_->Now(),
-                              delay,
+  TestOrderablePendingTask pt(from_here, task, now_src_->NowTicks(), delay,
                               base::TestPendingTask::NON_NESTABLE);
 
   TRACE_TASK("OrderedSimpleTaskRunner::PostNonNestableDelayedTask", pt);
@@ -139,7 +135,7 @@ bool OrderedSimpleTaskRunner::HasPendingTasks() const {
 
 base::TimeTicks OrderedSimpleTaskRunner::NextTaskTime() {
   if (pending_tasks_.size() <= 0) {
-    return TestNowSource::kAbsoluteMaxNow;
+    return AbsoluteMaxNow();
   }
 
   return pending_tasks_.begin()->GetTimeToRun();
@@ -149,10 +145,10 @@ base::TimeDelta OrderedSimpleTaskRunner::DelayToNextTaskTime() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (pending_tasks_.size() <= 0) {
-    return TestNowSource::kAbsoluteMaxNow - base::TimeTicks();
+    return AbsoluteMaxNow() - base::TimeTicks();
   }
 
-  base::TimeDelta delay = NextTaskTime() - now_src_->Now();
+  base::TimeDelta delay = NextTaskTime() - now_src_->NowTicks();
   if (delay > base::TimeDelta())
     return delay;
   return base::TimeDelta();
@@ -193,7 +189,7 @@ bool OrderedSimpleTaskRunner::RunTasksWhile(
 
   // If to advance now or not
   if (!advance_now_) {
-    modifiable_conditions.push_back(NowBefore(now_src_->Now()));
+    modifiable_conditions.push_back(NowBefore(now_src_->NowTicks()));
   } else {
     modifiable_conditions.push_back(AdvanceNow());
   }
@@ -242,23 +238,23 @@ bool OrderedSimpleTaskRunner::RunUntilIdle() {
 
 bool OrderedSimpleTaskRunner::RunUntilTime(base::TimeTicks time) {
   // If we are not auto advancing, force now forward to the time.
-  if (!advance_now_ && now_src_->Now() < time)
-    now_src_->SetNow(time);
+  if (!advance_now_ && now_src_->NowTicks() < time)
+    now_src_->Advance(time - now_src_->NowTicks());
 
   // Run tasks
   bool result = RunTasksWhile(NowBefore(time));
 
   // If the next task is after the stopping time and auto-advancing now, then
   // force time to be the stopping time.
-  if (!result && advance_now_ && now_src_->Now() < time) {
-    now_src_->SetNow(time);
+  if (!result && advance_now_ && now_src_->NowTicks() < time) {
+    now_src_->Advance(time - now_src_->NowTicks());
   }
 
   return result;
 }
 
 bool OrderedSimpleTaskRunner::RunForPeriod(base::TimeDelta period) {
-  return RunUntilTime(now_src_->Now() + period);
+  return RunUntilTime(now_src_->NowTicks() + period);
 }
 
 // base::trace_event tracing functionality
@@ -287,7 +283,8 @@ void OrderedSimpleTaskRunner::AsValueInto(
   state->EndArray();
 
   state->BeginDictionary("now_src");
-  now_src_->AsValueInto(state);
+  state->SetDouble("now_in_ms", (now_src_->NowTicks() - base::TimeTicks())
+                                    .InMillisecondsF());
   state->EndDictionary();
 
   state->SetBoolean("advance_now", advance_now_);
@@ -336,8 +333,8 @@ base::Callback<bool(void)> OrderedSimpleTaskRunner::AdvanceNow() {
 
 bool OrderedSimpleTaskRunner::AdvanceNowCallback() {
   base::TimeTicks next_task_time = NextTaskTime();
-  if (now_src_->Now() < next_task_time) {
-    now_src_->SetNow(next_task_time);
+  if (now_src_->NowTicks() < next_task_time) {
+    now_src_->Advance(next_task_time - now_src_->NowTicks());
   }
   return true;
 }

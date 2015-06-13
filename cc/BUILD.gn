@@ -673,8 +673,6 @@ source_set("test_support") {
     "test/test_image_factory.h",
     "test/test_in_process_context_provider.cc",
     "test/test_in_process_context_provider.h",
-    "test/test_now_source.cc",
-    "test/test_now_source.h",
     "test/test_occlusion_tracker.h",
     "test/test_shared_bitmap_manager.cc",
     "test/test_shared_bitmap_manager.h",

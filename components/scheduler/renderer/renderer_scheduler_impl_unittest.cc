@@ -5,9 +5,9 @@
 #include "components/scheduler/renderer/renderer_scheduler_impl.h"
 
 #include "base/callback.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/test/ordered_simple_task_runner.h"
-#include "cc/test/test_now_source.h"
 #include "components/scheduler/child/nestable_task_runner_for_test.h"
 #include "components/scheduler/child/scheduler_message_loop_delegate.h"
 #include "components/scheduler/child/test_time_source.h"
@@ -81,7 +81,7 @@ void RepostingIdleTestTask(SingleThreadIdleTaskRunner* idle_task_runner,
 void RepostingUpdateClockIdleTestTask(
     SingleThreadIdleTaskRunner* idle_task_runner,
     int* run_count,
-    scoped_refptr<cc::TestNowSource> clock,
+    base::SimpleTestTickClock* clock,
     base::TimeDelta advance_time,
     std::vector<base::TimeTicks>* deadlines,
     base::TimeTicks deadline) {
@@ -93,22 +93,21 @@ void RepostingUpdateClockIdleTestTask(
   }
   deadlines->push_back(deadline);
   (*run_count)++;
-  clock->AdvanceNow(advance_time);
+  clock->Advance(advance_time);
 }
 
 void WillBeginFrameIdleTask(RendererScheduler* scheduler,
-                            scoped_refptr<cc::TestNowSource> clock,
+                            base::SimpleTestTickClock* clock,
                             base::TimeTicks deadline) {
   scheduler->WillBeginFrame(cc::BeginFrameArgs::Create(
-      BEGINFRAME_FROM_HERE, clock->Now(), base::TimeTicks(),
+      BEGINFRAME_FROM_HERE, clock->NowTicks(), base::TimeTicks(),
       base::TimeDelta::FromMilliseconds(1000), cc::BeginFrameArgs::NORMAL));
 }
 
-void UpdateClockToDeadlineIdleTestTask(
-    cc::TestNowSource* clock,
-    int* run_count,
-    base::TimeTicks deadline) {
-  clock->SetNow(deadline);
+void UpdateClockToDeadlineIdleTestTask(base::SimpleTestTickClock* clock,
+                                       int* run_count,
+                                       base::TimeTicks deadline) {
+  clock->Advance(deadline - clock->NowTicks());
   (*run_count)++;
 }
 
@@ -185,10 +184,14 @@ class RendererSchedulerImplTest : public testing::Test {
  public:
   using Policy = RendererSchedulerImpl::Policy;
 
-  RendererSchedulerImplTest() : clock_(cc::TestNowSource::Create(5000)) {}
+  RendererSchedulerImplTest() : clock_(new base::SimpleTestTickClock()) {
+    clock_->Advance(base::TimeDelta::FromMicroseconds(5000));
+  }
 
   RendererSchedulerImplTest(base::MessageLoop* message_loop)
-      : clock_(cc::TestNowSource::Create(5000)), message_loop_(message_loop) {}
+      : clock_(new base::SimpleTestTickClock()), message_loop_(message_loop) {
+    clock_->Advance(base::TimeDelta::FromMicroseconds(5000));
+  }
 
   ~RendererSchedulerImplTest() override {}
 
@@ -197,8 +200,8 @@ class RendererSchedulerImplTest : public testing::Test {
       nestable_task_runner_ =
           SchedulerMessageLoopDelegate::Create(message_loop_.get());
     } else {
-      mock_task_runner_ =
-          make_scoped_refptr(new cc::OrderedSimpleTaskRunner(clock_, false));
+      mock_task_runner_ = make_scoped_refptr(
+          new cc::OrderedSimpleTaskRunner(clock_.get(), false));
       nestable_task_runner_ =
           NestableTaskRunnerForTest::Create(mock_task_runner_);
     }
@@ -214,10 +217,11 @@ class RendererSchedulerImplTest : public testing::Test {
     idle_task_runner_ = scheduler_->IdleTaskRunner();
     timer_task_runner_ = scheduler_->TimerTaskRunner();
     scheduler_->GetSchedulerHelperForTesting()->SetTimeSourceForTesting(
-        make_scoped_ptr(new TestTimeSource(clock_)));
+        make_scoped_ptr(new TestTimeSource(clock_.get())));
     scheduler_->GetSchedulerHelperForTesting()
         ->GetTaskQueueManagerForTesting()
-        ->SetTimeSourceForTesting(make_scoped_ptr(new TestTimeSource(clock_)));
+        ->SetTimeSourceForTesting(
+            make_scoped_ptr(new TestTimeSource(clock_.get())));
   }
 
   void TearDown() override {
@@ -245,7 +249,7 @@ class RendererSchedulerImplTest : public testing::Test {
 
   void DoMainFrame() {
     scheduler_->WillBeginFrame(cc::BeginFrameArgs::Create(
-        BEGINFRAME_FROM_HERE, clock_->Now(), base::TimeTicks(),
+        BEGINFRAME_FROM_HERE, clock_->NowTicks(), base::TimeTicks(),
         base::TimeDelta::FromMilliseconds(1000), cc::BeginFrameArgs::NORMAL));
     scheduler_->DidCommitFrameToCompositor();
   }
@@ -343,7 +347,7 @@ class RendererSchedulerImplTest : public testing::Test {
         &RendererSchedulerImpl::PolicyToString);
   }
 
-  scoped_refptr<cc::TestNowSource> clock_;
+  scoped_ptr<base::SimpleTestTickClock> clock_;
   // Only one of mock_task_runner_ or message_loop_ will be set.
   scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
   scoped_ptr<base::MessageLoop> message_loop_;
@@ -391,10 +395,10 @@ TEST_F(RendererSchedulerImplTest, TestRentrantTask) {
 TEST_F(RendererSchedulerImplTest, TestPostIdleTask) {
   int run_count = 0;
   base::TimeTicks expected_deadline =
-      clock_->Now() + base::TimeDelta::FromMilliseconds(2300);
+      clock_->NowTicks() + base::TimeDelta::FromMilliseconds(2300);
   base::TimeTicks deadline_in_task;
 
-  clock_->AdvanceNow(base::TimeDelta::FromMilliseconds(100));
+  clock_->Advance(base::TimeDelta::FromMilliseconds(100));
   idle_task_runner_->PostIdleTask(
       FROM_HERE, base::Bind(&IdleTestTask, &run_count, &deadline_in_task));
 
@@ -402,20 +406,20 @@ TEST_F(RendererSchedulerImplTest, TestPostIdleTask) {
   EXPECT_EQ(0, run_count);  // Shouldn't run yet as no WillBeginFrame.
 
   scheduler_->WillBeginFrame(cc::BeginFrameArgs::Create(
-      BEGINFRAME_FROM_HERE, clock_->Now(), base::TimeTicks(),
+      BEGINFRAME_FROM_HERE, clock_->NowTicks(), base::TimeTicks(),
       base::TimeDelta::FromMilliseconds(1000), cc::BeginFrameArgs::NORMAL));
   RunUntilIdle();
   EXPECT_EQ(0, run_count);  // Shouldn't run as no DidCommitFrameToCompositor.
 
-  clock_->AdvanceNow(base::TimeDelta::FromMilliseconds(1200));
+  clock_->Advance(base::TimeDelta::FromMilliseconds(1200));
   scheduler_->DidCommitFrameToCompositor();
   RunUntilIdle();
   EXPECT_EQ(0, run_count);  // We missed the deadline.
 
   scheduler_->WillBeginFrame(cc::BeginFrameArgs::Create(
-      BEGINFRAME_FROM_HERE, clock_->Now(), base::TimeTicks(),
+      BEGINFRAME_FROM_HERE, clock_->NowTicks(), base::TimeTicks(),
       base::TimeDelta::FromMilliseconds(1000), cc::BeginFrameArgs::NORMAL));
-  clock_->AdvanceNow(base::TimeDelta::FromMilliseconds(800));
+  clock_->Advance(base::TimeDelta::FromMilliseconds(800));
   scheduler_->DidCommitFrameToCompositor();
   RunUntilIdle();
   EXPECT_EQ(1, run_count);
@@ -449,10 +453,10 @@ TEST_F(RendererSchedulerImplTest, TestIdleTaskExceedsDeadline) {
   // Post two UpdateClockToDeadlineIdleTestTask tasks.
   idle_task_runner_->PostIdleTask(
       FROM_HERE,
-      base::Bind(&UpdateClockToDeadlineIdleTestTask, clock_, &run_count));
+      base::Bind(&UpdateClockToDeadlineIdleTestTask, clock_.get(), &run_count));
   idle_task_runner_->PostIdleTask(
       FROM_HERE,
-      base::Bind(&UpdateClockToDeadlineIdleTestTask, clock_, &run_count));
+      base::Bind(&UpdateClockToDeadlineIdleTestTask, clock_.get(), &run_count));
 
   EnableIdleTasks();
   RunUntilIdle();
@@ -536,15 +540,15 @@ TEST_F(RendererSchedulerImplTest, TestDelayedEndIdlePeriodCanceled) {
 
   // Trigger the beginning of an idle period for 1000ms.
   scheduler_->WillBeginFrame(cc::BeginFrameArgs::Create(
-      BEGINFRAME_FROM_HERE, clock_->Now(), base::TimeTicks(),
+      BEGINFRAME_FROM_HERE, clock_->NowTicks(), base::TimeTicks(),
       base::TimeDelta::FromMilliseconds(1000), cc::BeginFrameArgs::NORMAL));
   DoMainFrame();
 
   // End the idle period early (after 500ms), and send a WillBeginFrame which
   // specifies that the next idle period should end 1000ms from now.
-  clock_->AdvanceNow(base::TimeDelta::FromMilliseconds(500));
+  clock_->Advance(base::TimeDelta::FromMilliseconds(500));
   scheduler_->WillBeginFrame(cc::BeginFrameArgs::Create(
-      BEGINFRAME_FROM_HERE, clock_->Now(), base::TimeTicks(),
+      BEGINFRAME_FROM_HERE, clock_->NowTicks(), base::TimeTicks(),
       base::TimeDelta::FromMilliseconds(1000), cc::BeginFrameArgs::NORMAL));
 
   RunUntilIdle();
@@ -552,13 +556,13 @@ TEST_F(RendererSchedulerImplTest, TestDelayedEndIdlePeriodCanceled) {
 
   // Trigger the start of the idle period before the task to end the previous
   // idle period has been triggered.
-  clock_->AdvanceNow(base::TimeDelta::FromMilliseconds(400));
+  clock_->Advance(base::TimeDelta::FromMilliseconds(400));
   scheduler_->DidCommitFrameToCompositor();
 
   // Post a task which simulates running until after the previous end idle
   // period delayed task was scheduled for
   scheduler_->DefaultTaskRunner()->PostTask(FROM_HERE, base::Bind(NullTask));
-  clock_->AdvanceNow(base::TimeDelta::FromMilliseconds(300));
+  clock_->Advance(base::TimeDelta::FromMilliseconds(300));
 
   RunUntilIdle();
   EXPECT_EQ(1, run_count);  // We should still be in the new idle period.
@@ -628,7 +632,7 @@ TEST_F(RendererSchedulerImplTest,
 
   scheduler_->DidAnimateForInputOnCompositorThread();
   scheduler_->WillBeginFrame(cc::BeginFrameArgs::Create(
-      BEGINFRAME_FROM_HERE, clock_->Now(), base::TimeTicks(),
+      BEGINFRAME_FROM_HERE, clock_->NowTicks(), base::TimeTicks(),
       base::TimeDelta::FromMilliseconds(16), cc::BeginFrameArgs::NORMAL));
   scheduler_->DidCommitFrameToCompositor();  // Starts Idle Period
   RunUntilIdle();
@@ -637,10 +641,10 @@ TEST_F(RendererSchedulerImplTest,
               testing::ElementsAre(std::string("C1"), std::string("T1")));
 
   // End the idle period.
-  clock_->AdvanceNow(base::TimeDelta::FromMilliseconds(500));
+  clock_->Advance(base::TimeDelta::FromMilliseconds(500));
   scheduler_->DidAnimateForInputOnCompositorThread();
   scheduler_->WillBeginFrame(cc::BeginFrameArgs::Create(
-      BEGINFRAME_FROM_HERE, clock_->Now(), base::TimeTicks(),
+      BEGINFRAME_FROM_HERE, clock_->NowTicks(), base::TimeTicks(),
       base::TimeDelta::FromMilliseconds(16), cc::BeginFrameArgs::NORMAL));
 
   run_order.clear();
@@ -656,11 +660,11 @@ TEST_F(RendererSchedulerImplTest,
   PostTestTasks(&run_order, "C1 T1");
 
   // Simulate no recent idle period.
-  clock_->AdvanceNow(idle_period_starvation_threshold() * 2);
+  clock_->Advance(idle_period_starvation_threshold() * 2);
 
   scheduler_->DidAnimateForInputOnCompositorThread();
   scheduler_->WillBeginFrame(cc::BeginFrameArgs::Create(
-      BEGINFRAME_FROM_HERE, clock_->Now(), base::TimeTicks(),
+      BEGINFRAME_FROM_HERE, clock_->NowTicks(), base::TimeTicks(),
       base::TimeDelta::FromMilliseconds(16), cc::BeginFrameArgs::NORMAL));
 
   RunUntilIdle();
@@ -676,7 +680,7 @@ TEST_F(RendererSchedulerImplTest,
 
   scheduler_->DidAnimateForInputOnCompositorThread();
   cc::BeginFrameArgs begin_frame_args1 = cc::BeginFrameArgs::Create(
-      BEGINFRAME_FROM_HERE, clock_->Now(), base::TimeTicks(),
+      BEGINFRAME_FROM_HERE, clock_->NowTicks(), base::TimeTicks(),
       base::TimeDelta::FromMilliseconds(1000), cc::BeginFrameArgs::NORMAL);
   begin_frame_args1.on_critical_path = false;
   scheduler_->WillBeginFrame(begin_frame_args1);
@@ -687,10 +691,10 @@ TEST_F(RendererSchedulerImplTest,
               testing::ElementsAre(std::string("C1"), std::string("T1")));
 
   // End the idle period.
-  clock_->AdvanceNow(base::TimeDelta::FromMilliseconds(500));
+  clock_->Advance(base::TimeDelta::FromMilliseconds(500));
   scheduler_->DidAnimateForInputOnCompositorThread();
   cc::BeginFrameArgs begin_frame_args2 = cc::BeginFrameArgs::Create(
-      BEGINFRAME_FROM_HERE, clock_->Now(), base::TimeTicks(),
+      BEGINFRAME_FROM_HERE, clock_->NowTicks(), base::TimeTicks(),
       base::TimeDelta::FromMilliseconds(1000), cc::BeginFrameArgs::NORMAL);
   begin_frame_args2.on_critical_path = false;
   scheduler_->WillBeginFrame(begin_frame_args2);
@@ -804,7 +808,7 @@ TEST_F(RendererSchedulerImplTest, LoadingPriorityPolicy) {
 
   // Advance 1.5s and try again, the loading policy should have ended and the
   // task order should return to normal.
-  clock_->AdvanceNow(base::TimeDelta::FromMilliseconds(1500));
+  clock_->Advance(base::TimeDelta::FromMilliseconds(1500));
   run_order.clear();
   PostTestTasks(&run_order, "L1 I1 D1 C1 D2 C2");
   EnableIdleTasks();
@@ -994,7 +998,7 @@ TEST_F(RendererSchedulerImplTest,
                                    std::string("D1"), std::string("D2")));
 
   run_order.clear();
-  clock_->AdvanceNow(base::TimeDelta::FromMilliseconds(1000));
+  clock_->Advance(base::TimeDelta::FromMilliseconds(1000));
   PostTestTasks(&run_order, "D1 C1 D2 C2");
 
   // Compositor policy mode should have ended now that the clock has advanced.
@@ -1020,7 +1024,7 @@ TEST_F(RendererSchedulerImplTest,
                                    std::string("D1"), std::string("D2")));
 
   run_order.clear();
-  clock_->AdvanceNow(base::TimeDelta::FromMilliseconds(1000));
+  clock_->Advance(base::TimeDelta::FromMilliseconds(1000));
   PostTestTasks(&run_order, "D1 C1 D2 C2");
 
   // Compositor policy mode should have ended now that the clock has advanced.
@@ -1043,7 +1047,7 @@ TEST_F(RendererSchedulerImplTest, TestTouchstartPolicyEndsAfterTimeout) {
                                    std::string("D1"), std::string("D2")));
 
   run_order.clear();
-  clock_->AdvanceNow(base::TimeDelta::FromMilliseconds(1000));
+  clock_->Advance(base::TimeDelta::FromMilliseconds(1000));
 
   // Don't post any compositor tasks to simulate a very long running event
   // handler.
@@ -1113,7 +1117,7 @@ TEST_F(RendererSchedulerImplTest, TestIsHighPriorityWorkAnticipated) {
   EXPECT_FALSE(is_anticipated_before);
   EXPECT_TRUE(is_anticipated_after);
 
-  clock_->AdvanceNow(priority_escalation_after_input_duration() * 2);
+  clock_->Advance(priority_escalation_after_input_duration() * 2);
   simulate_input = false;
   default_task_runner_->PostTask(
       FROM_HERE,
@@ -1179,7 +1183,7 @@ TEST_F(RendererSchedulerImplTest, SlowMainThreadInputEvent) {
 
   // Simulate the input event being queued for a very long time. The compositor
   // task we post here represents the enqueued input task.
-  clock_->AdvanceNow(priority_escalation_after_input_duration() * 2);
+  clock_->Advance(priority_escalation_after_input_duration() * 2);
   scheduler_->DidHandleInputEventOnMainThread(
       FakeInputEvent(blink::WebInputEvent::GestureFlingStart));
   RunUntilIdle();
@@ -1189,7 +1193,7 @@ TEST_F(RendererSchedulerImplTest, SlowMainThreadInputEvent) {
   EXPECT_EQ(Policy::COMPOSITOR_PRIORITY, CurrentPolicy());
 
   // After the escalation period ends we should go back into normal mode.
-  clock_->AdvanceNow(priority_escalation_after_input_duration() * 2);
+  clock_->Advance(priority_escalation_after_input_duration() * 2);
   RunUntilIdle();
   EXPECT_EQ(Policy::NORMAL, CurrentPolicy());
 }
@@ -1198,8 +1202,8 @@ class RendererSchedulerImplWithMockSchedulerTest
     : public RendererSchedulerImplTest {
  public:
   void SetUp() override {
-    mock_task_runner_ =
-        make_scoped_refptr(new cc::OrderedSimpleTaskRunner(clock_, false));
+    mock_task_runner_ = make_scoped_refptr(
+        new cc::OrderedSimpleTaskRunner(clock_.get(), false));
     nestable_task_runner_ =
         NestableTaskRunnerForTest::Create(mock_task_runner_);
     mock_scheduler_ = new RendererSchedulerImplForTest(nestable_task_runner_);
@@ -1227,7 +1231,7 @@ TEST_F(RendererSchedulerImplWithMockSchedulerTest,
   mock_task_runner_->SetAutoAdvanceNowToPendingTasks(true);
 
   mock_scheduler_->ScheduleDelayedPolicyUpdate(
-      clock_->Now(), base::TimeDelta::FromMilliseconds(1));
+      clock_->NowTicks(), base::TimeDelta::FromMilliseconds(1));
   mock_scheduler_->EnsureUrgentPolicyUpdatePostedOnMainThread();
 
   RunUntilIdle();
@@ -1242,7 +1246,7 @@ TEST_F(RendererSchedulerImplWithMockSchedulerTest,
 
   mock_scheduler_->EnsureUrgentPolicyUpdatePostedOnMainThread();
   mock_scheduler_->ScheduleDelayedPolicyUpdate(
-      clock_->Now(), base::TimeDelta::FromMilliseconds(1));
+      clock_->NowTicks(), base::TimeDelta::FromMilliseconds(1));
 
   RunUntilIdle();
 
@@ -1265,7 +1269,7 @@ TEST_F(RendererSchedulerImplWithMockSchedulerTest,
       FakeInputEvent(blink::WebInputEvent::TouchStart));
   EXPECT_EQ(1, mock_scheduler_->update_policy_count_);
 
-  clock_->AdvanceNow(base::TimeDelta::FromMilliseconds(1000));
+  clock_->Advance(base::TimeDelta::FromMilliseconds(1000));
   RunUntilIdle();
 
   // We finally expect a delayed policy update 100ms later.
@@ -1314,7 +1318,7 @@ TEST_F(RendererSchedulerImplWithMockSchedulerTest,
       FakeInputEvent(blink::WebInputEvent::TouchMove));
   EXPECT_EQ(2, mock_scheduler_->update_policy_count_);
 
-  clock_->AdvanceNow(base::TimeDelta::FromMilliseconds(1000));
+  clock_->Advance(base::TimeDelta::FromMilliseconds(1000));
   RunUntilIdle();
 
   // We finally expect a delayed policy update.
@@ -1336,7 +1340,7 @@ TEST_F(RendererSchedulerImplWithMockSchedulerTest,
       FakeInputEvent(blink::WebInputEvent::TouchStart));
   EXPECT_EQ(1, mock_scheduler_->update_policy_count_);
 
-  clock_->AdvanceNow(base::TimeDelta::FromMilliseconds(1000));
+  clock_->Advance(base::TimeDelta::FromMilliseconds(1000));
   RunUntilIdle();
   // We expect a delayed policy update.
   EXPECT_EQ(2, mock_scheduler_->update_policy_count_);
@@ -1354,7 +1358,7 @@ TEST_F(RendererSchedulerImplWithMockSchedulerTest,
       FakeInputEvent(blink::WebInputEvent::TouchMove));
   EXPECT_EQ(3, mock_scheduler_->update_policy_count_);
 
-  clock_->AdvanceNow(base::TimeDelta::FromMilliseconds(1000));
+  clock_->Advance(base::TimeDelta::FromMilliseconds(1000));
   RunUntilIdle();
 
   // We finally expect a delayed policy update.
@@ -1462,7 +1466,7 @@ TEST_F(RendererSchedulerImplWithMessageLoopTest,
 
 TEST_F(RendererSchedulerImplTest, TestLongIdlePeriod) {
   base::TimeTicks expected_deadline =
-      clock_->Now() + maximum_idle_period_duration();
+      clock_->NowTicks() + maximum_idle_period_duration();
   base::TimeTicks deadline_in_task;
   int run_count = 0;
 
@@ -1480,7 +1484,7 @@ TEST_F(RendererSchedulerImplTest, TestLongIdlePeriod) {
 
 TEST_F(RendererSchedulerImplTest, TestLongIdlePeriodWithPendingDelayedTask) {
   base::TimeDelta pending_task_delay = base::TimeDelta::FromMilliseconds(30);
-  base::TimeTicks expected_deadline = clock_->Now() + pending_task_delay;
+  base::TimeTicks expected_deadline = clock_->NowTicks() + pending_task_delay;
   base::TimeTicks deadline_in_task;
   int run_count = 0;
 
@@ -1505,7 +1509,7 @@ TEST_F(RendererSchedulerImplTest,
                                         pending_task_delay);
 
   // Advance clock until after delayed task was meant to be run.
-  clock_->AdvanceNow(base::TimeDelta::FromMilliseconds(20));
+  clock_->Advance(base::TimeDelta::FromMilliseconds(20));
 
   // Post an idle task and BeginFrameNotExpectedSoon to initiate a long idle
   // period. Since there is a late pending delayed task this shouldn't actually
@@ -1517,7 +1521,7 @@ TEST_F(RendererSchedulerImplTest,
   EXPECT_EQ(0, run_count);
 
   // After the delayed task has been run we should trigger an idle period.
-  clock_->AdvanceNow(maximum_idle_period_duration());
+  clock_->Advance(maximum_idle_period_duration());
   RunUntilIdle();
   EXPECT_EQ(1, run_count);
 }
@@ -1528,12 +1532,12 @@ TEST_F(RendererSchedulerImplTest, TestLongIdlePeriodRepeating) {
   int run_count = 0;
 
   max_idle_task_reposts = 3;
-  base::TimeTicks clock_before(clock_->Now());
+  base::TimeTicks clock_before(clock_->NowTicks());
   base::TimeDelta idle_task_runtime(base::TimeDelta::FromMilliseconds(10));
   idle_task_runner_->PostIdleTask(
-      FROM_HERE,
-      base::Bind(&RepostingUpdateClockIdleTestTask, idle_task_runner_,
-                 &run_count, clock_, idle_task_runtime, &actual_deadlines));
+      FROM_HERE, base::Bind(&RepostingUpdateClockIdleTestTask,
+                            idle_task_runner_, &run_count, clock_.get(),
+                            idle_task_runtime, &actual_deadlines));
   scheduler_->BeginFrameNotExpectedSoon();
   RunUntilIdle();
   EXPECT_EQ(3, run_count);
@@ -1549,12 +1553,12 @@ TEST_F(RendererSchedulerImplTest, TestLongIdlePeriodRepeating) {
   // new BeginMainFrame.
   max_idle_task_reposts = 5;
   idle_task_runner_->PostIdleTask(
-      FROM_HERE,
-      base::Bind(&RepostingUpdateClockIdleTestTask, idle_task_runner_,
-                 &run_count, clock_, idle_task_runtime, &actual_deadlines));
+      FROM_HERE, base::Bind(&RepostingUpdateClockIdleTestTask,
+                            idle_task_runner_, &run_count, clock_.get(),
+                            idle_task_runtime, &actual_deadlines));
   idle_task_runner_->PostIdleTask(
       FROM_HERE, base::Bind(&WillBeginFrameIdleTask,
-                            base::Unretained(scheduler_.get()), clock_));
+                            base::Unretained(scheduler_.get()), clock_.get()));
   RunUntilIdle();
   EXPECT_EQ(4, run_count);
 }
@@ -1571,7 +1575,7 @@ TEST_F(RendererSchedulerImplTest, TestLongIdlePeriodDoesNotWakeScheduler) {
   // idle period.
   base::TimeTicks idle_period_deadline =
       scheduler_->CurrentIdleTaskDeadlineForTesting();
-  clock_->AdvanceNow(maximum_idle_period_duration());
+  clock_->Advance(maximum_idle_period_duration());
   RunUntilIdle();
 
   base::TimeTicks new_idle_period_deadline =
@@ -1613,7 +1617,7 @@ TEST_F(RendererSchedulerImplTest, TestLongIdlePeriodInTouchStartPolicy) {
   EXPECT_EQ(0, run_count);
 
   // The long idle period should start after the touchstart policy has finished.
-  clock_->AdvanceNow(priority_escalation_after_input_duration());
+  clock_->Advance(priority_escalation_after_input_duration());
   RunUntilIdle();
   EXPECT_EQ(1, run_count);
 }
@@ -1658,7 +1662,7 @@ TEST_F(RendererSchedulerImplTest, CanExceedIdleDeadlineIfRequired) {
 
   // Next long idle period will be for the maximum time, so
   // CanExceedIdleDeadlineIfRequired should return true.
-  clock_->AdvanceNow(maximum_idle_period_duration());
+  clock_->Advance(maximum_idle_period_duration());
   idle_task_runner_->PostIdleTask(
       FROM_HERE,
       base::Bind(&TestCanExceedIdleDeadlineIfRequiredTask, scheduler_.get(),
@@ -1670,7 +1674,7 @@ TEST_F(RendererSchedulerImplTest, CanExceedIdleDeadlineIfRequired) {
   // Next long idle period will be for the maximum time, so
   // CanExceedIdleDeadlineIfRequired should return true.
   scheduler_->WillBeginFrame(cc::BeginFrameArgs::Create(
-      BEGINFRAME_FROM_HERE, clock_->Now(), base::TimeTicks(),
+      BEGINFRAME_FROM_HERE, clock_->NowTicks(), base::TimeTicks(),
       base::TimeDelta::FromMilliseconds(1000), cc::BeginFrameArgs::NORMAL));
   EXPECT_FALSE(scheduler_->CanExceedIdleDeadlineIfRequired());
 }
@@ -1700,8 +1704,8 @@ TEST_F(RendererSchedulerImplTest, TestRendererHiddenIdlePeriod) {
   idle_task_runner_->PostIdleTask(
       FROM_HERE,
       base::Bind(&RepostingIdleTestTask, idle_task_runner_, &run_count));
-  clock_->AdvanceNow(end_idle_when_hidden_delay() +
-                     base::TimeDelta::FromMilliseconds(10));
+  clock_->Advance(end_idle_when_hidden_delay() +
+                  base::TimeDelta::FromMilliseconds(10));
   RunUntilIdle();
   EXPECT_EQ(2, run_count);
 }
@@ -1773,7 +1777,7 @@ TEST_F(RendererSchedulerImplTest, BeginMainFrameOnCriticalPath) {
   ASSERT_FALSE(scheduler_->BeginMainFrameOnCriticalPath());
 
   cc::BeginFrameArgs begin_frame_args = cc::BeginFrameArgs::Create(
-      BEGINFRAME_FROM_HERE, clock_->Now(), base::TimeTicks(),
+      BEGINFRAME_FROM_HERE, clock_->NowTicks(), base::TimeTicks(),
       base::TimeDelta::FromMilliseconds(1000), cc::BeginFrameArgs::NORMAL);
   scheduler_->WillBeginFrame(begin_frame_args);
   ASSERT_TRUE(scheduler_->BeginMainFrameOnCriticalPath());

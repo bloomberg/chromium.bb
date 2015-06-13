@@ -7,9 +7,9 @@
 
 #include <iosfwd>
 
+#include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
 #include "cc/output/begin_frame_args.h"
-#include "cc/test/test_now_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
@@ -38,10 +38,10 @@ BeginFrameArgs CreateExpiredBeginFrameArgsForTesting(
 // OrderSimpleTaskRunner.
 BeginFrameArgs CreateBeginFrameArgsForTesting(
     BeginFrameArgs::CreationLocation location,
-    scoped_refptr<TestNowSource> now_src);
+    base::SimpleTestTickClock* now_src);
 BeginFrameArgs CreateExpiredBeginFrameArgsForTesting(
     BeginFrameArgs::CreationLocation location,
-    scoped_refptr<TestNowSource> now_src);
+    base::SimpleTestTickClock* now_src);
 
 // gtest helpers -- these *must* be in the same namespace as the types they
 // operate on.
