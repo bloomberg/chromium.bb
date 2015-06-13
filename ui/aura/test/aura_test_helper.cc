@@ -62,7 +62,6 @@ void AuraTestHelper::SetUp(ui::ContextFactory* context_factory) {
   // from RootWindow.
   EnvTestHelper(Env::GetInstance()).SetInputStateLookup(nullptr);
 
-  ui::SetUpInputMethodFactoryForTesting();
   ui::InitializeInputMethodForTesting();
 
   gfx::Size host_size(800, 600);
