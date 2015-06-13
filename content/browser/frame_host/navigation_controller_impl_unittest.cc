@@ -2086,18 +2086,39 @@ TEST_F(NavigationControllerTest, NewSubframe) {
   RegisterForAllNavNotifications(&notifications, &controller);
 
   const GURL url1("http://foo1");
-  main_test_rfh()->NavigateAndCommitRendererInitiated(0, true, url1);
+  main_test_rfh()->NavigateAndCommitRendererInitiated(1, true, url1);
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
 
+  // Prereq: add a subframe with an initial auto-subframe navigation.
   main_test_rfh()->OnCreateChildFrame(
       MSG_ROUTING_NONE, blink::WebTreeScopeType::Document, std::string(),
       blink::WebSandboxFlags::None);
   RenderFrameHostImpl* subframe =
       contents()->GetFrameTree()->root()->child_at(0)->current_frame_host();
+  const GURL subframe_url("http://foo1/subframe");
+  {
+    FrameHostMsg_DidCommitProvisionalLoad_Params params;
+    params.page_id = 1;
+    params.nav_entry_id = 0;
+    params.did_create_new_entry = false;
+    params.url = subframe_url;
+    params.transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
+    params.should_update_history = false;
+    params.gesture = NavigationGestureUser;
+    params.is_post = false;
+    params.page_state = PageState::CreateFromURL(subframe_url);
+
+    // Navigating should do nothing.
+    LoadCommittedDetails details;
+    EXPECT_FALSE(controller.RendererDidNavigate(subframe, params, &details));
+    EXPECT_EQ(0U, notifications.size());
+  }
+
+  // Now do a new navigation in the frame.
   const GURL url2("http://foo2");
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
-  params.page_id = 1;
+  params.page_id = 2;
   params.nav_entry_id = 0;
   params.did_create_new_entry = true;
   params.url = url2;
@@ -2116,12 +2137,25 @@ TEST_F(NavigationControllerTest, NewSubframe) {
   EXPECT_FALSE(details.is_main_frame);
 
   // The new entry should be appended.
+  NavigationEntryImpl* entry = controller.GetLastCommittedEntry();
   EXPECT_EQ(2, controller.GetEntryCount());
+  EXPECT_EQ(entry, details.entry);
 
   // New entry should refer to the new page, but the old URL (entries only
   // reflect the toplevel URL).
-  EXPECT_EQ(url1, details.entry->GetURL());
-  EXPECT_EQ(params.page_id, details.entry->GetPageID());
+  EXPECT_EQ(url1, entry->GetURL());
+  EXPECT_EQ(params.page_id, entry->GetPageID());
+
+  // Verify subframe entries if we're in --site-per-process mode.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess)) {
+    // The entry should have a subframe FrameNavigationEntry.
+    ASSERT_EQ(1U, entry->root_node()->children.size());
+    EXPECT_EQ(url2, entry->root_node()->children[0]->frame_entry->url());
+  } else {
+    // There are no subframe FrameNavigationEntries by default.
+    EXPECT_EQ(0U, entry->root_node()->children.size());
+  }
 }
 
 // Auto subframes are ones the page loads automatically like ads. They should
@@ -2289,15 +2323,40 @@ TEST_F(NavigationControllerTest, BackSubframe) {
 
   // Main page.
   const GURL url1("http://foo1");
-  main_test_rfh()->NavigateAndCommitRendererInitiated(0, true, url1);
+  main_test_rfh()->NavigateAndCommitRendererInitiated(1, true, url1);
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   NavigationEntry* entry1 = controller.GetLastCommittedEntry();
   navigation_entry_committed_counter_ = 0;
 
+  // Prereq: add a subframe with an initial auto-subframe navigation.
+  main_test_rfh()->OnCreateChildFrame(
+      MSG_ROUTING_NONE, blink::WebTreeScopeType::Document, std::string(),
+      blink::WebSandboxFlags::None);
+  RenderFrameHostImpl* subframe =
+      contents()->GetFrameTree()->root()->child_at(0)->current_frame_host();
+  const GURL subframe_url("http://foo1/subframe");
+  {
+    FrameHostMsg_DidCommitProvisionalLoad_Params params;
+    params.page_id = 1;
+    params.nav_entry_id = 0;
+    params.did_create_new_entry = false;
+    params.url = subframe_url;
+    params.transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
+    params.should_update_history = false;
+    params.gesture = NavigationGestureUser;
+    params.is_post = false;
+    params.page_state = PageState::CreateFromURL(subframe_url);
+
+    // Navigating should do nothing.
+    LoadCommittedDetails details;
+    EXPECT_FALSE(controller.RendererDidNavigate(subframe, params, &details));
+    EXPECT_EQ(0U, notifications.size());
+  }
+
   // First manual subframe navigation.
   const GURL url2("http://foo2");
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
-  params.page_id = 1;
+  params.page_id = 2;
   params.nav_entry_id = 0;
   params.did_create_new_entry = true;
   params.url = url2;
@@ -2309,38 +2368,59 @@ TEST_F(NavigationControllerTest, BackSubframe) {
 
   // This should generate a new entry.
   LoadCommittedDetails details;
-  EXPECT_TRUE(controller.RendererDidNavigate(main_test_rfh(), params,
-                                             &details));
-  NavigationEntry* entry2 = controller.GetLastCommittedEntry();
+  EXPECT_TRUE(controller.RendererDidNavigate(subframe, params, &details));
+  NavigationEntryImpl* entry2 = controller.GetLastCommittedEntry();
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
   EXPECT_EQ(2, controller.GetEntryCount());
 
+  // Verify subframe entries if we're in --site-per-process mode.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess)) {
+    // The entry should have a subframe FrameNavigationEntry.
+    ASSERT_EQ(1U, entry2->root_node()->children.size());
+    EXPECT_EQ(url2, entry2->root_node()->children[0]->frame_entry->url());
+  } else {
+    // There are no subframe FrameNavigationEntries by default.
+    EXPECT_EQ(0U, entry2->root_node()->children.size());
+  }
+
   // Second manual subframe navigation should also make a new entry.
   const GURL url3("http://foo3");
-  params.page_id = 2;
+  params.page_id = 3;
   params.nav_entry_id = 0;
   params.did_create_new_entry = true;
   params.url = url3;
   params.transition = ui::PAGE_TRANSITION_MANUAL_SUBFRAME;
-  EXPECT_TRUE(controller.RendererDidNavigate(main_test_rfh(), params,
-                                             &details));
+  EXPECT_TRUE(controller.RendererDidNavigate(subframe, params, &details));
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
+  NavigationEntryImpl* entry3 = controller.GetLastCommittedEntry();
   EXPECT_EQ(3, controller.GetEntryCount());
   EXPECT_EQ(2, controller.GetCurrentEntryIndex());
 
+  // Verify subframe entries if we're in --site-per-process mode.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess)) {
+    // The entry should have a subframe FrameNavigationEntry.
+    ASSERT_EQ(1U, entry3->root_node()->children.size());
+    EXPECT_EQ(url3, entry3->root_node()->children[0]->frame_entry->url());
+  } else {
+    // There are no subframe FrameNavigationEntries by default.
+    EXPECT_EQ(0U, entry3->root_node()->children.size());
+  }
+
   // Go back one.
   controller.GoBack();
-  params.page_id = 1;
+  params.page_id = 2;
   params.nav_entry_id = entry2->GetUniqueID();
   params.did_create_new_entry = false;
   params.url = url2;
   params.transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
-  EXPECT_TRUE(controller.RendererDidNavigate(main_test_rfh(), params,
-                                             &details));
+  EXPECT_TRUE(controller.RendererDidNavigate(subframe, params, &details));
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
+  EXPECT_EQ(entry2, controller.GetLastCommittedEntry());
   EXPECT_EQ(3, controller.GetEntryCount());
   EXPECT_EQ(1, controller.GetCurrentEntryIndex());
   EXPECT_EQ(-1, controller.GetPendingEntryIndex());
@@ -2348,15 +2428,15 @@ TEST_F(NavigationControllerTest, BackSubframe) {
 
   // Go back one more.
   controller.GoBack();
-  params.page_id = 0;
+  params.page_id = 1;
   params.nav_entry_id = entry1->GetUniqueID();
   params.did_create_new_entry = false;
   params.url = url1;
   params.transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
-  EXPECT_TRUE(controller.RendererDidNavigate(main_test_rfh(), params,
-                                             &details));
+  EXPECT_TRUE(controller.RendererDidNavigate(subframe, params, &details));
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
+  EXPECT_EQ(entry1, controller.GetLastCommittedEntry());
   EXPECT_EQ(3, controller.GetEntryCount());
   EXPECT_EQ(0, controller.GetCurrentEntryIndex());
   EXPECT_EQ(-1, controller.GetPendingEntryIndex());

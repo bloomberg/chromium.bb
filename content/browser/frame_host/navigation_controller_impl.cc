@@ -1393,7 +1393,21 @@ void NavigationControllerImpl::RendererDidNavigateNewSubframe(
   // band with the actual navigations.
   DCHECK(GetLastCommittedEntry()) << "ClassifyNavigation should guarantee "
                                   << "that a last committed entry exists.";
-  NavigationEntryImpl* new_entry = GetLastCommittedEntry()->Clone();
+
+  NavigationEntryImpl* new_entry = nullptr;
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess)) {
+    // Make sure new_entry takes ownership of frame_entry in a scoped_refptr.
+    FrameNavigationEntry* frame_entry = new FrameNavigationEntry(
+        rfh->frame_tree_node()->frame_tree_node_id(), rfh->GetSiteInstance(),
+        params.url, params.referrer);
+    new_entry = GetLastCommittedEntry()->CloneAndReplace(rfh->frame_tree_node(),
+                                                         frame_entry);
+    CHECK(frame_entry->HasOneRef());
+  } else {
+    new_entry = GetLastCommittedEntry()->Clone();
+  }
+
   new_entry->SetPageID(params.page_id);
   InsertOrReplaceEntry(new_entry, false);
 }

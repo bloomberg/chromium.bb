@@ -44,13 +44,28 @@ bool NavigationEntryImpl::TreeNode::MatchesFrame(
          frame_entry->frame_tree_node_id() == -1;
 }
 
-NavigationEntryImpl::TreeNode* NavigationEntryImpl::TreeNode::Clone() const {
-  // Clone the tree using a copy of the FrameNavigationEntry, without sharing.
-  NavigationEntryImpl::TreeNode* copy =
-      new NavigationEntryImpl::TreeNode(frame_entry->Clone());
+scoped_ptr<NavigationEntryImpl::TreeNode>
+NavigationEntryImpl::TreeNode::CloneAndReplace(
+    FrameTreeNode* frame_tree_node,
+    FrameNavigationEntry* frame_navigation_entry) const {
+  if (frame_tree_node && MatchesFrame(frame_tree_node)) {
+    // Replace this node in the cloned tree and prune its children.
+    return make_scoped_ptr(
+        new NavigationEntryImpl::TreeNode(frame_navigation_entry));
+  }
 
-  // TODO(creis): Clone children once we add them.
-  return copy;
+  // Clone the tree using a copy of the FrameNavigationEntry, without sharing.
+  // TODO(creis): Share FNEs unless it's for another tab.
+  scoped_ptr<NavigationEntryImpl::TreeNode> copy(
+      new NavigationEntryImpl::TreeNode(frame_entry->Clone()));
+
+  // Recursively clone the children.
+  for (auto& child : children) {
+    copy->children.push_back(
+        child->CloneAndReplace(frame_tree_node, frame_navigation_entry));
+  }
+
+  return copy.Pass();
 }
 
 NavigationEntry* NavigationEntry::Create() {
@@ -351,11 +366,18 @@ void NavigationEntryImpl::ClearExtraData(const std::string& key) {
 }
 
 NavigationEntryImpl* NavigationEntryImpl::Clone() const {
+  return NavigationEntryImpl::CloneAndReplace(nullptr, nullptr);
+}
+
+NavigationEntryImpl* NavigationEntryImpl::CloneAndReplace(
+    FrameTreeNode* frame_tree_node,
+    FrameNavigationEntry* frame_navigation_entry) const {
   NavigationEntryImpl* copy = new NavigationEntryImpl();
 
   // TODO(creis): Only share the same FrameNavigationEntries if cloning within
   // the same tab.
-  copy->frame_tree_.reset(frame_tree_->Clone());
+  copy->frame_tree_ =
+      frame_tree_->CloneAndReplace(frame_tree_node, frame_navigation_entry);
 
   // Copy most state over, unless cleared in ResetForCommit.
   // Don't copy unique_id_, otherwise it won't be unique.
@@ -493,9 +515,8 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(FrameTreeNode* frame_tree_node,
       FindFrameEntry(frame_tree_node->parent());
   if (!parent_node) {
     // The renderer should not send a commit for a subframe before its parent.
-    // TODO(creis): This can currently happen because we don't yet clone the
-    // FrameNavigationEntry tree on manual subframe navigations.  Once that's
-    // added, we should kill the renderer if we get here.
+    // TODO(creis): Kill the renderer if we get here.
+    NOTREACHED() << "Shouldn't see a commit for a subframe before parent.";
     return;
   }
 
@@ -503,7 +524,7 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(FrameTreeNode* frame_tree_node,
   int frame_tree_node_id = frame_tree_node->frame_tree_node_id();
   for (TreeNode* child : parent_node->children) {
     if (child->frame_entry->frame_tree_node_id() == frame_tree_node_id) {
-      // Update the existing FrameNavigationEntry.
+      // Update the existing FrameNavigationEntry (e.g., for replaceState).
       child->frame_entry->UpdateEntry(site_instance, url, referrer, page_state);
       return;
     }
