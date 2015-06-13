@@ -1289,11 +1289,12 @@ URLIndexPrivateData::AddHistoryMatch::AddHistoryMatch(
     // If the iterator doesn't work, assume an offset of 0.
     if (!iter.Init())
       continue;
-    // Find the first word start.
+    // Find the first word start. If the iterator didn't find a word break, set
+    // an offset of term size. For example, the offset for "://" should be 3,
+    // indicating that the word-part is missing.
     while (iter.Advance() && !iter.IsWord()) {}
-    if (iter.IsWord())
-      lower_terms_to_word_starts_offsets_[i] = iter.prev();
-    // Else: the iterator didn't find a word break.  Assume an offset of 0.
+
+    lower_terms_to_word_starts_offsets_[i] = iter.prev();
   }
 }
 

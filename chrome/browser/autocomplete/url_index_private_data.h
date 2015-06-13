@@ -149,6 +149,7 @@ class URLIndexPrivateData
   friend class AddHistoryMatch;
   friend class ::HistoryQuickProviderTest;
   friend class InMemoryURLIndexTest;
+  FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, AddHistoryMatch);
   FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, CacheSaveRestore);
   FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, HugeResultSet);
   FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, ReadVisitsFromHistory);
@@ -207,6 +208,8 @@ class URLIndexPrivateData
     ScoredHistoryMatches ScoredMatches() const { return scored_matches_; }
 
    private:
+    friend class InMemoryURLIndexTest;
+    FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, AddHistoryMatch);
     bookmarks::BookmarkModel* bookmark_model_;
     const URLIndexPrivateData& private_data_;
     const std::string& languages_;

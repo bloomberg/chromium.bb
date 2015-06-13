@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/i18n/case_conversion.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
@@ -44,8 +45,29 @@ using base::ASCIIToUTF16;
 // processed when creating the test database.
 
 namespace {
+const size_t kInvalid = base::string16::npos;
 const size_t kMaxMatches = 3;
 const char kTestLanguages[] = "en,ja,hi,zh";
+
+// Helper function to set lower case |lower_string| and |lower_terms| (words
+// list) based on supplied |search_string| and |cursor_position|. If
+// |cursor_position| is set and useful (not at either end of the string), allow
+// the |search_string| to be broken at |cursor_position|. We do this by
+// pretending there's a space where the cursor is. |lower_terms| are obtained by
+// splitting the |lower_string| on whitespace into tokens.
+void StringToTerms(const char* search_string,
+                   size_t cursor_position,
+                   base::string16* lower_string,
+                   String16Vector* lower_terms) {
+  *lower_string = base::i18n::ToLower(ASCIIToUTF16(search_string));
+  if ((cursor_position != kInvalid) &&
+      (cursor_position < lower_string->length()) && (cursor_position > 0)) {
+    lower_string->insert(cursor_position, base::ASCIIToUTF16(" "));
+  }
+
+  Tokenize(*lower_string, base::kWhitespaceUTF16, lower_terms);
+}
+
 }  // namespace
 
 // -----------------------------------------------------------------------------
@@ -1191,6 +1213,85 @@ TEST_F(InMemoryURLIndexTest, MAYBE_RebuildFromHistoryIfCacheOld) {
 
   // Compare the captured and restored for equality.
   ExpectPrivateDataEqual(*old_data.get(), new_data);
+}
+
+TEST_F(InMemoryURLIndexTest, AddHistoryMatch) {
+  const struct {
+    const char* search_string;
+    size_t cursor_position;
+    const size_t expected_word_starts_offsets_size;
+    const size_t expected_word_starts_offsets[3];
+  } test_cases[] = {
+    /* No punctuations, only cursor position change. */
+    { "ABCD", kInvalid, 1, {0, kInvalid, kInvalid} },
+    { "abcd", 0,        1, {0, kInvalid, kInvalid} },
+    { "AbcD", 1,        2, {0, 0, kInvalid} },
+    { "abcd", 4,        1, {0, kInvalid, kInvalid} },
+
+    /* Starting with punctuation. */
+    { ".abcd",  kInvalid, 1, {1, kInvalid, kInvalid} },
+    { ".abcd",  0,        1, {1, kInvalid, kInvalid} },
+    { "!abcd",  1,        2, {1, 0, kInvalid} },
+    { "::abcd", 1,        2, {1, 1, kInvalid} },
+    { ":abcd",  5,        1, {1, kInvalid, kInvalid} },
+
+    /* Ending with punctuation. */
+    { "abcd://", kInvalid, 1, {0, kInvalid, kInvalid} },
+    { "ABCD://", 0,        1, {0, kInvalid, kInvalid} },
+    { "abcd://", 1,        2, {0, 0, kInvalid} },
+    { "abcd://", 4,        2, {0, 3, kInvalid} },
+    { "abcd://", 7,        1, {0, kInvalid, kInvalid} },
+
+    /* Punctuation in the middle. */
+    { "ab.cd", kInvalid, 1, {0, kInvalid, kInvalid} },
+    { "ab.cd", 0,        1, {0, kInvalid, kInvalid} },
+    { "ab!cd", 1,        2, {0, 0, kInvalid} },
+    { "AB.cd", 2,        2, {0, 1, kInvalid} },
+    { "AB.cd", 3,        2, {0, 0, kInvalid} },
+    { "ab:cd", 5,        1, {0, kInvalid, kInvalid} },
+
+    /* Hyphenation */
+    { "Ab-cd", kInvalid, 1, {0, kInvalid, kInvalid} },
+    { "ab-cd", 0,        1, {0, kInvalid, kInvalid} },
+    { "-abcd", 0,        1, {1, kInvalid, kInvalid} },
+    { "-abcd", 1,        2, {1, 0, kInvalid} },
+    { "abcd-", 2,        2, {0, 0, kInvalid} },
+    { "abcd-", 4,        2, {0, 1, kInvalid} },
+    { "ab-cd", 5,        1, {0, kInvalid, kInvalid} },
+
+    /* Whitespace */
+    { "Ab cd",  kInvalid, 2, {0, 0, kInvalid} },
+    { "ab cd",  0,        2, {0, 0, kInvalid} },
+    { " abcd",  0,        1, {0, kInvalid, kInvalid} },
+    { " abcd",  1,        1, {0, kInvalid, kInvalid} },
+    { "abcd ",  2,        2, {0, 0, kInvalid} },
+    { "abcd :", 4,        2, {0, 1, kInvalid} },
+    { "abcd :", 5,        2, {0, 1, kInvalid} },
+    { "abcd :", 2,        3, {0, 0, 1} }
+  };
+
+  for (size_t i = 0; i < arraysize(test_cases); ++i) {
+    SCOPED_TRACE(testing::Message()
+                 << "search_string = " << test_cases[i].search_string
+                 << ", cursor_position = " << test_cases[i].cursor_position);
+
+    base::string16 lower_string;
+    String16Vector lower_terms;
+    StringToTerms(test_cases[i].search_string, test_cases[i].cursor_position,
+                  &lower_string, &lower_terms);
+    URLIndexPrivateData::AddHistoryMatch match(nullptr, *GetPrivateData(),
+                                               kTestLanguages, lower_string,
+                                               lower_terms, base::Time::Now());
+
+    // Verify against expectations.
+    EXPECT_EQ(test_cases[i].expected_word_starts_offsets_size,
+              match.lower_terms_to_word_starts_offsets_.size());
+    for (size_t j = 0; j < test_cases[i].expected_word_starts_offsets_size;
+         ++j) {
+      EXPECT_EQ(test_cases[i].expected_word_starts_offsets[j],
+                match.lower_terms_to_word_starts_offsets_[j]);
+    }
+  }
 }
 
 class InMemoryURLIndexCacheTest : public testing::Test {
