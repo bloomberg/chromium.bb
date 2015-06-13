@@ -9,6 +9,7 @@
 
 namespace content {
 class RenderFrameHost;
+class WebContents;
 }  // namespace content
 
 namespace task_management {
@@ -17,7 +18,8 @@ namespace task_management {
 // out-of-process iframes.
 class SubframeTask : public RendererTask {
  public:
-  explicit SubframeTask(content::RenderFrameHost* render_frame_host);
+  SubframeTask(content::RenderFrameHost* render_frame_host,
+               content::WebContents* web_contents);
   ~SubframeTask() override;
 
   // task_management::RendererTask:

@@ -10,6 +10,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace task_management {
@@ -28,11 +29,11 @@ base::string16 AdjustTitle(const content::SiteInstance* site_instance) {
 
 }  // namespace
 
-SubframeTask::SubframeTask(content::RenderFrameHost* render_frame_host)
+SubframeTask::SubframeTask(content::RenderFrameHost* render_frame_host,
+                           content::WebContents* web_contents)
     : RendererTask(AdjustTitle(render_frame_host->GetSiteInstance()),
                    nullptr,
-                   render_frame_host->GetProcess()->GetHandle(),
-                   render_frame_host->GetProcess()) {
+                   web_contents) {
 }
 
 SubframeTask::~SubframeTask() {

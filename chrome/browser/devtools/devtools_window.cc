@@ -17,6 +17,7 @@
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
+#include "chrome/browser/task_management/web_contents_tags.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_iterator.h"
@@ -716,6 +717,11 @@ DevToolsWindow::DevToolsWindow(Profile* profile,
   }
 
   event_forwarder_.reset(new DevToolsEventForwarder(this));
+
+  // Tag the DevTools main WebContents with its TaskManager specific UserData
+  // so that it shows up in the task manager.
+  task_management::WebContentsTags::CreateForDevToolsContents(
+      main_web_contents_);
 }
 
 // static
@@ -888,6 +894,11 @@ void DevToolsWindow::WebContentsCreated(WebContents* source_contents,
     if (toolbox_web_contents_)
       delete toolbox_web_contents_;
     toolbox_web_contents_ = new_contents;
+
+    // Tag the DevTools toolbox WebContents with its TaskManager specific
+    // UserData so that it shows up in the task manager.
+    task_management::WebContentsTags::CreateForDevToolsContents(
+        toolbox_web_contents_);
   }
 }
 

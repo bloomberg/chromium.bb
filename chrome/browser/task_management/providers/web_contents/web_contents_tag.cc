@@ -18,6 +18,7 @@ const WebContentsTag* WebContentsTag::FromWebContents(
 
 WebContentsTag::WebContentsTag(content::WebContents* contents)
     : web_contents_(contents) {
+  DCHECK(contents);
   // You can't tag the |contents| here. The object creation is not complete yet.
   // This will be done in the factory methods inside
   // |task_management::WebContentsTags|.

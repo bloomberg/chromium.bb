@@ -41,7 +41,6 @@ BackgroundContentsTag::BackgroundContentsTag(
     BackgroundContents* background_contents)
     : WebContentsTag(web_contents),
       background_contents_(background_contents) {
-  DCHECK(web_contents);
   DCHECK(background_contents);
 }
 

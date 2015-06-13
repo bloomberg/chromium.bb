@@ -29,6 +29,9 @@ Task::Task(const base::string16& title,
 Task::~Task() {
 }
 
+void Task::Activate() {
+}
+
 void Task::Refresh(const base::TimeDelta& update_interval) {
   // TODO(afakhry): Add code here to skip this when network usage refresh has
   // never been requested.

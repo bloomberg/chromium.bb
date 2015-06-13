@@ -10,6 +10,7 @@
 
 namespace content {
 class RenderProcessHost;
+class WebContents;
 } // namespace content
 
 namespace task_management {
@@ -20,8 +21,7 @@ class RendererTask : public Task {
  public:
   RendererTask(const base::string16& title,
                const gfx::ImageSkia* icon,
-               base::ProcessHandle handle,
-               content::RenderProcessHost* render_process_host);
+               content::WebContents* web_contents);
   ~RendererTask() override;
 
   // An abstract method that will be called when the event
@@ -35,6 +35,7 @@ class RendererTask : public Task {
   virtual void OnFaviconChanged() = 0;
 
   // task_management::Task:
+  void Activate() override;
   void Refresh(const base::TimeDelta& update_interval) override;
   Type GetType() const override;
   int GetChildProcessUniqueID() const override;
@@ -44,7 +45,22 @@ class RendererTask : public Task {
   bool ReportsWebCacheStats() const override;
   blink::WebCache::ResourceTypeStats GetWebCacheStats() const override;
 
+ protected:
+  // Returns the title of the given |web_contents|.
+  static base::string16 GetTitleFromWebContents(
+      content::WebContents* web_contents);
+
+  // Returns the favicon of the given |web_contents| if any, and returns
+  // |nullptr| otherwise.
+  static const gfx::ImageSkia* GetFaviconFromWebContents(
+      content::WebContents* web_contents);
+
+  content::WebContents* web_contents() const { return web_contents_; }
+
  private:
+  // The WebContents of the task this object represents.
+  content::WebContents* web_contents_;
+
   // The render process host of the task this object represents.
   content::RenderProcessHost* render_process_host_;
 

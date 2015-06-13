@@ -43,6 +43,10 @@ class Task {
        base::ProcessHandle handle);
   virtual ~Task();
 
+  // Activates this TaskManager's task by bringing its container to the front
+  // (if possible).
+  virtual void Activate();
+
   // Will be called to let the task refresh itself between refresh cycles.
   // |update_interval| is the time since the last task manager refresh.
   virtual void Refresh(const base::TimeDelta& update_interval);

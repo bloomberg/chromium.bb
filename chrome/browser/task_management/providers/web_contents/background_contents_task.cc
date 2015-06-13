@@ -61,10 +61,7 @@ BackgroundContentsTask::BackgroundContentsTask(
     : RendererTask(AdjustAndLocalizeTitle(title,
                                           background_contents->GetURL().spec()),
                    GetDefaultIcon(),
-                   background_contents->web_contents()->GetRenderProcessHost()->
-                   GetHandle(),
-                   background_contents->web_contents()->
-                   GetRenderProcessHost()) {
+                   background_contents->web_contents()) {
 }
 
 BackgroundContentsTask::~BackgroundContentsTask() {
