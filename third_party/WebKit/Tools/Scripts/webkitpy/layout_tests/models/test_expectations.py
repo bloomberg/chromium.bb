@@ -85,10 +85,15 @@ class TestExpectationParser(object):
 
     MISSING_BUG_WARNING = 'Test lacks BUG specifier.'
 
-    def __init__(self, port, full_test_list, is_lint_mode):
+    def __init__(self, port, all_tests, is_lint_mode):
         self._port = port
         self._test_configuration_converter = TestConfigurationConverter(set(port.all_test_configurations()), port.configuration_specifier_macros())
-        self._full_test_list = full_test_list
+
+        if all_tests:
+            self._all_tests = set(all_tests)
+        else:
+            self._all_tests = set()
+
         self._is_lint_mode = is_lint_mode
 
     def parse(self, filename, expectations_string):
@@ -190,24 +195,18 @@ class TestExpectationParser(object):
     def _collect_matching_tests(self, expectation_line):
         """Convert the test specification to an absolute, normalized
         path and make sure directories end with the OS path separator."""
-        # FIXME: full_test_list can quickly contain a big amount of
-        # elements. We should consider at some point to use a more
-        # efficient structure instead of a list. Maybe a dictionary of
-        # lists to represent the tree of tests, leaves being test
-        # files and nodes being categories.
-
-        if not self._full_test_list:
+        if not self._all_tests:
             expectation_line.matching_tests = [expectation_line.path]
             return
 
         if not expectation_line.is_file:
             # this is a test category, return all the tests of the category.
-            expectation_line.matching_tests = [test for test in self._full_test_list if test.startswith(expectation_line.path)]
+            expectation_line.matching_tests = [test for test in self._all_tests if test.startswith(expectation_line.path)]
             return
 
         # this is a test file, do a quick check if it's in the
         # full test suite.
-        if expectation_line.path in self._full_test_list:
+        if expectation_line.path in self._all_tests:
             expectation_line.matching_tests.append(expectation_line.path)
 
     # FIXME: Update the original specifiers and remove this once the old syntax is gone.

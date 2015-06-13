@@ -296,7 +296,7 @@ class TestImporter(object):
         port = self.host.port_factory.get()
         w3c_import_expectations_path = self.webkit_finder.path_from_webkit_base('LayoutTests', 'W3CImportExpectations')
         w3c_import_expectations = self.filesystem.read_text_file(w3c_import_expectations_path)
-        parser = TestExpectationParser(port, full_test_list=(), is_lint_mode=False)
+        parser = TestExpectationParser(port, all_tests=(), is_lint_mode=False)
         expectation_lines = parser.parse(w3c_import_expectations_path, w3c_import_expectations)
         for line in expectation_lines:
             if 'SKIP' in line.expectations:
