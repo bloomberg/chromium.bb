@@ -185,13 +185,6 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
       const NextProtoVector& next_protos,
       bool can_advertise_http2);
 
-  // For unit testing only.
-  // Returns the unverified certificate chain as presented by server.
-  // Note that chain may be different than the verified chain returned by
-  // StreamSocket::GetSSLInfo().
-  virtual scoped_refptr<X509Certificate> GetUnverifiedServerCertificateChain()
-      const = 0;
-
  private:
   FRIEND_TEST_ALL_PREFIXES(SSLClientSocket, SerializeNextProtos);
   // For signed_cert_timestamps_received_ and stapled_ocsp_response_received_.

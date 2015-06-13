@@ -595,6 +595,7 @@ bool SSLClientSocketOpenSSL::GetSSLInfo(SSLInfo* ssl_info) {
     return false;
 
   ssl_info->cert = server_cert_verify_result_.verified_cert;
+  ssl_info->unverified_cert = server_cert_;
   ssl_info->cert_status = server_cert_verify_result_.cert_status;
   ssl_info->is_issued_by_known_root =
       server_cert_verify_result_.is_issued_by_known_root;
@@ -1920,11 +1921,6 @@ bool SSLClientSocketOpenSSL::IsRenegotiationAllowed() const {
       return true;
   }
   return false;
-}
-
-scoped_refptr<X509Certificate>
-SSLClientSocketOpenSSL::GetUnverifiedServerCertificateChain() const {
-  return server_cert_;
 }
 
 }  // namespace net

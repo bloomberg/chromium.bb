@@ -139,7 +139,9 @@ class NET_EXPORT HttpResponseInfo {
   // challenge, client certificate request is not part of an HTTP response.
   scoped_refptr<SSLCertRequestInfo> cert_request_info;
 
-  // The SSL connection info (if HTTPS).
+  // The SSL connection info (if HTTPS). Note that when a response is
+  // served from cache, not every field is present. See
+  // HttpResponseInfo::InitFromPickle().
   SSLInfo ssl_info;
 
   // The parsed response headers and status line.

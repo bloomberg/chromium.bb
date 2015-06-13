@@ -2433,6 +2433,7 @@ bool SSLClientSocketNSS::GetSSLInfo(SSLInfo* ssl_info) {
 
   ssl_info->cert_status = server_cert_verify_result_.cert_status;
   ssl_info->cert = server_cert_verify_result_.verified_cert;
+  ssl_info->unverified_cert = core_->state().server_cert;
 
   AddSCTInfoToSSLInfo(ssl_info);
 
@@ -3172,11 +3173,6 @@ void SSLClientSocketNSS::AddSCTInfoToSSLInfo(SSLInfo* ssl_info) const {
         SignedCertificateTimestampAndStatus(*iter,
                                             ct::SCT_STATUS_LOG_UNKNOWN));
   }
-}
-
-scoped_refptr<X509Certificate>
-SSLClientSocketNSS::GetUnverifiedServerCertificateChain() const {
-  return core_->state().server_cert.get();
 }
 
 ChannelIDService* SSLClientSocketNSS::GetChannelIDService() const {

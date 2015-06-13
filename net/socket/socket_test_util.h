@@ -664,10 +664,6 @@ class MockClientSocket : public SSLClientSocket {
   void RunCallbackAsync(const CompletionCallback& callback, int result);
   void RunCallback(const CompletionCallback& callback, int result);
 
-  // SSLClientSocket implementation.
-  scoped_refptr<X509Certificate> GetUnverifiedServerCertificateChain()
-      const override;
-
   // True if Connect completed successfully and Disconnect hasn't been called.
   bool connected_;
 

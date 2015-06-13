@@ -101,11 +101,6 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
   int SetReceiveBufferSize(int32 size) override;
   int SetSendBufferSize(int32 size) override;
 
- protected:
-  // SSLClientSocket implementation.
-  scoped_refptr<X509Certificate> GetUnverifiedServerCertificateChain()
-      const override;
-
  private:
   class PeerCertificateChain;
   class SSLContext;

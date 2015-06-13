@@ -2415,8 +2415,9 @@ TEST_F(SSLClientSocketTest, VerifyServerChainProperlyOrdered) {
                                     X509Certificate::FORMAT_AUTO);
 
   // Get the server certificate as received client side.
-  scoped_refptr<X509Certificate> server_certificate =
-      sock->GetUnverifiedServerCertificateChain();
+  SSLInfo ssl_info;
+  ASSERT_TRUE(sock->GetSSLInfo(&ssl_info));
+  scoped_refptr<X509Certificate> server_certificate = ssl_info.unverified_cert;
 
   // Get the intermediates as received  client side.
   const X509Certificate::OSCertHandles& server_intermediates =
@@ -2458,6 +2459,11 @@ TEST_F(SSLClientSocketTest, VerifyReturnChainProperlyOrdered) {
   // By default, cause the CertVerifier to treat all certificates as
   // expired.
   cert_verifier_->set_default_result(ERR_CERT_DATE_INVALID);
+
+  CertificateList unverified_certs = CreateCertificateListFromFile(
+      GetTestCertsDirectory(), "redundant-server-chain.pem",
+      X509Certificate::FORMAT_AUTO);
+  ASSERT_EQ(4u, unverified_certs.size());
 
   // We will expect SSLInfo to ultimately contain this chain.
   CertificateList certs =
@@ -2535,6 +2541,19 @@ TEST_F(SSLClientSocketTest, VerifyReturnChainProperlyOrdered) {
                                             certs[1]->os_cert_handle()));
   EXPECT_TRUE(X509Certificate::IsSameOSCert(intermediates[1],
                                             certs[2]->os_cert_handle()));
+
+  // Verify that SSLInfo also contains the chain as received from the server.
+  const X509Certificate::OSCertHandles& served_intermediates =
+      ssl_info.unverified_cert->GetIntermediateCertificates();
+  ASSERT_EQ(3U, served_intermediates.size());
+  EXPECT_TRUE(X509Certificate::IsSameOSCert(
+      ssl_info.cert->os_cert_handle(), unverified_certs[0]->os_cert_handle()));
+  EXPECT_TRUE(X509Certificate::IsSameOSCert(
+      served_intermediates[0], unverified_certs[1]->os_cert_handle()));
+  EXPECT_TRUE(X509Certificate::IsSameOSCert(
+      served_intermediates[1], unverified_certs[2]->os_cert_handle()));
+  EXPECT_TRUE(X509Certificate::IsSameOSCert(
+      served_intermediates[2], unverified_certs[3]->os_cert_handle()));
 
   sock->Disconnect();
   EXPECT_FALSE(sock->IsConnected());

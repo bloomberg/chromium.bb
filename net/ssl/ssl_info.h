@@ -45,6 +45,11 @@ class NET_EXPORT SSLInfo {
   // The SSL certificate.
   scoped_refptr<X509Certificate> cert;
 
+  // The SSL certificate as received by the client. Can be different
+  // from |cert|, which is the chain as built by the client during
+  // validation.
+  scoped_refptr<X509Certificate> unverified_cert;
+
   // Bitmask of status info of |cert|, representing, for example, known errors
   // and extended validation (EV) status.
   // See cert_status_flags.h for values.

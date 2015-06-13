@@ -110,11 +110,6 @@ class SSLClientSocketNSS : public SSLClientSocket {
   ChannelIDService* GetChannelIDService() const override;
   SSLFailureState GetSSLFailureState() const override;
 
- protected:
-  // SSLClientSocket implementation.
-  scoped_refptr<X509Certificate> GetUnverifiedServerCertificateChain()
-      const override;
-
  private:
   // Helper class to handle marshalling any NSS interaction to and from the
   // NSS and network task runners. Not every call needs to happen on the Core
