@@ -61,14 +61,14 @@ jboolean DataReductionProxySettingsAndroid::WasLoFiModeActiveOnMainFrame(
   return Settings()->WasLoFiModeActiveOnMainFrame();
 }
 
-jboolean DataReductionProxySettingsAndroid::WasLoFiShowImageRequestedBefore(
+jboolean DataReductionProxySettingsAndroid::WasLoFiLoadImageRequestedBefore(
     JNIEnv* env, jobject obj) {
-  return Settings()->WasLoFiShowImageRequestedBefore();
+  return Settings()->WasLoFiLoadImageRequestedBefore();
 }
 
-void DataReductionProxySettingsAndroid::SetLoFiShowImageRequested(
+void DataReductionProxySettingsAndroid::SetLoFiLoadImageRequested(
     JNIEnv* env, jobject obj) {
-  Settings()->SetLoFiShowImageRequested();
+  Settings()->SetLoFiLoadImageRequested();
 }
 
 jboolean DataReductionProxySettingsAndroid::IsDataReductionProxyManaged(

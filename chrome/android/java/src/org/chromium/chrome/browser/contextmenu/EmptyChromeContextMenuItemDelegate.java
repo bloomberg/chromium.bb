@@ -36,7 +36,7 @@ public class EmptyChromeContextMenuItemDelegate implements ChromeContextMenuItem
     }
 
     @Override
-    public void onShowOriginalImage() {
+    public void onLoadOriginalImage() {
     }
 
     @Override

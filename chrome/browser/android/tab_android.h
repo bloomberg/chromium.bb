@@ -189,7 +189,7 @@ class TabAndroid : public CoreTabHelperDelegate,
                               jint current,
                               jboolean animate);
 
-  void ShowOriginalImage(JNIEnv* env, jobject obj);
+  void LoadOriginalImage(JNIEnv* env, jobject obj);
 
   void SearchByImageInNewTabAsync(JNIEnv* env, jobject obj);
 

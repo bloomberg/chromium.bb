@@ -40,8 +40,8 @@ class DataReductionProxySettingsAndroid {
   jboolean IsDataReductionProxyEnabled(JNIEnv* env, jobject obj);
   jboolean CanUseDataReductionProxy(JNIEnv* env, jobject obj, jstring url);
   jboolean WasLoFiModeActiveOnMainFrame(JNIEnv* env, jobject obj);
-  jboolean WasLoFiShowImageRequestedBefore(JNIEnv* env, jobject obj);
-  void SetLoFiShowImageRequested(JNIEnv* env, jobject obj);
+  jboolean WasLoFiLoadImageRequestedBefore(JNIEnv* env, jobject obj);
+  void SetLoFiLoadImageRequested(JNIEnv* env, jobject obj);
   jboolean IsDataReductionProxyManaged(JNIEnv* env, jobject obj);
   void IncrementLoFiUserRequestsForImages(JNIEnv* env, jobject obj);
   void SetDataReductionProxyEnabled(JNIEnv* env, jobject obj, jboolean enabled);
@@ -74,7 +74,6 @@ class DataReductionProxySettingsAndroid {
   friend class DataReductionProxySettingsAndroidTest;
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxySettingsAndroidTest,
                            TestGetDailyContentLengths);
-
 
   ScopedJavaLocalRef<jlongArray> GetDailyContentLengths(JNIEnv* env,
                                                         const char* pref_name);

@@ -63,9 +63,9 @@ public interface ChromeContextMenuItemDelegate {
     void onOpenImageInNewTab(String url, Referrer referrer);
 
     /**
-     * Called when the original image should be shown.
+     * Called when the original image should be loaded.
      */
-    void onShowOriginalImage();
+    void onLoadOriginalImage();
 
     /**
      * Called when the {@code text} should be saved to the clipboard.

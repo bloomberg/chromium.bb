@@ -135,8 +135,8 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   // Copy to the clipboard an image located at a point in the RenderView
   void CopyImageAt(int x, int y);
 
-  // Show the original image located at a point in the RenderView.
-  void ShowOriginalImage();
+  // Load the original image located at a point in the RenderView.
+  void LoadOriginalImage();
 
   // Get an image located at a point in the RenderView for search.
   void GetImageThumbnailForSearch();

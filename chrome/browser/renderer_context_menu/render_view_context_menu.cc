@@ -223,7 +223,7 @@ const struct UmaEnumCommandIdPair {
     {63, IDC_WRITING_DIRECTION_DEFAULT},
     {64, IDC_WRITING_DIRECTION_LTR},
     {65, IDC_WRITING_DIRECTION_RTL},
-    {66, IDC_CONTENT_CONTEXT_SHOW_ORIGINAL_IMAGE},
+    {66, IDC_CONTENT_CONTEXT_LOAD_ORIGINAL_IMAGE},
     {67, IDC_CONTENT_CONTEXT_FORCESAVEPASSWORD},
     // Add new items here and use |enum_id| from the next line.
     // Also, add new items to RenderViewContextMenuItem enum in histograms.xml.
@@ -757,8 +757,8 @@ void RenderViewContextMenu::AppendImageItems() {
   if (it != params_.properties.end() && it->second ==
       data_reduction_proxy::chrome_proxy_lo_fi_directive()) {
     menu_model_.AddItemWithStringId(
-        IDC_CONTENT_CONTEXT_SHOW_ORIGINAL_IMAGE,
-        IDS_CONTENT_CONTEXT_SHOW_ORIGINAL_IMAGE);
+        IDC_CONTENT_CONTEXT_LOAD_ORIGINAL_IMAGE,
+        IDS_CONTENT_CONTEXT_LOAD_ORIGINAL_IMAGE);
   }
   DataReductionProxyChromeSettings* settings =
       DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
@@ -1189,7 +1189,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     // The images shown in the most visited thumbnails can't be opened or
     // searched for conventionally.
     case IDC_CONTENT_CONTEXT_OPEN_ORIGINAL_IMAGE_NEW_TAB:
-    case IDC_CONTENT_CONTEXT_SHOW_ORIGINAL_IMAGE:
+    case IDC_CONTENT_CONTEXT_LOAD_ORIGINAL_IMAGE:
     case IDC_CONTENT_CONTEXT_OPENIMAGENEWTAB:
     case IDC_CONTENT_CONTEXT_SEARCHWEBFORIMAGE:
       return params_.src_url.is_valid() &&
@@ -1508,8 +1508,8 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
           data_reduction_proxy::kDataReductionPassThroughHeader);
       break;
 
-    case IDC_CONTENT_CONTEXT_SHOW_ORIGINAL_IMAGE:
-      ShowOriginalImage();
+    case IDC_CONTENT_CONTEXT_LOAD_ORIGINAL_IMAGE:
+      LoadOriginalImage();
       break;
 
     case IDC_CONTENT_CONTEXT_OPENIMAGENEWTAB:
@@ -1871,7 +1871,7 @@ void RenderViewContextMenu::CopyImageAt(int x, int y) {
   source_web_contents_->GetRenderViewHost()->CopyImageAt(x, y);
 }
 
-void RenderViewContextMenu::ShowOriginalImage() {
+void RenderViewContextMenu::LoadOriginalImage() {
   RenderFrameHost* render_frame_host = GetRenderFrameHost();
   if (!render_frame_host)
     return;

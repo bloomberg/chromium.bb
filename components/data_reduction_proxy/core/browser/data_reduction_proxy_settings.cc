@@ -41,7 +41,7 @@ DataReductionProxySettings::DataReductionProxySettings()
       alternative_allowed_(false),
       promo_allowed_(false),
       lo_fi_mode_active_(false),
-      lo_fi_show_image_requested_(false),
+      lo_fi_load_image_requested_(false),
       prefs_(NULL),
       config_(nullptr) {
   lo_fi_user_requests_for_images_per_session_ =
@@ -184,7 +184,7 @@ PrefService* DataReductionProxySettings::GetOriginalProfilePrefs() {
 
 void DataReductionProxySettings::SetLoFiModeActiveOnMainFrame(
     bool lo_fi_mode_active) {
-  lo_fi_show_image_requested_ = false;
+  lo_fi_load_image_requested_ = false;
   lo_fi_mode_active_ = lo_fi_mode_active;
   if (!register_synthetic_field_trial_.is_null()) {
     RegisterLoFiFieldTrial();
@@ -195,12 +195,12 @@ bool DataReductionProxySettings::WasLoFiModeActiveOnMainFrame() const {
   return lo_fi_mode_active_;
 }
 
-bool DataReductionProxySettings::WasLoFiShowImageRequestedBefore() {
-  return lo_fi_show_image_requested_;
+bool DataReductionProxySettings::WasLoFiLoadImageRequestedBefore() {
+  return lo_fi_load_image_requested_;
 }
 
-void DataReductionProxySettings::SetLoFiShowImageRequested() {
-  lo_fi_show_image_requested_ = true;
+void DataReductionProxySettings::SetLoFiLoadImageRequested() {
+  lo_fi_load_image_requested_ = true;
 }
 
 void DataReductionProxySettings::IncrementLoFiUserRequestsForImages() {

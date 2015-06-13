@@ -530,14 +530,14 @@ IN_PROC_BROWSER_TEST_F(SearchByImageBrowserTest, ImageSearchWithCorruptImage) {
   EXPECT_EQ(ThumbnailResponseWatcher::THUMBNAIL_RECEIVED, watcher.Wait());
 }
 
-class ShowImageRequestInterceptor : public net::URLRequestInterceptor {
+class LoadImageRequestInterceptor : public net::URLRequestInterceptor {
  public:
-  ShowImageRequestInterceptor() : num_requests_(0),
+  LoadImageRequestInterceptor() : num_requests_(0),
                                   requests_to_wait_for_(-1),
                                   weak_factory_(this) {
   }
 
-  ~ShowImageRequestInterceptor() override {}
+  ~LoadImageRequestInterceptor() override {}
 
   // net::URLRequestInterceptor implementation
   net::URLRequestJob* MaybeInterceptRequest(
@@ -547,7 +547,7 @@ class ShowImageRequestInterceptor : public net::URLRequestInterceptor {
     EXPECT_TRUE(request->load_flags() & net::LOAD_BYPASS_CACHE);
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&ShowImageRequestInterceptor::RequestCreated,
+        base::Bind(&LoadImageRequestInterceptor::RequestCreated,
                    weak_factory_.GetWeakPtr()));
     return nullptr;
   }
@@ -592,12 +592,12 @@ class ShowImageRequestInterceptor : public net::URLRequestInterceptor {
 
   // This prevents any risk of flake if any test doesn't wait for a request
   // it sent.  Mutable so it can be accessed from a const function.
-  mutable base::WeakPtrFactory<ShowImageRequestInterceptor> weak_factory_;
+  mutable base::WeakPtrFactory<LoadImageRequestInterceptor> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(ShowImageRequestInterceptor);
+  DISALLOW_COPY_AND_ASSIGN(LoadImageRequestInterceptor);
 };
 
-class ShowImageBrowserTest : public InProcessBrowserTest {
+class LoadImageBrowserTest : public InProcessBrowserTest {
  protected:
   void SetupAndLoadImagePage(const std::string& image_path) {
     // Go to a page with an image in it. The test server doesn't serve the image
@@ -607,22 +607,22 @@ class ShowImageBrowserTest : public InProcessBrowserTest {
     ui_test_utils::NavigateToURL(browser(), page);
   }
 
-  void AddShowImageInterceptor(const std::string& image_path) {
-    interceptor_ = new ShowImageRequestInterceptor();
+  void AddLoadImageInterceptor(const std::string& image_path) {
+    interceptor_ = new LoadImageRequestInterceptor();
     scoped_ptr<net::URLRequestInterceptor> owned_interceptor(interceptor_);
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&ShowImageBrowserTest::AddInterceptorForURL,
+        base::Bind(&LoadImageBrowserTest::AddInterceptorForURL,
                    base::Unretained(this),
                    GURL(test_server()->GetURL(image_path).spec()),
                    base::Passed(&owned_interceptor)));
   }
 
-  void AttemptShowImage() {
+  void AttemptLoadImage() {
     // Right-click where the image should be.
-    // |menu_observer_| will cause the show-image menu item to be clicked.
+    // |menu_observer_| will cause the "Load image" menu item to be clicked.
     menu_observer_.reset(new ContextMenuNotificationObserver(
-        IDC_CONTENT_CONTEXT_SHOW_ORIGINAL_IMAGE));
+        IDC_CONTENT_CONTEXT_LOAD_ORIGINAL_IMAGE));
     content::WebContents* tab =
         browser()->tab_strip_model()->GetActiveWebContents();
     content::SimulateMouseClickAt(tab, 0, blink::WebMouseEvent::ButtonRight,
@@ -636,17 +636,17 @@ class ShowImageBrowserTest : public InProcessBrowserTest {
         url, handler.Pass());
   }
 
-  ShowImageRequestInterceptor* interceptor_;
+  LoadImageRequestInterceptor* interceptor_;
 
  private:
   scoped_ptr<ContextMenuNotificationObserver> menu_observer_;
 };
 
-IN_PROC_BROWSER_TEST_F(ShowImageBrowserTest, ShowImage) {
-  static const char kValidImage[] = "files/show_image/image.png";
+IN_PROC_BROWSER_TEST_F(LoadImageBrowserTest, LoadImage) {
+  static const char kValidImage[] = "files/load_image/image.png";
   SetupAndLoadImagePage(kValidImage);
-  AddShowImageInterceptor(kValidImage);
-  AttemptShowImage();
+  AddLoadImageInterceptor(kValidImage);
+  AttemptLoadImage();
   interceptor_->WaitForRequests(1);
   EXPECT_EQ(1, interceptor_->num_requests());
 }

@@ -344,7 +344,7 @@ TEST_F(DataReductionProxySettingsTest, TestLoFiImplicitOptOutClicksPerSession) {
   EXPECT_EQ(LoFiStatus::LOFI_STATUS_TEMPORARILY_OFF,
             test_context_->config()->GetLoFiStatus());
 
-  // Click "Show images" |lo_fi_user_requests_for_images_per_session_| times.
+  // Click "Load images" |lo_fi_user_requests_for_images_per_session_| times.
   for (int i = 1; i <= settings_->lo_fi_user_requests_for_images_per_session_;
        ++i) {
     settings_->IncrementLoFiUserRequestsForImages();
@@ -411,7 +411,7 @@ TEST_F(DataReductionProxySettingsTest,
     EXPECT_EQ(LoFiStatus::LOFI_STATUS_TEMPORARILY_OFF,
               test_context_->config()->GetLoFiStatus());
 
-    // Click "Show images" |lo_fi_user_requests_for_images_per_session_| times
+    // Click "Load images" |lo_fi_user_requests_for_images_per_session_| times
     // for each session.
     for (int j = 1; j <= settings_->lo_fi_user_requests_for_images_per_session_;
          ++j) {

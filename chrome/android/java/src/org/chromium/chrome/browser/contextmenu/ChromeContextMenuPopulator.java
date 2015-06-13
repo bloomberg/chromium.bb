@@ -86,7 +86,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             }
 
             if (!params.imageWasFetchedLoFi()) {
-                menu.findItem(R.id.contextmenu_show_original_image).setVisible(false);
+                menu.findItem(R.id.contextmenu_load_original_image).setVisible(false);
             } else {
                 DataReductionProxyUma.dataReductionProxyLoFiUIAction(
                         DataReductionProxyUma.ACTION_LOAD_IMAGE_CONTEXT_MENU_SHOWN);
@@ -125,15 +125,15 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         } else if (itemId == R.id.contextmenu_open_image_in_new_tab
                 || itemId == R.id.contextmenu_open_original_image_in_new_tab) {
             mDelegate.onOpenImageInNewTab(params.getSrcUrl(), params.getReferrer());
-        } else if (itemId == R.id.contextmenu_show_original_image) {
+        } else if (itemId == R.id.contextmenu_load_original_image) {
             DataReductionProxyUma.dataReductionProxyLoFiUIAction(
                     DataReductionProxyUma.ACTION_LOAD_IMAGE_CONTEXT_MENU_CLICKED);
-            if (!DataReductionProxySettings.getInstance().wasLoFiShowImageRequestedBefore()) {
+            if (!DataReductionProxySettings.getInstance().wasLoFiLoadImageRequestedBefore()) {
                 DataReductionProxyUma.dataReductionProxyLoFiUIAction(
                         DataReductionProxyUma.ACTION_LOAD_IMAGE_CONTEXT_MENU_CLICKED_ON_PAGE);
-                DataReductionProxySettings.getInstance().setLoFiShowImageRequested();
+                DataReductionProxySettings.getInstance().setLoFiLoadImageRequested();
             }
-            mDelegate.onShowOriginalImage();
+            mDelegate.onLoadOriginalImage();
         } else if (itemId == R.id.contextmenu_copy_link_address_text) {
             mDelegate.onSaveToClipboard(params.getUnfilteredLinkUrl(), true);
         } else if (itemId == R.id.contextmenu_copy_email_address) {

@@ -471,8 +471,8 @@ TEST_F(RenderViewContextMenuPrefsTest, DataSaverDisabledSaveImageAs) {
 }
 
 // Verify that the Chrome-Proxy Lo-Fi directive causes the context menu to
-// display the "Show Image" menu item.
-TEST_F(RenderViewContextMenuPrefsTest, DataSaverShowImage) {
+// display the "Load Image" menu item.
+TEST_F(RenderViewContextMenuPrefsTest, DataSaverLoadImage) {
   SetupDataReductionProxy(true);
   content::ContextMenuParams params = CreateParams(MenuItem::IMAGE);
   params.properties[data_reduction_proxy::chrome_proxy_header()] =
@@ -483,5 +483,5 @@ TEST_F(RenderViewContextMenuPrefsTest, DataSaverShowImage) {
       new TestRenderViewContextMenu(wc->GetMainFrame(), params));
   AppendImageItems(menu.get());
 
-  ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_SHOW_ORIGINAL_IMAGE));
+  ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_LOAD_ORIGINAL_IMAGE));
 }
