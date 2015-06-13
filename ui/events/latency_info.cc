@@ -128,6 +128,7 @@ scoped_refptr<base::trace_event::ConvertableToTraceFormat> AsTraceableData(
     component_info->SetDouble(
         "time", static_cast<double>(it->second.event_time.ToInternalValue()));
     component_info->SetDouble("count", it->second.event_count);
+    component_info->SetDouble("sequence_number", it->second.sequence_number);
     record_data->Set(GetComponentName(it->first.first), component_info);
   }
   record_data->SetDouble("trace_id", static_cast<double>(latency.trace_id));
