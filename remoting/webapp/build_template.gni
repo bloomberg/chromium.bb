@@ -79,7 +79,7 @@ template("build_webapp_html") {
     js_files = invoker.js_files
     html_output = invoker.html_output
 
-    script = "build-html.py"
+    script = rebase_path("//remoting/webapp/build-html.py", root_build_dir)
 
     inputs = [ html_template_file ] + html_template_include_files + js_files
 
@@ -156,7 +156,7 @@ template("desktop_remoting_webapp") {
   }
 
   action(target_name) {
-    script = "build-webapp.py"
+    script = "//remoting/webapp/build-webapp.py"
 
     webapp_type = invoker.webapp_type
     output_dir = invoker.output_dir
@@ -226,6 +226,138 @@ template("app_remoting_webapp") {
   locales_listfile_output = "$target_gen_dir/${target_name}_locales.txt"
 
   build_locales_listfile(locales_listfile) {
+    # TODO(garykac) Replace resources with empty stub rather than duplicating
+    # all the resources needed by the shared module.
+    # Template uses locales_listfile_output from outer scope.
+  }
+
+  action(target_name) {
+    script = "//remoting/webapp/build-webapp.py"
+
+    app_key = invoker.app_key
+    app_id = invoker.app_id
+    app_client_id = invoker.app_client_id
+    app_vendor = invoker.app_vendor
+    app_name = invoker.app_name
+    app_fullname = invoker.app_fullname
+    app_description = invoker.app_description
+    app_capabilities = invoker.app_capabilities
+    manifest_key = invoker.manifest_key
+
+    # These asserts are so that these variables get marked as being used so
+    # that GN doesn't complain about them.
+    assert(app_key != "" || app_key == "")
+    assert(app_id != "" || app_id == "")
+
+    ar_base_path = "//remoting/webapp/app_remoting"
+    if (app_vendor != "") {
+      ar_app_path = "$ar_base_path/internal/apps/$app_vendor/$app_name"
+    } else {
+      ar_app_path = "$ar_base_path/apps/$app_name"
+    }
+    ar_app_manifest = "$ar_app_path/manifest.json.jinja2"
+    ar_app_manifest_common = "$ar_base_path/manifest_common.json.jinja2"
+
+    output_dir = "remoting/app_remoting/$ar_service_environment/$target_name"
+    zip_path = "remoting/app_remoting/$ar_service_environment/$target_name.zip"
+
+    # TODO(garykac) Move this list of files into files.gni.
+    ar_app_specific_files = [
+      "$ar_app_path/icon16.png",
+      "$ar_app_path/icon48.png",
+      "$ar_app_path/icon128.png",
+      "$ar_app_path/loading_splash.png",
+    ]
+
+    ar_webapp_files =
+        ar_app_specific_files + ar_vendor_js_files + ar_vendor_html_files
+
+    inputs = [
+               rebase_path(ar_app_manifest, root_build_dir),
+               rebase_path(ar_app_manifest_common, root_build_dir),
+             ] + remoting_version_files + ar_webapp_files
+
+    outputs = [
+      "$target_gen_dir/$zip_path",
+    ]
+
+    deps = [
+      ":$locales_listfile",
+      "//remoting/resources",
+    ]
+
+    # Create a file that contains a list of all the resource files needed
+    # to build the webapp. This is needed to avoid problems on platforms that
+    # limit the size of a command line.
+    file_list = "$target_gen_dir/${target_name}_files.txt"
+    files = []
+    files += rebase_path(ar_webapp_files, root_build_dir)
+    write_file(file_list, files)
+
+    args = [
+      buildtype,
+      version_full,
+      output_dir,
+      zip_path,
+      rebase_path(ar_app_manifest, root_build_dir),
+      "app_remoting",  # Web app type
+    ]
+    args += [
+      "--files_listfile",
+      rebase_path(file_list, root_build_dir),
+    ]
+    args += [
+      "--locales_listfile",
+      rebase_path(locales_listfile_output, root_build_dir),
+    ]
+    args += [
+      "--jinja_paths",
+      rebase_path("//remoting/webapp/app_remoting", root_build_dir),
+    ]
+
+    if (is_debug) {
+      # Normally, the app-id for the orchestrator is automatically extracted
+      # from the webapp's extension id, but that approach doesn't work for
+      # dev webapp builds (since they all share the same dev extension id).
+      # The --appid arg will create a webapp that registers the given app-id
+      # rather than using the extension id.
+      # This is only done for Dev apps because the app-id for Release apps
+      # *must* match the extension id.
+      args += [
+        "--appid",
+        app_id,
+      ]
+    }
+
+    args += [
+      "--app_name",
+      app_fullname,
+    ]
+    args += [
+      "--app_description",
+      app_description,
+    ]
+    args += [ "--app_capabilities" ] + app_capabilities
+    args += [
+      "--service_environment",
+      ar_service_environment,
+    ]
+    args += [
+      "--manifest_key",
+      manifest_key,
+    ]
+    args += [
+      "--app_client_id",
+      app_client_id,
+    ]
+  }
+}
+
+template("app_remoting_shared_module") {
+  locales_listfile = target_name + "_locales"
+  locales_listfile_output = "$target_gen_dir/${target_name}_locales.txt"
+
+  build_locales_listfile(locales_listfile) {
     # Template uses locales_listfile_output from outer scope.
   }
 
@@ -275,6 +407,17 @@ template("app_remoting_webapp") {
     html_output = wcs_sandbox_html_output
   }
 
+  background_html = target_name + "_background_html"
+  background_html_output =
+      "$target_gen_dir/html/$target_name/ar_background.html"
+
+  build_webapp_html(background_html) {
+    html_template_file = ar_background_template
+    html_template_include_files = []
+    js_files = ar_background_html_js_files
+    html_output = background_html_output
+  }
+
   main_html = target_name + "_main_html"
   main_html_output = "$target_gen_dir/html/$target_name/main.html"
 
@@ -288,37 +431,20 @@ template("app_remoting_webapp") {
   action(target_name) {
     script = "build-webapp.py"
 
-    app_key = invoker.app_key
-    app_id = invoker.app_id
     app_client_id = invoker.app_client_id
     app_name = invoker.app_name
+    app_fullname = invoker.app_fullname
     app_description = invoker.app_description
-    app_capabilities = invoker.app_capabilities
     manifest_key = invoker.manifest_key
 
-    # These asserts are so that these variables get marked as being used so
-    # that GN doesn't complain about them.
-    assert(app_key != "" || app_key == "")
-    assert(app_id != "" || app_id == "")
+    ar_path = "app_remoting/$app_name"
+    ar_manifest = "$ar_path/manifest.json"
 
-    # TODO(garykac) For internal targets, we need to extract the vendor and app
-    # name from the target.
-    ar_app_name = "sample_app"  #target_name
-    ar_app_path = "app_remoting/apps/$ar_app_name"
-    ar_app_manifest = "$ar_app_path/manifest.json.jinja2"
-    ar_app_manifest_common = "app_remoting/manifest_common.json.jinja2"
-
-    output_dir = "remoting/app_remoting/$ar_service_environment/$target_name"
-    zip_path = "remoting/app_remoting/$ar_service_environment/$target_name.zip"
-
-    ar_app_specific_files = [
-      "$ar_app_path/icon16.png",
-      "$ar_app_path/icon48.png",
-      "$ar_app_path/icon128.png",
-      "$ar_app_path/loading_splash.png",
-    ]
+    output_dir = "remoting/app_remoting/$target_name"
+    zip_path = "remoting/app_remoting/$target_name.zip"
 
     ar_generated_html_files = [
+      background_html_output,
       feedback_consent_html_output,
       loading_window_html_output,
       message_window_html_output,
@@ -327,12 +453,10 @@ template("app_remoting_webapp") {
     ]
 
     ar_webapp_files =
-        ar_app_specific_files + ar_shared_resource_files + ar_all_js_files
+        ar_shared_resource_files + ar_all_js_files + ar_generated_html_files
 
-    inputs = [
-               rebase_path(ar_app_manifest, root_build_dir),
-               rebase_path(ar_app_manifest_common, root_build_dir),
-             ] + remoting_version_files + ar_webapp_files
+    inputs = [ rebase_path(ar_manifest, root_build_dir) ] +
+             remoting_version_files + ar_webapp_files
 
     outputs = [
       "$target_gen_dir/$zip_path",
@@ -353,7 +477,6 @@ template("app_remoting_webapp") {
     # limit the size of a command line.
     file_list = "$target_gen_dir/${target_name}_files.txt"
     files = []
-    files += rebase_path(ar_generated_html_files, root_build_dir)
     files += rebase_path(ar_webapp_files, root_build_dir)
     write_file(file_list, files)
 
@@ -362,8 +485,8 @@ template("app_remoting_webapp") {
       version_full,
       output_dir,
       zip_path,
-      rebase_path(ar_app_manifest, root_build_dir),
-      "app_remoting",  # Web app type
+      rebase_path(ar_manifest, root_build_dir),
+      "shared_module",  # Web app type
     ]
     args += [
       "--files_listfile",
@@ -373,37 +496,14 @@ template("app_remoting_webapp") {
       "--locales_listfile",
       rebase_path(locales_listfile_output, root_build_dir),
     ]
-    args += [
-      "--jinja_paths",
-      rebase_path("app_remoting", root_build_dir),
-    ]
-
-    if (is_debug) {
-      # Normally, the app-id for the orchestrator is automatically extracted
-      # from the webapp's extension id, but that approach doesn't work for
-      # dev webapp builds (since they all share the same dev extension id).
-      # The --appid arg will create a webapp that registers the given app-id
-      # rather than using the extension id.
-      # This is only done for Dev apps because the app-id for Release apps
-      # *must* match the extension id.
-      args += [
-        "--appid",
-        app_id,
-      ]
-    }
 
     args += [
       "--app_name",
-      app_name,
+      app_fullname,
     ]
     args += [
       "--app_description",
       app_description,
-    ]
-    args += [ "--app_capabilities" ] + app_capabilities
-    args += [
-      "--service_environment",
-      ar_service_environment,
     ]
     args += [
       "--manifest_key",

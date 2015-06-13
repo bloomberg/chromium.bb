@@ -45,12 +45,12 @@
             ],
           },
           {
-            'action_name': 'Verify >(ar_app_name) background.js',
+            'action_name': 'Verify >(ar_app_name) background.html',
             'variables': {
               'success_stamp': '<(PRODUCT_DIR)/>(_target_name)_background_jscompile.stamp',
             },
             'inputs': [
-              '<@(ar_background_js_files)',
+              '<@(ar_background_html_js_files)',
               '<@(remoting_webapp_js_proto_files)',
               # Include zip as input so that this action is run after the build.
               '<(zip_path)',
@@ -62,7 +62,7 @@
               'python', '../third_party/closure_compiler/compile.py',
               '<@(compiler_flags)',
               '--success-stamp', '<(success_stamp)',
-              '<@(ar_background_js_files)',
+              '<@(ar_background_html_js_files)',
               '<@(remoting_webapp_js_proto_files)',
             ],
           },

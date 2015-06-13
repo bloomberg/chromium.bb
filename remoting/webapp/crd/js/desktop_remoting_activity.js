@@ -28,7 +28,7 @@ remoting.DesktopRemotingActivity = function(parentActivity) {
   /** @private */
   this.sessionFactory_ = new remoting.ClientSessionFactory(
       document.querySelector('#client-container .client-plugin-container'),
-      remoting.app_capabilities());
+      [/* No special capabilities required. */]);
 
   /** @private {remoting.ClientSession} */
   this.session_ = null;

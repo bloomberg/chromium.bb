@@ -14,25 +14,59 @@
 var remoting = remoting || {};
 
 /**
- * @param {Array<string>} appCapabilities Array of application capabilities.
- * @param {remoting.LicenseManager=} opt_licenseManager
+ * Parameters for the remoting.AppRemoting constructor.
+ *
+ * appId: The application ID. If this is not specified than the app id will
+ *     be extracted from the app's manifest.
+ *
+ * appCapabilites: Array of application capabilites.
+ *
+ * licenseManager: Licence manager for this application.
+ *
+ * @typedef {{
+ *   appId: (string|undefined),
+ *   appCapabilities: (Array<string>|undefined),
+ *   licenseManager: (remoting.LicenseManager|undefined)
+ * }}
+ */
+remoting.AppRemotingParams;
+
+/**
+ * @param {remoting.AppRemotingParams} args
  * @constructor
  * @implements {remoting.ApplicationInterface}
  * @extends {remoting.Application}
  */
-remoting.AppRemoting = function(appCapabilities, opt_licenseManager) {
+remoting.AppRemoting = function(args) {
   base.inherits(this, remoting.Application);
 
   /** @private {remoting.Activity} */
   this.activity_ = null;
 
+  /** @private {string} */
+  this.appId_ = (args.appId) ? args.appId : chrome.runtime.id;
+
   /** @private */
-  this.licenseManager_ = (opt_licenseManager) ?
-                             opt_licenseManager :
+  this.licenseManager_ = (args.licenseManager) ?
+                             args.licenseManager :
                              new remoting.GaiaLicenseManager();
 
   /** @private */
-  this.appCapabilities_ = appCapabilities;
+  this.appCapabilities_ = (args.appCapabilities) ? args.appCapabilities : [];
+
+  // This prefix must be added to message window paths so that the HTML
+  // files can be found in the shared module.
+  // TODO(garykac) Add support for dev/prod shared modules.
+  remoting.MessageWindow.htmlFilePrefix =
+      "_modules/koejkfhmphamcgafjmkellhnekdkopod/";
+};
+
+/**
+ * @return {string} Application Id.
+ * @override {remoting.ApplicationInterface}
+ */
+remoting.AppRemoting.prototype.getApplicationId = function() {
+  return this.appId_;
 };
 
 /**
