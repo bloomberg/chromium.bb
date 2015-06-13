@@ -84,6 +84,10 @@ static_library("common") {
       # Use this Mac file that was filtered out.
       "chrome_version_info_mac.mm",
     ]
+    sources -= [
+      "resource_usage_reporter_type_converters.cc",
+      "resource_usage_reporter_type_converters.h",
+    ]
   } else {
     # Non-iOS.
     deps += [

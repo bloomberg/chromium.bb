@@ -48,7 +48,6 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
 
   void OnDnsPrefetch(const network_hints::LookupRequest& request);
   void OnPreconnect(const GURL& url, int count);
-  void OnResourceTypeStats(const blink::WebCache::ResourceTypeStats& stats);
   void OnUpdatedCacheStats(const blink::WebCache::UsageStats& stats);
 
   void OnAllowDatabase(int render_frame_id,

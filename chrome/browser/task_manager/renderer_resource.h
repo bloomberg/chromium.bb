@@ -44,9 +44,6 @@ class RendererResource : public Resource {
 
   void Refresh() override;
 
-  void NotifyResourceTypeStats(
-      const blink::WebCache::ResourceTypeStats& stats) override;
-
   content::RenderViewHost* render_view_host() const {
     return render_view_host_;
   }
@@ -57,11 +54,6 @@ class RendererResource : public Resource {
 
   // RenderViewHost we use to fetch stats.
   content::RenderViewHost* render_view_host_;
-  // The stats_ field holds information about resource usage in the renderer
-  // process and so it is updated asynchronously by the Refresh() call.
-  blink::WebCache::ResourceTypeStats stats_;
-  // This flag is true if we are waiting for the renderer to report its stats.
-  bool pending_stats_update_;
 
   scoped_ptr<ProcessResourceUsage> process_resource_usage_;
 

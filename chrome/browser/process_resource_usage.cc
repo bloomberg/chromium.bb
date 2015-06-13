@@ -9,11 +9,12 @@
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
+#include "chrome/common/resource_usage_reporter_type_converters.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/error_handler.h"
 
 class ProcessResourceUsage::ErrorHandler : public mojo::ErrorHandler {
  public:
-  ErrorHandler(ProcessResourceUsage* usage) : usage_(usage) {}
+  explicit ErrorHandler(ProcessResourceUsage* usage) : usage_(usage) {}
 
   // mojo::ErrorHandler implementation:
   void OnConnectionError() override;
@@ -89,4 +90,12 @@ size_t ProcessResourceUsage::GetV8MemoryUsed() const {
   if (stats_ && stats_->reports_v8_stats)
     return stats_->v8_bytes_used;
   return 0;
+}
+
+blink::WebCache::ResourceTypeStats ProcessResourceUsage::GetWebCoreCacheStats()
+    const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (stats_ && stats_->web_cache_stats)
+    return stats_->web_cache_stats->To<blink::WebCache::ResourceTypeStats>();
+  return {};
 }

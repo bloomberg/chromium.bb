@@ -12,14 +12,15 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/common/resource_usage_reporter.mojom.h"
+#include "third_party/WebKit/public/web/WebCache.h"
 
 // Provides resource usage information about a child process.
 //
 // This is a wrapper around the ResourceUsageReporter Mojo service that exposes
 // information about resources used by a child process. Currently, this is only
-// V8 memory usage, but could be expanded to include other resources such as web
-// cache. This is intended for status viewers such as the task manager and
-// about://memory-internals.
+// V8 memory and Blink resource cache usage, but could be expanded to include
+// other resources.  This is intended for status viewers such as the task
+// manager and about://memory-internals.
 //
 // To create:
 // 1. Create a ResourceUsageReporterPtr and obtain an InterfaceRequest<> using
@@ -64,6 +65,9 @@ class ProcessResourceUsage {
   bool ReportsV8MemoryStats() const;
   size_t GetV8MemoryAllocated() const;
   size_t GetV8MemoryUsed() const;
+
+  // Get Blink resource cache information.
+  blink::WebCache::ResourceTypeStats GetWebCoreCacheStats() const;
 
  private:
   class ErrorHandler;

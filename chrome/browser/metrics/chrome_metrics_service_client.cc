@@ -23,6 +23,7 @@
 #include "chrome/browser/metrics/drive_metrics_provider.h"
 #include "chrome/browser/metrics/omnibox_metrics_provider.h"
 #include "chrome/browser/metrics/time_ticks_experiment_win.h"
+#include "chrome/browser/process_resource_usage.h"
 #include "chrome/browser/ui/browser_otr_state.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -43,6 +44,7 @@
 #include "content/public/browser/histogram_fetcher.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/common/service_registry.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/metrics/android_metrics_provider.h"
@@ -250,11 +252,34 @@ void ChromeMetricsServiceClient::CollectFinalMetrics(
       new MetricsMemoryDetails(callback, &memory_growth_tracker_));
   details->StartFetch(MemoryDetails::FROM_CHROME_ONLY);
 
+  ScopedPtrMap<int, scoped_ptr<ProcessResourceUsage>> current_map;
+  host_resource_usage_map_.swap(current_map);
+
   // Collect WebCore cache information to put into a histogram.
   for (content::RenderProcessHost::iterator i(
           content::RenderProcessHost::AllHostsIterator());
        !i.IsAtEnd(); i.Advance()) {
-    i.GetCurrentValue()->Send(new ChromeViewMsg_GetCacheResourceStats());
+    content::RenderProcessHost* host = i.GetCurrentValue();
+    int host_id = host->GetID();
+    ProcessResourceUsage* resource_usage = nullptr;
+    auto iter = current_map.find(host_id);
+    if (iter != current_map.end()) {
+      resource_usage = iter->second;
+      host_resource_usage_map_.set(host_id, current_map.take_and_erase(iter));
+    } else {
+      content::ServiceRegistry* service_registry = host->GetServiceRegistry();
+      if (service_registry) {
+        ResourceUsageReporterPtr service;
+        service_registry->ConnectToRemoteService(mojo::GetProxy(&service));
+        resource_usage = new ProcessResourceUsage(service.Pass());
+        host_resource_usage_map_.set(host_id, make_scoped_ptr(resource_usage));
+      }
+    }
+    if (resource_usage) {
+      resource_usage->Refresh(
+          base::Bind(&ChromeMetricsServiceClient::OnWebCacheStatsRefresh,
+                     weak_ptr_factory_.GetWeakPtr(), host_id));
+    }
   }
 }
 
@@ -425,6 +450,26 @@ void ChromeMetricsServiceClient::OnInitTaskGotGoogleUpdateData() {
   // call into |FinishedReceivingProfilerData()| when the task completes.
   metrics::TrackingSynchronizer::FetchProfilerDataAsynchronously(
       weak_ptr_factory_.GetWeakPtr());
+}
+
+void ChromeMetricsServiceClient::OnWebCacheStatsRefresh(int host_id) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  auto iter = host_resource_usage_map_.find(host_id);
+  if (iter != host_resource_usage_map_.end()) {
+    blink::WebCache::ResourceTypeStats stats =
+        iter->second->GetWebCoreCacheStats();
+    LOCAL_HISTOGRAM_COUNTS("WebCoreCache.ImagesSizeKB",
+                           static_cast<int>(stats.images.size / 1024));
+    LOCAL_HISTOGRAM_COUNTS("WebCoreCache.CSSStylesheetsSizeKB",
+                           static_cast<int>(stats.cssStyleSheets.size / 1024));
+    LOCAL_HISTOGRAM_COUNTS("WebCoreCache.ScriptsSizeKB",
+                           static_cast<int>(stats.scripts.size / 1024));
+    LOCAL_HISTOGRAM_COUNTS("WebCoreCache.XSLStylesheetsSizeKB",
+                           static_cast<int>(stats.xslStyleSheets.size / 1024));
+    LOCAL_HISTOGRAM_COUNTS("WebCoreCache.FontsSizeKB",
+                           static_cast<int>(stats.fonts.size / 1024));
+  }
 }
 
 void ChromeMetricsServiceClient::ReceivedProfilerData(

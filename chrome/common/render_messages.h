@@ -165,21 +165,6 @@ IPC_STRUCT_TRAITS_BEGIN(ThemeBackgroundInfo)
   IPC_STRUCT_TRAITS_MEMBER(logo_alternate)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(blink::WebCache::ResourceTypeStat)
-  IPC_STRUCT_TRAITS_MEMBER(count)
-  IPC_STRUCT_TRAITS_MEMBER(size)
-  IPC_STRUCT_TRAITS_MEMBER(liveSize)
-  IPC_STRUCT_TRAITS_MEMBER(decodedSize)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(blink::WebCache::ResourceTypeStats)
-  IPC_STRUCT_TRAITS_MEMBER(images)
-  IPC_STRUCT_TRAITS_MEMBER(cssStyleSheets)
-  IPC_STRUCT_TRAITS_MEMBER(scripts)
-  IPC_STRUCT_TRAITS_MEMBER(xslStyleSheets)
-  IPC_STRUCT_TRAITS_MEMBER(fonts)
-IPC_STRUCT_TRAITS_END()
-
 IPC_STRUCT_TRAITS_BEGIN(blink::WebCache::UsageStats)
   IPC_STRUCT_TRAITS_MEMBER(minDeadCapacity)
   IPC_STRUCT_TRAITS_MEMBER(maxDeadCapacity)
@@ -227,10 +212,6 @@ IPC_MESSAGE_ROUTED1(ChromeViewMsg_WebUIJavaScript,
 // Set the content setting rules stored by the renderer.
 IPC_MESSAGE_CONTROL1(ChromeViewMsg_SetContentSettingRules,
                      RendererContentSettingRules /* rules */)
-
-// Asks the renderer to send back stats on the WebCore cache broken down by
-// resource types.
-IPC_MESSAGE_CONTROL0(ChromeViewMsg_GetCacheResourceStats)
 
 // Tells the renderer to create a FieldTrial, and by using a 100% probability
 // for the FieldTrial, forces the FieldTrial to have assigned group name.
@@ -492,11 +473,6 @@ IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_BlockedOutdatedPlugin,
 IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_BlockedUnauthorizedPlugin,
                     base::string16 /* name */,
                     std::string /* plugin group identifier */)
-
-// Provide the browser process with information about the WebCore resource
-// cache and current renderer framerate.
-IPC_MESSAGE_CONTROL1(ChromeViewHostMsg_ResourceTypeStats,
-                     blink::WebCache::ResourceTypeStats)
 
 // Message sent from the renderer to the browser to notify it of a
 // window.print() call which should cancel the prerender. The message is sent

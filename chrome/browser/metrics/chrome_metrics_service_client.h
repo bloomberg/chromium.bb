@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/containers/scoped_ptr_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -24,6 +25,7 @@ class GoogleUpdateMetricsProviderWin;
 class PluginMetricsProvider;
 class PrefRegistrySimple;
 class PrefService;
+class ProcessResourceUsage;
 
 #if !defined(OS_CHROMEOS) && !defined(OS_IOS)
 class SigninStatusMetricsProvider;
@@ -94,6 +96,10 @@ class ChromeMetricsServiceClient
   // Called after GoogleUpdate init task has been completed that continues the
   // init task by loading profiler data.
   void OnInitTaskGotGoogleUpdateData();
+
+  // Called after WebCache statistics have been received from a renderer
+  // process.
+  void OnWebCacheStatsRefresh(int host_id);
 
   // TrackingSynchronizerObserver:
   void ReceivedProfilerData(
@@ -183,6 +189,9 @@ class ChromeMetricsServiceClient
 
   // Time of this object's creation.
   const base::TimeTicks start_time_;
+
+  // Map of ProcessResourceUsage from render process host IDs.
+  ScopedPtrMap<int, scoped_ptr<ProcessResourceUsage>> host_resource_usage_map_;
 
   base::WeakPtrFactory<ChromeMetricsServiceClient> weak_ptr_factory_;
 

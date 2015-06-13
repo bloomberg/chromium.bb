@@ -10,7 +10,6 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
-#include "base/metrics/histogram.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
@@ -33,10 +32,6 @@
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "extensions/common/manifest_handlers/default_locale_handler.h"
-#endif
-
-#if defined(ENABLE_TASK_MANAGER)
-#include "chrome/browser/task_manager/task_manager.h"
 #endif
 
 #if defined(USE_TCMALLOC)
@@ -75,8 +70,6 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(ChromeRenderMessageFilter, message)
     IPC_MESSAGE_HANDLER(NetworkHintsMsg_DNSPrefetch, OnDnsPrefetch)
     IPC_MESSAGE_HANDLER(NetworkHintsMsg_Preconnect, OnPreconnect)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_ResourceTypeStats,
-                        OnResourceTypeStats)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_UpdatedCacheStats,
                         OnUpdatedCacheStats)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_AllowDatabase, OnAllowDatabase)
@@ -104,7 +97,6 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
 void ChromeRenderMessageFilter::OverrideThreadForMessage(
     const IPC::Message& message, BrowserThread::ID* thread) {
   switch (message.type()) {
-    case ChromeViewHostMsg_ResourceTypeStats::ID:
     case ChromeViewHostMsg_UpdatedCacheStats::ID:
     case ChromeViewHostMsg_RecordRappor::ID:
     case ChromeViewHostMsg_RecordRapporURL::ID:
@@ -132,26 +124,6 @@ void ChromeRenderMessageFilter::OnPreconnect(const GURL& url, int count) {
     predictor_->PreconnectUrl(
         url, GURL(), chrome_browser_net::UrlInfo::EARLY_LOAD_MOTIVATED, count);
   }
-}
-
-void ChromeRenderMessageFilter::OnResourceTypeStats(
-    const WebCache::ResourceTypeStats& stats) {
-  LOCAL_HISTOGRAM_COUNTS("WebCoreCache.ImagesSizeKB",
-                         static_cast<int>(stats.images.size / 1024));
-  LOCAL_HISTOGRAM_COUNTS("WebCoreCache.CSSStylesheetsSizeKB",
-                         static_cast<int>(stats.cssStyleSheets.size / 1024));
-  LOCAL_HISTOGRAM_COUNTS("WebCoreCache.ScriptsSizeKB",
-                         static_cast<int>(stats.scripts.size / 1024));
-  LOCAL_HISTOGRAM_COUNTS("WebCoreCache.XSLStylesheetsSizeKB",
-                         static_cast<int>(stats.xslStyleSheets.size / 1024));
-  LOCAL_HISTOGRAM_COUNTS("WebCoreCache.FontsSizeKB",
-                         static_cast<int>(stats.fonts.size / 1024));
-
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-#if defined(ENABLE_TASK_MANAGER)
-  TaskManager::GetInstance()->model()->NotifyResourceTypeStats(peer_pid(),
-                                                               stats);
-#endif  // defined(ENABLE_TASK_MANAGER)
 }
 
 void ChromeRenderMessageFilter::OnUpdatedCacheStats(

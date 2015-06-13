@@ -19,13 +19,10 @@ namespace task_manager {
 
 RendererResource::RendererResource(base::ProcessHandle process,
                                    content::RenderViewHost* render_view_host)
-    : process_(process),
-      render_view_host_(render_view_host),
-      pending_stats_update_(false) {
+    : process_(process), render_view_host_(render_view_host) {
   // We cache the process and pid as when a Tab/BackgroundContents is closed the
   // process reference becomes NULL and the TaskManager still needs it.
   unique_process_id_ = render_view_host_->GetProcess()->GetID();
-  memset(&stats_, 0, sizeof(stats_));
   ResourceUsageReporterPtr service;
   content::ServiceRegistry* service_registry =
       render_view_host_->GetProcess()->GetServiceRegistry();
@@ -38,16 +35,12 @@ RendererResource::~RendererResource() {
 }
 
 void RendererResource::Refresh() {
-  if (!pending_stats_update_) {
-    render_view_host_->Send(new ChromeViewMsg_GetCacheResourceStats);
-    pending_stats_update_ = true;
-  }
   process_resource_usage_->Refresh(base::Closure());
 }
 
 blink::WebCache::ResourceTypeStats
 RendererResource::GetWebCoreCacheStats() const {
-  return stats_;
+  return process_resource_usage_->GetWebCoreCacheStats();
 }
 
 size_t RendererResource::GetV8MemoryAllocated() const {
@@ -56,12 +49,6 @@ size_t RendererResource::GetV8MemoryAllocated() const {
 
 size_t RendererResource::GetV8MemoryUsed() const {
   return process_resource_usage_->GetV8MemoryUsed();
-}
-
-void RendererResource::NotifyResourceTypeStats(
-    const blink::WebCache::ResourceTypeStats& stats) {
-  stats_ = stats;
-  pending_stats_update_ = false;
 }
 
 base::string16 RendererResource::GetProfileName() const {

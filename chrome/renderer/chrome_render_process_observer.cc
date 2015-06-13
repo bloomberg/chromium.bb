@@ -28,6 +28,7 @@
 #include "chrome/common/net/net_resource_provider.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/resource_usage_reporter.mojom.h"
+#include "chrome/common/resource_usage_reporter_type_converters.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/variations/variations_util.h"
 #include "chrome/renderer/content_settings_observer.h"
@@ -117,9 +118,10 @@ static const int kWaitForWorkersStatsTimeoutMS = 20;
 
 class ResourceUsageReporterImpl : public ResourceUsageReporter {
  public:
-  explicit ResourceUsageReporterImpl(
+  ResourceUsageReporterImpl(
+      base::WeakPtr<ChromeRenderProcessObserver> observer,
       mojo::InterfaceRequest<ResourceUsageReporter> req)
-      : binding_(this, req.Pass()), weak_factory_(this) {}
+      : binding_(this, req.Pass()), observer_(observer), weak_factory_(this) {}
   ~ResourceUsageReporterImpl() override {}
 
  private:
@@ -164,6 +166,12 @@ class ResourceUsageReporterImpl : public ResourceUsageReporter {
     usage_data_->reports_v8_stats = true;
     callback_ = callback;
 
+    if (observer_ && observer_->webkit_initialized()) {
+      WebCache::ResourceTypeStats stats;
+      WebCache::getResourceTypeStats(&stats);
+      usage_data_->web_cache_stats = ResourceTypeStats::From(stats);
+    }
+
     v8::HeapStatistics heap_stats;
     v8::Isolate::GetCurrent()->GetHeapStatistics(&heap_stats);
     usage_data_->v8_bytes_allocated = heap_stats.total_heap_size();
@@ -189,13 +197,15 @@ class ResourceUsageReporterImpl : public ResourceUsageReporter {
   mojo::Callback<void(ResourceUsageDataPtr)> callback_;
   int workers_to_go_;
   mojo::StrongBinding<ResourceUsageReporter> binding_;
+  base::WeakPtr<ChromeRenderProcessObserver> observer_;
 
   base::WeakPtrFactory<ResourceUsageReporterImpl> weak_factory_;
 };
 
 void CreateResourceUsageReporter(
+    base::WeakPtr<ChromeRenderProcessObserver> observer,
     mojo::InterfaceRequest<ResourceUsageReporter> request) {
-  new ResourceUsageReporterImpl(request.Pass());
+  new ResourceUsageReporterImpl(observer, request.Pass());
 }
 
 }  // namespace
@@ -203,7 +213,7 @@ void CreateResourceUsageReporter(
 bool ChromeRenderProcessObserver::is_incognito_process_ = false;
 
 ChromeRenderProcessObserver::ChromeRenderProcessObserver()
-    : webkit_initialized_(false) {
+    : webkit_initialized_(false), weak_factory_(this) {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
 
@@ -228,7 +238,7 @@ ChromeRenderProcessObserver::ChromeRenderProcessObserver()
   content::ServiceRegistry* service_registry = thread->GetServiceRegistry();
   if (service_registry) {
     service_registry->AddService<ResourceUsageReporter>(
-        base::Bind(CreateResourceUsageReporter));
+        base::Bind(CreateResourceUsageReporter, weak_factory_.GetWeakPtr()));
   }
 
   // Configure modules that need access to resources.
@@ -261,8 +271,6 @@ bool ChromeRenderProcessObserver::OnControlMessageReceived(
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetIsIncognitoProcess,
                         OnSetIsIncognitoProcess)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetFieldTrialGroup, OnSetFieldTrialGroup)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_GetCacheResourceStats,
-                        OnGetCacheResourceStats)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetContentSettingRules,
                         OnSetContentSettingRules)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -298,13 +306,6 @@ void ChromeRenderProcessObserver::OnSetIsIncognitoProcess(
 void ChromeRenderProcessObserver::OnSetContentSettingRules(
     const RendererContentSettingRules& rules) {
   content_setting_rules_ = rules;
-}
-
-void ChromeRenderProcessObserver::OnGetCacheResourceStats() {
-  WebCache::ResourceTypeStats stats;
-  if (webkit_initialized_)
-    WebCache::getResourceTypeStats(&stats);
-  RenderThread::Get()->Send(new ChromeViewHostMsg_ResourceTypeStats(stats));
 }
 
 void ChromeRenderProcessObserver::OnSetFieldTrialGroup(

@@ -1200,17 +1200,6 @@ void TaskManagerModel::Refresh() {
   }
 }
 
-void TaskManagerModel::NotifyResourceTypeStats(
-    base::ProcessId renderer_id,
-    const blink::WebCache::ResourceTypeStats& stats) {
-  for (ResourceList::iterator it = resources_.begin();
-       it != resources_.end(); ++it) {
-    if (base::GetProcId((*it)->GetProcess()) == renderer_id) {
-      (*it)->NotifyResourceTypeStats(stats);
-    }
-  }
-}
-
 void TaskManagerModel::NotifyVideoMemoryUsageStats(
     const content::GPUVideoMemoryUsageStats& video_memory_usage_stats) {
   DCHECK(pending_video_memory_usage_stats_update_);

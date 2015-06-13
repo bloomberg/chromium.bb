@@ -284,10 +284,6 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
   // Updates the values for all rows.
   void Refresh();
 
-  void NotifyResourceTypeStats(
-        base::ProcessId renderer_id,
-        const blink::WebCache::ResourceTypeStats& stats);
-
   void NotifyVideoMemoryUsageStats(
       const content::GPUVideoMemoryUsageStats& video_memory_usage_stats);
 

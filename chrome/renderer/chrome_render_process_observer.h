@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "content/public/renderer/render_process_observer.h"
@@ -32,6 +33,8 @@ class ChromeRenderProcessObserver : public content::RenderProcessObserver,
   ~ChromeRenderProcessObserver() override;
 
   static bool is_incognito_process() { return is_incognito_process_; }
+
+  bool webkit_initialized() const { return webkit_initialized_; }
 
   // Returns a pointer to the content setting rules owned by
   // |ChromeRenderProcessObserver|.
@@ -60,6 +63,8 @@ class ChromeRenderProcessObserver : public content::RenderProcessObserver,
   RendererContentSettingRules content_setting_rules_;
 
   bool webkit_initialized_;
+
+  base::WeakPtrFactory<ChromeRenderProcessObserver> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeRenderProcessObserver);
 };
