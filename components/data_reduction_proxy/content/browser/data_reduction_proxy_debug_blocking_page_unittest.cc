@@ -303,7 +303,7 @@ TEST_F(DataReductionProxyDebugBlockingPageTest, BypassSubresourceDontProceed) {
   // The user did not proceed, the controler should be back to the first page,
   // the 2nd one should have been removed from the navigation controller.
   ASSERT_EQ(1, controller().GetEntryCount());
-  EXPECT_EQ(kGoogleURL, controller().GetActiveEntry()->GetURL().spec());
+  EXPECT_EQ(kGoogleURL, controller().GetLastCommittedEntry()->GetURL().spec());
 }
 
 // Tests showing a blocking page for a page that contains bypassed subresources
@@ -328,7 +328,7 @@ TEST_F(DataReductionProxyDebugBlockingPageTest, BypassSubresourceProceed) {
 
   // The user did proceed, the controller should be back to showing the page.
   ASSERT_EQ(1, controller().GetEntryCount());
-  EXPECT_EQ(kGoogleURL, controller().GetActiveEntry()->GetURL().spec());
+  EXPECT_EQ(kGoogleURL, controller().GetLastCommittedEntry()->GetURL().spec());
 }
 
 // Tests showing a blocking page for a page that contains multiple bypassed
@@ -362,7 +362,7 @@ TEST_F(DataReductionProxyDebugBlockingPageTest,
   // The user did not proceed, the controller should be back to the first page,
   // the 2nd one should have been removed from the navigation controller.
   ASSERT_EQ(1, controller().GetEntryCount());
-  EXPECT_EQ(kGoogleURL, controller().GetActiveEntry()->GetURL().spec());
+  EXPECT_EQ(kGoogleURL, controller().GetLastCommittedEntry()->GetURL().spec());
 }
 
 // Tests showing a blocking page for a page that contains multiple bypassed
@@ -391,7 +391,7 @@ TEST_F(DataReductionProxyDebugBlockingPageTest,
 
   // The user did proceed, the controller should be back to showing the page.
   ASSERT_EQ(1, controller().GetEntryCount());
-  EXPECT_EQ(kGoogleURL, controller().GetActiveEntry()->GetURL().spec());
+  EXPECT_EQ(kGoogleURL, controller().GetLastCommittedEntry()->GetURL().spec());
 }
 
 // Tests showing a blocking page then navigating back and forth to make sure the
@@ -418,7 +418,7 @@ TEST_F(DataReductionProxyDebugBlockingPageTest, NavigatingBackAndForth) {
   interstitial = GetDataReductionProxyDebugBlockingPage();
   ASSERT_FALSE(interstitial);
   ASSERT_EQ(2, controller().GetEntryCount());
-  EXPECT_EQ(kGoogleURL, controller().GetActiveEntry()->GetURL().spec());
+  EXPECT_EQ(kGoogleURL, controller().GetLastCommittedEntry()->GetURL().spec());
 
   // Navigate forward to the bypassed URL.
   web_contents()->GetController().GoForward();
@@ -434,7 +434,7 @@ TEST_F(DataReductionProxyDebugBlockingPageTest, NavigatingBackAndForth) {
   interstitial = GetDataReductionProxyDebugBlockingPage();
   ASSERT_FALSE(interstitial);
   ASSERT_EQ(2, controller().GetEntryCount());
-  EXPECT_EQ(kBypassURL, controller().GetActiveEntry()->GetURL().spec());
+  EXPECT_EQ(kBypassURL, controller().GetLastCommittedEntry()->GetURL().spec());
 }
 
 // Tests that calling "don't proceed" after "proceed" has been called causes
