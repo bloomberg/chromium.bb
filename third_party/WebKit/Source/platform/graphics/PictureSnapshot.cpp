@@ -96,6 +96,11 @@ PassRefPtr<PictureSnapshot> PictureSnapshot::load(const Vector<RefPtr<TilePictur
     return adoptRef(new PictureSnapshot(adoptRef(recorder.endRecordingAsPicture())));
 }
 
+bool PictureSnapshot::isEmpty() const
+{
+    return m_picture->cullRect().isEmpty();
+}
+
 PassOwnPtr<Vector<char>> PictureSnapshot::replay(unsigned fromStep, unsigned toStep, double scale) const
 {
     const SkIRect bounds = m_picture->cullRect().roundOut();
@@ -133,8 +138,10 @@ PassOwnPtr<PictureSnapshot::Timings> PictureSnapshot::profile(unsigned minRepeat
         if (timings->size() > 1)
             currentTimings->reserveCapacity(timings->begin()->size());
         ProfilingCanvas canvas(bitmap);
-        if (clipRect)
+        if (clipRect) {
             canvas.clipRect(SkRect::MakeXYWH(clipRect->x(), clipRect->y(), clipRect->width(), clipRect->height()));
+            canvas.resetStepCount();
+        }
         canvas.setTimings(currentTimings);
         m_picture->playback(&canvas);
         now = WTF::monotonicallyIncreasingTime();

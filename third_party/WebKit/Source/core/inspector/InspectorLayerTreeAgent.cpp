@@ -367,9 +367,14 @@ void InspectorLayerTreeAgent::loadSnapshot(ErrorString* errorString, const RefPt
     }
     RefPtr<PictureSnapshot> snapshot = PictureSnapshot::load(decodedTiles);
     if (!snapshot) {
-        *errorString = "Invalida snapshot format";
+        *errorString = "Invalid snapshot format";
         return;
     }
+    if (snapshot->isEmpty()) {
+        *errorString = "Empty snapshot";
+        return;
+    }
+
     *snapshotId = String::number(++s_lastSnapshotId);
     bool newEntry = m_snapshotById.add(*snapshotId, snapshot).isNewEntry;
     ASSERT_UNUSED(newEntry, newEntry);
