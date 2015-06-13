@@ -12,6 +12,8 @@ assert(is_android)
 
 source_set("android") {
   sources = [
+    "access_unit_queue.cc",
+    "access_unit_queue.h",
     "audio_decoder_job.cc",
     "audio_decoder_job.h",
     "browser_cdm_factory_android.cc",
@@ -67,6 +69,7 @@ source_set("android") {
 source_set("unittests") {
   testonly = true
   sources = [
+    "access_unit_queue_unittest.cc",
     "media_codec_bridge_unittest.cc",
     "media_drm_bridge_unittest.cc",
     "media_source_player_unittest.cc",

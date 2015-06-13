@@ -1105,6 +1105,7 @@
         '../url/url.gyp:url_lib',
       ],
       'sources': [
+        'base/android/access_unit_queue_unittest.cc',
         'base/android/media_codec_bridge_unittest.cc',
         'base/android/media_drm_bridge_unittest.cc',
         'base/android/media_source_player_unittest.cc',
@@ -1708,6 +1709,8 @@
           'target_name': 'player_android',
           'type': 'static_library',
           'sources': [
+            'base/android/access_unit_queue.cc',
+            'base/android/access_unit_queue.h',
             'base/android/audio_decoder_job.cc',
             'base/android/audio_decoder_job.h',
             'base/android/browser_cdm_factory_android.cc',
