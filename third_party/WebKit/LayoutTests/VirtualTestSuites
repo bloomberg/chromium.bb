@@ -103,7 +103,8 @@
     "prefix": "antialiasedtext",
     "base": "fast/text",
     "args": ["--enable-direct-write",
-             "--enable-font-antialiasing"]
+             "--enable-font-antialiasing",
+             "--enable-slimming-paint"]
   },
   {
     "prefix": "threaded",
