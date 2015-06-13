@@ -2228,8 +2228,10 @@ void RenderWidget::didOverscroll(
       accumulatedRootOverScroll.width, accumulatedRootOverScroll.height);
   params.latest_overscroll_delta =
       gfx::Vector2dF(unusedDelta.width, unusedDelta.height);
+  // TODO(sataya.m): don't negate velocity once http://crbug.com/499743 is
+  // fixed.
   params.current_fling_velocity =
-      gfx::Vector2dF(velocity.width, velocity.height);
+      gfx::Vector2dF(-velocity.width, -velocity.height);
   params.causal_event_viewport_point = gfx::PointF(position.x, position.y);
   Send(new InputHostMsg_DidOverscroll(routing_id_, params));
 }
