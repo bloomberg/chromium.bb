@@ -747,6 +747,24 @@ hooks = [
     'action': ['python', 'src/third_party/instrumented_libraries/scripts/download_binaries.py'],
   },
   {
+    # Ensure that while generating dependencies lists in .gyp files we don't
+    # accidentally reference any .pyc files whose corresponding .py files have
+    # already been deleted.
+    # We should actually try to avoid generating .pyc files, crbug.com/500078.
+    'name': 'remove_stale_pyc_files',
+    'pattern': '.',
+    'action': [
+        'python',
+        'src/tools/remove_stale_pyc_files.py',
+        'src/android_webview/tools',
+        'src/gpu/gles2_conform_support',
+        'src/ppapi',
+        'src/printing',
+        'src/third_party/closure_compiler/build',
+        'src/tools',
+    ],
+  },
+  {
     # A change to a .gyp, .gypi, or to GYP itself should run the generator.
     'name': 'gyp',
     'pattern': '.',
@@ -762,17 +780,6 @@ hooks = [
         'python',
         'src/tools/check_git_config.py',
         '--running-as-hook',
-    ],
-  },
-  {
-    # Ensure that we don't accidentally reference any .pyc files whose
-    # corresponding .py files have already been deleted.
-    'name': 'remove_stale_pyc_files',
-    'pattern': 'src/tools/.*\\.py',
-    'action': [
-        'python',
-        'src/tools/remove_stale_pyc_files.py',
-        'src/tools',
     ],
   },
 ]
