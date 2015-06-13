@@ -275,6 +275,9 @@
   <message name="IDS_SETTINGS_USERS_MODIFIED_BY_OWNER_LABEL" desc="Label saying settings may only be modified by the device owner.">
     These settings may only be modified by the owner:
   </message>
+  <message name="IDS_SETTINGS_USERS_MANAGED_LABEL" desc="Label saying settings is managed by enterprise and thus can't be modified.">
+    These settings are controlled by enterprise policy. Please contact your administrator for more information.
+  </message>
   <message name="IDS_SETTINGS_USERS_GUEST_BROWSING_LABEL" desc="Label for the guest browsing setting.">
     Enable Guest browsing
   </message>

@@ -14,35 +14,47 @@
   <template>
     <paper-material>
       <div class="page-content">
-        <div i18n-content="usersModifiedByOwnerLabel"></div>
+        <div i18n-content="usersModifiedByOwnerLabel"
+            hidden$="{{computeHideOwnerLabel_(isOwner, isWhitelistManaged)}}">
+        </div>
+        <div i18n-content="settingsManagedLabel"
+            hidden$="{{computeHideManagedLabel_(isOwner, isWhitelistManaged)}}">
+        </div>
         <div>
           <cr-settings-checkbox
               pref="{{prefs.cros.accounts.allowBWSI}}"
-              i18n-values="label:guestBrowsingLabel">
+              i18n-values="label:guestBrowsingLabel"
+              disabled="{{editingDisabled}}">
           </cr-settings-checkbox>
           <cr-settings-checkbox
               pref="{{prefs.cros.accounts.supervisedUsersEnabled}}"
-              i18n-values="label:supervisedUsersLabel">
+              i18n-values="label:supervisedUsersLabel"
+              disabled="{{editingDisabled}}">
           </cr-settings-checkbox>
           <cr-settings-checkbox
               pref="{{prefs.cros.accounts.showUserNamesOnSignIn}}"
-              i18n-values="label:showOnSigninLabel">
+              i18n-values="label:showOnSigninLabel"
+              disabled="{{editingDisabled}}">
           </cr-settings-checkbox>
-
-          <!-- TODO(orenb): Invert this pref!!! -->
           <cr-settings-checkbox
               pref="{{prefs.cros.accounts.allowGuest}}"
-              i18n-values="label:restrictSigninLabel">
+              id="restrictSignIn"
+              i18n-values="label:restrictSigninLabel"
+              disabled="{{editingDisabled}}" inverted>
           </cr-settings-checkbox>
         </div>
         <div class="users">
           <div>
-            <cr-settings-user-list prefs="{{prefs}}"></cr-settings-user-list>
+            <cr-settings-user-list prefs="[[prefs]]"
+                disabled="[[editingUsersDisabled]]">
+            </cr-settings-user-list>
           </div>
           <div>
-            <cr-input i18n-values="label:addUsersLabel" id="addUserInput"></cr-input>
+            <cr-input id="addUserInput" i18n-values="label:addUsersLabel"
+                disabled="[[editingUsersDisabled]]"></cr-input>
             <div class="add-user-button layout horizontal end-justified">
-              <cr-button i18n-content="addLabel" on-click="addUser_" raised>
+              <cr-button i18n-content="addLabel" on-click="addUser_"
+                  disabled="[[editingUsersDisabled]]" raised>
               </cr-button>
             </div>
           </div>

@@ -245,6 +245,8 @@ void AddUsersStrings(content::WebUIDataSource* html_source) {
                                   IDS_SETTINGS_USERS_MODIFIED_BY_OWNER_LABEL);
   html_source->AddLocalizedString("guestBrowsingLabel",
                                   IDS_SETTINGS_USERS_GUEST_BROWSING_LABEL);
+  html_source->AddLocalizedString("settingsManagedLabel",
+                                  IDS_SETTINGS_USERS_MANAGED_LABEL);
   html_source->AddLocalizedString("supervisedUsersLabel",
                                   IDS_SETTINGS_USERS_SUPERVISED_USERS_LABEL);
   html_source->AddLocalizedString("showOnSigninLabel",

@@ -28,6 +28,16 @@ Polymer({
       value: function() { return []; },
       notify: true
     },
+
+    /**
+     * Whether the user list is disabled, i.e. that no modifications can be
+     * made.
+     * @type {boolean}
+     */
+    disabled: {
+      type: Boolean,
+      value: false
+    }
   },
 
   /** @override */
@@ -40,7 +50,7 @@ Polymer({
           }.bind(this));
         }
       }, this);
-    });
+    }.bind(this));
 
     chrome.usersPrivate.getWhitelistedUsers(function(users) {
       this.users = users;
@@ -51,6 +61,11 @@ Polymer({
   removeUser_: function(e) {
     chrome.usersPrivate.removeWhitelistedUser(
         e.model.item.email, /* callback */ function() {});
+  },
+
+  /** @private */
+  shouldHideCloseButton_: function(disabled, isUserOwner) {
+    return disabled || isUserOwner;
   }
 });
 

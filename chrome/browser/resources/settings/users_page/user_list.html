@@ -10,7 +10,8 @@
       <template is="dom-repeat" items="[[users]]">
         <div class="user layout horizontal justified">
           <div class="layout vertical center-justified">[[item.email]]</div>
-          <div class="close-button">
+          <div class="close-button"
+              hidden$="[[shouldHideCloseButton_(disabled, item.isOwner)]]">
             <paper-icon-button icon="clear" class="clear-icon"
                 on-click="removeUser_">
             </paper-icon-button>
