@@ -221,10 +221,6 @@ crbug.com/330083 imported/web-platform-tests/shadow-dom/styles/test-003.html [ F
 crbug.com/330083 imported/web-platform-tests/shadow-dom/styles/test-010.html [ Failure ]
 crbug.com/330083 imported/web-platform-tests/shadow-dom/user-interaction/ranges-and-selections/test-002.html [ Failure ]
 
-Bug(wangxianzhu) virtual/slimmingpaint/http/tests/webfont/popup-menu-load-webfont-after-open.html [ NeedsRebaseline ]
-Bug(wangxianzhu) virtual/slimmingpaint/paint/frames/frameset-with-stacking-contexts.html [ NeedsRebaseline ]
-Bug(wangxianzhu) virtual/slimmingpaint/tables/mozilla/bugs/bug14323.html [ NeedsRebaseline ]
-
 crbug.com/442235 imported/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-methods/test-002.html [ Failure ]
 crbug.com/442235 imported/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-methods/test-003.html [ Failure ]
 crbug.com/442235 imported/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-methods/test-005.html [ Failure ]
