@@ -6,6 +6,7 @@
 #define HitTestCache_h
 
 #include "core/layout/HitTestResult.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -31,9 +32,12 @@ namespace blink {
 // size of 1.
 #define HIT_TEST_CACHE_SIZE (2)
 
-class HitTestCache {
+class HitTestCache final : public NoBaseWillBeGarbageCollectedFinalized<HitTestCache> {
 public:
-    HitTestCache() = default;
+    static PassOwnPtrWillBeRawPtr<HitTestCache> create()
+    {
+        return adoptPtrWillBeNoop(new HitTestCache);
+    }
 
     // Check the cache for a possible hit and update |result| if
     // hit encountered; returning true. Otherwise false.
@@ -48,7 +52,11 @@ public:
     // Adds a HitTestResult to the cache.
     void addCachedResult(const HitTestResult&, uint64_t domTreeVersion);
 
+    DECLARE_TRACE();
+
 private:
+    HitTestCache() = default;
+
     // These values are reported in UMA as the "EventHitTest" enumeration.
     // Do not reorder, append new values at the end, deprecate old
     // values and update histograms.xml.

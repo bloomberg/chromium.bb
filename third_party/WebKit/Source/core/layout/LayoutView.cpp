@@ -64,6 +64,7 @@ LayoutView::LayoutView(Document* document)
     , m_layoutCounterCount(0)
     , m_hitTestCount(0)
     , m_hitTestCacheHits(0)
+    , m_hitTestCache(HitTestCache::create())
     , m_pendingSelection(PendingSelection::create())
 {
     // init LayoutObject attributes
@@ -98,7 +99,7 @@ bool LayoutView::hitTest(HitTestResult& result)
 
     uint64_t domTreeVersion = document().domTreeVersion();
     HitTestResult cacheResult = result;
-    bool cacheHit = m_hitTestCache.lookupCachedResult(cacheResult, domTreeVersion);
+    bool cacheHit = m_hitTestCache->lookupCachedResult(cacheResult, domTreeVersion);
     bool hitLayer = layer()->hitTest(result);
 
     // FrameView scrollbars are not the same as Layer scrollbars tested by Layer::hitTestOverflowControls,
@@ -110,11 +111,11 @@ bool LayoutView::hitTest(HitTestResult& result)
 
     if (cacheHit) {
         m_hitTestCacheHits++;
-        m_hitTestCache.verifyCachedResult(result, cacheResult);
+        m_hitTestCache->verifyCachedResult(result, cacheResult);
     }
 
     if (hitLayer) {
-        m_hitTestCache.addCachedResult(result, domTreeVersion);
+        m_hitTestCache->addCachedResult(result, domTreeVersion);
 
         if (layer()->graphicsLayerBacking()) {
             layer()->graphicsLayerBacking()->platformLayer()->setHitTestCacheRect(enclosingIntRect(result.validityRect()));

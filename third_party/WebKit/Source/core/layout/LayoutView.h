@@ -58,7 +58,7 @@ public:
     unsigned hitTestCount() const { return m_hitTestCount; }
     unsigned hitTestCacheHits() const { return m_hitTestCacheHits; }
 
-    void clearHitTestCache() { m_hitTestCache.clear(); }
+    void clearHitTestCache() { m_hitTestCache->clear(); }
 
     virtual const char* name() const override { return "LayoutView"; }
 
@@ -218,7 +218,7 @@ private:
 
     unsigned m_hitTestCount;
     unsigned m_hitTestCacheHits;
-    HitTestCache m_hitTestCache;
+    OwnPtrWillBePersistent<HitTestCache> m_hitTestCache;
 
     OwnPtrWillBePersistent<PendingSelection> m_pendingSelection;
 };
