@@ -11,7 +11,18 @@
 #include "ui/gl/gpu_switching_observer.h"
 #include "ui/gl/scoped_cgl.h"
 
-@class ImageTransportLayer;
+// Interface to the CALayer that will draw the content, and will be sent to the
+// browser process via a CAContext.
+@protocol ImageTransportLayer
+// Draw a new frame whenever is appropriate (for pull-based systems, this may
+// result in the frame being drawn at some point in the future).
+- (void)drawNewFrame;
+// Draw the frame immediately (force pull models to do a pull immedately).
+- (void)drawPendingFrameImmediately;
+// This is called when the layer is no longer being used by the
+// CALayerStorageProvider.
+- (void)resetStorageProvider;
+@end
 
 namespace content {
 
@@ -39,9 +50,8 @@ class CALayerStorageProvider
   // Interface to ImageTransportLayer:
   CGLContextObj LayerShareGroupContext();
   base::Closure LayerShareGroupContextDirtiedCallback();
-  bool LayerCanDraw();
+  bool LayerHasPendingDraw() const;
   void LayerDoDraw();
-  void LayerResetStorageProvider();
 
   // ui::GpuSwitchingObserver implementation.
   void OnGpuSwitched() override;
@@ -53,14 +63,10 @@ class CALayerStorageProvider
   // hasn't drawn yet. This call will un-block the browser.
   void UnblockBrowserIfNeeded();
 
-  ImageTransportSurfaceFBO* transport_surface_;
+  // Inform the layer that it is no longer being used, and reset the layer.
+  void ResetLayer();
 
-  // Used to determine if we should use setNeedsDisplay or setAsynchronous to
-  // animate. If the last swap time happened very recently, then
-  // setAsynchronous is used (which allows smooth animation, but comes with the
-  // penalty of the canDrawInCGLContext function waking up the process every
-  // vsync).
-  base::TimeTicks last_synchronous_swap_time_;
+  ImageTransportSurfaceFBO* transport_surface_;
 
   // Used to determine if we should use setNeedsDisplay or setAsynchronous to
   // animate. If vsync is disabled, an immediate setNeedsDisplay and
@@ -73,11 +79,6 @@ class CALayerStorageProvider
 
   // Set when a new swap occurs, and un-set when |layer_| draws that frame.
   bool has_pending_draw_;
-
-  // A counter that is incremented whenever LayerCanDraw returns false. If this
-  // reaches a threshold, then |layer_| is switched to synchronous drawing to
-  // save CPU work.
-  uint32 can_draw_returned_false_count_;
 
   // The texture with the pixels to draw, and the share group it is allocated
   // in.
@@ -98,7 +99,7 @@ class CALayerStorageProvider
 
   // The CALayer that the current frame is being drawn into.
   base::scoped_nsobject<CAContext> context_;
-  base::scoped_nsobject<ImageTransportLayer> layer_;
+  base::scoped_nsobject<CALayer<ImageTransportLayer>> layer_;
 
   // When a CAContext is destroyed in the GPU process, it will become a blank
   // CALayer in the browser process. Put retains on these contexts in this queue
