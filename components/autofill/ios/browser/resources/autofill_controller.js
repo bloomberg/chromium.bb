@@ -154,7 +154,7 @@ __gCrWeb.autofill.lastActiveElement = null;
 
 /**
  * Extracts fields from |controlElements| with |requirements| and |extractMask|
- * to |formFields|. The extracted fields are also placed in |nameMap|.
+ * to |formFields|. The extracted fields are also placed in |elementArray|.
  *
  * It is based on the logic in
  *     bool ExtractFieldsFromControlElements(
@@ -163,10 +163,12 @@ __gCrWeb.autofill.lastActiveElement = null;
  *         ExtractMask extract_mask,
  *         ScopedVector<FormFieldData>* form_fields,
  *         std::vector<bool>* fields_extracted,
- *         std::map<base::string16, FormFieldData*>* name_map)
+ *         std::map<WebFormControlElement, FormFieldData*>* element_map)
  * in chromium/src/components/autofill/content/renderer/form_autofill_util.cc
  *
  * TODO(thestig): Get rid of |requirements| to match the C++ version.
+ * TODO(thestig): Make |element_map| a Map when Chrome makes iOS 8 and Safari 8
+ *                part of the minimal requirements.
  *
  * @param {Array<FormControlElement>} controlElements The control elements that
  *     will be processed.
@@ -177,16 +179,18 @@ __gCrWeb.autofill.lastActiveElement = null;
  * @param {Array<AutofillFormFieldData>} formFields The extracted form fields.
  * @param {Array<boolean>} fieldsExtracted Indicates whether the fields were
  *     extracted.
- * @param {Object<AutofillFormFieldData>} nameMap Map of field names to
- *     fields.
+ * @param {Array<?AutofillFormFieldData>} elementArray The extracted form
+ *     fields or null if a particular control has no corresponding field.
  * @return {boolean} Whether there are fields and not too many fields in the
  *     form.
  */
 function extractFieldsFromControlElements_(controlElements, requirements,
-    extractMask, formFields, fieldsExtracted, nameMap) {
+    extractMask, formFields, fieldsExtracted, elementArray) {
   for (var i = 0; i < controlElements.length; ++i) {
     fieldsExtracted[i] = false;
+    elementArray[i] = null;
 
+    /** @type {FormControlElement} */
     var controlElement = controlElements[i];
     if (!__gCrWeb.autofill.isAutofillableElement(controlElement)) {
       continue;
@@ -206,7 +210,7 @@ function extractFieldsFromControlElements_(controlElements, requirements,
     __gCrWeb.autofill.webFormControlElementToFormField(
         controlElement, extractMask, formField);
     formFields.push(formField);
-    nameMap[formField['name']] = formField;
+    elementArray[i] = formField;
     fieldsExtracted[i] = true;
 
     // To avoid overly expensive computation, we impose a maximum number of
@@ -221,9 +225,10 @@ function extractFieldsFromControlElements_(controlElements, requirements,
 
 /**
  * For each label element, get the corresponding form control element, use the
- * form control element's name as a key into the |nameMap| to find the
- * previously created AutofillFormFieldData and set the AutofillFormFieldData's
- * label to the label.firstChild().nodeValue() of the label element.
+ * form control element along with |controlElements| and |elementArray| to find
+ * the previously created AutofillFormFieldData and set the
+ * AutofillFormFieldData's label to the label.firstChild().nodeValue() of the
+ * label element.
  *
  * It is based on the logic in
  *     void MatchLabelsAndFields(
@@ -234,45 +239,69 @@ function extractFieldsFromControlElements_(controlElements, requirements,
  * This differs in that it takes a formElement field, instead of calling
  * field_element.isFormControlElement().
  *
+ * This also uses (|controlElements|, |elementArray|) because there is no
+ * guaranteeded Map support on iOS yet.
+ *
  * @param {NodeList} labels The labels to match.
  * @param {HTMLFormElement} formElement The form element being processed.
- * @param {Object<AutofillFormFieldData>} nameMap Map of field names to
- *     fields.
+ * @param {Array<FormControlElement>} controlElements The control elements that
+ *     were processed.
+ * @param {Array<?AutofillFormFieldData>} elementArray The extracted fields.
  */
-function matchLabelsAndFields_(labels, formElement, nameMap) {
+function matchLabelsAndFields_(labels, formElement, controlElements,
+    elementArray) {
   for (var index = 0; index < labels.length; ++index) {
     var label = labels[index];
     var fieldElement = label.control;
-    var elementName;
+    var fieldData = null;
     if (!fieldElement) {
       // Sometimes site authors will incorrectly specify the corresponding
       // field element's name rather than its id, so we compensate here.
-      elementName = label.htmlFor;
+      var elementName = label.htmlFor;
+      if (!elementName)
+        continue;
+      // Look through the list for elements with this name. There can actually
+      // be more than one. In this case, the label may not be particularly
+      // useful, so just discard it.
+      for (var elementIndex = 0; elementIndex < elementArray.length;
+           ++elementIndex) {
+        var currentFieldData = elementArray[elementIndex];
+        if (currentFieldData && currentFieldData['name'] === elementName) {
+          if (fieldData !== null) {
+            fieldData = null;
+            break;
+          } else {
+            fieldData = currentFieldData;
+          }
+        }
+      }
     } else if (fieldElement.form != formElement ||
                    fieldElement.type === 'hidden') {
       continue;
     } else {
-      elementName = __gCrWeb['common'].nameForAutofill(fieldElement);
+      // Typical case: look up |fieldData| in |elementArray|.
+      for (var elementIndex = 0; elementIndex < elementArray.length;
+           ++elementIndex) {
+        if (controlElements[elementIndex] === fieldElement) {
+          fieldData = elementArray[elementIndex];
+          break;
+        }
+      }
     }
 
-    if (!elementName)
+    if (!fieldData)
       continue;
 
-    var fieldElementData = nameMap[elementName];
-    if (!fieldElementData)
-      continue;
-
-    if (!('label' in fieldElementData)) {
-      fieldElementData['label'] = '';
+    if (!('label' in fieldData)) {
+      fieldData['label'] = '';
     }
     var labelText = __gCrWeb.autofill.findChildText(label);
     // Concatenate labels because some sites might have multiple label
     // candidates.
-    if (fieldElementData['label'].length > 0 &&
-        labelText.length > 0) {
-      fieldElementData['label'] += ' ';
+    if (fieldData['label'].length > 0 && labelText.length > 0) {
+      fieldData['label'] += ' ';
     }
-    fieldElementData['label'] += labelText;
+    fieldData['label'] += labelText;
   }
 }
 
@@ -314,9 +343,9 @@ function matchLabelsAndFields_(labels, formElement, nameMap) {
  */
 function formOrFieldsetsToFormData_(formElement, formControlElement,
     fieldsets, controlElements, requirements, extractMask, form, field) {
-  // A map from a AutofillFormFieldData's name to the AutofillFormFieldData
-  // itself.
-  var nameMap = {};
+  // This should be a map from a control element to the AutofillFormFieldData.
+  // However, without Map support, it's just an Array of AutofillFormFieldData.
+  var elementArray = [];
 
   // The extracted FormFields.
   var formFields = [];
@@ -327,23 +356,23 @@ function formOrFieldsetsToFormData_(formElement, formControlElement,
 
   if (!extractFieldsFromControlElements_(controlElements, requirements,
                                          extractMask, formFields,
-                                         fieldsExtracted, nameMap)) {
+                                         fieldsExtracted, elementArray)) {
     return false;
   }
 
   if (formElement) {
     // Loop through the label elements inside the form element. For each label
     // element, get the corresponding form control element, use the form control
-    // element's name as a key into the <name, AutofillFormFieldData> |nameMap|
-    // to find the previously created AutofillFormFieldData and set the
+    // element along with |controlElements| and |elementArray| to find the
+    // previously created AutofillFormFieldData and set the
     // AutofillFormFieldData's label.
     var labels = formElement.getElementsByTagName('label');
-    matchLabelsAndFields_(labels, formElement, nameMap);
+    matchLabelsAndFields_(labels, formElement, controlElements, elementArray);
   } else {
     // Same as the if block, but for all the labels in fieldset
     for (var i = 0; i < fieldsets.length; ++i) {
       var labels = fieldsets[i].getElementsByTagName('label');
-      matchLabelsAndFields_(labels, formElement, nameMap);
+      matchLabelsAndFields_(labels, formElement, controlElements, elementArray);
     }
   }
 
