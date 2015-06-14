@@ -1030,7 +1030,7 @@ void LayoutBlock::addVisualOverflowFromTheme()
         return;
 
     IntRect inflatedRect = pixelSnappedBorderBoxRect();
-    LayoutTheme::theme().adjustPaintInvalidationRect(this, inflatedRect);
+    LayoutTheme::theme().addVisualOverflow(*this, inflatedRect);
     addVisualOverflow(LayoutRect(inflatedRect));
 }
 

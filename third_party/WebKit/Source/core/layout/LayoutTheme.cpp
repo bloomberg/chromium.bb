@@ -397,10 +397,10 @@ bool LayoutTheme::isControlStyled(const ComputedStyle& style, const AuthorStyleI
     }
 }
 
-void LayoutTheme::adjustPaintInvalidationRect(const LayoutObject* o, IntRect& r)
+void LayoutTheme::addVisualOverflow(const LayoutObject& object, IntRect& borderBox)
 {
 #if USE(NEW_THEME)
-    m_platformTheme->inflateControlPaintRect(o->style()->appearance(), controlStatesForLayoutObject(o), r, o->style()->effectiveZoom());
+    m_platformTheme->addVisualOverflow(object.style()->appearance(), controlStatesForLayoutObject(&object), object.style()->effectiveZoom(), borderBox);
 #endif
 }
 

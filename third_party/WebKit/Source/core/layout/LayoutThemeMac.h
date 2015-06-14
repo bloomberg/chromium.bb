@@ -37,7 +37,7 @@ class LayoutThemeMac final : public LayoutTheme {
 public:
     static PassRefPtr<LayoutTheme> create();
 
-    virtual void adjustPaintInvalidationRect(const LayoutObject*, IntRect&) override;
+    virtual void addVisualOverflow(const LayoutObject&, IntRect& borderBox) override;
 
     virtual bool isControlStyled(const ComputedStyle&, const AuthorStyleInfo&) const override;
 

@@ -631,7 +631,7 @@ LengthBox ThemeMac::controlPadding(ControlPart part, const FontDescription& font
     }
 }
 
-void ThemeMac::inflateControlPaintRect(ControlPart part, ControlStates states, IntRect& zoomedRect, float zoomFactor) const
+void ThemeMac::addVisualOverflow(ControlPart part, ControlStates states, float zoomFactor, IntRect& zoomedRect) const
 {
     BEGIN_BLOCK_OBJC_EXCEPTIONS
     switch (part) {

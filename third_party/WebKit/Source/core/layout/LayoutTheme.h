@@ -86,9 +86,9 @@ public:
     // Whether or not the control has been styled enough by the author to disable the native appearance.
     virtual bool isControlStyled(const ComputedStyle&, const AuthorStyleInfo&) const;
 
-    // Some controls may spill out of their containers (e.g., the check on an OS X checkbox). When these controls issues paint invalidations,
-    // the theme needs to communicate this inflated rect to the engine so that it can invalidate the whole control.
-    virtual void adjustPaintInvalidationRect(const LayoutObject*, IntRect&);
+    // Some controls may spill out of their containers (e.g., the check on an OSX 10.9 checkbox). Add this
+    // "visual overflow" to the object's border box rect.
+    virtual void addVisualOverflow(const LayoutObject&, IntRect& borderBox);
 
     // This method is called whenever a control state changes on a particular themed object, e.g., the mouse becomes pressed
     // or a control becomes disabled. The ControlState parameter indicates which state has changed (from having to not having,

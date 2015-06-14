@@ -882,8 +882,9 @@ IntRect AXObject::boundingBoxForQuads(LayoutObject* obj, const Vector<FloatQuad>
     for (size_t i = 0; i < count; ++i) {
         IntRect r = quads[i].enclosingBoundingBox();
         if (!r.isEmpty()) {
+            // TODO(pdr): Should this be using visualOverflowRect?
             if (obj->style()->hasAppearance())
-                LayoutTheme::theme().adjustPaintInvalidationRect(obj, r);
+                LayoutTheme::theme().addVisualOverflow(*obj, r);
             result.unite(r);
         }
     }

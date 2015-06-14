@@ -96,11 +96,9 @@ public:
     // Method for painting a control. The rect is in zoomed coordinates.
     virtual void paint(ControlPart, ControlStates, GraphicsContext*, const IntRect& /*zoomedRect*/, float /*zoomFactor*/, ScrollableArea*) const { }
 
-    // Some controls may spill out of their containers (e.g., the check on an OS X checkbox).  When these controls repaint,
-    // the theme needs to communicate this inflated rect to the engine so that it can invalidate the whole control.
-    // The rect passed in is in zoomed coordinates, so the inflation should take that into account and make sure the inflation
-    // amount is also scaled by the zoomFactor.
-    virtual void inflateControlPaintRect(ControlPart, ControlStates, IntRect& /*zoomedRect*/, float /*zoomFactor*/) const { }
+    // Add visual overflow (e.g., the check on an OS X checkbox). The rect passed in is in zoomed coordinates so
+    // the inflation should take that into account and make sure the inflation amount is also scaled by the zoomFactor.
+    virtual void addVisualOverflow(ControlPart, ControlStates, float zoomFactor, IntRect& borderBox) const { }
 
 private:
     mutable Color m_activeSelectionColor;
