@@ -80,9 +80,6 @@ class PluginPlaceholder final : public PluginPlaceholderBase,
   // gin::Wrappable method:
   gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
       v8::Isolate* isolate) override;
-
-  // TODO(thakis): Remove this once crbug.com/499673 is fixed.
-  void HideCallback();
 };
 
 }  // namespace plugins
