@@ -9,7 +9,9 @@ update.sh. This script should replace update.sh on all platforms eventually."""
 import argparse
 import contextlib
 import cStringIO
+import glob
 import os
+import pipes
 import re
 import shutil
 import subprocess
@@ -52,6 +54,8 @@ COMPILER_RT_BUILD_DIR = os.path.join(LLVM_BUILD_DIR, '32bit-compiler-rt')
 CLANG_DIR = os.path.join(LLVM_DIR, 'tools', 'clang')
 LLD_DIR = os.path.join(LLVM_DIR, 'tools', 'lld')
 COMPILER_RT_DIR = os.path.join(LLVM_DIR, 'projects', 'compiler-rt')
+LIBCXX_DIR = os.path.join(LLVM_DIR, 'projects', 'libcxx')
+LIBCXXABI_DIR = os.path.join(LLVM_DIR, 'projects', 'libcxxabi')
 LLVM_BUILD_TOOLS_DIR = os.path.abspath(
     os.path.join(LLVM_DIR, '..', 'llvm-build-tools'))
 STAMP_FILE = os.path.join(LLVM_DIR, '..', 'llvm-build', 'cr_build_revision')
@@ -100,15 +104,15 @@ def ReadStampFile():
 
 def WriteStampFile(s):
   """Write s to the stamp file."""
-  if not os.path.exists(LLVM_BUILD_DIR):
-    os.makedirs(LLVM_BUILD_DIR)
+  if not os.path.exists(os.path.dirname(STAMP_FILE)):
+    os.makedirs(os.path.dirname(STAMP_FILE))
   with open(STAMP_FILE, 'w') as f:
     f.write(s)
 
 
 def GetSvnRevision(svn_repo):
   """Returns current revision of the svn repo at svn_repo."""
-  svn_info = subprocess.check_output(['svn', 'info', svn_repo], shell=True)
+  svn_info = subprocess.check_output('svn info ' + svn_repo, shell=True)
   m = re.search(r'Revision: (\d+)', svn_info)
   return m.group(1)
 
@@ -125,12 +129,22 @@ def RmTree(dir):
   shutil.rmtree(dir, onerror=ChmodAndRetry)
 
 
-def RunCommand(command, fail_hard=True):
+def RunCommand(command, env=None, fail_hard=True):
   """Run command and return success (True) or failure; or if fail_hard is
      True, exit on failure."""
 
-  print 'Running %s' % (str(command))
-  if subprocess.call(command, shell=True) == 0:
+  # https://docs.python.org/2/library/subprocess.html:
+  # "On Unix with shell=True [...] if args is a sequence, the first item
+  # specifies the command string, and any additional items will be treated as
+  # additional arguments to the shell itself.  That is to say, Popen does the
+  # equivalent of:
+  #   Popen(['/bin/sh', '-c', args[0], args[1], ...])"
+  #
+  # We want to pass additional arguments to command[0], not to the shell,
+  # so manually join everything into a single string.
+  command = ' '.join([pipes.quote(c) for c in command])
+  print 'Running', command
+  if subprocess.call(command, env=env, shell=True) == 0:
     return True
   print 'Failed.'
   if fail_hard:
@@ -221,7 +235,8 @@ def AddCMakeToPath():
       if zip_name.endswith('.zip'):
         zipfile.ZipFile(f).extractall(path=LLVM_BUILD_TOOLS_DIR)
       else:
-        tarfile.open(mode='r:gz', fileobj=f).extractall(path=LLVM_BUILD_DIR)
+        tarfile.open(mode='r:gz', fileobj=f).extractall(path=
+            LLVM_BUILD_TOOLS_DIR)
   os.environ['PATH'] = cmake_dir + os.pathsep + os.environ.get('PATH', '')
 
 vs_version = None
@@ -279,19 +294,40 @@ def UpdateClang(args):
   DeleteChromeToolsShim();
   Checkout('LLVM', LLVM_REPO_URL + '/llvm/trunk', LLVM_DIR)
   Checkout('Clang', LLVM_REPO_URL + '/cfe/trunk', CLANG_DIR)
-  Checkout('LLD', LLVM_REPO_URL + '/lld/trunk', LLD_DIR)
+  if sys.platform == 'win32':
+    Checkout('LLD', LLVM_REPO_URL + '/lld/trunk', LLD_DIR)
   Checkout('compiler-rt', LLVM_REPO_URL + '/compiler-rt/trunk', COMPILER_RT_DIR)
+  if sys.platform == 'darwin':
+    # clang needs a libc++ checkout, else -stdlib=libc++ won't find includes
+    # (i.e. this is needed for bootstrap builds).
+    Checkout('libcxx', LLVM_REPO_URL + '/libcxx/trunk', LIBCXX_DIR)
+    # While we're bundling our own libc++ on OS X, we need to compile libc++abi
+    # into it too (since OS X 10.6 doesn't have libc++abi.dylib either).
+    Checkout('libcxxabi', LLVM_REPO_URL + '/libcxxabi/trunk', LIBCXXABI_DIR)
+
   CreateChromeToolsShim();
 
-  # If building at head, define a macro that plugins can use for #ifdefing
-  # out code that builds at head, but not at CLANG_REVISION or vice versa.
-  cflags = cxxflags = ''
+  cc, cxx = None, None
+  cflags = cxxflags = ldflags = []
 
-  # If building at head, define a macro that plugins can use for #ifdefing
-  # out code that builds at head, but not at LLVM_WIN_REVISION or vice versa.
-  if use_head_revision:
-    cflags += ' -DLLVM_FORCE_HEAD_REVISION'
-    cxxflags += ' -DLLVM_FORCE_HEAD_REVISION'
+  # LLVM uses C++11 starting in llvm 3.5. On Linux, this means libstdc++4.7+ is
+  # needed, on OS X it requires libc++. clang only automatically links to libc++
+  # when targeting OS X 10.9+, so add stdlib=libc++ explicitly so clang can run
+  # on OS X versions as old as 10.7.
+  # TODO(thakis): Some bots are still on 10.6 (nacl...), so for now bundle
+  # libc++.dylib.  Remove this once all bots are on 10.7+, then use
+  # -DLLVM_ENABLE_LIBCXX=ON and change deployment_target to 10.7.
+  deployment_target = ''
+
+  if sys.platform == 'darwin':
+    # When building on 10.9, /usr/include usually doesn't exist, and while
+    # Xcode's clang automatically sets a sysroot, self-built clangs don't.
+    cflags = ['-isysroot', subprocess.check_output(
+        ['xcrun', '--show-sdk-path']).rstrip()]
+    cxxflags = ['-stdlib=libc++', '-nostdinc++',
+                '-I' + os.path.join(LIBCXX_DIR, 'include')] + cflags
+    if args.bootstrap:
+      deployment_target = '10.6'
 
   base_cmake_args = ['-GNinja',
                      '-DCMAKE_BUILD_TYPE=Release',
@@ -299,7 +335,6 @@ def UpdateClang(args):
                      '-DLLVM_ENABLE_THREADS=OFF',
                      ]
 
-  cc, cxx = None, None
   if args.bootstrap:
     print 'Building bootstrap compiler'
     if not os.path.exists(LLVM_BOOTSTRAP_DIR):
@@ -308,8 +343,8 @@ def UpdateClang(args):
     bootstrap_args = base_cmake_args + [
         '-DLLVM_TARGETS_TO_BUILD=host',
         '-DCMAKE_INSTALL_PREFIX=' + LLVM_BOOTSTRAP_INSTALL_DIR,
-        '-DCMAKE_C_FLAGS=' + cflags,
-        '-DCMAKE_CXX_FLAGS=' + cxxflags,
+        '-DCMAKE_C_FLAGS=' + ' '.join(cflags),
+        '-DCMAKE_CXX_FLAGS=' + ' '.join(cxxflags),
         ]
     if cc is not None:  bootstrap_args.append('-DCMAKE_C_COMPILER=' + cc)
     if cxx is not None: bootstrap_args.append('-DCMAKE_CXX_COMPILER=' + cxx)
@@ -330,15 +365,62 @@ def UpdateClang(args):
     cxx = cxx.replace('\\', '/')
     print 'Building final compiler'
 
+  if sys.platform == 'darwin':
+    # Build libc++.dylib while some bots are still on OS X 10.6.
+    libcxxbuild = os.path.join(LLVM_BUILD_DIR, 'libcxxbuild')
+    if os.path.isdir(libcxxbuild):
+      RmTree(libcxxbuild)
+    libcxxflags = ['-O3', '-std=c++11', '-fstrict-aliasing']
+
+    # libcxx and libcxxabi both have a file stdexcept.cpp, so put their .o files
+    # into different subdirectories.
+    os.makedirs(os.path.join(libcxxbuild, 'libcxx'))
+    os.chdir(os.path.join(libcxxbuild, 'libcxx'))
+    RunCommand(['c++', '-c'] + cxxflags + libcxxflags +
+                glob.glob(os.path.join(LIBCXX_DIR, 'src', '*.cpp')))
+
+    os.makedirs(os.path.join(libcxxbuild, 'libcxxabi'))
+    os.chdir(os.path.join(libcxxbuild, 'libcxxabi'))
+    RunCommand(['c++', '-c'] + cxxflags + libcxxflags +
+               glob.glob(os.path.join(LIBCXXABI_DIR, 'src', '*.cpp')) +
+               ['-I' + os.path.join(LIBCXXABI_DIR, 'include')])
+
+    os.chdir(libcxxbuild)
+    libdir = os.path.join(LIBCXX_DIR, 'lib')
+    RunCommand(['cc'] + glob.glob('libcxx/*.o') + glob.glob('libcxxabi/*.o') +
+        ['-o', 'libc++.1.dylib', '-dynamiclib', '-nodefaultlibs',
+         '-current_version', '1', '-compatibility_version', '1', '-lSystem',
+         '-install_name', '@executable_path/libc++.dylib',
+         '-Wl,-unexported_symbols_list,' + libdir + '/libc++unexp.exp',
+         '-Wl,-force_symbols_not_weak_list,' + libdir + '/notweak.exp',
+         '-Wl,-force_symbols_weak_list,' + libdir + '/weak.exp'])
+    if os.path.exists('libc++.dylib'):
+      os.remove('libc++.dylib')
+    os.symlink('libc++.1.dylib', 'libc++.dylib')
+    ldflags += ['-stdlib=libc++', '-L' + libcxxbuild]
+
   # Build clang.
   binutils_incdir = ''
   if sys.platform.startswith('linux'):
     binutils_incdir = os.path.join(BINUTILS_DIR, 'Linux_x64/Release/include')
 
+  # If building at head, define a macro that plugins can use for #ifdefing
+  # out code that builds at head, but not at LLVM_WIN_REVISION or vice versa.
+  if use_head_revision:
+    cflags += ['-DLLVM_FORCE_HEAD_REVISION']
+    cxxflags += ['-DLLVM_FORCE_HEAD_REVISION']
+
+  deployment_env = os.environ.copy()
+  if deployment_target:
+    deployment_env['MACOSX_DEPLOYMENT_TARGET'] = deployment_target
+
   cmake_args = base_cmake_args + [
       '-DLLVM_BINUTILS_INCDIR=' + binutils_incdir,
-      '-DCMAKE_C_FLAGS=' + cflags,
-      '-DCMAKE_CXX_FLAGS=' + cxxflags,
+      '-DCMAKE_C_FLAGS=' + ' '.join(cflags),
+      '-DCMAKE_CXX_FLAGS=' + ' '.join(cxxflags),
+      '-DCMAKE_EXE_LINKER_FLAGS=' + ' '.join(ldflags),
+      '-DCMAKE_SHARED_LINKER_FLAGS=' + ' '.join(ldflags),
+      '-DCMAKE_MODULE_LINKER_FLAGS=' + ' '.join(ldflags),
       '-DCHROMIUM_TOOLS_SRC=%s' % os.path.join(CHROMIUM_DIR, 'tools', 'clang'),
       '-DCHROMIUM_TOOLS=%s' % ';'.join(args.tools)]
   # TODO(thakis): Append this to base_cmake_args instead once compiler-rt
@@ -349,9 +431,15 @@ def UpdateClang(args):
   if not os.path.exists(LLVM_BUILD_DIR):
     os.makedirs(LLVM_BUILD_DIR)
   os.chdir(LLVM_BUILD_DIR)
-  RunCommand(GetVSVersion().SetupScript('x64') +
-             ['&&', 'cmake'] + cmake_args + [LLVM_DIR])
+  RunCommand(GetVSVersion().SetupScript('x64') + ['&&', 'cmake'] + cmake_args +
+             [LLVM_DIR], env=deployment_env)
   RunCommand(GetVSVersion().SetupScript('x64') + ['&&', 'ninja', 'all'])
+
+  # TODO(thakis): Run `strip bin/clang` on posix (with -x on darwin)
+
+  if sys.platform == 'darwin':
+    CopyFile(os.path.join(LLVM_BUILD_DIR, 'libc++.1.dylib'),
+             os.path.join(LLVM_BUILD_DIR, 'bin'))
 
   # Do an x86 build of compiler-rt to get the 32-bit ASan run-time.
   # TODO(hans): Remove once the regular build above produces this.
@@ -362,13 +450,13 @@ def UpdateClang(args):
   # above).
   #if args.bootstrap:
     # The bootstrap compiler produces 64-bit binaries by default.
-    #cflags += ' -m32'
-    #cxxflags += ' -m32'
+    #cflags += ['-m32']
+    #cxxflags += ['-m32']
   compiler_rt_args = base_cmake_args + [
-      '-DCMAKE_C_FLAGS=' + cflags,
-      '-DCMAKE_CXX_FLAGS=' + cxxflags]
-  RunCommand(GetVSVersion().SetupScript('x86') +
-             ['&&', 'cmake'] + compiler_rt_args + [LLVM_DIR])
+      '-DCMAKE_C_FLAGS=' + ' '.join(cflags),
+      '-DCMAKE_CXX_FLAGS=' + ' '.join(cxxflags)]
+  RunCommand(GetVSVersion().SetupScript('x86') + ['&&', 'cmake'] +
+             compiler_rt_args + [LLVM_DIR], env=deployment_env)
   RunCommand(GetVSVersion().SetupScript('x86') + ['&&', 'ninja', 'compiler-rt'])
 
   # TODO(hans): Make this (and the .gypi and .isolate files) version number
