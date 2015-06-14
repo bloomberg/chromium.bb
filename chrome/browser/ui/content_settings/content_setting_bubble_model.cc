@@ -983,13 +983,17 @@ ContentSettingMixedScriptBubbleModel::ContentSettingMixedScriptBubbleModel(
 }
 
 void ContentSettingMixedScriptBubbleModel::OnCustomLinkClicked() {
-  content_settings::RecordMixedScriptAction(
-      content_settings::MIXED_SCRIPT_ACTION_CLICKED_ALLOW);
   DCHECK(web_contents());
   web_contents()->SendToAllFrames(
       new ChromeViewMsg_SetAllowRunningInsecureContent(MSG_ROUTING_NONE, true));
   web_contents()->GetMainFrame()->Send(new ChromeViewMsg_ReloadFrame(
       web_contents()->GetMainFrame()->GetRoutingID()));
+
+  content_settings::RecordMixedScriptAction(
+      content_settings::MIXED_SCRIPT_ACTION_CLICKED_ALLOW);
+  content_settings::RecordMixedScriptActionWithRAPPOR(
+      content_settings::MIXED_SCRIPT_ACTION_CLICKED_ALLOW,
+      web_contents()->GetLastCommittedURL());
 }
 
 ContentSettingRPHBubbleModel::ContentSettingRPHBubbleModel(

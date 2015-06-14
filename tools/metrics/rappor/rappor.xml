@@ -143,6 +143,16 @@ components/rappor/rappor_service.cc.
   </summary>
 </rappor-metric>
 
+<rappor-metric name="ContentSettings.MixedScript.UserClickedAllow"
+    type="ETLD_PLUS_ONE">
+  <owner>lgarron@chromium.org</owner>
+  <summary>
+    The eTLD+1 of a URL where the user clicked &quot;Load unsafe scripts&quot;
+    on a mixed content shield. (This results in a page refresh. Mixed scripts
+    may not actually run until the users triggers them again after the refresh.)
+  </summary>
+</rappor-metric>
+
 <rappor-metric name="ContentSettings.PermissionActions_Camera.Revoked.Url"
     type="ETLD_PLUS_ONE">
   <owner>jialiul@chromium.org</owner>
