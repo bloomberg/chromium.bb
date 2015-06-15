@@ -163,6 +163,18 @@ bool WebAudioSourceProviderImpl::SetVolume(double volume) {
   return true;
 }
 
+void WebAudioSourceProviderImpl::SwitchOutputDevice(
+    const std::string& device_id,
+    const GURL& security_origin,
+    const SwitchOutputDeviceCB& callback) {
+  base::AutoLock auto_lock(sink_lock_);
+  if (!client_) {
+    sink_->SwitchOutputDevice(device_id, security_origin, callback);
+  } else {
+    callback.Run(SWITCH_OUTPUT_DEVICE_RESULT_ERROR_NOT_SUPPORTED);
+  }
+}
+
 void WebAudioSourceProviderImpl::Initialize(
     const AudioParameters& params,
     RenderCallback* renderer) {

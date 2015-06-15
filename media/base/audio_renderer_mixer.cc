@@ -71,6 +71,16 @@ void AudioRendererMixer::RemoveErrorCallback(const base::Closure& error_cb) {
   NOTREACHED();
 }
 
+void AudioRendererMixer::SwitchOutputDevice(
+    const std::string& device_id,
+    const GURL& security_origin,
+    const SwitchOutputDeviceCB& callback) {
+  DVLOG(1) << __FUNCTION__ << "(" << device_id << ", " << security_origin
+           << ")";
+  base::AutoLock auto_lock(lock_);
+  audio_sink_->SwitchOutputDevice(device_id, security_origin, callback);
+}
+
 int AudioRendererMixer::Render(AudioBus* audio_bus,
                                int audio_delay_milliseconds) {
   base::AutoLock auto_lock(lock_);

@@ -76,6 +76,12 @@ class CONTENT_EXPORT AudioMessageFilter : public IPC::MessageFilter {
   void OnStreamStateChanged(int stream_id,
                             media::AudioOutputIPCDelegateState state);
 
+  // Received when the browser process has finished processing a
+  // SwitchOutputDevice request
+  void OnOutputDeviceSwitched(int stream_id,
+                              int request_id,
+                              media::SwitchOutputDeviceResult result);
+
   // IPC sender for Send(); must only be accesed on |io_task_runner_|.
   IPC::Sender* sender_;
 

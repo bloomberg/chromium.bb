@@ -4,7 +4,10 @@
 
 #include "media/base/fake_audio_renderer_sink.h"
 
+#include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
+#include "base/single_thread_task_runner.h"
 
 namespace media {
 
@@ -50,6 +53,13 @@ void FakeAudioRendererSink::Play() {
 
 bool FakeAudioRendererSink::SetVolume(double volume) {
   return true;
+}
+
+void FakeAudioRendererSink::SwitchOutputDevice(
+    const std::string& device_id,
+    const GURL& security_origin,
+    const SwitchOutputDeviceCB& callback) {
+  callback.Run(SWITCH_OUTPUT_DEVICE_RESULT_SUCCESS);
 }
 
 bool FakeAudioRendererSink::Render(AudioBus* dest, int audio_delay_milliseconds,
