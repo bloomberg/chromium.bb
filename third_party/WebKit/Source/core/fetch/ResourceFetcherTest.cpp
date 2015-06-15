@@ -46,6 +46,17 @@ namespace blink {
 class ResourceFetcherTest : public ::testing::Test {
 };
 
+class TestResourceFactory : public ResourceFactory {
+public:
+    TestResourceFactory()
+        : ResourceFactory(Resource::Image) { }
+
+    Resource* create(const ResourceRequest& request, const String& charset) const override
+    {
+        return new Resource(request, Resource::Image);
+    }
+};
+
 TEST_F(ResourceFetcherTest, StartLoadAfterFrameDetach)
 {
     KURL secureURL(ParsedURLString, "https://secureorigin.test/image.png");
@@ -53,9 +64,9 @@ TEST_F(ResourceFetcherTest, StartLoadAfterFrameDetach)
     // and no resource should be present in the cache.
     RefPtrWillBeRawPtr<ResourceFetcher> fetcher = ResourceFetcher::create(nullptr);
     FetchRequest fetchRequest = FetchRequest(ResourceRequest(secureURL), FetchInitiatorInfo());
-    ResourcePtr<ImageResource> image = fetcher->fetchImage(fetchRequest);
-    EXPECT_EQ(image.get(), static_cast<ImageResource*>(0));
-    EXPECT_EQ(memoryCache()->resourceForURL(secureURL), static_cast<Resource*>(0));
+    ResourcePtr<Resource> resource = fetcher->requestResource(fetchRequest, TestResourceFactory());
+    EXPECT_EQ(resource.get(), static_cast<Resource*>(nullptr));
+    EXPECT_EQ(memoryCache()->resourceForURL(secureURL), static_cast<Resource*>(nullptr));
 }
 
 } // namespace blink

@@ -109,7 +109,7 @@ void InspectorResourceContentLoader::start()
         if (!resourceRequest.url().string().isEmpty()) {
             urlsToFetch.add(resourceRequest.url().string());
             FetchRequest request(resourceRequest, FetchInitiatorTypeNames::internal);
-            ResourcePtr<Resource> resource = document->fetcher()->fetchRawResource(request);
+            ResourcePtr<Resource> resource = RawResource::fetch(request, document->fetcher());
             if (resource) {
                 // Prevent garbage collection by holding a reference to this resource.
                 m_resources.append(resource.get());
@@ -130,7 +130,7 @@ void InspectorResourceContentLoader::start()
             urlsToFetch.add(url);
             FetchRequest request(ResourceRequest(url), FetchInitiatorTypeNames::internal);
             request.mutableResourceRequest().setRequestContext(WebURLRequest::RequestContextInternal);
-            ResourcePtr<Resource> resource = document->fetcher()->fetchCSSStyleSheet(request);
+            ResourcePtr<Resource> resource = CSSStyleSheetResource::fetch(request, document->fetcher());
             if (!resource)
                 continue;
             // Prevent garbage collection by holding a reference to this resource.

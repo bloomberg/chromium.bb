@@ -34,6 +34,7 @@
 namespace blink {
 
 class ImageResourceClient;
+class FetchRequest;
 class ResourceFetcher;
 class FloatSize;
 class Length;
@@ -48,7 +49,8 @@ class CORE_EXPORT ImageResource final : public Resource, public ImageObserver {
 public:
     typedef ImageResourceClient ClientType;
 
-    ImageResource(const ResourceRequest&);
+    static ResourcePtr<ImageResource> fetch(FetchRequest&, ResourceFetcher*);
+
     ImageResource(blink::Image*);
     // Exposed for testing
     ImageResource(const ResourceRequest&, blink::Image*);
@@ -118,6 +120,20 @@ protected:
     virtual void destroyDecodedDataIfPossible() override;
 
 private:
+    static void preCacheDataURIImage(const FetchRequest&, ResourceFetcher*);
+
+    class ImageResourceFactory : public ResourceFactory {
+    public:
+        ImageResourceFactory()
+            : ResourceFactory(Resource::Image) { }
+
+        Resource* create(const ResourceRequest& request, const String&) const override
+        {
+            return new ImageResource(request);
+        }
+    };
+    ImageResource(const ResourceRequest&);
+
     void clear();
 
     void setCustomAcceptHeader();

@@ -112,7 +112,7 @@ StyleFetchedImageSet* CSSImageSetValue::cachedImageSet(Document* document, float
         if (options.corsEnabled == IsCORSEnabled)
             request.setCrossOriginAccessControl(document->securityOrigin(), options.allowCredentials, options.credentialsRequested);
 
-        if (ResourcePtr<ImageResource> cachedImage = document->fetcher()->fetchImage(request)) {
+        if (ResourcePtr<ImageResource> cachedImage = ImageResource::fetch(request, document->fetcher())) {
             m_imageSet = StyleFetchedImageSet::create(cachedImage.get(), image.scaleFactor, this);
             m_accessedBestFitImage = true;
         }

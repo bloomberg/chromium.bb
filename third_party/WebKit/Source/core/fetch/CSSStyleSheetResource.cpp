@@ -28,13 +28,22 @@
 #include "core/fetch/CSSStyleSheetResource.h"
 
 #include "core/css/StyleSheetContents.h"
+#include "core/fetch/FetchRequest.h"
 #include "core/fetch/ResourceClientWalker.h"
+#include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/StyleSheetResourceClient.h"
 #include "platform/SharedBuffer.h"
 #include "platform/network/HTTPParsers.h"
 #include "wtf/CurrentTime.h"
 
 namespace blink {
+
+ResourcePtr<CSSStyleSheetResource> CSSStyleSheetResource::fetch(FetchRequest& request, ResourceFetcher* fetcher)
+{
+    ASSERT(request.resourceRequest().frameType() == WebURLRequest::FrameTypeNone);
+    request.mutableResourceRequest().setRequestContext(WebURLRequest::RequestContextStyle);
+    return toCSSStyleSheetResource(fetcher->requestResource(request, CSSStyleSheetResourceFactory()));
+}
 
 CSSStyleSheetResource::CSSStyleSheetResource(const ResourceRequest& resourceRequest, const String& charset)
     : StyleSheetResource(resourceRequest, CSSStyleSheet, "text/css", charset)

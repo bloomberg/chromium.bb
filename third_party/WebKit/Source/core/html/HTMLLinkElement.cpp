@@ -739,7 +739,7 @@ void LinkStyle::process()
             request.setCrossOriginAccessControl(document().securityOrigin(), crossOriginMode);
             setFetchFollowingCORS();
         }
-        setResource(document().fetcher()->fetchCSSStyleSheet(request));
+        setResource(CSSStyleSheetResource::fetch(request, document().fetcher()));
 
         if (!resource()) {
             // The request may have been denied if (for example) the stylesheet is local and the document is remote, or if there was a Content Security Policy Failure.

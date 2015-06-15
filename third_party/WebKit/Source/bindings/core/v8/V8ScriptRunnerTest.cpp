@@ -74,13 +74,13 @@ public:
     void setEmptyResource()
     {
         m_resourceRequest = WTF::adoptPtr(new ResourceRequest);
-        m_resource = ScriptResource::create(*m_resourceRequest.get(), "UTF-8");
+        m_resource = new ScriptResource(*m_resourceRequest.get(), "UTF-8");
     }
 
     void setResource()
     {
         m_resourceRequest = WTF::adoptPtr(new ResourceRequest(url()));
-        m_resource = ScriptResource::create(*m_resourceRequest.get(), "UTF-8");
+        m_resource = new ScriptResource(*m_resourceRequest.get(), "UTF-8");
     }
 
     CachedMetadataHandler* cacheHandler()
@@ -90,7 +90,7 @@ public:
 
 protected:
     WTF::OwnPtr<ResourceRequest> m_resourceRequest;
-    OwnPtrWillBePersistent<ScriptResource> m_resource;
+    ResourcePtr<ScriptResource> m_resource;
     V8TestingScope m_scope;
 
     static int counter;
@@ -120,7 +120,7 @@ TEST_F(V8ScriptRunnerTest, parseMemoryOption)
     EXPECT_FALSE(cacheHandler()->cachedMetadata(tagForCodeCache(cacheHandler())));
     // The cached data is associated with the encoding.
     ResourceRequest request(url());
-    OwnPtrWillBeRawPtr<ScriptResource> anotherResource = ScriptResource::create(request, "UTF-16");
+    ResourcePtr<ScriptResource> anotherResource = new ScriptResource(request, "UTF-16");
     EXPECT_FALSE(cacheHandler()->cachedMetadata(tagForParserCache(anotherResource->cacheHandler())));
 }
 
@@ -132,7 +132,7 @@ TEST_F(V8ScriptRunnerTest, parseOption)
     EXPECT_FALSE(cacheHandler()->cachedMetadata(tagForCodeCache(cacheHandler())));
     // The cached data is associated with the encoding.
     ResourceRequest request(url());
-    OwnPtrWillBeRawPtr<ScriptResource> anotherResource = ScriptResource::create(request, "UTF-16");
+    ResourcePtr<ScriptResource> anotherResource = new ScriptResource(request, "UTF-16");
     EXPECT_FALSE(cacheHandler()->cachedMetadata(tagForParserCache(anotherResource->cacheHandler())));
 }
 
@@ -144,7 +144,7 @@ TEST_F(V8ScriptRunnerTest, codeOption)
     EXPECT_TRUE(cacheHandler()->cachedMetadata(tagForCodeCache(cacheHandler())));
     // The cached data is associated with the encoding.
     ResourceRequest request(url());
-    OwnPtrWillBeRawPtr<ScriptResource> anotherResource = ScriptResource::create(request, "UTF-16");
+    ResourcePtr<ScriptResource> anotherResource = new ScriptResource(request, "UTF-16");
     EXPECT_FALSE(cacheHandler()->cachedMetadata(tagForCodeCache(anotherResource->cacheHandler())));
 }
 

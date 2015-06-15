@@ -31,12 +31,14 @@
 namespace blink {
 
 class Document;
+class FetchRequest;
+class ResourceFetcher;
 
 class DocumentResource final : public Resource {
 public:
     typedef ResourceClient ClientType;
 
-    DocumentResource(const ResourceRequest&, Type);
+    static ResourcePtr<DocumentResource> fetchSVGDocument(FetchRequest&, ResourceFetcher*);
     virtual ~DocumentResource();
     DECLARE_VIRTUAL_TRACE();
 
@@ -47,6 +49,18 @@ public:
     virtual void checkNotify() override;
 
 private:
+    class SVGDocumentResourceFactory : public ResourceFactory {
+    public:
+        SVGDocumentResourceFactory()
+            : ResourceFactory(Resource::SVGDocument) { }
+
+        Resource* create(const ResourceRequest& request, const String& charset) const override
+        {
+            return new DocumentResource(request, Resource::SVGDocument);
+        }
+    };
+    DocumentResource(const ResourceRequest&, Type);
+
     PassRefPtrWillBeRawPtr<Document> createDocument(const KURL&);
 
     RefPtrWillBeMember<Document> m_document;

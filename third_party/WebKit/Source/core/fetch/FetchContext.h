@@ -100,7 +100,6 @@ public:
     virtual void sendImagePing(const KURL&);
     virtual void addConsoleMessage(const String&) const;
     virtual SecurityOrigin* securityOrigin() const { return nullptr; }
-    virtual String charset() const { return String(); }
     virtual void upgradeInsecureRequest(FetchRequest&);
     virtual void addClientHintsIfNecessary(FetchRequest&);
     virtual void addCSPHeaderIfNecessary(Resource::Type, FetchRequest&);

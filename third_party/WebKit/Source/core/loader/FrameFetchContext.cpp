@@ -573,11 +573,6 @@ SecurityOrigin* FrameFetchContext::securityOrigin() const
     return m_document ? m_document->securityOrigin() : nullptr;
 }
 
-String FrameFetchContext::charset() const
-{
-    return m_document ? m_document->charset().string() : String();
-}
-
 void FrameFetchContext::upgradeInsecureRequest(FetchRequest& fetchRequest)
 {
     KURL url = fetchRequest.resourceRequest().url();

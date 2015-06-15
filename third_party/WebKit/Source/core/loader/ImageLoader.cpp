@@ -298,7 +298,7 @@ void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior, Up
             request.setContentSecurityCheck(DoNotCheckContentSecurityPolicy);
         }
 
-        newImage = document.fetcher()->fetchImage(request);
+        newImage = ImageResource::fetch(request, document.fetcher());
         if (m_loadingImageDocument && newImage)
             newImage->setLoading(true);
 

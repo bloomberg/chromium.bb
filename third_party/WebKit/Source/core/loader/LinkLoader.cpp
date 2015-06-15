@@ -35,6 +35,7 @@
 #include "core/dom/Document.h"
 #include "core/fetch/FetchInitiatorTypeNames.h"
 #include "core/fetch/FetchRequest.h"
+#include "core/fetch/LinkFetchResource.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/Settings.h"
 #include "core/html/CrossOriginAttribute.h"
@@ -181,7 +182,7 @@ void LinkLoader::preloadIfNeeded(const LinkRelAttribute& relAttribute, const KUR
         Settings* settings = document.settings();
         if (settings && settings->logPreload())
             document.addConsoleMessage(ConsoleMessage::create(OtherMessageSource, DebugMessageLevel, String("Preload triggered for " + href.host() + href.path())));
-        setResource(document.fetcher()->fetchLinkPreloadResource(Resource::LinkPreload, linkRequest));
+        setResource(LinkFetchResource::fetch(Resource::LinkPreload, linkRequest, document.fetcher()));
     }
 }
 
@@ -227,7 +228,7 @@ bool LinkLoader::loadLink(const LinkRelAttribute& relAttribute, const AtomicStri
         FetchRequest linkRequest(ResourceRequest(document.completeURL(href)), FetchInitiatorTypeNames::link);
         if (!crossOriginMode.isNull())
             linkRequest.setCrossOriginAccessControl(document.securityOrigin(), crossOriginMode);
-        setResource(document.fetcher()->fetchLinkResource(type, linkRequest));
+        setResource(LinkFetchResource::fetch(type, linkRequest, document.fetcher()));
     }
 
     if (const unsigned prerenderRelTypes = prerenderRelTypesFromRelAttribute(relAttribute)) {

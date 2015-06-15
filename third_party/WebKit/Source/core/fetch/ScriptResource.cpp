@@ -27,12 +27,21 @@
 #include "config.h"
 #include "core/fetch/ScriptResource.h"
 
+#include "core/fetch/FetchRequest.h"
 #include "core/fetch/ResourceClientWalker.h"
+#include "core/fetch/ResourceFetcher.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/SharedBuffer.h"
 #include "platform/network/HTTPParsers.h"
 
 namespace blink {
+
+ResourcePtr<ScriptResource> ScriptResource::fetch(FetchRequest& request, ResourceFetcher* fetcher)
+{
+    ASSERT(request.resourceRequest().frameType() == WebURLRequest::FrameTypeNone);
+    request.mutableResourceRequest().setRequestContext(WebURLRequest::RequestContextScript);
+    return toScriptResource(fetcher->requestResource(request, ScriptResourceFactory()));
+}
 
 ScriptResource::ScriptResource(const ResourceRequest& resourceRequest, const String& charset)
     : TextResource(resourceRequest, Script, "application/javascript", charset)

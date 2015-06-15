@@ -30,6 +30,7 @@
 #include "core/dom/Document.h"
 #include "core/fetch/FetchInitiatorTypeNames.h"
 #include "core/fetch/FetchRequest.h"
+#include "core/fetch/RawResource.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "platform/Logging.h"
@@ -119,7 +120,7 @@ bool TextTrackLoader::load(const KURL& url, const AtomicString& crossOriginMode)
     }
 
     ResourceFetcher* fetcher = document().fetcher();
-    setResource(fetcher->fetchTextTrack(cueRequest));
+    setResource(RawResource::fetchTextTrack(cueRequest, fetcher));
     return resource();
 }
 

@@ -89,7 +89,7 @@ TEST(ImageResourceTest, MultipartImage)
     URLTestHelpers::registerMockedURLLoad(testURL, "cancelTest.html", "text/html");
 
     // Emulate starting a real load, but don't expect any "real" WebURLLoaderClient callbacks.
-    ResourcePtr<ImageResource> cachedImage = new ImageResource(ResourceRequest(testURL));
+    ResourcePtr<ImageResource> cachedImage = new ImageResource(ResourceRequest(testURL), nullptr);
     cachedImage->setIdentifier(createUniqueIdentifier());
     cachedImage->load(fetcher.get(), ResourceLoaderOptions());
     Platform::current()->unitTestSupport()->unregisterMockedURL(testURL);
@@ -146,7 +146,7 @@ TEST(ImageResourceTest, CancelOnDetach)
     RefPtrWillBeRawPtr<ResourceFetcher> fetcher = ResourceFetcher::create(nullptr);
 
     // Emulate starting a real load.
-    ResourcePtr<ImageResource> cachedImage = new ImageResource(ResourceRequest(testURL));
+    ResourcePtr<ImageResource> cachedImage = new ImageResource(ResourceRequest(testURL), nullptr);
     cachedImage->setIdentifier(createUniqueIdentifier());
 
     cachedImage->load(fetcher.get(), ResourceLoaderOptions());
@@ -171,7 +171,7 @@ TEST(ImageResourceTest, CancelOnDetach)
 
 TEST(ImageResourceTest, DecodedDataRemainsWhileHasClients)
 {
-    ResourcePtr<ImageResource> cachedImage = new ImageResource(ResourceRequest());
+    ResourcePtr<ImageResource> cachedImage = new ImageResource(ResourceRequest(), nullptr);
     cachedImage->setLoading(true);
 
     MockImageResourceClient client;
@@ -205,7 +205,7 @@ TEST(ImageResourceTest, DecodedDataRemainsWhileHasClients)
 
 TEST(ImageResourceTest, UpdateBitmapImages)
 {
-    ResourcePtr<ImageResource> cachedImage = new ImageResource(ResourceRequest());
+    ResourcePtr<ImageResource> cachedImage = new ImageResource(ResourceRequest(), nullptr);
     cachedImage->setLoading(true);
 
     MockImageResourceClient client;

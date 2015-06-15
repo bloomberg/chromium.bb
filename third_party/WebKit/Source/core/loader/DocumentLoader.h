@@ -139,6 +139,8 @@ namespace blink {
 
         bool loadingMultipartContent() const;
 
+        void startPreload(Resource::Type, FetchRequest&);
+
     protected:
         DocumentLoader(LocalFrame*, const ResourceRequest&, const SubstituteData&);
 

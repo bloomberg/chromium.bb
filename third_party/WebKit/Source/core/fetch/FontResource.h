@@ -34,6 +34,7 @@
 
 namespace blink {
 
+class FetchRequest;
 class ResourceFetcher;
 class FontPlatformData;
 class FontCustomPlatformData;
@@ -42,7 +43,7 @@ class FontResource final : public Resource {
 public:
     typedef ResourceClient ClientType;
 
-    FontResource(const ResourceRequest&);
+    static ResourcePtr<FontResource> fetch(FetchRequest&, ResourceFetcher*);
     virtual ~FontResource();
 
     virtual void load(ResourceFetcher*, const ResourceLoaderOptions&) override;
@@ -58,7 +59,7 @@ public:
     void didScheduleLoad();
     void didUnscheduleLoad();
 
-    void setCORSFailed() { m_corsFailed = true; }
+    void setCORSFailed() override { m_corsFailed = true; }
     bool isCORSFailed() const { return m_corsFailed; }
 
     bool ensureCustomFontData();
@@ -68,6 +69,18 @@ protected:
     virtual bool isSafeToUnlock() const override;
 
 private:
+    class FontResourceFactory : public ResourceFactory {
+    public:
+        FontResourceFactory()
+            : ResourceFactory(Resource::Font) { }
+
+        Resource* create(const ResourceRequest& request, const String& charset) const override
+        {
+            return new FontResource(request);
+        }
+    };
+    FontResource(const ResourceRequest&);
+
     virtual void checkNotify() override;
     void fontLoadWaitLimitCallback(Timer<FontResource>*);
 

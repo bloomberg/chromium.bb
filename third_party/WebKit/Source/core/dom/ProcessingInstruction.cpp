@@ -170,10 +170,10 @@ void ProcessingInstruction::process(const String& href, const String& charset)
     FetchRequest request(ResourceRequest(document().completeURL(href)), FetchInitiatorTypeNames::processinginstruction);
     if (m_isXSL) {
         if (RuntimeEnabledFeatures::xsltEnabled())
-            resource = document().fetcher()->fetchXSLStyleSheet(request);
+            resource = XSLStyleSheetResource::fetch(request, document().fetcher());
     } else {
         request.setCharset(charset.isEmpty() ? document().charset() : charset);
-        resource = document().fetcher()->fetchCSSStyleSheet(request);
+        resource = CSSStyleSheetResource::fetch(request, document().fetcher());
     }
 
     if (resource) {

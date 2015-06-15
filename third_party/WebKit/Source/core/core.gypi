@@ -1441,6 +1441,8 @@
             'fetch/FontResource.h',
             'fetch/ImageResource.cpp',
             'fetch/ImageResource.h',
+            'fetch/LinkFetchResource.cpp',
+            'fetch/LinkFetchResource.h',
             'fetch/MemoryCache.cpp',
             'fetch/MemoryCache.h',
             'fetch/RawResource.cpp',

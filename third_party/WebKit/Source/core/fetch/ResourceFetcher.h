@@ -73,20 +73,7 @@ public:
     virtual ~ResourceFetcher();
     DECLARE_VIRTUAL_TRACE();
 
-    ResourcePtr<Resource> fetchSynchronously(FetchRequest&);
-    ResourcePtr<ImageResource> fetchImage(FetchRequest&);
-    ResourcePtr<CSSStyleSheetResource> fetchCSSStyleSheet(FetchRequest&);
-    ResourcePtr<ScriptResource> fetchScript(FetchRequest&);
-    ResourcePtr<FontResource> fetchFont(FetchRequest&);
-    ResourcePtr<RawResource> fetchRawResource(FetchRequest&);
-    ResourcePtr<RawResource> fetchMainResource(FetchRequest&, const SubstituteData&);
-    ResourcePtr<DocumentResource> fetchSVGDocument(FetchRequest&);
-    ResourcePtr<XSLStyleSheetResource> fetchXSLStyleSheet(FetchRequest&);
-    ResourcePtr<Resource> fetchLinkResource(Resource::Type, FetchRequest&);
-    ResourcePtr<Resource> fetchLinkPreloadResource(Resource::Type, FetchRequest&);
-    ResourcePtr<RawResource> fetchImport(FetchRequest&);
-    ResourcePtr<RawResource> fetchMedia(FetchRequest&);
-    ResourcePtr<RawResource> fetchTextTrack(FetchRequest&);
+    ResourcePtr<Resource> requestResource(FetchRequest&, const ResourceFactory&);
 
     Resource* cachedResource(const KURL&) const;
 
@@ -109,7 +96,7 @@ public:
 
     bool isPreloaded(const KURL&) const;
     void clearPreloads();
-    void preload(Resource::Type, FetchRequest&, const String& charset);
+    void preloadStarted(Resource*);
     void printPreloadStats();
 
     void addAllArchiveResources(MHTMLArchive*);
@@ -155,23 +142,23 @@ public:
 
     String getCacheIdentifier() const;
 
+    void scheduleDocumentResourcesGC();
+    bool clientDefersImage(const KURL&) const;
+    void determineRequestContext(ResourceRequest&, Resource::Type);
+
 private:
     friend class ResourceCacheValidationSuppressor;
 
     explicit ResourceFetcher(PassOwnPtrWillBeRawPtr<FetchContext>);
 
-    ResourcePtr<Resource> requestResource(Resource::Type, FetchRequest&);
-    ResourcePtr<Resource> createResourceForRevalidation(const FetchRequest&, Resource*);
-    ResourcePtr<Resource> createResourceForLoading(Resource::Type, FetchRequest&, const String& charset);
-    void preCacheDataURIImage(const FetchRequest&);
-    void preCacheSubstituteDataForMainResource(const FetchRequest&, const SubstituteData&);
+    ResourcePtr<Resource> createResourceForRevalidation(const FetchRequest&, Resource*, const ResourceFactory&);
+    ResourcePtr<Resource> createResourceForLoading(FetchRequest&, const String& charset, const ResourceFactory&);
     void storeResourceTimingInitiatorInformation(Resource*);
     bool scheduleArchiveLoad(Resource*, const ResourceRequest&);
 
     enum RevalidationPolicy { Use, Revalidate, Reload, Load };
     RevalidationPolicy determineRevalidationPolicy(Resource::Type, const FetchRequest&, Resource* existingResource) const;
 
-    void determineRequestContext(ResourceRequest&, Resource::Type);
     void addAdditionalRequestHeaders(ResourceRequest&, Resource::Type);
 
     static bool resourceNeedsLoad(Resource*, const FetchRequest&, RevalidationPolicy);
@@ -179,11 +166,9 @@ private:
     void notifyLoadedFromMemoryCache(Resource*);
 
     void garbageCollectDocumentResourcesTimerFired(Timer<ResourceFetcher>*);
-    void scheduleDocumentResourcesGC();
 
     void resourceTimingReportTimerFired(Timer<ResourceFetcher>*);
 
-    bool clientDefersImage(const KURL&) const;
     void reloadImagesIfNotDeferred();
 
     void willTerminateResourceLoader(ResourceLoader*);

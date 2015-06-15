@@ -227,7 +227,7 @@ void SVGUseElement::svgAttributeChanged(const QualifiedName& attrName)
             KURL url = document().completeURL(hrefString());
             if (url.hasFragmentIdentifier()) {
                 FetchRequest request(ResourceRequest(url), localName());
-                setDocumentResource(document().fetcher()->fetchSVGDocument(request));
+                setDocumentResource(DocumentResource::fetchSVGDocument(request, document().fetcher()));
             }
         } else {
             setDocumentResource(0);

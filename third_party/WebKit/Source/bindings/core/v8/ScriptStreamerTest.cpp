@@ -67,8 +67,8 @@ public:
         : m_scope(v8::Isolate::GetCurrent())
         , m_settings(Settings::create())
         , m_resourceRequest("http://www.streaming-test.com/")
-        , m_resource(ScriptResource::create(m_resourceRequest, "UTF-8").leakPtr())
-        , m_pendingScript(PendingScriptWrapper::create(0, m_resource)) // Takes ownership of m_resource.
+        , m_resource(new ScriptResource(m_resourceRequest, "UTF-8"))
+        , m_pendingScript(PendingScriptWrapper::create(0, m_resource.get()))
     {
         m_resource->setLoading(true);
         ScriptStreamer::setSmallScriptThresholdForTesting(0);
@@ -122,7 +122,7 @@ protected:
     // fetch any data outside the test; the test controls the data by calling
     // ScriptResource::appendData.
     ResourceRequest m_resourceRequest;
-    ScriptResource* m_resource;
+    ResourcePtr<ScriptResource> m_resource;
     OwnPtrWillBePersistent<PendingScriptWrapper> m_pendingScript;
 };
 

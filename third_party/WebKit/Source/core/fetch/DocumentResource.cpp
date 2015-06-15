@@ -25,10 +25,19 @@
 #include "core/fetch/DocumentResource.h"
 
 #include "core/dom/XMLDocument.h"
+#include "core/fetch/FetchRequest.h"
+#include "core/fetch/ResourceFetcher.h"
 #include "platform/SharedBuffer.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace blink {
+
+ResourcePtr<DocumentResource> DocumentResource::fetchSVGDocument(FetchRequest& request, ResourceFetcher* fetcher)
+{
+    ASSERT(request.resourceRequest().frameType() == WebURLRequest::FrameTypeNone);
+    request.mutableResourceRequest().setRequestContext(WebURLRequest::RequestContextImage);
+    return toDocumentResource(fetcher->requestResource(request, SVGDocumentResourceFactory()));
+}
 
 DocumentResource::DocumentResource(const ResourceRequest& request, Type type)
     : Resource(request, type)

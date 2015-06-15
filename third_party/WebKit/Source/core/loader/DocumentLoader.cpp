@@ -34,10 +34,14 @@
 #include "core/dom/DocumentParser.h"
 #include "core/dom/WeakIdentifierMap.h"
 #include "core/events/Event.h"
+#include "core/fetch/CSSStyleSheetResource.h"
 #include "core/fetch/FetchInitiatorTypeNames.h"
+#include "core/fetch/FetchRequest.h"
+#include "core/fetch/ImageResource.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/ResourceLoader.h"
+#include "core/fetch/ScriptResource.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
@@ -137,6 +141,21 @@ const ResourceRequest& DocumentLoader::request() const
 const KURL& DocumentLoader::url() const
 {
     return m_request.url();
+}
+
+void DocumentLoader::startPreload(Resource::Type type, FetchRequest& request)
+{
+    ASSERT(type == Resource::Script || type == Resource::CSSStyleSheet || type == Resource::Image);
+    ResourcePtr<Resource> resource;
+    if (type == Resource::Image)
+        resource = ImageResource::fetch(request, fetcher());
+    else if (type == Resource::Script)
+        resource = ScriptResource::fetch(request, fetcher());
+    else
+        resource = CSSStyleSheetResource::fetch(request, fetcher());
+
+    if (resource)
+        fetcher()->preloadStarted(resource.get());
 }
 
 void DocumentLoader::updateForSameDocumentNavigation(const KURL& newURL, SameDocumentNavigationSource sameDocumentNavigationSource)
@@ -690,7 +709,7 @@ void DocumentLoader::startLoadingMainResource()
     DEFINE_STATIC_LOCAL(ResourceLoaderOptions, mainResourceLoadOptions,
         (DoNotBufferData, AllowStoredCredentials, ClientRequestedCredentials, CheckContentSecurityPolicy, DocumentContext));
     FetchRequest cachedResourceRequest(request, FetchInitiatorTypeNames::document, mainResourceLoadOptions);
-    m_mainResource = m_fetcher->fetchMainResource(cachedResourceRequest, m_substituteData);
+    m_mainResource = RawResource::fetchMainResource(cachedResourceRequest, fetcher(), m_substituteData);
     if (!m_mainResource) {
         m_request = ResourceRequest();
         // If the load was aborted by clearing m_request, it's possible the ApplicationCacheHost

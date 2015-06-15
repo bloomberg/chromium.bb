@@ -33,6 +33,7 @@
 #include "core/fetch/FetchContext.h"
 #include "core/fetch/ImageResource.h"
 #include "core/fetch/MemoryCache.h"
+#include "core/fetch/RawResource.h"
 #include "core/fetch/Resource.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/ResourcePtr.h"
@@ -106,13 +107,13 @@ protected:
     ResourcePtr<Resource> fetch()
     {
         FetchRequest fetchRequest(ResourceRequest(KURL(ParsedURLString, kResourceURL)), FetchInitiatorInfo());
-        return m_fetcher->fetchSynchronously(fetchRequest);
+        return RawResource::fetchSynchronously(fetchRequest, fetcher());
     }
 
     ResourcePtr<Resource> fetchImage()
     {
         FetchRequest fetchRequest(ResourceRequest(KURL(ParsedURLString, kResourceURL)), FetchInitiatorInfo());
-        return m_fetcher->fetchImage(fetchRequest);
+        return ImageResource::fetch(fetchRequest, fetcher());
     }
 
     ResourceFetcher* fetcher() const { return m_fetcher.get(); }
@@ -468,7 +469,7 @@ TEST_F(CachingCorrectnessTest, PostToSameURLTwice)
     ResourceRequest request2(KURL(ParsedURLString, kResourceURL));
     request2.setHTTPMethod("POST");
     FetchRequest fetch2(request2, FetchInitiatorInfo());
-    ResourcePtr<Resource> resource2 = fetcher()->fetchSynchronously(fetch2);
+    ResourcePtr<Resource> resource2 = RawResource::fetchSynchronously(fetch2, fetcher());
 
     EXPECT_EQ(resource2, memoryCache()->resourceForURL(request2.url()));
     EXPECT_NE(resource1, resource2);

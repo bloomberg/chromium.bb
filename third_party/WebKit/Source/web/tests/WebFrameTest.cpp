@@ -6592,7 +6592,7 @@ static ResourcePtr<Resource> fetchManifest(Document* document, const KURL& url)
     FetchRequest fetchRequest = FetchRequest(ResourceRequest(url), FetchInitiatorInfo());
     fetchRequest.mutableResourceRequest().setRequestContext(WebURLRequest::RequestContextManifest);
 
-    return document->fetcher()->fetchSynchronously(fetchRequest);
+    return RawResource::fetchSynchronously(fetchRequest, document->fetcher());
 }
 
 TEST_P(ParameterizedWebFrameTest, ManifestFetch)

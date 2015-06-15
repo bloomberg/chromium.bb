@@ -29,6 +29,7 @@
 #include "core/dom/Document.h"
 #include "core/fetch/FetchInitiatorInfo.h"
 #include "core/fetch/ResourceFetcher.h"
+#include "core/loader/DocumentLoader.h"
 #include "platform/network/NetworkHints.h"
 #include "public/platform/Platform.h"
 
@@ -72,9 +73,14 @@ void HTMLResourcePreloader::preload(PassOwnPtr<PreloadRequest> preload)
         preconnectHost(preload.get());
         return;
     }
+    if (!m_document->loader())
+        return;
     FetchRequest request = preload->resourceRequest(m_document);
+    if (preload->resourceType() == Resource::Script || preload->resourceType() == Resource::CSSStyleSheet)
+        request.setCharset(preload->charset().isEmpty() ? m_document->charset().string() : preload->charset());
+    request.setForPreload(true);
     Platform::current()->histogramCustomCounts("WebCore.PreloadDelayMs", static_cast<int>(1000 * (monotonicallyIncreasingTime() - preload->discoveryTime())), 0, 2000, 20);
-    m_document->fetcher()->preload(preload->resourceType(), request, preload->charset());
+    m_document->loader()->startPreload(preload->resourceType(), request);
 }
 
 } // namespace blink

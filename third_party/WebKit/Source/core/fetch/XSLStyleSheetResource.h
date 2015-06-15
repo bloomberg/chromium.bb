@@ -31,15 +31,30 @@
 
 namespace blink {
 
+class FetchRequest;
+class ResourceFetcher;
+
 class XSLStyleSheetResource final : public StyleSheetResource {
 public:
-    XSLStyleSheetResource(const ResourceRequest&, const String& charset);
+    static ResourcePtr<XSLStyleSheetResource> fetch(FetchRequest&, ResourceFetcher*);
 
     const String& sheet() const { return m_sheet; }
 
     virtual void didAddClient(ResourceClient*) override;
 
 protected:
+    class XSLStyleSheetResourceFactory : public ResourceFactory {
+    public:
+        XSLStyleSheetResourceFactory()
+            : ResourceFactory(Resource::XSLStyleSheet) { }
+
+        Resource* create(const ResourceRequest& request, const String& charset) const override
+        {
+            return new XSLStyleSheetResource(request, charset);
+        }
+    };
+    XSLStyleSheetResource(const ResourceRequest&, const String& charset);
+
     virtual void checkNotify() override;
 
     String m_sheet;

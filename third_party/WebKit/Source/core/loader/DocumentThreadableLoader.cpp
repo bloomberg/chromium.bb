@@ -585,9 +585,9 @@ void DocumentThreadableLoader::loadRequest(const ResourceRequest& request, Resou
             newRequest.setOriginRestriction(FetchRequest::NoOriginRestriction);
         ASSERT(!resource());
         if (request.requestContext() == WebURLRequest::RequestContextVideo || request.requestContext() == WebURLRequest::RequestContextAudio)
-            setResource(m_document.fetcher()->fetchMedia(newRequest));
+            setResource(RawResource::fetchMedia(newRequest, m_document.fetcher()));
         else
-            setResource(m_document.fetcher()->fetchRawResource(newRequest));
+            setResource(RawResource::fetch(newRequest, m_document.fetcher()));
         if (resource() && resource()->loader()) {
             unsigned long identifier = resource()->identifier();
             InspectorInstrumentation::documentThreadableLoaderStartedLoadingForClient(&m_document, identifier, m_client);
@@ -598,7 +598,7 @@ void DocumentThreadableLoader::loadRequest(const ResourceRequest& request, Resou
     FetchRequest fetchRequest(request, m_options.initiator, resourceLoaderOptions);
     if (m_options.crossOriginRequestPolicy == AllowCrossOriginRequests)
         fetchRequest.setOriginRestriction(FetchRequest::NoOriginRestriction);
-    ResourcePtr<Resource> resource = m_document.fetcher()->fetchSynchronously(fetchRequest);
+    ResourcePtr<Resource> resource = RawResource::fetchSynchronously(fetchRequest, m_document.fetcher());
     ResourceResponse response = resource ? resource->response() : ResourceResponse();
     unsigned long identifier = resource ? resource->identifier() : std::numeric_limits<unsigned long>::max();
     ResourceError error = resource ? resource->resourceError() : ResourceError();

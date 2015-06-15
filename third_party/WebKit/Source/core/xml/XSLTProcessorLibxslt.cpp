@@ -27,6 +27,7 @@
 #include "core/dom/TransformSource.h"
 #include "core/editing/markup.h"
 #include "core/fetch/FetchInitiatorTypeNames.h"
+#include "core/fetch/RawResource.h"
 #include "core/fetch/Resource.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/FrameConsole.h"
@@ -102,7 +103,7 @@ static xmlDocPtr docLoaderFunc(
         ResourceLoaderOptions fetchOptions(ResourceFetcher::defaultResourceOptions());
         FetchRequest request(ResourceRequest(url), FetchInitiatorTypeNames::xml, fetchOptions);
         request.setOriginRestriction(FetchRequest::RestrictToSameOrigin);
-        ResourcePtr<Resource> resource = globalResourceFetcher->fetchSynchronously(request);
+        ResourcePtr<Resource> resource = RawResource::fetchSynchronously(request, globalResourceFetcher);
         if (!resource || !globalProcessor)
             return nullptr;
 

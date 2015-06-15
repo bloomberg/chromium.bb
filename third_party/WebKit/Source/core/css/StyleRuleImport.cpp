@@ -128,7 +128,7 @@ void StyleRuleImport::requestStyleSheet()
     }
 
     FetchRequest request(ResourceRequest(absURL), FetchInitiatorTypeNames::css, m_parentStyleSheet->charset());
-    m_resource = fetcher->fetchCSSStyleSheet(request);
+    m_resource = CSSStyleSheetResource::fetch(request, fetcher);
     if (m_resource) {
         // if the import rule is issued dynamically, the sheet may be
         // removed from the pending sheet count, so let the doc know

@@ -32,6 +32,7 @@
 
 namespace blink {
 
+class FetchRequest;
 class ScriptResource;
 
 class CORE_EXPORT ScriptResourceClient : public ResourceClient {
@@ -46,10 +47,10 @@ public:
 class CORE_EXPORT ScriptResource final : public TextResource {
 public:
     typedef ScriptResourceClient ClientType;
-    static PassOwnPtrWillBeRawPtr<ScriptResource> create(const ResourceRequest& request, const String& charset)
-    {
-        return adoptPtrWillBeNoop(new ScriptResource(request, charset));
-    }
+    static ResourcePtr<ScriptResource> fetch(FetchRequest&, ResourceFetcher*);
+
+    // Public for testing
+    ScriptResource(const ResourceRequest&, const String& charset);
 
     virtual ~ScriptResource();
 
@@ -63,7 +64,16 @@ public:
     bool mimeTypeAllowedByNosniff() const;
 
 private:
-    ScriptResource(const ResourceRequest&, const String& charset);
+    class ScriptResourceFactory : public ResourceFactory {
+    public:
+        ScriptResourceFactory()
+            : ResourceFactory(Resource::Script) { }
+
+        Resource* create(const ResourceRequest& request, const String& charset) const override
+        {
+            return new ScriptResource(request, charset);
+        }
+    };
 
     AtomicString m_script;
 };

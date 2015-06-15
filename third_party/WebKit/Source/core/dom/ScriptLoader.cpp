@@ -297,7 +297,7 @@ bool ScriptLoader::fetchScript(const String& sourceUrl, FetchRequest::DeferOptio
             request.setContentSecurityCheck(DoNotCheckContentSecurityPolicy);
         request.setDefer(defer);
 
-        m_resource = elementDocument->fetcher()->fetchScript(request);
+        m_resource = ScriptResource::fetch(request, elementDocument->fetcher());
         m_isExternalScript = true;
     }
 

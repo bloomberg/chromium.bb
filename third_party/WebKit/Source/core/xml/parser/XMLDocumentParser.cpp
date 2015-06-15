@@ -42,6 +42,7 @@
 #include "core/dom/ScriptLoader.h"
 #include "core/dom/TransformSource.h"
 #include "core/fetch/FetchInitiatorTypeNames.h"
+#include "core/fetch/RawResource.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/ScriptResource.h"
 #include "core/frame/ConsoleTypes.h"
@@ -653,7 +654,7 @@ static void* openFunc(const char* uri)
         XMLDocumentParserScope scope(0);
         // FIXME: We should restore the original global error handler as well.
         FetchRequest request(ResourceRequest(url), FetchInitiatorTypeNames::xml, ResourceFetcher::defaultResourceOptions());
-        ResourcePtr<Resource> resource = document->fetcher()->fetchSynchronously(request);
+        ResourcePtr<Resource> resource = RawResource::fetchSynchronously(request, document->fetcher());
         if (resource && !resource->errorOccurred()) {
             data = resource->resourceBuffer();
             finalURL = resource->response().url();

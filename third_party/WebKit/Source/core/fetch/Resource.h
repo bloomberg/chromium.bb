@@ -85,6 +85,7 @@ public:
         DecodeError
     };
 
+    // Exposed for testing.
     Resource(const ResourceRequest&, Type);
 #if ENABLE(OILPAN)
     virtual ~Resource();
@@ -104,6 +105,7 @@ public:
     virtual String encoding() const { return String(); }
     virtual void appendData(const char*, unsigned);
     virtual void error(Resource::Status);
+    virtual void setCORSFailed() { }
 
     void setNeedsSynchronousCacheHit(bool needsSynchronousCacheHit) { m_needsSynchronousCacheHit = needsSynchronousCacheHit; }
 
@@ -414,6 +416,17 @@ private:
     Vector<RedirectPair> m_redirectChain;
 
     static unsigned s_instanceCount;
+};
+
+class ResourceFactory {
+public:
+    virtual Resource* create(const ResourceRequest&, const String&) const = 0;
+    Resource::Type type() const { return m_type; }
+
+protected:
+    ResourceFactory(Resource::Type type) : m_type(type) { }
+
+    Resource::Type m_type;
 };
 
 #if !LOG_DISABLED

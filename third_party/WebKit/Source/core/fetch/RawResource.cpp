@@ -26,12 +26,83 @@
 #include "config.h"
 #include "core/fetch/RawResource.h"
 
+#include "core/fetch/FetchRequest.h"
+#include "core/fetch/MemoryCache.h"
 #include "core/fetch/ResourceClientWalker.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/ResourceLoader.h"
+#include "core/fetch/SubstituteData.h"
 #include "platform/SharedBuffer.h"
 
 namespace blink {
+
+void RawResource::preCacheSubstituteDataForMainResource(const FetchRequest& request, ResourceFetcher* fetcher, const SubstituteData& substituteData)
+{
+    const String cacheIdentifier = fetcher->getCacheIdentifier();
+    const KURL& url = request.url();
+    if (Resource* oldResource = memoryCache()->resourceForURL(url, cacheIdentifier))
+        memoryCache()->remove(oldResource);
+
+    ResourceResponse response(url, substituteData.mimeType(), substituteData.content()->size(), substituteData.textEncoding(), emptyString());
+    ResourcePtr<Resource> resource = new RawResource(request.resourceRequest(), Resource::MainResource);
+    resource->setNeedsSynchronousCacheHit(substituteData.forceSynchronousLoad());
+    resource->setOptions(request.options());
+    resource->setDataBufferingPolicy(BufferData);
+    resource->responseReceived(response, nullptr);
+    if (substituteData.content()->size())
+        resource->setResourceBuffer(substituteData.content());
+    resource->setCacheIdentifier(cacheIdentifier);
+    resource->finish();
+    memoryCache()->add(resource.get());
+}
+
+ResourcePtr<Resource> RawResource::fetchSynchronously(FetchRequest& request, ResourceFetcher* fetcher)
+{
+    request.mutableResourceRequest().setTimeoutInterval(10);
+    ResourceLoaderOptions options(request.options());
+    options.synchronousPolicy = RequestSynchronously;
+    request.setOptions(options);
+    return fetcher->requestResource(request, RawResourceFactory(Resource::Raw));
+}
+
+ResourcePtr<RawResource> RawResource::fetchImport(FetchRequest& request, ResourceFetcher* fetcher)
+{
+    ASSERT(request.resourceRequest().frameType() == WebURLRequest::FrameTypeNone);
+    request.mutableResourceRequest().setRequestContext(WebURLRequest::RequestContextImport);
+    RawResourceFactory factory(Resource::ImportResource);
+    return toRawResource(fetcher->requestResource(request, RawResourceFactory(Resource::ImportResource)));
+}
+
+ResourcePtr<RawResource> RawResource::fetch(FetchRequest& request, ResourceFetcher* fetcher)
+{
+    ASSERT(request.resourceRequest().frameType() == WebURLRequest::FrameTypeNone);
+    ASSERT(request.resourceRequest().requestContext() != WebURLRequest::RequestContextUnspecified);
+    return toRawResource(fetcher->requestResource(request, RawResourceFactory(Resource::Raw)));
+}
+
+ResourcePtr<RawResource> RawResource::fetchMainResource(FetchRequest& request, ResourceFetcher* fetcher, const SubstituteData& substituteData)
+{
+    ASSERT(request.resourceRequest().frameType() != WebURLRequest::FrameTypeNone);
+    ASSERT(request.resourceRequest().requestContext() == WebURLRequest::RequestContextForm || request.resourceRequest().requestContext() == WebURLRequest::RequestContextFrame || request.resourceRequest().requestContext() == WebURLRequest::RequestContextHyperlink || request.resourceRequest().requestContext() == WebURLRequest::RequestContextIframe || request.resourceRequest().requestContext() == WebURLRequest::RequestContextInternal || request.resourceRequest().requestContext() == WebURLRequest::RequestContextLocation);
+
+    if (substituteData.isValid())
+        preCacheSubstituteDataForMainResource(request, fetcher, substituteData);
+    return toRawResource(fetcher->requestResource(request, RawResourceFactory(Resource::MainResource)));
+}
+
+ResourcePtr<RawResource> RawResource::fetchMedia(FetchRequest& request, ResourceFetcher* fetcher)
+{
+    ASSERT(request.resourceRequest().frameType() == WebURLRequest::FrameTypeNone);
+    ASSERT(request.resourceRequest().requestContext() == WebURLRequest::RequestContextAudio || request.resourceRequest().requestContext() == WebURLRequest::RequestContextVideo);
+    return toRawResource(fetcher->requestResource(request, RawResourceFactory(Resource::Media)));
+}
+
+ResourcePtr<RawResource> RawResource::fetchTextTrack(FetchRequest& request, ResourceFetcher* fetcher)
+{
+    ASSERT(request.resourceRequest().frameType() == WebURLRequest::FrameTypeNone);
+    request.mutableResourceRequest().setRequestContext(WebURLRequest::RequestContextTrack);
+    return toRawResource(fetcher->requestResource(request, RawResourceFactory(Resource::TextTrack)));
+}
 
 RawResource::RawResource(const ResourceRequest& resourceRequest, Type type)
     : Resource(resourceRequest, type)

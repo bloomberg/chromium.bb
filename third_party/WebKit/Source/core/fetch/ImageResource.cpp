@@ -39,10 +39,59 @@
 #include "platform/SharedBuffer.h"
 #include "platform/TraceEvent.h"
 #include "platform/graphics/BitmapImage.h"
+#include "public/platform/Platform.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/StdLibExtras.h"
 
 namespace blink {
+
+void ImageResource::preCacheDataURIImage(const FetchRequest& request, ResourceFetcher* fetcher)
+{
+    const KURL& url = request.resourceRequest().url();
+    ASSERT(url.protocolIsData());
+
+    const String cacheIdentifier = fetcher->getCacheIdentifier();
+    if (memoryCache()->resourceForURL(url, cacheIdentifier))
+        return;
+
+    WebString mimetype;
+    WebString charset;
+    RefPtr<SharedBuffer> data = PassRefPtr<SharedBuffer>(Platform::current()->parseDataURL(url, mimetype, charset));
+    if (!data)
+        return;
+    ResourceResponse response(url, mimetype, data->size(), charset, String());
+
+    Resource* resource = new ImageResource(request.resourceRequest());
+    resource->setOptions(request.options());
+    // FIXME: We should provide a body stream here.
+    resource->responseReceived(response, nullptr);
+    if (data->size())
+        resource->setResourceBuffer(data);
+    resource->setCacheIdentifier(cacheIdentifier);
+    resource->finish();
+    memoryCache()->add(resource);
+    fetcher->scheduleDocumentResourcesGC();
+}
+
+ResourcePtr<ImageResource> ImageResource::fetch(FetchRequest& request, ResourceFetcher* fetcher)
+{
+    if (request.resourceRequest().requestContext() == WebURLRequest::RequestContextUnspecified)
+        request.mutableResourceRequest().setRequestContext(WebURLRequest::RequestContextImage);
+    if (fetcher->context().pageDismissalEventBeingDispatched()) {
+        KURL requestURL = request.resourceRequest().url();
+        if (requestURL.isValid() && fetcher->context().canRequest(Resource::Image, request.resourceRequest(), requestURL, request.options(), request.forPreload(), request.originRestriction()))
+            fetcher->context().sendImagePing(requestURL);
+        return 0;
+    }
+
+    if (request.resourceRequest().url().protocolIsData())
+        ImageResource::preCacheDataURIImage(request, fetcher);
+
+    if (fetcher->clientDefersImage(request.resourceRequest().url()))
+        request.setDefer(FetchRequest::DeferredByClient);
+
+    return toImageResource(fetcher->requestResource(request, ImageResourceFactory()));
+}
 
 ImageResource::ImageResource(const ResourceRequest& resourceRequest)
     : Resource(resourceRequest, Image)

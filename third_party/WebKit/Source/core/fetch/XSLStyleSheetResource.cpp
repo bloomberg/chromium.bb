@@ -27,12 +27,21 @@
 #include "config.h"
 #include "core/fetch/XSLStyleSheetResource.h"
 
+#include "core/fetch/FetchRequest.h"
 #include "core/fetch/ResourceClientWalker.h"
+#include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/StyleSheetResourceClient.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/SharedBuffer.h"
 
 namespace blink {
+
+ResourcePtr<XSLStyleSheetResource> XSLStyleSheetResource::fetch(FetchRequest& request, ResourceFetcher* fetcher)
+{
+    ASSERT(RuntimeEnabledFeatures::xsltEnabled());
+    request.mutableResourceRequest().setRequestContext(WebURLRequest::RequestContextXSLT);
+    return toXSLStyleSheetResource(fetcher->requestResource(request, XSLStyleSheetResourceFactory()));
+}
 
 XSLStyleSheetResource::XSLStyleSheetResource(const ResourceRequest& resourceRequest, const String& charset)
     : StyleSheetResource(resourceRequest, XSLStyleSheet, "text/xsl", charset)
