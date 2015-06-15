@@ -95,6 +95,16 @@ class TestGclientWriteConfigFile(
   'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git'}]
 """)
 
+  def testChromeSpecWithReleaseTag(self):
+    """Test WriteConfigFile with chrome checkout at a given release tag."""
+    gclient.WriteConfigFile('gclient', self._TEST_CWD, True, '45.0.2431.1')
+    self._AssertGclientConfigSpec("""solutions = [{'custom_deps': {},
+  'custom_vars': {},
+  'deps_file': 'releases/45.0.2431.1/DEPS',
+  'name': 'CHROME_DEPS',
+  'url': 'https://chrome-internal.googlesource.com/chrome/tools/buildspec.git'}]
+""")
+
   def testChromiumSpecWithReleaseTag(self):
     """Test WriteConfigFile with chromium checkout at a given release tag."""
     gclient.WriteConfigFile('gclient', self._TEST_CWD, False, '41.0.2270.0')
@@ -105,7 +115,7 @@ class TestGclientWriteConfigFile(
   'url': 'https://chromium.googlesource.com/chromium/src.git@refs/tags/41.0.2270.0'}]
 """)
 
-  def testChromeSpecWithReleaseTag(self):
+  def testChromeSpecWithReleaseTagDepsGit(self):
     """Test WriteConfigFile with chrome checkout at a given release tag."""
     gclient.WriteConfigFile('gclient', self._TEST_CWD, True, '41.0.2270.0')
     self._AssertGclientConfigSpec("""solutions = [{'custom_deps': {},
@@ -114,6 +124,18 @@ class TestGclientWriteConfigFile(
   'name': 'CHROME_DEPS',
   'url': 'https://chrome-internal.googlesource.com/chrome/tools/buildspec.git'}]
 """)
+
+  def testChromeSpecDepsResolution(self):
+    """Test BuildspecUsesDepsGit at release thresholds."""
+    for rev, uses_deps_git in (
+        ('41.0.2270.0', True),
+        ('45.0.2430.3', True),
+        ('45.0.2431.0', False),
+        ('44.0.2403.48', True),
+        ('44.0.2404.0', False),
+        ('43.0.2357.125', True),
+        ('43.0.2357.126', False)):
+      self.assertEqual(gclient.BuildspecUsesDepsGit(rev), uses_deps_git)
 
   def testChromeSpecWithGclientTemplate(self):
     """Test WriteConfigFile with chrome checkout with a gclient template."""

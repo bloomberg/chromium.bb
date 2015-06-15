@@ -17,6 +17,14 @@ from chromite.lib import osutils
 CHROME_COMMITTER_URL = 'https://chromium.googlesource.com/chromium/src'
 STATUS_URL = 'https://chromium-status.appspot.com/current?format=json'
 
+# Last release for each milestone where a '.DEPS.git' was emitted. After this,
+# a Git-only DEPS is emitted as 'DEPS' and '.DEPS.git' is no longer created.
+_DEPS_GIT_TRANSITION_MAP = {
+    45: (45, 0, 2430, 3),
+    44: (44, 0, 2403, 48),
+    43: (43, 0, 2357, 125),
+}
+
 
 def FindGclientFile(path):
   """Returns the nearest higher-level gclient file from the specified path.
@@ -78,6 +86,25 @@ def _FindOrAddSolution(solutions, name):
   return solution
 
 
+def BuildspecUsesDepsGit(rev):
+  """Tests if a given buildspec revision uses .DEPS.git or DEPS.
+
+  Previous, Chromium emitted two dependency files: DEPS and .DEPS.git, the
+  latter being a Git-only construction of DEPS. Recently a switch was thrown,
+  causing .DEPS.git to be emitted exclusively as DEPS.
+
+  To support past buildspec checkouts, this logic tests a given Chromium
+  buildspec revision against the transition thresholds, using .DEPS.git prior
+  to transition and DEPS after.
+  """
+  rev = tuple(int(d) for d in rev.split('.'))
+  milestone = rev[0]
+  threshold = _DEPS_GIT_TRANSITION_MAP.get(milestone)
+  if threshold:
+    return rev <= threshold
+  return all(milestone < k for k in _DEPS_GIT_TRANSITION_MAP.iterkeys())
+
+
 def _GetGclientURLs(internal, rev):
   """Get the URLs and deps_file values to use in gclient file.
 
@@ -88,12 +115,9 @@ def _GetGclientURLs(internal, rev):
   if rev is None or git.IsSHA1(rev):
     # Regular chromium checkout; src may float to origin/master or be pinned.
     url = constants.CHROMIUM_GOB_URL
+
     if rev:
       url += ('@' + rev)
-    # TODO(szager): .DEPS.git will eventually be deprecated in favor of DEPS.
-    # When that happens, this could should continue to work, because gclient
-    # will fall back to DEPS if .DEPS.git doesn't exist.  Eventually, this
-    # code should be cleaned up to stop referring to non-existent .DEPS.git.
     results.append(('src', url, '.DEPS.git'))
     if internal:
       results.append(
@@ -102,7 +126,11 @@ def _GetGclientURLs(internal, rev):
     # Internal buildspec: check out the buildspec repo and set deps_file to
     # the path to the desired release spec.
     url = constants.INTERNAL_GOB_URL + '/chrome/tools/buildspec.git'
-    results.append(('CHROME_DEPS', url, 'releases/%s/.DEPS.git' % rev))
+
+    # Chromium switched to DEPS at version 45.0.2432.3.
+    deps_file = '.DEPS.git' if BuildspecUsesDepsGit(rev) else 'DEPS'
+
+    results.append(('CHROME_DEPS', url, 'releases/%s/%s' % (rev, deps_file)))
   else:
     # External buildspec: use the main chromium src repository, pinned to the
     # release tag, with deps_file set to .DEPS.git (which is created by
