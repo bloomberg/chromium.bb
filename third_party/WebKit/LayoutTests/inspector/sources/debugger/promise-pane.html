@@ -103,7 +103,7 @@ function test()
             return;
         }
         InspectorTest.addResult("\nSetting search value: " + text);
-        promisePane._filter._textFilterUI.setValue(text);
+        promisePane._textFilterUI.setValue(text);
         promisePane._refresh();
         dumpPromiseDataGrid(step4);
     }
