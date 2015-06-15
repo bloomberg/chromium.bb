@@ -9,7 +9,6 @@
 #include "base/time/time.h"
 #include "cc/layers/content_layer_client.h"
 #include "cc/resources/bitmap_content_layer_updater.h"
-#include "cc/resources/bitmap_skpicture_content_layer_updater.h"
 #include "cc/resources/layer_painter.h"
 #include "cc/trees/layer_tree_host.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
@@ -90,16 +89,7 @@ void ContentLayer::CreateUpdaterIfNeeded() {
   if (updater_.get())
     return;
   scoped_ptr<LayerPainter> painter = ContentLayerPainter::Create(client_);
-  if (layer_tree_host()->settings().per_tile_painting_enabled) {
-    updater_ = BitmapSkPictureContentLayerUpdater::Create(
-        painter.Pass(),
-        rendering_stats_instrumentation(),
-        id());
-  } else {
-    updater_ = BitmapContentLayerUpdater::Create(
-        painter.Pass(),
-        id());
-  }
+  updater_ = BitmapContentLayerUpdater::Create(painter.Pass(), id());
   updater_->SetOpaque(contents_opaque());
   if (client_)
     updater_->SetFillsBoundsCompletely(client_->FillsBoundsCompletely());

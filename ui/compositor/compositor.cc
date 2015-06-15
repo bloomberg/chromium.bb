@@ -98,9 +98,6 @@ Compositor::Compositor(gfx::AcceleratedWidget widget,
       command_line->HasSwitch(switches::kDisableGpuVsync);
   settings.renderer_settings.partial_swap_enabled =
       !command_line->HasSwitch(cc::switches::kUIDisablePartialSwap);
-#if defined(OS_CHROMEOS)
-  settings.per_tile_painting_enabled = true;
-#endif
 #if defined(OS_WIN)
   settings.renderer_settings.finish_rendering_on_resize = true;
 #endif
