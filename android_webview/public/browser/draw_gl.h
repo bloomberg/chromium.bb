@@ -9,7 +9,18 @@
 extern "C" {
 #endif
 
-static const int kAwDrawGLInfoVersion = 1;
+
+// 1 is L/L MR1
+//
+// 2 starts at M, and added an imperfect workaround for complex clipping by
+// elevating the WebView into an FBO layer. If any transform, clip, or outline
+// clip occurs that would either likely use the stencil buffer for clipping, or
+// require shader based clipping in HWUI, the WebView is drawn into an FBO (if
+// it fits).
+// This is a temporary workaround for a lack of WebView support for stencil/
+// shader based round rect clipping, and should be removed when webview is
+// capable of supporting these clips internally when drawing.
+static const int kAwDrawGLInfoVersion = 2;
 
 // Holds the information required to trigger an OpenGL drawing operation.
 struct AwDrawGLInfo {
