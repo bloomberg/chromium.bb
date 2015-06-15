@@ -274,6 +274,7 @@ source_set("browser") {
       "//components/web_modal",
       "//content/app/resources",
       "//media",
+      "//mojo/application/public/cpp",
       "//mojo/common",
       "//mojo/environment:chromium",
       "//net:extras",
@@ -620,7 +621,8 @@ source_set("browser") {
     deps += [
       "//components/feedback",
       "//device/core",
-      "//device/devices_app:lib",
+      "//device/devices_app/public/cpp",
+      "//device/devices_app/public/cpp:factory",
       "//device/usb",
     ]
   }

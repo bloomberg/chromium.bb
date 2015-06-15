@@ -3236,6 +3236,7 @@
             '../content/app/resources/content_resources.gyp:content_resources',
             '../media/media.gyp:media',
             '../media/mojo/interfaces/mojo_bindings.gyp:platform_verification_api',
+            '../mojo/mojo_base.gyp:mojo_application_base',
             '../mojo/mojo_base.gyp:mojo_common_lib',
             '../mojo/mojo_base.gyp:mojo_environment_chromium',
             '../net/net.gyp:net_extras',
@@ -3595,7 +3596,8 @@
           'dependencies': [
             '../components/components.gyp:feedback_component',
             '../device/core/core.gyp:device_core',
-            '../device/devices_app/devices_app.gyp:devices_app_lib',
+            '../device/devices_app/devices_app.gyp:devices_app_public_cpp',
+            '../device/devices_app/devices_app.gyp:devices_app_public_cpp_factory',
             '../device/usb/usb.gyp:device_usb',
             '../net/net.gyp:net_browser_services',
           ]

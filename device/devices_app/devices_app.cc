@@ -23,8 +23,6 @@
 
 namespace device {
 
-const char kDevicesMojoAppUrl[] = "system:devices";
-
 namespace {
 
 // The number of seconds to wait without any bound DeviceManagers before
@@ -100,21 +98,14 @@ class DevicesApp::USBServiceInitializer {
   DISALLOW_COPY_AND_ASSIGN(USBServiceInitializer);
 };
 
-DevicesApp::~DevicesApp() {
-}
-
-// static
-scoped_ptr<mojo::ApplicationDelegate> DevicesApp::CreateDelegate(
-    scoped_refptr<base::SequencedTaskRunner> service_task_runner) {
-  return scoped_ptr<mojo::ApplicationDelegate>(
-      new DevicesApp(service_task_runner));
-}
-
 DevicesApp::DevicesApp(
     scoped_refptr<base::SequencedTaskRunner> service_task_runner)
     : app_impl_(nullptr),
       service_task_runner_(service_task_runner),
       active_device_manager_count_(0) {
+}
+
+DevicesApp::~DevicesApp() {
 }
 
 void DevicesApp::Initialize(mojo::ApplicationImpl* app) {

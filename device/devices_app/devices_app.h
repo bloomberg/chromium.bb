@@ -27,25 +27,16 @@ namespace usb {
 class DeviceManager;
 }
 
-extern const char kDevicesMojoAppUrl[];
-
 class DevicesApp : public mojo::ApplicationDelegate,
                    public mojo::InterfaceFactory<usb::DeviceManager>,
                    public mojo::ErrorHandler {
  public:
-  ~DevicesApp() override;
-
-  // |service_task_runner| is the thread TaskRunner on which the UsbService
-  // lives. This argument should be removed once UsbService is owned by the
-  // USB device manager and no longer part of the public device API. If null,
-  // the app will construct its own DeviceClient and UsbService.
-  static scoped_ptr<mojo::ApplicationDelegate> CreateDelegate(
+  explicit DevicesApp(
       scoped_refptr<base::SequencedTaskRunner> service_task_runner);
+  ~DevicesApp() override;
 
  private:
   class USBServiceInitializer;
-
-  DevicesApp(scoped_refptr<base::SequencedTaskRunner> service_task_runner);
 
   // mojo::ApplicationDelegate:
   void Initialize(mojo::ApplicationImpl* app) override;
