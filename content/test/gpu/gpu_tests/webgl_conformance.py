@@ -12,8 +12,9 @@ from telemetry import benchmark as benchmark_module
 from telemetry.core import browser_finder
 from telemetry.core import util
 from telemetry.page import page as page_module
-from telemetry.page import page_set
 from telemetry.page import page_test
+from telemetry.page import shared_page_state
+from telemetry.story.story_set import StorySet
 
 
 conformance_path = os.path.join(
@@ -109,6 +110,7 @@ class WebglConformancePage(page_module.Page):
   def __init__(self, page_set, test):
     super(WebglConformancePage, self).__init__(
       url='file://' + test, page_set=page_set, base_dir=page_set.base_dir,
+      shared_page_state_class=shared_page_state.SharedDesktopPageState,
       name=('WebglConformance.%s' %
               test.replace('/', '_').replace('-', '_').
                  replace('\\', '_').rpartition('.')[0].replace('.', '_')))
@@ -143,15 +145,13 @@ class WebglConformance(benchmark_module.Benchmark):
       return Webgl2ConformanceValidator()
     return WebglConformanceValidator()
 
-  def CreatePageSet(self, options):
+  def CreateStorySet(self, options):
     tests = self._ParseTests('00_test_list.txt',
         options.webgl_conformance_version,
-        (options.webgl2_only == 'true'))
+        (options.webgl2_only == 'true'),
+        None)
 
-    ps = page_set.PageSet(
-      user_agent_type='desktop',
-      serving_dirs=[''],
-      base_dir=conformance_path)
+    ps = StorySet(serving_dirs=[''], base_dir=conformance_path)
 
     for test in tests:
       ps.AddUserStory(WebglConformancePage(ps, test))
@@ -163,7 +163,7 @@ class WebglConformance(benchmark_module.Benchmark):
         conformance_path)
 
   @staticmethod
-  def _ParseTests(path, version, webgl2_only):
+  def _ParseTests(path, version, webgl2_only, folder_min_version):
     test_paths = []
     current_dir = os.path.dirname(path)
     full_path = os.path.normpath(os.path.join(conformance_path, path))
@@ -183,6 +183,7 @@ class WebglConformance(benchmark_module.Benchmark):
           continue
 
         line_tokens = line.split(' ')
+        test_name = line_tokens[-1]
 
         i = 0
         min_version = None
@@ -193,20 +194,22 @@ class WebglConformance(benchmark_module.Benchmark):
             min_version = line_tokens[i]
           i += 1
 
-        if (min_version and _CompareVersion(version, min_version) < 0):
+        min_version_to_compare = min_version or folder_min_version
+
+        if (min_version_to_compare and
+            _CompareVersion(version, min_version_to_compare) < 0):
           continue
 
-        if (webgl2_only and
-            (not min_version or _CompareVersion(min_version, '2.0.0') < 0)):
+        if (webgl2_only and (not ('.txt' in test_name)) and
+            ((not min_version_to_compare) or
+             (not min_version_to_compare.startswith('2')))):
           continue
-
-        test_name = line_tokens[-1]
 
         if '.txt' in test_name:
           include_path = os.path.join(current_dir, test_name)
           # We only check min-version >= 2.0.0 for the top level list.
           test_paths += WebglConformance._ParseTests(
-            include_path, version, False)
+              include_path, version, webgl2_only, min_version_to_compare)
         else:
           test = os.path.join(current_dir, test_name)
           test_paths.append(test)

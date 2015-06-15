@@ -545,7 +545,22 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # WEBGL 2 TESTS FAILURES
     ##############################################################
 
+    # Skip all WebGL 2 tests on Win AMD.
+    self.Skip('deqp/data/gles3/shaders/*', ['win', 'amd'], bug=483282)
+    self.Skip('framework/opengl/simplereference/*', ['win', 'amd'], bug=483282)
+    self.Skip('deqp/functional/gles3/*', ['win', 'amd'], bug=483282)
+    self.Skip('conformance2/*', ['win', 'amd'], bug=483282)
+
+    # Skip all WebGL 2 tests on Win Intel.
+    self.Skip('deqp/data/gles3/shaders/*', ['win', 'intel'], bug=483282)
+    self.Skip('framework/opengl/simplereference/*',
+        ['win', 'intel'], bug=483282)
+    self.Skip('deqp/functional/gles3/*', ['win', 'intel'], bug=483282)
+    self.Skip('conformance2/*', ['win', 'intel'], bug=483282)
+
+
     self.Fail('deqp/data/gles3/shaders/arrays.html', bug=483282)
+    self.Fail('deqp/data/gles3/shaders/constant_expressions.html', bug=483282)
     self.Fail('deqp/data/gles3/shaders/constants.html', bug=483282)
     self.Fail('deqp/data/gles3/shaders/conversions.html', bug=483282)
     self.Fail('deqp/data/gles3/shaders/functions.html', bug=483282)
@@ -554,9 +569,23 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('deqp/data/gles3/shaders/qualification_order.html', bug=483282)
     self.Fail('deqp/data/gles3/shaders/scoping.html', bug=483282)
 
+    self.Fail('deqp/functional/gles3/attriblocation.html', bug=483282)
+    self.Fail('deqp/functional/gles3/fbocompleteness.html', bug=483282)
+    self.Fail('deqp/functional/gles3/fbomultisample.html', bug=483282)
+    self.Fail('deqp/functional/gles3/fbostencilbuffer.html', bug=483282)
+    self.Fail('deqp/functional/gles3/fragmentoutput.html', bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit.html', bug=483282)
+    self.Fail('deqp/functional/gles3/instancedrendering.html', bug=483282)
+    self.Fail('deqp/functional/gles3/lifetime.html', bug=483282)
+    self.Fail('deqp/functional/gles3/pixelbufferobject.html', bug=483282)
+    self.Fail('deqp/functional/gles3/primitiverestart.html', bug=483282)
+    self.Fail('deqp/functional/gles3/samplerobject.html', bug=483282)
     self.Fail('deqp/functional/gles3/textureformat.html', bug=483282)
+    self.Fail('deqp/functional/gles3/texturewrap.html', bug=483282)
     self.Fail('deqp/functional/gles3/transformfeedback.html', bug=483282)
+    self.Fail('deqp/functional/gles3/uniformapi.html', bug=483282)
     self.Fail('deqp/functional/gles3/uniformbuffers.html', bug=483282)
+    self.Fail('deqp/functional/gles3/vertexarrays.html', bug=483282)
 
     self.Fail('conformance2/attribs/gl-vertex-attrib.html', bug=483282)
     self.Fail('conformance2/attribs/gl-vertex-attrib-i-render.html', bug=483282)
@@ -608,7 +637,3 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['mac'], bug=483282)
     self.Fail('conformance2/rendering/instanced-arrays.html',
         ['mac'], bug=483282)
-
-    # Skip all WebGL 2 tests on Win AMD & Intel.
-    self.Skip('conformance2/*', ['win', 'amd'], bug=483282)
-    self.Skip('deqp/data/gles3/*', ['win', 'intel'], bug=483282)
