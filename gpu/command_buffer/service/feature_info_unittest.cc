@@ -1173,16 +1173,6 @@ TEST_P(FeatureInfoTest, InitializeWithPreferredEXTDrawBuffers) {
   EXPECT_TRUE(info_->feature_flags().ext_draw_buffers);
 }
 
-TEST_P(FeatureInfoTest, ARBSyncDisabled) {
-  base::CommandLine command_line(0, NULL);
-  command_line.AppendSwitchASCII(
-      switches::kGpuDriverBugWorkarounds,
-      base::IntToString(gpu::DISABLE_ARB_SYNC));
-  SetupInitExpectationsWithCommandLine("GL_ARB_sync", command_line);
-  EXPECT_FALSE(info_->feature_flags().chromium_sync_query);
-  EXPECT_FALSE(gfx::GLFence::IsSupported());
-}
-
 TEST_P(FeatureInfoTest, BlendEquationAdvancedDisabled) {
   base::CommandLine command_line(0, NULL);
   command_line.AppendSwitchASCII(

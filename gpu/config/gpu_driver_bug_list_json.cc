@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.12",
+  "version": "8.13",
   "entries": [
     {
       "id": 1,
@@ -235,8 +235,9 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
         "type": "linux"
       },
       "vendor_id": "0x8086",
-      "features": [
-        "disable_ext_occlusion_query"
+      "disabled_extensions": [
+        "GL_ARB_occlusion_query2",
+        "GL_ARB_occlusion_query"
       ]
     },
     {
@@ -309,8 +310,8 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       },
       "vendor_id": "0x8086",
       "device_id": ["0xa011", "0xa012"],
-      "features": [
-        "disable_oes_standard_derivatives"
+      "disabled_extensions": [
+        "GL_OES_standard_derivatives"
       ]
     },
     {
@@ -814,8 +815,8 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
         "type": "android"
       },
       "gl_extensions": ".*GL_VIV_shader_binary.*",
-      "features": [
-        "disable_oes_standard_derivatives"
+      "disabled_extensions": [
+        "GL_OES_standard_derivatives"
       ]
     },
     {
@@ -850,8 +851,8 @@ LONG_STRING_CONST(
         }
       },
       "gl_vendor": "Qualcomm.*",
-      "features": [
-        "disable_egl_khr_fence_sync"
+      "disabled_extensions": [
+        "EGL_KHR_fence_sync"
       ]
     },
     {
@@ -883,8 +884,8 @@ LONG_STRING_CONST(
         }
       },
       "gl_vendor": "Imagination Technologies.*",
-      "features": [
-        "disable_egl_khr_fence_sync"
+      "disabled_extensions": [
+        "EGL_KHR_fence_sync"
       ]
     },
     {
@@ -905,8 +906,8 @@ LONG_STRING_CONST(
         "op": "<",
         "value": "3.0"
       },
-      "features": [
-        "disable_egl_khr_fence_sync"
+      "disabled_extensions": [
+        "EGL_KHR_fence_sync"
       ]
     },
     {
@@ -921,8 +922,8 @@ LONG_STRING_CONST(
         }
       },
       "gl_vendor": "Broadcom.*",
-      "features": [
-        "disable_egl_khr_fence_sync"
+      "disabled_extensions": [
+        "EGL_KHR_fence_sync"
       ]
     },
     {
@@ -1064,8 +1065,8 @@ LONG_STRING_CONST(
         "op": "=",
         "value": "3.1"
       },
-      "features": [
-        "disable_egl_khr_wait_sync"
+      "disabled_extensions": [
+        "EGL_KHR_wait_sync"
       ]
     },
     {
@@ -1193,7 +1194,7 @@ LONG_STRING_CONST(
     },
     {
       "id": 104,
-      "description": "EXT_occlusion_query hangs on MediaTek MT8135 pre-Lollipop",
+      "description": "EXT_occlusion_query_boolean hangs on MediaTek MT8135 pre-Lollipop",
       "os": {
         "type": "android",
         "version": {
@@ -1203,8 +1204,8 @@ LONG_STRING_CONST(
       },
       "gl_vendor": "Imagination.*",
       "gl_renderer": "PowerVR Rogue Han",
-      "features": [
-        "disable_ext_occlusion_query"
+      "disabled_extensions": [
+        "GL_EXT_occlusion_query_boolean"
       ]
     },
     {
@@ -1221,17 +1222,14 @@ LONG_STRING_CONST(
     },
     {
       "id": 106,
-      "description": "EXT_occlusion_query hangs on PowerVR SGX 544 (IMG) drivers",
+      "description": "EXT_occlusion_query_boolean hangs on PowerVR SGX 544 (IMG) drivers",
       "os": {
         "type": "android"
       },
       "gl_vendor": "Imagination.*",
       "gl_renderer": "PowerVR SGX 544",
-      "features": [
-        "disable_ext_occlusion_query"
-      ],
       "disabled_extensions": [
-        "EXT_occlusion_query_boolean"
+        "GL_EXT_occlusion_query_boolean"
       ]
     },
     {
@@ -1254,8 +1252,10 @@ LONG_STRING_CONST(
         "value2": "1.4"
       },
       "features": [
-        "avoid_egl_image_target_texture_reuse",
-        "disable_egl_khr_wait_sync"
+        "avoid_egl_image_target_texture_reuse"
+      ],
+      "disabled_extensions": [
+        "EGL_KHR_wait_sync"
       ]
     },
     {
@@ -1291,8 +1291,8 @@ LONG_STRING_CONST(
         "op": "<",
         "value": "95"
       },
-      "features": [
-        "disable_egl_khr_wait_sync"
+      "disabled_extensions": [
+        "EGL_KHR_wait_sync"
       ]
     },
     {
@@ -1328,7 +1328,7 @@ LONG_STRING_CONST(
     {
       "id": 113,
       "cr_bugs": [477514],
-      "description": "EXT_disjoint_timer_query fails after 2 queries on adreno 420",
+      "description": "EXT_disjoint_timer_query fails after 256 queries on adreno 420",
       "os": {
         "type": "android"
       },

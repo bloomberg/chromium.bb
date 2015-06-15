@@ -701,10 +701,9 @@ void FeatureInfo::InitializeFeatures() {
     validators_.render_buffer_format.AddValue(GL_DEPTH_COMPONENT24);
   }
 
-  if (!workarounds_.disable_oes_standard_derivatives &&
-      (gl_version_info_->is_es3 ||
-       extensions.Contains("GL_OES_standard_derivatives") ||
-       gfx::HasDesktopGLFeatures())) {
+  if (gl_version_info_->is_es3 ||
+      extensions.Contains("GL_OES_standard_derivatives") ||
+      gfx::HasDesktopGLFeatures()) {
     AddExtensionString("GL_OES_standard_derivatives");
     feature_flags_.oes_standard_derivatives = true;
     validators_.hint_target.AddValue(GL_FRAGMENT_SHADER_DERIVATIVE_HINT_OES);
@@ -838,10 +837,9 @@ void FeatureInfo::InitializeFeatures() {
   bool have_arb_occlusion_query =
       extensions.Contains("GL_ARB_occlusion_query");
 
-  if (!workarounds_.disable_ext_occlusion_query &&
-      (have_ext_occlusion_query_boolean ||
-       have_arb_occlusion_query2 ||
-       have_arb_occlusion_query)) {
+  if (have_ext_occlusion_query_boolean ||
+      have_arb_occlusion_query2 ||
+      have_arb_occlusion_query) {
     AddExtensionString("GL_EXT_occlusion_query_boolean");
     feature_flags_.occlusion_query_boolean = true;
     feature_flags_.use_arb_occlusion_query2_for_occlusion_query_boolean =
@@ -925,16 +923,6 @@ void FeatureInfo::InitializeFeatures() {
     feature_flags_.ext_shader_texture_lod = true;
   }
 
-#if !defined(OS_MACOSX)
-  if (workarounds_.disable_egl_khr_fence_sync) {
-    gfx::g_driver_egl.ext.b_EGL_KHR_fence_sync = false;
-  }
-  if (workarounds_.disable_egl_khr_wait_sync) {
-    gfx::g_driver_egl.ext.b_EGL_KHR_wait_sync = false;
-  }
-#endif
-  if (workarounds_.disable_arb_sync)
-    gfx::g_driver_gl.ext.b_GL_ARB_sync = false;
   bool ui_gl_fence_works = gfx::GLFence::IsSupported();
   UMA_HISTOGRAM_BOOLEAN("GPU.FenceSupport", ui_gl_fence_works);
 

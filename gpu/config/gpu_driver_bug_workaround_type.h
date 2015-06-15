@@ -20,8 +20,6 @@
          count_all_in_varyings_packing)                      \
   GPU_OP(DISABLE_ANGLE_INSTANCED_ARRAYS,                     \
          disable_angle_instanced_arrays)                     \
-  GPU_OP(DISABLE_ARB_SYNC,                                   \
-         disable_arb_sync)                                   \
   GPU_OP(DISABLE_ASYNC_READPIXELS,                           \
          disable_async_readpixels)                           \
   GPU_OP(DISABLE_BLEND_EQUATION_ADVANCED,                    \
@@ -32,24 +30,16 @@
          disable_d3d11)                                      \
   GPU_OP(DISABLE_DEPTH_TEXTURE,                              \
          disable_depth_texture)                              \
-  GPU_OP(DISABLE_EGL_KHR_FENCE_SYNC,                         \
-         disable_egl_khr_fence_sync)                         \
-  GPU_OP(DISABLE_EGL_KHR_WAIT_SYNC,                          \
-         disable_egl_khr_wait_sync)                          \
   GPU_OP(DISABLE_DISCARD_FRAMEBUFFER,                        \
          disable_discard_framebuffer)                        \
   GPU_OP(DISABLE_EXT_DRAW_BUFFERS,                           \
          disable_ext_draw_buffers)                           \
-  GPU_OP(DISABLE_EXT_OCCLUSION_QUERY,                        \
-         disable_ext_occlusion_query)                        \
   GPU_OP(DISABLE_GL_RGB_FORMAT,                              \
          disable_gl_rgb_format)                              \
   GPU_OP(DISABLE_MULTIMONITOR_MULTISAMPLING,                 \
          disable_multimonitor_multisampling)                 \
   GPU_OP(DISABLE_MULTISAMPLED_RENDER_TO_TEXTURE,             \
          disable_multisampled_render_to_texture)             \
-  GPU_OP(DISABLE_OES_STANDARD_DERIVATIVES,                   \
-         disable_oes_standard_derivatives)                   \
   GPU_OP(DISABLE_POST_SUB_BUFFERS_FOR_ONSCREEN_SURFACES,     \
          disable_post_sub_buffers_for_onscreen_surfaces)     \
   GPU_OP(ETC1_POWER_OF_TWO_ONLY,                             \
