@@ -361,7 +361,7 @@ struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, blink::Hea
         //   This is fine because the fact that the object can be initialized
         //   with memset indicates that it is safe to treat the zerod slot
         //   as a valid object.
-        static_assert(!ShouldBeTraced<Traits>::value || Traits::canInitializeWithMemset || WTF::IsPolymorphic<T>::value, "HeapVectorBacking doesn't support objects that cannot be initialized with memset.");
+        static_assert(!ShouldBeTraced<Traits>::value || Traits::canClearUnusedSlotsWithMemset || WTF::IsPolymorphic<T>::value, "HeapVectorBacking doesn't support objects that cannot be cleared as unused with memset.");
 
         // This trace method is instantiated for vectors where
         // ShouldBeTraced<Traits>::value is false, but the trace method

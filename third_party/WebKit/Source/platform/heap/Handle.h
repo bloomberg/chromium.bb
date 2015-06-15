@@ -1092,36 +1092,42 @@ namespace WTF {
 template <typename T> struct VectorTraits<blink::Member<T>> : VectorTraitsBase<blink::Member<T>> {
     static const bool needsDestruction = false;
     static const bool canInitializeWithMemset = true;
+    static const bool canClearUnusedSlotsWithMemset = true;
     static const bool canMoveWithMemcpy = true;
 };
 
 template <typename T> struct VectorTraits<blink::WeakMember<T>> : VectorTraitsBase<blink::WeakMember<T>> {
     static const bool needsDestruction = false;
     static const bool canInitializeWithMemset = true;
+    static const bool canClearUnusedSlotsWithMemset = true;
     static const bool canMoveWithMemcpy = true;
 };
 
 template <typename T> struct VectorTraits<blink::HeapVector<T, 0>> : VectorTraitsBase<blink::HeapVector<T, 0>> {
     static const bool needsDestruction = false;
     static const bool canInitializeWithMemset = true;
+    static const bool canClearUnusedSlotsWithMemset = true;
     static const bool canMoveWithMemcpy = true;
 };
 
 template <typename T> struct VectorTraits<blink::HeapDeque<T, 0>> : VectorTraitsBase<blink::HeapDeque<T, 0>> {
     static const bool needsDestruction = false;
     static const bool canInitializeWithMemset = true;
+    static const bool canClearUnusedSlotsWithMemset = true;
     static const bool canMoveWithMemcpy = true;
 };
 
 template <typename T, size_t inlineCapacity> struct VectorTraits<blink::HeapVector<T, inlineCapacity>> : VectorTraitsBase<blink::HeapVector<T, inlineCapacity>> {
     static const bool needsDestruction = VectorTraits<T>::needsDestruction;
     static const bool canInitializeWithMemset = VectorTraits<T>::canInitializeWithMemset;
+    static const bool canClearUnusedSlotsWithMemset = VectorTraits<T>::canClearUnusedSlotsWithMemset;
     static const bool canMoveWithMemcpy = VectorTraits<T>::canMoveWithMemcpy;
 };
 
 template <typename T, size_t inlineCapacity> struct VectorTraits<blink::HeapDeque<T, inlineCapacity>> : VectorTraitsBase<blink::HeapDeque<T, inlineCapacity>> {
     static const bool needsDestruction = VectorTraits<T>::needsDestruction;
     static const bool canInitializeWithMemset = VectorTraits<T>::canInitializeWithMemset;
+    static const bool canClearUnusedSlotsWithMemset = VectorTraits<T>::canClearUnusedSlotsWithMemset;
     static const bool canMoveWithMemcpy = VectorTraits<T>::canMoveWithMemcpy;
 };
 

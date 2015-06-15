@@ -36,7 +36,15 @@ namespace WTF {
     struct VectorTraitsBase
     {
         static const bool needsDestruction = !IsTriviallyDestructible<T>::value;
+
         static const bool canInitializeWithMemset = IsTriviallyDefaultConstructible<T>::value;
+        // true iff memset(slot, 0, size) constructs an unused slot value that is valid for
+        // Oilpan to trace and if the value needs destruction, its destructor can be invoked
+        // over. The zero'ed value representing an unused slot in the vector's backing storage;
+        // it does not have to be equal to what its constructor(s) would create, only be
+        // valid for those two uses.
+        static const bool canClearUnusedSlotsWithMemset = IsTriviallyDefaultConstructible<T>::value;
+
         static const bool canMoveWithMemcpy = IsTriviallyMoveAssignable<T>::value;
         static const bool canCopyWithMemcpy = IsTriviallyCopyAssignable<T>::value;
         static const bool canFillWithMemset = IsTriviallyDefaultConstructible<T>::value && (sizeof(T) == sizeof(char));
@@ -58,6 +66,7 @@ namespace WTF {
     struct SimpleClassVectorTraits : VectorTraitsBase<T>
     {
         static const bool canInitializeWithMemset = true;
+        static const bool canClearUnusedSlotsWithMemset = true;
         static const bool canMoveWithMemcpy = true;
         static const bool canCompareWithMemcmp = true;
     };
@@ -94,6 +103,7 @@ namespace WTF {
         static const bool canCopyWithMemcpy = FirstTraits::canCopyWithMemcpy && SecondTraits::canCopyWithMemcpy;
         static const bool canFillWithMemset = false;
         static const bool canCompareWithMemcmp = FirstTraits::canCompareWithMemcmp && SecondTraits::canCompareWithMemcmp;
+        static const bool canClearUnusedSlotsWithMemset = FirstTraits::canClearUnusedSlotsWithMemset && SecondTraits::canClearUnusedSlotsWithMemset;
         template <typename U = void>
         struct NeedsTracingLazily {
             static const bool value = ShouldBeTraced<FirstTraits>::value || ShouldBeTraced<SecondTraits>::value;
@@ -117,6 +127,7 @@ static_assert(!IsTriviallyDefaultConstructible<ClassName>::value || !IsTrivially
     struct VectorTraits<ClassName> : VectorTraitsBase<ClassName> \
     { \
         static const bool canInitializeWithMemset = true; \
+        static const bool canClearUnusedSlotsWithMemset = true; \
         static const bool canMoveWithMemcpy = true; \
     }; \
 }
@@ -128,6 +139,17 @@ static_assert(!IsTriviallyDefaultConstructible<ClassName>::value, "macro not nee
     struct VectorTraits<ClassName> : VectorTraitsBase<ClassName> \
     { \
         static const bool canInitializeWithMemset = true; \
+        static const bool canClearUnusedSlotsWithMemset = true; \
+    }; \
+}
+
+#define WTF_ALLOW_CLEAR_UNUSED_SLOTS_WITH_MEM_FUNCTIONS(ClassName) \
+namespace WTF { \
+static_assert(!IsTriviallyDefaultConstructible<ClassName>::value, "macro not needed"); \
+    template<> \
+    struct VectorTraits<ClassName> : VectorTraitsBase<ClassName> \
+    { \
+        static const bool canClearUnusedSlotsWithMemset = true; \
     }; \
 }
 

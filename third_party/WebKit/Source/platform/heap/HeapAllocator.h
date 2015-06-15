@@ -279,7 +279,7 @@ void HeapVectorBacking<T, Traits>::finalize(void* pointer)
 {
     static_assert(Traits::needsDestruction, "Only vector buffers with items requiring destruction should be finalized");
     // See the comment in HeapVectorBacking::trace.
-    static_assert(Traits::canInitializeWithMemset || WTF::IsPolymorphic<T>::value, "HeapVectorBacking doesn't support objects that cannot be initialized with memset or don't have a vtable");
+    static_assert(Traits::canClearUnusedSlotsWithMemset || WTF::IsPolymorphic<T>::value, "HeapVectorBacking doesn't support objects that cannot be cleared as unused with memset or don't have a vtable");
 
     ASSERT(!WTF::IsTriviallyDestructible<T>::value);
     HeapObjectHeader* header = HeapObjectHeader::fromPayload(pointer);
