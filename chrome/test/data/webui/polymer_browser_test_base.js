@@ -32,42 +32,48 @@ PolymerTest.prototype = {
   isAsync: true,
 
   /**
+   * Files that need not be compiled. Should be overridden to use correct
+   * relative paths with PolymerTest.getLibraries.
    * @override
-   * @final
    */
-  extraLibraries: ['../../../../third_party/mocha/mocha.js',
-                   'mocha_adapter.js'],
+  extraLibraries: [
+    'ui/webui/resources/js/cr.js',
+    'third_party/mocha/mocha.js',
+    'chrome/test/data/webui/mocha_adapter.js',
+  ],
 
   /** @override */
   setUp: function() {
     testing.Test.prototype.setUp.call(this);
 
-    // Import Polymer before running tests.
+    // Import Polymer and iron-test-helpers before running tests.
     suiteSetup(function(done) {
-      var link = document.createElement('link');
-      link.rel = 'import';
-      link.onload = function() {
-        done();
-      };
-      link.onerror = function() {
-        done(new Error('Failed to load Polymer!'));
-      };
-      link.href = 'chrome://resources/polymer/v0_8/polymer/polymer.html';
-      document.head.appendChild(link);
+      PolymerTest.importHref(
+          'chrome://resources/polymer/v1_0/polymer/polymer.html', done);
+      PolymerTest.importHref(
+          'chrome://resources/polymer/v1_0/iron-test-helpers/' +
+          'iron-test-helpers.html',
+          done);
     });
   },
 };
 
 /**
  * Imports the HTML file, then calls |done| on success or throws an error.
- * @param {String} href The URL to load.
- * @param {Function} done The done callback.
+ * @param {string} href The URL to load.
+ * @param {function(Error=)} done The done callback.
  */
 PolymerTest.importHref = function(href, done) {
-  Polymer.Base.importHref(
-      href,
-      function() { done(); },
-      function() { throw new Error('Failed to load ' + href); });
+  var link = document.createElement('link');
+  link.rel = 'import';
+  link.onload = function() {
+    done();
+  };
+  link.onerror = function() {
+    done(new Error('Failed to load ' + href));
+  };
+  link.href = href;
+  document.head.appendChild(link);
 };
 
 /**
@@ -75,4 +81,17 @@ PolymerTest.importHref = function(href, done) {
  */
 PolymerTest.clearBody = function() {
   document.body.innerHTML = '';
+};
+
+/**
+ * Helper function to return the list of extra libraries relative to basePath.
+ */
+PolymerTest.getLibraries = function(basePath) {
+  // Ensure basePath ends in '/'.
+  if (basePath.length && basePath[basePath.length - 1] != '/')
+    basePath += '/';
+
+  return PolymerTest.prototype.extraLibraries.map(function(library) {
+    return basePath + library;
+  });
 };

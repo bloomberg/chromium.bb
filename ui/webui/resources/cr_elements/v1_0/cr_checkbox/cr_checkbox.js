@@ -41,6 +41,6 @@ Polymer({
   },
 
   toggle: function() {
-    this.$.checkbox.toggle();
+    this.checked = !this.checked;
   },
 });

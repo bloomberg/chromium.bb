@@ -72,6 +72,7 @@
           '../ppapi/tests/test_page.css.mock-http-headers',
           '../testing/test_env.py',
           '../third_party/accessibility-audit/axs_testing.js',
+          '../third_party/mocha/mocha.js',
           '../third_party/pyftpdlib/',
           '../third_party/pywebsocket/',
           '../third_party/safe_browsing/',
