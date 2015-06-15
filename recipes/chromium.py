@@ -31,8 +31,6 @@ class Chromium(recipe_util.Recipe):
       spec['target_os'] = props['target_os'].split(',')
     if props.get('target_os_only'):
       spec['target_os_only'] = props['target_os_only']
-    install_build_deps = ['src/build/install-build-deps.sh']
-    spec['fetch_hooks'] = [install_build_deps]
     return {
       'type': 'gclient_git',
       'gclient_git_spec': spec,

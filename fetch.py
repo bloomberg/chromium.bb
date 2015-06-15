@@ -62,7 +62,7 @@ class Checkout(object):
   def run(self, cmd, **kwargs):
     print 'Running: %s' % (' '.join(pipes.quote(x) for x in cmd))
     if self.options.dry_run:
-      return ''
+      return 0
     return subprocess.check_output(cmd, **kwargs)
 
 
@@ -133,18 +133,13 @@ class GclientGitCheckout(GclientCheckout, GitCheckout):
     # Configure and do the gclient checkout.
     self.run_gclient('config', '--spec', self._format_spec())
     sync_cmd = ['sync']
-    if self.options.nohooks or self.spec.get('fetch_hooks'):
+    if self.options.nohooks:
       sync_cmd.append('--nohooks')
     if self.options.no_history:
       sync_cmd.append('--no-history')
     if self.spec.get('with_branch_heads', False):
       sync_cmd.append('--with_branch_heads')
     self.run_gclient(*sync_cmd)
-
-    for cmd in self.spec.get('fetch_hooks', []):
-      self.run(cmd)
-    if self.spec.get('fetch_hooks') and not self.options.nohooks:
-      self.run_gclient('runhooks')
 
     # Configure git.
     wd = os.path.join(self.base, self.root)
