@@ -92,7 +92,7 @@ class BASE_EXPORT HistogramBase {
   explicit HistogramBase(const std::string& name);
   virtual ~HistogramBase();
 
-  std::string histogram_name() const { return histogram_name_; }
+  const std::string& histogram_name() const { return histogram_name_; }
 
   // Comapres |name| to the histogram name and triggers a DCHECK if they do not
   // match. This is a helper function used by histogram macros, which results in

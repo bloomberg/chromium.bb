@@ -57,9 +57,9 @@ HistogramBase* StatisticsRecorder::RegisterOrDeleteDuplicate(
       histogram_to_return = histogram;
     } else {
       const std::string& name = histogram->histogram_name();
-      HistogramMap::iterator it = histograms_->find(name);
+      HistogramMap::iterator it = histograms_->find(HistogramNameRef(name));
       if (histograms_->end() == it) {
-        (*histograms_)[name] = histogram;
+        (*histograms_)[HistogramNameRef(name)] = histogram;
         ANNOTATE_LEAKING_OBJECT_PTR(histogram);  // see crbug.com/79322
         histogram_to_return = histogram;
       } else if (histogram == it->second) {
@@ -190,7 +190,7 @@ void StatisticsRecorder::GetHistograms(Histograms* output) {
     return;
 
   for (const auto& entry : *histograms_) {
-    DCHECK_EQ(entry.first, entry.second->histogram_name());
+    DCHECK_EQ(entry.first.name_, entry.second->histogram_name());
     output->push_back(entry.second);
   }
 }
@@ -219,7 +219,7 @@ HistogramBase* StatisticsRecorder::FindHistogram(const std::string& name) {
   if (histograms_ == NULL)
     return NULL;
 
-  HistogramMap::iterator it = histograms_->find(name);
+  HistogramMap::iterator it = histograms_->find(HistogramNameRef(name));
   if (histograms_->end() == it)
     return NULL;
   return it->second;
@@ -235,7 +235,7 @@ void StatisticsRecorder::GetSnapshot(const std::string& query,
     return;
 
   for (const auto& entry : *histograms_) {
-    if (entry.first.find(query) != std::string::npos)
+    if (entry.first.name_.find(query) != std::string::npos)
       snapshot->push_back(entry.second);
   }
 }
