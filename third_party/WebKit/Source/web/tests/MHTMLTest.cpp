@@ -185,7 +185,7 @@ TEST_F(MHTMLTest, TestMHTMLEncoding)
     RefPtr<SharedBuffer> data  = serialize("Test Serialization", "text/html", MHTMLArchive::UseDefaultEncoding);
 
     // Read the MHTML data line per line and do some pseudo-parsing to make sure the right encoding is used for the different sections.
-    LineReader lineReader(std::string(data->data()));
+    LineReader lineReader(std::string(data->data(), data->size()));
     int sectionCheckedCount = 0;
     const char* expectedEncoding = 0;
     std::string line;
