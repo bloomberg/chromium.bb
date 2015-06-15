@@ -202,14 +202,18 @@ class SDKPackageToolchainOverlaysStageTest(
       # Drop a uniquely named file in the toolchain overlay merged location.
       sysroot = None
       board = None
+      targets = None
       for opt in cmd[1:]:
         if opt.startswith('--sysroot='):
           sysroot = opt[len('--sysroot='):]
         elif opt.startswith('--include-boards='):
           board = opt[len('--include-boards='):]
+        elif opt.startswith('--targets='):
+          targets = opt[len('--targets='):]
 
       self.assertTrue(sysroot)
       self.assertTrue(board)
+      self.assertEqual('boards', targets)
       merged_dir = os.path.join(self.build_root, constants.DEFAULT_CHROOT_DIR,
                                 sysroot.lstrip(os.path.sep))
       osutils.Touch(os.path.join(merged_dir, board + '.tmp'))
@@ -239,17 +243,14 @@ class SDKPackageToolchainOverlaysStageTest(
           constants.SDK_OVERLAYS_OUTPUT,
           'built-sdk-overlay-toolchains-%s.tar.xz' % toolchains)
       output = cros_build_lib.RunCommand(
-          ['tar', '-I', 'xz', '-tvf', overlay_tarball],
+          ['tar', '-I', 'xz', '-tf', overlay_tarball],
           capture_output=True).output.splitlines()
-      # First line is './', use it as an anchor, count the chars, and strip
-      # as much from all other lines.
-      stripchars = len(output[0]) - 1
-      tar_lines = [x[stripchars:] for x in output[1:]]
-      # Check that the overlay tarball contains a marker file only, and that
-      # the board recorded by this marker file indeed uses the toolchains for
-      # which the tarball was built.
-      self.assertEqual(1, len(tar_lines))
-      board = tar_lines[0].lstrip('/')[:-len('.tmp')]
+      # Check that the overlay tarball contains a marker file and that the
+      # board recorded by this marker file indeed uses the toolchains for which
+      # the tarball was built.
+      tmp_files = [os.path.basename(x) for x in output if x.endswith('.tmp')]
+      self.assertEqual(1, len(tmp_files))
+      board = tmp_files[0][:-len('.tmp')]
       board_toolchains = '-'.join(sorted(
           toolchain.GetToolchainsForBoard(board).iterkeys()))
       self.assertEqual(toolchains, board_toolchains)
