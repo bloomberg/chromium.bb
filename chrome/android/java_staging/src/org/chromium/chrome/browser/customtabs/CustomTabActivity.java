@@ -29,6 +29,7 @@ import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerDocument;
 import org.chromium.chrome.browser.document.BrandColorUtils;
 import org.chromium.chrome.browser.tabmodel.SingleTabModelSelector;
+import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.toolbar.ToolbarControlContainer;
 import org.chromium.chrome.browser.toolbar.ToolbarHelper;
 import org.chromium.chrome.browser.widget.findinpage.FindToolbarManager;
@@ -103,7 +104,16 @@ public class CustomTabActivity extends CompositorChromeActivity {
     @Override
     public void preInflationStartup() {
         super.preInflationStartup();
-        setTabModelSelector(new SingleTabModelSelector(this, false, true));
+        setTabModelSelector(new SingleTabModelSelector(this, false, true) {
+            @Override
+            public Tab openNewTab(LoadUrlParams loadUrlParams, TabLaunchType type, Tab parent,
+                    boolean incognito) {
+                // A custom tab either loads a url or starts an external activity to handle the url.
+                // It never opens a new tab/chrome activity.
+                mTab.loadUrl(loadUrlParams);
+                return mTab;
+            }
+        });
         mIntentDataProvider = new CustomTabIntentDataProvider(getIntent(), this);
     }
 
