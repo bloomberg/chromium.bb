@@ -44,3 +44,6 @@ PluginTest.NPObjectIdentity
 
 # http://crbug.com/500070
 DumpAccessibilityEventsTest.AccessibilityEventsListboxNext
+
+# https://crbug.com/500576
+NavigationControllerBrowserTest.DontIgnoreBackAfterNavEntryLimit
