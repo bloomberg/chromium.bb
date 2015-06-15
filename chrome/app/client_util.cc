@@ -328,8 +328,10 @@ void ChromeDllLoader::OnBeforeLaunch(const std::string& process_type,
   } else {
     // Set non-browser processes up to be killed by the system after the browser
     // goes away. The browser uses the default shutdown order, which is 0x280.
+    // Note that lower numbers here denote "kill later" and higher numbers mean
+    // "kill sooner".
     // This gets rid of most of those unsighly sad tabs on logout and shutdown.
-    ::SetProcessShutdownParameters(0x281, SHUTDOWN_NORETRY);
+    ::SetProcessShutdownParameters(0x280 - 1, SHUTDOWN_NORETRY);
   }
 }
 
