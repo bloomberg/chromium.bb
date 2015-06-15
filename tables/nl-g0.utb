@@ -173,18 +173,25 @@ lastletterunder 6
 # opcodes, these characters would cause a new capsign or begcaps to be inserted
 # after each appearance in a uppercase string.
 
-class    uppersign                   -+&.'     # 4th class = $z
-context  $U[]$u                      @6
-context  $U%uppersign.[]$u           @6
-pass2    [@46]$U%uppersign.@46       @45
-pass2    [@46]$U%uppersign.@45       @45
-pass3    @45$zl.[]@45                @1b       # $zl = %uppersign or $l (letter)
-pass3    @45$zl.[@46]                ?
-pass3    @46$U[@6]                   ?
-pass3    @46$U%uppersign.[@6]        ?
-pass4    [@1b-45]                    ?
-pass4    [@6]@6                      ?
+#class    uppersign                   -+&.'     # 4th class = $z
+#context  $U[]$u                      @6
+#context  $U%uppersign.[]$u           @6
+#pass2    [@46]$U%uppersign.@46       @45
+#pass2    [@46]$U%uppersign.@45       @45
+#pass3    @45$zl.[]@45                @1b       # $zl = %uppersign or $l (letter)
+#pass3    @45$zl.[@46]                ?
+#pass3    @46$U[@6]                   ?
+#pass3    @46$U%uppersign.[@6]        ?
+#pass4    [@1b-45]                    ?
+#pass4    [@6]@6                      ?
 
-capsign  46
-begcaps  45
-# endcaps  6
+#capsign  46
+#begcaps  45
+#endcaps  6
+lencapsphrase 3
+capsword 45
+firstwordcaps 45-45
+lastwordbeforecaps 45
+singlelettercaps 46
+firstlettercaps 45
+lastlettercaps 6
