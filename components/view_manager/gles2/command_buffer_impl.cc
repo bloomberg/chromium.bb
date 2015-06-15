@@ -12,40 +12,29 @@
 
 namespace gles2 {
 namespace {
-void DestroyDriver(scoped_ptr<CommandBufferDriver> driver) {
-  // Just let ~scoped_ptr run.
-}
-
 void RunCallback(const mojo::Callback<void()>& callback) {
   callback.Run();
 }
+}  // namespace
 
-class CommandBufferDriverClientImpl : public CommandBufferDriver::Client {
+class CommandBufferImpl::CommandBufferDriverClientImpl
+    : public CommandBufferDriver::Client {
  public:
-  CommandBufferDriverClientImpl(
-      base::WeakPtr<CommandBufferImpl> command_buffer,
-      scoped_refptr<base::SingleThreadTaskRunner> control_task_runner)
-      : command_buffer_(command_buffer),
-        control_task_runner_(control_task_runner) {}
+  explicit CommandBufferDriverClientImpl(CommandBufferImpl* command_buffer)
+      : command_buffer_(command_buffer) {}
 
  private:
   void UpdateVSyncParameters(base::TimeTicks timebase,
                              base::TimeDelta interval) override {
-    control_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&CommandBufferImpl::UpdateVSyncParameters,
-                              command_buffer_, timebase, interval));
+    command_buffer_->UpdateVSyncParameters(timebase, interval);
   }
 
-  void DidLoseContext() override {
-    control_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&CommandBufferImpl::DidLoseContext,
-           command_buffer_));
-  }
+  void DidLoseContext() override { command_buffer_->DidLoseContext(); }
 
-  base::WeakPtr<CommandBufferImpl> command_buffer_;
-  scoped_refptr<base::SingleThreadTaskRunner> control_task_runner_;
+  CommandBufferImpl* command_buffer_;
+
+  DISALLOW_COPY_AND_ASSIGN(CommandBufferDriverClientImpl);
 };
-}
 
 CommandBufferImpl::CommandBufferImpl(
     mojo::InterfaceRequest<mojo::CommandBuffer> request,
@@ -58,10 +47,8 @@ CommandBufferImpl::CommandBufferImpl(
       driver_(driver.Pass()),
       viewport_parameter_listener_(listener.Pass()),
       binding_(this),
-      observer_(nullptr),
-      weak_factory_(this) {
-  driver_->set_client(make_scoped_ptr(new CommandBufferDriverClientImpl(
-      weak_factory_.GetWeakPtr(), control_task_runner)));
+      observer_(nullptr) {
+  driver_->set_client(make_scoped_ptr(new CommandBufferDriverClientImpl(this)));
 
   control_task_runner->PostTask(
       FROM_HERE, base::Bind(&CommandBufferImpl::BindToRequest,
@@ -140,8 +127,6 @@ void CommandBufferImpl::Echo(const mojo::Callback<void()>& callback) {
 CommandBufferImpl::~CommandBufferImpl() {
   if (observer_)
     observer_->OnCommandBufferImplDestroyed();
-  driver_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&DestroyDriver, base::Passed(&driver_)));
 }
 
 void CommandBufferImpl::BindToRequest(

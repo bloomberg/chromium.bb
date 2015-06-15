@@ -6,7 +6,6 @@
 #define COMPONENTS_VIEW_MANAGER_GLES2_COMMAND_BUFFER_IMPL_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "components/view_manager/public/interfaces/command_buffer.mojom.h"
 #include "components/view_manager/public/interfaces/viewport_parameter_listener.mojom.h"
@@ -34,6 +33,7 @@ class CommandBufferImpl : public mojo::CommandBuffer,
       gpu::SyncPointManager* sync_point_manager,
       scoped_ptr<CommandBufferDriver> driver);
 
+  // mojo::CommandBuffer:
   void Initialize(mojo::CommandBufferSyncClientPtr sync_client,
                   mojo::CommandBufferSyncPointClientPtr sync_point_client,
                   mojo::CommandBufferLostContextObserverPtr loss_observer,
@@ -50,19 +50,22 @@ class CommandBufferImpl : public mojo::CommandBuffer,
   void Echo(const mojo::Callback<void()>& callback) override;
 
   void DidLoseContext();
-  void UpdateVSyncParameters(base::TimeTicks timebase,
-                             base::TimeDelta interval);
 
   void set_observer(CommandBufferImplObserver* observer) {
     observer_ = observer;
   }
 
  private:
+  class CommandBufferDriverClientImpl;
+
   friend class base::DeleteHelper<CommandBufferImpl>;
 
   ~CommandBufferImpl() override;
 
   void BindToRequest(mojo::InterfaceRequest<CommandBuffer> request);
+
+  void UpdateVSyncParameters(base::TimeTicks timebase,
+                             base::TimeDelta interval);
 
   // mojo::ErrorHandler:
   void OnConnectionError() override;
@@ -75,7 +78,6 @@ class CommandBufferImpl : public mojo::CommandBuffer,
   mojo::Binding<CommandBuffer> binding_;
   CommandBufferImplObserver* observer_;
 
-  base::WeakPtrFactory<CommandBufferImpl> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(CommandBufferImpl);
 };
 

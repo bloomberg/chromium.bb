@@ -35,9 +35,7 @@ class GLSurface;
 namespace gles2 {
 
 // This class receives CommandBuffer messages on the same thread as the native
-// viewport. It is usually destructed on that thread, however if the native
-// viewport app is destroyed before CommandBufferImpl, then the latter's failed
-// PostTask will end up deleting this class on the control thread.
+// viewport.
 class CommandBufferDriver {
  public:
   class Client {
