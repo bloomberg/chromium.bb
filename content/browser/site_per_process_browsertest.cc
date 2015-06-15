@@ -563,10 +563,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, RestrictFrameDetach) {
       DepictFrameTree(root));
 }
 
-// TODO(creis): Fix and enable once initial subframe loads are fixed in Blink.
-// See https://crbug.com/498559.
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       DISABLED_NavigateRemoteFrame) {
+                       NavigateRemoteFrame) {
   GURL main_url(embedded_test_server()->GetURL("/site_per_process_main.html"));
   NavigateToURL(shell(), main_url);
 
@@ -620,11 +618,17 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
             child->current_frame_host()->GetSiteInstance());
 }
 
-// TODO(creis): Fix and enable once initial subframe loads are fixed in Blink.
-// See https://crbug.com/498559.
-// Also disabled on Windows for https://crbug.com/465722.
+#if defined(OS_WIN)
+// http://crbug.com/465722
+#define MAYBE_NavigateRemoteFrameToBlankAndDataURLs \
+    DISABLED_NavigateRemoteFrameToBlankAndDataURLs
+#else
+#define MAYBE_NavigateRemoteFrameToBlankAndDataURLs \
+    NavigateRemoteFrameToBlankAndDataURLs
+#endif
+
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       DISABLED_NavigateRemoteFrameToBlankAndDataURLs) {
+                       MAYBE_NavigateRemoteFrameToBlankAndDataURLs) {
   GURL main_url(embedded_test_server()->GetURL("/site_per_process_main.html"));
   NavigateToURL(shell(), main_url);
 
