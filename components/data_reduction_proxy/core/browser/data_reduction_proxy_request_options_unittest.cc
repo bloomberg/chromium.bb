@@ -17,6 +17,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
+#include "components/data_reduction_proxy/proto/client_config.pb.h"
 #include "net/base/auth.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
@@ -433,16 +434,13 @@ TEST_F(DataReductionProxyRequestOptionsTest, ParseLocalSessionKey) {
 
 TEST_F(DataReductionProxyRequestOptionsTest, PopulateConfigResponse) {
   CreateRequestOptions(kBogusVersion);
-  scoped_ptr<base::DictionaryValue> values(new base::DictionaryValue());
-  request_options()->PopulateConfigResponse(values.get());
-  std::string session;
-  std::string expire_time;
-  EXPECT_TRUE(values->GetString("sessionKey", &session));
-  EXPECT_TRUE(values->GetString("expireTime", &expire_time));
+  ClientConfig config;
+  request_options()->PopulateConfigResponse(&config);
   EXPECT_EQ(
       "0-1633771873-1633771873-1633771873|96bd72ec4a050ba60981743d41787768",
-      session);
-  EXPECT_EQ("1970-01-02T00:00:00.000Z", expire_time);
+      config.session_key());
+  EXPECT_EQ(86400, config.expire_time().seconds());
+  EXPECT_EQ(0, config.expire_time().nanos());
 }
 
 }  // namespace data_reduction_proxy

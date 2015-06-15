@@ -13,10 +13,6 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 
-namespace base {
-class DictionaryValue;
-}
-
 namespace net {
 class HostPortPair;
 class HttpRequestHeaders;
@@ -61,6 +57,7 @@ typedef enum {
 } Client;
 #undef CLIENT_ENUM
 
+class ClientConfig;
 class DataReductionProxyConfig;
 
 class DataReductionProxyRequestOptions {
@@ -122,7 +119,7 @@ class DataReductionProxyRequestOptions {
 
   // Populates |response| with the Data Reduction Proxy authentication info.
   // Virtualized for testing.
-  virtual void PopulateConfigResponse(base::DictionaryValue* response) const;
+  virtual void PopulateConfigResponse(ClientConfig* config) const;
 
   // Sets the credentials for sending to the Data Reduction Proxy.
   void SetCredentials(const std::string& session,

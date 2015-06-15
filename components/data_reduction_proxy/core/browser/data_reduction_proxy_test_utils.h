@@ -41,6 +41,7 @@ class URLRequestContextStorage;
 
 namespace data_reduction_proxy {
 
+class ClientConfig;
 class DataReductionProxyConfigurator;
 class DataReductionProxyEventCreator;
 class DataReductionProxyExperimentsStats;
@@ -87,8 +88,7 @@ class MockDataReductionProxyRequestOptions
 
   ~MockDataReductionProxyRequestOptions();
 
-  MOCK_CONST_METHOD1(PopulateConfigResponse,
-                     void(base::DictionaryValue* response));
+  MOCK_CONST_METHOD1(PopulateConfigResponse, void(ClientConfig* config));
 };
 
 // Test version of |DataReductionProxyConfigServiceClient|, which permits

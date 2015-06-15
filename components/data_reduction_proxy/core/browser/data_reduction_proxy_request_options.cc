@@ -15,13 +15,13 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "base/values.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_client_config_parser.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/data_reduction_proxy/core/common/version.h"
+#include "components/data_reduction_proxy/proto/client_config.pb.h"
 #include "crypto/random.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
@@ -297,17 +297,16 @@ void DataReductionProxyRequestOptions::SetKeyOnIO(const std::string& key) {
 }
 
 void DataReductionProxyRequestOptions::PopulateConfigResponse(
-    base::DictionaryValue* response) const {
+    ClientConfig* config) const {
   DCHECK(thread_checker_.CalledOnValidThread());
   std::string session;
   std::string credentials;
   base::Time now = Now();
   base::Time expiration_time = now + base::TimeDelta::FromHours(24);
   ComputeCredentials(now, &session, &credentials);
-  response->SetString("sessionKey",
-                      CreateLocalSessionKey(session, credentials));
-  response->SetString("expireTime",
-                      config_parser::TimeToISO8601(expiration_time));
+  config->set_session_key(CreateLocalSessionKey(session, credentials));
+  config_parser::TimetoTimestamp(expiration_time,
+                                 config->mutable_expire_time());
 }
 
 void DataReductionProxyRequestOptions::SetCredentials(

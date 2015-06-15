@@ -14,12 +14,7 @@ namespace data_reduction_proxy {
 
 namespace {
 
-const char kValidPreamble[] =
-    "{ \"sessionKey\": \"foobar\", "
-    "\"expireTime\": \"2100-12-31T23:59:59.999999Z\", "
-    "\"proxyConfig\": { \"httpProxyServers\": [";
-const char kValidPostamble[] = "] } }";
-const char kFutureTime[] = "31 Dec 2020 23:59:59";
+const char kFutureTime[] = "31 Dec 2020 23:59:59.001";
 
 }  // namespace
 
@@ -37,96 +32,63 @@ class DataReductionProxyClientConfigParserTest : public testing::Test {
   base::Time future_time_;
 };
 
-TEST_F(DataReductionProxyClientConfigParserTest, TimeToISO8601) {
+TEST_F(DataReductionProxyClientConfigParserTest, TimetoTimestamp) {
   const struct {
+    std::string test_name;
     base::Time time;
-    std::string expected;
+    int64 expected_seconds;
+    int32 expected_nanos;
   } tests[] = {
       {
-          base::Time::UnixEpoch(),
-          "1970-01-01T00:00:00.000Z",
+       "Epoch", base::Time::UnixEpoch(), 0, 0,
       },
       {
-          GetFutureTime(),
-          "2020-12-31T23:59:59.000Z",
+       "One day minus one second",
+       base::Time::UnixEpoch() + base::TimeDelta::FromDays(1) -
+           base::TimeDelta::FromMicroseconds(1),
+       24 * 60 * 60 - 1,
+       0,
+      },
+      {
+       "Future time",
+       GetFutureTime(),
+       // 2020-12-31T23:59:59.001Z
+       1609459199,
+       0,
       },
   };
 
   for (const auto& test : tests) {
-    EXPECT_EQ(test.expected, config_parser::TimeToISO8601(test.time));
-  }
-}
-
-TEST_F(DataReductionProxyClientConfigParserTest, ISO8601ToTimestamp) {
-  const struct {
-    std::string time_string;
-    int64 epoch_seconds;
-  } tests[] = {
-      {
-          "1970-01-01T00:00:00.000Z",
-          0,
-      },
-      {
-          "1970-01-01T00:00:00.999Z",
-          0,
-      },
-      {
-          "1950-01-01T00:00:00.000Z",
-          -631152000,
-      },
-      {
-          "1950-01-01T00:00:00.500Z",
-          -631151999,  // Rounding of negative fractional values causes this.
-      },
-  };
-
-  for (const auto& test : tests) {
-    Timestamp timestamp;
-    EXPECT_TRUE(
-        config_parser::ISO8601ToTimestamp(test.time_string, &timestamp));
-    EXPECT_EQ(test.epoch_seconds, timestamp.seconds());
-    EXPECT_EQ(0, timestamp.nanos());
-  }
-}
-
-TEST_F(DataReductionProxyClientConfigParserTest, ISO8601ToTimestampTestFailures)
-{
-  const std::string inputs[] = {
-      "",
-      "Not a time",
-      "1234",
-      "2099-43-12",
-      "2099-11-52",
-  };
-
-  for (const auto& input : inputs) {
-    Timestamp timestamp;
-    EXPECT_FALSE(config_parser::ISO8601ToTimestamp(input, &timestamp));
+    Timestamp ts;
+    config_parser::TimetoTimestamp(test.time, &ts);
+    EXPECT_EQ(test.expected_seconds, ts.seconds()) << test.test_name;
+    EXPECT_EQ(test.expected_nanos, ts.nanos()) << test.test_name;
   }
 }
 
 TEST_F(DataReductionProxyClientConfigParserTest, TimestampToTime) {
   const struct {
+    std::string test_name;
     int64 timestamp_seconds;
     int32 timestamp_nanos;
     base::Time expected_time;
   } tests[] = {
       {
-        0,
-        0,
-        base::Time::UnixEpoch(),
+       "Epoch", 0, 0, base::Time::UnixEpoch(),
       },
       {
-        24 * 60 * 60 - 1,
-        base::Time::kNanosecondsPerSecond - 1,
-        base::Time::UnixEpoch() + base::TimeDelta::FromDays(1) -
-            base::TimeDelta::FromMicroseconds(1),
+       "One day minus one second",
+       24 * 60 * 60 - 1,
+       base::Time::kNanosecondsPerSecond - 1,
+       base::Time::UnixEpoch() + base::TimeDelta::FromDays(1) -
+           base::TimeDelta::FromMicroseconds(1),
       },
       {
-          // 2020-12-31T23:59:59.000Z
-          1609459199,
-          0,
-          GetFutureTime(),
+       "Future time",
+       // 2020-12-31T23:59:59.001Z
+       1609459199,
+       1000000,
+       GetFutureTime(),
       },
   };
 
@@ -134,100 +96,8 @@ TEST_F(DataReductionProxyClientConfigParserTest, TimestampToTime) {
     Timestamp ts;
     ts.set_seconds(test.timestamp_seconds);
     ts.set_nanos(test.timestamp_nanos);
-    EXPECT_EQ(test.expected_time, config_parser::TimestampToTime(ts));
-  }
-}
-
-TEST_F(DataReductionProxyClientConfigParserTest, SingleServer) {
-  const std::string inputs[] = {
-    "{ \"scheme\": \"HTTP\", \"host\": \"foo.com\", \"port\": 80 }",
-    "{ \"scheme\": \"HTTPS\", \"host\": \"foo.com\", \"port\": 443 }",
-    "{ \"scheme\": \"QUIC\", \"host\": \"foo.com\", \"port\": 443 }",
-  };
-
-  for (const auto& scheme_fragment : inputs) {
-    std::string input = kValidPreamble + scheme_fragment + kValidPostamble;
-    ClientConfig config;
-    EXPECT_TRUE(config_parser::ParseClientConfig(input, &config));
-    EXPECT_EQ(1, config.proxy_config().http_proxy_servers_size());
-  }
-}
-
-TEST_F(DataReductionProxyClientConfigParserTest, MultipleServers) {
-  std::string input =
-      "{ \"scheme\": \"HTTP\", ""\"host\": \"foo.com\", \"port\": 80 }, "
-      "{ \"scheme\": \"HTTPS\", \"host\": \"foo.com\", \"port\": 443 }, "
-      "{ \"scheme\": \"QUIC\", \"host\": \"foo.com\", \"port\": 443 }";
-  ClientConfig config;
-  EXPECT_TRUE(config_parser::ParseClientConfig(
-      kValidPreamble + input + kValidPostamble, &config));
-  EXPECT_EQ(3, config.proxy_config().http_proxy_servers_size());
-}
-
-TEST_F(DataReductionProxyClientConfigParserTest, FailureCases) {
-  const std::string inputs[] = {
-    "",
-    "invalid json",
-    // No sessionKey
-    "{ \"expireTime\": \"2100-12-31T23:59:59.999999Z\","
-      "\"proxyConfig\": { \"httpProxyServers\": [ ] } }",
-    // No expireTime
-    "{ \"sessionKey\": \"foobar\","
-      "\"proxyConfig\": { \"httpProxyServers\": [ ] } }",
-    // No proxyConfig
-    "{ \"sessionKey\": \"foobar\", "
-      "\"expireTime\": \"2100-12-31T23:59:59.999999Z\" }",
-    // No proxyConfig.httpProxyServers
-    "{ \"sessionKey\": \"foobar\", "
-      "\"expireTime\": \"2100-12-31T23:59:59.999999Z\", \"proxyConfig\": { } }",
-    // Invalid sessionKey
-    "{ \"sessionKey\": 12345, "
-      "\"expireTime\": \"2100-12-31T23:59:59.999999Z\","
-      " \"proxyConfig\": { \"httpProxyServers\": [ ] } }",
-    // Invalid sessionKey
-    "{ \"sessionKey\": { }, "
-      "\"expireTime\": \"2100-12-31T23:59:59.999999Z\","
-      " \"proxyConfig\": { \"httpProxyServers\": [ ] } }",
-    // Invalid sessionKey
-    "{ \"sessionKey\": [ ], "
-      "\"expireTime\": \"2100-12-31T23:59:59.999999Z\","
-      " \"proxyConfig\": { \"httpProxyServers\": [ ] } }",
-    // Invalid expireTime
-    "{ \"sessionKey\": \"foobar\", "
-      "\"expireTime\": \"abcd\","
-      " \"proxyConfig\": { \"httpProxyServers\": [ ] } }",
-    // Invalid expireTime
-    "{ \"sessionKey\": \"foobar\", "
-      "\"expireTime\": [ ],"
-      " \"proxyConfig\": { \"httpProxyServers\": [ ] } }",
-    // Invalid expireTime
-    "{ \"sessionKey\": \"foobar\", "
-      "\"expireTime\": { },"
-      " \"proxyConfig\": { \"httpProxyServers\": [ ] } }",
-  };
-
-  for (const auto& input : inputs) {
-    ClientConfig config;
-    EXPECT_FALSE(config_parser::ParseClientConfig(input, &config));
-  }
-}
-
-TEST_F(DataReductionProxyClientConfigParserTest, EmptyServerLists) {
-  const std::string inputs[] = {
-    "",
-    "{ }",
-    "{ \"scheme\": \"foo\", \"host\": \"foo.com\", \"port\": 80 }",
-    "{ \"scheme\": \"HTTP\", \"port\": 80 }",
-    "{ \"scheme\": \"HTTP\", \"host\": \"foo.com\" }",
-    "{ \"scheme\": \"HTTP\", \"host\": \"foo.com\", \"port\": \"bar\" }",
-    "{ \"scheme\": \"HTTP\", \"host\": 12345, \"port\": 80 }",
-  };
-
-  for (const auto& scheme_fragment : inputs) {
-    std::string input = kValidPreamble + scheme_fragment + kValidPostamble;
-    ClientConfig config;
-    EXPECT_TRUE(config_parser::ParseClientConfig(input, &config));
-    EXPECT_EQ(0, config.proxy_config().http_proxy_servers_size());
+    EXPECT_EQ(test.expected_time, config_parser::TimestampToTime(ts))
+        << test.test_name;
   }
 }
 

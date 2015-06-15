@@ -8,11 +8,11 @@
 #include <string>
 #include <vector>
 
+#include "base/base64.h"
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/time/tick_clock.h"
-#include "base/values.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
@@ -32,44 +32,23 @@
 
 namespace {
 
-const char kSuccessResponse[] =
-    "{ \"sessionKey\": \"SecretSessionKey\", "
-    "\"expireTime\": \"1970-01-01T00:01:00.000Z\", "
-    "\"proxyConfig\": { \"httpProxyServers\": ["
-    "{ \"scheme\": \"HTTPS\", \"host\": \"origin.net\", \"port\": 443 },"
-    "{ \"scheme\": \"HTTP\", \"host\": \"fallback.net\", \"port\": 80 }"
-    "] } }";
-
-// The following values should match the ones in the response above.
+// The following values should match those in
+// DataReductionProxyConfigServiceClientTest.config_:
 const char kSuccessOrigin[] = "https://origin.net:443";
 const char kSuccessFallback[] = "fallback.net:80";
 const char kSuccessSessionKey[] = "SecretSessionKey";
 
-const char kOldSuccessResponse[] =
-    "{ \"sessionKey\": \"OldSecretSessionKey\", "
-    "\"expireTime\": \"1970-01-01T00:01:00.000Z\", "
-    "\"proxyConfig\": { \"httpProxyServers\": ["
-    "{ \"scheme\": \"HTTPS\", \"host\": \"old.origin.net\", \"port\": 443 },"
-    "{ \"scheme\": \"HTTP\", \"host\": \"old.fallback.net\", \"port\": 80 }"
-    "] } }";
-
-// The following values should match the ones in the response above.
+// The following values should match those in
+// DataReductionProxyConfigServiceClientTest.previous_config_:
 const char kOldSuccessOrigin[] = "https://old.origin.net:443";
 const char kOldSuccessFallback[] = "old.fallback.net:80";
 const char kOldSuccessSessionKey[] = "OldSecretSessionKey";
 
-const char kSerializedConfig[] =
-    "{ \"sessionKey\": \"SerializedSessionKey\", "
-    "\"expireTime\": \"1970-01-01T00:01:00.000Z\", "
-    "\"proxyConfig\": { \"httpProxyServers\": ["
-    "{ \"scheme\": \"HTTPS\", \"host\": \"serialized.net\", \"port\": 443 },"
-    "{ \"scheme\": \"HTTP\", \"host\": \"serialized.net\", \"port\": 80 }"
-    "] } }";
-
-// The following values should match the ones in the response above.
-const char kSerializedOrigin[] = "https://serialized.net:443";
-const char kSerializedFallback[] = "serialized.net:80";
-const char kSerializedSessionKey[] = "SerializedSessionKey";
+// The following values should match those in
+// DataReductionProxyConfigServiceClientTest.loaded_config_:
+const char kPersistedOrigin[] = "https://persisted.net:443";
+const char kPersistedFallback[] = "persisted.net:80";
+const char kPersistedSessionKey[] = "PersistedSessionKey";
 
 const char kConfigServiceFieldTrial[] = "DataReductionProxyConfigService";
 const char kConfigServiceURLParam[] = "url";
@@ -88,10 +67,10 @@ class RequestOptionsPopulator {
         increment_(increment) {
   }
 
-  void PopulateResponse(base::DictionaryValue* response) {
-    response->SetString("sessionKey", "abcdef|1234-5678-12345678");
-    response->SetString("expireTime",
-                        config_parser::TimeToISO8601(expiration_time_));
+  void PopulateResponse(ClientConfig* config) {
+    config->set_session_key("abcdef|1234-5678-12345678");
+    config_parser::TimetoTimestamp(expiration_time_,
+                                   config->mutable_expire_time());
     expiration_time_ += increment_;
   }
 
@@ -100,10 +79,48 @@ class RequestOptionsPopulator {
   base::TimeDelta increment_;
 };
 
-void PopulateResponseFailure(base::DictionaryValue* response) {
+void PopulateResponseFailure(ClientConfig* config) {
 }
 
 void StoreSerializedConfig(const std::string& value) {
+}
+
+// Creates a new ClientConfig from the given parameters.
+ClientConfig CreateConfig(const std::string& session_key,
+                          int64 expire_seconds,
+                          int64 expire_nanoseconds,
+                          ProxyServer_ProxyScheme primary_scheme,
+                          const std::string& primary_host,
+                          int primary_port,
+                          ProxyServer_ProxyScheme secondary_scheme,
+                          const std::string& secondary_host,
+                          int secondary_port) {
+  ClientConfig config;
+
+  config.set_session_key(session_key);
+  config.mutable_expire_time()->set_seconds(expire_seconds);
+  config.mutable_expire_time()->set_nanos(expire_nanoseconds);
+  ProxyServer* primary_proxy =
+      config.mutable_proxy_config()->add_http_proxy_servers();
+  primary_proxy->set_scheme(primary_scheme);
+  primary_proxy->set_host(primary_host);
+  primary_proxy->set_port(primary_port);
+  ProxyServer* secondary_proxy =
+      config.mutable_proxy_config()->add_http_proxy_servers();
+  secondary_proxy->set_scheme(secondary_scheme);
+  secondary_proxy->set_host(secondary_host);
+  secondary_proxy->set_port(secondary_port);
+
+  return config;
+}
+
+// Takes |config| and returns the base64 encoding of its serialized byte stream.
+std::string EncodeConfig(const ClientConfig& config) {
+  std::string config_data;
+  std::string encoded_data;
+  EXPECT_TRUE(config.SerializeToString(&config_data));
+  base::Base64Encode(config_data, &encoded_data);
+  return encoded_data;
 }
 
 }  // namespace
@@ -128,6 +145,25 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
     test_context_->test_config_client()->SetNow(base::Time::UnixEpoch());
     enabled_proxies_for_http_ =
         test_context_->test_params()->proxies_for_http(false /* alternative */);
+
+    // Set up the various test ClientConfigs.
+    ClientConfig config = CreateConfig(
+        kSuccessSessionKey, 60, 0, ProxyServer_ProxyScheme_HTTPS, "origin.net",
+        443, ProxyServer_ProxyScheme_HTTP, "fallback.net", 80);
+    config.SerializeToString(&config_);
+    encoded_config_ = EncodeConfig(config);
+
+    ClientConfig previous_config =
+        CreateConfig(kOldSuccessSessionKey, 60, 0,
+                     ProxyServer_ProxyScheme_HTTPS, "old.origin.net", 443,
+                     ProxyServer_ProxyScheme_HTTP, "old.fallback.net", 80);
+    previous_config.SerializeToString(&previous_config_);
+
+    ClientConfig persisted =
+        CreateConfig(kPersistedSessionKey, 60, 0, ProxyServer_ProxyScheme_HTTPS,
+                     "persisted.net", 443, ProxyServer_ProxyScheme_HTTP,
+                     "persisted.net", 80);
+    loaded_config_ = EncodeConfig(persisted);
   }
 
   void SetDataReductionProxyEnabled(bool enabled) {
@@ -160,11 +196,11 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
     expected_http_proxies.push_back(net::ProxyServer::FromURI(
         kSuccessFallback, net::ProxyServer::SCHEME_HTTP));
     EXPECT_EQ(base::TimeDelta::FromMinutes(1), config_client()->GetDelay());
-    EXPECT_THAT(expected_http_proxies,
-                testing::ContainerEq(configurator()->proxies_for_http()));
+    EXPECT_THAT(configurator()->proxies_for_http(),
+                testing::ContainerEq(expected_http_proxies));
     EXPECT_TRUE(configurator()->proxies_for_https().empty());
     EXPECT_EQ(kSuccessSessionKey, request_options()->GetSecureSession());
-    EXPECT_EQ(kSuccessResponse, persisted_config());
+    EXPECT_EQ(encoded_config(), persisted_config());
   }
 
   void VerifyRemoteSuccessWithOldConfig() {
@@ -174,22 +210,22 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
     expected_http_proxies.push_back(net::ProxyServer::FromURI(
         kOldSuccessFallback, net::ProxyServer::SCHEME_HTTP));
     EXPECT_EQ(base::TimeDelta::FromMinutes(1), config_client()->GetDelay());
-    EXPECT_THAT(expected_http_proxies,
-                testing::ContainerEq(configurator()->proxies_for_http()));
+    EXPECT_THAT(configurator()->proxies_for_http(),
+                testing::ContainerEq(expected_http_proxies));
     EXPECT_TRUE(configurator()->proxies_for_https().empty());
     EXPECT_EQ(kOldSuccessSessionKey, request_options()->GetSecureSession());
   }
 
-  void VerifySerializedSuccess() {
+  void VerifySuccessWithLoadedConfig() {
     std::vector<net::ProxyServer> expected_http_proxies;
     expected_http_proxies.push_back(net::ProxyServer::FromURI(
-        kSerializedOrigin, net::ProxyServer::SCHEME_HTTP));
+        kPersistedOrigin, net::ProxyServer::SCHEME_HTTP));
     expected_http_proxies.push_back(net::ProxyServer::FromURI(
-        kSerializedFallback, net::ProxyServer::SCHEME_HTTP));
-    EXPECT_THAT(expected_http_proxies,
-                testing::ContainerEq(configurator()->proxies_for_http()));
+        kPersistedFallback, net::ProxyServer::SCHEME_HTTP));
+    EXPECT_THAT(configurator()->proxies_for_http(),
+                testing::ContainerEq(expected_http_proxies));
     EXPECT_TRUE(configurator()->proxies_for_https().empty());
-    EXPECT_EQ(kSerializedSessionKey, request_options()->GetSecureSession());
+    EXPECT_EQ(kPersistedSessionKey, request_options()->GetSecureSession());
   }
 
   DataReductionProxyParams* params() {
@@ -225,6 +261,16 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
         prefs::kDataReductionProxyConfig);
   }
 
+  const std::string& success_response() const { return config_; }
+
+  const std::string& encoded_config() const { return encoded_config_; }
+
+  const std::string& previous_success_response() const {
+    return previous_config_;
+  }
+
+  const std::string& loaded_config() const { return loaded_config_; }
+
  private:
   base::MessageLoopForIO message_loop_;
   net::TestURLRequestContext context_;
@@ -233,6 +279,17 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
   scoped_ptr<DataReductionProxyTestContext> test_context_;
   scoped_ptr<DataReductionProxyRequestOptions> request_options_;
   std::vector<net::ProxyServer> enabled_proxies_for_http_;
+
+  // A configuration from the current remote request. The encoded version is
+  // also stored.
+  std::string config_;
+  std::string encoded_config_;
+
+  // A configuration from a previous remote request.
+  std::string previous_config_;
+
+  // An encoded config that represents a previously saved configuration.
+  std::string loaded_config_;
 };
 
 TEST_F(DataReductionProxyConfigServiceClientTest, TestConstructStaticResponse) {
@@ -240,7 +297,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest, TestConstructStaticResponse) {
       BuildConfigClient();
   std::string config_data = config_client->ConstructStaticResponse();
   ClientConfig config;
-  EXPECT_TRUE(config_parser::ParseClientConfig(config_data, &config));
+  EXPECT_TRUE(config.ParseFromString(config_data));
 }
 
 TEST_F(DataReductionProxyConfigServiceClientTest, SuccessfulLoop) {
@@ -259,16 +316,16 @@ TEST_F(DataReductionProxyConfigServiceClientTest, SuccessfulLoop) {
                           &RequestOptionsPopulator::PopulateResponse));
   config_client()->RetrieveConfig();
   EXPECT_EQ(base::TimeDelta::FromDays(1), config_client()->GetDelay());
-  EXPECT_THAT(enabled_proxies_for_http(),
-              testing::ContainerEq(configurator()->proxies_for_http()));
+  EXPECT_THAT(configurator()->proxies_for_http(),
+              testing::ContainerEq(enabled_proxies_for_http()));
   EXPECT_TRUE(configurator()->proxies_for_https().empty());
   config_client()->SetNow(base::Time::UnixEpoch() + base::TimeDelta::FromDays(1)
                           + base::TimeDelta::FromSeconds(5));
   config_client()->RetrieveConfig();
   EXPECT_EQ(base::TimeDelta::FromDays(1) - base::TimeDelta::FromSeconds(5),
             config_client()->GetDelay());
-  EXPECT_THAT(enabled_proxies_for_http(),
-              testing::ContainerEq(configurator()->proxies_for_http()));
+  EXPECT_THAT(configurator()->proxies_for_http(),
+              testing::ContainerEq(enabled_proxies_for_http()));
   EXPECT_TRUE(configurator()->proxies_for_https().empty());
 }
 
@@ -287,8 +344,8 @@ TEST_F(DataReductionProxyConfigServiceClientTest, SuccessfulLoopShortDuration) {
                                 &RequestOptionsPopulator::PopulateResponse));
   config_client()->RetrieveConfig();
   EXPECT_EQ(base::TimeDelta::FromSeconds(10), config_client()->GetDelay());
-  EXPECT_THAT(enabled_proxies_for_http(),
-              testing::ContainerEq(configurator()->proxies_for_http()));
+  EXPECT_THAT(configurator()->proxies_for_http(),
+              testing::ContainerEq(enabled_proxies_for_http()));
   EXPECT_TRUE(configurator()->proxies_for_https().empty());
 }
 
@@ -413,7 +470,8 @@ TEST_F(DataReductionProxyConfigServiceClientTest, GetConfigServiceURL) {
 TEST_F(DataReductionProxyConfigServiceClientTest, RemoteConfigSuccess) {
   net::MockRead mock_reads[] = {
       net::MockRead("HTTP/1.1 200 OK\r\n\r\n"),
-      net::MockRead(kSuccessResponse),
+      net::MockRead(net::ASYNC, success_response().c_str(),
+                    success_response().length()),
       net::MockRead(net::SYNCHRONOUS, net::OK),
   };
   net::StaticSocketDataProvider socket_data_provider(
@@ -441,7 +499,8 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
       {
        // Success.
        net::MockRead("HTTP/1.1 200 OK\r\n\r\n"),
-       net::MockRead(kSuccessResponse),
+       net::MockRead(net::ASYNC, success_response().c_str(),
+                     success_response().length()),
        net::MockRead(net::SYNCHRONOUS, net::OK),
       },
   };
@@ -500,7 +559,8 @@ TEST_F(DataReductionProxyConfigServiceClientTest, OnIPAddressChange) {
 
   net::MockRead success_reads[] = {
       net::MockRead("HTTP/1.1 200 OK\r\n\r\n"),
-      net::MockRead(kSuccessResponse),
+      net::MockRead(net::ASYNC, success_response().c_str(),
+                    success_response().length()),
       net::MockRead(net::SYNCHRONOUS, net::OK),
   };
   net::StaticSocketDataProvider socket_data_provider(
@@ -516,19 +576,22 @@ TEST_F(DataReductionProxyConfigServiceClientTest, AuthFailure) {
       {
        // Success.
        net::MockRead("HTTP/1.1 200 OK\r\n\r\n"),
-       net::MockRead(kOldSuccessResponse),
+       net::MockRead(net::ASYNC, previous_success_response().c_str(),
+                     previous_success_response().length()),
        net::MockRead(net::SYNCHRONOUS, net::OK),
       },
       {
        // Success.
        net::MockRead("HTTP/1.1 200 OK\r\n\r\n"),
-       net::MockRead(kSuccessResponse),
+       net::MockRead(net::ASYNC, success_response().c_str(),
+                     success_response().length()),
        net::MockRead(net::SYNCHRONOUS, net::OK),
       },
       {
        // Success.
        net::MockRead("HTTP/1.1 200 OK\r\n\r\n"),
-       net::MockRead(kOldSuccessResponse),
+       net::MockRead(net::ASYNC, previous_success_response().c_str(),
+                     previous_success_response().length()),
        net::MockRead(net::SYNCHRONOUS, net::OK),
       },
   };
@@ -569,7 +632,8 @@ TEST_F(DataReductionProxyConfigServiceClientTest, AuthFailure) {
 TEST_F(DataReductionProxyConfigServiceClientTest, ApplySerializedConfig) {
   net::MockRead success_reads[] = {
       net::MockRead("HTTP/1.1 200 OK\r\n\r\n"),
-      net::MockRead(kSuccessResponse),
+      net::MockRead(net::ASYNC, success_response().c_str(),
+                    success_response().length()),
       net::MockRead(net::SYNCHRONOUS, net::OK),
   };
   net::StaticSocketDataProvider socket_data_provider(
@@ -579,8 +643,8 @@ TEST_F(DataReductionProxyConfigServiceClientTest, ApplySerializedConfig) {
   config_client()->SetConfigServiceURL(GURL("http://configservice.com"));
   SetDataReductionProxyEnabled(true);
   EXPECT_TRUE(configurator()->proxies_for_https().empty());
-  config_client()->ApplySerializedConfig(kSerializedConfig);
-  VerifySerializedSuccess();
+  config_client()->ApplySerializedConfig(loaded_config());
+  VerifySuccessWithLoadedConfig();
   EXPECT_EQ(std::string(), persisted_config());
 
   config_client()->RetrieveConfig();
@@ -592,7 +656,8 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
        ApplySerializedConfigAfterReceipt) {
   net::MockRead success_reads[] = {
       net::MockRead("HTTP/1.1 200 OK\r\n\r\n"),
-      net::MockRead(kSuccessResponse),
+      net::MockRead(net::ASYNC, success_response().c_str(),
+                    success_response().length()),
       net::MockRead(net::SYNCHRONOUS, net::OK),
   };
   net::StaticSocketDataProvider socket_data_provider(
@@ -605,13 +670,13 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
   RunUntilIdle();
   VerifyRemoteSuccess();
 
-  config_client()->ApplySerializedConfig(kSerializedConfig);
+  config_client()->ApplySerializedConfig(encoded_config());
   VerifyRemoteSuccess();
 }
 
 TEST_F(DataReductionProxyConfigServiceClientTest, ApplySerializedConfigLocal) {
   SetDataReductionProxyEnabled(true);
-  config_client()->ApplySerializedConfig(kSerializedConfig);
+  config_client()->ApplySerializedConfig(encoded_config());
   EXPECT_TRUE(configurator()->proxies_for_https().empty());
 }
 

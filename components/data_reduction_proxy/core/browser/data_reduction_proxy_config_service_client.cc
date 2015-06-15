@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/json/json_writer.h"
@@ -105,7 +106,8 @@ GURL AddApiKeyToUrl(const GURL& url) {
   if (api_key.empty())
     return url;
 
-  return net::AppendQueryParameter(url, kApiKeyName, api_key);
+  GURL new_url = net::AppendOrReplaceQueryParameter(url, kApiKeyName, api_key);
+  return net::AppendOrReplaceQueryParameter(new_url, "alt", "proto");
 }
 
 }  // namespace
@@ -186,9 +188,12 @@ void DataReductionProxyConfigServiceClient::ApplySerializedConfig(
   if (remote_config_applied_)
     return;
 
-  ClientConfig config;
-  if (config_parser::ParseClientConfig(config_value, &config))
-    ParseAndApplyProxyConfig(config);
+  std::string decoded_config;
+  if (base::Base64Decode(config_value, &decoded_config)) {
+    ClientConfig config;
+    if (config.ParseFromString(decoded_config))
+      ParseAndApplyProxyConfig(config);
+  }
 }
 
 bool DataReductionProxyConfigServiceClient::ShouldRetryDueToAuthFailure(
@@ -196,9 +201,9 @@ bool DataReductionProxyConfigServiceClient::ShouldRetryDueToAuthFailure(
     const net::HostPortPair& proxy_server) {
   DCHECK(response_headers);
   if (config_->IsDataReductionProxy(proxy_server, nullptr)) {
-    DCHECK(!use_local_config_);
     if (response_headers->response_code() ==
         net::HTTP_PROXY_AUTHENTICATION_REQUIRED) {
+      DCHECK(!use_local_config_);
       // The default backoff logic is to increment the failure count (and
       // increase the backoff time) with each response failure to the remote
       // config service, and to decrement the failure count (and decrease the
@@ -243,11 +248,10 @@ base::Time DataReductionProxyConfigServiceClient::Now() {
 std::string
 DataReductionProxyConfigServiceClient::ConstructStaticResponse() const {
   std::string response;
-  scoped_ptr<base::DictionaryValue> values(new base::DictionaryValue());
-  params_->PopulateConfigResponse(values.get());
-  request_options_->PopulateConfigResponse(values.get());
-  base::JSONWriter::Write(*values, &response);
-
+  ClientConfig config;
+  params_->PopulateConfigResponse(&config);
+  request_options_->PopulateConfigResponse(&config);
+  config.SerializeToString(&response);
   return response;
 }
 
@@ -302,7 +306,7 @@ DataReductionProxyConfigServiceClient::GetURLFetcherForConfig(
   scoped_ptr<net::URLFetcher> fetcher(net::URLFetcher::Create(
       secure_proxy_check_url, net::URLFetcher::POST, this));
   fetcher->SetLoadFlags(net::LOAD_BYPASS_PROXY);
-  fetcher->SetUploadData("application/json", request_body);
+  fetcher->SetUploadData("application/x-profobuf", request_body);
   DCHECK(url_request_context_getter_);
   fetcher->SetRequestContext(url_request_context_getter_);
   // Configure max retries to be at most kMaxRetries times for 5xx errors.
@@ -325,8 +329,7 @@ void DataReductionProxyConfigServiceClient::HandleResponse(
   }
 
   if (status.status() == net::URLRequestStatus::SUCCESS &&
-      response_code == net::HTTP_OK &&
-      config_parser::ParseClientConfig(config_data, &config)) {
+      response_code == net::HTTP_OK && config.ParseFromString(config_data)) {
     succeeded = ParseAndApplyProxyConfig(config);
   }
 
@@ -342,7 +345,9 @@ void DataReductionProxyConfigServiceClient::HandleResponse(
                                configuration_fetch_latency);
     UMA_HISTOGRAM_COUNTS_100(kUMAConfigServiceFetchFailedAttemptsBeforeSuccess,
                              GetBackoffEntry()->failure_count());
-    config_storer_.Run(config_data);
+    std::string encoded_config;
+    base::Base64Encode(config_data, &encoded_config);
+    config_storer_.Run(encoded_config);
   }
 
   GetBackoffEntry()->InformOfRequest(succeeded);

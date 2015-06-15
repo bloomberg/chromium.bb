@@ -12,9 +12,9 @@
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
-#include "base/values.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_client_config_parser.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
+#include "components/data_reduction_proxy/proto/client_config.pb.h"
 #include "components/variations/variations_associated_data.h"
 #include "net/base/host_port_pair.h"
 #include "net/proxy/proxy_server.h"
@@ -54,10 +54,6 @@ const char kConfigServiceURLParam[] = "url";
 
 // Default URL for retrieving the Data Reduction Proxy configuration.
 const char kClientConfigURL[] = "";
-
-const char kConfigScheme[] = "scheme";
-const char kConfigHost[] = "host";
-const char kConfigPort[] = "port";
 
 }  // namespace
 
@@ -481,38 +477,23 @@ DataReductionProxyParams::proxies_for_https(
 }
 
 void DataReductionProxyParams::PopulateConfigResponse(
-    base::DictionaryValue* response) const {
-  scoped_ptr<base::Value> proxy_config(new base::DictionaryValue());
+    ClientConfig* config) const {
   if (!holdback_) {
-    base::DictionaryValue* proxy_config_dict = nullptr;
-    if (!proxy_config->GetAsDictionary(&proxy_config_dict))
-      return;
+    ProxyConfig* proxy_config = config->mutable_proxy_config();
 
-    scoped_ptr<base::Value> proxy_servers(new base::ListValue());
-    base::ListValue* proxy_servers_list = nullptr;
-    if (!proxy_servers->GetAsList(&proxy_servers_list))
-      return;
+    // Add |origin_|.
+    ProxyServer* server = proxy_config->add_http_proxy_servers();
+    server->set_scheme(config_parser::ProxySchemeFromScheme(origin_.scheme()));
+    server->set_host(origin_.host_port_pair().host());
+    server->set_port(origin_.host_port_pair().port());
 
-    proxy_servers->GetAsList(&proxy_servers_list);
-    scoped_ptr<base::DictionaryValue> server(new base::DictionaryValue());
-
-    server->SetString(kConfigScheme,
-                      config_parser::GetSchemeString(origin_.scheme()));
-    server->SetString(kConfigHost, origin_.host_port_pair().host());
-    server->SetInteger(kConfigPort, origin_.host_port_pair().port());
-    proxy_servers_list->Append(server.release());
-    server.reset(new base::DictionaryValue());
-
-    server->SetString(kConfigScheme, config_parser::GetSchemeString(
-                                         fallback_origin_.scheme()));
-    server->SetString(kConfigHost, fallback_origin_.host_port_pair().host());
-    server->SetInteger(kConfigPort, fallback_origin_.host_port_pair().port());
-    proxy_servers_list->Append(server.release());
-
-    proxy_config_dict->Set("httpProxyServers", proxy_servers.Pass());
+    // Add |fallback_origin_|.
+    server = proxy_config->add_http_proxy_servers();
+    server->set_scheme(
+        config_parser::ProxySchemeFromScheme(fallback_origin_.scheme()));
+    server->set_host(fallback_origin_.host_port_pair().host());
+    server->set_port(fallback_origin_.host_port_pair().port());
   }
-
-  response->Set("proxyConfig", proxy_config.Pass());
 }
 
 // Returns the URL to check to decide if the secure proxy origin should be

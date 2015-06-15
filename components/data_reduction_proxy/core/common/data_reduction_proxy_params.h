@@ -13,7 +13,6 @@
 #include "url/gurl.h"
 
 namespace base {
-class DictionaryValue;
 class TimeDelta;
 }
 
@@ -23,6 +22,8 @@ class ProxyServer;
 }
 
 namespace data_reduction_proxy {
+
+class ClientConfig;
 
 // Contains information about a given proxy server. |proxies_for_http| and
 // |proxies_for_https| contain the configured data reduction proxy servers.
@@ -173,7 +174,7 @@ class DataReductionProxyParams : public DataReductionProxyConfigValues {
 
   // Populates |response| with the Data Reduction Proxy server configuration.
   // Virtual for mocking.
-  virtual void PopulateConfigResponse(base::DictionaryValue* response) const;
+  virtual void PopulateConfigResponse(ClientConfig* config) const;
 
   // Overrides of |DataReductionProxyConfigValues|
   bool UsingHTTPTunnel(const net::HostPortPair& proxy_server) const override;
