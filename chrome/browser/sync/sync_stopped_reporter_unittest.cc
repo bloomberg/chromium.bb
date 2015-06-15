@@ -8,6 +8,8 @@
 #include "base/run_loop.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/non_thread_safe.h"
+#include "chrome/browser/sync/glue/local_device_info_provider_impl.h"
+#include "chrome/common/chrome_version_info.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
@@ -24,6 +26,8 @@ const char kEventURL[] = "http://chromium.org/test/event";
 const char kAuthToken[] = "multipass";
 const char kCacheGuid[] = "leeloo";
 const char kBirthday[] = "2263";
+
+const char kAuthHeaderPrefix[] = "Bearer ";
 
 class SyncStoppedReporterTest : public testing::Test {
  public:
@@ -54,6 +58,12 @@ class SyncStoppedReporterTest : public testing::Test {
 
   net::URLRequestContextGetter* request_context() {
     return request_context_.get();
+  }
+
+  static std::string GetUserAgent() {
+    chrome::VersionInfo version_info;
+    return browser_sync::LocalDeviceInfoProviderImpl::MakeUserAgentForSyncApi(
+        version_info);
   }
 
  private:
@@ -89,6 +99,17 @@ TEST_F(SyncStoppedReporterTest, FetcherConfiguration) {
   SyncStoppedReporter ssr(test_url(), request_context(), callback());
   ssr.ReportSyncStopped(kAuthToken, kCacheGuid, kBirthday);
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
+
+  // Ensure the headers are set correctly.
+  net::HttpRequestHeaders headers;
+  std::string header;
+  fetcher->GetExtraRequestHeaders(&headers);
+  headers.GetHeader(net::HttpRequestHeaders::kAuthorization, &header);
+  std::string auth_header(kAuthHeaderPrefix);
+  auth_header.append(kAuthToken);
+  EXPECT_EQ(auth_header, header);
+  headers.GetHeader(net::HttpRequestHeaders::kUserAgent, &header);
+  EXPECT_EQ(GetUserAgent(), header);
 
   sync_pb::EventRequest event_request;
   event_request.ParseFromString(fetcher->upload_data());

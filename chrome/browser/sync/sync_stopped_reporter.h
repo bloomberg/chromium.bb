@@ -59,6 +59,9 @@ class SyncStoppedReporter : public net::URLFetcherDelegate {
   // The URL for the sync server's event RPC.
   const GURL sync_event_url_;
 
+  // The user agent for the browser.
+  const std::string user_agent_;
+
   // Stored to simplify the API; needed for URLFetcher::Create().
   scoped_refptr<net::URLRequestContextGetter> request_context_;
 

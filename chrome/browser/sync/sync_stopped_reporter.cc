@@ -11,6 +11,8 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/glue/local_device_info_provider_impl.h"
+#include "chrome/common/chrome_version_info.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
@@ -18,14 +20,22 @@
 #include "sync/protocol/sync.pb.h"
 
 namespace {
-  const char kEventEndpoint[] = "event";
 
-  // The request is tiny, so even on poor connections 10 seconds should be
-  // plenty of time. Since sync is off when this request is started, we don't
-  // want anything sync-related hanging around for very long from a human
-  // perspective either. This seems like a good compromise.
-  const base::TimeDelta kRequestTimeout = base::TimeDelta::FromSeconds(10);
+const char kEventEndpoint[] = "event";
+
+// The request is tiny, so even on poor connections 10 seconds should be
+// plenty of time. Since sync is off when this request is started, we don't
+// want anything sync-related hanging around for very long from a human
+// perspective either. This seems like a good compromise.
+const base::TimeDelta kRequestTimeout = base::TimeDelta::FromSeconds(10);
+
+std::string GetUserAgent() {
+  chrome::VersionInfo version_info;
+  return browser_sync::LocalDeviceInfoProviderImpl::MakeUserAgentForSyncApi(
+      version_info);
 }
+
+}  // namespace
 
 namespace browser_sync {
 
@@ -34,9 +44,11 @@ SyncStoppedReporter::SyncStoppedReporter(
     const scoped_refptr<net::URLRequestContextGetter>& request_context,
     const ResultCallback& callback)
     : sync_event_url_(GetSyncEventURL(sync_service_url)),
+      user_agent_(GetUserAgent()),
       request_context_(request_context),
       callback_(callback) {
   DCHECK(!sync_service_url.is_empty());
+  DCHECK(!user_agent_.empty());
   DCHECK(request_context);
 }
 
@@ -64,9 +76,14 @@ void SyncStoppedReporter::ReportSyncStopped(const std::string& access_token,
   fetcher_->AddExtraRequestHeader(base::StringPrintf(
       "%s: Bearer %s", net::HttpRequestHeaders::kAuthorization,
       access_token.c_str()));
+  fetcher_->AddExtraRequestHeader(base::StringPrintf(
+      "%s: %s", net::HttpRequestHeaders::kUserAgent, user_agent_.c_str()));
   fetcher_->SetRequestContext(request_context_.get());
   fetcher_->SetUploadData("application/octet-stream", msg);
-  fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES);
+  fetcher_->SetLoadFlags(net::LOAD_BYPASS_CACHE |
+                         net::LOAD_DISABLE_CACHE |
+                         net::LOAD_DO_NOT_SAVE_COOKIES |
+                         net::LOAD_DO_NOT_SEND_COOKIES);
   fetcher_->Start();
   timer_.Start(FROM_HERE, kRequestTimeout, this,
                &SyncStoppedReporter::OnTimeout);
