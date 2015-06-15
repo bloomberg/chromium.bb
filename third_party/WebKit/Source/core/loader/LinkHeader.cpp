@@ -119,9 +119,9 @@ static LinkHeader::LinkParameterName paramterNameFromString(String name)
     // FIXME: Add support for more header parameters as neccessary.
     if (equalIgnoringCase(name, "rel"))
         return LinkHeader::LinkParameterRel;
-    else if (equalIgnoringCase(name, "anchor"))
+    if (equalIgnoringCase(name, "anchor"))
         return LinkHeader::LinkParameterAnchor;
-    else if (equalIgnoringCase(name, "crossorigin"))
+    if (equalIgnoringCase(name, "crossorigin"))
         return LinkHeader::LinkParameterCrossOrigin;
     return LinkHeader::LinkParameterUnknown;
 }

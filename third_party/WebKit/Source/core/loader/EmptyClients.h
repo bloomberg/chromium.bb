@@ -166,7 +166,7 @@ class CORE_EXPORT EmptyFrameLoaderClient : public FrameLoaderClient {
     WTF_MAKE_NONCOPYABLE(EmptyFrameLoaderClient); WTF_MAKE_FAST_ALLOCATED(EmptyFrameLoaderClient);
 public:
     EmptyFrameLoaderClient() { }
-    virtual ~EmptyFrameLoaderClient() {  }
+    virtual ~EmptyFrameLoaderClient() { }
 
     virtual bool hasWebView() const override { return true; } // mainly for assertions
 
@@ -304,7 +304,7 @@ class EmptyContextMenuClient final : public ContextMenuClient {
     WTF_MAKE_NONCOPYABLE(EmptyContextMenuClient); WTF_MAKE_FAST_ALLOCATED(EmptyContextMenuClient);
 public:
     EmptyContextMenuClient() { }
-    virtual ~EmptyContextMenuClient() {  }
+    virtual ~EmptyContextMenuClient() { }
     virtual void showContextMenu(const ContextMenu*) override { }
     virtual void clearContextMenu() override { }
 };
@@ -313,7 +313,7 @@ class EmptyDragClient final : public DragClient {
     WTF_MAKE_NONCOPYABLE(EmptyDragClient); WTF_MAKE_FAST_ALLOCATED(EmptyDragClient);
 public:
     EmptyDragClient() { }
-    virtual ~EmptyDragClient() {}
+    virtual ~EmptyDragClient() { }
     virtual DragDestinationAction actionMaskForDrag(DragData*) override { return DragDestinationActionNone; }
     virtual void startDrag(DragImage*, const IntPoint&, const IntPoint&, DataTransfer*, LocalFrame*, bool) override { }
 };

@@ -69,7 +69,7 @@ public:
         XSSAuditorViolationReport
     };
 
-    static void loadImage(LocalFrame*, const KURL& url);
+    static void loadImage(LocalFrame*, const KURL&);
     static void sendLinkAuditPing(LocalFrame*, const KURL& pingURL, const KURL& destinationURL);
     static void sendViolationReport(LocalFrame*, const KURL& reportURL, PassRefPtr<FormData> report, ViolationReportType);
 

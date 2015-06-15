@@ -37,7 +37,7 @@
 #include "wtf/CurrentTime.h"
 #include "wtf/text/CString.h"
 
-using std::min;
+using namespace std;
 
 namespace blink {
 
@@ -151,8 +151,9 @@ void ProgressTracker::incrementProgress(unsigned long identifier, const Resource
     if (ProgressItem* item = m_progressItems.get(identifier)) {
         item->bytesReceived = 0;
         item->estimatedLength = estimatedLength;
-    } else
+    } else {
         m_progressItems.set(identifier, adoptPtr(new ProgressItem(estimatedLength)));
+    }
 }
 
 void ProgressTracker::incrementProgress(unsigned long identifier, int length)
@@ -176,7 +177,7 @@ void ProgressTracker::incrementProgress(unsigned long identifier, int length)
     int numPendingOrLoadingRequests = m_frame->document()->fetcher()->requestCount();
     estimatedBytesForPendingRequests = progressItemDefaultEstimatedLength * numPendingOrLoadingRequests;
     remainingBytes = ((m_totalPageAndResourceBytesToLoad + estimatedBytesForPendingRequests) - m_totalBytesReceived);
-    if (remainingBytes > 0)  // Prevent divide by 0.
+    if (remainingBytes > 0) // Prevent divide by 0.
         percentOfRemainingBytes = (double)bytesReceived / (double)remainingBytes;
     else
         percentOfRemainingBytes = 1.0;
