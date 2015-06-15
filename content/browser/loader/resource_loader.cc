@@ -222,7 +222,7 @@ void ResourceLoader::OnReceivedRedirect(net::URLRequest* unused,
                                         bool* defer) {
   DCHECK_EQ(request_.get(), unused);
 
-  VLOG(1) << "OnReceivedRedirect: " << request_->url().spec();
+  DVLOG(1) << "OnReceivedRedirect: " << request_->url().spec();
   DCHECK(request_->status().is_success());
 
   ResourceRequestInfoImpl* info = GetRequestInfo();
@@ -230,8 +230,8 @@ void ResourceLoader::OnReceivedRedirect(net::URLRequest* unused,
   if (info->GetProcessType() != PROCESS_TYPE_PLUGIN &&
       !ChildProcessSecurityPolicyImpl::GetInstance()->
           CanRequestURL(info->GetChildID(), redirect_info.new_url)) {
-    VLOG(1) << "Denied unauthorized request for "
-            << redirect_info.new_url.possibly_invalid_spec();
+    DVLOG(1) << "Denied unauthorized request for "
+             << redirect_info.new_url.possibly_invalid_spec();
 
     // Tell the renderer that this request was disallowed.
     Cancel();
@@ -329,7 +329,7 @@ void ResourceLoader::OnBeforeNetworkStart(net::URLRequest* unused,
 void ResourceLoader::OnResponseStarted(net::URLRequest* unused) {
   DCHECK_EQ(request_.get(), unused);
 
-  VLOG(1) << "OnResponseStarted: " << request_->url().spec();
+  DVLOG(1) << "OnResponseStarted: " << request_->url().spec();
 
   progress_timer_.Stop();
 
@@ -372,8 +372,8 @@ void ResourceLoader::OnResponseStarted(net::URLRequest* unused) {
 
 void ResourceLoader::OnReadCompleted(net::URLRequest* unused, int bytes_read) {
   DCHECK_EQ(request_.get(), unused);
-  VLOG(1) << "OnReadCompleted: \"" << request_->url().spec() << "\""
-          << " bytes_read = " << bytes_read;
+  DVLOG(1) << "OnReadCompleted: \"" << request_->url().spec() << "\""
+           << " bytes_read = " << bytes_read;
 
   // bytes_read == -1 always implies an error.
   if (bytes_read == -1 || !request_->status().is_success()) {
@@ -506,7 +506,7 @@ void ResourceLoader::StartRequestInternal() {
 }
 
 void ResourceLoader::CancelRequestInternal(int error, bool from_renderer) {
-  VLOG(1) << "CancelRequestInternal: " << request_->url().spec();
+  DVLOG(1) << "CancelRequestInternal: " << request_->url().spec();
 
   ResourceRequestInfoImpl* info = GetRequestInfo();
 
@@ -689,7 +689,7 @@ void ResourceLoader::CompleteRead(int bytes_read) {
 }
 
 void ResourceLoader::ResponseCompleted() {
-  VLOG(1) << "ResponseCompleted: " << request_->url().spec();
+  DVLOG(1) << "ResponseCompleted: " << request_->url().spec();
   RecordHistograms();
   ResourceRequestInfoImpl* info = GetRequestInfo();
 
