@@ -71,7 +71,6 @@ BOOL g_animations_enabled = false;
                        parentWindow:parentWindow
                          anchoredAt:anchorPoint])) {
     acknowledged_ = NO;
-    [window setInfoBubbleCanBecomeKeyWindow:NO];
     delegate_ = delegate.Pass();
 
     ui::NativeTheme* nativeTheme = ui::NativeTheme::instance();
@@ -85,6 +84,9 @@ BOOL g_animations_enabled = false;
       [window setAllowedAnimations:info_bubble::kAnimateNone];
 
     [self layout];
+
+    [[self window] makeFirstResponder:
+        (actionButton_ ? actionButton_ : dismissButton_)];
   }
   return self;
 }
