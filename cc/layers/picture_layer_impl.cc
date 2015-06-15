@@ -477,6 +477,21 @@ void PictureLayerImpl::UpdateViewportRectForTilePriorityInContentSpace() {
       visible_rect_in_content_space =
           gfx::ToEnclosingRect(MathUtil::ProjectClippedRect(
               view_to_layer, viewport_rect_for_tile_priority));
+
+      // We have to allow for a viewport that is outside of the layer bounds in
+      // order to compute tile priorities correctly for offscreen content that
+      // is going to make it on screen. However, we also have to limit the
+      // viewport since it can be very large due to screen_space_transforms. As
+      // a heuristic, we clip to bounds padded by skewport_extrapolation_limit *
+      // maximum tiling scale, since this should allow sufficient room for
+      // skewport calculations.
+      gfx::Rect padded_bounds(bounds());
+      int padding_amount = layer_tree_impl()
+                               ->settings()
+                               .skewport_extrapolation_limit_in_content_pixels *
+                           MaximumTilingContentsScale();
+      padded_bounds.Inset(-padding_amount, -padding_amount);
+      visible_rect_in_content_space.Intersect(padded_bounds);
     }
   }
   viewport_rect_for_tile_priority_in_content_space_ =
