@@ -242,7 +242,7 @@ private:
     RefPtrWillBeMember<CSSStyleSheet> m_pageStyleSheet;
     TypeBuilder::CSS::StyleSheetOrigin::Enum m_origin;
     String m_documentURL;
-    OwnPtr<ParsedStyleSheet> m_parsedStyleSheet;
+    OwnPtrWillBeMember<ParsedStyleSheet> m_parsedStyleSheet;
     mutable CSSRuleVector m_flatRules;
     mutable String m_sourceURL;
 };

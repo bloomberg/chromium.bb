@@ -335,8 +335,7 @@ void StyleSheetHandler::endMediaQuery()
 
 } // namespace
 
-class ParsedStyleSheet {
-    WTF_MAKE_FAST_ALLOCATED(ParsedStyleSheet);
+class ParsedStyleSheet : public NoBaseWillBeGarbageCollectedFinalized<ParsedStyleSheet> {
 public:
     ParsedStyleSheet(CSSStyleSheet* pageStyleSheet);
 
@@ -348,14 +347,16 @@ public:
     PassRefPtrWillBeRawPtr<blink::CSSRuleSourceData> ruleSourceDataAt(unsigned) const;
     unsigned ruleCount() { return m_sourceData->size(); }
 
+    DECLARE_TRACE();
+
 private:
     void flattenSourceData(RuleSourceDataList*);
     void setSourceData(PassOwnPtrWillBeRawPtr<RuleSourceDataList>);
 
     String m_text;
     bool m_hasText;
-    OwnPtrWillBePersistent<RuleSourceDataList> m_sourceData;
-    RefPtrWillBePersistent<CSSStyleSheet> m_pageStyleSheet;
+    OwnPtrWillBeMember<RuleSourceDataList> m_sourceData;
+    RefPtrWillBeMember<CSSStyleSheet> m_pageStyleSheet;
 };
 
 ParsedStyleSheet::ParsedStyleSheet(CSSStyleSheet* pageStyleSheet)
@@ -432,6 +433,12 @@ PassRefPtrWillBeRawPtr<blink::CSSRuleSourceData> ParsedStyleSheet::ruleSourceDat
         return nullptr;
 
     return m_sourceData->at(index);
+}
+
+DEFINE_TRACE(ParsedStyleSheet)
+{
+    visitor->trace(m_sourceData);
+    visitor->trace(m_pageStyleSheet);
 }
 
 namespace blink {
@@ -953,6 +960,7 @@ DEFINE_TRACE(InspectorStyleSheet)
     visitor->trace(m_cssAgent);
     visitor->trace(m_resourceAgent);
     visitor->trace(m_pageStyleSheet);
+    visitor->trace(m_parsedStyleSheet);
     visitor->trace(m_flatRules);
     InspectorStyleSheetBase::trace(visitor);
 }
