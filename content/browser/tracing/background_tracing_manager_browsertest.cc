@@ -32,6 +32,7 @@ class BackgroundTracingManagerUploadConfigWrapper {
   }
 
   void Upload(const scoped_refptr<base::RefCountedString>& file_contents,
+              scoped_ptr<base::DictionaryValue> metadata,
               base::Callback<void()> done_callback) {
     receive_count_ += 1;
     EXPECT_TRUE(file_contents);

@@ -48,6 +48,8 @@ class BackgroundTracingManagerImpl : public content::BackgroundTracingManager {
   void ValidateStartupScenario();
   void AbortScenario();
 
+  scoped_ptr<base::DictionaryValue> GenerateMetadataDict() const;
+
   std::string GetTriggerNameFromHandle(TriggerHandle handle) const;
   bool IsTriggerHandleValid(TriggerHandle handle) const;
 

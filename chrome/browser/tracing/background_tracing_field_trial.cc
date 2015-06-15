@@ -42,6 +42,7 @@ void OnUploadComplete(TraceCrashServiceUploader* uploader,
 
 void UploadCallback(const std::string& upload_url,
                     const scoped_refptr<base::RefCountedString>& file_contents,
+                    scoped_ptr<base::DictionaryValue> metadata,
                     base::Closure callback) {
   TraceCrashServiceUploader* uploader = new TraceCrashServiceUploader(
       g_browser_process->system_request_context());
@@ -50,7 +51,7 @@ void UploadCallback(const std::string& upload_url,
     uploader->SetUploadURL(upload_url);
 
   uploader->DoUpload(
-      file_contents->data(), base::Bind(&OnUploadProgress),
+      file_contents->data(), metadata.Pass(), base::Bind(&OnUploadProgress),
       base::Bind(&OnUploadComplete, base::Owned(uploader), callback));
 }
 

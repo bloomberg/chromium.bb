@@ -38,6 +38,7 @@ class TracingController {
    public:
     virtual void AddTraceChunk(const std::string& chunk) {}
     virtual void SetSystemTrace(const std::string& data) {}
+    virtual void SetMetadata(const std::string& data) {}
     virtual void Close() {}
 
    protected:

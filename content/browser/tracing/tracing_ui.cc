@@ -327,7 +327,8 @@ void TracingUI::DoUpload(const base::ListValue* args) {
   trace_uploader_ = delegate_->GetTraceUploader(
       web_ui()->GetWebContents()->GetBrowserContext()->GetRequestContext());
   DCHECK(trace_uploader_);
-  trace_uploader_->DoUpload(file_contents, progress_callback, done_callback);
+  trace_uploader_->DoUpload(file_contents, nullptr, progress_callback,
+                            done_callback);
   // TODO(mmandlis): Add support for stopping the upload in progress.
 }
 

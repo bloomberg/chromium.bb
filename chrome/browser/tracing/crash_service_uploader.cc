@@ -8,6 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
+#include "base/json/json_writer.h"
 #include "base/memory/shared_memory.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -98,6 +99,7 @@ void TraceCrashServiceUploader::OnURLFetchUploadProgress(
 
 void TraceCrashServiceUploader::DoUpload(
     const std::string& file_contents,
+    scoped_ptr<base::DictionaryValue> metadata,
     const UploadProgressCallback& progress_callback,
     const UploadDoneCallback& done_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -105,12 +107,14 @@ void TraceCrashServiceUploader::DoUpload(
       content::BrowserThread::FILE, FROM_HERE,
       base::Bind(&TraceCrashServiceUploader::DoUploadOnFileThread,
                  base::Unretained(this), file_contents, upload_url_,
-                 progress_callback, done_callback));
+                 base::Passed(metadata.Pass()), progress_callback,
+                 done_callback));
 }
 
 void TraceCrashServiceUploader::DoUploadOnFileThread(
     const std::string& file_contents,
     const std::string& upload_url,
+    scoped_ptr<base::DictionaryValue> metadata,
     const UploadProgressCallback& progress_callback,
     const UploadDoneCallback& done_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
@@ -166,7 +170,7 @@ void TraceCrashServiceUploader::DoUploadOnFileThread(
   }
 
   std::string post_data;
-  SetupMultipart(product, version, "trace.json.gz",
+  SetupMultipart(product, version, metadata.Pass(), "trace.json.gz",
                  std::string(compressed_contents.get(), compressed_bytes),
                  &post_data);
 
@@ -186,6 +190,7 @@ void TraceCrashServiceUploader::OnUploadError(std::string error_message) {
 void TraceCrashServiceUploader::SetupMultipart(
     const std::string& product,
     const std::string& version,
+    scoped_ptr<base::DictionaryValue> metadata,
     const std::string& trace_filename,
     const std::string& trace_contents,
     std::string* post_data) {
@@ -200,6 +205,19 @@ void TraceCrashServiceUploader::SetupMultipart(
   // No minidump means no need for crash to process the report.
   net::AddMultipartValueForUpload("should_process", "false", kMultipartBoundary,
                                   "", post_data);
+  if (metadata) {
+    for (base::DictionaryValue::Iterator it(*metadata); !it.IsAtEnd();
+         it.Advance()) {
+      std::string value;
+      if (!it.value().GetAsString(&value)) {
+        if (!base::JSONWriter::Write(it.value(), &value))
+          continue;
+      }
+
+      net::AddMultipartValueForUpload(it.key(), value, kMultipartBoundary, "",
+                                      post_data);
+    }
+  }
 
   AddTraceFile(trace_filename, trace_contents, post_data);
 

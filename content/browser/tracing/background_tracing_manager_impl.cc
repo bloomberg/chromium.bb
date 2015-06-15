@@ -4,6 +4,7 @@
 
 #include "content/browser/tracing/background_tracing_manager_impl.h"
 
+#include "base/json/json_writer.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
@@ -20,6 +21,9 @@ namespace {
 
 base::LazyInstance<BackgroundTracingManagerImpl>::Leaky g_controller =
     LAZY_INSTANCE_INITIALIZER;
+
+const char kMetaDataConfigKey[] = "config";
+const char kMetaDataVersionKey[] = "product_version";
 
 // These values are used for a histogram. Do not reorder.
 enum BackgroundTracingMetrics {
@@ -387,11 +391,12 @@ void BackgroundTracingManagerImpl::OnFinalizeStarted(
   UMA_HISTOGRAM_MEMORY_KB("Tracing.Background.FinalizingTraceSizeInKB",
                           file_contents->size() / 1024);
 
-  if (!receive_callback_.is_null())
+  if (!receive_callback_.is_null()) {
     receive_callback_.Run(
-        file_contents,
+        file_contents, GenerateMetadataDict(),
         base::Bind(&BackgroundTracingManagerImpl::OnFinalizeComplete,
                    base::Unretained(this)));
+  }
 }
 
 void BackgroundTracingManagerImpl::OnFinalizeComplete() {
@@ -421,6 +426,23 @@ void BackgroundTracingManagerImpl::OnFinalizeComplete() {
   RecordBackgroundTracingMetric(FINALIZATION_COMPLETE);
 }
 
+scoped_ptr<base::DictionaryValue>
+BackgroundTracingManagerImpl::GenerateMetadataDict() const {
+  // Grab the product version.
+  std::string product_version = GetContentClient()->GetProduct();
+
+  // Serialize the config into json.
+  scoped_ptr<base::DictionaryValue> config_dict(new base::DictionaryValue());
+
+  BackgroundTracingConfig::IntoDict(config_.get(), config_dict.get());
+
+  scoped_ptr<base::DictionaryValue> metadata_dict(new base::DictionaryValue());
+  metadata_dict->Set(kMetaDataConfigKey, config_dict.Pass());
+  metadata_dict->SetString(kMetaDataVersionKey, product_version);
+
+  return metadata_dict.Pass();
+}
+
 void BackgroundTracingManagerImpl::BeginFinalizing(
     StartedFinalizingCallback callback) {
   is_gathering_ = true;
@@ -436,6 +458,12 @@ void BackgroundTracingManagerImpl::BeginFinalizing(
     trace_data_sink = content::TracingController::CreateCompressedStringSink(
         data_endpoint_wrapper_);
     RecordBackgroundTracingMetric(FINALIZATION_ALLOWED);
+
+    if (auto metadata_dict = GenerateMetadataDict()) {
+      std::string results;
+      if (base::JSONWriter::Write(*metadata_dict.get(), &results))
+        trace_data_sink->SetMetadata(results);
+    }
   } else {
     RecordBackgroundTracingMetric(FINALIZATION_DISALLOWED);
   }

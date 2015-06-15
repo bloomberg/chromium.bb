@@ -76,6 +76,7 @@ class ChromeTracingDelegateBrowserTest : public InProcessBrowserTest {
 
  private:
   void OnUpload(const scoped_refptr<base::RefCountedString>& file_contents,
+                scoped_ptr<base::DictionaryValue> metadata,
                 base::Callback<void()> done_callback) {
     receive_count_ += 1;
 
