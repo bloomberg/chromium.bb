@@ -101,31 +101,6 @@ HitTestResult& HitTestResult::operator=(const HitTestResult& other)
 {
     m_hitTestLocation = other.m_hitTestLocation;
     m_hitTestRequest = other.m_hitTestRequest;
-    populateFromCachedResult(other);
-
-    return *this;
-}
-
-bool HitTestResult::equalForCacheability(const HitTestResult& other) const
-{
-    return m_hitTestRequest.equalForCacheability(other.m_hitTestRequest)
-        && m_innerNode == other.innerNode()
-        && m_innerPossiblyPseudoNode == other.innerPossiblyPseudoNode()
-        && m_pointInInnerNodeFrame == other.m_pointInInnerNodeFrame
-        && m_localPoint == other.localPoint()
-        && m_innerURLElement == other.URLElement()
-        && m_scrollbar == other.scrollbar()
-        && m_isOverWidget == other.isOverWidget();
-}
-
-void HitTestResult::cacheValues(const HitTestResult& other)
-{
-    *this = other;
-    m_hitTestRequest = other.m_hitTestRequest.type() & ~HitTestRequest::AvoidCache;
-}
-
-void HitTestResult::populateFromCachedResult(const HitTestResult& other)
-{
     m_innerNode = other.innerNode();
     m_innerPossiblyPseudoNode = other.innerPossiblyPseudoNode();
     m_pointInInnerNodeFrame = other.m_pointInInnerNodeFrame;
@@ -133,10 +108,11 @@ void HitTestResult::populateFromCachedResult(const HitTestResult& other)
     m_innerURLElement = other.URLElement();
     m_scrollbar = other.scrollbar();
     m_isOverWidget = other.isOverWidget();
-    m_validityRect = other.m_validityRect;
 
     // Only copy the NodeSet in case of list hit test.
     m_listBasedTestResult = adoptPtrWillBeNoop(other.m_listBasedTestResult ? new NodeSet(*other.m_listBasedTestResult) : 0);
+
+    return *this;
 }
 
 DEFINE_TRACE(HitTestResult)
@@ -241,11 +217,6 @@ bool HitTestResult::isSelected() const
     if (LocalFrame* frame = m_innerNode->document().frame())
         return frame->selection().contains(m_hitTestLocation.point());
     return false;
-}
-
-void HitTestResult::setValidityRect(const LayoutRect& rect)
-{
-    m_validityRect = rect;
 }
 
 String HitTestResult::spellingToolTip(TextDirection& dir) const

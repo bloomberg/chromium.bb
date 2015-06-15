@@ -1772,7 +1772,6 @@ void Document::updateLayoutTree(StyleRecalcChange change)
 
     if (m_focusedElement && !m_focusedElement->isFocusable())
         clearFocusedElementSoon();
-    layoutView()->clearHitTestCache();
 
     ASSERT(!m_timeline->hasOutdatedAnimation());
 

@@ -231,9 +231,6 @@ public:
     virtual bool isOrphan() const = 0;
 
     virtual void setWebLayerClient(WebLayerClient*) = 0;
-
-    // TODO(dtapuska): Make pure virtual once cc side has landed crbug.com/398920.
-    virtual void setHitTestCacheRect(const WebRect&) { };
 };
 
 } // namespace blink

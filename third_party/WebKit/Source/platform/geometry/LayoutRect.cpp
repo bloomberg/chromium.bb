@@ -162,9 +162,4 @@ LayoutRect enclosingLayoutRect(const FloatRect& rect)
     return LayoutRect(location, maxPoint - location);
 }
 
-LayoutRect boundingRect(const LayoutPoint& point)
-{
-    return LayoutRect(point, LayoutSize(LayoutUnit::epsilonUnit(), LayoutUnit::epsilonUnit()));
-}
-
 } // namespace blink

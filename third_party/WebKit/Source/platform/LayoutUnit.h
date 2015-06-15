@@ -170,13 +170,6 @@ public:
 
     static float epsilon() { return 1.0f / kFixedPointDenominator; }
 
-    static const LayoutUnit epsilonUnit()
-    {
-        LayoutUnit m;
-        m.m_value = 1;
-        return m;
-    }
-
     static const LayoutUnit max()
     {
         LayoutUnit m;

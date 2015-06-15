@@ -49,8 +49,7 @@ class PositionWithAffinity;
 class Scrollbar;
 
 class CORE_EXPORT HitTestResult {
-    ALLOW_ONLY_INLINE_ALLOCATION();
-
+    DISALLOW_ALLOCATION();
 public:
     typedef WillBeHeapListHashSet<RefPtrWillBeMember<Node>> NodeSet;
 
@@ -63,14 +62,6 @@ public:
     ~HitTestResult();
     HitTestResult& operator=(const HitTestResult&);
     DECLARE_TRACE();
-
-    bool equalForCacheability(const HitTestResult&) const;
-    void cacheValues(const HitTestResult&);
-
-    // Populate this object based on another HitTestResult; similar to assignment operator
-    // but don't assign any of the request parameters. ie. Thie method avoids setting
-    // |m_hitTestLocation|, |m_hitTestRequest|.
-    void populateFromCachedResult(const HitTestResult&);
 
     // For point-based hit tests, these accessors provide information about the node
     // under the point. For rect-based hit tests they are meaningless (reflect the
@@ -133,9 +124,6 @@ public:
 
     bool isOverLink() const;
 
-    const LayoutRect& validityRect() const { return m_validityRect; }
-    void setValidityRect(const LayoutRect&);
-
     // Return true if the test is a list-based test and we should continue testing.
     bool addNodeToListBasedTestResult(Node*, const HitTestLocation& pointInContainer, const LayoutRect& = LayoutRect());
     bool addNodeToListBasedTestResult(Node*, const HitTestLocation& pointInContainer, const FloatRect&);
@@ -155,7 +143,6 @@ private:
 
     HitTestLocation m_hitTestLocation;
     HitTestRequest m_hitTestRequest;
-    LayoutRect m_validityRect;
 
     RefPtrWillBeMember<Node> m_innerNode;
     RefPtrWillBeMember<Node> m_innerPossiblyPseudoNode;

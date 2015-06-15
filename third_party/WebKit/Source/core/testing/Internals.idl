@@ -63,9 +63,6 @@
     [RaisesException] unsigned long updateStyleAndReturnAffectedElementCount();
     [RaisesException] unsigned long needsLayoutCount();
     [RaisesException] unsigned long hitTestCount(Document document);
-    [RaisesException] unsigned long hitTestCacheHits(Document document);
-    [RaisesException] Element? elementFromPointNoCache(Document document, double x, double y);
-    [RaisesException] void clearHitTestCache(Document document);
 
     // CSS Animation and Transition testing.
     [RaisesException] void pauseAnimations(double pauseTime);
