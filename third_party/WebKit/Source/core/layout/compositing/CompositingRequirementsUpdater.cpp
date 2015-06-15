@@ -223,6 +223,9 @@ void CompositingRequirementsUpdater::updateRecursive(DeprecatedPaintLayer* ances
     if (currentRecursionData.m_compositingAncestor && currentRecursionData.m_compositingAncestor->layoutObject()->isVideo())
         directReasons |= CompositingReasonVideoOverlay;
 
+    if (currentRecursionData.m_hasCompositedScrollingAncestor && layer->layoutObject()->styleRef().hasViewportConstrainedPosition())
+        directReasons |= CompositingReasonPositionFixed;
+
     if (compositor->canBeComposited(layer)) {
         reasonsToComposite |= directReasons;
 
