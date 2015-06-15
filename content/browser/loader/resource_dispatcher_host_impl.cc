@@ -1188,8 +1188,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
   }
 
   // Construct the request.
-  scoped_ptr<net::URLRequest> new_request;
-  new_request = request_context->CreateRequest(
+  scoped_ptr<net::URLRequest> new_request = request_context->CreateRequest(
       request_data.url, request_data.priority, NULL);
 
   new_request->set_method(request_data.method);
