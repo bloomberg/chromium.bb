@@ -712,8 +712,6 @@ bool LocalFrame::isURLAllowed(const KURL& url) const
 {
     // We allow one level of self-reference because some sites depend on that,
     // but we don't allow more than one.
-    if (host()->subframeCount() >= FrameHost::maxNumberOfFrames)
-        return false;
     bool foundSelfReference = false;
     for (const Frame* frame = this; frame; frame = frame->tree().parent()) {
         if (!frame->isLocalFrame())

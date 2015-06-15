@@ -73,6 +73,12 @@ void NodeRareData::finalizeGarbageCollectedObject()
         this->~NodeRareData();
 }
 
+void NodeRareData::incrementConnectedSubframeCount(unsigned amount)
+{
+    RELEASE_ASSERT_WITH_SECURITY_IMPLICATION((m_connectedFrameCount + amount) <= FrameHost::maxNumberOfFrames);
+    m_connectedFrameCount += amount;
+}
+
 // Ensure the 10 bits reserved for the m_connectedFrameCount cannot overflow
 static_assert(FrameHost::maxNumberOfFrames < (1 << NodeRareData::ConnectedFrameCountBits), "Frame limit should fit in rare data count");
 

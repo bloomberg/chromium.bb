@@ -82,10 +82,7 @@ public:
     }
 
     unsigned connectedSubframeCount() const { return m_connectedFrameCount; }
-    void incrementConnectedSubframeCount(unsigned amount)
-    {
-        m_connectedFrameCount += amount;
-    }
+    void incrementConnectedSubframeCount(unsigned amount);
     void decrementConnectedSubframeCount(unsigned amount)
     {
         ASSERT(m_connectedFrameCount);

@@ -7733,4 +7733,12 @@ TEST_F(WebFrameTest, OrientationFrameDetach)
     webViewImpl->mainFrameImpl()->sendOrientationChangeEvent();
 }
 
+TEST_F(WebFrameTest, MaxFramesDetach)
+{
+    registerMockedHttpURLLoad("max-frames-detach.html");
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    WebViewImpl* webViewImpl = webViewHelper.initializeAndLoad(m_baseURL + "max-frames-detach.html", true);
+    webViewImpl->mainFrameImpl()->collectGarbage();
+}
+
 } // namespace blink
