@@ -46,7 +46,7 @@ bool WebrtcDesktopCapturePrivateChooseDesktopMediaFunction::RunAsync() {
 
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &request_id_));
   DesktopCaptureRequestsRegistry::GetInstance()->AddRequest(
-      render_view_host()->GetProcess()->GetID(), request_id_, this);
+      render_frame_host()->GetProcess()->GetID(), request_id_, this);
 
   args_->Remove(0, NULL);
 

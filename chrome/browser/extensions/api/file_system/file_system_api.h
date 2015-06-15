@@ -112,7 +112,7 @@ class ConsentProvider {
 // context of running extensions) for ConsentProvider.
 class ConsentProviderDelegate : public ConsentProvider::DelegateInterface {
  public:
-  ConsentProviderDelegate(Profile* profile, content::RenderViewHost* host);
+  ConsentProviderDelegate(Profile* profile, content::RenderFrameHost* host);
   ~ConsentProviderDelegate();
 
  private:
@@ -135,7 +135,7 @@ class ConsentProviderDelegate : public ConsentProvider::DelegateInterface {
   bool IsWhitelistedComponent(const extensions::Extension& extension) override;
 
   Profile* const profile_;
-  content::RenderViewHost* const host_;
+  content::RenderFrameHost* const host_;
 
   DISALLOW_COPY_AND_ASSIGN(ConsentProviderDelegate);
 };

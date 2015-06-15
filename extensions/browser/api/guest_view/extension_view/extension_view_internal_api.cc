@@ -6,8 +6,8 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/stop_find_action.h"
@@ -21,7 +21,7 @@ bool ExtensionViewInternalExtensionFunction::RunAsync() {
   int instance_id = 0;
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &instance_id));
   ExtensionViewGuest* guest = ExtensionViewGuest::From(
-      render_view_host()->GetProcess()->GetID(), instance_id);
+      render_frame_host()->GetProcess()->GetID(), instance_id);
   if (!guest)
     return false;
   return RunAsyncSafe(guest);

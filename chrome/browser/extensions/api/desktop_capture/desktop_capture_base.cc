@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capture_options.h"
 #include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
@@ -46,9 +45,9 @@ DesktopCaptureChooseDesktopMediaFunctionBase::
 DesktopCaptureChooseDesktopMediaFunctionBase::
     ~DesktopCaptureChooseDesktopMediaFunctionBase() {
   // RenderViewHost may be already destroyed.
-  if (render_view_host()) {
+  if (render_frame_host()) {
     DesktopCaptureRequestsRegistry::GetInstance()->RemoveRequest(
-        render_view_host()->GetProcess()->GetID(), request_id_);
+        render_frame_host()->GetProcess()->GetID(), request_id_);
   }
 }
 
@@ -206,7 +205,7 @@ bool DesktopCaptureCancelChooseDesktopMediaFunctionBase::RunSync() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &request_id));
 
   DesktopCaptureRequestsRegistry::GetInstance()->CancelRequest(
-      render_view_host()->GetProcess()->GetID(), request_id);
+      render_frame_host()->GetProcess()->GetID(), request_id);
   return true;
 }
 

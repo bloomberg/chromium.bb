@@ -10,7 +10,7 @@
 #include <utility>
 #include <vector>
 
-#include "content/public/browser/render_view_host.h"
+#include "base/callback.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handlers/file_handler_info.h"
 
@@ -19,6 +19,7 @@ class Profile;
 namespace extensions {
 
 class ExtensionPrefs;
+struct FileHandlerInfo;
 struct GrantedFileEntry;
 
 // TODO(benwells): move this to platform_apps namespace.
@@ -78,12 +79,11 @@ bool HasFileSystemWritePermission(const Extension* extension);
 
 // Validates a file entry and populates |file_path| with the absolute path if it
 // is valid.
-bool ValidateFileEntryAndGetPath(
-    const std::string& filesystem_name,
-    const std::string& filesystem_path,
-    const content::RenderViewHost* render_view_host,
-    base::FilePath* file_path,
-    std::string* error);
+bool ValidateFileEntryAndGetPath(const std::string& filesystem_name,
+                                 const std::string& filesystem_path,
+                                 int render_process_id,
+                                 base::FilePath* file_path,
+                                 std::string* error);
 
 }  // namespace app_file_handler_util
 

@@ -8,6 +8,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -249,7 +250,7 @@ bool WebViewInternalExtensionFunction::RunAsync() {
   int instance_id = 0;
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &instance_id));
   WebViewGuest* guest = WebViewGuest::From(
-      render_view_host()->GetProcess()->GetID(), instance_id);
+      render_frame_host()->GetProcess()->GetID(), instance_id);
   if (!guest)
     return false;
 
@@ -306,7 +307,7 @@ bool WebViewInternalExecuteCodeFunction::Init() {
 
   WebContents* web_contents = GetSenderWebContents();
   if (web_contents && web_contents->GetWebUI()) {
-    const GURL& url = render_view_host()->GetSiteInstance()->GetSiteURL();
+    const GURL& url = render_frame_host()->GetSiteInstance()->GetSiteURL();
     set_host_id(HostID(HostID::WEBUI, url.spec()));
     return true;
   }
@@ -323,10 +324,10 @@ bool WebViewInternalExecuteCodeFunction::CanExecuteScriptOnPage() {
 
 extensions::ScriptExecutor*
 WebViewInternalExecuteCodeFunction::GetScriptExecutor() {
-  if (!render_view_host() || !render_view_host()->GetProcess())
+  if (!render_frame_host() || !render_frame_host()->GetProcess())
     return NULL;
   WebViewGuest* guest = WebViewGuest::From(
-      render_view_host()->GetProcess()->GetID(), guest_instance_id_);
+      render_frame_host()->GetProcess()->GetID(), guest_instance_id_);
   if (!guest)
     return NULL;
 
@@ -344,10 +345,10 @@ const GURL& WebViewInternalExecuteCodeFunction::GetWebViewSrc() const {
 bool WebViewInternalExecuteCodeFunction::LoadFileForWebUI(
     const std::string& file_src,
     const WebUIURLFetcher::WebUILoadFileCallback& callback) {
-  if (!render_view_host() || !render_view_host()->GetProcess())
+  if (!render_frame_host() || !render_frame_host()->GetProcess())
     return false;
   WebViewGuest* guest = WebViewGuest::From(
-      render_view_host()->GetProcess()->GetID(), guest_instance_id_);
+      render_frame_host()->GetProcess()->GetID(), guest_instance_id_);
   if (!guest || host_id().type() != HostID::WEBUI)
     return false;
 
@@ -355,7 +356,7 @@ bool WebViewInternalExecuteCodeFunction::LoadFileForWebUI(
   GURL file_url(owner_base_url.Resolve(file_src));
 
   url_fetcher_.reset(new WebUIURLFetcher(
-      this->browser_context(), render_view_host()->GetProcess()->GetID(),
+      this->browser_context(), render_frame_host()->GetProcess()->GetID(),
       render_view_host()->GetRoutingID(), file_url, callback));
   url_fetcher_->Start();
   return true;

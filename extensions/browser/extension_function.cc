@@ -10,7 +10,6 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "extensions/browser/extension_function_dispatcher.h"
@@ -415,7 +414,7 @@ UIThreadExtensionFunction::UIThreadExtensionFunction()
 }
 
 UIThreadExtensionFunction::~UIThreadExtensionFunction() {
-  if (dispatcher() && render_view_host())
+  if (dispatcher() && render_frame_host())
     dispatcher()->OnExtensionFunctionCompleted(extension());
 }
 

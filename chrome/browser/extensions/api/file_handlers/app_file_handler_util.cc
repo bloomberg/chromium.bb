@@ -9,7 +9,6 @@
 #include "base/files/file_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
-#include "content/public/browser/render_process_host.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/granted_file_entry.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -316,12 +315,11 @@ bool HasFileSystemWritePermission(const Extension* extension) {
       APIPermission::kFileSystemWrite);
 }
 
-bool ValidateFileEntryAndGetPath(
-    const std::string& filesystem_name,
-    const std::string& filesystem_path,
-    const content::RenderViewHost* render_view_host,
-    base::FilePath* file_path,
-    std::string* error) {
+bool ValidateFileEntryAndGetPath(const std::string& filesystem_name,
+                                 const std::string& filesystem_path,
+                                 int render_process_id,
+                                 base::FilePath* file_path,
+                                 std::string* error) {
   if (filesystem_path.empty()) {
     *error = kInvalidParameters;
     return false;
@@ -337,8 +335,7 @@ bool ValidateFileEntryAndGetPath(
   // filesystem.
   content::ChildProcessSecurityPolicy* policy =
       content::ChildProcessSecurityPolicy::GetInstance();
-  if (!policy->CanReadFileSystem(render_view_host->GetProcess()->GetID(),
-                                 filesystem_id)) {
+  if (!policy->CanReadFileSystem(render_process_id, filesystem_id)) {
     *error = kSecurityError;
     return false;
   }

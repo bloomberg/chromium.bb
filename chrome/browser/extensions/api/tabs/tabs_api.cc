@@ -62,7 +62,6 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
@@ -1072,8 +1071,7 @@ bool TabsGetCurrentFunction::RunSync() {
 
   // Return the caller, if it's a tab. If not the result isn't an error but an
   // empty tab (hence returning true).
-  WebContents* caller_contents =
-      WebContents::FromRenderViewHost(render_view_host());
+  WebContents* caller_contents = GetSenderWebContents();
   if (caller_contents && ExtensionTabUtil::GetTabId(caller_contents) >= 0)
     SetResult(ExtensionTabUtil::CreateTabValue(caller_contents, extension()));
 

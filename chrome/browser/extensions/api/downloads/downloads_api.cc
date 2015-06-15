@@ -55,6 +55,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -954,8 +955,7 @@ bool DownloadsDownloadFunction::RunAsync() {
 
   scoped_ptr<content::DownloadUrlParameters> download_params(
       new content::DownloadUrlParameters(
-          download_url,
-          render_view_host()->GetProcess()->GetID(),
+          download_url, render_frame_host()->GetProcess()->GetID(),
           render_view_host()->GetRoutingID(),
           current_profile->GetResourceContext()));
 

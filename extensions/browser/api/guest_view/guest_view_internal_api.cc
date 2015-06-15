@@ -7,8 +7,8 @@
 #include "components/guest_view/browser/guest_view_base.h"
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "components/guest_view/common/guest_view_constants.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "extensions/browser/guest_view/extensions_guest_view_manager_delegate.h"
 #include "extensions/common/api/guest_view_internal.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -93,7 +93,7 @@ bool GuestViewInternalDestroyGuestFunction::RunAsync() {
       guest_view_internal::DestroyGuest::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   GuestViewBase* guest = GuestViewBase::From(
-      render_view_host()->GetProcess()->GetID(), params->instance_id);
+      render_frame_host()->GetProcess()->GetID(), params->instance_id);
   if (!guest)
     return false;
   guest->Destroy();
@@ -112,7 +112,7 @@ bool GuestViewInternalSetSizeFunction::RunAsync() {
       guest_view_internal::SetSize::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   GuestViewBase* guest = GuestViewBase::From(
-      render_view_host()->GetProcess()->GetID(), params->instance_id);
+      render_frame_host()->GetProcess()->GetID(), params->instance_id);
   if (!guest)
     return false;
 

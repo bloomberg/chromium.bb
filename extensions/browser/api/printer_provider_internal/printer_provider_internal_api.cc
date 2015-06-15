@@ -17,8 +17,8 @@
 #include "content/public/browser/blob_handle.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/api/printer_provider/printer_provider_api.h"
 #include "extensions/browser/api/printer_provider/printer_provider_api_factory.h"
@@ -235,11 +235,9 @@ void PrinterProviderInternalGetPrintDataFunction::OnBlob(
   std::vector<std::string> uuids;
   uuids.push_back(blob->GetUUID());
 
-  content::WebContents* contents =
-      content::WebContents::FromRenderViewHost(render_view_host());
   extensions::BlobHolder* holder =
       extensions::BlobHolder::FromRenderProcessHost(
-          contents->GetRenderProcessHost());
+          render_frame_host()->GetProcess());
   holder->HoldBlobReference(blob.Pass());
 
   results_ = internal_api::GetPrintData::Results::Create(info);

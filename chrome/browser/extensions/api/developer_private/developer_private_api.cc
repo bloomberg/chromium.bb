@@ -44,6 +44,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_instance.h"
@@ -867,7 +868,7 @@ bool DeveloperPrivateLoadDirectoryFunction::RunAsync() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(2, &directory_url_str));
 
   context_ = content::BrowserContext::GetStoragePartition(
-      GetProfile(), render_view_host()->GetSiteInstance())
+                 GetProfile(), render_frame_host()->GetSiteInstance())
                  ->GetFileSystemContext();
 
   // Directory url is non empty only for syncfilesystem.
@@ -882,11 +883,10 @@ bool DeveloperPrivateLoadDirectoryFunction::RunAsync() {
     return LoadByFileSystemAPI(directory_url);
   } else {
     // Check if the DirecotryEntry is the instance of chrome filesystem.
-    if (!app_file_handler_util::ValidateFileEntryAndGetPath(filesystem_name,
-                                                            filesystem_path,
-                                                            render_view_host(),
-                                                            &project_base_path_,
-                                                            &error_)) {
+    if (!app_file_handler_util::ValidateFileEntryAndGetPath(
+            filesystem_name, filesystem_path,
+            render_frame_host()->GetProcess()->GetID(), &project_base_path_,
+            &error_)) {
       SetError("DirectoryEntry of unsupported filesystem.");
       return false;
     }

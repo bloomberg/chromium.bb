@@ -35,7 +35,6 @@
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/app_window/app_window.h"
@@ -226,16 +225,18 @@ void PassFileInfoToUIThread(const FileInfoOptCallback& callback,
 }
 
 // Gets a WebContents instance handle for a platform app hosted in
-// |render_view_host|. If not found, then returns NULL.
-content::WebContents* GetWebContentsForRenderViewHost(
+// |render_frame_host|. If not found, then returns NULL.
+content::WebContents* GetWebContentsForRenderFrameHost(
     Profile* profile,
-    content::RenderViewHost* render_view_host) {
-  extensions::AppWindowRegistry* const registry =
-      extensions::AppWindowRegistry::Get(profile);
-  DCHECK(registry);
-  extensions::AppWindow* const app_window =
-      registry->GetAppWindowForRenderViewHost(render_view_host);
-  return app_window ? app_window->web_contents() : nullptr;
+    content::RenderFrameHost* render_frame_host) {
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(render_frame_host);
+  // Check if there is an app window associated with the web contents; if not,
+  // return null.
+  return extensions::AppWindowRegistry::Get(profile)
+                 ->GetAppWindowForWebContents(web_contents)
+             ? web_contents
+             : nullptr;
 }
 
 #if defined(OS_CHROMEOS)
@@ -407,7 +408,7 @@ void ConsentProvider::DialogResultToConsent(const ConsentCallback& callback,
 }
 
 ConsentProviderDelegate::ConsentProviderDelegate(Profile* profile,
-                                                 content::RenderViewHost* host)
+                                                 content::RenderFrameHost* host)
     : profile_(profile), host_(host) {
   DCHECK(profile_);
 }
@@ -428,7 +429,7 @@ void ConsentProviderDelegate::ShowDialog(
     const file_system_api::ConsentProvider::ShowDialogCallback& callback) {
   DCHECK(host_);
   content::WebContents* const foreground_contents =
-      GetWebContentsForRenderViewHost(profile_, host_);
+      GetWebContentsForRenderFrameHost(profile_, host_);
   // If there is no web contents handle, then the method is most probably
   // executed from a background page. Find an app window to host the dialog.
   content::WebContents* const web_contents =
@@ -492,11 +493,9 @@ bool FileSystemGetDisplayPathFunction::RunSync() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(1, &filesystem_path));
 
   base::FilePath file_path;
-  if (!app_file_handler_util::ValidateFileEntryAndGetPath(filesystem_name,
-                                                          filesystem_path,
-                                                          render_view_host(),
-                                                          &file_path,
-                                                          &error_))
+  if (!app_file_handler_util::ValidateFileEntryAndGetPath(
+          filesystem_name, filesystem_path,
+          render_frame_host()->GetProcess()->GetID(), &file_path, &error_))
     return false;
 
   file_path = path_util::PrettifyPath(file_path);
@@ -525,7 +524,7 @@ void FileSystemEntryFunction::PrepareFilesForWritableApp(
 void FileSystemEntryFunction::RegisterFileSystemsAndSendResponse(
     const std::vector<base::FilePath>& paths) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (!render_view_host())
+  if (!render_frame_host())
     return;
 
   CreateResponse();
@@ -589,11 +588,9 @@ bool FileSystemGetWritableEntryFunction::RunAsync() {
     return false;
   }
 
-  if (!app_file_handler_util::ValidateFileEntryAndGetPath(filesystem_name,
-                                                          filesystem_path,
-                                                          render_view_host(),
-                                                          &path_,
-                                                          &error_))
+  if (!app_file_handler_util::ValidateFileEntryAndGetPath(
+          filesystem_name, filesystem_path,
+          render_frame_host()->GetProcess()->GetID(), &path_, &error_))
     return false;
 
   content::BrowserThread::PostTaskAndReply(
@@ -774,7 +771,7 @@ void FileSystemChooseEntryFunction::ShowPicker(
   // platform-app only.
   content::WebContents* const web_contents =
       extension_->is_platform_app()
-          ? GetWebContentsForRenderViewHost(GetProfile(), render_view_host())
+          ? GetWebContentsForRenderFrameHost(GetProfile(), render_frame_host())
           : GetAssociatedWebContents();
   if (!web_contents) {
     error_ = kInvalidCallingPage;
@@ -890,7 +887,7 @@ void FileSystemChooseEntryFunction::FilesSelected(
     // Get the WebContents for the app window to be the parent window of the
     // confirmation dialog if necessary.
     content::WebContents* const web_contents =
-        GetWebContentsForRenderViewHost(GetProfile(), render_view_host());
+        GetWebContentsForRenderFrameHost(GetProfile(), render_frame_host());
     if (!web_contents) {
       error_ = kInvalidCallingPage;
       SendResponse(false);
@@ -1137,11 +1134,9 @@ bool FileSystemRetainEntryFunction::RunAsync() {
     base::FilePath path;
     EXTENSION_FUNCTION_VALIDATE(args_->GetString(1, &filesystem_name));
     EXTENSION_FUNCTION_VALIDATE(args_->GetString(2, &filesystem_path));
-    if (!app_file_handler_util::ValidateFileEntryAndGetPath(filesystem_name,
-                                                            filesystem_path,
-                                                            render_view_host(),
-                                                            &path,
-                                                            &error_)) {
+    if (!app_file_handler_util::ValidateFileEntryAndGetPath(
+            filesystem_name, filesystem_path,
+            render_frame_host()->GetProcess()->GetID(), &path, &error_)) {
       return false;
     }
 
@@ -1283,7 +1278,7 @@ ExtensionFunction::ResponseAction FileSystemRequestFileSystemFunction::Run() {
   // Only kiosk apps in kiosk sessions can use this API.
   // Additionally it is enabled for whitelisted component extensions and apps.
   file_system_api::ConsentProviderDelegate consent_provider_delegate(
-      chrome_details_.GetProfile(), render_view_host());
+      chrome_details_.GetProfile(), render_frame_host());
   file_system_api::ConsentProvider consent_provider(&consent_provider_delegate);
 
   if (!consent_provider.IsGrantable(*extension()))
@@ -1406,23 +1401,23 @@ void FileSystemRequestFileSystemFunction::OnConsentReceived(
   DCHECK(policy);
 
   // Read-only permisisons.
-  policy->GrantReadFile(render_view_host()->GetProcess()->GetID(),
+  policy->GrantReadFile(render_frame_host()->GetProcess()->GetID(),
                         volume->mount_path());
-  policy->GrantReadFileSystem(render_view_host()->GetProcess()->GetID(),
+  policy->GrantReadFileSystem(render_frame_host()->GetProcess()->GetID(),
                               file_system_id);
 
   // Additional write permissions.
   if (writable) {
-    policy->GrantCreateReadWriteFile(render_view_host()->GetProcess()->GetID(),
+    policy->GrantCreateReadWriteFile(render_frame_host()->GetProcess()->GetID(),
                                      volume->mount_path());
-    policy->GrantCopyInto(render_view_host()->GetProcess()->GetID(),
+    policy->GrantCopyInto(render_frame_host()->GetProcess()->GetID(),
                           volume->mount_path());
-    policy->GrantWriteFileSystem(render_view_host()->GetProcess()->GetID(),
+    policy->GrantWriteFileSystem(render_frame_host()->GetProcess()->GetID(),
                                  file_system_id);
-    policy->GrantDeleteFromFileSystem(render_view_host()->GetProcess()->GetID(),
-                                      file_system_id);
+    policy->GrantDeleteFromFileSystem(
+        render_frame_host()->GetProcess()->GetID(), file_system_id);
     policy->GrantCreateFileForFileSystem(
-        render_view_host()->GetProcess()->GetID(), file_system_id);
+        render_frame_host()->GetProcess()->GetID(), file_system_id);
   }
 
   base::DictionaryValue* const dict = new base::DictionaryValue();
@@ -1444,7 +1439,7 @@ ExtensionFunction::ResponseAction FileSystemGetVolumeListFunction::Run() {
   // Only kiosk apps in kiosk sessions can use this API.
   // Additionally it is enabled for whitelisted component extensions and apps.
   file_system_api::ConsentProviderDelegate consent_provider_delegate(
-      chrome_details_.GetProfile(), render_view_host());
+      chrome_details_.GetProfile(), render_frame_host());
   file_system_api::ConsentProvider consent_provider(&consent_provider_delegate);
 
   if (!consent_provider.IsGrantable(*extension()))
