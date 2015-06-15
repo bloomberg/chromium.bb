@@ -4,36 +4,16 @@
 
 import("mojo.gni")
 
-# Generate a binary Mojo application in a self-named directory.
-# Application resources are copied to a "resources" directory alongside the app.
-# The parameters of this template are those of a shared library.
+# Generate a binary mojo application.The parameters of this template are those
+# of a shared library.
 template("mojo_native_application") {
-  base_target_name = target_name
   if (defined(invoker.output_name)) {
     base_target_name = invoker.output_name
+  } else {
+    base_target_name = target_name
   }
 
   final_target_name = target_name
-
-  mojo_deps = []
-  if (defined(invoker.deps)) {
-    mojo_deps += invoker.deps
-  }
-
-  if (defined(invoker.resources)) {
-    copy_step_name = "${base_target_name}__copy_resources"
-    copy(copy_step_name) {
-      sources = invoker.resources
-      outputs = [
-        "${root_out_dir}/${base_target_name}/resources/{{source_file_part}}",
-      ]
-      if (defined(invoker.testonly)) {
-        testonly = invoker.testonly
-      }
-      deps = mojo_deps
-    }
-    mojo_deps += [ ":$copy_step_name" ]
-  }
 
   if (!is_nacl) {
     output = base_target_name + ".mojo"
@@ -50,8 +30,8 @@ template("mojo_native_application") {
     }
 
     if (is_android) {
-      # On android, use the stripped version of the library, because
-      # applications are always fetched over the network.
+      # On android, use the stripped version of the library, because applications
+      # are always fetched over the network.
       library_dir = "${root_out_dir}/lib.stripped"
     } else {
       library_dir = root_out_dir
@@ -111,7 +91,9 @@ template("mojo_native_application") {
                          ],
                          ".",
                          mojo_root)
-      deps += mojo_deps
+      if (defined(invoker.deps)) {
+        deps += invoker.deps
+      }
       if (defined(invoker.forward_dependent_configs_from)) {
         forward_dependent_configs_from = invoker.forward_dependent_configs_from
       }
@@ -164,7 +146,7 @@ template("mojo_native_application") {
         "${library_dir}/${library_name}",
       ]
       outputs = [
-        "${root_out_dir}/${base_target_name}/${output}",
+        "${root_out_dir}/${output}",
       ]
     }
   } else {
@@ -229,7 +211,9 @@ template("mojo_native_application") {
                          ],
                          ".",
                          mojo_root)
-      deps += mojo_deps
+      if (defined(invoker.deps)) {
+        deps += invoker.deps
+      }
       if (defined(invoker.forward_dependent_configs_from)) {
         forward_dependent_configs_from = invoker.forward_dependent_configs_from
       }
@@ -282,7 +266,7 @@ template("mojo_native_application") {
         input_path,
       ]
 
-      output_path = "${root_build_dir}/${base_target_name}/${output}"
+      output_path = "${root_build_dir}/${output}"
       outputs = [
         output_path,
       ]
@@ -352,20 +336,21 @@ if (is_android) {
       }
     }
 
+    if (defined(invoker.output_name)) {
+      mojo_output = "$root_out_dir/" + invoker.output_name + ".mojo"
+    } else {
+      mojo_output = "$root_out_dir/" + target_name + ".mojo"
+    }
+
     action(target_name) {
       script = rebase_path("mojo/public/tools/prepend.py", ".", mojo_root)
-
-      base_target_name = target_name
-      if (defined(invoker.output_name)) {
-        base_target_name = invoker.output_name
-      }
 
       input = zip_action_output
       inputs = [
         input,
       ]
 
-      output = "${root_out_dir}/${base_target_name}/${base_target_name}.mojo"
+      output = mojo_output
       outputs = [
         output,
       ]

@@ -140,18 +140,42 @@ TEST_F(URLResolverTest, TestQueryForURLMapping) {
   EXPECT_EQ("https://c.org/b/a/foo?a=b", mapped_url.spec());
 }
 
-TEST_F(URLResolverTest, TestQueryForBaseFileURL) {
+TEST_F(URLResolverTest, TestQueryForBaseURL) {
   URLResolver resolver;
   resolver.SetMojoBaseURL(GURL("file:///base"));
   GURL mapped_url = resolver.ResolveMojoURL(GURL("mojo:foo?a=b"));
-  EXPECT_EQ("file:///base/foo/foo.mojo?a=b", mapped_url.spec());
+  EXPECT_EQ("file:///base/foo.mojo?a=b", mapped_url.spec());
 }
 
-TEST_F(URLResolverTest, TestQueryForBaseHttpURL) {
+// Verifies that ResolveMojoURL prefers the directory with the name of the host
+// over the raw file.
+TEST_F(URLResolverTest, PreferDirectory) {
+  base::ScopedTempDir tmp_dir;
+  ASSERT_TRUE(tmp_dir.CreateUniqueTempDir());
   URLResolver resolver;
-  resolver.SetMojoBaseURL(GURL("http://127.0.0.1:1234"));
-  GURL mapped_url = resolver.ResolveMojoURL(GURL("mojo:foo?a=b"));
-  EXPECT_EQ("http://127.0.0.1:1234/foo/foo.mojo?a=b", mapped_url.spec());
+  // With no directory |mojo:foo| maps to path/foo.mojo.
+  resolver.SetMojoBaseURL(util::FilePathToFileURL(tmp_dir.path()));
+  const GURL mapped_url = resolver.ResolveMojoURL(GURL("mojo:foo"));
+  EXPECT_EQ(util::FilePathToFileURL(tmp_dir.path()).spec() + "/foo.mojo",
+            mapped_url.spec());
+
+  // With an empty directory |mojo:foo| maps to path/foo.mojo.
+  const base::FilePath foo_file_path(
+      tmp_dir.path().Append(FILE_PATH_LITERAL("foo")));
+  ASSERT_TRUE(base::CreateDirectory(foo_file_path));
+  const GURL mapped_url_with_dir = resolver.ResolveMojoURL(GURL("mojo:foo"));
+  EXPECT_EQ(util::FilePathToFileURL(tmp_dir.path()).spec() + "/foo.mojo",
+            mapped_url_with_dir.spec());
+
+  // When foo.mojo exists in the directory (path/foo/foo.mojo), then it should
+  // be picked up.
+  // With an empty directory |mojo:foo| maps to path/foo/foo.mojo.
+  ASSERT_EQ(1,
+            base::WriteFile(foo_file_path.Append(FILE_PATH_LITERAL("foo.mojo")),
+                            "a", 1));
+  const GURL mapped_url_in_dir = resolver.ResolveMojoURL(GURL("mojo:foo"));
+  EXPECT_EQ(util::FilePathToFileURL(tmp_dir.path()).spec() + "/foo/foo.mojo",
+            mapped_url_in_dir.spec());
 }
 
 }  // namespace
