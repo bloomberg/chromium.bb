@@ -24,11 +24,11 @@
  */
 
 #include "config.h"
-
 #include "wtf/TemporaryChange.h"
+
 #include <gtest/gtest.h>
 
-namespace {
+namespace WTF {
 
 TEST(TemporaryChangeTest, Nested)
 {
@@ -45,4 +45,4 @@ TEST(TemporaryChangeTest, Nested)
     EXPECT_FALSE(originallyFalse);
 }
 
-} // namespace
+} // namespace WTF

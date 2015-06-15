@@ -24,11 +24,11 @@
  */
 
 #include "config.h"
-
 #include "wtf/MathExtras.h"
+
 #include <gtest/gtest.h>
 
-namespace {
+namespace WTF {
 
 TEST(MathExtrasTest, Lrint)
 {
@@ -261,4 +261,4 @@ TEST(MathExtrasTest, infinityMath)
     EXPECT_EQ(1.0, pow(nan, 0.0));
 }
 
-} // namespace
+} // namespace WTF

@@ -24,7 +24,6 @@
  */
 
 #include "config.h"
-
 #include "wtf/TreeNode.h"
 
 #include "wtf/PassRefPtr.h"
@@ -32,7 +31,7 @@
 #include "wtf/RefPtr.h"
 #include <gtest/gtest.h>
 
-namespace {
+namespace WTF {
 
 class TestTree : public RefCounted<TestTree>, public TreeNode<TestTree> {
 public:
@@ -233,5 +232,4 @@ TEST(TreeNodeTest, TraverseNextPostORder)
 
 }
 
-
-} // namespace
+} // namespace WTF

@@ -24,8 +24,8 @@
  */
 
 #include "config.h"
-
 #include "wtf/HashMap.h"
+
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
@@ -33,9 +33,11 @@
 #include "wtf/Vector.h"
 #include <gtest/gtest.h>
 
+namespace WTF {
+
 namespace {
 
-typedef WTF::HashMap<int, int> IntHashMap;
+using IntHashMap = HashMap<int, int>;
 
 TEST(HashMapTest, IteratorComparison)
 {
@@ -59,9 +61,9 @@ struct TestDoubleHashTraits : HashTraits<double> {
     static const unsigned minimumTableSize = 8;
 };
 
-typedef HashMap<double, int64_t, DefaultHash<double>::Hash, TestDoubleHashTraits> DoubleHashMap;
+using DoubleHashMap = HashMap<double, int64_t, DefaultHash<double>::Hash, TestDoubleHashTraits>;
 
-static int bucketForKey(double key)
+int bucketForKey(double key)
 {
     return DefaultHash<double>::Hash::hash(key) & (TestDoubleHashTraits::minimumTableSize - 1);
 }
@@ -102,7 +104,7 @@ private:
     int* m_destructNumber;
 };
 
-typedef WTF::HashMap<int, OwnPtr<DestructCounter>> OwnPtrHashMap;
+using OwnPtrHashMap = HashMap<int, OwnPtr<DestructCounter>>;
 
 TEST(HashMapTest, OwnPtrAsValue)
 {
@@ -137,8 +139,7 @@ TEST(HashMapTest, OwnPtrAsValue)
     EXPECT_EQ(2, destructNumber);
 }
 
-
-class DummyRefCounted: public WTF::RefCounted<DummyRefCounted> {
+class DummyRefCounted : public RefCounted<DummyRefCounted> {
 public:
     DummyRefCounted(bool& isDeleted) : m_isDeleted(isDeleted) { m_isDeleted = false; }
     ~DummyRefCounted()
@@ -242,7 +243,7 @@ public:
 private:
     int m_v;
 };
-typedef HashMap<int, OwnPtr<SimpleClass>> IntSimpleMap;
+using IntSimpleMap = HashMap<int, OwnPtr<SimpleClass>>;
 
 TEST(HashMapTest, AddResult)
 {
@@ -302,4 +303,6 @@ TEST(HashMapTest, ValueTypeDestructed)
     EXPECT_EQ(0, InstanceCounter::counter);
 }
 
-} // namespace
+} // anonymous namespace
+
+} // namespace WTF

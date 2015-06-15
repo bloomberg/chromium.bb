@@ -32,7 +32,7 @@ static int wtfStringCopyCount;
 #include "wtf/text/WTFString.h"
 #include <gtest/gtest.h>
 
-namespace {
+namespace WTF {
 
 #define EXPECT_N_WTF_STRING_COPIES(count, expr) \
     do { \
@@ -42,7 +42,7 @@ namespace {
         EXPECT_EQ(count, wtfStringCopyCount) << #expr; \
     } while (false)
 
-TEST(WTF, DISABLED_StringOperators)
+TEST(StringOperatorsTest, DISABLED_StringOperators)
 {
     String string("String");
     AtomicString atomicString("AtomicString");
@@ -185,4 +185,4 @@ TEST(WTF, DISABLED_StringOperators)
 #endif
 }
 
-} // namespace
+} // namespace WTF

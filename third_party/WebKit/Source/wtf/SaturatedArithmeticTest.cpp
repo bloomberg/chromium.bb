@@ -34,7 +34,7 @@
 #include <gtest/gtest.h>
 #include <limits.h>
 
-namespace {
+namespace WTF {
 
 TEST(SaturatedArithmeticTest, Addition)
 {
@@ -153,5 +153,4 @@ TEST(SaturatedArithmeticTest, SetUnsigned)
         saturatedSet(kNotOverflowed, kFractionBits));
 }
 
-
-} // namespace
+} // namespace WTF

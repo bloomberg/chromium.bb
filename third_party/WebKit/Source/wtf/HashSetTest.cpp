@@ -24,24 +24,26 @@
  */
 
 #include "config.h"
-
 #include "wtf/HashSet.h"
+
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
 #include <gtest/gtest.h>
 
-namespace {
+namespace WTF {
 
 template<int initialCapacity>
-    struct InitialCapacityTestHashTraits : public WTF::UnsignedWithZeroKeyHashTraits<int> {
+struct InitialCapacityTestHashTraits : public UnsignedWithZeroKeyHashTraits<int> {
     static const int minimumTableSize = initialCapacity;
 };
+
+namespace {
 
 template<unsigned size>
 void testInitialCapacity()
 {
-    const unsigned initialCapacity = WTF::HashTableCapacityForSize<size>::value;
+    const unsigned initialCapacity = HashTableCapacityForSize<size>::value;
     HashSet<int, DefaultHash<int>::Hash, InitialCapacityTestHashTraits<initialCapacity>> testSet;
 
     // Initial capacity is null.
@@ -163,7 +165,7 @@ TEST(HashSetTest, HashSetOwnPtr)
     EXPECT_EQ(ptr2, ownPtr2);
 }
 
-class DummyRefCounted: public WTF::RefCounted<DummyRefCounted> {
+class DummyRefCounted : public RefCounted<DummyRefCounted> {
 public:
     DummyRefCounted(bool& isDeleted) : m_isDeleted(isDeleted) { m_isDeleted = false; }
     ~DummyRefCounted() { m_isDeleted = true; }
@@ -208,5 +210,6 @@ TEST(HashSetTest, HashSetRefPtr)
     EXPECT_EQ(1, DummyRefCounted::s_refInvokesCount);
 }
 
+} // anonymous namespace
 
-} // namespace
+} // namespace WTF

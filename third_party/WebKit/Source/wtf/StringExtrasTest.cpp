@@ -24,14 +24,14 @@
  */
 
 #include "config.h"
-
 #include "wtf/StringExtras.h"
+
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
 #include <gtest/gtest.h>
 #include <limits>
 
-namespace {
+namespace WTF {
 
 template<typename IntegerType> struct PrintfFormatTrait { static const char format[]; };
 
@@ -134,4 +134,4 @@ TEST(StringExtraTest, IntegerToStringConversionUnsignedIntegerRegularNumbers)
     testNumbers<unsigned long long>();
 }
 
-} // namespace
+} // namespace WTF

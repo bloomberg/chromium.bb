@@ -24,13 +24,14 @@
  */
 
 #include "config.h"
-
 #include "wtf/Deque.h"
 
 #include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include <gtest/gtest.h>
+
+namespace WTF {
 
 namespace {
 
@@ -163,7 +164,7 @@ private:
     int* m_destructNumber;
 };
 
-typedef WTF::Deque<OwnPtr<DestructCounter>> OwnPtrDeque;
+using OwnPtrDeque = Deque<OwnPtr<DestructCounter>>;
 
 TEST(DequeTest, OwnPtr)
 {
@@ -232,7 +233,8 @@ TEST(DequeTest, OwnPtr)
 }
 
 // WrappedInt class will fail if it was memmoved or memcpyed.
-static HashSet<void*> constructedWrappedInts;
+HashSet<void*> constructedWrappedInts;
+
 class WrappedInt {
 public:
     WrappedInt(int i = 0)
@@ -313,4 +315,6 @@ TEST(DequeTest, SwapWithoutInlineCapacity)
     dequeB.swap(dequeA);
 }
 
-} // namespace
+} // anonymous namespace
+
+} // namespace WTF

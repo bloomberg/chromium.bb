@@ -33,32 +33,32 @@
 
 #include <gtest/gtest.h>
 
-namespace {
+namespace WTF {
 
 TEST(AtomicStringTest, Number)
 {
     int intValue = 1234;
-    ASSERT_EQ("1234", AtomicString::number(intValue));
+    EXPECT_EQ("1234", AtomicString::number(intValue));
     intValue = -1234;
-    ASSERT_EQ("-1234", AtomicString::number(intValue));
+    EXPECT_EQ("-1234", AtomicString::number(intValue));
     unsigned unsignedValue = 1234u;
-    ASSERT_EQ("1234", AtomicString::number(unsignedValue));
+    EXPECT_EQ("1234", AtomicString::number(unsignedValue));
     long longValue = 6553500;
-    ASSERT_EQ("6553500", AtomicString::number(longValue));
+    EXPECT_EQ("6553500", AtomicString::number(longValue));
     longValue = -6553500;
-    ASSERT_EQ("-6553500", AtomicString::number(longValue));
+    EXPECT_EQ("-6553500", AtomicString::number(longValue));
     unsigned long unsignedLongValue = 4294967295u;
-    ASSERT_EQ("4294967295", AtomicString::number(unsignedLongValue));
+    EXPECT_EQ("4294967295", AtomicString::number(unsignedLongValue));
     long long longlongValue = 9223372036854775807;
-    ASSERT_EQ("9223372036854775807", AtomicString::number(longlongValue));
+    EXPECT_EQ("9223372036854775807", AtomicString::number(longlongValue));
     longlongValue = -9223372036854775807;
-    ASSERT_EQ("-9223372036854775807", AtomicString::number(longlongValue));
+    EXPECT_EQ("-9223372036854775807", AtomicString::number(longlongValue));
     unsigned long long unsignedLongLongValue = 18446744073709551615u;
-    ASSERT_EQ("18446744073709551615", AtomicString::number(unsignedLongLongValue));
+    EXPECT_EQ("18446744073709551615", AtomicString::number(unsignedLongLongValue));
     double doubleValue = 1234.56;
-    ASSERT_EQ("1234.56", AtomicString::number(doubleValue));
+    EXPECT_EQ("1234.56", AtomicString::number(doubleValue));
     doubleValue = 1234.56789;
-    ASSERT_EQ("1234.56789", AtomicString::number(doubleValue, 9));
+    EXPECT_EQ("1234.56789", AtomicString::number(doubleValue, 9));
 }
 
 TEST(AtomicStringTest, ImplEquality)
@@ -69,12 +69,12 @@ TEST(AtomicStringTest, ImplEquality)
     AtomicString foo2("foo");
     AtomicString baz2("baz");
     AtomicString bar2("bar");
-    ASSERT_EQ(foo.impl(), foo2.impl());
-    ASSERT_EQ(bar.impl(), bar2.impl());
-    ASSERT_EQ(baz.impl(), baz2.impl());
-    ASSERT_NE(foo.impl(), bar.impl());
-    ASSERT_NE(foo.impl(), baz.impl());
-    ASSERT_NE(bar.impl(), baz.impl());
+    EXPECT_EQ(foo.impl(), foo2.impl());
+    EXPECT_EQ(bar.impl(), bar2.impl());
+    EXPECT_EQ(baz.impl(), baz2.impl());
+    EXPECT_NE(foo.impl(), bar.impl());
+    EXPECT_NE(foo.impl(), baz.impl());
+    EXPECT_NE(bar.impl(), baz.impl());
 }
 
-} // namespace
+} // namespace WTF

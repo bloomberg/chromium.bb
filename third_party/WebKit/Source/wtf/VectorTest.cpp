@@ -24,13 +24,15 @@
  */
 
 #include "config.h"
+#include "wtf/Vector.h"
 
 #include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
-#include "wtf/Vector.h"
 #include <gtest/gtest.h>
+
+namespace WTF {
 
 namespace {
 
@@ -392,4 +394,7 @@ TEST(VectorTest, Compare)
     compare<Comparable>();
     compare<WTF::String>();
 }
-} // namespace
+
+} // anonymous namespace
+
+} // namespace WTF

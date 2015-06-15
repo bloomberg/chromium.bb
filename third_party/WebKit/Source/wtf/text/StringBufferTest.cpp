@@ -5,15 +5,13 @@
  */
 
 #include "config.h"
-
 #include "wtf/text/StringBuffer.h"
 
 #include <gtest/gtest.h>
 
-namespace {
+namespace WTF {
 
-
-TEST(StringBuffer, Initial)
+TEST(StringBufferTest, Initial)
 {
     StringBuffer<LChar> buf1;
     EXPECT_EQ(0u, buf1.length());
@@ -28,7 +26,7 @@ TEST(StringBuffer, Initial)
     EXPECT_TRUE(buf3.characters());
 }
 
-TEST(StringBuffer, shrink)
+TEST(StringBufferTest, shrink)
 {
     StringBuffer<LChar> buf(2);
     EXPECT_EQ(2u, buf.length());
@@ -43,4 +41,4 @@ TEST(StringBuffer, shrink)
     EXPECT_EQ(0u, buf.length());
 }
 
-} // namespace
+} // namespace WTF

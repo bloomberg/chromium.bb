@@ -24,14 +24,14 @@
  */
 
 #include "config.h"
-
 #include "wtf/CheckedArithmetic.h"
+
 #include <gtest/gtest.h>
 
-namespace {
+namespace WTF {
 
 #define CheckedArithmeticTest(type, coerceLiteral, MixedSignednessTest) \
-    TEST(WTF, Checked_##type) \
+    TEST(CheckedArithmeticTest, Checked_##type) \
     { \
         Checked<type, RecordOverflow> value; \
         EXPECT_EQ(coerceLiteral(0), value.unsafeGet()); \
@@ -148,4 +148,4 @@ CheckedArithmeticTest(uint32_t, CoerceLiteralToUnsigned, AllowMixedSignednessTes
 CheckedArithmeticTest(int64_t, CoerceLiteralNop, IgnoreMixedSignednessTest)
 CheckedArithmeticTest(uint64_t, CoerceLiteralToUnsigned, IgnoreMixedSignednessTest)
 
-} // namespace
+} // namespace WTF

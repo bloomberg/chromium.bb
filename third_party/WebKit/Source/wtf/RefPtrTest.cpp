@@ -8,7 +8,7 @@
 #include "wtf/text/StringImpl.h"
 #include <gtest/gtest.h>
 
-namespace {
+namespace WTF {
 
 TEST(RefPtrTest, Basic)
 {
@@ -31,4 +31,4 @@ TEST(RefPtrTest, MoveAssignmentOperator)
     EXPECT_TRUE(!a);
 }
 
-}
+} // namespace WTF

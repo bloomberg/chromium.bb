@@ -24,13 +24,13 @@
  */
 
 #include "config.h"
-
 #include "wtf/Functional.h"
+
 #include "wtf/OwnPtr.h"
 #include "wtf/RefCounted.h"
 #include <gtest/gtest.h>
 
-namespace {
+namespace WTF {
 
 class UnwrappedClass {
 public:
@@ -73,21 +73,15 @@ private:
     int m_value;
 };
 
-} // namespace
-
-namespace WTF {
-
 template<> struct ParamStorageTraits<ClassToBeWrapped> {
     using StorageType = WrappedClass;
     static StorageType wrap(const ClassToBeWrapped& value) { return value.wrap(); }
     static UnwrappedClass unwrap(const StorageType& value) { return value.unwrap(); }
 };
 
-} // namespace WTF
-
 namespace {
 
-static int returnFortyTwo()
+int returnFortyTwo()
 {
     return 42;
 }
@@ -98,12 +92,12 @@ TEST(FunctionalTest, Basic)
     EXPECT_EQ(42, (*returnFortyTwoFunction)());
 }
 
-static int multiplyByTwo(int n)
+int multiplyByTwo(int n)
 {
     return n * 2;
 }
 
-static double multiplyByOneAndAHalf(double d)
+double multiplyByOneAndAHalf(double d)
 {
     return d * 1.5;
 }
@@ -126,12 +120,12 @@ TEST(FunctionalTest, UnaryPartBind)
     EXPECT_EQ(4.5, (*multiplyByOneAndAHalfFunction)(3));
 }
 
-static int multiply(int x, int y)
+int multiply(int x, int y)
 {
     return x * y;
 }
 
-static int subtract(int x, int y)
+int subtract(int x, int y)
 {
     return x - y;
 }
@@ -158,14 +152,14 @@ TEST(FunctionalTest, BinaryPartBind)
     EXPECT_EQ(2, (*subtractFunction)(4, 2));
 }
 
-static void sixArgFunc(int a, double b, char c, int* d, double* e, char* f)
+void sixArgFunc(int a, double b, char c, int* d, double* e, char* f)
 {
     *d = a;
     *e = b;
     *f = c;
 }
 
-static void assertArgs(int actualInt, double actualDouble, char actualChar, int expectedInt, double expectedDouble, char expectedChar)
+void assertArgs(int actualInt, double actualDouble, char actualChar, int expectedInt, double expectedDouble, char expectedChar)
 {
     EXPECT_EQ(expectedInt, actualInt);
     EXPECT_EQ(expectedDouble, actualDouble);
@@ -275,7 +269,7 @@ private:
     int m_value;
 };
 
-static int multiplyNumberByTwo(Number* number)
+int multiplyNumberByTwo(Number* number)
 {
     return number->value() * 2;
 }
@@ -318,4 +312,6 @@ TEST(FunctionalTest, WrapUnwrapInPartialBind)
     EXPECT_EQ(21, (*partiallyBoundFunction)(7));
 }
 
-} // namespace
+} // anonymous namespace
+
+} // namespace WTF

@@ -32,6 +32,8 @@
 #include "wtf/RefPtr.h"
 #include <gtest/gtest.h>
 
+namespace WTF {
+
 namespace {
 
 template<typename Set>
@@ -244,7 +246,7 @@ TEST(LinkedHashSetTest, PrependOrMoveToLastWithDuplicates)
     prependOrMoveToLastWithDuplicates<LinkedHashSet<int>>();
 }
 
-class DummyRefCounted: public WTF::RefCounted<DummyRefCounted> {
+class DummyRefCounted : public RefCounted<DummyRefCounted> {
 public:
     DummyRefCounted(bool& isDeleted) : m_isDeleted(isDeleted) { m_isDeleted = false; }
     ~DummyRefCounted() { m_isDeleted = true; }
@@ -718,4 +720,6 @@ TEST(LinkedHashSetTest, Swap)
     swapTestHelper<LinkedHashSet<int>>();
 }
 
-} // namespace
+} // anonymous namespace
+
+} // namespace WTF

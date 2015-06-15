@@ -24,33 +24,37 @@
  */
 
 #include "config.h"
-
 #include "wtf/StringHasher.h"
+
 #include <gtest/gtest.h>
+
+namespace WTF {
 
 namespace {
 
-static const LChar nullLChars[2] = { 0, 0 };
-static const UChar nullUChars[2] = { 0, 0 };
+const LChar nullLChars[2] = { 0, 0 };
+const UChar nullUChars[2] = { 0, 0 };
 
-static const unsigned emptyStringHash = 0x4EC889EU;
-static const unsigned singleNullCharacterHash = 0x3D3ABF44U;
+const unsigned emptyStringHash = 0x4EC889EU;
+const unsigned singleNullCharacterHash = 0x3D3ABF44U;
 
-static const LChar testALChars[6] = { 0x41, 0x95, 0xFF, 0x50, 0x01, 0 };
-static const UChar testAUChars[6] = { 0x41, 0x95, 0xFF, 0x50, 0x01, 0 };
-static const UChar testBUChars[6] = { 0x41, 0x95, 0xFFFF, 0x1080, 0x01, 0 };
+const LChar testALChars[6] = { 0x41, 0x95, 0xFF, 0x50, 0x01, 0 };
+const UChar testAUChars[6] = { 0x41, 0x95, 0xFF, 0x50, 0x01, 0 };
+const UChar testBUChars[6] = { 0x41, 0x95, 0xFFFF, 0x1080, 0x01, 0 };
 
-static const unsigned testAHash1 = 0xEA32B004;
-static const unsigned testAHash2 = 0x93F0F71E;
-static const unsigned testAHash3 = 0xCB609EB1;
-static const unsigned testAHash4 = 0x7984A706;
-static const unsigned testAHash5 = 0x0427561F;
+const unsigned testAHash1 = 0xEA32B004;
+const unsigned testAHash2 = 0x93F0F71E;
+const unsigned testAHash3 = 0xCB609EB1;
+const unsigned testAHash4 = 0x7984A706;
+const unsigned testAHash5 = 0x0427561F;
 
-static const unsigned testBHash1 = 0xEA32B004;
-static const unsigned testBHash2 = 0x93F0F71E;
-static const unsigned testBHash3 = 0x59EB1B2C;
-static const unsigned testBHash4 = 0xA7BCCC0A;
-static const unsigned testBHash5 = 0x79201649;
+const unsigned testBHash1 = 0xEA32B004;
+const unsigned testBHash2 = 0x93F0F71E;
+const unsigned testBHash3 = 0x59EB1B2C;
+const unsigned testBHash4 = 0xA7BCCC0A;
+const unsigned testBHash5 = 0x79201649;
+
+} // anonymous namespace
 
 TEST(StringHasherTest, StringHasher)
 {
@@ -406,4 +410,4 @@ TEST(StringHasherTest, StringHasher_hashMemory)
     EXPECT_EQ(testBHash5 & 0xFFFFFF, StringHasher::hashMemory<10>(testBUChars));
 }
 
-} // namespace
+} // namespace WTF

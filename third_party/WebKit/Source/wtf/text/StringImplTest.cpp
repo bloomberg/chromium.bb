@@ -24,26 +24,25 @@
  */
 
 #include "config.h"
-
 #include "wtf/text/StringImpl.h"
+
 #include "wtf/text/WTFString.h"
 #include <gtest/gtest.h>
 
-namespace {
+namespace WTF {
 
-TEST(WTF, StringImplCreate8Bit)
+TEST(StringImplTest, Create8Bit)
 {
     RefPtr<StringImpl> testStringImpl = StringImpl::create("1224");
-    ASSERT_TRUE(testStringImpl->is8Bit());
+    EXPECT_TRUE(testStringImpl->is8Bit());
 }
 
-TEST(WTF, StringImplLatin1CaseFoldTable)
+TEST(StringImplTest, Latin1CaseFoldTable)
 {
     LChar symbol = 0xff;
     while (symbol--) {
-        EXPECT_EQ(WTF::Unicode::foldCase(symbol), StringImpl::latin1CaseFoldTable[symbol]);
+        EXPECT_EQ(Unicode::foldCase(symbol), StringImpl::latin1CaseFoldTable[symbol]);
     }
 }
 
-
-} // namespace
+} // namespace WTF

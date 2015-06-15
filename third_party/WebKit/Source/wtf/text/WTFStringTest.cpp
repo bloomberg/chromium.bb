@@ -24,48 +24,52 @@
  */
 
 #include "config.h"
+#include "wtf/text/WTFString.h"
 
 #include "wtf/MathExtras.h"
 #include "wtf/text/CString.h"
-#include "wtf/text/WTFString.h"
 #include <gtest/gtest.h>
 #include <limits>
 
-namespace {
+namespace WTF {
 
-TEST(WTF, StringCreationFromLiteral)
+TEST(StringTest, CreationFromLiteral)
 {
     String stringFromLiteral("Explicit construction syntax");
-    ASSERT_EQ(strlen("Explicit construction syntax"), stringFromLiteral.length());
-    ASSERT_TRUE(stringFromLiteral == "Explicit construction syntax");
-    ASSERT_TRUE(stringFromLiteral.is8Bit());
-    ASSERT_TRUE(String("Explicit construction syntax") == stringFromLiteral);
+    EXPECT_EQ(strlen("Explicit construction syntax"), stringFromLiteral.length());
+    EXPECT_TRUE(stringFromLiteral == "Explicit construction syntax");
+    EXPECT_TRUE(stringFromLiteral.is8Bit());
+    EXPECT_TRUE(String("Explicit construction syntax") == stringFromLiteral);
 }
 
-TEST(WTF, StringASCII)
+TEST(StringTest, ASCII)
 {
     CString output;
 
     // Null String.
     output = String().ascii();
-    ASSERT_STREQ("", output.data());
+    EXPECT_STREQ("", output.data());
 
     // Empty String.
     output = emptyString().ascii();
-    ASSERT_STREQ("", output.data());
+    EXPECT_STREQ("", output.data());
 
     // Regular String.
     output = String("foobar").ascii();
-    ASSERT_STREQ("foobar", output.data());
+    EXPECT_STREQ("foobar", output.data());
 }
 
-static void testNumberToStringECMAScript(double number, const char* reference)
+namespace {
+
+void testNumberToStringECMAScript(double number, const char* reference)
 {
     CString numberString = String::numberToStringECMAScript(number).latin1();
-    ASSERT_STREQ(reference, numberString.data());
+    EXPECT_STREQ(reference, numberString.data());
 }
 
-TEST(WTF, StringNumberToStringECMAScriptBoundaries)
+} // anonymous namespace
+
+TEST(StringTest, NumberToStringECMAScriptBoundaries)
 {
     typedef std::numeric_limits<double> Limits;
 
@@ -85,7 +89,7 @@ TEST(WTF, StringNumberToStringECMAScriptBoundaries)
     testNumberToStringECMAScript(Limits::max(), "1.7976931348623157e+308");
 }
 
-TEST(WTF, StringNumberToStringECMAScriptRegularNumbers)
+TEST(StringTest, NumberToStringECMAScriptRegularNumbers)
 {
     // Pi.
     testNumberToStringECMAScript(piDouble, "3.141592653589793");
@@ -108,48 +112,48 @@ TEST(WTF, StringNumberToStringECMAScriptRegularNumbers)
     testNumberToStringECMAScript(phi, "1.618033988749895");
 }
 
-TEST(WTF, StringReplaceWithLiteral)
+TEST(StringTest, ReplaceWithLiteral)
 {
     // Cases for 8Bit source.
     String testString = "1224";
-    ASSERT_TRUE(testString.is8Bit());
+    EXPECT_TRUE(testString.is8Bit());
     testString.replaceWithLiteral('2', "");
-    ASSERT_STREQ("14", testString.utf8().data());
+    EXPECT_STREQ("14", testString.utf8().data());
 
     testString = "1224";
-    ASSERT_TRUE(testString.is8Bit());
+    EXPECT_TRUE(testString.is8Bit());
     testString.replaceWithLiteral('2', "3");
-    ASSERT_STREQ("1334", testString.utf8().data());
+    EXPECT_STREQ("1334", testString.utf8().data());
 
     testString = "1224";
-    ASSERT_TRUE(testString.is8Bit());
+    EXPECT_TRUE(testString.is8Bit());
     testString.replaceWithLiteral('2', "555");
-    ASSERT_STREQ("15555554", testString.utf8().data());
+    EXPECT_STREQ("15555554", testString.utf8().data());
 
     testString = "1224";
-    ASSERT_TRUE(testString.is8Bit());
+    EXPECT_TRUE(testString.is8Bit());
     testString.replaceWithLiteral('3', "NotFound");
-    ASSERT_STREQ("1224", testString.utf8().data());
+    EXPECT_STREQ("1224", testString.utf8().data());
 
     // Cases for 16Bit source.
     // U+00E9 (=0xC3 0xA9 in UTF-8) is e with accent.
     testString = String::fromUTF8("r\xC3\xA9sum\xC3\xA9");
-    ASSERT_FALSE(testString.is8Bit());
+    EXPECT_FALSE(testString.is8Bit());
     testString.replaceWithLiteral(UChar(0x00E9), "e");
-    ASSERT_STREQ("resume", testString.utf8().data());
+    EXPECT_STREQ("resume", testString.utf8().data());
 
     testString = String::fromUTF8("r\xC3\xA9sum\xC3\xA9");
-    ASSERT_FALSE(testString.is8Bit());
+    EXPECT_FALSE(testString.is8Bit());
     testString.replaceWithLiteral(UChar(0x00E9), "");
-    ASSERT_STREQ("rsum", testString.utf8().data());
+    EXPECT_STREQ("rsum", testString.utf8().data());
 
     testString = String::fromUTF8("r\xC3\xA9sum\xC3\xA9");
-    ASSERT_FALSE(testString.is8Bit());
+    EXPECT_FALSE(testString.is8Bit());
     testString.replaceWithLiteral('3', "NotFound");
-    ASSERT_STREQ("r\xC3\xA9sum\xC3\xA9", testString.utf8().data());
+    EXPECT_STREQ("r\xC3\xA9sum\xC3\xA9", testString.utf8().data());
 }
 
-TEST(WTF, StringComparisonOfSameStringVectors)
+TEST(StringTest, ComparisonOfSameStringVectors)
 {
     Vector<String> stringVector;
     stringVector.append("one");
@@ -159,22 +163,22 @@ TEST(WTF, StringComparisonOfSameStringVectors)
     sameStringVector.append("one");
     sameStringVector.append("two");
 
-    ASSERT_EQ(stringVector, sameStringVector);
+    EXPECT_EQ(stringVector, sameStringVector);
 }
 
 TEST(WTF, SimplifyWhiteSpace)
 {
     String extraSpaces("  Hello  world  ");
-    ASSERT_EQ(String("Hello world"), extraSpaces.simplifyWhiteSpace());
-    ASSERT_EQ(String("  Hello  world  "), extraSpaces.simplifyWhiteSpace(WTF::DoNotStripWhiteSpace));
+    EXPECT_EQ(String("Hello world"), extraSpaces.simplifyWhiteSpace());
+    EXPECT_EQ(String("  Hello  world  "), extraSpaces.simplifyWhiteSpace(WTF::DoNotStripWhiteSpace));
 
     String extraSpacesAndNewlines(" \nHello\n world\n ");
-    ASSERT_EQ(String("Hello world"), extraSpacesAndNewlines.simplifyWhiteSpace());
-    ASSERT_EQ(String("  Hello  world  "), extraSpacesAndNewlines.simplifyWhiteSpace(WTF::DoNotStripWhiteSpace));
+    EXPECT_EQ(String("Hello world"), extraSpacesAndNewlines.simplifyWhiteSpace());
+    EXPECT_EQ(String("  Hello  world  "), extraSpacesAndNewlines.simplifyWhiteSpace(WTF::DoNotStripWhiteSpace));
 
     String extraSpacesAndTabs(" \nHello\t world\t ");
-    ASSERT_EQ(String("Hello world"), extraSpacesAndTabs.simplifyWhiteSpace());
-    ASSERT_EQ(String("  Hello  world  "), extraSpacesAndTabs.simplifyWhiteSpace(WTF::DoNotStripWhiteSpace));
+    EXPECT_EQ(String("Hello world"), extraSpacesAndTabs.simplifyWhiteSpace());
+    EXPECT_EQ(String("  Hello  world  "), extraSpacesAndTabs.simplifyWhiteSpace(WTF::DoNotStripWhiteSpace));
 }
 
 struct CaseFoldingTestData {
@@ -211,7 +215,7 @@ const char* lithuanianLocales[] = {
 const char* nonLithuanianLocales[] = {
     "en", "en-US", "en_US", "en@foo=bar", "EN", "En", "ja", "fil", "fi", "el", };
 
-TEST(WTF, StringToUpperLocale)
+TEST(StringTest, ToUpperLocale)
 {
     CaseFoldingTestData testDataList[] = {
         {
@@ -263,7 +267,7 @@ TEST(WTF, StringToUpperLocale)
     }
 }
 
-TEST(WTF, StringToLowerLocale)
+TEST(StringTest, ToLowerLocale)
 {
     CaseFoldingTestData testDataList[] = {
         {
@@ -335,4 +339,4 @@ TEST(WTF, StartsWithIgnoringASCIICase)
     EXPECT_FALSE(startsWithIgnoringASCIICase(nonASCII, allASCIIDifferent));
 }
 
-} // namespace
+} // namespace WTF
