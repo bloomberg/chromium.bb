@@ -1980,3 +1980,4 @@ crbug.com/424338 [ XP ] tables/mozilla/bugs/bug3037-1.html [ Failure ]
 
 crbug.com/490141 [ SnowLeopard ] compositing/layer-creation/fixed-position-in-fixed-overflow.html [ NeedsRebaseline ]
 crbug.com/497950 [ SnowLeopard ] virtual/antialiasedtext/fast/text/international/pop-up-button-text-alignment-and-direction.html [ NeedsRebaseline ]
+crbug.com/453972 [ XP ] paint/frames/frameset-with-stacking-contexts.html  [ NeedsRebaseline ]
