@@ -93,9 +93,9 @@ message Verifiers {
   // result is too old (>1 day) it is ignored.
   optional TryJobVerifier try_job = 3;
 
-  // Deprecated. This verifier is only used by some legacy CQs that run
-  // presubmit on the CQ host. Please use a presubmit builder instead.
-  optional PresubmitCheckVerifier presubmit_check = 4;
+  // This verifier is used to ensure that the author has signed Google's
+  // Contributor License Agreement.
+  optional SignCLAVerifier sign_cla = 4;
 
   message ReviewerLgtmVerifier {
     // Required. Name of the project, whose committer list to use. This allows
@@ -123,12 +123,6 @@ message Verifiers {
   }
 
   message TryJobVerifier {
-    message Property {
-      optional string name = 1;
-      // TODO(sergiyb): Change type to Any on switching to protobuf3.
-      optional string value = 2;
-    }
-
     message Builder {
       // Name of the builder.
       optional string name = 1;
@@ -136,9 +130,6 @@ message Verifiers {
       // When true, the builder is triggered by CQ. Otherwise, it is expected to
       // be triggered from another tryjob. Default value is true.
       optional bool triggered = 2;
-
-      // Arbitrary properties passed to the tryjob.
-      repeated Property properties = 3;
 
       // When this field is present, it marks given builder as experimental. It
       // is only executed on a given percentage of the CLs and the outcome does
@@ -159,8 +150,5 @@ message Verifiers {
     repeated Bucket buckets = 1;
   }
 
-  message PresubmitCheckVerifier {
-    // After this timeout in seconds, the presubmit process will be killed.
-    optional int32 timeout = 1;
-  }
+  message SignCLAVerifier {}
 }
