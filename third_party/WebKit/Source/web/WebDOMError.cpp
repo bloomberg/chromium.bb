@@ -67,10 +67,11 @@ WebString WebDOMError::message() const
     return m_private->message();
 }
 
-v8::Local<v8::Value>  WebDOMError::toV8Value(v8::Local<v8::Object> /* creationContext */, v8::Isolate* isolate)
+v8::Local<v8::Value>  WebDOMError::toV8Value(v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
 {
     // We no longer use |creationContext| because it's often misused and points
     // to a context faked by user script.
+    ASSERT(creationContext->CreationContext() == isolate->GetCurrentContext());
     if (!m_private.get())
         return v8::Local<v8::Value>();
     return toV8(m_private.get(), isolate->GetCurrentContext()->Global(), isolate);

@@ -116,10 +116,11 @@ WebURL WebDOMFileSystem::rootURL() const
     return m_private->rootURL();
 }
 
-v8::Local<v8::Value> WebDOMFileSystem::toV8Value(v8::Local<v8::Object> /* creationContext */, v8::Isolate* isolate)
+v8::Local<v8::Value> WebDOMFileSystem::toV8Value(v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
 {
     // We no longer use |creationContext| because it's often misused and points
     // to a context faked by user script.
+    ASSERT(creationContext->CreationContext() == isolate->GetCurrentContext());
     if (!m_private.get())
         return v8::Local<v8::Value>();
     return toV8(m_private.get(), isolate->GetCurrentContext()->Global(), isolate);
@@ -131,6 +132,9 @@ v8::Local<v8::Value> WebDOMFileSystem::createV8Entry(
     v8::Local<v8::Object> creationContext,
     v8::Isolate* isolate)
 {
+    // We no longer use |creationContext| because it's often misused and points
+    // to a context faked by user script.
+    ASSERT(creationContext->CreationContext() == isolate->GetCurrentContext());
     if (!m_private.get())
         return v8::Local<v8::Value>();
     if (entryType == EntryTypeDirectory)
