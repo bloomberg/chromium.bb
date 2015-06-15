@@ -57,8 +57,9 @@ void HTMLBRElement::collectStyleForPresentationAttribute(const QualifiedName& na
             else
                 addPropertyToPresentationAttributeStyle(style, CSSPropertyClear, value);
         }
-    } else
+    } else {
         HTMLElement::collectStyleForPresentationAttribute(name, value, style);
+    }
 }
 
 LayoutObject* HTMLBRElement::createLayoutObject(const ComputedStyle& style)

@@ -55,8 +55,8 @@
 
 #include "bindings/core/v8/ScriptController.h"
 #include "core/HTMLNames.h"
-#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLBodyElement.h"
 #include "core/page/FocusController.h"

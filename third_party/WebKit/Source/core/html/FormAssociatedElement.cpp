@@ -313,10 +313,9 @@ const HTMLElement& toHTMLElement(const FormAssociatedElement& associatedElement)
 {
     if (associatedElement.isFormControlElement())
         return toHTMLFormControlElement(associatedElement);
-    else if (associatedElement.isLabelElement())
+    if (associatedElement.isLabelElement())
         return toHTMLLabelElement(associatedElement);
-    else
-        return toHTMLObjectElement(associatedElement);
+    return toHTMLObjectElement(associatedElement);
 }
 
 const HTMLElement* toHTMLElement(const FormAssociatedElement* associatedElement)

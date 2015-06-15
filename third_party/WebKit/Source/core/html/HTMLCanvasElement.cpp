@@ -77,7 +77,7 @@ const int DefaultHeight = 150;
 // in exchange for a smaller maximum canvas size.
 const int MaxCanvasArea = 32768 * 8192; // Maximum canvas area in CSS pixels
 
-//In Skia, we will also limit width/height to 32767.
+// In Skia, we will also limit width/height to 32767.
 const int MaxSkiaDim = 32767; // Maximum width/height in CSS pixels.
 
 bool canCreateImageBuffer(const IntSize& size)

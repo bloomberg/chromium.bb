@@ -72,8 +72,9 @@ void HTMLAreaElement::parseAttribute(const QualifiedName& name, const AtomicStri
         invalidateCachedRegion();
     } else if (name == altAttr || name == accesskeyAttr) {
         // Do nothing.
-    } else
+    } else {
         HTMLAnchorElement::parseAttribute(name, value);
+    }
 }
 
 void HTMLAreaElement::invalidateCachedRegion()
@@ -142,36 +143,36 @@ Path HTMLAreaElement::getRegion(const LayoutSize& size) const
 
     Path path;
     switch (shape) {
-        case Poly:
-            if (m_coords.size() >= 6) {
-                int numPoints = m_coords.size() / 2;
-                path.moveTo(FloatPoint(minimumValueForLength(m_coords[0], width).toFloat(), minimumValueForLength(m_coords[1], height).toFloat()));
-                for (int i = 1; i < numPoints; ++i)
-                    path.addLineTo(FloatPoint(minimumValueForLength(m_coords[i * 2], width).toFloat(), minimumValueForLength(m_coords[i * 2 + 1], height).toFloat()));
-                path.closeSubpath();
-            }
-            break;
-        case Circle:
-            if (m_coords.size() >= 3) {
-                Length radius = m_coords[2];
-                float r = std::min(minimumValueForLength(radius, width).toFloat(), minimumValueForLength(radius, height).toFloat());
-                path.addEllipse(FloatRect(minimumValueForLength(m_coords[0], width).toFloat() - r, minimumValueForLength(m_coords[1], height).toFloat() - r, 2 * r, 2 * r));
-            }
-            break;
-        case Rect:
-            if (m_coords.size() >= 4) {
-                float x0 = minimumValueForLength(m_coords[0], width).toFloat();
-                float y0 = minimumValueForLength(m_coords[1], height).toFloat();
-                float x1 = minimumValueForLength(m_coords[2], width).toFloat();
-                float y1 = minimumValueForLength(m_coords[3], height).toFloat();
-                path.addRect(FloatRect(x0, y0, x1 - x0, y1 - y0));
-            }
-            break;
-        case Default:
-            path.addRect(FloatRect(0, 0, width.toFloat(), height.toFloat()));
-            break;
-        case Unknown:
-            break;
+    case Poly:
+        if (m_coords.size() >= 6) {
+            int numPoints = m_coords.size() / 2;
+            path.moveTo(FloatPoint(minimumValueForLength(m_coords[0], width).toFloat(), minimumValueForLength(m_coords[1], height).toFloat()));
+            for (int i = 1; i < numPoints; ++i)
+                path.addLineTo(FloatPoint(minimumValueForLength(m_coords[i * 2], width).toFloat(), minimumValueForLength(m_coords[i * 2 + 1], height).toFloat()));
+            path.closeSubpath();
+        }
+        break;
+    case Circle:
+        if (m_coords.size() >= 3) {
+            Length radius = m_coords[2];
+            float r = std::min(minimumValueForLength(radius, width).toFloat(), minimumValueForLength(radius, height).toFloat());
+            path.addEllipse(FloatRect(minimumValueForLength(m_coords[0], width).toFloat() - r, minimumValueForLength(m_coords[1], height).toFloat() - r, 2 * r, 2 * r));
+        }
+        break;
+    case Rect:
+        if (m_coords.size() >= 4) {
+            float x0 = minimumValueForLength(m_coords[0], width).toFloat();
+            float y0 = minimumValueForLength(m_coords[1], height).toFloat();
+            float x1 = minimumValueForLength(m_coords[2], width).toFloat();
+            float y1 = minimumValueForLength(m_coords[3], height).toFloat();
+            path.addRect(FloatRect(x0, y0, x1 - x0, y1 - y0));
+        }
+        break;
+    case Default:
+        path.addRect(FloatRect(0, 0, width.toFloat(), height.toFloat()));
+        break;
+    case Unknown:
+        break;
     }
 
     return path;

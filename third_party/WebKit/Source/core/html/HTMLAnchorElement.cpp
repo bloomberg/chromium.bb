@@ -215,10 +215,11 @@ void HTMLAnchorElement::parseAttribute(const QualifiedName& name, const AtomicSt
         invalidateCachedVisitedLinkHash();
     } else if (name == nameAttr || name == titleAttr) {
         // Do nothing.
-    } else if (name == relAttr)
+    } else if (name == relAttr) {
         setRel(value);
-    else
+    } else {
         HTMLElement::parseAttribute(name, value);
+    }
 }
 
 void HTMLAnchorElement::accessKeyAction(bool sendMouseEvents)

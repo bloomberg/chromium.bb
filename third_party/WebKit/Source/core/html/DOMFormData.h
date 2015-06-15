@@ -39,7 +39,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 
-namespace WTF{
+namespace WTF {
 class TextEncoding;
 }
 

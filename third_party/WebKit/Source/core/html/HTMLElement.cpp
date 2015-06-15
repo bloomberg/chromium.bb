@@ -68,8 +68,7 @@ namespace blink {
 using namespace HTMLNames;
 using namespace WTF;
 
-using std::min;
-using std::max;
+using namespace std;
 
 DEFINE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLElement);
 
@@ -212,8 +211,9 @@ void HTMLElement::collectStyleForPresentationAttribute(const QualifiedName& name
         } else if (equalIgnoringCase(value, "false"))
             addPropertyToPresentationAttributeStyle(style, CSSPropertyWebkitUserDrag, CSSValueNone);
     } else if (name == dirAttr) {
-        if (equalIgnoringCase(value, "auto"))
+        if (equalIgnoringCase(value, "auto")) {
             addPropertyToPresentationAttributeStyle(style, CSSPropertyUnicodeBidi, unicodeBidiAttributeForDirAuto(this));
+        }
         else {
             if (isValidDirAttribute(value))
                 addPropertyToPresentationAttributeStyle(style, CSSPropertyDirection, value);
@@ -222,14 +222,15 @@ void HTMLElement::collectStyleForPresentationAttribute(const QualifiedName& name
             if (!hasTagName(bdiTag) && !hasTagName(bdoTag) && !hasTagName(outputTag))
                 addPropertyToPresentationAttributeStyle(style, CSSPropertyUnicodeBidi, CSSValueEmbed);
         }
-    } else if (name.matches(XMLNames::langAttr))
+    } else if (name.matches(XMLNames::langAttr)) {
         mapLanguageAttributeToLocale(value, style);
-    else if (name == langAttr) {
+    } else if (name == langAttr) {
         // xml:lang has a higher priority than lang.
         if (!fastHasAttribute(XMLNames::langAttr))
             mapLanguageAttributeToLocale(value, style);
-    } else
+    } else {
         Element::collectStyleForPresentationAttribute(name, value, style);
+    }
 }
 
 const AtomicString& HTMLElement::eventNameForAttributeName(const QualifiedName& attrName)
@@ -365,9 +366,9 @@ PassRefPtrWillBeRawPtr<DocumentFragment> HTMLElement::textToFragment(const Strin
 
         // Find next line break.
         for (i = start; i < length; i++) {
-          c = text[i];
-          if (c == '\r' || c == '\n')
-              break;
+            c = text[i];
+            if (c == '\r' || c == '\n')
+                break;
         }
 
         fragment->appendChild(Text::create(document(), text.substring(start, i - start)), exceptionState);
@@ -498,26 +499,27 @@ void HTMLElement::applyAlignmentAttributeToStyle(const AtomicString& alignment, 
     CSSValueID floatValue = CSSValueInvalid;
     CSSValueID verticalAlignValue = CSSValueInvalid;
 
-    if (equalIgnoringCase(alignment, "absmiddle"))
+    if (equalIgnoringCase(alignment, "absmiddle")) {
         verticalAlignValue = CSSValueMiddle;
-    else if (equalIgnoringCase(alignment, "absbottom"))
+    } else if (equalIgnoringCase(alignment, "absbottom")) {
         verticalAlignValue = CSSValueBottom;
-    else if (equalIgnoringCase(alignment, "left")) {
+    } else if (equalIgnoringCase(alignment, "left")) {
         floatValue = CSSValueLeft;
         verticalAlignValue = CSSValueTop;
     } else if (equalIgnoringCase(alignment, "right")) {
         floatValue = CSSValueRight;
         verticalAlignValue = CSSValueTop;
-    } else if (equalIgnoringCase(alignment, "top"))
+    } else if (equalIgnoringCase(alignment, "top")) {
         verticalAlignValue = CSSValueTop;
-    else if (equalIgnoringCase(alignment, "middle"))
+    } else if (equalIgnoringCase(alignment, "middle")) {
         verticalAlignValue = CSSValueWebkitBaselineMiddle;
-    else if (equalIgnoringCase(alignment, "center"))
+    } else if (equalIgnoringCase(alignment, "center")) {
         verticalAlignValue = CSSValueMiddle;
-    else if (equalIgnoringCase(alignment, "bottom"))
+    } else if (equalIgnoringCase(alignment, "bottom")) {
         verticalAlignValue = CSSValueBaseline;
-    else if (equalIgnoringCase(alignment, "texttop"))
+    } else if (equalIgnoringCase(alignment, "texttop")) {
         verticalAlignValue = CSSValueTextTop;
+    }
 
     if (floatValue != CSSValueInvalid)
         addPropertyToPresentationAttributeStyle(style, CSSPropertyFloat, floatValue);
@@ -540,7 +542,7 @@ String HTMLElement::contentEditable() const
     if (value.isEmpty() || equalIgnoringCase(value, "true"))
         return "true";
     if (equalIgnoringCase(value, "false"))
-         return "false";
+        return "false";
     if (equalIgnoringCase(value, "plaintext-only"))
         return "plaintext-only";
 

@@ -49,8 +49,9 @@ void HTMLDivElement::collectStyleForPresentationAttribute(const QualifiedName& n
             addPropertyToPresentationAttributeStyle(style, CSSPropertyTextAlign, CSSValueWebkitRight);
         else
             addPropertyToPresentationAttributeStyle(style, CSSPropertyTextAlign, value);
-    } else
+    } else {
         HTMLElement::collectStyleForPresentationAttribute(name, value, style);
+    }
 }
 
 }

@@ -105,46 +105,47 @@ void HTMLBodyElement::parseAttribute(const QualifiedName& name, const AtomicStri
         }
 
         setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::LinkColorChange));
-    } else if (name == onloadAttr)
+    } else if (name == onloadAttr) {
         document().setWindowAttributeEventListener(EventTypeNames::load, createAttributeEventListener(document().frame(), name, value, eventParameterName()));
-    else if (name == onbeforeunloadAttr)
+    } else if (name == onbeforeunloadAttr) {
         document().setWindowAttributeEventListener(EventTypeNames::beforeunload, createAttributeEventListener(document().frame(), name, value, eventParameterName()));
-    else if (name == onunloadAttr)
+    } else if (name == onunloadAttr) {
         document().setWindowAttributeEventListener(EventTypeNames::unload, createAttributeEventListener(document().frame(), name, value, eventParameterName()));
-    else if (name == onpagehideAttr)
+    } else if (name == onpagehideAttr) {
         document().setWindowAttributeEventListener(EventTypeNames::pagehide, createAttributeEventListener(document().frame(), name, value, eventParameterName()));
-    else if (name == onpageshowAttr)
+    } else if (name == onpageshowAttr) {
         document().setWindowAttributeEventListener(EventTypeNames::pageshow, createAttributeEventListener(document().frame(), name, value, eventParameterName()));
-    else if (name == onpopstateAttr)
+    } else if (name == onpopstateAttr) {
         document().setWindowAttributeEventListener(EventTypeNames::popstate, createAttributeEventListener(document().frame(), name, value, eventParameterName()));
-    else if (name == onblurAttr)
+    } else if (name == onblurAttr) {
         document().setWindowAttributeEventListener(EventTypeNames::blur, createAttributeEventListener(document().frame(), name, value, eventParameterName()));
-    else if (name == onerrorAttr)
+    } else if (name == onerrorAttr) {
         document().setWindowAttributeEventListener(EventTypeNames::error, createAttributeEventListener(document().frame(), name, value, eventParameterName()));
-    else if (name == onfocusAttr)
+    } else if (name == onfocusAttr) {
         document().setWindowAttributeEventListener(EventTypeNames::focus, createAttributeEventListener(document().frame(), name, value, eventParameterName()));
-    else if (RuntimeEnabledFeatures::orientationEventEnabled() && name == onorientationchangeAttr)
+    } else if (RuntimeEnabledFeatures::orientationEventEnabled() && name == onorientationchangeAttr) {
         document().setWindowAttributeEventListener(EventTypeNames::orientationchange, createAttributeEventListener(document().frame(), name, value, eventParameterName()));
-    else if (name == onhashchangeAttr)
+    } else if (name == onhashchangeAttr) {
         document().setWindowAttributeEventListener(EventTypeNames::hashchange, createAttributeEventListener(document().frame(), name, value, eventParameterName()));
-    else if (name == onmessageAttr)
+    } else if (name == onmessageAttr) {
         document().setWindowAttributeEventListener(EventTypeNames::message, createAttributeEventListener(document().frame(), name, value, eventParameterName()));
-    else if (name == onresizeAttr)
+    } else if (name == onresizeAttr) {
         document().setWindowAttributeEventListener(EventTypeNames::resize, createAttributeEventListener(document().frame(), name, value, eventParameterName()));
-    else if (name == onscrollAttr)
+    } else if (name == onscrollAttr) {
         document().setWindowAttributeEventListener(EventTypeNames::scroll, createAttributeEventListener(document().frame(), name, value, eventParameterName()));
-    else if (name == onselectionchangeAttr)
+    } else if (name == onselectionchangeAttr) {
         document().setAttributeEventListener(EventTypeNames::selectionchange, createAttributeEventListener(document().frame(), name, value, eventParameterName()));
-    else if (name == onstorageAttr)
+    } else if (name == onstorageAttr) {
         document().setWindowAttributeEventListener(EventTypeNames::storage, createAttributeEventListener(document().frame(), name, value, eventParameterName()));
-    else if (name == ononlineAttr)
+    } else if (name == ononlineAttr) {
         document().setWindowAttributeEventListener(EventTypeNames::online, createAttributeEventListener(document().frame(), name, value, eventParameterName()));
-    else if (name == onofflineAttr)
+    } else if (name == onofflineAttr) {
         document().setWindowAttributeEventListener(EventTypeNames::offline, createAttributeEventListener(document().frame(), name, value, eventParameterName()));
-    else if (name == onlanguagechangeAttr)
+    } else if (name == onlanguagechangeAttr) {
         document().setWindowAttributeEventListener(EventTypeNames::languagechange, createAttributeEventListener(document().frame(), name, value, eventParameterName()));
-    else
+    } else {
         HTMLElement::parseAttribute(name, value);
+    }
 }
 
 Node::InsertionNotificationRequest HTMLBodyElement::insertedInto(ContainerNode* insertionPoint)
