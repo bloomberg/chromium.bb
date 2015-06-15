@@ -20,5 +20,13 @@
                 "id": "Fake_id_to_trigger_experiment_code"
             }
         }
+    ],
+    "CustomTabs": [
+        {
+            "group_name": "Enabled"
+        },
+        {
+            "group_name": "Disabled"
+        }
     ]
 }
