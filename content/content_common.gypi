@@ -12,6 +12,7 @@
     '../third_party/WebKit/public/blink_headers.gyp:blink_headers',
     '../third_party/icu/icu.gyp:icuuc',
     '../ui/accessibility/accessibility.gyp:accessibility',
+    '../ui/accessibility/accessibility.gyp:ax_gen',
     '../ui/base/ime/ui_base_ime.gyp:ui_base_ime',
     '../ui/base/ui_base.gyp:ui_base',
     '../ui/events/ipc/events_ipc.gyp:events_ipc',
@@ -30,6 +31,7 @@
     # have to export the blink header settings so that relative paths in these
     # headers resolve correctly.
     '../third_party/WebKit/public/blink_headers.gyp:blink_headers',
+    '../ui/accessibility/accessibility.gyp:ax_gen',
   ],
   'variables': {
     'use_v4lplugin%': 0,
