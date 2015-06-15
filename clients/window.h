@@ -29,9 +29,9 @@
 #include <xkbcommon/xkbcommon.h>
 #include <wayland-client.h>
 #include <cairo.h>
-#include "../shared/config-parser.h"
-#include "../shared/zalloc.h"
-#include "../shared/platform.h"
+#include "shared/config-parser.h"
+#include "shared/zalloc.h"
+#include "shared/platform.h"
 
 #define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
 

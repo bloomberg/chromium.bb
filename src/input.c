@@ -34,7 +34,7 @@
 #include <fcntl.h>
 #include <limits.h>
 
-#include "../shared/os-compatibility.h"
+#include "shared/os-compatibility.h"
 #include "compositor.h"
 
 static void

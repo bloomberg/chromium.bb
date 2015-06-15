@@ -40,7 +40,7 @@
 #include <wayland-cursor.h>
 
 #include "window.h"
-#include "../shared/cairo-util.h"
+#include "shared/cairo-util.h"
 
 struct dnd_drag;
 

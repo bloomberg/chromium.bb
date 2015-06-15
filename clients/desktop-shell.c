@@ -43,8 +43,8 @@
 
 #include <wayland-client.h>
 #include "window.h"
-#include "../shared/cairo-util.h"
-#include "../shared/config-parser.h"
+#include "shared/cairo-util.h"
+#include "shared/config-parser.h"
 
 #include "desktop-shell-client-protocol.h"
 

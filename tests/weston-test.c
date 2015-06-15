@@ -31,13 +31,13 @@
 #include <unistd.h>
 #include <string.h>
 
-#include "../src/compositor.h"
+#include "src/compositor.h"
 #include "weston-test-server-protocol.h"
 
 #ifdef ENABLE_EGL
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
-#include "../src/weston-egl-ext.h"
+#include "src/weston-egl-ext.h"
 #endif /* ENABLE_EGL */
 
 struct weston_test {

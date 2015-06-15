@@ -35,7 +35,7 @@
 #include <wayland-client.h>
 
 #include "window.h"
-#include "../shared/matrix.h"
+#include "shared/matrix.h"
 
 #define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
 

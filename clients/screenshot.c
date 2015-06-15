@@ -37,7 +37,7 @@
 
 #include <wayland-client.h>
 #include "screenshooter-client-protocol.h"
-#include "../shared/os-compatibility.h"
+#include "shared/os-compatibility.h"
 
 /* The screenshooter is a good example of a custom object exposed by
  * the compositor and serves as a test bed for implementing client

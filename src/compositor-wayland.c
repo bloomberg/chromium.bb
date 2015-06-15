@@ -42,9 +42,9 @@
 #include "compositor.h"
 #include "gl-renderer.h"
 #include "pixman-renderer.h"
-#include "../shared/image-loader.h"
-#include "../shared/os-compatibility.h"
-#include "../shared/cairo-util.h"
+#include "shared/image-loader.h"
+#include "shared/os-compatibility.h"
+#include "shared/cairo-util.h"
 #include "fullscreen-shell-client-protocol.h"
 #include "presentation_timing-server-protocol.h"
 

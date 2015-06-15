@@ -28,7 +28,7 @@
 
 #include <unistd.h>
 
-#include "../shared/os-compatibility.h"
+#include "shared/os-compatibility.h"
 #include "weston-test-client-helper.h"
 
 /* tests, that attempt to crash the compositor on purpose */

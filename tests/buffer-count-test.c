@@ -32,7 +32,7 @@
 #include <GLES2/gl2.h>
 
 #include "weston-test-client-helper.h"
-#include "../shared/platform.h"
+#include "shared/platform.h"
 
 #define fail(msg) { fprintf(stderr, "%s failed\n", msg); return -1; }
 

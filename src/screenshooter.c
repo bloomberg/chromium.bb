@@ -36,7 +36,7 @@
 #include "compositor.h"
 #include "screenshooter-server-protocol.h"
 
-#include "../wcap/wcap-decode.h"
+#include "wcap/wcap-decode.h"
 
 struct screenshooter {
 	struct weston_compositor *ec;

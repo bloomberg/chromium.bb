@@ -40,7 +40,7 @@
 #include <wayland-client.h>
 
 #include "compositor.h"
-#include "../shared/os-compatibility.h"
+#include "shared/os-compatibility.h"
 #include "fullscreen-shell-client-protocol.h"
 
 struct shared_output {

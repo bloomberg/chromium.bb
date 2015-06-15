@@ -31,8 +31,8 @@
 #include <string.h>
 #include <stdbool.h>
 
-#include "../src/compositor.h"
-#include "../ivi-shell/ivi-layout-export.h"
+#include "src/compositor.h"
+#include "ivi-shell/ivi-layout-export.h"
 
 struct test_context {
 	struct weston_compositor *compositor;

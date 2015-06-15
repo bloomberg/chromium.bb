@@ -33,9 +33,9 @@
 #include <sys/mman.h>
 #include <getopt.h>
 #include <wayland-cursor.h>
-#include "../shared/cairo-util.h"
-#include "../shared/config-parser.h"
-#include "../shared/os-compatibility.h"
+#include "shared/cairo-util.h"
+#include "shared/config-parser.h"
+#include "shared/os-compatibility.h"
 #include "ivi-application-client-protocol.h"
 #include "ivi-hmi-controller-client-protocol.h"
 

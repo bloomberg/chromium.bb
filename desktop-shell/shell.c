@@ -38,7 +38,7 @@
 #include "shell.h"
 #include "desktop-shell-server-protocol.h"
 #include "workspaces-server-protocol.h"
-#include "../shared/config-parser.h"
+#include "shared/config-parser.h"
 #include "xdg-shell-server-protocol.h"
 
 #define DEFAULT_NUM_WORKSPACES 1

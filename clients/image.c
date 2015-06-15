@@ -41,7 +41,7 @@
 #include <wayland-client.h>
 
 #include "window.h"
-#include "../shared/cairo-util.h"
+#include "shared/cairo-util.h"
 
 struct image {
 	struct window *window;

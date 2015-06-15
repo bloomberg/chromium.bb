@@ -28,7 +28,7 @@
 #include <stdio.h>
 #include <assert.h>
 
-#include "../src/compositor.h"
+#include "src/compositor.h"
 
 static void
 surface_transform(void *data)

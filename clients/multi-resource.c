@@ -39,7 +39,7 @@
 #include <math.h>
 
 #include <wayland-client.h>
-#include "../shared/os-compatibility.h"
+#include "shared/os-compatibility.h"
 
 struct device {
 	enum { KEYBOARD, POINTER } type;

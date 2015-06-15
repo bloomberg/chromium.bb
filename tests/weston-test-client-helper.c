@@ -32,7 +32,7 @@
 #include <errno.h>
 #include <sys/mman.h>
 
-#include "../shared/os-compatibility.h"
+#include "shared/os-compatibility.h"
 #include "weston-test-client-helper.h"
 
 #define max(a, b) (((a) > (b)) ? (a) : (b))

@@ -33,7 +33,7 @@
 #include <sys/mman.h>
 
 #include <wayland-client.h>
-#include "../shared/os-compatibility.h"
+#include "shared/os-compatibility.h"
 
 #define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
 

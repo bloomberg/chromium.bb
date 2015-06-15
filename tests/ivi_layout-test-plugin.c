@@ -31,10 +31,10 @@
 #include <signal.h>
 #include <string.h>
 
-#include "../src/compositor.h"
+#include "src/compositor.h"
 #include "weston-test-server-protocol.h"
 #include "ivi-test.h"
-#include "../ivi-shell/ivi-layout-export.h"
+#include "ivi-shell/ivi-layout-export.h"
 
 struct test_context;
 
