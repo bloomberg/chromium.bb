@@ -467,6 +467,9 @@ TEST(RectTest, ScaleRect) {
 }
 
 TEST(RectTest, ToEnclosedRect) {
+  static const int max_int = std::numeric_limits<int>::max();
+  static const int min_int = std::numeric_limits<int>::min();
+  static const float max_float = std::numeric_limits<float>::max();
   static const struct Test {
     float x1; // source
     float y1;
@@ -476,28 +479,15 @@ TEST(RectTest, ToEnclosedRect) {
     int y2;
     int w2;
     int h2;
-  } tests [] = {
-    { 0.0f, 0.0f, 0.0f, 0.0f,
-      0, 0, 0, 0 },
-    { -1.5f, -1.5f, 3.0f, 3.0f,
-      -1, -1, 2, 2 },
-    { -1.5f, -1.5f, 3.5f, 3.5f,
-      -1, -1, 3, 3 },
-    { std::numeric_limits<float>::max(),
-      std::numeric_limits<float>::max(),
-      2.0f, 2.0f,
-      std::numeric_limits<int>::max(),
-      std::numeric_limits<int>::max(),
-      0, 0 },
-    { 0.0f, 0.0f,
-      std::numeric_limits<float>::max(),
-      std::numeric_limits<float>::max(),
-      0, 0,
-      std::numeric_limits<int>::max(),
-      std::numeric_limits<int>::max() },
-    { 20000.5f, 20000.5f, 0.5f, 0.5f,
-      20001, 20001, 0, 0 },
-  };
+  } tests[] = {{0.0f, 0.0f, 0.0f, 0.0f, 0, 0, 0, 0},
+               {-1.5f, -1.5f, 3.0f, 3.0f, -1, -1, 2, 2},
+               {-1.5f, -1.5f, 3.5f, 3.5f, -1, -1, 3, 3},
+               {max_float, max_float, 2.0f, 2.0f, max_int, max_int, 0, 0},
+               {0.0f, 0.0f, max_float, max_float, 0, 0, max_int, max_int},
+               {20000.5f, 20000.5f, 0.5f, 0.5f, 20001, 20001, 0, 0},
+               {min_int, min_int, max_int * 2.f, max_int * 2.f, min_int,
+                min_int, max_int, max_int},
+               {max_int, max_int, max_int, max_int, max_int, max_int, 0, 0}};
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
     RectF r1(tests[i].x1, tests[i].y1, tests[i].w1, tests[i].h1);
@@ -512,6 +502,9 @@ TEST(RectTest, ToEnclosedRect) {
 }
 
 TEST(RectTest, ToEnclosingRect) {
+  static const int max_int = std::numeric_limits<int>::max();
+  static const int min_int = std::numeric_limits<int>::min();
+  static const float max_float = std::numeric_limits<float>::max();
   static const struct Test {
     float x1; // source
     float y1;
@@ -521,30 +514,16 @@ TEST(RectTest, ToEnclosingRect) {
     int y2;
     int w2;
     int h2;
-  } tests [] = {
-    { 0.0f, 0.0f, 0.0f, 0.0f,
-      0, 0, 0, 0 },
-    { 5.5f, 5.5f, 0.0f, 0.0f,
-      5, 5, 0, 0 },
-    { -1.5f, -1.5f, 3.0f, 3.0f,
-      -2, -2, 4, 4 },
-    { -1.5f, -1.5f, 3.5f, 3.5f,
-      -2, -2, 4, 4 },
-    { std::numeric_limits<float>::max(),
-      std::numeric_limits<float>::max(),
-      2.0f, 2.0f,
-      std::numeric_limits<int>::max(),
-      std::numeric_limits<int>::max(),
-      0, 0 },
-    { 0.0f, 0.0f,
-      std::numeric_limits<float>::max(),
-      std::numeric_limits<float>::max(),
-      0, 0,
-      std::numeric_limits<int>::max(),
-      std::numeric_limits<int>::max() },
-    { 20000.5f, 20000.5f, 0.5f, 0.5f,
-      20000, 20000, 1, 1 },
-  };
+  } tests[] = {{0.0f, 0.0f, 0.0f, 0.0f, 0, 0, 0, 0},
+               {5.5f, 5.5f, 0.0f, 0.0f, 5, 5, 0, 0},
+               {-1.5f, -1.5f, 3.0f, 3.0f, -2, -2, 4, 4},
+               {-1.5f, -1.5f, 3.5f, 3.5f, -2, -2, 4, 4},
+               {max_float, max_float, 2.0f, 2.0f, max_int, max_int, 0, 0},
+               {0.0f, 0.0f, max_float, max_float, 0, 0, max_int, max_int},
+               {20000.5f, 20000.5f, 0.5f, 0.5f, 20000, 20000, 1, 1},
+               {min_int, min_int, max_int * 2.f, max_int * 2.f, min_int,
+                min_int, max_int, max_int},
+               {max_int, max_int, max_int, max_int, max_int, max_int, 0, 0}};
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
     RectF r1(tests[i].x1, tests[i].y1, tests[i].w1, tests[i].h1);

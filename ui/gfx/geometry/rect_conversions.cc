@@ -17,8 +17,16 @@ Rect ToEnclosingRect(const RectF& rect) {
   int min_y = ToFlooredInt(rect.y());
   float max_x = rect.right();
   float max_y = rect.bottom();
-  int width = rect.width() == 0 ? 0 : std::max(ToCeiledInt(max_x) - min_x, 0);
-  int height = rect.height() == 0 ? 0 : std::max(ToCeiledInt(max_y) - min_y, 0);
+  int width =
+      rect.width() == 0
+          ? 0
+          : std::max(
+                ToCeiledInt(static_cast<float>(ToCeiledInt(max_x)) - min_x), 0);
+  int height =
+      rect.height() == 0
+          ? 0
+          : std::max(
+                ToCeiledInt(static_cast<float>(ToCeiledInt(max_y)) - min_y), 0);
   return Rect(min_x, min_y, width, height);
 }
 
@@ -27,8 +35,10 @@ Rect ToEnclosedRect(const RectF& rect) {
   int min_y = ToCeiledInt(rect.y());
   float max_x = rect.right();
   float max_y = rect.bottom();
-  int width = std::max(ToFlooredInt(max_x) - min_x, 0);
-  int height = std::max(ToFlooredInt(max_y) - min_y, 0);
+  int width = std::max(
+      ToFlooredInt(static_cast<float>(ToFlooredInt(max_x)) - min_x), 0);
+  int height = std::max(
+      ToFlooredInt(static_cast<float>(ToFlooredInt(max_y)) - min_y), 0);
   return Rect(min_x, min_y, width, height);
 }
 
