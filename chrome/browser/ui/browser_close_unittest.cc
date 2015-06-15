@@ -15,13 +15,12 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class MockDownloadService : public DownloadService {
+class TestingDownloadService : public DownloadService {
  public:
-  MockDownloadService() : download_count_(0) {}
-  ~MockDownloadService() override {}
+  TestingDownloadService() : download_count_(0) {}
+  ~TestingDownloadService() override {}
 
   // All methods that aren't expected to be called in the execution of
   // this unit test are marked to result in test failure.  Using a simple
@@ -72,12 +71,12 @@ class MockDownloadService : public DownloadService {
  private:
   int download_count_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockDownloadService);
+  DISALLOW_COPY_AND_ASSIGN(TestingDownloadService);
 };
 
-static scoped_ptr<KeyedService> CreateMockDownloadService(
+static scoped_ptr<KeyedService> CreateTestingDownloadService(
     content::BrowserContext* browser_context) {
-  return scoped_ptr<KeyedService>(new MockDownloadService());
+  return scoped_ptr<KeyedService>(new TestingDownloadService());
 }
 
 class BrowserCloseTest : public testing::Test {
@@ -139,11 +138,11 @@ class BrowserCloseTest : public testing::Test {
                                int num_windows,
                                int num_downloads) {
     DownloadServiceFactory::GetInstance()->SetTestingFactory(
-        profile, &CreateMockDownloadService);
+        profile, &CreateTestingDownloadService);
     DownloadService* download_service(
         DownloadServiceFactory::GetForBrowserContext(profile));
-    MockDownloadService* mock_download_service(
-        static_cast<MockDownloadService*>(download_service));
+    TestingDownloadService* mock_download_service(
+        static_cast<TestingDownloadService*>(download_service));
     mock_download_service->SetDownloadCount(num_downloads);
 
     CHECK(browser_windows_.end() == browser_windows_.find(profile));
