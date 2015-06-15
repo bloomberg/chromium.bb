@@ -24,21 +24,28 @@
  *
  */
 
+// https://html.spec.whatwg.org/#the-workerglobalscope-common-interface
+
 [
     Exposed=Worker,
 ] interface WorkerGlobalScope : EventTarget {
-
-    // WorkerGlobalScope
     readonly attribute WorkerGlobalScope self;
     readonly attribute WorkerLocation location;
+
     void close();
+    // TODO(philipj): onerror should be an OnErrorEventHandler.
     attribute EventHandler onerror;
-    [Replaceable] readonly attribute WorkerConsole console;
+    // attribute EventHandler onlanguagechange;
+    // attribute EventHandler onoffline;
+    // attribute EventHandler ononline;
 
-
-    // WorkerUtils
+    // https://html.spec.whatwg.org/#apis-available-to-workers
     [RaisesException] void importScripts(DOMString... urls);
     readonly attribute WorkerNavigator navigator;
+
+    // Console API (non-standard but widely implemented in some form)
+    // https://developer.chrome.com/devtools/docs/console-api
+    [Replaceable] readonly attribute WorkerConsole console;
 };
 
 WorkerGlobalScope implements WindowBase64;

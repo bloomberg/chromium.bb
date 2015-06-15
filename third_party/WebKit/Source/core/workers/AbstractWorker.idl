@@ -29,11 +29,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://www.whatwg.org/specs/web-apps/current-work/#the-abstractworker-abstract-interface
+// https://html.spec.whatwg.org/#the-abstractworker-abstract-interface
 
 [
     LegacyTreatAsPartialInterface,
     NoInterfaceObject, // Always used on target of 'implements'
+    Exposed=(Window,Worker),
     WillBeGarbageCollected,
 ] interface AbstractWorker {
     attribute EventHandler onerror;

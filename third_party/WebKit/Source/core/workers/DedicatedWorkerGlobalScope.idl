@@ -28,9 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// https://html.spec.whatwg.org/#dedicated-workers-and-the-dedicatedworkerglobalscope-interface
+
 [
+    Global=(Worker,DedicatedWorker),
     Exposed=DedicatedWorker,
-    Global=(Worker,DedicatedWorker)
 ] interface DedicatedWorkerGlobalScope : WorkerGlobalScope {
     [PostMessage, RaisesException] void postMessage(any message, optional sequence<Transferable> transfer);
     attribute EventHandler onmessage;

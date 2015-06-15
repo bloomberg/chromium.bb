@@ -26,7 +26,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://www.whatwg.org/specs/web-apps/current-work/multipage/workers.html#the-workernavigator-object
+// https://html.spec.whatwg.org/#the-workernavigator-object
 
 [
     Exposed=Worker,
@@ -36,4 +36,5 @@
 
 WorkerNavigator implements NavigatorCPU;
 WorkerNavigator implements NavigatorID;
+// TODO(philipj): WorkerNavigator implements NavigatorLanguage;
 WorkerNavigator implements NavigatorOnLine;

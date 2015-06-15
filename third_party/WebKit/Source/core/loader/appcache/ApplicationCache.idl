@@ -23,8 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// https://html.spec.whatwg.org/#application-cache-api
+
 [
     DoNotCheckConstants,
+    // TODO(philipj): Exposed=(Window,SharedWorker)
 ] interface ApplicationCache : EventTarget {
     // update status
     const unsigned short UNCACHED = 0;
@@ -35,9 +38,10 @@
     const unsigned short OBSOLETE = 5;
     readonly attribute unsigned short status;
 
+    // updates
     [RaisesException] void update();
-    [RaisesException] void swapCache();
     void abort();
+    [RaisesException] void swapCache();
 
     // events
     attribute EventHandler onchecking;
