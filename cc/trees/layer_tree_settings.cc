@@ -42,7 +42,6 @@ LayerTreeSettings::LayerTreeSettings()
       scrollbar_show_scale_threshold(1.0f),
       solid_color_scrollbar_color(SK_ColorWHITE),
       timeout_and_draw_when_animation_checkerboards(true),
-      maximum_number_of_failed_draws_before_draw_is_forced_(3),
       layer_transforms_should_scale_layer_contents(false),
       layers_always_allowed_lcd_text(false),
       minimum_contents_scale(0.0625f),
@@ -88,8 +87,6 @@ SchedulerSettings LayerTreeSettings::ToSchedulerSettings() const {
   scheduler_settings.impl_side_painting = impl_side_painting;
   scheduler_settings.timeout_and_draw_when_animation_checkerboards =
       timeout_and_draw_when_animation_checkerboards;
-  scheduler_settings.maximum_number_of_failed_draws_before_draw_is_forced_ =
-      maximum_number_of_failed_draws_before_draw_is_forced_;
   scheduler_settings.using_synchronous_renderer_compositor =
       using_synchronous_renderer_compositor;
   scheduler_settings.throttle_frame_production =

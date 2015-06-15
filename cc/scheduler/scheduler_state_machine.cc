@@ -1065,7 +1065,7 @@ void SchedulerStateMachine::DidDrawIfPossibleCompleted(DrawResult result) {
       consecutive_checkerboard_animations_++;
       if (settings_.timeout_and_draw_when_animation_checkerboards &&
           consecutive_checkerboard_animations_ >=
-              settings_.maximum_number_of_failed_draws_before_draw_is_forced_) {
+              settings_.maximum_number_of_failed_draws_before_draw_is_forced) {
         consecutive_checkerboard_animations_ = 0;
         // We need to force a draw, but it doesn't make sense to do this until
         // we've committed and have new textures.

@@ -28,7 +28,6 @@ class CC_EXPORT SchedulerSettings {
   bool main_frame_before_activation_enabled;
   bool impl_side_painting;
   bool timeout_and_draw_when_animation_checkerboards;
-  int maximum_number_of_failed_draws_before_draw_is_forced_;
   bool using_synchronous_renderer_compositor;
   bool throttle_frame_production;
 
@@ -38,6 +37,7 @@ class CC_EXPORT SchedulerSettings {
   // completed atomically with no other tasks or actions occuring between them.
   bool main_thread_should_always_be_low_latency;
 
+  int maximum_number_of_failed_draws_before_draw_is_forced;
   base::TimeDelta background_frame_interval;
 
   scoped_refptr<base::trace_event::ConvertableToTraceFormat> AsValue() const;

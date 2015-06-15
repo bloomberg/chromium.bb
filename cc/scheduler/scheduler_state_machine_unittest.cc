@@ -450,7 +450,7 @@ TEST(SchedulerStateMachineTest,
 TEST(SchedulerStateMachineTest,
      TestFailedDrawsEventuallyForceDrawAfterNextCommit) {
   SchedulerSettings scheduler_settings;
-  scheduler_settings.maximum_number_of_failed_draws_before_draw_is_forced_ = 1;
+  scheduler_settings.maximum_number_of_failed_draws_before_draw_is_forced = 1;
   StateMachine state(scheduler_settings);
   SET_UP_STATE(state)
 
@@ -502,7 +502,7 @@ TEST(SchedulerStateMachineTest,
 TEST(SchedulerStateMachineTest, TestFailedDrawsDoNotRestartForcedDraw) {
   SchedulerSettings scheduler_settings;
   int draw_limit = 1;
-  scheduler_settings.maximum_number_of_failed_draws_before_draw_is_forced_ =
+  scheduler_settings.maximum_number_of_failed_draws_before_draw_is_forced =
       draw_limit;
   scheduler_settings.impl_side_painting = true;
   StateMachine state(scheduler_settings);
