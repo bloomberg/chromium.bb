@@ -33,6 +33,7 @@
 #include <sys/uio.h>
 
 #include "compositor.h"
+#include "shared/helpers.h"
 
 struct clipboard_source {
 	struct weston_data_source base;

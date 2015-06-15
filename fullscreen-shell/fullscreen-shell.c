@@ -34,6 +34,7 @@
 
 #include "compositor.h"
 #include "fullscreen-shell-server-protocol.h"
+#include "shared/helpers.h"
 
 struct fullscreen_shell {
 	struct wl_client *client;

@@ -34,6 +34,7 @@
 #include "ivi-shell.h"
 #include "input-method-server-protocol.h"
 #include "ivi-layout-private.h"
+#include "shared/helpers.h"
 
 struct input_panel_surface {
 	struct wl_resource *resource;

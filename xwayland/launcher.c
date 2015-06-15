@@ -36,6 +36,7 @@
 #include <signal.h>
 
 #include "xwayland.h"
+#include "shared/helpers.h"
 
 
 static int

@@ -30,6 +30,7 @@
 
 #include "compositor.h"
 #include "cms-helper.h"
+#include "shared/helpers.h"
 
 struct cms_static {
 	struct weston_compositor	*ec;

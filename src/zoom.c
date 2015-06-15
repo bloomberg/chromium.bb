@@ -29,6 +29,7 @@
 
 #include "compositor.h"
 #include "text-cursor-position-server-protocol.h"
+#include "shared/helpers.h"
 
 static void
 weston_zoom_frame_z(struct weston_animation *animation,

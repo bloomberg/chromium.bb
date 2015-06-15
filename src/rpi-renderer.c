@@ -37,6 +37,7 @@
 
 #include "compositor.h"
 #include "rpi-renderer.h"
+#include "shared/helpers.h"
 
 #ifdef ENABLE_EGL
 #include <EGL/egl.h>

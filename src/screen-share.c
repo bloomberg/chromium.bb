@@ -40,6 +40,7 @@
 #include <wayland-client.h>
 
 #include "compositor.h"
+#include "shared/helpers.h"
 #include "shared/os-compatibility.h"
 #include "fullscreen-shell-client-protocol.h"
 

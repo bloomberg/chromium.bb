@@ -35,6 +35,7 @@
 #include "compositor.h"
 #include "text-server-protocol.h"
 #include "input-method-server-protocol.h"
+#include "shared/helpers.h"
 
 struct text_input_manager;
 struct input_method;

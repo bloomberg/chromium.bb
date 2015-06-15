@@ -63,6 +63,7 @@
 #include "ivi-layout-export.h"
 #include "ivi-layout-private.h"
 
+#include "shared/helpers.h"
 #include "shared/os-compatibility.h"
 
 struct link_layer {

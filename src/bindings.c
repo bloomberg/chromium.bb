@@ -29,6 +29,7 @@
 #include <linux/input.h>
 
 #include "compositor.h"
+#include "shared/helpers.h"
 
 struct weston_binding {
 	uint32_t key;

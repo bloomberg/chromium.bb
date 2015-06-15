@@ -32,6 +32,7 @@
 #include "shell.h"
 #include "desktop-shell-server-protocol.h"
 #include "input-method-server-protocol.h"
+#include "shared/helpers.h"
 
 struct input_panel_surface {
 	struct wl_resource *resource;

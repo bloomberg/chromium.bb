@@ -32,6 +32,7 @@
 #include <assert.h>
 
 #include "pixman-renderer.h"
+#include "shared/helpers.h"
 
 #include <linux/input.h>
 

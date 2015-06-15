@@ -37,6 +37,7 @@
 #include "launcher-util.h"
 #include "libinput-seat.h"
 #include "libinput-device.h"
+#include "shared/helpers.h"
 
 static const char default_seat[] = "seat0";
 static const char default_seat_name[] = "default";

@@ -39,10 +39,7 @@
 
 #include <wayland-util.h>
 #include "config-parser.h"
-
-#define container_of(ptr, type, member) ({				\
-	const __typeof__( ((type *)0)->member ) *__mptr = (ptr);	\
-	(type *)( (char *)__mptr - offsetof(type,member) );})
+#include "helpers.h"
 
 struct weston_config_entry {
 	char *key;

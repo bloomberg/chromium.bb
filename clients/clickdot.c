@@ -40,6 +40,7 @@
 #include <wayland-client.h>
 
 #include "window.h"
+#include "shared/helpers.h"
 
 struct clickdot {
 	struct display *display;

@@ -32,6 +32,7 @@
 #include <assert.h>
 
 #include "compositor.h"
+#include "shared/helpers.h"
 
 struct weston_drag {
 	struct wl_client *client;

@@ -36,6 +36,7 @@
 
 #include "compositor.h"
 #include "cms-helper.h"
+#include "shared/helpers.h"
 
 struct cms_colord {
 	struct weston_compositor	*ec;

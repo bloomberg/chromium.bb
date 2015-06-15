@@ -60,6 +60,7 @@
 
 #include "ivi-layout-export.h"
 #include "ivi-hmi-controller-server-protocol.h"
+#include "shared/helpers.h"
 
 /*****************************************************************************
  *  structure, globals

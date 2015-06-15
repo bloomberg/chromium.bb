@@ -45,6 +45,7 @@
 #include "window.h"
 #include "shared/cairo-util.h"
 #include "shared/config-parser.h"
+#include "shared/helpers.h"
 
 #include "desktop-shell-client-protocol.h"
 

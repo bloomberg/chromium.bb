@@ -40,6 +40,8 @@
 #include "src/weston-egl-ext.h"
 #endif /* ENABLE_EGL */
 
+#include "shared/helpers.h"
+
 struct weston_test {
 	struct weston_compositor *compositor;
 	struct weston_layer layer;

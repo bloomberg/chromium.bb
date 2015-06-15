@@ -35,6 +35,7 @@
 
 #include "compositor.h"
 #include "screenshooter-server-protocol.h"
+#include "shared/helpers.h"
 
 #include "wcap/wcap-decode.h"
 

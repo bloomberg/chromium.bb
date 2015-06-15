@@ -34,6 +34,7 @@
 #include <fcntl.h>
 
 #include "compositor.h"
+#include "shared/helpers.h"
 
 WL_EXPORT void
 weston_spring_init(struct weston_spring *spring,

@@ -28,6 +28,7 @@
 #include <linux/input.h>
 
 #include "shell.h"
+#include "shared/helpers.h"
 
 struct exposay_surface {
 	struct desktop_shell *shell;
