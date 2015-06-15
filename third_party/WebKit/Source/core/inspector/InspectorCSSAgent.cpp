@@ -217,10 +217,10 @@ private:
 class InspectorCSSAgent::SetPropertyTextAction final : public InspectorCSSAgent::StyleSheetAction {
     WTF_MAKE_NONCOPYABLE(SetPropertyTextAction);
 public:
-    SetPropertyTextAction(InspectorStyleSheetBase* styleSheet, const InspectorCSSId& cssId, unsigned propertyIndex, const String& text, bool overwrite)
+    SetPropertyTextAction(InspectorStyleSheetBase* styleSheet, unsigned ruleIndex, unsigned propertyIndex, const String& text, bool overwrite)
         : InspectorCSSAgent::StyleSheetAction("SetPropertyText")
         , m_styleSheet(styleSheet)
-        , m_cssId(cssId)
+        , m_ruleIndex(ruleIndex)
         , m_propertyIndex(propertyIndex)
         , m_text(text)
         , m_overwrite(overwrite)
@@ -240,15 +240,15 @@ public:
     virtual bool undo(ExceptionState& exceptionState) override
     {
         String placeholder;
-        return m_styleSheet->setStyleText(m_cssId, m_oldStyleText);
+        return m_styleSheet->setStyleText(m_ruleIndex, m_oldStyleText);
     }
 
     virtual bool redo(ExceptionState& exceptionState) override
     {
-        if (!m_styleSheet->getStyleText(m_cssId, &m_oldStyleText))
+        if (!m_styleSheet->getStyleText(m_ruleIndex, &m_oldStyleText))
             return false;
-        bool result = m_styleSheet->setPropertyText(m_cssId, m_propertyIndex, m_text, m_overwrite, exceptionState);
-        m_styleSheet->getStyleText(m_cssId, &m_newStyleText);
+        bool result = m_styleSheet->setPropertyText(m_ruleIndex, m_propertyIndex, m_text, m_overwrite, exceptionState);
+        m_styleSheet->getStyleText(m_ruleIndex, &m_newStyleText);
         return result;
     }
 
@@ -279,7 +279,7 @@ public:
 
 private:
     RefPtrWillBeMember<InspectorStyleSheetBase> m_styleSheet;
-    InspectorCSSId m_cssId;
+    unsigned m_ruleIndex;
     unsigned m_propertyIndex;
     String m_text;
     String m_oldStyleText;
@@ -290,17 +290,17 @@ private:
 class InspectorCSSAgent::SetRuleSelectorAction final : public InspectorCSSAgent::StyleSheetAction {
     WTF_MAKE_NONCOPYABLE(SetRuleSelectorAction);
 public:
-    SetRuleSelectorAction(InspectorStyleSheet* styleSheet, const InspectorCSSId& cssId, const String& selector)
+    SetRuleSelectorAction(InspectorStyleSheet* styleSheet, unsigned ruleIndex, const String& selector)
         : InspectorCSSAgent::StyleSheetAction("SetRuleSelector")
         , m_styleSheet(styleSheet)
-        , m_cssId(cssId)
+        , m_ruleIndex(ruleIndex)
         , m_selector(selector)
     {
     }
 
     virtual bool perform(ExceptionState& exceptionState) override
     {
-        m_oldSelector = m_styleSheet->ruleSelector(m_cssId, exceptionState);
+        m_oldSelector = m_styleSheet->ruleSelector(m_ruleIndex, exceptionState);
         if (exceptionState.hadException())
             return false;
         return redo(exceptionState);
@@ -308,12 +308,12 @@ public:
 
     virtual bool undo(ExceptionState& exceptionState) override
     {
-        return m_styleSheet->setRuleSelector(m_cssId, m_oldSelector, exceptionState);
+        return m_styleSheet->setRuleSelector(m_ruleIndex, m_oldSelector, exceptionState);
     }
 
     virtual bool redo(ExceptionState& exceptionState) override
     {
-        return m_styleSheet->setRuleSelector(m_cssId, m_selector, exceptionState);
+        return m_styleSheet->setRuleSelector(m_ruleIndex, m_selector, exceptionState);
     }
 
     DEFINE_INLINE_VIRTUAL_TRACE()
@@ -324,7 +324,7 @@ public:
 
 private:
     RefPtrWillBeMember<InspectorStyleSheet> m_styleSheet;
-    InspectorCSSId m_cssId;
+    unsigned m_ruleIndex;
     String m_selector;
     String m_oldSelector;
 };
@@ -332,17 +332,17 @@ private:
 class InspectorCSSAgent::SetMediaTextAction final : public InspectorCSSAgent::StyleSheetAction {
     WTF_MAKE_NONCOPYABLE(SetMediaTextAction);
 public:
-    SetMediaTextAction(InspectorStyleSheet* styleSheet, const InspectorCSSId& cssId, const String& text)
+    SetMediaTextAction(InspectorStyleSheet* styleSheet, unsigned ruleIndex, const String& text)
         : InspectorCSSAgent::StyleSheetAction("SetMediaText")
         , m_styleSheet(styleSheet)
-        , m_cssId(cssId)
+        , m_ruleIndex(ruleIndex)
         , m_text(text)
     {
     }
 
     virtual bool perform(ExceptionState& exceptionState) override
     {
-        m_oldText = m_styleSheet->mediaRuleText(m_cssId, exceptionState);
+        m_oldText = m_styleSheet->mediaRuleText(m_ruleIndex, exceptionState);
         if (exceptionState.hadException())
             return false;
         return redo(exceptionState);
@@ -350,12 +350,12 @@ public:
 
     virtual bool undo(ExceptionState& exceptionState) override
     {
-        return m_styleSheet->setMediaRuleText(m_cssId, m_oldText, exceptionState);
+        return m_styleSheet->setMediaRuleText(m_ruleIndex, m_oldText, exceptionState);
     }
 
     virtual bool redo(ExceptionState& exceptionState) override
     {
-        return m_styleSheet->setMediaRuleText(m_cssId, m_text, exceptionState);
+        return m_styleSheet->setMediaRuleText(m_ruleIndex, m_text, exceptionState);
     }
 
     DEFINE_INLINE_VIRTUAL_TRACE()
@@ -366,7 +366,7 @@ public:
 
 private:
     RefPtrWillBeMember<InspectorStyleSheet> m_styleSheet;
-    InspectorCSSId m_cssId;
+    unsigned m_ruleIndex;
     String m_text;
     String m_oldText;
 };
@@ -389,7 +389,7 @@ public:
 
     virtual bool undo(ExceptionState& exceptionState) override
     {
-        return m_styleSheet->deleteRule(m_newId, m_oldText, exceptionState);
+        return m_styleSheet->deleteRule(m_newOrdinal, m_oldText, exceptionState);
     }
 
     virtual bool redo(ExceptionState& exceptionState) override
@@ -399,11 +399,11 @@ public:
         CSSStyleRule* cssStyleRule = m_styleSheet->addRule(m_ruleText, m_location, exceptionState);
         if (exceptionState.hadException())
             return false;
-        m_newId = m_styleSheet->ruleId(cssStyleRule);
+        m_newOrdinal = m_styleSheet->indexOf(cssStyleRule);
         return true;
     }
 
-    InspectorCSSId newRuleId() { return m_newId; }
+    unsigned newRuleOrdinal() { return m_newOrdinal; }
 
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
@@ -413,7 +413,7 @@ public:
 
 private:
     RefPtrWillBeMember<InspectorStyleSheet> m_styleSheet;
-    InspectorCSSId m_newId;
+    unsigned m_newOrdinal;
     String m_ruleText;
     String m_oldText;
     SourceRange m_location;
@@ -783,7 +783,7 @@ void InspectorCSSAgent::getMatchedStylesForNode(ErrorString* errorString, int no
             if (parentElement->style() && parentElement->style()->length()) {
                 InspectorStyleSheetForInlineStyle* styleSheet = asInspectorStyleSheet(parentElement);
                 if (styleSheet)
-                    entry->setInlineStyle(styleSheet->buildObjectForStyle(styleSheet->styleForId(InspectorCSSId(styleSheet->id(), 0))));
+                    entry->setInlineStyle(styleSheet->buildObjectForStyle(styleSheet->styleAt(0)));
             }
 
             entries->addItem(entry.release());
@@ -816,7 +816,7 @@ void InspectorCSSAgent::getComputedStyleForNode(ErrorString* errorString, int no
         return;
 
     RefPtrWillBeRawPtr<CSSComputedStyleDeclaration> computedStyleInfo = CSSComputedStyleDeclaration::create(node, true);
-    RefPtrWillBeRawPtr<InspectorStyle> inspectorStyle = InspectorStyle::create(InspectorCSSId(), computedStyleInfo, 0);
+    RefPtrWillBeRawPtr<InspectorStyle> inspectorStyle = InspectorStyle::create(0, computedStyleInfo, 0);
     style = inspectorStyle->buildArrayForComputedStyle();
 }
 
@@ -961,18 +961,18 @@ void InspectorCSSAgent::setPropertyText(ErrorString* errorString, const String& 
     SourceRange propertyRange;
     if (!jsonRangeToSourceRange(errorString, inspectorStyleSheet, range, &propertyRange))
         return;
-    InspectorCSSId compoundId;
-    unsigned propertyIndex;
+    unsigned ruleIndex = 0;
+    unsigned propertyIndex = 0;
     bool overwrite;
-    if (!inspectorStyleSheet->findPropertyByRange(propertyRange, &compoundId, &propertyIndex, &overwrite)) {
+    if (!inspectorStyleSheet->findPropertyByRange(propertyRange, &ruleIndex, &propertyIndex, &overwrite)) {
         *errorString = "Source range didn't match any existing property source range nor any property insertion point";
         return;
     }
 
     TrackExceptionState exceptionState;
-    bool success = m_domAgent->history()->perform(adoptRefWillBeNoop(new SetPropertyTextAction(inspectorStyleSheet, compoundId, propertyIndex, text, overwrite)), exceptionState);
+    bool success = m_domAgent->history()->perform(adoptRefWillBeNoop(new SetPropertyTextAction(inspectorStyleSheet, ruleIndex, propertyIndex, text, overwrite)), exceptionState);
     if (success)
-        result = inspectorStyleSheet->buildObjectForStyle(inspectorStyleSheet->styleForId(compoundId));
+        result = inspectorStyleSheet->buildObjectForStyle(inspectorStyleSheet->styleAt(ruleIndex));
     *errorString = InspectorDOMAgent::toErrorString(exceptionState);
 }
 
@@ -986,16 +986,16 @@ void InspectorCSSAgent::setRuleSelector(ErrorString* errorString, const String& 
     SourceRange selectorRange;
     if (!jsonRangeToSourceRange(errorString, inspectorStyleSheet, range, &selectorRange))
         return;
-    InspectorCSSId compoundId;
-    if (!inspectorStyleSheet->findRuleBySelectorRange(selectorRange, &compoundId)) {
+    unsigned ruleIndex = 0;
+    if (!inspectorStyleSheet->findRuleBySelectorRange(selectorRange, &ruleIndex)) {
         *errorString = "Source range didn't match any rule selector source range";
         return;
     }
 
     TrackExceptionState exceptionState;
-    bool success = m_domAgent->history()->perform(adoptRefWillBeNoop(new SetRuleSelectorAction(inspectorStyleSheet, compoundId, selector)), exceptionState);
+    bool success = m_domAgent->history()->perform(adoptRefWillBeNoop(new SetRuleSelectorAction(inspectorStyleSheet, ruleIndex, selector)), exceptionState);
     if (success) {
-        CSSStyleRule* rule = inspectorStyleSheet->ruleForId(compoundId);
+        CSSStyleRule* rule = inspectorStyleSheet->ruleAt(ruleIndex);
         result = inspectorStyleSheet->buildObjectForRule(rule, buildMediaListChain(rule));
     }
     *errorString = InspectorDOMAgent::toErrorString(exceptionState);
@@ -1011,16 +1011,16 @@ void InspectorCSSAgent::setMediaText(ErrorString* errorString, const String& sty
     SourceRange textRange;
     if (!jsonRangeToSourceRange(errorString, inspectorStyleSheet, range, &textRange))
         return;
-    InspectorCSSId compoundId;
-    if (!inspectorStyleSheet->findMediaRuleByRange(textRange, &compoundId)) {
+    unsigned ruleIndex = 0;
+    if (!inspectorStyleSheet->findMediaRuleByRange(textRange, &ruleIndex)) {
         *errorString = "Source range didn't match any media rule source range";
         return;
     }
 
     TrackExceptionState exceptionState;
-    bool success = m_domAgent->history()->perform(adoptRefWillBeNoop(new SetMediaTextAction(inspectorStyleSheet, compoundId, text)), exceptionState);
+    bool success = m_domAgent->history()->perform(adoptRefWillBeNoop(new SetMediaTextAction(inspectorStyleSheet, ruleIndex, text)), exceptionState);
     if (success) {
-        CSSMediaRule* rule = inspectorStyleSheet->mediaRuleForId(compoundId);
+        CSSMediaRule* rule = inspectorStyleSheet->mediaRuleAt(ruleIndex);
         String sourceURL = rule->parentStyleSheet()->contents()->baseURL();
         if (sourceURL.isEmpty())
             sourceURL = InspectorDOMAgent::documentURLString(rule->parentStyleSheet()->ownerDocument());
@@ -1071,8 +1071,8 @@ void InspectorCSSAgent::addRule(ErrorString* errorString, const String& styleShe
         return;
     }
 
-    InspectorCSSId ruleId = action->newRuleId();
-    CSSStyleRule* rule = inspectorStyleSheet->ruleForId(ruleId);
+    unsigned ruleOrdinal = action->newRuleOrdinal();
+    CSSStyleRule* rule = inspectorStyleSheet->ruleAt(ruleOrdinal);
     result = inspectorStyleSheet->buildObjectForRule(rule, buildMediaListChain(rule));
 }
 
@@ -1505,7 +1505,7 @@ PassRefPtr<TypeBuilder::CSS::CSSStyle> InspectorCSSAgent::buildObjectForAttribut
 
     MutableStylePropertySet* mutableAttributeStyle = toMutableStylePropertySet(attributeStyle);
 
-    RefPtrWillBeRawPtr<InspectorStyle> inspectorStyle = InspectorStyle::create(InspectorCSSId(), mutableAttributeStyle->ensureCSSStyleDeclaration(), 0);
+    RefPtrWillBeRawPtr<InspectorStyle> inspectorStyle = InspectorStyle::create(0, mutableAttributeStyle->ensureCSSStyleDeclaration(), 0);
     return inspectorStyle->buildObjectForStyle();
 }
 
