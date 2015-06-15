@@ -330,7 +330,8 @@ bool Canvas2DLayerBridge::restoreSurface()
         sharedContext = m_contextProvider->context3d();
 
     if (sharedContext && !sharedContext->isContextLost()) {
-        IntSize size(m_canvas->getTopDevice()->width(), m_canvas->getTopDevice()->height());
+        SkISize skSize = m_canvas->getBaseLayerSize();
+        IntSize size(skSize.width(), skSize.height());
         RefPtr<SkSurface> surface(createSkSurface(m_contextProvider->grContext(), size, m_msaaSampleCount, m_opacityMode));
         if (surface.get()) {
             m_surface = surface.release();
@@ -519,7 +520,7 @@ Platform3DObject Canvas2DLayerBridge::getBackingTexture()
         return 0;
     m_canvas->flush();
     context()->flush();
-    GrRenderTarget* renderTarget = m_canvas->getTopDevice()->accessRenderTarget();
+    GrRenderTarget* renderTarget = m_canvas->getDevice()->accessRenderTarget();
     if (renderTarget) {
         return renderTarget->asTexture()->getTextureHandle();
     }

@@ -73,7 +73,7 @@ const SkBitmap& ImageBufferSurface::bitmap()
 {
     ASSERT(canvas());
     willAccessPixels();
-    return canvas()->getTopDevice()->accessBitmap(false);
+    return canvas()->getDevice()->accessBitmap(false);
 }
 
 const SkBitmap& ImageBufferSurface::cachedBitmap() const
