@@ -198,7 +198,7 @@ class TabCapturePerformanceTest
     bool gpu_frames = PrintResults(
         analyzer.get(),
         test_name,
-        "RenderWidget::didCommitAndDrawCompositorFrame",
+        "RenderWidget::DidCommitAndDrawCompositorFrame",
         "ms");
     EXPECT_TRUE(gpu_frames);
 

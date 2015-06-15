@@ -699,17 +699,6 @@ void RenderWidget::OnShowHostContextMenu(ContextMenuParams* params) {
     screen_metrics_emulator_->OnShowContextMenu(params);
 }
 
-void RenderWidget::ScheduleCompositeWithForcedRedraw() {
-  if (compositor_) {
-    // Regardless of whether threaded compositing is enabled, always
-    // use this mechanism to force the compositor to redraw. However,
-    // the invalidation code path below is still needed for the
-    // non-threaded case.
-    compositor_->SetNeedsForcedRedraw();
-  }
-  scheduleComposite();
-}
-
 bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderWidget, message)
@@ -968,7 +957,7 @@ void RenderWidget::OnWasShown(bool needs_repainting,
         compositor_->CreateLatencyInfoSwapPromiseMonitor(&swap_latency_info));
     compositor_->SetNeedsForcedRedraw();
   }
-  scheduleComposite();
+  ScheduleComposite();
 }
 
 void RenderWidget::OnRequestMoveAck() {
@@ -1056,7 +1045,7 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(bool fallback) {
 void RenderWidget::OnSwapBuffersAborted() {
   TRACE_EVENT0("renderer", "RenderWidget::OnSwapBuffersAborted");
   // Schedule another frame so the compositor learns about it.
-  scheduleComposite();
+  ScheduleComposite();
 }
 
 void RenderWidget::OnSwapBuffersPosted() {
@@ -1386,7 +1375,7 @@ blink::WebLayerTreeView* RenderWidget::layerTreeView() {
   return compositor_.get();
 }
 
-void RenderWidget::willBeginCompositorFrame() {
+void RenderWidget::WillBeginCompositorFrame() {
   TRACE_EVENT0("gpu", "RenderWidget::willBeginCompositorFrame");
 
   // The following two can result in further layout and possibly
@@ -1399,11 +1388,6 @@ void RenderWidget::willBeginCompositorFrame() {
   UpdateSelectionBounds();
 }
 
-void RenderWidget::didBecomeReadyForAdditionalInput() {
-  TRACE_EVENT0("renderer", "RenderWidget::didBecomeReadyForAdditionalInput");
-  FlushPendingInputEventAck();
-}
-
 void RenderWidget::DidCommitCompositorFrame() {
   FOR_EACH_OBSERVER(RenderFrameImpl, render_frames_,
                     DidCommitCompositorFrame());
@@ -1413,6 +1397,55 @@ void RenderWidget::DidCommitCompositorFrame() {
   FOR_EACH_OBSERVER(RenderFrameImpl, video_hole_frames_,
                     DidCommitCompositorFrame());
 #endif  // defined(VIDEO_HOLE)
+  FlushPendingInputEventAck();
+}
+
+void RenderWidget::DidCommitAndDrawCompositorFrame() {
+  // NOTE: Tests may break if this event is renamed or moved. See
+  // tab_capture_performancetest.cc.
+  TRACE_EVENT0("gpu", "RenderWidget::DidCommitAndDrawCompositorFrame");
+  // Notify subclasses that we initiated the paint operation.
+  DidInitiatePaint();
+}
+
+void RenderWidget::DidCompleteSwapBuffers() {
+  TRACE_EVENT0("renderer", "RenderWidget::DidCompleteSwapBuffers");
+
+  // Notify subclasses threaded composited rendering was flushed to the screen.
+  DidFlushPaint();
+
+  if (!next_paint_flags_ &&
+      !need_update_rect_for_auto_resize_ &&
+      !plugin_window_moves_.size()) {
+    return;
+  }
+
+  ViewHostMsg_UpdateRect_Params params;
+  params.view_size = size_;
+  params.plugin_window_moves.swap(plugin_window_moves_);
+  params.flags = next_paint_flags_;
+
+  Send(new ViewHostMsg_UpdateRect(routing_id_, params));
+  next_paint_flags_ = 0;
+  need_update_rect_for_auto_resize_ = false;
+}
+
+void RenderWidget::ScheduleComposite() {
+  if (compositor_ &&
+      compositor_deps_->GetCompositorImplThreadTaskRunner().get()) {
+    compositor_->setNeedsAnimate();
+  }
+}
+
+void RenderWidget::ScheduleCompositeWithForcedRedraw() {
+  if (compositor_) {
+    // Regardless of whether threaded compositing is enabled, always
+    // use this mechanism to force the compositor to redraw. However,
+    // the invalidation code path below is still needed for the
+    // non-threaded case.
+    compositor_->SetNeedsForcedRedraw();
+  }
+  ScheduleComposite();
 }
 
 // static
@@ -1459,43 +1492,6 @@ void RenderWidget::QueueMessage(IPC::Message* msg,
     // call SetNeedsUpdateLayers instead of SetNeedsCommit so that
     // can_cancel_commit is not unset.
     compositor_->SetNeedsUpdateLayers();
-  }
-}
-
-void RenderWidget::didCommitAndDrawCompositorFrame() {
-  // NOTE: Tests may break if this event is renamed or moved. See
-  // tab_capture_performancetest.cc.
-  TRACE_EVENT0("gpu", "RenderWidget::didCommitAndDrawCompositorFrame");
-  // Notify subclasses that we initiated the paint operation.
-  DidInitiatePaint();
-}
-
-void RenderWidget::didCompleteSwapBuffers() {
-  TRACE_EVENT0("renderer", "RenderWidget::didCompleteSwapBuffers");
-
-  // Notify subclasses threaded composited rendering was flushed to the screen.
-  DidFlushPaint();
-
-  if (!next_paint_flags_ &&
-      !need_update_rect_for_auto_resize_ &&
-      !plugin_window_moves_.size()) {
-    return;
-  }
-
-  ViewHostMsg_UpdateRect_Params params;
-  params.view_size = size_;
-  params.plugin_window_moves.swap(plugin_window_moves_);
-  params.flags = next_paint_flags_;
-
-  Send(new ViewHostMsg_UpdateRect(routing_id_, params));
-  next_paint_flags_ = 0;
-  need_update_rect_for_auto_resize_ = false;
-}
-
-void RenderWidget::scheduleComposite() {
-  if (compositor_ &&
-      compositor_deps_->GetCompositorImplThreadTaskRunner().get()) {
-    compositor_->setNeedsAnimate();
   }
 }
 
@@ -1793,7 +1789,7 @@ void RenderWidget::SetDeviceScaleFactor(float device_scale_factor) {
     return;
 
   device_scale_factor_ = device_scale_factor;
-  scheduleComposite();
+  ScheduleComposite();
 }
 
 bool RenderWidget::SetDeviceColorProfile(

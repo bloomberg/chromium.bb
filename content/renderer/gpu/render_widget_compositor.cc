@@ -827,7 +827,7 @@ void RenderWidgetCompositor::setTopControlsShownRatio(float ratio) {
 }
 
 void RenderWidgetCompositor::WillBeginMainFrame() {
-  widget_->willBeginCompositorFrame();
+  widget_->WillBeginCompositorFrame();
 }
 
 void RenderWidgetCompositor::DidBeginMainFrame() {
@@ -929,16 +929,15 @@ void RenderWidgetCompositor::WillCommit() {
 void RenderWidgetCompositor::DidCommit() {
   DCHECK(!temporary_copy_output_request_);
   widget_->DidCommitCompositorFrame();
-  widget_->didBecomeReadyForAdditionalInput();
   compositor_deps_->GetRendererScheduler()->DidCommitFrameToCompositor();
 }
 
 void RenderWidgetCompositor::DidCommitAndDrawFrame() {
-  widget_->didCommitAndDrawCompositorFrame();
+  widget_->DidCommitAndDrawCompositorFrame();
 }
 
 void RenderWidgetCompositor::DidCompleteSwapBuffers() {
-  widget_->didCompleteSwapBuffers();
+  widget_->DidCompleteSwapBuffers();
   bool threaded = !!compositor_deps_->GetCompositorImplThreadTaskRunner().get();
   if (!threaded)
     widget_->OnSwapBuffersComplete();

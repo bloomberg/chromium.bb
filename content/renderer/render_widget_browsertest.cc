@@ -38,7 +38,7 @@ TEST_F(RenderWidgetTest, OnResize) {
   EXPECT_EQ(resize_params.needs_resize_ack, next_paint_is_resize_ack());
 
   // Clear the flag.
-  widget()->didCompleteSwapBuffers();
+  widget()->DidCompleteSwapBuffers();
 
   // Setting the same size again should not send the ack.
   resize_params.needs_resize_ack = false;

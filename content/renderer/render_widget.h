@@ -166,14 +166,9 @@ class CONTENT_EXPORT RenderWidget
   bool Send(IPC::Message* msg) override;
 
   // blink::WebWidgetClient
-  virtual void willBeginCompositorFrame();
   virtual void didAutoResize(const blink::WebSize& new_size);
   virtual void initializeLayerTreeView();
   virtual blink::WebLayerTreeView* layerTreeView();
-  virtual void didBecomeReadyForAdditionalInput();
-  virtual void didCommitAndDrawCompositorFrame();
-  virtual void didCompleteSwapBuffers();
-  virtual void scheduleComposite();
   virtual void didFocus();
   virtual void didBlur();
   virtual void didChangeCursor(const blink::WebCursorInfo&);
@@ -242,9 +237,6 @@ class CONTENT_EXPORT RenderWidget
   // Close the underlying WebWidget.
   virtual void Close();
 
-  // Notifies about a compositor frame commit operation having finished.
-  virtual void DidCommitCompositorFrame();
-
   // Deliveres |message| together with compositor state change updates. The
   // exact behavior depends on |policy|.
   // This mechanism is not a drop-in replacement for IPC: messages sent this way
@@ -285,6 +277,22 @@ class CONTENT_EXPORT RenderWidget
   void SetPopupOriginAdjustmentsForEmulation(ScreenMetricsEmulator* emulator);
   gfx::Rect AdjustValidationMessageAnchor(const gfx::Rect& anchor);
 
+  // Indicates that the compositor is about to begin a frame. This is primarily
+  // to signal to flow control mechanisms that a frame is beginning, not to
+  // perform actual painting work.
+  void WillBeginCompositorFrame();
+
+  // Notifies about a compositor frame commit operation having finished.
+  virtual void DidCommitCompositorFrame();
+
+  // Notifies that the draw commands for a committed frame have been issued.
+  void DidCommitAndDrawCompositorFrame();
+
+  // Notifies that the compositor has posted a swapbuffers operation to the GPU
+  // process.
+  void DidCompleteSwapBuffers();
+
+  void ScheduleComposite();
   void ScheduleCompositeWithForcedRedraw();
 
   // Called by the compositor in single-threaded mode when a swap is posted,

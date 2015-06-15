@@ -3551,7 +3551,7 @@ void RenderViewImpl::LaunchAndroidContentIntent(const GURL& intent,
     return;
 
   // Remove the content highlighting if any.
-  scheduleComposite();
+  ScheduleComposite();
 
   if (!intent.is_empty())
     Send(new ViewHostMsg_StartContentIntent(routing_id_, intent));
