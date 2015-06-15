@@ -12,10 +12,6 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 
-namespace google_breakpad {
-class ExceptionHandler;
-}
-
 namespace chromecast {
 class CastCrashReporterClientAndroid;
 
@@ -32,11 +28,6 @@ class CrashHandler {
 
   // Registers JNI methods for this module.
   static bool RegisterCastCrashJni(JNIEnv* env);
-
-  // Returns whether or not the user has allowed for uploading crash dumps.
-  bool CanUploadCrashDump();
-
-  void UploadCrashDumps();
 
  private:
   CrashHandler(const std::string& process_type,
@@ -57,7 +48,6 @@ class CrashHandler {
   std::string process_type_;
 
   scoped_ptr<CastCrashReporterClientAndroid> crash_reporter_client_;
-  scoped_ptr<google_breakpad::ExceptionHandler> crash_uploader_;
 
   DISALLOW_COPY_AND_ASSIGN(CrashHandler);
 };

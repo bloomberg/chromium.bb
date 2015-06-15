@@ -5,7 +5,7 @@
 #include "chromecast/browser/service/cast_service_android.h"
 
 #include "base/bind.h"
-#include "chromecast/android/chromecast_config_android.h"
+#include "chromecast/base/chromecast_config_android.h"
 #include "chromecast/browser/metrics/cast_metrics_service_client.h"
 
 namespace chromecast {

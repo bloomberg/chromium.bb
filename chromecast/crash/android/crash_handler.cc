@@ -26,16 +26,6 @@ namespace {
 
 chromecast::CrashHandler* g_crash_handler = NULL;
 
-bool HandleCrash(void* /* crash_context */) {
-  DCHECK(g_crash_handler);
-  g_crash_handler->UploadCrashDumps();
-
-  // TODO(gunsch): clean up the ATV crash handling code.
-  // Don't write another minidump. Chrome's default ExceptionHandler has already
-  // written a minidump by this point in the crash handling sequence.
-  return false;
-}
-
 // Debug builds: always to crash-staging
 // Release builds: only to crash-staging for local/invalid build numbers
 bool UploadCrashToStaging() {
@@ -92,18 +82,7 @@ CrashHandler::~CrashHandler() {
 void CrashHandler::Initialize() {
   if (process_type_.empty()) {
     InitializeUploader();
-
-    // ExceptionHandlers are called on crash in reverse order of
-    // instantiation. This ExceptionHandler will attempt to upload crashes
-    // and the log file written out by the main process.
-
-    // Dummy MinidumpDescriptor just to start up another ExceptionHandler.
-    google_breakpad::MinidumpDescriptor dummy(crash_dump_path_.value());
-    crash_uploader_.reset(new google_breakpad::ExceptionHandler(
-        dummy, &HandleCrash, NULL, NULL, true, -1));
-
     breakpad::InitCrashReporter(process_type_);
-
     return;
   }
 
@@ -118,28 +97,8 @@ void CrashHandler::InitializeUploader() {
       base::android::ConvertUTF8ToJavaString(env,
                                              crash_dump_path_.value());
   Java_CastCrashHandler_initializeUploader(
-      env, crash_dump_path_java.obj(), UploadCrashToStaging());
-}
-
-bool CrashHandler::CanUploadCrashDump() {
-  DCHECK(crash_reporter_client_);
-  return crash_reporter_client_->GetCollectStatsConsent();
-}
-
-void CrashHandler::UploadCrashDumps() {
-  VLOG(1) << "Attempting to upload current process crash";
-
-  if (CanUploadCrashDump()) {
-    JNIEnv* env = base::android::AttachCurrentThread();
-    // Current log file location
-    base::android::ScopedJavaLocalRef<jstring> log_file_path_java =
-        base::android::ConvertUTF8ToJavaString(env, log_file_path_.value());
-    Java_CastCrashHandler_uploadCrashDumps(env, log_file_path_java.obj());
-  } else {
-    VLOG(1) << "Removing crash dumps instead of uploading";
-    JNIEnv* env = base::android::AttachCurrentThread();
-    Java_CastCrashHandler_removeCrashDumps(env);
-  }
+      env, base::android::GetApplicationContext(),
+      crash_dump_path_java.obj(), UploadCrashToStaging());
 }
 
 }  // namespace chromecast

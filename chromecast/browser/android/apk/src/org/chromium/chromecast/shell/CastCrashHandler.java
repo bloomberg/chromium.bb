@@ -4,31 +4,29 @@
 
 package org.chromium.chromecast.shell;
 
+import android.content.Context;
+
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+import org.chromium.base.Log;
+import org.chromium.chromecast.base.ChromecastConfigAndroid;
 
 /**
  * JNI wrapper class for accessing CastCrashHandler.
  */
 @JNINamespace("chromecast")
 public final class CastCrashHandler {
-    private static CastCrashUploader sCrashUploader;
+    private static final String TAG = "cr.CastCrashHandler";
 
     @CalledByNative
-    public static void initializeUploader(String crashDumpPath, boolean uploadCrashToStaging) {
-        if (sCrashUploader == null) {
-            sCrashUploader = new CastCrashUploader(crashDumpPath, uploadCrashToStaging);
-            sCrashUploader.startPeriodicUpload();
+    public static void initializeUploader(Context context, String crashDumpPath,
+            boolean uploadCrashToStaging) {
+        CastCrashUploader uploader = new CastCrashUploader(crashDumpPath, uploadCrashToStaging);
+        if (ChromecastConfigAndroid.canSendUsageStats(context)) {
+            uploader.startPeriodicUpload();
+        } else {
+            Log.d(TAG, "Removing crash dumps instead of uploading");
+            uploader.removeCrashDumps();
         }
-    }
-
-    @CalledByNative
-    public static void removeCrashDumps() {
-        sCrashUploader.removeCrashDumps();
-    }
-
-    @CalledByNative
-    public static void uploadCrashDumps(String logFilePath) {
-        sCrashUploader.uploadCrashDumps(logFilePath);
     }
 }

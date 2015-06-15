@@ -8,6 +8,7 @@
 #include "base/android/jni_registrar.h"
 #include "chromecast/android/cast_metrics_helper_android.h"
 #include "chromecast/base/cast_sys_info_android.h"
+#include "chromecast/base/chromecast_config_android.h"
 #include "chromecast/browser/android/cast_window_android.h"
 #include "chromecast/browser/android/cast_window_manager.h"
 #include "chromecast/crash/android/crash_handler.h"
@@ -23,6 +24,7 @@ static base::android::RegistrationMethod kMethods[] = {
   { "CastSysInfoAndroid", CastSysInfoAndroid::RegisterJni },
   { "CastWindowAndroid", shell::CastWindowAndroid::RegisterJni },
   { "CastWindowManager", shell::RegisterCastWindowManager },
+  { "ChromecastConfigAndroid", ChromecastConfigAndroid::RegisterJni },
   { "CrashHandler", CrashHandler::RegisterCastCrashJni },
   { "ExternalVideoSurfaceContainer",
       external_video_surface::RegisterExternalVideoSurfaceJni },

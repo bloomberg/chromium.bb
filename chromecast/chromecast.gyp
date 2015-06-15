@@ -453,12 +453,12 @@
           'sources': [
             'base/cast_sys_info_android.cc',
             'base/cast_sys_info_android.h',
+            'base/chromecast_config_android.cc',
+            'base/chromecast_config_android.h',
             'android/cast_jni_registrar.cc',
             'android/cast_jni_registrar.h',
             'android/cast_metrics_helper_android.cc',
             'android/cast_metrics_helper_android.h',
-            'android/chromecast_config_android.cc',
-            'android/chromecast_config_android.h',
             'android/platform_jni_loader.h',
             'app/android/cast_jni_loader.cc',
             'browser/android/cast_window_android.cc',
@@ -477,17 +477,28 @@
               ],
             }, {
               'sources': [
-                'android/chromecast_config_android_stub.cc',
                 'android/platform_jni_loader_stub.cc',
               ],
             }]
           ],
         },  # end of target 'libcast_shell_android'
         {
+          'target_name': 'cast_base_java',
+          'type': 'none',
+          'dependencies': [
+            '../base/base.gyp:base_java',
+          ],
+          'variables': {
+            'java_in_dir': 'base/java',
+          },
+          'includes': ['../build/java.gypi'],
+        },  # end of target 'cast_base_java'
+        {
           'target_name': 'cast_shell_java',
           'type': 'none',
           'dependencies': [
             '<(android_support_v13_target)',
+            'cast_base_java',
             '../base/base.gyp:base_java',
             '../components/components.gyp:external_video_surface_java',
             '../content/content.gyp:content_java',
@@ -541,6 +552,7 @@
           'target_name': 'cast_jni_headers',
           'type': 'none',
           'sources': [
+            'base/java/src/org/chromium/chromecast/base/ChromecastConfigAndroid.java',
             'browser/android/apk/src/org/chromium/chromecast/shell/CastCrashHandler.java',
             'browser/android/apk/src/org/chromium/chromecast/shell/CastMetricsHelper.java',
             'browser/android/apk/src/org/chromium/chromecast/shell/CastSysInfoAndroid.java',

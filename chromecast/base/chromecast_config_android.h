@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_ANDROID_CHROMECAST_CONFIG_ANDROID_H_
-#define CHROMECAST_ANDROID_CHROMECAST_CONFIG_ANDROID_H_
+#ifndef CHROMECAST_BASE_CHROMECAST_CONFIG_ANDROID_H_
+#define CHROMECAST_BASE_CHROMECAST_CONFIG_ANDROID_H_
 
 #include <jni.h>
 
@@ -17,6 +17,7 @@ namespace android {
 class ChromecastConfigAndroid {
  public:
   static ChromecastConfigAndroid* GetInstance();
+  static bool RegisterJni(JNIEnv* env);
 
   // Returns whether or not the user has allowed sending usage stats and
   // crash reports.
@@ -44,4 +45,4 @@ class ChromecastConfigAndroid {
 }  // namespace android
 }  // namespace chromecast
 
-#endif  // CHROMECAST_ANDROID_CHROMECAST_CONFIG_ANDROID_H_
+#endif  // CHROMECAST_BASE_CHROMECAST_CONFIG_ANDROID_H_

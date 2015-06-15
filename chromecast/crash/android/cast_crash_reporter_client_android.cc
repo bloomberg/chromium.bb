@@ -8,7 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
-#include "chromecast/android/chromecast_config_android.h"
+#include "chromecast/base/chromecast_config_android.h"
 #include "chromecast/base/version.h"
 #include "chromecast/common/global_descriptors.h"
 #include "chromecast/crash/cast_crash_keys.h"

@@ -69,10 +69,6 @@ public final class CastCrashUploader {
                 TimeUnit.MINUTES);
     }
 
-    public void uploadCrashDumps(final String logFilePath) {
-        queueAllCrashDumpUploads(true /* synchronous */, logFilePath);
-    }
-
     public void removeCrashDumps() {
         File crashDumpDirectory = new File(mCrashDumpPath);
         for (File potentialDump : crashDumpDirectory.listFiles()) {
