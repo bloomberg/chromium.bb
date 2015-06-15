@@ -34,7 +34,6 @@
 #include "wtf/ListHashSet.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"
-#include "wtf/VectorTraits.h"
 
 namespace blink {
 
@@ -172,7 +171,5 @@ private:
 };
 
 } // namespace blink
-
-WTF_ALLOW_CLEAR_UNUSED_SLOTS_WITH_MEM_FUNCTIONS(blink::HitTestResult);
 
 #endif // HitTestResult_h

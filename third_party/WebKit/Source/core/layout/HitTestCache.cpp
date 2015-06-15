@@ -77,9 +77,4 @@ void HitTestCache::clear()
     m_items.clear();
 }
 
-DEFINE_TRACE(HitTestCache)
-{
-    visitor->trace(m_items);
-}
-
 } // namespace blink
