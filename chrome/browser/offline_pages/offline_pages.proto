@@ -1,0 +1,36 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// Offline page item protocol for storage and exchanging of offline page
+// metadata.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+option retain_unknown_fields = true;
+
+package offline_pages;
+
+message OfflinePageEntry {
+  // URL of the offline page.
+  required string url = 1;
+
+  // Title of the offline page.
+  required string title = 2;
+
+  // Version of the offline page metadata.
+  required int32 version = 3;
+
+  // Path to the offline archive.
+  required string file_path = 4;
+
+  // Size of the offline archive.
+  optional int64 file_size = 5;
+
+  // Creation time of the offline archive.
+  optional int64 creation_time = 6;
+
+  // Last access time of the offline archive.
+  optional int64 last_access_time = 7;
+}

@@ -1331,6 +1331,8 @@
       'browser/enhanced_bookmarks/bookmark_server_cluster_service_factory.h',
       'browser/enhanced_bookmarks/enhanced_bookmark_model_factory.cc',
       'browser/enhanced_bookmarks/enhanced_bookmark_model_factory.h',
+      'browser/offline_pages/offline_page_metadata_store_impl.cc',
+      'browser/offline_pages/offline_page_metadata_store_impl.h',
     ],
     'chrome_browser_bookmark_android_sources': [
       'browser/enhanced_bookmarks/android/bookmark_image_service_android.cc',
@@ -3084,6 +3086,7 @@
         'common_net',
         'encrypted_cert_logger_proto',
         'in_memory_url_index_cache_proto',
+        'offline_pages_proto',
         'probe_message_proto',
         '../components/components.gyp:autofill_core_browser',
         '../components/components.gyp:bookmarks_browser',
@@ -3834,6 +3837,18 @@
       'variables': {
         'proto_in_dir': 'browser/net',
         'proto_out_dir': 'chrome/browser/net',
+      },
+      'includes': [ '../build/protoc.gypi', ],
+    },
+    {
+      # Protobuf compiler / generator for the offline page item protocol buffer.
+      # GN version: //chrome/browser/offline_pages:offline_pages_proto
+      'target_name': 'offline_pages_proto',
+      'type': 'static_library',
+      'sources': [ 'browser/offline_pages/offline_pages.proto', ],
+      'variables': {
+        'proto_in_dir': 'browser/offline_pages',
+        'proto_out_dir': 'chrome/browser/offline_pages',
       },
       'includes': [ '../build/protoc.gypi', ],
     },
