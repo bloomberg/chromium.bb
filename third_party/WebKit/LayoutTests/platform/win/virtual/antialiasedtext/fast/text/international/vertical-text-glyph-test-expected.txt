@@ -7,7 +7,7 @@ layer at (0,0) size 800x594
         LayoutText {#text} at (0,0) size 140x24
           text run at (0,0) width 140: "Simple text path"
       LayoutBlockFlow (anonymous) at (0,46.33) size 784x219
-        LayoutBlockFlow {SPAN} at (0,0) size 25x213.22
+        LayoutBlockFlow {SPAN} at (0,0) size 25x213.23
           LayoutText {#text} at (0,0) size 24x214
             text run at (0,0) width 214: "string\x{300C}\x{3042}\x{3001}\x{5909}\x{3063}\x{FF01}\x{300D}\x{3002}"
         LayoutText {#text} at (0,0) size 0x0
@@ -16,7 +16,7 @@ layer at (0,0) size 800x594
         LayoutText {#text} at (0,0) size 158x24
           text run at (0,0) width 158: "Complex text path"
       LayoutBlockFlow (anonymous) at (0,345.64) size 784x219
-        LayoutBlockFlow {SPAN} at (0,0) size 25x213.22
+        LayoutBlockFlow {SPAN} at (0,0) size 25x213.23
           LayoutText {#text} at (0,0) size 24x214
             text run at (0,0) width 214: "string\x{300C}\x{3042}\x{3001}\x{5909}\x{3063}\x{FF01}\x{300D}\x{3002}"
         LayoutText {#text} at (0,0) size 0x0

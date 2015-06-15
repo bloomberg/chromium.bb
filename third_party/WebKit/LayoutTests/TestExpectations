@@ -102,8 +102,6 @@ crbug.com/244481 virtual/gpu/canvas/philip/tests/2d.shadow.blur.low.html [ Skip 
 
 crbug.com/9798 [ Win ] http/tests/misc/redirect-with-quotes.php [ Pass Timeout ]
 
-crbug.com/497590 virtual/antialiasedtext/fast/text/international/vertical-text-glyph-test.html [ NeedsManualRebaseline ]
-
 crbug.com/430980 [ Mac ] fast/events/hit-test-counts.html [ Failure Pass ]
 crbug.com/430980 [ Mac ] virtual/slimmingpaint/fast/events/hit-test-counts.html [ Skip ]
 
@@ -935,7 +933,7 @@ crbug.com/311524 [ Win ] http/tests/inspector/appcache/appcache-iframe-manifests
 
 crbug.com/453002 [ Win ] fast/css/font-weight-1.html [ ImageOnlyFailure Pass ]
 crbug.com/453002 [ Win ] fast/writing-mode/english-lr-text.html [ ImageOnlyFailure Pass ]
-# crbug.com/453002 [ Win7 ] virtual/antialiasedtext/fast/text/international/vertical-text-glyph-test.html [ ImageOnlyFailure NeedsManualRebaseline Pass ]
+crbug.com/453002 [ Win7 ] virtual/antialiasedtext/fast/text/international/vertical-text-glyph-test.html [ ImageOnlyFailure Pass ]
 crbug.com/453002 [ Win7 ] virtual/antialiasedtext/fast/text/justify-ideograph-vertical.html [ ImageOnlyFailure Pass ]
 crbug.com/453002 [ Win7 ] virtual/antialiasedtext/fast/text/orientation-sideways.html [ Failure Pass ]
 crbug.com/453002 [ Win ] virtual/slimmingpaint/fast/css/font-weight-1.html [ Skip ]
