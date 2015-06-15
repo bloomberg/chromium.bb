@@ -193,16 +193,22 @@ void ConstructCommands(CommandService* command_service,
                                         CommandService::ALL,
                                         CommandService::ANY_SCOPE,
                                         &named_commands)) {
-    for (const auto& pair : named_commands) {
+    for (auto& pair : named_commands) {
+      Command& command_to_use = pair.second;
       // TODO(devlin): For some reason beyond my knowledge, FindCommandByName
-      // returns different (and more current) data than GetNamedCommands.
+      // returns different data than GetNamedCommands, including the
+      // accelerators, but not the descriptions - and even then, only if the
+      // command is active.
       // Unfortunately, some systems may be relying on the other data (which
       // more closely matches manifest data).
-      Command command = command_service->FindCommandByName(
-          extension_id, pair.second.command_name());
-      bool active = command.accelerator().key_code() != ui::VKEY_UNKNOWN;
+      // Until we can sort all this out, we merge the two command structures.
+      Command active_command = command_service->FindCommandByName(
+          extension_id, command_to_use.command_name());
+      command_to_use.set_accelerator(active_command.accelerator());
+      command_to_use.set_global(active_command.global());
+      bool active = command_to_use.accelerator().key_code() != ui::VKEY_UNKNOWN;
       commands->push_back(
-          make_linked_ptr(construct_command(command, active, false)));
+          make_linked_ptr(construct_command(command_to_use, active, false)));
     }
   }
 }
