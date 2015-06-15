@@ -5,7 +5,6 @@
 #include "ppapi/proxy/ppapi_command_buffer_proxy.h"
 
 #include "base/numerics/safe_conversions.h"
-#include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/api_id.h"
 #include "ppapi/shared_impl/host_resource.h"
@@ -25,6 +24,8 @@ PpapiCommandBufferProxy::PpapiCommandBufferProxy(
   shared_state_shm_.reset(
       new base::SharedMemory(shared_state.shmem(), false));
   shared_state_shm_->Map(shared_state.size());
+  InstanceData* data = dispatcher->GetInstanceData(resource.instance());
+  flush_info_ = &data->flush_info_;
 }
 
 PpapiCommandBufferProxy::~PpapiCommandBufferProxy() {
@@ -51,18 +52,20 @@ void PpapiCommandBufferProxy::Flush(int32 put_offset) {
   if (last_state_.error != gpu::error::kNoError)
     return;
 
-  IPC::Message* message = new PpapiHostMsg_PPBGraphics3D_AsyncFlush(
-      ppapi::API_ID_PPB_GRAPHICS_3D, resource_, put_offset);
-
-  // Do not let a synchronous flush hold up this message. If this handler is
-  // deferred until after the synchronous flush completes, it will overwrite the
-  // cached last_state_ with out-of-date data.
-  message->set_unblock(true);
-  Send(message);
+  OrderingBarrier(put_offset);
+  FlushInternal();
 }
 
 void PpapiCommandBufferProxy::OrderingBarrier(int32 put_offset) {
-  Flush(put_offset);
+  if (last_state_.error != gpu::error::kNoError)
+    return;
+
+  if (flush_info_->flush_pending && flush_info_->resource != resource_)
+    FlushInternal();
+
+  flush_info_->flush_pending = true;
+  flush_info_->resource = resource_;
+  flush_info_->put_offset = put_offset;
 }
 
 void PpapiCommandBufferProxy::WaitForTokenInRange(int32 start, int32 end) {
@@ -268,6 +271,25 @@ void PpapiCommandBufferProxy::TryUpdateState() {
 gpu::CommandBufferSharedState* PpapiCommandBufferProxy::shared_state() const {
   return reinterpret_cast<gpu::CommandBufferSharedState*>(
       shared_state_shm_->memory());
+}
+
+void PpapiCommandBufferProxy::FlushInternal() {
+  DCHECK(last_state_.error == gpu::error::kNoError);
+
+  DCHECK(flush_info_->flush_pending);
+
+  IPC::Message* message = new PpapiHostMsg_PPBGraphics3D_AsyncFlush(
+      ppapi::API_ID_PPB_GRAPHICS_3D, flush_info_->resource,
+      flush_info_->put_offset);
+
+  // Do not let a synchronous flush hold up this message. If this handler is
+  // deferred until after the synchronous flush completes, it will overwrite the
+  // cached last_state_ with out-of-date data.
+  message->set_unblock(true);
+  Send(message);
+
+  flush_info_->flush_pending = false;
+  flush_info_->resource.SetHostResource(0, 0);
 }
 
 }  // namespace proxy

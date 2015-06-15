@@ -63,6 +63,14 @@ InstanceData::~InstanceData() {
     mouse_lock_callback->Abort();
 }
 
+InstanceData::FlushInfo::FlushInfo()
+    : flush_pending(false),
+      put_offset(0) {
+}
+
+InstanceData::FlushInfo::~FlushInfo() {
+}
+
 PluginDispatcher::PluginDispatcher(PP_GetInterface_Func get_interface,
                                    const PpapiPermissions& permissions,
                                    bool incognito)

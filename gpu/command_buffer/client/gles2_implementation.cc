@@ -3563,7 +3563,7 @@ void GLES2Implementation::BindBufferHelper(
 void GLES2Implementation::BindBufferStub(GLenum target, GLuint buffer) {
   helper_->BindBuffer(target, buffer);
   if (share_group_->bind_generates_resource())
-    helper_->CommandBufferHelper::Flush();
+    helper_->CommandBufferHelper::OrderingBarrier();
 }
 
 void GLES2Implementation::BindBufferBaseHelper(
@@ -3647,7 +3647,7 @@ void GLES2Implementation::BindFramebufferStub(GLenum target,
                                               GLuint framebuffer) {
   helper_->BindFramebuffer(target, framebuffer);
   if (share_group_->bind_generates_resource())
-    helper_->CommandBufferHelper::Flush();
+    helper_->CommandBufferHelper::OrderingBarrier();
 }
 
 void GLES2Implementation::BindRenderbufferHelper(
@@ -3677,7 +3677,7 @@ void GLES2Implementation::BindRenderbufferStub(GLenum target,
                                                GLuint renderbuffer) {
   helper_->BindRenderbuffer(target, renderbuffer);
   if (share_group_->bind_generates_resource())
-    helper_->CommandBufferHelper::Flush();
+    helper_->CommandBufferHelper::OrderingBarrier();
 }
 
 void GLES2Implementation::BindSamplerHelper(GLuint unit,
@@ -3724,7 +3724,7 @@ void GLES2Implementation::BindTextureHelper(GLenum target, GLuint texture) {
 void GLES2Implementation::BindTextureStub(GLenum target, GLuint texture) {
   helper_->BindTexture(target, texture);
   if (share_group_->bind_generates_resource())
-    helper_->CommandBufferHelper::Flush();
+    helper_->CommandBufferHelper::OrderingBarrier();
 }
 
 void GLES2Implementation::BindTransformFeedbackHelper(
@@ -3775,7 +3775,7 @@ void GLES2Implementation::BindValuebufferCHROMIUMStub(GLenum target,
                                                       GLuint valuebuffer) {
   helper_->BindValuebufferCHROMIUM(target, valuebuffer);
   if (share_group_->bind_generates_resource())
-    helper_->CommandBufferHelper::Flush();
+    helper_->CommandBufferHelper::OrderingBarrier();
 }
 
 void GLES2Implementation::UseProgramHelper(GLuint program) {

@@ -64,6 +64,11 @@ class PPAPI_SHARED_EXPORT HostResource {
     return host_resource_ < other.host_resource_;
   }
 
+  bool operator!=(const HostResource& other) const {
+    return instance_ != other.instance_ ||
+           host_resource_ != other.host_resource_;
+  }
+
  private:
   PP_Instance instance_;
   PP_Resource host_resource_;

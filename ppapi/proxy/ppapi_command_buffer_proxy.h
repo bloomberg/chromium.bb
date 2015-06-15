@@ -11,6 +11,7 @@
 #include "gpu/command_buffer/client/gpu_control.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/common/command_buffer_shared.h"
+#include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
 #include "ppapi/shared_impl/host_resource.h"
 
@@ -21,7 +22,6 @@ class Message;
 namespace ppapi {
 namespace proxy {
 
-class PluginDispatcher;
 class SerializedHandle;
 
 class PPAPI_PROXY_EXPORT PpapiCommandBufferProxy : public gpu::CommandBuffer,
@@ -78,6 +78,8 @@ class PPAPI_PROXY_EXPORT PpapiCommandBufferProxy : public gpu::CommandBuffer,
   // The shared memory area used to update state.
   gpu::CommandBufferSharedState* shared_state() const;
 
+  void FlushInternal();
+
   gpu::Capabilities capabilities_;
   State last_state_;
   scoped_ptr<base::SharedMemory> shared_state_shm_;
@@ -86,6 +88,8 @@ class PPAPI_PROXY_EXPORT PpapiCommandBufferProxy : public gpu::CommandBuffer,
   PluginDispatcher* dispatcher_;
 
   base::Closure channel_error_callback_;
+
+  InstanceData::FlushInfo *flush_info_;
 
   DISALLOW_COPY_AND_ASSIGN(PpapiCommandBufferProxy);
 };

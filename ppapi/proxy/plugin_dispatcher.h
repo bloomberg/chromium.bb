@@ -67,6 +67,16 @@ struct InstanceData {
   // The message handler which should handle JavaScript->Plugin messages, if
   // one has been registered, otherwise NULL.
   scoped_ptr<MessageHandler> message_handler;
+
+  // Flush info for PpapiCommandBufferProxy::OrderingBarrier().
+  struct FlushInfo {
+    FlushInfo();
+    ~FlushInfo();
+    bool flush_pending;
+    HostResource resource;
+    int32 put_offset;
+  };
+  FlushInfo flush_info_;
 };
 
 class PPAPI_PROXY_EXPORT PluginDispatcher
