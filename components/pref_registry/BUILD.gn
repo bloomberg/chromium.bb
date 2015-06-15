@@ -28,5 +28,8 @@ source_set("test_support") {
 
   deps = [
     ":pref_registry",
+    "//base",
+    "//base:prefs",
+    "//base:prefs_test_support",
   ]
 }
