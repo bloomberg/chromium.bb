@@ -46,6 +46,7 @@
 #define WL_HIDE_DEPRECATED
 #include <wayland-server.h>
 
+#include "shared/helpers.h"
 #include "window.h"
 
 #define MIN(x,y) (((x) < (y)) ? (x) : (y))

@@ -45,6 +45,7 @@
 #include "ivi-application-server-protocol.h"
 #include "ivi-layout-export.h"
 #include "ivi-layout-private.h"
+#include "shared/helpers.h"
 
 /* Representation of ivi_surface protocol object. */
 struct ivi_shell_surface

@@ -36,10 +36,9 @@
 #include <time.h>
 
 #include <wayland-client.h>
+#include "shared/helpers.h"
 #include "shared/os-compatibility.h"
 #include "presentation_timing-client-protocol.h"
-
-#define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
 
 enum run_mode {
 	RUN_MODE_FEEDBACK,

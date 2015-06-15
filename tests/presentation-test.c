@@ -31,6 +31,7 @@
 #include <assert.h>
 #include <time.h>
 
+#include "shared/helpers.h"
 #include "weston-test-client-helper.h"
 #include "presentation_timing-client-protocol.h"
 

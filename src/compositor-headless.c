@@ -31,6 +31,7 @@
 #include <sys/time.h>
 #include <stdbool.h>
 
+#include "shared/helpers.h"
 #include "compositor.h"
 #include "pixman-renderer.h"
 #include "presentation_timing-server-protocol.h"

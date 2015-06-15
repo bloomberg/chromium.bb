@@ -46,6 +46,7 @@
 #include <gbm.h>
 #include <libudev.h>
 
+#include "shared/helpers.h"
 #include "libbacklight.h"
 #include "compositor.h"
 #include "gl-renderer.h"

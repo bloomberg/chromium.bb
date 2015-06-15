@@ -34,6 +34,7 @@
 #include <fcntl.h>
 #include <limits.h>
 
+#include "shared/helpers.h"
 #include "shared/os-compatibility.h"
 #include "compositor.h"
 

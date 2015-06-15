@@ -42,6 +42,7 @@
 
 #include <libudev.h>
 
+#include "shared/helpers.h"
 #include "compositor.h"
 #include "launcher-util.h"
 #include "pixman-renderer.h"

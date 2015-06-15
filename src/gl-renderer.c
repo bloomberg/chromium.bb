@@ -40,6 +40,7 @@
 #include "gl-renderer.h"
 #include "vertex-clipping.h"
 
+#include "shared/helpers.h"
 #include "weston-egl-ext.h"
 
 struct gl_shader {

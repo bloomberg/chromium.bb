@@ -32,10 +32,9 @@
 
 #include <wayland-client.h>
 
+#include "shared/helpers.h"
 #include "shared/os-compatibility.h"
 #include "presentation_timing-client-protocol.h"
-
-#define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
 
 #define MIN(x,y) (((x) < (y)) ? (x) : (y))
 

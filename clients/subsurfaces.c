@@ -41,6 +41,7 @@
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 
+#include "shared/helpers.h"
 #include "window.h"
 
 #if 0

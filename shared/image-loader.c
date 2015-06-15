@@ -34,9 +34,8 @@
 #include <png.h>
 #include <pixman.h>
 
+#include "shared/helpers.h"
 #include "image-loader.h"
-
-#define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
 
 #ifdef HAVE_WEBP
 #include <webp/decode.h>

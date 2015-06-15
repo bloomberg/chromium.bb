@@ -37,6 +37,7 @@
 
 #include "desktop-shell-client-protocol.h"
 #include "window.h"
+#include "shared/helpers.h"
 
 extern struct wscreensaver_plugin glmatrix_screensaver;
 

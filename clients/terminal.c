@@ -44,6 +44,7 @@
 #include <wayland-client.h>
 
 #include "shared/config-parser.h"
+#include "shared/helpers.h"
 #include "window.h"
 
 static int option_fullscreen;

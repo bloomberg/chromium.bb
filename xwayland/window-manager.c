@@ -42,6 +42,7 @@
 #include "cairo-util.h"
 #include "compositor.h"
 #include "hash.h"
+#include "shared/helpers.h"
 
 struct wm_size_hints {
 	uint32_t flags;

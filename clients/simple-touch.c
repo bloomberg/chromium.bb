@@ -33,9 +33,8 @@
 #include <sys/mman.h>
 
 #include <wayland-client.h>
+#include "shared/helpers.h"
 #include "shared/os-compatibility.h"
-
-#define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
 
 struct seat {
 	struct touch *touch;

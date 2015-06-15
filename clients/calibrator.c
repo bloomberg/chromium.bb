@@ -35,9 +35,8 @@
 #include <wayland-client.h>
 
 #include "window.h"
+#include "shared/helpers.h"
 #include "shared/matrix.h"
-
-#define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
 
 /* Our points for the calibration must be not be on a line */
 static const struct {

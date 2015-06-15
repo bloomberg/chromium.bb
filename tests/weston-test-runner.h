@@ -31,6 +31,8 @@
 
 #include <stdlib.h>
 
+#include "shared/helpers.h"
+
 #ifdef NDEBUG
 #error "Tests must not be built with NDEBUG defined, they rely on assert()."
 #endif
@@ -43,8 +45,6 @@ struct weston_test {
 	int n_elements;
 	int must_fail;
 } __attribute__ ((aligned (32)));
-
-#define ARRAY_LENGTH(a) ((int) (sizeof (a) / sizeof (a)[0]))
 
 #define TEST_BEGIN(name, arg)					\
 	static void name(arg)

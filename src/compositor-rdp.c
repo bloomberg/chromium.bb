@@ -65,6 +65,7 @@
 #include <freerdp/locale/keyboard.h>
 #include <winpr/input.h>
 
+#include "shared/helpers.h"
 #include "compositor.h"
 #include "pixman-renderer.h"
 

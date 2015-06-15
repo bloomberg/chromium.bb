@@ -30,6 +30,7 @@
 
 #include "weston-test-runner.h"
 
+#include "shared/helpers.h"
 #include "src/vertex-clipping.h"
 
 #define BOUNDING_BOX_TOP_Y 100.0f

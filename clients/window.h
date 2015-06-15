@@ -33,8 +33,6 @@
 #include "shared/zalloc.h"
 #include "shared/platform.h"
 
-#define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
-
 #define container_of(ptr, type, member) ({				\
 	const __typeof__( ((type *)0)->member ) *__mptr = (ptr);	\
 	(type *)( (char *)__mptr - offsetof(type,member) );})

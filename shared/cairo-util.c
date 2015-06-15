@@ -35,10 +35,9 @@
 #include <cairo.h>
 #include "cairo-util.h"
 
+#include "shared/helpers.h"
 #include "image-loader.h"
 #include "config-parser.h"
-
-#define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
 
 void
 surface_flush_device(cairo_surface_t *surface)

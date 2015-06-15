@@ -67,6 +67,7 @@ typedef void *EGLContext;
 #include <linux/input.h>
 #include <wayland-client.h>
 #include "shared/cairo-util.h"
+#include "shared/helpers.h"
 #include "xdg-shell-client-protocol.h"
 #include "text-cursor-position-client-protocol.h"
 #include "workspaces-client-protocol.h"

@@ -41,6 +41,7 @@
 
 #include "window.h"
 #include "shared/cairo-util.h"
+#include "shared/helpers.h"
 
 struct dnd_drag;
 

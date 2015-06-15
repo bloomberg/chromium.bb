@@ -46,6 +46,7 @@
 #  include "rpi-bcm-stubs.h"
 #endif
 
+#include "shared/helpers.h"
 #include "compositor.h"
 #include "rpi-renderer.h"
 #include "launcher-util.h"

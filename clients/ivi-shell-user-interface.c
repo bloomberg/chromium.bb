@@ -35,6 +35,7 @@
 #include <wayland-cursor.h>
 #include "shared/cairo-util.h"
 #include "shared/config-parser.h"
+#include "shared/helpers.h"
 #include "shared/os-compatibility.h"
 #include "ivi-application-client-protocol.h"
 #include "ivi-hmi-controller-client-protocol.h"
@@ -175,7 +176,6 @@ mem_alloc(size_t size, char *file, int32_t line)
 }
 
 #define MEM_ALLOC(s) mem_alloc((s),__FILE__,__LINE__)
-#define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
 
 /*****************************************************************************
  *  Event Handler

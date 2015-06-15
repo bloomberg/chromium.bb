@@ -36,6 +36,7 @@
 
 #include <pango/pangocairo.h>
 
+#include "shared/helpers.h"
 #include "window.h"
 #include "text-client-protocol.h"
 

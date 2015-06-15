@@ -31,6 +31,7 @@
 #include <fcntl.h>
 
 #include "xwayland.h"
+#include "shared/helpers.h"
 
 static int
 writable_callback(int fd, uint32_t mask, void *data)

@@ -53,6 +53,7 @@
 #include "gl-renderer.h"
 #include "pixman-renderer.h"
 #include "shared/config-parser.h"
+#include "shared/helpers.h"
 #include "shared/image-loader.h"
 #include "presentation_timing-server-protocol.h"
 

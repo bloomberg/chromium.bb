@@ -61,6 +61,7 @@
 #include "compositor.h"
 #include "scaler-server-protocol.h"
 #include "presentation_timing-server-protocol.h"
+#include "shared/helpers.h"
 #include "shared/os-compatibility.h"
 #include "git-version.h"
 #include "version.h"

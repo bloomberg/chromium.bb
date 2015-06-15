@@ -42,6 +42,7 @@
 #include "compositor.h"
 #include "gl-renderer.h"
 #include "pixman-renderer.h"
+#include "shared/helpers.h"
 #include "shared/image-loader.h"
 #include "shared/os-compatibility.h"
 #include "shared/cairo-util.h"

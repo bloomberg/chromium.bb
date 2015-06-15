@@ -38,6 +38,7 @@
 
 #include <cairo.h>
 
+#include "shared/helpers.h"
 #include "window.h"
 
 /** window title */
