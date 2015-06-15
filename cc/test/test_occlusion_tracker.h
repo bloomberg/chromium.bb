@@ -12,60 +12,51 @@
 namespace cc {
 
 // A subclass to expose the total current occlusion.
-template <typename LayerType>
-class TestOcclusionTracker : public OcclusionTracker<LayerType> {
+class TestOcclusionTracker : public OcclusionTracker {
  public:
   explicit TestOcclusionTracker(const gfx::Rect& screen_scissor_rect)
-      : OcclusionTracker<LayerType>(screen_scissor_rect) {}
+      : OcclusionTracker(screen_scissor_rect) {}
 
   SimpleEnclosedRegion occlusion_from_inside_target() const {
-    return OcclusionTracker<LayerType>::stack_.back()
-        .occlusion_from_inside_target;
+    return stack_.back().occlusion_from_inside_target;
   }
   SimpleEnclosedRegion occlusion_from_outside_target() const {
-    return OcclusionTracker<LayerType>::stack_.back()
-        .occlusion_from_outside_target;
+    return stack_.back().occlusion_from_outside_target;
   }
 
   SimpleEnclosedRegion occlusion_on_contributing_surface_from_inside_target()
       const {
-    size_t stack_size = OcclusionTracker<LayerType>::stack_.size();
+    size_t stack_size = stack_.size();
     if (stack_size < 2)
       return SimpleEnclosedRegion();
-    return OcclusionTracker<LayerType>::stack_[stack_size - 2]
-        .occlusion_from_inside_target;
+    return stack_[stack_size - 2].occlusion_from_inside_target;
   }
   SimpleEnclosedRegion occlusion_on_contributing_surface_from_outside_target()
       const {
-    size_t stack_size = OcclusionTracker<LayerType>::stack_.size();
+    size_t stack_size = stack_.size();
     if (stack_size < 2)
       return SimpleEnclosedRegion();
-    return OcclusionTracker<LayerType>::stack_[stack_size - 2]
-        .occlusion_from_outside_target;
+    return stack_[stack_size - 2].occlusion_from_outside_target;
   }
 
   void set_occlusion_from_outside_target(const SimpleEnclosedRegion& region) {
-    OcclusionTracker<LayerType>::stack_.back().occlusion_from_outside_target =
-        region;
+    stack_.back().occlusion_from_outside_target = region;
   }
   void set_occlusion_from_inside_target(const SimpleEnclosedRegion& region) {
-    OcclusionTracker<LayerType>::stack_.back().occlusion_from_inside_target =
-        region;
+    stack_.back().occlusion_from_inside_target = region;
   }
 
   void set_occlusion_on_contributing_surface_from_outside_target(
       const SimpleEnclosedRegion& region) {
-    size_t stack_size = OcclusionTracker<LayerType>::stack_.size();
+    size_t stack_size = stack_.size();
     DCHECK_GE(stack_size, 2u);
-    OcclusionTracker<LayerType>::stack_[stack_size - 2]
-        .occlusion_from_outside_target = region;
+    stack_[stack_size - 2].occlusion_from_outside_target = region;
   }
   void set_occlusion_on_contributing_surface_from_inside_target(
       const SimpleEnclosedRegion& region) {
-    size_t stack_size = OcclusionTracker<LayerType>::stack_.size();
+    size_t stack_size = stack_.size();
     DCHECK_GE(stack_size, 2u);
-    OcclusionTracker<LayerType>::stack_[stack_size - 2]
-        .occlusion_from_inside_target = region;
+    stack_[stack_size - 2].occlusion_from_inside_target = region;
   }
 };
 

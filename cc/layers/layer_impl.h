@@ -57,8 +57,6 @@ class LayerTreeHostImpl;
 class LayerTreeImpl;
 class MicroBenchmarkImpl;
 class Occlusion;
-template <typename LayerType>
-class OcclusionTracker;
 class OpacityTree;
 class PrioritizedTile;
 class RenderPass;

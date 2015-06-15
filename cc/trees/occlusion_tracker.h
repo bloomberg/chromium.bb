@@ -18,8 +18,6 @@ namespace cc {
 class LayerImpl;
 class Region;
 class RenderSurfaceImpl;
-class Layer;
-class RenderSurface;
 
 // This class is used to track occlusion of layers while traversing them in a
 // front-to-back order. As each layer is visited, one of the methods in this
@@ -30,7 +28,6 @@ class RenderSurface;
 // queried via surfaceOccluded() and surfaceUnoccludedContentRect(). Finally,
 // once finished with the layer, occlusion behind the layer should be marked by
 // calling MarkOccludedBehindLayer().
-template <typename LayerType>
 class CC_EXPORT OcclusionTracker {
  public:
   explicit OcclusionTracker(const gfx::Rect& screen_space_clip_rect);
@@ -45,10 +42,10 @@ class CC_EXPORT OcclusionTracker {
 
   // Called at the beginning of each step in the LayerIterator's front-to-back
   // traversal.
-  void EnterLayer(const LayerIteratorPosition<LayerType>& layer_iterator);
+  void EnterLayer(const LayerIteratorPosition<LayerImpl>& layer_iterator);
   // Called at the end of each step in the LayerIterator's front-to-back
   // traversal.
-  void LeaveLayer(const LayerIteratorPosition<LayerType>& layer_iterator);
+  void LeaveLayer(const LayerIteratorPosition<LayerImpl>& layer_iterator);
 
   // Gives the region of the screen that is not occluded by something opaque.
   Region ComputeVisibleRegionInScreen() const;
@@ -60,8 +57,8 @@ class CC_EXPORT OcclusionTracker {
  protected:
   struct StackObject {
     StackObject() : target(0) {}
-    explicit StackObject(const LayerType* target) : target(target) {}
-    const LayerType* target;
+    explicit StackObject(const LayerImpl* target) : target(target) {}
+    const LayerImpl* target;
     SimpleEnclosedRegion occlusion_from_outside_target;
     SimpleEnclosedRegion occlusion_from_inside_target;
   };
@@ -86,32 +83,27 @@ class CC_EXPORT OcclusionTracker {
  private:
   // Called when visiting a layer representing itself. If the target was not
   // already current, then this indicates we have entered a new surface subtree.
-  void EnterRenderTarget(const LayerType* new_target);
+  void EnterRenderTarget(const LayerImpl* new_target);
 
   // Called when visiting a layer representing a target surface. This indicates
   // we have visited all the layers within the surface, and we may perform any
   // surface-wide operations.
-  void FinishedRenderTarget(const LayerType* finished_target);
+  void FinishedRenderTarget(const LayerImpl* finished_target);
 
   // Called when visiting a layer representing a contributing surface. This
   // indicates that we are leaving our current surface, and entering the new
   // one. We then perform any operations required for merging results from the
   // child subtree into its parent.
-  void LeaveToRenderTarget(const LayerType* new_target);
+  void LeaveToRenderTarget(const LayerImpl* new_target);
 
   // Add the layer's occlusion to the tracked state.
-  void MarkOccludedBehindLayer(const LayerType* layer);
+  void MarkOccludedBehindLayer(const LayerImpl* layer);
 
   gfx::Rect screen_space_clip_rect_;
   gfx::Size minimum_tracking_size_;
 
   DISALLOW_COPY_AND_ASSIGN(OcclusionTracker);
 };
-
-#if !defined(COMPILER_MSVC)
-extern template class OcclusionTracker<Layer>;
-extern template class OcclusionTracker<LayerImpl>;
-#endif
 
 }  // namespace cc
 
