@@ -5,7 +5,6 @@
 #include "content/child/web_url_loader_impl.h"
 
 #include <algorithm>
-#include <deque>
 #include <string>
 
 #include "base/bind.h"
@@ -22,8 +21,8 @@
 #include "content/child/request_extra_data.h"
 #include "content/child/request_info.h"
 #include "content/child/resource_dispatcher.h"
+#include "content/child/shared_memory_data_consumer_handle.h"
 #include "content/child/sync_load_response.h"
-#include "content/child/web_data_consumer_handle_impl.h"
 #include "content/child/web_url_request_util.h"
 #include "content/child/weburlresponse_extradata_impl.h"
 #include "content/common/resource_messages.h"
@@ -47,7 +46,6 @@
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/web/WebSecurityPolicy.h"
-#include "third_party/mojo/src/mojo/public/cpp/system/data_pipe.h"
 
 using base::Time;
 using base::TimeTicks;
@@ -71,8 +69,6 @@ namespace content {
 // Utilities ------------------------------------------------------------------
 
 namespace {
-
-const size_t kBodyStreamPipeCapacity = 4 * 1024;
 
 using HeadersVector = ResourceDevToolsInfo::HeadersVector;
 
@@ -330,8 +326,6 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context>,
   // We can optimize the handling of data URLs in most cases.
   bool CanHandleDataURLRequestLocally() const;
   void HandleDataURL();
-  MojoResult WriteDataOnBodyStream(const char* data, size_t size);
-  void OnHandleGotWritable(MojoResult);
 
   WebURLLoaderImpl* loader_;
   WebURLRequest request_;
@@ -342,12 +336,7 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context>,
   scoped_ptr<FtpDirectoryListingResponseDelegate> ftp_listing_delegate_;
   scoped_ptr<MultipartResponseDelegate> multipart_delegate_;
   scoped_ptr<StreamOverrideParameters> stream_override_;
-  mojo::ScopedDataPipeProducerHandle body_stream_writer_;
-  mojo::common::HandleWatcher body_stream_writer_watcher_;
-  // TODO(yhirano): Delete this buffer after implementing the back-pressure
-  // mechanism.
-  std::deque<char> body_stream_buffer_;
-  bool got_all_stream_body_data_;
+  scoped_ptr<SharedMemoryDataConsumerHandle::Writer> body_stream_writer_;
   enum DeferState {NOT_DEFERRING, SHOULD_DEFER, DEFERRED_DATA};
   DeferState defers_loading_;
   int request_id_;
@@ -362,7 +351,6 @@ WebURLLoaderImpl::Context::Context(
       resource_dispatcher_(resource_dispatcher),
       task_runner_(task_runner),
       referrer_policy_(blink::WebReferrerPolicyDefault),
-      got_all_stream_body_data_(false),
       defers_loading_(NOT_DEFERRING),
       request_id_(-1) {
 }
@@ -619,22 +607,20 @@ void WebURLLoaderImpl::Context::OnReceivedResponse(
   scoped_refptr<Context> protect(this);
 
   if (request_.useStreamOnResponse()) {
-    MojoCreateDataPipeOptions options;
-    options.struct_size = sizeof(MojoCreateDataPipeOptions);
-    options.flags = MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE;
-    options.element_num_bytes = 1;
-    options.capacity_num_bytes = kBodyStreamPipeCapacity;
-
-    mojo::ScopedDataPipeConsumerHandle consumer;
-    MojoResult result = mojo::CreateDataPipe(&options,
-                                             &body_stream_writer_,
-                                             &consumer);
-    if (result != MOJO_RESULT_OK) {
-      // TODO(yhirano): Handle the error.
-      return;
+    SharedMemoryDataConsumerHandle::BackpressureMode mode =
+        SharedMemoryDataConsumerHandle::kDoNotApplyBackpressure;
+    if (info.headers &&
+        info.headers->HasHeaderValue("Cache-Control", "no-store")) {
+      mode = SharedMemoryDataConsumerHandle::kApplyBackpressure;
     }
-    client_->didReceiveResponse(
-        loader_, response, new WebDataConsumerHandleImpl(consumer.Pass()));
+
+    auto reader = make_scoped_ptr(
+        new SharedMemoryDataConsumerHandle(mode, &body_stream_writer_));
+
+    // The client takes |reader|'s ownership.
+    client_->didReceiveResponse(loader_, response, reader.release());
+    // TODO(yhirano): Support ftp listening and multipart
+    return;
   } else {
     client_->didReceiveResponse(loader_, response);
   }
@@ -684,15 +670,7 @@ void WebURLLoaderImpl::Context::OnReceivedData(scoped_ptr<ReceivedData> data) {
   if (!client_)
     return;
 
-  if (request_.useStreamOnResponse()) {
-    // We don't support ftp_listening_delegate_ and multipart_delegate_ for now.
-    // TODO(yhirano): Support ftp listening and multipart.
-    MojoResult rv = WriteDataOnBodyStream(payload, data_length);
-    if (rv != MOJO_RESULT_OK && client_) {
-      client_->didFail(
-          loader_, CreateWebURLError(request_.url(), false, net::ERR_FAILED));
-    }
-  } else if (ftp_listing_delegate_) {
+  if (ftp_listing_delegate_) {
     // The FTP listing delegate will make the appropriate calls to
     // client_->didReceiveData and client_->didReceiveResponse.  Since the
     // delegate may want to do work after sending data to the delegate, keep
@@ -708,7 +686,17 @@ void WebURLLoaderImpl::Context::OnReceivedData(scoped_ptr<ReceivedData> data) {
     multipart_delegate_->OnReceivedData(payload, data_length,
                                         encoded_data_length);
   } else {
+    scoped_refptr<Context> protect(this);
+    // We dispatch the data even when |useStreamOnResponse()| is set, in order
+    // to make Devtools work.
     client_->didReceiveData(loader_, payload, data_length, encoded_data_length);
+
+    if (request_.useStreamOnResponse()) {
+      // We don't support ftp_listening_delegate_ and multipart_delegate_ for
+      // now.
+      // TODO(yhirano): Support ftp listening and multipart.
+      body_stream_writer_->AddData(data.Pass());
+    }
   }
 }
 
@@ -739,26 +727,20 @@ void WebURLLoaderImpl::Context::OnCompletedRequest(
     multipart_delegate_.reset(NULL);
   }
 
+  if (request_.useStreamOnResponse()) {
+    // TODO(yhirano): Notify error.
+    body_stream_writer_.reset();
+  }
+
   if (client_) {
     if (error_code != net::OK) {
       client_->didFail(
           loader_,
           CreateWebURLError(request_.url(), stale_copy_in_cache, error_code));
     } else {
-      if (request_.useStreamOnResponse()) {
-        got_all_stream_body_data_ = true;
-        if (body_stream_buffer_.empty()) {
-          // Close the handle to notify the end of data.
-          body_stream_writer_.reset();
-          client_->didFinishLoading(
-              loader_, (completion_time - TimeTicks()).InSecondsF(),
-              total_transfer_size);
-        }
-      } else {
-        client_->didFinishLoading(
-            loader_, (completion_time - TimeTicks()).InSecondsF(),
-            total_transfer_size);
-      }
+      client_->didFinishLoading(loader_,
+                                (completion_time - TimeTicks()).InSecondsF(),
+                                total_transfer_size);
     }
   }
 }
@@ -831,108 +813,6 @@ void WebURLLoaderImpl::Context::HandleDataURL() {
 
   OnCompletedRequest(error_code, false, false, info.security_info,
                      base::TimeTicks::Now(), 0);
-}
-
-MojoResult WebURLLoaderImpl::Context::WriteDataOnBodyStream(const char* data,
-                                                            size_t size) {
-  if (body_stream_buffer_.empty() && size == 0) {
-    // Nothing to do.
-    return MOJO_RESULT_OK;
-  }
-
-  if (!body_stream_writer_.is_valid()) {
-    // The handle is already cleared.
-    return MOJO_RESULT_OK;
-  }
-
-  char* buffer = nullptr;
-  uint32_t num_bytes_writable = 0;
-  MojoResult rv = mojo::BeginWriteDataRaw(body_stream_writer_.get(),
-                                          reinterpret_cast<void**>(&buffer),
-                                          &num_bytes_writable,
-                                          MOJO_WRITE_DATA_FLAG_NONE);
-  if (rv == MOJO_RESULT_SHOULD_WAIT) {
-    body_stream_buffer_.insert(body_stream_buffer_.end(), data, data + size);
-    body_stream_writer_watcher_.Start(
-        body_stream_writer_.get(),
-        MOJO_HANDLE_SIGNAL_WRITABLE,
-        MOJO_DEADLINE_INDEFINITE,
-        base::Bind(&WebURLLoaderImpl::Context::OnHandleGotWritable,
-                   base::Unretained(this)));
-    return MOJO_RESULT_OK;
-  }
-
-  if (rv != MOJO_RESULT_OK)
-    return rv;
-
-  uint32_t num_bytes_to_write = 0;
-  if (num_bytes_writable < body_stream_buffer_.size()) {
-    auto begin = body_stream_buffer_.begin();
-    auto end = body_stream_buffer_.begin() + num_bytes_writable;
-
-    std::copy(begin, end, buffer);
-    num_bytes_to_write = num_bytes_writable;
-    body_stream_buffer_.erase(begin, end);
-    body_stream_buffer_.insert(body_stream_buffer_.end(), data, data + size);
-  } else {
-    std::copy(body_stream_buffer_.begin(), body_stream_buffer_.end(), buffer);
-    num_bytes_writable -= body_stream_buffer_.size();
-    num_bytes_to_write += body_stream_buffer_.size();
-    buffer += body_stream_buffer_.size();
-    body_stream_buffer_.clear();
-
-    size_t num_newbytes_to_write =
-        std::min(size, static_cast<size_t>(num_bytes_writable));
-    std::copy(data, data + num_newbytes_to_write, buffer);
-    num_bytes_to_write += num_newbytes_to_write;
-    body_stream_buffer_.insert(body_stream_buffer_.end(),
-                               data + num_newbytes_to_write,
-                               data + size);
-  }
-
-  rv = mojo::EndWriteDataRaw(body_stream_writer_.get(), num_bytes_to_write);
-  if (rv == MOJO_RESULT_OK && !body_stream_buffer_.empty()) {
-    body_stream_writer_watcher_.Start(
-        body_stream_writer_.get(),
-        MOJO_HANDLE_SIGNAL_WRITABLE,
-        MOJO_DEADLINE_INDEFINITE,
-        base::Bind(&WebURLLoaderImpl::Context::OnHandleGotWritable,
-                   base::Unretained(this)));
-  }
-  return rv;
-}
-
-void WebURLLoaderImpl::Context::OnHandleGotWritable(MojoResult result) {
-  if (result != MOJO_RESULT_OK) {
-    if (client_) {
-      client_->didFail(
-          loader_, CreateWebURLError(request_.url(), false, net::ERR_FAILED));
-      // |this| can be deleted here.
-    }
-    return;
-  }
-
-  if (body_stream_buffer_.empty())
-    return;
-
-  MojoResult rv = WriteDataOnBodyStream(nullptr, 0);
-  if (rv == MOJO_RESULT_OK) {
-    if (got_all_stream_body_data_ && body_stream_buffer_.empty()) {
-      // Close the handle to notify the end of data.
-      body_stream_writer_.reset();
-      if (client_) {
-        // TODO(yhirano): Pass appropriate arguments.
-        client_->didFinishLoading(loader_, 0, 0);
-        // |this| can be deleted here.
-      }
-    }
-  } else {
-    if (client_) {
-      client_->didFail(
-          loader_, CreateWebURLError(request_.url(), false, net::ERR_FAILED));
-      // |this| can be deleted here.
-    }
-  }
 }
 
 // WebURLLoaderImpl -----------------------------------------------------------

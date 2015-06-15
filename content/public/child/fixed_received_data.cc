@@ -14,7 +14,7 @@ FixedReceivedData::FixedReceivedData(const char* data,
 
 FixedReceivedData::FixedReceivedData(ReceivedData* data)
     : FixedReceivedData(data->payload(),
-                        data->encoded_length(),
+                        data->length(),
                         data->encoded_length()) {
 }
 
