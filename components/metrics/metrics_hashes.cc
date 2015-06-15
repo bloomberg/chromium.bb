@@ -13,27 +13,19 @@ namespace metrics {
 namespace {
 
 // Converts the 8-byte prefix of an MD5 hash into a uint64 value.
-inline uint64 HashToUInt64(const std::string& hash) {
+inline uint64 DigestToUInt64(const base::MD5Digest& digest) {
   uint64 value;
-  DCHECK_GE(hash.size(), sizeof(value));
-  memcpy(&value, hash.data(), sizeof(value));
+  DCHECK_GE(arraysize(digest.a), sizeof(value));
+  memcpy(&value, digest.a, sizeof(value));
   return base::HostToNet64(value);
 }
 
 }  // namespace
 
 uint64 HashMetricName(const std::string& name) {
-  // Create an MD5 hash of the given |name|, represented as a byte buffer
-  // encoded as an std::string.
-  base::MD5Context context;
-  base::MD5Init(&context);
-  base::MD5Update(&context, name);
-
   base::MD5Digest digest;
-  base::MD5Final(&digest, &context);
-
-  std::string hash_str(reinterpret_cast<char*>(digest.a), arraysize(digest.a));
-  return HashToUInt64(hash_str);
+  base::MD5Sum(name.c_str(), name.size(), &digest);
+  return DigestToUInt64(digest);
 }
 
 }  // namespace metrics
