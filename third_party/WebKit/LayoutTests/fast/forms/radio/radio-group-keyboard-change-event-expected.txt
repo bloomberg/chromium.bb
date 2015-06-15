@@ -10,6 +10,8 @@ d e f
 
 b dispatched change event
 c dispatched change event
+e dispatched change event
+f dispatched change event
 PASS: a is not checked
 PASS: b is not checked
 PASS: c is checked
