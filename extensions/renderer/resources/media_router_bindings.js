@@ -279,7 +279,7 @@ define('media_router_bindings', [
    */
   function MediaRouterHandlers() {
     /**
-     * @type {function(!string, !string, !string=, !string=, !number=}
+     * @type {function(!string, !string, !string, !string, !number}
      */
     this.createRoute = null;
 
@@ -389,41 +389,42 @@ define('media_router_bindings', [
 
   /**
    * Requests that |sinkId| render the media referenced by |sourceUrn|. If the
-   * request is from the Presentation API, then opt_origin and opt_tabId will
+   * request is from the Presentation API, then origin and tabId will
    * be populated.
-   * @param {!string} sourceUrn The media source to render.
-   * @param {!string} sinkId The media sink ID.
-   * @param {!string=} opt_presentationId Presentation ID from the site
+   * @param {!string} sourceUrn Media source to render.
+   * @param {!string} sinkId Media sink ID.
+   * @param {!string} presentationId Presentation ID from the site
    *     requesting presentation. TODO(mfoltz): Remove.
-   * @param {!string=} opt_origin The origin of the site requesting
-   *     presentation.
-   * @param {!number=} opt_tabId ID of the tab that requested presentation.
+   * @param {!string} origin Origin of site requesting presentation.
+   * @param {!number} tabId ID of tab requesting presentation.
    * @return {!Promise.<!Object>} A Promise resolving to an object describing
-   *     the newly created media route.
+   *     the newly created media route, or rejecting with an error message on
+   *     failure.
    */
   MediaRouter.prototype.createRoute =
-      function(sourceUrn, sinkId, opt_presentationId, opt_origin, opt_tabId) {
+      function(sourceUrn, sinkId, presentationId, origin, tabId) {
     return this.handlers_.createRoute(
-        sourceUrn, sinkId, opt_presentationId, opt_origin, opt_tabId)
+        sourceUrn, sinkId, presentationId, origin, tabId)
         .then(function(route) {
           // Sink name is not used, so it is omitted here.
           return {route: routeToMojo_(route, "")};
         }.bind(this))
         .catch(function(err) {
-          return {error_text: err.message};
+          return {error_text: 'Error creating route: ' + err.message};
         });
   };
 
   /**
    * Handles a request via the Presentation API to join an existing route given
-   * by |sourceUrn| and |presentationId|. |origin| and |tabId| are used so the
-   * media route provider can limit the scope by origin or tab.
-   * @param {!string} sourceUrn The media source to render.
-   * @param {!string} presentationId The presentation ID to join.
-   * @param {!string} origin The origin of the site requesting join.
-   * @param {!number} tabId The ID of the tab requesting join.
-   * @return {!Promise.<!Object>} Resolved with the route on success,
-   * or with an error message on failure.
+   * by |sourceUrn| and |presentationId|. |origin| and |tabId| are used for
+   * validating same-origin/tab scope.
+   * @param {!string} sourceUrn Media source to render.
+   * @param {!string} presentationId Presentation ID to join.
+   * @param {!string} origin Origin of site requesting join.
+   * @param {!number} tabId ID of tab requesting join.
+   * @return {!Promise.<!Object>} A Promise resolving to an object describing
+   *     the newly created media route, or rejecting with an error message on
+   *     failure.
    */
   MediaRouter.prototype.joinRoute =
       function(sourceUrn, presentationId, origin, tabId) {

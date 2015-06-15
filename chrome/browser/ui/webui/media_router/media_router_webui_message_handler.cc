@@ -175,10 +175,7 @@ void MediaRouterWebUIMessageHandler::OnGetInitialSettings(
   initial_settings.Set("routes", routes.release());
 
   scoped_ptr<base::ListValue> cast_modes(CastModesToValue(
-      media_router_ui->cast_modes(),
-      // TODO(imcheng): Use media_router_ui->source_host() once DEFAULT mode
-      // is upstreamed.
-      std::string()));
+      media_router_ui->cast_modes(), media_router_ui->GetFrameURLHost()));
   initial_settings.Set("castModes", cast_modes.release());
 
   web_ui()->CallJavascriptFunction(kSetInitialSettings, initial_settings);

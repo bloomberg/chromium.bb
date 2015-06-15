@@ -118,11 +118,10 @@ class PresentationServiceDelegateImpl
     // Called when default media source for the corresponding WebContents has
     // changed.
     // |source|: New default MediaSource, or empty if default was removed.
-    // |frame_url|: URL of the frame that contains the default
-    //     media source, or empty if there is no default media source.
-    virtual void OnDefaultMediaSourceChanged(
-        const MediaSource& source,
-        const GURL& frame_url) = 0;
+    // |frame_url|: URL of the frame that contains the default media
+    //     source, or empty if there is no default media source.
+    virtual void OnDefaultMediaSourceChanged(const MediaSource& source,
+                                             const GURL& frame_url) = 0;
   };
 
   // Adds / removes an observer for listening to default MediaSource changes.
@@ -152,13 +151,15 @@ class PresentationServiceDelegateImpl
   // Returns |true| if the frame is the main frame of |web_contents_|.
   bool IsMainFrame(int render_process_id, int render_frame_id) const;
 
-  // Updates tab-level default MediaSource and source host name. If either
+  // Updates tab-level default MediaSource and/or default frame URL. If either
   // changed, notify the observers.
   void UpdateDefaultMediaSourceAndNotifyObservers(
       const MediaSource& new_default_source,
       const GURL& new_default_frame_url);
 
+  // Default MediaSource for the tab associated with this instance.
   MediaSource default_source_;
+  // URL of the frame that contains the default MediaSource.
   GURL default_frame_url_;
 
   // References to the observers listening for changes to default media source.

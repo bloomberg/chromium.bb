@@ -29,6 +29,9 @@ class MediaSinksObserver;
 using MediaRouteResponseCallback =
     base::Callback<void(scoped_ptr<MediaRoute>, const std::string&)>;
 
+// Used in cases where a tab ID is not applicable in CreateRoute/JoinRoute.
+const int kInvalidTabId = -1;
+
 // An interface for handling resources related to media routing.
 // Responsible for registering observers for receiving sink availability
 // updates, handling route requests/responses, and operating on routes (e.g.
@@ -40,10 +43,32 @@ class MediaRouter {
   virtual ~MediaRouter() {}
 
   // Creates a media route from |source_id| to |sink_id|.
+  // |origin| is the URL of requestor's page.
+  // |tab_id| is the ID of the tab in which the request was made.
+  // |origin| and |tab_id| are used for enforcing same-origin and/or same-tab
+  // scope for JoinRoute() requests. (e.g., if enforced, the page
+  // requesting JoinRoute() must have the same origin as the page that requested
+  // CreateRoute()).
+  // The caller may pass in|kInvalidTabId| if tab is not applicable.
   // |callback| is invoked with a response indicating success or failure.
   virtual void CreateRoute(const MediaSource::Id& source_id,
                            const MediaSink::Id& sink_id,
+                           const GURL& origin,
+                           int tab_id,
                            const MediaRouteResponseCallback& callback) = 0;
+
+  // Joins an existing route identified by |presentation_id|.
+  // |source|: The source to route to the existing route.
+  // |presentation_id|: Presentation ID of the existing route.
+  // |origin|, |tab_id|: Origin and tab of the join route request. Used for
+  // validation when enforcing same-origin and/or same-tab scope.
+  // (See CreateRoute documentation).
+  // |callback| is invoked with a response indicating success or failure.
+  virtual void JoinRoute(const MediaSource::Id& source,
+                         const std::string& presentation_id,
+                         const GURL& origin,
+                         int tab_id,
+                         const MediaRouteResponseCallback& callback) = 0;
 
   // Closes the media route specified by |route_id|.
   virtual void CloseRoute(const MediaRoute::Id& route_id) = 0;

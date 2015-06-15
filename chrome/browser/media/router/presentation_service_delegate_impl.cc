@@ -35,12 +35,37 @@ namespace media_router {
 namespace {
 
 using DelegateObserver = content::PresentationServiceDelegate::Observer;
+using PresentationSessionErrorCallback =
+    content::PresentationServiceDelegate::PresentationSessionErrorCallback;
+using PresentationSessionSuccessCallback =
+    content::PresentationServiceDelegate::PresentationSessionSuccessCallback;
 using RenderFrameHostId = std::pair<int, int>;
 
-// Returns the unique identifier for the supplied RenderViewHost.
-RenderFrameHostId GetRenderFrameHostId(RenderFrameHost* render_view_host) {
-  int render_process_id = render_view_host->GetProcess()->GetID();
-  int render_frame_id = render_view_host->GetRoutingID();
+// TODO(imcheng): Presentation URL and ID should be obtained from |route|, not
+// from bound values taken from the request.
+void OnJoinRouteResponse(const std::string& presentation_url,
+                         const std::string& presentation_id,
+                         const PresentationSessionSuccessCallback& success_cb,
+                         const PresentationSessionErrorCallback& error_cb,
+                         scoped_ptr<MediaRoute> route,
+                         const std::string& error_text) {
+  if (!route.get()) {
+    error_cb.Run(content::PresentationError(
+        content::PRESENTATION_ERROR_NO_PRESENTATION_FOUND, error_text));
+  } else {
+    DVLOG(1) << "OnJoinRouteResponse: "
+             << "route_id: " << route->media_route_id()
+             << ", presentation URL: " << presentation_url
+             << ", presentation ID: " << presentation_id;
+    success_cb.Run(
+        content::PresentationSessionInfo(presentation_url, presentation_id));
+  }
+}
+
+// Returns the unique identifier for the supplied RenderFrameHost.
+RenderFrameHostId GetRenderFrameHostId(RenderFrameHost* render_frame_host) {
+  int render_process_id = render_frame_host->GetProcess()->GetID();
+  int render_frame_id = render_frame_host->GetRoutingID();
   return RenderFrameHostId(render_process_id, render_frame_id);
 }
 
@@ -49,6 +74,7 @@ RenderFrameHostId GetRenderFrameHostId(RenderFrameHost* render_view_host) {
 GURL GetLastCommittedURLForFrame(RenderFrameHostId render_frame_host_id) {
   RenderFrameHost* render_frame_host = RenderFrameHost::FromID(
       render_frame_host_id.first, render_frame_host_id.second);
+  DCHECK(render_frame_host);
   return render_frame_host->GetLastCommittedURL();
 }
 
@@ -421,12 +447,12 @@ bool PresentationServiceDelegateImpl::IsMainFrame(int render_process_id,
 
 void PresentationServiceDelegateImpl::
     UpdateDefaultMediaSourceAndNotifyObservers(
-        const MediaSource& default_source,
-        const GURL& default_frame_url) {
-  if (!default_source.Equals(default_source_) ||
-      default_frame_url != default_frame_url_) {
-    default_source_ = default_source;
-    default_frame_url_ = default_frame_url;
+        const MediaSource& new_default_source,
+        const GURL& new_default_frame_url) {
+  if (!new_default_source.Equals(default_source_) ||
+      new_default_frame_url != default_frame_url_) {
+    default_source_ = new_default_source;
+    default_frame_url_ = new_default_frame_url;
     FOR_EACH_OBSERVER(
         DefaultMediaSourceObserver, default_media_source_observers_,
         OnDefaultMediaSourceChanged(default_source_, default_frame_url_));
@@ -479,8 +505,13 @@ void PresentationServiceDelegateImpl::JoinSession(
     const std::string& presentation_id,
     const PresentationSessionSuccessCallback& success_cb,
     const PresentationSessionErrorCallback& error_cb) {
-  // BUG=464205
-  NOTIMPLEMENTED();
+  router_->JoinRoute(
+      MediaSourceForPresentationUrl(presentation_url).id(), presentation_id,
+      GetLastCommittedURLForFrame(
+          RenderFrameHostId(render_process_id, render_frame_id)).GetOrigin(),
+      SessionTabHelper::IdForTab(web_contents_),
+      base::Bind(&OnJoinRouteResponse, presentation_url, presentation_id,
+                 success_cb, error_cb));
 }
 
 void PresentationServiceDelegateImpl::ListenForSessionMessages(

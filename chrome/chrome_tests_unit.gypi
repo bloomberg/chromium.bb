@@ -1436,6 +1436,7 @@
       'browser/supervised_user/supervised_user_whitelist_service_unittest.cc',
     ],
     'chrome_unit_tests_media_router_sources': [
+      'browser/media/router/create_session_request_unittest.cc',
       'browser/media/router/issue_manager_unittest.cc',
       'browser/media/router/issue_unittest.cc',
       'browser/media/router/media_router_mojo_impl_unittest.cc',

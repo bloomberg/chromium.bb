@@ -98,6 +98,8 @@ class MediaRouterUI
   // initially loaded. The header text is determined by the preferred cast mode.
   std::string GetInitialHeaderText() const;
 
+  // Returns the hostname of the default source's parent frame URL.
+  std::string GetFrameURLHost() const;
   bool has_pending_route_request() const { return has_pending_route_request_; }
   const GURL& frame_url() const { return frame_url_; }
   const std::vector<MediaSinkWithCastModes>& sinks() const { return sinks_; }

@@ -61,7 +61,14 @@ class MediaRouterMojoImpl : public MediaRouter,
   // enqueued for later use if the extension is temporarily suspended.
   void CreateRoute(const MediaSource::Id& source_id,
                    const MediaSink::Id& sink_id,
+                   const GURL& origin,
+                   int tab_id,
                    const MediaRouteResponseCallback& callback) override;
+  void JoinRoute(const MediaSource::Id& source_id,
+                 const std::string& presentation_id,
+                 const GURL& origin,
+                 int tab_id,
+                 const MediaRouteResponseCallback& callback) override;
   void CloseRoute(const MediaRoute::Id& route_id) override;
   void SendRouteMessage(const MediaRoute::Id& route_id,
                         const std::string& message,
@@ -110,14 +117,21 @@ class MediaRouterMojoImpl : public MediaRouter,
   // These calls invoke methods in the component extension via Mojo.
   void DoCreateRoute(const MediaSource::Id& source_id,
                      const MediaSink::Id& sink_id,
+                     const std::string& origin,
+                     int tab_id,
                      const MediaRouteResponseCallback& callback);
+  void DoJoinRoute(const MediaSource::Id& source_id,
+                   const std::string& presentation_id,
+                   const std::string& origin,
+                   int tab_id,
+                   const MediaRouteResponseCallback& callback);
   void DoCloseRoute(const MediaRoute::Id& route_id);
   void DoSendSessionMessage(const MediaRoute::Id& route_id,
                             const std::string& message,
                             const SendRouteMessageCallback& callback);
   void DoClearIssue(const Issue::Id& issue_id);
-  void DoStartObservingMediaSinks(const std::string& source_id);
-  void DoStopObservingMediaSinks(const std::string& source_id);
+  void DoStartObservingMediaSinks(const MediaSource::Id& source_id);
+  void DoStopObservingMediaSinks(const MediaSource::Id& source_id);
   void DoStartObservingMediaRoutes();
   void DoStopObservingMediaRoutes();
   void DoStartObservingIssues();
