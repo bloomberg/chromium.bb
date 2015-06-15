@@ -63,7 +63,7 @@ private:
 
     int calcEffectiveLogicalWidth();
     void shrinkColumnWidth(const LengthType&, int& available);
-    template<typename Total, LengthType, CellsToProcess, DistributionMode, DistributionDirection> void distributeWidthToColumns(int& available, Total);
+    template<typename Total, LengthType, CellsToProcess, DistributionMode, DistributionDirection> void distributeWidthToColumns(int& available, Total&);
 
     void insertSpanCell(LayoutTableCell*);
 

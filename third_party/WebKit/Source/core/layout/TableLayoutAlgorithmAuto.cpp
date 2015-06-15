@@ -616,8 +616,10 @@ void TableLayoutAlgorithmAuto::layout()
     // If we have overallocated, reduce every cell according to the difference between desired width and minwidth
     // this seems to produce to the pixel exact results with IE. Wonder is some of this also holds for width distributing.
     // This is basically the reverse of how we grew the cells.
-    if (available < 0)
-        shrinkColumnWidth(Auto, available);
+    if (available < 0) {
+        int autoWidthAvailable = available - static_cast<int>(totalAuto);
+        shrinkColumnWidth(Auto, autoWidthAvailable);
+    }
     if (available < 0)
         shrinkColumnWidth(Fixed, available);
     if (available < 0)
@@ -632,7 +634,7 @@ void TableLayoutAlgorithmAuto::layout()
 }
 
 template<typename Total, LengthType lengthType, CellsToProcess cellsToProcess, DistributionMode distributionMode, DistributionDirection distributionDirection>
-void TableLayoutAlgorithmAuto::distributeWidthToColumns(int& available, Total total)
+void TableLayoutAlgorithmAuto::distributeWidthToColumns(int& available, Total& total)
 {
     // TODO(alancutter): Make this work correctly for calc lengths.
     int nEffCols = static_cast<int>(m_table->numEffCols());
@@ -659,8 +661,8 @@ void TableLayoutAlgorithmAuto::distributeWidthToColumns(int& available, Total to
         m_layoutStruct[i].computedLogicalWidth = (distributionMode == InitialWidth) ? cellLogicalWidth : m_layoutStruct[i].computedLogicalWidth + cellLogicalWidth;
 
         // If we have run out of width to allocate we're done.
-        // Also, any overallocation will be unwound later so no point in building up cells to unwind, just bail now.
-        if (available <= 0 || total <= 0)
+        // TODO(rhogan): Extend this to Fixed as well.
+        if ((lengthType == Percent || lengthType == Auto) && (available <= 0 || total <= 0))
             return;
     }
 }
