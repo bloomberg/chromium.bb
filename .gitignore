@@ -380,6 +380,7 @@ v8.log
 /third_party/syzygy/binaries
 /third_party/trace-viewer
 /third_party/tsan/
+/third_party/ub-uiautomator/lib
 /third_party/usb_ids
 /third_party/usrsctp/usrsctplib
 /third_party/v8-i18n

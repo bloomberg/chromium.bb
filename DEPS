@@ -442,6 +442,9 @@ deps_os = {
     'src/third_party/robolectric/lib':
       Var('chromium_git') + '/chromium/third_party/robolectric.git' + '@' + '6b63c99a8b6967acdb42cbed0adb067c80efc810',
 
+    'src/third_party/ub-uiautomator/lib':
+      Var('chromium_git') + '/chromium/third_party/ub-uiautomator.git' + '@' + 'e6f02481bada8bdbdfdd7987dd6e648c44a3adcb',
+
     'src/third_party/lss':
       Var('chromium_git') + '/external/linux-syscall-support/lss.git' + '@' + Var('lss_revision'),
 
