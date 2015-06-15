@@ -130,8 +130,8 @@ namespace platformKeys {
     [nocompile] static object subtleCrypto();
 
     // Checks whether <code>details.serverCertificateChain</code> can be trusted
-    // for <code>details.serverHostname</code> according to the trust
-    // settings of the platform.
+    // for <code>details.hostname</code> according to the trust settings of the
+    // platform.
     // Note: The actual behavior of the trust verification is not fully
     // specified and might change in the future.
     // The API implementation verifies certificate expiration, validates the
