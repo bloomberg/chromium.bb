@@ -82,6 +82,10 @@ void WebServiceWorkerProviderImpl::getRegistrationForReady(
   GetDispatcher()->GetRegistrationForReady(context_->provider_id(), callbacks);
 }
 
+int WebServiceWorkerProviderImpl::provider_id() const {
+  return context_->provider_id();
+}
+
 void WebServiceWorkerProviderImpl::RemoveProviderClient() {
   // Remove the provider client, but only if the dispatcher is still there.
   // (For cleanup path we don't need to bother creating a new dispatcher)

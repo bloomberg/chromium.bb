@@ -77,6 +77,14 @@ bool CanUnregisterServiceWorker(const GURL& document_url,
          OriginCanAccessServiceWorkers(pattern);
 }
 
+bool CanUpdateServiceWorker(const GURL& document_url, const GURL& pattern) {
+  DCHECK(document_url.is_valid());
+  DCHECK(pattern.is_valid());
+  DCHECK(OriginCanAccessServiceWorkers(document_url));
+  DCHECK(OriginCanAccessServiceWorkers(pattern));
+  return document_url.GetOrigin() == pattern.GetOrigin();
+}
+
 bool CanGetRegistration(const GURL& document_url,
                         const GURL& given_document_url) {
   DCHECK(document_url.is_valid());
@@ -158,6 +166,8 @@ bool ServiceWorkerDispatcherHost::OnMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(ServiceWorkerDispatcherHost, message)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_RegisterServiceWorker,
                         OnRegisterServiceWorker)
+    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_UpdateServiceWorker,
+                        OnUpdateServiceWorker)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_UnregisterServiceWorker,
                         OnUnregisterServiceWorker)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_GetRegistration,
@@ -358,6 +368,60 @@ void ServiceWorkerDispatcherHost::OnRegisterServiceWorker(
                  thread_id,
                  provider_id,
                  request_id));
+}
+
+void ServiceWorkerDispatcherHost::OnUpdateServiceWorker(int provider_id,
+                                                        int64 registration_id) {
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerDispatcherHost::OnUpdateServiceWorker");
+  if (!GetContext())
+    return;
+
+  ServiceWorkerProviderHost* provider_host =
+      GetContext()->GetProviderHost(render_process_id_, provider_id);
+  if (!provider_host) {
+    bad_message::ReceivedBadMessage(this, bad_message::SWDH_UPDATE_NO_HOST);
+    return;
+  }
+  if (!provider_host->IsContextAlive())
+    return;
+
+  // TODO(ksakamoto): This check can be removed once crbug.com/439697 is fixed.
+  if (provider_host->document_url().is_empty())
+    return;
+
+  ServiceWorkerRegistration* registration =
+      GetContext()->GetLiveRegistration(registration_id);
+  if (!registration) {
+    // |registration| must be alive because a renderer retains a registration
+    // reference at this point.
+    bad_message::ReceivedBadMessage(
+        this, bad_message::SWDH_UPDATE_BAD_REGISTRATION_ID);
+    return;
+  }
+
+  if (!CanUpdateServiceWorker(provider_host->document_url(),
+                              registration->pattern())) {
+    bad_message::ReceivedBadMessage(this, bad_message::SWDH_UPDATE_CANNOT);
+    return;
+  }
+
+  if (!GetContentClient()->browser()->AllowServiceWorker(
+          registration->pattern(), provider_host->topmost_frame_url(),
+          resource_context_, render_process_id_, provider_host->frame_id())) {
+    return;
+  }
+
+  if (!registration->GetNewestVersion()) {
+    // This can happen if update() is called during initial script evaluation.
+    // Abort the following steps according to the spec.
+    return;
+  }
+
+  // The spec says, "update() pings the server for an updated version of this
+  // script without consulting caches", so set |force_bypass_cache| to true.
+  GetContext()->UpdateServiceWorker(registration,
+                                    true /* force_bypass_cache */);
 }
 
 void ServiceWorkerDispatcherHost::OnUnregisterServiceWorker(

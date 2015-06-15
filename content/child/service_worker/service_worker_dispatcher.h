@@ -65,23 +65,25 @@ class CONTENT_EXPORT ServiceWorkerDispatcher
   void OnMessageReceived(const IPC::Message& msg);
   bool Send(IPC::Message* msg);
 
-  // Corresponds to navigator.serviceWorker.register()
+  // Corresponds to navigator.serviceWorker.register().
   void RegisterServiceWorker(
       int provider_id,
       const GURL& pattern,
       const GURL& script_url,
       WebServiceWorkerRegistrationCallbacks* callbacks);
-  // Corresponds to navigator.serviceWorker.unregister()
+  // Corresponds to ServiceWorkerRegistration.update().
+  void UpdateServiceWorker(int provider_id, int64 registration_id);
+  // Corresponds to ServiceWorkerRegistration.unregister().
   void UnregisterServiceWorker(
       int provider_id,
       const GURL& pattern,
       WebServiceWorkerUnregistrationCallbacks* callbacks);
-  // Corresponds to navigator.serviceWorker.getRegistration()
+  // Corresponds to navigator.serviceWorker.getRegistration().
   void GetRegistration(
       int provider_id,
       const GURL& document_url,
       WebServiceWorkerRegistrationCallbacks* callbacks);
-  // Corresponds to navigator.serviceWorker.getRegistrations()
+  // Corresponds to navigator.serviceWorker.getRegistrations().
   void GetRegistrations(
       int provider_id,
       WebServiceWorkerGetRegistrationsCallbacks* callbacks);

@@ -119,6 +119,10 @@ IPC_MESSAGE_CONTROL5(ServiceWorkerHostMsg_RegisterServiceWorker,
                      GURL /* scope */,
                      GURL /* script_url */)
 
+IPC_MESSAGE_CONTROL2(ServiceWorkerHostMsg_UpdateServiceWorker,
+                     int /* provider_id */,
+                     int64 /* registration_id */)
+
 IPC_MESSAGE_CONTROL4(ServiceWorkerHostMsg_UnregisterServiceWorker,
                      int /* thread_id */,
                      int /* request_id */,

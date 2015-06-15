@@ -7,6 +7,7 @@
 #include "content/child/service_worker/service_worker_dispatcher.h"
 #include "content/child/service_worker/service_worker_registration_handle_reference.h"
 #include "content/child/service_worker/web_service_worker_impl.h"
+#include "content/child/service_worker/web_service_worker_provider_impl.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerRegistrationProxy.h"
 
@@ -110,6 +111,17 @@ WebServiceWorkerRegistrationImpl::proxy() {
 
 blink::WebURL WebServiceWorkerRegistrationImpl::scope() const {
   return handle_ref_->scope();
+}
+
+void WebServiceWorkerRegistrationImpl::update(
+    blink::WebServiceWorkerProvider* provider) {
+  WebServiceWorkerProviderImpl* provider_impl =
+      static_cast<WebServiceWorkerProviderImpl*>(provider);
+  ServiceWorkerDispatcher* dispatcher =
+      ServiceWorkerDispatcher::GetThreadSpecificInstance();
+  DCHECK(dispatcher);
+  dispatcher->UpdateServiceWorker(provider_impl->provider_id(),
+                                  registration_id());
 }
 
 int64 WebServiceWorkerRegistrationImpl::registration_id() const {

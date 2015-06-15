@@ -109,6 +109,9 @@ enum BadMessageReason {
   BDH_INVALID_SERVICE_ID = 83,
   RFH_COMMIT_DESERIALIZATION_FAILED = 84,
   BDH_INVALID_CHARACTERISTIC_ID = 85,
+  SWDH_UPDATE_NO_HOST = 86,
+  SWDH_UPDATE_BAD_REGISTRATION_ID = 87,
+  SWDH_UPDATE_CANNOT = 88,
 
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. RenderFrameHost becomes RFH) plus a unique description of the

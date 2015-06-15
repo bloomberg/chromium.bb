@@ -130,6 +130,12 @@ void ServiceWorkerDispatcher::RegisterServiceWorker(
       CurrentWorkerId(), request_id, provider_id, pattern, script_url));
 }
 
+void ServiceWorkerDispatcher::UpdateServiceWorker(int provider_id,
+                                                  int64 registration_id) {
+  thread_safe_sender_->Send(new ServiceWorkerHostMsg_UpdateServiceWorker(
+      provider_id, registration_id));
+}
+
 void ServiceWorkerDispatcher::UnregisterServiceWorker(
     int provider_id,
     const GURL& pattern,

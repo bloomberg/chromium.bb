@@ -45,6 +45,8 @@ class WebServiceWorkerProviderImpl
   virtual void getRegistrationForReady(
       WebServiceWorkerGetRegistrationForReadyCallbacks*);
 
+  int provider_id() const;
+
  private:
   void RemoveProviderClient();
   ServiceWorkerDispatcher* GetDispatcher();
