@@ -55,7 +55,7 @@ MessageListView::~MessageListView() {
 }
 
 void MessageListView::Layout() {
-  if (animator_.get())
+  if (animator_.get() && animator_->IsAnimating())
     return;
 
   gfx::Rect child_area = GetContentsBounds();
