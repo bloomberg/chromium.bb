@@ -270,6 +270,7 @@ SkiaBitLocker::SkiaBitLocker(SkCanvas* canvas)
       userClipRectSpecified_(false),
       cgContext_(0),
       bitmapScaleFactor_(1),
+      useDeviceBits_(false),
       bitmapIsDummy_(false) {
 }
 
@@ -280,6 +281,7 @@ SkiaBitLocker::SkiaBitLocker(SkCanvas* canvas,
       userClipRectSpecified_(true),
       cgContext_(0),
       bitmapScaleFactor_(bitmapScaleFactor),
+      useDeviceBits_(false),
       bitmapIsDummy_(false) {
   canvas_->save();
   canvas_->clipRect(SkRect::MakeFromIRect(userClipRect));
@@ -365,7 +367,9 @@ foundRight:
 void SkiaBitLocker::releaseIfNeeded() {
   if (!cgContext_)
     return;
-  if (!bitmapIsDummy_) {
+  if (useDeviceBits_) {
+    bitmap_.unlockPixels();
+  } else if (!bitmapIsDummy_) {
     // Find the bits that were drawn to.
     SkIRect bounds = computeDirtyRect();
     SkBitmap subset;
@@ -383,6 +387,7 @@ void SkiaBitLocker::releaseIfNeeded() {
   }
   CGContextRelease(cgContext_);
   cgContext_ = 0;
+  useDeviceBits_ = false;
   bitmapIsDummy_ = false;
 }
 
@@ -396,19 +401,42 @@ CGContextRef SkiaBitLocker::cgContext() {
     clip_bounds = SkIRect::MakeXYWH(0, 0, 1, 1);
   }
 
+  SkBaseDevice* device = canvas_->getTopDevice();
+  DCHECK(device);
+  if (!device)
+    return 0;
+
   releaseIfNeeded(); // This flushes any prior bitmap use
 
   // remember the top/left, in case we need to compose this later
   bitmapOffset_.set(clip_bounds.x(), clip_bounds.y());
 
-  bool result = bitmap_.tryAllocN32Pixels(
+  // Now make clip_bounds be relative to the current layer/device
+  clip_bounds.offset(-device->getOrigin());
+
+  const SkBitmap& deviceBits = device->accessBitmap(true);
+
+  // Only draw directly if we have pixels, and we're only rect-clipped.
+  // If not, we allocate an offscreen and draw into that, relying on the
+  // compositing step to apply skia's clip.
+  useDeviceBits_ = deviceBits.getPixels() &&
+                   canvas_->isClipRect() &&
+                   !bitmapIsDummy_;
+  if (useDeviceBits_) {
+    bool result = deviceBits.extractSubset(&bitmap_, clip_bounds);
+    DCHECK(result);
+    if (!result)
+      return 0;
+    bitmap_.lockPixels();
+  } else {
+    bool result = bitmap_.tryAllocN32Pixels(
         SkScalarCeilToInt(bitmapScaleFactor_ * clip_bounds.width()),
         SkScalarCeilToInt(bitmapScaleFactor_ * clip_bounds.height()));
-  DCHECK(result);
-  if (!result)
-    return 0;
-  bitmap_.eraseColor(0);
-
+    DCHECK(result);
+    if (!result)
+      return 0;
+    bitmap_.eraseColor(0);
+  }
   base::ScopedCFTypeRef<CGColorSpaceRef> colorSpace(
       CGColorSpaceCreateDeviceRGB());
   cgContext_ = CGBitmapContextCreate(bitmap_.getPixels(), bitmap_.width(),
