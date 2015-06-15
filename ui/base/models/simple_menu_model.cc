@@ -61,11 +61,6 @@ bool SimpleMenuModel::Delegate::GetIconForCommandId(
 void SimpleMenuModel::Delegate::CommandIdHighlighted(int command_id) {
 }
 
-void SimpleMenuModel::Delegate::ExecuteCommand(
-    int command_id, int event_flags) {
-  ExecuteCommand(command_id, event_flags);
-}
-
 void SimpleMenuModel::Delegate::MenuWillShow(SimpleMenuModel* /*source*/) {
 }
 
