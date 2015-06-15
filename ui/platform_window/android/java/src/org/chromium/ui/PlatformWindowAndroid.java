@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.mojo;
+package org.chromium.ui;
 
 import android.app.Activity;
 import android.content.Context;
@@ -19,21 +19,21 @@ import org.chromium.base.JNINamespace;
 /**
  * Exposes SurfaceView to native code.
  */
-@JNINamespace("native_viewport")
-public class PlatformViewportAndroid extends SurfaceView {
+@JNINamespace("ui")
+public class PlatformWindowAndroid extends SurfaceView {
 
     private long mNativeMojoViewport;
     private final SurfaceHolder.Callback mSurfaceCallback;
 
     @CalledByNative
-    public static PlatformViewportAndroid createForActivity(
+    public static PlatformWindowAndroid createForActivity(
             Activity activity, long nativeViewport) {
-        PlatformViewportAndroid rv = new PlatformViewportAndroid(activity, nativeViewport);
+        PlatformWindowAndroid rv = new PlatformWindowAndroid(activity, nativeViewport);
         activity.setContentView(rv);
         return rv;
     }
 
-    public PlatformViewportAndroid(Context context, long nativeViewport) {
+    public PlatformWindowAndroid(Context context, long nativeViewport) {
         super(context);
 
         setFocusable(true);
@@ -164,21 +164,21 @@ public class PlatformViewportAndroid extends SurfaceView {
         }
     }
 
-    private static native void nativeDestroy(long nativePlatformViewportAndroid);
+    private static native void nativeDestroy(long nativePlatformWindowAndroid);
 
     private static native void nativeSurfaceCreated(
-            long nativePlatformViewportAndroid, Surface surface, float devicePixelRatio);
+            long nativePlatformWindowAndroid, Surface surface, float devicePixelRatio);
 
     private static native void nativeSurfaceDestroyed(
-            long nativePlatformViewportAndroid);
+            long nativePlatformWindowAndroid);
 
     private static native void nativeSurfaceSetSize(
-            long nativePlatformViewportAndroid, int width, int height, float density);
+            long nativePlatformWindowAndroid, int width, int height, float density);
 
-    private static native boolean nativeTouchEvent(long nativePlatformViewportAndroid, long timeMs,
+    private static native boolean nativeTouchEvent(long nativePlatformWindowAndroid, long timeMs,
             int maskedAction, int pointerId, float x, float y, float pressure, float touchMajor,
             float touchMinor, float orientation, float hWheel, float vWheel);
 
     private static native boolean nativeKeyEvent(
-            long nativePlatformViewportAndroid, boolean pressed, int keyCode, int unicodeCharacter);
+            long nativePlatformWindowAndroid, boolean pressed, int keyCode, int unicodeCharacter);
 }
