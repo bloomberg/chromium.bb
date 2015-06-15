@@ -245,10 +245,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #   define SK_SUPPORT_LEGACY_GETTOPDEVICE
 #endif
 
-#ifndef    SK_NO_SPECIALIZED_AA_XFERMODES
-#   define SK_NO_SPECIALIZED_AA_XFERMODES
-#endif
-
 #ifndef    SK_SUPPORT_LEGACY_IMAGEFILTER_CTM
 #   define SK_SUPPORT_LEGACY_IMAGEFILTER_CTM
 #endif
