@@ -5505,18 +5505,7 @@
                     },
                   },
                 ],
-                ['optimize=="max" and clang==1', {
-                    # Like "max" below, but without WholeProgramOptimization.
-                    # TODO(hans): Remove when Clang rolls past r239656.
-                    'msvs_settings': {
-                      'VCCLCompilerTool': {
-                        'Optimization': '2',
-                        'FavorSizeOrSpeed': '1',
-                      },
-                    },
-                  },
-                ],
-                ['optimize=="max" and clang==0', {
+                ['optimize=="max"', {
                     # Disable Warning 4702 ("Unreachable code") for the WPO/PGO
                     # builds. Probably anything that this would catch that
                     # wouldn't be caught in a normal build isn't going to
