@@ -21,7 +21,6 @@ LayerSettings::~LayerSettings() {
 
 LayerTreeSettings::LayerTreeSettings()
     : impl_side_painting(false),
-      raster_enabled(true),
       single_thread_proxy_scheduler(true),
       use_external_begin_frame_source(false),
       main_frame_before_activation_enabled(false),

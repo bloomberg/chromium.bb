@@ -1035,7 +1035,7 @@ DrawResult LayerTreeHostImpl::PrepareToDraw(FrameData* frame) {
   // This will cause NotifyTileStateChanged() to be called for any visible tiles
   // that completed, which will add damage to the frame for them so they appear
   // as part of the current frame being drawn.
-  if (tile_manager_)
+  if (settings_.impl_side_painting)
     tile_manager_->UpdateVisibleTiles(global_tile_state_);
 
   frame->render_surface_layer_list = &active_tree_->RenderSurfaceLayerList();
@@ -1527,7 +1527,7 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame) {
                               !output_surface_->context_provider());
   rendering_stats_instrumentation_->IncrementFrameCount(1);
 
-  if (tile_manager_) {
+  if (settings_.impl_side_painting) {
     memory_history_->SaveEntry(
         tile_manager_->memory_stats_from_last_assign());
   }
@@ -1827,8 +1827,7 @@ void LayerTreeHostImpl::UpdateViewportContainerSizes() {
 void LayerTreeHostImpl::SynchronouslyInitializeAllTiles() {
   // Only valid for the single-threaded non-scheduled/synchronous case
   // using the zero copy raster worker pool.
-  if (tile_manager_)
-    single_thread_synchronous_task_graph_runner_->RunUntilIdle();
+  single_thread_synchronous_task_graph_runner_->RunUntilIdle();
 }
 
 void LayerTreeHostImpl::DidLoseOutputSurface() {
@@ -2270,7 +2269,7 @@ bool LayerTreeHostImpl::InitializeRenderer(
   // Since the new renderer may be capable of MSAA, update status here.
   UpdateGpuRasterizationStatus();
 
-  if (settings_.impl_side_painting && settings_.raster_enabled)
+  if (settings_.impl_side_painting)
     CreateAndSetTileManager();
   RecreateTreeResources();
 

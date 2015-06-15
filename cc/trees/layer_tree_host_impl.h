@@ -655,9 +655,6 @@ class CC_EXPORT LayerTreeHostImpl
 
   scoped_ptr<OutputSurface> output_surface_;
 
-  // |resource_provider_| and |tile_manager_| can be NULL, e.g. when using tile-
-  // free rendering - see OutputSurface::ForcedDrawToSoftwareDevice().
-  // |tile_manager_| can also be NULL when raster_enabled is false.
   scoped_ptr<ResourceProvider> resource_provider_;
   scoped_ptr<TileManager> tile_manager_;
   bool content_is_suitable_for_gpu_rasterization_;
