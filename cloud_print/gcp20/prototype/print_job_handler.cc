@@ -175,7 +175,7 @@ LocalPrintJob::SaveResult PrintJobHandler::CompleteLocalPrintJob(
   if (!SavePrintJob(current_job->second.data.content,
                     current_job->second.ticket,
                     base::Time::Now(),
-                    StringPrintf("%s", job_id.c_str()),
+                    job_id,
                     current_job->second.data.job_name, file_extension)) {
     SetJobState(job_id, LocalPrintJob::STATE_ABORTED);
     *error_description_out = "IO error";
