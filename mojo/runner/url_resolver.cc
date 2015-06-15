@@ -5,8 +5,6 @@
 #include "mojo/runner/url_resolver.h"
 
 #include "base/base_paths.h"
-#include "base/files/file_path.h"
-#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "mojo/runner/switches.h"
@@ -111,20 +109,8 @@ GURL URLResolver::ResolveMojoURL(const GURL& mojo_url) const {
   // It's still a mojo: URL, use the default mapping scheme.
   std::string query;
   GURL base_url = shell::GetBaseURLAndQuery(mojo_url, &query);
-  if (mojo_base_url_.SchemeIsFile()) {
-    const GURL url_with_directory(
-        mojo_base_url_.Resolve(base_url.host() + "/"));
-    const base::FilePath dir(util::UrlToFilePath(url_with_directory));
-    if (base::DirectoryExists(dir)) {
-      const std::string mojo_file_name(base_url.host() + ".mojo");
-      const base::FilePath mojo_path =
-          dir.Append(base::FilePath::FromUTF8Unsafe(mojo_file_name));
-      // Only use the directory if the .mojo exists in the directory.
-      if (base::PathExists(mojo_path))
-        return url_with_directory.Resolve(base_url.host() + ".mojo" + query);
-    }
-  }
-  return mojo_base_url_.Resolve(base_url.host() + ".mojo" + query);
+  const std::string host = base_url.host();
+  return mojo_base_url_.Resolve(host + "/" + host + ".mojo" + query);
 }
 
 }  // namespace runner

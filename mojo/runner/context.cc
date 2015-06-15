@@ -76,9 +76,9 @@ bool ConfigureURLMappings(const base::CommandLine& command_line,
   // The network service must be loaded from the filesystem.
   // This mapping is done before the command line URL mapping are processed, so
   // that it can be overridden.
-  resolver->AddURLMapping(
-      GURL("mojo:network_service"),
-      context->ResolveShellFileURL("file:network_service.mojo"));
+  resolver->AddURLMapping(GURL("mojo:network_service"),
+                          context->ResolveShellFileURL(
+                              "file:network_service/network_service.mojo"));
 
   // Command line URL mapping.
   std::vector<URLResolver::OriginMapping> origin_mappings =
