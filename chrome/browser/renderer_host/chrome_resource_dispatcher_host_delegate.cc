@@ -68,6 +68,7 @@
 #include "chrome/browser/apps/ephemeral_app_throttle.h"
 #include "chrome/browser/extensions/api/streams_private/streams_private_api.h"
 #include "chrome/browser/extensions/user_script_listener.h"
+#include "extensions/browser/extension_throttle_manager.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/common/constants.h"
@@ -586,11 +587,20 @@ void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(
 #endif
 
 #if defined(ENABLE_EXTENSIONS)
-  content::ResourceThrottle* throttle =
+  content::ResourceThrottle* wait_for_extensions_init_throttle =
       user_script_listener_->CreateResourceThrottle(request->url(),
                                                     resource_type);
-  if (throttle)
-    throttles->push_back(throttle);
+  if (wait_for_extensions_init_throttle)
+    throttles->push_back(wait_for_extensions_init_throttle);
+
+  extensions::ExtensionThrottleManager* extension_throttle_manager =
+      io_data->GetExtensionThrottleManager();
+  if (extension_throttle_manager) {
+    scoped_ptr<content::ResourceThrottle> extension_throttle =
+        extension_throttle_manager->MaybeCreateThrottle(request);
+    if (extension_throttle)
+      throttles->push_back(extension_throttle.release());
+  }
 #endif
 
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);

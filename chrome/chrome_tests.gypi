@@ -250,6 +250,7 @@
       'browser/extensions/extension_management_test_util.h',
       'browser/extensions/extension_messages_apitest.cc',
       'browser/extensions/extension_override_apitest.cc',
+      'browser/extensions/extension_request_limiting_throttle_browsertest.cc',
       'browser/extensions/extension_resource_request_policy_apitest.cc',
       'browser/extensions/extension_startup_browsertest.cc',
       'browser/extensions/extension_storage_apitest.cc',

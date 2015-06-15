@@ -678,14 +678,7 @@ bool ChromeNetworkDelegate::OnCanAccessFile(const net::URLRequest& request,
 
 bool ChromeNetworkDelegate::OnCanThrottleRequest(
     const net::URLRequest& request) const {
-#if defined(ENABLE_EXTENSIONS)
-  if (g_never_throttle_requests_)
-    return false;
-  return request.first_party_for_cookies().scheme() ==
-      extensions::kExtensionScheme;
-#else
   return false;
-#endif
 }
 
 bool ChromeNetworkDelegate::OnCanEnablePrivacyMode(

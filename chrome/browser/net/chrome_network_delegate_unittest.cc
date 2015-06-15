@@ -91,7 +91,7 @@ class ChromeNetworkDelegateThrottlingTest : public testing::Test {
     web_page_request->set_first_party_for_cookies(
         GURL("http://example.com/helloworld.html"));
 
-    ASSERT_TRUE(delegate->OnCanThrottleRequest(*extension_request));
+    ASSERT_FALSE(delegate->OnCanThrottleRequest(*extension_request));
     ASSERT_FALSE(delegate->OnCanThrottleRequest(*web_page_request));
 
     delegate->NeverThrottleRequests();
