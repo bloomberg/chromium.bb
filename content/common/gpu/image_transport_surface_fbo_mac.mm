@@ -172,11 +172,12 @@ void ImageTransportSurfaceFBO::AdjustBufferAllocation() {
 gfx::SwapResult ImageTransportSurfaceFBO::SwapBuffers() {
   TRACE_EVENT0("gpu", "ImageTransportSurfaceFBO::SwapBuffers");
   pending_swap_pixel_damage_rect_ = gfx::Rect(pixel_size_);
-  return SwapBuffersInternal() ? gfx::SwapResult::SWAP_ACK
-                               : gfx::SwapResult::SWAP_FAILED;
+  return SwapBuffersInternal(gfx::Rect(pixel_size_)) ?
+      gfx::SwapResult::SWAP_ACK : gfx::SwapResult::SWAP_FAILED;
 }
 
-bool ImageTransportSurfaceFBO::SwapBuffersInternal() {
+bool ImageTransportSurfaceFBO::SwapBuffersInternal(
+    const gfx::Rect& dirty_rect) {
   DCHECK(backbuffer_suggested_allocation_);
   if (!frontbuffer_suggested_allocation_)
     return true;
@@ -188,7 +189,7 @@ bool ImageTransportSurfaceFBO::SwapBuffersInternal() {
 
   // It is the responsibility of the storage provider to send the swap IPC.
   is_swap_buffers_send_pending_ = true;
-  storage_provider_->SwapBuffers();
+  storage_provider_->SwapBuffers(dirty_rect);
 
   // The call to swapBuffers could potentially result in an immediate draw.
   // Ensure that any changes made to the context's state are restored.
@@ -222,8 +223,8 @@ gfx::SwapResult ImageTransportSurfaceFBO::PostSubBuffer(int x,
                                                         int height) {
   TRACE_EVENT0("gpu", "ImageTransportSurfaceFBO::PostSubBuffer");
   pending_swap_pixel_damage_rect_.Union(gfx::Rect(x, y, width, height));
-  return SwapBuffersInternal() ? gfx::SwapResult::SWAP_ACK
-                               : gfx::SwapResult::SWAP_FAILED;
+  return SwapBuffersInternal(gfx::Rect(x, y, width, height)) ?
+      gfx::SwapResult::SWAP_ACK : gfx::SwapResult::SWAP_FAILED;
 }
 
 bool ImageTransportSurfaceFBO::SupportsPostSubBuffer() {

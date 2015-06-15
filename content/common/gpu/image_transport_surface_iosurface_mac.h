@@ -29,7 +29,7 @@ class IOSurfaceStorageProvider
   void FreeColorBufferStorage() override;
   void FrameSizeChanged(
       const gfx::Size& pixel_size, float scale_factor) override;
-  void SwapBuffers() override;
+  void SwapBuffers(const gfx::Rect& dirty_rect) override;
   void WillWriteToBackbuffer() override;
   void DiscardBackbuffer() override;
   void SwapBuffersAckedByBrowser(bool disable_throttling) override;

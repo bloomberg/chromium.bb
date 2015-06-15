@@ -16,7 +16,7 @@
 @protocol ImageTransportLayer
 // Draw a new frame whenever is appropriate (for pull-based systems, this may
 // result in the frame being drawn at some point in the future).
-- (void)drawNewFrame;
+- (void)drawNewFrame:(gfx::Rect)dirtyRect;
 // Draw the frame immediately (force pull models to do a pull immedately).
 - (void)drawPendingFrameImmediately;
 // This is called when the layer is no longer being used by the
@@ -42,7 +42,7 @@ class CALayerStorageProvider
   void FreeColorBufferStorage() override;
   void FrameSizeChanged(
       const gfx::Size& pixel_size, float scale_factor) override;
-  void SwapBuffers() override;
+  void SwapBuffers(const gfx::Rect& dirty_rect) override;
   void WillWriteToBackbuffer() override;
   void DiscardBackbuffer() override;
   void SwapBuffersAckedByBrowser(bool disable_throttling) override;
@@ -51,7 +51,7 @@ class CALayerStorageProvider
   CGLContextObj LayerShareGroupContext();
   base::Closure LayerShareGroupContextDirtiedCallback();
   bool LayerHasPendingDraw() const;
-  void LayerDoDraw();
+  void LayerDoDraw(const gfx::Rect& dirty_rect);
 
   // ui::GpuSwitchingObserver implementation.
   void OnGpuSwitched() override;

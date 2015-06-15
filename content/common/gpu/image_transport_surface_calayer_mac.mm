@@ -22,7 +22,43 @@ const size_t kFramesToKeepCAContextAfterDiscard = 2;
 const size_t kCanDrawFalsesBeforeSwitchFromAsync = 4;
 const base::TimeDelta kMinDeltaToSwitchToAsync =
     base::TimeDelta::FromSecondsD(1. / 15.);
+
+bool CanUseNSCGLSurface() {
+  // If there are multiple displays connected, then it is possible that we will
+  // end up on the slow path, where -[NSCGLSurface layerContents] will return
+  // a CGImage that is a dearly-made copy of the surface. Since we don't yet
+  // know how to avoid those sharp edges, just avoid using NSCGLSurface when
+  // multiple screens are present.
+  uint32_t count = 0;
+  CGError cg_error = CGGetActiveDisplayList(count, NULL, &count);
+  if (cg_error != kCGErrorSuccess) {
+    LOG(ERROR) << "Failed to query the number of displays.";
+    return false;
+  }
+  if (count != 1)
+    return false;
+
+  // Also of note is that transitions between the iGPU and the dGPU are rocky
+  // for a raw NSCGLSurface (or a layer-backed NSOpenGLLayer, for that matter).
+  // During a transition, windows may flash to black or yellow or gray. It may
+  // be that we will want to prevent using NSCGLSurface on multi-GPU systems.
+
+  // Leave this feature disabled until a flag for it is available.
+  return false;
 }
+
+}  // namespace
+
+// Private NSCGLSurface API.
+@interface NSCGLSurface : NSObject
+- (void)flushRect:(CGRect)rect;
+- (void)attachToCGLContext:(CGLContextObj)cglContext;
+- (id)initWithSize:(CGSize)size
+        colorSpace:(CGColorSpaceRef)colorSpace
+            atomic:(BOOL)atomic;
+@property(readonly) CGImageRef image;
+@property(readonly) id layerContents;
+@end
 
 @interface ImageTransportCAOpenGLLayer : CAOpenGLLayer <ImageTransportLayer> {
   content::CALayerStorageProvider* storageProvider_;
@@ -33,18 +69,36 @@ const base::TimeDelta kMinDeltaToSwitchToAsync =
   // setAsynchronous is used (which allows smooth animation, but comes with the
   // penalty of the canDrawInCGLContext function waking up the process every
   // vsync).
-  base::TimeTicks last_synchronous_swap_time_;
+  base::TimeTicks lastSynchronousSwapTime_;
 
   // A counter that is incremented whenever LayerCanDraw returns false. If this
   // reaches a threshold, then |layer_| is switched to synchronous drawing to
   // save CPU work.
-  uint32 can_draw_returned_false_count_;
+  uint32 canDrawReturnedFalseCount_;
+
+  gfx::Size pixelSize_;
 }
 
 - (id)initWithStorageProvider:(content::CALayerStorageProvider*)storageProvider
                     pixelSize:(gfx::Size)pixelSize
                   scaleFactor:(float)scaleFactor;
-- (void)drawNewFrame;
+- (void)drawNewFrame:(gfx::Rect)dirtyRect;
+- (void)drawPendingFrameImmediately;
+- (void)resetStorageProvider;
+@end
+
+@interface ImageTransportNSCGLSurface : CALayer <ImageTransportLayer> {
+  content::CALayerStorageProvider* storageProvider_;
+  base::ScopedTypeRef<CGLContextObj> cglContext_;
+  base::scoped_nsobject<NSCGLSurface> surface_;
+  gfx::Size pixelSize_;
+  bool hasDrawn_;
+}
+
+- (id)initWithStorageProvider:(content::CALayerStorageProvider*)storageProvider
+                    pixelSize:(gfx::Size)pixelSize
+                  scaleFactor:(float)scaleFactor;
+- (void)drawNewFrame:(gfx::Rect)dirtyRect;
 - (void)drawPendingFrameImmediately;
 - (void)resetStorageProvider;
 @end
@@ -60,11 +114,12 @@ const base::TimeDelta kMinDeltaToSwitchToAsync =
     [self setContentsScale:scaleFactor];
     [self setFrame:CGRectMake(0, 0, dipSize.width(), dipSize.height())];
     storageProvider_ = storageProvider;
+    pixelSize_ = pixelSize;
   }
   return self;
 }
 
-- (void)drawNewFrame {
+- (void)drawNewFrame:(gfx::Rect)dirtyRect {
   // This tracing would be more natural to do with a pseudo-thread for each
   // layer, rather than a counter.
   // http://crbug.com/366300
@@ -76,12 +131,12 @@ const base::TimeDelta kMinDeltaToSwitchToAsync =
     // Switch to asynchronous drawing only if we get two frames in rapid
     // succession.
     base::TimeTicks this_swap_time = base::TimeTicks::Now();
-    base::TimeDelta delta = this_swap_time - last_synchronous_swap_time_;
+    base::TimeDelta delta = this_swap_time - lastSynchronousSwapTime_;
     if (delta <= kMinDeltaToSwitchToAsync) {
-      last_synchronous_swap_time_ = base::TimeTicks();
+      lastSynchronousSwapTime_ = base::TimeTicks();
       [self setAsynchronous:YES];
     } else {
-      last_synchronous_swap_time_ = this_swap_time;
+      lastSynchronousSwapTime_ = this_swap_time;
       [self setNeedsDisplay];
     }
   }
@@ -128,7 +183,7 @@ const base::TimeDelta kMinDeltaToSwitchToAsync =
     // draw it.
     TRACE_COUNTER_ID1("gpu", "CALayerPendingSwap", self, 3);
 
-    can_draw_returned_false_count_ = 0;
+    canDrawReturnedFalseCount_ = 0;
     return YES;
   } else {
     // If there is not a draw pending, then give an instantaneous blip up from
@@ -142,10 +197,10 @@ const base::TimeDelta kMinDeltaToSwitchToAsync =
       // vsync, asking us if we have anything to draw. If we get many of these
       // in a row, ask that we stop getting these callback for now, so that we
       // don't waste CPU cycles.
-      if (can_draw_returned_false_count_ >= kCanDrawFalsesBeforeSwitchFromAsync)
+      if (canDrawReturnedFalseCount_ >= kCanDrawFalsesBeforeSwitchFromAsync)
         [self setAsynchronous:NO];
       else
-        can_draw_returned_false_count_ += 1;
+        canDrawReturnedFalseCount_ += 1;
     }
     return NO;
   }
@@ -160,7 +215,7 @@ const base::TimeDelta kMinDeltaToSwitchToAsync =
   gfx::ScopedSetGLToRealGLApi scoped_set_gl_api;
 
   if (storageProvider_) {
-    storageProvider_->LayerDoDraw();
+    storageProvider_->LayerDoDraw(gfx::Rect(pixelSize_));
 
     // A trace value of 0 indicates that there is no longer a pending swap ack.
     TRACE_COUNTER_ID1("gpu", "CALayerPendingSwap", self, 0);
@@ -175,6 +230,82 @@ const base::TimeDelta kMinDeltaToSwitchToAsync =
 
   DCHECK(!didDrawCallback_.is_null());
   didDrawCallback_.Run();
+}
+
+@end
+
+@implementation ImageTransportNSCGLSurface
+
+- (id)initWithStorageProvider:
+    (content::CALayerStorageProvider*)storageProvider
+                    pixelSize:(gfx::Size)pixelSize
+                  scaleFactor:(float)scaleFactor {
+  if (self = [super init]) {
+    ScopedCAActionDisabler disabler;
+    gfx::Size dipSize = gfx::ConvertSizeToDIP(scaleFactor, pixelSize);
+    [self setContentsScale:scaleFactor];
+    [self setFrame:CGRectMake(0, 0, dipSize.width(), dipSize.height())];
+    storageProvider_ = storageProvider;
+
+    // Allocate the NSCGLSurface to render into.
+    base::ScopedCFTypeRef<CGColorSpaceRef> cgColorSpace(
+        CGDisplayCopyColorSpace(CGMainDisplayID()));
+    Class NSCGLSurface_class = NSClassFromString(@"NSCGLSurface");
+    surface_.reset([[NSCGLSurface_class alloc] initWithSize:pixelSize.ToCGSize()
+                                                 colorSpace:cgColorSpace
+                                                     atomic:NO]);
+
+    // Create a context in the share group of the storage provider. We will
+    // draw content using this context.
+    CGLError cglError = kCGLNoError;
+    cglError = CGLCreateContext(
+        CGLGetPixelFormat(storageProvider_->LayerShareGroupContext()),
+        storageProvider_->LayerShareGroupContext(),
+        cglContext_.InitializeInto());
+    LOG_IF(ERROR, cglError != kCGLNoError) <<
+        "Failed to create CGL context for NSCGL surface.";
+
+    pixelSize_ = pixelSize;
+    hasDrawn_ = false;
+  }
+  return self;
+}
+
+- (void)drawNewFrame:(gfx::Rect)dirtyRect {
+  // Draw the first frame to the layer as covering the full layer. Subsequent
+  // frames may use partial damage.
+  if (!hasDrawn_) {
+    dirtyRect = gfx::Rect(pixelSize_);
+    hasDrawn_ = true;
+  }
+
+  // Make the context current to the thread, make the surface be the current
+  // drawable for the context, and draw.
+  [surface_ attachToCGLContext:cglContext_];
+  {
+    gfx::ScopedCGLSetCurrentContext scopedSetCurrentContext(cglContext_);
+    gfx::ScopedSetGLToRealGLApi scopedSetRealGLApi;
+    glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
+    glViewport(0, 0, pixelSize_.width(), pixelSize_.height());
+    storageProvider_->LayerDoDraw(dirtyRect);
+    glFlush();
+  }
+  [surface_ attachToCGLContext:NULL];
+  [surface_ flushRect:dirtyRect.ToCGRect()];
+
+  // Update the layer contents to be the content rendered by OpenGL.
+  {
+    ScopedCAActionDisabler disabler;
+    [self setContents:[surface_ layerContents]];
+  }
+}
+
+- (void)drawPendingFrameImmediately {
+  [self drawNewFrame:gfx::Rect(pixelSize_)];
+}
+
+- (void)resetStorageProvider {
+  storageProvider_ = NULL;
 }
 
 @end
@@ -390,7 +521,7 @@ void CALayerStorageProvider::FrameSizeChanged(const gfx::Size& pixel_size,
   DCHECK_EQ(fbo_scale_factor_, scale_factor);
 }
 
-void CALayerStorageProvider::SwapBuffers() {
+void CALayerStorageProvider::SwapBuffers(const gfx::Rect& dirty_rect) {
   TRACE_EVENT0("gpu", "CALayerStorageProvider::SwapBuffers");
   DCHECK(!has_pending_draw_);
 
@@ -401,6 +532,15 @@ void CALayerStorageProvider::SwapBuffers() {
     ResetLayer();
     recreate_layer_after_gpu_switch_ = false;
   }
+
+  // Determine if it is safe to use an NSCGLSurface, or if we should use the
+  // CAOpenGLLayer fallback. If we're not using the preferred type of layer,
+  // then reset the layer and re-create one of the preferred type.
+  bool can_use_ns_cgl_surface = CanUseNSCGLSurface();
+  Class expected_layer_class = can_use_ns_cgl_surface ?
+      [ImageTransportNSCGLSurface class] : [ImageTransportCAOpenGLLayer class];
+  if (![layer_ isKindOfClass:expected_layer_class])
+    ResetLayer();
 
   // Set the pending draw flag only after destroying the old layer (otherwise
   // destroying it will un-set the flag).
@@ -419,10 +559,17 @@ void CALayerStorageProvider::SwapBuffers() {
   // Allocate a CALayer to use to draw the content and make it current to the
   // CAContext, if needed.
   if (!layer_) {
-    layer_.reset([[ImageTransportCAOpenGLLayer alloc]
-        initWithStorageProvider:this
-                      pixelSize:fbo_pixel_size_
-                    scaleFactor:fbo_scale_factor_]);
+    if (can_use_ns_cgl_surface) {
+      layer_.reset([[ImageTransportNSCGLSurface alloc]
+          initWithStorageProvider:this
+                        pixelSize:fbo_pixel_size_
+                      scaleFactor:fbo_scale_factor_]);
+    } else {
+      layer_.reset([[ImageTransportCAOpenGLLayer alloc]
+          initWithStorageProvider:this
+                        pixelSize:fbo_pixel_size_
+                      scaleFactor:fbo_scale_factor_]);
+    }
     [context_ setLayer:layer_];
   }
 
@@ -435,7 +582,7 @@ void CALayerStorageProvider::SwapBuffers() {
   if (gpu_vsync_disabled_ || throttling_disabled_) {
     DrawImmediatelyAndUnblockBrowser();
   } else {
-    [layer_ drawNewFrame];
+    [layer_ drawNewFrame:dirty_rect];
   }
 
   if (has_pending_draw_) {
@@ -508,7 +655,7 @@ base::Closure CALayerStorageProvider::LayerShareGroupContextDirtiedCallback() {
   return share_group_context_dirtied_callback_;
 }
 
-void CALayerStorageProvider::LayerDoDraw() {
+void CALayerStorageProvider::LayerDoDraw(const gfx::Rect& dirty_rect) {
   TRACE_EVENT0("gpu", "CALayerStorageProvider::LayerDoDraw");
   if (gfx::GetGLImplementation() ==
       gfx::kGLImplementationDesktopGLCoreProfile) {
@@ -559,17 +706,17 @@ void CALayerStorageProvider::LayerDoDraw() {
     glBindTexture(GL_TEXTURE_RECTANGLE_ARB, fbo_texture_);
     glBegin(GL_QUADS);
     {
-      glTexCoord2f(0, 0);
-      glVertex2f(0, 0);
+      glTexCoord2f(dirty_rect.x(), dirty_rect.y());
+      glVertex2f(dirty_rect.x(), dirty_rect.y());
 
-      glTexCoord2f(0, fbo_pixel_size_.height());
-      glVertex2f(0, fbo_pixel_size_.height());
+      glTexCoord2f(dirty_rect.x(), dirty_rect.bottom());
+      glVertex2f(dirty_rect.x(), dirty_rect.bottom());
 
-      glTexCoord2f(fbo_pixel_size_.width(), fbo_pixel_size_.height());
-      glVertex2f(fbo_pixel_size_.width(), fbo_pixel_size_.height());
+      glTexCoord2f(dirty_rect.right(), dirty_rect.bottom());
+      glVertex2f(dirty_rect.right(), dirty_rect.bottom());
 
-      glTexCoord2f(fbo_pixel_size_.width(), 0);
-      glVertex2f(fbo_pixel_size_.width(), 0);
+      glTexCoord2f(dirty_rect.right(), dirty_rect.y());
+      glVertex2f(dirty_rect.right(), dirty_rect.y());
     }
     glEnd();
     glBindTexture(GL_TEXTURE_RECTANGLE_ARB, 0);

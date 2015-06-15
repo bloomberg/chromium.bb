@@ -112,7 +112,7 @@ void IOSurfaceStorageProvider::FrameSizeChanged(const gfx::Size& pixel_size,
   frame_scale_factor_ = scale_factor;
 }
 
-void IOSurfaceStorageProvider::SwapBuffers() {
+void IOSurfaceStorageProvider::SwapBuffers(const gfx::Rect& dirty_rect) {
   // The browser compositor will throttle itself, so we are free to unblock the
   // context immediately. Make sure that the browser is doing its throttling
   // appropriately by ensuring that the previous swap was acknowledged before
