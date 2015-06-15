@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.compositor.layouts.phone;
 import android.content.Context;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.os.SystemClock;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
@@ -301,6 +302,15 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
      */
     public ViewGroup getViewContainer() {
         return mViewContainer;
+    }
+
+    @Override
+    public void onTabCreating(int sourceTabId) {
+        // Force any in progress animations to end. This was introduced because
+        // we end up with 0 tabs if the animation for all tabs closing is still
+        // running when a new tab is created.
+        // See http://crbug.com/496557
+        onUpdateAnimation(SystemClock.currentThreadTimeMillis(), true);
     }
 
     @Override
