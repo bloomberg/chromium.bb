@@ -4,6 +4,7 @@
 
 package org.chromium.android_webview;
 
+import android.content.Context;
 import android.net.http.SslCertificate;
 import android.net.http.SslError;
 import android.util.Log;
@@ -31,9 +32,10 @@ import javax.security.auth.x500.X500Principal;
  */
 @JNINamespace("android_webview")
 public class AwContentsClientBridge {
-    static final String TAG = "AwContentsClientBridge";
+    private static final String TAG = "AwContentsClientBridge";
 
     private AwContentsClient mClient;
+    private Context mContext;
     // The native peer of this object.
     private long mNativeContentsClientBridge;
 
@@ -48,9 +50,10 @@ public class AwContentsClientBridge {
         mLookupTable = table;
     }
 
-    public AwContentsClientBridge(AwContentsClient client, DefaultAndroidKeyStore keyStore,
-            ClientCertLookupTable table) {
+    public AwContentsClientBridge(Context context, AwContentsClient client,
+            DefaultAndroidKeyStore keyStore, ClientCertLookupTable table) {
         assert client != null;
+        mContext = context;
         mClient = client;
         mLocalKeyStore = keyStore;
         mLookupTable = table;
@@ -258,7 +261,11 @@ public class AwContentsClientBridge {
 
     @CalledByNative
     private boolean shouldOverrideUrlLoading(String url) {
-        return mClient.shouldOverrideUrlLoading(url);
+        if (mClient.hasWebViewClient()) {
+            return mClient.shouldOverrideUrlLoading(url);
+        } else {
+            return AwContentsClient.sendBrowsingIntent(mContext, url);
+        }
     }
 
     void confirmJsResult(int id, String prompt) {

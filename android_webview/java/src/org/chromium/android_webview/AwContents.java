@@ -484,7 +484,11 @@ public class AwContents implements SmartClipProvider,
                 // If this is used for all navigations in future, cases for application initiated
                 // load, redirect and backforward should also be filtered out.
                 if (!navigationParams.isPost) {
-                    ignoreNavigation = mContentsClient.shouldOverrideUrlLoading(url);
+                    if (!mContentsClient.hasWebViewClient()) {
+                        ignoreNavigation = AwContentsClient.sendBrowsingIntent(mContext, url);
+                    } else {
+                        ignoreNavigation = mContentsClient.shouldOverrideUrlLoading(url);
+                    }
                 }
             }
             // The shouldOverrideUrlLoading call might have resulted in posting messages to the
@@ -672,7 +676,7 @@ public class AwContents implements SmartClipProvider,
         mLayoutSizer.setDIPScale(mDIPScale);
         mWebContentsDelegate = new AwWebContentsDelegateAdapter(
                 this, contentsClient, mContentViewClient, mContext, mContainerView);
-        mContentsClientBridge = new AwContentsClientBridge(contentsClient,
+        mContentsClientBridge = new AwContentsClientBridge(mContext, contentsClient,
                 mBrowserContext.getKeyStore(), AwContentsStatics.getClientCertLookupTable());
         mZoomControls = new AwZoomControls(this);
         mIoThreadClient = new IoThreadClientImpl();

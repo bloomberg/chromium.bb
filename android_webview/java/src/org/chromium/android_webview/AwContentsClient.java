@@ -6,6 +6,8 @@ package org.chromium.android_webview;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Picture;
@@ -13,7 +15,9 @@ import android.net.Uri;
 import android.net.http.SslError;
 import android.os.Looper;
 import android.os.Message;
+import android.provider.Browser;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.webkit.ConsoleMessage;
@@ -23,6 +27,7 @@ import android.webkit.WebChromeClient;
 
 import org.chromium.android_webview.permission.AwPermissionRequest;
 import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.SelectActionMode;
 import org.chromium.content.browser.SelectActionModeCallback.ActionHandler;
 
@@ -39,7 +44,7 @@ import java.util.HashMap;
  * i.e.: all methods in this class should either be final, or abstract.
  */
 public abstract class AwContentsClient {
-
+    private static final String TAG = "AwContentsClient";
     private final AwContentsClientCallbackHelper mCallbackHelper;
 
     // Last background color reported from the renderer. Holds the sentinal value INVALID_COLOR
@@ -151,6 +156,42 @@ public abstract class AwContentsClient {
 
     public abstract void onDownloadStart(String url, String userAgent, String contentDisposition,
             String mimeType, long contentLength);
+
+    public static boolean sendBrowsingIntent(Context context, String url) {
+        Intent intent;
+        // Perform generic parsing of the URI to turn it into an Intent.
+        try {
+            intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME);
+        } catch (Exception ex) {
+            Log.w(TAG, "Bad URI " + url, ex);
+            return false;
+        }
+        // Sanitize the Intent, ensuring web pages can not bypass browser
+        // security (only access to BROWSABLE activities).
+        intent.addCategory(Intent.CATEGORY_BROWSABLE);
+        intent.setComponent(null);
+        Intent selector = intent.getSelector();
+        if (selector != null) {
+            selector.addCategory(Intent.CATEGORY_BROWSABLE);
+            selector.setComponent(null);
+        }
+
+        // Pass the package name as application ID so that the intent from the
+        // same application can be opened in the same tab.
+        intent.putExtra(Browser.EXTRA_APPLICATION_ID, context.getPackageName());
+        if (ContentViewCore.activityFromContext(context) == null) {
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        }
+
+        try {
+            context.startActivity(intent);
+        } catch (ActivityNotFoundException ex) {
+            Log.w(TAG, "No application can handle " + url);
+            return false;
+        }
+
+        return true;
+    }
 
     public static Uri[] parseFileChooserResult(int resultCode, Intent intent) {
         if (resultCode == Activity.RESULT_CANCELED) {
