@@ -385,12 +385,11 @@ class TileManagerPerfTest : public testing::Test {
                            int approximate_tile_count_per_layer) {
     std::vector<FakePictureLayerImpl*> layers =
         CreateLayers(layer_count, approximate_tile_count_per_layer);
+
     timer_.Reset();
     bool resourceless_software_draw = false;
     do {
-      BeginFrameArgs args =
-          CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE);
-      host_impl_.WillBeginImplFrame(args);
+      host_impl_.AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
       for (const auto& layer : layers)
         layer->UpdateTiles(resourceless_software_draw);
 
@@ -398,7 +397,6 @@ class TileManagerPerfTest : public testing::Test {
       tile_manager()->PrepareTiles(global_state);
       tile_manager()->UpdateVisibleTiles(global_state);
       timer_.NextLap();
-      host_impl_.DidFinishImplFrame();
     } while (!timer_.HasTimeLimitExpired());
 
     perf_test::PrintResult("prepare_tiles", "", test_name,

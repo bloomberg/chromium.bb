@@ -24,9 +24,9 @@ FakeLayerTreeHostImpl::FakeLayerTreeHostImpl(Proxy* proxy,
   SetDebugState(LayerTreeDebugState());
   SetViewportSize(gfx::Size(100, 100));
 
-  // Avoid using Now() as the frame time in unit tests.
+  // Start an impl frame so tests have a valid frame_time to work with.
   base::TimeTicks time_ticks = base::TimeTicks::FromInternalValue(1);
-  SetCurrentBeginFrameArgs(
+  WillBeginImplFrame(
       CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
 }
 
@@ -45,9 +45,9 @@ FakeLayerTreeHostImpl::FakeLayerTreeHostImpl(const LayerTreeSettings& settings,
   // Explicitly clear all debug settings.
   SetDebugState(LayerTreeDebugState());
 
-  // Avoid using Now() as the frame time in unit tests.
+  // Start an impl frame so tests have a valid frame_time to work with.
   base::TimeTicks time_ticks = base::TimeTicks::FromInternalValue(1);
-  SetCurrentBeginFrameArgs(
+  WillBeginImplFrame(
       CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
 }
 
@@ -64,12 +64,11 @@ BeginFrameArgs FakeLayerTreeHostImpl::CurrentBeginFrameArgs() const {
   return current_begin_frame_tracker_.DangerousMethodCurrentOrLast();
 }
 
-void FakeLayerTreeHostImpl::SetCurrentBeginFrameArgs(
-    const BeginFrameArgs& args) {
-  if (!current_begin_frame_tracker_.DangerousMethodHasFinished()) {
-    current_begin_frame_tracker_.Finish();
-  }
-  current_begin_frame_tracker_.Start(args);
+void FakeLayerTreeHostImpl::AdvanceToNextFrame(base::TimeDelta advance_by) {
+  BeginFrameArgs next_begin_frame_args = current_begin_frame_tracker_.Current();
+  next_begin_frame_args.frame_time += advance_by;
+  DidFinishImplFrame();
+  WillBeginImplFrame(next_begin_frame_args);
 }
 
 int FakeLayerTreeHostImpl::RecursiveUpdateNumChildren(LayerImpl* layer) {
