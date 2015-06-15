@@ -15,11 +15,19 @@
 
 namespace extensions {
 
-namespace {
+MediaGalleriesCustomBindings::MediaGalleriesCustomBindings(
+    ScriptContext* context)
+    : ObjectBackedNativeHandler(context) {
+  RouteFunction(
+      "GetMediaFileSystemObject",
+      base::Bind(&MediaGalleriesCustomBindings::GetMediaFileSystemObject,
+                 base::Unretained(this)));
+}
 
 // FileSystemObject GetMediaFileSystem(string file_system_url): construct
 // a file system object from a file system url.
-void GetMediaFileSystemObject(const v8::FunctionCallbackInfo<v8::Value>& args) {
+void MediaGalleriesCustomBindings::GetMediaFileSystemObject(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
   CHECK_EQ(1, args.Length());
   CHECK(args[0]->IsString());
 
@@ -40,16 +48,7 @@ void GetMediaFileSystemObject(const v8::FunctionCallbackInfo<v8::Value>& args) {
                                       blink::WebFileSystemTypeExternal,
                                       blink::WebString::fromUTF8(fs_name),
                                       root_url)
-          .toV8Value(args.Holder(), args.GetIsolate()));
-}
-
-}  // namespace
-
-MediaGalleriesCustomBindings::MediaGalleriesCustomBindings(
-    ScriptContext* context)
-    : ObjectBackedNativeHandler(context) {
-  RouteFunction("GetMediaFileSystemObject",
-                base::Bind(&GetMediaFileSystemObject));
+          .toV8Value(context()->v8_context()->Global(), args.GetIsolate()));
 }
 
 }  // namespace extensions

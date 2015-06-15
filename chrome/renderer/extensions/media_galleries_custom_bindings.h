@@ -15,6 +15,9 @@ class MediaGalleriesCustomBindings : public ObjectBackedNativeHandler {
   explicit MediaGalleriesCustomBindings(ScriptContext* context);
 
  private:
+  void GetMediaFileSystemObject(
+      const v8::FunctionCallbackInfo<v8::Value>& args);
+
   DISALLOW_COPY_AND_ASSIGN(MediaGalleriesCustomBindings);
 };
 

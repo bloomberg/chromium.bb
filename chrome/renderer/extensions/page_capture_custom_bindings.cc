@@ -32,7 +32,8 @@ void PageCaptureCustomBindings::CreateBlob(
   blink::WebString path(base::UTF8ToUTF16(*v8::String::Utf8Value(args[0])));
   blink::WebBlob blob =
       blink::WebBlob::createFromFile(path, args[1]->Int32Value());
-  args.GetReturnValue().Set(blob.toV8Value(args.Holder(), args.GetIsolate()));
+  args.GetReturnValue().Set(
+      blob.toV8Value(context()->v8_context()->Global(), args.GetIsolate()));
 }
 
 void PageCaptureCustomBindings::SendResponseAck(

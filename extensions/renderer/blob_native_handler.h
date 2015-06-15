@@ -20,6 +20,9 @@ class ScriptContext;
 class BlobNativeHandler : public ObjectBackedNativeHandler {
  public:
   explicit BlobNativeHandler(ScriptContext* context);
+
+ private:
+  void TakeBrowserProcessBlob(const v8::FunctionCallbackInfo<v8::Value>& args);
 };
 
 }  // namespace extensions

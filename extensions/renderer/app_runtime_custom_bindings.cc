@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
+#include "extensions/renderer/script_context.h"
 #include "third_party/WebKit/public/platform/WebCString.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebBlob.h"
@@ -38,7 +39,20 @@ void SerializeToString(const v8::FunctionCallbackInfo<v8::Value>& args) {
       v8::String::NewFromUtf8(args.GetIsolate(), v.c_str()));
 }
 
-void CreateBlob(const v8::FunctionCallbackInfo<v8::Value>& args) {
+}  // namespace
+
+namespace extensions {
+
+AppRuntimeCustomBindings::AppRuntimeCustomBindings(ScriptContext* context)
+    : ObjectBackedNativeHandler(context) {
+  RouteFunction("DeserializeString", base::Bind(&DeserializeString));
+  RouteFunction("SerializeToString", base::Bind(&SerializeToString));
+  RouteFunction("CreateBlob", base::Bind(&AppRuntimeCustomBindings::CreateBlob,
+                                         base::Unretained(this)));
+}
+
+void AppRuntimeCustomBindings::CreateBlob(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
   DCHECK(args.Length() == 2);
   DCHECK(args[0]->IsString());
   DCHECK(args[1]->IsNumber());
@@ -50,18 +64,7 @@ void CreateBlob(const v8::FunctionCallbackInfo<v8::Value>& args) {
   blink::WebBlob web_blob =
       WebBlob::createFromFile(WebString::fromUTF8(blob_file_path), blob_length);
   args.GetReturnValue().Set(
-      web_blob.toV8Value(args.Holder(), args.GetIsolate()));
-}
-
-}  // namespace
-
-namespace extensions {
-
-AppRuntimeCustomBindings::AppRuntimeCustomBindings(ScriptContext* context)
-    : ObjectBackedNativeHandler(context) {
-  RouteFunction("DeserializeString", base::Bind(&DeserializeString));
-  RouteFunction("SerializeToString", base::Bind(&SerializeToString));
-  RouteFunction("CreateBlob", base::Bind(&CreateBlob));
+      web_blob.toV8Value(context()->v8_context()->Global(), args.GetIsolate()));
 }
 
 }  // namespace extensions

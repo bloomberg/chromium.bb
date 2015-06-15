@@ -40,7 +40,7 @@ void FileManagerPrivateCustomBindings::GetFileSystem(
                                       blink::WebFileSystemTypeExternal,
                                       blink::WebString::fromUTF8(name),
                                       GURL(root_url))
-          .toV8Value(args.Holder(), args.GetIsolate()));
+          .toV8Value(context()->v8_context()->Global(), args.GetIsolate()));
 }
 
 }  // namespace extensions

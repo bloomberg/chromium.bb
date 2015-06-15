@@ -15,6 +15,8 @@ class AppRuntimeCustomBindings : public ObjectBackedNativeHandler {
   explicit AppRuntimeCustomBindings(ScriptContext* context);
 
  private:
+  void CreateBlob(const v8::FunctionCallbackInfo<v8::Value>& args);
+
   DISALLOW_COPY_AND_ASSIGN(AppRuntimeCustomBindings);
 };
 
