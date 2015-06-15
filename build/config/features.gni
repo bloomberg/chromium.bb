@@ -183,8 +183,6 @@ enable_chromevox_next = false
 # Use brlapi from brltty for braille display support.
 use_brlapi = is_chromeos
 
-enable_media_router = !is_ios && !is_android
-
 # Option controlling the use of GConf (the classic GNOME configuration
 # system).
 # TODO(GYP) also require !embedded to enable.
