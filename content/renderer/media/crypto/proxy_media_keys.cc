@@ -61,8 +61,6 @@ void ProxyMediaKeys::CreateSessionAndGenerateRequest(
     media::EmeInitDataType init_data_type,
     const std::vector<uint8_t>& init_data,
     scoped_ptr<media::NewSessionCdmPromise> promise) {
-  // TODO(xhwang): Move these checks up to blink and DCHECK here.
-  // See http://crbug.com/342510
   CdmHostMsg_CreateSession_InitDataType create_session_init_data_type =
       INIT_DATA_TYPE_WEBM;
   switch (init_data_type) {
