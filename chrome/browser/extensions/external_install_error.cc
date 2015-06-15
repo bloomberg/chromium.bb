@@ -210,7 +210,6 @@ ExternalInstallBubbleAlert::GetBubbleViewMessages() {
       ExtensionInstallPrompt::PermissionsType::WITHHELD_PERMISSIONS;
 
   std::vector<base::string16> messages;
-  messages.push_back(prompt_->GetHeading());
   if (prompt_->GetPermissionCount(regular_permissions)) {
     messages.push_back(prompt_->GetPermissionsHeading(regular_permissions));
     for (size_t i = 0; i < prompt_->GetPermissionCount(regular_permissions);

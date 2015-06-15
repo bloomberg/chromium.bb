@@ -204,10 +204,10 @@ void ExtensionInstallDialogView::InitView() {
   // Inline install
   //      w/ permissions                 no permissions
   // +--------------------+------+  +--------------+------+
-  // | heading            | icon |  | heading      | icon |
+  // | title              | icon |  | title        | icon |
   // +--------------------|      |  +--------------|      |
   // | rating             |      |  | rating       |      |
-  // +--------------------|      |  +--------------+      |
+  // +--------------------|      |  +--------------|      |
   // | user_count         |      |  | user_count   |      |
   // +--------------------|      |  +--------------|      |
   // | store_link         |      |  | store_link   |      |
@@ -216,21 +216,21 @@ void ExtensionInstallDialogView::InitView() {
   // +--------------------+------+
   // | permissions_header |      |
   // +--------------------+------+
-  // | permission1        |      |
+  // | * permission1      |      |
   // +--------------------+------+
-  // | permission2        |      |
+  // | * permission2      |      |
   // +--------------------+------+
   //
   // Regular install
   // w/ permissions                     no permissions
   // +--------------------+------+  +--------------+------+
-  // | heading            | icon |  | heading      | icon |
+  // | title              | icon |  | title        | icon |
   // +--------------------|      |  +--------------+------+
   // | permissions_header |      |
   // +--------------------|      |
-  // | permission1        |      |
+  // | * permission1      |      |
   // +--------------------|      |
-  // | permission2        |      |
+  // | * permission2      |      |
   // +--------------------+------+
   int left_column_width =
       (prompt_->ShouldShowPermissions() + prompt_->GetRetainedFileCount()) > 0
@@ -247,8 +247,8 @@ void ExtensionInstallDialogView::InitView() {
   // Create the full scrollable view which will contain all the information
   // including the permissions.
   scrollable_ = new CustomScrollableView();
-  views::GridLayout* layout = CreateLayout(
-      scrollable_, left_column_width, column_set_id, false);
+  views::GridLayout* layout =
+      CreateLayout(scrollable_, left_column_width, column_set_id);
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
   scroll_view_->SetContents(scrollable_);
@@ -429,7 +429,7 @@ bool ExtensionInstallDialogView::AddPermissions(
     return false;
 
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
-  if (is_inline_install()) {
+  if (prompt_->has_webstore_data()) {
     layout->StartRow(0, column_set_id);
     layout->AddView(new views::Separator(views::Separator::HORIZONTAL),
                     3,
@@ -489,21 +489,22 @@ bool ExtensionInstallDialogView::AddPermissions(
 views::GridLayout* ExtensionInstallDialogView::CreateLayout(
     views::View* parent,
     int left_column_width,
-    int column_set_id,
-    bool single_detail_row) const {
-  views::GridLayout* layout = views::GridLayout::CreatePanel(parent);
+    int column_set_id) const {
+  // This is basically views::GridLayout::CreatePanel, but without a top margin
+  // (we effectively get a top margin anyway from the empty dialog title).
+  views::GridLayout* layout = new views::GridLayout(parent);
+  layout->SetInsets(0, views::kButtonHEdgeMarginNew, views::kPanelVertMargin,
+                    views::kButtonHEdgeMarginNew);
   parent->SetLayoutManager(layout);
 
   views::ColumnSet* column_set = layout->AddColumnSet(column_set_id);
-  column_set->AddColumn(views::GridLayout::LEADING,
-                        views::GridLayout::FILL,
+  column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING,
                         0,  // no resizing
                         views::GridLayout::USE_PREF,
                         0,  // no fixed width
                         left_column_width);
   column_set->AddPaddingColumn(0, views::kPanelHorizMargin);
-  column_set->AddColumn(views::GridLayout::TRAILING,
-                        views::GridLayout::LEADING,
+  column_set->AddColumn(views::GridLayout::TRAILING, views::GridLayout::LEADING,
                         0,  // no resizing
                         views::GridLayout::USE_PREF,
                         0,  // no fixed width
@@ -511,14 +512,14 @@ views::GridLayout* ExtensionInstallDialogView::CreateLayout(
 
   layout->StartRow(0, column_set_id);
 
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-
-  views::Label* heading = new views::Label(
-      prompt_->GetHeading(), rb.GetFontList(ui::ResourceBundle::MediumFont));
-  heading->SetMultiLine(true);
-  heading->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  heading->SizeToFit(left_column_width);
-  layout->AddView(heading);
+  views::Label* title =
+      new views::Label(prompt_->GetDialogTitle(),
+                       ui::ResourceBundle::GetSharedInstance().GetFontList(
+                           ui::ResourceBundle::MediumFont));
+  title->SetMultiLine(true);
+  title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  title->SizeToFit(left_column_width);
+  layout->AddView(title);
 
   // Scale down to icon size, but allow smaller icons (don't scale up).
   const gfx::ImageSkia* image = prompt_->icon().ToImageSkia();
@@ -530,26 +531,32 @@ views::GridLayout* ExtensionInstallDialogView::CreateLayout(
   icon->SetImage(*image);
   icon->SetHorizontalAlignment(views::ImageView::CENTER);
   icon->SetVerticalAlignment(views::ImageView::CENTER);
-  if (single_detail_row) {
-    layout->AddView(icon);
-  } else {
-    int icon_row_span = 1;
-    if (is_inline_install()) {
-      // Also span the rating, user_count and store_link rows.
-      icon_row_span = 4;
-    } else if (prompt_->ShouldShowPermissions()) {
-      size_t permission_count = prompt_->GetPermissionCount(
-          ExtensionInstallPrompt::PermissionsType::ALL_PERMISSIONS);
-      // Also span the permission header and each of the permission rows (all
-      // have a padding row above it). This also works for the 'no special
-      // permissions' case.
-      icon_row_span = 3 + permission_count * 2;
-    } else if (prompt_->GetRetainedFileCount()) {
-      // Also span the permission header and the retained files container.
-      icon_row_span = 4;
-    }
-    layout->AddView(icon, 1, icon_row_span);
+
+  int icon_row_span = 1;
+  if (prompt_->has_webstore_data()) {
+    // Also span the rating, user_count and store_link rows.
+    icon_row_span = 4;
+    // Note: Do not span the permissions here, there's a separator in between!
+  } else if (prompt_->ShouldShowPermissions()) {
+    size_t permission_count = prompt_->GetPermissionCount(
+        ExtensionInstallPrompt::PermissionsType::ALL_PERMISSIONS);
+    // Also span the permission header and each of the permission rows (all
+    // have a padding row above it). This also works for the 'no special
+    // permissions' case.
+    icon_row_span = 3 + permission_count * 2;
+  } else if (prompt_->GetRetainedFileCount() ||
+             prompt_->GetRetainedDeviceCount()) {
+    // Also span the permission header and the retained files container.
+    icon_row_span = 4;
   }
+  if (is_bundle_install()) {
+    // Also span the list of bundle items. One row per item, plus a padding row
+    // above and below.
+    int bundle_item_count = prompt_->bundle()->CountItemsWithState(
+        BundleInstaller::Item::STATE_PENDING);
+    icon_row_span += bundle_item_count + 2;
+  }
+  layout->AddView(icon, 1, icon_row_span);
 
   return layout;
 }
@@ -572,9 +579,7 @@ base::string16 ExtensionInstallDialogView::GetDialogButtonLabel(
     case ui::DIALOG_BUTTON_OK:
       return prompt_->GetAcceptButtonLabel();
     case ui::DIALOG_BUTTON_CANCEL:
-      return prompt_->HasAbortButtonLabel()
-                 ? prompt_->GetAbortButtonLabel()
-                 : l10n_util::GetStringUTF16(IDS_CANCEL);
+      return prompt_->GetAbortButtonLabel();
     default:
       NOTREACHED();
       return base::string16();
@@ -610,10 +615,6 @@ bool ExtensionInstallDialogView::Accept() {
 
 ui::ModalType ExtensionInstallDialogView::GetModalType() const {
   return ui::MODAL_TYPE_WINDOW;
-}
-
-base::string16 ExtensionInstallDialogView::GetWindowTitle() const {
-  return prompt_->GetDialogTitle();
 }
 
 void ExtensionInstallDialogView::LinkClicked(views::Link* source,

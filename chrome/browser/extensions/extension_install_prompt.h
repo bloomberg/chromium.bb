@@ -116,11 +116,9 @@ class ExtensionInstallPrompt
 
     // Getters for UI element labels.
     base::string16 GetDialogTitle() const;
-    base::string16 GetHeading() const;
     int GetDialogButtons() const;
-    bool HasAcceptButtonLabel() const;
+    // Returns the empty string when there should be no "accept" button.
     base::string16 GetAcceptButtonLabel() const;
-    bool HasAbortButtonLabel() const;
     base::string16 GetAbortButtonLabel() const;
     base::string16 GetPermissionsHeading(
         PermissionsType permissions_type) const;
@@ -130,7 +128,7 @@ class ExtensionInstallPrompt
     bool ShouldShowPermissions() const;
 
     // Getters for webstore metadata. Only populated when the type is
-    // INLINE_INSTALL_PROMPT.
+    // INLINE_INSTALL_PROMPT, EXTERNAL_INSTALL_PROMPT, or REPAIR_PROMPT.
 
     // The star display logic replicates the one used by the webstore (from
     // components.ratingutils.setFractionalYellowStars). Callers pass in an

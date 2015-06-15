@@ -4239,61 +4239,25 @@ Even if you have downloaded files from this website before, the website might ha
       </if>
 
       <!-- Extension install prompt -->
-      <message name="IDS_EXTENSION_INSTALL_PROMPT_TITLE" desc="Titlebar of the extension or app installation prompt window">
-        Confirm Installation
-      </message>
-      <message name="IDS_EXTENSION_INSTALL_APP_PROMPT_TITLE" desc="Titlebar of the app installation prompt window">
-        Confirm New App
-      </message>
-      <message name="IDS_EXTENSION_INSTALL_EXTENSION_PROMPT_TITLE" desc="Titlebar of the extension installation prompt window">
-        Confirm New Extension
-      </message>
-      <message name="IDS_EXTENSION_INSTALL_THEME_PROMPT_TITLE" desc="Titlebar of the theme installation prompt window">
-        Confirm New Theme
-      </message>
       <message name="IDS_EXTENSION_UNINSTALL_PROMPT_TITLE" desc="Titlebar of the extension or app uninstallation prompt window">
         Confirm Removal
       </message>
-      <message name="IDS_EXTENSION_RE_ENABLE_PROMPT_TITLE" desc="Titlebar of the extension or app prompt window when re-enabling an extension that requires additional permissions">
-        Confirm Re-enable
-      </message>
-      <message name="IDS_EXTENSION_PERMISSIONS_PROMPT_TITLE" desc="Titlebar of the extension or app permissions prompt window">
+      <message name="IDS_EXTENSION_CONFIRM_PERMISSIONS" desc="Titlebar of the extension or app permissions prompt window">
         Confirm Permissions
       </message>
-      <message name="IDS_EXTENSION_POST_INSTALL_PERMISSIONS_PROMPT_TITLE" desc="Titlebar of the extension or app permissions review window">
-        Current Permissions
+      <message name="IDS_EXTENSION_DELEGATED_INSTALL_PROMPT_TITLE" desc="Titlebar of the app delegated installation prompt window">
+        Add "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>" for <ph name="USER_NAME">$2<ex>Wallace</ex></ph>?
       </message>
-      <message name="IDS_EXTENSION_LAUNCH_APP_PROMPT_TITLE" desc="Titlebar of the app launch prompt window">
-        Confirm Launch App
-      </message>
-      <message name="IDS_EXTENSION_REPAIR_EXTENSION_PROMPT_TITLE" desc="Titlebar of the reinstall/repair extension prompt window.">
-        Repair Extension
-      </message>
-      <message name="IDS_EXTENSION_REPAIR_APP_PROMPT_TITLE" desc="Titlebar of the reinstall/repair app prompt window.">
-        Repair App
-      </message>
-      <message name="IDS_EXTENSION_REMOTE_INSTALL_APP_PROMPT_TITLE" desc="Titlebar of the app installation prompt window when an app was installed remotely">
-        Confirm New App
-      </message>
-      <message name="IDS_EXTENSION_REMOTE_INSTALL_EXTENSION_PROMPT_TITLE" desc="Titlebar of the extension installation prompt window when an app was installed remotely">
-        Confirm New Extension
-      </message>
-      <message name="IDS_EXTENSION_DELEGATED_INSTALL_APP_PROMPT_TITLE" desc="Titlebar of the app delegated installation prompt window">
-        Confirm New App for <ph name="USER_NAME">$1<ex>Wallace</ex></ph>
-      </message>
-      <message name="IDS_EXTENSION_DELEGATED_INSTALL_EXTENSION_PROMPT_TITLE" desc="Titlebar of the extension delegated installation prompt window">
-        Confirm New Extension for <ph name="USER_NAME">$1<ex>Wallace</ex></ph>
-      </message>
-      <message name="IDS_EXTENSION_INSTALL_PROMPT_HEADING" desc="First bold line in the content area of the extension or app installation prompt. Asks the user if they want to install a particular extension or app.">
+      <message name="IDS_EXTENSION_INSTALL_PROMPT_TITLE" desc="Titlebar of the extension or app installation prompt. Asks the user if they want to install a particular extension or app.">
         Add "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>"?
       </message>
-      <message name="IDS_EXTENSION_BUNDLE_INSTALL_PROMPT_HEADING_EXTENSIONS" desc="First bold line in the content area of the extension bundle installation prompt. Asks the user if they want to install the set of extensions.">
+      <message name="IDS_EXTENSION_BUNDLE_INSTALL_PROMPT_TITLE_EXTENSIONS" desc="Titlebar of the extension bundle installation prompt. Asks the user if they want to install the set of extensions.">
         "<ph name="BUNDLE_NAME">$1<ex>My Awesome Bundle</ex></ph>" adds these extensions:
       </message>
-      <message name="IDS_EXTENSION_BUNDLE_INSTALL_PROMPT_HEADING_APPS" desc="First bold line in the content area of the app bundle installation prompt. Asks the user if they want to install the set of apps.">
+      <message name="IDS_EXTENSION_BUNDLE_INSTALL_PROMPT_TITLE_APPS" desc="Titlebar of the app bundle installation prompt. Asks the user if they want to install the set of apps.">
         "<ph name="BUNDLE_NAME">$1<ex>My Awesome Bundle</ex></ph>" adds these apps:
       </message>
-      <message name="IDS_EXTENSION_BUNDLE_INSTALL_PROMPT_HEADING_EXTENSION_APPS" desc="First bold line in the content area of the extension and app bundle installation prompt. Asks the user if they want to install the set of apps and extensions.">
+      <message name="IDS_EXTENSION_BUNDLE_INSTALL_PROMPT_TITLE_EXTENSION_APPS" desc="Titlebar of the extension and app bundle installation prompt. Asks the user if they want to install the set of apps and extensions.">
         "<ph name="BUNDLE_NAME">$1<ex>My Awesome Bundle</ex></ph>" adds these apps and extensions:
       </message>
       <message name="IDS_EXTENSION_UNINSTALL_PROMPT_HEADING" desc="First bold line in the content area of the extension or app uninstallation prompt. Asks the user if they want to uninstall a particular extension or app.">
@@ -4302,22 +4266,22 @@ Even if you have downloaded files from this website before, the website might ha
       <message name="IDS_EXTENSION_PROGRAMMATIC_UNINSTALL_PROMPT_HEADING" desc="First bold line in the content area of the extension or app uninstallation prompt when the uninstallation is programmatically triggered by another extension. Asks the user if they want to uninstall a particular extension or app.">
         "<ph name="TRIGGERING_EXTENSION_NAME">$1<ex>Extension Manager</ex></ph>" would like to remove "<ph name="EXTENSION_NAME">$2<ex>Gmail Checker</ex></ph>".
       </message>
-      <message name="IDS_EXTENSION_RE_ENABLE_PROMPT_HEADING" desc="First bold line in the content area of the extension or app installation prompt. Asks the user if they want to re-enable a particular extension or app.">
+      <message name="IDS_EXTENSION_RE_ENABLE_PROMPT_TITLE" desc="Titlebar of the extension or app installation prompt. Asks the user if they want to re-enable a particular extension or app.">
         The newest version of "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>" has been disabled because it requires more permissions.
       </message>
-      <message name="IDS_EXTENSION_PERMISSIONS_PROMPT_HEADING" desc="First bold line in the content area of the extension or app permissions prompt. Asks the user if they want to grant the permissions to the particular extension or app.">
+      <message name="IDS_EXTENSION_PERMISSIONS_PROMPT_TITLE" desc="Titlebar of the extension or app permissions prompt. Asks the user if they want to grant the permissions to the particular extension or app.">
         "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>" has requested additional permissions.
       </message>
-      <message name="IDS_EXTENSION_POST_INSTALL_PERMISSIONS_PROMPT_HEADING" desc="First bold line in the content area of the extension or app permissions prompt. Shows the user the permissions a particular extension or app has.">
-        <ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>
+      <message name="IDS_EXTENSION_POST_INSTALL_PERMISSIONS_PROMPT_TITLE" desc="Titlebar of the extension or app permissions prompt. Shows the user the permissions a particular extension or app has.">
+        Current Permissions for "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>"
       </message>
-      <message name="IDS_EXTENSION_LAUNCH_APP_PROMPT_HEADING" desc="First bold line in the content area of the app launch prompt. Asks the user if they want to launch a particular app.">
+      <message name="IDS_EXTENSION_LAUNCH_APP_PROMPT_TITLE" desc="Titlebar of the app launch prompt. Asks the user if they want to launch a particular app.">
         Try "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>"?
       </message>
-      <message name="IDS_EXTENSION_REMOTE_INSTALL_PROMPT_HEADING" desc="First bold line in the content area of the extension or app installation prompt. Asks the user if they want to enable a particular extension or app that was installed remotely.">
+      <message name="IDS_EXTENSION_REMOTE_INSTALL_PROMPT_TITLE" desc="Titlebar of the extension or app installation prompt. Asks the user if they want to enable a particular extension or app that was installed remotely.">
         Enable "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>"?
       </message>
-      <message name="IDS_EXTENSION_REPAIR_PROMPT_HEADING" desc="First bold line in the content area of the extension or app installation prompt. Asks the user if they want to update the extension/app.">
+      <message name="IDS_EXTENSION_REPAIR_PROMPT_TITLE" desc="Titlebar of the extension or app installation prompt. Asks the user if they want to update the extension/app.">
         Repair "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>"?
       </message>
 
@@ -5084,8 +5048,17 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_EXTENSION_PROMPT_INSTALL_BUTTON" desc="Text for the install button on the extension install prompt">
         Add
       </message>
+      <message name="IDS_EXTENSION_INSTALL_PROMPT_ACCEPT_BUTTON_EXTENSION" desc="Text for the install button on the extension install prompt, for an extension (i.e. not app or theme).">
+        Add extension
+      </message>
+      <message name="IDS_EXTENSION_INSTALL_PROMPT_ACCEPT_BUTTON_APP" desc="Text for the install button on the extension install prompt, for an app.">
+        Add app
+      </message>
+      <message name="IDS_EXTENSION_INSTALL_PROMPT_ACCEPT_BUTTON_THEME" desc="Text for the install button on the extension install prompt, for a theme.">
+        Add theme
+      </message>
       <message name="IDS_EXTENSION_PROMPT_LAUNCH_BUTTON" desc="Text for the launch button on the extension install prompt">
-        Launch
+        Launch app
       </message>
       <message name="IDS_EXTENSION_PROMPT_UNINSTALL_BUTTON" desc="Text for the uninstall button on the extension uninstall prompt">
         Remove
@@ -5103,19 +5076,25 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Deny
       </message>
       <message name="IDS_EXTENSION_PROMPT_PERMISSIONS_CLEAR_RETAINED_FILES_BUTTON" desc="Text for the Revoke File Access button on the extension permissions prompt">
-        Revoke File Access
+        Revoke file access
       </message>
       <message name="IDS_EXTENSION_PROMPT_PERMISSIONS_CLEAR_RETAINED_DEVICES_BUTTON" desc="Text for the Revoke Device Access button on the extension permissions prompt">
-        Revoke Device Access
+        Revoke device access
       </message>
       <message name="IDS_EXTENSION_PROMPT_PERMISSIONS_CLEAR_RETAINED_FILES_AND_DEVICES_BUTTON" desc="Text for the Revoke File and Device Access button on the extension permissions prompt">
-        Revoke File and Device Access
+        Revoke file and device access
       </message>
-      <message name="IDS_EXTENSION_PROMPT_REMOTE_INSTALL_BUTTON" desc="Text for the install button on the extension install prompt for a remotely installed extension">
-        Enable
+      <message name="IDS_EXTENSION_PROMPT_REMOTE_INSTALL_BUTTON_EXTENSION" desc="Text for the install button on the extension install prompt for a remotely installed extension">
+        Enable extension
       </message>
-      <message name="IDS_EXTENSION_PROMPT_REPAIR_BUTTON" desc="Text for the install button on the extension reinstall prompt.">
-        Repair
+      <message name="IDS_EXTENSION_PROMPT_REMOTE_INSTALL_BUTTON_APP" desc="Text for the install button on the extension install prompt for a remotely installed app">
+        Enable app
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_REPAIR_BUTTON_EXTENSION" desc="Text for the install button on the extension reinstall prompt.">
+        Repair extension
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_REPAIR_BUTTON_APP" desc="Text for the install button on the app reinstall prompt.">
+        Repair app
       </message>
       <message name="IDS_EXTENSION_WEB_STORE_TITLE" desc="Text for the Chrome Web Store">
         Chrome Web Store
@@ -5156,17 +5135,20 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_EXTENSION_EXTERNAL_INSTALL_ALERT_THEME" desc="The wrench menu item indicating that a new external extension was installed.">
         New theme added (<ph name="EXTENSION_NAME">$1<ex>Babylon Toolbar</ex></ph>)
       </message>
-      <message name="IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_TITLE" desc="Titlebar of the prompt window for an externally installed extension or app">
-        "<ph name="EXTENSION_NAME">$1<ex>Babylon Toolbar</ex></ph>" added
-      </message>
-      <message name="IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_HEADING_EXTENSION" desc="First bold line of the prompt window for an externally installed extension or app.">
-        Another program on your computer added an extension that may change the way Chrome works.
-      </message>
-      <message name="IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_HEADING_APP" desc="First bold line of the prompt window for an externally installed extension or app.">
+      <message name="IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_TITLE_APP" desc="Titlebar of the prompt window for an externally installed app">
         Another program on your computer added an app that may change the way Chrome works.
+
+<ph name="EXTENSION_NAME">$1<ex>Babylon Toolbar</ex></ph>
       </message>
-      <message name="IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_HEADING_THEME" desc="First bold line of the prompt window for an externally installed extension or app.">
+      <message name="IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_TITLE_EXTENSION" desc="Titlebar of the prompt window for an externally installed extension">
+        Another program on your computer added an extension that may change the way Chrome works.
+
+<ph name="EXTENSION_NAME">$1<ex>Babylon Toolbar</ex></ph>
+      </message>
+      <message name="IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_TITLE_THEME" desc="Titlebar of the prompt window for an externally installed theme">
         Another program on your computer added a theme that may change the way Chrome works.
+
+<ph name="EXTENSION_NAME">$1<ex>Babylon Toolbar</ex></ph>
       </message>
       <message name="IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_ACCEPT_BUTTON_EXTENSION" desc="Button on the external install prompt to enable an extension installed by a third party.">
         Enable extension

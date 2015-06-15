@@ -22,7 +22,7 @@ bool IdentityPrivateGetStringsFunction::RunSync() {
 
   dict->SetString(
       "window-title",
-      l10n_util::GetStringUTF16(IDS_EXTENSION_PERMISSIONS_PROMPT_TITLE));
+      l10n_util::GetStringUTF16(IDS_EXTENSION_CONFIRM_PERMISSIONS));
 
   return true;
 }

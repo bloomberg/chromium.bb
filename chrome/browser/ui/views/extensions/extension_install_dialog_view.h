@@ -74,7 +74,6 @@ class ExtensionInstallDialogView : public views::DialogDelegateView,
   bool Cancel() override;
   bool Accept() override;
   ui::ModalType GetModalType() const override;
-  base::string16 GetWindowTitle() const override;
   void Layout() override;
   gfx::Size GetPreferredSize() const override;
 
@@ -92,15 +91,9 @@ class ExtensionInstallDialogView : public views::DialogDelegateView,
                       ExtensionInstallPrompt::PermissionsType perm_type);
 
   // Creates a layout consisting of dialog header, extension name and icon.
-  views::GridLayout* CreateLayout(
-      views::View* parent,
-      int left_column_width,
-      int column_set_id,
-      bool single_detail_row) const;
-
-  bool is_inline_install() const {
-    return prompt_->type() == ExtensionInstallPrompt::INLINE_INSTALL_PROMPT;
-  }
+  views::GridLayout* CreateLayout(views::View* parent,
+                                  int left_column_width,
+                                  int column_set_id) const;
 
   bool is_bundle_install() const {
     return prompt_->type() == ExtensionInstallPrompt::BUNDLE_INSTALL_PROMPT;

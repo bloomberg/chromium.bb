@@ -65,30 +65,17 @@ bool AllowWebstoreData(ExtensionInstallPrompt::PromptType type) {
 }
 
 static const int kTitleIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
-    0,  // The regular install prompt depends on what's being installed.
-    IDS_EXTENSION_INLINE_INSTALL_PROMPT_TITLE,
     IDS_EXTENSION_INSTALL_PROMPT_TITLE,
+    IDS_EXTENSION_INSTALL_PROMPT_TITLE,
+    0,  // Heading for bundle installs depends on the bundle contents.
     IDS_EXTENSION_RE_ENABLE_PROMPT_TITLE,
     IDS_EXTENSION_PERMISSIONS_PROMPT_TITLE,
-    IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_TITLE,
+    0,  // External installs use different strings for extensions/apps/themes.
     IDS_EXTENSION_POST_INSTALL_PERMISSIONS_PROMPT_TITLE,
     IDS_EXTENSION_LAUNCH_APP_PROMPT_TITLE,
-    0,  // The remote install prompt depends on what's being installed.
-    0,  // The repair install prompt depends on what's being installed.
-    0,  // The delegated install prompt depends on what's being installed.
-};
-static const int kHeadingIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
-    IDS_EXTENSION_INSTALL_PROMPT_HEADING,
-    0,  // Inline installs use the extension name.
-    0,  // Heading for bundle installs depends on the bundle contents.
-    IDS_EXTENSION_RE_ENABLE_PROMPT_HEADING,
-    IDS_EXTENSION_PERMISSIONS_PROMPT_HEADING,
-    0,  // External installs use different strings for extensions/apps.
-    IDS_EXTENSION_POST_INSTALL_PERMISSIONS_PROMPT_HEADING,
-    IDS_EXTENSION_LAUNCH_APP_PROMPT_HEADING,
-    IDS_EXTENSION_REMOTE_INSTALL_PROMPT_HEADING,
-    IDS_EXTENSION_REPAIR_PROMPT_HEADING,
-    IDS_EXTENSION_INSTALL_PROMPT_HEADING,
+    IDS_EXTENSION_REMOTE_INSTALL_PROMPT_TITLE,
+    IDS_EXTENSION_REPAIR_PROMPT_TITLE,
+    IDS_EXTENSION_DELEGATED_INSTALL_PROMPT_TITLE,
 };
 static const int kButtons[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
     ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL,
@@ -97,6 +84,9 @@ static const int kButtons[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
     ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL,
     ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL,
     ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL,
+    // The "OK" button in the post install permissions dialog allows revoking
+    // file/device access, and is only shown if such permissions exist; see
+    // ShouldDisplayRevokeButton().
     ui::DIALOG_BUTTON_CANCEL,
     ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL,
     ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL,
@@ -104,30 +94,30 @@ static const int kButtons[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
     ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL,
 };
 static const int kAcceptButtonIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
-    IDS_EXTENSION_PROMPT_INSTALL_BUTTON,
-    IDS_EXTENSION_PROMPT_INSTALL_BUTTON,
+    0,  // Regular installs use different strings for extensions/apps/themes.
+    0,  // Inline installs as well.
     IDS_EXTENSION_PROMPT_INSTALL_BUTTON,
     IDS_EXTENSION_PROMPT_RE_ENABLE_BUTTON,
     IDS_EXTENSION_PROMPT_PERMISSIONS_BUTTON,
-    0,  // External installs use different strings for extensions/apps.
+    0,  // External installs use different strings for extensions/apps/themes.
     0,  // Different strings depending on the files and devices retained.
     IDS_EXTENSION_PROMPT_LAUNCH_BUTTON,
-    IDS_EXTENSION_PROMPT_REMOTE_INSTALL_BUTTON,
-    IDS_EXTENSION_PROMPT_REPAIR_BUTTON,
-    IDS_EXTENSION_PROMPT_PERMISSIONS_BUTTON,
+    0,  // Remote installs use different strings for extensions/apps.
+    0,  // Repairs use different strings for extensions/apps.
+    0,  // Delegated installs use different strings for extensions/apps/themes.
 };
 static const int kAbortButtonIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
-    0,  // These all use the platform's default cancel label.
-    0,
-    0,
-    0,
+    IDS_CANCEL,
+    IDS_CANCEL,
+    IDS_CANCEL,
+    IDS_CANCEL,
     IDS_EXTENSION_PROMPT_PERMISSIONS_ABORT_BUTTON,
     IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_ABORT_BUTTON,
     IDS_CLOSE,
-    0,  // Platform dependent cancel button.
-    0,
-    0,
-    IDS_EXTENSION_PROMPT_PERMISSIONS_ABORT_BUTTON,
+    IDS_CANCEL,
+    IDS_CANCEL,
+    IDS_CANCEL,
+    IDS_CANCEL,
 };
 static const int
     kPermissionsHeaderIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
@@ -314,59 +304,23 @@ void ExtensionInstallPrompt::Prompt::SetWebstoreData(
 }
 
 base::string16 ExtensionInstallPrompt::Prompt::GetDialogTitle() const {
-  int resource_id = kTitleIds[type_];
-
-  if (type_ == INSTALL_PROMPT) {
-    if (extension_->is_app())
-      resource_id = IDS_EXTENSION_INSTALL_APP_PROMPT_TITLE;
-    else if (extension_->is_theme())
-      resource_id = IDS_EXTENSION_INSTALL_THEME_PROMPT_TITLE;
-    else
-      resource_id = IDS_EXTENSION_INSTALL_EXTENSION_PROMPT_TITLE;
-  } else if (type_ == EXTERNAL_INSTALL_PROMPT) {
-    return l10n_util::GetStringFUTF16(
-        resource_id, base::UTF8ToUTF16(extension_->name()));
-  } else if (type_ == REMOTE_INSTALL_PROMPT) {
-    if (extension_->is_app())
-      resource_id = IDS_EXTENSION_REMOTE_INSTALL_APP_PROMPT_TITLE;
-    else
-      resource_id = IDS_EXTENSION_REMOTE_INSTALL_EXTENSION_PROMPT_TITLE;
-  } else if (type_ == REPAIR_PROMPT) {
-    if (extension_->is_app())
-      resource_id = IDS_EXTENSION_REPAIR_APP_PROMPT_TITLE;
-    else
-      resource_id = IDS_EXTENSION_REPAIR_EXTENSION_PROMPT_TITLE;
-  } else if (type_ == DELEGATED_PERMISSIONS_PROMPT) {
-    DCHECK(!delegated_username_.empty());
-    if (extension_->is_app())
-      resource_id = IDS_EXTENSION_DELEGATED_INSTALL_APP_PROMPT_TITLE;
-    else
-      resource_id = IDS_EXTENSION_DELEGATED_INSTALL_EXTENSION_PROMPT_TITLE;
-    return l10n_util::GetStringFUTF16(
-        resource_id, base::UTF8ToUTF16(delegated_username_));
-  }
-
-  return l10n_util::GetStringUTF16(resource_id);
-}
-
-base::string16 ExtensionInstallPrompt::Prompt::GetHeading() const {
-  if (type_ == INLINE_INSTALL_PROMPT) {
-    return base::UTF8ToUTF16(extension_->name());
-  } else if (type_ == BUNDLE_INSTALL_PROMPT) {
+  int id = kTitleIds[type_];
+  if (type_ == BUNDLE_INSTALL_PROMPT) {
     return bundle_->GetHeadingTextFor(BundleInstaller::Item::STATE_PENDING);
-  } else if (type_ == EXTERNAL_INSTALL_PROMPT) {
-    int resource_id = -1;
-    if (extension_->is_app())
-      resource_id = IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_HEADING_APP;
-    else if (extension_->is_theme())
-      resource_id = IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_HEADING_THEME;
-    else
-      resource_id = IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_HEADING_EXTENSION;
-    return l10n_util::GetStringUTF16(resource_id);
-  } else {
-    return l10n_util::GetStringFUTF16(
-        kHeadingIds[type_], base::UTF8ToUTF16(extension_->name()));
   }
+  if (type_ == DELEGATED_PERMISSIONS_PROMPT) {
+    return l10n_util::GetStringFUTF16(id, base::UTF8ToUTF16(extension_->name()),
+                                      base::UTF8ToUTF16(delegated_username_));
+  }
+  if (type_ == EXTERNAL_INSTALL_PROMPT) {
+    if (extension_->is_app())
+      id = IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_TITLE_APP;
+    else if (extension_->is_theme())
+      id = IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_TITLE_THEME;
+    else
+      id = IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_TITLE_EXTENSION;
+  }
+  return l10n_util::GetStringFUTF16(id, base::UTF8ToUTF16(extension_->name()));
 }
 
 int ExtensionInstallPrompt::Prompt::GetDialogButtons() const {
@@ -377,48 +331,50 @@ int ExtensionInstallPrompt::Prompt::GetDialogButtons() const {
   return kButtons[type_];
 }
 
-bool ExtensionInstallPrompt::Prompt::HasAcceptButtonLabel() const {
-  if (type_ == POST_INSTALL_PERMISSIONS_PROMPT)
-    return ShouldDisplayRevokeButton();
-
-  if (kAcceptButtonIds[type_] == 0)
-    return false;
-
-  return true;
-}
-
 base::string16 ExtensionInstallPrompt::Prompt::GetAcceptButtonLabel() const {
-  if (type_ == EXTERNAL_INSTALL_PROMPT) {
-    int id = -1;
+  int id = kAcceptButtonIds[type_];
+
+  if (type_ == INSTALL_PROMPT || type_ == INLINE_INSTALL_PROMPT ||
+      type_ == DELEGATED_PERMISSIONS_PROMPT) {
+    if (extension_->is_app())
+      id = IDS_EXTENSION_INSTALL_PROMPT_ACCEPT_BUTTON_APP;
+    else if (extension_->is_theme())
+      id = IDS_EXTENSION_INSTALL_PROMPT_ACCEPT_BUTTON_THEME;
+    else
+      id = IDS_EXTENSION_INSTALL_PROMPT_ACCEPT_BUTTON_EXTENSION;
+  } else if (type_ == EXTERNAL_INSTALL_PROMPT) {
     if (extension_->is_app())
       id = IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_ACCEPT_BUTTON_APP;
     else if (extension_->is_theme())
       id = IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_ACCEPT_BUTTON_THEME;
     else
       id = IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_ACCEPT_BUTTON_EXTENSION;
-    return l10n_util::GetStringUTF16(id);
   } else if (type_ == POST_INSTALL_PERMISSIONS_PROMPT) {
-    int id = -1;
     if (GetRetainedFileCount() && GetRetainedDeviceCount()) {
       id =
           IDS_EXTENSION_PROMPT_PERMISSIONS_CLEAR_RETAINED_FILES_AND_DEVICES_BUTTON;
     } else if (GetRetainedFileCount()) {
       id = IDS_EXTENSION_PROMPT_PERMISSIONS_CLEAR_RETAINED_FILES_BUTTON;
-    } else {
-      DCHECK_LT(0U, GetRetainedDeviceCount());
+    } else if (GetRetainedDeviceCount()) {
       id = IDS_EXTENSION_PROMPT_PERMISSIONS_CLEAR_RETAINED_DEVICES_BUTTON;
     }
-    return l10n_util::GetStringUTF16(id);
+    // If there are neither retained files nor devices, leave id 0 so there
+    // will be no "accept" button.
+  } else if (type_ == REMOTE_INSTALL_PROMPT) {
+    if (extension_->is_app())
+      id = IDS_EXTENSION_PROMPT_REMOTE_INSTALL_BUTTON_APP;
+    else
+      id = IDS_EXTENSION_PROMPT_REMOTE_INSTALL_BUTTON_EXTENSION;
+  } else if (type_ == REPAIR_PROMPT) {
+    if (extension_->is_app())
+      id = IDS_EXTENSION_PROMPT_REPAIR_BUTTON_APP;
+    else
+      id = IDS_EXTENSION_PROMPT_REPAIR_BUTTON_EXTENSION;
   }
-  return l10n_util::GetStringUTF16(kAcceptButtonIds[type_]);
-}
-
-bool ExtensionInstallPrompt::Prompt::HasAbortButtonLabel() const {
-  return kAbortButtonIds[type_] > 0;
+  return id ? l10n_util::GetStringUTF16(id) : base::string16();
 }
 
 base::string16 ExtensionInstallPrompt::Prompt::GetAbortButtonLabel() const {
-  CHECK(HasAbortButtonLabel());
   return l10n_util::GetStringUTF16(kAbortButtonIds[type_]);
 }
 

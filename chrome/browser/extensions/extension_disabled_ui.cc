@@ -330,7 +330,9 @@ base::string16 ExtensionDisabledGlobalError::GetBubbleViewAcceptButtonLabel() {
   }
   if (is_remote_install_) {
     return l10n_util::GetStringUTF16(
-        IDS_EXTENSION_PROMPT_REMOTE_INSTALL_BUTTON);
+        extension_->is_app()
+            ? IDS_EXTENSION_PROMPT_REMOTE_INSTALL_BUTTON_APP
+            : IDS_EXTENSION_PROMPT_REMOTE_INSTALL_BUTTON_EXTENSION);
   }
   return l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_RE_ENABLE_BUTTON);
 }

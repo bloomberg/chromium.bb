@@ -278,19 +278,19 @@ bool HasAttribute(id item, CellAttributesMask attributeMask) {
 
 - (void)awakeFromNib {
   // Set control labels.
-  [titleField_ setStringValue:base::SysUTF16ToNSString(prompt_->GetHeading())];
+  [titleField_ setStringValue:base::SysUTF16ToNSString(
+      prompt_->GetDialogTitle())];
   NSRect okButtonRect;
-  if (prompt_->HasAcceptButtonLabel()) {
-    [okButton_ setTitle:base::SysUTF16ToNSString(
-        prompt_->GetAcceptButtonLabel())];
+  base::string16 acceptButtonLabel = prompt_->GetAcceptButtonLabel();
+  if (!acceptButtonLabel.empty()) {
+    [okButton_ setTitle:base::SysUTF16ToNSString(acceptButtonLabel)];
   } else {
     [okButton_ removeFromSuperview];
     okButtonRect = [okButton_ frame];
     okButton_ = nil;
   }
-  [cancelButton_ setTitle:prompt_->HasAbortButtonLabel() ?
-      base::SysUTF16ToNSString(prompt_->GetAbortButtonLabel()) :
-      l10n_util::GetNSString(IDS_CANCEL)];
+  [cancelButton_ setTitle:base::SysUTF16ToNSString(
+      prompt_->GetAbortButtonLabel())];
   if ([self hasWebstoreData]) {
     prompt_->AppendRatingStars(AppendRatingStarsShim, self);
     [ratingCountField_ setStringValue:base::SysUTF16ToNSString(
@@ -313,6 +313,16 @@ bool HasAttribute(id item, CellAttributesMask attributeMask) {
   CGFloat totalOffset = 0.0;
 
   OffsetControlVerticallyToFitContent(titleField_, &totalOffset);
+
+  if ([self hasWebstoreData]) {
+    OffsetControlVerticallyToFitContent(ratingCountField_, &totalOffset);
+    OffsetViewVerticallyToFitContent(ratingStars_, &totalOffset);
+    OffsetControlVerticallyToFitContent(userCountField_, &totalOffset);
+    OffsetControlVerticallyToFitContent(storeLinkButton_, &totalOffset);
+    NSPoint separatorOrigin = [warningsSeparator_ frame].origin;
+    separatorOrigin.y -= totalOffset;
+    [warningsSeparator_ setFrameOrigin:separatorOrigin];
+  }
 
   // Resize |okButton_| and |cancelButton_| to fit the button labels, but keep
   // them right-aligned.
