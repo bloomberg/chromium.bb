@@ -396,6 +396,7 @@ public class ContextualSearchManager extends ContextualSearchObservable
 
         mIsShowingPromo = false;
         mSearchPanelDelegate.setIsPromoActive(false);
+        notifyHideContextualSearch();
     }
 
     /**
@@ -1347,11 +1348,6 @@ public class ContextualSearchManager extends ContextualSearchObservable
         if (mSearchPanelDelegate.isShowing()) {
             getContextualSearchControl().setCentralText(selection);
         }
-    }
-
-    @Override
-    public void onClearSelection() {
-        notifyHideContextualSearch();
     }
 
     // --------------------------------------------------------------------------------------------

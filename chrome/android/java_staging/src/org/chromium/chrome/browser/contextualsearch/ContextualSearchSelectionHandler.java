@@ -43,9 +43,4 @@ interface ContextualSearchSelectionHandler {
      * Handle a dismissal of the selection on the base page.
      */
     public void handleSelectionDismissal();
-
-    /**
-     * Called when the selection is cleared.
-     */
-    public void onClearSelection();
 }
