@@ -69,9 +69,9 @@ const NSInteger kMiddleButtonNumber = 2;
   return [array_ objectAtIndex:rowIndex];
 }
 
-- (void)tableView:(NSTableView*)aTableView
-    setObjectValue:(id)anObject
-    forTableColumn:(NSTableColumn*)aTableColumn
+- (void)tableView:(NSTableView*)tableView
+    setObjectValue:(id)object
+    forTableColumn:(NSTableColumn*)tableColumn
                row:(NSInteger)rowIndex {
   NOTREACHED();
 }
