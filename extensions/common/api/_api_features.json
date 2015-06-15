@@ -152,6 +152,7 @@
         "chrome://extensions-frame/*",
         "chrome://extensions/*",
         "chrome://chrome-signin/*",
+        "chrome://media-router/*",
         "chrome://oobe/*"
       ]
     },
@@ -404,7 +405,11 @@
     "channel": "stable",
     "internal": true,
     "contexts": ["webui"],
-    "matches": ["chrome://chrome-signin/*", "chrome://oobe/*"]
+    "matches": [
+      "chrome://chrome-signin/*",
+      "chrome://media-router/*",
+      "chrome://oobe/*"
+    ]
   }],
   "webViewInternal": [{
     "internal": true,
@@ -414,7 +419,11 @@
     "internal": true,
     "channel": "dev",
     "contexts": ["webui"],
-    "matches": ["chrome://chrome-signin/*", "chrome://oobe/*"]
+    "matches": [
+      "chrome://chrome-signin/*",
+      "chrome://media-router/*",
+      "chrome://oobe/*"
+    ]
   }],
   "webViewRequest": [{
     "dependencies": ["permission:webview"],
@@ -422,6 +431,10 @@
   }, {
     "channel": "stable",
     "contexts": ["webui"],
-    "matches": ["chrome://chrome-signin/*", "chrome://oobe/*"]
+    "matches": [
+      "chrome://chrome-signin/*",
+      "chrome://media-router/*",
+      "chrome://oobe/*"
+    ]
   }]
 }
