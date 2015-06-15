@@ -1571,6 +1571,9 @@ WebString WebLocalFrameImpl::layoutTreeAsText(LayoutAsTextControls toShow) const
 {
     LayoutAsTextBehavior behavior = LayoutAsTextShowAllLayers;
 
+    if (toShow & LayoutAsTextWithLineTrees)
+        behavior |= LayoutAsTextShowLineTrees;
+
     if (toShow & LayoutAsTextDebug)
         behavior |= LayoutAsTextShowCompositedLayers | LayoutAsTextShowAddresses | LayoutAsTextShowIDAndClass | LayoutAsTextShowLayerNesting;
 

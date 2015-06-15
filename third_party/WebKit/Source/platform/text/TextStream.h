@@ -39,6 +39,10 @@ class IntRect;
 class FloatPoint;
 class FloatRect;
 class FloatSize;
+class LayoutUnit;
+class LayoutPoint;
+class LayoutRect;
+class LayoutSize;
 
 class PLATFORM_EXPORT TextStream {
 public:
@@ -72,6 +76,10 @@ PLATFORM_EXPORT TextStream& operator<<(TextStream&, const IntRect&);
 PLATFORM_EXPORT TextStream& operator<<(TextStream&, const FloatPoint&);
 PLATFORM_EXPORT TextStream& operator<<(TextStream&, const FloatSize&);
 PLATFORM_EXPORT TextStream& operator<<(TextStream&, const FloatRect&);
+PLATFORM_EXPORT TextStream& operator<<(TextStream&, const LayoutUnit&);
+PLATFORM_EXPORT TextStream& operator<<(TextStream&, const LayoutPoint&);
+PLATFORM_EXPORT TextStream& operator<<(TextStream&, const LayoutRect&);
+PLATFORM_EXPORT TextStream& operator<<(TextStream&, const LayoutSize&);
 
 PLATFORM_EXPORT void writeIndent(TextStream&, int indent);
 

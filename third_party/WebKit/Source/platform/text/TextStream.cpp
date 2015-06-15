@@ -26,11 +26,15 @@
 #include "config.h"
 #include "platform/text/TextStream.h"
 
+#include "platform/LayoutUnit.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/FloatSize.h"
 #include "platform/geometry/IntPoint.h"
 #include "platform/geometry/IntRect.h"
+#include "platform/geometry/LayoutPoint.h"
+#include "platform/geometry/LayoutRect.h"
+#include "platform/geometry/LayoutSize.h"
 #include "wtf/MathExtras.h"
 #include "wtf/StringExtras.h"
 #include "wtf/text/WTFString.h"
@@ -169,6 +173,27 @@ TextStream& operator<<(TextStream& ts, const FloatRect& r)
     ts << "x" << TextStream::FormatNumberRespectingIntegers(r.height());
     return ts;
 }
+
+TextStream& operator<<(TextStream& ts, const LayoutUnit& unit)
+{
+    return ts << unit.toDouble();
+}
+
+TextStream& operator<<(TextStream& ts, const LayoutPoint& point)
+{
+    return ts << FloatPoint(point);
+}
+
+TextStream& operator<<(TextStream& ts, const LayoutRect& rect)
+{
+    return ts << FloatRect(rect);
+}
+
+TextStream& operator<<(TextStream& ts, const LayoutSize& size)
+{
+    return ts << FloatSize(size);
+}
+
 
 void writeIndent(TextStream& ts, int indent)
 {

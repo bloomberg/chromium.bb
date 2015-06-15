@@ -101,7 +101,8 @@ public:
     enum LayoutAsTextControl {
         LayoutAsTextNormal = 0,
         LayoutAsTextDebug = 1 << 0,
-        LayoutAsTextPrinting = 1 << 1
+        LayoutAsTextPrinting = 1 << 1,
+        LayoutAsTextWithLineTrees = 1 << 2
     };
     typedef unsigned LayoutAsTextControls;
 

@@ -33,11 +33,12 @@
 namespace blink {
 
 class Color;
+class DeprecatedPaintLayer;
 class Element;
 class LayoutRect;
 class LocalFrame;
 class Node;
-class DeprecatedPaintLayer;
+class LayoutBlockFlow;
 class LayoutObject;
 class TextStream;
 
@@ -50,7 +51,8 @@ enum LayoutAsTextBehaviorFlags {
     LayoutAsTextShowIDAndClass = 1 << 4, // Show id and class attributes
     LayoutAsTextPrintingMode = 1 << 5, // Dump the tree in printing mode.
     LayoutAsTextDontUpdateLayout = 1 << 6, // Don't update layout, to make it safe to call showLayerTree() from the debugger inside layout or painting code.
-    LayoutAsTextShowLayoutState = 1 << 7 // Print the various 'needs layout' bits on layoutObjects.
+    LayoutAsTextShowLayoutState = 1 << 7, // Print the various 'needs layout' bits on layoutObjects.
+    LayoutAsTextShowLineTrees = 1 << 8 // Dump the line trees for each LayoutBlockFlow.
 };
 typedef unsigned LayoutAsTextBehavior;
 
@@ -66,6 +68,7 @@ class LayoutTreeAsText {
 public:
 static void writeLayoutObject(TextStream&, const LayoutObject&, LayoutAsTextBehavior);
 static void writeLayers(TextStream&, const DeprecatedPaintLayer* rootLayer, DeprecatedPaintLayer*, const LayoutRect& paintDirtyRect, int indent = 0, LayoutAsTextBehavior = LayoutAsTextBehaviorNormal);
+static void writeLineBoxTree(TextStream&, const LayoutBlockFlow&, int indent = 0);
 };
 
 // Helper function shared with SVGLayoutTreeAsText
