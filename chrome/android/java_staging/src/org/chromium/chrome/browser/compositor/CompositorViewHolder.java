@@ -813,7 +813,16 @@ public class CompositorViewHolder extends FrameLayout
 
                 FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(
                         LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+                if (mView.getLayoutParams() instanceof MarginLayoutParams) {
+                    MarginLayoutParams existingLayoutParams =
+                            (MarginLayoutParams) mView.getLayoutParams();
+                    layoutParams.leftMargin = existingLayoutParams.leftMargin;
+                    layoutParams.rightMargin = existingLayoutParams.rightMargin;
+                    layoutParams.topMargin = existingLayoutParams.topMargin;
+                    layoutParams.bottomMargin = existingLayoutParams.bottomMargin;
+                }
                 addView(mView, layoutParams);
+
                 setFocusable(false);
                 setFocusableInTouchMode(false);
 

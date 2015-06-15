@@ -164,6 +164,7 @@ public abstract class LayoutManager implements LayoutUpdateHost, LayoutProvider,
         View view = getActiveLayout().getViewForInteraction();
         if (view == null) return false;
 
+        e.offsetLocation(-view.getLeft(), -view.getTop());
         return view.dispatchTouchEvent(e);
     }
 

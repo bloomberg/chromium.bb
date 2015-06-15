@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.enhancedbookmarks;
 import android.app.Activity;
 import android.content.res.Resources;
 import android.view.View;
+import android.view.ViewGroup.MarginLayoutParams;
 
 import com.google.android.apps.chrome.R;
 
@@ -47,8 +48,14 @@ public class EnhancedBookmarkPage implements NativePage, EnhancedBookmarkStateCh
 
         mManager = new EnhancedBookmarkManager(mActivity);
         Resources res = mActivity.getResources();
-        mManager.getView().setPadding(0, res.getDimensionPixelSize(R.dimen.tab_strip_height)
-                + res.getDimensionPixelSize(R.dimen.toolbar_height_no_shadow), 0, 0);
+
+        MarginLayoutParams layoutParams = new MarginLayoutParams(
+                MarginLayoutParams.MATCH_PARENT, MarginLayoutParams.MATCH_PARENT);
+        layoutParams.setMargins(0,
+                res.getDimensionPixelSize(R.dimen.tab_strip_height)
+                + res.getDimensionPixelSize(R.dimen.toolbar_height_no_shadow),
+                0, 0);
+        mManager.getView().setLayoutParams(layoutParams);
         mManager.setUrlChangeListener(this);
     }
 
