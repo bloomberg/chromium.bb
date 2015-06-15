@@ -1310,7 +1310,7 @@ TEST_P(QuicConnectionTest, LeastUnackedLower) {
 TEST_P(QuicConnectionTest, TooManySentPackets) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
 
-  for (int i = 0; i < 1100; ++i) {
+  for (int i = 0; i < 3100; ++i) {
     SendStreamDataToPeer(1, "foo", 3 * i, !kFin, nullptr);
   }
 
@@ -1322,8 +1322,8 @@ TEST_P(QuicConnectionTest, TooManySentPackets) {
   EXPECT_CALL(visitor_, OnCanWrite()).Times(0);
 
   // Nack every packet except the last one, leaving a huge gap.
-  QuicAckFrame frame1 = InitAckFrame(1100);
-  for (QuicPacketSequenceNumber i = 1; i < 1100; ++i) {
+  QuicAckFrame frame1 = InitAckFrame(3100);
+  for (QuicPacketSequenceNumber i = 1; i < 3100; ++i) {
     NackPacket(i, &frame1);
   }
   ProcessAckPacket(&frame1);
@@ -1334,8 +1334,8 @@ TEST_P(QuicConnectionTest, TooManyReceivedPackets) {
   EXPECT_CALL(visitor_, OnConnectionClosed(
                             QUIC_TOO_MANY_OUTSTANDING_RECEIVED_PACKETS, false));
 
-  // Miss every other packet for 1000 packets.
-  for (QuicPacketSequenceNumber i = 1; i < 1000; ++i) {
+  // Miss every other packet for 3000 packets.
+  for (QuicPacketSequenceNumber i = 1; i < 3000; ++i) {
     ProcessPacket(i * 2);
     if (!connection_.connected()) {
       break;
