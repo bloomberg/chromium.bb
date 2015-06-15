@@ -283,6 +283,7 @@ void MemoryDumpManager::CreateProcessDump(const MemoryDumpRequestArgs& args,
       new ProcessMemoryDumpHolder(args, session_state_, callback));
   ProcessMemoryDump* pmd = &pmd_holder->process_memory_dump;
   bool did_any_provider_dump = false;
+  bool did_post_any_async_task = false;
 
   // Iterate over the active dump providers and invoke OnMemoryDump(pmd).
   // The MDM guarantees linearity (at most one MDP is active within one
@@ -314,8 +315,10 @@ void MemoryDumpManager::CreateProcessDump(const MemoryDumpRequestArgs& args,
             FROM_HERE, Bind(&MemoryDumpManager::ContinueAsyncProcessDump,
                             Unretained(this), Unretained(mdp), pmd_holder));
         // The thread underlying the TaskRunner might have gone away.
-        if (did_post_async_task)
+        if (did_post_async_task) {
           ++pmd_holder->num_pending_async_requests;
+          did_post_any_async_task = true;
+        }
       } else {
         // Invoke the dump provider synchronously.
         did_any_provider_dump |= InvokeDumpProviderLocked(mdp, pmd);
@@ -326,7 +329,7 @@ void MemoryDumpManager::CreateProcessDump(const MemoryDumpRequestArgs& args,
   // If at least one synchronous provider did dump and there are no pending
   // asynchronous requests, add the dump to the trace and invoke the callback
   // straight away (FinalizeDumpAndAddToTrace() takes care of the callback).
-  if (did_any_provider_dump && pmd_holder->num_pending_async_requests == 0)
+  if (did_any_provider_dump && !did_post_any_async_task)
     FinalizeDumpAndAddToTrace(pmd_holder);
 }
 
