@@ -10,6 +10,7 @@ and later.
 """
 
 import TestGyp
+import os
 
 
 test = TestGyp.TestGyp(formats=['msvs'])
@@ -53,5 +54,18 @@ test.must_contain('nested_folders.vcxproj.filters', '''\
   </ItemGroup>
 '''.replace('\n', '\r\n'))
 
+subdir_gyp = os.path.join('subdir', 'subdir.gyp')
+test.run_gyp(subdir_gyp, '-G', 'standalone', '-G', 'msvs_version=2010')
+
+test.must_contain(os.path.join('subdir', 'normalize.vcxproj.filters'), '''\
+  <ItemGroup>
+    <ClCompile Include="folder1\\a.c">
+      <Filter>folder1</Filter>
+    </ClCompile>
+    <ClCompile Include="folder2\\b.c">
+      <Filter>folder2</Filter>
+    </ClCompile>
+  </ItemGroup>
+'''.replace('\n', '\r\n'))
 
 test.pass_test()
