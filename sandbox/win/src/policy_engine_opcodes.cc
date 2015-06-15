@@ -9,15 +9,15 @@
 #include "sandbox/win/src/sandbox_types.h"
 
 namespace {
-const unsigned short kMaxUniStrSize = 0xfffc;
+const unsigned short kMaxUniStrSize = 0xfffc / sizeof(wchar_t);
 
 bool InitStringUnicode(const wchar_t* source, size_t length,
                        UNICODE_STRING* ustring) {
+  if (length > kMaxUniStrSize) {
+    return false;
+  }
   ustring->Buffer = const_cast<wchar_t*>(source);
   ustring->Length = static_cast<USHORT>(length) * sizeof(wchar_t);
-  if (length > kMaxUniStrSize) {
-      return false;
-  }
   ustring->MaximumLength = (NULL != source) ?
                                 ustring->Length + sizeof(wchar_t) : 0;
   return true;
@@ -314,9 +314,10 @@ EvalResult OpcodeEval<OP_WSTRING_MATCH>(PolicyOpcode* opcode,
     }
 
     UNICODE_STRING match_ustr;
-    InitStringUnicode(match_str, match_len, &match_ustr);
     UNICODE_STRING source_ustr;
-    InitStringUnicode(source_str, match_len, &source_ustr);
+    if (!InitStringUnicode(match_str, match_len, &match_ustr) ||
+        !InitStringUnicode(source_str, match_len, &source_ustr))
+      return EVAL_ERROR;
 
     if (0 == g_nt.RtlCompareUnicodeString(&match_ustr, &source_ustr,
                                           case_sensitive)) {
@@ -328,9 +329,10 @@ EvalResult OpcodeEval<OP_WSTRING_MATCH>(PolicyOpcode* opcode,
     }
   } else if (start_position < 0) {
     UNICODE_STRING match_ustr;
-    InitStringUnicode(match_str, match_len, &match_ustr);
     UNICODE_STRING source_ustr;
-    InitStringUnicode(source_str, match_len, &source_ustr);
+    if (!InitStringUnicode(match_str, match_len, &match_ustr) ||
+        !InitStringUnicode(source_str, match_len, &source_ustr))
+      return EVAL_ERROR;
 
     do {
       if (0 == g_nt.RtlCompareUnicodeString(&match_ustr, &source_ustr,
