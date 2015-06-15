@@ -1137,6 +1137,19 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(0U, entry->root_node()->children.size());
   EXPECT_FALSE(controller.HasCommittedRealLoad(root->child_at(0)));
 
+  // 1a. A nested iframe with no URL should also create no subframe entries.
+  {
+    LoadCommittedCapturer capturer(shell()->web_contents());
+    std::string script = "var iframe = document.createElement('iframe');"
+                         "document.body.appendChild(iframe);";
+    EXPECT_TRUE(content::ExecuteScript(root->child_at(0)->current_frame_host(),
+                                       script));
+    capturer.Wait();
+    EXPECT_EQ(ui::PAGE_TRANSITION_AUTO_SUBFRAME, capturer.transition_type());
+  }
+  EXPECT_EQ(0U, entry->root_node()->children.size());
+  EXPECT_FALSE(controller.HasCommittedRealLoad(root->child_at(0)->child_at(0)));
+
   // 2. Create another iframe with an about:blank URL.
   {
     LoadCommittedCapturer capturer(shell()->web_contents());

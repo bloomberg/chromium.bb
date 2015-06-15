@@ -515,8 +515,11 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(FrameTreeNode* frame_tree_node,
       FindFrameEntry(frame_tree_node->parent());
   if (!parent_node) {
     // The renderer should not send a commit for a subframe before its parent.
-    // TODO(creis): Kill the renderer if we get here.
-    NOTREACHED() << "Shouldn't see a commit for a subframe before parent.";
+    // However, we may see commits of subframes when their parent or ancestor is
+    // still the initial about:blank page, and we don't currently keep a
+    // FrameNavigationEntry for that.  We ignore such commits, similar to how we
+    // handle them at the top level.
+    // TODO(creis): Consider creating FNEs for initial about:blank commits.
     return;
   }
 
