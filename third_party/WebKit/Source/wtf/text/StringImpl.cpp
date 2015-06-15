@@ -502,38 +502,35 @@ PassRefPtr<StringImpl> StringImpl::lower()
     // no-op code path up through the first 'return' statement.
 
     // First scan the string for uppercase and non-ASCII characters:
-    bool noUpper = true;
-    UChar ored = 0;
     if (is8Bit()) {
-        const LChar* end = characters8() + m_length;
-        for (const LChar* chp = characters8(); chp != end; ++chp) {
-            if (UNLIKELY(isASCIIUpper(*chp)))
-                noUpper = false;
-            ored |= *chp;
+        unsigned firstIndexToBeLowered = m_length;
+        for (unsigned i = 0; i < m_length; ++i) {
+            LChar ch = characters8()[i];
+            if (UNLIKELY(isASCIIUpper(ch) || ch & ~0x7F)) {
+                firstIndexToBeLowered = i;
+                break;
+            }
         }
+
         // Nothing to do if the string is all ASCII with no uppercase.
-        if (noUpper && !(ored & ~0x7F))
+        if (firstIndexToBeLowered == m_length)
             return this;
 
-        RELEASE_ASSERT(m_length <= static_cast<unsigned>(numeric_limits<int32_t>::max()));
-        int32_t length = m_length;
-
         LChar* data8;
-        RefPtr<StringImpl> newImpl = createUninitialized(length, data8);
+        RefPtr<StringImpl> newImpl = createUninitialized(m_length, data8);
+        memcpy(data8, characters8(), firstIndexToBeLowered);
 
-        if (!(ored & ~0x7F)) {
-            for (int32_t i = 0; i < length; ++i)
-                data8[i] = toASCIILower(characters8()[i]);
-
-            return newImpl.release();
+        for (unsigned i = firstIndexToBeLowered; i < m_length; ++i) {
+            LChar ch = characters8()[i];
+            data8[i] = UNLIKELY(ch & ~0x7F) ? static_cast<LChar>(Unicode::toLower(ch))
+                                            : toASCIILower(ch);
         }
-
-        // Do a slower implementation for cases that include non-ASCII Latin-1 characters.
-        for (int32_t i = 0; i < length; ++i)
-            data8[i] = static_cast<LChar>(Unicode::toLower(characters8()[i]));
 
         return newImpl.release();
     }
+
+    bool noUpper = true;
+    UChar ored = 0;
 
     const UChar* end = characters16() + m_length;
     for (const UChar* chp = characters16(); chp != end; ++chp) {

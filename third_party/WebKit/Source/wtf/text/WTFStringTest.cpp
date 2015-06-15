@@ -339,4 +339,12 @@ TEST(WTF, StartsWithIgnoringASCIICase)
     EXPECT_FALSE(startsWithIgnoringASCIICase(nonASCII, allASCIIDifferent));
 }
 
+TEST(StringTest, Lower)
+{
+    EXPECT_STREQ("link", String("LINK").lower().ascii().data());
+    EXPECT_STREQ("link", String("lInk").lower().ascii().data());
+    EXPECT_STREQ("lin\xE1k", String("lIn\xC1k").lower().latin1().data());
+    EXPECT_STREQ("link", String::fromUTF8("LIN\xE2\x84\xAA").lower().utf8().data());
+}
+
 } // namespace WTF
