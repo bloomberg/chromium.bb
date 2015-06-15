@@ -219,6 +219,7 @@
     'chrome_common_full_safe_browsing_sources': [
       'common/safe_browsing/binary_feature_extractor.cc',
       'common/safe_browsing/binary_feature_extractor.h',
+      'common/safe_browsing/binary_feature_extractor_mac.cc',
       'common/safe_browsing/binary_feature_extractor_posix.cc',
       'common/safe_browsing/binary_feature_extractor_win.cc',
       'common/safe_browsing/download_protection_util.cc',

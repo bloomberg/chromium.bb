@@ -275,9 +275,28 @@ message ClientDownloadRequest {
     repeated DebugData debug_data = 7;
   }
 
+  message MachOHeaders {
+    // The mach_header or mach_header_64 struct.
+    required bytes mach_header = 1;
+
+    message LoadCommand {
+      // |command_id| is the first uint32 of |command| as well, but is
+      // extracted for easier processing.
+      required uint32 command_id = 1;
+      // The entire data stream of the load command.
+      required bytes command = 2;
+    }
+
+    // All the load commands of the Mach-O file.
+    repeated LoadCommand load_commands = 2;
+  }
+
   message ImageHeaders {
     // Windows Portable Executable image headers.
     optional PEImageHeaders pe_headers = 1;
+
+    // OS X Mach-O image headers.
+    optional MachOHeaders mach_o_headers = 2;
   };
 
   // Fields 12-17 are reserved for server-side use and are never sent by the

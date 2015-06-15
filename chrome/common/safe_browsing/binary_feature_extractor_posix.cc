@@ -9,28 +9,18 @@
 
 namespace safe_browsing {
 
-BinaryFeatureExtractor::BinaryFeatureExtractor() {}
-
-BinaryFeatureExtractor::~BinaryFeatureExtractor() {}
-
 void BinaryFeatureExtractor::CheckSignature(
     const base::FilePath& file_path,
     ClientDownloadRequest_SignatureInfo* signature_info) {}
 
-bool BinaryFeatureExtractor::ExtractImageFeatures(
-    const base::FilePath& file_path,
+#if !defined(OS_MACOSX)
+bool BinaryFeatureExtractor::ExtractImageFeaturesFromData(
+    const uint8_t* data, size_t data_size,
     ExtractHeadersOption options,
     ClientDownloadRequest_ImageHeaders* image_headers,
     google::protobuf::RepeatedPtrField<std::string>* signed_data) {
   return false;
 }
-
-bool BinaryFeatureExtractor::ExtractImageFeaturesFromFile(
-    base::File file,
-    ExtractHeadersOption options,
-    ClientDownloadRequest_ImageHeaders* image_headers,
-    google::protobuf::RepeatedPtrField<std::string>* signed_data) {
-  return false;
-}
+#endif
 
 }  // namespace safe_browsing

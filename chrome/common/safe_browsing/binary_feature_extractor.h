@@ -60,6 +60,14 @@ class BinaryFeatureExtractor
       ClientDownloadRequest_ImageHeaders* image_headers,
       google::protobuf::RepeatedPtrField<std::string>* signed_data);
 
+  // As above, but works on a byte array containing image data. This does not
+  // take ownership of the data.
+  virtual bool ExtractImageFeaturesFromData(
+      const uint8_t* data, size_t data_size,
+      ExtractHeadersOption options,
+      ClientDownloadRequest_ImageHeaders* image_headers,
+      google::protobuf::RepeatedPtrField<std::string>* signed_data);
+
   // Populates |digests.sha256| with the SHA256 digest of |file_path|.
   virtual void ExtractDigest(const base::FilePath& file_path,
                              ClientDownloadRequest_Digests* digests);

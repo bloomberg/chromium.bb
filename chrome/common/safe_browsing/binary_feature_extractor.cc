@@ -6,12 +6,41 @@
 
 #include "base/files/file.h"
 #include "base/files/file_path.h"
+#include "base/files/memory_mapped_file.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
 
 namespace safe_browsing {
+
+BinaryFeatureExtractor::BinaryFeatureExtractor() {}
+
+BinaryFeatureExtractor::~BinaryFeatureExtractor() {}
+
+bool BinaryFeatureExtractor::ExtractImageFeatures(
+    const base::FilePath& file_path,
+    ExtractHeadersOption options,
+    ClientDownloadRequest_ImageHeaders* image_headers,
+    google::protobuf::RepeatedPtrField<std::string>* signed_data) {
+  base::MemoryMappedFile mapped_file;
+  if (!mapped_file.Initialize(file_path))
+    return false;
+  return ExtractImageFeaturesFromData(mapped_file.data(), mapped_file.length(),
+      options, image_headers, signed_data);
+}
+
+bool BinaryFeatureExtractor::ExtractImageFeaturesFromFile(
+    base::File file,
+    ExtractHeadersOption options,
+    ClientDownloadRequest_ImageHeaders* image_headers,
+    google::protobuf::RepeatedPtrField<std::string>* signed_data) {
+  base::MemoryMappedFile mapped_file;
+  if (!mapped_file.Initialize(file.Pass()))
+    return false;
+  return ExtractImageFeaturesFromData(mapped_file.data(), mapped_file.length(),
+      options, image_headers, signed_data);
+}
 
 void BinaryFeatureExtractor::ExtractDigest(
     const base::FilePath& file_path,
