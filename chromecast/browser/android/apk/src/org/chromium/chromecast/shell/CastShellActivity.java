@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.AudioManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
@@ -171,6 +172,14 @@ public class CastShellActivity extends Activity {
             // As soon as the cast app is no longer in the foreground, we ought to immediately tear
             // everything down.
             finishGracefully();
+
+            // On pre-M devices, the device should be "unmuted" at the end of a Cast application
+            // session, signaled by the activity exiting. See b/19964892.
+            if (Build.VERSION.SDK_INT < 23) {
+                // Note: this is a no-op on fixed-volume devices.
+                CastAudioManager.getAudioManager(this)
+                        .setStreamMute(AudioManager.STREAM_MUSIC, false);
+            }
         }
 
         super.onStop();
