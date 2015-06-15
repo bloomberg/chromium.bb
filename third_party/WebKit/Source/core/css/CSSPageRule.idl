@@ -21,7 +21,10 @@
 // http://dev.w3.org/csswg/cssom/#the-csspagerule-interface
 
 // TODO(philipj): CSSPageRule should inherit from CSSGroupingRule.
-// crbug.com/496381
+// crbug.com/496381. To internally implement this as grouping rule,
+// margin at-rules should be implemented crbug.com/320370, since the
+// spec http://dev.w3.org/csswg/css-page/#at-page-rule allows only
+// margin at-rules inside @page.
 interface CSSPageRule : CSSRule {
     attribute DOMString selectorText;
     // TODO(philipj): style should have [PutForwards=cssText].

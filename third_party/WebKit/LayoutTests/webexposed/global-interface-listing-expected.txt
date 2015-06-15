@@ -354,6 +354,11 @@ interface CSS
 interface CSSFontFaceRule
     getter style
     method constructor
+interface CSSGroupingRule
+    getter cssRules
+    method constructor
+    method deleteRule
+    method insertRule
 interface CSSImportRule
     getter href
     getter media
@@ -373,11 +378,8 @@ interface CSSKeyframesRule
     method findRule
     setter name
 interface CSSMediaRule
-    getter cssRules
     getter media
     method constructor
-    method deleteRule
-    method insertRule
 interface CSSPageRule
     getter selectorText
     getter style

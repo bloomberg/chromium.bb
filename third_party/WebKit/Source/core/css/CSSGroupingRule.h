@@ -33,6 +33,7 @@ class ExceptionState;
 class CSSRuleList;
 
 class CSSGroupingRule : public CSSRule {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~CSSGroupingRule();
 

@@ -15,6 +15,7 @@
             'clipboard/DataTransferItemList.idl',
             'css/CSS.idl',
             'css/CSSFontFaceRule.idl',
+            'css/CSSGroupingRule.idl',
             'css/CSSImportRule.idl',
             'css/CSSKeyframeRule.idl',
             'css/CSSKeyframesRule.idl',
