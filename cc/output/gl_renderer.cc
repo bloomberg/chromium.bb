@@ -713,14 +713,9 @@ static skia::RefPtr<SkImage> ApplyImageFilter(
   canvas->drawSprite(source, 0, 0, &paint);
 
   skia::RefPtr<SkImage> image = skia::AdoptRef(surface->newImageSnapshot());
-  if (!image || !image->getTexture()) {
+  if (!image || !image->isTextureBacked()) {
     return skia::RefPtr<SkImage>();
   }
-
-  // Flush the GrContext to ensure all buffered GL calls are drawn to the
-  // backing store before we access and return it, and have cc begin using the
-  // GL context again.
-  canvas->flush();
 
   return image;
 }
@@ -958,6 +953,7 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
 
   scoped_ptr<ScopedResource> background_texture;
   skia::RefPtr<SkImage> background_image;
+  GLuint background_image_id = 0;
   gfx::Rect background_rect;
   if (use_shaders_for_blending) {
     // Compute a bounding box around the pixels that will be visible through
@@ -982,14 +978,17 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
         // pixels' coordinate space.
         background_image =
             ApplyBackgroundFilters(frame, quad, background_texture.get());
+        if (background_image)
+          background_image_id = background_image->getTextureHandle(true);
+        DCHECK(background_image_id);
       }
     }
 
     if (!background_texture) {
       // Something went wrong with reading the backdrop.
-      DCHECK(!background_image);
+      DCHECK(!background_image_id);
       use_shaders_for_blending = false;
-    } else if (background_image) {
+    } else if (background_image_id) {
       // Reset original background texture if there is not any mask
       if (!quad->mask_resource_id())
         background_texture.reset();
@@ -1003,7 +1002,7 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
   // Need original background texture for mask?
   bool mask_for_background =
       background_texture &&      // Have original background texture
-      background_image &&        // Have filtered background texture
+      background_image_id &&     // Have filtered background texture
       quad->mask_resource_id();  // Have mask texture
   SetBlendEnabled(
       !use_shaders_for_blending &&
@@ -1012,6 +1011,7 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
   // TODO(senorblanco): Cache this value so that we don't have to do it for both
   // the surface and its replica.  Apply filters to the contents texture.
   skia::RefPtr<SkImage> filter_image;
+  GLuint filter_image_id = 0;
   SkScalar color_matrix[20];
   bool use_color_matrix = false;
   if (!quad->filters.IsEmpty()) {
@@ -1034,6 +1034,10 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
         filter_image = ApplyImageFilter(
             ScopedUseGrContext::Create(this, frame), resource_provider_,
             quad->rect, quad->filters_scale, filter.get(), contents_texture);
+        if (filter_image) {
+          filter_image_id = filter_image->getTextureHandle(true);
+          DCHECK(filter_image_id);
+        }
       }
     }
   }
@@ -1049,10 +1053,9 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
   }
 
   scoped_ptr<ResourceProvider::ScopedSamplerGL> contents_resource_lock;
-  if (filter_image) {
-    GrTexture* texture = filter_image->getTexture();
+  if (filter_image_id) {
     DCHECK_EQ(GL_TEXTURE0, GetActiveTextureUnit(gl_));
-    gl_->BindTexture(GL_TEXTURE_2D, texture->getTextureHandle());
+    gl_->BindTexture(GL_TEXTURE_2D, filter_image_id);
   } else {
     contents_resource_lock =
         make_scoped_ptr(new ResourceProvider::ScopedSamplerGL(
@@ -1076,7 +1079,8 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
 
   ShaderLocations locations;
 
-  DCHECK_EQ(background_texture || background_image, use_shaders_for_blending);
+  DCHECK_EQ(background_texture || background_image_id,
+            use_shaders_for_blending);
   BlendMode shader_blend_mode = use_shaders_for_blending
                                     ? BlendModeFromSkXfermode(blend_mode)
                                     : BLEND_MODE_NONE;
@@ -1215,7 +1219,7 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
 
   scoped_ptr<ResourceProvider::ScopedSamplerGL> shader_background_sampler_lock;
   if (locations.backdrop != -1) {
-    DCHECK(background_texture || background_image);
+    DCHECK(background_texture || background_image_id);
     DCHECK_NE(locations.backdrop, 0);
     DCHECK_NE(locations.backdrop_rect, 0);
 
@@ -1225,10 +1229,9 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
                    background_rect.y(), background_rect.width(),
                    background_rect.height());
 
-    if (background_image) {
-      GrTexture* texture = background_image->getTexture();
+    if (background_image_id) {
       gl_->ActiveTexture(GL_TEXTURE0 + last_texture_unit);
-      gl_->BindTexture(GL_TEXTURE_2D, texture->getTextureHandle());
+      gl_->BindTexture(GL_TEXTURE_2D, background_image_id);
       gl_->ActiveTexture(GL_TEXTURE0);
       if (mask_for_background)
         gl_->Uniform1i(locations.original_backdrop, ++last_texture_unit);
@@ -1251,7 +1254,7 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
 
   // Flush the compositor context before the filter bitmap goes out of
   // scope, so the draw gets processed before the filter texture gets deleted.
-  if (filter_image)
+  if (filter_image_id)
     gl_->Flush();
 
   if (!use_shaders_for_blending)
