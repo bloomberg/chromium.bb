@@ -153,7 +153,8 @@ bool CanNavigateLocally(blink::WebFrame* frame,
 HTMLDocument::HTMLDocument(mojo::ApplicationImpl* html_document_app,
                            mojo::ApplicationConnection* connection,
                            URLResponsePtr response,
-                           Setup* setup)
+                           Setup* setup,
+                           const DeleteCallback& delete_callback)
     : app_refcount_(
           html_document_app->app_lifetime_helper()->CreateAppRefCount()),
       html_document_app_(html_document_app),
@@ -163,7 +164,8 @@ HTMLDocument::HTMLDocument(mojo::ApplicationImpl* html_document_app,
       root_(nullptr),
       view_manager_client_factory_(html_document_app->shell(), this),
       setup_(setup),
-      frame_tree_manager_binding_(&frame_tree_manager_) {
+      frame_tree_manager_binding_(&frame_tree_manager_),
+      delete_callback_(delete_callback) {
   connection->AddService(
       static_cast<mojo::InterfaceFactory<mandoline::FrameTreeClient>*>(this));
   connection->AddService(
@@ -175,6 +177,8 @@ HTMLDocument::HTMLDocument(mojo::ApplicationImpl* html_document_app,
 }
 
 HTMLDocument::~HTMLDocument() {
+  delete_callback_.Run(this);
+
   STLDeleteElements(&ax_providers_);
   STLDeleteElements(&ax_provider_requests_);
 

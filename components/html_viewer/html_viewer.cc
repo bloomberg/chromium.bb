@@ -4,10 +4,12 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/debug/stack_trace.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/html_viewer/html_document.h"
 #include "components/html_viewer/setup.h"
@@ -59,7 +61,13 @@ class HTMLDocumentApplicationDelegate : public mojo::ApplicationDelegate {
         setup_(setup) {}
 
  private:
-  ~HTMLDocumentApplicationDelegate() override {}
+  ~HTMLDocumentApplicationDelegate() override {
+    // Deleting the documents is going to trigger a callback to
+    // OnHTMLDocumentDeleted() and remove from |documents_|. Copy the set so we
+    // don't have to worry about the set being modified out from under us.
+    std::set<HTMLDocument*> documents(documents_);
+    STLDeleteElements(&documents);
+  }
 
   // Callback from the quit closure. We key off this rather than
   // ApplicationDelegate::Quit() as we don't want to shut down the messageloop
@@ -102,13 +110,21 @@ class HTMLDocumentApplicationDelegate : public mojo::ApplicationDelegate {
     return true;
   }
 
+  void OnHTMLDocumentDeleted(HTMLDocument* document) {
+    DCHECK(documents_.count(document) > 0);
+    documents_.erase(document);
+  }
+
   void OnResponseReceived(URLLoaderPtr loader,
                           mojo::ApplicationConnection* connection,
                           URLResponsePtr response) {
-    // HTMLDocument is destroyed when the hosting view is destroyed.
-    // TODO(sky): when headless, this leaks.
-    // TODO(sky): this needs to delete if serviceprovider goes away too.
-    new HTMLDocument(&app_, connection, response.Pass(), setup_);
+    // HTMLDocument is destroyed when the hosting view is destroyed, or
+    // explicitly from our destructor.
+    HTMLDocument* document = new HTMLDocument(
+        &app_, connection, response.Pass(), setup_,
+        base::Bind(&HTMLDocumentApplicationDelegate::OnHTMLDocumentDeleted,
+                   base::Unretained(this)));
+    documents_.insert(document);
   }
 
   mojo::ApplicationImpl app_;
@@ -119,6 +135,10 @@ class HTMLDocumentApplicationDelegate : public mojo::ApplicationDelegate {
   mojo::URLLoaderFactoryPtr url_loader_factory_;
   URLResponsePtr initial_response_;
   Setup* setup_;
+
+  // As we create HTMLDocuments they are added here. They are removed when the
+  // HTMLDocument is deleted.
+  std::set<HTMLDocument*> documents_;
 
   DISALLOW_COPY_AND_ASSIGN(HTMLDocumentApplicationDelegate);
 };

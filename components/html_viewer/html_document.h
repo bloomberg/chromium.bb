@@ -54,6 +54,8 @@ class HTMLDocument : public blink::WebViewClient,
                      public mojo::InterfaceFactory<mojo::AxProvider>,
                      public mojo::InterfaceFactory<mandoline::FrameTreeClient> {
  public:
+  using DeleteCallback = base::Callback<void(HTMLDocument*)>;
+
   // Load a new HTMLDocument with |response|.
   // |html_document_app| is the application this app was created in, and
   // |connection| the specific connection triggering this new instance.
@@ -61,7 +63,8 @@ class HTMLDocument : public blink::WebViewClient,
   HTMLDocument(mojo::ApplicationImpl* html_document_app,
                mojo::ApplicationConnection* connection,
                mojo::URLResponsePtr response,
-               Setup* setup);
+               Setup* setup,
+               const DeleteCallback& delete_callback);
   ~HTMLDocument() override;
 
  private:
@@ -175,6 +178,8 @@ class HTMLDocument : public blink::WebViewClient,
   mojo::Binding<mandoline::FrameTreeClient> frame_tree_manager_binding_;
 
   scoped_ptr<DevToolsAgentImpl> devtools_agent_;
+
+  DeleteCallback delete_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(HTMLDocument);
 };
