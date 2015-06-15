@@ -47,6 +47,8 @@ class RawData;
 class WebThreadSafeData {
 public:
     WebThreadSafeData() { }
+    BLINK_PLATFORM_EXPORT WebThreadSafeData(const char* data, size_t length);
+
     ~WebThreadSafeData() { reset(); }
 
     BLINK_PLATFORM_EXPORT void assign(const WebThreadSafeData&);
@@ -56,6 +58,9 @@ public:
     BLINK_PLATFORM_EXPORT const char* data() const;
 
     bool isEmpty() const { return !size(); }
+
+    BLINK_PLATFORM_EXPORT WebThreadSafeData(const WebThreadSafeData&);
+    BLINK_PLATFORM_EXPORT WebThreadSafeData& operator=(const WebThreadSafeData&);
 
 #if INSIDE_BLINK
     BLINK_PLATFORM_EXPORT WebThreadSafeData(const WTF::PassRefPtr<RawData>&);

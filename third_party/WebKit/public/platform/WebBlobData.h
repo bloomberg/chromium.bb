@@ -68,6 +68,10 @@ public:
 
     // Retrieves the values of the item at the given index. Returns false if
     // index is out of bounds.
+    // This call is single use only per index. The memory ownership is
+    // transfered to the result in the case of memory items. A second call with
+    // the same index will result in null data.
+    // TODO(dmurph): change the name to 'takeItemAt'
     BLINK_PLATFORM_EXPORT bool itemAt(size_t index, Item& result) const;
 
     BLINK_PLATFORM_EXPORT WebString contentType() const;
