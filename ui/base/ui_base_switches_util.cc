@@ -21,11 +21,6 @@ bool IsLinkDisambiguationPopupEnabled() {
 #endif
 }
 
-bool IsTextInputFocusManagerEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableTextInputFocusManager);
-}
-
 bool IsTouchDragDropEnabled() {
 #if defined(OS_CHROMEOS)
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(

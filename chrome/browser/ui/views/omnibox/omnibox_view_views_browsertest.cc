@@ -20,13 +20,13 @@
 #include "chrome/test/base/interactive_test_utils.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
-#include "ui/base/ime/text_input_focus_manager.h"
 #include "ui/base/test/ui_controls.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/events/event_processor.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/controls/textfield/textfield_test_api.h"
+#include "ui/views/ime/input_method.h"
 
 namespace {
 
@@ -376,18 +376,12 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest,
 }
 
 IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, FocusedTextInputClient) {
-  base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-  cmd_line->AppendSwitch(switches::kEnableTextInputFocusManager);
-
-  // TODO(yukishiino): The following call to FocusLocationBar is not necessary
-  // if the flag is enabled by default.  Remove the call once the transition to
-  // TextInputFocusManager completes.
   chrome::FocusLocationBar(browser());
   OmniboxView* view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxViewForBrowser(browser(), &view));
   OmniboxViewViews* omnibox_view_views = static_cast<OmniboxViewViews*>(view);
-  ui::TextInputFocusManager* text_input_focus_manager =
-      ui::TextInputFocusManager::GetInstance();
+  views::InputMethod* input_method =
+      omnibox_view_views->GetWidget()->GetInputMethod();
   EXPECT_EQ(omnibox_view_views->GetTextInputClient(),
-            text_input_focus_manager->GetFocusedTextInputClient());
+            input_method->GetTextInputClient());
 }

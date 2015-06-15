@@ -15,7 +15,6 @@
 #include "ui/base/hit_test.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/input_method_factory.h"
-#include "ui/base/ui_base_switches_util.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/geometry/dip_util.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
@@ -709,9 +708,6 @@ void BridgedNativeWidget::OnSizeConstraintsChanged() {
 }
 
 InputMethod* BridgedNativeWidget::CreateInputMethod() {
-  if (switches::IsTextInputFocusManagerEnabled())
-    return new NullInputMethod();
-
   return new InputMethodBridge(this, GetHostInputMethod(), true);
 }
 

@@ -22,9 +22,6 @@ const char kDisableDwmComposition[] = "disable-dwm-composition";
 // Disables large icons on the New Tab page.
 const char kDisableIconNtp[] = "disable-icon-ntp";
 
-// Disables an experimental focus manager to track text input clients.
-const char kDisableTextInputFocusManager[] = "disable-text-input-focus-manager";
-
 // Disables touch adjustment.
 const char kDisableTouchAdjustment[] = "disable-touch-adjustment";
 
@@ -43,9 +40,6 @@ const char kEnableIconNtp[] = "enable-icon-ntp";
 // Enables a zoomed popup bubble that allows the user to select a link.
 const char kEnableLinkDisambiguationPopup[] =
     "enable-link-disambiguation-popup";
-
-// Enables an experimental focus manager to track text input clients.
-const char kEnableTextInputFocusManager[] = "enable-text-input-focus-manager";
 
 // Enables touch event based drag and drop.
 const char kEnableTouchDragDrop[] = "enable-touch-drag-drop";

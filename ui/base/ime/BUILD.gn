@@ -89,8 +89,6 @@ component("ime") {
     "remote_input_method_win.h",
     "text_input_client.cc",
     "text_input_client.h",
-    "text_input_focus_manager.cc",
-    "text_input_focus_manager.h",
     "text_input_type.h",
     "ui_base_ime_export.h",
     "win/imm32_manager.cc",

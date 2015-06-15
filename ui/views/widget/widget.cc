@@ -1051,19 +1051,6 @@ void Widget::OnNativeWidgetActivationChanged(bool active) {
   FOR_EACH_OBSERVER(WidgetObserver, observers_,
                     OnWidgetActivationChanged(this, active));
 
-  // During window creation, the widget gets focused without activation, and in
-  // that case, the focus manager cannot set the appropriate text input client
-  // because the widget is not active.  Thus we have to notify the focus manager
-  // not only when the focus changes but also when the widget gets activated.
-  // See crbug.com/377479 for details.
-  views::FocusManager* focus_manager = GetFocusManager();
-  if (focus_manager) {
-    if (active)
-      focus_manager->FocusTextInputClient(focus_manager->GetFocusedView());
-    else
-      focus_manager->BlurTextInputClient(focus_manager->GetFocusedView());
-  }
-
   if (IsVisible() && non_client_view())
     non_client_view()->frame_view()->SchedulePaint();
 }

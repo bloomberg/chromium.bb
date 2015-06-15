@@ -19,8 +19,6 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/input_method_factory.h"
 #include "ui/base/ime/text_input_client.h"
-#include "ui/base/ime/text_input_focus_manager.h"
-#include "ui/base/ui_base_switches_util.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer_type.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -185,8 +183,6 @@ class KeyboardControllerTest : public testing::Test,
     aura_test_helper_->SetUp(context_factory);
     new wm::DefaultActivationClient(aura_test_helper_->root_window());
     ui::SetUpInputMethodFactoryForTesting();
-    if (::switches::IsTextInputFocusManagerEnabled())
-      ui::TextInputFocusManager::GetInstance()->FocusTextInputClient(NULL);
     focus_controller_.reset(new TestFocusController(root_window()));
     proxy_ = new TestKeyboardControllerProxy();
     controller_.reset(new KeyboardController(proxy_));
@@ -197,8 +193,6 @@ class KeyboardControllerTest : public testing::Test,
     controller()->RemoveObserver(this);
     controller_.reset();
     focus_controller_.reset();
-    if (::switches::IsTextInputFocusManagerEnabled())
-      ui::TextInputFocusManager::GetInstance()->FocusTextInputClient(NULL);
     aura_test_helper_->TearDown();
     ui::TerminateContextFactoryForTests();
   }
@@ -235,12 +229,7 @@ class KeyboardControllerTest : public testing::Test,
 
   void SetFocus(ui::TextInputClient* client) {
     ui::InputMethod* input_method = proxy()->GetInputMethod();
-    if (::switches::IsTextInputFocusManagerEnabled()) {
-      ui::TextInputFocusManager::GetInstance()->FocusTextInputClient(client);
-      input_method->OnTextInputTypeChanged(client);
-    } else {
-      input_method->SetFocusedTextInputClient(client);
-    }
+    input_method->SetFocusedTextInputClient(client);
     if (client && client->GetTextInputType() != ui::TEXT_INPUT_TYPE_NONE) {
       input_method->ShowImeIfNeeded();
       if (proxy_->GetKeyboardWindow()->bounds().height() == 0) {

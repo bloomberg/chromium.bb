@@ -16,7 +16,6 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ime/input_method.h"
-#include "ui/base/ui_base_switches_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/display.h"
@@ -629,9 +628,6 @@ bool DesktopNativeWidgetAura::HasCapture() const {
 }
 
 InputMethod* DesktopNativeWidgetAura::CreateInputMethod() {
-  if (switches::IsTextInputFocusManagerEnabled())
-    return new NullInputMethod();
-
   return new InputMethodBridge(this, GetHostInputMethod(), false);
 }
 

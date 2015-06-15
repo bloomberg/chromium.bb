@@ -30,8 +30,6 @@
 #include "ui/base/ime/dummy_text_input_client.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
-#include "ui/base/ime/text_input_focus_manager.h"
-#include "ui/base/ui_base_switches_util.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/events/test/test_event_handler.h"
 #include "ui/keyboard/keyboard_controller_proxy.h"
@@ -902,12 +900,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, EnsureCaretInWorkArea) {
   MockTextInputClient text_input_client;
   ui::InputMethod* input_method = proxy->GetInputMethod();
   ASSERT_TRUE(input_method);
-  if (switches::IsTextInputFocusManagerEnabled()) {
-    ui::TextInputFocusManager::GetInstance()->FocusTextInputClient(
-        &text_input_client);
-  } else {
-    input_method->SetFocusedTextInputClient(&text_input_client);
-  }
+  input_method->SetFocusedTextInputClient(&text_input_client);
 
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
   aura::Window* keyboard_container =
@@ -928,12 +921,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, EnsureCaretInWorkArea) {
   ASSERT_EQ(root_window->bounds().height() - keyboard_height,
             text_input_client.visible_rect().height());
 
-  if (switches::IsTextInputFocusManagerEnabled()) {
-    ui::TextInputFocusManager::GetInstance()->BlurTextInputClient(
-        &text_input_client);
-  } else {
-    input_method->SetFocusedTextInputClient(NULL);
-  }
+  input_method->SetFocusedTextInputClient(NULL);
 }
 
 // Tests that the virtual keyboard does not block context menus. The virtual

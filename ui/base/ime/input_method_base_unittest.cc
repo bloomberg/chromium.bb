@@ -12,8 +12,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/dummy_text_input_client.h"
 #include "ui/base/ime/input_method_observer.h"
-#include "ui/base/ime/text_input_focus_manager.h"
-#include "ui/base/ui_base_switches_util.h"
 #include "ui/events/event.h"
 
 namespace ui {
@@ -54,15 +52,9 @@ class ClientChangeVerifier {
 
   // Verifies the result satisfies the expectation or not.
   void Verify() {
-    if (switches::IsTextInputFocusManagerEnabled()) {
-      EXPECT_FALSE(on_will_change_focused_client_called_);
-      EXPECT_FALSE(on_did_change_focused_client_called_);
-      EXPECT_FALSE(on_text_input_state_changed_);
-    } else {
-      EXPECT_EQ(call_expected_, on_will_change_focused_client_called_);
-      EXPECT_EQ(call_expected_, on_did_change_focused_client_called_);
-      EXPECT_EQ(call_expected_, on_text_input_state_changed_);
-    }
+    EXPECT_EQ(call_expected_, on_will_change_focused_client_called_);
+    EXPECT_EQ(call_expected_, on_did_change_focused_client_called_);
+    EXPECT_EQ(call_expected_, on_text_input_state_changed_);
   }
 
   void OnWillChangeFocusedClient(TextInputClient* focused_before,
@@ -203,12 +195,7 @@ typedef ScopedObserver<InputMethod, InputMethodObserver>
 
 void SetFocusedTextInputClient(InputMethod* input_method,
                                TextInputClient* text_input_client) {
-  if (switches::IsTextInputFocusManagerEnabled()) {
-    TextInputFocusManager::GetInstance()->FocusTextInputClient(
-        text_input_client);
-  } else {
-    input_method->SetFocusedTextInputClient(text_input_client);
-  }
+  input_method->SetFocusedTextInputClient(text_input_client);
 }
 
 TEST_F(InputMethodBaseTest, SetFocusedTextInputClient) {
@@ -271,10 +258,6 @@ TEST_F(InputMethodBaseTest, SetFocusedTextInputClient) {
 }
 
 TEST_F(InputMethodBaseTest, DetachTextInputClient) {
-  // DetachTextInputClient is not supported when IsTextInputFocusManagerEnabled.
-  if (switches::IsTextInputFocusManagerEnabled())
-    return;
-
   DummyTextInputClient text_input_client;
   DummyTextInputClient text_input_client_the_other;
 

@@ -5,8 +5,6 @@
 #include "ui/base/ime/mock_input_method.h"
 
 #include "ui/base/ime/input_method_delegate.h"
-#include "ui/base/ime/text_input_focus_manager.h"
-#include "ui/base/ui_base_switches_util.h"
 #include "ui/events/event.h"
 
 namespace ui {
@@ -25,9 +23,6 @@ void MockInputMethod::SetDelegate(internal::InputMethodDelegate* delegate) {
 }
 
 void MockInputMethod::SetFocusedTextInputClient(TextInputClient* client) {
-  if (switches::IsTextInputFocusManagerEnabled())
-    return;
-
   if (text_input_client_ == client)
     return;
   text_input_client_ = client;
@@ -42,9 +37,6 @@ void MockInputMethod::DetachTextInputClient(TextInputClient* client) {
 }
 
 TextInputClient* MockInputMethod::GetTextInputClient() const {
-  if (switches::IsTextInputFocusManagerEnabled())
-    return TextInputFocusManager::GetInstance()->GetFocusedTextInputClient();
-
   return text_input_client_;
 }
 

@@ -14,7 +14,6 @@
 #include "ipc/ipc_message.h"
 #include "ui/accessibility/ax_enums.h"
 #include "ui/accessibility/ax_view_state.h"
-#include "ui/base/ui_base_switches_util.h"
 #include "ui/events/event.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/focus/focus_manager.h"
@@ -111,21 +110,6 @@ const char* WebView::GetClassName() const {
 }
 
 ui::TextInputClient* WebView::GetTextInputClient() {
-  // This function delegates the text input handling to the underlying
-  // content::RenderWidgetHostView.  So when the underlying RWHV is destroyed or
-  // replaced with another one, we have to notify the FocusManager through
-  // FocusManager::OnTextInputClientChanged() that the focused TextInputClient
-  // needs to be updated.
-  if (switches::IsTextInputFocusManagerEnabled() &&
-      web_contents() && !web_contents()->IsBeingDestroyed()) {
-    const content::RenderViewHost* host = web_contents()->GetRenderViewHost();
-    content::RenderWidgetHostView* host_view =
-        is_embedding_fullscreen_widget_ ?
-        web_contents()->GetFullscreenRenderWidgetHostView() :
-        web_contents()->GetRenderWidgetHostView();
-    if (host && host->IsRenderViewLive() && host_view)
-      return host_view->GetTextInputClient();
-  }
   return NULL;
 }
 
@@ -393,11 +377,6 @@ void WebView::ReattachForFullscreenChange(bool enter_fullscreen) {
 }
 
 void WebView::NotifyMaybeTextInputClientAndAccessibilityChanged() {
-  // Update the TextInputClient as needed; see GetTextInputClient().
-  FocusManager* const focus_manager = GetFocusManager();
-  if (focus_manager)
-    focus_manager->OnTextInputClientChanged(this);
-
 #if defined(OS_CHROMEOS)
   if (web_contents())
     NotifyAccessibilityEvent(ui::AX_EVENT_CHILDREN_CHANGED, false);

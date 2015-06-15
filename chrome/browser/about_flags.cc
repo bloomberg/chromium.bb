@@ -1615,14 +1615,6 @@ const Experiment kExperiments[] = {
      IDS_FLAGS_EXTENSION_CONTENT_VERIFICATION_DESCRIPTION,
      kOsDesktop,
      MULTI_VALUE_TYPE(kExtensionContentVerificationChoices)},
-#if defined(USE_AURA)
-    {"text-input-focus-manager",
-     IDS_FLAGS_TEXT_INPUT_FOCUS_MANAGER_NAME,
-     IDS_FLAGS_TEXT_INPUT_FOCUS_MANAGER_DESCRIPTION,
-     kOsCrOS | kOsLinux | kOsWin,
-     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableTextInputFocusManager,
-                               switches::kDisableTextInputFocusManager)},
-#endif
 #if defined(ENABLE_EXTENSIONS)
     {"extension-active-script-permission",
      IDS_FLAGS_USER_CONSENT_FOR_EXTENSION_SCRIPTS_NAME,
