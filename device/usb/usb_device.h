@@ -62,15 +62,19 @@ class UsbDevice : public base::RefCountedThreadSafe<UsbDevice> {
             const base::string16& serial_number);
   virtual ~UsbDevice();
 
+  // These members must be mutable by subclasses as necessary during device
+  // enumeration. To preserve the thread safety of this object they must remain
+  // constant afterwards.
+  base::string16 manufacturer_string_;
+  base::string16 product_string_;
+  base::string16 serial_number_;
+
  private:
   friend class base::RefCountedThreadSafe<UsbDevice>;
 
   const std::string guid_;
   const uint16 vendor_id_;
   const uint16 product_id_;
-  const base::string16 manufacturer_string_;
-  const base::string16 product_string_;
-  const base::string16 serial_number_;
 
   DISALLOW_COPY_AND_ASSIGN(UsbDevice);
 };

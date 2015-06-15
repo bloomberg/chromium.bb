@@ -95,20 +95,13 @@ UsbDeviceImpl::UsbDeviceImpl(
     PlatformUsbDevice platform_device,
     uint16 vendor_id,
     uint16 product_id,
-    const base::string16& manufacturer_string,
-    const base::string16& product_string,
-    const base::string16& serial_number,
-    const std::string& device_node,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner)
     : UsbDevice(vendor_id,
                 product_id,
-                manufacturer_string,
-                product_string,
-                serial_number),
+                base::string16(),
+                base::string16(),
+                base::string16()),
       platform_device_(platform_device),
-#if defined(OS_CHROMEOS)
-      devnode_(device_node),
-#endif  // defined(OS_CHROMEOS)
       context_(context),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       blocking_task_runner_(blocking_task_runner) {
@@ -129,7 +122,7 @@ void UsbDeviceImpl::CheckUsbAccess(const ResultCallback& callback) {
   chromeos::PermissionBrokerClient* client =
       chromeos::DBusThreadManager::Get()->GetPermissionBrokerClient();
   DCHECK(client) << "Could not get permission broker client.";
-  client->CheckPathAccess(devnode_, callback);
+  client->CheckPathAccess(device_path_, callback);
 }
 
 #endif  // defined(OS_CHROMEOS)
@@ -142,7 +135,7 @@ void UsbDeviceImpl::Open(const OpenCallback& callback) {
       chromeos::DBusThreadManager::Get()->GetPermissionBrokerClient();
   DCHECK(client) << "Could not get permission broker client.";
   client->RequestPathAccess(
-      devnode_, -1,
+      device_path_, -1,
       base::Bind(&UsbDeviceImpl::OnPathRequestComplete, this, callback));
 #else
   blocking_task_runner_->PostTask(

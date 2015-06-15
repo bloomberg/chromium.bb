@@ -13,12 +13,12 @@ UsbDevice::UsbDevice(uint16 vendor_id,
                      const base::string16& manufacturer_string,
                      const base::string16& product_string,
                      const base::string16& serial_number)
-    : guid_(base::GenerateGUID()),
-      vendor_id_(vendor_id),
-      product_id_(product_id),
-      manufacturer_string_(manufacturer_string),
+    : manufacturer_string_(manufacturer_string),
       product_string_(product_string),
-      serial_number_(serial_number) {
+      serial_number_(serial_number),
+      guid_(base::GenerateGUID()),
+      vendor_id_(vendor_id),
+      product_id_(product_id) {
 }
 
 UsbDevice::~UsbDevice() {

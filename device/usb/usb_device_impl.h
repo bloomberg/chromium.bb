@@ -40,6 +40,21 @@ class UsbDeviceImpl : public UsbDevice {
   bool Close(scoped_refptr<UsbDeviceHandle> handle) override;
   const UsbConfigDescriptor* GetConfiguration() override;
 
+  // These functions are used during enumeration only. The values must not
+  // change during the object's lifetime.
+  void set_manufacturer_string(const base::string16& value) {
+    manufacturer_string_ = value;
+  }
+  void set_product_string(const base::string16& value) {
+    product_string_ = value;
+  }
+  void set_serial_number(const base::string16& value) {
+    serial_number_ = value;
+  }
+  void set_device_path(const std::string& value) { device_path_ = value; }
+
+  PlatformUsbDevice platform_device() const { return platform_device_; }
+
  protected:
   friend class UsbServiceImpl;
   friend class UsbDeviceHandleImpl;
@@ -49,16 +64,11 @@ class UsbDeviceImpl : public UsbDevice {
                 PlatformUsbDevice platform_device,
                 uint16 vendor_id,
                 uint16 product_id,
-                const base::string16& manufacturer_string,
-                const base::string16& product_string,
-                const base::string16& serial_number,
-                const std::string& device_node,
                 scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
 
   ~UsbDeviceImpl() override;
 
   // Called only by UsbServiceImpl.
-  PlatformUsbDevice platform_device() const { return platform_device_; }
   void set_visited(bool visited) { visited_ = visited; }
   bool was_visited() const { return visited_; }
   void OnDisconnect();
@@ -78,11 +88,9 @@ class UsbDeviceImpl : public UsbDevice {
   PlatformUsbDevice platform_device_;
   bool visited_ = false;
 
-#if defined(OS_CHROMEOS)
-  // On Chrome OS save the devnode string for requesting path access from
-  // permission broker.
-  std::string devnode_;
-#endif
+  // On Chrome OS device path is necessary to request access from the permission
+  // broker.
+  std::string device_path_;
 
   // The current device configuration descriptor. May be null if the device is
   // in an unconfigured state.

@@ -65,31 +65,15 @@ class UsbServiceImpl : public UsbService,
   // an optional hint used on Windows to prevent enumerations before drivers for
   // a new device have been completely loaded.
   void RefreshDevices(const std::string& new_device_path);
+  void OnDeviceList(libusb_device** platform_devices, size_t device_count);
+  void RefreshDevicesComplete();
 
-  static void RefreshDevicesOnBlockingThread(
-      base::WeakPtr<UsbServiceImpl> usb_service,
-      const std::string& new_device_path,
-      scoped_refptr<base::SequencedTaskRunner> task_runner,
-      scoped_refptr<UsbContext> usb_context,
-      const std::set<PlatformUsbDevice>& previous_devices);
+  // Creates a new UsbDevice based on the given libusb device.
+  void EnumerateDevice(PlatformUsbDevice platform_device,
+                       const base::Closure& refresh_complete);
 
-  static void AddDeviceOnBlockingThread(
-      base::WeakPtr<UsbServiceImpl> usb_service,
-      scoped_refptr<base::SequencedTaskRunner> task_runner,
-      PlatformUsbDevice platform_device);
-
-  void RefreshDevicesComplete(libusb_device** platform_devices,
-                              ssize_t device_count);
-
-  // Adds a new UsbDevice to the devices_ map based on the given libusb device.
-  void AddDevice(PlatformUsbDevice platform_device,
-                 uint16 vendor_id,
-                 uint16 product_id,
-                 base::string16 manufacturer_string,
-                 base::string16 product_string,
-                 base::string16 serial_number,
-                 std::string device_node);
-
+  void AddDevice(const base::Closure& refresh_complete,
+                 scoped_refptr<UsbDeviceImpl> device);
   void RemoveDevice(scoped_refptr<UsbDeviceImpl> device);
 
   // Handle hotplug events from libusb.
@@ -113,7 +97,8 @@ class UsbServiceImpl : public UsbService,
 
   // Enumeration callbacks are queued until an enumeration completes.
   bool enumeration_ready_ = false;
-  std::vector<GetDevicesCallback> pending_enumerations_;
+  std::queue<std::string> pending_path_enumerations_;
+  std::vector<GetDevicesCallback> pending_enumeration_callbacks_;
 
   // The map from unique IDs to UsbDevices.
   typedef std::map<std::string, scoped_refptr<UsbDeviceImpl>> DeviceMap;
@@ -123,6 +108,9 @@ class UsbServiceImpl : public UsbService,
   typedef std::map<PlatformUsbDevice, scoped_refptr<UsbDeviceImpl>>
       PlatformDeviceMap;
   PlatformDeviceMap platform_devices_;
+
+  // Tracks PlatformUsbDevices while they are being enumerated.
+  std::set<PlatformUsbDevice> devices_being_enumerated_;
 
 #if defined(OS_WIN)
   ScopedObserver<DeviceMonitorWin, DeviceMonitorWin::Observer> device_observer_;
