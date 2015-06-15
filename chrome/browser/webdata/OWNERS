@@ -1,9 +1,0 @@
-# For sqlite stuff:
-shess@chromium.org
-
-# Core classes: WebDatabase and WebDataService
-per-file web_data*=pkasting@chromium.org
-
-# Autofill
-per-file autocomplete*=isherman@chromium.org
-per-file autofill*=isherman@chromium.org

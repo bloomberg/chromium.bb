@@ -17,7 +17,7 @@
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/signin/local_auth.h"
 #include "chrome/browser/signin/signin_cookie_changed_subscription.h"
-#include "chrome/browser/webdata/web_data_service_factory.h"
+#include "chrome/browser/web_data_service_factory.h"
 #include "chrome/common/chrome_version_info.h"
 #include "components/metrics/metrics_service.h"
 #include "components/signin/core/common/profile_management_switches.h"

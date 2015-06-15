@@ -20,7 +20,7 @@
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/webdata/web_data_service_factory.h"
+#include "chrome/browser/web_data_service_factory.h"
 #include "chrome/common/importer/imported_bookmark_entry.h"
 #include "chrome/common/pref_names.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
@@ -32,7 +32,7 @@
 #include "components/search_engines/template_url_service.h"
 
 #if defined(OS_WIN)
-#include "chrome/browser/webdata/web_data_service_factory.h"
+#include "chrome/browser/web_data_service_factory.h"
 #include "components/password_manager/core/browser/webdata/password_web_data_service_win.h"
 #endif
 

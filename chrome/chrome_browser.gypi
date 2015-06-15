@@ -789,8 +789,8 @@
       'browser/upgrade_detector.h',
       'browser/upload_list.cc',
       'browser/upload_list.h',
-      'browser/webdata/web_data_service_factory.cc',
-      'browser/webdata/web_data_service_factory.h',
+      'browser/web_data_service_factory.cc',
+      'browser/web_data_service_factory.h',
     ],
     'chrome_browser_android_sources': [
       'browser/media/protected_media_identifier_infobar_delegate.cc',
