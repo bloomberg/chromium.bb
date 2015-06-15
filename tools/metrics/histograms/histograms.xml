@@ -26428,7 +26428,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Omnibox.CharTypedToRepaintLatency">
+<histogram name="Omnibox.CharTypedToRepaintLatency" units="milliseconds">
   <owner>asvitkine@chromium.org</owner>
   <summary>
     Records the time taken between a keystroke being typed in the omnibox and
