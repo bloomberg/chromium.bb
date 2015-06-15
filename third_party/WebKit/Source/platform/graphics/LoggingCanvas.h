@@ -55,9 +55,6 @@ public:
     virtual void onDrawSprite(const SkBitmap&, int left, int top, const SkPaint*) override;
     virtual void onDrawVertices(VertexMode vmode, int vertexCount, const SkPoint vertices[], const SkPoint texs[],
         const SkColor colors[], SkXfermode* xmode, const uint16_t indices[], int indexCount, const SkPaint&) override;
-    virtual void beginCommentGroup(const char* description) override;
-    virtual void addComment(const char* keyword, const char* value) override;
-    virtual void endCommentGroup() override;
 
     virtual void onDrawDRRect(const SkRRect& outer, const SkRRect& inner, const SkPaint&) override;
     virtual void onDrawText(const void* text, size_t byteLength, SkScalar x, SkScalar y, const SkPaint&) override;

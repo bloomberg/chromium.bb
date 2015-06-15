@@ -81,9 +81,6 @@ protected:
     void onDrawSprite(const SkBitmap&, int left, int top, const SkPaint*) override = 0;
     void onDrawVertices(VertexMode vmode, int vertexCount, const SkPoint vertices[], const SkPoint texs[],
         const SkColor colors[], SkXfermode* xmode, const uint16_t indices[], int indexCount, const SkPaint&) override = 0;
-    void beginCommentGroup(const char* description) override = 0;
-    void addComment(const char* keyword, const char* value) override = 0;
-    void endCommentGroup() override = 0;
 
     void onDrawDRRect(const SkRRect& outer, const SkRRect& inner, const SkPaint&) override = 0;
     void onDrawText(const void* text, size_t byteLength, SkScalar x, SkScalar y, const SkPaint&) override = 0;
@@ -195,24 +192,6 @@ protected:
     {
         Interceptor interceptor(this);
         this->SkCanvas::onDrawVertices(vmode, vertexCount, vertices, texs, colors, xmode, indices, indexCount, paint);
-    }
-
-    void beginCommentGroup(const char* description) override
-    {
-        Interceptor interceptor(this);
-        this->SkCanvas::beginCommentGroup(description);
-    }
-
-    void addComment(const char* keyword, const char* value) override
-    {
-        Interceptor interceptor(this);
-        this->SkCanvas::addComment(keyword, value);
-    }
-
-    void endCommentGroup() override
-    {
-        Interceptor interceptor(this);
-        this->SkCanvas::endCommentGroup();
     }
 
     void onDrawDRRect(const SkRRect& outer, const SkRRect& inner, const SkPaint& paint) override

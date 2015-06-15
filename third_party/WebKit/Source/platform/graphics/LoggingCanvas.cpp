@@ -679,30 +679,6 @@ void LoggingCanvas::onDrawVertices(VertexMode vmode, int vertexCount, const SkPo
     this->SkCanvas::onDrawVertices(vmode, vertexCount, vertices, texs, colors, xmode, indices, indexCount, paint);
 }
 
-void LoggingCanvas::beginCommentGroup(const char* description)
-{
-    AutoLogger logger(this);
-    RefPtr<JSONObject> params = logger.logItemWithParams("beginCommentGroup");
-    params->setString("description", description);
-    this->SkCanvas::beginCommentGroup(description);
-}
-
-void LoggingCanvas::addComment(const char* keyword, const char* value)
-{
-    AutoLogger logger(this);
-    RefPtr<JSONObject> params = logger.logItemWithParams("addComment");
-    params->setString("key", keyword);
-    params->setString("value", value);
-    this->SkCanvas::addComment(keyword, value);
-}
-
-void LoggingCanvas::endCommentGroup()
-{
-    AutoLogger logger(this);
-    logger.logItem("endCommentGroup");
-    this->SkCanvas::endCommentGroup();
-}
-
 void LoggingCanvas::onDrawDRRect(const SkRRect& outer, const SkRRect& inner, const SkPaint& paint)
 {
     AutoLogger logger(this);
