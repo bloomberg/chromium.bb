@@ -16,6 +16,10 @@ TestKeyedServiceProvider::TestKeyedServiceProvider() {
 TestKeyedServiceProvider::~TestKeyedServiceProvider() {
 }
 
+void TestKeyedServiceProvider::AssertKeyedFactoriesBuilt() {
+  FakeSyncServiceFactory::GetInstance();
+}
+
 KeyedServiceBaseFactory* TestKeyedServiceProvider::GetSyncServiceFactory() {
   return FakeSyncServiceFactory::GetInstance();
 }

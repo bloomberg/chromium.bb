@@ -34,8 +34,7 @@ EnhancedBookmarkModelFactory::EnhancedBookmarkModelFactory()
     : BrowserStateKeyedServiceFactory(
           "EnhancedBookmarkModel",
           BrowserStateDependencyManager::GetInstance()) {
-  ios::KeyedServiceProvider* provider =
-      ios::GetChromeBrowserProvider()->GetKeyedServiceProvider();
+  ios::KeyedServiceProvider* provider = ios::GetKeyedServiceProvider();
   DependsOn(provider->GetBookmarkModelFactory());
 }
 
@@ -47,8 +46,7 @@ KeyedService* EnhancedBookmarkModelFactory::BuildServiceInstanceFor(
   DCHECK(!context->IsOffTheRecord());
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
-  ios::KeyedServiceProvider* provider =
-      ios::GetChromeBrowserProvider()->GetKeyedServiceProvider();
+  ios::KeyedServiceProvider* provider = ios::GetKeyedServiceProvider();
   return new EnhancedBookmarkModel(
       provider->GetBookmarkModelForBrowserState(browser_state),
       ios::GetChromeBrowserProvider()->GetProductVersionWithPrefix(

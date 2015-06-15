@@ -37,8 +37,7 @@ BookmarkServerClusterServiceFactory::BookmarkServerClusterServiceFactory()
     : BrowserStateKeyedServiceFactory(
           "BookmarkServerClusterService",
           BrowserStateDependencyManager::GetInstance()) {
-  ios::KeyedServiceProvider* provider =
-      ios::GetChromeBrowserProvider()->GetKeyedServiceProvider();
+  ios::KeyedServiceProvider* provider = ios::GetKeyedServiceProvider();
   DependsOn(provider->GetProfileOAuth2TokenServiceIOSFactory());
   DependsOn(provider->GetSigninManagerFactory());
   DependsOn(EnhancedBookmarkModelFactory::GetInstance());
@@ -53,8 +52,7 @@ KeyedService* BookmarkServerClusterServiceFactory::BuildServiceInstanceFor(
   DCHECK(!context->IsOffTheRecord());
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
-  ios::KeyedServiceProvider* provider =
-      ios::GetChromeBrowserProvider()->GetKeyedServiceProvider();
+  ios::KeyedServiceProvider* provider = ios::GetKeyedServiceProvider();
   return new BookmarkServerClusterService(
       GetApplicationContext()->GetApplicationLocale(),
       browser_state->GetRequestContext(),

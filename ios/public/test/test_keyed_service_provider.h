@@ -16,6 +16,7 @@ class TestKeyedServiceProvider : public KeyedServiceProvider {
   ~TestKeyedServiceProvider() override;
 
   // KeyedServiceProvider implementation:
+  void AssertKeyedFactoriesBuilt() override;
   KeyedServiceBaseFactory* GetSyncServiceFactory() override;
   sync_driver::SyncService* GetSyncServiceForBrowserState(
       ChromeBrowserState* browser_state) override;

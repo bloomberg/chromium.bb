@@ -46,10 +46,8 @@ AutofillClientIOS::~AutofillClientIOS() {
 }
 
 PersonalDataManager* AutofillClientIOS::GetPersonalDataManager() {
-  return ios::GetChromeBrowserProvider()
-      ->GetKeyedServiceProvider()
-      ->GetPersonalDataManagerForBrowserState(
-          browser_state_->GetOriginalChromeBrowserState());
+  return ios::GetKeyedServiceProvider()->GetPersonalDataManagerForBrowserState(
+      browser_state_->GetOriginalChromeBrowserState());
 }
 
 PrefService* AutofillClientIOS::GetPrefs() {
@@ -150,10 +148,8 @@ void AutofillClientIOS::DidFillOrPreviewField(
 }
 
 scoped_refptr<AutofillWebDataService> AutofillClientIOS::GetDatabase() {
-  return ios::GetChromeBrowserProvider()
-      ->GetKeyedServiceProvider()
-      ->GetAutofillWebDataForBrowserState(browser_state_,
-                                          ServiceAccessType::EXPLICIT_ACCESS);
+  return ios::GetKeyedServiceProvider()->GetAutofillWebDataForBrowserState(
+      browser_state_, ServiceAccessType::EXPLICIT_ACCESS);
 }
 
 void AutofillClientIOS::OnFirstUserGestureObserved() {

@@ -7,6 +7,7 @@
 #include "ios/chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "ios/chrome/browser/suggestions/suggestions_service_factory.h"
 #include "ios/chrome/browser/translate/translate_accept_languages_factory.h"
+#include "ios/public/provider/chrome/browser/keyed_service_provider.h"
 
 // This method gets the instance of each ServiceFactory. We do this so that
 // each ServiceFactory initializes itself and registers its dependencies with
@@ -21,4 +22,7 @@ void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
   TranslateAcceptLanguagesFactory::GetInstance();
   dom_distiller::DomDistillerServiceFactory::GetInstance();
   suggestions::SuggestionsServiceFactory::GetInstance();
+
+  if (ios::GetKeyedServiceProvider())
+    ios::GetKeyedServiceProvider()->AssertKeyedFactoriesBuilt();
 }

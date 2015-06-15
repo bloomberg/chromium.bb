@@ -24,11 +24,9 @@ class TestChromeBrowserProvider : public ChromeBrowserProvider {
   // ChromeBrowserProvider:
   StringProvider* GetStringProvider() override;
   const char* GetChromeUIScheme() override;
-  KeyedServiceProvider* GetKeyedServiceProvider() override;
 
  private:
   scoped_ptr<FakeStringProvider> string_provider_;
-  scoped_ptr<KeyedServiceProvider> test_keyed_service_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(TestChromeBrowserProvider);
 };

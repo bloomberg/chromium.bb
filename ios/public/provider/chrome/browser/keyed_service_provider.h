@@ -35,6 +35,11 @@ class SyncService;
 namespace ios {
 
 class ChromeBrowserState;
+class KeyedServiceProvider;
+
+// Registers and returns the global KeyedService provider.
+void SetKeyedServiceProvider(KeyedServiceProvider* provider);
+KeyedServiceProvider* GetKeyedServiceProvider();
 
 // A class that provides access to KeyedService that do not have a pure iOS
 // implementation yet.
@@ -42,6 +47,11 @@ class KeyedServiceProvider {
  public:
   KeyedServiceProvider();
   virtual ~KeyedServiceProvider();
+
+  // Ensures that all KeyedService factories are instantiated. Must be called
+  // before any BrowserState instance is created so that dependencies are
+  // correct.
+  virtual void AssertKeyedFactoriesBuilt();
 
   // Returns the bookmarks::BookmarkModel factory for dependencies.
   virtual KeyedServiceBaseFactory* GetBookmarkModelFactory();

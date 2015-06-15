@@ -5,6 +5,7 @@
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 
 #include "base/logging.h"
+#include "ios/public/provider/chrome/browser/keyed_service_provider.h"
 
 namespace ios {
 
@@ -89,7 +90,7 @@ std::string ChromeBrowserProvider::GetProductVersionWithPrefix(
 }
 
 KeyedServiceProvider* ChromeBrowserProvider::GetKeyedServiceProvider() {
-  return nullptr;
+  return ::ios::GetKeyedServiceProvider();
 }
 
 }  // namespace ios

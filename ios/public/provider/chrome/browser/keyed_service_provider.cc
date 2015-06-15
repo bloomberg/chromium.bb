@@ -7,11 +7,28 @@
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 
 namespace ios {
+namespace {
+KeyedServiceProvider* g_keyed_service_provider = nullptr;
+}  // namespace
+
+void SetKeyedServiceProvider(KeyedServiceProvider* provider) {
+  // Since the dependency between KeyedService is only resolved at instantiation
+  // time, forbid un-installation or overridden the global KeyedServiceProvider.
+  DCHECK(provider && !g_keyed_service_provider);
+  g_keyed_service_provider = provider;
+}
+
+KeyedServiceProvider* GetKeyedServiceProvider() {
+  return g_keyed_service_provider;
+}
 
 KeyedServiceProvider::KeyedServiceProvider() {
 }
 
 KeyedServiceProvider::~KeyedServiceProvider() {
+}
+
+void KeyedServiceProvider::AssertKeyedFactoriesBuilt() {
 }
 
 KeyedServiceBaseFactory* KeyedServiceProvider::GetBookmarkModelFactory() {
