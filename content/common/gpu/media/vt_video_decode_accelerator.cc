@@ -641,6 +641,16 @@ void VTVideoDecodeAccelerator::DecodeTask(
     return;
   }
 
+  // Make sure that the memory is actually allocated.
+  // CMBlockBufferReplaceDataBytes() is documented to do this, but prints a
+  // message each time starting in Mac OS X 10.10.
+  status = CMBlockBufferAssureBlockMemory(data);
+  if (status) {
+    NOTIFY_STATUS("CMBlockBufferAssureBlockMemory()", status,
+                  SFT_PLATFORM_ERROR);
+    return;
+  }
+
   // Copy NALU data into the CMBlockBuffer, inserting length headers.
   size_t offset = 0;
   for (size_t i = 0; i < nalus.size(); i++) {
@@ -675,8 +685,8 @@ void VTVideoDecodeAccelerator::DecodeTask(
       1,                    // num_samples
       0,                    // num_sample_timing_entries
       nullptr,              // &sample_timing_array
-      0,                    // num_sample_size_entries
-      nullptr,              // &sample_size_array
+      1,                    // num_sample_size_entries
+      &data_size,           // &sample_size_array
       sample.InitializeInto());
   if (status) {
     NOTIFY_STATUS("CMSampleBufferCreate()", status, SFT_PLATFORM_ERROR);
