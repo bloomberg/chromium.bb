@@ -181,9 +181,11 @@ cr.define('cr.ui', function() {
 
       this.menu.updateCommands(this);
 
-      var event = document.createEvent('UIEvents');
-      event.initUIEvent('menushow', true, true, window, null);
-
+      var event = new UIEvent('menushow',{
+        bubbles: true,
+        cancelable: true,
+        view: window
+      });
       if (!this.dispatchEvent(event))
         return;
 
@@ -227,6 +229,13 @@ cr.define('cr.ui', function() {
 
       this.showingEvents_.removeAll();
       this.focus();
+
+      var event = new UIEvent('menuhide', {
+        bubbles: true,
+        cancelable: false,
+        view: window
+      });
+      this.dispatchEvent(event);
 
       // On windows we might hide the menu in a right mouse button up and if
       // that is the case we wait some short period before we allow the menu

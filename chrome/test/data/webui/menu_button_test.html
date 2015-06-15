@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script>
+
+function testMenuShowAndHideEvents() {
+  var menu = document.createElement('div');
+  cr.ui.decorate(menu, cr.ui.Menu);
+  document.body.appendChild(menu);
+
+  var menuButton = document.createElement('div');
+  cr.ui.decorate(menuButton, cr.ui.MenuButton);
+  menuButton.menu = menu;
+  document.body.appendChild(menuButton);
+
+  var events = [];
+  menuButton.addEventListener('menushow', function(e) { events.push(e); });
+  menuButton.addEventListener('menuhide', function(e) { events.push(e); });
+
+  // Click to show menu.
+  menuButton.dispatchEvent(new MouseEvent('mousedown'));
+  assertEquals(1, events.length);
+  assertEquals('menushow', events[0].type);
+  assertEquals(true, events[0].bubbles);
+  assertEquals(true, events[0].cancelable);
+  assertEquals(window, events[0].view);
+
+  // Click to hide menu by clicking the button.
+  menuButton.dispatchEvent(new MouseEvent('mousedown'));
+  assertEquals(2, events.length);
+  assertEquals('menuhide', events[1].type);
+  assertEquals(true, events[1].bubbles);
+  assertEquals(false, events[1].cancelable);
+  assertEquals(window, events[1].view);
+
+  // Click to show menu and hide by clicking the outside of the button.
+  menuButton.dispatchEvent(new MouseEvent('mousedown'));
+  assertEquals(3, events.length);
+  assertEquals('menushow', events[2].type);
+  document.dispatchEvent(new MouseEvent('mousedown'));
+  assertEquals(4, events.length);
+  assertEquals('menuhide', events[3].type);
+}
+
+</script>
+</body>
+</html>
