@@ -39,7 +39,17 @@ CrOnc.ManagedProperty;
 /** @typedef {CrOnc.NetworkStateProperty|!CrOnc.ManagedProperty} */
 CrOnc.ManagedNetworkStateProperty;
 
-/** @typedef {chrome.networkingPrivate.IPConfigProperties} */
+// TODO(stevenjb): Update chrome_extensions.js to include IPConfigProperties
+// in chrome.networkingPrivate and use that.
+/** @typedef {{
+ *    Gateway: (string|undefined),
+ *    IPAddress: (string|undefined),
+ *    NameServers: (string|undefined),
+ *    RoutingPrefix: (number|undefined),
+ *    Type: (string|undefined),
+ *    WebProxyAutoDiscoveryUrl: (string|undefined)
+ * }}
+ */
 CrOnc.IPConfigProperties;
 
 /** @enum {string} */
