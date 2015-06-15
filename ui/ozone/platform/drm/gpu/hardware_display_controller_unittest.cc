@@ -212,6 +212,26 @@ TEST_F(HardwareDisplayControllerTest, CheckOverlayTestMode) {
   EXPECT_EQ(2, drm_->get_overlay_flip_call_count());
 }
 
+TEST_F(HardwareDisplayControllerTest, RejectUnderlays) {
+  ui::OverlayPlane plane1(scoped_refptr<ui::ScanoutBuffer>(
+      new MockScanoutBuffer(kDefaultModeSize)));
+  ui::OverlayPlane plane2(
+      scoped_refptr<ui::ScanoutBuffer>(new MockScanoutBuffer(kDefaultModeSize)),
+      -1, gfx::OVERLAY_TRANSFORM_NONE, gfx::Rect(kDefaultModeSize),
+      gfx::RectF(kDefaultModeSizeF));
+
+  EXPECT_TRUE(controller_->Modeset(plane1, kDefaultMode));
+
+  std::vector<ui::OverlayPlane> planes;
+  planes.push_back(plane1);
+  planes.push_back(plane2);
+
+  EXPECT_FALSE(controller_->SchedulePageFlip(
+      planes, false, false,
+      base::Bind(&HardwareDisplayControllerTest::PageFlipCallback,
+                 base::Unretained(this))));
+}
+
 TEST_F(HardwareDisplayControllerTest, PageflipMirroredControllers) {
   controller_->AddCrtc(scoped_ptr<ui::CrtcController>(
       new ui::CrtcController(drm_.get(), kSecondaryCrtc, kSecondaryConnector)));
