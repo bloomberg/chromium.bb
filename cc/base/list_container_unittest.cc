@@ -708,5 +708,117 @@ TEST(ListContainerTest,
   }
 }
 
+// Increments an int when constructed (or the counter pointer is supplied) and
+// decrements when destructed.
+class InstanceCounter {
+ public:
+  InstanceCounter() : counter_(nullptr) {}
+  explicit InstanceCounter(int* counter) { SetCounter(counter); }
+  ~InstanceCounter() {
+    if (counter_)
+      --*counter_;
+  }
+  void SetCounter(int* counter) {
+    counter_ = counter;
+    ++*counter_;
+  }
+
+ private:
+  int* counter_;
+};
+
+TEST(ListContainerTest, RemoveLastDestruction) {
+  // We keep an explicit instance count to make sure that the destructors are
+  // indeed getting called.
+  int counter = 0;
+  ListContainer<InstanceCounter> list(sizeof(InstanceCounter), 1);
+  EXPECT_EQ(0, counter);
+  EXPECT_EQ(0u, list.size());
+
+  // We should be okay to add one and then go back to zero.
+  list.AllocateAndConstruct<InstanceCounter>()->SetCounter(&counter);
+  EXPECT_EQ(1, counter);
+  EXPECT_EQ(1u, list.size());
+  list.RemoveLast();
+  EXPECT_EQ(0, counter);
+  EXPECT_EQ(0u, list.size());
+
+  // We should also be okay to remove the last multiple times, as long as there
+  // are enough elements in the first place.
+  list.AllocateAndConstruct<InstanceCounter>()->SetCounter(&counter);
+  list.AllocateAndConstruct<InstanceCounter>()->SetCounter(&counter);
+  list.AllocateAndConstruct<InstanceCounter>()->SetCounter(&counter);
+  list.AllocateAndConstruct<InstanceCounter>()->SetCounter(&counter);
+  list.AllocateAndConstruct<InstanceCounter>()->SetCounter(&counter);
+  list.AllocateAndConstruct<InstanceCounter>()->SetCounter(&counter);
+  list.RemoveLast();
+  list.RemoveLast();
+  EXPECT_EQ(4, counter);  // Leaves one in the last list.
+  EXPECT_EQ(4u, list.size());
+  list.RemoveLast();
+  EXPECT_EQ(3, counter);  // Removes an inner list from before.
+  EXPECT_EQ(3u, list.size());
+}
+
+// TODO(jbroman): std::equal would work if ListContainer iterators satisfied the
+// usual STL iterator constraints. We should fix that.
+template <typename It1, typename It2>
+bool Equal(It1 it1, const It1& end1, It2 it2) {
+  for (; it1 != end1; ++it1, ++it2) {
+    if (!(*it1 == *it2))
+      return false;
+  }
+  return true;
+}
+
+TEST(ListContainerTest, RemoveLastIteration) {
+  struct SmallStruct {
+    char dummy[16];
+  };
+  ListContainer<SmallStruct> list(sizeof(SmallStruct), 1);
+  std::vector<SmallStruct*> pointers;
+
+  // Utilities which keep these two lists in sync and check that their iteration
+  // order matches.
+  auto push = [&list, &pointers]() {
+    pointers.push_back(list.AllocateAndConstruct<SmallStruct>());
+  };
+  auto pop = [&list, &pointers]() {
+    pointers.pop_back();
+    list.RemoveLast();
+  };
+  auto check_equal = [&list, &pointers]() {
+    // They should be of the same size, and compare equal with all four kinds of
+    // iteration.
+    // Apparently Mac doesn't have vector::cbegin and vector::crbegin?
+    const auto& const_pointers = pointers;
+    ASSERT_EQ(list.size(), pointers.size());
+    ASSERT_TRUE(Equal(list.begin(), list.end(), pointers.begin()));
+    ASSERT_TRUE(Equal(list.cbegin(), list.cend(), const_pointers.begin()));
+    ASSERT_TRUE(Equal(list.rbegin(), list.rend(), pointers.rbegin()));
+    ASSERT_TRUE(Equal(list.crbegin(), list.crend(), const_pointers.rbegin()));
+  };
+
+  check_equal();  // Initially empty.
+  push();
+  check_equal();  // One full inner list.
+  push();
+  check_equal();  // One full, one partially full.
+  push();
+  push();
+  check_equal();  // Two full, one partially full.
+  pop();
+  check_equal();  // Two full, one empty.
+  pop();
+  check_equal();  // One full, one partially full, one empty.
+  pop();
+  check_equal();  // One full, one empty.
+  push();
+  pop();
+  pop();
+  ASSERT_TRUE(list.empty());
+  check_equal();  // Empty.
+}
+
 }  // namespace
 }  // namespace cc
