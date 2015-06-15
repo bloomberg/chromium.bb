@@ -66,7 +66,7 @@ struct {
 } const kConstraintEffectMap[] = {
   { content::kMediaStreamAudioDucking,
     media::AudioParameters::DUCKING },
-  { webrtc::MediaConstraintsInterface::kEchoCancellation,
+  { webrtc::MediaConstraintsInterface::kGoogEchoCancellation,
     media::AudioParameters::ECHO_CANCELLER },
 };
 
