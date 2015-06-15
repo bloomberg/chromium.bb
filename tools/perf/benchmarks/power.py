@@ -15,6 +15,10 @@ class PowerAndroidAcceptance(perf_benchmark.PerfBenchmark):
   """Android power acceptance test."""
   test = power.Power
   page_set = page_sets.AndroidAcceptancePageSet
+
+  def SetExtraBrowserOptions(self, options):
+    options.full_performance_mode = False
+
   @classmethod
   def Name(cls):
     return 'power.android_acceptance'
@@ -25,6 +29,10 @@ class PowerTypical10Mobile(perf_benchmark.PerfBenchmark):
   """Android typical 10 mobile power test."""
   test = power.Power
   page_set = page_sets.Typical10MobilePageSet
+
+  def SetExtraBrowserOptions(self, options):
+    options.full_performance_mode = False
+
   @classmethod
   def Name(cls):
     return 'power.typical_10_mobile'
@@ -36,6 +44,10 @@ class PowerTypical10MobileReload(perf_benchmark.PerfBenchmark):
   """Android typical 10 mobile power reload test."""
   test = power.LoadPower
   page_set = page_sets.Typical10MobileReloadPageSet
+
+  def SetExtraBrowserOptions(self, options):
+    options.full_performance_mode = False
+
   @classmethod
   def Name(cls):
     return 'power.typical_10_mobile_reload'
@@ -50,6 +62,7 @@ class PowerGpuRasterizationTypical10Mobile(perf_benchmark.PerfBenchmark):
 
   def SetExtraBrowserOptions(self, options):
     silk_flags.CustomizeBrowserOptionsForGpuRasterization(options)
+    options.full_performance_mode = False
 
   @classmethod
   def Name(cls):
@@ -60,6 +73,10 @@ class PowerTop10(perf_benchmark.PerfBenchmark):
   """Top 10 quiescent power test."""
   test = power.QuiescentPower
   page_set = page_sets.Top10PageSet
+
+  def SetExtraBrowserOptions(self, options):
+    options.full_performance_mode = False
+
   @classmethod
   def Name(cls):
     return 'power.top_10'
@@ -70,6 +87,10 @@ class PowerTop25(perf_benchmark.PerfBenchmark):
   """Top 25 quiescent power test."""
   test = power.QuiescentPower
   page_set = page_sets.Top25PageSet
+
+  def SetExtraBrowserOptions(self, options):
+    options.full_performance_mode = False
+
   @classmethod
   def Name(cls):
     return 'power.top_25'
@@ -95,6 +116,7 @@ class PowerPPSControlDisabled(perf_benchmark.PerfBenchmark):
 
   def SetExtraBrowserOptions(self, options):
     options.AppendExtraBrowserArgs(['--disable-plugin-power-saver'])
+    options.full_performance_mode = False
 
   @classmethod
   def Name(cls):
@@ -112,6 +134,7 @@ class PowerPPSControlEnabled(perf_benchmark.PerfBenchmark):
 
   def SetExtraBrowserOptions(self, options):
     options.AppendExtraBrowserArgs(['--enable-plugin-power-saver'])
+    options.full_performance_mode = False
 
   @classmethod
   def Name(cls):
@@ -128,6 +151,7 @@ class PowerThrottledPlugins(perf_benchmark.PerfBenchmark):
 
   def SetExtraBrowserOptions(self, options):
     options.AppendExtraBrowserArgs(['--disable-plugin-power-saver'])
+    options.full_performance_mode = False
 
   @classmethod
   def Name(cls):
@@ -144,6 +168,7 @@ class PowerThrottledPluginsPPS(perf_benchmark.PerfBenchmark):
 
   def SetExtraBrowserOptions(self, options):
     options.AppendExtraBrowserArgs(['--enable-plugin-power-saver'])
+    options.full_performance_mode = False
 
   @classmethod
   def Name(cls):
