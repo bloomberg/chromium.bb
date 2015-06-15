@@ -74,26 +74,6 @@ public:
     // should suppress compositor scheduling temporarily.
     virtual void suppressCompositorScheduling(bool enable) { }
 
-    // Indicates to the embedder that the compositor is about to begin a
-    // frame. This is primarily to signal to flow control mechanisms that a
-    // frame is beginning, not to perform actual painting work.
-    virtual void willBeginCompositorFrame() { }
-
-    // Indicates to the embedder that the WebWidget is ready for additional
-    // input.
-    virtual void didBecomeReadyForAdditionalInput() { }
-
-    // Called for compositing mode when a frame commit operation has finished.
-    virtual void didCommitCompositorFrame() { }
-
-    // Called for compositing mode when the draw commands for a WebKit-side
-    // frame have been issued.
-    virtual void didCommitAndDrawCompositorFrame() { }
-
-    // Called for compositing mode when swapbuffers has been posted in the GPU
-    // process.
-    virtual void didCompleteSwapBuffers() { }
-
     // Called when a call to WebWidget::animate is required
     virtual void scheduleAnimation() { }
 
