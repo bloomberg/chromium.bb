@@ -185,8 +185,16 @@ class LanguageDictionaryWebUITest : public InProcessBrowserTest {
 // overlay.
 // editDictionary overlay doesn't exist on OSX so disable it there.
 #if !defined(OS_MACOSX)
+
+// Crashes on Win 7. http://crbug.com/500609
+#if defined(OS_WIN)
+#define MAYBE_TestListKeyboardFocus DISABLED_TestListKeyboardFocus
+#else
+#define MAYBE_TestListKeyboardFocus TestListKeyboardFocus
+#endif
+
 IN_PROC_BROWSER_TEST_F(LanguageDictionaryWebUITest,
-                       TestListKeyboardFocus) {
+                       MAYBE_TestListKeyboardFocus) {
   const std::string list_selector = kDictionaryListSelector;
 
   // Populate the list with some test words.
