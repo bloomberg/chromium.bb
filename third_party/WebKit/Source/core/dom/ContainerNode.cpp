@@ -1084,6 +1084,21 @@ void ContainerNode::focusStateChanged()
 
 void ContainerNode::setFocus(bool received)
 {
+    // Recurse up author shadow trees to mark shadow hosts if it matches :focus.
+    // TODO(kochi): Handle UA shadows which marks multiple nodes as focused such as
+    // <input type="date"> the same way as author shadow.
+    if (ShadowRoot* root = containingShadowRoot()) {
+        if (root->type() == ShadowRoot::OpenShadowRoot)
+            shadowHost()->setFocus(received);
+    }
+
+    // If this is an author shadow host and indirectly focused (has focused element within
+    // its shadow root), update focus.
+    if (isElementNode() && document().focusedElement() && document().focusedElement() != this) {
+        if (toElement(this)->shadowRoot())
+            received = received && toElement(this)->shadowRoot()->delegatesFocus();
+    }
+
     if (focused() == received)
         return;
 
