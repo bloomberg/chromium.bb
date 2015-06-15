@@ -9,8 +9,6 @@
 
 #import "base/basictypes.h"
 
-class ButtonDecoration;
-
 // Base class for decorations at the left and right of the location
 // bar.  For instance, the location icon.
 
@@ -97,10 +95,6 @@ class LocationBarDecoration {
                                    const NSRect& frame);
   static NSSize GetLabelSize(NSString* label,
                              NSDictionary* attributes);
-
-  // Returns the current |LocationBarDecoration| as a |ButtonDecoration|, if it
-  // inherits from that class (i.e. if it needs to act as a button).
-  virtual ButtonDecoration* AsButtonDecoration();
 
   // Width returned by |GetWidthForSpace()| when the item should be
   // omitted for this width;

@@ -103,7 +103,3 @@ NSSize LocationBarDecoration::GetLabelSize(NSString* label,
                                            NSDictionary* attributes) {
   return [label sizeWithAttributes:attributes];
 }
-
-ButtonDecoration* LocationBarDecoration::AsButtonDecoration() {
-  return NULL;
-}

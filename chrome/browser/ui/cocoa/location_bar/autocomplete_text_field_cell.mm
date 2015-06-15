@@ -9,14 +9,12 @@
 #include "base/mac/mac_logging.h"
 #include "chrome/browser/search/search.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field.h"
-#import "chrome/browser/ui/cocoa/location_bar/button_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_decoration.h"
 #import "extensions/common/feature_switch.h"
 #include "grit/theme_resources.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 #import "ui/base/cocoa/appkit_utils.h"
 #import "ui/base/cocoa/nsview_additions.h"
-#import "ui/base/cocoa/tracking_area.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
 using extensions::FeatureSwitch;
@@ -34,8 +32,6 @@ const CGFloat kRightDecorationXOffset = 5.0;
 // The amount of padding on either side reserved for drawing
 // decorations.  [Views has |kItemPadding| == 3.]
 const CGFloat kDecorationHorizontalPad = 3.0;
-
-NSString* const kButtonDecorationKey = @"ButtonDecoration";
 
 const ui::NinePartImageIds kPopupBorderImageIds =
     IMAGE_GRID(IDR_OMNIBOX_POPUP_BORDER_AND_SHADOW);
@@ -55,15 +51,12 @@ const NSTimeInterval kLocationIconDragTimeout = 0.25;
 // |x_edge| describes the edge to layout the decorations against
 // (|NSMinXEdge| or |NSMaxXEdge|).  |regular_padding| is the padding
 // from the edge of |cell_frame| to use when the first visible decoration
-// is a regular decoration. |action_padding| is the padding to use when the
-// first decoration is a button decoration, ie. the action box button.
-// (|kDecorationHorizontalPad| is used between decorations).
+// is a regular decoration.
 void CalculatePositionsHelper(
     NSRect frame,
     const std::vector<LocationBarDecoration*>& all_decorations,
     NSRectEdge x_edge,
     CGFloat regular_padding,
-    CGFloat action_padding,
     std::vector<LocationBarDecoration*>* decorations,
     std::vector<NSRect>* decoration_frames,
     NSRect* remaining_frame) {
@@ -78,8 +71,7 @@ void CalculatePositionsHelper(
     if (all_decorations[i]->IsVisible()) {
       CGFloat padding = kDecorationHorizontalPad;
       if (is_first_visible_decoration) {
-        padding = all_decorations[i]->AsButtonDecoration() ?
-            action_padding : regular_padding;
+        padding = regular_padding;
         is_first_visible_decoration = false;
       }
 
@@ -120,8 +112,7 @@ void CalculatePositionsHelper(
 // |frame| is the cell's boundary rectangle, |remaining_frame| will get any
 // space left after decorations are laid out (for text).  |left_decorations| is
 // a set of decorations for the left-hand side of the cell, |right_decorations|
-// for the right-hand side.  |edge_width| is the width of one vertical edge of
-// the omnibox, this depends on whether the display is low DPI or high DPI.
+// for the right-hand side.
 // |decorations| will contain the resulting visible decorations, and
 // |decoration_frames| will contain their frames in the same coordinates as
 // |frame|.  Decorations will be ordered left to right. As a convenience returns
@@ -130,7 +121,6 @@ size_t CalculatePositionsInFrame(
     NSRect frame,
     const std::vector<LocationBarDecoration*>& left_decorations,
     const std::vector<LocationBarDecoration*>& right_decorations,
-    CGFloat edge_width,
     std::vector<LocationBarDecoration*>* decorations,
     std::vector<NSRect>* decoration_frames,
     NSRect* remaining_frame) {
@@ -139,8 +129,8 @@ size_t CalculatePositionsInFrame(
 
   // Layout |left_decorations| against the LHS.
   CalculatePositionsHelper(frame, left_decorations, NSMinXEdge,
-                           kLeftDecorationXOffset, edge_width,
-                           decorations, decoration_frames, &frame);
+                           kLeftDecorationXOffset, decorations,
+                           decoration_frames, &frame);
   DCHECK_EQ(decorations->size(), decoration_frames->size());
 
   // Capture the number of visible left-hand decorations.
@@ -148,7 +138,7 @@ size_t CalculatePositionsInFrame(
 
   // Layout |right_decorations| against the RHS.
   CalculatePositionsHelper(frame, right_decorations, NSMaxXEdge,
-                           kRightDecorationXOffset, edge_width, decorations,
+                           kRightDecorationXOffset, decorations,
                            decoration_frames, &frame);
   DCHECK_EQ(decorations->size(), decoration_frames->size());
 
@@ -164,12 +154,6 @@ size_t CalculatePositionsInFrame(
 
 }  // namespace
 
-@interface AutocompleteTextFieldCell ()
-// Post an OnSetFocus notification to the observer of |controlView|.
-- (void)focusNotificationFor:(NSEvent*)event
-                      ofView:(AutocompleteTextField*)controlView;
-@end
-
 @implementation AutocompleteTextFieldCell
 
 @synthesize isPopupMode = isPopupMode_;
@@ -184,11 +168,6 @@ size_t CalculatePositionsInFrame(
 
 - (CGFloat)cornerRadius {
   return kCornerRadius;
-}
-
-- (CGFloat)edgeWidth {
-  // The omnibox vertical edge width is 1 pixel both in low DPI and high DPI.
-  return [[self controlView] cr_lineWidth];
 }
 
 - (BOOL)shouldDrawBezel {
@@ -217,8 +196,7 @@ size_t CalculatePositionsInFrame(
   std::vector<NSRect> decorationFrames;
   NSRect textFrame;
   CalculatePositionsInFrame(frame, leftDecorations_, rightDecorations_,
-                            [self edgeWidth], &decorations, &decorationFrames,
-                            &textFrame);
+                            &decorations, &decorationFrames, &textFrame);
 
   return NSWidth(textFrame);
 }
@@ -234,8 +212,7 @@ size_t CalculatePositionsInFrame(
   std::vector<NSRect> decorationFrames;
   NSRect textFrame;
   CalculatePositionsInFrame(cellFrame, leftDecorations_, rightDecorations_,
-                            [self edgeWidth], &decorations, &decorationFrames,
-                            &textFrame);
+                            &decorations, &decorationFrames, &textFrame);
 
   // Find our decoration and return the corresponding frame.
   std::vector<LocationBarDecoration*>::const_iterator iter =
@@ -259,18 +236,12 @@ size_t CalculatePositionsInFrame(
   std::vector<NSRect> decorationFrames;
   NSRect textFrame = [super textFrameForFrame:cellFrame];
   CalculatePositionsInFrame(textFrame, leftDecorations_, rightDecorations_,
-                            [self edgeWidth], &decorations, &decorationFrames,
-                            &textFrame);
+                            &decorations, &decorationFrames, &textFrame);
 
   // NOTE: This function must closely match the logic in
   // |-drawInteriorWithFrame:inView:|.
 
   return textFrame;
-}
-
-// Returns the sub-frame where clicks can happen within the cell.
-- (NSRect)clickableFrameForFrame:(NSRect)cellFrame {
-  return [super textFrameForFrame:cellFrame];
 }
 
 - (NSRect)textCursorFrameForFrame:(NSRect)cellFrame {
@@ -279,8 +250,7 @@ size_t CalculatePositionsInFrame(
   NSRect textFrame;
   size_t left_count =
       CalculatePositionsInFrame(cellFrame, leftDecorations_, rightDecorations_,
-                                [self edgeWidth], &decorations,
-                                &decorationFrames, &textFrame);
+                                &decorations, &decorationFrames, &textFrame);
 
   // Determine the left-most extent for the i-beam cursor.
   CGFloat minX = NSMinX(textFrame);
@@ -360,8 +330,7 @@ size_t CalculatePositionsInFrame(
   NSRect workingFrame;
 
   CalculatePositionsInFrame(cellFrame, leftDecorations_, rightDecorations_,
-                            [self edgeWidth], &decorations, &decorationFrames,
-                            &workingFrame);
+                            &decorations, &decorationFrames, &workingFrame);
 
   // Draw the decorations.
   for (size_t i = 0; i < decorations.size(); ++i) {
@@ -401,8 +370,7 @@ size_t CalculatePositionsInFrame(
   std::vector<NSRect> decorationFrames;
   NSRect textFrame;
   CalculatePositionsInFrame(cellFrame, leftDecorations_, rightDecorations_,
-                            [self edgeWidth], &decorations, &decorationFrames,
-                            &textFrame);
+                            &decorations, &decorationFrames, &textFrame);
 
   for (size_t i = 0; i < decorations.size(); ++i) {
     if (NSMouseInRect(location, decorationFrames[i], flipped))
@@ -491,151 +459,11 @@ size_t CalculatePositionsInFrame(
     DCHECK_EQ([event type], NSLeftMouseUp);
   }
 
-  bool handled;
-  if (decoration->AsButtonDecoration()) {
-    ButtonDecoration* button = decoration->AsButtonDecoration();
-
-    button->SetButtonState(ButtonDecoration::kButtonStatePressed);
-    [controlView setNeedsDisplay:YES];
-
-    // Track the mouse until the user releases the button.
-    [self trackMouse:theEvent
-              inRect:decorationRect
-              ofView:controlView
-        untilMouseUp:YES];
-
-    const NSPoint mouseLocation = [[NSApp currentEvent] locationInWindow];
-    const NSPoint point = [controlView convertPoint:mouseLocation fromView:nil];
-
-    // Post delayed focus notification, if necessary.
-    if (focusEvent.get() && !button->PreventFocus(point))
-      [self focusNotificationFor:focusEvent ofView:controlView];
-    focusEvent.reset();
-
-    // Set the proper state (hover or normal) once the mouse has been released,
-    // and call |OnMousePressed| if the button was released while the mouse was
-    // within the bounds of the button.
-    if (NSMouseInRect(point, decorationRect, [controlView isFlipped])) {
-      button->SetButtonState(ButtonDecoration::kButtonStateHover);
-      [controlView setNeedsDisplay:YES];
-      handled = decoration->OnMousePressed(
-          [self frameForDecoration:decoration inFrame:cellFrame],
-          NSMakePoint(point.x - decorationRect.origin.x,
-                      point.y - decorationRect.origin.y));
-    } else {
-      button->SetButtonState(ButtonDecoration::kButtonStateNormal);
-      [controlView setNeedsDisplay:YES];
-      handled = true;
-    }
-  } else {
-    const NSPoint mouseLocation = [theEvent locationInWindow];
-    const NSPoint point = [controlView convertPoint:mouseLocation fromView:nil];
-    handled = decoration->OnMousePressed(
-        decorationRect,
-        NSMakePoint(point.x - decorationRect.origin.x,
-                    point.y - decorationRect.origin.y));
-  }
-
-  return handled ? YES : NO;
-}
-
-// Helper method for the |mouseEntered:inView:| and |mouseExited:inView:|
-// messages. Retrieves the |ButtonDecoration| for the specified event (received
-// from a tracking area), and returns |NULL| if no decoration matches.
-- (ButtonDecoration*)getButtonDecorationForEvent:(NSEvent*)theEvent {
-  ButtonDecoration* bd = static_cast<ButtonDecoration*>(
-      [[[[theEvent trackingArea] userInfo] valueForKey:kButtonDecorationKey]
-          pointerValue]);
-
-  CHECK(!bd ||
-      std::count(leftDecorations_.begin(), leftDecorations_.end(), bd) ||
-      std::count(rightDecorations_.begin(), rightDecorations_.end(), bd));
-
-  return bd;
-}
-
-// Helper method for |setUpTrackingAreasInView|. Creates an |NSDictionary| to
-// be used as user information to identify which decoration is the source of an
-// event (from a tracking area).
-- (NSDictionary*)getDictionaryForButtonDecoration:
-    (ButtonDecoration*)decoration {
-  if (!decoration)
-    return nil;
-
-  DCHECK(
-    std::count(leftDecorations_.begin(), leftDecorations_.end(), decoration) ||
-    std::count(rightDecorations_.begin(), rightDecorations_.end(), decoration));
-
-  return [NSDictionary
-      dictionaryWithObject:[NSValue valueWithPointer:decoration]
-                    forKey:kButtonDecorationKey];
-}
-
-- (void)mouseEntered:(NSEvent*)theEvent
-              inView:(AutocompleteTextField*)controlView {
-  ButtonDecoration* decoration = [self getButtonDecorationForEvent:theEvent];
-  if (decoration) {
-    decoration->SetButtonState(ButtonDecoration::kButtonStateHover);
-    [controlView setNeedsDisplay:YES];
-  }
-}
-
-- (void)mouseExited:(NSEvent*)theEvent
-             inView:(AutocompleteTextField*)controlView {
-  ButtonDecoration* decoration = [self getButtonDecorationForEvent:theEvent];
-  if (decoration) {
-    decoration->SetButtonState(ButtonDecoration::kButtonStateNormal);
-    [controlView setNeedsDisplay:YES];
-  }
-}
-
-- (void)setUpTrackingAreasInRect:(NSRect)frame
-                          ofView:(AutocompleteTextField*)view {
-  std::vector<LocationBarDecoration*> decorations;
-  std::vector<NSRect> decorationFrames;
-  NSRect textFrame;
-  NSRect cellRect = [self clickableFrameForFrame:[view bounds]];
-  CalculatePositionsInFrame(cellRect, leftDecorations_, rightDecorations_,
-                            [self edgeWidth], &decorations, &decorationFrames,
-                            &textFrame);
-
-  // Remove previously-registered tracking areas, since we'll update them below.
-  for (CrTrackingArea* area in [view trackingAreas]) {
-    if ([[area userInfo] objectForKey:kButtonDecorationKey])
-      [view removeTrackingArea:area];
-  }
-
-  // Setup new tracking areas for the buttons.
-  for (size_t i = 0; i < decorations.size(); ++i) {
-    ButtonDecoration* button = decorations[i]->AsButtonDecoration();
-    if (button) {
-      // If the button isn't pressed (in which case we want to leave it as-is),
-      // update it's state since we might have missed some entered/exited events
-      // because of the removing/adding of the tracking areas.
-      if (button->GetButtonState() !=
-          ButtonDecoration::kButtonStatePressed) {
-        const NSPoint mouseLocationWindow =
-            [[view window] mouseLocationOutsideOfEventStream];
-        const NSPoint mouseLocation =
-            [view convertPoint:mouseLocationWindow fromView:nil];
-        const BOOL mouseInRect = NSMouseInRect(
-            mouseLocation, decorationFrames[i], [view isFlipped]);
-        button->SetButtonState(mouseInRect ?
-                                   ButtonDecoration::kButtonStateHover :
-                                   ButtonDecoration::kButtonStateNormal);
-        [view setNeedsDisplay:YES];
-      }
-
-      NSDictionary* info = [self getDictionaryForButtonDecoration:button];
-      base::scoped_nsobject<CrTrackingArea> area(
-          [[CrTrackingArea alloc] initWithRect:decorationFrames[i]
-                                       options:NSTrackingMouseEnteredAndExited |
-                                               NSTrackingActiveAlways
-                                         owner:view
-                                      userInfo:info]);
-      [view addTrackingArea:area];
-    }
-  }
+  const NSPoint mouseLocation = [theEvent locationInWindow];
+  const NSPoint point = [controlView convertPoint:mouseLocation fromView:nil];
+  return decoration->OnMousePressed(
+      decorationRect, NSMakePoint(point.x - decorationRect.origin.x,
+                                  point.y - decorationRect.origin.y));
 }
 
 // Given a newly created .webloc plist url file, also give it a resource
@@ -818,8 +646,7 @@ static NSString* UnusedLegalNameForNewDropFile(NSURL* saveLocation,
   std::vector<NSRect> decorationFrames;
   NSRect textFrame;
   CalculatePositionsInFrame(cellFrame, leftDecorations_, rightDecorations_,
-                            [self edgeWidth], &decorations, &decorationFrames,
-                            &textFrame);
+                            &decorations, &decorationFrames, &textFrame);
 
   for (size_t i = 0; i < decorations.size(); ++i) {
     NSString* tooltip = decorations[i]->GetToolTip();
@@ -847,31 +674,12 @@ static NSString* UnusedLegalNameForNewDropFile(NSURL* saveLocation,
   return [super showsFirstResponder] && !hideFocusState_;
 }
 
-- (void)focusNotificationFor:(NSEvent*)event
-                      ofView:(AutocompleteTextField*)controlView {
+- (void)handleFocusEvent:(NSEvent*)event
+                  ofView:(AutocompleteTextField*)controlView {
   if ([controlView observer]) {
     const bool controlDown = ([event modifierFlags] & NSControlKeyMask) != 0;
     [controlView observer]->OnSetFocus(controlDown);
   }
-}
-
-- (void)handleFocusEvent:(NSEvent*)event
-                  ofView:(AutocompleteTextField*)controlView {
-  // Only intercept left button click. All other events cause immediate focus.
-  if ([event type] == NSLeftMouseDown) {
-    LocationBarDecoration* decoration =
-        [self decorationForEvent:event
-                          inRect:[controlView bounds]
-                          ofView:controlView];
-    // Only ButtonDecorations need a delayed focus handling.
-    if (decoration && decoration->AsButtonDecoration()) {
-      focusEvent_.reset([event retain]);
-      return;
-    }
-  }
-
-  // Handle event immediately.
-  [self focusNotificationFor:event ofView:controlView];
 }
 
 @end

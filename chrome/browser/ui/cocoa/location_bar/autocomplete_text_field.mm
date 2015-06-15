@@ -188,16 +188,6 @@ const CGFloat kAnimationDuration = 0.2;
   [super otherMouseDown:event];
 }
 
-// Received from tracking areas. Pass it down to the cell, and add the field.
-- (void)mouseEntered:(NSEvent*)theEvent {
-  [[self cell] mouseEntered:theEvent inView:self];
-}
-
-// Received from tracking areas. Pass it down to the cell, and add the field.
-- (void)mouseExited:(NSEvent*)theEvent {
-  [[self cell] mouseExited:theEvent inView:self];
-}
-
 // Overridden so that cursor and tooltip rects can be updated.
 - (void)setFrame:(NSRect)frameRect {
   [super setFrame:frameRect];
@@ -307,9 +297,6 @@ const CGFloat kAnimationDuration = 0.2;
   // Reload the decoration tooltips.
   [currentToolTips_ removeAllObjects];
   [[self cell] updateToolTipsInRect:[self bounds] ofView:self];
-
-  // Setup/update the tracking areas for the decorations.
-  [[self cell] setUpTrackingAreasInRect:[self bounds] ofView:self];
 }
 
 // NOTE(shess): http://crbug.com/19116 describes a weird bug which

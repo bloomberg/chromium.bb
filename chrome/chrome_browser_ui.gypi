@@ -1082,8 +1082,6 @@
       'browser/ui/cocoa/location_bar/autocomplete_text_field_editor.mm',
       'browser/ui/cocoa/location_bar/bubble_decoration.h',
       'browser/ui/cocoa/location_bar/bubble_decoration.mm',
-      'browser/ui/cocoa/location_bar/button_decoration.h',
-      'browser/ui/cocoa/location_bar/button_decoration.mm',
       'browser/ui/cocoa/location_bar/content_setting_decoration.h',
       'browser/ui/cocoa/location_bar/content_setting_decoration.mm',
       'browser/ui/cocoa/location_bar/ev_bubble_decoration.h',

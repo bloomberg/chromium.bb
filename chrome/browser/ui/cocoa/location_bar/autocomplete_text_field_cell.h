@@ -79,18 +79,6 @@ class LocationBarDecoration;
            inRect:(NSRect)cellFrame
            ofView:(AutocompleteTextField*)controlView;
 
-// These messages are passed down from the AutocompleteTextField, where they are
-// received from tracking areas registered for decorations that act as buttons.
-- (void)mouseEntered:(NSEvent*)theEvent
-              inView:(AutocompleteTextField*)controlView;
-- (void)mouseExited:(NSEvent*)theEvent
-             inView:(AutocompleteTextField*)controlView;
-
-// Setup tracking areas for the decorations that are part of this cell, so they
-// can receive |mouseEntered:| and |mouseExited:| events.
-- (void)setUpTrackingAreasInRect:(NSRect)frame
-                          ofView:(AutocompleteTextField*)view;
-
 // Overridden from StyledTextFieldCell to include decorations adjacent
 // to the text area which don't handle mouse clicks themselves.
 // Keyword-search bubble, for instance.
@@ -108,9 +96,6 @@ class LocationBarDecoration;
                    ofView:(AutocompleteTextField*)controlView;
 
 // Handles the |event| that caused |controlView| to become firstResponder.
-// If it is a mouse click on a ButtonDecoration, focus notifications are
-// postponed until the ButtonDecoration's OnMousePressed() was invoked.
-// Otherwise, they are called immediately.
 - (void)handleFocusEvent:(NSEvent*)event
                   ofView:(AutocompleteTextField*)controlView;
 @end
