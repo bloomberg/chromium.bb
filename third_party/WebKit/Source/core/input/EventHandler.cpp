@@ -561,6 +561,8 @@ ScrollResultOneDimensional EventHandler::scroll(ScrollDirection direction, Scrol
     if (!node || !node->layoutObject())
         return ScrollResultOneDimensional(false, delta);
 
+    m_frame->document()->updateLayoutIgnorePendingStylesheets();
+
     LayoutBox* curBox = node->layoutObject()->enclosingBox();
     while (curBox && !curBox->isLayoutView()) {
         ScrollDirectionPhysical physicalDirection = toPhysicalDirection(
@@ -589,6 +591,9 @@ void EventHandler::customizedScroll(const Node& startNode, ScrollState& scrollSt
 {
     if (scrollState.fullyConsumed())
         return;
+
+    if (scrollState.deltaX() || scrollState.deltaY())
+        m_frame->document()->updateLayoutIgnorePendingStylesheets();
 
     if (m_currentScrollChain.isEmpty())
         recomputeScrollChain(*m_frame, startNode, m_currentScrollChain);

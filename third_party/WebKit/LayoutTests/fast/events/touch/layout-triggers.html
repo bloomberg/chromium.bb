@@ -80,7 +80,7 @@ onload = function() {
     triggeredLayout = triggersLayout(function() {
         eventSender.gestureScrollUpdate(0, 5);
     });
-    shouldBeFalse('triggeredLayout');
+    shouldBeTrue('triggeredLayout');
 
     debug('Sending GestureScrollEnd');
     triggeredLayout = triggersLayout(function() {
