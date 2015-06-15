@@ -69,6 +69,8 @@ class MyInstance : public pp::Instance {
   }
 
   void OnFlush(int32_t) {
+    // This plugin continuously paints because it continously samples the
+    // gamepad and paints its updated state.
     Paint();
   }
 
@@ -145,4 +147,3 @@ Module* CreateModule() {
 }
 
 }  // namespace pp
-

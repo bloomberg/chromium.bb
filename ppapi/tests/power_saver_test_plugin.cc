@@ -15,11 +15,14 @@
 #undef PostMessage
 #endif
 
+static void DummyCompletionCallback(void*, int32_t) {
+}
+
 // This is a simple C++ Pepper plugin that enables Plugin Power Saver tests.
 class PowerSaverTestInstance : public pp::Instance {
  public:
   explicit PowerSaverTestInstance(PP_Instance instance)
-      : pp::Instance(instance), callback_factory_(this) {}
+      : pp::Instance(instance) {}
   ~PowerSaverTestInstance() override {}
 
   bool Init(uint32_t argc, const char* argn[], const char* argv[]) {
@@ -42,10 +45,10 @@ class PowerSaverTestInstance : public pp::Instance {
     if (!BindGraphics(device_context_))
       return;
 
+    // Since we draw a static image, we only need to make a new frame when
+    // the device is initialized or the view size changes.
     Paint();
   }
-
-  void OnFlush(int32_t) { Paint(); }
 
  private:
   void Paint() {
@@ -64,13 +67,11 @@ class PowerSaverTestInstance : public pp::Instance {
 
     device_context_.ReplaceContents(&image);
     device_context_.Flush(
-        callback_factory_.NewCallback(&PowerSaverTestInstance::OnFlush));
+        pp::CompletionCallback(&DummyCompletionCallback, nullptr));
   }
 
   pp::View view_;
   pp::Graphics2D device_context_;
-
-  pp::CompletionCallbackFactory<PowerSaverTestInstance> callback_factory_;
 };
 
 class PowerSaverTestModule : public pp::Module {
