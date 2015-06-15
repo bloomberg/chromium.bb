@@ -55,6 +55,10 @@ def main(argv):
                       help='Verbose output')
   parser.add_argument('-d', '--debug', action='store_true',
                       help='Enable debug stub')
+  parser.add_argument('-e', '--exceptions', action='store_true',
+                      help='Enable exception handling interface')
+  parser.add_argument('-p', '--passthrough-environment', action='store_true',
+                      help='Pass environment of host through to nexe')
   parser.add_argument('--debug-libs', action='store_true',
                       help='For dynamic executables, reference debug '
                            'libraries rather then release')
@@ -109,6 +113,12 @@ def main(argv):
 
   if options.debug:
     cmd.append('-g')
+
+  if options.exceptions:
+    cmd.append('-e')
+
+  if options.passthrough_environment:
+    cmd.append('-p')
 
   if not options.verbose:
     cmd += ['-l', os.devnull]
