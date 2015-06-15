@@ -529,9 +529,10 @@ class DeviceUtilsInstallTest(DeviceUtilsTest):
          'this.is.a.test.package'),
         (self.call.device.GetApplicationPath('this.is.a.test.package'),
          '/fake/data/app/this.is.a.test.package.apk'),
-        (self.call.device._GetChangedFilesImpl(
+        (self.call.device._GetChangedAndStaleFiles(
             '/fake/test/app.apk', '/fake/data/app/this.is.a.test.package.apk'),
-         [('/fake/test/app.apk', '/fake/data/app/this.is.a.test.package.apk')]),
+         ([('/fake/test/app.apk', '/fake/data/app/this.is.a.test.package.apk')],
+          [])),
         self.call.adb.Uninstall('this.is.a.test.package'),
         self.call.adb.Install('/fake/test/app.apk', reinstall=False)):
       self.device.Install('/fake/test/app.apk', retries=0)
@@ -542,9 +543,10 @@ class DeviceUtilsInstallTest(DeviceUtilsTest):
          'this.is.a.test.package'),
         (self.call.device.GetApplicationPath('this.is.a.test.package'),
          '/fake/data/app/this.is.a.test.package.apk'),
-        (self.call.device._GetChangedFilesImpl(
+        (self.call.device._GetChangedAndStaleFiles(
             '/fake/test/app.apk', '/fake/data/app/this.is.a.test.package.apk'),
-         [('/fake/test/app.apk', '/fake/data/app/this.is.a.test.package.apk')]),
+         ([('/fake/test/app.apk', '/fake/data/app/this.is.a.test.package.apk')],
+          [])),
         self.call.adb.Install('/fake/test/app.apk', reinstall=True)):
       self.device.Install('/fake/test/app.apk', reinstall=True, retries=0)
 
@@ -554,9 +556,9 @@ class DeviceUtilsInstallTest(DeviceUtilsTest):
          'this.is.a.test.package'),
         (self.call.device.GetApplicationPath('this.is.a.test.package'),
          '/fake/data/app/this.is.a.test.package.apk'),
-        (self.call.device._GetChangedFilesImpl(
+        (self.call.device._GetChangedAndStaleFiles(
             '/fake/test/app.apk', '/fake/data/app/this.is.a.test.package.apk'),
-         [])):
+         ([], []))):
       self.device.Install('/fake/test/app.apk', retries=0)
 
   def testInstall_fails(self):

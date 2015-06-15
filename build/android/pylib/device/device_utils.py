@@ -485,7 +485,9 @@ class DeviceUtils(object):
     package_name = apk_helper.GetPackageName(apk_path)
     device_path = self.GetApplicationPath(package_name)
     if device_path is not None:
-      should_install = bool(self._GetChangedFilesImpl(apk_path, device_path))
+      (files_to_push, _) = self._GetChangedAndStaleFiles(
+          apk_path, device_path)
+      should_install = bool(files_to_push)
       if should_install and not reinstall:
         self.adb.Uninstall(package_name)
     else:
@@ -832,8 +834,13 @@ class DeviceUtils(object):
       PUSH_CHANGED_FILES_DEFAULT_TIMEOUT,
       PUSH_CHANGED_FILES_DEFAULT_RETRIES)
   def PushChangedFiles(self, host_device_tuples, timeout=None,
-                       retries=None):
+                       retries=None, delete_device_stale=False):
     """Push files to the device, skipping files that don't need updating.
+
+    When a directory is pushed, it is traversed recursively on the host and
+    all files in it are pushed to the device as needed.
+    Additionally, if delete_device_stale option is True,
+    files that exist on the device but don't exist on the host are deleted.
 
     Args:
       host_device_tuples: A list of (host_path, device_path) tuples, where
@@ -842,6 +849,7 @@ class DeviceUtils(object):
         an absolute path of the destination on the device.
       timeout: timeout in seconds
       retries: number of retries
+      delete_device_stale: option to delete stale files on device
 
     Raises:
       CommandFailedError on failure.
@@ -849,15 +857,72 @@ class DeviceUtils(object):
       DeviceUnreachableError on missing device.
     """
 
-    files = []
+    all_changed_files = []
+    all_stale_files = []
     for h, d in host_device_tuples:
       if os.path.isdir(h):
         self.RunShellCommand(['mkdir', '-p', d], check_return=True)
-      files += self._GetChangedFilesImpl(h, d)
+      (changed_files, stale_files) = self._GetChangedAndStaleFiles(h, d)
+      all_changed_files += changed_files
+      all_stale_files += stale_files
 
-    if not files:
+    if delete_device_stale:
+      self.RunShellCommand(['rm', '-f'] + all_stale_files,
+                             check_return=True)
+
+    if not all_changed_files:
       return
 
+    self._PushFilesImpl(host_device_tuples, all_changed_files)
+
+  def _GetChangedAndStaleFiles(self, host_path, device_path):
+    """Get files to push and delete
+
+    Args:
+      host_path: an absolute path of a file or directory on the host
+      device_path: an absolute path of a file or directory on the device
+
+    Returns:
+      a two-element tuple
+      1st element: a list of (host_files_path, device_files_path) tuples to push
+      2nd element: a list of stale files under device_path
+    """
+    real_host_path = os.path.realpath(host_path)
+    try:
+      real_device_path = self.RunShellCommand(
+          ['realpath', device_path], single_line=True, check_return=True)
+    except device_errors.CommandFailedError:
+      real_device_path = None
+    if not real_device_path:
+      return ([(host_path, device_path)], [])
+
+    try:
+      host_checksums = md5sum.CalculateHostMd5Sums([real_host_path])
+      device_checksums = md5sum.CalculateDeviceMd5Sums(
+        [real_device_path], self)
+    except EnvironmentError as e:
+      logging.warning('Error calculating md5: %s', e)
+      return ([(host_path, device_path)], [])
+
+    if os.path.isfile(host_path):
+      host_checksum = host_checksums.get(real_host_path)
+      device_checksum = device_checksums.get(real_device_path)
+      if host_checksum != device_checksum:
+        return ([(host_path, device_path)], [])
+      else:
+        return ([], [])
+    else:
+      to_push = []
+      for host_abs_path, host_checksum in host_checksums.iteritems():
+        device_abs_path = '%s/%s' % (
+            real_device_path, os.path.relpath(host_abs_path, real_host_path))
+        device_checksum = device_checksums.pop(device_abs_path, None)
+        if device_checksum != host_checksum:
+          to_push.append((host_abs_path, device_abs_path))
+      to_delete = device_checksums.keys()
+      return (to_push, to_delete)
+
+  def _PushFilesImpl(self, host_device_tuples, files):
     size = sum(host_utils.GetRecursiveDiskUsage(h) for h, _ in files)
     file_count = len(files)
     dir_size = sum(host_utils.GetRecursiveDiskUsage(h)
@@ -887,44 +952,6 @@ class DeviceUtils(object):
       self.RunShellCommand(
           ['chmod', '-R', '777'] + [d for _, d in host_device_tuples],
           as_root=True, check_return=True)
-
-  def _GetChangedFilesImpl(self, host_path, device_path):
-    real_host_path = os.path.realpath(host_path)
-    try:
-      real_device_path = self.RunShellCommand(
-          ['realpath', device_path], single_line=True, check_return=True)
-    except device_errors.CommandFailedError:
-      real_device_path = None
-    if not real_device_path:
-      return [(host_path, device_path)]
-
-    try:
-      host_checksums = md5sum.CalculateHostMd5Sums([real_host_path])
-      device_paths_to_md5 = (
-          real_device_path if os.path.isfile(real_host_path)
-          else ('%s/%s' % (real_device_path, os.path.relpath(p, real_host_path))
-                for p in host_checksums.iterkeys()))
-      device_checksums = md5sum.CalculateDeviceMd5Sums(
-          device_paths_to_md5, self)
-    except EnvironmentError as e:
-      logging.warning('Error calculating md5: %s', e)
-      return [(host_path, device_path)]
-
-    if os.path.isfile(host_path):
-      host_checksum = host_checksums.get(real_host_path)
-      device_checksum = device_checksums.get(real_device_path)
-      if host_checksum != device_checksum:
-        return [(host_path, device_path)]
-      else:
-        return []
-    else:
-      to_push = []
-      for host_abs_path, host_checksum in host_checksums.iteritems():
-        device_abs_path = '%s/%s' % (
-            real_device_path, os.path.relpath(host_abs_path, real_host_path))
-        if (device_checksums.get(device_abs_path) != host_checksum):
-          to_push.append((host_abs_path, device_abs_path))
-      return to_push
 
   def _InstallCommands(self):
     if self._commands_installed is None:

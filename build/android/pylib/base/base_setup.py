@@ -59,7 +59,5 @@ def GenerateDepsDirUsingIsolate(suite_name, isolate_file_path,
 def PushDataDeps(device, device_dir, test_options):
   valgrind_tools.PushFilesForTool(test_options.tool, device)
   if os.path.exists(constants.ISOLATE_DEPS_DIR):
-    device.PushChangedFiles([
-        (os.path.join(constants.ISOLATE_DEPS_DIR, p),
-         '%s/%s' % (device_dir, p))
-        for p in os.listdir(constants.ISOLATE_DEPS_DIR)])
+    device.PushChangedFiles([(constants.ISOLATE_DEPS_DIR, device_dir)],
+                            delete_device_stale=test_options.delete_stale_data)

@@ -15,4 +15,5 @@ GTestOptions = collections.namedtuple('GTestOptions', [
     'isolate_file_path',
     'suite_name',
     'app_data_files',
-    'app_data_file_dir'])
+    'app_data_file_dir',
+    'delete_stale_data'])

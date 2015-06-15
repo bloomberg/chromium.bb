@@ -223,6 +223,9 @@ def AddGTestOptions(parser):
   group.add_argument('--app-data-file-dir',
                      help='Host directory to which app data files will be'
                           ' saved. Used with --app-data-file.')
+  group.add_argument('--delete-stale-data', dest='delete_stale_data',
+                     action='store_true',
+                     help='Delete stale test data on the device.')
 
   filter_group = group.add_mutually_exclusive_group()
   filter_group.add_argument('-f', '--gtest_filter', '--gtest-filter',
@@ -343,6 +346,9 @@ def AddInstrumentationTestOptions(parser):
                      dest='isolate_file_path',
                      help='.isolate file path to override the default '
                           'path')
+  group.add_argument('--delete-stale-data', dest='delete_stale_data',
+                     action='store_true',
+                     help='Delete stale test data on the device.')
 
   AddCommonOptions(parser)
   AddDeviceOptions(parser)
@@ -396,7 +402,8 @@ def ProcessInstrumentationOptions(args):
       args.test_support_apk_path,
       args.device_flags,
       args.isolate_file_path,
-      args.set_asserts
+      args.set_asserts,
+      args.delete_stale_data
       )
 
 
@@ -650,7 +657,8 @@ def _RunGTests(args, devices):
         args.isolate_file_path,
         suite_name,
         args.app_data_files,
-        args.app_data_file_dir)
+        args.app_data_file_dir,
+        args.delete_stale_data)
     runner_factory, tests = gtest_setup.Setup(gtest_options, devices)
 
     results, test_exit_code = test_dispatcher.RunTests(
