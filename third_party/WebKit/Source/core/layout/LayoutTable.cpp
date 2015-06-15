@@ -917,7 +917,7 @@ int LayoutTable::calcBorderStart() const
     if (!numEffCols())
         return 0;
 
-    unsigned borderWidth = 0;
+    int borderWidth = 0;
 
     const BorderValue& tableStartBorder = style()->borderStart();
     if (tableStartBorder.style() == BHIDDEN)
@@ -971,7 +971,7 @@ int LayoutTable::calcBorderEnd() const
     if (!numEffCols())
         return 0;
 
-    unsigned borderWidth = 0;
+    int borderWidth = 0;
 
     const BorderValue& tableEndBorder = style()->borderEnd();
     if (tableEndBorder.style() == BHIDDEN)

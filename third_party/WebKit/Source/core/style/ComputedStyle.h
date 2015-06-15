@@ -505,13 +505,13 @@ public:
     const LengthSize& borderBottomRightRadius() const { return surround->border.bottomRight(); }
     bool hasBorderRadius() const { return surround->border.hasBorderRadius(); }
 
-    unsigned borderLeftWidth() const { return surround->border.borderLeftWidth(); }
+    int borderLeftWidth() const { return surround->border.borderLeftWidth(); }
     EBorderStyle borderLeftStyle() const { return surround->border.left().style(); }
-    unsigned borderRightWidth() const { return surround->border.borderRightWidth(); }
+    int borderRightWidth() const { return surround->border.borderRightWidth(); }
     EBorderStyle borderRightStyle() const { return surround->border.right().style(); }
-    unsigned borderTopWidth() const { return surround->border.borderTopWidth(); }
+    int borderTopWidth() const { return surround->border.borderTopWidth(); }
     EBorderStyle borderTopStyle() const { return surround->border.top().style(); }
-    unsigned borderBottomWidth() const { return surround->border.borderBottomWidth(); }
+    int borderBottomWidth() const { return surround->border.borderBottomWidth(); }
     EBorderStyle borderBottomStyle() const { return surround->border.bottom().style(); }
 
     unsigned short borderBeforeWidth() const;

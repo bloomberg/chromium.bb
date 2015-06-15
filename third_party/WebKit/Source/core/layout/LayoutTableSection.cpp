@@ -1150,7 +1150,7 @@ int LayoutTableSection::calcBlockDirectionOuterBorder(BlockBorderSide side) cons
     if (!m_grid.size() || !totalCols)
         return 0;
 
-    unsigned borderWidth = 0;
+    int borderWidth = 0;
 
     const BorderValue& sb = side == BorderBefore ? style()->borderBefore() : style()->borderAfter();
     if (sb.style() == BHIDDEN)
@@ -1205,7 +1205,7 @@ int LayoutTableSection::calcInlineDirectionOuterBorder(InlineBorderSide side) co
         return 0;
     unsigned colIndex = side == BorderStart ? 0 : totalCols - 1;
 
-    unsigned borderWidth = 0;
+    int borderWidth = 0;
 
     const BorderValue& sb = side == BorderStart ? style()->borderStart() : style()->borderEnd();
     if (sb.style() == BHIDDEN)
