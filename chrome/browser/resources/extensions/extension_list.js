@@ -299,9 +299,13 @@ cr.define('extensions', function() {
 
         if (eventData.event_type == EventType.LOADED ||
             eventData.event_type == EventType.UNLOADED ||
-            eventData.event_type == EventType.PREFS_CHANGED) {
+            eventData.event_type == EventType.PREFS_CHANGED ||
+            eventData.event_type == EventType.UNINSTALLED) {
           // We update the commands overlay whenever an extension is added or
-          // removed (other updates wouldn't affect command-ly things).
+          // removed (other updates wouldn't affect command-ly things). We
+          // need both UNLOADED and UNINSTALLED since the UNLOADED event results
+          // in an extension losing active keybindings, and UNINSTALLED can
+          // result in the "Keyboard shortcuts" link being removed.
           ExtensionCommandsOverlay.updateExtensionsData(this.extensions_);
         }
       }.bind(this));
