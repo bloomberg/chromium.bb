@@ -45,7 +45,7 @@
     [CustomElementCallbacks] Document? transformToDocument(Node source);
 
     void setParameter(DOMString? namespaceURI, DOMString localName, DOMString value);
-    [TreatReturnedNullStringAs=Undefined] DOMString getParameter(DOMString? namespaceURI, DOMString localName);
+    DOMString? getParameter(DOMString? namespaceURI, DOMString localName);
     void removeParameter(DOMString? namespaceURI, DOMString localName);
     void clearParameters();
 

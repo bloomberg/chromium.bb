@@ -246,7 +246,7 @@ addResultExpectValue(testname, processor.getParameter(undefined, undefined), "Su
 // 5.2 pass getParameter a name which has not been set
 
 var testname = "pass getParameter a name which has not been set";
-addResultExpectValue(testname, processor.getParameter(undefined, "hasnotbeenset"), undefined);
+addResultExpectValue(testname, processor.getParameter(undefined, "hasnotbeenset"), null);
 
 // 5.3 verify getParameter actually gets (and set sets)
 processor.setParameter(null, "test", "testValue");
@@ -269,14 +269,14 @@ addResultExpectValue(testname, processor.getParameter("foo", "foo"), "Success");
 processor.setParameter(undefined, "test", "testValue");
 processor.removeParameter(undefined, "test");
 var testname = "verify removeParameter actually removes using undefined namespace";
-addResultExpectValue(testname, processor.getParameter(null, "test"), undefined);
+addResultExpectValue(testname, processor.getParameter(null, "test"), null);
 
 // 6.3 pass removeParameter undefined name
 
 processor.setParameter(undefined, "undefined", "Success");
 processor.removeParameter(undefined, undefined);
 var testname = "pass removeParameter undefined name";
-addResultExpectValue(testname, processor.getParameter(undefined, "undefined"), undefined);
+addResultExpectValue(testname, processor.getParameter(undefined, "undefined"), null);
 
 // 6.4 pass removeParameter a name which has not been set
 
@@ -287,7 +287,7 @@ addResultExpectValue("pass removeParameter a name which has not been set", "Succ
 processor.setParameter(null, "test", "testValue");
 processor.removeParameter(null, "test");
 var testname = "verify removeParameter actually removes";
-addResultExpectValue(testname, processor.getParameter(null, "test"), undefined);
+addResultExpectValue(testname, processor.getParameter(null, "test"), null);
 
 
 
@@ -298,7 +298,7 @@ addSectionHeader("void clearParameters()");
 processor.setParameter(null, "test", "testValue");
 processor.clearParameters();
 var testname = "verify that clearParameters does";
-addResultExpectValue(testname, processor.getParameter(null, "test"), undefined);
+addResultExpectValue(testname, processor.getParameter(null, "test"), null);
 
 
 // 8.0 void reset();
@@ -310,7 +310,7 @@ processor.reset();
 
 // 8.1 call, verify that parameters are cleared after reset()
 var testname = "verify that parameters have been cleared";
-addResultExpectValue(testname, processor.getParameter(null, "test"), undefined);
+addResultExpectValue(testname, processor.getParameter(null, "test"), null);
 
 // 8.2 call, verify that stylesheet has been cleared after reset()
 var testname = "verify that stylesheet has been cleared";
