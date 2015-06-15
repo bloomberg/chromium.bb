@@ -61,20 +61,33 @@ var CommandUtil = {};
  * @return {Entry} Entry of the found node.
  */
 CommandUtil.getCommandEntry = function(element) {
+  var entries = CommandUtil.getCommandEntries(element);
+  return entries.length === 0 ? null : entries[0];
+};
+
+/**
+ * Extracts entries on which command event was dispatched.
+ *
+ * @param {EventTarget} element Element which is the command event's target.
+ * @return {!Array<!Entry>} Entries of the found node.
+ */
+CommandUtil.getCommandEntries = function(element) {
   if (element instanceof DirectoryTree) {
     // element is a DirectoryTree.
-    return element.selectedItem ? element.selectedItem.entry : null;
+    return element.selectedItem ? [element.selectedItem.entry] : [];
   } else if (element instanceof DirectoryItem ||
              element instanceof ShortcutItem) {
     // element are sub items in DirectoryTree.
-    return element.entry;
+    return [element.entry];
   } else if (element instanceof cr.ui.List) {
     // element is a normal List (eg. the file list on the right panel).
-    var entry = element.selectedItem;
+    var entries = element.selectedItems;
     // Check if it is Entry or not by checking for toURL().
-    return entry && 'toURL' in entry ? entry : null;
+    return entries ||
+        entries.some(function(entry) { return !('toURL' in entry); }) ?
+        entries : [];
   } else {
-    return null;
+    return [];
   }
 };
 
@@ -650,10 +663,12 @@ CommandHandler.COMMANDS_['delete'] = /** @type {Command} */ ({
    * @param {!FileManager} fileManager FileManager to use.
    */
   execute: function(event, fileManager) {
-    var entries = fileManager.getSelection().entries;
-    var message = entries.length == 1 ?
+    var entries = CommandUtil.getCommandEntries(event.target);
+
+    var message = entries.length === 1 ?
         strf('GALLERY_CONFIRM_DELETE_ONE', entries[0].name) :
         strf('GALLERY_CONFIRM_DELETE_SOME', entries.length);
+
     fileManager.ui.deleteConfirmDialog.show(message, function() {
       fileManager.fileOperationManager.deleteEntries(entries);
     }, null, null);
@@ -663,10 +678,26 @@ CommandHandler.COMMANDS_['delete'] = /** @type {Command} */ ({
    * @param {!FileManager} fileManager FileManager to use.
    */
   canExecute: function(event, fileManager) {
-    var selection = fileManager.getSelection();
-    event.canExecute = !fileManager.isOnReadonlyDirectory() &&
-                       selection &&
-                       selection.totalCount > 0;
+    var entries = CommandUtil.getCommandEntries(event.target);
+
+    // If it contains a fake entry, hide command.
+    var containsFakeEntry = entries.some(function(entry) {
+      return util.isFakeEntry(entry);
+    });
+    if (containsFakeEntry) {
+      event.canExecute = false;
+      event.command.setHidden(true);
+      return;
+    }
+
+    // If it contains an entry which is on read only volume, disable command.
+    var containsReadOnlyEntry = entries.some(function(entry) {
+      var locationInfo = fileManager.volumeManager.getLocationInfo(entry);
+      return locationInfo && locationInfo.isReadOnly;
+    });
+
+    event.canExecute = !containsReadOnlyEntry;
+    event.command.setHidden(false);
   }
 });
 

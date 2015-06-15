@@ -369,11 +369,7 @@ function SubDirectoryItem(label, dirEntry, parentDirItem, tree) {
 
   // Sets up context menu of the item.
   if (tree.contextMenuForSubitems)
-    item.setContextMenu_(tree.contextMenuForSubitems);
-  // Adds handler for future change.
-  tree.addEventListener(
-      'contextMenuForSubitemsChange',
-      function(e) { item.setContextMenu_(e.newValue); });
+    cr.ui.contextMenuHandler.setContextMenu(item, tree.contextMenuForSubitems);
 
   // Populates children now if needed.
   if (parentDirItem.expanded)
@@ -388,18 +384,6 @@ SubDirectoryItem.prototype = {
   get entry() {
     return this.dirEntry_;
   }
-};
-
-/**
- * Sets the context menu for directory tree.
- * @param {!cr.ui.Menu} menu Menu to be set.
- * @private
- */
-SubDirectoryItem.prototype.setContextMenu_ = function(menu) {
-  var tree = this.parentTree_ || this;  // If no parent, 'this' itself is tree.
-  var locationInfo = tree.volumeManager_.getLocationInfo(this.entry);
-  if (locationInfo && locationInfo.isEligibleForFolderShortcut)
-    cr.ui.contextMenuHandler.setContextMenu(this, menu);
 };
 
 /**
@@ -1197,10 +1181,51 @@ DirectoryTree.prototype.onDirectoryContentChanged_ = function(event) {
   if (event.eventType !== 'changed' || !event.entry)
     return;
 
-  for (var i = 0; i < this.items.length; i++) {
-    if (this.items[i] instanceof VolumeItem)
-      this.items[i].updateItemByEntry(event.entry);
-  }
+  this.updateTreeByEntry_(event.entry);
+};
+
+/**
+ * Updates tree by entry.
+ * @param {!Entry} entry A changed entry. Deleted entry is passed when watched
+ *     directory is deleted.
+ * @private
+ */
+DirectoryTree.prototype.updateTreeByEntry_ = function(entry) {
+  entry.getDirectory(entry.fullPath, {create: false},
+      function() {
+        // If entry exists.
+        // e.g. /a/b is deleted while watching /a.
+        for (var i = 0; i < this.items.length; i++) {
+          if (this.items[i] instanceof VolumeItem)
+            this.items[i].updateItemByEntry(entry);
+        }
+      }.bind(this),
+      function() {
+        // If entry does not exist, try to get parent and update the subtree by
+        // it.
+        // e.g. /a/b is deleted while watching /a/b. Try to update /a in this
+        //     case.
+        entry.getParent(function(parentEntry) {
+          this.updateTreeByEntry_(parentEntry);
+        }.bind(this), function(error) {
+          // If it fails to get parent, update the subtree by volume.
+          // e.g. /a/b is deleted while watching /a/b/c. getParent of /a/b/c
+          //     fails in this case. We falls back to volume update.
+          //
+          // TODO(yawano): Try to get parent path also in this case by
+          //     manipulating path string.
+          var volumeInfo = this.volumeManager.getVolumeInfo(entry);
+          if (!volumeInfo)
+            return;
+
+          for (var i = 0; i < this.items.length; i++) {
+            if (this.items[i] instanceof VolumeItem &&
+                this.items[i].volumeInfo === volumeInfo) {
+              this.items[i].updateSubDirectories(true /* recursive */);
+            }
+          }
+        }.bind(this));
+      }.bind(this));
 };
 
 /**
