@@ -30,8 +30,6 @@
         'enhanced_bookmarks/bookmark_image_service.h',
         'enhanced_bookmarks/bookmark_server_cluster_service.cc',
         'enhanced_bookmarks/bookmark_server_cluster_service.h',
-        'enhanced_bookmarks/bookmark_server_search_service.cc',
-        'enhanced_bookmarks/bookmark_server_search_service.h',
         'enhanced_bookmarks/bookmark_server_service.cc',
         'enhanced_bookmarks/bookmark_server_service.h',
         'enhanced_bookmarks/enhanced_bookmark_model.cc',

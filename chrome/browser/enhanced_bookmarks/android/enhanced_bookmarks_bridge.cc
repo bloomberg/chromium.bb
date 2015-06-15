@@ -80,17 +80,10 @@ EnhancedBookmarksBridge::EnhancedBookmarksBridge(JNIEnv* env,
   cluster_service_->AddObserver(this);
   bookmark_image_service_ = static_cast<BookmarkImageServiceAndroid*>(
       BookmarkImageServiceFactory::GetForBrowserContext(profile_));
-  search_service_.reset(new BookmarkServerSearchService(
-      profile_->GetRequestContext(),
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_),
-      SigninManagerFactory::GetForProfile(profile_),
-      EnhancedBookmarkModelFactory::GetForBrowserContext(profile_)));
-  search_service_->AddObserver(this);
 }
 
 EnhancedBookmarksBridge::~EnhancedBookmarksBridge() {
   cluster_service_->RemoveObserver(this);
-  search_service_->RemoveObserver(this);
 }
 
 void EnhancedBookmarksBridge::Destroy(JNIEnv*, jobject) {
@@ -261,35 +254,6 @@ ScopedJavaLocalRef<jobject> EnhancedBookmarksBridge::AddBookmark(
   return new_java_obj;
 }
 
-void EnhancedBookmarksBridge::SendSearchRequest(JNIEnv* env,
-                                                jobject obj,
-                                                jstring j_query) {
-  search_service_->Search(base::android::ConvertJavaStringToUTF8(env, j_query));
-}
-
-ScopedJavaLocalRef<jobject> EnhancedBookmarksBridge::GetSearchResults(
-    JNIEnv* env,
-    jobject obj,
-    jstring j_query) {
-  DCHECK(enhanced_bookmark_model_->loaded());
-
-  ScopedJavaLocalRef<jobject> j_list =
-          Java_EnhancedBookmarksBridge_createBookmarkIdList(env);
-  scoped_ptr<std::vector<const BookmarkNode*>> results =
-      search_service_->ResultForQuery(
-          base::android::ConvertJavaStringToUTF8(env, j_query));
-
-  // If result is null, return a null java reference.
-  if (!results.get())
-    return ScopedJavaLocalRef<jobject>();
-
-  for (const BookmarkNode* node : *results) {
-    Java_EnhancedBookmarksBridge_addToBookmarkIdList(env, j_list.obj(),
-                                                     node->id(), node->type());
-  }
-  return j_list;
-}
-
 void EnhancedBookmarksBridge::OnChange(BookmarkServerService* service) {
   DCHECK(enhanced_bookmark_model_->loaded());
   JNIEnv* env = AttachCurrentThread();
@@ -300,8 +264,6 @@ void EnhancedBookmarksBridge::OnChange(BookmarkServerService* service) {
 
   if (service == cluster_service_) {
     Java_EnhancedBookmarksBridge_onFiltersChanged(env, obj.obj());
-  } else if (service == search_service_.get()) {
-    Java_EnhancedBookmarksBridge_onSearchResultReturned(env, obj.obj());
   }
 }
 

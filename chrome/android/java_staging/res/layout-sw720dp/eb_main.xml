@@ -6,29 +6,18 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="horizontal" >
+    android:orientation="horizontal"
+    android:background="@color/default_primary_color" >
 
     <org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkDrawerListView
         android:id="@+id/eb_drawer_list"
         android:layout_width="240dp"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        android:background="@color/default_primary_color"
         android:choiceMode="singleChoice"
         android:divider="@null"
         android:dividerHeight="0dp" />
 
-    <ViewSwitcher
-        android:id="@+id/eb_view_switcher"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:inAnimation="@android:anim/fade_in"
-        android:outAnimation="@android:anim/fade_out"
-        android:background="@color/default_primary_color" >
-
-        <include layout="@layout/eb_main_content" />
-
-        <include layout="@layout/eb_search" />
-    </ViewSwitcher>
+    <include layout="@layout/eb_main_content" />
 
 </LinearLayout>

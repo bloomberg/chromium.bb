@@ -1791,12 +1791,6 @@ Just open Chrome on your computer, go to the menu, and select “Sign in to Chro
       <message name="IDS_ENHANCED_BOOKMARK_ACTION_BAR_LIST_TOGGLE" desc="Button text for switching between list mode and grid mode [CHAR-LIMIT=32]">
         Toggle between list and grid mode
       </message>
-      <message name="IDS_ENHANCED_BOOKMARK_ACTION_BAR_SEARCH" desc="Button text for bookmark search action on the enhanced bookmark action bar [CHAR-LIMIT=32]">
-        Search bookmarks
-      </message>
-      <message name="IDS_ENHANCED_BOOKMARK_NO_RESULT" desc="Text explaining that no bookmarks are found to match a search query">
-        No bookmarks found
-      </message>
       <message name="IDS_ENHANCED_BOOKMARK_ACTION_BAR_EDIT_BOOKMARKS" desc="Button text for editing bookmarks action on the enhanced bookmark action bar [CHAR-LIMIT=32]">
         Edit bookmarks
       </message>

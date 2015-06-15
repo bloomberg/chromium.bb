@@ -14,8 +14,6 @@ source_set("enhanced_bookmarks") {
     "bookmark_image_service.h",
     "bookmark_server_cluster_service.cc",
     "bookmark_server_cluster_service.h",
-    "bookmark_server_search_service.cc",
-    "bookmark_server_search_service.h",
     "bookmark_server_service.cc",
     "bookmark_server_service.h",
     "enhanced_bookmark_model.cc",
