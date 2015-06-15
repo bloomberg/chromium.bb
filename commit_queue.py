@@ -142,8 +142,6 @@ def CMDbuilders(parser, args):
       for builder in bucket.builders:
         if not builder.HasField('experiment_percentage'):
           masters[bucket.name].setdefault(builder.name, {})
-          for prop in builder.properties:
-            masters[bucket.name][builder.name][prop.name] = prop.value
   print json.dumps(masters)
 
 CMDbuilders.func_usage_more = '<path-to-cq-config>'
