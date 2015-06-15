@@ -5871,9 +5871,6 @@
             "daisy_skate"
         ],
         "description": "Commit Queue (internal)",
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
-        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -9768,10 +9765,6 @@
             "link"
         ],
         "description": "Commit Queue (internal)",
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
-        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -10151,9 +10144,6 @@
             "lumpy"
         ],
         "description": "Commit Queue (internal)",
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
-        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -15393,9 +15383,6 @@
             "peach_pit"
         ],
         "description": "Commit Queue (internal)",
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
-        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -15590,9 +15577,6 @@
             "peppy"
         ],
         "description": "Commit Queue (internal)",
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
-        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -19739,9 +19723,6 @@
             "stumpy"
         ],
         "description": "Commit Queue (internal)",
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
-        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -20089,9 +20070,6 @@
             "stumpy_moblab"
         ],
         "description": "Commit Queue (internal)",
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"cq\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"moblab_quick\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
-        ],
         "image_test": false,
         "internal": true,
         "manifest": "official.xml",
@@ -24461,9 +24439,6 @@
             "wolf"
         ],
         "description": "Commit Queue (internal)",
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
-        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -24568,11 +24543,6 @@
         ],
         "description": "Commit Queue (internal)",
         "do_not_apply_cq_patches": true,
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 1,\n    \"num\": 1,\n    \"pool\": \"bvt\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"sanity\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 10,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 10,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
-        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -24737,9 +24707,6 @@
             "x86-alex"
         ],
         "description": "Commit Queue (internal)",
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
-        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -25969,9 +25936,6 @@
             "x86-zgb"
         ],
         "description": "Commit Queue (internal)",
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
-        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
