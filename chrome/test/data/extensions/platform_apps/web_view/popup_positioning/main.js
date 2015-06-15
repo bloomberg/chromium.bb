@@ -16,7 +16,7 @@ window.runTest = function(testName) {
 };
 
 var testHelper = function(onLoadStopHook) {
-  var webview = document.createElement('webview');
+  var webview = document.querySelector('webview');
   var loaded = false;
   webview.addEventListener('loadstop', function(e) {
     LOG('webview.loadstop');
@@ -42,7 +42,6 @@ var testHelper = function(onLoadStopHook) {
   webview.style.width = '300px';
   webview.style.height = '200px';
   webview.partition = 'popup-partition';
-  document.querySelector('#webview-tag-container').appendChild(webview);
   webview.setAttribute('src', 'guest.html');
 };
 

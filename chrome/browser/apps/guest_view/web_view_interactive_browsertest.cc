@@ -298,36 +298,24 @@ class WebViewInteractiveTest
    public:
     PopupCreatedObserver()
         : initial_widget_count_(0),
-          last_render_widget_host_(NULL),
-          seen_new_widget_(false) {}
+          last_render_widget_host_(NULL) {}
 
     ~PopupCreatedObserver() {}
 
     void Wait() {
-      size_t current_widget_count = CountWidgets();
-      if (!seen_new_widget_ &&
-          current_widget_count == initial_widget_count_ + 1) {
-        seen_new_widget_ = true;
+      if (CountWidgets() == initial_widget_count_ + 1) {
+        gfx::Rect popup_bounds =
+            last_render_widget_host_->GetView()->GetViewBounds();
+        if (!popup_bounds.size().IsEmpty()) {
+          if (message_loop_.get())
+            message_loop_->Quit();
+          return;
+        }
       }
 
       // If we haven't seen any new widget or we get 0 size widget, we need to
       // schedule waiting.
-      bool needs_to_schedule_wait = true;
-
-      if (seen_new_widget_) {
-        gfx::Rect popup_bounds =
-            last_render_widget_host_->GetView()->GetViewBounds();
-        if (!popup_bounds.size().IsEmpty())
-          needs_to_schedule_wait = false;
-      }
-
-      if (needs_to_schedule_wait) {
-        ScheduleWait();
-      } else {
-        // We are done.
-        if (message_loop_.get())
-          message_loop_->Quit();
-      }
+      ScheduleWait();
 
       if (!message_loop_.get()) {
         message_loop_ = new content::MessageLoopRunner;
@@ -370,14 +358,6 @@ class WebViewInteractiveTest
 
     DISALLOW_COPY_AND_ASSIGN(PopupCreatedObserver);
   };
-
-  void WaitForTitle(const char* title) {
-    base::string16 expected_title(base::ASCIIToUTF16(title));
-    base::string16 error_title(base::ASCIIToUTF16("FAILED"));
-    content::TitleWatcher title_watcher(guest_web_contents(), expected_title);
-    title_watcher.AlsoWaitForTitle(error_title);
-    ASSERT_EQ(expected_title, title_watcher.WaitAndGetTitle());
-  }
 
   void PopupTestHelper(const gfx::Point& padding) {
     PopupCreatedObserver popup_observer;

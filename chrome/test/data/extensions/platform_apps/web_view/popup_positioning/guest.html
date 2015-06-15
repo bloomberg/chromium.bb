@@ -19,7 +19,7 @@
     var LOG = function(var_args) {
       window.console.log.apply(window.console, arguments);
     };
-    var inputElement = document.querySelector('input');
+
     window.addEventListener('message', function(e) {
       LOG('message');
       var data = JSON.parse(e.data);
