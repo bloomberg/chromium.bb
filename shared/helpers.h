@@ -41,6 +41,17 @@ extern "C" {
 #define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
 #endif
 
+/**
+ * Returns the smaller of two values.
+ *
+ * @param x the first item to compare.
+ * @param y the second item to compare.
+ * @return the value that evaluates to lesser than the other.
+ */
+#ifndef MIN
+#define MIN(x,y) (((x) < (y)) ? (x) : (y))
+#endif
+
 #ifdef  __cplusplus
 }
 #endif

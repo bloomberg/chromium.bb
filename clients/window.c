@@ -5150,8 +5150,6 @@ fini_xkb(struct input *input)
 	xkb_keymap_unref(input->xkb.keymap);
 }
 
-#define MIN(a,b) ((a) < (b) ? a : b)
-
 static void
 display_add_input(struct display *d, uint32_t id)
 {

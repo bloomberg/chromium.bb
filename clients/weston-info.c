@@ -36,8 +36,6 @@
 #include "shared/os-compatibility.h"
 #include "presentation_timing-client-protocol.h"
 
-#define MIN(x,y) (((x) < (y)) ? (x) : (y))
-
 typedef void (*print_info_t)(void *info);
 typedef void (*destroy_info_t)(void *info);
 

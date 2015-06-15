@@ -49,8 +49,6 @@
 #include "shared/helpers.h"
 #include "window.h"
 
-#define MIN(x,y) (((x) < (y)) ? (x) : (y))
-
 #ifndef EGL_WL_create_wayland_buffer_from_image
 #define EGL_WL_create_wayland_buffer_from_image 1
 
