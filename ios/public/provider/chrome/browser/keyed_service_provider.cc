@@ -41,17 +41,6 @@ bookmarks::BookmarkModel* KeyedServiceProvider::GetBookmarkModelForBrowserState(
 }
 
 KeyedServiceBaseFactory*
-KeyedServiceProvider::GetProfileOAuth2TokenServiceFactory() {
-  return nullptr;
-}
-
-ProfileOAuth2TokenService*
-KeyedServiceProvider::GetProfileOAuth2TokenServiceForBrowserState(
-    ChromeBrowserState* browser_state) {
-  return nullptr;
-}
-
-KeyedServiceBaseFactory*
 KeyedServiceProvider::GetProfileOAuth2TokenServiceIOSFactory() {
   return nullptr;
 }
