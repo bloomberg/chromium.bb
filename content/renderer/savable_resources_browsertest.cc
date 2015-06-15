@@ -71,12 +71,14 @@ class SavableResourcesTest : public ContentBrowserTest {
 
     ASSERT_TRUE(GetAllSavableResourceLinksForCurrentPage(
         render_view->GetWebView(), file_url, &result, savable_schemes));
+
     // Check all links of sub-resource
     for (std::vector<GURL>::const_iterator cit = resources_list.begin();
          cit != resources_list.end(); ++cit) {
       ASSERT_TRUE(expected_resources_set.find(*cit) !=
                   expected_resources_set.end());
     }
+
     // Check all links of frame.
     for (std::vector<GURL>::const_iterator cit = frames_list.begin();
          cit != frames_list.end(); ++cit) {
@@ -85,6 +87,34 @@ class SavableResourcesTest : public ContentBrowserTest {
     }
   }
 };
+
+IN_PROC_BROWSER_TEST_F(SavableResourcesTest,
+                       GetSavableResourceLinksWithPageHasValidStyleLink) {
+  const char* expected_sub_resource_links[] = {
+    "style.css"
+  };
+
+  const char* expected_frame_links[] = {
+    "simple_linked_stylesheet.html",
+  };
+
+  // Add all expected links of sub-resource to expected set.
+  std::set<GURL> expected_resources_set;
+    const base::FilePath expected_resource_url =
+        GetTestFilePath("dom_serializer", expected_sub_resource_links[0]);
+    expected_resources_set.insert(
+        net::FilePathToFileURL(expected_resource_url));
+
+    //expected frame set
+    const base::FilePath expected_frame_url =
+        GetTestFilePath("dom_serializer", expected_frame_links[0]);
+    expected_resources_set.insert(
+        net::FilePathToFileURL(expected_frame_url));
+
+  base::FilePath page_file_path =
+      GetTestFilePath("dom_serializer", "simple_linked_stylesheet.html");
+  GetSavableResourceLinksForPage(page_file_path, expected_resources_set);
+}
 
 // Test function GetAllSavableResourceLinksForCurrentPage with a web page
 // which has valid savable resource links.
