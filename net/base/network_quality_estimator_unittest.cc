@@ -11,7 +11,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
-#include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "net/base/network_change_notifier.h"
@@ -30,7 +29,7 @@ TEST(NetworkQualityEstimatorTest, TestPeakKbpsFastestRTTUpdates) {
   ASSERT_TRUE(embedded_test_server.InitializeAndWaitUntilReady());
 
   // Enable requests to local host to be used for network quality estimation.
-  NetworkQualityEstimator estimator(true);
+  NetworkQualityEstimator estimator(true, true);
   {
     NetworkQuality network_quality = estimator.GetPeakEstimate();
     EXPECT_EQ(network_quality.rtt(), base::TimeDelta::Max());
@@ -40,11 +39,6 @@ TEST(NetworkQualityEstimatorTest, TestPeakKbpsFastestRTTUpdates) {
   TestDelegate test_delegate;
   TestURLRequestContext context(false);
 
-  uint64_t min_transfer_size_in_bytes =
-      NetworkQualityEstimator::kMinTransferSizeInBytes;
-  base::TimeDelta request_duration = base::TimeDelta::FromMicroseconds(
-      NetworkQualityEstimator::kMinRequestDurationMicroseconds);
-
   scoped_ptr<URLRequest> request(
       context.CreateRequest(embedded_test_server.GetURL("/echo.html"),
                             DEFAULT_PRIORITY, &test_delegate));
@@ -52,31 +46,14 @@ TEST(NetworkQualityEstimatorTest, TestPeakKbpsFastestRTTUpdates) {
 
   base::RunLoop().Run();
 
-  base::PlatformThread::Sleep(request_duration);
-
-  // With smaller transfer, RTT will be updated but not the downstream
-  // throughput.
-  estimator.NotifyDataReceived(*request, min_transfer_size_in_bytes - 1,
-                               min_transfer_size_in_bytes - 1);
+  // Both RTT and downstream throughput should be updated.
+  estimator.NotifyDataReceived(*request, 1000, 1000);
   {
     NetworkQuality network_quality = estimator.GetPeakEstimate();
     EXPECT_GT(network_quality.rtt(), base::TimeDelta());
-    EXPECT_EQ(network_quality.downstream_throughput_kbps(), 0);
+    EXPECT_LT(network_quality.rtt(), base::TimeDelta::Max());
+    EXPECT_GE(network_quality.downstream_throughput_kbps(), 1);
   }
-
-  // With large transfer, both RTT and downlink throughput will be updated.
-  estimator.NotifyDataReceived(*request, min_transfer_size_in_bytes,
-                               min_transfer_size_in_bytes);
-  {
-    NetworkQuality network_quality = estimator.GetPeakEstimate();
-    EXPECT_GE(network_quality.rtt(), request_duration);
-    EXPECT_GT(network_quality.downstream_throughput_kbps(), 0);
-    EXPECT_LE(
-        network_quality.downstream_throughput_kbps(),
-        min_transfer_size_in_bytes * 8.0 / request_duration.InMilliseconds());
-  }
-  EXPECT_LT(estimator.fastest_rtt_since_last_connection_change_,
-            base::TimeDelta::Max());
 
   // Check UMA histograms.
   base::HistogramTester histogram_tester;
@@ -102,14 +79,9 @@ TEST(NetworkQualityEstimatorTest, StoreObservations) {
       base::FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest")));
   ASSERT_TRUE(embedded_test_server.InitializeAndWaitUntilReady());
 
-  NetworkQualityEstimator estimator(true);
+  NetworkQualityEstimator estimator(true, true);
   TestDelegate test_delegate;
   TestURLRequestContext context(false);
-
-  uint64 min_transfer_size_in_bytes =
-      NetworkQualityEstimator::kMinTransferSizeInBytes;
-  base::TimeDelta request_duration = base::TimeDelta::FromMicroseconds(
-      NetworkQualityEstimator::kMinRequestDurationMicroseconds);
 
   // Push 10 more observations than the maximum buffer size.
   for (size_t i = 0;
@@ -119,10 +91,8 @@ TEST(NetworkQualityEstimatorTest, StoreObservations) {
                               DEFAULT_PRIORITY, &test_delegate));
     request->Start();
     base::RunLoop().Run();
-    base::PlatformThread::Sleep(request_duration);
 
-    estimator.NotifyDataReceived(*request, min_transfer_size_in_bytes,
-                                 min_transfer_size_in_bytes);
+    estimator.NotifyDataReceived(*request, 1000, 1000);
   }
 
   EXPECT_TRUE(estimator.VerifyBufferSizeForTests(
@@ -140,7 +110,6 @@ TEST(NetworkQualityEstimatorTest, StoreObservations) {
   // Verify that overflow protection works.
   request->Start();
   base::RunLoop().Run();
-  base::PlatformThread::Sleep(request_duration);
   estimator.NotifyDataReceived(*request, std::numeric_limits<int64_t>::max(),
                                std::numeric_limits<int64_t>::max());
   {

@@ -114,7 +114,12 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // |allow_local_host_requests_for_tests| should only be true when testing
   // against local HTTP server and allows the requests to local host to be
   // used for network quality estimation.
-  explicit NetworkQualityEstimator(bool allow_local_host_requests_for_tests);
+  // |allow_smaller_responses_for_tests| should only be true when testing
+  // against local HTTP server and allows the responses smaller than
+  // |kMinTransferSizeInBytes| or shorter than |kMinRequestDurationMicroseconds|
+  // to be used for network quality estimation.
+  NetworkQualityEstimator(bool allow_local_host_requests_for_tests,
+                          bool allow_smaller_responses_for_tests);
 
   // Returns the maximum size of the observation buffer.
   // Used for testing.
@@ -131,6 +136,11 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // Determines if the requests to local host can be used in estimating the
   // network quality. Set to true only for tests.
   const bool allow_localhost_requests_;
+
+  // Determines if the responses smaller than |kMinTransferSizeInBytes|
+  // or shorter than |kMinTransferSizeInBytes| can be used in estimating the
+  // network quality. Set to true only for tests.
+  const bool allow_small_responses_;
 
   // Time when last connection change was observed.
   base::TimeTicks last_connection_change_;

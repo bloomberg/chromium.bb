@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "net/base/load_timing_info.h"
 #include "net/base/net_util.h"
 #include "net/base/network_quality.h"
 #include "net/url_request/url_request.h"
@@ -24,12 +25,14 @@ const size_t kMaximumObservationsBufferSize = 500;
 namespace net {
 
 NetworkQualityEstimator::NetworkQualityEstimator()
-    : NetworkQualityEstimator(false) {
+    : NetworkQualityEstimator(false, false) {
 }
 
 NetworkQualityEstimator::NetworkQualityEstimator(
-    bool allow_local_host_requests_for_tests)
+    bool allow_local_host_requests_for_tests,
+    bool allow_smaller_responses_for_tests)
     : allow_localhost_requests_(allow_local_host_requests_for_tests),
+      allow_small_responses_(allow_smaller_responses_for_tests),
       last_connection_change_(base::TimeTicks::Now()),
       current_connection_type_(NetworkChangeNotifier::GetConnectionType()),
       fastest_rtt_since_last_connection_change_(base::TimeDelta::Max()),
@@ -63,25 +66,49 @@ void NetworkQualityEstimator::NotifyDataReceived(
   }
 
   base::TimeTicks now = base::TimeTicks::Now();
-  base::TimeDelta request_duration = now - request.creation_time();
-  DCHECK_GE(request_duration, base::TimeDelta());
+  LoadTimingInfo load_timing_info;
+  request.GetLoadTimingInfo(&load_timing_info);
+
+  // If the load timing info is unavailable, it probably means that the request
+  // did not go over the network.
+  if (load_timing_info.send_start.is_null() ||
+      load_timing_info.receive_headers_end.is_null()) {
+    return;
+  }
+
+  // Time when the resource was requested.
+  base::TimeTicks request_start_time = load_timing_info.send_start;
+
+  // Time when the headers were received.
+  base::TimeTicks headers_received_time = load_timing_info.receive_headers_end;
 
   // Only add RTT observation if this is the first read for this response.
   if (cumulative_prefilter_bytes_read == prefiltered_bytes_read) {
-    if (request_duration < fastest_rtt_since_last_connection_change_)
-      fastest_rtt_since_last_connection_change_ = request_duration;
+    // Duration between when the resource was requested and when response
+    // headers were received.
+    base::TimeDelta observed_rtt = headers_received_time - request_start_time;
+    DCHECK_GE(observed_rtt, base::TimeDelta());
+
+    if (observed_rtt < fastest_rtt_since_last_connection_change_)
+      fastest_rtt_since_last_connection_change_ = observed_rtt;
 
     rtt_msec_observations_.AddObservation(
-        Observation(request_duration.InMilliseconds(), now));
+        Observation(observed_rtt.InMilliseconds(), now));
   }
+
+  // Time since the resource was requested.
+  base::TimeDelta since_request_start = now - request_start_time;
+  DCHECK_GE(since_request_start, base::TimeDelta());
 
   // Ignore tiny transfers which will not produce accurate rates.
   // Ignore short duration transfers.
-  if (cumulative_prefilter_bytes_read >= kMinTransferSizeInBytes &&
-      request_duration >=
-          base::TimeDelta::FromMicroseconds(kMinRequestDurationMicroseconds)) {
+  // Skip the checks if |allow_small_responses_| is true.
+  if (allow_small_responses_ ||
+      (cumulative_prefilter_bytes_read >= kMinTransferSizeInBytes &&
+       since_request_start >= base::TimeDelta::FromMicroseconds(
+                                  kMinRequestDurationMicroseconds))) {
     double kbps_f = cumulative_prefilter_bytes_read * 8.0 / 1000.0 /
-                    request_duration.InSecondsF();
+                    since_request_start.InSecondsF();
     DCHECK_GE(kbps_f, 0.0);
 
     // Check overflow errors. This may happen if the kbpsF is more than
@@ -90,6 +117,11 @@ void NetworkQualityEstimator::NotifyDataReceived(
       kbps_f = std::numeric_limits<int32_t>::max() - 1;
 
     int32_t kbps = static_cast<int32_t>(kbps_f);
+
+    // If the |kbps| is less than 1, we set it to 1 to differentiate from case
+    // when there is no connection.
+    if (kbps_f > 0.0 && kbps == 0)
+      kbps = 1;
 
     if (kbps > 0) {
       if (kbps > peak_kbps_since_last_connection_change_)

@@ -4077,7 +4077,7 @@ TEST_F(URLRequestTestHTTP, GetZippedTest) {
 TEST_F(URLRequestTestHTTP, NetworkQualityEstimator) {
   ASSERT_TRUE(test_server_.Start());
   // Enable requests to local host to be used for network quality estimation.
-  NetworkQualityEstimator estimator(true);
+  NetworkQualityEstimator estimator(true, true);
 
   TestDelegate d;
   TestNetworkDelegate network_delegate;  // Must outlive URLRequest.
@@ -4086,26 +4086,18 @@ TEST_F(URLRequestTestHTTP, NetworkQualityEstimator) {
   context.set_network_delegate(&network_delegate);
   context.Init();
 
-  uint64_t min_transfer_size_in_bytes =
-      NetworkQualityEstimator::kMinTransferSizeInBytes;
-  // Create a long enough URL such that response size exceeds network quality
-  // estimator's minimum transfer size.
-  std::string url = "echo.html?";
-  url.append(min_transfer_size_in_bytes, 'x');
+  std::string url = "echo.html";
 
   scoped_ptr<URLRequest> r(
       context.CreateRequest(test_server_.GetURL(url), DEFAULT_PRIORITY, &d));
-  int sleep_duration_milliseconds = 1;
-  base::PlatformThread::Sleep(
-      base::TimeDelta::FromMilliseconds(sleep_duration_milliseconds));
   r->Start();
 
   base::RunLoop().Run();
 
   NetworkQuality network_quality =
       context.network_quality_estimator()->GetPeakEstimate();
-  EXPECT_GE(network_quality.rtt(),
-            base::TimeDelta::FromMilliseconds(sleep_duration_milliseconds));
+  EXPECT_GE(network_quality.rtt(), base::TimeDelta());
+  EXPECT_LT(network_quality.rtt(), base::TimeDelta::Max());
   EXPECT_GT(network_quality.downstream_throughput_kbps(), 0);
 
   // Verify that histograms are not populated. They should populate only when
