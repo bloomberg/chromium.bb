@@ -31,12 +31,6 @@ class MockAudioDelegate : public media::AudioOutputIPCDelegate {
     length_ = length;
   }
 
-  void OnOutputDeviceSwitched(int request_id,
-                              media::SwitchOutputDeviceResult result) override {
-    output_device_switched_received_ = true;
-    switch_output_device_result_ = result;
-  }
-
   void OnIPCClosed() override {}
 
   void Reset() {
@@ -49,10 +43,6 @@ class MockAudioDelegate : public media::AudioOutputIPCDelegate {
 
     volume_received_ = false;
     volume_ = 0;
-
-    output_device_switched_received_ = false;
-    switch_output_device_result_ =
-        media::SWITCH_OUTPUT_DEVICE_RESULT_ERROR_NOT_SUPPORTED;
   }
 
   bool state_changed_received() { return state_changed_received_; }
@@ -61,13 +51,6 @@ class MockAudioDelegate : public media::AudioOutputIPCDelegate {
   bool created_received() { return created_received_; }
   base::SharedMemoryHandle handle() { return handle_; }
   uint32 length() { return length_; }
-
-  bool output_device_switched_received() {
-    return output_device_switched_received_;
-  }
-  media::SwitchOutputDeviceResult switch_output_device_result() {
-    return switch_output_device_result_;
-  }
 
  private:
   bool state_changed_received_;
@@ -79,9 +62,6 @@ class MockAudioDelegate : public media::AudioOutputIPCDelegate {
 
   bool volume_received_;
   double volume_;
-
-  bool output_device_switched_received_;
-  media::SwitchOutputDeviceResult switch_output_device_result_;
 
   DISALLOW_COPY_AND_ASSIGN(MockAudioDelegate);
 };
@@ -122,14 +102,6 @@ TEST(AudioMessageFilterTest, Basic) {
   EXPECT_EQ(media::AUDIO_OUTPUT_IPC_DELEGATE_STATE_PLAYING, delegate.state());
   delegate.Reset();
 
-  // AudioMsg_NotifyOutputDeviceSwitched
-  static const int kSwitchOutputRequestId = 1;
-  EXPECT_FALSE(delegate.output_device_switched_received());
-  filter->OnOutputDeviceSwitched(kStreamId, kSwitchOutputRequestId,
-                                 media::SWITCH_OUTPUT_DEVICE_RESULT_SUCCESS);
-  EXPECT_TRUE(delegate.output_device_switched_received());
-  EXPECT_EQ(media::SWITCH_OUTPUT_DEVICE_RESULT_SUCCESS,
-            delegate.switch_output_device_result());
   message_loop.RunUntilIdle();
 
   ipc->CloseStream();

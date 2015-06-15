@@ -97,10 +97,6 @@ void PepperPlatformAudioOutput::OnStreamCreated(
   }
 }
 
-void PepperPlatformAudioOutput::OnOutputDeviceSwitched(
-    int request_id,
-    media::SwitchOutputDeviceResult result) {}
-
 void PepperPlatformAudioOutput::OnIPCClosed() { ipc_.reset(); }
 
 PepperPlatformAudioOutput::~PepperPlatformAudioOutput() {

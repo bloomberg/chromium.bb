@@ -5,8 +5,6 @@
 #ifndef MEDIA_AUDIO_AUDIO_OUTPUT_STREAM_SINK_H_
 #define MEDIA_AUDIO_AUDIO_OUTPUT_STREAM_SINK_H_
 
-#include <string>
-
 #include "base/compiler_specific.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
@@ -36,9 +34,6 @@ class MEDIA_EXPORT AudioOutputStreamSink
   void Pause() override;
   void Play() override;
   bool SetVolume(double volume) override;
-  void SwitchOutputDevice(const std::string& device_id,
-                          const GURL& security_origin,
-                          const SwitchOutputDeviceCB& callback) override;
 
   // AudioSourceCallback implementation.
   int OnMoreData(AudioBus* dest, uint32 total_bytes_delay) override;

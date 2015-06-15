@@ -4,8 +4,6 @@
 
 #include "content/renderer/media/audio_message_filter.h"
 
-#include <string>
-
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
@@ -35,9 +33,6 @@ class AudioMessageFilter::AudioOutputIPCImpl
   void PauseStream() override;
   void CloseStream() override;
   void SetVolume(double volume) override;
-  void SwitchOutputDevice(const std::string& device_id,
-                          const GURL& security_origin,
-                          int request_id) override;
 
  private:
   const scoped_refptr<AudioMessageFilter> filter_;
@@ -115,17 +110,6 @@ void AudioMessageFilter::AudioOutputIPCImpl::SetVolume(double volume) {
   filter_->Send(new AudioHostMsg_SetVolume(stream_id_, volume));
 }
 
-void AudioMessageFilter::AudioOutputIPCImpl::SwitchOutputDevice(
-    const std::string& device_id,
-    const GURL& security_origin,
-    int request_id) {
-  DCHECK_NE(stream_id_, kStreamIDNotSet);
-  DVLOG(1) << __FUNCTION__
-           << "(" << device_id << ", " << security_origin << ")";
-  filter_->Send(new AudioHostMsg_SwitchOutputDevice(
-      stream_id_, render_frame_id_, device_id, security_origin, request_id));
-}
-
 void AudioMessageFilter::Send(IPC::Message* message) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   if (!sender_) {
@@ -141,8 +125,6 @@ bool AudioMessageFilter::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(AudioMessageFilter, message)
     IPC_MESSAGE_HANDLER(AudioMsg_NotifyStreamCreated, OnStreamCreated)
     IPC_MESSAGE_HANDLER(AudioMsg_NotifyStreamStateChanged, OnStreamStateChanged)
-    IPC_MESSAGE_HANDLER(AudioMsg_NotifyOutputDeviceSwitched,
-                        OnOutputDeviceSwitched)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -211,22 +193,6 @@ void AudioMessageFilter::OnStreamStateChanged(
     return;
   }
   delegate->OnStateChanged(state);
-}
-
-void AudioMessageFilter::OnOutputDeviceSwitched(
-    int stream_id,
-    int request_id,
-    media::SwitchOutputDeviceResult result) {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
-  DVLOG(1) << __FUNCTION__
-           << "(" << stream_id << ", " << request_id << ", " << result << ")";
-  media::AudioOutputIPCDelegate* delegate = delegates_.Lookup(stream_id);
-  if (!delegate) {
-    DLOG(WARNING) << "Got OnOutputDeviceSwitched() event for a nonexistent or"
-                  << " removed audio renderer.  State: " << result;
-    return;
-  }
-  delegate->OnOutputDeviceSwitched(request_id, result);
 }
 
 }  // namespace content

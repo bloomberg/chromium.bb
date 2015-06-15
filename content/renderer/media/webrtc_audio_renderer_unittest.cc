@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <string>
 #include <vector>
 
 #include "base/single_thread_task_runner.h"
@@ -41,10 +40,6 @@ class MockAudioOutputIPC : public media::AudioOutputIPC {
   MOCK_METHOD0(PauseStream, void());
   MOCK_METHOD0(CloseStream, void());
   MOCK_METHOD1(SetVolume, void(double volume));
-  MOCK_METHOD3(SwitchOutputDevice,
-               void(const std::string& device_id,
-                    const GURL& security_origin,
-                    int request_id));
 };
 
 class FakeAudioOutputDevice
@@ -60,10 +55,6 @@ class FakeAudioOutputDevice
   MOCK_METHOD0(Pause, void());
   MOCK_METHOD0(Play, void());
   MOCK_METHOD1(SetVolume, bool(double volume));
-  MOCK_METHOD3(SwitchOutputDevice,
-               void(const std::string&,
-                    const GURL& security_origin,
-                    const media::SwitchOutputDeviceCB& callback));
 
  protected:
   virtual ~FakeAudioOutputDevice() {}

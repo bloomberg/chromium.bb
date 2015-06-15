@@ -5,15 +5,11 @@
 #include <vector>
 
 #include "base/at_exit.h"
-#include "base/bind_helpers.h"
-#include "base/callback.h"
 #include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/process/process_handle.h"
 #include "base/sync_socket.h"
-#include "base/task_runner.h"
 #include "base/test/test_timeouts.h"
-#include "base/thread_task_runner_handle.h"
 #include "media/audio/audio_output_device.h"
 #include "media/audio/sample_rates.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -56,15 +52,6 @@ class MockAudioOutputIPC : public AudioOutputIPC {
   MOCK_METHOD0(PauseStream, void());
   MOCK_METHOD0(CloseStream, void());
   MOCK_METHOD1(SetVolume, void(double volume));
-  MOCK_METHOD3(SwitchOutputDevice,
-               void(const std::string& device_id,
-                    const GURL& security_origin,
-                    int request_id));
-};
-
-class MockSwitchOutputDeviceCallback {
- public:
-  MOCK_METHOD1(Callback, void(media::SwitchOutputDeviceResult result));
 };
 
 ACTION_P2(SendPendingBytes, socket, pending_bytes) {
@@ -91,7 +78,6 @@ class AudioOutputDeviceTest
   void ExpectRenderCallback();
   void WaitUntilRenderCallback();
   void StopAudioDevice();
-  void SwitchOutputDevice();
 
  protected:
   // Used to clean up TLS pointers that the test(s) will initialize.
@@ -102,11 +88,9 @@ class AudioOutputDeviceTest
   StrictMock<MockRenderCallback> callback_;
   MockAudioOutputIPC* audio_output_ipc_;  // owned by audio_device_
   scoped_refptr<AudioOutputDevice> audio_device_;
-  MockSwitchOutputDeviceCallback switch_output_device_callback_;
 
  private:
   int CalculateMemorySize();
-  void SwitchOutputDeviceCallback(SwitchOutputDeviceResult result);
 
   SharedMemory shared_memory_;
   CancelableSyncSocket browser_socket_;
@@ -212,28 +196,6 @@ void AudioOutputDeviceTest::StopAudioDevice() {
   io_loop_.RunUntilIdle();
 }
 
-void AudioOutputDeviceTest::SwitchOutputDevice() {
-  const GURL security_origin("http://localhost");
-  const std::string device_id;
-  const int request_id = 1;
-
-  // Switch the output device and check that the IPC message is sent
-  EXPECT_CALL(*audio_output_ipc_,
-              SwitchOutputDevice(device_id, security_origin, request_id));
-  audio_device_->SwitchOutputDevice(
-      device_id, security_origin,
-      base::Bind(&MockSwitchOutputDeviceCallback::Callback,
-                 base::Unretained(&switch_output_device_callback_)));
-  io_loop_.RunUntilIdle();
-
-  // Simulate the reception of a successful response from the browser
-  EXPECT_CALL(switch_output_device_callback_,
-              Callback(SWITCH_OUTPUT_DEVICE_RESULT_SUCCESS));
-  audio_device_->OnOutputDeviceSwitched(request_id,
-                                        SWITCH_OUTPUT_DEVICE_RESULT_SUCCESS);
-  io_loop_.RunUntilIdle();
-}
-
 TEST_P(AudioOutputDeviceTest, Initialize) {
   // Tests that the object can be constructed, initialized and destructed
   // without having ever been started/stopped.
@@ -274,13 +236,6 @@ TEST_P(AudioOutputDeviceTest, CreateStream) {
   ExpectRenderCallback();
   CreateStream();
   WaitUntilRenderCallback();
-  StopAudioDevice();
-}
-
-// Switch the output device
-TEST_P(AudioOutputDeviceTest, SwitchOutputDevice) {
-  StartAudioDevice();
-  SwitchOutputDevice();
   StopAudioDevice();
 }
 

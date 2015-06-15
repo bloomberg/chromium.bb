@@ -5,8 +5,6 @@
 #ifndef MEDIA_BASE_FAKE_AUDIO_RENDERER_SINK_H_
 #define MEDIA_BASE_FAKE_AUDIO_RENDERER_SINK_H_
 
-#include <string>
-
 #include "media/audio/audio_parameters.h"
 #include "media/base/audio_renderer_sink.h"
 
@@ -32,9 +30,6 @@ class FakeAudioRendererSink : public AudioRendererSink {
   void Pause() override;
   void Play() override;
   bool SetVolume(double volume) override;
-  void SwitchOutputDevice(const std::string& device_id,
-                          const GURL& security_origin,
-                          const SwitchOutputDeviceCB& callback) override;
 
   // Attempts to call Render() on the callback provided to
   // Initialize() with |dest| and |audio_delay_milliseconds|.

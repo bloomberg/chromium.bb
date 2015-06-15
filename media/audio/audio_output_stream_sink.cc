@@ -57,14 +57,7 @@ bool AudioOutputStreamSink::SetVolume(double volume) {
   audio_task_runner_->PostTask(
       FROM_HERE, base::Bind(&AudioOutputStreamSink::DoSetVolume, this, volume));
   return true;
-}
-
-void AudioOutputStreamSink::SwitchOutputDevice(
-    const std::string& device_id,
-    const GURL& security_origin,
-    const SwitchOutputDeviceCB& callback) {
-  callback.Run(SWITCH_OUTPUT_DEVICE_RESULT_ERROR_NOT_SUPPORTED);
-}
+};
 
 int AudioOutputStreamSink::OnMoreData(AudioBus* dest,
                                       uint32 total_bytes_delay) {

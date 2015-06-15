@@ -4,9 +4,6 @@
 
 #include "media/audio/clockless_audio_sink.h"
 
-#include "base/bind.h"
-#include "base/location.h"
-#include "base/single_thread_task_runner.h"
 #include "base/threading/simple_thread.h"
 
 namespace media {
@@ -106,13 +103,6 @@ void ClocklessAudioSink::Pause() {
 bool ClocklessAudioSink::SetVolume(double volume) {
   // Audio is always muted.
   return volume == 0.0;
-}
-
-void ClocklessAudioSink::SwitchOutputDevice(
-    const std::string& device_id,
-    const GURL& security_origin,
-    const SwitchOutputDeviceCB& callback) {
-  callback.Run(SWITCH_OUTPUT_DEVICE_RESULT_ERROR_NOT_SUPPORTED);
 }
 
 }  // namespace media

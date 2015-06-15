@@ -5,7 +5,6 @@
 #include "media/base/audio_renderer_mixer_input.h"
 
 #include "base/bind.h"
-#include "base/location.h"
 #include "base/logging.h"
 #include "media/base/audio_renderer_mixer.h"
 
@@ -93,19 +92,6 @@ void AudioRendererMixerInput::Pause() {
 bool AudioRendererMixerInput::SetVolume(double volume) {
   volume_ = volume;
   return true;
-}
-
-void AudioRendererMixerInput::SwitchOutputDevice(
-    const std::string& device_id,
-    const GURL& security_origin,
-    const SwitchOutputDeviceCB& callback) {
-  DVLOG(1) << __FUNCTION__
-           << "(" << device_id << ", " << security_origin << ")";
-  if (mixer_) {
-    mixer_->SwitchOutputDevice(device_id, security_origin, callback);
-  } else {
-    callback.Run(SWITCH_OUTPUT_DEVICE_RESULT_ERROR_NOT_SUPPORTED);
-  }
 }
 
 double AudioRendererMixerInput::ProvideInput(AudioBus* audio_bus,

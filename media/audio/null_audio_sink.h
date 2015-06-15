@@ -32,9 +32,6 @@ class MEDIA_EXPORT NullAudioSink
   void Pause() override;
   void Play() override;
   bool SetVolume(double volume) override;
-  void SwitchOutputDevice(const std::string& device_id,
-                          const GURL& security_origin,
-                          const SwitchOutputDeviceCB& callback) override;
 
   // Enables audio frame hashing.  Must be called prior to Initialize().
   void StartAudioHashForTesting();
