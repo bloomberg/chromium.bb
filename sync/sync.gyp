@@ -398,6 +398,7 @@
         'syncable/on_disk_directory_backing_store.h',
         'syncable/parent_child_index.cc',
         'syncable/parent_child_index.h',
+        'syncable/proto_value_ptr.h',
         'syncable/scoped_kernel_lock.cc',
         'syncable/scoped_kernel_lock.h',
         'syncable/scoped_parent_child_index_updater.cc',

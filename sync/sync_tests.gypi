@@ -336,6 +336,7 @@
         'syncable/model_type_unittest.cc',
         'syncable/nigori_util_unittest.cc',
         'syncable/parent_child_index_unittest.cc',
+        'syncable/proto_value_ptr_unittest.cc',
         'syncable/syncable_enum_conversions_unittest.cc',
         'syncable/syncable_id_unittest.cc',
         'syncable/syncable_unittest.cc',
