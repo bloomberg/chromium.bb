@@ -288,6 +288,17 @@ void ChildFrameCompositingHelper::RequireCallback(
   sender->Send(new FrameHostMsg_RequireSequence(host_routing_id, id, sequence));
 }
 
+void ChildFrameCompositingHelper::RequireCallbackBrowserPlugin(
+    scoped_refptr<ThreadSafeSender> sender,
+    int host_routing_id,
+    int browser_plugin_instance_id,
+    cc::SurfaceId id,
+    cc::SurfaceSequence sequence) {
+  // This may be called on either the main or impl thread.
+  sender->Send(new BrowserPluginHostMsg_RequireSequence(
+      host_routing_id, browser_plugin_instance_id, id, sequence));
+}
+
 void ChildFrameCompositingHelper::OnSetSurface(
     const cc::SurfaceId& surface_id,
     const gfx::Size& frame_size,
@@ -308,8 +319,13 @@ void ChildFrameCompositingHelper::OnSetSurface(
         base::Bind(&ChildFrameCompositingHelper::SatisfyCallback, sender,
                    host_routing_id_);
     cc::SurfaceLayer::RequireCallback require_callback =
-        base::Bind(&ChildFrameCompositingHelper::RequireCallback, sender,
-                   host_routing_id_);
+        render_frame_proxy_
+            ? base::Bind(&ChildFrameCompositingHelper::RequireCallback, sender,
+                         host_routing_id_)
+            : base::Bind(
+                  &ChildFrameCompositingHelper::RequireCallbackBrowserPlugin,
+                  sender, host_routing_id_,
+                  browser_plugin_->browser_plugin_instance_id());
     surface_layer_ =
         cc::SurfaceLayer::Create(cc_blink::WebLayerImpl::LayerSettings(),
                                  satisfy_callback, require_callback);
@@ -320,9 +336,15 @@ void ChildFrameCompositingHelper::OnSetSurface(
   background_layer_->AddChild(surface_layer_);
 
   // The RWHV creates a destruction dependency on the surface that needs to be
-  // satisfied.
-  render_frame_proxy_->Send(
-      new FrameHostMsg_SatisfySequence(host_routing_id_, sequence));
+  // satisfied. Note: render_frame_proxy_ is null in the case our client is a
+  // BrowserPlugin; in this case the BrowserPlugin sends its own SatisfySequence
+  // message.
+  if (render_frame_proxy_) {
+    render_frame_proxy_->Send(
+        new FrameHostMsg_SatisfySequence(host_routing_id_, sequence));
+  } else if (browser_plugin_.get()) {
+    browser_plugin_->SendSatisfySequence(sequence);
+  }
 
   CheckSizeAndAdjustLayerProperties(frame_size, scale_factor,
                                     surface_layer_.get());

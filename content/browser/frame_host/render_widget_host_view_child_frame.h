@@ -27,6 +27,7 @@ class CrossProcessFrameConnector;
 class RenderWidgetHost;
 class RenderWidgetHostImpl;
 class RenderWidgetHostViewChildFrameTest;
+class RenderWidgetHostViewGuestSurfaceTest;
 
 // RenderWidgetHostViewChildFrame implements the view for a RenderWidgetHost
 // associated with content being rendered in a separate process from
@@ -148,11 +149,14 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   // cc::SurfaceFactoryClient implementation.
   void ReturnResources(const cc::ReturnedResourceArray& resources) override;
 
+  // Declared 'public' instead of 'protected' here to allow derived classes
+  // to Bind() to it.
+  void SurfaceDrawn(uint32 output_surface_id, cc::SurfaceDrawStatus drawn);
+
  protected:
   friend class RenderWidgetHostView;
   friend class RenderWidgetHostViewChildFrameTest;
-
-  void SurfaceDrawn(uint32 output_surface_id, cc::SurfaceDrawStatus drawn);
+  friend class RenderWidgetHostViewGuestSurfaceTest;
 
   // The last scroll offset of the view.
   gfx::Vector2dF last_scroll_offset_;
@@ -179,11 +183,11 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   // sent through it are routed to the embedding renderer process.
   CrossProcessFrameConnector* frame_connector_;
 
- private:
   base::WeakPtr<RenderWidgetHostViewChildFrame> AsWeakPtr() {
     return weak_factory_.GetWeakPtr();
   }
 
+ private:
   base::WeakPtrFactory<RenderWidgetHostViewChildFrame> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewChildFrame);
 };

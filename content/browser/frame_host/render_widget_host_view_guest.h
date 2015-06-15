@@ -100,7 +100,6 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   bool LockMouse() override;
   void UnlockMouse() override;
   void GetScreenInfo(blink::WebScreenInfo* results) override;
-  uint32_t GetSurfaceIdNamespace() override;
 
 #if defined(OS_MACOSX)
   // RenderWidgetHostView implementation.

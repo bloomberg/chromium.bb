@@ -114,6 +114,12 @@ class CONTENT_EXPORT ChildFrameCompositingHelper
                               int host_routing_id,
                               cc::SurfaceId id,
                               cc::SurfaceSequence sequence);
+  static void RequireCallbackBrowserPlugin(
+      scoped_refptr<ThreadSafeSender> sender,
+      int host_routing_id,
+      int browser_plugin_instance_id,
+      cc::SurfaceId id,
+      cc::SurfaceSequence sequence);
 
   int host_routing_id_;
   int last_route_id_;

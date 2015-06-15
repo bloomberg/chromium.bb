@@ -10,6 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
+#include "cc/surfaces/surface.h"
 #include "content/common/browser_plugin/browser_plugin_constants.h"
 #include "content/common/browser_plugin/browser_plugin_messages.h"
 #include "content/common/view_messages.h"
@@ -108,8 +109,31 @@ bool BrowserPlugin::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_SetTooltipText, OnSetTooltipText)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_ShouldAcceptTouchEvents,
                         OnShouldAcceptTouchEvents)
+    IPC_MESSAGE_HANDLER(BrowserPluginMsg_SetChildFrameSurface,
+                        OnSetChildFrameSurface)
   IPC_END_MESSAGE_MAP()
   return handled;
+}
+
+void BrowserPlugin::OnSetChildFrameSurface(
+    int browser_plugin_instance_id,
+    const cc::SurfaceId& surface_id,
+    const gfx::Size& frame_size,
+    float scale_factor,
+    const cc::SurfaceSequence& sequence) {
+  if (!attached())
+    return;
+
+  EnableCompositing(true);
+  DCHECK(compositing_helper_.get());
+
+  compositing_helper_->OnSetSurface(surface_id, frame_size, scale_factor,
+                                    sequence);
+}
+
+void BrowserPlugin::SendSatisfySequence(const cc::SurfaceSequence& sequence) {
+  BrowserPluginManager::Get()->Send(new BrowserPluginHostMsg_SatisfySequence(
+      render_frame_routing_id_, browser_plugin_instance_id_, sequence));
 }
 
 void BrowserPlugin::UpdateDOMAttribute(const std::string& attribute_name,

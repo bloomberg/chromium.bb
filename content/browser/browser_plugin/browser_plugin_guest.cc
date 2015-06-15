@@ -9,9 +9,12 @@
 #include "base/message_loop/message_loop.h"
 #include "base/pickle.h"
 #include "base/strings/utf_string_conversions.h"
+#include "cc/surfaces/surface.h"
+#include "cc/surfaces/surface_manager.h"
 #include "content/browser/browser_plugin/browser_plugin_embedder.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/compositor/surface_utils.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/render_widget_host_view_guest.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
@@ -24,7 +27,6 @@
 #include "content/common/browser_plugin/browser_plugin_messages.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/drag_messages.h"
-#include "content/common/frame_messages.h"
 #include "content/common/host_shared_bitmap_manager.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
@@ -40,6 +42,7 @@
 
 #if defined(OS_MACOSX)
 #include "content/browser/browser_plugin/browser_plugin_popup_menu_helper_mac.h"
+#include "content/common/frame_messages.h"
 #endif
 
 namespace content {
@@ -242,6 +245,8 @@ bool BrowserPluginGuest::OnMessageReceivedFromEmbedder(
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SetVisibility, OnSetVisibility)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_UnlockMouse_ACK, OnUnlockMouseAck)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_UpdateGeometry, OnUpdateGeometry)
+    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SatisfySequence, OnSatisfySequence)
+    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_RequireSequence, OnRequireSequence)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -360,6 +365,19 @@ void BrowserPluginGuest::PointerLockPermissionResponse(bool allow) {
       new BrowserPluginMsg_SetMouseLock(browser_plugin_instance_id(), allow));
 }
 
+void BrowserPluginGuest::UpdateGuestSizeIfNecessary(
+    const gfx::Size& frame_size, float scale_factor) {
+  gfx::Size view_size(
+      gfx::ToFlooredSize(gfx::ScaleSize(frame_size, 1.0f / scale_factor)));
+
+  if (last_seen_view_size_ != view_size) {
+    delegate_->GuestSizeChanged(view_size);
+    last_seen_view_size_ = view_size;
+  }
+}
+
+// TODO(wjmaclean): Remove this once any remaining users of this pathway
+// are gone.
 void BrowserPluginGuest::SwapCompositorFrame(
     uint32 output_surface_id,
     int host_process_id,
@@ -367,14 +385,8 @@ void BrowserPluginGuest::SwapCompositorFrame(
     scoped_ptr<cc::CompositorFrame> frame) {
   cc::RenderPass* root_pass =
       frame->delegated_frame_data->render_pass_list.back();
-  gfx::Size view_size(gfx::ToFlooredSize(gfx::ScaleSize(
-      root_pass->output_rect.size(),
-      1.0f / frame->metadata.device_scale_factor)));
-
-  if (last_seen_view_size_ != view_size) {
-    delegate_->GuestSizeChanged(view_size);
-    last_seen_view_size_ = view_size;
-  }
+  UpdateGuestSizeIfNecessary(root_pass->output_rect.size(),
+                             frame->metadata.device_scale_factor);
 
   last_pending_frame_.reset(new FrameMsg_CompositorFrameSwapped_Params());
   frame->AssignTo(&last_pending_frame_->frame);
@@ -385,6 +397,38 @@ void BrowserPluginGuest::SwapCompositorFrame(
   SendMessageToEmbedder(
       new BrowserPluginMsg_CompositorFrameSwapped(
           browser_plugin_instance_id(), *last_pending_frame_));
+}
+
+void BrowserPluginGuest::SetChildFrameSurface(
+    const cc::SurfaceId& surface_id,
+    const gfx::Size& frame_size,
+    float scale_factor,
+    const cc::SurfaceSequence& sequence) {
+  SendMessageToEmbedder(new BrowserPluginMsg_SetChildFrameSurface(
+      browser_plugin_instance_id(), surface_id, frame_size, scale_factor,
+      sequence));
+}
+
+void BrowserPluginGuest::OnSatisfySequence(
+    int instance_id,
+    const cc::SurfaceSequence& sequence) {
+  std::vector<uint32_t> sequences;
+  sequences.push_back(sequence.sequence);
+  cc::SurfaceManager* manager = GetSurfaceManager();
+  manager->DidSatisfySequences(sequence.id_namespace, &sequences);
+}
+
+void BrowserPluginGuest::OnRequireSequence(
+    int instance_id,
+    const cc::SurfaceId& id,
+    const cc::SurfaceSequence& sequence) {
+  cc::SurfaceManager* manager = GetSurfaceManager();
+  cc::Surface* surface = manager->GetSurfaceForId(id);
+  if (!surface) {
+    LOG(ERROR) << "Attempting to require callback on nonexistent surface";
+    return;
+  }
+  surface->AddDestructionDependency(sequence);
 }
 
 void BrowserPluginGuest::SetContentsOpaque(bool opaque) {

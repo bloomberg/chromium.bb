@@ -51,6 +51,8 @@ struct FrameHostMsg_ShowPopup_Params;
 
 namespace cc {
 class CompositorFrame;
+struct SurfaceId;
+struct SurfaceSequence;
 }  // namespace cc
 
 namespace gfx {
@@ -213,10 +215,17 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
 
   void PointerLockPermissionResponse(bool allow);
 
-  void SwapCompositorFrame(uint32 output_surface_id,
-                           int host_process_id,
-                           int host_routing_id,
-                           scoped_ptr<cc::CompositorFrame> frame);
+  // The next three functions are virtual for test purposes.
+  virtual void UpdateGuestSizeIfNecessary(const gfx::Size& frame_size,
+                                          float scale_factor);
+  virtual void SwapCompositorFrame(uint32 output_surface_id,
+                                   int host_process_id,
+                                   int host_routing_id,
+                                   scoped_ptr<cc::CompositorFrame> frame);
+  virtual void SetChildFrameSurface(const cc::SurfaceId& surface_id,
+                                    const gfx::Size& frame_size,
+                                    float scale_factor,
+                                    const cc::SurfaceSequence& sequence);
 
   void SetContentsOpaque(bool opaque);
 
@@ -227,20 +236,27 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
             const blink::WebFindOptions& options);
   bool StopFinding(StopFindAction action);
 
- private:
-  class EmbedderVisibilityObserver;
+ protected:
 
   // BrowserPluginGuest is a WebContentsObserver of |web_contents| and
   // |web_contents| has to stay valid for the lifetime of BrowserPluginGuest.
+  // Constructor protected for testing.
   BrowserPluginGuest(bool has_render_view,
                      WebContentsImpl* web_contents,
                      BrowserPluginGuestDelegate* delegate);
+
+ private:
+  class EmbedderVisibilityObserver;
 
   void InitInternal(const BrowserPluginHostMsg_Attach_Params& params,
                     WebContentsImpl* owner_web_contents);
 
   bool InAutoSizeBounds(const gfx::Size& size) const;
 
+  void OnSatisfySequence(int instance_id, const cc::SurfaceSequence& sequence);
+  void OnRequireSequence(int instance_id,
+                         const cc::SurfaceId& id,
+                         const cc::SurfaceSequence& sequence);
   // Message handlers for messages from embedder.
   void OnCompositorFrameSwappedACK(
       int instance_id,

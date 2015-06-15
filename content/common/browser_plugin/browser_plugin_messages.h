@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/process/process.h"
+#include "cc/surfaces/surface.h"
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
 #include "content/common/cursors/webcursor.h"
@@ -152,6 +153,15 @@ IPC_MESSAGE_CONTROL2(BrowserPluginHostMsg_UpdateGeometry,
                      int /* browser_plugin_instance_id */,
                      gfx::Rect /* view_rect */)
 
+IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_SatisfySequence,
+                    int /* browser_plugin_instance_id */,
+                    cc::SurfaceSequence /* sequence */)
+
+IPC_MESSAGE_ROUTED3(BrowserPluginHostMsg_RequireSequence,
+                    int /* browser_plugin_instance_id */,
+                    cc::SurfaceId /* surface_id */,
+                    cc::SurfaceSequence /* sequence */)
+
 // -----------------------------------------------------------------------------
 // These messages are from the browser process to the embedder.
 
@@ -185,6 +195,13 @@ IPC_MESSAGE_CONTROL2(BrowserPluginMsg_SetCursor,
 IPC_MESSAGE_CONTROL2(BrowserPluginMsg_CompositorFrameSwapped,
                      int /* browser_plugin_instance_id */,
                      FrameMsg_CompositorFrameSwapped_Params /* params */)
+
+IPC_MESSAGE_CONTROL5(BrowserPluginMsg_SetChildFrameSurface,
+                     int /* browser_plugin_instance_id */,
+                     cc::SurfaceId /* surface_id */,
+                     gfx::Size /* frame_size */,
+                     float /* scale_factor */,
+                     cc::SurfaceSequence /* sequence */)
 
 // Forwards a PointerLock Unlock request to the BrowserPlugin.
 IPC_MESSAGE_CONTROL2(BrowserPluginMsg_SetMouseLock,
