@@ -1783,7 +1783,7 @@
       'android/java/src/org/chromium/chrome/browser/infobar/SavePasswordInfoBar.java',
       'android/java/src/org/chromium/chrome/browser/invalidation/InvalidationServiceFactory.java',
       'android/java/src/org/chromium/chrome/browser/metrics/LaunchMetrics.java',
-      'android/java/src/org/chromium/chrome/browser/ssl/ConnectionSecurityHelper.java',
+      'android/java/src/org/chromium/chrome/browser/ssl/ConnectionSecurity.java',
       'android/java/src/org/chromium/chrome/browser/toolbar/ToolbarModel.java',
     ],
     'chrome_browser_mdns_sources': [
@@ -2725,10 +2725,10 @@
       'browser/ssl/chrome_ssl_host_state_delegate.h',
       'browser/ssl/chrome_ssl_host_state_delegate_factory.cc',
       'browser/ssl/chrome_ssl_host_state_delegate_factory.h',
-      'browser/ssl/connection_security_helper.cc',
-      'browser/ssl/connection_security_helper.h',
-      'browser/ssl/connection_security_helper_android.cc',
-      'browser/ssl/connection_security_helper_android.h',
+      'browser/ssl/connection_security.cc',
+      'browser/ssl/connection_security.h',
+      'browser/ssl/connection_security_android.cc',
+      'browser/ssl/connection_security_android.h',
       'browser/ssl/ssl_blocking_page.cc',
       'browser/ssl/ssl_blocking_page.h',
       'browser/ssl/ssl_cert_reporter.h',
@@ -3944,10 +3944,10 @@
         },
         {
           # GN: //chrome/android:chrome_android_java_enums_srcjar
-          'target_name': 'connection_security_helper_security_levels_java',
+          'target_name': 'connection_security_security_levels_java',
           'type': 'none',
           'variables': {
-            'source_file': 'browser/ssl/connection_security_helper.h',
+            'source_file': 'browser/ssl/connection_security.h',
           },
           'includes': [ '../build/android/java_cpp_enum.gypi' ],
         },

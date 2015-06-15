@@ -85,7 +85,7 @@ import org.chromium.chrome.browser.omnibox.geo.GeolocationHeader;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
-import org.chromium.chrome.browser.ssl.ConnectionSecurityHelperSecurityLevel;
+import org.chromium.chrome.browser.ssl.ConnectionSecurityLevel;
 import org.chromium.chrome.browser.tab.BackgroundContentViewHelper;
 import org.chromium.chrome.browser.tab.ChromeTab;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
@@ -675,7 +675,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
                 ? NavigationButtonType.PAGE : NavigationButtonType.EMPTY;
 
         mSecurityButton = (ImageButton) findViewById(R.id.security_button);
-        mSecurityIconType = ConnectionSecurityHelperSecurityLevel.NONE;
+        mSecurityIconType = ConnectionSecurityLevel.NONE;
 
         mDeleteButton = (TintedImageButton) findViewById(R.id.delete_button);
 
@@ -1157,7 +1157,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
     }
 
     private int getSecurityLevel() {
-        if (getCurrentTab() == null) return ConnectionSecurityHelperSecurityLevel.NONE;
+        if (getCurrentTab() == null) return ConnectionSecurityLevel.NONE;
         return getCurrentTab().getSecurityLevel();
     }
 
@@ -1169,14 +1169,14 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
      */
     public static int getSecurityIconResource(int securityLevel, boolean usingLightTheme) {
         switch (securityLevel) {
-            case ConnectionSecurityHelperSecurityLevel.NONE:
+            case ConnectionSecurityLevel.NONE:
                 return 0;
-            case ConnectionSecurityHelperSecurityLevel.SECURITY_WARNING:
+            case ConnectionSecurityLevel.SECURITY_WARNING:
                 return R.drawable.omnibox_https_warning;
-            case ConnectionSecurityHelperSecurityLevel.SECURITY_ERROR:
+            case ConnectionSecurityLevel.SECURITY_ERROR:
                 return R.drawable.omnibox_https_invalid;
-            case ConnectionSecurityHelperSecurityLevel.SECURE:
-            case ConnectionSecurityHelperSecurityLevel.EV_SECURE:
+            case ConnectionSecurityLevel.SECURE:
+            case ConnectionSecurityLevel.EV_SECURE:
                 return usingLightTheme
                         ? R.drawable.omnibox_https_valid_light : R.drawable.omnibox_https_valid;
             default:
@@ -1191,14 +1191,14 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
     @Override
     public void updateSecurityIcon(int securityLevel) {
         if (showingOriginalUrlForPreview()) {
-            securityLevel = ConnectionSecurityHelperSecurityLevel.NONE;
+            securityLevel = ConnectionSecurityLevel.NONE;
         }
         if (mQueryInTheOmnibox) {
-            if (securityLevel == ConnectionSecurityHelperSecurityLevel.SECURE
-                    || securityLevel == ConnectionSecurityHelperSecurityLevel.EV_SECURE) {
-                securityLevel = ConnectionSecurityHelperSecurityLevel.NONE;
-            } else if (securityLevel == ConnectionSecurityHelperSecurityLevel.SECURITY_WARNING
-                    || securityLevel == ConnectionSecurityHelperSecurityLevel.SECURITY_ERROR) {
+            if (securityLevel == ConnectionSecurityLevel.SECURE
+                    || securityLevel == ConnectionSecurityLevel.EV_SECURE) {
+                securityLevel = ConnectionSecurityLevel.NONE;
+            } else if (securityLevel == ConnectionSecurityLevel.SECURITY_WARNING
+                    || securityLevel == ConnectionSecurityLevel.SECURITY_ERROR) {
                 setUrlToPageUrl();
             }
         }
@@ -1210,7 +1210,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         if (mSecurityIconType == securityLevel) return;
         mSecurityIconType = securityLevel;
 
-        if (securityLevel == ConnectionSecurityHelperSecurityLevel.NONE) {
+        if (securityLevel == ConnectionSecurityLevel.NONE) {
             updateSecurityButton(false);
         } else {
             updateSecurityButton(true);
@@ -1228,9 +1228,9 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
     @Override
     public boolean shouldEmphasizeHttpsScheme() {
         int securityLevel = getSecurityLevel();
-        if (securityLevel == ConnectionSecurityHelperSecurityLevel.SECURITY_ERROR
-                || securityLevel == ConnectionSecurityHelperSecurityLevel.SECURITY_WARNING
-                || securityLevel == ConnectionSecurityHelperSecurityLevel.SECURITY_POLICY_WARNING) {
+        if (securityLevel == ConnectionSecurityLevel.SECURITY_ERROR
+                || securityLevel == ConnectionSecurityLevel.SECURITY_WARNING
+                || securityLevel == ConnectionSecurityLevel.SECURITY_POLICY_WARNING) {
             return true;
         }
         if (getToolbarDataProvider().isUsingBrandColor()) return false;
@@ -1943,9 +1943,8 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         boolean showingQuery = false;
         String displayText = mToolbarDataProvider.getText();
         int securityLevel = getSecurityLevel();
-        if (securityLevel != ConnectionSecurityHelperSecurityLevel.SECURITY_ERROR
-                && !TextUtils.isEmpty(displayText)
-                && mToolbarDataProvider.wouldReplaceURL()) {
+        if (securityLevel != ConnectionSecurityLevel.SECURITY_ERROR
+                && !TextUtils.isEmpty(displayText) && mToolbarDataProvider.wouldReplaceURL()) {
             url = displayText.trim();
             showingQuery = true;
             mQueryInTheOmnibox = true;

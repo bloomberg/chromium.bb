@@ -537,24 +537,23 @@ void OmniboxViewMac::ApplyTextAttributes(
   // TODO(shess): GTK has this as a member var, figure out why.
   // [Could it be to not change if no change?  If so, I'm guessing
   // AppKit may already handle that.]
-  const ConnectionSecurityHelper::SecurityLevel security_level =
+  const connection_security::SecurityLevel security_level =
       controller()->GetToolbarModel()->GetSecurityLevel(false);
 
   // Emphasize the scheme for security UI display purposes (if necessary).
   if (!model()->user_input_in_progress() && model()->CurrentTextIsURL() &&
-      scheme.is_nonempty() &&
-      (security_level != ConnectionSecurityHelper::NONE)) {
+      scheme.is_nonempty() && (security_level != connection_security::NONE)) {
     NSColor* color;
-    if (security_level == ConnectionSecurityHelper::EV_SECURE ||
-        security_level == ConnectionSecurityHelper::SECURE) {
+    if (security_level == connection_security::EV_SECURE ||
+        security_level == connection_security::SECURE) {
       color = SecureSchemeColor();
-    } else if (security_level == ConnectionSecurityHelper::SECURITY_ERROR) {
+    } else if (security_level == connection_security::SECURITY_ERROR) {
       color = SecurityErrorSchemeColor();
       // Add a strikethrough through the scheme.
       [attributedString addAttribute:NSStrikethroughStyleAttributeName
                  value:[NSNumber numberWithInt:NSUnderlineStyleSingle]
                  range:ComponentToNSRange(scheme)];
-    } else if (security_level == ConnectionSecurityHelper::SECURITY_WARNING) {
+    } else if (security_level == connection_security::SECURITY_WARNING) {
       color = BaseTextColor();
     } else {
       NOTREACHED();

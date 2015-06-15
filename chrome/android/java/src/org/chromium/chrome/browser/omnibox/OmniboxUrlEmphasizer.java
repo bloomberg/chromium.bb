@@ -12,7 +12,7 @@ import android.text.style.StrikethroughSpan;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.ssl.ConnectionSecurityHelperSecurityLevel;
+import org.chromium.chrome.browser.ssl.ConnectionSecurityLevel;
 
 import java.util.Locale;
 
@@ -135,7 +135,7 @@ public class OmniboxUrlEmphasizer {
      *            modified.
      * @param resources Resources for the given application context.
      * @param profile The profile viewing the given URL.
-     * @param securityLevel A valid ConnectionSecurityHelperSecurityLevel for the specified
+     * @param securityLevel A valid ConnectionSecurityLevel for the specified
      *                      web contents.
      * @param isInternalPage Whether this page is an internal Chrome page.
      * @param useDarkColors Whether the text colors should be dark (i.e.
@@ -145,9 +145,10 @@ public class OmniboxUrlEmphasizer {
     public static void emphasizeUrl(Spannable url, Resources resources, Profile profile,
             int securityLevel, boolean isInternalPage,
             boolean useDarkColors, boolean emphasizeHttpsScheme) {
-        assert (securityLevel == ConnectionSecurityHelperSecurityLevel.SECURITY_ERROR
-                || securityLevel == ConnectionSecurityHelperSecurityLevel.SECURITY_WARNING)
-                ? emphasizeHttpsScheme : true;
+        assert (securityLevel == ConnectionSecurityLevel.SECURITY_ERROR
+                || securityLevel == ConnectionSecurityLevel.SECURITY_WARNING)
+                ? emphasizeHttpsScheme
+                : true;
 
         String urlString = url.toString();
 
@@ -172,21 +173,21 @@ public class OmniboxUrlEmphasizer {
             if (!isInternalPage && emphasizeHttpsScheme) {
                 boolean strikeThroughScheme = false;
                 switch (securityLevel) {
-                    case ConnectionSecurityHelperSecurityLevel.NONE:
+                    case ConnectionSecurityLevel.NONE:
                         colorId = nonEmphasizedColorId;
                         break;
-                    case ConnectionSecurityHelperSecurityLevel.SECURITY_WARNING:
+                    case ConnectionSecurityLevel.SECURITY_WARNING:
                         colorId = R.color.url_emphasis_start_scheme_security_warning;
                         strikeThroughScheme = true;
                         break;
-                    case ConnectionSecurityHelperSecurityLevel.SECURITY_ERROR:
+                    case ConnectionSecurityLevel.SECURITY_ERROR:
                         colorId = R.color.url_emphasis_start_scheme_security_error;
                         strikeThroughScheme = true;
                         break;
-                    case ConnectionSecurityHelperSecurityLevel.EV_SECURE:
+                    case ConnectionSecurityLevel.EV_SECURE:
                         colorId = R.color.url_emphasis_start_scheme_ev_secure;
                         break;
-                    case ConnectionSecurityHelperSecurityLevel.SECURE:
+                    case ConnectionSecurityLevel.SECURE:
                         colorId = R.color.url_emphasis_start_scheme_secure;
                         break;
                     default:

@@ -8,7 +8,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.ssl.ConnectionSecurityHelperSecurityLevel;
+import org.chromium.chrome.browser.ssl.ConnectionSecurityLevel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.content.browser.test.util.CallbackHelper;
@@ -105,7 +105,7 @@ public class TabTest extends ChromeShellTestBase {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                assertEquals(ConnectionSecurityHelperSecurityLevel.NONE, mTab.getSecurityLevel());
+                assertEquals(ConnectionSecurityLevel.NONE, mTab.getSecurityLevel());
             }
         });
     }

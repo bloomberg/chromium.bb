@@ -47,8 +47,8 @@ import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.website.SingleWebsitePreferences;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.ssl.ConnectionSecurityHelper;
-import org.chromium.chrome.browser.ssl.ConnectionSecurityHelperSecurityLevel;
+import org.chromium.chrome.browser.ssl.ConnectionSecurity;
+import org.chromium.chrome.browser.ssl.ConnectionSecurityLevel;
 import org.chromium.chrome.browser.toolbar.ToolbarModel;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
@@ -250,7 +250,7 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
     // chrome://settings page).
     private boolean mIsInternalPage;
 
-    // The security level of the page (a valid ConnectionSecurityHelperSecurityLevel).
+    // The security level of the page (a valid ConnectionSecurityLevel).
     private int mSecurityLevel;
 
     // Whether the security level of the page was deprecated due to SHA-1.
@@ -395,7 +395,7 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
             mParsedUrl = null;
             mIsInternalPage = false;
         }
-        mSecurityLevel = ConnectionSecurityHelper.getSecurityLevelForWebContents(mWebContents);
+        mSecurityLevel = ConnectionSecurity.getSecurityLevelForWebContents(mWebContents);
         mDeprecatedSHA1Present = ToolbarModel.isDeprecatedSHA1Present(mWebContents);
 
         SpannableStringBuilder urlBuilder = new SpannableStringBuilder(mFullUrl);
@@ -464,7 +464,7 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
      * Gets the message to display in the connection message box for the given security level. Does
      * not apply to SECURITY_ERROR pages, since these have their own coloured/formatted message.
      *
-     * @param securityLevel A valid ConnectionSecurityHelperSecurityLevel, which is the security
+     * @param securityLevel A valid ConnectionSecurityLevel, which is the security
      *                      level of the page.
      * @param isInternalPage Whether or not this page is an internal chrome page (e.g. the
      *                       chrome://settings page).
@@ -474,13 +474,13 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
         if (isInternalPage) return R.string.page_info_connection_internal_page;
 
         switch (securityLevel) {
-            case ConnectionSecurityHelperSecurityLevel.NONE:
+            case ConnectionSecurityLevel.NONE:
                 return R.string.page_info_connection_http;
-            case ConnectionSecurityHelperSecurityLevel.SECURE:
-            case ConnectionSecurityHelperSecurityLevel.EV_SECURE:
+            case ConnectionSecurityLevel.SECURE:
+            case ConnectionSecurityLevel.EV_SECURE:
                 return R.string.page_info_connection_https;
-            case ConnectionSecurityHelperSecurityLevel.SECURITY_WARNING:
-            case ConnectionSecurityHelperSecurityLevel.SECURITY_POLICY_WARNING:
+            case ConnectionSecurityLevel.SECURITY_WARNING:
+            case ConnectionSecurityLevel.SECURITY_POLICY_WARNING:
                 return R.string.page_info_connection_mixed;
             default:
                 assert false : "Invalid security level specified: " + securityLevel;
@@ -493,7 +493,7 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
      * HTTPS connections.
      */
     private boolean isConnectionDetailsLinkVisible() {
-        return !mIsInternalPage && mSecurityLevel != ConnectionSecurityHelperSecurityLevel.NONE;
+        return !mIsInternalPage && mSecurityLevel != ConnectionSecurityLevel.NONE;
     }
 
     /**
@@ -505,7 +505,7 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
         if (mDeprecatedSHA1Present) {
             messageBuilder.append(
                     mContext.getResources().getString(R.string.page_info_connection_sha1));
-        } else if (mSecurityLevel != ConnectionSecurityHelperSecurityLevel.SECURITY_ERROR) {
+        } else if (mSecurityLevel != ConnectionSecurityLevel.SECURITY_ERROR) {
             messageBuilder.append(mContext.getResources().getString(
                     getConnectionMessageId(mSecurityLevel, mIsInternalPage)));
         } else {

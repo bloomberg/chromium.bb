@@ -45,7 +45,7 @@ import org.chromium.chrome.browser.omnibox.LocationBarLayout;
 import org.chromium.chrome.browser.omnibox.UrlBar;
 import org.chromium.chrome.browser.omnibox.UrlFocusChangeListener;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.ssl.ConnectionSecurityHelperSecurityLevel;
+import org.chromium.chrome.browser.ssl.ConnectionSecurityLevel;
 import org.chromium.chrome.browser.tab.ChromeTab;
 import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.components.dom_distiller.core.DomDistillerService;
@@ -85,7 +85,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar {
         mTitleBar = (TextView) findViewById(R.id.title_bar);
         mUrlInfoContainer = findViewById(R.id.url_info_container);
         mSecurityButton = (ImageButton) findViewById(R.id.security_button);
-        mSecurityIconType = ConnectionSecurityHelperSecurityLevel.NONE;
+        mSecurityIconType = ConnectionSecurityLevel.NONE;
         mCustomActionButton = (ImageButton) findViewById(R.id.action_button);
         mReturnButton = (TintedImageButton) findViewById(R.id.back_button);
         mSecurityButtonShowAnimator = ObjectAnimator.ofFloat(mSecurityButton, ALPHA, 1);
@@ -168,9 +168,9 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar {
     @Override
     public boolean shouldEmphasizeHttpsScheme() {
         int securityLevel = getSecurityLevel();
-        if (securityLevel == ConnectionSecurityHelperSecurityLevel.SECURITY_ERROR
-                || securityLevel == ConnectionSecurityHelperSecurityLevel.SECURITY_WARNING
-                || securityLevel == ConnectionSecurityHelperSecurityLevel.SECURITY_POLICY_WARNING) {
+        if (securityLevel == ConnectionSecurityLevel.SECURITY_ERROR
+                || securityLevel == ConnectionSecurityLevel.SECURITY_WARNING
+                || securityLevel == ConnectionSecurityLevel.SECURITY_POLICY_WARNING) {
             return true;
         }
         return false;
@@ -311,7 +311,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar {
     }
 
     private int getSecurityLevel() {
-        if (getCurrentTab() == null) return ConnectionSecurityHelperSecurityLevel.NONE;
+        if (getCurrentTab() == null) return ConnectionSecurityLevel.NONE;
         return getCurrentTab().getSecurityLevel();
     }
 
@@ -324,7 +324,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar {
         if (mSecurityIconType == securityLevel) return;
         mSecurityIconType = securityLevel;
 
-        if (securityLevel == ConnectionSecurityHelperSecurityLevel.NONE) {
+        if (securityLevel == ConnectionSecurityLevel.NONE) {
             // TODO(yusufo): Add an animator for hiding as well.
             mSecurityButton.setVisibility(GONE);
         } else {

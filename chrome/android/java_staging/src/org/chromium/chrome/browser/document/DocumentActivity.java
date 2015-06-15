@@ -50,7 +50,7 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.bandwidth.BandwidthReductionPreferences;
 import org.chromium.chrome.browser.preferences.bandwidth.DataReductionPromoScreen;
 import org.chromium.chrome.browser.signin.SigninPromoScreen;
-import org.chromium.chrome.browser.ssl.ConnectionSecurityHelperSecurityLevel;
+import org.chromium.chrome.browser.ssl.ConnectionSecurityLevel;
 import org.chromium.chrome.browser.tabmodel.SingleTabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
@@ -730,10 +730,9 @@ public class DocumentActivity extends CompositorChromeActivity {
 
             private boolean hasSecurityWarningOrError(Tab tab) {
                 int securityLevel = tab.getSecurityLevel();
-                return securityLevel == ConnectionSecurityHelperSecurityLevel.SECURITY_ERROR
-                        || securityLevel == ConnectionSecurityHelperSecurityLevel.SECURITY_WARNING
-                        || securityLevel
-                                   == ConnectionSecurityHelperSecurityLevel.SECURITY_POLICY_WARNING;
+                return securityLevel == ConnectionSecurityLevel.SECURITY_ERROR
+                        || securityLevel == ConnectionSecurityLevel.SECURITY_WARNING
+                        || securityLevel == ConnectionSecurityLevel.SECURITY_POLICY_WARNING;
             }
         });
 

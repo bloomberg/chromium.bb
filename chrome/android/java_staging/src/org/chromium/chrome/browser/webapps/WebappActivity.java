@@ -27,7 +27,7 @@ import org.chromium.chrome.browser.TabObserver;
 import org.chromium.chrome.browser.UrlUtilities;
 import org.chromium.chrome.browser.document.DocumentUtils;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
-import org.chromium.chrome.browser.ssl.ConnectionSecurityHelperSecurityLevel;
+import org.chromium.chrome.browser.ssl.ConnectionSecurityLevel;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.content.browser.ScreenOrientationProvider;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -307,9 +307,8 @@ public class WebappActivity extends FullScreenActivity {
         if (!TextUtils.isEmpty(url)) {
             boolean isSameWebsite =
                     UrlUtilities.sameDomainOrHost(mWebappInfo.uri().toString(), url, true);
-            visible = !isSameWebsite
-                    || securityLevel == ConnectionSecurityHelperSecurityLevel.SECURITY_ERROR
-                    || securityLevel == ConnectionSecurityHelperSecurityLevel.SECURITY_WARNING;
+            visible = !isSameWebsite || securityLevel == ConnectionSecurityLevel.SECURITY_ERROR
+                    || securityLevel == ConnectionSecurityLevel.SECURITY_WARNING;
         }
 
         return visible;

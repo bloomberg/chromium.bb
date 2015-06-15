@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.webapps;
 
 import android.test.FlakyTest;
 
-import org.chromium.chrome.browser.ssl.ConnectionSecurityHelperSecurityLevel;
+import org.chromium.chrome.browser.ssl.ConnectionSecurityLevel;
 import org.chromium.content_public.common.ScreenOrientationValues;
 
 /**
@@ -40,17 +40,15 @@ public class WebappUrlBarTest extends WebappActivityTestBase {
         final String url = scheme + host + path;
         final String urlExpectedWhenIconNotShown = scheme + host;
         final String urlExpectedWhenIconShown = host;
-        final int[] securityLevels = {
-            ConnectionSecurityHelperSecurityLevel.NONE,
-            ConnectionSecurityHelperSecurityLevel.EV_SECURE,
-            ConnectionSecurityHelperSecurityLevel.SECURE,
-            ConnectionSecurityHelperSecurityLevel.SECURITY_WARNING,
-            ConnectionSecurityHelperSecurityLevel.SECURITY_POLICY_WARNING,
-            ConnectionSecurityHelperSecurityLevel.SECURITY_ERROR };
+        final int[] securityLevels = {ConnectionSecurityLevel.NONE,
+                ConnectionSecurityLevel.EV_SECURE, ConnectionSecurityLevel.SECURE,
+                ConnectionSecurityLevel.SECURITY_WARNING,
+                ConnectionSecurityLevel.SECURITY_POLICY_WARNING,
+                ConnectionSecurityLevel.SECURITY_ERROR};
 
         for (int i : securityLevels) {
             // http://crbug.com/297249
-            if (i == ConnectionSecurityHelperSecurityLevel.SECURITY_POLICY_WARNING) continue;
+            if (i == ConnectionSecurityLevel.SECURITY_POLICY_WARNING) continue;
             mUrlBar.update(url, i);
 
             int iconResource = mUrlBar.getCurrentIconResourceForTests();

@@ -146,7 +146,7 @@ class LocationBarView : public LocationBar,
 
   // Returns the appropriate color for the desired kind, based on the user's
   // system theme.
-  SkColor GetColor(ConnectionSecurityHelper::SecurityLevel security_level,
+  SkColor GetColor(connection_security::SecurityLevel security_level,
                    ColorKind kind) const;
 
   // Returns the delegate.

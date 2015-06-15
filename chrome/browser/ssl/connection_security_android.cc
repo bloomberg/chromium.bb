@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ssl/connection_security_helper_android.h"
+#include "chrome/browser/ssl/connection_security_android.h"
 
 #include "base/logging.h"
-#include "chrome/browser/ssl/connection_security_helper.h"
+#include "chrome/browser/ssl/connection_security.h"
 #include "content/public/browser/web_contents.h"
-#include "jni/ConnectionSecurityHelper_jni.h"
+#include "jni/ConnectionSecurity_jni.h"
 
 // static
-bool RegisterConnectionSecurityHelperAndroid(JNIEnv* env) {
+bool RegisterConnectionSecurityAndroid(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
@@ -21,5 +21,5 @@ jint GetSecurityLevelForWebContents(JNIEnv* env,
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(jweb_contents);
   DCHECK(web_contents);
-  return ConnectionSecurityHelper::GetSecurityLevelForWebContents(web_contents);
+  return connection_security::GetSecurityLevelForWebContents(web_contents);
 }

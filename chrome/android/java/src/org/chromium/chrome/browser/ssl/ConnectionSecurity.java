@@ -9,21 +9,21 @@ import org.chromium.content_public.browser.WebContents;
 /**
  * Provides a way of accessing helpers for connection security levels.
  */
-public class ConnectionSecurityHelper {
+public class ConnectionSecurity {
     /**
      * Fetch the security level for a given web contents.
      *
      * @param webContents The web contents to get the security level for.
-     * @return The ConnectionSecurityHelperSecurityLevel for the specified web contents.
+     * @return The ConnectionSecurityLevel for the specified web contents.
      *
-     * @see ConnectionSecurityHelperSecurityLevel
+     * @see ConnectionSecurityLevel
      */
     public static int getSecurityLevelForWebContents(WebContents webContents) {
-        if (webContents == null) return ConnectionSecurityHelperSecurityLevel.NONE;
+        if (webContents == null) return ConnectionSecurityLevel.NONE;
         return nativeGetSecurityLevelForWebContents(webContents);
     }
 
-    private ConnectionSecurityHelper() {}
+    private ConnectionSecurity() {}
 
     private static native int nativeGetSecurityLevelForWebContents(WebContents webContents);
 }

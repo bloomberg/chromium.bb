@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.webapps;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.ssl.ConnectionSecurityHelperSecurityLevel;
+import org.chromium.chrome.browser.ssl.ConnectionSecurityLevel;
 import org.chromium.content_public.common.ScreenOrientationValues;
 
 /**
@@ -24,46 +24,38 @@ public class WebappVisibilityTest extends WebappActivityTestBase {
 
         // Show top controls for out-of-domain URLs.
         assertTrue(getActivity().shouldShowTopControls(
-                "http://notoriginalwebsite.com", ConnectionSecurityHelperSecurityLevel.NONE));
+                "http://notoriginalwebsite.com", ConnectionSecurityLevel.NONE));
         assertTrue(getActivity().shouldShowTopControls(
-                "http://otherwebsite.com", ConnectionSecurityHelperSecurityLevel.NONE));
+                "http://otherwebsite.com", ConnectionSecurityLevel.NONE));
 
         // Do not show top controls for subdomains and private registries that are secure.
         assertFalse(getActivity().shouldShowTopControls(
-                "http://sub.originalwebsite.com", ConnectionSecurityHelperSecurityLevel.NONE));
+                "http://sub.originalwebsite.com", ConnectionSecurityLevel.NONE));
         assertFalse(getActivity().shouldShowTopControls(
-                "http://thing.originalwebsite.com", ConnectionSecurityHelperSecurityLevel.NONE));
-        assertFalse(getActivity().shouldShowTopControls(webappUrl,
-                ConnectionSecurityHelperSecurityLevel.NONE));
+                "http://thing.originalwebsite.com", ConnectionSecurityLevel.NONE));
+        assertFalse(getActivity().shouldShowTopControls(webappUrl, ConnectionSecurityLevel.NONE));
         assertFalse(getActivity().shouldShowTopControls(
-                webappUrl + "/things.html", ConnectionSecurityHelperSecurityLevel.NONE));
+                webappUrl + "/things.html", ConnectionSecurityLevel.NONE));
         assertFalse(getActivity().shouldShowTopControls(
-                webappUrl + "/stuff.html", ConnectionSecurityHelperSecurityLevel.NONE));
+                webappUrl + "/stuff.html", ConnectionSecurityLevel.NONE));
 
         // Do not show top controls when URL is not available yet.
-        assertFalse(getActivity().shouldShowTopControls("",
-                ConnectionSecurityHelperSecurityLevel.NONE));
+        assertFalse(getActivity().shouldShowTopControls("", ConnectionSecurityLevel.NONE));
 
         // Show top controls for non secure URLs.
         assertTrue(getActivity().shouldShowTopControls(
-                "http://sub.originalwebsite.com",
-                ConnectionSecurityHelperSecurityLevel.SECURITY_WARNING));
+                "http://sub.originalwebsite.com", ConnectionSecurityLevel.SECURITY_WARNING));
         assertTrue(getActivity().shouldShowTopControls(
-                "http://notoriginalwebsite.com",
-                ConnectionSecurityHelperSecurityLevel.SECURITY_ERROR));
+                "http://notoriginalwebsite.com", ConnectionSecurityLevel.SECURITY_ERROR));
         assertTrue(getActivity().shouldShowTopControls(
-                "http://otherwebsite.com",
-                ConnectionSecurityHelperSecurityLevel.SECURITY_ERROR));
+                "http://otherwebsite.com", ConnectionSecurityLevel.SECURITY_ERROR));
         assertTrue(getActivity().shouldShowTopControls(
-                "http://thing.originalwebsite.com",
-                ConnectionSecurityHelperSecurityLevel.SECURITY_ERROR));
+                "http://thing.originalwebsite.com", ConnectionSecurityLevel.SECURITY_ERROR));
         assertTrue(getActivity().shouldShowTopControls(
-                webappUrl, ConnectionSecurityHelperSecurityLevel.SECURITY_WARNING));
+                webappUrl, ConnectionSecurityLevel.SECURITY_WARNING));
         assertTrue(getActivity().shouldShowTopControls(
-                webappUrl + "/things.html",
-                ConnectionSecurityHelperSecurityLevel.SECURITY_WARNING));
+                webappUrl + "/things.html", ConnectionSecurityLevel.SECURITY_WARNING));
         assertTrue(getActivity().shouldShowTopControls(
-                webappUrl + "/stuff.html",
-                ConnectionSecurityHelperSecurityLevel.SECURITY_WARNING));
+                webappUrl + "/stuff.html", ConnectionSecurityLevel.SECURITY_WARNING));
     }
 }

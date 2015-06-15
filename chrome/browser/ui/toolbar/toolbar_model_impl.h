@@ -40,11 +40,11 @@ class ToolbarModelImpl : public ToolbarModel {
   base::string16 GetCorpusNameForMobile() const override;
   GURL GetURL() const override;
   bool WouldPerformSearchTermReplacement(bool ignore_editing) const override;
-  ConnectionSecurityHelper::SecurityLevel GetSecurityLevel(
+  connection_security::SecurityLevel GetSecurityLevel(
       bool ignore_editing) const override;
   int GetIcon() const override;
   int GetIconForSecurityLevel(
-      ConnectionSecurityHelper::SecurityLevel level) const override;
+      connection_security::SecurityLevel level) const override;
   base::string16 GetEVCertName() const override;
   bool ShouldDisplayURL() const override;
 

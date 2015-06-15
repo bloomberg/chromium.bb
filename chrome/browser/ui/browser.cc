@@ -1305,7 +1305,7 @@ bool Browser::CanDragEnter(content::WebContents* source,
 }
 
 content::SecurityStyle Browser::GetSecurityStyle(WebContents* web_contents) {
-  return ConnectionSecurityHelper::GetSecurityStyleForWebContents(web_contents);
+  return connection_security::GetSecurityStyleForWebContents(web_contents);
 }
 
 bool Browser::IsMouseLocked() const {

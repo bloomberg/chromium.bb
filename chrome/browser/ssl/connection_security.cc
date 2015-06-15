@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ssl/connection_security_helper.h"
+#include "chrome/browser/ssl/connection_security.h"
 
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
@@ -31,8 +31,7 @@
 
 namespace {
 
-ConnectionSecurityHelper::SecurityLevel
-GetSecurityLevelForNonSecureFieldTrial() {
+connection_security::SecurityLevel GetSecurityLevelForNonSecureFieldTrial() {
   std::string choice =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kMarkNonSecureAs);
@@ -42,30 +41,30 @@ GetSecurityLevelForNonSecureFieldTrial() {
   enum MarkNonSecureStatus { NEUTRAL, DUBIOUS, NON_SECURE, LAST_STATUS };
   const char kEnumeration[] = "MarkNonSecureAs";
 
-  ConnectionSecurityHelper::SecurityLevel level;
+  connection_security::SecurityLevel level;
   MarkNonSecureStatus status;
 
   if (choice == switches::kMarkNonSecureAsNeutral) {
     status = NEUTRAL;
-    level = ConnectionSecurityHelper::NONE;
+    level = connection_security::NONE;
   } else if (choice == switches::kMarkNonSecureAsDubious) {
     status = DUBIOUS;
-    level = ConnectionSecurityHelper::SECURITY_WARNING;
+    level = connection_security::SECURITY_WARNING;
   } else if (choice == switches::kMarkNonSecureAsNonSecure) {
     status = NON_SECURE;
-    level = ConnectionSecurityHelper::SECURITY_ERROR;
+    level = connection_security::SECURITY_ERROR;
   } else if (group == switches::kMarkNonSecureAsNeutral) {
     status = NEUTRAL;
-    level = ConnectionSecurityHelper::NONE;
+    level = connection_security::NONE;
   } else if (group == switches::kMarkNonSecureAsDubious) {
     status = DUBIOUS;
-    level = ConnectionSecurityHelper::SECURITY_WARNING;
+    level = connection_security::SECURITY_WARNING;
   } else if (group == switches::kMarkNonSecureAsNonSecure) {
     status = NON_SECURE;
-    level = ConnectionSecurityHelper::SECURITY_ERROR;
+    level = connection_security::SECURITY_ERROR;
   } else {
     status = NEUTRAL;
-    level = ConnectionSecurityHelper::NONE;
+    level = connection_security::NONE;
   }
 
   UMA_HISTOGRAM_ENUMERATION(kEnumeration, status, LAST_STATUS);
@@ -74,8 +73,9 @@ GetSecurityLevelForNonSecureFieldTrial() {
 
 }  // namespace
 
-ConnectionSecurityHelper::SecurityLevel
-ConnectionSecurityHelper::GetSecurityLevelForWebContents(
+namespace connection_security {
+
+SecurityLevel GetSecurityLevelForWebContents(
     const content::WebContents* web_contents) {
   if (!web_contents)
     return NONE;
@@ -148,7 +148,7 @@ ConnectionSecurityHelper::GetSecurityLevelForWebContents(
   }
 }
 
-content::SecurityStyle ConnectionSecurityHelper::GetSecurityStyleForWebContents(
+content::SecurityStyle GetSecurityStyleForWebContents(
     const content::WebContents* web_contents) {
   SecurityLevel security_level = GetSecurityLevelForWebContents(web_contents);
 
@@ -168,3 +168,5 @@ content::SecurityStyle ConnectionSecurityHelper::GetSecurityStyleForWebContents(
   NOTREACHED();
   return content::SECURITY_STYLE_UNKNOWN;
 }
+
+}  // namespace connection_security

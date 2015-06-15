@@ -12,7 +12,7 @@
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
-#include "chrome/browser/ssl/connection_security_helper.h"
+#include "chrome/browser/ssl/connection_security.h"
 #include "chrome/browser/ui/toolbar/toolbar_model_delegate.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -109,12 +109,12 @@ bool ToolbarModelImpl::WouldPerformSearchTermReplacement(
   return !GetSearchTerms(ignore_editing).empty();
 }
 
-ConnectionSecurityHelper::SecurityLevel ToolbarModelImpl::GetSecurityLevel(
+connection_security::SecurityLevel ToolbarModelImpl::GetSecurityLevel(
     bool ignore_editing) const {
   // When editing, assume no security style.
   return (input_in_progress() && !ignore_editing)
-             ? ConnectionSecurityHelper::NONE
-             : ConnectionSecurityHelper::GetSecurityLevelForWebContents(
+             ? connection_security::NONE
+             : connection_security::GetSecurityLevelForWebContents(
                    delegate_->GetActiveWebContents());
 }
 
@@ -126,18 +126,18 @@ int ToolbarModelImpl::GetIcon() const {
 }
 
 int ToolbarModelImpl::GetIconForSecurityLevel(
-    ConnectionSecurityHelper::SecurityLevel level) const {
+    connection_security::SecurityLevel level) const {
   switch (level) {
-    case ConnectionSecurityHelper::NONE:
+    case connection_security::NONE:
       return IDR_LOCATION_BAR_HTTP;
-    case ConnectionSecurityHelper::EV_SECURE:
-    case ConnectionSecurityHelper::SECURE:
+    case connection_security::EV_SECURE:
+    case connection_security::SECURE:
       return IDR_OMNIBOX_HTTPS_VALID;
-    case ConnectionSecurityHelper::SECURITY_WARNING:
+    case connection_security::SECURITY_WARNING:
       return IDR_OMNIBOX_HTTPS_WARNING;
-    case ConnectionSecurityHelper::SECURITY_POLICY_WARNING:
+    case connection_security::SECURITY_POLICY_WARNING:
       return IDR_OMNIBOX_HTTPS_POLICY_WARNING;
-    case ConnectionSecurityHelper::SECURITY_ERROR:
+    case connection_security::SECURITY_ERROR:
       return IDR_OMNIBOX_HTTPS_INVALID;
   }
 
@@ -146,7 +146,7 @@ int ToolbarModelImpl::GetIconForSecurityLevel(
 }
 
 base::string16 ToolbarModelImpl::GetEVCertName() const {
-  if (GetSecurityLevel(false) != ConnectionSecurityHelper::EV_SECURE)
+  if (GetSecurityLevel(false) != connection_security::EV_SECURE)
     return base::string16();
 
   // Note: Navigation controller and active entry are guaranteed non-NULL or
@@ -239,10 +239,10 @@ base::string16 ToolbarModelImpl::GetSearchTerms(bool ignore_editing) const {
 
   // Otherwise, extract search terms for HTTPS pages that do not have a security
   // error.
-  ConnectionSecurityHelper::SecurityLevel security_level =
+  connection_security::SecurityLevel security_level =
       GetSecurityLevel(ignore_editing);
-  return ((security_level == ConnectionSecurityHelper::NONE) ||
-          (security_level == ConnectionSecurityHelper::SECURITY_ERROR))
+  return ((security_level == connection_security::NONE) ||
+          (security_level == connection_security::SECURITY_ERROR))
              ? base::string16()
              : search_terms;
 }

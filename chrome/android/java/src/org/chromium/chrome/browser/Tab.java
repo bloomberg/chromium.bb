@@ -42,8 +42,8 @@ import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.printing.TabPrinter;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.ssl.ConnectionSecurityHelper;
-import org.chromium.chrome.browser.ssl.ConnectionSecurityHelperSecurityLevel;
+import org.chromium.chrome.browser.ssl.ConnectionSecurity;
+import org.chromium.chrome.browser.ssl.ConnectionSecurityLevel;
 import org.chromium.chrome.browser.tab.SadTabViewFactory;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
@@ -1154,11 +1154,11 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     }
 
     /**
-     * @return The current {@link ConnectionSecurityHelperSecurityLevel} for the tab.
+     * @return The current {@link ConnectionSecurityLevel} for the tab.
      */
     // TODO(tedchoc): Remove this and transition all clients to use ToolbarModel directly.
     public int getSecurityLevel() {
-        return ConnectionSecurityHelper.getSecurityLevelForWebContents(getWebContents());
+        return ConnectionSecurity.getSecurityLevelForWebContents(getWebContents());
     }
 
     /**
@@ -2462,9 +2462,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
                 && !url.startsWith(UrlConstants.CHROME_NATIVE_SCHEME);
 
         int securityState = getSecurityLevel();
-        enableHidingTopControls &=
-                (securityState != ConnectionSecurityHelperSecurityLevel.SECURITY_ERROR
-                        && securityState != ConnectionSecurityHelperSecurityLevel.SECURITY_WARNING);
+        enableHidingTopControls &= (securityState != ConnectionSecurityLevel.SECURITY_ERROR
+                && securityState != ConnectionSecurityLevel.SECURITY_WARNING);
 
         enableHidingTopControls &=
                 !AccessibilityUtil.isAccessibilityEnabled(getApplicationContext());
