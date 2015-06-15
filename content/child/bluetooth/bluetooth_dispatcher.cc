@@ -233,15 +233,18 @@ void BluetoothDispatcher::OnRequestDeviceSuccess(
   pending_requests_.Remove(request_id);
 }
 
-void BluetoothDispatcher::OnRequestDeviceError(int thread_id,
-                                               int request_id,
-                                               BluetoothError error_type) {
+void BluetoothDispatcher::OnRequestDeviceError(
+    int thread_id,
+    int request_id,
+    BluetoothError error_type,
+    const std::string& error_message) {
   DCHECK(pending_requests_.Lookup(request_id)) << request_id;
   pending_requests_.Lookup(request_id)
       ->onError(new WebBluetoothError(
           // TODO(ortuno): Return more descriptive error messages.
           // http://crbug.com/490419
-          WebBluetoothErrorFromBluetoothError(error_type), ""));
+          WebBluetoothErrorFromBluetoothError(error_type),
+          WebString::fromUTF8(error_message)));
   pending_requests_.Remove(request_id);
 }
 
@@ -258,13 +261,15 @@ void BluetoothDispatcher::OnConnectGATTSuccess(
 
 void BluetoothDispatcher::OnConnectGATTError(int thread_id,
                                              int request_id,
-                                             BluetoothError error_type) {
+                                             BluetoothError error_type,
+                                             const std::string& error_message) {
   DCHECK(pending_connect_requests_.Lookup(request_id)) << request_id;
   pending_connect_requests_.Lookup(request_id)
       ->onError(new WebBluetoothError(
           // TODO(ortuno): Return more descriptive error messages.
           // http://crbug.com/490419
-          WebBluetoothErrorFromBluetoothError(error_type), ""));
+          WebBluetoothErrorFromBluetoothError(error_type),
+          WebString::fromUTF8(error_message)));
   pending_connect_requests_.Remove(request_id);
 }
 
@@ -281,9 +286,11 @@ void BluetoothDispatcher::OnGetPrimaryServiceSuccess(
   pending_primary_service_requests_.Remove(request_id);
 }
 
-void BluetoothDispatcher::OnGetPrimaryServiceError(int thread_id,
-                                                   int request_id,
-                                                   BluetoothError error_type) {
+void BluetoothDispatcher::OnGetPrimaryServiceError(
+    int thread_id,
+    int request_id,
+    BluetoothError error_type,
+    const std::string& error_message) {
   DCHECK(pending_primary_service_requests_.Lookup(request_id)) << request_id;
 
   // Since we couldn't find the service return null. See Step 3 of
@@ -300,7 +307,8 @@ void BluetoothDispatcher::OnGetPrimaryServiceError(int thread_id,
       ->callbacks->onError(new WebBluetoothError(
           // TODO(ortuno): Return more descriptive error messages.
           // http://crbug.com/490419
-          WebBluetoothErrorFromBluetoothError(error_type), ""));
+          WebBluetoothErrorFromBluetoothError(error_type),
+          WebString::fromUTF8(error_message)));
   pending_primary_service_requests_.Remove(request_id);
 }
 
@@ -319,9 +327,11 @@ void BluetoothDispatcher::OnGetCharacteristicSuccess(
   pending_characteristic_requests_.Remove(request_id);
 }
 
-void BluetoothDispatcher::OnGetCharacteristicError(int thread_id,
-                                                   int request_id,
-                                                   BluetoothError error_type) {
+void BluetoothDispatcher::OnGetCharacteristicError(
+    int thread_id,
+    int request_id,
+    BluetoothError error_type,
+    const std::string& error_message) {
   DCHECK(pending_characteristic_requests_.Lookup(request_id)) << request_id;
 
   // Since we couldn't find the characteristic return null. See Step 3 of
@@ -335,7 +345,8 @@ void BluetoothDispatcher::OnGetCharacteristicError(int thread_id,
         ->callbacks->onError(new WebBluetoothError(
             // TODO(ortuno): Return more descriptive error messages.
             // http://crbug.com/490419
-            WebBluetoothErrorFromBluetoothError(error_type), ""));
+            WebBluetoothErrorFromBluetoothError(error_type),
+            WebString::fromUTF8(error_message)));
   }
   pending_characteristic_requests_.Remove(request_id);
 }
@@ -356,14 +367,16 @@ void BluetoothDispatcher::OnReadValueSuccess(
 
 void BluetoothDispatcher::OnReadValueError(int thread_id,
                                            int request_id,
-                                           BluetoothError error_type) {
+                                           BluetoothError error_type,
+                                           const std::string& error_message) {
   DCHECK(pending_read_value_requests_.Lookup(request_id)) << request_id;
 
   pending_read_value_requests_.Lookup(request_id)
       ->onError(new WebBluetoothError(
           // TODO(ortuno): Return more descriptive error messages.
           // http://crbug.com/490419
-          WebBluetoothErrorFromBluetoothError(error_type), ""));
+          WebBluetoothErrorFromBluetoothError(error_type),
+          WebString::fromUTF8(error_message)));
 
   pending_read_value_requests_.Remove(request_id);
 }

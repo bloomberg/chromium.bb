@@ -2557,6 +2557,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Bluetooth.GATTErrors" enum="BluetoothGATTErrors">
+  <owner>jyasskin@chromium.org</owner>
+  <owner>ortuno@chromium.org</owner>
+  <owner>scheib@chromium.org</owner>
+  <summary>
+    Records how many times each GATT Error has occured. The results will be used
+    to determine how common this errors are and if we need to provide better
+    error messages to the users.
+  </summary>
+</histogram>
+
 <histogram name="Bluetooth.PairingMethod" enum="BluetoothPairingMethod">
   <owner>keybuk@chromium.org</owner>
   <summary>
@@ -49865,6 +49876,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="2" label="Available without LE"/>
   <int value="3" label="Available with LE"/>
   <int value="4" label="Available unknown LE"/>
+</enum>
+
+<enum name="BluetoothGATTErrors" type="int">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Failed"/>
+  <int value="2" label="In Progress"/>
+  <int value="3" label="Not Paired"/>
 </enum>
 
 <enum name="BluetoothPairingMethod" type="int">

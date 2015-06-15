@@ -112,10 +112,11 @@ IPC_MESSAGE_CONTROL3(BluetoothMsg_RequestDeviceSuccess,
                      content::BluetoothDevice /* device */)
 
 // Informs the renderer that the device request |request_id| failed.
-IPC_MESSAGE_CONTROL3(BluetoothMsg_RequestDeviceError,
+IPC_MESSAGE_CONTROL4(BluetoothMsg_RequestDeviceError,
                      int /* thread_id */,
                      int /* request_id */,
-                     content::BluetoothError /* result */)
+                     content::BluetoothError /* result */,
+                     std::string /* error_message */)
 
 // Informs the renderer that the connection request |request_id| succeeded.
 IPC_MESSAGE_CONTROL3(BluetoothMsg_ConnectGATTSuccess,
@@ -124,10 +125,11 @@ IPC_MESSAGE_CONTROL3(BluetoothMsg_ConnectGATTSuccess,
                      std::string /* device_instance_id */)
 
 // Informs the renderer that the connection request |request_id| failed.
-IPC_MESSAGE_CONTROL3(BluetoothMsg_ConnectGATTError,
+IPC_MESSAGE_CONTROL4(BluetoothMsg_ConnectGATTError,
                      int /* thread_id */,
                      int /* request_id */,
-                     content::BluetoothError /* result */)
+                     content::BluetoothError /* result */,
+                     std::string /* error_message */)
 
 // Informs the renderer that primary service request |request_id| succeeded.
 IPC_MESSAGE_CONTROL3(BluetoothMsg_GetPrimaryServiceSuccess,
@@ -136,10 +138,11 @@ IPC_MESSAGE_CONTROL3(BluetoothMsg_GetPrimaryServiceSuccess,
                      std::string /* service_instance_id */)
 
 // Informs the renderer that the primary service request |request_id| failed.
-IPC_MESSAGE_CONTROL3(BluetoothMsg_GetPrimaryServiceError,
+IPC_MESSAGE_CONTROL4(BluetoothMsg_GetPrimaryServiceError,
                      int /* thread_id */,
                      int /* request_id */,
-                     content::BluetoothError /* result */)
+                     content::BluetoothError /* result */,
+                     std::string /* error_message */)
 
 // Informs the renderer that characteristic request |request_id| succeeded.
 IPC_MESSAGE_CONTROL3(BluetoothMsg_GetCharacteristicSuccess,
@@ -148,10 +151,11 @@ IPC_MESSAGE_CONTROL3(BluetoothMsg_GetCharacteristicSuccess,
                      std::string /* characteristic_instance_id */)
 
 // Informs the renderer that the characteristic request |request_id| failed.
-IPC_MESSAGE_CONTROL3(BluetoothMsg_GetCharacteristicError,
+IPC_MESSAGE_CONTROL4(BluetoothMsg_GetCharacteristicError,
                      int /* thread_id */,
                      int /* request_id */,
-                     content::BluetoothError /* result */)
+                     content::BluetoothError /* result */,
+                     std::string /* error_message */)
 
 // Informs the renderer that the value has been read.
 IPC_MESSAGE_CONTROL3(BluetoothMsg_ReadCharacteristicValueSuccess,
@@ -160,10 +164,11 @@ IPC_MESSAGE_CONTROL3(BluetoothMsg_ReadCharacteristicValueSuccess,
                      std::vector<uint8_t> /* value */)
 
 // Informs the renderer that an error occurred while reading the value.
-IPC_MESSAGE_CONTROL3(BluetoothMsg_ReadCharacteristicValueError,
+IPC_MESSAGE_CONTROL4(BluetoothMsg_ReadCharacteristicValueError,
                      int /* thread_id */,
                      int /* request_id */,
-                     content::BluetoothError /* result */)
+                     content::BluetoothError /* result */,
+                     std::string /* error_message */)
 
 // Messages sent from the renderer to the browser.
 
