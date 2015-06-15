@@ -337,7 +337,10 @@ void StyleSheetHandler::endMediaQuery()
 
 class ParsedStyleSheet : public NoBaseWillBeGarbageCollectedFinalized<ParsedStyleSheet> {
 public:
-    ParsedStyleSheet(CSSStyleSheet* pageStyleSheet);
+    static PassOwnPtrWillBeRawPtr<ParsedStyleSheet> create(CSSStyleSheet* pageStyleSheet)
+    {
+        return adoptPtrWillBeNoop(new ParsedStyleSheet(pageStyleSheet));
+    }
 
     const String& text() const { ASSERT(m_hasText); return m_text; }
     void setText(const String&);
@@ -350,6 +353,8 @@ public:
     DECLARE_TRACE();
 
 private:
+    explicit ParsedStyleSheet(CSSStyleSheet* pageStyleSheet);
+
     void flattenSourceData(RuleSourceDataList*);
     void setSourceData(PassOwnPtrWillBeRawPtr<RuleSourceDataList>);
 
@@ -948,7 +953,7 @@ InspectorStyleSheet::InspectorStyleSheet(InspectorResourceAgent* resourceAgent, 
     , m_origin(origin)
     , m_documentURL(documentURL)
 {
-    m_parsedStyleSheet = adoptPtr(new ParsedStyleSheet(m_pageStyleSheet.get()));
+    m_parsedStyleSheet = ParsedStyleSheet::create(m_pageStyleSheet.get());
 }
 
 InspectorStyleSheet::~InspectorStyleSheet()
