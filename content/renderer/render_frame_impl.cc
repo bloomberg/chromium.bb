@@ -686,9 +686,12 @@ RenderFrameImpl::~RenderFrameImpl() {
 #endif
 
   if (!is_subframe_) {
-    // RenderFrameProxy is "owned" by RenderFrameImpl in the case it is
-    // the main frame. Ensure it is deleted along with this object.
-    if (render_frame_proxy_) {
+    // When not using --site-per-process, RenderFrameProxy is "owned" by
+    // RenderFrameImpl in the case it is the main frame. Ensure it is deleted
+    // along with this object.
+    if (render_frame_proxy_ &&
+        !base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kSitePerProcess)) {
       // The following method calls back into this object and clears
       // |render_frame_proxy_|.
       render_frame_proxy_->frameDetached(
@@ -1210,15 +1213,6 @@ void RenderFrameImpl::OnSwapOut(
   // the process based on the lifetime of this RenderFrameImpl object.
   if (is_main_frame) {
     render_view->WasSwappedOut();
-
-    // TODO(nasko): Currently, this RenderFrame is leaked due to
-    // https://crbug.com/464764, therefore the destructor won't be invoked to
-    // destroy this object. Until this bug is fixed, set the main frame of the
-    // RenderView to null here.
-    if (is_site_per_process) {
-      CHECK_EQ(render_view_->main_render_frame_, this);
-      render_view->main_render_frame_ = nullptr;
-    }
   }
 }
 
