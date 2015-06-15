@@ -137,20 +137,29 @@ numericmodechars ,.:
 # §1.58 Drukwijzigingsteken [1]
 
 lenitalphrase 3
+italword 456
+#italwordstop 6
 firstwordital 456-456
 lastworditalbefore 456
+singleletterital 456
 firstletterital 456
 lastletterital 6
 
 lenboldphrase 3
+boldword 456
+#boldwordstop 6
 firstwordbold 456-456
 lastwordboldbefore 456
+singleletterbold 456
 firstletterbold 456
 lastletterbold 6
 
 lenunderphrase 3
+underword 456
+#underwordstop 6
 firstwordunder 456-456
 lastwordunderbefore 456
+singleletterunder 456
 firstletterunder 456
 lastletterunder 6
 
