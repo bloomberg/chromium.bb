@@ -95,8 +95,11 @@ public class ItemChooserDialog {
             implements AdapterView.OnItemClickListener {
         private final LayoutInflater mInflater;
 
-        // The color of the highlighted item.
-        private final int mHighlightColor;
+        // The background color of the highlighted item.
+        private final int mBackgroundHighlightColor;
+
+        // The color of the non-highlighted text.
+        private final int mDefaultTextColor;
 
         // The zero-based index of the item currently selected in the dialog,
         // or -1 (INVALID_POSITION) if nothing is selected.
@@ -107,8 +110,10 @@ public class ItemChooserDialog {
 
             mInflater = LayoutInflater.from(context);
 
-            mHighlightColor = getContext().getResources().getColor(
+            mBackgroundHighlightColor = getContext().getResources().getColor(
                     R.color.light_active_color);
+            mDefaultTextColor = getContext().getResources().getColor(
+                    R.color.default_text_color);
         }
 
         @Override
@@ -150,9 +155,11 @@ public class ItemChooserDialog {
 
             // Set highlighting for currently selected item.
             if (position == mSelectedItem) {
-                view.setBackgroundColor(mHighlightColor);
+                view.setBackgroundColor(mBackgroundHighlightColor);
+                view.setTextColor(Color.WHITE);
             } else {
                 view.setBackground(null);
+                view.setTextColor(mDefaultTextColor);
             }
 
             ItemChooserRow item = (ItemChooserRow) getItem(position);
