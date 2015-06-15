@@ -5457,8 +5457,6 @@
               #   sparingly.
               'variables': {
                 'optimize%': 'size',
-                # Make sure that the 'clang' variable is defined here.
-                'clang': '<(clang)',
               },
               'msvs_settings': {
                 'VCLinkerTool': {
