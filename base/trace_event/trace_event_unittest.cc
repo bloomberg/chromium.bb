@@ -88,6 +88,7 @@ class TraceEventTestFixture : public testing::Test {
   }
 
   void EndTraceAndFlush() {
+    num_flush_callbacks_ = 0;
     WaitableEvent flush_complete_event(false, false);
     EndTraceAndFlushAsync(&flush_complete_event);
     flush_complete_event.Wait();
@@ -152,6 +153,7 @@ class TraceEventTestFixture : public testing::Test {
   TraceResultBuffer trace_buffer_;
   TraceResultBuffer::SimpleOutput json_output_;
   int event_watch_notification_;
+  size_t num_flush_callbacks_;
 
  private:
   // We want our singleton torn down after each test.
@@ -163,6 +165,10 @@ void TraceEventTestFixture::OnTraceDataCollected(
     WaitableEvent* flush_complete_event,
     const scoped_refptr<base::RefCountedString>& events_str,
     bool has_more_events) {
+  num_flush_callbacks_++;
+  if (num_flush_callbacks_ > 1) {
+    EXPECT_FALSE(events_str->data().empty());
+  }
   AutoLock lock(lock_);
   json_output_.json_output.clear();
   trace_buffer_.Start();
@@ -1071,6 +1077,43 @@ TEST_F(TraceEventTestFixture, NewTraceRecording) {
   EndTraceAndFlush();
 }
 
+TEST_F(TraceEventTestFixture, TestTraceFlush) {
+  size_t min_traces = 1;
+  size_t max_traces = 1;
+  do {
+    max_traces *= 2;
+    TraceLog::GetInstance()->SetEnabled(TraceConfig(),
+                                        TraceLog::RECORDING_MODE);
+    for (size_t i = 0; i < max_traces; i++) {
+      TRACE_EVENT_INSTANT0("x", "y", TRACE_EVENT_SCOPE_THREAD);
+    }
+    EndTraceAndFlush();
+  } while (num_flush_callbacks_ < 2);
+
+  while (min_traces + 50 <  max_traces) {
+    size_t traces = (min_traces + max_traces) / 2;
+    TraceLog::GetInstance()->SetEnabled(TraceConfig(),
+                                        TraceLog::RECORDING_MODE);
+    for (size_t i = 0; i < traces; i++) {
+      TRACE_EVENT_INSTANT0("x", "y", TRACE_EVENT_SCOPE_THREAD);
+    }
+    EndTraceAndFlush();
+    if (num_flush_callbacks_ < 2) {
+      min_traces = traces - 10;
+    } else {
+      max_traces = traces + 10;
+    }
+  }
+
+  for (size_t traces = min_traces; traces < max_traces; traces++) {
+    TraceLog::GetInstance()->SetEnabled(TraceConfig(),
+                                        TraceLog::RECORDING_MODE);
+    for (size_t i = 0; i < traces; i++) {
+      TRACE_EVENT_INSTANT0("x", "y", TRACE_EVENT_SCOPE_THREAD);
+    }
+    EndTraceAndFlush();
+  }
+}
 
 // Test that categories work.
 TEST_F(TraceEventTestFixture, Categories) {
