@@ -1591,6 +1591,9 @@ TEST_F(DelegatedRendererLayerImplTest, Occlusion) {
       gfx::Transform layer_transform;
       layer_transform.Translate(11.0, 0.0);
       delegated_renderer_layer_impl->SetTransform(layer_transform);
+      delegated_renderer_layer_impl->layer_tree_impl()
+          ->property_trees()
+          ->needs_rebuild = true;
 
       occlusion_in_target_of_delegated_quad += gfx::Vector2d(11, 0);
 
