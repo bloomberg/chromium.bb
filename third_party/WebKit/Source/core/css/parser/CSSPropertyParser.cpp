@@ -7586,17 +7586,6 @@ CSSValueID cssValueKeywordID(const CSSParserString& string)
     return string.is8Bit() ? cssValueKeywordID(string.characters8(), length) : cssValueKeywordID(string.characters16(), length);
 }
 
-// FIXME: This has nothing to do with parsing properties
-bool isValidNthToken(const CSSParserString& token)
-{
-    // The tokenizer checks for the construct of an+b.
-    // However, since the {ident} rule precedes the {nth} rule, some of those
-    // tokens are identified as string literal. Furthermore we need to accept
-    // "odd" and "even" which does not match to an+b.
-    return equalIgnoringCase(token, "odd") || equalIgnoringCase(token, "even")
-        || equalIgnoringCase(token, "n") || equalIgnoringCase(token, "-n");
-}
-
 bool CSSPropertyParser::isSystemColor(int id)
 {
     return (id >= CSSValueActiveborder && id <= CSSValueWindowtext) || id == CSSValueMenu;
