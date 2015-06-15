@@ -117,6 +117,8 @@ bool FileManagerPrivateGetPreferencesFunction::RunSync() {
       service->GetBoolean(prefs::kDisableDriveOverCellular);
   result.hosted_files_disabled =
       service->GetBoolean(prefs::kDisableDriveHostedFiles);
+  result.search_suggest_enabled =
+      service->GetBoolean(prefs::kSearchSuggestEnabled);
   result.use24hour_clock = service->GetBoolean(prefs::kUse24HourClock);
   result.allow_redeem_offers = true;
   if (!chromeos::CrosSettings::Get()->GetBoolean(

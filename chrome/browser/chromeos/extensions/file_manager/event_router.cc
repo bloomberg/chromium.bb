@@ -438,6 +438,7 @@ void EventRouter::ObserveEvents() {
   pref_change_registrar_->Add(prefs::kDisableDriveOverCellular, callback);
   pref_change_registrar_->Add(prefs::kDisableDriveHostedFiles, callback);
   pref_change_registrar_->Add(prefs::kDisableDrive, callback);
+  pref_change_registrar_->Add(prefs::kSearchSuggestEnabled, callback);
   pref_change_registrar_->Add(prefs::kUse24HourClock, callback);
 }
 

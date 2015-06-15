@@ -148,6 +148,7 @@ var FileWatchEvent;
  *   driveEnabled: boolean,
  *   cellularDisabled: boolean,
  *   hostedFilesDisabled: boolean,
+ *   searchSuggestEnabled: boolean,
  *   use24hourClock: boolean,
  *   allowRedeemOffers: boolean
  * }}
