@@ -244,7 +244,7 @@ void SVGImage::drawPatternForContainer(GraphicsContext* context, const FloatSize
     FloatRect spacedTile(tile);
     spacedTile.expand(repeatSpacing);
 
-    SkPictureBuilder patternPicture(spacedTile);
+    SkPictureBuilder patternPicture(spacedTile, nullptr, context);
     {
         DrawingRecorder patternPictureRecorder(patternPicture.context(), *this, DisplayItem::Type::SVGImage, spacedTile);
         if (!patternPictureRecorder.canUseCachedDrawing()) {

@@ -11,6 +11,7 @@ class SkPaint;
 
 namespace blink {
 
+class FloatRect;
 struct MarkerPosition;
 struct PaintInfo;
 class FloatPoint;
@@ -28,7 +29,7 @@ private:
     void fillShape(GraphicsContext*, const SkPaint&, SkPath::FillType);
     void strokeShape(GraphicsContext*, const SkPaint&);
 
-    void paintMarkers(const PaintInfo&);
+    void paintMarkers(const PaintInfo&, const FloatRect& boundingBox);
     void paintMarker(const PaintInfo&, LayoutSVGResourceMarker&, const MarkerPosition&, float);
     void strokeZeroLengthLineCaps(GraphicsContext*, const SkPaint&);
 

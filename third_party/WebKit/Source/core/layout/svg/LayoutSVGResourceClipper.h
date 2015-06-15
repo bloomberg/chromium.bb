@@ -47,7 +47,7 @@ public:
     SVGUnitTypes::SVGUnitType clipPathUnits() const { return toSVGClipPathElement(element())->clipPathUnits()->currentValue()->enumValue(); }
 
     bool tryPathOnlyClipping(const LayoutObject&, GraphicsContext*, const AffineTransform&, const FloatRect&);
-    PassRefPtr<const SkPicture> createContentPicture(AffineTransform&, const FloatRect&);
+    PassRefPtr<const SkPicture> createContentPicture(AffineTransform&, const FloatRect&, GraphicsContext*);
 
     bool hasCycle() { return m_inClipExpansion; }
     void beginClipExpansion() { ASSERT(!m_inClipExpansion); m_inClipExpansion = true; }

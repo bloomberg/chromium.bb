@@ -51,7 +51,7 @@ void GeneratedImage::drawPattern(GraphicsContext* destContext, const FloatRect& 
     FloatRect tileRect = srcRect;
     tileRect.expand(repeatSpacing);
 
-    SkPictureBuilder builder(tileRect);
+    SkPictureBuilder builder(tileRect, nullptr, destContext);
     if (RuntimeEnabledFeatures::slimmingPaintEnabled())
         builder.context().beginRecording(tileRect);
     drawTile(&builder.context(), srcRect);

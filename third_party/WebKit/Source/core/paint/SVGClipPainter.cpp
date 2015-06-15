@@ -125,7 +125,7 @@ void SVGClipPainter::drawClipMaskContent(GraphicsContext* context, const LayoutO
     ASSERT(context);
 
     AffineTransform contentTransformation;
-    RefPtr<const SkPicture> clipContentPicture = m_clip.createContentPicture(contentTransformation, targetBoundingBox);
+    RefPtr<const SkPicture> clipContentPicture = m_clip.createContentPicture(contentTransformation, targetBoundingBox, context);
 
     TransformRecorder recorder(*context, layoutObject, contentTransformation);
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {

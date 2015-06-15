@@ -50,7 +50,7 @@ public:
     static const LayoutSVGResourceType s_resourceType = MaskerResourceType;
     virtual LayoutSVGResourceType resourceType() const override { return s_resourceType; }
 
-    PassRefPtr<const SkPicture> createContentPicture(AffineTransform&, const FloatRect&);
+    PassRefPtr<const SkPicture> createContentPicture(AffineTransform&, const FloatRect&, GraphicsContext*);
 
 private:
     void calculateMaskContentPaintInvalidationRect();

@@ -71,7 +71,7 @@ void SVGMaskPainter::drawMaskForLayoutObject(GraphicsContext* context, const Lay
     ASSERT(context);
 
     AffineTransform contentTransformation;
-    RefPtr<const SkPicture> maskContentPicture = m_mask.createContentPicture(contentTransformation, targetBoundingBox);
+    RefPtr<const SkPicture> maskContentPicture = m_mask.createContentPicture(contentTransformation, targetBoundingBox, context);
 
     TransformRecorder recorder(*context, layoutObject, contentTransformation);
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {

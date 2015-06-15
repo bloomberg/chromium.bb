@@ -17,8 +17,9 @@
 #include "core/paint/PaintInfo.h"
 #include "core/paint/SVGContainerPainter.h"
 #include "core/paint/SVGPaintContext.h"
+#include "core/paint/ScopeRecorder.h"
 #include "core/paint/TransformRecorder.h"
-#include "platform/graphics/paint/DisplayItemListContextRecorder.h"
+#include "platform/graphics/paint/SkPictureBuilder.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "wtf/Optional.h"
@@ -101,7 +102,7 @@ void SVGShapePainter::paint(const PaintInfo& paintInfo)
                         }
                         break;
                     case PT_MARKERS:
-                        paintMarkers(paintContext.paintInfo());
+                        paintMarkers(paintContext.paintInfo(), boundingBox);
                         break;
                     default:
                         ASSERT_NOT_REACHED();
@@ -179,7 +180,7 @@ void SVGShapePainter::strokeShape(GraphicsContext* context, const SkPaint& paint
     }
 }
 
-void SVGShapePainter::paintMarkers(const PaintInfo& paintInfo)
+void SVGShapePainter::paintMarkers(const PaintInfo& paintInfo, const FloatRect& boundingBox)
 {
     const Vector<MarkerPosition>* markerPositions = m_layoutSVGShape.markerPositions();
     if (!markerPositions || markerPositions->isEmpty())
@@ -197,10 +198,22 @@ void SVGShapePainter::paintMarkers(const PaintInfo& paintInfo)
 
     float strokeWidth = m_layoutSVGShape.strokeWidth();
     unsigned size = markerPositions->size();
+    SkPictureBuilder pictureBuilder(boundingBox, nullptr, paintInfo.context);
+    PaintInfo markersPaintInfo(paintInfo);
+    markersPaintInfo.context = &pictureBuilder.context();
+
+    // It's expensive to track the transformed paint cull rect for each
+    // marker so just disable culling. The shape paint call will already be
+    // culled if it is outside the paint info cull rect.
+    markersPaintInfo.rect = LayoutRect::infiniteIntRect();
+
     for (unsigned i = 0; i < size; ++i) {
+        ScopeRecorder scopeRecorder(*markersPaintInfo.context, m_layoutSVGShape);
         if (LayoutSVGResourceMarker* marker = SVGMarkerData::markerForType((*markerPositions)[i].type, markerStart, markerMid, markerEnd))
-            paintMarker(paintInfo, *marker, (*markerPositions)[i], strokeWidth);
+            paintMarker(markersPaintInfo, *marker, (*markerPositions)[i], strokeWidth);
     }
+
+    pictureBuilder.endRecording()->playback(paintInfo.context->canvas());
 }
 
 void SVGShapePainter::paintMarker(const PaintInfo& paintInfo, LayoutSVGResourceMarker& marker, const MarkerPosition& position, float strokeWidth)
@@ -211,23 +224,12 @@ void SVGShapePainter::paintMarker(const PaintInfo& paintInfo, LayoutSVGResourceM
     if (markerElement->hasAttribute(SVGNames::viewBoxAttr) && markerElement->viewBox()->currentValue()->isValid() && markerElement->viewBox()->currentValue()->value().isEmpty())
         return;
 
-    {
-        DisplayItemListContextRecorder contextRecorder(*paintInfo.context);
-        PaintInfo markerPaintInfo(paintInfo);
-        markerPaintInfo.context = &contextRecorder.context();
+    TransformRecorder transformRecorder(*paintInfo.context, marker, marker.markerTransformation(position.origin, position.angle, strokeWidth));
+    Optional<FloatClipRecorder> clipRecorder;
+    if (SVGLayoutSupport::isOverflowHidden(&marker))
+        clipRecorder.emplace(*paintInfo.context, marker, paintInfo.phase, marker.viewport());
 
-        // It's expensive to track the transformed paint cull rect for each
-        // marker so just disable culling. The shape paint call will already be
-        // culled if it is outside the paint info cull rect.
-        markerPaintInfo.rect = LayoutRect::infiniteIntRect();
-
-        TransformRecorder transformRecorder(*markerPaintInfo.context, marker, marker.markerTransformation(position.origin, position.angle, strokeWidth));
-        Optional<FloatClipRecorder> clipRecorder;
-        if (SVGLayoutSupport::isOverflowHidden(&marker))
-            clipRecorder.emplace(*markerPaintInfo.context, marker, markerPaintInfo.phase, marker.viewport());
-
-        SVGContainerPainter(marker).paint(markerPaintInfo);
-    }
+    SVGContainerPainter(marker).paint(paintInfo);
 }
 
 void SVGShapePainter::strokeZeroLengthLineCaps(GraphicsContext* context, const SkPaint& strokePaint)
