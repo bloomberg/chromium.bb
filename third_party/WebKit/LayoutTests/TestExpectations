@@ -199,6 +199,14 @@ crbug.com/490511 imported/web-platform-tests/html/webappapis/scripting/processin
 crbug.com/490511 imported/web-platform-tests/html/syntax/parsing/html5lib_tests19.html [ Failure Pass Slow ]
 crbug.com/490511 imported/web-platform-tests/html/syntax/parsing/html5lib_tests2.html [ Failure Pass Slow ]
 
+crbug.com/497590 virtual/gpu/fast/canvas/setWidthResetAfterForcedRender.html [ NeedsRebaseline ]
+crbug.com/497590 virtual/prefer_compositing_to_lcd_text/compositing/overflow/updating-scrolling-container.html [ NeedsRebaseline ]
+crbug.com/497590 virtual/prefer_compositing_to_lcd_text/compositing/overflow/updating-scrolling-content.html [ NeedsRebaseline ]
+crbug.com/497590 virtual/prefer_compositing_to_lcd_text/compositing/overflow/text-color-change.html [ NeedsRebaseline ]
+crbug.com/497590 virtual/prefer_compositing_to_lcd_text/compositing/overflow/updating-scrolling-container-and-content.html [ NeedsRebaseline ]
+crbug.com/497590 virtual/prefer_compositing_to_lcd_text/compositing/overflow/scrolling-without-painting.html [ NeedsRebaseline ]
+crbug.com/497590 virtual/prefer_compositing_to_lcd_text/compositing/overflow/text-match-highlight.html [ NeedsRebaseline ]
+
 crbug.com/330083 imported/web-platform-tests/shadow-dom/elements-and-dom-objects/extensions-to-element-interface/methods/elements-001.html [ Failure ]
 crbug.com/330083 imported/web-platform-tests/shadow-dom/elements-and-dom-objects/extensions-to-element-interface/methods/non-element-nodes-001.html [ Failure ]
 crbug.com/330083 imported/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-methods/test-004.html [ Failure ]
@@ -1419,8 +1427,6 @@ crbug.com/408159 accessibility/is-ignored-change-sends-notification.html [ Timeo
 
 crbug.com/443234 accessibility/selection-change-notification-statictext.html [ Pass Timeout ]
 
-crbug.com/412570 [ Win7 ] virtual/gpu/fast/canvas/setWidthResetAfterForcedRender.html [ NeedsManualRebaseline ]
-
 crbug.com/413604 http/tests/loading/script-priorities.html [ Failure Pass ]
 
 crbug.com/415620 media/media-controller-media-fragment-uri-initial-playback-position.html [ Pass Failure ]
@@ -1586,7 +1592,6 @@ crbug.com/410929 virtual/gpu/fast/canvas/patternfill-repeat.html [ Pass ImageOnl
 crbug.com/410929 [ Linux Win ] virtual/gpu/fast/canvas/canvas-transforms-during-path.html [ Pass ImageOnlyFailure ]
 crbug.com/410929 [ Linux Win ] virtual/gpu/fast/canvas/canvas-resize-reset.html [ Pass ImageOnlyFailure ]
 crbug.com/410929 [ Linux Win ] virtual/gpu/fast/canvas/canvas-transform-nan.html [ Pass ImageOnlyFailure ]
-crbug.com/410929 [ Linux ] virtual/gpu/fast/canvas/setWidthResetAfterForcedRender.html [ Pass ImageOnlyFailure ]
 crbug.com/410929 [ Linux Win ] virtual/gpu/fast/canvas/font-update.html [ Pass ImageOnlyFailure ]
 crbug.com/410929 [ Linux Win ] virtual/gpu/fast/canvas/toDataURL-alpha.html [ Pass ImageOnlyFailure ]
 crbug.com/410929 virtual/gpu/fast/canvas/canvas-resize-after-paint-without-layout.html [ Pass ImageOnlyFailure ]

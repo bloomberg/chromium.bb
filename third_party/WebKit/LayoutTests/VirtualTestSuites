@@ -3,13 +3,15 @@
     "prefix": "gpu",
     "base": "fast/canvas",
     "args": ["--enable-accelerated-2d-canvas",
-             "--disable-display-list-2d-canvas"]
+             "--disable-display-list-2d-canvas",
+             "--enable-slimming-paint"]
   },
   {
     "prefix": "gpu",
     "base": "canvas/philip",
     "args": ["--enable-accelerated-2d-canvas",
-             "--disable-display-list-2d-canvas"]
+             "--disable-display-list-2d-canvas",
+             "--enable-slimming-paint"]
   },
   {
     "prefix": "display_list_2d_canvas",
@@ -26,38 +28,45 @@
   {
     "prefix": "threaded",
     "base": "compositing/visibility",
-    "args": ["--enable-threaded-compositing"]
+    "args": ["--enable-threaded-compositing",
+             "--enable-slimming-paint"]
   },
   {
     "prefix": "threaded",
     "base": "compositing/webgl",
-    "args": ["--enable-threaded-compositing"]
+    "args": ["--enable-threaded-compositing",
+             "--enable-slimming-paint"]
   },
   {
     "prefix": "prefer_compositing_to_lcd_text",
     "base": "compositing/overflow",
-    "args": ["--enable-prefer-compositing-to-lcd-text"]
+    "args": ["--enable-prefer-compositing-to-lcd-text",
+             "--enable-slimming-paint"]
   },
   {
     "prefix": "prefer_compositing_to_lcd_text",
     "base": "scrollbars",
-    "args": ["--enable-prefer-compositing-to-lcd-text"]
+    "args": ["--enable-prefer-compositing-to-lcd-text",
+             "--enable-slimming-paint"]
   },
   {
     "prefix": "threaded",
     "base": "animations",
-    "args": ["--enable-threaded-compositing"]
+    "args": ["--enable-threaded-compositing",
+             "--enable-slimming-paint"]
   },
   {
     "prefix": "threaded",
     "base": "transitions",
-    "args": ["--enable-threaded-compositing"]
+    "args": ["--enable-threaded-compositing",
+             "--enable-slimming-paint"]
   },
   {
     "prefix": "threaded",
     "base": "fast/scroll-behavior",
     "args": ["--enable-threaded-compositing",
-             "--enable-prefer-compositing-to-lcd-text"]
+             "--enable-prefer-compositing-to-lcd-text",
+             "--enable-slimming-paint"]
   },
   {
     "prefix": "stable",
@@ -97,7 +106,8 @@
   {
     "prefix": "linux-subpixel",
     "base": "platform/linux/fast/text/subpixel",
-    "args": ["--enable-webkit-text-subpixel-positioning"]
+    "args": ["--enable-webkit-text-subpixel-positioning",
+             "--enable-slimming-paint"]
   },
   {
     "prefix": "antialiasedtext",
@@ -109,7 +119,8 @@
   {
     "prefix": "threaded",
     "base": "printing",
-    "args": ["--enable-threaded-compositing"]
+    "args": ["--enable-threaded-compositing",
+             "--enable-slimming-paint"]
   },
     
   {
