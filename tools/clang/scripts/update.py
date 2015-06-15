@@ -415,8 +415,9 @@ def UpdateClang(args):
     cflags += ['-DLLVM_FORCE_HEAD_REVISION']
     cxxflags += ['-DLLVM_FORCE_HEAD_REVISION']
 
-  deployment_env = os.environ.copy()
+  deployment_env = None
   if deployment_target:
+    deployment_env = os.environ.copy()
     deployment_env['MACOSX_DEPLOYMENT_TARGET'] = deployment_target
 
   cmake_args = base_cmake_args + [
@@ -532,6 +533,9 @@ def main():
     return subprocess.call(
         [os.path.join(os.path.dirname(__file__), 'update.sh')] + sys.argv[1:],
         stderr=stderr)
+
+  # Don't buffer stdout, so that print statements are immediately flushed.
+  sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
 
   parser = argparse.ArgumentParser(description='Build Clang.')
   parser.add_argument('--bootstrap', action='store_true',
