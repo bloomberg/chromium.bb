@@ -9,9 +9,12 @@
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
-class StartupTaskRunnerService;
 class PrefRegistrySyncable;
 class Profile;
+
+namespace bookmarks {
+class StartupTaskRunnerService;
+}
 
 // Singleton that owns the start-up task runner service.
 class StartupTaskRunnerServiceFactory
@@ -19,7 +22,7 @@ class StartupTaskRunnerServiceFactory
  public:
   // Returns the instance of StartupTaskRunnerService associated with this
   // profile (creating one if none exists).
-  static StartupTaskRunnerService* GetForProfile(Profile* profile);
+  static bookmarks::StartupTaskRunnerService* GetForProfile(Profile* profile);
 
   // Returns an instance of the StartupTaskRunnerServiceFactory singleton.
   static StartupTaskRunnerServiceFactory* GetInstance();

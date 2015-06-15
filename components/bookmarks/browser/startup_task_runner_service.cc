@@ -8,6 +8,8 @@
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
 
+namespace bookmarks {
+
 StartupTaskRunnerService::StartupTaskRunnerService(
     const scoped_refptr<base::SequencedTaskRunner>& io_task_runner)
     : io_task_runner_(io_task_runner) {
@@ -30,3 +32,5 @@ scoped_refptr<base::DeferredSequencedTaskRunner>
 void StartupTaskRunnerService::StartDeferredTaskRunners() {
   GetBookmarkTaskRunner()->Start();
 }
+
+}  // namespace bookmarks

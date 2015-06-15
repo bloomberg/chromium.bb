@@ -8,6 +8,8 @@
 #include "components/bookmarks/browser/startup_task_runner_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
+using bookmarks::StartupTaskRunnerService;
+
 StartupTaskRunnerServiceFactory::StartupTaskRunnerServiceFactory()
     : BrowserContextKeyedServiceFactory(
         "StartupTaskRunnerServiceFactory",

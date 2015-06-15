@@ -16,6 +16,8 @@ class DeferredSequencedTaskRunner;
 class SequencedTaskRunner;
 }  // namespace base
 
+namespace bookmarks {
+
 // This service manages the startup task runners.
 class StartupTaskRunnerService : public base::NonThreadSafe,
                                  public KeyedService {
@@ -42,5 +44,7 @@ class StartupTaskRunnerService : public base::NonThreadSafe,
 
   DISALLOW_COPY_AND_ASSIGN(StartupTaskRunnerService);
 };
+
+}  // namespace bookmarks
 
 #endif  // COMPONENTS_BOOKMARKS_BROWSER_STARTUP_TASK_RUNNER_SERVICE_H_
