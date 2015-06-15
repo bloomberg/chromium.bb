@@ -145,7 +145,7 @@ interface ViewManagerService {
   // The embedder can detect when the embedded app disconnects by way of
   // OnEmbeddedAppDisconnected().
   //
-  // When a connection embeds an app the connection no longer has priviledges
+  // When a connection embeds an app the connection no longer has privileges
   // to access or see any of the children of the view. If the view had existing
   // children the children are removed. The one exception is the root
   // connection and any embed roots. The root always see the full tree, and
