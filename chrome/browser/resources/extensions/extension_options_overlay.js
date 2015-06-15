@@ -2,6 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Returns the width of a scrollbar in logical pixels.
+function getScrollbarWidth() {
+  // Create nested divs with scrollbars.
+  var outer = document.createElement('div');
+  outer.style.width = '100px';
+  outer.style.overflow = 'scroll';
+  outer.style.visibility = 'hidden';
+  document.body.appendChild(outer);
+  var inner = document.createElement('div');
+  inner.style.width = '101px';
+  outer.appendChild(inner);
+
+  // The outer div's |clientWidth| and |offsetWidth| differ only by the width of
+  // the vertical scrollbar.
+  var scrollbarWidth = outer.offsetWidth - outer.clientWidth;
+  outer.parentNode.removeChild(outer);
+  return scrollbarWidth;
+}
+
 cr.define('extensions', function() {
   'use strict';
 
@@ -132,11 +151,19 @@ cr.define('extensions', function() {
       extensionoptions.onpreferredsizechanged = function(evt) {
         var oldOverlayWidth = parseInt(overlayStyle.width, 10);
         var oldOverlayHeight = parseInt(overlayStyle.height, 10);
-        var newOverlayWidth = Math.max(evt.width, minWidth);
+        var newOverlayWidth = evt.width;
         // |evt.height| is just the new overlay guest height, and does not
         // include the overlay header height, so it needs to be added.
-        var newOverlayHeight =
-            Math.min(evt.height + overlayHeader.offsetHeight, maxHeight);
+        var newOverlayHeight = evt.height + overlayHeader.offsetHeight;
+
+        // Make room for the vertical scrollbar, if there is one.
+        if (newOverlayHeight > maxHeight) {
+          newOverlayWidth += getScrollbarWidth();
+        }
+
+        // Enforce |minWidth| and |maxHeight|.
+        newOverlayWidth = Math.max(newOverlayWidth, minWidth);
+        newOverlayHeight = Math.min(newOverlayHeight, maxHeight);
 
         // animationTime is the amount of time in ms that will be used to resize
         // the overlay. It is calculated by multiplying the pythagorean distance
