@@ -10,7 +10,7 @@ namespace net {
 
 const uint16 kDefaultSSLVersionMin = SSL_PROTOCOL_VERSION_TLS1;
 
-const uint16 kDefaultSSLVersionFallbackMin = SSL_PROTOCOL_VERSION_TLS1;
+const uint16 kDefaultSSLVersionFallbackMin = SSL_PROTOCOL_VERSION_TLS1_1;
 
 SSLConfig::CertAndStatus::CertAndStatus() : cert_status(0) {}
 

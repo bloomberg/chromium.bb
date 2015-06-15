@@ -9551,10 +9551,10 @@ I don't think this site should be blocked!
         SSL server probably obsolete.
       </message>
       <message name="IDS_ERRORPAGES_SUMMARY_SSL_FALLBACK_BEYOND_MINIMUM_VERSION" desc="Summary in the error page for SSL fallback errors.">
-        Unable to connect securely to the server. This website may have worked previously, but connecting to such sites has now been shown to cause security risks to all users and thus has been disabled for your safety.
+        Unable to connect securely to the server. This website may have worked previously, but there is a problem with the server. Connecting to such sites weakens security for all users and thus has been disabled.
       </message>
       <message name="IDS_ERRORPAGES_DETAILS_SSL_FALLBACK_BEYOND_MINIMUM_VERSION" desc="The error message displayed for SSL fallback errors.">
-        An SSLv3 fallback was able to handshake with the server, but we no longer accept SSLv3 fallbacks due to new attacks against the protocol. The server needs to be updated to support a minimum of TLS 1.0 and preferably TLS 1.2.
+        A TLS 1.0 fallback was able to handshake with the server, but we no longer accept TLS 1.0 fallbacks. The server needs to be updated to correctly implement version negotiation and preferably support TLS 1.2.
       </message>
 
       <message name="IDS_ERRORPAGES_HEADING_SSL_VERSION_OR_CIPHER_MISMATCH" desc="Heading in the error page for SSL cipher and version errors.">

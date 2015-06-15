@@ -8037,32 +8037,70 @@ class HTTPSFallbackTest : public testing::Test {
   scoped_ptr<URLRequest> request_;
 };
 
-// Tests TLSv1.1 -> TLSv1 fallback. Verifies that we don't fall back more
-// than necessary.
-TEST_F(HTTPSFallbackTest, TLSv1Fallback) {
+// Tests the TLS 1.0 fallback doesn't happen.
+TEST_F(HTTPSFallbackTest, TLSv1NoFallback) {
   SpawnedTestServer::SSLOptions ssl_options(
       SpawnedTestServer::SSLOptions::CERT_OK);
   ssl_options.tls_intolerant =
       SpawnedTestServer::SSLOptions::TLS_INTOLERANT_TLS1_1;
 
   ASSERT_NO_FATAL_FAILURE(DoFallbackTest(ssl_options));
-  ExpectConnection(SSL_CONNECTION_VERSION_TLS1);
+  ExpectFailure(ERR_SSL_FALLBACK_BEYOND_MINIMUM_VERSION);
+}
+
+// Tests the TLS 1.1 fallback.
+TEST_F(HTTPSFallbackTest, TLSv1_1Fallback) {
+  if (SSLClientSocket::GetMaxSupportedSSLVersion() <
+      SSL_CONNECTION_VERSION_TLS1_2) {
+    return;
+  }
+
+  SpawnedTestServer::SSLOptions ssl_options(
+      SpawnedTestServer::SSLOptions::CERT_OK);
+  ssl_options.tls_intolerant =
+      SpawnedTestServer::SSLOptions::TLS_INTOLERANT_TLS1_2;
+
+  ASSERT_NO_FATAL_FAILURE(DoFallbackTest(ssl_options));
+  ExpectConnection(SSL_CONNECTION_VERSION_TLS1_1);
+}
+
+// Tests that the TLS 1.1 fallback triggers on closed connections.
+TEST_F(HTTPSFallbackTest, TLSv1_1FallbackClosed) {
+  if (SSLClientSocket::GetMaxSupportedSSLVersion() <
+      SSL_CONNECTION_VERSION_TLS1_2) {
+    return;
+  }
+
+  SpawnedTestServer::SSLOptions ssl_options(
+      SpawnedTestServer::SSLOptions::CERT_OK);
+  ssl_options.tls_intolerant =
+      SpawnedTestServer::SSLOptions::TLS_INTOLERANT_TLS1_2;
+  ssl_options.tls_intolerance_type =
+      SpawnedTestServer::SSLOptions::TLS_INTOLERANCE_CLOSE;
+
+  ASSERT_NO_FATAL_FAILURE(DoFallbackTest(ssl_options));
+  ExpectConnection(SSL_CONNECTION_VERSION_TLS1_1);
 }
 
 // This test is disabled on Android because the remote test server doesn't cause
 // a TCP reset.
 #if !defined(OS_ANDROID)
-// Tests fallback to TLS 1.0 on connection reset.
-TEST_F(HTTPSFallbackTest, TLSv1FallbackReset) {
+// Tests fallback to TLS 1.1 on connection reset.
+TEST_F(HTTPSFallbackTest, TLSv1_1FallbackReset) {
+  if (SSLClientSocket::GetMaxSupportedSSLVersion() <
+      SSL_CONNECTION_VERSION_TLS1_2) {
+    return;
+  }
+
   SpawnedTestServer::SSLOptions ssl_options(
       SpawnedTestServer::SSLOptions::CERT_OK);
   ssl_options.tls_intolerant =
-      SpawnedTestServer::SSLOptions::TLS_INTOLERANT_TLS1_1;
+      SpawnedTestServer::SSLOptions::TLS_INTOLERANT_TLS1_2;
   ssl_options.tls_intolerance_type =
       SpawnedTestServer::SSLOptions::TLS_INTOLERANCE_RESET;
 
   ASSERT_NO_FATAL_FAILURE(DoFallbackTest(ssl_options));
-  ExpectConnection(SSL_CONNECTION_VERSION_TLS1);
+  ExpectConnection(SSL_CONNECTION_VERSION_TLS1_1);
 }
 #endif  // !OS_ANDROID
 
@@ -8107,30 +8145,6 @@ TEST_F(HTTPSFallbackTest, FallbackSCSVClosed) {
 
   // The original error should be replayed on rejected fallback.
   ExpectFailure(ERR_CONNECTION_CLOSED);
-}
-
-// Tests that the SSLv3 fallback doesn't happen.
-TEST_F(HTTPSFallbackTest, SSLv3Fallback) {
-  SpawnedTestServer::SSLOptions ssl_options(
-      SpawnedTestServer::SSLOptions::CERT_OK);
-  ssl_options.tls_intolerant =
-      SpawnedTestServer::SSLOptions::TLS_INTOLERANT_ALL;
-
-  ASSERT_NO_FATAL_FAILURE(DoFallbackTest(ssl_options));
-  ExpectFailure(ERR_SSL_VERSION_OR_CIPHER_MISMATCH);
-}
-
-// Tests that the TLSv1 fallback triggers on closed connections.
-TEST_F(HTTPSFallbackTest, SSLv3FallbackClosed) {
-  SpawnedTestServer::SSLOptions ssl_options(
-      SpawnedTestServer::SSLOptions::CERT_OK);
-  ssl_options.tls_intolerant =
-      SpawnedTestServer::SSLOptions::TLS_INTOLERANT_TLS1_1;
-  ssl_options.tls_intolerance_type =
-      SpawnedTestServer::SSLOptions::TLS_INTOLERANCE_CLOSE;
-
-  ASSERT_NO_FATAL_FAILURE(DoFallbackTest(ssl_options));
-  ExpectConnection(SSL_CONNECTION_VERSION_TLS1);
 }
 
 // Test that fallback probe connections don't cause sessions to be cached.

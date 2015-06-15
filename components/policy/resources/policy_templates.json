@@ -7200,18 +7200,12 @@
       'schema': {
         'type': 'string',
         'enum': [
-          'ssl3',
           'tls1',
           'tls1.1',
           'tls1.2',
         ],
       },
       'items': [
-        {
-          'name': 'SSLv3',
-          'value': 'ssl3',
-          'caption': 'SSL 3.0',
-        },
         {
           'name': 'TLSv1',
           'value': 'tls1',
@@ -7229,29 +7223,27 @@
         },
       ],
       'supported_on': [
-        'chrome.*:39-43',
-        'chrome_os:39-43',
-        'android:39-43',
-        'ios:39-43',
+        'chrome.*:45-47',
+        'chrome_os:45-47',
+        'android:45-47',
+        'ios:45-47',
       ],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
       },
-      'example_value': 'tls1',
+      'example_value': 'tls1.1',
       'id': 280,
-      'caption': '''Minimum SSL version to fallback to''',
-      'desc': '''Warning: SSLv3 support will be entirely removed from <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> after version 43 (around July 2015) and this policy will be removed at the same time.
+      'caption': '''Minimum TLS version to fallback to''',
+      'desc': '''Warning: The TLS 1.0 version fallback will be removed from <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> after version 47 (around January 2016) and the "tls1" option will stop working then.
 
-      When an SSL/TLS handshake fails, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will retry the connection with a lesser version of SSL/TLS in order to work around bugs in HTTPS servers. This setting configures the version at which this fallback process will stop. If a server performs version negotiation correctly (i.e. without breaking the connection) then this setting doesn't apply. Regardless, the resulting connection must still comply with SSLVersionMin.
+      When a TLS handshake fails, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will retry the connection with a lesser version of TLS in order to work around bugs in HTTPS servers. This setting configures the version at which this fallback process will stop. If a server performs version negotiation correctly (i.e. without breaking the connection) then this setting doesn't apply. Regardless, the resulting connection must still comply with SSLVersionMin.
 
-      If this policy is not configured then <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> uses a default minimum version which is SSLv3 in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> 38 and TLS 1.0 in later versions.
+      If this policy is not configured then <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> uses a default minimum version which is TLS 1.0 in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> 44 and TLS 1.1 in later versions. Note this does not disable support for TLS 1.0, only whether <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will work around buggy servers which cannot negotiate versions correctly.
 
-      Otherwise it may be set to one of the following values: "sslv3", "tls1", "tls1.1" or "tls1.2". A setting of "tls1" protects against attacks on SSLv3 but is already the default. A more likely situation is that compatibility with a buggy server must be maintained and thus this needs to be set to "sslv3". That potentially opens up all connections to SSLv3 attacks since a network attacker can induce fallbacks. Thus this is a stopgap measure and the server should be rapidly fixed.
+      Otherwise it may be set to one of the following values: "tls1", "tls1.1" or "tls1.2". If compatibility with a buggy server must be maintained, this may be set to "tls1". This is a stopgap measure and the server should be rapidly fixed.
 
-      A setting of "tls1.2" disables all fallback but this may have a significant compatibility impact.
-
-      Note that, despite the number, "sslv3" is an earlier version than "tls1".''',
+      A setting of "tls1.2" disables all fallback but this may have a significant compatibility impact.''',
     },
     {
       'name': 'ContextualSearchEnabled',

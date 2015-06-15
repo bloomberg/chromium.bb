@@ -2944,6 +2944,7 @@ TEST_F(SSLClientSocketTest, FallbackShardSessionCache) {
   SSLConfig ssl_config;
   SSLConfig fallback_ssl_config;
   fallback_ssl_config.version_max = SSL_PROTOCOL_VERSION_TLS1;
+  fallback_ssl_config.version_fallback_min = SSL_PROTOCOL_VERSION_TLS1;
   fallback_ssl_config.version_fallback = true;
 
   // Connect with a fallback config from the test server to add an entry to the
