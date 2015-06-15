@@ -25,6 +25,10 @@ const uint8_t kKey4Data[] = {
     0x7E, 0x57, 0x1D, 0x04, 0x7E, 0x57, 0x1D, 0x06,
     0x7E, 0x57, 0x1D, 0x04, 0x7E, 0x57, 0x1D, 0x06,
 };
+const uint8_t kCommonSystemSystemId[] = {
+    0x10, 0x77, 0xEF, 0xEC, 0xC0, 0xB2, 0x4D, 0x02,
+    0xAC, 0xE3, 0x3C, 0x1E, 0x52, 0xE2, 0xFB, 0x4B
+};
 
 class CencUtilsTest : public testing::Test {
  public:
@@ -32,7 +36,10 @@ class CencUtilsTest : public testing::Test {
       : key1_(kKey1Data, kKey1Data + arraysize(kKey1Data)),
         key2_(kKey2Data, kKey2Data + arraysize(kKey2Data)),
         key3_(kKey3Data, kKey3Data + arraysize(kKey3Data)),
-        key4_(kKey4Data, kKey4Data + arraysize(kKey4Data)) {}
+        key4_(kKey4Data, kKey4Data + arraysize(kKey4Data)),
+        common_system_system_id_(
+            kCommonSystemSystemId,
+            kCommonSystemSystemId + arraysize(kCommonSystemSystemId)) {}
 
  protected:
   // Initialize the start of the 'pssh' box (up to key_count)
@@ -58,23 +65,9 @@ class CencUtilsTest : public testing::Test {
     box->push_back(0);
     box->push_back(0);
     box->push_back(0);
-    // Add Clear Key SystemID.
-    box->push_back(0x10);
-    box->push_back(0x77);
-    box->push_back(0xEF);
-    box->push_back(0xEC);
-    box->push_back(0xC0);
-    box->push_back(0xB2);
-    box->push_back(0x4D);
-    box->push_back(0x02);
-    box->push_back(0xAC);
-    box->push_back(0xE3);
-    box->push_back(0x3C);
-    box->push_back(0x1E);
-    box->push_back(0x52);
-    box->push_back(0xE2);
-    box->push_back(0xFB);
-    box->push_back(0x4B);
+    // Add Common Encryption SystemID.
+    box->insert(box->end(), common_system_system_id_.begin(),
+                common_system_system_id_.end());
   }
 
   std::vector<uint8_t> MakePSSHBox(uint8_t version) {
@@ -112,7 +105,7 @@ class CencUtilsTest : public testing::Test {
     box.push_back(1);
 
     // Add key1.
-    for (int i = 0; i < 16; ++i)
+    for (size_t i = 0; i < key1.size(); ++i)
       box.push_back(key1[i]);
 
     // Add data_size (= 0).
@@ -141,11 +134,11 @@ class CencUtilsTest : public testing::Test {
     box.push_back(2);
 
     // Add key1.
-    for (int i = 0; i < 16; ++i)
+    for (size_t i = 0; i < key1.size(); ++i)
       box.push_back(key1[i]);
 
     // Add key2.
-    for (int i = 0; i < 16; ++i)
+    for (size_t i = 0; i < key2.size(); ++i)
       box.push_back(key2[i]);
 
     // Add data_size (= 0).
@@ -156,16 +149,32 @@ class CencUtilsTest : public testing::Test {
     return box;
   }
 
+  void AppendData(std::vector<uint8_t>& pssh_box,
+                  const std::vector<uint8_t>& data) {
+    // This assumes that |pssh_box| has been created using the routines above,
+    // and simply appends the data to the end of it. It updates the box size
+    // and sets the data size.
+    DCHECK(data.size() < 100);
+    pssh_box[3] += data.size();
+    pssh_box.pop_back();
+    pssh_box.push_back(data.size());
+    pssh_box.insert(pssh_box.end(), data.begin(), data.end());
+  }
+
   const std::vector<uint8_t>& Key1() { return key1_; }
   const std::vector<uint8_t>& Key2() { return key2_; }
   const std::vector<uint8_t>& Key3() { return key3_; }
   const std::vector<uint8_t>& Key4() { return key4_; }
+  const std::vector<uint8_t>& CommonSystemSystemId() {
+    return common_system_system_id_;
+  }
 
  private:
   std::vector<uint8_t> key1_;
   std::vector<uint8_t> key2_;
   std::vector<uint8_t> key3_;
   std::vector<uint8_t> key4_;
+  std::vector<uint8_t> common_system_system_id_;
 };
 
 TEST_F(CencUtilsTest, EmptyPSSH) {
@@ -214,9 +223,8 @@ TEST_F(CencUtilsTest, PSSHVersion0Plus1) {
   std::vector<uint8_t> box0 = MakePSSHBox(0);
   std::vector<uint8_t> box1 = MakePSSHBox(1, Key1());
 
-  // Concatentate box1 into box0.
-  for (const auto& value : box1)
-    box0.push_back(value);
+  // Concatentate box1 onto end of box0.
+  box0.insert(box0.end(), box1.begin(), box1.end());
 
   KeyIdList key_ids;
   EXPECT_TRUE(ValidatePsshInput(box0));
@@ -229,9 +237,8 @@ TEST_F(CencUtilsTest, PSSHVersion1Plus0) {
   std::vector<uint8_t> box0 = MakePSSHBox(0);
   std::vector<uint8_t> box1 = MakePSSHBox(1, Key1());
 
-  // Concatentate box0 into box1.
-  for (const auto& value : box0)
-    box1.push_back(value);
+  // Concatentate box0 onto end of box1.
+  box1.insert(box1.end(), box0.begin(), box0.end());
 
   KeyIdList key_ids;
   EXPECT_TRUE(ValidatePsshInput(box1));
@@ -245,12 +252,9 @@ TEST_F(CencUtilsTest, MultiplePSSHVersion1) {
   std::vector<uint8_t> box1 = MakePSSHBox(1, Key3());
   std::vector<uint8_t> box2 = MakePSSHBox(1, Key4());
 
-  // Concatentate box1 into box.
-  for (const auto& value : box1)
-    box.push_back(value);
-  // Concatentate box2 into box.
-  for (const auto& value : box2)
-    box.push_back(value);
+  // Concatentate box1 and box2 onto end of box.
+  box.insert(box.end(), box1.begin(), box1.end());
+  box.insert(box.end(), box2.begin(), box2.end());
 
   KeyIdList key_ids;
   EXPECT_TRUE(ValidatePsshInput(box));
@@ -265,14 +269,15 @@ TEST_F(CencUtilsTest, MultiplePSSHVersion1) {
 TEST_F(CencUtilsTest, InvalidPSSH) {
   std::vector<uint8_t> box = MakePSSHBox(1, Key1(), Key2());
   KeyIdList key_ids;
-  for (uint32 i = 1; i < box.size(); ++i) {
+  for (size_t i = 1; i < box.size(); ++i) {
     // Modify size of data passed to be less than real size.
     std::vector<uint8_t> truncated(&box[0], &box[0] + i);
-    EXPECT_FALSE(ValidatePsshInput(truncated));
+    EXPECT_FALSE(ValidatePsshInput(truncated)) << "Failed for length " << i;
     EXPECT_FALSE(GetKeyIdsForCommonSystemId(truncated, &key_ids));
     // Modify starting point.
     std::vector<uint8_t> changed_offset(&box[i], &box[i] + box.size() - i);
-    EXPECT_FALSE(ValidatePsshInput(changed_offset));
+    EXPECT_FALSE(ValidatePsshInput(changed_offset)) << "Failed for offset "
+                                                    << i;
     EXPECT_FALSE(GetKeyIdsForCommonSystemId(changed_offset, &key_ids));
   }
 }
@@ -295,9 +300,7 @@ TEST_F(CencUtilsTest, InvalidFlags) {
   box[10] = 3;
 
   KeyIdList key_ids;
-  // TODO(jrummell): This should fail as the 'pssh' box is skipped.
-  EXPECT_TRUE(GetKeyIdsForCommonSystemId(box, &key_ids));
-  EXPECT_EQ(0u, key_ids.size());
+  EXPECT_FALSE(GetKeyIdsForCommonSystemId(box, &key_ids));
 }
 
 TEST_F(CencUtilsTest, LongSize) {
@@ -373,4 +376,140 @@ TEST_F(CencUtilsTest, HugeSize) {
       std::vector<uint8_t>(data, data + arraysize(data)), &key_ids));
 }
 
+TEST_F(CencUtilsTest, GetPsshData_Version0) {
+  const uint8_t data_bytes[] = {0x01, 0x02, 0x03, 0x04};
+  std::vector<uint8_t> pssh_data;
+
+  std::vector<uint8_t> box = MakePSSHBox(0);
+  EXPECT_TRUE(GetPsshData(box, CommonSystemSystemId(), &pssh_data));
+  EXPECT_EQ(0u, pssh_data.size());
+
+  std::vector<uint8_t> data(data_bytes, data_bytes + arraysize(data_bytes));
+  AppendData(box, data);
+  EXPECT_TRUE(GetPsshData(box, CommonSystemSystemId(), &pssh_data));
+  EXPECT_EQ(data, pssh_data);
+}
+
+TEST_F(CencUtilsTest, GetPsshData_Version1NoKeys) {
+  const uint8_t data_bytes[] = {0x05, 0x06, 0x07, 0x08};
+  std::vector<uint8_t> pssh_data;
+
+  std::vector<uint8_t> box = MakePSSHBox(1);
+  EXPECT_TRUE(GetPsshData(box, CommonSystemSystemId(), &pssh_data));
+  EXPECT_EQ(0u, pssh_data.size());
+
+  std::vector<uint8_t> data(data_bytes, data_bytes + arraysize(data_bytes));
+  AppendData(box, data);
+  EXPECT_TRUE(GetPsshData(box, CommonSystemSystemId(), &pssh_data));
+  EXPECT_EQ(data, pssh_data);
+}
+
+TEST_F(CencUtilsTest, GetPsshData_Version1WithKeys) {
+  const uint8_t data_bytes[] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08};
+  std::vector<uint8_t> pssh_data;
+
+  std::vector<uint8_t> box = MakePSSHBox(1, Key1());
+  EXPECT_TRUE(GetPsshData(box, CommonSystemSystemId(), &pssh_data));
+  EXPECT_EQ(0u, pssh_data.size());
+
+  std::vector<uint8_t> data(data_bytes, data_bytes + arraysize(data_bytes));
+  AppendData(box, data);
+  EXPECT_TRUE(GetPsshData(box, CommonSystemSystemId(), &pssh_data));
+  EXPECT_EQ(data, pssh_data);
+}
+
+TEST_F(CencUtilsTest, GetPsshData_Version2) {
+  std::vector<uint8_t> pssh_data;
+
+  std::vector<uint8_t> box = MakePSSHBox(1, Key1());
+  EXPECT_TRUE(GetPsshData(box, CommonSystemSystemId(), &pssh_data));
+
+  // Change the version manually, since we don't know what v2 will contain.
+  box[8] = 2;
+  EXPECT_FALSE(GetPsshData(box, CommonSystemSystemId(), &pssh_data));
+}
+
+TEST_F(CencUtilsTest, GetPsshData_Version2ThenVersion1) {
+  std::vector<uint8_t> pssh_data;
+
+  std::vector<uint8_t> box_v1 = MakePSSHBox(1, Key1());
+  std::vector<uint8_t> box_v2 = MakePSSHBox(2, Key2(), Key3());
+
+  // Concatentate the boxes together (v2 first).
+  std::vector<uint8_t> boxes;
+  boxes.insert(boxes.end(), box_v2.begin(), box_v2.end());
+  boxes.insert(boxes.end(), box_v1.begin(), box_v1.end());
+  EXPECT_TRUE(GetPsshData(boxes, CommonSystemSystemId(), &pssh_data));
+
+  // GetKeyIdsForCommonSystemId() should return the single key from the v1
+  // 'pssh' box.
+  KeyIdList key_ids;
+  EXPECT_TRUE(GetKeyIdsForCommonSystemId(boxes, &key_ids));
+  EXPECT_EQ(1u, key_ids.size());
+  EXPECT_EQ(key_ids[0], Key1());
+}
+
+TEST_F(CencUtilsTest, GetPsshData_Version1ThenVersion2) {
+  std::vector<uint8_t> pssh_data;
+
+  std::vector<uint8_t> box_v1 = MakePSSHBox(1, Key3());
+  std::vector<uint8_t> box_v2 = MakePSSHBox(2, Key4());
+
+  // Concatentate the boxes together (v1 first).
+  std::vector<uint8_t> boxes;
+  boxes.insert(boxes.end(), box_v1.begin(), box_v1.end());
+  boxes.insert(boxes.end(), box_v2.begin(), box_v2.end());
+  EXPECT_TRUE(GetPsshData(boxes, CommonSystemSystemId(), &pssh_data));
+
+  // GetKeyIdsForCommonSystemId() should return the single key from the v1
+  // 'pssh' box.
+  KeyIdList key_ids;
+  EXPECT_TRUE(GetKeyIdsForCommonSystemId(boxes, &key_ids));
+  EXPECT_EQ(1u, key_ids.size());
+  EXPECT_EQ(key_ids[0], Key3());
+}
+
+TEST_F(CencUtilsTest, GetPsshData_DifferentSystemID) {
+  std::vector<uint8_t> unknown_system_id(kKey1Data,
+                                         kKey1Data + arraysize(kKey1Data));
+  std::vector<uint8_t> pssh_data;
+
+  std::vector<uint8_t> box = MakePSSHBox(1, Key1());
+  EXPECT_TRUE(GetPsshData(box, CommonSystemSystemId(), &pssh_data));
+  EXPECT_FALSE(GetPsshData(box, unknown_system_id, &pssh_data));
+}
+
+TEST_F(CencUtilsTest, GetPsshData_MissingData) {
+  const uint8_t data_bytes[] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08};
+  std::vector<uint8_t> pssh_data;
+
+  std::vector<uint8_t> box = MakePSSHBox(1, Key1());
+  std::vector<uint8_t> data(data_bytes, data_bytes + arraysize(data_bytes));
+  AppendData(box, data);
+  EXPECT_TRUE(GetPsshData(box, CommonSystemSystemId(), &pssh_data));
+
+  // Remove some data from the end, so now the size is incorrect.
+  box.pop_back();
+  box.pop_back();
+  EXPECT_FALSE(GetPsshData(box, CommonSystemSystemId(), &pssh_data));
+}
+
+TEST_F(CencUtilsTest, GetPsshData_MultiplePssh) {
+  const uint8_t data1_bytes[] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07};
+  const uint8_t data2_bytes[] = {0xa1, 0xa2, 0xa3, 0xa4};
+  std::vector<uint8_t> pssh_data;
+
+  std::vector<uint8_t> box1 = MakePSSHBox(1, Key1());
+  std::vector<uint8_t> data1(data1_bytes, data1_bytes + arraysize(data1_bytes));
+  AppendData(box1, data1);
+
+  std::vector<uint8_t> box2 = MakePSSHBox(0);
+  std::vector<uint8_t> data2(data2_bytes, data2_bytes + arraysize(data2_bytes));
+  AppendData(box2, data2);
+
+  box1.insert(box1.end(), box2.begin(), box2.end());
+  EXPECT_TRUE(GetPsshData(box1, CommonSystemSystemId(), &pssh_data));
+  EXPECT_EQ(data1, pssh_data);
+  EXPECT_NE(data2, pssh_data);
+}
 }  // namespace media

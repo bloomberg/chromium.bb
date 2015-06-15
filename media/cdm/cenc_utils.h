@@ -28,6 +28,17 @@ MEDIA_EXPORT bool ValidatePsshInput(const std::vector<uint8_t>& input);
 MEDIA_EXPORT bool GetKeyIdsForCommonSystemId(const std::vector<uint8_t>& input,
                                              KeyIdList* key_ids);
 
+// Gets the data field from the first 'pssh' box containing |system_id| UUID.
+// Returns true if such a box is found and successfully parsed. Returns false
+// otherwise.
+// Notes:
+// 1. If multiple PSSH boxes are found, the "Data" of the first matching 'pssh'
+//    box will be set in |pssh_data|.
+// 2. Only PSSH boxes are allowed in |input|.
+MEDIA_EXPORT bool GetPsshData(const std::vector<uint8_t>& input,
+                              const std::vector<uint8_t>& system_id,
+                              std::vector<uint8_t>* pssh_data);
+
 }  // namespace media
 
 #endif  // MEDIA_CDM_CENC_UTILS_H_
