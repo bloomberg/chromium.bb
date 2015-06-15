@@ -219,7 +219,7 @@ public abstract class CompositorChromeActivity extends ChromeActivity
             public void onDidNavigateMainFrame(Tab tab, String url, String baseUrl,
                     boolean isNavigationToDifferentPage, boolean isFragmentNavigation,
                     int statusCode) {
-                if (!tab.isNativePage()
+                if (!tab.isNativePage() && !tab.isIncognito()
                         && DataReductionProxySettings.getInstance().wasLoFiModeActiveOnMainFrame()
                         && DataReductionProxySettings.getInstance().canUseDataReductionProxy(
                                 url)) {
