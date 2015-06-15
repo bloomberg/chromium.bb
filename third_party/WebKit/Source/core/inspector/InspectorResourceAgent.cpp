@@ -369,8 +369,6 @@ void InspectorResourceAgent::willSendRequest(unsigned long identifier, DocumentL
 
     TypeBuilder::Page::ResourceType::Enum resourceType = InspectorPageAgent::resourceTypeJson(type);
     frontend()->requestWillBeSent(requestId, frameId, loaderId, urlWithoutFragment(loader->url()).string(), requestInfo.release(), monotonicallyIncreasingTime(), currentTime(), initiatorObject, buildObjectForResourceResponse(redirectResponse), &resourceType);
-    if (m_pendingXHRReplayData && !m_pendingXHRReplayData->async())
-        frontend()->flush();
 }
 
 void InspectorResourceAgent::markResourceAsCached(unsigned long identifier)
@@ -491,24 +489,25 @@ void InspectorResourceAgent::documentThreadableLoaderStartedLoadingForClient(uns
     if (client == m_pendingEventSource) {
         m_eventSourceRequestIdMap.set(client, identifier);
         m_pendingEventSource = nullptr;
+        return;
     }
 
-    if (client == m_pendingXHR) {
-        String requestId = IdentifiersFactory::requestId(identifier);
-        m_resourcesData->setResourceType(requestId, InspectorPageAgent::XHRResource);
-        m_resourcesData->setXHRReplayData(requestId, m_pendingXHRReplayData.get());
-        m_pendingXHR = nullptr;
-        m_pendingXHRReplayData.clear();
-    }
+    PendingXHRReplayDataMap::iterator it = m_pendingXHRReplayData.find(client);
+    if (it == m_pendingXHRReplayData.end())
+        return;
+
+    String requestId = IdentifiersFactory::requestId(identifier);
+    m_resourcesData->setResourceType(requestId, InspectorPageAgent::XHRResource);
+    m_resourcesData->setXHRReplayData(requestId, it->value.get());
 }
 
 void InspectorResourceAgent::willLoadXHR(XMLHttpRequest* xhr, ThreadableLoaderClient* client, const AtomicString& method, const KURL& url, bool async, PassRefPtr<FormData> formData, const HTTPHeaderMap& headers, bool includeCredentials)
 {
     ASSERT(xhr);
-    m_pendingXHR = client;
-    m_pendingXHRReplayData = XHRReplayData::create(xhr->executionContext(), method, urlWithoutFragment(url), async, formData.get(), includeCredentials);
+    RefPtrWillBeRawPtr<XHRReplayData> xhrReplayData = XHRReplayData::create(xhr->executionContext(), method, urlWithoutFragment(url), async, formData.get(), includeCredentials);
     for (const auto& header : headers)
-        m_pendingXHRReplayData->addHeader(header.key, header.value);
+        xhrReplayData->addHeader(header.key, header.value);
+    m_pendingXHRReplayData.set(client, xhrReplayData);
 }
 
 void InspectorResourceAgent::delayedRemoveReplayXHR(XMLHttpRequest* xhr)
@@ -523,8 +522,7 @@ void InspectorResourceAgent::delayedRemoveReplayXHR(XMLHttpRequest* xhr)
 
 void InspectorResourceAgent::didFailXHRLoading(XMLHttpRequest* xhr, ThreadableLoaderClient* client)
 {
-    m_pendingXHR = nullptr;
-    m_pendingXHRReplayData.clear();
+    m_pendingXHRReplayData.remove(client);
 
     // This method will be called from the XHR.
     // We delay deleting the replay XHR, as deleting here may delete the caller.
@@ -533,8 +531,7 @@ void InspectorResourceAgent::didFailXHRLoading(XMLHttpRequest* xhr, ThreadableLo
 
 void InspectorResourceAgent::didFinishXHRLoading(ExecutionContext* context, XMLHttpRequest* xhr, ThreadableLoaderClient* client, unsigned long identifier, ScriptString sourceString, const AtomicString& method, const String& url)
 {
-    m_pendingXHR = nullptr;
-    m_pendingXHRReplayData.clear();
+    m_pendingXHRReplayData.remove(client);
 
     // See comments on |didFailXHRLoading| for why we are delaying delete.
     delayedRemoveReplayXHR(xhr);
