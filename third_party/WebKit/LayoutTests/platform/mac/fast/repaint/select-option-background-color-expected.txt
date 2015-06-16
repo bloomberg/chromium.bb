@@ -7,6 +7,9 @@
       "drawsContent": true,
       "repaintRects": [
         [1, 35, 12, 14]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow OPTION id='option'"
       ]
     }
   ]

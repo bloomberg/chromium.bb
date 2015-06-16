@@ -10,6 +10,9 @@
         [210, 100, 90, 200],
         [100, 220, 200, 80],
         [100, 210, 200, 90]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow DIV id='target'"
       ]
     }
   ]

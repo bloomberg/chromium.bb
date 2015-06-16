@@ -52,6 +52,33 @@
         [8, 8, 60, 30],
         [8, 8, 60, 30],
         [8, 8, 60, 30]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow CAPTION id='caption1' class='blue half'",
+        "LayoutTableSection TBODY",
+        "LayoutTableRow TR",
+        "LayoutTableCell TD class='red half'",
+        "LayoutTableRow TR",
+        "LayoutTableCell TD class='green half'",
+        "LayoutBlockFlow DIV id='top' class='blue half'",
+        "LayoutTableSection TBODY",
+        "LayoutTableRow TR",
+        "LayoutTableCell TD class='red half'",
+        "LayoutTableRow TR",
+        "LayoutTableCell TD class='green half'",
+        "LayoutBlockFlow CAPTION id='caption2' class='zero'",
+        "LayoutTableSection TBODY",
+        "LayoutTableRow TR",
+        "LayoutTableCell TD class='green half'",
+        "LayoutTableRow TR",
+        "LayoutTableCell TD class='red half'",
+        "LayoutTable TABLE",
+        "LayoutBlockFlow DIV id='innerDiv'",
+        "LayoutTableSection TBODY",
+        "LayoutTableRow TR",
+        "LayoutTableCell TD class='half'",
+        "LayoutTableRow TR",
+        "LayoutTableCell TD class='half'"
       ]
     }
   ]

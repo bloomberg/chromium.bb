@@ -8,6 +8,10 @@
       "repaintRects": [
         [380, 10, 3, 18],
         [377, 10, 3, 18]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow DIV id='inner-editor'",
+        "LayoutBlockFlow DIV id='inner-editor'"
       ]
     }
   ]

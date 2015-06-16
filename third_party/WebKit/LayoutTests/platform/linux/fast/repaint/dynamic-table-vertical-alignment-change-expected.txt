@@ -11,6 +11,14 @@
         [12, 74, 100, 102],
         [11, 75, 100, 100],
         [10, 77, 102, 99]
+      ],
+      "paintInvalidationClients": [
+        "LayoutTableCell TD",
+        "LayoutBlockFlow (floating) DIV id='target'",
+        "LayoutTableCell TD",
+        "LayoutBlockFlow DIV",
+        "LayoutBlockFlow DIV",
+        "LayoutBlockFlow DIV"
       ]
     }
   ]

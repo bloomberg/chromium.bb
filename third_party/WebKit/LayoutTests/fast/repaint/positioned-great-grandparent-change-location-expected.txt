@@ -10,6 +10,14 @@
         [100, 200, 43, 18],
         [100, 100, 100, 100],
         [100, 100, 43, 18]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow (positioned) DIV id='great-grandparent'",
+        "LayoutBlockFlow (positioned) DIV",
+        "LayoutBlockFlow (positioned) DIV",
+        "LayoutBlockFlow (positioned) DIV",
+        "LayoutText #text",
+        "InlineTextBox 'Target'"
       ]
     }
   ]

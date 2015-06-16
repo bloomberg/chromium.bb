@@ -9,6 +9,15 @@
         [27, 353, 22, 18],
         [14, 353, 48, 64],
         [8, 548, 418, 18]
+      ],
+      "paintInvalidationClients": [
+        "InlineTextBox 'here; the great\n'",
+        "InlineTextBox 'wonder is, that there\u2018s any one left alive!\u2019'",
+        "RootInlineBox",
+        "LayoutBlockFlow P",
+        "LayoutBlockFlow (floating) SPAN id='blueFloat'",
+        "LayoutText #text",
+        "InlineTextBox 'foo'"
       ]
     }
   ]

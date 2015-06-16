@@ -9,6 +9,10 @@
       "repaintRects": [
         [8, 240, 784, 284],
         [0, 0, 800, 600]
+      ],
+      "paintInvalidationClients": [
+        "LayoutView #document",
+        "LayoutBlockFlow BODY"
       ]
     }
   ]

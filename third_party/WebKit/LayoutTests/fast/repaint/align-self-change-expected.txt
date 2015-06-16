@@ -10,6 +10,10 @@
         [100, 203, 100, 149],
         [0, 154, 100, 198],
         [0, 153, 100, 199]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow DIV class='item'",
+        "LayoutBlockFlow DIV class='item'"
       ]
     }
   ]

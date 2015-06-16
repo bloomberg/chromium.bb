@@ -12,6 +12,18 @@
         [13, 83, 63, 16],
         [13, 83, 54, 16],
         [9, 83, 198, 16]
+      ],
+      "paintInvalidationClients": [
+        "InlineTextBox ''",
+        "RootInlineBox",
+        "InlineTextBox ''",
+        "RootInlineBox",
+        "LayoutBlockFlow (anonymous)",
+        "LayoutText (anonymous)",
+        "InlineTextBox 'SUCCESS'",
+        "LayoutBlockFlow (anonymous)",
+        "LayoutText #text",
+        "InlineTextBox 'SUCCESS'"
       ]
     }
   ]

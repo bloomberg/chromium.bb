@@ -8,6 +8,10 @@
       "repaintRects": [
         [314, 564, 435, 15],
         [312, 112, 454, 469]
+      ],
+      "paintInvalidationClients": [
+        "HorizontalScrollbar",
+        "LayoutTableCell (relative positioned) TD id='cellToScroll' class='relative'"
       ]
     }
   ]

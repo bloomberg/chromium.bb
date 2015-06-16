@@ -15,6 +15,17 @@
         [8, 140, 61, 180],
         [8, 140, 61, 180],
         [8, 140, 61, 60]
+      ],
+      "paintInvalidationClients": [
+        "LayoutTableCell TD",
+        "LayoutTableCell TD id='t'",
+        "LayoutTableRow TR",
+        "LayoutTableCell TD",
+        "LayoutBlockFlow DIV",
+        "LayoutTableCell TD",
+        "LayoutTableRow TR",
+        "LayoutTableCell TD",
+        "LayoutTableCell TD id='s'"
       ]
     }
   ]

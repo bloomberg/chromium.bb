@@ -13,7 +13,32 @@
         [16, 300, 191, 15],
         [3, 300, 26, 15],
         [2, 300, 14, 15],
-        [2, 65, 235, 235]
+        [2, 65, 235, 235],
+        [2, 65, 235, 235],
+        [2, 65, 235, 235],
+        [2, 65, 225, 225],
+        [2, 65, 135, 135],
+        [2, 65, 58, 16]
+      ],
+      "paintInvalidationClients": [
+        "HorizontalScrollbar",
+        "LayoutIFrame (positioned) IFRAME",
+        "HorizontalScrollbar",
+        "LayoutIFrame (positioned) IFRAME",
+        "HorizontalScrollbar",
+        "LayoutIFrame (positioned) IFRAME",
+        "VerticalScrollbar",
+        "LayoutIFrame (positioned) IFRAME",
+        "VerticalScrollbar",
+        "LayoutIFrame (positioned) IFRAME",
+        "VerticalScrollbar",
+        "LayoutIFrame (positioned) IFRAME",
+        "LayoutIFrame (positioned) IFRAME",
+        "LayoutView #document",
+        "LayoutBlockFlow HTML",
+        "LayoutBlockFlow BODY",
+        "LayoutText #text",
+        "InlineTextBox 'scroll me'"
       ]
     }
   ]

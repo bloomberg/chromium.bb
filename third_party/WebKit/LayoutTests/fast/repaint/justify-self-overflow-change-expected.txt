@@ -17,6 +17,14 @@
         [-50, 52, 150, 150],
         [-50, 16, 850, 336],
         [-50, 0, 850, 352]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow HTML",
+        "LayoutBlockFlow BODY",
+        "LayoutGrid DIV id='container'",
+        "LayoutBlockFlow DIV class='item1'",
+        "LayoutBlockFlow DIV",
+        "LayoutBlockFlow DIV class='item2'"
       ]
     }
   ]

@@ -10,6 +10,10 @@
         [8, 282, 100, 100],
         [8, 132, 100, 100],
         [8, 82, 100, 100]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow (relative positioned) DIV id='a'",
+        "LayoutBlockFlow (positioned) DIV id='t'"
       ]
     }
   ]

@@ -14,6 +14,10 @@
             [300, 100, 120, 50],
             [50, 100, 120, 50]
           ],
+          "paintInvalidationClients": [
+            "LayoutBlockFlow (positioned) DIV",
+            "LayoutBlockFlow (positioned) DIV id='block'"
+          ],
           "children": [
             {
               "bounds": [685, 385],
@@ -24,6 +28,10 @@
                   "repaintRects": [
                     [300, 200, 120, 50],
                     [50, 200, 120, 50]
+                  ],
+                  "paintInvalidationClients": [
+                    "LayoutBlockFlow (positioned) DIV",
+                    "LayoutBlockFlow (positioned) DIV id='block'"
                   ],
                   "children": [
                     {
@@ -48,6 +56,11 @@
                     [0, 0, 15, 385],
                     [0, 0, 15, 385],
                     [0, 0, 15, 385]
+                  ],
+                  "paintInvalidationClients": [
+                    "##ALL##",
+                    "##ALL##",
+                    "##ALL##"
                   ]
                 },
                 {

@@ -8,6 +8,13 @@
       "repaintRects": [
         [8, 8, 100, 18],
         [8, 8, 100, 18]
+      ],
+      "paintInvalidationClients": [
+        "InlineTextBox ''",
+        "RootInlineBox",
+        "LayoutBlockFlow DIV id='target'",
+        "LayoutText #text",
+        "InlineTextBox '                         PASS     .'"
       ]
     }
   ]

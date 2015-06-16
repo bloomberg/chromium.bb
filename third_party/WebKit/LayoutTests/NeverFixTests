@@ -211,7 +211,6 @@ virtual/threaded/printing/width-overflow.html [ WontFix ]
 # Reftests failing due to invisible differences caused by rounding.
 # Will remove when we enable slimming paint by default.
 virtual/slimmingpaint/fast/sub-pixel/sub-pixel-transparency-layer.html [ WontFix ]
-virtual/slimmingpaint/fast/repaint/absolute-position-and-opacity-changed.html [ WontFix ]
 virtual/slimmingpaint/css3/filters/effect-all-on-background.html [ WontFix ]
 virtual/slimmingpaint/fast/multicol/border-radius-clipped-layer-second-column.html [ WontFix ]
 virtual/slimmingpaint/fast/multicol/border-radius-clipped-layer.html [ WontFix ]

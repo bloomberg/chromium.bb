@@ -8,6 +8,9 @@
       "repaintRects": [
         [10, 10, 200, 200],
         [10, 10, 100, 100]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow (positioned) DIV id='border-image'"
       ]
     }
   ]

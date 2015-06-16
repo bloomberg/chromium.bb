@@ -8,6 +8,9 @@
       "repaintRects": [
         [558, 8, 50, 500]
       ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow (positioned) DIV id='container'"
+      ],
       "children": [
         {
           "position": [8, 8],
@@ -16,6 +19,9 @@
           "backfaceVisibility": "hidden",
           "repaintRects": [
             [55, 0, 5, 40]
+          ],
+          "paintInvalidationClients": [
+            "LayoutBlockFlow (positioned) DIV class='test image'"
           ]
         },
         {
@@ -26,6 +32,9 @@
           "repaintRects": [
             [0, 0, 60, 40],
             [0, 0, 55, 40]
+          ],
+          "paintInvalidationClients": [
+            "LayoutBlockFlow (positioned) DIV class='test image size-cover'"
           ]
         },
         {
@@ -36,6 +45,9 @@
           "repaintRects": [
             [0, 0, 60, 40],
             [0, 0, 55, 40]
+          ],
+          "paintInvalidationClients": [
+            "LayoutBlockFlow (positioned) DIV class='test image size-contain'"
           ]
         },
         {
@@ -45,6 +57,9 @@
           "backfaceVisibility": "hidden",
           "repaintRects": [
             [55, 0, 5, 40]
+          ],
+          "paintInvalidationClients": [
+            "LayoutBlockFlow (positioned) DIV class='test image fixed-width'"
           ]
         },
         {
@@ -55,6 +70,9 @@
           "repaintRects": [
             [0, 0, 60, 40],
             [0, 0, 55, 40]
+          ],
+          "paintInvalidationClients": [
+            "LayoutBlockFlow (positioned) DIV class='test image percent-width'"
           ]
         },
         {
@@ -64,6 +82,9 @@
           "backfaceVisibility": "hidden",
           "repaintRects": [
             [55, 0, 5, 40]
+          ],
+          "paintInvalidationClients": [
+            "LayoutBlockFlow (positioned) DIV class='test image left'"
           ]
         },
         {
@@ -74,6 +95,9 @@
           "repaintRects": [
             [0, 0, 60, 40],
             [0, 0, 55, 40]
+          ],
+          "paintInvalidationClients": [
+            "LayoutBlockFlow (positioned) DIV class='test image right'"
           ]
         },
         {
@@ -84,6 +108,9 @@
           "repaintRects": [
             [0, 0, 60, 40],
             [0, 0, 55, 40]
+          ],
+          "paintInvalidationClients": [
+            "LayoutBlockFlow (positioned) DIV class='test image center'"
           ]
         },
         {
@@ -93,6 +120,9 @@
           "backfaceVisibility": "hidden",
           "repaintRects": [
             [55, 0, 5, 40]
+          ],
+          "paintInvalidationClients": [
+            "LayoutBlockFlow (positioned) DIV class='test image no-repeat'"
           ]
         },
         {
@@ -103,6 +133,9 @@
           "repaintRects": [
             [0, 0, 60, 40],
             [0, 0, 55, 40]
+          ],
+          "paintInvalidationClients": [
+            "LayoutBlockFlow (positioned) DIV class='test image repeat-space'"
           ]
         },
         {
@@ -113,6 +146,9 @@
           "repaintRects": [
             [0, 0, 60, 40],
             [0, 0, 55, 40]
+          ],
+          "paintInvalidationClients": [
+            "LayoutBlockFlow (positioned) DIV class='test image repeat-round'"
           ]
         },
         {
@@ -123,6 +159,9 @@
           "repaintRects": [
             [0, 0, 60, 40],
             [0, 0, 55, 40]
+          ],
+          "paintInvalidationClients": [
+            "LayoutBlockFlow (positioned) DIV class='test generated'"
           ]
         },
         {
@@ -133,6 +172,9 @@
           "repaintRects": [
             [0, 0, 60, 40],
             [0, 0, 55, 40]
+          ],
+          "paintInvalidationClients": [
+            "LayoutBlockFlow (positioned) DIV class='test generated cover'"
           ]
         },
         {
@@ -143,6 +185,9 @@
           "repaintRects": [
             [0, 0, 60, 40],
             [0, 0, 55, 40]
+          ],
+          "paintInvalidationClients": [
+            "LayoutBlockFlow (positioned) DIV class='test generated contain'"
           ]
         },
         {
@@ -152,6 +197,9 @@
           "backfaceVisibility": "hidden",
           "repaintRects": [
             [55, 0, 5, 40]
+          ],
+          "paintInvalidationClients": [
+            "LayoutBlockFlow (positioned) DIV class='test generated fixed-width'"
           ]
         },
         {
@@ -162,6 +210,9 @@
           "repaintRects": [
             [0, 0, 60, 40],
             [0, 0, 55, 40]
+          ],
+          "paintInvalidationClients": [
+            "LayoutBlockFlow (positioned) DIV class='test generated percent-width'"
           ]
         },
         {
@@ -172,6 +223,9 @@
           "repaintRects": [
             [0, 0, 60, 40],
             [0, 0, 55, 40]
+          ],
+          "paintInvalidationClients": [
+            "LayoutBlockFlow (positioned) DIV class='test generated left'"
           ]
         },
         {
@@ -182,6 +236,9 @@
           "repaintRects": [
             [0, 0, 60, 40],
             [0, 0, 55, 40]
+          ],
+          "paintInvalidationClients": [
+            "LayoutBlockFlow (positioned) DIV class='test generated right'"
           ]
         },
         {
@@ -192,6 +249,9 @@
           "repaintRects": [
             [0, 0, 60, 40],
             [0, 0, 55, 40]
+          ],
+          "paintInvalidationClients": [
+            "LayoutBlockFlow (positioned) DIV class='test generated center'"
           ]
         },
         {
@@ -202,6 +262,9 @@
           "repaintRects": [
             [0, 0, 60, 40],
             [0, 0, 55, 40]
+          ],
+          "paintInvalidationClients": [
+            "LayoutBlockFlow (positioned) DIV class='test generated no-repeat'"
           ]
         },
         {
@@ -212,6 +275,9 @@
           "repaintRects": [
             [0, 0, 60, 40],
             [0, 0, 55, 40]
+          ],
+          "paintInvalidationClients": [
+            "LayoutBlockFlow (positioned) DIV class='test generated repeat-space'"
           ]
         },
         {
@@ -222,6 +288,9 @@
           "repaintRects": [
             [0, 0, 60, 40],
             [0, 0, 55, 40]
+          ],
+          "paintInvalidationClients": [
+            "LayoutBlockFlow (positioned) DIV class='test generated repeat-round'"
           ]
         }
       ]

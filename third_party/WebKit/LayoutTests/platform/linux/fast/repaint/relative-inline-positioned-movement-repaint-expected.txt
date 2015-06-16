@@ -8,12 +8,20 @@
       "repaintRects": [
         [8, 7, 784, 21]
       ],
+      "paintInvalidationClients": [
+        "RootInlineBox",
+        "LayoutBlockFlow BODY"
+      ],
       "children": [
         {
           "position": [68, 7],
           "bounds": [348, 21],
           "drawsContent": true,
-          "backfaceVisibility": "hidden"
+          "backfaceVisibility": "hidden",
+          "paintInvalidationClients": [
+            "InlineTextBox 'When this layer moves it shouldn't generate a repaint rect.'",
+            "InlineFlowBox"
+          ]
         }
       ]
     }

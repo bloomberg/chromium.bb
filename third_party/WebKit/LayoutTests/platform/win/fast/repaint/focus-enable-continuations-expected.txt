@@ -11,6 +11,14 @@
         [7, 87, 86, 22],
         [7, 87, 86, 22],
         [2, 82, 96, 32]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow (positioned) DIV id='container'",
+        "LayoutBlockFlow (anonymous)",
+        "LayoutInline SPAN id='outer'",
+        "LayoutBlockFlow (anonymous)",
+        "LayoutBlockFlow (anonymous)",
+        "LayoutInline SPAN id='outer'"
       ]
     }
   ]

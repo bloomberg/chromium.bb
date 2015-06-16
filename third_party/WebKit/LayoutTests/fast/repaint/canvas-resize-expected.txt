@@ -8,6 +8,9 @@
       "repaintRects": [
         [50, 50, 600, 500],
         [50, 50, 500, 500]
+      ],
+      "paintInvalidationClients": [
+        "LayoutHTMLCanvas (positioned) CANVAS id='canvas'"
       ]
     }
   ]

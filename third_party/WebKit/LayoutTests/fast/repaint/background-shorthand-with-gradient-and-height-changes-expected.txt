@@ -9,6 +9,10 @@
         [8, 308, 784, 200],
         [8, 8, 784, 500],
         [8, 8, 784, 300]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow DIV id='outer'",
+        "LayoutBlockFlow DIV id='inner'"
       ]
     }
   ]

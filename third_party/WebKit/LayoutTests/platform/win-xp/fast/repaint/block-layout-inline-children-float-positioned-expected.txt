@@ -10,6 +10,14 @@
         [324, 37, 278, 19],
         [163, 37, 278, 20],
         [163, 37, 278, 19]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow (floating) SPAN",
+        "LayoutText #text",
+        "InlineTextBox 'the quick brown fox jumped over the lazy dog'",
+        "LayoutBlockFlow (positioned) SPAN",
+        "LayoutText #text",
+        "InlineTextBox 'the quick brown fox jumped over the lazy dog'"
       ]
     }
   ]

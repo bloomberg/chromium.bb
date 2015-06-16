@@ -15,6 +15,23 @@
         [8, 145, 4, 17],
         [8, 130, 784, 65],
         [8, 130, 4, 17]
+      ],
+      "paintInvalidationClients": [
+        "InlineTextBox ''",
+        "InlineTextBox '\n'",
+        "RootInlineBox",
+        "LayoutBlockFlow P",
+        "LayoutBlockFlow P",
+        "LayoutInline SPAN id='d'",
+        "InlineFlowBox",
+        "LayoutText #text",
+        "InlineTextBox '\u00A0'",
+        "LayoutBR BR",
+        "InlineTextBox '\n'",
+        "LayoutText #text",
+        "InlineTextBox 'Hello'",
+        "LayoutBR BR",
+        "InlineTextBox '\n'"
       ]
     }
   ]

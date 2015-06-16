@@ -13,6 +13,13 @@
           "backfaceVisibility": "hidden",
           "repaintRects": [
             [520, 0, 80, 340]
+          ],
+          "paintInvalidationClients": [
+            "LayoutText #text",
+            "InlineTextBox 'Lorem ipsum dolor'",
+            "InlineTextBox 'sit amet,'",
+            "InlineTextBox 'consectetur'",
+            "InlineTextBox 'adipiscing elit.'"
           ]
         }
       ]

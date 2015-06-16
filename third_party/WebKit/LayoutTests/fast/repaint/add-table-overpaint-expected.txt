@@ -11,6 +11,14 @@
         [0, 312, 800, 156],
         [0, 312, 156, 156],
         [0, 312, 156, 156]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow DIV",
+        "LayoutTable TABLE",
+        "LayoutTableCell TD",
+        "LayoutTableSection TBODY",
+        "LayoutTableRow TR",
+        "LayoutTableCell TD"
       ]
     }
   ]

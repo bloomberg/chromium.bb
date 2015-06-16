@@ -10,6 +10,11 @@
         [151, 293, 112, 15],
         [8, 293, 199, 15]
       ],
+      "paintInvalidationClients": [
+        "HorizontalScrollbar",
+        "HorizontalScrollbar",
+        "HorizontalScrollbar"
+      ],
       "children": [
         {
           "position": [8, 8],
@@ -24,6 +29,9 @@
               "backgroundColor": "#FF0000",
               "repaintRects": [
                 [0, 0, 600, 600]
+              ],
+              "paintInvalidationClients": [
+                "LayoutBlockFlow DIV id='inner'"
               ]
             }
           ]

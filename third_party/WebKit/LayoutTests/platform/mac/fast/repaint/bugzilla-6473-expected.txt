@@ -12,6 +12,12 @@
         [8, 130, 784, 18],
         [8, 130, 784, 18],
         [8, 130, 70, 18]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow DIV id='allcontent'",
+        "LayoutBlockFlow (relative positioned) P",
+        "LayoutText #text",
+        "InlineTextBox 'SUCCESS'"
       ]
     }
   ]

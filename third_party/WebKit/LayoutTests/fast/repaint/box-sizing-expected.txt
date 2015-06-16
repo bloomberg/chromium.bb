@@ -14,6 +14,10 @@
         [0, 280, 440, 60],
         [0, 100, 440, 40],
         [0, 80, 440, 60]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow (positioned) DIV id='target1' class='content-box'",
+        "LayoutBlockFlow (positioned) DIV id='target2' class='border-box'"
       ]
     }
   ]

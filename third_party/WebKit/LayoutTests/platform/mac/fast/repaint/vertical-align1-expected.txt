@@ -12,6 +12,16 @@
         [0, 80, 20, 20],
         [0, 34, 20, 20],
         [0, 0, 800, 104]
+      ],
+      "paintInvalidationClients": [
+        "InlineBox",
+        "InlineBox",
+        "InlineBox",
+        "RootInlineBox",
+        "LayoutBlockFlow BODY",
+        "LayoutBlockFlow BODY",
+        "LayoutBlockFlow DIV class='other'",
+        "LayoutBlockFlow DIV class='other'"
       ]
     }
   ]

@@ -14,6 +14,20 @@
         [-5, -5, 805, 237],
         [-5, -5, 805, 61],
         [-5, -5, 805, 29]
+      ],
+      "paintInvalidationClients": [
+        "InlineFlowBox",
+        "InlineTextBox 'Home'",
+        "InlineFlowBox",
+        "RootInlineBox",
+        "InlineTextBox 'crbug.com/424078: ensure inline elements get their outline painted'",
+        "RootInlineBox",
+        "LayoutBlockFlow HTML",
+        "LayoutBlockFlow BODY",
+        "LayoutBlockFlow (anonymous)",
+        "LayoutInline A id='link'",
+        "InlineFlowBox",
+        "LayoutBlockFlow P"
       ]
     }
   ]

@@ -11,6 +11,16 @@
         [18, 18, 22, 19],
         [8, 187, 784, 20],
         [8, 187, 22, 19]
+      ],
+      "paintInvalidationClients": [
+        "InlineTextBox 'abc'",
+        "LayoutText #text",
+        "RootInlineBox",
+        "LayoutBlockFlow DIV id='inner-target'",
+        "LayoutBlockFlow DIV id='inner-target'",
+        "LayoutText #text",
+        "InlineTextBox 'abc'",
+        "LayoutBlockFlow BODY"
       ]
     }
   ]

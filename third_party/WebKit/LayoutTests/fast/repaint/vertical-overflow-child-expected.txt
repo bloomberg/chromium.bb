@@ -11,6 +11,11 @@
         [29, 21, 301, 100],
         [28, 21, 286, 100],
         [28, 21, 186, 100]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow DIV class='vertical-rl'",
+        "LayoutBlockFlow DIV class='target'",
+        "LayoutBlockFlow DIV class='offset'"
       ]
     }
   ]

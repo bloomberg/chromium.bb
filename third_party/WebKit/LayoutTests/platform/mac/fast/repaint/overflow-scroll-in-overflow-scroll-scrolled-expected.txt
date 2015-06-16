@@ -11,6 +11,14 @@
         [762, 8, 15, 280],
         [8, 8, 769, 300],
         [8, 8, 300, 300]
+      ],
+      "paintInvalidationClients": [
+        "VerticalScrollbar",
+        "VerticalScrollbar",
+        "VerticalScrollbar",
+        "LayoutBlockFlow DIV id='innerDiv'",
+        "LayoutBlockFlow DIV",
+        "LayoutBlockFlow DIV"
       ]
     }
   ]

@@ -7,7 +7,12 @@
       "drawsContent": true,
       "repaintRects": [
         [128, 48, 100, 200],
-        [78, 48, 50, 100]
+        [78, 48, 50, 100],
+        [28, 48, 200, 200]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow DIV class='layoutroot'",
+        "LayoutBlockFlow DIV id='target'"
       ]
     }
   ]

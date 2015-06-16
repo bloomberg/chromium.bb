@@ -12,6 +12,12 @@
         [19, 189, 200, 40],
         [19, 29, 200, 60],
         [19, 29, 200, 40]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow DIV",
+        "LayoutBlockFlow DIV id='a'",
+        "LayoutBlockFlow DIV",
+        "LayoutBlockFlow DIV id='b'"
       ]
     }
   ]

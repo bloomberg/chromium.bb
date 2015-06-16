@@ -11,6 +11,24 @@
         [112, 108, 182, 104],
         [112, 108, 100, 100],
         [8, 108, 784, 103]
+      ],
+      "paintInvalidationClients": [
+        "InlineBox",
+        "InlineTextBox '\n'",
+        "InlineTextBox 'This span should disappear.\n'",
+        "InlineFlowBox",
+        "InlineBox",
+        "RootInlineBox",
+        "InlineTextBox 'This span should disappear.\n'",
+        "LayoutText #text",
+        "InlineFlowBox",
+        "LayoutInline SPAN id='target'",
+        "InlineBox",
+        "InlineTextBox '\n'",
+        "InlineBox",
+        "RootInlineBox",
+        "LayoutBlockFlow (anonymous)",
+        "LayoutBlockFlow DIV"
       ]
     }
   ]

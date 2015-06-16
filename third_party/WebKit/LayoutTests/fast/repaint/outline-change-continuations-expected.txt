@@ -8,6 +8,13 @@
       "repaintRects": [
         [6, 86, 88, 24],
         [4, 84, 92, 28]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow (anonymous)",
+        "LayoutInline SPAN id='outer'",
+        "LayoutBlockFlow (anonymous)",
+        "LayoutBlockFlow (anonymous)",
+        "LayoutInline SPAN id='outer'"
       ]
     }
   ]

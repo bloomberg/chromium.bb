@@ -8,6 +8,9 @@
       "repaintRects": [
         [0, 0, 100, 100]
       ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow (relative positioned) DIV id='inner'"
+      ],
       "children": [
         {
           "position": [278, 278],
@@ -18,7 +21,13 @@
           "backgroundColor": "#008000",
           "repaintRects": [
             [0, 0, 100, 100],
+            [0, 0, 100, 100],
             [0, 0, 100, 100]
+          ],
+          "paintInvalidationClients": [
+            "LayoutBlockFlow (relative positioned) DIV id='outer'",
+            "LayoutBlockFlow (relative positioned) DIV id='inner'",
+            "LayoutBlockFlow (relative positioned) DIV id='outer'"
           ]
         }
       ]

@@ -7,6 +7,9 @@
       "drawsContent": true,
       "repaintRects": [
         [250, 230, 100, 100]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow (positioned) DIV id='moveMe' class='absolute clipped'"
       ]
     }
   ]

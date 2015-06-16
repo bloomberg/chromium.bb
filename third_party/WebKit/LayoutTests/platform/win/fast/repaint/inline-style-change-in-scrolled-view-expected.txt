@@ -7,6 +7,10 @@
       "drawsContent": true,
       "repaintRects": [
         [0, 288, 431, 17]
+      ],
+      "paintInvalidationClients": [
+        "LayoutText #text",
+        "InlineTextBox 'Text Text Text Text Text Text Text Text Text Text Text Text Text'"
       ]
     }
   ]

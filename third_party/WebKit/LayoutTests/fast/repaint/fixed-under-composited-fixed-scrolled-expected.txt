@@ -15,6 +15,9 @@
           "backgroundColor": "#008000",
           "repaintRects": [
             [100, 100, 200, 200]
+          ],
+          "paintInvalidationClients": [
+            "LayoutBlockFlow (positioned) DIV id='fixed'"
           ]
         }
       ]

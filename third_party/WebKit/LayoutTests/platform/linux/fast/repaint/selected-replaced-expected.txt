@@ -9,6 +9,12 @@
         [8, 132, 214, 236],
         [8, 52, 784, 236],
         [8, 52, 214, 236]
+      ],
+      "paintInvalidationClients": [
+        "InlineBox",
+        "RootInlineBox",
+        "LayoutBlockFlow (anonymous)",
+        "LayoutImage (relative positioned) IMG id='test' class='moved'"
       ]
     }
   ]

@@ -16,8 +16,10 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
-        [0, 0, 2008, 2008],
         [0, 0, 300, 300]
+      ],
+      "paintInvalidationClients": [
+        "LayoutView #document"
       ]
     }
   ]
@@ -40,8 +42,10 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
-        [0, 0, 2008, 2008],
         [0, 0, 250, 250]
+      ],
+      "paintInvalidationClients": [
+        "LayoutView #document"
       ]
     }
   ]

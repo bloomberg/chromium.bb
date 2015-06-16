@@ -10,6 +10,14 @@
         [8, 74, 204, 232],
         [8, 74, 94, 232],
         [8, 74, 94, 232]
+      ],
+      "paintInvalidationClients": [
+        "RootInlineBox",
+        "InlineBox",
+        "LayoutBlockFlow (relative positioned) DIV id='i'",
+        "LayoutBlockFlow (positioned) DIV id='inner'",
+        "LayoutImage IMG",
+        "LayoutText #text"
       ]
     }
   ]

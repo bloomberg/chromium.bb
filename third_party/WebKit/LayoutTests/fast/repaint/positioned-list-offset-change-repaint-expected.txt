@@ -10,6 +10,16 @@
         [8, 60, 214, 232],
         [8, 60, 114, 236],
         [8, 60, 114, 232]
+      ],
+      "paintInvalidationClients": [
+        "RootInlineBox",
+        "InlineBox",
+        "InlineBox",
+        "LayoutBlockFlow (positioned) UL id='list'",
+        "LayoutListItem (positioned) LI",
+        "LayoutListMarker (anonymous)",
+        "LayoutImage IMG",
+        "LayoutText #text"
       ]
     }
   ]

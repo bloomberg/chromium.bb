@@ -4,7 +4,13 @@
     {
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "drawsContent": true,
+      "paintInvalidationClients": [
+        "InlineTextBox ''",
+        "RootInlineBox",
+        "LayoutText #text",
+        "InlineTextBox 'is invisible'"
+      ]
     }
   ]
 }

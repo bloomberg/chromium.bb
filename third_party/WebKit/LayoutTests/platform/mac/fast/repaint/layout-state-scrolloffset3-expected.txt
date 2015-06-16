@@ -9,6 +9,13 @@
         [100, 118, 35, 18],
         [100, 118, 35, 18],
         [100, 118, 31, 18]
+      ],
+      "paintInvalidationClients": [
+        "InlineTextBox ''",
+        "RootInlineBox",
+        "LayoutBlockFlow DIV id='target'",
+        "LayoutText #text",
+        "InlineTextBox 'after'"
       ]
     }
   ]

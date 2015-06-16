@@ -19,6 +19,9 @@
               "backgroundColor": "#008000",
               "repaintRects": [
                 [100, 0, 100, 200]
+              ],
+              "paintInvalidationClients": [
+                "LayoutBlockFlow DIV id='resize' class='accelerated'"
               ]
             }
           ]

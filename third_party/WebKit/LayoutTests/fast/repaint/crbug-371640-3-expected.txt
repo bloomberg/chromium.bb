@@ -18,6 +18,15 @@
         [408, 84, 200, 300],
         [408, 84, 100, 300],
         [408, 84, 100, 220]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow (positioned) DIV id='remove_child'",
+        "LayoutBlockFlow (floating) DIV id='remove' class='outer'",
+        "LayoutBlockFlow (floating) DIV id='container'",
+        "LayoutBlockFlow (floating) DIV id='keep_outer' class='outer'",
+        "LayoutBlockFlow (relative positioned) DIV id='keep_inner'",
+        "LayoutBlockFlow (positioned) DIV id='abs_pos'",
+        "LayoutBlockFlow DIV id='keep_child'"
       ]
     }
   ]

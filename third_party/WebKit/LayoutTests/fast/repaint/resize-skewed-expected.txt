@@ -8,6 +8,9 @@
       "repaintRects": [
         [0, 50, 700, 500],
         [0, 50, 600, 500]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow (positioned) DIV id='skewed'"
       ]
     }
   ]

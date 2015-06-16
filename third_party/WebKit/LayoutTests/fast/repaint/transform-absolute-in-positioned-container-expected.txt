@@ -8,6 +8,9 @@
       "repaintRects": [
         [118, 228, 202, 202],
         [76, 186, 286, 286]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow (relative positioned) DIV id='box' class='rotated'"
       ]
     }
   ]

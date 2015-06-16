@@ -8,6 +8,9 @@
       "repaintRects": [
         [8, 200, 100, 100],
         [8, 100, 100, 100]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow (positioned) DIV class='green'"
       ]
     }
   ]

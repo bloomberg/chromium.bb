@@ -12,6 +12,15 @@
         [31, 148, 761, 50],
         [31, 130, 7, 18],
         [31, 94, 761, 104]
+      ],
+      "paintInvalidationClients": [
+        "InlineBox",
+        "InlineBox",
+        "RootInlineBox",
+        "LayoutListItem LI",
+        "LayoutListItem LI",
+        "LayoutListMarker (anonymous)",
+        "LayoutImage IMG id='target'"
       ]
     }
   ]

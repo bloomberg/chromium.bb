@@ -14,6 +14,13 @@
         [8, 8, 300, 100],
         [8, 8, 300, 100],
         [8, 8, 100, 100]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow (floating) DIV id='node'",
+        "LayoutBlockFlow (floating) DIV",
+        "LayoutBlockFlow (floating) DIV",
+        "LayoutBlockFlow DIV",
+        "LayoutBlockFlow DIV"
       ]
     }
   ]

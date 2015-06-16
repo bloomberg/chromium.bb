@@ -12,6 +12,14 @@
         [31, 79, 766, 28],
         [8, 84, 784, 18],
         [8, 79, 789, 28]
+      ],
+      "paintInvalidationClients": [
+        "RootInlineBox",
+        "InlineBox",
+        "InlineTextBox 'Lorem Ipsum'",
+        "LayoutBlockFlow UL",
+        "LayoutListItem LI",
+        "LayoutBlockFlow A id='link'"
       ]
     }
   ]

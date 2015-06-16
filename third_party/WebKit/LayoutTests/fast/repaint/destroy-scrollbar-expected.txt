@@ -7,6 +7,10 @@
       "drawsContent": true,
       "repaintRects": [
         [185, 100, 15, 200]
+      ],
+      "paintInvalidationClients": [
+        "VerticalScrollbar",
+        "LayoutBlockFlow (positioned) DIV"
       ]
     }
   ]

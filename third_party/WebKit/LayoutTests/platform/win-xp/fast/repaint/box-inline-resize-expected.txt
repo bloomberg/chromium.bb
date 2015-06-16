@@ -12,6 +12,17 @@
         [8, 108, 111, 26],
         [8, 88, 32, 67],
         [8, 88, 32, 32]
+      ],
+      "paintInvalidationClients": [
+        "RootInlineBox",
+        "InlineBox",
+        "InlineBox",
+        "RootInlineBox",
+        "LayoutBlockFlow (anonymous)",
+        "LayoutImage IMG id='foo'",
+        "LayoutBlockFlow H2",
+        "LayoutText #text",
+        "InlineTextBox 'Chromium'"
       ]
     }
   ]

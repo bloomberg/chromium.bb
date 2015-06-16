@@ -9,6 +9,12 @@
         [20, 0, 10, 30],
         [0, 200, 200, 100],
         [0, 20, 30, 10]
+      ],
+      "paintInvalidationClients": [
+        "VerticalScrollbar",
+        "LayoutView #document",
+        "LayoutBlockFlow HTML",
+        "LayoutBlockFlow DIV"
       ]
     }
   ]
@@ -21,8 +27,14 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
-        [0, 0, 300, 300],
+        [200, 0, 100, 300],
         [0, 0, 300, 300]
+      ],
+      "paintInvalidationClients": [
+        "HorizontalScrollbar",
+        "LayoutView #document",
+        "LayoutView #document",
+        "LayoutBlockFlow HTML"
       ]
     }
   ]
@@ -38,6 +50,11 @@
         [25, 0, 5, 30],
         [0, 250, 300, 50],
         [0, 25, 30, 5]
+      ],
+      "paintInvalidationClients": [
+        "LayoutView #document",
+        "LayoutBlockFlow HTML",
+        "LayoutBlockFlow DIV"
       ]
     }
   ]
@@ -50,8 +67,13 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
-        [0, 0, 250, 250],
+        [250, 0, 50, 250],
         [0, 0, 250, 250]
+      ],
+      "paintInvalidationClients": [
+        "LayoutView #document",
+        "LayoutView #document",
+        "LayoutBlockFlow HTML"
       ]
     }
   ]

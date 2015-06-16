@@ -28,6 +28,12 @@
                 [570, 493, 89, 24],
                 [570, 493, 24, 24],
                 [535, 490, 35, 30]
+              ],
+              "paintInvalidationClients": [
+                "LayoutButton INPUT",
+                "LayoutSlider INPUT",
+                "LayoutFlexibleBox DIV",
+                "LayoutBlockFlow DIV id='thumb'"
               ]
             }
           ]

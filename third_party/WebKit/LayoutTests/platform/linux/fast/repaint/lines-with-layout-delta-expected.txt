@@ -9,6 +9,13 @@
         [8, 58, 200, 19],
         [8, 58, 38, 19],
         [8, 58, 34, 19]
+      ],
+      "paintInvalidationClients": [
+        "InlineTextBox ''",
+        "RootInlineBox",
+        "LayoutBlockFlow (floating) DIV id='target'",
+        "LayoutText #text",
+        "InlineTextBox 'PASS'"
       ]
     }
   ]

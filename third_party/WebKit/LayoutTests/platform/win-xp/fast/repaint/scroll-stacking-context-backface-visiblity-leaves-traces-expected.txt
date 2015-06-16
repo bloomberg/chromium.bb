@@ -16,6 +16,10 @@
             [10, 1822, 150, 150],
             [10, 1422, 150, 150],
             [10, 1422, 150, 150]
+          ],
+          "paintInvalidationClients": [
+            "LayoutBlockFlow (positioned) DIV id='searchbar'",
+            "LayoutBlockFlow DIV id='recentlink'"
           ]
         }
       ]

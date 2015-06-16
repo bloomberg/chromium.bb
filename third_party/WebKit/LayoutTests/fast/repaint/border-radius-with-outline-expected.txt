@@ -8,6 +8,9 @@
       "repaintRects": [
         [45, 45, 310, 310],
         [45, 45, 190, 310]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow (positioned) DIV id='target'"
       ]
     }
   ]

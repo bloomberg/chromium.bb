@@ -11,6 +11,14 @@
         [7, 63, 3, 21],
         [7, 43, 786, 62],
         [7, 43, 786, 42]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow DIV",
+        "LayoutBlockFlow DIV id='div'",
+        "LayoutBR BR",
+        "InlineTextBox '\n'",
+        "LayoutBlockFlow DIV id='div'",
+        "LayoutBlockFlow DIV id='div'"
       ]
     }
   ]

@@ -8,6 +8,9 @@
       "repaintRects": [
         [8, 8, 328, 328]
       ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow DIV id='box' class='green box blurry'"
+      ],
       "children": [
         {
           "position": [-20, -20],
@@ -16,6 +19,9 @@
           "backgroundColor": "#008000",
           "repaintRects": [
             [0, 0, 256, 256]
+          ],
+          "paintInvalidationClients": [
+            "LayoutBlockFlow DIV id='box' class='green box blurry'"
           ]
         }
       ]

@@ -9,8 +9,22 @@
         [18, 18, 284, 18],
         [18, 18, 284, 18],
         [18, 18, 23, 17],
+        [10, 18, 300, 26],
         [8, 184, 784, 18],
-        [8, 184, 23, 17]
+        [8, 184, 23, 17],
+        [0, 192, 800, 18]
+      ],
+      "paintInvalidationClients": [
+        "InlineTextBox 'abc'",
+        "LayoutText #text",
+        "RootInlineBox",
+        "LayoutBlockFlow DIV id='inner-target'",
+        "LayoutBlockFlow HTML",
+        "LayoutBlockFlow DIV id='inner-target'",
+        "LayoutText #text",
+        "InlineTextBox 'abc'",
+        "LayoutBlockFlow HTML",
+        "LayoutBlockFlow BODY"
       ]
     }
   ]

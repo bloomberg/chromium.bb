@@ -12,6 +12,38 @@
         [14, 364, 48, 64],
         [14, 353, 48, 64],
         [8, 350, 418, 125]
+      ],
+      "paintInvalidationClients": [
+        "InlineTextBox 'that it was a very\n'",
+        "InlineTextBox 'difficult game indeed.\n'",
+        "RootInlineBox",
+        "InlineTextBox 'The players all played at once without waiting'",
+        "RootInlineBox",
+        "InlineTextBox 'for turns,\n'",
+        "InlineTextBox 'quarrelling all the while, and fighting'",
+        "RootInlineBox",
+        "InlineTextBox 'for the hedgehogs; and in\n'",
+        "InlineTextBox 'a very short time '",
+        "InlineTextBox 'the'",
+        "RootInlineBox",
+        "InlineTextBox 'Queen'",
+        "InlineTextBox ' was in a furious passion, and went\n'",
+        "InlineTextBox 'stamping'",
+        "RootInlineBox",
+        "InlineTextBox 'about, and shouting \u2018Off with his head!\u2019 or \u2018Off with'",
+        "RootInlineBox",
+        "InlineTextBox 'her head!\u2019 about once in a minute.\n'",
+        "RootInlineBox",
+        "LayoutBlockFlow P",
+        "LayoutBlockFlow (floating) SPAN id='blueFloat'",
+        "LayoutText #text",
+        "InlineTextBox 'the'",
+        "InlineTextBox 'Queen'",
+        "LayoutText #text",
+        "InlineTextBox ' was in a furious passion, and went'",
+        "InlineTextBox 'stamping about, and shouting \u2018Off with his head!\u2019 or'",
+        "InlineTextBox '\u2018Off with\n'",
+        "InlineTextBox 'her head!\u2019 about once in a minute.\n'"
       ]
     }
   ]

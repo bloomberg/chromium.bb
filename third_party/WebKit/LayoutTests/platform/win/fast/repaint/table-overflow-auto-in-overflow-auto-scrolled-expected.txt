@@ -12,6 +12,16 @@
         [8, 8, 306, 300],
         [8, 8, 306, 300],
         [8, 8, 306, 300]
+      ],
+      "paintInvalidationClients": [
+        "VerticalScrollbar",
+        "LayoutBlockFlow DIV id='innerDiv'",
+        "LayoutTable TABLE",
+        "LayoutTableSection TBODY",
+        "LayoutTableRow TR",
+        "LayoutTableCell TD",
+        "LayoutTableRow TR",
+        "LayoutTableCell TD"
       ]
     }
   ]

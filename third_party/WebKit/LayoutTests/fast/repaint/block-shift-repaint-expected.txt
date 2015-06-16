@@ -26,6 +26,20 @@
         [8, 38, 60, 30],
         [8, 8, 60, 30],
         [8, 8, 60, 30]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow DIV id='div1' class='blue half'",
+        "LayoutBlockFlow DIV class='red half'",
+        "LayoutBlockFlow DIV class='green half'",
+        "LayoutBlockFlow DIV id='top' class='blue half'",
+        "LayoutBlockFlow DIV class='red half'",
+        "LayoutBlockFlow DIV class='green half'",
+        "LayoutBlockFlow DIV id='div2' class='zero'",
+        "LayoutBlockFlow DIV class='green half'",
+        "LayoutBlockFlow DIV class='red half'",
+        "LayoutBlockFlow DIV id='innerDiv'",
+        "LayoutBlockFlow DIV class='half'",
+        "LayoutBlockFlow DIV class='half'"
       ]
     }
   ]

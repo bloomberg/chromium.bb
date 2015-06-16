@@ -4,7 +4,10 @@
     {
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "drawsContent": true,
+      "paintInvalidationClients": [
+        "LayoutBlockFlow DIV"
+      ]
     }
   ]
 }

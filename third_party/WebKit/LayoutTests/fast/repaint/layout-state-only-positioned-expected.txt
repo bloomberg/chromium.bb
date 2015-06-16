@@ -8,6 +8,13 @@
       "repaintRects": [
         [88, 53, 15, 100],
         [3, 103, 10, 53]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow (positioned) DIV",
+        "VerticalScrollbar",
+        "VerticalScrollbar",
+        "VerticalScrollbar",
+        "LayoutBlockFlow (positioned) DIV id='q'"
       ]
     }
   ]

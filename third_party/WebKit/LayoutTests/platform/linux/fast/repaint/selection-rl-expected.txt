@@ -7,6 +7,12 @@
       "drawsContent": true,
       "repaintRects": [
         [773, 43, 19, 77]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow HTML",
+        "LayoutBlockFlow BODY",
+        "LayoutText #text",
+        "InlineTextBox 'Testing both hit testing'"
       ]
     }
   ]

@@ -10,6 +10,10 @@
         [0, 200, 100, 50],
         [0, 50, 150, 150],
         [0, 50, 100, 200]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow (positioned) DIV",
+        "LayoutImage (positioned) IMG"
       ]
     }
   ]
