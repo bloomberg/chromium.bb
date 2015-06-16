@@ -29,8 +29,10 @@ bool IsBinaryFile(const base::FilePath& file) {
       file.MatchesExtension(FILE_PATH_LITERAL(".pif")) ||
       file.MatchesExtension(FILE_PATH_LITERAL(".reg")) ||
       file.MatchesExtension(FILE_PATH_LITERAL(".scr")) ||
+      file.MatchesExtension(FILE_PATH_LITERAL(".url")) ||
       file.MatchesExtension(FILE_PATH_LITERAL(".vb")) ||
       file.MatchesExtension(FILE_PATH_LITERAL(".vbs")) ||
+      file.MatchesExtension(FILE_PATH_LITERAL(".website")) ||
       // Chrome extensions and android APKs are also reported.
       file.MatchesExtension(FILE_PATH_LITERAL(".crx")) ||
       file.MatchesExtension(FILE_PATH_LITERAL(".apk")) ||

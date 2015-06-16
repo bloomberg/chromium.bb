@@ -195,6 +195,7 @@ const base::FilePath::CharType* kDangerousFileTypes[] = {
   FILE_PATH_LITERAL(".xml"),
   FILE_PATH_LITERAL(".xsl"),
   FILE_PATH_LITERAL(".xslt")
+  FILE_PATH_LITERAL(".website")
 };
 
 // Maps extensions to their matching UMA histogram int value.

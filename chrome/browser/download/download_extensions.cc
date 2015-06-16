@@ -57,6 +57,8 @@ namespace download_util {
  *
  * ***** END LICENSE BLOCK ***** */
 
+// When adding new entries to this list, also append the file extension to the
+// kDangerousFileTypes array in download_stats.cc.
 static const struct Executables {
     const char* extension;
     DownloadDangerLevel level;
@@ -155,6 +157,7 @@ static const struct Executables {
   { "vss", ALLOW_ON_USER_GESTURE },
   { "vst", ALLOW_ON_USER_GESTURE },
   { "vsw", ALLOW_ON_USER_GESTURE },
+  { "website", DANGEROUS },
   { "ws", ALLOW_ON_USER_GESTURE },
   { "wsc", ALLOW_ON_USER_GESTURE },
   { "wsf", ALLOW_ON_USER_GESTURE },

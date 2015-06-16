@@ -88,6 +88,8 @@ enum MaliciousExtensionType {
   EXTENSION_DMG,
   EXTENSION_PKG,
   EXTENSION_TORRENT,
+  EXTENSION_WEBSITE,
+  EXTENSION_URL,
   EXTENSION_MAX,
 };
 
@@ -116,6 +118,9 @@ MaliciousExtensionType GetExtensionType(const base::FilePath& f) {
   if (f.MatchesExtension(FILE_PATH_LITERAL(".pkg"))) return EXTENSION_PKG;
   if (f.MatchesExtension(FILE_PATH_LITERAL(".torrent")))
     return EXTENSION_TORRENT;
+  if (f.MatchesExtension(FILE_PATH_LITERAL(".website")))
+    return EXTENSION_WEBSITE;
+  if (f.MatchesExtension(FILE_PATH_LITERAL(".url"))) return EXTENSION_URL;
   return EXTENSION_OTHER;
 }
 
