@@ -2417,6 +2417,27 @@ void LayoutObject::willBeDestroyed()
         selectionPaintInvalidationMap->remove(this);
 
     clearLayoutRootIfNeeded();
+
+    if (m_style) {
+        for (const FillLayer* bgLayer = &m_style->backgroundLayers(); bgLayer; bgLayer = bgLayer->next()) {
+            if (StyleImage* backgroundImage = bgLayer->image())
+                backgroundImage->removeClient(this);
+        }
+
+        for (const FillLayer* maskLayer = &m_style->maskLayers(); maskLayer; maskLayer = maskLayer->next()) {
+            if (StyleImage* maskImage = maskLayer->image())
+                maskImage->removeClient(this);
+        }
+
+        if (StyleImage* borderImage = m_style->borderImage().image())
+            borderImage->removeClient(this);
+
+        if (StyleImage* maskBoxImage = m_style->maskBoxImage().image())
+            maskBoxImage->removeClient(this);
+
+        removeShapeImageClient(m_style->shapeOutside());
+    }
+    ResourceLoadPriorityOptimizer::resourceLoadPriorityOptimizer()->removeLayoutObject(this);
 }
 
 void LayoutObject::insertedIntoTree()
@@ -2538,7 +2559,7 @@ void LayoutObject::destroyAndCleanupAnonymousWrappers()
 void LayoutObject::destroy()
 {
     willBeDestroyed();
-    postDestroy();
+    delete this;
 }
 
 void LayoutObject::removeShapeImageClient(ShapeValue* shapeValue)
@@ -2547,32 +2568,6 @@ void LayoutObject::removeShapeImageClient(ShapeValue* shapeValue)
         return;
     if (StyleImage* shapeImage = shapeValue->image())
         shapeImage->removeClient(this);
-}
-
-void LayoutObject::postDestroy()
-{
-    // It seems ugly that this is not in willBeDestroyed().
-    if (m_style) {
-        for (const FillLayer* bgLayer = &m_style->backgroundLayers(); bgLayer; bgLayer = bgLayer->next()) {
-            if (StyleImage* backgroundImage = bgLayer->image())
-                backgroundImage->removeClient(this);
-        }
-
-        for (const FillLayer* maskLayer = &m_style->maskLayers(); maskLayer; maskLayer = maskLayer->next()) {
-            if (StyleImage* maskImage = maskLayer->image())
-                maskImage->removeClient(this);
-        }
-
-        if (StyleImage* borderImage = m_style->borderImage().image())
-            borderImage->removeClient(this);
-
-        if (StyleImage* maskBoxImage = m_style->maskBoxImage().image())
-            maskBoxImage->removeClient(this);
-
-        removeShapeImageClient(m_style->shapeOutside());
-    }
-    ResourceLoadPriorityOptimizer::resourceLoadPriorityOptimizer()->removeLayoutObject(this);
-    delete this;
 }
 
 PositionWithAffinity LayoutObject::positionForPoint(const LayoutPoint&)
@@ -2928,6 +2923,7 @@ bool LayoutObject::isInert() const
 
 void LayoutObject::imageChanged(ImageResource* image, const IntRect* rect)
 {
+    ASSERT(m_node);
     imageChanged(static_cast<WrappedImagePtr>(image), rect);
 }
 

@@ -1152,7 +1152,6 @@ protected:
     void setSelfMayNeedPaintInvalidation();
 
     virtual void willBeDestroyed();
-    void postDestroy();
 
     virtual void insertedIntoTree();
     virtual void willBeRemovedFromTree();

@@ -54,7 +54,7 @@ LayoutPart::LayoutPart(Element* element)
 void LayoutPart::deref()
 {
     if (--m_refCount <= 0)
-        postDestroy();
+        delete this;
 }
 
 void LayoutPart::willBeDestroyed()
