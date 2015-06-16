@@ -63,6 +63,9 @@ public:
     DEFINE_INLINE_VIRTUAL_TRACE() { }
 
     virtual bool isLiveContext() { return false; }
+    virtual void countClientHintsDPR() { }
+    virtual void countClientHintsResourceWidth() { }
+    virtual void countClientHintsViewportWidth() { }
 
     virtual void addAdditionalRequestHeaders(ResourceRequest&, FetchResourceType);
     virtual void setFirstPartyForCookies(ResourceRequest&);

@@ -2960,7 +2960,7 @@ void Document::processHttpEquivContentSecurityPolicy(const AtomicString& equiv, 
 void Document::processHttpEquivAcceptCH(const AtomicString& content)
 {
     if (frame())
-        handleAcceptClientHintsHeader(content, m_clientHintsPreferences);
+        handleAcceptClientHintsHeader(content, m_clientHintsPreferences, fetcher());
 }
 
 void Document::processHttpEquivDefaultStyle(const AtomicString& content)

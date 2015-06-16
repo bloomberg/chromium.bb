@@ -105,6 +105,10 @@ public:
     void addClientHintsIfNecessary(FetchRequest&) override;
     void addCSPHeaderIfNecessary(Resource::Type, FetchRequest&) override;
 
+    virtual void countClientHintsDPR() override;
+    virtual void countClientHintsResourceWidth() override;
+    virtual void countClientHintsViewportWidth() override;
+
     DECLARE_VIRTUAL_TRACE();
 
 private:

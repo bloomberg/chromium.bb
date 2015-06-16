@@ -10,7 +10,7 @@
 
 namespace blink {
 
-class Document;
+class ResourceFetcher;
 
 class ClientHintsPreferences {
 public:
@@ -41,7 +41,7 @@ private:
     bool m_shouldSendViewportWidth;
 };
 
-CORE_EXPORT void handleAcceptClientHintsHeader(const String& headerValue, ClientHintsPreferences&);
+CORE_EXPORT void handleAcceptClientHintsHeader(const String& headerValue, ClientHintsPreferences&, ResourceFetcher*);
 } // namespace blink
 #endif
 

@@ -521,7 +521,7 @@ void TokenPreloadScanner::scanCommon(const Token& token, const SegmentedString& 
                 if (equalIgnoringCase(equivAttributeValue, "content-security-policy"))
                     m_isCSPEnabled = true;
                 else if (equalIgnoringCase(equivAttributeValue, "accept-ch"))
-                    handleAcceptClientHintsHeader(equivAttributeValue, m_clientHintsPreferences);
+                    handleAcceptClientHintsHeader(equivAttributeValue, m_clientHintsPreferences, nullptr);
                 return;
             }
             const typename Token::Attribute* nameAttribute = token.getAttributeItem(nameAttr);

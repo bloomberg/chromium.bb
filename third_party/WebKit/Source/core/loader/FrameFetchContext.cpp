@@ -222,8 +222,12 @@ void FrameFetchContext::dispatchDidReceiveResponse(unsigned long identifier, con
 {
     MixedContentChecker::checkMixedPrivatePublic(frame(), response.remoteIPAddress());
     LinkLoader::loadLinkFromHeader(response.httpHeaderField("Link"), frame()->document());
-    if (m_documentLoader == frame()->loader().provisionalDocumentLoader())
-        handleAcceptClientHintsHeader(response.httpHeaderField("accept-ch"), m_documentLoader->clientHintsPreferences());
+    if (m_documentLoader == frame()->loader().provisionalDocumentLoader()) {
+        ResourceFetcher* fetcher = nullptr;
+        if (frame()->document())
+            fetcher = frame()->document()->fetcher();
+        handleAcceptClientHintsHeader(response.httpHeaderField("accept-ch"), m_documentLoader->clientHintsPreferences(), fetcher);
+    }
 
     frame()->loader().progress().incrementProgress(identifier, response);
     frame()->loader().client()->dispatchDidReceiveResponse(m_documentLoader, identifier, response);
@@ -635,6 +639,21 @@ void FrameFetchContext::addCSPHeaderIfNecessary(Resource::Type type, FetchReques
     const ContentSecurityPolicy* csp = m_document->contentSecurityPolicy();
     if (csp->shouldSendCSPHeader(type))
         fetchRequest.mutableResourceRequest().addHTTPHeaderField("CSP", "active");
+}
+
+void FrameFetchContext::countClientHintsDPR()
+{
+    UseCounter::count(frame(), UseCounter::ClientHintsDPR);
+}
+
+void FrameFetchContext::countClientHintsResourceWidth()
+{
+    UseCounter::count(frame(), UseCounter::ClientHintsResourceWidth);
+}
+
+void FrameFetchContext::countClientHintsViewportWidth()
+{
+    UseCounter::count(frame(), UseCounter::ClientHintsViewportWidth);
 }
 
 DEFINE_TRACE(FrameFetchContext)

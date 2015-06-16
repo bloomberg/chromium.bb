@@ -32,7 +32,7 @@ TEST_F(ClientHintsPreferencesTest, Basic)
         ClientHintsPreferences preferences;
         const char* value = testCase.headerValue;
 
-        handleAcceptClientHintsHeader(value, preferences);
+        handleAcceptClientHintsHeader(value, preferences, nullptr);
         EXPECT_EQ(testCase.expectationResourceWidth, preferences.shouldSendResourceWidth());
         EXPECT_EQ(testCase.expectationDPR, preferences.shouldSendDPR());
         EXPECT_EQ(testCase.expectationViewportWidth, preferences.shouldSendViewportWidth());
