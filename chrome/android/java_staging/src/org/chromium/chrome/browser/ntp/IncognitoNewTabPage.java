@@ -37,7 +37,7 @@ public class IncognitoNewTabPage implements NativePage, InvalidationAwareThumbna
         @Override
         public void loadIncognitoLearnMore() {
             HelpAndFeedback.getInstance(mActivity).show(mActivity,
-                    mActivity.getString(R.string.help_context_incognito_learn_more), null,
+                    mActivity.getString(R.string.help_context_incognito_learn_more),
                     FeedbackCollector.create(Profile.getLastUsedProfile(), null));
         }
 

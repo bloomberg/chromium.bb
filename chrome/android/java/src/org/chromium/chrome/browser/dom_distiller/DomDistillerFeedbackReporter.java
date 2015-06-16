@@ -10,6 +10,9 @@ import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.ChromiumApplication;
+import org.chromium.chrome.browser.feedback.FeedbackCollector;
+import org.chromium.chrome.browser.feedback.FeedbackReporter;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
@@ -17,16 +20,25 @@ import org.chromium.ui.base.WindowAndroid;
  */
 @JNINamespace("dom_distiller::android")
 public final class DomDistillerFeedbackReporter {
+    private static final String DISTILLATION_QUALITY_KEY = "Distillation quality";
+    private static final String DISTILLATION_QUALITY_GOOD = "good";
+    private static final String DISTILLATION_QUALITY_BAD = "bad";
+
     /**
      * An {@link ExternalFeedbackReporter} that does nothing.
+     * TODO(nyquist): Remove when downstream codebase uses {@link FeedbackReporter}.
      */
+    @Deprecated
     public static class NoOpExternalFeedbackReporter implements ExternalFeedbackReporter {
         @Override
         public void reportFeedback(Activity activity, String url, boolean good) {
         }
     }
 
+    // TODO(nyquist): Remove when downstream codebase uses {@link FeedbackReporter}.
     private static ExternalFeedbackReporter sExternalFeedbackReporter;
+
+    private static FeedbackReporter sFeedbackReporter;
 
     /**
      * A static method for native code to call to call the external feedback form.
@@ -38,11 +50,25 @@ public final class DomDistillerFeedbackReporter {
     public static void reportFeedbackWithWindow(WindowAndroid window, String url, boolean good) {
         ThreadUtils.assertOnUiThread();
         Activity activity = window.getActivity().get();
+        // TODO(nyquist): Remove when downstream codebase uses {@link FeedbackReporter}.
         if (sExternalFeedbackReporter == null) {
             ChromiumApplication application = (ChromiumApplication) activity.getApplication();
             sExternalFeedbackReporter = application.createDomDistillerFeedbackLauncher();
         }
-        sExternalFeedbackReporter.reportFeedback(activity, url, good);
+        // Temporary support old code path.
+        if (!(sExternalFeedbackReporter instanceof NoOpExternalFeedbackReporter)) {
+            sExternalFeedbackReporter.reportFeedback(activity, url, good);
+            return;
+        }
+
+        if (sFeedbackReporter == null) {
+            ChromiumApplication application = (ChromiumApplication) activity.getApplication();
+            sFeedbackReporter = application.createFeedbackReporter();
+        }
+        FeedbackCollector collector = FeedbackCollector.create(Profile.getLastUsedProfile(), url);
+        String quality = good ? DISTILLATION_QUALITY_GOOD : DISTILLATION_QUALITY_BAD;
+        collector.add(DISTILLATION_QUALITY_KEY, quality);
+        sFeedbackReporter.reportFeedback(activity, collector);
     }
 
     private DomDistillerFeedbackReporter() {}

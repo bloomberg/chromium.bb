@@ -9,6 +9,9 @@ import android.app.Activity;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.ChromiumApplication;
+import org.chromium.chrome.browser.feedback.FeedbackCollector;
+import org.chromium.chrome.browser.feedback.FeedbackReporter;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
@@ -17,23 +20,41 @@ import org.chromium.ui.base.WindowAndroid;
 public final class ChildAccountFeedbackReporter {
     /**
      * An {@link ExternalFeedbackReporter} that does nothing.
+     * TODO(nyquist): Remove when downstream codebase uses {@link FeedbackReporter}.
      */
+    @Deprecated
     public static class NoOpExternalFeedbackReporter implements ExternalFeedbackReporter {
         @Override
         public void reportFeedback(Activity activity, String description, String url) {}
     }
 
+    // TODO(nyquist): Remove when downstream codebase uses {@link FeedbackReporter}.
     private static ExternalFeedbackReporter sExternalFeedbackReporter;
+
+    private static FeedbackReporter sFeedbackReporter;
 
     public static void reportFeedback(Activity activity,
                                       String description,
                                       String url) {
         ThreadUtils.assertOnUiThread();
+        // TODO(nyquist): Remove when downstream codebase uses {@link FeedbackReporter}.
         if (sExternalFeedbackReporter == null) {
             ChromiumApplication application = (ChromiumApplication) activity.getApplication();
             sExternalFeedbackReporter = application.createChildAccountFeedbackLauncher();
         }
-        sExternalFeedbackReporter.reportFeedback(activity, description, url);
+        // Temporary support old code path.
+        if (!(sExternalFeedbackReporter instanceof NoOpExternalFeedbackReporter)) {
+            sExternalFeedbackReporter.reportFeedback(activity, description, url);
+            return;
+        }
+
+        if (sFeedbackReporter == null) {
+            ChromiumApplication application = (ChromiumApplication) activity.getApplication();
+            sFeedbackReporter = application.createFeedbackReporter();
+        }
+        FeedbackCollector collector = FeedbackCollector.create(Profile.getLastUsedProfile(), url);
+        collector.setDescription(description);
+        sFeedbackReporter.reportFeedback(activity, collector);
     }
 
     @CalledByNative

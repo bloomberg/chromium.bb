@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.feedback;
 
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.text.TextUtils;
 
@@ -47,6 +48,16 @@ public class FeedbackCollector {
     private final ConnectivityTask mConnectivityTask;
 
     /**
+     * An optional description for the feedback report.
+     */
+    private String mDescription;
+
+    /**
+     * An optional screenshot for the feedback report.
+     */
+    private Bitmap mScreenshot;
+
+    /**
      * Creates a {@link FeedbackCollector} and starts asynchronous operations to gather extra data.
      * @param profile the current Profile.
      * @param url The URL of the current tab to include in the feedback the user sends, if any.
@@ -74,6 +85,40 @@ public class FeedbackCollector {
     public void add(String key, String value) {
         ThreadUtils.assertOnUiThread();
         mData.put(key, value);
+    }
+
+    /**
+     * Sets the default description to invoke feedback with.
+     * @param description the user visible description.
+     */
+    public void setDescription(String description) {
+        ThreadUtils.assertOnUiThread();
+        mDescription = description;
+    }
+
+    /**
+     * @return the default description to invoke feedback with.
+     */
+    public String getDescription() {
+        ThreadUtils.assertOnUiThread();
+        return mDescription;
+    }
+
+    /**
+     * Sets the screenshot to use for the feedback report.
+     * @param screenshot the user visible screenshot.
+     */
+    public void setScreenshot(Bitmap screenshot) {
+        ThreadUtils.assertOnUiThread();
+        mScreenshot = screenshot;
+    }
+
+    /**
+     * @return the screenshot to use for the feedback report.
+     */
+    public Bitmap getScreenshot() {
+        ThreadUtils.assertOnUiThread();
+        return mScreenshot;
     }
 
     /**

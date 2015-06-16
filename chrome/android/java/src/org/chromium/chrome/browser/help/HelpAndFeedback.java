@@ -46,6 +46,8 @@ public class HelpAndFeedback {
 
     /**
      * Starts an activity showing a help page for the specified context ID.
+     * TODO(nyquist): Remove when downstream codebase uses
+     * {@link #show(Activity, String, FeedbackCollector)}.
      *
      * @param activity The activity to use for starting the help activity and to take a
      *                 screenshot of.
@@ -56,9 +58,23 @@ public class HelpAndFeedback {
      *                   activity (which will show a rendered page as black).
      * @param collector the {@link FeedbackCollector} to use for extra data. Must not be null.
      */
+    @Deprecated
     public void show(Activity activity, String helpContext, Bitmap screenshot,
             @Nonnull FeedbackCollector collector) {
         launchFallbackSupportUri(activity);
+    }
+
+    /**
+     * Starts an activity showing a help page for the specified context ID.
+     *
+     * @param activity The activity to use for starting the help activity and to take a
+     *                 screenshot of.
+     * @param helpContext One of the CONTEXT_* constants. This should describe the user's current
+     *                    context and will be used to show a more relevant help page.
+     * @param collector the {@link FeedbackCollector} to use for extra data. Must not be null.
+     */
+    public void show(Activity activity, String helpContext, @Nonnull FeedbackCollector collector) {
+        show(activity, helpContext, collector.getScreenshot(), collector);
     }
 
     /**

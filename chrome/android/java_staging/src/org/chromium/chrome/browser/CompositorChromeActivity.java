@@ -689,8 +689,9 @@ public abstract class CompositorChromeActivity extends ChromeActivity
             startTakingCompositorActivityScreenshot(new GetBitmapCallback() {
                 @Override
                 public void onFinishGetBitmap(Bitmap bitmap, int response) {
+                    collector.setScreenshot(bitmap);
                     HelpAndFeedback.getInstance(mainActivity)
-                            .show(mainActivity, helpContextId, bitmap, collector);
+                            .show(mainActivity, helpContextId, collector);
                     RecordUserAction.record("MobileMenuFeedback");
                 }
             });

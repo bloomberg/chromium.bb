@@ -91,7 +91,7 @@ public class TranslatePreferences extends PreferenceFragment {
         int itemId = item.getItemId();
         if (itemId == R.id.menu_id_translate_help) {
             HelpAndFeedback.getInstance(getActivity())
-                    .show(getActivity(), getString(R.string.help_context_translate), null,
+                    .show(getActivity(), getString(R.string.help_context_translate),
                             FeedbackCollector.create(Profile.getLastUsedProfile(), null));
             return true;
         }

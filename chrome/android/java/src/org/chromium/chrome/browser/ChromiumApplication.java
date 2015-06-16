@@ -27,6 +27,8 @@ import org.chromium.chrome.browser.child_accounts.ChildAccountFeedbackReporter;
 import org.chromium.chrome.browser.child_accounts.ChildAccountService;
 import org.chromium.chrome.browser.dom_distiller.DomDistillerFeedbackReporter;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
+import org.chromium.chrome.browser.feedback.EmptyFeedbackReporter;
+import org.chromium.chrome.browser.feedback.FeedbackReporter;
 import org.chromium.chrome.browser.firstrun.FirstRunActivity;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.init.InvalidStartupDialog;
@@ -292,11 +294,22 @@ public abstract class ChromiumApplication extends ContentApplication {
     private static native String nativeGetBrowserUserAgent();
     private static native void nativeFlushPersistentData();
 
+    /**
+     * @return An instance of {@link FeedbackReporter} to report feedback.
+     */
+    public FeedbackReporter createFeedbackReporter() {
+        return new EmptyFeedbackReporter();
+    }
+
+    // TODO(nyquist): Remove when downstream codebase uses {@link FeedbackReporter}.
+    @Deprecated
     public org.chromium.chrome.browser.dom_distiller.ExternalFeedbackReporter
             createDomDistillerFeedbackLauncher() {
         return new DomDistillerFeedbackReporter.NoOpExternalFeedbackReporter();
     }
 
+    // TODO(nyquist): Remove when downstream codebase uses {@link FeedbackReporter}.
+    @Deprecated
     public org.chromium.chrome.browser.child_accounts.ExternalFeedbackReporter
             createChildAccountFeedbackLauncher() {
         return new ChildAccountFeedbackReporter.NoOpExternalFeedbackReporter();
