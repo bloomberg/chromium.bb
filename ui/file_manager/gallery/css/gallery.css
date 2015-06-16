@@ -516,26 +516,22 @@ input[type='checkbox']:checked {
 /* Editor buttons */
 
 .gallery .edit-bar-spacer {
-  -webkit-box-align: center;
-  -webkit-box-orient: horizontal;
-  -webkit-box-pack: center;
-  display: -webkit-box;
   height: 100%;
-  left: 280px;
   opacity: 0;
-  right: 280px;
   transition: opacity 180ms linear, visibility 0ms linear 180ms;
   visibility: hidden;
-  margin-bottom: -55px;
 }
 
 .gallery .toolbar .edit-main {
-  -webkit-box-orient: horizontal;
-  -webkit-box-pack: center;
+  bottom: 0;
   color: white;
-  display: -webkit-box;
+  display: flex;
   height: 55px;
+  justify-content: center;
+  left: 252px;
   overflow: visible;
+  position: absolute;
+  right: 252px;
 }
 
 .gallery[editing] .edit-bar-spacer {
@@ -586,15 +582,17 @@ input[type='checkbox']:checked {
 
   .gallery .edit-main button,
   .gallery .edit-main button[disabled] {
-      background-position: 5px center;
-    max-width: 60px;
-    min-width: 0;  /* Reset. */
+    background-position: 5px center;
+    flex: 0 1 auto;
+    min-width: 60px;
     padding: 0 10px 0 35px;
     width: auto;
   }
 
   .gallery > .toolbar button span {
-    display: inline;
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
     white-space: nowrap;
   }
 
