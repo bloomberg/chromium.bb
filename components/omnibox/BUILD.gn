@@ -19,6 +19,8 @@ static_library("omnibox") {
     "autocomplete_scheme_classifier.h",
     "base_search_provider.cc",
     "base_search_provider.h",
+    "history_provider.cc",
+    "history_provider.h",
     "in_memory_url_index_types.cc",
     "in_memory_url_index_types.h",
     "keyword_extensions_delegate.cc",
@@ -47,6 +49,7 @@ static_library("omnibox") {
   deps = [
     "//base",
     "//base:i18n",
+    "//components/bookmarks/browser",
     "//components/history/core/browser",
     "//components/resources",
     "//components/search",

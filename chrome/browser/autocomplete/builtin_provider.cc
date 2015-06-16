@@ -8,10 +8,10 @@
 
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/autocomplete/history_provider.h"
 #include "chrome/common/url_constants.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "components/omnibox/autocomplete_input.h"
+#include "components/omnibox/history_provider.h"
 #include "components/url_fixer/url_fixer.h"
 
 namespace {

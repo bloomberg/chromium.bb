@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_AUTOCOMPLETE_HISTORY_PROVIDER_H_
-#define CHROME_BROWSER_AUTOCOMPLETE_HISTORY_PROVIDER_H_
+#ifndef COMPONENTS_OMNIBOX_HISTORY_PROVIDER_H_
+#define COMPONENTS_OMNIBOX_HISTORY_PROVIDER_H_
 
 #include "base/compiler_specific.h"
 #include "components/omnibox/autocomplete_provider.h"
@@ -49,4 +49,4 @@ class HistoryProvider : public AutocompleteProvider {
   DISALLOW_COPY_AND_ASSIGN(HistoryProvider);
 };
 
-#endif  // CHROME_BROWSER_AUTOCOMPLETE_HISTORY_PROVIDER_H_
+#endif  // COMPONENTS_OMNIBOX_HISTORY_PROVIDER_H_

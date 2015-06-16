@@ -1,5 +1,6 @@
 include_rules = [
-  "+components/history",
+  "+components/bookmarks/browser",
+  "+components/history/core/browser",
   "+components/metrics/proto",
   "+components/search",
   "+components/search_engines",
