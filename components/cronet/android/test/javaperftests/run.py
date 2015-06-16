@@ -49,13 +49,13 @@ sys.path.append(os.path.join(REPOSITORY_ROOT, 'build/android'))
 import lighttpd_server
 from pylib import pexpect
 from pylib.device import intent
+from telemetry import android
 from telemetry import benchmark
 from telemetry import benchmark_runner
+from telemetry import story
 from telemetry.core import forwarders
 from telemetry.core.backends import adb_commands
 from telemetry.core.forwarders import android_forwarder
-from telemetry.user_story import android
-from telemetry.user_story import user_story_set
 from telemetry.value import scalar
 from telemetry.web_perf import timeline_based_measurement
 
@@ -119,7 +119,7 @@ def GetHttpServerURL(adb, resource):
   return 'http://%s:%d/%s' % (GetServersHost(adb), HTTP_PORT, resource)
 
 
-class CronetPerfTestUserStory(android.AppStory):
+class CronetPerfTestAndroidStory(android.AndroidStory):
   # Android AppStory implementation wrapping CronetPerfTest app.
   # Launches Cronet perf test app and waits for execution to complete
   # by waiting for presence of DONE_FILE.
@@ -139,7 +139,7 @@ class CronetPerfTestUserStory(android.AppStory):
         data='http://dummy/?'+urllib.urlencode(config),
         extras=None,
         category=None)
-    super(CronetPerfTestUserStory, self).__init__(
+    super(CronetPerfTestAndroidStory, self).__init__(
         start_intent, name='CronetPerfTest')
 
   def Run(self, shared_user_story_state):
@@ -147,17 +147,17 @@ class CronetPerfTestUserStory(android.AppStory):
       sleep(1.0)
 
 
-class CronetPerfTestUserStorySet(user_story_set.UserStorySet):
+class CronetPerfTestStorySet(story.StorySet):
 
   def __init__(self, adb):
-    super(CronetPerfTestUserStorySet, self).__init__()
-    # Create and add Cronet perf test UserStory.
-    self.AddUserStory(CronetPerfTestUserStory(adb))
+    super(CronetPerfTestStorySet, self).__init__()
+    # Create and add Cronet perf test AndroidStory.
+    self.AddUserStory(CronetPerfTestAndroidStory(adb))
 
 
 class CronetPerfTestMeasurement(
     timeline_based_measurement.TimelineBasedMeasurement):
-  # For now Android's UserStory's SharedAppState works only with
+  # For now AndroidStory's SharedAppState works only with
   # TimelineBasedMeasurements, so implement one that just forwards results from
   # Cronet perf test app.
 
@@ -182,7 +182,7 @@ class CronetPerfTestMeasurement(
 @benchmark.Enabled('android')
 class CronetPerfTestBenchmark(benchmark.Benchmark):
   # Benchmark implementation spawning off Cronet perf test measurement and
-  # UserStorySet.
+  # StorySet.
 
   def __init__(self, max_failures=None):
     super(CronetPerfTestBenchmark, self).__init__(max_failures)
@@ -191,8 +191,8 @@ class CronetPerfTestBenchmark(benchmark.Benchmark):
   def CreatePageTest(self, options):
     return CronetPerfTestMeasurement(self._adb, options)
 
-  def CreateUserStorySet(self, options):
-    return CronetPerfTestUserStorySet(self._adb)
+  def CreateStorySet(self, options):
+    return CronetPerfTestStorySet(self._adb)
 
 
 class QuicServer:
