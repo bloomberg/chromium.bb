@@ -173,14 +173,6 @@ struct desktop_shell {
 	} workspaces;
 
 	struct {
-		char *path;
-		int duration;
-		struct wl_resource *binding;
-		struct weston_process process;
-		struct wl_event_source *timer;
-	} screensaver;
-
-	struct {
 		struct wl_resource *binding;
 		struct wl_list surfaces;
 	} input_panel;

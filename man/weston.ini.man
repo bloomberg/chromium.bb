@@ -73,7 +73,6 @@ The section headers are:
 .BR "libinput       " "Input device configuration"
 .BR "shell          " "Desktop customization"
 .BR "launcher       " "Add launcher to the panel"
-.BR "screensaver    " "Screensaver selection"
 .BR "output         " "Output configuration"
 .BR "input-method   " "Onscreen keyboard input"
 .BR "keyboard       " "Keyboard layouts"
@@ -160,10 +159,7 @@ By default, xrgb8888 is used.
 .BI "idle-time="seconds
 sets Weston's idle timeout in seconds. This idle timeout is the time
 after which Weston will enter an "inactive" mode and screen will fade to
-black. Note that a screensaver may also start at this moment after fade-out
-(if enabled in the SCREENSAVER section below), but the current idle-time
-option has nothing to do with screensavers. A value of 0 disables the
-timeout.
+black. A value of 0 disables the timeout.
 
 .IR Important
 : This option may also be set via Weston's '-i' command
@@ -305,26 +301,6 @@ path=GDK_BACKEND=wayland gnome-terminal --full-screen
 .in
 .fi
 .PP
-.RE
-.SH "SCREENSAVER SECTION"
-The
-.B screensaver
-section is used to select and schedule a screensaver.
-The
-.B screensaver
-section is optional, as are all of the entries that may be specified in
-it.
-.TP 7
-.BI "path=" /usr/libexec/weston-screensaver
-This instructs the compositor to use the selected screensaver client on a given
-path (string). If this line is missing or commented out, the screensaver in
-.B "weston(1)"
-is disabled.
-.RE
-.TP 7
-.BI "duration=" 600
-The time in seconds until the screensaver disappears in order to save power
-(unsigned integer).
 .SH "OUTPUT SECTION"
 There can be multiple output sections, each corresponding to one output. It is
 currently only recognized by the drm and x11 backends.

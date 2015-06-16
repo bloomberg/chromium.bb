@@ -37,11 +37,6 @@ path=/usr/bin/google-chrome
 icon=/usr/share/icons/gnome/24x24/apps/arts.png
 path=@abs_top_builddir@/weston-flower
 
-[screensaver]
-# Comment path to disable screensaver
-path=@libexecdir@/weston-screensaver
-duration=600
-
 [input-method]
 path=@libexecdir@/weston-keyboard
 

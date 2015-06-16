@@ -134,8 +134,8 @@ Set the idle timeout to
 .I N
 seconds. The default timeout is 300 seconds. When there has not been any
 user input for the idle timeout, Weston enters an inactive mode. The
-screen fades to black, and depending on the shell in use, a screensaver
-may activate, monitors may switch off, and the shell may lock the session.
+screen fades to black, monitors may switch off, and the shell may lock
+the session.
 A value of 0 effectively disables the timeout.
 .TP
 \fB\-\-log\fR=\fIfile.log\fR

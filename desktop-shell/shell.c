@@ -607,16 +607,8 @@ static void
 shell_configuration(struct desktop_shell *shell)
 {
 	struct weston_config_section *section;
-	int duration;
 	char *s, *client;
 	int ret;
-
-	section = weston_config_get_section(shell->compositor->config,
-					    "screensaver", NULL, NULL);
-	weston_config_section_get_string(section,
-					 "path", &shell->screensaver.path, NULL);
-	weston_config_section_get_int(section, "duration", &duration, 60);
-	shell->screensaver.duration = duration * 1000;
 
 	section = weston_config_get_section(shell->compositor->config,
 					    "shell", NULL, NULL);
@@ -4296,65 +4288,6 @@ xdg_shell_unversioned_dispatch(const void *implementation,
 static void
 shell_fade(struct desktop_shell *shell, enum fade_type type);
 
-static int
-screensaver_timeout(void *data)
-{
-	struct desktop_shell *shell = data;
-
-	shell_fade(shell, FADE_OUT);
-
-	return 1;
-}
-
-static void
-handle_screensaver_sigchld(struct weston_process *proc, int status)
-{
-	struct desktop_shell *shell =
-		container_of(proc, struct desktop_shell, screensaver.process);
-
-	proc->pid = 0;
-
-	if (shell->locked)
-		weston_compositor_sleep(shell->compositor);
-}
-
-static void
-launch_screensaver(struct desktop_shell *shell)
-{
-	if (shell->screensaver.binding)
-		return;
-
-	if (!shell->screensaver.path) {
-		weston_compositor_sleep(shell->compositor);
-		return;
-	}
-
-	if (shell->screensaver.process.pid != 0) {
-		weston_log("old screensaver still running\n");
-		return;
-	}
-
-	weston_client_launch(shell->compositor,
-			   &shell->screensaver.process,
-			   shell->screensaver.path,
-			   handle_screensaver_sigchld);
-}
-
-static void
-terminate_screensaver(struct desktop_shell *shell)
-{
-	if (shell->screensaver.process.pid == 0)
-		return;
-
-	/* Disarm the screensaver timer, otherwise it may fire when the
-	 * compositor is not in the idle state. In that case, the screen will
-	 * be locked, but the wake_signal won't fire on user input, making the
-	 * system unresponsive. */
-	wl_event_source_timer_update(shell->screensaver.timer, 0);
-
-	kill(shell->screensaver.process.pid, SIGTERM);
-}
-
 static void
 configure_static_view(struct weston_view *ev, struct weston_layer *layer)
 {
@@ -4545,8 +4478,6 @@ static void
 resume_desktop(struct desktop_shell *shell)
 {
 	struct workspace *ws = get_current_workspace(shell);
-
-	terminate_screensaver(shell);
 
 	wl_list_remove(&shell->lock_layer.link);
 	if (shell->showing_input_panels) {
@@ -5223,8 +5154,6 @@ lock(struct desktop_shell *shell)
 	wl_list_remove(&ws->layer.link);
 	wl_list_insert(&shell->compositor->cursor_layer.link,
 		       &shell->lock_layer.link);
-
-	launch_screensaver(shell);
 
 	/* Remove the keyboard focus on all seats. This will be
 	 * restored to the workspace's saved state via
@@ -5919,97 +5848,6 @@ bind_desktop_shell(struct wl_client *client,
 			       "permission to bind desktop_shell denied");
 }
 
-static int
-screensaver_get_label(struct weston_surface *surface, char *buf, size_t len)
-{
-	return snprintf(buf, len, "screensaver for output %s",
-			surface->output->name);
-}
-
-static void
-screensaver_configure(struct weston_surface *surface, int32_t sx, int32_t sy)
-{
-	struct desktop_shell *shell = surface->configure_private;
-	struct weston_view *view;
-	struct weston_layer_entry *prev;
-
-	if (surface->width == 0)
-		return;
-
-	/* XXX: starting weston-screensaver beforehand does not work */
-	if (!shell->locked)
-		return;
-
-	view = container_of(surface->views.next, struct weston_view, surface_link);
-	center_on_output(view, surface->output);
-
-	if (wl_list_empty(&view->layer_link.link)) {
-		prev = container_of(shell->lock_layer.view_list.link.prev,
-				    struct weston_layer_entry, link);
-		weston_layer_entry_insert(prev, &view->layer_link);
-		weston_view_update_transform(view);
-		wl_event_source_timer_update(shell->screensaver.timer,
-					     shell->screensaver.duration);
-		shell_fade(shell, FADE_IN);
-	}
-}
-
-static void
-screensaver_set_surface(struct wl_client *client,
-			struct wl_resource *resource,
-			struct wl_resource *surface_resource,
-			struct wl_resource *output_resource)
-{
-	struct desktop_shell *shell = wl_resource_get_user_data(resource);
-	struct weston_surface *surface =
-		wl_resource_get_user_data(surface_resource);
-	struct weston_output *output = wl_resource_get_user_data(output_resource);
-	struct weston_view *view, *next;
-
-	/* Make sure we only have one view */
-	wl_list_for_each_safe(view, next, &surface->views, surface_link)
-		weston_view_destroy(view);
-	weston_view_create(surface);
-
-	surface->configure = screensaver_configure;
-	surface->configure_private = shell;
-	weston_surface_set_label_func(surface, screensaver_get_label);
-	surface->output = output;
-}
-
-static const struct screensaver_interface screensaver_implementation = {
-	screensaver_set_surface
-};
-
-static void
-unbind_screensaver(struct wl_resource *resource)
-{
-	struct desktop_shell *shell = wl_resource_get_user_data(resource);
-
-	shell->screensaver.binding = NULL;
-}
-
-static void
-bind_screensaver(struct wl_client *client,
-		 void *data, uint32_t version, uint32_t id)
-{
-	struct desktop_shell *shell = data;
-	struct wl_resource *resource;
-
-	resource = wl_resource_create(client, &screensaver_interface, 1, id);
-
-	if (shell->screensaver.binding == NULL) {
-		wl_resource_set_implementation(resource,
-					       &screensaver_implementation,
-					       shell, unbind_screensaver);
-		shell->screensaver.binding = resource;
-		return;
-	}
-
-	wl_resource_post_error(resource, WL_DISPLAY_ERROR_INVALID_OBJECT,
-			       "interface object already bound");
-}
-
 struct switcher {
 	struct desktop_shell *shell;
 	struct weston_surface *current;
@@ -6506,8 +6344,6 @@ shell_destroy(struct wl_listener *listener, void *data)
 		wl_client_destroy(shell->child.client);
 	}
 
-	wl_event_source_remove(shell->screensaver.timer);
-
 	wl_list_remove(&shell->idle_listener.link);
 	wl_list_remove(&shell->wake_listener.link);
 
@@ -6526,7 +6362,6 @@ shell_destroy(struct wl_listener *listener, void *data)
 		workspace_destroy(*ws);
 	wl_array_release(&shell->workspaces.array);
 
-	free(shell->screensaver.path);
 	free(shell->client);
 	free(shell);
 }
@@ -6716,10 +6551,6 @@ module_init(struct weston_compositor *ec,
 			     shell, bind_desktop_shell) == NULL)
 		return -1;
 
-	if (wl_global_create(ec->wl_display, &screensaver_interface, 1,
-			     shell, bind_screensaver) == NULL)
-		return -1;
-
 	if (wl_global_create(ec->wl_display, &workspace_manager_interface, 1,
 			     shell, bind_workspace_manager) == NULL)
 		return -1;
@@ -6732,9 +6563,6 @@ module_init(struct weston_compositor *ec,
 
 	loop = wl_display_get_event_loop(ec->wl_display);
 	wl_event_loop_add_idle(loop, launch_desktop_shell_process, shell);
-
-	shell->screensaver.timer =
-		wl_event_loop_add_timer(loop, screensaver_timeout, shell);
 
 	wl_list_for_each(seat, &ec->seat_list, link)
 		handle_seat_created(NULL, seat);
