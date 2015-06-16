@@ -14,7 +14,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/base/scoped_ptr_algorithm.h"
-#include "cc/layers/content_layer.h"
 #include "cc/layers/delegated_renderer_layer.h"
 #include "cc/layers/nine_patch_layer.h"
 #include "cc/layers/picture_layer.h"
@@ -46,15 +45,6 @@ const ui::Layer* GetRoot(const ui::Layer* layer) {
     layer = layer->parent();
   return layer;
 }
-
-struct UIImplSidePaintingStatus {
-  UIImplSidePaintingStatus()
-      : enabled(ui::IsUIImplSidePaintingEnabled()) {
-  }
-  bool enabled;
-};
-base::LazyInstance<UIImplSidePaintingStatus> g_ui_impl_side_painting_status =
-    LAZY_INSTANCE_INITIALIZER;
 
 base::LazyInstance<cc::LayerSettings> g_ui_layer_settings =
     LAZY_INSTANCE_INITIALIZER;
@@ -131,11 +121,6 @@ Layer::~Layer() {
 
   cc_layer_->RemoveLayerAnimationEventObserver(this);
   cc_layer_->RemoveFromParent();
-}
-
-// static
-bool Layer::UsingPictureLayer() {
-  return g_ui_impl_side_painting_status.Get().enabled;
 }
 
 // static
@@ -543,11 +528,8 @@ void Layer::SwitchToLayer(scoped_refptr<cc::Layer> new_layer) {
 }
 
 void Layer::SwitchCCLayerForTest() {
-  scoped_refptr<cc::Layer> new_layer;
-  if (Layer::UsingPictureLayer())
-    new_layer = cc::PictureLayer::Create(UILayerSettings(), this);
-  else
-    new_layer = cc::ContentLayer::Create(UILayerSettings(), this);
+  scoped_refptr<cc::Layer> new_layer =
+      cc::PictureLayer::Create(UILayerSettings(), this);
   SwitchToLayer(new_layer);
   content_layer_ = new_layer;
 }
@@ -1063,10 +1045,7 @@ void Layer::CreateCcLayer() {
     nine_patch_layer_ = cc::NinePatchLayer::Create(UILayerSettings());
     cc_layer_ = nine_patch_layer_.get();
   } else {
-    if (Layer::UsingPictureLayer())
-      content_layer_ = cc::PictureLayer::Create(UILayerSettings(), this);
-    else
-      content_layer_ = cc::ContentLayer::Create(UILayerSettings(), this);
+    content_layer_ = cc::PictureLayer::Create(UILayerSettings(), this);
     cc_layer_ = content_layer_.get();
   }
   cc_layer_->SetTransformOrigin(gfx::Point3F());

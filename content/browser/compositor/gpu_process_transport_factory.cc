@@ -110,10 +110,8 @@ GpuProcessTransportFactory::GpuProcessTransportFactory()
   if (UseSurfacesEnabled())
     surface_manager_ = make_scoped_ptr(new cc::SurfaceManager);
 
-  if (ui::IsUIImplSidePaintingEnabled()) {
-    raster_thread_.reset(new RasterThread(task_graph_runner_.get()));
-    raster_thread_->Start();
-  }
+  raster_thread_.reset(new RasterThread(task_graph_runner_.get()));
+  raster_thread_->Start();
 #if defined(OS_WIN)
   software_backing_.reset(new OutputDeviceBacking);
 #endif

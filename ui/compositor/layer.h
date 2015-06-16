@@ -76,8 +76,6 @@ class COMPOSITOR_EXPORT Layer
   explicit Layer(LayerType type);
   ~Layer() override;
 
-  static bool UsingPictureLayer();
-
   static const cc::LayerSettings& UILayerSettings();
   static void InitializeUILayerSettings();
 

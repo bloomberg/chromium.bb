@@ -20,8 +20,6 @@ const char kUIDisableThreadedCompositing[] = "ui-disable-threaded-compositing";
 const char kUIEnableCompositorAnimationTimelines[] =
     "ui-enable-compositor-animation-timelines";
 
-const char kUIDisableImplSidePainting[] = "ui-disable-impl-side-painting";
-
 const char kUIDisableSlimmingPaint[] = "ui-disable-slimming-paint";
 
 const char kUIEnableZeroCopy[] = "ui-enable-zero-copy";
@@ -31,13 +29,6 @@ const char kUIShowPaintRects[] = "ui-show-paint-rects";
 }  // namespace switches
 
 namespace ui {
-
-bool IsUIImplSidePaintingEnabled() {
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-
-  return !command_line.HasSwitch(switches::kUIDisableImplSidePainting);
-}
 
 bool IsUIZeroCopyEnabled() {
   const base::CommandLine& command_line =
