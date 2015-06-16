@@ -106,7 +106,6 @@ public:
     virtual bool asNumber(unsigned long* output) const;
     virtual bool asNumber(unsigned* output) const;
     virtual bool asString(String* output) const;
-    virtual bool asValue(RefPtr<JSONValue>* output);
     virtual bool asObject(RefPtr<JSONObject>* output);
     virtual bool asArray(RefPtr<JSONArray>* output);
     virtual PassRefPtr<JSONObject> asObject();

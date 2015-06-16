@@ -130,12 +130,6 @@ bool JSONValue::asString(String*) const
     return false;
 }
 
-bool JSONValue::asValue(RefPtr<JSONValue>* output)
-{
-    *output = this;
-    return true;
-}
-
 bool JSONValue::asObject(RefPtr<JSONObject>*)
 {
     return false;
