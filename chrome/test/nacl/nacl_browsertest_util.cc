@@ -301,7 +301,7 @@ void NaClBrowserTestNonSfiMode::SetUpCommandLine(
 void NaClBrowserTestTransitionalNonSfi::SetUpCommandLine(
     base::CommandLine* command_line) {
   NaClBrowserTestNonSfiMode::SetUpCommandLine(command_line);
-  command_line->AppendSwitch(switches::kUseNaClHelperNonSfi);
+  command_line->AppendSwitchASCII(switches::kUseNaClHelperNonSfi, "false");
 }
 
 base::FilePath::StringType NaClBrowserTestStatic::Variant() {

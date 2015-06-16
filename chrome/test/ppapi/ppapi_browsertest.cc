@@ -1394,14 +1394,15 @@ class NonSfiPackagedAppTest : public PackagedAppTest {
   }
 };
 
-// TODO(hidehiko): Switch for NonSfi tests to use nacl_helper_nonsfi, when
-// it is launched officially. See NaClBrowserTestPnaclTransitionalNonSfi
+// TODO(hidehiko): Remove this when clean-up to drop Non-SFI support from
+// nacl_helper is done. See NaClBrowserTestPnaclTransitionalNonSfi
 // for more details.
 class TransitionalNonSfiPackagedAppTest : public NonSfiPackagedAppTest {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     NonSfiPackagedAppTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kUseNaClHelperNonSfi);
+    command_line->AppendSwitchASCII(switches::kUseNaClHelperNonSfi,
+                                    "false");
   }
 };
 
