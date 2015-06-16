@@ -142,6 +142,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   scoped_ptr<PowerSaveBlockerImpl> power_save_blocker_;
 #endif
   scoped_ptr<DevToolsProtocolHandler> protocol_handler_;
+  bool current_frame_crashed_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameDevToolsAgentHost);
 };

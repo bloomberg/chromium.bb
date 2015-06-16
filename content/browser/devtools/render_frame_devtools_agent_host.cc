@@ -306,7 +306,8 @@ RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(
       protocol_handler_(new DevToolsProtocolHandler(
           this,
           base::Bind(&RenderFrameDevToolsAgentHost::SendMessageToClient,
-                     base::Unretained(this)))) {
+                     base::Unretained(this)))),
+      current_frame_crashed_(false) {
   DevToolsProtocolDispatcher* dispatcher = protocol_handler_->dispatcher();
   dispatcher->SetDOMHandler(dom_handler_.get());
   dispatcher->SetInputHandler(input_handler_.get());
@@ -336,6 +337,7 @@ RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(
 
 void RenderFrameDevToolsAgentHost::SetPending(RenderFrameHostImpl* host) {
   DCHECK(!pending_);
+  current_frame_crashed_ = false;
   pending_.reset(new FrameHostHolder(this, host));
   if (IsAttached())
     pending_->Reattach(current_.get());
@@ -350,6 +352,7 @@ void RenderFrameDevToolsAgentHost::SetPending(RenderFrameHostImpl* host) {
 
 void RenderFrameDevToolsAgentHost::CommitPending() {
   DCHECK(pending_);
+  current_frame_crashed_ = false;
 
   if (!ShouldCreateDevToolsFor(pending_->host())) {
     DestroyOnRenderFrameGone();
@@ -467,7 +470,7 @@ void RenderFrameDevToolsAgentHost::AboutToNavigateRenderFrame(
   DCHECK(!pending_ || pending_->host() != old_host);
   if (!current_ || current_->host() != old_host)
     return;
-  if (old_host == new_host)
+  if (old_host == new_host && !current_frame_crashed_)
     return;
   DCHECK(!pending_);
   SetPending(static_cast<RenderFrameHostImpl*>(new_host));
@@ -499,7 +502,8 @@ void RenderFrameDevToolsAgentHost::FrameDeleted(RenderFrameHost* rfh) {
 }
 
 void RenderFrameDevToolsAgentHost::RenderFrameDeleted(RenderFrameHost* rfh) {
-  FrameDeleted(rfh);
+  if (!current_frame_crashed_)
+    FrameDeleted(rfh);
 }
 
 void RenderFrameDevToolsAgentHost::DestroyOnRenderFrameGone() {
@@ -526,6 +530,7 @@ void RenderFrameDevToolsAgentHost::RenderProcessGone(
     case base::TERMINATION_STATUS_OOM_PROTECTED:
 #endif
       inspector_handler_->TargetCrashed();
+      current_frame_crashed_ = true;
       break;
     default:
       break;
@@ -585,6 +590,8 @@ void RenderFrameDevToolsAgentHost::DidCommitProvisionalLoadForFrame(
     RenderFrameHost* render_frame_host,
     const GURL& url,
     ui::PageTransition transition_type) {
+  if (pending_ && pending_->host() == render_frame_host)
+    CommitPending();
   service_worker_handler_->UpdateHosts();
 }
 
