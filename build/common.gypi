@@ -4791,6 +4791,7 @@
               '-pthread',  # Not supported by Android toolchain.
             ],
             'ldflags': [
+              '-Wl,--build-id=sha1',
               '-Wl,--no-undefined',
               '--sysroot=<(android_ndk_sysroot)',
               '-nostdlib',
