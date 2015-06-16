@@ -36,7 +36,7 @@ public class DocumentModeLowEndTest extends DocumentModeTestBase {
     @Restriction(RESTRICTION_TYPE_LOW_END_DEVICE)
     @MediumTest
     public void testNewTabLoadLowEnd() throws Exception {
-        launchTestPageDocument(HREF_LINK);
+        launchViaLaunchDocumentInstance(false, HREF_LINK, "href link page");
 
         final CallbackHelper tabCreatedCallback = new CallbackHelper();
         final CallbackHelper tabLoadStartedCallback = new CallbackHelper();
@@ -78,7 +78,7 @@ public class DocumentModeLowEndTest extends DocumentModeTestBase {
     @Restriction(RESTRICTION_TYPE_LOW_END_DEVICE)
     @MediumTest
     public void testNewTabRenderersLowEnd() throws Exception {
-        launchTestPageDocument(HREF_LINK);
+        launchViaLaunchDocumentInstance(false, HREF_LINK, "href link page");
 
         // Ignore any side effects that the first background tab might produce.
         openLinkInBackgroundTab();

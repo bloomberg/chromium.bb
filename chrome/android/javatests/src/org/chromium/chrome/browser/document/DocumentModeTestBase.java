@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
+import android.text.TextUtils;
 import android.view.ContextMenu;
 import android.view.View;
 
@@ -44,28 +45,19 @@ import java.util.concurrent.Callable;
 @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
 @DisableInTabbedMode
 public class DocumentModeTestBase extends MultiActivityTestBase {
-    protected static final String URL_1 = "data:text/html;charset=utf-8,Page%201";
-    protected static final String URL_2 = "data:text/html;charset=utf-8,Page%202";
-    protected static final String URL_3 = "data:text/html;charset=utf-8,Page%203";
-    protected static final String URL_4 = "data:text/html;charset=utf-8,Page%204";
+    protected static final String TAG = "cr.document";
+    protected static final String TEST_DIRECTORY = "DocumentModeTestBase";
 
-    protected static final String LANDING_PAGE = UrlUtils.encodeHtmlDataUri(
-            "<html>"
-            + "  <head>"
-            + "    <meta name='viewport' content='width=device-width "
-            + "        initial-scale=1.0, maximum-scale=1.0'>"
-            + "    <style>"
-            + "        body {margin: 0em;} div {width: 100%; height: 100%; background: #ff00ff;}"
-            + "    </style>"
-            + "  </head>"
-            + "  <body>Second page</body>"
-            + "</html>");
-    protected static final float LANDING_PAGE_SCALE = 1.0f;
+    protected static final String URL_1 = createTestUrl(1);
+    protected static final String URL_2 = createTestUrl(2);
+    protected static final String URL_3 = createTestUrl(3);
+    protected static final String URL_4 = createTestUrl(4);
 
     // Defines one gigantic link spanning the whole page that creates a new window.
     protected static final String HREF_LINK = UrlUtils.encodeHtmlDataUri(
             "<html>"
             + "  <head>"
+            + "    <title>href link page</title>"
             + "    <meta name='viewport'"
             + "        content='width=device-width initial-scale=0.5, maximum-scale=0.5'>"
             + "    <style>"
@@ -73,26 +65,32 @@ public class DocumentModeTestBase extends MultiActivityTestBase {
             + "    </style>"
             + "  </head>"
             + "  <body>"
-            + "    <a href='" + LANDING_PAGE + "' target='_blank'><div></div></a>"
+            + "    <a href='" + URL_4 + "' target='_blank'><div></div></a>"
             + "  </body>"
             + "</html>");
 
     // Clicking the body triggers a window.open() call.
+    protected static final String SUCCESS_URL = UrlUtils.encodeHtmlDataUri("opened!");
     protected static final String ONCLICK_LINK = UrlUtils.encodeHtmlDataUri(
             "<html>"
             + "  <head>"
+            + "    <title>window.open page</title>"
             + "    <meta name='viewport'"
             + "        content='width=device-width initial-scale=0.5, maximum-scale=0.5'>"
             + "    <style>"
             + "      body {margin: 0em;} div {width: 100%; height: 100%; background: #011684;}"
             + "    </style>"
+            + "    <script>"
+            + "      function openNewWindow() {"
+            + "        if (window.open('" + URL_4 + "')) location.href = '" + SUCCESS_URL + "';"
+            + "      }"
+            + "    </script>"
             + "  </head>"
             + "  <body id='body'>"
-            + "    <div onclick='window.open(\"" + LANDING_PAGE + "\")'></div></a>"
+            + "    <div onclick='openNewWindow()'></div></a>"
             + "  </body>"
             + "</html>");
 
-    private static final float HTML_SCALE = 0.5f;
     private static final float FLOAT_EPSILON = 0.001f;
 
     private static class TestTabObserver extends EmptyTabObserver {
@@ -127,9 +125,9 @@ public class DocumentModeTestBase extends MultiActivityTestBase {
      */
     protected int[] launchThreeTabs() throws Exception {
         int[] tabIds = new int[3];
-        tabIds[0] = launchViaViewIntent(false, URL_1);
-        tabIds[1] = launchViaViewIntent(false, URL_2);
-        tabIds[2] = launchViaViewIntent(false, URL_3);
+        tabIds[0] = launchViaViewIntent(false, URL_1, "Page 1");
+        tabIds[1] = launchViaViewIntent(false, URL_2, "Page 2");
+        tabIds[2] = launchViaViewIntent(false, URL_3, "Page 3");
         assertFalse(tabIds[0] == tabIds[1]);
         assertFalse(tabIds[0] == tabIds[2]);
         assertFalse(tabIds[1] == tabIds[2]);
@@ -145,7 +143,8 @@ public class DocumentModeTestBase extends MultiActivityTestBase {
     }
 
     /** Starts a DocumentActivity by using firing a VIEW Intent. */
-    protected int launchViaViewIntent(final boolean incognito, final String url) throws Exception {
+    protected int launchViaViewIntent(final boolean incognito, final String url,
+            final String expectedTitle) throws Exception {
         // Fire the Intent and wait until Chrome is in the foreground.
         Runnable runnable = new Runnable() {
             @Override
@@ -153,7 +152,7 @@ public class DocumentModeTestBase extends MultiActivityTestBase {
                 Runnable runnable = new Runnable() {
                     @Override
                     public void run() {
-                        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(URL_1));
+                        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                         intent.setClass(mContext, ChromeLauncherActivity.class);
                         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         if (incognito) {
@@ -169,12 +168,12 @@ public class DocumentModeTestBase extends MultiActivityTestBase {
                         runnable);
             }
         };
-        return launchUrlViaRunnable(incognito, runnable);
+        return launchUrlViaRunnable(incognito, runnable, expectedTitle);
     }
 
     /** Starts a DocumentActivity using {@ref ChromeLauncherActivity.launchDocumentInstance().} */
-    protected int launchViaLaunchDocumentInstance(
-            final boolean incognito, final String url) throws Exception {
+    protected int launchViaLaunchDocumentInstance(final boolean incognito, final String url,
+            final String expectedTitle) throws Exception {
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
@@ -183,7 +182,7 @@ public class DocumentModeTestBase extends MultiActivityTestBase {
                         DocumentMetricIds.STARTED_BY_UNKNOWN, PageTransition.LINK, false, null);
             }
         };
-        return launchUrlViaRunnable(incognito, runnable);
+        return launchUrlViaRunnable(incognito, runnable, expectedTitle);
     }
 
     /**
@@ -193,8 +192,8 @@ public class DocumentModeTestBase extends MultiActivityTestBase {
      * test suite runs.
      * @return ID of the Tab that was launched.
      */
-    protected int launchUrlViaRunnable(final boolean incognito, final Runnable runnable)
-            throws Exception {
+    protected int launchUrlViaRunnable(final boolean incognito, final Runnable runnable,
+            final String expectedTitle) throws Exception {
         final int tabCount =
                 ChromeMobileApplication.isDocumentTabModelSelectorInitializedForTests()
                 ? ChromeMobileApplication.getDocumentTabModelSelector().getModel(incognito)
@@ -204,7 +203,11 @@ public class DocumentModeTestBase extends MultiActivityTestBase {
                 ? ChromeMobileApplication.getDocumentTabModelSelector().getCurrentTabId()
                 : Tab.INVALID_TAB_ID;
 
-        runnable.run();
+        // Wait for the Activity to start up.
+        final DocumentActivity newActivity = (DocumentActivity) ActivityUtils.waitForActivity(
+                getInstrumentation(),
+                incognito ? IncognitoDocumentActivity.class : DocumentActivity.class, runnable);
+
         assertTrue(ChromeMobileApplication.isDocumentTabModelSelectorInitializedForTests());
         MultiActivityTestBase.waitUntilChromeInForeground();
 
@@ -225,21 +228,36 @@ public class DocumentModeTestBase extends MultiActivityTestBase {
             }
         }));
 
+        waitForFullLoad(newActivity, expectedTitle);
         return ChromeMobileApplication.getDocumentTabModelSelector().getCurrentTabId();
     }
 
     /**
-     * Launches DocumentActivity with a page that can be used to create a second page.
+     * Approximates when a DocumentActivity is fully ready and loaded, which is hard to gauge
+     * because Android's Activity transition animations are not monitorable.
      */
-    protected void launchTestPageDocument(String link) throws Exception {
-        launchViaLaunchDocumentInstance(false, link);
-        final DocumentActivity activity =
-                (DocumentActivity) ApplicationStatus.getLastTrackedFocusedActivity();
-        assertWaitForPageScaleFactorMatch(activity, HTML_SCALE);
+    protected void waitForFullLoad(final DocumentActivity activity, final String expectedTitle)
+            throws Exception {
+        assertWaitForPageScaleFactorMatch(activity, 0.5f);
+        final Tab tab = activity.getActivityTab();
+        assert tab != null;
+
+        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                if (!tab.isLoadingAndRenderingDone()) return false;
+                if (!TextUtils.equals(expectedTitle, tab.getTitle())) return false;
+                return true;
+            }
+        }));
     }
 
-    // TODO(dfalcantara): Combine this one and ChromeActivityTestCaseBase's.
-    protected void assertWaitForPageScaleFactorMatch(
+    /**
+     * Proper use of this function requires waiting for a page scale factor that isn't 1.0f because
+     * the default seems to be 1.0f.
+     * TODO(dfalcantara): Combine this one and ChromeActivityTestCaseBase's (crbug.com/498973)
+     */
+    private void assertWaitForPageScaleFactorMatch(
             final ChromeActivity activity, final float expectedScale) throws Exception {
         assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
@@ -307,8 +325,8 @@ public class DocumentModeTestBase extends MultiActivityTestBase {
         }));
         activity.getActivityTab().removeObserver(observer);
 
-        // Select the "open in new tab" option to open a tab in the background.
-        ChromeActivity newActivity = ActivityUtils.waitForActivity(getInstrumentation(),
+        // Select the "open in new tab" option.
+        DocumentActivity newActivity = ActivityUtils.waitForActivity(getInstrumentation(),
                 incognito ? IncognitoDocumentActivity.class : DocumentActivity.class,
                 new Runnable() {
                     @Override
@@ -323,6 +341,19 @@ public class DocumentModeTestBase extends MultiActivityTestBase {
                     }
                 }
         );
-        assertWaitForPageScaleFactorMatch(newActivity, LANDING_PAGE_SCALE);
+        waitForFullLoad(newActivity, "Page 4");
+    }
+
+    private static final String createTestUrl(int index) {
+        String[] colors = {"#000000", "#ff0000", "#00ff00", "#0000ff", "#ffff00"};
+        return UrlUtils.encodeHtmlDataUri(
+            "<html>"
+            + "  <head>"
+            + "    <title>Page " + index + "</title>"
+            + "    <meta name='viewport' content='width=device-width "
+            + "        initial-scale=0.5 maximum-scale=0.5'>"
+            + "  </head>"
+            + "  <body style='margin: 0em; background: " + colors[index] + ";'></body>"
+            + "</html>");
     }
 }
