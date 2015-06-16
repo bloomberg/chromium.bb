@@ -54,7 +54,8 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   };
 
   // Helper function to determine if the navigation request to |url| should be
-  // sent to the network stack.
+  // sent to the network stack. It will not be sent for data URLs or JavaScript
+  // URLs, cases where no network request needs to be made.
   static bool ShouldMakeNetworkRequest(const GURL& url);
 
   // Creates a request for a browser-intiated navigation.

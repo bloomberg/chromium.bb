@@ -116,10 +116,6 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
                          NavigationController::ReloadType reload_type,
                          base::TimeTicks navigation_start);
 
-  // PlzNavigate: sends the NavigationRequest for |frame_tree_node| to the
-  // network stack so that it can start.
-  void BeginNavigation(FrameTreeNode* frame_tree_node);
-
   void RecordNavigationMetrics(
       const LoadCommittedDetails& details,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params,

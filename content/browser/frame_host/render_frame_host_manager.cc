@@ -701,7 +701,8 @@ void RenderFrameHostManager::ResetProxyHosts() {
 }
 
 // PlzNavigate
-void RenderFrameHostManager::BeginNavigation(const NavigationRequest& request) {
+void RenderFrameHostManager::DidCreateNavigationRequest(
+    const NavigationRequest& request) {
   CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableBrowserSideNavigation));
   // Clean up any state in case there's an ongoing navigation.

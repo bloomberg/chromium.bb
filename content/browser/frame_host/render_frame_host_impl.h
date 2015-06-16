@@ -347,6 +347,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // PlzNavigate: this call happens on all browser-initiated navigations.
   void DispatchBeforeUnload(bool for_navigation);
 
+  // Returns true if a call to DispatchBeforeUnload will actually send the
+  // BeforeUnload IPC. This is the case if the current renderer is live and this
+  // frame is the main frame.
+  bool ShouldDispatchBeforeUnload();
+
   // Set the frame's opener to null in the renderer process in response to an
   // action in another renderer process.
   void DisownOpener();

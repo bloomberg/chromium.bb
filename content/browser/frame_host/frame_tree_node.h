@@ -162,7 +162,8 @@ class CONTENT_EXPORT FrameTreeNode {
   // NavigationRequest of this frame. This corresponds to the start of a new
   // navigation. If there was an ongoing navigation request before calling this
   // function, it is canceled. |navigation_request| should not be null.
-  void SetNavigationRequest(scoped_ptr<NavigationRequest> navigation_request);
+  void CreatedNavigationRequest(
+      scoped_ptr<NavigationRequest> navigation_request);
 
   // PlzNavigate
   // Resets the current navigation request. |is_commit| is true if the reset is

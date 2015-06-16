@@ -600,8 +600,9 @@ void NavigatorImpl::OnBeforeUnloadACK(FrameTreeNode* frame_tree_node,
   DCHECK_EQ(NavigationRequest::WAITING_FOR_RENDERER_RESPONSE,
             navigation_request->state());
 
+  // If the navigation is allowed to proceed, send the request to the IO thread.
   if (proceed)
-    BeginNavigation(frame_tree_node);
+    navigation_request->BeginNavigation();
   else
     CancelNavigation(frame_tree_node);
 }
@@ -634,12 +635,12 @@ void NavigatorImpl::OnBeginNavigation(
 
   // In all other cases the current navigation, if any, is canceled and a new
   // NavigationRequest is created for the node.
-  scoped_ptr<NavigationRequest> navigation_request =
+  frame_tree_node->CreatedNavigationRequest(
       NavigationRequest::CreateRendererInitiated(
           frame_tree_node, common_params, begin_params, body,
           controller_->GetLastCommittedEntryIndex(),
-          controller_->GetEntryCount());
-  frame_tree_node->SetNavigationRequest(navigation_request.Pass());
+          controller_->GetEntryCount()));
+  NavigationRequest* navigation_request = frame_tree_node->navigation_request();
 
   if (frame_tree_node->IsMainFrame()) {
     // Renderer-initiated main-frame navigations that need to swap processes
@@ -655,7 +656,7 @@ void NavigatorImpl::OnBeginNavigation(
     navigation_data_.reset();
   }
 
-  BeginNavigation(frame_tree_node);
+  navigation_request->BeginNavigation();
 }
 
 // PlzNavigate
@@ -803,42 +804,30 @@ void NavigatorImpl::RequestNavigation(
   CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableBrowserSideNavigation));
   DCHECK(frame_tree_node);
+
+  // This value must be set here because creating a NavigationRequest might
+  // change the renderer live/non-live status and change this result.
+  bool should_dispatch_beforeunload =
+      frame_tree_node->current_frame_host()->ShouldDispatchBeforeUnload();
   FrameMsg_Navigate_Type::Value navigation_type =
       GetNavigationType(controller_->GetBrowserContext(), entry, reload_type);
-  scoped_ptr<NavigationRequest> navigation_request =
+  frame_tree_node->CreatedNavigationRequest(
       NavigationRequest::CreateBrowserInitiated(frame_tree_node, entry,
                                                 navigation_type,
-                                                navigation_start, controller_);
-  frame_tree_node->SetNavigationRequest(navigation_request.Pass());
-  frame_tree_node->navigation_request()->SetWaitingForRendererResponse();
-
-  // Have the current renderer execute its beforeUnload event if needed. If it
-  // is not needed (eg. the renderer is not live), BeginNavigation should get
-  // called. If the navigation is synchronous and same-site, then it can be sent
-  // directly to the renderer (currently this is the case for navigations that
-  // do not make network requests such as data urls or Javascript urls).
-  if (NavigationRequest::ShouldMakeNetworkRequest(
-          frame_tree_node->navigation_request()->common_params().url)) {
-    frame_tree_node->current_frame_host()->DispatchBeforeUnload(true);
-  } else {
-    BeginNavigation(frame_tree_node);
-  }
-}
-
-void NavigatorImpl::BeginNavigation(FrameTreeNode* frame_tree_node) {
+                                                navigation_start, controller_));
   NavigationRequest* navigation_request = frame_tree_node->navigation_request();
 
-  // A browser-initiated navigation could have been cancelled while it was
-  // waiting for the BeforeUnload event to execute.
-  if (!navigation_request)
-    return;
-
-  // Start the request.
-   if (navigation_request->BeginNavigation()) {
-    // If the request was sent to the IO thread, notify the
-    // RenderFrameHostManager so it can speculatively create a RenderFrameHost
-    // (and potentially a new renderer process) in parallel.
-    frame_tree_node->render_manager()->BeginNavigation(*navigation_request);
+  // Have the current renderer execute its beforeunload event if needed. If it
+  // is not needed (when beforeunload dispatch is not needed or this navigation
+  // is synchronous and same-site) then NavigationRequest::BeginNavigation
+  // should be directly called instead.
+  if (should_dispatch_beforeunload &&
+      NavigationRequest::ShouldMakeNetworkRequest(
+          navigation_request->common_params().url)) {
+    navigation_request->SetWaitingForRendererResponse();
+    frame_tree_node->current_frame_host()->DispatchBeforeUnload(true);
+  } else {
+    navigation_request->BeginNavigation();
   }
 }
 

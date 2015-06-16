@@ -249,7 +249,7 @@ bool FrameTreeNode::CommitPendingSandboxFlags() {
   return did_change_flags;
 }
 
-void FrameTreeNode::SetNavigationRequest(
+void FrameTreeNode::CreatedNavigationRequest(
     scoped_ptr<NavigationRequest> navigation_request) {
   CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableBrowserSideNavigation));
@@ -266,6 +266,8 @@ void FrameTreeNode::SetNavigationRequest(
   }
 
   navigation_request_ = navigation_request.Pass();
+
+  render_manager()->DidCreateNavigationRequest(*navigation_request_);
 }
 
 void FrameTreeNode::ResetNavigationRequest(bool is_commit) {

@@ -384,9 +384,10 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   int GetRoutingIdForSiteInstance(SiteInstance* site_instance);
 
   // PlzNavigate
-  // Notifies the RFHM that a navigation has begun so that it can speculatively
-  // create a new RenderFrameHost (and potentially a new process) if needed.
-  void BeginNavigation(const NavigationRequest& request);
+  // Notifies the RenderFrameHostManager that a new NavigationRequest has been
+  // created and set in the FrameTreeNode so that it can speculatively create a
+  // new RenderFrameHost (and potentially a new process) if needed.
+  void DidCreateNavigationRequest(const NavigationRequest& request);
 
   // PlzNavigate
   // Called (possibly several times) during a navigation to select or create an

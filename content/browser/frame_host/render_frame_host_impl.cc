@@ -1695,16 +1695,12 @@ void RenderFrameHostImpl::Stop() {
 void RenderFrameHostImpl::DispatchBeforeUnload(bool for_navigation) {
   // TODO(creis): Support beforeunload on subframes.  For now just pretend that
   // the handler ran and allowed the navigation to proceed.
-  if (GetParent() || !IsRenderFrameLive()) {
-    // We don't have a live renderer, so just skip running beforeunload.
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnableBrowserSideNavigation)) {
-      frame_tree_node_->navigator()->OnBeforeUnloadACK(
-          frame_tree_node_, true);
-    } else {
-      frame_tree_node_->render_manager()->OnBeforeUnloadACK(
-          for_navigation, true, base::TimeTicks::Now());
-    }
+  if (!ShouldDispatchBeforeUnload()) {
+    DCHECK(!(base::CommandLine::ForCurrentProcess()->HasSwitch(
+                 switches::kEnableBrowserSideNavigation) &&
+             for_navigation));
+    frame_tree_node_->render_manager()->OnBeforeUnloadACK(
+        for_navigation, true, base::TimeTicks::Now());
     return;
   }
   TRACE_EVENT_ASYNC_BEGIN0(
@@ -1735,6 +1731,11 @@ void RenderFrameHostImpl::DispatchBeforeUnload(bool for_navigation) {
     send_before_unload_start_time_ = base::TimeTicks::Now();
     Send(new FrameMsg_BeforeUnload(routing_id_));
   }
+}
+
+bool RenderFrameHostImpl::ShouldDispatchBeforeUnload() {
+  // TODO(creis): Support beforeunload on subframes.
+  return !GetParent() && IsRenderFrameLive();
 }
 
 void RenderFrameHostImpl::DisownOpener() {
