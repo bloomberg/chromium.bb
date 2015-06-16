@@ -122,16 +122,16 @@ struct ScoredHistoryMatch : public history::HistoryMatch {
 
   // Returns a recency score based on |last_visit_days_ago|, which is
   // how many days ago the page was last visited.
-  static float GetRecencyScore(int last_visit_days_ago);
+  float GetRecencyScore(int last_visit_days_ago) const;
 
   // Examines the first kMaxVisitsToScore and return a score (higher is
   // better) based the rate of visits, whether the page is bookmarked, and
   // how often those visits are typed navigations (i.e., explicitly
   // invoked by the user).  |now| is passed in to avoid unnecessarily
   // recomputing it frequently.
-  static float GetFrequency(const base::Time& now,
-                            const bool bookmarked,
-                            const VisitInfoVector& visits);
+  float GetFrequency(const base::Time& now,
+                     const bool bookmarked,
+                     const VisitInfoVector& visits) const;
 
   // Combines the two component scores into a final score that's
   // an appropriate value to use as a relevancy score. Scoring buckets are

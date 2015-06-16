@@ -20,7 +20,6 @@
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/omnibox/omnibox_field_trial.h"
 #include "components/omnibox/url_prefix.h"
-#include "content/public/browser/browser_thread.h"
 
 namespace {
 
@@ -47,9 +46,6 @@ float days_ago_to_recency_score[kDaysToPrecomputeRecencyScoresFor];
 // is initialized by InitRawTermScoreToTopicalityScoreArray() called from
 // ScoredHistoryMatch::Init().
 float raw_term_score_to_topicality_score[kMaxRawTermScore];
-
-// Whether ScoredHistoryMatch::Init() has been called.
-bool initialized = false;
 
 // Precalculates raw_term_score_to_topicality_score, used in
 // GetTopicalityScore().
@@ -120,7 +116,16 @@ float ScoredHistoryMatch::topicality_threshold_ = -1;
 std::vector<ScoredHistoryMatch::ScoreMaxRelevance>*
     ScoredHistoryMatch::hqp_relevance_buckets_ = nullptr;
 
-ScoredHistoryMatch::ScoredHistoryMatch() : raw_score(0), can_inline(false) {
+ScoredHistoryMatch::ScoredHistoryMatch()
+    : ScoredHistoryMatch(history::URLRow(),
+                         VisitInfoVector(),
+                         std::string(),
+                         base::string16(),
+                         String16Vector(),
+                         WordStarts(),
+                         RowWordStarts(),
+                         false,
+                         base::Time::Max()) {
 }
 
 ScoredHistoryMatch::ScoredHistoryMatch(
@@ -134,11 +139,15 @@ ScoredHistoryMatch::ScoredHistoryMatch(
     bool is_url_bookmarked,
     base::Time now)
     : HistoryMatch(row, 0, false, false), raw_score(0), can_inline(false) {
+  // NOTE: Call Init() before doing any validity checking to ensure that the
+  // class is always initialized after an instance has been constructed. In
+  // particular, this ensures that the class is initialized after an instance
+  // has been constructed via the no-args constructor.
+  ScoredHistoryMatch::Init();
+
   GURL gurl = row.url();
   if (!gurl.is_valid())
     return;
-
-  ScoredHistoryMatch::Init();
 
   // Figure out where each search term appears in the URL and/or page title
   // so that we can score as well as provide autocomplete highlighting.
@@ -376,14 +385,7 @@ TermMatches ScoredHistoryMatch::FilterTermMatchesByWordStarts(
 
 // static
 void ScoredHistoryMatch::Init() {
-  // Because the code below is not thread safe, we check that we're only calling
-  // it from one thread: the UI thread.  Specifically, we check "if we've heard
-  // of the UI thread then we'd better be on it."  The first part is necessary
-  // so unit tests pass.  (Many unit tests don't set up the threading naming
-  // system; hence CurrentlyOn(UI thread) will fail.)
-  using content::BrowserThread;
-  DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::UI) ||
-         BrowserThread::CurrentlyOn(BrowserThread::UI));
+  static bool initialized = false;
 
   if (initialized)
     return;
@@ -406,7 +408,6 @@ float ScoredHistoryMatch::GetTopicalityScore(
     const base::string16& url,
     const WordStarts& terms_to_word_starts_offsets,
     const RowWordStarts& word_starts) {
-  ScoredHistoryMatch::Init();
   // A vector that accumulates per-term scores.  The strongest match--a
   // match in the hostname at a word boundary--is worth 10 points.
   // Everything else is less.  In general, a match that's not at a word
@@ -547,9 +548,7 @@ float ScoredHistoryMatch::GetTopicalityScore(
   return final_topicality_score;
 }
 
-// static
-float ScoredHistoryMatch::GetRecencyScore(int last_visit_days_ago) {
-  ScoredHistoryMatch::Init();
+float ScoredHistoryMatch::GetRecencyScore(int last_visit_days_ago) const {
   // Lookup the score in days_ago_to_recency_score, treating
   // everything older than what we've precomputed as the oldest thing
   // we've precomputed.  The std::max is to protect against corruption
@@ -558,10 +557,9 @@ float ScoredHistoryMatch::GetRecencyScore(int last_visit_days_ago) {
       std::min(last_visit_days_ago, kDaysToPrecomputeRecencyScoresFor - 1), 0)];
 }
 
-// static
 float ScoredHistoryMatch::GetFrequency(const base::Time& now,
                                        const bool bookmarked,
-                                       const VisitInfoVector& visits) {
+                                       const VisitInfoVector& visits) const {
   // Compute the weighted average |value_of_transition| over the last at
   // most kMaxVisitsToScore visits, where each visit is weighted using
   // GetRecencyScore() based on how many days ago it happened.  Use
