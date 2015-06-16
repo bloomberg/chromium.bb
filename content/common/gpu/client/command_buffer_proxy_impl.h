@@ -163,8 +163,6 @@ class CommandBufferProxyImpl
  private:
   typedef std::map<int32, scoped_refptr<gpu::Buffer> > TransferBufferMap;
   typedef base::hash_map<uint32, base::Closure> SignalTaskMap;
-  typedef base::ScopedPtrHashMap<int32, scoped_ptr<gfx::GpuMemoryBuffer>>
-      GpuMemoryBufferMap;
 
   void CheckLock() {
     if (lock_)
@@ -222,9 +220,6 @@ class CommandBufferProxyImpl
   // Tasks to be invoked in SignalSyncPoint responses.
   uint32 next_signal_id_;
   SignalTaskMap signal_tasks_;
-
-  // Local cache of id to gpu memory buffer mapping.
-  GpuMemoryBufferMap gpu_memory_buffers_;
 
   gpu::Capabilities capabilities_;
 
