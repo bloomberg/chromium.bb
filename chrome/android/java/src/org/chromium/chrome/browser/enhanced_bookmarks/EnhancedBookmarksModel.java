@@ -9,7 +9,6 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.BookmarksBridge;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkItem;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkModelObserver;
-import org.chromium.chrome.browser.enhanced_bookmarks.EnhancedBookmarksBridge.FiltersObserver;
 import org.chromium.chrome.browser.enhanced_bookmarks.EnhancedBookmarksBridge.SalientImageCallback;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.bookmarks.BookmarkId;
@@ -316,41 +315,6 @@ public class EnhancedBookmarksModel {
      */
     public void undo() {
         mBookmarksBridge.undo();
-    }
-
-    /**
-     * @see EnhancedBookmarksBridge#getFiltersForBookmark(BookmarkId)
-     */
-    public String[] getFiltersForBookmark(BookmarkId bookmark) {
-        return mEnhancedBookmarksBridge.getFiltersForBookmark(bookmark);
-    }
-
-    /**
-     * @see EnhancedBookmarksBridge#getFilters()
-     */
-    public List<String> getFilters() {
-        return mEnhancedBookmarksBridge.getFilters();
-    }
-
-    /**
-     * @see EnhancedBookmarksBridge#getBookmarksForFilter(String)
-     */
-    public List<BookmarkId> getBookmarksForFilter(String filter) {
-        return mEnhancedBookmarksBridge.getBookmarksForFilter(filter);
-    }
-
-    /**
-     * @see EnhancedBookmarksBridge#addFiltersObserver(FiltersObserver)
-     */
-    public void addFiltersObserver(FiltersObserver observer) {
-        mEnhancedBookmarksBridge.addFiltersObserver(observer);
-    }
-
-    /**
-     * @see EnhancedBookmarksBridge#removeFiltersObserver(FiltersObserver)
-     */
-    public void removeFiltersObserver(FiltersObserver observer) {
-        mEnhancedBookmarksBridge.removeFiltersObserver(observer);
     }
 
     /**

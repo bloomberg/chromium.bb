@@ -19,8 +19,6 @@ import com.google.android.apps.chrome.R;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkItem;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkModelObserver;
-import org.chromium.chrome.browser.enhanced_bookmarks.EnhancedBookmarksBridge.FiltersObserver;
-import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkManager.UIState;
 import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkPromoHeader.PromoHeaderShowingChangeListener;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.components.bookmarks.BookmarkId;
@@ -98,15 +96,6 @@ class EnhancedBookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
         @Override
         public void bookmarkModelChanged() {
             mDelegate.notifyStateChange(EnhancedBookmarkItemsAdapter.this);
-        }
-    };
-
-    private FiltersObserver mFiltersObserver = new FiltersObserver() {
-        @Override
-        public void onFiltersChanged() {
-            if (mDelegate.getCurrentState() == UIState.STATE_FILTER) {
-                mDelegate.notifyStateChange(EnhancedBookmarkItemsAdapter.this);
-            }
         }
     };
 
@@ -346,7 +335,6 @@ class EnhancedBookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
         mDelegate = delegate;
         mDelegate.addUIObserver(this);
         mDelegate.getModel().addModelObserver(mBookmarkModelObserver);
-        mDelegate.getModel().addFiltersObserver(mFiltersObserver);
 
         mItemFactory = mDelegate.isListModeEnabled()
                 ? new ListItemFactory() : new GridItemFactory();
@@ -358,7 +346,6 @@ class EnhancedBookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
     public void onDestroy() {
         mDelegate.removeUIObserver(this);
         mDelegate.getModel().removeModelObserver(mBookmarkModelObserver);
-        mDelegate.getModel().removeFiltersObserver(mFiltersObserver);
 
         mPromoHeaderManager.destroy();
     }
@@ -372,11 +359,6 @@ class EnhancedBookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
     public void onFolderStateSet(BookmarkId folder) {
         setBookmarks(mDelegate.getModel().getChildIDs(folder, true, false),
                 mDelegate.getModel().getChildIDs(folder, false, true));
-    }
-
-    @Override
-    public void onFilterStateSet(String filter) {
-        setBookmarks(null, mDelegate.getModel().getBookmarksForFilter(filter));
     }
 
     @Override

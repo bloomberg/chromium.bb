@@ -7,30 +7,20 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/prefs/pref_service.h"
-#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/enhanced_bookmarks/android/bookmark_image_service_android.h"
 #include "chrome/browser/enhanced_bookmarks/android/bookmark_image_service_factory.h"
-#include "chrome/browser/enhanced_bookmarks/bookmark_server_cluster_service_factory.h"
 #include "chrome/browser/enhanced_bookmarks/enhanced_bookmark_model_factory.h"
 #include "chrome/browser/profiles/profile_android.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
-#include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/common/android/bookmark_id.h"
 #include "components/bookmarks/common/android/bookmark_type.h"
-#include "components/enhanced_bookmarks/bookmark_server_cluster_service.h"
-#include "components/enhanced_bookmarks/enhanced_bookmark_model.h"
 #include "components/enhanced_bookmarks/enhanced_bookmark_utils.h"
-#include "components/enhanced_bookmarks/image_record.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/EnhancedBookmarksBridge_jni.h"
 #include "ui/gfx/android/java_bitmap.h"
-#include "ui/gfx/image/image.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ScopedJavaGlobalRef;
@@ -75,15 +65,8 @@ EnhancedBookmarksBridge::EnhancedBookmarksBridge(JNIEnv* env,
   enhanced_bookmark_model_ =
       EnhancedBookmarkModelFactory::GetForBrowserContext(profile_);
   enhanced_bookmark_model_->SetVersionSuffix(chrome::VersionInfo().OSType());
-  cluster_service_ =
-      BookmarkServerClusterServiceFactory::GetForBrowserContext(profile_);
-  cluster_service_->AddObserver(this);
   bookmark_image_service_ = static_cast<BookmarkImageServiceAndroid*>(
       BookmarkImageServiceFactory::GetForBrowserContext(profile_));
-}
-
-EnhancedBookmarksBridge::~EnhancedBookmarksBridge() {
-  cluster_service_->RemoveObserver(this);
 }
 
 void EnhancedBookmarksBridge::Destroy(JNIEnv*, jobject) {
@@ -140,46 +123,6 @@ void EnhancedBookmarksBridge::SetBookmarkDescription(JNIEnv* env,
 
   enhanced_bookmark_model_->SetDescription(
       node, base::android::ConvertJavaStringToUTF8(env, description));
-}
-
-ScopedJavaLocalRef<jobjectArray> EnhancedBookmarksBridge::GetFiltersForBookmark(
-    JNIEnv* env,
-    jobject obj,
-    jlong id,
-    jint type) {
-  DCHECK(enhanced_bookmark_model_->loaded());
-  if (type != BookmarkType::BOOKMARK_TYPE_NORMAL) {
-    return base::android::ToJavaArrayOfStrings(env, std::vector<std::string>());
-  }
-
-  const BookmarkNode* node = bookmarks::GetBookmarkNodeByID(
-        enhanced_bookmark_model_->bookmark_model(), static_cast<int64>(id));
-  std::vector<std::string> filters =
-      cluster_service_->ClustersForBookmark(node);
-  return base::android::ToJavaArrayOfStrings(env, filters);
-}
-
-void EnhancedBookmarksBridge::GetBookmarksForFilter(JNIEnv* env,
-                                                    jobject obj,
-                                                    jstring j_filter,
-                                                    jobject j_result_obj) {
-  DCHECK(enhanced_bookmark_model_->loaded());
-  const std::string title =
-      base::android::ConvertJavaStringToUTF8(env, j_filter);
-  const std::vector<const BookmarkNode*> bookmarks =
-      cluster_service_->BookmarksForClusterNamed(title);
-  for (const BookmarkNode* node : bookmarks) {
-    Java_EnhancedBookmarksBridge_addToBookmarkIdList(
-        env, j_result_obj, node->id(), node->type());
-  }
-}
-
-ScopedJavaLocalRef<jobjectArray> EnhancedBookmarksBridge::GetFilters(
-    JNIEnv* env,
-    jobject obj) {
-  DCHECK(enhanced_bookmark_model_->loaded());
-  const std::vector<std::string> filters = cluster_service_->GetClusters();
-  return base::android::ToJavaArrayOfStrings(env, filters);
 }
 
 ScopedJavaLocalRef<jobject> EnhancedBookmarksBridge::AddFolder(JNIEnv* env,
@@ -252,19 +195,6 @@ ScopedJavaLocalRef<jobject> EnhancedBookmarksBridge::AddBookmark(
   ScopedJavaLocalRef<jobject> new_java_obj = JavaBookmarkIdCreateBookmarkId(
       env, new_node->id(), BookmarkType::BOOKMARK_TYPE_NORMAL);
   return new_java_obj;
-}
-
-void EnhancedBookmarksBridge::OnChange(BookmarkServerService* service) {
-  DCHECK(enhanced_bookmark_model_->loaded());
-  JNIEnv* env = AttachCurrentThread();
-
-  ScopedJavaLocalRef<jobject> obj = weak_java_ref_.get(env);
-  if (obj.is_null())
-    return;
-
-  if (service == cluster_service_) {
-    Java_EnhancedBookmarksBridge_onFiltersChanged(env, obj.obj());
-  }
 }
 
 bool EnhancedBookmarksBridge::IsEditable(const BookmarkNode* node) const {

@@ -1752,17 +1752,11 @@ Just open Chrome on your computer, go to the menu, and select “Sign in to Chro
       <message name="IDS_ENHANCED_BOOKMARK_DRAWER_ALL_ITEMS" desc="Menu item for showing all bookmark items in the enhanced bookmarks UI [CHAR-LIMIT=24]">
         All bookmarks
       </message>
-      <message name="IDS_ENHANCED_BOOKMARK_DRAWER_AUTO_FOLDERS" desc="Title for the list of auto folders in the drawer view. [CHAR-LIMIT=32]">
-        Auto Folders
-      </message>
       <message name="IDS_ENHANCED_BOOKMARK_DRAWER_FOLDERS" desc="Title for the list of folders in the drawer view. [CHAR-LIMIT=32]">
         Folders
       </message>
       <message name="IDS_ENHANCED_BOOKMARK_TITLE_BAR_ALL_ITEMS" desc="Title bar text for showing all bookmark items in the enhanced bookmarks UI [CHAR-LIMIT=32]">
         Bookmarks
-      </message>
-      <message name="IDS_ENHANCED_BOOKMARK_AUTO_FOLDERS" desc="Header text for the list of auto folders applied to a bookmark [CHAR-LIMIT=32]">
-        Auto folders
       </message>
       <message name="IDS_ENHANCED_BOOKMARK_PARENT_FOLDER" desc="Header text for title of parent folder of the bookmark [CHAR-LIMIT=32]">
         Parent folder

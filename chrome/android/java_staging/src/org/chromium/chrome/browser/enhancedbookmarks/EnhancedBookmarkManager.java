@@ -24,7 +24,6 @@ import org.chromium.chrome.browser.BookmarksBridge.BookmarkItem;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkModelObserver;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.enhanced_bookmarks.EnhancedBookmarksBridge;
-import org.chromium.chrome.browser.enhanced_bookmarks.EnhancedBookmarksBridge.FiltersObserver;
 import org.chromium.chrome.browser.enhanced_bookmarks.EnhancedBookmarksModel;
 import org.chromium.chrome.browser.enhanced_bookmarks.LaunchLocation;
 import org.chromium.chrome.browser.enhanced_bookmarks.ViewMode;
@@ -105,17 +104,6 @@ public class EnhancedBookmarkManager implements EnhancedBookmarkDelegate {
         }
     };
 
-    private final FiltersObserver mFiltersObserver = new FiltersObserver() {
-        @Override
-        public void onFiltersChanged() {
-            // if the current selected filter was removed, we need to fall back. Relying on the
-            // default behavior by setting the filter mode again.
-            if (getCurrentState() == UIState.STATE_FILTER) {
-                setState(mStateStack.peek());
-            }
-        }
-    };
-
     /**
      * Creates an instance of {@link EnhancedBookmarkManager}. It also initializes resources,
      * bookmark models and jni bridges.
@@ -154,7 +142,6 @@ public class EnhancedBookmarkManager implements EnhancedBookmarkDelegate {
             mUndoController = null;
         }
         mEnhancedBookmarksModel.removeModelObserver(mBookmarkModelObserver);
-        mEnhancedBookmarksModel.removeFiltersObserver(mFiltersObserver);
         mEnhancedBookmarksModel.destroy();
         mEnhancedBookmarksModel = null;
     }
@@ -232,7 +219,6 @@ public class EnhancedBookmarkManager implements EnhancedBookmarkDelegate {
      */
     private void initializeIfBookmarkModelLoaded() {
         if (mEnhancedBookmarksModel.isBookmarkModelLoaded()) {
-            mEnhancedBookmarksModel.addFiltersObserver(mFiltersObserver);
             mDrawerListView.onEnhancedBookmarkDelegateInitialized(this);
             mContentView.onEnhancedBookmarkDelegateInitialized(this);
             if (mStateStack.isEmpty()) {
@@ -352,11 +338,6 @@ public class EnhancedBookmarkManager implements EnhancedBookmarkDelegate {
     }
 
     @Override
-    public void openFilter(String filter) {
-        setState(UIState.createFilterState(filter, mEnhancedBookmarksModel));
-    }
-
-    @Override
     public void openAllBookmarks() {
         setState(UIState.createAllBookmarksState(mEnhancedBookmarksModel));
     }
@@ -417,9 +398,6 @@ public class EnhancedBookmarkManager implements EnhancedBookmarkDelegate {
                 break;
             case UIState.STATE_FOLDER:
                 observer.onFolderStateSet(mStateStack.peek().mFolder);
-                break;
-            case UIState.STATE_FILTER:
-                observer.onFilterStateSet(mStateStack.peek().mFilter);
                 break;
             case UIState.STATE_LOADING:
                 // In loading state, onEnhancedBookmarkDelegateInitialized() is not called for all
@@ -524,7 +502,6 @@ public class EnhancedBookmarkManager implements EnhancedBookmarkDelegate {
         private int mState;
         private String mUrl;
         private BookmarkId mFolder;
-        private String mFilter;
 
         private static UIState createLoadingState(String url) {
             UIState state = new UIState();
@@ -543,12 +520,6 @@ public class EnhancedBookmarkManager implements EnhancedBookmarkDelegate {
                     bookmarkModel);
         }
 
-        private static UIState createFilterState(String filter,
-                EnhancedBookmarksModel bookmarkModel) {
-            return createStateFromUrl(encodeUrl(UrlConstants.BOOKMARKS_FILTER_URL, filter),
-                    bookmarkModel);
-        }
-
         /**
          * @return A state corresponding to the url. If the url is not valid, return all_bookmarks.
          */
@@ -560,12 +531,6 @@ public class EnhancedBookmarkManager implements EnhancedBookmarkDelegate {
 
             if (url.equals(UrlConstants.BOOKMARKS_URL)) {
                 state.mState = STATE_ALL_BOOKMARKS;
-            } else if (url.startsWith(UrlConstants.BOOKMARKS_FILTER_URL)) {
-                String suffix = decodeSuffix(url, UrlConstants.BOOKMARKS_FILTER_URL);
-                if (!suffix.isEmpty()) {
-                    state.mState = STATE_FILTER;
-                    state.mFilter = suffix;
-                }
             } else if (url.startsWith(UrlConstants.BOOKMARKS_FOLDER_URL)) {
                 String suffix = decodeSuffix(url, UrlConstants.BOOKMARKS_FOLDER_URL);
                 if (!suffix.isEmpty()) {
@@ -596,10 +561,6 @@ public class EnhancedBookmarkManager implements EnhancedBookmarkDelegate {
 
                 return bookmarkModel.doesBookmarkExist(mFolder)
                         && !mFolder.equals(bookmarkModel.getRootFolderId());
-            }
-            if (mState == STATE_FILTER) {
-                if (mFilter == null) return false;
-                else return bookmarkModel.getFilters().contains(mFilter);
             }
 
             return true;

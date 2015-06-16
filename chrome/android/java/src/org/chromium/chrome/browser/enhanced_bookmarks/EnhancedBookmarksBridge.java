@@ -13,15 +13,11 @@ import android.util.Pair;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
-import org.chromium.base.ObserverList;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.content_public.browser.WebContents;
 
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Access gate to C++ side enhanced bookmarks functionalities.
@@ -32,8 +28,6 @@ public final class EnhancedBookmarksBridge {
     private static final int SALIENT_IMAGE_MAX_CACHE_SIZE = 32 * 1024 * 1024; // 32MB
 
     private long mNativeEnhancedBookmarksBridge;
-    private final ObserverList<FiltersObserver> mFilterObservers =
-            new ObserverList<FiltersObserver>();
     private LruCache<String, Pair<String, Bitmap>> mSalientImageCache;
 
     /**
@@ -48,16 +42,6 @@ public final class EnhancedBookmarksBridge {
          */
         @CalledByNative("SalientImageCallback")
         void onSalientImageReady(Bitmap image, String imageUrl);
-    }
-
-    /**
-     * Interface to provide consumers notifications to changes in clusters
-     */
-    public interface FiltersObserver {
-        /**
-         * Invoked when client detects that filters have been added/removed from the server.
-         */
-        void onFiltersChanged();
     }
 
     /**
@@ -128,33 +112,6 @@ public final class EnhancedBookmarksBridge {
     }
 
     /**
-     * Registers a FiltersObserver to listen for filter change notifications.
-     * @param observer Observer to add
-     */
-    public void addFiltersObserver(FiltersObserver observer) {
-        mFilterObservers.addObserver(observer);
-    }
-
-    /**
-     * Unregisters a FiltersObserver from listening to filter change notifications.
-     * @param observer Observer to remove
-     */
-    public void removeFiltersObserver(FiltersObserver observer) {
-        mFilterObservers.removeObserver(observer);
-    }
-
-    /**
-     * Gets all the bookmark ids associated with a filter string.
-     * @param filter The filter string
-     * @return List of bookmark ids
-     */
-    public List<BookmarkId> getBookmarksForFilter(String filter) {
-        List<BookmarkId> list = new ArrayList<BookmarkId>();
-        nativeGetBookmarksForFilter(mNativeEnhancedBookmarksBridge, filter, list);
-        return list;
-    }
-
-    /**
      * Request bookmark salient image for the given URL. Please refer to
      * |BookmarkImageService::SalientImageForUrl|.
      * @return True if this method is executed synchronously. False if
@@ -198,27 +155,6 @@ public final class EnhancedBookmarksBridge {
     }
 
     /**
-     * Get all filters associated with the given bookmark.
-     *
-     * @param bookmark The bookmark to find filters for.
-     * @return Array of Strings, each representing a filter. If given a partner bookmark, this
-     *         method will return an empty array.
-     */
-    public String[] getFiltersForBookmark(BookmarkId bookmark) {
-        return nativeGetFiltersForBookmark(mNativeEnhancedBookmarksBridge, bookmark.getId(),
-                bookmark.getType());
-    }
-
-    /**
-     * @return Current set of known auto-filters for bookmarks.
-     */
-    public List<String> getFilters() {
-        List<String> list =
-                Arrays.asList(nativeGetFilters(mNativeEnhancedBookmarksBridge));
-        return list;
-    }
-
-    /**
      * @see |enhanced_bookmarks::GetDefaultViewMode()|
      */
     public static int getDefaultViewMode() {
@@ -247,29 +183,12 @@ public final class EnhancedBookmarksBridge {
         return cache;
     }
 
-    @CalledByNative
-    private void onFiltersChanged() {
-        for (FiltersObserver observer : mFilterObservers) {
-            observer.onFiltersChanged();
-        }
-    }
-
-    @CalledByNative
-    private static void addToBookmarkIdList(List<BookmarkId> bookmarkIdList, long id, int type) {
-        bookmarkIdList.add(new BookmarkId(id, type));
-    }
-
     private native long nativeInit(Profile profile);
     private native void nativeDestroy(long nativeEnhancedBookmarksBridge);
     private native String nativeGetBookmarkDescription(long nativeEnhancedBookmarksBridge, long id,
             int type);
     private native void nativeSetBookmarkDescription(long nativeEnhancedBookmarksBridge, long id,
             int type, String description);
-    private native void nativeGetBookmarksForFilter(long nativeEnhancedBookmarksBridge,
-            String filter, List<BookmarkId> list);
-    private native String[] nativeGetFilters(long nativeEnhancedBookmarksBridge);
-    private native String[] nativeGetFiltersForBookmark(long nativeEnhancedBookmarksBridge, long id,
-            int type);
     private native BookmarkId nativeAddFolder(long nativeEnhancedBookmarksBridge, BookmarkId parent,
             int index, String title);
     private native void nativeMoveBookmark(long nativeEnhancedBookmarksBridge,

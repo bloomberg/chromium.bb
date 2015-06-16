@@ -32,11 +32,6 @@ interface EnhancedBookmarkUIObserver {
     void onFolderStateSet(BookmarkId folder);
 
     /**
-     * @see EnhancedBookmarkDelegate#openFilter(String)
-     */
-    void onFilterStateSet(String filter);
-
-    /**
      * Please refer to
      * {@link EnhancedBookmarkDelegate#toggleSelectionForBookmark(BookmarkId)},
      * {@link EnhancedBookmarkDelegate#clearSelection()} and

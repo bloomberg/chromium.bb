@@ -275,13 +275,6 @@ public class EnhancedBookmarkActionBar extends Toolbar implements EnhancedBookma
     }
 
     @Override
-    public void onFilterStateSet(String filter) {
-        setTitle(filter);
-        setNavigationButton(NAVIGATION_BUTTON_MENU);
-        getMenu().findItem(R.id.edit_menu_id).setVisible(false);
-    }
-
-    @Override
     public void onListModeChange(boolean isListModeEnabled) {
         MenuItem menuItem = getMenu().findItem(R.id.list_toggle_menu_id);
         menuItem.getIcon().setLevel(isListModeEnabled ? 1 : 0);

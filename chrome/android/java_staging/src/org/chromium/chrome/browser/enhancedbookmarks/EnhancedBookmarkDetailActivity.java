@@ -19,7 +19,6 @@ import android.transition.Transition;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -33,13 +32,11 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkItem;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkModelObserver;
 import org.chromium.chrome.browser.UrlUtilities;
-import org.chromium.chrome.browser.enhanced_bookmarks.EnhancedBookmarksBridge.FiltersObserver;
 import org.chromium.chrome.browser.enhanced_bookmarks.EnhancedBookmarksBridge.SalientImageCallback;
 import org.chromium.chrome.browser.enhanced_bookmarks.EnhancedBookmarksModel;
 import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkDetailScrollView.OnScrollListener;
 import org.chromium.chrome.browser.widget.FadingShadow;
 import org.chromium.chrome.browser.widget.FadingShadowView;
-import org.chromium.chrome.browser.widget.FlowLayout;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
 import org.chromium.ui.UiUtils;
@@ -52,7 +49,7 @@ import org.chromium.ui.base.DeviceFormFactor;
  * the screen.
  */
 public class EnhancedBookmarkDetailActivity extends EnhancedBookmarkActivityBase implements
-        View.OnClickListener, OnScrollListener, FiltersObserver {
+        View.OnClickListener, OnScrollListener {
     public static final String INTENT_BOOKMARK_ID = "EnhancedBookmarkDetailActivity.BookmarkId";
     private static final int ANIMATION_DURATION_MS = 300;
 
@@ -66,8 +63,6 @@ public class EnhancedBookmarkDetailActivity extends EnhancedBookmarkActivityBase
     private EditText mUrlEditText;
     private View mFolderBox;
     private TextView mFolderTextView;
-    private TextView mAutoFoldersLabel;
-    private FlowLayout mAutoFoldersFlowLayout;
     private EditText mDescriptionEditText;
     private View mMaskView;
     private RelativeLayout mActionBarLayout;
@@ -120,7 +115,6 @@ public class EnhancedBookmarkDetailActivity extends EnhancedBookmarkActivityBase
         mBookmarkId = BookmarkId.getBookmarkIdFromString(
                 getIntent().getStringExtra(INTENT_BOOKMARK_ID));
         mEnhancedBookmarksModel.addModelObserver(mBookmarkModelObserver);
-        mEnhancedBookmarksModel.addFiltersObserver(this);
         setContentView(R.layout.eb_detail);
         mScrollView = (EnhancedBookmarkDetailScrollView) findViewById(
                 R.id.eb_detail_scroll_view);
@@ -130,8 +124,6 @@ public class EnhancedBookmarkDetailActivity extends EnhancedBookmarkActivityBase
         mUrlEditText = (EditText) findViewById(R.id.eb_detail_url);
         mFolderBox = findViewById(R.id.eb_detail_folder_box);
         mFolderTextView = (TextView) findViewById(R.id.eb_detail_folder_textview);
-        mAutoFoldersLabel = (TextView) findViewById(R.id.eb_detail_auto_folder_label);
-        mAutoFoldersFlowLayout = (FlowLayout) findViewById(R.id.eb_detail_flow_layout);
         mDescriptionEditText = (EditText) findViewById(R.id.eb_detail_description);
         mMaskView = findViewById(R.id.eb_detail_image_mask);
         mActionBarLayout = (RelativeLayout) findViewById(R.id.eb_detail_action_bar);
@@ -161,7 +153,6 @@ public class EnhancedBookmarkDetailActivity extends EnhancedBookmarkActivityBase
         mScrollView.setOnScrollListener(this);
 
         updateViews();
-        updateAutoFolders();
         setUpSharedElementAnimation();
     }
 
@@ -229,23 +220,6 @@ public class EnhancedBookmarkDetailActivity extends EnhancedBookmarkActivityBase
                     }
                 });
         mMaskView.setAlpha(0.0f);
-    }
-
-    private void updateAutoFolders() {
-        mAutoFoldersFlowLayout.removeAllViews();
-        String[] filters = mEnhancedBookmarksModel.getFiltersForBookmark(mBookmarkId);
-        for (String filter : filters) {
-            Button autoFolder = new AutoFolderButton(this);
-            autoFolder.setText(filter);
-            mAutoFoldersFlowLayout.addView(autoFolder);
-        }
-        if (mAutoFoldersFlowLayout.getChildCount() > 0) {
-            mAutoFoldersLabel.setVisibility(View.VISIBLE);
-            mAutoFoldersFlowLayout.setVisibility(View.VISIBLE);
-        } else {
-            mAutoFoldersLabel.setVisibility(View.GONE);
-            mAutoFoldersFlowLayout.setVisibility(View.GONE);
-        }
     }
 
     private void setParentFolderName(BookmarkId parentId) {
@@ -408,33 +382,9 @@ public class EnhancedBookmarkDetailActivity extends EnhancedBookmarkActivityBase
         super.onDestroy();
     }
 
-    @Override
-    public void onFiltersChanged() {
-        updateAutoFolders();
-    }
-
     private static void setViewHeight(View view, int height) {
         ViewGroup.LayoutParams lp = view.getLayoutParams();
         lp.height = height;
         view.setLayoutParams(lp);
-    }
-
-    /**
-     * Rounded button for auto folders in bookmark detail page.
-     */
-    private static class AutoFolderButton extends Button {
-
-        private static final int TEXT_SIZE_SP = 14;
-
-        public AutoFolderButton(Context context) {
-            super(context);
-            setTextSize(TEXT_SIZE_SP);
-            // Force auto folder buttons smaller than android default size.
-            setMinHeight(0);
-            setMinimumHeight(0);
-            setMinWidth(0);
-            setMinimumWidth(0);
-            setBackgroundResource(R.drawable.btn_enhanced_bookmark_auto_folder);
-        }
     }
 }

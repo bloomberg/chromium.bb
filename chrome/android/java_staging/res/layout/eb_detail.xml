@@ -108,27 +108,6 @@
                     android:textSize="16sp" />
             </LinearLayout>
 
-            <TextView
-                android:id="@+id/eb_detail_auto_folder_label"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="16dp"
-                android:layout_marginStart="16dp"
-                android:layout_marginTop="24dp"
-                android:layout_marginBottom="4dp"
-                android:fontFamily="sans-serif-medium"
-                android:text="@string/enhanced_bookmark_auto_folders"
-                android:textColor="@color/enhanced_bookmark_detail_section"
-                android:textSize="14sp"
-                android:textStyle="bold" />
-
-            <org.chromium.chrome.browser.widget.FlowLayout
-                android:id="@+id/eb_detail_flow_layout"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="16dp"
-                android:layout_marginStart="16dp" />
-
             <EditText
                 android:id="@+id/eb_detail_description"
                 android:layout_width="match_parent"

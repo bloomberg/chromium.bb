@@ -119,11 +119,6 @@ public class EnhancedBookmarkContentView extends RelativeLayout implements
     }
 
     @Override
-    public void onFilterStateSet(String filter) {
-        mLoadingView.hideLoadingUI();
-    }
-
-    @Override
     public void onSelectionStateChange(List<BookmarkId> selectedBookmarks) {
         if (!selectedBookmarks.isEmpty()) mShadow.setStrength(1.0f);
         else mScrollListener.onScrollChanged();

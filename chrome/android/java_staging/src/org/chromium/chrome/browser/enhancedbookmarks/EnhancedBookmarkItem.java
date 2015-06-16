@@ -251,9 +251,6 @@ abstract class EnhancedBookmarkItem extends FrameLayout implements EnhancedBookm
                 case UIState.STATE_FOLDER:
                     launchLocation = LaunchLocation.FOLDER;
                     break;
-                case UIState.STATE_FILTER:
-                    launchLocation = LaunchLocation.FILTER;
-                    break;
                 case UIState.STATE_LOADING:
                     assert false :
                             "The main content shouldn't be inflated if it's still loading";
@@ -317,10 +314,6 @@ abstract class EnhancedBookmarkItem extends FrameLayout implements EnhancedBookm
 
     @Override
     public void onFolderStateSet(BookmarkId folder) {
-    }
-
-    @Override
-    public void onFilterStateSet(String filter) {
     }
 
     @Override
