@@ -334,6 +334,10 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
   // Retrieves a copy (for thread-safety) of the current TraceConfig.
   TraceConfig GetCurrentTraceConfig() const;
 
+  // Initializes the thread-local event buffer, if not already initialized and
+  // if the current thread supports that (has a message loop).
+  void InitializeThreadLocalEventBufferIfSupported();
+
   // Enables normal tracing (recording trace events in the trace buffer).
   // See TraceConfig comments for details on how to control what categories
   // will be traced. If tracing has already been enabled, |category_filter| will

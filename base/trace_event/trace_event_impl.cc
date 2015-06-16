@@ -1312,6 +1312,26 @@ TraceLog::TraceLog()
 TraceLog::~TraceLog() {
 }
 
+void TraceLog::InitializeThreadLocalEventBufferIfSupported() {
+  // A ThreadLocalEventBuffer needs the message loop
+  // - to know when the thread exits;
+  // - to handle the final flush.
+  // For a thread without a message loop or the message loop may be blocked, the
+  // trace events will be added into the main buffer directly.
+  if (thread_blocks_message_loop_.Get() || !MessageLoop::current())
+    return;
+  auto thread_local_event_buffer = thread_local_event_buffer_.Get();
+  if (thread_local_event_buffer &&
+      !CheckGeneration(thread_local_event_buffer->generation())) {
+    delete thread_local_event_buffer;
+    thread_local_event_buffer = NULL;
+  }
+  if (!thread_local_event_buffer) {
+    thread_local_event_buffer = new ThreadLocalEventBuffer(this);
+    thread_local_event_buffer_.Set(thread_local_event_buffer);
+  }
+}
+
 bool TraceLog::OnMemoryDump(ProcessMemoryDump* pmd) {
   TraceEventMemoryOverhead overhead;
   overhead.Add("TraceLog", sizeof(*this));
@@ -2003,24 +2023,10 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
       OffsetNow() : offset_event_timestamp;
   ThreadTicks thread_now = ThreadNow();
 
-  ThreadLocalEventBuffer* thread_local_event_buffer = NULL;
-  // A ThreadLocalEventBuffer needs the message loop
-  // - to know when the thread exits;
-  // - to handle the final flush.
-  // For a thread without a message loop or the message loop may be blocked, the
-  // trace events will be added into the main buffer directly.
-  if (!thread_blocks_message_loop_.Get() && MessageLoop::current()) {
-    thread_local_event_buffer = thread_local_event_buffer_.Get();
-    if (thread_local_event_buffer &&
-        !CheckGeneration(thread_local_event_buffer->generation())) {
-      delete thread_local_event_buffer;
-      thread_local_event_buffer = NULL;
-    }
-    if (!thread_local_event_buffer) {
-      thread_local_event_buffer = new ThreadLocalEventBuffer(this);
-      thread_local_event_buffer_.Set(thread_local_event_buffer);
-    }
-  }
+  // |thread_local_event_buffer_| can be null if the current thread doesn't have
+  // a message loop or the message loop is blocked.
+  InitializeThreadLocalEventBufferIfSupported();
+  auto thread_local_event_buffer = thread_local_event_buffer_.Get();
 
   // Check and update the current thread name only if the event is for the
   // current thread to avoid locks in most cases.

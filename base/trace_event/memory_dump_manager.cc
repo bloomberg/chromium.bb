@@ -8,6 +8,7 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/compiler_specific.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "base/trace_event/memory_dump_session_state.h"
 #include "base/trace_event/process_memory_dump.h"
@@ -140,6 +141,10 @@ void RequestPeriodicGlobalDump() {
     g_periodic_dumps_count = 0;
 
   MemoryDumpManager::GetInstance()->RequestGlobalDump(dump_type);
+}
+
+void InitializeThreadLocalEventBufferIfSupported() {
+  TraceLog::GetInstance()->InitializeThreadLocalEventBufferIfSupported();
 }
 
 }  // namespace
@@ -285,6 +290,11 @@ void MemoryDumpManager::CreateProcessDump(const MemoryDumpRequestArgs& args,
   bool did_any_provider_dump = false;
   bool did_post_any_async_task = false;
 
+  // Initalizes the ThreadLocalEventBuffer for the syncrhonous dump providers
+  // that will be invoked in this thread without other posts. The initialization
+  // for the asynchronous providers, instead, is handled in OnTraceLogEnabled().
+  InitializeThreadLocalEventBufferIfSupported();
+
   // Iterate over the active dump providers and invoke OnMemoryDump(pmd).
   // The MDM guarantees linearity (at most one MDP is active within one
   // process) and thread-safety (MDM enforces the right locking when entering /
@@ -396,8 +406,19 @@ void MemoryDumpManager::OnTraceLogEnabled() {
   }
 
   session_state_ = new MemoryDumpSessionState();
-  for (auto it = dump_providers_.begin(); it != dump_providers_.end(); ++it)
-    it->second.disabled = false;
+  for (auto it = dump_providers_.begin(); it != dump_providers_.end(); ++it) {
+    MemoryDumpProviderInfo& mdp_info = it->second;
+    mdp_info.disabled = false;
+    if (mdp_info.task_runner) {
+      // The thread local event buffer must be initialized at this point as it
+      // registers its own dump provider (for tracing overhead acounting).
+      // The registration cannot happen lazily during the first TRACE_EVENT*
+      // as it might end up registering the ThreadLocalEventBuffer while
+      // in onMemoryDump(), which will deadlock.
+      mdp_info.task_runner->PostTask(
+          FROM_HERE, Bind(&InitializeThreadLocalEventBufferIfSupported));
+    }
+  }
 
   subtle::NoBarrier_Store(&memory_tracing_enabled_, 1);
 
