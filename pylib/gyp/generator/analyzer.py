@@ -387,6 +387,7 @@ def _DoesTargetDependOn(target):
   for dep in target.deps:
     if _DoesTargetDependOn(dep):
       target.match_status = MATCH_STATUS_MATCHES_BY_DEPENDENCY
+      print '\t', target.name, 'matches by dep', dep.name
       return True
   target.match_status = MATCH_STATUS_DOESNT_MATCH
   return False
@@ -397,6 +398,7 @@ def _GetTargetsDependingOn(possible_targets):
   directly on indirectly) on the matched targets.
   possible_targets: targets to search from."""
   found = []
+  print 'Targets that matched by dependency:'
   for target in possible_targets:
     if _DoesTargetDependOn(target):
       found.append(target)
@@ -552,6 +554,10 @@ def GenerateOutput(target_list, target_dicts, data, params):
       data, target_list, target_dicts, toplevel_dir, frozenset(config.files),
       params['build_files'])
 
+    print 'roots:'
+    for root in roots:
+      print '\t', root.name
+
     unqualified_mapping = _GetUnqualifiedToTargetMapping(all_targets,
                                                          config.targets)
     invalid_targets = None
@@ -561,6 +567,9 @@ def GenerateOutput(target_list, target_dicts, data, params):
     if matching_targets:
       search_targets = _LookupTargets(config.targets, unqualified_mapping)
       matched_search_targets = _GetTargetsDependingOn(search_targets)
+      print 'raw matched search targets:'
+      for target in matched_search_targets:
+        print '\t', target.name
       # Reset the visited status for _GetBuildTargets.
       for target in all_targets.itervalues():
         target.visited = False
