@@ -15,7 +15,7 @@ namespace IPC {
 class IPC_EXPORT AttachmentBrokerWin : public IPC::AttachmentBroker {
  public:
   AttachmentBrokerWin();
-  virtual ~AttachmentBrokerWin();
+  ~AttachmentBrokerWin() override;
 
   // In a non-broker process, the single instance of this class listens for
   // an IPC from the broker process indicating that a new attachment has been

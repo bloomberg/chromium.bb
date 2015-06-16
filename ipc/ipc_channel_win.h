@@ -106,11 +106,11 @@ class ChannelWin : public Channel,
   int32 client_secret_;
 
   scoped_ptr<base::ThreadChecker> thread_check_;
-  base::WeakPtrFactory<ChannelWin> weak_factory_;
 
   // |broker_| must outlive this instance.
   AttachmentBroker* broker_;
 
+  base::WeakPtrFactory<ChannelWin> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(ChannelWin);
 };
 

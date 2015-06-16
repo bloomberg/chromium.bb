@@ -46,8 +46,8 @@ ChannelWin::ChannelWin(const IPC::ChannelHandle& channel_handle,
       processing_incoming_(false),
       validate_client_(false),
       client_secret_(0),
-      weak_factory_(this),
-      broker_(broker) {
+      broker_(broker),
+      weak_factory_(this) {
   CreatePipe(channel_handle, mode);
 }
 
