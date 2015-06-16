@@ -27,6 +27,7 @@
 #include "crypto/ec_private_key.h"
 #include "crypto/openssl_util.h"
 #include "crypto/scoped_openssl_types.h"
+#include "net/base/ip_address_number.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_policy_enforcer.h"
 #include "net/cert/cert_verifier.h"
@@ -696,8 +697,16 @@ int SSLClientSocketOpenSSL::Init() {
   if (!ssl_ || !context->SetClientSocketForSSL(ssl_, this))
     return ERR_UNEXPECTED;
 
-  if (!SSL_set_tlsext_host_name(ssl_, host_and_port_.host().c_str()))
+  // SNI should only contain valid DNS hostnames, not IP addresses (see RFC
+  // 6066, Section 3).
+  //
+  // TODO(rsleevi): Should this code allow hostnames that violate the LDH rule?
+  // See https://crbug.com/496472 and https://crbug.com/496468 for discussion.
+  IPAddressNumber unused;
+  if (!ParseIPLiteralToNumber(host_and_port_.host(), &unused) &&
+      !SSL_set_tlsext_host_name(ssl_, host_and_port_.host().c_str())) {
     return ERR_UNEXPECTED;
+  }
 
   SSL_SESSION* session = context->session_cache()->Lookup(GetSessionCacheKey());
   if (session != nullptr)
