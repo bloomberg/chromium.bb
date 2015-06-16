@@ -47920,7 +47920,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="WebRTC.AudioInputChannelLayout" enum="ChannelLayout">
-  <owner>xians@chromium.org</owner>
+  <owner>henrika@chromium.org</owner>
   <summary>Audio input channel layout in WebRTC.</summary>
 </histogram>
 
@@ -47944,12 +47944,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="WebRTC.AudioInputSampleRate" enum="AudioSampleRate">
-  <owner>xians@chromium.org</owner>
+  <owner>henrika@chromium.org</owner>
   <summary>Audio input sample rate for WebRTC (in Hz).</summary>
 </histogram>
 
 <histogram name="WebRTC.AudioInputSampleRateUnexpected" units="Hz">
-  <owner>xians@chromium.org</owner>
+  <owner>henrika@chromium.org</owner>
   <summary>
     Audio input sample rate for WebRTC (atypical values, in Hz).
   </summary>
@@ -47964,25 +47964,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="WebRTC.AudioOutputFramesPerBuffer" enum="AudioFramesPerBuffer">
-  <owner>xians@chromium.org</owner>
+  <owner>henrika@chromium.org</owner>
   <summary>Size of WebRTC audio output buffers (in audio frames).</summary>
 </histogram>
 
 <histogram name="WebRTC.AudioOutputFramesPerBufferUnexpected"
     units="audio frames">
-  <owner>xians@chromium.org</owner>
+  <owner>henrika@chromium.org</owner>
   <summary>
     Size of WebRTC audio output buffers (atypical values, in audio frames).
   </summary>
 </histogram>
 
 <histogram name="WebRTC.AudioOutputSampleRate" enum="AudioSampleRate">
-  <owner>xians@chromium.org</owner>
+  <owner>henrika@chromium.org</owner>
   <summary>Audio output sample rate for WebRTC (in Hz).</summary>
 </histogram>
 
 <histogram name="WebRTC.AudioOutputSampleRateUnexpected" units="Hz">
-  <owner>xians@chromium.org</owner>
+  <owner>henrika@chromium.org</owner>
   <summary>
     Audio output sample rate for WebRTC (atypical values, in Hz).
   </summary>
