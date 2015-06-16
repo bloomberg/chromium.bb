@@ -76,6 +76,11 @@ class BaseScreen {
   // Returns the identifier of the screen.
   virtual std::string GetID() const;
 
+  // Called when user action event with |event_id|
+  // happened. Notification about this event comes from the JS
+  // counterpart.
+  virtual void OnUserAction(const std::string& action_id);
+
   void set_model_view_channel(ModelViewChannel* channel) { channel_ = channel; }
 
  protected:
@@ -113,11 +118,6 @@ class BaseScreen {
   // Screen can call this method to notify framework that it have finished
   // it's work with |outcome|.
   void Finish(BaseScreenDelegate::ExitCodes exit_code);
-
-  // Called when user action event with |event_id|
-  // happened. Notification about this event comes from the JS
-  // counterpart.
-  virtual void OnUserAction(const std::string& action_id);
 
   // The method is called each time some key in screen context is
   // updated by JS side. Default implementation does nothing, so

@@ -37,9 +37,6 @@ class UpdateModel : public BaseScreen {
   // This method is called, when view is being destroyed. Note, if model
   // is destroyed earlier then it has to call Unbind().
   virtual void OnViewDestroyed(UpdateView* view) = 0;
-
-  // Called any time a new network connect request occurs.
-  virtual void OnConnectToNetworkRequested() = 0;
 };
 
 }  // namespace chromeos

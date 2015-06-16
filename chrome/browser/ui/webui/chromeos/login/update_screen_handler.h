@@ -10,13 +10,10 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/chromeos/login/screens/update_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/network_dropdown_handler.h"
 
 namespace chromeos {
 
-class UpdateScreenHandler : public UpdateView,
-                            public BaseScreenHandler,
-                            public NetworkDropdownHandler::Observer {
+class UpdateScreenHandler : public UpdateView, public BaseScreenHandler {
  public:
   UpdateScreenHandler();
   ~UpdateScreenHandler() override;
@@ -34,10 +31,6 @@ class UpdateScreenHandler : public UpdateView,
   void Initialize() override;
 
  private:
-  // Observer is added in OobeUI.
-  // NetworkDropdownHandler::Observer implementation:
-  void OnConnectToNetworkRequested() override;
-
   UpdateModel* model_;
 
   // Keeps whether screen should be shown right after initialization.

@@ -63,11 +63,11 @@ AutoEnrollmentCheckScreen::~AutoEnrollmentCheckScreen() {
 
 void AutoEnrollmentCheckScreen::ClearState() {
   auto_enrollment_progress_subscription_.reset();
+  connect_request_subscription_.reset();
   NetworkPortalDetector::Get()->RemoveObserver(this);
 
-   auto_enrollment_state_ = policy::AUTO_ENROLLMENT_STATE_IDLE;
-   captive_portal_status_ =
-       NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN;
+  auto_enrollment_state_ = policy::AUTO_ENROLLMENT_STATE_IDLE;
+  captive_portal_status_ = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN;
 }
 
 void AutoEnrollmentCheckScreen::PrepareToShow() {
@@ -235,6 +235,9 @@ void AutoEnrollmentCheckScreen::ShowErrorScreen(
   error_screen->AllowGuestSignin(true);
   error_screen->SetErrorState(error_state,
                               network ? network->name() : std::string());
+  connect_request_subscription_ = error_screen->RegisterConnectRequestCallback(
+      base::Bind(&AutoEnrollmentCheckScreen::OnConnectRequested,
+                 base::Unretained(this)));
   get_base_screen_delegate()->ShowErrorScreen();
   histogram_helper_->OnErrorShow(error_state);
 }
@@ -242,6 +245,7 @@ void AutoEnrollmentCheckScreen::ShowErrorScreen(
 void AutoEnrollmentCheckScreen::SignalCompletion() {
   NetworkPortalDetector::Get()->RemoveObserver(this);
   auto_enrollment_progress_subscription_.reset();
+  connect_request_subscription_.reset();
 
   // Calling Finish() can cause |this| destruction, so let other methods finish
   // their work before.
@@ -267,6 +271,10 @@ bool AutoEnrollmentCheckScreen::IsCompleted() const {
   }
   NOTREACHED();
   return false;
+}
+
+void AutoEnrollmentCheckScreen::OnConnectRequested() {
+  auto_enrollment_controller_->Retry();
 }
 
 }  // namespace chromeos

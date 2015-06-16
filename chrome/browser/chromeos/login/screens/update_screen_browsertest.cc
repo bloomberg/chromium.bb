@@ -67,8 +67,6 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
   }
 
   void SetUpOnMainThread() override {
-    WizardInProcessBrowserTest::SetUpOnMainThread();
-
     mock_base_screen_delegate_.reset(new MockBaseScreenDelegate());
     mock_network_error_view_.reset(new MockNetworkErrorView());
     mock_error_screen_.reset(new MockErrorScreen(
@@ -79,6 +77,8 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
         .Times(AnyNumber())
         .WillRepeatedly(Return(mock_error_screen_.get()));
 
+    WizardInProcessBrowserTest::SetUpOnMainThread();
+
     ASSERT_TRUE(WizardController::default_controller() != NULL);
     update_screen_ = UpdateScreen::Get(WizardController::default_controller());
     ASSERT_TRUE(update_screen_ != NULL);
@@ -88,9 +88,9 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
   }
 
   void TearDownOnMainThread() override {
+    WizardInProcessBrowserTest::TearDownOnMainThread();
     mock_error_screen_.reset();
     mock_network_error_view_.reset();
-    WizardInProcessBrowserTest::TearDownOnMainThread();
   }
 
   void TearDownInProcessBrowserTestFixture() override {
@@ -399,7 +399,7 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestAPReselection) {
               OnExit(_, BaseScreenDelegate::UPDATE_ERROR_CHECKING_FOR_UPDATE,
                      _)).Times(1);
 
-  update_screen_->OnConnectToNetworkRequested();
+  update_screen_->OnConnectRequested();
   base::MessageLoop::current()->RunUntilIdle();
 }
 

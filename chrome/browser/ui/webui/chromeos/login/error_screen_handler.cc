@@ -24,6 +24,7 @@ ErrorScreenHandler::ErrorScreenHandler()
     : BaseScreenHandler(kJsScreenPath),
       model_(nullptr),
       show_on_init_(false),
+      showing_(false),
       weak_ptr_factory_(this) {
 }
 
@@ -43,9 +44,11 @@ void ErrorScreenHandler::Show() {
   BaseScreenHandler::ShowScreen(OobeUI::kScreenErrorMessage, NULL);
   if (model_)
     model_->OnShow();
+  showing_ = true;
 }
 
 void ErrorScreenHandler::Hide() {
+  showing_ = false;
   if (model_)
    model_->OnHide();
 }
@@ -131,6 +134,11 @@ void ErrorScreenHandler::Initialize() {
     Show();
     show_on_init_ = false;
   }
+}
+
+void ErrorScreenHandler::OnConnectToNetworkRequested() {
+  if (showing_ && model_)
+    model_->OnUserAction(NetworkErrorModel::kUserActionConnectRequested);
 }
 
 }  // namespace chromeos

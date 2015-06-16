@@ -86,9 +86,4 @@ void UpdateScreenHandler::Unbind() {
   BaseScreenHandler::SetBaseScreen(nullptr);
 }
 
-void UpdateScreenHandler::OnConnectToNetworkRequested() {
-  if (model_)
-    model_->OnConnectToNetworkRequested();
-}
-
 }  // namespace chromeos

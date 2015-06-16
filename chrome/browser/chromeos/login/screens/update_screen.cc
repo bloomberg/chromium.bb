@@ -369,13 +369,6 @@ void UpdateScreen::OnContextKeyUpdated(
   UpdateModel::OnContextKeyUpdated(key);
 }
 
-void UpdateScreen::OnConnectToNetworkRequested() {
-  if (state_ == STATE_ERROR) {
-    LOG(WARNING) << "Hiding error message since AP was reselected";
-    StartUpdateCheck();
-  }
-}
-
 void UpdateScreen::ExitUpdate(UpdateScreen::ExitReason reason) {
   DBusThreadManager::Get()->GetUpdateEngineClient()->RemoveObserver(this);
   NetworkPortalDetector::Get()->RemoveObserver(this);
@@ -522,6 +515,7 @@ void UpdateScreen::StartUpdateCheck() {
   GetErrorScreen()->HideCaptivePortal();
 
   NetworkPortalDetector::Get()->RemoveObserver(this);
+  connect_request_subscription_.reset();
   if (state_ == STATE_ERROR)
     HideErrorMessage();
   state_ = STATE_UPDATE;
@@ -537,6 +531,9 @@ void UpdateScreen::ShowErrorMessage() {
   error_message_timer_.Stop();
 
   state_ = STATE_ERROR;
+  connect_request_subscription_ =
+      GetErrorScreen()->RegisterConnectRequestCallback(base::Bind(
+          &UpdateScreen::OnConnectRequested, base::Unretained(this)));
   GetErrorScreen()->SetUIState(NetworkError::UI_STATE_UPDATE);
   get_base_screen_delegate()->ShowErrorScreen();
   histogram_helper_->OnErrorShow(GetErrorScreen()->GetErrorState());
@@ -599,6 +596,13 @@ void UpdateScreen::DelayErrorMessage() {
 base::OneShotTimer<UpdateScreen>&
 UpdateScreen::GetErrorMessageTimerForTesting() {
   return error_message_timer_;
+}
+
+void UpdateScreen::OnConnectRequested() {
+  if (state_ == STATE_ERROR) {
+    LOG(WARNING) << "Hiding error message since AP was reselected";
+    StartUpdateCheck();
+  }
 }
 
 }  // namespace chromeos

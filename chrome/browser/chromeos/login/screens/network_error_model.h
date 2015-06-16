@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_NETWORK_ERROR_MODEL_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_NETWORK_ERROR_MODEL_H_
 
+#include "base/callback_list.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/login/screens/network_error.h"
@@ -33,6 +34,7 @@ class NetworkErrorModel : public BaseScreen {
   static const char kUserActionLocalStateErrorPowerwashButtonClicked[];
   static const char kUserActionRebootButtonClicked[];
   static const char kUserActionShowCaptivePortalClicked[];
+  static const char kUserActionConnectRequested[];
 
   explicit NetworkErrorModel(BaseScreenDelegate* base_screen_delegate);
   ~NetworkErrorModel() override;

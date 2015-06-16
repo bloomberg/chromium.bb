@@ -24,6 +24,7 @@ class DictionaryValue;
 
 namespace chromeos {
 class AppLaunchSplashScreenActor;
+class AutoEnrollmentCheckScreenActor;
 class BaseScreenHandler;
 class ControllerPairingScreenActor;
 class DeviceDisabledScreenActor;
@@ -39,7 +40,6 @@ class NetworkDropdownHandler;
 class NetworkStateInformer;
 class SigninScreenHandler;
 class SigninScreenHandlerDelegate;
-class UpdateScreenHandler;
 class UserBoardScreenHandler;
 
 // A custom WebUI that defines datasource for out-of-box-experience (OOBE) UI:
@@ -192,7 +192,7 @@ class OobeUI : public OobeDisplay,
   NetworkDropdownHandler* network_dropdown_handler_;
 
   // Screens actors. Note, OobeUI owns them via |handlers_|, not directly here.
-  UpdateScreenHandler* update_screen_handler_;
+  UpdateView* update_view_;
   NetworkView* network_view_;
   EnableDebuggingScreenActor* debugging_screen_actor_;
   EulaView* eula_view_;

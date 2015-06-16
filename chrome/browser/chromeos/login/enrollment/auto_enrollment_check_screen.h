@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_check_screen_actor.h"
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_controller.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
+#include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/screens/network_error.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 
@@ -87,6 +88,9 @@ class AutoEnrollmentCheckScreen
   // Returns whether enrollment check was completed and decision was made.
   bool IsCompleted() const;
 
+  // The user requested a connection attempt to be performed.
+  void OnConnectRequested();
+
   AutoEnrollmentCheckScreenActor* actor_;
   AutoEnrollmentController* auto_enrollment_controller_;
 
@@ -97,6 +101,8 @@ class AutoEnrollmentCheckScreen
   policy::AutoEnrollmentState auto_enrollment_state_;
 
   scoped_ptr<ErrorScreensHistogramHelper> histogram_helper_;
+
+  ErrorScreen::ConnectRequestCallbackSubscription connect_request_subscription_;
 
   base::WeakPtrFactory<AutoEnrollmentCheckScreen> weak_ptr_factory_;
 

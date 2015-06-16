@@ -29,6 +29,8 @@ const char
 const char NetworkErrorModel::kUserActionRebootButtonClicked[] = "reboot";
 const char NetworkErrorModel::kUserActionShowCaptivePortalClicked[] =
     "show-captive-portal";
+const char NetworkErrorModel::kUserActionConnectRequested[] =
+    "connect-requested";
 
 NetworkErrorModel::NetworkErrorModel(BaseScreenDelegate* base_screen_delegate)
     : BaseScreen(base_screen_delegate) {

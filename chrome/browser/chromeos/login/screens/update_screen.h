@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/screens/update_model.h"
 #include "chromeos/dbus/update_engine_client.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
@@ -47,7 +48,6 @@ class UpdateScreen : public UpdateModel,
   void OnViewDestroyed(UpdateView* view) override;
   void OnUserAction(const std::string& action_id) override;
   void OnContextKeyUpdated(const ::login::ScreenContext::KeyType& key) override;
-  void OnConnectToNetworkRequested() override;
 
   // Starts network check. Made virtual to simplify mocking.
   virtual void StartNetworkCheck();
@@ -121,6 +121,9 @@ class UpdateScreen : public UpdateModel,
 
   void DelayErrorMessage();
 
+  // The user requested an attempt to connect to the network should be made.
+  void OnConnectRequested();
+
   // Timer for the interval to wait for the reboot.
   // If reboot didn't happen - ask user to reboot manually.
   base::OneShotTimer<UpdateScreen> reboot_timer_;
@@ -179,6 +182,8 @@ class UpdateScreen : public UpdateModel,
   // If redirect did not happen during this delay, error message is shown
   // instead.
   base::OneShotTimer<UpdateScreen> error_message_timer_;
+
+  ErrorScreen::ConnectRequestCallbackSubscription connect_request_subscription_;
 
   base::WeakPtrFactory<UpdateScreen> weak_factory_;
 

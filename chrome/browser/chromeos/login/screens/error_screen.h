@@ -25,6 +25,9 @@ class NetworkErrorView;
 // Controller for the error screen.
 class ErrorScreen : public NetworkErrorModel, public LoginPerformer::Delegate {
  public:
+  typedef scoped_ptr<base::CallbackList<void()>::Subscription>
+      ConnectRequestCallbackSubscription;
+
   ErrorScreen(BaseScreenDelegate* base_screen_delegate, NetworkErrorView* view);
   ~ErrorScreen() override;
 
@@ -61,6 +64,11 @@ class ErrorScreen : public NetworkErrorModel, public LoginPerformer::Delegate {
   void PolicyLoadFailed() override;
   void OnOnlineChecked(const std::string& username, bool success) override;
 
+  // Register a callback to be invoked when the user indicates that an attempt
+  // to connect to the network should be made.
+  ConnectRequestCallbackSubscription RegisterConnectRequestCallback(
+      const base::Closure& callback);
+
  private:
   // Default hide_closure for Hide().
   void DefaultHideCallback();
@@ -80,6 +88,9 @@ class ErrorScreen : public NetworkErrorModel, public LoginPerformer::Delegate {
 
   // Handle uses action to reboot device.
   void OnRebootButtonClicked();
+
+  // The user indicated to make an attempt to connect to the network.
+  void OnConnectRequested();
 
   // Handles the response of an ownership check and starts the guest session if
   // applicable.
@@ -103,6 +114,9 @@ class ErrorScreen : public NetworkErrorModel, public LoginPerformer::Delegate {
 
   // Optional callback that is called when NetworkError screen is hidden.
   scoped_ptr<base::Closure> on_hide_callback_;
+
+  // Callbacks to be invoked when a connection attempt is requested.
+  base::CallbackList<void()> connect_request_callbacks_;
 
   base::WeakPtrFactory<ErrorScreen> weak_factory_;
 
