@@ -26,6 +26,9 @@ namespace net {
 class URLRequestContextGetter;
 }
 
+class SearchTermsData;
+class TemplateURLService;
+
 class AutocompleteProviderClient {
  public:
   virtual ~AutocompleteProviderClient() {}
@@ -44,6 +47,12 @@ class AutocompleteProviderClient {
 
   // Returns the in-memory URL database.
   virtual history::URLDatabase* InMemoryDatabase() = 0;
+
+  // Returns the TemplateURLService.
+  virtual TemplateURLService* GetTemplateURLService() = 0;
+
+  // Returns the search terms data.
+  virtual const SearchTermsData& GetSearchTermsData() = 0;
 
   // The value to use for Accept-Languages HTTP header when making an HTTP
   // request.

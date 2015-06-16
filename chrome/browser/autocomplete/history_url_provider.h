@@ -10,6 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/synchronization/cancellation_flag.h"
+#include "base/threading/thread_checker.h"
 #include "components/history/core/browser/history_match.h"
 #include "components/omnibox/autocomplete_input.h"
 #include "components/omnibox/history_provider.h"
@@ -17,7 +18,6 @@
 #include "components/search_engines/template_url.h"
 
 class AutocompleteProviderListener;
-class Profile;
 class SearchTermsData;
 
 namespace base {
@@ -191,8 +191,7 @@ class HistoryURLProvider : public HistoryProvider {
   static const int kBaseScoreForNonInlineableResult;
 
   HistoryURLProvider(AutocompleteProviderClient* client,
-                     AutocompleteProviderListener* listener,
-                     Profile* profile);
+                     AutocompleteProviderListener* listener);
 
   // HistoryProvider:
   void Start(const AutocompleteInput& input,
@@ -326,7 +325,6 @@ class HistoryURLProvider : public HistoryProvider {
       MatchType match_type,
       int relevance);
 
-  Profile* profile_;
   AutocompleteProviderListener* listener_;
 
   // Params for the current query.  The provider should not free this directly;
@@ -337,6 +335,8 @@ class HistoryURLProvider : public HistoryProvider {
 
   // Params controlling experimental behavior of this provider.
   HUPScoringParams scoring_params_;
+
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(HistoryURLProvider);
 };

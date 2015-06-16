@@ -17,14 +17,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/autocomplete/scored_history_match.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
-#include "chrome/common/url_constants.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/history/core/browser/history_backend.h"
 #include "components/history/core/browser/history_database.h"
@@ -37,9 +30,9 @@
 #include "components/omnibox/in_memory_url_index_types.h"
 #include "components/omnibox/omnibox_field_trial.h"
 #include "components/omnibox/url_prefix.h"
+#include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/url_fixer/url_fixer.h"
-#include "content/public/browser/browser_thread.h"
 #include "net/base/net_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/gurl.h"
@@ -473,10 +466,8 @@ HistoryURLProviderParams::~HistoryURLProviderParams() {
 }
 
 HistoryURLProvider::HistoryURLProvider(AutocompleteProviderClient* client,
-                                       AutocompleteProviderListener* listener,
-                                       Profile* profile)
+                                       AutocompleteProviderListener* listener)
     : HistoryProvider(AutocompleteProvider::TYPE_HISTORY_URL, client),
-      profile_(profile),
       listener_(listener),
       params_(NULL) {
   // Initialize HUP scoring params based on the current experiment.
@@ -536,20 +527,17 @@ void HistoryURLProvider::Start(const AutocompleteInput& input,
   // Get the default search provider and search terms data now since we have to
   // retrieve these on the UI thread, and the second pass runs on the history
   // thread. |template_url_service| can be NULL when testing.
-  TemplateURLService* template_url_service =
-      TemplateURLServiceFactory::GetForProfile(profile_);
+  TemplateURLService* template_url_service = client()->GetTemplateURLService();
   TemplateURL* default_search_provider = template_url_service ?
       template_url_service->GetDefaultSearchProvider() : NULL;
-  UIThreadSearchTermsData data(profile_);
 
   // Create the data structure for the autocomplete passes.  We'll save this off
   // onto the |params_| member for later deletion below if we need to run pass
   // 2.
-  scoped_ptr<HistoryURLProviderParams> params(
-      new HistoryURLProviderParams(
-          fixed_up_input, trim_http, what_you_typed_match,
-          profile_->GetPrefs()->GetString(prefs::kAcceptLanguages),
-          default_search_provider, data));
+  scoped_ptr<HistoryURLProviderParams> params(new HistoryURLProviderParams(
+      fixed_up_input, trim_http, what_you_typed_match,
+      client()->AcceptLanguages(), default_search_provider,
+      client()->GetSearchTermsData()));
   // Note that we use the non-fixed-up input here, since fixup may strip
   // trailing whitespace.
   params->prevent_inline_autocomplete = PreventInlineAutocomplete(input);
@@ -597,9 +585,8 @@ AutocompleteMatch HistoryURLProvider::SuggestExactInput(
     const GURL& destination_url,
     bool trim_http) {
   // The FormattedStringWithEquivalentMeaning() call below requires callers to
-  // be on the UI thread.
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI) ||
-      !content::BrowserThread::IsThreadInitialized(content::BrowserThread::UI));
+  // be on the main thread.
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   AutocompleteMatch match(this, 0, false,
                           AutocompleteMatchType::URL_WHAT_YOU_TYPED);
@@ -616,9 +603,7 @@ AutocompleteMatch HistoryURLProvider::SuggestExactInput(
     const size_t offset = trim_http ? TrimHttpPrefix(&display_string) : 0;
     match.fill_into_edit =
         AutocompleteInput::FormattedStringWithEquivalentMeaning(
-            destination_url,
-            display_string,
-            ChromeAutocompleteSchemeClassifier(profile_));
+            destination_url, display_string, client()->SchemeClassifier());
     match.allowed_to_be_default_match = true;
     // NOTE: Don't set match.inline_autocompletion to something non-empty here;
     // it's surprising and annoying.
@@ -1127,9 +1112,8 @@ AutocompleteMatch HistoryURLProvider::HistoryMatchToACMatch(
     MatchType match_type,
     int relevance) {
   // The FormattedStringWithEquivalentMeaning() call below requires callers to
-  // be on the UI thread.
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI) ||
-      !content::BrowserThread::IsThreadInitialized(content::BrowserThread::UI));
+  // be on the main thread.
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   const history::HistoryMatch& history_match = params.matches[match_number];
   const history::URLRow& info = history_match.url_info;
@@ -1147,11 +1131,10 @@ AutocompleteMatch HistoryURLProvider::HistoryMatchToACMatch(
           0 : net::kFormatUrlOmitHTTP);
   match.fill_into_edit =
       AutocompleteInput::FormattedStringWithEquivalentMeaning(
-          info.url(),
-          net::FormatUrl(info.url(), languages, format_types,
-                         net::UnescapeRule::SPACES, NULL, NULL,
-                         &inline_autocomplete_offset),
-          ChromeAutocompleteSchemeClassifier(profile_));
+          info.url(), net::FormatUrl(info.url(), languages, format_types,
+                                     net::UnescapeRule::SPACES, NULL, NULL,
+                                     &inline_autocomplete_offset),
+          client()->SchemeClassifier());
   if (!params.prevent_inline_autocomplete &&
       (inline_autocomplete_offset != base::string16::npos)) {
     DCHECK(inline_autocomplete_offset <= match.fill_into_edit.length());

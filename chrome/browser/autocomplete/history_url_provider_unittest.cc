@@ -264,7 +264,7 @@ bool HistoryURLProviderTest::SetUpImpl(bool no_db) {
   history_service_ = HistoryServiceFactory::GetForProfile(
       profile_.get(), ServiceAccessType::EXPLICIT_ACCESS);
 
-  autocomplete_ = new HistoryURLProvider(client_.get(), this, profile_.get());
+  autocomplete_ = new HistoryURLProvider(client_.get(), this);
   TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
       profile_.get(), &HistoryURLProviderTest::CreateTemplateURLService);
   FillData();

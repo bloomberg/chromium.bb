@@ -194,7 +194,7 @@ AutocompleteController::AutocompleteController(
   }
   if (provider_types & AutocompleteProvider::TYPE_HISTORY_URL) {
     history_url_provider_ =
-        new HistoryURLProvider(provider_client_.get(), this, profile);
+        new HistoryURLProvider(provider_client_.get(), this);
     providers_.push_back(history_url_provider_);
   }
   // "Tab to search" can be used on all platforms other than Android.

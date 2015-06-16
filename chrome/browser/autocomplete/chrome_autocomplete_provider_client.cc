@@ -12,6 +12,7 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/pref_names.h"
@@ -20,7 +21,8 @@
 ChromeAutocompleteProviderClient::ChromeAutocompleteProviderClient(
     Profile* profile)
     : profile_(profile),
-      scheme_classifier_(profile) {
+      scheme_classifier_(profile),
+      search_terms_data_(profile_) {
 }
 
 ChromeAutocompleteProviderClient::~ChromeAutocompleteProviderClient() {
@@ -51,6 +53,14 @@ history::URLDatabase* ChromeAutocompleteProviderClient::InMemoryDatabase() {
   // This method is called in unit test contexts where the HistoryService isn't
   // loaded.
   return history_service ? history_service->InMemoryDatabase() : NULL;
+}
+
+TemplateURLService* ChromeAutocompleteProviderClient::GetTemplateURLService() {
+  return TemplateURLServiceFactory::GetForProfile(profile_);
+}
+
+const SearchTermsData& ChromeAutocompleteProviderClient::GetSearchTermsData() {
+  return search_terms_data_;
 }
 
 std::string ChromeAutocompleteProviderClient::AcceptLanguages() {

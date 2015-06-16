@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_AUTOCOMPLETE_CHROME_AUTOCOMPLETE_PROVIDER_CLIENT_H_
 
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
+#include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "components/omnibox/autocomplete_provider_client.h"
 
 class Profile;
@@ -21,6 +22,8 @@ class ChromeAutocompleteProviderClient : public AutocompleteProviderClient {
   history::HistoryService* HistoryService() override;
   bookmarks::BookmarkModel* BookmarkModel() override;
   history::URLDatabase* InMemoryDatabase() override;
+  TemplateURLService* GetTemplateURLService() override;
+  const SearchTermsData& GetSearchTermsData() override;
   std::string AcceptLanguages() override;
   bool IsOffTheRecord() override;
   bool SearchSuggestEnabled() override;
@@ -41,6 +44,7 @@ class ChromeAutocompleteProviderClient : public AutocompleteProviderClient {
  private:
   Profile* profile_;
   ChromeAutocompleteSchemeClassifier scheme_classifier_;
+  UIThreadSearchTermsData search_terms_data_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeAutocompleteProviderClient);
 };

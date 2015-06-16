@@ -30,6 +30,8 @@ class MockAutocompleteProviderClient : public AutocompleteProviderClient {
   MOCK_METHOD0(HistoryService, history::HistoryService*());
   MOCK_METHOD0(BookmarkModel, bookmarks::BookmarkModel*());
   MOCK_METHOD0(InMemoryDatabase, history::URLDatabase*());
+  MOCK_METHOD0(GetTemplateURLService, TemplateURLService*());
+  MOCK_METHOD0(GetSearchTermsData, const SearchTermsData&());
   MOCK_METHOD0(AcceptLanguages, std::string());
   MOCK_METHOD0(IsOffTheRecord, bool());
   MOCK_METHOD0(SearchSuggestEnabled, bool());
