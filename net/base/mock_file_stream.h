@@ -28,9 +28,7 @@ class MockFileStream : public FileStream {
   ~MockFileStream() override;
 
   // FileStream methods.
-  int Seek(base::File::Whence whence,
-           int64_t offset,
-           const Int64CompletionCallback& callback) override;
+  int Seek(int64_t offset, const Int64CompletionCallback& callback) override;
   int Read(IOBuffer* buf,
            int buf_len,
            const CompletionCallback& callback) override;

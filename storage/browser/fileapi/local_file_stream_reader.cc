@@ -106,10 +106,8 @@ void LocalFileStreamReader::DidOpenFileStream(
     return;
   }
   result = stream_impl_->Seek(
-      base::File::FROM_BEGIN, initial_offset_,
-      base::Bind(&LocalFileStreamReader::DidSeekFileStream,
-                 weak_factory_.GetWeakPtr(),
-                 callback));
+      initial_offset_, base::Bind(&LocalFileStreamReader::DidSeekFileStream,
+                                  weak_factory_.GetWeakPtr(), callback));
   if (result != net::ERR_IO_PENDING) {
     callback.Run(result);
   }

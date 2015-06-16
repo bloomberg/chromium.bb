@@ -114,19 +114,14 @@ void FileStream::Context::Close(const CompletionCallback& callback) {
   async_in_progress_ = true;
 }
 
-void FileStream::Context::Seek(base::File::Whence whence,
-                               int64_t offset,
+void FileStream::Context::Seek(int64_t offset,
                                const Int64CompletionCallback& callback) {
   DCHECK(!async_in_progress_);
 
   bool posted = base::PostTaskAndReplyWithResult(
-      task_runner_.get(),
-      FROM_HERE,
-      base::Bind(
-          &Context::SeekFileImpl, base::Unretained(this), whence, offset),
-      base::Bind(&Context::OnAsyncCompleted,
-                 base::Unretained(this),
-                 callback));
+      task_runner_.get(), FROM_HERE,
+      base::Bind(&Context::SeekFileImpl, base::Unretained(this), offset),
+      base::Bind(&Context::OnAsyncCompleted, base::Unretained(this), callback));
   DCHECK(posted);
 
   async_in_progress_ = true;
@@ -145,6 +140,10 @@ void FileStream::Context::Flush(const CompletionCallback& callback) {
   DCHECK(posted);
 
   async_in_progress_ = true;
+}
+
+bool FileStream::Context::IsOpen() const {
+  return file_.IsValid();
 }
 
 FileStream::Context::OpenResult FileStream::Context::OpenFileImpl(

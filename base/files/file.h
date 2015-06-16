@@ -176,6 +176,9 @@ class BASE_EXPORT File {
 
   ~File();
 
+  // Takes ownership of |platform_file|.
+  static File CreateForAsyncHandle(PlatformFile platform_file);
+
   // Move operator= for C++03 move emulation of this type.
   File& operator=(RValue other);
 

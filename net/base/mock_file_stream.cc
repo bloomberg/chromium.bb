@@ -35,14 +35,13 @@ MockFileStream::MockFileStream(
 MockFileStream::~MockFileStream() {
 }
 
-int MockFileStream::Seek(base::File::Whence whence,
-                         int64_t offset,
+int MockFileStream::Seek(int64_t offset,
                          const Int64CompletionCallback& callback) {
   Int64CompletionCallback wrapped_callback =
       base::Bind(&MockFileStream::DoCallback64,
                  weak_factory_.GetWeakPtr(), callback);
   if (forced_error_ == OK)
-    return FileStream::Seek(whence, offset, wrapped_callback);
+    return FileStream::Seek(offset, wrapped_callback);
   return ErrorCallback64(wrapped_callback);
 }
 

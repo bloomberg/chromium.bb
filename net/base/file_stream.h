@@ -62,15 +62,13 @@ class NET_EXPORT FileStream {
   // Returns true if Open succeeded and Close has not been called.
   virtual bool IsOpen() const;
 
-  // Adjust the position from where data is read asynchronously.
-  // Upon success, ERR_IO_PENDING is returned and |callback| will be run
-  // on the thread where Seek() was called with the the stream position
-  // relative to the start of the file.  Otherwise, an error code is returned.
-  // It is invalid to request any asynchronous operations while there is an
-  // in-flight asynchronous operation.
-  virtual int Seek(base::File::Whence whence,
-                   int64_t offset,
-                   const Int64CompletionCallback& callback);
+  // Adjust the position from the start of the file where data is read
+  // asynchronously. Upon success, ERR_IO_PENDING is returned and |callback|
+  // will be run on the thread where Seek() was called with the the stream
+  // position relative to the start of the file.  Otherwise, an error code is
+  // returned. It is invalid to request any asynchronous operations while there
+  // is an in-flight asynchronous operation.
+  virtual int Seek(int64_t offset, const Int64CompletionCallback& callback);
 
   // Call this method to read data from the current stream position
   // asynchronously. Up to buf_len bytes will be copied into buf.  (In
@@ -140,9 +138,6 @@ class NET_EXPORT FileStream {
   //
   // This method should not be called if the stream was opened READ_ONLY.
   virtual int Flush(const CompletionCallback& callback);
-
-  // Returns the underlying file for testing.
-  const base::File& GetFileForTesting() const;
 
  private:
   class Context;

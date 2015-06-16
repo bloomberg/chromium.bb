@@ -75,7 +75,6 @@ class FileStream::Context {
             int buf_len,
             const CompletionCallback& callback);
 
-  const base::File& file() const { return file_; }
   bool async_in_progress() const { return async_in_progress_; }
 
   ////////////////////////////////////////////////////////////////////////////
@@ -93,11 +92,12 @@ class FileStream::Context {
 
   void Close(const CompletionCallback& callback);
 
-  void Seek(base::File::Whence whence,
-            int64_t offset,
-            const Int64CompletionCallback& callback);
+  // Seeks |offset| bytes from the start of the file.
+  void Seek(int64_t offset, const Int64CompletionCallback& callback);
 
   void Flush(const CompletionCallback& callback);
+
+  bool IsOpen() const;
 
  private:
   struct IOResult {
@@ -150,7 +150,7 @@ class FileStream::Context {
   ////////////////////////////////////////////////////////////////////////////
 
   // Adjusts the position from where the data is read.
-  IOResult SeekFileImpl(base::File::Whence whence, int64_t offset);
+  IOResult SeekFileImpl(int64_t offset);
 
   void OnFileOpened();
 

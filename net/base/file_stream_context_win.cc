@@ -63,7 +63,7 @@ FileStream::Context::Context(base::File file,
   io_context_.handler = this;
   memset(&io_context_.overlapped, 0, sizeof(io_context_.overlapped));
   if (file_.IsValid()) {
-    // TODO(hashimoto): Check that file_ is async.
+    DCHECK(file_.async());
     OnFileOpened();
   }
 }
@@ -115,16 +115,11 @@ int FileStream::Context::Write(IOBuffer* buf,
 }
 
 FileStream::Context::IOResult FileStream::Context::SeekFileImpl(
-    base::File::Whence whence,
     int64_t offset) {
   LARGE_INTEGER result;
-  result.QuadPart = file_.Seek(whence, offset);
-  if (result.QuadPart >= 0) {
-    SetOffset(&io_context_.overlapped, result);
-    return IOResult(result.QuadPart, 0);
-  }
-
-  return IOResult::FromOSError(GetLastError());
+  result.QuadPart = offset;
+  SetOffset(&io_context_.overlapped, result);
+  return IOResult(result.QuadPart, 0);
 }
 
 void FileStream::Context::OnFileOpened() {

@@ -63,6 +63,15 @@ File::~File() {
   Close();
 }
 
+// static
+File File::CreateForAsyncHandle(PlatformFile platform_file) {
+  File file(platform_file);
+  // It would be nice if we could validate that |platform_file| was opened with
+  // FILE_FLAG_OVERLAPPED on Windows but this doesn't appear to be possible.
+  file.async_ = true;
+  return file.Pass();
+}
+
 File& File::operator=(RValue other) {
   if (this != other.object) {
     Close();

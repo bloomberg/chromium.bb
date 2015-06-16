@@ -152,11 +152,10 @@ void LocalFileStreamWriter::InitiateSeek(
     return;
   }
 
-  int result = stream_impl_->Seek(base::File::FROM_BEGIN, initial_offset_,
-                                  base::Bind(&LocalFileStreamWriter::DidSeek,
-                                             weak_factory_.GetWeakPtr(),
-                                             error_callback,
-                                             main_operation));
+  int result = stream_impl_->Seek(
+      initial_offset_,
+      base::Bind(&LocalFileStreamWriter::DidSeek, weak_factory_.GetWeakPtr(),
+                 error_callback, main_operation));
   if (result != net::ERR_IO_PENDING) {
     has_pending_operation_ = false;
     error_callback.Run(result);
