@@ -90,7 +90,7 @@ https://sites.google.com/a/chromium.org/dev/developers/performance-try-bots
 
 class BisectPrinter(object):
 
-  def __init__(self, opts, depot_registry):
+  def __init__(self, opts, depot_registry=None):
     self.opts = opts
     self.depot_registry = depot_registry
 

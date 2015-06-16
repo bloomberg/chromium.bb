@@ -2847,8 +2847,8 @@ def main():
         bisect_utils.OutputAnnotationStepClosed()
       if issue_closed:
         results = BisectResults(abort_reason='the bug is closed.')
-        bisect_test = BisectPerformanceMetrics(opts, os.getcwd())
-        bisect_test.printer.FormatAndPrintResults(results)
+        bisect_printer = BisectPrinter(opts)
+        bisect_printer.FormatAndPrintResults(results)
         return 0
 
     if opts.extra_src:
