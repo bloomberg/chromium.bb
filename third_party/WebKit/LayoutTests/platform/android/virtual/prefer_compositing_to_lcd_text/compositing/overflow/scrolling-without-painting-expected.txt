@@ -38,14 +38,7 @@
                   "bounds": [15, 185],
                   "drawsContent": true,
                   "repaintRects": [
-                    [0, 0, 15, 185],
-                    [0, 0, 15, 185],
                     [0, 0, 15, 185]
-                  ],
-                  "paintInvalidationClients": [
-                    "##ALL##",
-                    "##ALL##",
-                    "##ALL##"
                   ]
                 },
                 {

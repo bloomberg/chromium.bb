@@ -197,14 +197,6 @@ crbug.com/490511 imported/web-platform-tests/html/webappapis/scripting/processin
 crbug.com/490511 imported/web-platform-tests/html/syntax/parsing/html5lib_tests19.html [ Failure Pass Slow ]
 crbug.com/490511 imported/web-platform-tests/html/syntax/parsing/html5lib_tests2.html [ Failure Pass Slow ]
 
-crbug.com/497590 virtual/gpu/fast/canvas/setWidthResetAfterForcedRender.html [ NeedsRebaseline ]
-crbug.com/497590 virtual/prefer_compositing_to_lcd_text/compositing/overflow/updating-scrolling-container.html [ NeedsRebaseline ]
-crbug.com/497590 virtual/prefer_compositing_to_lcd_text/compositing/overflow/updating-scrolling-content.html [ NeedsRebaseline ]
-crbug.com/497590 virtual/prefer_compositing_to_lcd_text/compositing/overflow/text-color-change.html [ NeedsRebaseline ]
-crbug.com/497590 virtual/prefer_compositing_to_lcd_text/compositing/overflow/updating-scrolling-container-and-content.html [ NeedsRebaseline ]
-crbug.com/497590 virtual/prefer_compositing_to_lcd_text/compositing/overflow/scrolling-without-painting.html [ NeedsRebaseline ]
-crbug.com/497590 virtual/prefer_compositing_to_lcd_text/compositing/overflow/text-match-highlight.html [ NeedsRebaseline ]
-
 crbug.com/330083 imported/web-platform-tests/shadow-dom/elements-and-dom-objects/extensions-to-element-interface/methods/elements-001.html [ Failure ]
 crbug.com/330083 imported/web-platform-tests/shadow-dom/elements-and-dom-objects/extensions-to-element-interface/methods/non-element-nodes-001.html [ Failure ]
 crbug.com/330083 imported/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-methods/test-004.html [ Failure ]

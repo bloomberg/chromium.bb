@@ -13,6 +13,9 @@
           "repaintRects": [
             [0, 0, 210, 210]
           ],
+          "paintInvalidationClients": [
+            "LayoutBlockFlow DIV id='container'"
+          ],
           "children": [
             {
               "position": [5, 5],
@@ -23,6 +26,9 @@
                   "drawsContent": true,
                   "repaintRects": [
                     [-5, -5, 210, 210]
+                  ],
+                  "paintInvalidationClients": [
+                    "LayoutBlockFlow DIV id='container'"
                   ],
                   "children": [
                     {
