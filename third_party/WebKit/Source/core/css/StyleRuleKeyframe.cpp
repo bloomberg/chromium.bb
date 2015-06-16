@@ -7,7 +7,6 @@
 
 #include "core/css/StylePropertySet.h"
 #include "core/css/parser/CSSParser.h"
-#include "core/css/parser/CSSParserValues.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace blink {
@@ -69,25 +68,6 @@ String StyleRuleKeyframe::cssText() const
         result.append(' ');
     result.append('}');
     return result.toString();
-}
-
-PassOwnPtr<Vector<double>> StyleRuleKeyframe::createKeyList(CSSParserValueList* keys)
-{
-    size_t numKeys = keys ? keys->size() : 0;
-    OwnPtr<Vector<double>> keyVector = adoptPtr(new Vector<double>(numKeys));
-    for (size_t i = 0; i < numKeys; ++i) {
-        ASSERT(keys->valueAt(i)->unit == CSSPrimitiveValue::CSS_NUMBER);
-        double key = keys->valueAt(i)->fValue;
-        if (key < 0 || key > 100) {
-            // As per http://www.w3.org/TR/css3-animations/#keyframes,
-            // "If a keyframe selector specifies negative percentage values
-            // or values higher than 100%, then the keyframe will be ignored."
-            keyVector->clear();
-            break;
-        }
-        keyVector->at(i) = key / 100;
-    }
-    return keyVector.release();
 }
 
 DEFINE_TRACE_AFTER_DISPATCH(StyleRuleKeyframe)

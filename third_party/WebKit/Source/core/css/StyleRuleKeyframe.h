@@ -9,7 +9,6 @@
 
 namespace blink {
 
-class CSSParserValueList;
 class MutableStylePropertySet;
 class StylePropertySet;
 
@@ -34,8 +33,6 @@ public:
     String cssText() const;
 
     DECLARE_TRACE_AFTER_DISPATCH();
-
-    static PassOwnPtr<Vector<double>> createKeyList(CSSParserValueList*);
 
 private:
     StyleRuleKeyframe(PassOwnPtr<Vector<double>>, PassRefPtrWillBeRawPtr<StylePropertySet>);
