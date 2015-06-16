@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -27,6 +29,7 @@
 #include "content/public/browser/download_manager.h"
 #include "content/public/test/download_test_observer.h"
 #include "grit/theme_resources.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/url_request/url_request_slow_download_job.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/message_center.h"
@@ -240,7 +243,19 @@ class DownloadNotificationTestBase : public InProcessBrowserTest {
     command_line->AppendSwitch(switches::kEnableDownloadNotification);
   }
 
+  void SetUp() override {
+    base::FilePath test_data_dir;
+    PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
+    embedded_test_server()->ServeFilesFromDirectory(test_data_dir);
+
+    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+    embedded_test_server()->StopThread();
+    InProcessBrowserTest::SetUp();
+  }
+
   void SetUpOnMainThread() override {
+    embedded_test_server()->RestartThreadAndListen();
+
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
         base::Bind(&net::URLRequestSlowDownloadJob::AddUrlHandler));
@@ -399,9 +414,8 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadFile) {
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadDangerousFile) {
-  ASSERT_TRUE(test_server()->Start());
-  GURL download_url(
-      test_server()->GetURL("files/downloads/dangerous/dangerous.swf"));
+  GURL download_url(embedded_test_server()->GetURL(
+      "/downloads/dangerous/dangerous.swf"));
 
   content::DownloadTestObserverTerminal download_terminal_observer(
       GetDownloadManager(browser()),
@@ -451,9 +465,8 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadDangerousFile) {
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DiscardDangerousFile) {
-  ASSERT_TRUE(test_server()->Start());
-  GURL download_url(
-      test_server()->GetURL("files/downloads/dangerous/dangerous.swf"));
+  GURL download_url(embedded_test_server()->GetURL(
+      "/downloads/dangerous/dangerous.swf"));
 
   content::DownloadTestObserverTerminal download_terminal_observer(
       GetDownloadManager(browser()),
