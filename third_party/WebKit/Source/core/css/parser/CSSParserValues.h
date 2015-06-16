@@ -25,87 +25,12 @@
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSSelector.h"
 #include "core/css/CSSValueList.h"
-#include "wtf/text/AtomicString.h"
-#include "wtf/text/WTFString.h"
+#include "core/css/parser/CSSParserString.h"
 
 namespace blink {
 
 class QualifiedName;
 class CSSParserTokenRange;
-
-struct CSSParserString {
-    void init(const LChar* characters, unsigned length)
-    {
-        m_data.characters8 = characters;
-        m_length = length;
-        m_is8Bit = true;
-    }
-
-    void init(const UChar* characters, unsigned length)
-    {
-        m_data.characters16 = characters;
-        m_length = length;
-        m_is8Bit = false;
-    }
-
-    void initRaw(const void* charactersRaw, unsigned length, bool is8Bit)
-    {
-        m_data.charactersRaw = charactersRaw;
-        m_length = length;
-        m_is8Bit = is8Bit;
-    }
-
-    void init(const String& string)
-    {
-        m_length = string.length();
-        if (string.isNull()) {
-            m_data.characters8 = 0;
-            m_is8Bit = true;
-            return;
-        }
-        if (string.is8Bit()) {
-            m_data.characters8 = const_cast<LChar*>(string.characters8());
-            m_is8Bit = true;
-        } else {
-            m_data.characters16 = const_cast<UChar*>(string.characters16());
-            m_is8Bit = false;
-        }
-    }
-
-    bool is8Bit() const { return m_is8Bit; }
-    const LChar* characters8() const { ASSERT(is8Bit()); return m_data.characters8; }
-    const UChar* characters16() const { ASSERT(!is8Bit()); return m_data.characters16; }
-
-    unsigned length() const { return m_length; }
-
-    UChar operator[](unsigned i) const
-    {
-        ASSERT_WITH_SECURITY_IMPLICATION(i < m_length);
-        if (is8Bit())
-            return m_data.characters8[i];
-        return m_data.characters16[i];
-    }
-
-    bool equalIgnoringCase(const char* str) const
-    {
-        bool match = is8Bit() ? WTF::equalIgnoringCase(str, characters8(), length()) : WTF::equalIgnoringCase(str, characters16(), length());
-        if (!match)
-            return false;
-        ASSERT(strlen(str) >= length());
-        return str[length()] == '\0';
-    }
-
-    operator String() const { return is8Bit() ? String(m_data.characters8, m_length) : StringImpl::create8BitIfPossible(m_data.characters16, m_length); }
-    operator AtomicString() const { return is8Bit() ? AtomicString(m_data.characters8, m_length) : AtomicString(m_data.characters16, m_length); }
-
-    union {
-        const LChar* characters8;
-        const UChar* characters16;
-        const void* charactersRaw;
-    } m_data;
-    unsigned m_length;
-    bool m_is8Bit;
-};
 
 struct CSSParserFunction;
 class CSSParserValueList;

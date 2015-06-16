@@ -5,7 +5,7 @@
 #include "config.h"
 #include "core/css/parser/CSSTokenizerInputStream.h"
 
-#include "core/css/parser/CSSParserValues.h"
+#include "core/css/parser/CSSParserString.h"
 #include "core/html/parser/InputStreamPreprocessor.h"
 
 namespace blink {

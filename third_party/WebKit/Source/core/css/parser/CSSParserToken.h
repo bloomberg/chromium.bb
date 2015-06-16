@@ -7,7 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "core/css/CSSPrimitiveValue.h"
-#include "core/css/parser/CSSParserValues.h"
+#include "core/css/parser/CSSParserString.h"
 
 namespace blink {
 
