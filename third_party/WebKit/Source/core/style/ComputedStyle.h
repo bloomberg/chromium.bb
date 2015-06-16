@@ -514,10 +514,10 @@ public:
     int borderBottomWidth() const { return surround->border.borderBottomWidth(); }
     EBorderStyle borderBottomStyle() const { return surround->border.bottom().style(); }
 
-    unsigned short borderBeforeWidth() const;
-    unsigned short borderAfterWidth() const;
-    unsigned short borderStartWidth() const;
-    unsigned short borderEndWidth() const;
+    int borderBeforeWidth() const;
+    int borderAfterWidth() const;
+    int borderStartWidth() const;
+    int borderEndWidth() const;
 
     int outlineSize() const { return max(0, outlineWidth() + outlineOffset()); }
     int outlineWidth() const

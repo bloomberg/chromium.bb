@@ -1525,7 +1525,7 @@ const BorderValue& ComputedStyle::borderEnd() const
     return isLeftToRightDirection() ? borderBottom() : borderTop();
 }
 
-unsigned short ComputedStyle::borderBeforeWidth() const
+int ComputedStyle::borderBeforeWidth() const
 {
     switch (writingMode()) {
     case TopToBottomWritingMode:
@@ -1541,7 +1541,7 @@ unsigned short ComputedStyle::borderBeforeWidth() const
     return borderTopWidth();
 }
 
-unsigned short ComputedStyle::borderAfterWidth() const
+int ComputedStyle::borderAfterWidth() const
 {
     switch (writingMode()) {
     case TopToBottomWritingMode:
@@ -1557,14 +1557,14 @@ unsigned short ComputedStyle::borderAfterWidth() const
     return borderBottomWidth();
 }
 
-unsigned short ComputedStyle::borderStartWidth() const
+int ComputedStyle::borderStartWidth() const
 {
     if (isHorizontalWritingMode())
         return isLeftToRightDirection() ? borderLeftWidth() : borderRightWidth();
     return isLeftToRightDirection() ? borderTopWidth() : borderBottomWidth();
 }
 
-unsigned short ComputedStyle::borderEndWidth() const
+int ComputedStyle::borderEndWidth() const
 {
     if (isHorizontalWritingMode())
         return isLeftToRightDirection() ? borderRightWidth() : borderLeftWidth();
