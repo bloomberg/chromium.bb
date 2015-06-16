@@ -66,7 +66,8 @@ class HTMLDocumentApplicationDelegate : public mojo::ApplicationDelegate {
     // OnHTMLDocumentDeleted() and remove from |documents_|. Copy the set so we
     // don't have to worry about the set being modified out from under us.
     std::set<HTMLDocument*> documents(documents_);
-    STLDeleteElements(&documents);
+    for (HTMLDocument* doc : documents)
+      doc->Destroy();
   }
 
   // Callback from the quit closure. We key off this rather than

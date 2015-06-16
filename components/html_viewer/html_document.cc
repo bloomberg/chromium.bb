@@ -176,6 +176,17 @@ HTMLDocument::HTMLDocument(mojo::ApplicationImpl* html_document_app,
     Load(response_.Pass());
 }
 
+void HTMLDocument::Destroy() {
+  // See comment in header for a description of lifetime.
+  if (root_) {
+    // Deleting the ViewManager calls back to OnViewManagerDestroyed() and
+    // triggers deletion.
+    delete root_->view_manager();
+  } else {
+    delete this;
+  }
+}
+
 HTMLDocument::~HTMLDocument() {
   delete_callback_.Run(this);
 

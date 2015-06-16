@@ -47,6 +47,10 @@ class Setup;
 class WebLayerTreeViewImpl;
 
 // A view for a single HTML document.
+//
+// HTMLDocument is deleted in one of two ways:
+// . When the View the HTMLDocument is embedded in is destroyed.
+// . Explicitly by way of Destroy().
 class HTMLDocument : public blink::WebViewClient,
                      public blink::WebFrameClient,
                      public mojo::ViewManagerDelegate,
@@ -65,7 +69,9 @@ class HTMLDocument : public blink::WebViewClient,
                mojo::URLResponsePtr response,
                Setup* setup,
                const DeleteCallback& delete_callback);
-  ~HTMLDocument() override;
+
+  // Deletes this object.
+  void Destroy();
 
  private:
   // Data associated with a child iframe.
@@ -75,6 +81,8 @@ class HTMLDocument : public blink::WebViewClient,
   };
 
   using FrameToViewMap = std::map<blink::WebLocalFrame*, ChildFrameData>;
+
+  ~HTMLDocument() override;
 
   // Updates the size and scale factor of the webview and related classes from
   // |root_|.
