@@ -275,27 +275,19 @@ void LayoutBlock::styleWillChange(StyleDifference diff, const ComputedStyle& new
     setReplaced(newStyle.isDisplayInlineType());
 
     if (oldStyle && parent()) {
-        bool oldStyleIsContainer = oldStyle->position() != StaticPosition || oldStyle->hasTransformRelatedProperty();
-        bool newStyleIsContainer = newStyle.position() != StaticPosition || newStyle.hasTransformRelatedProperty();
+        bool oldHasTransformRelatedProperty = oldStyle->hasTransformRelatedProperty();
+        bool newHasTransformRelatedProperty = newStyle.hasTransformRelatedProperty();
+        bool oldStyleIsContainer = oldStyle->position() != StaticPosition || oldHasTransformRelatedProperty;
 
-        if (oldStyleIsContainer && !newStyleIsContainer) {
+        if (oldStyleIsContainer && (newStyle.position() == StaticPosition || (oldHasTransformRelatedProperty && !newHasTransformRelatedProperty))) {
             // Clear our positioned objects list. Our absolutely positioned descendants will be
             // inserted into our containing block's positioned objects list during layout.
             removePositionedObjects(0, NewContainingBlock);
-        } else if (!oldStyleIsContainer && newStyleIsContainer) {
+        } else if (!oldStyleIsContainer && (newStyle.position() != StaticPosition || newHasTransformRelatedProperty)) {
             // Remove our absolutely positioned descendants from their current containing block.
             // They will be inserted into our positioned objects list during layout.
-            LayoutObject* cb = parent();
-            while (cb && (cb->style()->position() == StaticPosition || (cb->isInline() && !cb->isReplaced())) && !cb->isLayoutView()) {
-                if (cb->style()->position() == RelativePosition && cb->isInline() && !cb->isReplaced()) {
-                    cb = cb->containingBlock();
-                    break;
-                }
-                cb = cb->parent();
-            }
-
-            if (cb->isLayoutBlock())
-                toLayoutBlock(cb)->removePositionedObjects(this, NewContainingBlock);
+            if (LayoutBlock* cb = containingBlock())
+                cb->removePositionedObjects(this, NewContainingBlock);
         }
     }
 
@@ -325,6 +317,16 @@ void LayoutBlock::styleDidChange(StyleDifference diff, const ComputedStyle* oldS
         toLayoutBlock(parent())->removeAnonymousWrappersIfRequired();
 
     const ComputedStyle& newStyle = styleRef();
+
+    if (oldStyle && parent()) {
+        if (oldStyle->position() != newStyle.position() && newStyle.position() != StaticPosition) {
+            // Remove our absolutely positioned descendants from their new containing block,
+            // in case containingBlock() changes by the change to the position property.
+            // See styleWillChange() for other cases.
+            if (LayoutBlock* cb = containingBlock())
+                cb->removePositionedObjects(this, NewContainingBlock);
+        }
+    }
 
     if (TextAutosizer* textAutosizer = document().textAutosizer())
         textAutosizer->record(this);
