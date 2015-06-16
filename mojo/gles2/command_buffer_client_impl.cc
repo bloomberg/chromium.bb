@@ -252,8 +252,8 @@ int32_t CommandBufferClientImpl::CreateImage(ClientBuffer buffer,
   int32 new_id = ++next_image_id_;
 
   mojo::SizePtr size = mojo::Size::New();
-  size->width = width;
-  size->height = height;
+  size->width = static_cast<int32_t>(width);
+  size->height = static_cast<int32_t>(height);
 
   MojoGpuMemoryBufferImpl* gpu_memory_buffer =
       MojoGpuMemoryBufferImpl::FromClientBuffer(buffer);
@@ -310,7 +310,7 @@ int32_t CommandBufferClientImpl::CreateGpuMemoryBufferImage(
     unsigned internalformat,
     unsigned usage) {
   scoped_ptr<gfx::GpuMemoryBuffer> buffer(MojoGpuMemoryBufferImpl::Create(
-      gfx::Size(width, height),
+      gfx::Size(static_cast<int>(width), static_cast<int>(height)),
       gpu::ImageFactory::ImageFormatToGpuMemoryBufferFormat(internalformat),
       gpu::ImageFactory::ImageUsageToGpuMemoryBufferUsage(usage)));
   if (!buffer)
