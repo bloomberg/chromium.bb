@@ -143,6 +143,11 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'opengl'], bug=1007) # angle bug ID
     self.Fail('conformance/renderbuffers/framebuffer-object-attachment.html',
         ['win', 'opengl'], bug=1007) # angle bug ID
+    self.Fail('conformance/rendering/point-size.html',
+        ['win', 'opengl'], bug=1007) # angle bug ID
+    self.Fail('conformance/rendering/' +
+        'point-with-gl-pointcoord-in-fragment-shader.html',
+        ['win', 'opengl'], bug=1007) # angle bug ID
     self.Fail('conformance/textures/gl-pixelstorei.html',
         ['win', 'opengl'], bug=1007) # angle bug ID
     self.Fail('conformance/textures/tex-image-canvas-corruption.html',
