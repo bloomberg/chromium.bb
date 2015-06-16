@@ -114,6 +114,7 @@ source_set("browser") {
       "//content/common:mojo_bindings",
       "//content/public/common:mojo_bindings",
       "//device/bluetooth",
+      "//gin",
       "//mojo/application/public/interfaces",
       "//storage/browser",
       "//storage/common",

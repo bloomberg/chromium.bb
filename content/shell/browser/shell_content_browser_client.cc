@@ -34,7 +34,6 @@
 #include "content/shell/common/shell_messages.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/renderer/layout_test/blink_test_helpers.h"
-#include "gin/v8_initializer.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
 
@@ -129,12 +128,7 @@ void ShellContentBrowserClient::SetSwapProcessesForRedirect(bool swap) {
 }
 
 ShellContentBrowserClient::ShellContentBrowserClient()
-    :
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-      v8_natives_fd_(-1),
-      v8_snapshot_fd_(-1),
-#endif  // OS_POSIX && !OS_MACOSX
-      shell_browser_main_parts_(NULL) {
+    : shell_browser_main_parts_(NULL) {
   DCHECK(!g_browser_client);
   g_browser_client = this;
 }
@@ -204,22 +198,6 @@ bool ShellContentBrowserClient::IsHandledURL(const GURL& url) {
       return true;
   }
   return false;
-}
-
-void ShellContentBrowserClient::AppendMappedFileCommandLineSwitches(
-    base::CommandLine* command_line) {
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-#if defined(V8_USE_EXTERNAL_STARTUP_DATA)
-  std::string process_type =
-      command_line->GetSwitchValueASCII(switches::kProcessType);
-  if (process_type != switches::kZygoteProcess) {
-    DCHECK(natives_fd_exists());
-    command_line->AppendSwitch(::switches::kV8NativesPassedByFD);
-    if (snapshot_fd_exists())
-      command_line->AppendSwitch(::switches::kV8SnapshotPassedByFD);
-  }
-#endif  // V8_USE_EXTERNAL_STARTUP_DATA
-#endif  // OS_POSIX && !OS_MACOSX
 }
 
 void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
@@ -357,23 +335,6 @@ void ShellContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
     const base::CommandLine& command_line,
     int child_process_id,
     FileDescriptorInfo* mappings) {
-#if defined(V8_USE_EXTERNAL_STARTUP_DATA)
-  if (!natives_fd_exists()) {
-    int v8_natives_fd = -1;
-    int v8_snapshot_fd = -1;
-    if (gin::V8Initializer::OpenV8FilesForChildProcesses(&v8_natives_fd,
-                                                         &v8_snapshot_fd)) {
-      v8_natives_fd_.reset(v8_natives_fd);
-      v8_snapshot_fd_.reset(v8_snapshot_fd);
-    }
-  }
-  // V8 can't start up without the source of the natives, but it can
-  // start up (slower) without the snapshot.
-  DCHECK(natives_fd_exists());
-  mappings->Share(kV8NativesDataDescriptor, v8_natives_fd_.get());
-  mappings->Share(kV8SnapshotDataDescriptor, v8_snapshot_fd_.get());
-#endif  // V8_USE_EXTERNAL_STARTUP_DATA
-
 #if defined(OS_ANDROID)
   int flags = base::File::FLAG_OPEN | base::File::FLAG_READ;
   base::FilePath pak_file;

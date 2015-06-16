@@ -9,6 +9,7 @@ include_rules = [
   "+content/public/browser",
   "+device/battery",  # For battery status service.
   "+device/vibration",  # For Vibration API
+  "+gin/v8_initializer.h",
   "+media/audio",  # For audio input for speech input feature.
   "+media/base",  # For Android JNI registration.
   "+media/filters",  # For reporting GPU decoding UMA.

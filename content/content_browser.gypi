@@ -1795,6 +1795,7 @@
         '../components/mime_util/mime_util.gyp:mime_util',
         '../components/scheduler/scheduler.gyp:scheduler_common',
         '../device/bluetooth/bluetooth.gyp:device_bluetooth',
+        '../gin/gin.gyp:gin',
         '../net/net.gyp:http_server',
         '../storage/storage_browser.gyp:storage',
         '../storage/storage_common.gyp:storage_common',

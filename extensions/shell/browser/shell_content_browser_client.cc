@@ -28,7 +28,6 @@
 #include "extensions/shell/browser/shell_browser_main_parts.h"
 #include "extensions/shell/browser/shell_extension_system.h"
 #include "extensions/shell/browser/shell_speech_recognition_manager_delegate.h"
-#include "gin/v8_initializer.h"
 #include "url/gurl.h"
 
 #if !defined(DISABLE_NACL)
@@ -54,12 +53,7 @@ ShellContentBrowserClient* g_instance = nullptr;
 
 ShellContentBrowserClient::ShellContentBrowserClient(
     ShellBrowserMainDelegate* browser_main_delegate)
-    :
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-      v8_natives_fd_(-1),
-      v8_snapshot_fd_(-1),
-#endif  // OS_POSIX && !OS_MACOSX
-      browser_main_parts_(nullptr),
+    : browser_main_parts_(nullptr),
       browser_main_delegate_(browser_main_delegate) {
   DCHECK(!g_instance);
   g_instance = this;
@@ -200,21 +194,6 @@ void ShellContentBrowserClient::SiteInstanceDeleting(
                  site_instance->GetId()));
 }
 
-void ShellContentBrowserClient::AppendMappedFileCommandLineSwitches(
-    base::CommandLine* command_line) {
-  std::string process_type =
-      command_line->GetSwitchValueASCII(::switches::kProcessType);
-
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-#if defined(V8_USE_EXTERNAL_STARTUP_DATA)
-  DCHECK(natives_fd_exists());
-  command_line->AppendSwitch(::switches::kV8NativesPassedByFD);
-  if (snapshot_fd_exists())
-    command_line->AppendSwitch(::switches::kV8SnapshotPassedByFD);
-#endif  // V8_USE_EXTERNAL_STARTUP_DATA
-#endif  // OS_POSIX && !OS_MACOSX
-}
-
 void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
     base::CommandLine* command_line,
     int child_process_id) {
@@ -253,30 +232,6 @@ void ShellContentBrowserClient::GetAdditionalAllowedSchemesForFileSystem(
       additional_allowed_schemes);
   additional_allowed_schemes->push_back(kExtensionScheme);
 }
-
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-void ShellContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
-    const base::CommandLine& command_line,
-    int child_process_id,
-    content::FileDescriptorInfo* mappings) {
-#if defined(V8_USE_EXTERNAL_STARTUP_DATA)
-  if (!natives_fd_exists()) {
-    int v8_natives_fd = -1;
-    int v8_snapshot_fd = -1;
-    if (gin::V8Initializer::OpenV8FilesForChildProcesses(&v8_natives_fd,
-                                                         &v8_snapshot_fd)) {
-      v8_natives_fd_.reset(v8_natives_fd);
-      v8_snapshot_fd_.reset(v8_snapshot_fd);
-    }
-  }
-  // V8 can't start up without the source of the natives, but it can
-  // start up (slower) without the snapshot.
-  DCHECK(natives_fd_exists());
-  mappings->Share(kV8NativesDataDescriptor, v8_natives_fd_.get());
-  mappings->Share(kV8SnapshotDataDescriptor, v8_snapshot_fd_.get());
-#endif  // V8_USE_EXTERNAL_STARTUP_DATA
-}
-#endif  // OS_POSIX && !OS_MACOSX
 
 content::DevToolsManagerDelegate*
 ShellContentBrowserClient::GetDevToolsManagerDelegate() {

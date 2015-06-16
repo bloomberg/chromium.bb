@@ -274,12 +274,6 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual void AppendExtraCommandLineSwitches(base::CommandLine* command_line,
                                               int child_process_id) {}
 
-  // This is called on the process launching thread, when files that should be
-  // passed to the client have been opened.  It allows command line switches to
-  // be added to tell the client where to find its files.
-  virtual void AppendMappedFileCommandLineSwitches(
-      base::CommandLine* command_line) {}
-
   // Returns the locale used by the application.
   // This is called on the UI and IO threads.
   virtual std::string GetApplicationLocale();
