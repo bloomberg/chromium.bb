@@ -18,6 +18,7 @@ import android.view.View;
 
 import com.google.android.apps.chrome.R;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
@@ -255,7 +256,7 @@ public class NewTabPage
                 case ID_OPEN_IN_INCOGNITO_TAB:
                     recordOpenedMostVisitedItem(item);
                     if (FeatureUtilities.isDocumentMode(mActivity)) {
-                        mActivity.finishAndRemoveTask();
+                        ApiCompatibilityUtils.finishAndRemoveTask(mActivity);
                     }
                     mTabModelSelector.openNewTab(new LoadUrlParams(item.getUrl()),
                             TabLaunchType.FROM_LONGPRESS_FOREGROUND, mTab, true);
