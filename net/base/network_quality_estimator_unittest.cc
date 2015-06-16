@@ -22,7 +22,8 @@
 
 namespace net {
 
-TEST(NetworkQualityEstimatorTest, TestPeakKbpsFastestRTTUpdates) {
+// http://crbug.com/492410
+TEST(NetworkQualityEstimatorTest, DISABLED_TestPeakKbpsFastestRTTUpdates) {
   net::test_server::EmbeddedTestServer embedded_test_server;
   embedded_test_server.ServeFilesFromDirectory(
       base::FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest")));
