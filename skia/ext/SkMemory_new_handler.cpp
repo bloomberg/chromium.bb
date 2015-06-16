@@ -46,21 +46,35 @@ void sk_free(void* p) {
     }
 }
 
+// We get lots of bugs filed on us that amount to overcommiting bitmap memory,
+// then some time later failing to back that VM with physical memory.
+// They're hard to track down, so in Debug mode we touch all memory right up front.
+//
+// For malloc, fill is an arbitrary byte and ideally not 0.  For calloc, it's got to be 0.
+static void* prevent_overcommit(int fill, size_t size, void* p) {
+    // We probably only need to touch one byte per page, but memset makes things easy.
+    SkDEBUGCODE(memset(p, fill, size));
+    return p;
+}
+
 void* sk_malloc_throw(size_t size) {
-    return throw_on_failure(size, malloc(size));
+    return prevent_overcommit(0x42, size, throw_on_failure(size, malloc(size)));
 }
 
 static void* sk_malloc_nothrow(size_t size) {
     // TODO(b.kelemen): we should always use UncheckedMalloc but currently it
     // doesn't work as intended everywhere.
-#if  defined(OS_IOS)
-    return malloc(size);
-#else
     void* result;
+#if  defined(OS_IOS)
+    result = malloc(size);
+#else
     // It's the responsibility of the caller to check the return value.
     ignore_result(base::UncheckedMalloc(size, &result));
-    return result;
 #endif
+    if (result) {
+        prevent_overcommit(0x47, size, result);
+    }
+    return result;
 }
 
 void* sk_malloc_flags(size_t size, unsigned flags) {
@@ -71,18 +85,21 @@ void* sk_malloc_flags(size_t size, unsigned flags) {
 }
 
 void* sk_calloc_throw(size_t size) {
-    return throw_on_failure(size, calloc(size, 1));
+    return prevent_overcommit(0, size, throw_on_failure(size, calloc(size, 1)));
 }
 
 void* sk_calloc(size_t size) {
     // TODO(b.kelemen): we should always use UncheckedCalloc but currently it
     // doesn't work as intended everywhere.
-#if  defined(OS_IOS)
-    return calloc(1, size);
-#else
     void* result;
+#if  defined(OS_IOS)
+    result = calloc(1, size);
+#else
     // It's the responsibility of the caller to check the return value.
     ignore_result(base::UncheckedCalloc(size, 1, &result));
-    return result;
 #endif
+    if (result) {
+        prevent_overcommit(0, size, result);
+    }
+    return result;
 }
