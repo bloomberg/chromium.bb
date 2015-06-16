@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
 #include "components/view_manager/animation_runner.h"
+#include "components/view_manager/display_manager.h"
 #include "components/view_manager/event_dispatcher.h"
 #include "components/view_manager/focus_controller_delegate.h"
 #include "components/view_manager/ids.h"
@@ -26,7 +27,6 @@ namespace view_manager {
 
 class ClientConnection;
 class ConnectionManagerDelegate;
-class DisplayManager;
 class FocusController;
 class ServerView;
 class ViewManagerServiceImpl;
@@ -36,7 +36,8 @@ class ViewManagerServiceImpl;
 class ConnectionManager : public ServerViewDelegate,
                           public ServerViewObserver,
                           public mojo::ViewManagerRoot,
-                          public FocusControllerDelegate {
+                          public FocusControllerDelegate,
+                          public DisplayManagerDelegate {
  public:
   // Create when a ViewManagerServiceImpl is about to make a change. Ensures
   // clients are notified correctly.
@@ -72,7 +73,9 @@ class ConnectionManager : public ServerViewDelegate,
   };
 
   ConnectionManager(ConnectionManagerDelegate* delegate,
-                    scoped_ptr<DisplayManager> display_manager);
+                    bool is_headless,
+                    mojo::ApplicationImpl* app_impl,
+                    const scoped_refptr<gles2::GpuState>& gpu_state);
   ~ConnectionManager() override;
 
   // Creates a new ServerView. The return value is owned by the caller, but must
@@ -103,8 +106,6 @@ class ConnectionManager : public ServerViewDelegate,
 
   void SetFocusedView(ServerView* view);
   ServerView* GetFocusedView();
-
-  ServerView* root() { return root_.get(); }
 
   // Returns whether |view| is a descendant of some root view but not itself a
   // root view.
@@ -156,14 +157,20 @@ class ConnectionManager : public ServerViewDelegate,
   // Dispatches |event| directly to the appropriate connection for |view|.
   void DispatchInputEventToView(const ServerView* view, mojo::EventPtr event);
 
+  // DisplayManager::Delegate:
+  ServerView* GetRoot() override;
+  void OnEvent(mojo::EventPtr event) override;
+  void OnDisplayClosed() override;
+  void OnViewportMetricsChanged(
+      const mojo::ViewportMetrics& old_metrics,
+      const mojo::ViewportMetrics& new_metrics) override;
+
   // These functions trivially delegate to all ViewManagerServiceImpls, which in
   // term notify their clients.
   void ProcessViewDestroyed(ServerView* view);
   void ProcessViewBoundsChanged(const ServerView* view,
                                 const gfx::Rect& old_bounds,
                                 const gfx::Rect& new_bounds);
-  void ProcessViewportMetricsChanged(const mojo::ViewportMetrics& old_metrics,
-                                     const mojo::ViewportMetrics& new_metrics);
   void ProcessWillChangeViewHierarchy(const ServerView* view,
                                       const ServerView* new_parent,
                                       const ServerView* old_parent);

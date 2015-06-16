@@ -5,7 +5,7 @@
 #include "components/view_manager/display_manager.h"
 
 #include "base/numerics/safe_conversions.h"
-#include "components/view_manager/connection_manager.h"
+#include "components/view_manager/display_manager_factory.h"
 #include "components/view_manager/gles2/gpu_state.h"
 #include "components/view_manager/native_viewport/onscreen_context_provider.h"
 #include "components/view_manager/public/interfaces/gpu.mojom.h"
@@ -74,32 +74,39 @@ void DrawViewTree(mojo::Pass* pass,
 
 }  // namespace
 
+// static
+DisplayManagerFactory* DisplayManager::factory_ = nullptr;
+
+// static
+DisplayManager* DisplayManager::Create(
+    bool is_headless,
+    mojo::ApplicationImpl* app_impl,
+    const scoped_refptr<gles2::GpuState>& gpu_state) {
+  if (factory_)
+    return factory_->CreateDisplayManager(is_headless, app_impl, gpu_state);
+  return new DefaultDisplayManager(is_headless, app_impl, gpu_state);
+}
+
 DefaultDisplayManager::DefaultDisplayManager(
     bool is_headless,
     mojo::ApplicationImpl* app_impl,
-    const scoped_refptr<gles2::GpuState>& gpu_state,
-    const mojo::Callback<void()>& platform_viewport_closed_callback)
+    const scoped_refptr<gles2::GpuState>& gpu_state)
     : is_headless_(is_headless),
       app_impl_(app_impl),
       gpu_state_(gpu_state),
-      connection_manager_(nullptr),
-      event_dispatcher_(nullptr),
+      delegate_(nullptr),
       draw_timer_(false, false),
       frame_pending_(false),
       context_provider_(
           new native_viewport::OnscreenContextProvider(gpu_state)),
-      platform_viewport_closed_callback_(platform_viewport_closed_callback),
       weak_factory_(this) {
   metrics_.size_in_pixels = mojo::Size::New();
   metrics_.size_in_pixels->width = 800;
   metrics_.size_in_pixels->height = 600;
 }
 
-void DefaultDisplayManager::Init(
-    ConnectionManager* connection_manager,
-    EventDispatcher* event_dispatcher) {
-  connection_manager_ = connection_manager;
-  event_dispatcher_ = event_dispatcher;
+void DefaultDisplayManager::Init(DisplayManagerDelegate* delegate) {
+  delegate_ = delegate;
 
   platform_viewport_ =
       native_viewport::PlatformViewport::Create(this, is_headless_).Pass();
@@ -134,7 +141,7 @@ void DefaultDisplayManager::SchedulePaint(const ServerView* view,
   if (!view->IsDrawn())
     return;
   const gfx::Rect root_relative_rect =
-      ConvertRectBetweenViews(view, connection_manager_->root(), bounds);
+      ConvertRectBetweenViews(view, delegate_->GetRoot(), bounds);
   if (root_relative_rect.IsEmpty())
     return;
   dirty_rect_.Union(root_relative_rect);
@@ -154,7 +161,7 @@ void DefaultDisplayManager::Draw() {
   auto pass = mojo::CreateDefaultPass(1, rect);
   pass->damage_rect = Rect::From(dirty_rect_);
 
-  DrawViewTree(pass.get(), connection_manager_->root(), gfx::Vector2d(), 1.0f);
+  DrawViewTree(pass.get(), delegate_->GetRoot(), gfx::Vector2d(), 1.0f);
 
   auto frame = mojo::Frame::New();
   frame->passes.push_back(pass.Pass());
@@ -192,7 +199,7 @@ void DefaultDisplayManager::OnAcceleratedWidgetDestroyed() {
 }
 
 void DefaultDisplayManager::OnEvent(mojo::EventPtr event) {
-  event_dispatcher_->OnEvent(event.Pass());
+  delegate_->OnEvent(event.Pass());
 }
 
 void DefaultDisplayManager::OnMetricsChanged(const gfx::Size& size,
@@ -206,16 +213,15 @@ void DefaultDisplayManager::OnMetricsChanged(const gfx::Size& size,
   metrics.size_in_pixels = mojo::Size::From(size);
   metrics.device_pixel_ratio = device_scale_factor;
 
-  connection_manager_->root()->SetBounds(gfx::Rect(size));
-  connection_manager_->ProcessViewportMetricsChanged(metrics_, metrics);
+  delegate_->GetRoot()->SetBounds(gfx::Rect(size));
+  delegate_->OnViewportMetricsChanged(metrics_, metrics);
 
   metrics_.size_in_pixels = metrics.size_in_pixels.Clone();
   metrics_.device_pixel_ratio = metrics.device_pixel_ratio;
 }
 
 void DefaultDisplayManager::OnDestroyed() {
-  if (!platform_viewport_closed_callback_.is_null())
-    platform_viewport_closed_callback_.Run();
+  delegate_->OnDisplayClosed();
 }
 
 }  // namespace view_manager

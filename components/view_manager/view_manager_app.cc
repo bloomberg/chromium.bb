@@ -51,14 +51,8 @@ void ViewManagerApp::Initialize(ApplicationImpl* app) {
 
   if (!gpu_state_.get())
     gpu_state_ = new gles2::GpuState;
-  scoped_ptr<DefaultDisplayManager> display_manager(new DefaultDisplayManager(
-      is_headless_,
-      app_impl_,
-      gpu_state_,
-      base::Bind(&ViewManagerApp::OnLostConnectionToWindowManager,
-                 base::Unretained(this))));
   connection_manager_.reset(
-      new ConnectionManager(this, display_manager.Pass()));
+      new ConnectionManager(this, is_headless_, app_impl_, gpu_state_));
 }
 
 bool ViewManagerApp::ConfigureIncomingConnection(

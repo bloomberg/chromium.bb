@@ -69,6 +69,8 @@ source_set("lib") {
     "default_access_policy.h",
     "display_manager.cc",
     "display_manager.h",
+    "display_manager_delegate.h",
+    "display_manager_factory.h",
     "event_dispatcher.cc",
     "event_dispatcher.h",
     "focus_controller.cc",

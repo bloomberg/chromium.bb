@@ -36,12 +36,13 @@ void EventDispatcher::OnEvent(mojo::EventPtr event) {
                                 static_cast<int>(event->pointer_data->y));
     ServerView* target = connection_manager_->GetFocusedView();
     if (event->action == mojo::EVENT_TYPE_POINTER_DOWN || !target) {
-      target = FindDeepestVisibleView(connection_manager_->root(), root_point);
+      target =
+          FindDeepestVisibleView(connection_manager_->GetRoot(), root_point);
       CHECK(target);
       connection_manager_->SetFocusedView(target);
     }
     const gfx::PointF local_point(ConvertPointFBetweenViews(
-        connection_manager_->root(), target,
+        connection_manager_->GetRoot(), target,
         gfx::PointF(event->pointer_data->x, event->pointer_data->y)));
     event->pointer_data->x = local_point.x();
     event->pointer_data->y = local_point.y();

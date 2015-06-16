@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
+#include "components/view_manager/display_manager_delegate.h"
 #include "components/view_manager/native_viewport/platform_viewport.h"
 #include "components/view_manager/public/interfaces/display.mojom.h"
 #include "components/view_manager/public/interfaces/view_manager.mojom.h"
@@ -35,8 +36,8 @@ class ApplicationImpl;
 
 namespace view_manager {
 
+class DisplayManagerFactory;
 class EventDispatcher;
-class ConnectionManager;
 class ServerView;
 
 // DisplayManager is used to connect the root ServerView to a display.
@@ -44,9 +45,12 @@ class DisplayManager {
  public:
   virtual ~DisplayManager() {}
 
-  virtual void Init(
-      ConnectionManager* connection_manager,
-      EventDispatcher* event_dispatcher) = 0;
+  static DisplayManager* Create(
+      bool is_headless,
+      mojo::ApplicationImpl* app_impl,
+      const scoped_refptr<gles2::GpuState>& gpu_state);
+
+  virtual void Init(DisplayManagerDelegate* delegate) = 0;
 
   // Schedules a paint for the specified region in the coordinates of |view|.
   virtual void SchedulePaint(const ServerView* view,
@@ -55,6 +59,16 @@ class DisplayManager {
   virtual void SetViewportSize(const gfx::Size& size) = 0;
 
   virtual const mojo::ViewportMetrics& GetViewportMetrics() = 0;
+
+  // Overrides factory for testing. Default (NULL) value indicates regular
+  // (non-test) environment.
+  static void set_factory_for_testing(DisplayManagerFactory* factory) {
+    DisplayManager::factory_ = factory;
+  }
+
+ private:
+  // Static factory instance (always NULL for non-test).
+  static DisplayManagerFactory* factory_;
 };
 
 // DisplayManager implementation that connects to the services necessary to
@@ -63,16 +77,13 @@ class DefaultDisplayManager :
     public DisplayManager,
     public native_viewport::PlatformViewport::Delegate {
  public:
-  DefaultDisplayManager(
-      bool is_headless,
-      mojo::ApplicationImpl* app_impl,
-      const scoped_refptr<gles2::GpuState>& gpu_state,
-      const mojo::Callback<void()>& platform_viewport_closed_callback);
+  DefaultDisplayManager(bool is_headless,
+                        mojo::ApplicationImpl* app_impl,
+                        const scoped_refptr<gles2::GpuState>& gpu_state);
   ~DefaultDisplayManager() override;
 
   // DisplayManager:
-  void Init(ConnectionManager* connection_manager,
-            EventDispatcher* event_dispatcher) override;
+  void Init(DisplayManagerDelegate* delegate) override;
   void SchedulePaint(const ServerView* view, const gfx::Rect& bounds) override;
   void SetViewportSize(const gfx::Size& size) override;
   const mojo::ViewportMetrics& GetViewportMetrics() override;
@@ -94,8 +105,7 @@ class DefaultDisplayManager :
   bool is_headless_;
   mojo::ApplicationImpl* app_impl_;
   scoped_refptr<gles2::GpuState> gpu_state_;
-  ConnectionManager* connection_manager_;
-  EventDispatcher* event_dispatcher_;
+  DisplayManagerDelegate* delegate_;
 
   mojo::ViewportMetrics metrics_;
   gfx::Rect dirty_rect_;
@@ -105,7 +115,6 @@ class DefaultDisplayManager :
   mojo::DisplayPtr display_;
   scoped_ptr<native_viewport::OnscreenContextProvider> context_provider_;
   scoped_ptr<native_viewport::PlatformViewport> platform_viewport_;
-  mojo::Callback<void()> platform_viewport_closed_callback_;
 
   base::WeakPtrFactory<DefaultDisplayManager> weak_factory_;
 

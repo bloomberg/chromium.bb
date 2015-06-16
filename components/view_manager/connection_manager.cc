@@ -110,13 +110,17 @@ ConnectionManager::ScopedChange::~ScopedChange() {
   connection_manager_->FinishChange();
 }
 
-ConnectionManager::ConnectionManager(ConnectionManagerDelegate* delegate,
-                                     scoped_ptr<DisplayManager> display_manager)
+ConnectionManager::ConnectionManager(
+    ConnectionManagerDelegate* delegate,
+    bool is_headless,
+    mojo::ApplicationImpl* app_impl,
+    const scoped_refptr<gles2::GpuState>& gpu_state)
     : delegate_(delegate),
       window_manager_client_connection_(nullptr),
       next_connection_id_(1),
       event_dispatcher_(this),
-      display_manager_(display_manager.Pass()),
+      display_manager_(
+          DisplayManager::Create(is_headless, app_impl, gpu_state)),
       root_(CreateServerView(RootViewId(0))),
       current_change_(nullptr),
       in_destructor_(false),
@@ -125,7 +129,7 @@ ConnectionManager::ConnectionManager(ConnectionManagerDelegate* delegate,
   root_->SetBounds(gfx::Rect(800, 600));
   root_->SetVisible(true);
 
-  display_manager_->Init(this, &event_dispatcher_);
+  display_manager_->Init(this);
 }
 
 ConnectionManager::~ConnectionManager() {
@@ -318,21 +322,33 @@ void ConnectionManager::DispatchInputEventToView(const ServerView* view,
                                          base::Bind(&base::DoNothing));
 }
 
+ServerView* ConnectionManager::GetRoot() {
+  return root_.get();
+}
+
+void ConnectionManager::OnEvent(mojo::EventPtr event) {
+  event_dispatcher_.OnEvent(event.Pass());
+}
+
+void ConnectionManager::OnDisplayClosed() {
+  delegate_->OnLostConnectionToWindowManager();
+}
+
+void ConnectionManager::OnViewportMetricsChanged(
+    const mojo::ViewportMetrics& old_metrics,
+    const mojo::ViewportMetrics& new_metrics) {
+  for (auto& pair : connection_map_) {
+    pair.second->service()->ProcessViewportMetricsChanged(
+        old_metrics, new_metrics, IsChangeSource(pair.first));
+  }
+}
+
 void ConnectionManager::ProcessViewBoundsChanged(const ServerView* view,
                                                  const gfx::Rect& old_bounds,
                                                  const gfx::Rect& new_bounds) {
   for (auto& pair : connection_map_) {
     pair.second->service()->ProcessViewBoundsChanged(
         view, old_bounds, new_bounds, IsChangeSource(pair.first));
-  }
-}
-
-void ConnectionManager::ProcessViewportMetricsChanged(
-    const mojo::ViewportMetrics& old_metrics,
-    const mojo::ViewportMetrics& new_metrics) {
-  for (auto& pair : connection_map_) {
-    pair.second->service()->ProcessViewportMetricsChanged(
-        old_metrics, new_metrics, IsChangeSource(pair.first));
   }
 }
 
@@ -386,7 +402,7 @@ void ConnectionManager::FinishChange() {
 }
 
 void ConnectionManager::DoAnimation() {
-  if (!DecrementAnimatingViewsOpacity(root()))
+  if (!DecrementAnimatingViewsOpacity(GetRoot()))
     animation_timer_.Stop();
 }
 
