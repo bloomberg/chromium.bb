@@ -14,8 +14,8 @@ import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore.TabPersistentStoreObserver;
-import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.chrome.test.util.browser.tabmodel.MockTabModelSelector;
+import org.chromium.content.browser.test.NativeLibraryTestBase;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
@@ -23,7 +23,7 @@ import org.chromium.content_public.browser.WebContents;
 import java.util.ArrayList;
 
 /** Tests for the TabPersistentStore. */
-public class TabPersistentStoreTest extends ChromeShellTestBase {
+public class TabPersistentStoreTest extends NativeLibraryTestBase {
     private static final int SELECTOR_INDEX = 0;
 
     private static class TabRestoredDetails {
@@ -123,9 +123,7 @@ public class TabPersistentStoreTest extends ChromeShellTestBase {
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        clearAppData();
-        startChromeBrowserProcessSync(getInstrumentation().getTargetContext());
-
+        loadNativeLibraryAndInitBrowserProcess();
         mMockDirectory = new TestTabModelDirectory(getInstrumentation().getTargetContext(),
                 "TabPersistentStoreTest", Integer.toString(SELECTOR_INDEX));
     }

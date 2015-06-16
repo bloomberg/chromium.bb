@@ -7,7 +7,7 @@ package org.chromium.chrome.browser;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.chrome.browser.tabmodel.TestTabModelDirectory;
-import org.chromium.chrome.shell.ChromeShellTestBase;
+import org.chromium.content.browser.test.NativeLibraryTestBase;
 
 import java.io.File;
 
@@ -15,14 +15,13 @@ import java.io.File;
  * Tests whether TabState can be saved and restored to disk properly. Also checks to see if
  * TabStates from previous versions of Chrome can still be loaded and upgraded.
  */
-public class TabStateTest extends ChromeShellTestBase {
+public class TabStateTest extends NativeLibraryTestBase {
     private TestTabModelDirectory mTestTabModelDirectory;
 
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        clearAppData();
-        startChromeBrowserProcessSync(getInstrumentation().getTargetContext());
+        loadNativeLibraryAndInitBrowserProcess();
         mTestTabModelDirectory = new TestTabModelDirectory(
                 getInstrumentation().getTargetContext(), "TabStateTest", null);
     }

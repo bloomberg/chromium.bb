@@ -23,7 +23,7 @@ import java.io.FileOutputStream;
  * This gets around an infrastructure bug with setting file permissions.
  */
 public class TestTabModelDirectory {
-    private static final String TAG = "TestTabModelDirectory";
+    private static final String TAG = "cr.tabmodel";
 
     /**
      * Information about an encoded TabState file.  Although the Tab ID is _not_ encoded in the

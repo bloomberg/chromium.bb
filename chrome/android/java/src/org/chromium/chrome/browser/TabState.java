@@ -54,8 +54,7 @@ public class TabState {
     private static final long KEY_CHECKER = 0;
 
     /** Overrides the Chrome channel/package name to test a variant channel-specific behaviour. */
-    @VisibleForTesting
-    static String sChannelNameOverrideForTest;
+    private static String sChannelNameOverrideForTest;
 
     /** Contains the state for a WebContents. */
     public static class WebContentsState {
@@ -417,6 +416,7 @@ public class TabState {
      * Overrides the channel name for testing.
      * @param name Channel to use.
      */
+    @VisibleForTesting
     public static void setChannelNameOverrideForTest(String name) {
         sChannelNameOverrideForTest = name;
     }
