@@ -24557,6 +24557,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Network.Shill.DHCPClientMTUValue" units="bytes">
+  <owner>pstew@chromium.org</owner>
+  <summary>
+    Chrome OS network diagnostic metric sampling the MTU value proposed by the
+    DHCP server.  A sample is emitted each time the DHCP client completes
+    negotiation with a server.
+  </summary>
+</histogram>
+
 <histogram name="Network.Shill.DHCPClientStatus" enum="NetworkDhcpClientStatus">
   <owner>pstew@chromium.org</owner>
   <summary>
