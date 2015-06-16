@@ -2082,6 +2082,15 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead,
   } else if (child_process_launcher_.get()) {
     status = child_process_launcher_->GetChildTerminationStatus(already_dead,
                                                                 &exit_code);
+    if (already_dead && status == base::TERMINATION_STATUS_STILL_RUNNING) {
+      // May be in case of IPC error, if it takes long time for renderer
+      // to exit. Child process will be killed in any case during
+      // child_process_launcher_.reset(). Make sure we will not broadcast
+      // FrameHostMsg_RenderProcessGone with status
+      // TERMINATION_STATUS_STILL_RUNNING, since this will break WebContentsImpl
+      // logic.
+      status = base::TERMINATION_STATUS_PROCESS_CRASHED;
+    }
   }
 
   RendererClosedDetails details(status, exit_code);
