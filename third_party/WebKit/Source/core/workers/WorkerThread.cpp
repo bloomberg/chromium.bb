@@ -177,6 +177,8 @@ WorkerThread::~WorkerThread()
 
 void WorkerThread::start(PassOwnPtr<WorkerThreadStartupData> startupData)
 {
+    ASSERT(isMainThread());
+
     if (m_started)
         return;
 
@@ -307,6 +309,8 @@ bool WorkerThread::terminated()
 
 void WorkerThread::terminateInternal()
 {
+    ASSERT(isMainThread());
+
     // Protect against this method, initialize() or termination via the global scope racing each other.
     MutexLocker lock(m_threadStateMutex);
 
