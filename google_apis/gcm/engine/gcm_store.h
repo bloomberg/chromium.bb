@@ -29,6 +29,11 @@ class MCSMessage;
 // as well as store device and user checkin information.
 class GCM_EXPORT GCMStore {
  public:
+  enum StoreOpenMode {
+    DO_NOT_CREATE,
+    CREATE_IF_MISSING
+  };
+
   // Map of message id to message data for outgoing messages.
   typedef std::map<std::string, linked_ptr<google::protobuf::MessageLite> >
       OutgoingMessageMap;
@@ -44,6 +49,7 @@ class GCM_EXPORT GCMStore {
     void Reset();
 
     bool success;
+    bool store_does_not_exist;
     uint64 device_android_id;
     uint64 device_security_token;
     std::map<std::string, std::string> registrations;
@@ -68,7 +74,7 @@ class GCM_EXPORT GCMStore {
 
   // Load the data from persistent store and pass the initial state back to
   // caller.
-  virtual void Load(const LoadCallback& callback) = 0;
+  virtual void Load(StoreOpenMode open_mode, const LoadCallback& callback) = 0;
 
   // Close the persistent store.
   virtual void Close() = 0;

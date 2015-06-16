@@ -8,6 +8,7 @@ namespace gcm {
 
 GCMStore::LoadResult::LoadResult()
     : success(false),
+      store_does_not_exist(false),
       device_android_id(0),
       device_security_token(0) {
 }
@@ -28,6 +29,7 @@ void GCMStore::LoadResult::Reset() {
   account_mappings.clear();
   heartbeat_intervals.clear();
   success = false;
+  store_does_not_exist = false;
   instance_id_data.clear();
 }
 

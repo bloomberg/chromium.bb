@@ -198,7 +198,7 @@ void MCSClientTest::BuildMCSClient() {
 }
 
 void MCSClientTest::InitializeClient() {
-  gcm_store_->Load(base::Bind(
+  gcm_store_->Load(GCMStore::CREATE_IF_MISSING, base::Bind(
       &MCSClient::Initialize,
       base::Unretained(mcs_client_.get()),
       base::Bind(&MCSClientTest::ErrorCallback,

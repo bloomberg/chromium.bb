@@ -31,7 +31,7 @@ class GCM_EXPORT GCMStoreImpl : public GCMStore {
   ~GCMStoreImpl() override;
 
   // Load the directory and pass the initial state back to caller.
-  void Load(const LoadCallback& callback) override;
+  void Load(StoreOpenMode open_mode, const LoadCallback& callback) override;
 
   // Closes the GCM store.
   void Close() override;

@@ -361,8 +361,14 @@ void GCMClientImpl::Start(StartMode start_mode) {
     return;
 
   // Once the loading is completed, the check-in will be initiated.
-  gcm_store_->Load(base::Bind(&GCMClientImpl::OnLoadCompleted,
-                              weak_ptr_factory_.GetWeakPtr()));
+  // If we're in lazy start mode, don't create a new store since none is really
+  // using GCM functionality yet.
+  gcm_store_->Load(
+      (start_mode == IMMEDIATE_START) ?
+          GCMStore::CREATE_IF_MISSING :
+          GCMStore::DO_NOT_CREATE,
+      base::Bind(&GCMClientImpl::OnLoadCompleted,
+                 weak_ptr_factory_.GetWeakPtr()));
   state_ = LOADING;
 }
 
@@ -370,7 +376,15 @@ void GCMClientImpl::OnLoadCompleted(scoped_ptr<GCMStore::LoadResult> result) {
   DCHECK_EQ(LOADING, state_);
 
   if (!result->success) {
-    ResetStore();
+    if (result->store_does_not_exist) {
+      // In the case that the store does not exist, set |state| back to
+      // INITIALIZED such that store loading could be triggered again when
+      // Start() is called with IMMEDIATE_START.
+      state_ = INITIALIZED;
+    } else {
+      // Otherwise, destroy the store to try again.
+      ResetStore();
+    }
     return;
   }
   gcm_store_reset_ = false;

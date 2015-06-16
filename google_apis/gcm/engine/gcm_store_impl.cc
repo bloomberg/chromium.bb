@@ -50,6 +50,7 @@ enum LoadStatus {
   LOADING_LAST_TOKEN_TIME_FAILED,
   LOADING_HEARTBEAT_INTERVALS_FAILED,
   LOADING_INSTANCE_ID_DATA_FAILED,
+  STORE_DOES_NOT_EXIST,
 
   // NOTE: always keep this entry at the end. Add new status types only
   // immediately above this line. Make sure to update the corresponding
@@ -185,7 +186,7 @@ class GCMStoreImpl::Backend
           scoped_ptr<Encryptor> encryptor);
 
   // Blocking implementations of GCMStoreImpl methods.
-  void Load(const LoadCallback& callback);
+  void Load(StoreOpenMode open_mode, const LoadCallback& callback);
   void Close();
   void Destroy(const UpdateCallback& callback);
   void SetDeviceCredentials(uint64 device_android_id,
@@ -243,7 +244,7 @@ class GCMStoreImpl::Backend
   friend class base::RefCountedThreadSafe<Backend>;
   ~Backend();
 
-  LoadStatus OpenStoreAndLoadData(LoadResult* result);
+  LoadStatus OpenStoreAndLoadData(StoreOpenMode open_mode, LoadResult* result);
   bool LoadDeviceCredentials(uint64* android_id, uint64* security_token);
   bool LoadRegistrations(std::map<std::string, std::string>* registrations);
   bool LoadIncomingMessages(std::vector<std::string>* incoming_messages);
@@ -275,15 +276,23 @@ GCMStoreImpl::Backend::Backend(
 
 GCMStoreImpl::Backend::~Backend() {}
 
-LoadStatus GCMStoreImpl::Backend::OpenStoreAndLoadData(LoadResult* result) {
+LoadStatus GCMStoreImpl::Backend::OpenStoreAndLoadData(StoreOpenMode open_mode,
+                                                       LoadResult* result) {
   LoadStatus load_status;
   if (db_.get()) {
     LOG(ERROR) << "Attempting to reload open database.";
     return RELOADING_OPEN_STORE;
   }
 
+  // Checks if the store exists or not. Calling DB::Open with create_if_missing
+  // not set will still create a new directory if the store does not exist.
+  if (open_mode == DO_NOT_CREATE && !base::DirectoryExists(path_)) {
+    DVLOG(2) << "Database " << path_.value() << " does not exist";
+    return STORE_DOES_NOT_EXIST;
+  }
+
   leveldb::Options options;
-  options.create_if_missing = true;
+  options.create_if_missing = open_mode == CREATE_IF_MISSING;
   options.reuse_logs = leveldb_env::kDefaultLogReuseOptionValue;
   leveldb::DB* db;
   leveldb::Status status =
@@ -325,12 +334,14 @@ LoadStatus GCMStoreImpl::Backend::OpenStoreAndLoadData(LoadResult* result) {
   return LOADING_SUCCEEDED;
 }
 
-void GCMStoreImpl::Backend::Load(const LoadCallback& callback) {
+void GCMStoreImpl::Backend::Load(StoreOpenMode open_mode,
+                                 const LoadCallback& callback) {
   scoped_ptr<LoadResult> result(new LoadResult());
-  LoadStatus load_status = OpenStoreAndLoadData(result.get());
+  LoadStatus load_status = OpenStoreAndLoadData(open_mode, result.get());
   UMA_HISTOGRAM_ENUMERATION("GCM.LoadStatus", load_status, LOAD_STATUS_COUNT);
   if (load_status != LOADING_SUCCEEDED) {
     result->Reset();
+    result->store_does_not_exist = (load_status == STORE_DOES_NOT_EXIST);
     foreground_task_runner_->PostTask(FROM_HERE,
                                       base::Bind(callback,
                                                  base::Passed(&result)));
@@ -1156,11 +1167,12 @@ GCMStoreImpl::GCMStoreImpl(
 
 GCMStoreImpl::~GCMStoreImpl() {}
 
-void GCMStoreImpl::Load(const LoadCallback& callback) {
+void GCMStoreImpl::Load(StoreOpenMode open_mode, const LoadCallback& callback) {
   blocking_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&GCMStoreImpl::Backend::Load,
                  backend_,
+                 open_mode,
                  base::Bind(&GCMStoreImpl::LoadContinuation,
                             weak_ptr_factory_.GetWeakPtr(),
                             callback)));

@@ -307,7 +307,8 @@ void MCSProbe::Start() {
                                   gcm_store_.get(),
                                   &recorder_));
   run_loop_.reset(new base::RunLoop());
-  gcm_store_->Load(base::Bind(&MCSProbe::LoadCallback,
+  gcm_store_->Load(GCMStore::CREATE_IF_MISSING,
+                   base::Bind(&MCSProbe::LoadCallback,
                               base::Unretained(this)));
   run_loop_->Run();
 }

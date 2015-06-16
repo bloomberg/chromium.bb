@@ -56454,6 +56454,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="10" label="Loading last token time failed"/>
   <int value="11" label="Loading heartbeat intervals failed"/>
   <int value="12" label="Loading Instance ID data failed"/>
+  <int value="13" label="Store does not exist"/>
 </enum>
 
 <enum name="GCMOutgoingMessageTTLCategory" type="int">
