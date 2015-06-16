@@ -127,6 +127,7 @@ name=@@PACKAGE@@
 baseurl=$REPOCONFIG/$DEFAULT_ARCH
 enabled=1
 gpgcheck=1
+gpgkey=https://dl.google.com/linux/linux_signing_key.pub
 REPOCONTENT
   fi
 }
