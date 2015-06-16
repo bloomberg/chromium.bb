@@ -61,6 +61,7 @@
     ],
     'platform_heap_test_files': [
       'HeapTest.cpp',
+      'BlinkGCMemoryDumpProviderTest.cpp',
     ],
     'conditions': [
       ['target_arch == "arm"', {
