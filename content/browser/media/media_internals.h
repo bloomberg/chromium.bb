@@ -108,19 +108,19 @@ class CONTENT_EXPORT MediaInternals
   // Saves |event| so that it can be sent later in SendHistoricalMediaEvents().
   void SaveEvent(int process_id, const media::MediaLogEvent& event);
 
-  // Caches |value| under |cache_key| so that future SendAudioLogUpdate() calls
+  // Caches |value| under |cache_key| so that future UpdateAudioLog() calls
   // will include the current data.  Calls JavaScript |function|(|value|) for
-  // each registered UpdateCallback.
+  // each registered UpdateCallback (if any).
   enum AudioLogUpdateType {
     CREATE,             // Creates a new AudioLog cache entry.
     UPDATE_IF_EXISTS,   // Updates an existing AudioLog cache entry, does
                         // nothing if it doesn't exist.
     UPDATE_AND_DELETE,  // Deletes an existing AudioLog cache entry.
   };
-  void SendAudioLogUpdate(AudioLogUpdateType type,
-                          const std::string& cache_key,
-                          const std::string& function,
-                          const base::DictionaryValue* value);
+  void UpdateAudioLog(AudioLogUpdateType type,
+                      const std::string& cache_key,
+                      const std::string& function,
+                      const base::DictionaryValue* value);
 
   // Must only be accessed on the UI thread.
   std::vector<UpdateCallback> update_callbacks_;

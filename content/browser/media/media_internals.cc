@@ -154,9 +154,9 @@ void AudioLogImpl::OnCreated(int component_id,
                  ChannelLayoutToString(params.channel_layout()));
   dict.SetString("effects", EffectsToString(params.effects()));
 
-  media_internals_->SendAudioLogUpdate(MediaInternals::CREATE,
-                                       FormatCacheKey(component_id),
-                                       kAudioLogUpdateFunction, &dict);
+  media_internals_->UpdateAudioLog(MediaInternals::CREATE,
+                                   FormatCacheKey(component_id),
+                                   kAudioLogUpdateFunction, &dict);
 }
 
 void AudioLogImpl::OnStarted(int component_id) {
@@ -171,9 +171,9 @@ void AudioLogImpl::OnClosed(int component_id) {
   base::DictionaryValue dict;
   StoreComponentMetadata(component_id, &dict);
   dict.SetString(kAudioLogStatusKey, "closed");
-  media_internals_->SendAudioLogUpdate(MediaInternals::UPDATE_AND_DELETE,
-                                       FormatCacheKey(component_id),
-                                       kAudioLogUpdateFunction, &dict);
+  media_internals_->UpdateAudioLog(MediaInternals::UPDATE_AND_DELETE,
+                                   FormatCacheKey(component_id),
+                                   kAudioLogUpdateFunction, &dict);
 }
 
 void AudioLogImpl::OnError(int component_id) {
@@ -184,9 +184,9 @@ void AudioLogImpl::OnSetVolume(int component_id, double volume) {
   base::DictionaryValue dict;
   StoreComponentMetadata(component_id, &dict);
   dict.SetDouble("volume", volume);
-  media_internals_->SendAudioLogUpdate(MediaInternals::UPDATE_IF_EXISTS,
-                                       FormatCacheKey(component_id),
-                                       kAudioLogUpdateFunction, &dict);
+  media_internals_->UpdateAudioLog(MediaInternals::UPDATE_IF_EXISTS,
+                                   FormatCacheKey(component_id),
+                                   kAudioLogUpdateFunction, &dict);
 }
 
 void AudioLogImpl::OnSwitchOutputDevice(int component_id,
@@ -194,9 +194,9 @@ void AudioLogImpl::OnSwitchOutputDevice(int component_id,
   base::DictionaryValue dict;
   StoreComponentMetadata(component_id, &dict);
   dict.SetString("device_id", device_id);
-  media_internals_->SendAudioLogUpdate(MediaInternals::UPDATE_IF_EXISTS,
-                                       FormatCacheKey(component_id),
-                                       kAudioLogUpdateFunction, &dict);
+  media_internals_->UpdateAudioLog(MediaInternals::UPDATE_IF_EXISTS,
+                                   FormatCacheKey(component_id),
+                                   kAudioLogUpdateFunction, &dict);
 }
 
 void AudioLogImpl::SendWebContentsTitle(int component_id,
@@ -236,7 +236,7 @@ void AudioLogImpl::SendWebContentsTitleHelper(
   // we use UPDATE_IF_EXISTS to discard such instances.
   dict->SetInteger("render_process_id", render_process_id);
   dict->SetString("web_contents_title", web_contents->GetTitle());
-  MediaInternals::GetInstance()->SendAudioLogUpdate(
+  MediaInternals::GetInstance()->UpdateAudioLog(
       MediaInternals::UPDATE_IF_EXISTS, cache_key, kAudioLogUpdateFunction,
       dict.get());
 }
@@ -247,9 +247,9 @@ void AudioLogImpl::SendSingleStringUpdate(int component_id,
   base::DictionaryValue dict;
   StoreComponentMetadata(component_id, &dict);
   dict.SetString(key, value);
-  media_internals_->SendAudioLogUpdate(MediaInternals::UPDATE_IF_EXISTS,
-                                       FormatCacheKey(component_id),
-                                       kAudioLogUpdateFunction, &dict);
+  media_internals_->UpdateAudioLog(MediaInternals::UPDATE_IF_EXISTS,
+                                   FormatCacheKey(component_id),
+                                   kAudioLogUpdateFunction, &dict);
 }
 
 void AudioLogImpl::StoreComponentMetadata(int component_id,
@@ -650,13 +650,10 @@ void MediaInternals::SaveEvent(int process_id,
   pending_events.push_back(event);
 }
 
-void MediaInternals::SendAudioLogUpdate(AudioLogUpdateType type,
-                                        const std::string& cache_key,
-                                        const std::string& function,
-                                        const base::DictionaryValue* value) {
-  if (!CanUpdate())
-    return;
-
+void MediaInternals::UpdateAudioLog(AudioLogUpdateType type,
+                                    const std::string& cache_key,
+                                    const std::string& function,
+                                    const base::DictionaryValue* value) {
   {
     base::AutoLock auto_lock(lock_);
     const bool has_entry = audio_streams_cached_data_.HasKey(cache_key);
@@ -676,7 +673,8 @@ void MediaInternals::SendAudioLogUpdate(AudioLogUpdateType type,
     }
   }
 
-  SendUpdate(SerializeUpdate(function, value));
+  if (CanUpdate())
+    SendUpdate(SerializeUpdate(function, value));
 }
 
 }  // namespace content
