@@ -381,7 +381,6 @@ public:
     virtual bool isImage() const { return false; }
 
     virtual bool isInlineBlockOrInlineTable() const { return false; }
-    virtual bool isLayoutBoxModelObject() const { return false; }
     virtual bool isLayoutBlock() const { return false; }
     virtual bool isLayoutBlockFlow() const { return false; }
     virtual bool isLayoutFlowThread() const { return false; }

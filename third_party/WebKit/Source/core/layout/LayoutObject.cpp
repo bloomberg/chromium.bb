@@ -1669,7 +1669,7 @@ StyleDifference LayoutObject::adjustStyleDifference(StyleDifference diff) const
     // The answer to layerTypeRequired() for plugins, iframes, and canvas can change without the actual
     // style changing, since it depends on whether we decide to composite these elements. When the
     // layer status of one of these elements changes, we need to force a layout.
-    if (!diff.needsFullLayout() && style() && isLayoutBoxModelObject()) {
+    if (!diff.needsFullLayout() && style() && isBoxModelObject()) {
         bool requiresLayer = toLayoutBoxModelObject(this)->layerTypeRequired() != NoDeprecatedPaintLayer;
         if (hasLayer() != requiresLayer)
             diff.setNeedsFullLayout();

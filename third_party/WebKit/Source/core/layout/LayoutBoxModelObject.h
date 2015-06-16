@@ -265,8 +265,6 @@ private:
     LayoutUnit computedCSSPadding(const Length&) const;
     virtual bool isBoxModelObject() const override final { return true; }
 
-    virtual bool isLayoutBoxModelObject() const override final { return true; }
-
     OwnPtr<DeprecatedPaintLayer> m_layer;
 };
 
