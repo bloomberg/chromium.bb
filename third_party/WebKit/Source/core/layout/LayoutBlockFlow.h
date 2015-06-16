@@ -425,7 +425,6 @@ public:
         bool m_discardMarginBefore : 1;
         bool m_discardMarginAfter : 1;
     };
-    LayoutUnit marginOffsetForSelfCollapsingBlock();
 
     FloatingObjects* floatingObjects() { return m_floatingObjects.get(); }
 

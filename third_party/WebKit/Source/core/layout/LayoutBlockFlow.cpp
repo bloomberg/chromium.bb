@@ -95,6 +95,7 @@ class MarginInfo {
     bool m_determinedMarginBeforeQuirk : 1;
 
     bool m_discardMargin : 1;
+    bool m_lastChildIsSelfCollapsingBlockWithClearance : 1;
 
     // These flags track the previous maximal positive and negative margins.
     LayoutUnit m_positiveMargin;
@@ -147,6 +148,8 @@ public:
     LayoutUnit negativeMargin() const { return m_negativeMargin; }
     bool discardMargin() const { return m_discardMargin; }
     LayoutUnit margin() const { return m_positiveMargin - m_negativeMargin; }
+    void setLastChildIsSelfCollapsingBlockWithClearance(bool value) { m_lastChildIsSelfCollapsingBlockWithClearance = value; }
+    bool lastChildIsSelfCollapsingBlockWithClearance() const { return m_lastChildIsSelfCollapsingBlockWithClearance; }
 };
 static bool inNormalFlow(LayoutBox* child)
 {
@@ -1037,6 +1040,7 @@ MarginInfo::MarginInfo(LayoutBlockFlow* blockFlow, LayoutUnit beforeBorderPaddin
     , m_hasMarginAfterQuirk(false)
     , m_determinedMarginBeforeQuirk(false)
     , m_discardMargin(false)
+    , m_lastChildIsSelfCollapsingBlockWithClearance(false)
 {
     const ComputedStyle& blockStyle = blockFlow->styleRef();
     ASSERT(blockFlow->isLayoutView() || blockFlow->parent());
@@ -1194,8 +1198,8 @@ LayoutUnit LayoutBlockFlow::collapseMargins(LayoutBox& child, MarginInfo& margin
     // If the child's previous sibling is a self-collapsing block that cleared a float then its top border edge has been set at the bottom border edge
     // of the float. Since we want to collapse the child's top margin with the self-collapsing block's top and bottom margins we need to adjust our parent's height to match the
     // margin top of the self-collapsing block. If the resulting collapsed margin leaves the child still intruding into the float then we will want to clear it.
-    if (!marginInfo.canCollapseWithMarginBefore() && previousBlockFlow && previousBlockFlow->isSelfCollapsingBlock()) {
-        clearanceForSelfCollapsingBlock = previousBlockFlow->marginOffsetForSelfCollapsingBlock();
+    if (!marginInfo.canCollapseWithMarginBefore() && previousBlockFlow && marginInfo.lastChildIsSelfCollapsingBlockWithClearance()) {
+        clearanceForSelfCollapsingBlock = marginValuesForChild(*previousBlockFlow).positiveMarginBefore();
         setLogicalHeight(logicalHeight() - clearanceForSelfCollapsingBlock);
     }
 
@@ -1310,10 +1314,13 @@ void LayoutBlockFlow::adjustPositionedBlock(LayoutBox& child, const MarginInfo& 
 LayoutUnit LayoutBlockFlow::clearFloatsIfNeeded(LayoutBox& child, MarginInfo& marginInfo, LayoutUnit oldTopPosMargin, LayoutUnit oldTopNegMargin, LayoutUnit yPos, bool childIsSelfCollapsing)
 {
     LayoutUnit heightIncrease = getClearDelta(&child, yPos);
+    marginInfo.setLastChildIsSelfCollapsingBlockWithClearance(false);
+
     if (!heightIncrease)
         return yPos;
 
     if (childIsSelfCollapsing) {
+        marginInfo.setLastChildIsSelfCollapsingBlockWithClearance(true);
         bool childDiscardMargin = mustDiscardMarginBeforeForChild(child) || mustDiscardMarginAfterForChild(child);
         marginInfo.setDiscardMargin(childDiscardMargin);
 
@@ -1499,15 +1506,6 @@ LayoutUnit LayoutBlockFlow::estimateLogicalTopPosition(LayoutBox& child, const M
     return logicalTopEstimate;
 }
 
-LayoutUnit LayoutBlockFlow::marginOffsetForSelfCollapsingBlock()
-{
-    ASSERT(isSelfCollapsingBlock());
-    LayoutBlockFlow* parentBlock = toLayoutBlockFlow(parent());
-    if (parentBlock && style()->clear() && parentBlock->getClearDelta(this, logicalHeight()))
-        return marginValuesForChild(*this).positiveMarginBefore();
-    return LayoutUnit();
-}
-
 void LayoutBlockFlow::adjustFloatingBlock(const MarginInfo& marginInfo)
 {
     // The float should be positioned taking into account the bottom margin
@@ -1536,8 +1534,10 @@ void LayoutBlockFlow::handleAfterSideOfBlock(LayoutBox* lastChild, LayoutUnit be
     // If our last child was a self-collapsing block with clearance then our logical height is flush with the
     // bottom edge of the float that the child clears. The correct vertical position for the margin-collapsing we want
     // to perform now is at the child's margin-top - so adjust our height to that position.
-    if (lastChild && lastChild->isLayoutBlockFlow() && lastChild->isSelfCollapsingBlock())
-        setLogicalHeight(logicalHeight() - toLayoutBlockFlow(lastChild)->marginOffsetForSelfCollapsingBlock());
+    if (marginInfo.lastChildIsSelfCollapsingBlockWithClearance()) {
+        ASSERT(lastChild);
+        setLogicalHeight(logicalHeight() - marginValuesForChild(*lastChild).positiveMarginBefore());
+    }
 
     if (marginInfo.canCollapseMarginAfterWithChildren() && !marginInfo.canCollapseMarginAfterWithLastChild())
         marginInfo.setCanCollapseMarginAfterWithChildren(false);
@@ -1834,13 +1834,12 @@ LayoutUnit LayoutBlockFlow::getClearDelta(LayoutBox* child, LayoutUnit logicalTo
     LayoutUnit result = clearSet ? std::max<LayoutUnit>(0, logicalBottom - logicalTop) : LayoutUnit();
     if (!result && child->avoidsFloats()) {
         LayoutUnit newLogicalTop = logicalTop;
+        LayoutRect borderBox = child->borderBoxRect();
+        LayoutUnit childLogicalWidthAtOldLogicalTopOffset = isHorizontalWritingMode() ? borderBox.width() : borderBox.height();
         while (true) {
             LayoutUnit availableLogicalWidthAtNewLogicalTopOffset = availableLogicalWidthForLine(newLogicalTop, false, logicalHeightForChild(*child));
             if (availableLogicalWidthAtNewLogicalTopOffset == availableLogicalWidthForContent())
                 return newLogicalTop - logicalTop;
-
-            LayoutRect borderBox = child->borderBoxRect();
-            LayoutUnit childLogicalWidthAtOldLogicalTopOffset = isHorizontalWritingMode() ? borderBox.width() : borderBox.height();
 
             LogicalExtentComputedValues computedValues;
             child->logicalExtentAfterUpdatingLogicalWidth(newLogicalTop, computedValues);
