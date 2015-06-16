@@ -404,6 +404,7 @@ _x86_internal_release_boards = frozenset([
     'falco',
     'falco_li',
     'gandof',
+    'glados',
     'glimmer',
     'gnawty',
     'guado',
@@ -623,6 +624,7 @@ _waterfall_config_map = {
         # Experimental Canaries (Group)
         'daisy-freon-release-group',
         'peach-freon-release-group',
+        'glados-release-group',
         'pineview-freon-release-group',
         'rambi-d-release-group',
         'rambi-e-release-group',
@@ -2503,6 +2505,13 @@ def GetConfig():
       )
   )
 
+  # glados-based boards
+  _AddGroupConfig(
+      'glados', 'glados', (
+      ),
+      important=False,
+  )
+
   # Factory and Firmware releases much inherit from these classes.
   # Modifications for these release builders should go here.
 
@@ -2623,6 +2632,7 @@ def GetConfig():
       'cyan',
       'enguarde',
       'expresso',
+      'glados',
       'glimmer',
       'gnawty',
       'heli',
