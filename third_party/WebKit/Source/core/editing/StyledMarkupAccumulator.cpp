@@ -74,9 +74,15 @@ void StyledMarkupAccumulator::appendEndTag(const Element& element)
 void StyledMarkupAccumulator::appendStartMarkup(Node& node)
 {
     switch (node.nodeType()) {
-    case Node::TEXT_NODE:
-        appendText(toText(node));
+    case Node::TEXT_NODE: {
+        Text& text = toText(node);
+        if (text.parentElement() && text.parentElement()->tagQName() == textareaTag) {
+            appendText(text);
+            break;
+        }
+        appendTextWithInlineStyle(text);
         break;
+    }
     case Node::ELEMENT_NODE: {
         Element& element = toElement(node);
         RefPtrWillBeRawPtr<EditingStyle> style = createInlineStyle(element);
@@ -96,15 +102,6 @@ void StyledMarkupAccumulator::appendEndMarkup(StringBuilder& result, const Eleme
 
 void StyledMarkupAccumulator::appendText(Text& text)
 {
-    if (text.parentElement() && text.parentElement()->tagQName() == textareaTag) {
-        appendText(m_result, text);
-        return;
-    }
-    appendTextWithInlineStyle(m_result, text);
-}
-
-void StyledMarkupAccumulator::appendText(StringBuilder& out, Text& text)
-{
     const String& str = text.data();
     unsigned length = str.length();
     unsigned start = 0;
@@ -118,10 +115,10 @@ void StyledMarkupAccumulator::appendText(StringBuilder& out, Text& text)
             length -= start;
         }
     }
-    MarkupFormatter::appendCharactersReplacingEntities(out, str, start, length, m_formatter.entityMaskForText(text));
+    MarkupFormatter::appendCharactersReplacingEntities(m_result, str, start, length, m_formatter.entityMaskForText(text));
 }
 
-void StyledMarkupAccumulator::appendTextWithInlineStyle(StringBuilder& out, Text& text)
+void StyledMarkupAccumulator::appendTextWithInlineStyle(Text& text)
 {
     const bool wrappingSpan = shouldApplyWrappingStyle(text);
     if (wrappingSpan) {
@@ -136,23 +133,23 @@ void StyledMarkupAccumulator::appendTextWithInlineStyle(StringBuilder& out, Text
         ASSERT(propertyMissingOrEqualToNone(wrappingStyle->style(), CSSPropertyWebkitTextDecorationsInEffect));
         ASSERT(m_document);
 
-        out.appendLiteral("<span style=\"");
-        MarkupFormatter::appendAttributeValue(out, wrappingStyle->style()->asText(), m_document->isHTMLDocument());
-        out.appendLiteral("\">");
+        m_result.appendLiteral("<span style=\"");
+        MarkupFormatter::appendAttributeValue(m_result, wrappingStyle->style()->asText(), m_document->isHTMLDocument());
+        m_result.appendLiteral("\">");
     }
 
     if (!shouldAnnotate()) {
-        appendText(out, text);
+        appendText(text);
     } else {
         const bool useRenderedText = !enclosingElementWithTag(firstPositionInNode(&text), selectTag);
         String content = useRenderedText ? renderedText(text) : stringValueForRange(text);
         StringBuilder buffer;
         MarkupFormatter::appendCharactersReplacingEntities(buffer, content, 0, content.length(), EntityMaskInPCDATA);
-        out.append(convertHTMLTextToInterchangeFormat(buffer.toString(), text));
+        m_result.append(convertHTMLTextToInterchangeFormat(buffer.toString(), text));
     }
 
     if (wrappingSpan)
-        out.append("</span>");
+        m_result.append("</span>");
 }
 
 void StyledMarkupAccumulator::appendElement(const Element& element, PassRefPtrWillBeRawPtr<EditingStyle> style)

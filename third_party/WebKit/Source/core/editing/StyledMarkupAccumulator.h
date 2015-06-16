@@ -71,8 +71,7 @@ public:
     bool shouldApplyWrappingStyle(const Node&) const;
 
 private:
-    void appendText(StringBuilder&, Text&);
-    void appendTextWithInlineStyle(StringBuilder&, Text&);
+    void appendTextWithInlineStyle(Text&);
 
     String renderedText(Text&);
     String stringValueForRange(const Text&);
