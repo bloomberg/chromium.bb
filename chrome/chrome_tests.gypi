@@ -941,7 +941,6 @@
       'browser/autofill/autofill_interactive_uitest.cc',
       'browser/autofill/autofill_uitest_util.cc',
       'browser/browser_keyevents_browsertest.cc',
-      'browser/chrome_plugin_interactive_test.cc',
       'browser/extensions/api/extension_action/browser_action_interactive_test.cc',
       'browser/extensions/api/omnibox/omnibox_api_interactive_test.cc',
       'browser/extensions/browsertest_util.cc',
@@ -2409,13 +2408,6 @@
             '../components/components.gyp:copresence',
             # build time dependency.
             '../v8/src/d8.gyp:d8#host',
-          ],
-        }],
-        ['OS!="android" and OS!="ios" and OS!="linux"', {
-          # npapi test plugin doesn't build on android or ios
-          'dependencies': [
-            # build time dependency.
-            '../content/content_shell_and_tests.gyp:copy_npapi_test_plugin',
           ],
         }],
         ['enable_app_list==1', {

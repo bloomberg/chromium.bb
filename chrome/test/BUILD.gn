@@ -970,12 +970,6 @@ if (!is_android) {
           [ "../browser/copresence/chrome_whispernet_client_browsertest.cc" ]
       deps += [ "//components/copresence" ]
     }
-    if (!is_android && !is_ios && !is_linux) {
-      # NPAPI test plugin only works on some platforms.
-      data_deps += [
-        #'../content/content_shell_and_tests.gyp:copy_npapi_test_plugin',  TODO(GYP)
-      ]
-    }
     if (enable_app_list) {
       sources += rebase_path(
               chrome_tests_gypi_values.chrome_browser_tests_app_list_sources,

@@ -183,7 +183,6 @@
           '<(PRODUCT_DIR)/content_shell.pak',
           '<(PRODUCT_DIR)/libclearkeycdm.dylib',
           '<(PRODUCT_DIR)/osmesa.so',
-          '<(PRODUCT_DIR)/plugins/npapi_test_plugin.plugin/',
           '<(PRODUCT_DIR)/plugins/test_netscape_plugin.plugin/',
           '<(PRODUCT_DIR)/power_saver_test_plugin.plugin/Contents/MacOS/power_saver_test_plugin',
           '<(PRODUCT_DIR)/ppapi_tests.plugin/Contents/MacOS/ppapi_tests',

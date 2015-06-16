@@ -285,8 +285,6 @@
       'test/webrtc_content_browsertest_base.h',
     ],
     'content_browsertests_plugins_sources': [
-      'browser/plugin_data_remover_impl_browsertest.cc',
-      'browser/plugin_service_impl_browsertest.cc',
       'renderer/pepper/fake_pepper_plugin_instance.cc',
       'renderer/pepper/mock_renderer_ppapi_host.cc',
       'renderer/pepper/pepper_device_enumeration_host_helper_unittest.cc',
@@ -1496,13 +1494,6 @@
                 'browser/compositor/image_transport_factory_browsertest.cc',
               ],
             }],
-            ['OS!="android" and OS!="ios" and OS!="linux"', {
-              # npapi test plugin doesn't build on android or ios
-              'dependencies': [
-                # Runtime dependencies
-                'copy_npapi_test_plugin',
-              ],
-            }],
             ['enable_webrtc==1', {
               'sources': [ '<@(content_browsertests_webrtc_sources)' ],
               'dependencies': [
@@ -2058,150 +2049,6 @@
           },
           'includes': [
             '../build/host_jar.gypi',
-          ],
-        },
-      ],
-    }],
-    ['OS!="android" and OS!="ios" and OS!="linux"', {
-      # npapi test plugin doesn't build on android or ios
-      'targets': [
-        {
-          'target_name': 'npapi_test_plugin',
-          'type': 'loadable_module',
-          'variables': {
-            'chromium_code': 1,
-          },
-          'mac_bundle': 1,
-          'dependencies': [
-            '<(DEPTH)/base/base.gyp:base',
-            '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
-            '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
-          ],
-          'sources': [
-            'test/plugin/npapi_constants.cc',
-            'test/plugin/npapi_constants.h',
-            'test/plugin/npapi_test.cc',
-            'test/plugin/npapi_test.def',
-            'test/plugin/npapi_test.rc',
-            'test/plugin/plugin_arguments_test.cc',
-            'test/plugin/plugin_arguments_test.h',
-            'test/plugin/plugin_client.cc',
-            'test/plugin/plugin_client.h',
-            'test/plugin/plugin_create_instance_in_paint.cc',
-            'test/plugin/plugin_create_instance_in_paint.h',
-            'test/plugin/plugin_delete_plugin_in_deallocate_test.cc',
-            'test/plugin/plugin_delete_plugin_in_deallocate_test.h',
-            'test/plugin/plugin_delete_plugin_in_stream_test.cc',
-            'test/plugin/plugin_delete_plugin_in_stream_test.h',
-            'test/plugin/plugin_execute_stream_javascript.cc',
-            'test/plugin/plugin_execute_stream_javascript.h',
-            'test/plugin/plugin_get_javascript_url2_test.cc',
-            'test/plugin/plugin_get_javascript_url2_test.h',
-            'test/plugin/plugin_get_javascript_url_test.cc',
-            'test/plugin/plugin_get_javascript_url_test.h',
-            'test/plugin/plugin_geturl_test.cc',
-            'test/plugin/plugin_geturl_test.h',
-            'test/plugin/plugin_javascript_open_popup.cc',
-            'test/plugin/plugin_javascript_open_popup.h',
-            'test/plugin/plugin_new_fails_test.cc',
-            'test/plugin/plugin_new_fails_test.h',
-            'test/plugin/plugin_npobject_identity_test.cc',
-            'test/plugin/plugin_npobject_identity_test.h',
-            'test/plugin/plugin_npobject_lifetime_test.cc',
-            'test/plugin/plugin_npobject_lifetime_test.h',
-            'test/plugin/plugin_npobject_proxy_test.cc',
-            'test/plugin/plugin_npobject_proxy_test.h',
-            'test/plugin/plugin_private_test.cc',
-            'test/plugin/plugin_private_test.h',
-            'test/plugin/plugin_request_read_test.cc',
-            'test/plugin/plugin_request_read_test.h',
-            'test/plugin/plugin_schedule_timer_test.cc',
-            'test/plugin/plugin_schedule_timer_test.h',
-            'test/plugin/plugin_setup_test.cc',
-            'test/plugin/plugin_setup_test.h',
-            'test/plugin/plugin_test.cc',
-            'test/plugin/plugin_test.h',
-            'test/plugin/plugin_test_factory.cc',
-            'test/plugin/plugin_test_factory.h',
-            'test/plugin/plugin_thread_async_call_test.cc',
-            'test/plugin/plugin_thread_async_call_test.h',
-            'test/plugin/plugin_window_size_test.cc',
-            'test/plugin/plugin_window_size_test.h',
-            'test/plugin/plugin_windowed_test.cc',
-            'test/plugin/plugin_windowed_test.h',
-            'test/plugin/plugin_windowless_test.cc',
-            'test/plugin/plugin_windowless_test.h',
-            'test/plugin/resource.h',
-          ],
-          'include_dirs': [
-            '../..',
-          ],
-          'xcode_settings': {
-            'INFOPLIST_FILE': '<(DEPTH)/content/test/plugin/Info.plist',
-          },
-          'conditions': [
-            ['OS!="win"', {
-              'sources!': [
-                 # windows-specific resources
-                'test/plugin/npapi_test.def',
-                'test/plugin/npapi_test.rc',
-                 # Seems windows specific.
-                'test/plugin/plugin_create_instance_in_paint.cc',
-                'test/plugin/plugin_create_instance_in_paint.h',
-                # TODO(port):  Port these.
-                # plugin_npobject_lifetime_test.cc has win32-isms
-                #   (HWND, CALLBACK).
-                'test/plugin/plugin_npobject_lifetime_test.cc',
-                 # The window APIs are necessarily platform-specific.
-                'test/plugin/plugin_window_size_test.cc',
-                'test/plugin/plugin_windowed_test.cc',
-              ],
-            }],
-            ['OS=="mac"', {
-              'product_extension': 'plugin',
-              'link_settings': {
-                'libraries': [
-                  '$(SDKROOT)/System/Library/Frameworks/Carbon.framework',
-                ],
-              },
-            }],
-            ['os_posix == 1 and OS != "mac" and (target_arch == "x64" or target_arch == "arm")', {
-              # Shared libraries need -fPIC on x86-64
-              'cflags': ['-fPIC']
-            }],
-          ],
-        },
-        {
-          'target_name': 'copy_npapi_test_plugin',
-          'type': 'none',
-          'dependencies': [
-            'npapi_test_plugin',
-          ],
-          'conditions': [
-            ['OS=="win"', {
-              'copies': [
-                {
-                  'destination': '<(PRODUCT_DIR)/plugins',
-                  'files': ['<(PRODUCT_DIR)/npapi_test_plugin.dll'],
-                },
-              ],
-            }],
-            ['OS=="mac"', {
-              'copies': [
-                {
-                  'destination': '<(PRODUCT_DIR)/plugins/',
-                  'files': ['<(PRODUCT_DIR)/npapi_test_plugin.plugin'],
-                },
-              ]
-            }],
-            ['os_posix == 1 and OS != "mac"', {
-              'copies': [
-                {
-                  'destination': '<(PRODUCT_DIR)/plugins',
-                  'files': ['<(PRODUCT_DIR)/libnpapi_test_plugin.so'],
-                },
-              ],
-            }],
           ],
         },
       ],

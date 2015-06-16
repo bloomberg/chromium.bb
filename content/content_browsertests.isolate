@@ -95,7 +95,6 @@
       'variables': {
         'files': [
           '<(PRODUCT_DIR)/Content Shell.app/',
-          '<(PRODUCT_DIR)/plugins/npapi_test_plugin.plugin/',
           '<(PRODUCT_DIR)/plugins/test_netscape_plugin.plugin/',
           '<(PRODUCT_DIR)/ppapi_tests.plugin/Contents/MacOS/ppapi_tests',
         ],
@@ -108,7 +107,6 @@
           '<(PRODUCT_DIR)/Content Shell Helper.app.dSYM/',
           '<(PRODUCT_DIR)/Content Shell.app.dSYM/',
           '<(PRODUCT_DIR)/content_browsertests.dSYM/',
-          '<(PRODUCT_DIR)/npapi_test_plugin.plugin.dSYM/',
           '<(PRODUCT_DIR)/ppapi_tests.plugin.dSYM/',
           '<(PRODUCT_DIR)/test_netscape_plugin.plugin.dSYM/',
         ],
@@ -120,7 +118,6 @@
           '<(PRODUCT_DIR)/content_shell.pak',
           '<(PRODUCT_DIR)/osmesa.dll',
           '<(PRODUCT_DIR)/plugins/np_test_netscape_plugin.dll',
-          '<(PRODUCT_DIR)/plugins/npapi_test_plugin.dll',
           '<(PRODUCT_DIR)/ppapi_tests.dll',
         ],
       },

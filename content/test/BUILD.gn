@@ -379,11 +379,6 @@ if (!is_mac) {
           [ "../browser/compositor/image_transport_factory_browsertest.cc" ]
     }
 
-    if (!is_android && !is_ios && !is_linux) {
-      # Npapi test plugin doesn't build on Android or iOS.
-      #data_deps += [ 'copy_npapi_test_plugin' ]  TODO(GYP)
-    }
-
     if (enable_webrtc) {
       sources += rebase_path(
               content_tests_gypi_values.content_browsertests_webrtc_sources,

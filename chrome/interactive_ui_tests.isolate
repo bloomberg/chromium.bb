@@ -100,7 +100,6 @@
           '<(PRODUCT_DIR)/libEGL.dll',
           '<(PRODUCT_DIR)/libGLESv2.dll',
           '<(PRODUCT_DIR)/osmesa.dll',
-          '<(PRODUCT_DIR)/plugins/npapi_test_plugin.dll',
           '<(PRODUCT_DIR)/ppapi_tests.dll',
         ],
       },
