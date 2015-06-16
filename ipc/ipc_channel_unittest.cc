@@ -190,8 +190,7 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(GenericClient) {
 
   // Set up IPC channel.
   scoped_ptr<IPC::Channel> channel(IPC::Channel::CreateClient(
-      IPCTestBase::GetChannelName("GenericClient"),
-      &listener));
+      IPCTestBase::GetChannelName("GenericClient"), &listener, nullptr));
   CHECK(channel->Connect());
   listener.Init(channel.get());
   IPC::TestChannelListener::SendOneMessage(channel.get(), "hello from child");

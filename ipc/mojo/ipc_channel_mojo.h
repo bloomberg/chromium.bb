@@ -69,25 +69,37 @@ class IPC_MOJO_EXPORT ChannelMojo
 
   // Create ChannelMojo. A bootstrap channel is created as well.
   // |host| must not be null for server channels.
+  // |broker| must outlive the newly created channel.
   static scoped_ptr<ChannelMojo> Create(
       Delegate* delegate,
       scoped_refptr<base::TaskRunner> io_runner,
       const ChannelHandle& channel_handle,
       Mode mode,
-      Listener* listener);
+      Listener* listener,
+      AttachmentBroker* broker);
 
   // Create a factory object for ChannelMojo.
   // The factory is used to create Mojo-based ChannelProxy family.
   // |host| must not be null.
+  // TODO(erikchen): Remove default parameter for |broker|. It exists only to
+  // make the upcoming refactor decomposable into smaller CLs.
+  // http://crbug.com/493414.
+  // |broker| must outlive the factory and all channels it creates.
   static scoped_ptr<ChannelFactory> CreateServerFactory(
       Delegate* delegate,
       scoped_refptr<base::TaskRunner> io_runner,
-      const ChannelHandle& channel_handle);
+      const ChannelHandle& channel_handle,
+      AttachmentBroker* broker = nullptr);
 
+  // TODO(erikchen): Remove default parameter for |broker|. It exists only to
+  // make the upcoming refactor decomposable into smaller CLs.
+  // http://crbug.com/493414.
+  // |broker| must outlive the factory and all channels it creates.
   static scoped_ptr<ChannelFactory> CreateClientFactory(
       Delegate* delegate,
       scoped_refptr<base::TaskRunner> io_runner,
-      const ChannelHandle& channel_handle);
+      const ChannelHandle& channel_handle,
+      AttachmentBroker* broker = nullptr);
 
   ~ChannelMojo() override;
 
@@ -129,7 +141,8 @@ class IPC_MOJO_EXPORT ChannelMojo
               scoped_refptr<base::TaskRunner> io_runner,
               const ChannelHandle& channel_handle,
               Mode mode,
-              Listener* listener);
+              Listener* listener,
+              AttachmentBroker* broker);
 
   void CreateMessagingPipe(mojo::embedder::ScopedPlatformHandle handle,
                            const CreateMessagingPipeCallback& callback);

@@ -347,7 +347,6 @@ void ChannelProxy::Context::Send(Message* message) {
                             base::Passed(scoped_ptr<Message>(message))));
 }
 
-
 //-----------------------------------------------------------------------------
 
 // static
@@ -355,9 +354,10 @@ scoped_ptr<ChannelProxy> ChannelProxy::Create(
     const IPC::ChannelHandle& channel_handle,
     Channel::Mode mode,
     Listener* listener,
-    const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner) {
+    const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner,
+    AttachmentBroker* broker) {
   scoped_ptr<ChannelProxy> channel(new ChannelProxy(listener, ipc_task_runner));
-  channel->Init(channel_handle, mode, true);
+  channel->Init(channel_handle, mode, true, broker);
   return channel.Pass();
 }
 
@@ -396,7 +396,8 @@ ChannelProxy::~ChannelProxy() {
 
 void ChannelProxy::Init(const IPC::ChannelHandle& channel_handle,
                         Channel::Mode mode,
-                        bool create_pipe_now) {
+                        bool create_pipe_now,
+                        AttachmentBroker* broker) {
 #if defined(OS_POSIX)
   // When we are creating a server on POSIX, we need its file descriptor
   // to be created immediately so that it can be accessed and passed
@@ -406,8 +407,7 @@ void ChannelProxy::Init(const IPC::ChannelHandle& channel_handle,
     create_pipe_now = true;
   }
 #endif  // defined(OS_POSIX)
-  Init(ChannelFactory::Create(channel_handle, mode),
-       create_pipe_now);
+  Init(ChannelFactory::Create(channel_handle, mode, broker), create_pipe_now);
 }
 
 void ChannelProxy::Init(scoped_ptr<ChannelFactory> factory,

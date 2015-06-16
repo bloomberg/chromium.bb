@@ -27,14 +27,18 @@ class ChannelWin : public Channel,
                    public base::MessageLoopForIO::IOHandler {
  public:
   // Mirror methods of Channel, see ipc_channel.h for description.
-  ChannelWin(const IPC::ChannelHandle &channel_handle, Mode mode,
-             Listener* listener);
+  // |broker| must outlive the newly created object.
+  ChannelWin(const IPC::ChannelHandle& channel_handle,
+             Mode mode,
+             Listener* listener,
+             AttachmentBroker* broker);
   ~ChannelWin() override;
 
   // Channel implementation
   bool Connect() override;
   void Close() override;
   bool Send(Message* message) override;
+  AttachmentBroker* GetAttachmentBroker() override;
   base::ProcessId GetPeerPID() const override;
   base::ProcessId GetSelfPID() const override;
 
@@ -103,6 +107,9 @@ class ChannelWin : public Channel,
 
   scoped_ptr<base::ThreadChecker> thread_check_;
   base::WeakPtrFactory<ChannelWin> weak_factory_;
+
+  // |broker_| must outlive this instance.
+  AttachmentBroker* broker_;
 
   DISALLOW_COPY_AND_ASSIGN(ChannelWin);
 };

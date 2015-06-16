@@ -6,6 +6,7 @@
 #define IPC_IPC_CHANNEL_READER_H_
 
 #include "base/basictypes.h"
+#include "ipc/attachment_broker.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_export.h"
 
@@ -24,7 +25,7 @@ namespace internal {
 // functionality that would benefit from being factored out. If we add
 // something like that in the future, it would be more appropriate to add it
 // here (and rename appropriately) rather than writing a different class.
-class ChannelReader {
+class ChannelReader : virtual public SupportsAttachmentBrokering {
  public:
   explicit ChannelReader(Listener* listener);
   virtual ~ChannelReader();

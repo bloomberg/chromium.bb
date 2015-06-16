@@ -155,7 +155,7 @@ class Worker : public Listener, public Sender {
   virtual SyncChannel* CreateChannel() {
     scoped_ptr<SyncChannel> channel = SyncChannel::Create(
         channel_name_, mode_, this, ipc_thread_.task_runner().get(), true,
-        &shutdown_event_);
+        &shutdown_event_, nullptr);
     return channel.release();
   }
 
@@ -327,7 +327,7 @@ class TwoStepServer : public Worker {
     SyncChannel* channel =
         SyncChannel::Create(channel_name(), mode(), this,
                             ipc_thread().task_runner().get(), create_pipe_now_,
-                            shutdown_event()).release();
+                            shutdown_event(), nullptr).release();
     return channel;
   }
 
@@ -349,7 +349,7 @@ class TwoStepClient : public Worker {
     SyncChannel* channel =
         SyncChannel::Create(channel_name(), mode(), this,
                             ipc_thread().task_runner().get(), create_pipe_now_,
-                            shutdown_event()).release();
+                            shutdown_event(), nullptr).release();
     return channel;
   }
 
@@ -1138,7 +1138,7 @@ class RestrictedDispatchClient : public Worker {
 
     non_restricted_channel_ = SyncChannel::Create(
         "non_restricted_channel", IPC::Channel::MODE_CLIENT, this,
-        ipc_thread().task_runner().get(), true, shutdown_event());
+        ipc_thread().task_runner().get(), true, shutdown_event(), nullptr);
 
     server_->ListenerThread()->task_runner()->PostTask(
         FROM_HERE, base::Bind(&RestrictedDispatchServer::OnDoPing, server_, 2));
@@ -1525,7 +1525,7 @@ class RestrictedDispatchPipeWorker : public Worker {
     event2_->Wait();
     other_channel_ = SyncChannel::Create(
         other_channel_name_, IPC::Channel::MODE_CLIENT, this,
-        ipc_thread().task_runner().get(), true, shutdown_event());
+        ipc_thread().task_runner().get(), true, shutdown_event(), nullptr);
     other_channel_->SetRestrictDispatchChannelGroup(group_);
     if (!is_first()) {
       event1_->Signal();
@@ -1601,7 +1601,7 @@ class ReentrantReplyServer1 : public Worker {
   void Run() override {
     server2_channel_ = SyncChannel::Create(
         "reentrant_reply2", IPC::Channel::MODE_CLIENT, this,
-        ipc_thread().task_runner().get(), true, shutdown_event());
+        ipc_thread().task_runner().get(), true, shutdown_event(), nullptr);
     server_ready_->Signal();
     Message* msg = new SyncChannelTestMsg_Reentrant1();
     server2_channel_->Send(msg);

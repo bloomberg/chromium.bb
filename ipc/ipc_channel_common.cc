@@ -8,36 +8,49 @@ namespace IPC {
 
 // static
 scoped_ptr<Channel> Channel::CreateClient(
-    const IPC::ChannelHandle &channel_handle, Listener* listener) {
-  return Channel::Create(channel_handle, Channel::MODE_CLIENT, listener);
+    const IPC::ChannelHandle& channel_handle,
+    Listener* listener,
+    AttachmentBroker* broker) {
+  return Channel::Create(channel_handle, Channel::MODE_CLIENT, listener,
+                         broker);
 }
 
 // static
 scoped_ptr<Channel> Channel::CreateNamedServer(
-    const IPC::ChannelHandle &channel_handle, Listener* listener) {
-  return Channel::Create(channel_handle, Channel::MODE_NAMED_SERVER, listener);
+    const IPC::ChannelHandle& channel_handle,
+    Listener* listener,
+    AttachmentBroker* broker) {
+  return Channel::Create(channel_handle, Channel::MODE_NAMED_SERVER, listener,
+                         broker);
 }
 
 // static
 scoped_ptr<Channel> Channel::CreateNamedClient(
-    const IPC::ChannelHandle &channel_handle, Listener* listener) {
-  return Channel::Create(channel_handle, Channel::MODE_NAMED_CLIENT, listener);
+    const IPC::ChannelHandle& channel_handle,
+    Listener* listener,
+    AttachmentBroker* broker) {
+  return Channel::Create(channel_handle, Channel::MODE_NAMED_CLIENT, listener,
+                         broker);
 }
 
 #if defined(OS_POSIX)
 // static
 scoped_ptr<Channel> Channel::CreateOpenNamedServer(
-    const IPC::ChannelHandle &channel_handle, Listener* listener) {
-  return Channel::Create(channel_handle,
-                         Channel::MODE_OPEN_NAMED_SERVER,
-                         listener);
+    const IPC::ChannelHandle& channel_handle,
+    Listener* listener,
+    AttachmentBroker* broker) {
+  return Channel::Create(channel_handle, Channel::MODE_OPEN_NAMED_SERVER,
+                         listener, broker);
 }
 #endif
 
 // static
 scoped_ptr<Channel> Channel::CreateServer(
-    const IPC::ChannelHandle &channel_handle, Listener* listener) {
-  return Channel::Create(channel_handle, Channel::MODE_SERVER, listener);
+    const IPC::ChannelHandle& channel_handle,
+    Listener* listener,
+    AttachmentBroker* broker) {
+  return Channel::Create(channel_handle, Channel::MODE_SERVER, listener,
+                         broker);
 }
 
 Channel::~Channel() {

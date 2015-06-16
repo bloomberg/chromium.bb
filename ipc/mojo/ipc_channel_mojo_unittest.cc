@@ -68,9 +68,10 @@ class ListenerThatExpectsOK : public IPC::Listener {
 class ChannelClient {
  public:
   explicit ChannelClient(IPC::Listener* listener, const char* name) {
-    channel_ = IPC::ChannelMojo::Create(NULL, main_message_loop_.task_runner(),
-                                        IPCTestBase::GetChannelName(name),
-                                        IPC::Channel::MODE_CLIENT, listener);
+    channel_ =
+        IPC::ChannelMojo::Create(NULL, main_message_loop_.task_runner(),
+                                 IPCTestBase::GetChannelName(name),
+                                 IPC::Channel::MODE_CLIENT, listener, nullptr);
   }
 
   void Connect() {
@@ -116,8 +117,8 @@ class IPCChannelMojoTest : public IPCChannelMojoTestBase {
       const IPC::ChannelHandle& handle,
       base::SequencedTaskRunner* runner) override {
     host_.reset(new IPC::ChannelMojoHost(task_runner()));
-    return IPC::ChannelMojo::CreateServerFactory(host_->channel_delegate(),
-                                                 task_runner(), handle);
+    return IPC::ChannelMojo::CreateServerFactory(
+        host_->channel_delegate(), task_runner(), handle, nullptr);
   }
 
   bool DidStartClient() override {
@@ -224,8 +225,8 @@ class IPCChannelMojoErrorTest : public IPCChannelMojoTestBase {
       const IPC::ChannelHandle& handle,
       base::SequencedTaskRunner* runner) override {
     host_.reset(new IPC::ChannelMojoHost(task_runner()));
-    return IPC::ChannelMojo::CreateServerFactory(host_->channel_delegate(),
-                                                 task_runner(), handle);
+    return IPC::ChannelMojo::CreateServerFactory(
+        host_->channel_delegate(), task_runner(), handle, nullptr);
   }
 
   bool DidStartClient() override {
@@ -558,8 +559,8 @@ class IPCChannelMojoDeadHandleTest : public IPCChannelMojoTestBase {
       const IPC::ChannelHandle& handle,
       base::SequencedTaskRunner* runner) override {
     host_.reset(new IPC::ChannelMojoHost(task_runner()));
-    return IPC::ChannelMojo::CreateServerFactory(host_->channel_delegate(),
-                                                 task_runner(), handle);
+    return IPC::ChannelMojo::CreateServerFactory(
+        host_->channel_delegate(), task_runner(), handle, nullptr);
   }
 
   bool DidStartClient() override {

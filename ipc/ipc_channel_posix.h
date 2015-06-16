@@ -26,14 +26,18 @@ class IPC_EXPORT ChannelPosix : public Channel,
                                 public internal::ChannelReader,
                                 public base::MessageLoopForIO::Watcher {
  public:
-  ChannelPosix(const IPC::ChannelHandle& channel_handle, Mode mode,
-               Listener* listener);
+  // |broker| must outlive the newly created object.
+  ChannelPosix(const IPC::ChannelHandle& channel_handle,
+               Mode mode,
+               Listener* listener,
+               AttachmentBroker* broker);
   ~ChannelPosix() override;
 
   // Channel implementation
   bool Connect() override;
   void Close() override;
   bool Send(Message* message) override;
+  AttachmentBroker* GetAttachmentBroker() override;
   base::ProcessId GetPeerPID() const override;
   base::ProcessId GetSelfPID() const override;
   int GetClientFileDescriptor() const override;
@@ -174,6 +178,9 @@ class IPC_EXPORT ChannelPosix : public Channel,
   // If non-zero, overrides the process ID sent in the hello message.
   static int global_pid_;
 #endif  // OS_LINUX
+
+  // |broker_| must outlive this instance.
+  AttachmentBroker* broker_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ChannelPosix);
 };

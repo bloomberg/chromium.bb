@@ -47,7 +47,7 @@ TEST_F(IPCMojoBootstrapTest, Connect) {
 
   TestingDelegate delegate;
   scoped_ptr<IPC::MojoBootstrap> bootstrap = IPC::MojoBootstrap::Create(
-      GetTestChannelHandle(), IPC::Channel::MODE_SERVER, &delegate);
+      GetTestChannelHandle(), IPC::Channel::MODE_SERVER, &delegate, nullptr);
 
   ASSERT_TRUE(bootstrap->Connect());
 #if defined(OS_POSIX)
@@ -71,7 +71,8 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(IPCMojoBootstrapTestClient) {
   scoped_ptr<IPC::MojoBootstrap> bootstrap = IPC::MojoBootstrap::Create(
       IPCTestBase::GetChannelName("IPCMojoBootstrapTestClient"),
       IPC::Channel::MODE_CLIENT,
-      &delegate);
+      &delegate,
+      nullptr);
 
   bootstrap->Connect();
 

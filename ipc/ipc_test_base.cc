@@ -90,8 +90,7 @@ void IPCTestBase::CreateChannelProxy(
   CHECK(!channel_proxy_.get());
   channel_proxy_ = IPC::ChannelProxy::Create(
       CreateChannelFactory(GetTestChannelHandle(), ipc_task_runner.get()),
-      listener,
-      ipc_task_runner);
+      listener, ipc_task_runner);
 }
 
 void IPCTestBase::DestroyChannelProxy() {
@@ -161,5 +160,6 @@ scoped_refptr<base::SequencedTaskRunner> IPCTestBase::task_runner() {
 scoped_ptr<IPC::ChannelFactory> IPCTestBase::CreateChannelFactory(
     const IPC::ChannelHandle& handle,
     base::SequencedTaskRunner* runner) {
-  return IPC::ChannelFactory::Create(handle, IPC::Channel::MODE_SERVER);
+  return IPC::ChannelFactory::Create(handle, IPC::Channel::MODE_SERVER,
+                                     nullptr);
 }

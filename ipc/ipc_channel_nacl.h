@@ -35,9 +35,11 @@ class ChannelNacl : public Channel,
                     public internal::ChannelReader {
  public:
   // Mirror methods of Channel, see ipc_channel.h for description.
+  // |broker| must outlive the newly created object.
   ChannelNacl(const IPC::ChannelHandle& channel_handle,
               Mode mode,
-              Listener* listener);
+              Listener* listener,
+              AttachmentBroker* broker);
   ~ChannelNacl() override;
 
   // Channel implementation.
@@ -46,6 +48,7 @@ class ChannelNacl : public Channel,
   bool Connect() override;
   void Close() override;
   bool Send(Message* message) override;
+  AttachmentBroker* GetAttachmentBroker() override;
 
   // Posted to the main thread by ReaderThreadRunner.
   void DidRecvMsg(scoped_ptr<MessageContents> contents);
@@ -113,6 +116,9 @@ class ChannelNacl : public Channel,
   std::deque<linked_ptr<Message> > output_queue_;
 
   base::WeakPtrFactory<ChannelNacl> weak_ptr_factory_;
+
+  // |broker_| must outlive this instance.
+  AttachmentBroker* broker_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ChannelNacl);
 };

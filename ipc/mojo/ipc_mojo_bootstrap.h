@@ -13,6 +13,8 @@
 
 namespace IPC {
 
+class AttachmentBroker;
+
 // MojoBootstrap establishes a bootstrap pipe between two processes in
 // Chrome. It creates a native IPC::Channel first, then sends one
 // side of a newly created pipe to peer process. The pipe is intended
@@ -38,7 +40,8 @@ class IPC_MOJO_EXPORT MojoBootstrap : public Listener {
   // mode as |mode|. The result is notified to passed |delegate|.
   static scoped_ptr<MojoBootstrap> Create(ChannelHandle handle,
                                           Channel::Mode mode,
-                                          Delegate* delegate);
+                                          Delegate* delegate,
+                                          AttachmentBroker* broker);
 
   MojoBootstrap();
   ~MojoBootstrap() override;

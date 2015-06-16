@@ -20,6 +20,7 @@
 
 namespace IPC {
 
+class AttachmentBroker;
 class Listener;
 
 //------------------------------------------------------------------------------
@@ -118,11 +119,21 @@ class IPC_EXPORT Channel : public Sender {
   //
   // TODO(morrita): Replace CreateByModeForProxy() with one of above Create*().
   //
-  static scoped_ptr<Channel> Create(
-      const IPC::ChannelHandle &channel_handle, Mode mode, Listener* listener);
+  // TODO(erikchen): Remove default parameter for |broker|. It exists only to
+  // make the upcoming refactor decomposable into smaller CLs.
+  // http://crbug.com/493414.
+  static scoped_ptr<Channel> Create(const IPC::ChannelHandle& channel_handle,
+                                    Mode mode,
+                                    Listener* listener,
+                                    AttachmentBroker* broker = nullptr);
 
+  // TODO(erikchen): Remove default parameter for |broker|. It exists only to
+  // make the upcoming refactor decomposable into smaller CLs.
+  // http://crbug.com/493414.
   static scoped_ptr<Channel> CreateClient(
-      const IPC::ChannelHandle &channel_handle, Listener* listener);
+      const IPC::ChannelHandle& channel_handle,
+      Listener* listener,
+      AttachmentBroker* broker = nullptr);
 
   // Channels on Windows are named by default and accessible from other
   // processes. On POSIX channels are anonymous by default and not accessible
@@ -130,18 +141,29 @@ class IPC_EXPORT Channel : public Sender {
   // On Windows MODE_NAMED_SERVER is equivalent to MODE_SERVER and
   // MODE_NAMED_CLIENT is equivalent to MODE_CLIENT.
   static scoped_ptr<Channel> CreateNamedServer(
-      const IPC::ChannelHandle &channel_handle, Listener* listener);
+      const IPC::ChannelHandle& channel_handle,
+      Listener* listener,
+      AttachmentBroker* broker);
   static scoped_ptr<Channel> CreateNamedClient(
-      const IPC::ChannelHandle &channel_handle, Listener* listener);
+      const IPC::ChannelHandle& channel_handle,
+      Listener* listener,
+      AttachmentBroker* broker);
 #if defined(OS_POSIX)
   // An "open" named server accepts connections from ANY client.
   // The caller must then implement their own access-control based on the
   // client process' user Id.
   static scoped_ptr<Channel> CreateOpenNamedServer(
-      const IPC::ChannelHandle &channel_handle, Listener* listener);
+      const IPC::ChannelHandle& channel_handle,
+      Listener* listener,
+      AttachmentBroker* broker);
 #endif
+  // TODO(erikchen): Remove default parameter for |broker|. It exists only to
+  // make the upcoming refactor decomposable into smaller CLs.
+  // http://crbug.com/493414.
   static scoped_ptr<Channel> CreateServer(
-      const IPC::ChannelHandle &channel_handle, Listener* listener);
+      const IPC::ChannelHandle& channel_handle,
+      Listener* listener,
+      AttachmentBroker* broker = nullptr);
 
   ~Channel() override;
 

@@ -110,8 +110,8 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(SyncSocketServerClient) {
   base::MessageLoopForIO main_message_loop;
   SyncSocketServerListener listener;
   scoped_ptr<IPC::Channel> channel(IPC::Channel::CreateClient(
-      IPCTestBase::GetChannelName("SyncSocketServerClient"),
-      &listener));
+      IPCTestBase::GetChannelName("SyncSocketServerClient"), &listener,
+      nullptr));
   EXPECT_TRUE(channel->Connect());
   listener.Init(channel.get());
   base::MessageLoop::current()->Run();

@@ -122,13 +122,15 @@ void ChannelNacl::ReaderThreadRunner::Run() {
 
 ChannelNacl::ChannelNacl(const IPC::ChannelHandle& channel_handle,
                          Mode mode,
-                         Listener* listener)
+                         Listener* listener,
+                         AttachmentBroker* broker)
     : ChannelReader(listener),
       mode_(mode),
       waiting_connect_(true),
       pipe_(-1),
       pipe_name_(channel_handle.name),
-      weak_ptr_factory_(this) {
+      weak_ptr_factory_(this),
+      broker_(broker) {
   if (!CreatePipe(channel_handle)) {
     // The pipe may have been closed already.
     const char *modestr = (mode_ & MODE_SERVER_FLAG) ? "server" : "client";
@@ -215,6 +217,10 @@ bool ChannelNacl::Send(Message* message) {
     return ProcessOutgoingMessages();
 
   return true;
+}
+
+AttachmentBroker* ChannelNacl::GetAttachmentBroker() {
+  return broker_;
 }
 
 void ChannelNacl::DidRecvMsg(scoped_ptr<MessageContents> contents) {
@@ -372,10 +378,12 @@ void ChannelNacl::HandleInternalMessage(const Message& msg) {
 // Channel's methods
 
 // static
-scoped_ptr<Channel> Channel::Create(
-    const IPC::ChannelHandle &channel_handle, Mode mode, Listener* listener) {
+scoped_ptr<Channel> Channel::Create(const IPC::ChannelHandle& channel_handle,
+                                    Mode mode,
+                                    Listener* listener,
+                                    AttachmentBroker* broker) {
   return scoped_ptr<Channel>(
-      new ChannelNacl(channel_handle, mode, listener));
+      new ChannelNacl(channel_handle, mode, listener, broker));
 }
 
 }  // namespace IPC

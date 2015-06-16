@@ -13,6 +13,8 @@
 
 namespace IPC {
 
+class AttachmentBroker;
+
 // Encapsulates how a Channel is created. A ChannelFactory can be
 // passed to the constructor of ChannelProxy or SyncChannel to tell them
 // how to create underlying channel.
@@ -20,8 +22,9 @@ class IPC_EXPORT ChannelFactory {
  public:
   // Creates a factory for "native" channel built through
   // IPC::Channel::Create().
-  static scoped_ptr<ChannelFactory> Create(
-      const ChannelHandle& handle, Channel::Mode mode);
+  static scoped_ptr<ChannelFactory> Create(const ChannelHandle& handle,
+                                           Channel::Mode mode,
+                                           AttachmentBroker* broker);
 
   virtual ~ChannelFactory() { }
   virtual std::string GetName() const = 0;

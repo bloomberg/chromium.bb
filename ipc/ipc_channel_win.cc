@@ -34,8 +34,10 @@ ChannelWin::State::~State() {
                 "member.");
 }
 
-ChannelWin::ChannelWin(const IPC::ChannelHandle &channel_handle,
-                       Mode mode, Listener* listener)
+ChannelWin::ChannelWin(const IPC::ChannelHandle& channel_handle,
+                       Mode mode,
+                       Listener* listener,
+                       AttachmentBroker* broker)
     : ChannelReader(listener),
       input_state_(this),
       output_state_(this),
@@ -44,7 +46,8 @@ ChannelWin::ChannelWin(const IPC::ChannelHandle &channel_handle,
       processing_incoming_(false),
       validate_client_(false),
       client_secret_(0),
-      weak_factory_(this) {
+      weak_factory_(this),
+      broker_(broker) {
   CreatePipe(channel_handle, mode);
 }
 
@@ -99,6 +102,10 @@ bool ChannelWin::Send(Message* message) {
   }
 
   return true;
+}
+
+AttachmentBroker* ChannelWin::GetAttachmentBroker() {
+  return broker_;
 }
 
 base::ProcessId ChannelWin::GetPeerPID() const {
@@ -476,10 +483,12 @@ void ChannelWin::OnIOCompleted(
 // Channel's methods
 
 // static
-scoped_ptr<Channel> Channel::Create(
-    const IPC::ChannelHandle &channel_handle, Mode mode, Listener* listener) {
+scoped_ptr<Channel> Channel::Create(const IPC::ChannelHandle& channel_handle,
+                                    Mode mode,
+                                    Listener* listener,
+                                    AttachmentBroker* broker) {
   return scoped_ptr<Channel>(
-      new ChannelWin(channel_handle, mode, listener));
+      new ChannelWin(channel_handle, mode, listener, broker));
 }
 
 // static

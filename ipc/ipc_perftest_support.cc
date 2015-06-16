@@ -327,8 +327,8 @@ PingPongTestClient::~PingPongTestClient() {
 
 scoped_ptr<Channel> PingPongTestClient::CreateChannel(
     Listener* listener) {
-  return Channel::CreateClient(
-      IPCTestBase::GetChannelName("PerformanceClient"), listener);
+  return Channel::CreateClient(IPCTestBase::GetChannelName("PerformanceClient"),
+                               listener, nullptr);
 }
 
 int PingPongTestClient::RunMain() {
