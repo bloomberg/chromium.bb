@@ -83,10 +83,4 @@ message CertLoggerRequest {
   // Information about the interstitial that was shown to the user for
   // this certificate error.
   optional CertLoggerInterstitialInfo interstitial_info = 7;
-
-  // The unverified certificate chain as received by the client, as a
-  // series of PEM-encoded certificates. Can be different than
-  // |cert_chain|, which is the chain the client built during
-  // verification.
-  optional string unverified_cert_chain = 8;
 };

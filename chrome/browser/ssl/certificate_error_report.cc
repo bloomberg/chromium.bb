@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "base/stl_util.h"
-#include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/ssl/cert_logger.pb.h"
 #include "net/cert/cert_status_flags.h"
@@ -49,17 +48,6 @@ void AddCertStatusToReportErrors(net::CertStatus cert_status,
   if (cert_status & net::CERT_STATUS_NO_REVOCATION_MECHANISM)
     report->add_cert_error(CertLoggerRequest::ERR_CERT_NO_REVOCATION_MECHANISM);
 }
-
-bool CertificateChainToString(scoped_refptr<net::X509Certificate> cert,
-                              std::string* result) {
-  std::vector<std::string> pem_encoded_chain;
-  if (!cert->GetPEMEncodedChain(&pem_encoded_chain))
-    return false;
-
-  *result = JoinString(pem_encoded_chain, std::string());
-  return true;
-}
-
 }  // namespace
 
 CertificateErrorReport::CertificateErrorReport()
@@ -73,17 +61,14 @@ CertificateErrorReport::CertificateErrorReport(const std::string& hostname,
   cert_report_->set_time_usec(now.ToInternalValue());
   cert_report_->set_hostname(hostname);
 
-  if (!CertificateChainToString(ssl_info.cert,
-                                cert_report_->mutable_cert_chain())) {
+  std::vector<std::string> pem_encoded_chain;
+  if (!ssl_info.cert->GetPEMEncodedChain(&pem_encoded_chain)) {
     LOG(ERROR) << "Could not get PEM encoded chain.";
   }
 
-  if (ssl_info.unverified_cert &&
-      !CertificateChainToString(
-          ssl_info.unverified_cert,
-          cert_report_->mutable_unverified_cert_chain())) {
-    LOG(ERROR) << "Could not get PEM encoded unverified certificate chain.";
-  }
+  std::string* cert_chain = cert_report_->mutable_cert_chain();
+  for (size_t i = 0; i < pem_encoded_chain.size(); ++i)
+    cert_chain->append(pem_encoded_chain[i]);
 
   cert_report_->add_pin(ssl_info.pinning_failure_log);
 
