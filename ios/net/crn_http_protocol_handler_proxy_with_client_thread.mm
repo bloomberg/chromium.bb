@@ -45,7 +45,7 @@
 - (void)runInvocationQueueOnClientThread;
 - (void)postToClientThread:(SEL)aSelector, ... NS_REQUIRES_NIL_TERMINATION;
 - (void)invokeOnClientThread:(NSInvocation*)invocation;
-// hese functions are just wrappers around the corresponding
+// These functions are just wrappers around the corresponding
 // NSURLProtocolClient methods, used for task posting.
 - (void)didFailWithErrorOnClientThread:(NSError*)error;
 - (void)didLoadDataOnClientThread:(NSData*)data;
@@ -184,7 +184,8 @@
   DCHECK(_clientThread);
   if (!_protocol)
     return;
-  [self postToClientThread:@selector(wasRedirectedToRequestOnClientThread:),
+  [self postToClientThread:@selector(wasRedirectedToRequestOnClientThread:
+                                                         redirectResponse:),
                            request, redirectResponse, nil];
 }
 
