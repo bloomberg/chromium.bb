@@ -17,11 +17,9 @@ bool RemoteLayerAPISupported() {
   if (!base::mac::IsOSMavericksOrLater())
     return false;
 
-  bool disabled_at_command_line =
+  static bool disabled_at_command_line =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableRemoteCoreAnimation) ||
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableNSGLSurfaces);
+          switches::kDisableRemoteCoreAnimation);
   if (disabled_at_command_line)
     return false;
 

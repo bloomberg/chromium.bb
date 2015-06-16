@@ -11,7 +11,6 @@
 #include "base/trace_event/trace_event.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/accelerated_widget_mac/io_surface_layer.h"
-#include "ui/accelerated_widget_mac/io_surface_ns_gl_surface.h"
 #include "ui/accelerated_widget_mac/surface_handle_types.h"
 #include "ui/base/cocoa/animation_utils.h"
 #include "ui/gfx/geometry/dip_util.h"
@@ -94,7 +93,6 @@ void AcceleratedWidgetMac::ResetNSView() {
   [flipped_layer_ removeFromSuperlayer];
   DestroyIOSurfaceLayer(io_surface_layer_);
   DestroyCAContextLayer(ca_context_layer_);
-  DestroyIOSurfaceNSGLSurface();
   DestroySoftwareLayer();
 
   last_swap_size_dip_ = gfx::Size();
@@ -109,8 +107,6 @@ bool AcceleratedWidgetMac::HasFrameOfSize(
 int AcceleratedWidgetMac::GetRendererID() const {
   if (io_surface_layer_)
     return [io_surface_layer_ rendererID];
-  if (io_surface_ns_gl_surface_)
-    return io_surface_ns_gl_surface_->GetRendererID();
   return 0;
 }
 
@@ -154,13 +150,7 @@ void AcceleratedWidgetMac::GotAcceleratedFrame(
   switch (GetSurfaceHandleType(surface_handle)) {
     case kSurfaceHandleTypeIOSurface: {
       IOSurfaceID io_surface_id = IOSurfaceIDFromSurfaceHandle(surface_handle);
-      if (IOSurfaceNSGLSurface::CanUseNSGLSurfaceForView(
-              view_->AcceleratedWidgetGetNSView())) {
-        GotAcceleratedIOSurfaceFrameNSGL(
-            io_surface_id, pixel_size, scale_factor, pixel_damage_rect);
-      } else {
-        GotAcceleratedIOSurfaceFrame(io_surface_id, pixel_size, scale_factor);
-      }
+      GotAcceleratedIOSurfaceFrame(io_surface_id, pixel_size, scale_factor);
       break;
     }
     case kSurfaceHandleTypeCAContext: {
@@ -203,36 +193,6 @@ void AcceleratedWidgetMac::GotAcceleratedCAContextFrame(
     DestroyCAContextLayer(old_ca_context_layer);
 
   // Remove any different-type layers that this is replacing.
-  DestroyIOSurfaceLayer(io_surface_layer_);
-  DestroyIOSurfaceNSGLSurface();
-  DestroySoftwareLayer();
-}
-
-void AcceleratedWidgetMac::GotAcceleratedIOSurfaceFrameNSGL(
-    IOSurfaceID io_surface_id,
-    const gfx::Size& pixel_size,
-    float scale_factor,
-    const gfx::Rect& pixel_damage_rect) {
-  if (!io_surface_ns_gl_surface_ ||
-      io_surface_ns_gl_surface_->NeedsToBeRecreated()) {
-    io_surface_ns_gl_surface_.reset(
-        IOSurfaceNSGLSurface::Create(
-            this,
-            view_->AcceleratedWidgetGetNSView(),
-            needs_gl_finish_workaround_));
-  }
-
-  if (!io_surface_ns_gl_surface_) {
-    LOG(ERROR) << "Failed to create IOSurfaceNSGLSurface";
-    AcknowledgeAcceleratedFrame();
-    return;
-  }
-
-  io_surface_ns_gl_surface_->GotFrame(
-      io_surface_id, pixel_size, scale_factor, pixel_damage_rect);
-
-  // Remove any different-type layers that this is replacing.
-  DestroyCAContextLayer(ca_context_layer_);
   DestroyIOSurfaceLayer(io_surface_layer_);
   DestroySoftwareLayer();
 }
@@ -305,7 +265,6 @@ void AcceleratedWidgetMac::GotAcceleratedIOSurfaceFrame(
 
   // Remove any different-type layers that this is replacing.
   DestroyCAContextLayer(ca_context_layer_);
-  DestroyIOSurfaceNSGLSurface();
   DestroySoftwareLayer();
 }
 
@@ -337,7 +296,6 @@ void AcceleratedWidgetMac::GotSoftwareFrame(float scale_factor,
   // Remove any different-type layers that this is replacing.
   DestroyCAContextLayer(ca_context_layer_);
   DestroyIOSurfaceLayer(io_surface_layer_);
-  DestroyIOSurfaceNSGLSurface();
 }
 
 void AcceleratedWidgetMac::DestroyCAContextLayer(
@@ -359,10 +317,6 @@ void AcceleratedWidgetMac::DestroyIOSurfaceLayer(
     io_surface_layer_.reset();
 }
 
-void AcceleratedWidgetMac::DestroyIOSurfaceNSGLSurface() {
-  io_surface_ns_gl_surface_.reset();
-}
-
 void AcceleratedWidgetMac::DestroySoftwareLayer() {
   if (!software_layer_)
     return;
@@ -379,10 +333,6 @@ bool AcceleratedWidgetMac::IOSurfaceLayerShouldAckImmediately() const {
 }
 
 void AcceleratedWidgetMac::IOSurfaceLayerDidDrawFrame() {
-  AcknowledgeAcceleratedFrame();
-}
-
-void AcceleratedWidgetMac::IOSurfaceNSGLSurfaceDidDrawFrame() {
   AcknowledgeAcceleratedFrame();
 }
 

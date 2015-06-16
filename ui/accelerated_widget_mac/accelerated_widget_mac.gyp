@@ -21,8 +21,6 @@
         'io_surface_context.mm',
         'io_surface_layer.h',
         'io_surface_layer.mm',
-        'io_surface_ns_gl_surface.h',
-        'io_surface_ns_gl_surface.mm',
         'io_surface_texture.h',
         'io_surface_texture.mm',
         'software_layer.h',

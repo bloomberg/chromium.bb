@@ -7,13 +7,16 @@
 namespace switches {
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-// Enable use of cross-process CALayers to display content directly from the
+// Disable use of cross-process CALayers to display content directly from the
 // GPU process on Mac.
 const char kDisableRemoteCoreAnimation[] = "disable-remote-core-animation";
 
-// Force all windows to render via a layer-backed view bound to an
-// NSOpenGLContext.
-const char kEnableNSGLSurfaces[] = "enable-ns-gl-surfaces";
+// Enable using the private NSCGLSurface API to draw content.
+const char kEnableNSCGLSurfaceApi[] = "enable-ns-cgl-surface-api";
+
+// Force all content to draw via the private NSCGLSurface API, even when there
+// exist performance, stability, or correctness reasons not to.
+const char kForceNSCGLSurfaceApi[] = "force-ns-cgl-surface-api";
 #endif
 
 // Disables use of DWM composition for top level windows.

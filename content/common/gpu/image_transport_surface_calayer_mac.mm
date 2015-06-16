@@ -11,6 +11,7 @@
 #include "base/trace_event/trace_event.h"
 #include "ui/accelerated_widget_mac/surface_handle_types.h"
 #include "ui/base/cocoa/animation_utils.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gl/gl_gl_api_implementation.h"
@@ -24,6 +25,18 @@ const base::TimeDelta kMinDeltaToSwitchToAsync =
     base::TimeDelta::FromSecondsD(1. / 15.);
 
 bool CanUseNSCGLSurface() {
+  // Respect command line flags for the API's usage.
+  static bool forced_at_command_line =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kForceNSCGLSurfaceApi);
+  if (forced_at_command_line)
+    return true;
+  static bool enabled_at_command_line =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableNSCGLSurfaceApi);
+  if (!enabled_at_command_line)
+    return false;
+
   // If there are multiple displays connected, then it is possible that we will
   // end up on the slow path, where -[NSCGLSurface layerContents] will return
   // a CGImage that is a dearly-made copy of the surface. Since we don't yet
@@ -38,10 +51,11 @@ bool CanUseNSCGLSurface() {
   if (count != 1)
     return false;
 
-  // Also of note is that transitions between the iGPU and the dGPU are rocky
-  // for a raw NSCGLSurface (or a layer-backed NSOpenGLLayer, for that matter).
-  // During a transition, windows may flash to black or yellow or gray. It may
-  // be that we will want to prevent using NSCGLSurface on multi-GPU systems.
+  // Systems with multiple GPUs can exhibit problems where incorrect content
+  // will briefly flash during resize, and especially during transitions between
+  // the iGPU and the dGPU. These problems are exhibited by layer-backed
+  // NSOpenGLViews as well.
+  // TODO(ccameron): Add this check.
 
   // Leave this feature disabled until a flag for it is available.
   return false;

@@ -14,7 +14,8 @@ namespace switches {
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 UI_BASE_EXPORT extern const char kDisableRemoteCoreAnimation[];
-UI_BASE_EXPORT extern const char kEnableNSGLSurfaces[];
+UI_BASE_EXPORT extern const char kEnableNSCGLSurfaceApi[];
+UI_BASE_EXPORT extern const char kForceNSCGLSurfaceApi[];
 #endif
 
 UI_BASE_EXPORT extern const char kDisableDwmComposition[];
