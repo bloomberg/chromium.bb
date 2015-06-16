@@ -616,6 +616,10 @@ void SyncTest::SetUpInProcessBrowserTestFixture() {
   net::RuleBasedHostResolverProc* resolver =
       new net::RuleBasedHostResolverProc(host_resolver());
   resolver->AllowDirectLookup("*.google.com");
+
+  // Allow connection to googleapis.com for oauth token requests in E2E tests.
+  resolver->AllowDirectLookup("*.googleapis.com");
+
   // On Linux, we use Chromium's NSS implementation which uses the following
   // hosts for certificate verification. Without these overrides, running the
   // integration tests on Linux causes error as we make external DNS lookups.
