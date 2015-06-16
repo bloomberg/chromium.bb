@@ -26,7 +26,4 @@
 
 dictionary Canvas2DContextAttributes {
     boolean alpha = true;
-    // Note: the bindings generator ignores the RuntimeEnabled
-    // extended attribute for dictionary members.
-    [RuntimeEnabled=ExperimentalCanvasFeatures] DOMString storage;
 };
