@@ -11,65 +11,71 @@ namespace ui {
 base::char16 DeadXkbKeySymToCombiningCharacter(xkb_keysym_t keysym) {
   switch (keysym) {
     case XKB_KEY_dead_grave:
-      return 0x0768;  // combining grave accent
+      return 0x0300;  // combining grave accent
     case XKB_KEY_dead_acute:
-      return 0x0769;  // combining acute accent
+      return 0x0301;  // combining acute accent
     case XKB_KEY_dead_circumflex:
-      return 0x0770;  // combining circumflex accent
+      return 0x0302;  // combining circumflex accent
     case XKB_KEY_dead_tilde:
-      return 0x0771;  // combining tilde
+      return 0x0303;  // combining tilde
     case XKB_KEY_dead_macron:
-      return 0x0772;  // combining macron
+      return 0x0304;  // combining macron
     case XKB_KEY_dead_breve:
-      return 0x0774;  // combining breve
+      return 0x0306;  // combining breve
     case XKB_KEY_dead_abovedot:
-      return 0x0775;  // combining dot above
+      return 0x0307;  // combining dot above
     case XKB_KEY_dead_diaeresis:
-      return 0x0776;  // combining diaeresis
+      return 0x0308;  // combining diaeresis
     case XKB_KEY_dead_abovering:
-      return 0x0778;  // combining ring above
+      return 0x030A;  // combining ring above
     case XKB_KEY_dead_doubleacute:
-      return 0x0779;  // combining double acute accent
+      return 0x030B;  // combining double acute accent
     case XKB_KEY_dead_caron:
-      return 0x0780;  // combining caron
+      return 0x030C;  // combining caron
     case XKB_KEY_dead_cedilla:
-      return 0x0807;  // combining cedilla
+      return 0x0327;  // combining cedilla
     case XKB_KEY_dead_ogonek:
-      return 0x0808;  // combining ogonek
+      return 0x0328;  // combining ogonek
     case XKB_KEY_dead_iota:
-      return 0x0837;  // combining greek ypogegrammeni
+      return 0x0345;  // combining greek ypogegrammeni
+    case XKB_KEY_dead_voiced_sound:
+      return 0x3099;  // combining katakana-hiragana voiced sound mark
+    case XKB_KEY_dead_semivoiced_sound:
+      return 0x309A;  // combining katakana-hiragana semi-voiced sound mark
     case XKB_KEY_dead_belowdot:
-      return 0x0803;  // combining dot below
+      return 0x0323;  // combining dot below
     case XKB_KEY_dead_hook:
-      return 0x0777;  // combining hook above
+      return 0x0309;  // combining hook above
     case XKB_KEY_dead_horn:
-      return 0x0795;  // combining horn
+      return 0x031B;  // combining horn
     case XKB_KEY_dead_stroke:
-      return 0x0824;  // combining long solidus overlay
+      return 0x0338;  // combining long solidus overlay
     case XKB_KEY_dead_abovecomma:
-      return 0x0787;  // combining comma above
+      return 0x0313;  // combining comma above
     case XKB_KEY_dead_abovereversedcomma:
-      return 0x0788;  // combining reversed comma above
+      return 0x0314;  // combining reversed comma above
     case XKB_KEY_dead_doublegrave:
-      return 0x0783;  // combining double grave accent
+      return 0x030F;  // combining double grave accent
     case XKB_KEY_dead_belowring:
-      return 0x0805;  // combining ring below
+      return 0x0325;  // combining ring below
     case XKB_KEY_dead_belowmacron:
-      return 0x0817;  // combining macron below
+      return 0x0331;  // combining macron below
     case XKB_KEY_dead_belowcircumflex:
-      return 0x0813;  // combining circumflex accent below
+      return 0x032D;  // combining circumflex accent below
     case XKB_KEY_dead_belowtilde:
-      return 0x0816;  // combining tilde below
+      return 0x0330;  // combining tilde below
     case XKB_KEY_dead_belowbreve:
-      return 0x0814;  // combining breve below
+      return 0x032E;  // combining breve below
     case XKB_KEY_dead_belowdiaeresis:
-      return 0x0804;  // combining diaeresis below
+      return 0x0324;  // combining diaeresis below
     case XKB_KEY_dead_invertedbreve:
-      return 0x0785;  // combining inverted breve
+      return 0x0311;  // combining inverted breve
     case XKB_KEY_dead_belowcomma:
-      return 0x0806;  // combining comma below
+      return 0x0326;  // combining comma below
     case XKB_KEY_dead_currency:
-      return 0x0164;  // currency sign
+      return 0x00A4;  // currency sign
+    case XKB_KEY_dead_greek:
+      return 0x037E;  // greek question mark
     default:
       return 0;
   }
