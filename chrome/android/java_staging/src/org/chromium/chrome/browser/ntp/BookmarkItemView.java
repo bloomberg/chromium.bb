@@ -190,7 +190,7 @@ class BookmarkItemView extends AppCompatTextView implements OnCreateContextMenuL
             int iconSize;
             if (mIsFolder) {
                 faviconDrawable = TintedDrawable.constructTintedDrawable(getResources(),
-                        mIsManaged ? R.drawable.eb_managed : R.drawable.eb_others);
+                        mIsManaged ? R.drawable.eb_managed : R.drawable.eb_folder);
                 iconSize = mDrawingData.mFaviconContainerSize;
             } else {
                 faviconDrawable = new BitmapDrawable(getResources(), favicon);

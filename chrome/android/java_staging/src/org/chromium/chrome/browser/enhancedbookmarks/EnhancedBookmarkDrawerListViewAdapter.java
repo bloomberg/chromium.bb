@@ -315,12 +315,10 @@ class EnhancedBookmarkDrawerListViewAdapter extends BaseAdapter {
                 if (mManagedAndPartnerFolderIds != null
                         && mManagedAndPartnerFolderIds.contains(item.mFolderId)) {
                     iconDrawableId = R.drawable.eb_managed;
-                } else if (item.mFolderId.equals(mMobileNodeId)) {
-                    iconDrawableId = R.drawable.eb_mobile;
-                } else if (item.mFolderId.equals(mDesktopNodeId)) {
-                    iconDrawableId = R.drawable.eb_bookmarks_bar;
-                } else if (item.mFolderId.equals(mOthersNodeId)) {
-                    iconDrawableId = R.drawable.eb_others;
+                } else if (item.mFolderId.equals(mMobileNodeId)
+                        || item.mFolderId.equals(mOthersNodeId)
+                        || item.mFolderId.equals(mDesktopNodeId)) {
+                    iconDrawableId = R.drawable.eb_folder;
                 } else {
                     iconDrawableId = 0;
                 }

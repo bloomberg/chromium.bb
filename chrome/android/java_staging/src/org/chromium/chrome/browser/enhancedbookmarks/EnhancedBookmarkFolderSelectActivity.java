@@ -168,8 +168,7 @@ public class EnhancedBookmarkFolderSelectActivity extends EnhancedBookmarkActivi
             entryList.add(new FolderListEntry(folder, depthList.get(i), title,
                     folder.equals(mParentId), FolderListEntry.TYPE_NORMAL));
         }
-        mBookmarkIdsAdapter = new FolderListAdapter(entryList, this,
-                mEnhancedBookmarksModel);
+        mBookmarkIdsAdapter = new FolderListAdapter(entryList, this);
         mBookmarkIdsList.setAdapter(mBookmarkIdsAdapter);
     }
 
@@ -253,24 +252,13 @@ public class EnhancedBookmarkFolderSelectActivity extends EnhancedBookmarkActivi
         private final int mBasePadding;
         private final int mPaddingIncrement;
 
-        private BookmarkId mDesktopNodeId = null;
-        private BookmarkId mMobileNodeId = null;
-        private BookmarkId mOthersNodeId = null;
-
         List<FolderListEntry> mEntryList;
-        Context mContext;
 
-        public FolderListAdapter(List<FolderListEntry> entryList, Context context,
-                EnhancedBookmarksModel model) {
-            mContext = context;
+        public FolderListAdapter(List<FolderListEntry> entryList, Context context) {
             mEntryList = entryList;
-            mBasePadding = mContext.getResources()
+            mBasePadding = context.getResources()
                     .getDimensionPixelSize(R.dimen.enhanced_bookmark_folder_item_left);
             mPaddingIncrement = mBasePadding * 2;
-
-            mMobileNodeId = model.getMobileFolderId();
-            mDesktopNodeId = model.getDesktopFolderId();
-            mOthersNodeId = model.getOtherFolderId();
         }
 
         @Override
@@ -335,22 +323,7 @@ public class EnhancedBookmarkFolderSelectActivity extends EnhancedBookmarkActivi
             int iconId = 0;
 
             if (entry.mType == FolderListEntry.TYPE_NORMAL) {
-                // TODO(kkimlabs): This special icon logic is similar to
-                //                 EnhancedBookmarkDrawerListViewAdapter. Ideally we should
-                //                 share the logic.
-                // Only top folders have special icons.
-                if (entry.mDepth == 0) {
-
-                    if (entry.mId.equals(mMobileNodeId)) {
-                        iconId = R.drawable.eb_mobile;
-                    } else if (entry.mId.equals(mDesktopNodeId)) {
-                        iconId = R.drawable.eb_bookmarks_bar;
-                    } else if (entry.mId.equals(mOthersNodeId)) {
-                        iconId = R.drawable.eb_others;
-                    }
-                } else {
-                    iconId = R.drawable.eb_folder;
-                }
+                iconId = R.drawable.eb_folder;
             } else if (entry.mType == FolderListEntry.TYPE_NEW_FOLDER) {
                 // For new folder, start_icon is different.
                 iconId = R.drawable.eb_add_folder;

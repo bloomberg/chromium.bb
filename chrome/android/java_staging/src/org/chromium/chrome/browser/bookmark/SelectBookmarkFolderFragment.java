@@ -271,7 +271,7 @@ public class SelectBookmarkFolderFragment extends AsyncTaskFragment implements O
             final FolderListEntry entry = getItem(position);
 
             BitmapDrawable icon = TintedDrawable.constructTintedDrawable(
-                    getResources(), R.drawable.eb_others);
+                    getResources(), R.drawable.eb_folder);
             ApiCompatibilityUtils.setCompoundDrawablesRelativeWithIntrinsicBounds(
                     view, icon, null, null, null);
 
