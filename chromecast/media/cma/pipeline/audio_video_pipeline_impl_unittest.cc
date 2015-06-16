@@ -15,7 +15,7 @@
 #include "chromecast/media/cma/backend/audio_pipeline_device.h"
 #include "chromecast/media/cma/backend/media_clock_device.h"
 #include "chromecast/media/cma/backend/media_pipeline_device.h"
-#include "chromecast/media/cma/backend/media_pipeline_device_default.h"
+#include "chromecast/media/cma/backend/media_pipeline_device_factory_default.h"
 #include "chromecast/media/cma/base/buffering_controller.h"
 #include "chromecast/media/cma/base/decoder_buffer_base.h"
 #include "chromecast/media/cma/pipeline/audio_pipeline_impl.h"
@@ -60,8 +60,10 @@ class AudioVideoPipelineImplTest : public testing::Test {
 
 AudioVideoPipelineImplTest::AudioVideoPipelineImplTest()
   : media_pipeline_(new MediaPipelineImpl()) {
-  scoped_ptr<MediaPipelineDevice> media_pipeline_device(
-      new MediaPipelineDeviceDefault());
+  scoped_ptr<MediaPipelineDeviceFactory> factory =
+      make_scoped_ptr(new MediaPipelineDeviceFactoryDefault());
+  scoped_ptr<MediaPipelineDevice> media_pipeline_device =
+      make_scoped_ptr(new MediaPipelineDevice(factory.Pass()));
   media_pipeline_->Initialize(kLoadTypeURL, media_pipeline_device.Pass());
   media_pipeline_->SetPlaybackRate(1.0);
 }

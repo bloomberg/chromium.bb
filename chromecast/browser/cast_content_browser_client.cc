@@ -25,6 +25,7 @@
 #include "chromecast/browser/url_request_context_factory.h"
 #include "chromecast/common/global_descriptors.h"
 #include "chromecast/media/cma/backend/media_pipeline_device.h"
+#include "chromecast/media/cma/backend/media_pipeline_device_factory.h"
 #include "components/crash/app/breakpad_linux.h"
 #include "components/crash/browser/crash_handler_host_linux.h"
 #include "components/network_hints/browser/network_hints_message_filter.h"
@@ -85,7 +86,9 @@ CastContentBrowserClient::CreateAudioManagerFactory() {
 scoped_ptr<media::MediaPipelineDevice>
 CastContentBrowserClient::CreateMediaPipelineDevice(
     const media::MediaPipelineDeviceParams& params) {
-  return media::CreateMediaPipelineDevice(params);
+  scoped_ptr<media::MediaPipelineDeviceFactory> factory =
+      GetMediaPipelineDeviceFactory(params);
+  return make_scoped_ptr(new media::MediaPipelineDevice(factory.Pass()));
 }
 #endif
 

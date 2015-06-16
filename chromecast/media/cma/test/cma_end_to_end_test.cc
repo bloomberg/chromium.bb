@@ -8,7 +8,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
-#include "chromecast/media/cma/backend/media_pipeline_device_default.h"
+#include "chromecast/media/cma/backend/media_pipeline_device.h"
+#include "chromecast/media/cma/backend/media_pipeline_device_factory_default.h"
 #include "chromecast/media/cma/base/buffering_defs.h"
 #include "chromecast/media/cma/filters/cma_renderer.h"
 #include "chromecast/media/cma/pipeline/media_pipeline_impl.h"
@@ -34,9 +35,12 @@ class CmaEndToEndTest : public testing::Test {
         message_loop_.task_runner()));
 
     scoped_ptr<MediaPipelineImpl> media_pipeline(new MediaPipelineImpl());
+    scoped_ptr<MediaPipelineDeviceFactory> factory =
+        make_scoped_ptr(new MediaPipelineDeviceFactoryDefault());
+
     media_pipeline->Initialize(
         kLoadTypeMediaSource,
-        make_scoped_ptr(new MediaPipelineDeviceDefault()));
+        make_scoped_ptr(new MediaPipelineDevice(factory.Pass())));
 
     renderer_.reset(new CmaRenderer(media_pipeline.Pass(), null_sink_.get()));
   }

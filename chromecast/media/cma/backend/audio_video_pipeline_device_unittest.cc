@@ -23,6 +23,7 @@
 #include "chromecast/media/cma/backend/audio_pipeline_device.h"
 #include "chromecast/media/cma/backend/media_clock_device.h"
 #include "chromecast/media/cma/backend/media_pipeline_device.h"
+#include "chromecast/media/cma/backend/media_pipeline_device_factory.h"
 #include "chromecast/media/cma/backend/media_pipeline_device_params.h"
 #include "chromecast/media/cma/backend/video_pipeline_device.h"
 #include "chromecast/media/cma/base/decoder_buffer_adapter.h"
@@ -322,7 +323,9 @@ void AudioVideoPipelineDeviceTest::OnEos(
 void AudioVideoPipelineDeviceTest::Initialize() {
   // Create the media device.
   MediaPipelineDeviceParams params;
-  media_pipeline_device_.reset(CreateMediaPipelineDevice(params).release());
+  scoped_ptr<MediaPipelineDeviceFactory> device_factory =
+      GetMediaPipelineDeviceFactory(params);
+  media_pipeline_device_.reset(new MediaPipelineDevice(device_factory.Pass()));
   media_clock_device_ = media_pipeline_device_->GetMediaClockDevice();
 
   // Clock initialization and configuration.

@@ -13,34 +13,45 @@ namespace chromecast {
 namespace media {
 class AudioPipelineDevice;
 class MediaClockDevice;
+class MediaPipelineDeviceFactory;
 class MediaPipelineDeviceParams;
 class VideoPipelineDevice;
 
 // MediaPipelineDevice is the owner of the underlying audio/video/clock
-// devices.
+// devices.  It ensures that the clock outlives the audio and video devices, so
+// it is safe for them to reference the clock with a raw pointer.
 class MediaPipelineDevice {
  public:
-  MediaPipelineDevice();
-  virtual ~MediaPipelineDevice();
+  // Constructs object using clock, audio, video created by given factory.
+  explicit MediaPipelineDevice(scoped_ptr<MediaPipelineDeviceFactory> factory);
 
-  virtual AudioPipelineDevice* GetAudioPipelineDevice() const = 0;
+  // Constructs explicitly from separate clock, audio, video elements
+  MediaPipelineDevice(scoped_ptr<MediaClockDevice> media_clock_device,
+                      scoped_ptr<AudioPipelineDevice> audio_pipeline_device,
+                      scoped_ptr<VideoPipelineDevice> video_pipeline_device);
+  ~MediaPipelineDevice();
 
-  virtual VideoPipelineDevice* GetVideoPipelineDevice() const = 0;
-
-  virtual MediaClockDevice* GetMediaClockDevice() const = 0;
+  AudioPipelineDevice* GetAudioPipelineDevice() const {
+    return audio_pipeline_device_.get();
+  }
+  VideoPipelineDevice* GetVideoPipelineDevice() const {
+    return video_pipeline_device_.get();
+  }
+  MediaClockDevice* GetMediaClockDevice() const {
+    return media_clock_device_.get();
+  }
 
  private:
+  scoped_ptr<MediaClockDevice> media_clock_device_;
+  scoped_ptr<AudioPipelineDevice> audio_pipeline_device_;
+  scoped_ptr<VideoPipelineDevice> video_pipeline_device_;
+
   DISALLOW_COPY_AND_ASSIGN(MediaPipelineDevice);
 };
 
 // Factory method to create a MediaPipelineDevice.
 typedef base::Callback<scoped_ptr<MediaPipelineDevice>(
     const MediaPipelineDeviceParams&)> CreatePipelineDeviceCB;
-
-// Direct creation of vendor-specific media device pipeline.
-// TODO(halliwell): move into libcast_media
-scoped_ptr<MediaPipelineDevice> CreateMediaPipelineDevice(
-    const MediaPipelineDeviceParams& params);
 
 }  // namespace media
 }  // namespace chromecast

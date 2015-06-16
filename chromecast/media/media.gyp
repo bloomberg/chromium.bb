@@ -139,8 +139,9 @@
         'cma/backend/media_component_device_default.h',
         'cma/backend/media_pipeline_device.cc',
         'cma/backend/media_pipeline_device.h',
-        'cma/backend/media_pipeline_device_default.cc',
-        'cma/backend/media_pipeline_device_default.h',
+        'cma/backend/media_pipeline_device_factory.h',
+        'cma/backend/media_pipeline_device_factory_default.cc',
+        'cma/backend/media_pipeline_device_factory_default.h',
         'cma/backend/media_pipeline_device_params.cc',
         'cma/backend/media_pipeline_device_params.h',
         'cma/backend/video_pipeline_device.cc',
@@ -155,7 +156,7 @@
           ],
         }, {
           'sources': [
-            'cma/backend/media_pipeline_device_default_factory.cc',
+            'cma/backend/media_pipeline_device_factory_simple.cc'
           ],
         }],
       ],
