@@ -533,6 +533,7 @@ bool WebURLLoaderImpl::Context::OnReceivedRedirect(
   new_request.setFirstPartyForCookies(
       redirect_info.new_first_party_for_cookies);
   new_request.setDownloadToFile(request_.downloadToFile());
+  new_request.setUseStreamOnResponse(request_.useStreamOnResponse());
   new_request.setRequestContext(request_.requestContext());
   new_request.setFrameType(request_.frameType());
   new_request.setSkipServiceWorker(request_.skipServiceWorker());
