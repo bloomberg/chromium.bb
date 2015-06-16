@@ -83,9 +83,8 @@ class PepperWebPluginImpl : public blink::WebPlugin {
   virtual bool isPrintScalingDisabled() override;
 
   virtual int printBegin(const blink::WebPrintParams& print_params) override;
-  virtual bool printPage(int page_number, blink::WebCanvas* canvas) override;
-  virtual void printPage(int page_number, blink::WebCanvas* canvas,
-                         bool unused);
+  void printPage(int page_number, blink::WebCanvas* canvas,
+                 bool unused) override;
   virtual void printEnd() override;
 
   virtual bool canRotateView() override;
