@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/browser/devtools/cast_dev_tools_delegate.h"
@@ -112,42 +113,40 @@ std::string GetFrontendUrl() {
 
 }  // namespace
 
-RemoteDebuggingServer::RemoteDebuggingServer() : port_(0) {
+RemoteDebuggingServer::RemoteDebuggingServer()
+    : port_(kDefaultRemoteDebuggingPort) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  pref_port_.Init(prefs::kRemoteDebuggingPort,
-                  CastBrowserProcess::GetInstance()->pref_service(),
-                  base::Bind(&RemoteDebuggingServer::OnPortChanged,
-                             base::Unretained(this)));
+  pref_enabled_.Init(prefs::kEnableRemoteDebugging,
+                     CastBrowserProcess::GetInstance()->pref_service(),
+                     base::Bind(&RemoteDebuggingServer::OnEnabledChanged,
+                                base::Unretained(this)));
+
+  std::string port_str =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kRemoteDebuggingPort);
+  if (!port_str.empty()) {
+    int port = kDefaultRemoteDebuggingPort;
+    if (base::StringToInt(port_str, &port)) {
+      port_ = static_cast<uint16>(port);
+    } else {
+      port_ = kDefaultRemoteDebuggingPort;
+    }
+  }
 
   // Starts new dev tools, clearing port number saved in config.
   // Remote debugging in production must be triggered only by config server.
-  pref_port_.SetValue(ShouldStartImmediately() ?
-                      kDefaultRemoteDebuggingPort : 0);
-  OnPortChanged();
+  pref_enabled_.SetValue(ShouldStartImmediately() && port_ != 0);
+  OnEnabledChanged();
 }
 
 RemoteDebuggingServer::~RemoteDebuggingServer() {
-  pref_port_.SetValue(0);
-  OnPortChanged();
+  pref_enabled_.SetValue(false);
+  OnEnabledChanged();
 }
 
-void RemoteDebuggingServer::OnPortChanged() {
-  uint16 new_port = static_cast<uint16>(std::max(*pref_port_, 0));
-  VLOG(1) << "OnPortChanged called: old_port=" << port_
-          << ", new_port=" << new_port;
-
-  if (new_port == port_) {
-    VLOG(1) << "Port has not been changed. Ignore silently.";
-    return;
-  }
-
-  if (devtools_http_handler_) {
-    LOG(INFO) << "Stop old devtools: port=" << port_;
-    devtools_http_handler_.reset();
-  }
-
-  port_ = new_port;
-  if (port_ > 0) {
+void RemoteDebuggingServer::OnEnabledChanged() {
+  bool enabled = *pref_enabled_ && port_ != 0;
+  if (enabled && !devtools_http_handler_) {
     devtools_http_handler_.reset(new DevToolsHttpHandler(
         CreateSocketFactory(port_),
         GetFrontendUrl(),
@@ -157,6 +156,9 @@ void RemoteDebuggingServer::OnPortChanged() {
         std::string(),
         GetUserAgent()));
     LOG(INFO) << "Devtools started: port=" << port_;
+  } else if (!enabled && devtools_http_handler_) {
+    LOG(INFO) << "Stop devtools: port=" << port_;
+    devtools_http_handler_.reset();
   }
 }
 

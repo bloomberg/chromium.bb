@@ -23,8 +23,8 @@ class RemoteDebuggingServer {
   ~RemoteDebuggingServer();
 
  private:
-  // Called on port number changed.
-  void OnPortChanged();
+  // Called when pref_enabled_ is changed.
+  void OnEnabledChanged();
 
   // Returns whether or not the remote debugging server should be available
   // on device startup.
@@ -32,7 +32,7 @@ class RemoteDebuggingServer {
 
   scoped_ptr<devtools_http_handler::DevToolsHttpHandler> devtools_http_handler_;
 
-  IntegerPrefMember pref_port_;
+  BooleanPrefMember pref_enabled_;
   uint16 port_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteDebuggingServer);

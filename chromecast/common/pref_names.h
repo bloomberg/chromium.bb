@@ -7,8 +7,8 @@
 
 namespace prefs {
 
+extern const char kEnableRemoteDebugging[];
 extern const char kMetricsIsNewClientID[];
-extern const char kRemoteDebuggingPort[];
 extern const char kStabilityChildProcessCrashCount[];
 extern const char kStabilityKernelCrashCount[];
 extern const char kStabilityOtherUserCrashCount[];

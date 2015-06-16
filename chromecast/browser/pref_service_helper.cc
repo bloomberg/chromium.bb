@@ -43,8 +43,8 @@ scoped_ptr<PrefService> PrefServiceHelper::CreatePrefService(
   const base::FilePath config_path(GetConfigPath());
   VLOG(1) << "Loading config from " << config_path.value();
 
+  registry->RegisterBooleanPref(prefs::kEnableRemoteDebugging, false);
   registry->RegisterBooleanPref(prefs::kMetricsIsNewClientID, false);
-  registry->RegisterIntegerPref(prefs::kRemoteDebuggingPort, 0);
 
   RegisterPlatformPrefs(registry);
 

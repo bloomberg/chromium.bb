@@ -78,10 +78,8 @@ void StopCastWindow(JNIEnv* env, jclass clazz,
 
 void EnableDevTools(JNIEnv* env, jclass clazz, jboolean enable) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  // The specific port value doesn't matter since Android uses Unix domain
-  // sockets, only whether or not it is zero.
-  CastBrowserProcess::GetInstance()->pref_service()->
-      SetInteger(prefs::kRemoteDebuggingPort, enable ? 1 : 0);
+  CastBrowserProcess::GetInstance()->pref_service()->SetBoolean(
+      prefs::kEnableRemoteDebugging, enable);
 }
 
 }  // namespace shell

@@ -6,13 +6,12 @@
 
 namespace prefs {
 
+// Boolean which specifies if remote debugging is enabled
+const char kEnableRemoteDebugging[] = "enable_remote_debugging";
+
 // Boolean that specifies whether or not the client_id has been regenerated
 // due to bug b/9487011.
 const char kMetricsIsNewClientID[] = "user_experience_metrics.is_new_client_id";
-
-// Port on which to host the remote debugging server. A value of 0 indicates
-// that remote debugging is disabled.
-const char kRemoteDebuggingPort[] = "remote_debugging_port";
 
 // Total number of child process crashes (other than renderer / extension
 // renderer ones, and plugin children, which are counted separately) since the
