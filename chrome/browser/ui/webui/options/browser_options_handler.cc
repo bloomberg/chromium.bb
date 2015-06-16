@@ -1149,6 +1149,10 @@ void BrowserOptionsHandler::SetDefaultWebClientUIState(
 
   if (state == ShellIntegration::STATE_IS_DEFAULT) {
     status_string_id = IDS_OPTIONS_DEFAULTBROWSER_DEFAULT;
+    // Notify the user in the future if Chrome ceases to be the user's chosen
+    // default browser.
+    PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
+    prefs->SetBoolean(prefs::kCheckDefaultBrowser, true);
   } else if (state == ShellIntegration::STATE_NOT_DEFAULT) {
     if (ShellIntegration::CanSetAsDefaultBrowser() ==
             ShellIntegration::SET_DEFAULT_NOT_ALLOWED) {
