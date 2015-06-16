@@ -485,9 +485,22 @@ TEST(RectTest, ToEnclosedRect) {
                {max_float, max_float, 2.0f, 2.0f, max_int, max_int, 0, 0},
                {0.0f, 0.0f, max_float, max_float, 0, 0, max_int, max_int},
                {20000.5f, 20000.5f, 0.5f, 0.5f, 20001, 20001, 0, 0},
-               {min_int, min_int, max_int * 2.f, max_int * 2.f, min_int,
-                min_int, max_int, max_int},
-               {max_int, max_int, max_int, max_int, max_int, max_int, 0, 0}};
+               {static_cast<float>(min_int),
+                static_cast<float>(min_int),
+                max_int * 2.f,
+                max_int * 2.f,
+                min_int,
+                min_int,
+                max_int,
+                max_int},
+               {static_cast<float>(max_int),
+                static_cast<float>(max_int),
+                static_cast<float>(max_int),
+                static_cast<float>(max_int),
+                max_int,
+                max_int,
+                0,
+                0}};
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
     RectF r1(tests[i].x1, tests[i].y1, tests[i].w1, tests[i].h1);
@@ -521,9 +534,22 @@ TEST(RectTest, ToEnclosingRect) {
                {max_float, max_float, 2.0f, 2.0f, max_int, max_int, 0, 0},
                {0.0f, 0.0f, max_float, max_float, 0, 0, max_int, max_int},
                {20000.5f, 20000.5f, 0.5f, 0.5f, 20000, 20000, 1, 1},
-               {min_int, min_int, max_int * 2.f, max_int * 2.f, min_int,
-                min_int, max_int, max_int},
-               {max_int, max_int, max_int, max_int, max_int, max_int, 0, 0}};
+               {static_cast<float>(min_int),
+                static_cast<float>(min_int),
+                max_int * 2.f,
+                max_int * 2.f,
+                min_int,
+                min_int,
+                max_int,
+                max_int},
+               {static_cast<float>(max_int),
+                static_cast<float>(max_int),
+                static_cast<float>(max_int),
+                static_cast<float>(max_int),
+                max_int,
+                max_int,
+                0,
+                0}};
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
     RectF r1(tests[i].x1, tests[i].y1, tests[i].w1, tests[i].h1);
