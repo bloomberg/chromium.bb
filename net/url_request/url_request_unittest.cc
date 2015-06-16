@@ -8043,7 +8043,7 @@ TEST_F(HTTPSFallbackTest, TLSv1NoFallback) {
 // Tests the TLS 1.1 fallback.
 TEST_F(HTTPSFallbackTest, TLSv1_1Fallback) {
   if (SSLClientSocket::GetMaxSupportedSSLVersion() <
-      SSL_CONNECTION_VERSION_TLS1_2) {
+      SSL_PROTOCOL_VERSION_TLS1_2) {
     return;
   }
 
@@ -8059,7 +8059,7 @@ TEST_F(HTTPSFallbackTest, TLSv1_1Fallback) {
 // Tests that the TLS 1.1 fallback triggers on closed connections.
 TEST_F(HTTPSFallbackTest, TLSv1_1FallbackClosed) {
   if (SSLClientSocket::GetMaxSupportedSSLVersion() <
-      SSL_CONNECTION_VERSION_TLS1_2) {
+      SSL_PROTOCOL_VERSION_TLS1_2) {
     return;
   }
 
@@ -8080,7 +8080,7 @@ TEST_F(HTTPSFallbackTest, TLSv1_1FallbackClosed) {
 // Tests fallback to TLS 1.1 on connection reset.
 TEST_F(HTTPSFallbackTest, TLSv1_1FallbackReset) {
   if (SSLClientSocket::GetMaxSupportedSSLVersion() <
-      SSL_CONNECTION_VERSION_TLS1_2) {
+      SSL_PROTOCOL_VERSION_TLS1_2) {
     return;
   }
 
