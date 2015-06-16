@@ -25,6 +25,57 @@ using url_matcher::URLMatcherConditionSet;
 
 namespace extensions {
 
+//
+// ScopedEvaluationCoalescer
+//
+
+// Used to coalesce multiple requests for evaluation into a zero or one actual
+// evaluations (depending on the EvaluationDisposition).  This is required for
+// correctness when multiple trackers respond to the same event. Otherwise,
+// executing the request from the first tracker will be done before the tracked
+// state has been updated for the other trackers.
+class ChromeContentRulesRegistry::EvaluationScope {
+ public:
+  // Default disposition is PERFORM_EVALUATION.
+  explicit EvaluationScope(ChromeContentRulesRegistry* registry);
+  EvaluationScope(ChromeContentRulesRegistry* registry,
+                  EvaluationDisposition disposition);
+  ~EvaluationScope();
+
+ private:
+  ChromeContentRulesRegistry* const registry_;
+
+  DISALLOW_COPY_AND_ASSIGN(EvaluationScope);
+};
+
+ChromeContentRulesRegistry::EvaluationScope::EvaluationScope(
+    ChromeContentRulesRegistry* registry)
+    : EvaluationScope(registry, PERFORM_EVALUATION) {}
+
+ChromeContentRulesRegistry::EvaluationScope::EvaluationScope(
+    ChromeContentRulesRegistry* registry,
+    EvaluationDisposition disposition)
+    : registry_(registry) {
+  // All coalescers on the stack should have the same disposition.
+  DCHECK(registry_->record_rule_evaluation_requests_ == 0 ||
+         registry_->evaluation_disposition_ == disposition);
+  registry_->evaluation_disposition_ = disposition;
+  ++registry_->record_rule_evaluation_requests_;
+}
+
+ChromeContentRulesRegistry::EvaluationScope::~EvaluationScope() {
+  if (--registry_->record_rule_evaluation_requests_ == 0 &&
+      registry_->evaluation_disposition_ == PERFORM_EVALUATION) {
+    for (content::WebContents* tab : registry_->evaluation_pending_)
+      registry_->EvaluateConditionsForTab(tab);
+    registry_->evaluation_pending_.clear();
+  }
+}
+
+//
+// ChromeContentRulesRegistry
+//
+
 ChromeContentRulesRegistry::ChromeContentRulesRegistry(
     content::BrowserContext* browser_context,
     RulesCacheDelegate* cache_delegate)
@@ -33,7 +84,10 @@ ChromeContentRulesRegistry::ChromeContentRulesRegistry(
                            content::BrowserThread::UI,
                            cache_delegate,
                            RulesRegistryService::kDefaultRulesRegistryID),
-      css_condition_tracker_(browser_context, this) {
+      page_url_condition_tracker_(browser_context, this),
+      css_condition_tracker_(browser_context, this),
+      record_rule_evaluation_requests_(0),
+      evaluation_disposition_(PERFORM_EVALUATION) {
   extension_info_map_ = ExtensionSystem::Get(browser_context)->info_map();
 
   registrar_.Add(this,
@@ -59,6 +113,11 @@ void ChromeContentRulesRegistry::Observe(
 
 void ChromeContentRulesRegistry::RequestEvaluation(
     content::WebContents* contents) {
+  if (record_rule_evaluation_requests_ > 0) {
+    evaluation_pending_.insert(contents);
+    return;
+  }
+
   EvaluateConditionsForTab(contents);
 }
 
@@ -72,6 +131,9 @@ void ChromeContentRulesRegistry::MonitorWebContentsForRuleEvaluation(
   // We rely on active_rules_ to have a key-value pair for |contents| to know
   // which WebContents we are working with.
   active_rules_[contents] = std::set<const ContentRule*>();
+
+  EvaluationScope evaluation_scope(this);
+  page_url_condition_tracker_.TrackForWebContents(contents);
   css_condition_tracker_.TrackForWebContents(contents);
 }
 
@@ -79,8 +141,12 @@ void ChromeContentRulesRegistry::DidNavigateMainFrame(
     content::WebContents* contents,
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
-  if (ContainsKey(active_rules_, contents))
+  if (ContainsKey(active_rules_, contents)) {
+    EvaluationScope evaluation_scope(this);
+    page_url_condition_tracker_.OnWebContentsNavigation(contents, details,
+                                                        params);
     css_condition_tracker_.OnWebContentsNavigation(contents, details, params);
+  }
 }
 
 bool ChromeContentRulesRegistry::ManagingRulesForBrowserContext(
@@ -137,9 +203,9 @@ std::set<const ContentRule*> ChromeContentRulesRegistry::GetMatches(
 std::string ChromeContentRulesRegistry::AddRulesImpl(
     const std::string& extension_id,
     const std::vector<linked_ptr<RulesRegistry::Rule> >& rules) {
-  const Extension* extension =
-      ExtensionRegistry::Get(browser_context())
-          ->GetExtensionById(extension_id, ExtensionRegistry::EVERYTHING);
+  EvaluationScope evaluation_scope(this);
+  const Extension* extension = ExtensionRegistry::Get(browser_context())
+      ->GetInstalledExtension(extension_id);
   DCHECK(extension) << "Must have extension with id " << extension_id;
 
   base::Time extension_installation_time =
@@ -149,16 +215,21 @@ std::string ChromeContentRulesRegistry::AddRulesImpl(
   RulesMap new_content_rules;
 
   for (const linked_ptr<RulesRegistry::Rule>& rule : rules) {
-    ContentRule::GlobalRuleId rule_id(extension_id, *(rule)->id);
+    ContentRule::GlobalRuleId rule_id(extension_id, *rule->id);
     DCHECK(content_rules_.find(rule_id) == content_rules_.end());
 
     scoped_ptr<ContentRule> content_rule(
-        ContentRule::Create(url_matcher_.condition_factory(), browser_context(),
-                            extension, extension_installation_time, rule,
-                            ContentRule::ConsistencyChecker(), &error));
+        ContentRule::Create(
+            page_url_condition_tracker_.condition_factory(),
+            browser_context(),
+            extension,
+            extension_installation_time,
+            rule,
+            ContentRule::ConsistencyChecker(),
+            &error));
     if (!error.empty()) {
       // Clean up temporary condition sets created during rule creation.
-      url_matcher_.ClearUnusedConditionSets();
+      page_url_condition_tracker_.ClearUnusedConditionSets();
       return error;
     }
     DCHECK(content_rule);
@@ -183,7 +254,7 @@ std::string ChromeContentRulesRegistry::AddRulesImpl(
     }
   }
 
-  // Register url patterns in url_matcher_.
+  // Register url patterns in the URL matcher.
   URLMatcherConditionSet::Vector all_new_condition_sets;
   for (const std::pair<ContentRule::GlobalRuleId,
                        linked_ptr<const ContentRule>>& rule_id_rule_pair :
@@ -191,10 +262,10 @@ std::string ChromeContentRulesRegistry::AddRulesImpl(
     const linked_ptr<const ContentRule>& rule = rule_id_rule_pair.second;
     rule->conditions().GetURLMatcherConditionSets(&all_new_condition_sets);
   }
-  url_matcher_.AddConditionSets(all_new_condition_sets);
+  page_url_condition_tracker_.AddConditionSets(
+      all_new_condition_sets);
 
   UpdateCssSelectorsFromRules();
-  EvaluateConditionsForAllTabs();
 
   return std::string();
 }
@@ -202,8 +273,12 @@ std::string ChromeContentRulesRegistry::AddRulesImpl(
 std::string ChromeContentRulesRegistry::RemoveRulesImpl(
     const std::string& extension_id,
     const std::vector<std::string>& rule_identifiers) {
+  // Ignore evaluation requests in this function because it reverts actions on
+  // any active rules itself. Otherwise, we run the risk of reverting the same
+  // rule multiple times.
+  EvaluationScope evaluation_scope(this, IGNORE_EVALUATION);
   // URLMatcherConditionSet IDs that can be removed from URLMatcher.
-  std::vector<URLMatcherConditionSet::ID> remove_from_url_matcher;
+  std::vector<URLMatcherConditionSet::ID> condition_set_ids_to_remove;
 
   for (const std::string& id : rule_identifiers) {
     ContentRule::GlobalRuleId rule_id(extension_id, id);
@@ -219,7 +294,7 @@ std::string ChromeContentRulesRegistry::RemoveRulesImpl(
     rule->conditions().GetURLMatcherConditionSets(&condition_sets);
     for (const scoped_refptr<URLMatcherConditionSet>& condition_set :
          condition_sets) {
-      remove_from_url_matcher.push_back(condition_set->id());
+      condition_set_ids_to_remove.push_back(condition_set->id());
       match_id_to_rule_.erase(condition_set->id());
     }
 
@@ -237,8 +312,9 @@ std::string ChromeContentRulesRegistry::RemoveRulesImpl(
     content_rules_.erase(content_rules_entry);
   }
 
-  // Clear URLMatcher based on condition_set_ids that are not needed any more.
-  url_matcher_.RemoveConditionSets(remove_from_url_matcher);
+  // Clear URLMatcher of condition sets that are not needed any more.
+  page_url_condition_tracker_.RemoveConditionSets(
+      condition_set_ids_to_remove);
 
   UpdateCssSelectorsFromRules();
 
@@ -281,7 +357,7 @@ void ChromeContentRulesRegistry::UpdateCssSelectorsFromRules() {
 void ChromeContentRulesRegistry::EvaluateConditionsForTab(
     content::WebContents* tab) {
   extensions::RendererContentMatchData renderer_data;
-  renderer_data.page_url_matches = url_matcher_.MatchURL(tab->GetURL());
+  page_url_condition_tracker_.GetMatches(tab, &renderer_data.page_url_matches);
   css_condition_tracker_.GetMatchingCssSelectors(tab,
                                                  &renderer_data.css_selectors);
   std::set<const ContentRule*> matching_rules =
@@ -312,14 +388,9 @@ void ChromeContentRulesRegistry::EvaluateConditionsForTab(
     swap(matching_rules, prev_matching_rules);
 }
 
-void ChromeContentRulesRegistry::EvaluateConditionsForAllTabs() {
-  for (const auto& web_contents_active_rules_pair : active_rules_)
-    EvaluateConditionsForTab(web_contents_active_rules_pair.first);
-}
-
 bool ChromeContentRulesRegistry::IsEmpty() const {
   return match_id_to_rule_.empty() && content_rules_.empty() &&
-         url_matcher_.IsEmpty();
+         page_url_condition_tracker_.IsEmpty();
 }
 
 void ChromeContentRulesRegistry::UpdateMatchingCssSelectorsForTesting(

@@ -6,7 +6,9 @@
 
 #include <algorithm>
 
+#include "base/stl_util.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/extensions/api/declarative_content/declarative_content_condition_tracker_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_service.h"
@@ -88,22 +90,12 @@ OnWatchedPageChange(
 }
 
 //
-// DeclarativeContentCssConditionTrackerDelegate
-//
-
-DeclarativeContentCssConditionTrackerDelegate::
-DeclarativeContentCssConditionTrackerDelegate() {}
-
-DeclarativeContentCssConditionTrackerDelegate::
-~DeclarativeContentCssConditionTrackerDelegate() {}
-
-//
 // DeclarativeContentCssConditionTracker
 //
 
 DeclarativeContentCssConditionTracker::DeclarativeContentCssConditionTracker(
     content::BrowserContext* context,
-    DeclarativeContentCssConditionTrackerDelegate* delegate)
+    DeclarativeContentConditionTrackerDelegate* delegate)
     : context_(context),
       delegate_(delegate) {
   registrar_.Add(this,
@@ -137,19 +129,31 @@ void DeclarativeContentCssConditionTracker::SetWatchedCssSelectors(
 
 void DeclarativeContentCssConditionTracker::TrackForWebContents(
     content::WebContents* contents) {
-  CreatePerWebContentsTracker(contents);
+  per_web_contents_tracker_[contents] =
+      make_linked_ptr(new PerWebContentsTracker(
+          contents,
+          base::Bind(&DeclarativeContentConditionTrackerDelegate::
+                     RequestEvaluation,
+                     base::Unretained(delegate_)),
+          base::Bind(&DeclarativeContentCssConditionTracker::
+                     DeletePerWebContentsTracker,
+                     base::Unretained(this))));
+  // Note: the condition is always false until we receive OnWatchedPageChange,
+  // so there's no need to evaluate it here.
 }
 
 void DeclarativeContentCssConditionTracker::OnWebContentsNavigation(
     content::WebContents* contents,
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
+  DCHECK(ContainsKey(per_web_contents_tracker_, contents));
   per_web_contents_tracker_[contents]->OnWebContentsNavigation(details, params);
 }
 
 void DeclarativeContentCssConditionTracker::GetMatchingCssSelectors(
     content::WebContents* contents,
     base::hash_set<std::string>* css_selectors) {
+  DCHECK(ContainsKey(per_web_contents_tracker_, contents));
   const std::vector<std::string>& matching_css_selectors =
       per_web_contents_tracker_[contents]->matching_css_selectors();
   css_selectors->insert(matching_css_selectors.begin(),
@@ -160,21 +164,9 @@ void DeclarativeContentCssConditionTracker::
 UpdateMatchingCssSelectorsForTesting(
     content::WebContents* contents,
     const std::vector<std::string>& matching_css_selectors) {
+  DCHECK(ContainsKey(per_web_contents_tracker_, contents));
   per_web_contents_tracker_[contents]->
       UpdateMatchingCssSelectorsForTesting(matching_css_selectors);
-}
-
-void DeclarativeContentCssConditionTracker::CreatePerWebContentsTracker(
-    content::WebContents* contents) {
-  per_web_contents_tracker_[contents] =
-      make_linked_ptr(new PerWebContentsTracker(
-          contents,
-          base::Bind(&DeclarativeContentCssConditionTrackerDelegate::
-                     RequestEvaluation,
-                     base::Unretained(delegate_)),
-          base::Bind(&DeclarativeContentCssConditionTracker::
-                     DeletePerWebContentsTracker,
-                     base::Unretained(this))));
 }
 
 void DeclarativeContentCssConditionTracker::Observe(
@@ -202,6 +194,7 @@ InstructRenderProcessIfManagingBrowserContext(
 
 void DeclarativeContentCssConditionTracker::DeletePerWebContentsTracker(
     content::WebContents* contents) {
+  DCHECK(ContainsKey(per_web_contents_tracker_, contents));
   per_web_contents_tracker_.erase(contents);
 }
 

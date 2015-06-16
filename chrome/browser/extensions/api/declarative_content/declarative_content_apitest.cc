@@ -679,5 +679,14 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
   ASSERT_TRUE(LoadExtension(ext_dir_.unpacked_path()));
 }
 
+// TODO(wittman): Once ChromeContentRulesRegistry operates on condition and
+// action interfaces, add a test that checks that a navigation always evaluates
+// consistent URL state for all conditions. i.e.: if condition1 evaluates to
+// false on url0 and true on url1, and condition2 evaluates to true on url0 and
+// false on url1, navigate from url0 to url1 and validate that no action is
+// triggered. Do the same when navigating back to url0. This kind of test is
+// unfortunately not feasible with the current implementation and the existing
+// supported conditions and actions.
+
 }  // namespace
 }  // namespace extensions

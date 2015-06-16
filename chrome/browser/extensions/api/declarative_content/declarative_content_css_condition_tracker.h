@@ -28,24 +28,7 @@ class WebContents;
 
 namespace extensions {
 
-// Interface that allows the DeclarativeContentCssConditionTracker to request
-// condition evaluation, and shields it from having to know about Browsers.
-class DeclarativeContentCssConditionTrackerDelegate {
- public:
-  // Requests re-evaluation of conditions for |contents|.
-  virtual void RequestEvaluation(content::WebContents* contents) = 0;
-
-  // Returns true if the evaluator should manage condition state for |context|.
-  virtual bool ShouldManageConditionsForBrowserContext(
-      content::BrowserContext* context) = 0;
-
- protected:
-  DeclarativeContentCssConditionTrackerDelegate();
-  virtual ~DeclarativeContentCssConditionTrackerDelegate();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DeclarativeContentCssConditionTrackerDelegate);
-};
+class DeclarativeContentConditionTrackerDelegate;
 
 // Supports watching of CSS selectors to across tab contents in a browser
 // context, and querying for the matching CSS selectors for a context.
@@ -54,7 +37,7 @@ class DeclarativeContentCssConditionTracker
  public:
   DeclarativeContentCssConditionTracker(
       content::BrowserContext* context,
-      DeclarativeContentCssConditionTrackerDelegate* delegate);
+      DeclarativeContentConditionTrackerDelegate* delegate);
   ~DeclarativeContentCssConditionTracker() override;
 
   // Sets the set of CSS selectors to watch for CSS condition evaluation.
@@ -130,9 +113,6 @@ class DeclarativeContentCssConditionTracker
     DISALLOW_COPY_AND_ASSIGN(PerWebContentsTracker);
   };
 
-  // Instantiate a PerWebContentsTracker watching |contents|.
-  void CreatePerWebContentsTracker(content::WebContents* contents);
-
   // content::NotificationObserver implementation.
   void Observe(int type,
                const content::NotificationSource& source,
@@ -144,7 +124,7 @@ class DeclarativeContentCssConditionTracker
       content::RenderProcessHost* process);
 
   // Called by PerWebContentsTracker on web contents destruction.
-  void DeletePerWebContentsTracker(content::WebContents* tracker);
+  void DeletePerWebContentsTracker(content::WebContents* contents);
 
   // The context whose state we're monitoring for evaluation.
   content::BrowserContext* context_;
@@ -153,13 +133,12 @@ class DeclarativeContentCssConditionTracker
   // vector is sorted by construction.
   std::vector<std::string> watched_css_selectors_;
 
-  // Maps WebContents to the tracker for that WebContents
-  // state.
+  // Maps WebContents to the tracker for that WebContents state.
   std::map<content::WebContents*, linked_ptr<PerWebContentsTracker>>
       per_web_contents_tracker_;
 
   // Weak.
-  DeclarativeContentCssConditionTrackerDelegate* delegate_;
+  DeclarativeContentConditionTrackerDelegate* delegate_;
 
   // Manages our notification registrations.
   content::NotificationRegistrar registrar_;
