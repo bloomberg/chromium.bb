@@ -149,4 +149,13 @@ public class MathUtils {
     public static float flipSignIf(float value, boolean flipSign) {
         return flipSign ? -value : value;
     }
+
+    /**
+     * Compares two long values. Same as {@link Long#compare}, but available on all API levels.
+     *
+     * TODO(newt): replace this with Long.compare() once Chrome only supports API level 19+.
+     */
+    public static int compareLongs(long lhs, long rhs) {
+        return lhs < rhs ? -1 : (lhs == rhs ? 0 : 1);
+    }
 }

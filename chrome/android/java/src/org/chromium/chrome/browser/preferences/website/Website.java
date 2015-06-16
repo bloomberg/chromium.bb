@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.preferences.website;
 
+import org.chromium.chrome.browser.util.MathUtils;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -66,7 +68,7 @@ public class Website implements Serializable {
      */
     public int compareByStorageTo(Website to) {
         if (this == to) return 0;
-        return getTotalUsage() < to.getTotalUsage() ? 1 : -1;
+        return MathUtils.compareLongs(to.getTotalUsage(), getTotalUsage());
     }
 
     /**
