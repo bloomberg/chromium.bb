@@ -196,7 +196,7 @@ static void signal_catch(int sig, linux_siginfo_t *info, void *uc) {
     exception_frame_from_signal_context(&exception_frame, uc);
     g_signal_handler_function_pointer(&exception_frame.context);
   }
-  _exit(-1);
+  _exit(-sig);
 }
 
 static void nonsfi_initialize_signal_handler_locked() {
