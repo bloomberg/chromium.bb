@@ -8853,6 +8853,7 @@ TEST_F(LayerTreeHostCommonTest, BoundsDeltaAffectVisibleContentRect) {
   gfx::Size device_viewport_size = gfx::Size(300, 600);
   gfx::Transform identity_matrix;
 
+  host_impl.SetViewportSize(device_viewport_size);
   host_impl.active_tree()->SetRootLayer(
       LayerImpl::Create(host_impl.active_tree(), 1));
 

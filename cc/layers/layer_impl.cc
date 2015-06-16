@@ -887,10 +887,22 @@ void LayerImpl::SetBoundsDelta(const gfx::Vector2dF& bounds_delta) {
   bounds_delta_ = bounds_delta;
 
   ScrollbarParametersDidChange(true);
-  if (masks_to_bounds())
+
+  if (masks_to_bounds()) {
+    // If layer is clipping, then update the clip node using the new bounds.
+    ClipNode* clip_node =
+        layer_tree_impl()->property_trees()->clip_tree.Node(clip_tree_index());
+    if (clip_node) {
+      DCHECK(id() == clip_node->owner_id);
+      clip_node->data.clip =
+          gfx::RectF(gfx::PointF() + offset_to_transform_parent(), bounds());
+      layer_tree_impl()->property_trees()->clip_tree.set_needs_update(true);
+    }
+
     NoteLayerPropertyChangedForSubtree();
-  else
+  } else {
     NoteLayerPropertyChanged();
+  }
 }
 
 void LayerImpl::SetMaskLayer(scoped_ptr<LayerImpl> mask_layer) {

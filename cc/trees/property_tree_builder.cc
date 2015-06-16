@@ -78,7 +78,7 @@ static bool RequiresClipNode(LayerType* layer,
   const bool render_surface_may_grow_due_to_clip_children =
       layer->render_surface() && layer->num_unclipped_descendants() > 0;
 
-  if (!layer->parent() || layer->masks_to_bounds() || layer->mask_layer() ||
+  if (layer->masks_to_bounds() || layer->mask_layer() ||
       render_surface_may_grow_due_to_clip_children)
     return true;
 
@@ -130,8 +130,7 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
                         data_for_children->ancestor_clips_subtree)) {
     // Unclipped surfaces reset the clip rect.
     data_for_children->clip_tree_parent = parent_id;
-  } else if (layer->parent()) {
-    // Note the root clip gets handled elsewhere.
+  } else {
     LayerType* transform_parent = data_for_children->transform_tree_parent;
     if (layer->position_constraint().is_fixed_position() &&
         !created_transform_node) {
