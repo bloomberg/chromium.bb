@@ -54,7 +54,7 @@ void ImagePainter::paintAreaElementFocusRing(const PaintInfo& paintInfo)
         return;
 
     const ComputedStyle& areaElementStyle = *areaElement.ensureComputedStyle();
-    unsigned short outlineWidth = areaElementStyle.outlineWidth();
+    int outlineWidth = areaElementStyle.outlineWidth();
     if (!outlineWidth)
         return;
 

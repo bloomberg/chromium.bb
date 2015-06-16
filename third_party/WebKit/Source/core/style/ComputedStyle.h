@@ -519,8 +519,8 @@ public:
     unsigned short borderStartWidth() const;
     unsigned short borderEndWidth() const;
 
-    unsigned short outlineSize() const { return max(0, outlineWidth() + outlineOffset()); }
-    unsigned short outlineWidth() const
+    int outlineSize() const { return max(0, outlineWidth() + outlineOffset()); }
+    int outlineWidth() const
     {
         if (m_background->outline().style() == BNONE)
             return 0;
