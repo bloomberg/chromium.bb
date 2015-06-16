@@ -1,0 +1,18 @@
+Name: Google Cardboard
+Short Name: cardboard
+URL: https://github.com/googlesamples/cardboard-java/
+Version: 0.5.4
+Date: 28 May 2015
+Revision: 08ad25a04f2801bd822c3f2cd28301b68d74aef6
+License: Apache 2.0
+License File: LICENSE
+Security Critical: yes
+
+Description:
+The Cardboard project aims at developing inexpensive virtual reality (VR) tools
+to allow everyone to enjoy VR in a simple, fun, and natural way. The Cardboard
+SDK for Android enables developers familiar with OpenGL to quickly start
+creating VR applications.
+
+Local Modifications:
+None
