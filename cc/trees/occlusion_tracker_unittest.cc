@@ -220,7 +220,12 @@ class OcclusionTrackerTest : public testing::Test {
   void CalcDrawEtc(TestContentLayerImpl* root) {
     DCHECK(root == root_.get());
 
+    // These occlusion tests attach and detach layers in multiple
+    // iterations, so rebuild property trees every time.
+    root->layer_tree_impl()->property_trees()->needs_rebuild = true;
+
     FakeLayerTreeHostImpl::RecursiveUpdateNumChildren(root);
+
     LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
         root, root->bounds(), &render_surface_layer_list_impl_);
     inputs.can_adjust_raster_scales = true;
