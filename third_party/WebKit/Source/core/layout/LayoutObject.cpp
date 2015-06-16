@@ -2062,20 +2062,8 @@ void LayoutObject::mapLocalToContainer(const LayoutBoxModelObject* paintInvalida
 
 const LayoutObject* LayoutObject::pushMappingToContainer(const LayoutBoxModelObject* ancestorToStopAt, LayoutGeometryMap& geometryMap) const
 {
-    ASSERT_UNUSED(ancestorToStopAt, ancestorToStopAt != this);
-
-    LayoutObject* container = parent();
-    if (!container)
-        return nullptr;
-
-    // FIXME: this should call offsetFromContainer to share code, but I'm not sure it's ever called.
-    LayoutSize offset;
-    if (container->hasOverflowClip())
-        offset = -LayoutSize(toLayoutBox(container)->scrolledContentOffset());
-
-    geometryMap.push(this, offset);
-
-    return container;
+    ASSERT_NOT_REACHED();
+    return nullptr;
 }
 
 void LayoutObject::mapAbsoluteToLocalPoint(MapCoordinatesFlags mode, TransformState& transformState) const
