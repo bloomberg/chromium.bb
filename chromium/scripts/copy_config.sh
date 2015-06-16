@@ -6,7 +6,7 @@
 
 # Use this to copy all config files into the tree.
 for os in linux linux-noasm mac win win-vs2013; do
-  for target in Chromium ChromiumOS Chrome ChromeOS Ensemble; do
+  for target in Chromium ChromiumOS Chrome ChromeOS; do
     # Copy config files for various architectures:
     #   - ia32/x64 have config.asm, config.h
     #   - arm/arm-neon have config.h

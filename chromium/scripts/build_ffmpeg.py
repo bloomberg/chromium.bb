@@ -26,7 +26,6 @@ BRANDINGS = [
   'ChromeOS',
   'Chromium',
   'ChromiumOS',
-  'Ensemble',
 ]
 
 
@@ -34,7 +33,7 @@ USAGE = """Usage: %prog TARGET_OS TARGET_ARCH [options] -- [configure_args]
 
 Valid combinations are linux       [ia32|x64|mipsel|arm|arm-neon|arm64]
                        linux-noasm [x64]
-                       mac         [ia32|x64]
+                       mac         [x64]
                        win         [ia32|x64]
 
 Platform specific build notes:
@@ -70,14 +69,11 @@ Platform specific build notes:
       - Add these packages at install time: diffutils, yasm, make, python.
       - Copy chromium/scripts/cygwin-wrapper to /usr/local/bin
 
-    Ensemble will only be built for ia32, x64, ARM & mipsel.
-
 Resulting binaries will be placed in:
   build.TARGET_ARCH.TARGET_OS/Chromium/out/
   build.TARGET_ARCH.TARGET_OS/Chrome/out/
   build.TARGET_ARCH.TARGET_OS/ChromiumOS/out/
-  build.TARGET_ARCH.TARGET_OS/ChromeOS/out/
-  build.TARGET_ARCH.TARGET_OS/Ensemble/out/"""
+  build.TARGET_ARCH.TARGET_OS/ChromeOS/out/"""
 
 
 def PrintAndCheckCall(argv, *args, **kwargs):
@@ -135,18 +131,6 @@ def BuildFFmpeg(target_os, target_arch, host_os, host_arch, parallel_jobs,
 
   PrintAndCheckCall(
       [os.path.join(FFMPEG_DIR, 'configure')] + configure_flags, cwd=config_dir)
-
-  if (target_os, target_arch) == ('mac', 'ia32'):
-    # Required to get Mac ia32 builds compiling with -fno-omit-frame-pointer,
-    # which is required for accurate stack traces.  See http://crbug.com/115170.
-    #
-    # Without this, building without -fomit-frame-pointer on ia32 will result in
-    # the the inclusion of a number of inline assembly blocks that use too many
-    # registers for its input/output operands.
-    for name in ('config.h', 'config.asm'):
-      RewriteFile(os.path.join(config_dir, name),
-                  'HAVE_EBP_AVAILABLE 1',
-                  'HAVE_EBP_AVAILABLE 0')
 
   if target_os in (host_os, host_os + '-noasm') and not config_only:
     libraries = [
@@ -253,6 +237,9 @@ def main(argv):
       '--disable-vda',
       '--disable-vdpau',
 
+      # --optflags doesn't append multiple entries, so set all at once.
+      '--optflags="-O2"',
+
       # Common codecs.
       '--enable-decoder=theora,vorbis,vp8',
       '--enable-decoder=pcm_u8,pcm_s16le,pcm_s24le,pcm_f32le',
@@ -260,12 +247,6 @@ def main(argv):
       '--enable-demuxer=ogg,matroska,wav',
       '--enable-parser=opus,vp3,vorbis,vp8',
   ])
-
-  # --optflags doesn't append multiple entries, so set all at once.
-  if (target_os, target_arch) == ('mac', 'ia32'):
-    configure_flags['Common'].append('--optflags="-fno-omit-frame-pointer -O2"')
-  else:
-    configure_flags['Common'].append('--optflags="-O2"')
 
   # Linux only.
   if target_os in ('linux', 'linux-noasm'):
@@ -388,13 +369,7 @@ def main(argv):
         '--cc=clang',
         '--cxx=clang++',
     ])
-    if target_arch == 'ia32':
-      configure_flags['Common'].extend([
-          '--arch=i686',
-          '--extra-cflags=-m32',
-          '--extra-ldflags=-m32',
-      ])
-    elif target_arch == 'x64':
+    if target_arch == 'x64':
       configure_flags['Common'].extend([
           '--arch=x86_64',
           '--extra-cflags=-m64',
@@ -437,13 +412,6 @@ def main(argv):
   configure_flags['ChromiumOS'].extend([
       '--enable-demuxer=flac',
       '--enable-decoder=flac',
-      '--enable-parser=flac',
-  ])
-
-  # Ensemble specific configuration.
-  configure_flags['Ensemble'].extend([
-      '--enable-decoder=alac,flac',
-      '--enable-demuxer=flac',
       '--enable-parser=flac',
   ])
 
@@ -492,14 +460,6 @@ def main(argv):
                     configure_flags['Chromium'] +
                     configure_flags['ChromiumOS'] +
                     configure_args)
-    # Ensemble should be only build on a restricted set of platforms.
-    if target_arch in ['ia32','x64', 'arm', 'mipsel']:
-      do_build_ffmpeg('Ensemble',
-                      configure_flags['Common'] +
-                      configure_flags['Chrome'] +
-                      configure_flags['Ensemble'] +
-                      configure_args)
-
     # ChromeOS enables MPEG4 which requires error resilience :(
     chrome_os_flags = (configure_flags['Common'] +
                        configure_flags['Chrome'] +

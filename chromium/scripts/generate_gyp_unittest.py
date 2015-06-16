@@ -175,7 +175,7 @@ class SourceSetUnittest(unittest.TestCase):
 
     # All targets case.
     a = gg.SourceSet(set(['a', 'b']), set(['arm']),
-                     set(['Chromium', 'ChromiumOS', 'Chrome', 'ChromeOS', 'Ensemble']),
+                     set(['Chromium', 'ChromiumOS', 'Chrome', 'ChromeOS']),
                      set(['win'])).GenerateGypStanza()
     string.index(a, '(1)')
 

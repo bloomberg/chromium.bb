@@ -11,57 +11,13 @@ FFmpeg's configure scripts and Makefiles. It scans through build directories for
 object files then does a reverse lookup against the FFmpeg source tree to find
 the corresponding C or assembly file.
 
-Running build_ffmpeg.sh for ia32, arm, arm-neon and mips32 platforms is
-required prior to running this script. The arm, arm-neon and mips32 platforms
-assume a Chromium OS build environment.
+Running build_ffmpeg.sh on each supported platform for all architecture is
+required prior to running this script.  See build_ffmpeg.py for details as well
+as the documentation at:
 
-The Ensemble branding supports the following architectures: ia32, x86, arm, and
-mipsel.
+https://docs.google.com/document/d/14bqZ9NISsyEO3948wehhJ7wc9deTIz-yHUhF1MQp7Po/edit?pli=1#heading=h.x346hhrqw4lx
 
-Step 1: Have a Chromium OS checkout (refer to http://dev.chromium.org)
-  mkdir chromeos
-  repo init ...
-  repo sync
-
-Step 2: Check out deps/third_party/ffmpeg inside Chromium OS (or cp -fpr it over
-from an existing checkout; symlinks and mount --bind no longer appear to enable
-access from within chroot)
-  cd path/to/chromeos
-  mkdir deps
-  cd deps
-  git clone http://git.chromium.org/chromium/third_party/ffmpeg.git
-
-Step 3: Build for ia32 platform outside chroot (will need yasm in path)
-  cd path/to/chromeos/deps/ffmpeg
-  ./chromium/scripts/build_ffmpeg.sh linux ia32 path/to/chromeos/deps/ffmpeg
-
-Step 4: Build and enter Chromium OS chroot:
-  cd path/to/chromeos/src/scripts
-  cros_sdk --enter
-
-Step 5: Setup build environment for ARM:
-  ./setup_board --board arm-generic
-
-Step 6: Build for arm/arm-neon platforms inside chroot
-  ./chromium/scripts/build_ffmpeg.sh linux arm path/to/chromeos/deps/ffmpeg
-  ./chromium/scripts/build_ffmpeg.sh linux arm-neon path/to/chromeos/deps/ffmpeg
-
-Step 7: Setup build environment for MIPS:
-  ./setup_board --board mipsel-o32-generic
-
-Step 8: Build for mipsel platform inside chroot
-  ./chromium/scripts/build_ffmpeg.py linux mipsel
-
-Step 9: Build for Windows platform; you will need a MinGW shell started from
-inside a Visual Studio Command Prompt to run build_ffmpeg.sh:
-  ./chromium/scripts/build_ffmpeg.sh win ia32 $(pwd)
-
-Step 10: Exit chroot and generate gyp file
-  exit
-  cd path/to/chromeos/deps/ffmpeg
-  ./chromium/scripts/generate_gyp.py
-
-Phew!
+Once you've built all platforms and architectures you may run this script.
 
 While this seems insane, reverse engineering and maintaining a gyp file by hand
 is significantly more painful.
@@ -145,7 +101,7 @@ GN_SOURCE_END = """]
 
 # Controls GYP conditional stanza generation.
 SUPPORTED_ARCHITECTURES = ['ia32', 'arm', 'arm-neon', 'x64', 'mipsel']
-SUPPORTED_TARGETS = ['Chromium', 'Chrome', 'ChromiumOS', 'ChromeOS', 'Ensemble']
+SUPPORTED_TARGETS = ['Chromium', 'Chrome', 'ChromiumOS', 'ChromeOS']
 # Mac doesn't have any platform specific files, so just use linux and win.
 SUPPORTED_PLATFORMS = ['linux', 'win']
 
