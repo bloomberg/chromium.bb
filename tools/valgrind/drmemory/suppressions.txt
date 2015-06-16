@@ -720,7 +720,7 @@ name=http://crbug.com/463261
 blink_web.dll!blink::WebFrameWidgetImpl::selectionBounds
 ...
 content.dll!content::RenderWidget::UpdateSelectionBounds
-content.dll!content::RenderWidget::willBeginCompositorFrame
+content.dll!content::RenderWidget::WillBeginCompositorFrame
 cc.dll!base::internal::InvokeHelper<>::MakeItSo
 
 UNADDRESSABLE ACCESS
