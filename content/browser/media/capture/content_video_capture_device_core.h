@@ -18,7 +18,7 @@
 #include "media/video/capture/video_capture_device.h"
 
 namespace media {
-class VideoCaptureParams;
+struct VideoCaptureParams;
 class VideoFrame;
 }  // namespace media
 

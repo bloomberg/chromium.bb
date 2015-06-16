@@ -16,7 +16,7 @@ class WebMediaStream;
 
 namespace media {
 class AudioCapturerSource;
-class VideoCaptureFormat;
+struct VideoCaptureFormat;
 class VideoCapturerSource;
 }
 

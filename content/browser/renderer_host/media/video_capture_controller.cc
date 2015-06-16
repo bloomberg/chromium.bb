@@ -347,7 +347,7 @@ void VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread(
         break;
       }
 
-      bool inserted =
+      const bool inserted =
           client->active_buffers.insert(std::make_pair(buffer_id, frame))
               .second;
       DCHECK(inserted) << "Unexpected duplicate buffer: " << buffer_id;
@@ -363,10 +363,11 @@ void VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread(
     UMA_HISTOGRAM_ASPECT_RATIO("Media.VideoCapture.AspectRatio",
                                frame->visible_rect().width(),
                                frame->visible_rect().height());
-    double frame_rate;
+    double frame_rate = 0.0f;
     if (!frame->metadata()->GetDouble(media::VideoFrameMetadata::FRAME_RATE,
-                                      &frame_rate))
+                                      &frame_rate)) {
       frame_rate = video_capture_format_.frame_rate;
+    }
     UMA_HISTOGRAM_COUNTS("Media.VideoCapture.FrameRate", frame_rate);
     has_received_frames_ = true;
   }

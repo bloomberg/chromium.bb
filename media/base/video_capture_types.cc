@@ -108,6 +108,10 @@ std::string VideoCaptureFormat::PixelFormatToString(VideoPixelFormat format) {
 }
 
 VideoCaptureParams::VideoCaptureParams()
-    : resolution_change_policy(RESOLUTION_POLICY_FIXED_RESOLUTION) {}
+    : resolution_change_policy(RESOLUTION_POLICY_FIXED_RESOLUTION)
+#if defined(OS_LINUX)
+      , use_native_gpu_memory_buffers(false)
+#endif
+    {}
 
 }  // namespace media

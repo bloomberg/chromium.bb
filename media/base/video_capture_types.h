@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "build/build_config.h"
 #include "media/base/media_export.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -64,8 +65,7 @@ const int kFrameRatePrecision = 10000;
 // This class is used by the video capture device to specify the format of every
 // frame captured and returned to a client. It is also used to specify a
 // supported capture format by a device.
-class MEDIA_EXPORT VideoCaptureFormat {
- public:
+struct MEDIA_EXPORT VideoCaptureFormat {
   VideoCaptureFormat();
   VideoCaptureFormat(const gfx::Size& frame_size,
                      float frame_rate,
@@ -99,12 +99,14 @@ typedef std::vector<VideoCaptureFormat> VideoCaptureFormats;
 // This class is used by the client of a video capture device to specify the
 // format of frames in which the client would like to have captured frames
 // returned.
-class MEDIA_EXPORT VideoCaptureParams {
- public:
+struct MEDIA_EXPORT VideoCaptureParams {
   VideoCaptureParams();
 
   bool operator==(const VideoCaptureParams& other) const {
     return requested_format == other.requested_format &&
+#if defined(OS_LINUX)
+        use_native_gpu_memory_buffers == other.use_native_gpu_memory_buffers &&
+#endif
         resolution_change_policy == other.resolution_change_policy;
   }
 
@@ -113,6 +115,11 @@ class MEDIA_EXPORT VideoCaptureParams {
 
   // Policy for resolution change.
   ResolutionChangePolicy resolution_change_policy;
+
+#if defined(OS_LINUX)
+  // Indication to the Driver to try to use native GpuMemoryBuffers.
+  bool use_native_gpu_memory_buffers;
+#endif
 };
 
 }  // namespace media

@@ -28,6 +28,13 @@ const char kAlsaInputDevice[] = "alsa-input-device";
 const char kAlsaOutputDevice[] = "alsa-output-device";
 #endif
 
+#if defined(OS_LINUX)
+// Try to use Native GpuMemoryBuffers for Video Capture. The actual use depends
+// on the actual hardware capabilities of the capture device and encoder(s).
+const char kUseNativeGpuMemoryBuffersForCapture[] =
+    "use-native-gpu-memory-buffers-for-capture";
+#endif
+
 #if defined(OS_MACOSX)
 // AVFoundation is available in versions 10.7 and onwards, and is to be used
 // http://crbug.com/288562 for both audio and video device monitoring and for

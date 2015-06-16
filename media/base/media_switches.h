@@ -27,6 +27,10 @@ MEDIA_EXPORT extern const char kAlsaInputDevice[];
 MEDIA_EXPORT extern const char kAlsaOutputDevice[];
 #endif
 
+#if defined(OS_LINUX)
+MEDIA_EXPORT extern const char kUseNativeGpuMemoryBuffersForCapture[];
+#endif
+
 #if defined(OS_MACOSX)
 MEDIA_EXPORT extern const char kEnableAVFoundation[];
 MEDIA_EXPORT extern const char kForceQTKit[];
