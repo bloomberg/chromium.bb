@@ -131,7 +131,7 @@ bool DOMWindow::isInsecureScriptAccess(LocalDOMWindow& callingWindow, const Stri
 
         // FIXME: The name canAccess seems to be a roundabout way to ask "can execute script".
         // Can we name the SecurityOrigin function better to make this more clear?
-        if (callingWindow.frame()->securityContext()->securityOrigin()->canAccess(frame()->securityContext()->securityOrigin()))
+        if (callingWindow.frame()->securityContext()->securityOrigin()->canAccessCheckSuborigins(frame()->securityContext()->securityOrigin()))
             return false;
     }
 
@@ -220,7 +220,7 @@ String DOMWindow::sanitizedCrossDomainAccessErrorMessage(LocalDOMWindow* calling
     if (callingWindowURL.isNull())
         return String();
 
-    ASSERT(!callingWindow->document()->securityOrigin()->canAccess(frame()->securityContext()->securityOrigin()));
+    ASSERT(!callingWindow->document()->securityOrigin()->canAccessCheckSuborigins(frame()->securityContext()->securityOrigin()));
 
     SecurityOrigin* activeOrigin = callingWindow->document()->securityOrigin();
     String message = "Blocked a frame with origin \"" + activeOrigin->toString() + "\" from accessing a cross-origin frame.";
@@ -242,7 +242,7 @@ String DOMWindow::crossDomainAccessErrorMessage(LocalDOMWindow* callingWindow)
     // FIXME: This message, and other console messages, have extra newlines. Should remove them.
     SecurityOrigin* activeOrigin = callingWindow->document()->securityOrigin();
     SecurityOrigin* targetOrigin = frame()->securityContext()->securityOrigin();
-    ASSERT(!activeOrigin->canAccess(targetOrigin));
+    ASSERT(!activeOrigin->canAccessCheckSuborigins(targetOrigin));
 
     String message = "Blocked a frame with origin \"" + activeOrigin->toString() + "\" from accessing a frame with origin \"" + targetOrigin->toString() + "\". ";
 

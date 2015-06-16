@@ -93,10 +93,25 @@ public:
     // another SecurityOrigin.
     bool canAccess(const SecurityOrigin*) const;
 
+    // Same as canAccess, except that it adds an additional check to make sure
+    // that the SecurityOrigins have the same suborigin name. If you're not
+    // familiar with Suborigins, you probably want canAccess() for now.
+    // Suborigins is a spec in progress, and where it should be enforced is
+    // still in flux. See https://crbug.com/336894 for more details.
+    bool canAccessCheckSuborigins(const SecurityOrigin*) const;
+
     // Returns true if this SecurityOrigin can read content retrieved from
     // the given URL. For example, call this function before issuing
     // XMLHttpRequests.
     bool canRequest(const KURL&) const;
+
+    // Same as canRequest, except that it adds an additional check to make sure
+    // that the SecurityOrigin does not have a suborigin name. Like with
+    // canAccessCheckSuborigins() above, if you're not familiar with
+    // Suborigins, you probably want canRequest() for now. Suborigins is a spec
+    // in progress, and where it should be enforced is still in flux. See
+    // https://crbug.com/336894 for more details.
+    bool canRequestNoSuborigin(const KURL&) const;
 
     // Returns true if drawing an image from this URL taints a canvas from
     // this security origin. For example, call this function before
@@ -206,6 +221,7 @@ public:
     // This method checks for equality, ignoring the value of document.domain
     // (and whether it was set) but considering the host. It is used for postMessage.
     bool isSameSchemeHostPort(const SecurityOrigin*) const;
+    bool isSameSchemeHostPortAndSuborigin(const SecurityOrigin*) const;
 
     bool needsDatabaseIdentifierQuirkForFiles() const { return m_needsDatabaseIdentifierQuirkForFiles; }
 
@@ -228,6 +244,7 @@ private:
     friend class SecurityOriginTest;
     friend class SecurityOriginTest_Suborigins_Test;
     friend class SecurityOriginTest_SuboriginsParsing_Test;
+    friend class SecurityOriginTest_SuboriginsIsSameSchemeHostPortAndSuborigin_Test;
 
     SecurityOrigin();
     explicit SecurityOrigin(const KURL&);

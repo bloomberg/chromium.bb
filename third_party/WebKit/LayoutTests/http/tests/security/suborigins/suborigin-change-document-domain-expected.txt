@@ -1,6 +1,0 @@
-CONSOLE MESSAGE: line 12: secret = I am a secret
-
-This is a testharness.js-based test.
-FAIL Validate that a frame can't change it's document.domain and enter the suborigin Uncaught Error: assert_equals: secret should not be touchable by the child in a suborigin. expected "Unchanged" but got "I am a secret"
-Harness: the test ran to completion.
-

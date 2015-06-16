@@ -1,5 +1,0 @@
-CONSOLE ERROR: line 7: The Suborigin name 'foobar' was delivered via a Content Security Policy in a <meta> element and not an HTTP header, which is disallowed. The Suborigin has been ignored.
-This is a testharness.js-based test.
-PASS Suborigin in <meta> disallowed 
-Harness: the test ran to completion.
-

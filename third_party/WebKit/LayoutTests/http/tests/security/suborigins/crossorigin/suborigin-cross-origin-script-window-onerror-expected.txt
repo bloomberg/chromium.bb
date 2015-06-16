@@ -1,3 +1,0 @@
-Test that window.onerror won't reveal any potentially sensitive script content if the latter is loaded from a different suborigin. The test passes if you don't see any data from the linked resource.
-
-window.onerror message: Uncaught SyntaxError: Unexpected identifier at http://127.0.0.1:8000/security/resources/cross-origin-script.txt: 1

@@ -148,7 +148,7 @@ bool ExecutionContext::shouldSanitizeScriptError(const String& sourceURL, Access
 {
     if (corsStatus == OpaqueResource)
         return true;
-    return !(securityOrigin()->canRequest(completeURL(sourceURL)) || corsStatus == SharableCrossOrigin);
+    return !(securityOrigin()->canRequestNoSuborigin(completeURL(sourceURL)) || corsStatus == SharableCrossOrigin);
 }
 
 void ExecutionContext::reportException(PassRefPtrWillBeRawPtr<ErrorEvent> event, int scriptId, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack, AccessControlStatus corsStatus)

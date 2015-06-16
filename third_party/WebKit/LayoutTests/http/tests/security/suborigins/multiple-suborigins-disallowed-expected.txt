@@ -1,5 +1,3 @@
+CONSOLE ERROR: Ignoring duplicate Content-Security-Policy directive 'suborigin'.
 
-This is a testharness.js-based test.
-FAIL Multiple Suborigins Disallowed Uncaught Error: assert_equals: The parent frame should never be able to get the secret value from the child iframe. expected "" but got "I am a secret"
-Harness: the test ran to completion.
 

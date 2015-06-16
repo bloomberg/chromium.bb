@@ -286,6 +286,17 @@ bool SecurityOrigin::canAccess(const SecurityOrigin* other) const
     return canAccess;
 }
 
+bool SecurityOrigin::canAccessCheckSuborigins(const SecurityOrigin* other) const
+{
+    if (hasSuborigin() != other->hasSuborigin())
+        return false;
+
+    if (hasSuborigin() && suboriginName() != other->suboriginName())
+        return false;
+
+    return canAccess(other);
+}
+
 bool SecurityOrigin::passesFileCheck(const SecurityOrigin* other) const
 {
     ASSERT(isLocal() && other->isLocal());
@@ -318,6 +329,11 @@ bool SecurityOrigin::canRequest(const KURL& url) const
         return true;
 
     return false;
+}
+
+bool SecurityOrigin::canRequestNoSuborigin(const KURL& url) const
+{
+    return !hasSuborigin() && canRequest(url);
 }
 
 bool SecurityOrigin::taintsCanvas(const KURL& url) const
@@ -558,6 +574,11 @@ bool SecurityOrigin::isSameSchemeHostPort(const SecurityOrigin* other) const
         return false;
 
     return true;
+}
+
+bool SecurityOrigin::isSameSchemeHostPortAndSuborigin(const SecurityOrigin* other) const
+{
+    return isSameSchemeHostPort(other) && (!hasSuborigin() || suboriginName() == other->suboriginName());
 }
 
 const KURL& SecurityOrigin::urlWithUniqueSecurityOrigin()

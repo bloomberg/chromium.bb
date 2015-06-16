@@ -38,10 +38,11 @@ namespace blink {
 struct SecurityOriginHash {
     static unsigned hash(SecurityOrigin* origin)
     {
-        unsigned hashCodes[3] = {
+        unsigned hashCodes[4] = {
             origin->protocol().impl() ? origin->protocol().impl()->hash() : 0,
             origin->host().impl() ? origin->host().impl()->hash() : 0,
-            origin->port()
+            origin->port(),
+            origin->suboriginName().impl() ? origin->suboriginName().impl()->hash() : 0
         };
         return StringHasher::hashMemory<sizeof(hashCodes)>(hashCodes);
     }
@@ -58,7 +59,7 @@ struct SecurityOriginHash {
         if (a == b)
             return true;
 
-        if (!a->isSameSchemeHostPort(b))
+        if (!a->isSameSchemeHostPortAndSuborigin(b))
             return false;
 
         if (a->domainWasSetInDOM() != b->domainWasSetInDOM())

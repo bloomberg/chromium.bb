@@ -1,5 +1,0 @@
-CONSOLE ERROR: line 2325: Uncaught Error: assert_equals: document.suborigin should exist when page has a suborigin. expected (string) "foobar" but got (undefined) undefined
-This is a testharness.js-based test.
-FAIL Validate presence and value of document.suborigin Uncaught Error: assert_equals: document.suborigin should exist when page has a suborigin. expected (string) "foobar" but got (undefined) undefined
-Harness: the test ran to completion.
-

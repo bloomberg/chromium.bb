@@ -43,7 +43,7 @@ namespace blink {
 
 static bool isOriginAccessibleFromDOMWindow(SecurityOrigin* targetOrigin, LocalDOMWindow* callingWindow)
 {
-    return callingWindow && callingWindow->document()->securityOrigin()->canAccess(targetOrigin);
+    return callingWindow && callingWindow->document()->securityOrigin()->canAccessCheckSuborigins(targetOrigin);
 }
 
 static bool canAccessFrame(v8::Isolate* isolate, SecurityOrigin* targetFrameOrigin, DOMWindow* targetWindow, ExceptionState& exceptionState)

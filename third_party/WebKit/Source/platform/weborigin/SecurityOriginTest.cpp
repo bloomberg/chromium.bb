@@ -227,4 +227,73 @@ TEST_F(SecurityOriginTest, SuboriginsParsing)
     EXPECT_EQ("https://foobar_test.com", builder.toString());
 }
 
+TEST_F(SecurityOriginTest, SuboriginsIsSameSchemeHostPortAndSuborigin)
+{
+    blink::RuntimeEnabledFeatures::setSuboriginsEnabled(true);
+    RefPtr<SecurityOrigin> origin = SecurityOrigin::createFromString("https://foobar_test.com");
+    RefPtr<SecurityOrigin> other1 = SecurityOrigin::createFromString("https://bazbar_test.com");
+    RefPtr<SecurityOrigin> other2 = SecurityOrigin::createFromString("http://foobar_test.com");
+    RefPtr<SecurityOrigin> other3 = SecurityOrigin::createFromString("https://foobar_test.com:1234");
+    RefPtr<SecurityOrigin> other4 = SecurityOrigin::createFromString("https://test.com");
+
+    EXPECT_TRUE(origin->isSameSchemeHostPortAndSuborigin(origin.get()));
+    EXPECT_FALSE(origin->isSameSchemeHostPortAndSuborigin(other1.get()));
+    EXPECT_FALSE(origin->isSameSchemeHostPortAndSuborigin(other2.get()));
+    EXPECT_FALSE(origin->isSameSchemeHostPortAndSuborigin(other3.get()));
+    EXPECT_FALSE(origin->isSameSchemeHostPortAndSuborigin(other4.get()));
+}
+
+TEST_F(SecurityOriginTest, CanAccess)
+{
+    RuntimeEnabledFeatures::setSuboriginsEnabled(true);
+
+    struct TestCase {
+        bool canAccess;
+        bool canAccessCheckSuborigins;
+        const char* origin1;
+        const char* origin2;
+    };
+
+    TestCase tests[] = {
+        { true, true, "https://foobar.com", "https://foobar.com" },
+        { false, false, "https://foobar.com", "https://bazbar.com" },
+        { true, false, "https://foobar.com", "https://name_foobar.com" },
+        { true, false, "https://name_foobar.com", "https://foobar.com" },
+        { true, true, "https://name_foobar.com", "https://name_foobar.com" },
+    };
+
+    for (size_t i = 0; i < arraysize(tests); ++i) {
+        RefPtr<SecurityOrigin> origin1 = SecurityOrigin::createFromString(tests[i].origin1);
+        RefPtr<SecurityOrigin> origin2 = SecurityOrigin::createFromString(tests[i].origin2);
+        EXPECT_EQ(tests[i].canAccess, origin1->canAccess(origin2.get()));
+        EXPECT_EQ(tests[i].canAccessCheckSuborigins, origin1->canAccessCheckSuborigins(origin2.get()));
+    }
+}
+
+TEST_F(SecurityOriginTest, CanRequest)
+{
+    RuntimeEnabledFeatures::setSuboriginsEnabled(true);
+
+    struct TestCase {
+        bool canRequest;
+        bool canRequestNoSuborigin;
+        const char* origin;
+        const char* url;
+    };
+
+    TestCase tests[] = {
+        { true, true, "https://foobar.com", "https://foobar.com" },
+        { false, false, "https://foobar.com", "https://bazbar.com" },
+        { true, false, "https://name_foobar.com", "https://foobar.com" },
+        { false, false, "https://name_foobar.com", "https://bazbar.com" },
+    };
+
+    for (size_t i = 0; i < arraysize(tests); ++i) {
+        RefPtr<SecurityOrigin> origin = SecurityOrigin::createFromString(tests[i].origin);
+        blink::KURL url(blink::ParsedURLString, tests[i].url);
+        EXPECT_EQ(tests[i].canRequest, origin->canRequest(url));
+        EXPECT_EQ(tests[i].canRequestNoSuborigin, origin->canRequestNoSuborigin(url));
+    }
+}
+
 } // namespace blink

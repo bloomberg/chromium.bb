@@ -2,11 +2,19 @@
 <html>
 <head>
     <title>Valid suborigin names</title>
-<script src="/resources/testharness.js"></script>
-<script src="/resources/testharnessreport.js"></script>
 </head>
 
 <script>
+if (window.testRunner) {
+    testRunner.dumpAsText();
+    testRunner.waitUntilDone();
+}
+
+function finish() {
+    if (window.testRunner)
+        testRunner.notifyDone();
+}
+
 var test_suborigin_names = [
     "foobar",
     "foob4r",
@@ -18,27 +26,18 @@ var test_suborigin_names = [
 var iframe;
 var i = 0;
 function next() {
-    name = test_suborigin_names[i];
+    if (i >= test_suborigin_names.length)
+        finish();
+    document.getElementById('iframe').src = "resources/reach-into-iframe.php?childsuborigin=" + test_suborigin_names[i];
     i++;
-    iframe.src = "resources/childsuborigin.php?suborigin=" + name;
 }
 
-window.onmessage = function() {
-    if (i > test_suborigin_names.length)
-        done();
-
-    var secret = '';
-    try {
-        secret = iframe.contentWindow.secret;
-        assert_unreached();
-    } catch(e) {
-        assert_equals(secret, "", "The parent frame should never be able to get the secret value from the child iframe.");
-    };
+window.onmessage = function(event) {
+    alert(event.data);
     next();
 };
 
-window.onload = function() {; 
-    iframe = document.getElementById('iframe');
+window.onload = function() {
     next();
 };
 </script>

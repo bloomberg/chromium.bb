@@ -1,6 +1,14 @@
-CONSOLE ERROR: Error while parsing the 'suborigin' Content Security Policy directive: No suborigin name specified.
-
-This is a testharness.js-based test.
-FAIL Invalid suborigin names Uncaught Error: assert_unreached: Reached unreachable code
-Harness: the test ran to completion.
+ALERT: I am a secret
+CONSOLE ERROR: Error while parsing the 'suborigin' Content Security Policy directive: Invalid character ''' in suborigin.
+ALERT: I am a secret
+CONSOLE ERROR: Error while parsing the 'suborigin' Content Security Policy directive: Invalid character ''' in suborigin.
+ALERT: I am a secret
+CONSOLE ERROR: Error while parsing the 'suborigin' Content Security Policy directive: Invalid character ''' in suborigin.
+ALERT: I am a secret
+CONSOLE ERROR: Error while parsing the 'suborigin' Content Security Policy directive: Invalid character ''' in suborigin.
+ALERT: I am a secret
+CONSOLE ERROR: Error while parsing the 'suborigin' Content Security Policy directive: Invalid character '@' in suborigin.
+ALERT: I am a secret
+CONSOLE ERROR: Error while parsing the 'suborigin' Content Security Policy directive: Whitespace is not allowed in suborigin names.
+ALERT: I am a secret
 

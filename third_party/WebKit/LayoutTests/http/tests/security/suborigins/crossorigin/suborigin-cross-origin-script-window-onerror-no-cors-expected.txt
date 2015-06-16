@@ -1,0 +1,15 @@
+CONSOLE ERROR: line 1: Uncaught SomeError
+The test passes if 'window.onerror' gets unsanitized information about an exception thrown in a script loaded with a 'crossorigin' attribute, and delivered with valid CORS headers.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+FAIL /SomeError/.test(msg) should be true. Was false.
+FAIL url should be http://localhost:8000/security/resources/cors-script.php?fail=true&cors=true. Was .
+FAIL line should be 1. Was 0.
+FAIL column should be 1. Was 0.
+FAIL window.errorObject should not be null.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

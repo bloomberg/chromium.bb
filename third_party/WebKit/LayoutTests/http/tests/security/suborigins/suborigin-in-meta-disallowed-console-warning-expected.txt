@@ -1,0 +1,2 @@
+CONSOLE ERROR: line 8: The Suborigin name 'foobar' was delivered via a Content Security Policy in a <meta> element and not an HTTP header, which is disallowed. The Suborigin has been ignored.
+

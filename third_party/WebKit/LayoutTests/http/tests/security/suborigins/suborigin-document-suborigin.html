@@ -1,6 +1,3 @@
-<?php
-header("Content-Security-Policy: suborigin foobar");
-?>
 <!DOCTYPE html>
 <html>
 <head>
@@ -9,7 +6,10 @@ header("Content-Security-Policy: suborigin foobar");
 <script src="/resources/testharnessreport.js"></script>
 </head>
 <script>
-assert_equals(document.suborigin, "foobar", "document.suborigin should exist when page has a suborigin.");
-done();
+window.onmessage = function(event) {
+    assert_equals(event.data, undefined, "document.suborigin should exist when page has a suborigin.");
+    done();
+}
 </script>
+<iframe src="resources/post-document-to-parent.php?suborigin=foobar"></iframe>
 </html>
