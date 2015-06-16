@@ -141,9 +141,11 @@ bool MediaElementAudioSourceHandler::passesCurrentSrcCORSAccessCheck(const KURL&
 
 void MediaElementAudioSourceHandler::printCORSMessage(const String& message)
 {
-    context()->executionContext()->addConsoleMessage(
-        ConsoleMessage::create(SecurityMessageSource, InfoMessageLevel,
-            "MediaElementAudioSource outputs zeroes due to CORS access restrictions for " + message));
+    if (context()->executionContext()) {
+        context()->executionContext()->addConsoleMessage(
+            ConsoleMessage::create(SecurityMessageSource, InfoMessageLevel,
+                "MediaElementAudioSource outputs zeroes due to CORS access restrictions for " + message));
+    }
 }
 
 void MediaElementAudioSourceHandler::process(size_t numberOfFrames)
