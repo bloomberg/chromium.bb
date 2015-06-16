@@ -27,6 +27,9 @@ function WaterfallInfo(waterfallData) {
   this.url = waterfallUrl;
 }
 
+/** Global callbacks. */
+var gWaterfallInfoCallbacks = {counter: 0};
+
 /** Send an asynchronous request to get the main waterfall's JSON. */
 WaterfallInfo.prototype.requestJson = function() {
   if (this.inFlight) {
@@ -43,17 +46,22 @@ WaterfallInfo.prototype.requestJson = function() {
   this.timeLastRequested = new Date().getTime();
   gNumRequestsInFlight++;
 
-  // Create the request and send it off.
+  // Create callback function.
+  var name = "fn" + gWaterfallInfoCallbacks.counter++;
   var waterfallInfo = this;
-  var url = this.url + 'json/builders/';
-  var request = new XMLHttpRequest();
-  request.open('GET', url, true);
-  request.onreadystatechange = function() {
-    if (request.readyState == 4 && request.status == 200) {
-      waterfallInfo.parseJSON(JSON.parse(request.responseText));
-    }
-  };
-  request.send(null);
+  gWaterfallInfoCallbacks[name] = function(json) {
+    delete gWaterfallInfoCallbacks[name];
+    waterfallInfo.parseJSON(json);
+  }
+
+  // Use JSONP to get data.
+  var head = document.head;
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.setAttribute('src', this.url +
+      'json/builders/?callback=gWaterfallInfoCallbacks.' + name);
+  head.appendChild(script);
+  head.removeChild(script);
 };
 
 /** Parse out the data received about the waterfall. */

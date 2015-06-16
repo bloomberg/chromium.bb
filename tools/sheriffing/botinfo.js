@@ -64,27 +64,35 @@ BotInfo.prototype.update = function(rootJsonUrl, builderJson) {
   }
 };
 
+/** Global callbacks. */
+var gBotInfoCallbacks = {counter: 0};
+
 /** Request and save data about a particular build. */
 BotInfo.prototype.requestJson = function(rootJsonUrl, buildNumber) {
   this.inFlight++;
   gNumRequestsInFlight++;
 
+  // Create callback function.
+  var name = "fn" + gBotInfoCallbacks.counter++;
   var botInfo = this;
-  var url = rootJsonUrl + 'builders/' + this.name + '/builds/' + buildNumber;
-  var request = new XMLHttpRequest();
-  request.open('GET', url, true);
-  request.onreadystatechange = function() {
-    if (request.readyState == 4 && request.status == 200) {
-      botInfo.inFlight--;
-      gNumRequestsInFlight--;
+  gBotInfoCallbacks[name] = function(json) {
+    delete gBotInfoCallbacks[name];
 
-      var json = JSON.parse(request.responseText);
-      botInfo.builds[json.number] = new BuildInfo(json);
-      botInfo.updateIsSteadyGreen();
-      gWaterfallDataIsDirty = true;
-    }
-  };
-  request.send(null);
+    botInfo.inFlight--;
+    gNumRequestsInFlight--;
+    botInfo.builds[json.number] = new BuildInfo(json);
+    botInfo.updateIsSteadyGreen();
+    gWaterfallDataIsDirty = true;
+  }
+
+  // Use JSONP to get data.
+  var url = rootJsonUrl + 'builders/' + this.name + '/builds/' + buildNumber;
+  var head = document.head;
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.setAttribute('src', url + '?callback=gBotInfoCallbacks.' + name);
+  head.appendChild(script);
+  head.removeChild(script);
 };
 
 /** Guess the last known build a builder finished. */
