@@ -445,8 +445,10 @@ const char kEnableLinkableEphemeralApps[]   = "enable-linkable-ephemeral-apps";
 // Enables the material design Settings feature.
 const char kEnableMaterialDesignSettings[]  = "enable-md-settings";
 
+#if defined(ENABLE_MEDIA_ROUTER)
 // Enables Media Router.
 const char kEnableMediaRouter[]             = "enable-media-router";
+#endif
 
 // Runs the Native Client inside the renderer process and enables GPU plugin
 // (internally adds lEnableGpuPlugin to the command line).

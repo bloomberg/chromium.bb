@@ -41,21 +41,18 @@ cr.define('media_router', function() {
    * @param {string} id The ID of this issue.
    * @param {string} title The issue title.
    * @param {string} message The issue message.
-   * @param {string} defaultActionText The button text of default action.
    * @param {number} defaultActionType The type of default action.
-   * @param {?string} secondaryActionText The button text of optional action.
    * @param {?number} secondaryActionType The type of optional action.
    * @param {?string} mediaRouteId The route ID to which this issue
    *                  pertains. If not set, this is a global issue.
    * @param {boolean} isBlocking True if this issue blocks other UI.
-   * @param {?string} helpURL The URL to be opened if learn more is clicked.
+   * @param {?number} helpPageId The numeric help center ID.
    * @constructor
    * @struct
    */
-  var Issue = function(id, title, message, defaultActionText,
-                       defaultActionType, secondaryActionText,
+  var Issue = function(id, title, message, defaultActionType,
                        secondaryActionType, mediaRouteId, isBlocking,
-                       helpURL) {
+                       helpPageId) {
     /** @type {string} */
     this.id = id;
 
@@ -65,14 +62,8 @@ cr.define('media_router', function() {
     /** @type {string} */
     this.message = message;
 
-    /** @type {string} */
-    this.defaultActionText = defaultActionText;
-
     /** @type {number} */
     this.defaultActionType = defaultActionType;
-
-    /** @type {?string} */
-    this.secondaryActionText = secondaryActionText;
 
     /** @type {?number} */
     this.secondaryActionType = secondaryActionType;
@@ -83,8 +74,8 @@ cr.define('media_router', function() {
     /** @type {boolean} */
     this.isBlocking = isBlocking;
 
-    /** @type {?string} */
-    this.helpURL = helpURL;
+    /** @type {?number} */
+    this.helpPageId = helpPageId;
   };
 
 

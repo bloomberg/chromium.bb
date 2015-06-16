@@ -56,7 +56,7 @@ Polymer({
     this.fire('issue-action-click', {
       id: this.issue.id,
       actionType: actionType,
-      helpURL: this.issue.helpURL,
+      helpPageId: this.issue.helpPageId,
     });
   },
 

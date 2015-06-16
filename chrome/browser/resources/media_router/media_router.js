@@ -17,8 +17,7 @@ cr.define('media_router', function() {
    * router content, such as the media sink and media route lists.
    */
   function initialize() {
-    // TODO(apacible): Add chrome.send call when browser WebUI message
-    // handler is implemented.
+    media_router.browserApi.requestInitialData();
 
     container = $('media-router-container');
     media_router.ui.setContainer(container);
@@ -41,16 +40,16 @@ cr.define('media_router', function() {
    * Acts on an issue and dismisses it from the UI.
    * Called when the user performs an action on an issue.
    *
-   * @param {{detail: {id: string, actionType: number, helpURL: string}}} data
+   * @param {{detail: {id: string, actionType: number}}} data
    * Parameters in |data|.detail:
    *   id - issue ID.
    *   actionType - type of action performed by the user.
-   *   helpURL - the help URL for the issue.
+   *   helpPageId - the numeric help center ID.
    */
   function onIssueActionClick(data) {
     media_router.browserApi.actOnIssue(data.detail.id,
                                        data.detail.actionType,
-                                       data.detail.helpURL);
+                                       data.detail.helpPageId);
     container.issue = null;
   }
 

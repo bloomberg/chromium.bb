@@ -96,7 +96,6 @@ bool MediaRouterAction::ExecuteAction(bool by_user) {
 }
 
 void MediaRouterAction::UpdateState() {
-  NOTIMPLEMENTED();
 }
 
 MediaRouterDialogController*

@@ -38,11 +38,6 @@ class ComponentToolbarActionsFactory {
   // count has not been checked yet.
   int num_component_actions_;
 
-  // Whether or not Media Router UI is currently enabled.
-  // TODO(apacible): Replace this with a switch once there is more Media Router
-  //                 functionality.
-  bool media_router_ui_enabled_;
-
   DISALLOW_COPY_AND_ASSIGN(ComponentToolbarActionsFactory);
 };
 

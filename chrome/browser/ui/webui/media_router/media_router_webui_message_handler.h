@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "chrome/browser/media/router/issue.h"
 #include "chrome/browser/ui/webui/media_router/media_cast_mode.h"
 #include "chrome/browser/ui/webui/media_router/media_sink_with_cast_modes.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -44,14 +45,23 @@ class MediaRouterWebUIMessageHandler : public content::WebUIMessageHandler {
   void RegisterMessages() override;
 
   // Handlers for JavaScript messages.
-  void OnGetInitialSettings(const base::ListValue* args);
+  // In all cases, |args| consists of a single DictionaryValue containing the
+  // actual parameters.
+  // See media_router_ui_interface.js for documentation on parameters.
+  void OnRequestInitialData(const base::ListValue* args);
   void OnCreateRoute(const base::ListValue* args);
   void OnActOnIssue(const base::ListValue* args);
   void OnCloseRoute(const base::ListValue* args);
   void OnCloseDialog(const base::ListValue* args);
 
+  // Performs an action for an Issue of |type|.
+  // |args| contains additional parameter that varies based on |type|.
+  // Returns |true| if the action was successfully performed.
+  bool ActOnIssueType(const IssueAction::Type& type,
+                      const base::DictionaryValue* args);
+
   // Helper function for getting a pointer to the corresponding MediaRouterUI.
-  MediaRouterUI* GetMediaRouterUI() const;
+  MediaRouterUI* GetMediaRouterUI();
 
   // Keeps track of whether a command to close the dialog has been issued.
   bool dialog_closing_;

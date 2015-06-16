@@ -238,13 +238,11 @@ define('media_router_bindings', [
 
     // Convert MediaRoutes to Mojo objects and add their sink names
     // via sinkNameMap.
-    var mojoRoutes = routes.map(function(route) {
-      return routeToMojo_(routes[j], sinkNameMap[routes[j].sinkId]);
+    var mojoRoutes = routes.map(function(nextRoute) {
+      return routeToMojo_(nextRoute, sinkNameMap[nextRoute.sinkId]);
     });
 
-    this.service_.onRoutesUpdated(
-        mojoRoutes,
-        sinks.map(MediaRouterObserver.sinkToMojo_));
+    this.service_.onRoutesUpdated(mojoRoutes, sinks.map(sinkToMojo_));
   };
 
   /**
@@ -327,6 +325,8 @@ define('media_router_bindings', [
    * @constructor
    */
   function MediaRouter(mediaRouterObserver) {
+    mediaRouterMojom.MediaRouter.stubClass.call(this);
+
     /**
      * Object containing JS callbacks into Provider Manager code.
      * @type {!MediaRouterHandlers}
@@ -361,7 +361,7 @@ define('media_router_bindings', [
       'startObservingMediaRoutes'
     ];
     requiredHandlers.forEach(function(nextHandler) {
-      if (!handlers.hasOwnProperty(nextHandler)) {
+      if (handlers[nextHandler] === undefined) {
         console.error(nextHandler + ' handler not registered.');
       }
     });

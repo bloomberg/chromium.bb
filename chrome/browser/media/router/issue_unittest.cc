@@ -12,12 +12,12 @@ namespace media_router {
 // Checks static IssueAction factory method.
 TEST(IssueUnitTest, IssueActionConstructor) {
   // Pre-defined "Ok" issue action.
-  IssueAction action1(IssueAction::OK);
-  EXPECT_EQ(IssueAction::OK, action1.type());
+  IssueAction action1(IssueAction::TYPE_OK);
+  EXPECT_EQ(IssueAction::TYPE_OK, action1.type());
 
   // Pre-defined "Cancel" issue action.
-  IssueAction action2(IssueAction::CANCEL);
-  EXPECT_EQ(IssueAction::CANCEL, action2.type());
+  IssueAction action2(IssueAction::TYPE_CANCEL);
+  EXPECT_EQ(IssueAction::TYPE_CANCEL, action2.type());
 }
 
 // Tests custom Issue factory method without any secondary actions.
@@ -26,12 +26,13 @@ TEST(IssueUnitTest, CustomIssueConstructionWithNoSecondaryActions) {
   std::string title = "title";
   std::string message = "message";
 
-  Issue issue1(title, message, IssueAction(IssueAction::OK), secondary_actions,
-               "", Issue::WARNING, false, "http://www.google.com/");
+  Issue issue1(title, message, IssueAction(IssueAction::TYPE_OK),
+               secondary_actions, "", Issue::WARNING, false,
+               "http://www.google.com/");
 
   EXPECT_EQ(title, issue1.title());
   EXPECT_EQ(message, issue1.message());
-  EXPECT_EQ(IssueAction::OK, issue1.default_action().type());
+  EXPECT_EQ(IssueAction::TYPE_OK, issue1.default_action().type());
   EXPECT_TRUE(issue1.secondary_actions().empty());
   EXPECT_EQ(Issue::WARNING, issue1.severity());
   EXPECT_EQ("", issue1.route_id());
@@ -39,12 +40,13 @@ TEST(IssueUnitTest, CustomIssueConstructionWithNoSecondaryActions) {
   EXPECT_FALSE(issue1.is_blocking());
   EXPECT_EQ("http://www.google.com/", issue1.help_url().spec());
 
-  Issue issue2(title, message, IssueAction(IssueAction::OK), secondary_actions,
-               "routeid", Issue::FATAL, true, "http://www.google.com/");
+  Issue issue2(title, message, IssueAction(IssueAction::TYPE_OK),
+               secondary_actions, "routeid", Issue::FATAL, true,
+               "http://www.google.com/");
 
   EXPECT_EQ(title, issue2.title());
   EXPECT_EQ(message, issue2.message());
-  EXPECT_EQ(IssueAction::OK, issue1.default_action().type());
+  EXPECT_EQ(IssueAction::TYPE_OK, issue1.default_action().type());
   EXPECT_TRUE(issue2.secondary_actions().empty());
   EXPECT_EQ(Issue::FATAL, issue2.severity());
   EXPECT_EQ("routeid", issue2.route_id());
@@ -52,12 +54,12 @@ TEST(IssueUnitTest, CustomIssueConstructionWithNoSecondaryActions) {
   EXPECT_TRUE(issue2.is_blocking());
   EXPECT_EQ("http://www.google.com/", issue1.help_url().spec());
 
-  Issue issue3(title, "", IssueAction(IssueAction::OK), secondary_actions,
+  Issue issue3(title, "", IssueAction(IssueAction::TYPE_OK), secondary_actions,
                "routeid", Issue::FATAL, true, "http://www.google.com/");
 
   EXPECT_EQ(title, issue3.title());
   EXPECT_EQ("", issue3.message());
-  EXPECT_EQ(IssueAction::OK, issue1.default_action().type());
+  EXPECT_EQ(IssueAction::TYPE_OK, issue1.default_action().type());
   EXPECT_TRUE(issue3.secondary_actions().empty());
   EXPECT_EQ(Issue::FATAL, issue3.severity());
   EXPECT_EQ("routeid", issue3.route_id());
@@ -69,18 +71,18 @@ TEST(IssueUnitTest, CustomIssueConstructionWithNoSecondaryActions) {
 // Tests custom Issue factory method with secondary actions.
 TEST(IssueUnitTest, CustomIssueConstructionWithSecondaryActions) {
   std::vector<IssueAction> secondary_actions;
-  secondary_actions.push_back(IssueAction(IssueAction::DISMISS));
-  secondary_actions.push_back(IssueAction(IssueAction::CANCEL));
+  secondary_actions.push_back(IssueAction(IssueAction::TYPE_DISMISS));
+  secondary_actions.push_back(IssueAction(IssueAction::TYPE_CANCEL));
   EXPECT_EQ(2u, secondary_actions.size());
   std::string title = "title";
   std::string message = "message";
 
-  Issue issue1(title, message, IssueAction(IssueAction::OK), secondary_actions,
-               "", Issue::WARNING, false, "");
+  Issue issue1(title, message, IssueAction(IssueAction::TYPE_OK),
+               secondary_actions, "", Issue::WARNING, false, "");
 
   EXPECT_EQ(title, issue1.title());
   EXPECT_EQ(message, issue1.message());
-  EXPECT_EQ(IssueAction::OK, issue1.default_action().type());
+  EXPECT_EQ(IssueAction::TYPE_OK, issue1.default_action().type());
   EXPECT_FALSE(issue1.secondary_actions().empty());
   EXPECT_EQ(2u, issue1.secondary_actions().size());
   EXPECT_EQ(Issue::WARNING, issue1.severity());
@@ -88,12 +90,12 @@ TEST(IssueUnitTest, CustomIssueConstructionWithSecondaryActions) {
   EXPECT_TRUE(issue1.is_global());
   EXPECT_FALSE(issue1.is_blocking());
 
-  Issue issue2(title, message, IssueAction(IssueAction::OK), secondary_actions,
-               "routeid", Issue::FATAL, true, "");
+  Issue issue2(title, message, IssueAction(IssueAction::TYPE_OK),
+               secondary_actions, "routeid", Issue::FATAL, true, "");
 
   EXPECT_EQ(title, issue2.title());
   EXPECT_EQ(message, issue2.message());
-  EXPECT_EQ(IssueAction::OK, issue2.default_action().type());
+  EXPECT_EQ(IssueAction::TYPE_OK, issue2.default_action().type());
   EXPECT_FALSE(issue2.secondary_actions().empty());
   EXPECT_EQ(2u, issue2.secondary_actions().size());
   EXPECT_EQ(Issue::FATAL, issue2.severity());
@@ -101,12 +103,12 @@ TEST(IssueUnitTest, CustomIssueConstructionWithSecondaryActions) {
   EXPECT_FALSE(issue2.is_global());
   EXPECT_TRUE(issue2.is_blocking());
 
-  Issue issue3(title, "", IssueAction(IssueAction::OK), secondary_actions,
+  Issue issue3(title, "", IssueAction(IssueAction::TYPE_OK), secondary_actions,
                "routeid", Issue::FATAL, true, "");
 
   EXPECT_EQ(title, issue3.title());
   EXPECT_EQ("", issue3.message());
-  EXPECT_EQ(IssueAction::OK, issue3.default_action().type());
+  EXPECT_EQ(IssueAction::TYPE_OK, issue3.default_action().type());
   EXPECT_FALSE(issue3.secondary_actions().empty());
   EXPECT_EQ(2u, issue3.secondary_actions().size());
   EXPECT_EQ(Issue::FATAL, issue3.severity());
@@ -118,20 +120,20 @@ TEST(IssueUnitTest, CustomIssueConstructionWithSecondaryActions) {
 // Tests == and != method.
 TEST(IssueUnitTest, Equal) {
   std::vector<IssueAction> secondary_actions;
-  secondary_actions.push_back(IssueAction(IssueAction::DISMISS));
-  secondary_actions.push_back(IssueAction(IssueAction::CANCEL));
+  secondary_actions.push_back(IssueAction(IssueAction::TYPE_DISMISS));
+  secondary_actions.push_back(IssueAction(IssueAction::TYPE_CANCEL));
 
   std::vector<IssueAction> secondary_actions2;
-  secondary_actions2.push_back(IssueAction(IssueAction::DISMISS));
+  secondary_actions2.push_back(IssueAction(IssueAction::TYPE_DISMISS));
 
   std::string title = "title";
   std::string message = "message";
 
-  Issue issue1(Issue(title, message, IssueAction(IssueAction::OK),
+  Issue issue1(Issue(title, message, IssueAction(IssueAction::TYPE_OK),
                      secondary_actions, "", Issue::WARNING, false, ""));
   EXPECT_TRUE(issue1.Equals(issue1));
 
-  Issue issue2(Issue(title, message, IssueAction(IssueAction::OK),
+  Issue issue2(Issue(title, message, IssueAction(IssueAction::TYPE_OK),
                      secondary_actions, "", Issue::WARNING, false, ""));
   EXPECT_FALSE(issue1.Equals(issue2));
 }

@@ -89,7 +89,6 @@ void MediaRouterMojoImpl::OnConnectionError() {
 
   mojo_media_router_.reset();
   binding_.reset();
-  mojo_media_router_extension_id_.clear();
 }
 
 void MediaRouterMojoImpl::ProvideMediaRouter(

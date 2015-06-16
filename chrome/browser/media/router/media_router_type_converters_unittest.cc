@@ -107,9 +107,9 @@ TEST(MediaRouterTypeConvertersTest, ConvertIssue) {
   mojoIssue->help_url = "help_url";
 
   std::vector<IssueAction> secondary_actions;
-  secondary_actions.push_back(IssueAction(IssueAction::CANCEL));
-  secondary_actions.push_back(IssueAction(IssueAction::DISMISS));
-  Issue expected_issue("title", "msg", IssueAction(IssueAction::OK),
+  secondary_actions.push_back(IssueAction(IssueAction::TYPE_CANCEL));
+  secondary_actions.push_back(IssueAction(IssueAction::TYPE_DISMISS));
+  Issue expected_issue("title", "msg", IssueAction(IssueAction::TYPE_OK),
                        secondary_actions, "routeId", Issue::WARNING, true,
                        "help_url");
   Issue converted_issue = mojo::TypeConverter<
@@ -144,7 +144,7 @@ TEST(MediaRouterTypeConvertersTest, ConvertIssueWithoutOptionalFields) {
   mojoIssue->severity = interfaces::Issue::Severity::SEVERITY_WARNING;
   mojoIssue->is_blocking = true;
 
-  Issue expected_issue("title", "", IssueAction(IssueAction::OK),
+  Issue expected_issue("title", "", IssueAction(IssueAction::TYPE_OK),
                        std::vector<IssueAction>(), "", Issue::WARNING, true,
                        "");
 

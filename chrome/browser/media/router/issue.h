@@ -16,7 +16,13 @@ namespace media_router {
 // The text that corresponds with an action a user can take for a Issue.
 class IssueAction {
  public:
-  enum Type { OK, CANCEL, DISMISS, LEARN_MORE };
+  enum Type {
+    TYPE_OK,
+    TYPE_CANCEL,
+    TYPE_DISMISS,
+    TYPE_LEARN_MORE,
+    TYPE_MAX /* Denotes enum value boundary. */
+  };
 
   explicit IssueAction(const Type type);
   ~IssueAction();

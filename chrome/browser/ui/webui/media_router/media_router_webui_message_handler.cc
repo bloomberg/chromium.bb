@@ -4,29 +4,34 @@
 
 #include "chrome/browser/ui/webui/media_router/media_router_webui_message_handler.h"
 
+#include <string>
+
 #include "base/bind.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/ui/webui/media_router/media_router_ui.h"
-#include "chrome/grit/generated_resources.h"
-#include "content/public/browser/web_ui.h"
-#include "ui/base/l10n/l10n_util.h"
 
 namespace media_router {
 
 namespace {
 
+const char kHelpPageUrlPrefix[] =
+    "https://support.google.com/chromecast/answer/%d";
+
 // Message names.
-const char kGetInitialSettings[] = "getInitialSettings";
+const char kRequestInitialData[] = "requestInitialData";
 const char kCreateRoute[] = "requestRoute";
 const char kActOnIssue[] = "actOnIssue";
 const char kCloseRoute[] = "closeRoute";
 const char kCloseDialog[] = "closeDialog";
 
 // JS function names.
-const char kSetInitialSettings[] = "media_router.setInitialSettings";
+const char kSetInitialData[] = "media_router.ui.setInitialData";
 const char kAddRoute[] = "media_router.ui.addRoute";
+const char kSetIssue[] = "media_router.ui.setIssue";
 const char kSetSinkList[] = "media_router.ui.setSinkList";
 const char kSetRouteList[] = "media_router.ui.setRouteList";
 const char kSetCastModeList[] = "media_router.ui.setCastModeList";
+const char kWindowOpen[] = "window.open";
 
 scoped_ptr<base::ListValue> SinksToValue(
     const std::vector<MediaSinkWithCastModes>& sinks) {
@@ -90,6 +95,48 @@ scoped_ptr<base::ListValue> CastModesToValue(const CastModeSet& cast_modes,
   return value.Pass();
 }
 
+// Returns an Issue dictionary created from |issue| that can be used in WebUI.
+scoped_ptr<base::DictionaryValue> IssueToValue(const Issue& issue) {
+  scoped_ptr<base::DictionaryValue> dictionary(new base::DictionaryValue);
+  dictionary->SetString("id", issue.id());
+  dictionary->SetString("title", issue.title());
+  dictionary->SetString("message", issue.message());
+  dictionary->SetInteger("defaultActionType", issue.default_action().type());
+  if (!issue.secondary_actions().empty()) {
+    dictionary->SetInteger("secondaryActionType",
+                           issue.secondary_actions().begin()->type());
+  }
+  if (!issue.route_id().empty())
+    dictionary->SetString("routeId", issue.route_id());
+  dictionary->SetBoolean("isBlocking", issue.is_blocking());
+
+  return dictionary.Pass();
+}
+
+bool IsValidIssueActionTypeNum(int issue_action_type_num) {
+  return issue_action_type_num >= 0 &&
+         issue_action_type_num < IssueAction::TYPE_MAX;
+}
+
+// Composes a "learn more" URL. The URL depends on template arguments in |args|.
+// Returns an empty string if |args| is invalid.
+std::string GetLearnMoreUrl(const base::DictionaryValue* args) {
+  // TODO(imcheng): The template arguments for determining the learn more URL
+  // should come from the Issue object in the browser, not from WebUI.
+  int help_page_id = -1;
+  if (!args->GetInteger("helpPageId", &help_page_id) || help_page_id < 0) {
+    DVLOG(1) << "Invalid help page id.";
+    return std::string();
+  }
+
+  std::string help_url = base::StringPrintf(kHelpPageUrlPrefix, help_page_id);
+  if (!GURL(help_url).is_valid()) {
+    DVLOG(1) << "Error: URL is invalid and cannot be opened.";
+    return std::string();
+  }
+  return help_url;
+}
+
 }  // namespace
 
 MediaRouterWebUIMessageHandler::MediaRouterWebUIMessageHandler()
@@ -124,22 +171,25 @@ void MediaRouterWebUIMessageHandler::UpdateCastModes(
 
 void MediaRouterWebUIMessageHandler::AddRoute(const MediaRoute& route) {
   DVLOG(2) << "AddRoute";
-
   scoped_ptr<base::DictionaryValue> route_value(RouteToValue(route));
   web_ui()->CallJavascriptFunction(kAddRoute, *route_value);
 }
 
 void MediaRouterWebUIMessageHandler::UpdateIssue(const Issue* issue) {
   DVLOG(2) << "UpdateIssue";
-  // TODO(imcheng): Implement conversion from Issue to dictionary object
-  // (crbug.com/464216).
-  NOTIMPLEMENTED();
+  if (issue) {
+    scoped_ptr<base::DictionaryValue> issue_val(IssueToValue(*issue));
+    web_ui()->CallJavascriptFunction(kSetIssue, *issue_val);
+  } else {
+    // Clears the issue in the WebUI.
+    web_ui()->CallJavascriptFunction(kSetIssue);
+  }
 }
 
 void MediaRouterWebUIMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
-      kGetInitialSettings,
-      base::Bind(&MediaRouterWebUIMessageHandler::OnGetInitialSettings,
+      kRequestInitialData,
+      base::Bind(&MediaRouterWebUIMessageHandler::OnRequestInitialData,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kCreateRoute,
@@ -159,48 +209,55 @@ void MediaRouterWebUIMessageHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-void MediaRouterWebUIMessageHandler::OnGetInitialSettings(
+void MediaRouterWebUIMessageHandler::OnRequestInitialData(
     const base::ListValue* args) {
+  DVLOG(1) << "OnRequestInitialData";
   MediaRouterUI* media_router_ui = GetMediaRouterUI();
 
-  base::DictionaryValue initial_settings;
+  base::DictionaryValue initial_data;
 
-  initial_settings.SetString("headerText",
-                             media_router_ui->GetInitialHeaderText());
+  initial_data.SetString("headerText", media_router_ui->GetInitialHeaderText());
 
   scoped_ptr<base::ListValue> sinks(SinksToValue(media_router_ui->sinks()));
-  initial_settings.Set("sinks", sinks.release());
+  initial_data.Set("sinks", sinks.release());
 
   scoped_ptr<base::ListValue> routes(RoutesToValue(media_router_ui->routes()));
-  initial_settings.Set("routes", routes.release());
+  initial_data.Set("routes", routes.release());
 
   scoped_ptr<base::ListValue> cast_modes(CastModesToValue(
-      media_router_ui->cast_modes(), media_router_ui->GetFrameURLHost()));
-  initial_settings.Set("castModes", cast_modes.release());
+      media_router_ui->cast_modes(),
+      // TODO(imcheng): Use media_router_ui->source_host() once DEFAULT mode
+      // is upstreamed.
+      std::string()));
+  initial_data.Set("castModes", cast_modes.release());
 
-  web_ui()->CallJavascriptFunction(kSetInitialSettings, initial_settings);
+  web_ui()->CallJavascriptFunction(kSetInitialData, initial_data);
   media_router_ui->UIInitialized();
 }
 
 void MediaRouterWebUIMessageHandler::OnCreateRoute(
     const base::ListValue* args) {
+  DVLOG(1) << "OnCreateRoute";
+  const base::DictionaryValue* args_dict = nullptr;
   std::string sink_id;
-  int cast_mode_num;
-  if (!args->GetString(0, &sink_id) || !args->GetInteger(1, &cast_mode_num)) {
-    LOG(ERROR) << "Unable to extract args.";
+  int cast_mode_num = -1;
+  if (!args->GetDictionary(0, &args_dict) ||
+      !args_dict->GetString("sinkId", &sink_id) ||
+      !args_dict->GetInteger("selectedCastMode", &cast_mode_num)) {
+    DVLOG(1) << "Unable to extract args.";
     return;
   }
 
   if (sink_id.empty()) {
-    LOG(ERROR) << "Media Route Provider Manager did not respond with a "
-               << "valid sink ID. Aborting.";
+    DVLOG(1) << "Media Route Provider Manager did not respond with a "
+             << "valid sink ID. Aborting.";
     return;
   }
 
   MediaRouterUI* media_router_ui =
       static_cast<MediaRouterUI*>(web_ui()->GetController());
   if (media_router_ui->has_pending_route_request()) {
-    LOG(ERROR) << "UI already has pending route request. Ignoring.";
+    DVLOG(1) << "UI already has pending route request. Ignoring.";
     return;
   }
 
@@ -220,21 +277,40 @@ void MediaRouterWebUIMessageHandler::OnCreateRoute(
 
   // TODO(imcheng): Display error in UI. (crbug.com/490372)
   if (!success)
-    LOG(ERROR) << "Error initiating route request.";
+    DVLOG(1) << "Error initiating route request.";
 }
 
 void MediaRouterWebUIMessageHandler::OnActOnIssue(
     const base::ListValue* args) {
-  // TODO(imcheng): Implement (crbug.com/464216).
-  NOTIMPLEMENTED();
+  DVLOG(1) << "OnActOnIssue";
+  const base::DictionaryValue* args_dict = nullptr;
+  Issue::Id issue_id;
+  int action_type_num = -1;
+  if (!args->GetDictionary(0, &args_dict) ||
+      !args_dict->GetString("issueId", &issue_id) ||
+      !args_dict->GetInteger("actionType", &action_type_num)) {
+    DVLOG(1) << "Unable to extract args.";
+    return;
+  }
+  if (!IsValidIssueActionTypeNum(action_type_num)) {
+    DVLOG(1) << "Invalid action type: " << action_type_num;
+    return;
+  }
+  IssueAction::Type action_type =
+      static_cast<IssueAction::Type>(action_type_num);
+  if (ActOnIssueType(action_type, args_dict))
+    DVLOG(1) << "ActOnIssueType failed for Issue ID " << issue_id;
+  GetMediaRouterUI()->ClearIssue(issue_id);
 }
 
 void MediaRouterWebUIMessageHandler::OnCloseRoute(
     const base::ListValue* args) {
-  DVLOG(2) << "OnCloseRoute";
+  DVLOG(1) << "OnCloseRoute";
+  const base::DictionaryValue* args_dict = nullptr;
   std::string route_id;
-  if (!args->GetString(0, &route_id)) {
-    LOG(ERROR) << "Unable to extract args.";
+  if (!args->GetDictionary(0, &args_dict) ||
+      !args_dict->GetString(0, &route_id)) {
+    DVLOG(1) << "Unable to extract args.";
     return;
   }
   GetMediaRouterUI()->CloseRoute(route_id);
@@ -242,6 +318,7 @@ void MediaRouterWebUIMessageHandler::OnCloseRoute(
 
 void MediaRouterWebUIMessageHandler::OnCloseDialog(
     const base::ListValue* args) {
+  DVLOG(1) << "OnCloseDialog";
   if (dialog_closing_)
     return;
 
@@ -249,7 +326,24 @@ void MediaRouterWebUIMessageHandler::OnCloseDialog(
   GetMediaRouterUI()->Close();
 }
 
-MediaRouterUI* MediaRouterWebUIMessageHandler::GetMediaRouterUI() const {
+bool MediaRouterWebUIMessageHandler::ActOnIssueType(
+    const IssueAction::Type& action_type,
+    const base::DictionaryValue* args) {
+  if (action_type == IssueAction::TYPE_LEARN_MORE) {
+    std::string learn_more_url = GetLearnMoreUrl(args);
+    if (learn_more_url.empty())
+      return false;
+    scoped_ptr<base::ListValue> open_args(new base::ListValue);
+    open_args->AppendString(learn_more_url);
+    web_ui()->CallJavascriptFunction(kWindowOpen, *open_args);
+    return true;
+  } else {
+    // Do nothing; no other issue action types require any other action.
+    return true;
+  }
+}
+
+MediaRouterUI* MediaRouterWebUIMessageHandler::GetMediaRouterUI() {
   MediaRouterUI* media_router_ui =
       static_cast<MediaRouterUI*>(web_ui()->GetController());
   DCHECK(media_router_ui);
