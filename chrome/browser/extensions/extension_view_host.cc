@@ -5,13 +5,17 @@
 #include "chrome/browser/extensions/extension_view_host.h"
 
 #include "base/strings/string_piece.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_view.h"
 #include "chrome/browser/extensions/window_controller.h"
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/platform_util.h"
+#include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "components/autofill/content/browser/content_autofill_driver_factory.h"
+#include "components/autofill/core/browser/autofill_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_view_host.h"
@@ -64,6 +68,16 @@ ExtensionViewHost::ExtensionViewHost(
   // Not used for panels, see PanelHost.
   DCHECK(host_type == VIEW_TYPE_EXTENSION_DIALOG ||
          host_type == VIEW_TYPE_EXTENSION_POPUP);
+
+  // Attach WebContents helpers. Extension tabs automatically get them attached
+  // in TabHelpers::AttachTabHelpers, but popups don't.
+  // TODO(kalman): How much of TabHelpers::AttachTabHelpers should be here?
+  autofill::ChromeAutofillClient::CreateForWebContents(host_contents());
+  autofill::ContentAutofillDriverFactory::CreateForWebContentsAndDelegate(
+      host_contents(),
+      autofill::ChromeAutofillClient::FromWebContents(host_contents()),
+      g_browser_process->GetApplicationLocale(),
+      autofill::AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER);
 }
 
 ExtensionViewHost::~ExtensionViewHost() {
