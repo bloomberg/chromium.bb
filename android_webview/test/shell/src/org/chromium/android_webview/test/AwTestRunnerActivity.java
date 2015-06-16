@@ -5,6 +5,7 @@
 package org.chromium.android_webview.test;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
@@ -16,6 +17,8 @@ import android.widget.LinearLayout;
 public class AwTestRunnerActivity extends Activity {
 
     private LinearLayout mLinearLayout;
+    private Intent mLastSentIntent;
+    private boolean mIgnoreStartActivity;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -48,5 +51,19 @@ public class AwTestRunnerActivity extends Activity {
      */
     public void removeAllViews() {
         mLinearLayout.removeAllViews();
+    }
+
+    @Override
+    public void startActivity(Intent i) {
+        mLastSentIntent = i;
+        if (!mIgnoreStartActivity) super.startActivity(i);
+    }
+
+    public Intent getLastSentIntent() {
+        return mLastSentIntent;
+    }
+
+    public void setIgnoreStartActivity(boolean ignore) {
+        mIgnoreStartActivity = ignore;
     }
 }

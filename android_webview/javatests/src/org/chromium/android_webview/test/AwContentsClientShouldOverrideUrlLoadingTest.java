@@ -16,6 +16,7 @@ import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content.browser.test.util.CallbackHelper;
+import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageStartedHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnReceivedErrorHelper;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -869,5 +870,98 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
                 return AwContents.getNativeInstanceCount() == 0;
             }
         });
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testNullContentsClientWithServerRedirect() throws Throwable {
+        try {
+            // The test will fire real intents through the test activity.
+            // Need to temporarily suppress startActivity otherwise there will be a
+            // handler selection window and the test can't dismiss that.
+            getActivity().setIgnoreStartActivity(true);
+            final String testUrl = mWebServer.setResponse("/" + CommonResources.ABOUT_FILENAME,
+                    CommonResources.ABOUT_HTML, CommonResources.getTextHtmlHeaders(true));
+            AwTestContainerView awTestContainerView =
+                    createAwTestContainerViewOnMainSync(new NullContentsClient() {
+                        @Override
+                        public boolean hasWebViewClient() {
+                            return false;
+                        }
+                    });
+            final AwContents awContents = awTestContainerView.getAwContents();
+            loadUrlAsync(awContents, testUrl);
+            pollOnUiThread(new Callable<Boolean>() {
+                @Override
+                public Boolean call() {
+                    return awContents.getTitle().equals(CommonResources.ABOUT_TITLE);
+                }
+            });
+
+            assertNull(getActivity().getLastSentIntent());
+
+            // Now the server will redirect path1 to path2. Path2 will load ABOUT_HTML.
+            // AwContents should create an intent for the server initiated redirection.
+            final String path1 = "/from.html";
+            final String path2 = "/to.html";
+            final String fromUrl = mWebServer.setRedirect(path1, path2);
+            final String toUrl = mWebServer.setResponse(
+                    path2, CommonResources.ABOUT_HTML, CommonResources.getTextHtmlHeaders(true));
+            loadUrlAsync(awContents, fromUrl);
+
+            pollOnUiThread(new Callable<Boolean>() {
+                @Override
+                public Boolean call() {
+                    return getActivity().getLastSentIntent() != null;
+                }
+            });
+            assertEquals(toUrl, getActivity().getLastSentIntent().getData().toString());
+        } finally {
+            getActivity().setIgnoreStartActivity(false);
+        }
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testNullContentsClientOpenLink() throws Throwable {
+        try {
+            // The test will fire real intents through the test activity.
+            // Need to temporarily suppress startActivity otherwise there will be a
+            // handler selection window and the test can't dismiss that.
+            getActivity().setIgnoreStartActivity(true);
+            final String testUrl = mWebServer.setResponse("/" + CommonResources.ABOUT_FILENAME,
+                    CommonResources.ABOUT_HTML, CommonResources.getTextHtmlHeaders(true));
+            AwTestContainerView awTestContainerView =
+                    createAwTestContainerViewOnMainSync(new NullContentsClient() {
+                        @Override
+                        public boolean hasWebViewClient() {
+                            return false;
+                        }
+                    });
+            final AwContents awContents = awTestContainerView.getAwContents();
+            // Clicking on a link should create an intent.
+            final String htmlWithLink = "<html><title>Click Title</title><body><a id='link' href='"
+                    + testUrl + "'>Click this!</a></body></html>";
+            final String urlWithLink = mWebServer.setResponse(
+                    "/html_with_link.html", htmlWithLink, CommonResources.getTextHtmlHeaders(true));
+            loadUrlAsync(awContents, urlWithLink);
+            pollOnUiThread(new Callable<Boolean>() {
+                @Override
+                public Boolean call() {
+                    return awContents.getTitle().equals("Click Title");
+                }
+            });
+            awContents.getSettings().setJavaScriptEnabled(true);
+            DOMUtils.clickNode(this, awContents.getContentViewCore(), "link");
+            pollOnUiThread(new Callable<Boolean>() {
+                @Override
+                public Boolean call() {
+                    return getActivity().getLastSentIntent() != null;
+                }
+            });
+            assertEquals(testUrl, getActivity().getLastSentIntent().getData().toString());
+        } finally {
+            getActivity().setIgnoreStartActivity(false);
+        }
     }
 }
