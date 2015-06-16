@@ -3693,7 +3693,6 @@
             'cflags': [
               '-O>(debug_optimize)',
               '-g',
-              '-gdwarf-4',
             ],
             'conditions' : [
               ['OS=="android" and target_arch!="mipsel" and target_arch!="mips64el"', {
