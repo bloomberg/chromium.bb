@@ -30,7 +30,7 @@ namespace {
 
 // In case the fields in the pickle ever change, version them so we can try to
 // read old pickles. (Note: do not eat old pickles past the expiration date.)
-const int kPickleVersion = 6;
+const int kPickleVersion = 7;
 
 // We could localize this string, but then changing your locale would cause
 // you to lose access to all your stored passwords. Maybe best not to do that.
@@ -218,12 +218,18 @@ bool DeserializeValueSize(const std::string& signon_realm,
     }
 
     if (version > 5) {
-      if (!iter.ReadInt(&generation_upload_status)) {
+      bool read_success = iter.ReadInt(&generation_upload_status);
+      if (!read_success && version > 6) {
+        // Valid version 6 pickles might still lack the
+        // generation_upload_status, see http://crbug.com/494229#c11.
         LogDeserializationWarning(version, signon_realm, false);
+        return false;
       }
-      form->generation_upload_status =
-          static_cast<PasswordForm::GenerationUploadStatus>(
-              generation_upload_status);
+      if (read_success) {
+        form->generation_upload_status =
+            static_cast<PasswordForm::GenerationUploadStatus>(
+                generation_upload_status);
+      }
     }
 
     converted_forms.push_back(form.Pass());
@@ -259,6 +265,7 @@ void SerializeValue(const std::vector<autofill::PasswordForm*>& forms,
     pickle->WriteString(form->avatar_url.spec());
     pickle->WriteString(form->federation_url.spec());
     pickle->WriteBool(form->skip_zero_click);
+    pickle->WriteInt(form->generation_upload_status);
   }
 }
 

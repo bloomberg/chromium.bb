@@ -173,6 +173,7 @@ class NativeBackendKWalletTestBase : public testing::Test {
     form_google_.avatar_url = GURL("http://www.google.com/avatar");
     form_google_.federation_url = GURL("http://www.google.com/federation_url");
     form_google_.skip_zero_click = true;
+    form_google_.generation_upload_status = PasswordForm::NEGATIVE_SIGNAL_SENT;
 
     form_isc_.origin = GURL("http://www.isc.org/");
     form_isc_.action = GURL("http://www.isc.org/auth");
@@ -934,15 +935,21 @@ TEST_F(NativeBackendKWalletTest, RemoveLoginsSyncedBetween) {
 
 class NativeBackendKWalletPickleTest : public NativeBackendKWalletTestBase {
  protected:
-  void CreateVersion6Pickle(const PasswordForm& form, base::Pickle* pickle);
-  void CreateVersion5Pickle(const PasswordForm& form, base::Pickle* pickle);
-  void CreateVersion3Pickle(const PasswordForm& form, base::Pickle* pickle);
-  void CreateVersion2Pickle(const PasswordForm& form, base::Pickle* pickle);
-  void CreateVersion1Pickle(const PasswordForm& form, base::Pickle* pickle);
+  // Based on |form|, fills |pickle| with data conforming to
+  // |effective_version|, but marking the pickle version as |stored_version|. In
+  // most cases the two versions should be the same.
+  void CreateVersion1PlusPickle(const PasswordForm& form,
+                                base::Pickle* pickle,
+                                int stored_version,
+                                int effective_version);
   void CreateVersion0Pickle(bool size_32,
                             const PasswordForm& form,
                             base::Pickle* pickle);
-  void CheckVersion6Pickle();
+  // As explained in http://crbug.com/494229#c11, version 6 added a new optional
+  // field to version 5. This field became required in version 7. Depending on
+  // |with_optional_field|, this method checks deserialization with or without
+  // the optional field.
+  void CheckVersion6Pickle(bool with_optional_field);
   void CheckVersion5Pickle();
   void CheckVersion3Pickle();
   void CheckVersion2Pickle();
@@ -960,63 +967,30 @@ class NativeBackendKWalletPickleTest : public NativeBackendKWalletTestBase {
                     base::Pickle* pickle);
 };
 
-void NativeBackendKWalletPickleTest::CreateVersion6Pickle(
+void NativeBackendKWalletPickleTest::CreateVersion1PlusPickle(
     const PasswordForm& form,
-    base::Pickle* pickle) {
-  pickle->WriteInt(6);
+    base::Pickle* pickle,
+    int stored_version,
+    int effective_version) {
+  pickle->WriteInt(stored_version);
   CreatePickle(false, true, form, pickle);
+  if (effective_version < 2)
+    return;
   pickle->WriteInt(form.type);
   pickle->WriteInt(form.times_used);
   autofill::SerializeFormData(form.form_data, pickle);
+  if (effective_version < 3)
+    return;
   pickle->WriteInt64(form.date_synced.ToInternalValue());
+  if (effective_version < 4)
+    return;
   pickle->WriteString16(form.display_name);
   pickle->WriteString(form.avatar_url.spec());
   pickle->WriteString(form.federation_url.spec());
   pickle->WriteBool(form.skip_zero_click);
+  if (effective_version < 7)
+    return;
   pickle->WriteInt(form.generation_upload_status);
-}
-
-void NativeBackendKWalletPickleTest::CreateVersion5Pickle(
-    const PasswordForm& form,
-    base::Pickle* pickle) {
-  pickle->WriteInt(5);
-  CreatePickle(false, true, form, pickle);
-  pickle->WriteInt(form.type);
-  pickle->WriteInt(form.times_used);
-  autofill::SerializeFormData(form.form_data, pickle);
-  pickle->WriteInt64(form.date_synced.ToInternalValue());
-  pickle->WriteString16(form.display_name);
-  pickle->WriteString(form.avatar_url.spec());
-  pickle->WriteString(form.federation_url.spec());
-  pickle->WriteBool(form.skip_zero_click);
-}
-
-void NativeBackendKWalletPickleTest::CreateVersion3Pickle(
-    const PasswordForm& form,
-    base::Pickle* pickle) {
-  pickle->WriteInt(3);
-  CreatePickle(false, false, form, pickle);
-  pickle->WriteInt(form.type);
-  pickle->WriteInt(form.times_used);
-  autofill::SerializeFormData(form.form_data, pickle);
-  pickle->WriteInt64(form.date_synced.ToInternalValue());
-}
-
-void NativeBackendKWalletPickleTest::CreateVersion2Pickle(
-    const PasswordForm& form,
-    base::Pickle* pickle) {
-  pickle->WriteInt(2);
-  CreatePickle(false, false, form, pickle);
-  pickle->WriteInt(form.type);
-  pickle->WriteInt(form.times_used);
-  autofill::SerializeFormData(form.form_data, pickle);
-}
-
-void NativeBackendKWalletPickleTest::CreateVersion1Pickle(
-    const PasswordForm& form,
-    base::Pickle* pickle) {
-  pickle->WriteInt(1);
-  CreatePickle(false, false, form, pickle);
 }
 
 void NativeBackendKWalletPickleTest::CreateVersion0Pickle(
@@ -1052,11 +1026,15 @@ void NativeBackendKWalletPickleTest::CreatePickle(bool size_32,
     pickle->WriteInt64(form.date_created.ToTimeT());
 }
 
-void NativeBackendKWalletPickleTest::CheckVersion6Pickle() {
+void NativeBackendKWalletPickleTest::CheckVersion6Pickle(
+    bool with_optional_field) {
   base::Pickle pickle;
   PasswordForm form = form_google_;
-  form.generation_upload_status = PasswordForm::NEGATIVE_SIGNAL_SENT;
-  CreateVersion6Pickle(form, &pickle);
+  if (!with_optional_field) {
+    PasswordForm default_values;
+    form.generation_upload_status = default_values.generation_upload_status;
+  }
+  CreateVersion1PlusPickle(form, &pickle, 6, with_optional_field ? 7 : 5);
 
   ScopedVector<PasswordForm> form_list =
       NativeBackendKWalletStub::DeserializeValue(form.signon_realm, pickle);
@@ -1069,8 +1047,11 @@ void NativeBackendKWalletPickleTest::CheckVersion6Pickle() {
 
 void NativeBackendKWalletPickleTest::CheckVersion5Pickle() {
   base::Pickle pickle;
+  PasswordForm default_values;
   PasswordForm form = form_google_;
-  CreateVersion5Pickle(form, &pickle);
+  // Remove the field which was not present in version #5.
+  form.generation_upload_status = default_values.generation_upload_status;
+  CreateVersion1PlusPickle(form, &pickle, 5, 5);
 
   ScopedVector<PasswordForm> form_list =
       NativeBackendKWalletStub::DeserializeValue(form.signon_realm, pickle);
@@ -1082,13 +1063,15 @@ void NativeBackendKWalletPickleTest::CheckVersion5Pickle() {
 
 void NativeBackendKWalletPickleTest::CheckVersion3Pickle() {
   base::Pickle pickle;
+  PasswordForm default_values;
   PasswordForm form = form_google_;
   // Remove the fields which were not present in version #3.
-  form.display_name.clear();
-  form.avatar_url = GURL();
-  form.federation_url = GURL();
-  form.skip_zero_click = false;
-  CreateVersion3Pickle(form, &pickle);
+  form.display_name = default_values.display_name;
+  form.avatar_url = default_values.avatar_url;
+  form.federation_url = default_values.federation_url;
+  form.skip_zero_click = default_values.skip_zero_click;
+  form.generation_upload_status = default_values.generation_upload_status;
+  CreateVersion1PlusPickle(form, &pickle, 3, 3);
 
   ScopedVector<PasswordForm> form_list =
       NativeBackendKWalletStub::DeserializeValue(form.signon_realm, pickle);
@@ -1104,7 +1087,7 @@ void NativeBackendKWalletPickleTest::CheckVersion2Pickle() {
   form.times_used = form_google_.times_used;
   form.type = form_google_.type;
   form.form_data = form_google_.form_data;
-  CreateVersion2Pickle(form, &pickle);
+  CreateVersion1PlusPickle(form, &pickle, 2, 2);
 
   ScopedVector<PasswordForm> form_list =
       NativeBackendKWalletStub::DeserializeValue(form.signon_realm, pickle);
@@ -1118,7 +1101,7 @@ void NativeBackendKWalletPickleTest::CheckVersion2Pickle() {
 void NativeBackendKWalletPickleTest::CheckVersion1Pickle() {
   base::Pickle pickle;
   PasswordForm form = form_google_;
-  CreateVersion1Pickle(form, &pickle);
+  CreateVersion1PlusPickle(form, &pickle, 1, 1);
 
   ScopedVector<autofill::PasswordForm> form_list =
       NativeBackendKWalletStub::DeserializeValue(form.signon_realm, pickle);
@@ -1206,5 +1189,6 @@ TEST_F(NativeBackendKWalletPickleTest, CheckVersion5Pickle) {
 }
 
 TEST_F(NativeBackendKWalletPickleTest, CheckVersion6Pickle) {
-  CheckVersion6Pickle();
+  CheckVersion6Pickle(false);
+  CheckVersion6Pickle(true);
 }
