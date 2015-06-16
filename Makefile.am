@@ -33,7 +33,7 @@ tests/weston-ivi.ini : $(srcdir)/ivi-shell/weston.ini.in
 		-e 's|@bindir[@]|$(bindir)|g' \
 		-e 's|@abs_top_builddir[@]|$(abs_top_builddir)|g' \
 		-e 's|@abs_top_srcdir[@]|$(abs_top_srcdir)|g' \
-		-e 's|@libexecdir[@]|$(libexecdir)|g' \
+		-e 's|@libexecdir[@]|$(abs_builddir)|g' \
 		-e 's|@plugin_prefix[@]|$(abs_top_builddir)/.libs/|g' \
 		$< > $@
 
