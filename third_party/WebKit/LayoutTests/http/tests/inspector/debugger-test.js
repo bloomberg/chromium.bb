@@ -4,9 +4,6 @@ InspectorTest.preloadPanel("sources");
 
 InspectorTest.startDebuggerTest = function(callback, quiet)
 {
-    var testPath = WebInspector.settings.createSetting("testPath", "").get();
-    if (testPath.startsWith("LayoutTests/inspector/sources/debugger-step/"))
-        InspectorTest.startDumpingProtocolMessages();
     console.assert(InspectorTest.debuggerModel.debuggerEnabled(), "Debugger has to be enabled");
     if (quiet !== undefined)
         InspectorTest._quiet = quiet;
