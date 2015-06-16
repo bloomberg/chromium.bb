@@ -28,7 +28,6 @@
           '../third_party/android_testrunner/',
           '../third_party/flot/jquery.flot.min.js',
           '../third_party/webpagereplay/',
-          '../tools/perf/unit-info.json',
           '../tools/telemetry/',
           '<(PRODUCT_DIR)/bitmaptools<(EXECUTABLE_SUFFIX)',
         ],
