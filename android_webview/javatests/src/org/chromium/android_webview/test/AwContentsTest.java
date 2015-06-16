@@ -26,6 +26,7 @@ import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.test.TestAwContentsClient.OnDownloadStartHelper;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content.browser.test.util.CallbackHelper;
@@ -647,6 +648,48 @@ public class AwContentsTest extends AwTestBase {
         assertTrue(child.italic);
         assertFalse(child.lineThrough);
         assertFalse(child.underline);
+    }
+
+    @DisabledTest
+    @Feature({"AndroidWebView"})
+    public void testRequestAccessibilitySnapshotStrongStyle() throws Throwable {
+        final String data = "<html><body><p>foo</p><p><strong>bar</strong></p></body></html>";
+        AccessibilitySnapshotNode root = receiveAccessibilitySnapshot(data);
+        assertEquals(2, root.children.size());
+        assertEquals("", root.text);
+        AccessibilitySnapshotNode child1 = root.children.get(0);
+        assertEquals("foo", child1.text);
+        assertTrue(child1.hasStyle);
+        assertFalse(child1.bold);
+        AccessibilitySnapshotNode child2 = root.children.get(1);
+        assertEquals("bar", child2.text);
+        assertTrue(child1.textSize < child2.textSize);
+    }
+
+    @DisabledTest
+    @Feature({"AndroidWebView"})
+    public void testRequestAccessibilitySnapshotItalicStyle() throws Throwable {
+        final String data = "<html><body><i>foo</i></body></html>";
+        AccessibilitySnapshotNode root = receiveAccessibilitySnapshot(data);
+        assertEquals(1, root.children.size());
+        assertEquals("", root.text);
+        AccessibilitySnapshotNode child = root.children.get(0);
+        assertEquals("foo", child.text);
+        assertTrue(child.hasStyle);
+        assertTrue(child.italic);
+    }
+
+    @DisabledTest
+    @Feature({"AndroidWebView"})
+    public void testRequestAccessibilitySnapshotBoldStyle() throws Throwable {
+        final String data = "<html><body><b>foo</b></body></html>";
+        AccessibilitySnapshotNode root = receiveAccessibilitySnapshot(data);
+        assertEquals(1, root.children.size());
+        assertEquals("", root.text);
+        AccessibilitySnapshotNode child = root.children.get(0);
+        assertEquals("foo", child.text);
+        assertTrue(child.hasStyle);
+        assertTrue(child.bold);
     }
 
     @Feature({"AndroidWebView"})
