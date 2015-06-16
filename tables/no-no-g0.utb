@@ -82,6 +82,31 @@ sign □ 123456                # Empty square
 sign ● 2356                  # Filled circle
 sign ○ 2356                  # Empty circle
 
+uplow Αα 1                   # alpha
+uplow Ββ 12                  # beta
+uplow Γγ 1245                # gamma
+uplow Δδ 145                 # delta
+uplow Εε 15                  # epsilon
+uplow Ζζ 1356                # zeta
+uplow Ηη 5                   # eta
+uplow Θθ 4                   # theta
+uplow Ιι 24                  # iota
+uplow Κκ 13                  # kappa
+uplow Λλ 123                 # lambda
+uplow Μμ 134                 # my
+uplow Νν 1345                # ny
+uplow Ξξ 1346                # ksi
+uplow Οο 135                 # omikron
+uplow Ππ 1234                # pi
+uplow Ρρ 1235                # rho
+uplow Σς 234                 # sigma
+uplow Ττ 2345                # tau
+uplow Υυ 136                 # ypsilon
+uplow Φφ 124                 # fi
+uplow Χχ 12346               # khi
+uplow Ψψ 13456               # psi
+uplow Ωω 2456                # omega
+
 uplow \x00C8\x00E8 2346      # e with grave è x00C8 / 00E8
 uplow \x00C9\x00E9 123456    # e with acute é x00C9 / 00E9
 uplow \x00CA\x00EA 126       # e with circumflex x00CA / 00EA
@@ -92,7 +117,7 @@ uplow \x00D3\x00F3 1456      # o with acute ó x00D3 / 00F3
 uplow \x00D4\x00F4 46-135    # o with circumflex ô x00D4 / 00F4
 uplow \x00CD\x00ED 126       # i with acute x00CD / 00ED
 uplow \x00C6\x00E6 345       # æ x00C6 / 00E6
-uplow \x00C1\x00E1 12356     # a with acute x00C1 / 00E1
+uplow \x00C1\x00E1 16        # a with acute x00C1 / 00E1
 uplow Øø 246                 # o with stroke
 uplow \X00DA\x00FA 12456     # u with acute x00DA / 00FA
 uplow \x0160\x0161 156       # s with caron x00FB
@@ -114,7 +139,7 @@ uplow Ðð 156                 # Eth
 uplow Ŋŋ 1246                # Eng
 uplow Þþ 1246                # Thorn
 uplow Üü 1245                # u with diaeresis
-uplow Ŧŧ 1245                # t with stroke
+uplow Ŧŧ 1256                # t with stroke
 
 math + 235                   # plus x002B
 math / 34 solidus            # x002F

@@ -146,7 +146,7 @@
           "comment": "Alphabet used in Norwegian: Example 5",
           "xfail": false,
           "input": "Kärnten",
-          "output": "⠅⠜⠗⠝⠞⠑⠝"
+          "output": "⠠⠅⠜⠗⠝⠞⠑⠝"
         }
       ]
     },
@@ -173,7 +173,7 @@
         {
           "comment": "Alphabet used in Norwegian: Example 8",
           "xfail": false,
-          "input": "Det er én ting jeg lurer på, sa André.",
+          "input": "\"Det er én ting jeg lurer på,\" sa André.",
           "output": "⠲⠠⠙⠑⠞ ⠑⠗ ⠿⠝ ⠞⠊⠝⠛ ⠚⠑⠛ ⠇⠥⠗⠑⠗ ⠏⠡⠂⠲ ⠎⠁ ⠠⠁⠝⠙⠗⠿⠄"
         }
       ]
@@ -229,7 +229,7 @@
           "comment": "Alphabet used in Norwegian: Example 14",
           "xfail": false,
           "input": "Det trur eg òg.",
-          "output": "⠙⠑⠞ ⠞⠗⠥⠗ ⠑⠛ ⠬⠛⠄"
+          "output": "⠠⠙⠑⠞ ⠞⠗⠥⠗ ⠑⠛ ⠬⠛⠄"
         }
       ]
     },
@@ -273,7 +273,7 @@
       "data": [
         {
           "comment": "Alphabet used in Sami",
-          "xfail": false,
+          "xfail": true,
           "input": "a á b c č d đ e f g h i j k l m n ŋ o p r s š t ŧ u v z ž",
           "output": "⠁ ⠷ ⠃ ⠉ ⠩ ⠙ ⠹ ⠑ ⠋ ⠛ ⠓ ⠊ ⠚ ⠅ ⠇ ⠍ ⠝ ⠫ ⠕ ⠏ ⠗ ⠎ ⠱ ⠞ ⠳ ⠥ ⠧ ⠵ ⠮"
         }
@@ -283,7 +283,7 @@
       "data": [
         {
           "comment": "Alphabet used in norrønt",
-          "xfail": false,
+          "xfail": true,
           "input": "a á b c d ð e é f g h i í j k l m n o ó p q r s t u ú v w x y ý z þ æ ö oe ǫ",
           "output": "⠁ ⠡ ⠃ ⠉ ⠙ ⠱ ⠑ ⠮ ⠋ ⠛ ⠓ ⠊ ⠣ ⠚ ⠅ ⠇ ⠍ ⠝ ⠕ ⠹ ⠏ ⠟ ⠗ ⠎ ⠞ ⠥ ⠻ ⠧ ⠺ ⠭ ⠽ ⠯ ⠵ ⠫ ⠜ ⠪ ⠬ ⠾"
         }
@@ -293,7 +293,7 @@
       "data": [
         {
           "comment": "Alphabet used in Iceland",
-          "xfail": false,
+          "xfail": true,
           "input": "a á b c d ð e é f g h i í j k l m n o ó p q r s t u ú v w x y ý z þ æ ö",
           "output": "⠁ ⠡ ⠃ ⠉ ⠙ ⠱ ⠑ ⠮ ⠋ ⠛ ⠓ ⠊ ⠣ ⠚ ⠅ ⠇ ⠍ ⠝ ⠕ ⠹ ⠏ ⠟ ⠗ ⠎ ⠞ ⠥ ⠻ ⠧ ⠺ ⠭ ⠽ ⠯ ⠵ ⠫ ⠜ ⠪"
         }
@@ -387,7 +387,7 @@
           "comment": "Full stop: Example 3",
           "xfail": false,
           "input": "H.C. Andersen.",
-          "output": "⠓⠄⠠⠉⠄ ⠠⠁⠝⠙⠑⠗⠎⠑⠝⠄"
+          "output": "⠠⠓⠄⠠⠉⠄ ⠠⠁⠝⠙⠑⠗⠎⠑⠝⠄"
         }
       ]
     },
@@ -397,7 +397,7 @@
           "comment": "Full stop: Example 4",
           "xfail": false,
           "input": "Det er helt tåp...",
-          "output": "⠙⠑⠞ ⠑⠗ ⠓⠑⠇⠞ ⠞⠡⠏…"
+          "output": "⠠⠙⠑⠞ ⠑⠗ ⠓⠑⠇⠞ ⠞⠡⠏⠄⠄⠄"
         }
       ]
     },
@@ -577,7 +577,7 @@
         {
           "comment": "Question mark: Example 3",
           "xfail": false,
-          "input": "Skal vi gå ut og spise i dag? spurte Karin.",
+          "input": "\"Skal vi gå ut og spise i dag?\" spurte Karin.",
           "output": "⠲⠠⠎⠅⠁⠇ ⠧⠊ ⠛⠡ ⠥⠞ ⠕⠛ ⠎⠏⠊⠎⠑ ⠊ ⠙⠁⠛⠢⠲ ⠎⠏⠥⠗⠞⠑ ⠠⠅⠁⠗⠊⠝⠄"
         }
       ]
@@ -669,7 +669,7 @@
           "comment": "Curly brackets: Example 1",
           "xfail": false,
           "input": "{ }",
-          "output": "⠷ ⠠⠾"
+          "output": "⠠⠷ ⠠⠾"
         }
       ]
     },
@@ -686,7 +686,7 @@
       "data": [
         {
           "comment": "Mengdeparentes: Example 1",
-          "xfail": false,
+          "xfail": true,
           "input": "{ }",
           "output": "⠣ ⠜"
         }
@@ -696,7 +696,7 @@
       "data": [
         {
           "comment": "Mengdeparentes: Example 2",
-          "xfail": false,
+          "xfail": true,
           "input": "L = {1, 3, 4}",
           "output": "⠠⠇ ⠶⠣⠼⠁⠂ ⠼⠉⠂ ⠼⠙⠜"
         }
@@ -716,7 +716,7 @@
         {
           "comment": "Quotes: Example 2",
           "xfail": false,
-          "input": "Jeg går nå, sa han.",
+          "input": "\"Jeg går nå,\" sa han.",
           "output": "⠲⠠⠚⠑⠛ ⠛⠡⠗ ⠝⠡⠂⠲ ⠎⠁ ⠓⠁⠝⠄"
         }
       ]
@@ -735,7 +735,7 @@
         {
           "comment": "Quotes: Example 4",
           "xfail": false,
-          "input": "Reiste han med Vesta\"?\"",
+          "input": "\"Reiste han med \"Vesta\"?\"",
           "output": "⠲⠠⠗⠑⠊⠎⠞⠑ ⠓⠁⠝ ⠍⠑⠙ ⠲⠠⠧⠑⠎⠞⠁⠲⠢⠲"
         }
       ]
@@ -745,7 +745,7 @@
         {
           "comment": "Quotes: Example 5",
           "xfail": false,
-          "input": "Vera\" het båten,\" rettet hun.",
+          "input": "\"\"Vera\" het båten,\" rettet hun.",
           "output": "⠲⠲⠠⠧⠑⠗⠁⠲ ⠓⠑⠞ ⠃⠡⠞⠑⠝⠂⠲ ⠗⠑⠞⠞⠑⠞ ⠓⠥⠝⠄"
         }
       ]
@@ -783,7 +783,7 @@
           "comment": " Apostrophe : Example 3",
           "xfail": false,
           "input": "Dette må være Vigdis' bok.",
-          "output": "⠠⠙⠑⠞⠞⠑ ⠍⠡ ⠧⠜⠗⠑ ⠧⠊⠛⠙⠊⠎⠐ ⠃⠕⠅⠄"
+          "output": "⠠⠙⠑⠞⠞⠑ ⠍⠡ ⠧⠜⠗⠑ ⠠⠧⠊⠛⠙⠊⠎⠐ ⠃⠕⠅⠄"
         }
       ]
     },
@@ -793,7 +793,7 @@
           "comment": " Apostrophe : Example 4",
           "xfail": false,
           "input": "Møtet var i NATO's faste råd.",
-          "output": "⠠⠍⠪⠞⠑⠞ ⠧⠁⠗ ⠊ ⠠⠠⠝⠁⠞⠕⠠⠎ ⠋⠁⠎⠞⠑ ⠗⠡⠙⠄"
+          "output": "⠠⠍⠪⠞⠑⠞ ⠧⠁⠗ ⠊ ⠠⠠⠝⠁⠞⠕⠐⠎ ⠋⠁⠎⠞⠑ ⠗⠡⠙⠄"
         }
       ]
     },
@@ -848,7 +848,7 @@
           "comment": "Section sign:Example 2",
           "xfail": false,
           "input": "§ 18 § 223 2. ledd",
-          "output": "⠬⠼⠁⠓ ⠬⠼⠃⠃⠉ ⠼⠃⠄ ⠇⠑⠙⠙"
+          "output": "⠬⠼⠁⠓⠬ ⠼⠃⠃⠉ ⠼⠃⠄ ⠇⠑⠙⠙"
         }
       ]
     },
@@ -858,7 +858,7 @@
           "comment": "Section sign:Example 3",
           "xfail": false,
           "input": "§§ 28—32 §§ 20 og 24",
-          "output": "⠬⠬⠼⠃⠓⠤⠤⠼⠉⠃ ⠬⠬⠼⠃⠚ ⠕⠛ ⠼⠃⠙"
+          "output": "⠬⠬⠼⠃⠓⠤⠤⠼⠉⠃ ⠬⠬ ⠼⠃⠚ ⠕⠛ ⠼⠃⠙"
         }
       ]
     },
@@ -877,7 +877,7 @@
           "comment": "Number sign:Example 2",
           "xfail": false,
           "input": "På telefonen finner du tasten #.",
-          "output": "⠏⠡ ⠞⠑⠇⠑⠋⠕⠝⠑⠝ ⠋⠊⠝⠝⠑⠗ ⠙⠥ ⠞⠁⠎⠞⠑⠝ ⠼⠄"
+          "output": "⠠⠏⠡ ⠞⠑⠇⠑⠋⠕⠝⠑⠝ ⠋⠊⠝⠝⠑⠗ ⠙⠥ ⠞⠁⠎⠞⠑⠝ ⠼⠄"
         }
       ]
     },
@@ -885,7 +885,7 @@
       "data": [
         {
           "comment": "Number sign:Example 3",
-          "xfail": false,
+          "xfail": true,
           "input": "Viderekobling oppløses ved å trykke #21#.",
           "output": "⠠⠧⠊⠙⠑⠗⠑⠅⠕⠃⠇⠊⠝⠛ ⠕⠏⠏⠇⠪⠎⠑⠎ ⠧⠑⠙ ⠡ ⠞⠗⠽⠅⠅⠑ ⠼⠠⠼⠃⠁⠼⠄"
         }
@@ -896,8 +896,8 @@
         {
           "comment": "Dash :Example 1",
           "xfail": false,
-          "input": "-",
-          "output": "⠤"
+          "input": "a-a",
+          "output": "⠁⠤⠁"
         }
       ]
     },
@@ -907,7 +907,7 @@
           "comment": "Dash :Example 3",
           "xfail": false,
           "input": "Anne-Lise fikk en aha-opplevelse.",
-          "output": "⠠⠁⠝⠝⠑⠤⠠⠇⠊⠎⠑ ⠋⠊⠅⠅ ⠑⠝ ⠁⠓⠁⠕⠏⠏⠇⠑⠧⠑⠇⠎⠑⠄"
+          "output": "⠠⠁⠝⠝⠑⠤⠠⠇⠊⠎⠑ ⠋⠊⠅⠅ ⠑⠝ ⠁⠓⠁⠤⠕⠏⠏⠇⠑⠧⠑⠇⠎⠑⠄"
         }
       ]
     },
@@ -1025,7 +1025,7 @@
           "comment": "Slash: Example 4",
           "xfail": false,
           "input": "De framførte \"Våren\" av Grieg/Vinje.",
-          "output": "⠠⠙⠑ ⠋⠗⠁⠍⠋⠪⠗⠞⠑ ⠲⠧⠡⠗⠑⠝⠲ ⠁⠧ ⠠⠛⠗⠊⠑⠛⠌⠠⠧⠊⠝⠚⠑⠄"
+          "output": "⠠⠙⠑ ⠋⠗⠁⠍⠋⠪⠗⠞⠑ ⠲⠠⠧⠡⠗⠑⠝⠲ ⠁⠧ ⠠⠛⠗⠊⠑⠛⠌⠠⠧⠊⠝⠚⠑⠄"
         }
       ]
     },
@@ -1035,7 +1035,7 @@
           "comment": "Slash: Example 5",
           "xfail": false,
           "input": "Det må lederen og/eller kassereren bestemme.",
-          "output": "⠙⠑⠞ ⠍⠡ ⠇⠑⠙⠑⠗⠑⠝ ⠕⠛⠌⠑⠇⠇⠑⠗ ⠅⠁⠎⠎⠑⠗⠑⠗⠑⠝ ⠃⠑⠎⠞⠑⠍⠍⠑⠄"
+          "output": "⠠⠙⠑⠞ ⠍⠡ ⠇⠑⠙⠑⠗⠑⠝ ⠕⠛⠌⠑⠇⠇⠑⠗ ⠅⠁⠎⠎⠑⠗⠑⠗⠑⠝ ⠃⠑⠎⠞⠑⠍⠍⠑⠄"
         }
       ]
     },
@@ -1052,7 +1052,7 @@
       "data": [
         {
           "comment": "Small Latin letters: Example 1",
-          "xfail": false,
+          "xfail": true,
           "input": "Anne løser oppgavene 19 c, 24 d og 33 c.",
           "output": "⠠⠁⠝⠝⠑ ⠇⠪⠎⠑⠗ ⠕⠏⠏⠛⠁⠧⠑⠝⠑ ⠼⠁⠊⠰⠉⠂ ⠼⠃⠙⠰⠙ ⠕⠛ ⠼⠉⠉⠰⠉⠄"
         }
@@ -1064,7 +1064,7 @@
           "comment": "Small Latin letters: Example 2",
           "xfail": false,
           "input": "Jeg vet at hun spiller i klasse a.",
-          "output": "⠚⠑⠛ ⠧⠑⠞ ⠁⠞ ⠓⠥⠝ ⠎⠏⠊⠇⠇⠑⠗ ⠊ ⠅⠇⠁⠎⠎⠑ ⠁⠄"
+          "output": "⠠⠚⠑⠛ ⠧⠑⠞ ⠁⠞ ⠓⠥⠝ ⠎⠏⠊⠇⠇⠑⠗ ⠊ ⠅⠇⠁⠎⠎⠑ ⠁⠄"
         }
       ]
     },
@@ -1266,7 +1266,7 @@
           "comment": "Highlighting: Example 1",
           "xfail": false,
           "input":    "hund hunden hunder hundene",
-          "typeform": "00000000011100001110000111",
+          "typeform": "00000000011000001100000111",
           "output": "⠓⠥⠝⠙ ⠓⠥⠝⠙⠆⠑⠝⠰ ⠓⠥⠝⠙⠆⠑⠗⠰ ⠓⠥⠝⠙⠆⠑⠝⠑⠰"
         }
       ]
@@ -1288,7 +1288,7 @@
           "comment": "Highlighting: Example 3",
           "xfail": false,
           "input":    "Jeg verken vil eller kan gjøre dette for deg!",
-          "typeform": "000000000001111000000111100000000000000000000",
+          "typeform": "000000000011111000001111100000000000000000000",
           "output": "⠠⠚⠑⠛ ⠧⠑⠗⠅⠑⠝ ⠆⠧⠊⠇⠰ ⠑⠇⠇⠑⠗ ⠆⠅⠁⠝⠰ ⠛⠚⠪⠗⠑ ⠙⠑⠞⠞⠑ ⠋⠕⠗ ⠙⠑⠛⠖"
         }
       ]
@@ -1365,7 +1365,7 @@
           "comment": "Sperret tekst: Example 1",
           "xfail": false,
           "input": "Det viktigste er å få fram m e n i n g e n.",
-          "output": "⠙⠑⠞ ⠧⠊⠅⠞⠊⠛⠎⠞⠑ ⠑⠗ ⠡ ⠋⠡ ⠋⠗⠁⠍ ⠐⠂⠍⠑⠝⠊⠝⠛⠑⠝⠐⠂⠄"
+          "output": "⠠⠙⠑⠞ ⠧⠊⠅⠞⠊⠛⠎⠞⠑ ⠑⠗ ⠡ ⠋⠡ ⠋⠗⠁⠍ ⠐⠂⠍⠑⠝⠊⠝⠛⠑⠝⠐⠂⠄"
         }
       ]
     },
@@ -1385,7 +1385,7 @@
           "comment": "Capitalization: Example 1",
           "xfail": false,
           "input": "Jeg bare MÅ snakke med deg!",
-          "output": "⠚⠑⠛ ⠃⠁⠗⠑ ⠠⠠⠍⠡ ⠎⠝⠁⠅⠅⠑ ⠍⠑⠙ ⠙⠑⠛⠖"
+          "output": "⠠⠚⠑⠛ ⠃⠁⠗⠑ ⠠⠠⠍⠡ ⠎⠝⠁⠅⠅⠑ ⠍⠑⠙ ⠙⠑⠛⠖"
         }
       ]
     },
@@ -1404,7 +1404,7 @@
           "comment": "Headlines:  Example 1",
           "xfail": false,
           "input": "EN ROSE MED TORNER",
-          "output": "⠠⠑⠝ ⠠⠠⠗⠕⠎⠑ ⠠⠠⠍⠑⠙ ⠠⠠⠞⠕⠗⠝⠑⠗"
+          "output": "⠠⠠⠑⠝ ⠠⠠⠗⠕⠎⠑ ⠠⠠⠍⠑⠙ ⠠⠠⠞⠕⠗⠝⠑⠗"
         }
       ]
     },
@@ -1414,7 +1414,7 @@
           "comment": "Headlines:  Example 2",
           "xfail": false,
           "input": "SAK 27/07 SØKNAD OM ØKONOMISK STØTTE FOR 2007",
-          "output": "⠎⠁⠅ ⠼⠃⠛⠌⠼⠚⠛ ⠠⠠⠎⠪⠅⠝⠁⠙ ⠠⠠⠕⠍ ⠠⠠⠪⠅⠕⠝⠕⠍⠊⠎⠅ ⠠⠠⠎⠞⠪⠞⠞⠑ ⠠⠠⠋⠕⠗ ⠼⠃⠚⠚⠛"
+          "output": "⠠⠠⠎⠁⠅ ⠼⠃⠛⠌⠼⠚⠛ ⠠⠠⠎⠪⠅⠝⠁⠙ ⠠⠠⠕⠍ ⠠⠠⠪⠅⠕⠝⠕⠍⠊⠎⠅ ⠠⠠⠎⠞⠪⠞⠞⠑ ⠠⠠⠋⠕⠗ ⠼⠃⠚⠚⠛"
         }
       ]
     },
@@ -2023,7 +2023,7 @@
           "comment": "Annotations: Example 3",
           "xfail": false,
           "input": "Det er bare 30 g smør i kaka!",
-          "output": "⠠⠙⠑⠞ ⠑⠗ ⠃⠁⠗⠑ ⠼⠉⠚ ⠛ ⠎⠍ø⠗ ⠊ ⠅⠁⠅⠁⠖"
+          "output": "⠠⠙⠑⠞ ⠑⠗ ⠃⠁⠗⠑ ⠼⠉⠚ ⠛ ⠎⠍⠪⠗ ⠊ ⠅⠁⠅⠁⠖"
         }
       ]
     },
@@ -2033,7 +2033,7 @@
           "comment": "Annotations: Example 4",
           "xfail": false,
           "input": "Lua kostet bare 64 kr på salg.",
-          "output": "⠇⠥⠁ ⠅⠕⠎⠞⠑⠞ ⠃⠁⠗⠑ ⠼⠋⠙ ⠅⠗ ⠏⠡ ⠎⠁⠇⠛⠄"
+          "output": "⠠⠇⠥⠁ ⠅⠕⠎⠞⠑⠞ ⠃⠁⠗⠑ ⠼⠋⠙ ⠅⠗ ⠏⠡ ⠎⠁⠇⠛⠄"
         }
       ]
     },
@@ -2062,7 +2062,7 @@
           "comment": "Degrees: Example 1",
           "xfail": false,
           "input": "Vinkelen var 45°.",
-          "output": "⠧⠊⠝⠅⠑⠇⠑⠝ ⠧⠁⠗ ⠼⠙⠑⠐⠴⠄"
+          "output": "⠠⠧⠊⠝⠅⠑⠇⠑⠝ ⠧⠁⠗ ⠼⠙⠑⠐⠴⠄"
         }
       ]
     },
@@ -2476,7 +2476,7 @@
           "comment": "Universal Accent: Example 3",
           "xfail": false,
           "input": "hôpital",
-          "output": "⠓⠈⠕⠏⠊⠞⠁⠇"
+          "output": "⠓⠨⠕⠏⠊⠞⠁⠇"
         }
       ]
     },
