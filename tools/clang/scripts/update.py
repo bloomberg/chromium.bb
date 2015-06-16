@@ -689,9 +689,6 @@ def main():
         [os.path.join(os.path.dirname(__file__), 'update.sh')] + sys.argv[1:],
         stderr=stderr)
 
-  # Don't buffer stdout, so that print statements are immediately flushed.
-  sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
-
   parser = argparse.ArgumentParser(description='Build Clang.')
   parser.add_argument('--bootstrap', action='store_true',
                       help='first build clang with CC, then with itself.')
@@ -742,6 +739,11 @@ def main():
     else:
       print PACKAGE_VERSION
     return 0
+
+  # Don't buffer stdout, so that print statements are immediately flushed.
+  # Do this only after --print-revision has been handled, else we'll get
+  # an error message when this script is run from gn for some reason.
+  sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
 
   if use_head_revision:
     # Use a real revision number rather than HEAD to make sure that the stamp
