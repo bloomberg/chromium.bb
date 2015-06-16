@@ -7,44 +7,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "net/base/ip_endpoint.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "url/gurl.h"
 
 namespace extensions {
 namespace core_api {
 namespace cast_channel {
-
-// Tests URL parsing and validation.
-TEST(CastChannelOpenFunctionTest, TestParseChannelUrl) {
-  typedef CastChannelOpenFunction ccof;
-  ConnectInfo connect_info;
-
-  EXPECT_TRUE(ccof::ParseChannelUrl(GURL("cast://192.0.0.1:8009"),
-                                    &connect_info));
-  EXPECT_EQ(connect_info.ip_address, "192.0.0.1");
-  EXPECT_EQ(connect_info.port, 8009);
-  EXPECT_EQ(connect_info.auth, CHANNEL_AUTH_TYPE_SSL);
-
-  EXPECT_TRUE(ccof::ParseChannelUrl(GURL("casts://192.0.0.1:12345"),
-                                    &connect_info));
-  EXPECT_EQ(connect_info.ip_address, "192.0.0.1");
-  EXPECT_EQ(connect_info.port, 12345);
-  EXPECT_EQ(connect_info.auth, CHANNEL_AUTH_TYPE_SSL_VERIFIED);
-
-  EXPECT_FALSE(ccof::ParseChannelUrl(GURL("http://192.0.0.1:12345"),
-                                     &connect_info));
-  EXPECT_FALSE(ccof::ParseChannelUrl(GURL("cast:192.0.0.1:12345"),
-                                     &connect_info));
-  EXPECT_FALSE(ccof::ParseChannelUrl(GURL("cast://:12345"), &connect_info));
-  EXPECT_FALSE(ccof::ParseChannelUrl(GURL("cast://192.0.0.1:abcd"),
-                                     &connect_info));
-  EXPECT_FALSE(ccof::ParseChannelUrl(GURL(""), &connect_info));
-  EXPECT_FALSE(ccof::ParseChannelUrl(GURL("foo"), &connect_info));
-  EXPECT_FALSE(ccof::ParseChannelUrl(GURL("cast:"), &connect_info));
-  EXPECT_FALSE(ccof::ParseChannelUrl(GURL("cast::"), &connect_info));
-  EXPECT_FALSE(ccof::ParseChannelUrl(GURL("cast://192.0.0.1"), &connect_info));
-  EXPECT_FALSE(ccof::ParseChannelUrl(GURL("cast://:"), &connect_info));
-  EXPECT_FALSE(ccof::ParseChannelUrl(GURL("cast://192.0.0.1:"), &connect_info));
-}
 
 // Tests parsing of ConnectInfo.
 TEST(CastChannelOpenFunctionTest, TestParseConnectInfo) {

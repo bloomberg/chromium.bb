@@ -17,7 +17,6 @@
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/common/api/cast_channel.h"
 
-class GURL;
 class CastChannelAPITest;
 
 namespace content {
@@ -188,12 +187,6 @@ class CastChannelOpenFunction : public CastChannelAsyncApiFunction {
     DISALLOW_COPY_AND_ASSIGN(CastMessageHandler);
   };
 
-  // Parses the cast:// or casts:// |url|, fills |connect_info| with the
-  // corresponding details, and returns true. Returns false if |url| is not a
-  // valid Cast URL.
-  static bool ParseChannelUrl(const GURL& url,
-                              cast_channel::ConnectInfo* connect_info);
-
   // Validates that |connect_info| represents a valid IP end point and returns a
   // new IPEndPoint if so.  Otherwise returns nullptr.
   static net::IPEndPoint* ParseConnectInfo(
@@ -205,13 +198,11 @@ class CastChannelOpenFunction : public CastChannelAsyncApiFunction {
   // The id of the newly opened socket.
   int new_channel_id_;
   CastChannelAPI* api_;
-  scoped_ptr<cast_channel::ConnectInfo> connect_info_;
   scoped_ptr<net::IPEndPoint> ip_endpoint_;
   cast_channel::ChannelAuthType channel_auth_;
   base::TimeDelta liveness_timeout_;
   base::TimeDelta ping_interval_;
 
-  FRIEND_TEST_ALL_PREFIXES(CastChannelOpenFunctionTest, TestParseChannelUrl);
   FRIEND_TEST_ALL_PREFIXES(CastChannelOpenFunctionTest, TestParseConnectInfo);
   DISALLOW_COPY_AND_ASSIGN(CastChannelOpenFunction);
 };

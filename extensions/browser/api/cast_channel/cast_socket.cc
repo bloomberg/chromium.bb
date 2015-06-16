@@ -563,12 +563,6 @@ void CastSocketImpl::CloseInternal() {
   logger_->LogSocketEvent(channel_id_, proto::SOCKET_CLOSED);
 }
 
-std::string CastSocketImpl::cast_url() const {
-  return ((channel_auth_ == CHANNEL_AUTH_TYPE_SSL_VERIFIED) ? "casts://"
-                                                            : "cast://") +
-         ip_endpoint_.ToString();
-}
-
 bool CastSocketImpl::CalledOnValidThread() const {
   return thread_checker_.CalledOnValidThread();
 }

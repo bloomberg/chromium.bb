@@ -61,8 +61,6 @@ using ::testing::SaveArg;
 
 namespace {
 
-const char kTestCastUrl[] = "cast://192.168.1.1:8009";
-
 static void FillCastMessage(const std::string& message,
                             CastMessage* cast_message) {
   cast_message->set_namespace_("foo");
@@ -112,7 +110,6 @@ class CastChannelAPITest : public ExtensionApiTest {
     ON_CALL(*mock_cast_socket_, channel_auth())
         .WillByDefault(Return(cast_channel::CHANNEL_AUTH_TYPE_SSL));
     ON_CALL(*mock_cast_socket_, keep_alive()).WillByDefault(Return(false));
-    ON_CALL(*mock_cast_socket_, cast_url()).WillByDefault(Return(kTestCastUrl));
   }
 
   void SetUpOpenSendClose() {
@@ -307,22 +304,6 @@ IN_PROC_BROWSER_TEST_F(CastChannelAPITest, MAYBE_TestPingTimeoutSslVerified) {
 // TODO(kmarshall): Win Dbg has a workaround that makes RunExtensionSubtest
 // always return true without actually running the test. Remove when fixed.
 #if defined(OS_WIN) && !defined(NDEBUG)
-#define MAYBE_TestOpenSendCloseWithUrl DISABLED_TestOpenSendCloseWithUrl
-#else
-#define MAYBE_TestOpenSendCloseWithUrl TestOpenSendCloseWithUrl
-#endif
-// Test loading extension, opening a channel with a URL, adding a listener,
-// writing, reading, and closing.
-IN_PROC_BROWSER_TEST_F(CastChannelAPITest, MAYBE_TestOpenSendCloseWithUrl) {
-  SetUpOpenSendClose();
-
-  EXPECT_TRUE(RunExtensionSubtest("cast_channel/api",
-                                  "test_open_send_close_url.html"));
-}
-
-// TODO(kmarshall): Win Dbg has a workaround that makes RunExtensionSubtest
-// always return true without actually running the test. Remove when fixed.
-#if defined(OS_WIN) && !defined(NDEBUG)
 #define MAYBE_TestOpenReceiveClose DISABLED_TestOpenReceiveClose
 #else
 #define MAYBE_TestOpenReceiveClose TestOpenReceiveClose
@@ -404,24 +385,9 @@ IN_PROC_BROWSER_TEST_F(CastChannelAPITest, TestOpenInvalidConnectInfo) {
       extensions::test_util::CreateEmptyExtension();
   scoped_refptr<extensions::CastChannelOpenFunction> cast_channel_open_function;
 
-  // Invalid URL
-  // TODO(mfoltz): Remove this test case when fixing crbug.com/331905
-  cast_channel_open_function = CreateOpenFunction(empty_extension);
-  std::string error(utils::RunFunctionAndReturnError(
-      cast_channel_open_function.get(), "[\"blargh\"]", browser()));
-  EXPECT_EQ(error, "Invalid connect_info (invalid Cast URL blargh)");
-
-  // Wrong type
-  // TODO(mfoltz): Remove this test case when fixing crbug.com/331905
-  cast_channel_open_function = CreateOpenFunction(empty_extension);
-  error = utils::RunFunctionAndReturnError(
-      cast_channel_open_function.get(),
-      "[123]", browser());
-  EXPECT_EQ(error, "Invalid connect_info (unknown type)");
-
   // Invalid IP address
   cast_channel_open_function = CreateOpenFunction(empty_extension);
-  error = utils::RunFunctionAndReturnError(
+  std::string error = utils::RunFunctionAndReturnError(
       cast_channel_open_function.get(),
       "[{\"ipAddress\": \"invalid_ip\", \"port\": 8009, \"auth\": \"ssl\"}]",
       browser());
@@ -434,14 +400,6 @@ IN_PROC_BROWSER_TEST_F(CastChannelAPITest, TestOpenInvalidConnectInfo) {
       "[{\"ipAddress\": \"127.0.0.1\", \"port\": -200, \"auth\": \"ssl\"}]",
       browser());
   EXPECT_EQ(error, "Invalid connect_info (invalid port)");
-
-  // Auth not set
-  cast_channel_open_function = CreateOpenFunction(empty_extension);
-  error = utils::RunFunctionAndReturnError(
-      cast_channel_open_function.get(),
-      "[{\"ipAddress\": \"127.0.0.1\", \"port\": 8009}]",
-      browser());
-  EXPECT_EQ(error, "connect_info.auth is required");
 }
 
 IN_PROC_BROWSER_TEST_F(CastChannelAPITest, TestSendInvalidMessageInfo) {
@@ -453,7 +411,7 @@ IN_PROC_BROWSER_TEST_F(CastChannelAPITest, TestSendInvalidMessageInfo) {
   cast_channel_send_function = CreateSendFunction(empty_extension);
   std::string error(utils::RunFunctionAndReturnError(
       cast_channel_send_function.get(),
-      "[{\"channelId\": 1, \"url\": \"cast://127.0.0.1:8009\", "
+      "[{\"channelId\": 1, "
       "\"keepAlive\": true, "
       "\"connectInfo\": "
       "{\"ipAddress\": \"127.0.0.1\", \"port\": 8009, "
@@ -467,7 +425,7 @@ IN_PROC_BROWSER_TEST_F(CastChannelAPITest, TestSendInvalidMessageInfo) {
   cast_channel_send_function = CreateSendFunction(empty_extension);
   error = utils::RunFunctionAndReturnError(
       cast_channel_send_function.get(),
-      "[{\"channelId\": 1, \"url\": \"cast://127.0.0.1:8009\", "
+      "[{\"channelId\": 1, "
       "\"keepAlive\": true, "
       "\"connectInfo\": "
       "{\"ipAddress\": \"127.0.0.1\", \"port\": 8009, "
@@ -481,7 +439,7 @@ IN_PROC_BROWSER_TEST_F(CastChannelAPITest, TestSendInvalidMessageInfo) {
   cast_channel_send_function = CreateSendFunction(empty_extension);
   error = utils::RunFunctionAndReturnError(
       cast_channel_send_function.get(),
-      "[{\"channelId\": 1, \"url\": \"cast://127.0.0.1:8009\", "
+      "[{\"channelId\": 1, "
       "\"keepAlive\": true, "
       "\"connectInfo\": "
       "{\"ipAddress\": \"127.0.0.1\", \"port\": 8009, "
@@ -495,7 +453,7 @@ IN_PROC_BROWSER_TEST_F(CastChannelAPITest, TestSendInvalidMessageInfo) {
   cast_channel_send_function = CreateSendFunction(empty_extension);
   error = utils::RunFunctionAndReturnError(
       cast_channel_send_function.get(),
-      "[{\"channelId\": 1, \"url\": \"cast://127.0.0.1:8009\", "
+      "[{\"channelId\": 1, "
       "\"keepAlive\": true, "
       "\"connectInfo\": "
       "{\"ipAddress\": \"127.0.0.1\", \"port\": 8009, "

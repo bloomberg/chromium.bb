@@ -33,4 +33,5 @@ var maybeClose = function(channel) {
 };
 
 chrome.cast.channel.onError.addListener(onError);
-chrome.cast.channel.open('cast://192.168.1.1:8009', onOpen);
+chrome.cast.channel.open({ipAddress: '192.168.1.1', port: 8009, auth: 'ssl'},
+                         onOpen);

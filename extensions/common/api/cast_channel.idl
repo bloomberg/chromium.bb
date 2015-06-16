@@ -96,10 +96,6 @@ namespace cast.channel {
     // Id for the channel.
     long channelId;
 
-    // DEPRECATED: The URL to the receiver.  This field will be removed in a
-    // future release.
-    DOMString url;
-
     // Connection information that was used to establish the channel to the
     // receiver.
     ConnectInfo connectInfo;
@@ -188,10 +184,7 @@ namespace cast.channel {
     // callback will be invoked with a ChannelInfo with channel.readyState ==
     // 'closed', channel.errorState will be set to the error condition, and
     // onError will be fired with error details.
-    //
-    // TODO(mfoltz): Convert 'any' to ConnectInfo once all clients are updated
-    // to not send URLs.
-    static void open(any connectInfo,
+    static void open(ConnectInfo connectInfo,
                      ChannelInfoCallback callback);
 
     // Sends a message on the channel and invokes callback with the resulting
