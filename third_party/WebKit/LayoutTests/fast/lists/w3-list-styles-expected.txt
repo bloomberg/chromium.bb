@@ -210,6 +210,9 @@ The CSS2.0 specification doesn't define what characters should be used to create
 一百零二 a hundred and two, undefined
 零 zero, undefined
 一 one
+一千 a thousand, undefined
+一千萬零一千 ten million one thousand, undefined
+一百萬零一百 one million one hundred, undefined
 hebrew
 
 CSS says: list-style-type: hebrew;

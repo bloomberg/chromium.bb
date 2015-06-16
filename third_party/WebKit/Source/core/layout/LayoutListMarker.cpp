@@ -359,24 +359,37 @@ static String toCJKIdeographic(int number, const UChar table[23])
             group[7] = static_cast<AbstractCJKChar>(SecondGroupMarker - 1 + i);
 
         // Put in the four digits and digit markers for any non-zero digits.
-        group[6] = static_cast<AbstractCJKChar>(Digit0 + (groupValue % 10));
+        int digitValue = (groupValue % 10);
+        bool trailingZero = table[Lang] == Chinese && !digitValue;
+        if (digitValue)
+            group[6] = static_cast<AbstractCJKChar>(Digit0 + (groupValue % 10));
         if (number != 0 || groupValue > 9) {
-            int digitValue = ((groupValue / 10) % 10);
-            group[4] = static_cast<AbstractCJKChar>(Digit0 + digitValue);
+            digitValue = ((groupValue / 10) % 10);
+            if (digitValue || !trailingZero)
+                group[4] = static_cast<AbstractCJKChar>(Digit0 + digitValue);
+            trailingZero &= !digitValue;
             if (digitValue)
                 group[5] = SecondDigitMarker;
         }
         if (number != 0 || groupValue > 99) {
-            int digitValue = ((groupValue / 100) % 10);
-            group[2] = static_cast<AbstractCJKChar>(Digit0 + digitValue);
+            digitValue = ((groupValue / 100) % 10);
+            if (digitValue || !trailingZero)
+                group[2] = static_cast<AbstractCJKChar>(Digit0 + digitValue);
+            trailingZero &= !digitValue;
             if (digitValue)
                 group[3] = ThirdDigitMarker;
         }
         if (number != 0 || groupValue > 999) {
-            int digitValue = groupValue / 1000;
-            group[0] = static_cast<AbstractCJKChar>(Digit0 + digitValue);
+            digitValue = groupValue / 1000;
+            if (digitValue || !trailingZero)
+                group[0] = static_cast<AbstractCJKChar>(Digit0 + digitValue);
             if (digitValue)
                 group[1] = FourthDigitMarker;
+        }
+
+        if (trailingZero && i > 0) {
+            group[6] = group[7];
+            group[7] = Digit0;
         }
 
         // Remove the tens digit, but leave the marker, for any group that has
@@ -447,11 +460,10 @@ static EListStyleType effectiveListMarkerType(EListStyleType type, int value)
     case Tibetan:
     case Urdu:
     case KoreanHangulFormal:
+    case CJKIdeographic:
         return type; // Can represent all ordinals.
     case Armenian:
         return (value < 1 || value > 99999999) ? DecimalListStyle : type;
-    case CJKIdeographic:
-        return (value < 0) ? DecimalListStyle : type;
     case Georgian:
         return (value < 1 || value > 19999) ? DecimalListStyle : type;
     case Hebrew:

@@ -11,7 +11,7 @@ PASS list marker is Ք̂Ջ̂Ղ̂Թ̂ՔՋՂԹ.
 PASS list marker is 100000000.
 cjk-ideographic
 
-PASS list marker is -1.
+PASS list marker is 負一.
 PASS list marker is 零.
 PASS list marker is 一.
 ethiopic-numeric

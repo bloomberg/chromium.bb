@@ -16,7 +16,7 @@ ol.hebrew { list-style-type: hebrew; }
 ol.georgian { list-style-type: georgian; }
 ol.armenian { list-style-type: armenian; }
 ol.lower-greek { list-style-type: lower-greek; }
-ol { margin-bottom: 2em; }
+ol { margin-bottom: 2em; margin-left: 3em; }
 ol ol { margin-bottom: 0em; margin-top: 0.5em; }
 </style> 
 <script src="resources/dump-list.js"></script>
@@ -310,7 +310,17 @@ ol ol { margin-bottom: 0em; margin-top: 0.5em; }
         <ol class="cjk" start="0"> 
           <li>zero, undefined</li> 
           <li>one</li> 
-        </ol></div> 
+        </ol>
+
+        <ol class="cjk" start="1000">
+          <li>a thousand, undefined</li>
+        </ol>
+        <ol class="cjk" start="10001000">
+          <li>ten million one thousand, undefined</li>
+        </ol>
+        <ol class="cjk" start="1000100">
+          <li>one million one hundred, undefined</li>
+        </ol></div>
      <h2>hebrew</h2> 
      <p class="notes">CSS says: <code>list-style-type: hebrew;</code></p> 
      <p class="notes">The CSS2.0 specification doesn't define the algorithm for the Hebrew numbering.</p> 
