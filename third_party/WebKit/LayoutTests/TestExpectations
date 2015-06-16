@@ -415,12 +415,6 @@ crbug.com/492664 imported/csswg-test/css-writing-modes-3/writing-mode-vertical-r
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/writing-mode-vertical-rl-002.xht [ Pass ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/writing-mode-vertical-rl-003.htm [ Pass ImageOnlyFailure ]
 
-# https://codereview.chromium.org/1149853004
-crbug.com/500591 fast/canvas/canvas-composite-transformclip.html [ NeedsRebaseline ]
-crbug.com/500591 fast/canvas/canvas-composite.html  [ NeedsRebaseline ]
-crbug.com/500591 virtual/display_list_2d_canvas/fast/canvas/canvas-composite-transformclip.html [ NeedsRebaseline ]
-crbug.com/500591 virtual/display_list_2d_canvas/fast/canvas/canvas-composite.html [ NeedsRebaseline ]
-
 # These CSS Writing Modes Level 3 tests pass but causes 1px diff on images, notified to the submitter.
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/box-offsets-rel-pos-vlr-005.xht [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/box-offsets-rel-pos-vrl-004.xht [ ImageOnlyFailure ]
