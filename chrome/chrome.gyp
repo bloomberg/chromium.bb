@@ -349,7 +349,6 @@
     ['OS=="linux"',
       { 'targets': [
         {
-          # GN version: //chrome:linux_symbols
           'target_name': 'linux_symbols',
           'type': 'none',
           'conditions': [
@@ -358,15 +357,14 @@
                 {
                   'action_name': 'dump_symbols',
                   'inputs': [
-                    '<(DEPTH)/build/linux/dump_app_syms.py',
+                    '<(DEPTH)/build/linux/dump_app_syms',
                     '<(PRODUCT_DIR)/dump_syms',
                     '<(PRODUCT_DIR)/chrome',
                   ],
                   'outputs': [
                     '<(PRODUCT_DIR)/chrome.breakpad.<(target_arch)',
                   ],
-                  'action': ['python',
-                             '<(DEPTH)/build/linux/dump_app_syms.py',
+                  'action': ['<(DEPTH)/build/linux/dump_app_syms',
                              '<(PRODUCT_DIR)/dump_syms',
                              '<(linux_strip_binary)',
                              '<(PRODUCT_DIR)/chrome',
