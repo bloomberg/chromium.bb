@@ -104,7 +104,8 @@ TEST_F(FormAutocompleteTest, SubmitEventPrevented) {
 
 // Tests that submitting a form that has autocomplete="off" generates
 // WillSubmitForm and FormSubmitted messages.
-TEST_F(FormAutocompleteTest, AutoCompleteOffFormSubmit) {
+// Flaky: http://crbug.com/500851.
+TEST_F(FormAutocompleteTest, DISABLED_AutoCompleteOffFormSubmit) {
   // Load a form.
   LoadHTML("<html><form id='myForm' autocomplete='off'>"
            "<input name='fname' value='Rick'/>"
