@@ -53,9 +53,10 @@ ViewManagerServiceImpl::ViewManagerServiceImpl(
       creator_id_(creator_id),
       client_(nullptr),
       is_embed_root_(false) {
-  CHECK(GetView(root_id));
+  ServerView* view = GetView(root_id);
+  CHECK(view);
   root_.reset(new ViewId(root_id));
-  if (root_id.IsRoot())
+  if (view->GetRoot() == view)
     access_policy_.reset(new WindowManagerAccessPolicy(id_, this));
   else
     access_policy_.reset(new DefaultAccessPolicy(id_, this));

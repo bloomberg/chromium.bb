@@ -28,14 +28,9 @@ void TestServerViewDelegate::PrepareToChangeViewVisibility(ServerView* view) {
 void TestServerViewDelegate::OnScheduleViewPaint(const ServerView* view) {
 }
 
-bool TestServerViewDelegate::IsViewDrawn(const ServerView* view) const {
-  if (!root_view_)
-    return false;
-  if (!root_view_->visible())
-    return false;
-  while (view && view != root_view_ && view->visible())
-    view = view->parent();
-  return view == root_view_;
+const ServerView* TestServerViewDelegate::GetRootView(
+    const ServerView* view) const {
+  return root_view_;
 }
 
 }  // namespace view_manager

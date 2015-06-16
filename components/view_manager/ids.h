@@ -21,10 +21,6 @@ struct ViewId {
       : connection_id(connection_id), view_id(view_id) {}
   ViewId() : connection_id(0), view_id(0) {}
 
-  bool IsRoot() const {
-    return connection_id == kInvalidConnectionId && view_id >= 2;
-  }
-
   bool operator==(const ViewId& other) const {
     return other.connection_id == connection_id &&
         other.view_id == view_id;

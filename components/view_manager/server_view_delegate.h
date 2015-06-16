@@ -39,7 +39,9 @@ class ServerViewDelegate {
 
   virtual void OnScheduleViewPaint(const ServerView* view) = 0;
 
-  virtual bool IsViewDrawn(const ServerView* view) const = 0;
+  // Returns the root of the view tree to which this |view| is attached. Returns
+  // null if this view is not attached up through to a root view.
+  virtual const ServerView* GetRootView(const ServerView* view) const = 0;
 
  protected:
   virtual ~ServerViewDelegate() {}

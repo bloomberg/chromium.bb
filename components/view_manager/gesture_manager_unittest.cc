@@ -149,6 +149,7 @@ class GestureManagerTest : public testing::Test {
       : root_(&view_delegate_, ViewId(1, 1)),
         child_(&view_delegate_, ViewId(2, 2)),
         gesture_manager_(&gesture_delegate_, &root_) {
+    view_delegate_.set_root_view(&root_);
     root_.SetVisible(true);
     MarkAsRespondsToTouch(&root_);
     root_.SetBounds(gfx::Rect(0, 0, 100, 100));

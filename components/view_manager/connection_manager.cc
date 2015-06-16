@@ -464,13 +464,11 @@ void ConnectionManager::OnScheduleViewPaint(const ServerView* view) {
     display_manager_->SchedulePaint(view, gfx::Rect(view->bounds().size()));
 }
 
-bool ConnectionManager::IsViewDrawn(const ServerView* view) const {
+const ServerView* ConnectionManager::GetRootView(const ServerView* view) const {
   // TODO(fsamuel): Iterate over all roots once we support multiple roots.
-  if (!root_->visible())
-    return false;
-  while (view && view != root_.get() && view->visible())
+  while (view && view->parent())
     view = view->parent();
-  return view == root_.get();
+  return view == root_.get() ? view : nullptr;
 }
 
 void ConnectionManager::OnViewDestroyed(ServerView* view) {

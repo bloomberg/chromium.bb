@@ -24,7 +24,7 @@ class TestServerViewDelegate : public ServerViewDelegate {
                                     ServerView* old_parent) override;
   void PrepareToChangeViewVisibility(ServerView* view) override;
   void OnScheduleViewPaint(const ServerView* view) override;
-  bool IsViewDrawn(const ServerView* view) const override;
+  const ServerView* GetRootView(const ServerView* view) const override;
 
   const ServerView* root_view_;
 
