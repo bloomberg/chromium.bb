@@ -1201,7 +1201,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 #if defined(DISABLE_SLOW_FILESAPP_TESTS)
 #define MAYBE_CopyBetweenWindows DISABLED_CopyBetweenWindows
 #else
-#define MAYBE_CopyBetweenWindows CopyBetweenWindows
+// flaky: http://crbug.com/500966
+#define MAYBE_CopyBetweenWindows DISABLED_CopyBetweenWindows
 #endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     MAYBE_CopyBetweenWindows,
