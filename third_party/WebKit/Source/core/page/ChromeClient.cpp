@@ -77,28 +77,13 @@ void ChromeClient::setWindowFeatures(const WindowFeatures& features)
     setResizable(features.resizable);
 }
 
-class ScopedJavaScriptDialogInstrumentation {
-    STACK_ALLOCATED();
-public:
-    ScopedJavaScriptDialogInstrumentation(LocalFrame& frame, const String& message)
-        : m_cookie(InspectorInstrumentation::willRunJavaScriptDialog(&frame, message))
-    {
-    }
-    ~ScopedJavaScriptDialogInstrumentation()
-    {
-        InspectorInstrumentation::didRunJavaScriptDialog(m_cookie);
-    }
-
-private:
-    InspectorInstrumentationCookie m_cookie;
-};
-
-template<typename ReturnType, typename... Params>
-ReturnType openJavaScriptDialog(
+template<typename... Params>
+bool openJavaScriptDialog(
     ChromeClient* chromeClient,
-    ReturnType(ChromeClient::*function)(LocalFrame*, const String& message, Params&...),
+    bool(ChromeClient::*function)(LocalFrame*, const String& message, Params&...),
     LocalFrame& frame,
     const String& message,
+    ChromeClient::DialogType dialogType,
     Params&... parameters)
 {
     // Defer loads in case the client method runs a new event loop that would
@@ -106,22 +91,24 @@ ReturnType openJavaScriptDialog(
     // executing JavaScript.
     ScopedPageLoadDeferrer deferrer;
 
-    ScopedJavaScriptDialogInstrumentation instrumentation(frame, message);
-    return (chromeClient->*function)(&frame, message, parameters...);
+    InspectorInstrumentationCookie cookie = InspectorInstrumentation::willRunJavaScriptDialog(&frame, message, dialogType);
+    bool result = (chromeClient->*function)(&frame, message, parameters...);
+    InspectorInstrumentation::didRunJavaScriptDialog(cookie, result);
+    return result;
 }
 
 bool ChromeClient::openBeforeUnloadConfirmPanel(const String& message, LocalFrame* frame)
 {
     ASSERT(frame);
-    return openJavaScriptDialog(this, &ChromeClient::openBeforeUnloadConfirmPanelDelegate, *frame, message);
+    return openJavaScriptDialog(this, &ChromeClient::openBeforeUnloadConfirmPanelDelegate, *frame, message, ChromeClient::HTMLDialog);
 }
 
-void ChromeClient::openJavaScriptAlert(LocalFrame* frame, const String& message)
+bool ChromeClient::openJavaScriptAlert(LocalFrame* frame, const String& message)
 {
     ASSERT(frame);
     if (!canOpenModalIfDuringPageDismissal(frame->tree().top(), ChromeClient::AlertDialog, message))
-        return;
-    openJavaScriptDialog(this, &ChromeClient::openJavaScriptAlertDelegate, *frame, message);
+        return false;
+    return openJavaScriptDialog(this, &ChromeClient::openJavaScriptAlertDelegate, *frame, message, ChromeClient::AlertDialog);
 }
 
 bool ChromeClient::openJavaScriptConfirm(LocalFrame* frame, const String& message)
@@ -129,7 +116,7 @@ bool ChromeClient::openJavaScriptConfirm(LocalFrame* frame, const String& messag
     ASSERT(frame);
     if (!canOpenModalIfDuringPageDismissal(frame->tree().top(), ChromeClient::ConfirmDialog, message))
         return false;
-    return openJavaScriptDialog(this, &ChromeClient::openJavaScriptConfirmDelegate, *frame, message);
+    return openJavaScriptDialog(this, &ChromeClient::openJavaScriptConfirmDelegate, *frame, message, ChromeClient::ConfirmDialog);
 }
 
 bool ChromeClient::openJavaScriptPrompt(LocalFrame* frame, const String& prompt, const String& defaultValue, String& result)
@@ -137,7 +124,7 @@ bool ChromeClient::openJavaScriptPrompt(LocalFrame* frame, const String& prompt,
     ASSERT(frame);
     if (!canOpenModalIfDuringPageDismissal(frame->tree().top(), ChromeClient::PromptDialog, prompt))
         return false;
-    return openJavaScriptDialog(this, &ChromeClient::openJavaScriptPromptDelegate, *frame, prompt, defaultValue, result);
+    return openJavaScriptDialog(this, &ChromeClient::openJavaScriptPromptDelegate, *frame, prompt, ChromeClient::PromptDialog, defaultValue, result);
 }
 
 void ChromeClient::mouseDidMoveOverElement(const HitTestResult& result)

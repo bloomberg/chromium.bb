@@ -44,6 +44,7 @@
 #include "core/inspector/ConsoleAPITypes.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutImage.h"
+#include "core/page/ChromeClient.h"
 #include "platform/network/FormData.h"
 #include "platform/network/WebSocketHandshakeRequest.h"
 #include "platform/network/WebSocketHandshakeResponse.h"

@@ -127,7 +127,7 @@ public:
 
     virtual void closeWindowSoon() = 0;
 
-    void openJavaScriptAlert(LocalFrame*, const String&);
+    bool openJavaScriptAlert(LocalFrame*, const String&);
     bool openJavaScriptConfirm(LocalFrame*, const String&);
     bool openJavaScriptPrompt(LocalFrame*, const String& message, const String& defaultValue, String& result);
     virtual void setStatusbarText(const String&) = 0;
@@ -250,7 +250,7 @@ protected:
     virtual void showMouseOverURL(const HitTestResult&) = 0;
     virtual void setWindowRect(const IntRect&) = 0;
     virtual bool openBeforeUnloadConfirmPanelDelegate(LocalFrame*, const String& message) = 0;
-    virtual void openJavaScriptAlertDelegate(LocalFrame*, const String&) = 0;
+    virtual bool openJavaScriptAlertDelegate(LocalFrame*, const String&) = 0;
     virtual bool openJavaScriptConfirmDelegate(LocalFrame*, const String&) = 0;
     virtual bool openJavaScriptPromptDelegate(LocalFrame*, const String& message, const String& defaultValue, String& result) = 0;
     virtual void printDelegate(LocalFrame*) = 0;

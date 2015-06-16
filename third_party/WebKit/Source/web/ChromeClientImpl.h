@@ -83,7 +83,7 @@ public:
     bool canOpenBeforeUnloadConfirmPanel() override;
     bool openBeforeUnloadConfirmPanelDelegate(LocalFrame*, const String&) override;
     void closeWindowSoon() override;
-    void openJavaScriptAlertDelegate(LocalFrame*, const String&) override;
+    bool openJavaScriptAlertDelegate(LocalFrame*, const String&) override;
     bool openJavaScriptConfirmDelegate(LocalFrame*, const String&) override;
     bool openJavaScriptPromptDelegate(
         LocalFrame*, const String& message,

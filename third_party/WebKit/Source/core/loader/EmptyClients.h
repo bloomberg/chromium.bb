@@ -110,7 +110,7 @@ public:
 
     void closeWindowSoon() override { }
 
-    void openJavaScriptAlertDelegate(LocalFrame*, const String&) override { }
+    bool openJavaScriptAlertDelegate(LocalFrame*, const String&) override { return false; }
     bool openJavaScriptConfirmDelegate(LocalFrame*, const String&) override { return false; }
     bool openJavaScriptPromptDelegate(LocalFrame*, const String&, const String&, String&) override { return false; }
 

@@ -96,6 +96,21 @@ String frameId(LocalFrame* frame)
     return frame ? InspectorIdentifiers<LocalFrame>::identifier(frame) : "";
 }
 
+TypeBuilder::Page::DialogType::Enum dialogTypeToProtocol(ChromeClient::DialogType dialogType)
+{
+    switch (dialogType) {
+    case ChromeClient::AlertDialog:
+        return TypeBuilder::Page::DialogType::Alert;
+    case ChromeClient::ConfirmDialog:
+        return TypeBuilder::Page::DialogType::Confirm;
+    case ChromeClient::PromptDialog:
+        return TypeBuilder::Page::DialogType::Prompt;
+    case ChromeClient::HTMLDialog:
+        return TypeBuilder::Page::DialogType::Beforeunload;
+    }
+    return TypeBuilder::Page::DialogType::Alert;
+}
+
 }
 
 class InspectorPageAgent::GetResourceContentLoadListener final : public VoidCallback {
@@ -743,14 +758,14 @@ void InspectorPageAgent::frameClearedScheduledNavigation(LocalFrame* frame)
     frontend()->frameClearedScheduledNavigation(frameId(frame));
 }
 
-void InspectorPageAgent::willRunJavaScriptDialog(const String& message)
+void InspectorPageAgent::willRunJavaScriptDialog(const String& message, ChromeClient::DialogType dialogType)
 {
-    frontend()->javascriptDialogOpening(message);
+    frontend()->javascriptDialogOpening(message, dialogTypeToProtocol(dialogType));
 }
 
-void InspectorPageAgent::didRunJavaScriptDialog()
+void InspectorPageAgent::didRunJavaScriptDialog(bool result)
 {
-    frontend()->javascriptDialogClosed();
+    frontend()->javascriptDialogClosed(result);
 }
 
 void InspectorPageAgent::didLayout()

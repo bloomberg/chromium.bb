@@ -36,6 +36,7 @@
 #include "core/InspectorFrontend.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/InspectorResourceContentLoader.h"
+#include "core/page/ChromeClient.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/WTFString.h"
 
@@ -112,8 +113,8 @@ public:
     void frameStoppedLoading(LocalFrame*);
     void frameScheduledNavigation(LocalFrame*, double delay);
     void frameClearedScheduledNavigation(LocalFrame*);
-    void willRunJavaScriptDialog(const String& message);
-    void didRunJavaScriptDialog();
+    void willRunJavaScriptDialog(const String& message, ChromeClient::DialogType);
+    void didRunJavaScriptDialog(bool result);
     void didLayout();
     void didScroll();
     void didResizeMainFrame();

@@ -19,11 +19,12 @@ function test()
 
     function onOpening(event)
     {
-        InspectorTest.log("Opening with message: " + event.params.message);
+        InspectorTest.log("Opening dialog: type=" + event.params.type + "; message=" + event.params.message);
     }
-    function onClosed()
+
+    function onClosed(event)
     {
-        InspectorTest.log("Closed");
+        InspectorTest.log("Closed dialog: result=" + event.params.result);
     }
 
     InspectorTest.sendCommand("Page.navigate", { "url": "http://nosuchurl" });

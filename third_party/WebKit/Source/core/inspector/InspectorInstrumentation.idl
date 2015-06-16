@@ -327,10 +327,10 @@ interface InspectorInstrumentation {
     void frameClearedScheduledNavigation([Keep] LocalFrame*);
 
     [Page, Inline=FastReturn]
-    InspectorInstrumentationCookie willRunJavaScriptDialog(LocalFrame*, const String& message);
+    InspectorInstrumentationCookie willRunJavaScriptDialog(LocalFrame*, const String& message, ChromeClient::DialogType dialogType);
 
     [Page, Inline=FastReturn]
-    void didRunJavaScriptDialog(const InspectorInstrumentationCookie&);
+    void didRunJavaScriptDialog(const InspectorInstrumentationCookie&, bool result);
 
     [Inline=Forward]
     void willDestroyResource(Resource* cachedResource);

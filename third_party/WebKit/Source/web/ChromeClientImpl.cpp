@@ -408,7 +408,7 @@ void ChromeClientImpl::closeWindowSoon()
 
 // Although a LocalFrame is passed in, we don't actually use it, since we
 // already know our own m_webView.
-void ChromeClientImpl::openJavaScriptAlertDelegate(LocalFrame* frame, const String& message)
+bool ChromeClientImpl::openJavaScriptAlertDelegate(LocalFrame* frame, const String& message)
 {
     notifyPopupOpeningObservers();
     WebLocalFrameImpl* webframe = WebLocalFrameImpl::fromFrame(frame);
@@ -416,7 +416,9 @@ void ChromeClientImpl::openJavaScriptAlertDelegate(LocalFrame* frame, const Stri
         if (WebUserGestureIndicator::isProcessingUserGesture())
             WebUserGestureIndicator::currentUserGestureToken().setJavascriptPrompt();
         webframe->client()->runModalAlertDialog(message);
+        return true;
     }
+    return false;
 }
 
 // See comments for openJavaScriptAlertDelegate().
