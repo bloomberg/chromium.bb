@@ -10,6 +10,16 @@
   },
   'target_defaults': {
     'defines': ['CONTENT_IMPLEMENTATION'],
+    'conditions': [
+      # TODO(jschuh): Remove this after crbug.com/173851 gets fixed.
+      ['OS=="win" and target_arch=="x64"', {
+        'msvs_settings': {
+          'VCCLCompilerTool': {
+            'AdditionalOptions': ['/bigobj'],
+          },
+        },
+      }],
+    ],
   },
   'conditions': [
     ['OS != "ios"', {
