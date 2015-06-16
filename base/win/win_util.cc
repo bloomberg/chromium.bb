@@ -149,8 +149,8 @@ bool IsKeyboardPresentOnSlate() {
     if (status == CR_SUCCESS) {
       // To reduce the scope of the hack we only look for ACPI and HID\\VID
       // prefixes in the keyboard device ids.
-      if (StartsWith(device_id, L"ACPI", false) ||
-          StartsWith(device_id, L"HID\\VID", false)) {
+      if (StartsWith(device_id, L"ACPI", CompareCase::INSENSITIVE_ASCII) ||
+          StartsWith(device_id, L"HID\\VID", CompareCase::INSENSITIVE_ASCII)) {
         keyboard_count++;
       }
     }

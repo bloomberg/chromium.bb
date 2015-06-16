@@ -507,48 +507,114 @@ bool EqualsASCII(const string16& a, const StringPiece& b) {
   return std::equal(b.begin(), b.end(), a.begin());
 }
 
-bool StartsWithASCII(const std::string& str,
-                     const std::string& search,
-                     bool case_sensitive) {
-  if (case_sensitive)
-    return str.compare(0, search.length(), search) == 0;
-  else
-    return base::strncasecmp(str.c_str(), search.c_str(), search.length()) == 0;
+template<typename Str>
+bool StartsWithT(BasicStringPiece<Str> str,
+                 BasicStringPiece<Str> search_for,
+                 CompareCase case_sensitivity) {
+  if (search_for.size() > str.size())
+    return false;
+
+  BasicStringPiece<Str> source = str.substr(0, search_for.size());
+
+  switch (case_sensitivity) {
+    case CompareCase::SENSITIVE:
+      return source == search_for;
+
+    case CompareCase::INSENSITIVE_ASCII:
+      return std::equal(
+          search_for.begin(), search_for.end(),
+          source.begin(),
+          base::CaseInsensitiveCompareASCII<typename Str::value_type>());
+
+    default:
+      NOTREACHED();
+      return false;
+  }
+}
+
+bool StartsWith(StringPiece str,
+                StringPiece search_for,
+                CompareCase case_sensitivity) {
+  return StartsWithT<std::string>(str, search_for, case_sensitivity);
+}
+
+bool StartsWith(StringPiece16 str,
+                StringPiece16 search_for,
+                CompareCase case_sensitivity) {
+  return StartsWithT<string16>(str, search_for, case_sensitivity);
 }
 
 bool StartsWith(const string16& str,
                 const string16& search,
                 bool case_sensitive) {
-  if (case_sensitive) {
-    return str.compare(0, search.length(), search) == 0;
+  if (!case_sensitive) {
+    // This function was originally written using the current locale functions
+    // for case-insensitive comparisons. Emulate this behavior until callers
+    // can be converted either to use the case-insensitive ASCII one (most
+    // callers) or ICU functions in base_i18n.
+    if (search.size() > str.size())
+      return false;
+    return std::equal(search.begin(), search.end(), str.begin(),
+                      CaseInsensitiveCompare<char16>());
   }
-  if (search.size() > str.size())
+  return StartsWith(StringPiece16(str), StringPiece16(search),
+                    CompareCase::SENSITIVE);
+}
+
+template <typename Str>
+bool EndsWithT(BasicStringPiece<Str> str,
+               BasicStringPiece<Str> search_for,
+               CompareCase case_sensitivity) {
+  if (search_for.size() > str.size())
     return false;
-  return std::equal(search.begin(), search.end(), str.begin(),
-                    CaseInsensitiveCompare<char16>());
+
+  BasicStringPiece<Str> source = str.substr(str.size() - search_for.size(),
+                                            search_for.size());
+
+  switch (case_sensitivity) {
+    case CompareCase::SENSITIVE:
+      return source == search_for;
+
+    case CompareCase::INSENSITIVE_ASCII:
+      return std::equal(
+          source.begin(), source.end(),
+          search_for.begin(),
+          base::CaseInsensitiveCompareASCII<typename Str::value_type>());
+
+    default:
+      NOTREACHED();
+      return false;
+  }
 }
 
-template <typename STR>
-bool EndsWithT(const STR& str, const STR& search, bool case_sensitive) {
-  size_t str_length = str.length();
-  size_t search_length = search.length();
-  if (search_length > str_length)
-    return false;
-  if (case_sensitive)
-    return str.compare(str_length - search_length, search_length, search) == 0;
-  return std::equal(search.begin(), search.end(),
-                    str.begin() + (str_length - search_length),
-                    base::CaseInsensitiveCompare<typename STR::value_type>());
+bool EndsWith(StringPiece str,
+              StringPiece search_for,
+              CompareCase case_sensitivity) {
+  return EndsWithT<std::string>(str, search_for, case_sensitivity);
 }
 
-bool EndsWith(const std::string& str, const std::string& search,
+bool EndsWith(StringPiece16 str,
+              StringPiece16 search_for,
+                          CompareCase case_sensitivity) {
+  return EndsWithT<string16>(str, search_for, case_sensitivity);
+}
+
+bool EndsWith(const string16& str,
+              const string16& search,
               bool case_sensitive) {
-  return EndsWithT(str, search, case_sensitive);
-}
-
-bool EndsWith(const string16& str, const string16& search,
-              bool case_sensitive) {
-  return EndsWithT(str, search, case_sensitive);
+  if (!case_sensitive) {
+    // This function was originally written using the current locale functions
+    // for case-insensitive comparisons. Emulate this behavior until callers
+    // can be converted either to use the case-insensitive ASCII one (most
+    // callers) or ICU functions in base_i18n.
+    if (search.size() > str.size())
+      return false;
+    return std::equal(search.begin(), search.end(),
+                      str.begin() + (str.size() - search.size()),
+                      CaseInsensitiveCompare<char16>());
+  }
+  return EndsWith(StringPiece16(str), StringPiece16(search),
+                    CompareCase::SENSITIVE);
 }
 
 }  // namespace base

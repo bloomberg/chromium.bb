@@ -301,9 +301,10 @@ class CONTENT_EXPORT SavePackage
   // Number of all need to be saved resources.
   size_t all_save_items_count_;
 
-  typedef std::set<base::FilePath::StringType,
-                   bool (*)(const base::FilePath::StringType&,
-                            const base::FilePath::StringType&)> FileNameSet;
+  using FileNameSet =
+      std::set<base::FilePath::StringType,
+               bool (*)(base::FilePath::StringPieceType,
+                        base::FilePath::StringPieceType)>;
   // This set is used to eliminate duplicated file names in saving directory.
   FileNameSet file_name_set_;
 

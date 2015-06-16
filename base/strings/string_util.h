@@ -329,24 +329,52 @@ BASE_EXPORT bool LowerCaseEqualsASCII(const char16* a_begin,
 // strings are not ASCII.
 BASE_EXPORT bool EqualsASCII(const string16& a, const StringPiece& b);
 
-// Returns true if str starts with search, or false otherwise.
-// TODO(brettw) the case sensitive flag makes callsites difficult to read.
-// Consider splitting this out in two variants (few callers want
-// case-insensitive compares) or use an enum that makes this more explicit.
-BASE_EXPORT bool StartsWithASCII(const std::string& str,
-                                 const std::string& search,
-                                 bool case_sensitive);
-BASE_EXPORT bool StartsWith(const base::string16& str,
-                            const base::string16& search,
-                            bool case_sensitive);
+// Indicates case sensitivity of comparisons. Only ASCII case insensitivity
+// is supported. Full Unicode case-insensitive conversions would need to go in
+// base/i18n so it can use ICU.
+//
+// If you need to do Unicode-aware case-insensitive StartsWith/EndsWith, it's
+// best to just call base::i18n::ToLower() on the arguements, and then use the
+// results to a case-sensitive comparison.
+enum class CompareCase {
+  SENSITIVE,
+  INSENSITIVE_ASCII,
+};
 
-// Returns true if str ends with search, or false otherwise.
-// TODO(brettw) case sensitive flag confusion, see StartsWith above.
-BASE_EXPORT bool EndsWith(const std::string& str,
-                          const std::string& search,
-                          bool case_sensitive);
-BASE_EXPORT bool EndsWith(const base::string16& str,
-                          const base::string16& search,
+BASE_EXPORT bool StartsWith(StringPiece str,
+                            StringPiece search_for,
+                            CompareCase case_sensitivity);
+BASE_EXPORT bool StartsWith(StringPiece16 str,
+                            StringPiece16 search_for,
+                            CompareCase case_sensitivity);
+BASE_EXPORT bool EndsWith(StringPiece str,
+                          StringPiece search_for,
+                          CompareCase case_sensitivity);
+BASE_EXPORT bool EndsWith(StringPiece16 str,
+                          StringPiece16 search_for,
+                          CompareCase case_sensitivity);
+
+// DEPRECATED. Returns true if str starts/ends with search, or false otherwise.
+// TODO(brettw) remove in favor of the "enum" versions above.
+inline bool StartsWithASCII(const std::string& str,
+                            const std::string& search,
+                            bool case_sensitive) {
+  return StartsWith(StringPiece(str), StringPiece(search),
+                    case_sensitive ? CompareCase::SENSITIVE
+                                   : CompareCase::INSENSITIVE_ASCII);
+}
+BASE_EXPORT bool StartsWith(const string16& str,
+                            const string16& search,
+                            bool case_sensitive);
+inline bool EndsWith(const std::string& str,
+                     const std::string& search,
+                     bool case_sensitive) {
+  return EndsWith(StringPiece(str), StringPiece(search),
+                  case_sensitive ? CompareCase::SENSITIVE
+                                 : CompareCase::INSENSITIVE_ASCII);
+}
+BASE_EXPORT bool EndsWith(const string16& str,
+                          const string16& search,
                           bool case_sensitive);
 
 }  // namespace base
