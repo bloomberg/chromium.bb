@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_save_info.h"
 #include "content/public/common/referrer.h"
@@ -45,7 +46,7 @@ class CONTENT_EXPORT DownloadUrlParameters {
   typedef std::pair<std::string, std::string> RequestHeadersNameValuePair;
   typedef std::vector<RequestHeadersNameValuePair> RequestHeadersType;
 
-  static DownloadUrlParameters* FromWebContents(
+  static scoped_ptr<DownloadUrlParameters> FromWebContents(
       WebContents* web_contents,
       const GURL& url);
 

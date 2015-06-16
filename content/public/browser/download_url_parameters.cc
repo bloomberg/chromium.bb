@@ -34,14 +34,13 @@ DownloadUrlParameters::~DownloadUrlParameters() {
 }
 
 // static
-DownloadUrlParameters* DownloadUrlParameters::FromWebContents(
+scoped_ptr<DownloadUrlParameters> DownloadUrlParameters::FromWebContents(
     WebContents* web_contents,
     const GURL& url) {
-  return new DownloadUrlParameters(
-      url,
-      web_contents->GetRenderProcessHost()->GetID(),
+  return scoped_ptr<DownloadUrlParameters>(new DownloadUrlParameters(
+      url, web_contents->GetRenderProcessHost()->GetID(),
       web_contents->GetRenderViewHost()->GetRoutingID(),
-      web_contents->GetBrowserContext()->GetResourceContext());
+      web_contents->GetBrowserContext()->GetResourceContext()));
 }
 
 }  // namespace content
