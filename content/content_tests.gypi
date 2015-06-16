@@ -227,7 +227,6 @@
       'browser/message_port_provider_browsertest.cc',
       'browser/mojo_shell_browsertest.cc',
       'browser/net_info_browsertest.cc',
-      'browser/plugin_browsertest.cc',
       'browser/renderer_host/input/touch_action_browsertest.cc',
       'browser/renderer_host/input/touch_input_browsertest.cc',
       'browser/renderer_host/render_message_filter_browsertest.cc',
@@ -1483,11 +1482,6 @@
               ],
               'sources': [
                 'renderer/external_popup_menu_browsertest.cc',
-              ],
-            }],
-            ['use_aura==1 and OS!="win"', {
-              'sources!': [
-                'browser/plugin_browsertest.cc',
               ],
             }],
             ['use_aura==1 or toolkit_views==1', {
