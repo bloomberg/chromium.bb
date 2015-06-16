@@ -17,7 +17,7 @@ source_set("platform_window") {
   ]
 }
 
-component("platform_impls") {
+group("platform_impls") {
   if (is_android) {
     deps = [
       "//ui/platform_window/android",
