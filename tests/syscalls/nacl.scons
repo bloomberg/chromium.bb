@@ -277,3 +277,29 @@ node = env.CommandSelLdrTestNacl(
 env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests'],
                        'run_filepos_test')
+
+
+file_access_disabling_nexe = env.ComponentProgram(
+    'file_access_disabling', ['file_access_disabling.cc'],
+    EXTRA_LIBS=['${NONIRT_LIBS}'])
+
+# Not all of the syscalls that this tests are hooked up in nacl-glibc.  Also,
+# some of the filesystem syscalls are not implemented for Windows.
+fs_disabling_test_is_broken = env.Bit('nacl_glibc') or env.Bit('host_windows')
+
+node = env.CommandSelLdrTestNacl(
+    'file_access_enabled.out',
+    file_access_disabling_nexe,
+    ['--enabled', env.MakeTempDir(prefix='tmp_file_access_enabled_test')],
+    sel_ldr_flags=['-a'])
+env.AddNodeToTestSuite(node, ['small_tests', 'sel_ldr_tests'],
+                       'run_file_access_enabled_test',
+                       is_broken=fs_disabling_test_is_broken)
+
+node = env.CommandSelLdrTestNacl(
+    'file_access_disabled.out',
+    file_access_disabling_nexe,
+    ['--disabled', env.MakeTempDir(prefix='tmp_file_access_disabled_test')])
+env.AddNodeToTestSuite(node, ['small_tests', 'sel_ldr_tests'],
+                       'run_file_access_disabled_test',
+                       is_broken=fs_disabling_test_is_broken)
