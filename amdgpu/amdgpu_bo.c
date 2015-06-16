@@ -225,6 +225,10 @@ int amdgpu_bo_query_info(amdgpu_bo_handle bo,
 	struct drm_amdgpu_gem_op gem_op = {};
 	int r;
 
+	/* Validate the BO passed in */
+	if (!bo->handle)
+		return -EINVAL;
+
 	/* Query metadata. */
 	metadata.handle = bo->handle;
 	metadata.op = AMDGPU_GEM_METADATA_OP_GET_METADATA;
