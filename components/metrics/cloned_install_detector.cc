@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/single_thread_task_runner.h"

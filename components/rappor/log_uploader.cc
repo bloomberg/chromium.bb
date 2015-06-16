@@ -4,7 +4,7 @@
 
 #include "components/rappor/log_uploader.h"
 
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"

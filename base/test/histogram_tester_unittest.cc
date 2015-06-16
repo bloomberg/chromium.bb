@@ -5,7 +5,7 @@
 #include "base/test/histogram_tester.h"
 
 #include "base/memory/scoped_ptr.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/histogram_samples.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

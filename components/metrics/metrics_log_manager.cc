@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/timer/elapsed_timer.h"
 #include "components/metrics/metrics_log.h"

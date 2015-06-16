@@ -5,7 +5,7 @@
 #include "components/metrics/metrics_reporting_scheduler.h"
 
 #include "base/compiler_specific.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/variations/variations_associated_data.h"
 

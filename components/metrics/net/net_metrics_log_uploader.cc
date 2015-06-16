@@ -4,7 +4,7 @@
 
 #include "components/metrics/net/net_metrics_log_uploader.h"
 
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "net/base/load_flags.h"
 #include "net/base/network_change_notifier.h"
 #include "net/url_request/url_fetcher.h"

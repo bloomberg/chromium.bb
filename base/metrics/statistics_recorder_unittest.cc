@@ -6,7 +6,7 @@
 
 #include "base/json/json_reader.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -5,7 +5,7 @@
 #include "components/rappor/rappor_prefs.h"
 
 #include "base/base64.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/rand_util.h"
