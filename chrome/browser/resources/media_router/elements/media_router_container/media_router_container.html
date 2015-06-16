@@ -47,9 +47,6 @@
         on-close-route-click="showSinkList_"
         hidden$="[[computerRouteDetailsHidden_(currentView_, issue)]]">
     </route-details>
-    <!-- TODO(apacible): Fix menu jumping to the top of the list when scrolled
-    down and then a paper-item is selected.
-    https://github.com/PolymerElements/paper-menu/issues/17 -->
     <paper-menu id="sink-list"
         hidden$="[[computeSinkListHidden_(currentView_, issue)]]">
       <template is="dom-repeat" id="sinkList" items="[[sinkList]]">
