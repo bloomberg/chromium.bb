@@ -34,15 +34,15 @@
 
 namespace WTF {
 
+AdjustAmountOfExternalAllocatedMemoryFunction ArrayBufferContents::s_adjustAmountOfExternalAllocatedMemoryFunction;
+
 ArrayBufferContents::ArrayBufferContents()
     : m_data(0)
-    , m_sizeInBytes(0)
-    , m_deallocationObserver(0) { }
+    , m_sizeInBytes(0) { }
 
 ArrayBufferContents::ArrayBufferContents(unsigned numElements, unsigned elementByteSize, ArrayBufferContents::InitializationPolicy policy)
     : m_data(0)
     , m_sizeInBytes(0)
-    , m_deallocationObserver(0)
 {
     // Do not allow 32-bit overflow of the total size.
     if (numElements) {
@@ -56,11 +56,9 @@ ArrayBufferContents::ArrayBufferContents(unsigned numElements, unsigned elementB
     m_sizeInBytes = numElements * elementByteSize;
 }
 
-ArrayBufferContents::ArrayBufferContents(
-    void* data, unsigned sizeInBytes, ArrayBufferDeallocationObserver* observer)
+ArrayBufferContents::ArrayBufferContents(void* data, unsigned sizeInBytes)
     : m_data(data)
     , m_sizeInBytes(sizeInBytes)
-    , m_deallocationObserver(observer)
 {
     if (!m_data) {
         ASSERT(!m_sizeInBytes);
@@ -79,11 +77,8 @@ ArrayBufferContents::~ArrayBufferContents()
 
 void ArrayBufferContents::clear()
 {
-    if (m_data && m_deallocationObserver)
-        m_deallocationObserver->arrayBufferDeallocated(m_sizeInBytes);
     m_data = 0;
     m_sizeInBytes = 0;
-    m_deallocationObserver = 0;
 }
 
 void ArrayBufferContents::transfer(ArrayBufferContents& other)
@@ -107,14 +102,18 @@ void ArrayBufferContents::copyTo(ArrayBufferContents& other)
 
 void ArrayBufferContents::allocateMemory(size_t size, InitializationPolicy policy, void*& data)
 {
+    if (s_adjustAmountOfExternalAllocatedMemoryFunction)
+        s_adjustAmountOfExternalAllocatedMemoryFunction(static_cast<int>(size));
     data = partitionAllocGenericFlags(WTF::Partitions::getBufferPartition(), PartitionAllocReturnNull, size);
     if (policy == ZeroInitialize && data)
         memset(data, '\0', size);
 }
 
-void ArrayBufferContents::freeMemory(void* data, size_t)
+void ArrayBufferContents::freeMemory(void* data, size_t size)
 {
     partitionFreeGeneric(WTF::Partitions::getBufferPartition(), data);
+    if (s_adjustAmountOfExternalAllocatedMemoryFunction)
+        s_adjustAmountOfExternalAllocatedMemoryFunction(-static_cast<int>(size));
 }
 
 } // namespace WTF

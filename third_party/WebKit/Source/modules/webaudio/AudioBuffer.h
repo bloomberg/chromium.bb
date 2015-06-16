@@ -70,8 +70,6 @@ public:
 
     DEFINE_INLINE_TRACE() { }
 
-    virtual v8::Local<v8::Object> associateWithWrapper(v8::Isolate*, const WrapperTypeInfo*, v8::Local<v8::Object> wrapper) override;
-
 private:
     static PassRefPtr<DOMFloat32Array> createFloat32ArrayOrNull(size_t length);
 

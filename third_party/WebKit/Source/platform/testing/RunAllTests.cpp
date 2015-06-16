@@ -53,7 +53,7 @@ static void AlwaysZeroNumberSource(unsigned char* buf, size_t len)
 int main(int argc, char** argv)
 {
     WTF::setRandomSource(AlwaysZeroNumberSource);
-    WTF::initialize(CurrentTime, nullptr, nullptr, nullptr);
+    WTF::initialize(CurrentTime, nullptr, nullptr, nullptr, nullptr);
     WTF::initializeMainThread(0);
 
     blink::TestingPlatformSupport::Config platformConfig;

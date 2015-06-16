@@ -13,7 +13,6 @@
             'ArrayBufferBuilder.h',
             'ArrayBufferContents.cpp',
             'ArrayBufferContents.h',
-            'ArrayBufferDeallocationObserver.h',
             'ArrayBufferView.cpp',
             'ArrayBufferView.h',
             'ArrayPiece.cpp',

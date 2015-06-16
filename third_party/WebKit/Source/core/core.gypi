@@ -2179,8 +2179,6 @@
             'dom/CrossThreadTask.h',
             'dom/DOMArrayBuffer.cpp',
             'dom/DOMArrayBuffer.h',
-            'dom/DOMArrayBufferDeallocationObserver.cpp',
-            'dom/DOMArrayBufferDeallocationObserver.h',
             'dom/DOMArrayBufferView.h',
             'dom/DOMArrayPiece.cpp',
             'dom/DOMArrayPiece.h',

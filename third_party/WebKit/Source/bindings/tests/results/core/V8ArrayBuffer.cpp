@@ -12,7 +12,6 @@
 #include "bindings/core/v8/V8DOMConfiguration.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
 #include "core/dom/ContextFeatures.h"
-#include "core/dom/DOMArrayBufferDeallocationObserver.h"
 #include "core/dom/Document.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
@@ -47,12 +46,8 @@ TestArrayBuffer* V8ArrayBuffer::toImpl(v8::Local<v8::Object> object)
     // Transfer the ownership of the allocated memory to an ArrayBuffer without
     // copying.
     v8::ArrayBuffer::Contents v8Contents = v8buffer->Externalize();
-    WTF::ArrayBufferContents contents(v8Contents.Data(), v8Contents.ByteLength(), 0);
+    WTF::ArrayBufferContents contents(v8Contents.Data(), v8Contents.ByteLength());
     RefPtr<TestArrayBuffer> buffer = TestArrayBuffer::create(contents);
-    // Since this transfer doesn't allocate new memory, do not call
-    // DOMArrayBufferDeallocationObserver::blinkAllocatedMemory.
-    buffer->buffer()->setDeallocationObserverWithoutAllocationNotification(
-        DOMArrayBufferDeallocationObserver::instance());
     buffer->associateWithWrapper(v8::Isolate::GetCurrent(), buffer->wrapperTypeInfo(), object);
 
     return buffer.get();

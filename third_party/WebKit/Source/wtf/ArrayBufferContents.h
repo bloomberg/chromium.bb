@@ -27,8 +27,9 @@
 #ifndef ArrayBufferContents_h
 #define ArrayBufferContents_h
 
-#include "wtf/ArrayBufferDeallocationObserver.h"
+#include "wtf/Assertions.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/WTF.h"
 #include "wtf/WTFExport.h"
 
 namespace WTF {
@@ -49,7 +50,7 @@ public:
     // upon destruction.
     // This constructor will not call observer->StartObserving(), so it is a responsibility
     // of the caller to make sure JS knows about external memory.
-    ArrayBufferContents(void* data, unsigned sizeInBytes, ArrayBufferDeallocationObserver*);
+    ArrayBufferContents(void* data, unsigned sizeInBytes);
 
     ~ArrayBufferContents();
 
@@ -58,30 +59,21 @@ public:
     void* data() const { return m_data; }
     unsigned sizeInBytes() const { return m_sizeInBytes; }
 
-    void setDeallocationObserver(ArrayBufferDeallocationObserver& observer)
-    {
-        if (!m_deallocationObserver) {
-            m_deallocationObserver = &observer;
-            m_deallocationObserver->blinkAllocatedMemory(m_sizeInBytes);
-        }
-    }
-    void setDeallocationObserverWithoutAllocationNotification(ArrayBufferDeallocationObserver& observer)
-    {
-        if (!m_deallocationObserver) {
-            m_deallocationObserver = &observer;
-        }
-    }
-
     void transfer(ArrayBufferContents& other);
     void copyTo(ArrayBufferContents& other);
 
     static void allocateMemory(size_t, InitializationPolicy, void*&);
     static void freeMemory(void*, size_t);
+    static void setAdjustAmoutOfExternalAllocatedMemoryFunction(AdjustAmountOfExternalAllocatedMemoryFunction function)
+    {
+        ASSERT(!s_adjustAmountOfExternalAllocatedMemoryFunction);
+        s_adjustAmountOfExternalAllocatedMemoryFunction = function;
+    }
 
 private:
     void* m_data;
     unsigned m_sizeInBytes;
-    ArrayBufferDeallocationObserver* m_deallocationObserver;
+    static AdjustAmountOfExternalAllocatedMemoryFunction s_adjustAmountOfExternalAllocatedMemoryFunction;
 };
 
 } // namespace WTF

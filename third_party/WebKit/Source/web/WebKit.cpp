@@ -163,6 +163,11 @@ static void callOnMainThreadFunction(WTF::MainThreadFunction function, void* con
     Platform::current()->mainThread()->postTask(FROM_HERE, new MainThreadTaskRunner(function, context));
 }
 
+static void adjustAmountOfExternalAllocatedMemory(int size)
+{
+    v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(size);
+}
+
 void initializeWithoutV8(Platform* platform)
 {
     ASSERT(!s_webKitInitialized);
@@ -172,7 +177,7 @@ void initializeWithoutV8(Platform* platform)
     Platform::initialize(platform);
 
     WTF::setRandomSource(cryptographicallyRandomValues);
-    WTF::initialize(currentTimeFunction, monotonicallyIncreasingTimeFunction, systemTraceTimeFunction, histogramEnumerationFunction);
+    WTF::initialize(currentTimeFunction, monotonicallyIncreasingTimeFunction, systemTraceTimeFunction, histogramEnumerationFunction, adjustAmountOfExternalAllocatedMemory);
     WTF::initializeMainThread(callOnMainThreadFunction);
     Heap::init();
 
