@@ -1870,17 +1870,14 @@ def GetPreferredTryMasters(project, change):
   masters = json.loads(subprocess.check_output(
       ['commit_queue', 'builders', cq_config_path], shell=is_win))
 
-  # Explicitly iterate over copies of keys since we mutate them.
-  for master in masters.keys():
-    for builder in masters[master].keys():
+  try_config = {}
+  for master in masters:
+    try_config.setdefault(master, {})
+    for builder in masters[master]:
       # Do not trigger presubmit builders, since they're likely to fail
       # (e.g. OWNERS checks before finished code review), and we're
       # running local presubmit anyway.
-      if 'presubmit' in builder:
-        masters[master].pop(builder)
-      else:
-        # Convert testfilter format to the one expected by git-cl-try.
-        testfilter = masters[master][builder].get('testfilter', 'defaulttests')
-        masters[master][builder] = [testfilter]
+      if 'presubmit' not in builder:
+        try_config[master][builder] = ['defaulttests']
 
-  return masters
+  return try_config
