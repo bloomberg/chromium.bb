@@ -788,6 +788,7 @@ void Dispatcher::IdleNotification() {
 void Dispatcher::OnRenderProcessShutdown() {
   v8_schema_registry_.reset();
   forced_idle_timer_.reset();
+  content_watcher_.reset();
 }
 
 void Dispatcher::OnActivateExtension(const std::string& extension_id) {

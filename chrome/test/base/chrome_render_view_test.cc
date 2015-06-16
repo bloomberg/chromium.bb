@@ -5,6 +5,7 @@
 #include "chrome/test/base/chrome_render_view_test.h"
 
 #include "base/debug/leak_annotations.h"
+#include "base/run_loop.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/render_messages.h"
@@ -107,6 +108,7 @@ void ChromeRenderViewTest::SetUp() {
 }
 
 void ChromeRenderViewTest::TearDown() {
+  base::RunLoop().RunUntilIdle();
 #if defined(ENABLE_EXTENSIONS)
   ChromeContentRendererClient* client =
       static_cast<ChromeContentRendererClient*>(content_renderer_client_.get());
