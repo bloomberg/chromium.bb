@@ -398,8 +398,6 @@ test("components_browsertests") {
 
   if (is_android) {
     sources += [
-      "test/android/browsertests_apk/components_browser_tests_android.cc",
-      "test/android/browsertests_apk/components_browser_tests_android.h",
       "test/android/browsertests_apk/components_browser_tests_jni_onload.cc",
     ]
     sources -= [ "autofill/content/browser/risk/fingerprint_browsertest.cc" ]
