@@ -5,31 +5,18 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file.
 -->
-
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:chrome="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/eb_item_tile" >
-
-    <!-- contentDescription skipped on purpose since it's non-functional/informational icon -->
-    <ImageView
-        android:id="@+id/google_icon"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:layout_margin="18dp"
-        android:contentDescription="@null"
-        android:src="@drawable/blue_google_icon" />
+    android:background="@drawable/eb_item_tile"
+    android:orientation="vertical"
+    android:padding="16dp" >
 
     <TextView
         android:id="@+id/title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_alignTop="@id/google_icon"
-        android:layout_toEndOf="@id/google_icon"
         android:text="@string/enhanced_bookmark_sign_in_promo_title"
         android:textColor="@color/default_text_color"
         android:textSize="16sp"
@@ -39,9 +26,7 @@
         android:id="@+id/description"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_below="@id/title"
-        android:layout_toEndOf="@id/google_icon"
+        android:layout_marginTop="8dp"
         android:text="@string/enhanced_bookmark_sign_in_promo_description"
         android:textColor="@color/default_text_color"
         android:textSize="14sp" />
@@ -49,9 +34,8 @@
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_below="@id/description"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="16dp"
+        android:layout_gravity="end"
         android:gravity="center_vertical"
         android:orientation="horizontal" >
 
@@ -69,7 +53,6 @@
             android:id="@+id/sign_in"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="16dp"
             android:text="@string/enhanced_bookmark_sign_in_promo_sign_in"
             android:textAllCaps="true"
             android:textColor="@android:color/white"
@@ -77,4 +60,4 @@
             chrome:buttonColor="@color/light_active_color" />
     </LinearLayout>
 
-</RelativeLayout>
+</LinearLayout>

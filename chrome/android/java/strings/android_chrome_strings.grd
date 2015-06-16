@@ -1735,10 +1735,10 @@ Just open Chrome on your computer, go to the menu, and select “Sign in to Chro
 
       <!-- Enhanced bookmark strings -->
       <message name="IDS_ENHANCED_BOOKMARK_SIGN_IN_PROMO_TITLE" desc="Promo title encouraging the user to sign in to Chrome to improve their bookmarks experience. It means that after signing-in, bookmarks will become synced across devices and possible to search.">
-        Synced and searchable
+        Back up and sync your bookmarks
       </message>
       <message name="IDS_ENHANCED_BOOKMARK_SIGN_IN_PROMO_DESCRIPTION" desc="Description for enhanced bookmark UI sign-in promotion.">
-        Sign in to get your bookmarks on all your devices.
+        Sign in to Chrome to access your bookmarks from any device
       </message>
       <message name="IDS_ENHANCED_BOOKMARK_SIGN_IN_PROMO_NO_THANKS" desc="Text for the decline button in the enhanced bookmark UI">
         No, thanks
