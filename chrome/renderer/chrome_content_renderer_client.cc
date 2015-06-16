@@ -172,6 +172,7 @@ using blink::WebCache;
 using blink::WebConsoleMessage;
 using blink::WebDataSource;
 using blink::WebDocument;
+using blink::WebLocalFrame;
 using blink::WebPlugin;
 using blink::WebPluginParams;
 using blink::WebSecurityOrigin;
@@ -1366,34 +1367,43 @@ ChromeContentRendererClient::GetExtensionDispatcherForTest() {
 }
 
 bool ChromeContentRendererClient::CrossesExtensionExtents(
-    blink::WebFrame* frame,
+    blink::WebLocalFrame* frame,
     const GURL& new_url,
     const extensions::ExtensionSet& extensions,
     bool is_extension_url,
     bool is_initial_navigation) {
-  GURL old_url(frame->top()->document().url());
+  DCHECK(!frame->parent());
+  GURL old_url(frame->document().url());
 
   // If old_url is still empty and this is an initial navigation, then this is
-  // a window.open operation.  We should look at the opener URL.
+  // a window.open operation.  We should look at the opener URL.  Note that the
+  // opener is a local frame in this case.
   if (is_initial_navigation && old_url.is_empty() && frame->opener()) {
+    WebLocalFrame* opener_frame = frame->opener()->toWebLocalFrame();
+
     // If we're about to open a normal web page from a same-origin opener stuck
     // in an extension process, we want to keep it in process to allow the
     // opener to script it.
-    WebDocument opener_document = frame->opener()->document();
-    WebSecurityOrigin opener = frame->opener()->document().securityOrigin();
+    WebDocument opener_document = opener_frame->document();
+    WebSecurityOrigin opener_origin = opener_document.securityOrigin();
     bool opener_is_extension_url =
-        !opener.isUnique() && extensions.GetExtensionOrAppByURL(
+        !opener_origin.isUnique() && extensions.GetExtensionOrAppByURL(
             opener_document.url()) != NULL;
     if (!is_extension_url &&
         !opener_is_extension_url &&
         IsStandaloneExtensionProcess() &&
-        opener.canRequest(WebURL(new_url)))
+        opener_origin.canRequest(WebURL(new_url)))
       return false;
 
-    // In all other cases, we want to compare against the top frame's URL (as
-    // opposed to the opener frame's), since that's what determines the type of
-    // process.  This allows iframes outside an app to open a popup in the app.
-    old_url = frame->top()->opener()->top()->document().url();
+    // In all other cases, we want to compare against the URL that determines
+    // the type of process.  In default Chrome, that's the URL of the opener's
+    // top frame and not the opener frame itself.  In --site-per-process, we
+    // can use the opener frame itself.
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kSitePerProcess))
+      old_url = opener_frame->document().url();
+    else
+      old_url = opener_frame->top()->document().url();
   }
 
   // Only consider keeping non-app URLs in an app process if this window

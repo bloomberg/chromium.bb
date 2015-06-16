@@ -196,7 +196,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
 
   // Returns true if the frame is navigating to an URL either into or out of an
   // extension app's extent.
-  bool CrossesExtensionExtents(blink::WebFrame* frame,
+  bool CrossesExtensionExtents(blink::WebLocalFrame* frame,
                                const GURL& new_url,
                                const extensions::ExtensionSet& extensions,
                                bool is_extension_url,
