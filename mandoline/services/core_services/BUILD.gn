@@ -47,10 +47,24 @@ if (is_android) {
     ]
   }
 } else {
+  copy("copy_files") {
+    sources = [
+      "$root_out_dir/icudtl.dat",
+      "$root_out_dir/libEGL.dll",
+      "$root_out_dir/libGLESv2.dll",
+      "$root_out_dir/ui_test.pak",
+    ]
+    outputs = [
+      "$root_out_dir/core_services/{{source_file_part}}",
+    ]
+  }
   mojo_native_application("core_services") {
     deps = [
       ":sources",
     ]
+    if (is_win) {
+      deps += [ ":copy_files" ]
+    }
   }
 }
 
