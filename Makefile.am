@@ -86,6 +86,7 @@ weston_SOURCES =					\
 	src/timeline.c					\
 	src/timeline.h					\
 	src/timeline-object.h				\
+	shared/helpers.h				\
 	shared/matrix.c					\
 	shared/matrix.h					\
 	shared/zalloc.h					\
@@ -205,7 +206,8 @@ gl_renderer_la_SOURCES =			\
 	src/gl-renderer.h			\
 	src/gl-renderer.c			\
 	src/vertex-clipping.c			\
-	src/vertex-clipping.h
+	src/vertex-clipping.h			\
+	shared/helpers.h
 endif
 
 if ENABLE_X11_COMPOSITOR
@@ -220,7 +222,9 @@ x11_backend_la_CFLAGS =				\
 	$(CAIRO_CFLAGS)				\
 	$(X11_COMPOSITOR_CFLAGS)		\
 	$(GCC_CFLAGS)
-x11_backend_la_SOURCES = src/compositor-x11.c
+x11_backend_la_SOURCES = 			\
+	src/compositor-x11.c			\
+	shared/helpers.h
 endif
 
 INPUT_BACKEND_LIBS = $(LIBINPUT_BACKEND_LIBS)
@@ -228,7 +232,8 @@ INPUT_BACKEND_SOURCES =				\
 	src/libinput-seat.c			\
 	src/libinput-seat.h			\
 	src/libinput-device.c			\
-	src/libinput-device.h
+	src/libinput-device.h			\
+	shared/helpers.h
 
 if ENABLE_DRM_COMPOSITOR
 module_LTLIBRARIES += drm-backend.la
@@ -247,6 +252,7 @@ drm_backend_la_CFLAGS =				\
 drm_backend_la_SOURCES =			\
 	src/compositor-drm.c			\
 	$(INPUT_BACKEND_SOURCES)		\
+	shared/helpers.h			\
 	src/libbacklight.c			\
 	src/libbacklight.h
 
@@ -271,7 +277,9 @@ wayland_backend_la_CFLAGS =			\
 	$(CAIRO_CFLAGS)				\
 	$(WAYLAND_COMPOSITOR_CFLAGS)		\
 	$(GCC_CFLAGS)
-wayland_backend_la_SOURCES = src/compositor-wayland.c
+wayland_backend_la_SOURCES = 			\
+	src/compositor-wayland.c		\
+	shared/helpers.h
 nodist_wayland_backend_la_SOURCES =			\
 	protocol/fullscreen-shell-protocol.c		\
 	protocol/fullscreen-shell-client-protocol.h
@@ -301,6 +309,7 @@ rpi_backend_la_SOURCES =			\
 	src/rpi-renderer.c			\
 	src/rpi-renderer.h			\
 	src/rpi-bcm-stubs.h			\
+	shared/helpers.h			\
 	$(INPUT_BACKEND_SOURCES)
 
 if ENABLE_EGL
@@ -315,7 +324,9 @@ module_LTLIBRARIES += headless-backend.la
 headless_backend_la_LDFLAGS = -module -avoid-version
 headless_backend_la_LIBADD = $(COMPOSITOR_LIBS) libshared.la
 headless_backend_la_CFLAGS = $(COMPOSITOR_CFLAGS) $(GCC_CFLAGS)
-headless_backend_la_SOURCES = src/compositor-headless.c
+headless_backend_la_SOURCES = 			\
+	src/compositor-headless.c		\
+	shared/helpers.h
 endif
 
 if ENABLE_FBDEV_COMPOSITOR
@@ -335,6 +346,7 @@ fbdev_backend_la_CFLAGS =			\
 	$(GCC_CFLAGS)
 fbdev_backend_la_SOURCES =			\
 	src/compositor-fbdev.c			\
+	shared/helpers.h			\
 	$(INPUT_BACKEND_SOURCES)
 endif
 
@@ -348,7 +360,9 @@ rdp_backend_la_CFLAGS =				\
 	$(COMPOSITOR_CFLAGS)			\
 	$(RDP_COMPOSITOR_CFLAGS)		\
 	$(GCC_CFLAGS)
-rdp_backend_la_SOURCES = src/compositor-rdp.c
+rdp_backend_la_SOURCES = 			\
+	src/compositor-rdp.c			\
+	shared/helpers.h
 endif
 
 if HAVE_LCMS
@@ -359,7 +373,8 @@ cms_static_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS) $(LCMS_CFLAGS)
 cms_static_la_SOURCES =				\
 	src/cms-static.c				\
 	src/cms-helper.c				\
-	src/cms-helper.h
+	src/cms-helper.h				\
+	shared/helpers.h
 if ENABLE_COLORD
 module_LTLIBRARIES += cms-colord.la
 cms_colord_la_LDFLAGS = -module -avoid-version
@@ -368,7 +383,8 @@ cms_colord_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS) $(COLORD_CFLAGS)
 cms_colord_la_SOURCES =				\
 	src/cms-colord.c			\
 	src/cms-helper.c			\
-	src/cms-helper.h
+	src/cms-helper.h			\
+	shared/helpers.h
 endif
 endif
 
@@ -449,11 +465,15 @@ nodist_weston_simple_damage_SOURCES =		\
 weston_simple_damage_CFLAGS = $(AM_CFLAGS) $(SIMPLE_CLIENT_CFLAGS)
 weston_simple_damage_LDADD = $(SIMPLE_CLIENT_LIBS) libshared.la
 
-weston_simple_touch_SOURCES = clients/simple-touch.c
+weston_simple_touch_SOURCES = 			\
+	clients/simple-touch.c			\
+	shared/helpers.h
 weston_simple_touch_CFLAGS = $(AM_CFLAGS) $(SIMPLE_CLIENT_CFLAGS)
 weston_simple_touch_LDADD = $(SIMPLE_CLIENT_LIBS) libshared.la
 
-weston_presentation_shm_SOURCES = clients/presentation-shm.c
+weston_presentation_shm_SOURCES = 			\
+	clients/presentation-shm.c			\
+	shared/helpers.h
 nodist_weston_presentation_shm_SOURCES =		\
 	protocol/presentation_timing-protocol.c		\
 	protocol/presentation_timing-client-protocol.h
@@ -481,7 +501,8 @@ noinst_LTLIBRARIES += libtoytoolkit.la
 
 libtoytoolkit_la_SOURCES =				\
 	clients/window.c				\
-	clients/window.h
+	clients/window.h				\
+	shared/helpers.h
 
 nodist_libtoytoolkit_la_SOURCES =			\
 	protocol/text-cursor-position-protocol.c	\
@@ -518,7 +539,9 @@ nodist_weston_screenshooter_SOURCES =			\
 weston_screenshooter_LDADD = $(CLIENT_LIBS) libshared.la
 weston_screenshooter_CFLAGS = $(AM_CFLAGS) $(CLIENT_CFLAGS)
 
-weston_terminal_SOURCES = clients/terminal.c
+weston_terminal_SOURCES = 				\
+	clients/terminal.c				\
+	shared/helpers.h
 weston_terminal_LDADD = libtoytoolkit.la -lutil
 weston_terminal_CFLAGS = $(AM_CFLAGS) $(CLIENT_CFLAGS)
 
@@ -533,7 +556,9 @@ weston_cliptest_SOURCES =				\
 weston_cliptest_CFLAGS = $(AM_CFLAGS) $(CLIENT_CFLAGS)
 weston_cliptest_LDADD = libtoytoolkit.la
 
-weston_dnd_SOURCES = clients/dnd.c
+weston_dnd_SOURCES = 					\
+	clients/dnd.c					\
+	shared/helpers.h
 weston_dnd_LDADD = libtoytoolkit.la
 weston_dnd_CFLAGS = $(AM_CFLAGS) $(CLIENT_CFLAGS)
 
@@ -552,7 +577,9 @@ weston_scaler_CFLAGS = $(AM_CFLAGS) $(CLIENT_CFLAGS)
 if HAVE_CAIRO_GLESV2
 demo_clients += weston-nested weston-nested-client
 
-weston_nested_SOURCES = clients/nested.c
+weston_nested_SOURCES = 				\
+	clients/nested.c				\
+	shared/helpers.h
 weston_nested_LDADD = libtoytoolkit.la $(SERVER_LIBS)
 weston_nested_CFLAGS = $(AM_CFLAGS) $(CLIENT_CFLAGS)
 
@@ -561,11 +588,15 @@ weston_nested_client_LDADD = $(SIMPLE_EGL_CLIENT_LIBS) -lm
 weston_nested_client_CFLAGS = $(AM_CFLAGS) $(CLIENT_CFLAGS)
 endif
 
-weston_eventdemo_SOURCES = clients/eventdemo.c
+weston_eventdemo_SOURCES = 				\
+	clients/eventdemo.c				\
+	shared/helpers.h
 weston_eventdemo_LDADD = libtoytoolkit.la
 weston_eventdemo_CFLAGS = $(AM_CFLAGS) $(CLIENT_CFLAGS)
 
-weston_clickdot_SOURCES = clients/clickdot.c
+weston_clickdot_SOURCES = 				\
+	clients/clickdot.c				\
+	shared/helpers.h
 weston_clickdot_LDADD = libtoytoolkit.la
 weston_clickdot_CFLAGS = $(AM_CFLAGS) $(CLIENT_CFLAGS)
 
@@ -580,11 +611,15 @@ nodist_weston_fullscreen_SOURCES =			\
 weston_fullscreen_LDADD = libtoytoolkit.la
 weston_fullscreen_CFLAGS = $(AM_CFLAGS) $(CLIENT_CFLAGS)
 
-weston_stacking_SOURCES = clients/stacking.c
+weston_stacking_SOURCES = 				\
+	clients/stacking.c				\
+	shared/helpers.h
 weston_stacking_LDADD = libtoytoolkit.la
 weston_stacking_CFLAGS = $(AM_CFLAGS) $(CLIENT_CFLAGS)
 
-weston_calibrator_SOURCES = clients/calibrator.c	\
+weston_calibrator_SOURCES = 				\
+	clients/calibrator.c				\
+	shared/helpers.h				\
 	shared/matrix.c					\
 	shared/matrix.h
 weston_calibrator_LDADD = libtoytoolkit.la
@@ -592,7 +627,9 @@ weston_calibrator_CFLAGS = $(AM_CFLAGS) $(CLIENT_CFLAGS)
 
 if BUILD_SUBSURFACES_CLIENT
 demo_clients += weston-subsurfaces
-weston_subsurfaces_SOURCES = clients/subsurfaces.c
+weston_subsurfaces_SOURCES = 			\
+	clients/subsurfaces.c			\
+	shared/helpers.h
 weston_subsurfaces_CFLAGS =			\
 	$(AM_CFLAGS)				\
 	$(SIMPLE_EGL_CLIENT_CFLAGS)		\
@@ -602,7 +639,9 @@ endif
 
 if HAVE_PANGO
 demo_clients += weston-editor
-weston_editor_SOURCES = clients/editor.c
+weston_editor_SOURCES = 			\
+	clients/editor.c			\
+	shared/helpers.h
 nodist_weston_editor_SOURCES =			\
 	protocol/text-protocol.c		\
 	protocol/text-client-protocol.h
@@ -626,14 +665,18 @@ nodist_weston_simple_im_SOURCES =		\
 weston_simple_im_LDADD = $(CLIENT_LIBS)
 weston_simple_im_CFLAGS = $(AM_CFLAGS) $(CLIENT_CFLAGS)
 
-weston_info_SOURCES = clients/weston-info.c
+weston_info_SOURCES = 					\
+	clients/weston-info.c				\
+	shared/helpers.h
 nodist_weston_info_SOURCES =				\
 	protocol/presentation_timing-protocol.c		\
 	protocol/presentation_timing-client-protocol.h
 weston_info_LDADD = $(WESTON_INFO_LIBS) libshared.la
 weston_info_CFLAGS = $(AM_CFLAGS) $(CLIENT_CFLAGS)
 
-weston_desktop_shell_SOURCES = clients/desktop-shell.c
+weston_desktop_shell_SOURCES = 				\
+	clients/desktop-shell.c				\
+	shared/helpers.h
 nodist_weston_desktop_shell_SOURCES =			\
 	protocol/desktop-shell-client-protocol.h	\
 	protocol/desktop-shell-protocol.c
@@ -641,7 +684,9 @@ weston_desktop_shell_LDADD = libtoytoolkit.la
 weston_desktop_shell_CFLAGS = $(AM_CFLAGS) $(CLIENT_CFLAGS)
 
 if ENABLE_IVI_SHELL
-weston_ivi_shell_user_interface_SOURCES = clients/ivi-shell-user-interface.c
+weston_ivi_shell_user_interface_SOURCES = 				\
+	clients/ivi-shell-user-interface.c				\
+	shared/helpers.h
 nodist_weston_ivi_shell_user_interface_SOURCES =			\
 	protocol/ivi-hmi-controller-client-protocol.h			\
 	protocol/ivi-hmi-controller-protocol.c				\
@@ -665,7 +710,8 @@ weston_screensaver_SOURCES =				\
 	clients/wscreensaver-glue.c			\
 	clients/wscreensaver-glue.h			\
 	clients/glmatrix.c				\
-	clients/matrix3.xpm
+	clients/matrix3.xpm				\
+	shared/helpers.h
 nodist_weston_screensaver_SOURCES =			\
 	protocol/desktop-shell-client-protocol.h	\
 	protocol/desktop-shell-protocol.c
@@ -767,7 +813,8 @@ desktop_shell_la_SOURCES =				\
 	desktop-shell/shell.h				\
 	desktop-shell/shell.c				\
 	desktop-shell/exposay.c				\
-	desktop-shell/input-panel.c
+	desktop-shell/input-panel.c			\
+	shared/helpers.h
 nodist_desktop_shell_la_SOURCES =			\
 	protocol/desktop-shell-protocol.c		\
 	protocol/desktop-shell-server-protocol.h	\
@@ -792,7 +839,8 @@ fullscreen_shell_la_LDFLAGS = -module -avoid-version
 fullscreen_shell_la_LIBADD = $(COMPOSITOR_LIBS)
 fullscreen_shell_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS)
 fullscreen_shell_la_SOURCES =			\
-	fullscreen-shell/fullscreen-shell.c
+	fullscreen-shell/fullscreen-shell.c	\
+	shared/helpers.h
 nodist_fullscreen_shell_la_SOURCES =			\
 	protocol/fullscreen-shell-protocol.c		\
 	protocol/fullscreen-shell-server-protocol.h
@@ -817,7 +865,8 @@ ivi_shell_la_SOURCES =				\
 	ivi-shell/ivi-layout-transition.c	\
 	ivi-shell/ivi-shell.h			\
 	ivi-shell/ivi-shell.c			\
-	ivi-shell/input-panel-ivi.c
+	ivi-shell/input-panel-ivi.c		\
+	shared/helpers.h
 nodist_ivi_shell_la_SOURCES =			\
 	protocol/ivi-application-protocol.c		\
 	protocol/ivi-application-server-protocol.h
@@ -830,7 +879,8 @@ hmi_controller_la_LIBADD = $(COMPOSITOR_LIBS) libshared.la
 hmi_controller_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS)
 hmi_controller_la_SOURCES =				\
 	ivi-shell/ivi-layout-export.h			\
-	ivi-shell/hmi-controller.c
+	ivi-shell/hmi-controller.c			\
+	shared/helpers.h
 nodist_hmi_controller_la_SOURCES =			\
 	protocol/ivi-hmi-controller-protocol.c		\
 	protocol/ivi-hmi-controller-server-protocol.h
@@ -855,7 +905,8 @@ screen_share_la_CFLAGS =			\
 	$(SCREEN_SHARE_CFLAGS)			\
 	$(GCC_CFLAGS)
 screen_share_la_SOURCES =			\
-	src/screen-share.c
+	src/screen-share.c			\
+	shared/helpers.h
 nodist_screen_share_la_SOURCES =			\
 	protocol/fullscreen-shell-protocol.c		\
 	protocol/fullscreen-shell-client-protocol.h
@@ -893,7 +944,8 @@ xwayland_la_SOURCES =				\
 	xwayland/dnd.c				\
 	xwayland/launcher.c			\
 	xwayland/hash.c				\
-	xwayland/hash.h
+	xwayland/hash.h				\
+	shared/helpers.h
 endif
 
 
@@ -911,6 +963,7 @@ libshared_la_SOURCES =				\
 	shared/config-parser.h			\
 	shared/file-util.c			\
 	shared/file-util.h			\
+	shared/helpers.h			\
 	shared/os-compatibility.c		\
 	shared/os-compatibility.h
 
@@ -932,6 +985,7 @@ libshared_cairo_la_LIBADD =			\
 
 libshared_cairo_la_SOURCES =			\
 	$(libshared_la_SOURCES)			\
+	shared/helpers.h			\
 	shared/image-loader.c			\
 	shared/image-loader.h			\
 	shared/cairo-util.c			\
@@ -1013,7 +1067,9 @@ surface_test_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS)
 weston_test_la_LIBADD = $(COMPOSITOR_LIBS) libshared.la
 weston_test_la_LDFLAGS = $(test_module_ldflags)
 weston_test_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS)
-weston_test_la_SOURCES = tests/weston-test.c
+weston_test_la_SOURCES = 			\
+	tests/weston-test.c			\
+	shared/helpers.h
 nodist_weston_test_la_SOURCES =			\
 	protocol/weston-test-protocol.c	\
 	protocol/weston-test-server-protocol.h
@@ -1033,6 +1089,7 @@ config_parser_test_LDADD = libshared.la libtest-runner.la $(COMPOSITOR_LIBS)
 
 vertex_clip_test_SOURCES =			\
 	tests/vertex-clip-test.c		\
+	shared/helpers.h			\
 	src/vertex-clipping.c			\
 	src/vertex-clipping.h
 vertex_clip_test_LDADD = libtest-runner.la -lm -lrt
@@ -1091,7 +1148,9 @@ subsurface_weston_SOURCES = tests/subsurface-test.c
 subsurface_weston_CFLAGS = $(AM_CFLAGS) $(TEST_CLIENT_CFLAGS)
 subsurface_weston_LDADD = libtest-client.la
 
-presentation_weston_SOURCES = tests/presentation-test.c
+presentation_weston_SOURCES = 			\
+	tests/presentation-test.c		\
+	shared/helpers.h
 nodist_presentation_weston_SOURCES =		\
 	protocol/presentation_timing-protocol.c	\
 	protocol/presentation_timing-client-protocol.h
@@ -1139,7 +1198,8 @@ ivi_layout_test_la_LDFLAGS = $(test_module_ldflags)
 ivi_layout_test_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS)
 ivi_layout_test_la_SOURCES =			\
 	tests/ivi_layout-test-plugin.c		\
-	tests/ivi-test.h
+	tests/ivi-test.h			\
+	shared/helpers.h
 nodist_ivi_layout_test_la_SOURCES =		\
 	protocol/weston-test-protocol.c		\
 	protocol/weston-test-server-protocol.h
@@ -1158,7 +1218,8 @@ noinst_PROGRAMS += ivi-layout.ivi
 
 ivi_layout_ivi_SOURCES =			\
 	tests/ivi_layout-test.c 		\
-	tests/ivi-test.h
+	tests/ivi-test.h			\
+	shared/helpers.h
 nodist_ivi_layout_ivi_SOURCES = 		\
 	protocol/ivi-application-protocol.c	\
 	protocol/ivi-application-client-protocol.h
