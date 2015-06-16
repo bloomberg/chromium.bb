@@ -744,7 +744,8 @@ void TabAndroid::UpdateTopControlsState(JNIEnv* env,
 }
 
 void TabAndroid::LoadOriginalImage(JNIEnv* env, jobject obj) {
-  content::RenderFrameHost* render_frame_host = web_contents()->GetMainFrame();
+  content::RenderFrameHost* render_frame_host =
+      web_contents()->GetFocusedFrame();
   render_frame_host->Send(new ChromeViewMsg_RequestReloadImageForContextNode(
       render_frame_host->GetRoutingID()));
 }
