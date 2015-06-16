@@ -51,6 +51,7 @@ public:
 
 private:
     bool convertBlocksToInlines() const { return m_convertBlocksToInlines == ConvertBlocksToInlines::Convert; }
+    bool shouldAnnotate() const { return m_shouldAnnotate == AnnotateForInterchange; }
     Node* serializeNodes(Node* startNode, Node* pastEnd, StyledMarkupAccumulator*);
     Node* traverseNodesForSerialization(Node* startNode, Node* pastEnd, StyledMarkupAccumulator*);
     void wrapWithNode(StyledMarkupAccumulator&, ContainerNode&, PassRefPtrWillBeRawPtr<EditingStyle>);

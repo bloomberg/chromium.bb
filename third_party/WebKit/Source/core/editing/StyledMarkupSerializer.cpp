@@ -124,7 +124,7 @@ String StyledMarkupSerializer<Strategy>::createMarkup()
     Node* firstNode = m_start.nodeAsRangeFirstNode();
     VisiblePosition visibleStart(toPositionInDOMTree(m_start), VP_DEFAULT_AFFINITY);
     VisiblePosition visibleEnd(toPositionInDOMTree(m_end), VP_DEFAULT_AFFINITY);
-    if (m_shouldAnnotate == AnnotateForInterchange && needInterchangeNewlineAfter(visibleStart)) {
+    if (shouldAnnotate() && needInterchangeNewlineAfter(visibleStart)) {
         markupAccumulator.appendInterchangeNewline();
         if (visibleStart == visibleEnd.previous())
             return markupAccumulator.takeResults();
@@ -188,7 +188,7 @@ String StyledMarkupSerializer<Strategy>::createMarkup()
     }
 
     // FIXME: The interchange newline should be placed in the block that it's in, not after all of the content, unconditionally.
-    if (m_shouldAnnotate == AnnotateForInterchange && needInterchangeNewlineAt(visibleEnd))
+    if (shouldAnnotate() && needInterchangeNewlineAt(visibleEnd))
         markupAccumulator.appendInterchangeNewline();
 
     return markupAccumulator.takeResults();
@@ -204,8 +204,7 @@ Node* StyledMarkupSerializer<Strategy>::serializeNodes(Node* startNode, Node* pa
 
     Node* highestNodeToBeSerialized = markupAccumulator->highestNodeToBeSerialized();
     if (highestNodeToBeSerialized && Strategy::parent(*highestNodeToBeSerialized)) {
-        bool shouldAnnotate = m_shouldAnnotate == AnnotateForInterchange;
-        RefPtrWillBeRawPtr<EditingStyle> wrappingStyle = EditingStyle::wrappingStyleForSerialization(Strategy::parent(*highestNodeToBeSerialized), shouldAnnotate);
+        RefPtrWillBeRawPtr<EditingStyle> wrappingStyle = EditingStyle::wrappingStyleForSerialization(Strategy::parent(*highestNodeToBeSerialized), shouldAnnotate());
         markupAccumulator->setWrappingStyle(wrappingStyle.release());
     }
     return traverseNodesForSerialization(startNode, pastEnd, markupAccumulator);
@@ -301,7 +300,7 @@ bool StyledMarkupSerializer<Strategy>::needsInlineStyle(const Element& element)
 {
     if (!element.isHTMLElement())
         return false;
-    if (m_shouldAnnotate == AnnotateForInterchange)
+    if (shouldAnnotate())
         return true;
     return convertBlocksToInlines() && isBlock(&element);
 }
