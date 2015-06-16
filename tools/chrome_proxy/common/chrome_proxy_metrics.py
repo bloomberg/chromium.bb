@@ -68,6 +68,24 @@ class ChromeProxyResponse(network_metrics.HTTPResponse):
     return (not self.ShouldHaveChromeProxyViaHeader() or
             self.HasChromeProxyViaHeader())
 
+  def GetChromeProxyRequestHeaderValue(self, key):
+    """Get a specific Chrome-Proxy request header value.
+
+    Returns:
+        The value for a specific Chrome-Proxy request header value for a
+        given key. Returns None if no such key is present.
+    """
+    if 'Chrome-Proxy' not in self.response.request_headers:
+      return None
+
+    chrome_proxy_request_header = self.response.request_headers['Chrome-Proxy']
+    values = [v.strip() for v in chrome_proxy_request_header.split(',')]
+    for value in values:
+      kvp = value.split('=', 1)
+      if len(kvp) == 2 and kvp[0].strip() == key:
+        return kvp[1].strip()
+    return None
+
   def GetChromeProxyClientType(self):
     """Get the client type directive from the Chrome-Proxy request header.
 
@@ -77,16 +95,7 @@ class ChromeProxyResponse(network_metrics.HTTPResponse):
         "Chrome-Proxy: c=android" is present, then this method would return
         "android". Returns None if no client type directive is present.
     """
-    if 'Chrome-Proxy' not in self.response.request_headers:
-      return None
-
-    chrome_proxy_request_header = self.response.request_headers['Chrome-Proxy']
-    values = [v.strip() for v in chrome_proxy_request_header.split(',')]
-    for value in values:
-      kvp = value.split('=', 1)
-      if len(kvp) == 2 and kvp[0].strip() == 'c':
-        return kvp[1].strip()
-    return None
+    return self.GetChromeProxyRequestHeaderValue('c')
 
   def HasChromeProxyLoFiRequest(self):
     return self.HasRequestHeader('Chrome-Proxy', "q=low")

@@ -378,6 +378,22 @@ class ChromeProxySmoke(ChromeProxyValidation):
 PROXIED = metrics.PROXIED
 DIRECT = metrics.DIRECT
 
+class ChromeProxyClientConfig(ChromeProxyValidation):
+  """Chrome proxy client configuration service validation."""
+
+  def __init__(self):
+    super(ChromeProxyClientConfig, self).__init__(
+        restart_after_each_page=True,
+        metrics=metrics.ChromeProxyMetric())
+
+  def CustomizeBrowserOptions(self, options):
+    super(ChromeProxyClientConfig, self).CustomizeBrowserOptions(options)
+    options.AppendExtraBrowserArgs(
+      '--enable-data-reduction-proxy-config-client')
+
+  def AddResults(self, tab, results):
+    self._metrics.AddResultsForClientConfig(tab, results)
+
 class ChromeProxyVideoValidation(page_test.PageTest):
   """Validation for video pages.
 

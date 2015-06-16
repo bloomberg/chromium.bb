@@ -581,6 +581,31 @@ class ChromeProxyMetric(network_metrics.NetworkMetric):
     results.AddValue(scalar.ScalarValue(
         results.current_page, 'via', 'count', via_count))
 
+  def AddResultsForClientConfig(self, tab, results):
+    resources_with_old_auth = 0
+    resources_with_new_auth = 0
+
+    super(ChromeProxyMetric, self).AddResults(tab, results)
+    for resp in self.IterResponses(tab):
+      if resp.GetChromeProxyRequestHeaderValue('s') != None:
+        resources_with_new_auth += 1
+      if resp.GetChromeProxyRequestHeaderValue('ps') != None:
+        resources_with_old_auth += 1
+
+    if resources_with_old_auth != 0:
+      raise ChromeProxyMetricException, (
+          'Expected zero responses with the old authentication scheme but '
+          'received %d.' % resources_with_old_auth)
+
+    if resources_with_new_auth == 0:
+      raise ChromeProxyMetricException, (
+          'Expected at least one response with the new authentication scheme, '
+          'but zero such responses were received.')
+
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'new_auth', 'count', resources_with_new_auth))
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'old_auth', 'count', resources_with_old_auth))
 
 PROXIED = 'proxied'
 DIRECT = 'direct'
@@ -685,4 +710,3 @@ class ChromeProxyVideoMetric(network_metrics.NetworkMetric):
 def IsTestUrlForBlockOnce(url):
   return (url == 'http://check.googlezip.net/blocksingle/' or
       url == 'http://chromeproxy-test.appspot.com/default?respBody=T0s=&respStatus=200&flywheelAction=block-once')
-

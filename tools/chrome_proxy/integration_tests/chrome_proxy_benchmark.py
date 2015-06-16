@@ -178,6 +178,16 @@ class ChromeProxySmoke(ChromeProxyBenchmark):
     return 'chrome_proxy_benchmark.smoke.smoke'
 
 
+class ChromeProxyClientConfig(ChromeProxyBenchmark):
+  tag = 'client_config'
+  test = measurements.ChromeProxyClientConfig
+  page_set = pagesets.SyntheticPageSet
+
+  @classmethod
+  def Name(cls):
+    return 'chrome_proxy_benchmark.client_config.synthetic'
+
+
 @benchmark.Enabled(*DESKTOP_CHROME_BROWSERS)
 class ChromeProxyVideoDirect(benchmark.Benchmark):
   tag = 'video'
