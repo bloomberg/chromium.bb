@@ -6,8 +6,14 @@
 #include "wtf/AddressSpaceRandomization.h"
 
 #include "wtf/PageAllocator.h"
-#include "wtf/ProcessID.h"
 #include "wtf/SpinLock.h"
+
+#if OS(WIN)
+#include <windows.h>
+#else
+#include <sys/time.h>
+#include <unistd.h>
+#endif
 
 namespace WTF {
 
@@ -45,7 +51,21 @@ uint32_t ranval(ranctx* x)
         x->initialized = true;
         char c;
         uint32_t seed = static_cast<uint32_t>(reinterpret_cast<uintptr_t>(&c));
-        seed ^= static_cast<uint32_t>(getCurrentProcessID());
+        uint32_t pid;
+        uint32_t usec;
+#if OS(WIN)
+        pid = GetCurrentProcessId();
+        SYSTEMTIME st;
+        GetSystemTime(&st);
+        usec = static_cast<uint32_t>(st.wMilliseconds * 1000);
+#else
+        pid = static_cast<uint32_t>(getpid());
+        struct timeval tv;
+        gettimeofday(&tv, 0);
+        usec = static_cast<uint32_t>(tv.tv_usec);
+#endif
+        seed ^= pid;
+        seed ^= usec;
         x->a = 0xf1ea5eed;
         x->b = x->c = x->d = seed;
         for (int i = 0; i < 20; ++i) {
@@ -76,6 +96,7 @@ void* getRandomPageBase()
 #if OS(WIN)
     // 64-bit Windows has a bizarrely small 8TB user address space.
     // Allocates in the 1-5TB region.
+    // TODO(cevans): I think Win 8.1 has 47-bits like Linux.
     random &= 0x3ffffffffffUL;
     random += 0x10000000000UL;
 #else
