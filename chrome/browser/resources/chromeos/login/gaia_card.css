@@ -31,36 +31,6 @@
   padding: 24px 40px 34px;
 }
 
-::content /deep/ .blue-button {
-  background-color: rgb(66, 133, 244);
-  color: rgb(255, 255, 255);
-  min-width: 90px;
-}
-
-::content /deep/ .dialog-action-button {
-  color: rgb(66, 133, 244);
-}
-
-::content /deep/ .dialog-action-button:focus {
-  background: rgb(217, 221, 234);
-}
-
-::content /deep/ .link-button {
-  color: rgb(66, 133, 244);
-  font-size: 14px;
-  margin: 0;
-  text-align: left;
-  text-transform: none;
-}
-
-::content /deep/ .link-button:focus {
-  background: rgb(217, 221, 234);
-}
-
-::content /deep/ .link-button::shadow .button-content {
-  padding: 0;
-}
-
 ::content /deep/ div.gaia-body-text {
   margin-bottom: 24px;
 }

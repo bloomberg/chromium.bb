@@ -293,7 +293,3 @@ html /deep/ #forgotPasswordDlg {
   top: 200px;
   width: 350px;
 }
-
-html /deep/ #forgotPasswordDlg gaia-paper-button[autofocus] {
-  color: rgb(66, 133, 244);
-}

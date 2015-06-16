@@ -4,12 +4,22 @@
 <link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
 
 <!--
-  Simple paper- and core-icon- buttons which also triggers 'tap' event on keys
-  'Enter' and 'Space'.
+  Material design buttons that mimic GAIA's buttons.
+
+  Example:
+    <gaia-button type="dialog"></gaia-button>
+
+  Attributes:
+    'type' - there are three kinds of button: regular blue button (none type
+             provided), dialog button (type="dialog") and a button that looks
+             more like a link (type="link").
+    'disabled' - button is disabled when the attribute is set.
 -->
-<polymer-element name="gaia-paper-button" extends="paper-button"
-    on-keydown="onKeyDown" tabindex="0">
+<polymer-element name="gaia-button" extends="paper-button"
+    attributes="type" on-keydown="{{onKeyDown}}" on-focus="{{onFocus}}"
+    on-blur="{{onBlur}}" tabindex="0">
   <template>
+    <link rel="stylesheet" href="gaia_button.css">
     <shadow></shadow>
   </template>
 </polymer-element>
@@ -27,16 +37,5 @@
   <template>
     <link rel="stylesheet" href="gaia_icon_button.css">
     <core-icon icon="{{icon}}" fit></core-icon>
-  </template>
-</polymer-element>
-
-<!--
-  Paper-button which is raised when it's focused.
-  It also triggers 'tap' event on keys 'Enter' and 'Space'.
--->
-<polymer-element name="gaia-raised-on-focus-button" extends="gaia-paper-button"
-    on-focus="{{onButtonFocus}}" on-blur="{{onButtonBlur}}">
-  <template>
-    <shadow></shadow>
   </template>
 </polymer-element>

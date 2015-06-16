@@ -19,7 +19,7 @@ Polymer('gaia-input', (function() {
 
     setDomainVisibility: function() {
       this.$.domainLabel.hidden = (this.type !== 'email') || !this.domain ||
-          (this.value.indexOf('@') !== -1);
+          (this.value && this.value.indexOf('@') !== -1);
     },
 
     onTap: function() {

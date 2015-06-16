@@ -3,11 +3,37 @@
  * found in the LICENSE file.
  */
 
-Polymer('gaia-paper-button', {
+Polymer('gaia-button', {
+  ready: function() {
+    this.typeChanged();
+  },
+
   onKeyDown: function(e) {
-    if (!this.disabled && (e.keyCode == 13 || e.keyCode == 32))
+    if (!this.disabled && (e.keyCode == 13 || e.keyCode == 32)) {
       this.fire('tap');
-  }
+      this.fire('click');
+      e.stopPropagation();
+    }
+  },
+
+  onFocus: function() {
+    if (this.type == 'link' || this.type == 'dialog')
+      return;
+    this.raised = true;
+  },
+
+  onBlur: function() {
+    if (this.type == 'link' || this.type == 'dialog')
+      return;
+    this.raised = false;
+  },
+
+  typeChanged: function() {
+    if (this.type == 'link')
+      this.setAttribute('noink', '');
+    else
+      this.removeAttribute('noink');
+  },
 });
 
 Polymer('gaia-icon-button', {
@@ -19,14 +45,4 @@ Polymer('gaia-icon-button', {
     /* Prevents button focusing after mouse click. */
     e.preventDefault();
   }
-});
-
-Polymer('gaia-raised-on-focus-button', {
-  onButtonFocus: function() {
-    this.raised = true;
-  },
-
-  onButtonBlur: function() {
-    this.raised = false;
-  },
 });

@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 <include src="gaia_buttons.js">
-<include src="gaia_input.js">
 <include src="gaia_input_form.js">
-<include src="offline_gaia.js">
+<include src="gaia_input.js">
 <include src="gaia_password_changed.js">
+<include src="offline_gaia.js">
 <include src="saml_confirm_password.js">

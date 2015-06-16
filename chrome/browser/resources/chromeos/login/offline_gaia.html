@@ -73,16 +73,15 @@
                 i18n-values="error:offlineLoginInvalidPassword;
                              label:offlineLoginPassword">
             </gaia-input>
-            <gaia-paper-button noink class="link-button"
-                i18n-content="offlineLoginForgotPasswordBtn"
-                on-tap="{{onForgotPasswordClicked}}">
-            </gaia-paper-button>
+            <gaia-button type="link" on-tap="{{onForgotPasswordClicked}}"
+                i18n-content="offlineLoginForgotPasswordBtn">
+            </gaia-button>
             <paper-action-dialog id="forgotPasswordDlg" autoCloseDisabled
                 backdrop on-keydown="{{onKeyDownOnDialog}}">
               <p i18n-content="offlineLoginForgotPasswordDlg"></p>
-              <gaia-paper-button id="dialogCloseBtn" affirmative autofocus
+              <gaia-button type="dialog" affirmative autofocus
                   i18n-content="offlineLoginCloseBtn">
-              </gaia-paper-button>
+              </gaia-button>
             </paper-action-dialog>
           </gaia-input-form>
         </gaia-card>
