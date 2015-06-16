@@ -271,8 +271,8 @@ def _GetOrCreateTargetByName(targets, target_name):
 def _DoesTargetTypeRequireBuild(target_dict):
   """Returns true if the target type is such that it needs to be built."""
   # If a 'none' target has rules or actions we assume it requires a build.
-  return target_dict['type'] != 'none' or \
-      target_dict.get('actions') or target_dict.get('rules')
+  return bool(target_dict['type'] != 'none' or
+              target_dict.get('actions') or target_dict.get('rules'))
 
 
 def _GenerateTargets(data, target_list, target_dicts, toplevel_dir, files,
@@ -437,6 +437,12 @@ def _AddBuildTargets(target, roots, add_if_no_ancestor, result):
           (add_if_no_ancestor or target.requires_build)) or
          (target.is_static_library and add_if_no_ancestor and
           not target.is_or_has_linked_ancestor)):
+    print '\t\tadding to build targets', target.name, 'executable', \
+           target.is_executable, 'added_to_compile_targets', \
+           target.added_to_compile_targets, 'add_if_no_ancestor', \
+           add_if_no_ancestor, 'requires_build', target.requires_build, \
+           'is_static_library', target.is_static_library, \
+           'is_or_has_linked_ancestor', target.is_or_has_linked_ancestor
     result.add(target)
     target.added_to_compile_targets = True
 
@@ -447,6 +453,7 @@ def _GetBuildTargets(matching_targets, roots):
   roots: set of root targets in the build files to search from."""
   result = set()
   for target in matching_targets:
+    print '\tfinding build targets for match', target.name
     _AddBuildTargets(target, roots, True, result)
   return result
 
@@ -566,6 +573,12 @@ def GenerateOutput(target_list, target_dicts, data, params):
 
     if matching_targets:
       search_targets = _LookupTargets(config.targets, unqualified_mapping)
+      print 'supplied targets'
+      for target in config.targets:
+        print '\t', target
+      print 'expanded supplied targets'
+      for target in search_targets:
+        print '\t', target.name
       matched_search_targets = _GetTargetsDependingOn(search_targets)
       print 'raw matched search targets:'
       for target in matched_search_targets:
@@ -573,6 +586,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
       # Reset the visited status for _GetBuildTargets.
       for target in all_targets.itervalues():
         target.visited = False
+      print 'Finding build targets'
       build_targets = _GetBuildTargets(matching_targets, roots)
       matched_search_targets = [gyp.common.ParseQualifiedTarget(target.name)[1]
                                 for target in matched_search_targets]
