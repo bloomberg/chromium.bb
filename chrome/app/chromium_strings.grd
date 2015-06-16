@@ -929,16 +929,6 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
 
       <!-- SRT bubble messages -->
       <if expr="is_win">
-        <if expr="use_titlecase">
-          <message name="IDS_SRT_MENU_ITEM" desc="In Title Case: Text for the Chrome menu option replacing Update required.">
-            Chromium Has Detected Unusual Behavior
-          </message>
-        </if>
-        <if expr="not use_titlecase">
-          <message name="IDS_SRT_MENU_ITEM" desc="Text for the Chrome menu option replacing Update required.">
-            Chromium has detected unusual behavior
-          </message>
-        </if>
         <message name="IDS_SRT_BUBBLE_TITLE" desc="Text for the title of the software removal tool bubble view.">
             Chromium has detected unusual behavior
         </message>

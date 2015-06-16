@@ -8469,6 +8469,16 @@ I don't think this site should be blocked!
       <message name="IDS_SRT_BUBBLE_TEXT" desc="Text for the Chrome Cleanup Tool bubble view full description.">
           Is Chrome crashing, showing unusual startup pages, toolbars, or unexpected ads you can't get rid of, or otherwise changing your browsing experience? You may be able to fix the problem by running the Chrome Cleanup Tool.
       </message>
+      <if expr="use_titlecase">
+        <message name="IDS_SRT_MENU_ITEM" desc="In Title Case: Text for the Chrome menu option to be shown when unusual behavior was detected.">
+          Unusual Behavior Detected
+        </message>
+      </if>
+      <if expr="not use_titlecase">
+        <message name="IDS_SRT_MENU_ITEM" desc="Text for the Chrome menu option to be shown when unusual behavior was detected.">
+          Unusual behavior detected
+        </message>
+      </if>
       <!-- Upgrade bubble messages -->
       <message name="IDS_REENABLE_UPDATES" desc="Text for the button the user clicks to re-enable automatic updates.">
         Enable autoupdate
