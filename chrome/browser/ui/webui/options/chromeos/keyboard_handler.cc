@@ -15,6 +15,8 @@
 #include "content/public/browser/web_ui.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/events/devices/device_data_manager.h"
+#include "ui/events/devices/keyboard_device.h"
 
 namespace {
 const struct ModifierKeysSelectItem {
@@ -42,15 +44,27 @@ const char* kDataValuesNames[] = {
   "remapCapsLockKeyToValue",
   "remapDiamondKeyToValue",
 };
+
+bool HasExternalKeyboard() {
+  for (const ui::KeyboardDevice& keyboard :
+       ui::DeviceDataManager::GetInstance()->keyboard_devices()) {
+    if (keyboard.type == ui::InputDeviceType::INPUT_DEVICE_EXTERNAL)
+      return true;
+  }
+
+  return false;
+}
 }  // namespace
 
 namespace chromeos {
 namespace options {
 
 KeyboardHandler::KeyboardHandler() {
+  ui::DeviceDataManager::GetInstance()->AddObserver(this);
 }
 
 KeyboardHandler::~KeyboardHandler() {
+  ui::DeviceDataManager::GetInstance()->RemoveObserver(this);
 }
 
 void KeyboardHandler::GetLocalizedValues(
@@ -131,20 +145,15 @@ void KeyboardHandler::GetLocalizedValues(
 }
 
 void KeyboardHandler::InitializePage() {
-  bool chromeos_keyboard = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kHasChromeOSKeyboard);
-  const base::FundamentalValue show_caps_lock_options(!chromeos_keyboard);
-
   bool has_diamond_key = base::CommandLine::ForCurrentProcess()->HasSwitch(
       chromeos::switches::kHasChromeOSDiamondKey);
   const base::FundamentalValue show_diamond_key_options(has_diamond_key);
 
   web_ui()->CallJavascriptFunction(
-      "options.KeyboardOverlay.showCapsLockOptions",
-      show_caps_lock_options);
-  web_ui()->CallJavascriptFunction(
       "options.KeyboardOverlay.showDiamondKeyOptions",
       show_diamond_key_options);
+
+  UpdateCapsLockOptions();
 }
 
 void KeyboardHandler::RegisterMessages() {
@@ -155,8 +164,19 @@ void KeyboardHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
+void KeyboardHandler::OnKeyboardDeviceConfigurationChanged() {
+  UpdateCapsLockOptions();
+}
+
 void KeyboardHandler::HandleShowKeyboardShortcuts(const base::ListValue* args) {
   ash::Shell::GetInstance()->new_window_delegate()->ShowKeyboardOverlay();
+}
+
+void KeyboardHandler::UpdateCapsLockOptions() const {
+  const base::FundamentalValue show_caps_lock_options(HasExternalKeyboard());
+  web_ui()->CallJavascriptFunction(
+      "options.KeyboardOverlay.showCapsLockOptions",
+      show_caps_lock_options);
 }
 
 }  // namespace options
