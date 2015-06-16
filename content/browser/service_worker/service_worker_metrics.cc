@@ -116,4 +116,28 @@ void ServiceWorkerMetrics::RecordEventStatus(size_t fired_events,
                            unhandled_ratio);
 }
 
+void ServiceWorkerMetrics::RecordFetchEventStatus(
+    bool is_main_resource,
+    ServiceWorkerStatusCode status) {
+  if (is_main_resource) {
+    UMA_HISTOGRAM_ENUMERATION("ServiceWorker.FetchEvent.MainResource.Status",
+                              status, SERVICE_WORKER_ERROR_MAX_VALUE);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("ServiceWorker.FetchEvent.Subresource.Status",
+                              status, SERVICE_WORKER_ERROR_MAX_VALUE);
+  }
+}
+
+void ServiceWorkerMetrics::RecordURLRequestJobResult(
+    bool is_main_resource,
+    URLRequestJobResult result) {
+  if (is_main_resource) {
+    UMA_HISTOGRAM_ENUMERATION("ServiceWorker.URLRequestJob.MainResource.Result",
+                              result, NUM_REQUEST_JOB_RESULT_TYPES);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("ServiceWorker.URLRequestJob.Subresource.Result",
+                              result, NUM_REQUEST_JOB_RESULT_TYPES);
+  }
+}
+
 }  // namespace content

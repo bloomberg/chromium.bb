@@ -35,6 +35,29 @@ class ServiceWorkerMetrics {
     NUM_DELETE_AND_START_OVER_RESULT_TYPES,
   };
 
+  enum URLRequestJobResult {
+    REQUEST_JOB_FALLBACK_RESPONSE,
+    REQUEST_JOB_FALLBACK_FOR_CORS,
+    REQUEST_JOB_HEADERS_ONLY_RESPONSE,
+    REQUEST_JOB_STREAM_RESPONSE,
+    REQUEST_JOB_BLOB_RESPONSE,
+    REQUEST_JOB_ERROR_RESPONSE_STATUS_ZERO,
+    REQUEST_JOB_ERROR_BAD_BLOB,
+    REQUEST_JOB_ERROR_NO_PROVIDER_HOST,
+    REQUEST_JOB_ERROR_NO_ACTIVE_VERSION,
+    REQUEST_JOB_ERROR_NO_REQUEST,
+    REQUEST_JOB_ERROR_FETCH_EVENT_DISPATCH,
+    REQUEST_JOB_ERROR_BLOB_READ,
+    REQUEST_JOB_ERROR_STREAM_ABORTED,
+    REQUEST_JOB_ERROR_KILLED,
+    REQUEST_JOB_ERROR_KILLED_WITH_BLOB,
+    REQUEST_JOB_ERROR_KILLED_WITH_STREAM,
+    REQUEST_JOB_ERROR_DESTROYED,
+    REQUEST_JOB_ERROR_DESTROYED_WITH_BLOB,
+    REQUEST_JOB_ERROR_DESTROYED_WITH_STREAM,
+    NUM_REQUEST_JOB_RESULT_TYPES,
+  };
+
   // Used for ServiceWorkerDiskCache.
   static void CountInitDiskCacheResult(bool result);
   static void CountReadResponseResult(ReadResponseResult result);
@@ -68,6 +91,15 @@ class ServiceWorkerMetrics {
   // Records the ratio of unhandled events to the all events fired during
   // the lifetime of ServiceWorker.
   static void RecordEventStatus(size_t fired_events, size_t handled_events);
+
+  // Records result of a ServiceWorkerURLRequestJob that was forwarded to
+  // the service worker.
+  static void RecordURLRequestJobResult(bool is_main_resource,
+                                        URLRequestJobResult result);
+
+  // Records the result of dispatching a fetch event to a service worker.
+  static void RecordFetchEventStatus(bool is_main_resource,
+                                     ServiceWorkerStatusCode status);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ServiceWorkerMetrics);

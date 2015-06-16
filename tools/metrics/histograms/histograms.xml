@@ -37094,6 +37094,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ServiceWorker.FetchEvent.MainResource.Status"
+    enum="ServiceWorkerStatusCode">
+  <owner>falken@chromium.org</owner>
+  <summary>
+    The result of dispatching a fetch event to a Service Worker for a main
+    resource request.
+  </summary>
+</histogram>
+
+<histogram name="ServiceWorker.FetchEvent.Subresource.Status"
+    enum="ServiceWorkerStatusCode">
+  <owner>falken@chromium.org</owner>
+  <summary>
+    The result of dispatching a fetch event to a Service Worker for a
+    subresource request.
+  </summary>
+</histogram>
+
 <histogram name="ServiceWorker.FetchEvent.Time" units="milliseconds">
   <owner>shimazu@chromium.org</owner>
   <summary>
@@ -37290,6 +37308,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Records the ratio of unhandled events to all events that are dispatched to
     each ServiceWorker.  Recorded when each ServiceWorkerVersion is destructed.
+  </summary>
+</histogram>
+
+<histogram name="ServiceWorker.URLRequestJob.MainResource.Result"
+    enum="ServiceWorkerURLRequestJobResult">
+  <owner>falken@chromium.org</owner>
+  <summary>
+    Records the result of a main resource request forwarded to a Service Worker.
+  </summary>
+</histogram>
+
+<histogram name="ServiceWorker.URLRequestJob.Subresource.Result"
+    enum="ServiceWorkerURLRequestJobResult">
+  <owner>falken@chromium.org</owner>
+  <summary>
+    Records the result of a subresource request forwarded to a Service Worker.
   </summary>
 </histogram>
 
@@ -65110,6 +65144,28 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="15" label="SERVICE_WORKER_ERROR_SCRIPT_EVALUATE_FAILED"/>
   <int value="16" label="SERVICE_WORKER_ERROR_DISK_CACHE"/>
   <int value="17" label="SERVICE_WORKER_ERROR_REDUNDANT"/>
+</enum>
+
+<enum name="ServiceWorkerURLRequestJobResult" type="int">
+  <int value="0" label="REQUEST_JOB_FALLBACK_RESPONSE"/>
+  <int value="1" label="REQUEST_JOB_FALLBACK_FOR_CORS"/>
+  <int value="2" label="REQUEST_JOB_HEADERS_ONLY_RESPONSE"/>
+  <int value="3" label="REQUEST_JOB_STREAM_RESPONSE"/>
+  <int value="4" label="REQUEST_JOB_BLOB_RESPONSE"/>
+  <int value="5" label="REQUEST_JOB_ERROR_RESPONSE_STATUS_ZERO"/>
+  <int value="6" label="REQUEST_JOB_ERROR_BAD_BLOB"/>
+  <int value="7" label="REQUEST_JOB_ERROR_NO_PROVIDER_HOST"/>
+  <int value="8" label="REQUEST_JOB_ERROR_NO_ACTIVE_VERSION"/>
+  <int value="9" label="REQUEST_JOB_ERROR_NO_REQUEST"/>
+  <int value="10" label="REQUEST_JOB_ERROR_FETCH_EVENT_DISPATCH"/>
+  <int value="11" label="REQUEST_JOB_ERROR_BLOB_READ"/>
+  <int value="12" label="REQUEST_JOB_ERROR_STREAM_ABORTED"/>
+  <int value="13" label="REQUEST_JOB_ERROR_KILLED"/>
+  <int value="14" label="REQUEST_JOB_ERROR_KILLED_WITH_BLOB"/>
+  <int value="15" label="REQUEST_JOB_ERROR_KILLED_WITH_STREAM"/>
+  <int value="16" label="REQUEST_JOB_ERROR_DESTROYED"/>
+  <int value="17" label="REQUEST_JOB_ERROR_DESTROYED_WITH_BLOB"/>
+  <int value="18" label="REQUEST_JOB_ERROR_DESTROYED_WITH_STREAM"/>
 </enum>
 
 <enum name="ServiceWorkerWriteResponseResult" type="int">
