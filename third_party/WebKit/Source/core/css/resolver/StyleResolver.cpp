@@ -240,11 +240,12 @@ void StyleResolver::addTreeBoundaryCrossingScope(ContainerNode& scope)
 void StyleResolver::resetAuthorStyle(TreeScope& treeScope)
 {
     m_treeBoundaryCrossingRules.removeScope(treeScope.rootNode());
-    resetRuleFeatures();
 
     ScopedStyleResolver* resolver = treeScope.scopedStyleResolver();
     if (!resolver)
         return;
+
+    resetRuleFeatures();
 
     if (treeScope.rootNode().isDocumentNode()) {
         resolver->resetAuthorStyle();
