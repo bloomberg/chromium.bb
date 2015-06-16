@@ -172,10 +172,13 @@ class ResourceUsageReporterImpl : public ResourceUsageReporter {
       usage_data_->web_cache_stats = ResourceTypeStats::From(stats);
     }
 
-    v8::HeapStatistics heap_stats;
-    v8::Isolate::GetCurrent()->GetHeapStatistics(&heap_stats);
-    usage_data_->v8_bytes_allocated = heap_stats.total_heap_size();
-    usage_data_->v8_bytes_used = heap_stats.used_heap_size();
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    if (isolate) {
+      v8::HeapStatistics heap_stats;
+      isolate->GetHeapStatistics(&heap_stats);
+      usage_data_->v8_bytes_allocated = heap_stats.total_heap_size();
+      usage_data_->v8_bytes_used = heap_stats.used_heap_size();
+    }
     base::Closure collect = base::Bind(
         &ResourceUsageReporterImpl::CollectOnWorkerThread,
         base::ThreadTaskRunnerHandle::Get(), weak_factory_.GetWeakPtr());
