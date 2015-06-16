@@ -243,7 +243,7 @@ bool FileManagerPrivateZoomFunction::RunSync() {
       NOTREACHED();
       return false;
   }
-  render_view_host()->Zoom(zoom_type);
+  render_view_host_do_not_use()->Zoom(zoom_type);
   return true;
 }
 

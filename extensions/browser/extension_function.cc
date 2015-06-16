@@ -431,7 +431,8 @@ void UIThreadExtensionFunction::Destruct() const {
   BrowserThread::DeleteOnUIThread::Destruct(this);
 }
 
-content::RenderViewHost* UIThreadExtensionFunction::render_view_host() const {
+content::RenderViewHost*
+UIThreadExtensionFunction::render_view_host_do_not_use() const {
   return render_frame_host_ ? render_frame_host_->GetRenderViewHost() : nullptr;
 }
 

@@ -477,7 +477,7 @@ class UIThreadExtensionFunction : public ExtensionFunction {
   // DEPRECATED: Please use render_frame_host().
   // TODO(devlin): Remove this once all callers are updated to use
   // render_frame_host().
-  content::RenderViewHost* render_view_host() const;
+  content::RenderViewHost* render_view_host_do_not_use() const;
 
   void SetRenderFrameHost(content::RenderFrameHost* render_frame_host);
   content::RenderFrameHost* render_frame_host() const {

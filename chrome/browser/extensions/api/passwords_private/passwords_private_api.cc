@@ -84,10 +84,9 @@ ExtensionFunction::ResponseAction
   PasswordsPrivateDelegate* delegate =
       PasswordsPrivateDelegateFactory::GetForBrowserContext(browser_context());
 
-  delegate->RequestShowPassword(
-      parameters->login_pair.origin_url,
-      parameters->login_pair.username,
-      render_view_host());
+  delegate->RequestShowPassword(parameters->login_pair.origin_url,
+                                parameters->login_pair.username,
+                                GetSenderWebContents());
 
   // No response given from this API function; instead, listeners wait for the
   // chrome.passwordsPrivate.onPlaintextPasswordRetrieved event to fire.

@@ -91,10 +91,9 @@ class TestDelegate : public PasswordsPrivateDelegate {
     SendPasswordExceptionsList();
   }
 
-  void RequestShowPassword(
-      const std::string& origin_url,
-      const std::string& username,
-      const content::RenderViewHost* render_view_host) override {
+  void RequestShowPassword(const std::string& origin_url,
+                           const std::string& username,
+                           content::WebContents* web_contents) override {
     // Return a mocked password value.
     std::string plaintext_password(kPlaintextPassword);
     observers_->Notify(

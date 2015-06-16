@@ -33,7 +33,7 @@ PasswordsPrivateDelegateImpl::PasswordsPrivateDelegateImpl(Profile* profile)
       set_password_exception_list_called_(false),
       is_initialized_(false),
       languages_(profile->GetPrefs()->GetString(prefs::kAcceptLanguages)),
-      render_view_host_(nullptr),
+      web_contents_(nullptr),
       observers_(new base::ObserverListThreadSafe<Observer>()) {
   password_manager_presenter_->Initialize();
   password_manager_presenter_->UpdatePasswordLists();
@@ -101,32 +101,29 @@ void PasswordsPrivateDelegateImpl::RemovePasswordExceptionInternal(
 void PasswordsPrivateDelegateImpl::RequestShowPassword(
     const std::string& origin_url,
     const std::string& username,
-    const content::RenderViewHost* render_view_host) {
-  ExecuteFunction(base::Bind(
-      &PasswordsPrivateDelegateImpl::RequestShowPasswordInternal,
-      base::Unretained(this),
-      origin_url,
-      username,
-      render_view_host));
+    content::WebContents* web_contents) {
+  ExecuteFunction(
+      base::Bind(&PasswordsPrivateDelegateImpl::RequestShowPasswordInternal,
+                 base::Unretained(this), origin_url, username, web_contents));
 }
 
 void PasswordsPrivateDelegateImpl::RequestShowPasswordInternal(
     const std::string& origin_url,
     const std::string& username,
-    const content::RenderViewHost* render_view_host) {
+    content::WebContents* web_contents) {
   std::string key = LoginPairToMapKey(origin_url, username);
   if (login_pair_to_index_map_.find(key) == login_pair_to_index_map_.end()) {
     // If the URL/username pair does not exist in the map, do nothing.
     return;
   }
 
-  // Save |render_view_host| so that the call to RequestShowPassword() below can
-  // call use this value by calling GetNativeWindow(). Note: This is safe
-  // because GetNativeWindow() will only be called immediately from
+  // Save |web_contents| so that the call to RequestShowPassword() below
+  // can use this value by calling GetNativeWindow(). Note: This is safe because
+  // GetNativeWindow() will only be called immediately from
   // RequestShowPassword().
   // TODO(stevenjb): Pass this directly to RequestShowPassword(); see
   // crbug.com/495290.
-  render_view_host_ = render_view_host;
+  web_contents_ = web_contents;
 
   // Request the password. When it is retrieved, ShowPassword() will be called.
   password_manager_presenter_->RequestShowPassword(
@@ -227,9 +224,8 @@ void PasswordsPrivateDelegateImpl::SendPasswordExceptionsList() {
 
 #if !defined(OS_ANDROID)
 gfx::NativeWindow PasswordsPrivateDelegateImpl::GetNativeWindow() const {
-  DCHECK(render_view_host_);
-  return content::WebContents::FromRenderViewHost(render_view_host_)
-      ->GetTopLevelNativeWindow();
+  DCHECK(web_contents_);
+  return web_contents_->GetTopLevelNativeWindow();
 }
 #endif
 

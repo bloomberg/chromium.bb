@@ -23,7 +23,7 @@
 class Profile;
 
 namespace content {
-class RenderViewHost;
+class WebContents;
 }
 
 namespace extensions {
@@ -41,10 +41,9 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
   void RemoveSavedPassword(
       const std::string& origin_url, const std::string& username) override;
   void RemovePasswordException(const std::string& exception_url) override;
-  void RequestShowPassword(
-      const std::string& origin_url,
-      const std::string& username,
-      const content::RenderViewHost* render_view_host) override;
+  void RequestShowPassword(const std::string& origin_url,
+                           const std::string& username,
+                           content::WebContents* web_contents) override;
 
   // PasswordUIView implementation.
   Profile* GetProfile() override;
@@ -78,10 +77,9 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
   void RemoveSavedPasswordInternal(
       const std::string& origin_url, const std::string& username);
   void RemovePasswordExceptionInternal(const std::string& exception_url);
-  void RequestShowPasswordInternal(
-      const std::string& origin_url,
-      const std::string& username,
-      const content::RenderViewHost* render_view_host);
+  void RequestShowPasswordInternal(const std::string& origin_url,
+                                   const std::string& username,
+                                   content::WebContents* web_contents);
   void SendSavedPasswordsList();
   void SendPasswordExceptionsList();
 
@@ -113,9 +111,9 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
   // User pref for storing accept languages.
   std::string languages_;
 
-  // The RenderViewHost used when invoking this API. Used to fetch the
+  // The WebContents used when invoking this API. Used to fetch the
   // NativeWindow for the window where the API was called.
-  const content::RenderViewHost* render_view_host_;
+  content::WebContents* web_contents_;
 
   // The observers.
   scoped_refptr<base::ObserverListThreadSafe<Observer>> observers_;

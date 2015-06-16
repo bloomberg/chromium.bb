@@ -357,7 +357,7 @@ bool WebViewInternalExecuteCodeFunction::LoadFileForWebUI(
 
   url_fetcher_.reset(new WebUIURLFetcher(
       this->browser_context(), render_frame_host()->GetProcess()->GetID(),
-      render_view_host()->GetRoutingID(), file_url, callback));
+      render_view_host_do_not_use()->GetRoutingID(), file_url, callback));
   url_fetcher_->Start();
   return true;
 }
@@ -416,7 +416,7 @@ WebViewInternalAddContentScriptsFunction::Run() {
     return RespondNow(Error(kViewInstanceIdError));
 
   GURL owner_base_url(
-      render_view_host()->GetSiteInstance()->GetSiteURL().GetWithEmptyPath());
+      render_frame_host()->GetSiteInstance()->GetSiteURL().GetWithEmptyPath());
   std::set<UserScript> result;
 
   content::WebContents* sender_web_contents = GetSenderWebContents();
@@ -433,7 +433,7 @@ WebViewInternalAddContentScriptsFunction::Run() {
 
   manager->AddContentScripts(
       sender_web_contents->GetRenderProcessHost()->GetID(),
-      render_view_host()->GetRoutingID(), params->instance_id, host_id, result);
+      render_view_host_do_not_use(), params->instance_id, host_id, result);
 
   return RespondNow(NoArguments());
 }

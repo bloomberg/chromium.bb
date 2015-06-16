@@ -8,6 +8,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "extensions/browser/declarative_user_script_manager.h"
 #include "extensions/browser/declarative_user_script_master.h"
 #include "extensions/browser/extension_system.h"
@@ -42,7 +43,7 @@ WebViewContentScriptManager* WebViewContentScriptManager::Get(
 
 void WebViewContentScriptManager::AddContentScripts(
     int embedder_process_id,
-    int embedder_routing_id,
+    content::RenderViewHost* render_view_host,
     int view_instance_id,
     const HostID& host_id,
     const std::set<UserScript>& scripts) {
@@ -95,7 +96,8 @@ void WebViewContentScriptManager::AddContentScripts(
     user_script_loader_observer_.Add(loader);
 
   // Step 4: adds new scripts to the master.
-  master->AddScripts(scripts, embedder_process_id, embedder_routing_id);
+  master->AddScripts(scripts, embedder_process_id,
+                     render_view_host->GetRoutingID());
 
   // Step 5: creates an entry in |webview_host_id_map_| for the given
   // |embedder_process_id| and |view_instance_id| if it doesn't exist.

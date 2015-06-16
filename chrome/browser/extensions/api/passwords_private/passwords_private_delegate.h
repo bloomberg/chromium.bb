@@ -26,7 +26,7 @@ class Value;
 }
 
 namespace content {
-class RenderViewHost;
+class WebContents;
 }
 
 namespace extensions {
@@ -84,10 +84,9 @@ class PasswordsPrivateDelegate : public KeyedService {
   // |username| The username used in conjunction with the saved password.
   // |native_window| The Chrome host window; will be used to show an OS-level
   //     authentication dialog if necessary.
-  virtual void RequestShowPassword(
-      const std::string& origin_url,
-      const std::string& username,
-      const content::RenderViewHost* render_view_host) = 0;
+  virtual void RequestShowPassword(const std::string& origin_url,
+                                   const std::string& username,
+                                   content::WebContents* web_contents) = 0;
 };
 
 }  // namespace extensions
