@@ -8,6 +8,7 @@
 #include "base/run_loop.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/thread_task_runner_handle.h"
+#include "chrome/browser/download/notification/download_notification_manager.h"
 #include "chrome/browser/notifications/notification_test_util.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -23,51 +24,6 @@
 using testing::NiceMock;
 using testing::Return;
 using testing::_;
-
-namespace {
-
-class MockDownloadNotificationItemDelegate
-    : public DownloadNotificationItem::Delegate {
- public:
-  MockDownloadNotificationItemDelegate()
-      : on_download_removed_call_count_(0u),
-        on_download_started_call_count_(0u),
-        on_download_stopped_call_count_(0u) {}
-
-  void OnCreated(DownloadNotificationItem* item) override {
-  }
-
-  void OnDownloadRemoved(DownloadNotificationItem* item) override {
-    on_download_removed_call_count_++;
-  }
-
-  void OnDownloadStarted(DownloadNotificationItem* item) override {
-    on_download_started_call_count_++;
-  }
-
-  void OnDownloadStopped(DownloadNotificationItem* item) override {
-    on_download_stopped_call_count_++;
-  }
-
-  size_t GetOnDownloadRemovedCallCount() {
-    return on_download_removed_call_count_;
-  }
-
-  size_t GetOnDownloadStartedCallCount() {
-    return on_download_started_call_count_;
-  }
-
-  size_t GetOnDownloadStoppedCallCount() {
-    return on_download_stopped_call_count_;
-  }
-
- private:
-  size_t on_download_removed_call_count_;
-  size_t on_download_started_call_count_;
-  size_t on_download_stopped_call_count_;
-};
-
-}  // anonymous namespace
 
 namespace test {
 
@@ -86,9 +42,12 @@ class DownloadNotificationItemTest : public testing::Test {
     ASSERT_TRUE(profile_manager_->SetUp());
     profile_ = profile_manager_->CreateTestingProfile("test-user");
 
-    ui_manager_.reset(new StubNotificationUIManager);
-    DownloadNotificationItem::SetStubNotificationUIManagerForTesting(
-        ui_manager_.get());
+    scoped_ptr<NotificationUIManager> ui_manager(new StubNotificationUIManager);
+    TestingBrowserProcess::GetGlobal()->
+        SetNotificationUIManager(ui_manager.Pass());
+
+    download_notification_manager_.reset(
+        new DownloadNotificationManagerForProfile(profile_, nullptr));
 
     download_item_.reset(new NiceMock<content::MockDownloadItem>());
     ON_CALL(*download_item_, GetId()).WillByDefault(Return(12345));
@@ -100,18 +59,25 @@ class DownloadNotificationItemTest : public testing::Test {
     ON_CALL(*download_item_, GetDangerType())
         .WillByDefault(Return(content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS));
     ON_CALL(*download_item_, IsDone()).WillByDefault(Return(false));
+    ON_CALL(*download_item_, GetBrowserContext())
+        .WillByDefault(Return(profile_));
   }
 
   void TearDown() override {
-    download_notification_item_.reset();
+    download_notification_item_ = nullptr;  // will be free'd in the manager.
+    download_notification_manager_.reset();
     profile_manager_.reset();
     message_center::MessageCenter::Shutdown();
     testing::Test::TearDown();
   }
 
  protected:
-  message_center::MessageCenter* message_center() {
+  message_center::MessageCenter* message_center() const {
     return message_center::MessageCenter::Get();
+  }
+
+  NotificationUIManager* ui_manager() const {
+    return TestingBrowserProcess::GetGlobal()->notification_ui_manager();
   }
 
   std::string notification_id() const {
@@ -119,12 +85,13 @@ class DownloadNotificationItemTest : public testing::Test {
   }
 
   const Notification* notification() const {
-    return ui_manager_->FindById(download_notification_item_->watcher_->id(),
-                                 NotificationUIManager::GetProfileID(profile_));
+    return ui_manager()->FindById(
+        download_notification_item_->watcher()->id(),
+        NotificationUIManager::GetProfileID(profile_));
   }
 
   size_t NotificationCount() const {
-    return ui_manager_
+    return ui_manager()
         ->GetAllIdsByProfileAndSourceOrigin(
               NotificationUIManager::GetProfileID(profile_),
               GURL(DownloadNotificationItem::kDownloadNotificationOrigin))
@@ -132,8 +99,8 @@ class DownloadNotificationItemTest : public testing::Test {
   }
 
   void RemoveNotification() {
-    ui_manager_->CancelById(download_notification_item_->watcher_->id(),
-                            NotificationUIManager::GetProfileID(profile_));
+    ui_manager()->CancelById(download_notification_item_->watcher()->id(),
+                             NotificationUIManager::GetProfileID(profile_));
 
     // Waits, since removing a notification may cause an async job.
     base::RunLoop().RunUntilIdle();
@@ -152,21 +119,21 @@ class DownloadNotificationItemTest : public testing::Test {
   }
 
   void CreateDownloadNotificationItem() {
-    download_notification_item_.reset(new DownloadNotificationItem(
-        download_item_.get(), profile_, &delegate_));
+    download_notification_manager_->OnNewDownloadReady(download_item_.get());
+    download_notification_item_ =
+        download_notification_manager_->items_[download_item_.get()];
   }
 
   base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
 
-  scoped_ptr<StubNotificationUIManager> ui_manager_;
-
   scoped_ptr<TestingProfileManager> profile_manager_;
   Profile* profile_;
 
-  MockDownloadNotificationItemDelegate delegate_;
   scoped_ptr<NiceMock<content::MockDownloadItem>> download_item_;
-  scoped_ptr<DownloadNotificationItem> download_notification_item_;
+  scoped_ptr<DownloadNotificationManagerForProfile>
+      download_notification_manager_;
+  DownloadNotificationItem* download_notification_item_;
 };
 
 TEST_F(DownloadNotificationItemTest, ShowAndCloseNotification) {
@@ -268,31 +235,6 @@ TEST_F(DownloadNotificationItemTest, OpenWhenComplete) {
 
   // DownloadItem::OpenDownload must not be called since the file opens
   // automatically due to the open-when-complete flag.
-}
-
-TEST_F(DownloadNotificationItemTest, DownloadNotificationItemDelegate) {
-  // Shows a notification and checks OnDownloadStarted().
-  EXPECT_EQ(0u, delegate_.GetOnDownloadStartedCallCount());
-  CreateDownloadNotificationItem();
-  EXPECT_EQ(1u, delegate_.GetOnDownloadStartedCallCount());
-
-  download_item_->NotifyObserversDownloadOpened();
-  download_item_->NotifyObserversDownloadUpdated();
-
-  // Checks OnDownloadStopped().
-  EXPECT_EQ(0u, delegate_.GetOnDownloadStoppedCallCount());
-  EXPECT_CALL(*download_item_, GetState())
-      .WillRepeatedly(Return(content::DownloadItem::COMPLETE));
-  EXPECT_CALL(*download_item_, IsDone()).WillRepeatedly(Return(true));
-  download_item_->NotifyObserversDownloadUpdated();
-  EXPECT_EQ(1u, delegate_.GetOnDownloadStoppedCallCount());
-
-  // Checks OnDownloadRemoved().
-  EXPECT_EQ(0u, delegate_.GetOnDownloadRemovedCallCount());
-  download_item_->NotifyObserversDownloadRemoved();
-  EXPECT_EQ(1u, delegate_.GetOnDownloadRemovedCallCount());
-
-  download_item_.reset();
 }
 
 }  // namespace test

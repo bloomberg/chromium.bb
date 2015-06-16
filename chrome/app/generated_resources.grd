@@ -1909,6 +1909,22 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
                desc=".">
                <ph name="FILE_NAME">$1<ex>somedocument.pdf</ex></ph> download unsuccessful
       </message>
+      <message name="IDS_DOWNLOAD_STATUS_GROUP_IN_PROGRESS_TITLE"
+               desc="Title of download group notification which shows the combined progress of multiple downloads.">
+        {NUM_DOWNLOADS, plural,
+         =1 {Downloading a file}
+         other {Downloading # files}}
+      </message>
+      <message name="IDS_DOWNLOAD_STATUS_GROUP_DONE_TITLE"
+               desc="Title of download group notification which shows the combined progress of multiple downloads. [ICU Syntax]">
+        {NUM_DOWNLOADS, plural,
+         =1 {Downloaded a file}
+         other {Downloaded # files}}
+      </message>
+      <message name="IDS_DOWNLOAD_STATUS_COMBINED_IN_PROGRESS"
+               desc="Status text of download notification which shows the combined progres of multiple downloads">
+               <ph name="PERCENT">$1<ex>30</ex></ph>% complete, <ph name="TIME_LEFT">$2<ex>20 secs left</ex></ph>,
+      </message>
       <message name="IDS_DOWNLOAD_STATUS_IN_PROGRESS"
                desc="Size and units downloaded, time remaining.">
         <ph name="DOWNLOAD_RECEIVED">$1<ex>54/154 MB</ex></ph>, <ph name="TIME_LEFT">$2<ex>5s</ex></ph>
@@ -2067,6 +2083,10 @@ Even if you have downloaded files from this website before, the website might ha
           Show in Finder
         </message>
       </if>
+      <message name="IDS_DOWNLOAD_LINK_SHOW_ALL_DOWNLOADS"
+               desc="In the download notification, 'Show all downloads' button text.">
+        Show all downloads
+      </message>
       <message name="IDS_DOWNLOAD_TAB_CANCELLED"
                desc="Text that appears next to the downloaded files that have been canceled">
         Canceled

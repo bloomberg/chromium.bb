@@ -130,6 +130,8 @@ class TestingBrowserProcess : public BrowserProcess {
   void SetBrowserPolicyConnector(policy::BrowserPolicyConnector* connector);
   void SetSafeBrowsingService(SafeBrowsingService* sb_service);
   void SetSystemRequestContext(net::URLRequestContextGetter* context_getter);
+  void SetNotificationUIManager(
+      scoped_ptr<NotificationUIManager> notification_ui_manager);
 
  private:
   // See CreateInstance() and DestoryInstance() above.

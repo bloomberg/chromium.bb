@@ -5,10 +5,9 @@
 #ifndef CHROME_BROWSER_DOWNLOAD_NOTIFICATION_DOWNLOAD_NOTIFICATION_ITEM_H_
 #define CHROME_BROWSER_DOWNLOAD_NOTIFICATION_DOWNLOAD_NOTIFICATION_ITEM_H_
 
-#include "chrome/browser/download/notification/download_notification_item.h"
-
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/download/download_commands.h"
+#include "chrome/browser/download/notification/download_notification.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_delegate.h"
 #include "chrome/browser/notifications/notification_test_util.h"
@@ -21,74 +20,35 @@ namespace test {
 class DownloadNotificationItemTest;
 }
 
-class DownloadNotificationItem : public content::DownloadItem::Observer {
+class DownloadNotificationItem : public DownloadNotification {
  public:
-  class Delegate {
-   public:
-    virtual void OnCreated(DownloadNotificationItem* item) = 0;
-    virtual void OnDownloadStarted(DownloadNotificationItem* item) = 0;
-    virtual void OnDownloadStopped(DownloadNotificationItem* item) = 0;
-    virtual void OnDownloadRemoved(DownloadNotificationItem* item) = 0;
-  };
-
-  static const char kDownloadNotificationOrigin[];
-
   DownloadNotificationItem(content::DownloadItem* item,
-                           Profile* profile,
-                           Delegate* delegate);
+                           DownloadNotificationManagerForProfile* manager);
 
   ~DownloadNotificationItem() override;
+
+  // Methods called from NotificationWatcher.
+  void OnDownloadUpdated(content::DownloadItem* item) override;
+  void OnDownloadRemoved(content::DownloadItem* item) override;
+  void OnNotificationClose() override;
+  void OnNotificationClick() override;
+  void OnNotificationButtonClick(int button_index) override;
+  std::string GetNotificationId() const override;
 
  private:
   friend class test::DownloadNotificationItemTest;
 
   enum NotificationUpdateType {
-    ADD_NEW,
-    UPDATE_EXISTING
+    ADD,
+    UPDATE,
+    UPDATE_AND_POPUP
   };
-
-  class NotificationWatcher : public NotificationDelegate {
-   public:
-    explicit NotificationWatcher(DownloadNotificationItem* item);
-
-    // NotificationDelegate overrides:
-    void Close(bool by_user) override;
-    void Click() override;
-    bool HasClickedListener() override;
-    void ButtonClick(int button_index) override;
-    std::string id() const override;
-
-   private:
-    ~NotificationWatcher() override;
-
-    DownloadNotificationItem* item_;
-  };
-
-  // For testing. This is set by SetStubNotificationUIManagerForTesting method.
-  static StubNotificationUIManager* stub_notification_ui_manager_for_testing_;
-
-  // Replaces the NotificationUIManager for tests.
-  static void SetStubNotificationUIManagerForTesting(
-      StubNotificationUIManager* stub_notification_ui_manager) {
-    stub_notification_ui_manager_for_testing_ = stub_notification_ui_manager;
-  }
-
-  // Methods called from NotificationWatcher.
-  void OnNotificationClick();
-  void OnNotificationButtonClick(int button_index);
-
-  // DownloadItem::Observer overrides:
-  void OnDownloadUpdated(content::DownloadItem* item) override;
-  void OnDownloadOpened(content::DownloadItem* item) override;
-  void OnDownloadRemoved(content::DownloadItem* item) override;
-  void OnDownloadDestroyed(content::DownloadItem* item) override;
 
   void CloseNotificationByUser();
   void CloseNotificationByNonUser();
+  void Update();
   void UpdateNotificationData(NotificationUpdateType type);
   void SetNotificationImage(int resource_id);
-
-  NotificationUIManager* notification_ui_manager() const;
 
   // Returns a short one-line status string for the download.
   base::string16 GetTitle() const;
@@ -100,20 +60,24 @@ class DownloadNotificationItem : public content::DownloadItem::Observer {
   // if IsDangerous() is true.
   base::string16 GetWarningText() const;
 
-  Browser* GetBrowser();
+  Browser* GetBrowser() const;
+  Profile* profile() const;
 
   // Returns the list of possible extra (all except the default) actions.
   scoped_ptr<std::vector<DownloadCommands::Command>> GetExtraActions() const;
 
+  // Flag to show the notification on next update. If true, the notification
+  // goes visible. The initial value is true so it gets shown on initial update.
+  bool show_next_ = true;
+  // Current vilibility status of the notification.
+  bool visible_ = false;
+
   int image_resource_id_ = 0;
   content::DownloadItem::DownloadState previous_download_state_ =
       content::DownloadItem::MAX_DOWNLOAD_STATE;  // As uninitialized state
-  Profile* profile_;
-  scoped_refptr<NotificationWatcher> watcher_;
   scoped_ptr<Notification> notification_;
   content::DownloadItem* item_;
   scoped_ptr<std::vector<DownloadCommands::Command>> button_actions_;
-  Delegate* const delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadNotificationItem);
 };

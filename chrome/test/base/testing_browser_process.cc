@@ -390,6 +390,11 @@ void TestingBrowserProcess::SetSystemRequestContext(
   system_request_context_ = context_getter;
 }
 
+void TestingBrowserProcess::SetNotificationUIManager(
+    scoped_ptr<NotificationUIManager> notification_ui_manager) {
+  notification_ui_manager_.swap(notification_ui_manager);
+}
+
 void TestingBrowserProcess::SetLocalState(PrefService* local_state) {
   if (!local_state) {
     // The local_state_ PrefService is owned outside of TestingBrowserProcess,
