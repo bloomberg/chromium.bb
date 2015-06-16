@@ -6,18 +6,7 @@
 
 namespace ui {
 
-InProgressTouchEvdev::InProgressTouchEvdev()
-    : altered(false),
-      cancelled(false),
-      was_touching(false),
-      touching(false),
-      x(0),
-      y(0),
-      tracking_id(-1),
-      slot(0),
-      radius_x(0),
-      radius_y(0),
-      pressure(0) {
+InProgressTouchEvdev::InProgressTouchEvdev() {
 }
 
 InProgressTouchEvdev::~InProgressTouchEvdev() {}

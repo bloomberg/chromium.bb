@@ -16,14 +16,7 @@ namespace ui {
 
 InputControllerEvdev::InputControllerEvdev(KeyboardEvdev* keyboard,
                                            MouseButtonMapEvdev* button_map)
-    : settings_update_pending_(false),
-      input_device_factory_(nullptr),
-      keyboard_(keyboard),
-      button_map_(button_map),
-      has_mouse_(false),
-      has_touchpad_(false),
-      caps_lock_led_state_(false),
-      weak_ptr_factory_(this) {
+    : keyboard_(keyboard), button_map_(button_map), weak_ptr_factory_(this) {
 }
 
 InputControllerEvdev::~InputControllerEvdev() {

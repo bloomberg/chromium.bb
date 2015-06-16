@@ -77,10 +77,10 @@ class EVENTS_OZONE_EVDEV_EXPORT InputControllerEvdev : public InputController {
   InputDeviceSettingsEvdev input_device_settings_;
 
   // Task to update config from input_device_settings_ is pending.
-  bool settings_update_pending_;
+  bool settings_update_pending_ = false;
 
   // Factory for devices. Needed to update device config.
-  InputDeviceFactoryEvdevProxy* input_device_factory_;
+  InputDeviceFactoryEvdevProxy* input_device_factory_ = nullptr;
 
   // Keyboard state.
   KeyboardEvdev* keyboard_;
@@ -89,11 +89,11 @@ class EVENTS_OZONE_EVDEV_EXPORT InputControllerEvdev : public InputController {
   MouseButtonMapEvdev* button_map_;
 
   // Device presence.
-  bool has_mouse_;
-  bool has_touchpad_;
+  bool has_mouse_ = false;
+  bool has_touchpad_ = false;
 
   // LED state.
-  bool caps_lock_led_state_;
+  bool caps_lock_led_state_ = false;
 
   base::WeakPtrFactory<InputControllerEvdev> weak_ptr_factory_;
 

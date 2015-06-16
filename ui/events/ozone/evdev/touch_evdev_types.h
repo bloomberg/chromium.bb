@@ -21,21 +21,21 @@ struct EVENTS_OZONE_EVDEV_EXPORT InProgressTouchEvdev {
   ~InProgressTouchEvdev();
 
   // Whether there is new information for the touch.
-  bool altered;
+  bool altered = false;
 
   // Whether the touch was cancelled. Touch events should be ignored till a
   // new touch is initiated.
-  bool cancelled;
+  bool cancelled = false;
 
-  bool was_touching;
-  bool touching;
-  float x;
-  float y;
-  int tracking_id;
-  size_t slot;
-  float radius_x;
-  float radius_y;
-  float pressure;
+  bool was_touching = false;
+  bool touching = false;
+  float x = 0;
+  float y = 0;
+  int tracking_id = -1;
+  size_t slot = 0;
+  float radius_x = 0;
+  float radius_y = 0;
+  float pressure = 0;
 };
 
 }  // namespace ui

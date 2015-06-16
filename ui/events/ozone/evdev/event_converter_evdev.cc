@@ -22,8 +22,7 @@ EventConverterEvdev::EventConverterEvdev(int fd,
                                          uint16_t product_id)
     : fd_(fd),
       path_(path),
-      input_device_(id, type, name, vendor_id, product_id),
-      ignore_events_(false) {
+      input_device_(id, type, name, vendor_id, product_id) {
 }
 
 EventConverterEvdev::~EventConverterEvdev() {

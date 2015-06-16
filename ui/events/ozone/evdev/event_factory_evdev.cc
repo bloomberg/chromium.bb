@@ -118,15 +118,13 @@ class ProxyDeviceEventDispatcher : public DeviceEventDispatcherEvdev {
 EventFactoryEvdev::EventFactoryEvdev(CursorDelegateEvdev* cursor,
                                      DeviceManager* device_manager,
                                      KeyboardLayoutEngine* keyboard_layout)
-    : last_device_id_(0),
-      device_manager_(device_manager),
+    : device_manager_(device_manager),
       keyboard_(&modifiers_,
                 keyboard_layout,
                 base::Bind(&EventFactoryEvdev::DispatchUiEvent,
                            base::Unretained(this))),
       cursor_(cursor),
       input_controller_(&keyboard_, &button_map_),
-      initialized_(false),
       touch_id_generator_(0),
       weak_ptr_factory_(this) {
   DCHECK(device_manager_);

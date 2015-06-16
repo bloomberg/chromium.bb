@@ -67,10 +67,10 @@ class EVENTS_OZONE_EVDEV_EXPORT EventModifiersEvdev {
   int modifiers_down_[EVDEV_NUM_MODIFIERS];
 
   // Mask of modifier flags currently "locked".
-  int modifier_flags_locked_;
+  int modifier_flags_locked_ = 0;
 
   // Mask of modifier flags currently active (nonzero keys pressed xor locked).
-  int modifier_flags_;
+  int modifier_flags_ = 0;
 
   // Update modifier_flags_ from modifiers_down_ and modifier_flags_locked_.
   void UpdateFlags(unsigned int modifier);

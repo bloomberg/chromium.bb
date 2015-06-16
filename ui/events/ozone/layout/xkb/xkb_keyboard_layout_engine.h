@@ -54,7 +54,7 @@ class EVENTS_OZONE_LAYOUT_EXPORT XkbKeyboardLayoutEngine
   std::vector<XkbFlagMapEntry> xkb_flag_map_;
 
   // Flag mask for num lock, which is always considered enabled.
-  xkb_mod_mask_t num_lock_mod_mask_;
+  xkb_mod_mask_t num_lock_mod_mask_ = 0;
 
   // Determines the Windows-based KeyboardCode (VKEY) for a character key,
   // accounting for non-US layouts. May return VKEY_UNKNOWN, in which case the

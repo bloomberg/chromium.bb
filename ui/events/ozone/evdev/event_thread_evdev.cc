@@ -28,8 +28,7 @@ class EvdevThread : public base::Thread {
         dispatcher_(dispatcher.Pass()),
         cursor_(cursor),
         init_callback_(callback),
-        init_runner_(base::ThreadTaskRunnerHandle::Get()),
-        input_device_factory_(nullptr) {}
+        init_runner_(base::ThreadTaskRunnerHandle::Get()) {}
   ~EvdevThread() override { Stop(); }
 
   void Init() override {
@@ -58,7 +57,7 @@ class EvdevThread : public base::Thread {
   scoped_refptr<base::SingleThreadTaskRunner> init_runner_;
 
   // Thread-internal state.
-  InputDeviceFactoryEvdev* input_device_factory_;
+  InputDeviceFactoryEvdev* input_device_factory_ = nullptr;
 };
 
 }  // namespace

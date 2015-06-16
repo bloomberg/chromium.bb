@@ -78,10 +78,10 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
   DeviceEventDispatcherEvdev* dispatcher_;
 
   // Set if we have seen a SYN_DROPPED and not yet re-synced with the device.
-  bool syn_dropped_;
+  bool syn_dropped_ = false;
 
   // Device has multitouch capability.
-  bool has_mt_;
+  bool has_mt_ = false;
 
   // Use BTN_LEFT instead of BT_TOUCH.
   bool quirk_left_mouse_button_ = false;
@@ -99,13 +99,13 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
   float y_num_tuxels_;
 
   // Number of touch points reported by driver
-  int touch_points_;
+  int touch_points_ = 0;
 
   // Tracking id counter.
-  int next_tracking_id_;
+  int next_tracking_id_ = 0;
 
   // Touch point currently being updated from the /dev/input/event* stream.
-  size_t current_slot_;
+  size_t current_slot_ = 0;
 
   // In-progress touch points.
   std::vector<InProgressTouchEvdev> events_;

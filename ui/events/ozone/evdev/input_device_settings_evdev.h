@@ -12,14 +12,18 @@ struct InputDeviceSettingsEvdev {
   InputDeviceSettingsEvdev(const InputDeviceSettingsEvdev& other);
   ~InputDeviceSettingsEvdev();
 
-  bool tap_to_click_enabled;
-  bool three_finger_click_enabled;
-  bool tap_dragging_enabled;
-  bool natural_scroll_enabled;
-  bool tap_to_click_paused;
+  static const int kDefaultSensitivity = 3;
 
-  int touchpad_sensitivity;
-  int mouse_sensitivity;
+  // The initial settings are not critical since they will be shortly be changed
+  // to the user's preferences or the application's own defaults.
+  bool tap_to_click_enabled = true;
+  bool three_finger_click_enabled = false;
+  bool tap_dragging_enabled = false;
+  bool natural_scroll_enabled = false;
+  bool tap_to_click_paused = false;
+
+  int touchpad_sensitivity = kDefaultSensitivity;
+  int mouse_sensitivity = kDefaultSensitivity;
 };
 
 }  // namespace ui

@@ -91,7 +91,7 @@ class EVENTS_OZONE_EVDEV_EXPORT GestureInterpreterLibevdevCros
 
   // True if the device may be regarded as a mouse. This includes normal mice
   // and multi-touch mice.
-  bool is_mouse_;
+  bool is_mouse_ = false;
 
   // Shared cursor state.
   CursorDelegateEvdev* cursor_;
@@ -103,7 +103,7 @@ class EVENTS_OZONE_EVDEV_EXPORT GestureInterpreterLibevdevCros
   DeviceEventDispatcherEvdev* dispatcher_;
 
   // Gestures interpretation state.
-  gestures::GestureInterpreter* interpreter_;
+  gestures::GestureInterpreter* interpreter_ = nullptr;
 
   // Last key state from libevdev.
   unsigned long prev_key_state_[EVDEV_BITS_TO_LONGS(KEY_CNT)];
@@ -113,7 +113,7 @@ class EVENTS_OZONE_EVDEV_EXPORT GestureInterpreterLibevdevCros
   std::bitset<kMouseButtonCount> mouse_button_state_;
 
   // Device pointer.
-  Evdev* evdev_;
+  Evdev* evdev_ = nullptr;
 
   // Gesture lib device properties.
   scoped_ptr<GestureDeviceProperties> device_properties_;

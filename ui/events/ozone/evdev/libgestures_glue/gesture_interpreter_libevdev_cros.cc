@@ -96,12 +96,9 @@ GestureInterpreterLibevdevCros::GestureInterpreterLibevdevCros(
     GesturePropertyProvider* property_provider,
     DeviceEventDispatcherEvdev* dispatcher)
     : id_(id),
-      is_mouse_(false),
       cursor_(cursor),
       property_provider_(property_provider),
       dispatcher_(dispatcher),
-      interpreter_(NULL),
-      evdev_(NULL),
       device_properties_(new GestureDeviceProperties) {
   memset(&prev_key_state_, 0, sizeof(prev_key_state_));
 }

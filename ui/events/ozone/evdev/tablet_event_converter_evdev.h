@@ -57,18 +57,18 @@ class EVENTS_OZONE_EVDEV_EXPORT TabletEventConverterEvdev
   // Dispatcher for events.
   DeviceEventDispatcherEvdev* dispatcher_;
 
-  int y_abs_location_;
-  int x_abs_location_;
+  int y_abs_location_ = 0;
+  int x_abs_location_ = 0;
   int x_abs_min_;
   int y_abs_min_;
   int x_abs_range_;
   int y_abs_range_;
 
   // BTN_TOOL_ code for the active device
-  int stylus_;
+  int stylus_ = 0;
 
   // Whether we need to move the cursor
-  bool abs_value_dirty_;
+  bool abs_value_dirty_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TabletEventConverterEvdev);
 };

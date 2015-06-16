@@ -101,7 +101,7 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdev
   InputDevice input_device_;
 
   // Whether events from the device should be ignored.
-  bool ignore_events_;
+  bool ignore_events_ = false;
 
   // Controller for watching the input fd.
   base::MessagePumpLibevent::FileDescriptorWatcher controller_;

@@ -11,7 +11,7 @@
 // libgestures requires that this be in the top level namespace.
 struct GesturesTimer {
  public:
-  GesturesTimer() : callback_(NULL), callback_data_(NULL) {}
+  GesturesTimer() {}
   ~GesturesTimer() {}
 
   void Set(stime_t delay, GesturesTimerCallback callback, void* callback_data) {
@@ -39,8 +39,8 @@ struct GesturesTimer {
     }
   }
 
-  GesturesTimerCallback callback_;
-  void* callback_data_;
+  GesturesTimerCallback callback_ = nullptr;
+  void* callback_data_ = nullptr;
   base::OneShotTimer<GesturesTimer> timer_;
 };
 

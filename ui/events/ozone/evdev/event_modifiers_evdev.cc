@@ -30,8 +30,7 @@ static const int kEventFlagFromModifiers[] = {
 
 }  // namespace
 
-EventModifiersEvdev::EventModifiersEvdev()
-    : modifier_flags_locked_(0), modifier_flags_(0) {
+EventModifiersEvdev::EventModifiersEvdev() {
   memset(modifiers_down_, 0, sizeof(modifiers_down_));
 }
 EventModifiersEvdev::~EventModifiersEvdev() {}

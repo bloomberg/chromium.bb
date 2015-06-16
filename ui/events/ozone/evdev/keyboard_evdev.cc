@@ -71,10 +71,6 @@ KeyboardEvdev::KeyboardEvdev(EventModifiersEvdev* modifiers,
     : callback_(callback),
       modifiers_(modifiers),
       keyboard_layout_engine_(keyboard_layout_engine),
-      auto_repeat_enabled_(true),
-      repeat_key_(KEY_RESERVED),
-      repeat_sequence_(0),
-      repeat_device_id_(0),
       weak_ptr_factory_(this) {
   repeat_delay_ = base::TimeDelta::FromMilliseconds(kRepeatDelayMs);
   repeat_interval_ = base::TimeDelta::FromMilliseconds(kRepeatIntervalMs);

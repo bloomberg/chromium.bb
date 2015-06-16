@@ -649,9 +649,7 @@ XkbKeyCodeConverter::~XkbKeyCodeConverter() {
 
 XkbKeyboardLayoutEngine::XkbKeyboardLayoutEngine(
     const XkbKeyCodeConverter& converter)
-    : num_lock_mod_mask_(0),
-      key_code_converter_(converter),
-      weak_ptr_factory_(this) {
+    : key_code_converter_(converter), weak_ptr_factory_(this) {
   // TODO: add XKB_CONTEXT_NO_ENVIRONMENT_NAMES
   xkb_context_.reset(xkb_context_new(XKB_CONTEXT_NO_DEFAULT_INCLUDES));
   xkb_context_include_path_append(xkb_context_.get(),

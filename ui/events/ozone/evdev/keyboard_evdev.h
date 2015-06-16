@@ -93,10 +93,10 @@ class EVENTS_OZONE_EVDEV_EXPORT KeyboardEvdev {
   KeyboardLayoutEngine* keyboard_layout_engine_;
 
   // Key repeat state.
-  bool auto_repeat_enabled_;
-  unsigned int repeat_key_;
-  unsigned int repeat_sequence_;
-  int repeat_device_id_;
+  bool auto_repeat_enabled_ = true;
+  unsigned int repeat_key_ = KEY_RESERVED;
+  unsigned int repeat_sequence_ = 0;
+  int repeat_device_id_ = 0;
   base::TimeDelta repeat_delay_;
   base::TimeDelta repeat_interval_;
 
