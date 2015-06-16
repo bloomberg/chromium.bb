@@ -871,7 +871,7 @@ component("base") {
   }
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
-  if (is_android && !is_debug) {
+  if (!is_debug) {
     configs -= [ "//build/config/compiler:optimize" ]
     configs += [ "//build/config/compiler:optimize_max" ]
   }
@@ -890,7 +890,7 @@ source_set("base_static") {
     "win/pe_image.h",
   ]
 
-  if (is_android && !is_debug) {
+  if (!is_debug) {
     configs -= [ "//build/config/compiler:optimize" ]
     configs += [ "//build/config/compiler:optimize_max" ]
   }
@@ -943,7 +943,7 @@ component("i18n") {
     "//third_party/icu",
   ]
 
-  if (is_android && !is_debug) {
+  if (!is_debug) {
     configs -= [ "//build/config/compiler:optimize" ]
     configs += [ "//build/config/compiler:optimize_max" ]
   }
@@ -1055,7 +1055,7 @@ component("prefs") {
     ":base",
   ]
 
-  if (is_android && !is_debug) {
+  if (!is_debug) {
     configs -= [ "//build/config/compiler:optimize" ]
     configs += [ "//build/config/compiler:optimize_max" ]
   }

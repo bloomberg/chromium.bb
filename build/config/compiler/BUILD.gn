@@ -1092,12 +1092,11 @@ config("no_size_t_to_int_warning") {
 #   configs += [ "//build/config/compiler/optimize_max" ]
 
 # Shared settings for both "optimize" and "optimize_max" configs.
+# IMPORTANT: On Windows "/O1" and "/O2" must go before the common flags.
 if (is_win) {
   common_optimize_on_cflags = [
-    "/O2",
-    "/Ob2",  # both explicit and auto inlining.
-    "/Oy-",  # disable omitting frame pointers, must be after /o2.
-    "/Os",  # favor size over speed.
+    "/Ob2",  # Both explicit and auto inlining.
+    "/Oy-",  # Disable omitting frame pointers, must be after /O2.
   ]
   if (!is_asan) {
     common_optimize_on_cflags += [
@@ -1163,15 +1162,16 @@ if (is_win) {
 
 # Default "optimization on" config. On Windows, this favors size over speed.
 config("optimize") {
-  cflags = common_optimize_on_cflags
-  ldflags = common_optimize_on_ldflags
   if (is_win) {
-    cflags += [ "/Os" ]  # favor size over speed.
+    # Favor size over speed, /O1 must be before the common flags. The GYP
+    # build also specifies /Os and /GF but these are implied by /O1.
+    cflags = [ "/O1" ] + common_optimize_on_cflags + [ "/Oi" ]
   } else if (is_android || is_ios) {
-    cflags += [ "-Os" ]  # Favor size over speed.
+    cflags = [ "-Os" ] + common_optimize_on_cflags  # Favor size over speed.
   } else {
-    cflags += [ "-O2" ]
+    cflags = [ "-O2" ] + common_optimize_on_cflags
   }
+  ldflags = common_optimize_on_ldflags
 }
 
 # Turn off optimizations.
@@ -1203,11 +1203,11 @@ config("no_optimize") {
 # optimization and link-time code generation which is very expensive and should
 # be used sparingly.
 config("optimize_max") {
-  cflags = common_optimize_on_cflags
   ldflags = common_optimize_on_ldflags
   if (is_win) {
-    cflags -= [ "/Os" ]
-    cflags += [ "/Ot" ]  # Favor speed over size.
+    # Favor speed over size, /O2 must be before the common flags. The GYP
+    # build also specifies /Ot, /Oi, and /GF, but these are implied by /O2.
+    cflags = [ "/O2" ] + common_optimize_on_cflags
     if (is_official_build) {
       # TODO(GYP): TODO(dpranke): Should these only be on in an official
       # build, or on all the time? For now we'll require official build so
@@ -1224,7 +1224,7 @@ config("optimize_max") {
       ldflags += [ "/LTCG" ]
     }
   } else {
-    cflags += [ "-O2" ]
+    cflags = [ "-O2" ] + common_optimize_on_cflags
   }
 }
 
