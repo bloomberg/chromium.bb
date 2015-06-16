@@ -60,6 +60,7 @@ import cgi
 import glob
 import google.protobuf.text_format
 import hashlib
+import json
 import logging
 import os
 import random
@@ -72,16 +73,6 @@ import tlslite.utils
 import tlslite.utils.cryptomath
 import urlparse
 
-# The name and availability of the json module varies in python versions.
-try:
-  import simplejson as json
-except ImportError:
-  try:
-    import json
-  except ImportError:
-    logging.error('Could not import json')
-    json = None
-
 import asn1der
 import testserver_base
 
@@ -92,14 +83,12 @@ import cloud_policy_pb2 as cp
 try:
   import chrome_extension_policy_pb2 as ep
 except ImportError:
-  logging.error('Could not import chrome_extension_policy_pb2')
   ep = None
 
 # Device policy is only available on Chrome OS builds.
 try:
   import chrome_device_policy_pb2 as dp
 except ImportError:
-  logging.error('Could not import chrome_device_policy_pb2')
   dp = None
 
 # ASN.1 object identifier for PKCS#1/RSA.
@@ -750,13 +739,13 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         if payload is None:
           self.GatherUserPolicySettings(settings, policy.get(policy_key, {}))
           payload = settings.SerializeToString()
-      elif dp is not None and msg.policy_type == 'google/chromeos/device':
+      elif msg.policy_type == 'google/chromeos/device':
         settings = dp.ChromeDeviceSettingsProto()
         payload = self.server.ReadPolicyFromDataDir(policy_key, settings)
         if payload is None:
           self.GatherDevicePolicySettings(settings, policy.get(policy_key, {}))
           payload = settings.SerializeToString()
-      elif ep is not None and msg.policy_type == 'google/chrome/extension':
+      elif msg.policy_type == 'google/chrome/extension':
         settings = ep.ExternalPolicyData()
         payload = self.server.ReadPolicyFromDataDir(policy_key, settings)
         if payload is None:
