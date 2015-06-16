@@ -256,6 +256,14 @@ void WebMediaPlayerMS::setVolume(double volume) {
     audio_renderer_->SetVolume(volume_);
 }
 
+void WebMediaPlayerMS::setSinkId(const blink::WebString& device_id,
+                                 media::WebSetSinkIdCB* raw_web_callbacks) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  scoped_ptr<media::WebSetSinkIdCB> web_callbacks(raw_web_callbacks);
+  web_callbacks->onError(new blink::WebSetSinkIdError(
+      blink::WebSetSinkIdError::ErrorTypeNotSupported, "Not Supported"));
+}
+
 void WebMediaPlayerMS::setPreload(WebMediaPlayer::Preload preload) {
   DCHECK(thread_checker_.CalledOnValidThread());
 }

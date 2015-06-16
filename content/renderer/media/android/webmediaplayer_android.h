@@ -28,6 +28,7 @@
 #include "media/base/demuxer_stream.h"
 #include "media/base/media_keys.h"
 #include "media/base/time_delta_interpolator.h"
+#include "media/blink/webmediaplayer_util.h"
 #include "media/cdm/proxy_decryptor.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
@@ -113,6 +114,8 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   virtual bool supportsSave() const;
   virtual void setRate(double rate);
   virtual void setVolume(double volume);
+  virtual void setSinkId(const blink::WebString& device_id,
+                         media::WebSetSinkIdCB* raw_web_callbacks);
   virtual void requestRemotePlayback();
   virtual void requestRemotePlaybackControl();
   virtual blink::WebTimeRanges buffered() const;

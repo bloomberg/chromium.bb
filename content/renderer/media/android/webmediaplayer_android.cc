@@ -458,6 +458,15 @@ void WebMediaPlayerAndroid::setVolume(double volume) {
   player_manager_->SetVolume(player_id_, volume);
 }
 
+void WebMediaPlayerAndroid::setSinkId(
+    const blink::WebString& device_id,
+    media::WebSetSinkIdCB* raw_web_callbacks) {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+  scoped_ptr<media::WebSetSinkIdCB> web_callbacks(raw_web_callbacks);
+  web_callbacks->onError(new blink::WebSetSinkIdError(
+      blink::WebSetSinkIdError::ErrorTypeNotSupported, "Not Supported"));
+}
+
 bool WebMediaPlayerAndroid::hasVideo() const {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   // If we have obtained video size information before, use it.

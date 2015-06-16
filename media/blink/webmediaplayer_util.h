@@ -10,8 +10,10 @@
 #include "media/base/media_export.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/ranges.h"
+#include "third_party/WebKit/public/platform/WebCallbacks.h"
 #include "third_party/WebKit/public/platform/WebEncryptedMediaTypes.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
+#include "third_party/WebKit/public/platform/WebSetSinkIdError.h"
 #include "third_party/WebKit/public/platform/WebTimeRange.h"
 #include "url/gurl.h"
 
@@ -37,6 +39,8 @@ EmeInitDataType MEDIA_EXPORT
 ConvertToEmeInitDataType(blink::WebEncryptedMediaInitDataType init_data_type);
 blink::WebEncryptedMediaInitDataType MEDIA_EXPORT
 ConvertToWebInitDataType(EmeInitDataType init_data_type);
+
+typedef blink::WebCallbacks<void, blink::WebSetSinkIdError> WebSetSinkIdCB;
 
 }  // namespace media
 

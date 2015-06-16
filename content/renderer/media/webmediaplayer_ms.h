@@ -12,6 +12,7 @@
 #include "base/threading/thread_checker.h"
 #include "cc/layers/video_frame_provider.h"
 #include "media/blink/skcanvas_video_renderer.h"
+#include "media/blink/webmediaplayer_util.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
 #include "url/gurl.h"
@@ -75,6 +76,8 @@ class WebMediaPlayerMS
   virtual void seek(double seconds);
   virtual void setRate(double rate);
   virtual void setVolume(double volume);
+  virtual void setSinkId(const blink::WebString& device_id,
+                         media::WebSetSinkIdCB* raw_web_callbacks);
   virtual void setPreload(blink::WebMediaPlayer::Preload preload);
   virtual blink::WebTimeRanges buffered() const;
   virtual blink::WebTimeRanges seekable() const;

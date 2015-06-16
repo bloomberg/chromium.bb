@@ -383,6 +383,14 @@ void WebMediaPlayerImpl::setVolume(double volume) {
   pipeline_.SetVolume(volume);
 }
 
+void WebMediaPlayerImpl::setSinkId(const blink::WebString& device_id,
+                                   WebSetSinkIdCB* raw_web_callbacks) {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  scoped_ptr<WebSetSinkIdCB> web_callbacks(raw_web_callbacks);
+  web_callbacks->onError(new blink::WebSetSinkIdError(
+      blink::WebSetSinkIdError::ErrorTypeNotSupported, "Not Supported"));
+}
+
 #define STATIC_ASSERT_MATCHING_ENUM(webkit_name, chromium_name) \
     static_assert(static_cast<int>(WebMediaPlayer::webkit_name) == \
                   static_cast<int>(BufferedDataSource::chromium_name), \
