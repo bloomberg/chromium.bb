@@ -5,6 +5,7 @@
 module mojo;
 
 import "components/view_manager/public/interfaces/gpu_capabilities.mojom";
+import "ui/mojo/geometry/geometry.mojom";
 
 struct CommandBufferState {
   int32 num_entries;
@@ -52,4 +53,12 @@ interface CommandBuffer {
   InsertSyncPoint(bool retire);
   RetireSyncPoint(uint32 sync_point);
   Echo() => ();
+
+  CreateImage(int32 id,
+              handle memory_handle,
+              int32 type,
+              Size size,
+              int32 format,
+              int32 internal_format);
+  DestroyImage(int32 id);
 };

@@ -120,6 +120,7 @@ source_set("lib") {
     "//components/resource_provider/public/cpp",
     "//components/resource_provider/public/interfaces",
     "//components/scheduler:scheduler",
+    "//components/view_manager/gles2:lib",
     "//components/view_manager/public/interfaces",
     "//components/webcrypto",
     "//gin",

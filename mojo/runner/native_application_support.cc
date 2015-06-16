@@ -9,7 +9,10 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "mojo/platform_handle/platform_handle_private_thunks.h"
+#include "mojo/public/platform/native/gles2_impl_chromium_copy_texture_thunks.h"
+#include "mojo/public/platform/native/gles2_impl_chromium_image_thunks.h"
 #include "mojo/public/platform/native/gles2_impl_chromium_miscellaneous_thunks.h"
+#include "mojo/public/platform/native/gles2_impl_chromium_pixel_transfer_buffer_object_thunks.h"
 #include "mojo/public/platform/native/gles2_impl_chromium_sub_image_thunks.h"
 #include "mojo/public/platform/native/gles2_impl_chromium_sync_point_thunks.h"
 #include "mojo/public/platform/native/gles2_impl_chromium_texture_mailbox_thunks.h"
@@ -83,8 +86,14 @@ bool RunNativeApplication(base::NativeLibrary app_library,
     // If the application is using GLES2 extension points, register those
     // thunks. Applications may use or not use any of these, so don't warn if
     // they are missing.
+    SetThunks(MojoMakeGLES2ImplChromiumCopyTextureThunks,
+              "MojoSetGLES2ImplChromiumCopyTextureThunks", app_library);
+    SetThunks(MojoMakeGLES2ImplChromiumImageThunks,
+              "MojoSetGLES2ImplChromiumImageThunks", app_library);
     SetThunks(MojoMakeGLES2ImplChromiumMiscellaneousThunks,
               "MojoSetGLES2ImplChromiumMiscellaneousThunks", app_library);
+    SetThunks(MojoMakeGLES2ImplChromiumPixelTransferBufferObjectThunks,
+              "MojoSetGLES2ImplChromiumPixelTransferBufferObjectThunks", app_library);
     SetThunks(MojoMakeGLES2ImplChromiumSubImageThunks,
               "MojoSetGLES2ImplChromiumSubImageThunks", app_library);
     SetThunks(MojoMakeGLES2ImplChromiumTextureMailboxThunks,

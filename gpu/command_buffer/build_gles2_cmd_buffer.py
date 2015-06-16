@@ -2309,7 +2309,7 @@ _FUNCTION_INFO = {
     'client_test': False,
     'gen_cmd': False,
     'expectation': False,
-    'extension': True,
+    'extension': "CHROMIUM_image",
     'chromium': True,
     'trace_level': 1,
   },
@@ -2317,7 +2317,7 @@ _FUNCTION_INFO = {
     'type': 'Manual',
     'client_test': False,
     'gen_cmd': False,
-    'extension': True,
+    'extension': "CHROMIUM_image",
     'chromium': True,
     'trace_level': 1,
   },
@@ -2329,7 +2329,7 @@ _FUNCTION_INFO = {
     'client_test': False,
     'gen_cmd': False,
     'expectation': False,
-    'extension': True,
+    'extension': "CHROMIUM_image",
     'chromium': True,
     'trace_level': 1,
   },
@@ -3055,7 +3055,7 @@ _FUNCTION_INFO = {
   },
   'MapBufferCHROMIUM': {
     'gen_cmd': False,
-    'extension': True,
+    'extension': "CHROMIUM_pixel_transfer_buffer_object",
     'chromium': True,
     'client_test': False,
     'trace_level': 1,
@@ -3471,7 +3471,7 @@ _FUNCTION_INFO = {
   },
   'UnmapBufferCHROMIUM': {
     'gen_cmd': False,
-    'extension': True,
+    'extension': "CHROMIUM_pixel_transfer_buffer_object",
     'chromium': True,
     'client_test': False,
     'trace_level': 1,
@@ -3624,14 +3624,14 @@ _FUNCTION_INFO = {
   'CopyTextureCHROMIUM': {
     'decoder_func': 'DoCopyTextureCHROMIUM',
     'unit_test': False,
-    'extension': True,
+    'extension': "CHROMIUM_copy_texture",
     'chromium': True,
     'trace_level': 2,
   },
   'CopySubTextureCHROMIUM': {
     'decoder_func': 'DoCopySubTextureCHROMIUM',
     'unit_test': False,
-    'extension': True,
+    'extension': "CHROMIUM_copy_texture",
     'chromium': True,
     'trace_level': 2,
   },
@@ -3808,13 +3808,13 @@ _FUNCTION_INFO = {
   'BindTexImage2DCHROMIUM': {
     'decoder_func': 'DoBindTexImage2DCHROMIUM',
     'unit_test': False,
-    'extension': True,
+    'extension': "CHROMIUM_image",
     'chromium': True,
   },
   'ReleaseTexImage2DCHROMIUM': {
     'decoder_func': 'DoReleaseTexImage2DCHROMIUM',
     'unit_test': False,
-    'extension': True,
+    'extension': "CHROMIUM_image",
     'chromium': True,
   },
   'ShallowFinishCHROMIUM': {
@@ -4634,7 +4634,9 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
                 func.MakeTypedOriginalArgString("")))
     extensions = ["CHROMIUM_sync_point", "CHROMIUM_texture_mailbox",
                   "CHROMIUM_sub_image", "CHROMIUM_miscellaneous",
-                  "occlusion_query_EXT"]
+                  "occlusion_query_EXT", "CHROMIUM_image",
+                  "CHROMIUM_copy_texture",
+                  "CHROMIUM_pixel_transfer_buffer_object"]
     if func.IsCoreGLFunction() or func.GetInfo("extension") in extensions:
       file.Write("MojoGLES2MakeCurrent(context_);");
       func_return = "gl" + func.original_name + "(" + \
@@ -10471,7 +10473,10 @@ class MojoGLES2Impl : public gpu::gles2::GLES2Interface {
 #include "mojo/gpu/mojo_gles2_impl_autogen.h"
 
 #include "base/logging.h"
+#include "third_party/mojo/src/mojo/public/c/gles2/chromium_copy_texture.h"
+#include "third_party/mojo/src/mojo/public/c/gles2/chromium_image.h"
 #include "third_party/mojo/src/mojo/public/c/gles2/chromium_miscellaneous.h"
+#include "third_party/mojo/src/mojo/public/c/gles2/chromium_pixel_transfer_buffer_object.h"
 #include "third_party/mojo/src/mojo/public/c/gles2/chromium_sub_image.h"
 #include "third_party/mojo/src/mojo/public/c/gles2/chromium_sync_point.h"
 #include "third_party/mojo/src/mojo/public/c/gles2/chromium_texture_mailbox.h"
@@ -11075,6 +11080,15 @@ def main(argv):
   gen.WriteMojoGLCallVisitorForExtension(
       mojo_gles2_prefix + "_occlusion_query_ext_autogen.h",
       "occlusion_query_EXT")
+  gen.WriteMojoGLCallVisitorForExtension(
+      mojo_gles2_prefix + "_chromium_image_autogen.h",
+      "CHROMIUM_image")
+  gen.WriteMojoGLCallVisitorForExtension(
+      mojo_gles2_prefix + "_chromium_copy_texture_autogen.h",
+      "CHROMIUM_copy_texture")
+  gen.WriteMojoGLCallVisitorForExtension(
+      mojo_gles2_prefix + "_chromium_pixel_transfer_buffer_object_autogen.h",
+      "CHROMIUM_pixel_transfer_buffer_object")
 
   Format(gen.generated_cpp_filenames)
 

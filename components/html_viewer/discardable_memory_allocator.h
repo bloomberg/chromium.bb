@@ -8,6 +8,7 @@
 #include <list>
 
 #include "base/memory/discardable_memory_allocator.h"
+#include "base/synchronization/lock.h"
 
 namespace html_viewer {
 
@@ -15,8 +16,6 @@ namespace html_viewer {
 // allocations.
 class DiscardableMemoryAllocator : public base::DiscardableMemoryAllocator {
  public:
-  class OwnedMemoryChunk;
-
   explicit DiscardableMemoryAllocator(size_t desired_max_memory);
   ~DiscardableMemoryAllocator() override;
 
@@ -25,22 +24,31 @@ class DiscardableMemoryAllocator : public base::DiscardableMemoryAllocator {
       size_t size) override;
 
  private:
-  friend class OwnedMemoryChunk;
+  class DiscardableMemoryChunkImpl;
+  friend class DiscardableMemoryChunkImpl;
 
-  // Called by OwnedMemoryChunks when they are unlocked. This puts them at the
-  // end of the live_unlocked_chunks_ list and passes an iterator to their
-  // position in the unlocked chunk list.
-  std::list<OwnedMemoryChunk*>::iterator NotifyUnlocked(
-      OwnedMemoryChunk* chunk);
+  // Called by DiscardableMemoryChunkImpl when they are unlocked. This puts them
+  // at the end of the live_unlocked_chunks_ list and passes an iterator to
+  // their position in the unlocked chunk list.
+  std::list<DiscardableMemoryChunkImpl*>::iterator NotifyUnlocked(
+      DiscardableMemoryChunkImpl* chunk);
 
-  // Called by OwnedMemoryChunks when they are locked. This removes the passed
-  // in unlocked chunk list.
-  void NotifyLocked(std::list<OwnedMemoryChunk*>::iterator it);
+  // Called by DiscardableMemoryChunkImpl when they are locked. This removes the
+  // passed in unlocked chunk list.
+  void NotifyLocked(std::list<DiscardableMemoryChunkImpl*>::iterator it);
+
+  // Called by DiscardableMemoryChunkImpl when it's destructed. It must be
+  // unlocked, by definition.
+  void NotifyDestructed(std::list<DiscardableMemoryChunkImpl*>::iterator it);
 
   // The amount of memory we can allocate before we try to free unlocked
   // chunks. We can go over this amount if all callers keep their discardable
   // chunks locked.
   const size_t desired_max_memory_;
+
+  // Protects all members below, since this class can be called on the main
+  // thread and impl side painting raster threads.
+  base::Lock lock_;
 
   // A count of the sum of memory. Used to trigger discarding the oldest
   // memory.
@@ -51,7 +59,7 @@ class DiscardableMemoryAllocator : public base::DiscardableMemoryAllocator {
 
   // A linked list of unlocked allocated chunks so that the tail is most
   // recently accessed chunks.
-  std::list<OwnedMemoryChunk*> live_unlocked_chunks_;
+  std::list<DiscardableMemoryChunkImpl*> live_unlocked_chunks_;
 
   DISALLOW_COPY_AND_ASSIGN(DiscardableMemoryAllocator);
 };

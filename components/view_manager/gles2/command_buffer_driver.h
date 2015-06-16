@@ -71,6 +71,13 @@ class CommandBufferDriver {
                               uint32_t size);
   void DestroyTransferBuffer(int32_t id);
   void Echo(const mojo::Callback<void()>& callback);
+  void CreateImage(int32_t id,
+                   mojo::ScopedHandle memory_handle,
+                   int32_t type,
+                   mojo::SizePtr size,
+                   int32_t format,
+                   int32_t internal_format);
+  void DestroyImage(int32_t id);
 
   // Called at shutdown to destroy the X window. This is needed when the parent
   // window is being destroyed. Otherwise X calls for this window will fail.

@@ -296,7 +296,7 @@ blink::WebStorageNamespace* HTMLDocument::createSessionStorageNamespace() {
 void HTMLDocument::initializeLayerTreeView() {
   if (setup_->is_headless()) {
     web_layer_tree_view_impl_.reset(new WebLayerTreeViewImpl(
-        setup_->compositor_thread(), nullptr, nullptr));
+        setup_->compositor_thread(), nullptr, nullptr, nullptr, nullptr));
     return;
   }
 
@@ -311,7 +311,9 @@ void HTMLDocument::initializeLayerTreeView() {
   mojo::GpuPtr gpu_service;
   html_document_app_->ConnectToService(request2.Pass(), &gpu_service);
   web_layer_tree_view_impl_.reset(new WebLayerTreeViewImpl(
-      setup_->compositor_thread(), surface.Pass(), gpu_service.Pass()));
+      setup_->compositor_thread(), setup_->gpu_memory_buffer_manager(),
+      setup_->raster_thread_helper()->task_graph_runner(), surface.Pass(),
+      gpu_service.Pass()));
 }
 
 blink::WebLayerTreeView* HTMLDocument::layerTreeView() {

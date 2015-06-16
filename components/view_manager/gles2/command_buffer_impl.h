@@ -48,6 +48,13 @@ class CommandBufferImpl : public mojo::CommandBuffer,
   void InsertSyncPoint(bool retire) override;
   void RetireSyncPoint(uint32_t sync_point) override;
   void Echo(const mojo::Callback<void()>& callback) override;
+  void CreateImage(int32_t id,
+                   mojo::ScopedHandle memory_handle,
+                   int32_t type,
+                   mojo::SizePtr size,
+                   int32_t format,
+                   int32_t internal_format) override;
+  void DestroyImage(int32_t id) override;
 
   void DidLoseContext();
 

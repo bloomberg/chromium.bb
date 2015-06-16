@@ -124,6 +124,25 @@ void CommandBufferImpl::Echo(const mojo::Callback<void()>& callback) {
                                         base::Bind(&RunCallback, callback));
 }
 
+void CommandBufferImpl::CreateImage(int32_t id,
+                                    mojo::ScopedHandle memory_handle,
+                                    int32 type,
+                                    mojo::SizePtr size,
+                                    int32_t format,
+                                    int32_t internal_format) {
+  driver_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&CommandBufferDriver::CreateImage,
+                            base::Unretained(driver_.get()), id,
+                            base::Passed(&memory_handle), type,
+                            base::Passed(&size), format, internal_format));
+}
+
+void CommandBufferImpl::DestroyImage(int32_t id) {
+  driver_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&CommandBufferDriver::DestroyImage,
+                            base::Unretained(driver_.get()), id));
+}
+
 CommandBufferImpl::~CommandBufferImpl() {
   if (observer_)
     observer_->OnCommandBufferImplDestroyed();

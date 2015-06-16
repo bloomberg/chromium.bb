@@ -63,7 +63,6 @@ void SurfaceContextFactory::RemoveCompositor(ui::Compositor* compositor) {
 }
 
 bool SurfaceContextFactory::DoesCreateTestContexts() {
-  NOTIMPLEMENTED();
   return false;
 }
 
@@ -81,13 +80,11 @@ cc::SharedBitmapManager* SurfaceContextFactory::GetSharedBitmapManager() {
 
 gpu::GpuMemoryBufferManager*
 SurfaceContextFactory::GetGpuMemoryBufferManager() {
-  NOTIMPLEMENTED();
-  return nullptr;
+  return &gpu_memory_buffer_manager_;
 }
 
 cc::TaskGraphRunner* SurfaceContextFactory::GetTaskGraphRunner() {
-  NOTIMPLEMENTED();
-  return nullptr;
+  return raster_thread_helper_.task_graph_runner();
 }
 
 scoped_ptr<cc::SurfaceIdAllocator>

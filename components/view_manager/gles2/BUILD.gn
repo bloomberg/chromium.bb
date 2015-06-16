@@ -44,10 +44,17 @@ source_set("lib") {
     "command_buffer_type_conversions.h",
     "mojo_buffer_backing.cc",
     "mojo_buffer_backing.h",
+    "mojo_gpu_memory_buffer.cc",
+    "mojo_gpu_memory_buffer.h",
+    "mojo_gpu_memory_buffer_manager.cc",
+    "mojo_gpu_memory_buffer_manager.h",
+    "raster_thread_helper.cc",
+    "raster_thread_helper.h",
   ]
 
   deps = [
     "//base",
+    "//cc",
     "//components/view_manager/public/interfaces",
     "//gpu/command_buffer/common",
     "//third_party/mojo/src/mojo/public/cpp/bindings",

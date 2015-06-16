@@ -15,23 +15,16 @@ const size_t kAlmostOneMegabyte = 1023 * kOneKilobyte;
 const size_t kOneMegabyte = 1024 * kOneKilobyte;
 
 TEST(DiscardableMemoryAllocator, Basic) {
+  DiscardableMemoryAllocator allocator(kOneMegabyte);
   scoped_ptr<base::DiscardableMemory> chunk;
+  // Make sure the chunk is locked when allocated. In debug mode, we will
+  // dcheck.
+  chunk = allocator.AllocateLockedDiscardableMemory(kOneKilobyte);
+  chunk->Unlock();
 
-  {
-    DiscardableMemoryAllocator allocator(kOneMegabyte);
-
-    // Make sure the chunk is locked when allocated. In debug mode, we will
-    // dcheck.
-    chunk = allocator.AllocateLockedDiscardableMemory(kOneKilobyte);
-    chunk->Unlock();
-
-    // Make sure we can lock a chunk.
-    EXPECT_TRUE(chunk->Lock());
-    chunk->Unlock();
-  }
-
-  // The chunk's backing should have disappeared with the allocator.
-  EXPECT_FALSE(chunk->Lock());
+  // Make sure we can lock a chunk.
+  EXPECT_TRUE(chunk->Lock());
+  chunk->Unlock();
 }
 
 TEST(DiscardableMemoryAllocator, DiscardChunks) {

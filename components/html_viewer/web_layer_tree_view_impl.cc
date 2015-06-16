@@ -20,6 +20,8 @@ namespace html_viewer {
 
 WebLayerTreeViewImpl::WebLayerTreeViewImpl(
     scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
+    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+    cc::TaskGraphRunner* task_graph_runner,
     mojo::SurfacePtr surface,
     mojo::GpuPtr gpu_service)
     : widget_(NULL),
@@ -30,13 +32,17 @@ WebLayerTreeViewImpl::WebLayerTreeViewImpl(
 
   cc::LayerTreeSettings settings;
 
+  settings.impl_side_painting = true;
+  settings.use_image_texture_target = GL_TEXTURE_2D;
+  settings.use_one_copy = true;
+  // TODO(jam): use multiple compositor raster threads and set gather_pixel_refs
+  // accordingly (see content).
+
   // For web contents, layer transforms should scale up the contents of layers
   // to keep content always crisp when possible.
   settings.layer_transforms_should_scale_layer_contents = true;
 
   cc::SharedBitmapManager* shared_bitmap_manager = nullptr;
-  gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager = nullptr;
-  cc::TaskGraphRunner* task_graph_runner = nullptr;
 
   cc::LayerTreeHost::InitParams params;
   params.client = this;

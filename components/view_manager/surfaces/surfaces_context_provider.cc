@@ -12,6 +12,7 @@ namespace surfaces {
 SurfacesContextProvider::SurfacesContextProvider(
     mojo::ScopedMessagePipeHandle command_buffer_handle)
     : command_buffer_handle_(command_buffer_handle.Pass()), context_(nullptr) {
+  capabilities_.gpu.image = true;
 }
 
 bool SurfacesContextProvider::BindToCurrentThread() {

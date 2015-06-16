@@ -5,45 +5,59 @@
 #include "components/html_viewer/discardable_memory_allocator.h"
 
 #include "base/memory/discardable_memory.h"
-#include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
 
 namespace html_viewer {
 
-// Represents an actual memory chunk. This is an object owned by
-// DiscardableMemoryAllocator. DiscardableMemoryChunkImpl are passed to the
-// rest of the program, and access this memory through a weak ptr.
-class DiscardableMemoryAllocator::OwnedMemoryChunk {
+// Interface to the rest of the program. These objects are owned outside of the
+// allocator.
+class DiscardableMemoryAllocator::DiscardableMemoryChunkImpl
+    : public base::DiscardableMemory {
  public:
-  OwnedMemoryChunk(size_t size, DiscardableMemoryAllocator* allocator)
+  DiscardableMemoryChunkImpl(size_t size, DiscardableMemoryAllocator* allocator)
       : is_locked_(true),
         size_(size),
         data_(new uint8_t[size]),
-        allocator_(allocator),
-        weak_factory_(this) {}
-  ~OwnedMemoryChunk() {}
+        allocator_(allocator) {}
 
-  void Lock() {
-    DCHECK(!is_locked_);
-    is_locked_ = true;
-    allocator_->NotifyLocked(unlocked_position_);
+  ~DiscardableMemoryChunkImpl() override {
+    // Either the memory is discarded or the memory chunk is unlocked.
+    DCHECK(data_ || !is_locked_);
+    if (!is_locked_ && data_)
+      allocator_->NotifyDestructed(unlocked_position_);
   }
 
-  void Unlock() {
+  // Overridden from DiscardableMemoryChunk:
+  bool Lock() override {
+    DCHECK(!is_locked_);
+    if (!data_)
+      return false;
+
+    is_locked_ = true;
+    allocator_->NotifyLocked(unlocked_position_);
+    return true;
+  }
+
+  void Unlock() override {
     DCHECK(is_locked_);
+    DCHECK(data_);
     is_locked_ = false;
     unlocked_position_ = allocator_->NotifyUnlocked(this);
   }
 
-  bool is_locked() const { return is_locked_; }
-  size_t size() const { return size_; }
-  void* data() const {
-    DCHECK(is_locked_);
-    return data_.get();
+  void* data() const override {
+    if (data_) {
+      DCHECK(is_locked_);
+      return data_.get();
+    }
+    return nullptr;
   }
 
-  base::WeakPtr<OwnedMemoryChunk> GetWeakPtr() {
-    return weak_factory_.GetWeakPtr();
+  size_t size() const { return size_; }
+
+  void Discard() {
+    DCHECK(!is_locked_);
+    data_.reset();
   }
 
  private:
@@ -52,56 +66,10 @@ class DiscardableMemoryAllocator::OwnedMemoryChunk {
   scoped_ptr<uint8_t[]> data_;
   DiscardableMemoryAllocator* allocator_;
 
-  std::list<OwnedMemoryChunk*>::iterator unlocked_position_;
-
-  base::WeakPtrFactory<OwnedMemoryChunk> weak_factory_;
-
-  DISALLOW_IMPLICIT_CONSTRUCTORS(OwnedMemoryChunk);
-};
-
-namespace {
-
-// Interface to the rest of the program. These objects are owned outside of the
-// allocator and wrap a weak ptr.
-class DiscardableMemoryChunkImpl : public base::DiscardableMemory {
- public:
-  explicit DiscardableMemoryChunkImpl(
-      base::WeakPtr<DiscardableMemoryAllocator::OwnedMemoryChunk> chunk)
-      : memory_chunk_(chunk) {}
-  ~DiscardableMemoryChunkImpl() override {
-    // Either the memory chunk is invalid (because the backing has gone away),
-    // or the memory chunk is unlocked (because leaving the chunk locked once
-    // we deallocate means the chunk will never get cleaned up).
-    DCHECK(!memory_chunk_ || !memory_chunk_->is_locked());
-  }
-
-  // Overridden from DiscardableMemoryChunk:
-  bool Lock() override {
-    if (!memory_chunk_)
-      return false;
-
-    memory_chunk_->Lock();
-    return true;
-  }
-
-  void Unlock() override {
-    DCHECK(memory_chunk_);
-    memory_chunk_->Unlock();
-  }
-
-  void* data() const override {
-    if (memory_chunk_)
-      return memory_chunk_->data();
-    return nullptr;
-  }
-
- private:
-  base::WeakPtr<DiscardableMemoryAllocator::OwnedMemoryChunk> memory_chunk_;
+  std::list<DiscardableMemoryChunkImpl*>::iterator unlocked_position_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(DiscardableMemoryChunkImpl);
 };
-
-}  // namespace
 
 DiscardableMemoryAllocator::DiscardableMemoryAllocator(
     size_t desired_max_memory)
@@ -117,7 +85,9 @@ DiscardableMemoryAllocator::~DiscardableMemoryAllocator() {
 
 scoped_ptr<base::DiscardableMemory>
 DiscardableMemoryAllocator::AllocateLockedDiscardableMemory(size_t size) {
-  OwnedMemoryChunk* chunk = new OwnedMemoryChunk(size, this);
+  base::AutoLock lock(lock_);
+  scoped_ptr<DiscardableMemoryChunkImpl> chunk(
+      new DiscardableMemoryChunkImpl(size, this));
   total_live_memory_ += size;
   locked_chunks_++;
 
@@ -128,23 +98,30 @@ DiscardableMemoryAllocator::AllocateLockedDiscardableMemory(size_t size) {
   while (total_live_memory_ > desired_max_memory_ &&
          it != live_unlocked_chunks_.end()) {
     total_live_memory_ -= (*it)->size();
-    delete *it;
+    (*it)->Discard();
     it = live_unlocked_chunks_.erase(it);
   }
 
-  return make_scoped_ptr(new DiscardableMemoryChunkImpl(chunk->GetWeakPtr()));
+  return chunk.Pass();
 }
 
-std::list<DiscardableMemoryAllocator::OwnedMemoryChunk*>::iterator
-DiscardableMemoryAllocator::NotifyUnlocked(
-    DiscardableMemoryAllocator::OwnedMemoryChunk* chunk) {
+std::list<DiscardableMemoryAllocator::DiscardableMemoryChunkImpl*>::iterator
+DiscardableMemoryAllocator::NotifyUnlocked(DiscardableMemoryChunkImpl* chunk) {
+  base::AutoLock lock(lock_);
   locked_chunks_--;
   return live_unlocked_chunks_.insert(live_unlocked_chunks_.end(), chunk);
 }
 
 void DiscardableMemoryAllocator::NotifyLocked(
-    std::list<OwnedMemoryChunk*>::iterator it) {
+    std::list<DiscardableMemoryChunkImpl*>::iterator it) {
+  base::AutoLock lock(lock_);
   locked_chunks_++;
+  live_unlocked_chunks_.erase(it);
+}
+
+void DiscardableMemoryAllocator::NotifyDestructed(
+    std::list<DiscardableMemoryChunkImpl*>::iterator it) {
+  base::AutoLock lock(lock_);
   live_unlocked_chunks_.erase(it);
 }
 

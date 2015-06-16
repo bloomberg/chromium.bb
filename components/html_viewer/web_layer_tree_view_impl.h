@@ -26,6 +26,11 @@ class WebWidget;
 
 namespace cc {
 class LayerTreeHost;
+class TaskGraphRunner;
+}
+
+namespace gpu {
+class GpuMemoryBufferManager;
 }
 
 namespace mojo {
@@ -40,6 +45,8 @@ class WebLayerTreeViewImpl : public blink::WebLayerTreeView,
  public:
   WebLayerTreeViewImpl(
       scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
+      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+      cc::TaskGraphRunner* task_graph_runner,
       mojo::SurfacePtr surface,
       mojo::GpuPtr gpu_service);
   ~WebLayerTreeViewImpl() override;

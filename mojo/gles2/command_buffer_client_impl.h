@@ -102,6 +102,9 @@ class CommandBufferClientImpl : public mojo::CommandBufferLostContextObserver,
   int32_t last_put_offset_;
   int32_t next_transfer_buffer_id_;
 
+  // Image IDs are allocated in sequence.
+  int next_image_id_;
+
   const MojoAsyncWaiter* async_waiter_;
 };
 

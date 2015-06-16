@@ -15,13 +15,18 @@
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
+#include "gpu/command_buffer/service/image_factory.h"
 #include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/command_buffer/service/valuebuffer_manager.h"
+#include "mojo/converters/geometry/geometry_type_converters.h"
+#include "mojo/platform_handle/platform_handle_functions.h"
+#include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/vsync_provider.h"
 #include "ui/gl/gl_context.h"
+#include "ui/gl/gl_image_shared_memory.h"
 #include "ui/gl/gl_surface.h"
 
 namespace gles2 {
@@ -220,6 +225,84 @@ void CommandBufferDriver::DestroyTransferBuffer(int32_t id) {
 
 void CommandBufferDriver::Echo(const mojo::Callback<void()>& callback) {
   callback.Run();
+}
+
+void CommandBufferDriver::CreateImage(int32_t id,
+                                      mojo::ScopedHandle memory_handle,
+                                      int32 type,
+                                      mojo::SizePtr size,
+                                      int32_t format,
+                                      int32_t internal_format) {
+  gpu::gles2::ImageManager* image_manager = decoder_->GetImageManager();
+  if (image_manager->LookupImage(id)) {
+    LOG(ERROR) << "Image already exists with same ID.";
+    return;
+  }
+
+  gfx::GpuMemoryBuffer::Format gpu_format =
+      static_cast<gfx::GpuMemoryBuffer::Format>(format);
+  if (!gpu::ImageFactory::IsGpuMemoryBufferFormatSupported(
+          gpu_format, decoder_->GetCapabilities())) {
+    LOG(ERROR) << "Format is not supported.";
+    return;
+  }
+
+  gfx::Size gfx_size = size.To<gfx::Size>();
+  if (!gpu::ImageFactory::IsImageSizeValidForGpuMemoryBufferFormat(
+      gfx_size, gpu_format)) {
+    LOG(ERROR) << "Invalid image size for format.";
+    return;
+  }
+
+  if (!gpu::ImageFactory::IsImageFormatCompatibleWithGpuMemoryBufferFormat(
+          internal_format, gpu_format)) {
+    LOG(ERROR) << "Incompatible image format.";
+    return;
+  }
+
+  if (type != gfx::SHARED_MEMORY_BUFFER) {
+    NOTIMPLEMENTED();
+    return;
+  }
+
+  gfx::GpuMemoryBufferHandle gfx_handle;
+  // TODO(jam): create mojo enum for this and converter
+  gfx_handle.type = static_cast<gfx::GpuMemoryBufferType>(type);
+  gfx_handle.id = id;
+
+  MojoPlatformHandle platform_handle;
+  MojoResult extract_result = MojoExtractPlatformHandle(
+      memory_handle.release().value(),
+      &platform_handle);
+  if (extract_result != MOJO_RESULT_OK) {
+    NOTREACHED();
+    return;
+  }
+
+#if defined(OS_WIN)
+  gfx_handle.handle = platform_handle;
+#else
+  gfx_handle.handle = base::FileDescriptor(platform_handle, false);
+#endif
+
+  scoped_refptr<gfx::GLImageSharedMemory> image =
+      new gfx::GLImageSharedMemory(gfx_size, internal_format);
+  // TODO(jam): also need a mojo enum for this enum
+  if (!image->Initialize(gfx_handle, gpu_format)) {
+    NOTREACHED();
+    return;
+  }
+
+  image_manager->AddImage(image.get(), id);
+}
+
+void CommandBufferDriver::DestroyImage(int32_t id) {
+  gpu::gles2::ImageManager* image_manager = decoder_->GetImageManager();
+  if (!image_manager->LookupImage(id)) {
+    LOG(ERROR) << "Image with ID doesn't exist.";
+    return;
+  }
+  image_manager->RemoveImage(id);
 }
 
 void CommandBufferDriver::OnParseError() {

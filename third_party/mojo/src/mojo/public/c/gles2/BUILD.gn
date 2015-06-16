@@ -20,13 +20,19 @@ group("gles2") {
 
 mojo_sdk_source_set("headers") {
   sources = [
+    "chromium_copy_texture.h",
+    "chromium_image.h",
     "chromium_miscellaneous.h",
+    "chromium_pixel_transfer_buffer_object.h",
     "chromium_sub_image.h",
     "chromium_sync_point.h",
     "chromium_texture_mailbox.h",
     "gles2.h",
     "gles2_call_visitor_autogen.h",
+    "gles2_call_visitor_chromium_copy_texture_autogen.h",
+    "gles2_call_visitor_chromium_image_autogen.h",
     "gles2_call_visitor_chromium_miscellaneous_autogen.h",
+    "gles2_call_visitor_chromium_pixel_transfer_buffer_object_autogen.h",
     "gles2_call_visitor_chromium_sub_image_autogen.h",
     "gles2_call_visitor_chromium_sync_point_autogen.h",
     "gles2_call_visitor_chromium_texture_mailbox_autogen.h",
