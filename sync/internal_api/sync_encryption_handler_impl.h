@@ -88,6 +88,11 @@ class SYNC_EXPORT_PRIVATE SyncEncryptionHandlerImpl
   base::Time migration_time() const;
   base::Time custom_passphrase_time() const;
 
+  // Restore a saved nigori obtained from OnLocalSetPassphraseEncryption.
+  //
+  // Writes the nigori to the Directory and updates the Cryptographer.
+  void RestoreNigori(const SyncEncryptionHandler::NigoriState& nigori_state);
+
  private:
   friend class SyncEncryptionHandlerImplTest;
   FRIEND_TEST_ALL_PREFIXES(SyncEncryptionHandlerImplTest,
@@ -139,7 +144,10 @@ class SYNC_EXPORT_PRIVATE SyncEncryptionHandlerImpl
   // Iterate over all encrypted types ensuring each entry is properly encrypted.
   void ReEncryptEverything(WriteTransaction* trans);
 
-  // Apply a nigori update. Updates internal and cryptographer state.
+  // Updates internal and cryptographer state.
+  //
+  // Assumes |nigori| is already present in the Sync Directory.
+  //
   // Returns true on success, false if |nigori| was incompatible, and the
   // nigori node must be corrected.
   // Note: must be called from within a transaction.
@@ -260,6 +268,9 @@ class SYNC_EXPORT_PRIVATE SyncEncryptionHandlerImpl
   // If an explicit passphrase is in use, returns the time at which it was set
   // (if known). Else return base::Time().
   base::Time GetExplicitPassphraseTime() const;
+
+  // Notify observers when a custom passphrase is set by this device.
+  void NotifyObserversOfLocalCustomPassphrase(WriteTransaction* trans);
 
   base::ThreadChecker thread_checker_;
 

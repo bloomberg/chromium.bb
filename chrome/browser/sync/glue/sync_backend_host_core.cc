@@ -299,6 +299,14 @@ void SyncBackendHostCore::OnPassphraseTypeChanged(
       type, passphrase_time);
 }
 
+void SyncBackendHostCore::OnLocalSetPassphraseEncryption(
+    const syncer::SyncEncryptionHandler::NigoriState& nigori_state) {
+  host_.Call(
+      FROM_HERE,
+      &SyncBackendHostImpl::HandleLocalSetPassphraseEncryptionOnFrontendLoop,
+      nigori_state);
+}
+
 void SyncBackendHostCore::OnCommitCountersUpdated(
     syncer::ModelType type,
     const syncer::CommitCounters& counters) {

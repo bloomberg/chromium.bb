@@ -26,8 +26,11 @@
 #include "sync/protocol/sync.pb.h"
 #include "sync/syncable/directory.h"
 #include "sync/syncable/entry.h"
+#include "sync/syncable/mutable_entry.h"
 #include "sync/syncable/nigori_util.h"
 #include "sync/syncable/syncable_base_transaction.h"
+#include "sync/syncable/syncable_model_neutral_write_transaction.h"
+#include "sync/syncable/syncable_write_transaction.h"
 #include "sync/util/cryptographer.h"
 #include "sync/util/encryptor.h"
 #include "sync/util/time.h"
@@ -783,6 +786,36 @@ base::Time SyncEncryptionHandlerImpl::custom_passphrase_time() const {
   return custom_passphrase_time_;
 }
 
+void SyncEncryptionHandlerImpl::RestoreNigori(
+    const SyncEncryptionHandler::NigoriState& nigori_state) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  WriteTransaction trans(FROM_HERE, user_share_);
+
+  // Verify we don't already have a nigori node.
+  WriteNode nigori_node(&trans);
+  BaseNode::InitByLookupResult init_result = nigori_node.InitTypeRoot(NIGORI);
+  DCHECK(init_result == BaseNode::INIT_FAILED_ENTRY_NOT_GOOD);
+
+  // Create one.
+  syncable::ModelNeutralMutableEntry model_neutral_mutable_entry(
+      trans.GetWrappedWriteTrans(), syncable::CREATE_NEW_TYPE_ROOT, NIGORI);
+  DCHECK(model_neutral_mutable_entry.good());
+  model_neutral_mutable_entry.PutServerIsDir(true);
+  model_neutral_mutable_entry.PutUniqueServerTag(ModelTypeToRootTag(NIGORI));
+  model_neutral_mutable_entry.PutIsUnsynced(true);
+
+  // Update it with the saved nigori specifics.
+  syncable::MutableEntry mutable_entry(trans.GetWrappedWriteTrans(),
+                                       syncable::GET_TYPE_ROOT, NIGORI);
+  DCHECK(mutable_entry.good());
+  sync_pb::EntitySpecifics specifics;
+  specifics.mutable_nigori()->CopyFrom(nigori_state.nigori_specifics);
+  mutable_entry.PutSpecifics(specifics);
+
+  // Update our state based on the saved nigori node.
+  ApplyNigoriUpdate(nigori_state.nigori_specifics, trans.GetWrappedTrans());
+}
+
 // This function iterates over all encrypted types.  There are many scenarios in
 // which data for some or all types is not currently available.  In that case,
 // the lookup of the root node will fail and we will skip encryption for that
@@ -1126,20 +1159,34 @@ void SyncEncryptionHandlerImpl::SetCustomPassphrase(
   }
 
   std::string bootstrap_token;
-  if (cryptographer->AddKey(key_params)) {
-    DVLOG(1) << "Setting custom passphrase.";
-    cryptographer->GetBootstrapToken(&bootstrap_token);
-    passphrase_type_ = CUSTOM_PASSPHRASE;
-    custom_passphrase_time_ = base::Time::Now();
-    FOR_EACH_OBSERVER(SyncEncryptionHandler::Observer, observers_,
-                            OnPassphraseTypeChanged(
-                                passphrase_type_,
-                                GetExplicitPassphraseTime()));
-  } else {
+  if (!cryptographer->AddKey(key_params)) {
     NOTREACHED() << "Failed to add key to cryptographer.";
     return;
   }
+
+  DVLOG(1) << "Setting custom passphrase.";
+  cryptographer->GetBootstrapToken(&bootstrap_token);
+  passphrase_type_ = CUSTOM_PASSPHRASE;
+  custom_passphrase_time_ = base::Time::Now();
+  FOR_EACH_OBSERVER(
+      SyncEncryptionHandler::Observer, observers_,
+      OnPassphraseTypeChanged(passphrase_type_, GetExplicitPassphraseTime()));
   FinishSetPassphrase(true, bootstrap_token, trans, nigori_node);
+}
+
+void SyncEncryptionHandlerImpl::NotifyObserversOfLocalCustomPassphrase(
+    WriteTransaction* trans) {
+  WriteNode nigori_node(trans);
+  BaseNode::InitByLookupResult init_result = nigori_node.InitTypeRoot(NIGORI);
+  DCHECK_EQ(init_result, BaseNode::INIT_OK);
+  NigoriState nigori_state;
+  nigori_state.nigori_specifics = nigori_node.GetNigoriSpecifics();
+  DCHECK(nigori_state.nigori_specifics.passphrase_type() ==
+             sync_pb::NigoriSpecifics::CUSTOM_PASSPHRASE ||
+         nigori_state.nigori_specifics.passphrase_type() ==
+             sync_pb::NigoriSpecifics::FROZEN_IMPLICIT_PASSPHRASE);
+  FOR_EACH_OBSERVER(SyncEncryptionHandler::Observer, observers_,
+                    OnLocalSetPassphraseEncryption(nigori_state));
 }
 
 void SyncEncryptionHandlerImpl::DecryptPendingKeysWithExplicitPassphrase(
@@ -1484,6 +1531,11 @@ bool SyncEncryptionHandlerImpl::AttemptToMigrateNigoriToKeystore(
 
   DVLOG(1) << "Completing nigori migration to keystore support.";
   nigori_node->SetNigoriSpecifics(migrated_nigori);
+
+  if (new_encrypt_everything &&
+      (new_passphrase_type == FROZEN_IMPLICIT_PASSPHRASE ||
+       new_passphrase_type == CUSTOM_PASSPHRASE))
+    NotifyObserversOfLocalCustomPassphrase(trans);
 
   switch (new_passphrase_type) {
     case KEYSTORE_PASSPHRASE:

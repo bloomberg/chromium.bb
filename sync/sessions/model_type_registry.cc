@@ -333,6 +333,10 @@ void ModelTypeRegistry::OnPassphraseTypeChanged(PassphraseType type,
                                                 base::Time passphrase_time) {
 }
 
+void ModelTypeRegistry::OnLocalSetPassphraseEncryption(
+    const SyncEncryptionHandler::NigoriState& nigori_state) {
+}
+
 ModelTypeSet ModelTypeRegistry::GetEnabledDirectoryTypes() const {
   return enabled_directory_types_;
 }

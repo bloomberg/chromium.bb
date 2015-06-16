@@ -45,6 +45,8 @@ class SYNC_EXPORT_PRIVATE JsSyncEncryptionHandlerObserver
   void OnCryptographerStateChanged(Cryptographer* cryptographer) override;
   void OnPassphraseTypeChanged(PassphraseType type,
                                base::Time explicit_passphrase_time) override;
+  void OnLocalSetPassphraseEncryption(
+      const SyncEncryptionHandler::NigoriState& nigori_state) override;
 
  private:
   void HandleJsEvent(const tracked_objects::Location& from_here,

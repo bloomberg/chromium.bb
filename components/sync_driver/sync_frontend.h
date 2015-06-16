@@ -134,6 +134,14 @@ class SyncFrontend {
 
   // Called when the sync cycle returns there is an user actionable error.
   virtual void OnActionableError(const syncer::SyncProtocolError& error) = 0;
+
+  // Called when the user of this device enables passphrase encryption.
+  //
+  // |nigori_state| contains the new (post custom passphrase) encryption keys
+  // and can be used to restore SyncEncryptionHandler's state across sync
+  // backend instances. See also SyncEncryptionHandlerImpl::RestoreNigori.
+  virtual void OnLocalSetPassphraseEncryption(
+      const syncer::SyncEncryptionHandler::NigoriState& nigori_state) = 0;
 };
 
 }  // namespace sync_driver

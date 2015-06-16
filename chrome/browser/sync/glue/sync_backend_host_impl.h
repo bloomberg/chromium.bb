@@ -279,6 +279,9 @@ class SyncBackendHostImpl
       syncer::PassphraseType type,
       base::Time explicit_passphrase_time);
 
+  void HandleLocalSetPassphraseEncryptionOnFrontendLoop(
+      const syncer::SyncEncryptionHandler::NigoriState& nigori_state);
+
   void HandleStopSyncingPermanentlyOnFrontendLoop();
 
   // Dispatched to from OnConnectionStatusChange to handle updating
@@ -361,4 +364,3 @@ class SyncBackendHostImpl
 }  // namespace browser_sync
 
 #endif  // CHROME_BROWSER_SYNC_GLUE_SYNC_BACKEND_HOST_IMPL_H_
-

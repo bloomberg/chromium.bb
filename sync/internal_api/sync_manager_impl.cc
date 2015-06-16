@@ -404,6 +404,10 @@ void SyncManagerImpl::OnPassphraseTypeChanged(
       sync_encryption_handler_->migration_time());
 }
 
+void SyncManagerImpl::OnLocalSetPassphraseEncryption(
+    const SyncEncryptionHandler::NigoriState& nigori_state) {
+}
+
 void SyncManagerImpl::StartSyncingNormally(
     const ModelSafeRoutingInfo& routing_info,
     base::Time last_poll_time) {

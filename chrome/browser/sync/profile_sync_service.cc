@@ -1412,6 +1412,18 @@ void ProfileSyncService::OnActionableError(const SyncProtocolError& error) {
   }
 }
 
+void ProfileSyncService::OnLocalSetPassphraseEncryption(
+    const syncer::SyncEncryptionHandler::NigoriState& nigori_state) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  // TODO(maniscalco): At this point the user has set a custom passphrase and we
+  // have received the updated nigori state. Time to cache the nigori state,
+  // shutdown sync, then restart it and restore the cached nigori state.
+  //
+  // We should also clear the bootstrap keystore key from the pref before
+  // restarting sync to ensure we obtain a new, valid one when we perform the
+  // configuration sync cycle (crbug.com/490836).
+}
+
 void ProfileSyncService::OnConfigureDone(
     const DataTypeManager::ConfigureResult& result) {
   configure_status_ = result.status;

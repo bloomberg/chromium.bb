@@ -115,6 +115,8 @@ class SyncBackendHostCore
       syncer::Cryptographer* cryptographer) override;
   void OnPassphraseTypeChanged(syncer::PassphraseType type,
                                base::Time passphrase_time) override;
+  void OnLocalSetPassphraseEncryption(
+      const syncer::SyncEncryptionHandler::NigoriState& nigori_state) override;
 
   // TypeDebugInfoObserver implementation
   void OnCommitCountersUpdated(syncer::ModelType type,

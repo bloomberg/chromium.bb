@@ -817,6 +817,8 @@ class SyncEncryptionHandlerObserverMock
   MOCK_METHOD1(OnCryptographerStateChanged, void(Cryptographer*));  // NOLINT
   MOCK_METHOD2(OnPassphraseTypeChanged, void(PassphraseType,
                                              base::Time));  // NOLINT
+  MOCK_METHOD1(OnLocalSetPassphraseEncryption,
+               void(const SyncEncryptionHandler::NigoriState&));  // NOLINT
 };
 
 }  // namespace

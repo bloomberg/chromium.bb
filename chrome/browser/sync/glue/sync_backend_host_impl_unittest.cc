@@ -106,6 +106,9 @@ class MockSyncFrontend : public sync_driver::SyncFrontend {
   MOCK_METHOD1(OnActionableError,
       void(const syncer::SyncProtocolError& sync_error));
   MOCK_METHOD0(OnSyncConfigureRetry, void());
+  MOCK_METHOD1(
+      OnLocalSetPassphraseEncryption,
+      void(const syncer::SyncEncryptionHandler::NigoriState& nigori_state));
 };
 
 class FakeSyncManagerFactory : public syncer::SyncManagerFactory {

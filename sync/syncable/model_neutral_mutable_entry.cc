@@ -48,7 +48,10 @@ ModelNeutralMutableEntry::ModelNeutralMutableEntry(BaseWriteTransaction* trans,
                                                    CreateNewTypeRoot,
                                                    ModelType type)
     : Entry(trans), base_write_transaction_(trans) {
-  DCHECK(IsTypeWithClientGeneratedRoot(type));
+  // We allow NIGORI because we allow SyncEncryptionHandler to restore a nigori
+  // across Directory instances (see SyncEncryptionHandler::RestoreNigori).
+  if (type != NIGORI)
+    DCHECK(IsTypeWithClientGeneratedRoot(type));
   Entry same_type_root(trans, GET_TYPE_ROOT, type);
   kernel_ = NULL;
   if (same_type_root.good()) {

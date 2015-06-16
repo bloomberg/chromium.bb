@@ -811,6 +811,12 @@ void SyncBackendHostImpl::HandlePassphraseTypeChangedOnFrontendLoop(
   cached_explicit_passphrase_time_ = explicit_passphrase_time;
 }
 
+void SyncBackendHostImpl::HandleLocalSetPassphraseEncryptionOnFrontendLoop(
+    const syncer::SyncEncryptionHandler::NigoriState& nigori_state) {
+  DCHECK_EQ(base::MessageLoop::current(), frontend_loop_);
+  frontend_->OnLocalSetPassphraseEncryption(nigori_state);
+}
+
 void SyncBackendHostImpl::HandleConnectionStatusChangeOnFrontendLoop(
     syncer::ConnectionStatus status) {
   if (!frontend_)

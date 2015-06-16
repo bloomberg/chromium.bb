@@ -10,10 +10,7 @@
 #include "base/time/time.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
-
-namespace sync_pb {
-class EncryptedData;
-}
+#include "sync/protocol/sync.pb.h"
 
 namespace syncer {
 
@@ -56,6 +53,8 @@ enum BootstrapTokenType {
 // methods must be invoked on the sync thread.
 class SYNC_EXPORT SyncEncryptionHandler {
  public:
+  struct NigoriState;
+
   // All Observer methods are done synchronously from within a transaction and
   // on the sync thread.
   class SYNC_EXPORT Observer {
@@ -123,8 +122,20 @@ class SYNC_EXPORT SyncEncryptionHandler {
     virtual void OnPassphraseTypeChanged(PassphraseType type,
                                          base::Time passphrase_time) = 0;
 
+    // The user has set a passphrase using this device.
+    //
+    // |nigori_state| can be used to restore nigori state across
+    // SyncEncryptionHandlerImpl lifetimes. See also SyncEncryptionHandlerImpl's
+    // RestoredNigori method.
+    virtual void OnLocalSetPassphraseEncryption(
+        const NigoriState& nigori_state) = 0;
+
    protected:
     virtual ~Observer();
+  };
+
+  struct NigoriState {
+    sync_pb::NigoriSpecifics nigori_specifics;
   };
 
   SyncEncryptionHandler();
