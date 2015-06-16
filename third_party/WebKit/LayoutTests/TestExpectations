@@ -949,8 +949,6 @@ crbug.com/321857 [ Win7 Debug ] fast/filesystem/workers/file-writer-events-share
 
 crbug.com/343892 [ Linux Mac ] fast/workers/shared-worker-name.html [ Pass Crash ]
 
-crbug.com/368560 [ Win ] http/tests/svg/image-fetch-fail.svg [ Timeout Pass ]
-
 crbug.com/253763 fast/text-autosizing/first-line-scale-factor.html [ ImageOnlyFailure ]
 crbug.com/253763 virtual/slimmingpaint/fast/text-autosizing/first-line-scale-factor.html [ Skip ]
 
