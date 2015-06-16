@@ -1223,11 +1223,10 @@ void GCMDriverDesktop::GetGCMStatisticsFinished(
     const GCMClient::GCMStatistics& stats) {
   DCHECK(ui_thread_->RunsTasksOnCurrentThread());
 
-  // Normally request_gcm_statistics_callback_ would not be null.
+  // request_gcm_statistics_callback_ could be null when an activity, i.e.
+  // network activity, is triggered while gcm-intenals page is not open.
   if (!request_gcm_statistics_callback_.is_null())
     request_gcm_statistics_callback_.Run(stats);
-  else
-    LOG(WARNING) << "request_gcm_statistics_callback_ is NULL.";
 }
 
 bool GCMDriverDesktop::TokenTupleComparer::operator()(
