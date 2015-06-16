@@ -23,9 +23,8 @@ TEST_F(DirectoryImplTest, Read) {
     uint32_t open_flags;
   } files_to_create[] = {
       {"my_file1", kFlagRead | kFlagWrite | kFlagCreate},
-      {"my_file2", kFlagWrite | kFlagCreate | kFlagOpenAlways},
-      {"my_file3", kFlagWrite | kFlagCreate | kFlagAppend},
-      {"my_file4", kFlagWrite | kFlagCreate}};
+      {"my_file2", kFlagWrite | kFlagCreate},
+      {"my_file3", kFlagAppend | kFlagCreate }};
   for (size_t i = 0; i < arraysize(files_to_create); i++) {
     error = FILE_ERROR_FAILED;
     directory->OpenFile(files_to_create[i].name, nullptr,
@@ -51,7 +50,6 @@ TEST_F(DirectoryImplTest, Read) {
   expected_contents["my_file1"] = FS_FILE_TYPE_REGULAR_FILE;
   expected_contents["my_file2"] = FS_FILE_TYPE_REGULAR_FILE;
   expected_contents["my_file3"] = FS_FILE_TYPE_REGULAR_FILE;
-  expected_contents["my_file4"] = FS_FILE_TYPE_REGULAR_FILE;
   expected_contents["my_dir"] = FS_FILE_TYPE_DIRECTORY;
   // Note: We don't expose ".." or ".".
 

@@ -60,6 +60,12 @@ void DirectoryImpl::OpenFile(const mojo::String& raw_path,
     return;
   }
 
+#if defined(OS_WIN)
+  // On Windows, FILE_FLAG_BACKUP_SEMANTICS is needed to open a directory.
+  if (DirectoryExists(path))
+    open_flags |= base::File::FLAG_BACKUP_SEMANTICS;
+#endif  // OS_WIN
+
   base::File base_file(path, open_flags);
   if (!base_file.IsValid()) {
     callback.Run(FILE_ERROR_FAILED);
