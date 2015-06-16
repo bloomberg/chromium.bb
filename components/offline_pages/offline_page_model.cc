@@ -11,18 +11,29 @@
 
 namespace offline_pages {
 
-OfflinePageModel::OfflinePageModel(scoped_ptr<OfflinePageMetadataStore> store)
-    : store_(store.Pass()) {
+OfflinePageModel::OfflinePageModel(scoped_ptr<OfflinePageMetadataStore> store,
+                                   OfflinePageArchiver* archiver)
+    : store_(store.Pass()),
+      archiver_(archiver) {
+  DCHECK(archiver);
 }
 
 OfflinePageModel::~OfflinePageModel() {
 }
 
 void OfflinePageModel::Shutdown() {
-  NOTIMPLEMENTED();
 }
 
 void OfflinePageModel::SavePageOffline(const GURL& url) {
+}
+
+void OfflinePageModel::OnCreateArchiveDone(
+    OfflinePageArchiver::Request* request,
+    OfflinePageArchiver::ArchiverResult result,
+    const base::FilePath& file_path) {
+  // TODO(fgorski): Match request against one of the expected requests
+  // TODO(fgorski): Create an entry in the offline pages metadata store for that
+  //                request.
   NOTIMPLEMENTED();
 }
 

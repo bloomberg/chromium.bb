@@ -38,12 +38,53 @@ void OfflinePageTestStore::RemoveOfflinePage(const GURL& page_url,
                                              const UpdateCallback& callback) {
 }
 
+class OfflinePageTestArchiverRequest : public OfflinePageArchiver::Request {
+ public:
+  explicit OfflinePageTestArchiverRequest(const  GURL& url) : url_(url) {}
+  ~OfflinePageTestArchiverRequest() override {}
+
+  void Cancel() override;
+  const GURL& url() const override { return url_; }
+
+ private:
+  GURL url_;
+};
+
+void OfflinePageTestArchiverRequest::Cancel() {
+}
+
+
+class OfflinePageTestArchiver : public OfflinePageArchiver {
+ public:
+  ~OfflinePageTestArchiver() override;
+
+  // OfflinePageArchiver implementation:
+  scoped_ptr<Request> CreateArchive(const GURL& url,
+                                    Client* client) override;
+};
+
+OfflinePageTestArchiver::~OfflinePageTestArchiver() {
+}
+
+scoped_ptr<OfflinePageArchiver::Request> OfflinePageTestArchiver::CreateArchive(
+    const GURL& url,
+    Client* client) {
+  scoped_ptr<OfflinePageTestArchiverRequest> request(
+      new OfflinePageTestArchiverRequest(url));
+  return request.Pass();
+}
+
 class OfflinePageModelTest : public testing::Test {
  public:
   OfflinePageModelTest();
   ~OfflinePageModelTest() override;
 
   scoped_ptr<OfflinePageMetadataStore> BuildStore();
+
+  OfflinePageTestArchiver* archiver() { return &archiver_; }
+
+ private:
+  OfflinePageTestArchiver archiver_;
 };
 
 OfflinePageModelTest::OfflinePageModelTest() {
@@ -59,7 +100,7 @@ scoped_ptr<OfflinePageMetadataStore> OfflinePageModelTest::BuildStore() {
 TEST_F(OfflinePageModelTest, Initialize) {
   scoped_ptr<OfflinePageMetadataStore> store = BuildStore();
   OfflinePageMetadataStore* store_ptr = store.get();
-  OfflinePageModel model(store.Pass());
+  OfflinePageModel model(store.Pass(), archiver());
   EXPECT_EQ(store_ptr, model.GetStoreForTesting());
 }
 

@@ -18,6 +18,7 @@
         'keyed_service_core',
       ],
       'sources': [
+        'offline_pages/offline_page_archiver.h',
         'offline_pages/offline_page_item.cc',
         'offline_pages/offline_page_item.h',
         'offline_pages/offline_page_model.cc',

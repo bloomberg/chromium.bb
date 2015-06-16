@@ -5,6 +5,7 @@
 # GYP: //components/offline_pages.gypi:offline_pages
 static_library("offline_pages") {
   sources = [
+    "offline_page_archiver.h",
     "offline_page_item.cc",
     "offline_page_item.h",
     "offline_page_metadata_store.cc",

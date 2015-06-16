@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/offline_pages/offline_page_archiver.h"
 
 class GURL;
 
@@ -20,13 +21,20 @@ class OfflinePageMetadataStore;
 
 // Serivce for saving pages offline, storing the offline copy and metadata, and
 // retrieving them upon request.
-class OfflinePageModel : public KeyedService {
+class OfflinePageModel : public KeyedService,
+                         public OfflinePageArchiver::Client {
  public:
-  explicit OfflinePageModel(scoped_ptr<OfflinePageMetadataStore> store);
+  OfflinePageModel(scoped_ptr<OfflinePageMetadataStore> store,
+                   OfflinePageArchiver* archiver);
   ~OfflinePageModel() override;
 
-  // KeyedService:
+  // KeyedService implementation.
   void Shutdown() override;
+
+  // OfflinePageArchiver::Client implementation.
+  void OnCreateArchiveDone(OfflinePageArchiver::Request* request,
+                           OfflinePageArchiver::ArchiverResult error,
+                           const base::FilePath& file_path) override;
 
   // Saves the page loaded in the web contents offline.
   void SavePageOffline(const GURL& url);
@@ -40,6 +48,9 @@ class OfflinePageModel : public KeyedService {
  private:
   // Persistent store for offline page metadata.
   scoped_ptr<OfflinePageMetadataStore> store_;
+
+  // Offline page archiver. Outlives the model. Owned by the embedder.
+  OfflinePageArchiver* archiver_;
 
   DISALLOW_COPY_AND_ASSIGN(OfflinePageModel);
 };
