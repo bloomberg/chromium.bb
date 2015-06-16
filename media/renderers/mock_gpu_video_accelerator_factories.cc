@@ -71,4 +71,8 @@ MockGpuVideoAcceleratorFactories::CreateVideoEncodeAccelerator() {
   return scoped_ptr<VideoEncodeAccelerator>(DoCreateVideoEncodeAccelerator());
 }
 
+unsigned MockGpuVideoAcceleratorFactories::ImageTextureTarget() {
+  return GL_TEXTURE_2D;
+}
+
 }  // namespace media

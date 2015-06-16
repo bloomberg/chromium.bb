@@ -831,8 +831,11 @@ const char kUseFakeUIForMediaStream[]     = "use-fake-ui-for-media-stream";
 // Enable native GPU memory buffer support when available.
 const char kEnableNativeGpuMemoryBuffers[] = "enable-native-gpu-memory-buffers";
 
-// Overrides the default texture target used with CHROMIUM_image extension.
-const char kUseImageTextureTarget[] = "use-image-texture-target";
+// Texture target for CHROMIUM_image backed content textures.
+const char kContentImageTextureTarget[] = "content-image-texture-target";
+
+// Texture target for CHROMIUM_image backed video frame textures.
+const char kVideoImageTextureTarget[] = "video-image-texture-target";
 
 // Set when Chromium should use a mobile user agent.
 const char kUseMobileUserAgent[] = "use-mobile-user-agent";

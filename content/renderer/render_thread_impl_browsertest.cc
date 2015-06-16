@@ -160,7 +160,7 @@ class RenderThreadImplBrowserTest : public testing::Test {
     base::CommandLine::StringVector old_argv = cmd->argv();
 
     cmd->AppendSwitchASCII(switches::kNumRasterThreads, "1");
-    cmd->AppendSwitchASCII(switches::kUseImageTextureTarget,
+    cmd->AppendSwitchASCII(switches::kContentImageTextureTarget,
                            base::UintToString(GL_TEXTURE_2D));
 
     thread_ = new RenderThreadImplForTest(

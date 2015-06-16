@@ -599,7 +599,7 @@ void RenderThreadImpl::Init() {
 #endif
 
   std::string image_texture_target_string =
-      command_line.GetSwitchValueASCII(switches::kUseImageTextureTarget);
+      command_line.GetSwitchValueASCII(switches::kContentImageTextureTarget);
   bool parsed_image_texture_target = base::StringToUint(
       image_texture_target_string, &use_image_texture_target_);
   DCHECK(parsed_image_texture_target);
@@ -1290,8 +1290,15 @@ RenderThreadImpl::GetGpuFactories() {
     }
   }
   if (gpu_va_context_provider_.get()) {
+    std::string image_texture_target_string =
+        cmd_line->GetSwitchValueASCII(switches::kContentImageTextureTarget);
+    unsigned image_texture_target = 0;
+    bool parsed_image_texture_target =
+        base::StringToUint(image_texture_target_string, &image_texture_target);
+    DCHECK(parsed_image_texture_target);
     gpu_factories = RendererGpuVideoAcceleratorFactories::Create(
-        gpu_channel_host.get(), media_task_runner, gpu_va_context_provider_);
+        gpu_channel_host.get(), media_task_runner, gpu_va_context_provider_,
+        image_texture_target);
   }
   return gpu_factories;
 }

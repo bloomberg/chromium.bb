@@ -46,7 +46,8 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
   static scoped_refptr<RendererGpuVideoAcceleratorFactories> Create(
       GpuChannelHost* gpu_channel_host,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      const scoped_refptr<ContextProviderCommandBuffer>& context_provider);
+      const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
+      unsigned image_texture_target);
 
   // media::GpuVideoAcceleratorFactories implementation.
   scoped_ptr<media::VideoDecodeAccelerator> CreateVideoDecodeAccelerator()
@@ -69,6 +70,7 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
       gfx::GpuMemoryBuffer::Usage usage) override;
 
   bool IsTextureRGSupported() override;
+  unsigned ImageTextureTarget() override;
   gpu::gles2::GLES2Interface* GetGLES2Interface() override;
   scoped_ptr<base::SharedMemory> CreateSharedMemory(size_t size) override;
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() override;
@@ -83,7 +85,8 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
   RendererGpuVideoAcceleratorFactories(
       GpuChannelHost* gpu_channel_host,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      const scoped_refptr<ContextProviderCommandBuffer>& context_provider);
+      const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
+      unsigned image_texture_target);
   ~RendererGpuVideoAcceleratorFactories() override;
 
   // Helper to bind |context_provider| to the |task_runner_| thread after
@@ -98,6 +101,7 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   scoped_refptr<GpuChannelHost> gpu_channel_host_;
   scoped_refptr<ContextProviderCommandBuffer> context_provider_;
+  const unsigned image_texture_target_;
   scoped_ptr<GLHelper> gl_helper_;
   gpu::GpuMemoryBufferManager* const gpu_memory_buffer_manager_;
 

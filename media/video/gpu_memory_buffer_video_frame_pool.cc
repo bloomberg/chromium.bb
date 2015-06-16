@@ -32,7 +32,10 @@ class GpuMemoryBufferVideoFramePool::PoolImpl
   // null.
   PoolImpl(const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
            const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories)
-      : task_runner_(task_runner), gpu_factories_(gpu_factories) {}
+      : task_runner_(task_runner),
+        gpu_factories_(gpu_factories),
+        texture_target_(gpu_factories_ ? gpu_factories_->ImageTextureTarget()
+                                       : GL_TEXTURE_2D) {}
 
   // Takes a software VideoFrame and returns a VideoFrame backed by native
   // textures if possible.
@@ -100,7 +103,7 @@ class GpuMemoryBufferVideoFramePool::PoolImpl
   // Pool of resources.
   std::list<FrameResources*> resources_pool_;
 
-  unsigned texture_target_ = GL_TEXTURE_2D;
+  const unsigned texture_target_;
   DISALLOW_COPY_AND_ASSIGN(PoolImpl);
 };
 

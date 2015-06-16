@@ -28,10 +28,12 @@ scoped_refptr<RendererGpuVideoAcceleratorFactories>
 RendererGpuVideoAcceleratorFactories::Create(
     GpuChannelHost* gpu_channel_host,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-    const scoped_refptr<ContextProviderCommandBuffer>& context_provider) {
+    const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
+    unsigned image_texture_target) {
   scoped_refptr<RendererGpuVideoAcceleratorFactories> factories =
-      new RendererGpuVideoAcceleratorFactories(
-          gpu_channel_host, task_runner, context_provider);
+      new RendererGpuVideoAcceleratorFactories(gpu_channel_host, task_runner,
+                                               context_provider,
+                                               image_texture_target);
   // Post task from outside constructor, since AddRef()/Release() is unsafe from
   // within.
   task_runner->PostTask(
@@ -44,10 +46,12 @@ RendererGpuVideoAcceleratorFactories::Create(
 RendererGpuVideoAcceleratorFactories::RendererGpuVideoAcceleratorFactories(
     GpuChannelHost* gpu_channel_host,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-    const scoped_refptr<ContextProviderCommandBuffer>& context_provider)
+    const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
+    unsigned image_texture_target)
     : task_runner_(task_runner),
       gpu_channel_host_(gpu_channel_host),
       context_provider_(context_provider),
+      image_texture_target_(image_texture_target),
       gpu_memory_buffer_manager_(
           ChildThreadImpl::current()->gpu_memory_buffer_manager()),
       thread_safe_sender_(ChildThreadImpl::current()->thread_safe_sender()) {
@@ -209,6 +213,10 @@ bool RendererGpuVideoAcceleratorFactories::IsTextureRGSupported() {
   if (!context)
     return false;
   return context->GetImplementation()->capabilities().texture_rg;
+}
+
+unsigned RendererGpuVideoAcceleratorFactories::ImageTextureTarget() {
+  return image_texture_target_;
 }
 
 gpu::gles2::GLES2Interface*

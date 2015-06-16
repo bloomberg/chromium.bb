@@ -1137,22 +1137,26 @@ static void AppendCompositorCommandLineFlags(base::CommandLine* command_line) {
   if (IsForceGpuRasterizationEnabled())
     command_line->AppendSwitch(switches::kForceGpuRasterization);
 
-  // TODO(reveman): We currently assume that the compositor will use BGRA_8888
-  // if it's able to, and RGBA_8888 otherwise. Since we don't know what it will
-  // use we hardcode BGRA_8888 here for now. We should instead
-  // move decisions about GpuMemoryBuffer format to the browser embedder so we
-  // know it here, and pass that decision to the compositor for each usage.
-  // crbug.com/490362
-  gfx::GpuMemoryBuffer::Format format = gfx::GpuMemoryBuffer::BGRA_8888;
-
-  // TODO(danakj): When one-copy uploads support partial update, change this
-  // usage to PERSISTENT_MAP for one-copy.
-  gfx::GpuMemoryBuffer::Usage usage = gfx::GpuMemoryBuffer::MAP;
+  command_line->AppendSwitchASCII(
+      switches::kContentImageTextureTarget,
+      base::UintToString(
+          // TODO(reveman): We currently assume that the compositor will use
+          // BGRA_8888 if it's able to, and RGBA_8888 otherwise. Since we don't
+          // know what it will use we hardcode BGRA_8888 here for now. We should
+          // instead move decisions about GpuMemoryBuffer format to the browser
+          // embedder so we know it here, and pass that decision to the
+          // compositor for each usage.
+          // crbug.com/490362
+          BrowserGpuChannelHostFactory::GetImageTextureTarget(
+              gfx::GpuMemoryBuffer::BGRA_8888,
+              // TODO(danakj): When one-copy supports partial update, change
+              // this usage to PERSISTENT_MAP for one-copy.
+              gfx::GpuMemoryBuffer::MAP)));
 
   command_line->AppendSwitchASCII(
-      switches::kUseImageTextureTarget,
-      base::UintToString(
-          BrowserGpuChannelHostFactory::GetImageTextureTarget(format, usage)));
+      switches::kVideoImageTextureTarget,
+      base::UintToString(BrowserGpuChannelHostFactory::GetImageTextureTarget(
+          gfx::GpuMemoryBuffer::R_8, gfx::GpuMemoryBuffer::MAP)));
 
   // Appending disable-gpu-feature switches due to software rendering list.
   GpuDataManagerImpl* gpu_data_manager = GpuDataManagerImpl::GetInstance();
