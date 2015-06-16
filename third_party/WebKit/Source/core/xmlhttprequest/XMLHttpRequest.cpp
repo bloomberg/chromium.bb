@@ -161,7 +161,7 @@ public:
         if (m_body) {
             // |m_body| has |this| as a raw pointer, but it is not a problem
             // because |this| owns |m_body|.
-            m_body->registerClient(this);
+            m_reader = m_body->obtainReader(this);
         }
     }
     ~ReadableStreamSource() override { }
@@ -229,7 +229,7 @@ private:
         while (m_needsMore) {
             const void* buffer = nullptr;
             size_t size = 0;
-            Result result = m_body->beginRead(&buffer, WebDataConsumerHandle::FlagNone, &size);
+            Result result = m_reader->beginRead(&buffer, WebDataConsumerHandle::FlagNone, &size);
             if (result == WebDataConsumerHandle::ShouldWait)
                 return;
             if (result == WebDataConsumerHandle::Done) {
@@ -252,7 +252,7 @@ private:
             }
             RefPtr<DOMArrayBuffer> arrayBuffer = DOMArrayBuffer::create(size, 1);
             memcpy(arrayBuffer->data(), buffer, size);
-            result = m_body->endRead(size);
+            result = m_reader->endRead(size);
             if (result != WebDataConsumerHandle::Ok) {
                 m_stream->error(DOMException::create(NetworkError));
                 m_owner->abort();
@@ -269,6 +269,7 @@ private:
     RawPtrWillBeMember<XMLHttpRequest> m_owner;
     Member<ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBufferView>>> m_stream;
     OwnPtr<WebDataConsumerHandle> m_body;
+    OwnPtr<WebDataConsumerHandle::Reader> m_reader;
     bool m_needsMore;
     bool m_hasReadBody;
     bool m_hasGotDidFinishLoading;
