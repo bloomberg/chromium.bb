@@ -96,13 +96,34 @@ void StyledMarkupAccumulator::appendEndMarkup(StringBuilder& result, const Eleme
 
 void StyledMarkupAccumulator::appendText(Text& text)
 {
-    appendText(m_result, text);
+    if (text.parentElement() && text.parentElement()->tagQName() == textareaTag) {
+        appendText(m_result, text);
+        return;
+    }
+    appendTextWithInlineStyle(m_result, text);
 }
 
 void StyledMarkupAccumulator::appendText(StringBuilder& out, Text& text)
 {
-    const bool parentIsTextarea = text.parentElement() && text.parentElement()->tagQName() == textareaTag;
-    const bool wrappingSpan = shouldApplyWrappingStyle(text) && !parentIsTextarea;
+    const String& str = text.data();
+    unsigned length = str.length();
+    unsigned start = 0;
+    if (m_end.isNotNull()) {
+        if (text == m_end.text())
+            length = m_end.offset();
+    }
+    if (m_start.isNotNull()) {
+        if (text == m_start.text()) {
+            start = m_start.offset();
+            length -= start;
+        }
+    }
+    MarkupFormatter::appendCharactersReplacingEntities(out, str, start, length, m_formatter.entityMaskForText(text));
+}
+
+void StyledMarkupAccumulator::appendTextWithInlineStyle(StringBuilder& out, Text& text)
+{
+    const bool wrappingSpan = shouldApplyWrappingStyle(text);
     if (wrappingSpan) {
         RefPtrWillBeRawPtr<EditingStyle> wrappingStyle = m_wrappingStyle->copy();
         // FIXME: <rdar://problem/5371536> Style rules that match pasted content can change it's appearance
@@ -120,21 +141,8 @@ void StyledMarkupAccumulator::appendText(StringBuilder& out, Text& text)
         out.appendLiteral("\">");
     }
 
-    if (!shouldAnnotate() || parentIsTextarea) {
-        const String& str = text.data();
-        unsigned length = str.length();
-        unsigned start = 0;
-        if (m_end.isNotNull()) {
-            if (text == m_end.text())
-                length = m_end.offset();
-        }
-        if (m_start.isNotNull()) {
-            if (text == m_start.text()) {
-                start = m_start.offset();
-                length -= start;
-            }
-        }
-        MarkupFormatter::appendCharactersReplacingEntities(out, str, start, length, m_formatter.entityMaskForText(text));
+    if (!shouldAnnotate()) {
+        appendText(out, text);
     } else {
         const bool useRenderedText = !enclosingElementWithTag(firstPositionInNode(&text), selectTag);
         String content = useRenderedText ? renderedText(text) : stringValueForRange(text);

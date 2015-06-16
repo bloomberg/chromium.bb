@@ -72,6 +72,7 @@ public:
 
 private:
     void appendText(StringBuilder&, Text&);
+    void appendTextWithInlineStyle(StringBuilder&, Text&);
 
     String renderedText(Text&);
     String stringValueForRange(const Text&);
