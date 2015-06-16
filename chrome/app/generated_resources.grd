@@ -11881,7 +11881,7 @@ Dead Jim feedback.
         Remove account
       </message>
       <message name="IDS_PROFILES_CONFIRM_SIGNIN_TUTORIAL_CONTENT_TEXT" desc="Content of the tutorial card in the avatar menu bubble view shown when a user successfully signs in to Chrome.">
-        Your tabs, bookmarks, history, and other settings will be synced to your Google Account.
+        Your bookmarks, history, passwords, and other settings will be synced to your Google Account.
       </message>
       <message name="IDS_PROFILES_TUTORIAL_OK_BUTTON" desc="Button in the avatar menu tutorial card for dismissing the signin confirmation bubble">
         OK, got it
