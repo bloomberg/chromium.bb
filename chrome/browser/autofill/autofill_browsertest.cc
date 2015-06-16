@@ -787,7 +787,17 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, AppendCountryCodeForAggregatedPhones) {
 //   The phone number does not have a leading '+'.
 //   The phone number has a leading international direct dialing (IDD) code.
 // This does not apply to US numbers. For US numbers, '+' is removed.
-IN_PROC_BROWSER_TEST_F(AutofillTest, UsePlusSignForInternationalNumber) {
+
+// Flaky on Windows. http://crbug.com/500491
+#if defined(OS_WIN)
+#define MAYBE_UsePlusSignForInternationalNumber \
+    DISABLED_UsePlusSignForInternationalNumber
+#else
+#define MAYBE_UsePlusSignForInternationalNumber \
+    UsePlusSignForInternationalNumber
+#endif
+
+IN_PROC_BROWSER_TEST_F(AutofillTest, MAYBE_UsePlusSignForInternationalNumber) {
   ASSERT_TRUE(test_server()->Start());
   std::vector<FormMap> profiles;
 
