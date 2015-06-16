@@ -15,6 +15,7 @@
 #include <gtest/gtest.h>
 
 using testing::_;
+using testing::AtMost;
 using testing::Invoke;
 using testing::Return;
 using testing::Mock;
@@ -159,7 +160,6 @@ public:
         m_workerThread = adoptRef(new WorkerThreadForTest(
             m_mockWorkerLoaderProxyProvider.get(),
             *m_mockWorkerReportingProxy));
-        ExpectWorkerLifetimeReportingCalls();
     }
 
     void TearDown() override
@@ -167,10 +167,8 @@ public:
         m_workerThread->workerLoaderProxy()->detachProvider(m_mockWorkerLoaderProxyProvider.get());
     }
 
-    void startAndWaitForInit()
+    void start()
     {
-        OwnPtr<WebWaitableEvent> completionEvent = adoptPtr(Platform::current()->createWaitableEvent());
-
         OwnPtr<Vector<CSPHeaderAndType>> headers = adoptPtr(new Vector<CSPHeaderAndType>());
         CSPHeaderAndType headerAndType("contentSecurityPolicy", ContentSecurityPolicyHeaderTypeReport);
         headers->append(headerAndType);
@@ -187,6 +185,11 @@ public:
             m_securityOrigin.get(),
             clients.release(),
             V8CacheOptionsDefault));
+    }
+
+    void waitForInit()
+    {
+        OwnPtr<WebWaitableEvent> completionEvent = adoptPtr(Platform::current()->createWaitableEvent());
         m_workerThread->backingThread().postTask(FROM_HERE, new SignalTask(completionEvent.get()));
         completionEvent->wait();
     }
@@ -203,7 +206,7 @@ public:
     }
 
 protected:
-    void ExpectWorkerLifetimeReportingCalls()
+    void expectWorkerLifetimeReportingCalls()
     {
         EXPECT_CALL(*m_mockWorkerReportingProxy, workerGlobalScopeStarted(_)).Times(1);
         EXPECT_CALL(*m_mockWorkerReportingProxy, didEvaluateWorkerScript(true)).Times(1);
@@ -219,7 +222,19 @@ protected:
 
 TEST_F(WorkerThreadTest, StartAndStop)
 {
-    startAndWaitForInit();
+    expectWorkerLifetimeReportingCalls();
+    start();
+    waitForInit();
+    m_workerThread->terminateAndWait();
+}
+
+TEST_F(WorkerThreadTest, StartAndStopImmediately)
+{
+    EXPECT_CALL(*m_mockWorkerReportingProxy, workerGlobalScopeStarted(_)).Times(AtMost(1));
+    EXPECT_CALL(*m_mockWorkerReportingProxy, didEvaluateWorkerScript(true)).Times(AtMost(1));
+    EXPECT_CALL(*m_mockWorkerReportingProxy, workerThreadTerminated()).Times(AtMost(1));
+    EXPECT_CALL(*m_mockWorkerReportingProxy, willDestroyWorkerGlobalScope()).Times(AtMost(1));
+    start();
     m_workerThread->terminateAndWait();
 }
 
@@ -236,7 +251,9 @@ TEST_F(WorkerThreadTest, GcOccursWhileIdle)
 
     EXPECT_CALL(*m_workerThread, doIdleGc(_)).Times(testing::AtLeast(1));
 
-    startAndWaitForInit();
+    expectWorkerLifetimeReportingCalls();
+    start();
+    waitForInit();
     postWakeUpTask(500ul);
 
     gcDone->wait();
@@ -280,7 +297,9 @@ TEST_F(WorkerThreadTest, GcDoesNotOccurWhenNotIdle)
 
     EXPECT_CALL(*m_workerThread, doIdleGc(_)).Times(0);
 
-    startAndWaitForInit();
+    expectWorkerLifetimeReportingCalls();
+    start();
+    waitForInit();
 
     WebScheduler* scheduler = m_workerThread->backingThread().platformThread().scheduler();
 

@@ -216,6 +216,8 @@ void WorkerThread::initialize(PassOwnPtr<WorkerThreadStartupData> startupData)
             // Notify the proxy that the WorkerGlobalScope has been disposed of.
             // This can free this thread object, hence it must not be touched afterwards.
             m_workerReportingProxy.workerThreadTerminated();
+            // Notify the main thread that it is safe to deallocate our resources.
+            m_terminationEvent->signal();
             return;
         }
 
@@ -327,11 +329,11 @@ void WorkerThread::terminateInternal()
     if (m_shutdown)
         return;
 
-    // If the worker thread was never initialized, complete the termination immediately.
-    if (!m_workerGlobalScope) {
-        m_terminationEvent->signal();
+    // If the worker thread was never initialized, don't start another
+    // shutdown, but still wait for the thread to signal when termination has
+    // completed.
+    if (!m_workerGlobalScope)
         return;
-    }
 
     // Ensure that tasks are being handled by thread event loop. If script execution weren't forbidden, a while(1) loop in JS could keep the thread alive forever.
     m_workerGlobalScope->script()->willScheduleExecutionTermination();
