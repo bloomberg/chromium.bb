@@ -1267,8 +1267,6 @@
       'browser/autocomplete/autocomplete_controller.cc',
       'browser/autocomplete/autocomplete_controller.h',
       'browser/autocomplete/autocomplete_controller_delegate.h',
-      'browser/autocomplete/bookmark_provider.cc',
-      'browser/autocomplete/bookmark_provider.h',
       'browser/autocomplete/builtin_provider.cc',
       'browser/autocomplete/builtin_provider.h',
       'browser/autocomplete/chrome_autocomplete_provider_client.cc',

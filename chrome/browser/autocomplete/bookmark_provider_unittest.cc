@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/autocomplete/bookmark_provider.h"
+#include "components/omnibox/bookmark_provider.h"
 
 #include <algorithm>
 #include <string>
@@ -14,6 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/bookmarks/browser/bookmark_match.h"
@@ -76,8 +77,9 @@ class BookmarkProviderTest : public testing::Test {
   void SetUp() override;
 
   content::TestBrowserThreadBundle thread_bundle_;
-  bookmarks::TestBookmarkClient client_;
+  bookmarks::TestBookmarkClient bookmark_client_;
   scoped_ptr<TestingProfile> profile_;
+  scoped_ptr<ChromeAutocompleteProviderClient> provider_client_;
   scoped_ptr<BookmarkModel> model_;
   scoped_refptr<BookmarkProvider> provider_;
 
@@ -86,13 +88,14 @@ class BookmarkProviderTest : public testing::Test {
 };
 
 BookmarkProviderTest::BookmarkProviderTest() {
-  model_ = client_.CreateModel();
+  model_ = bookmark_client_.CreateModel();
 }
 
 void BookmarkProviderTest::SetUp() {
   profile_.reset(new TestingProfile());
   DCHECK(profile_.get());
-  provider_ = new BookmarkProvider(profile_.get());
+  provider_client_.reset(new ChromeAutocompleteProviderClient(profile_.get()));
+  provider_ = new BookmarkProvider(provider_client_.get());
   DCHECK(provider_.get());
   provider_->set_bookmark_model_for_testing(model_.get());
 

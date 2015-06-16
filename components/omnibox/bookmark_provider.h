@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_AUTOCOMPLETE_BOOKMARK_PROVIDER_H_
-#define CHROME_BROWSER_AUTOCOMPLETE_BOOKMARK_PROVIDER_H_
+#ifndef COMPONENTS_OMNIBOX_BOOKMARK_PROVIDER_H_
+#define COMPONENTS_OMNIBOX_BOOKMARK_PROVIDER_H_
 
 #include <string>
 
@@ -12,7 +12,7 @@
 #include "components/omnibox/autocomplete_provider.h"
 #include "components/query_parser/snippet.h"
 
-class Profile;
+class AutocompleteProviderClient;
 
 namespace bookmarks {
 class BookmarkModel;
@@ -29,7 +29,7 @@ struct BookmarkMatch;
 // and visit counts and last visit dates, etc. into consideration while scoring.
 class BookmarkProvider : public AutocompleteProvider {
  public:
-  explicit BookmarkProvider(Profile* profile);
+  explicit BookmarkProvider(AutocompleteProviderClient* client);
 
   // When |minimal_changes| is true short circuit any additional searching and
   // leave the previous matches for this provider unchanged, otherwise perform
@@ -72,7 +72,7 @@ class BookmarkProvider : public AutocompleteProvider {
       size_t text_length,
       bool is_url);
 
-  Profile* profile_;
+  AutocompleteProviderClient* client_;
   bookmarks::BookmarkModel* bookmark_model_;
 
   // Languages used during the URL formatting.
@@ -81,4 +81,4 @@ class BookmarkProvider : public AutocompleteProvider {
   DISALLOW_COPY_AND_ASSIGN(BookmarkProvider);
 };
 
-#endif  // CHROME_BROWSER_AUTOCOMPLETE_BOOKMARK_PROVIDER_H_
+#endif  // COMPONENTS_OMNIBOX_BOOKMARK_PROVIDER_H_

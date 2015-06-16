@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/autocomplete/bookmark_provider.h"
+#include "components/omnibox/bookmark_provider.h"
 
 #include <algorithm>
 #include <functional>
@@ -11,13 +11,10 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
-#include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/common/pref_names.h"
 #include "components/bookmarks/browser/bookmark_match.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
+#include "components/omnibox/autocomplete_provider_client.h"
 #include "components/omnibox/autocomplete_result.h"
 #include "components/omnibox/history_provider.h"
 #include "components/omnibox/url_prefix.h"
@@ -55,13 +52,13 @@ void CorrectTitleAndMatchPositions(
 
 // BookmarkProvider ------------------------------------------------------------
 
-BookmarkProvider::BookmarkProvider(Profile* profile)
+BookmarkProvider::BookmarkProvider(AutocompleteProviderClient* client)
     : AutocompleteProvider(AutocompleteProvider::TYPE_BOOKMARK),
-      profile_(profile),
+      client_(client),
       bookmark_model_(NULL) {
-  if (profile) {
-    bookmark_model_ = BookmarkModelFactory::GetForProfile(profile);
-    languages_ = profile_->GetPrefs()->GetString(prefs::kAcceptLanguages);
+  if (client_) {
+    bookmark_model_ = client_->BookmarkModel();
+    languages_ = client_->AcceptLanguages();
   }
 }
 
@@ -206,7 +203,7 @@ AutocompleteMatch BookmarkProvider::BookmarkMatchToACMatch(
                                true);
   match.fill_into_edit =
       AutocompleteInput::FormattedStringWithEquivalentMeaning(
-          url, match.contents, ChromeAutocompleteSchemeClassifier(profile_));
+          url, match.contents, client_->SchemeClassifier());
   if (inline_autocomplete_offset != base::string16::npos) {
     // |inline_autocomplete_offset| may be beyond the end of the
     // |fill_into_edit| if the user has typed an URL with a scheme and the
