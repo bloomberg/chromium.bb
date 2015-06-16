@@ -28,7 +28,9 @@
       'shell/static_application_loader.cc',
       'shell/static_application_loader.h',
       'shell/switches.cc',
-      'shell/switches.h',
+      'shell/switches.cc',
+      'shell/update_fetcher.cc',
+      'shell/update_fetcher.h',
       'util/filename_util.cc',
       'util/filename_util.h',
     ],
@@ -42,6 +44,7 @@
       '<(DEPTH)/mojo/mojo_base.gyp:mojo_environment_chromium',
       '<(DEPTH)/mojo/mojo_base.gyp:mojo_url_type_converters',
       '<(DEPTH)/mojo/mojo_services.gyp:network_service_bindings_lib',
+      '<(DEPTH)/mojo/mojo_services.gyp:updater_bindings_lib',
       '<(DEPTH)/url/url.gyp:url_lib',
     ],
   }, {

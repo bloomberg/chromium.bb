@@ -16,6 +16,7 @@
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/services/network/public/interfaces/url_loader_factory.mojom.h"
+#include "mojo/services/updater/updater.mojom.h"
 #include "mojo/shell/application_loader.h"
 #include "mojo/shell/fetcher.h"
 #include "mojo/shell/identity.h"
@@ -243,6 +244,7 @@ class ApplicationManager {
 
   base::SequencedWorkerPool* blocking_pool_;
   URLLoaderFactoryPtr url_loader_factory_;
+  updater::UpdaterPtr updater_;
   MimeTypeToURLMap mime_type_to_url_;
   ScopedVector<NativeRunner> native_runners_;
   bool disable_cache_;

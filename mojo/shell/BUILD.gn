@@ -30,6 +30,8 @@ source_set("shell") {
     "static_application_loader.h",
     "switches.cc",
     "switches.h",
+    "update_fetcher.cc",
+    "update_fetcher.h",
   ]
 
   public_deps = [
@@ -38,6 +40,7 @@ source_set("shell") {
     "//mojo/common",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//mojo/services/network/public/interfaces",
+    "//mojo/services/updater",
     "//url",
   ]
   deps = [

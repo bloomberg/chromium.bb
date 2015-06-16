@@ -14,8 +14,10 @@ group("app") {
   }
 
   data_deps = [
-    "//mandoline/ui/browser",
     "//mandoline/services/core_services",
+    "//mandoline/services/updater",
+    "//mandoline/ui/browser",
     "//mojo/runner:mojo_runner",
+    "//mojo/services/updater",
   ]
 }

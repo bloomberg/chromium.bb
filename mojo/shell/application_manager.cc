@@ -20,6 +20,7 @@
 #include "mojo/shell/query_util.h"
 #include "mojo/shell/shell_impl.h"
 #include "mojo/shell/switches.h"
+#include "mojo/shell/update_fetcher.h"
 
 namespace mojo {
 namespace shell {
@@ -175,6 +176,16 @@ void ApplicationManager::ConnectToApplicationInternal(
   if (resolved_url.SchemeIsFile()) {
     new LocalFetcher(
         resolved_url, GetBaseURLAndQuery(resolved_url, nullptr),
+        base::Bind(callback, NativeApplicationCleanup::DONT_DELETE));
+    return;
+  }
+
+  if (mapped_url.SchemeIs("mojo") &&
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUseUpdater)) {
+    ConnectToService(GURL("mojo:updater"), &updater_);
+    new UpdateFetcher(
+        mapped_url, updater_.get(),
         base::Bind(callback, NativeApplicationCleanup::DONT_DELETE));
     return;
   }

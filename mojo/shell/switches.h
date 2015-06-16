@@ -15,6 +15,7 @@ namespace switches {
 extern const char kDontDeleteOnDownload[];
 extern const char kEnableMultiprocess[];
 extern const char kPredictableAppFilenames[];
+extern const char kUseUpdater[];
 
 }  // namespace switches
 

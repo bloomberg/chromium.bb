@@ -23,4 +23,8 @@ const char kEnableMultiprocess[] = "enable-multiprocess";
 // their content.
 const char kPredictableAppFilenames[] = "predictable-app-filenames";
 
+// Pull apps via component updater, rather than using default local resolution
+// to find them.
+const char kUseUpdater[] = "use-updater";
+
 }  // namespace switches

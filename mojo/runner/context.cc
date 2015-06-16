@@ -62,23 +62,25 @@ bool ConfigureURLMappings(const base::CommandLine& command_line,
 
   // Configure the resolution of unknown mojo: URLs.
   GURL base_url;
-  if (command_line.HasSwitch(switches::kOrigin))
+  if (command_line.HasSwitch(switches::kOrigin)) {
     base_url = GURL(command_line.GetSwitchValueASCII(switches::kOrigin));
-  else
+  } else if (!command_line.HasSwitch(switches::kUseUpdater)) {
     // Use the shell's file root if the base was not specified.
     base_url = context->ResolveShellFileURL("");
+  }
 
-  if (!base_url.is_valid())
-    return false;
+  if (base_url.is_valid())
+    resolver->SetMojoBaseURL(base_url);
 
-  resolver->SetMojoBaseURL(base_url);
-
-  // The network service must be loaded from the filesystem.
+  // The network service and updater must be loaded from the filesystem.
   // This mapping is done before the command line URL mapping are processed, so
   // that it can be overridden.
   resolver->AddURLMapping(GURL("mojo:network_service"),
                           context->ResolveShellFileURL(
                               "file:network_service/network_service.mojo"));
+  resolver->AddURLMapping(
+      GURL("mojo:updater"),
+      context->ResolveShellFileURL("file:updater/updater.mojo"));
 
   // Command line URL mapping.
   std::vector<URLResolver::OriginMapping> origin_mappings =
