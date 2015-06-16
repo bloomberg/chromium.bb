@@ -5,7 +5,7 @@
 #include "components/google/core/browser/google_search_metrics.h"
 
 #include "base/logging.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 
 GoogleSearchMetrics::GoogleSearchMetrics() {
 }

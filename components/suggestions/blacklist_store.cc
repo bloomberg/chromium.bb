@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/base64.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/prefs/pref_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/suggestions/suggestions_pref_names.h"

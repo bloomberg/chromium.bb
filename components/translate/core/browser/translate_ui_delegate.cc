@@ -5,7 +5,7 @@
 #include "components/translate/core/browser/translate_ui_delegate.h"
 
 #include "base/i18n/string_compare.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "components/translate/core/browser/language_state.h"
 #include "components/translate/core/browser/translate_client.h"
 #include "components/translate/core/browser/translate_download_manager.h"

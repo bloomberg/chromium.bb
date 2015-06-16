@@ -5,7 +5,7 @@
 #include "components/error_page/common/net_error_info.h"
 
 #include "base/logging.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 
 namespace chrome_common_net {
 

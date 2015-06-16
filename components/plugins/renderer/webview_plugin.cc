@@ -5,7 +5,7 @@
 #include "components/plugins/renderer/webview_plugin.h"
 
 #include "base/message_loop/message_loop.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "content/public/common/web_preferences.h"
 #include "content/public/renderer/render_view.h"

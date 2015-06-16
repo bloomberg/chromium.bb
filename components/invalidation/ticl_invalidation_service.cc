@@ -5,7 +5,7 @@
 #include "components/invalidation/ticl_invalidation_service.h"
 
 #include "base/command_line.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/invalidation/gcm_invalidation_bridge.h"
 #include "components/invalidation/invalidation_service_util.h"

@@ -4,7 +4,7 @@
 
 #include "components/dom_distiller/core/feedback_reporter.h"
 
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 
 namespace dom_distiller {
 

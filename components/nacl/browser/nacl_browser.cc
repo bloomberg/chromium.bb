@@ -8,7 +8,7 @@
 #include "base/files/file_proxy.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/pickle.h"
 #include "base/rand_util.h"

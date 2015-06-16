@@ -5,7 +5,7 @@
 #include "components/autofill/core/browser/autofill_metrics.h"
 
 #include "base/logging.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_type.h"

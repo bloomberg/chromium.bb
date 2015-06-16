@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "components/language_usage_metrics/language_usage_metrics.h"
 
