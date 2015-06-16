@@ -31,8 +31,6 @@
 <translation id="2297568595583585744">স্থিতি ট্রে</translation>
 <translation id="2248649616066688669">Chromebook এর সঙ্গে একটি বহিস্থিত প্রদর্শন সংযুক্ত থাকাকালীন আপনি এটি ব্যবহার করা চালিয়ে যেতে পারেন এমনকি যখন এটির লিড বন্ধ থাকে তখনো।</translation>
 <translation id="2946640296642327832">ব্লুটুথ সক্ষম করুন</translation>
-<translation id="478959186716341421">কাস্ট করা হচ্ছে</translation>
-<translation id="5537725057119320332">কাস্ট করুন</translation>
 <translation id="6459472438155181876">স্ক্রীন <ph name="DISPLAY_NAME"/> তে প্রসারিত হচ্ছে</translation>
 <translation id="8206859287963243715">সেলুলার</translation>
 <translation id="6596816719288285829">IP ঠিকানা</translation>
@@ -73,7 +71,6 @@
 <translation id="2509468283778169019">CAPS LOCK চালু</translation>
 <translation id="3892641579809465218">অভ্যন্তরীণ প্রদর্শন</translation>
 <translation id="7823564328645135659">আপনার সেটিংস সিঙ্ক করার পরে ভাষা &quot;<ph name="FROM_LOCALE"/>&quot; থেকে &quot;<ph name="TO_LOCALE"/>&quot; এ পরিবর্তন করা হয়েছে৷</translation>
-<translation id="7113420380180868673">$1 কাস্ট করা হচ্ছে</translation>
 <translation id="3606978283550408104">ব্রেইল প্রদর্শন সংযুক্ত হয়েছে৷</translation>
 <translation id="8654520615680304441">Wi-Fi চালু করুন...</translation>
 <translation id="4421231901400348175">রিমোট সহায়কের মাধ্যমে <ph name="HELPER_NAME"/>-এর সাথে আপনার স্ক্রীন নিয়ন্ত্রন ভাগ করুন৷</translation>
@@ -98,7 +95,6 @@
 <translation id="3626637461649818317"><ph name="PERCENTAGE"/>% বাকি আছে</translation>
 <translation id="9089416786594320554">ইনপুট পদ্ধতিসমূহ</translation>
 <translation id="2700058918926273959"><ph name="SESSION_TIME_REMAINING"/> এর মধ্যে সেশন শেষ হয়ে যাবে৷ আপনাকে সাইন আউট করা হবে৷</translation>
-<translation id="5807965672380739016">এতে ডেস্কটপ কাস্ট করুন</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
 <translation id="3963445509666917109">স্পিকার (অভ্যন্তরীণ)</translation>
 <translation id="1747827819627189109">অন-স্ক্রীন কীবোর্ড সক্ষম করা রয়েছে</translation>
@@ -119,7 +115,6 @@
 <translation id="8528322925433439945">মোবাইল ...</translation>
 <translation id="3157169093162779309">আবর্তন লক সক্ষম করুন</translation>
 <translation id="8428213095426709021">সেটিংস</translation>
-<translation id="6592705765268910579">অজানা রিসিভার</translation>
 <translation id="2372145515558759244">অ্যাপ্লিকেশনগুলি সিঙ্ক হচ্ছে...</translation>
 <translation id="1987317783729300807">অ্যাকাউন্টসমূহ</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> বাকি পুরো চার্জ হতে</translation>
@@ -211,7 +206,6 @@ Alt+Search অথবা বাতিল করতে Shift টিপুন৷</t
 <translation id="3009178788565917040">আউটপুট</translation>
 <translation id="3147142846278915599">লঞ্চার (অ্যাপ সিঙ্ক করা হচ্ছে...)</translation>
 <translation id="6911468394164995108">অন্যান্য যোগদান ...</translation>
-<translation id="4373966964907728675">ডেস্কটপ কাস্ট করা হচ্ছে</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608"><ph name="HOUR"/>ঘন্টা <ph name="MINUTE"/> মিনিট পর্যন্ত পূর্ণ</translation>
 <translation id="3077734595579995578">shift</translation>

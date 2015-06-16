@@ -31,8 +31,6 @@
 <translation id="2297568595583585744">Stavový panel</translation>
 <translation id="2248649616066688669">Pokud je Chromebook připojen k externí obrazovce, můžete ho používat i po zavření víka.</translation>
 <translation id="2946640296642327832">Zapnout Bluetooth</translation>
-<translation id="478959186716341421">Odesílání</translation>
-<translation id="5537725057119320332">Odeslat</translation>
 <translation id="6459472438155181876">Rozšíření obrazovky na displej <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Mobil</translation>
 <translation id="6596816719288285829">IP adresa</translation>
@@ -72,7 +70,6 @@
 <translation id="2509468283778169019">CAPS LOCK je zapnutý</translation>
 <translation id="3892641579809465218">Interní displej</translation>
 <translation id="7823564328645135659">Jazyk prohlížeče Chrome se po synchronizaci nastavení změnil z jazyka <ph name="FROM_LOCALE"/> na jazyk <ph name="TO_LOCALE"/>.</translation>
-<translation id="7113420380180868673">Odesílání karty $1</translation>
 <translation id="3606978283550408104">Je připojen hmatový displej.</translation>
 <translation id="8654520615680304441">Zapnout Wi-Fi...</translation>
 <translation id="4421231901400348175">Ovládání obrazovky je prostřednictvím Vzdálené pomoci sdíleno s uživatelem <ph name="HELPER_NAME"/>.</translation>
@@ -96,7 +93,6 @@
 <translation id="3626637461649818317">Zbývá <ph name="PERCENTAGE"/> %</translation>
 <translation id="9089416786594320554">Metody zadávání dat</translation>
 <translation id="2700058918926273959">Relace skončí za <ph name="SESSION_TIME_REMAINING"/>. Poté budete odhlášeni.</translation>
-<translation id="5807965672380739016">Odeslat plochu do</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/> %</translation>
 <translation id="3963445509666917109">Reproduktor (interní)</translation>
 <translation id="1747827819627189109">Softwarová klávesnice je aktivována</translation>
@@ -117,7 +113,6 @@
 <translation id="8528322925433439945">Mobilní sítě...</translation>
 <translation id="3157169093162779309">Zapnout zámek otáčení</translation>
 <translation id="8428213095426709021">Nastavení</translation>
-<translation id="6592705765268910579">Neznámý příjemce</translation>
 <translation id="2372145515558759244">Synchronizace aplikací...</translation>
 <translation id="1987317783729300807">Účty</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> do úplného nabití</translation>
@@ -209,7 +204,6 @@ Vypnete jej stisknutím kombinace kláves Alt + Vyhledávání nebo Shift.</tran
 <translation id="3009178788565917040">Výstup</translation>
 <translation id="3147142846278915599">Spouštěč (synchronizace aplikací...)</translation>
 <translation id="6911468394164995108">Připojit k jiné...</translation>
-<translation id="4373966964907728675">Odesílání plochy</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608"><ph name="HOUR"/> h <ph name="MINUTE"/> min do nabití</translation>
 <translation id="3077734595579995578">shift</translation>

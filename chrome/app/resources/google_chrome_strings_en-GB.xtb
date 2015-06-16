@@ -80,6 +80,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="8551886023433311834">Nearly up to date! Restart your device to finish updating.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="1073391069195728457">Chrome - Notifications</translation>
+<translation id="6368805772029492593">For added security, Google Chrome will encrypt your data.</translation>
 <translation id="7339898014177206373">New window</translation>
 <translation id="3282568296779691940">Sign in to Chrome</translation>
 <translation id="3089968997497233615">There's a new, safer version of Google Chrome available.</translation>
@@ -173,7 +174,6 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="2290095356545025170">Are you sure you want to uninstall Google Chrome?</translation>
 <translation id="4273752058983339720">Google Chrome is configured to automatically launch when you start your computer.</translation>
 <translation id="2316129865977710310">No, thank you</translation>
-<translation id="415994390253732730">Chrome Behaving Strangely?</translation>
 <translation id="1104959162601287462">About the &amp;Chrome OS</translation>
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
 <translation id="7626032353295482388">Welcome to Chrome</translation>
@@ -226,6 +226,7 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="6113794647360055231">Chrome just got better</translation>
 <translation id="2588322182880276190">Chrome logo</translation>
+<translation id="4519152997629025674">Google Chrome may use <ph name="BEGIN_LINK"/>web services<ph name="END_LINK"/> to improve your browsing experience. You may optionally disable these services at any time.</translation>
 <translation id="4367618624832907428">Google Chrome can’t display the web page because your computer isn’t connected to the Internet.</translation>
 <translation id="174539241580958092">Google Chrome could not sync your data due to an error signing in.</translation>
 <translation id="8255190535488645436">Google Chrome is using your camera and microphone.</translation>
@@ -233,7 +234,6 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
         settings.</translation>
 <translation id="9102715433345326100">This file is malicious and Chrome has blocked it.</translation>
 <translation id="8205111949707227942">Optional: Help make Chrome OS better by sending usage statistics and crash reports automatically to Google.</translation>
-<translation id="487887346205285304">Chrome behaving strangely?</translation>
 <translation id="3622797965165704966">Now it's easier to use Chrome with your Google Account and on shared computers.</translation>
 <translation id="7196020411877309443">Why am I seeing this?</translation>
 <translation id="2769762047821873045">Google Chrome isn't your default browser.</translation>

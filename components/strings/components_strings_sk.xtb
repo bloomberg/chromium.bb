@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="sk">
 <translation id="2774256287122201187">Môžete pokračovať. Ak budete pokračovať na stránku, toto upozornenie sa zobrazí až o päť minút.</translation>
+<translation id="3963721102035795474">Režim čítačky</translation>
 <translation id="7485870689360869515">Nenašli sa žiadne údaje.</translation>
 <translation id="3884278016824448484">Kolidujúci identifikátor zariadenia</translation>
 <translation id="5172758083709347301">Počítač</translation>
@@ -63,7 +64,7 @@
 <translation id="7108649287766967076">Preklad do jazyka <ph name="TARGET_LANGUAGE"/> zlyhal.</translation>
 <translation id="4103249731201008433">Sériové číslo zariadenia je neplatné</translation>
 <translation id="3219579145727097045">Zadajte dátum vypršania platnosti a štvormiestny kód CVC z prednej strany svojej karty</translation>
-<translation id="3667681724235208644">Zobraziť pôvodnú stránku</translation>
+<translation id="59107663811261420">Služba Google Payments nepodporuje v prípade tohto obchodníka tento typ karty. Vyberte inú kartu.</translation>
 <translation id="4079302484614802869">Konfigurácia proxy je nastavená na použitie skriptu PAC webovej adresy, nie pevne daných serverov proxy.</translation>
 <translation id="5540224163453853">Požadovaný článok sa nepodarilo nájsť.</translation>
 <translation id="8437238597147034694">&amp;Vrátiť späť presunutie</translation>
@@ -90,6 +91,7 @@
 <translation id="7977590112176369853">&lt;zadajte dotaz&gt;</translation>
 <translation id="552553974213252141">Bol text vyňatý správne?</translation>
 <translation id="5317780077021120954">Uložiť</translation>
+<translation id="8530504477309582336">Služba Google Payments nepodporuje tento typ karty. Vyberte inú kartu.</translation>
 <translation id="7610193165460212391">Hodnota (<ph name="VALUE"/>) presahuje povolený rozsah.</translation>
 <translation id="3739623965217189342">Skopírovaný odkaz</translation>
 <translation id="8790007591277257123">&amp;Znova vymazať</translation>
@@ -163,6 +165,7 @@
 <translation id="8891727572606052622">Neplatný režim proxy.</translation>
 <translation id="3105172416063519923">Identifikátor obsahu:</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="1549470594296187301">Ak chcete použiť túto funkciu, musíte povoliť JavaScript.</translation>
 <translation id="2587841377698384444">Identifikátor priečinka API:</translation>
 <translation id="7752995774971033316">Nespravované</translation>
 <translation id="3712624925041724820">Vyčerpané licencie</translation>
@@ -227,6 +230,7 @@
 <translation id="7568593326407688803">Táto stránka je v jazyku<ph name="ORIGINAL_LANGUAGE"/>Chceli by ste ju preložiť?</translation>
 <translation id="8876793034577346603">Konfiguráciu siete sa nepodarilo analyzovať.</translation>
 <translation id="4800132727771399293">Skontrolujte dátum vypršania platnosti aj kód CVC a skúste to znova</translation>
+<translation id="7965440304569005629">Zavrieť zobrazenie čítačky</translation>
 <translation id="4171400957073367226">Nesprávny overovací podpis</translation>
 <translation id="9125941078353557812">Zadajte trojmiestny kód CVC zo zadnej strany svojej karty</translation>
 <translation id="106701514854093668">Záložky plochy</translation>

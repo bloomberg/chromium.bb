@@ -77,7 +77,6 @@
 <translation id="3738139272394829648">Appuyer pour rechercher</translation>
 <translation id="257931822824936280">Développé – Cliquer pour réduire</translation>
 <translation id="4773299976671772492">Interrompu</translation>
-<translation id="5118309162436926908">Connectez-vous pour synchroniser vos onglets, vos favoris, votre historique et d'autres paramètres sur tous vos appareils.</translation>
 <translation id="7596558890252710462">Système d'exploitation</translation>
 <translation id="3358663646935160692">Ce compte est géré par <ph name="DOMAIN_NAME"/>.
 
@@ -127,6 +126,7 @@ Vous vous connectez avec un compte géré, et vous donnez à l'administrateur le
 <translation id="4378154925671717803">Téléphone</translation>
 <translation id="988938288723502454">Impossible de créer un dossier de téléchargement sur la carte SD.</translation>
 <translation id="3896036286668839683">Lecteur de certificats</translation>
+<translation id="8660471606262461360">Informations issues de Google Payments</translation>
 <translation id="5171045022955879922">Rechercher ou saisir une URL</translation>
 <translation id="2321958826496381788">Faites glisser le curseur pour lire le texte aisément. Sa taille doit être similaire à celle-ci lorsque vous appuyez deux fois sur un paragraphe.</translation>
 <translation id="3282568296779691940">Connectez-vous à Chrome</translation>
@@ -177,7 +177,9 @@ Vous vous connectez avec un compte géré, et vous donnez à l'administrateur le
 <translation id="5000922062037820727">Bloquée (recommandé)</translation>
 <translation id="544291274896356069">En ouvrant ce lien dans une application externe, vous allez quitter le mode navigation privée. Voulez-vous continuer ?</translation>
 <translation id="3917783807003067648">Position bloquée</translation>
+<translation id="3207960819495026254">Favori</translation>
 <translation id="1379156015317873965">Améliorer les performances de chargement des pages</translation>
+<translation id="5953603475187800576">Afficher les adresses et les cartes de paiement figurant sur Google Payments</translation>
 <translation id="8481940801237642152">Votre connexion à ce site est privée, mais d'autres personnes connectées au réseau peuvent réussir à modifier l'apparence de la page.</translation>
 <translation id="2593272815202181319">Monospace</translation>
 <translation id="4807098396393229769">Titulaire de la carte</translation>
@@ -231,7 +233,6 @@ Appuyez sur le bouton &quot;Retour&quot; pour quitter ce mode.</translation>
 <translation id="583891442612896534">Impossible de se connecter aux serveurs de Google dans Chrome pour la compression de données. Les sauvegardes de données peuvent être limitées.</translation>
 <translation id="4827948050554950725">Ajouter une carte de paiement</translation>
 <translation id="2316129865977710310">Non merci</translation>
-<translation id="3489120686474540259">Ajoutez un compte pour synchroniser vos onglets, vos favoris, votre historique et d'autres paramètres sur tous vos appareils.</translation>
 <translation id="4278390842282768270">Autorisé</translation>
 <translation id="4686372254213217147">Taille initiale</translation>
 <translation id="4526792582053123229">Le HTTPS et la navigation privée empêchent la détection et l'optimisation des pages.</translation>
@@ -261,7 +262,6 @@ Appuyez sur le bouton &quot;Retour&quot; pour quitter ce mode.</translation>
 <translation id="4526249700380860531">Afficher et gérer les mots de passe enregistrés sur <ph name="BEGIN_LINK"/>passwords.google.com<ph name="END_LINK"/></translation>
 <translation id="2496180316473517155">Historique de navigation</translation>
 <translation id="6108923351542677676">Configuration en cours…</translation>
-<translation id="7358682983403815415">Vos onglets ouverts, vos favoris, votre historique et d'autres éléments sont en cours de synchronisation avec votre compte Google.</translation>
 <translation id="6964496835063002391">Ajouter un compte</translation>
 <translation id="4698413471314543145">Une fonctionnalité essentielle à l'exécution de Google Chrome est manquante. Soit vous n'avez pas terminé d'installer Google Chrome, soit la version installée n'est pas compatible avec cette version d'Android.</translation>
 <translation id="1943432128510653496">Enregistrer les mots de passe</translation>
@@ -342,7 +342,6 @@ Appuyez sur le bouton &quot;Retour&quot; pour quitter ce mode.</translation>
 <translation id="5164482624172255778">Souhaitez-vous que Google Chrome vous propose de traduire les pages de ce site rédigées en <ph name="LANGUAGE"/> lors de votre prochaine visite ?</translation>
 <translation id="4062305924942672200">Informations légales</translation>
 <translation id="515227803646670480">Effacer les données stockées</translation>
-<translation id="6757714913056001524">Sélectionnez un compte pour synchroniser vos onglets, vos favoris, votre historique et d'autres paramètres sur tous vos appareils.</translation>
 <translation id="6935223586406308151"><ph name="DOMAIN_NAME"/> a été ajouté à votre écran d'accueil.</translation>
 <translation id="7638584964844754484">Phrase secrète incorrecte.</translation>
 <translation id="129553762522093515">Récemment fermés</translation>
@@ -360,6 +359,7 @@ Appuyez sur le bouton &quot;Retour&quot; pour quitter ce mode.</translation>
 <translation id="7324738665594301612">Dans le cadre d'une expérience, nous testons actuellement l'envoi par proxy de pages HTTPS via les serveurs Google.</translation>
 <translation id="7947953824732555851">Accepter/Se connecter</translation>
 <translation id="6333140779060797560">Partager via <ph name="APPLICATION"/></translation>
+<translation id="5939518447894949180">Réinitialiser</translation>
 <translation id="6040143037577758943">Fermer</translation>
 <translation id="4943872375798546930">Aucun résultat</translation>
 <translation id="2139186145475833000">Ajouter à l'écran d'accueil</translation>
@@ -381,7 +381,6 @@ Appuyez sur le bouton &quot;Retour&quot; pour quitter ce mode.</translation>
 <translation id="3988213473815854515">Position autorisée</translation>
 <translation id="8912362522468806198">Compte Google</translation>
 <translation id="6165508094623778733">En savoir plus</translation>
-<translation id="3828029223314399057">Rechercher dans les favoris</translation>
 <translation id="3003595280608617736">Aucune carte SD</translation>
 <translation id="6337234675334993532">Chiffrement</translation>
 <translation id="862875433388403934">Il se peut que le contenu (films, musique, etc.) téléchargé dans d'autres applications ne soit plus lisible tant que ces applications n'ont pas obtenu de nouvelles licences sur la base d'un nouvel identifiant d'appareil.
@@ -429,10 +428,8 @@ Pour obtenir de nouvelles licences, connectez-vous à Internet et lisez le conte
 <translation id="1178581264944972037">Suspendre</translation>
 <translation id="5127805178023152808">La synchronisation est désactivée.</translation>
 <translation id="5677928146339483299">Bloqué</translation>
-<translation id="5917058779668915997">Vos onglets, vos favoris, votre historique et d'autres paramètres seront synchronisés avec votre compte Google.</translation>
 <translation id="1709438864123551175">Économiseur de données</translation>
 <translation id="2770465223704140727">Retirer de la liste</translation>
-<translation id="3132683934591522090">Afficher l'image</translation>
 <translation id="6027491994609789413">Lecture de la vidéo en cours…</translation>
 <translation id="7561196759112975576">Toujours</translation>
 <translation id="605721222689873409">AA</translation>

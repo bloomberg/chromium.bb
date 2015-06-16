@@ -77,7 +77,6 @@
 <translation id="3738139272394829648">タップして検索</translation>
 <translation id="257931822824936280">展開されています - クリックすると折りたたまれます。</translation>
 <translation id="4773299976671772492">停止しました</translation>
-<translation id="5118309162436926908">ログインすると、お使いのどのデバイスでもタブ、ブックマーク、履歴などの設定を利用できるようになります</translation>
 <translation id="7596558890252710462">オペレーティング システム</translation>
 <translation id="3358663646935160692">このアカウントは <ph name="DOMAIN_NAME"/> によって管理されています。
 
@@ -127,6 +126,7 @@
 <translation id="4378154925671717803">電話番号</translation>
 <translation id="988938288723502454">SD カードにはダウンロード ディレクトリを作成できません。</translation>
 <translation id="3896036286668839683">証明書ビューア</translation>
+<translation id="8660471606262461360">Google ペイメントから取得</translation>
 <translation id="5171045022955879922">検索するか URL を入力してください</translation>
 <translation id="2321958826496381788">読みやすくなるまでスライダをドラッグしてください。段落をダブルタップするとテキストがこれより大きくなります。</translation>
 <translation id="3282568296779691940">Chrome にログイン</translation>
@@ -177,7 +177,9 @@
 <translation id="5000922062037820727">ブロック（推奨）</translation>
 <translation id="544291274896356069">このリンクを外部アプリケーションで開くと、シークレット モードが解除されます。続行しますか？</translation>
 <translation id="3917783807003067648">位置情報はブロック</translation>
+<translation id="3207960819495026254">ブックマークしました</translation>
 <translation id="1379156015317873965">ページの表示速度が向上します</translation>
+<translation id="5953603475187800576">Google ペイメントに登録した住所とクレジット カードの情報を表示する</translation>
 <translation id="8481940801237642152">このサイトへの接続はプライベート接続です。ただし、ネットワーク上のユーザーがこのページのデザインを変更できる可能性はあります。</translation>
 <translation id="2593272815202181319">等幅</translation>
 <translation id="4807098396393229769">名義人名</translation>
@@ -231,7 +233,6 @@
 <translation id="583891442612896534">データ圧縮のために Chrome から Google サーバーにアクセスすることができません。データ使用量をあまり削減できない可能性があります。</translation>
 <translation id="4827948050554950725">クレジット カードを追加</translation>
 <translation id="2316129865977710310">いいえ</translation>
-<translation id="3489120686474540259">アカウントを追加すると、お使いのどのデバイスでもタブ、ブックマーク、履歴などの設定を利用できるようになります。</translation>
 <translation id="4278390842282768270">許可</translation>
 <translation id="4686372254213217147">元のサイズ</translation>
 <translation id="4526792582053123229">HTTPS やシークレット モードでアクセスしたページについては、Google による最適化や確認は行われません。</translation>
@@ -261,7 +262,6 @@
 <translation id="4526249700380860531"><ph name="BEGIN_LINK"/>passwords.google.com<ph name="END_LINK"/> での保存パスワードの表示と管理</translation>
 <translation id="2496180316473517155">閲覧履歴</translation>
 <translation id="6108923351542677676">設定しています...</translation>
-<translation id="7358682983403815415">開いているタブ、ブックマーク、履歴、その他の設定を Google アカウントに同期しています。</translation>
 <translation id="6964496835063002391">アカウントを追加</translation>
 <translation id="4698413471314543145">Chrome の実行に必須の機能が見つかりません。Chrome のインストールが完了していないか、Chrome がこのバージョンの Android と互換性がないことが原因です。</translation>
 <translation id="1943432128510653496">パスワードを保存する</translation>
@@ -341,7 +341,6 @@
 <translation id="5164482624172255778">次回から Google Chrome でこのサイトの<ph name="LANGUAGE"/>ページの翻訳を表示しますか？</translation>
 <translation id="4062305924942672200">法的情報</translation>
 <translation id="515227803646670480">保存したデータの消去</translation>
-<translation id="6757714913056001524">アカウントを選択すると、お使いのどのデバイスでもタブ、ブックマーク、履歴などの設定を利用できるようになります。</translation>
 <translation id="6935223586406308151"><ph name="DOMAIN_NAME"/> をホーム画面に追加しました</translation>
 <translation id="7638584964844754484">パスフレーズが正しくありません</translation>
 <translation id="129553762522093515">最近閉じたタブ</translation>
@@ -359,6 +358,7 @@
 <translation id="7324738665594301612">Google では試験運用の一環として、Google サーバーを経由して HTTPS ページをプロキシ送信するテストを行っています。</translation>
 <translation id="7947953824732555851">同意してログイン</translation>
 <translation id="6333140779060797560"><ph name="APPLICATION"/> で共有します</translation>
+<translation id="5939518447894949180">リセット</translation>
 <translation id="6040143037577758943">閉じる</translation>
 <translation id="4943872375798546930">結果はありません</translation>
 <translation id="2139186145475833000">ホーム画面に追加</translation>
@@ -380,7 +380,6 @@
 <translation id="3988213473815854515">位置情報は許可</translation>
 <translation id="8912362522468806198">Google アカウントを使用</translation>
 <translation id="6165508094623778733">詳しく見る</translation>
-<translation id="3828029223314399057">ブックマークを検索</translation>
 <translation id="3003595280608617736">SD カードがありません</translation>
 <translation id="6337234675334993532">暗号化</translation>
 <translation id="862875433388403934">他のアプリケーションでダウンロードしたコンテンツ（映画、音楽など）は再生できなくなっている可能性があります。再生するには、該当のアプリケーションで新しいデバイス認証情報に基づくライセンスを再取得する必要があります。
@@ -428,10 +427,8 @@
 <translation id="1178581264944972037">一時停止</translation>
 <translation id="5127805178023152808">同期は無効です</translation>
 <translation id="5677928146339483299">ブロック</translation>
-<translation id="5917058779668915997">タブ、ブックマーク、履歴などの設定が Google アカウントに同期されます。</translation>
 <translation id="1709438864123551175">データセーバー</translation>
 <translation id="2770465223704140727">リストから削除</translation>
-<translation id="3132683934591522090">画像を表示</translation>
 <translation id="6027491994609789413">動画を再生しています</translation>
 <translation id="7561196759112975576">常に使用</translation>
 <translation id="605721222689873409">YY</translation>

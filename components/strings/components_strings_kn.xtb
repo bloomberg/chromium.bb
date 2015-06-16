@@ -63,7 +63,7 @@
 <translation id="7108649287766967076"><ph name="TARGET_LANGUAGE"/> ಗೆ ಅನುವಾದ ವಿಫಲವಾಗಿದೆ.</translation>
 <translation id="4103249731201008433">ಸಾಧನದ ಸರಣಿಯ ಸಂಖ್ಯೆ ಅಮಾನ್ಯವಾಗಿದೆ</translation>
 <translation id="3219579145727097045">ನಿಮ್ಮ ಕಾರ್ಡ್‌ನ ಮುಂಭಾಗದಲ್ಲಿರುವ ಮುಕ್ತಾಯದ ದಿನಾಂಕ ಮತ್ತು 4-ಅಂಕಿಗಳ CVC ಅನ್ನು ನಮೂದಿಸಿ</translation>
-<translation id="3667681724235208644">ಮೂಲಪುಟವನ್ನು ವೀಕ್ಷಿಸಿ</translation>
+<translation id="59107663811261420">ಈ ವರ್ತಕರಿಗೆ Google Payments ನಿಂದ ಈ ಪ್ರಕಾರದ ಕಾರ್ಡ್ ಬೆಂಬಲಿತವಾಗಿಲ್ಲ. ದಯವಿಟ್ಟು ಬೇರೆಯ ಕಾರ್ಡ್ ಆಯ್ಕೆಮಾಡಿ.</translation>
 <translation id="4079302484614802869">ಪ್ರಾಕ್ಸಿ ಕಾನ್ಫಿಗರೇಶನ್ ಅನ್ನು .pac ಸ್ಕ್ರಿಪ್ಟ್ URL ಬಳಸುವಂತೆ ಹೊಂದಿಸಲಾಗಿದೆ, ಹೊಂದಿಸಿದ ಪ್ರಾಕ್ಸಿ ಸರ್ವರ್‌ಗಳಲ್ಲ.</translation>
 <translation id="5540224163453853">ವಿನಂತಿಸಿದ ಲೇಖನವನ್ನು ಹುಡುಕಲು ಸಾಧವಾಗಲಿಲ್ಲ.</translation>
 <translation id="8437238597147034694">&amp;ಸರಿಸುವುದನ್ನು ರದ್ದುಗೊಳಿಸಿ</translation>
@@ -90,6 +90,7 @@
 <translation id="7977590112176369853">&lt;ಪ್ರಶ್ನೆ ನಮೂದಿಸಿ&gt;</translation>
 <translation id="552553974213252141">ಪಠ್ಯವನ್ನು ಸರಿಯಾಗಿ ಪ್ರತ್ಯೇಕಿಸಲಾಗಿದೆಯೇ?</translation>
 <translation id="5317780077021120954">ಉಳಿಸು</translation>
+<translation id="8530504477309582336">ಈ ಪ್ರಕಾರದ ಕಾರ್ಡ್ ಅನ್ನು Google Payments ಬೆಂಬಲಿಸುವುದಿಲ್ಲ. ದಯವಿಟ್ಟು ಬೇರೆ ಕಾರ್ಡ್ ಆಯ್ಕೆಮಾಡಿ.</translation>
 <translation id="7610193165460212391">ಮೌಲ್ಯವು ವ್ಯಾಪ್ತಿಯಿಂದ <ph name="VALUE"/> ಹೊರಗಿದೆ.</translation>
 <translation id="3739623965217189342">ನೀವು ನಕಲಿಸಿದ ಲಿಂಕ್</translation>
 <translation id="8790007591277257123">&amp;ಅಳಿಸುವುದನ್ನು ಮತ್ತೆಮಾಡು</translation>
@@ -128,7 +129,7 @@
 <translation id="6445051938772793705">ರಾಷ್ಟ್ರ</translation>
 <translation id="5031870354684148875">Google ಅನುವಾದದ ಕುರಿತು</translation>
 <translation id="1152921474424827756"><ph name="URL"/> ನ <ph name="BEGIN_LINK"/>ಸಂಗ್ರಹಿಸಲಾಗಿರುವ ನಕಲನ್ನು<ph name="END_LINK"/> ಪ್ರವೇಶಿಸಿ</translation>
-<translation id="8201077131113104583">&quot;<ph name="EXTENSION_ID"/>&quot; ID ಜೊತೆಗಿನ ವಿಸ್ತರಣೆಗೆ ಅಮಾನ್ಯವಾದ ನವೀಕರಣ URL.</translation>
+<translation id="8201077131113104583">&quot;<ph name="EXTENSION_ID"/>&quot; ID ಜೊತೆಗಿನ ವಿಸ್ತರಣೆಗೆ ಅಮಾನ್ಯವಾದ ಅಪ್‌ಡೇಟ್‌‌ URL.</translation>
 <translation id="6891596781022320156">ನೀತಿಯ ಮಟ್ಟವು ಬೆಂಬಲಿತವಾಗಿಲ್ಲ.</translation>
 <translation id="2025186561304664664">ಪ್ರಾಕ್ಸಿಯನ್ನು ಸ್ವಯಂ ಕಾನ್ಫಿಗರ್ ಆಗಿ ಹೊಂದಿಸಲಾಗಿದೆ.</translation>
 <translation id="1853748787962613237">ಲೇಖನವನ್ನು ಪ್ರದರ್ಶಿಸಲು ವಿಫಲವಾಗಿದೆ.</translation>

@@ -77,7 +77,6 @@
 <translation id="3738139272394829648">輕觸搜尋</translation>
 <translation id="257931822824936280">已展開 - 按一下即可收合。</translation>
 <translation id="4773299976671772492">已停止</translation>
-<translation id="5118309162436926908">登入後，即可從任何裝置取得自己的分頁、書籤、歷史紀錄和其他設定</translation>
 <translation id="7596558890252710462">作業系統</translation>
 <translation id="3358663646935160692">這個帳戶由 <ph name="DOMAIN_NAME"/> 負責管理。
 
@@ -127,6 +126,7 @@
 <translation id="4378154925671717803">電話</translation>
 <translation id="988938288723502454">無法在 SD 卡上建立下載目錄。</translation>
 <translation id="3896036286668839683">憑證檢視者</translation>
+<translation id="8660471606262461360">來自 Google Payments</translation>
 <translation id="5171045022955879922">搜尋或輸入網址</translation>
 <translation id="2321958826496381788">拖曳滑桿，將文字調整到您可以舒適閱讀的大小。當您輕按兩下文字段落，文字至少應呈現這樣的大小。</translation>
 <translation id="3282568296779691940">登入 Chrome</translation>
@@ -177,7 +177,9 @@
 <translation id="5000922062037820727">已封鎖 (建議)</translation>
 <translation id="544291274896356069">如果使用外部應用程式開啟這個連結，無痕模式就會結束。要繼續嗎？</translation>
 <translation id="3917783807003067648">位置資訊遭到封鎖</translation>
+<translation id="3207960819495026254">已加入書籤</translation>
 <translation id="1379156015317873965">改善網頁載入效能</translation>
+<translation id="5953603475187800576">顯示 Google Payments 中儲存的地址和信用卡資料</translation>
 <translation id="8481940801237642152">您與這個網站建立了私人連線，但網路上的其他人可能可以變更網頁的外觀。</translation>
 <translation id="2593272815202181319">等寬</translation>
 <translation id="4807098396393229769">信用卡持有人姓名</translation>
@@ -231,7 +233,6 @@
 <translation id="583891442612896534">Chrome 無法連上 Google 的伺服器進行資料壓縮，這可能會導致您無法節省某些數據流量。</translation>
 <translation id="4827948050554950725">新增信用卡</translation>
 <translation id="2316129865977710310">不，謝謝</translation>
-<translation id="3489120686474540259">新增帳戶後，即可從任何裝置取得自己的分頁、書籤、歷史紀錄和其他設定。</translation>
 <translation id="4278390842282768270">允許</translation>
 <translation id="4686372254213217147">原始大小</translation>
 <translation id="1853692000353488670">新增無痕式分頁</translation>
@@ -262,7 +263,6 @@
 <translation id="4526249700380860531">您可以前往 <ph name="BEGIN_LINK"/>passwords.google.com<ph name="END_LINK"/> 查看及管理已儲存的密碼</translation>
 <translation id="2496180316473517155">瀏覽紀錄</translation>
 <translation id="6108923351542677676">設定中…</translation>
-<translation id="7358682983403815415">系統正在將您的書籤、紀錄、開啟的分頁和其他設定同步傳送到您的 Google 帳戶。</translation>
 <translation id="6964496835063002391">新增帳戶</translation>
 <translation id="4698413471314543145">找不到執行 Chrome 所需的重要功能；Chrome 安裝程序可能未完成，或是 Chrome 與這個 Android 版本不相容。</translation>
 <translation id="1943432128510653496">儲存密碼</translation>
@@ -342,7 +342,6 @@
 <translation id="5164482624172255778">下次造訪這個網站時，需要 Google Chrome 為您翻譯其中的<ph name="LANGUAGE"/>網頁嗎？</translation>
 <translation id="4062305924942672200">法律資訊</translation>
 <translation id="515227803646670480">清除儲存的資料</translation>
-<translation id="6757714913056001524">選取帳戶後，即可從任何裝置取得自己的分頁、書籤、歷史紀錄和其他設定。</translation>
 <translation id="6935223586406308151"><ph name="DOMAIN_NAME"/> 已加到您的主畫面</translation>
 <translation id="7638584964844754484">通關密語不正確</translation>
 <translation id="129553762522093515">最近關閉的分頁</translation>
@@ -360,6 +359,7 @@
 <translation id="7324738665594301612">我們正在執行實驗功能，測試透過 Google 伺服器對 HTTPS 網頁執行 Proxy 處理的效能。</translation>
 <translation id="7947953824732555851">接受並登入</translation>
 <translation id="6333140779060797560">透過 <ph name="APPLICATION"/> 分享</translation>
+<translation id="5939518447894949180">重設</translation>
 <translation id="6040143037577758943">關閉</translation>
 <translation id="4943872375798546930">沒有結果</translation>
 <translation id="2139186145475833000">加到主畫面</translation>
@@ -381,7 +381,6 @@
 <translation id="3988213473815854515">禁止存取位置資訊</translation>
 <translation id="8912362522468806198">Google 帳戶</translation>
 <translation id="6165508094623778733">瞭解詳情</translation>
-<translation id="3828029223314399057">搜尋書籤</translation>
 <translation id="3003595280608617736">沒有 SD 卡</translation>
 <translation id="6337234675334993532">加密</translation>
 <translation id="862875433388403934">其他應用程式必須以新的裝置憑證重新取得授權，才能順利播放已下載的內容 (例如電影、音樂等)。
@@ -429,10 +428,8 @@
 <translation id="1178581264944972037">暫停</translation>
 <translation id="5127805178023152808">同步功能已停用</translation>
 <translation id="5677928146339483299">已封鎖</translation>
-<translation id="5917058779668915997">系統會將您的分頁、書籤、歷史紀錄和其他設定與您的 Google 帳戶保持同步。</translation>
 <translation id="1709438864123551175">Data Saver</translation>
 <translation id="2770465223704140727">從清單中移除</translation>
-<translation id="3132683934591522090">顯示圖片</translation>
 <translation id="6027491994609789413">正在播放影片</translation>
 <translation id="7561196759112975576">永遠使用</translation>
 <translation id="605721222689873409">年</translation>

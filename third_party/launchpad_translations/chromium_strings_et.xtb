@@ -113,7 +113,6 @@
 <translation id="6970811910055250180">Teie seadme täiendamine ...</translation>
 <translation id="2485422356828889247">Desinstalli</translation>
 <translation id="85843667276690461">Hangi abi Chromiumi kasutamise kohta</translation>
-<translation id="7731057871445607139">Kas Chromium käitub veidralt?</translation>
 <translation id="5358375970380395591">Logite sisse hallatud kontoga ja annate selle administraatorile üle Chromiumi profiili juhtimise. Teie Chromiumi andmed, näiteks rakendused, järjehoidjad, ajalugu, paroolid ja muud seaded seotakse jäädavalt kasutajaga <ph name="USER_NAME"/>. Saate need andmed kustutada Google'i kontode juhtpaneeli kaudu, kuid te ei saa neid seostada teise kontoga. <ph name="LEARN_MORE"/></translation>
 <translation id="9036189287518468038">Chromiumi rakenduste käiviti</translation>
 <translation id="5563479599352954471">Otsing ühe puudutusega</translation>
@@ -186,7 +185,6 @@ On võimalik, et mõni funktsioon ei ole saadaval. Määrake muu profiilikataloo
           parandamiseks uuesti lubada.</translation>
 <translation id="1174473354587728743">Kas jagage arvutit? Saate nüüd seadistada Chromiumi just nii, nagu teile meeldib.</translation>
 <translation id="9013087743919948559">Chromiumi lisamine</translation>
-<translation id="2525993619214772747">Kas Chromium käitub veidralt?</translation>
 <translation id="6334986366598267305">Nüüd on Chromiumi lihtsam kasutada Google'i kontoga ja jagatud arvutistes.</translation>
 <translation id="6212496753309875659">Arvutis on juba Chromiumi uuem versioon. Kui tarkvara ei tööta, siis desinstallige Chromium ja proovige uuesti.</translation>
 <translation id="1115445892567829615">Chromium ei saanud teie andmeid sünkroonida. Värskendage oma sünkroonimisparooli.</translation>

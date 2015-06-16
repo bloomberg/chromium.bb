@@ -63,7 +63,7 @@
 <translation id="7108649287766967076">Échec de la traduction en <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="4103249731201008433">Le numéro de série de l'appareil n'est pas valide.</translation>
 <translation id="3219579145727097045">Saisissez la date d'expiration et le code CVC à quatre chiffres figurant au recto de votre carte.</translation>
-<translation id="3667681724235208644">Afficher la page d'origine</translation>
+<translation id="59107663811261420">Ce type de carte n'est pas compatible avec Google Payments pour ce marchand. Veuillez sélectionner une autre carte.</translation>
 <translation id="4079302484614802869">La configuration du proxy est définie pour utiliser une URL de script .pac, et non pas des serveurs proxy déterminés.</translation>
 <translation id="5540224163453853">Impossible de trouver l'article demandé.</translation>
 <translation id="8437238597147034694">&amp;Annuler le déplacement</translation>
@@ -90,6 +90,7 @@
 <translation id="7977590112176369853">&lt;saisir une requête&gt;</translation>
 <translation id="552553974213252141">Le texte a-t-il été extrait correctement ?</translation>
 <translation id="5317780077021120954">Enregistrer</translation>
+<translation id="8530504477309582336">Ce type de carte n'est pas compatible avec Google Payments. Veuillez sélectionner une autre carte.</translation>
 <translation id="7610193165460212391">La valeur <ph name="VALUE"/> est hors limites.</translation>
 <translation id="3739623965217189342">Lien copié</translation>
 <translation id="8790007591277257123">&amp;Rétablir la suppression</translation>

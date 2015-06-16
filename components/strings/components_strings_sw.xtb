@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="sw">
 <translation id="2774256287122201187">Unaweza kuendelea. Ukienda kwenye ukurasa, onyo hili halitaonekana tena kwa dakika tano.</translation>
+<translation id="3963721102035795474">Hali ya Usomaji</translation>
 <translation id="7485870689360869515">Hakuna data iliyopatikana.</translation>
 <translation id="3884278016824448484">Kitambulisho cha kifaa kinachokinzana</translation>
 <translation id="5172758083709347301">Mashine</translation>
@@ -63,7 +64,7 @@
 <translation id="7108649287766967076">Tafsiri kwenda <ph name="TARGET_LANGUAGE"/> imeshindwa.</translation>
 <translation id="4103249731201008433">Namabari tambulishi ya kifaa ni batili</translation>
 <translation id="3219579145727097045">Weka tarehe ya kuisha muda na CVC yenye tarakimu 4 kutoka mbele ya kadi yako</translation>
-<translation id="3667681724235208644">Angalia Asili</translation>
+<translation id="59107663811261420">Aina hii ya kadi haiwezi kutumiwa na Google Payments kwa muuzaji huyu. Tafadhali teua kadi tofauti.</translation>
 <translation id="4079302484614802869">Usanidi wa proksi umewekwa kutumia URL hati ya .pac, siyo seva proksi za kudumu.</translation>
 <translation id="5540224163453853">Haikuweza kupata makala yaliyoitishwa.</translation>
 <translation id="8437238597147034694">Tendua hatua</translation>
@@ -90,6 +91,7 @@
 <translation id="7977590112176369853">&lt;weka hoja&gt;</translation>
 <translation id="552553974213252141">Je, maandishi yalitolewa kwa njia sahihi?</translation>
 <translation id="5317780077021120954">Hifadhi</translation>
+<translation id="8530504477309582336">Aina hii ya kadi haiwezi kutumiwa na Google Payments. Tafadhali teua kadi tofauti.</translation>
 <translation id="7610193165460212391">Thamani imezidi masafa<ph name="VALUE"/>.</translation>
 <translation id="3739623965217189342">Kiungo ulichonakili</translation>
 <translation id="8790007591277257123">Rudia kufuta</translation>
@@ -163,6 +165,7 @@
 <translation id="8891727572606052622">Modi batili ya proksi.</translation>
 <translation id="3105172416063519923">Kitambulisho cha Kipengee:</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="1549470594296187301">Lazima JavaScript iwashwe ili utumie kipengele hiki.</translation>
 <translation id="2587841377698384444">Kitambulisho cha API ya Saraka:</translation>
 <translation id="7752995774971033316">Haidhibitiwi</translation>
 <translation id="3712624925041724820">Leseni zimekwisha</translation>
@@ -223,6 +226,7 @@
 <translation id="7568593326407688803">Ukurasa huu umeandikwa kwa<ph name="ORIGINAL_LANGUAGE"/>Je, ungependa kuutafsiri?</translation>
 <translation id="8876793034577346603">Usanidi wa mtandao umekosa kuchanganuliwa.</translation>
 <translation id="4800132727771399293">Angalia tarehe yako ya kuisha muda na CVC na ujaribu tena</translation>
+<translation id="7965440304569005629">Funga mwonekano wa usomaji</translation>
 <translation id="4171400957073367226">Sahihi mbaya ya uthibitishaji</translation>
 <translation id="9125941078353557812">Weka CVC yenye tarakimu 3 kutoka nyuma ya kadi yako</translation>
 <translation id="106701514854093668">Alamisho za Eneokazi</translation>

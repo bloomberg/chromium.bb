@@ -63,7 +63,7 @@
 <translation id="7108649287766967076">ترجمه به <ph name="TARGET_LANGUAGE"/> انجام نشد.</translation>
 <translation id="4103249731201008433">شماره سریال دستگاه نامعتبر است</translation>
 <translation id="3219579145727097045">‏تاریخ انقضا و کد تأیید چهار رقمی CVC را از پشت کارت‌تان وارد کنید</translation>
-<translation id="3667681724235208644">مشاهده مورد اصلی</translation>
+<translation id="59107663811261420">‏Google Payments این نوع کارت را برای این تاجر پشتیبانی نمی‌کند. لطفاً کارت دیگری انتخاب کنید.</translation>
 <translation id="4079302484614802869">‏تنظیمات پروکسی، برای استفاده از آدرس اسکریپت pac. تنظیم شده است و از سرورهای ثابت نمی‌تواند استفاده کند.</translation>
 <translation id="5540224163453853">مقاله درخواستی یافت نشد.</translation>
 <translation id="8437238597147034694">&amp;واگرد انتقال</translation>
@@ -90,6 +90,7 @@
 <translation id="7977590112176369853">&lt;واردکردن پرسش&gt;</translation>
 <translation id="552553974213252141">آیا نوشتار به درستی استخراج شده است؟</translation>
 <translation id="5317780077021120954">ذخیره</translation>
+<translation id="8530504477309582336">‏Google Payments این نوع کارت را پشتیبانی نمی‌کند. لطفاً کارت دیگری انتخاب کنید.</translation>
 <translation id="7610193165460212391">مقدار خارج از محدوده <ph name="VALUE"/> است.</translation>
 <translation id="3739623965217189342">پیوندی که کپی کرده‌اید</translation>
 <translation id="8790007591277257123">&amp;انجام مجدد حذف</translation>

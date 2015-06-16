@@ -31,8 +31,6 @@
 <translation id="2297568595583585744">Status tray</translation>
 <translation id="2248649616066688669">You can keep using your Chromebook while it's connected to an external display, even with the lid closed.</translation>
 <translation id="2946640296642327832">Enable Bluetooth</translation>
-<translation id="478959186716341421">Casting</translation>
-<translation id="5537725057119320332">Cast</translation>
 <translation id="6459472438155181876">Extending screen to <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Mobile</translation>
 <translation id="6596816719288285829">IP Address</translation>
@@ -40,6 +38,7 @@
 <translation id="1812696562331527143">Your input method has changed to <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>3rd party<ph name="END_LINK"/>).
 Press Shift + Alt to switch.</translation>
 <translation id="6043994281159824495">Sign out now</translation>
+<translation id="5168181903108465623">Cast devices available</translation>
 <translation id="2127372758936585790">Low-power charger</translation>
 <translation id="3799026279081545374">You may have a bad charger. If you live in the US, please call 866-628-1371 in order to receive help and a replacement. If you live in the UK, please call 0800-026-0613. If you live in Ireland, please call 1-800-832-664. If you live in Canada, please call 866-628-1372. If you live in Australia, please call 1-800-067-460.</translation>
 <translation id="3891340733213178823">Press Ctrl+Shift+Q twice to sign out.</translation>
@@ -73,7 +72,6 @@ Press Shift + Alt to switch.</translation>
 <translation id="2509468283778169019">CAPS LOCK is on</translation>
 <translation id="3892641579809465218">Internal Display</translation>
 <translation id="7823564328645135659">The language has changed from &quot;<ph name="FROM_LOCALE"/>&quot; to &quot;<ph name="TO_LOCALE"/>&quot; after syncing your settings.</translation>
-<translation id="7113420380180868673">Casting $1</translation>
 <translation id="3606978283550408104">Braille display connected.</translation>
 <translation id="8654520615680304441">Turn Wi-Fi on...</translation>
 <translation id="4421231901400348175">Sharing control of your screen with <ph name="HELPER_NAME"/> via Remote Assistance.</translation>
@@ -98,8 +96,8 @@ Press Shift + Alt to switch.</translation>
 <translation id="3626637461649818317"><ph name="PERCENTAGE"/>% remaining</translation>
 <translation id="9089416786594320554">Input methods</translation>
 <translation id="2700058918926273959">Session ends in <ph name="SESSION_TIME_REMAINING"/>. You will be signed out.</translation>
-<translation id="5807965672380739016">Cast desktop to</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
+<translation id="1963814843110128691">Casting £1 to £2</translation>
 <translation id="3963445509666917109">Speaker (Internal)</translation>
 <translation id="1747827819627189109">On-screen keyboard enabled</translation>
 <translation id="2208323208084708176">Unified desktop mode</translation>
@@ -119,7 +117,6 @@ Press Shift + Alt to switch.</translation>
 <translation id="8528322925433439945">Mobile ...</translation>
 <translation id="3157169093162779309">Enable rotation lock</translation>
 <translation id="8428213095426709021">Settings</translation>
-<translation id="6592705765268910579">Unknown receiver</translation>
 <translation id="2372145515558759244">Syncing apps...</translation>
 <translation id="1987317783729300807">Accounts</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> until full</translation>
@@ -184,6 +181,7 @@ Press Shift + Alt to switch.</translation>
 <translation id="6785414152754474415">Battery is <ph name="PERCENTAGE"/>% full and charging.</translation>
 <translation id="4895488851634969361">Battery is full.</translation>
 <translation id="615957422585914272">Show on-screen keyboard</translation>
+<translation id="8443356412772935865">Casting screen to £1</translation>
 <translation id="5947494881799873997">Revert</translation>
 <translation id="7593891976182323525">Search or Shift</translation>
 <translation id="7649070708921625228">Help</translation>
@@ -192,9 +190,11 @@ Press Search or Shift to cancel.</translation>
 <translation id="397105322502079400">Calculating...</translation>
 <translation id="1013923882670373915">Bluetooth device &quot;<ph name="DEVICE_NAME"/>&quot; would like permission to pair. Please enter this PIN code on that device: <ph name="PINCODE"/></translation>
 <translation id="2819276065543622893">You will be signed out now.</translation>
+<translation id="4961318399572185831">Cast screen</translation>
 <translation id="5507786745520522457">Set up mobile data</translation>
 <translation id="6165508094623778733">Learn more</translation>
 <translation id="7168224885072002358">Reverting to old resolution in <ph name="TIMEOUT_SECONDS"/></translation>
+<translation id="5927132638760172455">Casting to an unknown receiver</translation>
 <translation id="743058460480092004">Camera and microphone are in use.</translation>
 <translation id="6550675742724504774">Options</translation>
 <translation id="6406704438230478924">altgr</translation>
@@ -212,7 +212,6 @@ Press Alt+Search or Shift to cancel.</translation>
 <translation id="3009178788565917040">Output</translation>
 <translation id="3147142846278915599">Launcher (syncing apps...)</translation>
 <translation id="6911468394164995108">Join other ...</translation>
-<translation id="4373966964907728675">Casting desktop</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608"><ph name="HOUR"/>h <ph name="MINUTE"/>m until full</translation>
 <translation id="3077734595579995578">shift</translation>

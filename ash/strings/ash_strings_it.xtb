@@ -31,8 +31,6 @@
 <translation id="2297568595583585744">Barra di stato</translation>
 <translation id="2248649616066688669">Puoi continuare a utilizzare il Chromebook mentre è collegato a un monitor esterno, anche con il coperchio chiuso.</translation>
 <translation id="2946640296642327832">Attiva Bluetooth</translation>
-<translation id="478959186716341421">Trasmissione</translation>
-<translation id="5537725057119320332">Trasmetti</translation>
 <translation id="6459472438155181876">Estensione dello schermo su <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Cellulare</translation>
 <translation id="6596816719288285829">Indirizzo IP</translation>
@@ -73,7 +71,6 @@ Premi Maiusc+Alt per cambiare metodo.</translation>
 <translation id="2509468283778169019">BLOC MAIUSC è attivo</translation>
 <translation id="3892641579809465218">Display interno</translation>
 <translation id="7823564328645135659">La lingua è stata modificata da &quot;<ph name="FROM_LOCALE"/>&quot; a &quot;<ph name="TO_LOCALE"/>&quot; dopo la sincronizzazione delle impostazioni.</translation>
-<translation id="7113420380180868673">Trasmissione $1</translation>
 <translation id="3606978283550408104">Display Braille collegato.</translation>
 <translation id="8654520615680304441">Attiva Wi-Fi...</translation>
 <translation id="4421231901400348175">Condividi il controllo dello schermo con <ph name="HELPER_NAME"/> tramite Assistenza remota.</translation>
@@ -98,7 +95,6 @@ Premi Maiusc+Alt per cambiare metodo.</translation>
 <translation id="3626637461649818317"><ph name="PERCENTAGE"/>% rimanente</translation>
 <translation id="9089416786594320554">Metodi di immissione</translation>
 <translation id="2700058918926273959">La sessione terminerà tra <ph name="SESSION_TIME_REMAINING"/>. Verrà eseguita la disconnessione.</translation>
-<translation id="5807965672380739016">Trasmetti desktop a</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
 <translation id="3963445509666917109">Altoparlante (interno)</translation>
 <translation id="1747827819627189109">Tastiera sullo schermo attiva</translation>
@@ -119,7 +115,6 @@ Premi Maiusc+Alt per cambiare metodo.</translation>
 <translation id="8528322925433439945">Reti mobili...</translation>
 <translation id="3157169093162779309">Attiva blocco rotazione</translation>
 <translation id="8428213095426709021">Impostazioni</translation>
-<translation id="6592705765268910579">Ricevitore sconosciuto</translation>
 <translation id="2372145515558759244">Sincronizzazione applicazioni...</translation>
 <translation id="1987317783729300807">Account</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> al completamento</translation>
@@ -212,7 +207,6 @@ Premi Alt+tasto per la ricerca o Maiusc per annullare.</translation>
 <translation id="3009178788565917040">Uscita</translation>
 <translation id="3147142846278915599">Avvio applicazioni (sincronizzazione delle app...)</translation>
 <translation id="6911468394164995108">Connetti a un'altra...</translation>
-<translation id="4373966964907728675">Trasmissione desktop</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608"><ph name="HOUR"/> h e <ph name="MINUTE"/> m per completare la ricarica</translation>
 <translation id="3077734595579995578">maiusc</translation>

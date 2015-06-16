@@ -106,7 +106,6 @@
 <translation id="6970811910055250180">Ihr Gerät wird aktualisiert...</translation>
 <translation id="2485422356828889247">Deinstallieren</translation>
 <translation id="85843667276690461">Hilfe für Chromium aufrufen</translation>
-<translation id="7731057871445607139">Verhält Chromium sich ungewöhnlich?</translation>
 <translation id="5358375970380395591">Sie melden sich mit einem verwalteten Konto an und ermöglichen dessen Administrator Zugriff auf Ihr Chromium-Profil. Ihre Chromium-Daten, wie Apps, Lesezeichen, Verlauf, Passwörter und andere Einstellungen, werden dauerhaft mit <ph name="USER_NAME"/> verknüpft. Sie können diese Daten über das Google Konten-Dashboard löschen, aber nicht mit einem anderen Konto verknüpfen. <ph name="LEARN_MORE"/></translation>
 <translation id="9036189287518468038">Chromium App Launcher</translation>
 <translation id="5563479599352954471">Suchen durch einfaches Tippen</translation>
@@ -169,7 +168,6 @@ Einige Funktionen stehen möglicherweise nicht zur Verfügung. Geben Sie bitte e
           diese Option für eine verbesserte Leistung wieder zu aktivieren.</translation>
 <translation id="1174473354587728743">Sie nutzen einen Computer gemeinsam mit anderen? Jetzt können Sie Chromium nach Ihren Wünschen einrichten.</translation>
 <translation id="9013087743919948559">Zu Chromium hinzufügen</translation>
-<translation id="2525993619214772747">Verhält Chromium sich ungewöhnlich?</translation>
 <translation id="6334986366598267305">Sie können Chromium jetzt noch einfacher mit Ihrem Google-Konto und auf gemeinsam genutzten Computern verwenden.</translation>
 <translation id="6212496753309875659">Auf diesem Computer befindet sich bereits eine neuere Version von Chromium. Falls die Software nicht funktioniert, deinstallieren Sie Chromium bitte und versuchen Sie es erneut.</translation>
 <translation id="1115445892567829615">Chromium konnte Ihre Daten nicht synchronisieren. Bitte aktualisieren Sie Ihre Passphrase für die Synchronisierung.</translation>

@@ -31,8 +31,6 @@
 <translation id="2297568595583585744">Állapottálca</translation>
 <translation id="2248649616066688669">Amennyiben Chromebookjához külső kijelzőt csatlakoztat, akkor is tovább használhatja eszközét, ha annak fedele le van hajtva.</translation>
 <translation id="2946640296642327832">Bluetooth engedélyezése</translation>
-<translation id="478959186716341421">Átküldés folyamatban</translation>
-<translation id="5537725057119320332">Küldés</translation>
 <translation id="6459472438155181876">Képernyő kiterjesztése erre: <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Mobil</translation>
 <translation id="6596816719288285829">IP-cím</translation>
@@ -73,7 +71,6 @@ A váltáshoz nyomja meg a Shift + Alt billentyűkódot.</translation>
 <translation id="2509468283778169019">A CAPS LOCK be van kapcsolva</translation>
 <translation id="3892641579809465218">Belső kijelző</translation>
 <translation id="7823564328645135659">A beállítások szinkronizálását követően &quot;<ph name="FROM_LOCALE"/>&quot; nyelvről &quot;<ph name="TO_LOCALE"/>&quot; nyelvre változott a nyelvi beállítás.</translation>
-<translation id="7113420380180868673">$1 átküldése</translation>
 <translation id="3606978283550408104">Braille-kijelző csatlakoztatva.</translation>
 <translation id="8654520615680304441">Wi-Fi bekapcsolása...</translation>
 <translation id="4421231901400348175">A képernyő irányításának megosztása <ph name="HELPER_NAME"/> segítővel a Távsegítség szolgáltatás keretein belül.</translation>
@@ -98,7 +95,6 @@ A váltáshoz nyomja meg a Shift + Alt billentyűkódot.</translation>
 <translation id="3626637461649818317"><ph name="PERCENTAGE"/>% maradt</translation>
 <translation id="9089416786594320554">Beviteli módszerek</translation>
 <translation id="2700058918926273959">A munkamenet <ph name="SESSION_TIME_REMAINING"/> múlva véget ér. A rendszer ekkor kijelentkezteti Önt.</translation>
-<translation id="5807965672380739016">Asztal átküldése a következőre</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
 <translation id="3963445509666917109">Hangszóró (belső)</translation>
 <translation id="1747827819627189109">Képernyő-billentyűzet bekapcsolva</translation>
@@ -119,7 +115,6 @@ A váltáshoz nyomja meg a Shift + Alt billentyűkódot.</translation>
 <translation id="8528322925433439945">Mobil...</translation>
 <translation id="3157169093162779309">Az elforgatás zárolásának engedélyezése</translation>
 <translation id="8428213095426709021">Beállítások</translation>
-<translation id="6592705765268910579">Ismeretlen fogadó eszköz</translation>
 <translation id="2372145515558759244">Alkalmazások szinkronizálása...</translation>
 <translation id="1987317783729300807">Fiókok</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> a teljes feltöltésig</translation>
@@ -212,7 +207,6 @@ Kikapcsolásához nyomja meg az Alt + Keresés vagy a Shift billentyűt.</transl
 <translation id="3009178788565917040">Kimenet</translation>
 <translation id="3147142846278915599">Indító (alkalmazások szinkronizálása…)</translation>
 <translation id="6911468394164995108">Csatlakozás másik hálózathoz...</translation>
-<translation id="4373966964907728675">Asztal átküldése</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608"><ph name="HOUR"/> ó <ph name="MINUTE"/> p a teljes feltöltésig</translation>
 <translation id="3077734595579995578">shift</translation>

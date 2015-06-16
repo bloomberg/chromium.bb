@@ -77,7 +77,6 @@
 <translation id="3738139272394829648">터치하여 검색</translation>
 <translation id="257931822824936280">펼쳐짐 - 접으려면 클릭</translation>
 <translation id="4773299976671772492">중지됨</translation>
-<translation id="5118309162436926908">로그인하면 모든 기기에서 탭, 북마크, 방문 기록, 기타 설정을 사용할 수 있습니다.</translation>
 <translation id="7596558890252710462">운영체제</translation>
 <translation id="3358663646935160692"><ph name="DOMAIN_NAME"/>에서 관리하는 계정입니다.
 
@@ -127,6 +126,7 @@
 <translation id="4378154925671717803">휴대전화</translation>
 <translation id="988938288723502454">SD 카드에 다운로드 디렉토리를 만들 수 없습니다.</translation>
 <translation id="3896036286668839683">인증서 뷰어</translation>
+<translation id="8660471606262461360">출처: Google Payments</translation>
 <translation id="5171045022955879922">검색 또는 URL 입력</translation>
 <translation id="2321958826496381788">편하게 읽을 수 있을 때까지 슬라이더를 드래그하세요. 단락을 두 번 탭하면 텍스트가 이 이상의 크기로 표시됩니다.</translation>
 <translation id="3282568296779691940">Chrome에 로그인</translation>
@@ -177,7 +177,9 @@
 <translation id="5000922062037820727">차단(권장)</translation>
 <translation id="544291274896356069">이 링크가 외부 애플리케이션에서 열리면 시크릿 모드가 종료됩니다. 계속하시겠습니까?</translation>
 <translation id="3917783807003067648">위치가 차단됨</translation>
+<translation id="3207960819495026254">북마크됨</translation>
 <translation id="1379156015317873965">페이지 로드 성능 개선</translation>
+<translation id="5953603475187800576">Google Payments에 저장된 주소와 신용카드 표시</translation>
 <translation id="8481940801237642152">이 사이트에 대한 연결은 비공개지만 네트워크에 있는 다른 사람은 페이지 디자인을 변경할 수 있습니다.</translation>
 <translation id="2593272815202181319">고정 너비</translation>
 <translation id="4807098396393229769">카드 명의</translation>
@@ -231,7 +233,6 @@
 <translation id="583891442612896534">Chrome이 Google 서버에 접속할 수 없어 데이터를 압축하지 못했습니다. 데이터 절약이 제한적일 수 있습니다.</translation>
 <translation id="4827948050554950725">신용카드 추가</translation>
 <translation id="2316129865977710310">아니요, 괜찮습니다.</translation>
-<translation id="3489120686474540259">계정을 추가하면 모든 기기에서 탭, 북마크, 방문 기록, 기타 설정을 사용할 수 있습니다.</translation>
 <translation id="4278390842282768270">허용됨</translation>
 <translation id="4686372254213217147">원래 크기</translation>
 <translation id="4526792582053123229">HTTPS 또는 시크릿 모드를 사용해 액세스한 페이지는 최적화되지 않으며 Google에서 볼 수 없습니다.</translation>
@@ -261,7 +262,6 @@
 <translation id="4526249700380860531"><ph name="BEGIN_LINK"/>passwords.google.com<ph name="END_LINK"/>에서 저장된 비밀번호 보기 및 관리</translation>
 <translation id="2496180316473517155">인터넷 사용 기록</translation>
 <translation id="6108923351542677676">설정 진행 중...</translation>
-<translation id="7358682983403815415">열린 탭, 북마크, 기록 등이 Google 계정과 동기화 중입니다.</translation>
 <translation id="6964496835063002391">계정 추가</translation>
 <translation id="4698413471314543145">Chrome 실행에 필요한 중요한 기능이 없습니다. Chrome 설치가 제대로 완료되지 않았거나 사용 중인 Android 버전과 호환되지 않습니다.</translation>
 <translation id="1943432128510653496">비밀번호 저장</translation>
@@ -341,7 +341,6 @@
 <translation id="5164482624172255778">다음에 Chrome에서 이 사이트의 <ph name="LANGUAGE"/> 페이지를 번역하시겠습니까?</translation>
 <translation id="4062305924942672200">법적 정보</translation>
 <translation id="515227803646670480">저장된 데이터 삭제</translation>
-<translation id="6757714913056001524">계정을 선택하면 모든 기기에서 탭, 북마크, 방문 기록, 기타 설정을 사용할 수 있습니다.</translation>
 <translation id="6935223586406308151"><ph name="DOMAIN_NAME"/>이(가) 홈 화면에 추가되었습니다.</translation>
 <translation id="7638584964844754484">암호가 잘못되었습니다.</translation>
 <translation id="129553762522093515">최근에 닫은 탭</translation>
@@ -359,6 +358,7 @@
 <translation id="7324738665594301612">Google은 실험의 일환으로 Google 서버를 통해 HTTPS 페이지의 프록시를 테스트하고 있습니다.</translation>
 <translation id="7947953824732555851">수락 및 로그인</translation>
 <translation id="6333140779060797560">공유 방법: <ph name="APPLICATION"/></translation>
+<translation id="5939518447894949180">재설정</translation>
 <translation id="6040143037577758943">닫기</translation>
 <translation id="4943872375798546930">검색결과가 없습니다.</translation>
 <translation id="2139186145475833000">홈 화면에 추가</translation>
@@ -380,7 +380,6 @@
 <translation id="3988213473815854515">위치 허용됨</translation>
 <translation id="8912362522468806198">Google 계정</translation>
 <translation id="6165508094623778733">자세히 알아보기</translation>
-<translation id="3828029223314399057">북마크 검색</translation>
 <translation id="3003595280608617736">SD 카드 없음</translation>
 <translation id="6337234675334993532">암호화</translation>
 <translation id="862875433388403934">다른 애플리케이션에서 다운로드한 콘텐츠(영화, 음악 등)는 해당 애플리케이션이 새로운 기기 사용자 인증 정보를 기반으로 라이선스를 다시 취득해야 재생할 수 있습니다.
@@ -428,10 +427,8 @@
 <translation id="1178581264944972037">일시중지</translation>
 <translation id="5127805178023152808">동기화 사용 안함</translation>
 <translation id="5677928146339483299">차단됨</translation>
-<translation id="5917058779668915997">탭, 북마크, 방문 기록, 기타 설정이 Google 계정에 동기화됩니다.</translation>
 <translation id="1709438864123551175">데이터 세이버</translation>
 <translation id="2770465223704140727">목록에서 삭제</translation>
-<translation id="3132683934591522090">이미지 표시</translation>
 <translation id="6027491994609789413">동영상 재생 중</translation>
 <translation id="7561196759112975576">항상</translation>
 <translation id="605721222689873409">YY</translation>

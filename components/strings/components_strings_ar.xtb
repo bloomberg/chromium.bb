@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ar">
 <translation id="2774256287122201187">يمكنك المتابعة. إذا تابعت إلى الصفحة، فلن يظهر هذا التحذير مرة أخرى لمدة خمس دقائق.</translation>
+<translation id="3963721102035795474">وضع القارئ</translation>
 <translation id="7485870689360869515">لم يتم العثور على بيانات.</translation>
 <translation id="3884278016824448484">معرف جهاز متضارب</translation>
 <translation id="5172758083709347301">الجهاز</translation>
@@ -63,7 +64,7 @@
 <translation id="7108649287766967076">أخفقت الترجمة إلى <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="4103249731201008433">الرقم التسلسلي للجهاز غير صالح</translation>
 <translation id="3219579145727097045">‏أدخل تاريخ انتهاء الصلاحية ورمز التحقق من البطاقة (CVC) المكوّن من أربعة أرقام من الجزء الأمامي من بطاقتك.</translation>
-<translation id="3667681724235208644">عرض النسخة الأصلية</translation>
+<translation id="59107663811261420">‏هذا النوع من البطاقات غير متوافق مع Google Payments لهذا التاجر. يُرجى تحديد بطاقة أخرى.</translation>
 <translation id="4079302484614802869">‏تم تعيين تهيئة الخادم الوكيل لاستخدام عنوان URL نص برمجي ‎.pac وليس الخوادم الوكيلة الثابتة.</translation>
 <translation id="5540224163453853">تعذر العثور على المقالة المطلوبة</translation>
 <translation id="8437238597147034694">تراجع عن ال&amp;نقل</translation>
@@ -90,6 +91,7 @@
 <translation id="7977590112176369853">&lt;أدخل طلب البحث&gt;</translation>
 <translation id="552553974213252141">هل تم استخراج النص بشكل صحيح؟</translation>
 <translation id="5317780077021120954">حفظ</translation>
+<translation id="8530504477309582336">‏هذا النوع من البطاقات غير متوافق مع Google Payments. يُرجى تحديد بطاقة مختلفة.</translation>
 <translation id="7610193165460212391">القيمة خارج النطاق <ph name="VALUE"/>.</translation>
 <translation id="3739623965217189342">الرابط الذي نسخته</translation>
 <translation id="8790007591277257123">إعادة الح&amp;ذف</translation>
@@ -163,6 +165,7 @@
 <translation id="8891727572606052622">وضع الخادم الوكيل غير صالح.</translation>
 <translation id="3105172416063519923">رقم تعريف الأصل:</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="1549470594296187301">‏يجب تمكين JavaScript لاستخدام هذه الميزة.</translation>
 <translation id="2587841377698384444">رقم تعريف واجهة برمجة التطبيقات الدليل:</translation>
 <translation id="7752995774971033316">غير مُدار</translation>
 <translation id="3712624925041724820">التراخيص مستنفذة</translation>
@@ -227,6 +230,7 @@
 <translation id="7568593326407688803">تتوفر هذه الصفحة باللغة<ph name="ORIGINAL_LANGUAGE"/>فهل تريد ترجمتها؟</translation>
 <translation id="8876793034577346603">أخفق تحليل تهيئة الشبكة</translation>
 <translation id="4800132727771399293">‏تحقق من تاريخ انتهاء الصلاحية ورمز التحقق من البطاقة (CVC) وأعد المحاولة مرة أخرى.</translation>
+<translation id="7965440304569005629">إغلاق عرض القارئ</translation>
 <translation id="4171400957073367226">توقيع تحقق سيئ</translation>
 <translation id="9125941078353557812">‏أدخل رمز التحقق من البطاقة (CVC) المكون من ثلاثة أرقام من الجزء الخلفي من بطاقتك</translation>
 <translation id="106701514854093668">الإشارات المرجعية على سطح المكتب</translation>

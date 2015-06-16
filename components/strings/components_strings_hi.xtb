@@ -63,7 +63,7 @@
 <translation id="7108649287766967076"><ph name="TARGET_LANGUAGE"/> में अनुवाद विफल रहा.</translation>
 <translation id="4103249731201008433">डिवाइस की क्रम संख्या अमान्य है</translation>
 <translation id="3219579145727097045">अवधि समाप्‍ति दिनांक और अपने कार्ड के सामने की ओर दिया गया 4 अंकों वाला CVC डालें</translation>
-<translation id="3667681724235208644">मौलिक देखें</translation>
+<translation id="59107663811261420">कार्ड का यह प्रकार Google पेमेंट्स द्वारा इस व्यापारी के लिए समर्थित नहीं है. कृपया कोई भिन्न कार्ड चुनें.</translation>
 <translation id="4079302484614802869">प्रॉक्‍सी कॉन्‍फ़िगरेशन को .pac स्‍क्रिप्‍ट URL का उपयोग करने के लिए सेट किया जाता है, फ़िक्‍स्‍ड प्रॉक्‍सी सर्वर के लिए नहीं.</translation>
 <translation id="5540224163453853">अनुरोध किया गया लेख नहीं ढूंढा जा सका.</translation>
 <translation id="8437238597147034694">&amp;ले जाना वापस लाएं</translation>
@@ -90,6 +90,7 @@
 <translation id="7977590112176369853">&lt;क्वेरी प्रविष्ट करें&gt;</translation>
 <translation id="552553974213252141">क्या लेख सही तरीके से निकाला गया था?</translation>
 <translation id="5317780077021120954">सहेजें</translation>
+<translation id="8530504477309582336">कार्ड का यह प्रकार Google पेमेंट्स द्वारा समर्थित नहीं है. कृपया कोई भिन्न कार्ड चुनें.</translation>
 <translation id="7610193165460212391"><ph name="VALUE"/> मान सीमा से बाहर है.</translation>
 <translation id="3739623965217189342">काॅपी किया गया लिंक</translation>
 <translation id="8790007591277257123">&amp;हटाना फिर से करें</translation>

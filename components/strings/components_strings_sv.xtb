@@ -63,7 +63,7 @@
 <translation id="7108649287766967076">Översättningen till <ph name="TARGET_LANGUAGE"/> misslyckades.</translation>
 <translation id="4103249731201008433">Enhetens serienummer är ogiltigt</translation>
 <translation id="3219579145727097045">Ange utgångsdatum och den fyrsiffriga CVC-koden på kortets framsida</translation>
-<translation id="3667681724235208644">Visa originalet</translation>
+<translation id="59107663811261420">Den här korttypen stöds inte i Google Payments för den här säljaren. Välj ett annat kort.</translation>
 <translation id="4079302484614802869">Proxykonfigurationen är inställd på att använda en webbadress med PAC-skript, inte fasta proxyservrar.</translation>
 <translation id="5540224163453853">Det gick inte att hitta den önskade artikeln.</translation>
 <translation id="8437238597147034694">&amp;Ångra Flytta</translation>
@@ -90,6 +90,7 @@
 <translation id="7977590112176369853">&lt;skriv fråga&gt;</translation>
 <translation id="552553974213252141">Extraherades texten korrekt?</translation>
 <translation id="5317780077021120954">Spara</translation>
+<translation id="8530504477309582336">Den här korttypen stöds inte i Google Payments. Välj ett annat kort.</translation>
 <translation id="7610193165460212391">Värdet är utanför intervallet <ph name="VALUE"/>.</translation>
 <translation id="3739623965217189342">Länk som du har kopierat</translation>
 <translation id="8790007591277257123">&amp;Gör om Ta bort</translation>

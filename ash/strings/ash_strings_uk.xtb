@@ -31,8 +31,6 @@
 <translation id="2297568595583585744">Контейтер стану</translation>
 <translation id="2248649616066688669">Ви можете продовжувати користуватися Chromebook, поки він під’єднаний до зовнішнього екрана, навіть якщо кришку закрито.</translation>
 <translation id="2946640296642327832">Увімкнути Bluetooth</translation>
-<translation id="478959186716341421">Трансляція</translation>
-<translation id="5537725057119320332">Акторський склад</translation>
 <translation id="6459472438155181876">Розширення екрана на <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Мобільний</translation>
 <translation id="6596816719288285829">ІР-адреса</translation>
@@ -73,7 +71,6 @@
 <translation id="2509468283778169019">Режим CAPS LOCK увімкнено</translation>
 <translation id="3892641579809465218">Внутрішній екран</translation>
 <translation id="7823564328645135659">Після синхронізації налаштувань мову змінено. Попередня: <ph name="FROM_LOCALE"/>, нова: <ph name="TO_LOCALE"/>.</translation>
-<translation id="7113420380180868673">Транслюється $1</translation>
 <translation id="3606978283550408104">Брайлівський дисплей під’єднано.</translation>
 <translation id="8654520615680304441">Увімкнення Wi-Fi…</translation>
 <translation id="4421231901400348175">Спільний доступ до екрана для користувача <ph name="HELPER_NAME"/> через віддалену допомогу.</translation>
@@ -98,7 +95,6 @@
 <translation id="3626637461649818317">Залишилося <ph name="PERCENTAGE"/>%</translation>
 <translation id="9089416786594320554">Методи введення</translation>
 <translation id="2700058918926273959">Сеанс закінчиться через <ph name="SESSION_TIME_REMAINING"/>. Ви вийдете.</translation>
-<translation id="5807965672380739016">Транслювати робочий стіл на пристрій</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
 <translation id="3963445509666917109">Динамік (внутрішній)</translation>
 <translation id="1747827819627189109">Екранну клавіатуру ввімкнено</translation>
@@ -119,7 +115,6 @@
 <translation id="8528322925433439945">Мобільні ...</translation>
 <translation id="3157169093162779309">Заблокувати обертання</translation>
 <translation id="8428213095426709021">Налаштування</translation>
-<translation id="6592705765268910579">Невідомий одержувач</translation>
 <translation id="2372145515558759244">Синхронізація програм...</translation>
 <translation id="1987317783729300807">Облікові записи</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> до повного зарядження</translation>
@@ -212,7 +207,6 @@
 <translation id="3009178788565917040">Вихід</translation>
 <translation id="3147142846278915599">Панель запуску (синхронізація додатків…)</translation>
 <translation id="6911468394164995108">Під’єднатися до іншої...</translation>
-<translation id="4373966964907728675">Трансляція робочого стола</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608"><ph name="HOUR"/> год. <ph name="MINUTE"/> хв. до повного зарядження</translation>
 <translation id="3077734595579995578">shift</translation>

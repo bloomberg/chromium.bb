@@ -80,6 +80,7 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="8551886023433311834">Inakaribia kusasishwa! Anzisha kifaa chako upya kifaa ili kukamilisha kusasisha.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="1073391069195728457">Chrome - Arifa</translation>
+<translation id="6368805772029492593">Kwa usalama ulioongezwa, Google Chrome itasimba data yako kwa njia fiche.</translation>
 <translation id="7339898014177206373">Dirisha jipya</translation>
 <translation id="3282568296779691940">Ingia katika Chrome</translation>
 <translation id="3089968997497233615">Kuna toleo jipya na salama la Google Chrome.</translation>
@@ -172,7 +173,6 @@ Kuingia bila kujali kutaunganisha maelezo ya Chrome kama vile alamisho, historia
 <translation id="2290095356545025170">Je, una hakika kuwa ungependa kusanidua Google Chrome?</translation>
 <translation id="4273752058983339720">Google Chrome imesanidiwa ili kuzindua moja kwa moja unapowasha komyuta yako.</translation>
 <translation id="2316129865977710310">La, asante</translation>
-<translation id="415994390253732730">Je, Chrome imebadilika visivyo?</translation>
 <translation id="1104959162601287462">Kuhusu &amp;Chrome OS</translation>
 <translation id="5328989068199000832">Jozi za Google Chrome</translation>
 <translation id="7626032353295482388">Karibu kwenye Chrome</translation>
@@ -224,13 +224,13 @@ Kuingia bila kujali kutaunganisha maelezo ya Chrome kama vile alamisho, historia
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="6113794647360055231">Chrome imeboreshwa zaidi</translation>
 <translation id="2588322182880276190">Nembo ya Chrome</translation>
+<translation id="4519152997629025674">Google Chrome inaweza kutumia <ph name="BEGIN_LINK"/>huduma za wavuti<ph name="END_LINK"/> kuimarisha hali yako ya kuvinjari. Unaweza kuzima huduma hizi kwa hiari wakati wowote.</translation>
 <translation id="4367618624832907428">Google Chrome haiwezi kuonyesha ukurasa wa wavuti kwa sababu kompyuta yako haijaunganishwa kwenye Intanenti.</translation>
 <translation id="174539241580958092">Google Chrome haikuweza kusawazisha data yako kutokana na hitilafu ya kuingia katika akaunti.</translation>
 <translation id="8255190535488645436">Google Chrome inatumia kamera na maikrofoni yako.</translation>
 <translation id="7396375882099008034">Ruhusu Chrome ifikie mtandao kwenye mipangilio yako ya ngome au kingavirusi.</translation>
 <translation id="9102715433345326100">Faili hii ni hasidi, na Chrome imeizuia.</translation>
 <translation id="8205111949707227942">Hiari: Saidia kuifanya Chrome OS kuwa bora kwa kutuma kiotomatiki takwimu za utumiaji na ripoti za kuvurugika kwa Google.</translation>
-<translation id="487887346205285304">Je, Chrome imebadilika visivyo?</translation>
 <translation id="3622797965165704966">Sasa ni rahisi zaidi kutumia Chrome pamoja na Akaunti yako ya Google na kwenye kompyuta zinazoshirikiwa.</translation>
 <translation id="7196020411877309443">Ni kwa kwa nini ninaona hii?</translation>
 <translation id="2769762047821873045">Google Chrome sio kivinjari chako cha chaguo-msingi</translation>

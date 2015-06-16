@@ -63,7 +63,7 @@
 <translation id="7108649287766967076">Помилка перекладу такою мовою: <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="4103249731201008433">Недійсний серійний номер пристрою</translation>
 <translation id="3219579145727097045">Введіть дату закінчення терміну дії та код CVC з 4 цифр, розташований на звороті вашої картки</translation>
-<translation id="3667681724235208644">Переглянути оригінальну сторінку</translation>
+<translation id="59107663811261420">Цей продавець не приймає такий тип картки в Google Payments. Виберіть іншу картку.</translation>
 <translation id="4079302484614802869">Конфігурацію проксі-сервера налаштовано на використання URL-адреси сценарію .pac, а не фіксованих проксі-серверів.</translation>
 <translation id="5540224163453853">Не вдалося знайти потрібну статтю.</translation>
 <translation id="8437238597147034694">&amp;Відмінити переміщення</translation>
@@ -90,6 +90,7 @@
 <translation id="7977590112176369853">&lt;уведіть запит&gt;</translation>
 <translation id="552553974213252141">Текст отримано правильно?</translation>
 <translation id="5317780077021120954">Зберегти</translation>
+<translation id="8530504477309582336">Цей тип картки не підтримується в Google Payments. Виберіть іншу картку.</translation>
 <translation id="7610193165460212391">Значення за межами діапазону <ph name="VALUE"/>.</translation>
 <translation id="3739623965217189342">Скопійоване посилання</translation>
 <translation id="8790007591277257123">&amp;Повторити видалення</translation>

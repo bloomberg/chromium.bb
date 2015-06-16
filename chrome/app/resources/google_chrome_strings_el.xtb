@@ -76,6 +76,7 @@
 <translation id="8551886023433311834">Η ενημέρωση σχεδόν πραγματοποιήθηκε! Επανεκκινήστε τη συσκευή σας για να ολοκληρωθεί η ενημέρωση.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="1073391069195728457">Chrome - Ειδοποιήσεις</translation>
+<translation id="6368805772029492593">Για επιπλέον ασφάλεια, το Google Chrome θα κρυπτογραφήσει τα δεδομένα σας.</translation>
 <translation id="7339898014177206373">Νέο παράθυρο</translation>
 <translation id="3282568296779691940">Σύνδεση στο Chrome</translation>
 <translation id="3089968997497233615">Υπάρχει μια νέα, ασφαλέστερη έκδοση του Google Chrome.</translation>
@@ -170,7 +171,6 @@
 <translation id="2290095356545025170">Είστε βέβαιοι ότι θέλετε να καταργήσετε την εγκατάσταση του Google Chrome;</translation>
 <translation id="4273752058983339720">Το Google Chrome έχει διαμορφωθεί για να ξεκινάει αυτόματα κατά την εκκίνηση του υπολογιστή σας.</translation>
 <translation id="2316129865977710310">Όχι, ευχαριστώ</translation>
-<translation id="415994390253732730">Το Chrome συμπεριφέρεται περίεργα;</translation>
 <translation id="1104959162601287462">Σχ&amp;ετικά με το Chrome OS</translation>
 <translation id="5328989068199000832">Δυαδικά αρχεία Google Chrome</translation>
 <translation id="7626032353295482388">Καλώς ήρθατε στο Chrome</translation>
@@ -223,6 +223,7 @@
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="6113794647360055231">Το Chrome έγινε ακόμα καλύτερο</translation>
 <translation id="2588322182880276190">Λογότυπο Chrome</translation>
+<translation id="4519152997629025674">Το Google Chrome ενδέχεται να χρησιμοποιεί <ph name="BEGIN_LINK"/>υπηρεσίες ιστού<ph name="END_LINK"/> για να βελτιώσει την εμπειρία περιήγησής σας. Μπορείτε, εάν θέλετε, να απενεργοποιήσετε αυτές τις υπηρεσίες.</translation>
 <translation id="4367618624832907428">Το Google Chrome δεν μπορεί να προβάλει την ιστοσελίδα διότι ο υπολογιστής σας δεν είναι συνδεδεμένος στο διαδίκτυο.</translation>
 <translation id="174539241580958092">Το Google Chrome δεν κατάφερε να συγχρονίσει τα δεδομένα σας λόγω σφάλματος κατά τη σύνδεση.</translation>
 <translation id="8255190535488645436">Το Google Chrome χρησιμοποιεί την κάμερα και το μικρόφωνό σας.</translation>
@@ -230,7 +231,6 @@
         προστασίας ή του λογισμικού προστασίας από ιούς που διαθέτετε.</translation>
 <translation id="9102715433345326100">Αυτό το αρχείο είναι κακόβουλο και έχει αποκλειστεί από το Chrome.</translation>
 <translation id="8205111949707227942">Προαιρετικό: Συμβάλετε στη βελτίωση του Chrome OS στέλνοντας αυτόματα στην Google στατιστικά στοιχεία χρήσης και αναφορές σφαλμάτων.</translation>
-<translation id="487887346205285304">Το Chrome συμπεριφέρεται περίεργα;</translation>
 <translation id="3622797965165704966">Τώρα μπορείτε να χρησιμοποιείτε πιο εύκολα το Chrome με το Λογαριασμό σας Google και σε κοινόχρηστους υπολογιστές.</translation>
 <translation id="7196020411877309443">Γιατί το βλέπω αυτό;</translation>
 <translation id="2769762047821873045">Το Google Chrome δεν είναι το προεπιλεγμένο πρόγραμμα περιήγησης.</translation>

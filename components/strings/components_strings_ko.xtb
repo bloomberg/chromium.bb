@@ -63,7 +63,7 @@
 <translation id="7108649287766967076"><ph name="TARGET_LANGUAGE"/>로 번역하지 못했습니다.</translation>
 <translation id="4103249731201008433">기기 일련번호가 잘못됨</translation>
 <translation id="3219579145727097045">신용카드의 유효기간과 카드 앞면의 4자리 CVC를 입력하세요.</translation>
-<translation id="3667681724235208644">원본 페이지 보기</translation>
+<translation id="59107663811261420">이 판매자의 Google Payments에서 지원하지 않는 카드 유형입니다. 다른 카드를 선택해 주세요.</translation>
 <translation id="4079302484614802869">프록시 설정이 고정 프록시 서버가 아닌 .pac 스크립트 URL을 사용하도록 설정됩니다.</translation>
 <translation id="5540224163453853">요청한 글을 찾지 못했습니다.</translation>
 <translation id="8437238597147034694">이동 실행 취소(&amp;U)</translation>
@@ -90,6 +90,7 @@
 <translation id="7977590112176369853">&lt;검색어 입력&gt;</translation>
 <translation id="552553974213252141">텍스트가 올바로 추출되었습니까?</translation>
 <translation id="5317780077021120954">저장</translation>
+<translation id="8530504477309582336">Google Payments에서 지원하지 않는 카드 유형입니다. 다른 카드를 선택해 주세요.</translation>
 <translation id="7610193165460212391">값(<ph name="VALUE"/>)이 범위를 벗어났습니다.</translation>
 <translation id="3739623965217189342">복사한 링크</translation>
 <translation id="8790007591277257123">삭제 다시 실행(&amp;R)</translation>

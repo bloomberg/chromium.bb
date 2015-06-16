@@ -31,8 +31,6 @@
 <translation id="2297568595583585744">સ્થિતિ ટ્રે</translation>
 <translation id="2248649616066688669">તમે કોઈ બાહ્ય પ્રદર્શનથી તમારી Chromebook કનેક્ટ હોય ત્યારે ઉપયોગમાં લેવાનું ચાલુ રાખી શકો છો પછી ભલેને તેનું ઢાંકણું બંધ હોય.</translation>
 <translation id="2946640296642327832">Bluetooth સક્ષમ કરો</translation>
-<translation id="478959186716341421">કાસ્ટ કરી રહ્યાં છે</translation>
-<translation id="5537725057119320332">કાસ્ટ કરો</translation>
 <translation id="6459472438155181876">સ્ક્રીનને <ph name="DISPLAY_NAME"/> પર વિસ્તૃત કરી રહ્યાં છે</translation>
 <translation id="8206859287963243715">સેલ્યુલર</translation>
 <translation id="6596816719288285829">IP સરનામું</translation>
@@ -73,7 +71,6 @@
 <translation id="2509468283778169019">CAPS LOCK ચાલુ છે</translation>
 <translation id="3892641579809465218">આંતરિક પ્રદર્શન</translation>
 <translation id="7823564328645135659">તમારી સેટિંગ્સ સમન્વયિત કર્યા પછી ભાષા &quot;<ph name="FROM_LOCALE"/>&quot; થી &quot;<ph name="TO_LOCALE"/>&quot; માં બદલાઈ ગઈ છે.</translation>
-<translation id="7113420380180868673">$1 કાસ્ટ કરી રહ્યાં છે</translation>
 <translation id="3606978283550408104">બ્રેઇલ પ્રદર્શન કનેક્ટ થયું.</translation>
 <translation id="8654520615680304441">Wi-Fi ચાલુ કરો...</translation>
 <translation id="4421231901400348175">દૂરસ્થ સહાય વડે <ph name="HELPER_NAME"/> સાથે તમારી સ્ક્રીનનું નિયંત્રણ શેર કરવું.</translation>
@@ -98,7 +95,6 @@
 <translation id="3626637461649818317"><ph name="PERCENTAGE"/>% બાકી</translation>
 <translation id="9089416786594320554">ઇનપુટ પદ્ધતિઓ</translation>
 <translation id="2700058918926273959"><ph name="SESSION_TIME_REMAINING"/> માં સત્ર સમાપ્ત થાય છે. તમને સાઇન આઉટ કરવામાં આવશે.</translation>
-<translation id="5807965672380739016">આ પર ડેસ્કટૉપને કાસ્ટ કરો</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
 <translation id="3963445509666917109">સ્પીકર (આંતરિક)</translation>
 <translation id="1747827819627189109">ઓન-સ્ક્રીન કીબોર્ડ સક્ષમ કર્યું</translation>
@@ -119,7 +115,6 @@
 <translation id="8528322925433439945">મોબાઇલ ...</translation>
 <translation id="3157169093162779309">પરિભ્રમણ લૉક સક્ષમ કરો</translation>
 <translation id="8428213095426709021">સેટિંગ્સ</translation>
-<translation id="6592705765268910579">અજાણ્યાં પ્રાપ્તકર્તા</translation>
 <translation id="2372145515558759244">એપ્લિકેશન્સને સમન્વયિત કરી રહ્યું છે...</translation>
 <translation id="1987317783729300807">એકાઉન્ટ્સ</translation>
 <translation id="8456362689280298700">પૂર્ણ થવામાં <ph name="HOUR"/>:<ph name="MINUTE"/> બાકી</translation>
@@ -211,7 +206,6 @@
 <translation id="3009178788565917040">આઉટપુટ</translation>
 <translation id="3147142846278915599">લોન્ચર (એપ્લિકેશન્સને સમન્વયિત કરી રહ્યું છે..)</translation>
 <translation id="6911468394164995108">અન્યથી જોડાઓ...</translation>
-<translation id="4373966964907728675">ડેસ્કટૉપ કાસ્ટ કરી રહ્યાં છે</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608"><ph name="HOUR"/>ક <ph name="MINUTE"/>મિ સુધીમાં પૂર્ણ</translation>
 <translation id="3077734595579995578">shift</translation>

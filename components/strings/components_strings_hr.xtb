@@ -63,7 +63,7 @@
 <translation id="7108649287766967076">Prijevod na <ph name="TARGET_LANGUAGE"/> nije uspio.</translation>
 <translation id="4103249731201008433">Serijski broj uređaja nije važeći</translation>
 <translation id="3219579145727097045">Unesite datum isteka i četveroznamenkasti CVC s prednje strane kartice</translation>
-<translation id="3667681724235208644">Prikaži original</translation>
+<translation id="59107663811261420">Google Payments ne podržava tu vrstu kartice za ovog trgovca. Odaberite neku drugu karticu.</translation>
 <translation id="4079302484614802869">Konfiguracija proxy poslužitelja postavljena je za upotrebu URL-a .pac skripte, a ne fiksnih proxy poslužitelja.</translation>
 <translation id="5540224163453853">Traženi članak nije pronađen.</translation>
 <translation id="8437238597147034694">&amp;Poništi premještanje</translation>
@@ -90,6 +90,7 @@
 <translation id="7977590112176369853">&lt;unesite upit&gt;</translation>
 <translation id="552553974213252141">Je li tekst ispravno izdvojen?</translation>
 <translation id="5317780077021120954">Spremi</translation>
+<translation id="8530504477309582336">Google Payments ne podržava tu vrstu kartice. Odaberite neku drugu karticu.</translation>
 <translation id="7610193165460212391">Vrijednost je izvan raspona <ph name="VALUE"/>.</translation>
 <translation id="3739623965217189342">Veza koju ste kopirali</translation>
 <translation id="8790007591277257123">&amp;Ponovi brisanje</translation>

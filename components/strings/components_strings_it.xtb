@@ -63,7 +63,7 @@
 <translation id="7108649287766967076">Traduzione in <ph name="TARGET_LANGUAGE"/> non riuscita.</translation>
 <translation id="4103249731201008433">Il numero di serie del dispositivo non è valido</translation>
 <translation id="3219579145727097045">Inserisci la data di scadenza e il codice CVC di quattro cifre indicato sul retro della carta</translation>
-<translation id="3667681724235208644">Visualizza originale</translation>
+<translation id="59107663811261420">Questo tipo di carta non è supportato in Google Payments per questo commerciante. Seleziona un'altra carta.</translation>
 <translation id="4079302484614802869">L'impostazione della configurazione proxy prevede l'utilizzo di un URL script .pac, non di server proxy fissi.</translation>
 <translation id="5540224163453853">Impossibile trovare l'articolo richiesto.</translation>
 <translation id="8437238597147034694">&amp;Annulla spostamento</translation>
@@ -90,6 +90,7 @@
 <translation id="7977590112176369853">&lt;inserisci query&gt;</translation>
 <translation id="552553974213252141">Il testo è stato estratto correttamente?</translation>
 <translation id="5317780077021120954">Salva</translation>
+<translation id="8530504477309582336">Questo tipo di carta non è supportato in Google Payments. Seleziona un'altra carta.</translation>
 <translation id="7610193165460212391">Il valore non è compreso nell'intervallo (<ph name="VALUE"/>).</translation>
 <translation id="3739623965217189342">Link che hai copiato</translation>
 <translation id="8790007591277257123">&amp;Ripeti eliminazione</translation>

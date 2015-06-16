@@ -63,7 +63,7 @@
 <translation id="7108649287766967076">Превод на <ph name="TARGET_LANGUAGE"/> није успео.</translation>
 <translation id="4103249731201008433">Серијски број уређаја је неважећи</translation>
 <translation id="3219579145727097045">Унесите датум истека и четвороцифрени CVC који се налази на предњој страни картице</translation>
-<translation id="3667681724235208644">Прикажи оригинал</translation>
+<translation id="59107663811261420">Google Payments не подржава овај тип картице за овог продавца. Изаберите неку другу картицу.</translation>
 <translation id="4079302484614802869">Конфигурација проксија је подешена да користи URL адресу .pac скрипте, а не фиксне прокси сервере.</translation>
 <translation id="5540224163453853">Нисмо пронашли захтевани чланак.</translation>
 <translation id="8437238597147034694">&amp;Опозови премештање</translation>
@@ -90,6 +90,7 @@
 <translation id="7977590112176369853">&lt;унесите упит&gt;</translation>
 <translation id="552553974213252141">Да ли је текст правилно издвојен?</translation>
 <translation id="5317780077021120954">Сачувај</translation>
+<translation id="8530504477309582336">Google Payments не подржава овај тип картице. Изаберите неку другу картицу.</translation>
 <translation id="7610193165460212391">Вредност је изван опсега <ph name="VALUE"/>.</translation>
 <translation id="3739623965217189342">Линк који сте копирали</translation>
 <translation id="8790007591277257123">&amp;Понови брисање</translation>

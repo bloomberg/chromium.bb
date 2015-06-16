@@ -74,6 +74,7 @@
 <translation id="8551886023433311834">Atualização quase concluída! Reinicie seu dispositivo para concluir a atualização.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="1073391069195728457">Google Chrome - Notificações</translation>
+<translation id="6368805772029492593">Para maior segurança, o Google Chrome criptografará seus dados.</translation>
 <translation id="7339898014177206373">Nova janela</translation>
 <translation id="3282568296779691940">Fazer login no Google Chrome</translation>
 <translation id="3089968997497233615">Há uma versão nova e mais segura do Google Chrome disponível.</translation>
@@ -167,7 +168,6 @@ Se você decidir fazer login assim mesmo, as informações do Google Chrome, com
 <translation id="2290095356545025170">Tem certeza de que deseja desinstalar o Google Chrome?</translation>
 <translation id="4273752058983339720">O Google Chrome está configurado para iniciar automaticamente quando você inicia o computador.</translation>
 <translation id="2316129865977710310">Não.</translation>
-<translation id="415994390253732730">O Google Chrome está se comportando de forma estranha?</translation>
 <translation id="1104959162601287462">Sobre o Chrome OS</translation>
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
 <translation id="7626032353295482388">Bem-vindo ao Google Chrome</translation>
@@ -220,6 +220,7 @@ Se você decidir fazer login assim mesmo, as informações do Google Chrome, com
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="6113794647360055231">O Chrome ficou ainda melhor</translation>
 <translation id="2588322182880276190">Logotipo do Google Chrome</translation>
+<translation id="4519152997629025674">O Google Chrome pode usar <ph name="BEGIN_LINK"/>serviços da Web<ph name="END_LINK"/> para melhorar a qualidade da sua navegação. Você pode desativar esses serviços a qualquer momento.</translation>
 <translation id="4367618624832907428">O Google Chrome não pode exibir a página da Web porque seu computador não está conectado à Internet.</translation>
 <translation id="174539241580958092">O Google Chrome não pôde sincronizar seus dados devido a um erro no login.</translation>
 <translation id="8255190535488645436">O Google Chrome está usando sua câmera e seu microfone.</translation>
@@ -227,7 +228,6 @@ Se você decidir fazer login assim mesmo, as informações do Google Chrome, com
         firewall ou antivírus.</translation>
 <translation id="9102715433345326100">Este arquivo é malicioso e foi bloqueado pelo Google Chrome.</translation>
 <translation id="8205111949707227942">Opcional: ajude a melhorar este sistema operacional enviando-nos estatísticas de uso e relatórios de erros.</translation>
-<translation id="487887346205285304">O Google Chrome está se comportando de forma estranha?</translation>
 <translation id="3622797965165704966">Agora ficou mais fácil usar o Chrome com sua Conta do Google e em computadores compartilhados.</translation>
 <translation id="7196020411877309443">Por que estou vendo este aviso?</translation>
 <translation id="2769762047821873045">O Google Chrome não é o seu navegador padrão.</translation>

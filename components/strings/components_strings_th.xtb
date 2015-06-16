@@ -63,7 +63,7 @@
 <translation id="7108649287766967076">การแปลเป็น <ph name="TARGET_LANGUAGE"/> ล้มเหลว</translation>
 <translation id="4103249731201008433">หมายเลขซีเรียลของอุปกรณ์ไม่ถูกต้อง</translation>
 <translation id="3219579145727097045">ป้อนวันหมดอายุและ CVC 4 หลักจากด้านหน้าบัตร</translation>
-<translation id="3667681724235208644">ดูหน้าต้นฉบับ</translation>
+<translation id="59107663811261420">Google Payments ไม่สนับสนุนบัตรประเภทนี้สำหรับผู้ขายรายนี้ โปรดเลือกบัตรอื่น</translation>
 <translation id="4079302484614802869">การกำหนดค่าพร็อกซีมีการตั้งค่าให้ใช้ URL สคริปต์ .pac ไม่ใช่พร็อกซีเซิร์ฟเวอร์แบบคงที่</translation>
 <translation id="5540224163453853">ไม่พบบทความที่ขอ</translation>
 <translation id="8437238597147034694">&amp;เลิกทำการย้าย</translation>
@@ -90,6 +90,7 @@
 <translation id="7977590112176369853">&lt;ป้อนคำค้นหา&gt;</translation>
 <translation id="552553974213252141">ดึงข้อความออกมาถูกต้องไหม</translation>
 <translation id="5317780077021120954">บันทึก</translation>
+<translation id="8530504477309582336">Google Payments ไม่สนับสนุนบัตรประเภทนี้ โปรดเลือกบัตรอื่น</translation>
 <translation id="7610193165460212391">ค่าอยู่นอกช่วง <ph name="VALUE"/></translation>
 <translation id="3739623965217189342">ลิงก์ที่คุณคัดลอกมา</translation>
 <translation id="8790007591277257123">&amp;ทำซ้ำการนำออก</translation>

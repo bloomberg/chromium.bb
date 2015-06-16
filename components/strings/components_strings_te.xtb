@@ -63,7 +63,7 @@
 <translation id="7108649287766967076"><ph name="TARGET_LANGUAGE"/>కు అనువాదం విఫలమైంది.</translation>
 <translation id="4103249731201008433">పరికరం క్రమ సంఖ్య చెల్లదు</translation>
 <translation id="3219579145727097045">మీ కార్డ్ గడువు ముగింపు తేదీ మరియు దాని వెనుకవైపు ఉండే 4 అంకెల CVCని నమోదు చేయండి</translation>
-<translation id="3667681724235208644">అసలైనదాన్ని వీక్షించండి</translation>
+<translation id="59107663811261420">ఈ వ్యాపారి కోసం Google Payments ఈ రకమైన కార్డ్‌కి మద్దతివ్వదు. దయచేసి వేరొక కార్డ్‌ను ఎంచుకోండి.</translation>
 <translation id="4079302484614802869">ప్రాక్సీ కాన్ఫిగరేషన్ స్థిరమైన ప్రాక్సీ సర్వర్‌లను కాకుండా, ఒక .pac స్క్రిప్ట్ URLను ఉపయోగించడానికి సెట్ చేయబడింది.</translation>
 <translation id="5540224163453853">అభ్యర్థించిన కథనాన్ని కనుగొనడం సాధ్యపడలేదు.</translation>
 <translation id="8437238597147034694">&amp;తరలించడాన్ని రద్దు చేయి</translation>
@@ -90,6 +90,7 @@
 <translation id="7977590112176369853">&lt;ప్రశ్నను ఎంటర్ చెయ్యండి&gt;</translation>
 <translation id="552553974213252141">వచనం సరిగ్గా సంగ్రహించబడిందా?</translation>
 <translation id="5317780077021120954">సేవ్ చేయి</translation>
+<translation id="8530504477309582336">Google Payments ఈ రకమైన కార్డ్‌కి మద్దతివ్వదు. దయచేసి వేరొక కార్డ్‌ను ఎంచుకోండి.</translation>
 <translation id="7610193165460212391">విలువ <ph name="VALUE"/> పరిధి వెలుపల ఉంది.</translation>
 <translation id="3739623965217189342">మీరు కాపీ చేసిన లింక్</translation>
 <translation id="8790007591277257123">&amp;తొలగించడాన్ని పునరావృతం చేయి</translation>

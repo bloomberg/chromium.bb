@@ -63,7 +63,7 @@
 <translation id="7108649287766967076">Prevod v jezik <ph name="TARGET_LANGUAGE"/> ni uspel.</translation>
 <translation id="4103249731201008433">Neveljavna serijska številka naprave</translation>
 <translation id="3219579145727097045">Vnesite datum poteka in štirimestno kodo CVC na sprednji strani kartice</translation>
-<translation id="3667681724235208644">Ogled izvirnika</translation>
+<translation id="59107663811261420">Ta vrsta kartice ni podprta v storitvi Google Payments pri tem trgovcu. Izberite drugo kartico.</translation>
 <translation id="4079302484614802869">Konfiguracija strežnika proxy je nastavljena na uporabo URL-ja skripta .pac, ne na stalne strežnike proxy.</translation>
 <translation id="5540224163453853">Zahtevanega članka ni bilo mogoče najti.</translation>
 <translation id="8437238597147034694">&amp;Razveljavi premik</translation>
@@ -90,6 +90,7 @@
 <translation id="7977590112176369853">&lt;vnesite poizvedbo&gt;</translation>
 <translation id="552553974213252141">Ali je bilo besedilo pravilno izvlečeno?</translation>
 <translation id="5317780077021120954">Shrani</translation>
+<translation id="8530504477309582336">Ta vrsta kartice ni podprta v storitvi Google Payments. Izberite drugo kartico.</translation>
 <translation id="7610193165460212391">Vrednost je zunaj obsega <ph name="VALUE"/>.</translation>
 <translation id="3739623965217189342">Povezava, ki ste jo kopirali</translation>
 <translation id="8790007591277257123">&amp;Uveljavi izbris</translation>

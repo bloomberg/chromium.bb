@@ -53,7 +53,7 @@
 <translation id="1647391597548383849">Kameran käyttöoikeus</translation>
 <translation id="5210365745912300556">Sulje välilehti</translation>
 <translation id="1369915414381695676">Sivusto <ph name="SITE_NAME"/> lisättiin.</translation>
-<translation id="5902828464777634901">Kaikki tämän sivuston tallentamat paikalliset tiedot poistetaan.</translation>
+<translation id="5902828464777634901">Kaikki tämän sivuston tallentamat paikalliset tiedot (myös evästeet) poistetaan.</translation>
 <translation id="7658239707568436148">Peruuta</translation>
 <translation id="2154710561487035718">Kopioi URL-osoite</translation>
 <translation id="6770414673596662518">Chromen selaussuojajärjestelmän avulla myös tunnistetaan haitallisia sivuja ja suojataan sinua tietojenkalastelulta, haittaohjelmilta ja haitallisilta latauksilta.</translation>
@@ -77,7 +77,6 @@
 <translation id="3738139272394829648">Koskettamalla hakeminen</translation>
 <translation id="257931822824936280">Laajennettu – tiivistä klikkaamalla.</translation>
 <translation id="4773299976671772492">Keskeytetty</translation>
-<translation id="5118309162436926908">Kirjaudu ja käytä välilehtiä, kirjanmerkkejä, historiaa ja muita asetuksiasi kaikissa laitteissasi.</translation>
 <translation id="7596558890252710462">Käyttöjärjestelmä</translation>
 <translation id="3358663646935160692">Tätä tiliä hallinnoi <ph name="DOMAIN_NAME"/>.
 
@@ -127,6 +126,7 @@ Olet kirjautumassa hallinnoituun tiliin, jonka hallinnoijalla on oikeus muokata 
 <translation id="4378154925671717803">Puhelin</translation>
 <translation id="988938288723502454">Lataushakemiston luominen SD-kortille epäonnistui.</translation>
 <translation id="3896036286668839683">Varmennetiedot</translation>
+<translation id="8660471606262461360">Google Paymentsista</translation>
 <translation id="5171045022955879922">Kirjoita hakusanoja tai URL-osoite</translation>
 <translation id="2321958826496381788">Vedä liukusäädintä, kunnes voit lukea tämän mukavasti. Tekstin tulisi olla vähintään näin suurta kaksoisnapautettuasi kappaletta.</translation>
 <translation id="3282568296779691940">Kirjaudu Chromeen</translation>
@@ -177,7 +177,9 @@ Olet kirjautumassa hallinnoituun tiliin, jonka hallinnoijalla on oikeus muokata 
 <translation id="5000922062037820727">Estetty (suositus)</translation>
 <translation id="544291274896356069">Incognito-tilasta poistutaan, jos avaat tämän linkin ulkoisessa sovelluksessa. Haluatko jatkaa?</translation>
 <translation id="3917783807003067648">Sijainnin käyttö on estetty.</translation>
+<translation id="3207960819495026254">Kirjanmerkeissä</translation>
 <translation id="1379156015317873965">Paranna sivun lataustehokkuutta</translation>
+<translation id="5953603475187800576">Näytä Google Paymentsin osoitteet ja luottokortit</translation>
 <translation id="8481940801237642152">Sivustoon on muodostettu salattu yhteys, mutta verkon käyttäjät voivat päästä muokkaamaan sivun ulkoasua.</translation>
 <translation id="2593272815202181319">Monospace</translation>
 <translation id="4807098396393229769">Kortissa oleva nimi</translation>
@@ -231,7 +233,6 @@ Palaa painamalla edellinen-painiketta.</translation>
 <translation id="583891442612896534">Chrome ei saa yhteyttä Googlen palvelimiin tietojen pakkausta varten. Tietojen tallentaminen voi olla rajoitettua.</translation>
 <translation id="4827948050554950725">Lisää luottokortti</translation>
 <translation id="2316129865977710310">Ei kiitos</translation>
-<translation id="3489120686474540259">Lisää tili, niin voit käyttää välilehtiä, kirjanmerkkejä, historiaa ja muita asetuksiasi kaikilla laitteillasi.</translation>
 <translation id="4278390842282768270">Sallittu</translation>
 <translation id="4686372254213217147">Alkuperäinen koko</translation>
 <translation id="4526792582053123229">Google ei optimoi tai näe HTTPS- tai incognito-tilassa käytettyjä sivuja.</translation>
@@ -261,7 +262,6 @@ Palaa painamalla edellinen-painiketta.</translation>
 <translation id="4526249700380860531">Tarkastele ja hallinnoi tallennettuja salasanoja osoitteessa <ph name="BEGIN_LINK"/>passwords.google.com<ph name="END_LINK"/></translation>
 <translation id="2496180316473517155">Selaushistoria</translation>
 <translation id="6108923351542677676">Synkronointia valmistellaan…</translation>
-<translation id="7358682983403815415">Avoimet välilehdet, kirjanmerkit, historia ja muita tietoja synkronoidaan Google-tiliisi.</translation>
 <translation id="6964496835063002391">Lisää tili.</translation>
 <translation id="4698413471314543145">Chromen suorittamiseen tarvittava kriittinen toiminto puuttuu. Joko Chromea ei ole asennettu loppuun tai selain ei sovi yhteen tämän Android-version kanssa.</translation>
 <translation id="1943432128510653496">Salasanojen tallentaminen</translation>
@@ -341,7 +341,6 @@ Palaa painamalla edellinen-painiketta.</translation>
 <translation id="5164482624172255778">Haluatko Google Chromen ehdottavan sivuston kielellä <ph name="LANGUAGE"/> kirjoitettujen sivujen kääntämistä seuraavalla kerralla?</translation>
 <translation id="4062305924942672200">Oikeudelliset tiedot</translation>
 <translation id="515227803646670480">Poista tallennetut tiedot</translation>
-<translation id="6757714913056001524">Valitse tili, niin voit käyttää välilehtiä, kirjanmerkkejä, historiaa ja muita asetuksiasi kaikilla laitteillasi.</translation>
 <translation id="6935223586406308151"><ph name="DOMAIN_NAME"/> lisättiin aloitusnäyttöön.</translation>
 <translation id="7638584964844754484">Väärä tunnuslause.</translation>
 <translation id="129553762522093515">Hiljattain suljetut välilehdet</translation>
@@ -359,6 +358,7 @@ Palaa painamalla edellinen-painiketta.</translation>
 <translation id="7324738665594301612">Testaamme HTTPS-sivujen lähettämistä Googlen välityspalvelimien kautta osana kokeilua.</translation>
 <translation id="7947953824732555851">Hyväksy ja kirjaudu sisään</translation>
 <translation id="6333140779060797560">Jaa sovelluksella <ph name="APPLICATION"/></translation>
+<translation id="5939518447894949180">Tyhjennä</translation>
 <translation id="6040143037577758943">Sulje</translation>
 <translation id="4943872375798546930">Ei tuloksia</translation>
 <translation id="2139186145475833000">Lisää aloitusnäyttöön</translation>
@@ -380,7 +380,6 @@ Palaa painamalla edellinen-painiketta.</translation>
 <translation id="3988213473815854515">Sijainnin käyttö on sallittu.</translation>
 <translation id="8912362522468806198">Google-tilisi avulla</translation>
 <translation id="6165508094623778733">Lisätietoja</translation>
-<translation id="3828029223314399057">Hae kirjanmerkeistä</translation>
 <translation id="3003595280608617736">Ei SD-korttia</translation>
 <translation id="6337234675334993532">Salaus</translation>
 <translation id="862875433388403934">Muissa sov. ladattua sisältöä (esim. elokuvia, musiikkia) ei ehkä voi toistaa ennen käyttöoik. myöntämistä sovellukselle uudell. uusien laitteen kirjautumistiet. perust.
@@ -428,10 +427,8 @@ Hanki uudet käyttöoik. muodostam. verkkoyhteys ja toistamalla ladattu sisält�
 <translation id="1178581264944972037">Tauko</translation>
 <translation id="5127805178023152808">Synkronointi ei ole käytössä</translation>
 <translation id="5677928146339483299">Estetty</translation>
-<translation id="5917058779668915997">Välilehdet, kirjanmerkit, historia ja muut asetuksesi synkronoidaan Google-tiliisi.</translation>
 <translation id="1709438864123551175">Data Saver</translation>
 <translation id="2770465223704140727">Poista luettelosta</translation>
-<translation id="3132683934591522090">Näytä kuva</translation>
 <translation id="6027491994609789413">Toistetaan videota.</translation>
 <translation id="7561196759112975576">Aina</translation>
 <translation id="605721222689873409">VV</translation>

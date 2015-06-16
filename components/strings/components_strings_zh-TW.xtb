@@ -63,7 +63,7 @@
 <translation id="7108649287766967076">無法將網頁內容翻譯成<ph name="TARGET_LANGUAGE"/>。</translation>
 <translation id="4103249731201008433">裝置序號無效</translation>
 <translation id="3219579145727097045">請輸入有效期限和信用卡正面的四位數信用卡安全碼</translation>
-<translation id="3667681724235208644">查看原始網頁</translation>
+<translation id="59107663811261420">這個商家的 Google Payments 不支援此類型卡片，請選取其他卡片。</translation>
 <translation id="4079302484614802869">Proxy 設定已設為使用 .pac 指令碼網址，而非固定的 Proxy 伺服器。</translation>
 <translation id="5540224163453853">找不到要求的文章。</translation>
 <translation id="8437238597147034694">復原移動(&amp;U)</translation>
@@ -90,6 +90,7 @@
 <translation id="7977590112176369853">&lt;輸入查詢&gt;</translation>
 <translation id="552553974213252141">擷取的文字是否正確？</translation>
 <translation id="5317780077021120954">儲存</translation>
+<translation id="8530504477309582336">Google Payments 不支援此類型卡片，請選取其他卡片。</translation>
 <translation id="7610193165460212391">值超出 <ph name="VALUE"/> 的範圍。</translation>
 <translation id="3739623965217189342">您複製的連結</translation>
 <translation id="8790007591277257123">重做刪除(&amp;R)</translation>

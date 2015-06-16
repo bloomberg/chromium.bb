@@ -63,7 +63,7 @@
 <translation id="7108649287766967076">De vertaling naar het <ph name="TARGET_LANGUAGE"/> is mislukt.</translation>
 <translation id="4103249731201008433">Serienummer van apparaat is ongeldig</translation>
 <translation id="3219579145727097045">Geef de vervaldatum en viercijferige CVC-code op die op de voorkant van je kaart staan</translation>
-<translation id="3667681724235208644">Origineel weergeven</translation>
+<translation id="59107663811261420">Dit type kaart wordt voor deze verkoper niet ondersteund door Google Payments. Selecteer een andere kaart.</translation>
 <translation id="4079302484614802869">Proxyconfiguratie is ingesteld op het gebruik van een pac-script-URL, niet op het gebruik van vaste proxyservers.</translation>
 <translation id="5540224163453853">Kan het gevraagde artikel niet vinden.</translation>
 <translation id="8437238597147034694">&amp;Verplaatsen ongedaan maken</translation>
@@ -90,6 +90,7 @@
 <translation id="7977590112176369853">&lt;geef hier uw zoekopdracht op&gt;</translation>
 <translation id="552553974213252141">Is de tekst correct geëxtraheerd?</translation>
 <translation id="5317780077021120954">Opslaan</translation>
+<translation id="8530504477309582336">Dit type kaart wordt niet ondersteund door Google Payments. Selecteer een andere kaart.</translation>
 <translation id="7610193165460212391">Waarde <ph name="VALUE"/> is buiten bereik.</translation>
 <translation id="3739623965217189342">Link die je hebt gekopieerd</translation>
 <translation id="8790007591277257123">&amp;Opnieuw verwijderen</translation>

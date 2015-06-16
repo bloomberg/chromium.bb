@@ -77,7 +77,6 @@
 <translation id="3738139272394829648">גע כדי לחפש</translation>
 <translation id="257931822824936280">מורחב - לחץ כדי לכווץ.</translation>
 <translation id="4773299976671772492">הופסק</translation>
-<translation id="5118309162436926908">היכנס כדי לקבל גישה אל הכרטיסיות, הסימניות, ההיסטוריה והגדרות נוספות שלך בכל המכשירים שברשותך</translation>
 <translation id="7596558890252710462">מערכת הפעלה</translation>
 <translation id="3358663646935160692">‏החשבון הזה מנוהל על ידי <ph name="DOMAIN_NAME"/>.
 
@@ -127,6 +126,7 @@
 <translation id="4378154925671717803">טלפון</translation>
 <translation id="988938288723502454">‏לא ניתן ליצור ספריית הורדה בכרטיס SD.</translation>
 <translation id="3896036286668839683">מציג האישורים</translation>
+<translation id="8660471606262461360">‏מ-Google Payments</translation>
 <translation id="5171045022955879922">חפש או הקלד כתובת אתר</translation>
 <translation id="2321958826496381788">גרור את המחוון עד שתוכל לקרוא את הקטע הזה בצורה נוחה. לאחר שתקיש פעמיים על פיסקה, הטקסט אמור להיות מוצג בגודל הזה לפחות.</translation>
 <translation id="3282568296779691940">‏כניסה ל-Chrome</translation>
@@ -177,7 +177,9 @@
 <translation id="5000922062037820727">חסומה (מומלץ)</translation>
 <translation id="544291274896356069">פתיחת הקישור הזה ביישום חיצוני תוציא אותך ממצב גלישה בסתר. האם להמשיך?</translation>
 <translation id="3917783807003067648">המיקום חסום</translation>
+<translation id="3207960819495026254">מסומן בסימניה</translation>
 <translation id="1379156015317873965">שיפור בביצועי טעינת הדפים</translation>
+<translation id="5953603475187800576">‏הצג כתובות וכרטיסי אשראי מ-Google Payments</translation>
 <translation id="8481940801237642152">החיבור שלך לאתר הזה הוא פרטי, אך ייתכן שמישהו ברשת יכול לשנות את המראה של הדף.</translation>
 <translation id="2593272815202181319">רוחב אחיד</translation>
 <translation id="4807098396393229769">שם על הכרטיס</translation>
@@ -231,7 +233,6 @@
 <translation id="583891442612896534">‏ל-Chrome אין אפשרות לגשת אל שרתי Google לדחיסת נתונים. ייתכן שהחיסכון בנתונים יהיה מוגבל.</translation>
 <translation id="4827948050554950725">הוסף כרטיס אשראי</translation>
 <translation id="2316129865977710310">לא, תודה</translation>
-<translation id="3489120686474540259">הוסף חשבון כדי לקבל גישה אל הכרטיסיות, הסימניות, ההיסטוריה והגדרות נוספות בכל המכשירים שברשותך.</translation>
 <translation id="4278390842282768270">מותר</translation>
 <translation id="4686372254213217147">גודל מקורי</translation>
 <translation id="4526792582053123229">‏Google לא תראה או תבצע אופטימיזציה של דפים שהגישה אליהם בוצעה דרך HTTPS או במצב גלישה בסתר.</translation>
@@ -261,7 +262,6 @@
 <translation id="4526249700380860531">‏הצג ונהל סיסמאות שמורות ב-<ph name="BEGIN_LINK"/>passwords.google.com<ph name="END_LINK"/></translation>
 <translation id="2496180316473517155">היסטוריית גלישה</translation>
 <translation id="6108923351542677676">ההגדרה מתבצעת…</translation>
-<translation id="7358682983403815415">‏הכרטיסיות הפתוחות, הסימניות, ההיסטוריה ונתונים נוספים מסתנכרנים עם חשבון Google שלך.</translation>
 <translation id="6964496835063002391">הוסף חשבון</translation>
 <translation id="4698413471314543145">‏חסרה פונקציונליות קריטית הנדרשת להפעלת Chrome. התקנת Chrome אינה מלאה, או שאינה תואמת לגרסה הזו של Android.</translation>
 <translation id="1943432128510653496">שמור סיסמאות</translation>
@@ -341,7 +341,6 @@
 <translation id="5164482624172255778">‏האם ברצונך ש-Google Chrome יציע בפעם הבאה לתרגם דפים בשפה <ph name="LANGUAGE"/> מאתר זה?</translation>
 <translation id="4062305924942672200">מידע משפטי</translation>
 <translation id="515227803646670480">נקה נתונים מאוחסנים</translation>
-<translation id="6757714913056001524">בחר חשבון כדי לקבל גישה אל הכרטיסיות, הסימניות, ההיסטוריה והגדרות נוספות שלך בכל המכשירים שברשותך.</translation>
 <translation id="6935223586406308151"><ph name="DOMAIN_NAME"/> נוסף אל מסך דף הבית</translation>
 <translation id="7638584964844754484">ביטוי סיסמה שגוי</translation>
 <translation id="129553762522093515">נסגרו לאחרונה</translation>
@@ -359,6 +358,7 @@
 <translation id="7324738665594301612">‏אנו בודקים את ההעברה של דפי HTTPS בשרתי proxy של Google כחלק מניסוי.</translation>
 <translation id="7947953824732555851">קבל והיכנס</translation>
 <translation id="6333140779060797560">שתף באמצעות <ph name="APPLICATION"/></translation>
+<translation id="5939518447894949180">אפס</translation>
 <translation id="6040143037577758943">סגור</translation>
 <translation id="4943872375798546930">אין תוצאות</translation>
 <translation id="2139186145475833000">הוסף למסך דף הבית</translation>
@@ -380,7 +380,6 @@
 <translation id="3988213473815854515">ניתנה הרשאת מיקום</translation>
 <translation id="8912362522468806198">‏חשבון Google</translation>
 <translation id="6165508094623778733">למידע נוסף</translation>
-<translation id="3828029223314399057">חפש סימניות</translation>
 <translation id="3003595280608617736">‏אין כרטיס SD</translation>
 <translation id="6337234675334993532">הצפנה</translation>
 <translation id="862875433388403934">ייתכן שלא תוכל עוד להפעיל תוכן (סרטים, מוזיקה וכו') שהורדת באפליקציות אחרות עד לרכישה מחדש של רישיונות באפליקציות אלה עם פרטי כניסה למכשיר חדש. כדי להשיג רישיונות חדשים, התחבר לאינטרנט והפעל את התוכן שהורדת.</translation>
@@ -426,10 +425,8 @@
 <translation id="1178581264944972037">השהה</translation>
 <translation id="5127805178023152808">סנכרון כבוי</translation>
 <translation id="5677928146339483299">במצב חסום</translation>
-<translation id="5917058779668915997">‏הסימניות, ההיסטוריה והגדרות נוספות יסונכרנו עם חשבון Google שלך.</translation>
 <translation id="1709438864123551175">‏חוסך הנתונים (Data Saver)</translation>
 <translation id="2770465223704140727">הסר מהרשימה</translation>
-<translation id="3132683934591522090">הצג תמונה</translation>
 <translation id="6027491994609789413">מפעיל סרטון</translation>
 <translation id="7561196759112975576">תמיד</translation>
 <translation id="605721222689873409">YY</translation>

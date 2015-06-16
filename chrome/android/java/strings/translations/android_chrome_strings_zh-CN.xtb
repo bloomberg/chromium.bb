@@ -77,7 +77,6 @@
 <translation id="3738139272394829648">触摸搜索</translation>
 <translation id="257931822824936280">已展开 - 点击此处即可收起。</translation>
 <translation id="4773299976671772492">已停止</translation>
-<translation id="5118309162436926908">登录后可获取您所有设备上目前打开的标签页、保存的书签、历史记录和其他设置</translation>
 <translation id="7596558890252710462">操作系统</translation>
 <translation id="3358663646935160692">此帐户由 <ph name="DOMAIN_NAME"/> 管理。
 
@@ -127,6 +126,7 @@
 <translation id="4378154925671717803">电话</translation>
 <translation id="988938288723502454">无法在 SD 卡中创建下载目录。</translation>
 <translation id="3896036286668839683">证书查看器</translation>
+<translation id="8660471606262461360">来自 Google Payments</translation>
 <translation id="5171045022955879922">搜索或输入网址</translation>
 <translation id="2321958826496381788">拖动该滑块，将文字调整到适合您阅读的大小。点按两次某段落后，显示的文字至少应是这么大。</translation>
 <translation id="3282568296779691940">登录 Chrome</translation>
@@ -177,7 +177,9 @@
 <translation id="5000922062037820727">已阻止（推荐）</translation>
 <translation id="544291274896356069">如果在外部应用中打开此链接，您将退出隐身模式。是否继续？</translation>
 <translation id="3917783807003067648">禁止访问位置信息</translation>
+<translation id="3207960819495026254">已加书签</translation>
 <translation id="1379156015317873965">提高网页加载速度</translation>
+<translation id="5953603475187800576">显示 Google Payments 中保存的地址和信用卡数据</translation>
 <translation id="8481940801237642152">您与此网站建立的是私密连接，但网络上的某些用户也许能更改此网页的外观。</translation>
 <translation id="2593272815202181319">等宽</translation>
 <translation id="4807098396393229769">持卡人姓名</translation>
@@ -231,7 +233,6 @@
 <translation id="583891442612896534">Chrome 无法连接到 Google 服务器来进行数据压缩，因此您节省的数据流量可能有限。</translation>
 <translation id="4827948050554950725">添加信用卡</translation>
 <translation id="2316129865977710310">不用了，谢谢</translation>
-<translation id="3489120686474540259">请添加帐户，以便获取您所有设备上目前打开的标签页、保存的书签、历史记录和其他设置。</translation>
 <translation id="4278390842282768270">允许的 Cookie</translation>
 <translation id="4686372254213217147">原始大小</translation>
 <translation id="4526792582053123229">Google 不会优化（也看不到）采用 HTTPS 协议或以隐身模式访问的网页。</translation>
@@ -261,7 +262,6 @@
 <translation id="4526249700380860531">通过 <ph name="BEGIN_LINK"/>passwords.google.com<ph name="END_LINK"/> 查看和管理已保存的密码</translation>
 <translation id="2496180316473517155">浏览记录</translation>
 <translation id="6108923351542677676">正在设置…</translation>
-<translation id="7358682983403815415">系统正在将您打开的标签页、保存的书签、历史记录等信息同步到您的 Google 帐户。</translation>
 <translation id="6964496835063002391">添加帐户</translation>
 <translation id="4698413471314543145">缺少运行 Chrome 所需的关键功能；您可能未完成 Chrome 安装过程，或者 Chrome 与此版本的 Android 不兼容。</translation>
 <translation id="1943432128510653496">保存密码</translation>
@@ -341,7 +341,6 @@
 <translation id="5164482624172255778">下次访问这个网站时，您希望 Google Chrome 翻译此网站的<ph name="LANGUAGE"/>网页吗？</translation>
 <translation id="4062305924942672200">法律信息</translation>
 <translation id="515227803646670480">清除存储的数据</translation>
-<translation id="6757714913056001524">请选择帐户，以便获取您所有设备上目前打开的标签页、保存的书签、历史记录和其他设置。</translation>
 <translation id="6935223586406308151"><ph name="DOMAIN_NAME"/> 已添加到您的主屏幕</translation>
 <translation id="7638584964844754484">密码不正确</translation>
 <translation id="129553762522093515">最近关闭的标签页</translation>
@@ -359,6 +358,7 @@
 <translation id="7324738665594301612">我们正在作为某项实验的参与者对通过 Google 服务器代理 HTTPS 网页进行测试。</translation>
 <translation id="7947953824732555851">接受并登录</translation>
 <translation id="6333140779060797560">通过<ph name="APPLICATION"/>分享</translation>
+<translation id="5939518447894949180">重置</translation>
 <translation id="6040143037577758943">关闭</translation>
 <translation id="4943872375798546930">找不到结果</translation>
 <translation id="2139186145475833000">添加到主屏幕</translation>
@@ -380,7 +380,6 @@
 <translation id="3988213473815854515">允许访问位置信息</translation>
 <translation id="8912362522468806198">Google 帐户</translation>
 <translation id="6165508094623778733">了解详情</translation>
-<translation id="3828029223314399057">搜索书签</translation>
 <translation id="3003595280608617736">无 SD 卡</translation>
 <translation id="6337234675334993532">加密</translation>
 <translation id="862875433388403934">其他应用中下载的内容（例如电影、音乐等）将无法再播放，除非这些应用根据新的设备凭据重新获得许可。
@@ -428,10 +427,8 @@
 <translation id="1178581264944972037">暂停</translation>
 <translation id="5127805178023152808">同步功能已关闭</translation>
 <translation id="5677928146339483299">已屏蔽</translation>
-<translation id="5917058779668915997">系统会将您目前打开的标签页、保存的书签、历史记录和其他设置同步到您的 Google 帐户。</translation>
 <translation id="1709438864123551175">流量节省程序</translation>
 <translation id="2770465223704140727">从列表中移除</translation>
-<translation id="3132683934591522090">显示原图</translation>
 <translation id="6027491994609789413">正在播放视频</translation>
 <translation id="7561196759112975576">永远</translation>
 <translation id="605721222689873409">YY</translation>

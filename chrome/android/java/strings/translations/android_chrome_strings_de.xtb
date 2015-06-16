@@ -77,7 +77,6 @@
 <translation id="3738139272394829648">Zum Suchen tippen</translation>
 <translation id="257931822824936280">Maximiert – zum Minimieren klicken</translation>
 <translation id="4773299976671772492">Angehalten</translation>
-<translation id="5118309162436926908">Melden Sie sich an, um auf allen Ihren Geräten auf Ihre Tabs, Lesezeichen, Ihren Verlauf und andere Einstellungen zuzugreifen.</translation>
 <translation id="7596558890252710462">Betriebssystem</translation>
 <translation id="3358663646935160692">Dieses Konto wird von <ph name="DOMAIN_NAME"/> verwaltet.
 
@@ -127,6 +126,7 @@ Sie melden sich gerade mit einem verwalteten Konto an und geben dem Administrato
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="988938288723502454">Fehler beim Erstellen des Download-Verzeichnisses auf der SD-Karte</translation>
 <translation id="3896036286668839683">Zertifikats-Viewer</translation>
+<translation id="8660471606262461360">Aus Google Payments</translation>
 <translation id="5171045022955879922">Suchen oder URL eingeben</translation>
 <translation id="2321958826496381788">Ziehen Sie den Schieberegler, bis Sie diesen Text problemlos lesen können. Nach dem Doppeltippen auf einen Abschnitt sollte der Text mindestens so groß sein.</translation>
 <translation id="3282568296779691940">In Chrome anmelden</translation>
@@ -177,7 +177,9 @@ Sie melden sich gerade mit einem verwalteten Konto an und geben dem Administrato
 <translation id="5000922062037820727">Blockiert (empfohlen)</translation>
 <translation id="544291274896356069">Der Inkognitomodus wird beendet, wenn dieser Link in einer externen App geöffnet wird. Vorgang fortsetzen?</translation>
 <translation id="3917783807003067648">Standort blockiert</translation>
+<translation id="3207960819495026254">Mit einem Lesezeichen versehen</translation>
 <translation id="1379156015317873965">Seiten schneller laden</translation>
+<translation id="5953603475187800576">Adressen und Kreditkarten aus Google Payments anzeigen</translation>
 <translation id="8481940801237642152">Ihre Verbindung zu dieser Website ist privat, möglicherweise ist jedoch jemand im Netzwerk in der Lage, das Aussehen der Seite zu ändern.</translation>
 <translation id="2593272815202181319">Festbreitenschrift</translation>
 <translation id="4807098396393229769">Name auf Karte</translation>
@@ -231,7 +233,6 @@ Zum Verlassen die Zurück-Taste drücken</translation>
 <translation id="583891442612896534">Chrome kann die Google-Server für die Datenkomprimierung nicht erreichen. Ihre Einsparungen bei der Datennutzung können begrenzt sein.</translation>
 <translation id="4827948050554950725">Kreditkarte hinzufügen</translation>
 <translation id="2316129865977710310">Kein Interesse</translation>
-<translation id="3489120686474540259">Fügen Sie ein Konto hinzu, um Ihre Tabs, Lesezeichen, Ihren Verlauf und andere Einstellungen auf allen Ihren Geräten abzurufen.</translation>
 <translation id="4278390842282768270">Zugelassen</translation>
 <translation id="4686372254213217147">Originalgröße</translation>
 <translation id="4526792582053123229">Über HTTPS oder den Inkognitomodus aufgerufene Seiten werden von Google nicht optimiert oder protokolliert.</translation>
@@ -261,7 +262,6 @@ Zum Verlassen die Zurück-Taste drücken</translation>
 <translation id="4526249700380860531">Unter <ph name="BEGIN_LINK"/>passwords.google.com<ph name="END_LINK"/> gespeicherte Passwörter aufrufen und verwalten</translation>
 <translation id="2496180316473517155">Browserverlauf</translation>
 <translation id="6108923351542677676">Einrichtung läuft...</translation>
-<translation id="7358682983403815415">Ihre geöffneten Tabs, Lesezeichen, Ihr Verlauf und andere Inhalte werden mit Ihrem Google-Konto synchronisiert.</translation>
 <translation id="6964496835063002391">Konto hinzufügen</translation>
 <translation id="4698413471314543145">Es fehlen wichtige Funktionen zur Ausführung von Chrome. Ihre Chrome-Installation ist entweder unvollständig oder nicht mit dieser Android-Version kompatibel.</translation>
 <translation id="1943432128510653496">Passwörter speichern</translation>
@@ -341,7 +341,6 @@ Zum Verlassen die Zurück-Taste drücken</translation>
 <translation id="5164482624172255778">Soll Google Chrome ab dem nächsten Aufruf eine Übersetzung von Seiten dieser Website anbieten, die auf <ph name="LANGUAGE"/> sind?</translation>
 <translation id="4062305924942672200">Rechtliche Hinweise</translation>
 <translation id="515227803646670480">Gespeich. Daten löschen</translation>
-<translation id="6757714913056001524">Wählen Sie ein Konto aus, um Ihre Tabs, Lesezeichen, Ihren Verlauf und andere Einstellungen auf allen Ihren Geräten abzurufen.</translation>
 <translation id="6935223586406308151"><ph name="DOMAIN_NAME"/> wurde zum Startbildschirm hinzugefügt.</translation>
 <translation id="7638584964844754484">Falsche Passphrase</translation>
 <translation id="129553762522093515">Kürzlich geschlossen</translation>
@@ -359,6 +358,7 @@ Zum Verlassen die Zurück-Taste drücken</translation>
 <translation id="7324738665594301612">Wir testen die experimentelle Verwendung von Google-Proxy-Servern für HTTPS-Seiten.</translation>
 <translation id="7947953824732555851">Akzeptieren und anmelden</translation>
 <translation id="6333140779060797560">Über <ph name="APPLICATION"/> teilen</translation>
+<translation id="5939518447894949180">Zurücksetzen</translation>
 <translation id="6040143037577758943">Schließen</translation>
 <translation id="4943872375798546930">Keine Ergebnisse</translation>
 <translation id="2139186145475833000">Zum Startbildschirm hinzu</translation>
@@ -380,7 +380,6 @@ Zum Verlassen die Zurück-Taste drücken</translation>
 <translation id="3988213473815854515">Standort freigegeben</translation>
 <translation id="8912362522468806198">Google-Konto</translation>
 <translation id="6165508094623778733">Weitere Informationen</translation>
-<translation id="3828029223314399057">In Lesezeichen suchen</translation>
 <translation id="3003595280608617736">Keine SD-Karte</translation>
 <translation id="6337234675334993532">Verschlüsselung</translation>
 <translation id="862875433388403934">In anderen Anwendungen heruntergeladene Inhalte wie Filme und Musik können möglicherweise erst wieder abgespielt werden, nachdem Lizenzen basierend auf neuen Anmeldedaten für die betreffenden Anwendungen erworben wurden.
@@ -428,10 +427,8 @@ Um neue Lizenzen zu erwerben, stellen Sie eine Internetverbindung her und spiele
 <translation id="1178581264944972037">Anhalten</translation>
 <translation id="5127805178023152808">Synchronisierung ist deaktiviert</translation>
 <translation id="5677928146339483299">Blockiert</translation>
-<translation id="5917058779668915997">Ihre Tabs, Lesezeichen, Ihr Verlauf und andere Einstellungen werden mit Ihrem Google-Konto synchronisiert.</translation>
 <translation id="1709438864123551175">Datenkomprimierung</translation>
 <translation id="2770465223704140727">Aus Liste entfernen</translation>
-<translation id="3132683934591522090">Bild anzeigen</translation>
 <translation id="6027491994609789413">Video wird abgespielt.</translation>
 <translation id="7561196759112975576">Immer</translation>
 <translation id="605721222689873409">JJ</translation>

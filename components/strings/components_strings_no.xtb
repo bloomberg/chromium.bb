@@ -63,7 +63,7 @@
 <translation id="7108649287766967076">Oversettelsen til <ph name="TARGET_LANGUAGE"/> mislyktes.</translation>
 <translation id="4103249731201008433">Enhetens serienummer er ugyldig</translation>
 <translation id="3219579145727097045">Skriv inn utløpsdatoen og den firesifrede CVC-koden du finner på forsiden av kortet ditt.</translation>
-<translation id="3667681724235208644">Se originalen</translation>
+<translation id="59107663811261420">Denne korttypen støttes ikke av Google Payments for denne selgeren. Velg et annet kort.</translation>
 <translation id="4079302484614802869">Konfigurasjonen av proxytjeneren er angitt til å bruke en nettadresse med .pac-skript, ikke statiske proxytjenere.</translation>
 <translation id="5540224163453853">Den forespurte artikkelen ble ikke funnet.</translation>
 <translation id="8437238597147034694">&amp;Angre flyttingen</translation>
@@ -90,6 +90,7 @@
 <translation id="7977590112176369853">&lt;skriv inn søk&gt;</translation>
 <translation id="552553974213252141">Ble tekstutdraget riktig?</translation>
 <translation id="5317780077021120954">Lagre</translation>
+<translation id="8530504477309582336">Denne korttypen støttes ikke av Google Payments. Velg et annet kort.</translation>
 <translation id="7610193165460212391">Verdien er utenfor rekkevidden <ph name="VALUE"/>.</translation>
 <translation id="3739623965217189342">En link du kopierte</translation>
 <translation id="8790007591277257123">&amp;Slett likevel</translation>

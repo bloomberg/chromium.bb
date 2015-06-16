@@ -63,7 +63,7 @@
 <translation id="7108649287766967076">Не удалось выполнить перевод на <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="4103249731201008433">Серийный номер устройства недействителен</translation>
 <translation id="3219579145727097045">Введите срок действия и четырехзначный CVC-код, указанный на лицевой стороне карты.</translation>
-<translation id="3667681724235208644">Смотреть оригинал</translation>
+<translation id="59107663811261420">Сервис Google Payments не поддерживает карты этого типа для данного продавца. Выберите другую карту.</translation>
 <translation id="4079302484614802869">Конфигурация прокси-сервера предусматривает использование URL PAC-скриптов вместо фиксированных прокси-серверов.</translation>
 <translation id="5540224163453853">Не удалось найти указанную статью</translation>
 <translation id="8437238597147034694">&amp;Отменить перемещение</translation>
@@ -90,6 +90,7 @@
 <translation id="7977590112176369853">&lt;введите запрос&gt;</translation>
 <translation id="552553974213252141">Правильно ли извлечен текст?</translation>
 <translation id="5317780077021120954">Сохранить</translation>
+<translation id="8530504477309582336">Этот тип карт не поддерживается в Google Payments. Выберите другую карту.</translation>
 <translation id="7610193165460212391">Значение <ph name="VALUE"/> лежит за пределами разрешенного диапазона.</translation>
 <translation id="3739623965217189342">Скопированная ссылка</translation>
 <translation id="8790007591277257123">&amp;Повторить удаление</translation>

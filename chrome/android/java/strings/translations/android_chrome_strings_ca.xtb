@@ -77,7 +77,6 @@
 <translation id="3738139272394829648">Toca per cercar</translation>
 <translation id="257931822824936280">Vista desplegada (feu clic per replegar-la)</translation>
 <translation id="4773299976671772492">Aturat</translation>
-<translation id="5118309162436926908">Inicieu la sessió per accedir a les pestanyes, a les adreces d'interès, a l'historial i a altres opcions de configuració des de tots els dispositius</translation>
 <translation id="7596558890252710462">Sistema operatiu</translation>
 <translation id="3358663646935160692"><ph name="DOMAIN_NAME"/> s'encarrega de gestionar aquest compte.
 
@@ -127,6 +126,7 @@ Inicieu la sessió amb un compte gestionat, de manera que concediu al seu admini
 <translation id="4378154925671717803">Telèfon</translation>
 <translation id="988938288723502454">No es pot crear un directori de baixada a la targeta SD.</translation>
 <translation id="3896036286668839683">Lector de certificats</translation>
+<translation id="8660471606262461360">De Google Payments</translation>
 <translation id="5171045022955879922">Cerqueu o escriviu l'URL</translation>
 <translation id="2321958826496381788">Arrossegueu el control lliscant fins que ho pugueu llegir còmodament. El text ha de ser almenys així de gran després de tocar dos cops un paràgraf.</translation>
 <translation id="3282568296779691940">Inicia la sessió a Chrome</translation>
@@ -177,7 +177,9 @@ Inicieu la sessió amb un compte gestionat, de manera que concediu al seu admini
 <translation id="5000922062037820727">Bloquejat (recomanat)</translation>
 <translation id="544291274896356069">Si obriu aquest enllaç en una aplicació externa abandonareu el mode d'incògnit. Voleu continuar?</translation>
 <translation id="3917783807003067648">La ubicació està bloquejada</translation>
+<translation id="3207960819495026254">S'ha afegit a les adreces d'interès.</translation>
 <translation id="1379156015317873965">Millora el rendiment de càrrega de la pàgina</translation>
+<translation id="5953603475187800576">Mostra les adreces i les targetes de crèdit de Google Payments</translation>
 <translation id="8481940801237642152">La vostra connexió amb aquest lloc és privada, però és possible que algun usuari de la xarxa pugui canviar l'aspecte de la pàgina.</translation>
 <translation id="2593272815202181319">Monospace</translation>
 <translation id="4807098396393229769">Titular de la targeta</translation>
@@ -231,7 +233,6 @@ Premeu el botó Enrere per sortir-ne.</translation>
 <translation id="583891442612896534">Chrome no es pot connectar amb els servidors de Google per comprimir les dades. És possible que només pugueu desar dades de manera limitada.</translation>
 <translation id="4827948050554950725">Afegeix una targeta de crèdit</translation>
 <translation id="2316129865977710310">No, gràcies</translation>
-<translation id="3489120686474540259">Afegiu un compte per poder accedir a les pestanyes, a les adreces d'interès, a l'historial i a altres opcions de configuració des de tots els vostres dispositius.</translation>
 <translation id="4278390842282768270">Permeses</translation>
 <translation id="4686372254213217147">Mida original</translation>
 <translation id="4526792582053123229">Google no optimitzarà ni veurà pàgines a què hàgiu accedit en mode d'incògnit o amb HTTPS.</translation>
@@ -261,7 +262,6 @@ Premeu el botó Enrere per sortir-ne.</translation>
 <translation id="4526249700380860531">Consulteu i gestioneu les contrasenyes desades a <ph name="BEGIN_LINK"/>passwords.google.com<ph name="END_LINK"/></translation>
 <translation id="2496180316473517155">Historial de navegació</translation>
 <translation id="6108923351542677676">Configuració en curs...</translation>
-<translation id="7358682983403815415">S'estan sincronitzant les pestanyes obertes, les adreces d'interès, l'historial i altres elements amb el vostre compte de Google.</translation>
 <translation id="6964496835063002391">Afegeix un compte</translation>
 <translation id="4698413471314543145">Falta una funcionalitat crítica necessària per executar Chrome; la vostra instal·lació de Chrome no està completa o bé no és compatible amb aquesta versió d'Android.</translation>
 <translation id="1943432128510653496">Desa les contrasenyes</translation>
@@ -341,7 +341,6 @@ Premeu el botó Enrere per sortir-ne.</translation>
 <translation id="5164482624172255778">Voleu que Google Chrome us ofereixi la possibilitat de traduir les pàgines en <ph name="LANGUAGE"/> d'aquest lloc la propera vegada?</translation>
 <translation id="4062305924942672200">Informació legal</translation>
 <translation id="515227803646670480">Esborrar les dades emmagatzemades</translation>
-<translation id="6757714913056001524">Seleccioneu un compte per poder accedir a les vostres pestanyes, a les adreces d'interès, a l'historial i a altres opcions de configuració des de tots els vostres dispositius.</translation>
 <translation id="6935223586406308151"><ph name="DOMAIN_NAME"/> s'ha afegit a la pantalla d'inici</translation>
 <translation id="7638584964844754484">La frase de contrasenya és incorrecta</translation>
 <translation id="129553762522093515">Tancades recentment</translation>
@@ -359,6 +358,7 @@ Premeu el botó Enrere per sortir-ne.</translation>
 <translation id="7324738665594301612">Estem fent proves d'ús de servidors de Google com a servidors intermediaris per a pàgines HTTPS com a part d'un experiment.</translation>
 <translation id="7947953824732555851">Acc. i inicia sessió</translation>
 <translation id="6333140779060797560">Comparteix mitjançant <ph name="APPLICATION"/>.</translation>
+<translation id="5939518447894949180">Restableix</translation>
 <translation id="6040143037577758943">Tanca</translation>
 <translation id="4943872375798546930">No hi ha resultats</translation>
 <translation id="2139186145475833000">Afegeix a pantalla d'inici</translation>
@@ -380,7 +380,6 @@ Premeu el botó Enrere per sortir-ne.</translation>
 <translation id="3988213473815854515">La ubicació es permet</translation>
 <translation id="8912362522468806198">Compte de Google</translation>
 <translation id="6165508094623778733">Més informació</translation>
-<translation id="3828029223314399057">Cerca adreces d'interès</translation>
 <translation id="3003595280608617736">No hi ha cap targeta SD</translation>
 <translation id="6337234675334993532">Encriptació</translation>
 <translation id="862875433388403934">És possible que el contingut (pel·lícules, música, etc.) que hàgiu baixat en altres aplicacions ja no es pugui reproduir fins que aquestes aplicacions no tornin a adquirir llicències basades en les credencials del dispositiu nou.
@@ -428,10 +427,8 @@ Per obtenir llicències noves, connecteu-vos a Internet i reproduïu el contingu
 <translation id="1178581264944972037">Pausa</translation>
 <translation id="5127805178023152808">Sincronització desactivada</translation>
 <translation id="5677928146339483299">Bloquejat</translation>
-<translation id="5917058779668915997">Se sincronitzaran les pestanyes, les adreces d'interès, l'historial i altres opcions de configuració amb el compte de Google.</translation>
 <translation id="1709438864123551175">Economitzador de dades</translation>
 <translation id="2770465223704140727">Suprimeix de la llista</translation>
-<translation id="3132683934591522090">Mostra la imatge</translation>
 <translation id="6027491994609789413">S'està reproduint el vídeo</translation>
 <translation id="7561196759112975576">Sempre</translation>
 <translation id="605721222689873409">AA</translation>

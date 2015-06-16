@@ -63,7 +63,7 @@
 <translation id="7108649287766967076">Traducerea în <ph name="TARGET_LANGUAGE"/> nu a reușit.</translation>
 <translation id="4103249731201008433">Numărul de serie al gadgetului este nevalid</translation>
 <translation id="3219579145727097045">Introdu data de expirare și codul CVC alcătuit din 4 cifre înscris pe fața cardului</translation>
-<translation id="3667681724235208644">Vedeți pagina originală</translation>
+<translation id="59107663811261420">Acest tip de card nu este acceptat de Google Payments pentru acest comerciant. Selectează alt card.</translation>
 <translation id="4079302484614802869">Configurația pentru proxy este setată să utilizeze o adresă URL pentru scripturi .pac, și nu servere proxy fixe.</translation>
 <translation id="5540224163453853">Articolul solicitat nu poate fi găsit.</translation>
 <translation id="8437238597147034694">&amp;Anulați mutarea</translation>
@@ -90,6 +90,7 @@
 <translation id="7977590112176369853">&lt;introdu interogarea&gt;</translation>
 <translation id="552553974213252141">Textul a fost extras corect?</translation>
 <translation id="5317780077021120954">Salvează</translation>
+<translation id="8530504477309582336">Acest tip de card nu este acceptat de Google Payments. Selectează alt card.</translation>
 <translation id="7610193165460212391">Valoarea este în afara intervalului <ph name="VALUE"/>.</translation>
 <translation id="3739623965217189342">Linkul copiat de tine</translation>
 <translation id="8790007591277257123">&amp;Repetați ștergerea</translation>

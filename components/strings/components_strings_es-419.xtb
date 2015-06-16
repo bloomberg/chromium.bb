@@ -63,7 +63,7 @@
 <translation id="7108649287766967076">Se produjo un error en la traducción al <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="4103249731201008433">El número de serie del dispositivo no es válido.</translation>
 <translation id="3219579145727097045">Ingresa la fecha de vencimiento y el CVC de 4 dígitos que figura en el frente de la tarjeta de crédito.</translation>
-<translation id="3667681724235208644">Ver original</translation>
+<translation id="59107663811261420">Google Payments no admite este tipo de tarjeta para este comerciante. Selecciona otra tarjeta.</translation>
 <translation id="4079302484614802869">El proxy está configurado para usar una URL de script .pac, no servidores proxy fijos.</translation>
 <translation id="5540224163453853">No se pudo encontrar el artículo solicitado.</translation>
 <translation id="8437238597147034694">&amp;Deshacer Mover</translation>
@@ -90,6 +90,7 @@
 <translation id="7977590112176369853">&lt;escribir consulta&gt;</translation>
 <translation id="552553974213252141">¿Se extrajo el texto correctamente?</translation>
 <translation id="5317780077021120954">Guardar</translation>
+<translation id="8530504477309582336">Google Payments no admite este tipo de tarjeta. Selecciona otra tarjeta.</translation>
 <translation id="7610193165460212391">El valor <ph name="VALUE"/> está fuera del rango.</translation>
 <translation id="3739623965217189342">Vínculo copiado</translation>
 <translation id="8790007591277257123">&amp;Rehacer Eliminar</translation>

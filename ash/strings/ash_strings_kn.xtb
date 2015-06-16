@@ -31,8 +31,6 @@
 <translation id="2297568595583585744">ಸ್ಥಿತಿ ಟ್ರೆ</translation>
 <translation id="2248649616066688669">ನಿಮ್ಮ Chromebook ಅನ್ನು ಬಾಹ್ಯ ಪ್ರದರ್ಶನಕ್ಕೆ ಸಂಪರ್ಕಗೊಳಿಸಿರುವಾಗ, ಅದರ ಮುಚ್ಚಳ ಮುಚ್ಚಿದ್ದರೂ ಅದನ್ನು ನೀವು ಬಳಸುತ್ತಲೇ ಇರಬಹುದು.</translation>
 <translation id="2946640296642327832">bluetooth ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
-<translation id="478959186716341421">ಬಿತ್ತರಿಸಲಾಗುತ್ತಿದೆ</translation>
-<translation id="5537725057119320332">ಪಾತ್ರವರ್ಗ</translation>
 <translation id="6459472438155181876"><ph name="DISPLAY_NAME"/> ಗೆ ಪರದೆಯನ್ನು ವಿಸ್ತರಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="8206859287963243715">ಸೆಲ್ಯುಲಾರ್</translation>
 <translation id="6596816719288285829">IP ವಿಳಾಸ</translation>
@@ -73,7 +71,6 @@
 <translation id="2509468283778169019">CAPS LOCK ಆನ್ ಆಗಿದೆ</translation>
 <translation id="3892641579809465218">ಆಂತರಿಕ ಪ್ರದರ್ಶನ</translation>
 <translation id="7823564328645135659">ನಿಮ್ಮ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಸಿಂಕ್ ಮಾಡಿದ ನಂತರ ಭಾಷೆಯನ್ನು &quot;<ph name="FROM_LOCALE"/>&quot; ನಿಂದ &quot;<ph name="TO_LOCALE"/>&quot; ಗೆ ಬದಲಾಯಿಸಲಾಗಿದೆ.</translation>
-<translation id="7113420380180868673">$1 ಬಿತ್ತರಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="3606978283550408104">ಬ್ರೇಲ್ ಪ್ರದರ್ಶನವನ್ನು ಸಂಪರ್ಕಗೊಳಿಸಲಾಗಿದೆ.</translation>
 <translation id="8654520615680304441">Wi-Fi ಆನ್ ಮಾಡಿ...</translation>
 <translation id="4421231901400348175">ರಿಮೋಟ್ ಸಹಾಯದ ಮೂಲಕ <ph name="HELPER_NAME"/> ಜೊತೆಗೆ ನಿಮ್ಮ ಪರದೆಯ ನಿಯಂತ್ರಣವನ್ನು ಹಂಚಲಾಗುತ್ತಿದೆ.</translation>
@@ -98,7 +95,6 @@
 <translation id="3626637461649818317"><ph name="PERCENTAGE"/>% ಉಳಿದಿದೆ</translation>
 <translation id="9089416786594320554">ಇನ್‌ಪುಟ್ ವಿಧಾನಗಳು</translation>
 <translation id="2700058918926273959">ಸೆಷನ್ <ph name="SESSION_TIME_REMAINING"/> ರಲ್ಲಿ ಕೊನೆಗೊಳ್ಳಲಿದೆ. ನೀವು ಸೈನ್ ಔಟ್ ಆಗಲಿರುವಿರಿ.</translation>
-<translation id="5807965672380739016">ಡೆಸ್ಕ್‌ಟಾಪ್ ಅನ್ನು ಇದಕ್ಕೆ ಬಿತ್ತರಿಸಿ</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
 <translation id="3963445509666917109">ಸ್ಪೀಕರ್ (ಆಂತರಿಕ)</translation>
 <translation id="1747827819627189109">ಆನ್ ಸ್ಕ್ರೀನ್ ಕೀಬೋರ್ಡ್ ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ</translation>
@@ -119,7 +115,6 @@
 <translation id="8528322925433439945">ಮೊಬೈಲ್...</translation>
 <translation id="3157169093162779309">ತಿರುಗಿಸುವಿಕೆ ಲಾಕ್ ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="8428213095426709021">ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
-<translation id="6592705765268910579">ಅಪರಿಚಿತ ಸ್ವೀಕರಿಸುವವರು</translation>
 <translation id="2372145515558759244">ಅಪ್ಲಿಕೇಶನ್‌ಗಳನ್ನು ಸಿಂಕ್ ಮಾಡಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="1987317783729300807">ಖಾತೆಗಳು</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> ಪೂರ್ಣಗೊಳ್ಳುವವರೆಗೆ</translation>
@@ -211,7 +206,6 @@
 <translation id="3009178788565917040">ಔಟ್‌ಪುಟ್</translation>
 <translation id="3147142846278915599">ಲಾಂಚರ್ (ಅಪ್ಲಿಕೇಶನ್‌ಗಳನ್ನು ಸಿಂಕ್ ಮಾಡಲಾಗುತ್ತಿದೆ...)</translation>
 <translation id="6911468394164995108">ಇತರರನ್ನು ಸೇರಿ...</translation>
-<translation id="4373966964907728675">ಡೆಸ್ಕ್‌ಟಾಪ್ ಬಿತ್ತರಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608">ಪೂರ್ಣವಾಗುವವರಗೆ <ph name="HOUR"/>ಗಂ <ph name="MINUTE"/>ನಿ</translation>
 <translation id="3077734595579995578">shift</translation>

@@ -31,8 +31,6 @@
 <translation id="2297568595583585744">Durum tepsisi</translation>
 <translation id="2248649616066688669">Chromebook'unuz harici bir ekrana bağlıyken, kapağı kapalı olsa da cihazınızı kullanmaya devam edebilirsiniz.</translation>
 <translation id="2946640296642327832">Bluetooth'u etkinleştir</translation>
-<translation id="478959186716341421">Yayınlanıyor</translation>
-<translation id="5537725057119320332">Yayınla</translation>
 <translation id="6459472438155181876">Ekran şuraya genişletiliyor: <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Cep telefonu</translation>
 <translation id="6596816719288285829">IP Adresi</translation>
@@ -73,7 +71,6 @@ Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="2509468283778169019">CAPS LOCK açık</translation>
 <translation id="3892641579809465218">Dahili Ekran</translation>
 <translation id="7823564328645135659">Ayarlarınız senkronize edildikten sonra &quot;<ph name="FROM_LOCALE"/>&quot; olan dil &quot;<ph name="TO_LOCALE"/>&quot; olarak değiştirildi.</translation>
-<translation id="7113420380180868673">$1 yayınlanıyor</translation>
 <translation id="3606978283550408104">Braille ekranı bağlandı.</translation>
 <translation id="8654520615680304441">Kablosuz'u aç...</translation>
 <translation id="4421231901400348175">Ekranınızın kontrolü, Uzaktan Yardım kullanılarak <ph name="HELPER_NAME"/> ile paylaşılıyor.</translation>
@@ -98,7 +95,6 @@ Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="3626637461649818317">%<ph name="PERCENTAGE"/> kaldı</translation>
 <translation id="9089416786594320554">Giriş yöntemleri</translation>
 <translation id="2700058918926273959">Oturumun süresi <ph name="SESSION_TIME_REMAINING"/> içinde bitiyor. Süre dolduğunda oturumunuz kapatılacaktır.</translation>
-<translation id="5807965672380739016">Masaüstünü şuraya yayınla:</translation>
 <translation id="6247708409970142803">%<ph name="PERCENTAGE"/></translation>
 <translation id="3963445509666917109">Hoparlör (Dahili)</translation>
 <translation id="1747827819627189109">Dokunmatik klavye etkin</translation>
@@ -119,7 +115,6 @@ Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="8528322925433439945">Mobile...</translation>
 <translation id="3157169093162779309">Döndürme kilidini etkinleştir</translation>
 <translation id="8428213095426709021">Ayarlar</translation>
-<translation id="6592705765268910579">Bilinmeyen alıcı</translation>
 <translation id="2372145515558759244">Uygulamalar senkronize ediliyor...</translation>
 <translation id="1987317783729300807">Hesaplar</translation>
 <translation id="8456362689280298700">Dolması için gereken süre: <ph name="HOUR"/>:<ph name="MINUTE"/> </translation>
@@ -213,7 +208,6 @@ Devre dışı bırakmak için Ctrl+Alt+Z tuşlarına basın.</translation>
 <translation id="3009178788565917040">Çıkış</translation>
 <translation id="3147142846278915599">Launcher (uygulamalar senkronize ediliyor...)</translation>
 <translation id="6911468394164995108">Başka ağa katıl...</translation>
-<translation id="4373966964907728675">Masaüstü yayınlanıyor</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608">Tam dolana kadar <ph name="HOUR"/> sa <ph name="MINUTE"/> dk var</translation>
 <translation id="3077734595579995578">üstkrktr</translation>

@@ -77,7 +77,6 @@
 <translation id="3738139272394829648">Pindutin upang Hanapin</translation>
 <translation id="257931822824936280">Pinalawak - i-click upang i-collapse.</translation>
 <translation id="4773299976671772492">Inihinto</translation>
-<translation id="5118309162436926908">Mag-sign in upang magamit ang iyong mga tab, bookmark, history at iba pang mga setting sa lahat ng iyong device</translation>
 <translation id="7596558890252710462">Operating system</translation>
 <translation id="3358663646935160692">Pinamamahalaan ang account na ito ng <ph name="DOMAIN_NAME"/>.
 
@@ -127,6 +126,7 @@ Nagsa-sign in ka sa isang pinamamahalaang account at nagbibigay sa administrator
 <translation id="4378154925671717803">Telepono</translation>
 <translation id="988938288723502454">Hindi makakagawa ng direktoryo ng download sa SD card.</translation>
 <translation id="3896036286668839683">Viewer ng Certificate</translation>
+<translation id="8660471606262461360">Mula sa Google Payments</translation>
 <translation id="5171045022955879922">Hanapin o i-type ang URL</translation>
 <translation id="2321958826496381788">I-drag ang slider hanggang sa mabasa mo ito nang kumportable. Dapat ay halos ganito kalaki ang text pagkatapos mag-double tap sa isang talata.</translation>
 <translation id="3282568296779691940">Mag-sign in sa Chrome</translation>
@@ -177,7 +177,9 @@ Nagsa-sign in ka sa isang pinamamahalaang account at nagbibigay sa administrator
 <translation id="5000922062037820727">Naka-block (inirerekomenda)</translation>
 <translation id="544291274896356069">Aalis ka sa incognito mode kung bubuksan mo ang link na ito sa isang panlabas na application. Gusto mo bang magpatuloy?</translation>
 <translation id="3917783807003067648">Na-block ang lokasyon</translation>
+<translation id="3207960819495026254">Naka-bookmark</translation>
 <translation id="1379156015317873965">Pabilisin ang pag-load ng page</translation>
+<translation id="5953603475187800576">Ipakita ang mga address at credit card mula sa Google Payments</translation>
 <translation id="8481940801237642152">Pribado ang iyong koneksyon sa site na ito, ngunit maaaring mabago ng isang tao sa network ang hitsura ng page.</translation>
 <translation id="2593272815202181319">Monospace</translation>
 <translation id="4807098396393229769">Pangalang makikita sa card</translation>
@@ -231,7 +233,6 @@ Pindutin ang button na bumalik upang lumabas.</translation>
 <translation id="583891442612896534">Hindi magawa ng Chrome na makipag-ugnayan sa mga server ng Google para sa pag-compress ng data. Maaaring limitado lang ang matipid mo sa data.</translation>
 <translation id="4827948050554950725">Magdagdag ng credit card</translation>
 <translation id="2316129865977710310">Hindi, salamat</translation>
-<translation id="3489120686474540259">Magdagdag ng account upang makuha ang iyong mga tab, bookmark, history at iba pang mga setting sa lahat ng iyong device.</translation>
 <translation id="4278390842282768270">Pinapayagan</translation>
 <translation id="4686372254213217147">Orihinal na laki</translation>
 <translation id="4526792582053123229">Ang mga page na na-access gamit ang HTTPS o Incognito ay hindi mao-optimize o makikita ng Google.</translation>
@@ -261,7 +262,6 @@ Pindutin ang button na bumalik upang lumabas.</translation>
 <translation id="4526249700380860531">Tingnan at pamahalaan ang mga naka-save na password sa <ph name="BEGIN_LINK"/>passwords.google.com<ph name="END_LINK"/></translation>
 <translation id="2496180316473517155">History ng Pagba-browse</translation>
 <translation id="6108923351542677676">Kasalukuyang sine-setup…</translation>
-<translation id="7358682983403815415">Sini-sync sa iyong Google Account ang iyong mga nakabukas na tab, bookmark, kasaysayan, at higit pa.</translation>
 <translation id="6964496835063002391">Magdagdag ng account</translation>
 <translation id="4698413471314543145">Wala ang mahalagang functionality na kinakailangan upang patakbuhin ang Chrome; maaaring hindi natapos ang pag-install sa iyong Chrome o hindi ito tugma sa bersyong ito ng Android.</translation>
 <translation id="1943432128510653496">I-save ang mga password</translation>
@@ -341,7 +341,6 @@ Pindutin ang button na bumalik upang lumabas.</translation>
 <translation id="5164482624172255778">Gusto mo bang i-alok ng Google Chrome na isalin ang mga pahinang <ph name="LANGUAGE"/> mula sa site na ito sa susunod na pagkakataon?</translation>
 <translation id="4062305924942672200">Impormasyong legal</translation>
 <translation id="515227803646670480">I-clear ang nakaimbak na data</translation>
-<translation id="6757714913056001524">Pumili ng account upang makuha ang iyong mga tab, bookmark, history at iba pang mga setting sa lahat ng iyong device.</translation>
 <translation id="6935223586406308151">Idinagdag ang <ph name="DOMAIN_NAME"/> sa iyong Home screen</translation>
 <translation id="7638584964844754484">Maling passphrase</translation>
 <translation id="129553762522093515">Kamakailang isinara</translation>
@@ -359,6 +358,7 @@ Pindutin ang button na bumalik upang lumabas.</translation>
 <translation id="7324738665594301612">Sinusubukan namin ang pagpo-proxy ng mga HTTPS page sa pamamagitan ng mga server ng Google bilang bahagi ng isang eksperimento.</translation>
 <translation id="7947953824732555851">I-accept, mag-sign in</translation>
 <translation id="6333140779060797560">Ibahagi sa pamamagitan ng <ph name="APPLICATION"/></translation>
+<translation id="5939518447894949180">I-reset</translation>
 <translation id="6040143037577758943">Isara</translation>
 <translation id="4943872375798546930">Walang mga resulta</translation>
 <translation id="2139186145475833000">Magdagdag sa Home screen</translation>
@@ -380,7 +380,6 @@ Pindutin ang button na bumalik upang lumabas.</translation>
 <translation id="3988213473815854515">Pinapahintulutan ang lokasyon</translation>
 <translation id="8912362522468806198">Google Account</translation>
 <translation id="6165508094623778733">Matuto nang higit pa</translation>
-<translation id="3828029223314399057">Bookmark sa paghahanap</translation>
 <translation id="3003595280608617736">Walang SD card</translation>
 <translation id="6337234675334993532">Pag-encrypt</translation>
 <translation id="862875433388403934">Ang content (mga pelikula, musika, atbp.) na na-download sa iba pang mga application ay maaaring hindi na ma-play hanggang sa muling makakuha ang mga application na iyon ng mga lisensya batay sa bagong kredensyal ng device.
@@ -428,10 +427,8 @@ Upang makakuha ng mga bagong lisensya, kumonekta sa internet at i-play ang iyong
 <translation id="1178581264944972037">I-pause</translation>
 <translation id="5127805178023152808">Naka-off ang pag-sync</translation>
 <translation id="5677928146339483299">Naka-block</translation>
-<translation id="5917058779668915997">Masi-sync ang iyong mga tab, bookmark, history at iba pang mga setting sa iyong Google Account.</translation>
 <translation id="1709438864123551175">Data Saver</translation>
 <translation id="2770465223704140727">Alisin sa listahan</translation>
-<translation id="3132683934591522090">Ipakita ang larawan</translation>
 <translation id="6027491994609789413">Pine-play ang video</translation>
 <translation id="7561196759112975576">Palagi</translation>
 <translation id="605721222689873409">YY</translation>

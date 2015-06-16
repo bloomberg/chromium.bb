@@ -31,8 +31,6 @@
 <translation id="2297568595583585744">Stavový panel</translation>
 <translation id="2248649616066688669">Chromebook môžete používať aj počas jeho pripojenia k externej obrazovke (dokonca aj so zavretým krytom).</translation>
 <translation id="2946640296642327832">Povoliť rozhranie Bluetooth</translation>
-<translation id="478959186716341421">Prenáša sa</translation>
-<translation id="5537725057119320332">Prenášať</translation>
 <translation id="6459472438155181876">Rozšírenie obrazovky na displej <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Mobilné</translation>
 <translation id="6596816719288285829">Adresa IP</translation>
@@ -40,6 +38,7 @@
 <translation id="1812696562331527143">Metóda vstupu sa zmenila na <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>tretia strana<ph name="END_LINK"/>).
         Prepnete ju stlačením klávesov Shift + Alt.</translation>
 <translation id="6043994281159824495">Odhlásiť sa</translation>
+<translation id="5168181903108465623">Dostupné zariadenia na prenos</translation>
 <translation id="2127372758936585790">Nabíjačka s nízkym výkonom</translation>
 <translation id="3799026279081545374">Je možné, že máte chybnú nabíjačku. Ak žijete v USA, požiadajte o pomoc a výmenu na čísle 866-628-1371. Ak žijete v Spojenom kráľovstve, volajte na číslo 0800-026-0613. Ak žijete v Írsku, volajte na číslo 1-800-832-664. Ak žijete v Kanade, volajte na číslo 866-628-1372. Ak žijete v Austrálii, volajte na číslo 1-800-067-460.</translation>
 <translation id="3891340733213178823">Ak sa chcete odhlásiť, stlačte dvakrát kombináciu klávesov Ctrl+Shift+Q.</translation>
@@ -73,7 +72,6 @@
 <translation id="2509468283778169019">Kláves CAPS LOCK je zapnutý</translation>
 <translation id="3892641579809465218">Interný displej</translation>
 <translation id="7823564328645135659">Po synchronizácii vašich nastavení bol zmenený jazyk „<ph name="FROM_LOCALE"/>“ na jazyk „<ph name="TO_LOCALE"/>“.</translation>
-<translation id="7113420380180868673">Prenáša sa karta $1</translation>
 <translation id="3606978283550408104">Bola pripojená Braillova obrazovka.</translation>
 <translation id="8654520615680304441">Zapnúť sieť Wi-Fi...</translation>
 <translation id="4421231901400348175">Ovládanie obrazovky sa prostredníctvom Vzdialenej pomoci zdieľa s používateľom <ph name="HELPER_NAME"/>.</translation>
@@ -98,8 +96,8 @@
 <translation id="3626637461649818317">Zostáva <ph name="PERCENTAGE"/> %</translation>
 <translation id="9089416786594320554">Metódy vstupu</translation>
 <translation id="2700058918926273959">Relácia sa skončí o <ph name="SESSION_TIME_REMAINING"/>. Následne budete odhlásený/-á.</translation>
-<translation id="5807965672380739016">Prenášať pracovnú plochu na</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/> %</translation>
+<translation id="1963814843110128691">Prebieha prenášanie zo zariadenia $1 na zariadenie $2</translation>
 <translation id="3963445509666917109">Reproduktor (vnútorný)</translation>
 <translation id="1747827819627189109">Klávesnica na obrazovke je povolená</translation>
 <translation id="2208323208084708176">Režim zjednotenej pracovnej plochy</translation>
@@ -119,7 +117,6 @@
 <translation id="8528322925433439945">Mobilné siete...</translation>
 <translation id="3157169093162779309">Zapnúť zámku otáčania</translation>
 <translation id="8428213095426709021">Nastavenia</translation>
-<translation id="6592705765268910579">Neznámy prijímač</translation>
 <translation id="2372145515558759244">Prebieha synchronizácia aplikácií...</translation>
 <translation id="1987317783729300807">Účty</translation>
 <translation id="8456362689280298700">čas do úplného nabitia: <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
@@ -184,6 +181,7 @@
 <translation id="6785414152754474415">Batéria je nabitá na <ph name="PERCENTAGE"/> % a nabíja sa.</translation>
 <translation id="4895488851634969361">Batéria je úplne nabitá.</translation>
 <translation id="615957422585914272">Zobraziť klávesnicu na obrazovke</translation>
+<translation id="8443356412772935865">Prebieha prenášanie obrazovky na zariadenie $1</translation>
 <translation id="5947494881799873997">Vrátiť</translation>
 <translation id="7593891976182323525">Hľadať alebo Shift</translation>
 <translation id="7649070708921625228">Pomocník</translation>
@@ -192,9 +190,11 @@ Ak ho chcete zrušiť, stlačte klávesy Hľadať alebo Shift.</translation>
 <translation id="397105322502079400">Prebieha výpočet...</translation>
 <translation id="1013923882670373915">Zariadenie Bluetooth s názvom <ph name="DEVICE_NAME"/> žiada o povolenie párovania. Zadajte na danom zariadení toto číslo PIN: <ph name="PINCODE"/></translation>
 <translation id="2819276065543622893">Teraz prebehne odhlásenie.</translation>
+<translation id="4961318399572185831">Prenášanie obrazovky</translation>
 <translation id="5507786745520522457">Nastaviť mobilné dáta</translation>
 <translation id="6165508094623778733">Viac informácií</translation>
 <translation id="7168224885072002358">Vrátenie starého rozlíšenia prebehne o <ph name="TIMEOUT_SECONDS"/></translation>
+<translation id="5927132638760172455">Prebieha prenášanie na neznámy prijímač</translation>
 <translation id="743058460480092004">Fotoaparát a mikrofón sa používajú.</translation>
 <translation id="6550675742724504774">Možnosti</translation>
 <translation id="6406704438230478924">altgr</translation>
@@ -212,7 +212,6 @@ Ak ho chcete zrušiť, stlačte klávesy Alt + Hľadať alebo Shift.</translatio
 <translation id="3009178788565917040">Výstup</translation>
 <translation id="3147142846278915599">Spúšťač (synchronizujú sa aplikácie...)</translation>
 <translation id="6911468394164995108">Pripojiť k ďalšej...</translation>
-<translation id="4373966964907728675">Prenáša sa pracovná plocha</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608"><ph name="HOUR"/>h <ph name="MINUTE"/>min do nabitia</translation>
 <translation id="3077734595579995578">shift</translation>

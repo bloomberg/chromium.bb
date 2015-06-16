@@ -77,7 +77,6 @@
 <translation id="3738139272394829648">Vyhledání klepnutím</translation>
 <translation id="257931822824936280">Rozbaleno – kliknutím sbalíte</translation>
 <translation id="4773299976671772492">Zastaveno</translation>
-<translation id="5118309162436926908">Přihlaste se a synchronizujte karty, záložky, historii a nastavení do všech svých zařízení.</translation>
 <translation id="7596558890252710462">Operační systém</translation>
 <translation id="3358663646935160692">Tento účet spravuje <ph name="DOMAIN_NAME"/>.
 
@@ -127,6 +126,7 @@ Přihlašujete se pomocí spravovaného účtu a poskytujete jeho správci kontr
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="988938288723502454">Na SD kartě nelze vytvořit adresář pro stahování.</translation>
 <translation id="3896036286668839683">Prohlížeč certifikátů</translation>
+<translation id="8660471606262461360">Od služby Google Payments</translation>
 <translation id="5171045022955879922">Vyhledávejte či zadejte URL</translation>
 <translation id="2321958826496381788">Přetahujte posuvník tak dlouho, dokud nebudete moci pohodlně přečíst tento text. Po dvojitém klepnutí na odstavec by měl být text alespoň takto velký.</translation>
 <translation id="3282568296779691940">Přihlášení do Chrome</translation>
@@ -177,7 +177,9 @@ Přihlašujete se pomocí spravovaného účtu a poskytujete jeho správci kontr
 <translation id="5000922062037820727">Blokováno (doporučeno)</translation>
 <translation id="544291274896356069">Pokud tento odkaz otevřete v externí aplikaci, opustíte anonymní režim. Chcete pokračovat?</translation>
 <translation id="3917783807003067648">Přístup k poloze je blokován</translation>
+<translation id="3207960819495026254">Přidáno do záložek</translation>
 <translation id="1379156015317873965">Zlepšit výkon při načítání stránek</translation>
+<translation id="5953603475187800576">Zobrazit adresy a platební karty ze služby Google Payments</translation>
 <translation id="8481940801237642152">Spojení s tímto webem je soukromé, avšak některý uživatel v síti může být schopen změnit vzhled stránky.</translation>
 <translation id="2593272815202181319">Neproporcionální</translation>
 <translation id="4807098396393229769">Jméno na kartě</translation>
@@ -231,7 +233,6 @@ Ukončíte jej stisknutím tlačítka Zpět.</translation>
 <translation id="583891442612896534">Chrome se nemůže připojit k serverům společnosti Google pro kompresi dat. Úspora dat může být omezena.</translation>
 <translation id="4827948050554950725">Přidat platební kartu</translation>
 <translation id="2316129865977710310">Ne, děkuji</translation>
-<translation id="3489120686474540259">Přidejte účet a získejte své karty, záložky, historii a nastavení do všech svých zařízení.</translation>
 <translation id="4278390842282768270">Povoleno</translation>
 <translation id="4686372254213217147">Původní velikost</translation>
 <translation id="4526792582053123229">Stránky zobrazené prostřednictvím protokolu HTTPS nebo v anonymním režimu nebudou pro Google viditelné a nebudou optimalizovány.</translation>
@@ -261,7 +262,6 @@ Ukončíte jej stisknutím tlačítka Zpět.</translation>
 <translation id="4526249700380860531">Uložená hesla můžete zobrazit a upravit na adrese <ph name="BEGIN_LINK"/>passwords.google.com<ph name="END_LINK"/></translation>
 <translation id="2496180316473517155">Historie procházení</translation>
 <translation id="6108923351542677676">Probíhá nastavování…</translation>
-<translation id="7358682983403815415">Otevřené karty, záložky, historie a další údaje se synchronizují s vaším účtem Google.</translation>
 <translation id="6964496835063002391">Přidat účet</translation>
 <translation id="4698413471314543145">Chybí nezbytná funkce pro spuštění aplikace Chrome. Instalace aplikace Chrome buď nebyla dokončena, nebo aplikace není kompatibilní s touto verzí platformy Android.</translation>
 <translation id="1943432128510653496">Ukládání hesel</translation>
@@ -341,7 +341,6 @@ Ukončíte jej stisknutím tlačítka Zpět.</translation>
 <translation id="5164482624172255778">Chcete, aby Google Chrome při příští návštěvě nabízel překlad stránek v jazyce <ph name="LANGUAGE"/> z tohoto webu?</translation>
 <translation id="4062305924942672200">Právní informace</translation>
 <translation id="515227803646670480">Vymazat uložená data</translation>
-<translation id="6757714913056001524">Vyberte účet a získejte své karty, záložky, historii a nastavení do všech svých zařízení.</translation>
 <translation id="6935223586406308151">Doména <ph name="DOMAIN_NAME"/> byla přidána na plochu</translation>
 <translation id="7638584964844754484">Nesprávná heslová fráze</translation>
 <translation id="129553762522093515">Nedávno zavřené</translation>
@@ -359,6 +358,7 @@ Ukončíte jej stisknutím tlačítka Zpět.</translation>
 <translation id="7324738665594301612">Jako součást experimentu testujeme načítání stránek HTTPS prostřednictvím proxy serverů společnosti Google.</translation>
 <translation id="7947953824732555851">Přijmout a přihlásit</translation>
 <translation id="6333140779060797560">Sdílet prostřednictvím aplikace <ph name="APPLICATION"/></translation>
+<translation id="5939518447894949180">Resetovat</translation>
 <translation id="6040143037577758943">Zavřít</translation>
 <translation id="4943872375798546930">Žádné výsledky</translation>
 <translation id="2139186145475833000">Přidat na plochu</translation>
@@ -380,7 +380,6 @@ Ukončíte jej stisknutím tlačítka Zpět.</translation>
 <translation id="3988213473815854515">Přístup k poloze je povolen</translation>
 <translation id="8912362522468806198">Účet Google</translation>
 <translation id="6165508094623778733">Další informace</translation>
-<translation id="3828029223314399057">Hledat v záložkách</translation>
 <translation id="3003595280608617736">SD karta není k dispozici</translation>
 <translation id="6337234675334993532">Šifrování</translation>
 <translation id="862875433388403934">Obsah (filmy, hudba atd.) stažený v jiných aplikacích možná nebude možné přehrát, dokud dané aplikace znovu nezískají licence s novými identifikačními údaji zařízení.
@@ -428,10 +427,8 @@ Chcete-li získat nové licence, připojte se k internetu a přehrajte stažen
 <translation id="1178581264944972037">Pozastavit</translation>
 <translation id="5127805178023152808">Synchronizace je vypnuta</translation>
 <translation id="5677928146339483299">Zablokováno</translation>
-<translation id="5917058779668915997">Karty, záložky, historie a další nastavení budou synchronizovány s vaším účtem Google.</translation>
 <translation id="1709438864123551175">Spořič dat</translation>
 <translation id="2770465223704140727">Odstranit ze seznamu</translation>
-<translation id="3132683934591522090">Zobrazit obrázek</translation>
 <translation id="6027491994609789413">Přehrávání videa</translation>
 <translation id="7561196759112975576">Vždy</translation>
 <translation id="605721222689873409">RR</translation>

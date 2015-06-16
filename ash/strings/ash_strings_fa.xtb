@@ -31,8 +31,6 @@
 <translation id="2297568595583585744">سینی وضعیت</translation>
 <translation id="2248649616066688669">‏وقتی دستگاه Chromebook شما به یک نمایشگر خارجی متصل است می‌توانید همچنان از آن استفاده کنید، حتی با در بسته.</translation>
 <translation id="2946640296642327832">فعال کردن بلوتوث</translation>
-<translation id="478959186716341421">در حال فرستادن</translation>
-<translation id="5537725057119320332">فرستادن</translation>
 <translation id="6459472438155181876">گسترش صفحه به <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">سلولی</translation>
 <translation id="6596816719288285829">‏آدرس IP</translation>
@@ -72,7 +70,6 @@
 <translation id="2509468283778169019">‏CAPS LOCK روشن است</translation>
 <translation id="3892641579809465218">صفحه نمایش داخلی</translation>
 <translation id="7823564328645135659">بعد از همگام‌سازی تنظیمات شما، زبان از «<ph name="FROM_LOCALE"/>» به «<ph name="TO_LOCALE"/>» تغییر کرد.</translation>
-<translation id="7113420380180868673">در حال فرستادن $1</translation>
 <translation id="3606978283550408104">صفحه‌نمایش بریل متصل شد.</translation>
 <translation id="8654520615680304441">‏روشن کردن Wi-Fi در...</translation>
 <translation id="4421231901400348175">به اشتراک گذاشتن کنترل صفحه‌تان با <ph name="HELPER_NAME"/> از طریق راهنمایی از راه دور.</translation>
@@ -96,7 +93,6 @@
 <translation id="3626637461649818317"><ph name="PERCENTAGE"/>٪ باقیمانده</translation>
 <translation id="9089416786594320554">روش‌های ورودی</translation>
 <translation id="2700058918926273959">جلسه در <ph name="SESSION_TIME_REMAINING"/> به پایان می‌رسد. از سیستم خارج خواهید شد.</translation>
-<translation id="5807965672380739016">فرستادن میزکار به</translation>
 <translation id="6247708409970142803">%<ph name="PERCENTAGE"/></translation>
 <translation id="3963445509666917109">بلندگو (داخلی)</translation>
 <translation id="1747827819627189109">صفحه‌کلید روی صفحه فعال شد</translation>
@@ -117,7 +113,6 @@
 <translation id="8528322925433439945">تلفن همراه...</translation>
 <translation id="3157169093162779309">قفل چرخش فعال شود</translation>
 <translation id="8428213095426709021">تنظیمات</translation>
-<translation id="6592705765268910579">گیرنده ناشناس</translation>
 <translation id="2372145515558759244">در حال همگام‌سازی برنامه‌ها…</translation>
 <translation id="1987317783729300807">حساب‌ها</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> تا پر شود</translation>
@@ -210,7 +205,6 @@ Alt+جستجو یا Shift را برای لغو فشار دهید.</translation>
 <translation id="3009178788565917040">خروجی</translation>
 <translation id="3147142846278915599">راه انداز (همگام‌سازی برنامه‌ها...)</translation>
 <translation id="6911468394164995108">پیوستن به شبکه دیگر…</translation>
-<translation id="4373966964907728675">در حال فرستادن میزکار</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608"><ph name="HOUR"/>ساعت <ph name="MINUTE"/>دقیقه مانده تا باتری شارژ شود</translation>
 <translation id="3077734595579995578">تبدیل</translation>

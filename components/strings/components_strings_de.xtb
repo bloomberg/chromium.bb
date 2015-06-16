@@ -63,7 +63,7 @@
 <translation id="7108649287766967076">Bei der Übersetzung (<ph name="TARGET_LANGUAGE"/>) ist ein Fehler aufgetreten.</translation>
 <translation id="4103249731201008433">Seriennummer des Geräts ist ungültig.</translation>
 <translation id="3219579145727097045">Geben Sie das Ablaufdatum und den vierstelligen CVC-Code auf der Vorderseite Ihrer Karte ein.</translation>
-<translation id="3667681724235208644">Original ansehen</translation>
+<translation id="59107663811261420">Dieser Kartentyp wird von Google Payments für diesen Händler nicht unterstützt. Bitte verwenden Sie eine andere Karte.</translation>
 <translation id="4079302484614802869">Die Proxy-Konfiguration ist auf die Verwendung einer PAC-Skript-URL und nicht die von festen Proxyservern eingestellt.</translation>
 <translation id="5540224163453853">Der gewünschte Artikel wurde nicht gefunden.</translation>
 <translation id="8437238597147034694">&amp;Verschieben rückgängig machen</translation>
@@ -90,6 +90,7 @@
 <translation id="7977590112176369853">&lt;Suchanfrage eingeben&gt;</translation>
 <translation id="552553974213252141">Wurde der Text korrekt extrahiert?</translation>
 <translation id="5317780077021120954">Speichern</translation>
+<translation id="8530504477309582336">Dieser Kartentyp wird von Google Payments nicht unterstützt. Bitte verwenden Sie eine andere Karte.</translation>
 <translation id="7610193165460212391">Wert liegt außerhalb des zulässigen Bereichs (<ph name="VALUE"/>).</translation>
 <translation id="3739623965217189342">Von Ihnen kopierter Link</translation>
 <translation id="8790007591277257123">&amp;Löschen wiederholen</translation>

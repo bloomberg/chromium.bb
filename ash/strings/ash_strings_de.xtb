@@ -31,8 +31,6 @@
 <translation id="2297568595583585744">Statusleiste</translation>
 <translation id="2248649616066688669">Wenn Ihr Chromebook mit einem externen Bildschirm verbunden ist, können Sie es weiterhin verwenden – sogar, wenn es zugeklappt ist.</translation>
 <translation id="2946640296642327832">Bluetooth aktivieren</translation>
-<translation id="478959186716341421">Wird gestreamt</translation>
-<translation id="5537725057119320332">Übertragen</translation>
 <translation id="6459472438155181876">Bildschirm wird auf <ph name="DISPLAY_NAME"/> erweitert...</translation>
 <translation id="8206859287963243715">Mobil</translation>
 <translation id="6596816719288285829">IP-Adresse</translation>
@@ -73,7 +71,6 @@ Drücken Sie zum Wechseln Shift+Alt.</translation>
 <translation id="2509468283778169019">Feststelltaste An</translation>
 <translation id="3892641579809465218">Interne Anzeige</translation>
 <translation id="7823564328645135659">Nach der Synchronisierung Ihrer Einstellungen wurde die Sprache von &quot;<ph name="FROM_LOCALE"/>&quot; in &quot;<ph name="TO_LOCALE"/>&quot; geändert.</translation>
-<translation id="7113420380180868673">Übertragung $1</translation>
 <translation id="3606978283550408104">Verbindung zur Braillezeile hergestellt</translation>
 <translation id="8654520615680304441">WLAN aktivieren...</translation>
 <translation id="4421231901400348175">Sie teilen sich die Bildschirmsteuerung mit <ph name="HELPER_NAME"/> per Remote-Unterstützung.</translation>
@@ -98,7 +95,6 @@ Drücken Sie zum Wechseln Shift+Alt.</translation>
 <translation id="3626637461649818317"><ph name="PERCENTAGE"/> % verbleibend</translation>
 <translation id="9089416786594320554">Eingabemethoden</translation>
 <translation id="2700058918926273959">Sitzung endet in <ph name="SESSION_TIME_REMAINING"/>. Sie werden dann abgemeldet.</translation>
-<translation id="5807965672380739016">Desktop übertragen nach</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/> %</translation>
 <translation id="3963445509666917109">Lautsprecher (intern)</translation>
 <translation id="1747827819627189109">Bildschirmtastatur aktiviert</translation>
@@ -119,7 +115,6 @@ Drücken Sie zum Wechseln Shift+Alt.</translation>
 <translation id="8528322925433439945">Mobil...</translation>
 <translation id="3157169093162779309">Rotationssperre aktivieren</translation>
 <translation id="8428213095426709021">Einstellungen</translation>
-<translation id="6592705765268910579">Unbekannter Receiver</translation>
 <translation id="2372145515558759244">Apps werden synchronisiert...</translation>
 <translation id="1987317783729300807">Konten</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> bis voll aufgeladen</translation>
@@ -212,7 +207,6 @@ Drücken Sie Alt+Suchen oder Shift, um die Aktivierung aufzuheben.</translation>
 <translation id="3009178788565917040">Ausgang</translation>
 <translation id="3147142846278915599">Launcher (Apps werden synchronisiert...)</translation>
 <translation id="6911468394164995108">Andere Netzwerke...</translation>
-<translation id="4373966964907728675">Desktop wird übertragen</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608">In <ph name="HOUR"/> Std. <ph name="MINUTE"/> Min. vollständig aufgeladen</translation>
 <translation id="3077734595579995578">Shift</translation>

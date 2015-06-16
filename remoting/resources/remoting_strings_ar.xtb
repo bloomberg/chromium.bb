@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ar">
 <translation id="337167041784729019">إظهار الإحصاءات</translation>
+<translation id="2256115617011615191">إعادة التشغيل الآن</translation>
 <translation id="7606912958770842224">تمكين الاتصالات عن بُعد</translation>
 <translation id="3785447812627779171">مضيف
 التوافق مع نظام التشغيل</translation>
@@ -137,6 +138,7 @@
 <translation id="8196755618196986400">للسماح لنا بالاتصال بك لمزيد من المعلومات، سيتم تضمين عنوان بريدك الإلكتروني في أيّ تعليقات تقدمها.</translation>
 <translation id="154040539590487450">أخفق بدء خدمة الدخول عن بُعد.</translation>
 <translation id="7948001860594368197">خيارات الشاشة</translation>
+<translation id="2221097377466213233">‏استخدم زر Ctrl الأيمن في نظام التشغيل Win (⌘ في نظام التشغيل Mac)</translation>
 <translation id="5254120496627797685">‏ستؤدي مغادرة هذه الصفحة إلى إنهاء جلسة سطح المكتب البعيد من Chrome.</translation>
 <translation id="7019153418965365059">خطأ بالمضيف غير معروف: <ph name="HOST_OFFLINE_REASON"/>.</translation>
 <translation id="712467900648340229">فشل الاتصال بجهاز البث.</translation>
@@ -152,6 +154,7 @@
 <translation id="8116630183974937060">حدث خطأ في الشبكة. الرجاء التحقق من اتصال الجهاز بالإنترنت ثم إعادة المحاولة.</translation>
 <translation id="3020807351229499221">أخفق تحديث رقم التعريف الشخصي. الرجاء إعادة المحاولة لاحقًا.</translation>
 <translation id="2647232381348739934">‏خدمة التوافق مع نظام التشغيل Chrome</translation>
+<translation id="2888969873284818612">حدث خطأ في الشبكة. سنعيد تشغيل التطبيق عندما يتصل جهازك بالإنترنت مرة أخرى.</translation>
 <translation id="579702532610384533">إعادة الاتصال</translation>
 <translation id="4867841927763172006">‏إرسال PrtScn</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME"/> (آخر دخول على الإنترنت في تمام <ph name="DATE_OR_TIME"/>)</translation>
@@ -260,6 +263,7 @@
 <translation id="4277463233460010382">تمت تهيئة هذا الكمبيوتر بحيث يسمح لعميل واحد أو أكثر بالاتصال بدون إدخال رقم تعريف شخصي.</translation>
 <translation id="837021510621780684">من هذا الكمبيوتر</translation>
 <translation id="518094545883702183">ولا تستخدم هذه المعلومات سوى لتشخيص المشكلة التي قدمت عنها التقرير، كما أنها غير متاحة إلا للشخص الذي يحقق في تقريرك، ويتم الاحتفاظ بها لمدة لا تتجاوز 30 يومًا.</translation>
+<translation id="1261403020716313927">• تسرّب ذاكرة كبير ثابت عند قطع الاتصال من سطح المكتب البعيد.</translation>
 <translation id="3870154837782082782">Google Inc‎.‎</translation>
 <translation id="4918086044614829423">قبول</translation>
 <translation id="7215059001581613786">الرجاء إدخال رقم تعريف شخصي يتكون من ستة أرقام أو أكثر.</translation>

@@ -31,8 +31,6 @@
 <translation id="2297568595583585744">状态栏</translation>
 <translation id="2248649616066688669">Chromebook连接到外接显示器时，即使合上盖子，也可继续使用。</translation>
 <translation id="2946640296642327832">启用蓝牙</translation>
-<translation id="478959186716341421">正在投射</translation>
-<translation id="5537725057119320332">投射</translation>
 <translation id="6459472438155181876">正在将屏幕扩展到<ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">蜂窝网络设备</translation>
 <translation id="6596816719288285829">IP 地址</translation>
@@ -73,7 +71,6 @@
 <translation id="2509468283778169019">CAPS LOCK 已打开</translation>
 <translation id="3892641579809465218">内部显示</translation>
 <translation id="7823564328645135659">同步了您的设置后，该语言已由“<ph name="FROM_LOCALE"/>”更改为“<ph name="TO_LOCALE"/>”。</translation>
-<translation id="7113420380180868673">正在投射“$1”</translation>
 <translation id="3606978283550408104">已连接盲文显示屏。</translation>
 <translation id="8654520615680304441">启用 Wi-Fi...</translation>
 <translation id="4421231901400348175">正在通过远程协助与<ph name="HELPER_NAME"/>共享您屏幕的控制权限。</translation>
@@ -98,7 +95,6 @@
 <translation id="3626637461649818317">剩余电量：<ph name="PERCENTAGE"/>%</translation>
 <translation id="9089416786594320554">输入法</translation>
 <translation id="2700058918926273959">会话将在<ph name="SESSION_TIME_REMAINING"/>后结束，到时您将自动退出。</translation>
-<translation id="5807965672380739016">将桌面投射至</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
 <translation id="3963445509666917109">扬声器（内部）</translation>
 <translation id="1747827819627189109">屏幕键盘已启用</translation>
@@ -119,7 +115,6 @@
 <translation id="8528322925433439945">移动...</translation>
 <translation id="3157169093162779309">启用旋转锁定</translation>
 <translation id="8428213095426709021">设置</translation>
-<translation id="6592705765268910579">接收器未知</translation>
 <translation id="2372145515558759244">正在同步应用...</translation>
 <translation id="1987317783729300807">帐户</translation>
 <translation id="8456362689280298700">电池充满还需 <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
@@ -212,7 +207,6 @@
 <translation id="3009178788565917040">输出</translation>
 <translation id="3147142846278915599">启动器（正在同步应用…）</translation>
 <translation id="6911468394164995108">连接其他网络...</translation>
-<translation id="4373966964907728675">正在投射桌面</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>：<ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608">还需要 <ph name="HOUR"/> 小时 <ph name="MINUTE"/> 分钟才能充满电</translation>
 <translation id="3077734595579995578">shift</translation>

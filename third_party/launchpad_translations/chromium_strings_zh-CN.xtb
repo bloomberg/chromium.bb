@@ -99,7 +99,6 @@
 <translation id="6970811910055250180">正在更新设备...</translation>
 <translation id="2485422356828889247">卸载</translation>
 <translation id="85843667276690461">获取 Chromium 使用帮助</translation>
-<translation id="7731057871445607139">Chromium 存在异常？</translation>
 <translation id="5358375970380395591">您目前登录的帐户是一个托管帐户，该帐户的管理员将能够控制您的 Chromium 个人资料。您的 Chromium 数据（例如您的应用、书签、历史记录、密码和其他设置）将永远与 <ph name="USER_NAME"/> 相关联。您可以通过 Google 帐户信息中心删除这些数据，但无法将这些数据与其他帐户相关联。<ph name="LEARN_MORE"/></translation>
 <translation id="9036189287518468038">Chromium 应用启动器</translation>
 <translation id="5563479599352954471">触摸一下即可启动搜索</translation>
@@ -160,7 +159,6 @@
           如果这无法解决该问题，我们建议您重新启用此选项，以便改善性能。</translation>
 <translation id="1174473354587728743">与其他人共用计算机？现在，您可以随心所欲地设置Chromium。</translation>
 <translation id="9013087743919948559">添加到 Chromium</translation>
-<translation id="2525993619214772747">Chromium 存在异常？</translation>
 <translation id="6334986366598267305">现在，无论是通过Google帐户还是在共用的计算机上，您都可以更轻松地使用Chromium。</translation>
 <translation id="6212496753309875659">此计算机已安装了更高版本的 Chromium。如果软件无法正常运行，请卸载 Chromium 并重试。</translation>
 <translation id="1115445892567829615">Chromium无法同步您的数据。请更新您的同步密码。</translation>

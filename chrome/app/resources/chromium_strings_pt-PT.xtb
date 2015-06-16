@@ -113,7 +113,6 @@
 <translation id="6970811910055250180">A atualizar o dispositivo...</translation>
 <translation id="2485422356828889247">Desinstalar</translation>
 <translation id="85843667276690461">Obter ajuda para utilizar o Chromium</translation>
-<translation id="7731057871445607139">O Chromium está a comportar-se de forma estranha?</translation>
 <translation id="5358375970380395591">Está a iniciar sessão com uma conta gerida e a permitir que o administrador controle o seu perfil do Chromium. Os seus dados do Chromium, como aplicações, marcadores, histórico, palavras-passe e outras definições, ficarão associados definitivamente a <ph name="USER_NAME"/>. Poderá eliminar estes dados através do Painel de Controlo das Contas Google, mas não poderá associá-los a outra conta. <ph name="LEARN_MORE"/></translation>
 <translation id="9036189287518468038">Iniciador de Aplicações do Chromium</translation>
 <translation id="5563479599352954471">Pesquisar com um toque</translation>
@@ -186,7 +185,6 @@ Algumas funcionalidades podem não estar disponíveis. Especifique um diretório
           novamente para melhorar o desempenho.</translation>
 <translation id="1174473354587728743">Partilha um computador? Agora pode configurar o Chromium exatamente como pretende.</translation>
 <translation id="9013087743919948559">Adicionar ao Chromium</translation>
-<translation id="2525993619214772747">O Chromium está a comportar-se de forma estranha?</translation>
 <translation id="6334986366598267305">Agora é mais fácil utilizar o Chromium com a sua Conta Google e em computadores partilhados.</translation>
 <translation id="6212496753309875659">Este computador já tem uma versão mais recente do Chromium. Se o software não estiver a funcionar, desinstale o Chromium e tente novamente.</translation>
 <translation id="1115445892567829615">O Chromium não conseguiu sincronizar os dados. Atualize a frase de acesso da Sincronização.</translation>

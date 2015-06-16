@@ -112,7 +112,6 @@
 <translation id="6970811910055250180">お使いの端末を更新しています...</translation>
 <translation id="2485422356828889247">アンインストール</translation>
 <translation id="85843667276690461">Chromium の使用に関するアドバイス</translation>
-<translation id="7731057871445607139">Chromium の動作がおかしい場合</translation>
 <translation id="5358375970380395591">現在、管理対象アカウントでログインしており、あなたの Chromium プロフィールを管理者が制御できる状態になっています。あなたの Chromium データ（アプリ、ブックマーク、履歴、パスワードなどの設定）は永続的に <ph name="USER_NAME"/> に関連付けられます。このデータは Google アカウントのダッシュボードを介して削除できますが、このデータを別のアカウントに関連付けることはできなくなります。<ph name="LEARN_MORE"/></translation>
 <translation id="9036189287518468038">Chromium アプリ ランチャー</translation>
 <translation id="5563479599352954471">ワンタップで検索</translation>
@@ -184,7 +183,6 @@
           このオプションを再び有効にすることをおすすめします。</translation>
 <translation id="1174473354587728743">共有パソコンにするなど、Chromium をお好みの方法で設定できるようになりました。</translation>
 <translation id="9013087743919948559">Chromium に追加</translation>
-<translation id="2525993619214772747">Chromium の動作がおかしい場合</translation>
 <translation id="6334986366598267305">共有パソコンの Chromium で Google アカウントが簡単に使用できるようになりました。</translation>
 <translation id="6212496753309875659">新しいバージョンの Chromium が既にインストールされています。ソフトウェアが動作しない場合は、Chromium をアンインストールしてからもう一度お試しください。</translation>
 <translation id="1115445892567829615">Chromium はデータを同期できませんでした。同期パスフレーズを更新してください。</translation>

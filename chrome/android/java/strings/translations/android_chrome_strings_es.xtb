@@ -77,7 +77,6 @@
 <translation id="3738139272394829648">Tocar para buscar</translation>
 <translation id="257931822824936280">Ampliado (hacer clic para contraer)</translation>
 <translation id="4773299976671772492">Detenido</translation>
-<translation id="5118309162436926908">Inicia sesión para ver tus pestañas, tus marcadores, tu historial y otras opciones en todos tus dispositivos</translation>
 <translation id="7596558890252710462">Sistema operativo</translation>
 <translation id="3358663646935160692">Esta cuenta está administrada por <ph name="DOMAIN_NAME"/>.
 
@@ -127,6 +126,7 @@ Vas a iniciar sesión con una cuenta administrada, lo que significa que proporci
 <translation id="4378154925671717803">Teléfono</translation>
 <translation id="988938288723502454">No se puede crear un directorio de descarga en la tarjeta SD.</translation>
 <translation id="3896036286668839683">Visor de certificados</translation>
+<translation id="8660471606262461360">De Google Payments</translation>
 <translation id="5171045022955879922">Busca o escribe una URL</translation>
 <translation id="2321958826496381788">Arrastra el control deslizante hasta que puedas leer cómodamente. El texto debe tener al menos este tamaño después de tocar un párrafo dos veces.</translation>
 <translation id="3282568296779691940">Iniciar sesión en Chrome</translation>
@@ -177,7 +177,9 @@ Vas a iniciar sesión con una cuenta administrada, lo que significa que proporci
 <translation id="5000922062037820727">Bloqueado (recomendado)</translation>
 <translation id="544291274896356069">Saldrás del modo incógnito si este enlace se abre en una aplicación externa. ¿Quieres continuar?</translation>
 <translation id="3917783807003067648">La ubicación está bloqueada</translation>
+<translation id="3207960819495026254">Añadido a marcadores</translation>
 <translation id="1379156015317873965">Mejorar rendimiento de carga de páginas</translation>
+<translation id="5953603475187800576">Mostrar direcciones y tarjetas de crédito de Google Payments</translation>
 <translation id="8481940801237642152">Tu conexión a este sitio es privada, pero alguien en la red podría cambiar la apariencia de la página.</translation>
 <translation id="2593272815202181319">Monoespaciado</translation>
 <translation id="4807098396393229769">Titular de la tarjeta</translation>
@@ -231,7 +233,6 @@ Pulsa el botón de retroceso para salir.</translation>
 <translation id="583891442612896534">Chrome no puede acceder a los servidores de Google para comprimir los datos. El ahorro de datos puede estar limitado.</translation>
 <translation id="4827948050554950725">Añadir tarjeta de crédito</translation>
 <translation id="2316129865977710310">No, gracias</translation>
-<translation id="3489120686474540259">Añade una cuenta para ver tus pestañas, tus marcadores, tu historial y otras opciones en todos tus dispositivos.</translation>
 <translation id="4278390842282768270">Permitido</translation>
 <translation id="4686372254213217147">Tamaño original</translation>
 <translation id="4526792582053123229">Google no optimizará ni verá páginas a las que accedas con HTTPS o en modo incógnito.</translation>
@@ -261,7 +262,6 @@ Pulsa el botón de retroceso para salir.</translation>
 <translation id="4526249700380860531">Consulta y administra contraseñas guardadas en la página <ph name="BEGIN_LINK"/>passwords.google.com<ph name="END_LINK"/></translation>
 <translation id="2496180316473517155">Historial de navegación</translation>
 <translation id="6108923351542677676">Configuración en curso…</translation>
-<translation id="7358682983403815415">Se están sincronizando las pestañas abiertas, los marcadores, el historial y otros datos con tu cuenta de Google.</translation>
 <translation id="6964496835063002391">Añadir una cuenta</translation>
 <translation id="4698413471314543145">Falta una función esencial obligatoria para ejecutar Chrome. Es posible que tu instalación de Chrome no esté completa o que no sea compatible con esta versión de Android.</translation>
 <translation id="1943432128510653496">Guardar contraseñas</translation>
@@ -341,7 +341,6 @@ Pulsa el botón de retroceso para salir.</translation>
 <translation id="5164482624172255778">¿Quieres que Google Chrome te ofrezca la opción de traducir las páginas escritas en <ph name="LANGUAGE"/> de este sitio la próxima vez?</translation>
 <translation id="4062305924942672200">Información legal</translation>
 <translation id="515227803646670480">Borrar datos almacenados</translation>
-<translation id="6757714913056001524">Selecciona una cuenta para ver tus pestañas, tus marcadores, tu historial y otras opciones en todos tus dispositivos.</translation>
 <translation id="6935223586406308151"><ph name="DOMAIN_NAME"/> se ha añadido a tu pantalla de inicio</translation>
 <translation id="7638584964844754484">Frase de contraseña incorrecta</translation>
 <translation id="129553762522093515">Cerrado recientemente</translation>
@@ -359,6 +358,7 @@ Pulsa el botón de retroceso para salir.</translation>
 <translation id="7324738665594301612">Estamos probando el envío de páginas HTTPS a proxies a través de los servidores de Google como parte de un experimento.</translation>
 <translation id="7947953824732555851">Aceptar y acceder</translation>
 <translation id="6333140779060797560">Compartir a través de <ph name="APPLICATION"/></translation>
+<translation id="5939518447894949180">Restablecer</translation>
 <translation id="6040143037577758943">Cerrar</translation>
 <translation id="4943872375798546930">Sin resultados</translation>
 <translation id="2139186145475833000">Añadir a pantalla de inicio</translation>
@@ -380,7 +380,6 @@ Pulsa el botón de retroceso para salir.</translation>
 <translation id="3988213473815854515">Se permite la ubicación</translation>
 <translation id="8912362522468806198">cuenta de Google</translation>
 <translation id="6165508094623778733">Más información</translation>
-<translation id="3828029223314399057">Buscar marcadores</translation>
 <translation id="3003595280608617736">Falta la tarjeta SD</translation>
 <translation id="6337234675334993532">Cifrado</translation>
 <translation id="862875433388403934">Es posible que el contenido (películas, música, etc.) descargado en otras aplicaciones no se pueda reproducir hasta que esas aplicaciones no vuelvan a adquirir licencias basadas en una nueva credencial de dispositivo.
@@ -428,10 +427,8 @@ Para obtener nuevas licencias, conéctate a Internet y reproduce el contenido de
 <translation id="1178581264944972037">Detener</translation>
 <translation id="5127805178023152808">La sincronización está desactivada</translation>
 <translation id="5677928146339483299">Con bloqueo</translation>
-<translation id="5917058779668915997">Tus pestañas, tus marcadores, tu historial y otras opciones se sincronizarán con tu cuenta de Google.</translation>
 <translation id="1709438864123551175">Economizador de datos</translation>
 <translation id="2770465223704140727">Eliminar de la lista</translation>
-<translation id="3132683934591522090">Mostrar imagen</translation>
 <translation id="6027491994609789413">Reproduciendo vídeo</translation>
 <translation id="7561196759112975576">Siempre</translation>
 <translation id="605721222689873409">AA</translation>

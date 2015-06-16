@@ -78,6 +78,7 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="8551886023433311834">Aktualizácia je takmer hotová! Dokončíte ju reštartovaním zariadenia.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="1073391069195728457">Chrome – upozornenia</translation>
+<translation id="6368805772029492593">V záujme vyššej miery zabezpečenia budú dáta v prehliadači Google Chrome šifrované.</translation>
 <translation id="7339898014177206373">Nové okno</translation>
 <translation id="3282568296779691940">Prihlásenie do prehliadača Chrome</translation>
 <translation id="3089968997497233615">K dispozícii je nová, bezpečnejšia verzia prehliadača Google Chrome.</translation>
@@ -171,7 +172,6 @@ Ak sa chcete aj napriek tomu prihlásiť, informácie prehliadača Chrome, ako s
 <translation id="2290095356545025170">Naozaj chcete odinštalovať aplikáciu Google Chrome?</translation>
 <translation id="4273752058983339720">Prehliadač Google Chrome je nakonfigurovaný tak, aby sa automaticky spustil pri zapnutí počítača.</translation>
 <translation id="2316129865977710310">Nie, ďakujem</translation>
-<translation id="415994390253732730">Správa sa prehliadač Chrome zvláštne?</translation>
 <translation id="1104959162601287462">Informácie o systéme &amp;Chrome OS</translation>
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
 <translation id="7626032353295482388">Víta vás prehliadač Chrome</translation>
@@ -224,13 +224,13 @@ Ak sa chcete aj napriek tomu prihlásiť, informácie prehliadača Chrome, ako s
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="6113794647360055231">Prehliadač Chrome bol práve vylepšený</translation>
 <translation id="2588322182880276190">Logo Chrome</translation>
+<translation id="4519152997629025674">Google Chrome môže používať <ph name="BEGIN_LINK"/>webové služby<ph name="END_LINK"/>, aby vám spríjemnil prehliadanie. Tieto služby môžete kedykoľvek zakázať.</translation>
 <translation id="4367618624832907428">Prehliadač Google Chrome nemôže zobraziť danú webstránku, pretože váš počítač nie je pripojený k internetu.</translation>
 <translation id="174539241580958092">Prehliadaču Google Chrome sa nepodarilo synchronizovať vaše údaje z dôvodu chyby prihlásenia.</translation>
 <translation id="8255190535488645436">Google Chrome používa vašu kameru a mikrofón.</translation>
 <translation id="7396375882099008034">Prehliadaču Chrome povoľte prístup k sieti v nastaveniach brány firewall alebo antivírusového softvéru.</translation>
 <translation id="9102715433345326100">Tento súbor je škodlivý, a preto ho prehliadač Chrome zablokoval.</translation>
 <translation id="8205111949707227942">Voliteľné: Chcem pomôcť pri vylepšovaní služieb prehliadača Chrome tým, že bude automaticky odosielať spoločnosti Google štatistické údaje o jeho využívaní a správy o výpadkoch.</translation>
-<translation id="487887346205285304">Správa sa prehliadač Chrome zvláštne?</translation>
 <translation id="3622797965165704966">Teraz je používanie prehliadača Chrome s účtom Google a na zdieľaných počítačoch oveľa ľahšie.</translation>
 <translation id="7196020411877309443">Prečo sa zobrazila táto výzva?</translation>
 <translation id="2769762047821873045">Google Chrome nie je váš predvolený prehliadač.</translation>

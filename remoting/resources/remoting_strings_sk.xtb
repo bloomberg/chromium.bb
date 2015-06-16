@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="sk">
 <translation id="337167041784729019">Zobraziť štatistiky</translation>
+<translation id="2256115617011615191">Reštartovať</translation>
 <translation id="7606912958770842224">Povoliť vzdialené pripojenia</translation>
 <translation id="3785447812627779171">Chromoting
 Hostiteľ</translation>
@@ -137,6 +138,7 @@ Informácie o ochrane osobných údajov nájdete v Pravidlách ochrany osobných
 <translation id="8196755618196986400">Vaša e-mailová adresa bude uvedená v každej spätnej väzbe, ktorú odošlete. Umožní nám to kontaktovať vás v prípade potreby ďalších informácií.</translation>
 <translation id="154040539590487450">Spustenie služby vzdialeného prístupu zlyhalo.</translation>
 <translation id="7948001860594368197">Možnosti obrazovky</translation>
+<translation id="2221097377466213233">Použitím pravého klávesa Ctrl vyvoláte kláves Win (kláves ⌘ na počítači Mac)</translation>
 <translation id="5254120496627797685">Ak opustíte túto stránku, relácia Vzdialenej plochy Chrome sa ukončí.</translation>
 <translation id="7019153418965365059">Nerozpoznaná chyba hostiteľa: <ph name="HOST_OFFLINE_REASON"/>.</translation>
 <translation id="712467900648340229">Nepodarilo sa pripojiť k zariadeniu Cast.</translation>
@@ -152,6 +154,7 @@ Informácie o ochrane osobných údajov nájdete v Pravidlách ochrany osobných
 <translation id="8116630183974937060">Vyskytla sa chyba siete. Uistite sa, že je vaše zariadenie online a skúste to znova.</translation>
 <translation id="3020807351229499221">Aktualizácia kódu PIN sa nepodarila. Skúste to znova neskôr.</translation>
 <translation id="2647232381348739934">Služba Chromoting</translation>
+<translation id="2888969873284818612">Vyskytla sa chyba siete. Keď bude vaše zariadenie znova online, aplikáciu reštartujeme.</translation>
 <translation id="579702532610384533">Znova pripojiť</translation>
 <translation id="4867841927763172006">Odoslať akciu PrtScn</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME"/> (naposledy online <ph name="DATE_OR_TIME"/>)</translation>
@@ -258,6 +261,7 @@ Hostiteľ pracovnej plochy</translation>
 <translation id="4277463233460010382">Tento počítač je nakonfigurovaný tak, aby povolil pripojenie jedného alebo viacerých klientov bez zadania kódu PIN.</translation>
 <translation id="837021510621780684">Z tohto počítača</translation>
 <translation id="518094545883702183">K týmto informáciám, ktoré sa používajú iba na diagnostiku vami nahláseného problému, má prístup výhradne osoba prešetrujúca vaše hlásenie. Tieto informácie budú uchovávané maximálne 30 dní.</translation>
+<translation id="1261403020716313927">• Oprava veľkého úniku pamäte pri odpojení od vzdialenej pracovnej plochy.</translation>
 <translation id="3870154837782082782">Spoločnosť Google Inc.</translation>
 <translation id="4918086044614829423">Prijať</translation>
 <translation id="7215059001581613786">Zadajte kód PIN obsahujúci 6 alebo viac číslic.</translation>

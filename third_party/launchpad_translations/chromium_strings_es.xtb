@@ -116,7 +116,6 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="6970811910055250180">Actualizando el dispositivo...</translation>
 <translation id="2485422356828889247">Desinstalar</translation>
 <translation id="85843667276690461">Obtener ayuda de Chromium</translation>
-<translation id="7731057871445607139">¿Chromium tiene un comportamiento extraño?</translation>
 <translation id="5358375970380395591">Vas a iniciar sesión con una cuenta administrada, lo que significa que proporcionarás a su administrador control sobre tu perfil de Chromium. Tus datos de Chromium como, por ejemplo, tus aplicaciones, tus marcadores, tu historial, tus contraseñas y otras opciones se vincularán de forma permanente a la cuenta <ph name="USER_NAME"/>. Podrás eliminar estos datos a través del Panel de control de cuentas de Google, pero no podrás asociarlos a otra cuenta. <ph name="LEARN_MORE"/></translation>
 <translation id="9036189287518468038">Menú de aplicaciones de Chromium</translation>
 <translation id="5563479599352954471">Buscar con un toque</translation>
@@ -186,7 +185,6 @@ Es posible que algunas funciones no estén disponibles. Especifica un directorio
 <translation id="4404275227760602850">Accede al menú de Chromium, selecciona Ajustes, haz clic en Privacidad (Avanzados) e inhabilita la opción de cargar previamente recursos de página. Si esto no soluciona el problema, te recomendamos que vuelvas a habilitar esta opción para mejorar el rendimiento.</translation>
 <translation id="1174473354587728743">Si compartes un ordenador, ahora puedes configurar Chromium como quieras.</translation>
 <translation id="9013087743919948559">Añadir a Chromium</translation>
-<translation id="2525993619214772747">¿Chromium tiene un comportamiento extraño?</translation>
 <translation id="6334986366598267305">Ahora es más fácil utilizar Chromium con tu cuenta de Google y en ordenadores compartidos.</translation>
 <translation id="6212496753309875659">Este ordenador ya cuenta con una versión más reciente de Chromium. Si el software no funciona, desinstala Chromium y vuelve a intentarlo.</translation>
 <translation id="1115445892567829615">Chromium no ha podido sincronizar los datos. Actualiza la frase de contraseña de sincronización.</translation>

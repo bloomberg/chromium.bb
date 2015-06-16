@@ -31,8 +31,6 @@
 <translation id="2297568595583585744">Barre d'état</translation>
 <translation id="2248649616066688669">Vous pouvez continuer à utiliser votre Chromebook, même fermé, tant qu'il est connecté à un écran externe.</translation>
 <translation id="2946640296642327832">Activer le Bluetooth</translation>
-<translation id="478959186716341421">Diffusion en cours…</translation>
-<translation id="5537725057119320332">Caster</translation>
 <translation id="6459472438155181876">Extension de l'écran pour <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Mobile</translation>
 <translation id="6596816719288285829">Adresse IP</translation>
@@ -73,7 +71,6 @@ Appuyez sur Maj + Alt pour en utiliser un autre.</translation>
 <translation id="2509468283778169019">Touche VERR MAJ activée</translation>
 <translation id="3892641579809465218">Affichage interne</translation>
 <translation id="7823564328645135659">La langue utilisée est passée de &quot;<ph name="FROM_LOCALE"/>&quot; à &quot;<ph name="TO_LOCALE"/>&quot; après la synchronisation de vos paramètres.</translation>
-<translation id="7113420380180868673">Diffusion de l'onglet &quot;$1&quot; en cours</translation>
 <translation id="3606978283550408104">La plage braille est connectée.</translation>
 <translation id="8654520615680304441">Activer le Wi-Fi…</translation>
 <translation id="4421231901400348175">Partager le contrôle de votre écran avec <ph name="HELPER_NAME"/> via l'assistance à distance</translation>
@@ -98,7 +95,6 @@ Appuyez sur Maj + Alt pour en utiliser un autre.</translation>
 <translation id="3626637461649818317"><ph name="PERCENTAGE"/> % restant(s)</translation>
 <translation id="9089416786594320554">Modes de saisie</translation>
 <translation id="2700058918926273959">Fin de la session dans <ph name="SESSION_TIME_REMAINING"/>. Vous allez être déconnecté.</translation>
-<translation id="5807965672380739016">Caster le Bureau sur</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/> %</translation>
 <translation id="3963445509666917109">Haut-parleur (interne)</translation>
 <translation id="1747827819627189109">Clavier à l'écran activé</translation>
@@ -119,7 +115,6 @@ Appuyez sur Maj + Alt pour en utiliser un autre.</translation>
 <translation id="8528322925433439945">Mobile…</translation>
 <translation id="3157169093162779309">Activer le verrouillage de la rotation</translation>
 <translation id="8428213095426709021">Paramètres</translation>
-<translation id="6592705765268910579">Récepteur inconnu</translation>
 <translation id="2372145515558759244">Synchronisation des applications…</translation>
 <translation id="1987317783729300807">Comptes</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> de chargement</translation>
@@ -212,7 +207,6 @@ Appuyez sur Alt + Recherche ou Maj pour le désactiver.</translation>
 <translation id="3009178788565917040">Sortie</translation>
 <translation id="3147142846278915599">Lanceur d'applications (synchronisation des applications en cours…)</translation>
 <translation id="6911468394164995108">Autre réseau…</translation>
-<translation id="4373966964907728675">Diffusion du Bureau en cours…</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/> : <ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608">Encore <ph name="HOUR"/> h <ph name="MINUTE"/> min de chargement</translation>
 <translation id="3077734595579995578">maj</translation>

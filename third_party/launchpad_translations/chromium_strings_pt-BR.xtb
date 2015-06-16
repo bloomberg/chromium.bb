@@ -15,6 +15,7 @@
 <translation id="3748537968684000502">Você está vendo uma página segura do Chromium.</translation>
 <translation id="2077129598763517140">Usar aceleração de hardware quando disponível</translation>
 <translation id="1065672644894730302">Não foi possível ler suas preferências. Alguns recursos podem não estar disponíveis e as alterações nas preferências não serão salvas.</translation>
+<translation id="2233513990531887259">Reiniciar no modo imersivo do Chromium</translation>
 <translation id="7861509383340276692">Vá até
           o menu do Chromium &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -26,6 +27,7 @@
 <translation id="4423735387467980091">Personalizar e controlar o Chromium</translation>
 <translation id="1881322772814446296">Você está fazendo login com uma conta gerenciada e concedendo ao administrador da conta o controle sobre seu perfil do Chromium. Seus dados do Chromium, como aplicativos, favoritos, histórico, senhas e outras configurações serão permanentemente vinculados a <ph name="USER_NAME"/>. Você pode excluir esses dados pelo painel das Contas do Google, mas não pode associá-los a outra conta. Você tem a opção de criar um novo perfil para manter seus dados existentes do Chromium separados. <ph name="LEARN_MORE"/></translation>
 <translation id="5620765574781326016">Saiba mais sobre tópicos em websites sem sair da página.</translation>
+<translation id="7723128346970903111">Quando ativada, usa o fluxo de login do Chromium baseado em iframe. Caso contrário, usa um fluxo baseado em visualização da Web.</translation>
 <translation id="731644333568559921">Atualizar o &amp;Chromium OS</translation>
 <translation id="7421823331379285070">O Chromium requer Windows XP ou posterior. Alguns recursos podem não funcionar.</translation>
 <translation id="1185134272377778587">Sobre o Chromium</translation>
@@ -39,6 +41,7 @@
 <translation id="1668054258064581266">Depois de remover sua conta do Chromium, pode ser necessário recarregar as guias abertas para que a alteração entre em vigor.</translation>
 <translation id="4285930937574705105">Ocorreu uma falha na instalação devido a um erro não especificado. Se o Chromium estiver sendo executado, feche-o e tente novamente.</translation>
 <translation id="1396446129537741364">O Chromium está tentando mostrar senhas.</translation>
+<translation id="2097986737970966220">Abrir Chromium na área de trabalho</translation>
 <translation id="8987477933582888019">Navegador da Web</translation>
 <translation id="4050175100176540509">Melhorias de segurança importantes e novos recursos estão disponíveis na versão mais recente.</translation>
 <translation id="2886012850691518054">Opcional: Ajude a tornar o Chromium melhor enviando automaticamente as estatísticas de uso e os relatórios de erros ao Google.</translation>
@@ -70,11 +73,13 @@
 <translation id="2347108572062610441">Esta extensão alterou a página que é exibida quando você inicia o Chromium.</translation>
 <translation id="3849925841547750267">Suas configurações do Mozilla Firefox não ficam disponíveis enquanto esse navegador é executado. Para importar essas configurações para o Chromium, salve seu trabalho e feche todas as janelas do Firefox. Em seguida, clique em Continuar.</translation>
 <translation id="7027298027173928763">Não foi possível atualizar o Chromium para a versão mais recente. Com isso, você está perdendo novos recursos e correções de segurança incríveis. Reinstale o Chromium manualmente.</translation>
+<translation id="2718390899429598676">Para maior segurança, o Chromium criptografará seus dados.</translation>
 <translation id="8897323336392112261">Controla também qual página deve ser exibida quando você inicia o Chromium ou clica no botão &quot;Página inicial&quot;.</translation>
 <translation id="4330585738697551178">Este módulo é conhecido por entrar em conflito com o Chromium.</translation>
 <translation id="3190315855212034486">O Chromium travou. Reiniciar agora?</translation>
 <translation id="3068515742935458733">Ajude a melhorar o Chromium. Envie relatórios de erros e <ph name="UMA_LINK"/> para o Google</translation>
 <translation id="734373864078049451">Sua Web, seus favoritos e demais conteúdo do Chromium estão aqui.</translation>
+<translation id="4075965373589665797">A reinicialização no modo de área de trabalho fecha e reinicia seus aplicativos do Chromium.</translation>
 <translation id="3197823471738295152">O dispositivo está atualizado.</translation>
 <translation id="8551886023433311834">Atualização quase concluída! Reinicie seu dispositivo para concluir a atualização.</translation>
 <translation id="8738058698779197622">Para estabelecer uma conexão segura, o relógio precisa ser ajustado corretamente. Isso ocorre porque os certificados que os websites usam para se identificar são válidos apenas por períodos específicos. Como o relógio do seu dispositivo está incorreto, o Chromium não pode verificar esses certificados.</translation>
@@ -85,10 +90,12 @@
 <translation id="7473891865547856676">Não, obrigado</translation>
 <translation id="9191268552238695869">Um administrador instalou o Chromium neste sistema, e ele está disponível para todos os usuários. O Chromium do sistema substituirá a instalação do usuário agora.</translation>
 <translation id="3509308970982693815">Feche todas as janelas do Chromium e tente novamente.</translation>
+<translation id="3192211604788138894">Reiniciar o Chromium em modo Windows 8</translation>
 <translation id="8851136666856101339">main</translation>
 <translation id="4077262827416206768">Feche todas as janelas do Chromium e reinicie o Chromium para que a alteração entre em vigor.</translation>
 <translation id="6475912303565314141">Controla também qual página deve ser exibida quando você inicia o Chromium.</translation>
 <translation id="1725059042853530269">O Chromium bloqueou o arquivo <ph name="FILE_NAME"/>, porque ele pode prejudicar sua experiência de navegação.</translation>
+<translation id="208174207680926830">Reiniciar o Chromium na área de trabalho</translation>
 <translation id="750717762378961310">Este arquivo é malicioso e foi bloqueado pelo Chromium.</translation>
 <translation id="6944967875980567883">Módulos carregados no Chromium</translation>
 <translation id="6899795326977034905">No Mac, as senhas são salvas em seu Keychain e podem ser acessadas ou sincronizadas por outros usuários do Chromium que compartilhem esta conta do Mac OS X.</translation>
@@ -102,6 +109,7 @@
 <translation id="6055895534982063517">Há uma nova versão ainda mais rápida do Chromium disponível.</translation>
 <translation id="8821041990367117597">O Chromium não pôde sincronizar seus dados, pois os detalhes de login da sua conta estão desatualizados.</translation>
 <translation id="4677944499843243528">O perfil parece estar em uso por outro processo do Chromium (<ph name="PROCESS_ID"/>) em outro computador (<ph name="HOST_NAME"/>). O Chromium bloqueou o perfil para que ele não seja corrompido. Se você tiver certeza de que nenhum outro processo está usando este perfil, pode desbloquear o perfil e reiniciar o Chromium.</translation>
+<translation id="5796460469508169315">O Chromium está quase pronto.</translation>
 <translation id="4994636714258228724">Cadastrar-se no Chromium</translation>
 <translation id="7066436765290594559">O Chromium OS não pôde sincronizar seus dados. Atualize sua senha de sincronização.</translation>
 <translation id="7747138024166251722">O instalador não conseguiu criar um diretório temporário. Verifique se há espaço livre em disco e se há permissão para a instalação de software.</translation>
@@ -111,7 +119,6 @@
 <translation id="6970811910055250180">Atualizando o dispositivo...</translation>
 <translation id="2485422356828889247">Desinstalar</translation>
 <translation id="85843667276690461">Obter ajuda para usar o Chromium</translation>
-<translation id="7731057871445607139">O Chromium está se comportando de forma estranha?</translation>
 <translation id="5358375970380395591">Você está fazendo login com uma conta gerenciada e concedendo ao administrador da conta o controle sobre seu perfil do Chromium. Seus dados do Chromium, como aplicativos, favoritos, histórico, senhas e outras configurações serão permanentemente vinculados a <ph name="USER_NAME"/>. Você pode excluir esses dados pelo painel das Contas do Google, mas não pode associá-los a outra conta. <ph name="LEARN_MORE"/></translation>
 <translation id="9036189287518468038">Iniciador de aplicativos do Chromium</translation>
 <translation id="5563479599352954471">Pesquisar com um toque</translation>
@@ -159,6 +166,7 @@ incomuns e incorretas. Um invasor está tentando fingir ser <ph name="SITE"/>, o
 <translation id="1293235220023151515">Foi encontrada uma instalação conflituosa do Chromium no sistema. Desinstale e tente novamente.</translation>
 <translation id="5398878173008909840">Há uma nova versão do Chromium disponível.</translation>
 <translation id="2648074677641340862">Ocorreu um erro no sistema operacional durante a instalação. Faça o download do Chromium novamente.</translation>
+<translation id="3595526210123705352">A reinicialização no modo Windows 8 fecha e reinicia todos os aplicativos do Chromium.</translation>
 <translation id="5942520288919337908">A extensão <ph name="EXTENSION_NAME"/> foi adicionada ao Chromium.</translation>
 <translation id="7211828883345145708">Permite atalhos adicionais do teclado que são úteis para a depuração do Chromium.</translation>
 <translation id="549669000822060376">Aguarde enquanto o Chromium instala as últimas atualizações do sistema.</translation>
@@ -182,7 +190,7 @@ incomuns e incorretas. Um invasor está tentando fingir ser <ph name="SITE"/>, o
           novamente para melhorar o desempenho.</translation>
 <translation id="1174473354587728743">Você compartilha um computador? Agora é possível configurar o Chromium do jeito que você gosta.</translation>
 <translation id="9013087743919948559">Adicionar ao Chromium</translation>
-<translation id="2525993619214772747">O Chromium está se comportando de forma estranha?</translation>
+<translation id="7090955637699162649">O Chromium pode usar <ph name="BEGIN_LINK"/>serviços da Web<ph name="END_LINK"/> para melhorar a qualidade da sua navegação. Você pode desativar esses serviços a qualquer momento.</translation>
 <translation id="6334986366598267305">Agora ficou mais fácil usar o Chromium com sua Conta do Google e em computadores compartilhados.</translation>
 <translation id="6212496753309875659">Este computador já tem uma versão mais recente do Chromium. Se o software não estiver funcionando, desinstale o Chromium e tente novamente.</translation>
 <translation id="1115445892567829615">O Chromium não pôde sincronizar seus dados. Atualize sua senha de sincronização.</translation>
@@ -201,6 +209,7 @@ incomuns e incorretas. Um invasor está tentando fingir ser <ph name="SITE"/>, o
 <translation id="1929939181775079593">O Chromium não está respondendo. Reiniciar agora?</translation>
 <translation id="1414495520565016063">Você está conectado ao Chromium.</translation>
 <translation id="2158734852934720349">Licenças de código aberto do Chromium OS</translation>
+<translation id="6900895776413482243">A reinicialização no modo imersivo fecha e reinicia todos os aplicativos do Chromium.</translation>
 <translation id="2966088006374919794">O Chromium precisa iniciar um aplicativo externo para lidar com os links <ph name="SCHEME"/>. O link solicitado é <ph name="PROTOLINK"/>.</translation>
 <translation id="7205698830395646142">Esconder no menu do Chromium</translation>
 <translation id="9019929317751753759">Para tornar o Chromium mais seguro, desativamos a extensão a seguir, que não está listada na <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> e pode ter sido adicionada sem seu conhecimento.</translation>
@@ -224,6 +233,7 @@ incomuns e incorretas. Um invasor está tentando fingir ser <ph name="SITE"/>, o
 <translation id="7483335560992089831">Não é possível instalar a mesma versão do Chromium que está sendo executada. Feche o Chromium e tente novamente.</translation>
 <translation id="1150979032973867961">Este servidor não conseguiu provar que é <ph name="DOMAIN"/>. O certificado de segurança não é confiável para o sistema operacional do seu computador. Isso pode ser causado por uma configuração incorreta ou pela interceptação da sua conexão por um invasor.</translation>
 <translation id="7641113255207688324">O Chromium não é seu navegador padrão.</translation>
+<translation id="358997566136285270">Logotipo do Chromium</translation>
 <translation id="4458285410772214805">Saia e faça login novamente para que esta alteração entre em vigor.</translation>
 <translation id="2847479871509788944">Remover do Chromium</translation>
 <translation id="761356813943268536">O Chromium está usando sua câmera e seu microfone.</translation>
@@ -232,6 +242,7 @@ incomuns e incorretas. Um invasor está tentando fingir ser <ph name="SITE"/>, o
 <translation id="1708666629004767631">Há uma nova versão mais segura do Chromium disponível.</translation>
 <translation id="1644918877723739397">O Chromium armazenará essa senha na sua <ph name="SAVED_PASSWORD_LINK"/> e lembrará dela na próxima vez que você precisar.</translation>
 <translation id="378917192836375108">O Chromium permite que você clique em um número de telefone na web e ligue para ele com o Skype!</translation>
+<translation id="1461885241643463646">Ativa fluxos de login do Chromium baseados em iframe. Esta sinalização modifica login com ativação baseada na Web.</translation>
 <translation id="608189560609172163">O Chromium não pôde sincronizar seus dados devido a um erro ao fazer login.</translation>
 <translation id="4888717733111232871">Regra interna para que o Chromium permita tráfego mDNS.</translation>
 <translation id="151962892725702025">O Chromium OS não pôde sincronizar seus dados porque a sincronização não está disponível para seu domínio.</translation>

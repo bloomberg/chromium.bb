@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="el">
 <translation id="2774256287122201187">Μπορείτε να συνεχίσετε. Αν συνεχίσετε στη σελίδα, αυτή η προειδοποίηση δεν θα εμφανιστεί ξανά για πέντε λεπτά.</translation>
+<translation id="3963721102035795474">Λειτουργία αναγνώστη</translation>
 <translation id="7485870689360869515">Δεν βρέθηκαν δεδομένα</translation>
 <translation id="3884278016824448484">Αναγνωριστικό συσκευής που προκαλεί διένεξη</translation>
 <translation id="5172758083709347301">Υπολογιστής</translation>
@@ -63,7 +64,7 @@
 <translation id="7108649287766967076">Η μετάφραση στα <ph name="TARGET_LANGUAGE"/> απέτυχε.</translation>
 <translation id="4103249731201008433">Ο σειριακός αριθμός της συσκευής δεν είναι έγκυρος</translation>
 <translation id="3219579145727097045">Εισαγάγετε την ημερομηνία λήξης και τον τετραψήφιο κωδικό CVC από το μπροστινό μέρος της κάρτας σας</translation>
-<translation id="3667681724235208644">Προβολή αρχικής</translation>
+<translation id="59107663811261420">Αυτός ο τύπος κάρτας δεν υποστηρίζεται από το Google Payments γι' αυτόν τον έμπορο. Επιλέξτε διαφορετική κάρτα.</translation>
 <translation id="4079302484614802869">Η διαμόρφωση του διακομιστή μεσολάβησης είναι ορισμένη να χρησιμοποιεί μια διεύθυνση URL σεναρίου .pac και όχι σταθερούς διακομιστές μεσολάβησης.</translation>
 <translation id="5540224163453853">Δεν ήταν δυνατή η εύρεση του άρθρου που ζητήσατε.</translation>
 <translation id="8437238597147034694">&amp;Αναίρεση μετακίνησης</translation>
@@ -90,6 +91,7 @@
 <translation id="7977590112176369853">&lt;πληκτρολογήστε ερώτημα&gt;</translation>
 <translation id="552553974213252141">Έγινε σωστή εξαγωγή του κειμένου;</translation>
 <translation id="5317780077021120954">Αποθήκευση</translation>
+<translation id="8530504477309582336">Αυτός ο τύπος κάρτας δεν υποστηρίζεται από το Google Payments. Επιλέξτε άλλη κάρτα.</translation>
 <translation id="7610193165460212391">Η τιμή είναι εκτός του εύρους τιμών <ph name="VALUE"/>.</translation>
 <translation id="3739623965217189342">Σύνδεσμος που αντιγρ.</translation>
 <translation id="8790007591277257123">&amp;Επανάληψη διαγραφής</translation>
@@ -163,6 +165,7 @@
 <translation id="8891727572606052622">Μη έγκυρη λειτουργία διακομιστή μεσολάβησης.</translation>
 <translation id="3105172416063519923">Αναγνωριστικό στοιχείο:</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="1549470594296187301">Θα πρέπει να ενεργοποιηθεί η JavaScript για τη χρήση αυτής της λειτουργίας.</translation>
 <translation id="2587841377698384444">Αναγνωριστικό API καταλόγου:</translation>
 <translation id="7752995774971033316">Χωρίς διαχείριση</translation>
 <translation id="3712624925041724820">Οι άδειες έχουν εξαντληθεί</translation>
@@ -227,6 +230,7 @@
 <translation id="7568593326407688803">Αυτή η σελίδα είναι στα<ph name="ORIGINAL_LANGUAGE"/>Θέλετε να τη μεταφράσετε;</translation>
 <translation id="8876793034577346603">Αποτυχία ανάλυσης της διαμόρφωσης δικτύου</translation>
 <translation id="4800132727771399293">Ελέγξτε την ημερομηνία λήξης και τον κωδικό σας CVC και δοκιμάστε ξανά</translation>
+<translation id="7965440304569005629">Κλείσιμο προβολής αναγνώστη</translation>
 <translation id="4171400957073367226">Εσφαλμένη υπογραφή επαλήθευσης</translation>
 <translation id="9125941078353557812">Εισαγάγετε τον τριψήφιο κωδικό CVC από το πίσω μέρος της κάρτας σας</translation>
 <translation id="106701514854093668">Σελιδοδείκτες επιτραπέζιου υπολογιστή</translation>

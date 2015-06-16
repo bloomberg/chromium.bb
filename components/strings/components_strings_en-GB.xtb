@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="en-GB">
 <translation id="2774256287122201187">You may continue. If you continue to the page, this warning will not appear again for five minutes.</translation>
+<translation id="3963721102035795474">Reader Mode</translation>
 <translation id="7485870689360869515">No data found.</translation>
 <translation id="3884278016824448484">Conflicting device identifier</translation>
 <translation id="5172758083709347301">Machine</translation>
@@ -63,7 +64,7 @@
 <translation id="7108649287766967076">The translation to <ph name="TARGET_LANGUAGE"/> failed.</translation>
 <translation id="4103249731201008433">Device serial number is invalid</translation>
 <translation id="3219579145727097045">Enter the expiration date and 4-digit CVC from the front of your card</translation>
-<translation id="3667681724235208644">View Original</translation>
+<translation id="59107663811261420">This type of card is not supported by Google Payments for this merchant. Please select a different card.</translation>
 <translation id="4079302484614802869">Proxy configuration is set to use a .pac script URL, not fixed proxy servers.</translation>
 <translation id="5540224163453853">Could not find the requested article.</translation>
 <translation id="8437238597147034694">&amp;Undo move</translation>
@@ -90,6 +91,7 @@
 <translation id="7977590112176369853">&lt;enter query&gt;</translation>
 <translation id="552553974213252141">Was the text extracted correctly?</translation>
 <translation id="5317780077021120954">Save</translation>
+<translation id="8530504477309582336">This type of card is not supported by Google Payments. Please select a different card.</translation>
 <translation id="7610193165460212391">Value is out of range <ph name="VALUE"/>.</translation>
 <translation id="3739623965217189342">Link that you copied</translation>
 <translation id="8790007591277257123">&amp;Redo delete</translation>
@@ -163,6 +165,7 @@
 <translation id="8891727572606052622">Invalid proxy mode.</translation>
 <translation id="3105172416063519923">Asset ID:</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="1549470594296187301">JavaScript must be enabled to use this feature.</translation>
 <translation id="2587841377698384444">Directory API ID:</translation>
 <translation id="7752995774971033316">Unmanaged</translation>
 <translation id="3712624925041724820">Licenses exhausted</translation>
@@ -227,6 +230,7 @@
 <translation id="7568593326407688803">This page is in<ph name="ORIGINAL_LANGUAGE"/>Would you like to translate it?</translation>
 <translation id="8876793034577346603">Network configuration failed to be parsed.</translation>
 <translation id="4800132727771399293">Check your expiration date and CVC and try again</translation>
+<translation id="7965440304569005629">Close reader view</translation>
 <translation id="4171400957073367226">Bad verification signature</translation>
 <translation id="9125941078353557812">Enter the 3-digit CVC from the back of your card</translation>
 <translation id="106701514854093668">Desktop Bookmarks</translation>

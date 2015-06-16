@@ -63,7 +63,7 @@
 <translation id="7108649287766967076">Neizdevās tulkot šādā valodā: <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="4103249731201008433">Ierīces sērijas numurs nav derīgs.</translation>
 <translation id="3219579145727097045">Ievadiet derīguma termiņu un 4 ciparu CVC kodu, kas ir norādīts jūsu kredītkartes priekšpusē.</translation>
-<translation id="3667681724235208644">Skatīt sākotnējo</translation>
+<translation id="59107663811261420">Šis kartes veids šim tirgotājam pakalpojumā Google Payments netiek atbalstīts. Lūdzu, atlasiet citu karti.</translation>
 <translation id="4079302484614802869">Starpniekserveris ir iestatīts, lai tas lietotu .pac skripta URL, nevis fiksētus starpniekserverus.</translation>
 <translation id="5540224163453853">Pieprasīto rakstu nevarēja atrast.</translation>
 <translation id="8437238597147034694">&amp;Atsaukt pārvietošanu</translation>
@@ -90,6 +90,7 @@
 <translation id="7977590112176369853">&lt;ievadīt vaicājumu&gt;</translation>
 <translation id="552553974213252141">Vai iegūtais teksts bija pareizs?</translation>
 <translation id="5317780077021120954">Saglabāt</translation>
+<translation id="8530504477309582336">Šis kartes veids netiek atbalstīts pakalpojumā Google Payments. Lūdzu, atlasiet citu karti.</translation>
 <translation id="7610193165460212391">Vērtība pārsniedz diapazonu: <ph name="VALUE"/>.</translation>
 <translation id="3739623965217189342">Jūsu kopētā saite</translation>
 <translation id="8790007591277257123">&amp;Atcelt dzēšanas atsaukšanu</translation>

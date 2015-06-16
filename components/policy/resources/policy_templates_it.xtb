@@ -356,7 +356,7 @@ Se la norma non viene impostata o viene impostata su false, la posizione non vie
 
       Se l'impostazione è attivata o non è configurata, gli utenti possono stampare.
 
-      Se l'impostazione è disattivata, gli utenti non possono stampare da <ph name="PRODUCT_NAME"/>. La stampa è disattivata nel menu Strumenti, nelle estensioni, nelle app JavaScript e così via. È possibile stampare da plug-in che ignorano <ph name="PRODUCT_NAME"/> durante la stampa. Ad esempio, alcune app Flash presentano l'opzione di stampa nel loro menu di scelta rapida, che non è analizzato in questo criterio.</translation>
+      Se l'impostazione è disattivata, gli utenti non possono stampare da <ph name="PRODUCT_NAME"/>. La stampa è disattivata nel menu Strumenti, nelle estensioni, nelle app JavaScript e così via. È possibile stampare da plug-in che ignorano <ph name="PRODUCT_NAME"/> durante la stampa. Ad esempio, alcune app Flash presentano l'opzione di stampa nel loro menu contestuale, che non è analizzato in questo criterio.</translation>
 <translation id="9135033364005346124">Attiva proxy <ph name="CLOUD_PRINT_NAME"/></translation>
 <translation id="4519046672992331730">Consente di attivare i suggerimenti di ricerca nella omnibox di <ph name="PRODUCT_NAME"/> e di impedire agli utenti di modificare l'impostazione.
 

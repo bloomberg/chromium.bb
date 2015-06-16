@@ -63,7 +63,7 @@
 <translation id="7108649287766967076">Nabigo ang pag-translate sa <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="4103249731201008433">Di-wasto ang serial number ng device</translation>
 <translation id="3219579145727097045">Ilagay ang petsa ng pag-expire at ang CVC na may 4 na digit mula sa harap ng iyong card</translation>
-<translation id="3667681724235208644">Tingnan ang Orihinal</translation>
+<translation id="59107663811261420">Ang ganitong uri ng card ay hindi sinusuportahan ng Google Payments para sa merchant na ito. Mangyaring pumili ng ibang card.</translation>
 <translation id="4079302484614802869">Nakatakda ang configuration ng proxy upang gumamit ng isang .pac script URL, hindi ng mga hindi nababagong proxy server.</translation>
 <translation id="5540224163453853">Hindi mahanap ang hiniling na artikulo.</translation>
 <translation id="8437238597147034694">&amp;I-undo ang paglilipat</translation>
@@ -90,6 +90,7 @@
 <translation id="7977590112176369853">&lt;ilagay ang query&gt;</translation>
 <translation id="552553974213252141">Nakuha ba nang tama ang text?</translation>
 <translation id="5317780077021120954">I-save</translation>
+<translation id="8530504477309582336">Ang ganitong uri ng card ay hindi sinusuportahan ng Google Payments. Mangyaring pumili ng ibang card.</translation>
 <translation id="7610193165460212391">Wala sa sakop ang halaga <ph name="VALUE"/>.</translation>
 <translation id="3739623965217189342">Link na kinopya mo</translation>
 <translation id="8790007591277257123">&amp;Gawing muli ang pagtanggal</translation>

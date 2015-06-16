@@ -64,7 +64,7 @@
 <translation id="7108649287766967076"><ph name="TARGET_LANGUAGE"/> এ অনুবাদ ব্যর্থ হয়েছে৷</translation>
 <translation id="4103249731201008433">ডিভাইসের ক্রমিক সংখ্যা অবৈধ</translation>
 <translation id="3219579145727097045">আপনার কার্ডের সামনে থাকা ৪ সংখ্যার CVC এবং মেয়াদ শেষের তারিখ লিখুন</translation>
-<translation id="3667681724235208644">আসলটি দেখুন</translation>
+<translation id="59107663811261420">এই বণিকের জন্য এই ধরনের কার্ড Google Payments দ্বারা সমর্থিত নয়৷ দয়া করে একটি আলাদা কার্ড নির্বাচন করুন৷</translation>
 <translation id="4079302484614802869">প্রক্সি কনফিগারেশনটি .pac স্ক্রিপ্ট URL-এ ব্যবহার করাতে সেট থাকে স্থির প্রক্সি সার্ভারগুলিতে নয়৷</translation>
 <translation id="5540224163453853">অনুরোধকৃত নিবন্ধ খুঁজে পাওয়া যায়নি৷</translation>
 <translation id="8437238597147034694">&amp;সরানোকে পূর্বাবস্থায় ফেরান</translation>
@@ -91,6 +91,7 @@
 <translation id="7977590112176369853">&lt;ক্যোয়ারী লিখুন&gt;</translation>
 <translation id="552553974213252141">পাঠ্য কি সঠিকভাবে প্রাপ্ত হয়েছে?</translation>
 <translation id="5317780077021120954">সংরক্ষণ করুন</translation>
+<translation id="8530504477309582336">এই ধরনের কার্ড Google Payments দ্বারা সমর্থিত নয়৷ দয়া করে একটি আলাদা কার্ড নির্বাচন করুন৷</translation>
 <translation id="7610193165460212391">সীমার বাইরে মান <ph name="VALUE"/>৷</translation>
 <translation id="3739623965217189342">আপনার অনুলিপি করা লিঙ্ক</translation>
 <translation id="8790007591277257123">&amp;মুছে ফেলাকে পুনরায় করুন</translation>

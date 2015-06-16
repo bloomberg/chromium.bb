@@ -31,8 +31,6 @@
 <translation id="2297568595583585744">Olekusalv</translation>
 <translation id="2248649616066688669">Kui Chromebook on ühendatud välise ekraaniga, saate jätkata Chromebooki kasutamist isegi siis, kui selle kaas on suletud.</translation>
 <translation id="2946640296642327832">Luba Bluetooth</translation>
-<translation id="478959186716341421">Ülekandmine</translation>
-<translation id="5537725057119320332">Ülekanne</translation>
 <translation id="6459472438155181876">Ekraani laiendamine seadmesse <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Mobiil</translation>
 <translation id="6596816719288285829">IP-aadress</translation>
@@ -73,7 +71,6 @@ Selle muutmiseks vajutage klahve Tõstuklahv + Alt.</translation>
 <translation id="2509468283778169019">SUURTÄHELUKK on sisse lülitatud</translation>
 <translation id="3892641579809465218">Sisemine kuva</translation>
 <translation id="7823564328645135659">Pärast seadete sünkroonimist asendati <ph name="FROM_LOCALE"/> keel <ph name="TO_LOCALE"/> keelega.</translation>
-<translation id="7113420380180868673">Ülekandmine: $1</translation>
 <translation id="3606978283550408104">Punktkirja ekraanikuva on ühendatud.</translation>
 <translation id="8654520615680304441">Lülita WiFi sisse ...</translation>
 <translation id="4421231901400348175">Ekraani juhtimise jagamine isikuga <ph name="HELPER_NAME"/> kaugabi kaudu.</translation>
@@ -98,7 +95,6 @@ Selle muutmiseks vajutage klahve Tõstuklahv + Alt.</translation>
 <translation id="3626637461649818317"><ph name="PERCENTAGE"/>% on jäänud</translation>
 <translation id="9089416786594320554">Sisestusviisid</translation>
 <translation id="2700058918926273959">Seansi lõpuni on jäänud <ph name="SESSION_TIME_REMAINING"/>. Teid logitakse välja.</translation>
-<translation id="5807965672380739016">Kanna töölaud üle asukohta</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
 <translation id="3963445509666917109">Kõlar (sisemine)</translation>
 <translation id="1747827819627189109">Ekraanil kuvatav klaviatuur on lubatud</translation>
@@ -119,7 +115,6 @@ Selle muutmiseks vajutage klahve Tõstuklahv + Alt.</translation>
 <translation id="8528322925433439945">Mobiil ...</translation>
 <translation id="3157169093162779309">Luba pööramise lukustus</translation>
 <translation id="8428213095426709021">Seadistused</translation>
-<translation id="6592705765268910579">Tundmatu vastuvõtja</translation>
 <translation id="2372145515558759244">Rakenduste sünkroonimine ...</translation>
 <translation id="1987317783729300807">Kontod</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> täislaadimiseni</translation>
@@ -212,7 +207,6 @@ Tühistamiseks vajutage klahvikombinatsiooni Alt + otsinguklahv või tõstuklahv
 <translation id="3009178788565917040">Väljund</translation>
 <translation id="3147142846278915599">Käivitusprogramm (rakenduste sünkroonimine ...)</translation>
 <translation id="6911468394164995108">Liitu muu võrguga ...</translation>
-<translation id="4373966964907728675">Töölaua ülekandmine</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608"><ph name="HOUR"/> h <ph name="MINUTE"/> min aku täitumiseni</translation>
 <translation id="3077734595579995578">tõstuklahv</translation>

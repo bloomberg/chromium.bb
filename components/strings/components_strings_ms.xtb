@@ -63,7 +63,7 @@
 <translation id="7108649287766967076">Terjemahan kepada <ph name="TARGET_LANGUAGE"/> gagal.</translation>
 <translation id="4103249731201008433">Nombor siri peranti tidak sah</translation>
 <translation id="3219579145727097045">Masukkan tarikh tamat tempoh dan CVC 4 digit dari bahagian depan kad anda</translation>
-<translation id="3667681724235208644">Lihat Yang Asal</translation>
+<translation id="59107663811261420">Kad jenis ini tidak disokong oleh Google Payments untuk pedagang ini. Sila pilih kad yang lain.</translation>
 <translation id="4079302484614802869">Konfigurasi proksi ditetapkan kepada penggunaaan URL skrip .pac, bukannya pelayan proksi tetap.</translation>
 <translation id="5540224163453853">Tidak menemui artikel yang diminta.</translation>
 <translation id="8437238597147034694">&amp;Buat asal pindahkan</translation>
@@ -90,6 +90,7 @@
 <translation id="7977590112176369853">&lt;masukkan pertanyaan&gt;</translation>
 <translation id="552553974213252141">Adakah teks diekstrak dengan betul?</translation>
 <translation id="5317780077021120954">Simpan</translation>
+<translation id="8530504477309582336">Kad jenis ini tidak disokong oleh Google Payments. Sila pilih kad yang lain.</translation>
 <translation id="7610193165460212391">Nilai berada di luar julat <ph name="VALUE"/></translation>
 <translation id="3739623965217189342">Pautan yang anda salin</translation>
 <translation id="8790007591277257123">&amp;Buat semula pemadaman</translation>

@@ -31,8 +31,6 @@
 <translation id="2297568595583585744">Tila-alue</translation>
 <translation id="2248649616066688669">Voit käyttää Chromebookia sen ollessa yhdistettynä ulkoiseen näyttöön, vaikka laitteen kansi olisi kiinni.</translation>
 <translation id="2946640296642327832">Ota Bluetooth käyttöön</translation>
-<translation id="478959186716341421">Suoratoistetaan</translation>
-<translation id="5537725057119320332">Lähetä</translation>
 <translation id="6459472438155181876">Ruutua laajennetaan: <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Matkapuhelin</translation>
 <translation id="6596816719288285829">IP-osoite</translation>
@@ -73,7 +71,6 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="2509468283778169019">CAPS LOCK on päällä</translation>
 <translation id="3892641579809465218">Sisäinen näyttö</translation>
 <translation id="7823564328645135659">Käyttökieli on muutettu kielestä <ph name="FROM_LOCALE"/> kieleksi <ph name="TO_LOCALE"/> asetustesi synkronoinnin yhteydessä.</translation>
-<translation id="7113420380180868673">Suoratoistetaan $1</translation>
 <translation id="3606978283550408104">Pistekirjoitusnäyttö on yhdistetty.</translation>
 <translation id="8654520615680304441">Ota Wi-Fi käyttöön…</translation>
 <translation id="4421231901400348175">Näyttösi hallinta jaetaan käyttäjän <ph name="HELPER_NAME"/> kanssa Etätuen kautta.</translation>
@@ -98,7 +95,6 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="3626637461649818317"><ph name="PERCENTAGE"/> % jäljellä</translation>
 <translation id="9089416786594320554">Syöttötavat</translation>
 <translation id="2700058918926273959">Istunnon loppumiseen on <ph name="SESSION_TIME_REMAINING"/>. Sinut kirjataan ulos.</translation>
-<translation id="5807965672380739016">Suoratoista työpöytä:</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/> %</translation>
 <translation id="3963445509666917109">Kaiutin (sisäinen)</translation>
 <translation id="1747827819627189109">Ruutunäppäimistö otettiin käyttöön</translation>
@@ -119,7 +115,6 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="8528322925433439945">Mobiiliverkot...</translation>
 <translation id="3157169093162779309">Ota näytön kierron lukitus käyttöön</translation>
 <translation id="8428213095426709021">Asetukset</translation>
-<translation id="6592705765268910579">Tuntematon vastaanottaja</translation>
 <translation id="2372145515558759244">Synkronoidaan sovelluksia...</translation>
 <translation id="1987317783729300807">Tilit</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> kunnes akku on ladattu</translation>
@@ -209,7 +204,6 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="3009178788565917040">Äänentoisto</translation>
 <translation id="3147142846278915599">Käynnistysohjelma (synkronoidaan sovelluksia…)</translation>
 <translation id="6911468394164995108">Liity muuhun verkkoon...</translation>
-<translation id="4373966964907728675">Suoratoistetaan työpöytää</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608">Akku täynnä <ph name="HOUR"/> t <ph name="MINUTE"/> min kuluttua</translation>
 <translation id="3077734595579995578">shift</translation>

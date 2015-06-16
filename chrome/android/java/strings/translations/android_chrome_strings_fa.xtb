@@ -77,7 +77,6 @@
 <translation id="3738139272394829648">لمس کردن برای جستجو</translation>
 <translation id="257931822824936280">بزرگ‌شده - برای کوچک کردن کلیک کنید.</translation>
 <translation id="4773299976671772492">متوقف شد</translation>
-<translation id="5118309162436926908">برای دریافت برگه‌ها، نشانک‌ها، سابقه و سایر تنظیمات در همه دستگاه‌هایتان به سیستم وارد شوید</translation>
 <translation id="7596558890252710462">سیستم عامل</translation>
 <translation id="3358663646935160692">‏این حساب توسط <ph name="DOMAIN_NAME"/> مدیریت می‌شود. شما با یک حساب مدیریت شده وارد سیستم شده‌اید و به سرپرست این حساب اجازه کنترل نمایه Chrome خود را می‌دهید. اطلاعات Chrome شما به صورت دائم با این حساب مرتبط می‌شود. با قطع ارتباط از این حساب، کلیه اطلاعات Chrome شما در دستگاه حذف می‌شود.</translation>
 <translation id="4684427112815847243">همگام‌سازی همه</translation>
@@ -125,6 +124,7 @@
 <translation id="4378154925671717803">تلفن</translation>
 <translation id="988938288723502454">‏ایجاد پوشه دانلود در کارت SD امکان‌پذیر نیست.</translation>
 <translation id="3896036286668839683">نظاره‌گر گواهی</translation>
+<translation id="8660471606262461360">‏از Google Payments</translation>
 <translation id="5171045022955879922">‏جستجو یا تایپ URL</translation>
 <translation id="2321958826496381788">لغزنده را بکشید تا زمانی که بتوانید این متن را به راحتی بخوانید. بعد از دو ضربه متوالی روی یک پاراگراف، اندازه نوشتار حداقل باید به این بزرگی باشد.</translation>
 <translation id="3282568296779691940">‏ورود به Chrome</translation>
@@ -174,7 +174,9 @@
 <translation id="5000922062037820727">مسدود (توصیه می‌شود)</translation>
 <translation id="544291274896356069">اگر این پیوند در یک برنامه خارجی باز شود از حالت ناشناس خارج می‌شوید. ادامه می‌دهید؟</translation>
 <translation id="3917783807003067648">مکان مسدود است</translation>
+<translation id="3207960819495026254">نشانک‌گذاری شده</translation>
 <translation id="1379156015317873965">بهبود عملکرد بارگیری صفحه</translation>
+<translation id="5953603475187800576">‏نمایش آدرس‌ها و کارت‌های اعتباری از Google Payments</translation>
 <translation id="8481940801237642152">اتصال شما به این سایت خصوصی است، اما ممکن است شخصی در شبکه بتواند ظاهر این صفحه را تغییر دهد.</translation>
 <translation id="2593272815202181319">قلم‌های با عرض ثابت</translation>
 <translation id="4807098396393229769">نام روی کارت</translation>
@@ -228,7 +230,6 @@
 <translation id="583891442612896534">‏Chrome نمی‌تواند برای فشرده کردن داده‌ها به سرورهای Google دسترسی پیدا کند. ممکن است صرفه‌جویی در مصرف داده محدود شود.</translation>
 <translation id="4827948050554950725">افزودن کارت اعتباری</translation>
 <translation id="2316129865977710310">خیر، سپاسگزارم</translation>
-<translation id="3489120686474540259">حسابی را اضافه کنید تا برگه‌ها، نشانک‌ها، سابقه و دیگر تنظیمات‌تان را در همه دستگاه‌های‌تان دریافت کنید.</translation>
 <translation id="4278390842282768270">مجاز است</translation>
 <translation id="4686372254213217147">اندازه اصلی</translation>
 <translation id="4526792582053123229">‏Google صفحات بازدیدشده با HTTPS یا حالت ناشناس را بهینه یا مشاهده نمی‌کند.</translation>
@@ -258,7 +259,6 @@
 <translation id="4526249700380860531">‏مشاهده و مدیریت گذرواژه‌های ذخیره شده در <ph name="BEGIN_LINK"/>passwords.google.com<ph name="END_LINK"/></translation>
 <translation id="2496180316473517155">سابقه مرور</translation>
 <translation id="6108923351542677676">تنظیم در حال انجام است...</translation>
-<translation id="7358682983403815415">‏‫برگه‌های باز، نشانک‌ها، سابقه و موارد دیگر با حساب Google شما همگام‌سازی می‌شوند.</translation>
 <translation id="6964496835063002391">افزودن حساب</translation>
 <translation id="4698413471314543145">‏یکی از قابلیت‌های مهم برای اجرای Chrome موجود نیست؛ ممکن است نصب Chrome شما به‌ صورت ناقص انجام شده باشد یا اینکه با این نسخه از Android سازگار نباشد.</translation>
 <translation id="1943432128510653496">ذخیره گذرواژه‌ها</translation>
@@ -338,7 +338,6 @@
 <translation id="5164482624172255778">‏آیا مایلید دفعه بعد Google Chrome ترجمه صفحاتی به زبان <ph name="LANGUAGE"/> در این سایت را پیشنهاد دهد؟</translation>
 <translation id="4062305924942672200">اطلاعات حقوقی</translation>
 <translation id="515227803646670480">پاک کردن داده ذخیره شده</translation>
-<translation id="6757714913056001524">حسابی را انتخاب کنید تا برگه‌ها، نشانک‌ها، سابقه و سایر تنظیماتتان را در همه دستگاه‌هایتان دریافت کنید.</translation>
 <translation id="6935223586406308151"><ph name="DOMAIN_NAME"/> به صفحه اصلی شما اضافه شد</translation>
 <translation id="7638584964844754484">عبارت عبور نادرست است</translation>
 <translation id="129553762522093515">اخیراً بسته شده</translation>
@@ -356,6 +355,7 @@
 <translation id="7324738665594301612">‏در حال آزمایش پروکسی کردن صفحات HTTPS از طریق سرورهای Google به عنوان بخشی از یک آزمایش هستیم.</translation>
 <translation id="7947953824732555851">پذیرش و ورود به سیستم</translation>
 <translation id="6333140779060797560">اشتراک‌گذاری از طریق <ph name="APPLICATION"/></translation>
+<translation id="5939518447894949180">بازنشانی</translation>
 <translation id="6040143037577758943">بستن</translation>
 <translation id="4943872375798546930">نتیجه‌ای یافت نشد</translation>
 <translation id="2139186145475833000">افزودن به صفحه اصلی</translation>
@@ -377,7 +377,6 @@
 <translation id="3988213473815854515">مکان مجاز است</translation>
 <translation id="8912362522468806198">‏حساب Google</translation>
 <translation id="6165508094623778733">بیشتر بدانید</translation>
-<translation id="3828029223314399057">جستجوی نشانک‌ها</translation>
 <translation id="3003595280608617736">‏کارت SD موجود نیست</translation>
 <translation id="6337234675334993532">رمزگذاری</translation>
 <translation id="862875433388403934">شاید دیگر محتوای دانلود شده (فیلم‌ها، موسیقی و غیره) در برنامه‌های دیگر قابل پخش نباشد، مگر آنکه آن برنامه‌ها مجدداً مجوزها را بر اساس اعتبارنامه دستگاه جدید بدست آورند.
@@ -426,10 +425,8 @@
 <translation id="1178581264944972037">توقف موقت</translation>
 <translation id="5127805178023152808">همگام‌سازی خاموش است</translation>
 <translation id="5677928146339483299">مسدود است</translation>
-<translation id="5917058779668915997">‏برگه‌ها، نشانک‌ها، سابقه و تنظیمات دیگرتان با حساب Google شما همگام خواهند شد.</translation>
 <translation id="1709438864123551175">صرفه‌جویی در مصرف داده</translation>
 <translation id="2770465223704140727">حذف از لیست</translation>
-<translation id="3132683934591522090">نمایش تصویر</translation>
 <translation id="6027491994609789413">درحال پخش ویدیو</translation>
 <translation id="7561196759112975576">همیشه</translation>
 <translation id="605721222689873409">سال</translation>

@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="pt-BR">
 <translation id="2774256287122201187">Você pode prosseguir. Se prosseguir para a página, este aviso não aparecerá novamente por cinco minutos.</translation>
+<translation id="3963721102035795474">Modo leitor</translation>
 <translation id="7485870689360869515">Nenhum dado encontrado</translation>
 <translation id="3884278016824448484">Identificador de dispositivo em conflito</translation>
 <translation id="5172758083709347301">Máquina</translation>
@@ -63,7 +64,7 @@
 <translation id="7108649287766967076">Falha na tradução para <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="4103249731201008433">O número de série do dispositivo é inválido</translation>
 <translation id="3219579145727097045">Insira a data de validade e o CVC de quatro dígitos que aparece na parte frontal do seu cartão</translation>
-<translation id="3667681724235208644">Ver original</translation>
+<translation id="59107663811261420">Este tipo de cartão não é aceito pelo Google Payments para este comerciante. Selecione outro cartão.</translation>
 <translation id="4079302484614802869">A configuração do proxy definida utiliza um URL de script .pac, e não servidores proxy fixos.</translation>
 <translation id="5540224163453853">Não foi possível encontrar o artigo solicitado.</translation>
 <translation id="8437238597147034694">&amp;Desfazer mover</translation>
@@ -90,6 +91,7 @@
 <translation id="7977590112176369853">&lt;inserir consulta&gt;</translation>
 <translation id="552553974213252141">O texto foi extraído corretamente?</translation>
 <translation id="5317780077021120954">Salvar</translation>
+<translation id="8530504477309582336">Este tipo de cartão não é aceito pelo Google Payments. Selecione outro cartão.</translation>
 <translation id="7610193165460212391">O valor não corresponde ao período <ph name="VALUE"/>.</translation>
 <translation id="3739623965217189342">Link que você copiou</translation>
 <translation id="8790007591277257123">&amp;Refazer excluir</translation>
@@ -163,6 +165,7 @@
 <translation id="8891727572606052622">Modo de proxy inválido.</translation>
 <translation id="3105172416063519923">Código do recurso:</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="1549470594296187301">O JavaScript deve ser ativado para usar este recurso.</translation>
 <translation id="2587841377698384444">Código da API do diretório:</translation>
 <translation id="7752995774971033316">Não gerenciado</translation>
 <translation id="3712624925041724820">Licenças esgotadas</translation>
@@ -227,6 +230,7 @@
 <translation id="7568593326407688803">Esta página está em<ph name="ORIGINAL_LANGUAGE"/>Deseja traduzi-la?</translation>
 <translation id="8876793034577346603">Falha ao analisar a configuração de rede.</translation>
 <translation id="4800132727771399293">Verifique sua data de validade e seu CVC e tente novamente</translation>
+<translation id="7965440304569005629">Fechar visualização do leitor</translation>
 <translation id="4171400957073367226">Assinatura de verificação inválida</translation>
 <translation id="9125941078353557812">Digite o CVC de três dígitos encontrados na parte de trás do seu cartão</translation>
 <translation id="106701514854093668">Favoritos do computador</translation>

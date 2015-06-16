@@ -77,7 +77,6 @@
 <translation id="3738139272394829648">Meklēšana pieskaroties</translation>
 <translation id="257931822824936280">Izvērsts — noklikšķiniet, lai sakļautu.</translation>
 <translation id="4773299976671772492">Pārtraukts</translation>
-<translation id="5118309162436926908">Pierakstieties, lai piekļūtu savām cilnēm, grāmatzīmēm, vēsturei un citiem iestatījumiem no visām savām ierīcēm.</translation>
 <translation id="7596558890252710462">Operētājsistēma</translation>
 <translation id="3358663646935160692">Šis konts tiek pārvaldīts domēnā <ph name="DOMAIN_NAME"/>.
 
@@ -127,6 +126,7 @@ Jūs pierakstāties, izmantojot pārvaldītu kontu, un ļaujat šī konta admini
 <translation id="4378154925671717803">Tālrunis</translation>
 <translation id="988938288723502454">Nevar izveidot lejupielāžu direktoriju SD kartē.</translation>
 <translation id="3896036286668839683">Sertifikāta skatītājs</translation>
+<translation id="8660471606262461360">No Google Payments</translation>
 <translation id="5171045022955879922">Meklējiet vai ievadiet URL.</translation>
 <translation id="2321958826496381788">Velciet slīdni, kamēr varat ērti lasīt. Pēc dubultskāriena rindkopai tekstam ir jābūt vismaz šādā lielumā.</translation>
 <translation id="3282568296779691940">Pierakstīšanās pārlūkā Chrome</translation>
@@ -177,7 +177,9 @@ Jūs pierakstāties, izmantojot pārvaldītu kontu, un ļaujat šī konta admini
 <translation id="5000922062037820727">Bloķēta (ieteicams)</translation>
 <translation id="544291274896356069">Atverot šo saiti ārējā lietojumprogrammā, tiks aizvērts inkognito režīms. Vai turpināt?</translation>
 <translation id="3917783807003067648">Bloķēta piekļuve atrašanās vietas informācijai</translation>
+<translation id="3207960819495026254">Atzīmēts kā grāmatzīme</translation>
 <translation id="1379156015317873965">Uzlabot lapu ielādes veiktspēju</translation>
+<translation id="5953603475187800576">Rādīt adreses un kredītkartes no pakalpojuma Google Payments</translation>
 <translation id="8481940801237642152">Jūsu savienojums ar šo vietni ir privāts, taču kāds, kurš ir tīklā, var mainīt lapas izskatu.</translation>
 <translation id="2593272815202181319">Vienplatuma</translation>
 <translation id="4807098396393229769">Vārds uz kartes</translation>
@@ -231,7 +233,6 @@ Lai izietu, nospiediet pogu “Atpakaļ”.</translation>
 <translation id="583891442612896534">Chrome nevar sasniegt Google serverus, lai veiktu datu saspiešanu. Datu lietojuma samazinājums var būt ierobežots.</translation>
 <translation id="4827948050554950725">Pievienot kredītkarti</translation>
 <translation id="2316129865977710310">Nē, paldies</translation>
-<translation id="3489120686474540259">Pievienojiet kontu, lai piekļūtu savām cilnēm, grāmatzīmēm, vēsturei un citiem iestatījumiem no visām savām ierīcēm.</translation>
 <translation id="4278390842282768270">Atļauts</translation>
 <translation id="4686372254213217147">Sākotnējais lielums</translation>
 <translation id="4526792582053123229">Lapas, kuru atvēršanai tika izmantots protokols HTTPS vai inkognito režīms, netiks optimizētas, un Google tās nevarēs skatīt.</translation>
@@ -261,7 +262,6 @@ Lai izietu, nospiediet pogu “Atpakaļ”.</translation>
 <translation id="4526249700380860531">Skatīt un pārvaldīt saglabātās paroles vietnē <ph name="BEGIN_LINK"/>passwords.google.com<ph name="END_LINK"/></translation>
 <translation id="2496180316473517155">Pārlūkošanas vēsture</translation>
 <translation id="6108923351542677676">Notiek iestatīšana...</translation>
-<translation id="7358682983403815415">Jūsu atvērtās cilnes, grāmatzīmes, vēsture un citi dati tiek sinhronizēti ar jūsu Google kontu.</translation>
 <translation id="6964496835063002391">Pievienojiet kontu</translation>
 <translation id="4698413471314543145">Trūkst būtiskas funkcionalitātes, kas nepieciešama pārlūka Chrome palaišanai. Vai nu jūsu pārlūka Chrome instalācija ir nepilnīga, vai arī pārlūks nav saderīgs ar Android versiju.</translation>
 <translation id="1943432128510653496">Paroļu saglabāšana</translation>
@@ -341,7 +341,6 @@ Lai izietu, nospiediet pogu “Atpakaļ”.</translation>
 <translation id="5164482624172255778">Vai vēlaties, lai Google Chrome nākamreiz piedāvātu tulkot šīs vietnes lapas, kuru saturs ir šādā valodā: <ph name="LANGUAGE"/>?</translation>
 <translation id="4062305924942672200">Juridiskā informācija</translation>
 <translation id="515227803646670480">Saglabāto datu notīrīšana</translation>
-<translation id="6757714913056001524">Atlasiet kontu, lai piekļūtu savām cilnēm, grāmatzīmēm, vēsturei un citiem iestatījumiem no visām savām ierīcēm.</translation>
 <translation id="6935223586406308151">Domēns <ph name="DOMAIN_NAME"/> tika pievienots jūsu sākuma ekrānam</translation>
 <translation id="7638584964844754484">Nepareiza ieejas frāze</translation>
 <translation id="129553762522093515">Nesen aizvērtas</translation>
@@ -359,6 +358,7 @@ Lai izietu, nospiediet pogu “Atpakaļ”.</translation>
 <translation id="7324738665594301612">Eksperimenta laikā mēs testējam HTTPS lapu sūtīšanu, izmantojot Google serverus kā starpniekserverus.</translation>
 <translation id="7947953824732555851">Pieņemt un pierakst.</translation>
 <translation id="6333140779060797560">Kopīgot, izmantojot <ph name="APPLICATION"/></translation>
+<translation id="5939518447894949180">Atiestatīt</translation>
 <translation id="6040143037577758943">Aizvērt</translation>
 <translation id="4943872375798546930">Nav rezultātu</translation>
 <translation id="2139186145475833000">Pievienot sākuma ekrānam</translation>
@@ -380,7 +380,6 @@ Lai izietu, nospiediet pogu “Atpakaļ”.</translation>
 <translation id="3988213473815854515">Atļauta piekļuve atrašanās vietas informācijai</translation>
 <translation id="8912362522468806198">Google konts</translation>
 <translation id="6165508094623778733">Uzziniet vairāk</translation>
-<translation id="3828029223314399057">Meklēt grāmatzīmes</translation>
 <translation id="3003595280608617736">Nav SD kartes</translation>
 <translation id="6337234675334993532">Šifrēšana</translation>
 <translation id="862875433388403934">Citās lietojumprogrammās lejupielādētu saturu (filmas, mūziku), iespējams, nevarēs atskaņot, kamēr šajās lietojumprogrammās netiks iegūtas licences, pamatojoties uz jauniem ierīces akreditācijas datiem.
@@ -428,10 +427,8 @@ Lai iegūtu jaunas licences, izveidojiet savienojumu ar internetu un atskaņojie
 <translation id="1178581264944972037">Pauzēt</translation>
 <translation id="5127805178023152808">Sinhronizācija izslēgta</translation>
 <translation id="5677928146339483299">Bloķēts</translation>
-<translation id="5917058779668915997">Jūsu cilnes, grāmatzīmes, vēsture un citi iestatījumi tiks sinhronizēti ar jūsu Google kontu.</translation>
 <translation id="1709438864123551175">Datu lietojuma samazinātājs</translation>
 <translation id="2770465223704140727">Noņemt no saraksta</translation>
-<translation id="3132683934591522090">Rādīt attēlu</translation>
 <translation id="6027491994609789413">Notiek videoklipa atskaņošana</translation>
 <translation id="7561196759112975576">Vienmēr</translation>
 <translation id="605721222689873409">GG</translation>

@@ -31,8 +31,6 @@
 <translation id="2297568595583585744">علبة الحالة</translation>
 <translation id="2248649616066688669">‏يمكنك متابعة استخدام جهاز Chromebook أثناء اتصاله بشاشة خارجية، حتى مع غلق الغطاء.</translation>
 <translation id="2946640296642327832">تمكين البلوتوث</translation>
-<translation id="478959186716341421">إرسال</translation>
-<translation id="5537725057119320332">إرسال</translation>
 <translation id="6459472438155181876">تمديد الشاشة إلى <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">خلوي</translation>
 <translation id="6596816719288285829">‏عنوان IP</translation>
@@ -40,6 +38,7 @@
 <translation id="1812696562331527143">‏تم تغيير أسلوب الإدخال إلى <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>جهة خارجية<ph name="END_LINK"/>).
 اضغط على Shift + Alt للتبديل.</translation>
 <translation id="6043994281159824495">الخروج الآن</translation>
+<translation id="5168181903108465623">أجهزة البث متاحة</translation>
 <translation id="2127372758936585790">شاحن منخفض الطاقة</translation>
 <translation id="3799026279081545374">‏قد يكون الشاحن غير صالح. إذا كنت مقيمًا في الولايات المتحدة، فالرجاء الاتصال بالرقم ‎866-628-1371 للحصول على مساعدة واستبدال الشاحن. وإذا كنت مقيمًا في المملكة المتحدة، فالرجاء الاتصال بالرقم ‎0800-026-0613. وإذا كنت مقيمًا في أيرلندا، فالرجاء الاتصال بالرقم ‎1-800-832-664. وإذا كنت مقيمًا في كندا، فالرجاء الاتصال بالرقم ‎866-628-1372. وإذا كنت مقيمًا في أستراليا، فالرجاء الاتصال بالرقم ‎1-800-067-460.</translation>
 <translation id="3891340733213178823">‏للخروج اضغط على Ctrl+Shift+Q مرتين.</translation>
@@ -73,7 +72,6 @@
 <translation id="2509468283778169019">‏مفتاح CAPS LOCK قيد التشغيل</translation>
 <translation id="3892641579809465218">العرض الداخلي</translation>
 <translation id="7823564328645135659">تم تغيير اللغة من &quot;<ph name="FROM_LOCALE"/>&quot; إلى &quot;<ph name="TO_LOCALE"/>&quot; بعد مزامنة إعداداتك.</translation>
-<translation id="7113420380180868673">يتم الآن إرسال $1</translation>
 <translation id="3606978283550408104">تم توصيل شاشة برايل.</translation>
 <translation id="8654520615680304441">‏تشغيل شبكة Wi-Fi...</translation>
 <translation id="4421231901400348175">مشاركة التحكم في شاشتك مع <ph name="HELPER_NAME"/> عن طريق المساعدة عن بُعد.</translation>
@@ -98,8 +96,8 @@
 <translation id="3626637461649818317">باقٍ <ph name="PERCENTAGE"/>%</translation>
 <translation id="9089416786594320554">أساليب الإدخال</translation>
 <translation id="2700058918926273959">تنتهي الجلسة في <ph name="SESSION_TIME_REMAINING"/>. وسيتم إخراجك.</translation>
-<translation id="5807965672380739016">إرسال سطح المكتب إلى</translation>
 <translation id="6247708409970142803">%<ph name="PERCENTAGE"/></translation>
+<translation id="1963814843110128691">جارٍ إرسال $1 إلى $2</translation>
 <translation id="3963445509666917109">سماعة (داخلية)</translation>
 <translation id="1747827819627189109">تم تمكين لوحة المفاتيح على الشاشة</translation>
 <translation id="2208323208084708176">وضع سطح المكتب الموحد</translation>
@@ -119,7 +117,6 @@
 <translation id="8528322925433439945">الجوال ...</translation>
 <translation id="3157169093162779309">تمكين قفل التدوير</translation>
 <translation id="8428213095426709021">إعدادات</translation>
-<translation id="6592705765268910579">مستلم غير معروف</translation>
 <translation id="2372145515558759244">جارٍ مزامنة التطبيقات...</translation>
 <translation id="1987317783729300807">الحسابات</translation>
 <translation id="8456362689280298700">حتى الاكتمال: <ph name="HOUR"/>:<ph name="MINUTE"/> ‏</translation>
@@ -184,6 +181,7 @@
 <translation id="6785414152754474415">اكتمل شحن <ph name="PERCENTAGE"/>% من البطارية ويجري شحنها.</translation>
 <translation id="4895488851634969361">البطارية مملوءة.</translation>
 <translation id="615957422585914272">إظهار لوحة مفاتيح على الشاشة</translation>
+<translation id="8443356412772935865">جارٍ إرسال الشاشة إلى $1</translation>
 <translation id="5947494881799873997">التراجع عن الإجراء</translation>
 <translation id="7593891976182323525">‏مفتاح البحث أو Shift</translation>
 <translation id="7649070708921625228">مساعدة</translation>
@@ -191,9 +189,11 @@
 <translation id="397105322502079400">جارٍ الحساب...</translation>
 <translation id="1013923882670373915">يريد جهاز بلوتوث &quot;<ph name="DEVICE_NAME"/>&quot; الحصول على إذن للإقران. الرجاء إدخال رقم التعريف الشخصي هذا في هذا الجهاز: <ph name="PINCODE"/></translation>
 <translation id="2819276065543622893">سيتم تسجيل خروجك الآن.</translation>
+<translation id="4961318399572185831">إرسال الشاشة</translation>
 <translation id="5507786745520522457">تثبيت بيانات الجوّال</translation>
 <translation id="6165508094623778733">مزيد من المعلومات</translation>
 <translation id="7168224885072002358">سيتم الرجوع إلى درجة الدقة القديمة في غضون <ph name="TIMEOUT_SECONDS"/></translation>
+<translation id="5927132638760172455">إرسال إلى مستلم غير معروف</translation>
 <translation id="743058460480092004">الكاميرا والميكروفون قيد الاستخدام.</translation>
 <translation id="6550675742724504774">خيارات</translation>
 <translation id="6406704438230478924">altgr</translation>
@@ -209,7 +209,6 @@
 <translation id="3009178788565917040">الإخراج</translation>
 <translation id="3147142846278915599">‏Launcher (مزامنة التطبيقات...)</translation>
 <translation id="6911468394164995108">الانضمام إلى شبكة أخرى...</translation>
-<translation id="4373966964907728675">يتم الآن إرسال سطح المكتب</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608"><ph name="HOUR"/>س <ph name="MINUTE"/>د حتى الاكتمال</translation>
 <translation id="3077734595579995578">shift</translation>

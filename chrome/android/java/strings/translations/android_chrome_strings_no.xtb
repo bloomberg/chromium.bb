@@ -77,7 +77,6 @@
 <translation id="3738139272394829648">Trykk for å søke</translation>
 <translation id="257931822824936280">Utvidet – klikk for å minimere.</translation>
 <translation id="4773299976671772492">Stoppet</translation>
-<translation id="5118309162436926908">Logg på for å få fanene, bokmerkene og loggene dine, i tillegg til andre innstillinger, på alle enhetene du bruker</translation>
 <translation id="7596558890252710462">Operativsystem</translation>
 <translation id="3358663646935160692">Denne kontoen administreres av <ph name="DOMAIN_NAME"/>.
 
@@ -127,6 +126,7 @@ Du logger på med en administrert konto, og gir administratoren kontroll over Ch
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="988938288723502454">Nedlastingskatalogen kan ikke opprettes på SD-kort.</translation>
 <translation id="3896036286668839683">Sertifikatfremviser</translation>
+<translation id="8660471606262461360">Fra Google Payments</translation>
 <translation id="5171045022955879922">Søk, eller skriv inn en nettadresse</translation>
 <translation id="2321958826496381788">Dra glidebryteren til du kan lese dette uten problemer. Når du har dobbelttrykket på et avsnitt, bør teksten være minst like stor som dette.</translation>
 <translation id="3282568296779691940">Logg på Chrome</translation>
@@ -177,7 +177,9 @@ Du logger på med en administrert konto, og gir administratoren kontroll over Ch
 <translation id="5000922062037820727">Blokkert (anbefales)</translation>
 <translation id="544291274896356069">Inkognitomodus forlates hvis denne linken åpnes i et eksternt program. Vil du fortsette?</translation>
 <translation id="3917783807003067648">Posisjonen er blokkert</translation>
+<translation id="3207960819495026254">Bokmerket</translation>
 <translation id="1379156015317873965">Forbedre ytelsen ved sideinnlasting</translation>
+<translation id="5953603475187800576">Vis adresser og kredittkort fra Google Payments</translation>
 <translation id="8481940801237642152">Tilkoblingen til dette området er privat, men det kan hende at noen på nettverket kan endre utseendet på siden.</translation>
 <translation id="2593272815202181319">Monospace</translation>
 <translation id="4807098396393229769">Navn som er oppført på kortet</translation>
@@ -231,7 +233,6 @@ Trykk på tilbake-knappen for å avslutte.</translation>
 <translation id="583891442612896534">Chrome kunne ikke kontakte Google-tjenerne for datakomprimering. Det kan hende at du bare oppnår begrenset datasparing.</translation>
 <translation id="4827948050554950725">Legg til et kredittkort</translation>
 <translation id="2316129865977710310">Nei takk</translation>
-<translation id="3489120686474540259">Legg til en konto for å få fanene, bokmerkene, loggen og innstillingene dine på alle enhetene du bruker.</translation>
 <translation id="4278390842282768270">Tillatt</translation>
 <translation id="4686372254213217147">Opprinnelig størrelse</translation>
 <translation id="4526792582053123229">Sider som åpnes med HTTPS eller i inkognitomodus, blir ikke optimalisert eller sett av Google.</translation>
@@ -261,7 +262,6 @@ Trykk på tilbake-knappen for å avslutte.</translation>
 <translation id="4526249700380860531">Se på og administrer lagrede passord på <ph name="BEGIN_LINK"/>passwords.google.com<ph name="END_LINK"/></translation>
 <translation id="2496180316473517155">Nettlesingslogg</translation>
 <translation id="6108923351542677676">Konfigurasjon pågår …</translation>
-<translation id="7358682983403815415">De åpne fanene, bokmerkene, loggen og mer blir synkronisert med Google-kontoen din.</translation>
 <translation id="6964496835063002391">Legg til en konto</translation>
 <translation id="4698413471314543145">En avgjørende funksjon som kreves for å kjøre Chrome, mangler. Chrome-installasjonen er enten ufullstendig eller ikke kompatibel med denne versjonen av Android.</translation>
 <translation id="1943432128510653496">Lagring av passord</translation>
@@ -341,7 +341,6 @@ Trykk på tilbake-knappen for å avslutte.</translation>
 <translation id="5164482624172255778">Vil du at Google Chrome skal tilby seg å oversette sider på <ph name="LANGUAGE"/> fra dette nettstedet neste gang?</translation>
 <translation id="4062305924942672200">Juridisk informasjon</translation>
 <translation id="515227803646670480">Sletting av alle lagrede data</translation>
-<translation id="6757714913056001524">Velg en konto for å få fanene, bokmerkene, loggen og innstillingene dine på alle enhetene du bruker.</translation>
 <translation id="6935223586406308151"><ph name="DOMAIN_NAME"/> ble lagt til på startsiden din.</translation>
 <translation id="7638584964844754484">Feil passordfrase</translation>
 <translation id="129553762522093515">Nylig lukket</translation>
@@ -359,6 +358,7 @@ Trykk på tilbake-knappen for å avslutte.</translation>
 <translation id="7324738665594301612">Vi tester sending av HTTPS-sider gjennom Google-tjenerne som en del av et eksperiment.</translation>
 <translation id="7947953824732555851">Godta og logg på</translation>
 <translation id="6333140779060797560">Del via <ph name="APPLICATION"/></translation>
+<translation id="5939518447894949180">Tilbakestill</translation>
 <translation id="6040143037577758943">Lukk</translation>
 <translation id="4943872375798546930">Ingen resultater</translation>
 <translation id="2139186145475833000">Legg til på startsiden</translation>
@@ -380,7 +380,6 @@ Trykk på tilbake-knappen for å avslutte.</translation>
 <translation id="3988213473815854515">Posisjon er tillatt</translation>
 <translation id="8912362522468806198">Google-konto</translation>
 <translation id="6165508094623778733">Les mer</translation>
-<translation id="3828029223314399057">Søk i bokmerker</translation>
 <translation id="3003595280608617736">Ikke noe SD-kort</translation>
 <translation id="6337234675334993532">Kryptering</translation>
 <translation id="862875433388403934">Innhold (filmer, musikk osv.) som er lastet ned i andre apper, kan kanskje ikke spilles av lenger, før appene får nye lisenser basert på ny enhetslegitimasjon.
@@ -428,10 +427,8 @@ For å få nye lisenser må du koble deg til Internett og spille av innholdet du
 <translation id="1178581264944972037">Stans midlertidig</translation>
 <translation id="5127805178023152808">Synkronisering er slått av</translation>
 <translation id="5677928146339483299">Blokkert</translation>
-<translation id="5917058779668915997">Faner, bokmerker, loggen og andre innstillinger synkroniseres med Google-kontoen din.</translation>
 <translation id="1709438864123551175">Datasparing</translation>
 <translation id="2770465223704140727">Fjern fra listen</translation>
-<translation id="3132683934591522090">Vis bildet</translation>
 <translation id="6027491994609789413">Spiller av videoen</translation>
 <translation id="7561196759112975576">Alltid</translation>
 <translation id="605721222689873409">ÅÅ</translation>

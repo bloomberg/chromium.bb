@@ -158,7 +158,6 @@
 <translation id="5678550637669481956">Se concedió acceso de lectura y escritura a <ph name="VOLUME_NAME"/>.</translation>
 <translation id="7017587484910029005">Escribe los caracteres que ves en la imagen a continuación.</translation>
 <translation id="9013589315497579992">Certificado de autenticación de cliente SSL incorrecto</translation>
-<translation id="5410992958511618392">Deslizar para seleccionar</translation>
 <translation id="2278098630001018905">Usar otra dirección de envío</translation>
 <translation id="1467999917853307373"><ph name="URL"/> quiere almacenar datos de forma permanente en el dispositivo.</translation>
 <translation id="8524066305376229396">Almacenamiento permanente:</translation>
@@ -255,7 +254,6 @@
 <translation id="42981349822642051">Mostrar</translation>
 <translation id="7774497835322490043">Habilita la depuración del código auxiliar GDB. Esto detendrá una aplicación Native Client en el inicio y esperará a que se una nacl-gdb (desde el SDK de NaCl).</translation>
 <translation id="2686444421126615064">Ver cuenta</translation>
-<translation id="9215293857209265904">&quot;<ph name="EXTENSION_NAME"/>&quot; agregada</translation>
 <translation id="7693221960936265065">el principio</translation>
 <translation id="9105212490906037469">F2</translation>
 <translation id="4920887663447894854">Se bloquearon los siguientes sitios para que no puedan rastrear tu ubicación en esta página:</translation>
@@ -437,7 +435,6 @@
 <translation id="6698381487523150993">Creado:</translation>
 <translation id="4684748086689879921">Omitir importación</translation>
 <translation id="6912686727854004322">Para que esto suceda, debes habilitar la actividad de voz y audio, y capacitar a Chromebook en los pasos siguientes.</translation>
-<translation id="6418443601594065950">Inhabilitar ventana emergente de la barra de información para contenido multimedia protegido</translation>
 <translation id="8191230140820435481">Administrar tus aplicaciones, extensiones y temas</translation>
 <translation id="8279107132611114222">Tu solicitud de acceso a este sitio se envió a <ph name="NAME"/>.</translation>
 <translation id="8034955203865359138">No se encontraron entradas del historial.</translation>
@@ -688,6 +685,7 @@
 <translation id="4847468520816441019">Métricas para mostrar</translation>
 <translation id="5098647635849512368">No se puede encontrar la ruta de acceso absoluta al directorio al paquete.</translation>
 <translation id="5859272821192576954">Todo listo para utilizar Hangouts</translation>
+<translation id="5855756842026516189">Protege tus pagos con Google Payments.</translation>
 <translation id="8565650234829130278">Se ha intentado instalar una versión anterior de la aplicación.</translation>
 <translation id="6380224340023442078">Configuracion de contenido...</translation>
 <translation id="1612129875274679969">Mantener este dispositivo en modo kiosco de forma permanente</translation>
@@ -828,6 +826,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="1547297114045837579">Habilitar rasterización de GPU</translation>
 <translation id="3241680850019875542">Seleccionar el directorio de raíz de la extensión que debe empaquetarse. Para actualizar una extensión, también debes seleccionar el archivo de clave privada que será reutilizado.</translation>
 <translation id="7845849068167576533">Aunque hayas visitado el sitio web antes, no es seguro ahora. La Navegación segura de Google <ph name="BEGIN_LINK"/>detectó software malicioso<ph name="END_LINK"/> en <ph name="SITE"/> recientemente. A veces, los sitios web que suelen ser seguros contienen software malicioso. El contenido malicioso proviene de <ph name="SUBRESOURCE_HOST"/>, un conocido distribuidor de software malicioso.</translation>
+<translation id="9137356749601179867">Mostrar la casilla de verificación para poder guardar de forma local una tarjeta de crédito descargada del servidor</translation>
 <translation id="7986295104073916105">Leer y cambiar la configuración guardada de la contraseña</translation>
 <translation id="5711983031544731014">No se puede desbloquear. Ingresa la contraseña.</translation>
 <translation id="2149850907588596975">Contraseñas y formularios</translation>
@@ -954,7 +953,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="1124772482545689468">Usuario</translation>
 <translation id="1685141618403317602">Anular registro</translation>
 <translation id="6039651071822577588">Diccionario de propiedades de la red con formato no válido</translation>
-<translation id="8772559521634908780">Confirmar nueva extensión</translation>
 <translation id="4022426551683927403">&amp;Agregar a diccionario</translation>
 <translation id="8014206674403687691"><ph name="IDS_SHORT_PRODUCT_NAME"/> no puede volver a la versión instalada previamente. Vuelve a intentarlo para utilizar la función Powerwash en el dispositivo.</translation>
 <translation id="5639549361331209298">Vuelve a cargar esta página y espera para ver más opciones.</translation>
@@ -1017,6 +1015,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="8061298200659260393">No permitir que ningún sitio envíe mensajes de inserción</translation>
 <translation id="6328639280570009161">Intenta inhabilitar la predicción de red.</translation>
 <translation id="3528498924003805721">Destinos de accesos directos</translation>
+<translation id="5117427536932535467">Temas y fondos de pantalla</translation>
 <translation id="6780439250949340171">administrar otros parámetros de configuración</translation>
 <translation id="204622017488417136">El dispositivo volverá a la versión de Chrome instalada anteriormente. Se eliminarán todas las cuentas de usuario y los datos locales. Esta acción no se puede deshacer.</translation>
 <translation id="8912793549644936705">Expandir</translation>
@@ -1034,6 +1033,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="2678063897982469759">Permitir nuevamente</translation>
 <translation id="1779766957982586368">Cerrar ventana</translation>
 <translation id="4850886885716139402">Ver</translation>
+<translation id="3075066926036244931">No se pudieron guardar los datos en Google Payments.</translation>
 <translation id="89217462949994770">Has ingresado el número de PIN incorrecto demasiadas veces. Comunícate con <ph name="CARRIER_ID"/> para obtener un nuevo PIN de desbloqueo de 8 dígitos.</translation>
 <translation id="2776441542064982094">Parece que no hay dispositivos disponibles para registrar en la red. Si el dispositivo está activado y conectado a Internet, prueba a registrarlo siguiendo las instrucciones del manual.</translation>
 <translation id="8659716501582523573">Dirección IP:</translation>
@@ -1112,6 +1112,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="6806236207372176468">Inhabilitar compatibilidad con la codificación de video de hardware WebRTC</translation>
 <translation id="7549584377607005141">Esta página web necesita los datos ingresados anteriormente para mostrarse correctamente. Puedes volver a enviar los datos, pero ten en cuenta que se repetirán las acciones que la página haya realizado anteriormente.</translation>
 <translation id="6954850746343724854">Habilita Native Client para todas las aplicaciones web, incluso para aquellas que no se han instalado desde la Chrome Web Store.</translation>
+<translation id="1596174774107741586">Usar los servidores de zona de pruebas de Google Payments</translation>
 <translation id="9068931793451030927">Ruta:</translation>
 <translation id="4289540628985791613">Descripción general</translation>
 <translation id="283278805979278081">Tomar fotografía.</translation>
@@ -1194,6 +1195,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="2971213274238188218">reducir brillo</translation>
 <translation id="473546211690256853">Esta cuenta está administrada por <ph name="DOMAIN"/>.</translation>
 <translation id="288024221176729610">Checo</translation>
+<translation id="5493905423961633717">Guarda y protege tus datos con Google Payments.</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="4839122884004914586">Cancelar la lista de renderización del software</translation>
 <translation id="6305012486838822927">Teclado lao</translation>
@@ -1280,7 +1282,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="1357589289913453911">ID de extensión</translation>
 <translation id="8688579245973331962">¿No aparece tu nombre?</translation>
 <translation id="3226128629678568754">Presiona el botón para volver a cargar y, de ese modo, enviar nuevamente los datos necesarios para cargar la página.</translation>
-<translation id="702455272205692181"><ph name="EXTENSION_NAME"/></translation>
 <translation id="3589283827341767588">Habilitar vínculo de administración remota de contraseñas</translation>
 <translation id="529034129044944303">Eliminar cookies y otros datos del sitio y de complementos al cerrar el navegador</translation>
 <translation id="6871690136546646783">Permite inhabilitar la compatibilidad de ajuste táctil. Se trata de un proceso en el que se ajusta la posición de un gesto táctil para compensar la baja resolución de los toques con respecto a un mouse.</translation>
@@ -1307,7 +1308,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="3909791450649380159">Cor&amp;tar</translation>
 <translation id="2955913368246107853">Cerrar la barra de búsqueda</translation>
 <translation id="4044260751144303020">Composición para elementos de posición fija</translation>
-<translation id="8722708758503989074">Habilita un administrador de selección experimental para hacer un seguimiento de los clientes de entrada de texto.</translation>
 <translation id="1507705801791187716">Excelente, no hay errores.</translation>
 <translation id="5642508497713047">Firmante de la CRL</translation>
 <translation id="813082847718468539">Consulta la información del sitio</translation>
@@ -1381,7 +1381,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="2801702994096586034">Servidor 3</translation>
 <translation id="1598604884989842103">Habilitar la interfaz de usuario de ampliación de TouchView para realizar pruebas</translation>
 <translation id="155138250499894874">&quot;<ph name="BUNDLE_NAME"/>&quot; agrega las siguientes extensiones:</translation>
-<translation id="3453151469744735422">Revocar acceso al dispositivo</translation>
 <translation id="6687839925582416859">Transmitir escritorio o ventana</translation>
 <translation id="4580526846085481512">¿Estás seguro de que deseas eliminar los elementos $1?</translation>
 <translation id="5292890015345653304">Inserta una tarjeta SD o una tarjeta de memoria USB.</translation>
@@ -1389,7 +1388,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="5583370583559395927">Tiempo restante: <ph name="TIME_REMAINING"/></translation>
 <translation id="6219717821796422795">Hanyu</translation>
 <translation id="255937426064304553">Inglés (Estados Unidos; internacional)</translation>
-<translation id="2803407661478021186">Un resguardo SSLv3 pudo establecer un protocolo de enlace con el servidor, pero ya no aceptamos resguardos SSLv3 debido a nuevos ataques contra el protocolo. El servidor debe actualizarse para admitir por lo menos TLS 1.0 y, preferiblemente, TLS 1.2.</translation>
 <translation id="7719421816612904796">Se agotó el tiempo de espera para la capacitación.</translation>
 <translation id="3725367690636977613">páginas</translation>
 <translation id="3498215018399854026">No pudimos comunicarnos con ninguno de tus padres. Vuelve a intentarlo.</translation>
@@ -1499,6 +1497,8 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="2869742291459757746">Permite al usuario hacer que Chrome genere contraseñas cuando detecte páginas de creación de cuenta.</translation>
 <translation id="7079038783243627996">&quot;<ph name="EXTENSION"/>&quot; podrá leer y eliminar archivos de sonido, video e imagen almacenados en las carpetas seleccionadas.</translation>
 <translation id="1737968601308870607">Incluir error</translation>
+<translation id="3831688386498123870">Accede a tu cuenta para pagar con Google Payments</translation>
+<translation id="852605377609758011">Se usará una tarjeta virtual para la transacción. Una tarjeta virtual te brinda un nuevo número de tarjeta para que el vendedor no tenga acceso al número real de tu tarjeta de crédito.</translation>
 <translation id="2594056015203442344">Al habilitar esta marca, los indicadores de audio en la barra de pestañas también funcionan como controles para silenciar el audio de las pestañas.  Además, se agregan comandos en el menú contextual de la pestaña para poder silenciar rápidamente varias pestañas seleccionadas.</translation>
 <translation id="5316588172263354223">Búsqueda por voz en cualquier momento</translation>
 <translation id="1389297115360905376">Esto se puede agregar solamente desde <ph name="CHROME_WEB_STORE"/>.</translation>
@@ -1589,7 +1589,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="3242765319725186192">Clave previamente compartida:</translation>
 <translation id="8249048954461686687">Carpeta OEM</translation>
 <translation id="54870580363317966">Elige un avatar para este usuario supervisado.</translation>
-<translation id="2189826151768452760">Habilitar la extensión para Reducir datos en modo de baja fidelidad</translation>
 <translation id="839736845446313156">Registrarse</translation>
 <translation id="2660779039299703961">Evento</translation>
 <translation id="4249248555939881673">Esperando la conexión de red...</translation>
@@ -1600,10 +1599,10 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="747114903913869239">Error: No se puede decodificar la extensión</translation>
 <translation id="8209439005376447114"><ph name="ISSUER"/> verificó la identidad de este sitio web. El servidor proporcionó la información de transparencia de certificados válida.</translation>
 <translation id="5412637665001827670">Teclado búlgaro </translation>
-<translation id="7187885785158279764">Revocar acceso al archivo</translation>
 <translation id="3574210789297084292">acceder</translation>
 <translation id="5254480569305195883">Habilitar compatibilidad con evento de sincronización en segundo plano de ServiceWorker</translation>
 <translation id="2134149231879627725">Deja que Google te ayude de manera remota a bloquear y a localizar tu dispositivo, así como a borrar sus datos.</translation>
+<translation id="5151034238407558331">Lamentablemente, solamente los compradores que tengan una dirección en EE.UU. podrán usar Google Payments con este comerciante. Si resides en EE.UU., |cambia tu dirección particular en Google Payments| o realiza el pago sin usar Google Payments.</translation>
 <translation id="1146204723345436916">Importar marcadores de un archivo HTML...</translation>
 <translation id="2113921862428609753">Acceso de información de la entidad</translation>
 <translation id="9190063653747922532">L2TP/IPsec + clave previamente compartida</translation>
@@ -1613,7 +1612,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="2401813394437822086">¿No puedes acceder a tu cuenta?</translation>
 <translation id="6071181508177083058">confirmar contraseña</translation>
 <translation id="4906679076183257864">Restablecer valores predeterminados</translation>
-<translation id="7481375069266239836">Mostrar imagen</translation>
 <translation id="4747597332667805440">Habilitar interfaz de usuario basada en cuadros para restaurar la sesión</translation>
 <translation id="2344262275956902282">Utilizar las teclas - y = para enviar una lista de candidatos</translation>
 <translation id="3609138628363401169">El servidor no admite la extensión de negociación TLS.</translation>
@@ -1658,7 +1656,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="7256069811654036843">Ir a la página anterior</translation>
 <translation id="4811502511369621968">La dirección de correo electrónico no es válida. Compruébala y vuelve a intentarlo.</translation>
 <translation id="175196451752279553">Volver a abrir una pestaña cerrada</translation>
-<translation id="8602851771975208551">Otro programa en tu computadora agregó una aplicación que puede cambiar el funcionamiento de Chrome.</translation>
 <translation id="2655386581175833247">Certificado de usuario:</translation>
 <translation id="5039804452771397117">Permitir</translation>
 <translation id="5435964418642993308">Pulsa enter para volver, tecla para menú contextual para ver historial</translation>
@@ -1792,7 +1789,6 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="7460898608667578234">Ucraniano</translation>
 <translation id="614161640521680948">Idioma:</translation>
 <translation id="6404511346730675251">Editar marcador</translation>
-<translation id="1052795589626540564">Confirmar nueva extensión de <ph name="USER_NAME"/></translation>
 <translation id="6718273304615422081">Comprimiendo…</translation>
 <translation id="4109135793348361820">Mover ventana a <ph name="USER_NAME"/> (<ph name="USER_EMAIL"/>)</translation>
 <translation id="2875698561019555027">(Páginas de error de Chrome)</translation>
@@ -1833,6 +1829,7 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="5074318175948309511">Es posible que debas actualizar la página para que se aplique la nueva configuración.</translation>
 <translation id="3740150184898623344">Mostrar el botón de modo de lectura en todas las páginas</translation>
 <translation id="3947376313153737208">Sin selección</translation>
+<translation id="6405640832764359650">Habilitar la casilla de verificación para guardar tarjetas en Google Payments</translation>
 <translation id="1346104802985271895">Método de entrada vietnamita (TELEX)</translation>
 <translation id="7896906914454843592">Teclado ampliado de EE. UU.</translation>
 <translation id="2242603986093373032">No hay ningún dispositivo.</translation>
@@ -1865,7 +1862,7 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="8293206222192510085">Agregar Marcador</translation>
 <translation id="2592884116796016067">Una parte de esta página (HTML WebWorker) se ha bloqueado, tal vez no funcione correctamente.</translation>
 <translation id="2529133382850673012">Teclado en inglés de EE.UU.</translation>
-<translation id="4352850459590683051">Revocar acceso al archivo y al dispositivo</translation>
+<translation id="3176592269865293091">Google Payments detectó un error.</translation>
 <translation id="4411578466613447185">Firmante del código</translation>
 <translation id="1354868058853714482">Adobe Reader está desactualizado y puede no ser seguro.</translation>
 <translation id="6200903742087665630">Habilitar iframes fuera del proceso</translation>
@@ -2049,9 +2046,10 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="3326821416087822643">Comprimiendo <ph name="FILE_NAME"/>…</translation>
 <translation id="3081104028562135154">Aumentar</translation>
 <translation id="3734816294831429815"><ph name="PRODUCT_NAME"/> se reiniciará en <ph name="SECONDS"/> segundos.</translation>
+<translation id="881450003165101303">Google Payments no es compatible con este comerciante.</translation>
 <translation id="8732030010853991079">Para usar esta extensión, haz clic en este ícono.</translation>
 <translation id="32330993344203779">Tu dispositivo se inscribió correctamente para administración empresarial.</translation>
-<translation id="9177483892433212068">Administrador de selección experimental de entrada de texto</translation>
+<translation id="6269540072308453256">Google Payments no está disponible en este momento.</translation>
 <translation id="158917669717260118">No se pudo cargar la página web debido a que tu equipo entró en modo de suspensión o hibernación. Cuando esto ocurre, las conexiones de red se cierran y las nuevas solicitudes de red fallan. Si vuelves a cargar la página, este problema se resolverá.</translation>
 <translation id="6316671927443834085">Error al desconectar de &quot;<ph name="DEVICE_NAME"/>&quot;</translation>
 <translation id="1962233722219655970">Esta página usa una aplicación con tecnología Native Client que no funciona en tu computadora.</translation>
@@ -2072,6 +2070,7 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
         <ph name="HOST_NAME"/>
         para acceder a un sitio interno, comunícate con el administrador
         de la red.</translation>
+<translation id="6938162839153260184">Google Payments no admite esta versión de Chrome o no reconoce la clave de la API de Google.</translation>
 <translation id="7130561729700538522">El registro en el administrador de dispositivos de Google no se realizó correctamente.</translation>
 <translation id="4991420928586866460">Tratar las teclas de la fila superior como teclas de función</translation>
 <translation id="4350019051035968019">Este dispositivo no se puede registrar en el dominio al que pertenece tu cuenta porque ya lo administra otro dominio.</translation>
@@ -2345,13 +2344,13 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="1406500794671479665">Verificando...</translation>
 <translation id="7193047015510747410">Autocompletar credencial de sincronización</translation>
 <translation id="7257173066616499747">Redes Wi-Fi</translation>
-<translation id="2726841397172503890">Habilita la selección con deslizamiento en el teclado virtual. Para que esta opción tenga efecto, se debe habilitar también el teclado virtual.</translation>
 <translation id="6199801702437275229">Esperando información sobre espacio...</translation>
 <translation id="2767649238005085901">Presiona enter para avanzar, tecla para menú contextual para ver historial</translation>
 <translation id="6124650939968185064">Las siguientes extensiones dependen de esta extensión:</translation>
 <translation id="8580634710208701824">Volver a cargar marco</translation>
 <translation id="1018656279737460067">Cancelado</translation>
 <translation id="7606992457248886637">Autoridades</translation>
+<translation id="5953603475187800576">Mostrar las direcciones y las tarjetas de crédito de Google Payments</translation>
 <translation id="4197674956721858839">Comprim. selección</translation>
 <translation id="2672142220933875349">El archivo crx no es válido; no se pudo desempaquetar.</translation>
 <translation id="707392107419594760">Selecciona tu teclado:</translation>
@@ -2482,7 +2481,6 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="8249681497942374579">Eliminar acceso directo de escritorio</translation>
 <translation id="8898786835233784856">Seleccionar siguiente pestaña</translation>
 <translation id="8759753423332885148">Más información</translation>
-<translation id="7100539137591200610">Confirmar nueva aplicación para <ph name="USER_NAME"/></translation>
 <translation id="4011708746171704399">Habilitar transiciones animadas en el tutorial de primera ejecución</translation>
 <translation id="304826556400666995">Activar sonido de las pestañas</translation>
 <translation id="4314564217497012208">Transmitir esta pestaña a…</translation>
@@ -2551,6 +2549,7 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="1965328510789761112">Memoria privada</translation>
 <translation id="7312441861087971374"><ph name="PLUGIN_NAME"/> no está actualizado.</translation>
 <translation id="4159681666905192102">Esta es una cuenta para niños administrada por <ph name="CUSTODIAN_EMAIL"/> y <ph name="SECOND_CUSTODIAN_EMAIL"/>.</translation>
+<translation id="3505030558724226696">Revocar el acceso al dispositivo</translation>
 <translation id="5790085346892983794">Completado correctamente</translation>
 <translation id="7639178625568735185">Entendido</translation>
 <translation id="1901769927849168791">Se detectó una tarjeta SD.</translation>
@@ -2742,7 +2741,6 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="2435248616906486374">Red desconectada</translation>
 <translation id="5087864757604726239">atrás</translation>
 <translation id="4804331037112292643">Cuadro de diálogo para abrir/guardar archivo</translation>
-<translation id="7603592958332467761">Inhabilitar la implementación inteligente del teclado virtual</translation>
 <translation id="960987915827980018">Falta aproximadamente una hora.</translation>
 <translation id="3466147780910026086">Analizando el dispositivo de medios…</translation>
 <translation id="3112378005171663295">Ocultar</translation>
@@ -3031,6 +3029,7 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="7382160026931194400">La |configuración de contenido| y los #motores de búsqueda# guardados no se eliminarán y es posible que reflejen tus hábitos de navegación.</translation>
 <translation id="7503821294401948377">No se pudo cargar el ícono '<ph name="ICON"/>' para las acciones del navegador.</translation>
 <translation id="4809190954660909198">Nuevos detalles de facturación…</translation>
+<translation id="6016640600871825812">Google Payments exige al menos un nombre y un apellido.</translation>
 <translation id="3722396466546931176">Agrega idiomas y arrástralos para ordenarlos según tu preferencia.</translation>
 <translation id="3857466062686943799">Agregar a la barra de tareas</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME"/> empezará a ejecutarse cuando se inicie el sistema y seguirá ejecutándose en segundo plano aunque cierres todas las demás ventanas de <ph name="PRODUCT_NAME"/>.</translation>
@@ -3039,6 +3038,7 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="1611704746353331382">Exportar marcadores a un archivo HTML...</translation>
 <translation id="8275863942928500239">Inhabilitar la opción para tocar comentarios adicionales sobre los componentes de la interfaz de usuario</translation>
 <translation id="2391419135980381625">Fuente estándar</translation>
+<translation id="8066238397346344588">Inhabilitar Google Payments</translation>
 <translation id="8652139471850419555">Redes preferidas</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME"/> (predeterminado)</translation>
 <translation id="5392544185395226057">Activar asistencia para Native Client</translation>
@@ -3069,7 +3069,6 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="3858678421048828670">Teclado italiano</translation>
 <translation id="1436784010935106834">Eliminado</translation>
 <translation id="3730639321086573427">Destinos locales</translation>
-<translation id="399856887277429830">Ejecutar la herramienta de eliminación de software</translation>
 <translation id="7918257978052780342">Inscribir</translation>
 <translation id="4195814663415092787">Continúa desde donde abandonaste</translation>
 <translation id="2941952326391522266">Este servidor no pudo probar que su dominio es <ph name="DOMAIN"/>; el certificado de seguridad proviene de <ph name="DOMAIN2"/>. Es posible que esto se deba a una configuración incorrecta o a que un atacante interceptó la conexión.</translation>
@@ -3117,7 +3116,6 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="765676359832457558">Ocultar configuración avanzada...</translation>
 <translation id="456864639507282337">Agregar un motor de búsqueda</translation>
 <translation id="8655295600908251630">Canal</translation>
-<translation id="2237490276938263504">La extensión &quot;<ph name="EXTENSION_NAME"/>&quot; solicitó un certificado. Si seleccionas un certificado, la extensión podrá usar esta identidad con los servidores ahora y en el futuro. Se recomienda elegir un certificado solo si la extensión es de confianza.</translation>
 <translation id="5829401023154985950">Administrar...</translation>
 <translation id="6832874810062085277">preguntar</translation>
 <translation id="8401363965527883709">Desmarca la casilla de verificación</translation>
@@ -3268,11 +3266,11 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="4853020600495124913">Abrir en una ventana &amp;nueva</translation>
 <translation id="6847758263950452722">Guardar página como MHTML</translation>
 <translation id="3563432852173030730">No se pudo descargar la aplicación del kiosco.</translation>
+<translation id="324743268744517458">Advertencia: No estás conectado a los servidores de producción de Google Payments; en consecuencia, las tarjetas emitidas no serán válidas.</translation>
 <translation id="4711094779914110278">Turco</translation>
 <translation id="2572032849266859634">Se concedió acceso de solo lectura a <ph name="VOLUME_NAME"/>.</translation>
 <translation id="8193362611902704788">Habilita el Selector de aplicaciones. Al habilitarlo, se crean accesos directos del sistema operativo en el Selector de aplicaciones.</translation>
 <translation id="5121130586824819730">Tu disco duro está lleno. Guarda en otra ubicación o libera espacio en el disco duro.</translation>
-<translation id="5549435349608496346">No se puede conectar de manera segura al servidor. Es posible que este sitio web haya funcionado anteriormente, pero se demostró que la conexión con estos sitios provoca riesgos de seguridad para todos los usuarios y, por lo tanto, se inhabilitó para mayor protección.</translation>
 <translation id="1875987452136482705">Esta opción inhabilita la compatibilidad en WebRTC para decodificar transmisiones de video a través del hardware de la plataforma.</translation>
 <translation id="6164005077879661055">Todos los archivos y los datos locales asociados al usuario supervisado se eliminarán de forma permanente una vez que se elimine este usuario supervisado. Es posible que el administrador pueda seguir viendo la configuración y los sitios web visitados de este usuario supervisado en <ph name="MANAGEMENT_URL"/>.</translation>
 <translation id="6723839937902243910">Alimentación</translation>
@@ -3313,7 +3311,6 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="2378982052244864789">Seleccionar el directorio de extensión.</translation>
 <translation id="7861215335140947162">&amp;Descargas</translation>
 <translation id="5154108062446123722">Configuración avanzada para <ph name="PRINTING_DESTINATION"/></translation>
-<translation id="8096278924598956538">Reparar aplicación</translation>
 <translation id="4279125075627804580">Habilitar control de interfaz de usuario para silenciar el audio de las pestañas</translation>
 <translation id="1358735829858566124">No se puede utilizar el archivo o el directorio.</translation>
 <translation id="175772926354468439">Habilitar tema</translation>
@@ -3367,6 +3364,7 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
     <ph name="LINE_BREAK1"/>
     Ya es posible crear una copia de seguridad en <ph name="BEGIN_LINK"/>Google Drive<ph name="END_LINK"/>.</translation>
 <translation id="2677924368525077324">Habilitar la edición de texto táctil</translation>
+<translation id="9213566138414731677"><ph name="WALLET_ERROR"/> Puedes completar la transacción sin usar Google Payments.</translation>
 <translation id="283669119850230892">Para utilizar la red <ph name="NETWORK_ID"/>, primero debes establecer la conexión a Internet que se especifica a continuación.</translation>
 <translation id="7513996269498582533">Detectado por ti</translation>
 <translation id="9073281213608662541">PAP</translation>
@@ -3641,6 +3639,7 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="4633945134722448536">Si se habilita esta función, se envía una solicitud previa de resultados de búsqueda para la consulta ingresada en el cuadro multifunción y se reutiliza la página de búsqueda base preprocesada para confirmar cualquier consulta de búsqueda y no solo aquellas con solicitud previa.</translation>
 <translation id="8755376271068075440">&amp;Mayor</translation>
 <translation id="8132793192354020517">Conectado a <ph name="NAME"/></translation>
+<translation id="949382280525592713"><ph name="LEGAL_DOC_AGREEMENT"/> Para protegerte contra fraudes, se compartirá con Google Payments la información de la computadora que usas (incluida la ubicación).</translation>
 <translation id="4316850752623536204">Sitio web del programador</translation>
 <translation id="7052914147756339792">Establecer fondo de pantalla...</translation>
 <translation id="5865597920301323962">Las cookies de <ph name="DOMAIN"/> se borrarán al salir.</translation>
@@ -3716,6 +3715,7 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="6325191661371220117">Inhabilitar inicio automático</translation>
 <translation id="6817358880000653228">Contraseñas guardadas para este sitio:</translation>
 <translation id="4613271546271159013">Una extensión cambió la página que se muestra al abrir una nueva pestaña.</translation>
+<translation id="3378630551672149129">Accede a tu cuenta y presiona la clave de pestaña para interactuar con los elementos de entrada</translation>
 <translation id="351152300840026870">Fuente de ancho fijo</translation>
 <translation id="4301786491084298653">Inhabilitar en <ph name="DOMAIN"/></translation>
 <translation id="5827266244928330802">Safari</translation>
@@ -3745,7 +3745,6 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="4619415398457343772">Compromiso de AA</translation>
 <translation id="7450732239874446337">Entrada/salida de red suspendida</translation>
 <translation id="6107079717483424262">Reconocer tu voz cuando dices &quot;OK Google&quot;</translation>
-<translation id="4003393903129308792">Habilitar rasterizador de una copia</translation>
 <translation id="5178667623289523808">Buscar anterior</translation>
 <translation id="1510785804673676069">Si utilizas un servidor proxy, comprueba la configuración de proxy o comunícate con el administrador de red para asegurarte de que el servidor proxy funcione. Si crees que no necesitas un servidor proxy, modifica la <ph name="LINK_START"/>configuración de proxy<ph name="LINK_END"/>.</translation>
 <translation id="6773575010135450071">Más acciones…</translation>
@@ -3788,7 +3787,6 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="1482449910686828779">Ejecutar siempre</translation>
 <translation id="6442187272350399447">Impresionante</translation>
 <translation id="7317938878466090505"><ph name="PROFILE_NAME"/> (actual)</translation>
-<translation id="6774230405643443657">Habilitar la decodificación diferida de imágenes</translation>
 <translation id="2148999191776934271"><ph name="HOUR"/>:<ph name="MINUTE"/> de carga hasta completarse</translation>
 <translation id="6007237601604674381">Se produjo un error en al mover el archivo (<ph name="ERROR_MESSAGE"/>).</translation>
 <translation id="907841381057066561">Error al crear el archivo zip temporal durante el empaquetado.</translation>
@@ -3802,7 +3800,6 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="5959471481388474538">Red no disponible</translation>
 <translation id="4871308555310586478">No se obtuvo en Chrome Web Store.</translation>
 <translation id="3578594933904494462">Se está compartiendo el contenido de esta pestaña.</translation>
-<translation id="3401079963003821207">Obtener la herramienta de eliminación de software</translation>
 <translation id="4243835228168841140"><ph name="FULLSCREEN_ORIGIN"/> desea inhabilitar el cursor del mouse.</translation>
 <translation id="5473075389972733037">IBM</translation>
 <translation id="7807711621188256451">Permitir siempre que <ph name="HOST"/> acceda a la cámara</translation>
@@ -3869,7 +3866,6 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="6426993025560594914">Todos los experimentos están disponibles en tu plataforma.</translation>
 <translation id="1834560242799653253">Orientación:</translation>
 <translation id="6150853954427645995">Para guardar este archivo para su uso sin conexión, conéctate nuevamente, haz clic con el botón secundario en el archivo y selecciona la opción <ph name="OFFLINE_CHECKBOX_NAME"/>.</translation>
-<translation id="6440616190620341629">Habilita la decodificación sin composición en MediaDrm de forma predeterminada para extensiones de contenido multimedia encriptado.</translation>
 <translation id="7732882898097938546">Permite habilitar el nuevo algoritmo de combinaciones del Selector de aplicaciones.</translation>
 <translation id="8353683614194668312">Puede:</translation>
 <translation id="1047956942837015229">Eliminando <ph name="COUNT"/> elementos…</translation>
@@ -3937,6 +3933,7 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="7748144333872478614">Inhabilitar los fondos de ventana en TouchView</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="4618518823426718711">Acerca de NaCI</translation>
+<translation id="3084771660770137092">El proceso de la página web puede haber finalizado por agotamiento de la memoria de Chrome o por algún otro motivo. Para continuar, reinicia la página o accede a otra página.</translation>
 <translation id="1114901192629963971">No se puede verificar tu contraseña en la red actual. Selecciona otra red.</translation>
 <translation id="6430814529589430811">Certificado único ASCII con codificación Base64</translation>
 <translation id="3305661444342691068">Abrir PDF en vista previa</translation>
@@ -4037,7 +4034,6 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="1991402313603869273"><ph name="PLUGIN_NAME"/> no está permitido.</translation>
 <translation id="527605982717517565">Siempre permitir JavaScript en <ph name="HOST"/></translation>
 <translation id="702373420751953740">Versión de PRL:</translation>
-<translation id="1307041843857566458">Confirmación de nueva activación</translation>
 <translation id="8654151524613148204">El archivo es demasiado grande para que tu equipo lo procese.</translation>
 <translation id="2987776766682852234">Reducir el nivel de detalle del encabezado &quot;de referencia&quot; predeterminado</translation>
 <translation id="1221024147024329929">PKCS N. º 1 MD2 con encriptación RSA</translation>
@@ -4100,8 +4096,8 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="1792705092719258158">Habilitar el modo de pantalla espejada</translation>
 <translation id="6982896539684144327">Se detectó una impresora de <ph name="VENDOR_NAME"/>.</translation>
 <translation id="8050038245906040378">Firma de código comercial de Microsoft</translation>
+<translation id="8684255857039823328">Se guardó la contraseña. Accede a tus contraseñas en cualquier dispositivo en <ph name="MANAGEMENT_LINK"/>.</translation>
 <translation id="3031557471081358569">Selecciona elementos para importar:</translation>
-<translation id="6728144975495880845">Si se habilita esta opción, los subprocesos de la trama escriben en la memoria GPU.</translation>
 <translation id="1368832886055348810">De izquierda a derecha</translation>
 <translation id="8689102680909215706">La extensión &quot;<ph name="EXTENSION_NAME"/>&quot; se instaló de forma remota.</translation>
 <translation id="133014027510889724">Habilitar control de rendimiento</translation>
@@ -4179,7 +4175,6 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="2911372483530471524">Espacios de nombres PID</translation>
 <translation id="4267171000817377500">Complementos</translation>
 <translation id="8025789898011765392">Tareas</translation>
-<translation id="3140978158653201367">Confirmar nuevo tema</translation>
 <translation id="8439506636278576865">Ofrecer la traducción de páginas en este idioma</translation>
 <translation id="5189060859917252173">El certificado &quot;<ph name="CERTIFICATE_NAME"/>&quot; representa a una Entidad de certificación.</translation>
 <translation id="164729547906544836">Teclado tamil (ITRANS)</translation>
@@ -4191,7 +4186,6 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="1503394326855300303">El propietario de esta cuenta requiere que sea la primera a la que se acceda al crear una sesión de acceso múltiple.</translation>
 <translation id="2662876636500006917">Tienda virtual de Chrome</translation>
 <translation id="6151417162996330722">El certificado de servidor tiene un período de validez demasiado extenso.</translation>
-<translation id="676881925959847033">Inhabilita de forma predeterminada la ventana emergente de la barra de información al acceder al identificador de contenido multimedia protegido.</translation>
 <translation id="952992212772159698">No activado</translation>
 <translation id="443464694732789311">Continuar</translation>
 <translation id="140250605646987970">Se detectó tu teléfono, pero Smart Lock solamente se admite en dispositivos con Android 5.0 y versiones posteriores. &lt;a&gt;Más información&lt;/a&gt;</translation>
@@ -4210,6 +4204,7 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="2885378588091291677">Administrador de tareas</translation>
 <translation id="7412226954991670867">Memoria de GPU</translation>
 <translation id="4916679969857390442">Lupa</translation>
+<translation id="8688644143607459122">Al hacer clic en Continuar, aceptas usar Google Payments. Para protegerte contra fraudes, se compartirá con Google Payments la información de la computadora (incluida la ubicación).</translation>
 <translation id="2080796051686842158">Inhabilita la animación de inicio del fondo de pantalla (excepto en el caso de OOBE).</translation>
 <translation id="305932878998873762">La caché simple para HTTP es una nueva caché. Depende del sistema de archivos para la asignación de espacio en disco.</translation>
 <translation id="8962083179518285172">Ocultar detalles</translation>
@@ -4339,13 +4334,11 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="9206487995878691001">Método de entrada cangjie</translation>
 <translation id="3903912596042358459">El servidor se niega a cumplir esta solicitud</translation>
 <translation id="8135557862853121765"><ph name="NUM_KILOBYTES"/> K</translation>
-<translation id="9031126959232087887">Difiere las operaciones de decodificación de imágenes en WebKit hasta que se pinten.</translation>
 <translation id="2731392572903530958">Volv&amp;er a abrir una ventana cerrada</translation>
 <translation id="6509136331261459454">Administrar otros usuarios...</translation>
 <translation id="6561726789132298588">ingresar</translation>
 <translation id="1254593899333212300">Conexión directa a Internet</translation>
 <translation id="6107012941649240045">Emitido a</translation>
-<translation id="1101112020367325578">No permitir nunca los complementos no incluidos en la zona de pruebas en <ph name="HOST"/></translation>
 <translation id="6483805311199035658">Abriendo <ph name="FILE"/>...</translation>
 <translation id="5465122519792752163">Teclado nepalí (caracteres indios)</translation>
 <translation id="940425055435005472">Tamaño de la fuente:</translation>
@@ -4410,7 +4403,6 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="885381502874625531">Teclado bielorruso</translation>
 <translation id="9154194610265714752">Actualizado</translation>
 <translation id="1803133642364907127">Verificación de contenido de extensión</translation>
-<translation id="1614929118078468638">Reparar extensión</translation>
 <translation id="5438430601586617544">(Sin empaquetar)</translation>
 <translation id="6506262503848065804">Registrando…</translation>
 <translation id="6460601847208524483">Buscar siguiente</translation>
@@ -4495,6 +4487,7 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="131461803491198646">Red local, no en modo roaming</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE"/> - <ph name="FULL_DATE"/></translation>
 <translation id="1830259362126610548">Transmitir esta pestaña (optimizada para el audio)</translation>
+<translation id="3660127367837350905">Google Payments protege tu tarjeta</translation>
 <translation id="1285320974508926690">Nunca traducir este sitio</translation>
 <translation id="3613422051106148727">&amp;Abrir en una pestaña nueva</translation>
 <translation id="8954894007019320973">(Cont.)</translation>
@@ -4541,6 +4534,7 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="5039512255859636053">$1 TB</translation>
 <translation id="4285498937028063278">No fijar</translation>
 <translation id="8734073480934656039">Al habilitar esta opción, las aplicaciones del kiosco podrán iniciarse automáticamente en el inicio.</translation>
+<translation id="3957769504621887787">Usar Google Payments</translation>
 <translation id="6700480081846086223">Transmitir <ph name="HOST_NAME"/></translation>
 <translation id="316307797510303346">Puedes controlar y ver los sitios web que esta persona visita desde <ph name="CUSTODIAN_EMAIL"/>.
   Tus datos de acceso a la cuenta están desactualizados.</translation>
@@ -4681,6 +4675,7 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="6016809788585079594">Di &quot;OK Google&quot; por última vez.</translation>
 <translation id="7792122566227574447">Más visitado excepto en páginas de búsqueda</translation>
 <translation id="4839303808932127586">Guardar video como...</translation>
+<translation id="78196818692136852">Google Payments no puede procesar la transacción.</translation>
 <translation id="317583078218509884">La nueva configuración de permisos del sitio se aplicará al volver a cargar la página.</translation>
 <translation id="3135204511829026971">Girar pantalla</translation>
 <translation id="1317502925920562130">¿Esta es la página principal que esperabas ver?</translation>
@@ -4740,7 +4735,6 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="634208815998129842">Administrador de tareas</translation>
 <translation id="2735698359135166290">Teclado estándar rumano</translation>
 <translation id="1701062906490865540">Eliminar a esta persona</translation>
-<translation id="8475313423285172237">Otro programa en tu computadora agregó una extensión que puede cambiar el funcionamiento de Chrome.</translation>
 <translation id="4850458635498951714">Agregar un dispositivo</translation>
 <translation id="3140353188828248647">Enfoque en la barra de direcciones</translation>
 <translation id="1371806038977523515">Configuración controlada por:</translation>
@@ -4809,6 +4803,7 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="4447465454292850432">Batería:</translation>
 <translation id="2752805177271551234">Utilizar historial de entrada</translation>
 <translation id="7268365133021434339">Cerrar pestañas</translation>
+<translation id="5531274207066050939">Google Payments</translation>
 <translation id="9131598836763251128">Selecciona uno o más archivos.</translation>
 <translation id="6221345481584921695">La Navegación segura de Google <ph name="BEGIN_LINK"/>detectó software malicioso<ph name="END_LINK"/> en <ph name="SITE"/> recientemente. A veces, los sitios web que suelen ser seguros contienen software malicioso. El contenido malicioso proviene de <ph name="SUBRESOURCE_HOST"/>, un conocido distribuidor de software malicioso.</translation>
 <translation id="4589268276914962177">Terminal nueva</translation>
@@ -4830,7 +4825,6 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="9149866541089851383">Edición...</translation>
 <translation id="8735794438432839558">Conéctate a Internet para acceder a tu Chromebook.</translation>
 <translation id="3356395591469757189">Sugerencias de Autocompletar como vista adicional del teclado</translation>
-<translation id="2194802420977819330">Por ejemplo, ¿se producen fallos, se muestran páginas de inicio o barras de herramientas inusuales, aparecen anuncios inesperados que no puedes cerrar, o la experiencia de navegación cambia de alguna manera? Puedes solucionar el problema con la herramienta de eliminación de software.</translation>
 <translation id="7939412583708276221">Continuar de todos modos</translation>
 <translation id="8579285237314169903">Sincronizando <ph name="NUMBER_OF_FILES"/> elementos…</translation>
 <translation id="8140778357236808512">Importar un usuario supervisado existente</translation>
@@ -4856,6 +4850,7 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="7003257528951459794">Frecuencia:</translation>
 <translation id="5710406368443808765">El sistema no pudo almacenar el ID y el token del dispositivo.</translation>
 <translation id="1248269069727746712"><ph name="PRODUCT_NAME"/> está usando la configuración del proxy del sistema de tu dispositivo para conectarse a la red.</translation>
+<translation id="4573096868619592038">Se inhabilitó Google Payments</translation>
 <translation id="3467267818798281173">Pedir sugerencias a Google</translation>
 <translation id="8408402540408758445">Enviar una solicitud previa de los resultados de búsqueda</translation>
 <translation id="5486275809415469523"><ph name="APP_NAME"/> está compartiendo tu pantalla con <ph name="TAB_NAME"/>.</translation>
@@ -4926,6 +4921,7 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="7484964289312150019">Abrir todos los marcadores en una &amp;nueva ventana</translation>
 <translation id="1731346223650886555">Punto y coma</translation>
 <translation id="917861274483335838">Administrar el bloqueo de complementos…</translation>
+<translation id="7968728703861615399">Se produjo un error en tu cuenta de Google Payments.</translation>
 <translation id="3678559383040232393">Teclado maltés</translation>
 <translation id="4450974146388585462">Diagnosticar</translation>
 <translation id="7339763383339757376">PKCS N. º 7, certificado único</translation>
@@ -5023,7 +5019,6 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="7278870042769914968">Usar tema GTK+</translation>
 <translation id="4501530680793980440">Confirmar eliminación</translation>
 <translation id="6841186874966388268">Errores</translation>
-<translation id="6456623799351433175">Confirmar inicio de aplicación</translation>
 <translation id="8737709691285775803">Shill</translation>
 <translation id="1902576642799138955">Período de validez</translation>
 <translation id="1110753181581583968">{NUM_DOWNLOAD,plural, =1{Continuar descarga}other{Continuar descargas}}</translation>
@@ -5033,6 +5028,7 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="4942394808693235155">Buscar actualizaciones y aplicarlas</translation>
 <translation id="1520635877184409083">Ajustar</translation>
 <translation id="5691596662111998220">El archivo <ph name="FILE_NAME"/> ya no existe.</translation>
+<translation id="6904344821472985372">Revocar acceso al archivo</translation>
 <translation id="9153744823707037316">Método de entrada de matriz</translation>
 <translation id="855773602626431402">Se impidió que un complemento no incluido en la zona de pruebas se ejecutara en la página.</translation>
 <translation id="8678648549315280022">Administrar configuración de descarga…</translation>
@@ -5247,7 +5243,6 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="1507170440449692343">Esta página no tiene permiso para acceder a la cámara.</translation>
 <translation id="4189406272289638749">La extensión &lt;b&gt;<ph name="EXTENSION_NAME"/>&lt;/b&gt; controla esta configuración.</translation>
 <translation id="803771048473350947">Archivo</translation>
-<translation id="4511407694269990297">extremadamente breve</translation>
 <translation id="8037117027592400564">Leer todo el texto hablado con la síntesis de voz</translation>
 <translation id="1519759545815312682">La actividad de voz y audio está habilitada para <ph name="USER_EMAIL"/>.</translation>
 <translation id="4764029864566166446">Actualizar el complemento…</translation>
@@ -5276,7 +5271,6 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="5308689395849655368">Notificación de fallas desactivada.</translation>
 <translation id="7592362899630581445">El certificado del servidor no cumple con las restricciones de nombre.</translation>
 <translation id="9003647077635673607">Permitir en todos los sitios web</translation>
-<translation id="6837930996380214191">Permisos actuales</translation>
 <translation id="8689341121182997459">Caduca:</translation>
 <translation id="236128817791440714">Recomendado: configurar Smart Lock para Android</translation>
 <translation id="899403249577094719">URL base del certificado Netscape</translation>
@@ -5368,6 +5362,7 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="2453576648990281505">Ya existe el archivo.</translation>
 <translation id="6972929256216826630">Permitir que todos los sitios descarguen varios archivos automáticamente</translation>
 <translation id="3127589841327267804">PYJJ</translation>
+<translation id="8609432254184257462">Tu tarjeta está protegida con la tarjeta virtual de Google Payments (<ph name="FRONTING_CREDIT_CARD"/>), y se mostrará este número en el recibo. De todos modos, el cargo de la compra se efectuará en la tarjeta <ph name="BACKING_CREDIT_CARD"/>.</translation>
 <translation id="3668823961463113931">Controladores</translation>
 <translation id="8808478386290700967">Tienda virtual</translation>
 <translation id="1732215134274276513">Desmarcar pestañas</translation>
@@ -5440,7 +5435,6 @@ Presiona cualquier tecla para seguir navegando.</translation>
 <translation id="5130080518784460891">Eten</translation>
 <translation id="5037676449506322593">Seleccionar todo</translation>
 <translation id="4124987746317609294">Intervalo de tiempo</translation>
-<translation id="1981905533439890161">Confirmar nueva aplicación</translation>
 <translation id="7717014941119698257">Descargando: <ph name="STATUS"/></translation>
 <translation id="2785530881066938471">No se pudo cargar el archivo &quot;<ph name="RELATIVE_PATH"/>&quot; para la secuencia de comandos del contenido. No está codificado en UTF-8.</translation>
 <translation id="8744525654891896746">Seleccionar un avatar para este usuario supervisado</translation>
@@ -5455,7 +5449,6 @@ Presiona cualquier tecla para seguir navegando.</translation>
 <translation id="3688526734140524629">Cambiar canal</translation>
 <translation id="4959447747655704388">Si comprendes los riesgos para tu seguridad, puedes <ph name="BEGIN_LINK"/>visitar el sitio infectado<ph name="END_LINK"/>.</translation>
 <translation id="7030084719913890980">Es posible que los atacantes hayan vulnerado el sitio y que intenten instalar aplicaciones peligrosas en tu computadora para robar o eliminar tus datos (p. ej., fotos, contraseñas, mensajes y tarjetas de crédito).</translation>
-<translation id="3448964021054693031">Inhabilitar el teclado virtual inteligente</translation>
 <translation id="5941153596444580863">Agregar persona…</translation>
 <translation id="4503387275462811823">Descripción de la extensión</translation>
 <translation id="2157875535253991059">Esta página está en modo de pantalla completa.</translation>
@@ -5533,7 +5526,6 @@ Presiona cualquier tecla para seguir navegando.</translation>
 <translation id="930268624053534560">Marcas de tiempo detalladas</translation>
 <translation id="1088086359088493902">Segundos</translation>
 <translation id="73289266812733869">Desmarcado</translation>
-<translation id="8863222671655378135">Al habilitar esta marca, la extensión para Reducir datos cambia al modo de baja fidelidad.</translation>
 <translation id="8054563304616131773">Ingresa una dirección de correo electrónico válida.</translation>
 <translation id="8639963783467694461">Configuración de Autocompletar</translation>
 <translation id="2951247061394563839">Centrar ventana</translation>
@@ -5559,6 +5551,7 @@ Presiona cualquier tecla para seguir navegando.</translation>
 <translation id="8938356204940892126">Me rindo</translation>
 <translation id="2670965183549957348">Considerando método de entrada</translation>
 <translation id="7839804798877833423">Para recuperar estos archivos, se utilizará aproximadamente <ph name="FILE_SIZE"/> de los datos móviles.</translation>
+<translation id="3268451620468152448">Pestañas abiertas</translation>
 <translation id="4918086044614829423">Aceptar</translation>
 <translation id="5167131699331641907">Teclado para Países Bajos</translation>
 <translation id="7401762151840183030">La configuración se restaurará a los valores predeterminados originales. De esta forma, se restablecerá la página principal, la página Nueva pestaña y el motor de búsqueda; se inhabilitarán las extensiones y se anulará la fijación de todas las pestañas. También se borrarán otros datos temporales y almacenados en la memoria caché, como las cookies y los datos de contenido y de sitios.</translation>
@@ -5580,6 +5573,7 @@ Presiona cualquier tecla para seguir navegando.</translation>
 <translation id="7885283703487484916">muy breve</translation>
 <translation id="5238278114306905396">Se eliminó automáticamente la aplicación &quot;<ph name="EXTENSION_NAME"/>&quot;.</translation>
 <translation id="4538792345715658285">Instalada por una política empresarial</translation>
+<translation id="7982740804274085295">Los programadores pueden usar el servicio de zona de pruebas para las solicitudes de requestAutocomplete() de la API de Google Payments.</translation>
 <translation id="6307493301326177172">Es posible que los atacantes hayan vulnerado el sitio y que intenten instalar aplicaciones peligrosas en tu dispositivo para robar o eliminar tus datos (p. ej., fotos, contraseñas, mensajes y tarjetas de crédito).</translation>
 <translation id="6129953537138746214">Google Space</translation>
 <translation id="2626799779920242286">Vuelve a intentarlo más tarde.</translation>
@@ -5766,8 +5760,6 @@ Presiona cualquier tecla para seguir navegando.</translation>
 <translation id="4215898373199266584">¡No se lo digas a nadie! El modo incógnito (<ph name="INCOGNITO_MODE_SHORTCUT"/>) puede resultarte útil la próxima vez.</translation>
 <translation id="1048597748939794622">Forzado en todas las capas</translation>
 <translation id="9169496697824289689">Ver combinación de teclas para acceso directo</translation>
-<translation id="3132683934591522090">Mostrar imagen</translation>
-<translation id="420676372321767680">Habilitar la decodificación sin composición</translation>
 <translation id="2925966894897775835">Hojas de cálculo de Google</translation>
 <translation id="632744581670418035">Superposición de teclado</translation>
 <translation id="3349155901412833452">Utiliza las teclas - y = para enviar una lista de candidatos</translation>
@@ -5807,7 +5799,6 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="6059652578941944813">Jerarquía de certificados</translation>
 <translation id="3153094071447713741">Funciones experimentales de la vista de entrada</translation>
 <translation id="5729712731028706266">&amp;Ver</translation>
-<translation id="9170884462774788842">Otro programa en tu computadora agregó un tema que puede cambiar el funcionamiento de Chrome.</translation>
 <translation id="8571108619753148184">Servidor 4</translation>
 <translation id="4508765956121923607">Ver códig&amp;o fuente</translation>
 <translation id="5975083100439434680">Alejar</translation>
@@ -5839,7 +5830,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="2650446666397867134">Se denegó el acceso al archivo.</translation>
 <translation id="5832830184511718549">Utiliza un subproceso secundario para realizar la composición de páginas web. Esto permite un desplazamiento sin problemas, incluso cuando el subproceso principal no responda.</translation>
 <translation id="7943385054491506837">Inglés (Estados Unidos; Colemak)</translation>
-<translation id="8203365863660628138">Confirmar instalación</translation>
+<translation id="4316693445078347518">Generando la tarjeta virtual de Google Payments…</translation>
 <translation id="1635033183663317347">Instalado por tu tutor</translation>
 <translation id="5457858494714903578">No puedes instalar una extensión no confiable con el ID &quot;<ph name="IMPORT_ID"/>&quot;.</translation>
 <translation id="7025325401470358758">Siguiente panel</translation>

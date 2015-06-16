@@ -63,7 +63,7 @@
 <translation id="7108649287766967076">Tõlkimine <ph name="TARGET_LANGUAGE"/> keelde ebaõnnestus.</translation>
 <translation id="4103249731201008433">Seadme seerianumber on kehtetu</translation>
 <translation id="3219579145727097045">Sisestage aegumiskuupäev ja 4-kohaline CVC kaardi tagaküljelt</translation>
-<translation id="3667681724235208644">Originaali kuvamine</translation>
+<translation id="59107663811261420">Google Payments ei toeta selle kaupmehe puhul seda tüüpi kaarti. Valige teine kaart.</translation>
 <translation id="4079302484614802869">Puhverserveri konfigureerimine on määratud kasutama pac-skripti URL-i, mitte fikseeritud puhverservereid.</translation>
 <translation id="5540224163453853">Taotletud artiklit ei õnnestunud leida.</translation>
 <translation id="8437238597147034694">&amp;Võta teisaldamine tagasi</translation>
@@ -90,6 +90,7 @@
 <translation id="7977590112176369853">&lt;sisesta päring&gt;</translation>
 <translation id="552553974213252141">Kas tekst ekstraktiti õigesti?</translation>
 <translation id="5317780077021120954">Salvesta</translation>
+<translation id="8530504477309582336">Google Payments ei toeta seda tüüpi kaarti. Valige teine kaart.</translation>
 <translation id="7610193165460212391">Väärtus on vahemikust (<ph name="VALUE"/>) väljaspool.</translation>
 <translation id="3739623965217189342">Teie kopeeritud link</translation>
 <translation id="8790007591277257123">&amp;Kustuta uuesti</translation>

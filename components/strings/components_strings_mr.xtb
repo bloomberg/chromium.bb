@@ -63,7 +63,7 @@
 <translation id="7108649287766967076"><ph name="TARGET_LANGUAGE"/> मध्ये भाषांतर अयशस्वी झाले.</translation>
 <translation id="4103249731201008433">डिव्हाइस सिरीयल क्रमांक अवैध आहे</translation>
 <translation id="3219579145727097045">आपल्या कार्डच्या समोरच्या भागावरील कालबाह्यता तारीख आणि 4-अंकी CVC प्रविष्ट करा</translation>
-<translation id="3667681724235208644">मूळ पहा</translation>
+<translation id="59107663811261420">कार्डचा हा प्रकार या व्यापार्‍यासाठी Google Payments द्वारे समर्थित नाही. कृपया एक भिन्न कार्ड निवडा.</translation>
 <translation id="4079302484614802869">प्रॉक्सी कॉन्फिगरेशन .pac स्क्रिप्ट URL वापरण्‍यास सेट करण्‍यात आले आहे, निश्चित प्रॉक्सी सर्व्हर नव्हे.</translation>
 <translation id="5540224163453853">विनंती केलेला लेख शोधू शकलो नाही.</translation>
 <translation id="8437238597147034694">&amp;हलवा पूर्ववत करा</translation>
@@ -90,6 +90,7 @@
 <translation id="7977590112176369853">&lt;क्वेरी प्रविष्ट करा&gt;</translation>
 <translation id="552553974213252141">मजकूर योग्यरितीने काढला होता?</translation>
 <translation id="5317780077021120954">जतन करा</translation>
+<translation id="8530504477309582336">या प्रकारचे कार्ड Google Payments द्वारे समर्थित नाही. कृपया एक भिन्न कार्ड निवडा.</translation>
 <translation id="7610193165460212391">मूल्य <ph name="VALUE"/> श्रेणीच्या बाहेर आहे.</translation>
 <translation id="3739623965217189342">आपण कॉपी केलेल्याचा दुवा जोडा</translation>
 <translation id="8790007591277257123">&amp;पुन्हा करा हटवा</translation>

@@ -31,8 +31,6 @@
 <translation id="2297568595583585744">സ്റ്റാറ്റസ് ട്രേ</translation>
 <translation id="2248649616066688669">നിങ്ങളുടെ Chromebook ഒരു ബാഹ്യ ഡിസ്‌പ്ലേയിൽ കണക്‌റ്റുചെയ്തിരിക്കുമ്പോൾ, ലിഡ് അടച്ചിരിക്കുകയാണെങ്കിൽപ്പോലും നിങ്ങൾക്ക് Chromebook ഉപയോഗിക്കുന്നത് തുടരാം.</translation>
 <translation id="2946640296642327832">Bluetooth പ്രാപ്‌തമാക്കുക</translation>
-<translation id="478959186716341421">കാസ്റ്റുചെയ്യുന്നു</translation>
-<translation id="5537725057119320332">കാസ്‌റ്റുചെയ്യുക</translation>
 <translation id="6459472438155181876">സ്‌ക്രീൻ <ph name="DISPLAY_NAME"/> എന്നതിലേക്ക് വികസിപ്പിക്കുന്നു</translation>
 <translation id="8206859287963243715">സെല്ലുലാര്‍‌</translation>
 <translation id="6596816719288285829">IP വിലാസം</translation>
@@ -73,7 +71,6 @@
 <translation id="2509468283778169019">CAPS LOCK ഓൺ ആണ്</translation>
 <translation id="3892641579809465218">ആന്തരിക പ്രദർശനം</translation>
 <translation id="7823564328645135659">നിങ്ങളുടെ ക്രമീകരണങ്ങള്‍ സമന്വയിപ്പിച്ചതിന് ശേഷം ഭാഷ &quot;<ph name="FROM_LOCALE"/>&quot; എന്നതില്‍ നിന്ന് &quot;<ph name="TO_LOCALE"/>&quot; എന്നതിലേക്ക് മാറി.</translation>
-<translation id="7113420380180868673">$1 കാസ്റ്റുചെയ്യുന്നു</translation>
 <translation id="3606978283550408104">ബ്രെയ്‌ലി ഡിസ്‌പ്ലേ കണക്‌റ്റുചെയ്‌തു.</translation>
 <translation id="8654520615680304441">Wi-Fi ഓണാക്കുക...</translation>
 <translation id="4421231901400348175"><ph name="HELPER_NAME"/> ഉപയോഗിച്ച് നിങ്ങളുടെ വിദൂര സഹായി മുഖേന സ്‌ക്രീനിന്റെ നിയന്ത്രണം പങ്കിടുക.</translation>
@@ -97,7 +94,6 @@
 <translation id="3626637461649818317"><ph name="PERCENTAGE"/>% ശേഷിക്കുന്നു</translation>
 <translation id="9089416786594320554">ഇൻപുട്ട്  രീതികൾ</translation>
 <translation id="2700058918926273959"><ph name="SESSION_TIME_REMAINING"/>-നുള്ളിൽ സെഷൻ അവസാനിക്കുന്നു. നിങ്ങൾ സൈൻ ഔട്ടാകും.</translation>
-<translation id="5807965672380739016">ഇതിലേക്ക് ഡെസ്‌ക്‌ടോപ്പ് കാസ്റ്റുചെയ്യുക</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
 <translation id="3963445509666917109">സ്‌പീക്കർ (ആന്തരികം)</translation>
 <translation id="1747827819627189109">ഓൺ‌ സ്‌ക്രീൻ കീ‌ബോർഡ് പ്രവർത്തനക്ഷമമാക്കി</translation>
@@ -118,7 +114,6 @@
 <translation id="8528322925433439945">മൊബൈൽ ...</translation>
 <translation id="3157169093162779309">റൊട്ടേഷൻ ലോക്ക് പ്രവർത്തനക്ഷമമാക്കുക</translation>
 <translation id="8428213095426709021">ക്രമീകരണങ്ങള്‍</translation>
-<translation id="6592705765268910579">അജ്ഞാത റിസീവർ</translation>
 <translation id="2372145515558759244">അപ്ലിക്കേഷനുകൾ സമന്വയിപ്പിക്കുന്നു...</translation>
 <translation id="1987317783729300807">അക്കൗണ്ടുകൾ‌</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> നിറയാൻ</translation>
@@ -210,7 +205,6 @@
 <translation id="3009178788565917040">ഔട്ട്പുട്ട്</translation>
 <translation id="3147142846278915599">ലോഞ്ചർ (അപ്ലിക്കേഷൻ സമന്വയിപ്പിക്കുന്നു...)</translation>
 <translation id="6911468394164995108">മറ്റുള്ളവ ചേർക്കുക...</translation>
-<translation id="4373966964907728675">ഡെസ്‌ക്‌ടോപ്പ് കാസ്റ്റുചെയ്യുന്നു</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608">പൂർണ്ണമായും ചാർജാകുന്നതിന് <ph name="HOUR"/>മ <ph name="MINUTE"/>മി</translation>
 <translation id="3077734595579995578">shift</translation>

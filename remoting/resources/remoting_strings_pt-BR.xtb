@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="pt-BR">
 <translation id="337167041784729019">Mostrar estatísticas</translation>
+<translation id="2256115617011615191">Reiniciar agora</translation>
 <translation id="7606912958770842224">Ativar conexões remotas</translation>
 <translation id="3785447812627779171">Host do
 Chromoting</translation>
@@ -137,6 +138,7 @@ Para ver mais informações sobre privacidade, consulte a Política de Privacida
 <translation id="8196755618196986400">Para que possamos entrar em contato com mais informações, seu endereço de e-mail será incluído em todo o feedback enviado por você.</translation>
 <translation id="154040539590487450">Falha ao iniciar o serviço de acesso remoto.</translation>
 <translation id="7948001860594368197">Opções de tela</translation>
+<translation id="2221097377466213233">Usar Ctrl da direita para enviar tecla Win (⌘ no Mac)</translation>
 <translation id="5254120496627797685">Abandonar esta página encerrará sua sessão na Área de trabalho remota do Google Chrome.</translation>
 <translation id="7019153418965365059">Erro de host não reconhecido: <ph name="HOST_OFFLINE_REASON"/>.</translation>
 <translation id="712467900648340229">Não foi possível estabelecer conexão com o dispositivo de transmissão.</translation>
@@ -152,6 +154,7 @@ Para ver mais informações sobre privacidade, consulte a Política de Privacida
 <translation id="8116630183974937060">Ocorreu um erro de rede. Verifique se o dispositivo está on-line e tente novamente.</translation>
 <translation id="3020807351229499221">Falha ao atualizar o PIN. Tente novamente mais tarde.</translation>
 <translation id="2647232381348739934">Serviço Chromoting</translation>
+<translation id="2888969873284818612">Ocorreu um erro de rede. Reiniciaremos o aplicativo quando seu dispositivo estiver on-line novamente.</translation>
 <translation id="579702532610384533">Reconectar</translation>
 <translation id="4867841927763172006">Enviar PrtScn</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME"/> (última vez on-line em <ph name="DATE_OR_TIME"/>)</translation>
@@ -258,6 +261,7 @@ remota do Google Chrome</translation>
 <translation id="4277463233460010382">Este computador está configurado para permitir que um ou mais clientes se conectem sem ter que inserir um PIN.</translation>
 <translation id="837021510621780684">Deste computador</translation>
 <translation id="518094545883702183">Essa informação é usada apenas para diagnosticar o problema que você está relatando, está disponível apenas para as pessoas que estão investigando seu relatório e só fica retida por até 30 dias.</translation>
+<translation id="1261403020716313927">• Corrigida grande perda de memória na desconexão da área de trabalho remota.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="4918086044614829423">Aceitar</translation>
 <translation id="7215059001581613786">Digite um PIN de seis ou mais dígitos.</translation>

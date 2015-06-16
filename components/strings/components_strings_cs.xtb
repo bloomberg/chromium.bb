@@ -63,7 +63,7 @@
 <translation id="7108649287766967076">Překlad do jazyka <ph name="TARGET_LANGUAGE"/> se nezdařil.</translation>
 <translation id="4103249731201008433">Sériové číslo zařízení je neplatné</translation>
 <translation id="3219579145727097045">Zadejte datum vypršení platnosti a čtyřmístný kód CVC z přední strany karty</translation>
-<translation id="3667681724235208644">Zobrazit originál</translation>
+<translation id="59107663811261420">Tento typ karty ve službě Google Payments u tohoto obchodníka není podporován. Vyberte prosím jinou kartu.</translation>
 <translation id="4079302484614802869">Proxy je nastaveno na používání adresy URL skriptu PAC, nikoliv pevně daných serverů proxy.</translation>
 <translation id="5540224163453853">Požadovaný článek nebyl nalezen.</translation>
 <translation id="8437238597147034694">&amp;Vrátit přesunutí zpět</translation>
@@ -90,6 +90,7 @@
 <translation id="7977590112176369853">&lt;zadat dotaz&gt;</translation>
 <translation id="552553974213252141">Byl text extrahován správně?</translation>
 <translation id="5317780077021120954">Uložit</translation>
+<translation id="8530504477309582336">Služba Google Payments tento typ karty nepodporuje. Vyberte prosím jinou kartu.</translation>
 <translation id="7610193165460212391">Hodnota <ph name="VALUE"/> je mimo rozsah.</translation>
 <translation id="3739623965217189342">Zkopírovaný odkaz</translation>
 <translation id="8790007591277257123">&amp;Opakovat smazání</translation>

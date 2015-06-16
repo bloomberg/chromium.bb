@@ -77,7 +77,6 @@
 <translation id="3738139272394829648">Нажмите для поиска</translation>
 <translation id="257931822824936280">Развернуто. Нажмите, чтобы свернуть.</translation>
 <translation id="4773299976671772492">Остановлено</translation>
-<translation id="5118309162436926908">Войдите, чтобы синхронизировать вкладки, историю и настройки на всех устройствах.</translation>
 <translation id="7596558890252710462">Операционная система</translation>
 <translation id="3358663646935160692">Этот аккаунт зарегистрирован в домене <ph name="DOMAIN_NAME"/>.
 
@@ -127,6 +126,7 @@
 <translation id="4378154925671717803">Телефон</translation>
 <translation id="988938288723502454">Не удается создать каталог для скачивания на SD-карте.</translation>
 <translation id="3896036286668839683">Средство просмотра сертификатов</translation>
+<translation id="8660471606262461360">Из Google Payments</translation>
 <translation id="5171045022955879922">Введите запрос или URL</translation>
 <translation id="2321958826496381788">Перемещайте ползунок, пока текст не станет удобным для чтения. После двойного нажатия на абзац текст должен быть такого размера.</translation>
 <translation id="3282568296779691940">Войдите в Chrome</translation>
@@ -177,7 +177,9 @@
 <translation id="5000922062037820727">Заблокировано (рекомендуется)</translation>
 <translation id="544291274896356069">Эта ссылка откроется во внешнем приложении, и вы выйдете из режима инкогнито. Продолжить?</translation>
 <translation id="3917783807003067648">Доступ к геоданным запрещен</translation>
+<translation id="3207960819495026254">Добавлено в закладки</translation>
 <translation id="1379156015317873965">Более эффективная загрузка страниц</translation>
+<translation id="5953603475187800576">Показывать адреса и кредитные карты из Google Payments</translation>
 <translation id="8481940801237642152">Подключение к веб-сайту защищено, но посторонний пользователь может изменить вид страницы</translation>
 <translation id="2593272815202181319">Моноширинный</translation>
 <translation id="4807098396393229769">Имя владельца</translation>
@@ -231,7 +233,6 @@
 <translation id="583891442612896534">Не удалось подключиться к серверам Google для сжатия данных. Объем трафика может увеличиться.</translation>
 <translation id="4827948050554950725">Добавить кредитную карту</translation>
 <translation id="2316129865977710310">Спасибо, не надо</translation>
-<translation id="3489120686474540259">Добавьте аккаунт, и вы сможете работать с одними и теми же вкладками, историей, закладками и другими настройками на любом устройстве.</translation>
 <translation id="4278390842282768270">Разрешены</translation>
 <translation id="4686372254213217147">Исходный размер</translation>
 <translation id="4526792582053123229">Нам недоступны страницы, открытые через HTTPS или в режиме инкогнито, поэтому их нельзя оптимизировать.</translation>
@@ -261,7 +262,6 @@
 <translation id="4526249700380860531">Просматривайте сохраненные пароли и управляйте ими на странице <ph name="BEGIN_LINK"/>passwords.google.com<ph name="END_LINK"/></translation>
 <translation id="2496180316473517155">История просмотров</translation>
 <translation id="6108923351542677676">Настройка…</translation>
-<translation id="7358682983403815415">Вкладки, закладки, история и настройки синхронизируются с вашим аккаунтом Google.</translation>
 <translation id="6964496835063002391">Добавить аккаунт</translation>
 <translation id="4698413471314543145">Отсутствует функция, необходимая для работы Chrome. Возможно, установка не была завершена или вы используете несовместимую версию Android.</translation>
 <translation id="1943432128510653496">Сохранение паролей</translation>
@@ -341,7 +341,6 @@
 <translation id="5164482624172255778">Хотите, чтобы Google Chrome всегда предлагал перевести этот сайт, когда на его страницах используется <ph name="LANGUAGE"/>?</translation>
 <translation id="4062305924942672200">Юридическая информация</translation>
 <translation id="515227803646670480">Удаление данных</translation>
-<translation id="6757714913056001524">Выберите аккаунт, чтобы получить доступ к своим вкладкам, истории, закладкам и другим настройкам на любом устройстве.</translation>
 <translation id="6935223586406308151">Домен <ph name="DOMAIN_NAME"/> добавлен на главный экран</translation>
 <translation id="7638584964844754484">Неверная кодовая фраза</translation>
 <translation id="129553762522093515">Недавно закрытые</translation>
@@ -359,6 +358,7 @@
 <translation id="7324738665594301612">Мы тестируем новую функцию: серверы Google сжимают данные HTTPS-страниц.</translation>
 <translation id="7947953824732555851">Принять и войти</translation>
 <translation id="6333140779060797560">Отправить с помощью <ph name="APPLICATION"/></translation>
+<translation id="5939518447894949180">Сбросить</translation>
 <translation id="6040143037577758943">Закрыть</translation>
 <translation id="4943872375798546930">Нет результатов</translation>
 <translation id="2139186145475833000">Добавить на главный экран</translation>
@@ -380,7 +380,6 @@
 <translation id="3988213473815854515">Доступ к геоданным разрешен</translation>
 <translation id="8912362522468806198">Аккаунт Google</translation>
 <translation id="6165508094623778733">Подробнее...</translation>
-<translation id="3828029223314399057">Искать в закладках</translation>
 <translation id="3003595280608617736">Нет SD-карты</translation>
 <translation id="6337234675334993532">Шифрование</translation>
 <translation id="862875433388403934">Воспроизведение контента (фильмов, музыки и т. д.), скачанного в других приложениях, может не поддерживаться, пока не будут получены лицензии с новыми учетными данными устройства.
@@ -428,10 +427,8 @@
 <translation id="1178581264944972037">Пауза</translation>
 <translation id="5127805178023152808">Синхронизация выключена</translation>
 <translation id="5677928146339483299">Заблокировано</translation>
-<translation id="5917058779668915997">Ваши закладки, история просмотров, вкладки и настройки синхронизируются с аккаунтом Google.</translation>
 <translation id="1709438864123551175">Экономия трафика</translation>
 <translation id="2770465223704140727">Удалить из списка</translation>
-<translation id="3132683934591522090">Показать изображение</translation>
 <translation id="6027491994609789413">Воспроизведение видео</translation>
 <translation id="7561196759112975576">Всегда</translation>
 <translation id="605721222689873409">ГГ</translation>

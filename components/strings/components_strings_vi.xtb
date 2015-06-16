@@ -63,7 +63,7 @@
 <translation id="7108649287766967076">Bản dịch sang <ph name="TARGET_LANGUAGE"/> không thành công.</translation>
 <translation id="4103249731201008433">Số sê-ri thiết bị không hợp lệ</translation>
 <translation id="3219579145727097045">Nhập ngày hết hạn và CVC gồm 4 chữ số ở mặt trước thẻ của bạn</translation>
-<translation id="3667681724235208644">Xem trang gốc</translation>
+<translation id="59107663811261420">Loại thẻ này không được Google Payments hỗ trợ cho người bán này. Vui lòng chọn thẻ khác.</translation>
 <translation id="4079302484614802869">Cấu hình proxy được đặt để sử dụng URL tập lệnh .pac chứ không phải máy chủ proxy cố định.</translation>
 <translation id="5540224163453853">Không thể tìm thấy bài viết đã yêu cầu.</translation>
 <translation id="8437238597147034694">&amp;Hoàn tác di chuyển</translation>
@@ -90,6 +90,7 @@
 <translation id="7977590112176369853">&lt;nhập truy vấn&gt;</translation>
 <translation id="552553974213252141">Văn bản đã được trích xuất chính xác chưa?</translation>
 <translation id="5317780077021120954">Lưu</translation>
+<translation id="8530504477309582336">Google Payments không hỗ trợ loại thẻ này. Vui lòng chọn thẻ khác.</translation>
 <translation id="7610193165460212391">Giá trị nằm ngoài phạm vi <ph name="VALUE"/>.</translation>
 <translation id="3739623965217189342">Liên kết đã sao chép</translation>
 <translation id="8790007591277257123">&amp;Làm lại xóa</translation>

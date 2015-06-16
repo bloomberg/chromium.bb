@@ -77,7 +77,6 @@
 <translation id="3738139272394829648">Tocar para pesquisar</translation>
 <translation id="257931822824936280">Expandido. Clique para reduzir.</translation>
 <translation id="4773299976671772492">Parado</translation>
-<translation id="5118309162436926908">Inicie sessão para aceder aos separadores, aos marcadores, ao histórico e a outras definições em todos os dispositivos</translation>
 <translation id="7596558890252710462">Sistema operativo</translation>
 <translation id="3358663646935160692">Esta conta é gerida por <ph name="DOMAIN_NAME"/>.
 
@@ -127,6 +126,7 @@ Está a iniciar sessão com uma conta gerida e a atribuir ao respetivo administr
 <translation id="4378154925671717803">Telefone</translation>
 <translation id="988938288723502454">Não é possível criar o diretório de transferência no cartão SD.</translation>
 <translation id="3896036286668839683">Visualizador de certificados</translation>
+<translation id="8660471606262461360">Do Google Payments</translation>
 <translation id="5171045022955879922">Pesquisar ou escrever URL</translation>
 <translation id="2321958826496381788">Arraste o controlo de deslize até conseguir ler confortavelmente. O texto deve ter, pelo menos, este tamanho depois de tocar duas vezes num parágrafo.</translation>
 <translation id="3282568296779691940">Iniciar sessão no Chrome</translation>
@@ -177,7 +177,9 @@ Está a iniciar sessão com uma conta gerida e a atribuir ao respetivo administr
 <translation id="5000922062037820727">Bloqueado (recomendado)</translation>
 <translation id="544291274896356069">Abandonar o modo de navegação anónima se este link estiver aberto numa aplicação externa. Deseja continuar?</translation>
 <translation id="3917783807003067648">A localização está bloqueada</translation>
+<translation id="3207960819495026254">Adicionado aos marcadores</translation>
 <translation id="1379156015317873965">Melhorar o desempenho de carregamento de páginas</translation>
+<translation id="5953603475187800576">Mostrar endereços e cartões de crédito do Google Payments</translation>
 <translation id="8481940801237642152">A sua ligação a este site é privada, mas alguém na rede pode estar a tentar alterar o aspeto da página.</translation>
 <translation id="2593272815202181319">Monoespaço</translation>
 <translation id="4807098396393229769">Nome no cartão</translation>
@@ -231,7 +233,6 @@ Clique no botão de retrocesso para sair.</translation>
 <translation id="583891442612896534">O Chrome não consegue comunicar com os servidores da Google para a compressão de dados. A poupança de dados pode ser limitada.</translation>
 <translation id="4827948050554950725">Adicionar cartão de crédito</translation>
 <translation id="2316129865977710310">Não, obrigado</translation>
-<translation id="3489120686474540259">Adicione uma conta para aceder aos separadores, marcadores, histórico e outras definições em todos os dispositivos.</translation>
 <translation id="4278390842282768270">Permitidos:</translation>
 <translation id="4686372254213217147">Tamanho original</translation>
 <translation id="4526792582053123229">As páginas acedidas com HTTPS ou no modo de navegação anónima não são otimizadas ou vistas pelo Google.</translation>
@@ -261,7 +262,6 @@ Clique no botão de retrocesso para sair.</translation>
 <translation id="4526249700380860531">Ver e gerir as palavras-passe guardadas em <ph name="BEGIN_LINK"/>passwords.google.com<ph name="END_LINK"/></translation>
 <translation id="2496180316473517155">Histórico de navegação</translation>
 <translation id="6108923351542677676">Configuração em curso…</translation>
-<translation id="7358682983403815415">Os seus separadores abertos, marcadores, histórico e muito mais estão a ser sincronizados com a sua Conta Google.</translation>
 <translation id="6964496835063002391">Adicionar uma conta</translation>
 <translation id="4698413471314543145">Uma funcionalidade crítica, necessária para executar o Chrome, está em falta. A instalação do Chrome pode estar incompleta ou não ser compatível com esta versão do Android.</translation>
 <translation id="1943432128510653496">Guardar palavras-passe</translation>
@@ -341,7 +341,6 @@ Clique no botão de retrocesso para sair.</translation>
 <translation id="5164482624172255778">Pretende que o Google Chrome se ofereça para traduzir as páginas em <ph name="LANGUAGE"/> deste site da próxima vez?</translation>
 <translation id="4062305924942672200">Informações legais</translation>
 <translation id="515227803646670480">Limpar dados armazenados</translation>
-<translation id="6757714913056001524">Selecione uma conta para aceder aos separadores, marcadores, histórico e outras definições em todos os dispositivos.</translation>
 <translation id="6935223586406308151"><ph name="DOMAIN_NAME"/> foi adicionado ao ecrã principal</translation>
 <translation id="7638584964844754484">Frase de acesso incorreta</translation>
 <translation id="129553762522093515">Fechados recentemente</translation>
@@ -359,6 +358,7 @@ Clique no botão de retrocesso para sair.</translation>
 <translation id="7324738665594301612">Estamos a testar a utilização de páginas HTTPS com proxy através dos servidores da Google no âmbito de uma experiência.</translation>
 <translation id="7947953824732555851">Aceitar e in. sessão</translation>
 <translation id="6333140779060797560">Partilhar através de <ph name="APPLICATION"/></translation>
+<translation id="5939518447894949180">Repor</translation>
 <translation id="6040143037577758943">Fechar</translation>
 <translation id="4943872375798546930">Nenhum resultado</translation>
 <translation id="2139186145475833000">Adicionar ao ecrã principal</translation>
@@ -380,7 +380,6 @@ Clique no botão de retrocesso para sair.</translation>
 <translation id="3988213473815854515">A localização é permitida</translation>
 <translation id="8912362522468806198">Conta Google</translation>
 <translation id="6165508094623778733">Saiba mais</translation>
-<translation id="3828029223314399057">Pesquisar marcadores</translation>
 <translation id="3003595280608617736">Nenhum cartão SD</translation>
 <translation id="6337234675334993532">Encriptação</translation>
 <translation id="862875433388403934">É possível que os conteúdos (filmes, música, etc.) transferidos noutras aplicações deixem de ser reproduzíveis enquanto essas aplicações não voltarem a obter licenças com base numa nova credencial de dispositivo.
@@ -428,10 +427,8 @@ Para obter licenças novas, ligue-se à Internet e reproduza o conteúdo transfe
 <translation id="1178581264944972037">Pausa</translation>
 <translation id="5127805178023152808">A sincronização está desativada</translation>
 <translation id="5677928146339483299">Bloqueado</translation>
-<translation id="5917058779668915997">Os separadores, marcadores, histórico e outras definições são sincronizados com a sua Conta Google.</translation>
 <translation id="1709438864123551175">Poupança de dados</translation>
 <translation id="2770465223704140727">Remover da lista</translation>
-<translation id="3132683934591522090">Mostrar imagem</translation>
 <translation id="6027491994609789413">A reproduzir vídeo</translation>
 <translation id="7561196759112975576">Sempre</translation>
 <translation id="605721222689873409">AA</translation>

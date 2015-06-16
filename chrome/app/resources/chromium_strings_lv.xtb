@@ -113,7 +113,6 @@
 <translation id="6970811910055250180">Notiek ierīces atjaunināšana...</translation>
 <translation id="2485422356828889247">Atinstalēt</translation>
 <translation id="85843667276690461">Saņemt palīdzību par Chromium izmantošanu</translation>
-<translation id="7731057871445607139">Vai Chromium darbība ir neparasta?</translation>
 <translation id="5358375970380395591">Jūs pierakstāties ar pārvaldītu kontu, kura administrators var kontrolēt jūsu profilu. Jūsu Chromium dati, piemēram, lietotnes, grāmatzīmes, vēsture, paroles un citi iestatījumi, tiks neatgriezeniski saistīti ar lietotāju <ph name="USER_NAME"/>. Varēsiet dzēst šos datus, izmantojot Google kontu informācijas paneli, taču nevarēsiet šos datus saistīt ar citu kontu. <ph name="LEARN_MORE"/></translation>
 <translation id="9036189287518468038">Chromium lietotņu palaišanas programma</translation>
 <translation id="5563479599352954471">Meklējiet ar vienu pieskārienu</translation>
@@ -185,7 +184,6 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai iz
           lai uzlabotu veiktspēju.</translation>
 <translation id="1174473354587728743">Vai datoru izmanto vairāki lietotāji? Tagad varat iestatīt pārlūku Chromium atbilstoši savām vajadzībām.</translation>
 <translation id="9013087743919948559">Pievienot pārlūkam Chromium</translation>
-<translation id="2525993619214772747">Vai Chromium darbība ir neparasta?</translation>
 <translation id="6334986366598267305">Tagad pārlūkā Chromium ir vieglāk izmantot Google kontu, kā arī ir atvieglota lietošana datoros, ko izmanto vairākas personas.</translation>
 <translation id="6212496753309875659">Šim datoram jau ir jaunākā Chromium versija. Ja programmatūra nedarbojas, atinstalējiet pārlūku Chromium un mēģiniet vēlreiz.</translation>
 <translation id="1115445892567829615">Chromium nevarēja sinhronizēt jūsu datus. Lūdzu, atjauniniet savu sinhronizācijas ieejas frāzi.</translation>

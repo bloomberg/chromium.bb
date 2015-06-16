@@ -31,8 +31,6 @@
 <translation id="2297568595583585744">స్థితి ట్రే</translation>
 <translation id="2248649616066688669">మీ Chromebook బాహ్య డిస్‌ప్లేకి కనెక్ట్ చేయబడినప్పుడు మూత మూసివేసి ఉన్నప్పటికీ కూడా మీరు దాన్ని ఉపయోగించడం కొనసాగించవచ్చు.</translation>
 <translation id="2946640296642327832">Bluetoothని ప్రారంభించు</translation>
-<translation id="478959186716341421">ప్రసారం చేస్తున్నాము</translation>
-<translation id="5537725057119320332">Cast</translation>
 <translation id="6459472438155181876"><ph name="DISPLAY_NAME"/>కు స్క్రీన్‌ను విస్తరిస్తోంది</translation>
 <translation id="8206859287963243715">సెల్యులార్</translation>
 <translation id="6596816719288285829">IP చిరునామా</translation>
@@ -73,7 +71,6 @@
 <translation id="2509468283778169019">CAPS LOCK ఆన్‌లో ఉంది</translation>
 <translation id="3892641579809465218">అంతర్గత ప్రదర్శన</translation>
 <translation id="7823564328645135659">మీ సెట్టింగ్‌లను సమకాలీకరించిన తర్వాత Chrome యొక్క భాష &quot;<ph name="FROM_LOCALE"/>&quot; నుండి &quot;<ph name="TO_LOCALE"/>&quot;కి మార్చబడింది.</translation>
-<translation id="7113420380180868673">$1ని ప్రసారం చేస్తున్నాము</translation>
 <translation id="3606978283550408104">బ్రెయిలీ డిస్‌ప్లే కనెక్ట్ చేయబడింది.</translation>
 <translation id="8654520615680304441">Wi-Fiని ప్రారంభించు...</translation>
 <translation id="4421231901400348175">రిమోట్ సహాయం విధానంలో మీ స్క్రీన్ నియంత్రణ <ph name="HELPER_NAME"/>కి భాగస్వామ్యం చేయబడుతోంది.</translation>
@@ -98,7 +95,6 @@
 <translation id="3626637461649818317"><ph name="PERCENTAGE"/>% మిగిలి ఉంది</translation>
 <translation id="9089416786594320554">ఇన్‌పుట్ పద్ధతులు</translation>
 <translation id="2700058918926273959">సెషన్ <ph name="SESSION_TIME_REMAINING"/>లో ముగుస్తుంది. మీరు సైన్ అవుట్ చేయబడతారు.</translation>
-<translation id="5807965672380739016">డెస్క్‌టాప్‌ను దీనికి/వీటికి ప్రసారం చేయవచ్చు</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
 <translation id="3963445509666917109">స్పీకర్ (అంతర్గతం)</translation>
 <translation id="1747827819627189109">స్క్రీన్‌పై కనిపించే కీబోర్డ్ ప్రారంభించబడింది</translation>
@@ -119,7 +115,6 @@
 <translation id="8528322925433439945">మొబైల్ ...</translation>
 <translation id="3157169093162779309">రొటేషన్ లాక్‌ను ప్రారంభించండి</translation>
 <translation id="8428213095426709021">సెట్టింగ్‌లు</translation>
-<translation id="6592705765268910579">తెలియని స్వీకర్త</translation>
 <translation id="2372145515558759244">అనువర్తనాలను సమకాలీకరిస్తోంది...</translation>
 <translation id="1987317783729300807">ఖాతాలు</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/>లో పూర్తవుతుంది</translation>
@@ -212,7 +207,6 @@
 <translation id="3009178788565917040">అవుట్‌పుట్</translation>
 <translation id="3147142846278915599">లాంచర్ (అనువర్తనాలను సమకాలీకరిస్తోంది...)</translation>
 <translation id="6911468394164995108">మరొక దానిలో చేరండి...</translation>
-<translation id="4373966964907728675">డెస్క్‌టాప్‌ను ప్రసారం చేస్తున్నాము</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608">నిండే వరకు <ph name="HOUR"/>h <ph name="MINUTE"/>m అవుతుంది</translation>
 <translation id="3077734595579995578">shift</translation>

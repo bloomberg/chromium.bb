@@ -77,7 +77,6 @@
 <translation id="3738139272394829648">แตะเพื่อค้นหา</translation>
 <translation id="257931822824936280">ขยาย - คลิกเพื่อยุบ</translation>
 <translation id="4773299976671772492">หยุดแล้ว</translation>
-<translation id="5118309162436926908">ลงชื่อเข้าใช้เพื่อรับแท็บ บุ๊กมาร์ก ประวัติการเข้าชม และการตั้งค่าอื่นๆ บนอุปกรณ์ทั้งหมดของคุณ</translation>
 <translation id="7596558890252710462">ระบบปฏิบัติการ</translation>
 <translation id="3358663646935160692">ผู้จัดการบัญชีนี้คือ <ph name="DOMAIN_NAME"/>
 
@@ -127,6 +126,7 @@
 <translation id="4378154925671717803">โทรศัพท์</translation>
 <translation id="988938288723502454">ไม่สามารถสร้างไดเรกทอรีดาวน์โหลดในการ์ด SD</translation>
 <translation id="3896036286668839683">เครื่องมือดูใบรับรอง</translation>
+<translation id="8660471606262461360">จาก Google Payments</translation>
 <translation id="5171045022955879922">ค้นหาหรือพิมพ์ URL</translation>
 <translation id="2321958826496381788">ลากแถบเลื่อนจนกว่าคุณจะสามารถอ่านได้อย่างสะดวก ข้อความควรมีขนาดเท่านี้เป็นอย่างน้อยหลังจากแตะ 2 ครั้งบนย่อหน้า</translation>
 <translation id="3282568296779691940">ลงชื่อเข้าใช้ Chrome</translation>
@@ -177,7 +177,9 @@
 <translation id="5000922062037820727">ถูกบล็อก (แนะนำ)</translation>
 <translation id="544291274896356069">ออกจากโหมดไม่ระบุตัวตนถ้ามีการเปิดลิงก์นี้ในแอปพลิเคชันภายนอก ดำเนินการต่อไหม</translation>
 <translation id="3917783807003067648">บล็อกตำแหน่งอยู่</translation>
+<translation id="3207960819495026254">บุ๊กมาร์กแล้ว</translation>
 <translation id="1379156015317873965">ปรับปรุงประสิทธิภาพการโหลดหน้าเว็บ</translation>
+<translation id="5953603475187800576">แสดงที่อยู่และบัตรเครดิตจาก Google Payments</translation>
 <translation id="8481940801237642152">การเชื่อมต่อกับไซต์นี้เป็นแบบส่วนตัว แต่คนอื่นในเครือข่ายอาจเปลี่ยนลักษณะของหน้าได้</translation>
 <translation id="2593272815202181319">Monospace</translation>
 <translation id="4807098396393229769">ชื่อบนบัตร</translation>
@@ -231,7 +233,6 @@
 <translation id="583891442612896534">Chrome ไม่สามารถเข้าถึงเซิร์ฟเวอร์ Google เพื่อบีบอัดข้อมูล การประหยัดอินเทอร์เน็ตของคุณอาจมีข้อจำกัด</translation>
 <translation id="4827948050554950725">เพิ่มบัตรเครดิต</translation>
 <translation id="2316129865977710310">ไม่ ขอบคุณ</translation>
-<translation id="3489120686474540259">เพิ่มบัญชีเพื่อรับแท็บ บุ๊กมาร์ก ประวัติการเข้าชม และการตั้งค่าอื่นๆ บนอุปกรณ์ทั้งหมดของคุณ</translation>
 <translation id="4278390842282768270">อนุญาตแล้ว</translation>
 <translation id="4686372254213217147">ขนาดต้นฉบับ</translation>
 <translation id="4526792582053123229">Google จะไม่เห็นและจะไม่มีการเพิ่มประสิทธิภาพหน้าที่เข้าถึงด้วย HTTPS หรือโหมดไม่ระบุตัวตน</translation>
@@ -261,7 +262,6 @@
 <translation id="4526249700380860531">ดูและจัดการรหัสผ่านที่บันทึกไว้ที่ <ph name="BEGIN_LINK"/>passwords.google.com<ph name="END_LINK"/></translation>
 <translation id="2496180316473517155">ประวัติการเข้าชมที่เรียกดู</translation>
 <translation id="6108923351542677676">กำลังดำเนินการตั้งค่า…</translation>
-<translation id="7358682983403815415">กำลังซิงค์แท็บที่เปิด บุ๊กมาร์ก ประวัติการเข้าชม และอื่นๆ ของคุณกับบัญชี Google</translation>
 <translation id="6964496835063002391">เพิ่มบัญชี</translation>
 <translation id="4698413471314543145">ฟังก์ชันที่จำเป็นต่อการเรียกใช้ Chrome ขาดหายไป อาจเป็นเพราะการติดตั้ง Chrome ของคุณไม่สมบูรณ์หรือไม่สามารถทำงานร่วมกับ Android เวอร์ชันนี้ได้</translation>
 <translation id="1943432128510653496">บันทึกรหัสผ่าน</translation>
@@ -341,7 +341,6 @@
 <translation id="5164482624172255778">คุณต้องการให้ Google Chrome เสนอการแปลหน้าเว็บภาษา<ph name="LANGUAGE"/>จากไซต์นี้ในครั้งต่อไปไหม</translation>
 <translation id="4062305924942672200">ข้อมูลทางกฎหมาย</translation>
 <translation id="515227803646670480">ล้างข้อมูลที่เก็บไว้</translation>
-<translation id="6757714913056001524">เลือกบัญชีเพื่อรับแท็บ บุ๊กมาร์ก ประวัติการเข้าชม และการตั้งค่าอื่นๆ บนอุปกรณ์ทั้งหมดของคุณ</translation>
 <translation id="6935223586406308151">เพิ่ม <ph name="DOMAIN_NAME"/> ไปยังหน้าจอหลักแล้ว</translation>
 <translation id="7638584964844754484">รหัสผ่านไม่ถูกต้อง</translation>
 <translation id="129553762522093515">เพิ่งปิด</translation>
@@ -359,6 +358,7 @@
 <translation id="7324738665594301612">เรากำลังทดสอบการพร็อกซีของหน้า HTTPS ผ่านเซิร์ฟเวอร์ของ Google ซึ่งเป็นส่วนหนึ่งของการทดลอง</translation>
 <translation id="7947953824732555851">ยอมรับและลงชื่อเข้าใช้</translation>
 <translation id="6333140779060797560">แชร์ผ่าน <ph name="APPLICATION"/></translation>
+<translation id="5939518447894949180">รีเซ็ต</translation>
 <translation id="6040143037577758943">ปิด</translation>
 <translation id="4943872375798546930">ไม่มีผลการค้นหา</translation>
 <translation id="2139186145475833000">เพิ่มไปยังหน้าจอหลัก</translation>
@@ -380,7 +380,6 @@
 <translation id="3988213473815854515">อนุญาตตำแหน่ง</translation>
 <translation id="8912362522468806198">บัญชี Google</translation>
 <translation id="6165508094623778733">เรียนรู้เพิ่มเติม</translation>
-<translation id="3828029223314399057">ค้นหาบุ๊กมาร์ก</translation>
 <translation id="3003595280608617736">ไม่มีการ์ด SD</translation>
 <translation id="6337234675334993532">การเข้ารหัส</translation>
 <translation id="862875433388403934">เนื้อหา (ภาพยนตร์ เพลง ฯลฯ) ที่ดาวน์โหลดในแอปพลิเคชันอื่นๆ อาจไม่สามารถเล่นได้อีกต่อไปจนกว่าแอปพลิเคชันเหล่านั้นจะได้รับใบอนุญาตอีกครั้งโดยขึ้นอยู่กับข้อมูลรับรองของอุปกรณ์ใหม่
@@ -428,10 +427,8 @@
 <translation id="1178581264944972037">หยุดชั่วคราว</translation>
 <translation id="5127805178023152808">การซิงค์ปิดอยู่</translation>
 <translation id="5677928146339483299">ถูกบล็อก</translation>
-<translation id="5917058779668915997">แท็บ บุ๊กมาร์ก ประวัติการเข้าชม และการตั้งค่าอื่นๆ จะได้รับการซิงค์ไปยังบัญชี Google ของคุณ</translation>
 <translation id="1709438864123551175">โปรแกรมประหยัดอินเทอร์เน็ต</translation>
 <translation id="2770465223704140727">ลบจากรายการ</translation>
-<translation id="3132683934591522090">แสดงรูปภาพ</translation>
 <translation id="6027491994609789413">กำลังเล่นวิดีโอ</translation>
 <translation id="7561196759112975576">ทุกครั้ง</translation>
 <translation id="605721222689873409">ปป</translation>

@@ -77,7 +77,6 @@
 <translation id="3738139272394829648">Додирни за претрагу</translation>
 <translation id="257931822824936280">Проширено је – Кликните да бисте скупили.</translation>
 <translation id="4773299976671772492">Заустављено је</translation>
-<translation id="5118309162436926908">Пријавите се да бисте добили картице, обележиваче, историју и друга подешавања на свим уређајима</translation>
 <translation id="7596558890252710462">Оперативни систем</translation>
 <translation id="3358663646935160692">Овим налогом управља <ph name="DOMAIN_NAME"/>.
 
@@ -127,6 +126,7 @@
 <translation id="4378154925671717803">Телефон</translation>
 <translation id="988938288723502454">Није успело прављење директоријума за преузимање на SD картици.</translation>
 <translation id="3896036286668839683">Приказивач сертификата</translation>
+<translation id="8660471606262461360">Од Google Payments-а</translation>
 <translation id="5171045022955879922">Претражите или унесите URL адресу</translation>
 <translation id="2321958826496381788">Превлачите клизач док ово не будете могли лако да прочитате. Када двапут додирнете пасус, текст треба да буде бар оволики.</translation>
 <translation id="3282568296779691940">Пријављивање у Chrome</translation>
@@ -177,7 +177,9 @@
 <translation id="5000922062037820727">Блокирано (препоручено)</translation>
 <translation id="544291274896356069">Напустићете режим без архивирања ако се овај линк отвори у спољној апликацији. Желите ли да наставите?</translation>
 <translation id="3917783807003067648">Локација је блокирана</translation>
+<translation id="3207960819495026254">Обележено</translation>
 <translation id="1379156015317873965">Побољшање учитавања страница</translation>
+<translation id="5953603475187800576">Приказуј адресе и кредитне картице из Google Payments-а</translation>
 <translation id="8481940801237642152">Веза са овим сајтом је приватна, али неко на мрежи ће можда моћи да промени изглед странице.</translation>
 <translation id="2593272815202181319">Фиксне ширине</translation>
 <translation id="4807098396393229769">Име и презиме на картици</translation>
@@ -231,7 +233,6 @@
 <translation id="583891442612896534">Chrome није успео да контактира Google сервере ради компримовања података. Уштеда података може да буде ограничена.</translation>
 <translation id="4827948050554950725">Додајте кредитну картицу</translation>
 <translation id="2316129865977710310">Не, хвала</translation>
-<translation id="3489120686474540259">Додајте налог да бисте добили картице, обележиваче, историју и друга подешавања на свим уређајима.</translation>
 <translation id="4278390842282768270">Дозвољено</translation>
 <translation id="4686372254213217147">Оригинална величина</translation>
 <translation id="4526792582053123229">Google неће оптимизовати нити видети странице којима се приступа помоћу HTTPS-а или у режиму без архивирања.</translation>
@@ -261,7 +262,6 @@
 <translation id="4526249700380860531">Прегледајте сачуване лозинке и управљајте њима на <ph name="BEGIN_LINK"/>passwords.google.com<ph name="END_LINK"/></translation>
 <translation id="2496180316473517155">Историја прегледања</translation>
 <translation id="6108923351542677676">Подешавање је у току...</translation>
-<translation id="7358682983403815415">Отворене картице, обележивачи, историја и други садржај се синхронизују са Google налогом.</translation>
 <translation id="6964496835063002391">Додајте налог</translation>
 <translation id="4698413471314543145">Недостаје функција од критичне важности потребна за покретање Chrome-а; или инсталација Chrome-а није комплетна или није компатибилна са овом верзијом Android-а.</translation>
 <translation id="1943432128510653496">Сачувај лозинке</translation>
@@ -341,7 +341,6 @@
 <translation id="5164482624172255778">Желите ли да Google Chrome следећи пут понуди да преведе странице са овог сајта чији је језик <ph name="LANGUAGE"/>?</translation>
 <translation id="4062305924942672200">Правне информације</translation>
 <translation id="515227803646670480">Обришите сачуване податке</translation>
-<translation id="6757714913056001524">Изаберите налог да бисте добили картице, обележиваче, историју и друга подешавања на свим уређајима.</translation>
 <translation id="6935223586406308151"><ph name="DOMAIN_NAME"/> је додат на почетни екран</translation>
 <translation id="7638584964844754484">Неисправна приступна фраза</translation>
 <translation id="129553762522093515">Недавно затворено</translation>
@@ -359,6 +358,7 @@
 <translation id="7324738665594301612">Тестирамо преношење HTTPS страница преко Google сервера у склопу експеримента.</translation>
 <translation id="7947953824732555851">Прихвати и пријави ме</translation>
 <translation id="6333140779060797560">Дељење преко <ph name="APPLICATION"/></translation>
+<translation id="5939518447894949180">Ресетуј</translation>
 <translation id="6040143037577758943">Затвори</translation>
 <translation id="4943872375798546930">Нема резултата</translation>
 <translation id="2139186145475833000">Додај на почетни екран</translation>
@@ -380,7 +380,6 @@
 <translation id="3988213473815854515">Локација је дозвољена</translation>
 <translation id="8912362522468806198">Google налога</translation>
 <translation id="6165508094623778733">Сазнајте више</translation>
-<translation id="3828029223314399057">Претражи обележиваче</translation>
 <translation id="3003595280608617736">Нема SD картице</translation>
 <translation id="6337234675334993532">Шифровање</translation>
 <translation id="862875433388403934">Можда више нећете моћи да пуштате садржај (филмови, музика итд.) преузет у другим апликацијама док оне поново не добију лиценце на основу новог акредитива уређаја.
@@ -428,10 +427,8 @@
 <translation id="1178581264944972037">Паузирај</translation>
 <translation id="5127805178023152808">Синхронизација је искључена</translation>
 <translation id="5677928146339483299">Блокирано</translation>
-<translation id="5917058779668915997">Картице, обележивачи, историја и друга подешавања се синхронизују са Google налогом.</translation>
 <translation id="1709438864123551175">Уштеда података</translation>
 <translation id="2770465223704140727">Уклони са листе</translation>
-<translation id="3132683934591522090">Прикажи слику</translation>
 <translation id="6027491994609789413">Репродукује се видео</translation>
 <translation id="7561196759112975576">Увек</translation>
 <translation id="605721222689873409">ГГ</translation>

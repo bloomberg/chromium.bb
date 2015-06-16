@@ -77,7 +77,6 @@
 <translation id="3738139272394829648">Tikken om te zoeken</translation>
 <translation id="257931822824936280">Uitgevouwen; klik om samen te vouwen.</translation>
 <translation id="4773299976671772492">Beëindigd</translation>
-<translation id="5118309162436926908">Log in en bekijk je tabbladen, bladwijzers, geschiedenis en meer op al je apparaten.</translation>
 <translation id="7596558890252710462">Besturingssysteem</translation>
 <translation id="3358663646935160692">Dit account wordt beheerd door <ph name="DOMAIN_NAME"/>.
 
@@ -127,6 +126,7 @@ Je logt in met een beheerd account en geeft de beheerder controle over je Chrome
 <translation id="4378154925671717803">Telefoon</translation>
 <translation id="988938288723502454">Kan geen downloaddirectory maken op de SD-kaart.</translation>
 <translation id="3896036286668839683">Certificaatweergave</translation>
+<translation id="8660471606262461360">Van Google Payments</translation>
 <translation id="5171045022955879922">Zoek of typ een URL</translation>
 <translation id="2321958826496381788">Sleep de schuifknop tot je deze tekst prettig kunt lezen. De tekst moet minimaal deze grootte hebben nadat je op een alinea hebt dubbelgetikt.</translation>
 <translation id="3282568296779691940">Inloggen bij Chrome</translation>
@@ -177,7 +177,9 @@ Je logt in met een beheerd account en geeft de beheerder controle over je Chrome
 <translation id="5000922062037820727">Geblokkeerd (aanbevolen)</translation>
 <translation id="544291274896356069">Je verlaat de incognitomodus als deze link wordt geopend in een externe app. Doorgaan?</translation>
 <translation id="3917783807003067648">Locatie is geblokkeerd</translation>
+<translation id="3207960819495026254">Toegevoegd aan 'Bladwijzers'</translation>
 <translation id="1379156015317873965">Laadprestaties van pagina verbeteren</translation>
+<translation id="5953603475187800576">Adressen en creditcards uit Google Payments weergeven</translation>
 <translation id="8481940801237642152">Je verbinding met deze site is privé, maar iemand op het netwerk kan mogelijk het uiterlijk van de pagina wijzigen.</translation>
 <translation id="2593272815202181319">Monospace</translation>
 <translation id="4807098396393229769">Naam op kaart</translation>
@@ -231,7 +233,6 @@ Klik op de knop 'Terug' om te sluiten.</translation>
 <translation id="583891442612896534">Chrome kan de Google-servers niet bereiken voor gegevenscompressie. De besparing op je gegevensgebruik is mogelijk beperkt.</translation>
 <translation id="4827948050554950725">Een creditcard toevoegen</translation>
 <translation id="2316129865977710310">Nee, bedankt</translation>
-<translation id="3489120686474540259">Voeg een account toe om je tabbladen, bladwijzers, geschiedenis en meer op al je apparaten te bekijken.</translation>
 <translation id="4278390842282768270">Toegestaan</translation>
 <translation id="4686372254213217147">Oorspronkelijke grootte</translation>
 <translation id="4526792582053123229">Pagina's die via HTTPS of incognito worden geopend, worden niet geoptimaliseerd of gedetecteerd door Google.</translation>
@@ -261,7 +262,6 @@ Klik op de knop 'Terug' om te sluiten.</translation>
 <translation id="4526249700380860531">Opgeslagen wachtwoorden bekijken en beheren via <ph name="BEGIN_LINK"/>passwords.google.com<ph name="END_LINK"/></translation>
 <translation id="2496180316473517155">Browsegeschiedenis</translation>
 <translation id="6108923351542677676">Instellen wordt uitgevoerd...</translation>
-<translation id="7358682983403815415">Je geopende tabbladen, bladwijzers, geschiedenis en meer worden gesynchroniseerd met je Google-account.</translation>
 <translation id="6964496835063002391">Een account toevoegen</translation>
 <translation id="4698413471314543145">Er ontbreekt essentiële functionaliteit voor het uitvoeren van Chrome. Je Chrome-installatie is onvolledig of niet compatibel met deze versie van Android.</translation>
 <translation id="1943432128510653496">Wachtwoorden opslaan</translation>
@@ -341,7 +341,6 @@ Klik op de knop 'Terug' om te sluiten.</translation>
 <translation id="5164482624172255778">Wil je dat Google Chrome de volgende keer aanbiedt om pagina's in het <ph name="LANGUAGE"/> op deze site te vertalen?</translation>
 <translation id="4062305924942672200">Juridische informatie</translation>
 <translation id="515227803646670480">Opgeslagen gegevens wissen</translation>
-<translation id="6757714913056001524">Selecteer een account om je tabbladen, bladwijzers, geschiedenis en meer op al je apparaten te bekijken.</translation>
 <translation id="6935223586406308151"><ph name="DOMAIN_NAME"/> is toegevoegd aan je startscherm</translation>
 <translation id="7638584964844754484">Onjuiste wachtwoordzin</translation>
 <translation id="129553762522093515">Recent gesloten</translation>
@@ -359,6 +358,7 @@ Klik op de knop 'Terug' om te sluiten.</translation>
 <translation id="7324738665594301612">We testen het via proxy overdragen van HTTPS-pagina's via servers van Google als onderdeel van een experiment.</translation>
 <translation id="7947953824732555851">Accepteren en inloggen</translation>
 <translation id="6333140779060797560">Delen via <ph name="APPLICATION"/></translation>
+<translation id="5939518447894949180">Terugzetten</translation>
 <translation id="6040143037577758943">Sluiten</translation>
 <translation id="4943872375798546930">Geen resultaten</translation>
 <translation id="2139186145475833000">Toevoegen aan startscherm</translation>
@@ -380,7 +380,6 @@ Klik op de knop 'Terug' om te sluiten.</translation>
 <translation id="3988213473815854515">Locatie is toegestaan</translation>
 <translation id="8912362522468806198">Google-account</translation>
 <translation id="6165508094623778733">Meer informatie</translation>
-<translation id="3828029223314399057">Zoeken in bladwijzers</translation>
 <translation id="3003595280608617736">Geen SD-kaart</translation>
 <translation id="6337234675334993532">Codering</translation>
 <translation id="862875433388403934">Inhoud (films, muziek, enzovoort) die is gedownload in andere apps kan mogelijk niet langer worden afgespeeld, totdat die apps opnieuw licenties verkrijgen op basis van nieuwe apparaatinloggegevens.
@@ -428,10 +427,8 @@ Maak verbinding met internet en speel je gedownloade inhoud af om nieuwe licenti
 <translation id="1178581264944972037">Onderbreken</translation>
 <translation id="5127805178023152808">Synchronisatie is uitgeschakeld</translation>
 <translation id="5677928146339483299">Geblokkeerd</translation>
-<translation id="5917058779668915997">Je tabbladen, bladwijzers, geschiedenis en andere instellingen worden gesynchroniseerd met je Google-account.</translation>
 <translation id="1709438864123551175">Databesparing</translation>
 <translation id="2770465223704140727">Verwijderen uit lijst</translation>
-<translation id="3132683934591522090">Afbeelding weergeven</translation>
 <translation id="6027491994609789413">Video wordt afgespeeld</translation>
 <translation id="7561196759112975576">Altijd</translation>
 <translation id="605721222689873409">JJ</translation>

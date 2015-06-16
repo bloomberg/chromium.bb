@@ -63,7 +63,7 @@
 <translation id="7108649287766967076"><ph name="TARGET_LANGUAGE"/> માં અનુવાદ નિષ્ફળ રહ્યો.</translation>
 <translation id="4103249731201008433">ઉપકરણ અનુક્ર્માંક નંબર અમાન્ય છે</translation>
 <translation id="3219579145727097045">તમારા કાર્ડની આગળની બાજુ પરથી સમાપ્તિ તારીખ અને 4-અંકનો CVC દાખલ કરો</translation>
-<translation id="3667681724235208644">મૂળ જુઓ</translation>
+<translation id="59107663811261420">આ વેપારી માટે Google Payments દ્વારા આ પ્રકારના કાર્ડને સમર્થન નથી. કૃપા કરીને બીજું કાર્ડ પસંદ કરો.</translation>
 <translation id="4079302484614802869">પ્રોક્સી ગોઠવણી .pac સ્ક્રિપ્ટ URL નો ઉપયોગ કરવા માટે સેટ છે, નિયત પ્રોક્સી સર્વર્સ માટે નહીં.</translation>
 <translation id="5540224163453853">વિનંતી કરેલ લેખ શોધી શકાયો નથી.</translation>
 <translation id="8437238597147034694">&amp;ખસેડવું પૂર્વવત્‌ કરો</translation>
@@ -90,6 +90,7 @@
 <translation id="7977590112176369853">&lt;ક્વેરી દાખલ કરો&gt;</translation>
 <translation id="552553974213252141">શું ટેક્સ્ટ ઠીકથી કાઢી હતી?</translation>
 <translation id="5317780077021120954">સાચવો</translation>
+<translation id="8530504477309582336">Google Payments દ્વારા આ પ્રકારના કાર્ડને સમર્થન નથી. કૃપા કરીને બીજું કાર્ડ પસંદ કરો.</translation>
 <translation id="7610193165460212391">મૂલ્ય <ph name="VALUE"/> શ્રેણી બહારનું છે.</translation>
 <translation id="3739623965217189342">તમે કૉપિ કરેલ લિંક</translation>
 <translation id="8790007591277257123">&amp;કાઢી નાખવું ફરી કરો</translation>

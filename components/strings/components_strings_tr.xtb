@@ -63,7 +63,7 @@
 <translation id="7108649287766967076"><ph name="TARGET_LANGUAGE"/> diline çeviri başarısız oldu.</translation>
 <translation id="4103249731201008433">Cihazın seri numarası geçersiz</translation>
 <translation id="3219579145727097045">Son kullanma tarihini ve kartınızın önündeki 4 basamaklı CVC'yi girin</translation>
-<translation id="3667681724235208644">Orijinali Görüntüle</translation>
+<translation id="59107663811261420">Google Payments, bu satıcı için bu kart türünü desteklememektedir. Lütfen farklı bir kart seçin.</translation>
 <translation id="4079302484614802869">Proxy yapılandırması sabit proxy sunucuları değil, bir .pac komut dosyası URL'sini kullanmak üzere ayarlandı.</translation>
 <translation id="5540224163453853">İstenen makale bulunamadı.</translation>
 <translation id="8437238597147034694">Taşımayı &amp;geri al</translation>
@@ -90,6 +90,7 @@
 <translation id="7977590112176369853">&lt;sorgu girin&gt;</translation>
 <translation id="552553974213252141">Metin doğru bir şekilde çıkarıldı mı?</translation>
 <translation id="5317780077021120954">Kaydet</translation>
+<translation id="8530504477309582336">Google Payments, bu kart türünü desteklememektedir. Lütfen farklı bir kart seçin.</translation>
 <translation id="7610193165460212391">Değer aralık dışında: <ph name="VALUE"/>.</translation>
 <translation id="3739623965217189342">Kopyaladığınız bağlantı</translation>
 <translation id="8790007591277257123">Silmeyi &amp;yeniden yap</translation>

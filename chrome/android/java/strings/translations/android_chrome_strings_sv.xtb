@@ -77,7 +77,6 @@
 <translation id="3738139272394829648">Tryck för att söka</translation>
 <translation id="257931822824936280">Vyn har expanderats. Komprimera den genom att klicka.</translation>
 <translation id="4773299976671772492">Har stoppats</translation>
-<translation id="5118309162436926908">Om du loggar in får du åtkomst till flikar, bokmärken, historik och inställningar på alla dina enheter.</translation>
 <translation id="7596558890252710462">Operativsystem</translation>
 <translation id="3358663646935160692">Kontot hanteras av <ph name="DOMAIN_NAME"/>.
 
@@ -127,6 +126,7 @@ Du loggar in med ett hanterat konto, vilket innebär att administratören kontro
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="988938288723502454">Det går inte att skapa en katalog för hämtade filer på SD-kortet.</translation>
 <translation id="3896036286668839683">Certifikatvisare</translation>
+<translation id="8660471606262461360">Från Google Payments</translation>
 <translation id="5171045022955879922">Ange eller sök efter webbadress</translation>
 <translation id="2321958826496381788">Flytta reglaget tills du kan läsa texten ordentligt. Texten bör bli åtminstone så här stor när du trycker två gånger på ett stycke.</translation>
 <translation id="3282568296779691940">Logga in i Chrome</translation>
@@ -177,7 +177,9 @@ Du loggar in med ett hanterat konto, vilket innebär att administratören kontro
 <translation id="5000922062037820727">Blockerad (rekommenderas)</translation>
 <translation id="544291274896356069">Om den här länken öppnas i ett externt program sker inte det i inkognitoläge. Vill du fortsätta?</translation>
 <translation id="3917783807003067648">Platsen är blockerad</translation>
+<translation id="3207960819495026254">Bokmärkt</translation>
 <translation id="1379156015317873965">Förbättra sidinläsning</translation>
+<translation id="5953603475187800576">Visa adresser och kreditkort från Google Payments</translation>
 <translation id="8481940801237642152">Din anslutning till webbplatsen är privat, men någon i nätverket kanske kan ändra utseendet på sidan.</translation>
 <translation id="2593272815202181319">Monospace</translation>
 <translation id="4807098396393229769">Namn på kort</translation>
@@ -231,7 +233,6 @@ Tryck på bakåtknappen om du vill lämna det.</translation>
 <translation id="583891442612896534">Chrome kan inte nå Googles servrar för datakomprimeringen. Du kanske inte sparar data i någon större utsträckning.</translation>
 <translation id="4827948050554950725">Lägg till ett kreditkort</translation>
 <translation id="2316129865977710310">Nej tack</translation>
-<translation id="3489120686474540259">Lägg till ett konto och få åtkomst till flikar, bokmärken, historik och inställningar på alla dina enheter.</translation>
 <translation id="4278390842282768270">Tillåtet</translation>
 <translation id="4686372254213217147">Originalstorlek</translation>
 <translation id="4526792582053123229">Google varken optimerar eller ser sidor som öppnas med HTTPS eller i inkognitoläge.</translation>
@@ -261,7 +262,6 @@ Tryck på bakåtknappen om du vill lämna det.</translation>
 <translation id="4526249700380860531">Visa och hantera sparade lösenord på <ph name="BEGIN_LINK"/>passwords.google.com<ph name="END_LINK"/></translation>
 <translation id="2496180316473517155">Webbhistorik</translation>
 <translation id="6108923351542677676">Konfigurationen pågår ...</translation>
-<translation id="7358682983403815415">Bland annat öppna flikar, bokmärken och historik synkroniseras med ditt Google-konto.</translation>
 <translation id="6964496835063002391">Lägg till ett konto</translation>
 <translation id="4698413471314543145">Det saknas viktiga funktioner i din version som krävs för att Chrome ska kunna köras. Antingen har installationen av Chrome inte slutförts eller så är Chrome och den här versionen av Android inte kompatibla.</translation>
 <translation id="1943432128510653496">Spara lösenord</translation>
@@ -341,7 +341,6 @@ Tryck på bakåtknappen om du vill lämna det.</translation>
 <translation id="5164482624172255778">Vill du att alternativet att översätta sidor i Google Chrome på <ph name="LANGUAGE"/> från den här webbplatsen ska visas nästa gång?</translation>
 <translation id="4062305924942672200">Juridisk information</translation>
 <translation id="515227803646670480">Ta bort sparad data</translation>
-<translation id="6757714913056001524">Välj ett konto och få åtkomst till flikar, bokmärken, historik och inställningar på alla dina enheter.</translation>
 <translation id="6935223586406308151"><ph name="DOMAIN_NAME"/> har lagts till på startskärmen</translation>
 <translation id="7638584964844754484">Felaktig lösenfras</translation>
 <translation id="129553762522093515">Nyligen stängda</translation>
@@ -359,6 +358,7 @@ Tryck på bakåtknappen om du vill lämna det.</translation>
 <translation id="7324738665594301612">Som en del av ett experiment testar vi att skicka HTTPS-sidor via Googles servrar som proxy.</translation>
 <translation id="7947953824732555851">Godkänn och logga in</translation>
 <translation id="6333140779060797560">Dela via <ph name="APPLICATION"/></translation>
+<translation id="5939518447894949180">Återställ</translation>
 <translation id="6040143037577758943">Stäng</translation>
 <translation id="4943872375798546930">Inga resultat</translation>
 <translation id="2139186145475833000">Lägg till på startskärmen</translation>
@@ -380,7 +380,6 @@ Tryck på bakåtknappen om du vill lämna det.</translation>
 <translation id="3988213473815854515">Platsen är tillåten</translation>
 <translation id="8912362522468806198">Google-konto</translation>
 <translation id="6165508094623778733">Läs mer</translation>
-<translation id="3828029223314399057">Sök efter bokmärken</translation>
 <translation id="3003595280608617736">Inget SD-kort</translation>
 <translation id="6337234675334993532">Kryptering</translation>
 <translation id="862875433388403934">Det kan hända att det inte går att spela upp innehåll (t.ex. filmer och musik) som har hämtats i andra appar förrän dessa appar får nya licenser som baseras på nya användaruppgifter för enheten.
@@ -428,10 +427,8 @@ Du hämtar nya licenser genom att ansluta till internet och spela upp det nedlad
 <translation id="1178581264944972037">Paus</translation>
 <translation id="5127805178023152808">Synkronisering är av</translation>
 <translation id="5677928146339483299">Blockerad</translation>
-<translation id="5917058779668915997">Flikar, bokmärken, historik och andra inställningar synkroniseras till ditt Google-konto.</translation>
 <translation id="1709438864123551175">Databesparing</translation>
 <translation id="2770465223704140727">Ta bort från listan</translation>
-<translation id="3132683934591522090">Visa bild</translation>
 <translation id="6027491994609789413">Videon spelas upp</translation>
 <translation id="7561196759112975576">Alltid</translation>
 <translation id="605721222689873409">ÅÅ</translation>

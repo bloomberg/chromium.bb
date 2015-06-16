@@ -113,7 +113,6 @@
 <translation id="6970811910055250180">기기를 업데이트하는 중...</translation>
 <translation id="2485422356828889247">제거</translation>
 <translation id="85843667276690461">Chromium 사용에 대한 도움말</translation>
-<translation id="7731057871445607139">Chromium이 올바르게 작동하지 않습니까?</translation>
 <translation id="5358375970380395591">관리 계정으로 로그인하고 Chromium 프로필에 대한 관리자 제어권을 부여하려고 합니다. 앱, 북마크, 방문 기록, 비밀번호 및 기타 설정 등 Chromium 데이터가 <ph name="USER_NAME"/> 계정에 영구적으로 연결됩니다. 이후 이 데이터를 Google 계정 대시보드에서 삭제할 수는 있지만 다른 계정에 연결할 수는 없습니다. <ph name="LEARN_MORE"/></translation>
 <translation id="9036189287518468038">Chromium 앱 실행기</translation>
 <translation id="5563479599352954471">터치 한 번으로 검색</translation>
@@ -185,7 +184,6 @@
           성능을 개선해 보시기 바랍니다.</translation>
 <translation id="1174473354587728743">컴퓨터를 공유하시겠습니까? 이제 원하는 대로 Chromium을 설정할 수 있습니다.</translation>
 <translation id="9013087743919948559">Chromium에 추가</translation>
-<translation id="2525993619214772747">Chromium이 올바르게 작동하지 않습니까?</translation>
 <translation id="6334986366598267305">이제 Google 계정으로 공유 컴퓨터에서 Chromium을 손쉽게 사용할 수 있습니다.</translation>
 <translation id="6212496753309875659">컴퓨터에 이미 최신 버전의 Chromium이 있습니다. 소프트웨어가 작동하지 않으면 Chromium의 설치를 제거한 뒤 다시 시도하세요.</translation>
 <translation id="1115445892567829615">Chromium에서 데이터를 동기화하지 못했습니다. 동기화 암호를 업데이트하시기 바랍니다.</translation>

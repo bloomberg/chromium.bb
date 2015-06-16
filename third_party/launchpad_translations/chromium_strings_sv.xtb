@@ -115,7 +115,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="6970811910055250180">Enheten uppdateras ...</translation>
 <translation id="2485422356828889247">Avinstallera</translation>
 <translation id="85843667276690461">Få hjälp med att använda Chromium</translation>
-<translation id="7731057871445607139">Fungerar Chromium konstigt?</translation>
 <translation id="5358375970380395591">Du loggar in med ett hanterat konto och ger dess administratör kontroll över din Chromium-profil. Dina uppgifter i Chromium, t.ex. dina appar, bokmärken, din historik, ditt lösenord och andra inställningar, kopplas då permanent till <ph name="USER_NAME"/>. Du kommer att kunna ta bort dessa uppgifter via instrumentpanelen i Google Konton, men du kommer inte att kunna koppla dem till något annat konto. <ph name="LEARN_MORE"/></translation>
 <translation id="9036189287518468038">Startprogrammet för appar i Chromium</translation>
 <translation id="5563479599352954471">Sök med en tryckning</translation>
@@ -187,7 +186,6 @@ Vissa funktioner är kanske inte tillgängliga. Ange en annan profilkatalog elle
           igen vilket ger bättre prestanda.</translation>
 <translation id="1174473354587728743">Delar du dator? Nu kan du konfigurera Chromium precis som du vill.</translation>
 <translation id="9013087743919948559">Lägg till i Chromium</translation>
-<translation id="2525993619214772747">Fungerar Chromium konstigt?</translation>
 <translation id="6334986366598267305">Nu är det enklare att använda Chromium med ditt Google-konto och på delade datorer.</translation>
 <translation id="6212496753309875659">Det finns redan en nyare version av Chromium på den här datorn. Avinstallera Chromium och försök igen om programvaran inte fungerar.</translation>
 <translation id="1115445892567829615">Chromium kunde inte synkronisera data. Uppdatera lösenfrasen för synkroniseringen.</translation>

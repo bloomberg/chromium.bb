@@ -76,6 +76,7 @@
 <translation id="8551886023433311834">محدّث تقريبًا! أعد تشغيل الجهاز لإنهاء التحديث.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="1073391069195728457">‏Chrome - الإشعارات</translation>
+<translation id="6368805772029492593">‏لمزيد من الأمان، سيشفر Google Chrome بياناتك</translation>
 <translation id="7339898014177206373">نافذة جديدة</translation>
 <translation id="3282568296779691940">‏تسجيل الدخول إلى Chrome</translation>
 <translation id="3089968997497233615">‏يتوفر إصدار جديد وأكثر أمانًا لمتصفح Google Chrome.</translation>
@@ -173,7 +174,6 @@
 <translation id="2290095356545025170">‏هل تريد بالتأكيد إزالة Google Chrome؟</translation>
 <translation id="4273752058983339720">‏تمت تهيئة Google Chrome لإطلاقه تلقائيًا عند بدء تشغيل جهاز الكمبيوتر.</translation>
 <translation id="2316129865977710310">لا، شكرًا</translation>
-<translation id="415994390253732730">‏هل يتصرف Chrome على نحو غريب؟</translation>
 <translation id="1104959162601287462">‏حول &amp;نظام التشغيل Google Chrome</translation>
 <translation id="5328989068199000832">‏ثنائيات Google Chrome</translation>
 <translation id="7626032353295482388">‏مرحبًا بك في Chrome‏</translation>
@@ -224,6 +224,7 @@
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="6113794647360055231">‏Chrome أصبح أفضل</translation>
 <translation id="2588322182880276190">‏شعار Chrome</translation>
+<translation id="4519152997629025674">‏يستخدم Google Chrome <ph name="BEGIN_LINK"/>خدمات الويب<ph name="END_LINK"/> لتحسين تجربة التصفح. يمكنك تعطيل هذه الخدمات اختياريًا في أي وقت.</translation>
 <translation id="4367618624832907428">‏لم يتمكن Google Chrome من عرض صفحة الويب لأن الكمبيوتر غير متصل بالإنترنت.</translation>
 <translation id="174539241580958092">‏تعذر على Google Chrome مزامنة البيانات نظرًا لوجود خطأ في تسجيل الدخول.</translation>
 <translation id="8255190535488645436">‏يستخدم Google Chrome الكاميرا والميكروفون.</translation>
@@ -231,7 +232,6 @@
         برنامج مكافحة الفيروسات.</translation>
 <translation id="9102715433345326100">‏يُعد الملف برنامجًا ضارًا، وقد أجرى Chrome حظره.</translation>
 <translation id="8205111949707227942">‏اختياري: ساعد في تحسين Chrome OS عن طريق إرسال إحصاءات الاستخدام وتقارير الأعطال إلى Google تلقائيًا.</translation>
-<translation id="487887346205285304">‏هل يتصرف Chrome على نحو غريب؟</translation>
 <translation id="3622797965165704966">‏الآن أصبح استخدام Chrome مع حسابك في Google وفي أجهزة الكمبيوتر المشتركة أكثر سهولة.</translation>
 <translation id="7196020411877309443">لماذا أرى مربع الحوار هذا؟</translation>
 <translation id="2769762047821873045">‏ليس Google Chrome متصفحك الافتراضي.</translation>

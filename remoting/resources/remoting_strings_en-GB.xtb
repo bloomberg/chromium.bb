@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="en-GB">
 <translation id="337167041784729019">Show statistics</translation>
+<translation id="2256115617011615191">Restart now</translation>
 <translation id="7606912958770842224">Enable remote connections</translation>
 <translation id="3785447812627779171">Chromoting
 Host</translation>
@@ -137,6 +138,7 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
 <translation id="8196755618196986400">To allow us to contact you for further information, your email address will be included in any feedback that you submit.</translation>
 <translation id="154040539590487450">Failed to start remote access service.</translation>
 <translation id="7948001860594368197">Screen options</translation>
+<translation id="2221097377466213233">Use right Ctrl for Win key (⌘ on Mac)</translation>
 <translation id="5254120496627797685">Leaving this page will end your Chrome Remote Desktop session.</translation>
 <translation id="7019153418965365059">Unrecognised host error: <ph name="HOST_OFFLINE_REASON"/>.</translation>
 <translation id="712467900648340229">Failed to connect to Cast device.</translation>
@@ -152,6 +154,7 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
 <translation id="8116630183974937060">A network error occurred. Please check that your device is on-line and try again.</translation>
 <translation id="3020807351229499221">Failed to update the PIN. Please try again later.</translation>
 <translation id="2647232381348739934">Chromoting Service</translation>
+<translation id="2888969873284818612">A network error occurred. We will restart the app when your device is on-line again.</translation>
 <translation id="579702532610384533">Reconnect</translation>
 <translation id="4867841927763172006">Send PrtScn</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME"/> (last online <ph name="DATE_OR_TIME"/>)</translation>
@@ -258,6 +261,7 @@ Desktop Host</translation>
 <translation id="4277463233460010382">This computer is configured to allow one or more clients to connect without entering a PIN.</translation>
 <translation id="837021510621780684">From this computer</translation>
 <translation id="518094545883702183">This information is used only for diagnosing the problem that you are reporting, is available only to someone investigating your report, and is retained for no more than 30 days.</translation>
+<translation id="1261403020716313927">• Fixed large memory leak on disconnection from remote desktop.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="4918086044614829423">Accept</translation>
 <translation id="7215059001581613786">Please enter a PIN consisting of six or more digits.</translation>

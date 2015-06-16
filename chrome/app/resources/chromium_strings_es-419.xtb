@@ -111,7 +111,6 @@
 <translation id="6970811910055250180">Actualizando el dispositivo...</translation>
 <translation id="2485422356828889247">Desinstalación</translation>
 <translation id="85843667276690461">Obtener ayuda para usar Chromium</translation>
-<translation id="7731057871445607139">¿Chromium tiene un comportamiento extraño?</translation>
 <translation id="5358375970380395591">Estás por acceder con una cuenta administrada, lo que significa que proporcionarás al administrador el control sobre tu perfil de Chromium. Tus datos de Chromium, como las aplicaciones, los marcadores, el historial, las contraseñas y otros parámetros de configuración quedarán vinculados a <ph name="USER_NAME"/> de forma permanente. Podrás eliminar estos datos a través del Panel de control de Cuentas de Google, pero no podrás asociarlos a otra cuenta. <ph name="LEARN_MORE"/></translation>
 <translation id="9036189287518468038">Selector de aplicaciones de Chromium</translation>
 <translation id="5563479599352954471">Buscar con un toque</translation>
@@ -181,7 +180,6 @@
           para obtener un mejor rendimiento.</translation>
 <translation id="1174473354587728743">¿Compartes una computadora? Ahora puedes configurar Chromium como a ti te gusta.</translation>
 <translation id="9013087743919948559">Agregar a Chromium</translation>
-<translation id="2525993619214772747">¿Chromium tiene un comportamiento extraño?</translation>
 <translation id="6334986366598267305">Ahora es más sencillo utilizar Chromium con la cuenta de Google y en computadoras compartidas.</translation>
 <translation id="6212496753309875659">Este equipo ya tiene una versión más reciente de Chromium. Si el software no funciona, desinstala Chromium y vuelve a intentarlo.</translation>
 <translation id="1115445892567829615">Chromium no pudo sincronizar los datos. Actualiza la frase de contraseña de sincronización.</translation>

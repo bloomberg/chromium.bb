@@ -113,7 +113,6 @@
 <translation id="6970811910055250180">Ažuriranje uređaja...</translation>
 <translation id="2485422356828889247">Deinstaliraj</translation>
 <translation id="85843667276690461">Pomoć za upotrebu Chromiuma</translation>
-<translation id="7731057871445607139">Chromium se ponaša čudno?</translation>
 <translation id="5358375970380395591">Prijavljujete se upravljanim računom i dajete administratoru kontrolu nad svojim profilom u sustavu Chromium. Vaši podaci u sustavu Chromium, primjerice, aplikacije, oznake, povijest, zaporke i ostale postavke, trajno će se povezati s korisnikom <ph name="USER_NAME"/>. Moći ćete izbrisati te podatke putem Nadzorne ploče Google računa, ali ih nećete moći povezati s nekim drugim računom. <ph name="LEARN_MORE"/></translation>
 <translation id="9036189287518468038">Pokretač aplikacija sustava Chromium</translation>
 <translation id="5563479599352954471">Pretraživanje jednim dodirom</translation>
@@ -185,7 +184,6 @@ Neke su značajke možda nedostupne. Navedite neki drugi direktorij profila ili 
           radi bolje izvedbe.</translation>
 <translation id="1174473354587728743">Dijelite računalo? Sada možete prilagoditi Chromium baš kako želite.</translation>
 <translation id="9013087743919948559">Dodajte u Chromium</translation>
-<translation id="2525993619214772747">Chromium se ponaša čudno?</translation>
 <translation id="6334986366598267305">Upotreba Chromiuma s vašim Google računom te na dijeljenim računalima sada je još jednostavnija.</translation>
 <translation id="6212496753309875659">Ovo računalo već ima noviju verziju Chromiuma. Ako softver ne funkcionira, deinstalirajte Chromium i pokušajte ponovo.</translation>
 <translation id="1115445892567829615">Chromium nije mogao sinkronizirati vaše podatke. Ažurirajte svoju zaporku za sinkronizaciju.</translation>

@@ -63,7 +63,7 @@
 <translation id="7108649287766967076">La traducció a <ph name="TARGET_LANGUAGE"/> ha fallat.</translation>
 <translation id="4103249731201008433">El número de sèrie del dispositiu no és vàlid</translation>
 <translation id="3219579145727097045">Introduïu la data de caducitat i el CVC de quatre dígits que trobareu a la part davantera de la targeta</translation>
-<translation id="3667681724235208644">Mostra l'original</translation>
+<translation id="59107663811261420">Google Payments no admet aquest tipus de targeta per a aquest comerciant. Seleccioneu-ne una altra.</translation>
 <translation id="4079302484614802869">La configuració del servidor intermediari s'ha definit perquè utilitzi un URL d'script .pac, en lloc de servidors intermedis fixos.</translation>
 <translation id="5540224163453853">No s'ha pogut trobar l'article sol·licitat.</translation>
 <translation id="8437238597147034694">&amp;Desfés el moviment</translation>
@@ -90,6 +90,7 @@
 <translation id="7977590112176369853">&lt;introdueix la consulta&gt;</translation>
 <translation id="552553974213252141">S'ha extret correctament el text?</translation>
 <translation id="5317780077021120954">Desa</translation>
+<translation id="8530504477309582336">Google Payments no admet aquest tipus de targeta. Seleccioneu-ne una altra.</translation>
 <translation id="7610193165460212391">El valor es troba fora de l'interval <ph name="VALUE"/> .</translation>
 <translation id="3739623965217189342">Enllaç que heu copiat</translation>
 <translation id="8790007591277257123">&amp;Refés la supressió</translation>

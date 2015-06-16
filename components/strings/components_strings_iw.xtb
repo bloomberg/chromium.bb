@@ -63,7 +63,7 @@
 <translation id="7108649287766967076">התרגום ל<ph name="TARGET_LANGUAGE"/> נכשל.</translation>
 <translation id="4103249731201008433">המספר הסידורי של המכשיר אינו חוקי</translation>
 <translation id="3219579145727097045">‏הזן את תאריך סיום התוקף ו-CVC בן ארבע ספרות המופיע בחזית הכרטיס</translation>
-<translation id="3667681724235208644">הצג את המקור</translation>
+<translation id="59107663811261420">‏סוג הכרטיס הזה אינו נתמך על ידי Google Payments אצל הסוחר הזה. בחר כרטיס אחר.</translation>
 <translation id="4079302484614802869">‏תצורת ה-Proxy מוגדרת להשתמש בכתובת אתר של סקריפט מסוג ‎.Pac ולא בשרתי Proxy קבועים.</translation>
 <translation id="5540224163453853">לא ניתן היה למצוא את הפריט המבוקש.</translation>
 <translation id="8437238597147034694">&amp;ביטול העברה</translation>
@@ -90,6 +90,7 @@
 <translation id="7977590112176369853">&lt;הזן שאילתה&gt;</translation>
 <translation id="552553974213252141">האם הטקסט נשלף כראוי?</translation>
 <translation id="5317780077021120954">שמור</translation>
+<translation id="8530504477309582336">‏סוג הכרטיס הזה אינו נתמך על ידי Google Payments. בחר כרטיס אחר.</translation>
 <translation id="7610193165460212391">הערך מחוץ לטווח <ph name="VALUE"/>.</translation>
 <translation id="3739623965217189342">קישור שהעתקת</translation>
 <translation id="8790007591277257123">&amp;ביצוע מחדש של מחיקה</translation>

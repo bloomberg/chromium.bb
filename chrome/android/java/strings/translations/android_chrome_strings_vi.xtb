@@ -77,7 +77,6 @@
 <translation id="3738139272394829648">Chạm để tìm kiếm</translation>
 <translation id="257931822824936280">Đã mở rộng - nhấp để thu gọn.</translation>
 <translation id="4773299976671772492">Đã dừng</translation>
-<translation id="5118309162436926908">Đăng nhập để nhận tab, dấu trang, lịch sử và cài đặt khác trên tất cả các thiết bị của bạn.</translation>
 <translation id="7596558890252710462">Hệ điều hành</translation>
 <translation id="3358663646935160692">Tài khoản này được quản lý bởi <ph name="DOMAIN_NAME"/>.
 
@@ -127,6 +126,7 @@ Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp
 <translation id="4378154925671717803">Điện thoại</translation>
 <translation id="988938288723502454">Không thể tạo thư mục tải xuống trên thẻ SD.</translation>
 <translation id="3896036286668839683">Trình xem chứng chỉ</translation>
+<translation id="8660471606262461360">Từ Google Payments</translation>
 <translation id="5171045022955879922">Tìm kiếm hoặc nhập URL</translation>
 <translation id="2321958826496381788">Kéo thanh trượt cho đến khi bạn có thể đọc nội dung này thoải mái. Chữ tối thiểu phải to như này sau khi bấm đúp vào một đoạn.</translation>
 <translation id="3282568296779691940">Đăng nhập Chrome</translation>
@@ -177,7 +177,9 @@ Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp
 <translation id="5000922062037820727">Bị chặn (được đề xuất)</translation>
 <translation id="544291274896356069">Rời khỏi chế độ ẩn danh nếu liên kết này đã được mở trong một ứng dụng bên ngoài. Tiếp tục?</translation>
 <translation id="3917783807003067648">Vị trí bị chặn</translation>
+<translation id="3207960819495026254">Đã được đánh dấu trang</translation>
 <translation id="1379156015317873965">Cải thiện hiệu suất tải của trang</translation>
+<translation id="5953603475187800576">Hiển thị địa chỉ và thẻ tín dụng từ Google Payments</translation>
 <translation id="8481940801237642152">Kết nối của bạn tới trang web này ở chế độ riêng tư nhưng ai đó trên mạng có thể thay đổi giao diện của trang.</translation>
 <translation id="2593272815202181319">Monospace</translation>
 <translation id="4807098396393229769">Tên trên thẻ</translation>
@@ -231,7 +233,6 @@ Nhấn nút quay lại để thoát.</translation>
 <translation id="583891442612896534">Chrome không thể kết nối với máy chủ của Google để nén dữ liệu. Các khoản tiết kiệm đối với dữ liệu của bạn có thể bị giới hạn.</translation>
 <translation id="4827948050554950725">Thêm thẻ tín dụng</translation>
 <translation id="2316129865977710310">Không, cảm ơn</translation>
-<translation id="3489120686474540259">Thêm tài khoản để nhận tab, dấu trang, lịch sử và cài đặt khác trên tất cả các thiết bị của bạn.</translation>
 <translation id="4278390842282768270">Được cho phép</translation>
 <translation id="4686372254213217147">Kích thước ban đầu</translation>
 <translation id="4526792582053123229">Google sẽ không tối ưu hóa hoặc thấy các trang được truy cập bằng HTTPS hoặc Chế độ ẩn danh.</translation>
@@ -261,7 +262,6 @@ Nhấn nút quay lại để thoát.</translation>
 <translation id="4526249700380860531">Xem và quản lý mật khẩu đã lưu tại <ph name="BEGIN_LINK"/>passwords.google.com<ph name="END_LINK"/></translation>
 <translation id="2496180316473517155">Lịch sử duyệt web</translation>
 <translation id="6108923351542677676">Đang thiết lập…</translation>
-<translation id="7358682983403815415">Các tab đang mở, dấu trang, lịch sử và nhiều nội dung khác đang được đồng bộ hóa với tài khoản Google của bạn.</translation>
 <translation id="6964496835063002391">Thêm tài khoản</translation>
 <translation id="4698413471314543145">Chức năng quan trọng cần có để chạy Chrome bị thiếu; quá trình cài đặt Chrome của bạn chưa hoàn tất hoặc không tương thích với phiên bản Android này.</translation>
 <translation id="1943432128510653496">Lưu mật khẩu</translation>
@@ -341,7 +341,6 @@ Nhấn nút quay lại để thoát.</translation>
 <translation id="5164482624172255778">Bạn có muốn Google Chrome đề xuất dịch các trang <ph name="LANGUAGE"/> từ trang web này vào lần tiếp theo không?</translation>
 <translation id="4062305924942672200">Thông tin pháp lý</translation>
 <translation id="515227803646670480">Xóa dữ liệu đã lưu trữ</translation>
-<translation id="6757714913056001524">Chọn tài khoản để nhận tab, dấu trang, lịch sử và cài đặt khác trên tất cả các thiết bị của bạn.</translation>
 <translation id="6935223586406308151">Đã thêm <ph name="DOMAIN_NAME"/> vào Màn hình chính của bạn</translation>
 <translation id="7638584964844754484">Cụm mật khẩu không chính xác</translation>
 <translation id="129553762522093515">Các tab đã đóng gần đây</translation>
@@ -359,6 +358,7 @@ Nhấn nút quay lại để thoát.</translation>
 <translation id="7324738665594301612">Chúng tôi đang kiểm tra việc ủy quyền các trang HTTPS thông qua máy chủ Google dưới dạng một phần của thử nghiệm.</translation>
 <translation id="7947953824732555851">Chấp nhận &amp; đăng nhập</translation>
 <translation id="6333140779060797560">Chia sẻ qua <ph name="APPLICATION"/></translation>
+<translation id="5939518447894949180">Đặt lại</translation>
 <translation id="6040143037577758943">Đóng</translation>
 <translation id="4943872375798546930">Không tìm thấy kết quả nào</translation>
 <translation id="2139186145475833000">Thêm vào Màn hình chính</translation>
@@ -380,7 +380,6 @@ Nhấn nút quay lại để thoát.</translation>
 <translation id="3988213473815854515">Vị trí được cho phép</translation>
 <translation id="8912362522468806198">Tài khoản Google</translation>
 <translation id="6165508094623778733">Tìm hiểu thêm</translation>
-<translation id="3828029223314399057">Tìm kiếm dấu trang</translation>
 <translation id="3003595280608617736">Không có thẻ SD nào</translation>
 <translation id="6337234675334993532">Mã hóa</translation>
 <translation id="862875433388403934">Nội dung (phim, nhạc, v.v.) được tải xuống trong các ứng dụng khác có thể không còn phát được cho tới khi ứng dụng đó nhận lại giấy phép dựa theo thông tin đăng nhập thiết bị mới.
@@ -428,10 +427,8 @@ Nhấn nút quay lại để thoát.</translation>
 <translation id="1178581264944972037">Tạm dừng</translation>
 <translation id="5127805178023152808">Đồng bộ hóa đã tắt</translation>
 <translation id="5677928146339483299">Bị chặn</translation>
-<translation id="5917058779668915997">Tab, dấu trang, lịch sử và các cài đặt khác sẽ được đồng bộ hóa với Tài khoản Google của bạn.</translation>
 <translation id="1709438864123551175">Trình tiết kiệm dữ liệu</translation>
 <translation id="2770465223704140727">Xóa khỏi danh sách</translation>
-<translation id="3132683934591522090">Hiển thị hình ảnh</translation>
 <translation id="6027491994609789413">Đang phát video</translation>
 <translation id="7561196759112975576">Luôn luôn</translation>
 <translation id="605721222689873409">YY</translation>

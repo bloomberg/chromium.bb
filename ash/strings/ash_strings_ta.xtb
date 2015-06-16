@@ -31,8 +31,6 @@
 <translation id="2297568595583585744">நிலைத் தட்டு</translation>
 <translation id="2248649616066688669">வெளிப்புற காட்சியுடன் இணைக்கப்பட்டிருக்கும்போது, மூடியை மூடி வைத்தும் உங்கள் Chromebook ஐத் தொடர்ந்து பயன்படுத்தலாம்.</translation>
 <translation id="2946640296642327832">புளூடூத்தை இயக்கு</translation>
-<translation id="478959186716341421">அனுப்புகிறது</translation>
-<translation id="5537725057119320332">அனுப்பு</translation>
 <translation id="6459472438155181876"><ph name="DISPLAY_NAME"/> க்கு திரை விரிவாக்கப்படுகிறது</translation>
 <translation id="8206859287963243715">செல்லுலர்</translation>
 <translation id="6596816719288285829">IP முகவரி</translation>
@@ -73,7 +71,6 @@
 <translation id="2509468283778169019">CAPS LOCK இயக்கத்தில்</translation>
 <translation id="3892641579809465218">இணையக் காட்சி</translation>
 <translation id="7823564328645135659">உங்கள் அமைப்புகளை ஒத்திசைத்த பிறகு, மொழியானது &quot;<ph name="FROM_LOCALE"/>&quot; இலிருந்து &quot;<ph name="TO_LOCALE"/>&quot; க்கு மாற்றப்பட்டுள்ளது.</translation>
-<translation id="7113420380180868673">$1ஐ அனுப்புகிறது</translation>
 <translation id="3606978283550408104">பிரெய்ல் திரை இணைக்கப்பட்டது.</translation>
 <translation id="8654520615680304441">வைஃபையை இயக்கு...</translation>
 <translation id="4421231901400348175">தொலைநிலை உதவி மூலம் <ph name="HELPER_NAME"/> உடன் உங்கள் திரையின் கட்டுப்பாட்டைப் பகிர்கிறது.</translation>
@@ -98,7 +95,6 @@
 <translation id="3626637461649818317"><ph name="PERCENTAGE"/>% மீதமுள்ளது</translation>
 <translation id="9089416786594320554">உள்ளீட்டு முறைகள்</translation>
 <translation id="2700058918926273959"><ph name="SESSION_TIME_REMAINING"/> இல் அமர்வு முடிந்துவிடும். வெளியேற்றப்படுவீர்கள்.</translation>
-<translation id="5807965672380739016">இதற்கு டெஸ்க்டாப்பை அனுப்பு:</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
 <translation id="3963445509666917109">ஸ்பீக்கர் (உட்புறம்)</translation>
 <translation id="1747827819627189109">ஆன்ஸ்க்ரீன் விசைப்பலகை இயக்கப்பட்டது</translation>
@@ -119,7 +115,6 @@
 <translation id="8528322925433439945">மொபைல் ...</translation>
 <translation id="3157169093162779309">சுழற்றல் பூட்டை இயக்கு</translation>
 <translation id="8428213095426709021">அமைப்புகள்</translation>
-<translation id="6592705765268910579">தெரியாத ரிசீவர்</translation>
 <translation id="2372145515558759244">பயன்பாடுகளை ஒத்திசைக்கிறது...</translation>
 <translation id="1987317783729300807">கணக்குகள்</translation>
 <translation id="8456362689280298700">நிரம்ப <ph name="HOUR"/>:<ph name="MINUTE"/> உள்ளது</translation>
@@ -212,7 +207,6 @@
 <translation id="3009178788565917040">வெளியீடு</translation>
 <translation id="3147142846278915599">துவக்கி (பயன்பாடுகளை ஒத்திசைக்கிறது...)</translation>
 <translation id="6911468394164995108">மற்றொன்றில் சேர்...</translation>
-<translation id="4373966964907728675">டெஸ்க்டாப்பை அனுப்புகிறது</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608">முழுவதும் சார்ஜ் ஆகும் நேரம் - <ph name="HOUR"/>ம <ph name="MINUTE"/>நி</translation>
 <translation id="3077734595579995578">shift</translation>

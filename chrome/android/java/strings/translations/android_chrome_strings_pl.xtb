@@ -77,7 +77,6 @@
 <translation id="3738139272394829648">Dotknij, by wyszukać</translation>
 <translation id="257931822824936280">Rozwinięty – kliknij, by zwinąć.</translation>
 <translation id="4773299976671772492">Zatrzymano</translation>
-<translation id="5118309162436926908">Zaloguj się, by korzystać ze swoich kart, zakładek, historii i innych ustawień na wszystkich urządzeniach</translation>
 <translation id="7596558890252710462">System operacyjny</translation>
 <translation id="3358663646935160692">Tym kontem zarządza <ph name="DOMAIN_NAME"/>.
 
@@ -127,6 +126,7 @@ Logujesz się na zarządzane konto i dajesz jego administratorowi kontrolę nad 
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="988938288723502454">Nie można utworzyć katalogu pobierania na karcie SD.</translation>
 <translation id="3896036286668839683">Przeglądarka certyfikatów</translation>
+<translation id="8660471606262461360">Z Google Payments</translation>
 <translation id="5171045022955879922">Wyszukaj lub wpisz URL</translation>
 <translation id="2321958826496381788">Przeciągaj suwak, by umożliwić wygodne czytanie. Gdy dwukrotnie klikniesz akapit, tekst powiększy się co najmniej do tej wielkości.</translation>
 <translation id="3282568296779691940">Zaloguj się w Chrome</translation>
@@ -177,7 +177,9 @@ Logujesz się na zarządzane konto i dajesz jego administratorowi kontrolę nad 
 <translation id="5000922062037820727">Zablokowane (zalecane)</translation>
 <translation id="544291274896356069">Jeśli otworzysz ten link w aplikacji zewnętrznej, opuścisz tryb incognito. Kontynuować?</translation>
 <translation id="3917783807003067648">Lokalizacja jest zablokowana</translation>
+<translation id="3207960819495026254">Dodano do zakładek</translation>
 <translation id="1379156015317873965">Popraw szybkość wczytywania stron</translation>
+<translation id="5953603475187800576">Pokaż adresy i karty kredytowe z Google Payments</translation>
 <translation id="8481940801237642152">Twoje połączenie z tą witryną jest prywatne, ale inna osoba w sieci może zmienić wygląd tej strony.</translation>
 <translation id="2593272815202181319">Stała szerokość znaków</translation>
 <translation id="4807098396393229769">Imię i nazwisko na karcie</translation>
@@ -231,7 +233,6 @@ Aby go wyłączyć, kliknij przycisk Wstecz.</translation>
 <translation id="583891442612896534">Chrome nie może połączyć się z serwerami Google kompresującymi dane. Oszczędność użycia danych może być ograniczona.</translation>
 <translation id="4827948050554950725">Dodaj kartę kredytową</translation>
 <translation id="2316129865977710310">Nie, dziękuję</translation>
-<translation id="3489120686474540259">Dodaj konto, by korzystać ze swoich kart, zakładek, historii i ustawień na wszystkich urządzeniach.</translation>
 <translation id="4278390842282768270">Dopuszczone</translation>
 <translation id="4686372254213217147">Rozmiar pierwotny</translation>
 <translation id="4526792582053123229">Google nie optymalizuje ani nie widzi stron, z którymi łączysz się przez HTTPS lub które przeglądasz w trybie incognito.</translation>
@@ -261,7 +262,6 @@ Aby go wyłączyć, kliknij przycisk Wstecz.</translation>
 <translation id="4526249700380860531">Wyświetlaj zapisane hasła i zarządzaj nimi na <ph name="BEGIN_LINK"/>passwords.google.com<ph name="END_LINK"/></translation>
 <translation id="2496180316473517155">Historia przeglądania</translation>
 <translation id="6108923351542677676">Trwa konfigurowanie…</translation>
-<translation id="7358682983403815415">Z Twoim kontem Google są teraz synchronizowane otwarte karty, zakładki, historia i inne ustawienia.</translation>
 <translation id="6964496835063002391">Dodaj konto</translation>
 <translation id="4698413471314543145">Brak ważnych funkcji wymaganych do uruchomienia Chrome. Instalacja Chrome jest niekompletna lub niezgodna z tą wersją Androida.</translation>
 <translation id="1943432128510653496">Zapisuj hasła</translation>
@@ -341,7 +341,6 @@ Aby go wyłączyć, kliknij przycisk Wstecz.</translation>
 <translation id="5164482624172255778">Czy chcesz, aby następnym razem przeglądarka Google Chrome zaoferowała tłumaczenie stron z tej witryny, których język to <ph name="LANGUAGE"/>?</translation>
 <translation id="4062305924942672200">Informacje prawne</translation>
 <translation id="515227803646670480">Wyczyść zapisane dane</translation>
-<translation id="6757714913056001524">Wybierz konto, by korzystać ze swoich kart, zakładek, historii i ustawień na wszystkich urządzeniach.</translation>
 <translation id="6935223586406308151">Domena <ph name="DOMAIN_NAME"/> została dodana do ekranu głównego</translation>
 <translation id="7638584964844754484">Nieprawidłowe hasło</translation>
 <translation id="129553762522093515">Ostatnio zamknięte</translation>
@@ -359,6 +358,7 @@ Aby go wyłączyć, kliknij przycisk Wstecz.</translation>
 <translation id="7324738665594301612">W ramach eksperymentu testujemy przekazywanie stron HTTPS przez serwery Google.</translation>
 <translation id="7947953824732555851">Zaakceptuj i zaloguj się</translation>
 <translation id="6333140779060797560">Udostępnij przez: <ph name="APPLICATION"/></translation>
+<translation id="5939518447894949180">Resetuj</translation>
 <translation id="6040143037577758943">Zamknij</translation>
 <translation id="4943872375798546930">Brak wyników</translation>
 <translation id="2139186145475833000">Dodaj do ekranu głównego</translation>
@@ -380,7 +380,6 @@ Aby go wyłączyć, kliknij przycisk Wstecz.</translation>
 <translation id="3988213473815854515">Lokalizacja jest dozwolona</translation>
 <translation id="8912362522468806198">Konta Google</translation>
 <translation id="6165508094623778733">Więcej informacji</translation>
-<translation id="3828029223314399057">Przeszukaj zakładki</translation>
 <translation id="3003595280608617736">Brak karty SD</translation>
 <translation id="6337234675334993532">Szyfrowanie</translation>
 <translation id="862875433388403934">Odtwarzanie pobranych treści (filmów, muzyki itp.) w innych aplikacjach może wymagać uzyskania licencji na podstawie nowych danych logowania urządzenia.
@@ -428,10 +427,8 @@ Aby otrzymać nowe licencje, połącz się z internetem i odtwórz pobrane treś
 <translation id="1178581264944972037">Wstrzymaj</translation>
 <translation id="5127805178023152808">Synchronizacja jest wyłączona</translation>
 <translation id="5677928146339483299">Zablokowane</translation>
-<translation id="5917058779668915997">Karty, zakładki, historia i ustawienia będą synchronizowane z Twoim kontem Google.</translation>
 <translation id="1709438864123551175">Oszczędzanie danych</translation>
 <translation id="2770465223704140727">Usuń z listy</translation>
-<translation id="3132683934591522090">Pokaż obraz</translation>
 <translation id="6027491994609789413">Odtwarzam film</translation>
 <translation id="7561196759112975576">Zawsze</translation>
 <translation id="605721222689873409">RR</translation>

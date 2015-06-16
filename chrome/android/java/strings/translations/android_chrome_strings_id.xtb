@@ -77,7 +77,6 @@
 <translation id="3738139272394829648">Sentuh untuk Menelusuri</translation>
 <translation id="257931822824936280">Diperluas - klik untuk menciutkan</translation>
 <translation id="4773299976671772492">Dihentikan</translation>
-<translation id="5118309162436926908">Masuk untuk mendapatkan tab, bookmark, riwayat, dan setelan Anda lainnya di semua perangkat</translation>
 <translation id="7596558890252710462">Sistem operasi</translation>
 <translation id="3358663646935160692">Akun ini dikelola oleh <ph name="DOMAIN_NAME"/>.
 
@@ -127,6 +126,7 @@ Anda masuk dengan akun yang dikelola dan memberikan administratornya kontrol ata
 <translation id="4378154925671717803">Telepon</translation>
 <translation id="988938288723502454">Tidak dapat membuat direktori unduhan pada kartu SD.</translation>
 <translation id="3896036286668839683">Penampil Sertifikat</translation>
+<translation id="8660471606262461360">Dari Google Payments</translation>
 <translation id="5171045022955879922">Telusuri atau ketik URL</translation>
 <translation id="2321958826496381788">Seret penggeser sampai Anda dapat membacanya dengan nyaman. Teks harus terlihat setidaknya sebesar ini setelah paragraf diketuk dua kali.</translation>
 <translation id="3282568296779691940">Masuk ke Chrome</translation>
@@ -177,7 +177,9 @@ Anda masuk dengan akun yang dikelola dan memberikan administratornya kontrol ata
 <translation id="5000922062037820727">Diblokir (disarankan)</translation>
 <translation id="544291274896356069">Mode penyamaran akan ditutup jika tautan ini dibuka di aplikasi eksternal. Lanjutkan?</translation>
 <translation id="3917783807003067648">Lokasi diblokir</translation>
+<translation id="3207960819495026254">Diberi bookmark</translation>
 <translation id="1379156015317873965">Meningkatkan kinerja muatan laman</translation>
+<translation id="5953603475187800576">Tampilkan alamat dan kartu kredit di Google Payments</translation>
 <translation id="8481940801237642152">Sambungan Anda ke situs ini bersifat pribadi, namun seseorang yang berada dalam jaringan Anda mungkin dapat mengubah tampilan laman.</translation>
 <translation id="2593272815202181319">Monospace</translation>
 <translation id="4807098396393229769">Nama pada kartu</translation>
@@ -231,7 +233,6 @@ Tekan tombol kembali untuk keluar.</translation>
 <translation id="583891442612896534">Chrome tidak dapat menjangkau server Google untuk mengompresi data. Penyimpanan data Anda mungkin dibatasi.</translation>
 <translation id="4827948050554950725">Tambahkan kartu kredit</translation>
 <translation id="2316129865977710310">Lain kali</translation>
-<translation id="3489120686474540259">Tambahkan akun untuk mendapatkan tab, bookmark, riwayat, dan setelan lainnya di semua perangkat Anda.</translation>
 <translation id="4278390842282768270">Diizinkan</translation>
 <translation id="4686372254213217147">Ukuran asli</translation>
 <translation id="4526792582053123229">Laman yang diakses dengan HTTPS atau Penyamaran tidak akan dioptimalkan atau dilihat oleh Google.</translation>
@@ -261,7 +262,6 @@ Tekan tombol kembali untuk keluar.</translation>
 <translation id="4526249700380860531">Melihat dan mengelola sandi yang tersimpan di <ph name="BEGIN_LINK"/>passwords.google.com<ph name="END_LINK"/></translation>
 <translation id="2496180316473517155">Riwayat jelajah</translation>
 <translation id="6108923351542677676">Penyiapan sedang berlangsung...</translation>
-<translation id="7358682983403815415">Tab yang dibuka, bookmark, riwayat, dan lainnya sedang disinkronkan dengan Akun Google Anda.</translation>
 <translation id="6964496835063002391">Tambahkan akun</translation>
 <translation id="4698413471314543145">Fungsi penting yang diperlukan untuk menjalankan Chrome tidak ada; bisa jadi karena pemasangan Chrome Anda tidak lengkap, atau tidak kompatibel dengan versi Android ini.</translation>
 <translation id="1943432128510653496">Menyimpan sandi</translation>
@@ -341,7 +341,6 @@ Tekan tombol kembali untuk keluar.</translation>
 <translation id="5164482624172255778">Ingin Google Chrome menawarkan untuk menerjemahkan laman berbahasa <ph name="LANGUAGE"/> dari situs ini saat Anda mengunjunginya lagi?</translation>
 <translation id="4062305924942672200">Informasi hukum</translation>
 <translation id="515227803646670480">Hapus data tersimpan</translation>
-<translation id="6757714913056001524">Pilih akun untuk mendapatkan tab, bookmark, riwayat, dan setelan lainnya di seluruh perangkat Anda.</translation>
 <translation id="6935223586406308151"><ph name="DOMAIN_NAME"/> ditambahkan ke Layar utama Anda</translation>
 <translation id="7638584964844754484">Frasa sandi salah</translation>
 <translation id="129553762522093515">Barusan ditutup</translation>
@@ -359,6 +358,7 @@ Tekan tombol kembali untuk keluar.</translation>
 <translation id="7324738665594301612">Kami menguji pemberian proxy pada laman HTTPS melalui server Google sebagai bagian dari percobaan.</translation>
 <translation id="7947953824732555851">Terima dan masuk</translation>
 <translation id="6333140779060797560">Bagikan melalui <ph name="APPLICATION"/></translation>
+<translation id="5939518447894949180">Setel ulang</translation>
 <translation id="6040143037577758943">Tutup</translation>
 <translation id="4943872375798546930">Tidak ada hasil</translation>
 <translation id="2139186145475833000">Tambahkan ke Layar utama</translation>
@@ -380,7 +380,6 @@ Tekan tombol kembali untuk keluar.</translation>
 <translation id="3988213473815854515">Lokasi diizinkan</translation>
 <translation id="8912362522468806198">Akun Google</translation>
 <translation id="6165508094623778733">Pelajari lebih lanjut</translation>
-<translation id="3828029223314399057">Cari bookmark</translation>
 <translation id="3003595280608617736">Tidak ada kartu SD</translation>
 <translation id="6337234675334993532">Enkripsi</translation>
 <translation id="862875433388403934">Konten (film, musik, dsb.) yang diunduh di aplikasi lain mungkin tidak dapat diputar lagi hingga aplikasi tersebut mendapatkan kembali lisensi berdasarkan kredensial perangkat yang baru.
@@ -428,10 +427,8 @@ Untuk mendapatkan lisensi baru, sambungkan ke internet dan putar konten yang diu
 <translation id="1178581264944972037">Jeda</translation>
 <translation id="5127805178023152808">Sinkronisasi nonaktif</translation>
 <translation id="5677928146339483299">Dicekal</translation>
-<translation id="5917058779668915997">Tab, bookmark, riwayat, dan setelan lainnya akan disinkronkan ke Akun Google Anda.</translation>
 <translation id="1709438864123551175">Penghemat Data</translation>
 <translation id="2770465223704140727">Hapus dari daftar</translation>
-<translation id="3132683934591522090">Tampilkan gambar</translation>
 <translation id="6027491994609789413">Memutar video</translation>
 <translation id="7561196759112975576">Selalu</translation>
 <translation id="605721222689873409">TT</translation>
