@@ -761,10 +761,10 @@ jinja_template("chrome_public_apk_manifest") {
 # GYP: //chrome/android/chrome_apk.gyp:chrome_public_template_resources
 jinja_template_resources("chrome_public_template_resources") {
   resources = [
-    "java_staging/res_template/xml/searchable.xml",
-    "java_staging/res_template/xml/syncadapter.xml",
+    "java/res_template/xml/searchable.xml",
+    "java/res_template/xml/syncadapter.xml",
   ]
-  res_dir = "java_staging/res_template"
+  res_dir = "java/res_template"
   variables = jinja_variables
 }
 

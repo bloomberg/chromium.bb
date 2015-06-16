@@ -208,7 +208,7 @@
       'target_name': 'chrome_public_template_resources',
       'type': 'none',
       'variables': {
-        'jinja_inputs_base_dir': '<(chrome_java_dir)/res_template',
+        'jinja_inputs_base_dir': 'java/res_template',
         'jinja_inputs': [
           '<(jinja_inputs_base_dir)/xml/searchable.xml',
           '<(jinja_inputs_base_dir)/xml/syncadapter.xml',
