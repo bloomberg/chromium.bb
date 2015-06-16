@@ -101,8 +101,21 @@ void BrowserIOSurfaceManager::EnsureRunning() {
   }
 }
 
-IOSurfaceManagerToken BrowserIOSurfaceManager::GetGpuProcessToken() const {
+IOSurfaceManagerToken BrowserIOSurfaceManager::GenerateGpuProcessToken() {
+  base::AutoLock lock(lock_);
+
+  DCHECK(gpu_process_token_.IsZero());
+  gpu_process_token_ = IOSurfaceManagerToken::Generate();
+  DCHECK(gpu_process_token_.Verify());
   return gpu_process_token_;
+}
+
+void BrowserIOSurfaceManager::InvalidateGpuProcessToken() {
+  base::AutoLock lock(lock_);
+
+  DCHECK(!gpu_process_token_.IsZero());
+  gpu_process_token_.SetZero();
+  io_surfaces_.clear();
 }
 
 IOSurfaceManagerToken BrowserIOSurfaceManager::GenerateChildProcessToken(
@@ -123,10 +136,7 @@ void BrowserIOSurfaceManager::InvalidateChildProcessToken(
   child_process_ids_.erase(token);
 }
 
-BrowserIOSurfaceManager::BrowserIOSurfaceManager()
-    : initialized_(false),
-      gpu_process_token_(IOSurfaceManagerToken::Generate()) {
-  DCHECK(gpu_process_token_.Verify());
+BrowserIOSurfaceManager::BrowserIOSurfaceManager() : initialized_(false) {
 }
 
 BrowserIOSurfaceManager::~BrowserIOSurfaceManager() {
@@ -227,7 +237,7 @@ bool BrowserIOSurfaceManager::HandleRegisterIOSurfaceRequest(
   static_assert(sizeof(request.token_name) == sizeof(token.name),
                 "Mach message token size doesn't match expectation.");
   token.SetName(request.token_name);
-  if (token != gpu_process_token_) {
+  if (token.IsZero() || token != gpu_process_token_) {
     LOG(ERROR) << "Illegal message from non-GPU process!";
     return false;
   }
@@ -251,7 +261,7 @@ bool BrowserIOSurfaceManager::HandleUnregisterIOSurfaceRequest(
   static_assert(sizeof(request.token_name) == sizeof(token.name),
                 "Mach message token size doesn't match expectation.");
   token.SetName(request.token_name);
-  if (token != gpu_process_token_) {
+  if (token.IsZero() || token != gpu_process_token_) {
     LOG(ERROR) << "Illegal message from non-GPU process!";
     return false;
   }
@@ -276,17 +286,18 @@ bool BrowserIOSurfaceManager::HandleAcquireIOSurfaceRequest(
     return false;
   }
 
-  IOSurfaceMapKey key(request.io_surface_id, child_process_id_it->second);
-  auto it = io_surfaces_.find(key);
-  if (it == io_surfaces_.end()) {
-    LOG(ERROR) << "Invalid Id for IOSurface " << request.io_surface_id;
-    return false;
-  }
-
   reply->header.msgh_bits =
       MACH_MSGH_BITS_REMOTE(request.header.msgh_bits) | MACH_MSGH_BITS_COMPLEX;
   reply->header.msgh_remote_port = request.header.msgh_remote_port;
   reply->header.msgh_size = sizeof(*reply);
+
+  IOSurfaceMapKey key(request.io_surface_id, child_process_id_it->second);
+  auto it = io_surfaces_.find(key);
+  if (it == io_surfaces_.end()) {
+    LOG(ERROR) << "Invalid Id for IOSurface " << request.io_surface_id;
+    return true;
+  }
+
   reply->body.msgh_descriptor_count = 1;
   reply->io_surface_port.name = it->second->get();
   reply->io_surface_port.disposition = MACH_MSG_TYPE_COPY_SEND;

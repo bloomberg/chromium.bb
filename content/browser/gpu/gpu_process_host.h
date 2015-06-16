@@ -31,6 +31,10 @@
 #include "ui/gfx/native_widget_types.h"
 #include "url/gurl.h"
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+#include "content/common/mac/io_surface_manager_token.h"
+#endif
+
 struct GPUCreateCommandBufferConfig;
 
 namespace IPC {
@@ -281,6 +285,12 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   typedef std::multimap<int, scoped_refptr<GpuSurfaceTracker::SurfaceRef> >
       SurfaceRefMap;
   SurfaceRefMap surface_refs_;
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  // Unique unguessable token that the GPU process is using to register
+  // IOSurfaces.
+  IOSurfaceManagerToken io_surface_manager_token_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(GpuProcessHost);
 };

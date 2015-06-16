@@ -45,15 +45,18 @@ class CONTENT_EXPORT BrowserIOSurfaceManager : public IOSurfaceManager {
   // Performs any necessary setup that cannot happen in the constructor.
   void EnsureRunning();
 
-  // Get the unique unguessable token that the GPU process can use to
+  // Generate a unique unguessable token that the GPU process can use to
   // register/unregister IOSurface for use by clients.
-  IOSurfaceManagerToken GetGpuProcessToken() const;
+  IOSurfaceManagerToken GenerateGpuProcessToken();
+
+  // Invalidate the previously generated GPU process token.
+  void InvalidateGpuProcessToken();
 
   // Generate a unique unguessable token that the child process associated
   // |child_process_id| can use to acquire IOSurface references.
   IOSurfaceManagerToken GenerateChildProcessToken(int child_process_id);
 
-  // Invalidate a previously generated token.
+  // Invalidate a previously generated child process token.
   void InvalidateChildProcessToken(const IOSurfaceManagerToken& token);
 
  private:
@@ -103,10 +106,11 @@ class CONTENT_EXPORT BrowserIOSurfaceManager : public IOSurfaceManager {
   ChildProcessIdMap child_process_ids_;
 
   // Stores the GPU process token.
-  const IOSurfaceManagerToken gpu_process_token_;
+  IOSurfaceManagerToken gpu_process_token_;
 
-  // Mutex that guards |initialized_|, |io_surfaces_| and |child_process_ids_|.
-  mutable base::Lock lock_;
+  // Mutex that guards |initialized_|, |io_surfaces_|, |child_process_ids_|
+  // and |gpu_process_token_|.
+  base::Lock lock_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserIOSurfaceManager);
 };
