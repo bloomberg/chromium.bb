@@ -3001,9 +3001,8 @@
       "data": [
         {
           "comment": "Footnotes and endnotes: Example 1",
-          "xfail": false,
           "input": "Skolen ble åpnet i den franske hovedstaden i 1784,*",
-          "output": "⠠⠎⠅⠕⠇⠑⠝ ⠃⠇⠑ ⠡⠏⠝⠑⠞ ⠊ ⠙⠑⠝ ⠋⠗⠁⠝⠎⠅⠑ ⠓⠕⠧⠑⠙⠎⠞⠁⠙⠑⠝ ⠊ ⠼⠁⠛⠓⠙⠂⠔ "
+          "output": "⠠⠎⠅⠕⠇⠑⠝ ⠃⠇⠑ ⠡⠏⠝⠑⠞ ⠊ ⠙⠑⠝ ⠋⠗⠁⠝⠎⠅⠑ ⠓⠕⠧⠑⠙⠎⠞⠁⠙⠑⠝ ⠊ ⠼⠁⠛⠓⠙⠂⠔"
         }
       ]
     },
@@ -3060,8 +3059,7 @@
       "data": [
         {
           "comment": "Footnotes and endnotes: Example 7",
-          "xfail": false,
-          "input": "Man viser til en fotnote med et siffer1 som settes opphøyd uten mellomrom inntil det ord eller det uttrykk som noten gjelder: Hun brukte uttrykket \"takle problemet\"2",
+          "input": "Man viser til en fotnote med et siffer¹ som settes opphøyd uten mellomrom inntil det ord eller det uttrykk som noten gjelder: Hun brukte uttrykket \"takle problemet\"²",
           "output": "⠠⠍⠁⠝ ⠧⠊⠎⠑⠗ ⠞⠊⠇ ⠑⠝ ⠋⠕⠞⠝⠕⠞⠑ ⠍⠑⠙ ⠑⠞ ⠎⠊⠋⠋⠑⠗⠠⠼⠁ ⠎⠕⠍ ⠎⠑⠞⠞⠑⠎ ⠕⠏⠏⠓⠪⠽⠙ ⠥⠞⠑⠝ ⠍⠑⠇⠇⠕⠍⠗⠕⠍ ⠊⠝⠝⠞⠊⠇ ⠙⠑⠞ ⠕⠗⠙ ⠑⠇⠇⠑⠗ ⠙⠑⠞ ⠥⠞⠞⠗⠽⠅⠅ ⠎⠕⠍ ⠝⠕⠞⠑⠝ ⠛⠚⠑⠇⠙⠑⠗⠒ ⠆⠠⠓⠥⠝ ⠃⠗⠥⠅⠞⠑ ⠥⠞⠞⠗⠽⠅⠅⠑⠞ ⠲⠞⠁⠅⠇⠑ ⠏⠗⠕⠃⠇⠑⠍⠑⠞⠲⠰⠠⠼⠃"
         }
       ]
@@ -3089,7 +3087,6 @@
       "data": [
         {
           "comment": "Footnotes and endnotes: Example 10",
-          "xfail": false,
           "input":    "2 Fra engelsk tackle a problem.",
           "typeform": "0000000000000011111111111111110",
           "output": "⠼⠃ ⠠⠋⠗⠁ ⠑⠝⠛⠑⠇⠎⠅ ⠆⠞⠁⠉⠅⠇⠑ ⠁ ⠏⠗⠕⠃⠇⠑⠍⠰⠄"
