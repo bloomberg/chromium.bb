@@ -37,16 +37,16 @@ define('media_router_bindings', [
    * Returns a Mojo MediaRoute object given a MediaRoute and a
    * media sink name.
    * @param {!MediaRoute} route
-   * @param {!string=} opt_sinkName
+   * @param {!string} sinkName
    * @return {!mojo.MediaRoute}
    */
-  function routeToMojo_(route, opt_sinkName) {
+  function routeToMojo_(route, sinkName) {
     return new mediaRouterMojom.MediaRoute({
       'media_route_id': route.id,
       'media_source': route.mediaSource,
       'media_sink': new mediaRouterMojom.MediaSink({
         'sink_id': route.sinkId,
-        'name': opt_sinkName,
+        'name': sinkName,
       }),
       'description': route.description,
       'icon_url': route.iconUrl,
@@ -138,8 +138,7 @@ define('media_router_bindings', [
    * @param {!Array<!MediaSink>} sinks
    */
   MediaRouterObserver.prototype.onSinksReceived = function(sourceUrn, sinks) {
-    this.service_.onSinksReceived(sourceUrn,
-                                   sinks.map(sinkToMojo_));
+    this.service_.onSinksReceived(sourceUrn, sinks.map(sinkToMojo_));
   };
 
   /**
@@ -430,7 +429,8 @@ define('media_router_bindings', [
       function(sourceUrn, presentationId, origin, tabId) {
     return this.handlers_.joinRoute(sourceUrn, presentationId, origin, tabId)
         .then(function(newRoute) {
-          return {route: routeToMojo_(newRoute)};
+          // Sink name is not used, so it is omitted here.
+          return {route: routeToMojo_(newRoute, "")};
         },
         function(err) {
           return {error_text: 'Error joining route: ' + err.message};
