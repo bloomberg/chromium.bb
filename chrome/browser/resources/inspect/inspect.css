@@ -79,7 +79,7 @@ img {
 }
 
 #content > div {
-  padding: 54px 20px 65px 0;
+  padding: 0 20px 65px 0;
 }
 #content > div:not(.selected) {
   display: none;
@@ -89,11 +89,7 @@ img {
   background: linear-gradient(white, white 40%, rgba(255, 255, 255, 0.92));
   border-bottom: 1px solid #eee;
   font-size: 150%;
-  left: 150px;
   padding: 20px 0 10px 0;
-  position: fixed;
-  right: 20px;
-  top: 0;
   z-index: 1;
 }
 
