@@ -287,7 +287,6 @@ v8.log
 /third_party/cros
 /third_party/cros_system_api
 /third_party/cygwin
-/third_party/deqp
 /third_party/directxsdk
 /third_party/dom_distiller_js/dist
 /third_party/drmemory/drmemory-windows-sfx.exe
