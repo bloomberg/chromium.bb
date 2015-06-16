@@ -11,7 +11,12 @@ group("webapp") {
   deps = [
     ":webapp_v1",
     ":ar_sample_app",
+    ":ar_shared_module",
   ]
+
+  if (enable_internal_app_remoting_targets) {
+    deps += [ "//remoting/internal:ar_internal_apps" ]
+  }
 
   if (enable_nacl) {
     deps += [ ":webapp_v2" ]
@@ -40,8 +45,18 @@ app_remoting_webapp("ar_sample_app") {
   app_key = "Sample_App"
   app_id = "ljacajndfccfgnfohlgkdphmbnpkjflk"
   app_client_id = "sample_client_id"
-  app_name = "App Remoting Client"
+  app_vendor = ""
+  app_name = "sample_app"
+  app_fullname = "App Remoting Client"
   app_description = "App Remoting client"
   app_capabilities = [ "GOOGLE_DRIVE" ]
+  manifest_key = "remotingdevbuild"
+}
+
+app_remoting_shared_module("ar_shared_module") {
+  app_client_id = "sample_client_id"
+  app_name = "shared_module"
+  app_fullname = "AppRemoting Shared Module"
+  app_description = "AppRemoting Shared Module"
   manifest_key = "remotingdevbuild"
 }

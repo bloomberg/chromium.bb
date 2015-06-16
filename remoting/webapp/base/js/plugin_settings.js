@@ -49,18 +49,6 @@ remoting.Settings.prototype.OAUTH2_REDIRECT_URL = function() {
 remoting.Settings.prototype.APP_REMOTING_API_BASE_URL =
     'APP_REMOTING_API_BASE_URL';
 
-/**
- * Return this app's Application ID.
- *
- * This is a function rather than a constant because the build script may
- * replace this string with code to calculate the app id dynamically.
- *
- * @return {string} The Application ID.
- */
-remoting.Settings.prototype.getAppRemotingApplicationId = function() {
-  return 'APP_REMOTING_APPLICATION_ID';
-};
-
 /** @type {string} XMPP JID for the remoting directory server bot. */
 remoting.Settings.prototype.DIRECTORY_BOT_JID = 'DIRECTORY_BOT_JID';
 
