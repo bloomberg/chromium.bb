@@ -300,7 +300,14 @@ message PerfDataProto {
     optional MMapEvent mmap_event = 2;
     optional SampleEvent sample_event = 3;
     optional CommEvent comm_event = 4;
+    // FORK and EXIT events are structurally identical. They only differ by the
+    // event type. But using two distinct fields makes things easier.
     optional ForkEvent fork_event = 5;
+    optional ForkEvent exit_event = 9;
+
+    // Not added from original: optional LostEvent lost_event = 6;
+    // Not added from original: optional ThrottleEvent throttle_event = 7;
+    // Not added from original: optional ReadEvent read_event = 8;
   }
 
   message PerfEventStats {
