@@ -5,6 +5,7 @@
 #ifndef BASE_CONTAINERS_SCOPED_PTR_MAP_H_
 #define BASE_CONTAINERS_SCOPED_PTR_MAP_H_
 
+#include <functional>
 #include <map>
 #include <utility>
 
@@ -19,11 +20,11 @@
 //
 // |ScopedPtr| must be a type scoped_ptr<T>. This is for compatibility with
 // std::map in C++11.
-template <class Key, class ScopedPtr>
+template <class Key, class ScopedPtr, class Compare = std::less<Key>>
 class ScopedPtrMap {
   MOVE_ONLY_TYPE_WITH_MOVE_CONSTRUCTOR_FOR_CPP_03(ScopedPtrMap)
 
-  using Container = std::map<Key, typename ScopedPtr::element_type*>;
+  using Container = std::map<Key, typename ScopedPtr::element_type*, Compare>;
 
  public:
   using allocator_type = typename Container::allocator_type;
@@ -32,6 +33,8 @@ class ScopedPtrMap {
   using reference = typename Container::reference;
   using const_reference = typename Container::const_reference;
   using key_type = typename Container::key_type;
+  using mapped_type = ScopedPtr;
+  using key_compare = typename Container::key_compare;
   using const_iterator = typename Container::const_iterator;
   using const_reverse_iterator = typename Container::const_reverse_iterator;
 

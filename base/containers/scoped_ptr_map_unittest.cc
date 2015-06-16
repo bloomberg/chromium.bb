@@ -4,6 +4,7 @@
 
 #include "base/containers/scoped_ptr_map.h"
 
+#include <functional>
 #include <map>
 #include <utility>
 
@@ -141,6 +142,19 @@ TEST(ScopedPtrMapTest, Clear) {
   scoped_map.clear();
   EXPECT_TRUE(destroyed);
   EXPECT_TRUE(scoped_map.empty());
+}
+
+TEST(ScopedPtrMapTest, Compare) {
+  // Construct a ScopedPtrMap with a custom comparison function.
+  bool destroyed = false;
+  ScopedPtrMap<int, scoped_ptr<ScopedDestroyer>, std::greater<int>> scoped_map;
+  scoped_map.insert(0, make_scoped_ptr(new ScopedDestroyer(&destroyed)));
+  scoped_map.insert(1, make_scoped_ptr(new ScopedDestroyer(&destroyed)));
+
+  auto it = scoped_map.begin();
+  EXPECT_EQ(1, it->first);
+  ++it;
+  EXPECT_EQ(0, it->first);
 }
 
 TEST(ScopedPtrMapTest, Scope) {
