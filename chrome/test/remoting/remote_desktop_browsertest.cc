@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
+#include "chrome/browser/ui/webui/signin/login_ui_test_utils.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/remoting/key_code_conv.h"
 #include "chrome/test/remoting/page_load_notification_observer.h"
@@ -275,9 +276,6 @@ void RemoteDesktopBrowserTest::Authorize() {
 
   // Verify the active tab is at the "Google Accounts" login page.
   EXPECT_EQ("accounts.google.com", GetCurrentURL().host());
-
-  EXPECT_TRUE(HtmlElementExists("Email"));
-  EXPECT_TRUE(HtmlElementExists("Passwd"));
 }
 
 void RemoteDesktopBrowserTest::Authenticate() {
@@ -287,14 +285,9 @@ void RemoteDesktopBrowserTest::Authenticate() {
   // The active WebContents should have the "Google Accounts" login page loaded.
   ASSERT_EQ("accounts.google.com", GetCurrentURL().host());
 
-  ASSERT_TRUE(HtmlElementExists("Email"));
-  ASSERT_TRUE(HtmlElementExists("Passwd"));
-
-  // Now log in using the username and password passed in from the command line.
-  ExecuteScriptAndWaitForAnyPageLoad(
-      "document.getElementById(\"Email\").value = \"" + username_ + "\";" +
-      "document.getElementById(\"Passwd\").value = \"" + password_ +"\";" +
-      "document.forms[\"gaia_loginform\"].submit();");
+  // Sign-in by injecting JavaScript in the chrome://chrome-signin/ page.
+  login_ui_test_utils::ExecuteJsToSigninInSigninFrame(browser(), username_,
+                                                      password_);
 
   // TODO(weitaosu): Is there a better way to verify we are on the
   // "Request for Permission" page?
