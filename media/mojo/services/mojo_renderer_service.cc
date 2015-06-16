@@ -149,11 +149,13 @@ void MojoRendererService::UpdateMediaTime(bool force) {
 }
 
 void MojoRendererService::CancelPeriodicMediaTimeUpdates() {
+  DVLOG(2) << __FUNCTION__;
   UpdateMediaTime(false);
-  time_update_timer_.Reset();
+  time_update_timer_.Stop();
 }
 
 void MojoRendererService::SchedulePeriodicMediaTimeUpdates() {
+  DVLOG(2) << __FUNCTION__;
   UpdateMediaTime(true);
   time_update_timer_.Start(
       FROM_HERE,
