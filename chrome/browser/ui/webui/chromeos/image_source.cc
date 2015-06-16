@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/chromeos/image_source.h"
 
+#include <vector>
+
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
@@ -22,8 +24,8 @@ using content::BrowserThread;
 namespace chromeos {
 namespace {
 
-const char* kWhitelistedFiles[] = {
-  "fcc/label.png"
+const char* kWhitelistedDirectories[] = {
+  "regulatory_labels"
 };
 
 // Callback for user_manager::UserImageLoader.
@@ -107,8 +109,21 @@ std::string ImageSource::GetMimeType(const std::string& path) const {
 }
 
 bool ImageSource::IsWhitelisted(const std::string& path) const {
-  const char** end = kWhitelistedFiles + arraysize(kWhitelistedFiles);
-  return std::find(kWhitelistedFiles, end, path) != end;
+  base::FilePath file_path(path);
+  if (file_path.ReferencesParent())
+    return false;
+
+  // Check if the path starts with a whitelisted directory.
+  std::vector<std::string> components;
+  file_path.GetComponents(&components);
+  if (components.empty())
+    return false;
+
+  for (size_t i = 0; i < arraysize(kWhitelistedDirectories); i++) {
+    if (components[0] == kWhitelistedDirectories[i])
+      return true;
+  }
+  return false;
 }
 
 }  // namespace chromeos

@@ -156,13 +156,10 @@ cr.define('help', function() {
                                  cr.ui.ArrowLocation.TOP_END);
         };
 
-        // Unhide the product label if/when the image loads.
-        var productLabel = $('product-label');
-        var show = function() { $('product-label-container').hidden = false; };
-        if (productLabel.naturalWidth)
-          show();
-        else
-          productLabel.onload = show;
+        // Unhide the regulatory label if/when the image loads.
+        $('regulatory-label').onload = function() {
+          $('regulatory-label-container').hidden = false;
+        };
       }
 
       var logo = $('product-logo');
@@ -579,12 +576,21 @@ cr.define('help', function() {
     },
 
     /**
-     * Sets the product label's alt text.
+     * Sets the regulatory label's source.
+     * @param {string} path The path to use for the image.
+     * @private
+     */
+    setRegulatoryLabelPath_: function(path) {
+      $('regulatory-label').src = path;
+    },
+
+    /**
+     * Sets the regulatory label's alt text.
      * @param {string} text The text to use for the image.
      * @private
      */
-    setProductLabelText_: function(text) {
-      $('product-label').setAttribute('alt', text);
+    setRegulatoryLabelText_: function(text) {
+      $('regulatory-label').alt = text;
     },
   };
 
@@ -655,8 +661,14 @@ cr.define('help', function() {
     HelpPage.getInstance().setBuildDate_(buildDate);
   };
 
-  HelpPage.setProductLabelText = function(text) {
-    HelpPage.getInstance().setProductLabelText_(text);
+  HelpPage.setRegulatoryLabelPath = function(path) {
+    assert(cr.isChromeOS);
+    HelpPage.getInstance().setRegulatoryLabelPath_(path);
+  };
+
+  HelpPage.setRegulatoryLabelText = function(text) {
+    assert(cr.isChromeOS);
+    HelpPage.getInstance().setRegulatoryLabelText_(text);
   };
 
   // Export
