@@ -2761,6 +2761,22 @@ int SSLClientSocketNSS::InitializeSSLOptions() {
     return ERR_NO_SSL_VERSIONS_ENABLED;
   }
 
+  if (ssl_config_.require_ecdhe) {
+    const PRUint16* const ssl_ciphers = SSL_GetImplementedCiphers();
+    const PRUint16 num_ciphers = SSL_GetNumImplementedCiphers();
+
+    // Iterate over the cipher suites and disable those that don't use ECDHE.
+    for (unsigned i = 0; i < num_ciphers; i++) {
+      SSLCipherSuiteInfo info;
+      if (SSL_GetCipherSuiteInfo(ssl_ciphers[i], &info, sizeof(info)) ==
+          SECSuccess) {
+        if (strcmp(info.keaTypeName, "ECDHE") != 0) {
+          SSL_CipherPrefSet(nss_fd_, ssl_ciphers[i], PR_FALSE);
+        }
+      }
+    }
+  }
+
   if (ssl_config_.version_fallback) {
     rv = SSL_OptionSet(nss_fd_, SSL_ENABLE_FALLBACK_SCSV, PR_TRUE);
     if (rv != SECSuccess) {

@@ -138,6 +138,7 @@ void SslHmacChannelAuthenticator::SecureAndAuthenticate(
     ssl_config.cert_io_enabled = false;
     ssl_config.rev_checking_enabled = false;
     ssl_config.allowed_bad_certs.push_back(cert_and_status);
+    ssl_config.require_ecdhe = true;
 
     net::HostPortPair host_and_port(kSslFakeHostName, 0);
     net::SSLClientSocketContext context;

@@ -357,8 +357,7 @@ int SSLServerSocketNSS::InitializeSSLOptions() {
     const PRUint16* const ssl_ciphers = SSL_GetImplementedCiphers();
     const PRUint16 num_ciphers = SSL_GetNumImplementedCiphers();
 
-    // Require forward security by iterating over the cipher suites and
-    // disabling all those that don't use ECDHE.
+    // Iterate over the cipher suites and disable those that don't use ECDHE.
     for (unsigned i = 0; i < num_ciphers; i++) {
       SSLCipherSuiteInfo info;
       if (SSL_GetCipherSuiteInfo(ssl_ciphers[i], &info, sizeof(info)) ==

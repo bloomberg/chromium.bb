@@ -3105,6 +3105,37 @@ TEST_F(SSLClientSocketTest, DeprecatedShardSessionCache) {
   EXPECT_EQ(SSLInfo::HANDSHAKE_FULL, ssl_info.handshake_type);
 }
 
+TEST_F(SSLClientSocketTest, RequireECDHE) {
+  // Run test server without ECDHE.
+  SpawnedTestServer::SSLOptions ssl_options;
+  ssl_options.key_exchanges = SpawnedTestServer::SSLOptions::KEY_EXCHANGE_RSA;
+  SpawnedTestServer test_server(SpawnedTestServer::TYPE_HTTPS, ssl_options,
+                                base::FilePath());
+  ASSERT_TRUE(test_server.Start());
+
+  AddressList addr;
+  ASSERT_TRUE(test_server.GetAddressList(&addr));
+
+  TestCompletionCallback callback;
+  TestNetLog log;
+  scoped_ptr<StreamSocket> transport(
+      new TCPClientSocket(addr, &log, NetLog::Source()));
+  int rv = transport->Connect(callback.callback());
+  rv = callback.GetResult(rv);
+  EXPECT_EQ(OK, rv);
+
+  SSLConfig config;
+  config.require_ecdhe = true;
+
+  scoped_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
+      transport.Pass(), test_server.host_port_pair(), config));
+
+  rv = sock->Connect(callback.callback());
+  rv = callback.GetResult(rv);
+
+  EXPECT_EQ(ERR_SSL_VERSION_OR_CIPHER_MISMATCH, rv);
+}
+
 TEST_F(SSLClientSocketFalseStartTest, FalseStartEnabled) {
   if (!SupportsAESGCM()) {
     LOG(WARNING) << "Skipping test because AES-GCM is not supported.";
