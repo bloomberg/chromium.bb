@@ -26,24 +26,24 @@ if (!window.AutocompleteErrorEvent) {
     shouldBe("new AutocompleteErrorEvent('eventType', { cancelable: true }).cancelable", "true");
 
     // reason is passed.
-    shouldBeEqualToString("new AutocompleteErrorEvent('eventType', { reason: 'doremi' }).reason", "doremi");
+    shouldBeEqualToString("new AutocompleteErrorEvent('eventType', { reason: 'cancel' }).reason", "cancel");
     shouldBeEqualToString("new AutocompleteErrorEvent('eventType', { reason: '' }).reason", "");
+    shouldBeEqualToString("new AutocompleteErrorEvent('eventType', { reason: 'disabled' }).reason", "disabled");
+    shouldBeEqualToString("new AutocompleteErrorEvent('eventType', { reason: 'invalid' }).reason", "invalid");
     shouldBeEqualToString("new AutocompleteErrorEvent('eventType', { reason: undefined }).reason", "");
-    shouldBeEqualToString("new AutocompleteErrorEvent('eventType', { reason: null }).reason", "null");
-    shouldBeEqualToString("new AutocompleteErrorEvent('eventType', { reason: false }).reason", "false");
-    shouldBeEqualToString("new AutocompleteErrorEvent('eventType', { reason: true }).reason", "true");
-    shouldBeEqualToString("new AutocompleteErrorEvent('eventType', { reason: 12345 }).reason", "12345");
-    shouldBeEqualToString("new AutocompleteErrorEvent('eventType', { reason: 18446744073709551615 }).reason", "18446744073709552000");
-    shouldBeEqualToString("new AutocompleteErrorEvent('eventType', { reason: NaN }).reason", "NaN");
-    shouldBeEqualToString("new AutocompleteErrorEvent('eventType', { reason: [] }).reason", "");
-    shouldBeEqualToString("new AutocompleteErrorEvent('eventType', { reason: [1, 2, 3] }).reason", "1,2,3");
-    shouldBeEqualToString("new AutocompleteErrorEvent('eventType', { reason: {doremi: 12345} }).reason", "[object Object]");
-    shouldBeEqualToString("new AutocompleteErrorEvent('eventType', { reason: {valueOf: function () { return 'doremi'; } } }).reason", "[object Object]");
+
+    // Invalid reason throws exception
+    shouldThrow("new AutocompleteErrorEvent('eventType', { reason: 'doremi' })");
+    shouldThrow("new AutocompleteErrorEvent('eventType', { reason: null })");
+    shouldThrow("new AutocompleteErrorEvent('eventType', { reason: false })");
+    shouldThrow("new AutocompleteErrorEvent('eventType', { reason: true })");
+    shouldThrow("new AutocompleteErrorEvent('eventType', { reason: 12345 })");
+    shouldThrow("new AutocompleteErrorEvent('eventType', { reason: NaN })");
 
     // All initializers are passed.
-    shouldBe("new AutocompleteErrorEvent('eventType', { bubbles: true, cancelable: true, reason: 'doremi' }).bubbles", "true");
-    shouldBe("new AutocompleteErrorEvent('eventType', { bubbles: true, cancelable: true, reason: 'doremi' }).cancelable", "true");
-    shouldBeEqualToString("new AutocompleteErrorEvent('eventType', { bubbles: true, cancelable: true, reason: 'doremi' }).reason", "doremi");
+    shouldBe("new AutocompleteErrorEvent('eventType', { bubbles: true, cancelable: true, reason: '' }).bubbles", "true");
+    shouldBe("new AutocompleteErrorEvent('eventType', { bubbles: true, cancelable: true, reason: 'cancel' }).cancelable", "true");
+    shouldBeEqualToString("new AutocompleteErrorEvent('eventType', { bubbles: true, cancelable: true, reason: 'disabled' }).reason", "disabled");
 }
 
 </script>

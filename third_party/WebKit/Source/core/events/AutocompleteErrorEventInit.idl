@@ -5,6 +5,5 @@
 // https://html.spec.whatwg.org/multipage/forms.html#the-autocompleteerrorevent-interface
 
 dictionary AutocompleteErrorEventInit : EventInit {
-    // FIXME: According to the spec, "reason" should be AutocompleteErrorReason.
-    DOMString reason;
+    AutocompleteErrorReason reason;
 };
