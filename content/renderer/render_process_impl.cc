@@ -57,9 +57,8 @@ RenderProcessImpl::RenderProcessImpl()
     v8::V8::SetFlagsFromString(flags.c_str(), static_cast<int>(flags.size()));
   }
 
-  // Turn on cross-site document blocking for renderer processes.
-  SiteIsolationPolicy::SetPolicyEnabled(
-      GetContentClient()->renderer()->ShouldEnableSiteIsolationPolicy());
+  SiteIsolationStatsGatherer::SetEnabled(
+      GetContentClient()->renderer()->ShouldGatherSiteIsolationStats());
 }
 
 RenderProcessImpl::~RenderProcessImpl() {

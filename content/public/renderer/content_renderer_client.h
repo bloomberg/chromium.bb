@@ -273,10 +273,10 @@ class CONTENT_EXPORT ContentRendererClient {
   virtual bool ShouldReportDetailedMessageForSource(
       const base::string16& source) const;
 
-  // Returns true if we should apply the cross-site document blocking policy to
-  // this renderer process. Currently, we apply the policy only to a renderer
-  // process running on a normal page from the web.
-  virtual bool ShouldEnableSiteIsolationPolicy() const;
+  // Returns true if we should gather stats during resource loads as if the
+  // cross-site document blocking policy were enabled. Does not actually block
+  // any pages.
+  virtual bool ShouldGatherSiteIsolationStats() const;
 
   // Creates a permission client proxy for in-renderer worker.
   virtual blink::WebWorkerContentSettingsClientProxy*

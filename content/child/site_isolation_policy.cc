@@ -21,9 +21,9 @@ namespace content {
 
 namespace {
 
-// The cross-site document blocking/UMA data collection is deactivated by
-// default, and only activated in renderer processes.
-static bool g_policy_enabled = false;
+// The gathering of UMA stats for site isolation is deactivated by default, and
+// only activated in renderer processes.
+static bool g_stats_gathering_enabled = false;
 
 // MIME types
 const char kTextHtml[] = "text/html";
@@ -132,17 +132,18 @@ void HistogramCountNotBlockedResponse(const std::string& bucket_prefix,
 SiteIsolationResponseMetaData::SiteIsolationResponseMetaData() {
 }
 
-void SiteIsolationPolicy::SetPolicyEnabled(bool enabled) {
-  g_policy_enabled = enabled;
+void SiteIsolationStatsGatherer::SetEnabled(bool enabled) {
+  g_stats_gathering_enabled = enabled;
 }
 
 linked_ptr<SiteIsolationResponseMetaData>
-SiteIsolationPolicy::OnReceivedResponse(const GURL& frame_origin,
-                                        const GURL& response_url,
-                                        ResourceType resource_type,
-                                        int origin_pid,
-                                        const ResourceResponseInfo& info) {
-  if (!g_policy_enabled)
+SiteIsolationStatsGatherer::OnReceivedResponse(
+    const GURL& frame_origin,
+    const GURL& response_url,
+    ResourceType resource_type,
+    int origin_pid,
+    const ResourceResponseInfo& info) {
+  if (!g_stats_gathering_enabled)
     return linked_ptr<SiteIsolationResponseMetaData>();
 
   // if |origin_pid| is non-zero, it means that this response is for a plugin
@@ -160,14 +161,14 @@ SiteIsolationPolicy::OnReceivedResponse(const GURL& frame_origin,
   if (IsResourceTypeFrame(resource_type))
     return linked_ptr<SiteIsolationResponseMetaData>();
 
-  if (!IsBlockableScheme(response_url))
+  if (!CrossSiteDocumentClassifier::IsBlockableScheme(response_url))
     return linked_ptr<SiteIsolationResponseMetaData>();
 
-  if (IsSameSite(frame_origin, response_url))
+  if (CrossSiteDocumentClassifier::IsSameSite(frame_origin, response_url))
     return linked_ptr<SiteIsolationResponseMetaData>();
 
   SiteIsolationResponseMetaData::CanonicalMimeType canonical_mime_type =
-      GetCanonicalMimeType(info.mime_type);
+      CrossSiteDocumentClassifier::GetCanonicalMimeType(info.mime_type);
 
   if (canonical_mime_type == SiteIsolationResponseMetaData::Others)
     return linked_ptr<SiteIsolationResponseMetaData>();
@@ -181,7 +182,8 @@ SiteIsolationPolicy::OnReceivedResponse(const GURL& frame_origin,
   // We can use a case-insensitive header name for EnumerateHeader().
   info.headers->EnumerateHeader(NULL, "access-control-allow-origin",
                                 &access_control_origin);
-  if (IsValidCorsHeaderSet(frame_origin, response_url, access_control_origin))
+  if (CrossSiteDocumentClassifier::IsValidCorsHeaderSet(
+          frame_origin, response_url, access_control_origin))
     return linked_ptr<SiteIsolationResponseMetaData>();
 
   // Real XSD data collection starts from here.
@@ -200,11 +202,11 @@ SiteIsolationPolicy::OnReceivedResponse(const GURL& frame_origin,
   return resp_data;
 }
 
-bool SiteIsolationPolicy::OnReceivedFirstChunk(
+bool SiteIsolationStatsGatherer::OnReceivedFirstChunk(
     const linked_ptr<SiteIsolationResponseMetaData>& resp_data,
     const char* raw_data,
     int raw_length) {
-  if (!g_policy_enabled)
+  if (!g_stats_gathering_enabled)
     return false;
 
   DCHECK(resp_data.get());
@@ -234,15 +236,18 @@ bool SiteIsolationPolicy::OnReceivedFirstChunk(
     bool sniffed_as_target_document = false;
     if (resp_data->canonical_mime_type == SiteIsolationResponseMetaData::HTML) {
       bucket_prefix = "SiteIsolation.XSD.HTML";
-      sniffed_as_target_document = SniffForHTML(data);
+      sniffed_as_target_document =
+          CrossSiteDocumentClassifier::SniffForHTML(data);
     } else if (resp_data->canonical_mime_type ==
                SiteIsolationResponseMetaData::XML) {
       bucket_prefix = "SiteIsolation.XSD.XML";
-      sniffed_as_target_document = SniffForXML(data);
+      sniffed_as_target_document =
+          CrossSiteDocumentClassifier::SniffForXML(data);
     } else if (resp_data->canonical_mime_type ==
                SiteIsolationResponseMetaData::JSON) {
       bucket_prefix = "SiteIsolation.XSD.JSON";
-      sniffed_as_target_document = SniffForJSON(data);
+      sniffed_as_target_document =
+          CrossSiteDocumentClassifier::SniffForJSON(data);
     } else {
       NOTREACHED() << "Not a blockable mime type: "
                    << resp_data->canonical_mime_type;
@@ -264,11 +269,11 @@ bool SiteIsolationPolicy::OnReceivedFirstChunk(
     // and JSON sniffer to a text document in the order, and block it
     // if any of them succeeds in sniffing.
     std::string bucket_prefix;
-    if (SniffForHTML(data))
+    if (CrossSiteDocumentClassifier::SniffForHTML(data))
       bucket_prefix = "SiteIsolation.XSD.Plain.HTML";
-    else if (SniffForXML(data))
+    else if (CrossSiteDocumentClassifier::SniffForXML(data))
       bucket_prefix = "SiteIsolation.XSD.Plain.XML";
-    else if (SniffForJSON(data))
+    else if (CrossSiteDocumentClassifier::SniffForJSON(data))
       bucket_prefix = "SiteIsolation.XSD.Plain.JSON";
 
     if (bucket_prefix.size() > 0) {
@@ -287,7 +292,8 @@ bool SiteIsolationPolicy::OnReceivedFirstChunk(
 }
 
 SiteIsolationResponseMetaData::CanonicalMimeType
-SiteIsolationPolicy::GetCanonicalMimeType(const std::string& mime_type) {
+CrossSiteDocumentClassifier::GetCanonicalMimeType(
+    const std::string& mime_type) {
   if (base::LowerCaseEqualsASCII(mime_type, kTextHtml)) {
     return SiteIsolationResponseMetaData::HTML;
   }
@@ -311,15 +317,15 @@ SiteIsolationPolicy::GetCanonicalMimeType(const std::string& mime_type) {
   return SiteIsolationResponseMetaData::Others;
 }
 
-bool SiteIsolationPolicy::IsBlockableScheme(const GURL& url) {
+bool CrossSiteDocumentClassifier::IsBlockableScheme(const GURL& url) {
   // We exclude ftp:// from here. FTP doesn't provide a Content-Type
   // header which our policy depends on, so we cannot protect any
   // document from FTP servers.
   return url.SchemeIs(url::kHttpScheme) || url.SchemeIs(url::kHttpsScheme);
 }
 
-bool SiteIsolationPolicy::IsSameSite(const GURL& frame_origin,
-                                     const GURL& response_url) {
+bool CrossSiteDocumentClassifier::IsSameSite(const GURL& frame_origin,
+                                             const GURL& response_url) {
   if (!frame_origin.is_valid() || !response_url.is_valid())
     return false;
 
@@ -337,7 +343,7 @@ bool SiteIsolationPolicy::IsSameSite(const GURL& frame_origin,
 // their policy works in terms of origins, not sites. For example,
 // when frame is sub.a.com and it is not allowed to access a document
 // with sub1.a.com. But under Site Isolation, it's allowed.
-bool SiteIsolationPolicy::IsValidCorsHeaderSet(
+bool CrossSiteDocumentClassifier::IsValidCorsHeaderSet(
     const GURL& frame_origin,
     const GURL& website_origin,
     const std::string& access_control_origin) {
@@ -365,7 +371,7 @@ bool SiteIsolationPolicy::IsValidCorsHeaderSet(
 }
 
 // This function is a slight modification of |net::SniffForHTML|.
-bool SiteIsolationPolicy::SniffForHTML(StringPiece data) {
+bool CrossSiteDocumentClassifier::SniffForHTML(StringPiece data) {
   // The content sniffer used by Chrome and Firefox are using "<!--"
   // as one of the HTML signatures, but it also appears in valid
   // JavaScript, considered as well-formed JS by the browser.  Since
@@ -375,7 +381,7 @@ bool SiteIsolationPolicy::SniffForHTML(StringPiece data) {
   // TODO(dsjang): parameterize |net::SniffForHTML| with an option
   // that decides whether to include <!-- or not, so that we can
   // remove this function.
-  // TODO(dsjang): Once SiteIsolationPolicy is moved into the browser
+  // TODO(dsjang): Once CrossSiteDocumentClassifier is moved into the browser
   // process, we should do single-thread checking here for the static
   // initializer.
   static const StringPiece kHtmlSignatures[] = {
@@ -421,19 +427,19 @@ bool SiteIsolationPolicy::SniffForHTML(StringPiece data) {
   return false;
 }
 
-bool SiteIsolationPolicy::SniffForXML(base::StringPiece data) {
+bool CrossSiteDocumentClassifier::SniffForXML(base::StringPiece data) {
   // TODO(dsjang): Chrome's mime_sniffer is using strncasecmp() for
   // this signature. However, XML is case-sensitive. Don't we have to
   // be more lenient only to block documents starting with the exact
   // string <?xml rather than <?XML ?
-  // TODO(dsjang): Once SiteIsolationPolicy is moved into the browser
+  // TODO(dsjang): Once CrossSiteDocumentClassifier is moved into the browser
   // process, we should do single-thread checking here for the static
   // initializer.
   static const StringPiece kXmlSignatures[] = {StringPiece("<?xml")};
   return MatchesSignature(data, kXmlSignatures, arraysize(kXmlSignatures));
 }
 
-bool SiteIsolationPolicy::SniffForJSON(base::StringPiece data) {
+bool CrossSiteDocumentClassifier::SniffForJSON(base::StringPiece data) {
   // TODO(dsjang): We have to come up with a better way to sniff
   // JSON. However, even RE cannot help us that much due to the fact
   // that we don't do full parsing.  This DFA starts with state 0, and
@@ -479,13 +485,10 @@ bool SiteIsolationPolicy::SniffForJSON(base::StringPiece data) {
   return state == kColonState;
 }
 
-bool SiteIsolationPolicy::SniffForJS(StringPiece data) {
-  // TODO(dsjang): This is a real hack. The only purpose of this function is to
-  // try to see if there's any possibility that this data can be JavaScript
-  // (superset of JS). This function will be removed once UMA stats are
-  // gathered.
-
-  // Search for "var " for JS detection.
+bool SiteIsolationStatsGatherer::SniffForJS(StringPiece data) {
+  // The purpose of this function is to try to see if there's any possibility
+  // that this data can be JavaScript (superset of JS). Search for "var " for JS
+  // detection. This is a real hack and should only be used for stats gathering.
   return data.find("var ") != base::StringPiece::npos;
 }
 

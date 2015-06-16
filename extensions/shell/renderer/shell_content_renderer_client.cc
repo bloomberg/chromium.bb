@@ -130,8 +130,7 @@ bool ShellContentRendererClient::IsExternalPepperPlugin(
 #endif
 }
 
-bool ShellContentRendererClient::ShouldEnableSiteIsolationPolicy() const {
-  // Extension renderers don't need site isolation.
+bool ShellContentRendererClient::ShouldGatherSiteIsolationStats() const {
   return false;
 }
 

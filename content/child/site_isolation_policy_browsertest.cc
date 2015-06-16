@@ -20,10 +20,10 @@ namespace content {
 // resources from other websites, not constrained by the Same Origin Policy.  We
 // are trying to verify that the renderer cannot fetch any cross-site document
 // responses even when the Same Origin Policy is turned off inside the renderer.
-class SiteIsolationPolicyBrowserTest : public ContentBrowserTest {
+class SiteIsolationStatsGathererBrowserTest : public ContentBrowserTest {
  public:
-  SiteIsolationPolicyBrowserTest() {}
-  ~SiteIsolationPolicyBrowserTest() override {}
+  SiteIsolationStatsGathererBrowserTest() {}
+  ~SiteIsolationStatsGathererBrowserTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ASSERT_TRUE(test_server()->Start());
@@ -142,7 +142,7 @@ class SiteIsolationPolicyBrowserTest : public ContentBrowserTest {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(SiteIsolationPolicyBrowserTest);
+  DISALLOW_COPY_AND_ASSIGN(SiteIsolationStatsGathererBrowserTest);
 };
 
 // TODO(dsjang): we cannot run these tests on Android since SetUpCommandLine()
@@ -156,7 +156,7 @@ class SiteIsolationPolicyBrowserTest : public ContentBrowserTest {
   CrossSiteDocumentBlockingForMimeType
 #endif
 
-IN_PROC_BROWSER_TEST_F(SiteIsolationPolicyBrowserTest,
+IN_PROC_BROWSER_TEST_F(SiteIsolationStatsGathererBrowserTest,
                        MAYBE_CrossSiteDocumentBlockingForMimeType) {
   // Load a page that issues illegal cross-site document requests to bar.com.
   // The page uses XHR to request HTML/XML/JSON documents from bar.com, and
@@ -232,7 +232,7 @@ IN_PROC_BROWSER_TEST_F(SiteIsolationPolicyBrowserTest,
   CrossSiteDocumentBlockingForDifferentTargets
 #endif
 
-IN_PROC_BROWSER_TEST_F(SiteIsolationPolicyBrowserTest,
+IN_PROC_BROWSER_TEST_F(SiteIsolationStatsGathererBrowserTest,
                        MAYBE_CrossSiteDocumentBlockingForDifferentTargets) {
   // This webpage loads a cross-site HTML page in different targets such as
   // <img>,<link>,<embed>, etc. Since the requested document is blocked, and one

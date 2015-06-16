@@ -133,7 +133,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
       blink::WebSpeechSynthesizerClient* client) override;
   bool ShouldReportDetailedMessageForSource(
       const base::string16& source) const override;
-  bool ShouldEnableSiteIsolationPolicy() const override;
+  bool ShouldGatherSiteIsolationStats() const override;
   blink::WebWorkerContentSettingsClientProxy*
   CreateWorkerContentSettingsClientProxy(content::RenderFrame* render_frame,
                                          blink::WebFrame* frame) override;

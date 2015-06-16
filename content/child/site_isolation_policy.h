@@ -19,13 +19,14 @@ namespace content {
 
 struct ResourceResponseInfo;
 
-// SiteIsolationPolicy implements the cross-site document blocking policy (XSDP)
-// for Site Isolation. XSDP will monitor network responses to a renderer and
-// block illegal responses so that a compromised renderer cannot steal private
-// information from other sites. For now SiteIsolationPolicy monitors responses
-// to gather various UMA stats to see the compatibility impact of actual
-// deployment of the policy. The UMA stat categories SiteIsolationPolicy gathers
-// are as follows:
+// CrossSiteDocumentClassifier implements the cross-site document blocking
+// policy (XSDP) for Site Isolation. XSDP will monitor network responses to a
+// renderer and block illegal responses so that a compromised renderer cannot
+// steal private information from other sites.
+//
+// SiteIsolationStatsGatherer monitors responses to gather various UMA stats to
+// see the compatibility impact of actual deployment of the policy. The UMA stat
+// categories SiteIsolationStatsGatherer gathers are as follows:
 //
 // SiteIsolation.AllResponses : # of all network responses.
 // SiteIsolation.XSD.DataLength : the length of the first packet of a response.
@@ -73,14 +74,15 @@ struct SiteIsolationResponseMetaData {
   bool no_sniff;
 };
 
-class CONTENT_EXPORT SiteIsolationPolicy {
+// TODO(nick): Move this class into its own file.
+class CONTENT_EXPORT SiteIsolationStatsGatherer {
  public:
   // Set activation flag for the UMA data collection for this renderer process.
-  static void SetPolicyEnabled(bool enabled);
+  static void SetEnabled(bool enabled);
 
-  // Returns any bookkeeping data about the HTTP header information for the
-  // request identified by |request_id|. Any data returned should then be
-  // passed to OnReceivedFirstChunk() with the first data chunk.
+  // Returns any bookkeeping data about the HTTP header information for a
+  // request. Any data returned should then be passed to OnReceivedFirstChunk()
+  // with the first data chunk.
   static linked_ptr<SiteIsolationResponseMetaData> OnReceivedResponse(
       const GURL& frame_origin,
       const GURL& response_url,
@@ -89,7 +91,7 @@ class CONTENT_EXPORT SiteIsolationPolicy {
       const ResourceResponseInfo& info);
 
   // Examines the first chunk of network data in case response_url is registered
-  // as a cross-site document by DidReceiveResponse(). This records various
+  // as a cross-site document by OnReceivedResponse(). This records various
   // kinds of UMA data stats. This function is called only if the length of
   // received data is non-zero.
   static bool OnReceivedFirstChunk(
@@ -98,14 +100,19 @@ class CONTENT_EXPORT SiteIsolationPolicy {
       int length);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(SiteIsolationPolicyTest, IsBlockableScheme);
-  FRIEND_TEST_ALL_PREFIXES(SiteIsolationPolicyTest, IsSameSite);
-  FRIEND_TEST_ALL_PREFIXES(SiteIsolationPolicyTest, IsValidCorsHeaderSet);
-  FRIEND_TEST_ALL_PREFIXES(SiteIsolationPolicyTest, SniffForHTML);
-  FRIEND_TEST_ALL_PREFIXES(SiteIsolationPolicyTest, SniffForXML);
-  FRIEND_TEST_ALL_PREFIXES(SiteIsolationPolicyTest, SniffForJSON);
-  FRIEND_TEST_ALL_PREFIXES(SiteIsolationPolicyTest, SniffForJS);
+  FRIEND_TEST_ALL_PREFIXES(SiteIsolationStatsGathererTest, SniffForJS);
 
+  SiteIsolationStatsGatherer();  // Not instantiable.
+
+  // Imprecise JS sniffing; only appropriate for collecting UMA stat.
+  static bool SniffForJS(base::StringPiece data);
+
+  DISALLOW_COPY_AND_ASSIGN(SiteIsolationStatsGatherer);
+};
+
+// TODO(nick): Move this class into its own file.
+class CONTENT_EXPORT CrossSiteDocumentClassifier {
+ public:
   // Returns the representative mime type enum value of the mime type of
   // response. For example, this returns the same value for all text/xml mime
   // type families such as application/xml, application/rss+xml.
@@ -135,15 +142,10 @@ class CONTENT_EXPORT SiteIsolationPolicy {
   static bool SniffForXML(base::StringPiece data);
   static bool SniffForJSON(base::StringPiece data);
 
-  // TODO(dsjang): this is only needed for collecting UMA stat. Will be deleted
-  // when this class is used for actual blocking.
-  static bool SniffForJS(base::StringPiece data);
+ private:
+  CrossSiteDocumentClassifier();  // Not instantiable.
 
-  // Never needs to be constructed/destructed.
-  SiteIsolationPolicy() {}
-  ~SiteIsolationPolicy() {}
-
-  DISALLOW_COPY_AND_ASSIGN(SiteIsolationPolicy);
+  DISALLOW_COPY_AND_ASSIGN(CrossSiteDocumentClassifier);
 };
 
 }  // namespace content

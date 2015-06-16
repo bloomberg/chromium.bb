@@ -188,7 +188,7 @@ bool ContentRendererClient::ShouldReportDetailedMessageForSource(
   return false;
 }
 
-bool ContentRendererClient::ShouldEnableSiteIsolationPolicy() const {
+bool ContentRendererClient::ShouldGatherSiteIsolationStats() const {
   return true;
 }
 

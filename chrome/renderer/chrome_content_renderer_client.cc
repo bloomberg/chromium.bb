@@ -1509,12 +1509,12 @@ bool ChromeContentRendererClient::ShouldReportDetailedMessageForSource(
 #endif
 }
 
-bool ChromeContentRendererClient::ShouldEnableSiteIsolationPolicy() const {
-  // SiteIsolationPolicy is off by default. We would like to activate cross-site
-  // document blocking (for UMA data collection) for normal renderer processes
-  // running a normal web page from the Internet. We only turn on
-  // SiteIsolationPolicy for a renderer process that does not have the extension
-  // flag on.
+bool ChromeContentRendererClient::ShouldGatherSiteIsolationStats() const {
+  // Site isolation stats are gathered currently for non-extension renderer
+  // processes running a normal web page from the Internet.
+  // TODO(nick): https://crbug.com/268640 Gather stats for extension processes
+  // too; we would need to check the extension's manifest to know which sites
+  // it's allowed to access.
 #if defined(ENABLE_EXTENSIONS)
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   return !command_line->HasSwitch(extensions::switches::kExtensionProcess);

@@ -161,11 +161,10 @@ void ResourceDispatcher::OnReceivedResponse(
   ResourceResponseInfo renderer_response_info;
   ToResourceResponseInfo(*request_info, response_head, &renderer_response_info);
   request_info->site_isolation_metadata =
-      SiteIsolationPolicy::OnReceivedResponse(request_info->frame_origin,
-                                              request_info->response_url,
-                                              request_info->resource_type,
-                                              request_info->origin_pid,
-                                              renderer_response_info);
+      SiteIsolationStatsGatherer::OnReceivedResponse(
+          request_info->frame_origin, request_info->response_url,
+          request_info->resource_type, request_info->origin_pid,
+          renderer_response_info);
   request_info->peer->OnReceivedResponse(renderer_response_info);
 }
 
@@ -241,7 +240,7 @@ void ResourceDispatcher::OnReceivedData(int request_id,
     // Check whether this response data is compliant with our cross-site
     // document blocking policy. We only do this for the first chunk of data.
     if (request_info->site_isolation_metadata.get()) {
-      SiteIsolationPolicy::OnReceivedFirstChunk(
+      SiteIsolationStatsGatherer::OnReceivedFirstChunk(
           request_info->site_isolation_metadata, data_ptr, data_length);
       request_info->site_isolation_metadata.reset();
     }
@@ -302,7 +301,7 @@ void ResourceDispatcher::OnReceivedRedirect(
     if (!request_info)
       return;
     // We update the response_url here so that we can send it to
-    // SiteIsolationPolicy later when OnReceivedResponse is called.
+    // SiteIsolationStatsGatherer later when OnReceivedResponse is called.
     request_info->response_url = redirect_info.new_url;
     request_info->pending_redirect_message.reset(
         new ResourceHostMsg_FollowRedirect(request_id));
