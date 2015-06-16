@@ -48,9 +48,6 @@ DownloadDangerLevel GetFileDangerLevel(const base::FilePath& path);
 // automatic opening for a file type.
 bool IsAllowedToOpenAutomatically(const base::FilePath& path);
 
-// Tests if we think the server means for this mime_type to be executable.
-bool IsExecutableMimeType(const std::string& mime_type);
-
 }  // namespace download_util
 
 #endif  // CHROME_BROWSER_DOWNLOAD_DOWNLOAD_EXTENSIONS_H_

@@ -379,37 +379,4 @@ bool IsAllowedToOpenAutomatically(const base::FilePath& path) {
   return GetFileType(path).auto_open_hint == ALLOW_AUTO_OPEN;
 }
 
-static const char* kExecutableWhiteList[] = {
-  // JavaScript is just as powerful as EXE.
-  "text/javascript",
-  "text/javascript;version=*",
-  "text/html",
-  // Registry files can cause critical changes to the MS OS behavior.
-  // Addition of this mimetype also addresses bug 7337.
-  "text/x-registry",
-  "text/x-sh",
-  // Some sites use binary/octet-stream to mean application/octet-stream.
-  // See http://code.google.com/p/chromium/issues/detail?id=1573
-  "binary/octet-stream"
-};
-
-static const char* kExecutableBlackList[] = {
-  // These application types are not executable.
-  "application/*+xml",
-  "application/xml"
-};
-
-bool IsExecutableMimeType(const std::string& mime_type) {
-  for (size_t i = 0; i < arraysize(kExecutableWhiteList); ++i) {
-    if (net::MatchesMimeType(kExecutableWhiteList[i], mime_type))
-      return true;
-  }
-  for (size_t i = 0; i < arraysize(kExecutableBlackList); ++i) {
-    if (net::MatchesMimeType(kExecutableBlackList[i], mime_type))
-      return false;
-  }
-  // We consider only other application types to be executable.
-  return net::MatchesMimeType("application/*", mime_type);
-}
-
 }  // namespace download_util
