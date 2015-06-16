@@ -21214,9 +21214,26 @@
                 ],
                 "vm_tests": [],
                 "vm_tests_supported": []
+            },
+            {
+                "_template": "full",
+                "boards": [
+                    "veyron_shark"
+                ],
+                "build_packages_in_background": true,
+                "chrome_sdk_build_chrome": false,
+                "grouped": true,
+                "name": "veyron_shark-full",
+                "prebuilts": "public",
+                "unittests": null,
+                "useflags": [
+                    "-chrome_internal"
+                ],
+                "vm_tests": [],
+                "vm_tests_supported": []
             }
         ],
-        "description": "Full Builds; Group config (boards: veyron_brain, veyron_danger, veyron_thea)",
+        "description": "Full Builds; Group config (boards: veyron_brain, veyron_danger, veyron_thea, veyron_shark)",
         "name": "veyron-c-full-group",
         "prebuilts": "public",
         "useflags": [
@@ -21267,9 +21284,22 @@
                 "unittests": null,
                 "vm_tests": [],
                 "vm_tests_supported": []
+            },
+            {
+                "_template": "release",
+                "boards": [
+                    "veyron_shark"
+                ],
+                "build_packages_in_background": true,
+                "chrome_sdk_build_chrome": false,
+                "grouped": true,
+                "name": "veyron_shark-release",
+                "unittests": null,
+                "vm_tests": [],
+                "vm_tests_supported": []
             }
         ],
-        "description": "Release Builds (canary) (internal); Group config (boards: veyron_brain, veyron_danger, veyron_thea)",
+        "description": "Release Builds (canary) (internal); Group config (boards: veyron_brain, veyron_danger, veyron_thea, veyron_shark)",
         "name": "veyron-c-release-group",
         "vm_tests": [],
         "vm_tests_supported": []
@@ -23614,6 +23644,198 @@
             "veyron_romy"
         ],
         "name": "veyron_romy-tot-chromium-pfq-informational",
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": [],
+        "vm_tests_supported": []
+    },
+    "veyron_shark-chrome-pfq": {
+        "_template": "chrome-pfq",
+        "boards": [
+            "veyron_shark"
+        ],
+        "important": false,
+        "manifest": "official.xml",
+        "name": "veyron_shark-chrome-pfq",
+        "vm_tests": [],
+        "vm_tests_supported": []
+    },
+    "veyron_shark-chromium-pfq": {
+        "_template": "chromium-pfq",
+        "boards": [
+            "veyron_shark"
+        ],
+        "description": "Preflight Chromium Uprev & Build (internal)",
+        "important": false,
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "name": "veyron_shark-chromium-pfq",
+        "overlays": "both",
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": [],
+        "vm_tests_supported": []
+    },
+    "veyron_shark-compile-only-pre-cq": {
+        "_template": "compile-only-pre-cq",
+        "boards": [
+            "veyron_shark"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "name": "veyron_shark-compile-only-pre-cq",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "veyron_shark-full": {
+        "_template": "full",
+        "boards": [
+            "veyron_shark"
+        ],
+        "name": "veyron_shark-full",
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": [],
+        "vm_tests_supported": []
+    },
+    "veyron_shark-no-vmtest-pre-cq": {
+        "_template": "no-vmtest-pre-cq",
+        "boards": [
+            "veyron_shark"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "name": "veyron_shark-no-vmtest-pre-cq",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "veyron_shark-paladin": {
+        "_template": "paladin",
+        "boards": [
+            "veyron_shark"
+        ],
+        "description": "Commit Queue (internal)",
+        "important": false,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "name": "veyron_shark-paladin",
+        "overlays": "both",
+        "prebuilts": "private",
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [],
+        "vm_tests_supported": []
+    },
+    "veyron_shark-payloads": {
+        "_template": "payloads",
+        "boards": [
+            "veyron_shark"
+        ],
+        "name": "veyron_shark-payloads"
+    },
+    "veyron_shark-pre-cq": {
+        "_template": "pre-cq",
+        "boards": [
+            "veyron_shark"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "name": "veyron_shark-pre-cq",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [],
+        "vm_tests_supported": []
+    },
+    "veyron_shark-release": {
+        "_template": "release",
+        "boards": [
+            "veyron_shark"
+        ],
+        "name": "veyron_shark-release",
+        "vm_tests": [],
+        "vm_tests_supported": []
+    },
+    "veyron_shark-release-afdo": {
+        "_template": "release-afdo-generate",
+        "boards": [
+            "veyron_shark"
+        ],
+        "child_configs": [
+            {
+                "_template": "release-afdo-generate",
+                "boards": [
+                    "veyron_shark"
+                ],
+                "grouped": true,
+                "name": "veyron_shark-release-afdo-generate",
+                "vm_tests": [],
+                "vm_tests_supported": []
+            },
+            {
+                "_template": "release-afdo-use",
+                "boards": [
+                    "veyron_shark"
+                ],
+                "grouped": true,
+                "name": "veyron_shark-release-afdo-use",
+                "vm_tests": [],
+                "vm_tests_supported": []
+            }
+        ],
+        "name": "veyron_shark-release-afdo",
+        "vm_tests": [],
+        "vm_tests_supported": []
+    },
+    "veyron_shark-release-afdo-generate": {
+        "_template": "release-afdo-generate",
+        "boards": [
+            "veyron_shark"
+        ],
+        "name": "veyron_shark-release-afdo-generate",
+        "vm_tests": [],
+        "vm_tests_supported": []
+    },
+    "veyron_shark-release-afdo-use": {
+        "_template": "release-afdo-use",
+        "boards": [
+            "veyron_shark"
+        ],
+        "name": "veyron_shark-release-afdo-use",
+        "vm_tests": [],
+        "vm_tests_supported": []
+    },
+    "veyron_shark-tot-chrome-pfq-informational": {
+        "_template": "chrome-pfq-informational",
+        "boards": [
+            "veyron_shark"
+        ],
+        "manifest": "official.xml",
+        "name": "veyron_shark-tot-chrome-pfq-informational",
+        "vm_tests": [],
+        "vm_tests_supported": []
+    },
+    "veyron_shark-tot-chromium-pfq-informational": {
+        "_template": "chromium-pfq-informational",
+        "boards": [
+            "veyron_shark"
+        ],
+        "name": "veyron_shark-tot-chromium-pfq-informational",
         "useflags": [
             "-chrome_internal"
         ],
