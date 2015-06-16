@@ -12,13 +12,18 @@ import org.chromium.base.Log;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -34,6 +39,10 @@ class FileHelper {
     private static final String TEMP_FILE_PREFIX = "temp-";
     // Prefix used when naming timestamp files.
     private static final String TIMESTAMP_PREFIX = "asset_timestamp-";
+    // Name of the file listing assets to extract with one asset file per line.
+    private static final String ASSETS_LIST_NAME = "assets_list";
+    // Directory where applications cached with the shell will be extracted.
+    private static final String CACHED_APP_DIRECTORY = "cached_apps";
 
     /**
      * Used to indicate the type of destination file that should be created.
@@ -72,6 +81,37 @@ class FileHelper {
         final File expectedTimestamp =
                 new File(outputDir, TIMESTAMP_PREFIX + pi.versionCode + "-" + pi.lastUpdateTime);
         return expectedTimestamp.exists() ? null : expectedTimestamp;
+    }
+
+    /**
+     * Returns the directory where cached applications will be extracted.
+     */
+    public static File getCachedAppsDir(Context context) {
+        return context.getDir(CACHED_APP_DIRECTORY, Context.MODE_PRIVATE);
+    }
+
+    /**
+     * Returns the names of the assets in ASSETS_LIST_NAME.
+     */
+    public static List<String> getAssetsList(Context context) throws IOException {
+        List<String> results = new ArrayList<String>();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(
+                context.getAssets().open(ASSETS_LIST_NAME), Charset.forName("UTF-8")));
+
+        try {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                line = line.trim();
+                // These two are read by the system and don't need to be extracted.
+                if (!line.isEmpty() && !line.equals("bootstrap_java.dex.jar")
+                        && !line.equals("libbootstrap.so")) {
+                    results.add(line);
+                }
+            }
+        } finally {
+            reader.close();
+        }
+        return results;
     }
 
     /**

@@ -80,22 +80,22 @@ bool IsCachedApp(JNIEnv* env,
                  const GURL& url,
                  base::FilePath* app_dir,
                  base::FilePath* path_to_mojo) {
-  ScopedJavaLocalRef<jstring> j_local_apps_dir =
-      Java_AndroidHandler_getLocalAppsDir(env, GetApplicationContext());
-  const base::FilePath local_apps_fp(
-      ConvertJavaStringToUTF8(env, j_local_apps_dir.obj()));
-  const std::string local_apps(util::FilePathToFileURL(local_apps_fp).spec());
+  ScopedJavaLocalRef<jstring> j_cached_apps_dir =
+      Java_AndroidHandler_getCachedAppsDir(env, GetApplicationContext());
+  const base::FilePath cached_apps_fp(
+      ConvertJavaStringToUTF8(env, j_cached_apps_dir.obj()));
+  const std::string cached_apps(util::FilePathToFileURL(cached_apps_fp).spec());
   const std::string response_url(GURL(url).spec());
-  if (response_url.size() <= local_apps.size() ||
-      local_apps.compare(0u, local_apps.size(), response_url, 0u,
-                         local_apps.size()) != 0) {
+  if (response_url.size() <= cached_apps.size() ||
+      cached_apps.compare(0u, cached_apps.size(), response_url, 0u,
+                          cached_apps.size()) != 0) {
     return false;
   }
 
   const std::string mojo_suffix(".mojo");
   // app_rel_path is either something like html_viewer/html_viewer.mojo, or
   // html_viewer.mojo, depending upon whether the app has a package.
-  const std::string app_rel_path(response_url.substr(local_apps.size() + 1));
+  const std::string app_rel_path(response_url.substr(cached_apps.size() + 1));
   const size_t slash_index = app_rel_path.find('/');
   if (slash_index != std::string::npos) {
     const std::string tail =
@@ -107,7 +107,7 @@ bool IsCachedApp(JNIEnv* env,
                      mojo_suffix) != 0) {
       return false;
     }
-    *app_dir = local_apps_fp.Append(head);
+    *app_dir = cached_apps_fp.Append(head);
     *path_to_mojo = app_dir->Append(tail);
     return true;
   }
@@ -118,9 +118,9 @@ bool IsCachedApp(JNIEnv* env,
     return false;
   }
 
-  *app_dir = local_apps_fp.Append(
+  *app_dir = cached_apps_fp.Append(
       app_rel_path.substr(0, app_rel_path.size() - mojo_suffix.size()));
-  *path_to_mojo = local_apps_fp.Append(app_rel_path);
+  *path_to_mojo = cached_apps_fp.Append(app_rel_path);
   return true;
 }
 

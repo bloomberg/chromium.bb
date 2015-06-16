@@ -2,9 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//mojo/mojo_application_package.gni")
+import("//mojo/public/mojo_application.gni")
 
-mojo_application_package("omnibox") {
+mojo_native_application("omnibox") {
   sources = [
     "main.cc",
   ]

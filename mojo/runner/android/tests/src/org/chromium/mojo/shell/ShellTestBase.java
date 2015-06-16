@@ -5,10 +5,10 @@
 package org.chromium.mojo.shell;
 
 import android.content.Context;
-import android.content.res.AssetManager;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+import org.chromium.base.Log;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,24 +18,24 @@ import java.io.IOException;
  */
 @JNINamespace("mojo::runner::test")
 public class ShellTestBase {
-    // Directory where applications bundled with the tests will be extracted.
-    private static final String TEST_APP_DIRECTORY = "test_apps";
+    private static final String TAG = "ShellTestBase";
 
     /**
      * Extracts the mojo applications from the apk assets and returns the directory where they are.
      */
     @CalledByNative
     private static String extractMojoApplications(Context context) throws IOException {
-        final File outputDirectory = context.getDir(TEST_APP_DIRECTORY, Context.MODE_PRIVATE);
-
-        AssetManager manager = context.getResources().getAssets();
-        for (String asset : manager.list("")) {
-            if (asset.endsWith(".mojo")) {
+        File cachedAppsDir = FileHelper.getCachedAppsDir(context);
+        try {
+            FileHelper.prepareDirectoryForAssets(context, cachedAppsDir);
+            for (String assetPath : FileHelper.getAssetsList(context)) {
                 FileHelper.extractFromAssets(
-                        context, asset, outputDirectory, FileHelper.FileType.PERMANENT);
+                        context, assetPath, cachedAppsDir, FileHelper.FileType.PERMANENT);
             }
+        } catch (Exception e) {
+            Log.e(TAG, "ShellTestBase initialization failed.", e);
+            throw new RuntimeException(e);
         }
-
-        return outputDirectory.getAbsolutePath();
+        return cachedAppsDir.getAbsolutePath();
     }
 }

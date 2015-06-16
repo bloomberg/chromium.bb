@@ -54,25 +54,21 @@ copy_ex("copy_mandoline_assets") {
   deps = [
     "//components/devtools_service",
     "//components/html_viewer",
-    "//components/view_manager",
-    "//components/view_manager/surfaces",
     "//mandoline/services/core_services",
     "//mojo/runner:bootstrap",
     "//mojo/runner:bootstrap_java",
-    "//mojo/services/network",
   ]
   sources = [
-    "$root_out_dir/core_services.mojo",
-    "$root_out_dir/devtools_service.mojo",
     "$root_out_dir/lib.stripped/libbootstrap.so",
-    "$root_out_dir/network_service.mojo",
     "$root_out_dir/obj/mojo/runner/bootstrap_java.dex.jar",
-    "$root_out_dir/surfaces_service.mojo",
   ]
 
   # Directories can't be specified as sources so pass manually to the script.
-  args =
-      [ "--files=" + rebase_path("$root_out_dir/html_viewer", root_build_dir) ]
+  args = [
+    "--files=" + rebase_path("$root_out_dir/core_services", root_build_dir),
+    "--files=" + rebase_path("$root_out_dir/devtools_service", root_build_dir),
+    "--files=" + rebase_path("$root_out_dir/html_viewer", root_build_dir),
+  ]
 
   if (use_aura) {
     deps += [
@@ -80,9 +76,10 @@ copy_ex("copy_mandoline_assets") {
       "//mandoline/ui/omnibox",
     ]
 
-    args +=
-        [ "--files=" + rebase_path("$root_out_dir/browser", root_build_dir) ] +
-        [ "--files=" + rebase_path("$root_out_dir/omnibox", root_build_dir) ]
+    args += [
+      "--files=" + rebase_path("$root_out_dir/browser", root_build_dir),
+      "--files=" + rebase_path("$root_out_dir/omnibox", root_build_dir),
+    ]
   }
 }
 

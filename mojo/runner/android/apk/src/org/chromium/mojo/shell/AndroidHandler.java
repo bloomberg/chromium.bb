@@ -243,8 +243,8 @@ public class AndroidHandler {
     }
 
     @CalledByNative
-    static String getLocalAppsDir(Context context) {
-        return ShellMain.getLocalAppsDir(context).getAbsolutePath();
+    static String getCachedAppsDir(Context context) {
+        return ShellMain.getCachedAppsDir(context).getAbsolutePath();
     }
 
     private static File getDexOutputDir(Context context) {
