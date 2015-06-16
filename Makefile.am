@@ -190,7 +190,6 @@ westoninclude_HEADERS =				\
 	src/timeline-object.h			\
 	shared/matrix.h				\
 	shared/config-parser.h			\
-	shared/helpers.h			\
 	shared/zalloc.h				\
 	shared/platform.h
 
