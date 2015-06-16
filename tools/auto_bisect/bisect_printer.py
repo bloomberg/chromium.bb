@@ -138,8 +138,6 @@ class BisectPrinter(object):
       for culprit in bisect_results.culprit_revisions:
         cl, info, depot = culprit
         self._PrintRevisionInfo(cl, info, depot)
-      if bisect_results.other_regressions:
-        self._PrintOtherRegressions(bisect_results.other_regressions)
     self._PrintRetestResults(bisect_results)
     self._PrintTestedCommitsTable(bisect_results.state.GetRevisionStates(),
                                   bisect_results.first_working_revision,
@@ -349,21 +347,6 @@ class BisectPrinter(object):
       print REPRO_STEPS_TRYJOB_TELEMETRY % {'command': telemetry_command}
     else:
       print REPRO_STEPS_TRYJOB
-
-  def _PrintOtherRegressions(self, other_regressions):
-    """Prints a section of the results about other potential regressions."""
-    print
-    print 'Other regressions may have occurred:'
-    self._PrintTableRow([8, 70, 10], ['Depot', 'Range', 'Confidence'])
-    for regression in other_regressions:
-      current_rev_state, prev_rev_state, confidence = regression
-      self._PrintTableRow(
-          [8, 70, 10],
-          [current_rev_state.depot, current_rev_state.revision,
-           '%d%%' % confidence])
-      self._PrintTableRow(
-          [8, 70], [prev_rev_state.depot, prev_rev_state.revision])
-      print
 
   @staticmethod
   def _ConfidenceLevelStatus(bisect_results):

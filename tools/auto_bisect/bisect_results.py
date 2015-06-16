@@ -28,8 +28,6 @@ class BisectResults(object):
   If both of above revisions are not None, the follow properties are present:
     culprit_revisions: A list of revisions, which contain the bad change
         introducing the failure.
-    other_regressions: A list of tuples representing other regressions, which
-        may have occurred.
     regression_size: For performance bisects, this is a relative change of
         the mean metric value. For other bisects this field always contains
         'zero-to-nonzero'.
@@ -91,9 +89,6 @@ class BisectResults(object):
       self.culprit_revisions = self._FindCulpritRevisions(
           rev_states, depot_registry, first_working_rev, last_broken_rev)
 
-      self.other_regressions = self._FindOtherRegressions(
-          rev_states, statistics['bad_greater_than_good'])
-
       self.warnings += self._GetResultBasedWarnings(
           self.culprit_revisions, opts, self.confidence)
     elif first_working_rev is not None:
@@ -103,7 +98,6 @@ class BisectResults(object):
       self.regression_std_err = 0
       self.confidence = 0
       self.culprit_revisions = []
-      self.other_regressions = []
 
   def AddRetestResults(self, results_tot, results_reverted):
     if not results_tot or not results_reverted:
@@ -184,50 +178,6 @@ class BisectResults(object):
     # of good and bad values just by chance.
     _, _, p_value = ttest.WelchsTTest(sample1, sample2)
     return 100.0 * (1.0 - p_value)
-
-  @classmethod
-  def _FindOtherRegressions(cls, revision_states, bad_greater_than_good):
-    """Compiles a list of other possible regressions from the revision data.
-
-    Args:
-      revision_states: Sorted list of RevisionState objects.
-      bad_greater_than_good: Whether the result value at the "bad" revision is
-          numerically greater than the result value at the "good" revision.
-
-    Returns:
-      A list of [current_rev, previous_rev, confidence] for other places where
-      there may have been a regression.
-    """
-    other_regressions = []
-    previous_values = []
-    prev_state = None
-    for revision_state in revision_states:
-      if revision_state.value:
-        current_values = revision_state.value['values']
-        if previous_values:
-          confidence_params = (sum(previous_values, []),
-                               sum([current_values], []))
-          confidence = cls.ConfidenceScore(*confidence_params,
-                                           accept_single_bad_or_good=True)
-          mean_of_prev_runs = math_utils.Mean(sum(previous_values, []))
-          mean_of_current_runs = math_utils.Mean(current_values)
-
-          # Check that the potential regression is in the same direction as
-          # the overall regression. If the mean of the previous runs < the
-          # mean of the current runs, this local regression is in same
-          # direction.
-          prev_greater_than_current = mean_of_prev_runs > mean_of_current_runs
-          if bad_greater_than_good:
-            is_same_direction = prev_greater_than_current
-          else:
-            is_same_direction = not prev_greater_than_current
-
-          # Only report potential regressions with high confidence.
-          if is_same_direction and confidence > 50:
-            other_regressions.append([revision_state, prev_state, confidence])
-        previous_values.append(current_values)
-        prev_state = revision_state
-    return other_regressions
 
   @staticmethod
   def FindBreakingRevRange(revision_states):
