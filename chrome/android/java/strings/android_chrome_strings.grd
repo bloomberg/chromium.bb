@@ -2183,6 +2183,9 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
       <message name="IDS_HELP_CONTEXT_USAGE_REPORTS" translateable="false">
         send_crash_report
       </message>
+      <message name="IDS_HELP_CONTEXT_SAD_TAB" translateable="false">
+        mobile_awsnap
+      </message>
     </messages>
   </release>
 </grit>

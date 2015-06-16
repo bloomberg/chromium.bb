@@ -24,8 +24,4 @@ public class UrlConstants {
     public static final String RECENT_TABS_URL = "chrome-native://recent-tabs/";
     public static final String RECENT_TABS_HOST = "recent-tabs";
     public static final String HISTORY_URL = "chrome://history/";
-
-    // This is chrome::kCrashReasonURL. Please ensure they stay in sync.
-    public static final String CRASH_REASON_URL =
-            "https://support.google.com/chrome/?p=mobile_awsnap";
 }

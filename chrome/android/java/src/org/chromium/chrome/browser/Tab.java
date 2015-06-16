@@ -36,7 +36,9 @@ import org.chromium.chrome.browser.contextmenu.ContextMenuParams;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulatorWrapper;
 import org.chromium.chrome.browser.contextmenu.EmptyChromeContextMenuItemDelegate;
+import org.chromium.chrome.browser.feedback.FeedbackCollector;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
+import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.metrics.UmaUtils;
@@ -1651,7 +1653,11 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             OnClickListener suggestionAction = new OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    loadUrl(new LoadUrlParams(UrlConstants.CRASH_REASON_URL));
+                    Activity activity = mWindowAndroid.getActivity().get();
+                    assert activity != null;
+                    HelpAndFeedback.getInstance(activity).show(
+                            activity, activity.getString(R.string.help_context_sad_tab), null,
+                            FeedbackCollector.create(Profile.getLastUsedProfile(), null));
                 }
             };
             OnClickListener reloadButtonAction = new OnClickListener() {
