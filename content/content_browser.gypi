@@ -500,6 +500,8 @@
       'browser/byte_stream.h',
       'browser/cache_storage/cache_storage.cc',
       'browser/cache_storage/cache_storage.h',
+      'browser/cache_storage/cache_storage_blob_to_disk_cache.cc',
+      'browser/cache_storage/cache_storage_blob_to_disk_cache.h',
       'browser/cache_storage/cache_storage_cache.cc',
       'browser/cache_storage/cache_storage_cache.h',
       'browser/cache_storage/cache_storage_context_impl.cc',

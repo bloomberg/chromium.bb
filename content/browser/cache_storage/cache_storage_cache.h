@@ -28,6 +28,7 @@ class QuotaManagerProxy;
 
 namespace content {
 
+class CacheStorageBlobToDiskCache;
 class CacheMetadata;
 class CacheStorageScheduler;
 class TestCacheStorageCache;
@@ -102,7 +103,6 @@ class CONTENT_EXPORT CacheStorageCache
   friend class base::RefCounted<CacheStorageCache>;
   friend class TestCacheStorageCache;
 
-  class BlobReader;
   struct KeysContext;
   struct MatchContext;
   struct PutContext;
@@ -150,10 +150,11 @@ class CONTENT_EXPORT CacheStorageCache
   void PutDidWriteHeaders(scoped_ptr<PutContext> put_context,
                           int expected_bytes,
                           int rv);
-  void PutDidWriteBlobToCache(scoped_ptr<PutContext> put_context,
-                              scoped_ptr<BlobReader> blob_reader,
-                              disk_cache::ScopedEntryPtr entry,
-                              bool success);
+  void PutDidWriteBlobToCache(
+      scoped_ptr<PutContext> put_context,
+      scoped_ptr<CacheStorageBlobToDiskCache> blob_reader,
+      disk_cache::ScopedEntryPtr entry,
+      bool success);
 
   // Returns ERROR_NOT_FOUND if not found. Otherwise deletes and returns OK.
   void Delete(const CacheStorageBatchOperation& operation,

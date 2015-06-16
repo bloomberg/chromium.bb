@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "content/browser/cache_storage/cache_storage.pb.h"
+#include "content/browser/cache_storage/cache_storage_blob_to_disk_cache.h"
 #include "content/browser/cache_storage/cache_storage_scheduler.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/referrer.h"
@@ -166,116 +167,6 @@ void ReadMetadataDidReadMetadata(
 
 }  // namespace
 
-// Streams data from a blob and writes it to a given disk_cache::Entry.
-class CacheStorageCache::BlobReader : public net::URLRequest::Delegate {
- public:
-  typedef base::Callback<void(disk_cache::ScopedEntryPtr, bool)>
-      EntryAndBoolCallback;
-
-  BlobReader()
-      : cache_entry_offset_(0),
-        buffer_(new net::IOBufferWithSize(kBufferSize)),
-        weak_ptr_factory_(this) {}
-
-  // |entry| is passed to the callback once complete.
-  void StreamBlobToCache(
-      disk_cache::ScopedEntryPtr entry,
-      const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
-      scoped_ptr<storage::BlobDataHandle> blob_data_handle,
-      const EntryAndBoolCallback& callback) {
-    DCHECK(entry);
-    DCHECK(request_context_getter->GetURLRequestContext());
-
-    entry_ = entry.Pass();
-    callback_ = callback;
-
-    blob_request_ = storage::BlobProtocolHandler::CreateBlobRequest(
-        blob_data_handle.Pass(), request_context_getter->GetURLRequestContext(),
-        this);
-    blob_request_->Start();
-  }
-
-  // net::URLRequest::Delegate overrides for reading blobs.
-  void OnReceivedRedirect(net::URLRequest* request,
-                          const net::RedirectInfo& redirect_info,
-                          bool* defer_redirect) override {
-    NOTREACHED();
-  }
-  void OnAuthRequired(net::URLRequest* request,
-                      net::AuthChallengeInfo* auth_info) override {
-    NOTREACHED();
-  }
-  void OnCertificateRequested(
-      net::URLRequest* request,
-      net::SSLCertRequestInfo* cert_request_info) override {
-    NOTREACHED();
-  }
-  void OnSSLCertificateError(net::URLRequest* request,
-                             const net::SSLInfo& ssl_info,
-                             bool fatal) override {
-    NOTREACHED();
-  }
-  void OnBeforeNetworkStart(net::URLRequest* request, bool* defer) override {
-    NOTREACHED();
-  }
-
-  void OnResponseStarted(net::URLRequest* request) override {
-    if (!request->status().is_success()) {
-      callback_.Run(entry_.Pass(), false);
-      return;
-    }
-    ReadFromBlob();
-  }
-
-  virtual void ReadFromBlob() {
-    int bytes_read = 0;
-    bool done =
-        blob_request_->Read(buffer_.get(), buffer_->size(), &bytes_read);
-    if (done)
-      OnReadCompleted(blob_request_.get(), bytes_read);
-  }
-
-  void OnReadCompleted(net::URLRequest* request, int bytes_read) override {
-    if (!request->status().is_success()) {
-      callback_.Run(entry_.Pass(), false);
-      return;
-    }
-
-    if (bytes_read == 0) {
-      callback_.Run(entry_.Pass(), true);
-      return;
-    }
-
-    net::CompletionCallback cache_write_callback =
-        base::Bind(&BlobReader::DidWriteDataToEntry,
-                   weak_ptr_factory_.GetWeakPtr(), bytes_read);
-
-    int rv = entry_->WriteData(INDEX_RESPONSE_BODY, cache_entry_offset_,
-                               buffer_.get(), bytes_read, cache_write_callback,
-                               true /* truncate */);
-    if (rv != net::ERR_IO_PENDING)
-      cache_write_callback.Run(rv);
-  }
-
-  void DidWriteDataToEntry(int expected_bytes, int rv) {
-    if (rv != expected_bytes) {
-      callback_.Run(entry_.Pass(), false);
-      return;
-    }
-
-    cache_entry_offset_ += rv;
-    ReadFromBlob();
-  }
-
- private:
-  int cache_entry_offset_;
-  disk_cache::ScopedEntryPtr entry_;
-  scoped_ptr<net::URLRequest> blob_request_;
-  EntryAndBoolCallback callback_;
-  scoped_refptr<net::IOBufferWithSize> buffer_;
-  base::WeakPtrFactory<BlobReader> weak_ptr_factory_;
-};
-
 // The state needed to pass between CacheStorageCache::Keys callbacks.
 struct CacheStorageCache::KeysContext {
   explicit KeysContext(const CacheStorageCache::RequestsCallback& callback)
@@ -303,6 +194,7 @@ struct CacheStorageCache::KeysContext {
   scoped_ptr<disk_cache::Backend::Iterator> backend_iterator;
   disk_cache::Entry* enumerated_entry;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(KeysContext);
 };
 
@@ -335,6 +227,7 @@ struct CacheStorageCache::MatchContext {
   scoped_refptr<net::IOBufferWithSize> response_body_buffer;
   size_t total_bytes_read;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(MatchContext);
 };
 
@@ -374,6 +267,7 @@ struct CacheStorageCache::PutContext {
   // CreateEntry.
   disk_cache::Entry* cache_entry;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(PutContext);
 };
 
@@ -933,8 +827,9 @@ void CacheStorageCache::PutDidWriteHeaders(scoped_ptr<PutContext> put_context,
 
   disk_cache::ScopedEntryPtr entry(put_context->cache_entry);
   put_context->cache_entry = NULL;
-  scoped_ptr<BlobReader> reader(new BlobReader());
-  BlobReader* reader_ptr = reader.get();
+  scoped_ptr<CacheStorageBlobToDiskCache> reader(
+      new CacheStorageBlobToDiskCache());
+  CacheStorageBlobToDiskCache* reader_ptr = reader.get();
 
   // Grab some pointers before passing put_context in Bind.
   scoped_refptr<net::URLRequestContextGetter> request_context_getter =
@@ -943,7 +838,8 @@ void CacheStorageCache::PutDidWriteHeaders(scoped_ptr<PutContext> put_context,
       put_context->blob_data_handle.Pass();
 
   reader_ptr->StreamBlobToCache(
-      entry.Pass(), request_context_getter, blob_data_handle.Pass(),
+      entry.Pass(), INDEX_RESPONSE_BODY, request_context_getter,
+      blob_data_handle.Pass(),
       base::Bind(&CacheStorageCache::PutDidWriteBlobToCache,
                  weak_ptr_factory_.GetWeakPtr(),
                  base::Passed(put_context.Pass()),
@@ -952,7 +848,7 @@ void CacheStorageCache::PutDidWriteHeaders(scoped_ptr<PutContext> put_context,
 
 void CacheStorageCache::PutDidWriteBlobToCache(
     scoped_ptr<PutContext> put_context,
-    scoped_ptr<BlobReader> blob_reader,
+    scoped_ptr<CacheStorageBlobToDiskCache> blob_reader,
     disk_cache::ScopedEntryPtr entry,
     bool success) {
   DCHECK(entry);
