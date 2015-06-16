@@ -160,8 +160,9 @@ void WASAPIAudioInputStream::Start(AudioInputCallback* callback) {
 
   // Create and start the thread that will drive the capturing by waiting for
   // capture events.
-  capture_thread_ =
-      new base::DelegateSimpleThread(this, "wasapi_capture_thread");
+  capture_thread_ = new base::DelegateSimpleThread(
+      this, "wasapi_capture_thread",
+      base::SimpleThread::Options(base::ThreadPriority::REALTIME_AUDIO));
   capture_thread_->Start();
 
   // Start streaming data between the endpoint buffer and the audio engine.
@@ -351,9 +352,6 @@ HRESULT WASAPIAudioInputStream::GetMixFormat(const std::string& device_id,
 
 void WASAPIAudioInputStream::Run() {
   ScopedCOMInitializer com_init(ScopedCOMInitializer::kMTA);
-
-  // Increase the thread priority.
-  capture_thread_->SetThreadPriority(base::ThreadPriority::REALTIME_AUDIO);
 
   // Enable MMCSS to ensure that this thread receives prioritized access to
   // CPU resources.

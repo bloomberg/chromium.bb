@@ -143,9 +143,11 @@ class SingleThreadTaskGraphRunner
       public base::DelegateSimpleThread::Delegate {
  public:
   SingleThreadTaskGraphRunner()
-      : worker_thread_(this, "CompositorTileWorker1") {
+      : worker_thread_(
+            this,
+            "CompositorTileWorker1",
+            base::SimpleThread::Options(base::ThreadPriority::BACKGROUND)) {
     worker_thread_.Start();
-    worker_thread_.SetThreadPriority(base::ThreadPriority::BACKGROUND);
   }
 
   ~SingleThreadTaskGraphRunner() override {

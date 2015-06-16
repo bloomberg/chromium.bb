@@ -250,8 +250,9 @@ void WASAPIAudioOutputStream::Start(AudioSourceCallback* callback) {
 
   // Create and start the thread that will drive the rendering by waiting for
   // render events.
-  render_thread_.reset(
-      new base::DelegateSimpleThread(this, "wasapi_render_thread"));
+  render_thread_.reset(new base::DelegateSimpleThread(
+      this, "wasapi_render_thread",
+      base::SimpleThread::Options(base::ThreadPriority::REALTIME_AUDIO)));
   render_thread_->Start();
   if (!render_thread_->HasBeenStarted()) {
     LOG(ERROR) << "Failed to start WASAPI render thread.";
@@ -333,9 +334,6 @@ void WASAPIAudioOutputStream::GetVolume(double* volume) {
 
 void WASAPIAudioOutputStream::Run() {
   ScopedCOMInitializer com_init(ScopedCOMInitializer::kMTA);
-
-  // Increase the thread priority.
-  render_thread_->SetThreadPriority(base::ThreadPriority::REALTIME_AUDIO);
 
   // Enable MMCSS to ensure that this thread receives prioritized access to
   // CPU resources.
