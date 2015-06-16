@@ -20,6 +20,7 @@ class IPC_EXPORT MessageAttachment
   enum Type {
     TYPE_PLATFORM_FILE,  // The instance is |PlatformFileAttachment|.
     TYPE_MOJO_HANDLE,    // The instance is |MojoHandleAttachment|.
+    TYPE_WIN_HANDLE,     // The instance is |HandleAttachmentWin|.
   };
 
   virtual Type GetType() const = 0;

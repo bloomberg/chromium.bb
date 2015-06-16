@@ -11,6 +11,12 @@
       # This part is shared between the targets defined below.
       ['ipc_target==1', {
         'sources': [
+          'attachment_broker.h',
+          'attachment_broker_win.cc',
+          'attachment_broker_win.h',
+          'brokerable_attachment.cc',
+          'brokerable_attachment.h',
+          'handle_attachment_win.h',
           'ipc_channel.cc',
           'ipc_channel.h',
           'ipc_channel_factory.cc',
