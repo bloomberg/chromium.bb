@@ -409,19 +409,6 @@ unsigned WebMediaPlayerMS::videoDecodedByteCount() const {
 bool WebMediaPlayerMS::copyVideoTextureToPlatformTexture(
     blink::WebGraphicsContext3D* web_graphics_context,
     unsigned int texture,
-    unsigned int level,
-    unsigned int internal_format,
-    unsigned int type,
-    bool premultiply_alpha,
-    bool flip_y) {
-  return copyVideoTextureToPlatformTexture(web_graphics_context, texture,
-                                           internal_format, type,
-                                           premultiply_alpha, flip_y);
-}
-
-bool WebMediaPlayerMS::copyVideoTextureToPlatformTexture(
-    blink::WebGraphicsContext3D* web_graphics_context,
-    unsigned int texture,
     unsigned int internal_format,
     unsigned int type,
     bool premultiply_alpha,

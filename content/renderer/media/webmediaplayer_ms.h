@@ -117,22 +117,13 @@ class WebMediaPlayerMS
   virtual unsigned audioDecodedByteCount() const;
   virtual unsigned videoDecodedByteCount() const;
 
-  // TODO(dshwang): remove |level|. crbug.com/443151
   bool copyVideoTextureToPlatformTexture(
       blink::WebGraphicsContext3D* web_graphics_context,
       unsigned int texture,
-      unsigned int level,
       unsigned int internal_format,
       unsigned int type,
       bool premultiply_alpha,
       bool flip_y) override;
-  virtual bool copyVideoTextureToPlatformTexture(
-      blink::WebGraphicsContext3D* web_graphics_context,
-      unsigned int texture,
-      unsigned int internal_format,
-      unsigned int type,
-      bool premultiply_alpha,
-      bool flip_y);
 
   // VideoFrameProvider implementation.
   void SetVideoFrameProviderClient(

@@ -619,7 +619,7 @@ void WebMediaPlayerAndroid::paint(blink::WebCanvas* canvas,
 
   unsigned textureId = static_cast<unsigned>(
     (bitmap_.getTexture())->getTextureHandle());
-  if (!copyVideoTextureToPlatformTexture(context3D, textureId, 0,
+  if (!copyVideoTextureToPlatformTexture(context3D, textureId,
       GL_RGBA, GL_UNSIGNED_BYTE, true, false)) {
     return;
   }
@@ -636,19 +636,6 @@ void WebMediaPlayerAndroid::paint(blink::WebCanvas* canvas,
   // It is not necessary to pass the dest into the drawBitmap call since all
   // the context have been set up before calling paintCurrentFrameInContext.
   canvas->drawBitmapRect(bitmap_, 0, dest, &paint);
-}
-
-bool WebMediaPlayerAndroid::copyVideoTextureToPlatformTexture(
-    blink::WebGraphicsContext3D* web_graphics_context,
-    unsigned int texture,
-    unsigned int level,
-    unsigned int internal_format,
-    unsigned int type,
-    bool premultiply_alpha,
-    bool flip_y) {
-  return copyVideoTextureToPlatformTexture(web_graphics_context, texture,
-                                           internal_format, type,
-                                           premultiply_alpha, flip_y);
 }
 
 bool WebMediaPlayerAndroid::copyVideoTextureToPlatformTexture(
