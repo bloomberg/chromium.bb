@@ -126,4 +126,17 @@ public class JavaBridgeTestBase extends ContentShellTestBase {
                     "Failed to injectObjectsAndReload: " + Log.getStackTraceString(e));
         }
     }
+
+    protected void synchronousPageReload() throws Throwable {
+        TestCallbackHelperContainer.OnPageFinishedHelper onPageFinishedHelper =
+                mTestCallbackHelperContainer.getOnPageFinishedHelper();
+        int currentCallCount = onPageFinishedHelper.getCallCount();
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                getContentViewCore().getWebContents().getNavigationController().reload(true);
+            }
+        });
+        onPageFinishedHelper.waitForCallback(currentCallCount);
+    }
 }

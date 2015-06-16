@@ -104,19 +104,6 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
         return mTestController.waitForStringValue();
     }
 
-    protected void synchronousPageReload() throws Throwable {
-        TestCallbackHelperContainer.OnPageFinishedHelper onPageFinishedHelper =
-                mTestCallbackHelperContainer.getOnPageFinishedHelper();
-        int currentCallCount = onPageFinishedHelper.getCallCount();
-        runTestOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                getContentViewCore().getWebContents().getNavigationController().reload(true);
-            }
-        });
-        onPageFinishedHelper.waitForCallback(currentCallCount);
-    }
-
     // Note that this requires that we can pass a JavaScript boolean to Java.
     private void executeAndSetIfException(String script) throws Throwable {
         executeJavaScript("try {"

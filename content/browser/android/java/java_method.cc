@@ -149,8 +149,9 @@ void JavaMethod::EnsureTypesAndIDAreSetUp() const {
   // Form the signature and record the parameter types.
   parameter_types_.resize(num_parameters_);
   for (size_t i = 0; i < num_parameters_; ++i) {
-    ScopedJavaLocalRef<jobject> parameter(env, env->GetObjectArrayElement(
-        parameters.obj(), i));
+    ScopedJavaLocalRef<jclass> parameter(
+        env,
+        static_cast<jclass>(env->GetObjectArrayElement(parameters.obj(), i)));
     ScopedJavaLocalRef<jstring> name(env, static_cast<jstring>(
         env->CallObjectMethod(parameter.obj(), GetMethodIDFromClassName(
             env,
@@ -159,6 +160,9 @@ void JavaMethod::EnsureTypesAndIDAreSetUp() const {
             kReturningJavaLangString))));
     std::string name_utf8 = ConvertJavaStringToUTF8(name);
     signature += BinaryNameToJNISignature(name_utf8, &parameter_types_[i]);
+    if (parameter_types_[i].type == JavaType::TypeObject) {
+      parameter_types_[i].class_ref.Reset(parameter);
+    }
   }
   signature += ")";
 
