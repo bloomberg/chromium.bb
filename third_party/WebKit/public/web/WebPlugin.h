@@ -131,10 +131,9 @@ public:
     // pages to be printed at these settings.
     virtual int printBegin(const WebPrintParams& printParams) { return 0; }
 
-    // Prints the page specified by pageNumber (0-based index) into the supplied canvas.
-    virtual bool printPage(int pageNumber, WebCanvas* canvas) { return false; }
     // TODO: Remove third parameter when both blink and chromium changes land for bug496765
     virtual void printPage(int pageNumber, WebCanvas* canvas, bool unused) { }
+    virtual void printPage(int pageNumber, WebCanvas* canvas) { }
 
     // Ends the print operation.
     virtual void printEnd() { }
