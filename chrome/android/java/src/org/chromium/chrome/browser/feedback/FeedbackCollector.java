@@ -7,15 +7,12 @@ package org.chromium.chrome.browser.feedback;
 import android.os.Bundle;
 import android.text.TextUtils;
 
-import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.profiles.Profile;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 import javax.annotation.Nullable;
 
@@ -29,8 +26,6 @@ import javax.annotation.Nullable;
  * Interacting with the {@link FeedbackCollector} is only allowed on the main thread.
  */
 public class FeedbackCollector {
-    private static final String TAG = "cr.feedback";
-
     /**
      * A user visible string describing the current URL.
      */
@@ -49,7 +44,7 @@ public class FeedbackCollector {
     private final Map<String, String> mData;
     private final Profile mProfile;
     private final String mUrl;
-    private final Future<ConnectivityCheckerCollector.FeedbackData> mConnectivityFuture;
+    private final ConnectivityTask mConnectivityTask;
 
     /**
      * Creates a {@link FeedbackCollector} and starts asynchronous operations to gather extra data.
@@ -67,8 +62,7 @@ public class FeedbackCollector {
         mData = new HashMap<>();
         mProfile = profile;
         mUrl = url;
-        mConnectivityFuture = ConnectivityCheckerCollector.startChecks(
-                mProfile, DEFAULT_ASYNC_COLLECTION_TIMEOUT_MS);
+        mConnectivityTask = ConnectivityTask.create(mProfile, DEFAULT_ASYNC_COLLECTION_TIMEOUT_MS);
     }
 
     /**
@@ -100,12 +94,8 @@ public class FeedbackCollector {
     }
 
     private void addConnectivityData() {
-        try {
-            Map<String, String> connectivityMap = mConnectivityFuture.get().toMap();
-            mData.putAll(connectivityMap);
-        } catch (InterruptedException | ExecutionException e) {
-            Log.w(TAG, "Failed to successfully get connectivity data.", e.getMessage());
-        }
+        Map<String, String> connectivityMap = mConnectivityTask.get().toMap();
+        mData.putAll(connectivityMap);
     }
 
     private void addDataReductionProxyData() {
