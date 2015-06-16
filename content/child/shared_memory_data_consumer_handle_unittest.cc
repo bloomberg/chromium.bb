@@ -10,8 +10,10 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/location.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/task_runner.h"
 #include "base/threading/thread.h"
 #include "content/public/child/fixed_received_data.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -107,7 +109,7 @@ class ThreadedSharedMemoryDataConsumerHandleTest : public ::testing::Test {
   class ReadDataOperation final {
    public:
     typedef WebDataConsumerHandle::Result Result;
-    ReadDataOperation(scoped_ptr<WebDataConsumerHandle> handle,
+    ReadDataOperation(scoped_ptr<SharedMemoryDataConsumerHandle> handle,
                       base::MessageLoop* main_message_loop,
                       const base::Closure& on_done)
         : handle_(handle.Pass()),
@@ -119,7 +121,7 @@ class ThreadedSharedMemoryDataConsumerHandleTest : public ::testing::Test {
     void ReadData() {
       if (!client_) {
         client_.reset(new ClientImpl(this));
-        handle_->registerClient(client_.get());
+        reader_ = handle_->ObtainReader(client_.get());
       }
 
       Result rv = kOk;
@@ -127,7 +129,7 @@ class ThreadedSharedMemoryDataConsumerHandleTest : public ::testing::Test {
 
       while (true) {
         char buffer[16];
-        rv = handle_->read(&buffer, sizeof(buffer), kNone, &read_size);
+        rv = reader_->read(&buffer, sizeof(buffer), kNone, &read_size);
         if (rv != kOk)
           break;
         result_.insert(result_.size(), &buffer[0], read_size);
@@ -144,11 +146,13 @@ class ThreadedSharedMemoryDataConsumerHandleTest : public ::testing::Test {
       }
 
       // The operation is done.
+      reader_.reset();
       main_message_loop_->PostTask(FROM_HERE, on_done_);
     }
 
    private:
-    scoped_ptr<WebDataConsumerHandle> handle_;
+    scoped_ptr<SharedMemoryDataConsumerHandle> handle_;
+    scoped_ptr<WebDataConsumerHandle::Reader> reader_;
     scoped_ptr<WebDataConsumerHandle::Client> client_;
     base::MessageLoop* main_message_loop_;
     base::Closure on_done_;
@@ -161,7 +165,7 @@ class ThreadedSharedMemoryDataConsumerHandleTest : public ::testing::Test {
   }
 
   StrictMock<MockClient> client_;
-  scoped_ptr<WebDataConsumerHandle> handle_;
+  scoped_ptr<SharedMemoryDataConsumerHandle> handle_;
   scoped_ptr<Writer> writer_;
   base::MessageLoop loop_;
 };
@@ -182,10 +186,18 @@ class SharedMemoryDataConsumerHandleTest
   base::MessageLoop loop_;
 };
 
+void RunPostedTasks() {
+  base::RunLoop run_loop;
+  base::MessageLoop::current()->task_runner()->PostTask(FROM_HERE,
+                                                        run_loop.QuitClosure());
+  run_loop.Run();
+}
+
 TEST_P(SharedMemoryDataConsumerHandleTest, ReadFromEmpty) {
   char buffer[4];
   size_t read = 88;
-  Result result = handle_->read(buffer, 4, kNone, &read);
+  auto reader = handle_->ObtainReader(nullptr);
+  Result result = reader->read(buffer, 4, kNone, &read);
 
   EXPECT_EQ(kShouldWait, result);
   EXPECT_EQ(0u, read);
@@ -196,7 +208,8 @@ TEST_P(SharedMemoryDataConsumerHandleTest, AutoClose) {
   size_t read = 88;
 
   writer_.reset();
-  Result result = handle_->read(buffer, 4, kNone, &read);
+  auto reader = handle_->ObtainReader(nullptr);
+  Result result = reader->read(buffer, 4, kNone, &read);
 
   EXPECT_EQ(kDone, result);
   EXPECT_EQ(0u, read);
@@ -207,24 +220,82 @@ TEST_P(SharedMemoryDataConsumerHandleTest, ReadSimple) {
 
   char buffer[4] = {};
   size_t read = 88;
-  Result result = handle_->read(buffer, 3, kNone, &read);
+  auto reader = handle_->ObtainReader(nullptr);
+  Result result = reader->read(buffer, 3, kNone, &read);
 
   EXPECT_EQ(kOk, result);
   EXPECT_EQ(3u, read);
   EXPECT_STREQ("hel", buffer);
 
-  result = handle_->read(buffer, 3, kNone, &read);
+  result = reader->read(buffer, 3, kNone, &read);
   EXPECT_EQ(kOk, result);
   EXPECT_EQ(2u, read);
   EXPECT_STREQ("lol", buffer);
 
-  result = handle_->read(buffer, 3, kNone, &read);
+  result = reader->read(buffer, 3, kNone, &read);
   EXPECT_EQ(kShouldWait, result);
   EXPECT_EQ(0u, read);
 
   writer_->Close();
 
-  result = handle_->read(buffer, 3, kNone, &read);
+  result = reader->read(buffer, 3, kNone, &read);
+  EXPECT_EQ(kDone, result);
+  EXPECT_EQ(0u, read);
+}
+
+TEST_P(SharedMemoryDataConsumerHandleTest, ReadAfterHandleIsGone) {
+  writer_->AddData(NewFixedData("hello"));
+
+  char buffer[8] = {};
+  size_t read = 88;
+  auto reader = handle_->ObtainReader(nullptr);
+
+  handle_.reset();
+
+  Result result = reader->read(buffer, sizeof(buffer), kNone, &read);
+
+  EXPECT_EQ(kOk, result);
+  EXPECT_EQ(5u, read);
+  EXPECT_STREQ("hello", buffer);
+
+  result = reader->read(buffer, 3, kNone, &read);
+  EXPECT_EQ(kShouldWait, result);
+  EXPECT_EQ(0u, read);
+
+  writer_->Close();
+
+  result = reader->read(buffer, 3, kNone, &read);
+  EXPECT_EQ(kDone, result);
+  EXPECT_EQ(0u, read);
+}
+
+TEST_P(SharedMemoryDataConsumerHandleTest, ReObtainReader) {
+  writer_->AddData(NewFixedData("hello"));
+
+  char buffer[4] = {};
+  size_t read = 88;
+  auto reader = handle_->ObtainReader(nullptr);
+  Result result = reader->read(buffer, 3, kNone, &read);
+
+  EXPECT_EQ(kOk, result);
+  EXPECT_EQ(3u, read);
+  EXPECT_STREQ("hel", buffer);
+
+  reader.reset();
+  reader = handle_->ObtainReader(nullptr);
+
+  result = reader->read(buffer, 3, kNone, &read);
+  EXPECT_EQ(kOk, result);
+  EXPECT_EQ(2u, read);
+  EXPECT_STREQ("lol", buffer);
+
+  result = reader->read(buffer, 3, kNone, &read);
+  EXPECT_EQ(kShouldWait, result);
+  EXPECT_EQ(0u, read);
+
+  writer_->Close();
+
+  result = reader->read(buffer, 3, kNone, &read);
   EXPECT_EQ(kDone, result);
   EXPECT_EQ(0u, read);
 }
@@ -235,13 +306,14 @@ TEST_P(SharedMemoryDataConsumerHandleTest, CloseBeforeReading) {
 
   char buffer[20] = {};
   size_t read = 88;
-  Result result = handle_->read(buffer, sizeof(buffer), kNone, &read);
+  auto reader = handle_->ObtainReader(nullptr);
+  Result result = reader->read(buffer, sizeof(buffer), kNone, &read);
 
   EXPECT_EQ(kOk, result);
   EXPECT_EQ(5u, read);
   EXPECT_STREQ("hello", buffer);
 
-  result = handle_->read(buffer, sizeof(buffer), kNone, &read);
+  result = reader->read(buffer, sizeof(buffer), kNone, &read);
   EXPECT_EQ(kDone, result);
   EXPECT_EQ(0u, read);
 }
@@ -260,37 +332,38 @@ TEST_P(SharedMemoryDataConsumerHandleTest, AddMultipleData) {
   size_t read;
   Result result;
 
+  auto reader = handle_->ObtainReader(nullptr);
   std::fill(&buffer[0], &buffer[arraysize(buffer)], 0);
-  result = handle_->read(buffer, 6, kNone, &read);
+  result = reader->read(buffer, 6, kNone, &read);
   EXPECT_EQ(kOk, result);
   EXPECT_EQ(6u, read);
   EXPECT_STREQ("Once u", buffer);
 
   std::fill(&buffer[0], &buffer[arraysize(buffer)], 0);
-  result = handle_->read(buffer, 2, kNone, &read);
+  result = reader->read(buffer, 2, kNone, &read);
   EXPECT_EQ(kOk, result);
   EXPECT_EQ(2u, read);
   EXPECT_STREQ("po", buffer);
 
   std::fill(&buffer[0], &buffer[arraysize(buffer)], 0);
-  result = handle_->read(buffer, 9, kNone, &read);
+  result = reader->read(buffer, 9, kNone, &read);
   EXPECT_EQ(kOk, result);
   EXPECT_EQ(9u, read);
   EXPECT_STREQ("n a time ", buffer);
 
   std::fill(&buffer[0], &buffer[arraysize(buffer)], 0);
-  result = handle_->read(buffer, 3, kNone, &read);
+  result = reader->read(buffer, 3, kNone, &read);
   EXPECT_EQ(kOk, result);
   EXPECT_EQ(3u, read);
   EXPECT_STREQ("the", buffer);
 
   std::fill(&buffer[0], &buffer[arraysize(buffer)], 0);
-  result = handle_->read(buffer, 20, kNone, &read);
+  result = reader->read(buffer, 20, kNone, &read);
   EXPECT_EQ(kOk, result);
   EXPECT_EQ(9u, read);
   EXPECT_STREQ("re was a ", buffer);
 
-  result = handle_->read(buffer, sizeof(buffer), kNone, &read);
+  result = reader->read(buffer, sizeof(buffer), kNone, &read);
   EXPECT_EQ(kDone, result);
   EXPECT_EQ(0u, read);
 }
@@ -303,20 +376,21 @@ TEST_P(SharedMemoryDataConsumerHandleTest, AddMultipleDataInteractively) {
   size_t read;
   Result result;
 
+  auto reader = handle_->ObtainReader(nullptr);
   std::fill(&buffer[0], &buffer[arraysize(buffer)], 0);
-  result = handle_->read(buffer, 6, kNone, &read);
+  result = reader->read(buffer, 6, kNone, &read);
   EXPECT_EQ(kOk, result);
   EXPECT_EQ(6u, read);
   EXPECT_STREQ("Once u", buffer);
 
   std::fill(&buffer[0], &buffer[arraysize(buffer)], 0);
-  result = handle_->read(buffer, 2, kNone, &read);
+  result = reader->read(buffer, 2, kNone, &read);
   EXPECT_EQ(kOk, result);
   EXPECT_EQ(2u, read);
   EXPECT_STREQ("po", buffer);
 
   std::fill(&buffer[0], &buffer[arraysize(buffer)], 0);
-  result = handle_->read(buffer, 9, kNone, &read);
+  result = reader->read(buffer, 9, kNone, &read);
   EXPECT_EQ(kOk, result);
   EXPECT_EQ(2u, read);
   EXPECT_STREQ("n ", buffer);
@@ -324,7 +398,7 @@ TEST_P(SharedMemoryDataConsumerHandleTest, AddMultipleDataInteractively) {
   writer_->AddData(NewFixedData("a "));
 
   std::fill(&buffer[0], &buffer[arraysize(buffer)], 0);
-  result = handle_->read(buffer, 1, kNone, &read);
+  result = reader->read(buffer, 1, kNone, &read);
   EXPECT_EQ(kOk, result);
   EXPECT_EQ(1u, read);
   EXPECT_STREQ("a", buffer);
@@ -336,18 +410,18 @@ TEST_P(SharedMemoryDataConsumerHandleTest, AddMultipleDataInteractively) {
   writer_->Close();
 
   std::fill(&buffer[0], &buffer[arraysize(buffer)], 0);
-  result = handle_->read(buffer, 9, kNone, &read);
+  result = reader->read(buffer, 9, kNone, &read);
   EXPECT_EQ(kOk, result);
   EXPECT_EQ(9u, read);
   EXPECT_STREQ(" time the", buffer);
 
   std::fill(&buffer[0], &buffer[arraysize(buffer)], 0);
-  result = handle_->read(buffer, 20, kNone, &read);
+  result = reader->read(buffer, 20, kNone, &read);
   EXPECT_EQ(kOk, result);
   EXPECT_EQ(9u, read);
   EXPECT_STREQ("re was a ", buffer);
 
-  result = handle_->read(buffer, sizeof(buffer), kNone, &read);
+  result = reader->read(buffer, sizeof(buffer), kNone, &read);
   EXPECT_EQ(kDone, result);
   EXPECT_EQ(0u, read);
 }
@@ -358,14 +432,17 @@ TEST_P(SharedMemoryDataConsumerHandleTest, RegisterClient) {
   InSequence s;
   EXPECT_CALL(checkpoint, Call(0));
   EXPECT_CALL(checkpoint, Call(1));
-  EXPECT_CALL(client_, didGetReadable());
   EXPECT_CALL(checkpoint, Call(2));
+  EXPECT_CALL(client_, didGetReadable());
+  EXPECT_CALL(checkpoint, Call(3));
 
   checkpoint.Call(0);
-  handle_->registerClient(&client_);
+  auto reader = handle_->ObtainReader(&client_);
   checkpoint.Call(1);
-  writer_->Close();
+  RunPostedTasks();
   checkpoint.Call(2);
+  writer_->Close();
+  checkpoint.Call(3);
 }
 
 TEST_P(SharedMemoryDataConsumerHandleTest, RegisterClientWhenDataExists) {
@@ -374,14 +451,17 @@ TEST_P(SharedMemoryDataConsumerHandleTest, RegisterClientWhenDataExists) {
   InSequence s;
   EXPECT_CALL(checkpoint, Call(0));
   EXPECT_CALL(checkpoint, Call(1));
-  EXPECT_CALL(client_, didGetReadable());
   EXPECT_CALL(checkpoint, Call(2));
+  EXPECT_CALL(client_, didGetReadable());
+  EXPECT_CALL(checkpoint, Call(3));
 
   checkpoint.Call(0);
   writer_->AddData(NewFixedData("Once "));
   checkpoint.Call(1);
-  handle_->registerClient(&client_);
+  auto reader = handle_->ObtainReader(&client_);
   checkpoint.Call(2);
+  RunPostedTasks();
+  checkpoint.Call(3);
 }
 
 TEST_P(SharedMemoryDataConsumerHandleTest, AddDataWhenClientIsRegistered) {
@@ -401,13 +481,13 @@ TEST_P(SharedMemoryDataConsumerHandleTest, AddDataWhenClientIsRegistered) {
   EXPECT_CALL(checkpoint, Call(5));
 
   checkpoint.Call(0);
-  handle_->registerClient(&client_);
+  auto reader = handle_->ObtainReader(&client_);
   checkpoint.Call(1);
   writer_->AddData(NewFixedData("Once "));
   checkpoint.Call(2);
   writer_->AddData(NewFixedData("upon "));
   checkpoint.Call(3);
-  result = handle_->read(buffer, sizeof(buffer), kNone, &size);
+  result = reader->read(buffer, sizeof(buffer), kNone, &size);
   EXPECT_EQ(kOk, result);
   EXPECT_EQ(10u, size);
   checkpoint.Call(4);
@@ -426,7 +506,7 @@ TEST_P(SharedMemoryDataConsumerHandleTest, CloseWithClientAndData) {
   EXPECT_CALL(checkpoint, Call(3));
 
   checkpoint.Call(0);
-  handle_->registerClient(&client_);
+  auto reader = handle_->ObtainReader(&client_);
   checkpoint.Call(1);
   writer_->AddData(NewFixedData("Once "));
   checkpoint.Call(2);
@@ -434,7 +514,7 @@ TEST_P(SharedMemoryDataConsumerHandleTest, CloseWithClientAndData) {
   checkpoint.Call(3);
 }
 
-TEST_P(SharedMemoryDataConsumerHandleTest, UnregisterClient) {
+TEST_P(SharedMemoryDataConsumerHandleTest, ReleaseReader) {
   Checkpoint checkpoint;
 
   InSequence s;
@@ -443,9 +523,9 @@ TEST_P(SharedMemoryDataConsumerHandleTest, UnregisterClient) {
   EXPECT_CALL(checkpoint, Call(2));
 
   checkpoint.Call(0);
-  handle_->registerClient(&client_);
+  auto reader = handle_->ObtainReader(&client_);
   checkpoint.Call(1);
-  handle_->unregisterClient();
+  reader.reset();
   writer_->AddData(NewFixedData("Once "));
   checkpoint.Call(2);
 }
@@ -455,7 +535,8 @@ TEST_P(SharedMemoryDataConsumerHandleTest, TwoPhaseReadShouldWait) {
   const void* buffer = &result;
   size_t size = 99;
 
-  result = handle_->beginRead(&buffer, kNone, &size);
+  auto reader = handle_->ObtainReader(nullptr);
+  result = reader->beginRead(&buffer, kNone, &size);
   EXPECT_EQ(kShouldWait, result);
   EXPECT_EQ(nullptr, buffer);
   EXPECT_EQ(0u, size);
@@ -468,28 +549,29 @@ TEST_P(SharedMemoryDataConsumerHandleTest, TwoPhaseReadSimple) {
   const void* buffer = &result;
   size_t size = 99;
 
-  result = handle_->beginRead(&buffer, kNone, &size);
+  auto reader = handle_->ObtainReader(nullptr);
+  result = reader->beginRead(&buffer, kNone, &size);
   EXPECT_EQ(kOk, result);
   EXPECT_EQ(5u, size);
   EXPECT_EQ("Once ", ToString(buffer, 5));
 
-  handle_->endRead(1);
+  reader->endRead(1);
 
-  result = handle_->beginRead(&buffer, kNone, &size);
+  result = reader->beginRead(&buffer, kNone, &size);
   EXPECT_EQ(kOk, result);
   EXPECT_EQ(4u, size);
   EXPECT_EQ("nce ", ToString(buffer, 4));
 
-  handle_->endRead(4);
+  reader->endRead(4);
 
-  result = handle_->beginRead(&buffer, kNone, &size);
+  result = reader->beginRead(&buffer, kNone, &size);
   EXPECT_EQ(kShouldWait, result);
   EXPECT_EQ(0u, size);
   EXPECT_EQ(nullptr, buffer);
 
   writer_->Close();
 
-  result = handle_->beginRead(&buffer, kNone, &size);
+  result = reader->beginRead(&buffer, kNone, &size);
   EXPECT_EQ(kDone, result);
   EXPECT_EQ(0u, size);
   EXPECT_EQ(nullptr, buffer);
@@ -503,35 +585,36 @@ TEST_P(SharedMemoryDataConsumerHandleTest, TwoPhaseReadWithMultipleData) {
   const void* buffer = &result;
   size_t size = 99;
 
-  result = handle_->beginRead(&buffer, kNone, &size);
+  auto reader = handle_->ObtainReader(nullptr);
+  result = reader->beginRead(&buffer, kNone, &size);
   EXPECT_EQ(kOk, result);
   EXPECT_EQ(5u, size);
   EXPECT_EQ("Once ", ToString(buffer, 5));
 
-  handle_->endRead(1);
+  reader->endRead(1);
 
-  result = handle_->beginRead(&buffer, kNone, &size);
+  result = reader->beginRead(&buffer, kNone, &size);
   EXPECT_EQ(kOk, result);
   EXPECT_EQ(4u, size);
   EXPECT_EQ("nce ", ToString(buffer, 4));
 
-  handle_->endRead(4);
+  reader->endRead(4);
 
-  result = handle_->beginRead(&buffer, kNone, &size);
+  result = reader->beginRead(&buffer, kNone, &size);
   EXPECT_EQ(kOk, result);
   EXPECT_EQ(5u, size);
   EXPECT_EQ("upon ", ToString(buffer, 5));
 
-  handle_->endRead(5);
+  reader->endRead(5);
 
-  result = handle_->beginRead(&buffer, kNone, &size);
+  result = reader->beginRead(&buffer, kNone, &size);
   EXPECT_EQ(kShouldWait, result);
   EXPECT_EQ(0u, size);
   EXPECT_EQ(nullptr, buffer);
 
   writer_->Close();
 
-  result = handle_->beginRead(&buffer, kNone, &size);
+  result = reader->beginRead(&buffer, kNone, &size);
   EXPECT_EQ(kDone, result);
   EXPECT_EQ(0u, size);
   EXPECT_EQ(nullptr, buffer);

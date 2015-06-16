@@ -69,7 +69,7 @@ class ReadDataOperation : public ReadDataOperationBase {
   void ReadData() {
     if (!client_) {
       client_.reset(new ClientImpl(this));
-      handle_->registerClient(client_.get());
+      reader_ = handle_->ObtainReader(client_.get());
     }
 
     Result rv = kOk;
@@ -77,7 +77,7 @@ class ReadDataOperation : public ReadDataOperationBase {
 
     while (true) {
       char buffer[16];
-      rv = handle_->read(&buffer, sizeof(buffer), kNone, &readSize);
+      rv = reader_->read(&buffer, sizeof(buffer), kNone, &readSize);
       if (rv != kOk)
         break;
       result_.insert(result_.size(), &buffer[0], readSize);
@@ -94,11 +94,13 @@ class ReadDataOperation : public ReadDataOperationBase {
     }
 
     // The operation is done.
+    reader_.reset();
     main_message_loop_->task_runner()->PostTask(FROM_HERE, on_done_);
   }
 
  private:
-  scoped_ptr<WebDataConsumerHandle> handle_;
+  scoped_ptr<WebDataConsumerHandleImpl> handle_;
+  scoped_ptr<WebDataConsumerHandle::Reader> reader_;
   scoped_ptr<WebDataConsumerHandle::Client> client_;
   base::MessageLoop* main_message_loop_;
   base::Closure on_done_;
@@ -123,21 +125,21 @@ class TwoPhaseReadDataOperation : public ReadDataOperationBase {
   void ReadData() {
     if (!client_) {
       client_.reset(new ClientImpl(this));
-      handle_->registerClient(client_.get());
+      reader_ = handle_->ObtainReader(client_.get());
     }
 
     Result rv;
     while (true) {
       const void* buffer = nullptr;
       size_t size;
-      rv = handle_->beginRead(&buffer, kNone, &size);
+      rv = reader_->beginRead(&buffer, kNone, &size);
       if (rv != kOk)
         break;
       // In order to verify endRead, we read at most one byte for each time.
       size_t read_size = std::max(static_cast<size_t>(1), size);
       result_.insert(result_.size(), static_cast<const char*>(buffer),
                      read_size);
-      rv = handle_->endRead(read_size);
+      rv = reader_->endRead(read_size);
       if (rv != kOk) {
         // Something is wrong.
         result_ = "error";
@@ -157,11 +159,13 @@ class TwoPhaseReadDataOperation : public ReadDataOperationBase {
     }
 
     // The operation is done.
+    reader_.reset();
     main_message_loop_->task_runner()->PostTask(FROM_HERE, on_done_);
   }
 
  private:
-  scoped_ptr<WebDataConsumerHandle> handle_;
+  scoped_ptr<WebDataConsumerHandleImpl> handle_;
+  scoped_ptr<WebDataConsumerHandle::Reader> reader_;
   scoped_ptr<WebDataConsumerHandle::Client> client_;
   base::MessageLoop* main_message_loop_;
   base::Closure on_done_;

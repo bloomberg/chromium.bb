@@ -39,9 +39,27 @@ class CONTENT_EXPORT SharedMemoryDataConsumerHandle final
     DISALLOW_COPY_AND_ASSIGN(Writer);
   };
 
+  class ReaderImpl final : public Reader {
+   public:
+    ReaderImpl(scoped_refptr<Context> context, Client* client);
+    virtual ~ReaderImpl();
+    virtual Result read(void* data, size_t size, Flags flags, size_t* readSize);
+    virtual Result beginRead(const void** buffer,
+                             Flags flags,
+                             size_t* available);
+    virtual Result endRead(size_t readSize);
+
+   private:
+    scoped_refptr<Context> context_;
+
+    DISALLOW_COPY_AND_ASSIGN(ReaderImpl);
+ };
+
   SharedMemoryDataConsumerHandle(BackpressureMode mode,
                                  scoped_ptr<Writer>* writer);
   virtual ~SharedMemoryDataConsumerHandle();
+
+  scoped_ptr<Reader> ObtainReader(Client* client);
 
   virtual Result read(void* data, size_t size, Flags flags, size_t* readSize);
   virtual Result beginRead(const void** buffer, Flags flags, size_t* available);
@@ -50,7 +68,13 @@ class CONTENT_EXPORT SharedMemoryDataConsumerHandle final
   virtual void unregisterClient();
 
  private:
+  virtual ReaderImpl* obtainReaderInternal(Client* client);
+  void LockImplicitly();
+  void UnlockImplicitly();
+
   scoped_refptr<Context> context_;
+  // This is an implicitly acquired reader for deprecated APIs.
+  scoped_ptr<Reader> reader_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedMemoryDataConsumerHandle);
 };

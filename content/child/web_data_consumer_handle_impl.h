@@ -16,23 +16,37 @@ namespace content {
 class CONTENT_EXPORT WebDataConsumerHandleImpl final
     : public NON_EXPORTED_BASE(blink::WebDataConsumerHandle) {
   typedef mojo::ScopedDataPipeConsumerHandle Handle;
+  class Context;
+
  public:
+  class CONTENT_EXPORT ReaderImpl final : public NON_EXPORTED_BASE(Reader) {
+   public:
+    ReaderImpl(scoped_refptr<Context> context, Client* client);
+    virtual ~ReaderImpl();
+    virtual Result read(void* data, size_t size, Flags flags, size_t* readSize);
+    virtual Result beginRead(const void** buffer,
+                             Flags flags,
+                             size_t* available);
+    virtual Result endRead(size_t readSize);
+
+   private:
+    Result HandleReadResult(MojoResult);
+    void StartWatching();
+    void OnHandleGotReadable(MojoResult);
+
+    scoped_refptr<Context> context_;
+    mojo::common::HandleWatcher handle_watcher_;
+    Client* client_;
+  };
+  scoped_ptr<Reader> ObtainReader(Client* client);
+
   explicit WebDataConsumerHandleImpl(Handle handle);
   virtual ~WebDataConsumerHandleImpl();
 
-  virtual Result read(void* data, size_t size, Flags flags, size_t* readSize);
-  virtual Result beginRead(const void** buffer, Flags flags, size_t* available);
-  virtual Result endRead(size_t readSize);
-  virtual void registerClient(Client* client);
-  virtual void unregisterClient();
-
  private:
-  Result HandleReadResult(MojoResult);
-  void OnHandleGotReadable(MojoResult);
+  virtual ReaderImpl* obtainReaderInternal(Client* client);
 
-  Handle handle_;
-  Client* client_;
-  mojo::common::HandleWatcher handle_watcher_;
+  scoped_refptr<Context> context_;
 };
 
 }  // namespace content
