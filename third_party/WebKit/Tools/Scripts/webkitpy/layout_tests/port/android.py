@@ -180,7 +180,7 @@ class ContentShellDriverDetails():
         return '/data/local/tmp/content-shell-crash-dumps'
 
     def additional_command_line_flags(self, use_breakpad):
-        flags = ['--run-layout-test', '--encode-binary']
+        flags = ['--encode-binary']
         if use_breakpad:
             flags.extend(['--enable-crash-reporter', '--crash-dumps-dir=%s' % self.device_crash_dumps_directory()])
         return flags
@@ -461,7 +461,7 @@ class AndroidPort(base.Port):
         return self._build_path(MD5SUM_HOST_FILE_NAME)
 
     def additional_driver_flag(self):
-        return self._driver_details.additional_command_line_flags(use_breakpad=not self.get_option('disable_breakpad'))
+        return super(AndroidPort, self).additional_driver_flag() + self._driver_details.additional_command_line_flags(use_breakpad=not self.get_option('disable_breakpad'))
 
     def default_timeout_ms(self):
         # Android platform has less computing power than desktop platforms.
