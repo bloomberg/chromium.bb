@@ -41,7 +41,7 @@ class WTF_EXPORT Partitions {
 public:
     static void initialize(HistogramEnumerationFunction = nullptr);
     static void shutdown();
-    ALWAYS_INLINE static PartitionRootGeneric* getBufferPartition()
+    ALWAYS_INLINE static PartitionRootGeneric* bufferPartition()
     {
         // TODO(haraken): This check is needed because some call sites allocate
         // Blink things before WTF::initialize(). We should fix those call sites
@@ -51,7 +51,7 @@ public:
         return m_bufferAllocator.root();
     }
 
-    ALWAYS_INLINE static PartitionRootGeneric* getFastMallocPartition()
+    ALWAYS_INLINE static PartitionRootGeneric* fastMallocPartition()
     {
         // TODO(haraken): This check is needed because some call sites allocate
         // Blink things before WTF::initialize(). We should fix those call sites
@@ -61,15 +61,15 @@ public:
         return m_fastMallocAllocator.root();
     }
 
-    ALWAYS_INLINE static PartitionRoot* getObjectModelPartition()
+    ALWAYS_INLINE static PartitionRoot* objectModelPartition()
     {
         ASSERT(s_initialized);
         return m_objectModelAllocator.root();
     }
-    ALWAYS_INLINE static PartitionRoot* getRenderingPartition()
+    ALWAYS_INLINE static PartitionRoot* layoutPartition()
     {
         ASSERT(s_initialized);
-        return m_renderingAllocator.root();
+        return m_layoutAllocator.root();
     }
 
     static size_t currentDOMMemoryUsage()
@@ -84,7 +84,7 @@ public:
         totalSize += m_fastMallocAllocator.root()->totalSizeOfCommittedPages;
         totalSize += m_bufferAllocator.root()->totalSizeOfCommittedPages;
         totalSize += m_objectModelAllocator.root()->totalSizeOfCommittedPages;
-        totalSize += m_renderingAllocator.root()->totalSizeOfCommittedPages;
+        totalSize += m_layoutAllocator.root()->totalSizeOfCommittedPages;
         return totalSize;
     }
 
@@ -99,7 +99,7 @@ private:
     static PartitionAllocatorGeneric m_fastMallocAllocator;
     static PartitionAllocatorGeneric m_bufferAllocator;
     static SizeSpecificPartitionAllocator<3328> m_objectModelAllocator;
-    static SizeSpecificPartitionAllocator<1024> m_renderingAllocator;
+    static SizeSpecificPartitionAllocator<1024> m_layoutAllocator;
     static HistogramEnumerationFunction m_histogramEnumeration;
 };
 

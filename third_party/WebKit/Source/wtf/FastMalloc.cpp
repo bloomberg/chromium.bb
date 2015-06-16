@@ -53,17 +53,17 @@ char* fastStrDup(const char* src)
 
 void* fastMalloc(size_t n)
 {
-    return partitionAllocGeneric(Partitions::getFastMallocPartition(), n);
+    return partitionAllocGeneric(Partitions::fastMallocPartition(), n);
 }
 
 void fastFree(void* p)
 {
-    partitionFreeGeneric(Partitions::getFastMallocPartition(), p);
+    partitionFreeGeneric(Partitions::fastMallocPartition(), p);
 }
 
 void* fastRealloc(void* p, size_t n)
 {
-    return partitionReallocGeneric(Partitions::getFastMallocPartition(), p, n);
+    return partitionReallocGeneric(Partitions::fastMallocPartition(), p, n);
 }
 
 } // namespace WTF

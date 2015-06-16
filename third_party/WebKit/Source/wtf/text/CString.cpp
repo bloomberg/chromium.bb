@@ -41,13 +41,13 @@ PassRefPtr<CStringBuffer> CStringBuffer::createUninitialized(size_t length)
 
     // The +1 is for the terminating NUL character.
     size_t size = sizeof(CStringBuffer) + length + 1;
-    CStringBuffer* stringBuffer = static_cast<CStringBuffer*>(partitionAllocGeneric(Partitions::getBufferPartition(), size));
+    CStringBuffer* stringBuffer = static_cast<CStringBuffer*>(partitionAllocGeneric(Partitions::bufferPartition(), size));
     return adoptRef(new (stringBuffer) CStringBuffer(length));
 }
 
 void CStringBuffer::operator delete(void* ptr)
 {
-    partitionFreeGeneric(Partitions::getBufferPartition(), ptr);
+    partitionFreeGeneric(Partitions::bufferPartition(), ptr);
 }
 
 CString::CString(const char* str)

@@ -109,7 +109,7 @@ static_assert(sizeof(Node) <= sizeof(SameSizeAsNode), "Node should stay small");
 void* Node::operator new(size_t size)
 {
     ASSERT(isMainThread());
-    return partitionAlloc(WTF::Partitions::getObjectModelPartition(), size);
+    return partitionAlloc(WTF::Partitions::objectModelPartition(), size);
 }
 
 void Node::operator delete(void* ptr)

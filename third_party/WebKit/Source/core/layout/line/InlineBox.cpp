@@ -73,7 +73,7 @@ void InlineBox::remove(MarkLineBoxes markLineBoxes)
 
 void* InlineBox::operator new(size_t sz)
 {
-    return partitionAlloc(WTF::Partitions::getRenderingPartition(), sz);
+    return partitionAlloc(WTF::Partitions::layoutPartition(), sz);
 }
 
 void InlineBox::operator delete(void* ptr)

@@ -1119,7 +1119,7 @@ LayoutRect DeprecatedPaintLayer::paintingExtent(const DeprecatedPaintLayer* root
 
 void* DeprecatedPaintLayer::operator new(size_t sz)
 {
-    return partitionAlloc(WTF::Partitions::getRenderingPartition(), sz);
+    return partitionAlloc(WTF::Partitions::layoutPartition(), sz);
 }
 
 void DeprecatedPaintLayer::operator delete(void* ptr)

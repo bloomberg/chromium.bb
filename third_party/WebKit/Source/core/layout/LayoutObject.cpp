@@ -149,7 +149,7 @@ static SelectionPaintInvalidationMap* selectionPaintInvalidationMap = nullptr;
 void* LayoutObject::operator new(size_t sz)
 {
     ASSERT(isMainThread());
-    return partitionAlloc(WTF::Partitions::getRenderingPartition(), sz);
+    return partitionAlloc(WTF::Partitions::layoutPartition(), sz);
 }
 
 void LayoutObject::operator delete(void* ptr)

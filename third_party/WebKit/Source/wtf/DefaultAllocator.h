@@ -52,7 +52,7 @@ public:
     static size_t quantizedSize(size_t count)
     {
         RELEASE_ASSERT(count <= kMaxUnquantizedAllocation / sizeof(T));
-        return partitionAllocActualSize(Partitions::getBufferPartition(), count * sizeof(T));
+        return partitionAllocActualSize(Partitions::bufferPartition(), count * sizeof(T));
     }
     static const size_t kMaxUnquantizedAllocation = kGenericMaxDirectMapped;
 };
