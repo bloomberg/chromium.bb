@@ -148,6 +148,7 @@ STUB_HEADER_PREAMBLE = """// This is generated file. Do not modify directly.
 #ifndef %(guard_name)s
 #define %(guard_name)s
 
+#include <stdarg.h>
 #include <map>
 #include <string>
 #include <vector>
