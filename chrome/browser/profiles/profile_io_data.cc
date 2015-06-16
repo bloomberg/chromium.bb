@@ -95,7 +95,6 @@
 #include "chrome/browser/extensions/extension_resource_protocols.h"
 #include "extensions/browser/extension_protocols.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/browser/extension_throttle_manager.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/common/constants.h"
 #endif
@@ -801,17 +800,7 @@ extensions::InfoMap* ProfileIOData::GetExtensionInfoMap() const {
 #if defined(ENABLE_EXTENSIONS)
   return extension_info_map_.get();
 #else
-  return nullptr;
-#endif
-}
-
-extensions::ExtensionThrottleManager*
-ProfileIOData::GetExtensionThrottleManager() const {
-  DCHECK(initialized_) << "ExtensionSystem not initialized";
-#if defined(ENABLE_EXTENSIONS)
-  return extension_throttle_manager_.get();
-#else
-  return nullptr;
+  return NULL;
 #endif
 }
 
@@ -1018,12 +1007,7 @@ void ProfileIOData::Init(
 #if defined(ENABLE_EXTENSIONS)
   network_delegate->set_extension_info_map(
       profile_params_->extension_info_map.get());
-  if (!command_line.HasSwitch(switches::kDisableExtensionsHttpThrottling)) {
-    extension_throttle_manager_.reset(
-        new extensions::ExtensionThrottleManager());
-  }
 #endif
-
 #if defined(ENABLE_CONFIGURATION_POLICY)
   network_delegate->set_url_blacklist_manager(url_blacklist_manager_.get());
 #endif

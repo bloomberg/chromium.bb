@@ -50,7 +50,6 @@ class DataReductionProxyIOData;
 }
 
 namespace extensions {
-class ExtensionThrottleManager;
 class InfoMap;
 }
 
@@ -133,7 +132,6 @@ class ProfileIOData {
   // with a content::ResourceContext, and they want access to Chrome data for
   // that profile.
   extensions::InfoMap* GetExtensionInfoMap() const;
-  extensions::ExtensionThrottleManager* GetExtensionThrottleManager() const;
   CookieSettings* GetCookieSettings() const;
   HostContentSettingsMap* GetHostContentSettingsMap() const;
 
@@ -577,12 +575,6 @@ class ProfileIOData {
 #if defined(ENABLE_SUPERVISED_USERS)
   mutable scoped_refptr<const SupervisedUserURLFilter>
       supervised_user_url_filter_;
-#endif
-
-#if defined(ENABLE_EXTENSIONS)
-  // Is NULL if switches::kDisableExtensionsHttpThrottling is on.
-  mutable scoped_ptr<extensions::ExtensionThrottleManager>
-      extension_throttle_manager_;
 #endif
 
   mutable scoped_ptr<DevToolsNetworkController> network_controller_;
