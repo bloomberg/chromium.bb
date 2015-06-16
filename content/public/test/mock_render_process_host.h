@@ -47,7 +47,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   void WidgetRestored() override;
   void WidgetHidden() override;
   int VisibleWidgetCount() const override;
-  bool IsIsolatedGuest() const override;
+  bool IsForGuestsOnly() const override;
   StoragePartition* GetStoragePartition() const override;
   virtual void AddWord(const base::string16& word);
   bool Shutdown(int exit_code, bool wait) override;
@@ -108,8 +108,8 @@ class MockRenderProcessHost : public RenderProcessHost {
     factory_ = factory;
   }
 
-  void set_is_isolated_guest(bool is_isolated_guest) {
-    is_isolated_guest_ = is_isolated_guest;
+  void set_is_for_guests_only(bool is_for_guests_only) {
+    is_for_guests_only_ = is_for_guests_only;
   }
 
   void SetProcessHandle(scoped_ptr<base::ProcessHandle> new_handle) {
@@ -134,7 +134,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   IDMap<IPC::Listener> listeners_;
   bool fast_shutdown_started_;
   bool deletion_callback_called_;
-  bool is_isolated_guest_;
+  bool is_for_guests_only_;
   scoped_ptr<base::ProcessHandle> process_handle;
 
   DISALLOW_COPY_AND_ASSIGN(MockRenderProcessHost);

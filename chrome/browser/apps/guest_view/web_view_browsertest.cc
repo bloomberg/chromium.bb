@@ -522,7 +522,7 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
     content::Source<content::NavigationController> source =
         guest_observer.source();
     EXPECT_TRUE(source->GetWebContents()->GetRenderProcessHost()->
-        IsIsolatedGuest());
+        IsForGuestsOnly());
 
     content::WebContents* guest_web_contents = source->GetWebContents();
     return guest_web_contents;
@@ -556,7 +556,7 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
     // Wait for interstitial page to be shown in guest.
     content::WebContents* guest_web_contents =
         GetGuestViewManager()->WaitForSingleGuestCreated();
-    ASSERT_TRUE(guest_web_contents->GetRenderProcessHost()->IsIsolatedGuest());
+    ASSERT_TRUE(guest_web_contents->GetRenderProcessHost()->IsForGuestsOnly());
     content::WaitForInterstitialAttach(guest_web_contents);
   }
 
@@ -1205,7 +1205,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestRemoveWebviewOnExit) {
   content::Source<content::NavigationController> source =
       guest_observer.source();
   EXPECT_TRUE(source->GetWebContents()->GetRenderProcessHost()->
-      IsIsolatedGuest());
+      IsForGuestsOnly());
 
   ASSERT_TRUE(guest_loaded_listener.WaitUntilSatisfied());
 

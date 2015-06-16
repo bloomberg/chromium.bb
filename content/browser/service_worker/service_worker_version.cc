@@ -252,7 +252,7 @@ void OpenWindowOnUI(
 
   RenderProcessHost* render_process_host =
       RenderProcessHost::FromID(process_id);
-  if (render_process_host->IsIsolatedGuest()) {
+  if (render_process_host->IsForGuestsOnly()) {
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                             base::Bind(callback,
                                        ChildProcessHost::kInvalidUniqueID,

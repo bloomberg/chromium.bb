@@ -38,7 +38,7 @@ MockRenderProcessHost::MockRenderProcessHost(BrowserContext* browser_context)
       prev_routing_id_(0),
       fast_shutdown_started_(false),
       deletion_callback_called_(false),
-      is_isolated_guest_(false) {
+      is_for_guests_only_(false) {
   // Child process security operations can't be unit tested unless we add
   // ourselves as an existing child process.
   ChildProcessSecurityPolicyImpl::GetInstance()->Add(GetID());
@@ -138,8 +138,8 @@ int MockRenderProcessHost::VisibleWidgetCount() const {
   return 1;
 }
 
-bool MockRenderProcessHost::IsIsolatedGuest() const {
-  return is_isolated_guest_;
+bool MockRenderProcessHost::IsForGuestsOnly() const {
+  return is_for_guests_only_;
 }
 
 StoragePartition* MockRenderProcessHost::GetStoragePartition() const {

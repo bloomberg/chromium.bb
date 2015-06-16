@@ -97,7 +97,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
  public:
   RenderProcessHostImpl(BrowserContext* browser_context,
                         StoragePartitionImpl* storage_partition_impl,
-                        bool is_isolated_guest);
+                        bool is_for_guests_only);
   ~RenderProcessHostImpl() override;
 
   // RenderProcessHost implementation (public portion).
@@ -112,7 +112,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void WidgetRestored() override;
   void WidgetHidden() override;
   int VisibleWidgetCount() const override;
-  bool IsIsolatedGuest() const override;
+  bool IsForGuestsOnly() const override;
   StoragePartition* GetStoragePartition() const override;
   bool Shutdown(int exit_code, bool wait) override;
   bool FastShutdownIfPossible() override;
@@ -262,8 +262,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
     return notification_message_filter_.get();
   }
 
-  void set_is_isolated_guest_for_testing(bool is_isolated_guest) {
-    is_isolated_guest_ = is_isolated_guest;
+  void set_is_for_guests_only_for_testing(bool is_for_guests_only) {
+    is_for_guests_only_ = is_for_guests_only;
   }
 
   // Called when the existence of the other renderer process which is connected
@@ -433,9 +433,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // Records the last time we regarded the child process active.
   base::TimeTicks child_process_activity_time_;
 
-  // Indicates whether this is a RenderProcessHost of a Browser Plugin guest
-  // renderer.
-  bool is_isolated_guest_;
+  // Indicates whether this RenderProcessHost is exclusively hosting guest
+  // RenderFrames.
+  bool is_for_guests_only_;
 
   // Forwards messages between WebRTCInternals in the browser process
   // and PeerConnectionTracker in the renderer process.

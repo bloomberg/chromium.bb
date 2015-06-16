@@ -770,7 +770,7 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
                                         request.bindings());
       // Make sure the current RenderViewHost has the right bindings.
       if (speculative_web_ui() &&
-          !render_frame_host_->GetProcess()->IsIsolatedGuest()) {
+          !render_frame_host_->GetProcess()->IsForGuestsOnly()) {
         render_frame_host_->render_view_host()->AllowBindings(
             speculative_web_ui()->GetBindings());
       }
@@ -1562,7 +1562,7 @@ scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
   // WebContents. If not used in the first navigation, this RVH is swapped out
   // and is not granted bindings, so we may need to grant them when swapping it
   // in.
-  if (web_ui && !new_render_frame_host->GetProcess()->IsIsolatedGuest()) {
+  if (web_ui && !new_render_frame_host->GetProcess()->IsForGuestsOnly()) {
     int required_bindings = web_ui->GetBindings();
     RenderViewHost* render_view_host =
         new_render_frame_host->render_view_host();
@@ -1673,7 +1673,7 @@ bool RenderFrameHostManager::InitRenderView(
   } else {
     dest_web_ui = pending_web_ui();
   }
-  if (dest_web_ui && !render_view_host->GetProcess()->IsIsolatedGuest()) {
+  if (dest_web_ui && !render_view_host->GetProcess()->IsForGuestsOnly()) {
     render_view_host->AllowBindings(dest_web_ui->GetBindings());
   } else {
     // Ensure that we don't create an unprivileged RenderView in a WebUI-enabled
@@ -2066,7 +2066,7 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
     SetPendingWebUI(dest_url, bindings);
     // Make sure the new RenderViewHost has the right bindings.
     if (pending_web_ui() &&
-        !render_frame_host_->GetProcess()->IsIsolatedGuest()) {
+        !render_frame_host_->GetProcess()->IsForGuestsOnly()) {
       render_frame_host_->render_view_host()->AllowBindings(
           pending_web_ui()->GetBindings());
     }

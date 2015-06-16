@@ -2071,7 +2071,7 @@ void RenderFrameHostImpl::UpdatePermissionsForNavigation(
     const RequestNavigationParams& request_params) {
   // Browser plugin guests are not allowed to navigate outside web-safe schemes,
   // so do not grant them the ability to request additional URLs.
-  if (!GetProcess()->IsIsolatedGuest()) {
+  if (!GetProcess()->IsForGuestsOnly()) {
     ChildProcessSecurityPolicyImpl::GetInstance()->GrantRequestURL(
         GetProcess()->GetID(), common_params.url);
     if (common_params.url.SchemeIs(url::kDataScheme) &&

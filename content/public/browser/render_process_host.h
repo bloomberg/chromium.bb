@@ -100,11 +100,11 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   virtual void WidgetHidden() = 0;
   virtual int VisibleWidgetCount() const = 0;
 
-  // Indicates whether the current RenderProcessHost is associated with an
-  // isolated guest renderer process. Not all guest renderers are created equal.
-  // A guest, as indicated by BrowserPluginGuest::IsGuest, may coexist with
-  // other non-guest renderers in the same process if IsIsolatedGuest is false.
-  virtual bool IsIsolatedGuest() const = 0;
+  // Indicates whether the current RenderProcessHost is exclusively hosting
+  // guest RenderFrames. Not all guest RenderFrames are created equal.  A guest,
+  // as indicated by BrowserPluginGuest::IsGuest, may coexist with other
+  // non-guest RenderFrames in the same process if IsForGuestsOnly() is false.
+  virtual bool IsForGuestsOnly() const = 0;
 
   // Returns the storage partition associated with this process.
   //

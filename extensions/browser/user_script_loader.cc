@@ -380,7 +380,7 @@ void UserScriptLoader::SendUpdate(content::RenderProcessHost* process,
                                   const std::set<HostID>& changed_hosts) {
   // Don't allow injection of non-whitelisted extensions' content scripts
   // into <webview>.
-  bool whitelisted_only = process->IsIsolatedGuest() && host_id().id().empty();
+  bool whitelisted_only = process->IsForGuestsOnly() && host_id().id().empty();
 
   // Make sure we only send user scripts to processes in our browser_context.
   if (!ExtensionsBrowserClient::Get()->IsSameContext(

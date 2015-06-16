@@ -245,7 +245,7 @@ class WebViewInteractiveTest
     content::Source<content::NavigationController> source =
         guest_observer.source();
     EXPECT_TRUE(source->GetWebContents()->GetRenderProcessHost()->
-        IsIsolatedGuest());
+        IsForGuestsOnly());
 
     guest_web_contents_ = source->GetWebContents();
     embedder_web_contents_ =

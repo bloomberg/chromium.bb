@@ -872,7 +872,7 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
     extra_parts_[i]->RenderProcessWillLaunch(host);
 
   RendererContentSettingRules rules;
-  if (host->IsIsolatedGuest()) {
+  if (host->IsForGuestsOnly()) {
 #if defined(ENABLE_EXTENSIONS)
     GetGuestViewDefaultContentSettingRules(profile->IsOffTheRecord(), &rules);
 #else

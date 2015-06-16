@@ -344,7 +344,7 @@ bool RenderViewHostImpl::CreateRenderView(
 
   // If it's enabled, tell the renderer to set up the Javascript bindings for
   // sending messages back to the browser.
-  if (GetProcess()->IsIsolatedGuest())
+  if (GetProcess()->IsForGuestsOnly())
     DCHECK_EQ(0, enabled_bindings_);
   Send(new ViewMsg_AllowBindings(GetRoutingID(), enabled_bindings_));
   // Let our delegate know that we created a RenderView.
@@ -727,7 +727,7 @@ RenderFrameHost* RenderViewHostImpl::GetMainFrame() {
 
 void RenderViewHostImpl::AllowBindings(int bindings_flags) {
   // Never grant any bindings to browser plugin guests.
-  if (GetProcess()->IsIsolatedGuest()) {
+  if (GetProcess()->IsForGuestsOnly()) {
     NOTREACHED() << "Never grant bindings to a guest process.";
     return;
   }

@@ -662,7 +662,7 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestRemoveWebviewOnExit) {
                                      "runTest('testRemoveWebviewOnExit')"));
 
   content::WebContents* guest_web_contents = GetGuestWebContents();
-  EXPECT_TRUE(guest_web_contents->GetRenderProcessHost()->IsIsolatedGuest());
+  EXPECT_TRUE(guest_web_contents->GetRenderProcessHost()->IsForGuestsOnly());
   ASSERT_TRUE(guest_loaded_listener.WaitUntilSatisfied());
 
   content::WebContentsDestroyedWatcher destroyed_watcher(guest_web_contents);
