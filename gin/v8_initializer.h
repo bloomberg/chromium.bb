@@ -6,7 +6,6 @@
 #define GIN_V8_INITIALIZER_H_
 
 #include "base/files/file.h"
-#include "base/files/memory_mapped_file.h"
 #include "gin/array_buffer.h"
 #include "gin/gin_export.h"
 #include "gin/public/isolate_holder.h"
@@ -51,17 +50,12 @@ class GIN_EXPORT V8Initializer {
   // so that it will not return if natives cannot be loaded.
   static void LoadV8Natives();
 
-  // Opens (unless already cached) and returns the V8 natives file.
-  // Use with LoadV8NativesFromFD().
-  // Asserts if the file does not exist.
-  static base::PlatformFile GetOpenNativesFileForChildProcesses(
-      base::MemoryMappedFile::Region* region_out);
-
-  // Opens (unless already cached) and returns the V8 snapshot file.
-  // Use with LoadV8SnapshotFromFD().
-  // Will return -1 if the file does not exist.
-  static base::PlatformFile GetOpenSnapshotFileForChildProcesses(
-      base::MemoryMappedFile::Region* region_out);
+  // Opens the V8 snapshot data files and returns open file descriptors to these
+  // files in |natives_fd_out| and |snapshot_fd_out|, which can be passed to
+  // child processes.
+  static bool OpenV8FilesForChildProcesses(base::PlatformFile* natives_fd_out,
+                                           base::PlatformFile* snapshot_fd_out)
+      WARN_UNUSED_RESULT;
 #endif  // V8_USE_EXTERNAL_STARTUP_DATA
 };
 

@@ -112,6 +112,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const std::string& alias_name) override;
   void AppendExtraCommandLineSwitches(base::CommandLine* command_line,
                                       int child_process_id) override;
+  void AppendMappedFileCommandLineSwitches(
+      base::CommandLine* command_line) override;
   std::string GetApplicationLocale() override;
   std::string GetAcceptLangs(content::BrowserContext* context) override;
   const gfx::ImageSkia* GetDefaultFavicon() override;
@@ -304,6 +306,13 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   // versions of Chrome.
   std::set<std::string> allowed_dev_channel_origins_;
 #endif
+
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+  base::ScopedFD v8_natives_fd_;
+  base::ScopedFD v8_snapshot_fd_;
+  bool natives_fd_exists() { return v8_natives_fd_ != -1; }
+  bool snapshot_fd_exists() { return v8_snapshot_fd_ != -1; }
+#endif  // OS_POSIX && !OS_MACOSX
 
   // Vector of additional ChromeContentBrowserClientParts.
   // Parts are deleted in the reverse order they are added.
