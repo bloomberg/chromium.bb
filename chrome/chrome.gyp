@@ -691,7 +691,6 @@
             '../net/net.gyp:net',
             '../printing/printing.gyp:printing',
             '../skia/skia.gyp:skia',
-            '../third_party/libjingle/libjingle.gyp:libjingle',
           ],
           'sources': [
             # Note: sources list duplicated in GN build.

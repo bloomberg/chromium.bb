@@ -985,9 +985,6 @@
       ],
       'conditions': [
         ['chromeos==1', {
-          'include_dirs': [
-            '../third_party/libjingle/source',
-          ],
           'dependencies': [
             '../build/linux/system.gyp:dbus',
             '../chromeos/ime/input_method.gyp:gencode',

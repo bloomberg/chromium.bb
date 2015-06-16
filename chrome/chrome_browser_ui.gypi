@@ -2810,7 +2810,6 @@
             '../storage/storage_common.gyp:storage_common',
             '../third_party/expat/expat.gyp:expat',
             '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
-            '../third_party/libjingle/libjingle.gyp:libjingle',
             '../third_party/mojo/mojo_edk.gyp:mojo_system_impl',
             '../third_party/re2/re2.gyp:re2',
             '../ui/base/ime/ui_base_ime.gyp:ui_base_ime',

@@ -2029,8 +2029,8 @@
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
         '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput',
-        '../third_party/libjingle/libjingle.gyp:peerconnection_server',
         '../third_party/safe_browsing/safe_browsing.gyp:safe_browsing',
+        '../third_party/webrtc/modules/modules.gyp:desktop_capture',
         '../third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
         '../ui/accessibility/accessibility.gyp:accessibility_test_support',
         '../ui/compositor/compositor.gyp:compositor_test_support',
@@ -3289,13 +3289,6 @@
           'sources': [
             'tools/service_discovery_sniffer/service_discovery_sniffer.cc',
             'tools/service_discovery_sniffer/service_discovery_sniffer.h',
-          ],
-          'conditions': [
-            ['enable_webrtc==1', {
-              'dependencies': [
-                '../third_party/libjingle/libjingle.gyp:libjingle_webrtc'
-              ]
-            }],
           ],
         }]
     }],

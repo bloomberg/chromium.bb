@@ -80,7 +80,6 @@
           '../third_party/tlslite/',
           '<(PRODUCT_DIR)/browser_tests<(EXECUTABLE_SUFFIX)',
           '<(PRODUCT_DIR)/browser_tests.pak',
-          '<(PRODUCT_DIR)/peerconnection_server<(EXECUTABLE_SUFFIX)',
           '<(PRODUCT_DIR)/pseudo_locales/',
           '<(PRODUCT_DIR)/pyproto/',
           # TODO(jam): above is directory for GYP. GN uses:
