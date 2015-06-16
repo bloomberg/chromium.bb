@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.EmptyTabObserver;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.UrlUtilities;
 import org.chromium.chrome.browser.WebContentsFactory;
+import org.chromium.chrome.browser.banners.AppBannerManager;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
 import org.chromium.chrome.browser.contextmenu.ContextMenuParams;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
@@ -113,6 +114,11 @@ public class CustomTab extends ChromeTab {
     @VisibleForTesting
     CustomTabNavigationDelegate getExternalNavigationDelegate() {
         return mNavigationDelegate;
+    }
+
+    @Override
+    protected AppBannerManager createAppBannerManager() {
+        return null;
     }
 
     @Override

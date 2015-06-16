@@ -1414,9 +1414,16 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         initializeNative();
 
         if (AppBannerManager.isEnabled()) {
-            mAppBannerManager = new AppBannerManager(this, mContext);
-            addObserver(mAppBannerManager);
+            mAppBannerManager = createAppBannerManager();
+            if (mAppBannerManager != null) addObserver(mAppBannerManager);
         }
+    }
+
+    /**
+     * @return {@link AppBannerManager} to be used for this tab. May be null.
+     */
+    protected AppBannerManager createAppBannerManager() {
+        return new AppBannerManager(this, mContext);
     }
 
     /**
