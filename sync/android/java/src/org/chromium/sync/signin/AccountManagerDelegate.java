@@ -49,4 +49,7 @@ public interface AccountManagerDelegate {
     String peekAuthToken(Account account, String authTokenType);
 
     AuthenticatorDescription[] getAuthenticatorTypes();
+
+    AccountManagerFuture<Boolean> hasFeatures(Account account, String[] features,
+            AccountManagerCallback<Boolean> callback, Handler handler);
 }

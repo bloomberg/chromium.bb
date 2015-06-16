@@ -27,6 +27,11 @@
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/jni_android.h"
+#include "chrome/browser/supervised_user/child_accounts/child_account_service_android.h"
+#endif
+
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "components/user_manager/user_manager.h"
@@ -120,6 +125,12 @@ void ChildAccountService::SetIsChildAccount(bool is_child_account) {
 void ChildAccountService::Init() {
   SupervisedUserServiceFactory::GetForProfile(profile_)->SetDelegate(this);
   AccountTrackerServiceFactory::GetForProfile(profile_)->AddObserver(this);
+
+#if defined(OS_ANDROID)
+  bool is_child_account = false;
+  if (GetJavaChildAccountStatus(&is_child_account))
+    SetIsChildAccount(is_child_account);
+#endif
 
   PropagateChildStatusToUser(profile_->IsChild());
 

@@ -1,0 +1,4 @@
+include_rules = [
+  "+sync/android/java/src/org/chromium/sync",
+  "+sync/test/android/javatests/src/org/chromium/sync/test/util",
+]

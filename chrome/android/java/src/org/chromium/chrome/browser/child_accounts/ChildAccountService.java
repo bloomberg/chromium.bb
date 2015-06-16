@@ -9,13 +9,19 @@ import android.accounts.AccountManager;
 import android.accounts.AccountManagerCallback;
 import android.accounts.AccountManagerFuture;
 import android.accounts.AuthenticatorException;
+import android.accounts.OnAccountsUpdateListener;
 import android.accounts.OperationCanceledException;
 import android.content.Context;
 import android.os.AsyncTask;
-import android.util.Log;
 
+import org.chromium.base.CalledByNative;
 import org.chromium.base.CommandLine;
+import org.chromium.base.Log;
+import org.chromium.base.ThreadUtils;
+import org.chromium.base.TraceEvent;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.sync.signin.AccountManagerHelper;
 
 import java.io.IOException;
@@ -25,55 +31,68 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutionException;
 
+import javax.annotation.Nullable;
+
 /**
  * This class detects child accounts and enables special treatment for them.
  */
 public class ChildAccountService {
 
-    private static final String TAG = "ChildAccountService";
-
-    private static final int CHILD_ACCOUNT_DONT_FORCE = 0;
-    private static final int CHILD_ACCOUNT_FORCE_ON = 1;
-    private static final int CHILD_ACCOUNT_FORCE_OFF = 2;
+    private static final String TAG = "cr.ChildAccountService";
 
     /**
-     * An account feature (corresponding to a Gaia service flag) that specifies whether the account
-     * is a child account.
-     */
-    private static final String FEATURE_IS_CHILD_ACCOUNT_KEY = "service_uca";
-
-    /**
-     * The maximum amount of time to wait for the child account check, in milliseconds.
+     * The maximum amount of time to wait for the initial child account check, in milliseconds.
      */
     private static final int CHILD_ACCOUNT_TIMEOUT_MS = 1000;
-
-    private static final Object sLock = new Object();
 
     private static ChildAccountService sChildAccountService;
 
     private final Context mContext;
 
-    // This is null if we haven't determined the child account status yet.
+    /**
+     * Non-null if the the child account status has been determined.
+     */
     private Boolean mHasChildAccount;
 
+    /**
+     * Non-null while a child account check is in progress. Note that if the child account status
+     * has been previously determined, the externally visible status only changes when the check
+     * finishes. This means that before that, calls to {@link #checkHasChildAccount} and
+     * {@link #hasChildAccount} will return the last value, even if it is now stale.
+     */
     private AccountManagerFuture<Boolean> mAccountManagerFuture;
 
+    /**
+     * Non-empty while the initial child account check is in progress.
+     */
     private final List<HasChildAccountCallback> mCallbacks = new ArrayList<>();
 
-    private ChildAccountService(Context context) {
+    protected ChildAccountService(Context context) {
         mContext = context;
+        AccountManager accountManager = AccountManager.get(mContext);
+        accountManager.addOnAccountsUpdatedListener(new OnAccountsUpdateListener() {
+            @Override
+            public void onAccountsUpdated(Account[] accounts) {
+                ThreadUtils.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        recheckChildAccountStatus();
+                    }
+                });
+            }
+        }, null, false);
     }
 
     /**
      * Returns the shared ChildAccountService instance, creating one if necessary.
+     *
      * @param context The context to initialize the ChildAccountService with.
      * @return The shared instance.
      */
     public static ChildAccountService getInstance(Context context) {
-        synchronized (sLock) {
-            if (sChildAccountService == null) {
-                sChildAccountService = new ChildAccountService(context.getApplicationContext());
-            }
+        ThreadUtils.assertOnUiThread();
+        if (sChildAccountService == null) {
+            sChildAccountService = new ChildAccountService(context.getApplicationContext());
         }
         return sChildAccountService;
     }
@@ -92,110 +111,139 @@ public class ChildAccountService {
 
     /**
      * Checks for the presence of child accounts on the device.
+     *
      * @param callback Will be called with the result (see
-     * {@link HasChildAccountCallback#onChildAccountChecked}).
+     *            {@link HasChildAccountCallback#onChildAccountChecked}). The callback is guaranteed
+     *            to be called on a future turn of the event loop, even if the result can be
+     *            determined immediately.
      */
     public void checkHasChildAccount(final HasChildAccountCallback callback) {
-        if (mHasChildAccount != null) {
-            callback.onChildAccountChecked(mHasChildAccount);
+        if (mHasChildAccount != null || maybeUpdatePredeterminedChildAccountStatus()) {
+            postCallback(callback);
             return;
         }
+        mCallbacks.add(callback);
+        if (mAccountManagerFuture == null) requestChildAccountStatus();
+    }
 
+    private void postCallback(final HasChildAccountCallback callback) {
+        final boolean hasChildAccount = mHasChildAccount;
+        ThreadUtils.postOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                callback.onChildAccountChecked(hasChildAccount);
+            }
+        });
+    }
+
+    /**
+     * Updates the child account status if it can be determined immediately.
+     *
+     * @return Whether the child account status was updated.
+     */
+    private boolean maybeUpdatePredeterminedChildAccountStatus() {
+        Boolean predeterminedChildAccountStatus = getPredeterminedChildStatus();
+        if (predeterminedChildAccountStatus == null) return false;
+        setHasChildAccount(predeterminedChildAccountStatus);
+        return true;
+    }
+
+    /**
+     * @return The child account status if it can be determined immediately, or null otherwise.
+     */
+    @Nullable
+    private Boolean getPredeterminedChildStatus() {
+        if (!isChildAccountDetectionEnabled()) {
+            Log.v(TAG, "Child account detection disabled");
+            return false;
+        }
         Account[] googleAccounts =
                 AccountManagerHelper.get(mContext).getGoogleAccounts();
         if (googleAccounts.length != 1) {
-            mHasChildAccount = false;
-            callback.onChildAccountChecked(false);
             if (CommandLine.getInstance().hasSwitch(ChromeSwitches.CHILD_ACCOUNT)) {
                 Log.w(TAG, "Ignoring --" + ChromeSwitches.CHILD_ACCOUNT + " command line flag "
                         + "because there are " + googleAccounts.length + " Google accounts on the "
                         + "device");
+            } else {
+                Log.v(TAG, googleAccounts.length + " Google accounts on the device");
             }
-            return;
+            return false;
         }
-        Account account = googleAccounts[0];
-
-        int forceChildAccount = shouldForceChildAccount(account);
-        if (forceChildAccount != CHILD_ACCOUNT_DONT_FORCE) {
-            mHasChildAccount = forceChildAccount == CHILD_ACCOUNT_FORCE_ON;
-            callback.onChildAccountChecked(mHasChildAccount);
-            return;
+        String childAccountName =
+                CommandLine.getInstance().getSwitchValue(ChromeSwitches.CHILD_ACCOUNT);
+        String accountName = googleAccounts[0].name;
+        if (childAccountName != null && accountName.equals(childAccountName)) {
+            Log.v(TAG, "Child account forced via command line for " + childAccountName);
+            return true;
         }
+        return null;
+    }
 
-        mCallbacks.add(callback);
-
-        if (mAccountManagerFuture != null) return;
+    private void requestChildAccountStatus() {
+        assert mAccountManagerFuture == null;
 
         final Timer timer = new Timer();
-
-        String[] features = {FEATURE_IS_CHILD_ACCOUNT_KEY};
-        mAccountManagerFuture = AccountManager.get(mContext).hasFeatures(account, features,
+        final int traceId = System.identityHashCode(this);
+        TraceEvent.startAsync("ChildAccountService.checkFeatures", traceId);
+        AccountManagerHelper accountManagerHelper = AccountManagerHelper.get(mContext);
+        final AccountManagerFuture<Boolean> future = accountManagerHelper.checkChildAccount(
+                accountManagerHelper.getSingleGoogleAccount(),
                 new AccountManagerCallback<Boolean>() {
                     @Override
                     public void run(AccountManagerFuture<Boolean> future) {
-                        Log.i(TAG, "completed AM request");
-                        assert future == mAccountManagerFuture;
-                        assert future.isDone();
+                        TraceEvent.finishAsync("ChildAccountService.checkFeatures", traceId);
 
                         timer.cancel();
 
-                        boolean hasChildAccount = hasChildAccount();
-                        for (HasChildAccountCallback callback : mCallbacks) {
-                            callback.onChildAccountChecked(hasChildAccount);
+                        assert future.isDone();
+
+                        // Ignore any future that is not the current one.
+                        if (future == mAccountManagerFuture) {
+                            setHasChildAccount(getFutureResult());
                         }
-                        mCallbacks.clear();
                     }
-                }, null /* handler */);
+                });
 
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                if (!mAccountManagerFuture.isDone()) {
-                    Log.i(TAG, "cancelling AM request");
-                    mAccountManagerFuture.cancel(true);
+        // Add a timeout during the initial check, to avoid blocking startup for too long.
+        if (mHasChildAccount == null) {
+            timer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    if (!future.isDone()) {
+                        Log.v(TAG, "AM request timed out");
+                        future.cancel(true);
+                    }
                 }
-            }}, CHILD_ACCOUNT_TIMEOUT_MS);
-    }
-
-    private int shouldForceChildAccount(Account account) {
-        String childAccountName = CommandLine.getInstance().getSwitchValue(
-                ChromeSwitches.CHILD_ACCOUNT);
-        if (childAccountName != null && account.name.equals(childAccountName)) {
-            return CHILD_ACCOUNT_FORCE_ON;
+            }, CHILD_ACCOUNT_TIMEOUT_MS);
         }
-        if (!isChildAccountDetectionEnabled()) return CHILD_ACCOUNT_FORCE_OFF;
-        return CHILD_ACCOUNT_DONT_FORCE;
+        mAccountManagerFuture = future;
     }
 
     private boolean getFutureResult() {
+        boolean result = false;
         try {
-            Log.i(TAG, "before mAccountManagerFuture.getResult()");
-            boolean result = mAccountManagerFuture.getResult();
-            Log.i(TAG, "after mAccountManagerFuture.getResult()");
-            return result;
+            result = mAccountManagerFuture.getResult();
+            Log.v(TAG, "AM future result:" + result);
         } catch (OperationCanceledException e) {
             Log.e(TAG, "Timed out fetching child account flag: ", e);
-        } catch (AuthenticatorException e) {
+        } catch (AuthenticatorException | IOException e) {
             Log.e(TAG, "Error while fetching child account flag: ", e);
-        } catch (IOException e) {
-            Log.e(TAG, "Error while fetching child account flag: ", e);
+        } finally {
+            mAccountManagerFuture = null;
         }
-        return false;
+        return result;
     }
 
     /**
-     * Synchronously checks for the presence of child accounts on the device. This method should
+     * Returns whether there is a child account on the device. This method should
      * only be called after the result has been determined (usually using
      * {@link #checkHasChildAccount} or {@link #waitUntilFinished} to block).
+     *
      * @return Whether there is a child account on the device.
      */
     public boolean hasChildAccount() {
-        // Lazily get the result from the future, so this can be called both from the
-        // AccountManagerCallback and after waiting for the future to be resolved.
-        if (mHasChildAccount == null) {
-            // If the future is not resolved yet, this will assert.
-            mHasChildAccount = getFutureResult();
-        }
+        ThreadUtils.assertOnUiThread();
+
         return mHasChildAccount;
     }
 
@@ -204,33 +252,110 @@ public class ChildAccountService {
      * instead of this method, see {@link #checkHasChildAccount}.
      */
     public void waitUntilFinished() {
-        if (mAccountManagerFuture == null) return;
-        if (mAccountManagerFuture.isDone()) return;
+        ThreadUtils.assertOnUiThread();
 
+        if (mHasChildAccount != null) return;
+        assert mAccountManagerFuture != null;
+
+        TraceEvent.begin("ChildAccountService.waitUntilFinished");
         // This will block in getFutureResult(), but that may only happen on a background thread.
         try {
-            new AsyncTask<Void, Void, Void>() {
+            AsyncTask<Void, Void, Boolean> task = new AsyncTask<Void, Void, Boolean>() {
                 @Override
-                protected Void doInBackground(Void... params) {
-                    getFutureResult();
-                    return null;
+                protected Boolean doInBackground(Void... params) {
+                    return getFutureResult();
                 }
-            }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR).get();
+            };
+            setHasChildAccount(task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR).get());
         } catch (ExecutionException e) {
             Log.w(TAG, "Error while fetching child account flag: ", e);
         } catch (InterruptedException e) {
             Log.w(TAG, "Interrupted while fetching child account flag: ", e);
         }
+        TraceEvent.end("ChildAccountService.waitUntilFinished");
     }
 
-    private boolean isChildAccountDetectionEnabled() {
+    /**
+     * If this returns false, Chrome will assume there are no child accounts on the device,
+     * and no further checks will be made, which has the effect of a kill switch.
+     * Can be overridden by subclasses to avoid native calls in testing.
+     *
+     * @return Whether child account detection is enabled.
+     */
+    protected boolean isChildAccountDetectionEnabled() {
         return nativeIsChildAccountDetectionEnabled();
     }
 
+    private void setHasChildAccount(boolean hasChildAccount) {
+        Boolean oldHasChildAccount = mHasChildAccount;
+        mHasChildAccount = hasChildAccount;
+        for (HasChildAccountCallback callback : mCallbacks) {
+            postCallback(callback);
+        }
+        mCallbacks.clear();
+
+        onChildAccountStatusUpdated(oldHasChildAccount);
+    }
+
+    /**
+     * Called when the child account status has been determined or updated.
+     * Can be overridden by subclasses to avoid native calls and calls into dependencies in testing.
+     *
+     * @param oldValue The old child account status. This is null when the child account status
+     *         has been determined for the first time after the browser has started.
+     */
+    protected void onChildAccountStatusUpdated(Boolean oldValue) {
+        Log.v(TAG, "hasChildAccount: " + mHasChildAccount + " oldHasChildAccount: " + oldValue);
+        if (mHasChildAccount) {
+            if (oldValue == null) {
+                // This is the first time we have determined the child account status,
+                // which means the browser is starting up. The startup code will sign in
+                // and call us back in onChildAccountSigninComplete().
+                return;
+            }
+            if (!oldValue.booleanValue()) {
+                // We have switched from no child account to child account while the browser
+                // is running. Sign in (which will call us back in onChildAccountSigninComplete()).
+                SigninManager signinManager = SigninManager.get(mContext);
+                Account account = AccountManagerHelper.get(mContext).getSingleGoogleAccount();
+                signinManager.signInToSelectedAccount(null, account,
+                        SigninManager.SIGNIN_TYPE_FORCED_CHILD_ACCOUNT,
+                        SigninManager.SIGNIN_SYNC_IMMEDIATELY, false, null);
+                return;
+            }
+        }
+        // Fallthrough for all other cases: Propagate child account status to native code.
+        // This is a no-op if the child account status does not change.
+        nativeSetIsChildAccount(mHasChildAccount);
+    }
+
+    /**
+     * Called when the browser has been signed in to the child account.
+     */
     public void onChildAccountSigninComplete() {
-        nativeOnChildAccountSigninComplete();
+        nativeSetIsChildAccount(true);
+    }
+
+    @VisibleForTesting
+    void recheckChildAccountStatus() {
+        // Cancel the AccountManagerFuture if it is running.
+        if (mAccountManagerFuture != null) {
+            mAccountManagerFuture.cancel(true);
+            mAccountManagerFuture = null;
+        }
+        if (!maybeUpdatePredeterminedChildAccountStatus()) {
+            requestChildAccountStatus();
+        }
+    }
+
+    @CalledByNative
+    private static void onInvalidationReceived() {
+        assert ThreadUtils.runningOnUiThread();
+        if (sChildAccountService == null) return;
+        sChildAccountService.recheckChildAccountStatus();
     }
 
     private native boolean nativeIsChildAccountDetectionEnabled();
-    private native void nativeOnChildAccountSigninComplete();
+
+    private native void nativeSetIsChildAccount(boolean isChild);
 }

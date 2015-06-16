@@ -5,9 +5,16 @@
 package org.chromium.sync.test.util;
 
 import android.accounts.Account;
+import android.os.Handler;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import javax.annotation.Nullable;
 
 /**
  * This class is used by the {@link MockAccountManager} to hold information about a given
@@ -25,9 +32,13 @@ public class AccountHolder {
 
     private final boolean mAlwaysAccept;
 
+    private Set<String> mFeatures;
+
+    private final List<Runnable> mFeatureCallbacks = new ArrayList<>();
+
     private AccountHolder(Account account, String password, Map<String, String> authTokens,
-            Map<String, Boolean> hasBeenAccepted, boolean alwaysAccept) {
-        mAlwaysAccept = alwaysAccept;
+            Map<String, Boolean> hasBeenAccepted, boolean alwaysAccept,
+            @Nullable Set<String> features) {
         if (account == null) {
             throw new IllegalArgumentException("Account can not be null");
         }
@@ -36,6 +47,8 @@ public class AccountHolder {
         mAuthTokens = authTokens == null ? new HashMap<String, String>() : authTokens;
         mHasBeenAccepted = hasBeenAccepted == null
                 ? new HashMap<String, Boolean>() : hasBeenAccepted;
+        mAlwaysAccept = alwaysAccept;
+        mFeatures = features;
     }
 
     public Account getAccount() {
@@ -81,6 +94,46 @@ public class AccountHolder {
         }
     }
 
+    /**
+     * @return The set of account features. This method may only be called after the account
+     *         features have been fetched.
+     */
+    public Set<String> getFeatures() {
+        assert mFeatures != null;
+        return mFeatures;
+    }
+
+    /**
+     * Adds a callback to be run when the account features have been fetched. If that has already
+     * happened, the callback is run immediately.
+     *
+     * @param callback The callback to be run when the account features have been fetched.
+     */
+    public void addFeaturesCallback(Runnable callback) {
+        if (mFeatures == null) {
+            mFeatureCallbacks.add(callback);
+            return;
+        }
+
+        new Handler().post(callback);
+    }
+
+    /**
+     * Notifies this object that the account features have been fetched.
+     *
+     * @param features The set of account features.
+     */
+    public void didFetchFeatures(Set<String> features) {
+        assert features != null;
+        assert mFeatures == null;
+        mFeatures = features;
+        Handler handler = new Handler();
+        for (Runnable r : mFeatureCallbacks) {
+            handler.post(r);
+        }
+        mFeatureCallbacks.clear();
+    }
+
     @Override
     public int hashCode() {
         return mAccount.hashCode();
@@ -121,6 +174,9 @@ public class AccountHolder {
                 .hasBeenAcceptedMap(mHasBeenAccepted).alwaysAccept(mAlwaysAccept);
     }
 
+    /**
+     * Used to construct AccountHolder instances.
+     */
     public static class Builder {
 
         private Account mTempAccount;
@@ -132,6 +188,8 @@ public class AccountHolder {
         private Map<String, Boolean> mTempHasBeenAccepted;
 
         private boolean mTempAlwaysAccept;
+
+        private Set<String> mFeatures = new HashSet<>();
 
         public Builder account(Account account) {
             mTempAccount = account;
@@ -174,9 +232,31 @@ public class AccountHolder {
             return this;
         }
 
+        public Builder addFeature(String feature) {
+            if (mFeatures == null) {
+                mFeatures = new HashSet<>();
+            }
+            mFeatures.add(feature);
+            return this;
+        }
+
+        /**
+         * Sets the set of features for this account.
+         *
+         * @param features The set of account features. Can be null to indicate that the account
+         *            features have not been fetched yet. In this case,
+         *            {@link AccountHolder#didFetchFeatures} should be called on the resulting
+         *            {@link AccountHolder} before the features can be accessed.
+         * @return This object, for chaining method calls.
+         */
+        public Builder featureSet(Set<String> features) {
+            mFeatures = features;
+            return this;
+        }
+
         public AccountHolder build() {
             return new AccountHolder(mTempAccount, mTempPassword, mTempAuthTokens,
-                    mTempHasBeenAccepted, mTempAlwaysAccept);
+                    mTempHasBeenAccepted, mTempAlwaysAccept, mFeatures);
         }
     }
 

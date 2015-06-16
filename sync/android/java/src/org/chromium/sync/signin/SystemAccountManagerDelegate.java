@@ -102,4 +102,10 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
     public AuthenticatorDescription[] getAuthenticatorTypes() {
         return mAccountManager.getAuthenticatorTypes();
     }
+
+    @Override
+    public AccountManagerFuture<Boolean> hasFeatures(Account account, String[] features,
+            AccountManagerCallback<Boolean> callback, Handler handler) {
+        return mAccountManager.hasFeatures(account, features, callback, handler);
+    }
 }

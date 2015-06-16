@@ -25,8 +25,8 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.TextUtils;
-import android.util.Log;
 
+import org.chromium.base.Log;
 import org.chromium.sync.signin.AccountManagerDelegate;
 import org.chromium.sync.signin.AccountManagerHelper;
 
@@ -69,7 +69,7 @@ import javax.annotation.Nullable;
  */
 public class MockAccountManager implements AccountManagerDelegate {
 
-    private static final String TAG = "MockAccountManager";
+    private static final String TAG = "cr.MockAccountManager";
 
     private static final long WAIT_TIME_FOR_GRANT_BROADCAST_MS = scaleTimeout(20000);
 
@@ -340,6 +340,32 @@ public class MockAccountManager implements AccountManagerDelegate {
         return new AuthenticatorDescription[] { googleAuthenticator };
     }
 
+    @Override
+    public AccountManagerFuture<Boolean> hasFeatures(Account account, final String[] features,
+            AccountManagerCallback<Boolean> callback, Handler handler) {
+        final AccountHolder accountHolder = getAccountHolder(account);
+        AccountManagerTask<Boolean> accountManagerTask =
+                new AccountManagerTask<Boolean>(handler, callback, new Callable<Boolean>() {
+                    @Override
+                    public Boolean call() throws Exception {
+                        Set<String> accountFeatures = accountHolder.getFeatures();
+                        for (String feature : features) {
+                            if (!accountFeatures.contains(feature)) {
+                                Log.d(TAG, accountFeatures + " does not contain " + feature);
+                                return false;
+                            }
+                        }
+                        return true;
+                    }
+                });
+        accountHolder.addFeaturesCallback(accountManagerTask);
+        return accountManagerTask;
+    }
+
+    public void notifyFeaturesFetched(Account account, Set<String> features) {
+        getAccountHolder(account).didFetchFeatures(features);
+    }
+
     public void prepareAllowAppPermission(Account account, String authTokenType) {
         addPreparedAppPermission(new AccountAuthTokenPreparation(account, authTokenType, true));
     }
@@ -507,7 +533,7 @@ public class MockAccountManager implements AccountManagerDelegate {
             }
         }
 
-        protected Handler getHandler() {
+        private Handler getHandler() {
             return mHandler == null ? mMainHandler : mHandler;
         }
 

@@ -8,6 +8,7 @@ package org.chromium.sync.signin;
 import android.Manifest;
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.accounts.AccountManagerCallback;
 import android.accounts.AccountManagerFuture;
 import android.accounts.AuthenticatorDescription;
 import android.accounts.AuthenticatorException;
@@ -50,6 +51,12 @@ public class AccountManagerHelper {
     private static final String GOOGLEMAIL_COM = "googlemail.com";
 
     public static final String GOOGLE_ACCOUNT_TYPE = "com.google";
+
+    /**
+     * An account feature (corresponding to a Gaia service flag) that specifies whether the account
+     * is a child account.
+     */
+    @VisibleForTesting public static final String FEATURE_IS_CHILD_ACCOUNT_KEY = "service_uca";
 
     private static final Object sLock = new Object();
 
@@ -128,6 +135,18 @@ public class AccountManagerHelper {
 
     public Account[] getGoogleAccounts() {
         return mAccountManager.getAccountsByType(GOOGLE_ACCOUNT_TYPE);
+    }
+
+    /**
+     * Convenience method to get the single Google account on the device. Should only be
+     * called if it has been determined that there is exactly one account.
+     *
+     * @return The single account to sign into.
+     */
+    public Account getSingleGoogleAccount() {
+        Account[] googleAccounts = getGoogleAccounts();
+        assert googleAccounts.length == 1;
+        return googleAccounts[0];
     }
 
     public boolean hasGoogleAccounts() {
@@ -369,5 +388,11 @@ public class AccountManagerHelper {
         if (authToken != null && !authToken.isEmpty()) {
             mAccountManager.invalidateAuthToken(GOOGLE_ACCOUNT_TYPE, authToken);
         }
+    }
+
+    public AccountManagerFuture<Boolean> checkChildAccount(
+            Account account, AccountManagerCallback<Boolean> callback) {
+        String[] features = {FEATURE_IS_CHILD_ACCOUNT_KEY};
+        return mAccountManager.hasFeatures(account, features, callback, null /* handler */);
     }
 }
