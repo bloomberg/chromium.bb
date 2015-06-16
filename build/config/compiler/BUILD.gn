@@ -104,6 +104,7 @@ config("compiler") {
       "/Gy",  # Enable function-level linking.
       "/GS",  # Enable buffer security checking.
       "/FS",  # Preserve previous PDB behavior.
+      "/bigobj",  # Always use big .obj format.
     ]
 
     # Building with Clang on Windows is a work in progress and very
