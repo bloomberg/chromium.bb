@@ -348,6 +348,12 @@ body.check-select .dialog-header
   margin: 8px;
 }
 
+.dialog-header button.icon-button > files-toggle-ripple {
+  height: 28px;
+  margin: 2px;
+  width: 28px;
+}
+
 #search-button {
   background-image: -webkit-image-set(
       url(../images/files/ui/search_white.png) 1x,

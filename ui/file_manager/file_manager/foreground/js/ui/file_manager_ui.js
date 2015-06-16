@@ -149,9 +149,9 @@ function FileManagerUI(providersModel, element, launchParam) {
    * @const
    */
   this.searchBox = new SearchBox(
-      this.element.querySelector('#search-box'),
-      this.element.querySelector('#search-button'),
-      this.element.querySelector('#no-search-results'));
+      queryRequiredElement(this.element, '#search-box'),
+      queryRequiredElement(this.element, '#search-button'),
+      queryRequiredElement(this.element, '#no-search-results'));
 
   /**
    * Empty folder UI.
@@ -177,12 +177,30 @@ function FileManagerUI(providersModel, element, launchParam) {
       '#sort-button', cr.ui.MenuButton);
 
   /**
+   * Ripple effect of sort button.
+   * @private {!FilesToggleRipple}
+   * @const
+   */
+  this.sortButtonToggleRipple =
+      /** @type {!FilesToggleRipple} */ (queryRequiredElement(
+          this.sortButton, 'files-toggle-ripple'));
+
+  /**
    * The button to open gear menu.
    * @type {!cr.ui.MenuButton}
    * @const
    */
   this.gearButton = util.queryDecoratedElement(
       '#gear-button', cr.ui.MenuButton);
+
+  /**
+   * Ripple effect of gear button.
+   * @type {!FilesToggleRipple}
+   * @const
+   */
+  this.gearButtonToggleRipple =
+      /** @type {!FilesToggleRipple} */ (queryRequiredElement(
+          this.gearButton, 'files-toggle-ripple'));
 
   /**
    * @type {!GearMenu}

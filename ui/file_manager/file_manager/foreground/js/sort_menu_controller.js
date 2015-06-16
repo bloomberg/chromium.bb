@@ -4,11 +4,15 @@
 
 /**
  * @param {!cr.ui.MenuButton} sortButton
+ * @param {!FilesToggleRipple} toggleRipple
  * @param {!FileListModel} fileListModel
  * @constructor
  * @struct
  */
-function SortMenuController(sortButton, fileListModel) {
+function SortMenuController(sortButton, toggleRipple, fileListModel) {
+  /** @private {!FilesToggleRipple} */
+  this.toggleRipple_ = toggleRipple;
+
   /** @private {!FileListModel} */
   this.fileListModel_ = fileListModel;
 
@@ -26,6 +30,7 @@ function SortMenuController(sortButton, fileListModel) {
       sortButton.menu, '#sort-menu-sort-by-date');
 
   sortButton.addEventListener('menushow', this.updateCheckmark_.bind(this));
+  sortButton.addEventListener('menuhide', this.onHideSortMenu_.bind(this));
 };
 
 /**
@@ -33,6 +38,7 @@ function SortMenuController(sortButton, fileListModel) {
  * @private
  */
 SortMenuController.prototype.updateCheckmark_ = function() {
+  this.toggleRipple_.activated = true;
   var sortField = this.fileListModel_.sortStatus.field;
 
   this.setCheckStatus_(this.sortByNameButton_, sortField === 'name');
@@ -40,6 +46,14 @@ SortMenuController.prototype.updateCheckmark_ = function() {
   this.setCheckStatus_(this.sortByTypeButton_, sortField === 'type');
   this.setCheckStatus_(this.sortByDateButton_,
                        sortField === 'modificationTime');
+};
+
+/**
+ * Handle hide event of sort menu button.
+ * @private
+ */
+SortMenuController.prototype.onHideSortMenu_ = function() {
+  this.toggleRipple_.activated = false;
 };
 
 /**

@@ -434,9 +434,11 @@ FileManager.prototype = /** @struct */ {
         this.selectionHandler_);
     this.sortMenuController_ = new SortMenuController(
         this.ui_.sortButton,
+        this.ui_.sortButtonToggleRipple,
         assert(this.directoryModel_.getFileList()));
     this.gearMenuController_ = new GearMenuController(
         this.ui_.gearButton,
+        this.ui_.gearButtonToggleRipple,
         this.ui_.gearMenu,
         this.directoryModel_,
         this.commandHandler);

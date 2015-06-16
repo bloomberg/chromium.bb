@@ -5,9 +5,9 @@
 /**
  * Search box.
  *
- * @param {Element} element Root element of the search box.
- * @param {Element} searchButton Search button.
- * @param {Element} noResultMessage Message element for the empty result.
+ * @param {!Element} element Root element of the search box.
+ * @param {!Element} searchButton Search button.
+ * @param {!Element} noResultMessage Message element for the empty result.
  * @extends {cr.EventTarget}
  * @constructor
  */
@@ -22,19 +22,28 @@ function SearchBox(element, searchButton, noResultMessage) {
 
   /**
    * Root element of the search box.
-   * @type {Element}
+   * @type {!Element}
    */
   this.element = element;
 
   /**
    * Search button.
-   * @type {Element}
+   * @type {!Element}
    */
   this.searchButton = searchButton;
 
   /**
+   * Ripple effect of search button.
+   * @private {!FilesToggleRipple}
+   * @const
+   */
+  this.searchButtonToggleRipple_ =
+      /** @type {!FilesToggleRipple} */ (queryRequiredElement(
+          this.searchButton, 'files-toggle-ripple'));
+
+  /**
    * No result message.
-   * @type {Element}
+   * @type {!Element}
    */
   this.noResultMessage = noResultMessage;
 
@@ -205,6 +214,7 @@ SearchBox.prototype.onFocus_ = function() {
   this.element.classList.toggle('has-cursor', true);
   this.autocompleteList.attachToInput(this.inputElement);
   this.updateStyles_();
+  this.searchButtonToggleRipple_.activated = true;
 };
 
 /**
@@ -215,6 +225,7 @@ SearchBox.prototype.onBlur_ = function() {
   this.element.classList.toggle('has-cursor', false);
   this.autocompleteList.detach();
   this.updateStyles_();
+  this.searchButtonToggleRipple_.activated = false;
 };
 
 /**

@@ -4,6 +4,7 @@
 
 /**
  * @param {!cr.ui.MenuButton} gearButton
+ * @param {!FilesToggleRipple} toggleRipple
  * @param {!GearMenu} gearMenu
  * @param {!DirectoryModel} directoryModel
  * @param {!CommandHandler} commandHandler
@@ -11,7 +12,14 @@
  * @struct
  */
 function GearMenuController(
-    gearButton, gearMenu, directoryModel, commandHandler) {
+    gearButton, toggleRipple, gearMenu, directoryModel, commandHandler) {
+  /**
+   * @type {!FilesToggleRipple}
+   * @const
+   * @private
+   */
+  this.toggleRipple_ = toggleRipple;
+
   /**
    * @type {!GearMenu}
    * @const
@@ -34,6 +42,7 @@ function GearMenuController(
   this.commandHandler_ = commandHandler;
 
   gearButton.addEventListener('menushow', this.onShowGearMenu_.bind(this));
+  gearButton.addEventListener('menuhide', this.onHideGearMenu_.bind(this));
   directoryModel.addEventListener(
       'directory-changed', this.onDirectoryChanged_.bind(this));
   chrome.fileManagerPrivate.onPreferencesChanged.addListener(
@@ -45,10 +54,18 @@ function GearMenuController(
  * @private
  */
 GearMenuController.prototype.onShowGearMenu_ = function() {
+  this.toggleRipple_.activated = true;
   this.refreshRemainingSpace_(false);  /* Without loading caption. */
 
   // Update view of drive-related settings.
   this.commandHandler_.updateAvailability();
+};
+
+/**
+ * @private
+ */
+GearMenuController.prototype.onHideGearMenu_ = function() {
+  this.toggleRipple_.activated = false;
 };
 
 /**

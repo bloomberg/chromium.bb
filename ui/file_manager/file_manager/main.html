@@ -35,6 +35,7 @@
     <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input-container.html">
     <link rel="import" href="chrome://resources/polymer/v1_0/paper-progress/paper-progress.html">
     <link rel="import" href="chrome://resources/polymer/v1_0/paper-ripple/paper-ripple.html">
+    <link rel="import" href="foreground/elements/files_toggle_ripple.html">
   </head>
 
   <body tabindex="-1">
@@ -237,7 +238,7 @@
       </button>
       <button id="search-button" class="icon-button" tabindex="12"
               i18n-values="aria-label:SEARCH_TEXT_LABEL">
-        <paper-ripple fit class="recenteringTouch"></paper-ripple>
+        <files-toggle-ripple></files-toggle-ripple>
       </button>
       <div id="search-box">
         <paper-input-container no-label-float>
@@ -270,13 +271,13 @@
               menu="#sort-menu"
               i18n-values="aria-label:SORT_BUTTON_TOOLTIP"
               aria-activedescendant="sort-menu">
-        <paper-ripple fit class="recenteringTouch"></paper-ripple>
+        <files-toggle-ripple></files-toggle-ripple>
       </button>
       <button id="gear-button" class="icon-button" tabindex="17"
               menu="#gear-menu"
               i18n-values="aria-label:GEAR_BUTTON_TOOLTIP"
               aria-activedescendant="gear-menu">
-        <paper-ripple fit class="recenteringTouch"></paper-ripple>
+        <files-toggle-ripple></files-toggle-ripple>
       </button>
     </div>
 
