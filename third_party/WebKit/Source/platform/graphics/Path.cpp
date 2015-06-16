@@ -61,6 +61,12 @@ Path& Path::operator=(const Path& other)
     return *this;
 }
 
+Path& Path::operator=(const SkPath& other)
+{
+    m_path = other;
+    return *this;
+}
+
 bool Path::operator==(const Path& other) const
 {
     return m_path == other.m_path;

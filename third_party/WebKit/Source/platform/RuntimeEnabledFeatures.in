@@ -103,7 +103,7 @@ OverflowChangedEvent
 OverlayFullscreenVideo
 OverlayScrollbars
 PagePopup status=stable
-PathOpsSVGClipping
+PathOpsSVGClipping status=experimental
 Permissions status=stable
 PointerEvent
 PreciseMemoryInfo

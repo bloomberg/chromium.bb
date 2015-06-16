@@ -388,6 +388,21 @@ crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-combine-upright/te
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-combine-upright/text-emphasis-001.htm [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-combine-upright/value-all-and-inherit-001.htm [ ImageOnlyFailure ]
 
+# https://codereview.chromium.org/1185383002
+crbug.com/263911 svg/W3C-SVG-1.1/masking-intro-01-f.svg [ NeedsRebaseline ]
+crbug.com/263911 svg/W3C-SVG-1.1/masking-path-01-b.svg [ NeedsRebaseline ]
+crbug.com/263911 svg/clip-path/clip-path-child-clipped.svg [ NeedsRebaseline ]
+crbug.com/263911 svg/clip-path/clip-path-css-transform-1.svg [ NeedsRebaseline ]
+crbug.com/263911 svg/clip-path/clip-path-evenodd-nonzero.svg [ NeedsRebaseline ]
+crbug.com/263911 svg/clip-path/clip-path-evenodd.svg [ NeedsRebaseline ]
+crbug.com/263911 svg/clip-path/clip-path-nonzero-evenodd.svg [ NeedsRebaseline ]
+crbug.com/263911 svg/clip-path/clip-path-nonzero.svg [ NeedsRebaseline ]
+crbug.com/263911 svg/clip-path/clip-path-transform-1.svg [ NeedsRebaseline ]
+crbug.com/263911 svg/clip-path/clipper-placement-issue.svg [ NeedsRebaseline ]
+crbug.com/263911 svg/custom/masking-clipping-hidpi.svg [ NeedsRebaseline ]
+crbug.com/263911 svg/repaint/mask-clip-target-transform.svg [ NeedsRebaseline ]
+crbug.com/263911 svg/zoom/page/zoom-clip-path.html [ NeedsRebaseline ]
+
 # These tests pass but images do not match because of position: absolute in vertical flow bug
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/block-flow-direction-009.xht [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/clip-rect-vlr-003.xht [ ImageOnlyFailure ]

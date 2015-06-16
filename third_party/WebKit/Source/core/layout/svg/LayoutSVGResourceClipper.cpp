@@ -40,6 +40,7 @@
 #include "platform/graphics/paint/DrawingDisplayItem.h"
 #include "platform/graphics/paint/SkPictureBuilder.h"
 #include "third_party/skia/include/core/SkPicture.h"
+#include "third_party/skia/include/pathops/SkPathOps.h"
 
 namespace blink {
 
@@ -73,6 +74,8 @@ bool LayoutSVGResourceClipper::tryPathOnlyClipping(const LayoutObject& layoutObj
         return false;
 
     Path clipPath;
+    bool usingBuilder = false;
+    SkOpBuilder clipPathBuilder;
 
     for (SVGElement* childElement = Traversal<SVGElement>::firstChild(*element()); childElement; childElement = Traversal<SVGElement>::nextSibling(*childElement)) {
         LayoutObject* childLayoutObject = childElement->layoutObject();
@@ -92,21 +95,32 @@ bool LayoutSVGResourceClipper::tryPathOnlyClipping(const LayoutObject& layoutObj
         if (!svgStyle.clipperResource().isEmpty())
             return false;
 
+        // First clip shape.
         if (clipPath.isEmpty()) {
-            // First clip shape.
             styled->toClipPath(clipPath);
+
             continue;
         }
 
-        if (RuntimeEnabledFeatures::pathOpsSVGClippingEnabled()) {
-            // Attempt to generate a combined clip path, fall back to masking if not possible.
-            Path subPath;
-            styled->toClipPath(subPath);
-            if (!clipPath.unionPath(subPath))
-                return false;
-        } else {
+        // Multiple shapes require PathOps.
+        if (!RuntimeEnabledFeatures::pathOpsSVGClippingEnabled())
             return false;
+
+        // Second clip shape => start using the builder.
+        if (!usingBuilder) {
+            clipPathBuilder.add(clipPath.skPath(), kUnion_SkPathOp);
+            usingBuilder = true;
         }
+
+        Path subPath;
+        styled->toClipPath(subPath);
+        clipPathBuilder.add(subPath.skPath(), kUnion_SkPathOp);
+    }
+
+    if (usingBuilder) {
+        SkPath resolvedPath;
+        clipPathBuilder.resolve(&resolvedPath);
+        clipPath = resolvedPath;
     }
 
     // We are able to represent the clip as a path. Continue with direct clipping,

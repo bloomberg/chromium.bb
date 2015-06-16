@@ -73,6 +73,7 @@ public:
 
     Path(const Path&);
     Path& operator=(const Path&);
+    Path& operator=(const SkPath&);
     bool operator==(const Path&) const;
 
     bool contains(const FloatPoint&, WindRule = RULE_NONZERO) const;
