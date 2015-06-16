@@ -89,7 +89,9 @@ class SQLitePersistentCookieStore::Backend
       const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
       bool restore_old_session_cookies,
       CookieCryptoDelegate* crypto_delegate)
-      : path_(path),
+      : delete_session_cookies_at_shutdown_(
+            ShouldDeleteSessionCookiesAtShutdown()),
+        path_(path),
         num_pending_(0),
         initialized_(false),
         corruption_detected_(false),
@@ -241,6 +243,7 @@ class SQLitePersistentCookieStore::Backend
   void FinishedLoadingCookies(const LoadedCallback& loaded_callback,
                               bool success);
 
+  bool delete_session_cookies_at_shutdown_;
   const base::FilePath path_;
   scoped_ptr<sql::Connection> db_;
   sql::MetaTable meta_table_;
@@ -1188,7 +1191,7 @@ void SQLitePersistentCookieStore::Backend::Close() {
 void SQLitePersistentCookieStore::Backend::InternalBackgroundClose() {
   DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
 
-  if (ShouldDeleteSessionCookiesAtShutdown())
+  if (delete_session_cookies_at_shutdown_)
     DeleteSessionCookiesOnShutdown();
 
   // Commit any pending operations
