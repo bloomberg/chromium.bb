@@ -24,13 +24,15 @@ using csp_validator::SanitizeContentSecurityPolicy;
 namespace {
 
 const char kDefaultContentSecurityPolicy[] =
-    "script-src 'self' chrome-extension-resource:; object-src 'self';";
+    "script-src 'self' blob: filesystem: chrome-extension-resource:; "
+    "object-src 'self' blob: filesystem:;";
 
 #define PLATFORM_APP_LOCAL_CSP_SOURCES \
-    "'self' data: chrome-extension-resource:"
+    "'self' blob: filesystem: data: chrome-extension-resource:"
+
 const char kDefaultPlatformAppContentSecurityPolicy[] =
     // Platform apps can only use local resources by default.
-    "default-src 'self' chrome-extension-resource:;"
+    "default-src 'self' blob: filesystem: chrome-extension-resource:;"
     // For remote resources, they can fetch them via XMLHttpRequest.
     " connect-src *;"
     // And serve them via data: or same-origin (blob:, filesystem:) URLs
