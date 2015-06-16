@@ -44,7 +44,8 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         if (!TextUtils.isEmpty(params.getLinkUrl()) && !params.getLinkUrl().equals(BLANK_URL)) {
             menu.setHeaderTitle(params.getLinkUrl());
         } else if (!TextUtils.isEmpty(params.getTitleText())) {
-            menu.setHeaderTitle(params.getTitleText());
+            ContextMenuTitleView title = new ContextMenuTitleView(context, params.getTitleText());
+            menu.setHeaderView(title);
         }
 
         if (mMenuInflater == null) mMenuInflater = new MenuInflater(context);
