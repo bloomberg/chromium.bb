@@ -17,6 +17,8 @@
 #include "chrome/browser/speech/tts_controller.h"
 #include "chrome/browser/speech/tts_platform.h"
 #include "chrome/common/chrome_switches.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_system.h"
 #include "net/base/network_change_notifier.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -184,6 +186,18 @@ class TtsApiTest : public ExtensionApiTest {
   virtual void SetUpInProcessBrowserTestFixture() {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
     TtsController::GetInstance()->SetPlatformImpl(&mock_platform_impl_);
+  }
+
+  void AddNetworkSpeechSynthesisExtension() {
+    content::WindowedNotificationObserver observer(
+        NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY,
+        content::NotificationService::AllSources());
+    ExtensionService* service =
+        extensions::ExtensionSystem::Get(profile())->extension_service();
+    service->component_loader()->AddNetworkSpeechSynthesisExtension();
+    observer.Wait();
+    ASSERT_EQ(Manifest::COMPONENT,
+              content::Source<const Extension>(observer.source())->location());
   }
 
  protected:
@@ -427,9 +441,7 @@ IN_PROC_BROWSER_TEST_F(TtsApiTest, NetworkSpeechEngine) {
   net::NetworkChangeNotifier::DisableForTest disable_for_test;
   FakeNetworkOnlineStateForTest fake_online_state(true);
 
-  ExtensionService* service = extensions::ExtensionSystem::Get(
-      profile())->extension_service();
-  service->component_loader()->AddNetworkSpeechSynthesisExtension();
+  ASSERT_NO_FATAL_FAILURE(AddNetworkSpeechSynthesisExtension());
   ASSERT_TRUE(RunExtensionTest("tts_engine/network_speech_engine")) << message_;
 }
 
@@ -438,9 +450,7 @@ IN_PROC_BROWSER_TEST_F(TtsApiTest, NoNetworkSpeechEngineWhenOffline) {
   net::NetworkChangeNotifier::DisableForTest disable_for_test;
   FakeNetworkOnlineStateForTest fake_online_state(false);
 
-  ExtensionService* service = extensions::ExtensionSystem::Get(
-      profile())->extension_service();
-  service->component_loader()->AddNetworkSpeechSynthesisExtension();
+  ASSERT_NO_FATAL_FAILURE(AddNetworkSpeechSynthesisExtension());
   // Test should fail when offline.
   ASSERT_FALSE(RunExtensionTest("tts_engine/network_speech_engine"));
 }
