@@ -12,37 +12,39 @@ import os
 import sys
 
 
-def run(command):
+def run(command, extra_options=''):
+  command = command + ' ' + extra_options
   print command
   return os.system(command)
 
 
-def build(out_dir):
-  return run ('ninja -C ' + out_dir + ' cronet_test_instrumentation_apk')
+def build(out_dir, extra_options=''):
+  return run('ninja -C ' + out_dir + ' cronet_test_instrumentation_apk',
+             extra_options)
 
 
 def install(release_arg):
-  return run ('build/android/adb_install_apk.py ' + release_arg + \
-              ' --apk=CronetTest.apk')
+  return run('build/android/adb_install_apk.py ' + release_arg + \
+             ' --apk=CronetTest.apk')
 
 
 def test(release_arg, extra_options):
-  return run ('build/android/test_runner.py instrumentation '+ \
-              release_arg + ' --test-apk=CronetTestInstrumentation ' + \
-              extra_options)
+  return run('build/android/test_runner.py instrumentation '+ \
+             release_arg + ' --test-apk=CronetTestInstrumentation',
+             extra_options)
 
 
 def debug(extra_options):
-  return run ('build/android/adb_gdb --start ' + \
-              '--activity=.CronetTestActivity ' + \
-              '--program-name=CronetTest ' + \
-              '--package-name=org.chromium.net ' + \
-              ' '.join(extra_options))
+  return run('build/android/adb_gdb --start ' + \
+             '--activity=.CronetTestActivity ' + \
+             '--program-name=CronetTest ' + \
+             '--package-name=org.chromium.net',
+             extra_options)
 
 
 def stack(out_dir):
-  return run ('adb logcat -d | third_party/android_tools/ndk/ndk-stack ' + \
-              '-sym ' + out_dir + '/lib')
+  return run('adb logcat -d | third_party/android_tools/ndk/ndk-stack ' + \
+             '-sym ' + out_dir + '/lib')
 
 
 def main():
@@ -79,7 +81,7 @@ def main():
   if (options.command=='sync'):
     return run ('git pull --rebase && ' + gyp_defines + ' gclient sync')
   if (options.command=='build'):
-    return build(out_dir)
+    return build(out_dir, extra_options)
   if (options.command=='install'):
     return install(release_arg)
   if (options.command=='proguard'):
