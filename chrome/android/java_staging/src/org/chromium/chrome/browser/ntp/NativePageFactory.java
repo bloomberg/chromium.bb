@@ -32,8 +32,6 @@ public class NativePageFactory {
                 TabModelSelector tabModelSelector) {
             if (tab.isIncognito()) {
                 return new IncognitoNewTabPage(activity);
-            } else if (FeatureUtilities.isDocumentMode(activity)) {
-                return new DocumentNewTabPage(activity, tab, tabModelSelector);
             } else {
                 return new NewTabPage(activity, tab, tabModelSelector);
             }

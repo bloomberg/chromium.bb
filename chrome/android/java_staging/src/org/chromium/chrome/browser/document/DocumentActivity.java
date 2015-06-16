@@ -43,7 +43,6 @@ import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkUtils;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.metrics.UmaUtils;
-import org.chromium.chrome.browser.ntp.DocumentNewTabPage;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -820,11 +819,11 @@ public class DocumentActivity extends CompositorChromeActivity {
             }, MENU_EXIT_ANIMATION_WAIT_MS);
         } else if (id == R.id.all_bookmarks_menu_id) {
             if (!EnhancedBookmarkUtils.showEnhancedBookmarkIfEnabled(this)) {
-                DocumentNewTabPage.launchBookmarksDialog(this, mDocumentTab, getTabModelSelector());
+                NewTabPage.launchBookmarksDialog(this, mDocumentTab, getTabModelSelector());
             }
             RecordUserAction.record("MobileMenuAllBookmarks");
         } else if (id == R.id.recent_tabs_menu_id) {
-            DocumentNewTabPage.launchRecentTabsDialog(this, mDocumentTab, false);
+            NewTabPage.launchRecentTabsDialog(this, mDocumentTab, false);
             RecordUserAction.record("MobileMenuOpenTabs");
         } else if (id == R.id.find_in_page_id) {
             mFindToolbarManager.showToolbar();

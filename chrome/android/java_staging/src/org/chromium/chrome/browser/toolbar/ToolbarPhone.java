@@ -258,6 +258,11 @@ public class ToolbarPhone extends ToolbarLayout
         setLayoutTransition(null);
 
         mMenuButton.setVisibility(shouldShowMenuButton() ? View.VISIBLE : View.GONE);
+        if (FeatureUtilities.isDocumentMode(getContext())) {
+            ApiCompatibilityUtils.setMarginEnd(
+                    (MarginLayoutParams) mMenuButton.getLayoutParams(),
+                    getResources().getDimensionPixelSize(R.dimen.document_toolbar_menu_offset));
+        }
 
         finishInflateForTabSwitchingResources();
 
@@ -1592,6 +1597,10 @@ public class ToolbarPhone extends ToolbarLayout
 
     @Override
     protected boolean shouldShowMenuButton() {
+        // Even in Document mode, the toolbar menu button will be shown while on the NTP.  This
+        // allows the menu to translate off the screen on scroll to match the tabbed behavior.
+        if (mVisualState == VisualState.NEW_TAB_NORMAL) return true;
+
         return !mPhoneLocationBar.showMenuButtonInOmnibox() && super.shouldShowMenuButton();
     }
 
@@ -1883,6 +1892,8 @@ public class ToolbarPhone extends ToolbarLayout
                 && !newTabContentDescription.equals(mNewTabButton.getContentDescription())) {
             mNewTabButton.setContentDescription(newTabContentDescription);
         }
+
+        getMenuButton().setVisibility(shouldShowMenuButton() ? View.VISIBLE : View.GONE);
     }
 
     @Override

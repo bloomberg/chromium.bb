@@ -5,7 +5,9 @@
 package org.chromium.chrome.browser.ntp;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.view.ContextMenu;
@@ -26,13 +28,18 @@ import org.chromium.chrome.browser.NativePage;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareThumbnailProvider;
+import org.chromium.chrome.browser.document.DocumentMetricIds;
 import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkUtils;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
+import org.chromium.chrome.browser.ntp.BookmarksPage.BookmarkSelectedListener;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
+import org.chromium.chrome.browser.preferences.DocumentModeManager;
+import org.chromium.chrome.browser.preferences.DocumentModePreference;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.profiles.MostVisitedSites;
 import org.chromium.chrome.browser.profiles.MostVisitedSites.MostVisitedURLsObserver;
 import org.chromium.chrome.browser.profiles.MostVisitedSites.ThumbnailCallback;
@@ -41,6 +48,7 @@ import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
@@ -52,6 +60,9 @@ import java.util.concurrent.TimeUnit;
  */
 public class NewTabPage
         implements NativePage, InvalidationAwareThumbnailProvider, TemplateUrlServiceObserver {
+
+    // The number of times that an opt-out promo will be shown.
+    private static final int MAX_OPT_OUT_PROMO_COUNT = 10;
 
     // MostVisitedItem Context menu item IDs.
     static final int ID_OPEN_IN_NEW_TAB = 0;
@@ -74,6 +85,7 @@ public class NewTabPage
     private LargeIconBridge mLargeIconBridge;
     private LogoBridge mLogoBridge;
     private boolean mSearchProviderHasLogo;
+    private final boolean mOptOutPromoShown;
     private String mOnLogoClickUrl;
     private FakeboxDelegate mFakeboxDelegate;
 
@@ -128,6 +140,31 @@ public class NewTabPage
         return url != null && url.startsWith(UrlConstants.NTP_URL);
     }
 
+    public static void launchBookmarksDialog(Activity activity, Tab tab,
+            TabModelSelector tabModelSelector) {
+        if (!EnhancedBookmarkUtils.showEnhancedBookmarkIfEnabled(activity)) {
+            BookmarkDialogSelectedListener listener = new BookmarkDialogSelectedListener(tab);
+            NativePage page = BookmarksPage.buildPageInDocumentMode(
+                    activity, tab, tabModelSelector, Profile.getLastUsedProfile(),
+                    listener);
+            page.updateForUrl(UrlConstants.BOOKMARKS_URL);
+            Dialog dialog = new NativePageDialog(activity, page);
+            listener.setDialog(dialog);
+            dialog.show();
+        }
+    }
+
+    public static void launchRecentTabsDialog(Activity activity, Tab tab,
+            boolean finishActivityOnOpen) {
+        DocumentRecentTabsManager manager =
+                new DocumentRecentTabsManager(tab, activity, finishActivityOnOpen);
+        NativePage page = new RecentTabsPage(activity, manager);
+        page.updateForUrl(UrlConstants.RECENT_TABS_URL);
+        Dialog dialog = new NativePageDialog(activity, page);
+        manager.setDialog(dialog);
+        dialog.show();
+    }
+
     @VisibleForTesting
     static void setMostVisitedSitesForTests(MostVisitedSites mostVisitedSitesForTests) {
         sMostVisitedSitesForTests = mostVisitedSitesForTests;
@@ -150,17 +187,39 @@ public class NewTabPage
             mMostVisitedSites.recordOpenedMostVisitedItem(item.getIndex());
         }
 
-        @Override
-        public boolean shouldShowOptOutPromo() {
-            return false;
+        private void recordDocumentOptOutPromoClick(int which) {
+            RecordHistogram.recordEnumeratedHistogram("DocumentActivity.OptOutClick", which,
+                    DocumentMetricIds.OPT_OUT_CLICK_COUNT);
         }
 
         @Override
-        public void optOutPromoShown() {}
+        public boolean shouldShowOptOutPromo() {
+            if (!FeatureUtilities.isDocumentMode(mActivity)) return false;
+            DocumentModeManager documentModeManager = DocumentModeManager.getInstance(mActivity);
+            return !documentModeManager.isOptOutPromoDismissed()
+                    && (documentModeManager.getOptOutShownCount() < MAX_OPT_OUT_PROMO_COUNT);
+        }
+
+        @Override
+        public void optOutPromoShown() {
+            assert FeatureUtilities.isDocumentMode(mActivity);
+            DocumentModeManager.getInstance(mActivity).incrementOptOutShownCount();
+            RecordUserAction.record("DocumentActivity_OptOutShownOnHome");
+        }
 
         @Override
         public void optOutPromoClicked(boolean settingsClicked) {
-            assert false : "Should never be called for this page";
+            assert FeatureUtilities.isDocumentMode(mActivity);
+            if (settingsClicked) {
+                recordDocumentOptOutPromoClick(DocumentMetricIds.OPT_OUT_CLICK_SETTINGS);
+                PreferencesLauncher.launchSettingsPage(mActivity,
+                        DocumentModePreference.class.getName());
+            } else {
+                recordDocumentOptOutPromoClick(DocumentMetricIds.OPT_OUT_CLICK_GOT_IT);
+                DocumentModeManager documentModeManager = DocumentModeManager.getInstance(
+                        mActivity);
+                documentModeManager.setOptedOutState(DocumentModeManager.OPT_OUT_PROMO_DISMISSED);
+            }
         }
 
         @Override
@@ -195,6 +254,9 @@ public class NewTabPage
                     return true;
                 case ID_OPEN_IN_INCOGNITO_TAB:
                     recordOpenedMostVisitedItem(item);
+                    if (FeatureUtilities.isDocumentMode(mActivity)) {
+                        mActivity.finishAndRemoveTask();
+                    }
                     mTabModelSelector.openNewTab(new LoadUrlParams(item.getUrl()),
                             TabLaunchType.FROM_LONGPRESS_FOREGROUND, mTab, true);
                     return true;
@@ -210,7 +272,9 @@ public class NewTabPage
         public void navigateToBookmarks() {
             if (mIsDestroyed) return;
             RecordUserAction.record("MobileNTPSwitchToBookmarks");
-            if (!EnhancedBookmarkUtils.showEnhancedBookmarkIfEnabled(mActivity)) {
+            if (FeatureUtilities.isDocumentMode(mActivity)) {
+                launchBookmarksDialog(mActivity, mTab, mTabModelSelector);
+            } else if (!EnhancedBookmarkUtils.showEnhancedBookmarkIfEnabled(mActivity)) {
                 mTab.loadUrl(new LoadUrlParams(UrlConstants.BOOKMARKS_URL));
             }
         }
@@ -219,7 +283,11 @@ public class NewTabPage
         public void navigateToRecentTabs() {
             if (mIsDestroyed) return;
             RecordUserAction.record("MobileNTPSwitchToOpenTabs");
-            mTab.loadUrl(new LoadUrlParams(UrlConstants.RECENT_TABS_URL));
+            if (FeatureUtilities.isDocumentMode(mActivity)) {
+                launchRecentTabsDialog(mActivity, mTab, true);
+            } else {
+                mTab.loadUrl(new LoadUrlParams(UrlConstants.RECENT_TABS_URL));
+            }
         }
 
         @Override
@@ -315,9 +383,14 @@ public class NewTabPage
         mBackgroundColor = activity.getResources().getColor(R.color.ntp_bg);
         TemplateUrlService.getInstance().addObserver(this);
 
+        // Whether to show the promo can change within the lifetime of a single NTP instance
+        // because the user can dismiss the promo.  To ensure the UI is consistent, cache the
+        // value initially and ignore further updates.
+        mOptOutPromoShown = mNewTabPageManager.shouldShowOptOutPromo();
+
         mMostVisitedSites = buildMostVisitedSites(mProfile);
         mLogoBridge = new LogoBridge(mProfile);
-        mSearchProviderHasLogo = TemplateUrlService.getInstance().isDefaultSearchEngineGoogle();
+        updateSearchProviderHasLogo();
 
         LayoutInflater inflater = LayoutInflater.from(activity);
         mNewTabPageView = (NewTabPageView) inflater.inflate(R.layout.new_tab_page, null);
@@ -348,12 +421,20 @@ public class NewTabPage
     }
 
     private boolean isInSingleUrlBarMode(Context context) {
-        return mSearchProviderHasLogo && !DeviceFormFactor.isTablet(context);
+        if (DeviceFormFactor.isTablet(context)) return false;
+        if (mOptOutPromoShown) return false;
+
+        return mSearchProviderHasLogo;
+    }
+
+    private void updateSearchProviderHasLogo() {
+        mSearchProviderHasLogo = !mOptOutPromoShown
+                && TemplateUrlService.getInstance().isDefaultSearchEngineGoogle();
     }
 
     private void onSearchEngineUpdated() {
         // TODO(newt): update this if other search providers provide logos.
-        mSearchProviderHasLogo = TemplateUrlService.getInstance().isDefaultSearchEngineGoogle();
+        updateSearchProviderHasLogo();
         mNewTabPageView.setSearchProviderHasLogo(mSearchProviderHasLogo);
     }
 
@@ -484,5 +565,29 @@ public class NewTabPage
     @Override
     public void captureThumbnail(Canvas canvas) {
         mNewTabPageView.captureThumbnail(canvas);
+    }
+
+    private static class BookmarkDialogSelectedListener implements BookmarkSelectedListener {
+        private Dialog mDialog;
+        private final Tab mTab;
+
+        public BookmarkDialogSelectedListener(Tab tab) {
+            mTab = tab;
+        }
+
+        @Override
+        public void onNewTabOpened() {
+            if (mDialog != null) mDialog.dismiss();
+        }
+
+        @Override
+        public void onBookmarkSelected(String url, String title, Bitmap favicon) {
+            if (mDialog != null) mDialog.dismiss();
+            mTab.loadUrl(new LoadUrlParams(url));
+        }
+
+        public void setDialog(Dialog dialog) {
+            mDialog = dialog;
+        }
     }
 }
