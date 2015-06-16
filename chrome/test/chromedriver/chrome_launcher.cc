@@ -53,7 +53,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #elif defined(OS_WIN)
-#include "base/win/scoped_handle.h"
 #include "chrome/test/chromedriver/keycode_text_conversion.h"
 #endif
 
@@ -328,25 +327,6 @@ Status LaunchDesktopChrome(
     options.fds_to_remap = &no_stderr;
   }
 #elif defined(OS_WIN)
-  // Silence chrome error message.
-  HANDLE out_read;
-  HANDLE out_write;
-  SECURITY_ATTRIBUTES sa_attr;
-
-  sa_attr.nLength = sizeof(SECURITY_ATTRIBUTES);
-  sa_attr.bInheritHandle = TRUE;
-  sa_attr.lpSecurityDescriptor = NULL;
-  if (!CreatePipe(&out_read, &out_write, &sa_attr, 0))
-      return Status(kUnknownError, "CreatePipe() - Pipe creation failed");
-  // Prevent handle leak.
-  base::win::ScopedHandle scoped_out_read(out_read);
-  base::win::ScopedHandle scoped_out_write(out_write);
-
-  options.stdout_handle = out_write;
-  options.stderr_handle = out_write;
-  options.stdin_handle = GetStdHandle(STD_INPUT_HANDLE);
-  options.inherit_handles = true;
-
   if (!SwitchToUSKeyboardLayout())
     VLOG(0) << "Can not set to US keyboard layout - Some keycodes may be"
         "interpreted incorrectly";
