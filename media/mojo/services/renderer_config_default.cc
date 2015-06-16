@@ -10,6 +10,7 @@
 #include "media/audio/audio_output_stream_sink.h"
 #include "media/audio/fake_audio_log_factory.h"
 #include "media/base/media.h"
+#include "media/base/null_video_sink.h"
 #include "media/filters/opus_audio_decoder.h"
 
 #if !defined(MEDIA_DISABLE_FFMPEG)
@@ -23,20 +24,6 @@
 
 namespace media {
 namespace internal {
-
-class DummyVideoRendererSink : public VideoRendererSink {
- public:
-  DummyVideoRendererSink() {}
-  ~DummyVideoRendererSink() override {}
-
-  void Start(RenderCallback* callback) override {}
-  void Stop() override {}
-  void PaintFrameUsingOldRenderingPath(
-      const scoped_refptr<VideoFrame>& frame) override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DummyVideoRendererSink);
-};
 
 class DefaultRendererConfig : public PlatformRendererConfig {
  public:
@@ -96,8 +83,11 @@ class DefaultRendererConfig : public PlatformRendererConfig {
     return new AudioOutputStreamSink();
   }
 
-  scoped_ptr<VideoRendererSink> GetVideoRendererSink() override {
-    return make_scoped_ptr(new DummyVideoRendererSink());
+  scoped_ptr<VideoRendererSink> GetVideoRendererSink(
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) override {
+    return make_scoped_ptr(
+        new NullVideoSink(false, base::TimeDelta::FromSecondsD(1.0 / 60),
+                          NullVideoSink::NewFrameCB(), task_runner));
   }
 
   const AudioHardwareConfig& GetAudioHardwareConfig() override {

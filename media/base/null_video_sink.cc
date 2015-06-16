@@ -58,7 +58,7 @@ void NullVideoSink::CallRender() {
       current_render_time_, end_of_interval, background_render_);
   const bool is_new_frame = new_frame != last_frame_;
   last_frame_ = new_frame;
-  if (is_new_frame)
+  if (is_new_frame && !new_frame_cb_.is_null())
     new_frame_cb_.Run(new_frame);
 
   current_render_time_ += interval_;

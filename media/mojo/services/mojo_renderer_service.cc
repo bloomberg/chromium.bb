@@ -40,7 +40,7 @@ MojoRendererService::MojoRendererService(
   scoped_refptr<MediaLog> media_log(new MediaLog());
   RendererConfig* renderer_config = RendererConfig::Get();
   audio_renderer_sink_ = renderer_config->GetAudioRendererSink();
-  video_renderer_sink_ = renderer_config->GetVideoRendererSink();
+  video_renderer_sink_ = renderer_config->GetVideoRendererSink(task_runner);
 
   scoped_ptr<AudioRenderer> audio_renderer(new AudioRendererImpl(
       task_runner, audio_renderer_sink_.get(),

@@ -35,6 +35,7 @@
 // real audio plays out for each test.
 #define EXPECT_HASH_EQ(a, b)
 #define EXPECT_VIDEO_FORMAT_EQ(a, b)
+#define EXPECT_COLOR_SPACE_EQ(a, b)
 
 // TODO(xhwang): EME support is not complete for the mojo renderer, so all
 // encrypted tests are currently disabled.
@@ -46,6 +47,7 @@
 #else
 #define EXPECT_HASH_EQ(a, b) EXPECT_EQ(a, b)
 #define EXPECT_VIDEO_FORMAT_EQ(a, b) EXPECT_EQ(a, b)
+#define EXPECT_COLOR_SPACE_EQ(a, b) EXPECT_EQ(a, b)
 #endif
 
 using testing::_;
@@ -1662,7 +1664,8 @@ TEST_F(PipelineIntegrationTest, BT709_VP9_WebM) {
   Play();
   ASSERT_TRUE(WaitUntilOnEnded());
   EXPECT_VIDEO_FORMAT_EQ(last_video_frame_format_, VideoFrame::YV12);
-  EXPECT_EQ(last_video_frame_color_space_, VideoFrame::COLOR_SPACE_HD_REC709);
+  EXPECT_COLOR_SPACE_EQ(last_video_frame_color_space_,
+                        VideoFrame::COLOR_SPACE_HD_REC709);
 }
 
 // Verify that videos with an odd frame size playback successfully.

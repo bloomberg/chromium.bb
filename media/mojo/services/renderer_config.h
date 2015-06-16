@@ -37,7 +37,8 @@ class PlatformRendererConfig {
 
   // The output sink used for rendering audio or video respectively.
   virtual scoped_refptr<AudioRendererSink> GetAudioRendererSink() = 0;
-  virtual scoped_ptr<VideoRendererSink> GetVideoRendererSink() = 0;
+  virtual scoped_ptr<VideoRendererSink> GetVideoRendererSink(
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) = 0;
 
   // The platform's audio hardware configuration.  Note, this must remain
   // constant for the lifetime of the PlatformRendererConfig.
@@ -58,7 +59,8 @@ class RendererConfig {
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
       const LogCB& media_log_cb);
   scoped_refptr<AudioRendererSink> GetAudioRendererSink();
-  scoped_ptr<VideoRendererSink> GetVideoRendererSink();
+  scoped_ptr<VideoRendererSink> GetVideoRendererSink(
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
   const AudioHardwareConfig& GetAudioHardwareConfig();
 
  private:

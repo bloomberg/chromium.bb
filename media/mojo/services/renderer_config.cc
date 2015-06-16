@@ -34,8 +34,9 @@ scoped_refptr<AudioRendererSink> RendererConfig::GetAudioRendererSink() {
   return renderer_config_->GetAudioRendererSink();
 }
 
-scoped_ptr<VideoRendererSink> RendererConfig::GetVideoRendererSink() {
-  return renderer_config_->GetVideoRendererSink();
+scoped_ptr<VideoRendererSink> RendererConfig::GetVideoRendererSink(
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
+  return renderer_config_->GetVideoRendererSink(task_runner);
 }
 
 const AudioHardwareConfig& RendererConfig::GetAudioHardwareConfig() {

@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
+#include "media/base/media_export.h"
 #include "media/base/video_renderer_sink.h"
 
 namespace base {
@@ -17,7 +18,7 @@ class SingleThreadTaskRunner;
 
 namespace media {
 
-class NullVideoSink : public VideoRendererSink {
+class MEDIA_EXPORT NullVideoSink : public VideoRendererSink {
  public:
   using NewFrameCB = base::Callback<void(const scoped_refptr<VideoFrame>&)>;
 
