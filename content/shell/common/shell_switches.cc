@@ -30,6 +30,10 @@ const char kCrashOnFailure[] = "crash-on-failure";
 // identically functioning |kRunLayoutTest| switch should be used instead.
 const char kDumpRenderTree[] = "dump-render-tree";
 
+// When dump-render-tree is enabled, this causes the line box tree for
+// each LayoutBlockFlow to be dumped as well.
+const char kDumpLineBoxTrees[] = "dump-line-box-trees";
+
 // Expose window.ipcTester object for testing
 const char kExposeIpcEcho[] = "expose-ipc-echo";
 

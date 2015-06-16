@@ -226,20 +226,29 @@ void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
     base::CommandLine* command_line,
     int child_process_id) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kRunLayoutTest))
+          switches::kRunLayoutTest)) {
     command_line->AppendSwitch(switches::kRunLayoutTest);
+  }
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableFontAntialiasing))
+          switches::kDumpLineBoxTrees)) {
+    command_line->AppendSwitch(switches::kDumpLineBoxTrees);
+  }
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableFontAntialiasing)) {
     command_line->AppendSwitch(switches::kEnableFontAntialiasing);
+  }
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kExposeInternalsForTesting))
+          switches::kExposeInternalsForTesting)) {
     command_line->AppendSwitch(switches::kExposeInternalsForTesting);
+  }
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kExposeIpcEcho))
+          switches::kExposeIpcEcho)) {
     command_line->AppendSwitch(switches::kExposeIpcEcho);
+  }
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kStableReleaseMode))
+          switches::kStableReleaseMode)) {
     command_line->AppendSwitch(switches::kStableReleaseMode);
+  }
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableCrashReporter)) {
     command_line->AppendSwitch(switches::kEnableCrashReporter);

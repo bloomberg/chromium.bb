@@ -16,6 +16,7 @@ extern const char kContentShellDataPath[];
 extern const char kCrashDumpsDir[];
 extern const char kCrashOnFailure[];
 extern const char kDumpRenderTree[];
+extern const char kDumpLineBoxTrees[];
 extern const char kExposeIpcEcho[];
 extern const char kEnableAccelerated2DCanvas[];
 extern const char kEnableFontAntialiasing[];

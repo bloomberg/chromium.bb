@@ -784,8 +784,11 @@ void BlinkTestRunner::CaptureDump() {
     interfaces->TestRunner()->GetAudioData(&vector_data);
     Send(new ShellViewHostMsg_AudioDump(routing_id(), vector_data));
   } else {
-    Send(new ShellViewHostMsg_TextDump(routing_id(),
-                                       proxy()->CaptureTree(false)));
+      const base::CommandLine& command_line =
+          *base::CommandLine::ForCurrentProcess();
+    Send(new ShellViewHostMsg_TextDump(
+        routing_id(), proxy()->CaptureTree(
+            false, command_line.HasSwitch(switches::kDumpLineBoxTrees))));
 
     if (test_config_.enable_pixel_dumping &&
         interfaces->TestRunner()->ShouldGeneratePixelResults()) {

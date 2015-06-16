@@ -111,7 +111,7 @@ class TEST_RUNNER_EXPORT WebTestProxyBase {
   void HideValidationMessage();
   void MoveValidationMessage(const blink::WebRect& anchor_in_root_view);
 
-  std::string CaptureTree(bool debug_render_tree);
+  std::string CaptureTree(bool debug_render_tree, bool dump_line_box_trees);
   void CapturePixelsForPrinting(
       const base::Callback<void(const SkBitmap&)>& callback);
   void CopyImageAtAndCapturePixels(

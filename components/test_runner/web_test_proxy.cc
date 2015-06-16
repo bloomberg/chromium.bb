@@ -457,7 +457,9 @@ void WebTestProxyBase::ShowValidationMessage(
                           base::UTF16ToUTF8(sub_message) + "\n");
 }
 
-std::string WebTestProxyBase::CaptureTree(bool debug_render_tree) {
+std::string WebTestProxyBase::CaptureTree(
+    bool debug_render_tree,
+    bool dump_line_box_trees) {
   bool should_dump_custom_text =
       test_interfaces_->GetTestRunner()->shouldDumpAsCustomText();
   bool should_dump_as_text =
@@ -490,6 +492,8 @@ std::string WebTestProxyBase::CaptureTree(bool debug_render_tree) {
       layout_text_behavior |= blink::WebFrame::LayoutAsTextPrinting;
     if (debug_render_tree)
       layout_text_behavior |= blink::WebFrame::LayoutAsTextDebug;
+    if (dump_line_box_trees)
+      layout_text_behavior |= blink::WebFrame::LayoutAsTextWithLineTrees;
     data_utf8 = frame->layoutTreeAsText(layout_text_behavior).utf8();
     data_utf8 += DumpFrameScrollPosition(frame, recursive);
   }
