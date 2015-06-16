@@ -318,6 +318,10 @@ deps_os = {
     # Binaries for nacl sdk.
     'src/third_party/nacl_sdk_binaries':
      Var('chromium_git') + '/chromium/deps/nacl_sdk_binaries.git' + '@' + '759dfca03bdc774da7ecbf974f6e2b84f43699a5',
+
+    # ANGLE uses dEQP for GPU testing
+    'src/tests/third_party/deqp':
+     'https://android.googlesource.com/platform/external/deqp@554adf152573fb579d0cbc68d3c1395e5ee94391',
   },
   'ios': {
     'src/ios/third_party/gcdwebserver/src':
