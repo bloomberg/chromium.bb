@@ -13,7 +13,29 @@
 #include "native_client/src/include/nacl_assert.h"
 #include "native_client/tests/inbrowser_test_runner/test_runner.h"
 
-int TestMain(void) {
+#ifdef _NEWLIB_VERSION
+/* TODO(sbc): Remove these once they get added to stdlib.h */
+long int random(void);
+void srandom(unsigned int seed);
+#endif
+
+int TestRand(void) {
+  /*
+   * Simply test that rand/srand and random/srandom are linkable
+   * and callable
+   */
+  random();
+  srandom(123);
+  random();
+
+  rand();
+  srand(123);
+  rand();
+
+  return 0;
+}
+
+int TestSecureRandom(void) {
   int result = 0;
 
   uint8_t byte1 = 0;
@@ -89,5 +111,8 @@ int TestMain(void) {
 }
 
 int main(void) {
-  return RunTests(TestMain);
+  int rtn = RunTests(TestSecureRandom);
+  if (rtn)
+    return rtn;
+  return RunTests(TestRand);
 }

@@ -6,8 +6,8 @@
 
 #include <stdlib.h>
 
-/* Implementation of random() in terms of rand() (which is part of newlib) */
+/* Implementation of srandom() in terms of srand() (which is part of newlib) */
 
-long int random(void) {
-  return rand();
+void srandom(unsigned int seed) {
+  srand(seed);
 }

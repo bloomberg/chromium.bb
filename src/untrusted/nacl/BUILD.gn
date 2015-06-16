@@ -136,9 +136,9 @@ static_library("nacl") {
     "gc_hooks.c",
     "nacl_irt.c",
     "nacl_irt_init.c",
+    "nacl_random.c",
     "nacl_tls_get.c",
     "nacl_tls_init.c",
-    "random.c",
   ]
 
   if (current_os != "glibc") {
@@ -191,6 +191,7 @@ static_library("nacl") {
       "open.c",
       "pthread_initialize_minimal.c",
       "pthread_stubs.c",
+      "random.c",
       "read.c",
       "readlink.c",
       "rename.c",
@@ -202,6 +203,7 @@ static_library("nacl") {
       "sigmask.c",
       "sigprocmask.c",
       "sigsetmask.c",
+      "srandom.c",
       "stacktrace.c",
       "start.c",
       "stat.c",

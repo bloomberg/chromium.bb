@@ -64,6 +64,7 @@ SRCS_NEWLIB_SYSCALL =  [
     'ntohl.c',
     'ntohs.c',
     'open.c',
+    'random.c',
     'read.c',
     'readlink.c',
     'rename.c',
@@ -75,6 +76,7 @@ SRCS_NEWLIB_SYSCALL =  [
     'sigmask.c',
     'sigprocmask.c',
     'sigsetmask.c',
+    'srandom.c',
     'stat.c',
     'symlink.c',
     'sysconf.c',
@@ -230,7 +232,7 @@ SRCS_NACL_EXTENSIONS = [
     'nacl_irt_init.c',
     'nacl_tls_get.c',
     'nacl_tls_init.c',
-    'random.c',
+    'nacl_random.c',
     ]
 
 if env.Bit('nacl_glibc'):
