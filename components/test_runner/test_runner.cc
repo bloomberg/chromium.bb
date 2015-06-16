@@ -752,7 +752,7 @@ void TestRunnerBindings::SetDomainRelaxationForbiddenForURLScheme(
 v8::Local<v8::Value>
 TestRunnerBindings::EvaluateScriptInIsolatedWorldAndReturnValue(
     int world_id, const std::string& script) {
-  if (!runner_)
+  if (!runner_ || world_id <= 0 || world_id >= (1 << 29))
     return v8::Local<v8::Value>();
   return runner_->EvaluateScriptInIsolatedWorldAndReturnValue(world_id,
                                                               script);
@@ -760,7 +760,7 @@ TestRunnerBindings::EvaluateScriptInIsolatedWorldAndReturnValue(
 
 void TestRunnerBindings::EvaluateScriptInIsolatedWorld(
     int world_id, const std::string& script) {
-  if (runner_)
+  if (runner_ && world_id > 0 && world_id < (1 << 29))
     runner_->EvaluateScriptInIsolatedWorld(world_id, script);
 }
 
