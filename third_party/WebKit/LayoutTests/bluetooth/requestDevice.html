@@ -12,6 +12,7 @@ sequential_promise_test(function() {
     assert_unreached('Expected no devices but one was returned.');
   }, function(e) {
     assert_equals(e.name, 'NotFoundError');
+      assert_equals(e.message, 'No Bluetooth devices in range.');
   });
 }, 'Reject with NotFoundError.');
 

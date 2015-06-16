@@ -14,6 +14,7 @@ sequential_promise_test(function() {
       assert_unreached('Should return error if device not in adapter.');
     }, function(e) {
       assert_equals(e.name, 'NetworkError');
+      assert_equals(e.message, 'Bluetooth Device is no longer in range.');
     });
   });
 }, 'Device goes out of range. Reject with NetworkError.');
@@ -25,6 +26,7 @@ sequential_promise_test(function() {
       assert_unreached('Should return error since device failed to connect.');
     }, function(e) {
       assert_equals(e.name, 'NetworkError');
+      assert_equals(e.message, 'Connection failed for unknown reason.');
     });
   });
 }, 'Device failed to connect. Reject with NetworkError.');

@@ -25,6 +25,7 @@ sequential_promise_test(function() {
       assert_unreached("Device went out of range, should fail.");
     }, function(e) {
       assert_equals(e.name, "NetworkError");
+      assert_equals(e.message, 'Bluetooth Device is no longer in range.');
     });
   });
 }, 'Device goes out of range. Reject with NetworkError.');

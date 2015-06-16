@@ -27,6 +27,7 @@ sequential_promise_test(function() {
       assert_unreached('Device went out of range, should fail.');
     }, function(e) {
       assert_equals(e.name, 'NetworkError');
+      assert_equals(e.message, 'Bluetooth Device is no longer in range.');
     });
   });
 }, 'Device goes out of range. Reject with NetworkError.');
@@ -43,8 +44,7 @@ sequential_promise_test(function() {
     return characteristic.readValue().then(function() {
       assert_unreached('Characteristic is unreadable. Should fail.');
     }, function(e) {
-      // TODO(ortuno): Uncomment once browser side patch lands.
-      // assert_equals(e.name, 'NotSupportedError');
+      assert_equals(e.name, 'NotSupportedError');
     });
   });
 }, 'Characteristic is not readable. Reject with NetworkError.');
