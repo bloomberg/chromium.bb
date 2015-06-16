@@ -32,10 +32,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/renderer_preferences.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/extension_icon_set.h"
-#include "extensions/common/manifest_handlers/icons_handler.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -73,26 +70,17 @@ std::string OfflineLoadPage::GetHTMLContents() {
   int resource_id;
   base::DictionaryValue error_strings;
 
-  // The offline page for app has icons and slightly different message.
   Profile* profile = Profile::FromBrowserContext(
       web_contents_->GetBrowserContext());
   DCHECK(profile);
-  const extensions::Extension* extension = extensions::ExtensionRegistry::Get(
-      profile)->enabled_extensions().GetHostedAppByURL(url_);
   const std::string& locale = g_browser_process->GetApplicationLocale();
-  if (extension && !extension->from_bookmark()) {
-    LocalizedError::GetAppErrorStrings(url_, extension, locale, &error_strings);
-    resource_id = IDR_OFFLINE_APP_LOAD_HTML;
-  } else {
-    const std::string accept_languages =
-        profile->GetPrefs()->GetString(prefs::kAcceptLanguages);
-    LocalizedError::GetStrings(net::ERR_INTERNET_DISCONNECTED,
-                               net::kErrorDomain, url_, false, false, locale,
-                               accept_languages,
-                               scoped_ptr<error_page::ErrorPageParams>(),
-                               &error_strings);
-    resource_id = IDR_OFFLINE_NET_LOAD_HTML;
-  }
+  const std::string accept_languages =
+      profile->GetPrefs()->GetString(prefs::kAcceptLanguages);
+  LocalizedError::GetStrings(net::ERR_INTERNET_DISCONNECTED, net::kErrorDomain,
+                             url_, false, false, locale, accept_languages,
+                             scoped_ptr<error_page::ErrorPageParams>(),
+                             &error_strings);
+  resource_id = IDR_OFFLINE_NET_LOAD_HTML;
 
   std::string template_html = ResourceBundle::GetSharedInstance()
                                   .GetRawDataResource(resource_id)

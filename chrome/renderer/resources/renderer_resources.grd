@@ -19,7 +19,6 @@
       </if>
       <include name="IDR_BLOCKED_PLUGIN_HTML" file="blocked_plugin.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_DISABLED_PLUGIN_HTML" file="disabled_plugin.html" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_ERROR_APP_HTML" file="error_app.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_NET_ERROR_HTML" file="neterror.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_PLUGIN_POSTER_HTML" file="plugin_poster.html" flattenhtml="true" type="BINDATA" />
 

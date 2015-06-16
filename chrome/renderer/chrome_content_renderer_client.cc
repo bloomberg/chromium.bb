@@ -1145,61 +1145,22 @@ void ChromeContentRendererClient::GetNavigationErrorStrings(
     std::string* error_html,
     base::string16* error_description) {
   const GURL failed_url = error.unreachableURL;
-  const Extension* extension = NULL;
-
-#if defined(ENABLE_EXTENSIONS)
-  if (failed_url.is_valid() &&
-      !failed_url.SchemeIs(extensions::kExtensionScheme)) {
-    extension = extension_dispatcher_->extensions()->GetExtensionOrAppByURL(
-        failed_url);
-  }
-#endif
 
   bool is_post = base::EqualsASCII(failed_request.httpMethod(), "POST");
 
   if (error_html) {
-    bool extension_but_not_bookmark_app = false;
-#if defined(ENABLE_EXTENSIONS)
-    extension_but_not_bookmark_app = extension && !extension->from_bookmark();
-#endif
-    // Use a local error page.
-    if (extension_but_not_bookmark_app) {
-#if defined(ENABLE_EXTENSIONS)
-      // TODO(erikkay): Should we use a different template for different
-      // error messages?
-      int resource_id = IDR_ERROR_APP_HTML;
-      const base::StringPiece template_html(
-          ResourceBundle::GetSharedInstance().GetRawDataResource(
-              resource_id));
-      if (template_html.empty()) {
-        NOTREACHED() << "unable to load template. ID: " << resource_id;
-      } else {
-        base::DictionaryValue error_strings;
-        const std::string locale = RenderThread::Get()->GetLocale();
-        LocalizedError::GetAppErrorStrings(failed_url, extension, locale,
-                                           &error_strings);
-        // "t" is the id of the template's root node.
-        *error_html = webui::GetTemplatesHtml(template_html, &error_strings,
-                                              "t");
-      }
-#endif
-    } else {
-      // TODO(ellyjones): change GetNavigationErrorStrings to take a RenderFrame
-      // instead of a RenderView, then pass that in.
-      // This is safe for now because we only install the NetErrorHelper on the
-      // main render frame anyway; see the TODO(ellyjones) in
-      // RenderFrameCreated.
-      content::RenderFrame* main_render_frame =
-          render_view->GetMainRenderFrame();
-      NetErrorHelper* helper = NetErrorHelper::Get(main_render_frame);
-      helper->GetErrorHTML(frame, error, is_post, error_html);
-    }
+    // TODO(ellyjones): change GetNavigationErrorStrings to take a RenderFrame
+    // instead of a RenderView, then pass that in.
+    // This is safe for now because we only install the NetErrorHelper on the
+    // main render frame anyway; see the TODO(ellyjones) in
+    // RenderFrameCreated.
+    content::RenderFrame* main_render_frame = render_view->GetMainRenderFrame();
+    NetErrorHelper* helper = NetErrorHelper::Get(main_render_frame);
+    helper->GetErrorHTML(frame, error, is_post, error_html);
   }
 
-  if (error_description) {
-    if (!extension)
-      *error_description = LocalizedError::GetErrorDetails(error, is_post);
-  }
+  if (error_description)
+    *error_description = LocalizedError::GetErrorDetails(error, is_post);
 }
 
 bool ChromeContentRendererClient::RunIdleHandlerWhenWidgetsHidden() {
