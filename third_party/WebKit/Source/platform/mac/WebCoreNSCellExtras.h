@@ -26,14 +26,12 @@
 #import <AppKit/AppKit.h>
 #include "platform/PlatformExport.h"
 
-#if !defined(MAC_OS_X_VERSION_10_7) || MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_7
+#define BUTTON_CELL_DRAW_WITH_FRAME_DRAWS_FOCUS_RING (!defined(MAC_OS_X_VERSION_10_7) || MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_7)
 
-@interface NSCell (LionSDKDeclarations)
-- (void)drawFocusRingMaskWithFrame:(NSRect)cellFrame inView:(NSView *)controlView;
+#if !BUTTON_CELL_DRAW_WITH_FRAME_DRAWS_FOCUS_RING
+
+@interface NSCell (WebCoreFocusRingDrawing)
+- (void)_web_drawFocusRingWithFrame:(NSRect)cellFrame inView:(NSView *)controlView;
 @end
 
 #endif
-
-@interface NSCell (WebCoreFocusRingDrawing)
-- (void)cr_drawFocusRingWithFrame:(NSRect)cellFrame inView:(NSView *)controlView;
-@end

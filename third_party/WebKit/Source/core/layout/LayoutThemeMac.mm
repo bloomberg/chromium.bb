@@ -880,8 +880,9 @@ void LayoutThemeMac::setPopupButtonCellState(const LayoutObject* object, const I
     updateCheckedState(popupButton, object);
     updateEnabledState(popupButton, object);
     updatePressedState(popupButton, object);
-    if (![popupButton respondsToSelector:@selector(drawFocusRingMaskWithFrame:inView:)])
-        updateFocusedState(popupButton, object);
+#if BUTTON_CELL_DRAW_WITH_FRAME_DRAWS_FOCUS_RING
+    updateFocusedState(popupButton, object);
+#endif
 }
 
 const IntSize* LayoutThemeMac::menuListSizes() const

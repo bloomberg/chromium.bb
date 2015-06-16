@@ -25,13 +25,12 @@
 
 #import "platform/mac/WebCoreNSCellExtras.h"
 
+#if !BUTTON_CELL_DRAW_WITH_FRAME_DRAWS_FOCUS_RING
+
 @implementation NSCell (WebCoreFocusRingDrawing)
 
-- (void)cr_drawFocusRingWithFrame:(NSRect)cellFrame inView:(NSView *)controlView
+- (void)_web_drawFocusRingWithFrame:(NSRect)cellFrame inView:(NSView *)controlView
 {
-    // FIXME: Remove this check when we drop support for Mac OS X 10.6
-    if (![self respondsToSelector:@selector(drawFocusRingMaskWithFrame:inView:)])
-        return;
     CGContextRef cgContext = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
     CGContextSaveGState(cgContext);
     NSSetFocusRingStyle(NSFocusRingOnly);
@@ -42,3 +41,5 @@
 }
 
 @end
+
+#endif // !BUTTON_CELL_DRAW_WITH_FRAME_DRAWS_FOCUS_RING

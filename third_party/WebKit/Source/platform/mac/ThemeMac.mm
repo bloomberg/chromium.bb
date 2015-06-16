@@ -141,13 +141,13 @@ static void updateStates(NSCell* cell, ControlStates states)
     if (enabled != oldEnabled)
         [cell setEnabled:enabled];
 
-    if (![cell respondsToSelector:@selector(drawFocusRingMaskWithFrame:inView:)]) {
-        // Focused state
-        bool oldFocused = [cell showsFirstResponder];
-        bool focused = states & FocusControlState;
-        if (focused != oldFocused)
-            [cell setShowsFirstResponder:focused];
-    }
+#if BUTTON_CELL_DRAW_WITH_FRAME_DRAWS_FOCUS_RING
+    // Focused state
+    bool oldFocused = [cell showsFirstResponder];
+    bool focused = states & FocusControlState;
+    if (focused != oldFocused)
+        [cell setShowsFirstResponder:focused];
+#endif
 
     // Checked and Indeterminate
     bool oldIndeterminate = [cell state] == NSMixedState;
@@ -214,6 +214,7 @@ IntRect ThemeMac::inflateRectForAA(const IntRect& rect) {
 
 // static
 IntRect ThemeMac::inflateRectForFocusRing(const IntRect& rect) {
+#if BUTTON_CELL_DRAW_WITH_FRAME_DRAWS_FOCUS_RING
     // Just put a margin of 16 units around the rect. The UI elements that use this don't appropriately
     // scale their focus rings appropriately (e.g, paint pickers), or switch to non-native widgets when
     // scaled (e.g, check boxes and radio buttons).
@@ -224,6 +225,9 @@ IntRect ThemeMac::inflateRectForFocusRing(const IntRect& rect) {
     result.setWidth(rect.width() + 2 * margin);
     result.setHeight(rect.height() + 2 * margin);
     return result;
+#else
+    return rect;
+#endif
 }
 
 // Checkboxes
@@ -301,8 +305,10 @@ static void paintCheckbox(ControlStates states, GraphicsContext* context, const 
     LocalCurrentGraphicsContext localContext(context, ThemeMac::inflateRectForFocusRing(inflatedRect));
     NSView* view = ensuredView(scrollableArea);
     [checkboxCell drawWithFrame:NSRect(inflatedRect) inView:view];
+#if !BUTTON_CELL_DRAW_WITH_FRAME_DRAWS_FOCUS_RING
     if (states & FocusControlState)
-        [checkboxCell cr_drawFocusRingWithFrame:NSRect(inflatedRect) inView:view];
+        [checkboxCell _web_drawFocusRingWithFrame:NSRect(inflatedRect) inView:view];
+#endif
     [checkboxCell setControlView:nil];
 
     END_BLOCK_OBJC_EXCEPTIONS
@@ -382,8 +388,10 @@ static void paintRadio(ControlStates states, GraphicsContext* context, const Int
     BEGIN_BLOCK_OBJC_EXCEPTIONS
     NSView* view = ensuredView(scrollableArea);
     [radioCell drawWithFrame:NSRect(inflatedRect) inView:view];
+#if !BUTTON_CELL_DRAW_WITH_FRAME_DRAWS_FOCUS_RING
     if (states & FocusControlState)
-        [radioCell cr_drawFocusRingWithFrame:NSRect(inflatedRect) inView:view];
+        [radioCell _web_drawFocusRingWithFrame:NSRect(inflatedRect) inView:view];
+#endif
     [radioCell setControlView:nil];
     END_BLOCK_OBJC_EXCEPTIONS
 }
@@ -473,8 +481,10 @@ static void paintButton(ControlPart part, ControlStates states, GraphicsContext*
     NSView* view = ensuredView(scrollableArea);
 
     [buttonCell drawWithFrame:NSRect(inflatedRect) inView:view];
+#if !BUTTON_CELL_DRAW_WITH_FRAME_DRAWS_FOCUS_RING
     if (states & FocusControlState)
-        [buttonCell cr_drawFocusRingWithFrame:NSRect(inflatedRect) inView:view];
+        [buttonCell _web_drawFocusRingWithFrame:NSRect(inflatedRect) inView:view];
+#endif
     [buttonCell setControlView:nil];
 
     END_BLOCK_OBJC_EXCEPTIONS
