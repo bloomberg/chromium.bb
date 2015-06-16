@@ -254,31 +254,11 @@
               ],
             }],  # target_arch == "ia32"
             ['target_arch == "arm"', {
-              # TODO(ihf): See the long comment in build_ffmpeg.sh
-              # We want to be consistent with CrOS and have configured
-              # ffmpeg for thumb. Protect yourself from -marm.
-              'cflags!': [
-                '-marm',
-              ],
-              'cflags': [
-                '-mthumb',
-                '-march=armv7-a',
-                '-mtune=cortex-a8',
-              ],
               # On arm we use gcc to compile the assembly.
               'sources': [
                 '<@(asm_sources)',
               ],
               'conditions': [
-                ['arm_neon == 0', {
-                  'cflags': [
-                    '-mfpu=vfpv3-d16',
-                  ],
-                }, {
-                  'cflags': [
-                    '-mfpu=neon',
-                  ],
-                }],
                 ['arm_float_abi == "hard"', {
                   'cflags': [
                     '-DHAVE_VFP_ARGS=1'
@@ -290,12 +270,6 @@
                 }],
               ],
             }],
-            ['target_arch == "mipsel"', {
-              'cflags': [
-                '-mips32',
-                '-EL -Wl,-EL',
-              ],
-            }],  # target_arch == "mipsel"
             ['os_posix == 1 and OS != "mac"', {
               'defines': [
                 '_ISOC99_SOURCE',
