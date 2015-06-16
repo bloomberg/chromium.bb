@@ -80,7 +80,7 @@ class CONTENT_EXPORT SiteIsolationPolicy {
 
   // Returns any bookkeeping data about the HTTP header information for the
   // request identified by |request_id|. Any data returned should then be
-  // passed to ShouldBlockResponse with the first packet.
+  // passed to OnReceivedFirstChunk() with the first data chunk.
   static linked_ptr<SiteIsolationResponseMetaData> OnReceivedResponse(
       const GURL& frame_origin,
       const GURL& response_url,
@@ -88,16 +88,14 @@ class CONTENT_EXPORT SiteIsolationPolicy {
       int origin_pid,
       const ResourceResponseInfo& info);
 
-  // Examines the first network packet in case response_url is registered as a
-  // cross-site document by DidReceiveResponse().  In case that this response is
-  // blocked, it returns an alternative data to be sent to the renderer in
-  // |alternative_data|. This records various kinds of UMA data stats. This
-  // function is called only if the length of received data is non-zero.
-  static bool ShouldBlockResponse(
+  // Examines the first chunk of network data in case response_url is registered
+  // as a cross-site document by DidReceiveResponse(). This records various
+  // kinds of UMA data stats. This function is called only if the length of
+  // received data is non-zero.
+  static bool OnReceivedFirstChunk(
       const linked_ptr<SiteIsolationResponseMetaData>& resp_data,
       const char* payload,
-      int length,
-      std::string* alternative_data);
+      int length);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SiteIsolationPolicyTest, IsBlockableScheme);

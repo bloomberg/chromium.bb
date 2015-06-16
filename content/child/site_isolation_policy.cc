@@ -200,11 +200,10 @@ SiteIsolationPolicy::OnReceivedResponse(const GURL& frame_origin,
   return resp_data;
 }
 
-bool SiteIsolationPolicy::ShouldBlockResponse(
+bool SiteIsolationPolicy::OnReceivedFirstChunk(
     const linked_ptr<SiteIsolationResponseMetaData>& resp_data,
     const char* raw_data,
-    int raw_length,
-    std::string* alternative_data) {
+    int raw_length) {
   if (!g_policy_enabled)
     return false;
 
@@ -212,8 +211,8 @@ bool SiteIsolationPolicy::ShouldBlockResponse(
 
   StringPiece data(raw_data, raw_length);
 
-  // Record the length of the first received network packet to see if it's
-  // enough for sniffing.
+  // Record the length of the first received chunk of data to see if it's enough
+  // for sniffing.
   UMA_HISTOGRAM_COUNTS("SiteIsolation.XSD.DataLength", raw_length);
 
   // Record the number of cross-site document responses with a specific mime
@@ -223,7 +222,7 @@ bool SiteIsolationPolicy::ShouldBlockResponse(
       SiteIsolationResponseMetaData::MaxCanonicalMimeType);
 
   // Store the result of cross-site document blocking analysis.
-  bool is_blocked = false;
+  bool would_block = false;
   bool sniffed_as_js = SniffForJS(data);
 
   // Record the number of responses whose content is sniffed for what its mime
@@ -250,11 +249,11 @@ bool SiteIsolationPolicy::ShouldBlockResponse(
     }
 
     if (sniffed_as_target_document) {
-      is_blocked = true;
+      would_block = true;
       HistogramCountBlockedResponse(bucket_prefix, resp_data, false);
     } else {
       if (resp_data->no_sniff) {
-        is_blocked = true;
+        would_block = true;
         HistogramCountBlockedResponse(bucket_prefix, resp_data, true);
       } else {
         HistogramCountNotBlockedResponse(bucket_prefix, sniffed_as_js);
@@ -273,10 +272,10 @@ bool SiteIsolationPolicy::ShouldBlockResponse(
       bucket_prefix = "SiteIsolation.XSD.Plain.JSON";
 
     if (bucket_prefix.size() > 0) {
-      is_blocked = true;
+      would_block = true;
       HistogramCountBlockedResponse(bucket_prefix, resp_data, false);
     } else if (resp_data->no_sniff) {
-      is_blocked = true;
+      would_block = true;
       HistogramCountBlockedResponse("SiteIsolation.XSD.Plain", resp_data, true);
     } else {
       HistogramCountNotBlockedResponse("SiteIsolation.XSD.Plain",
@@ -284,18 +283,7 @@ bool SiteIsolationPolicy::ShouldBlockResponse(
     }
   }
 
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kBlockCrossSiteDocuments))
-    is_blocked = false;
-
-  if (is_blocked) {
-    alternative_data->erase();
-    alternative_data->insert(0, " ");
-    LOG(ERROR) << resp_data->response_url
-               << " is blocked as an illegal cross-site document from "
-               << resp_data->frame_origin;
-  }
-  return is_blocked;
+  return would_block;
 }
 
 SiteIsolationResponseMetaData::CanonicalMimeType

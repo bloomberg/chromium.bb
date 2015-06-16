@@ -313,10 +313,6 @@ void ThreadedDataProvider::ForwardAndACKData(const char* data,
                                              int encoded_data_length) {
   DCHECK(background_thread_.isCurrentThread());
 
-  // TODO(oysteine): SiteIsolationPolicy needs to be be checked
-  // here before we pass the data to the data provider
-  // (or earlier on the I/O thread), otherwise once SiteIsolationPolicy does
-  // actual blocking as opposed to just UMA logging this will bypass it.
   threaded_data_receiver_->acceptData(data, data_length);
 
   scoped_ptr<std::vector<char>> data_copy;

@@ -28,10 +28,6 @@
 #include "base/win/scoped_handle.h"
 #endif
 
-namespace base {
-class RunLoop;
-}
-
 namespace gfx {
 class Point;
 }

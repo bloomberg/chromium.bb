@@ -168,7 +168,6 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
     linked_ptr<base::SharedMemory> buffer;
     scoped_refptr<SharedMemoryReceivedDataFactory> received_data_factory;
     linked_ptr<SiteIsolationResponseMetaData> site_isolation_metadata;
-    bool blocked_response;
     int buffer_size;
   };
   typedef base::hash_map<int, PendingRequestInfo> PendingRequestList;

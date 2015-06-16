@@ -39,12 +39,6 @@ const char kBlinkPlatformLogChannels[]      = "blink-platform-log-channels";
 // the enum value. Applied after other command line flags and prefs.
 const char kBlinkSettings[]                 = "blink-settings";
 
-// Block cross-site documents (i.e., HTML/XML/JSON) from being loaded in
-// subresources when a document is not supposed to read them.  This will later
-// allow us to block them from the entire renderer process when site isolation
-// is enabled.
-const char kBlockCrossSiteDocuments[]     = "block-cross-site-documents";
-
 // Causes the browser process to crash on startup.
 const char kBrowserCrashTest[]              = "crash-test";
 
