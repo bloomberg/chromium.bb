@@ -104,7 +104,7 @@ void SyncSetupService::SetSyncingAllDataTypes(bool sync_all) {
 }
 
 bool SyncSetupService::IsSyncEnabled() const {
-  return sync_service_->IsSyncEnabledAndLoggedIn();
+  return sync_service_->CanSyncStart();
 }
 
 void SyncSetupService::SetSyncEnabled(bool sync_enabled) {
@@ -159,7 +159,7 @@ bool SyncSetupService::HasFinishedInitialSetup() {
   //   1. User is signed in with sync enabled and the sync setup was completed.
   //   OR
   //   2. User is not signed in or has disabled sync.
-  return !sync_service_->IsSyncEnabledAndLoggedIn() ||
+  return !sync_service_->CanSyncStart() ||
          sync_service_->HasSyncSetupCompleted();
 }
 
@@ -174,7 +174,7 @@ void SyncSetupService::CommitChanges() {
   if (sync_service_->FirstSetupInProgress()) {
     // Turn on the sync setup completed flag only if the user did not turn sync
     // off.
-    if (sync_service_->IsSyncEnabledAndLoggedIn()) {
+    if (sync_service_->CanSyncStart()) {
       sync_service_->SetSyncSetupCompleted();
     }
   }

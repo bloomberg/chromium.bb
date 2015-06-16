@@ -127,7 +127,7 @@ void ExternalPrefLoader::StartLoading() {
       ProfileSyncService* service =
           ProfileSyncServiceFactory::GetForProfile(profile_);
       DCHECK(service);
-      if (service->IsSyncEnabledAndLoggedIn() &&
+      if (service->CanSyncStart() &&
           (service->HasSyncSetupCompleted() ||
            browser_defaults::kSyncAutoStarts)) {
         service->AddObserver(this);
@@ -150,7 +150,7 @@ void ExternalPrefLoader::OnStateChanged() {
   ProfileSyncService* service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
   DCHECK(service);
-  if (!service->IsSyncEnabledAndLoggedIn()) {
+  if (!service->CanSyncStart()) {
     PostLoadAndRemoveObservers();
   }
 }

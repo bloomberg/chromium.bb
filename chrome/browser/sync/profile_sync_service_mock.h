@@ -103,7 +103,7 @@ class ProfileSyncServiceMock : public ProfileSyncService {
                void(const sync_driver::DataTypeManager::ConfigureResult&));
   MOCK_METHOD0(OnConfigureStart, void());
 
-  MOCK_METHOD0(IsSyncEnabledAndLoggedIn, bool());
+  MOCK_CONST_METHOD0(CanSyncStart, bool());
   MOCK_CONST_METHOD0(IsManaged, bool());
   MOCK_METHOD0(IsOAuthRefreshTokenAvailable, bool());
 

@@ -40,7 +40,7 @@ bool FakeSyncService::HasObserver(
   return false;
 }
 
-bool FakeSyncService::IsSyncEnabledAndLoggedIn() {
+bool FakeSyncService::CanSyncStart() const {
   return false;
 }
 

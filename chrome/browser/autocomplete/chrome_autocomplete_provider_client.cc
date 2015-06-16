@@ -86,7 +86,7 @@ bool ChromeAutocompleteProviderClient::TabSyncEnabledAndUnencrypted() {
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile_);
   sync_driver::SyncPrefs sync_prefs(profile_->GetPrefs());
   return service &&
-      service->IsSyncEnabledAndLoggedIn() &&
+      service->CanSyncStart() &&
       sync_prefs.GetPreferredDataTypes(syncer::UserTypes()).Has(
           syncer::PROXY_TABS) &&
       !service->GetEncryptedDataTypes().Has(syncer::SESSIONS);

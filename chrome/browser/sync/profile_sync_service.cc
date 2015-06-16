@@ -289,12 +289,8 @@ ProfileSyncService::~ProfileSyncService() {
   CHECK(!backend_initialized_);
 }
 
-bool ProfileSyncService::IsSyncEnabledAndLoggedIn() {
-  // Exit if sync is not allowed or not requested.
-  if (!IsSyncAllowed() || !IsSyncRequested())
-    return false;
-
-  return IsSignedIn();
+bool ProfileSyncService::CanSyncStart() const {
+  return IsSyncAllowed() && IsSyncRequested() && IsSignedIn();
 }
 
 bool ProfileSyncService::IsOAuthRefreshTokenAvailable() {

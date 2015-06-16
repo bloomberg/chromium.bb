@@ -56,8 +56,7 @@ class SyncStartupTrackerTest : public testing::Test {
         .WillRepeatedly(Return(false));
     EXPECT_CALL(*mock_pss_, HasUnrecoverableError())
         .WillRepeatedly(Return(false));
-    EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn())
-        .WillRepeatedly(Return(true));
+    EXPECT_CALL(*mock_pss_, CanSyncStart()).WillRepeatedly(Return(true));
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
@@ -69,8 +68,7 @@ class SyncStartupTrackerTest : public testing::Test {
 
 TEST_F(SyncStartupTrackerTest, SyncAlreadyInitialized) {
   EXPECT_CALL(*mock_pss_, backend_initialized()).WillRepeatedly(Return(true));
-  EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn())
-      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*mock_pss_, CanSyncStart()).WillRepeatedly(Return(true));
   EXPECT_CALL(observer_, SyncStartupCompleted());
   SyncStartupTracker tracker(profile_.get(), &observer_);
 }
@@ -79,8 +77,7 @@ TEST_F(SyncStartupTrackerTest, SyncNotSignedIn) {
   // Make sure that we get a SyncStartupFailed() callback if sync is not logged
   // in.
   EXPECT_CALL(*mock_pss_, backend_initialized()).WillRepeatedly(Return(false));
-  EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn()).WillRepeatedly(
-      Return(false));
+  EXPECT_CALL(*mock_pss_, CanSyncStart()).WillRepeatedly(Return(false));
   EXPECT_CALL(observer_, SyncStartupFailed());
   SyncStartupTracker tracker(profile_.get(), &observer_);
 }
@@ -89,8 +86,7 @@ TEST_F(SyncStartupTrackerTest, SyncAuthError) {
   // Make sure that we get a SyncStartupFailed() callback if sync gets an auth
   // error.
   EXPECT_CALL(*mock_pss_, backend_initialized()).WillRepeatedly(Return(false));
-  EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn()).WillRepeatedly(
-      Return(true));
+  EXPECT_CALL(*mock_pss_, CanSyncStart()).WillRepeatedly(Return(true));
   GoogleServiceAuthError error(
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
   EXPECT_CALL(*mock_pss_, GetAuthError()).WillRepeatedly(ReturnRef(error));
@@ -122,8 +118,7 @@ TEST_F(SyncStartupTrackerTest, SyncDelayedAuthError) {
 
   // Now, mark the PSS as having an auth error.
   EXPECT_CALL(*mock_pss_, backend_initialized()).WillRepeatedly(Return(false));
-  EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn()).WillRepeatedly(
-      Return(true));
+  EXPECT_CALL(*mock_pss_, CanSyncStart()).WillRepeatedly(Return(true));
   GoogleServiceAuthError error(
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
   EXPECT_CALL(*mock_pss_, GetAuthError()).WillRepeatedly(ReturnRef(error));
@@ -142,8 +137,7 @@ TEST_F(SyncStartupTrackerTest, SyncDelayedUnrecoverableError) {
 
   // Now, mark the PSS as having an unrecoverable error.
   EXPECT_CALL(*mock_pss_, backend_initialized()).WillRepeatedly(Return(false));
-  EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn()).WillRepeatedly(
-      Return(true));
+  EXPECT_CALL(*mock_pss_, CanSyncStart()).WillRepeatedly(Return(true));
   GoogleServiceAuthError error(
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
   EXPECT_CALL(*mock_pss_, GetAuthError()).WillRepeatedly(ReturnRef(error));

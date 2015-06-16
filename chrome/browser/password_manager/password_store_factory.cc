@@ -98,7 +98,7 @@ bool ShouldAffiliationBasedMatchingBeActive(Profile* profile) {
   ProfileSyncService* profile_sync_service =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
   return profile_sync_service &&
-         profile_sync_service->IsSyncEnabledAndLoggedIn() &&
+         profile_sync_service->CanSyncStart() &&
          profile_sync_service->IsSyncActive() &&
          profile_sync_service->GetPreferredDataTypes().Has(syncer::PASSWORDS) &&
          !profile_sync_service->IsUsingSecondaryPassphrase();

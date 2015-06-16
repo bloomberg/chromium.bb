@@ -50,7 +50,7 @@ PrecacheManager* GetPrecacheManager(Profile* profile) {
 
 bool IsSyncTabsEnabled(Profile* profile) {
   ProfileSyncService* sync = ProfileSyncServiceFactory::GetForProfile(profile);
-  return sync->IsSyncEnabledAndLoggedIn() &&
+  return sync->CanSyncStart() &&
          sync->GetPreferredDataTypes().Has(syncer::PROXY_TABS);
 }
 

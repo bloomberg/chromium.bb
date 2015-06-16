@@ -176,7 +176,7 @@ void ProfileSyncServiceAndroid::SignInSync(JNIEnv* env, jobject) {
   // should start up automatically as long as it has credentials). This can
   // happen normally if (for example) the user closes and reopens the sync
   // settings window quickly during initial startup.
-  if (sync_service_->IsSyncEnabledAndLoggedIn() &&
+  if (sync_service_->CanSyncStart() &&
       sync_service_->IsOAuthRefreshTokenAvailable() &&
       sync_service_->HasSyncSetupCompleted()) {
     return;

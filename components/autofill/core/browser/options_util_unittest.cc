@@ -29,7 +29,7 @@ class SyncServiceMock : public sync_driver::SyncService {
   MOCK_METHOD1(RemoveObserver, void(sync_driver::SyncServiceObserver*));
   MOCK_CONST_METHOD1(HasObserver,
                      bool(const sync_driver::SyncServiceObserver*));
-  MOCK_METHOD0(IsSyncEnabledAndLoggedIn, bool());
+  MOCK_CONST_METHOD0(CanSyncStart, bool());
   MOCK_METHOD0(DisableForUser, void());
   MOCK_METHOD0(RequestStop, void());
   MOCK_METHOD0(RequestStart, void());
@@ -72,7 +72,7 @@ scoped_ptr<SyncServiceMock> CreateSyncService(bool has_autofill_profile,
   ON_CALL(*sync, GetActiveDataTypes()).WillByDefault(Return(type_set));
   ON_CALL(*sync, GetPreferredDataTypes()).WillByDefault(Return(type_set));
 
-  ON_CALL(*sync, IsSyncEnabledAndLoggedIn())
+  ON_CALL(*sync, CanSyncStart())
       .WillByDefault(Return(is_enabled_and_logged_in));
 
   return sync;

@@ -382,7 +382,7 @@ bool ContextualSearchDelegate::CanSendPageURL(
   ProfileSyncService* service =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
   sync_driver::SyncPrefs sync_prefs(profile->GetPrefs());
-  if (service == NULL || !service->IsSyncEnabledAndLoggedIn() ||
+  if (service == NULL || !service->CanSyncStart() ||
       !sync_prefs.GetPreferredDataTypes(syncer::UserTypes())
            .Has(syncer::PROXY_TABS) ||
       !service->GetActiveDataTypes().Has(syncer::HISTORY_DELETE_DIRECTIVES)) {

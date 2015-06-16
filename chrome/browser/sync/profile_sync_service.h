@@ -277,7 +277,7 @@ class ProfileSyncService : public sync_driver::SyncService,
   bool HasSyncSetupCompleted() const override;
   bool IsSyncAllowed() const override;
   bool IsSyncActive() const override;
-  bool IsSyncEnabledAndLoggedIn() override;
+  bool CanSyncStart() const override;
   void DisableForUser() override;
   void RequestStop() override;
   void RequestStart() override;

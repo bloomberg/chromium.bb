@@ -67,15 +67,11 @@ class SyncService : public sync_driver::DataTypeEncryptionHandler {
   // TODO(sync): The methods below were pulled from ProfileSyncService, and
   // should be evaluated to see if they should stay.
 
-  // Returns true if sync is enabled/not suppressed and the user is logged in.
+  // Returns true if sync is allowed, requested, and the user is logged in.
   // (being logged in does not mean that tokens are available - tokens may
   // be missing because they have not loaded yet, or because they were deleted
   // due to http://crbug.com/121755).
-  // Virtual to enable mocking in tests.
-  // TODO(tim): Remove this? Nothing in ProfileSyncService uses it, and outside
-  // callers use a seemingly arbitrary / redundant / bug prone combination of
-  // this method, IsSyncAllowed, and others.
-  virtual bool IsSyncEnabledAndLoggedIn() = 0;
+  virtual bool CanSyncStart() const = 0;
 
   // Disables sync for user. Use ShowLoginDialog to enable.
   virtual void DisableForUser() = 0;

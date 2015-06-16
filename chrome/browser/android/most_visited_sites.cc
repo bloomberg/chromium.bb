@@ -111,7 +111,7 @@ SyncState GetSyncState(Profile* profile) {
   if (!sync)
     return SyncState::SYNC_OR_HISTORY_SYNC_DISABLED;
   return suggestions::GetSyncState(
-      sync->IsSyncEnabledAndLoggedIn(),
+      sync->CanSyncStart(),
       sync->IsSyncActive() && sync->ConfigurationDone(),
       sync->GetActiveDataTypes().Has(syncer::HISTORY_DELETE_DIRECTIVES));
 }

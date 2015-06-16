@@ -15,7 +15,7 @@ bool WalletIntegrationAvailable(
     sync_driver::SyncService* sync_service,
     const PrefService& pref_service,
     const PersonalDataManager& personal_data_manager) {
-  if (!(sync_service && sync_service->IsSyncEnabledAndLoggedIn() &&
+  if (!(sync_service && sync_service->CanSyncStart() &&
         sync_service->GetPreferredDataTypes().Has(syncer::AUTOFILL_PROFILE))) {
     return false;
   }

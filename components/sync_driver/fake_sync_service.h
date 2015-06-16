@@ -26,7 +26,7 @@ class FakeSyncService : public sync_driver::SyncService {
   void RemoveObserver(sync_driver::SyncServiceObserver* observer) override;
   bool HasObserver(
       const sync_driver::SyncServiceObserver* observer) const override;
-  bool IsSyncEnabledAndLoggedIn() override;
+  bool CanSyncStart() const override;
   void DisableForUser() override;
   void RequestStop() override;
   void RequestStart() override;
