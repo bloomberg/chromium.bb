@@ -58,6 +58,8 @@
 #ifndef MEDIA_AUDIO_AUDIO_OUTPUT_DEVICE_H_
 #define MEDIA_AUDIO_AUDIO_OUTPUT_DEVICE_H_
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
@@ -95,6 +97,9 @@ class MEDIA_EXPORT AudioOutputDevice
   void Play() override;
   void Pause() override;
   bool SetVolume(double volume) override;
+  void SwitchOutputDevice(const std::string& device_id,
+                          const GURL& security_origin,
+                          const SwitchOutputDeviceCB& callback) override;
 
   // Methods called on IO thread ----------------------------------------------
   // AudioOutputIPCDelegate methods.
@@ -102,6 +107,8 @@ class MEDIA_EXPORT AudioOutputDevice
   void OnStreamCreated(base::SharedMemoryHandle handle,
                        base::SyncSocket::Handle socket_handle,
                        int length) override;
+  void OnOutputDeviceSwitched(int request_id,
+                              SwitchOutputDeviceResult result) override;
   void OnIPCClosed() override;
 
  protected:
@@ -129,10 +136,15 @@ class MEDIA_EXPORT AudioOutputDevice
   void PauseOnIOThread();
   void ShutDownOnIOThread();
   void SetVolumeOnIOThread(double volume);
+  void SwitchOutputDeviceOnIOThread(const std::string& device_id,
+                                    const GURL& security_origin,
+                                    const SwitchOutputDeviceCB& callback);
 
   // base::MessageLoop::DestructionObserver implementation for the IO loop.
   // If the IO loop dies before we do, we shut down the audio thread from here.
   void WillDestroyCurrentMessageLoop() override;
+
+  void SetCurrentSwitchRequest(const SwitchOutputDeviceCB& callback);
 
   AudioParameters audio_parameters_;
 
@@ -170,6 +182,9 @@ class MEDIA_EXPORT AudioOutputDevice
   // TODO(scherkus): Replace this by changing AudioRendererSink to either accept
   // the callback via Start(). See http://crbug.com/151051 for details.
   bool stopping_hack_;
+
+  int current_switch_request_id_;
+  SwitchOutputDeviceCB current_switch_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioOutputDevice);
 };

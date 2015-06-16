@@ -290,6 +290,7 @@ source_set("unittests") {
     "//media/base:test_support",
     "//testing/gmock",
     "//testing/gtest",
+    "//url",
   ]
 
   configs += [

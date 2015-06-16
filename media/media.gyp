@@ -1468,6 +1468,7 @@
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '../ui/gfx/gfx.gyp:gfx_test_support',
+        '../url/url.gyp:url_lib',
       ],
       'sources': [
         'base/run_all_unittests.cc',

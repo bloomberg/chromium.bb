@@ -6,6 +6,7 @@
 #define MEDIA_BASE_AUDIO_RENDERER_MIXER_H_
 
 #include <map>
+#include <string>
 
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
@@ -38,6 +39,10 @@ class MEDIA_EXPORT AudioRendererMixer
   void set_pause_delay_for_testing(base::TimeDelta delay) {
     pause_delay_ = delay;
   }
+
+  void SwitchOutputDevice(const std::string& device_id,
+                          const GURL& security_origin,
+                          const SwitchOutputDeviceCB& callback);
 
  private:
   // AudioRendererSink::RenderCallback implementation.

@@ -5,6 +5,7 @@
 #ifndef MEDIA_BASE_AUDIO_RENDERER_MIXER_INPUT_H_
 #define MEDIA_BASE_AUDIO_RENDERER_MIXER_INPUT_H_
 
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
@@ -32,6 +33,9 @@ class MEDIA_EXPORT AudioRendererMixerInput
   void Play() override;
   void Pause() override;
   bool SetVolume(double volume) override;
+  void SwitchOutputDevice(const std::string& device_id,
+                          const GURL& security_origin,
+                          const SwitchOutputDeviceCB& callback) override;
   void Initialize(const AudioParameters& params,
                   AudioRendererSink::RenderCallback* renderer) override;
 
