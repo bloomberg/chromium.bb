@@ -36,7 +36,7 @@ class RestoreOnStartupTestChromeOS : public LoginPolicyTestBase {
 
   // LoginPolicyTestBase:
   void SetUpCommandLine(base::CommandLine* command_line) override;
-  scoped_ptr<base::DictionaryValue> GetMandatoryPoliciesValue() const override;
+  void GetMandatoryPoliciesValue(base::DictionaryValue* policy) const override;
 
   void LogInAndVerifyStartUpURLs();
 
@@ -53,16 +53,14 @@ void RestoreOnStartupTestChromeOS::SetUpCommandLine(
   command_line->AppendSwitch(switches::kDisableChildAccountDetection);
 }
 
-scoped_ptr<base::DictionaryValue>
-RestoreOnStartupTestChromeOS::GetMandatoryPoliciesValue() const {
-  scoped_ptr<base::DictionaryValue> policy(new base::DictionaryValue);
+void RestoreOnStartupTestChromeOS::GetMandatoryPoliciesValue(
+    base::DictionaryValue* policy) const {
   policy->SetInteger(key::kRestoreOnStartup,
                      SessionStartupPref::kPrefValueURLs);
   scoped_ptr<base::ListValue> urls(new base::ListValue);
   urls->AppendString(kStartUpURL1);
   urls->AppendString(kStartUpURL2);
   policy->Set(key::kRestoreOnStartupURLs, urls.Pass());
-  return policy;
 }
 
 void RestoreOnStartupTestChromeOS::LogInAndVerifyStartUpURLs() {

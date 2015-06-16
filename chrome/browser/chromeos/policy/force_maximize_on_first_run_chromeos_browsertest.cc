@@ -9,7 +9,6 @@
 #include "ash/test/display_manager_test_api.h"
 #include "ash/wm/window_positioner.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -38,10 +37,8 @@ class ForceMaximizeOnFirstRunTest : public LoginPolicyTestBase,
     set_use_webview(GetParam());
   }
 
-  scoped_ptr<base::DictionaryValue> GetMandatoryPoliciesValue() const override {
-    scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
-    dict->SetBoolean(key::kForceMaximizeOnFirstRun, true);
-    return dict;
+  void GetMandatoryPoliciesValue(base::DictionaryValue* policy) const override {
+    policy->SetBoolean(key::kForceMaximizeOnFirstRun, true);
   }
 
   void SetUpResolution() {
@@ -109,10 +106,8 @@ class ForceMaximizePolicyFalseTest : public ForceMaximizeOnFirstRunTest {
  protected:
   ForceMaximizePolicyFalseTest() : ForceMaximizeOnFirstRunTest() {}
 
-  scoped_ptr<base::DictionaryValue> GetMandatoryPoliciesValue() const override {
-    scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
-    dict->SetBoolean(key::kForceMaximizeOnFirstRun, false);
-    return dict;
+  void GetMandatoryPoliciesValue(base::DictionaryValue* policy) const override {
+    policy->SetBoolean(key::kForceMaximizeOnFirstRun, false);
   }
 
  private:

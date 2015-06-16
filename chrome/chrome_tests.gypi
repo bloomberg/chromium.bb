@@ -766,6 +766,8 @@
       'browser/chromeos/policy/restore_on_startup_browsertest_chromeos.cc',
       'browser/chromeos/policy/user_cloud_external_data_manager_browsertest.cc',
       'browser/chromeos/policy/user_cloud_policy_manager_chromeos_browsertest.cc',
+      'browser/chromeos/policy/user_policy_test_helper.cc',
+      'browser/chromeos/policy/user_policy_test_helper.h',
       'browser/chromeos/policy/variations_service_policy_browsertest.cc',
       'browser/chromeos/power/peripheral_battery_observer_browsertest.cc',
       'browser/chromeos/preferences_browsertest.cc',

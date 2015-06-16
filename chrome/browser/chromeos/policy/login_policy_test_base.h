@@ -7,19 +7,17 @@
 
 #include <string>
 
-#include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 
 namespace base {
-class FilePath;
 class DictionaryValue;
 }
 
 namespace policy {
 
-class LocalPolicyTestServer;
+class UserPolicyTestHelper;
 
 // This class can be used to implement tests which need policy to be set prior
 // to login.
@@ -33,8 +31,8 @@ class LoginPolicyTestBase : public chromeos::OobeBaseTest {
   void SetUpCommandLine(base::CommandLine* command_line) override;
   void SetUpOnMainThread() override;
 
-  virtual scoped_ptr<base::DictionaryValue> GetMandatoryPoliciesValue() const;
-  virtual scoped_ptr<base::DictionaryValue> GetRecommendedPoliciesValue() const;
+  virtual void GetMandatoryPoliciesValue(base::DictionaryValue* policy) const;
+  virtual void GetRecommendedPoliciesValue(base::DictionaryValue* policy) const;
 
   void SkipToLoginScreen();
   void LogIn(const std::string& user_id, const std::string& password);
@@ -44,12 +42,9 @@ class LoginPolicyTestBase : public chromeos::OobeBaseTest {
 
  private:
   void SetUpGaiaServerWithAccessTokens();
-  void SetMergeSessionParams(const std::string& email);
-  void SetServerPolicy();
-  base::FilePath PolicyFilePath() const;
+  void SetMergeSessionParams();
 
-  scoped_ptr<LocalPolicyTestServer> test_server_;
-  base::ScopedTempDir temp_dir_;
+  scoped_ptr<UserPolicyTestHelper> user_policy_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginPolicyTestBase);
 };

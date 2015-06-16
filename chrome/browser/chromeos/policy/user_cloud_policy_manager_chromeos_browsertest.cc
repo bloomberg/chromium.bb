@@ -26,17 +26,14 @@ class UserCloudPolicyManagerTest : public LoginPolicyTestBase,
     set_use_webview(GetParam());
   }
 
-  scoped_ptr<base::DictionaryValue> GetMandatoryPoliciesValue() const override {
+  void GetMandatoryPoliciesValue(base::DictionaryValue* policy) const override {
     scoped_ptr<base::ListValue> list(new base::ListValue);
     list->AppendString("chrome://policy");
     list->AppendString("chrome://about");
 
-    scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
-    dict->Set(key::kRestoreOnStartupURLs, list.Pass());
-    dict->SetInteger(key::kRestoreOnStartup,
-                     SessionStartupPref::kPrefValueURLs);
-
-    return dict;
+    policy->Set(key::kRestoreOnStartupURLs, list.Pass());
+    policy->SetInteger(key::kRestoreOnStartup,
+                       SessionStartupPref::kPrefValueURLs);
   }
 
  private:
