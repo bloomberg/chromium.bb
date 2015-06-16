@@ -71,7 +71,7 @@ public class EnhancedBookmarkManager implements EnhancedBookmarkDelegate {
         public void bookmarkNodeRemoved(BookmarkItem parent, int oldIndex, BookmarkItem node) {
             // If the folder is removed in folder mode, show the parent folder or falls back to all
             // bookmarks mode.
-            if (getCurrentState() == STATE_FOLDER
+            if (getCurrentState() == UIState.STATE_FOLDER
                     && node.getId().equals(mStateStack.peek().mFolder)) {
                 if (mEnhancedBookmarksModel.getTopLevelFolderIDs(true, true).contains(
                         node.getId())) {
@@ -98,7 +98,7 @@ public class EnhancedBookmarkManager implements EnhancedBookmarkDelegate {
         public void bookmarkModelChanged() {
             // If the folder no longer exists in folder mode, we need to fall back. Relying on the
             // default behavior by setting the folder mode again.
-            if (getCurrentState() == STATE_FOLDER) {
+            if (getCurrentState() == UIState.STATE_FOLDER) {
                 setState(mStateStack.peek());
             }
             clearSelection();
@@ -110,7 +110,7 @@ public class EnhancedBookmarkManager implements EnhancedBookmarkDelegate {
         public void onFiltersChanged() {
             // if the current selected filter was removed, we need to fall back. Relying on the
             // default behavior by setting the filter mode again.
-            if (getCurrentState() == STATE_FILTER) {
+            if (getCurrentState() == UIState.STATE_FILTER) {
                 setState(mStateStack.peek());
             }
         }
@@ -238,7 +238,7 @@ public class EnhancedBookmarkManager implements EnhancedBookmarkDelegate {
             if (mStateStack.isEmpty()) {
                 setState(UIState.createStateFromUrl(getUrlFromPreference(),
                         mEnhancedBookmarksModel));
-            } else if (mStateStack.peek().mState == STATE_LOADING) {
+            } else if (mStateStack.peek().mState == UIState.STATE_LOADING) {
                 String url = mStateStack.pop().mUrl;
                 setState(UIState.createStateFromUrl(url, mEnhancedBookmarksModel));
             }
@@ -248,7 +248,7 @@ public class EnhancedBookmarkManager implements EnhancedBookmarkDelegate {
             mContentView.showLoadingUi();
             mDrawerListView.showLoadingUi();
             mContentView.showLoadingUi();
-            if (mStateStack.isEmpty() || mStateStack.peek().mState != STATE_LOADING) {
+            if (mStateStack.isEmpty() || mStateStack.peek().mState != UIState.STATE_LOADING) {
                 setState(UIState.createLoadingState(getUrlFromPreference()));
             } else if (!mStateStack.isEmpty()) {
                 // Refresh the UI. This is needed because on tablet, updateForUrl might set up
@@ -325,12 +325,12 @@ public class EnhancedBookmarkManager implements EnhancedBookmarkDelegate {
         }
         if (!mStateStack.isEmpty()) {
             if (mStateStack.peek().equals(state)) return;
-            if (mStateStack.peek().mState == STATE_LOADING) {
+            if (mStateStack.peek().mState == UIState.STATE_LOADING) {
                 mStateStack.pop();
             }
         }
         mStateStack.push(state);
-        if (state.mState != STATE_LOADING) {
+        if (state.mState != UIState.STATE_LOADING) {
             // Loading state may be pushed to the stack but should never be stored in preferences.
             saveUrlToPreference(state.mUrl);
             // If a loading state is replaced by another loading state, do not notify this change.
@@ -412,16 +412,16 @@ public class EnhancedBookmarkManager implements EnhancedBookmarkDelegate {
     public void notifyStateChange(EnhancedBookmarkUIObserver observer) {
         int state = getCurrentState();
         switch (state) {
-            case STATE_ALL_BOOKMARKS:
+            case UIState.STATE_ALL_BOOKMARKS:
                 observer.onAllBookmarksStateSet();
                 break;
-            case STATE_FOLDER:
+            case UIState.STATE_FOLDER:
                 observer.onFolderStateSet(mStateStack.peek().mFolder);
                 break;
-            case STATE_FILTER:
+            case UIState.STATE_FILTER:
                 observer.onFilterStateSet(mStateStack.peek().mFilter);
                 break;
-            case STATE_LOADING:
+            case UIState.STATE_LOADING:
                 // In loading state, onEnhancedBookmarkDelegateInitialized() is not called for all
                 // UIObservers, which means that there will be no observers at the time. Do nothing.
                 assert mUIObservers.isEmpty();
@@ -501,7 +501,7 @@ public class EnhancedBookmarkManager implements EnhancedBookmarkDelegate {
 
     @Override
     public int getCurrentState() {
-        if (mStateStack.isEmpty()) return STATE_LOADING;
+        if (mStateStack.isEmpty()) return UIState.STATE_LOADING;
         return mStateStack.peek().mState;
     }
 
@@ -509,38 +509,42 @@ public class EnhancedBookmarkManager implements EnhancedBookmarkDelegate {
      * Internal state that represents a url. Note every state needs to have a _valid_ url. For
      * loading state, {@link #mUrl} indicates the target to open after the bookmark model is loaded.
      */
-    private static class UIState {
+    static class UIState {
+        private static final int STATE_INVALID = 0;
+        static final int STATE_LOADING = 1;
+        static final int STATE_ALL_BOOKMARKS = 2;
+        static final int STATE_FOLDER = 3;
+        static final int STATE_FILTER = 4;
+
         private static final String TAG = "UIState";
         private static final String URL_CHARSET = "UTF-8";
         /**
-         * One of the four states:
-         * {@link EnhancedBookmarkDelegate#STATE_ALL_BOOKMARKS},
-         * {@link EnhancedBookmarkDelegate#STATE_FILTER},
-         * {@link EnhancedBookmarkDelegate#STATE_FOLDER},
-         * {@link EnhancedBookmarkDelegate#STATE_LOADING},
+         * One of the STATE_* constants.
          */
-        int mState;
-        String mUrl;
-        BookmarkId mFolder;
-        String mFilter;
+        private int mState;
+        private String mUrl;
+        private BookmarkId mFolder;
+        private String mFilter;
 
-        static UIState createLoadingState(String url) {
+        private static UIState createLoadingState(String url) {
             UIState state = new UIState();
             state.mUrl = url;
             state.mState = STATE_LOADING;
             return state;
         }
 
-        static UIState createAllBookmarksState(EnhancedBookmarksModel bookmarkModel) {
+        private static UIState createAllBookmarksState(EnhancedBookmarksModel bookmarkModel) {
             return createStateFromUrl(UrlConstants.BOOKMARKS_URL, bookmarkModel);
         }
 
-        static UIState createFolderState(BookmarkId folder, EnhancedBookmarksModel bookmarkModel) {
+        private static UIState createFolderState(BookmarkId folder,
+                EnhancedBookmarksModel bookmarkModel) {
             return createStateFromUrl(UrlConstants.BOOKMARKS_FOLDER_URL + folder.toString(),
                     bookmarkModel);
         }
 
-        static UIState createFilterState(String filter, EnhancedBookmarksModel bookmarkModel) {
+        private static UIState createFilterState(String filter,
+                EnhancedBookmarksModel bookmarkModel) {
             return createStateFromUrl(encodeUrl(UrlConstants.BOOKMARKS_FILTER_URL, filter),
                     bookmarkModel);
         }
@@ -548,9 +552,12 @@ public class EnhancedBookmarkManager implements EnhancedBookmarkDelegate {
         /**
          * @return A state corresponding to the url. If the url is not valid, return all_bookmarks.
          */
-        static UIState createStateFromUrl(String url, EnhancedBookmarksModel bookmarkModel) {
+        private static UIState createStateFromUrl(String url,
+                EnhancedBookmarksModel bookmarkModel) {
             UIState state = new UIState();
+            state.mState = STATE_INVALID;
             state.mUrl = url;
+
             if (url.equals(UrlConstants.BOOKMARKS_URL)) {
                 state.mState = STATE_ALL_BOOKMARKS;
             } else if (url.startsWith(UrlConstants.BOOKMARKS_FILTER_URL)) {
@@ -575,11 +582,15 @@ public class EnhancedBookmarkManager implements EnhancedBookmarkDelegate {
             return state;
         }
 
+        private UIState() {
+        }
+
         /**
          * @return Whether this state is valid.
          */
-        boolean isValid(EnhancedBookmarksModel bookmarkModel) {
-            if (mUrl == null) return false;
+        private boolean isValid(EnhancedBookmarksModel bookmarkModel) {
+            if (mUrl == null || mState == STATE_INVALID) return false;
+
             if (mState == STATE_FOLDER) {
                 if (mFolder == null) return false;
 
@@ -594,7 +605,7 @@ public class EnhancedBookmarkManager implements EnhancedBookmarkDelegate {
             return true;
         }
 
-        static String decodeSuffix(String url, String prefix) {
+        private static String decodeSuffix(String url, String prefix) {
             String suffix = url.substring(prefix.length());
             try {
                 suffix = URLDecoder.decode(suffix, URL_CHARSET);
@@ -604,7 +615,7 @@ public class EnhancedBookmarkManager implements EnhancedBookmarkDelegate {
             return suffix;
         }
 
-        static String encodeUrl(String prefix, String suffix) {
+        private static String encodeUrl(String prefix, String suffix) {
             try {
                 suffix = URLEncoder.encode(suffix, URL_CHARSET);
             } catch (UnsupportedEncodingException e) {

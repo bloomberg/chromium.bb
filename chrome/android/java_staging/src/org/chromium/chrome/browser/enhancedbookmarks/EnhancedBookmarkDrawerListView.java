@@ -13,6 +13,7 @@ import android.widget.ListView;
 
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkModelObserver;
 import org.chromium.chrome.browser.enhanced_bookmarks.EnhancedBookmarksBridge.FiltersObserver;
+import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkManager.UIState;
 import org.chromium.components.bookmarks.BookmarkId;
 
 import java.util.List;
@@ -98,21 +99,21 @@ class EnhancedBookmarkDrawerListView extends ListView implements EnhancedBookmar
     @Override
     public void onAllBookmarksStateSet() {
         mAdapter.updateList();
-        setItemChecked(mAdapter.getItemPosition(EnhancedBookmarkDelegate.STATE_ALL_BOOKMARKS, null),
+        setItemChecked(mAdapter.getItemPosition(UIState.STATE_ALL_BOOKMARKS, null),
                 true);
     }
 
     @Override
     public void onFolderStateSet(BookmarkId folder) {
         mAdapter.updateList();
-        setItemChecked(mAdapter.getItemPosition(EnhancedBookmarkDelegate.STATE_FOLDER, folder),
+        setItemChecked(mAdapter.getItemPosition(UIState.STATE_FOLDER, folder),
                 true);
     }
 
     @Override
     public void onFilterStateSet(String filter) {
         mAdapter.updateList();
-        setItemChecked(mAdapter.getItemPosition(EnhancedBookmarkDelegate.STATE_FILTER, filter),
+        setItemChecked(mAdapter.getItemPosition(UIState.STATE_FILTER, filter),
                 true);
     }
 

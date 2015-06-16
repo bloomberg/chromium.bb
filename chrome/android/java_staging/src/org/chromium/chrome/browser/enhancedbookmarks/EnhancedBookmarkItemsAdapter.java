@@ -20,6 +20,7 @@ import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkItem;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkModelObserver;
 import org.chromium.chrome.browser.enhanced_bookmarks.EnhancedBookmarksBridge.FiltersObserver;
+import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkManager.UIState;
 import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkPromoHeader.PromoHeaderShowingChangeListener;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.components.bookmarks.BookmarkId;
@@ -103,7 +104,7 @@ class EnhancedBookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
     private FiltersObserver mFiltersObserver = new FiltersObserver() {
         @Override
         public void onFiltersChanged() {
-            if (mDelegate.getCurrentState() == EnhancedBookmarkDelegate.STATE_FILTER) {
+            if (mDelegate.getCurrentState() == UIState.STATE_FILTER) {
                 mDelegate.notifyStateChange(EnhancedBookmarkItemsAdapter.this);
             }
         }

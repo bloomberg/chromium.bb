@@ -31,11 +31,6 @@ interface EnhancedBookmarkDelegate {
         public void onBookmarkUIStateChange(String url);
     }
 
-    static final int STATE_LOADING = 0;
-    static final int STATE_ALL_BOOKMARKS = 1;
-    static final int STATE_FOLDER = 2;
-    static final int STATE_FILTER = 3;
-
     /**
      * Corresponds to "All Items" list item in the side drawer. Shows all bookmarks.
      */
@@ -154,7 +149,7 @@ interface EnhancedBookmarkDelegate {
 
     /**
      * @return Current UIState of Enhanced Bookmark main UI. If no mode is stored,
-     *         {@link EnhancedBookmarkDelegate#STATE_LOADING} is returned.
+     *         {@link UIState#STATE_LOADING} is returned.
      */
     int getCurrentState();
 }

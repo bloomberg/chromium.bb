@@ -25,6 +25,7 @@ import com.google.android.apps.chrome.R;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkItem;
 import org.chromium.chrome.browser.enhanced_bookmarks.LaunchLocation;
 import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkItemsAdapter.BookmarkGrid;
+import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkManager.UIState;
 import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkSalientImageView.SalientImageDrawableFactory;
 import org.chromium.chrome.browser.widget.CustomShapeDrawable.CircularDrawable;
 import org.chromium.chrome.browser.widget.CustomShapeDrawable.TopRoundedCornerDrawable;
@@ -224,7 +225,7 @@ abstract class EnhancedBookmarkItem extends FrameLayout implements EnhancedBookm
         mFolderTitleView.setVisibility(View.INVISIBLE);
         BookmarkId parentId = bookmarkItem.getParentId();
         // On folder mode, folder name is shown at top so no need to show it again.
-        if (mDelegate.getCurrentState() != EnhancedBookmarkDelegate.STATE_FOLDER
+        if (mDelegate.getCurrentState() != UIState.STATE_FOLDER
                 && parentId != null) {
             BookmarkItem parentItem = mDelegate.getModel().getBookmarkById(parentId);
             if (parentItem != null) {
@@ -244,16 +245,16 @@ abstract class EnhancedBookmarkItem extends FrameLayout implements EnhancedBookm
         } else {
             int launchLocation = -1;
             switch (mDelegate.getCurrentState()) {
-                case EnhancedBookmarkDelegate.STATE_ALL_BOOKMARKS:
+                case UIState.STATE_ALL_BOOKMARKS:
                     launchLocation = LaunchLocation.ALL_ITEMS;
                     break;
-                case EnhancedBookmarkDelegate.STATE_FOLDER:
+                case UIState.STATE_FOLDER:
                     launchLocation = LaunchLocation.FOLDER;
                     break;
-                case EnhancedBookmarkDelegate.STATE_FILTER:
+                case UIState.STATE_FILTER:
                     launchLocation = LaunchLocation.FILTER;
                     break;
-                case EnhancedBookmarkDelegate.STATE_LOADING:
+                case UIState.STATE_LOADING:
                     assert false :
                             "The main content shouldn't be inflated if it's still loading";
                     break;

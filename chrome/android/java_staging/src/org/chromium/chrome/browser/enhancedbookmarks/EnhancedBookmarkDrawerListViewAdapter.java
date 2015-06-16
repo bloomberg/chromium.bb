@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 import com.google.android.apps.chrome.R;
 
+import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkManager.UIState;
 import org.chromium.components.bookmarks.BookmarkId;
 
 import java.util.ArrayList;
@@ -227,9 +228,9 @@ class EnhancedBookmarkDrawerListViewAdapter extends BaseAdapter {
      * Get item position of the given mode.
      */
     int getItemPosition(int state, Object modeDetail) {
-        if (state == EnhancedBookmarkDelegate.STATE_ALL_BOOKMARKS) {
+        if (state == UIState.STATE_ALL_BOOKMARKS) {
             return 0;
-        } else if (state == EnhancedBookmarkDelegate.STATE_FOLDER) {
+        } else if (state == UIState.STATE_FOLDER) {
             Set<BookmarkId> topLevelFolderParents = new HashSet<>();
             topLevelFolderParents.addAll(mDelegate.getModel().getTopLevelFolderParentIDs());
             topLevelFolderParents.add(mDesktopNodeId);
@@ -247,7 +248,7 @@ class EnhancedBookmarkDrawerListViewAdapter extends BaseAdapter {
                 topFolderId = parentId;
             }
             return positionOfBookmarkId(topFolderId);
-        } else if (state == EnhancedBookmarkDelegate.STATE_FILTER) {
+        } else if (state == UIState.STATE_FILTER) {
             String filter = (String) modeDetail;
             return positionOfFilter(filter);
         }
