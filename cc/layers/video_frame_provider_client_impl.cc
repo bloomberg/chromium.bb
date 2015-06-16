@@ -112,10 +112,12 @@ const gfx::Transform& VideoFrameProviderClientImpl::StreamTextureMatrix()
 }
 
 void VideoFrameProviderClientImpl::StopUsingProvider() {
-  // Block the provider from shutting down until this client is done
-  // using the frame.
-  base::AutoLock locker(provider_lock_);
-  provider_ = nullptr;
+  {
+    // Block the provider from shutting down until this client is done
+    // using the frame.
+    base::AutoLock locker(provider_lock_);
+    provider_ = nullptr;
+  }
   if (rendering_)
     StopRendering();
 }
@@ -166,16 +168,20 @@ void VideoFrameProviderClientImpl::OnBeginFrame(const BeginFrameArgs& args) {
   DCHECK(!stopped_);
 
   TRACE_EVENT0("cc", "VideoFrameProviderClientImpl::OnBeginFrame");
-  base::AutoLock locker(provider_lock_);
+  {
+    base::AutoLock locker(provider_lock_);
 
-  // We use frame_time + interval here because that is the estimated time at
-  // which a frame returned during this phase will end up being displayed.
-  if (!provider_ ||
-      !provider_->UpdateCurrentFrame(args.frame_time + args.interval,
-                                     args.frame_time + 2 * args.interval)) {
-    return;
+    // We use frame_time + interval here because that is the estimated time at
+    // which a frame returned during this phase will end up being displayed.
+    if (!provider_ ||
+        !provider_->UpdateCurrentFrame(args.frame_time + args.interval,
+                                       args.frame_time + 2 * args.interval)) {
+      return;
+    }
   }
 
+  // Warning: Do not hold |provider_lock_| while calling this function, it may
+  // lead to a reentrant call to HasCurrentFrame() above.
   DidReceiveFrame();
 }
 
