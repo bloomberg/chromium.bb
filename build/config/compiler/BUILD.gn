@@ -51,8 +51,8 @@ declare_args() {
   # with some utilities such as icecc and ccache. Requires gold and
   # gcc >= 4.8 or clang.
   # http://gcc.gnu.org/wiki/DebugFission
-  use_debug_fission =
-      !is_win && use_gold && linux_use_bundled_binutils && !use_ccache
+  use_debug_fission = is_debug && !is_win && use_gold &&
+                      linux_use_bundled_binutils && !use_ccache
 
   if (is_win) {
     # Whether the VS xtree header has been patched to disable warning 4702. If
