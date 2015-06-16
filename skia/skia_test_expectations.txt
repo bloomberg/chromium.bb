@@ -48,10 +48,4 @@
 #
 # START OVERRIDES HERE
 
-# https://codereview.chromium.org/1149853004
-crbug.com/500591 fast/canvas/canvas-composite-transformclip.html [ NeedsManualRebaseline ]
-crbug.com/500591 fast/canvas/canvas-composite.html  [ NeedsManualRebaseline ]
-crbug.com/500591 virtual/display_list_2d_canvas/fast/canvas/canvas-composite-transformclip.html [ NeedsManualRebaseline ]
-crbug.com/500591 virtual/display_list_2d_canvas/fast/canvas/canvas-composite.html [ NeedsManualRebaseline ]
-
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
