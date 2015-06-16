@@ -68,7 +68,8 @@ void VerifyReceivedRendererMessages(content::MockRenderThread* render_thread,
 
 // Tests that submitting a form generates WillSubmitForm and FormSubmitted
 // messages with the form fields.
-TEST_F(FormAutocompleteTest, NormalFormSubmit) {
+// Flaky: http://crbug.com/500851.
+TEST_F(FormAutocompleteTest, DISABLED_NormalFormSubmit) {
   // Load a form.
   LoadHTML("<html><form id='myForm'><input name='fname' value='Rick'/>"
            "<input name='lname' value='Deckard'/></form></html>");
@@ -119,7 +120,8 @@ TEST_F(FormAutocompleteTest, AutoCompleteOffFormSubmit) {
 }
 
 // Tests that fields with autocomplete off are submitted.
-TEST_F(FormAutocompleteTest, AutoCompleteOffInputSubmit) {
+// Flaky: http://crbug.com/500851.
+TEST_F(FormAutocompleteTest, DISABLED_AutoCompleteOffInputSubmit) {
   // Load a form.
   LoadHTML("<html><form id='myForm'>"
            "<input name='fname' value='Rick'/>"
@@ -137,7 +139,8 @@ TEST_F(FormAutocompleteTest, AutoCompleteOffInputSubmit) {
 // Tests that submitting a form that has been dynamically set as autocomplete
 // off generates WillSubmitForm and FormSubmitted messages.
 // Note: We previously did the opposite, for bug http://crbug.com/36520
-TEST_F(FormAutocompleteTest, DynamicAutoCompleteOffFormSubmit) {
+// Flaky: http://crbug.com/500851.
+TEST_F(FormAutocompleteTest, DISABLED_DynamicAutoCompleteOffFormSubmit) {
   LoadHTML("<html><form id='myForm'><input name='fname' value='Rick'/>"
            "<input name='lname' value='Deckard'/></form></html>");
 
