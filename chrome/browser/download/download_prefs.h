@@ -66,8 +66,12 @@ class DownloadPrefs {
   // |path.Extension()|.
   bool IsAutoOpenEnabledBasedOnExtension(const base::FilePath& path) const;
 
-  // Enables auto-open based on file extension. Returns true on success.
-  // TODO(phajdan.jr): Add WARN_UNUSED_RESULT here.
+  // Enables automatically opening all downloads with the same file type as
+  // |file_name|. Returns true on success. The call may fail if |file_name|
+  // either doesn't have an extension (hence the file type cannot be
+  // determined), or if the file type is one that is disallowed from being
+  // opened automatically. See IsAllowedToOpenAutomatically() for details on the
+  // latter.
   bool EnableAutoOpenBasedOnExtension(const base::FilePath& file_name);
 
   // Disables auto-open based on file extension.

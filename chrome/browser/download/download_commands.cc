@@ -7,6 +7,7 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_crx_util.h"
+#include "chrome/browser/download/download_extensions.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -88,6 +89,8 @@ bool DownloadCommands::IsCommandEnabled(Command command) const {
       // filename. Don't base an "Always open" decision based on it. Also
       // exclude extensions.
       return download_item_->CanOpenDownload() &&
+             download_util::IsAllowedToOpenAutomatically(
+                 download_item_->GetTargetFilePath()) &&
              !download_crx_util::IsExtensionDownload(*download_item_);
     case CANCEL:
       return !download_item_->IsDone();
