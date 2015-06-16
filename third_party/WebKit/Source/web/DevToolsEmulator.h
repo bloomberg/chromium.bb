@@ -30,6 +30,7 @@ public:
     void setDeviceScaleAdjustment(float);
     void setPreferCompositingToLCDTextEnabled(bool);
     void setUseMobileViewportStyle(bool);
+    void setPluginsEnabled(bool);
     void setScriptEnabled(bool);
     void setDoubleTapToZoomEnabled(bool);
     bool doubleTapToZoomEnabled() const;
@@ -58,6 +59,7 @@ private:
     float m_embedderDeviceScaleAdjustment;
     bool m_embedderPreferCompositingToLCDTextEnabled;
     bool m_embedderUseMobileViewport;
+    bool m_embedderPluginsEnabled;
 
     bool m_touchEventEmulationEnabled;
     bool m_doubleTapToZoomEnabled;

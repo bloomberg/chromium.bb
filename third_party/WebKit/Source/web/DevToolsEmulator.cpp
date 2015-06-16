@@ -59,6 +59,7 @@ DevToolsEmulator::DevToolsEmulator(WebViewImpl* webViewImpl)
     , m_embedderDeviceScaleAdjustment(webViewImpl->page()->settings().deviceScaleAdjustment())
     , m_embedderPreferCompositingToLCDTextEnabled(webViewImpl->page()->settings().preferCompositingToLCDTextEnabled())
     , m_embedderUseMobileViewport(webViewImpl->page()->settings().useMobileViewportStyle())
+    , m_embedderPluginsEnabled(webViewImpl->page()->settings().pluginsEnabled())
     , m_touchEventEmulationEnabled(false)
     , m_doubleTapToZoomEnabled(false)
     , m_originalTouchEnabled(false)
@@ -115,6 +116,14 @@ void DevToolsEmulator::setUseMobileViewportStyle(bool enabled)
     bool emulateMobileEnabled = m_deviceMetricsEnabled && m_emulateMobileEnabled;
     if (!emulateMobileEnabled)
         m_webViewImpl->page()->settings().setUseMobileViewportStyle(enabled);
+}
+
+void DevToolsEmulator::setPluginsEnabled(bool enabled)
+{
+    m_embedderPluginsEnabled = enabled;
+    bool emulateMobileEnabled = m_deviceMetricsEnabled && m_emulateMobileEnabled;
+    if (!emulateMobileEnabled)
+        m_webViewImpl->page()->settings().setPluginsEnabled(enabled);
 }
 
 void DevToolsEmulator::setScriptEnabled(bool enabled)
@@ -189,6 +198,7 @@ void DevToolsEmulator::enableMobileEmulation()
     m_webViewImpl->page()->settings().setTextAutosizingEnabled(true);
     m_webViewImpl->page()->settings().setPreferCompositingToLCDTextEnabled(true);
     m_webViewImpl->page()->settings().setUseMobileViewportStyle(true);
+    m_webViewImpl->page()->settings().setPluginsEnabled(false);
     m_webViewImpl->setZoomFactorOverride(1);
 
     m_originalDefaultMinimumPageScaleFactor = m_webViewImpl->defaultMinimumPageScaleFactor();
@@ -207,6 +217,7 @@ void DevToolsEmulator::disableMobileEmulation()
     m_webViewImpl->page()->settings().setTextAutosizingEnabled(m_embedderTextAutosizingEnabled);
     m_webViewImpl->page()->settings().setPreferCompositingToLCDTextEnabled(m_embedderPreferCompositingToLCDTextEnabled);
     m_webViewImpl->page()->settings().setUseMobileViewportStyle(m_embedderUseMobileViewport);
+    m_webViewImpl->page()->settings().setPluginsEnabled(m_embedderPluginsEnabled);
     m_webViewImpl->setZoomFactorOverride(0);
     m_emulateMobileEnabled = false;
     m_webViewImpl->setDefaultPageScaleLimits(

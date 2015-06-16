@@ -281,7 +281,7 @@ void WebSettingsImpl::setLoadWithOverviewMode(bool enabled)
 
 void WebSettingsImpl::setPluginsEnabled(bool enabled)
 {
-    m_settings->setPluginsEnabled(enabled);
+    m_devToolsEmulator->setPluginsEnabled(enabled);
 }
 
 void WebSettingsImpl::setAvailablePointerTypes(int pointers)
