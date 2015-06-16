@@ -61,9 +61,8 @@ v8::Local<v8::Value> toV8(const TestInterfaceEventInit& impl, v8::Local<v8::Obje
 
 bool toV8TestInterfaceEventInit(const TestInterfaceEventInit& impl, v8::Local<v8::Object> dictionary, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
 {
-    // TODO(bashi): Use ForceSet() instead of Set(). http://crbug.com/476720
     if (impl.hasStringMember()) {
-        if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "stringMember"), v8String(isolate, impl.stringMember()))))
+        if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8String(isolate, "stringMember"), v8String(isolate, impl.stringMember()))))
             return false;
     }
 

@@ -324,7 +324,7 @@ def setter_context(interface, attribute, context):
 
     if ('Replaceable' in attribute.extended_attributes or
             is_constructor_attribute(attribute)):
-        context['cpp_setter'] = '%sForceSetAttributeOnThis(propertyName, v8Value, info)' % cpp_name(interface)
+        context['cpp_setter'] = '%sCreateDataProperty(propertyName, v8Value, info)' % cpp_name(interface)
         return
 
     extended_attributes = attribute.extended_attributes

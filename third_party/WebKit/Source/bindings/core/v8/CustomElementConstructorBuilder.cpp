@@ -193,10 +193,10 @@ bool CustomElementConstructorBuilder::createConstructor(Document* document, Cust
     // no side effects.
     if (!v8CallBoolean(m_constructor->Set(context, prototypeKey, m_prototype)))
         return false;
-    // This *configures* the property. ForceSet of a function's
+    // This *configures* the property. DefineOwnProperty of a function's
     // "prototype" does not affect the value, but can reconfigure the
     // property.
-    if (!v8CallBoolean(m_constructor->ForceSet(context, prototypeKey, m_prototype, v8::PropertyAttribute(v8::ReadOnly | v8::DontEnum | v8::DontDelete))))
+    if (!v8CallBoolean(m_constructor->DefineOwnProperty(context, prototypeKey, m_prototype, v8::PropertyAttribute(v8::ReadOnly | v8::DontEnum | v8::DontDelete))))
         return false;
 
     v8::Local<v8::String> constructorKey = v8String(isolate, "constructor");
@@ -208,7 +208,7 @@ bool CustomElementConstructorBuilder::createConstructor(Document* document, Cust
         return false;
 
     V8HiddenValue::setHiddenValue(isolate, m_prototype, V8HiddenValue::customElementIsInterfacePrototypeObject(isolate), v8::True(isolate));
-    if (!v8CallBoolean(m_prototype->ForceSet(context, v8String(isolate, "constructor"), m_constructor, v8::DontEnum)))
+    if (!v8CallBoolean(m_prototype->DefineOwnProperty(context, v8String(isolate, "constructor"), m_constructor, v8::DontEnum)))
         return false;
 
     return true;

@@ -94,22 +94,21 @@ v8::Local<v8::Value> toV8(const TestDictionaryDerivedImplementedAs& impl, v8::Lo
 
 bool toV8TestDictionaryDerivedImplementedAs(const TestDictionaryDerivedImplementedAs& impl, v8::Local<v8::Object> dictionary, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
 {
-    // TODO(bashi): Use ForceSet() instead of Set(). http://crbug.com/476720
     if (impl.hasDerivedStringMember()) {
-        if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "derivedStringMember"), v8String(isolate, impl.derivedStringMember()))))
+        if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8String(isolate, "derivedStringMember"), v8String(isolate, impl.derivedStringMember()))))
             return false;
     }
 
     if (impl.hasDerivedStringMemberWithDefault()) {
-        if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "derivedStringMemberWithDefault"), v8String(isolate, impl.derivedStringMemberWithDefault()))))
+        if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8String(isolate, "derivedStringMemberWithDefault"), v8String(isolate, impl.derivedStringMemberWithDefault()))))
             return false;
     } else {
-        if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "derivedStringMemberWithDefault"), v8String(isolate, String("default string value")))))
+        if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8String(isolate, "derivedStringMemberWithDefault"), v8String(isolate, String("default string value")))))
             return false;
     }
 
     if (impl.hasRequiredLongMember()) {
-        if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "requiredLongMember"), v8::Integer::New(isolate, impl.requiredLongMember()))))
+        if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8String(isolate, "requiredLongMember"), v8::Integer::New(isolate, impl.requiredLongMember()))))
             return false;
     } else {
         ASSERT_NOT_REACHED();

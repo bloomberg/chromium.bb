@@ -109,8 +109,7 @@ v8::Local<v8::Value> toV8(const IDBKey* key, v8::Local<v8::Object> creationConte
                 v8::Local<v8::Value> value = toV8(key->array()[i].get(), creationContext, isolate);
                 if (value.IsEmpty())
                     value = v8::Undefined(isolate);
-                // TODO(jsbell): Use DefineOwnProperty when exposed by V8. http://crbug.com/475206
-                if (!v8CallBoolean(array->ForceSet(context, v8::Integer::New(isolate, i), value)))
+                if (!v8CallBoolean(array->CreateDataProperty(context, i, value)))
                     return v8Undefined();
             }
             return array;
@@ -363,8 +362,7 @@ static v8::Local<v8::Value> deserializeIDBValueArray(v8::Isolate* isolate, v8::L
         v8::Local<v8::Value> v8Value = deserializeIDBValue(isolate, creationContext, values->at(i).get());
         if (v8Value.IsEmpty())
             v8Value = v8::Undefined(isolate);
-        // TODO(cmumford): Use DefineOwnProperty when exposed by V8. http://crbug.com/475206
-        if (!v8CallBoolean(array->ForceSet(context, v8::Integer::New(isolate, i), v8Value)))
+        if (!v8CallBoolean(array->CreateDataProperty(context, i, v8Value)))
             return v8Undefined();
     }
 
@@ -409,8 +407,7 @@ bool injectV8KeyIntoV8Value(v8::Isolate* isolate, v8::Local<v8::Value> key, v8::
                 return false;
         } else {
             value = v8::Object::New(isolate);
-            // TODO(jsbell): Use DefineOwnProperty when exposed by V8. http://crbug.com/475206
-            if (!v8CallBoolean(object->ForceSet(context, property, value)))
+            if (!v8CallBoolean(object->CreateDataProperty(context, property, value)))
                 return false;
         }
     }
@@ -424,8 +421,7 @@ bool injectV8KeyIntoV8Value(v8::Isolate* isolate, v8::Local<v8::Value> key, v8::
     // If it's not an implicit property of value, value must be an object.
     v8::Local<v8::Object> object = value.As<v8::Object>();
     v8::Local<v8::String> property = v8String(isolate, keyPathElements.last());
-    // TODO(jsbell): Use DefineOwnProperty when exposed by V8. http://crbug.com/475206
-    if (!v8CallBoolean(object->ForceSet(context, property, key)))
+    if (!v8CallBoolean(object->CreateDataProperty(context, property, key)))
         return false;
 
     return true;

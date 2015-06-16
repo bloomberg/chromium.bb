@@ -30,17 +30,17 @@ const WrapperTypeInfo& TestInterfaceCheckSecurity::s_wrapperTypeInfo = V8TestInt
 namespace TestInterfaceCheckSecurityV8Internal {
 
 template<class CallbackInfo>
-static void TestInterfaceCheckSecurityForceSetAttributeOnThis(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const CallbackInfo& info)
+static bool TestInterfaceCheckSecurityCreateDataProperty(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const CallbackInfo& info)
 {
     TestInterfaceCheckSecurity* impl = V8TestInterfaceCheckSecurity::toImpl(info.Holder());
     v8::String::Utf8Value attributeName(name);
     ExceptionState exceptionState(ExceptionState::SetterContext, *attributeName, "TestInterfaceCheckSecurity", info.Holder(), info.GetIsolate());
     if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), impl->frame(), exceptionState)) {
         exceptionState.throwIfNeeded();
-        return;
+        return false;
     }
     ASSERT(info.This()->IsObject());
-    v8::Local<v8::Object>::Cast(info.This())->ForceSet(info.GetIsolate()->GetCurrentContext(), name, v8Value);
+    return v8CallBoolean(v8::Local<v8::Object>::Cast(info.This())->CreateDataProperty(info.GetIsolate()->GetCurrentContext(), name, v8Value));
 }
 
 static void readonlyLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -204,7 +204,7 @@ static void doNotCheckSecurityReplaceableReadonlyLongAttributeAttributeGetterCal
 static void doNotCheckSecurityReplaceableReadonlyLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::String> propertyName = v8AtomicString(info.GetIsolate(), "doNotCheckSecurityReplaceableReadonlyLongAttribute");
-    TestInterfaceCheckSecurityForceSetAttributeOnThis(propertyName, v8Value, info);
+    TestInterfaceCheckSecurityCreateDataProperty(propertyName, v8Value, info);
 }
 
 static void doNotCheckSecurityReplaceableReadonlyLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -232,7 +232,7 @@ static void doNotCheckSecurityReplaceableReadonlyLongAccessorAttributeGetterCall
 static void doNotCheckSecurityReplaceableReadonlyLongAccessorAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::String> propertyName = v8AtomicString(info.GetIsolate(), "doNotCheckSecurityReplaceableReadonlyLongAccessor");
-    TestInterfaceCheckSecurityForceSetAttributeOnThis(propertyName, v8Value, info);
+    TestInterfaceCheckSecurityCreateDataProperty(propertyName, v8Value, info);
 }
 
 static void doNotCheckSecurityReplaceableReadonlyLongAccessorAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)

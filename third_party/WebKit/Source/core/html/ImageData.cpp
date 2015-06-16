@@ -141,7 +141,7 @@ v8::Local<v8::Object> ImageData::associateWithWrapper(v8::Isolate* isolate, cons
         // of the ImageData object to the created v8 object, eliminating the
         // C++ callback when accessing the "data" property.
         v8::Local<v8::Value> pixelArray = toV8(m_data.get(), wrapper, isolate);
-        if (pixelArray.IsEmpty() || !v8CallBoolean(wrapper->ForceSet(isolate->GetCurrentContext(), v8AtomicString(isolate, "data"), pixelArray, v8::ReadOnly)))
+        if (pixelArray.IsEmpty() || !v8CallBoolean(wrapper->DefineOwnProperty(isolate->GetCurrentContext(), v8AtomicString(isolate, "data"), pixelArray, v8::ReadOnly)))
             return v8::Local<v8::Object>();
     }
     return wrapper;

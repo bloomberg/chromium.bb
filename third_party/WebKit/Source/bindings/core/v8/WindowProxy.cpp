@@ -374,6 +374,8 @@ void WindowProxy::updateDocumentProperty()
     checkDocumentWrapper(m_document.newLocal(m_isolate), frame->document());
 
     ASSERT(documentWrapper->IsObject());
+    // TODO(bashi): Avoid using ForceSet(). When we use accessors to implement
+    // attributes, we may be able to remove updateDocumentProperty().
     if (!v8CallBoolean(context->Global()->ForceSet(context, v8AtomicString(m_isolate, "document"), documentWrapper, static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontDelete))))
         return;
 

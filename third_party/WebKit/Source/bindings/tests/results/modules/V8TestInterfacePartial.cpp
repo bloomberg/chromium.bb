@@ -334,8 +334,8 @@ void V8TestInterfacePartial::preparePrototypeObject(v8::Isolate* isolate, v8::Lo
         unscopeables = prototypeObject->Get(v8Context, unscopablesSymbol).ToLocalChecked().As<v8::Object>();
     else
         unscopeables = v8::Object::New(isolate);
-    unscopeables->ForceSet(v8Context, v8AtomicString(isolate, "unscopeableVoidMethod"), v8::True(isolate)).FromJust();
-    prototypeObject->ForceSet(v8Context, unscopablesSymbol, unscopeables).FromJust();
+    unscopeables->CreateDataProperty(v8Context, v8AtomicString(isolate, "unscopeableVoidMethod"), v8::True(isolate)).FromJust();
+    prototypeObject->CreateDataProperty(v8Context, unscopablesSymbol, unscopeables).FromJust();
 }
 
 void V8TestInterfacePartial::initialize()

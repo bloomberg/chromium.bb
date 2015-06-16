@@ -54,7 +54,7 @@ void V8ObjectBuilder::addInternal(const String& name, v8::Local<v8::Value> value
 {
     if (m_object.IsEmpty())
         return;
-    if (value.IsEmpty() || m_object->ForceSet(m_scriptState->context(), v8String(m_scriptState->isolate(), name), value).IsNothing())
+    if (value.IsEmpty() || m_object->CreateDataProperty(m_scriptState->context(), v8String(m_scriptState->isolate(), name), value).IsNothing())
         m_object.Clear();
 }
 

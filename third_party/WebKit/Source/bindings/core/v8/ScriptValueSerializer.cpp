@@ -1825,13 +1825,11 @@ bool ScriptValueDeserializer::completeDenseArray(uint32_t numProperties, uint32_
         return false;
     if (length > stackDepth())
         return false;
-    v8::Isolate* isolate = m_reader.scriptState()->isolate();
     v8::Local<v8::Context> context = m_reader.scriptState()->context();
     for (unsigned i = 0, stackPos = stackDepth() - length; i < length; i++, stackPos++) {
         v8::Local<v8::Value> elem = element(stackPos);
         if (!elem->IsUndefined()) {
-            // TODO(jsbell): Use DefineOwnProperty when exposed by v8. http://crbug.com/475206
-            if (!v8CallBoolean(array->ForceSet(context, v8::Integer::New(isolate, i), elem)))
+            if (!v8CallBoolean(array->CreateDataProperty(context, i, elem)))
                 return false;
         }
     }
@@ -1897,8 +1895,14 @@ bool ScriptValueDeserializer::initializeObject(v8::Local<v8::Object> object, uin
     for (unsigned i = stackDepth() - length; i < stackDepth(); i += 2) {
         v8::Local<v8::Value> propertyName = element(i);
         v8::Local<v8::Value> propertyValue = element(i + 1);
-        // TODO(jsbell): Use DefineOwnProperty when exposed by v8. http://crbug.com/475206
-        if (!v8CallBoolean(object->ForceSet(context, propertyName, propertyValue)))
+        bool result = false;
+        if (propertyName->IsString())
+            result = v8CallBoolean(object->CreateDataProperty(context, propertyName.As<v8::String>(), propertyValue));
+        else if (propertyName->IsUint32())
+            result = v8CallBoolean(object->CreateDataProperty(context, propertyName.As<v8::Uint32>()->Value(), propertyValue));
+        else
+            ASSERT_NOT_REACHED();
+        if (!result)
             return false;
     }
     pop(length);

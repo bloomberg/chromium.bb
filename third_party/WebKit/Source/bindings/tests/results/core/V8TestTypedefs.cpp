@@ -34,10 +34,10 @@ const WrapperTypeInfo& TestTypedefs::s_wrapperTypeInfo = V8TestTypedefs::wrapper
 namespace TestTypedefsV8Internal {
 
 template<class CallbackInfo>
-static void TestTypedefsForceSetAttributeOnThis(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const CallbackInfo& info)
+static bool TestTypedefsCreateDataProperty(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const CallbackInfo& info)
 {
     ASSERT(info.This()->IsObject());
-    v8::Local<v8::Object>::Cast(info.This())->ForceSet(info.GetIsolate()->GetCurrentContext(), name, v8Value);
+    return v8CallBoolean(v8::Local<v8::Object>::Cast(info.This())->CreateDataProperty(info.GetIsolate()->GetCurrentContext(), name, v8Value));
 }
 
 static void TestTypedefsConstructorAttributeSetterCallback(v8::Local<v8::Name>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
@@ -52,7 +52,7 @@ static void TestTypedefsConstructorAttributeSetterCallback(v8::Local<v8::Name>, 
         const WrapperTypeInfo* wrapperTypeInfo = WrapperTypeInfo::unwrap(data);
         if (!wrapperTypeInfo)
             break;
-        TestTypedefsForceSetAttributeOnThis(v8String(info.GetIsolate(), wrapperTypeInfo->interfaceName), v8Value, info);
+        TestTypedefsCreateDataProperty(v8String(info.GetIsolate(), wrapperTypeInfo->interfaceName), v8Value, info);
     } while (false); // do ... while (false) just for use of break
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -93,7 +93,7 @@ static void uLongLongAttributeAttributeSetterCallback(const v8::FunctionCallback
 static void tAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     v8::Local<v8::String> propertyName = v8AtomicString(info.GetIsolate(), "tAttribute");
-    TestTypedefsForceSetAttributeOnThis(propertyName, v8Value, info);
+    TestTypedefsCreateDataProperty(propertyName, v8Value, info);
 }
 
 static void tAttributeAttributeSetterCallback(v8::Local<v8::Name>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)

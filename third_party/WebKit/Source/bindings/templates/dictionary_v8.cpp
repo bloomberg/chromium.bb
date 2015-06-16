@@ -99,17 +99,16 @@ v8::Local<v8::Value> toV8(const {{cpp_class}}& impl, v8::Local<v8::Object> creat
 
 bool toV8{{cpp_class}}(const {{cpp_class}}& impl, v8::Local<v8::Object> dictionary, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
 {
-    // TODO(bashi): Use ForceSet() instead of Set(). http://crbug.com/476720
     {% for member in members %}
     if (impl.{{member.has_method_name}}()) {
         {% if member.is_object %}
         ASSERT(impl.{{member.cpp_name}}().isObject());
         {% endif %}
-        if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "{{member.name}}"), {{member.cpp_value_to_v8_value}})))
+        if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8String(isolate, "{{member.name}}"), {{member.cpp_value_to_v8_value}})))
             return false;
     {% if member.v8_default_value %}
     } else {
-        if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "{{member.name}}"), {{member.v8_default_value}})))
+        if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8String(isolate, "{{member.name}}"), {{member.v8_default_value}})))
             return false;
     {% elif member.is_required %}
     } else {

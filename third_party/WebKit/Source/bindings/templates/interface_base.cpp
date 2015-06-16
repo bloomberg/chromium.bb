@@ -48,7 +48,7 @@ static void (*{{method.name}}MethodForPartialInterface)(const v8::FunctionCallba
 {% block replaceable_attribute_setter_and_callback %}
 {% if has_replaceable_attributes or has_constructor_attributes %}
 template<class CallbackInfo>
-static void {{cpp_class}}ForceSetAttributeOnThis(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const CallbackInfo& info)
+static bool {{cpp_class}}CreateDataProperty(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const CallbackInfo& info)
 {
     {% if is_check_security %}
     {{cpp_class}}* impl = {{v8_class}}::toImpl(info.Holder());
@@ -56,11 +56,11 @@ static void {{cpp_class}}ForceSetAttributeOnThis(v8::Local<v8::Name> name, v8::L
     ExceptionState exceptionState(ExceptionState::SetterContext, *attributeName, "{{interface_name}}", info.Holder(), info.GetIsolate());
     if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), impl->frame(), exceptionState)) {
         exceptionState.throwIfNeeded();
-        return;
+        return false;
     }
     {% endif %}
     ASSERT(info.This()->IsObject());
-    v8::Local<v8::Object>::Cast(info.This())->ForceSet(info.GetIsolate()->GetCurrentContext(), name, v8Value);
+    return v8CallBoolean(v8::Local<v8::Object>::Cast(info.This())->CreateDataProperty(info.GetIsolate()->GetCurrentContext(), name, v8Value));
 }
 
 {% if has_constructor_attributes %}
@@ -76,7 +76,7 @@ static void {{cpp_class}}ConstructorAttributeSetterCallback(v8::Local<v8::Name>,
         const WrapperTypeInfo* wrapperTypeInfo = WrapperTypeInfo::unwrap(data);
         if (!wrapperTypeInfo)
             break;
-        {{cpp_class}}ForceSetAttributeOnThis(v8String(info.GetIsolate(), wrapperTypeInfo->interfaceName), v8Value, info);
+        {{cpp_class}}CreateDataProperty(v8String(info.GetIsolate(), wrapperTypeInfo->interfaceName), v8Value, info);
     } while (false); // do ... while (false) just for use of break
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }

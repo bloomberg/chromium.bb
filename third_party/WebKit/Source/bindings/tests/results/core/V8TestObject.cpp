@@ -102,10 +102,10 @@ static void MEASURED_CONSTANTConstantGetterCallback(v8::Local<v8::Name>, const v
 }
 
 template<class CallbackInfo>
-static void TestObjectForceSetAttributeOnThis(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const CallbackInfo& info)
+static bool TestObjectCreateDataProperty(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const CallbackInfo& info)
 {
     ASSERT(info.This()->IsObject());
-    v8::Local<v8::Object>::Cast(info.This())->ForceSet(info.GetIsolate()->GetCurrentContext(), name, v8Value);
+    return v8CallBoolean(v8::Local<v8::Object>::Cast(info.This())->CreateDataProperty(info.GetIsolate()->GetCurrentContext(), name, v8Value));
 }
 
 static void TestObjectConstructorAttributeSetterCallback(v8::Local<v8::Name>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
@@ -120,7 +120,7 @@ static void TestObjectConstructorAttributeSetterCallback(v8::Local<v8::Name>, v8
         const WrapperTypeInfo* wrapperTypeInfo = WrapperTypeInfo::unwrap(data);
         if (!wrapperTypeInfo)
             break;
-        TestObjectForceSetAttributeOnThis(v8String(info.GetIsolate(), wrapperTypeInfo->interfaceName), v8Value, info);
+        TestObjectCreateDataProperty(v8String(info.GetIsolate(), wrapperTypeInfo->interfaceName), v8Value, info);
     } while (false); // do ... while (false) just for use of break
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -2554,7 +2554,7 @@ static void conditionalLongAttributeAttributeSetterCallback(const v8::FunctionCa
 static void testInterfaceEmptyConstructorAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     v8::Local<v8::String> propertyName = v8AtomicString(info.GetIsolate(), "testInterfaceEmptyConstructorAttribute");
-    TestObjectForceSetAttributeOnThis(propertyName, v8Value, info);
+    TestObjectCreateDataProperty(propertyName, v8Value, info);
 }
 
 static void testInterfaceEmptyConstructorAttributeAttributeSetterCallback(v8::Local<v8::Name>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
@@ -2567,7 +2567,7 @@ static void testInterfaceEmptyConstructorAttributeAttributeSetterCallback(v8::Lo
 static void testInterfaceEmptyConstructorAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     v8::Local<v8::String> propertyName = v8AtomicString(info.GetIsolate(), "testInterfaceEmptyConstructorAttribute");
-    TestObjectForceSetAttributeOnThis(propertyName, v8Value, info);
+    TestObjectCreateDataProperty(propertyName, v8Value, info);
 }
 
 static void testInterfaceEmptyConstructorAttributeAttributeSetterCallback(v8::Local<v8::Name>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
@@ -2581,7 +2581,7 @@ static void testInterfaceEmptyConstructorAttributeAttributeSetterCallback(v8::Lo
 static void measureAsFeatureNameTestInterfaceEmptyConstructorAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     v8::Local<v8::String> propertyName = v8AtomicString(info.GetIsolate(), "measureAsFeatureNameTestInterfaceEmptyConstructorAttribute");
-    TestObjectForceSetAttributeOnThis(propertyName, v8Value, info);
+    TestObjectCreateDataProperty(propertyName, v8Value, info);
 }
 
 static void measureAsFeatureNameTestInterfaceEmptyConstructorAttributeAttributeSetterCallback(v8::Local<v8::Name>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
@@ -4522,7 +4522,7 @@ static void replaceableReadonlyLongAttributeAttributeGetterCallback(const v8::Fu
 static void replaceableReadonlyLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::String> propertyName = v8AtomicString(info.GetIsolate(), "replaceableReadonlyLongAttribute");
-    TestObjectForceSetAttributeOnThis(propertyName, v8Value, info);
+    TestObjectCreateDataProperty(propertyName, v8Value, info);
 }
 
 static void replaceableReadonlyLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -4550,7 +4550,7 @@ static void replaceableReadonlyLongAccessorAttributeGetterCallback(const v8::Fun
 static void replaceableReadonlyLongAccessorAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::String> propertyName = v8AtomicString(info.GetIsolate(), "replaceableReadonlyLongAccessor");
-    TestObjectForceSetAttributeOnThis(propertyName, v8Value, info);
+    TestObjectCreateDataProperty(propertyName, v8Value, info);
 }
 
 static void replaceableReadonlyLongAccessorAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -13050,15 +13050,15 @@ void V8TestObject::preparePrototypeObject(v8::Isolate* isolate, v8::Local<v8::Ob
         unscopeables = prototypeObject->Get(v8Context, unscopablesSymbol).ToLocalChecked().As<v8::Object>();
     else
         unscopeables = v8::Object::New(isolate);
-    unscopeables->ForceSet(v8Context, v8AtomicString(isolate, "unscopeableLongAttribute"), v8::True(isolate)).FromJust();
+    unscopeables->CreateDataProperty(v8Context, v8AtomicString(isolate, "unscopeableLongAttribute"), v8::True(isolate)).FromJust();
     if (RuntimeEnabledFeatures::featureNameEnabled()) {
-        unscopeables->ForceSet(v8Context, v8AtomicString(isolate, "unscopeableRuntimeEnabledLongAttribute"), v8::True(isolate)).FromJust();
+        unscopeables->CreateDataProperty(v8Context, v8AtomicString(isolate, "unscopeableRuntimeEnabledLongAttribute"), v8::True(isolate)).FromJust();
     }
     if (RuntimeEnabledFeatures::featureNameEnabled()) {
-        unscopeables->ForceSet(v8Context, v8AtomicString(isolate, "unscopeableRuntimeEnabledVoidMethod"), v8::True(isolate)).FromJust();
+        unscopeables->CreateDataProperty(v8Context, v8AtomicString(isolate, "unscopeableRuntimeEnabledVoidMethod"), v8::True(isolate)).FromJust();
     }
-    unscopeables->ForceSet(v8Context, v8AtomicString(isolate, "unscopeableVoidMethod"), v8::True(isolate)).FromJust();
-    prototypeObject->ForceSet(v8Context, unscopablesSymbol, unscopeables).FromJust();
+    unscopeables->CreateDataProperty(v8Context, v8AtomicString(isolate, "unscopeableVoidMethod"), v8::True(isolate)).FromJust();
+    prototypeObject->CreateDataProperty(v8Context, unscopablesSymbol, unscopeables).FromJust();
 }
 
 void V8TestObject::refObject(ScriptWrappable* scriptWrappable)

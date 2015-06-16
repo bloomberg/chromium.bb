@@ -548,6 +548,7 @@ void V8InjectedScriptHost::setNonEnumPropertyCallback(const v8::FunctionCallback
         return;
 
     v8::Local<v8::Object> object = info[0].As<v8::Object>();
+    // TODO(bashi): Use DefineOwnProperty() if possible.
     object->ForceSet(info.GetIsolate()->GetCurrentContext(), info[1], info[2], v8::DontEnum);
 }
 

@@ -36,10 +36,10 @@ const WrapperTypeInfo& TestInterface5Implementation::s_wrapperTypeInfo = V8TestI
 namespace TestInterface5ImplementationV8Internal {
 
 template<class CallbackInfo>
-static void TestInterface5ImplementationForceSetAttributeOnThis(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const CallbackInfo& info)
+static bool TestInterface5ImplementationCreateDataProperty(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const CallbackInfo& info)
 {
     ASSERT(info.This()->IsObject());
-    v8::Local<v8::Object>::Cast(info.This())->ForceSet(info.GetIsolate()->GetCurrentContext(), name, v8Value);
+    return v8CallBoolean(v8::Local<v8::Object>::Cast(info.This())->CreateDataProperty(info.GetIsolate()->GetCurrentContext(), name, v8Value));
 }
 
 static void TestInterface5ImplementationConstructorAttributeSetterCallback(v8::Local<v8::Name>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
@@ -54,7 +54,7 @@ static void TestInterface5ImplementationConstructorAttributeSetterCallback(v8::L
         const WrapperTypeInfo* wrapperTypeInfo = WrapperTypeInfo::unwrap(data);
         if (!wrapperTypeInfo)
             break;
-        TestInterface5ImplementationForceSetAttributeOnThis(v8String(info.GetIsolate(), wrapperTypeInfo->interfaceName), v8Value, info);
+        TestInterface5ImplementationCreateDataProperty(v8String(info.GetIsolate(), wrapperTypeInfo->interfaceName), v8Value, info);
     } while (false); // do ... while (false) just for use of break
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -98,7 +98,7 @@ static void testInterfaceAttributeAttributeSetterCallback(const v8::FunctionCall
 static void testInterfaceConstructorAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     v8::Local<v8::String> propertyName = v8AtomicString(info.GetIsolate(), "testInterfaceConstructorAttribute");
-    TestInterface5ImplementationForceSetAttributeOnThis(propertyName, v8Value, info);
+    TestInterface5ImplementationCreateDataProperty(propertyName, v8Value, info);
 }
 
 static void testInterfaceConstructorAttributeAttributeSetterCallback(v8::Local<v8::Name>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
