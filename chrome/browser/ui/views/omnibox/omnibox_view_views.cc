@@ -601,6 +601,16 @@ int OmniboxViewViews::GetOmniboxTextLength() const {
 void OmniboxViewViews::EmphasizeURLComponents() {
   if (!location_bar_view_)
     return;
+
+  // If the current contents is a URL, force left-to-right rendering at the
+  // paragraph level. Right-to-left runs are still rendered RTL, but will not
+  // flip the whole URL around. For example (if "ABC" is Hebrew), this will
+  // render "ABC.com" as "CBA.com", rather than "com.CBA".
+  bool text_is_url = model()->CurrentTextIsURL();
+  GetRenderText()->SetDirectionalityMode(text_is_url
+                                             ? gfx::DIRECTIONALITY_FORCE_LTR
+                                             : gfx::DIRECTIONALITY_FROM_TEXT);
+
   // See whether the contents are a URL with a non-empty host portion, which we
   // should emphasize.  To check for a URL, rather than using the type returned
   // by Parse(), ask the model, which will check the desired page transition for
@@ -612,8 +622,7 @@ void OmniboxViewViews::EmphasizeURLComponents() {
       text(), ChromeAutocompleteSchemeClassifier(profile()), &scheme, &host);
   bool grey_out_url = text().substr(scheme.begin, scheme.len) ==
       base::UTF8ToUTF16(extensions::kExtensionScheme);
-  bool grey_base = model()->CurrentTextIsURL() &&
-      (host.is_nonempty() || grey_out_url);
+  bool grey_base = text_is_url && (host.is_nonempty() || grey_out_url);
   SetColor(location_bar_view_->GetColor(
       security_level_,
       grey_base ? LocationBarView::DEEMPHASIZED_TEXT : LocationBarView::TEXT));
@@ -629,7 +638,7 @@ void OmniboxViewViews::EmphasizeURLComponents() {
   // editing; and in some cases, e.g. for "site:foo.com" searches, the parser
   // may have incorrectly identified a qualifier as a scheme.
   SetStyle(gfx::DIAGONAL_STRIKE, false);
-  if (!model()->user_input_in_progress() && model()->CurrentTextIsURL() &&
+  if (!model()->user_input_in_progress() && text_is_url &&
       scheme.is_nonempty() && (security_level_ != connection_security::NONE)) {
     SkColor security_color = location_bar_view_->GetColor(
         security_level_, LocationBarView::SECURITY_TEXT);
