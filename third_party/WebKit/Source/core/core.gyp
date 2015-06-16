@@ -799,15 +799,6 @@
                 '-lm -lstdc++',
               ],
             }],
-            # Enable bigobj to fix fatal error C1128: number of sections
-            # exceeded object file format limit while compiling Document.cpp.
-            ['OS=="win" and target_arch=="x64"', {
-              'msvs_settings': {
-                'VCCLCompilerTool': {
-                  'AdditionalOptions': ['/bigobj'],
-                },
-              },
-            }],
             ['OS=="win" and chromium_win_pch==1', {
               'sources/': [
                 ['include', '<(DEPTH)/third_party/WebKit/Source/build/win/Precompile.cpp'],
