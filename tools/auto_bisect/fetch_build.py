@@ -195,7 +195,8 @@ class BuildArchive(object):
     """Returns the time to wait for a build after requesting one."""
     if self._platform in ('win', 'win64'):
       return MAX_WIN_BUILD_TIME
-    if self._platform in ('linux', 'android', 'android-chrome'):
+    if self._platform in ('linux', 'android',
+                          'android_arm64', 'android-chrome'):
       return MAX_LINUX_BUILD_TIME
     if self._platform == 'mac':
       return MAX_MAC_BUILD_TIME
