@@ -3594,7 +3594,7 @@ void RenderViewImpl::OnEnableViewSourceMode() {
   main_frame->enableViewSourceMode(true);
 }
 
-#if defined(OS_ANDROID) || defined(TOOLKIT_VIEWS)
+#if defined(OS_ANDROID) || defined(USE_AURA)
 bool RenderViewImpl::didTapMultipleTargets(
     const WebSize& inner_viewport_offset,
     const WebRect& touch_rect,
@@ -3680,7 +3680,7 @@ bool RenderViewImpl::didTapMultipleTargets(
 
   return handled;
 }
-#endif  // defined(OS_ANDROID) || defined(TOOLKIT_VIEWS)
+#endif  // defined(OS_ANDROID) || defined(USE_AURA)
 
 unsigned RenderViewImpl::GetLocalSessionHistoryLengthForTesting() const {
   return history_list_length_;

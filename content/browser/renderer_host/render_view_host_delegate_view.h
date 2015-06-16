@@ -82,7 +82,7 @@ class CONTENT_EXPORT RenderViewHostDelegateView {
   virtual void HidePopupMenu() {};
 #endif
 
-#if defined(TOOLKIT_VIEWS) || defined(USE_AURA)
+#if defined(USE_AURA)
   // Shows a Link Disambiguation Popup. |target_rect| is the area the user
   // touched that resulted in ambiguity, in DIPs in the host's coordinate
   // system, |zoomed_bitmap| is an enlarged image of that |target_rect|, and

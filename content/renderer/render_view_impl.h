@@ -376,7 +376,7 @@ class CONTENT_EXPORT RenderViewImpl
   virtual void focusedNodeChanged(const blink::WebNode& fromNode,
                                   const blink::WebNode& toNode);
   virtual void didUpdateLayout();
-#if defined(OS_ANDROID) || defined(TOOLKIT_VIEWS)
+#if defined(OS_ANDROID) || defined(USE_AURA)
   virtual bool didTapMultipleTargets(
       const blink::WebSize& inner_viewport_offset,
       const blink::WebRect& touch_rect,
