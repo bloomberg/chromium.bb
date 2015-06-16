@@ -39,6 +39,7 @@
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/layout/LayoutEmbeddedObject.h"
+#include "core/layout/LayoutHTMLCanvas.h"
 #include "core/layout/LayoutImage.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutVideo.h"
@@ -74,10 +75,12 @@ static IntRect contentsRect(const LayoutObject* layoutObject)
 {
     if (!layoutObject->isBox())
         return IntRect();
+    if (layoutObject->isCanvas())
+        return pixelSnappedIntRect(toLayoutHTMLCanvas(layoutObject)->replacedContentRect());
+    if (layoutObject->isVideo())
+        return toLayoutVideo(layoutObject)->videoBox();
 
-    return layoutObject->isVideo() ?
-        toLayoutVideo(layoutObject)->videoBox() :
-        pixelSnappedIntRect(toLayoutBox(layoutObject)->contentBoxRect());
+    return pixelSnappedIntRect(toLayoutBox(layoutObject)->contentBoxRect());
 }
 
 static IntRect backgroundRect(const LayoutObject* layoutObject)
