@@ -68,9 +68,6 @@ TEST_F(WKWebViewConfigurationProviderTest, ConfigurationOwnerhip) {
             other_provider.GetWebViewConfiguration().processPool);
 }
 
-#if 0
-// TODO(shreyasv) Disabled for usage of nil on latest Xcode beta.
-// crbug.com/498841
 // Tests that internal configuration object can not be changed by clients.
 TEST_F(WKWebViewConfigurationProviderTest, ConfigurationProtection) {
   CR_TEST_REQUIRES_WK_WEB_VIEW();
@@ -82,10 +79,15 @@ TEST_F(WKWebViewConfigurationProviderTest, ConfigurationProtection) {
   base::scoped_nsobject<WKUserContentController> userContentController(
       [[config userContentController] retain]);
 
-  // nil-out the properties of returned configuration object.
-  config.processPool = nil;
-  config.preferences = nil;
-  config.userContentController = nil;
+  // Change the properties of returned configuration object.
+  TestBrowserState other_browser_state;
+  WKWebViewConfiguration* other_wk_web_view_configuration =
+      GetProvider(&other_browser_state).GetWebViewConfiguration();
+  ASSERT_TRUE(other_wk_web_view_configuration);
+  config.processPool = other_wk_web_view_configuration.processPool;
+  config.preferences = other_wk_web_view_configuration.preferences;
+  config.userContentController =
+      other_wk_web_view_configuration.userContentController;
 
   // Make sure that the properties of internal configuration were not changed.
   EXPECT_TRUE(provider.GetWebViewConfiguration().processPool);
@@ -96,7 +98,6 @@ TEST_F(WKWebViewConfigurationProviderTest, ConfigurationProtection) {
   EXPECT_EQ(userContentController.get(),
             provider.GetWebViewConfiguration().userContentController);
 }
-#endif
 
 // Tests that |HasWebViewConfiguration| returns false by default.
 TEST_F(WKWebViewConfigurationProviderTest, NoConfigurationByDefault) {
