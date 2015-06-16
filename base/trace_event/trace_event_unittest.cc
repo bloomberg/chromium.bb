@@ -137,6 +137,7 @@ class TraceEventTestFixture : public testing::Test {
     ASSERT_FALSE(tracelog->IsEnabled());
     trace_buffer_.SetOutputCallback(json_output_.GetCallback());
     event_watch_notification_ = 0;
+    num_flush_callbacks_ = 0;
   }
   void TearDown() override {
     if (TraceLog::GetInstance())
