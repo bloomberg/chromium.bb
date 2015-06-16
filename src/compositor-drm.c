@@ -127,8 +127,8 @@ struct drm_backend {
 
 	struct udev_input input;
 
-	uint32_t cursor_width;
-	uint32_t cursor_height;
+	int32_t cursor_width;
+	int32_t cursor_height;
 };
 
 struct drm_mode {
@@ -1081,7 +1081,8 @@ drm_output_prepare_cursor_view(struct drm_output *output,
 		return NULL;
 	if (ev->surface->buffer_ref.buffer == NULL ||
 	    !wl_shm_buffer_get(ev->surface->buffer_ref.buffer->resource) ||
-	    ev->surface->width > 64 || ev->surface->height > 64)
+	    ev->surface->width > b->cursor_width ||
+	    ev->surface->height > b->cursor_height)
 		return NULL;
 
 	output->cursor_view = ev;
