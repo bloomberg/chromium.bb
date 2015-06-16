@@ -34,7 +34,7 @@ class AppInfoDialog : public views::View,
   ~AppInfoDialog() override;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(AppInfoDialogViewsTest,
+  FRIEND_TEST_ALL_PREFIXES(AppInfoDialogAshTest,
                            PinButtonsAreFocusedAfterPinUnpin);
 
   // Closes the dialog.

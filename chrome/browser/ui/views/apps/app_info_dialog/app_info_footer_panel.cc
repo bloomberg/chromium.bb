@@ -170,8 +170,9 @@ void AppInfoFooterPanel::SetPinnedToShelf(bool value) {
 bool AppInfoFooterPanel::CanSetPinnedToShelf() const {
 #if defined(USE_ASH)
   // Non-Ash platforms don't have a shelf.
-  if (chrome::GetHostDesktopTypeForNativeWindow(parent_window_) !=
-      chrome::HOST_DESKTOP_TYPE_ASH) {
+  if (!ash::Shell::HasInstance() ||
+      chrome::GetHostDesktopTypeForNativeWindow(parent_window_) !=
+          chrome::HOST_DESKTOP_TYPE_ASH) {
     return false;
   }
 

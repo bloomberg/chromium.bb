@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "content/public/test/web_contents_tester.h"
 #include "extensions/browser/extension_prefs.h"
@@ -48,12 +49,42 @@ scoped_ptr<base::DictionaryValue> MakeExtensionManifest(
   return manifest;
 }
 
+scoped_ptr<base::DictionaryValue> MakePackagedAppManifest() {
+  return extensions::DictionaryBuilder()
+      .Set("name", "Test App Name")
+      .Set("version", "2.0")
+      .Set("manifest_version", 2)
+      .Set("app", extensions::DictionaryBuilder().Set(
+                      "background",
+                      extensions::DictionaryBuilder().Set(
+                          "scripts",
+                          extensions::ListBuilder().Append("background.js"))))
+      .Build();
+}
+
 }  // namespace
 
+// static
+ExtensionService* TestExtensionEnvironment::CreateExtensionServiceForProfile(
+    TestingProfile* profile) {
+  TestExtensionSystem* extension_system =
+      static_cast<TestExtensionSystem*>(ExtensionSystem::Get(profile));
+  return extension_system->CreateExtensionService(
+      base::CommandLine::ForCurrentProcess(), base::FilePath(), false);
+}
+
 TestExtensionEnvironment::TestExtensionEnvironment()
-    : profile_(new TestingProfile),
-      extension_service_(NULL),
-      extension_prefs_(NULL) {
+    : thread_bundle_(new content::TestBrowserThreadBundle),
+      profile_(new TestingProfile),
+      extension_service_(nullptr) {
+#if defined(USE_AURA)
+  aura::Env::CreateInstance(true);
+#endif
+}
+
+TestExtensionEnvironment::TestExtensionEnvironment(
+    base::MessageLoopForUI* message_loop)
+    : profile_(new TestingProfile), extension_service_(nullptr) {
 #if defined(USE_AURA)
   aura::Env::CreateInstance(true);
 #endif
@@ -74,17 +105,13 @@ TestExtensionSystem* TestExtensionEnvironment::GetExtensionSystem() {
 }
 
 ExtensionService* TestExtensionEnvironment::GetExtensionService() {
-  if (extension_service_ == NULL) {
-    extension_service_ = GetExtensionSystem()->CreateExtensionService(
-        base::CommandLine::ForCurrentProcess(), base::FilePath(), false);
-  }
+  if (!extension_service_)
+    extension_service_ = CreateExtensionServiceForProfile(profile());
   return extension_service_;
 }
 
 ExtensionPrefs* TestExtensionEnvironment::GetExtensionPrefs() {
-  if (extension_prefs_ == NULL)
-    extension_prefs_ = ExtensionPrefs::Get(profile_.get());
-  return extension_prefs_;
+  return ExtensionPrefs::Get(profile_.get());
 }
 
 const Extension* TestExtensionEnvironment::MakeExtension(
@@ -108,12 +135,29 @@ const Extension* TestExtensionEnvironment::MakeExtension(
   return result.get();
 }
 
+scoped_refptr<Extension> TestExtensionEnvironment::MakePackagedApp(
+    const std::string& id,
+    bool install) {
+  scoped_refptr<Extension> result = ExtensionBuilder()
+                                        .SetManifest(MakePackagedAppManifest())
+                                        .SetID(id)
+                                        .Build();
+  if (install)
+    GetExtensionService()->AddExtension(result.get());
+  return result;
+}
+
 scoped_ptr<content::WebContents> TestExtensionEnvironment::MakeTab() const {
   scoped_ptr<content::WebContents> contents(
       content::WebContentsTester::CreateTestWebContents(profile(), NULL));
   // Create a tab id.
   SessionTabHelper::CreateForWebContents(contents.get());
   return contents.Pass();
+}
+
+void TestExtensionEnvironment::DeleteProfile() {
+  profile_.reset();
+  extension_service_ = nullptr;
 }
 
 }  // namespace extensions

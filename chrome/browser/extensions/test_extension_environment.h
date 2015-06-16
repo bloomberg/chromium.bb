@@ -7,7 +7,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/users/scoped_test_user_manager.h"
@@ -28,6 +27,7 @@ class Value;
 
 namespace content {
 class WebContents;
+class TestBrowserThreadBundle;
 }
 
 namespace extensions {
@@ -40,7 +40,18 @@ class TestExtensionSystem;
 // extensions and tabs for extension-related unittests.
 class TestExtensionEnvironment {
  public:
+  // Fetches the TestExtensionSystem in |profile| and creates a default
+  // ExtensionService there,
+  static ExtensionService* CreateExtensionServiceForProfile(
+      TestingProfile* profile);
+
   TestExtensionEnvironment();
+
+  // Allows a test harness to pass its own message loop (typically
+  // base::MessageLoopForUI::current()), rather than have
+  // TestExtensionEnvironment create and own a TestBrowserThreadBundle.
+  explicit TestExtensionEnvironment(base::MessageLoopForUI* message_loop);
+
   ~TestExtensionEnvironment();
 
   TestingProfile* profile() const;
@@ -67,11 +78,18 @@ class TestExtensionEnvironment {
   const Extension* MakeExtension(const base::Value& manifest_extra,
                                  const std::string& id);
 
+  // Generates a valid packaged app manifest with the given ID. If |install|
+  // it gets added to the ExtensionService in |profile|.
+  scoped_refptr<Extension> MakePackagedApp(const std::string& id, bool install);
+
   // Returns a test web contents that has a tab id.
   scoped_ptr<content::WebContents> MakeTab() const;
 
+  // Deletes the testing profile to test profile teardown.
+  void DeleteProfile();
+
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  scoped_ptr<content::TestBrowserThreadBundle> thread_bundle_;
 
 #if defined(OS_CHROMEOS)
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
@@ -84,7 +102,8 @@ class TestExtensionEnvironment {
 #endif
   scoped_ptr<TestingProfile> profile_;
   ExtensionService* extension_service_;
-  ExtensionPrefs* extension_prefs_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestExtensionEnvironment);
 };
 
 }  // namespace extensions

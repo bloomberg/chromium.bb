@@ -1360,6 +1360,7 @@
       # Views implies app list is enabled (only disabled on mobile).
       'browser/ui/views/app_list/linux/app_list_linux_unittest.cc',
       'browser/ui/views/app_list/win/app_list_win_unittest.cc',
+      'browser/ui/views/apps/app_info_dialog/app_info_dialog_ash_unittest.cc',
       'browser/ui/views/apps/app_info_dialog/app_info_dialog_views_unittest.cc',
       'browser/ui/views/apps/app_info_dialog/app_info_permissions_panel_unittest.cc',
       'browser/ui/views/apps/shaped_app_window_targeter_unittest.cc',

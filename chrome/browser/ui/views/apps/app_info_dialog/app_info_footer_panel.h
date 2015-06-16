@@ -41,7 +41,7 @@ class AppInfoFooterPanel
   ~AppInfoFooterPanel() override;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(AppInfoDialogViewsTest,
+  FRIEND_TEST_ALL_PREFIXES(AppInfoDialogAshTest,
                            PinButtonsAreFocusedAfterPinUnpin);
 
   void CreateButtons();
