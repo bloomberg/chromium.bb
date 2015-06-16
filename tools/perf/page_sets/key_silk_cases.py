@@ -1,6 +1,7 @@
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+from telemetry.page import shared_page_state
 from telemetry.page import page as page_module
 from telemetry.page import page_set as page_set_module
 
@@ -15,8 +16,8 @@ class KeySilkCasesPage(page_module.Page):
         navigate steps.
     """
     super(KeySilkCasesPage, self).__init__(
-        url=url, page_set=page_set, credentials_path = 'data/credentials.json')
-    self.user_agent_type = 'mobile'
+        url=url, page_set=page_set, credentials_path = 'data/credentials.json',
+        shared_page_state_class=shared_page_state.SharedMobilePageState)
     self.archive_data_file = 'data/key_silk_cases.json'
     self._run_no_page_interactions = run_no_page_interactions
 
@@ -710,7 +711,6 @@ class KeySilkCasesPageSet(page_set_module.PageSet):
 
   def __init__(self, run_no_page_interactions=False):
     super(KeySilkCasesPageSet, self).__init__(
-      user_agent_type='mobile',
       archive_data_file='data/key_silk_cases.json',
       bucket=page_set_module.PARTNER_BUCKET)
 

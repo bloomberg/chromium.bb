@@ -1,6 +1,7 @@
 # Copyright 2015 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+from telemetry.page import shared_page_state
 from telemetry.page import page_set as page_set_module
 
 from page_sets import top_pages
@@ -31,23 +32,24 @@ class PageReloadCasesPageSet(page_set_module.PageSet):
 
   def __init__(self):
     super(PageReloadCasesPageSet, self).__init__(
-        user_agent_type='desktop',
         archive_data_file='data/top_25.json',
         bucket=page_set_module.PARTNER_BUCKET)
 
+    shared_desktop_state = shared_page_state.SharedDesktopPageState
+
     self.AddUserStory(_CreatePageClassWithReload(
-        top_pages.GoogleWebSearchPage)(self))
+        top_pages.GoogleWebSearchPage)(self, shared_desktop_state))
     self.AddUserStory(_CreatePageClassWithReload(
-        top_pages.GmailPage)(self))
+        top_pages.GmailPage)(self, shared_desktop_state))
     self.AddUserStory(_CreatePageClassWithReload(
-        top_pages.GoogleCalendarPage)(self))
+        top_pages.GoogleCalendarPage)(self, shared_desktop_state))
     self.AddUserStory(_CreatePageClassWithReload(
-        top_pages.GoogleDocPage)(self))
+        top_pages.GoogleDocPage)(self, shared_desktop_state))
     self.AddUserStory(_CreatePageClassWithReload(
-        top_pages.GooglePlusPage)(self))
+        top_pages.GooglePlusPage)(self, shared_desktop_state))
     self.AddUserStory(_CreatePageClassWithReload(
-        top_pages.YoutubePage)(self))
+        top_pages.YoutubePage)(self, shared_desktop_state))
     self.AddUserStory(_CreatePageClassWithReload(
-        top_pages.WordpressPage)(self))
+        top_pages.WordpressPage)(self, shared_desktop_state))
     self.AddUserStory(_CreatePageClassWithReload(
-        top_pages.FacebookPage)(self))
+        top_pages.FacebookPage)(self, shared_desktop_state))

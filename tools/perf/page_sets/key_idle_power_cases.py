@@ -3,19 +3,20 @@
 # found in the LICENSE file.
 from page_sets import android_screen_restoration_shared_state
 
+from telemetry.page import shared_page_state
 from telemetry.page import page as page_module
 from telemetry.page import page_set as page_set_module
 
 
 class KeyIdlePowerPage(page_module.Page):
 
-  def __init__(self, url, page_set, turn_screen_off):
+  def __init__(self, url, page_set, turn_screen_off,
+               shared_page_state_class=shared_page_state.SharedMobilePageState):
     super(KeyIdlePowerPage, self).__init__(
         url=url,
         page_set=page_set,
         shared_page_state_class=(android_screen_restoration_shared_state
             .AndroidScreenRestorationSharedState))
-    self.user_agent_type = 'mobile'
     self._turn_screen_off = turn_screen_off
 
   def RunNavigateSteps(self, action_runner):
@@ -42,7 +43,7 @@ class KeyIdlePowerCasesPageSet(page_set_module.PageSet):
   """ Key idle power cases """
 
   def __init__(self):
-    super(KeyIdlePowerCasesPageSet, self).__init__(user_agent_type='mobile')
+    super(KeyIdlePowerCasesPageSet, self).__init__()
 
     foreground_urls_list = [
       # Why: Ensure minimal activity for static, empty pages in the foreground.

@@ -37,7 +37,6 @@ class SimpleMobileSitesFlingPageSet(page_set_module.PageSet):
 
   def __init__(self):
     super(SimpleMobileSitesFlingPageSet, self).__init__(
-      user_agent_type='tablet_10_inch',
       archive_data_file='data/simple_mobile_sites.json',
       bucket=page_set_module.PUBLIC_BUCKET)
 

@@ -15,7 +15,6 @@ class PaperCalculatorHitTest(polymer.PolymerPage):
       url='file://key_hit_test_cases/paper-calculator-no-rendering.html',
       page_set=page_set, run_no_page_interactions=False)
 
-    self.user_agent_type = 'mobile'
 
   def PerformPageInteractions(self, action_runner):
     # pay cost of selecting tap target only once
@@ -41,7 +40,6 @@ class PaperCalculatorHitTest(polymer.PolymerPage):
 class KeyHitTestCasesPageSet(page_set_module.PageSet):
 
   def __init__(self):
-    super(KeyHitTestCasesPageSet, self).__init__(
-      user_agent_type='mobile')
+    super(KeyHitTestCasesPageSet, self).__init__()
 
     self.AddUserStory(PaperCalculatorHitTest(self))

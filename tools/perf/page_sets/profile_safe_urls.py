@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from profile_creators import profile_safe_url_list
+from telemetry.page import shared_page_state
 from telemetry.page import page as page_module
 from telemetry.page import page_set as page_set_module
 
@@ -11,6 +12,7 @@ class ProfileSafeUrlPage(page_module.Page):
     super(ProfileSafeUrlPage, self).__init__(
         url=url,
         page_set = page_set,
+        shared_page_state_class=shared_page_state.SharedDesktopPageState,
         credentials_path = 'data/credentials.json')
     self.credentials = 'google'
 
@@ -21,7 +23,6 @@ class ProfileSafeUrlsPageSet(page_set_module.PageSet):
   def __init__(self):
     super(ProfileSafeUrlsPageSet, self).__init__(
       archive_data_file='data/profile_safe_urls.json',
-      user_agent_type='desktop',
       bucket=page_set_module.PARTNER_BUCKET)
 
     # Only use the first 500 urls to prevent the .wpr files from getting too

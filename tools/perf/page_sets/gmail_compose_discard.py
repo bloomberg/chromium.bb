@@ -4,6 +4,7 @@
 
 import re
 
+from telemetry.page import shared_page_state
 from telemetry.page import page as page_module
 from telemetry.page import page_set as page_set_module
 
@@ -25,9 +26,9 @@ class GmailComposeDiscardPage(page_module.Page):
     super(GmailComposeDiscardPage, self).__init__(
       url='https://mail.google.com/mail/',
       page_set=page_set,
+      shared_page_state_class=shared_page_state.SharedDesktopPageState,
       credentials_path = 'data/credentials.json')
     self.credentials = 'google'
-    self.user_agent_type = 'desktop'
 
   def RunNavigateSteps(self, action_runner):
     super(GmailComposeDiscardPage, self).RunNavigateSteps(action_runner)
@@ -65,7 +66,6 @@ class GmailComposeDiscardPageSet(page_set_module.PageSet):
   """
 
   def __init__(self):
-    super(GmailComposeDiscardPageSet, self).__init__(
-      user_agent_type='desktop')
+    super(GmailComposeDiscardPageSet, self).__init__()
 
     self.AddUserStory(GmailComposeDiscardPage(self))

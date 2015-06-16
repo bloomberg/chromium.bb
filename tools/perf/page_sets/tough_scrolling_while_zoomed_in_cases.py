@@ -44,7 +44,6 @@ class ToughScrollingWhileZoomedInCasesPageSet(page_set_module.PageSet):
 
   def __init__(self):
     super(ToughScrollingWhileZoomedInCasesPageSet, self).__init__(
-        user_agent_type='desktop',
         archive_data_file='data/tough_pinch_zoom_cases.json',
         bucket=page_set_module.PARTNER_BUCKET)
 

@@ -1,6 +1,7 @@
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+from telemetry.page import shared_page_state
 from telemetry.page import page as page_module
 from telemetry.page import page_set as page_set_module
 
@@ -26,8 +27,8 @@ class KeyMobileSitesSmoothPage(page_module.Page):
                action_on_load_complete=False):
     super(KeyMobileSitesSmoothPage, self).__init__(
         url=url, page_set=page_set, name=name,
-        credentials_path='data/credentials.json', labels=labels)
-    self.user_agent_type = 'mobile'
+        credentials_path='data/credentials.json', labels=labels,
+        shared_page_state_class=shared_page_state.SharedMobilePageState)
     self.archive_data_file = 'data/key_mobile_sites.json'
     self.action_on_load_complete = action_on_load_complete
 
@@ -133,7 +134,6 @@ class KeyMobileSitesSmoothPageSet(page_set_module.PageSet):
 
   def __init__(self):
     super(KeyMobileSitesSmoothPageSet, self).__init__(
-      user_agent_type='mobile',
       archive_data_file='data/key_mobile_sites_smooth.json',
       bucket=page_set_module.PARTNER_BUCKET)
 

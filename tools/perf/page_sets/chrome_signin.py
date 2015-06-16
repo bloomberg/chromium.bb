@@ -1,7 +1,7 @@
 # Copyright 2015 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
+from telemetry.page import shared_page_state
 from telemetry.page import page as page_module
 from telemetry.page import page_set as page_set_module
 
@@ -16,8 +16,8 @@ class ChromeSigninPage(page_module.Page):
         url='chrome://signin-internals',
         page_set=page_set,
         credentials_path='data/chrome_signin_credentials.json',
-        credentials_bucket=page_set_module.INTERNAL_BUCKET)
-    self.user_agent_type = 'desktop'
+        credentials_bucket=page_set_module.INTERNAL_BUCKET,
+        shared_page_state_class=shared_page_state.SharedDesktopPageState)
 
   def RunPageInteractions(self, action_runner):
     # Use page.credentials_path because it is automatically translated into a

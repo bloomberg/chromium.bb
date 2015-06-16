@@ -1,6 +1,7 @@
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+from telemetry.page import shared_page_state
 from telemetry.page import page as page_module
 from telemetry.page import page_set as page_set_module
 
@@ -8,8 +9,9 @@ from telemetry.page import page_set as page_set_module
 class Typical25Page(page_module.Page):
 
   def __init__(self, url, page_set, run_no_page_interactions):
-    super(Typical25Page, self).__init__(url=url, page_set=page_set)
-    self.user_agent_type = 'desktop'
+    super(Typical25Page, self).__init__(
+        url=url, page_set=page_set,
+        shared_page_state_class=shared_page_state.SharedDesktopPageState)
     self.archive_data_file = 'data/typical_25.json'
     self._run_no_page_interactions = run_no_page_interactions
 
@@ -26,7 +28,6 @@ class Typical25PageSet(page_set_module.PageSet):
 
   def __init__(self, run_no_page_interactions=False):
     super(Typical25PageSet, self).__init__(
-      user_agent_type='desktop',
       archive_data_file='data/typical_25.json',
       bucket=page_set_module.PARTNER_BUCKET)
 

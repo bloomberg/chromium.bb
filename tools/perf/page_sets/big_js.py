@@ -1,6 +1,7 @@
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+from telemetry.page import shared_page_state
 from telemetry.page import page as page_module
 from telemetry.page import page_set as page_set_module
 
@@ -11,8 +12,7 @@ class BigJsPageSet(page_set_module.PageSet):
   def __init__(self):
     super(BigJsPageSet, self).__init__(
       archive_data_file='data/big_js.json',
-      bucket=page_set_module.PARTNER_BUCKET,
-      user_agent_type='desktop')
+      bucket=page_set_module.PARTNER_BUCKET)
 
     # www.foo.com is a dummy page to make it easier to run only one interesting
     # page at a time. You can't just run the interesting page on its own: Page
@@ -25,4 +25,6 @@ class BigJsPageSet(page_set_module.PageSet):
        'http://www.foo.com',
     ]
     for url in urls_list:
-      self.AddUserStory(page_module.Page(url, self))
+      self.AddUserStory(page_module.Page(
+          url, self,
+          shared_page_state_class=shared_page_state.SharedDesktopPageState))

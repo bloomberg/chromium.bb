@@ -6,7 +6,9 @@ import logging
 from telemetry.page import shared_page_state
 
 
-class FlingGestureSupportedSharedState(shared_page_state.SharedPageState):
+class FlingGestureSupportedSharedState(
+    shared_page_state.Shared10InchTabletPageState):
+
   def CanRunOnBrowser(self, browser_info):
     if not browser_info.HasFlingGestureSupport():
       logging.warning('Browser does not support fling gestures, skipping test')

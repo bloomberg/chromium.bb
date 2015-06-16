@@ -1,6 +1,7 @@
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+from telemetry.page import shared_page_state
 from telemetry.page import page as page_module
 from telemetry.page import page_set as page_set_module
 
@@ -9,8 +10,8 @@ class ToughMemoryMultiTabPage(page_module.Page):
 
   def __init__(self, url, page_set):
     super(ToughMemoryMultiTabPage, self).__init__(
-        url=url, page_set=page_set, credentials_path = 'data/credentials.json')
-    self.user_agent_type = 'mobile'
+        url=url, page_set=page_set, credentials_path = 'data/credentials.json',
+        shared_page_state_class=shared_page_state.SharedMobilePageState)
     self.archive_data_file = 'data/key_mobile_sites.json'
 
 
@@ -20,7 +21,6 @@ class ToughMemoryMultiTabPageSet(page_set_module.PageSet):
 
   def __init__(self):
     super(ToughMemoryMultiTabPageSet, self).__init__(
-      user_agent_type='mobile',
       archive_data_file='data/key_mobile_sites.json')
 
     urls_list = [

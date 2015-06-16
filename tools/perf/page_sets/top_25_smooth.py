@@ -1,6 +1,7 @@
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+from telemetry.page import shared_page_state
 from telemetry.page import page as page_module
 from telemetry.page import page_set as page_set_module
 
@@ -25,8 +26,8 @@ class TopSmoothPage(page_module.Page):
   def __init__(self, url, page_set, name='', credentials=None):
     super(TopSmoothPage, self).__init__(
         url=url, page_set=page_set, name=name,
+        shared_page_state_class=shared_page_state.SharedDesktopPageState,
         credentials_path='data/credentials.json')
-    self.user_agent_type = 'desktop'
     self.credentials = credentials
 
   def RunPageInteractions(self, action_runner):
@@ -82,40 +83,41 @@ class Top25SmoothPageSet(page_set_module.PageSet):
 
   def __init__(self):
     super(Top25SmoothPageSet, self).__init__(
-        user_agent_type='desktop',
         archive_data_file='data/top_25_smooth.json',
         bucket=page_set_module.PARTNER_BUCKET)
 
+    desktop_state_class = shared_page_state.SharedDesktopPageState
+
     self.AddUserStory(_CreatePageClassWithSmoothInteractions(
-        top_pages.GoogleWebSearchPage)(self))
-    self.AddUserStory(GmailSmoothPage(self))
-    self.AddUserStory(GoogleCalendarSmoothPage(self))
+        top_pages.GoogleWebSearchPage)(self, desktop_state_class))
+    self.AddUserStory(GmailSmoothPage(self, desktop_state_class))
+    self.AddUserStory(GoogleCalendarSmoothPage(self, desktop_state_class))
     self.AddUserStory(_CreatePageClassWithSmoothInteractions(
-        top_pages.GoogleImageSearchPage)(self))
-    self.AddUserStory(GoogleDocSmoothPage(self))
+        top_pages.GoogleImageSearchPage)(self, desktop_state_class))
+    self.AddUserStory(GoogleDocSmoothPage(self, desktop_state_class))
     self.AddUserStory(_CreatePageClassWithSmoothInteractions(
-        top_pages.GooglePlusPage)(self))
+        top_pages.GooglePlusPage)(self, desktop_state_class))
     self.AddUserStory(_CreatePageClassWithSmoothInteractions(
-        top_pages.YoutubePage)(self))
+        top_pages.YoutubePage)(self, desktop_state_class))
     self.AddUserStory(_CreatePageClassWithSmoothInteractions(
-        top_pages.BlogspotPage)(self))
+        top_pages.BlogspotPage)(self, desktop_state_class))
     self.AddUserStory(_CreatePageClassWithSmoothInteractions(
-        top_pages.WordpressPage)(self))
+        top_pages.WordpressPage)(self, desktop_state_class))
     self.AddUserStory(_CreatePageClassWithSmoothInteractions(
-        top_pages.FacebookPage)(self))
+        top_pages.FacebookPage)(self, desktop_state_class))
     self.AddUserStory(_CreatePageClassWithSmoothInteractions(
-        top_pages.LinkedinPage)(self))
+        top_pages.LinkedinPage)(self, desktop_state_class))
     self.AddUserStory(_CreatePageClassWithSmoothInteractions(
-        top_pages.WikipediaPage)(self))
+        top_pages.WikipediaPage)(self, desktop_state_class))
     self.AddUserStory(_CreatePageClassWithSmoothInteractions(
-        top_pages.TwitterPage)(self))
+        top_pages.TwitterPage)(self, desktop_state_class))
     self.AddUserStory(_CreatePageClassWithSmoothInteractions(
-        top_pages.PinterestPage)(self))
-    self.AddUserStory(ESPNSmoothPage(self))
+        top_pages.PinterestPage)(self, desktop_state_class))
+    self.AddUserStory(ESPNSmoothPage(self, desktop_state_class))
     self.AddUserStory(_CreatePageClassWithSmoothInteractions(
-        top_pages.WeatherPage)(self))
+        top_pages.WeatherPage)(self, desktop_state_class))
     self.AddUserStory(_CreatePageClassWithSmoothInteractions(
-        top_pages.YahooGamesPage)(self))
+        top_pages.YahooGamesPage)(self, desktop_state_class))
 
     other_urls = [
         # Why: #1 news worldwide (Alexa global)

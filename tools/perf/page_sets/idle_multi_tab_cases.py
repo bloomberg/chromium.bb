@@ -4,6 +4,7 @@
 
 import os
 
+from telemetry.page import shared_page_state
 from telemetry.page import page_set as page_set_module
 
 from page_sets import top_pages
@@ -52,15 +53,14 @@ class IdleMultiTabCasesPageSet(page_set_module.PageSet):
 
   def __init__(self):
     super(IdleMultiTabCasesPageSet, self).__init__(
-        user_agent_type='desktop',
         archive_data_file='data/top_25.json',
         bucket=page_set_module.PARTNER_BUCKET)
     with open(os.path.join(os.path.dirname(__file__),
               'idle_multi_tab_cases.js')) as f:
       base_js = f.read()
-    pages = [
-      top_pages.GoogleDocPage,
-      top_7_stress.GooglePlusPage,
-    ]
-    for page in pages:
-      self.AddUserStory(_CreateIdleMultiTabPageClass(page, base_js)(self))
+    self.AddUserStory(
+        _CreateIdleMultiTabPageClass(top_pages.GoogleDocPage, base_js)
+        (self, shared_page_state.SharedDesktopPageState))
+    self.AddUserStory(
+        _CreateIdleMultiTabPageClass(top_7_stress.GooglePlusPage, base_js)
+        (self))
