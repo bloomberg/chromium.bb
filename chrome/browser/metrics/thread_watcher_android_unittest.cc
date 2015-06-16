@@ -70,4 +70,9 @@ TEST(ThreadWatcherAndroidTest, ApplicationStatusNotification) {
   NotifyApplicationStateChange(
       base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES);
   EXPECT_TRUE(ThreadWatcherList::g_thread_watcher_list_);
+
+  // ThreadWatcherList::StartWatchingAll() creates g_thread_watcher_observer_.
+  // This should be released by ThreadWatcherList::StopWatchingAll() in the end
+  // of test to not affect other test cases.
+  ThreadWatcherList::StopWatchingAll();
 }
