@@ -316,18 +316,20 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['android'], bug=478572)
     self.Fail('deqp/data/gles2/shaders/linkage.html',
         ['android'], bug=478572)
-    self.Fail('conformance/textures/tex-image-and-sub-image-2d-with-video.html',
+    # The following WebView crashes are causing problems with further
+    # tests in the suite, so skip them for now.
+    self.Skip('conformance/textures/tex-image-and-sub-image-2d-with-video.html',
         ['android', 'android-webview-shell'], bug=352645)
-    self.Fail('conformance/textures/' +
+    self.Skip('conformance/textures/' +
         'tex-image-and-sub-image-2d-with-video-rgb565.html',
         ['android', 'android-webview-shell'], bug=352645)
-    self.Fail('conformance/textures/' +
+    self.Skip('conformance/textures/' +
         'tex-image-and-sub-image-2d-with-video-rgba4444.html',
         ['android', 'android-webview-shell'], bug=352645)
-    self.Fail('conformance/textures/' +
+    self.Skip('conformance/textures/' +
         'tex-image-and-sub-image-2d-with-video-rgba5551.html',
         ['android', 'android-webview-shell'], bug=352645)
-    self.Fail('conformance/textures/texture-npot-video.html',
+    self.Skip('conformance/textures/texture-npot-video.html',
         ['android', 'android-webview-shell'], bug=352645)
     # Recent regressions have caused these to fail on multiple devices
     self.Fail('conformance/textures/tex-image-and-sub-image-2d-with-video.html',
@@ -344,7 +346,11 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # These are failing on the Nexus 5 and 6
     self.Fail('conformance/extensions/oes-texture-float-with-canvas.html',
               ['android', 'qualcomm'], bug=499555)
-    self.Fail('conformance/extensions/oes-texture-float-with-video.html',
+    # This crashes in Android WebView on the Nexus 6, preventing the
+    # suite from running further. Rather than add multiple
+    # suppressions, skip it until it's passing at least in content
+    # shell.
+    self.Skip('conformance/extensions/oes-texture-float-with-video.html',
               ['android', 'qualcomm'], bug=499555)
     # Nexus 6 failures only
     self.Fail('conformance/context/' +
@@ -352,15 +358,14 @@ class WebGLConformanceExpectations(GpuTestExpectations):
               ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
     self.Fail('conformance/context/premultiplyalpha-test.html',
               ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
-    self.Fail('conformance/extensions/oes-texture-float-with-canvas.html',
-              ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
     self.Fail('conformance/extensions/oes-texture-float-with-image-data.html',
               ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
     self.Fail('conformance/extensions/oes-texture-float-with-image.html',
               ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
-    self.Fail('conformance/extensions/oes-texture-float-with-video.html',
-              ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
-    self.Fail('conformance/more/functions/bindFramebufferLeaveNonZero.html',
+    # bindBufferBadArgs is causing the GPU thread to crash, taking
+    # down the WebView shell, causing the next test to fail and
+    # subsequent tests to be aborted.
+    self.Skip('conformance/more/functions/bindBufferBadArgs.html',
               ['android', 'android-webview-shell',
                ('qualcomm', 'Adreno (TM) 420')], bug=499874)
     self.Fail('conformance/rendering/gl-scissor-test.html',
