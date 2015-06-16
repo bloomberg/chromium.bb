@@ -52,7 +52,6 @@ extern const char kSyncWifiCredentials[];
 extern const char kSyncManaged[];
 extern const char kSyncSuppressStart[];
 
-extern const char kSyncUsingSecondaryPassphrase[];
 extern const char kSyncEncryptionBootstrapToken[];
 extern const char kSyncKeystoreEncryptionBootstrapToken[];
 
