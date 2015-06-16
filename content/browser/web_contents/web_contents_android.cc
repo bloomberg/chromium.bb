@@ -13,7 +13,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "content/browser/accessibility/browser_accessibility_android.h"
-#include "content/browser/accessibility/browser_accessibility_manager.h"
+#include "content/browser/accessibility/browser_accessibility_manager_android.h"
 #include "content/browser/android/interstitial_page_delegate_android.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/media/android/browser_media_player_manager.h"
@@ -105,8 +105,10 @@ void AXTreeSnapshotCallback(const ScopedJavaGlobalRef<jobject>& callback,
     Java_WebContentsImpl_onAccessibilitySnapshot(env, nullptr, callback.obj());
     return;
   }
-  scoped_ptr<BrowserAccessibilityManager> manager(
-      BrowserAccessibilityManager::Create(result, nullptr));
+  scoped_ptr<BrowserAccessibilityManagerAndroid> manager(
+      static_cast<BrowserAccessibilityManagerAndroid*>(
+          BrowserAccessibilityManager::Create(result, nullptr)));
+  manager->set_prune_tree_for_screen_reader(false);
   BrowserAccessibilityAndroid* root =
       static_cast<BrowserAccessibilityAndroid*>(manager->GetRoot());
   ScopedJavaLocalRef<jobject> j_root = WalkAXTreeDepthFirst(env, root);

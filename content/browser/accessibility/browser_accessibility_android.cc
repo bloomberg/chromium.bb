@@ -81,18 +81,22 @@ bool BrowserAccessibilityAndroid::PlatformIsLeaf() const {
   if (GetRole() == ui::AX_ROLE_DATE || GetRole() == ui::AX_ROLE_INPUT_TIME)
     return true;
 
-  // Headings with text can drop their children.
-  base::string16 name = GetText();
-  if (GetRole() == ui::AX_ROLE_HEADING && !name.empty())
-    return true;
+  BrowserAccessibilityManagerAndroid* manager_android =
+      static_cast<BrowserAccessibilityManagerAndroid*>(manager());
+  if (manager_android->prune_tree_for_screen_reader()) {
+    // Headings with text can drop their children.
+    base::string16 name = GetText();
+    if (GetRole() == ui::AX_ROLE_HEADING && !name.empty())
+      return true;
 
-  // Focusable nodes with text can drop their children.
-  if (HasState(ui::AX_STATE_FOCUSABLE) && !name.empty())
-    return true;
+    // Focusable nodes with text can drop their children.
+    if (HasState(ui::AX_STATE_FOCUSABLE) && !name.empty())
+      return true;
 
-  // Nodes with only static text as children can drop their children.
-  if (HasOnlyStaticTextChildren())
-    return true;
+    // Nodes with only static text as children can drop their children.
+    if (HasOnlyStaticTextChildren())
+      return true;
+  }
 
   return BrowserAccessibility::PlatformIsLeaf();
 }

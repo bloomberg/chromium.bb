@@ -70,7 +70,8 @@ BrowserAccessibilityManagerAndroid::BrowserAccessibilityManagerAndroid(
     const ui::AXTreeUpdate& initial_tree,
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory)
-    : BrowserAccessibilityManager(delegate, factory) {
+    : BrowserAccessibilityManager(delegate, factory),
+      prune_tree_for_screen_reader_(true) {
   Initialize(initial_tree);
   SetContentViewCore(content_view_core);
 }
