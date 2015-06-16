@@ -3228,9 +3228,14 @@
           'IntermediateDirectory': '$(OutDir)\\obj\\$(ProjectName)',
           'CharacterSet': '1',
         },
-        # Add the default import libs.
         'msvs_settings':{
+          'VCCompilerTool': {
+            'AdditionalOptions': [
+              '/bigobj',
+            ],
+          },
           'VCLinkerTool': {
+            # Add the default import libs.
             'AdditionalDependencies': [
               'kernel32.lib',
               'gdi32.lib',
