@@ -1,0 +1,90 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CONTENT_PUBLIC_TEST_TEST_WEB_UI_H_
+#define CONTENT_PUBLIC_TEST_TEST_WEB_UI_H_
+
+#include <vector>
+
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
+#include "base/values.h"
+#include "content/public/browser/web_ui.h"
+
+namespace content {
+
+// Test instance of WebUI that tracks the data passed to
+// CallJavascriptFunction().
+class TestWebUI : public WebUI {
+ public:
+  TestWebUI();
+  ~TestWebUI() override;
+
+  void ClearTrackedCalls();
+
+  // WebUI overrides.
+  WebContents* GetWebContents() const override;
+  WebUIController* GetController() const override;
+  void SetController(WebUIController* controller) override {}
+  float GetDeviceScaleFactor() const override;
+  const base::string16& GetOverriddenTitle() const override;
+  void OverrideTitle(const base::string16& title) override {}
+  ui::PageTransition GetLinkTransitionType() const override;
+  void SetLinkTransitionType(ui::PageTransition type) override {}
+  int GetBindings() const override;
+  void SetBindings(int bindings) override {}
+  void OverrideJavaScriptFrame(const std::string& frame_name) override {}
+  void AddMessageHandler(WebUIMessageHandler* handler) override {}
+  void RegisterMessageCallback(const std::string& message,
+                               const MessageCallback& callback) override {}
+  void ProcessWebUIMessage(const GURL& source_url,
+                           const std::string& message,
+                           const base::ListValue& args) override {}
+  void CallJavascriptFunction(const std::string& function_name) override;
+  void CallJavascriptFunction(const std::string& function_name,
+                              const base::Value& arg1) override;
+  void CallJavascriptFunction(const std::string& function_name,
+                              const base::Value& arg1,
+                              const base::Value& arg2) override;
+  void CallJavascriptFunction(const std::string& function_name,
+                              const base::Value& arg1,
+                              const base::Value& arg2,
+                              const base::Value& arg3) override;
+  void CallJavascriptFunction(const std::string& function_name,
+                              const base::Value& arg1,
+                              const base::Value& arg2,
+                              const base::Value& arg3,
+                              const base::Value& arg4) override;
+  void CallJavascriptFunction(
+      const std::string& function_name,
+      const std::vector<const base::Value*>& args) override;
+
+  class CallData {
+   public:
+    explicit CallData(const std::string& function_name);
+    ~CallData();
+
+    void TakeAsArg1(base::Value* arg);
+    void TakeAsArg2(base::Value* arg);
+
+    const std::string& function_name() const { return function_name_; }
+    const base::Value* arg1() const { return arg1_.get(); }
+    const base::Value* arg2() const { return arg2_.get(); }
+
+   private:
+    std::string function_name_;
+    scoped_ptr<base::Value> arg1_;
+    scoped_ptr<base::Value> arg2_;
+  };
+
+  const ScopedVector<CallData>& call_data() const { return call_data_; }
+
+ private:
+  ScopedVector<CallData> call_data_;
+  base::string16 temp_string_;
+};
+
+}  // namespace content
+
+#endif  // CONTENT_PUBLIC_TEST_TEST_WEB_UI_H_
