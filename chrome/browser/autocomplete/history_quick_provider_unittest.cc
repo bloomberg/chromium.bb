@@ -16,6 +16,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/autocomplete/history_url_provider.h"
 #include "chrome/browser/autocomplete/in_memory_url_index.h"
@@ -216,6 +217,7 @@ class HistoryQuickProviderTest : public testing::Test {
   content::TestBrowserThread file_thread_;
 
   scoped_ptr<TestingProfile> profile_;
+  scoped_ptr<ChromeAutocompleteProviderClient> client_;
   history::HistoryService* history_service_;
 
   ACMatches ac_matches_;  // The resulting matches after running RunTest.
@@ -225,6 +227,7 @@ class HistoryQuickProviderTest : public testing::Test {
 
 void HistoryQuickProviderTest::SetUp() {
   profile_.reset(new TestingProfile());
+  client_.reset(new ChromeAutocompleteProviderClient(profile_.get()));
   ASSERT_TRUE(profile_->CreateHistoryService(true, false));
   profile_->CreateBookmarkModel(true);
   bookmarks::test::WaitForBookmarkModelToLoad(
@@ -236,7 +239,7 @@ void HistoryQuickProviderTest::SetUp() {
   InMemoryURLIndex* index =
       InMemoryURLIndexFactory::GetForProfile(profile_.get());
   EXPECT_TRUE(index);
-  provider_ = new HistoryQuickProvider(profile_.get(), index);
+  provider_ = new HistoryQuickProvider(client_.get(), profile_.get(), index);
   TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
       profile_.get(), &HistoryQuickProviderTest::CreateTemplateURLService);
   FillData();

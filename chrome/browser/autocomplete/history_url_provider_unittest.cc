@@ -12,6 +12,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/autocomplete/history_quick_provider.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -218,6 +219,7 @@ class HistoryURLProviderTest : public testing::Test,
   content::TestBrowserThreadBundle thread_bundle_;
   ACMatches matches_;
   scoped_ptr<TestingProfile> profile_;
+  scoped_ptr<ChromeAutocompleteProviderClient> client_;
   history::HistoryService* history_service_;
   scoped_refptr<HistoryURLProvider> autocomplete_;
   // Should the matches be sorted and duplicates removed?
@@ -251,6 +253,7 @@ void HistoryURLProviderTest::OnProviderUpdate(bool updated_matches) {
 
 bool HistoryURLProviderTest::SetUpImpl(bool no_db) {
   profile_.reset(new TestingProfile());
+  client_.reset(new ChromeAutocompleteProviderClient(profile_.get()));
   if (!(profile_->CreateHistoryService(true, no_db)))
     return false;
   if (!no_db) {
@@ -261,7 +264,7 @@ bool HistoryURLProviderTest::SetUpImpl(bool no_db) {
   history_service_ = HistoryServiceFactory::GetForProfile(
       profile_.get(), ServiceAccessType::EXPLICIT_ACCESS);
 
-  autocomplete_ = new HistoryURLProvider(this, profile_.get());
+  autocomplete_ = new HistoryURLProvider(client_.get(), this, profile_.get());
   TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
       profile_.get(), &HistoryURLProviderTest::CreateTemplateURLService);
   FillData();

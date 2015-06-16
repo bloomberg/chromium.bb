@@ -9,6 +9,7 @@
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service_factory.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -51,6 +52,15 @@ ChromeAutocompleteProviderClient::SchemeClassifier() {
   return scheme_classifier_;
 }
 
+history::HistoryService* ChromeAutocompleteProviderClient::HistoryService() {
+  return HistoryServiceFactory::GetForProfile(
+      profile_, ServiceAccessType::EXPLICIT_ACCESS);
+}
+
+bookmarks::BookmarkModel* ChromeAutocompleteProviderClient::BookmarkModel() {
+  return BookmarkModelFactory::GetForProfile(profile_);
+}
+
 void ChromeAutocompleteProviderClient::Classify(
     const base::string16& text,
     bool prefer_keyword,
@@ -66,18 +76,17 @@ void ChromeAutocompleteProviderClient::Classify(
 }
 
 history::URLDatabase* ChromeAutocompleteProviderClient::InMemoryDatabase() {
-  history::HistoryService* history_service =
-      HistoryServiceFactory::GetForProfile(profile_,
-                                           ServiceAccessType::EXPLICIT_ACCESS);
+  history::HistoryService* history_service = HistoryService();
+
+  // This method is called in unit test contexts where the HistoryService isn't
+  // loaded.
   return history_service ? history_service->InMemoryDatabase() : NULL;
 }
 
 void ChromeAutocompleteProviderClient::DeleteMatchingURLsForKeywordFromHistory(
     history::KeywordID keyword_id,
     const base::string16& term) {
-  HistoryServiceFactory::GetForProfile(profile_,
-                                       ServiceAccessType::EXPLICIT_ACCESS)
-      ->DeleteMatchingURLsForKeyword(keyword_id, term);
+  HistoryService()->DeleteMatchingURLsForKeyword(keyword_id, term);
 }
 
 bool ChromeAutocompleteProviderClient::TabSyncEnabledAndUnencrypted() {

@@ -76,10 +76,12 @@ const int kDefaultZeroSuggestRelevance = 100;
 
 // static
 ZeroSuggestProvider* ZeroSuggestProvider::Create(
+    AutocompleteProviderClient* client,
     AutocompleteProviderListener* listener,
     TemplateURLService* template_url_service,
     Profile* profile) {
-  return new ZeroSuggestProvider(listener, template_url_service, profile);
+  return new ZeroSuggestProvider(client, listener, template_url_service,
+                                 profile);
 }
 
 // static
@@ -121,7 +123,7 @@ void ZeroSuggestProvider::Start(const AutocompleteInput& input,
   // most visited field trials.
   if (CanSendURL(input.current_url(), suggest_url, default_provider,
                  current_page_classification_,
-                 template_url_service_->search_terms_data(), client_.get()) &&
+                 template_url_service_->search_terms_data(), client_) &&
       !OmniboxFieldTrial::InZeroSuggestPersonalizedFieldTrial() &&
       !OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial()) {
     // Update suggest_url to include the current_page_url.
@@ -189,13 +191,14 @@ void ZeroSuggestProvider::ResetSession() {
 }
 
 ZeroSuggestProvider::ZeroSuggestProvider(
-  AutocompleteProviderListener* listener,
-  TemplateURLService* template_url_service,
-  Profile* profile)
-    : BaseSearchProvider(template_url_service,
-                         scoped_ptr<AutocompleteProviderClient>(
-                             new ChromeAutocompleteProviderClient(profile)),
-                         AutocompleteProvider::TYPE_ZERO_SUGGEST),
+    AutocompleteProviderClient* client,
+
+    AutocompleteProviderListener* listener,
+    TemplateURLService* template_url_service,
+    Profile* profile)
+    : BaseSearchProvider(AutocompleteProvider::TYPE_ZERO_SUGGEST,
+                         client,
+                         template_url_service),
       listener_(listener),
       profile_(profile),
       results_from_cache_(false),
@@ -444,8 +447,7 @@ bool ZeroSuggestProvider::ShouldShowNonContextualZeroSuggest(
   if (!ZeroSuggestEnabled(suggest_url,
                           template_url_service_->GetDefaultSearchProvider(),
                           current_page_classification_,
-                          template_url_service_->search_terms_data(),
-                          client_.get()))
+                          template_url_service_->search_terms_data(), client_))
     return false;
 
   // If we cannot send URLs, then only the MostVisited and Personalized

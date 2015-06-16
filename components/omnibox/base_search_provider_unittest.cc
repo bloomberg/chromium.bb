@@ -31,6 +31,8 @@ class MockAutocompleteProviderClient : public AutocompleteProviderClient {
   MOCK_METHOD0(SearchSuggestEnabled, bool());
   MOCK_METHOD0(ShowBookmarkBar, bool());
   MOCK_METHOD0(SchemeClassifier, const AutocompleteSchemeClassifier&());
+  MOCK_METHOD0(HistoryService, history::HistoryService*());
+  MOCK_METHOD0(BookmarkModel, bookmarks::BookmarkModel*());
   MOCK_METHOD6(
       Classify,
       void(const base::string16& text,
@@ -53,14 +55,10 @@ class TestBaseSearchProvider : public BaseSearchProvider {
  public:
   typedef BaseSearchProvider::MatchMap MatchMap;
 
-  // Note: Takes ownership of client. scoped_ptr<> would be the right way to
-  // express that, but NiceMock<> can't forward a scoped_ptr.
-  TestBaseSearchProvider(TemplateURLService* template_url_service,
+  TestBaseSearchProvider(AutocompleteProvider::Type type,
                          AutocompleteProviderClient* client,
-                         AutocompleteProvider::Type type)
-      : BaseSearchProvider(template_url_service,
-                           scoped_ptr<AutocompleteProviderClient>(client),
-                           type) {}
+                         TemplateURLService* template_url_service)
+      : BaseSearchProvider(type, client, template_url_service) {}
   MOCK_METHOD1(DeleteMatch, void(const AutocompleteMatch& match));
   MOCK_CONST_METHOD1(AddProviderInfo, void(ProvidersInfo* provider_info));
   MOCK_CONST_METHOD1(GetTemplateURL, const TemplateURL*(bool is_keyword));
@@ -107,14 +105,14 @@ class BaseSearchProviderTest : public testing::Test {
                                NULL,
                                NULL,
                                base::Closure()));
+    client_.reset(new NiceMock<MockAutocompleteProviderClient>());
     provider_ = new NiceMock<TestBaseSearchProvider>(
-        service_.get(),
-        new NiceMock<MockAutocompleteProviderClient>,
-        AutocompleteProvider::TYPE_SEARCH);
+        AutocompleteProvider::TYPE_SEARCH, client_.get(), service_.get());
   }
 
   scoped_refptr<NiceMock<TestBaseSearchProvider> > provider_;
   scoped_ptr<TemplateURLService> service_;
+  scoped_ptr<NiceMock<MockAutocompleteProviderClient>> client_;
 };
 
 TEST_F(BaseSearchProviderTest, PreserveAnswersWhenDeduplicating) {

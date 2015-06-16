@@ -19,7 +19,6 @@
 #include "chrome/browser/autocomplete/history_url_provider.h"
 #include "chrome/browser/autocomplete/in_memory_url_index.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/chrome_switches.h"
@@ -47,9 +46,11 @@
 bool HistoryQuickProvider::disabled_ = false;
 
 HistoryQuickProvider::HistoryQuickProvider(
+    AutocompleteProviderClient* client,
     Profile* profile,
     InMemoryURLIndex* in_memory_url_index)
-    : HistoryProvider(profile, AutocompleteProvider::TYPE_HISTORY_QUICK),
+    : HistoryProvider(AutocompleteProvider::TYPE_HISTORY_QUICK, client),
+      profile_(profile),
       languages_(profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)),
       in_memory_url_index_(in_memory_url_index) {
 }
@@ -105,9 +106,7 @@ void HistoryQuickProvider::DoAutocomplete() {
        autocomplete_input_.parts().password.is_nonempty() ||
        autocomplete_input_.parts().path.is_nonempty());
   if (can_have_url_what_you_typed_match_first) {
-    history::HistoryService* const history_service =
-        HistoryServiceFactory::GetForProfile(
-            profile_, ServiceAccessType::EXPLICIT_ACCESS);
+    history::HistoryService* const history_service = client()->HistoryService();
     // We expect HistoryService to be available.  In case it's not,
     // (e.g., due to Profile corruption) we let HistoryQuick provider
     // completions (which may be available because it's a different

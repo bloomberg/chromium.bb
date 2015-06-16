@@ -190,7 +190,9 @@ class HistoryURLProvider : public HistoryProvider {
   static const int kScoreForWhatYouTypedResult;
   static const int kBaseScoreForNonInlineableResult;
 
-  HistoryURLProvider(AutocompleteProviderListener* listener, Profile* profile);
+  HistoryURLProvider(AutocompleteProviderClient* client,
+                     AutocompleteProviderListener* listener,
+                     Profile* profile);
 
   // HistoryProvider:
   void Start(const AutocompleteInput& input,
@@ -324,6 +326,7 @@ class HistoryURLProvider : public HistoryProvider {
       MatchType match_type,
       int relevance);
 
+  Profile* profile_;
   AutocompleteProviderListener* listener_;
 
   // Params for the current query.  The provider should not free this directly;

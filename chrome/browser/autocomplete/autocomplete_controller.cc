@@ -16,7 +16,6 @@
 #include "chrome/browser/autocomplete/autocomplete_controller_delegate.h"
 #include "chrome/browser/autocomplete/bookmark_provider.h"
 #include "chrome/browser/autocomplete/builtin_provider.h"
-#include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
 #include "chrome/browser/autocomplete/history_quick_provider.h"
 #include "chrome/browser/autocomplete/history_url_provider.h"
 #include "chrome/browser/autocomplete/in_memory_url_index_factory.h"
@@ -174,6 +173,7 @@ AutocompleteController::AutocompleteController(
     AutocompleteControllerDelegate* delegate,
     int provider_types)
     : delegate_(delegate),
+      provider_client_(new ChromeAutocompleteProviderClient(profile)),
       history_url_provider_(NULL),
       keyword_provider_(NULL),
       search_provider_(NULL),
@@ -189,10 +189,12 @@ AutocompleteController::AutocompleteController(
     providers_.push_back(new BuiltinProvider());
   if (provider_types & AutocompleteProvider::TYPE_HISTORY_QUICK) {
     providers_.push_back(new HistoryQuickProvider(
-        profile, InMemoryURLIndexFactory::GetForProfile(profile)));
+        provider_client_.get(), profile,
+        InMemoryURLIndexFactory::GetForProfile(profile)));
   }
   if (provider_types & AutocompleteProvider::TYPE_HISTORY_URL) {
-    history_url_provider_ = new HistoryURLProvider(this, profile);
+    history_url_provider_ =
+        new HistoryURLProvider(provider_client_.get(), this, profile);
     providers_.push_back(history_url_provider_);
   }
   // "Tab to search" can be used on all platforms other than Android.
@@ -208,16 +210,15 @@ AutocompleteController::AutocompleteController(
   }
 #endif
   if (provider_types & AutocompleteProvider::TYPE_SEARCH) {
-    search_provider_ = new SearchProvider(
-        this, template_url_service, scoped_ptr<AutocompleteProviderClient>(
-            new ChromeAutocompleteProviderClient(profile)));
+    search_provider_ =
+        new SearchProvider(provider_client_.get(), this, template_url_service);
     providers_.push_back(search_provider_);
   }
   if (provider_types & AutocompleteProvider::TYPE_SHORTCUTS)
     providers_.push_back(new ShortcutsProvider(profile));
   if (provider_types & AutocompleteProvider::TYPE_ZERO_SUGGEST) {
     zero_suggest_provider_ = ZeroSuggestProvider::Create(
-        this, template_url_service, profile);
+        provider_client_.get(), this, template_url_service, profile);
     if (zero_suggest_provider_)
       providers_.push_back(zero_suggest_provider_);
   }

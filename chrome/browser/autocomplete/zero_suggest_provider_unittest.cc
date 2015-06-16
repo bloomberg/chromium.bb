@@ -9,6 +9,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
+#include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -142,16 +143,10 @@ class ZeroSuggestProviderTest : public testing::Test,
   // Needed for OmniboxFieldTrial::ActivateStaticTrials().
   scoped_ptr<base::FieldTrialList> field_trial_list_;
 
-  // URLFetcherFactory implementation registered.
   net::TestURLFetcherFactory test_factory_;
-
-  // Profile we use.
   TestingProfile profile_;
-
-  // ZeroSuggestProvider object under test.
+  scoped_ptr<ChromeAutocompleteProviderClient> client_;
   scoped_refptr<ZeroSuggestProvider> provider_;
-
-  // Default template URL.
   TemplateURL* default_t_url_;
 };
 
@@ -166,6 +161,8 @@ void ZeroSuggestProviderTest::SetUp() {
       &profile_, &TemplateURLServiceFactory::BuildInstanceFor);
   AutocompleteClassifierFactory::GetInstance()->SetTestingFactoryAndUse(
       &profile_, &AutocompleteClassifierFactory::BuildInstanceFor);
+
+  client_.reset(new ChromeAutocompleteProviderClient(&profile_));
 
   TemplateURLService* turl_model =
       TemplateURLServiceFactory::GetForProfile(&profile_);
@@ -183,7 +180,8 @@ void ZeroSuggestProviderTest::SetUp() {
 
   TopSitesFactory* top_sites_factory = TopSitesFactory::GetInstance();
   top_sites_factory->SetTestingFactory(&profile_, BuildFakeEmptyTopSites);
-  provider_ = ZeroSuggestProvider::Create(this, turl_model, &profile_);
+  provider_ =
+      ZeroSuggestProvider::Create(client_.get(), this, turl_model, &profile_);
 }
 
 void ZeroSuggestProviderTest::TearDown() {

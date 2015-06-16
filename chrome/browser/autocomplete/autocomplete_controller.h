@@ -12,6 +12,7 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
 #include "components/omnibox/autocomplete_input.h"
 #include "components/omnibox/autocomplete_provider.h"
 #include "components/omnibox/autocomplete_provider_listener.h"
@@ -204,6 +205,9 @@ class AutocompleteController : public AutocompleteProviderListener {
                   bool due_to_user_inactivity);
 
   AutocompleteControllerDelegate* delegate_;
+
+  // The client passed to the providers.
+  scoped_ptr<ChromeAutocompleteProviderClient> provider_client_;
 
   // A list of all providers.
   Providers providers_;

@@ -8,10 +8,6 @@
 
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/common/url_constants.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/omnibox/autocomplete_input.h"
@@ -23,12 +19,10 @@ using bookmarks::BookmarkModel;
 
 void HistoryProvider::DeleteMatch(const AutocompleteMatch& match) {
   DCHECK(done_);
-  DCHECK(profile_);
+  DCHECK(client_);
   DCHECK(match.deletable);
 
-  history::HistoryService* const history_service =
-      HistoryServiceFactory::GetForProfile(profile_,
-                                           ServiceAccessType::EXPLICIT_ACCESS);
+  history::HistoryService* const history_service = client_->HistoryService();
 
   // Delete the underlying URL along with all its visits from the history DB.
   // The resulting HISTORY_URLS_DELETED notification will also cause all caches
@@ -48,17 +42,16 @@ bool HistoryProvider::PreventInlineAutocomplete(
        IsWhitespace(input.text()[input.text().length() - 1]));
 }
 
-HistoryProvider::HistoryProvider(Profile* profile,
-                                 AutocompleteProvider::Type type)
-    : AutocompleteProvider(type),
-      profile_(profile) {
+HistoryProvider::HistoryProvider(AutocompleteProvider::Type type,
+                                 AutocompleteProviderClient* client)
+    : AutocompleteProvider(type), client_(client) {
 }
 
 HistoryProvider::~HistoryProvider() {}
 
 void HistoryProvider::DeleteMatchFromMatches(const AutocompleteMatch& match) {
   bool found = false;
-  BookmarkModel* bookmark_model = BookmarkModelFactory::GetForProfile(profile_);
+  BookmarkModel* bookmark_model = client_->BookmarkModel();
   for (ACMatches::iterator i(matches_.begin()); i != matches_.end(); ++i) {
     if (i->destination_url == match.destination_url && i->type == match.type) {
       found = true;

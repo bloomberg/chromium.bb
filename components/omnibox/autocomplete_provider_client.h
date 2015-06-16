@@ -13,7 +13,12 @@ struct AutocompleteMatch;
 class AutocompleteSchemeClassifier;
 class GURL;
 
+namespace bookmarks {
+class BookmarkModel;
+}
+
 namespace history {
+class HistoryService;
 class URLDatabase;
 }
 
@@ -43,6 +48,12 @@ class AutocompleteProviderClient {
 
   // Returns the scheme classifier.
   virtual const AutocompleteSchemeClassifier& SchemeClassifier() = 0;
+
+  // Returns the HistoryService.
+  virtual history::HistoryService* HistoryService() = 0;
+
+  // Returns the bookmarks:BookmarkModel.
+  virtual bookmarks::BookmarkModel* BookmarkModel() = 0;
 
   // Given some string |text| that the user wants to use for navigation,
   // determines how it should be interpreted.

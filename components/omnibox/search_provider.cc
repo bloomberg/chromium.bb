@@ -118,12 +118,12 @@ class SearchProvider::CompareScoredResults {
 
 // SearchProvider -------------------------------------------------------------
 
-SearchProvider::SearchProvider(
-    AutocompleteProviderListener* listener,
-    TemplateURLService* template_url_service,
-    scoped_ptr<AutocompleteProviderClient> client)
-    : BaseSearchProvider(template_url_service, client.Pass(),
-                         AutocompleteProvider::TYPE_SEARCH),
+SearchProvider::SearchProvider(AutocompleteProviderClient* client,
+                               AutocompleteProviderListener* listener,
+                               TemplateURLService* template_url_service)
+    : BaseSearchProvider(AutocompleteProvider::TYPE_SEARCH,
+                         client,
+                         template_url_service),
       listener_(listener),
       providers_(template_url_service),
       answers_cache_(10) {
@@ -850,7 +850,7 @@ scoped_ptr<net::URLFetcher> SearchProvider::CreateSuggestFetcher(
   // the user is in the field trial.
   if (CanSendURL(current_page_url_, suggest_url, template_url,
                  input.current_page_classification(),
-                 template_url_service_->search_terms_data(), client_.get()) &&
+                 template_url_service_->search_terms_data(), client_) &&
       OmniboxFieldTrial::InZeroSuggestAfterTypingFieldTrial()) {
     search_term_args.current_page_url = current_page_url_.spec();
     // Create the suggest URL again with the current page URL.

@@ -72,7 +72,8 @@ ACMatches::const_iterator FindDefaultMatch(const ACMatches& matches) {
 class SuggestionDeletionHandler;
 class SearchProviderForTest : public SearchProvider {
  public:
-  SearchProviderForTest(AutocompleteProviderListener* listener,
+  SearchProviderForTest(ChromeAutocompleteProviderClient* client,
+                        AutocompleteProviderListener* listener,
                         TemplateURLService* template_url_service,
                         Profile* profile);
   bool is_success() { return is_success_; }
@@ -87,12 +88,11 @@ class SearchProviderForTest : public SearchProvider {
 };
 
 SearchProviderForTest::SearchProviderForTest(
+    ChromeAutocompleteProviderClient* client,
     AutocompleteProviderListener* listener,
     TemplateURLService* template_url_service,
     Profile* profile)
-    : SearchProvider(listener, template_url_service,
-                     scoped_ptr<AutocompleteProviderClient>(
-                         new ChromeAutocompleteProviderClient(profile))),
+    : SearchProvider(client, listener, template_url_service),
       is_success_(false) {
 }
 
@@ -255,13 +255,9 @@ class SearchProviderTest : public testing::Test,
 
   content::TestBrowserThreadBundle thread_bundle_;
 
-  // URLFetcherFactory implementation registered.
   net::TestURLFetcherFactory test_factory_;
-
-  // Profile we use.
   TestingProfile profile_;
-
-  // The provider.
+  scoped_ptr<ChromeAutocompleteProviderClient> client_;
   scoped_refptr<SearchProviderForTest> provider_;
 
   // If non-NULL, OnProviderUpdate quits the current |run_loop_|.
@@ -283,6 +279,8 @@ void SearchProviderTest::SetUp() {
   ASSERT_TRUE(profile_.CreateHistoryService(true, false));
   TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
       &profile_, &TemplateURLServiceFactory::BuildInstanceFor);
+
+  client_.reset(new ChromeAutocompleteProviderClient(&profile_));
 
   TemplateURLService* turl_model =
       TemplateURLServiceFactory::GetForProfile(&profile_);
@@ -325,7 +323,8 @@ void SearchProviderTest::SetUp() {
   AutocompleteClassifierFactory::GetInstance()->SetTestingFactoryAndUse(
       &profile_, &AutocompleteClassifierFactory::BuildInstanceFor);
 
-  provider_ = new SearchProviderForTest(this, turl_model, &profile_);
+  provider_ =
+      new SearchProviderForTest(client_.get(), this, turl_model, &profile_);
   OmniboxFieldTrial::kDefaultMinimumTimeBetweenSuggestQueriesMs = 0;
 }
 

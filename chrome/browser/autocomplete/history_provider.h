@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "components/omnibox/autocomplete_provider.h"
+#include "components/omnibox/autocomplete_provider_client.h"
 #include "components/omnibox/in_memory_url_index_types.h"
 
 class AutocompleteInput;
@@ -25,7 +26,9 @@ class HistoryProvider : public AutocompleteProvider {
   static bool PreventInlineAutocomplete(const AutocompleteInput& input);
 
  protected:
-  HistoryProvider(Profile* profile, AutocompleteProvider::Type type);
+  HistoryProvider(AutocompleteProvider::Type type,
+                  AutocompleteProviderClient* client);
+
   ~HistoryProvider() override;
 
   // Finds and removes the match from the current collection of matches and
@@ -38,7 +41,12 @@ class HistoryProvider : public AutocompleteProvider {
                                                    size_t text_length,
                                                    bool is_url);
 
-  Profile* profile_;
+  AutocompleteProviderClient* client() { return client_; }
+
+ private:
+  AutocompleteProviderClient* client_;
+
+  DISALLOW_COPY_AND_ASSIGN(HistoryProvider);
 };
 
 #endif  // CHROME_BROWSER_AUTOCOMPLETE_HISTORY_PROVIDER_H_

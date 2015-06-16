@@ -22,6 +22,8 @@ class ChromeAutocompleteProviderClient : public AutocompleteProviderClient {
   bool SearchSuggestEnabled() override;
   bool ShowBookmarkBar() override;
   const AutocompleteSchemeClassifier& SchemeClassifier() override;
+  history::HistoryService* HistoryService() override;
+  bookmarks::BookmarkModel* BookmarkModel() override;
   void Classify(
       const base::string16& text,
       bool prefer_keyword,

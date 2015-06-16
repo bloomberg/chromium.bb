@@ -49,9 +49,9 @@ class BaseSearchProvider : public AutocompleteProvider {
   // ID used in creating URLFetcher for deleting suggestion results.
   static const int kDeletionURLFetcherID;
 
-  BaseSearchProvider(TemplateURLService* template_url_service,
-                     scoped_ptr<AutocompleteProviderClient> client,
-                     AutocompleteProvider::Type type);
+  BaseSearchProvider(AutocompleteProvider::Type type,
+                     AutocompleteProviderClient* client,
+                     TemplateURLService* template_url_service);
 
   // Returns whether |match| is flagged as a query that should be prefetched.
   static bool ShouldPrefetch(const AutocompleteMatch& match);
@@ -220,8 +220,8 @@ class BaseSearchProvider : public AutocompleteProvider {
   // Records in UMA whether the deletion request resulted in success.
   virtual void RecordDeletionResult(bool success) = 0;
 
+  AutocompleteProviderClient* client_;
   TemplateURLService* template_url_service_;
-  scoped_ptr<AutocompleteProviderClient> client_;
 
   // Whether a field trial, if any, has triggered in the most recent
   // autocomplete query. This field is set to true only if the suggestion

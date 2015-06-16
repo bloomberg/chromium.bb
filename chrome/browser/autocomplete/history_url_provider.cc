@@ -19,7 +19,6 @@
 #include "base/time/time.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/autocomplete/scored_history_match.h"
-#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
@@ -473,9 +472,11 @@ HistoryURLProviderParams::HistoryURLProviderParams(
 HistoryURLProviderParams::~HistoryURLProviderParams() {
 }
 
-HistoryURLProvider::HistoryURLProvider(AutocompleteProviderListener* listener,
+HistoryURLProvider::HistoryURLProvider(AutocompleteProviderClient* client,
+                                       AutocompleteProviderListener* listener,
                                        Profile* profile)
-    : HistoryProvider(profile, AutocompleteProvider::TYPE_HISTORY_URL),
+    : HistoryProvider(AutocompleteProvider::TYPE_HISTORY_URL, client),
+      profile_(profile),
       listener_(listener),
       params_(NULL) {
   // Initialize HUP scoring params based on the current experiment.
@@ -528,11 +529,7 @@ void HistoryURLProvider::Start(const AutocompleteInput& input,
     matches_.push_back(what_you_typed_match);
 
   // We'll need the history service to run both passes, so try to obtain it.
-  if (!profile_)
-    return;
-  history::HistoryService* const history_service =
-      HistoryServiceFactory::GetForProfile(profile_,
-                                           ServiceAccessType::EXPLICIT_ACCESS);
+  history::HistoryService* const history_service = client()->HistoryService();
   if (!history_service)
     return;
 

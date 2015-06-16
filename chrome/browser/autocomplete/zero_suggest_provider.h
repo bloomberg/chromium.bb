@@ -49,7 +49,8 @@ class ZeroSuggestProvider : public BaseSearchProvider,
                             public net::URLFetcherDelegate {
  public:
   // Creates and returns an instance of this provider.
-  static ZeroSuggestProvider* Create(AutocompleteProviderListener* listener,
+  static ZeroSuggestProvider* Create(AutocompleteProviderClient* client,
+                                     AutocompleteProviderListener* listener,
                                      TemplateURLService* template_url_service,
                                      Profile* profile);
 
@@ -69,7 +70,8 @@ class ZeroSuggestProvider : public BaseSearchProvider,
   void ResetSession() override;
 
  private:
-  ZeroSuggestProvider(AutocompleteProviderListener* listener,
+  ZeroSuggestProvider(AutocompleteProviderClient* client,
+                      AutocompleteProviderListener* listener,
                       TemplateURLService* template_url_service,
                       Profile* profile);
 

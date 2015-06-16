@@ -24,7 +24,9 @@ struct ScoredHistoryMatch;
 // history.
 class HistoryQuickProvider : public HistoryProvider {
  public:
-  HistoryQuickProvider(Profile* profile, InMemoryURLIndex* in_memory_url_index);
+  HistoryQuickProvider(AutocompleteProviderClient* client,
+                       Profile* profile,
+                       InMemoryURLIndex* in_memory_url_index);
 
   // AutocompleteProvider. |minimal_changes| is ignored since there is no asynch
   // completion performed.
@@ -54,6 +56,7 @@ class HistoryQuickProvider : public HistoryProvider {
   AutocompleteMatch QuickMatchToACMatch(const ScoredHistoryMatch& history_match,
                                         int score);
 
+  Profile* profile_;
   AutocompleteInput autocomplete_input_;
   std::string languages_;
   InMemoryURLIndex* in_memory_url_index_;  // Not owned by this class.

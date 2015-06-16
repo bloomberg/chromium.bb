@@ -81,13 +81,13 @@ const int BaseSearchProvider::kDefaultProviderURLFetcherID = 1;
 const int BaseSearchProvider::kKeywordProviderURLFetcherID = 2;
 const int BaseSearchProvider::kDeletionURLFetcherID = 3;
 
-BaseSearchProvider::BaseSearchProvider(
-    TemplateURLService* template_url_service,
-    scoped_ptr<AutocompleteProviderClient> client,
-    AutocompleteProvider::Type type)
+BaseSearchProvider::BaseSearchProvider(AutocompleteProvider::Type type,
+                                       AutocompleteProviderClient* client,
+
+                                       TemplateURLService* template_url_service)
     : AutocompleteProvider(type),
+      client_(client),
       template_url_service_(template_url_service),
-      client_(client.Pass()),
       field_trial_triggered_(false),
       field_trial_triggered_in_session_(false) {
 }
