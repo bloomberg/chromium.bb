@@ -161,7 +161,7 @@ void ConnectivityCheckerImpl::OnSSLCertificateError(
     net::URLRequest* request,
     const net::SSLInfo& ssl_info,
     bool fatal) {
-  LOG(ERROR) << "OnSSLCertificateError";
+  LOG(ERROR) << "OnSSLCertificateError: cert_status=" << ssl_info.cert_status;
   timeout_.Cancel();
   OnUrlRequestError();
 }
