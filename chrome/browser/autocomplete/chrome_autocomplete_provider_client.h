@@ -17,13 +17,15 @@ class ChromeAutocompleteProviderClient : public AutocompleteProviderClient {
 
   // AutocompleteProviderClient:
   net::URLRequestContextGetter* RequestContext() override;
-  bool IsOffTheRecord() override;
-  std::string AcceptLanguages() override;
-  bool SearchSuggestEnabled() override;
-  bool ShowBookmarkBar() override;
   const AutocompleteSchemeClassifier& SchemeClassifier() override;
   history::HistoryService* HistoryService() override;
   bookmarks::BookmarkModel* BookmarkModel() override;
+  history::URLDatabase* InMemoryDatabase() override;
+  std::string AcceptLanguages() override;
+  bool IsOffTheRecord() override;
+  bool SearchSuggestEnabled() override;
+  bool ShowBookmarkBar() override;
+  bool TabSyncEnabledAndUnencrypted() override;
   void Classify(
       const base::string16& text,
       bool prefer_keyword,
@@ -31,11 +33,9 @@ class ChromeAutocompleteProviderClient : public AutocompleteProviderClient {
       metrics::OmniboxEventProto::PageClassification page_classification,
       AutocompleteMatch* match,
       GURL* alternate_nav_url) override;
-  history::URLDatabase* InMemoryDatabase() override;
   void DeleteMatchingURLsForKeywordFromHistory(
       history::KeywordID keyword_id,
       const base::string16& term) override;
-  bool TabSyncEnabledAndUnencrypted() override;
   void PrefetchImage(const GURL& url) override;
 
  private:

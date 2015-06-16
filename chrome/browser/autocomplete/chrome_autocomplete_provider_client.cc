@@ -31,22 +31,6 @@ ChromeAutocompleteProviderClient::RequestContext() {
   return profile_->GetRequestContext();
 }
 
-bool ChromeAutocompleteProviderClient::IsOffTheRecord() {
-  return profile_->IsOffTheRecord();
-}
-
-std::string ChromeAutocompleteProviderClient::AcceptLanguages() {
-  return profile_->GetPrefs()->GetString(prefs::kAcceptLanguages);
-}
-
-bool ChromeAutocompleteProviderClient::SearchSuggestEnabled() {
-  return profile_->GetPrefs()->GetBoolean(prefs::kSearchSuggestEnabled);
-}
-
-bool ChromeAutocompleteProviderClient::ShowBookmarkBar() {
-  return profile_->GetPrefs()->GetBoolean(bookmarks::prefs::kShowBookmarkBar);
-}
-
 const AutocompleteSchemeClassifier&
 ChromeAutocompleteProviderClient::SchemeClassifier() {
   return scheme_classifier_;
@@ -59,6 +43,41 @@ history::HistoryService* ChromeAutocompleteProviderClient::HistoryService() {
 
 bookmarks::BookmarkModel* ChromeAutocompleteProviderClient::BookmarkModel() {
   return BookmarkModelFactory::GetForProfile(profile_);
+}
+
+history::URLDatabase* ChromeAutocompleteProviderClient::InMemoryDatabase() {
+  history::HistoryService* history_service = HistoryService();
+
+  // This method is called in unit test contexts where the HistoryService isn't
+  // loaded.
+  return history_service ? history_service->InMemoryDatabase() : NULL;
+}
+
+std::string ChromeAutocompleteProviderClient::AcceptLanguages() {
+  return profile_->GetPrefs()->GetString(prefs::kAcceptLanguages);
+}
+
+bool ChromeAutocompleteProviderClient::IsOffTheRecord() {
+  return profile_->IsOffTheRecord();
+}
+
+bool ChromeAutocompleteProviderClient::SearchSuggestEnabled() {
+  return profile_->GetPrefs()->GetBoolean(prefs::kSearchSuggestEnabled);
+}
+
+bool ChromeAutocompleteProviderClient::ShowBookmarkBar() {
+  return profile_->GetPrefs()->GetBoolean(bookmarks::prefs::kShowBookmarkBar);
+}
+
+bool ChromeAutocompleteProviderClient::TabSyncEnabledAndUnencrypted() {
+  // Check field trials and settings allow sending the URL on suggest requests.
+  ProfileSyncService* service =
+      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile_);
+  sync_driver::SyncPrefs sync_prefs(profile_->GetPrefs());
+  return service && service->CanSyncStart() &&
+         sync_prefs.GetPreferredDataTypes(syncer::UserTypes())
+             .Has(syncer::PROXY_TABS) &&
+         !service->GetEncryptedDataTypes().Has(syncer::SESSIONS);
 }
 
 void ChromeAutocompleteProviderClient::Classify(
@@ -75,30 +94,10 @@ void ChromeAutocompleteProviderClient::Classify(
                        page_classification, match, alternate_nav_url);
 }
 
-history::URLDatabase* ChromeAutocompleteProviderClient::InMemoryDatabase() {
-  history::HistoryService* history_service = HistoryService();
-
-  // This method is called in unit test contexts where the HistoryService isn't
-  // loaded.
-  return history_service ? history_service->InMemoryDatabase() : NULL;
-}
-
 void ChromeAutocompleteProviderClient::DeleteMatchingURLsForKeywordFromHistory(
     history::KeywordID keyword_id,
     const base::string16& term) {
   HistoryService()->DeleteMatchingURLsForKeyword(keyword_id, term);
-}
-
-bool ChromeAutocompleteProviderClient::TabSyncEnabledAndUnencrypted() {
-  // Check field trials and settings allow sending the URL on suggest requests.
-  ProfileSyncService* service =
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile_);
-  sync_driver::SyncPrefs sync_prefs(profile_->GetPrefs());
-  return service &&
-      service->CanSyncStart() &&
-      sync_prefs.GetPreferredDataTypes(syncer::UserTypes()).Has(
-          syncer::PROXY_TABS) &&
-      !service->GetEncryptedDataTypes().Has(syncer::SESSIONS);
 }
 
 void ChromeAutocompleteProviderClient::PrefetchImage(const GURL& url) {

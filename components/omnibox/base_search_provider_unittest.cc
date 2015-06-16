@@ -26,13 +26,15 @@ class MockAutocompleteProviderClient : public AutocompleteProviderClient {
  public:
   MockAutocompleteProviderClient() {}
   MOCK_METHOD0(RequestContext, net::URLRequestContextGetter*());
-  MOCK_METHOD0(IsOffTheRecord, bool());
-  MOCK_METHOD0(AcceptLanguages, std::string());
-  MOCK_METHOD0(SearchSuggestEnabled, bool());
-  MOCK_METHOD0(ShowBookmarkBar, bool());
   MOCK_METHOD0(SchemeClassifier, const AutocompleteSchemeClassifier&());
   MOCK_METHOD0(HistoryService, history::HistoryService*());
   MOCK_METHOD0(BookmarkModel, bookmarks::BookmarkModel*());
+  MOCK_METHOD0(InMemoryDatabase, history::URLDatabase*());
+  MOCK_METHOD0(AcceptLanguages, std::string());
+  MOCK_METHOD0(IsOffTheRecord, bool());
+  MOCK_METHOD0(SearchSuggestEnabled, bool());
+  MOCK_METHOD0(ShowBookmarkBar, bool());
+  MOCK_METHOD0(TabSyncEnabledAndUnencrypted, bool());
   MOCK_METHOD6(
       Classify,
       void(const base::string16& text,
@@ -41,10 +43,8 @@ class MockAutocompleteProviderClient : public AutocompleteProviderClient {
            metrics::OmniboxEventProto::PageClassification page_classification,
            AutocompleteMatch* match,
            GURL* alternate_nav_url));
-  MOCK_METHOD0(InMemoryDatabase, history::URLDatabase*());
   MOCK_METHOD2(DeleteMatchingURLsForKeywordFromHistory,
                void(history::KeywordID keyword_id, const base::string16& term));
-  MOCK_METHOD0(TabSyncEnabledAndUnencrypted, bool());
   MOCK_METHOD1(PrefetchImage, void(const GURL& url));
 
  private:
