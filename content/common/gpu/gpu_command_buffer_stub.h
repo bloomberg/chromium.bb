@@ -146,6 +146,8 @@ class GpuCommandBufferStub
 
   void MarkContextLost();
 
+  const gpu::gles2::FeatureInfo* GetFeatureInfo() const;
+
   uint64 GetMemoryUsage() const;
 
   void SendSwapBuffersCompleted(

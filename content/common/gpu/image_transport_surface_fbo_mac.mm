@@ -217,6 +217,11 @@ void ImageTransportSurfaceFBO::SetRendererID(int renderer_id) {
     context_->share_group()->SetRendererID(renderer_id);
 }
 
+const gpu::gles2::FeatureInfo* ImageTransportSurfaceFBO::GetFeatureInfo()
+    const {
+  return helper_->stub()->GetFeatureInfo();
+}
+
 gfx::SwapResult ImageTransportSurfaceFBO::PostSubBuffer(int x,
                                                         int y,
                                                         int width,

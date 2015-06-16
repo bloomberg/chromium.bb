@@ -1054,6 +1054,10 @@ gfx::Size GpuCommandBufferStub::GetSurfaceSize() const {
   return surface_->GetSize();
 }
 
+const gpu::gles2::FeatureInfo* GpuCommandBufferStub::GetFeatureInfo() const {
+  return context_group_->feature_info();
+}
+
 gpu::gles2::MemoryTracker* GpuCommandBufferStub::GetMemoryTracker() const {
   return context_group_->memory_tracker();
 }

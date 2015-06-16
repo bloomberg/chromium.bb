@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.13",
+  "version": "8.14",
   "entries": [
     {
       "id": 1,
@@ -1440,6 +1440,21 @@ LONG_STRING_CONST(
       "gl_renderer": "Mali.*",
       "features": [
         "max_copy_texture_chromium_size_262144"
+      ]
+    },
+    {
+      "id": 121,
+      "description": "NSCGLSurface API is buggy on multi-GPU systems",
+      "cr_bugs": [496484],
+      "os": {
+        "type": "macosx"
+      },
+      "gpu_count": {
+        "op": ">",
+        "value": "1"
+      },
+      "features": [
+        "disable_ns_cgl_surface_api"
       ]
     }
   ]

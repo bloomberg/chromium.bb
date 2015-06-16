@@ -89,6 +89,8 @@ class ImageTransportSurfaceFBO
                        float scale_factor);
   void SetRendererID(int renderer_id);
 
+  const gpu::gles2::FeatureInfo* GetFeatureInfo() const;
+
  protected:
   // ImageTransportSurface implementation
   void OnBufferPresented(

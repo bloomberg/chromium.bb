@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/trace_event/trace_event.h"
+#include "gpu/config/gpu_info_collector.h"
 #include "ui/accelerated_widget_mac/surface_handle_types.h"
 #include "ui/base/cocoa/animation_utils.h"
 #include "ui/base/ui_base_switches.h"
@@ -24,7 +25,7 @@ const size_t kCanDrawFalsesBeforeSwitchFromAsync = 4;
 const base::TimeDelta kMinDeltaToSwitchToAsync =
     base::TimeDelta::FromSecondsD(1. / 15.);
 
-bool CanUseNSCGLSurface() {
+bool CanUseNSCGLSurface(const gpu::gles2::FeatureInfo* feature_info) {
   // Respect command line flags for the API's usage.
   static bool forced_at_command_line =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -55,7 +56,8 @@ bool CanUseNSCGLSurface() {
   // will briefly flash during resize, and especially during transitions between
   // the iGPU and the dGPU. These problems are exhibited by layer-backed
   // NSOpenGLViews as well.
-  // TODO(ccameron): Add this check.
+  if (feature_info->workarounds().disable_ns_cgl_surface_api)
+    return false;
 
   // Leave this feature disabled until a flag for it is available.
   return false;
@@ -550,7 +552,8 @@ void CALayerStorageProvider::SwapBuffers(const gfx::Rect& dirty_rect) {
   // Determine if it is safe to use an NSCGLSurface, or if we should use the
   // CAOpenGLLayer fallback. If we're not using the preferred type of layer,
   // then reset the layer and re-create one of the preferred type.
-  bool can_use_ns_cgl_surface = CanUseNSCGLSurface();
+  bool can_use_ns_cgl_surface =
+      CanUseNSCGLSurface(transport_surface_->GetFeatureInfo());
   Class expected_layer_class = can_use_ns_cgl_surface ?
       [ImageTransportNSCGLSurface class] : [ImageTransportCAOpenGLLayer class];
   if (![layer_ isKindOfClass:expected_layer_class])
