@@ -1,5 +1,5 @@
 <?php
-    header("ACCEPT-CH: DPR, RW");
+    header("ACCEPT-CH: DPR, Width, Viewport-Width");
 ?>
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
@@ -13,15 +13,22 @@
 
         var loadRWImage = function() {
             var img = new Image();
-            img.src = 'resources/image-checks-for-rw.php';
+            img.src = 'resources/image-checks-for-width.php';
             img.onload = t.step_func(function(){ t.done(); });
+            img.onerror = t.step_func(unreached);
+            document.body.appendChild(img);
+        };
+        var loadViewportImage = function() {
+            var img = new Image();
+            img.src = 'resources/image-checks-for-viewport-width.php';
+            img.onload = t.step_func(loadRWImage);
             img.onerror = t.step_func(unreached);
             document.body.appendChild(img);
         };
         t.step(function() {
             var img = new Image();
             img.src = 'resources/image-checks-for-dpr.php';
-            img.onload = t.step_func(loadRWImage);
+            img.onload = t.step_func(loadViewportImage);
             img.onerror = t.step_func(unreached);
             document.body.appendChild(img);
         });

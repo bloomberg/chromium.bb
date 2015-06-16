@@ -1,5 +1,5 @@
 <?php
-    $rw = $_SERVER["HTTP_RW"];
+    $rw = $_SERVER["HTTP_WIDTH"];
     $expected_rw = $_GET["rw"];
 
     if ((isset($expected_rw) && $rw == $expected_rw) || (isset($rw) && !isset($expected_rw))) {

@@ -10,29 +10,35 @@
 
 namespace blink {
 
-class DocumentLoader;
+class Document;
 
 class ClientHintsPreferences {
 public:
     ClientHintsPreferences()
         : m_shouldSendDPR(false)
-        , m_shouldSendRW(false)
+        , m_shouldSendResourceWidth(false)
+        , m_shouldSendViewportWidth(false)
     {
     }
 
     void set(const ClientHintsPreferences& other)
     {
         m_shouldSendDPR = other.m_shouldSendDPR;
-        m_shouldSendRW = other.m_shouldSendRW;
+        m_shouldSendResourceWidth = other.m_shouldSendResourceWidth;
+        m_shouldSendViewportWidth = other.m_shouldSendViewportWidth;
     }
 
     void setShouldSendDPR(bool should) { m_shouldSendDPR = should; }
-    void setShouldSendRW(bool should) { m_shouldSendRW = should; }
+    void setShouldSendResourceWidth(bool should) { m_shouldSendResourceWidth = should; }
+    void setShouldSendViewportWidth(bool should) { m_shouldSendViewportWidth = should; }
     bool shouldSendDPR() const { return m_shouldSendDPR; }
-    bool shouldSendRW() const { return m_shouldSendRW; }
+    bool shouldSendResourceWidth() const { return m_shouldSendResourceWidth; }
+    bool shouldSendViewportWidth() const { return m_shouldSendViewportWidth; }
+
 private:
     bool m_shouldSendDPR;
-    bool m_shouldSendRW;
+    bool m_shouldSendResourceWidth;
+    bool m_shouldSendViewportWidth;
 };
 
 CORE_EXPORT void handleAcceptClientHintsHeader(const String& headerValue, ClientHintsPreferences&);

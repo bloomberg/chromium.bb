@@ -16,25 +16,26 @@ TEST_F(ClientHintsPreferencesTest, Basic)
 {
     struct TestCase {
         const char* headerValue;
-        bool expectationRW;
+        bool expectationResourceWidth;
         bool expectationDPR;
+        bool expectationViewportWidth;
     } cases[] = {
-        {"rw, dpr", true, true},
-        {"Rw, dPr", true, true},
-        {"RW, DPR", true, true},
-        {"dprw", false, false},
-        {"DPRW", false, false},
+        {"width, dpr, viewportWidth", true, true, false},
+        {"WiDtH, dPr,     viewport-width", true, true, true},
+        {"WIDTH, DPR, VIWEPROT-Width", true, true, false},
+        {"VIewporT-Width, wutwut, width", true, false, true},
+        {"dprw", false, false, false},
+        {"DPRW", false, false, false},
     };
 
-    for (auto testCase : cases) {
+    for (const auto& testCase : cases) {
         ClientHintsPreferences preferences;
         const char* value = testCase.headerValue;
-        bool expectationRW = testCase.expectationRW;
-        bool expectationDPR = testCase.expectationDPR;
 
         handleAcceptClientHintsHeader(value, preferences);
-        EXPECT_EQ(expectationRW, preferences.shouldSendRW());
-        EXPECT_EQ(expectationDPR, preferences.shouldSendDPR());
+        EXPECT_EQ(testCase.expectationResourceWidth, preferences.shouldSendResourceWidth());
+        EXPECT_EQ(testCase.expectationDPR, preferences.shouldSendDPR());
+        EXPECT_EQ(testCase.expectationViewportWidth, preferences.shouldSendViewportWidth());
     }
 }
 

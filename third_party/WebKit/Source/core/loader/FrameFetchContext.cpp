@@ -611,16 +611,20 @@ void FrameFetchContext::addClientHintsIfNecessary(FetchRequest& fetchRequest)
         return;
 
     bool shouldSendDPR = m_document->clientHintsPreferences().shouldSendDPR() || fetchRequest.clientHintsPreferences().shouldSendDPR();
-    bool shouldSendRW = m_document->clientHintsPreferences().shouldSendRW() || fetchRequest.clientHintsPreferences().shouldSendRW();
+    bool shouldSendResourceWidth = m_document->clientHintsPreferences().shouldSendResourceWidth() || fetchRequest.clientHintsPreferences().shouldSendResourceWidth();
+    bool shouldSendViewportWidth = m_document->clientHintsPreferences().shouldSendViewportWidth() || fetchRequest.clientHintsPreferences().shouldSendViewportWidth();
 
     if (shouldSendDPR)
         fetchRequest.mutableResourceRequest().addHTTPHeaderField("DPR", AtomicString(String::number(m_document->devicePixelRatio())));
 
-    if (shouldSendRW && frame()->view()) {
+    if (shouldSendResourceWidth) {
         FetchRequest::ResourceWidth resourceWidth = fetchRequest.resourceWidth();
-        float usedResourceWidth = resourceWidth.isSet ? resourceWidth.width : frame()->view()->viewportWidth();
-        fetchRequest.mutableResourceRequest().addHTTPHeaderField("RW", AtomicString(String::number(ceil(usedResourceWidth))));
+        if (resourceWidth.isSet)
+            fetchRequest.mutableResourceRequest().addHTTPHeaderField("Width", AtomicString(String::number(ceil(resourceWidth.width))));
     }
+
+    if (shouldSendViewportWidth && frame()->view())
+        fetchRequest.mutableResourceRequest().addHTTPHeaderField("Viewport-Width", AtomicString(String::number(frame()->view()->viewportWidth())));
 }
 
 void FrameFetchContext::addCSPHeaderIfNecessary(Resource::Type type, FetchRequest& fetchRequest)

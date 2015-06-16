@@ -210,21 +210,25 @@ TEST_F(HTMLPreloadScannerTest, testViewportNoContent)
 TEST_F(HTMLPreloadScannerTest, testMetaAcceptCH)
 {
     ClientHintsPreferences dpr;
-    ClientHintsPreferences rw;
-    ClientHintsPreferences dprAndRw;
+    ClientHintsPreferences resourceWidth;
+    ClientHintsPreferences all;
+    ClientHintsPreferences viewportWidth;
     dpr.setShouldSendDPR(true);
-    dprAndRw.setShouldSendDPR(true);
-    rw.setShouldSendRW(true);
-    dprAndRw.setShouldSendRW(true);
+    all.setShouldSendDPR(true);
+    resourceWidth.setShouldSendResourceWidth(true);
+    all.setShouldSendResourceWidth(true);
+    viewportWidth.setShouldSendViewportWidth(true);
     TestCase testCases[] = {
         {"http://example.test", "<meta http-equiv='accept-ch' content='bla'><img srcset='bla.gif 320w, blabla.gif 640w'>", "blabla.gif", "http://example.test/", Resource::Image, 0},
         {"http://example.test", "<meta http-equiv='accept-ch' content='dprw'><img srcset='bla.gif 320w, blabla.gif 640w'>", "blabla.gif", "http://example.test/", Resource::Image, 0},
         {"http://example.test", "<meta http-equiv='accept-ch'><img srcset='bla.gif 320w, blabla.gif 640w'>", "blabla.gif", "http://example.test/", Resource::Image, 0},
         {"http://example.test", "<meta http-equiv='accept-ch' content='dpr \t'><img srcset='bla.gif 320w, blabla.gif 640w'>", "blabla.gif", "http://example.test/", Resource::Image, 0, dpr},
         {"http://example.test", "<meta http-equiv='accept-ch' content='bla,dpr \t'><img srcset='bla.gif 320w, blabla.gif 640w'>", "blabla.gif", "http://example.test/", Resource::Image, 0, dpr},
-        {"http://example.test", "<meta http-equiv='accept-ch' content='  rw  '><img srcset='bla.gif 320w, blabla.gif 640w'>", "blabla.gif", "http://example.test/", Resource::Image, 0, rw},
-        {"http://example.test", "<meta http-equiv='accept-ch' content='  rw  , wutever'><img srcset='bla.gif 320w, blabla.gif 640w'>", "blabla.gif", "http://example.test/", Resource::Image, 0, rw},
-        {"http://example.test", "<meta http-equiv='accept-ch' content='  rw  , wutever, dpr \t'><img srcset='bla.gif 320w, blabla.gif 640w'>", "blabla.gif", "http://example.test/", Resource::Image, 0, dprAndRw},
+        {"http://example.test", "<meta http-equiv='accept-ch' content='  width  '><img srcset='bla.gif 320w, blabla.gif 640w'>", "blabla.gif", "http://example.test/", Resource::Image, 0, resourceWidth},
+        {"http://example.test", "<meta http-equiv='accept-ch' content='  width  , wutever'><img srcset='bla.gif 320w, blabla.gif 640w'>", "blabla.gif", "http://example.test/", Resource::Image, 0, resourceWidth},
+        {"http://example.test", "<meta http-equiv='accept-ch' content='  viewport-width  '><img srcset='bla.gif 320w, blabla.gif 640w'>", "blabla.gif", "http://example.test/", Resource::Image, 0, resourceWidth},
+        {"http://example.test", "<meta http-equiv='accept-ch' content='  viewport-width  , wutever'><img srcset='bla.gif 320w, blabla.gif 640w'>", "blabla.gif", "http://example.test/", Resource::Image, 0, resourceWidth},
+        {"http://example.test", "<meta http-equiv='accept-ch' content='  viewport-width  ,width, wutever, dpr \t'><img srcset='bla.gif 320w, blabla.gif 640w'>", "blabla.gif", "http://example.test/", Resource::Image, 0, all},
     };
 
     for (const auto& testCase : testCases)

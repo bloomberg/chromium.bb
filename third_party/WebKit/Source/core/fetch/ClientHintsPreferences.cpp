@@ -12,14 +12,18 @@ namespace blink {
 
 void handleAcceptClientHintsHeader(const String& headerValue, ClientHintsPreferences& preferences)
 {
-    if (RuntimeEnabledFeatures::clientHintsEnabled()) {
-        CommaDelimitedHeaderSet acceptCH;
-        parseCommaDelimitedHeader(headerValue, acceptCH);
-        if (acceptCH.contains("dpr"))
-            preferences.setShouldSendDPR(true);
-        if (acceptCH.contains("rw"))
-            preferences.setShouldSendRW(true);
-    }
+    if (!RuntimeEnabledFeatures::clientHintsEnabled() || headerValue.isEmpty())
+        return;
+    CommaDelimitedHeaderSet acceptCH;
+    parseCommaDelimitedHeader(headerValue, acceptCH);
+    if (acceptCH.contains("dpr"))
+        preferences.setShouldSendDPR(true);
+
+    if (acceptCH.contains("width"))
+        preferences.setShouldSendResourceWidth(true);
+
+    if (acceptCH.contains("viewport-width"))
+        preferences.setShouldSendViewportWidth(true);
 }
 
 }

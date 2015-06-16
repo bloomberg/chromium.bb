@@ -11,7 +11,7 @@
 
         var loadRWImage = function() {
             var img = new Image();
-            img.src = 'resources/image-checks-for-rw.php';
+            img.src = 'resources/image-checks-for-width.php';
             img.onload = t.step_func(unreached);
             img.onerror = t.step_func(function(){ t.done(); });
             body.appendChild(img);
