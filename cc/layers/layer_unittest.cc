@@ -73,6 +73,7 @@ class LayerTest : public testing::Test {
     LayerTreeSettings settings;
     params.client = &fake_client_;
     params.settings = &settings;
+    params.task_graph_runner = &task_graph_runner_;
     layer_tree_host_.reset(
         new StrictMock<MockLayerTreeHost>(&fake_client_, &params));
   }
@@ -941,18 +942,16 @@ TEST_F(LayerTest, TranformIsInvertibleAnimation) {
 
 class LayerTreeHostFactory {
  public:
-  LayerTreeHostFactory()
-      : client_(FakeLayerTreeHostClient::DIRECT_3D),
-        shared_bitmap_manager_(new TestSharedBitmapManager),
-        gpu_memory_buffer_manager_(new TestGpuMemoryBufferManager) {}
+  LayerTreeHostFactory() : client_(FakeLayerTreeHostClient::DIRECT_3D) {}
 
   scoped_ptr<LayerTreeHost> Create() { return Create(LayerTreeSettings()); }
 
   scoped_ptr<LayerTreeHost> Create(LayerTreeSettings settings) {
     LayerTreeHost::InitParams params;
     params.client = &client_;
-    params.shared_bitmap_manager = shared_bitmap_manager_.get();
-    params.gpu_memory_buffer_manager = gpu_memory_buffer_manager_.get();
+    params.shared_bitmap_manager = &shared_bitmap_manager_;
+    params.task_graph_runner = &task_graph_runner_;
+    params.gpu_memory_buffer_manager = &gpu_memory_buffer_manager_;
     params.settings = &settings;
     params.main_task_runner = base::ThreadTaskRunnerHandle::Get();
     return LayerTreeHost::CreateSingleThreaded(&client_, &params);
@@ -960,8 +959,9 @@ class LayerTreeHostFactory {
 
  private:
   FakeLayerTreeHostClient client_;
-  scoped_ptr<TestSharedBitmapManager> shared_bitmap_manager_;
-  scoped_ptr<TestGpuMemoryBufferManager> gpu_memory_buffer_manager_;
+  TestSharedBitmapManager shared_bitmap_manager_;
+  TestTaskGraphRunner task_graph_runner_;
+  TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
 };
 
 void AssertLayerTreeHostMatchesForSubtree(Layer* layer, LayerTreeHost* host) {

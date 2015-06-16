@@ -6,6 +6,7 @@
 #define CONTENT_TEST_WEB_LAYER_TREE_VIEW_IMPL_FOR_TESTING_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_single_thread_client.h"
 #include "third_party/WebKit/public/platform/WebLayerTreeView.h"
@@ -92,6 +93,7 @@ class WebLayerTreeViewImplForTesting
   void DidAbortSwapBuffers() override {}
 
  private:
+  cc::TestTaskGraphRunner task_graph_runner_;
   scoped_ptr<cc::LayerTreeHost> layer_tree_host_;
 
   DISALLOW_COPY_AND_ASSIGN(WebLayerTreeViewImplForTesting);

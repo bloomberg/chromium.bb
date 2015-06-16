@@ -385,6 +385,7 @@ class MultipleCompositeDoesNotCreateOutputSurface
   void InitializeSettings(LayerTreeSettings* settings) override {
     settings->single_thread_proxy_scheduler = false;
     settings->use_zero_copy = true;
+    settings->use_one_copy = false;
   }
 
   void RequestNewOutputSurface() override {
@@ -424,6 +425,7 @@ class FailedCreateDoesNotCreateExtraOutputSurface
   void InitializeSettings(LayerTreeSettings* settings) override {
     settings->single_thread_proxy_scheduler = false;
     settings->use_zero_copy = true;
+    settings->use_one_copy = false;
   }
 
   void RequestNewOutputSurface() override {
@@ -477,6 +479,7 @@ class LayerTreeHostContextTestCommitAfterDelayedOutputSurface
   void InitializeSettings(LayerTreeSettings* settings) override {
     settings->single_thread_proxy_scheduler = false;
     settings->use_zero_copy = true;
+    settings->use_one_copy = false;
   }
 
   void RequestNewOutputSurface() override {
@@ -519,6 +522,7 @@ class LayerTreeHostContextTestAvoidUnnecessaryComposite
   void InitializeSettings(LayerTreeSettings* settings) override {
     settings->single_thread_proxy_scheduler = false;
     settings->use_zero_copy = true;
+    settings->use_one_copy = false;
   }
 
   void RequestNewOutputSurface() override {

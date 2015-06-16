@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "cc/layers/layer_lists.h"
 #include "cc/test/fake_layer_tree_host_client.h"
+#include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "cc/trees/property_tree.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -131,6 +132,7 @@ class LayerTreeHostCommonTestBase {
   LayerSettings layer_settings_;
 
   FakeLayerTreeHostClient client_;
+  TestTaskGraphRunner task_graph_runner_;
   int render_surface_layer_list_count_;
 };
 

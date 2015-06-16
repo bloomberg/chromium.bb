@@ -10,6 +10,7 @@
 #include "cc/layers/layer_impl.h"
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/geometry_test_utils.h"
+#include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -55,7 +56,8 @@ class LayerPositionConstraintTest : public testing::Test {
  public:
   LayerPositionConstraintTest()
       : fake_client_(FakeLayerTreeHostClient::DIRECT_3D),
-        layer_tree_host_(FakeLayerTreeHost::Create(&fake_client_)),
+        layer_tree_host_(
+            FakeLayerTreeHost::Create(&fake_client_, &task_graph_runner_)),
         root_impl_(nullptr),
         scroll_layer_impl_(nullptr),
         child_transform_layer_impl_(nullptr),
@@ -123,6 +125,7 @@ class LayerPositionConstraintTest : public testing::Test {
 
  protected:
   FakeLayerTreeHostClient fake_client_;
+  TestTaskGraphRunner task_graph_runner_;
   scoped_ptr<FakeLayerTreeHost> layer_tree_host_;
   LayerSettings layer_settings_;
   scoped_refptr<Layer> root_;

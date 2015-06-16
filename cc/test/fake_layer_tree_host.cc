@@ -4,28 +4,36 @@
 
 #include "cc/test/fake_layer_tree_host.h"
 
+#include "cc/test/test_task_graph_runner.h"
+
 namespace cc {
 FakeLayerTreeHost::FakeLayerTreeHost(FakeLayerTreeHostClient* client,
                                      LayerTreeHost::InitParams* params)
     : LayerTreeHost(params),
       client_(client),
-      host_impl_(*params->settings, &proxy_, &manager_, nullptr),
+      host_impl_(*params->settings,
+                 &proxy_,
+                 &manager_,
+                 params->task_graph_runner),
       needs_commit_(false) {
   client_->SetLayerTreeHost(this);
 }
 
 scoped_ptr<FakeLayerTreeHost> FakeLayerTreeHost::Create(
-    FakeLayerTreeHostClient* client) {
+    FakeLayerTreeHostClient* client,
+    TestTaskGraphRunner* task_graph_runner) {
   LayerTreeSettings settings;
-  return Create(client, settings);
+  return Create(client, task_graph_runner, settings);
 }
 
 scoped_ptr<FakeLayerTreeHost> FakeLayerTreeHost::Create(
     FakeLayerTreeHostClient* client,
+    TestTaskGraphRunner* task_graph_runner,
     const LayerTreeSettings& settings) {
   LayerTreeHost::InitParams params;
   params.client = client;
   params.settings = &settings;
+  params.task_graph_runner = task_graph_runner;
   return make_scoped_ptr(new FakeLayerTreeHost(client, &params));
 }
 

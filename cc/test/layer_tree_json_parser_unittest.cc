@@ -9,6 +9,7 @@
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/geometry_test_utils.h"
+#include "cc/test/test_task_graph_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
@@ -65,7 +66,9 @@ class LayerTreeJsonParserSanityCheck : public testing::Test {
 TEST_F(LayerTreeJsonParserSanityCheck, Basic) {
   FakeImplProxy proxy;
   TestSharedBitmapManager shared_bitmap_manager;
-  FakeLayerTreeHostImpl host_impl(&proxy, &shared_bitmap_manager, nullptr);
+  TestTaskGraphRunner task_graph_runner;
+  FakeLayerTreeHostImpl host_impl(&proxy, &shared_bitmap_manager,
+                                  &task_graph_runner);
   LayerTreeImpl* tree = host_impl.active_tree();
 
   scoped_ptr<LayerImpl> root_impl(LayerImpl::Create(tree, 1));
@@ -94,7 +97,9 @@ TEST_F(LayerTreeJsonParserSanityCheck, Basic) {
 TEST_F(LayerTreeJsonParserSanityCheck, EventHandlerRegions) {
   FakeImplProxy proxy;
   TestSharedBitmapManager shared_bitmap_manager;
-  FakeLayerTreeHostImpl host_impl(&proxy, &shared_bitmap_manager, nullptr);
+  TestTaskGraphRunner task_graph_runner;
+  FakeLayerTreeHostImpl host_impl(&proxy, &shared_bitmap_manager,
+                                  &task_graph_runner);
   LayerTreeImpl* tree = host_impl.active_tree();
 
   scoped_ptr<LayerImpl> root_impl(LayerImpl::Create(tree, 1));

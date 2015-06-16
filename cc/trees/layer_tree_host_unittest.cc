@@ -1616,6 +1616,7 @@ class LayerTreeHostTestCompositeImmediatelyStateTransitions
   void InitializeSettings(LayerTreeSettings* settings) override {
     settings->single_thread_proxy_scheduler = false;
     settings->use_zero_copy = true;
+    settings->use_one_copy = false;
   }
 
   void BeginTest() override {
@@ -4924,6 +4925,7 @@ class LayerTreeHostTestSynchronousCompositeSwapPromise
   void InitializeSettings(LayerTreeSettings* settings) override {
     settings->single_thread_proxy_scheduler = false;
     settings->use_zero_copy = true;
+    settings->use_one_copy = false;
   }
 
   void BeginTest() override {

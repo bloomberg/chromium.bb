@@ -77,10 +77,9 @@ class TiledLayerTest : public testing::Test {
 
   void SetUp() override {
     impl_thread_.Start();
-    shared_bitmap_manager_.reset(new TestSharedBitmapManager());
     LayerTreeHost::InitParams params;
     params.client = &synchronous_output_surface_client_;
-    params.shared_bitmap_manager = shared_bitmap_manager_.get();
+    params.shared_bitmap_manager = &shared_bitmap_manager_;
     params.settings = &settings_;
     params.main_task_runner = base::ThreadTaskRunnerHandle::Get();
 
@@ -98,10 +97,10 @@ class TiledLayerTest : public testing::Test {
 
     DebugScopedSetImplThreadAndMainThreadBlocked
         impl_thread_and_main_thread_blocked(proxy_);
-    resource_provider_ = FakeResourceProvider::Create(
-        output_surface_.get(), shared_bitmap_manager_.get());
+    resource_provider_ = FakeResourceProvider::Create(output_surface_.get(),
+                                                      &shared_bitmap_manager_);
     host_impl_ = make_scoped_ptr(new FakeLayerTreeHostImpl(
-        proxy_, shared_bitmap_manager_.get(), nullptr));
+        settings_, proxy_, &shared_bitmap_manager_, nullptr));
   }
 
   ~TiledLayerTest() override {
@@ -217,8 +216,8 @@ class TiledLayerTest : public testing::Test {
   LayerTreeSettings settings_;
   LayerSettings layer_settings_;
   FakeOutputSurfaceClient output_surface_client_;
+  TestSharedBitmapManager shared_bitmap_manager_;
   scoped_ptr<OutputSurface> output_surface_;
-  scoped_ptr<SharedBitmapManager> shared_bitmap_manager_;
   scoped_ptr<ResourceProvider> resource_provider_;
   scoped_ptr<ResourceUpdateQueue> queue_;
   PriorityCalculator priority_calculator_;

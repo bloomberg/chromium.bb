@@ -8,6 +8,7 @@
 
 #include "cc/layers/layer.h"
 #include "cc/test/fake_layer_tree_host.h"
+#include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -114,7 +115,9 @@ TEST(LayerIteratorTest, SimpleTree) {
   root_layer->AddChild(fourth);
 
   FakeLayerTreeHostClient client(FakeLayerTreeHostClient::DIRECT_3D);
-  scoped_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create(&client);
+  TestTaskGraphRunner task_graph_runner;
+  scoped_ptr<FakeLayerTreeHost> host =
+      FakeLayerTreeHost::Create(&client, &task_graph_runner);
   host->SetRootLayer(root_layer);
 
   RenderSurfaceLayerList render_surface_layer_list;
@@ -152,7 +155,9 @@ TEST(LayerIteratorTest, ComplexTree) {
   root23->AddChild(root231);
 
   FakeLayerTreeHostClient client(FakeLayerTreeHostClient::DIRECT_3D);
-  scoped_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create(&client);
+  TestTaskGraphRunner task_graph_runner;
+  scoped_ptr<FakeLayerTreeHost> host =
+      FakeLayerTreeHost::Create(&client, &task_graph_runner);
   host->SetRootLayer(root_layer);
 
   RenderSurfaceLayerList render_surface_layer_list;
@@ -199,7 +204,9 @@ TEST(LayerIteratorTest, ComplexTreeMultiSurface) {
   root23->AddChild(root231);
 
   FakeLayerTreeHostClient client(FakeLayerTreeHostClient::DIRECT_3D);
-  scoped_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create(&client);
+  TestTaskGraphRunner task_graph_runner;
+  scoped_ptr<FakeLayerTreeHost> host =
+      FakeLayerTreeHost::Create(&client, &task_graph_runner);
   host->SetRootLayer(root_layer);
 
   RenderSurfaceLayerList render_surface_layer_list;

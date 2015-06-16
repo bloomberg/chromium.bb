@@ -11,6 +11,7 @@
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_proxy.h"
+#include "cc/test/test_task_graph_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
@@ -23,11 +24,11 @@ class MicroBenchmarkControllerTest : public testing::Test {
 
   void SetUp() override {
     impl_proxy_ = make_scoped_ptr(new FakeImplProxy);
-    shared_bitmap_manager_.reset(new TestSharedBitmapManager());
     layer_tree_host_impl_ = make_scoped_ptr(new FakeLayerTreeHostImpl(
-        impl_proxy_.get(), shared_bitmap_manager_.get(), nullptr));
+        impl_proxy_.get(), &shared_bitmap_manager_, &task_graph_runner_));
 
-    layer_tree_host_ = FakeLayerTreeHost::Create(&layer_tree_host_client_);
+    layer_tree_host_ = FakeLayerTreeHost::Create(&layer_tree_host_client_,
+                                                 &task_graph_runner_);
     layer_tree_host_->SetRootLayer(Layer::Create(LayerSettings()));
     layer_tree_host_->InitializeForTesting(scoped_ptr<Proxy>(new FakeProxy));
   }
@@ -39,8 +40,9 @@ class MicroBenchmarkControllerTest : public testing::Test {
   }
 
   FakeLayerTreeHostClient layer_tree_host_client_;
+  TestTaskGraphRunner task_graph_runner_;
+  TestSharedBitmapManager shared_bitmap_manager_;
   scoped_ptr<FakeLayerTreeHost> layer_tree_host_;
-  scoped_ptr<SharedBitmapManager> shared_bitmap_manager_;
   scoped_ptr<FakeLayerTreeHostImpl> layer_tree_host_impl_;
   scoped_ptr<FakeImplProxy> impl_proxy_;
 };

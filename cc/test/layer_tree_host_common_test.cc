@@ -160,7 +160,7 @@ void LayerTreeHostCommonTestBase::ExecuteCalculateDrawProperties(
 
 scoped_ptr<FakeLayerTreeHost>
 LayerTreeHostCommonTestBase::CreateFakeLayerTreeHost() {
-  return FakeLayerTreeHost::Create(&client_);
+  return FakeLayerTreeHost::Create(&client_, &task_graph_runner_);
 }
 
 }  // namespace cc

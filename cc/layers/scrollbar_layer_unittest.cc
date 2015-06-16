@@ -121,10 +121,13 @@ class ScrollbarLayerTest : public testing::Test {
  public:
   ScrollbarLayerTest() : fake_client_(FakeLayerTreeHostClient::DIRECT_3D) {
     layer_tree_settings_.single_thread_proxy_scheduler = false;
+    layer_tree_settings_.use_zero_copy = true;
+    layer_tree_settings_.use_one_copy = false;
 
     LayerTreeHost::InitParams params;
     params.client = &fake_client_;
     params.settings = &layer_tree_settings_;
+    params.task_graph_runner = &task_graph_runner_;
 
     layer_tree_host_.reset(
         new FakeResourceTrackingLayerTreeHost(&fake_client_, &params));
@@ -138,6 +141,7 @@ class ScrollbarLayerTest : public testing::Test {
 
  protected:
   FakeLayerTreeHostClient fake_client_;
+  TestTaskGraphRunner task_graph_runner_;
   LayerTreeSettings layer_tree_settings_;
   LayerSettings layer_settings_;
   scoped_ptr<FakeResourceTrackingLayerTreeHost> layer_tree_host_;

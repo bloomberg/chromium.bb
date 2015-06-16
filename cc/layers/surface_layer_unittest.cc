@@ -16,7 +16,7 @@
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/layer_tree_test.h"
-#include "cc/test/test_shared_bitmap_manager.h"
+#include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/layer_tree_host.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,7 +32,8 @@ class SurfaceLayerTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    layer_tree_host_ = FakeLayerTreeHost::Create(&fake_client_);
+    layer_tree_host_ =
+        FakeLayerTreeHost::Create(&fake_client_, &task_graph_runner_);
     layer_tree_host_->SetViewportSize(gfx::Size(10, 10));
   }
 
@@ -43,9 +44,9 @@ class SurfaceLayerTest : public testing::Test {
     }
   }
 
-  scoped_ptr<FakeLayerTreeHost> layer_tree_host_;
   FakeLayerTreeHostClient fake_client_;
-  TestSharedBitmapManager shared_bitmap_manager_;
+  TestTaskGraphRunner task_graph_runner_;
+  scoped_ptr<FakeLayerTreeHost> layer_tree_host_;
   LayerSettings layer_settings_;
 };
 
@@ -76,7 +77,7 @@ TEST_F(SurfaceLayerTest, MultipleFramesOneSurface) {
   layer_tree_host_->SetRootLayer(layer);
 
   scoped_ptr<FakeLayerTreeHost> layer_tree_host2 =
-      FakeLayerTreeHost::Create(&fake_client_);
+      FakeLayerTreeHost::Create(&fake_client_, &task_graph_runner_);
   scoped_refptr<SurfaceLayer> layer2(SurfaceLayer::Create(
       layer_settings_, base::Bind(&SatisfyCallback, &blank_change),
       base::Bind(&RequireCallback, &required_id, &required_seq)));

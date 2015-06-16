@@ -54,9 +54,12 @@ gpu::Mailbox MailboxFromChar(char value) {
 
 class MockLayerTreeHost : public LayerTreeHost {
  public:
-  static scoped_ptr<MockLayerTreeHost> Create(FakeLayerTreeHostClient* client) {
+  static scoped_ptr<MockLayerTreeHost> Create(
+      FakeLayerTreeHostClient* client,
+      TaskGraphRunner* task_graph_runner) {
     LayerTreeHost::InitParams params;
     params.client = client;
+    params.task_graph_runner = task_graph_runner;
     LayerTreeSettings settings;
     params.settings = &settings;
     return make_scoped_ptr(new MockLayerTreeHost(client, &params));
@@ -190,7 +193,8 @@ class TextureLayerTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    layer_tree_host_ = MockLayerTreeHost::Create(&fake_client_);
+    layer_tree_host_ =
+        MockLayerTreeHost::Create(&fake_client_, &task_graph_runner_);
     EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(AnyNumber());
     layer_tree_host_->SetViewportSize(gfx::Size(10, 10));
     Mock::VerifyAndClearExpectations(layer_tree_host_.get());
@@ -919,7 +923,8 @@ class TextureLayerImplWithMailboxTest : public TextureLayerTest {
 
   void SetUp() override {
     TextureLayerTest::SetUp();
-    layer_tree_host_ = MockLayerTreeHost::Create(&fake_client_);
+    layer_tree_host_ =
+        MockLayerTreeHost::Create(&fake_client_, &task_graph_runner_);
     EXPECT_TRUE(host_impl_.InitializeRenderer(FakeOutputSurface::Create3d()));
   }
 

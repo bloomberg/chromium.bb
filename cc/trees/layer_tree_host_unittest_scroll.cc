@@ -19,6 +19,7 @@
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/layer_tree_test.h"
 #include "cc/test/test_shared_bitmap_manager.h"
+#include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -1138,13 +1139,14 @@ TEST(LayerTreeHostFlingTest, DidStopFlingingThread) {
       impl_thread.task_runner().get(), &received_stop_flinging);
   FakeLayerTreeHostClient client(FakeLayerTreeHostClient::DIRECT_3D);
 
-  ASSERT_TRUE(impl_thread.task_runner().get());
-  scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
-      new TestSharedBitmapManager());
+  ASSERT_TRUE(impl_thread.task_runner());
+  TestSharedBitmapManager shared_bitmap_manager;
+  TestTaskGraphRunner task_graph_runner;
 
   LayerTreeHost::InitParams params;
   params.client = &client;
-  params.shared_bitmap_manager = shared_bitmap_manager.get();
+  params.shared_bitmap_manager = &shared_bitmap_manager;
+  params.task_graph_runner = &task_graph_runner;
   params.settings = &settings;
   params.main_task_runner = base::ThreadTaskRunnerHandle::Get();
   scoped_ptr<LayerTreeHost> layer_tree_host =

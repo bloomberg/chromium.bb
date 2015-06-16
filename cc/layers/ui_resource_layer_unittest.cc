@@ -14,6 +14,7 @@
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/geometry_test_utils.h"
+#include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -55,7 +56,8 @@ class UIResourceLayerTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    layer_tree_host_ = FakeLayerTreeHost::Create(&fake_client_);
+    layer_tree_host_ =
+        FakeLayerTreeHost::Create(&fake_client_, &task_graph_runner_);
     layer_tree_host_->InitializeSingleThreaded(
         &fake_client_, base::ThreadTaskRunnerHandle::Get(), nullptr);
   }
@@ -65,6 +67,7 @@ class UIResourceLayerTest : public testing::Test {
   }
 
   FakeLayerTreeHostClient fake_client_;
+  TestTaskGraphRunner task_graph_runner_;
   scoped_ptr<FakeLayerTreeHost> layer_tree_host_;
   LayerSettings layer_settings_;
 };

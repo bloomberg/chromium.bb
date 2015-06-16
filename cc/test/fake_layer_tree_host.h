@@ -15,12 +15,16 @@
 #include "cc/trees/tree_synchronizer.h"
 
 namespace cc {
+class TestTaskGraphRunner;
 
 class FakeLayerTreeHost : public LayerTreeHost {
  public:
-  static scoped_ptr<FakeLayerTreeHost> Create(FakeLayerTreeHostClient* client);
   static scoped_ptr<FakeLayerTreeHost> Create(
       FakeLayerTreeHostClient* client,
+      TestTaskGraphRunner* task_graph_runner);
+  static scoped_ptr<FakeLayerTreeHost> Create(
+      FakeLayerTreeHostClient* client,
+      TestTaskGraphRunner* task_graph_runner,
       const LayerTreeSettings& settings);
 
   ~FakeLayerTreeHost() override;

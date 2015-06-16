@@ -18,6 +18,7 @@
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/test_occlusion_tracker.h"
+#include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -86,7 +87,7 @@ class OcclusionTrackerTest : public testing::Test {
   explicit OcclusionTrackerTest(bool opaque_layers)
       : opaque_layers_(opaque_layers),
         client_(FakeLayerTreeHostClient::DIRECT_3D),
-        host_(FakeLayerTreeHost::Create(&client_)),
+        host_(FakeLayerTreeHost::Create(&client_, &task_graph_runner_)),
         next_layer_impl_id_(1) {}
 
   virtual void RunMyTest() = 0;
@@ -314,6 +315,7 @@ class OcclusionTrackerTest : public testing::Test {
 
   bool opaque_layers_;
   FakeLayerTreeHostClient client_;
+  TestTaskGraphRunner task_graph_runner_;
   scoped_ptr<FakeLayerTreeHost> host_;
   // These hold ownership of the layers for the duration of the test.
   scoped_ptr<LayerImpl> root_;

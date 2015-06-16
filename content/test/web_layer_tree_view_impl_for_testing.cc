@@ -47,6 +47,7 @@ void WebLayerTreeViewImplForTesting::Initialize() {
   params.client = this;
   params.settings = &settings;
   params.main_task_runner = base::ThreadTaskRunnerHandle::Get();
+  params.task_graph_runner = &task_graph_runner_;
   layer_tree_host_ = cc::LayerTreeHost::CreateSingleThreaded(this, &params);
   DCHECK(layer_tree_host_);
 }

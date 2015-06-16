@@ -13,6 +13,7 @@
 #include "cc/test/fake_ui_resource_layer_tree_host_impl.h"
 #include "cc/test/layer_test_common.h"
 #include "cc/test/test_shared_bitmap_manager.h"
+#include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -59,7 +60,9 @@ void QuadSizeTest(scoped_ptr<UIResourceLayerImpl> layer,
 TEST(UIResourceLayerImplTest, VerifyDrawQuads) {
   FakeImplProxy proxy;
   TestSharedBitmapManager shared_bitmap_manager;
-  FakeUIResourceLayerTreeHostImpl host_impl(&proxy, &shared_bitmap_manager);
+  TestTaskGraphRunner task_graph_runner;
+  FakeUIResourceLayerTreeHostImpl host_impl(&proxy, &shared_bitmap_manager,
+                                            &task_graph_runner);
   host_impl.InitializeRenderer(FakeOutputSurface::Create3d());
 
   // Make sure we're appending quads when there are valid values.
@@ -103,7 +106,9 @@ void OpaqueBoundsTest(scoped_ptr<UIResourceLayerImpl> layer,
 TEST(UIResourceLayerImplTest, VerifySetOpaqueOnSkBitmap) {
   FakeImplProxy proxy;
   TestSharedBitmapManager shared_bitmap_manager;
-  FakeUIResourceLayerTreeHostImpl host_impl(&proxy, &shared_bitmap_manager);
+  TestTaskGraphRunner task_graph_runner;
+  FakeUIResourceLayerTreeHostImpl host_impl(&proxy, &shared_bitmap_manager,
+                                            &task_graph_runner);
   host_impl.InitializeRenderer(FakeOutputSurface::Create3d());
 
   gfx::Size bitmap_size(100, 100);
@@ -131,7 +136,9 @@ TEST(UIResourceLayerImplTest, VerifySetOpaqueOnSkBitmap) {
 TEST(UIResourceLayerImplTest, VerifySetOpaqueOnLayer) {
   FakeImplProxy proxy;
   TestSharedBitmapManager shared_bitmap_manager;
-  FakeUIResourceLayerTreeHostImpl host_impl(&proxy, &shared_bitmap_manager);
+  TestTaskGraphRunner task_graph_runner;
+  FakeUIResourceLayerTreeHostImpl host_impl(&proxy, &shared_bitmap_manager,
+                                            &task_graph_runner);
   host_impl.InitializeRenderer(FakeOutputSurface::Create3d());
 
   gfx::Size bitmap_size(100, 100);

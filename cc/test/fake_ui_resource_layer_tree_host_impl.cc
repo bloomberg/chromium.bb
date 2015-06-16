@@ -11,8 +11,9 @@ namespace cc {
 
 FakeUIResourceLayerTreeHostImpl::FakeUIResourceLayerTreeHostImpl(
     Proxy* proxy,
-    SharedBitmapManager* manager)
-    : FakeLayerTreeHostImpl(proxy, manager, nullptr) {
+    SharedBitmapManager* manager,
+    TaskGraphRunner* task_graph_runner)
+    : FakeLayerTreeHostImpl(proxy, manager, task_graph_runner) {
 }
 
 FakeUIResourceLayerTreeHostImpl::~FakeUIResourceLayerTreeHostImpl() {}
