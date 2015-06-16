@@ -246,7 +246,7 @@ public class SyncController implements ApplicationStateListener,
                 .putBoolean(DELAY_SYNC_SETUP_PREF, delay).apply();
     }
 
-    private void onMainActivityStart() {
+    public void onMainActivityStart() {
         if (!mFirstActivityStarted) {
             onFirstStart();
         }

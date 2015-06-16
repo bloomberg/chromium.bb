@@ -219,6 +219,7 @@ public class ChromeMobileApplication extends ChromiumApplication {
         mInitializedSharedClasses = true;
 
         GoogleServicesManager.get(this).onMainActivityStart();
+        SyncController.get(this).onMainActivityStart();
         RevenueStats.getInstance();
         ShortcutHelper.setFullScreenAction(ChromeLauncherActivity.ACTION_START_WEBAPP);
 
