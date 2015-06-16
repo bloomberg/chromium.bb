@@ -132,10 +132,10 @@ class MediaRouter {
   // Adds the IssuesObserver |observer|.
   // It is invalid to register the same observer more than once and will result
   // in undefined behavior.
-  virtual void AddIssuesObserver(IssuesObserver* observer) = 0;
+  virtual void RegisterIssuesObserver(IssuesObserver* observer) = 0;
 
   // Removes the IssuesObserver |observer|.
-  virtual void RemoveIssuesObserver(IssuesObserver* observer) = 0;
+  virtual void UnregisterIssuesObserver(IssuesObserver* observer) = 0;
 };
 
 }  // namespace media_router

@@ -4,6 +4,16 @@
 
 // This Polymer element is used to show information about issues related
 // to casting.
+(function() {
+
+/**
+ * Maps an issue action type to the resource identifier of the text shown
+ * in the action button.
+ * @type {!Array<string>}
+ */
+var issueActionTypeToButtonTextResource = [
+    'okButton', 'cancelButton', 'dismissButton', 'learnMoreButton'];
+
 Polymer({
   is: 'issue-banner',
 
@@ -15,6 +25,18 @@ Polymer({
     issue: {
       type: Object,
       value: null,
+    },
+
+    /**
+     * The text shown in the default action button.
+     * @private {string}
+     */
+    defaultActionButtonText_: {
+      type: String,
+      value: function() {
+        return loadTimeData.getString(
+            issueActionTypeToButtonTextResource[issue.defaultActionType]);
+      },
     },
   },
 
@@ -56,7 +78,7 @@ Polymer({
     this.fire('issue-action-click', {
       id: this.issue.id,
       actionType: actionType,
-      helpPageId: this.issue.helpPageId,
+      helpPageId: this.issue.helpPageId
     });
   },
 
@@ -80,3 +102,4 @@ Polymer({
     this.fireIssueActionClick_(this.issue.optActionType);
   },
 });
+})();

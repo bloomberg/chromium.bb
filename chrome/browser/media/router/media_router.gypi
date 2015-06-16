@@ -13,6 +13,7 @@
       'issue_manager.cc',
       'issue_manager.h',
       'issues_observer.h',
+      'issues_observer.cc',
       'media_route.cc',
       'media_route.h',
       'media_route_id.h',

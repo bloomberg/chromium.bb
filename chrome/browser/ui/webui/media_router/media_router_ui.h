@@ -105,7 +105,6 @@ class MediaRouterUI
   const std::vector<MediaSinkWithCastModes>& sinks() const { return sinks_; }
   const std::vector<MediaRoute>& routes() const { return routes_; }
   const std::set<MediaCastMode>& cast_modes() const { return cast_modes_; }
-
   const content::WebContents* initiator() const { return initiator_; }
 
  private:

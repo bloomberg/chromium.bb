@@ -9,15 +9,23 @@
 
 namespace media_router {
 
-// Interface for observing when issues have been updated.
-// TODO(imcheng): Implement automatic register/unregister from MediaRouter.
+class MediaRouter;
+
+// Base class for observing Media Router Issue. There is at most one Issue
+// at any given time.
 class IssuesObserver {
  public:
-  virtual ~IssuesObserver() {}
+  explicit IssuesObserver(MediaRouter* router);
+  virtual ~IssuesObserver();
 
-  // Called when there is a new highest priority issue.
-  // |issue| can be nullptr.
-  virtual void OnIssueUpdated(const Issue* issue) = 0;
+  // Called when there is an updated Media Router Issue.
+  // If |issue| is nullptr, then there is currently no issue.
+  virtual void OnIssueUpdated(const Issue* issue) {}
+
+ private:
+  MediaRouter* router_;
+
+  DISALLOW_COPY_AND_ASSIGN(IssuesObserver);
 };
 
 }  // namespace media_router

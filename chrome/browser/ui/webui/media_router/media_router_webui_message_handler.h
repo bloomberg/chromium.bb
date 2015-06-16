@@ -14,6 +14,7 @@
 #include "content/public/browser/web_ui_message_handler.h"
 
 namespace base {
+class DictionaryValue;
 class ListValue;
 }  // namespace base
 

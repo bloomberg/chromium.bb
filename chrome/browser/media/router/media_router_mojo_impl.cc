@@ -285,12 +285,12 @@ void MediaRouterMojoImpl::UnregisterMediaRoutesObserver(
   }
 }
 
-void MediaRouterMojoImpl::AddIssuesObserver(IssuesObserver* observer) {
+void MediaRouterMojoImpl::RegisterIssuesObserver(IssuesObserver* observer) {
   // TODO(imcheng): Implement. (crbug.com/461815)
   NOTIMPLEMENTED();
 }
 
-void MediaRouterMojoImpl::RemoveIssuesObserver(IssuesObserver* observer) {
+void MediaRouterMojoImpl::UnregisterIssuesObserver(IssuesObserver* observer) {
   // TODO(imcheng): Implement. (crbug.com/461815)
   NOTIMPLEMENTED();
 }

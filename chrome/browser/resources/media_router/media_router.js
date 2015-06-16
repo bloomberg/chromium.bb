@@ -40,7 +40,8 @@ cr.define('media_router', function() {
    * Acts on an issue and dismisses it from the UI.
    * Called when the user performs an action on an issue.
    *
-   * @param {{detail: {id: string, actionType: number}}} data
+   * @param {{detail: {id: string, actionType: number, helpPageId: number}}}
+   *     data
    * Parameters in |data|.detail:
    *   id - issue ID.
    *   actionType - type of action performed by the user.

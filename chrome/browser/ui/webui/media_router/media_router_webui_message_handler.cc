@@ -309,7 +309,7 @@ void MediaRouterWebUIMessageHandler::OnCloseRoute(
   const base::DictionaryValue* args_dict = nullptr;
   std::string route_id;
   if (!args->GetDictionary(0, &args_dict) ||
-      !args_dict->GetString(0, &route_id)) {
+      !args_dict->GetString("routeId", &route_id)) {
     DVLOG(1) << "Unable to extract args.";
     return;
   }

@@ -50,7 +50,10 @@ std::string GetHostFromURL(const GURL& gurl) {
 // updated.
 class MediaRouterUI::UIIssuesObserver : public IssuesObserver {
  public:
-  explicit UIIssuesObserver(MediaRouterUI* ui) : ui_(ui) { DCHECK(ui); }
+  UIIssuesObserver(MediaRouter* router, MediaRouterUI* ui)
+      : IssuesObserver(router), ui_(ui) {
+    DCHECK(ui);
+  }
 
   ~UIIssuesObserver() override {}
 
@@ -151,7 +154,7 @@ void MediaRouterUI::InitCommon(const content::WebContents* initiator,
   DCHECK(initiator);
 
   // Register for Issue and MediaRoute updates.
-  issues_observer_.reset(new UIIssuesObserver(this));
+  issues_observer_.reset(new UIIssuesObserver(router_, this));
   routes_observer_.reset(new UIMediaRoutesObserver(router_, this));
 
   query_result_manager_.reset(new QueryResultManager(router_));

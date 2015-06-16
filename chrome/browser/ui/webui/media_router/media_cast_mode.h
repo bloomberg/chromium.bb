@@ -32,6 +32,7 @@ enum MediaCastMode {
 
 using CastModeSet = std::set<MediaCastMode>;
 
+// TODO(imcheng): Move localization logic to WebUI.
 // Returns a localized title string for |mode| and |host| (e.g. google.com).
 std::string MediaCastModeToTitle(MediaCastMode mode, const std::string& host);
 

@@ -37,6 +37,20 @@
    Select cast mode
   </message>
 
+  <!-- Issue Actions -->
+  <message name="IDS_MEDIA_ROUTER_CANCEL_BUTTON" desc="Text of Cancel button.">
+    Cancel
+  </message>
+  <message name="IDS_MEDIA_ROUTER_DISMISS_BUTTON" desc="Text of Dismiss button.">
+    Dismiss
+  </message>
+  <message name="IDS_MEDIA_ROUTER_LEARN_MORE_BUTTON" desc="Text of Learn More button.">
+    Learn More
+  </message>
+  <message name="IDS_MEDIA_ROUTER_OK_BUTTON" desc="Text of Ok button.">
+    Ok
+  </message>
+
   <!-- Route Details -->
   <message name="IDS_MEDIA_ROUTER_BACK_TO_SINK_PICKER" desc="Label of back to sink picker button.">
     Back to device list
