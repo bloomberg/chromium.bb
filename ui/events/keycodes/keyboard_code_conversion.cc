@@ -336,6 +336,13 @@ bool DomCodeToUsLayoutMeaning(DomCode dom_code,
       return true;
     }
   }
+  if ((flags & EF_CONTROL_DOWN) == EF_CONTROL_DOWN) {
+    *out_dom_key = DomKey::UNIDENTIFIED;
+    *out_character = 0;
+    *out_key_code = LocatedToNonLocatedKeyboardCode(
+        DomCodeToUsLayoutKeyboardCode(dom_code));
+    return true;
+  }
   return false;
 }
 
@@ -438,6 +445,8 @@ DomKey CharacterToDomKey(uint32 character) {
       return DomKey::ENTER;
     case 0x1B:
       return DomKey::ESCAPE;
+    case 0x7F:
+      return DomKey::DEL;
     default:
       return DomKey::CHARACTER;
   }

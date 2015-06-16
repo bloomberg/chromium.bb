@@ -30,9 +30,11 @@ bool ShouldStripModifiersForArrowKeysAndEnter() {
 
 }  // namespace
 
-KeyboardDrivenEventRewriter::KeyboardDrivenEventRewriter() {}
+KeyboardDrivenEventRewriter::KeyboardDrivenEventRewriter() {
+}
 
-KeyboardDrivenEventRewriter::~KeyboardDrivenEventRewriter() {}
+KeyboardDrivenEventRewriter::~KeyboardDrivenEventRewriter() {
+}
 
 ui::EventRewriteStatus KeyboardDrivenEventRewriter::RewriteForTesting(
     const ui::Event& event,
@@ -69,20 +71,21 @@ ui::EventRewriteStatus KeyboardDrivenEventRewriter::Rewrite(
   const ui::KeyEvent& key_event = static_cast<const ui::KeyEvent&>(event);
   ui::KeyboardCode key_code = key_event.key_code();
 
-  if (key_code != ui::VKEY_LEFT &&
-      key_code != ui::VKEY_RIGHT &&
-      key_code != ui::VKEY_UP &&
-      key_code != ui::VKEY_DOWN &&
-      key_code != ui::VKEY_RETURN &&
-      key_code != ui::VKEY_F6) {
+  if (key_code != ui::VKEY_LEFT && key_code != ui::VKEY_RIGHT &&
+      key_code != ui::VKEY_UP && key_code != ui::VKEY_DOWN &&
+      key_code != ui::VKEY_RETURN && key_code != ui::VKEY_F6) {
     return ui::EVENT_REWRITE_CONTINUE;
   }
 
-  chromeos::EventRewriter::BuildRewrittenKeyEvent(
-      key_event,
-      key_event.key_code(),
+  chromeos::EventRewriter::MutableKeyState state = {
       flags & ~(ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN),
-      rewritten_event);
+      key_event.code(),
+      key_event.GetDomKey(),
+      key_event.GetCharacter(),
+      key_event.key_code()};
+
+  chromeos::EventRewriter::BuildRewrittenKeyEvent(key_event, state,
+                                                  rewritten_event);
   return ui::EVENT_REWRITE_REWRITTEN;
 }
 

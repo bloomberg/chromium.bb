@@ -11,6 +11,7 @@
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/dom_key.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
+#include "ui/events/keycodes/dom_us_layout_data.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 namespace {
@@ -44,7 +45,11 @@ void CheckDomCodeToMeaning(const char* label,
                          static_cast<int>(dom_code), event_flags));
   EXPECT_EQ(result.defined, success);
   if (success) {
-    EXPECT_EQ(result.dom_key, result_dom_key);
+    EXPECT_EQ(result.dom_key, result_dom_key)
+        << "Expected '"
+        << ui::KeycodeConverter::DomKeyToKeyString(result.dom_key)
+        << "' Actual '"
+        << ui::KeycodeConverter::DomKeyToKeyString(result_dom_key) << "'";
     EXPECT_EQ(result.character, result_character);
     EXPECT_EQ(result.legacy_key_code, result_legacy_key_code);
   } else {
@@ -517,6 +522,16 @@ TEST(KeyboardCodeConversion, UsLayout) {
                           ui::EF_ALTGR_DOWN, it.normal);
     CheckDomCodeToMeaning("p_us_a", ui::DomCodeToUsLayoutMeaning, it.dom_code,
                           ui::EF_ALTGR_DOWN|ui::EF_SHIFT_DOWN, it.shift);
+  }
+}
+
+TEST(KeyboardCodeConversion, Tables) {
+  // Verify that kDomCodeToKeyboardCodeMap is ordered by DomCode value.
+  uint32_t previous = 0;
+  for (const auto& it : ui::kDomCodeToKeyboardCodeMap) {
+    uint32_t current = static_cast<uint32_t>(it.dom_code);
+    EXPECT_LT(previous, current);
+    previous = current;
   }
 }
 

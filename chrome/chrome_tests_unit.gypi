@@ -2427,14 +2427,6 @@
             'browser/ui/views/frame/opaque_browser_frame_view_layout_unittest.cc',
             'browser/ui/views/sync/one_click_signin_bubble_view_unittest.cc',
           ],
-          'conditions': [
-            ['use_ozone==1', {
-              'sources!': [
-                # crbug.com/354036
-                'browser/chromeos/events/event_rewriter_unittest.cc',
-              ],
-            }],
-          ],
         }],
         ['use_x11==1', {
           'dependencies': [

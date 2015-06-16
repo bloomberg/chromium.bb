@@ -21,6 +21,11 @@ namespace ash {
 class StickyKeysController;
 }
 
+namespace ui {
+enum class DomCode;
+enum class DomKey;
+};
+
 namespace chromeos {
 namespace input_method {
 class ImeKeyboard;
@@ -43,6 +48,15 @@ class EventRewriter : public ui::EventRewriter {
     kDeviceAppleKeyboard,
     kDeviceHotrodRemote,
     kDeviceVirtualCoreKeyboard,  // X-server generated events.
+  };
+
+  // Things that keyboard-related rewriter phases can change about an Event.
+  struct MutableKeyState {
+    int flags;
+    ui::DomCode code;
+    ui::DomKey key;
+    base::char16 character;
+    ui::KeyboardCode key_code;
   };
 
   // Does not take ownership of the |sticky_keys_controller|, which may also
@@ -83,27 +97,12 @@ class EventRewriter : public ui::EventRewriter {
       scoped_ptr<ui::Event>* new_event) override;
 
   // Generate a new key event from an original key event and the replacement
-  // key code and flags determined by a key rewriter.
+  // state determined by a key rewriter.
   static void BuildRewrittenKeyEvent(const ui::KeyEvent& key_event,
-                                     ui::KeyboardCode key_code,
-                                     int flags,
+                                     const MutableKeyState& state,
                                      scoped_ptr<ui::Event>* rewritten_event);
 
  private:
-  // Things that keyboard-related rewriter phases can change about an Event.
-  struct MutableKeyState {
-    int flags;
-    ui::KeyboardCode key_code;
-  };
-
-  // Tables of direct remappings for |RewriteWithKeyboardRemappingsByKeyCode()|.
-  struct KeyboardRemapping {
-    ui::KeyboardCode input_key_code;
-    int input_flags;
-    ui::KeyboardCode output_key_code;
-    int output_flags;
-  };
-
   void DeviceKeyPressedOrReleased(int device_id);
 
   // Returns the PrefService that should be used.
@@ -137,15 +136,6 @@ class EventRewriter : public ui::EventRewriter {
   int GetRemappedModifierMasks(const PrefService& pref_service,
                                const ui::Event& event,
                                int original_flags) const;
-
-  // Given a set of KeyboardRemapping structs, it finds a matching struct
-  // if possible, and updates the remapped event values. Returns true if a
-  // remapping was found and remapped values were updated.
-  bool RewriteWithKeyboardRemappingsByKeyCode(
-      const KeyboardRemapping* remappings,
-      size_t num_remappings,
-      const MutableKeyState& input,
-      MutableKeyState* remapped_state);
 
   // Rewrite a particular kind of event.
   ui::EventRewriteStatus RewriteKeyEvent(
