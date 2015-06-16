@@ -8,7 +8,7 @@ var url = decodeURIComponent(/url=([^&]*)/.exec(location.search)[1]);
 var filter = {urls: ['http://www.example.com/*'], types: ['xmlhttprequest']};
 
 chrome.webRequest.onCompleted.addListener(function(details) {
-  chrome.test.notifyFail();
+  chrome.test.notifyFail('Unexpected.');
 }, filter);
 
 chrome.webRequest.onErrorOccurred.addListener(function(details) {
