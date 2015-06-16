@@ -384,6 +384,8 @@ int CastSocketImpl::DoTcpConnectComplete(int connect_result) {
                                 connect_result);
   if (connect_result == net::OK) {
     SetConnectState(proto::CONN_STATE_SSL_CONNECT);
+  } else if (connect_result == net::ERR_CONNECTION_TIMED_OUT) {
+    SetErrorState(CHANNEL_ERROR_CONNECT_TIMEOUT);
   } else {
     SetErrorState(CHANNEL_ERROR_CONNECT_ERROR);
   }
@@ -427,6 +429,8 @@ int CastSocketImpl::DoSslConnectComplete(int result) {
     } else {
       transport_->Start();
     }
+  } else if (result == net::ERR_CONNECTION_TIMED_OUT) {
+    SetErrorState(CHANNEL_ERROR_CONNECT_TIMEOUT);
   } else {
     SetErrorState(CHANNEL_ERROR_AUTHENTICATION_ERROR);
   }
