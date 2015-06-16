@@ -134,7 +134,7 @@ struct MessageService::OpenChannelParams {
   std::string channel_name;
   bool include_tls_channel_id;
   std::string tls_channel_id;
-  bool include_guest_process_id;
+  bool include_guest_process_info;
 
   // Takes ownership of receiver.
   OpenChannelParams(int source_process_id,
@@ -148,7 +148,7 @@ struct MessageService::OpenChannelParams {
                     const GURL& source_url,
                     const std::string& channel_name,
                     bool include_tls_channel_id,
-                    bool include_guest_process_id)
+                    bool include_guest_process_info)
       : source_process_id(source_process_id),
         source_frame_id(source_frame_id),
         target_frame_id(target_frame_id),
@@ -159,7 +159,7 @@ struct MessageService::OpenChannelParams {
         source_url(source_url),
         channel_name(channel_name),
         include_tls_channel_id(include_tls_channel_id),
-        include_guest_process_id(include_guest_process_id) {
+        include_guest_process_info(include_guest_process_info) {
     if (source_tab)
       this->source_tab = source_tab.Pass();
   }
@@ -314,7 +314,7 @@ void MessageService::OpenChannelToExtension(
   WebContents* source_contents = tab_util::GetWebContentsByFrameID(
       source_process_id, source_routing_id);
 
-  bool include_guest_process_id = false;
+  bool include_guest_process_info = false;
 
   // Include info about the opener's tab (if it was a tab).
   scoped_ptr<base::DictionaryValue> source_tab;
@@ -337,7 +337,13 @@ void MessageService::OpenChannelToExtension(
     bool is_web_view = !!WebViewGuest::FromWebContents(source_contents);
     if (is_web_view && extensions::Manifest::IsComponentLocation(
                            target_extension->location())) {
-      include_guest_process_id = true;
+      include_guest_process_info = true;
+      auto* rfh = content::RenderFrameHost::FromID(source_process_id,
+                                                   source_routing_id);
+      // Include |source_frame_id| so that we can retrieve the guest's frame
+      // routing id in OpenChannelImpl.
+      if (rfh)
+        source_frame_id = source_routing_id;
     }
   }
 
@@ -346,7 +352,7 @@ void MessageService::OpenChannelToExtension(
       -1,  // no target_frame_id for a channel to an extension/background page.
       nullptr, receiver_port_id, source_extension_id, target_extension_id,
       source_url, channel_name, include_tls_channel_id,
-      include_guest_process_id));
+      include_guest_process_info));
 
   pending_incognito_channels_[GET_CHANNEL_ID(params->receiver_port_id)] =
       PendingMessagesQueue();
@@ -563,8 +569,19 @@ void MessageService::OpenChannelImpl(scoped_ptr<OpenChannelParams> params) {
   CHECK(channel->receiver->GetRenderProcessHost());
 
   int guest_process_id = content::ChildProcessHost::kInvalidUniqueID;
-  if (params->include_guest_process_id)
+  int guest_render_frame_routing_id = MSG_ROUTING_NONE;
+  if (params->include_guest_process_info) {
     guest_process_id = params->source_process_id;
+    guest_render_frame_routing_id = params->source_frame_id;
+    auto* guest_rfh = content::RenderFrameHost::FromID(
+        guest_process_id, guest_render_frame_routing_id);
+    // Reset the |source_frame_id| parameter.
+    params->source_frame_id = -1;
+
+    DCHECK(guest_rfh == nullptr ||
+           WebViewGuest::FromWebContents(
+               WebContents::FromRenderFrameHost(guest_rfh)) != nullptr);
+  }
 
   // Send the connect event to the receiver.  Give it the opener's port ID (the
   // opener has the opposite port ID).
@@ -574,6 +591,7 @@ void MessageService::OpenChannelImpl(scoped_ptr<OpenChannelParams> params) {
                                        params->source_frame_id,
                                        params->target_frame_id,
                                        guest_process_id,
+                                       guest_render_frame_routing_id,
                                        params->source_extension_id,
                                        params->target_extension_id,
                                        params->source_url,

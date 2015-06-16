@@ -362,6 +362,7 @@ void DispatchOnConnectToScriptContext(
   v8::Local<v8::Value> tab = v8::Null(isolate);
   v8::Local<v8::Value> tls_channel_id_value = v8::Undefined(isolate);
   v8::Local<v8::Value> guest_process_id = v8::Undefined(isolate);
+  v8::Local<v8::Value> guest_render_frame_routing_id = v8::Undefined(isolate);
 
   if (extension) {
     if (!source->tab.empty() && !extension->is_platform_app())
@@ -377,8 +378,11 @@ void DispatchOnConnectToScriptContext(
                                                      tls_channel_id.size());
     }
 
-    if (info.guest_process_id != content::ChildProcessHost::kInvalidUniqueID)
+    if (info.guest_process_id != content::ChildProcessHost::kInvalidUniqueID) {
       guest_process_id = v8::Integer::New(isolate, info.guest_process_id);
+      guest_render_frame_routing_id =
+          v8::Integer::New(isolate, info.guest_render_frame_routing_id);
+    }
   }
 
   v8::Local<v8::Value> arguments[] = {
@@ -393,6 +397,8 @@ void DispatchOnConnectToScriptContext(
       v8::Integer::New(isolate, source->frame_id),
       // guestProcessId
       guest_process_id,
+      // guestRenderFrameRoutingId
+      guest_render_frame_routing_id,
       // sourceExtensionId
       v8::String::NewFromUtf8(isolate, info.source_id.c_str(),
                               v8::String::kNormalString, info.source_id.size()),

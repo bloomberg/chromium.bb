@@ -209,6 +209,7 @@
                              sourceTab,
                              sourceFrameId,
                              guestProcessId,
+                             guestRenderFrameRoutingId,
                              sourceExtensionId,
                              targetExtensionId,
                              sourceUrl,
@@ -239,13 +240,15 @@
       sender.tab = sourceTab;
     if (sourceFrameId >= 0)
       sender.frameId = sourceFrameId;
-    if (typeof guestProcessId != 'undefined') {
-      // Note that |guestProcessId| is not a standard field on MessageSender and
-      // should not be exposed to drive-by extensions; it is only exposed to
-      // component extensions.
+    if (typeof guestProcessId !== 'undefined' &&
+        typeof guestRenderFrameRoutingId !== 'undefined') {
+      // Note that |guestProcessId| and |guestRenderFrameRoutingId| are not
+      // standard fields on MessageSender and should not be exposed to drive-by
+      // extensions; it is only exposed to component extensions.
       logging.CHECK(processNatives.IsComponentExtension(),
           "GuestProcessId can only be exposed to component extensions.");
       sender.guestProcessId = guestProcessId;
+      sender.guestRenderFrameRoutingId = guestRenderFrameRoutingId;
     }
     if (typeof tlsChannelId != 'undefined')
       sender.tlsChannelId = tlsChannelId;

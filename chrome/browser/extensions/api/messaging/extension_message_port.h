@@ -27,6 +27,7 @@ class ExtensionMessagePort : public MessageService::MessagePort {
                          int source_frame_id,
                          int target_frame_id,
                          int guest_process_id,
+                         int guest_render_frame_routing_id,
                          const std::string& source_extension_id,
                          const std::string& target_extension_id,
                          const GURL& source_url,

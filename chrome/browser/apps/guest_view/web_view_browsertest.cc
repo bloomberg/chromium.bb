@@ -33,6 +33,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/common/child_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/fake_speech_recognition_manager.h"
@@ -2060,8 +2061,28 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, SendMessageToComponentExtensionFromGuest) {
 
   TestHelper("testComponentExtension", "web_view/component_extension",
              NEEDS_TEST_SERVER);
-}
 
+  content::WebContents* embedder_web_contents = GetFirstAppWindowWebContents();
+  ASSERT_TRUE(embedder_web_contents);
+
+  // Retrive the guestProcessId and guestRenderFrameRoutingId from the
+  // extension.
+  int guest_process_id = content::ChildProcessHost::kInvalidUniqueID;
+  content::ExecuteScriptAndGetValue(embedder_web_contents->GetMainFrame(),
+                                    "window.guestProcessId")
+      ->GetAsInteger(&guest_process_id);
+  int guest_render_frame_routing_id = MSG_ROUTING_NONE;
+  content::ExecuteScriptAndGetValue(embedder_web_contents->GetMainFrame(),
+                                    "window.guestRenderFrameRoutingId")
+      ->GetAsInteger(&guest_render_frame_routing_id);
+
+  auto* guest_rfh = content::RenderFrameHost::FromID(
+      guest_process_id, guest_render_frame_routing_id);
+  // Verify that the guest related info (guest_process_id and
+  // guest_render_frame_routing_id) actually points to a WebViewGuest.
+  ASSERT_TRUE(extensions::WebViewGuest::FromWebContents(
+      content::WebContents::FromRenderFrameHost(guest_rfh)));
+}
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, SetPropertyOnDocumentReady) {
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/document_ready"))

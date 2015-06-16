@@ -4,9 +4,14 @@
 
 chrome.runtime.onMessageExternal.addListener(
     function(message, sender, callback) {
-  if (typeof sender.guestProcessId != 'undefined') {
-    callback('defined');
+  if (typeof sender.guestProcessId !== 'undefined' &&
+      typeof sender.guestRenderFrameRoutingId !== 'undefined') {
+    callback({
+      result: 'defined',
+      guestProcessId: sender.guestProcessId,
+      guestRenderFrameRoutingId: sender.guestRenderFrameRoutingId
+    });
   } else {
-    callback('undefined');
+    callback({result: 'undefined'});
   }
 });

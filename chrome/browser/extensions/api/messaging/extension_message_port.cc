@@ -29,6 +29,7 @@ void ExtensionMessagePort::DispatchOnConnect(
     int source_frame_id,
     int target_frame_id,
     int guest_process_id,
+    int guest_render_frame_routing_id,
     const std::string& source_extension_id,
     const std::string& target_extension_id,
     const GURL& source_url,
@@ -44,6 +45,7 @@ void ExtensionMessagePort::DispatchOnConnect(
   info.source_url = source_url;
   info.target_frame_id = target_frame_id;
   info.guest_process_id = guest_process_id;
+  info.guest_render_frame_routing_id = guest_render_frame_routing_id;
 
   process_->Send(new ExtensionMsg_DispatchOnConnect(
       routing_id_, dest_port_id, channel_name, source, info, tls_channel_id));

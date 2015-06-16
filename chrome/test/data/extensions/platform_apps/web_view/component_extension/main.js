@@ -26,11 +26,20 @@ function testNonComponentExtension() {
   testExtension('to_non_component');
 }
 
+// These values are set once the <webview> gives us the info via the
+// extension.
+// Our test reads these values back to verify that they are correct.
+window.guestProcessId = -1;
+window.guestRenderFrameRoutingId = -2;
+
 // Creates a webview with the |embedder.guestURL| and posts |messageToPost|
 // to the webview's content window.
 function testExtension(messageToPost) {
   var onPostMessageReceived = function(e) {
-    if (e.data == 'SUCCESS') {
+    var data = JSON.parse(e.data);
+    if (data.result === 'SUCCESS') {
+      window.guestProcessId = data.guestProcessId;
+      window.guestRenderFrameRoutingId = data.guestRenderFrameRoutingId;
       chrome.test.sendMessage('TEST_PASSED');
     } else {
       chrome.test.sendMessage('TEST_FAILED');
