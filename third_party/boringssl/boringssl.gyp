@@ -11,7 +11,8 @@
         'boringssl.gypi',
       ],
       'sources': [
-        '<@(boringssl_lib_sources)',
+        '<@(boringssl_crypto_sources)',
+        '<@(boringssl_ssl_sources)',
       ],
       'defines': [
         'BORINGSSL_IMPLEMENTATION',

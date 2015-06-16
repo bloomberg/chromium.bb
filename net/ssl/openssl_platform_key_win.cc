@@ -432,6 +432,7 @@ const RSA_METHOD win_rsa_method = {
     nullptr,  // bn_mod_exp
     RSA_FLAG_OPAQUE,
     nullptr,  // keygen
+    nullptr,  // multi_prime_keygen
     RsaMethodSupportsDigest,
 };
 
