@@ -432,7 +432,6 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
       atoi(command_line.GetSwitchValueASCII(
       switches::kAcceleratedCanvas2dMSAASampleCount).c_str());
   prefs.text_blobs_enabled =
-      command_line.HasSwitch(switches::kForceTextBlobs) ||
       !command_line.HasSwitch(switches::kDisableTextBlobs);
 
   prefs.pinch_overlay_scrollbar_thickness = 10;

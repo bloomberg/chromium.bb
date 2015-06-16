@@ -512,11 +512,6 @@ const char kGpuRasterizationMSAASampleCount[] =
 // overrides this if present.
 const char kForceRendererAccessibility[]    = "force-renderer-accessibility";
 
-// Always use text blob rendering, overriding kDisableTextBlobs and any
-// heuristics that may otherwise disable it.
-// TODO(fmalita): remove after --disable-impl-side-painting is phased out.
-const char kForceTextBlobs[]                = "force-text-blobs";
-
 // Passes gpu device_id from browser process to GPU process.
 const char kGpuDeviceID[]                   = "gpu-device-id";
 
