@@ -171,6 +171,10 @@ component("app_list") {
       "//ui/events",
       "//ui/views",
     ]
+
+    public_deps = [
+      "//ui/views",
+    ]
   }
 
   if (is_mac) {

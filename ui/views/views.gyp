@@ -624,6 +624,11 @@
         '../resources/ui_resources.gyp:ui_resources',
         '../strings/ui_strings.gyp:ui_strings',
       ],
+      'all_dependent_settings': {
+        'defines': [
+          'TOOLKIT_VIEWS=1',
+        ],
+      },
       'export_dependent_settings': [
         '../accessibility/accessibility.gyp:ax_gen',
       ],
