@@ -124,7 +124,8 @@ bool VideoLayerImpl::WillDraw(DrawMode draw_mode,
     unsigned resource_id = resource_provider->CreateResourceFromTextureMailbox(
         external_resources.mailboxes[i],
         SingleReleaseCallbackImpl::Create(
-            external_resources.release_callbacks[i]));
+            external_resources.release_callbacks[i]),
+        external_resources.read_lock_fences_enabled);
     frame_resources_.push_back(FrameResource(
         resource_id, external_resources.mailboxes[i].size_in_pixels(),
         external_resources.mailboxes[i].allow_overlay()));

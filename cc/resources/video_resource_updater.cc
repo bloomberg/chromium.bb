@@ -85,7 +85,9 @@ void VideoResourceUpdater::SetPlaneResourceUniqueId(
   plane_resource->timestamp = video_frame->timestamp();
 }
 
-VideoFrameExternalResources::VideoFrameExternalResources() : type(NONE) {}
+VideoFrameExternalResources::VideoFrameExternalResources()
+    : type(NONE), read_lock_fences_enabled(false) {
+}
 
 VideoFrameExternalResources::~VideoFrameExternalResources() {}
 
@@ -373,6 +375,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
   const size_t textures = media::VideoFrame::NumPlanes(video_frame->format());
   DCHECK_GE(textures, 1u);
   VideoFrameExternalResources external_resources;
+  external_resources.read_lock_fences_enabled = true;
   switch (video_frame->format()) {
     case media::VideoFrame::ARGB:
     case media::VideoFrame::XRGB:

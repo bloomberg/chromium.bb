@@ -550,7 +550,8 @@ ResourceId ResourceProvider::CreateResourceFromIOSurface(
 
 ResourceId ResourceProvider::CreateResourceFromTextureMailbox(
     const TextureMailbox& mailbox,
-    scoped_ptr<SingleReleaseCallbackImpl> release_callback_impl) {
+    scoped_ptr<SingleReleaseCallbackImpl> release_callback_impl,
+    bool read_lock_fences_enabled) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // Just store the information. Mailbox will be consumed in LockForRead().
   ResourceId id = next_id_++;
@@ -575,7 +576,15 @@ ResourceId ResourceProvider::CreateResourceFromTextureMailbox(
   resource->release_callback_impl =
       base::Bind(&SingleReleaseCallbackImpl::Run,
                  base::Owned(release_callback_impl.release()));
+  resource->read_lock_fences_enabled = read_lock_fences_enabled;
   return id;
+}
+
+ResourceId ResourceProvider::CreateResourceFromTextureMailbox(
+    const TextureMailbox& mailbox,
+    scoped_ptr<SingleReleaseCallbackImpl> release_callback_impl) {
+  return CreateResourceFromTextureMailbox(mailbox, release_callback_impl.Pass(),
+                                          false);
 }
 
 void ResourceProvider::DeleteResource(ResourceId id) {

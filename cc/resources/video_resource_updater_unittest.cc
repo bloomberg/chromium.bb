@@ -309,6 +309,7 @@ TEST_F(VideoResourceUpdaterTest, CreateForHardwarePlanes) {
 
   resources = updater.CreateExternalResourcesFromVideoFrame(video_frame);
   EXPECT_EQ(VideoFrameExternalResources::YUV_RESOURCE, resources.type);
+  EXPECT_TRUE(resources.read_lock_fences_enabled);
   EXPECT_EQ(3u, resources.mailboxes.size());
   EXPECT_EQ(3u, resources.release_callbacks.size());
   EXPECT_EQ(0u, resources.software_resources.size());

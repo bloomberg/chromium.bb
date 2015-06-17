@@ -145,6 +145,11 @@ class CC_EXPORT ResourceProvider {
       const TextureMailbox& mailbox,
       scoped_ptr<SingleReleaseCallbackImpl> release_callback_impl);
 
+  ResourceId CreateResourceFromTextureMailbox(
+      const TextureMailbox& mailbox,
+      scoped_ptr<SingleReleaseCallbackImpl> release_callback_impl,
+      bool read_lock_fences_enabled);
+
   void DeleteResource(ResourceId id);
 
   // Update pixels from image, copying source_rect (in image) to dest_offset (in

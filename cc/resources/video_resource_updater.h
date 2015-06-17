@@ -53,6 +53,7 @@ class CC_EXPORT VideoFrameExternalResources {
   ResourceType type;
   std::vector<TextureMailbox> mailboxes;
   std::vector<ReleaseCallbackImpl> release_callbacks;
+  bool read_lock_fences_enabled;
 
   // TODO(danakj): Remove these too.
   std::vector<unsigned> software_resources;
