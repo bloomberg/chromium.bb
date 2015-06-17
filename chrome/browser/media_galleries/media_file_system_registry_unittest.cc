@@ -38,7 +38,6 @@
 #include "components/storage_monitor/test_storage_monitor.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_factory.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_thread.h"
@@ -483,7 +482,6 @@ void ProfileState::CheckGalleries(
     const std::string& test,
     const std::vector<MediaFileSystemInfo>& regular_extension_galleries,
     const std::vector<MediaFileSystemInfo>& all_extension_galleries) {
-  content::RenderViewHost* rvh = single_web_contents_->GetRenderViewHost();
   MediaFileSystemRegistry* registry =
       g_browser_process->media_file_system_registry();
 
@@ -491,7 +489,7 @@ void ProfileState::CheckGalleries(
   std::vector<MediaFileSystemInfo> empty_expectation;
   std::vector<base::string16> empty_names;
   registry->GetMediaFileSystemsForExtension(
-      rvh, no_permissions_extension_.get(),
+      single_web_contents_.get(), no_permissions_extension_.get(),
       base::Bind(&ProfileState::CompareResults, base::Unretained(this),
                  base::StringPrintf("%s (no permission)", test.c_str()),
                  base::ConstRef(empty_names),
@@ -501,7 +499,7 @@ void ProfileState::CheckGalleries(
 
   // Read permission only.
   registry->GetMediaFileSystemsForExtension(
-      rvh, regular_permission_extension_.get(),
+      single_web_contents_.get(), regular_permission_extension_.get(),
       base::Bind(&ProfileState::CompareResults, base::Unretained(this),
                  base::StringPrintf("%s (regular permission)", test.c_str()),
                  base::ConstRef(compare_names_read_),
@@ -511,7 +509,7 @@ void ProfileState::CheckGalleries(
 
   // All galleries permission.
   registry->GetMediaFileSystemsForExtension(
-      rvh, all_permission_extension_.get(),
+      single_web_contents_.get(), all_permission_extension_.get(),
       base::Bind(&ProfileState::CompareResults, base::Unretained(this),
                  base::StringPrintf("%s (all permission)", test.c_str()),
                  base::ConstRef(compare_names_all_),
@@ -521,12 +519,11 @@ void ProfileState::CheckGalleries(
 }
 
 FSInfoMap ProfileState::GetGalleriesInfo(extensions::Extension* extension) {
-  content::RenderViewHost* rvh = single_web_contents_->GetRenderViewHost();
   FSInfoMap results;
   MediaFileSystemRegistry* registry =
       g_browser_process->media_file_system_registry();
   registry->GetMediaFileSystemsForExtension(
-      rvh, extension,
+      single_web_contents_.get(), extension,
       base::Bind(&GetGalleryInfoCallback, base::Unretained(&results)));
   base::MessageLoop::current()->RunUntilIdle();
   return results;

@@ -29,7 +29,7 @@ class MediaScanManager;
 class Profile;
 
 namespace content {
-class RenderViewHost;
+class WebContents;
 }
 
 namespace extensions {
@@ -76,16 +76,16 @@ class MediaFileSystemRegistry
   ~MediaFileSystemRegistry() override;
 
   // Passes to |callback| the list of media filesystem IDs and paths for a
-  // given RVH.
+  // given WebContents.
   void GetMediaFileSystemsForExtension(
-      const content::RenderViewHost* rvh,
+      content::WebContents* contents,
       const extensions::Extension* extension,
       const MediaFileSystemsCallback& callback);
 
   // Attempt to register the file system for |pref_id|. If |extension| does not
   // have permission to |pref_id|, sends |callback| FILE_ERROR_NOT_FOUND.
   void RegisterMediaFileSystemForExtension(
-      const content::RenderViewHost* rvh,
+      content::WebContents* contents,
       const extensions::Extension* extension,
       MediaGalleryPrefId pref_id,
       const base::Callback<void(base::File::Error result)>& callback);

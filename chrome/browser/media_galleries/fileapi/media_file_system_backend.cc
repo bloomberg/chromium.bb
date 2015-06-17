@@ -28,6 +28,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_request_info.h"
+#include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_system.h"
 #include "net/url_request/url_request.h"
 #include "storage/browser/fileapi/copy_or_move_file_validator.h"
@@ -64,8 +65,9 @@ void OnPreferencesInit(
     const base::Callback<void(base::File::Error result)>& callback) {
   MediaFileSystemRegistry* registry =
       g_browser_process->media_file_system_registry();
-  registry->RegisterMediaFileSystemForExtension(rvh, extension, pref_id,
-                                                callback);
+  registry->RegisterMediaFileSystemForExtension(
+      content::WebContents::FromRenderViewHost(rvh), extension, pref_id,
+      callback);
 }
 
 void AttemptAutoMountOnUIThread(

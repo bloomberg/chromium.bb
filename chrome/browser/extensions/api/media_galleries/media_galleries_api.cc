@@ -558,8 +558,8 @@ void MediaGalleriesGetMediaFileSystemsFunction::GetMediaFileSystemsForExtension(
   }
   MediaFileSystemRegistry* registry = media_file_system_registry();
   DCHECK(registry->GetPreferences(GetProfile())->IsInitialized());
-  registry->GetMediaFileSystemsForExtension(render_view_host_do_not_use(),
-                                            extension(), cb);
+  registry->GetMediaFileSystemsForExtension(GetSenderWebContents(), extension(),
+                                            cb);
 }
 
 
@@ -736,8 +736,8 @@ MediaGalleriesAddUserSelectedFolderFunction::GetMediaFileSystemsForExtension(
   }
   MediaFileSystemRegistry* registry = media_file_system_registry();
   DCHECK(registry->GetPreferences(GetProfile())->IsInitialized());
-  registry->GetMediaFileSystemsForExtension(render_view_host_do_not_use(),
-                                            extension(), cb);
+  registry->GetMediaFileSystemsForExtension(GetSenderWebContents(), extension(),
+                                            cb);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -897,7 +897,7 @@ void MediaGalleriesAddScanResultsFunction::GetAndReturnGalleries() {
   MediaFileSystemRegistry* registry = media_file_system_registry();
   DCHECK(registry->GetPreferences(GetProfile())->IsInitialized());
   registry->GetMediaFileSystemsForExtension(
-      render_view_host_do_not_use(), extension(),
+      GetSenderWebContents(), extension(),
       base::Bind(&MediaGalleriesAddScanResultsFunction::ReturnGalleries, this));
 }
 
