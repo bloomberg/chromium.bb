@@ -730,8 +730,6 @@ crbug.com/280342 [ Linux Win ] http/tests/media/progress-events-generated-correc
 crbug.com/282081 [ Win Release ] http/tests/security/contentSecurityPolicy/report-only-from-header.php [ Pass Timeout ]
 crbug.com/282086 [ XP Release ] virtual/gpu/fast/canvas/webgl/gl-uniform-arrays.html [ Pass Timeout ]
 crbug.com/282089 [ Win7 Debug ] plugins/override-node-method.html [ Crash Pass ]
-crbug.com/282091 fast/forms/time-multiple-fields/time-multiple-fields-speech-crash.html [ Pass Timeout ]
-crbug.com/282091 virtual/slimmingpaint/fast/forms/time-multiple-fields/time-multiple-fields-speech-crash.html [ Skip ]
 crbug.com/282092 [ Mac ] svg/dom/SVGLength-px-with-context.html [ Failure Pass ]
 crbug.com/282093 [ Mac ] svg/hixie/text/001.xml [ Crash Failure Pass ImageOnlyFailure ]
 crbug.com/282095 storage/websql/read-transactions-running-concurrently.html [ Failure Pass ]
