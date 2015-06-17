@@ -161,7 +161,6 @@
           'dependencies': [
             '../device/bluetooth/bluetooth.gyp:*',
             '../device/device_tests.gyp:*',
-            '../gpu/skia_runner/skia_runner.gyp:*',
           ],
         }],
         ['use_openssl==0 and (OS=="mac" or OS=="ios" or OS=="win")', {
