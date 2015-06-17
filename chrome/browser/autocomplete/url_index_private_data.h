@@ -12,9 +12,9 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/autocomplete/in_memory_url_index_cache.pb.h"
+#include "chrome/browser/autocomplete/scored_history_match.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/omnibox/in_memory_url_index_types.h"
-#include "components/omnibox/scored_history_match.h"
 
 class HistoryQuickProviderTest;
 
