@@ -3161,6 +3161,11 @@
                 # depend on icu to fix races. http://crbug.com/417583
                 '../third_party/icu/icu.gyp:icudata',
               ],
+              # Set this so we aren't included as a target in files that
+              # include this file via a wildcard (such as chrome_tests.gypi).
+              # If we didn't do this the All target ends up with a rule that
+              # makes it unnecessarily compile in certain situations.
+              'suppress_wildcard': 1,
               'direct_dependent_settings': {
                 'includes': [
                   '../build/isolate.gypi',
