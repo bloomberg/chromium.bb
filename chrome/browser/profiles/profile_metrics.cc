@@ -147,7 +147,7 @@ bool ProfileMetrics::CountProfileInformation(ProfileManager* manager,
   size_t number_of_profiles = info_cache.GetNumberOfProfiles();
   counts->total = number_of_profiles;
 
-  // Ignore other metrics if we have no profiles, e.g. in Chrome Frame tests.
+  // Ignore other metrics if we have no profiles.
   if (!number_of_profiles)
     return false;
 
@@ -208,7 +208,7 @@ void ProfileMetrics::LogNumberOfProfiles(ProfileManager* manager) {
   bool success = CountProfileInformation(manager, &counts);
   UMA_HISTOGRAM_COUNTS_100("Profile.NumberOfProfiles", counts.total);
 
-  // Ignore other metrics if we have no profiles, e.g. in Chrome Frame tests.
+  // Ignore other metrics if we have no profiles.
   if (success) {
     UMA_HISTOGRAM_COUNTS_100("Profile.NumberOfManagedProfiles",
                              counts.supervised);
