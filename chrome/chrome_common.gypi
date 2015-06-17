@@ -405,6 +405,7 @@
         }],
         ['OS != "ios"', {
           'dependencies': [
+            'common_mojo_bindings',
             '<(DEPTH)/components/components.gyp:autofill_core_common',
             '<(DEPTH)/components/components.gyp:autofill_content_common',
             '<(DEPTH)/components/components.gyp:password_manager_core_common',
