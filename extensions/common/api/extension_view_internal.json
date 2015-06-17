@@ -11,7 +11,7 @@
     },
     "functions": [
       {
-        "name": "navigate",
+        "name": "loadSrc",
         "type": "function",
         "parameters": [
           {
@@ -21,6 +21,43 @@
           {
             "type": "string",
             "name": "src"
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "parameters": [
+              {
+                "name": "hasLoadSucceeded",
+                "type": "boolean",
+                "description": "Whether or not loading the src has succeeded."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "parseSrc",
+        "type": "function",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "src"
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "parameters": [
+              {
+                "name": "isSrcValid",
+                "type": "boolean",
+                "description": "Whether or not the src is valid."
+              },
+              {
+                "name": "extensionId",
+                "type": "string",
+                "description": "The extension ID of the src."
+              }
+            ]
           }
         ]
       }

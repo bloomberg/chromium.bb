@@ -29,24 +29,41 @@ class ExtensionViewInternalExtensionFunction : public AsyncExtensionFunction {
   virtual bool RunAsyncSafe(ExtensionViewGuest* guest) = 0;
 };
 
-class ExtensionViewInternalNavigateFunction
+// Attempts to load a src into the extensionview.
+class ExtensionViewInternalLoadSrcFunction
     : public ExtensionViewInternalExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("extensionViewInternal.navigate",
-                             EXTENSIONVIEWINTERNAL_NAVIGATE);
-  ExtensionViewInternalNavigateFunction() {}
+  DECLARE_EXTENSION_FUNCTION("extensionViewInternal.loadSrc",
+                             EXTENSIONVIEWINTERNAL_LOADSRC);
+  ExtensionViewInternalLoadSrcFunction() {}
 
  protected:
-  ~ExtensionViewInternalNavigateFunction() override {}
+  ~ExtensionViewInternalLoadSrcFunction() override {}
 
  private:
-  // ExtensionViewInternalExtensionFunction implementation.
+  // ExtensionViewInternalLoadSrcFunction implementation.
   bool RunAsyncSafe(ExtensionViewGuest* guest) override;
 
-  DISALLOW_COPY_AND_ASSIGN(ExtensionViewInternalNavigateFunction);
+  DISALLOW_COPY_AND_ASSIGN(ExtensionViewInternalLoadSrcFunction);
+};
+
+// Parses a src and determines whether or not it is valid.
+class ExtensionViewInternalParseSrcFunction : public AsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("extensionViewInternal.parseSrc",
+                             EXTENSIONVIEWINTERNAL_PARSESRC);
+  ExtensionViewInternalParseSrcFunction() {}
+
+ protected:
+  ~ExtensionViewInternalParseSrcFunction() override {}
+
+ private:
+  // ExtensionViewInternalParseSrcFunction implementation.
+  bool RunAsync() final;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionViewInternalParseSrcFunction);
 };
 
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_EXTENSION_VIEW_EXTENSION_VIEW_INTERNAL_API_H_
-

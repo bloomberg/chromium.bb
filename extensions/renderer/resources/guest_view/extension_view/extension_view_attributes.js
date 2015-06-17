@@ -14,7 +14,7 @@ var ExtensionViewInternal =
 // -----------------------------------------------------------------------------
 // ExtensionAttribute object.
 
-// Attribute that handles extension binded to the extensionview.
+// Attribute that handles the extension associated with the extensionview.
 function ExtensionAttribute(view) {
   GuestViewAttributes.ReadOnlyAttribute.call(
       this, ExtensionViewConstants.ATTRIBUTE_EXTENSION, view);
@@ -27,29 +27,16 @@ ExtensionAttribute.prototype.__proto__ =
 // SrcAttribute object.
 
 // Attribute that handles the location and navigation of the extensionview.
+// This is read only because we only want to be able to navigate to a src
+// through the load API call, which checks for URL validity and the extension
+// ID of the new src.
 function SrcAttribute(view) {
-  GuestViewAttributes.Attribute.call(
+  GuestViewAttributes.ReadOnlyAttribute.call(
       this, ExtensionViewConstants.ATTRIBUTE_SRC, view);
 }
 
-SrcAttribute.prototype.__proto__ = GuestViewAttributes.Attribute.prototype;
-
-SrcAttribute.prototype.handleMutation = function(oldValue, newValue) {
-  if (!newValue && oldValue) {
-    this.setValueIgnoreMutation(oldValue);
-    return;
-  }
-  this.parse();
-};
-
-SrcAttribute.prototype.parse = function() {
-  if (!this.view.elementAttached || !this.getValue() ||
-      !this.view.guest.getId()) {
-    return;
-  }
-
-  ExtensionViewInternal.navigate(this.view.guest.getId(), this.getValue());
-};
+SrcAttribute.prototype.__proto__ =
+    GuestViewAttributes.ReadOnlyAttribute.prototype;
 
 // -----------------------------------------------------------------------------
 

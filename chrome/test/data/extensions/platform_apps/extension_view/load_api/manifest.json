@@ -1,5 +1,5 @@
 {
-  "name": "Platform App Test: <extensionview> connect api call",
+  "name": "Platform App Test: <extensionview> load api call",
   "version": "1",
   "permissions": [
     "extensionview"

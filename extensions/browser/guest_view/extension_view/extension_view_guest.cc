@@ -4,7 +4,6 @@
 
 #include "extensions/browser/guest_view/extension_view/extension_view_guest.h"
 
-#include "base/strings/string_util.h"
 #include "components/crx_file/id_util.h"
 #include "components/guest_view/browser/guest_view_event.h"
 #include "content/public/browser/render_process_host.h"
@@ -40,7 +39,7 @@ GuestViewBase* ExtensionViewGuest::Create(
   return new ExtensionViewGuest(owner_web_contents);
 }
 
-void ExtensionViewGuest::NavigateGuest(const std::string& src,
+bool ExtensionViewGuest::NavigateGuest(const std::string& src,
                                        bool force_navigation) {
   GURL url = extension_url_.Resolve(src);
 
@@ -48,20 +47,19 @@ void ExtensionViewGuest::NavigateGuest(const std::string& src,
   // then navigate to about:blank.
   bool url_not_allowed = (url != GURL(url::kAboutBlankURL)) &&
       (url.GetOrigin() != extension_url_.GetOrigin());
-  if (!url.is_valid() || url_not_allowed) {
-    NavigateGuest(url::kAboutBlankURL, true /* force_navigation */);
-    return;
-  }
+  if (!url.is_valid() || url_not_allowed)
+    return NavigateGuest(url::kAboutBlankURL, true /* force_navigation */);
 
-  if (!force_navigation && (view_page_ == url))
-    return;
+  if (!force_navigation && (url_ == url))
+    return false;
 
   web_contents()->GetRenderProcessHost()->FilterURL(false, &url);
   web_contents()->GetController().LoadURL(url, content::Referrer(),
                                           ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
                                           std::string());
 
-  view_page_ = url;
+  url_ = url;
+  return true;
 }
 
 // GuestViewBase implementation.
@@ -126,17 +124,10 @@ void ExtensionViewGuest::DidCommitProvisionalLoadForFrame(
   if (render_frame_host->GetParent())
     return;
 
-  view_page_ = url;
-
-  // Gets chrome-extension://extensionid/ prefix.
-  std::string prefix = url.GetWithEmptyPath().spec();
-  std::string relative_url = url.spec();
-
-  // Removes the prefix.
-  ReplaceFirstSubstringAfterOffset(&relative_url, 0, prefix, "");
+  url_ = url;
 
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
-  args->SetString(guest_view::kUrl, relative_url);
+  args->SetString(guest_view::kUrl, url_.spec());
   DispatchEventToView(
       new GuestViewEvent(extensionview::kEventLoadCommit, args.Pass()));
 }
@@ -144,7 +135,7 @@ void ExtensionViewGuest::DidCommitProvisionalLoadForFrame(
 void ExtensionViewGuest::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
-  if (attached() && (params.url.GetOrigin() != view_page_.GetOrigin())) {
+  if (attached() && (params.url.GetOrigin() != url_.GetOrigin())) {
     bad_message::ReceivedBadMessage(web_contents()->GetRenderProcessHost(),
                                     bad_message::EVG_BAD_ORIGIN);
   }

@@ -41,7 +41,8 @@ class ExtensionViewTest : public extensions::PlatformAppBrowserTest {
 
   void TestHelper(const std::string& test_name,
                   const std::string& app_location,
-                  const std::string& app_to_embed) {
+                  const std::string& app_to_embed,
+                  const std::string& second_app_to_embed) {
     LoadAndLaunchPlatformApp(app_location.c_str(), "Launched");
 
     // Flush any pending events to make sure we start with a clean slate.
@@ -58,8 +59,9 @@ class ExtensionViewTest : public extensions::PlatformAppBrowserTest {
     done_listener.set_failure_message("TEST_FAILED");
     if (!content::ExecuteScript(
             embedder_web_contents,
-            base::StringPrintf("runTest('%s', '%s')", test_name.c_str(),
-                               app_to_embed.c_str()))) {
+            base::StringPrintf("runTest('%s', '%s', '%s')", test_name.c_str(),
+                               app_to_embed.c_str(),
+                               second_app_to_embed.c_str()))) {
       LOG(ERROR) << "UNABLE TO START TEST.";
       return;
     }
@@ -80,23 +82,46 @@ IN_PROC_BROWSER_TEST_F(ExtensionViewTest,
   const extensions::Extension* skeleton_app =
       InstallPlatformApp("extension_view/skeleton");
   TestHelper("testExtensionViewCreationShouldSucceed", "extension_view",
-             skeleton_app->id());
-}
-
-// Tests that verify that <extensionview> can navigate to different sources.
-IN_PROC_BROWSER_TEST_F(ExtensionViewTest, ShimSrcAttribute) {
-  ASSERT_TRUE(RunPlatformAppTest(
-      "platform_apps/extension_view/src_attribute"));
-}
-
-// Tests that verify that <extensionview> can call the connect function.
-IN_PROC_BROWSER_TEST_F(ExtensionViewTest, ConnectAPICall) {
-  ASSERT_TRUE(RunPlatformAppTest("platform_apps/extension_view/connect_api"));
+             skeleton_app->id(), "");
 }
 
 // Tests that verify that <extensionview> does not change extension ID if
 // someone tries to change it in JavaScript.
 IN_PROC_BROWSER_TEST_F(ExtensionViewTest, ShimExtensionAttribute) {
-  ASSERT_TRUE(RunPlatformAppTest(
-      "platform_apps/extension_view/extension_attribute"));
+  const extensions::Extension* skeleton_app =
+      InstallPlatformApp("extension_view/skeleton");
+  TestHelper("testExtensionAttribute", "extension_view/extension_attribute",
+             skeleton_app->id(), "");
+}
+
+// Tests that verify that <extensionview> does not change src if
+// someone tries to change it in JavaScript.
+IN_PROC_BROWSER_TEST_F(ExtensionViewTest, ShimSrcAttribute) {
+  const extensions::Extension* skeleton_app =
+      InstallPlatformApp("extension_view/skeleton");
+  TestHelper("testSrcAttribute", "extension_view/src_attribute",
+             skeleton_app->id(), "");
+}
+
+// Tests that verify that <extensionview> can call the load function.
+IN_PROC_BROWSER_TEST_F(ExtensionViewTest, LoadAPICall) {
+  const extensions::Extension* skeleton_app =
+      InstallPlatformApp("extension_view/skeleton");
+  const extensions::Extension* skeleton_app_two =
+      InstallPlatformApp("extension_view/skeleton_two");
+  TestHelper("testLoadAPIFunction", "extension_view/load_api",
+             skeleton_app->id(),
+             skeleton_app_two->id());
+}
+
+// Tests that verify that <extensionview> can queue up multiple calls to the
+// load function.
+IN_PROC_BROWSER_TEST_F(ExtensionViewTest, QueuedLoadAPICall) {
+  const extensions::Extension* skeleton_app =
+      InstallPlatformApp("extension_view/skeleton");
+  const extensions::Extension* skeleton_app_two =
+      InstallPlatformApp("extension_view/skeleton_two");
+  TestHelper("testQueuedLoadAPIFunction", "extension_view/load_api",
+             skeleton_app->id(),
+             skeleton_app_two->id());
 }

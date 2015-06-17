@@ -1113,6 +1113,8 @@ enum HistogramValue {
   WEBCAMPRIVATE_CLOSEWEBCAM,
   SERIAL_SETBREAK,
   SERIAL_CLEARBREAK,
+  EXTENSIONVIEWINTERNAL_LOADSRC,
+  EXTENSIONVIEWINTERNAL_PARSESRC,
   // Last entry: Add new entries above and ensure to update
   // tools/metrics/histograms/histograms.xml.
   ENUM_BOUNDARY

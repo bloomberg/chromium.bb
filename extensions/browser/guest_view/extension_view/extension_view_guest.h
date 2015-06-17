@@ -24,7 +24,8 @@ class ExtensionViewGuest
       content::WebContents* owner_web_contents);
 
   // Request navigating the guest to the provided |src| URL.
-  void NavigateGuest(const std::string& src, bool force_navigation);
+  // Returns true if the navigation is successful.
+  bool NavigateGuest(const std::string& src, bool force_navigation);
 
   // GuestViewBase implementation.
   bool CanRunInDetachedState() const override;
@@ -51,7 +52,10 @@ class ExtensionViewGuest
   // Applies attributes to the extensionview.
   void ApplyAttributes(const base::DictionaryValue& params);
 
-  GURL view_page_;
+  // The full URL that the extensionview is currently navigated to.
+  GURL url_;
+
+  // The extension URL, including the extension scheme and extension ID.
   GURL extension_url_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionViewGuest);
