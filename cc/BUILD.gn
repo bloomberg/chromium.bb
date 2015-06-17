@@ -768,7 +768,6 @@ test("cc_unittests") {
     "layers/texture_layer_impl_unittest.cc",
     "layers/texture_layer_unittest.cc",
     "layers/tiled_layer_impl_unittest.cc",
-    "layers/tiled_layer_unittest.cc",
     "layers/ui_resource_layer_impl_unittest.cc",
     "layers/ui_resource_layer_unittest.cc",
     "layers/video_frame_provider_client_impl_unittest.cc",

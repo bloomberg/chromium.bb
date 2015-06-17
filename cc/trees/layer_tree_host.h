@@ -324,12 +324,6 @@ class CC_EXPORT LayerTreeHost {
     return needs_meta_info_recomputation_;
   }
 
-  // If this is true, only property trees will be used for main thread CDP.
-  // CDP will not be run, and verify_property_trees will be ignored.
-  bool using_only_property_trees() const {
-    return settings().impl_side_painting;
-  }
-
   void RecordFrameTimingEvents(
       scoped_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
       scoped_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events);
@@ -365,27 +359,10 @@ class CC_EXPORT LayerTreeHost {
  private:
   void InitializeProxy(scoped_ptr<Proxy> proxy);
 
-  void PaintLayerContents(
-      const RenderSurfaceLayerList& render_surface_layer_list,
-      ResourceUpdateQueue* queue,
-      bool* did_paint_content,
-      bool* need_more_updates);
-  void PaintMasksForRenderSurface(Layer* render_surface_layer,
-                                  ResourceUpdateQueue* queue,
-                                  bool* did_paint_content,
-                                  bool* need_more_updates);
   bool UpdateLayers(Layer* root_layer, ResourceUpdateQueue* queue);
   void UpdateHudLayer();
-  void TriggerPrepaint();
 
   void ReduceMemoryUsage();
-
-  void PrioritizeTextures(
-      const RenderSurfaceLayerList& render_surface_layer_list);
-  void SetPrioritiesForSurfaces(size_t surface_memory_bytes);
-  void SetPrioritiesForLayers(const RenderSurfaceLayerList& update_list);
-  size_t CalculateMemoryForRenderSurfaces(
-      const RenderSurfaceLayerList& update_list);
 
   bool AnimateLayersRecursive(Layer* current, base::TimeTicks time);
 
@@ -410,8 +387,6 @@ class CC_EXPORT LayerTreeHost {
   bool inside_begin_main_frame_;
   bool needs_full_tree_sync_;
   bool needs_meta_info_recomputation_;
-
-  base::CancelableClosure prepaint_callback_;
 
   LayerTreeHostClient* client_;
   scoped_ptr<Proxy> proxy_;
