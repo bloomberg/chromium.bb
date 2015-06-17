@@ -838,7 +838,8 @@ bool PasswordAutofillAgent::FindPasswordInfoForElement(
 
 bool PasswordAutofillAgent::ShowSuggestions(
     const blink::WebInputElement& element,
-    bool show_all) {
+    bool show_all,
+    bool generation_popup_showing) {
   const blink::WebInputElement* username_element;
   PasswordInfo* password_info;
   if (!FindPasswordInfoForElement(element, &username_element, &password_info))
@@ -860,6 +861,13 @@ bool PasswordAutofillAgent::ShowSuggestions(
   // suggestions popup.
   if (element.isPasswordField() && username_is_available)
     return true;
+
+  UMA_HISTOGRAM_BOOLEAN(
+      "PasswordManager.AutocompletePopupSuppressedByGeneration",
+      generation_popup_showing);
+
+  if (generation_popup_showing)
+    return false;
 
   // Chrome should never show more than one account for a password element since
   // this implies that the username element cannot be modified. Thus even if

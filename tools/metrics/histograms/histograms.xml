@@ -27434,6 +27434,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Why was &quot;Allow to collect URL?&quot; bubble closed?</summary>
 </histogram>
 
+<histogram name="PasswordManager.AutocompletePopupSuppressedByGeneration"
+    enum="BooleanSuppressed">
+  <owner>gcasto@chromium.org</owner>
+  <summary>
+    If the password manager UI was suppressed because generation UI was already
+    being displayed for the same field.
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.BlacklistedSites">
   <owner>gcasto@chromium.org</owner>
   <owner>vabr@chromium.org</owner>

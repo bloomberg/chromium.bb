@@ -9,6 +9,7 @@
 #include "components/autofill/content/common/autofill_messages.h"
 #include "components/autofill/content/renderer/form_autofill_util.h"
 #include "components/autofill/content/renderer/test_password_generation_agent.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFormElement.h"
 
@@ -43,6 +44,19 @@ void SetAccountCreationFormsDetectedMessage(
   forms.push_back(form_data);
   AutofillMsg_AccountCreationFormsDetected msg(0, forms);
   generation_agent->OnMessageReceived(msg);
+}
+
+void ExpectPasswordGenerationAvailable(
+    TestPasswordGenerationAgent* password_generation,
+    bool available) {
+  if (available) {
+    ASSERT_EQ(1u, password_generation->messages().size());
+    EXPECT_EQ(AutofillHostMsg_ShowPasswordGenerationPopup::ID,
+              password_generation->messages()[0]->type());
+  } else {
+    EXPECT_TRUE(password_generation->messages().empty());
+  }
+  password_generation->clear_messages();
 }
 
 }  // namespace autofill

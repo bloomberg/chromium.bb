@@ -90,6 +90,14 @@ const char kNonVisibleFormHTML[] =
     "  </form>"
     "</body>";
 
+const char kSignupFormHTML[] =
+    "<FORM name='LoginTestForm' action='http://www.bidule.com'>"
+    "  <INPUT type='text' id='random_info'/>"
+    "  <INPUT type='password' id='new_password'/>"
+    "  <INPUT type='password' id='confirm_password'/>"
+    "  <INPUT type='submit' value='Login'/>"
+    "</FORM>";
+
 const char kEmptyWebpage[] =
     "<html>"
     "   <head>"
@@ -255,6 +263,10 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
     fill_data_.action = GURL("http://www.bidule.com");
 
     LoadHTML(kFormHTML);
+
+    // Necessary for SimulateElementClick() to work correctly.
+    GetWebWidget()->resize(blink::WebSize(500, 500));
+    GetWebWidget()->setFocus(true);
 
     // Now retrieve the input elements so the test can access them.
     UpdateUsernameAndPasswordElements();
@@ -1861,6 +1873,44 @@ TEST_F(PasswordAutofillAgentTest,
       ->WillSubmitForm(username_element_.form());
 
   ExpectFormSubmittedWithUsernameAndPasswords(kAliceUsername, "NewPass22", "");
+}
+
+// If password generation is enabled for a field, password autofill should not
+// show UI.
+TEST_F(PasswordAutofillAgentTest, PasswordGenerationSupersedesAutofill) {
+  LoadHTML(kSignupFormHTML);
+
+  // Update password_element_;
+  WebDocument document = GetMainFrame()->document();
+  WebElement element =
+      document.getElementById(WebString::fromUTF8("new_password"));
+  ASSERT_FALSE(element.isNull());
+  password_element_ = element.to<blink::WebInputElement>();
+
+  // Update fill_data_ for the new form and simulate filling. Pretend as if
+  // the password manager didn't detect a username field so it will try to
+  // show UI when the password field is focused.
+  fill_data_.wait_for_username = true;
+  fill_data_.username_field = FormFieldData();
+  fill_data_.password_field.name = base::ASCIIToUTF16("new_password");
+  UpdateOriginForHTML(kSignupFormHTML);
+  SimulateOnFillPasswordForm(fill_data_);
+
+  // Simulate generation triggering.
+  SetNotBlacklistedMessage(password_generation_,
+                           kSignupFormHTML);
+  SetAccountCreationFormsDetectedMessage(password_generation_,
+                                         GetMainFrame()->document(),
+                                         0);
+
+  // Simulate the field being clicked to start typing. This should trigger
+  // generation but not password autofill.
+  SetFocused(password_element_);
+  SimulateElementClick("new_password");
+  EXPECT_EQ(nullptr,
+            render_thread_->sink().GetFirstMessageMatching(
+                AutofillHostMsg_ShowPasswordSuggestions::ID));
+  ExpectPasswordGenerationAvailable(password_generation_, true);
 }
 
 }  // namespace autofill

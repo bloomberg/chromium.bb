@@ -20,6 +20,8 @@ void SetNotBlacklistedMessage(TestPasswordGenerationAgent* generation_agent,
 void SetAccountCreationFormsDetectedMessage(TestPasswordGenerationAgent* agent,
                                             blink::WebDocument document,
                                             int form_index);
+void ExpectPasswordGenerationAvailable(TestPasswordGenerationAgent* agent,
+                                       bool available);
 
 }  // namespace autofill
 

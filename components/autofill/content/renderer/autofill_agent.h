@@ -266,6 +266,12 @@ class AutofillAgent : public content::RenderFrameObserver,
   // messages to close the Autofill popup when it can't possibly be showing.
   bool is_popup_possibly_visible_;
 
+  // If the generation popup is possibly visible. This is tracked to prevent
+  // generation UI from displaying at the same time as password manager UI.
+  // This is needed because generation is shown on field focus vs. field click
+  // for the password manager. TODO(gcasto): Have both UIs show on focus.
+  bool is_generation_popup_possibly_visible_;
+
   base::WeakPtrFactory<AutofillAgent> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillAgent);
