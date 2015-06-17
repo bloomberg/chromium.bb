@@ -24,6 +24,7 @@ SSLInfo::~SSLInfo() {
 
 SSLInfo& SSLInfo::operator=(const SSLInfo& info) {
   cert = info.cert;
+  unverified_cert = info.unverified_cert;
   cert_status = info.cert_status;
   security_bits = info.security_bits;
   connection_status = info.connection_status;
@@ -40,6 +41,7 @@ SSLInfo& SSLInfo::operator=(const SSLInfo& info) {
 
 void SSLInfo::Reset() {
   cert = NULL;
+  unverified_cert = NULL;
   cert_status = 0;
   security_bits = -1;
   connection_status = 0;
