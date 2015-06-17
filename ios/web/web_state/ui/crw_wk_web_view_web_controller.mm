@@ -199,11 +199,6 @@ NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
 // Attempts to handle a script message. Returns YES on success, NO otherwise.
 - (BOOL)respondToWKScriptMessage:(WKScriptMessage*)scriptMessage;
 
-// Handles 'window.history.willChangeState' message.
-- (BOOL)handleWindowHistoryWillChangeStateMessage:
-    (base::DictionaryValue*)message
-                                          context:(NSDictionary*)context;
-
 #if !defined(ENABLE_CHROME_NET_STACK_FOR_WKWEBVIEW)
 // Called when WKWebView estimatedProgress has been changed.
 - (void)webViewEstimatedProgressDidChange;
@@ -784,7 +779,8 @@ NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
     (base::DictionaryValue*)message
                                           context:(NSDictionary*)context {
   _changingHistoryState = YES;
-  return YES;
+  return
+      [super handleWindowHistoryWillChangeStateMessage:message context:context];
 }
 
 - (BOOL)handleWindowHistoryDidPushStateMessage:(base::DictionaryValue*)message

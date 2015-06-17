@@ -397,7 +397,8 @@ goog.require('__crWeb.message');
     invokeOnHost_({'command': 'window.history.go', 'value': delta});
   };
   window.history.pushState = function(stateObject, pageTitle, pageUrl) {
-    __gCrWeb.core_dynamic.historyWillChangeState();
+    __gCrWeb.message.invokeOnHost(
+        {'command': 'window.history.willChangeState'});
     // Calling stringify() on undefined causes a JSON parse error.
     var serializedState =
         typeof(stateObject) == 'undefined' ? '' :
@@ -410,7 +411,9 @@ goog.require('__crWeb.message');
                    'pageUrl': pageUrl.toString()});
   };
   window.history.replaceState = function(stateObject, pageTitle, pageUrl) {
-    __gCrWeb.core_dynamic.historyWillChangeState();
+    __gCrWeb.message.invokeOnHost(
+        {'command': 'window.history.willChangeState'});
+
     // Calling stringify() on undefined causes a JSON parse error.
     var serializedState =
         typeof(stateObject) == 'undefined' ? '' :

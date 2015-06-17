@@ -172,6 +172,10 @@ struct NewWindowInfo {
 // TODO(stuartmorgan): Remove once the hook points are driven from the subclass.
 - (BOOL)checkForUnexpectedURLChange;
 
+// Handles 'window.history.willChangeState' message.
+- (BOOL)handleWindowHistoryWillChangeStateMessage:
+            (base::DictionaryValue*)message
+                                          context:(NSDictionary*)context;
 // Handles 'window.history.didPushState' message.
 - (BOOL)handleWindowHistoryDidPushStateMessage:(base::DictionaryValue*)message
                                        context:(NSDictionary*)context;

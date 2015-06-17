@@ -47,13 +47,4 @@ __gCrWeb.core_dynamic = {};
     if (__gCrWeb.common.updatePluginPlaceholders())
       __gCrWeb.message.invokeOnHost({'command': 'addPluginPlaceholders'});
   }
-
-  /**
-   * Sends window.history.willChangeState message. Called when
-   * history.pushState and history.replaceState are invoked.
-   */
-  __gCrWeb.core_dynamic.historyWillChangeState = function() {
-    __gCrWeb.message.invokeOnHost(
-        {'command': 'window.history.willChangeState'});
-  };
 }());

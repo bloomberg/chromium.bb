@@ -139,14 +139,6 @@ __gCrWeb.core_dynamic = {};
   }
 
   /**
-   * Called when history.pushState and history.replaceState are invoked.
-   */
-  __gCrWeb.core_dynamic.historyWillChangeState = function () {
-    // UIWebViewWebController does not need to be notified prior to
-    // history.pushState or history.replaceState calls.
-  };
-
-  /**
    * Exits Fullscreen video by calling webkitExitFullScreen on every video
    * element.
    */

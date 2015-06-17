@@ -2043,6 +2043,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
         @selector(handleWindowHashChangeMessage:context:);
     (*handlers)["window.history.back"] =
         @selector(handleWindowHistoryBackMessage:context:);
+    (*handlers)["window.history.willChangeState"] =
+        @selector(handleWindowHistoryWillChangeStateMessage:context:);
     (*handlers)["window.history.didPushState"] =
         @selector(handleWindowHistoryDidPushStateMessage:context:);
     (*handlers)["window.history.didReplaceState"] =
@@ -2418,6 +2420,22 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   int delta;
   message->GetInteger("value", &delta);
   [self goDelta:delta];
+  return YES;
+}
+
+- (BOOL)handleWindowHistoryWillChangeStateMessage:(base::DictionaryValue*)unused
+                                          context:(NSDictionary*)unusedContext {
+  // This dummy handler is a workaround for crbug.com/490673. Issue was
+  // happening when two sequential calls of window.history.pushState were
+  // performed by the page. In that case state was changed twice before
+  // first change was reported to embedder (and first URL change was reported
+  // incorrectly).
+
+  // Using dummy handler for window.history.willChangeState message holds
+  // second state change until the first change is reported, because messages
+  // are queued. This is essentially a sleep, and not the real fix of the
+  // problem. TODO(eugenebut): refactor handleWindowHistoryDidPushStateMessage:
+  // to avoid this "sleep".
   return YES;
 }
 
