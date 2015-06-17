@@ -6,7 +6,6 @@
 
 #include "base/test/values_test_util.h"
 #include "base/values.h"
-#include "cc/layers/content_layer.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/nine_patch_layer.h"
 #include "cc/layers/picture_layer.h"
@@ -43,8 +42,6 @@ scoped_refptr<Layer> ParseTreeFromValue(base::Value* val,
   scoped_refptr<Layer> new_layer;
   if (layer_type == "SolidColorLayer") {
     new_layer = SolidColorLayer::Create(layer_settings);
-  } else if (layer_type == "ContentLayer") {
-    new_layer = ContentLayer::Create(layer_settings, content_client);
   } else if (layer_type == "NinePatchLayer") {
     success &= dict->GetList("ImageAperture", &list);
     int aperture_x, aperture_y, aperture_width, aperture_height;

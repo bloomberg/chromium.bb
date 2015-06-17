@@ -5,7 +5,6 @@
 #include "cc/trees/layer_tree_host.h"
 
 #include "base/basictypes.h"
-#include "cc/layers/content_layer.h"
 #include "cc/layers/delegated_frame_provider.h"
 #include "cc/layers/delegated_frame_resource_collection.h"
 #include "cc/layers/heads_up_display_layer.h"

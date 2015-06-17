@@ -12,7 +12,6 @@
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "cc/debug/lap_timer.h"
-#include "cc/layers/content_layer.h"
 #include "cc/layers/nine_patch_layer.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/texture_layer.h"

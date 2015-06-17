@@ -13,7 +13,6 @@
 #include "base/thread_task_runner_handle.h"
 #include "cc/animation/timing_function.h"
 #include "cc/debug/frame_rate_counter.h"
-#include "cc/layers/content_layer.h"
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/io_surface_layer.h"
 #include "cc/layers/layer_impl.h"

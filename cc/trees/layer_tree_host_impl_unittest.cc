@@ -27,7 +27,6 @@
 #include "cc/layers/solid_color_layer_impl.h"
 #include "cc/layers/solid_color_scrollbar_layer_impl.h"
 #include "cc/layers/texture_layer_impl.h"
-#include "cc/layers/tiled_layer_impl.h"
 #include "cc/layers/video_layer_impl.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/compositor_frame_ack.h"

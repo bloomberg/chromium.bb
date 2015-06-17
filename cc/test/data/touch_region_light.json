@@ -12,7 +12,7 @@
                "ContentsOpaque": true,
                "DrawTransform": [ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, -0.0, -1.0, 0.0, 1.0 ],
                "DrawsContent": true,
-               "LayerType": "cc::TiledLayerImpl",
+               "LayerType": "cc::PictureLayerImpl",
                "Opacity": 1.0,
                "Position": [ 0.0, 0.0 ],
                "TouchRegion": [ 0, 0, 384, 732 ]
@@ -20,14 +20,14 @@
             "ContentsOpaque": false,
             "DrawTransform": [ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, -0.0, -1.0, 0.0, 1.0 ],
             "DrawsContent": false,
-            "LayerType": "cc::TiledLayerImpl",
+            "LayerType": "cc::PictureLayerImpl",
             "Opacity": 1.0,
             "Position": [ 0.0, 0.0 ]
          } ],
          "ContentsOpaque": false,
          "DrawTransform": [ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, -0.0, -1.0, 0.0, 1.0 ],
          "DrawsContent": false,
-         "LayerType": "cc::TiledLayerImpl",
+         "LayerType": "cc::PictureLayerImpl",
          "Opacity": 1.0,
          "Position": [ 0.0, 0.0 ],
          "Scrollable": true
@@ -35,7 +35,7 @@
       "ContentsOpaque": false,
       "DrawTransform": [ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0 ],
       "DrawsContent": false,
-      "LayerType": "cc::TiledLayerImpl",
+      "LayerType": "cc::PictureLayerImpl",
       "Opacity": 1.0,
       "Position": [ 0.0, 0.0 ]
    }, {
@@ -53,14 +53,14 @@
       "ContentsOpaque": false,
       "DrawTransform": [ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 374.0, 0.0, 0.0, 1.0 ],
       "DrawsContent": false,
-      "LayerType": "cc::TiledLayerImpl",
+      "LayerType": "cc::PictureLayerImpl",
       "Opacity": 1.0,
       "Position": [ 374.0, 0.0 ]
    } ],
    "ContentsOpaque": false,
    "DrawTransform": [ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0 ],
    "DrawsContent": false,
-   "LayerType": "cc::TiledLayerImpl",
+   "LayerType": "cc::PictureLayerImpl",
    "Opacity": 1.0,
    "Position": [ 0.0, 0.0 ]
 }

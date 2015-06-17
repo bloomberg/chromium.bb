@@ -23,7 +23,7 @@
                   "ContentsOpaque": false,
                   "DrawTransform": [ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0 ],
                   "DrawsContent": false,
-                  "LayerType": "ContentLayer",
+                  "LayerType": "PictureLayer",
                   "Opacity": 1.0,
                   "Position": [ 0.0, 0.0 ]
                }, {
@@ -32,7 +32,7 @@
                   "ContentsOpaque": false,
                   "DrawTransform": [ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0 ],
                   "DrawsContent": false,
-                  "LayerType": "ContentLayer",
+                  "LayerType": "PictureLayer",
                   "Opacity": 1.0,
                   "Position": [ 0.0, 0.0 ]
                }, {
@@ -41,7 +41,7 @@
                   "ContentsOpaque": false,
                   "DrawTransform": [ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0 ],
                   "DrawsContent": false,
-                  "LayerType": "ContentLayer",
+                  "LayerType": "PictureLayer",
                   "Opacity": 1.0,
                   "Position": [ 0.0, 0.0 ]
                }, {
@@ -50,7 +50,7 @@
                   "ContentsOpaque": false,
                   "DrawTransform": [ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0 ],
                   "DrawsContent": false,
-                  "LayerType": "ContentLayer",
+                  "LayerType": "PictureLayer",
                   "Opacity": 1.0,
                   "Position": [ 0.0, 0.0 ]
                }, {
@@ -59,7 +59,7 @@
                   "ContentsOpaque": false,
                   "DrawTransform": [ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0 ],
                   "DrawsContent": false,
-                  "LayerType": "ContentLayer",
+                  "LayerType": "PictureLayer",
                   "Opacity": 1.0,
                   "Position": [ 0.0, 0.0 ]
                }, {
@@ -68,7 +68,7 @@
                   "ContentsOpaque": false,
                   "DrawTransform": [ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0 ],
                   "DrawsContent": false,
-                  "LayerType": "ContentLayer",
+                  "LayerType": "PictureLayer",
                   "Opacity": 1.0,
                   "Position": [ 0.0, 0.0 ]
                }, {
@@ -77,7 +77,7 @@
                   "ContentsOpaque": false,
                   "DrawTransform": [ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0 ],
                   "DrawsContent": false,
-                  "LayerType": "ContentLayer",
+                  "LayerType": "PictureLayer",
                   "Opacity": 1.0,
                   "Position": [ 0.0, 0.0 ]
                }, {
@@ -86,7 +86,7 @@
                   "ContentsOpaque": false,
                   "DrawTransform": [ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0 ],
                   "DrawsContent": false,
-                  "LayerType": "ContentLayer",
+                  "LayerType": "PictureLayer",
                   "Opacity": 1.0,
                   "Position": [ 0.0, 0.0 ]
                } ],
@@ -969,7 +969,7 @@
       "ContentsOpaque": false,
       "DrawTransform": [ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0 ],
       "DrawsContent": true,
-      "LayerType": "ContentLayer",
+      "LayerType": "PictureLayer",
       "Opacity": 1.0,
       "Position": [ 0.0, 0.0 ]
    } ],

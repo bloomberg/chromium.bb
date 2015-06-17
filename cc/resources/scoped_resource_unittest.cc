@@ -9,7 +9,6 @@
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/fake_resource_provider.h"
 #include "cc/test/test_shared_bitmap_manager.h"
-#include "cc/test/tiled_layer_test_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {

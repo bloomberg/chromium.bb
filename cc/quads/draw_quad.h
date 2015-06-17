@@ -27,10 +27,10 @@ namespace cc {
 // Note: quads contain rects and sizes, which live in different spaces. There is
 // the "content space", which is the arbitrary space in which the quad's
 // geometry is defined (generally related to the layer that produced the quad,
-// e.g. the content space for TiledLayerImpls, or the geometry space for
-// PictureLayerImpls). There is also the "target space", which is the space, in
-// "physical" pixels, of the render target where the quads is drawn. The quad's
-// transform maps the content space to the target space.
+// e.g. the geometry space for PictureLayerImpls or the layer's coordinate space
+// for most other layers). There is also the "target space", which is the space,
+// in "physical" pixels, of the render target where the quads is drawn. The
+// quad's transform maps the content space to the target space.
 class CC_EXPORT DrawQuad {
  public:
   enum Material {
