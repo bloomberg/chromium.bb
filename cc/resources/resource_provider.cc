@@ -596,7 +596,8 @@ void ResourceProvider::DeleteResource(ResourceId id) {
   DCHECK_EQ(resource->imported_count, 0);
   DCHECK(resource->pending_set_pixels || !resource->locked_for_write);
 
-  if (resource->exported_count > 0 || resource->lock_for_read_count > 0) {
+  if (resource->exported_count > 0 || resource->lock_for_read_count > 0 ||
+      !ReadLockFenceHasPassed(resource)) {
     resource->marked_for_deletion = true;
     return;
   } else {
@@ -954,6 +955,12 @@ void ResourceProvider::UnlockForWrite(ResourceProvider::Resource* resource) {
   DCHECK_EQ(resource->exported_count, 0);
   DCHECK(resource->origin == Resource::INTERNAL);
   resource->locked_for_write = false;
+}
+
+void ResourceProvider::EnableReadLockFencesForTesting(ResourceId id) {
+  Resource* resource = GetResource(id);
+  DCHECK(resource);
+  resource->read_lock_fences_enabled = true;
 }
 
 ResourceProvider::ScopedReadLockGL::ScopedReadLockGL(
@@ -1386,6 +1393,7 @@ void ResourceProvider::ReceiveFromChild(
       resource->mailbox = TextureMailbox(it->mailbox_holder.mailbox,
                                          it->mailbox_holder.texture_target,
                                          it->mailbox_holder.sync_point);
+      resource->read_lock_fences_enabled = it->read_lock_fences_enabled;
     }
     resource->child_id = child;
     // Don't allocate a texture for a child.
@@ -1441,14 +1449,6 @@ void ResourceProvider::ReceiveReturnsFromParent(
     if (resource->exported_count)
       continue;
 
-    // Need to wait for the current read lock fence to pass before we can
-    // recycle this resource.
-    if (resource->read_lock_fences_enabled) {
-      if (current_read_lock_fence_.get())
-        current_read_lock_fence_->Set();
-      resource->read_lock_fence = current_read_lock_fence_;
-    }
-
     if (returned.sync_point) {
       DCHECK(!resource->has_shared_bitmap_id);
       if (resource->origin == Resource::INTERNAL) {
@@ -1493,6 +1493,7 @@ void ResourceProvider::TransferResource(GLES2Interface* gl,
   resource->mailbox_holder.texture_target = source->target;
   resource->filter = source->filter;
   resource->size = source->size;
+  resource->read_lock_fences_enabled = source->read_lock_fences_enabled;
   resource->is_repeated = (source->wrap_mode == GL_REPEAT);
 
   if (source->type == RESOURCE_TYPE_BITMAP) {
@@ -1564,13 +1565,21 @@ void ResourceProvider::DeleteAndReturnUnusedResourcesToChild(
         (resource.type == RESOURCE_TYPE_GL_TEXTURE && lost_output_surface_);
     if (resource.exported_count > 0 || resource.lock_for_read_count > 0) {
       if (style != FOR_SHUTDOWN) {
-        // Defer this until we receive the resource back from the parent or
-        // the read lock is released.
+        // Defer this resource deletion.
         resource.marked_for_deletion = true;
         continue;
       }
-
-      // We still have an exported_count, so we'll have to lose it.
+      // We can't postpone the deletion, so we'll have to lose it.
+      is_lost = true;
+    } else if (!ReadLockFenceHasPassed(&resource)) {
+      // TODO(dcastagna): see if it's possible to use this logic for
+      // the branch above too, where the resource is locked or still exported.
+      if (style != FOR_SHUTDOWN && !child_info->marked_for_deletion) {
+        // Defer this resource deletion.
+        resource.marked_for_deletion = true;
+        continue;
+      }
+      // We can't postpone the deletion, so we'll have to lose it.
       is_lost = true;
     }
 

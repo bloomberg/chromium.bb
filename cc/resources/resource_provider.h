@@ -108,6 +108,8 @@ class CC_EXPORT ResourceProvider {
 
   bool IsLost(ResourceId id);
 
+  void EnableReadLockFencesForTesting(ResourceId id);
+
   // Producer interface.
 
   ResourceType default_resource_type() const { return default_resource_type_; }

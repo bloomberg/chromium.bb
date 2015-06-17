@@ -1045,6 +1045,190 @@ TEST_P(ResourceProviderTest, ReadLockCountStopsReturnToChildOrDelete) {
   resource_provider_->DestroyChild(child_id);
 }
 
+class TestFence : public ResourceProvider::Fence {
+ public:
+  TestFence() {}
+
+  void Set() override {}
+  bool HasPassed() override { return passed; }
+  void Wait() override {}
+
+  bool passed = false;
+
+ private:
+  ~TestFence() override {}
+};
+
+TEST_P(ResourceProviderTest, ReadLockFenceStopsReturnToChildOrDelete) {
+  if (GetParam() != ResourceProvider::RESOURCE_TYPE_GL_TEXTURE)
+    return;
+  gfx::Size size(1, 1);
+  ResourceFormat format = RGBA_8888;
+
+  ResourceId id1 = child_resource_provider_->CreateResource(
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format);
+  uint8_t data1[4] = {1, 2, 3, 4};
+  child_resource_provider_->CopyToResource(id1, data1, size);
+  child_resource_provider_->EnableReadLockFencesForTesting(id1);
+  ReturnedResourceArray returned_to_child;
+  int child_id =
+      resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
+
+  // Transfer some resources to the parent.
+  ResourceProvider::ResourceIdArray resource_ids_to_transfer;
+  resource_ids_to_transfer.push_back(id1);
+  TransferableResourceArray list;
+  child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
+                                                &list);
+  ASSERT_EQ(1u, list.size());
+  EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id1));
+  EXPECT_TRUE(list[0].read_lock_fences_enabled);
+
+  resource_provider_->ReceiveFromChild(child_id, list);
+
+  scoped_refptr<TestFence> fence(new TestFence);
+  resource_provider_->SetReadLockFence(fence.get());
+  {
+    unsigned parent_id = list.front().id;
+    resource_provider_->WaitSyncPointIfNeeded(parent_id);
+    ResourceProvider::ScopedReadLockGL lock(resource_provider_.get(),
+                                            parent_id);
+  }
+  resource_provider_->DeclareUsedResourcesFromChild(
+      child_id, ResourceProvider::ResourceIdSet());
+  EXPECT_EQ(0u, returned_to_child.size());
+
+  resource_provider_->DeclareUsedResourcesFromChild(
+      child_id, ResourceProvider::ResourceIdSet());
+  EXPECT_EQ(0u, returned_to_child.size());
+  fence->passed = true;
+
+  resource_provider_->DeclareUsedResourcesFromChild(
+      child_id, ResourceProvider::ResourceIdSet());
+  EXPECT_EQ(1u, returned_to_child.size());
+
+  child_resource_provider_->ReceiveReturnsFromParent(returned_to_child);
+  child_resource_provider_->DeleteResource(id1);
+  EXPECT_EQ(0u, child_resource_provider_->num_resources());
+}
+
+TEST_P(ResourceProviderTest, ReadLockFenceDestroyChild) {
+  if (GetParam() != ResourceProvider::RESOURCE_TYPE_GL_TEXTURE)
+    return;
+  gfx::Size size(1, 1);
+  ResourceFormat format = RGBA_8888;
+
+  ResourceId id1 = child_resource_provider_->CreateResource(
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format);
+  uint8_t data[4] = {1, 2, 3, 4};
+  child_resource_provider_->CopyToResource(id1, data, size);
+  child_resource_provider_->EnableReadLockFencesForTesting(id1);
+
+  ResourceId id2 = child_resource_provider_->CreateResource(
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format);
+  child_resource_provider_->CopyToResource(id2, data, size);
+
+  ReturnedResourceArray returned_to_child;
+  int child_id =
+      resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
+
+  // Transfer resources to the parent.
+  ResourceProvider::ResourceIdArray resource_ids_to_transfer;
+  resource_ids_to_transfer.push_back(id1);
+  resource_ids_to_transfer.push_back(id2);
+  TransferableResourceArray list;
+  child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
+                                                &list);
+  ASSERT_EQ(2u, list.size());
+  EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id1));
+  EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id2));
+
+  resource_provider_->ReceiveFromChild(child_id, list);
+
+  scoped_refptr<TestFence> fence(new TestFence);
+  resource_provider_->SetReadLockFence(fence.get());
+  {
+    for (size_t i = 0; i < list.size(); i++) {
+      unsigned parent_id = list[i].id;
+      resource_provider_->WaitSyncPointIfNeeded(parent_id);
+      ResourceProvider::ScopedReadLockGL lock(resource_provider_.get(),
+                                              parent_id);
+    }
+  }
+  EXPECT_EQ(0u, returned_to_child.size());
+
+  EXPECT_EQ(2u, resource_provider_->num_resources());
+
+  resource_provider_->DestroyChild(child_id);
+
+  EXPECT_EQ(0u, resource_provider_->num_resources());
+  EXPECT_EQ(2u, returned_to_child.size());
+
+  // id1 should be lost and id2 should not.
+  EXPECT_EQ(returned_to_child[0].lost, returned_to_child[0].id == id1);
+  EXPECT_EQ(returned_to_child[1].lost, returned_to_child[1].id == id1);
+
+  child_resource_provider_->ReceiveReturnsFromParent(returned_to_child);
+  child_resource_provider_->DeleteResource(id1);
+  child_resource_provider_->DeleteResource(id2);
+  EXPECT_EQ(0u, child_resource_provider_->num_resources());
+}
+
+TEST_P(ResourceProviderTest, ReadLockFenceContextLost) {
+  if (GetParam() != ResourceProvider::RESOURCE_TYPE_GL_TEXTURE)
+    return;
+  gfx::Size size(1, 1);
+  ResourceFormat format = RGBA_8888;
+
+  ResourceId id1 = child_resource_provider_->CreateResource(
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format);
+  uint8_t data[4] = {1, 2, 3, 4};
+  child_resource_provider_->CopyToResource(id1, data, size);
+  child_resource_provider_->EnableReadLockFencesForTesting(id1);
+
+  ResourceId id2 = child_resource_provider_->CreateResource(
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format);
+  child_resource_provider_->CopyToResource(id2, data, size);
+
+  ReturnedResourceArray returned_to_child;
+  int child_id =
+      resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
+
+  // Transfer resources to the parent.
+  ResourceProvider::ResourceIdArray resource_ids_to_transfer;
+  resource_ids_to_transfer.push_back(id1);
+  resource_ids_to_transfer.push_back(id2);
+  TransferableResourceArray list;
+  child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
+                                                &list);
+  ASSERT_EQ(2u, list.size());
+  EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id1));
+  EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id2));
+
+  resource_provider_->ReceiveFromChild(child_id, list);
+
+  scoped_refptr<TestFence> fence(new TestFence);
+  resource_provider_->SetReadLockFence(fence.get());
+  {
+    for (size_t i = 0; i < list.size(); i++) {
+      unsigned parent_id = list[i].id;
+      resource_provider_->WaitSyncPointIfNeeded(parent_id);
+      ResourceProvider::ScopedReadLockGL lock(resource_provider_.get(),
+                                              parent_id);
+    }
+  }
+  EXPECT_EQ(0u, returned_to_child.size());
+
+  EXPECT_EQ(2u, resource_provider_->num_resources());
+  resource_provider_->DidLoseOutputSurface();
+  resource_provider_ = nullptr;
+
+  EXPECT_EQ(2u, returned_to_child.size());
+
+  EXPECT_TRUE(returned_to_child[0].lost);
+  EXPECT_TRUE(returned_to_child[1].lost);
+}
+
 TEST_P(ResourceProviderTest, TransferSoftwareResources) {
   if (GetParam() != ResourceProvider::RESOURCE_TYPE_BITMAP)
     return;
