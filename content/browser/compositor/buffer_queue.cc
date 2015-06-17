@@ -124,6 +124,45 @@ void BufferQueue::Reshape(const gfx::Size& size, float scale_factor) {
   FreeAllSurfaces();
 }
 
+void BufferQueue::RecreateBuffers() {
+  // We need to recreate the buffers, for whatever reason the old ones are not
+  // presentable on the device anymore.
+  // Unused buffers can be freed directly, they will be re-allocated as needed.
+  // Any in flight, current or displayed surface must be replaced.
+  for (size_t i = 0; i < available_surfaces_.size(); i++)
+    FreeSurface(&available_surfaces_[i]);
+  available_surfaces_.clear();
+
+  for (auto& surface : in_flight_surfaces_)
+    surface = RecreateBuffer(&surface);
+
+  current_surface_ = RecreateBuffer(&current_surface_);
+  displayed_surface_ = RecreateBuffer(&displayed_surface_);
+
+  if (current_surface_.texture) {
+    // If we have a texture bound, we will need to re-bind it.
+    gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();
+    gl->BindFramebuffer(GL_FRAMEBUFFER, fbo_);
+    gl->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                             GL_TEXTURE_2D, current_surface_.texture, 0);
+  }
+}
+
+BufferQueue::AllocatedSurface BufferQueue::RecreateBuffer(
+    AllocatedSurface* surface) {
+  if (!surface->texture)
+    return *surface;
+  AllocatedSurface new_surface = GetNextSurface();
+  new_surface.damage = surface->damage;
+
+  // Copy the entire texture.
+  CopyBufferDamage(new_surface.texture, surface->texture, gfx::Rect(),
+                   gfx::Rect(size_));
+
+  FreeSurface(surface);
+  return new_surface;
+}
+
 void BufferQueue::PageFlipComplete() {
   DCHECK(!in_flight_surfaces_.empty());
 

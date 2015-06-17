@@ -43,6 +43,8 @@ class CONTENT_EXPORT BufferQueue {
   void PageFlipComplete();
   void Reshape(const gfx::Size& size, float scale_factor);
 
+  void RecreateBuffers();
+
   unsigned int current_texture_id() const { return current_surface_.texture; }
   unsigned int fbo() const { return fbo_; }
 
@@ -75,6 +77,8 @@ class CONTENT_EXPORT BufferQueue {
 
   // Return a surface, available to be drawn into.
   AllocatedSurface GetNextSurface();
+
+  AllocatedSurface RecreateBuffer(AllocatedSurface* surface);
 
   gfx::Size size_;
   scoped_refptr<cc::ContextProvider> context_provider_;

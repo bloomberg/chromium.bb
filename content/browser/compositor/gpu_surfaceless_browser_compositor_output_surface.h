@@ -33,6 +33,9 @@ class GpuSurfacelessBrowserCompositorOutputSurface
   void BindFramebuffer() override;
   void Reshape(const gfx::Size& size, float scale_factor) override;
 
+  void OnSwapBuffersCompleted(const std::vector<ui::LatencyInfo>& latency_info,
+                              gfx::SwapResult result) override;
+
   unsigned int internalformat_;
   scoped_ptr<GLHelper> gl_helper_;
   scoped_ptr<BufferQueue> output_surface_;

@@ -59,8 +59,9 @@ class GpuBrowserCompositorOutputSurface
 #endif
 
   CommandBufferProxyImpl* GetCommandBufferProxy();
-  void OnSwapBuffersCompleted(const std::vector<ui::LatencyInfo>& latency_info,
-                              gfx::SwapResult result);
+  virtual void OnSwapBuffersCompleted(
+      const std::vector<ui::LatencyInfo>& latency_info,
+      gfx::SwapResult result);
 
   base::CancelableCallback<void(const std::vector<ui::LatencyInfo>&,
                                 gfx::SwapResult)>
