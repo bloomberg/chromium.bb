@@ -3290,6 +3290,11 @@
             # chrome/browser/metrics/variations/generate_resources_map.py
             '<(SHARED_INTERMEDIATE_DIR)/chrome/browser/metrics/variations/generated_resources_map.cc',
           ],
+          'conditions': [
+            ['toolkit_views==1', {
+              'dependencies': [ '../ui/views/views.gyp:views' ],
+            }],
+          ],
         }, {  # OS == "ios"
           'dependencies': [
             '../net/net.gyp:net',

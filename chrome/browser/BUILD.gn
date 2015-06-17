@@ -301,6 +301,10 @@ source_set("browser") {
       "//ui/web_dialogs",
       "//v8",
     ]
+
+    if (toolkit_views) {
+      deps += [ "//ui/views" ]
+    }
   } else {  # iOS
     sources +=
         rebase_path(gypi_values.chrome_browser_ios_sources, ".", "//chrome")

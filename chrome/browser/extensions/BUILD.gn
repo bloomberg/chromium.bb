@@ -116,6 +116,17 @@ source_set("extensions") {
     ]
   }
 
+  if (use_aura) {
+    deps += [
+      "//ui/keyboard",
+      "//ui/keyboard:resources",
+    ]
+  }
+
+  if (toolkit_views) {
+    deps += [ "//ui/views" ]
+  }
+
   if (is_linux) {
     configs += [ "//build/config/linux:fontconfig" ]
     deps += [ "//dbus" ]
@@ -154,13 +165,6 @@ source_set("extensions") {
                            "//chrome")
   } else {
     sources += [ "api/braille_display_private/braille_controller_stub.cc" ]
-  }
-
-  if (use_aura) {
-    deps += [
-      "//ui/keyboard",
-      "//ui/keyboard:resources",
-    ]
   }
 
   # chromeos uses its own global_shortcut_listener, _x11 is not necessary.

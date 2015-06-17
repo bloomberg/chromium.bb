@@ -78,6 +78,11 @@
             'bookmarks/common/android/component_jni_registrar.h',
           ],
         }],
+        ['toolkit_views==1', {
+          'dependencies': [
+            '<(DEPTH)/ui/views/views.gyp:views',
+          ],
+        }],
       ],
     },
     {

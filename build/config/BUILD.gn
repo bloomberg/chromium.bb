@@ -90,9 +90,6 @@ config("feature_flags") {
     # TODO(brettw) should probably be "=1".
     defines += [ "USE_UDEV" ]
   }
-  if (toolkit_views) {
-    defines += [ "TOOLKIT_VIEWS=1" ]
-  }
   if (ui_compositor_image_transport) {
     # TODO(brettw) should probably be "=1".
     defines += [ "UI_COMPOSITOR_IMAGE_TRANSPORT" ]
