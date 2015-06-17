@@ -32,6 +32,7 @@ group("tests") {
       "//components/resource_provider:tests",
       "//components/view_manager:tests",
       "//mandoline/tab:mandoline_frame_apptests",
+      "//media/mojo/services:media_apptests",
     ]
   }
 }

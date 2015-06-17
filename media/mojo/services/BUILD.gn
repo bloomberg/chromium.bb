@@ -162,11 +162,11 @@ if (!is_component_build) {
     ]
   }
 
-  # Note, this 'test' must be loaded via mojo_shell as an app:
+  # Note, this 'test' must be loaded via mojo_runner as an app:
   #
-  #   out/Debug/mojo_shell mojo:media_test
+  #   out/Debug/mojo_runner mojo:media_apptests
   #
-  mojo_native_application("media_test") {
+  mojo_native_application("media_apptests") {
     testonly = true
 
     deps = [
@@ -192,6 +192,6 @@ group("tests") {
   ]
 
   if (!is_component_build) {
-    deps += [ ":media_test" ]
+    deps += [ ":media_apptests" ]
   }
 }
