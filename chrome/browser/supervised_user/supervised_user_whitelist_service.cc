@@ -6,15 +6,18 @@
 
 #include <string>
 
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
+#include "base/strings/string_split.h"
 #include "base/values.h"
 #include "chrome/browser/component_updater/supervised_user_whitelist_installer.h"
 #include "chrome/browser/supervised_user/supervised_user_site_list.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "sync/api/sync_change.h"
@@ -62,6 +65,32 @@ void SupervisedUserWhitelistService::Init() {
   installer_->Subscribe(
       base::Bind(&SupervisedUserWhitelistService::OnWhitelistReady,
                  weak_ptr_factory_.GetWeakPtr()));
+
+  // Register whitelists specified on the command line.
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+  std::string command_line_whitelists = command_line->GetSwitchValueASCII(
+      switches::kInstallSupervisedUserWhitelists);
+  std::vector<std::string> split_whitelists;
+  base::SplitString(command_line_whitelists, ',', &split_whitelists);
+  for (const std::string& whitelist : split_whitelists) {
+    std::string id;
+    std::string name;
+    size_t separator = whitelist.find(':');
+    if (separator != std::string::npos) {
+      id = whitelist.substr(0, separator);
+      name = whitelist.substr(separator + 1);
+    } else {
+      id = whitelist;
+    }
+
+    // Skip whitelists that were already registered.
+    if (registered_whitelists_.count(id) > 0u)
+      continue;
+
+    bool new_installation = true;
+    RegisterWhitelist(id, name, new_installation);
+  }
 }
 
 void SupervisedUserWhitelistService::AddSiteListsChangedCallback(
