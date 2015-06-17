@@ -549,12 +549,10 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
   }
 #endif
 
-#if defined(OS_ANDROID)
   if (remove_mask & REMOVE_APP_BANNER_DATA || remove_mask & REMOVE_HISTORY) {
     profile_->GetHostContentSettingsMap()->ClearSettingsForOneType(
         CONTENT_SETTINGS_TYPE_APP_BANNER);
   }
-#endif
 
   if (remove_mask & REMOVE_PASSWORDS) {
     content::RecordAction(UserMetricsAction("ClearBrowsingData_Passwords"));

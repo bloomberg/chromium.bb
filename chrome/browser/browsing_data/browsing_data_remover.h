@@ -75,9 +75,7 @@ class BrowsingDataRemover
     REMOVE_CHANNEL_IDS = 1 << 12,
     REMOVE_CONTENT_LICENSES = 1 << 13,
     REMOVE_SERVICE_WORKERS = 1 << 14,
-#if defined(OS_ANDROID)
     REMOVE_APP_BANNER_DATA = 1 << 15,
-#endif
     // REMOVE_NOCHECKS intentionally does not check if the Profile's prohibited
     // from deleting history or downloads.
     REMOVE_NOCHECKS = 1 << 16,
@@ -94,9 +92,7 @@ class BrowsingDataRemover
                        REMOVE_PLUGIN_DATA |
                        REMOVE_SERVICE_WORKERS |
                        REMOVE_WEBSQL |
-#if defined(OS_ANDROID)
                        REMOVE_APP_BANNER_DATA |
-#endif
                        REMOVE_CHANNEL_IDS,
 
     // Includes all the available remove options. Meant to be used by clients
