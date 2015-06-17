@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import logging
+import multiprocessing
 import os
 import re
 import subprocess
@@ -49,7 +50,7 @@ def _run_apptest(config, shell, args, apptest):
   start_time = time.time()
 
   try:
-    output = _run_test(config, shell, args, apptest)
+    output = _run_test_with_timeout(config, shell, args, apptest)
   except Exception as e:
     _print_error(command, e)
     return False
@@ -70,7 +71,7 @@ def _get_fixtures(config, shell, args, apptest):
   """Returns an apptest's "Suite.Fixture" list via --gtest_list_tests output."""
   try:
     arguments = args + ["--gtest_list_tests"]
-    tests = _run_test(config, shell, arguments, apptest)
+    tests = _run_test_with_timeout(config, shell, arguments, apptest)
     logging.getLogger().debug("Tests for %s:\n%s" % (apptest, tests))
     # Remove log lines from the output and ensure it matches known formatting.
     tests = re.sub("^(\[|WARNING: linker:).*\n", "", tests, flags=re.MULTILINE)
@@ -111,15 +112,31 @@ def _build_command_line(config, args, apptest):
   return prefix + [paths.mojo_runner] + args + [apptest]
 
 
-def _run_test(config, shell, args, apptest):
-  """Run the given test and return the output."""
+# TODO(msw): Determine proper test timeout durations (starting small).
+def _run_test_with_timeout(config, shell, args, apptest, timeout_in_seconds=10):
+  """Run the given test with a timeout and return the output or an error."""
+  result = multiprocessing.Queue()
+  process = multiprocessing.Process(
+      target=_run_test, args=(config, shell, args, apptest, result))
+  process.start()
+  process.join(timeout_in_seconds)
+  if process.is_alive():
+    process.terminate()
+    process.join()
+    return "Error: Test timeout after %s seconds" % timeout_in_seconds
+  return result.get()
+
+
+def _run_test(config, shell, args, apptest, result):
+  """Run the given test and puts the output in |result|."""
   if (config.target_os != Config.OS_ANDROID):
     command = _build_command_line(config, args, apptest)
-    return subprocess.check_output(command, stderr=subprocess.STDOUT)
+    result.put(subprocess.check_output(command, stderr=subprocess.STDOUT))
+    return
 
   assert shell
   (r, w) = os.pipe()
   with os.fdopen(r, "r") as rf:
     with os.fdopen(w, "w") as wf:
       shell.StartActivity('MojoShellActivity', args + [apptest], wf, wf.close)
-      return rf.read()
+      result.put(rf.read())
