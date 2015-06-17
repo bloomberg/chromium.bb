@@ -11,6 +11,7 @@ import android.text.TextUtils;
 import com.google.android.apps.chrome.R;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.test.DocumentActivityTestBase;
@@ -135,9 +136,11 @@ public class BrandColorTest extends DocumentActivityTestBase {
     /**
      * Test for checking navigating to a brand color site from a site with no brand color and then
      * back again.
+     * @SmallTest
+     * @Feature({"Omnibox"})
+     * http://crbug.com/501324
      */
-    @SmallTest
-    @Feature({"Omnibox"})
+    @DisabledTest
     public void testNavigatingToBrandColorAndBack() throws InterruptedException {
         startMainActivityWithURL("about:blank");
         checkForBrandColor(mDefaultColor);
