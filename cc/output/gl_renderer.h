@@ -122,9 +122,9 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   void FinishDrawingQuadList() override;
 
   // Returns true if quad requires antialiasing and false otherwise.
-  static bool ShouldAntialiasQuad(const gfx::Transform& device_transform,
-                                  const DrawQuad* quad,
-                                  bool force_antialiasing);
+  static bool ShouldAntialiasQuad(const gfx::QuadF& device_layer_quad,
+                                  bool clipped,
+                                  bool force_aa);
 
   // Inflate the quad and fill edge array for fragment shader.
   // |local_quad| is set to inflated quad. |edge| array is filled with
@@ -132,7 +132,14 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   static void SetupQuadForClippingAndAntialiasing(
       const gfx::Transform& device_transform,
       const DrawQuad* quad,
-      bool use_aa,
+      const gfx::QuadF* device_layer_quad,
+      const gfx::QuadF* clip_region,
+      gfx::QuadF* local_quad,
+      float edge[24]);
+  static void SetupRenderPassQuadForClippingAndAntialiasing(
+      const gfx::Transform& device_transform,
+      const RenderPassDrawQuad* quad,
+      const gfx::QuadF* device_layer_quad,
       const gfx::QuadF* clip_region,
       gfx::QuadF* local_quad,
       float edge[24]);
@@ -204,6 +211,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
                          const ContentDrawQuadBase* quad,
                          ResourceId resource_id,
                          const gfx::Transform& device_transform,
+                         const gfx::QuadF& aa_quad,
                          const gfx::QuadF* clip_region);
   void DrawContentQuadNoAA(const DrawingFrame* frame,
                            const ContentDrawQuadBase* quad,

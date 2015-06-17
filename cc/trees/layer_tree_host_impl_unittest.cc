@@ -5959,9 +5959,14 @@ TEST_F(LayerTreeHostImplTest, FarAwayQuadsDontNeedAA) {
   ASSERT_LE(1u, frame.render_passes[0]->quad_list.size());
   const DrawQuad* quad = frame.render_passes[0]->quad_list.front();
 
+  bool clipped = false, force_aa = false;
+  gfx::QuadF device_layer_quad = MathUtil::MapQuad(
+      quad->shared_quad_state->content_to_target_transform,
+      gfx::QuadF(quad->shared_quad_state->visible_content_rect), &clipped);
+  EXPECT_FALSE(clipped);
   bool antialiased =
       GLRendererWithSetupQuadForAntialiasing::ShouldAntialiasQuad(
-          quad->shared_quad_state->content_to_target_transform, quad, false);
+          device_layer_quad, clipped, force_aa);
   EXPECT_FALSE(antialiased);
 
   host_impl_->DrawLayers(&frame);
