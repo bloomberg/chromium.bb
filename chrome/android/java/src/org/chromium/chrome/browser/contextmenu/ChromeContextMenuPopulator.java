@@ -76,7 +76,19 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         if (params.isVideo()) {
             menu.findItem(R.id.contextmenu_save_video).setVisible(
                     UrlUtilities.isDownloadableScheme(params.getSrcUrl()));
-        } else if (params.isImage()) {
+        } else if (params.isImage() && params.imageWasFetchedLoFi()) {
+            DataReductionProxyUma.dataReductionProxyLoFiUIAction(
+                    DataReductionProxyUma.ACTION_LOAD_IMAGE_CONTEXT_MENU_SHOWN);
+            // All image context menu items other than "Load image," "Open original image in
+            // new tab," and "Copy image URL" should be disabled on Lo-Fi images.
+            menu.findItem(R.id.contextmenu_save_image).setVisible(false);
+            menu.findItem(R.id.contextmenu_open_image).setVisible(false);
+            menu.findItem(R.id.contextmenu_open_image_in_new_tab).setVisible(false);
+            menu.findItem(R.id.contextmenu_search_by_image).setVisible(false);
+            menu.findItem(R.id.contextmenu_copy_image).setVisible(false);
+        } else if (params.isImage() && !params.imageWasFetchedLoFi()) {
+            menu.findItem(R.id.contextmenu_load_original_image).setVisible(false);
+
             menu.findItem(R.id.contextmenu_save_image).setVisible(
                     UrlUtilities.isDownloadableScheme(params.getSrcUrl()));
 
@@ -84,13 +96,6 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
                 menu.findItem(R.id.contextmenu_open_image_in_new_tab).setVisible(false);
             } else {
                 menu.findItem(R.id.contextmenu_open_original_image_in_new_tab).setVisible(false);
-            }
-
-            if (!params.imageWasFetchedLoFi()) {
-                menu.findItem(R.id.contextmenu_load_original_image).setVisible(false);
-            } else {
-                DataReductionProxyUma.dataReductionProxyLoFiUIAction(
-                        DataReductionProxyUma.ACTION_LOAD_IMAGE_CONTEXT_MENU_SHOWN);
             }
 
             // Avoid showing open image option for same image which is already opened.
