@@ -26,7 +26,10 @@ jinja_variables = [
 
 # GYP: //chrome/chrome.gyp:chrome_java (resources part)
 android_resources("chrome_java_resources") {
-  resource_dirs = [ "java/res" ]
+  resource_dirs = [
+    "java/res",
+    "java/res_default",
+  ]
   deps = [
     ":chrome_strings_grd",
     "//content/public/android:content_java_resources",
@@ -617,10 +620,7 @@ android_library("chrome_staging_java") {
 
 #GYP: //chrome/android/chrome_apk.gyp:chrome_staging_java
 android_resources("chrome_staging_java_resources") {
-  resource_dirs = [
-    "java_staging/res",
-    "java_staging/res_default",
-  ]
+  resource_dirs = [ "java_staging/res" ]
   custom_package = "com.google.android.apps.chrome"
   deps = [
     "//chrome/android:chrome_java_resources",

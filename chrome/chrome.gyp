@@ -614,9 +614,17 @@
             'has_java_resources': 1,
             'R_package': 'org.chromium.chrome',
             'R_package_relpath': 'org/chromium/chrome',
-            # Include xml string files generated from generated_resources.grd
-            'res_extra_dirs': ['<(SHARED_INTERMEDIATE_DIR)/chrome/java/res'],
-            'res_extra_files': ['<!@pymod_do_main(grit_info <@(grit_defines) --outputs "<(SHARED_INTERMEDIATE_DIR)/chrome" app/generated_resources.grd)'],
+            # Include channel-specific resources and xml string files generated
+            # from generated_resources.grd
+            'res_channel_dir': '<(java_in_dir)/res_default',
+            'res_extra_dirs': [
+              '<(res_channel_dir)',
+              '<(SHARED_INTERMEDIATE_DIR)/chrome/java/res',
+            ],
+            'res_extra_files': [
+              '<!@(find <(res_channel_dir) -type f)',
+              '<!@pymod_do_main(grit_info <@(grit_defines) --outputs "<(SHARED_INTERMEDIATE_DIR)/chrome" app/generated_resources.grd)',
+            ],
           },
           'includes': [
             '../build/java.gypi',

@@ -134,9 +134,6 @@
         'R_package': 'com.google.android.apps.chrome',
         'R_package_relpath': 'com/google/android/apps/chrome',
         'has_java_resources': 1,
-        'res_channel_dir': '<(chrome_java_dir)/res_default',
-        'res_extra_dirs': ['<(res_channel_dir)'],
-        'res_extra_files': ['<!@(find <(res_channel_dir) -type f)'],
       },
       'dependencies': [
         'custom_tabs_service_aidl',
