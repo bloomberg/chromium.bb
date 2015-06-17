@@ -41,7 +41,7 @@ base::FilePath GetPathForApplicationUrl(const GURL& application_url) {
   // |base_path| on android has an additional path, need to go up a level to get
   // at other apps resources.
   base_path = base_path.DirName();
-  base_path = base_path.AppendASCII("app_local_apps");
+  base_path = base_path.AppendASCII("app_cached_apps");
 #else
   PathService::Get(base::DIR_EXE, &base_path);
 #endif
