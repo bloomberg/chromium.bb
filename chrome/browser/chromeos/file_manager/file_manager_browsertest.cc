@@ -1573,6 +1573,12 @@ IN_PROC_BROWSER_TEST_F(VideoPlayerBrowserTest, OpenSingleVideoOnDownloads) {
   StartTest();
 }
 
+IN_PROC_BROWSER_TEST_F(
+    VideoPlayerBrowserTestInGuestMode, OpenSingleVideoOnDownloads) {
+  set_test_case_name("openSingleVideoOnDownloads");
+  StartTest();
+}
+
 IN_PROC_BROWSER_TEST_F(VideoPlayerBrowserTest, OpenSingleVideoOnDrive) {
   set_test_case_name("openSingleVideoOnDrive");
   StartTest();
