@@ -471,15 +471,18 @@ bool XSSAuditor::filterCharacterToken(const FilterTokenRequest& request)
     if (m_state == PermittingAdjacentCharacterTokens)
         return false;
 
-    if ((m_state == SuppressingAdjacentCharacterTokens)
-        || (m_scriptTagFoundInRequest && isContainedInRequest(canonicalizedSnippetForJavaScript(request)))) {
+    if (m_state == FilteringTokens && m_scriptTagFoundInRequest) {
+        String snippet = canonicalizedSnippetForJavaScript(request);
+        if (isContainedInRequest(snippet))
+            m_state = SuppressingAdjacentCharacterTokens;
+        else if (!snippet.isEmpty())
+            m_state = PermittingAdjacentCharacterTokens;
+    }
+    if (m_state == SuppressingAdjacentCharacterTokens) {
         request.token.eraseCharacters();
         request.token.appendToCharacter(' '); // Technically, character tokens can't be empty.
-        m_state = SuppressingAdjacentCharacterTokens;
         return true;
     }
-
-    m_state = PermittingAdjacentCharacterTokens;
     return false;
 }
 
