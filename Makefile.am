@@ -9,7 +9,7 @@ AM_CPPFLAGS =					\
 	-I$(top_srcdir)/src			\
 	-I$(top_builddir)/protocol
 
-AM_CFLAGS = $(GCC_CFLAGS) $(FFI_CFLAGS)
+AM_CFLAGS = $(GCC_CFLAGS)
 
 aclocaldir = $(datadir)/aclocal
 dist_aclocal_DATA = wayland-scanner.m4
@@ -39,6 +39,7 @@ nodist_include_HEADERS =			\
 	protocol/wayland-server-protocol.h	\
 	protocol/wayland-client-protocol.h
 
+libwayland_util_la_CFLAGS = $(FFI_CFLAGS) $(GCC_CFLAGS)
 libwayland_util_la_SOURCES =			\
 	src/connection.c			\
 	src/wayland-util.c			\
