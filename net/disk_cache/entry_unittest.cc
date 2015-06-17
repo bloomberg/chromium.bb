@@ -598,7 +598,13 @@ TEST_F(DiskCacheEntryTest, ExternalAsyncIO) {
   ExternalAsyncIO();
 }
 
-TEST_F(DiskCacheEntryTest, ExternalAsyncIONoBuffer) {
+// TODO(ios): This test is flaky. http://crbug.com/497101
+#if defined(OS_IOS)
+#define MAYBE_ExternalAsyncIONoBuffer DISABLED_ExternalAsyncIONoBuffer
+#else
+#define MAYBE_ExternalAsyncIONoBuffer ExternalAsyncIONoBuffer
+#endif
+TEST_F(DiskCacheEntryTest, MAYBE_ExternalAsyncIONoBuffer) {
   InitCache();
   cache_impl_->SetFlags(disk_cache::kNoBuffering);
   ExternalAsyncIO();
