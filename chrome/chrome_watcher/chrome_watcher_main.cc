@@ -3,10 +3,12 @@
 // found in the LICENSE file.
 
 #include <windows.h>
+#include <sddl.h>
 
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/file_version_info.h"
 #include "base/files/file_path.h"
@@ -27,6 +29,8 @@
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "base/win/scoped_handle.h"
+#include "base/win/win_util.h"
+
 #include "chrome/chrome_watcher/chrome_watcher_main_api.h"
 #include "chrome/installer/util/util_constants.h"
 #include "components/browser_watcher/endsession_watcher_window_win.h"
@@ -275,6 +279,68 @@ void DumpHungBrowserProcess(const base::string16& channel,
                                    kasko::api::LARGER_DUMP_TYPE,
                                    key_buffers.data(), value_buffers.data());
 }
+
+void LoggedDeregisterEventSource(HANDLE event_source_handle) {
+  if (!::DeregisterEventSource(event_source_handle))
+    DPLOG(ERROR) << "DeregisterEventSource";
+}
+
+void LoggedLocalFree(PSID sid) {
+  if (::LocalFree(sid) != nullptr)
+    DPLOG(ERROR) << "LocalFree";
+}
+
+void OnCrashReportUpload(void* context,
+                         const base::char16* report_id,
+                         const base::char16* minidump_path,
+                         const base::char16* const* keys,
+                         const base::char16* const* values) {
+  // Open the event source.
+  HANDLE event_source_handle = ::RegisterEventSource(NULL, L"Chrome");
+  if (!event_source_handle) {
+    PLOG(ERROR) << "RegisterEventSource";
+    return;
+  }
+  // Ensure cleanup on scope exit.
+  base::ScopedClosureRunner deregister_event_source(
+      base::Bind(&LoggedDeregisterEventSource, event_source_handle));
+
+  // Get the user's SID for the log record.
+  base::string16 sid_string;
+  PSID sid = nullptr;
+  if (base::win::GetUserSidString(&sid_string)) {
+    if (!sid_string.empty()) {
+      if (!::ConvertStringSidToSid(sid_string.c_str(), &sid))
+        DPLOG(ERROR) << "ConvertStringSidToSid";
+      DCHECK(sid);
+    }
+  }
+  // Ensure cleanup on scope exit.
+  base::ScopedClosureRunner free_sid(
+      base::Bind(&LoggedLocalFree, base::Unretained(sid)));
+
+  // Generate the message.
+  // Note that the format of this message must match the consumer in
+  // chrome/browser/crash_upload_list_win.cc.
+  base::string16 message =
+      L"Crash uploaded. Id=" + base::string16(report_id) + L".";
+
+  // Matches Omaha.
+  const int kCrashUploadEventId = 2;
+
+  // Report the event.
+  const base::char16* strings[] = {message.c_str()};
+  if (!::ReportEvent(event_source_handle, EVENTLOG_INFORMATION_TYPE,
+                     0,  // category
+                     kCrashUploadEventId, sid,
+                     1,  // count
+                     0, strings, nullptr)) {
+    DPLOG(ERROR);
+  }
+
+  // TODO(erikwright): Copy minidump to some "last dump" location?
+}
+
 #endif  // KASKO
 
 }  // namespace
@@ -314,7 +380,8 @@ extern "C" int WatcherMain(const base::char16* registry_path,
       base::FilePath(browser_data_directory)
           .Append(kPermanentlyFailedReportsSubdir)
           .value()
-          .c_str());
+          .c_str(),
+      &OnCrashReportUpload, nullptr);
   if (launched_kasko &&
       base::StringPiece16(channel_name) == installer::kChromeChannelCanary) {
     on_hung_callback = base::Bind(&DumpHungBrowserProcess, channel_name);

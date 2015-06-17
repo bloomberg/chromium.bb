@@ -716,7 +716,7 @@ hooks = [
     'action': ['python',
                'src/build/get_syzygy_binaries.py',
                '--output-dir=src/third_party/kasko',
-               '--revision=b8adaf37ad3beae939ee2db5ae9c0f8b380d2060',
+               '--revision=9d16d06290d1c3d326cc37753560c8120021c938',
                '--resource=kasko.zip',
                '--resource=kasko_symbols.zip',
                '--overwrite',
