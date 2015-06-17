@@ -1176,6 +1176,9 @@ FcStrSerializeAlloc (FcSerialize *serialize, const FcChar8 *str);
 FcPrivate FcChar8 *
 FcStrSerialize (FcSerialize *serialize, const FcChar8 *str);
 
+FcPrivate int
+FcStrListGetLength (const FcStrList *list);
+
 /* fcobjs.c */
 
 FcPrivate void

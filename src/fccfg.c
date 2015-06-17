@@ -373,6 +373,8 @@ FcConfigAddDirList (FcConfig *config, FcSetName set, FcStrSet *dirSet)
     dirlist = FcStrListCreate (dirSet);
     if (!dirlist)
         return FcFalse;
+    if (FcStrListGetLength (dirlist) == 0)
+	ret = FcTrue;
 	
     while ((dir = FcStrListNext (dirlist)))
     {
