@@ -77,8 +77,8 @@ void BootstrapSandboxPolicy::RegisterSandboxPolicies() {
 }  // namespace
 
 bool ShouldEnableBootstrapSandbox() {
-  return base::mac::IsOSMountainLionOrEarlier() ||
-         base::mac::IsOSMavericks();
+  // TODO(rsesek): Re-enable when crbug.com/501128 is fixed.
+  return false;
 }
 
 sandbox::BootstrapSandbox* GetBootstrapSandbox() {
