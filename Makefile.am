@@ -34,19 +34,22 @@ else
 wayland_scanner = wayland-scanner
 endif
 
-libwayland_util_la_CFLAGS = $(FFI_CFLAGS) $(GCC_CFLAGS)
+libwayland_util_la_CFLAGS = $(GCC_CFLAGS)
 libwayland_util_la_SOURCES =			\
-	src/connection.c			\
 	src/wayland-util.c			\
-	src/wayland-util.h			\
-	src/wayland-os.c			\
-	src/wayland-os.h			\
-	src/wayland-private.h
+	src/wayland-util.h
 
 noinst_LTLIBRARIES = libwayland-util.la
 
 if ENABLE_LIBRARIES
 lib_LTLIBRARIES = libwayland-server.la libwayland-client.la
+
+libwayland_util_la_CFLAGS += $(FFI_CFLAGS)
+libwayland_util_la_SOURCES +=			\
+	src/connection.c			\
+	src/wayland-os.c			\
+	src/wayland-os.h			\
+	src/wayland-private.h
 
 include_HEADERS =				\
 	src/wayland-util.h			\
