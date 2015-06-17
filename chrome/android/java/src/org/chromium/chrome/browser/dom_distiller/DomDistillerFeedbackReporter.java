@@ -24,20 +24,6 @@ public final class DomDistillerFeedbackReporter {
     private static final String DISTILLATION_QUALITY_GOOD = "good";
     private static final String DISTILLATION_QUALITY_BAD = "bad";
 
-    /**
-     * An {@link ExternalFeedbackReporter} that does nothing.
-     * TODO(nyquist): Remove when downstream codebase uses {@link FeedbackReporter}.
-     */
-    @Deprecated
-    public static class NoOpExternalFeedbackReporter implements ExternalFeedbackReporter {
-        @Override
-        public void reportFeedback(Activity activity, String url, boolean good) {
-        }
-    }
-
-    // TODO(nyquist): Remove when downstream codebase uses {@link FeedbackReporter}.
-    private static ExternalFeedbackReporter sExternalFeedbackReporter;
-
     private static FeedbackReporter sFeedbackReporter;
 
     /**
@@ -50,17 +36,6 @@ public final class DomDistillerFeedbackReporter {
     public static void reportFeedbackWithWindow(WindowAndroid window, String url, boolean good) {
         ThreadUtils.assertOnUiThread();
         Activity activity = window.getActivity().get();
-        // TODO(nyquist): Remove when downstream codebase uses {@link FeedbackReporter}.
-        if (sExternalFeedbackReporter == null) {
-            ChromiumApplication application = (ChromiumApplication) activity.getApplication();
-            sExternalFeedbackReporter = application.createDomDistillerFeedbackLauncher();
-        }
-        // Temporary support old code path.
-        if (!(sExternalFeedbackReporter instanceof NoOpExternalFeedbackReporter)) {
-            sExternalFeedbackReporter.reportFeedback(activity, url, good);
-            return;
-        }
-
         if (sFeedbackReporter == null) {
             ChromiumApplication application = (ChromiumApplication) activity.getApplication();
             sFeedbackReporter = application.createFeedbackReporter();

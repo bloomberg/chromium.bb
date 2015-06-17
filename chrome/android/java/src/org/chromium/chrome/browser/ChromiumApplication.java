@@ -23,9 +23,7 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
-import org.chromium.chrome.browser.child_accounts.ChildAccountFeedbackReporter;
 import org.chromium.chrome.browser.child_accounts.ChildAccountService;
-import org.chromium.chrome.browser.dom_distiller.DomDistillerFeedbackReporter;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.feedback.EmptyFeedbackReporter;
 import org.chromium.chrome.browser.feedback.FeedbackReporter;
@@ -299,20 +297,6 @@ public abstract class ChromiumApplication extends ContentApplication {
      */
     public FeedbackReporter createFeedbackReporter() {
         return new EmptyFeedbackReporter();
-    }
-
-    // TODO(nyquist): Remove when downstream codebase uses {@link FeedbackReporter}.
-    @Deprecated
-    public org.chromium.chrome.browser.dom_distiller.ExternalFeedbackReporter
-            createDomDistillerFeedbackLauncher() {
-        return new DomDistillerFeedbackReporter.NoOpExternalFeedbackReporter();
-    }
-
-    // TODO(nyquist): Remove when downstream codebase uses {@link FeedbackReporter}.
-    @Deprecated
-    public org.chromium.chrome.browser.child_accounts.ExternalFeedbackReporter
-            createChildAccountFeedbackLauncher() {
-        return new ChildAccountFeedbackReporter.NoOpExternalFeedbackReporter();
     }
 
     /**

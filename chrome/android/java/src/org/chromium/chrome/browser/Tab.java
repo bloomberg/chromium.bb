@@ -1663,7 +1663,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
                     Activity activity = mWindowAndroid.getActivity().get();
                     assert activity != null;
                     HelpAndFeedback.getInstance(activity).show(
-                            activity, activity.getString(R.string.help_context_sad_tab), null,
+                            activity, activity.getString(R.string.help_context_sad_tab),
                             FeedbackCollector.create(Profile.getLastUsedProfile(), null));
                 }
             };
