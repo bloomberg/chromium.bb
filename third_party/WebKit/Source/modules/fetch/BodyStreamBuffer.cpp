@@ -6,6 +6,7 @@
 #include "modules/fetch/BodyStreamBuffer.h"
 
 #include "core/dom/DOMArrayBuffer.h"
+#include "core/dom/ExceptionCode.h"
 
 namespace blink {
 
@@ -134,6 +135,97 @@ private:
     Member<BodyStreamBuffer> m_outBuffer2;
 };
 
+// WebDataConsumerHandleAdapter is used to migrate incrementally
+// from BodyStreamBuffer to FetchDataConsumerHandle and will be removed
+// after the migration.
+class WebDataConsumerHandleAdapter
+    : public GarbageCollectedFinalized<WebDataConsumerHandleAdapter>
+    , public WebDataConsumerHandle::Client {
+public:
+    WebDataConsumerHandleAdapter(PassOwnPtr<WebDataConsumerHandle> handle, const String& failureMessage)
+        : m_reader(handle->obtainReader(this))
+        , m_failureMessage(failureMessage)
+        , m_outputBuffer(new BodyStreamBuffer(new Canceller(this)))
+    {
+        ASSERT(m_reader);
+    }
+
+    BodyStreamBuffer* outputBuffer() { return m_outputBuffer; }
+
+    DEFINE_INLINE_TRACE()
+    {
+        visitor->trace(m_outputBuffer);
+    }
+
+private:
+    class Canceller : public BodyStreamBuffer::Canceller {
+    public:
+        explicit Canceller(WebDataConsumerHandleAdapter* source) : m_source(source) { }
+
+        void cancel() override
+        {
+            m_source->close();
+        }
+
+        DEFINE_INLINE_VIRTUAL_TRACE()
+        {
+            BodyStreamBuffer::Canceller::trace(visitor);
+            visitor->trace(m_source);
+        }
+
+    private:
+        Member<WebDataConsumerHandleAdapter> m_source;
+    };
+
+    void didGetReadable() override
+    {
+        while (true) {
+            const void* buffer;
+            size_t available;
+            WebDataConsumerHandle::Result result = m_reader->beginRead(&buffer, WebDataConsumerHandle::FlagNone, &available);
+            switch (result) {
+            case WebDataConsumerHandle::Ok:
+                m_outputBuffer->write(DOMArrayBuffer::create(buffer, available));
+                m_reader->endRead(available);
+                break;
+
+            case WebDataConsumerHandle::Done:
+                close();
+                return;
+
+            case WebDataConsumerHandle::ShouldWait:
+                return;
+
+            case WebDataConsumerHandle::Busy:
+            case WebDataConsumerHandle::ResourceExhausted:
+            case WebDataConsumerHandle::UnexpectedError:
+                error();
+                return;
+            }
+        }
+    }
+
+    void error()
+    {
+        m_reader.clear();
+        m_outputBuffer->error(DOMException::create(NetworkError, m_failureMessage));
+        m_outputBuffer.clear();
+    }
+
+    void close()
+    {
+        m_reader.clear();
+        m_outputBuffer->close();
+        m_outputBuffer.clear();
+    }
+
+    OwnPtr<WebDataConsumerHandle::Reader> m_reader;
+    String m_failureMessage;
+
+    Member<BodyStreamBuffer> m_outputBuffer;
+};
+
+
 } // namespace
 
 PassRefPtr<DOMArrayBuffer> BodyStreamBuffer::read()
@@ -215,6 +307,11 @@ BodyStreamBuffer::BodyStreamBuffer(Canceller* canceller)
     : m_isClosed(false)
     , m_canceller(canceller)
 {
+}
+
+BodyStreamBuffer* BodyStreamBuffer::create(PassOwnPtr<WebDataConsumerHandle> handle, const String& failureMessage)
+{
+    return (new WebDataConsumerHandleAdapter(handle, failureMessage))->outputBuffer();
 }
 
 } // namespace blink

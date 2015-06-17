@@ -9,6 +9,7 @@
 #include "modules/ModulesExport.h"
 #include "platform/blob/BlobData.h"
 #include "platform/heap/Heap.h"
+#include "public/platform/WebDataConsumerHandle.h"
 #include "wtf/Deque.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
@@ -70,6 +71,11 @@ public:
     void unregisterObserver();
     bool isObserverRegistered() const { return m_observer.get(); }
     DECLARE_TRACE();
+
+    // Creates a BodyStreamBuffer from |handle| as the source.
+    // On failure, BodyStreamBuffer::error() is called with a NetworkError
+    // with |failureMessage|.
+    static BodyStreamBuffer* create(PassOwnPtr<WebDataConsumerHandle> /* handle */, const String& failureMessage);
 
 private:
     Deque<RefPtr<DOMArrayBuffer>> m_queue;
