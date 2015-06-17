@@ -15,42 +15,43 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/autocomplete/in_memory_url_index.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/common/chrome_switches.h"
+#include "chrome/common/crash_keys.h"
+#include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/history/core/browser/history_database.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "components/omnibox/autocomplete_match_type.h"
-#include "components/omnibox/autocomplete_provider_client.h"
 #include "components/omnibox/autocomplete_result.h"
 #include "components/omnibox/history_url_provider.h"
 #include "components/omnibox/in_memory_url_index_types.h"
 #include "components/omnibox/omnibox_field_trial.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
+#include "content/public/browser/notification_source.h"
+#include "content/public/browser/notification_types.h"
 #include "net/base/escape.h"
 #include "net/base/net_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/third_party/mozilla/url_parse.h"
 #include "url/url_util.h"
 
-namespace {
-
-// Used to help investigate bug 464926.  NOTE: This value is defined multiple
-// places in the codebase due to layering issues. DO NOT change the value here
-// without changing it in all other places that it is defined in the codebase
-// (search for |kBug464926CrashKey|).
-const char kBug464926CrashKey[] = "bug-464926-info";
-
-}  // namespace
-
 bool HistoryQuickProvider::disabled_ = false;
 
 HistoryQuickProvider::HistoryQuickProvider(
     AutocompleteProviderClient* client,
+    Profile* profile,
     InMemoryURLIndex* in_memory_url_index)
     : HistoryProvider(AutocompleteProvider::TYPE_HISTORY_QUICK, client),
-      languages_(client->GetAcceptLanguages()),
+      profile_(profile),
+      languages_(profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)),
       in_memory_url_index_(in_memory_url_index) {
 }
 
@@ -183,7 +184,8 @@ void HistoryQuickProvider::DoAutocomplete() {
   // likely score for the URL-what-you-typed result.
 
   // |template_url_service| or |template_url| can be NULL in unit tests.
-  TemplateURLService* template_url_service = client()->GetTemplateURLService();
+  TemplateURLService* template_url_service =
+      TemplateURLServiceFactory::GetForProfile(profile_);
   TemplateURL* template_url = template_url_service ?
       template_url_service->GetDefaultSearchProvider() : NULL;
   int max_match_score = matches.begin()->raw_score;
@@ -230,7 +232,7 @@ AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
           info.url(),
           net::FormatUrl(info.url(), languages_, format_types,
                          net::UnescapeRule::SPACES, NULL, NULL, NULL),
-          client()->GetSchemeClassifier());
+          ChromeAutocompleteSchemeClassifier(profile_));
   std::vector<size_t> offsets =
       OffsetsFromTermMatches(history_match.url_matches);
   base::OffsetAdjuster::Adjustments adjustments;
@@ -246,11 +248,11 @@ AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
   // Set |inline_autocompletion| and |allowed_to_be_default_match| if possible.
   if (history_match.can_inline) {
     base::debug::ScopedCrashKey crash_info(
-        kBug464926CrashKey,
+        crash_keys::kBug464926CrashKey,
         info.url().spec().substr(0, 30) + " " +
-            base::UTF16ToUTF8(autocomplete_input_.text()).substr(0, 20) + " " +
-            base::SizeTToString(history_match.url_matches.size()) + " " +
-            base::SizeTToString(offsets.size()));
+        base::UTF16ToUTF8(autocomplete_input_.text()).substr(0, 20) + " " +
+        base::SizeTToString(history_match.url_matches.size()) + " " +
+        base::SizeTToString(offsets.size()));;
     CHECK(!new_matches.empty());
     size_t inline_autocomplete_offset = new_matches[0].offset +
         new_matches[0].length;
@@ -265,8 +267,9 @@ AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
     match.allowed_to_be_default_match = match.inline_autocompletion.empty() ||
         !PreventInlineAutocomplete(autocomplete_input_);
   }
-  match.EnsureUWYTIsAllowedToBeDefault(autocomplete_input_.canonicalized_url(),
-                                       client()->GetTemplateURLService());
+  match.EnsureUWYTIsAllowedToBeDefault(
+      autocomplete_input_.canonicalized_url(),
+      TemplateURLServiceFactory::GetForProfile(profile_));
 
   // Format the description autocomplete presentation.
   match.description = info.title();

@@ -189,7 +189,7 @@ AutocompleteController::AutocompleteController(
     providers_.push_back(new BuiltinProvider());
   if (provider_types & AutocompleteProvider::TYPE_HISTORY_QUICK) {
     providers_.push_back(new HistoryQuickProvider(
-        provider_client_.get(),
+        provider_client_.get(), profile,
         InMemoryURLIndexFactory::GetForProfile(profile)));
   }
   if (provider_types & AutocompleteProvider::TYPE_HISTORY_URL) {

@@ -239,7 +239,7 @@ void HistoryQuickProviderTest::SetUp() {
   InMemoryURLIndex* index =
       InMemoryURLIndexFactory::GetForProfile(profile_.get());
   EXPECT_TRUE(index);
-  provider_ = new HistoryQuickProvider(client_.get(), index);
+  provider_ = new HistoryQuickProvider(client_.get(), profile_.get(), index);
   TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
       profile_.get(), &HistoryQuickProviderTest::CreateTemplateURLService);
   FillData();
