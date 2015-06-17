@@ -108,8 +108,6 @@ SecurityLevel GetSecurityLevelForWebContents(
       if (service && service->UsedPolicyCertificates())
         return SECURITY_POLICY_WARNING;
 #endif
-      if (ssl.content_status & content::SSLStatus::DISPLAYED_INSECURE_CONTENT)
-        return SECURITY_WARNING;
       scoped_refptr<net::X509Certificate> cert;
       if (content::CertStore::GetInstance()->RetrieveCert(ssl.cert_id, &cert) &&
           (ssl.cert_status & net::CERT_STATUS_SHA1_SIGNATURE_PRESENT)) {
@@ -128,6 +126,8 @@ SecurityLevel GetSecurityLevelForWebContents(
           return SECURITY_WARNING;
         }
       }
+      if (ssl.content_status & content::SSLStatus::DISPLAYED_INSECURE_CONTENT)
+        return SECURITY_WARNING;
       if (net::IsCertStatusError(ssl.cert_status)) {
         DCHECK(net::IsCertStatusMinorError(ssl.cert_status));
         return SECURITY_WARNING;
