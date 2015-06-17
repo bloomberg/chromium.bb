@@ -61,10 +61,12 @@ class MockExecutive(object):
     def ignore_error(error):
         pass
 
-    def __init__(self, should_log=False, should_throw=False, should_throw_when_run=None):
+    def __init__(self, should_log=False, should_throw=False,
+                 should_throw_when_run=None, should_return_zero_when_run=None):
         self._should_log = should_log
         self._should_throw = should_throw
         self._should_throw_when_run = should_throw_when_run or set()
+        self._should_return_zero_when_run = should_return_zero_when_run or set()
         # FIXME: Once executive wraps os.getpid() we can just use a static pid for "this" process.
         self._running_pids = {'test-webkitpy': os.getpid()}
         self._proc = None
@@ -115,6 +117,10 @@ class MockExecutive(object):
 
         if self._should_throw:
             raise ScriptError("MOCK ScriptError", output=output)
+
+        if return_exit_code and self._should_return_zero_when_run.intersection(args):
+            return 0
+
         return output
 
     def cpu_count(self):

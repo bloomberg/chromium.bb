@@ -829,7 +829,18 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
 
         did_finish = False
         try:
-            old_branch_name = tool.scm().current_branch()
+            # Setup git-svn for dcommit if necessary.
+            if tool.executive.run_command(
+                    ['git', 'config', '--local', '--get-regexp', r'^svn-remote\.'],
+                    return_exit_code=True):
+                tool.executive.run_command(['git', 'auto-svn'])
+
+            # Save the current branch name and checkout a clean branch for the patch.
+            old_branch_name = tool.executive.run_command(
+                ["git", "rev-parse", "--symbolic-full-name", "HEAD"])
+            if old_branch_name == "HEAD":
+                # If HEAD is detached use commit SHA instead.
+                old_branch_name = tool.executive.run_command(["git", "rev-parse", "HEAD"])
             tool.scm().delete_branch(self.AUTO_REBASELINE_BRANCH_NAME)
             tool.scm().create_clean_branch(self.AUTO_REBASELINE_BRANCH_NAME)
 
