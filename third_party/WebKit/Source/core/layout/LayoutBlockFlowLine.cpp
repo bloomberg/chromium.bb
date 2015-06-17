@@ -746,22 +746,6 @@ void LayoutBlockFlow::layoutRunsAndFloats(LineLayoutState& layoutState)
         deleteLineRange(layoutState, startLine);
     }
 
-    if (!layoutState.isFullLayout() && lastRootBox() && lastRootBox()->endsWithBreak()) {
-        // If the last line before the start line ends with a line break that clear floats,
-        // adjust the height accordingly.
-        // A line break can be either the first or the last object on a line, depending on its direction.
-        if (InlineBox* lastLeafChild = lastRootBox()->lastLeafChild()) {
-            LayoutObject* lastObject = &lastLeafChild->layoutObject();
-            if (!lastObject->isBR())
-                lastObject = &lastRootBox()->firstLeafChild()->layoutObject();
-            if (lastObject->isBR()) {
-                EClear clear = lastObject->style()->clear();
-                if (clear != CNONE)
-                    clearFloats(clear);
-            }
-        }
-    }
-
     layoutRunsAndFloatsInRange(layoutState, resolver, cleanLineStart, cleanLineBidiStatus);
     linkToEndLineIfNeeded(layoutState);
     markDirtyFloatsForPaintInvalidation(layoutState.floats());
@@ -888,10 +872,9 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState,
             for (size_t i = 0; i < lineBreaker.positionedObjects().size(); ++i)
                 setStaticPositions(this, lineBreaker.positionedObjects()[i]);
 
-            if (!layoutState.lineInfo().isEmpty()) {
+            if (!layoutState.lineInfo().isEmpty())
                 layoutState.lineInfo().setFirstLine(false);
-                clearFloats(lineBreaker.clear());
-            }
+            clearFloats(lineBreaker.clear());
 
             if (m_floatingObjects && lastRootBox()) {
                 const FloatingObjectSet& floatingObjectSet = m_floatingObjects->set();
@@ -1646,6 +1629,7 @@ RootInlineBox* LayoutBlockFlow::determineStartPosition(LineLayoutState& layoutSt
 {
     RootInlineBox* curr = nullptr;
     RootInlineBox* last = nullptr;
+    RootInlineBox* firstLineBoxWithBreakAndClearance = 0;
 
     // FIXME: This entire float-checking block needs to be broken into a new function.
     bool dirtiedByFloat = false;
@@ -1668,6 +1652,13 @@ RootInlineBox* LayoutBlockFlow::determineStartPosition(LineLayoutState& layoutSt
                     layoutState.updatePaintInvalidationRangeFromBox(curr, paginationDelta);
                     curr->adjustBlockDirectionPosition(paginationDelta.toFloat());
                 }
+            }
+
+            // If the linebox breaks cleanly and with clearance then dirty from at least this point onwards so that we can clear the correct floats without difficulty.
+            if (!firstLineBoxWithBreakAndClearance && curr->endsWithBreak()) {
+                InlineBox* lastBox = style()->isLeftToRightDirection() ? curr->lastLeafChild() : curr->firstLeafChild();
+                if (lastBox && lastBox->layoutObject().isBR() && lastBox->layoutObject().style()->clear() != CNONE)
+                    firstLineBoxWithBreakAndClearance = curr;
             }
 
             // If a new float has been inserted before this line or before its last known float, just do a full layout.
@@ -1695,6 +1686,8 @@ RootInlineBox* LayoutBlockFlow::determineStartPosition(LineLayoutState& layoutSt
         curr = nullptr;
         ASSERT(!firstLineBox() && !lastLineBox());
     } else {
+        if (firstLineBoxWithBreakAndClearance)
+            curr = firstLineBoxWithBreakAndClearance;
         if (curr) {
             // We have a dirty line.
             if (RootInlineBox* prevRootBox = curr->prevRootBox()) {
