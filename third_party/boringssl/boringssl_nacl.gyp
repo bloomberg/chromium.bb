@@ -23,8 +23,7 @@
         'boringssl.gypi'
       ],
       'sources': [
-        '<@(boringssl_crypto_sources)',
-        '<@(boringssl_ssl_sources)',
+        '<@(boringssl_lib_sources)',
       ],
       'defines': [
         'OPENSSL_NO_ASM',

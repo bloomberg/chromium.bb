@@ -37,8 +37,7 @@ if (is_win && !is_msan) {
 }
 
 component("boringssl") {
-  sources = gypi_values.boringssl_crypto_sources
-  sources += gypi_values.boringssl_ssl_sources
+  sources = gypi_values.boringssl_lib_sources
 
   public_configs = [ ":openssl_config" ]
 
