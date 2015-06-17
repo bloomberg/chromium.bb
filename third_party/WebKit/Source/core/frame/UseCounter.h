@@ -740,6 +740,11 @@ public:
         ClientHintsResourceWidth = 836,
         ClientHintsViewportWidth = 837,
         SRIElementIntegrityAttributeButIneligible = 838,
+        FormDataAppendFile = 839,
+        FormDataAppendFileWithFilename = 840,
+        FormDataAppendBlob = 841,
+        FormDataAppendBlobWithFilename = 842,
+        FormDataAppendNull = 843,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

@@ -40,8 +40,8 @@ typedef (File or USVString) FormDataEntryValue;
     ImplementedAs=DOMFormData,
 ] interface FormData {
     // TODO(philipj): The value argument should be FormDataEntryValue and there
-    // should be no optional filename argument.
-    void append(USVString name, Blob value, optional USVString filename);
+    // should be no optional filename argument. crbug.com/498790
+    [CallWith=ExecutionContext] void append(USVString name, Blob value, optional USVString filename);
     void append(USVString name, USVString value);
 
     [RuntimeEnabled=FormDataNewMethods, ImplementedAs=deleteEntry] void delete(USVString name);

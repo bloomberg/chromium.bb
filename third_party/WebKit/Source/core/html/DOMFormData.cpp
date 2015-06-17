@@ -33,6 +33,7 @@
 
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/File.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/HTMLFormElement.h"
 #include "wtf/text/TextEncoding.h"
 #include "wtf/text/WTFString.h"
@@ -97,8 +98,23 @@ void DOMFormData::append(const String& name, const String& value)
     appendData(name, value);
 }
 
-void DOMFormData::append(const String& name, Blob* blob, const String& filename)
+void DOMFormData::append(ExecutionContext* context, const String& name, Blob* blob, const String& filename)
 {
+    if (blob) {
+        if (blob->isFile()) {
+            if (filename.isNull())
+                UseCounter::count(context, UseCounter::FormDataAppendFile);
+            else
+                UseCounter::count(context, UseCounter::FormDataAppendFileWithFilename);
+        } else {
+            if (filename.isNull())
+                UseCounter::count(context, UseCounter::FormDataAppendBlob);
+            else
+                UseCounter::count(context, UseCounter::FormDataAppendBlobWithFilename);
+        }
+    } else {
+        UseCounter::count(context, UseCounter::FormDataAppendNull);
+    }
     appendBlob(name, blob, filename);
 }
 

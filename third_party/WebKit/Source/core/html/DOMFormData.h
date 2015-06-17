@@ -67,7 +67,7 @@ public:
 
     // FormData interface.
     void append(const String& name, const String& value);
-    void append(const String& name, Blob*, const String& filename = String());
+    void append(ExecutionContext*, const String& name, Blob*, const String& filename = String());
     void get(const String& name, FormDataEntryValue& result);
     Vector<FormDataEntryValue> getAll(const String& name);
     void set(const String& name, const String& value);
