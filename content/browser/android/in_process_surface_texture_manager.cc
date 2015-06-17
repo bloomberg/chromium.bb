@@ -10,6 +10,8 @@
 #include "base/android/jni_android.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/logging.h"
+#include "content/browser/media/android/browser_media_player_manager.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace content {
 
@@ -56,7 +58,13 @@ void InProcessSurfaceTextureManager::EstablishSurfaceTexturePeer(
     scoped_refptr<gfx::SurfaceTexture> surface_texture,
     int render_frame_id,
     int player_id) {
-  NOTIMPLEMENTED();
+  if (!surface_texture.get())
+    return;
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&BrowserMediaPlayerManager::SetSurfacePeer, surface_texture,
+                 render_process_handle, render_frame_id, player_id));
 }
 
 InProcessSurfaceTextureManager::InProcessSurfaceTextureManager() {

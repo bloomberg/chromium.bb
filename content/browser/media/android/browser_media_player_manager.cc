@@ -11,12 +11,14 @@
 #include "content/browser/media/android/browser_demuxer_android.h"
 #include "content/browser/media/android/media_resource_getter_impl.h"
 #include "content/browser/media/android/media_session.h"
+#include "content/browser/media/media_web_contents_observer.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_view_android.h"
 #include "content/common/media/media_player_messages_android.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/android/external_video_surface_container.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -65,6 +67,56 @@ void BrowserMediaPlayerManager::RegisterFactory(Factory factory) {
 void BrowserMediaPlayerManager::RegisterMediaUrlInterceptor(
     media::MediaUrlInterceptor* media_url_interceptor) {
   media_url_interceptor_ = media_url_interceptor;
+}
+
+// static
+void BrowserMediaPlayerManager::SetSurfacePeer(
+    scoped_refptr<gfx::SurfaceTexture> surface_texture,
+    base::ProcessHandle render_process_handle,
+    int render_frame_id,
+    int player_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  int render_process_id = 0;
+  RenderProcessHost::iterator it = RenderProcessHost::AllHostsIterator();
+  while (!it.IsAtEnd()) {
+    if (it.GetCurrentValue()->GetHandle() == render_process_handle) {
+      render_process_id = it.GetCurrentValue()->GetID();
+      break;
+    }
+    it.Advance();
+  }
+  if (!render_process_id) {
+    DVLOG(1) << "Cannot find render process for render_process_handle "
+             << render_process_handle;
+    return;
+  }
+
+  RenderFrameHostImpl* frame =
+      RenderFrameHostImpl::FromID(render_process_id, render_frame_id);
+  if (!frame) {
+    DVLOG(1) << "Cannot find frame for render_frame_id " << render_frame_id;
+    return;
+  }
+
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(WebContents::FromRenderFrameHost(frame));
+  BrowserMediaPlayerManager* player_manager =
+      web_contents->media_web_contents_observer()->GetMediaPlayerManager(frame);
+  if (!player_manager) {
+    DVLOG(1) << "Cannot find the media player manager for frame " << frame;
+    return;
+  }
+
+  media::MediaPlayerAndroid* player = player_manager->GetPlayer(player_id);
+  if (!player) {
+    DVLOG(1) << "Cannot find media player for player_id " << player_id;
+    return;
+  }
+
+  if (player != player_manager->GetFullscreenPlayer()) {
+    gfx::ScopedJavaSurface scoped_surface(surface_texture.get());
+    player->SetVideoSurface(scoped_surface.Pass());
+  }
 }
 
 // static
