@@ -4093,7 +4093,12 @@ class LayerTreeHostTestBreakSwapPromise : public LayerTreeHostTest {
     if (commit_complete_count_ == 1) {
       // This commit will be aborted because no actual update.
       PostSetNeedsUpdateLayersToMainThread();
-    } else {
+    }
+  }
+
+  void SwapBuffersOnThread(LayerTreeHostImpl* host_impl, bool result) override {
+    int frame = host_impl->active_tree()->source_frame_number();
+    if (frame == 2) {
       EndTest();
     }
   }
