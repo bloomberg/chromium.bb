@@ -12,7 +12,7 @@ SchedulerSettings::SchedulerSettings()
     : use_external_begin_frame_source(false),
       main_frame_while_swap_throttled_enabled(false),
       main_frame_before_activation_enabled(false),
-      impl_side_painting(false),
+      impl_side_painting(true),
       timeout_and_draw_when_animation_checkerboards(true),
       using_synchronous_renderer_compositor(false),
       throttle_frame_production(true),
