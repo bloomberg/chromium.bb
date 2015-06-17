@@ -676,6 +676,18 @@ importer.RuntimeCommandWidget.prototype.setDetailsBannerVisible =
  */
 importer.RuntimeCommandWidget.prototype.setDetailsVisible = function(visible) {
   if (visible) {
+    // Align the detail panel horizontally to the dropdown button.
+    if (document.documentElement.getAttribute('dir') === 'rtl') {
+      var anchorLeft = this.sideButton_.getBoundingClientRect().left;
+      if (anchorLeft)
+        this.detailsPanel_.style.left = anchorLeft + 'px';
+    } else {
+      var availableWidth = document.body.getBoundingClientRect().width;
+      var anchorRight = this.sideButton_.getBoundingClientRect().right;
+      if (anchorRight)
+        this.detailsPanel_.style.right = (availableWidth - anchorRight) + 'px';
+    }
+
     this.detailsPanel_.hidden = false;
 
     // The following line is a hacky way to force the container to lay out

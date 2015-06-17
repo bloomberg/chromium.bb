@@ -29,6 +29,7 @@
 
     <script src="common/js/polymer_config.js"></script>
     <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+    <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/image-icons.html">
     <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
     <link rel="import" href="chrome://resources/polymer/v1_0/iron-input/iron-input.html">
     <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
@@ -282,25 +283,23 @@
     </div>
 
     <div id="cloud-import-details" class="hidden" hidden>
-      <paper-shadow z="2">
-        <div class="banner">
-          <div class="title" i18n-content="CLOUD_IMPORT_TITLE"></div>
-          <div class="description" i18n-content="CLOUD_IMPORT_DESCRIPTION"></div>
+      <div class="banner">
+        <div class="title" i18n-content="CLOUD_IMPORT_TITLE"></div>
+        <div class="description" i18n-content="CLOUD_IMPORT_DESCRIPTION"></div>
+      </div>
+      <div class="main">
+        <div class="status">
+          <iron-icon icon="cloud-queue"></iron-icon>
+          <div class="content"></div>
         </div>
-        <div class="main">
-          <div class="status">
-            <iron-icon icon="cloud-queue"></iron-icon>
-            <div class="content"></div>
-          </div>
-          <div class="progress"><div class="value"></div></div>
-          <paper-button class="import" tabindex="-1">
-            <span i18n-content="CLOUD_IMPORT_COMMAND"></span>
-          </paper-button>
-          <paper-button class="cancel" tabindex="-1">
-            <span i18n-content="CLOUD_IMPORT_CANCEL_COMMAND"></span>
-          </paper-button>
-        </div>
-      </paper-shadow>
+        <div class="progress"><div class="value"></div></div>
+        <paper-button class="import" tabindex="-1">
+          <span i18n-content="CLOUD_IMPORT_COMMAND"></span>
+        </paper-button>
+        <paper-button class="cancel" tabindex="-1">
+          <span i18n-content="CLOUD_IMPORT_CANCEL_COMMAND"></span>
+        </paper-button>
+      </div>
     </div>
 
     <div class="dialog-container">

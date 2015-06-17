@@ -442,20 +442,27 @@ body.check-select #gear-button {
 #cloud-import-details {
   background-color: white;
   border-radius: 2px;
+  box-shadow: 0 4px 5px 0 rgba(0, 0, 0, 0.14),
+              0 1px 10px 0 rgba(0, 0, 0, 0.12),
+              0 2px 4px -1px rgba(0, 0, 0, 0.4);
   line-height: 1.5em;
   position: absolute;
-  top: 38px;  /* Positioned just overlapping the top of the toolbar */
+  top: 42px;  /* Positioned just overlapping the top of the toolbar */
   transition: all 0.2s ease;
   width: 270px;
   z-index: 5;
 }
 
+/* These horizontal positions for #cloud-import-details are fallback value.
+   Usually, these positions are calculated based on the position of dropdown.
+   These fallback values will be used when the cloud import penel is shown
+   before the toolbar buttons are fully laid out. */
 html[dir='ltr'] #cloud-import-details {
-  right: 13px;  /* Positioned in relation to the cloud-import toolbar button */
+  right: 148px;  /* Positioned in relation to the cloud-import toolbar button */
 }
 
 html[dir='rtl'] #cloud-import-details {
-  left: 13px;  /* Positioned in relation to the cloud-import toolbar button */
+  left: 148px;  /* Positioned in relation to the cloud-import toolbar button */
 }
 
 #cloud-import-details.hidden {
