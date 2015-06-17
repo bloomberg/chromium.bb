@@ -481,6 +481,8 @@
       'test/menu_runner_test_api.h',
       'test/slider_test_api.cc',
       'test/slider_test_api.h',
+      'test/scoped_views_test_helper.cc',
+      'test/scoped_views_test_helper.h',
       'test/test_views.cc',
       'test/test_views.h',
       'test/test_views_delegate.h',

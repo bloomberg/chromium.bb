@@ -9,6 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+#include "ui/views/test/scoped_views_test_helper.h"
 #include "ui/views/test/test_views_delegate.h"
 #include "ui/views/widget/widget.h"
 
@@ -17,8 +18,6 @@
 #endif
 
 namespace views {
-
-class ViewsTestHelper;
 
 // A base class for views unit test. It creates a message loop necessary
 // to drive UI events and takes care of OLE initialization for windows.
@@ -38,10 +37,13 @@ class ViewsTestBase : public PlatformTest {
   Widget::InitParams CreateParams(Widget::InitParams::Type type);
 
  protected:
-  TestViewsDelegate* views_delegate() const { return views_delegate_.get(); }
+  TestViewsDelegate* views_delegate() const {
+    return test_helper_->views_delegate();
+  }
 
   void set_views_delegate(scoped_ptr<TestViewsDelegate> views_delegate) {
-    views_delegate_.swap(views_delegate);
+    DCHECK(!setup_called_);
+    views_delegate_for_setup_.swap(views_delegate);
   }
 
   base::MessageLoopForUI* message_loop() { return &message_loop_; }
@@ -52,8 +54,8 @@ class ViewsTestBase : public PlatformTest {
 
  private:
   base::MessageLoopForUI message_loop_;
-  scoped_ptr<TestViewsDelegate> views_delegate_;
-  scoped_ptr<ViewsTestHelper> test_helper_;
+  scoped_ptr<TestViewsDelegate> views_delegate_for_setup_;
+  scoped_ptr<ScopedViewsTestHelper> test_helper_;
   bool setup_called_;
   bool teardown_called_;
 

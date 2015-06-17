@@ -248,9 +248,7 @@ TEST_F(DesktopNativeWidgetAuraTest, WidgetCanBeDestroyedFromNestedLoop) {
 // 1. Child window destroyed which should lead to the destruction of the
 //    parent.
 // 2. Parent window destroyed which should lead to the child being destroyed.
-class DesktopAuraTopLevelWindowTest
-    : public views::TestViewsDelegate,
-      public aura::WindowObserver {
+class DesktopAuraTopLevelWindowTest : public aura::WindowObserver {
  public:
   DesktopAuraTopLevelWindowTest()
       : top_level_widget_(NULL),
@@ -264,13 +262,6 @@ class DesktopAuraTopLevelWindowTest
     EXPECT_TRUE(owned_window_destroyed_);
     top_level_widget_ = NULL;
     owned_window_ = NULL;
-  }
-
-  // views::TestViewsDelegate overrides.
-  void OnBeforeWidgetInit(Widget::InitParams* params,
-                          internal::NativeWidgetDelegate* delegate) override {
-    if (!params->native_widget)
-      params->native_widget = new views::DesktopNativeWidgetAura(delegate);
   }
 
   void CreateTopLevelWindow(const gfx::Rect& bounds, bool fullscreen) {
@@ -362,10 +353,20 @@ class DesktopAuraTopLevelWindowTest
   DISALLOW_COPY_AND_ASSIGN(DesktopAuraTopLevelWindowTest);
 };
 
-typedef WidgetTest DesktopAuraWidgetTest;
+class DesktopAuraWidgetTest : public WidgetTest {
+ public:
+  DesktopAuraWidgetTest() {}
+
+  void SetUp() override {
+    ViewsTestBase::SetUp();
+    views_delegate()->set_use_desktop_native_widgets(true);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DesktopAuraWidgetTest);
+};
 
 TEST_F(DesktopAuraWidgetTest, FullscreenWindowDestroyedBeforeOwnerTest) {
-  set_views_delegate(nullptr);
   DesktopAuraTopLevelWindowTest fullscreen_window;
   ASSERT_NO_FATAL_FAILURE(fullscreen_window.CreateTopLevelWindow(
       gfx::Rect(0, 0, 200, 200), true));
@@ -376,8 +377,6 @@ TEST_F(DesktopAuraWidgetTest, FullscreenWindowDestroyedBeforeOwnerTest) {
 }
 
 TEST_F(DesktopAuraWidgetTest, FullscreenWindowOwnerDestroyed) {
-  set_views_delegate(nullptr);
-
   DesktopAuraTopLevelWindowTest fullscreen_window;
   ASSERT_NO_FATAL_FAILURE(fullscreen_window.CreateTopLevelWindow(
       gfx::Rect(0, 0, 200, 200), true));
@@ -388,7 +387,6 @@ TEST_F(DesktopAuraWidgetTest, FullscreenWindowOwnerDestroyed) {
 }
 
 TEST_F(DesktopAuraWidgetTest, TopLevelOwnedPopupTest) {
-  set_views_delegate(nullptr);
   DesktopAuraTopLevelWindowTest popup_window;
   ASSERT_NO_FATAL_FAILURE(popup_window.CreateTopLevelWindow(
       gfx::Rect(0, 0, 200, 200), false));
@@ -401,7 +399,6 @@ TEST_F(DesktopAuraWidgetTest, TopLevelOwnedPopupTest) {
 // This test validates that when a top level owned popup Aura window is
 // resized, the widget is resized as well.
 TEST_F(DesktopAuraWidgetTest, TopLevelOwnedPopupResizeTest) {
-  set_views_delegate(nullptr);
   DesktopAuraTopLevelWindowTest popup_window;
 
   popup_window.set_use_async_mode(false);
@@ -421,7 +418,6 @@ TEST_F(DesktopAuraWidgetTest, TopLevelOwnedPopupResizeTest) {
 // This test validates that when a top level owned popup Aura window is
 // repositioned, the widget is repositioned as well.
 TEST_F(DesktopAuraWidgetTest, TopLevelOwnedPopupRepositionTest) {
-  set_views_delegate(nullptr);
   DesktopAuraTopLevelWindowTest popup_window;
 
   popup_window.set_use_async_mode(false);

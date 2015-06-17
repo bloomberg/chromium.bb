@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_dialog_views.h"
 
-#include "ash/test/ash_test_base.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -12,6 +11,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "extensions/browser/extension_system.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/views/test/scoped_views_test_helper.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 #include "ui/views/window/dialog_delegate.h"
@@ -23,17 +23,15 @@ const char kTestOtherExtensionId[] = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
 
 }  // namespace
 
-class AppInfoDialogViewsTest : public ash::test::AshTestBase,
+class AppInfoDialogViewsTest : public testing::Test,
                                public views::WidgetObserver {
  public:
-  AppInfoDialogViewsTest()
-      : extension_environment_(base::MessageLoopForUI::current()) {}
+  AppInfoDialogViewsTest() {}
 
   // Overridden from testing::Test:
   void SetUp() override {
-    ash::test::AshTestBase::SetUp();
     widget_ = views::DialogDelegate::CreateDialogWidget(
-        new views::DialogDelegateView(), CurrentContext(), NULL);
+        new views::DialogDelegateView(), views_test_helper_.GetContext(), NULL);
     widget_->AddObserver(this);
 
     dialog_ = new AppInfoDialog(
@@ -46,7 +44,6 @@ class AppInfoDialogViewsTest : public ash::test::AshTestBase,
     if (!widget_destroyed_)
       widget_->CloseNow();
     EXPECT_TRUE(widget_destroyed_);
-    ash::test::AshTestBase::TearDown();
   }
 
  protected:
@@ -70,6 +67,7 @@ class AppInfoDialogViewsTest : public ash::test::AshTestBase,
   bool widget_destroyed_ = false;
   AppInfoDialog* dialog_ = nullptr;  // Owned by |widget_|'s views hierarchy.
   extensions::TestExtensionEnvironment extension_environment_;
+  views::ScopedViewsTestHelper views_test_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(AppInfoDialogViewsTest);
 };

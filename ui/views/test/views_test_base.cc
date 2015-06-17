@@ -6,9 +6,6 @@
 
 #include "base/run_loop.h"
 #include "ui/base/clipboard/clipboard.h"
-#include "ui/base/ime/input_method_initializer.h"
-#include "ui/compositor/test/context_factories_for_test.h"
-#include "ui/views/test/views_test_helper.h"
 
 namespace views {
 
@@ -27,18 +24,11 @@ ViewsTestBase::~ViewsTestBase() {
 void ViewsTestBase::SetUp() {
   testing::Test::SetUp();
   setup_called_ = true;
-  if (!views_delegate_)
-    views_delegate_.reset(new TestViewsDelegate());
+  if (!views_delegate_for_setup_)
+    views_delegate_for_setup_.reset(new TestViewsDelegate());
 
-  // The ContextFactory must exist before any Compositors are created.
-  bool enable_pixel_output = false;
-  ui::ContextFactory* context_factory =
-      ui::InitializeContextFactoryForTests(enable_pixel_output);
-  views_delegate_->set_context_factory(context_factory);
-
-  test_helper_.reset(ViewsTestHelper::Create(&message_loop_, context_factory));
-  test_helper_->SetUp();
-  ui::InitializeInputMethodForTesting();
+  test_helper_.reset(
+      new ScopedViewsTestHelper(views_delegate_for_setup_.Pass()));
 }
 
 void ViewsTestBase::TearDown() {
@@ -48,13 +38,8 @@ void ViewsTestBase::TearDown() {
   // and these tasks if un-executed would upset Valgrind.
   RunPendingMessages();
   teardown_called_ = true;
-  views_delegate_.reset();
   testing::Test::TearDown();
-  ui::ShutdownInputMethodForTesting();
-  test_helper_->TearDown();
-  ui::TerminateContextFactoryForTests();
-
-  views_delegate_.reset();
+  test_helper_.reset();
 }
 
 void ViewsTestBase::RunPendingMessages() {

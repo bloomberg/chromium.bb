@@ -1355,14 +1355,20 @@
       'browser/profiles/profile_list_desktop_unittest.cc',
       'browser/shell_integration_linux_unittest.cc',
     ],
+    # Cross-platform views unit tests ready for toolkit-views on Mac.
+    # TODO(tapted): Enable toolkit-views unit_tests on Mac when their
+    # respective implementations are linked in. http://crbug.com/412234.
     'chrome_unit_tests_views_sources': [
+      'browser/ui/views/apps/app_info_dialog/app_info_dialog_views_unittest.cc',
+      'browser/ui/views/apps/app_info_dialog/app_info_permissions_panel_unittest.cc',
+    ],
+    # Cross-platform (except Mac) views unit tests. Assumes app list is enabled.
+    'chrome_unit_tests_views_non_mac_sources': [
       'browser/ui/views/accelerator_table_unittest.cc',
       # Views implies app list is enabled (only disabled on mobile).
       'browser/ui/views/app_list/linux/app_list_linux_unittest.cc',
       'browser/ui/views/app_list/win/app_list_win_unittest.cc',
       'browser/ui/views/apps/app_info_dialog/app_info_dialog_ash_unittest.cc',
-      'browser/ui/views/apps/app_info_dialog/app_info_dialog_views_unittest.cc',
-      'browser/ui/views/apps/app_info_dialog/app_info_permissions_panel_unittest.cc',
       'browser/ui/views/apps/shaped_app_window_targeter_unittest.cc',
       'browser/ui/views/autofill/autofill_dialog_views_unittest.cc',
       'browser/ui/views/bookmarks/bookmark_bar_view_unittest.cc',
@@ -2636,11 +2642,10 @@
             '../ui/views/views.gyp:views',
             '../ui/views/views.gyp:views_test_support',
           ],
+          'sources': [ '<@(chrome_unit_tests_views_sources)' ],
           'conditions': [
-            # TODO(tapted): Enable toolkit-views unit_tests on Mac when their
-            # respective implementations are linked in. http://crbug.com/412234.
             ['OS != "mac"', {
-              'sources': [ '<@(chrome_unit_tests_views_sources)' ],
+              'sources': [ '<@(chrome_unit_tests_views_non_mac_sources)' ],
             }],
           ],
         }],

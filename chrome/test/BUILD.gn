@@ -1362,12 +1362,14 @@ if (!is_android) {
         "//ui/views",
         "//ui/views:test_support",
       ]
+      sources += rebase_path(unit_gypi_values.chrome_unit_tests_views_sources,
+                             ".",
+                             "//chrome")
       if (!is_mac) {
-        # TODO(tapted): Enable toolkit-views unit_tests on Mac when their
-        # respective implementations are linked in. http://crbug.com/412234.
-        sources += rebase_path(unit_gypi_values.chrome_unit_tests_views_sources,
-                               ".",
-                               "//chrome")
+        sources += rebase_path(
+                unit_gypi_values.chrome_unit_tests_views_non_mac_sources,
+                ".",
+                "//chrome")
       }
     }
     if (use_ash) {
