@@ -339,7 +339,7 @@ void QuicClientSession::OnStreamFrames(
                          it->second);
   }
 
-  return QuicSession::OnStreamFrames(frames);
+  return QuicSpdySession::OnStreamFrames(frames);
 }
 
 void QuicClientSession::AddObserver(Observer* observer) {
@@ -564,14 +564,14 @@ void QuicClientSession::CloseStream(QuicStreamId stream_id) {
         stream_id, stream->num_frames_received(),
         stream->num_duplicate_frames_received());
   }
-  QuicSession::CloseStream(stream_id);
+  QuicSpdySession::CloseStream(stream_id);
   OnClosedStream();
 }
 
 void QuicClientSession::SendRstStream(QuicStreamId id,
                                       QuicRstStreamErrorCode error,
                                       QuicStreamOffset bytes_written) {
-  QuicSession::SendRstStream(id, error, bytes_written);
+  QuicSpdySession::SendRstStream(id, error, bytes_written);
   OnClosedStream();
 }
 
@@ -642,7 +642,7 @@ void QuicClientSession::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {
     if (server_info_)
       server_info_->OnExternalCacheHit();
   }
-  QuicSession::OnCryptoHandshakeEvent(event);
+  QuicSpdySession::OnCryptoHandshakeEvent(event);
 }
 
 void QuicClientSession::OnCryptoHandshakeMessageSent(
@@ -738,7 +738,7 @@ void QuicClientSession::OnConnectionClosed(QuicErrorCode error,
 void QuicClientSession::OnSuccessfulVersionNegotiation(
     const QuicVersion& version) {
   logger_->OnSuccessfulVersionNegotiation(version);
-  QuicSession::OnSuccessfulVersionNegotiation(version);
+  QuicSpdySession::OnSuccessfulVersionNegotiation(version);
 }
 
 void QuicClientSession::OnProofValid(
