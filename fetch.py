@@ -62,7 +62,7 @@ class Checkout(object):
   def run(self, cmd, **kwargs):
     print 'Running: %s' % (' '.join(pipes.quote(x) for x in cmd))
     if self.options.dry_run:
-      return 0
+      return ''
     return subprocess.check_output(cmd, **kwargs)
 
 
