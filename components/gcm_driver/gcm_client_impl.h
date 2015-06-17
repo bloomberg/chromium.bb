@@ -250,7 +250,10 @@ class GCMClientImpl
   // Callback for store operation where result does not matter.
   void IgnoreWriteResultCallback(bool success);
 
-  // Callback for resetting the GCM store.
+  // Callback for destroying the GCM store.
+  void DestroyStoreCallback(bool success);
+
+  // Callback for resetting the GCM store. The store will be reloaded.
   void ResetStoreCallback(bool success);
 
   // Completes the registration request.
@@ -284,6 +287,12 @@ class GCMClientImpl
 
   // Is there any standalone app being registered for GCM?
   bool HasStandaloneRegisteredApp() const;
+
+  // Destroys the store when it is not needed.
+  void DestroyStoreWhenNotNeeded();
+
+  // Reset all cahced values.
+  void ResetCache();
 
   // Builder for the GCM internals (mcs client, etc.).
   scoped_ptr<GCMInternalsBuilder> internals_builder_;
@@ -361,6 +370,9 @@ class GCMClientImpl
 
   // Factory for creating references when scheduling periodic checkin.
   base::WeakPtrFactory<GCMClientImpl> periodic_checkin_ptr_factory_;
+
+  // Factory for wiping out GCM store.
+  base::WeakPtrFactory<GCMClientImpl> destroying_gcm_store_ptr_factory_;
 
   // Factory for creating references in callbacks.
   base::WeakPtrFactory<GCMClientImpl> weak_ptr_factory_;

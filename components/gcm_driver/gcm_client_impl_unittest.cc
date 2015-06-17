@@ -9,8 +9,9 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/test_mock_time_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/clock.h"
 #include "base/timer/timer.h"
 #include "google_apis/gcm/base/fake_encryptor.h"
@@ -360,16 +361,16 @@ class GCMClientImplTest : public testing::Test,
   int64 CurrentTime();
 
   // Tooling.
-  void PumpLoop();
   void PumpLoopUntilIdle();
-  void QuitLoop();
-  void InitializeLoop();
   bool CreateUniqueTempDir();
   AutoAdvancingTestClock* clock() const {
     return reinterpret_cast<AutoAdvancingTestClock*>(gcm_client_->clock_.get());
   }
   net::TestURLFetcherFactory* url_fetcher_factory() {
     return &url_fetcher_factory_;
+  }
+  base::TestMockTimeTaskRunner* task_runner() {
+    return task_runner_.get();
   }
 
  private:
@@ -386,9 +387,10 @@ class GCMClientImplTest : public testing::Test,
 
   scoped_ptr<GCMClientImpl> gcm_client_;
 
-  base::MessageLoop message_loop_;
-  scoped_ptr<base::RunLoop> run_loop_;
   net::TestURLFetcherFactory url_fetcher_factory_;
+
+  scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
+  base::ThreadTaskRunnerHandle task_runner_handle_;
 
   // Injected to GCM client:
   base::ScopedTempDir temp_directory_;
@@ -398,8 +400,10 @@ class GCMClientImplTest : public testing::Test,
 GCMClientImplTest::GCMClientImplTest()
     : last_event_(NONE),
       last_result_(GCMClient::UNKNOWN_ERROR),
+      task_runner_(new base::TestMockTimeTaskRunner),
+      task_runner_handle_(task_runner_),
       url_request_context_getter_(
-          new net::TestURLRequestContextGetter(message_loop_.task_runner())) {
+          new net::TestURLRequestContextGetter(task_runner_)) {
 }
 
 GCMClientImplTest::~GCMClientImplTest() {}
@@ -407,7 +411,6 @@ GCMClientImplTest::~GCMClientImplTest() {}
 void GCMClientImplTest::SetUp() {
   testing::Test::SetUp();
   ASSERT_TRUE(CreateUniqueTempDir());
-  InitializeLoop();
   BuildGCMClient(base::TimeDelta());
   InitializeGCMClient();
   StartGCMClient();
@@ -422,23 +425,8 @@ void GCMClientImplTest::SetUpUrlFetcherFactory() {
   url_fetcher_factory_.set_remove_fetcher_on_delete(true);
 }
 
-void GCMClientImplTest::PumpLoop() {
-  run_loop_->Run();
-  run_loop_.reset(new base::RunLoop());
-}
-
 void GCMClientImplTest::PumpLoopUntilIdle() {
-  run_loop_->RunUntilIdle();
-  run_loop_.reset(new base::RunLoop());
-}
-
-void GCMClientImplTest::QuitLoop() {
-  if (run_loop_ && run_loop_->running())
-    run_loop_->Quit();
-}
-
-void GCMClientImplTest::InitializeLoop() {
-  run_loop_.reset(new base::RunLoop);
+  task_runner_->RunUntilIdle();
 }
 
 bool GCMClientImplTest::CreateUniqueTempDir() {
@@ -534,7 +522,7 @@ void GCMClientImplTest::InitializeGCMClient() {
   gcm_client_->Initialize(
       chrome_build_info,
       gcm_store_path(),
-      message_loop_.task_runner(),
+      task_runner_,
       url_request_context_getter_,
       make_scoped_ptr<Encryptor>(new FakeEncryptor),
       this);
@@ -581,7 +569,6 @@ void GCMClientImplTest::OnGCMReady(
   last_event_ = LOADING_COMPLETED;
   last_account_mappings_ = account_mappings;
   last_token_fetch_time_ = last_token_fetch_time;
-  QuitLoop();
 }
 
 void GCMClientImplTest::OnMessageReceived(
@@ -590,7 +577,6 @@ void GCMClientImplTest::OnMessageReceived(
   last_event_ = MESSAGE_RECEIVED;
   last_app_id_ = registration_id;
   last_message_ = message;
-  QuitLoop();
 }
 
 void GCMClientImplTest::OnRegisterFinished(
@@ -672,6 +658,31 @@ TEST_F(GCMClientImplTest, LoadingBusted) {
   EXPECT_EQ(LOADING_COMPLETED, last_event());
   EXPECT_EQ(kDeviceAndroidId2, mcs_client()->last_android_id());
   EXPECT_EQ(kDeviceSecurityToken2, mcs_client()->last_security_token());
+}
+
+TEST_F(GCMClientImplTest, DestroyStoreWhenNotNeeded) {
+  // Close the GCM store.
+  gcm_client()->Stop();
+  PumpLoopUntilIdle();
+
+  // Restart GCM client. The store is loaded successfully.
+  reset_last_event();
+  BuildGCMClient(base::TimeDelta());
+  InitializeGCMClient();
+  gcm_client()->Start(GCMClient::DELAYED_START);
+  PumpLoopUntilIdle();
+
+  EXPECT_EQ(GCMClientImpl::LOADED, gcm_client_state());
+  EXPECT_TRUE(device_checkin_info().android_id);
+  EXPECT_TRUE(device_checkin_info().secret);
+
+  // Fast forward the clock to trigger the store destroying logic.
+  task_runner()->FastForwardBy(base::TimeDelta::FromMilliseconds(300000));
+  PumpLoopUntilIdle();
+
+  EXPECT_EQ(GCMClientImpl::INITIALIZED, gcm_client_state());
+  EXPECT_FALSE(device_checkin_info().android_id);
+  EXPECT_FALSE(device_checkin_info().secret);
 }
 
 TEST_F(GCMClientImplTest, RegisterApp) {
@@ -867,7 +878,6 @@ void GCMClientImplCheckinTest::SetUp() {
   // Creating unique temp directory that will be used by GCMStore shared between
   // GCM Client and G-services settings.
   ASSERT_TRUE(CreateUniqueTempDir());
-  InitializeLoop();
   // Time will be advancing one hour every time it is checked.
   BuildGCMClient(base::TimeDelta::FromSeconds(kSettingsCheckinInterval));
   InitializeGCMClient();
@@ -1078,7 +1088,7 @@ TEST_F(GCMClientImplCheckinTest, CheckinWhenAccountReplaced) {
 }
 
 class GCMClientImplStartAndStopTest : public GCMClientImplTest {
-public:
+ public:
   GCMClientImplStartAndStopTest();
   ~GCMClientImplStartAndStopTest() override;
 
@@ -1096,7 +1106,6 @@ GCMClientImplStartAndStopTest::~GCMClientImplStartAndStopTest() {
 void GCMClientImplStartAndStopTest::SetUp() {
   testing::Test::SetUp();
   ASSERT_TRUE(CreateUniqueTempDir());
-  InitializeLoop();
   BuildGCMClient(base::TimeDelta());
   InitializeGCMClient();
 }
