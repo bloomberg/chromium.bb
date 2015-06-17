@@ -11,7 +11,6 @@
 #include "core/css/MediaQueryExp.h"
 #include "core/css/parser/CSSParserToken.h"
 #include "core/css/parser/CSSParserTokenRange.h"
-#include "core/css/parser/CSSParserValues.h"
 #include "core/css/parser/MediaQueryBlockWatcher.h"
 #include "wtf/text/WTFString.h"
 
@@ -26,14 +25,14 @@ private:
     String m_mediaType;
     OwnPtrWillBeMember<ExpressionHeapVector> m_expressions;
     String m_mediaFeature;
-    CSSParserValueList m_valueList;
+    Vector<CSSParserToken, 4> m_valueList;
     bool m_mediaTypeSet;
 
 public:
     MediaQueryData();
     void clear();
     bool addExpression();
-    bool tryAddParserValue(CSSParserTokenType, const CSSParserToken&);
+    bool tryAddParserToken(CSSParserTokenType, const CSSParserToken&);
     void setMediaType(const String&);
     PassOwnPtrWillBeRawPtr<MediaQuery> takeMediaQuery();
 

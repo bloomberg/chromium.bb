@@ -156,7 +156,7 @@ void MediaQueryParser::readFeatureValue(CSSParserTokenType type, const CSSParser
     if (type == DimensionToken && token.unitType() == CSSPrimitiveValue::CSS_UNKNOWN) {
         m_state = SkipUntilComma;
     } else {
-        if (m_mediaQueryData.tryAddParserValue(type, token))
+        if (m_mediaQueryData.tryAddParserToken(type, token))
             m_state = ReadFeatureEnd;
         else
             m_state = SkipUntilBlockEnd;
@@ -171,7 +171,7 @@ void MediaQueryParser::readFeatureEnd(CSSParserTokenType type, const CSSParserTo
         else
             m_state = SkipUntilComma;
     } else if (type == DelimiterToken && token.delimiter() == '/') {
-        m_mediaQueryData.tryAddParserValue(type, token);
+        m_mediaQueryData.tryAddParserToken(type, token);
         m_state = ReadFeatureValue;
     } else {
         m_state = SkipUntilBlockEnd;
@@ -246,7 +246,7 @@ void MediaQueryData::clear()
     m_mediaType = MediaTypeNames::all;
     m_mediaTypeSet = false;
     m_mediaFeature = String();
-    m_valueList.destroyAndClear();
+    m_valueList.clear();
     m_expressions = adoptPtrWillBeNoop(new ExpressionHeapVector);
 }
 
@@ -259,34 +259,22 @@ PassOwnPtrWillBeRawPtr<MediaQuery> MediaQueryData::takeMediaQuery()
 
 bool MediaQueryData::addExpression()
 {
-    OwnPtrWillBeRawPtr<MediaQueryExp> expression = MediaQueryExp::createIfValid(m_mediaFeature, &m_valueList);
+    OwnPtrWillBeRawPtr<MediaQueryExp> expression = MediaQueryExp::createIfValid(m_mediaFeature, m_valueList);
     bool isValid = !!expression;
     m_expressions->append(expression.release());
-    m_valueList.destroyAndClear();
+    m_valueList.clear();
     return isValid;
 }
 
-bool MediaQueryData::tryAddParserValue(CSSParserTokenType type, const CSSParserToken& token)
+bool MediaQueryData::tryAddParserToken(CSSParserTokenType type, const CSSParserToken& token)
 {
-    CSSParserValue value;
-    if (type == NumberToken || type == PercentageToken || type == DimensionToken) {
-        value.setFromNumber(token.numericValue(), token.unitType());
-        value.isInt = (token.numericValueType() == IntegerValueType);
-    } else if (type == DelimiterToken) {
-        value.unit = CSSParserValue::Operator;
-        value.iValue = token.delimiter();
-        value.id = CSSValueInvalid;
-        value.isInt = false;
-    } else if (type == IdentToken) {
-        value.unit = CSSPrimitiveValue::CSS_IDENT;
-        value.string = token.value();
-        value.id = cssValueKeywordID(token.value());
-        value.isInt = false;
-    } else {
-        return false;
+    if (type == NumberToken || type == PercentageToken || type == DimensionToken
+        || type == DelimiterToken || type == IdentToken) {
+        m_valueList.append(token);
+        return true;
     }
-    m_valueList.addValue(value);
-    return true;
+
+    return false;
 }
 
 void MediaQueryData::setMediaType(const String& mediaType)
