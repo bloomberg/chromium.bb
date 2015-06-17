@@ -32,7 +32,6 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_shell_apk.ContentShellTestBase;
 
 import java.util.ArrayList;
-import java.util.concurrent.Callable;
 
 /**
  * Integration tests for text input using cases based on fixed regressions.
@@ -945,7 +944,7 @@ public class ImeTest extends ContentShellTestBase {
 
         DOMUtils.longPressNode(this, mContentViewCore, "input_text");
         final PastePopupMenu pastePopup = mContentViewCore.getPastePopupForTest();
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return pastePopup.isShowing();
@@ -986,7 +985,7 @@ public class ImeTest extends ContentShellTestBase {
     }
 
     private void assertWaitForKeyboardStatus(final boolean show) throws InterruptedException {
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return show == getImeAdapter().mIsShowWithoutHideOutstanding
@@ -997,7 +996,7 @@ public class ImeTest extends ContentShellTestBase {
 
     private void assertWaitForSelectActionBarStatus(
             final boolean show) throws InterruptedException {
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return show == mContentViewCore.isSelectActionBarShowing();
@@ -1032,7 +1031,7 @@ public class ImeTest extends ContentShellTestBase {
         assertTrue("Actual selection was: " + mInputMethodManagerWrapper.getSelection()
                         + ", and actual composition was: "
                         + mInputMethodManagerWrapper.getComposition(),
-                CriteriaHelper.pollForCriteria(new Criteria() {
+                CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
                     @Override
                     public boolean isSatisfied() {
                         return mInputMethodManagerWrapper.getSelection().equals(selection)
@@ -1060,20 +1059,14 @@ public class ImeTest extends ContentShellTestBase {
 
     private void assertClipboardContents(final Activity activity, final String expectedContents)
             throws InterruptedException {
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
-                    @Override
-                    public Boolean call() throws Exception {
-                        ClipboardManager clipboardManager =
-                                (ClipboardManager) activity.getSystemService(
-                                        Context.CLIPBOARD_SERVICE);
-                        ClipData clip = clipboardManager.getPrimaryClip();
-                        return clip != null && clip.getItemCount() == 1
-                                && TextUtils.equals(clip.getItemAt(0).getText(), expectedContents);
-                    }
-                });
+                ClipboardManager clipboardManager =
+                        (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
+                ClipData clip = clipboardManager.getPrimaryClip();
+                return clip != null && clip.getItemCount() == 1
+                        && TextUtils.equals(clip.getItemAt(0).getText(), expectedContents);
             }
         }));
     }

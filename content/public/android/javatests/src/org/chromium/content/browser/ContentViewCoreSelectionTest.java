@@ -19,8 +19,6 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content_shell_apk.ContentShellTestBase;
 
-import java.util.concurrent.Callable;
-
 /**
  * Integration tests for text selection-related behavior.
  */
@@ -548,27 +546,21 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
 
     private void assertClipboardContents(final Context context, final String expectedContents)
             throws InterruptedException {
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
-                    @Override
-                    public Boolean call() throws Exception {
-                        ClipboardManager clipboardManager =
-                                (ClipboardManager) context.getSystemService(
-                                        Context.CLIPBOARD_SERVICE);
-                        ClipData clip = clipboardManager.getPrimaryClip();
-                        return clip != null && clip.getItemCount() == 1
-                                && TextUtils.equals(clip.getItemAt(0).getText(), expectedContents);
-                    }
-                });
+                ClipboardManager clipboardManager =
+                        (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
+                ClipData clip = clipboardManager.getPrimaryClip();
+                return clip != null && clip.getItemCount() == 1
+                        && TextUtils.equals(clip.getItemAt(0).getText(), expectedContents);
             }
         }));
     }
 
     private void assertWaitForSelectActionBarVisible(
             final boolean visible) throws InterruptedException {
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return visible == mContentViewCore.isSelectActionBarShowing();
@@ -623,7 +615,7 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
     }
 
     private void assertWaitForPastePopupStatus(final boolean show) throws InterruptedException {
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return show == mContentViewCore.getPastePopupForTest().isShowing();

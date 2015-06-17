@@ -11,8 +11,14 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
+import org.chromium.content.browser.ContentViewCore;
+import org.chromium.content.browser.test.util.Criteria;
+import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.net.test.util.TestWebServer;
+
+import java.util.concurrent.Callable;
 
 /**
  * Tests for pop up window flow.
@@ -83,5 +89,68 @@ public class PopupWindowTest extends AwTestBase {
                 "modifyDomOfPopup()");
         onPageFinishedHelper.waitForCallback(onPageFinishedCallCount);
         assertEquals("about:blank", onPageFinishedHelper.getUrl());
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testPopupWindowTextHandle() throws Throwable {
+        final String popupPath = "/popup.html";
+        final String parentPageHtml = CommonResources.makeHtmlPageFrom("", "<script>"
+                        + "function tryOpenWindow() {"
+                        + "  var newWindow = window.open('" + popupPath + "');"
+                        + "}</script>");
+
+        final String popupPageHtml = CommonResources.makeHtmlPageFrom(
+                "<title>" + POPUP_TITLE + "</title>",
+                "<span id=\"plain_text\" class=\"full_view\">This is a popup window.</span>");
+
+        triggerPopup(mParentContents, mParentContentsClient, mWebServer, parentPageHtml,
+                popupPageHtml, popupPath, "tryOpenWindow()");
+        PopupInfo popupInfo = connectPendingPopup(mParentContents);
+        final AwContents popupContents = popupInfo.popupContents;
+        TestAwContentsClient popupContentsClient = popupInfo.popupContentsClient;
+        assertEquals(POPUP_TITLE, getTitleOnUiThread(popupContents));
+
+        enableJavaScriptOnUiThread(popupContents);
+
+        // Now long press on some texts and see if the text handles show up.
+        DOMUtils.longPressNode(this, popupContents.getContentViewCore(), "plain_text");
+        assertWaitForSelectActionBarStatus(true, popupContents.getContentViewCore());
+        assertTrue(runTestOnUiThreadAndGetResult(new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                return popupContents.getContentViewCore().hasSelection();
+            }
+        }));
+
+        // Now hide the select action bar. This should hide the text handles and
+        // clear the selection.
+        hideSelectActionMode(popupContents.getContentViewCore());
+
+        assertWaitForSelectActionBarStatus(false, popupContents.getContentViewCore());
+        String jsGetSelection = "window.getSelection().toString()";
+        // Test window.getSelection() returns empty string "" literally.
+        assertEquals("\"\"", executeJavaScriptAndWaitForResult(
+                                     popupContents, popupContentsClient, jsGetSelection));
+    }
+
+    // Copied from imeTest.java.
+    private void assertWaitForSelectActionBarStatus(final boolean show, final ContentViewCore cvc)
+            throws InterruptedException {
+        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return show == cvc.isSelectActionBarShowing();
+            }
+        }));
+    }
+
+    private void hideSelectActionMode(final ContentViewCore cvc) {
+        getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                cvc.hideSelectActionMode();
+            }
+        });
     }
 }

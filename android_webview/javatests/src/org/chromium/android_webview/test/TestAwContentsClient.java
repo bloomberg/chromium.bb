@@ -6,12 +6,17 @@ package org.chromium.android_webview.test;
 
 import android.graphics.Picture;
 import android.net.http.SslError;
+import android.view.ActionMode;
+import android.view.View;
 import android.webkit.ConsoleMessage;
 import android.webkit.ValueCallback;
 
 import org.chromium.android_webview.AwContentsClient.AwWebResourceRequest;
 import org.chromium.android_webview.AwWebResourceResponse;
 import org.chromium.base.ThreadUtils;
+import org.chromium.content.browser.SelectActionMode;
+import org.chromium.content.browser.SelectActionModeCallback;
+import org.chromium.content.browser.SelectActionModeCallback.ActionHandler;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageCommitVisibleHelper;
@@ -214,6 +219,16 @@ public class TestAwContentsClient extends NullContentsClient {
     public void onReceivedSslError(ValueCallback<Boolean> callback, SslError error) {
         callback.onReceiveValue(mAllowSslError);
         mOnReceivedSslErrorHelper.notifyCalled();
+    }
+
+    @Override
+    public SelectActionMode startActionMode(
+            View view, ActionHandler actionHandler, boolean floating) {
+        if (floating) return null;
+        ActionMode.Callback callback =
+                new SelectActionModeCallback(view.getContext(), actionHandler);
+        ActionMode actionMode = view.startActionMode(callback);
+        return actionMode != null ? new SelectActionMode(actionMode) : null;
     }
 
     public void setAllowSslError(boolean allow) {
