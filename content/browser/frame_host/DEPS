@@ -1,5 +1,4 @@
 include_rules = [
-  "+content/public/renderer/isolated_world_ids.h",
   # The frame_host files should only call upwards in the layering via the
   # delegate interfaces.
   "-content/browser/web_contents",

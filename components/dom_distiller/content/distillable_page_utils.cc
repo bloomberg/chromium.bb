@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
+#include "components/dom_distiller/content/distiller_javascript_utils.h"
 #include "components/dom_distiller/core/distillable_page_detector.h"
 #include "components/dom_distiller/core/experiments.h"
 #include "components/dom_distiller/core/page_features.h"
@@ -46,8 +47,8 @@ void IsOpenGraphArticle(content::WebContents* web_contents,
   std::string og_article_js = ResourceBundle::GetSharedInstance()
                                   .GetRawDataResource(IDR_IS_DISTILLABLE_JS)
                                   .as_string();
-  main_frame->ExecuteJavaScript(base::UTF8ToUTF16(og_article_js),
-                                base::Bind(OnOGArticleJsResult, callback));
+  RunIsolatedJavaScript(main_frame, og_article_js,
+                        base::Bind(OnOGArticleJsResult, callback));
 }
 
 void IsDistillablePage(content::WebContents* web_contents,
@@ -92,8 +93,8 @@ void IsDistillablePageForDetector(content::WebContents* web_contents,
       ResourceBundle::GetSharedInstance()
           .GetRawDataResource(IDR_EXTRACT_PAGE_FEATURES_JS)
           .as_string();
-  main_frame->ExecuteJavaScript(
-      base::UTF8ToUTF16(extract_features_js),
+  RunIsolatedJavaScript(
+      main_frame, extract_features_js,
       base::Bind(OnExtractFeaturesJsResult, detector, callback));
 }
 

@@ -1,4 +1,0 @@
-include_rules = [
-  "+chrome/renderer/chrome_isolated_world_ids.h",
-  "+grit/enhanced_bookmarks_resources.h",
-]

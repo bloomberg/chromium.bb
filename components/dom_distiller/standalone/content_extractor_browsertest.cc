@@ -14,6 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/thread_task_runner_handle.h"
+#include "components/dom_distiller/content/distiller_javascript_utils.h"
 #include "components/dom_distiller/content/distiller_page_web_contents.h"
 #include "components/dom_distiller/core/article_entry.h"
 #include "components/dom_distiller/core/distilled_page_prefs.h"
@@ -28,6 +29,7 @@
 #include "components/pref_registry/testing_pref_service_syncable.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/isolated_world_ids.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/shell/browser/shell.h"
 #include "google/protobuf/io/coded_stream.h"
@@ -416,6 +418,7 @@ class ContentExtractor : public ContentBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(ContentExtractor, MANUAL_ExtractUrl) {
+  SetDistillerJavaScriptWorldId(content::ISOLATED_WORLD_ID_CONTENT_END);
   Start();
   base::RunLoop().Run();
 }

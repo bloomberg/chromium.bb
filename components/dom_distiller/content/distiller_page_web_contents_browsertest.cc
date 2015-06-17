@@ -7,6 +7,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "components/dom_distiller/content/distiller_javascript_utils.h"
 #include "components/dom_distiller/content/distiller_page_web_contents.h"
 #include "components/dom_distiller/content/web_contents_main_frame_observer.h"
 #include "components/dom_distiller/core/distiller_page.h"
@@ -17,6 +18,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/isolated_world_ids.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/shell/browser/shell.h"
 #include "grit/components_strings.h"
@@ -80,6 +82,9 @@ class DistillerPageWebContentsTest : public ContentBrowserTest {
  public:
   // ContentBrowserTest:
   void SetUpOnMainThread() override {
+    if (!DistillerJavaScriptWorldIdIsSet()) {
+      SetDistillerJavaScriptWorldId(content::ISOLATED_WORLD_ID_CONTENT_END);
+    }
     AddComponentsResources();
     SetUpTestServer();
     ContentBrowserTest::SetUpOnMainThread();

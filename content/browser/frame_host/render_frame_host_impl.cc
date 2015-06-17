@@ -61,9 +61,9 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/isolated_world_ids.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
-#include "content/public/renderer/isolated_world_ids.h"
 #include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/ax_tree_update.h"
 #include "url/gurl.h"
@@ -306,10 +306,16 @@ void RenderFrameHostImpl::ExecuteJavaScriptInIsolatedWorld(
     return;
   }
 
-  int key = g_next_javascript_callback_id++;
+  int key = 0;
+  bool request_reply = false;
+  if (!callback.is_null()) {
+    request_reply = true;
+    key = g_next_javascript_callback_id++;
+    javascript_callbacks_.insert(std::make_pair(key, callback));
+  }
+
   Send(new FrameMsg_JavaScriptExecuteRequestInIsolatedWorld(
-      routing_id_, javascript, key, true, world_id));
-  javascript_callbacks_.insert(std::make_pair(key, callback));
+      routing_id_, javascript, key, request_reply, world_id));
 }
 
 RenderViewHost* RenderFrameHostImpl::GetRenderViewHost() {

@@ -9,7 +9,9 @@
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "chrome/browser/dom_distiller/lazy_dom_distiller_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_isolated_world_ids.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/dom_distiller/content/distiller_javascript_utils.h"
 #include "components/dom_distiller/content/dom_distiller_viewer_source.h"
 #include "components/dom_distiller/core/external_feedback_reporter.h"
 #include "components/dom_distiller/core/url_constants.h"
@@ -34,6 +36,12 @@ void RegisterDomDistillerViewerSource(Profile* profile) {
     reporter.reset(
         new dom_distiller::android::ExternalFeedbackReporterAndroid());
 #endif  // defined(OS_ANDROID)
+
+    // Set the JavaScript world ID.
+    if (!dom_distiller::DistillerJavaScriptWorldIdIsSet()) {
+      dom_distiller::SetDistillerJavaScriptWorldId(
+          chrome::ISOLATED_WORLD_ID_CHROME_INTERNAL);
+    }
 
     content::URLDataSource::Add(
         profile,

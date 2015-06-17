@@ -6,11 +6,13 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "components/dom_distiller/content/distillable_page_utils.h"
+#include "components/dom_distiller/content/distiller_javascript_utils.h"
 #include "components/dom_distiller/core/distillable_page_detector.h"
 #include "components/dom_distiller/core/page_features.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/isolated_world_ids.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/shell/browser/shell.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -26,6 +28,9 @@ class DomDistillerDistillablePageUtilsTest : public content::ContentBrowserTest,
                                              content::WebContentsObserver {
  public:
   void SetUpOnMainThread() override {
+    if (!DistillerJavaScriptWorldIdIsSet()) {
+      SetDistillerJavaScriptWorldId(content::ISOLATED_WORLD_ID_CONTENT_END);
+    }
     AddComponentsResources();
     SetUpTestServer();
     ContentBrowserTest::SetUpOnMainThread();

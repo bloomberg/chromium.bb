@@ -5,7 +5,7 @@
 #include "chrome/renderer/extensions/chrome_extensions_renderer_client.h"
 
 #include "base/lazy_instance.h"
-#include "chrome/renderer/chrome_isolated_world_ids.h"
+#include "chrome/common/chrome_isolated_world_ids.h"
 #include "chrome/renderer/chrome_render_process_observer.h"
 
 ChromeExtensionsRendererClient::ChromeExtensionsRendererClient() {}

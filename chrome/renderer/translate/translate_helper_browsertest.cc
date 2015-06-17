@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/time/time.h"
-#include "chrome/renderer/chrome_isolated_world_ids.h"
+#include "chrome/common/chrome_isolated_world_ids.h"
 #include "chrome/test/base/chrome_render_view_test.h"
 #include "components/translate/content/common/translate_messages.h"
 #include "components/translate/content/renderer/translate_helper.h"
