@@ -122,7 +122,7 @@ exec_script_whitelist = [
   # TODO(dgn): Layer violation but breaks the build otherwise, see
   # https://crbug.com/474506
   "//clank/java/BUILD.gn",
-  "//clank/native/framework/BUILD.gn",
+  "//clank/native/BUILD.gn",
 
   "//components/domain_reliability/BUILD.gn",
   "//components/scheduler/scheduler.gni",
