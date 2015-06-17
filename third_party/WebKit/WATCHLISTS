@@ -420,6 +420,7 @@
                            'fmalita@chromium.org',
                            'jbroman@chromium.org',
                            'dongseong.hwang@intel.com',
+                           'drott+blinkwatch@chromium.org',
                            'junov@chromium.org' ],
     'heap': [ 'ager@chromium.org',
               'haraken@chromium.org',
