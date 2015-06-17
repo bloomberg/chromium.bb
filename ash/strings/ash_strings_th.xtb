@@ -38,6 +38,7 @@
 <translation id="1812696562331527143">วิธีการป้อนข้อมูลของคุณเปลี่ยนแปลงเป็น <ph name="INPUT_METHOD_ID"/>* (<ph name="BEGIN_LINK"/>บุคคลที่สาม<ph name="END_LINK"/>)
 กด Shift + Alt เพื่อสลับ</translation>
 <translation id="6043994281159824495">ออกจากระบบเลย</translation>
+<translation id="5168181903108465623">เครื่องส่งพร้อมใช้งาน</translation>
 <translation id="2127372758936585790">ที่ชาร์จพลังงานต่ำ</translation>
 <translation id="3799026279081545374">ที่ชาร์จของคุณอาจเสีย หากคุณอาศัยในสหรัฐอเมริกา โปรดโทรไปที่ 866-628-1371 เพื่อขอความช่วยเหลือหรือขอเปลี่ยนสินค้า หากคุณอาศัยในสหราชอาณาจักร โปรดโทรไปที่ 0800-026-0613 หากคุณอาศัยในไอร์แลนด์ โปรดโทรไปที่ 1-800-832-664 หากคุณอาศัยในแคนาดา โปรดโทรไปที่ 866-628-1372 หากคุณอาศัยในออสเตรเลีย โปรดโทรไปที่ 1-800-067-460</translation>
 <translation id="3891340733213178823">กด Ctrl+Shift+Q 2 ครั้งเพื่อออกจากระบบ</translation>
@@ -96,6 +97,7 @@
 <translation id="9089416786594320554">วิธีการป้อนข้อมูล</translation>
 <translation id="2700058918926273959">เซสชันจะสิ้นสุดใน <ph name="SESSION_TIME_REMAINING"/> ระบบจะให้คุณออกจากระบบ</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
+<translation id="1963814843110128691">กำลังแคสต์ $1 ไปยัง $2</translation>
 <translation id="3963445509666917109">ลำโพง (ภายใน)</translation>
 <translation id="1747827819627189109">เปิดใช้แป้นพิมพ์บนหน้าจออยู่</translation>
 <translation id="2208323208084708176">โหมดเดสก์ท็อปแบบรวม</translation>
@@ -179,6 +181,7 @@
 <translation id="6785414152754474415">มีแบตเตอรี่ <ph name="PERCENTAGE"/>% และกำลังชาร์จ</translation>
 <translation id="4895488851634969361">แบตเตอรี่เต็ม</translation>
 <translation id="615957422585914272">แสดงแป้นพิมพ์บนหน้าจอ</translation>
+<translation id="8443356412772935865">กำลังแคสต์หน้าจอไปยัง $1</translation>
 <translation id="5947494881799873997">ย้อนกลับ</translation>
 <translation id="7593891976182323525">ค้นหาหรือ Shift</translation>
 <translation id="7649070708921625228">ช่วยเหลือ</translation>
@@ -187,9 +190,11 @@
 <translation id="397105322502079400">กำลังคำนวณ...</translation>
 <translation id="1013923882670373915">อุปกรณ์บลูทูธ &quot;<ph name="DEVICE_NAME"/>&quot; ต้องการสิทธิ์ในการจับคู่ โปรดป้อนรหัส PIN นี้บนอุปกรณ์นั้น: <ph name="PINCODE"/></translation>
 <translation id="2819276065543622893">คุณจะออกจากระบบในตอนนี้</translation>
+<translation id="4961318399572185831">แคสต์หน้าจอ</translation>
 <translation id="5507786745520522457">ตั้งค่าข้อมูลมือถือ</translation>
 <translation id="6165508094623778733">เรียนรู้เพิ่มเติม</translation>
 <translation id="7168224885072002358">เปลี่ยนกลับไปเป็นความละเอียดเดิมภายใน <ph name="TIMEOUT_SECONDS"/></translation>
+<translation id="5927132638760172455">กำลังแคสต์ไปยังเครื่องรับที่ไม่รู้จัก</translation>
 <translation id="743058460480092004">ใช้กล้องถ่ายรูปและไมโครโฟนอยู่</translation>
 <translation id="6550675742724504774">ตัวเลือก</translation>
 <translation id="6406704438230478924">altgr</translation>

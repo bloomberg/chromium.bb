@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ko">
 <translation id="337167041784729019">통계 보기</translation>
+<translation id="2256115617011615191">지금 다시 시작</translation>
 <translation id="7606912958770842224">원격 연결 사용</translation>
 <translation id="3785447812627779171">Chromoting
 호스트</translation>
@@ -137,6 +138,7 @@
 <translation id="8196755618196986400">Google이 더 자세한 내용을 확인하기 위해 연락할 수 있도록, 제출한 의견에 사용자의 이메일 주소를 포함해주시기 바랍니다.</translation>
 <translation id="154040539590487450">원격 액세스 서비스를 시작하지 못했습니다.</translation>
 <translation id="7948001860594368197">화면 옵션</translation>
+<translation id="2221097377466213233">오른쪽 Ctrl를 Win 키로 사용(Mac의 경우 ⌘)</translation>
 <translation id="5254120496627797685">이 페이지를 닫으면 Chrome 원격 데스크톱 세션이 종료됩니다.</translation>
 <translation id="7019153418965365059">알 수 없는 호스트 오류입니다. <ph name="HOST_OFFLINE_REASON"/>.</translation>
 <translation id="712467900648340229">Cast 기기에 연결하지 못했습니다.</translation>
@@ -152,6 +154,7 @@
 <translation id="8116630183974937060">네트워크 오류가 발생했습니다. 기기가 온라인 상태인지 확인하고 다시 시도하세요.</translation>
 <translation id="3020807351229499221">PIN을 업데이트하지 못했습니다. 나중에 다시 시도해 주세요.</translation>
 <translation id="2647232381348739934">Chromoting 서비스</translation>
+<translation id="2888969873284818612">네트워크 오류가 발생했습니다. 기기가 다시 온라인 상태가 되면 앱을 다시 시작하겠습니다.</translation>
 <translation id="579702532610384533">다시 연결</translation>
 <translation id="4867841927763172006">PrtScn 전송</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME"/>(최근 연결: <ph name="DATE_OR_TIME"/>)</translation>
@@ -258,6 +261,7 @@
 <translation id="4277463233460010382">이 컴퓨터는 한 개 이상의 클라이언트가 PIN을 입력하지 않고도 연결할 수 있도록 구성되었습니다.</translation>
 <translation id="837021510621780684">이 컴퓨터에서 시작한 연결</translation>
 <translation id="518094545883702183">이 정보는 보고된 문제를 진단하는 데만 사용되고 보고서 조사 담당자만 볼 수 있으며, 30일 이내에 폐기됩니다.</translation>
+<translation id="1261403020716313927">• 원격 데스크톱과의 연결 해제 시 발생하는 다량의 메모리 누수를 해결했습니다.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="4918086044614829423">수락</translation>
 <translation id="7215059001581613786">6자리 이상의 숫자로 구성된 PIN을 입력하세요.</translation>

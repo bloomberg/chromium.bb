@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="th">
 <translation id="2774256287122201187">คุณสามารถดำเนินการต่อได้ หากคุณไปยังหน้าดังกล่าว คำเตือนนี้จะไม่ปรากฏอีกเป็นเวลา 5 นาที</translation>
+<translation id="3963721102035795474">โหมดนักอ่าน</translation>
 <translation id="7485870689360869515">ไม่พบข้อมูล</translation>
 <translation id="3884278016824448484">ตัวชี้อุปกรณ์ขัดแย้งกัน</translation>
 <translation id="5172758083709347301">ผู้ใช้คอมพิวเตอร์นี้</translation>
@@ -164,6 +165,7 @@
 <translation id="8891727572606052622">โหมดพร็อกซีไม่ถูกต้อง</translation>
 <translation id="3105172416063519923">รหัสสินทรัพย์:</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="1549470594296187301">ต้องเปิดใช้ JavaScript เพื่อใช้คุณลักษณะนี้</translation>
 <translation id="2587841377698384444">รหัส API ไดเรกทอรี:</translation>
 <translation id="7752995774971033316">ไม่ได้จัดการ</translation>
 <translation id="3712624925041724820">ใบอนุญาตหมด</translation>

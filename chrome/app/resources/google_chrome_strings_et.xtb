@@ -76,6 +76,7 @@
 <translation id="8551886023433311834">Seade on peaaegu ajakohane. Täienduse lõpuleviimiseks taaskäivitage seade.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="1073391069195728457">Chrome – märguanded</translation>
+<translation id="6368805772029492593">Turvalisuse suurendamiseks krüptib Google Chrome teie andmed.</translation>
 <translation id="7339898014177206373">Uus aken</translation>
 <translation id="3282568296779691940">Chrome'i sisselogimine</translation>
 <translation id="3089968997497233615">Saadaval on uus ja turvalisem Google Chrome'i versioon.</translation>
@@ -222,6 +223,7 @@ Kui logite siiski sisse, liidetakse Chrome'i teave, nagu järjehoidjad, ajalugu 
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="6113794647360055231">Chrome muutus just paremaks</translation>
 <translation id="2588322182880276190">Chrome'i logo</translation>
+<translation id="4519152997629025674">Google Chrome võib kasutada <ph name="BEGIN_LINK"/>veebiteenuseid<ph name="END_LINK"/> teie sirvimiskogemuse täiustamiseks. Võite need teenused soovi korral igal ajal välja lülitada.</translation>
 <translation id="4367618624832907428">Google Chrome ei saa veebilehte kuvada, kuna teie arvuti pole Internetiga ühendatud.</translation>
 <translation id="174539241580958092">Google Chrome ei saanud sisselogimisvea tõttu teie andmeid sünkroonida.</translation>
 <translation id="8255190535488645436">Google Chrome kasutab kaamerat ja mikrofoni.</translation>

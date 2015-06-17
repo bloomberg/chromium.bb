@@ -74,6 +74,7 @@
 <translation id="8551886023433311834">Обновление почти завершено. Перезагрузите устройство.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="1073391069195728457">Chrome - Оповещения</translation>
+<translation id="6368805772029492593">В целях повышения безопасности Google Chrome шифрует ваши данные.</translation>
 <translation id="7339898014177206373">Новое окно</translation>
 <translation id="3282568296779691940">Войдите в Chrome</translation>
 <translation id="3089968997497233615">Доступна новая, более безопасная версия Google Chrome.</translation>
@@ -207,6 +208,7 @@
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="6113794647360055231">Chrome становится все лучше</translation>
 <translation id="2588322182880276190">Логотип Chrome</translation>
+<translation id="4519152997629025674">Для более качественной работы Google Chrome может использовать <ph name="BEGIN_LINK"/>веб-сервисы<ph name="END_LINK"/>. При необходимости вы можете отключить их.</translation>
 <translation id="4367618624832907428">Google Chrome не может отобразить веб-страницу, потому что компьютер не подключен к Интернету.</translation>
 <translation id="174539241580958092">Google Chrome не удалось синхронизировать данные из-за ошибки входа в аккаунт.</translation>
 <translation id="8255190535488645436">Google Chrome использует камеру и микрофон.</translation>

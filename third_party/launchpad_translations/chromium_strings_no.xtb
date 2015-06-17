@@ -15,6 +15,7 @@
 <translation id="3748537968684000502">Du ser på en sikker Chromium-side.</translation>
 <translation id="2077129598763517140">Bruk maskinvareakselerasjon når det er tilgjengelig</translation>
 <translation id="1065672644894730302">Kan ikke lese innstillingene. Enkelte funksjoner kan være utilgjengelige, og endringer av innstillingene blir ikke lagret.</translation>
+<translation id="2233513990531887259">Start på nytt i maksimert modus for Chromium</translation>
 <translation id="7861509383340276692">Gå til
         Chromium-menyen &gt;
         <ph name="SETTINGS_TITLE"/>
@@ -26,6 +27,7 @@
 <translation id="4423735387467980091">Tilpass og kontrollér Chromium</translation>
 <translation id="1881322772814446296">Du logger deg på med en administrert konto og gir tilhørende administratorer kontroll over Chromium-profilen din. Chromium-dataene dine, slik som apper, bokmerker, loggen, passord og andre innstillinger knyttes permanent til <ph name="USER_NAME"/>. Du kan slette disse dataene via oversikten for Google-kontoer, men du kan ikke knytte disse dataene til en annen konto. Du kan velge om du vil opprette en ny profil for å holde de eksisterende Chromium-dataene atskilte. <ph name="LEARN_MORE"/></translation>
 <translation id="5620765574781326016">Finn ut mer om emner på nettsteder uten å forlate siden.</translation>
+<translation id="7723128346970903111">Når dette er slått på, brukes en iframe-basert påloggingsprosess for Chromium. Hvis ikke brukes en nettvisningsbasert prosess.</translation>
 <translation id="731644333568559921">Oppdater &amp;Chromium OS</translation>
 <translation id="7421823331379285070">Chromium krever Windows XP eller nyere. Enkelte funksjoner vil kanskje ikke fungere.</translation>
 <translation id="1185134272377778587">Om Chromium</translation>
@@ -39,6 +41,7 @@
 <translation id="1668054258064581266">Når du har fjernet kontoen din fra Chromium, kan det hende at du må laste inn de åpne fanene på nytt før endringene trer i kraft.</translation>
 <translation id="4285930937574705105">Installeringen mislyktes på grunn av en uspesifisert feil. Lukk Chromium hvis nettleseren kjører, og prøv på nytt.</translation>
 <translation id="1396446129537741364">Chromium prøver å vise passord.</translation>
+<translation id="2097986737970966220">Åpne Chromium på skrivebordet</translation>
 <translation id="8987477933582888019">Nettleser</translation>
 <translation id="4050175100176540509">Viktige sikkerhetsforbedringer og nye funksjoner er tilgjengelige i den nyeste versjonen.</translation>
 <translation id="2886012850691518054">Valgfritt: Bidra til å gjøre Chromium bedre ved å sende brukerstatistikk og krasjrapporter automatisk til Google.</translation>
@@ -70,11 +73,13 @@
 <translation id="2347108572062610441">Denne utvidelsen har endret hvilken side som vises når du starter Chromium.</translation>
 <translation id="3849925841547750267">Mozilla Firefox-innstillingene dine er dessverre ikke tilgjengelige når den nettleseren brukes. Hvis du vil installere de innstillingene til Chromium, må du lagre arbeidet ditt og lukke alle Firefox-vinduer. Klikk deretter på Fortsett.</translation>
 <translation id="7027298027173928763">Chromium kunne ikke oppdatere seg selv til den nyeste versjonen, så du går glipp av fantastiske nye funksjoner og sikkerhetsforbedringer. Du må installere Chromium på nytt manuelt.</translation>
+<translation id="2718390899429598676">Chromium krypterer dataene dine for å øke sikkerheten.</translation>
 <translation id="8897323336392112261">Den styrer også hvilken side som vises når du starter Chromium eller klikker på Startside-knappen.</translation>
 <translation id="4330585738697551178">Denne modulen er kjent for å komme i konflikt med Chromium.</translation>
 <translation id="3190315855212034486">Chromium har krasjet. Vil du starte den på nytt nå?</translation>
 <translation id="3068515742935458733">Bidra til å gjøre Chromium bedre ved å sende programstopprapporter og <ph name="UMA_LINK"/> til Google</translation>
 <translation id="734373864078049451">Her finner du nettinnholdet, bokmerkene og de andre Chromium-tingene dine.</translation>
+<translation id="4075965373589665797">Når du starter på nytt i skrivebordsmodus, blir Chromium-appene lukket og startet på nytt.</translation>
 <translation id="3197823471738295152">Enheten er oppdatert.</translation>
 <translation id="8551886023433311834">Nesten oppdatert! Start enheten på nytt for å fullføre oppdateringen.</translation>
 <translation id="8738058698779197622">Klokken din må være riktig stilt for at du skal kunne opprette en sikker forbindelse. Sertifikatene som nettsteder bruker til å identifisere seg med, er nemlig bare gyldige i en viss tid. Siden enhetens klokke er feil, kan ikke Chromium kontrollere disse sertifikatene.</translation>
@@ -85,10 +90,12 @@
 <translation id="7473891865547856676">Nei takk</translation>
 <translation id="9191268552238695869">En administrator har installert Chromium på dette systemet, og nettleseren er tilgjengelig for alle brukere. Chromium på systemnivå erstatter installasjonene du har på brukernivå.</translation>
 <translation id="3509308970982693815">Lukk alle Chromium-vinduer og prøv på nytt.</translation>
+<translation id="3192211604788138894">Start Chromium på nytt i Windows 8-modus</translation>
 <translation id="8851136666856101339">main</translation>
 <translation id="4077262827416206768">Lukk alle Chromium-vinduer og start Chromium på nytt for at denne endringen skal tre i kraft.</translation>
 <translation id="6475912303565314141">Den styrer også hvilken side som vises når du starter Chromium.</translation>
 <translation id="1725059042853530269"><ph name="FILE_NAME"/>-filen kan gi deg en dårligere leseopplevelse, så Chromium har blokkert den.</translation>
+<translation id="208174207680926830">Start Chromium på nytt på skrivebordet</translation>
 <translation id="750717762378961310">Denne filen er skadelig, og Chromium har blokkert den.</translation>
 <translation id="6944967875980567883">Moduler lastet inn i Chromium</translation>
 <translation id="6899795326977034905">På Mac blir passord lagret i nøkkelringen. Andre Chromium-brukere som deler denne OS X-kontoen, har adgang til og kan synkronisere med disse passordene.</translation>
@@ -102,6 +109,7 @@
 <translation id="6055895534982063517">En nyere versjon av Chromium er tilgjengelig, og den er raskere enn noen gang.</translation>
 <translation id="8821041990367117597">Chromium kunne ikke synkronisere dataene dine. Dette skyldes at påloggingsopplysningene for kontoen din er foreldede.</translation>
 <translation id="4677944499843243528">Profilen ser ut til å være i bruk av en annen Chromium-prosess (<ph name="PROCESS_ID"/>) på en annen datamaskin (<ph name="HOST_NAME"/>). Chromium har låst profilen slik at den ikke blir infisert. Hvis du er sikker på at ingen andre prosesser bruker profilen, kan du låse opp profilen og starte Chromium på nytt.</translation>
+<translation id="5796460469508169315">Chromium er nesten klar.</translation>
 <translation id="4994636714258228724">Legg til deg selv i Chromium</translation>
 <translation id="7066436765290594559">Chromium kunne ikke synkronisere dataene dine. Oppdater passordfrasen for synkronisering.</translation>
 <translation id="7747138024166251722">Installasjonsprogrammet kunne ikke opprette en midlertidig katalog. Kontroller at du har nok ledig diskplass og tillatelse til å installere programvare.</translation>
@@ -160,6 +168,7 @@ og feil legitimasjon. Enten utgir en hacker seg for å være <ph name="SITE"/>, 
 <translation id="1293235220023151515">Det ble funnet en konfliktskapende installasjon av Chromium på systemet. Avinstaller den og prøv på nytt.</translation>
 <translation id="5398878173008909840">En nyere versjon av Chromium er tilgjengelig.</translation>
 <translation id="2648074677641340862">Det oppsto en systemfeil under installering. Last ned Chromium på nytt.</translation>
+<translation id="3595526210123705352">Når du starter på nytt i Windows 8-modus, blir Chromium-appene lukket og startet på nytt.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME"/> har blitt lagt til i Chromium.</translation>
 <translation id="7211828883345145708">Aktiverer flere hurtigtaster som er nyttige for feilsøking av Chromium.</translation>
 <translation id="549669000822060376">Vent mens Chromium installerer de nyeste systemoppdateringene.</translation>
@@ -185,6 +194,7 @@ Det er mulig at enkelte funksjoner ikke er tilgjengelige. Angi en annen profilka
           igjen for å bedre ytelsen.</translation>
 <translation id="1174473354587728743">Deler du datamaskinen din med andre? Nå kan du konfigurere Chromium akkurat slik du vil.</translation>
 <translation id="9013087743919948559">Legg til i Chromium</translation>
+<translation id="7090955637699162649">Chromium kan bruke <ph name="BEGIN_LINK"/>nettjenester<ph name="END_LINK"/> for å forbedre surfeopplevelsen din. Du kan når som helst velge å slå av disse tjenestene.</translation>
 <translation id="6334986366598267305">Nå er det enklere å bruke Chromium med Google-kontoen din og på datamaskiner du deler med andre.</translation>
 <translation id="6212496753309875659">Denne datamaskinen har allerede en nyere versjon av Chromium. Hvis programvaren ikke fungerer, må du avinstallere Chromium og prøve på nytt.</translation>
 <translation id="1115445892567829615">Chromium kunne ikke synkronisere dataene dine. Oppdater passordfrasen for synkronisering.</translation>
@@ -201,6 +211,7 @@ Det er mulig at enkelte funksjoner ikke er tilgjengelige. Angi en annen profilka
 <translation id="1929939181775079593">Chromium svarer ikke. Vil du starte den på nytt nå?</translation>
 <translation id="1414495520565016063">Du er logget på Chromium.</translation>
 <translation id="2158734852934720349">Åpen kildekode-lisenser for Chromium OS</translation>
+<translation id="6900895776413482243">Når du starter på nytt i maksimert modus, blir Chromium-appene lukket og startet på nytt.</translation>
 <translation id="2966088006374919794">Chromium må starte et eksternt program for å håndtere <ph name="SCHEME"/>-linker. Den påkrevde linken er <ph name="PROTOLINK"/>.</translation>
 <translation id="7205698830395646142">Skjul i Chromium-menyen</translation>
 <translation id="9019929317751753759">For å gjøre Chromium tryggere har vi slått av følgende utvidelse som ikke finnes i <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/>, og som kan ha blitt lagt til uten at du vet det.</translation>
@@ -223,6 +234,7 @@ Det er mulig at enkelte funksjoner ikke er tilgjengelige. Angi en annen profilka
 <translation id="7483335560992089831">Kan ikke installere den samme Chromium-versjonen som kjører. Lukk Chromium og prøv på nytt.</translation>
 <translation id="1150979032973867961">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN"/>. Sikkerhetssertifikatet til tjeneren er ikke klarert av datamaskinens operativsystem. Dette kan være forårsaket av en feilkonfigurering eller en angriper som avskjærer tilkoblingen din.</translation>
 <translation id="7641113255207688324">Chromium er ikke standard nettleser.</translation>
+<translation id="358997566136285270">Chromium-logo</translation>
 <translation id="4458285410772214805">Logg deg av og så på igjen for at denne endringen skal tre i kraft.</translation>
 <translation id="2847479871509788944">Fjern fra Chromium</translation>
 <translation id="761356813943268536">Chromium bruker kameraet og mikrofonen din.</translation>
@@ -231,6 +243,7 @@ Det er mulig at enkelte funksjoner ikke er tilgjengelige. Angi en annen profilka
 <translation id="1708666629004767631">En ny, sikrere versjon av Chromium er tilgjengelig.</translation>
 <translation id="1644918877723739397">Chromium lagrer dette i <ph name="SAVED_PASSWORD_LINK"/> og husker det neste gang du trenger det.</translation>
 <translation id="378917192836375108">Med Chromium kan du klikke på et telefonnummer på nettet og ringe til det med Skype.</translation>
+<translation id="1461885241643463646">Slår på iframe-baserte påloggingsprosesser for Chromium. Dette flagget overstyrer --enable-web-based-signin.</translation>
 <translation id="608189560609172163">Chromium kunne ikke synkronisere dataene dine på grunn av en feil under påloggingen.</translation>
 <translation id="4888717733111232871">Regel om innkommende trafikk for Chromium for å tillate mDNS-trafikk.</translation>
 <translation id="151962892725702025">Chromium OS kunne ikke synkronisere dataene dine fordi synkronisering ikke er tilgjengelig for domenet ditt.</translation>

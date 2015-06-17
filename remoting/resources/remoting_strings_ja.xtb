@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ja">
 <translation id="337167041784729019">統計情報を表示</translation>
+<translation id="2256115617011615191">今すぐ再起動</translation>
 <translation id="7606912958770842224">リモート接続を有効にする</translation>
 <translation id="3785447812627779171">Chromoting
 ホスト</translation>
@@ -137,6 +138,7 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="8196755618196986400">後で詳しい情報をお知らせするために、送信いただくフィードバックにはお客様のメールアドレスが記載されますのでご了承ください。</translation>
 <translation id="154040539590487450">リモート アクセス サービスを開始できませんでした。</translation>
 <translation id="7948001860594368197">画面のオプション</translation>
+<translation id="2221097377466213233">右 Ctrl キーを Win キー（Mac の場合は ⌘）として使用</translation>
 <translation id="5254120496627797685">このページを閉じると、Chrome リモート デスクトップ セッションが終了します。</translation>
 <translation id="7019153418965365059">不明なホストエラー: <ph name="HOST_OFFLINE_REASON"/>。</translation>
 <translation id="712467900648340229">キャスト デバイスに接続できませんでした。</translation>
@@ -152,6 +154,7 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="8116630183974937060">ネットワーク エラーが発生しました。デバイスがインターネットに接続されているか確認して、もう一度お試しください。</translation>
 <translation id="3020807351229499221">PIN を更新できませんでした。しばらくしてからもう一度お試しください。</translation>
 <translation id="2647232381348739934">Chromoting サービス</translation>
+<translation id="2888969873284818612">ネットワーク エラーが発生しました。デバイスが再度オンラインになったときにアプリを再開します。</translation>
 <translation id="579702532610384533">再接続</translation>
 <translation id="4867841927763172006">PrtScn を送信</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME"/>（前回のオンライン接続: <ph name="DATE_OR_TIME"/>）</translation>
@@ -258,6 +261,7 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="4277463233460010382">このパソコンは、1 つ以上のクライアントが PIN の入力なしで接続できるように設定されています。</translation>
 <translation id="837021510621780684">このパソコンからの接続</translation>
 <translation id="518094545883702183">この情報は、報告していただいた問題を診断する目的にのみ使用され、調査担当者のみに利用可能となります。この情報が 30 日間を過ぎて保持されることはありません。</translation>
+<translation id="1261403020716313927">• リモートデスクトップからの切断時に発生していた大きなメモリリークを修正しました。</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="4918086044614829423">承諾</translation>
 <translation id="7215059001581613786">PIN は 6 桁以上で入力してください。</translation>

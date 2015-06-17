@@ -38,6 +38,7 @@
 <translation id="1812696562331527143">የግብዓት ስልትዎ ወደ <ph name="INPUT_METHOD_ID"/> ተቀይሯል*(<ph name="BEGIN_LINK"/>3ኛ ወገን<ph name="END_LINK"/>)።
 ለመቀየር Shift + Alt ይጫኑ።</translation>
 <translation id="6043994281159824495">አሁን ዘግተህ ውጣ</translation>
+<translation id="5168181903108465623">የCast መሣሪያዎች ይገኛሉ</translation>
 <translation id="2127372758936585790">አነስተኛ ኃይል ያለው ባትሪ መሙያ</translation>
 <translation id="3799026279081545374">መጥፎ የኃይል መሙያ ሊኖርዎት ይችላል። በአሜሪካ ውስጥ የሚኖሩ ከሆኑ እርዳታን እና መተኪያን ለማግኘት እባክዎ ወደ 866-628-1371 ይደውሉ። በዩኬ ውስጥ የሚኖሩ ከሆኑ እባክዎ ወደ 0800-026-0613 ይደውሉ። በአየርላንድ ውስጥ የሚሆኑ ከሆኑ እባክዎ ወደ 1-800-832-664 ይደውሉ። በካናዳ ውስጥ የሚኖሩ ከሆኑ እባክዎ ወደ 866-628-1372 ይደውሉ። በአውስትራሊያ ውስጥ የሚኖሩ ከሆኑ እባክዎ ወደ 1-800-067-460 ይደውሉ።</translation>
 <translation id="3891340733213178823">ዘግተው ለመውጣት Ctrl+Shift+Qን ሁለቴ ይጫኑ።</translation>
@@ -96,6 +97,7 @@
 <translation id="9089416786594320554">የግቤት ስልቶች</translation>
 <translation id="2700058918926273959">ክፍለ-ጊዜ በ<ph name="SESSION_TIME_REMAINING"/> ውስጥ ያበቃል። ዘግተው እንዲወጡ ይደረጋሉ።</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
+<translation id="1963814843110128691">$1ን ወደ $2 በመውሰድ ላይ</translation>
 <translation id="3963445509666917109">ድምጽ ማጉያ (ውስጣዊ)</translation>
 <translation id="1747827819627189109">በማያ ገጽ ላይ የቁልፍ ሰሌዳ ነቅቷል</translation>
 <translation id="2208323208084708176">የተዋሃደ የዴስክቶፕ ሁነታ</translation>
@@ -179,6 +181,7 @@
 <translation id="6785414152754474415">ባትሪው <ph name="PERCENTAGE"/>% ሙሉ ሆኖ በተጨማሪም ኃይል እየሞላ ነው።</translation>
 <translation id="4895488851634969361">ባትሪው ሙሉ ነው።</translation>
 <translation id="615957422585914272">የማያ ገጽ ላይ ቁልፍ ሰሌዳ አሳይ</translation>
+<translation id="8443356412772935865">ማያ ገጽን ወደ $1 በመውሰድ ላይ</translation>
 <translation id="5947494881799873997">አድህር</translation>
 <translation id="7593891976182323525">Search ወይም Shift</translation>
 <translation id="7649070708921625228">እገዛ</translation>
@@ -187,9 +190,11 @@
 <translation id="397105322502079400">በማስላት ላይ...</translation>
 <translation id="1013923882670373915">የብሉቱዝ መሣሪያ «<ph name="DEVICE_NAME"/>» ለመጣመር ፍቃድ ይፈልጋል። እባክዎ ይህን የፒን ኮድ በዚህ መሣሪያ ላይ ያስገቡ፦ <ph name="PINCODE"/></translation>
 <translation id="2819276065543622893">አሁን ዘግተው እንዲወጡ ይደረጋሉ።</translation>
+<translation id="4961318399572185831">የCast ማያ ገጽ</translation>
 <translation id="5507786745520522457">የተንቀሳቃሽ ስልክ ውሂብ ያዋቅሩ</translation>
 <translation id="6165508094623778733">ተጨማሪ ለመረዳት</translation>
 <translation id="7168224885072002358">በ<ph name="TIMEOUT_SECONDS"/> ውስጥ ወደ ቀድሞው ጥራት በመመለስ ላይ</translation>
+<translation id="5927132638760172455">ወዳልታወቀ ተቀባይ በመውሰድ ላይ</translation>
 <translation id="743058460480092004">ካሜራና ማይክራፎን ስራ ላይ ናቸው።</translation>
 <translation id="6550675742724504774">አማራጮች</translation>
 <translation id="6406704438230478924">altgr</translation>

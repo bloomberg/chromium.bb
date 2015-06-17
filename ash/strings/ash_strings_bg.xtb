@@ -38,6 +38,7 @@
 <translation id="1812696562331527143">Методът ви на въвеждане се промени на <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>трета страна<ph name="END_LINK"/>).
 Натиснете „Shift + Alt“, за да превключите.</translation>
 <translation id="6043994281159824495">Изход сега</translation>
+<translation id="5168181903108465623">Налице са устройства Cast</translation>
 <translation id="2127372758936585790">Зарядно устройство с малка мощност</translation>
 <translation id="3799026279081545374">Възможно е зарядното ви устройство да е дефектно. За да получите помощ и да го замените, моля, обадете се на номера за държавата, в която живеете – 866-628-1371 за САЩ, 0800-026-0613 за Великобритания, 1-800-832-664 за Ирландия, 866-628-1372 за Канада и 1-800-067-460 за Австралия.</translation>
 <translation id="3891340733213178823">Натиснете два пъти „Ctrl+Shift+Q“ за изход.</translation>
@@ -96,6 +97,7 @@
 <translation id="9089416786594320554">Методи за въвеждане</translation>
 <translation id="2700058918926273959">Сесията приключва след <ph name="SESSION_TIME_REMAINING"/>. Ще излезете от профила.</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
+<translation id="1963814843110128691">$1 се предава към $2</translation>
 <translation id="3963445509666917109">Високоговорител (вътрешен)</translation>
 <translation id="1747827819627189109">Екранната клавиатура е активирана</translation>
 <translation id="2208323208084708176">Режим на обединен работен плот</translation>
@@ -179,6 +181,7 @@
 <translation id="6785414152754474415">Батерията е <ph name="PERCENTAGE"/>% пълна и се зарежда.</translation>
 <translation id="4895488851634969361">Батерията е пълна.</translation>
 <translation id="615957422585914272">Показване на екранната клавиатура</translation>
+<translation id="8443356412772935865">Екранът се предава към $1</translation>
 <translation id="5947494881799873997">Възстановяване</translation>
 <translation id="7593891976182323525">„търсене“ или „Shift“</translation>
 <translation id="7649070708921625228">Помощ</translation>
@@ -187,9 +190,11 @@
 <translation id="397105322502079400">Изчислява се...</translation>
 <translation id="1013923882670373915">Устройството с Bluetooth „<ph name="DEVICE_NAME"/>“ иска разрешение за сдвояване. Моля, въведете на него следния ПИН код: <ph name="PINCODE"/></translation>
 <translation id="2819276065543622893">Ще излезете сега.</translation>
+<translation id="4961318399572185831">Предаване на екрана</translation>
 <translation id="5507786745520522457">Настройване на мобилните данни</translation>
 <translation id="6165508094623778733">Научете повече</translation>
 <translation id="7168224885072002358">Старата разделителна способност ще се възстанови след <ph name="TIMEOUT_SECONDS"/></translation>
+<translation id="5927132638760172455">Предава се към неизвестен приемник</translation>
 <translation id="743058460480092004">Камерата и микрофонът се използват.</translation>
 <translation id="6550675742724504774">Опции</translation>
 <translation id="6406704438230478924">altgr</translation>

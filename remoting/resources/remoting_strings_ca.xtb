@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ca">
 <translation id="337167041784729019">Mostra les estadístiques</translation>
+<translation id="2256115617011615191">Reinicia ara</translation>
 <translation id="7606912958770842224">Activa les connexions remotes</translation>
 <translation id="3785447812627779171">Chromoting
 Host</translation>
@@ -137,6 +138,7 @@ Per obtenir informació sobre la privadesa, vegeu la Política de privadesa de G
 <translation id="8196755618196986400">La vostra adreça electrònica s'inclourà en tots els suggeriments que envieu perquè us puguem escriure i proporcionar-vos més informació.</translation>
 <translation id="154040539590487450">No s'ha pogut iniciar el servei d'accés remot.</translation>
 <translation id="7948001860594368197">Opcions de pantalla</translation>
+<translation id="2221097377466213233">Utilitza la tecla de Ctrl dreta com a tecla de Windows (⌘ a Mac)</translation>
 <translation id="5254120496627797685">Si sortiu d'aquesta pàgina, la sessió de l'escriptori remot de Chrome finalitzarà.</translation>
 <translation id="7019153418965365059">Error d'amfitrió no reconegut: <ph name="HOST_OFFLINE_REASON"/>.</translation>
 <translation id="712467900648340229">La connexió amb el dispositiu d'emissió no s'ha pogut establir</translation>
@@ -152,6 +154,7 @@ Per obtenir informació sobre la privadesa, vegeu la Política de privadesa de G
 <translation id="8116630183974937060">S'ha produït un error de xarxa. Comproveu que el dispositiu estigui en línia i torneu-ho a provar.</translation>
 <translation id="3020807351229499221">No s'ha pogut actualitzar el PIN. Torneu-ho a provar més tard.</translation>
 <translation id="2647232381348739934">Servei de Chromoting</translation>
+<translation id="2888969873284818612">S'ha produït un error a la xarxa. Reiniciarem l'aplicació quan el dispositiu torni a estar en línia.</translation>
 <translation id="579702532610384533">Torna a connectar</translation>
 <translation id="4867841927763172006">Envia Impr Pant</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME"/> (última connexió: <ph name="DATE_OR_TIME"/>)</translation>
@@ -258,6 +261,7 @@ remot de Chrome</translation>
 <translation id="4277463233460010382">La configuració d'aquest ordinador permet que un o més clients es connectin sense introduir cap PIN.</translation>
 <translation id="837021510621780684">Des d'aquest ordinador</translation>
 <translation id="518094545883702183">Aquesta informació només s'utilitza per diagnosticar el problema de què esteu informant. Només hi poden accedir les persones que analitzen l'informe i es conserva com a màxim durant 30 dies.</translation>
+<translation id="1261403020716313927">• Hem corregit una filtració de memòria important en desconnectar-se des d'un escriptori remot.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="4918086044614829423">Accepta</translation>
 <translation id="7215059001581613786">Introduïu un PIN que tingui sis dígits o més.</translation>

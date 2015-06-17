@@ -38,6 +38,7 @@
 <translation id="1812696562331527143">आपली इनपुट पद्धत <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>तृतीय पक्षावर<ph name="END_LINK"/>)बदलली.
 स्‍विच करण्‍यासाठी Shift + Alt दाबा.</translation>
 <translation id="6043994281159824495">आता साइन आउट करा</translation>
+<translation id="5168181903108465623">कास्‍ट डिव्‍हाइसेस उपलब्‍ध</translation>
 <translation id="2127372758936585790">निम्न-उर्जेचे चार्जर</translation>
 <translation id="3799026279081545374">आपल्याकडे खराब चार्जर असू शकतो. आपण यूएस मध्ये रहात असल्यास, कृपया मदत आणि दुसरा चार्जर प्राप्त करण्यासाठी 866-628-1371 वर कॉल करा. आपण यूके मध्ये रहात असल्यास, कृपया 0800-026-0613 वर कॉल करा. आपण आयर्लंडमध्ये रहात असल्यास, कृपया 1-800-832-664 वर कॉल करा. आपण कॅनडामध्ये रहात असल्यास, कृपया 866-628-1372 वर कॉल करा. आपण ऑस्ट्रेलियामध्ये रहात असल्यास, कृपया 1-800-067-460 वर कॉल करा.</translation>
 <translation id="3891340733213178823">साइन आउट करण्यासाठी Ctrl+Shift+Q दोनदा दाबा.</translation>
@@ -96,6 +97,7 @@
 <translation id="9089416786594320554">इनपुट पद्धती</translation>
 <translation id="2700058918926273959"><ph name="SESSION_TIME_REMAINING"/> मध्ये सत्र समाप्त होते. आपल्याला साइन आउट केले जाईल.</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
+<translation id="1963814843110128691">$1 ते $2 कास्ट करत आहे...</translation>
 <translation id="3963445509666917109">स्पीकर (अंतर्गत)</translation>
 <translation id="1747827819627189109">ऑन-स्क्रीन कीबोर्ड सक्षम</translation>
 <translation id="2208323208084708176">एकीकृत डेस्कटॉप मोड</translation>
@@ -179,6 +181,7 @@
 <translation id="6785414152754474415">बॅटरी <ph name="PERCENTAGE"/>% भरली आहे आणि चार्ज होत आहे.</translation>
 <translation id="4895488851634969361">बॅटरी भरली आहे.</translation>
 <translation id="615957422585914272">ऑन-स्‍क्रीन कीबोर्ड दर्शवा</translation>
+<translation id="8443356412772935865">स्क्रीन $1 वर कास्ट करीत आहे</translation>
 <translation id="5947494881799873997">परत करा</translation>
 <translation id="7593891976182323525">Search किंवा Shift</translation>
 <translation id="7649070708921625228">मदत</translation>
@@ -187,9 +190,11 @@
 <translation id="397105322502079400">गणना करत आहे...</translation>
 <translation id="1013923882670373915">&quot;<ph name="DEVICE_NAME"/>&quot; Bluetooth डिव्हाइस जोडण्यासाठी परवानगी घेऊ इच्छिते. कृपया त्या डिव्हाइसवर हा पिन प्रविष्ट करा: <ph name="PINCODE"/></translation>
 <translation id="2819276065543622893">आता आपल्याला साइन आउट केले जाईल.</translation>
+<translation id="4961318399572185831">स्क्रीन कास्ट करा</translation>
 <translation id="5507786745520522457">मोबाइल डेटा सेट करा</translation>
 <translation id="6165508094623778733">अधिक जाणून घ्या</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS"/> मध्ये जुन्या रिजोल्यूशनवर परत करत आहे</translation>
+<translation id="5927132638760172455">एका अज्ञात प्राप्तकर्त्यावर कास्ट करीत आहे</translation>
 <translation id="743058460480092004">कॅमेरा आणि मायक्रोफोन वापरात आहेत.</translation>
 <translation id="6550675742724504774">पर्याय</translation>
 <translation id="6406704438230478924">altgr</translation>

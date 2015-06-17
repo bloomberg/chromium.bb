@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ca">
 <translation id="2774256287122201187">Podeu continuar. Si accediu a la pàgina, no es tornarà a mostrar aquest advertiment fins d'aquí a cinc minuts.</translation>
+<translation id="3963721102035795474">Mode de lector</translation>
 <translation id="7485870689360869515">No s'han trobat dades.</translation>
 <translation id="3884278016824448484">L'identificador del dispositiu ja s'està utilitzant</translation>
 <translation id="5172758083709347301">Automàtica</translation>
@@ -164,6 +165,7 @@
 <translation id="8891727572606052622">El mode de servidor intermediari no és vàlid.</translation>
 <translation id="3105172416063519923">Identificador de l'element:</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="1549470594296187301">Heu d'activar el JavaScript per utilitzar aquesta funció.</translation>
 <translation id="2587841377698384444">Identificador de l'API de directoris:</translation>
 <translation id="7752995774971033316">Sense gestionar</translation>
 <translation id="3712624925041724820">Llicències exhaurides</translation>

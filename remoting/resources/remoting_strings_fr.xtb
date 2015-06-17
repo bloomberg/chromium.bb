@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="fr">
 <translation id="337167041784729019">Afficher les statistiques</translation>
+<translation id="2256115617011615191">Redémarrer maintenant</translation>
 <translation id="7606912958770842224">Activer les connexions à distance</translation>
 <translation id="3785447812627779171">Hôte
 Chromoting</translation>
@@ -137,6 +138,7 @@ Pour en savoir plus sur la confidentialité, veuillez consulter les règles de c
 <translation id="8196755618196986400">Afin que nous puissions vous contacter pour vous demander de nous fournir plus d'informations, votre adresse e-mail est incluse dans tous les commentaires que vous soumettez.</translation>
 <translation id="154040539590487450">Échec du démarrage du service d'accès à distance.</translation>
 <translation id="7948001860594368197">Options de l'écran</translation>
+<translation id="2221097377466213233">Utiliser la touche Ctrl de droite comme touche Windows (ou ⌘ sur un Mac)</translation>
 <translation id="5254120496627797685">En quittant cette page, vous mettrez fin à la session du bureau à distance Google Chrome.</translation>
 <translation id="7019153418965365059">Erreur d'hôte non reconnue : <ph name="HOST_OFFLINE_REASON"/>.</translation>
 <translation id="712467900648340229">Échec de la connexion à l'appareil Cast</translation>
@@ -152,6 +154,7 @@ Pour en savoir plus sur la confidentialité, veuillez consulter les règles de c
 <translation id="8116630183974937060">Une erreur réseau s'est produite. Veuillez vérifier que votre appareil est en ligne, puis réessayer.</translation>
 <translation id="3020807351229499221">Échec de la mise à jour du code d'accès. Veuillez réessayer ultérieurement.</translation>
 <translation id="2647232381348739934">Service Chromoting</translation>
+<translation id="2888969873284818612">Une erreur réseau s'est produite. L'application va être redémarrée lorsque votre appareil sera de nouveau en ligne.</translation>
 <translation id="579702532610384533">Reconnexion</translation>
 <translation id="4867841927763172006">Envoyer Imp écr</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME"/> (dernière connexion : <ph name="DATE_OR_TIME"/>)</translation>
@@ -258,6 +261,7 @@ Google Chrome</translation>
 <translation id="4277463233460010382">Cet ordinateur est configuré pour permettre à un ou plusieurs clients de se connecter sans saisir de code d'accès.</translation>
 <translation id="837021510621780684">À partir de cet ordinateur</translation>
 <translation id="518094545883702183">Ces informations sont conservées 30 jours au maximum et mises à disposition uniquement de la personne chargée d'étudier votre rapport afin d'identifier le problème que vous avez relevé.</translation>
+<translation id="1261403020716313927">• Réparation de l'importante fuite de mémoire lors de la déconnexion du Bureau à distance.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="4918086044614829423">Accepter</translation>
 <translation id="7215059001581613786">Veuillez saisir un code d'accès composé d'au moins six chiffres.</translation>

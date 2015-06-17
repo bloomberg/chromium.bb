@@ -17,6 +17,7 @@
 <translation id="1065672644894730302">환경설정을 읽을 수 없습니다.
 
 일부 기능을 사용할 수 없으며 환경설정의 변경사항이 저장되지 않습니다.</translation>
+<translation id="2233513990531887259">Chromium 몰입형 모드로 다시 시작</translation>
 <translation id="7861509383340276692">Chromium 메뉴 &gt;
           <ph name="SETTINGS_TITLE"/>
           &gt;
@@ -27,6 +28,7 @@
 <translation id="4423735387467980091">Chromium 맞춤설정 및 제어</translation>
 <translation id="1881322772814446296">관리 계정으로 로그인하고 Chromium 프로필에 대한 관리자 제어권을 부여하려고 합니다. 앱, 북마크, 방문 기록, 비밀번호 및 기타 설정 등 Chromium 데이터가 <ph name="USER_NAME"/> 계정에 영구적으로 연결됩니다. 이후 이 데이터를 Google 계정 대시보드에서 삭제할 수는 있지만 다른 계정에 연결할 수는 없습니다. 기존 Chromium 데이터를 유지하려면 새 프로필을 만드는 방법이 있습니다. <ph name="LEARN_MORE"/></translation>
 <translation id="5620765574781326016">페이지를 나가지 않고 웹사이트에서 주제에 대해 자세히 알아보기</translation>
+<translation id="7723128346970903111">사용 설정하면 iframe 기반 Chromium 로그인 절차를 사용하며, 그렇지 않은 경우 WebView 기반 로그인 절차를 사용합니다.</translation>
 <translation id="731644333568559921">Chrome OS 업데이트</translation>
 <translation id="7421823331379285070">Chromium에는 Windows XP 이상이 필요합니다. 일부 기능이 작동하지 않을 수 있습니다.</translation>
 <translation id="1185134272377778587">Chromium 정보</translation>
@@ -40,6 +42,7 @@
 <translation id="1668054258064581266">Chromium에서 계정을 삭제한 후 열려 있는 탭을 새로고침해야 적용됩니다.</translation>
 <translation id="4285930937574705105">확인되지 않은 오류로 설치에 실패했습니다. Chromium이 실행 중인 경우 종료한 후 다시 실행하세요.</translation>
 <translation id="1396446129537741364">Chromium이 비밀번호를 표시하려고 합니다.</translation>
+<translation id="2097986737970966220">데스크톱에서 Chromium 열기</translation>
 <translation id="8987477933582888019">웹브라우저</translation>
 <translation id="4050175100176540509">최신 버전에는 중요한 보안 개선사항 및 새로운 기능이 포함되어 있습니다.</translation>
 <translation id="2886012850691518054">선택사항: 사용 통계 및 오류 보고서가 Google로 자동 전송되도록 선택하시면 Chromium을 개선하는 데 도움이 됩니다.</translation>
@@ -70,11 +73,13 @@
 <translation id="2347108572062610441">Chromium을 시작하면 표시되는 페이지가 이 확장 프로그램으로 인해 변경되었습니다.</translation>
 <translation id="3849925841547750267">Mozilla Firefox 브라우저가 실행 중일 때는 설정 기능을 사용할 수 없습니다. 이 설정을 Chromium으로 가져오려면 현재 작업을 저장하고 Firefox 창을 모두 닫습니다. 그런 다음 '계속'을 클릭합니다.</translation>
 <translation id="7027298027173928763">Chromium을 최신 버전으로 자동 업데이트할 수 없기 때문에 새로운 기능과 보안 수정사항 업데이트가 누락될 수 있습니다. Chromium을 직접 다시 설치해야 합니다.</translation>
+<translation id="2718390899429598676">보안 강화를 위해 Chromium에서 사용자 데이터를 암호화합니다.</translation>
 <translation id="8897323336392112261">또한 Chromium을 시작하거나 홈 버튼을 클릭할 때 표시되는 페이지를 설정합니다.</translation>
 <translation id="4330585738697551178">이 모듈은 Chromium과 충돌하는 것으로 알려져 있습니다.</translation>
 <translation id="3190315855212034486">Chromium이 다운되었습니다. 다시 시작하시겠습니까?</translation>
 <translation id="3068515742935458733">오류 보고서와 <ph name="UMA_LINK"/>을(를) Google로 전송하여 Chromium 개선에 참여합니다.</translation>
 <translation id="734373864078049451">웹, 북마크 및 기타 Chromium 콘텐츠가 여기에 저장됩니다.</translation>
+<translation id="4075965373589665797">데스크톱 모드로 다시 실행하면 Chromium 앱이 닫혔다가 다시 실행됩니다.</translation>
 <translation id="3197823471738295152">기기가 최신 버전입니다.</translation>
 <translation id="8551886023433311834">업데이트가 거의 완료되었습니다. 업데이트를 완료하려면 기기를 다시 시작하세요.</translation>
 <translation id="8738058698779197622">보안 연결을 설정하려면 시계가 올바로 설정되어 있어야 합니다. 웹사이트가 자신을 식별하는 데 사용하는 인증서가 특정 기간에만 유효하기 때문입니다. 기기의 시계가 잘못 설정되어 Chromium에서 이 인증서를 확인할 수 없습니다.</translation>
@@ -85,10 +90,12 @@
 <translation id="7473891865547856676">건너뛰기</translation>
 <translation id="9191268552238695869">관리자가 Chromium을 시스템에 설치하여 모든 사용자가 사용할 수 있습니다. 시스템 수준의 Chromium은 사용자 수준의 설치를 대체합니다.</translation>
 <translation id="3509308970982693815">Chromium 창을 모두 닫고 다시 시도해 보세요.</translation>
+<translation id="3192211604788138894">Windows 8 모드에서 Chromium 다시 실행</translation>
 <translation id="8851136666856101339">main</translation>
 <translation id="4077262827416206768">모든 Chromium 창을 닫은 뒤 다시 Chromium을 실행하면 변경 사항이 반영됩니다.</translation>
 <translation id="6475912303565314141">또한 Chromium을 시작할 때 표시되는 페이지를 설정합니다.</translation>
 <translation id="1725059042853530269"><ph name="FILE_NAME"/>이(가) 인터넷 사용 환경을 손상할 수 있어서 Chromium에서 차단했습니다.</translation>
+<translation id="208174207680926830">데스크톱에서 Chromium 다시 실행</translation>
 <translation id="750717762378961310">이 파일은 악성 파일이므로 Chromium에서 차단했습니다.</translation>
 <translation id="6944967875980567883">Chromium에 로드된 모듈</translation>
 <translation id="6899795326977034905">Mac에서는 비밀번호가 키체인에 저장되며 이 OS X 계정을 공유하는 다른 Chromium 사용자가 액세스하거나 동기화할 수 있습니다.</translation>
@@ -102,6 +109,7 @@
 <translation id="6055895534982063517">이전보다 더 빨라진 Chromium 새 버전을 사용할 수 있습니다.</translation>
 <translation id="8821041990367117597">계정의 로그인 세부정보가 오래되어 Chromium에서 데이터를 동기화하지 못했습니다.</translation>
 <translation id="4677944499843243528">다른 컴퓨터(<ph name="HOST_NAME"/>)의 다른 Chromium 프로세스(<ph name="PROCESS_ID"/>)에서 프로필을 사용 중인 것 같습니다. 프로필이 손상되지 않도록 Chromium에서 잠금 설정했습니다. 다른 프로세스에서 프로필을 사용 중이지 않은 것이 확실한 경우 프로필을 잠금 해제하고 Chromium을 다시 시작하세요.</translation>
+<translation id="5796460469508169315">Chromium 준비가 거의 완료되었습니다.</translation>
 <translation id="4994636714258228724">Chromium에 본인 추가</translation>
 <translation id="7066436765290594559">Chromium OS에서 데이터를 동기화하지 못했습니다. 동기화 암호를 업데이트하세요.</translation>
 <translation id="7747138024166251722">설치 프로그램이 임시 디렉토리를 만들지 못했습니다. 디스크 공간 및 설치 권한을 확인해 보세요.</translation>
@@ -160,6 +168,7 @@
 <translation id="1293235220023151515">Chromium을 시스템에 설치하는 중에 이전 설치와 충돌이 발생했습니다. 제거한 다음 다시 시도해 주세요.</translation>
 <translation id="5398878173008909840">Chromium의 새 버전이 출시되었습니다.</translation>
 <translation id="2648074677641340862">설치 중 운영체제 오류가 발생했습니다. Chromium을 다시 다운로드하세요.</translation>
+<translation id="3595526210123705352">Windows 8 모드로 다시 실행하면 Chromium 앱이 닫혔다가 다시 실행됩니다.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME"/>이(가) Chromium에 추가되었습니다.</translation>
 <translation id="7211828883345145708">Chromium 디버깅에 유용한 추가 키보드 단축키를 사용합니다.</translation>
 <translation id="549669000822060376">Chromium에서 최신 시스템 업데이트를 설치하는 동안 잠시 기다려 주세요.</translation>
@@ -184,6 +193,7 @@
           성능을 개선해 보시기 바랍니다.</translation>
 <translation id="1174473354587728743">컴퓨터를 공유하시겠습니까? 이제 원하는 대로 Chromium을 설정할 수 있습니다.</translation>
 <translation id="9013087743919948559">Chromium에 추가</translation>
+<translation id="7090955637699162649">Chromium은 브라우저 사용 환경을 개선하기 위해 <ph name="BEGIN_LINK"/>웹 서비스<ph name="END_LINK"/>를 이용할 수 있습니다. 원하는 경우 언제든지 서비스를 사용 중지하실 수 있습니다.</translation>
 <translation id="6334986366598267305">이제 Google 계정으로 공유 컴퓨터에서 Chromium을 손쉽게 사용할 수 있습니다.</translation>
 <translation id="6212496753309875659">컴퓨터에 이미 최신 버전의 Chromium이 있습니다. 소프트웨어가 작동하지 않으면 Chromium의 설치를 제거한 뒤 다시 시도하세요.</translation>
 <translation id="1115445892567829615">Chromium에서 데이터를 동기화하지 못했습니다. 동기화 암호를 업데이트하시기 바랍니다.</translation>
@@ -201,6 +211,7 @@
 <translation id="1929939181775079593">Chromium이 응답하지 않습니다. 다시 시작하시겠습니까?</translation>
 <translation id="1414495520565016063">Chromium에 로그인했습니다.</translation>
 <translation id="2158734852934720349">Chromium OS 오픈소스 라이선스</translation>
+<translation id="6900895776413482243">Chromium 몰입형 모드로 다시 실행하면 Chromium 앱이 닫혔다가 다시 실행됩니다.</translation>
 <translation id="2966088006374919794"><ph name="SCHEME"/> 링크 처리를 위해 Chrome에서 외부 응용 프로그램을 실행해야 합니다. 요청 링크는 <ph name="PROTOLINK"/>입니다.</translation>
 <translation id="7205698830395646142">Chromium 메뉴에서 숨기기</translation>
 <translation id="9019929317751753759">Google에서는 Chromium의 보안을 강화하기 위해 <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/>에 표시되지 않고 사용자가 모르게 추가되었을 수 있는 다음 확장 프로그램의 사용을 중지했습니다.</translation>
@@ -224,6 +235,7 @@
 <translation id="7483335560992089831">이미 실행 중인 Chromium과 동일한 버전을 설치할 수 없습니다. Chromium을 종료한 뒤 다시 시도하세요.</translation>
 <translation id="1150979032973867961">이 서버가 <ph name="DOMAIN"/>임을 입증할 수 없으며 컴퓨터의 운영체제에서 신뢰하는 보안 인증서가 아닙니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.</translation>
 <translation id="7641113255207688324">Chromium이 기본 브라우저로 설정되어 있지 않습니다.</translation>
+<translation id="358997566136285270">Chromium 로고</translation>
 <translation id="4458285410772214805">변경사항을 적용하려면 로그아웃했다가 다시 로그인하세요.</translation>
 <translation id="2847479871509788944">Chromium에서 제거...</translation>
 <translation id="761356813943268536">Chromium이 카메라와 마이크를 사용 중입니다.</translation>
@@ -232,6 +244,7 @@
 <translation id="1708666629004767631">새롭고 안전한 Chromium의 새 버전을 사용할 수 있습니다.</translation>
 <translation id="1644918877723739397">Chromium은 <ph name="SAVED_PASSWORD_LINK"/>에 비밀번호를 저장한 후 다음에 필요할 때 제공합니다.</translation>
 <translation id="378917192836375108">Chromium을 사용하면 웹에서 전화번호를 클릭하여 Skype로 통화할 수 있습니다.</translation>
+<translation id="1461885241643463646">iframe 기반 Chromium 로그인 절차를 사용합니다(이 플래그는 웹 기반 로그인 사용보다 우선함).</translation>
 <translation id="608189560609172163">로그인 중 오류가 발생하여 Chromium에서 데이터를 동기화하지 못했습니다.</translation>
 <translation id="4888717733111232871">Chromium이 mDNS 트래픽을 허용하는 인바운드 규칙입니다.</translation>
 <translation id="151962892725702025">내 도메인에서 동기화를 사용할 수 없으므로 Chromium OS에서 데이터를 동기화하지 못했습니다.</translation>

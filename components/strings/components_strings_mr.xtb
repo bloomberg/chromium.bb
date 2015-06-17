@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="mr">
 <translation id="2774256287122201187">आपण सुरु ठेवू शकता. आपण पृष्ठावर सुरु ठेवल्यास, ही चेतावणी पाच मिनिटे पुन्हा दिसणार नाही.</translation>
+<translation id="3963721102035795474">वाचक मोड</translation>
 <translation id="7485870689360869515">डेटा आढळला नाही.</translation>
 <translation id="3884278016824448484">संघर्ष करणारा डिव्हाइस अभिज्ञापक</translation>
 <translation id="5172758083709347301">मशीन</translation>
@@ -164,6 +165,7 @@
 <translation id="8891727572606052622">अवैध प्रॉक्सी मोड.</translation>
 <translation id="3105172416063519923">मालमत्ता ID:</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="1549470594296187301">हे वैशिष्‍ट्य वापरण्‍यासाठी JavaScript सक्षम करणे आवश्‍यक आहे.</translation>
 <translation id="2587841377698384444">शब्दकोश API ID:</translation>
 <translation id="7752995774971033316">व्यवस्थापित न केलेले</translation>
 <translation id="3712624925041724820">परवाने संपुष्टात</translation>

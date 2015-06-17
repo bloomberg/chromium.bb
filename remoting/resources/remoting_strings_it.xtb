@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="it">
 <translation id="337167041784729019">Mostra statistiche</translation>
+<translation id="2256115617011615191">Riavvia adesso</translation>
 <translation id="7606912958770842224">Attiva connessioni remote</translation>
 <translation id="3785447812627779171">Host
 Chromoting</translation>
@@ -137,6 +138,7 @@ Per informazioni sulla privacy, leggi le Norme sulla privacy di Google (http://g
 <translation id="8196755618196986400">Per poterti contattare qualora ci servissero ulteriori informazioni, il tuo indirizzo email verrà incluso in ogni feedback da te inviato.</translation>
 <translation id="154040539590487450">Impossibile avviare il servizio di accesso remoto.</translation>
 <translation id="7948001860594368197">Opzioni schermo</translation>
+<translation id="2221097377466213233">Utilizza il tasto Ctrl di destra e il tasto Windows (⌘ su Mac)</translation>
 <translation id="5254120496627797685">Se esci da questa pagina, la sessione Chrome Remote Desktop verrà terminata.</translation>
 <translation id="7019153418965365059">Errore host non riconosciuto: <ph name="HOST_OFFLINE_REASON"/>.</translation>
 <translation id="712467900648340229">Impossibile connettersi al dispositivo di trasmissione.</translation>
@@ -152,6 +154,7 @@ Per informazioni sulla privacy, leggi le Norme sulla privacy di Google (http://g
 <translation id="8116630183974937060">Si è verificato un errore di rete. Controlla che il dispositivo sia online e riprova.</translation>
 <translation id="3020807351229499221">Impossibile aggiornare il PIN. Riprova più tardi.</translation>
 <translation id="2647232381348739934">Servizio Chromoting</translation>
+<translation id="2888969873284818612">Si è verificato un errore di rete. L'app sarà riavviata quando il dispositivo tornerà online.</translation>
 <translation id="579702532610384533">Riconnetti</translation>
 <translation id="4867841927763172006">Invia Stamp</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME"/> (ultima connessione: <ph name="DATE_OR_TIME"/>)</translation>
@@ -258,6 +261,7 @@ Remote Desktop</translation>
 <translation id="4277463233460010382">Questo computer è configurato per consentire la connessione di uno o più client senza l'inserimento di un codice PIN.</translation>
 <translation id="837021510621780684">Da questo computer</translation>
 <translation id="518094545883702183">Queste informazioni vengono utilizzate soltanto per identificare il problema segnalato, sono disponibili soltanto a chi effettua accertamenti in merito alla tua segnalazione e vengono conservate per massimo 30 giorni.</translation>
+<translation id="1261403020716313927">• Risoluzione della perdita rilevante di memoria al momento della disconnessione da Remote Desktop.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="4918086044614829423">Accetto</translation>
 <translation id="7215059001581613786">Inserisci un PIN formato da almeno sei cifre.</translation>

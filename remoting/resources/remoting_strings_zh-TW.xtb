@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="zh-TW">
 <translation id="337167041784729019">顯示統計資料</translation>
+<translation id="2256115617011615191">立即重新啟動</translation>
 <translation id="7606912958770842224">啟用遠端連線</translation>
 <translation id="3785447812627779171">Chromoting
 主機</translation>
@@ -137,6 +138,7 @@
 <translation id="8196755618196986400">如果您允許我們要求您提供更進一步的資訊，凡是您提交的意見回饋都會包含您的電子郵件地址。</translation>
 <translation id="154040539590487450">無法啟動遠端存取服務。</translation>
 <translation id="7948001860594368197">螢幕選項</translation>
+<translation id="2221097377466213233">使用右邊的 Ctrl 做為 Windows 鍵 (Mac 上為 ⌘ 鍵)</translation>
 <translation id="5254120496627797685">如果離開這個頁面，您的 Chrome 遠端桌面工作階段也會結束。</translation>
 <translation id="7019153418965365059">不明主機錯誤：<ph name="HOST_OFFLINE_REASON"/>。</translation>
 <translation id="712467900648340229">無法連線至 Cast 裝置。</translation>
@@ -152,6 +154,7 @@
 <translation id="8116630183974937060">發生網路錯誤。請確認您的裝置已連線至網路，然後再試一次。</translation>
 <translation id="3020807351229499221">無法更新 PIN，請稍後再試。</translation>
 <translation id="2647232381348739934">Chromoting 服務</translation>
+<translation id="2888969873284818612">發生網路錯誤。系統將在您的裝置恢復網路連線後重新啟動應用程式。</translation>
 <translation id="579702532610384533">重新連線</translation>
 <translation id="4867841927763172006">傳送 PrtScn</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME"/> (上次上線時間：<ph name="DATE_OR_TIME"/>)</translation>
@@ -258,6 +261,7 @@
 <translation id="4277463233460010382">這台電腦已設為允許一或多個用戶端可不輸入 PIN 進行連線。</translation>
 <translation id="837021510621780684">從這台電腦</translation>
 <translation id="518094545883702183">這些資訊只會用於診斷您所回報的問題，並且僅供相關調查人員存取。此外，系統會在 30 天後刪除這些資訊。</translation>
+<translation id="1261403020716313927">• 修正與遠端桌面中斷連線時會造成大量記憶體流失的問題。</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="4918086044614829423">接受</translation>
 <translation id="7215059001581613786">請輸入一個至少 6 位數的 PIN。</translation>

@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ru">
 <translation id="2774256287122201187">Вы можете продолжить работу. Если вы останетесь на странице, предупреждение будет показано снова через 5 минут.</translation>
+<translation id="3963721102035795474">Режим чтения</translation>
 <translation id="7485870689360869515">Данные не найдены.</translation>
 <translation id="3884278016824448484">Конфликт идентификаторов устройств</translation>
 <translation id="5172758083709347301">Локальный компьютер</translation>
@@ -164,6 +165,7 @@
 <translation id="8891727572606052622">Недопустимый режим работы прокси-сервера.</translation>
 <translation id="3105172416063519923">Идентификатор объекта:</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="1549470594296187301">Для использования этой функции необходимо включить JavaScript.</translation>
 <translation id="2587841377698384444">Идентификатор Directory API:</translation>
 <translation id="7752995774971033316">Не управляется</translation>
 <translation id="3712624925041724820">Недостаточно лицензий</translation>

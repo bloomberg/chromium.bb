@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="uk">
 <translation id="337167041784729019">Показати статистику</translation>
+<translation id="2256115617011615191">Перезапустити</translation>
 <translation id="7606912958770842224">Увімкнути віддалені з’єднання</translation>
 <translation id="3785447812627779171">Хост Віддаленого
 доступу ОС Chrome</translation>
@@ -137,6 +138,7 @@
 <translation id="8196755618196986400">Щоб ми могли зв’язатися з вами, ваша електронна адреса включатиметься у відгуки, які ви надсилаєте.</translation>
 <translation id="154040539590487450">Не вдалося запустити службу віддаленого доступу.</translation>
 <translation id="7948001860594368197">Параметри екрана</translation>
+<translation id="2221097377466213233">Використовувати праву клавішу Ctrl як клавішу Win (⌘ в ОС Mac)</translation>
 <translation id="5254120496627797685">Якщо залишити цю сторінку, сеанс програми Віддалене керування Chrome закінчиться.</translation>
 <translation id="7019153418965365059">Невідома помилка хосту: <ph name="HOST_OFFLINE_REASON"/>.</translation>
 <translation id="712467900648340229">Помилка під’єднання до пристрою Cast.</translation>
@@ -152,6 +154,7 @@
 <translation id="8116630183974937060">Сталася помилка мережі. Перевірте з’єднання з Інтернетом на своєму пристрої та повторіть спробу.</translation>
 <translation id="3020807351229499221">Не вдалось оновити PIN-код. Повторіть спробу пізніше.</translation>
 <translation id="2647232381348739934">Служба Віддалений доступ ОС Chrome</translation>
+<translation id="2888969873284818612">Сталася помилка мережі. Додаток перезапуститься, коли пристрій під’єднається до Інтернету.</translation>
 <translation id="579702532610384533">З'єднати повторно</translation>
 <translation id="4867841927763172006">Надіслати команду PrtScn</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME"/> (востаннє онлайн: <ph name="DATE_OR_TIME"/>)</translation>
@@ -258,6 +261,7 @@
 <translation id="4277463233460010382">На цьому комп’ютері одному чи кільком клієнтам дозволено під’єднуватися без PIN-коду.</translation>
 <translation id="837021510621780684">З цього комп’ютера</translation>
 <translation id="518094545883702183">Ці дані потрібні лише для діагностики вашої проблеми. Вони надаються лише особі, яка розглядає вашу заявку, і зберігаються до 30 днів.</translation>
+<translation id="1261403020716313927">• Виправлено значний витік даних, який відбувався під час відключення від додатка Віддалене керування.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="4918086044614829423">Прийняти</translation>
 <translation id="7215059001581613786">Введіть PIN-код із принаймні шести символів.</translation>

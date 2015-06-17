@@ -38,6 +38,7 @@
 <translation id="1812696562331527143">Kaedah masukan anda telah ditukar kepada <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>pihak ke-3<ph name="END_LINK"/>).
 Tekan Shift + Alt untuk menukar.</translation>
 <translation id="6043994281159824495">Log keluar sekarang</translation>
+<translation id="5168181903108465623">Peranti Cast tersedia</translation>
 <translation id="2127372758936585790">Pengecas berkuasa rendah</translation>
 <translation id="3799026279081545374">Anda mungkin mempunyai pengecas yang rosak. Jika anda tinggal di AS, sila hubungi 866-628-1371866-628-1371 untuk mendapatkan bantuan dan pengecas ganti. Jika anda tinggal di UK, sila hubungi 0800-026-06130800-026-0613. Jika anda tinggal di Ireland, sila hubungi 1-800-832-664. Jika anda tinggal di Kanada, sila hubungi 866-628-1372866-628-1372. Jika anda tinggal di Australia, sila hubungi 1-800-067-460.</translation>
 <translation id="3891340733213178823">Tekan Ctrl+Shift+Q dua kali untuk keluar.</translation>
@@ -96,6 +97,7 @@ Tekan Shift + Alt untuk menukar.</translation>
 <translation id="9089416786594320554">Kaedah input</translation>
 <translation id="2700058918926273959">Sesi tamat dalam <ph name="SESSION_TIME_REMAINING"/>. Anda akan dilog keluar.</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
+<translation id="1963814843110128691">Menghantar $1 hingga $2</translation>
 <translation id="3963445509666917109">Pembesar Suara (Dalaman)</translation>
 <translation id="1747827819627189109">Papan kekunci pada skrin didayakan</translation>
 <translation id="2208323208084708176">Mod desktop bersatu</translation>
@@ -179,6 +181,7 @@ Tekan Shift + Alt untuk menukar.</translation>
 <translation id="6785414152754474415">Bateri <ph name="PERCENTAGE"/>% penuh dan sedang dicas.</translation>
 <translation id="4895488851634969361">Bateri penuh.</translation>
 <translation id="615957422585914272">Paparkan papan kekunci pada skrin</translation>
+<translation id="8443356412772935865">Menghantar skrin ke $1</translation>
 <translation id="5947494881799873997">Berbalik</translation>
 <translation id="7593891976182323525">Search atau Shift</translation>
 <translation id="7649070708921625228">Bantuan</translation>
@@ -186,9 +189,11 @@ Tekan Shift + Alt untuk menukar.</translation>
 <translation id="397105322502079400">Mengira...</translation>
 <translation id="1013923882670373915">Peranti Bluetooth &quot;<ph name="DEVICE_NAME"/>&quot; ingin kebenaran untuk berpasangan. Sila masukkan kod PIN ini pada peranti tersebut: <ph name="PINCODE"/></translation>
 <translation id="2819276065543622893">Anda akan dilog keluar sekarang.</translation>
+<translation id="4961318399572185831">Hantar skrin</translation>
 <translation id="5507786745520522457">Sediakan data mudah alih</translation>
 <translation id="6165508094623778733">Ketahui lebih lanjut</translation>
 <translation id="7168224885072002358">Kembali kepada peleraian lama dalam <ph name="TIMEOUT_SECONDS"/></translation>
+<translation id="5927132638760172455">Menghantar ke penerima yang tidak diketahui</translation>
 <translation id="743058460480092004">Kamera dan mikrofon sedang digunakan.</translation>
 <translation id="6550675742724504774">Pilihan</translation>
 <translation id="6406704438230478924">altgr</translation>

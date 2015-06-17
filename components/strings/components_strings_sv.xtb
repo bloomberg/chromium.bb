@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="sv">
 <translation id="2774256287122201187">Du kan fortsätta. Om du fortsätter till sidan visas inte den här varningen igen på fem minuter.</translation>
+<translation id="3963721102035795474">Läsarläge</translation>
 <translation id="7485870689360869515">Ingen data hittades.</translation>
 <translation id="3884278016824448484">Motstridiga enhetsidentifierare</translation>
 <translation id="5172758083709347301">Dator</translation>
@@ -164,6 +165,7 @@
 <translation id="8891727572606052622">Ogiltigt proxyläge.</translation>
 <translation id="3105172416063519923">Tillgångs-id:</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="1549470594296187301">JavaScript måste aktiveras för att du ska kunna använda den här funktionen.</translation>
 <translation id="2587841377698384444">Id för katalog-API:</translation>
 <translation id="7752995774971033316">Hanteras inte</translation>
 <translation id="3712624925041724820">Licenserna har tagit slut</translation>

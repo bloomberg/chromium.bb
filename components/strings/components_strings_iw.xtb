@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="iw">
 <translation id="2774256287122201187">אתה רשאי להמשיך. אם תמשיך אל הדף, האזהרה הזו לא תופיע שוב למשך חמש דקות.</translation>
+<translation id="3963721102035795474">מצב קורא</translation>
 <translation id="7485870689360869515">לא נמצאו נתונים.</translation>
 <translation id="3884278016824448484">מזהה מכשיר מתנגש</translation>
 <translation id="5172758083709347301">מכונה</translation>
@@ -164,6 +165,7 @@
 <translation id="8891727572606052622">‏מצב שרת Proxy לא חוקי.</translation>
 <translation id="3105172416063519923">מזהה נכס:</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="1549470594296187301">‏JavaScript צריך להיות מופעל כדי להשתמש בתכונה זו.</translation>
 <translation id="2587841377698384444">‏מזהה ממשק API של ספרייה:</translation>
 <translation id="7752995774971033316">ללא ניהול</translation>
 <translation id="3712624925041724820">אין מספיק רישיונות</translation>

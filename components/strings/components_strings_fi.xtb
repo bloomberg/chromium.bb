@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="fi">
 <translation id="2774256287122201187">Voit jatkaa. Jos jatkat sivulle, tätä varoitusta ei näytetä uudelleen viiteen minuuttiin.</translation>
+<translation id="3963721102035795474">Lukijatila</translation>
 <translation id="7485870689360869515">Tietoja ei löydy.</translation>
 <translation id="3884278016824448484">Ristiriitainen laitteen tunnus</translation>
 <translation id="5172758083709347301">Kaikki tietokoneen käyttäjät</translation>
@@ -164,6 +165,7 @@
 <translation id="8891727572606052622">Virheellinen välityspalvelimen tila.</translation>
 <translation id="3105172416063519923">Laitteen tunnus:</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="1549470594296187301">Tämän ominaisuuden käyttö edellyttää JavaScriptiä.</translation>
 <translation id="2587841377698384444">Hakemistosovellusliittymän tunnus:</translation>
 <translation id="7752995774971033316">Ei hallinnoida</translation>
 <translation id="3712624925041724820">Käyttöluvat ovat lopussa</translation>

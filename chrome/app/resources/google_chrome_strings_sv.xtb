@@ -80,6 +80,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="8551886023433311834">Uppdateringen är nästan klar! Slutför den genom att starta om enheten.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="1073391069195728457">Chrome – meddelanden</translation>
+<translation id="6368805772029492593">Din data krypteras i Google Chrome för att öka säkerheten.</translation>
 <translation id="7339898014177206373">Nytt fönster</translation>
 <translation id="3282568296779691940">Logga in i Chrome</translation>
 <translation id="3089968997497233615">Det finns en ny, ännu säkrare version av Google Chrome.</translation>
@@ -226,6 +227,7 @@ Om du loggar in ändå synkroniseras din information i Chrome, till exempel bokm
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="6113794647360055231">Vi har gjort Chrome ännu bättre</translation>
 <translation id="2588322182880276190">Logotypen för Chrome</translation>
+<translation id="4519152997629025674">Google Chrome kan använda <ph name="BEGIN_LINK"/>webbtjänster<ph name="END_LINK"/> för att förbättra din upplevelse när du surfar. Om du vill kan du inaktivera sådana tjänster.</translation>
 <translation id="4367618624832907428">Det går inte att visa webbsidan i Google Chrome eftersom datorn inte är ansluten till internet.</translation>
 <translation id="174539241580958092">Google Chrome kunde inte synkronisera data på grund av ett fel vid inloggningen.</translation>
 <translation id="8255190535488645436">Google Chrome använder din kamera och mikrofon.</translation>

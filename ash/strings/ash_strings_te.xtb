@@ -38,6 +38,7 @@
 <translation id="1812696562331527143">మీ ఇన్‌పుట్ పద్ధతి <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>3వ పక్షం<ph name="END_LINK"/>)కు మార్చబడింది.
 మారడానికి Shift + Altను నొక్కండి.</translation>
 <translation id="6043994281159824495">ఇప్పుడే సైన్ అవుట్ చేయి</translation>
+<translation id="5168181903108465623">Cast పరికరాలు అందుబాటులో ఉన్నాయి</translation>
 <translation id="2127372758936585790">తక్కువ-పవర్ గల ఛార్జర్</translation>
 <translation id="3799026279081545374">మీరు పని చేయని ఛార్జర్‌ను కలిగి ఉండవచ్చు. మీరు USలో నివసిస్తుంటే, దయచేసి సహాయం పొందడానికి మరియు భర్తీ అభ్యర్థించడానికి 866-628-1371కి కాల్ చేయండి. మీరు UKలో నివసిస్తుంటే, దయచేసి 0800-026-0613కి కాల్ చేయండి. మీరు ఐర్లాండ్‌లో నివసిస్తుంటే, దయచేసి 1-800-832-664కి కాల్ చేయండి. మీరు కెనడాలో నివసిస్తుంటే, దయచేసి 866-628-1372కి కాల్ చేయండి. మీరు ఆస్ట్రేలియాలో నివసిస్తుంటే, దయచేసి 1-800-067-460కి కాల్ చేయండి.</translation>
 <translation id="3891340733213178823">సైన్ అవుట్ చేయడానికి Ctrl+Shift+Qని రెండుసార్లు నొక్కండి.</translation>
@@ -96,6 +97,7 @@
 <translation id="9089416786594320554">ఇన్‌పుట్ పద్ధతులు</translation>
 <translation id="2700058918926273959">సెషన్ <ph name="SESSION_TIME_REMAINING"/>లో ముగుస్తుంది. మీరు సైన్ అవుట్ చేయబడతారు.</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
+<translation id="1963814843110128691">$1 నుండి $2కి ప్రసారం చేస్తోంది</translation>
 <translation id="3963445509666917109">స్పీకర్ (అంతర్గతం)</translation>
 <translation id="1747827819627189109">స్క్రీన్‌పై కనిపించే కీబోర్డ్ ప్రారంభించబడింది</translation>
 <translation id="2208323208084708176">ఏకీకృత డెస్క్‌టాప్ మోడ్</translation>
@@ -179,6 +181,7 @@
 <translation id="6785414152754474415">బ్యాటరీ <ph name="PERCENTAGE"/>% నిండింది మరియు ఛార్జ్ అవుతోంది.</translation>
 <translation id="4895488851634969361">బ్యాటరీ నిండింది.</translation>
 <translation id="615957422585914272">స్క్రీన్‌పై కీబోర్డ్‌ను చూపు</translation>
+<translation id="8443356412772935865">స్క్రీన్‌ను $1కి ప్రసారం చేస్తోంది</translation>
 <translation id="5947494881799873997">తిరిగి పూర్వ స్థితికి మార్చు</translation>
 <translation id="7593891976182323525">Search లేదా Shift</translation>
 <translation id="7649070708921625228">సహాయం</translation>
@@ -187,9 +190,11 @@
 <translation id="397105322502079400">గణిస్తోంది...</translation>
 <translation id="1013923882670373915">బ్లూటూత్ పరికరం &quot;<ph name="DEVICE_NAME"/>&quot; జత కావడానికి అనుమతి కోరుతోంది. దయచేసి ఆ పరికరంలో ఈ PIN కోడ్‌ను నమోదు చేయండి: <ph name="PINCODE"/></translation>
 <translation id="2819276065543622893">మీరు ఇప్పుడు సైన్ అవుట్ చేయబడతారు.</translation>
+<translation id="4961318399572185831">స్క్రీన్ ప్రసారం చేయండి</translation>
 <translation id="5507786745520522457">మొబైల్ డేటాను సెటప్ చేయండి</translation>
 <translation id="6165508094623778733">మరింత తెలుసుకోండి</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS"/>లో తిరిగి పాత రిజల్యూషన్‌కి మార్చబడుతోంది</translation>
+<translation id="5927132638760172455">తెలియని స్వీకర్తకు ప్రసారం చేస్తోంది</translation>
 <translation id="743058460480092004">కెమెరా మరియు మైక్రోఫోన్ ఉపయోగంలో ఉన్నాయి.</translation>
 <translation id="6550675742724504774">ఎంపికలు</translation>
 <translation id="6406704438230478924">altgr</translation>

@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="vi">
 <translation id="337167041784729019">Hiển thị số liệu thống kê</translation>
+<translation id="2256115617011615191">Khởi động lại ngay</translation>
 <translation id="7606912958770842224">Bật kết nối từ xa</translation>
 <translation id="3785447812627779171">Máy chủ kết nối từ xa
 trên Chrome</translation>
@@ -137,6 +138,7 @@ Các máy tính từ xa có bàn phím không phải tiếng Anh-Mỹ có thể 
 <translation id="8196755618196986400">Để cho phép chúng tôi liên hệ với bạn để biết thêm thông tin, địa chỉ email của bạn sẽ được bao gồm trong mọi phản hồi mà bạn gửi.</translation>
 <translation id="154040539590487450">Không thể bắt đầu dịch vụ truy cập từ xa.</translation>
 <translation id="7948001860594368197">Tùy chọn màn hình</translation>
+<translation id="2221097377466213233">Sử dụng phím Ctrl bên phải cho phím Win (⌘ trên máy Mac)</translation>
 <translation id="5254120496627797685">Thoát khỏi trang này sẽ kết thúc phiên Chrome Remote Desktop của bạn.</translation>
 <translation id="7019153418965365059">Lỗi máy chủ không xác định: <ph name="HOST_OFFLINE_REASON"/>.</translation>
 <translation id="712467900648340229">Không kết nối được tới Thiết bị truyền.</translation>
@@ -152,6 +154,7 @@ Các máy tính từ xa có bàn phím không phải tiếng Anh-Mỹ có thể 
 <translation id="8116630183974937060">Đã xảy ra lỗi mạng. Hãy kiểm tra xem thiết bị của bạn có trực tuyến hay không và thử lại.</translation>
 <translation id="3020807351229499221">Không thể cập nhật mã PIN. Vui lòng thử lại sau.</translation>
 <translation id="2647232381348739934">Dịch vụ kết nối từ xa trên Chrome</translation>
+<translation id="2888969873284818612">Đã xảy ra lỗi mạng. Chúng tôi sẽ khởi động lại ứng dụng khi thiết bị của bạn trực tuyến trở lại.</translation>
 <translation id="579702532610384533">Kết nối lại</translation>
 <translation id="4867841927763172006">Gửi PrtScn</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME"/> (trực tuyến lần cuối <ph name="DATE_OR_TIME"/>)</translation>
@@ -258,6 +261,7 @@ Remote Desktop</translation>
 <translation id="4277463233460010382">Máy tính này được định cấu hình để cho phép một hoặc nhiều ứng dụng khách kết nối mà không cần nhập mã PIN.</translation>
 <translation id="837021510621780684">Từ máy tính này</translation>
 <translation id="518094545883702183">Thông tin này chỉ được sử dụng để chẩn đoán sự cố bạn đang báo cáo, chỉ khả dụng đối với người điều tra báo cáo của bạn và được giữ lại tối đa 30 ngày.</translation>
+<translation id="1261403020716313927">• Đã khắc phục lỗi rò rỉ lớn bộ nhớ khi ngắt kết nối khỏi máy tính từ xa.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="4918086044614829423">Chấp nhận</translation>
 <translation id="7215059001581613786">Vui lòng nhập mã PIN có từ sáu chữ số trở lên.</translation>

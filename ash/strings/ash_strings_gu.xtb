@@ -38,6 +38,7 @@
 <translation id="1812696562331527143">તમારી ઇનપુટ પદ્ધતિ  <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>3જા પક્ષ<ph name="END_LINK"/>)માં બદલાઇ ગયેલ છે.
 સ્વિચ કરવા માટે Shift + Alt દબાવો.</translation>
 <translation id="6043994281159824495">હવે સાઇન આઉટ કરો</translation>
+<translation id="5168181903108465623">Cast ઉપકરણો ઉપલબ્ધ</translation>
 <translation id="2127372758936585790">નિમ્ન-પાવર ચાર્જર</translation>
 <translation id="3799026279081545374">તમારી પાસે ખરાબ ચાર્જર હોઈ શકે છે. જો તમે યુએસમાં રહો છો, તો સહાય અને અવેજી પ્રાપ્ત કરવા માટે કૃપા કરીને 866-628-1371 પર કૉલ કરો. જો તમે યુકેમાં રહો છો, તો કૃપા કરીને 0800-026-0613 પર કૉલ કરો. જો તમે આયરલેન્ડમાં રહો છો, તો કૃપા કરીને 1-800-832-664 પર કૉલ કરો. જો તમે કેનેડામાં રહો છો, તો કૃપા કરીને 866-628-1372 પર કૉલ કરો. જો તમે ઑસ્ટ્રેલિયામાં રહો છો, તો કૃપા કરીને 1-800-067-460 પર કૉલ કરો.</translation>
 <translation id="3891340733213178823">સાઇન આઉટ કરવા માટે બે વાર Ctrl+Shift+Q દબાવો.</translation>
@@ -96,6 +97,7 @@
 <translation id="9089416786594320554">ઇનપુટ પદ્ધતિઓ</translation>
 <translation id="2700058918926273959"><ph name="SESSION_TIME_REMAINING"/> માં સત્ર સમાપ્ત થાય છે. તમને સાઇન આઉટ કરવામાં આવશે.</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
+<translation id="1963814843110128691">$1 ને $2 પર કાસ્ટ કરી રહ્યાં છે</translation>
 <translation id="3963445509666917109">સ્પીકર (આંતરિક)</translation>
 <translation id="1747827819627189109">ઓન-સ્ક્રીન કીબોર્ડ સક્ષમ કર્યું</translation>
 <translation id="2208323208084708176">એકીકૃત ડેસ્કટૉપ મોડ</translation>
@@ -179,6 +181,7 @@
 <translation id="6785414152754474415">બેટરી <ph name="PERCENTAGE"/> % પૂર્ણ અને ચાર્જ થઈ રહી છે.</translation>
 <translation id="4895488851634969361">બેટરી સંપૂર્ણ છે.</translation>
 <translation id="615957422585914272">ઑન-સ્ક્રીન કીબોર્ડ બતાવો</translation>
+<translation id="8443356412772935865">$1 પર સ્ક્રીનને કાસ્ટ કરી રહ્યાં છે</translation>
 <translation id="5947494881799873997">પાછા ફરો</translation>
 <translation id="7593891976182323525">Search અથવા Shift</translation>
 <translation id="7649070708921625228">સહાય</translation>
@@ -187,9 +190,11 @@
 <translation id="397105322502079400">ગણના કરી રહ્યું છે...</translation>
 <translation id="1013923882670373915">Bluetooth ઉપકરણ &quot;<ph name="DEVICE_NAME"/>&quot; ને જોડી બનાવવા માટે પરવાનગી જોઈએ છે. કૃપા કરીને તે ઉપકરણ પર આ PIN કોડ દાખલ કરો: <ph name="PINCODE"/></translation>
 <translation id="2819276065543622893">તમે હવે સાઇન આઉટ થશો.</translation>
+<translation id="4961318399572185831">સ્ક્રીનને કાસ્ટ કરો</translation>
 <translation id="5507786745520522457">મોબાઇલ ડેટા સેટ કરો</translation>
 <translation id="6165508094623778733">વધુ જાણો</translation>
 <translation id="7168224885072002358">જૂના રિઝોલ્યુશન પર પાછા ફરી રહ્યાં છે <ph name="TIMEOUT_SECONDS"/></translation>
+<translation id="5927132638760172455">અજાણ્યાં પ્રાપ્તકર્તા પર કાસ્ટ કરી રહ્યાં છે</translation>
 <translation id="743058460480092004">કૅમેરો અને માઇક્રોફોન ઉપયોગમાં છે.</translation>
 <translation id="6550675742724504774">વિકલ્પો</translation>
 <translation id="6406704438230478924">altgr</translation>

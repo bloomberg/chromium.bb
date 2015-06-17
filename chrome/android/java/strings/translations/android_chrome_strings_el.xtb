@@ -51,7 +51,6 @@
 <translation id="4803910478683254032">Η εισαγωγή απέτυχε</translation>
 <translation id="3485544713029068372">Smart Lock για κωδικούς πρόσβασης</translation>
 <translation id="6999892069268112724">Επιβεβαίωση Λογαριασμού Google</translation>
-<translation id="4352423910708841374">Συγχρονισμένοι και με δυνατότητα αναζήτησης</translation>
 <translation id="1446450296470737166">Να επιτρέπεται πλήρης έλεγχος σε MIDI</translation>
 <translation id="7851858861565204677">Άλλες συσκευές</translation>
 <translation id="1404122904123200417">Ενσωματωμένο σε <ph name="WEBSITE_URL"/></translation>
@@ -121,7 +120,6 @@
 <translation id="932327136139879170">Αρχική σελίδα</translation>
 <translation id="963967414714199900">Τελευταίος συγχρονισμός: Πριν λίγο</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME"/>, εφαρμογή ιστού. <ph name="APP_URL"/></translation>
-<translation id="7646360244607347866">Προβολή  (ΠΕΙΡΑΜΑΤΙΚΟ)</translation>
 <translation id="200669432486043882">Αντικατάσταση αρχείου</translation>
 <translation id="9086455579313502267">Δεν είναι δυνατή η πρόσβαση στο δίκτυο</translation>
 <translation id="5595485650161345191">Επεξεργασία διεύθυνσης</translation>
@@ -466,7 +464,6 @@
 <translation id="5138299137310274655">Αυτή η σελίδα είναι στα <ph name="SOURCE_LANGUAGE"/>. Να μεταφραστεί στα <ph name="TARGET_LANGUAGE"/>;</translation>
 <translation id="2913331724188855103">Να επιτρέπεται στους ιστότοπους η αποθήκευση και η ανάγνωση δεδομένων cookie (συνιστάται)</translation>
 <translation id="5512137114520586844">Αυτός ο λογαριασμός τελεί υπό τη διαχείριση του γονέα <ph name="PARENT_NAME"/>.</translation>
-<translation id="4852188034940155708">Αυτόματη δημιουργία φακέλων</translation>
 <translation id="7144878232160441200">Δοκιμάστε ξανά</translation>
 <translation id="7829298379596169484">Πρόσβαση στην είσοδο ήχου</translation>
 <translation id="1373696734384179344">Ανεπαρκής μνήμη για τη λήψη του επιλεγμένου περιεχομένου.</translation>
@@ -475,7 +472,6 @@
 <translation id="8928220460877261598">Έχετε συνδεθεί πλέον στο Chrome.</translation>
 <translation id="7811044698839470685">Μόνο όποιος γνωρίζει τη φράση πρόσβασής σας μπορεί να διαβάσει τα κρυπτογραφημένα δεδομένα σας. Η φράση δεν αποστέλλεται στην Google ούτε αποθηκεύεται εκεί. Αν την ξεχάσετε, απαιτείται επαναφορά συγχρονισμού.</translation>
 <translation id="8547287415299944404">Δεν είναι δυνατή η διαγραφή του ιστορικού περιήγησης για παιδικούς λογαριασμούς</translation>
-<translation id="3700134753671613714">Συνδεθείτε για να μεταφέρετε τους σελιδοδείκτες σας σε όλες τις συσκευές σας</translation>
 <translation id="5032574515228824816">Προτροπή</translation>
 <translation id="7772032839648071052">Επιβεβαίωση φράσης πρόσβασης</translation>
 <translation id="6010869025736512584">Πρόσβαση στην είσοδο βίντεο</translation>
@@ -545,7 +541,6 @@
 <translation id="5210714456814679336">Οι καρτέλες που έχετε ανοίξει στο Chrome σε άλλες συσκευές θα εμφανίζονται εδώ.</translation>
 <translation id="1568822834048182062">Οι σελιδοδείκτες, το ιστορικό, οι κωδικοί πρόσβασης και άλλες ρυθμίσεις θα συγχρονιστούν με το Λογαριασμό σας Google</translation>
 <translation id="2073235970478114994">Φόρτωση εικόνων</translation>
-<translation id="6336862230287483356">Αυτόματη δημιουργία φακέλων</translation>
 <translation id="6027491994609789413">Αναπαραγωγή βίντεο</translation>
 <translation id="7561196759112975576">Πάντα</translation>
 <translation id="605721222689873409">ΕΕ</translation>

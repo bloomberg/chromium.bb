@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="it">
 <translation id="2774256287122201187">Puoi continuare. Se rimani nella pagina, questo avviso non verrà più visualizzato per cinque minuti.</translation>
+<translation id="3963721102035795474">Modalità Reader</translation>
 <translation id="7485870689360869515">Nessun dato trovato.</translation>
 <translation id="3884278016824448484">Identificativo del dispositivo in conflitto</translation>
 <translation id="5172758083709347301">Computer</translation>
@@ -164,6 +165,7 @@
 <translation id="8891727572606052622">Modalità proxy non valida.</translation>
 <translation id="3105172416063519923">ID asset:</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="1549470594296187301">JavaScript deve essere attivato per utilizzare questa funzione.</translation>
 <translation id="2587841377698384444">ID API directory:</translation>
 <translation id="7752995774971033316">Non gestito</translation>
 <translation id="3712624925041724820">Licenze esaurite</translation>

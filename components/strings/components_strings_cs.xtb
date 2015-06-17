@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="cs">
 <translation id="2774256287122201187">Můžete pokračovat. Pokud na stránku budete pokračovat, toto upozornění se pět minut nebude zobrazovat.</translation>
+<translation id="3963721102035795474">Režim čtečky</translation>
 <translation id="7485870689360869515">Nebyla nalezena žádná data.</translation>
 <translation id="3884278016824448484">Konfliktní identifikátor zařízení</translation>
 <translation id="5172758083709347301">Počítač</translation>
@@ -164,6 +165,7 @@
 <translation id="8891727572606052622">Neplatný režim proxy serveru.</translation>
 <translation id="3105172416063519923">ID díla:</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="1549470594296187301">Chcete-li tuto funkci použít, musí být aktivován JavaScript.</translation>
 <translation id="2587841377698384444">ID rozhraní Directory API:</translation>
 <translation id="7752995774971033316">Nespravováno</translation>
 <translation id="3712624925041724820">Byly vyčerpány licence</translation>

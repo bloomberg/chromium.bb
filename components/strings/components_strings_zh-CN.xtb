@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="zh-CN">
 <translation id="2774256287122201187">您可以继续。如果您继续前往该页面，那么在接下来的 5 分钟内将不会再看到此警告。</translation>
+<translation id="3963721102035795474">阅读器模式</translation>
 <translation id="7485870689360869515">找不到数据。</translation>
 <translation id="3884278016824448484">设备标识符存在冲突</translation>
 <translation id="5172758083709347301">本机</translation>
@@ -164,6 +165,7 @@
 <translation id="8891727572606052622">代理模式无效。</translation>
 <translation id="3105172416063519923">资产 ID：</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="1549470594296187301">必须启用 JavaScript 才能使用此功能。</translation>
 <translation id="2587841377698384444">Directory API ID：</translation>
 <translation id="7752995774971033316">非托管</translation>
 <translation id="3712624925041724820">许可已用尽</translation>

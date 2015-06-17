@@ -37,6 +37,7 @@
 <translation id="3621712662352432595">تنظیمات صوتی</translation>
 <translation id="1812696562331527143">‏روش ورودی شما به <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>شخص ثالث<ph name="END_LINK"/>) تغییر یافت. Shift + Alt را برای تعویض فشار دهید.</translation>
 <translation id="6043994281159824495">خروج از سیستم هم‌اکنون</translation>
+<translation id="5168181903108465623">دستگاه‌های فرستادن موجود هستند</translation>
 <translation id="2127372758936585790">شارژر برق ضعیف</translation>
 <translation id="3799026279081545374">ممکن است شارژرتان بد باشد. اگر در ایالات متحده زندگی می‌کنید، لطفاً با شماره ۱۳۷۱-۶۲۸-۸۶۶ تماس بگیرید تا راهنمایی شوید و جایگزین را دریافت کنید. اگر دربریتانیا زندگی می‌کنید، لطفاً با شماره ۰۶۱۳-۰۲۶-۰۸۰۰ تماس بگیرید. اگر در ایرلند زندگی می‌کنید، لطفاً با شماره ۶۶۴-۸۳۲-۸۰۰-۱ تماس بگیرید. اگر در کانادا زندگی می‌کنید، لطفاً با شماره ۱۳۷۲-۶۲۸-۸۶۶ تماس بگیرید. اگر در استرالیا زندگی می‌کنید، لطفاً با شماره ۴۶۰-۰۶۷-۸۰۰-۱ تماس بگیرید.</translation>
 <translation id="3891340733213178823">‏برای خروج از سیستم Ctrl+Shift+Q را دو بار فشار دهید.</translation>
@@ -94,6 +95,7 @@
 <translation id="9089416786594320554">روش‌های ورودی</translation>
 <translation id="2700058918926273959">جلسه در <ph name="SESSION_TIME_REMAINING"/> به پایان می‌رسد. از سیستم خارج خواهید شد.</translation>
 <translation id="6247708409970142803">%<ph name="PERCENTAGE"/></translation>
+<translation id="1963814843110128691">در حال فرستادن $1 به $2</translation>
 <translation id="3963445509666917109">بلندگو (داخلی)</translation>
 <translation id="1747827819627189109">صفحه‌کلید روی صفحه فعال شد</translation>
 <translation id="2208323208084708176">حالت میزکار یکپارچه</translation>
@@ -177,6 +179,7 @@
 <translation id="6785414152754474415">باتری <ph name="PERCENTAGE"/> درصد پر و درحال شارژ است.</translation>
 <translation id="4895488851634969361">باتری پر است.</translation>
 <translation id="615957422585914272">نمایش صفحه‌کلید روی صفحه</translation>
+<translation id="8443356412772935865">در حال فرستادن صفحه به $1</translation>
 <translation id="5947494881799873997">برگرداندن</translation>
 <translation id="7593891976182323525">‏جستجو یا Shift</translation>
 <translation id="7649070708921625228">راهنما</translation>
@@ -185,9 +188,11 @@
 <translation id="397105322502079400">در حال محاسبه…</translation>
 <translation id="1013923882670373915">دستگاه بلوتوث «<ph name="DEVICE_NAME"/>» برای مرتبط‌سازی به مجوز نیاز دارد. لطفاً این کد پین را در آن دستگاه وارد کنید: <ph name="PINCODE"/></translation>
 <translation id="2819276065543622893">هم‌اکنون از سیستم خارج خواهید شد.</translation>
+<translation id="4961318399572185831">فرستادن صفحه</translation>
 <translation id="5507786745520522457">تنظیم داده‌های دستگاه همراه</translation>
 <translation id="6165508094623778733">بیشتر بدانید</translation>
 <translation id="7168224885072002358">برگرداندن به وضوح قدیمی در <ph name="TIMEOUT_SECONDS"/></translation>
+<translation id="5927132638760172455">در حال فرستادن به گیرنده ناشناس</translation>
 <translation id="743058460480092004">دوربین و میکروفن در حال استفاده هستند.</translation>
 <translation id="6550675742724504774">گزینه‌ها</translation>
 <translation id="6406704438230478924">دگرساز راست</translation>

@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="nl">
 <translation id="2774256287122201187">Je kunt doorgaan. Als je doorgaat naar de pagina, wordt deze waarschuwing gedurende vijf minuten niet opnieuw weergegeven.</translation>
+<translation id="3963721102035795474">Lezermodus</translation>
 <translation id="7485870689360869515">Geen gegevens gevonden.</translation>
 <translation id="3884278016824448484">Conflicterende apparaat-ID's</translation>
 <translation id="5172758083709347301">Computer</translation>
@@ -164,6 +165,7 @@
 <translation id="8891727572606052622">Ongeldige proxymodus.</translation>
 <translation id="3105172416063519923">Item-ID:</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="1549470594296187301">JavaScript moet zijn ingeschakeld om deze functie te kunnen gebruiken.</translation>
 <translation id="2587841377698384444">Directory API-ID:</translation>
 <translation id="7752995774971033316">Niet-beheerd</translation>
 <translation id="3712624925041724820">Licenties zijn verbruikt</translation>

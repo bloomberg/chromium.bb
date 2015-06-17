@@ -38,6 +38,7 @@
 <translation id="1812696562331527143">Naging <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>3rd party<ph name="END_LINK"/>) ang iyong pamamaraan ng pag-input.
 Pindutin ang Shift + Alt upang magpalit.</translation>
 <translation id="6043994281159824495">Mag-sign out ngayon</translation>
+<translation id="5168181903108465623">I-cast ang mga available na device</translation>
 <translation id="2127372758936585790">Low-power charger</translation>
 <translation id="3799026279081545374">Maaaring mayroon kang hindi magandang charger. Kung nakatira ka sa US, mangyaring tumawag sa 866-628-1371 upang makatanggap ng tulong at ng kapalit. Kung nakatira ka sa UK, mangyaring tumawag sa 0800-026-0613. Kung nakatira ka sa Ireland, mangyaring tumawag sa 1-800-832-664. Kung nakatira ka sa Canada, mangyaring tumawag sa 866-628-1372. Kung nakatira ka sa Australia, mangyaring tumawag sa 1-800-067-460.</translation>
 <translation id="3891340733213178823">Pindutin ang Ctrl+Shift+Q nang dalawang beses upang mag-sign out.</translation>
@@ -96,6 +97,7 @@ Pindutin ang Shift + Alt upang magpalit.</translation>
 <translation id="9089416786594320554">Mga pamamaraan ng pag-input</translation>
 <translation id="2700058918926273959">Matatapos ang session pagkalipas ng <ph name="SESSION_TIME_REMAINING"/>. Masa-sign out ka.</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
+<translation id="1963814843110128691">Ikina-cast ang $1 sa $2</translation>
 <translation id="3963445509666917109">Speaker (Internal)</translation>
 <translation id="1747827819627189109">Naka-enable ang on-screen na keyboard</translation>
 <translation id="2208323208084708176">Unified desktop mode</translation>
@@ -179,6 +181,7 @@ Pindutin ang Shift + Alt upang magpalit.</translation>
 <translation id="6785414152754474415">Ang baterya ay <ph name="PERCENTAGE"/>% na puno at nagcha-charge.</translation>
 <translation id="4895488851634969361">Puno na ang baterya.</translation>
 <translation id="615957422585914272">Ipakita ang on-screen na keyboard</translation>
+<translation id="8443356412772935865">Ikinacast ang screen sa $1</translation>
 <translation id="5947494881799873997">I-revert</translation>
 <translation id="7593891976182323525">Search or Shift</translation>
 <translation id="7649070708921625228">Tulong</translation>
@@ -187,9 +190,11 @@ Pindutin ang Search o Shift upang kanselahin.</translation>
 <translation id="397105322502079400">Kinakalkula...</translation>
 <translation id="1013923882670373915">Gusto ng bluetooth device na &quot;<ph name="DEVICE_NAME"/>&quot; ng pahintulot na magpares. Pakilagay ang PIN na ito sa device na iyon: <ph name="PINCODE"/></translation>
 <translation id="2819276065543622893">Masa-sign out ka ngayon.</translation>
+<translation id="4961318399572185831">I-cast ang screen</translation>
 <translation id="5507786745520522457">I-set up ang mobile data</translation>
 <translation id="6165508094623778733">Matuto nang higit pa</translation>
 <translation id="7168224885072002358">Magre-revert sa lumang resolution sa loob ng <ph name="TIMEOUT_SECONDS"/></translation>
+<translation id="5927132638760172455">Ikina-cast sa isang hindi kilalang tatanggap</translation>
 <translation id="743058460480092004">Ginagamit ang camera at mikropono.</translation>
 <translation id="6550675742724504774">Mga Pagpipilian</translation>
 <translation id="6406704438230478924">altgr</translation>

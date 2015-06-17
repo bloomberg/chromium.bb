@@ -74,6 +74,7 @@
 <translation id="8551886023433311834">Aggiornamento quasi completato. Riavvia il dispositivo per terminare l'aggiornamento.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="1073391069195728457">Chrome - Notifiche</translation>
+<translation id="6368805772029492593">Per maggiore sicurezza, Google Chrome cripterà i tuoi dati.</translation>
 <translation id="7339898014177206373">Nuova finestra</translation>
 <translation id="3282568296779691940">Accedi a Chrome</translation>
 <translation id="3089968997497233615">È disponibile una nuova versione più sicura di Google Chrome.</translation>
@@ -209,6 +210,7 @@ Se il problema non si risolve, dovresti riattivare questa opzione per ottenere p
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="6113794647360055231">Da oggi Chrome è ancora meglio</translation>
 <translation id="2588322182880276190">Logo di Chrome</translation>
+<translation id="4519152997629025674">Google Chrome potrebbe utilizzare <ph name="BEGIN_LINK"/>servizi web<ph name="END_LINK"/> per migliorare la navigazione. Se lo desideri, puoi disattivarli in qualsiasi momento.</translation>
 <translation id="4367618624832907428">Impossibile visualizzare la pagina web in Google Chrome perché il computer non è connesso a Internet.</translation>
 <translation id="174539241580958092">Impossibile sincronizzare i dati in Google Chrome a causa di un errore durante l'accesso.</translation>
 <translation id="8255190535488645436">Google Chrome sta utilizzando videocamera e microfono.</translation>

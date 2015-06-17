@@ -51,7 +51,6 @@
 <translation id="4803910478683254032">أخفق الاستيراد</translation>
 <translation id="3485544713029068372">‏Smart Lock لكلمات المرور</translation>
 <translation id="6999892069268112724">‏تأكيد حساب Google</translation>
-<translation id="4352423910708841374">متزامنة وقابلة للبحث</translation>
 <translation id="1446450296470737166">‏السماح بالتحكم الكامل لأجهزة MIDI</translation>
 <translation id="7851858861565204677">أجهزة أخرى</translation>
 <translation id="1404122904123200417">تم التضمين في <ph name="WEBSITE_URL"/></translation>
@@ -119,7 +118,6 @@
 <translation id="932327136139879170">الصفحة الرئيسية</translation>
 <translation id="963967414714199900">آخر مزامنة: الآن</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME"/>، تطبيق ويب. <ph name="APP_URL"/></translation>
-<translation id="7646360244607347866">عرض القارئ (تجريبي)</translation>
 <translation id="200669432486043882">استبدال ملف</translation>
 <translation id="9086455579313502267">تعذر الدخول إلى الشبكة</translation>
 <translation id="5595485650161345191">تعديل العنوان</translation>
@@ -463,7 +461,6 @@
 <translation id="5138299137310274655">هذه الصفحة باللغة <ph name="SOURCE_LANGUAGE"/> هل تريد ترجمتها إلى اللغة <ph name="TARGET_LANGUAGE"/>؟</translation>
 <translation id="2913331724188855103">السماح للمواقع بحفظ بيانات ملفات تعريف الارتباط وقراءتها (موصى به)</translation>
 <translation id="5512137114520586844">تتم إدارة هذا الحساب بواسطة <ph name="PARENT_NAME"/>.</translation>
-<translation id="4852188034940155708">المجلدات التلقائية</translation>
 <translation id="7144878232160441200">إعادة المحاولة</translation>
 <translation id="7829298379596169484">جارٍ الوصول إلى إدخال الصوت</translation>
 <translation id="1373696734384179344">لا توجد ذاكرة كافية لتنزيل المحتوى المحدد.</translation>
@@ -472,7 +469,6 @@
 <translation id="8928220460877261598">‏تم تسجيل دخولك إلى Chrome الآن.</translation>
 <translation id="7811044698839470685">‏لا يمكن لأحد قراءة بياناتك المشفرة سوى من لديه عبارة المرور التي تستخدمها. لا يتم إرسال عبارة المرور هذه إلى شركة Google ولا تخزينها. فإذا نسيت عبارة المرور، فيجب إعادة تعيين المزامنة.</translation>
 <translation id="8547287415299944404">لا يمكن محو سجل التصفح لحسابات الأطفال</translation>
-<translation id="3700134753671613714">سجّل الدخول للحصول على الإشارات المرجعية في جميع أجهزتك.</translation>
 <translation id="5032574515228824816">مطالبة</translation>
 <translation id="7772032839648071052">تأكيد عبارة المرور</translation>
 <translation id="6010869025736512584">جارٍ الوصول إلى إدخال الفيديو</translation>
@@ -542,7 +538,6 @@
 <translation id="5210714456814679336">‏ستظهر هنا علامات التبويب التي فتحتها في Chrome من أجهزتك الأخرى.</translation>
 <translation id="1568822834048182062">‏ستتم مزامنة الإشارات المرجعية والسجل وكلمات المرور وغير ذلك من الإعدادات مع حسابك على Google.</translation>
 <translation id="2073235970478114994">تحميل الصور</translation>
-<translation id="6336862230287483356">مجلدات تلقائية</translation>
 <translation id="6027491994609789413">جارٍ تشغيل الفيديو</translation>
 <translation id="7561196759112975576">دومًا</translation>
 <translation id="605721222689873409">العام</translation>

@@ -38,6 +38,7 @@
 <translation id="1812696562331527143">Metode masukan Anda telah berubah menjadi <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>pihak ketiga<ph name="END_LINK"/>).
 Tekan Shift + Alt untuk beralih.</translation>
 <translation id="6043994281159824495">Keluar sekarang</translation>
+<translation id="5168181903108465623">Perangkat transmisi tersedia</translation>
 <translation id="2127372758936585790">Pengisi daya rendah</translation>
 <translation id="3799026279081545374">Mungkin Anda memiliki pengisi daya yang tidak bagus. Apabila Anda tinggal di AS, hubungi 866-628-1371 untuk mendapatkan bantuan dan pengganti. Apabila Anda tinggal di Inggris, hubungi 0800-026-0613. Apabila Anda tinggal di Irlandia, hubungi 1-800-832-664. Apabila Anda tinggal di Kanada, hubungi 866-628-1372. Apabila Anda tinggal di Australia, hubungi 1-800-067-460.</translation>
 <translation id="3891340733213178823">Tekan Ctrl+Shift+Q dua kali untuk keluar.</translation>
@@ -96,6 +97,7 @@ Tekan Shift + Alt untuk beralih.</translation>
 <translation id="9089416786594320554">Metode masukan</translation>
 <translation id="2700058918926273959">Sesi berakhir dalam <ph name="SESSION_TIME_REMAINING"/>. Anda akan keluar.</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
+<translation id="1963814843110128691">Mentransmisi $1 ke $2</translation>
 <translation id="3963445509666917109">Pengeras Suara (Internal)</translation>
 <translation id="1747827819627189109">Keyboard di layar diaktifkan</translation>
 <translation id="2208323208084708176">Mode desktop terpadu</translation>
@@ -179,6 +181,7 @@ Tekan Shift + Alt untuk beralih.</translation>
 <translation id="6785414152754474415">Baterai sudah terisi <ph name="PERCENTAGE"/>% dan masih mengisi.</translation>
 <translation id="4895488851634969361">Baterai penuh.</translation>
 <translation id="615957422585914272">Tampilkan keyboard di layar</translation>
+<translation id="8443356412772935865">Mentransmisi layar ke $1</translation>
 <translation id="5947494881799873997">Kembalikan</translation>
 <translation id="7593891976182323525">Telusuri atau Shift</translation>
 <translation id="7649070708921625228">Bantuan</translation>
@@ -187,9 +190,11 @@ Tekan Telusuri atau Shift untuk membatalkan.</translation>
 <translation id="397105322502079400">Menghitung...</translation>
 <translation id="1013923882670373915">Perangkat Bluetooth &quot;<ph name="DEVICE_NAME"/>&quot; meminta izin untuk bersanding. Masukan kode PIN ini pada perangkat tersebut: <ph name="PINCODE"/></translation>
 <translation id="2819276065543622893">Anda akan dikeluarkan sekarang.</translation>
+<translation id="4961318399572185831">Transmisikan layar</translation>
 <translation id="5507786745520522457">Siapkan data seluler</translation>
 <translation id="6165508094623778733">Pelajari lebih lanjut</translation>
 <translation id="7168224885072002358">Mengembalikan ke resolusi lama dalam <ph name="TIMEOUT_SECONDS"/></translation>
+<translation id="5927132638760172455">Mentransmisi ke penerima tak dikenal</translation>
 <translation id="743058460480092004">Kamera dan mikrofon sedang digunakan.</translation>
 <translation id="6550675742724504774">Opsi</translation>
 <translation id="6406704438230478924">altgr</translation>

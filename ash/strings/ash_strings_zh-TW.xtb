@@ -38,6 +38,7 @@
 <translation id="1812696562331527143">您的輸入法已變更為 <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>第三方<ph name="END_LINK"/>)。
 按下 Shift + Alt 鍵即可切換。</translation>
 <translation id="6043994281159824495">立即登出</translation>
+<translation id="5168181903108465623">可用的投放裝置</translation>
 <translation id="2127372758936585790">低功率充電器</translation>
 <translation id="3799026279081545374">您的充電器可能有問題。如需相關協助或索取新的充電器，請致電 866-628-1371 (美國)、0800-026-0613 (英國)、1-800-832-664 (愛爾蘭)、866-628-1372 (加拿大) 或 1-800-067-460 (澳洲)。</translation>
 <translation id="3891340733213178823">按兩下 Ctrl+Shift+Q 鍵即可登出。</translation>
@@ -96,6 +97,7 @@
 <translation id="9089416786594320554">輸入法</translation>
 <translation id="2700058918926273959">這個工作階段將在 <ph name="SESSION_TIME_REMAINING"/>後結束，屆時系統會將您登出。</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
+<translation id="1963814843110128691">正在將 $1 投放到 $2</translation>
 <translation id="3963445509666917109">喇叭 (內部)</translation>
 <translation id="1747827819627189109">螢幕小鍵盤已啟用</translation>
 <translation id="2208323208084708176">整合桌面模式</translation>
@@ -179,6 +181,7 @@
 <translation id="6785414152754474415">電池電量為 <ph name="PERCENTAGE"/>% (充電中)。</translation>
 <translation id="4895488851634969361">電池電量已滿。</translation>
 <translation id="615957422585914272">顯示螢幕小鍵盤</translation>
+<translation id="8443356412772935865">正在將畫面投放到 $1</translation>
 <translation id="5947494881799873997">還原</translation>
 <translation id="7593891976182323525">搜尋鍵或 Shift 鍵</translation>
 <translation id="7649070708921625228">說明</translation>
@@ -187,9 +190,11 @@
 <translation id="397105322502079400">計算中…</translation>
 <translation id="1013923882670373915">藍牙裝置「<ph name="DEVICE_NAME"/>」要求配對權限，請在裝置上輸入以下 PIN 碼：<ph name="PINCODE"/></translation>
 <translation id="2819276065543622893">現在即將登出。</translation>
+<translation id="4961318399572185831">投放畫面</translation>
 <translation id="5507786745520522457">設定行動資料</translation>
 <translation id="6165508094623778733">瞭解詳情</translation>
 <translation id="7168224885072002358">系統將在 <ph name="TIMEOUT_SECONDS"/> 秒後還原成原來的解析度</translation>
+<translation id="5927132638760172455">正在投放至不明接收端</translation>
 <translation id="743058460480092004">攝影機和麥克風正在使用中。</translation>
 <translation id="6550675742724504774">選項</translation>
 <translation id="6406704438230478924">altgr</translation>

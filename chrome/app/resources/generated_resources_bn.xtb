@@ -31,6 +31,7 @@
 <translation id="2224444042887712269">এই সেটিংটি <ph name="OWNER_EMAIL"/> এর৷</translation>
 <translation id="1852799913675865625"><ph name="ERROR_TEXT"/> ফাইলটি পড়ার চেষ্টা করার সময় একটি ত্রুটি ঘটেছিল৷</translation>
 <translation id="3828924085048779000">ফাঁকা পাসফ্রেজের অনুমতি নেই৷</translation>
+<translation id="7781069478569868053">নতুন ট্যাব পৃষ্ঠা</translation>
 <translation id="1844692022597038441">এই ফাইলটি অফলাইনে উপলব্ধ নয়৷</translation>
 <translation id="2709516037105925701">স্বয়ংপূরণ</translation>
 <translation id="3916445069167113093"> এই প্রকারের ফাইল আপনার কম্পিউটারের ক্ষতি করতে পারে৷ আপনি কি যেকোনো ভাবে <ph name="FILE_NAME"/> রাখতে চান?</translation>
@@ -300,6 +301,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="743823505716061814">অনুসন্ধান কুয়েরিগুলিকে আপনার Google অ্যাকাউন্টের সঙ্গে সংযুক্ত করা হবে৷ আপনি সেগুলিকে আপনার <ph name="BEGIN_LINK"/>অ্যাকাউন্ট ইতিহাস<ph name="END_LINK"/> -এ দেখতে এবং মুছতে পারেন৷</translation>
 <translation id="8774934320277480003">শীর্ষ মার্জিন</translation>
 <translation id="1390548061267426325">নিয়মিত ট্যাব রূপে খুলুন</translation>
+<translation id="7287143125007575591">অ্যাক্সেস অস্বীকার করা হয়েছে।</translation>
 <translation id="8520687380519886411">ঐতিহ্যবাহি স্ক্রলিং</translation>
 <translation id="5081055027309504756">Seccomp-BPF স্যান্ডবক্স</translation>
 <translation id="2757031529886297178">FPS সংখ্যায়ক</translation>
@@ -371,6 +373,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="2278562042389100163">ব্রাউজার উইন্ডো খুলুন</translation>
 <translation id="5246282308050205996"><ph name="APP_NAME"/> ক্র্যাশ করেছে৷ অ্যাপ পুনঃসূচনা করতে এই বেলুনটি ক্লিক করুন৷</translation>
 <translation id="1201895884277373915">এই সাইট থেকে আরো</translation>
+<translation id="3894828473520419515">সঞ্চিত অনুলিপি দেখান</translation>
 <translation id="9218430445555521422">ডিফল্ট হিসেবে সেট করুন</translation>
 <translation id="5027550639139316293">ইমেল শংসাপত্র</translation>
 <translation id="938582441709398163">কীবোর্ড ওভারলে</translation>
@@ -575,6 +578,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="5145331109270917438">সংশোধনের তারিখ</translation>
 <translation id="6596816719288285829">IP ঠিকানা</translation>
 <translation id="7603461642606849762">ম্যানিফেস্ট URL debug.nmf এর মাধ্যমে শেষ হলে তবেই ডিবাগ করুন৷</translation>
+<translation id="2902127500170292085"><ph name="EXTENSION_NAME"/> এই প্রিন্টারের সঙ্গে যোগাযোগ করতে পারেনি। প্রিন্টারটি প্লাগ ইন করা আছে কিনা তা নিশ্চিত করে আবার চেষ্টা করুন।</translation>
 <translation id="8656768832129462377">চেক করবেন না</translation>
 <translation id="413121957363593859">উপাদানগুলি</translation>
 <translation id="715487527529576698">প্রাথমিক চীনা মোড হল সরলীকৃত চীনা</translation>
@@ -837,6 +841,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="7845849068167576533">এমনকি আপনি যদি আগে এই ওয়েবসাইটে এসে থাকেন, তাহলেও এখন এটি নিরাপদ নয়। Google নিরাপদ ব্রাউজিং সাম্প্রতিক <ph name="SITE"/> এ <ph name="BEGIN_LINK"/>মালওয়্যার শনাক্ত করেছে<ph name="END_LINK"/>। যেসব ওয়েবসাইট সাধারণত নিরাপদ থাকে, সেগুলি কখনও কখনও মালওয়্যার দ্বারা আক্রান্ত হয়। <ph name="SUBRESOURCE_HOST"/>, একটি পরিচিত মালওয়্যার বিতরণকারী, থেকে ক্ষতিকারক সামগ্রী আসে।</translation>
 <translation id="9137356749601179867">সার্ভার থেকে ডাউনলোড করা একটি ক্রেডিট কার্ডের স্থানীয় সংরক্ষণ অফার করতে চেকবাক্স দেখান</translation>
 <translation id="7986295104073916105">সংরক্ষিত পাসওয়ার্ড সেটিংস পড়ুন ও পরিবর্তন করুন</translation>
+<translation id="7177840076592118126">এক নজরে একটি স্থিতিশীল উইন্ডো অর্ডার ব্যবহার করুন।</translation>
 <translation id="5711983031544731014">আনলক করতে অক্ষম৷ আপনার পাসওয়ার্ড লিখুন৷</translation>
 <translation id="2149850907588596975">পাসওয়ার্ড ও ফর্ম</translation>
 <translation id="3672928695873425336">'ক্লিক করে ছোট করতে' শেল্ফ অমঞ্জুর করুন৷</translation>
@@ -1047,6 +1052,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="3075066926036244931">Google Payments এ ডেটা সংরক্ষণ করা যায়নি।</translation>
 <translation id="89217462949994770">আপনি অনেকবার ভুল PIN লিখেছেন৷ একটি নতুন 8-ডিজিটের PIN আনলকিং কী সংগ্রহ করতে দয়া করে <ph name="CARRIER_ID"/>-এ যোগাযোগ করুন৷</translation>
 <translation id="2776441542064982094">দেখে মনে হচ্ছে নেটওয়ার্কে নিবন্ধিত করার জন্য সেখানে কোনো ডিভাইস নেই৷ যদি আপানার ডিভাইস চালু থাকে এবং ইন্টারনেটে সংযুক্ত থাকে, তবে এটির নির্দেশনার ম্যানুয়ালের নির্দেশাবলী ব্যবহার করে এটিকে নিবন্ধিত করার চেষ্টা করুন৷</translation>
+<translation id="2796740370559399562">কুকিজকে অনুমতি দেয়া চালিয়ে যান</translation>
 <translation id="8659716501582523573">IP ঠিকানা:</translation>
 <translation id="7782102568078991263">Google থেকে আর কোনো পরামর্শ নেই</translation>
 <translation id="8038111231936746805">(ডিফল্ট)</translation>
@@ -1136,6 +1142,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="1634788685286903402">এই শংসাপত্রটি ইমেল ব্যবহারকারীদের সনাক্ত করতে বিশ্বাস করুন৷</translation>
 <translation id="1856715684130786728">অবস্থান যোগ করুন...</translation>
 <translation id="7219357088166514551"><ph name="ENGINE"/> এ অনুসন্ধান করুন বা URL লিখুন</translation>
+<translation id="42137655013211669">এই সম্পদে অ্যাক্সেস করা সার্ভার দ্বারা নিষিদ্ধ ছিল।</translation>
 <translation id="1832511806131704864">ফোন পরিবর্তন আপডেট হয়েছে</translation>
 <translation id="4684427112815847243">সবকিছু সমন্বয় করুন</translation>
 <translation id="5630163645818715367">ব্রাউজারের উপরের সীমানা ক্রোমে মেটারিয়াল ডিজাইন</translation>
@@ -1204,6 +1211,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="230927227160767054">এই পৃষ্ঠাটি একটি পরিষেবা নিয়ন্ত্রক ইনস্টল করতে চায়৷</translation>
 <translation id="5334142896108694079">স্ক্রিপ্ট ক্যাশে</translation>
 <translation id="4801512016965057443">মোবাইল ডেটা রোমিংয়ের মঞ্জুরি দিন</translation>
+<translation id="1205489148908752564">পরিচ্ছন্ন তালিকাতে যুক্ত ব্যবহারকারিদের পড়ুন এবং পরিবর্তন করুন</translation>
 <translation id="2971213274238188218">অনুজ্জ্বল করুন</translation>
 <translation id="473546211690256853">এই অ্যাকাউন্টটি <ph name="DOMAIN"/> দ্বারা পরিচালিত</translation>
 <translation id="288024221176729610">চেক</translation>
@@ -1328,6 +1336,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="6802031077390104172"><ph name="USAGE"/> (<ph name="OID"/>)</translation>
 <translation id="6025215716629925253">ট্রেস স্ট্যাক</translation>
 <translation id="4052120076834320548">অতি ক্ষুদ্র</translation>
+<translation id="6421289605565391955">পরীক্ষার জন্য একটি পরিষেবা প্রদানকারী নির্দিষ্ট ডেটা হ্রাসকরণ প্রক্সী ব্যবহার করুন।</translation>
 <translation id="3393716657345709557">অনুরোধকরা এন্ট্রি ক্যাশের মধ্যে পাওয়া যায়নি৷</translation>
 <translation id="7191454237977785534">ফাইল এই রূপে সংরক্ষণ করুন</translation>
 <translation id="7241389281993241388">ক্লায়েন্ট শংসাপত্র আমদানি করতে দয়া করে <ph name="TOKEN_NAME"/>-এ সাইন ইন করুন৷</translation>
@@ -1437,6 +1446,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="6263082573641595914">Microsoft CA সংস্করণ</translation>
 <translation id="2289383640829819703">কোনো ডাউনলোড পাওয়া যায় নি.</translation>
 <translation id="7716020873543636594">মাউস পয়েন্টার বন্ধ হয়ে গেলে স্বয়ংক্রিয়ভাবে ক্লিক করুন</translation>
+<translation id="3170544058711792988">বিবর্ধকের ফোকাস স্ক্রীনে রাখুন</translation>
 <translation id="953345106084818179">অনুমতির অনুরোধ জানান</translation>
 <translation id="3447661539832366887">এই ডিভাইসের মালিক ডাইনোসর গেমটি বন্ধ করেছেন৷</translation>
 <translation id="1197199342062592414">আসুন শুরু করা যাক</translation>
@@ -1596,12 +1606,14 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="3706919628594312718">মাউস সেটিংস</translation>
 <translation id="8094917007353911263">আপনি যে নেটওয়ার্কটি ব্যবহার করছেন সেটির জন্য অপনাকে <ph name="BEGIN_BOLD"/><ph name="LOGIN_URL"/><ph name="END_BOLD"/>-তে যেতে হতে পারে৷</translation>
 <translation id="7676077734785147678">এক্সটেনশান IME</translation>
+<translation id="3204209274259353887">সক্ষম করা হলে, WebRTC তখন DTLS 1.2 এর সাথে আদানপ্রদানের চেষ্টা করবে।</translation>
 <translation id="8326478304147373412">PKCS #7, শংসাপত্র শৃঙ্খল</translation>
 <translation id="3242765319725186192">প্রাক্‌-অংশীদারী করা কী:</translation>
 <translation id="8249048954461686687">OEM ফোল্ডার</translation>
 <translation id="54870580363317966">এই তত্ত্বাবধানে থাকা ব্যবহারকারীর জন্য কোন অবতার চয়ন করুন৷</translation>
 <translation id="839736845446313156">নিবন্ধ করুন</translation>
 <translation id="2660779039299703961">ইভেন্ট</translation>
+<translation id="456664934433279154">টুলকিট-দৃশ্য ভিত্তিক Chrome অ্যাপ্লিকেশানগুলির উইন্ডোগুলি ব্যবহার করা হবে কিনা তা নিয়ন্ত্রণ করে।</translation>
 <translation id="4249248555939881673">নেটওয়ার্ক সংযোগের জন্য অপেক্ষা করা হচ্ছে...</translation>
 <translation id="5620568081365989559">DevTools <ph name="FOLDER_PATH"/> এ সম্পূর্ণ অ্যাক্সেস অনুরোধ করে৷
 আপনি যে কোনো সংবেদনশীল তথ্য প্রকাশ করবেন না তা নিশ্চিত করুন।</translation>
@@ -1749,6 +1761,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="3124111068741548686">ব্যবহারকারীর হ্যান্ডলগুলি</translation>
 <translation id="4874539263382920044">শিরোনামে কমপক্ষে একটি অক্ষর থাকা আবশ্যক</translation>
 <translation id="9214520840402538427">ওহো! প্রারম্ভিক ইনস্টলেশন-সময়ের বৈশিষ্ট্যাবলীর সময় ফুরিয়েছে৷ দয়া করে আপনার সহায়ক প্রতিনিধির সঙ্গে যোগাযোগ করুন৷</translation>
+<translation id="8226222018808695353">নিষিদ্ধ</translation>
 <translation id="6237614789842758826">Google এ অনুসন্ধান করুন</translation>
 <translation id="798525203920325731">নেটওয়ার্ক নামব্যবধান</translation>
 <translation id="7092106376816104">পপ-আও ব্যতিক্রম</translation>
@@ -1782,6 +1795,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="3009779501245596802">সূচিবদ্ধ ডেটাবেস</translation>
 <translation id="3041612393474885105">শংসাপত্র তথ্য</translation>
 <translation id="1923786009776354244">WebRTC অচেতন মূল হেডারের জন্য সমর্থন সক্ষম করুন৷</translation>
+<translation id="8789375980715484686">অন্যান্য ব্যবহারকারিদের পরিচালনা করুন</translation>
 <translation id="5023943178135355362">অস্ট্রেলিয়ান স্ক্রলিং <ph name="BEGIN_LINK"/>আরো জানুন<ph name="END_LINK"/></translation>
 <translation id="465499440663162826">Chrome ওয়েব দোকানে সংযোগ করতে পারেনি।</translation>
 <translation id="7378810950367401542">/</translation>
@@ -1908,6 +1922,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="4707934200082538898">দয়া করে আরো নির্দেশাবলীর জন্য <ph name="BEGIN_BOLD"/> <ph name="MANAGER_EMAIL"/> <ph name="END_BOLD"/> এ আপনার ইমেল পরীক্ষা করুন৷</translation>
 <translation id="391445228316373457">নেপালি কীবোর্ড (ফোনেটিক)</translation>
 <translation id="8071942001314758122">শুধুমাত্র তিন বার &quot;Ok Google&quot; বলুন</translation>
+<translation id="4929925845384605079">শেল্ফ ব্যানারে যোগ করুন এর প্রদর্শন সক্ষম করে যা একজন ব্যবহারকারিকে কোনো ওয়েব অ্যাপ্লিকেশানকে তাদের শেল্ফে বা অন্য কোনো প্ল্যাটফর্ম নির্দিষ্ট সমতুল কিছুতে যোগ করার অনুরোধ জানায়।</translation>
 <translation id="4089521618207933045">উপমেনু রয়েছে</translation>
 <translation id="4793866834012505469">ভয়েস মডেল পুনরায় ট্রেইন করুন৷</translation>
 <translation id="3470442499439619530">এই ব্যবহারকারীকে সরান</translation>
@@ -2296,6 +2311,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="544083962418256601">শর্টকাটগুলি তৈরি করুন...</translation>
 <translation id="6143186082490678276">সহায়তা পান</translation>
 <translation id="8457625695411745683">ভালো</translation>
+<translation id="5975501027219721441">সঞ্চিত পৃষ্ঠাটি দেখান</translation>
 <translation id="8335587457941836791">শেল্ফ থেকে আনপিন করুন</translation>
 <translation id="2222641695352322289">এটি পূর্বাবস্থায় ফিরিয়ে আনার একমাত্র উপায় হল <ph name="IDS_SHORT_PRODUCT_OS_NAME"/> পুনরায় ইনস্টল করা৷</translation>
 <translation id="5605716740717446121">আপনি সঠিক PIN আনলকিং কী না লিখলে আপনার SIM কার্ড স্থায়ীভাবে অক্ষম হবে৷ প্রচেষ্টা বাকি আছে: <ph name="TRIES_COUNT"/>টি</translation>
@@ -2439,6 +2455,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="583281660410589416">অজানা</translation>
 <translation id="3774278775728862009">থাই  ইনপুট পদ্ধতি(টিআইএস- 820.2538 কীবোর্ড)</translation>
 <translation id="9115675100829699941">&amp;বুকমার্কস</translation>
+<translation id="466224668447152463">গোপনীয়তা এবং নিরাপত্তা</translation>
 <translation id="7570496663860904543">একটি পৃষ্ঠা লোড করতে ব্যর্থ হলে ব্রাউজারের ক্যাশেতে পৃষ্ঠার একটি মামুলি প্রতিলিপি যদি উপস্থিত থাকে, এই মামুলি প্রতিলিপিটি লোড করতে ব্যবহারকারীকে অনুমতি দেওয়ার জন্য একটি বোতামকে উপস্থিত করা হয়৷  প্রাথমিক সক্ষম চয়ন,  ত্রুটি পৃষ্ঠায় বিশেষ লক্ষণীয় অবস্থানে বোতামটিকে রাখে; বোতমটিকে পুনরায় লোড করতে গৌণ সক্ষম চয়ন এটিকে গৌণ রাখে৷</translation>
 <translation id="1731589410171062430">মোট: <ph name="NUMBER_OF_SHEETS"/> <ph name="SHEETS_LABEL"/> (<ph name="NUMBER_OF_PAGES"/> <ph name="PAGE_OR_PAGES_LABEL"/>)</translation>
 <translation id="7461924472993315131">পিন</translation>
@@ -2449,6 +2466,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="4820334425169212497">না, আমি এটা দেখিনি</translation>
 <translation id="691024665142758461">একাধিক ফাইল ডাউনলোড করুন</translation>
 <translation id="1166359541137214543">ABC</translation>
+<translation id="540296380408672091"><ph name="HOST"/> এ সর্বদা কুকিজ অবরুদ্ধ করুন</translation>
 <translation id="3227137524299004712">মাইক্রোফোন</translation>
 <translation id="5528368756083817449">বুকমার্ক পরিচালক</translation>
 <translation id="7705600705238488017">পরিবর্তে <ph name="BEGIN_LINK"/>Chrome ওয়েব Store ব্রাউজ<ph name="END_LINK"/>করতে চান?</translation>
@@ -2546,6 +2564,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="5352033265844765294">Time Stamping</translation>
 <translation id="1493892686965953381"><ph name="LOAD_STATE_PARAMETER"/>এর জন্য প্রতীক্ষারত...</translation>
 <translation id="3901991538546252627"><ph name="NAME"/>-এ সংযোগ করা হচ্ছে</translation>
+<translation id="7812634759091149319">chrome://apps বা chrome://extensions এ নেটিভ এক্সটেনশান অনুমতিগুলি বা বিশদ বিবরণ লিঙ্ক (যেটি ওয়েব দোকানে যাওয়ার লিঙ্ক) এর জায়গায় টুলকিট-দৃশ্য নির্ভর অ্যাপ্লিকেশান তথ্য ডায়ালগ অ্যাক্সেসযোগ্য করে।</translation>
 <translation id="7551059576287086432"><ph name="FILE_NAME"/> ডাউনলোড করা অসফল হয়েছে</translation>
 <translation id="4744335556946062993">মুদ্রণ পূর্বরূপ নিবন্ধন প্রচারগুলি সক্রিয় করুন</translation>
 <translation id="748138892655239008">শংসাপত্র প্রাথমিক বাধ্যবাধকতা</translation>
@@ -2794,6 +2813,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="6702639462873609204">&amp;সম্পাদনা করুন...</translation>
 <translation id="9148126808321036104">আবার সাইন ইন করুন</translation>
 <translation id="2282146716419988068">GPU প্রক্রিয়া</translation>
+<translation id="3113334552982755865">অক্ষম করা থাকলে, রাস্টার থ্রেডগুলি GPU মেমরিতে লিখবে না।</translation>
 <translation id="4690246192099372265">সুইডিশ</translation>
 <translation id="1682548588986054654">নতুন ছদ্মবেশী উইন্ডো</translation>
 <translation id="6833901631330113163">দক্ষিণ ইউরোপীয়</translation>
@@ -2904,8 +2924,10 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="1414648216875402825">আপনি <ph name="PRODUCT_NAME"/> এর অস্থায়ী সংস্করণে আপডেট হচ্ছেন, এটিতে থাকা বৈশিষ্টগুলি প্রগতিতে রয়েছে৷ ক্র্যাশ এবং অপ্রত্যাশিত ত্রুটিগুলি ঘটবে৷ দয়া করে সাবধানতার সাথে এগিয়ে যান৷</translation>
 <translation id="8382913212082956454">&amp;ইমেল ঠিকানা কপি করুন</translation>
 <translation id="7887192723714330082">স্ক্রিনটি চালু এবং আনলক থাকাকালীন &quot;Ok Google&quot; এ প্রতিক্রিয়া দিন</translation>
+<translation id="2280845493034384933">কিছু পরিস্থিতিতে ফ্লিপ করা ভিউপোর্ট স্ক্রোল ক্রম সক্ষম করে। যেমন, পিঞ্চ-জুম করার সময়, ভিজুয়্যাল ভিউপোর্ট প্রথমে স্ক্রল করতে হবে, তারপরে লে-আউট ভিউপোর্টটি।</translation>
 <translation id="4157188838832721931">পাসওয়ার্ডগুলির পৃষ্ঠাতে পাসওয়ার্ডগুলি প্রকাশ করার আগে ব্যবহারকারীকে তার OS-এর পাসওয়ার্ডের জন্য প্রণোদিত হওয়া অক্ষম করুন।</translation>
 <translation id="2993517869960930405">অ্যাপ্লিকেশানের তথ্য</translation>
+<translation id="3088757355463573099">পরীক্ষার জন্য একটি পরিষেবা প্রদানকারী নির্দিষ্ট ডেটা হ্রাসকরণ প্রক্সী সক্ষম করুন।</translation>
 <translation id="2903493209154104877">ঠিকানা</translation>
 <translation id="3479552764303398839">এখনই নয়</translation>
 <translation id="3714633008798122362">ওয়েব ক্যালেন্ডার</translation>
@@ -3118,6 +3140,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="8342318071240498787">একই নাম সহ ফাইল অথবা একটি নির্দেশিকা ইতিমধ্যেই বিদ্যমান আছে৷</translation>
 <translation id="3697100740575341996">আপনার IT প্রশাসক আপনার ডিভাইসের জন্য Chrome গুডিজগুলিকে অক্ষম করেছে৷ <ph name="MORE_INFO_LINK"/></translation>
 <translation id="2537154813650311294">অ্যাপ্লিকেশান লঞ্চারে, ড্রাইভ অ্যাপ্লিকেশানগুলিকে Chrome অ্যাপ্লিকেশানগুলির সাথে পাশাপাশি দেখাবেন না৷</translation>
+<translation id="4538684596480161368"><ph name="HOST"/> এ সর্বদা আনস্যান্ডবক্সড প্লাগ ইন অবরুদ্ধ করুন</translation>
 <translation id="8053390638574070785">এই পৃষ্ঠাটি পুনঃ লোড করুন</translation>
 <translation id="308330327687243295">https://mail.google.com/mail/?extsrc=mailto&amp;url=%s</translation>
 <translation id="5507756662695126555">অ-অস্বীকৃতি</translation>
@@ -3274,6 +3297,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="3651020361689274926">অনুরোধ হওয়া সংস্থানটি আর বিদ্যমান নেই এবং অগ্রবর্তী ঠিকানা নেই৷ এটি একটি স্থায়ী অবস্থা হিসাবে প্রত্যাশিত৷</translation>
 <translation id="3057861065630527966">আপনার ফটো ও ভিডিওগুলির ব্যাকআপ নিন</translation>
 <translation id="2989786307324390836">DER-এনকোডেড বাইনারি, একক শংসাপত্র</translation>
+<translation id="6630752851777525409">আপনার পক্ষ থেকে একটি শংসাপত্র প্রমাণীকৃত করতে <ph name="EXTENSION_NAME"/> সেটিতে স্থায়ী অ্যাক্সেস চায়।</translation>
 <translation id="3827774300009121996">&amp;পূর্ণ স্ক্রীণ</translation>
 <translation id="7982083145464587921">এই ত্রুটি সংশোধন করতে দয়া করে আপনার ডিভাইসটি পুনরায় চালু করুন৷</translation>
 <translation id="3771294271822695279">ভিডিও  ফাইলসমূহ</translation>
@@ -3299,6 +3323,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="1031460590482534116">ক্লায়েন্ট শংসাপত্র জমা করার চেষ্টা করার সময় একটি সমস্যা হয়েছে৷ ত্রুটি <ph name="ERROR_NUMBER"/> (<ph name="ERROR_NAME"/>)</translation>
 <translation id="7296774163727375165"><ph name="DOMAIN"/> এর শর্তাবলী</translation>
 <translation id="7136984461011502314"><ph name="PRODUCT_NAME"/>-তে আপনাকে স্বাগতম</translation>
+<translation id="5515008897660088170">টুলকিট-দৃশ্যর অ্যাপ্লিকেশান তথ্য উইন্ডোগুলি।</translation>
 <translation id="1826516787628120939">চেক করা হচ্ছে</translation>
 <translation id="5241128660650683457">আপনার দেখা ওয়েবসাইটগুলির সমস্ত ডেটা পড়ে</translation>
 <translation id="204497730941176055">Microsoft শংসাপত্র টেম্পলেট নাম</translation>
@@ -3457,6 +3482,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="4035758313003622889">&amp;কার্য পরিচালক</translation>
 <translation id="6356936121715252359">Adobe Flash Player সঞ্চয় সেটিংস...</translation>
 <translation id="8874184842967597500">সংযুক্ত নয়</translation>
+<translation id="8354560714384889844">টুলকিট-দৃশ্যর অ্যাপ্লিকেশান তথ্য ডায়ালগ।</translation>
 <translation id="7313804056609272439">ভিয়েতনামী ইনপুট পদ্ধতি (ভিএনআই)</translation>
 <translation id="8599675288025166194">পরীক্ষামূলক লিঙ্কযুক্ত অল্পক্ষণস্থায়ী অ্যাপ্লিকেশানগুলি সক্ষম করুন৷</translation>
 <translation id="9093469356685234112"><ph name="ORIGIN"/>-এর জন্য সংরক্ষিত অ্যাকাউন্টসমূহ</translation>
@@ -3489,6 +3515,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
     ডিভাইসে পর্যাপ্ত স্থান নেই৷
     <ph name="LINE_BREAK2"/>
     শুরু করতে কিছু ফটো চয়ন করার চেষ্টা করুন৷</translation>
+<translation id="914566504855049417">WebRTC এর জন্য DTLS 1.2 এর সাথে আদানপ্রদান সক্ষম করুন।</translation>
 <translation id="4416628180566102937">তালিকাভুক্ত এবং পুনর্সূচনা করুন</translation>
 <translation id="4623537843784569564">এই এক্সটেনশানটি ভুলভাবে আপডেট হয়ে থাকতে পারে৷ আবার ইনস্টল করার চেষ্টা করুন৷</translation>
 <translation id="4342311272543222243">ওহো, TPM ত্রুটি৷</translation>
@@ -3640,6 +3667,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="8680787084697685621">অ্যাকাউন্ট সাইন-ইন বিশদ তারিখ সীমার বাইরে৷</translation>
 <translation id="5649823029736413118">প্রিমিয়াম সামগ্রী প্লে করতে <ph name="URL"/> এর আপনার ডিভাইসকে স্বতন্ত্র ভাবে সনাক্ত করা প্রয়োজন৷</translation>
 <translation id="8090234456044969073">আপনার সবচেয়ে ঘন ঘন পরিদর্শিত ওয়েবসাইটের একটি তালিকা পড়ুন</translation>
+<translation id="7946068607136443002">অ্যাপ্লিকেশান-তালিকাটি স্পর্শ মোডে থাকলে সেটি পূর্ণস্ক্রীন মোডে দেখা যাবে। এই ফ্ল্যাগটি এই মোডের বাইরে কিছুই করে না।</translation>
 <translation id="8899285681604219177">অসমর্থিত এক্সটেনশানগুলি নিষ্ক্রিয় করা আছে</translation>
 <translation id="889901481107108152">দুঃখিত, এই গবেষণা আপনার প্ল্যাটফর্মে উপলব্ধ নেই৷</translation>
 <translation id="1873879463550486830">SUID Sandbox</translation>
@@ -3753,6 +3781,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="1107591249535594099">যদি পরীক্ষা করা হয়, Chrome দ্রুত ফর্ম পূরণ করার জন্য এই ডিভাইসে থাকা আপনার কার্ডের একটি প্রতিলিপি সঞ্চয় করবে৷</translation>
 <translation id="1062407476771304334">প্রতিস্থাপন করুন</translation>
 <translation id="2266168284394154563">স্ক্রিন জুম পুনরায় সেট করুন</translation>
+<translation id="7473810335848400503">ভিউপোর্ট স্ক্রোল ক্রম উল্টান।</translation>
 <translation id="76814018934986158">এই সাইটটিতে একটি নিরাপত্তাহীন স্ক্রিপ্ট লোড থাকার কারণে এই সাইটে আপনার সংযোগ ব্যক্তিগত নয়৷</translation>
 <translation id="3091247532584160609"><ph name="DATA_SOURCE"/> (<ph name="ALLOWED_COUNT"/>টি মঞ্জুরিপ্রাপ্ত / <ph name="BLOCKED_COUNT"/>টি অবরুদ্ধ)</translation>
 <translation id="7072025625456903686">সবগুলির অনুমোদন বা কাস্টমাইজ করুন</translation>
@@ -3871,6 +3900,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="4779083564647765204">জুম</translation>
 <translation id="6397363302884558537">কথা বলা বন্ধ করুন</translation>
 <translation id="6957703620025723294">পরীক্ষামূলক ক্যানভাস বৈশিষ্ট্যগুলি সক্ষম করুন</translation>
+<translation id="3385050660708634073">আপনার নিজস্ব সিঙ্ক পাসফ্রেজ দিয়ে সিঙ্ক হওয়া সমস্ত ডেটা এনক্রিপ্ট করুন।</translation>
 <translation id="8151185429379586178">বিকাশকারী সরঞ্জামগুলি</translation>
 <translation id="1526560967942511387">শিরোনামহীন দস্তাবেজ</translation>
 <translation id="3979748722126423326"><ph name="NETWORKDEVICE"/> সক্ষম করুন</translation>
@@ -4127,7 +4157,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="1502341367962526993">কোন পৃষ্ঠাগুলিতে পাঠক মোড বোতামটি দেখানো হবে তা নির্ধারণ করে৷</translation>
 <translation id="3627320433825461852">1 মিনিটেরও কম সময় বাকি আছে</translation>
 <translation id="3123569374670379335">(তত্ত্বাবধানে থাকা)</translation>
-<translation id="854600348164706309">আপনার ট্যাবগুলি, বুকমার্কগুলি, ইতিহাস এবং অন্যান্য সেটিংস আপনার Google অ্যাকাউন্টে সিঙ্ক হবে।</translation>
 <translation id="4047345532928475040">N/A</translation>
 <translation id="5604324414379907186">সর্বদা বুকমার্কস দণ্ড দেখান</translation>
 <translation id="249113932447298600">দুঃখিত, <ph name="DEVICE_LABEL"/> ডিভাইসটি এই মুহুর্তে সমর্থিত নয়৷</translation>
@@ -4207,6 +4236,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="2255317897038918278">Microsoft Time Stamping</translation>
 <translation id="3033332627063280038">ক্যাশে-নিয়ন্ত্রণ: পুনঃবৈধতার-সময়ে-অব্যবহৃত ডিরেক্টিভ এর পরীক্ষামূলক বাস্তবায়ন সক্ষম করে। এটি সার্ভারকে লেটেন্সি উন্নত করার জন্য কিছু রিসোর্সের যে পুনঃবৈধতা করা যেতে পারে তা উল্লেখ করার অনুমতি দেয়।</translation>
 <translation id="3493881266323043047">বৈধতা</translation>
+<translation id="6631802470730636970">শেল্ফে যোগ করা সক্রিয় করুন</translation>
 <translation id="5979421442488174909">&amp;এতে অনুবাদ করুন <ph name="LANGUAGE"/></translation>
 <translation id="1503394326855300303">একটি একাধিক সাইন ইন সেশনে এই মালিক অ্যাকাউন্টটি প্রথম সাইন ইন থাকা অ্যাকাউন্ট হতে হবে৷</translation>
 <translation id="2662876636500006917">Chrome  ওয়েব বাজার</translation>
@@ -4217,7 +4247,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="8299269255470343364">জাপানী</translation>
 <translation id="9088659014978240063">সিস্টেমের CPU তে <ph name="SHORT_PRODUCT_NAME"/> এর প্রভাব সম্পর্কিত মেট্রিক্স</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME"/> (<ph name="DEVICE"/>)</translation>
-<translation id="6429639049555216915">অ্যাপলিকেশানটি বর্তমানে পাওয়া যাচ্ছে না৷</translation>
 <translation id="1243314992276662751">আপলোড</translation>
 <translation id="2144536955299248197">শংসাপত্র দর্শনকারী: <ph name="CERTIFICATE_NAME"/></translation>
 <translation id="8261387128019234107"><ph name="PROFILE_NAME"/> এর জন্য অ্যাকাউন্ট যোগ করুন</translation>
@@ -4235,6 +4264,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="8962083179518285172">বিবরণ লুকান</translation>
 <translation id="5695323626817702678">স্বল্প সময়</translation>
 <translation id="2359808026110333948">অবিরত</translation>
+<translation id="7453008956351770337">এই প্রিন্টারটি নির্বাচন করে, আপনি নিম্নল্লিখিত এক্সটেনশানটিকে আপনার প্রিন্টারে অ্যাক্সেস করার অনুমতি দিচ্ছেন:</translation>
 <translation id="6102473941787693058">অবৈধ TLS/SSL সার্টিফিকেট চেইন-এর প্রতিবেদন করার জন্য নির্বাচন সক্ষম করুন</translation>
 <translation id="7863133010182113457">যখন chrome শুরু হয় তখন ডেটা হ্রাস প্রক্সী ব্যবহার করে প্রাপ্ত ডেটা সঞ্চয় মুছে ফেলা হয়৷</translation>
 <translation id="4235200303672858594">সম্পূর্ণ স্ক্রীন</translation>
@@ -4302,6 +4332,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="7915471803647590281">প্রতিক্রিয়াটি প্রেরণের আগে কী ঘটছে তা দয়া করে আমাদের জানান৷ </translation>
 <translation id="5725124651280963564"><ph name="HOST_NAME"/>-এর জন্য একটি কী জেনারেট করতে অনুগ্রহ করে <ph name="TOKEN_NAME"/>-এ সাইন ইন করুন৷</translation>
 <translation id="8418113698656761985">রোমানিয় কীবোর্ড</translation>
+<translation id="1225404570112441414">যেকোনো সময় ব্যবহার করার জন্য এই সাইটটিকে আপনার শেল্ফে যোগ করুন।</translation>
 <translation id="3206175707080061730">&quot;$1&quot; নামের একটি ফাইল ইতিমধ্যেই বিদ্যমান৷ আপনি কি এটি প্রতিস্থাপন করতে চান?</translation>
 <translation id="5976160379964388480">অন্যান্য</translation>
 <translation id="3439970425423980614">পূর্বরুপের মধ্যে PDF খোলা হচ্ছে</translation>
@@ -4320,6 +4351,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="2475982808118771221">একটি ত্রুটি ঘটেছে</translation>
 <translation id="3324684065575061611">(এন্টারপ্রাইজ নীতি দ্বারা অক্ষমিত)</translation>
 <translation id="7385854874724088939">মুদ্রণের চেষ্টা করার সময় কোন ত্রুটি ঘটেছে৷  দয়া করে আপনার মুদ্রকটি চেক করুন এবং আবার চেষ্টা করুন৷</translation>
+<translation id="7012435537548305893">পূর্ণস্ক্রীন অ্যাপ্লিকেশান-তালিকাটিকে স্পর্শ-মোডে সক্ষম করে।</translation>
 <translation id="770015031906360009">গ্রীক</translation>
 <translation id="7455133967321480974">বিশ্বব্যাপী ডিফল্ট ব্যবহার করুন (অবরোধ করুন)</translation>
 <translation id="8463215747450521436">এই তত্ত্বাবধানে থাকা ব্যবহারকারীটি পরিচালকের দ্বারা মুছে দেওয়া বা অক্ষম করে রাখা থাকতে পারে৷ আপনি যদি এই ব্যবহারকারী হিসেবে সাইন ইন করা চালিয়ে যেতে চান তাহলে দয়া করে পরিচালকের সঙ্গে যোগাযোগ করুন৷</translation>
@@ -4524,6 +4556,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="4669109953235344059">পুনরায় চেষ্টা করুন</translation>
 <translation id="3758760622021964394">পৃষ্ঠাটি আপনার মাউস কার্সার অক্ষম করতে চাইছে৷</translation>
 <translation id="4165986682804962316">সাইটের সেটিংস</translation>
+<translation id="1835339313324024">ভার্চুয়াল কিবোর্ডের স্মার্ট ডিপ্লয়মেন্ট করুন</translation>
 <translation id="4106164762195622179">ছদ্মবেশী ট্যাবগুলিতে আপনি যে পৃষ্ঠাগুলি দেখেন সেগুলি আপনার <ph name="BEGIN_BOLD"/>সব<ph name="END_BOLD"/> ছদ্মবেশী ট্যাব বন্ধ করে দেওয়ার পর ব্রাউজারের ইতিহাস, কুকি স্টোর বা অনুসন্ধান ইতিহাসে থাকবে না। আপনি ডাউনলোড করেছেন এমন ফাইল বা বুকমার্ক তৈরি করছেন এমন সবগুলি রাখা হবে।</translation>
 <translation id="1209796539517632982">স্বয়ংক্রিয় নাম সার্ভার</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS"/> এর জন্য বিকল্পগুলির মেনু</translation>
@@ -4567,6 +4600,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="8144022414479088182">আপনি কি এই ডিভাইসটিকে একটি Chromebox মিটিং ডিভাইস হিসেবে সেট আপ করার বিষয়ে নিশ্চিত?</translation>
 <translation id="3331974543021145906">অ্যাপ্লিকেশানের তথ্য</translation>
 <translation id="2668079306436607263">ওভারস্ক্রোল ইতিহাস নেভিগেশন</translation>
+<translation id="9215934040295798075">ওয়ালপেপার সেট করুন</translation>
 <translation id="2350796302381711542"><ph name="REPLACED_HANDLER_TITLE"/> এর পরিবর্তে সমস্ত <ph name="PROTOCOL"/> লিঙ্কগুলি খুলতে <ph name="HANDLER_HOSTNAME"/>কে অনুমোদিত করবেন?</translation>
 <translation id="320825648481311438">যখন সক্ষম করা থাকে, তখন ব্রাউজার Google অ্যাকাউন্টগুলির সাইন ইন হওয়া বা আউট  হওয়া পরিচালনা করে।</translation>
 <translation id="7066944511817949584">&quot;<ph name="DEVICE_NAME"/>&quot;-এর সাথে সংযোগ করতে ব্যর্থ৷</translation>
@@ -4576,7 +4610,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="3803991353670408298">এটি সরানোর আগে দয়া করে অন্য ইনপুট পদ্ধতি যুক্ত করুন৷</translation>
 <translation id="4209267054566995313">কোনও মাউস অথবা টাচপ্যাড সনাক্ত করা হয় নি৷</translation>
 <translation id="337920581046691015"><ph name="PRODUCT_NAME"/> ইনস্টল করা হবে৷</translation>
-<translation id="8730941225957945932">সকল অঙ্কনের জন্য স্লিমিং পেন্ট দর্শন তালিকা ব্যবহার করুন৷</translation>
 <translation id="5636996382092289526"><ph name="NETWORK_ID"/> ব্যবহার করতে গেলে আপনাকে প্রথমে <ph name="LINK_START"/>নেটওয়ার্কের সাইন-ইন পৃষ্ঠায় যেতে হবে<ph name="LINK_END"/>, যা কয়েক সেকেন্ডের মধ্যে স্বয়ংক্রিয়ভাবে খুলবে৷ যদি এমন না হয়, তাহলে নেটওয়ার্কটি ব্যবহার করা যেতে পারে৷</translation>
 <translation id="78957024357676568">বাম</translation>
 <translation id="7048141481140415714">TouchView পূর্ণবিস্তার মোডে টগল করার জন্য Ctrl+Alt+Shift+8 সক্ষম করুন৷</translation>
@@ -4629,6 +4662,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="6196854373336333322">&quot;<ph name="EXTENSION_NAME"/>&quot; এক্সটেনশান আপনার প্রক্সী সেটিংস নিয়ন্ত্রণ করছে, যার মানে হল আপনি অনলাইনে যাই করুন না কেন এটি তার পরিবর্তন করতে, সেখানে জোর করে প্রবেশ বা সেটি লুকিয়ে দেখতে পারবে। আপনি যদি বুঝতে না পারেন কেন এই পরিবর্তনটি হয়েছে তাহলে আপনি সম্ভবত এটি চাইছেন না।</translation>
 <translation id="7583419135027754249">আলতো চাপার সঙ্গে সঙ্গে সর্বদা একটি ক্লিক ইভেন্ট পাঠায়, এমনকি এটি কোনো দুইবার-আলতো চাপা অঙ্গভঙ্গির অংশ হলেও৷ এটি অধিকাংশ পৃষ্ঠাতে ৩০০ms এর মতো হারে নেভিগেশানের গতি এবং আলতো চাপার দরুন হওয়া কাজের গতি বাড়ায়, কিন্তু এর অর্থ হল জুম করতে দুইবার-আলতো চাপার সময়ে লিঙ্ক এবং বোতামগুলিকে অবশ্যই এড়িয়ে চলতে হবে৷</translation>
 <translation id="3420980393175304359">ব্যক্তি পরিবর্তন করুন</translation>
+<translation id="2541423446708352368">সকল ডাউনলোড দেখান</translation>
 <translation id="2406941037785138796">অক্ষমগুলি</translation>
 <translation id="5030338702439866405">দ্বারা ইস্যু করা</translation>
 <translation id="7940103665344164219">ভাগ করা মেমোরি ব্যবহার</translation>
@@ -5045,6 +5079,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="8737709691285775803">শিল</translation>
 <translation id="1902576642799138955">বৈধতা পর্ব</translation>
 <translation id="1110753181581583968">{NUM_DOWNLOAD,plural, =1{ডাউনলোড চালিয়ে যান}one{ডাউনলোড চালিয়ে যান}other{ডাউনলোড চালিয়ে যান}}</translation>
+<translation id="5325120507747984426">এক নজরে মোডে একটি স্থিতিশীল উইন্ডো ক্রম ব্যবহার করে যা এক নজরে মোডে প্রবেশ/প্রস্থান এবং এক নজরের সেশনগুলোর মধ্যে পরিবর্তনের সময় উইন্ডোগুলির নড়াচড়া কমানোর চেষ্টা করে।</translation>
 <translation id="1883460408637458805">টেরাবাইট</translation>
 <translation id="4910021444507283344">WebGL</translation>
 <translation id="952059663570656154">পাসওয়ার্ড সংরক্ষিত হবে না</translation>
@@ -5092,6 +5127,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="6870130893560916279">ইউক্রেনীয় কীবোর্ড</translation>
 <translation id="5521078259930077036">আপনি কি এই পৃষ্ঠাটিকে হোম পৃষ্টা হিসেবে আশা করছিলেন?</translation>
 <translation id="8574794171590710404">এই সাইটটি একটি প্লাগইন (<ph name="PLUGIN_NAME"/>) ব্যবহার করে যা অসমর্থিত৷</translation>
+<translation id="1532697124104874386">ভার্চুয়াল কীবোড এর স্মার্ট ডিপ্লয়মেন্ট সক্ষম/অক্ষম করুন।</translation>
 <translation id="5023310440958281426">আপনার প্রশাসকের নীতিগুলি দেখুন</translation>
 <translation id="8931394284949551895">নতুন ডিভাইসগুলি</translation>
 <translation id="1441841714100794440">ভিয়েতনামি কীবোর্ড (টেলেক্স)</translation>
@@ -5460,6 +5496,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="2785530881066938471">বর্তমান স্ক্রিপ্টটির জন্য <ph name="RELATIVE_PATH"/> ফাইলটি লোড করতে পারা যায়নি৷ এটি UTF-8 এনকোড হওয়া নেই৷</translation>
 <translation id="8744525654891896746">এই তত্বাবধানে থাকা ব্যবহারকারীর জন্য একটি অবতার নির্বাচন করুন</translation>
 <translation id="3807747707162121253">&amp;বাতিল</translation>
+<translation id="2740531572673183784">ওকে</translation>
 <translation id="202352106777823113">ডাউনলোডটি অত্যধিক সময় নিয়েছে এবং নেটওয়ার্ক দ্বারা বন্ধ হয়েছে৷</translation>
 <translation id="6155817405098385604">GPU যখন ব্যবহার হয় না 3D সফ্টওয়্যার রাস্টেরাইজারে ফিরে আসবেন না৷</translation>
 <translation id="3306897190788753224">অস্থায়ীভাবে রূপান্তর ব্যক্তিগতকরণ, ইতিহাস-ভিত্তিক প্রস্তাবনাগুলি এবং ব্যবহারকারীর অভিধান অক্ষম করুন</translation>
@@ -5474,6 +5511,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="4503387275462811823">এক্সটেনশান বিবরণ</translation>
 <translation id="2157875535253991059">পৃষ্ঠাটি এখন পূর্ণ পর্দায় রয়েছে</translation>
 <translation id="4434147949468540706">স্ক্রোল সমাপ্তি প্রভাব</translation>
+<translation id="827097179112817503">হোম বোতাম দেখান</translation>
 <translation id="471800408830181311">ব্যক্তিগত কী আউটপুট করতে ব্যর্থ৷</translation>
 <translation id="6151559892024914821">টাচ প্রবর্তিত ড্র্যাগ এবং ড্রপ সক্ষম করুন</translation>
 <translation id="3394150261239285340"><ph name="HOST"/> আপনার ক্যামেরা ও মাইক্রোফোন ব্যবহার করতে চায়৷</translation>
@@ -5770,6 +5808,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="7353601530677266744">কম্যান্ড লাইন</translation>
 <translation id="2766006623206032690">প্র&amp;তিলেপন করুন ও যান</translation>
 <translation id="5253753933804516447">আপনার স্ক্রীন চালু এবং আনলক থাকাকালীন ভয়েস অনুসন্ধানে &quot;Ok Google&quot; সক্ষম করুন</translation>
+<translation id="1568822834048182062">আপনার বুকমার্ক, ইতিহাস, পাসওয়ার্ড এবং অন্যান্য সেটিংস আপনার Google অ্যাকাউন্টে সিঙ্ক করা হবে।</translation>
 <translation id="5511823366942919280">আপনি কি &quot;শার্ক&quot; হিসেবে এই ডিভাইসটিকে সেটআপ করতে ইচ্ছুক?</translation>
 <translation id="5286673433070377078">Bleeding Edge Renderer Paths - আপনার ব্রাউজার ক্র্যাশ করার সমূহ সম্ভাবনা আছে</translation>
 <translation id="6843725295806269523">নিঃশব্দ</translation>
@@ -5828,6 +5867,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="2817109084437064140">ডিভাইসে আমদানি করুন এবং বাঁধুন... </translation>
 <translation id="3331321258768829690">(<ph name="UTCOFFSET"/>) <ph name="LONGTZNAME"/> (<ph name="EXEMPLARCITY"/>)</translation>
 <translation id="2813137708069460534"><ph name="SHORT_PRODUCT_NAME"/> এর নেটওয়ার্ক ব্যবহার সম্পর্কিত মেট্রিক্স</translation>
+<translation id="2491341326828824053">এক-অনুলিপি রাস্টারাইজার অক্ষম করুন</translation>
 <translation id="7250799832286185545">বছর</translation>
 <translation id="5849869942539715694">প্যাক এক্সটেনশান...</translation>
 <translation id="7339785458027436441">টাইপ করার সময় বানান পরীক্ষা করুন</translation>

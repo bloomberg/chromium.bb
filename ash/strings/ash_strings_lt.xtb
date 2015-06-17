@@ -38,6 +38,7 @@
 <translation id="1812696562331527143">Įvesties metodas pakeistas į <ph name="INPUT_METHOD_ID"/>* (<ph name="BEGIN_LINK"/>trečioji šalis<ph name="END_LINK"/>).
         Jei norite perjungti, paspauskite „Shift“ + „Alt“.</translation>
 <translation id="6043994281159824495">Atsijungti dabar</translation>
+<translation id="5168181903108465623">Pasiekiami perdavimo įrenginiai</translation>
 <translation id="2127372758936585790">Mažos galios įkroviklis</translation>
 <translation id="3799026279081545374">Turbūt jūsų kroviklis yra netinkamas. Jei gyvenate JAV, skambinkite numeriu 866-628-1371, kad gautumėte pagalbos ir būtų pakeistas kroviklis. Jei gyvenate JK, skambinkite numeriu 0800-026-0613. Jei gyvenate Airijoje, skambinkite numeriu 1-800-832-664. Jei gyvenate Kanadoje, skambinkite numeriu 866-628-1372. Jei gyvenate Australijoje, skambinkite numeriu 1-800-067-460.</translation>
 <translation id="3891340733213178823">Jei norite atsijungti, du kartus paspauskite „Ctrl“ + „Shift“ + Q.</translation>
@@ -96,6 +97,7 @@
 <translation id="9089416786594320554">Įvesties metodai</translation>
 <translation id="2700058918926273959">Sesija baigsis po <ph name="SESSION_TIME_REMAINING"/>. Būsite atjungti.</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/> %</translation>
+<translation id="1963814843110128691">Perduodama $1 į $2</translation>
 <translation id="3963445509666917109">Garsiakalbis (vidinis)</translation>
 <translation id="1747827819627189109">Ekrano klaviatūra įgalinta</translation>
 <translation id="2208323208084708176">Vieno darbalaukio režimas</translation>
@@ -179,6 +181,7 @@
 <translation id="6785414152754474415">Likusi akumuliatoriaus įkrova: <ph name="PERCENTAGE"/> %. Jis įkraunamas.</translation>
 <translation id="4895488851634969361">Akumuliatorius visiškai įkrautas.</translation>
 <translation id="615957422585914272">Rodyti ekrano klaviatūrą</translation>
+<translation id="8443356412772935865">Ekranas perduodamas į $1</translation>
 <translation id="5947494881799873997">Grąžinti</translation>
 <translation id="7593891976182323525">Paieškos arba antrojo lygio klavišas</translation>
 <translation id="7649070708921625228">Žinynas</translation>
@@ -187,9 +190,11 @@ Jei norite atšaukti, paspauskite paieškos arba antrojo lygio klavišą.</trans
 <translation id="397105322502079400">Skaičiuojama...</translation>
 <translation id="1013923882670373915">„Bluetooth“ įrenginys „<ph name="DEVICE_NAME"/>“ prašo leidimo susieti. Šiame įrenginyje įveskite šį PIN kodą: <ph name="PINCODE"/></translation>
 <translation id="2819276065543622893">Būsite atjungti.</translation>
+<translation id="4961318399572185831">Perduoti ekraną</translation>
 <translation id="5507786745520522457">Nustatyti mobiliojo ryšio duomenis</translation>
 <translation id="6165508094623778733">Sužinokite daugiau</translation>
 <translation id="7168224885072002358">Po <ph name="TIMEOUT_SECONDS"/> bus grąžinta sena skyra</translation>
+<translation id="5927132638760172455">Perduodama į nežinomą imtuvą</translation>
 <translation id="743058460480092004">Kamera ir mikrofonas naudojami.</translation>
 <translation id="6550675742724504774">Parinktys</translation>
 <translation id="6406704438230478924">altgr</translation>

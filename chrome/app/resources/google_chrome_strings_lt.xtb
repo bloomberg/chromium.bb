@@ -80,6 +80,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="8551886023433311834">Beveik įdiegta naujausia versija! Paleiskite įrenginį iš naujo, kad būtų užbaigtas naujinimas.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/>– „Google Chrome“</translation>
 <translation id="1073391069195728457">„Chrome“ – pranešimai</translation>
+<translation id="6368805772029492593">Kad būtų papildomai užtikrintas saugumas, „Google Chrome“ užšifruos jūsų duomenis.</translation>
 <translation id="7339898014177206373">Naujas langas</translation>
 <translation id="3282568296779691940">Prisijungti prie „Chrome“</translation>
 <translation id="3089968997497233615">Galima nauja, saugesnė „Google Chrome“ versija.</translation>
@@ -228,6 +229,7 @@ Prisijungus bet kuriuo būdu, „Chrome“ informacija, pvz., žymės, istorija 
 <translation id="5566025111015594046">„Google Chrome“ (mDNS-In)</translation>
 <translation id="6113794647360055231">„Chrome“ dabar dar tobulesnė</translation>
 <translation id="2588322182880276190">„Chrome“ logotipas</translation>
+<translation id="4519152997629025674">„Google Chrome“ gali naudoti <ph name="BEGIN_LINK"/>žiniatinklio paslaugas<ph name="END_LINK"/>, kad būtų pagerintas naršymas. Pasirinktinai galite bet kada neleisti teikti šių paslaugų.</translation>
 <translation id="4367618624832907428">„Google Chrome“ nepavyksta pateikti tinklalapio, nes kompiuteris neprijungtas prie interneto.</translation>
 <translation id="174539241580958092">„Google Chrome“ negali sinchronizuoti duomenų, nes prisijungiant įvyko klaida.</translation>
 <translation id="8255190535488645436">„Google Chrome“ naudoja jūsų fotoaparatą ir mikrofoną.</translation>

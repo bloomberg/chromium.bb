@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="lt">
 <translation id="337167041784729019">Rodyti statistiką</translation>
+<translation id="2256115617011615191">Paleisti iš naujo dabar</translation>
 <translation id="7606912958770842224">Įgalinti nuotolinį ryšį</translation>
 <translation id="3785447812627779171">„Chrome“ nuotolinio ryšio
 priegloba</translation>
@@ -137,6 +138,7 @@ Jei reikia informacijos apie privatumą, žr. „Google“ privatumo politiką (
 <translation id="8196755618196986400">Kad galėtume su jumis susisiekti dėl išsamesnės informacijos, jūsų el. pašto adresas bus įtrauktas į bet kurį jūsų pateiktą atsiliepimą.</translation>
 <translation id="154040539590487450">Paleidžiant nuotolinės prieigos paslaugą įvyko klaida.</translation>
 <translation id="7948001860594368197">Ekrano parinktys</translation>
+<translation id="2221097377466213233">Klavišui „Win“ naudokite dešinėje pusėje esantį klavišą „Ctrl“ (⌘ sistemoje „Mac“)</translation>
 <translation id="5254120496627797685">Išėjus iš šio puslapio, baigsis „Chrome“ nuotolinio kompiuterio valdymo sesija.</translation>
 <translation id="7019153418965365059">Neatpažinta prieglobos klaida: <ph name="HOST_OFFLINE_REASON"/>.</translation>
 <translation id="712467900648340229">Nepavyko prisijungti prie perdavimo įrenginio.</translation>
@@ -152,6 +154,7 @@ Jei reikia informacijos apie privatumą, žr. „Google“ privatumo politiką (
 <translation id="8116630183974937060">Įvyko tinklo klaida. Patikrinkite, ar įrenginys prijungtas, ir bandykite dar kartą.</translation>
 <translation id="3020807351229499221">Atnaujinant PIN kodą įvyko klaida. Bandykite dar kartą vėliau.</translation>
 <translation id="2647232381348739934">„Chrome“ nuotolinio ryšio paslauga</translation>
+<translation id="2888969873284818612">Įvyko tinklo klaida. Kai įrenginys bus vėl prijungtas, iš naujo paleisime programą.</translation>
 <translation id="579702532610384533">Pakartotinai prijungti</translation>
 <translation id="4867841927763172006">Siųsti „PrtScn“</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME"/> (paskutinį kartą prisijungta <ph name="DATE_OR_TIME"/>)</translation>
@@ -258,6 +261,7 @@ valdymo priegloba</translation>
 <translation id="4277463233460010382">Šis kompiuteris sukonfigūruotas leisti vienam ar keliems klientams prisijungti neįvedus PIN kodo.</translation>
 <translation id="837021510621780684">Iš šio kompiuterio</translation>
 <translation id="518094545883702183">Ši informacija naudojama tik problemos, apie kurią pranešate, diagnozavimo tikslais, ji pasiekiama tik ataskaitą nagrinėjančiam asmeniui ir saugoma ne ilgiau nei 30 dienų.</translation>
+<translation id="1261403020716313927">• Sutvarkytas didelės dalies atminties praradimas atsijungiant nuo nuotolinio darbalaukio.</translation>
 <translation id="3870154837782082782">„Google Inc.“</translation>
 <translation id="4918086044614829423">Priimti</translation>
 <translation id="7215059001581613786">Įveskite PIN kodą, sudarytą iš šešių ar daugiau skaitmenų.</translation>

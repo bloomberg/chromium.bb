@@ -15,7 +15,7 @@
 <translation id="8996941253935762404">Webové stránky, ktoré sa chystáte navštíviť, obsahujú škodlivé programy</translation>
 <translation id="3595596368722241419">Batéria je nabitá</translation>
 <translation id="8098352321677019742"><ph name="PRODUCT_NAME"/> – upozornenia</translation>
-<translation id="5186650237607254032">Aktualizujte si zámku obrazovky na svojom telefóne, aby sa vypla, keď budete v blízkosti. Telefón tak odomknete rýchlejšie a na svojom zariadení <ph name="DEVICE_TYPE"/> si budete môcť vychutnať lepšiu skúsenosť s používaním funkcie Smart Lock.</translation>
+<translation id="5186650237607254032">Aktualizujte si zámku obrazovky na svojom telefóne, aby sa vypla, keď budete nablízku. Telefón tak odomknete rýchlejšie a v zariadení <ph name="DEVICE_TYPE"/> budete môcť používať vylepšenú funkciu Smart Lock.</translation>
 <translation id="3566021033012934673">Vaše pripojenie nie je súkromné</translation>
 <translation id="3751522270321808809">Tieto stránky sa vás môžu pokúsiť oklamať a ukradnúť vaše údaje (napríklad heslá, správy alebo kreditné karty).</translation>
 <translation id="3228679360002431295">Prebieha pripájanie a overovanie<ph name="ANIMATED_ELLIPSIS"/></translation>
@@ -2910,7 +2910,7 @@ Po vytvorení nového kontrolovaného používateľa môžete kedykoľvek spravo
 <translation id="5148652308299789060">Zakázať softvérový rasterizér 3D</translation>
 <translation id="9205143043463108573">Umiestni nástroj Spúšťač aplikácií na šírku do stredu obrazovky.</translation>
 <translation id="7996005831155352675">Aktivácia automatického dopĺňania jedným kliknutím</translation>
-<translation id="870112442358620996">Ponúkať ukladanie hesiel pomocou funkcie Google Smart Lock pre heslá.</translation>
+<translation id="870112442358620996">Ponúkať ukladanie hesiel pomocou funkcie Google Smart Lock na heslá.</translation>
 <translation id="1414648216875402825">Chystáte sa vykonať aktualizáciu na nestabilnú verziu prehliadača <ph name="PRODUCT_NAME"/>, ktorá obsahuje funkcie vo vývoji. Bude dochádzať ku zlyhaniam a neočakávaným chybám. Postupujte opatrne.</translation>
 <translation id="8382913212082956454">Kopírovať &amp;e-mailovú adresu</translation>
 <translation id="7887192723714330082">Reagovať na „Ok Google“, keď je obrazovka zapnutá a odomknutá</translation>
@@ -4014,7 +4014,7 @@ Do úplného nabitia zostáva: <ph name="HOUR"/>:<ph name="MINUTE"/></translatio
 <translation id="1859234291848436338">Smer písania</translation>
 <translation id="5038625366300922036">Zobraziť viac...</translation>
 <translation id="8437209419043462667">Americká klávesnica</translation>
-<translation id="3172213052701798825">Google Smart Lock pre heslá</translation>
+<translation id="3172213052701798825">Google Smart Lock na heslá</translation>
 <translation id="5045550434625856497">Nesprávne heslo</translation>
 <translation id="6397592254427394018">Otvoriť všetky záložky v &amp;okne inkognito</translation>
 <translation id="8155481074575809396">Ak je táto možnosť povolená, text sa nevykreslí pomocou bitmapových masiek alfa, ale pomocou podpísaných polí vzdialenosti.</translation>
@@ -4146,7 +4146,6 @@ Do úplného nabitia zostáva: <ph name="HOUR"/>:<ph name="MINUTE"/></translatio
 <translation id="1502341367962526993">Určuje, na ktorých stránkach sa zobrazí tlačidlo režimu čítačky.</translation>
 <translation id="3627320433825461852">Zostáva menej ako 1 minúta</translation>
 <translation id="3123569374670379335">(kontrolovaný)</translation>
-<translation id="854600348164706309">Vaše karty, záložky, história a ostatné nastavenia budú synchronizované s vaším účtom Google.</translation>
 <translation id="4047345532928475040">Nepoužiteľné</translation>
 <translation id="5604324414379907186">Vždy zobraziť panel so záložkami</translation>
 <translation id="249113932447298600">Je nám ľúto, ale zariadenie <ph name="DEVICE_LABEL"/> nie je momentálne podporované.</translation>
@@ -4235,7 +4234,6 @@ Do úplného nabitia zostáva: <ph name="HOUR"/>:<ph name="MINUTE"/></translatio
 <translation id="8299269255470343364">Japončina</translation>
 <translation id="9088659014978240063">Metriky súvisiace s účinkom prehliadača <ph name="SHORT_PRODUCT_NAME"/> na využitie procesora systému</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME"/> (<ph name="DEVICE"/>)</translation>
-<translation id="6429639049555216915">Táto aplikácia momentálne nie je k dispozícii.</translation>
 <translation id="1243314992276662751">Nahrať</translation>
 <translation id="2144536955299248197">Zobrazovač certifikátov: <ph name="CERTIFICATE_NAME"/></translation>
 <translation id="8261387128019234107">Pridať účet k profilu <ph name="PROFILE_NAME"/></translation>
@@ -4600,7 +4598,6 @@ Do úplného nabitia zostáva: <ph name="HOUR"/>:<ph name="MINUTE"/></translatio
 <translation id="3803991353670408298">Pred odstránením tohto spôsobu zadávania pridajte iný spôsob zadávania.</translation>
 <translation id="4209267054566995313">Myš ani touchpad neboli rozpoznané.</translation>
 <translation id="337920581046691015">Nainštaluje sa <ph name="PRODUCT_NAME"/>.</translation>
-<translation id="8730941225957945932">Použite zobrazované zoznamy zužovacieho vyfarbenia pre všetky nákresy.</translation>
 <translation id="5636996382092289526">Pred použitím siete <ph name="NETWORK_ID"/> bude možno potrebné najprv <ph name="LINK_START"/>prejsť na prihlasovaciu stránku siete<ph name="LINK_END"/>, ktorá sa otvorí automaticky v priebehu niekoľkých sekúnd. Ak k tomu nedôjde, daná sieť sa nedá použiť.</translation>
 <translation id="78957024357676568">doľava</translation>
 <translation id="7048141481140415714">Povolí prepínanie režimu maximalizácie aplikácie TouchView pomocou kombinácie klávesov Ctrl+Alt+Shift+D.</translation>
@@ -4653,6 +4650,7 @@ Do úplného nabitia zostáva: <ph name="HOUR"/>:<ph name="MINUTE"/></translatio
 <translation id="6196854373336333322">Toto rozšírenie „<ph name="EXTENSION_NAME"/>“ prevzalo kontrolu nad vašimi nastaveniami servera proxy, čo znamená, že môže zmeniť, prerušiť alebo zachytiť všetku vašu činnosť online. Ak neviete, prečo k tomu došlo, pravdepodobne si to neželáte.</translation>
 <translation id="7583419135027754249">Vždy odosielať udalosti kliknutí okamžite po klepnutí, dokonca aj v prípade, ak nie sú súčasťou gesta dvojitého klepnutia. Na väčšine stránok to urýchli navigáciu a ďalšie akcie klepnutí o 300 ms, avšak pri približovaní zobrazenia dvojitým klepnutím sa nesmie klepnúť na odkazy ani tlačidlá.</translation>
 <translation id="3420980393175304359">Prepnutie osoby</translation>
+<translation id="2541423446708352368">Zobraziť všetky stiahnuté súbory</translation>
 <translation id="2406941037785138796">Zákazy</translation>
 <translation id="5030338702439866405">Vydavateľ</translation>
 <translation id="7940103665344164219">Využitie zdieľanej pamäte</translation>
@@ -5494,6 +5492,7 @@ Ak chcete pokračovať v práci, stlačte ľubovoľný kláves.</translation>
 <translation id="2785530881066938471">Pre skript obsahu sa nepodarilo sa načítať súbor „<ph name="RELATIVE_PATH"/>“. Nepoužíva kódovanie UTF-8.</translation>
 <translation id="8744525654891896746">Vyberte avatar pre tohto kontrolovaného používateľa</translation>
 <translation id="3807747707162121253">&amp;Zrušiť</translation>
+<translation id="2740531572673183784">OK</translation>
 <translation id="202352106777823113">Sťahovanie trvalo príliš dlho a bolo zastavené sieťou.</translation>
 <translation id="6155817405098385604">Nepovolí použitie softvérového rasterizéra 3D v prípade, že sa nedá použiť jednotka GPU.</translation>
 <translation id="3306897190788753224">Dočasne zakázať prispôsobenie konverzie, návrhy na základe histórie a používateľský slovník</translation>
@@ -5804,6 +5803,7 @@ Ak chcete pokračovať v práci, stlačte ľubovoľný kláves.</translation>
 <translation id="7353601530677266744">Príkazový riadok</translation>
 <translation id="2766006623206032690">Vl&amp;ožiť a otvoriť</translation>
 <translation id="5253753933804516447">Aktivovať hlasové vyhľadávanie pomocou kľúčového slova „Ok Google“, keď je zapnutá a odomknutá obrazovka.</translation>
+<translation id="1568822834048182062">Vaše záložky, história, heslá a ďalšie nastavenia budú synchronizované s účtom Google.</translation>
 <translation id="5511823366942919280">Naozaj chcete toto zariadenie nastaviť ako zariadenie Shark?</translation>
 <translation id="5286673433070377078">Experimentálne nové trasy vykresľovacieho modulu – S VEĽKOU PRAVDEPODOBNOSŤOU SPÔSOBIA ZLYHANIE PREHLIADAČA</translation>
 <translation id="6843725295806269523">stlmiť</translation>

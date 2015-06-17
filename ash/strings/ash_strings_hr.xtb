@@ -38,6 +38,7 @@
 <translation id="1812696562331527143">Vaš je način unosa promijenjen u <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>treća strana<ph name="END_LINK"/>).
 Pritisnite Shift + Alt za promjenu.</translation>
 <translation id="6043994281159824495">Odjavi se odmah</translation>
+<translation id="5168181903108465623">Dostupni su uređaji za emitiranje</translation>
 <translation id="2127372758936585790">Punjač male snage</translation>
 <translation id="3799026279081545374">Možda imate neispravan punjač. Ako živite u SAD-u, nazovite 866-628-1371 da biste dobili pomoć i zamjenski punjač. Ako živite u Velikoj Britaniji, nazovite 0800-026-0613. Ako živite u Irskoj, nazovite 1-800-832-664. Ako živite u Kanadi, nazovite 866-628-1372. Ako živite u Australiji, nazovite 1-800-067-460.</translation>
 <translation id="3891340733213178823">Pritisnite Ctrl + Shift + Q dvaput da biste se odjavili.</translation>
@@ -96,6 +97,7 @@ Pritisnite Shift + Alt za promjenu.</translation>
 <translation id="9089416786594320554">Načini unosa</translation>
 <translation id="2700058918926273959">Sesija će završiti za <ph name="SESSION_TIME_REMAINING"/>. Odjavit ćete se.</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
+<translation id="1963814843110128691">Emitiranje kartice $1 na uređaju $2</translation>
 <translation id="3963445509666917109">Zvučnik (ugrađeni)</translation>
 <translation id="1747827819627189109">Tipkovnica na zaslonu omogućena je</translation>
 <translation id="2208323208084708176">Način jedinstvene radne površine</translation>
@@ -179,6 +181,7 @@ Pritisnite Shift + Alt za promjenu.</translation>
 <translation id="6785414152754474415">Baterija je <ph name="PERCENTAGE"/>% puna i puni se.</translation>
 <translation id="4895488851634969361">Baterija je puna.</translation>
 <translation id="615957422585914272">Prikaži tipkovnicu na zaslonu</translation>
+<translation id="8443356412772935865">Emitiranje zaslona na uređaju $1</translation>
 <translation id="5947494881799873997">Vrati</translation>
 <translation id="7593891976182323525">Pretraživanje ili Shift</translation>
 <translation id="7649070708921625228">Pomoć</translation>
@@ -187,9 +190,11 @@ Pritisnite tipke Pretraživanje ili Shift da biste ju isključili.</translation>
 <translation id="397105322502079400">Izračun u tijeku…</translation>
 <translation id="1013923882670373915">Bluetooth uređaj &quot;<ph name="DEVICE_NAME"/>&quot; traži dopuštenje za uparivanje. Unesite ovaj PIN na tom uređaju: <ph name="PINCODE"/>.</translation>
 <translation id="2819276065543622893">Odjavit ćete se sada.</translation>
+<translation id="4961318399572185831">Emitiranje zaslona</translation>
 <translation id="5507786745520522457">Postavljanje mobilnih podataka</translation>
 <translation id="6165508094623778733">Saznajte više</translation>
 <translation id="7168224885072002358">Vraćanje na staru razlučivost za <ph name="TIMEOUT_SECONDS"/></translation>
+<translation id="5927132638760172455">Emitiranje na nepoznati prijamnik</translation>
 <translation id="743058460480092004">Fotoaparat i mikrofon su aktivni.</translation>
 <translation id="6550675742724504774">Opcije</translation>
 <translation id="6406704438230478924">altgr</translation>

@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ro">
 <translation id="2774256287122201187">Poți continua. Dacă accesezi pagina, acest avertisment nu se va mai afișa în următoarele 5 minute.</translation>
+<translation id="3963721102035795474">Modul Cititor</translation>
 <translation id="7485870689360869515">Nu s-au găsit date.</translation>
 <translation id="3884278016824448484">Identificator de gadget în conflict</translation>
 <translation id="5172758083709347301">Computer</translation>
@@ -164,6 +165,7 @@
 <translation id="8891727572606052622">Mod proxy nevalid.</translation>
 <translation id="3105172416063519923">ID articol:</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="1549470594296187301">Trebuie să activezi JavaScript pentru a folosi această funcție.</translation>
 <translation id="2587841377698384444">ID-ul API-ului Directory:</translation>
 <translation id="7752995774971033316">Negestionat</translation>
 <translation id="3712624925041724820">Licențe epuizate</translation>

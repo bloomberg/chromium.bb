@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ro">
 <translation id="337167041784729019">Afișează statisticile</translation>
+<translation id="2256115617011615191">Repornește acum</translation>
 <translation id="7606912958770842224">Activați conexiunile la distanță</translation>
 <translation id="3785447812627779171">Gazdă
 Chromoting</translation>
@@ -137,6 +138,7 @@ Pentru informații privind confidențialitatea, accesați Politica de confidenț
 <translation id="8196755618196986400">Pentru a putea să te contactăm pentru mai multe informații, adresa ta de e-mail va fi inclusă în orice feedback pe care îl trimiți.</translation>
 <translation id="154040539590487450">Pornirea serviciului de acces la distanță nu a reușit.</translation>
 <translation id="7948001860594368197">Opțiuni ecran</translation>
+<translation id="2221097377466213233">Folosește tasta Ctrl din dreapta pentru tasta Windows (⌘ pe Mac)</translation>
 <translation id="5254120496627797685">Părăsind această pagină, veți încheia sesiunea Desktop la distanță Chrome.</translation>
 <translation id="7019153418965365059">Eroare nerecunoscută a gazdei: <ph name="HOST_OFFLINE_REASON"/>.</translation>
 <translation id="712467900648340229">Nu s-a putut stabili conexiunea la dispozitivul de proiecție.</translation>
@@ -152,6 +154,7 @@ Pentru informații privind confidențialitatea, accesați Politica de confidenț
 <translation id="8116630183974937060">A apărut o eroare de rețea. Verificați dacă dispozitivul este online și încercați din nou.</translation>
 <translation id="3020807351229499221">Codul PIN nu a putut fi actualizat. Încercați din nou mai târziu.</translation>
 <translation id="2647232381348739934">Serviciul Chromoting</translation>
+<translation id="2888969873284818612">A apărut o eroare de rețea. Vom reporni aplicația când dispozitivul va fi online din nou.</translation>
 <translation id="579702532610384533">Reconectează-te</translation>
 <translation id="4867841927763172006">Trimite PrtScn</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME"/> (online ultima dată la <ph name="DATE_OR_TIME"/>)</translation>
@@ -258,6 +261,7 @@ la distanță Chrome</translation>
 <translation id="4277463233460010382">Acest computer este configurat să permită conectarea unuia sau a mai multor clienți fără introducerea unui PIN.</translation>
 <translation id="837021510621780684">De la acest computer</translation>
 <translation id="518094545883702183">Această informație este folosită numai pentru diagnosticarea problemei pe care o raportezi, este disponibilă numai pentru persoana care îți examinează raportul și nu este păstrată pentru mai mult de 30 de zile.</translation>
+<translation id="1261403020716313927">• S-a remediat marea pierdere de memorie apărută la deconectarea de la desktopul la distanță.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="4918086044614829423">Accept</translation>
 <translation id="7215059001581613786">Introduceți un cod PIN format din cel puțin șase cifre.</translation>

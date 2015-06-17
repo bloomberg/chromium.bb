@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="sr">
 <translation id="2774256287122201187">Можете да наставите. Ако наставите до странице, ово упозорење се неће поново појавити у наредних пет минута.</translation>
+<translation id="3963721102035795474">Режим читаоца</translation>
 <translation id="7485870689360869515">Нису пронађени подаци.</translation>
 <translation id="3884278016824448484">Неусаглашени идентификатор уређаја</translation>
 <translation id="5172758083709347301">Рачунар</translation>
@@ -164,6 +165,7 @@
 <translation id="8891727572606052622">Неважећи режим проксија.</translation>
 <translation id="3105172416063519923">ИД елемента:</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="1549470594296187301">JavaScript мора да буде омогућен да бисте користили ову функцију.</translation>
 <translation id="2587841377698384444">ИД API-ја за директоријуме:</translation>
 <translation id="7752995774971033316">Не управља</translation>
 <translation id="3712624925041724820">Нема више лиценци</translation>

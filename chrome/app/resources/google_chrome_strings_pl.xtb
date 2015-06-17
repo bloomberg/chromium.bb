@@ -74,6 +74,7 @@
 <translation id="8551886023433311834">Aktualizacja jest już prawie ukończona. Wystarczy tylko uruchomić ponownie urządzenie.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="1073391069195728457">Chrome – powiadomienia</translation>
+<translation id="6368805772029492593">Dla większego bezpieczeństwa Google Chrome szyfruje dane.</translation>
 <translation id="7339898014177206373">Nowe okno</translation>
 <translation id="3282568296779691940">Zaloguj się w Chrome</translation>
 <translation id="3089968997497233615">Dostępna jest nowa, bezpieczniejsza wersja przeglądarki Google Chrome.</translation>
@@ -219,6 +220,7 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="6113794647360055231">Chrome jest jeszcze lepszy</translation>
 <translation id="2588322182880276190">Logo Chrome</translation>
+<translation id="4519152997629025674">Google Chrome może korzystać z <ph name="BEGIN_LINK"/>usług sieciowych<ph name="END_LINK"/>, by poprawić wygodę użytkowania. Można je wyłączyć w dowolnym momencie.</translation>
 <translation id="4367618624832907428">Google Chrome nie może wyświetlić strony internetowej, bo komputer nie ma połączenia z internetem.</translation>
 <translation id="174539241580958092">Google Chrome nie może zsynchronizować danych z powodu błędu podczas logowania.</translation>
 <translation id="8255190535488645436">Google Chrome używa Twojej kamery i mikrofonu.</translation>

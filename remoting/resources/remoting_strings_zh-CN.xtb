@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="zh-CN">
 <translation id="337167041784729019">显示统计信息</translation>
+<translation id="2256115617011615191">立即重新启动</translation>
 <translation id="7606912958770842224">启用远程连接</translation>
 <translation id="3785447812627779171">Chrome 远程
 访问主机</translation>
@@ -137,6 +138,7 @@
 <translation id="8196755618196986400">为了便于我们与您联系（以便了解更多信息），您的电子邮件地址将包含在您提交的所有反馈中。</translation>
 <translation id="154040539590487450">无法启动远程访问服务。</translation>
 <translation id="7948001860594368197">屏幕选项</translation>
+<translation id="2221097377466213233">使用右侧的 Ctrl 键执行 Win 键功能（在 Mac 上则使用 ⌘ 键）</translation>
 <translation id="5254120496627797685">如果您离开此页，那么您的 Chrome 远程桌面会话就会结束。</translation>
 <translation id="7019153418965365059">无法识别的主机错误：<ph name="HOST_OFFLINE_REASON"/>。</translation>
 <translation id="712467900648340229">无法连接到投射设备。</translation>
@@ -152,6 +154,7 @@
 <translation id="8116630183974937060">发生网络错误。请确保您的设备已连接到网络，然后重试。</translation>
 <translation id="3020807351229499221">无法更新 PIN。请稍后重试。</translation>
 <translation id="2647232381348739934">Chrome 远程访问服务</translation>
+<translation id="2888969873284818612">出现网络错误。当您的设备重新联网后，系统将重新启动该应用。</translation>
 <translation id="579702532610384533">重新连接</translation>
 <translation id="4867841927763172006">发送PrtScn</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME"/>（上次联网时间：<ph name="DATE_OR_TIME"/>）</translation>
@@ -258,6 +261,7 @@
 <translation id="4277463233460010382">此计算机已配置为允许一个或多个客户端无需输入 PIN 即可进行连接。</translation>
 <translation id="837021510621780684">来自此计算机</translation>
 <translation id="518094545883702183">这些信息仅用于诊断您报告的问题，并且只有负责对您报告的问题进行调查的人员才可使用。这些信息的保留时间不会超过 30 天。</translation>
+<translation id="1261403020716313927">• 更正了在与远程桌面断开连接时会出现大量内存泄露的问题。</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="4918086044614829423">接受</translation>
 <translation id="7215059001581613786">请输入至少包含 6 位数的 PIN。</translation>

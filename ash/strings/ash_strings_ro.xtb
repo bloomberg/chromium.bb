@@ -38,6 +38,7 @@
 <translation id="1812696562331527143">Metoda de introducere s-a schimbat la <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>terță parte<ph name="END_LINK"/>).
         Apăsați pe Shift + Alt pentru a comuta.</translation>
 <translation id="6043994281159824495">Deconectați-vă acum</translation>
+<translation id="5168181903108465623">Dispozitive de proiecție disponibile</translation>
 <translation id="2127372758936585790">Încărcător de putere joasă</translation>
 <translation id="3799026279081545374">Este posibil să aveți un încărcător defect. Dacă locuiți în S.U.A., sunați la 866-628-1371 pentru a primi asistență și un încărcător de schimb. Dacă locuiți în Regatul Unit, sunați la 0800-026-0613. Dacă locuiți în Irlanda, sunați la 1-800-832-664. Dacă locuiți în Canada, sunați la 866-628-1372. Dacă locuiți în Australia, sunați la 1-800-067-460.</translation>
 <translation id="3891340733213178823">Apăsați de două ori Ctrl+Shift+Q pentru a vă deconecta.</translation>
@@ -96,6 +97,7 @@
 <translation id="9089416786594320554">Metode de introducere</translation>
 <translation id="2700058918926273959">Sesiunea se încheie peste <ph name="SESSION_TIME_REMAINING"/>. Veți fi deconectat(ă).</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/> %</translation>
+<translation id="1963814843110128691">Se proiectează $1 pe $2</translation>
 <translation id="3963445509666917109">Difuzor (intern)</translation>
 <translation id="1747827819627189109">Tastatură pe ecran activată</translation>
 <translation id="2208323208084708176">Modul Desktop unificat</translation>
@@ -179,6 +181,7 @@
 <translation id="6785414152754474415">Nivelul bateriei este de <ph name="PERCENTAGE"/>% și se încarcă.</translation>
 <translation id="4895488851634969361">Bateria este încărcată complet.</translation>
 <translation id="615957422585914272">Afișați tastatura pe ecran</translation>
+<translation id="8443356412772935865">Se proiectează ecranul pe $1</translation>
 <translation id="5947494881799873997">Reveniți</translation>
 <translation id="7593891976182323525">Căutare sau Shift</translation>
 <translation id="7649070708921625228">Ajutor</translation>
@@ -187,9 +190,11 @@ Apăsați Căutare sau Shift pentru a anula.</translation>
 <translation id="397105322502079400">Se calculează...</translation>
 <translation id="1013923882670373915">Dispozitivul Bluetooth „<ph name="DEVICE_NAME"/>” solicită permisiunea de a se conecta. Introduceți acest cod PIN pe dispozitivul respectiv: <ph name="PINCODE"/></translation>
 <translation id="2819276065543622893">Veți fi deconectat(ă) acum.</translation>
+<translation id="4961318399572185831">Proiectează ecranul</translation>
 <translation id="5507786745520522457">Configurați datele mobile</translation>
 <translation id="6165508094623778733">Află mai multe</translation>
 <translation id="7168224885072002358">Se revine la rezoluția anterioară în <ph name="TIMEOUT_SECONDS"/></translation>
+<translation id="5927132638760172455">Se proiectează pe un receiver necunoscut</translation>
 <translation id="743058460480092004">Camera foto și microfonul sunt în uz.</translation>
 <translation id="6550675742724504774">Opțiuni</translation>
 <translation id="6406704438230478924">altgr</translation>

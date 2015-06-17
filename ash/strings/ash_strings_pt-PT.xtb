@@ -38,6 +38,7 @@
 <translation id="1812696562331527143">O seu método de introdução foi alterado para <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>terceiros<ph name="END_LINK"/>).
 Prima Shift + Alt para mudar.</translation>
 <translation id="6043994281159824495">Terminar sessão agora</translation>
+<translation id="5168181903108465623">Dispositivos de transmissão disponíveis</translation>
 <translation id="2127372758936585790">Carregador de baixo consumo</translation>
 <translation id="3799026279081545374">Pode ter um carregador defeituoso. Se vive nos EUA, ligue para 866-628-1371 para receber ajuda e uma substituição. Se vive no Reino Unido, ligue para 0800-026-0613. Se vive na Irlanda, ligue para 1-800-832-664. Se vive no Canadá, ligue para 866-628-1372. Se vive na Austrália, ligue para 1-800-067-460.</translation>
 <translation id="3891340733213178823">Prima Ctrl+Shift+Q duas vezes para terminar sessão.</translation>
@@ -96,6 +97,7 @@ Prima Shift + Alt para mudar.</translation>
 <translation id="9089416786594320554">Métodos de introdução</translation>
 <translation id="2700058918926273959">A sessão termina em <ph name="SESSION_TIME_REMAINING"/>. A sua sessão será terminada.</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
+<translation id="1963814843110128691">A transmitir $1 para $2</translation>
 <translation id="3963445509666917109">Altifalante (interno)</translation>
 <translation id="1747827819627189109">Teclado no ecrã ativado</translation>
 <translation id="2208323208084708176">Modo de ambiente de trabalho unificado</translation>
@@ -179,6 +181,7 @@ Prima Shift + Alt para mudar.</translation>
 <translation id="6785414152754474415">A bateria está <ph name="PERCENTAGE"/>% cheia e a carregar.</translation>
 <translation id="4895488851634969361">A bateria está carregada.</translation>
 <translation id="615957422585914272">Mostrar teclado no ecrã</translation>
+<translation id="8443356412772935865">A transmitir ecrã para $1</translation>
 <translation id="5947494881799873997">Reverter</translation>
 <translation id="7593891976182323525">Pesquisar ou Shift</translation>
 <translation id="7649070708921625228">Ajuda</translation>
@@ -187,9 +190,11 @@ Prima Pesquisar ou Shift para cancelar.</translation>
 <translation id="397105322502079400">A calcular...</translation>
 <translation id="1013923882670373915">O dispositivo Bluetooth &quot;<ph name="DEVICE_NAME"/>&quot; necessita de autorização para sincronizar. Introduza este código PIN nesse dispositivo: <ph name="PINCODE"/></translation>
 <translation id="2819276065543622893">A sessão será terminada agora.</translation>
+<translation id="4961318399572185831">Transmitir ecrã</translation>
 <translation id="5507786745520522457">Configurar dados móveis</translation>
 <translation id="6165508094623778733">Saiba mais</translation>
 <translation id="7168224885072002358">A reverter para a resolução antiga dentro de <ph name="TIMEOUT_SECONDS"/></translation>
+<translation id="5927132638760172455">A transmitir para um recetor desconhecido</translation>
 <translation id="743058460480092004">A câmara e o microfone estão a ser utilizados.</translation>
 <translation id="6550675742724504774">Opções</translation>
 <translation id="6406704438230478924">altgr</translation>

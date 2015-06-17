@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="pt-PT">
 <translation id="2774256287122201187">Pode continuar. Se avançar para a página, este aviso só volta a aparecer dentro de cinco minutos.</translation>
+<translation id="3963721102035795474">Modo de leitor</translation>
 <translation id="7485870689360869515">Não foram encontrados dados.</translation>
 <translation id="3884278016824448484">Identificador do dispositivo em conflito</translation>
 <translation id="5172758083709347301">Equipamento</translation>
@@ -164,6 +165,7 @@
 <translation id="8891727572606052622">Modo de proxy inválido.</translation>
 <translation id="3105172416063519923">ID de recurso:</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="1549470594296187301">É necessário ativar o JavaScript para utilizar esta funcionalidade.</translation>
 <translation id="2587841377698384444">ID da API de diretório:</translation>
 <translation id="7752995774971033316">Não gerido</translation>
 <translation id="3712624925041724820">Licenças esgotadas</translation>

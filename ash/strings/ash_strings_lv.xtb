@@ -38,6 +38,7 @@
 <translation id="1812696562331527143">Ievades metode ir mainīta uz <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>trešā puse<ph name="END_LINK"/>).
 Lai to pārslēgtu, nospiediet taustiņu kombināciju Shift+Alt.</translation>
 <translation id="6043994281159824495">Izrakstīties tagad</translation>
+<translation id="5168181903108465623">Pieejamas apraides ierīces</translation>
 <translation id="2127372758936585790">Lādētājs ar mazu strāvas padevi</translation>
 <translation id="3799026279081545374">Iespējams, uzlādes ierīce ir bojāta. Ja dzīvojat ASV, lūdzu, zvaniet 866-628-1371, lai saņemtu palīdzību vai pieprasītu ierīces aizstāšanu. Ja dzīvojat Lielbritānijā, lūdzu, zvaniet 0800-026-0613. Ja dzīvojat Īrijā, lūdzu, zvaniet 1-800-832-664. Ja dzīvojat Kanādā, lūdzu, zvaniet 866-628-1372. Ja dzīvojat Austrālijā, lūdzu, zvaniet 1-800-067-460.</translation>
 <translation id="3891340733213178823">Lai izrakstītos, divas reizes nospiediet taustiņu kombināciju Ctrl+Shift+Q.</translation>
@@ -96,6 +97,7 @@ Lai to pārslēgtu, nospiediet taustiņu kombināciju Shift+Alt.</translation>
 <translation id="9089416786594320554">Ievades metodes</translation>
 <translation id="2700058918926273959">Atlikušais laiks līdz šīs sesijas beigām: <ph name="SESSION_TIME_REMAINING"/>. Jūs tiksiet izrakstīts.</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
+<translation id="1963814843110128691">Apraida $1 uz $2</translation>
 <translation id="3963445509666917109">Skaļrunis (iekšējais)</translation>
 <translation id="1747827819627189109">Ekrāna tastatūra iespējota</translation>
 <translation id="2208323208084708176">Vienots darbvirsmas režīms</translation>
@@ -179,6 +181,7 @@ Lai to pārslēgtu, nospiediet taustiņu kombināciju Shift+Alt.</translation>
 <translation id="6785414152754474415">Akumulatora uzlādes līmenis: <ph name="PERCENTAGE"/>%; uzlāde tiek turpināta.</translation>
 <translation id="4895488851634969361">Akumulators ir pilnībā uzlādēts.</translation>
 <translation id="615957422585914272">Rādīt ekrāna tastatūru</translation>
+<translation id="8443356412772935865">Apraida ekrānu uz $1</translation>
 <translation id="5947494881799873997">Atjaunot</translation>
 <translation id="7593891976182323525">Meklēt vai Shift</translation>
 <translation id="7649070708921625228">Palīdzība</translation>
@@ -187,9 +190,11 @@ Lai atceltu tā funkcionalitāti, nospiediet Meklēt vai Shift.</translation>
 <translation id="397105322502079400">Aprēķina...</translation>
 <translation id="1013923882670373915">Bluetooth ierīce “<ph name="DEVICE_NAME"/>” vēlas saņemt atļauju, lai izveidotu savienojumu pārī. Lūdzu, ierīcē ievadiet šo PIN: <ph name="PINCODE"/>.</translation>
 <translation id="2819276065543622893">Jūs tagad tiksiet izrakstīts.</translation>
+<translation id="4961318399572185831">Ekrāna apraide</translation>
 <translation id="5507786745520522457">Iestatīt mobilos datus</translation>
 <translation id="6165508094623778733">Uzziniet vairāk</translation>
 <translation id="7168224885072002358">Iepriekšējā izšķirtspēja tiks atgriezta pēc <ph name="TIMEOUT_SECONDS"/></translation>
+<translation id="5927132638760172455">Apraide uz nezināmu saņēmēju</translation>
 <translation id="743058460480092004">Kamera un mikrofons tiek lietoti.</translation>
 <translation id="6550675742724504774">Opcijas</translation>
 <translation id="6406704438230478924">altgr</translation>

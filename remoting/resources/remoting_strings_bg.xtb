@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="bg">
 <translation id="337167041784729019">Показване на статистическите данни</translation>
+<translation id="2256115617011615191">Рестартиране сега</translation>
 <translation id="7606912958770842224">Активиране на отдалечените връзки</translation>
 <translation id="3785447812627779171">Хост на
 Chromoting</translation>
@@ -137,6 +138,7 @@ Chromoting</translation>
 <translation id="8196755618196986400">За да можем да се свържем с вас за допълнителна информация, имейл адресът ви ще бъде включен във всички отзиви, които изпращате.</translation>
 <translation id="154040539590487450">Стартирането на услугата за отдалечен достъп не бе успешно.</translation>
 <translation id="7948001860594368197">Опции за екрана</translation>
+<translation id="2221097377466213233">Използвайте десния клавиш „Ctrl“ като клавиш „Windows“ (⌘ под Mac)</translation>
 <translation id="5254120496627797685">Ако излезете от тази страница, сесията ви в отдалечения работен плот на Chrome ще приключи.</translation>
 <translation id="7019153418965365059">Неразпозната грешка в хоста: <ph name="HOST_OFFLINE_REASON"/>.</translation>
 <translation id="712467900648340229">Свързването с устройството Cast не бе успешно.</translation>
@@ -152,6 +154,7 @@ Chromoting</translation>
 <translation id="8116630183974937060">Възникна грешка в мрежата. Моля, уверете се, че устройството ви е онлайн, и опитайте отново.</translation>
 <translation id="3020807351229499221">Актуализирането на ПИН кода не бе успешно. Моля, опитайте отново по-късно.</translation>
 <translation id="2647232381348739934">Услуга за Chromoting</translation>
+<translation id="2888969873284818612">Възникна грешка в мрежата. Ще рестартираме приложението, когато устройството ви отново е онлайн.</translation>
 <translation id="579702532610384533">Повторно свързване</translation>
 <translation id="4867841927763172006">Изпращане на PrtScn</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME"/> (последно онлайн: <ph name="DATE_OR_TIME"/>)</translation>
@@ -258,6 +261,7 @@ Chromoting</translation>
 <translation id="4277463233460010382">Този компютър е конфигуриран така, че една или повече клиентски програми да могат да установяват връзка, без да въвеждат ПИН код.</translation>
 <translation id="837021510621780684">От този компютър</translation>
 <translation id="518094545883702183">Тази информация служи единствено за диагностика на проблема, за който подавате сигнал. Тя е достъпна само за проучващото го лице и се съхранява най-много за 30 дни.</translation>
+<translation id="1261403020716313927">• Отстранен е проблемът, водещ до загубата на много памет при прекратяване на връзката с отдалечения работен плот.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="4918086044614829423">Приемам</translation>
 <translation id="7215059001581613786">Моля, въведете ПИН код, състоящ се от шест или повече цифри.</translation>

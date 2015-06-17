@@ -38,6 +38,7 @@
 <translation id="1812696562331527143">Tu método de entrada ha cambiado a <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>externo<ph name="END_LINK"/>).
 Para cambiarlo, pulsa Mayús + Alt.</translation>
 <translation id="6043994281159824495">Salir ahora</translation>
+<translation id="5168181903108465623">Dispositivos de transmisión disponibles</translation>
 <translation id="2127372758936585790">Cargador de baja potencia</translation>
 <translation id="3799026279081545374">Es posible que tu cargador esté defectuoso. Si vives en Estados Unidos, llama al teléfono 866-628-1371 para obtener ayuda y recibir un cargador de sustitución. Si vives en el Reino Unido, llama al teléfono 0800-026-0613. Si vives en Irlanda, llama al teléfono 1-800-832-664. Si vives en Canadá, llama al teléfono 866-628-1372. Si vives en Australia, llama al teléfono 1-800-067-460.</translation>
 <translation id="3891340733213178823">Pulsa Ctrl+Mayús+Q dos veces para cerrar sesión.</translation>
@@ -96,6 +97,7 @@ Para cambiarlo, pulsa Mayús + Alt.</translation>
 <translation id="9089416786594320554">Métodos de entrada</translation>
 <translation id="2700058918926273959">La sesión finalizará dentro de <ph name="SESSION_TIME_REMAINING"/>. Se cerrará tu sesión.</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
+<translation id="1963814843110128691">Enviando $1 a $2</translation>
 <translation id="3963445509666917109">Altavoz (interno)</translation>
 <translation id="1747827819627189109">Teclado en pantalla habilitado</translation>
 <translation id="2208323208084708176">Modo de escritorio unificado</translation>
@@ -179,6 +181,7 @@ Para cambiarlo, pulsa Mayús + Alt.</translation>
 <translation id="6785414152754474415">La batería se está cargando y está al <ph name="PERCENTAGE"/>%.</translation>
 <translation id="4895488851634969361">La batería está llena.</translation>
 <translation id="615957422585914272">Mostrar teclado en pantalla</translation>
+<translation id="8443356412772935865">Enviando pantalla a $1</translation>
 <translation id="5947494881799873997">Deshacer</translation>
 <translation id="7593891976182323525">Tecla de búsqueda o Mayús</translation>
 <translation id="7649070708921625228">Ayuda</translation>
@@ -187,9 +190,11 @@ Pulsa Mayús o la tecla de búsqueda para cancelar la operación.</translation>
 <translation id="397105322502079400">Calculando...</translation>
 <translation id="1013923882670373915">El dispositivo Bluetooth &quot;<ph name="DEVICE_NAME"/>&quot; solicita permiso para vincularse. Introduce el código PIN <ph name="PINCODE"/> en el dispositivo</translation>
 <translation id="2819276065543622893">Tu sesión se cerrará ahora.</translation>
+<translation id="4961318399572185831">Enviar pantalla</translation>
 <translation id="5507786745520522457">Configurar datos móviles</translation>
 <translation id="6165508094623778733">Más información</translation>
 <translation id="7168224885072002358">Restableciendo la resolución anterior en <ph name="TIMEOUT_SECONDS"/></translation>
+<translation id="5927132638760172455">Enviando contenido a un receptor desconocido</translation>
 <translation id="743058460480092004">La cámara y el micrófono se están utilizando.</translation>
 <translation id="6550675742724504774">Configuración</translation>
 <translation id="6406704438230478924">Alt Gr</translation>

@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="et">
 <translation id="2774256287122201187">Võite jätkata. Kui liigute edasi lehele, ei ilmu see hoiatus järgmise viie minuti jooksul uuesti.</translation>
+<translation id="3963721102035795474">Lugejarežiim</translation>
 <translation id="7485870689360869515">Andmeid ei leitud.</translation>
 <translation id="3884278016824448484">Seadme identifikaator on konfliktne</translation>
 <translation id="5172758083709347301">Masin</translation>
@@ -164,6 +165,7 @@
 <translation id="8891727572606052622">Kehtetu puhverserveri režiim.</translation>
 <translation id="3105172416063519923">Vara ID:</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="1549470594296187301">Selle funktsiooni kasutamiseks peab JavaScript olema lubatud.</translation>
 <translation id="2587841377698384444">Kataloogi API ID:</translation>
 <translation id="7752995774971033316">Haldamata</translation>
 <translation id="3712624925041724820">Litsentsid on ammendunud</translation>

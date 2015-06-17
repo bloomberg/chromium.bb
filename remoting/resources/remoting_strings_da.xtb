@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="da">
 <translation id="337167041784729019">Vis statistik</translation>
+<translation id="2256115617011615191">Genstart nu</translation>
 <translation id="7606912958770842224">Aktivér fjernforbindelser</translation>
 <translation id="3785447812627779171">Chromoting-
 host</translation>
@@ -137,6 +138,7 @@ Du kan få flere oplysninger om privatliv i privatlivspolitikkerne for Google (h
 <translation id="8196755618196986400">Din e-mailadresse medtages i din feedback, så vi kan kontakte dig i tilfælde af, at vi har brug for yderligere oplysninger.</translation>
 <translation id="154040539590487450">Tjenesten til fjernadgang kunne ikke starte.</translation>
 <translation id="7948001860594368197">Valgmuligheder for skærm</translation>
+<translation id="2221097377466213233">Brug Ctrl-knappen i højre side på et Windows-tastatur (⌘ på en Mac)</translation>
 <translation id="5254120496627797685">Hvis du forlader denne side, afsluttes din session med Chrome Fjernskrivebord.</translation>
 <translation id="7019153418965365059">Fejl – hosten genkendes ikke: <ph name="HOST_OFFLINE_REASON"/>.</translation>
 <translation id="712467900648340229">Der kunne ikke oprettes forbindelse til Cast-enheden.</translation>
@@ -152,6 +154,7 @@ Du kan få flere oplysninger om privatliv i privatlivspolitikkerne for Google (h
 <translation id="8116630183974937060">Der opstod en netværksfejl. Kontrollér, at din enhed er online, og prøv igen.</translation>
 <translation id="3020807351229499221">Pinkoden kunne ikke opdateres. Prøv igen senere.</translation>
 <translation id="2647232381348739934">Tjenesten Chromoting</translation>
+<translation id="2888969873284818612">Der opstod en netværksfejl. Vi genstarter appen, når din enhed er online igen.</translation>
 <translation id="579702532610384533">Genopret forbindelse</translation>
 <translation id="4867841927763172006">Send PrtScn</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME"/> (sidst online <ph name="DATE_OR_TIME"/>)</translation>
@@ -258,6 +261,7 @@ Fjernskrivebord</translation>
 <translation id="4277463233460010382">Denne computer er konfigureret til at tillade, at en eller flere klienter opretter forbindelse uden at angive en pinkode.</translation>
 <translation id="837021510621780684">Fra denne computer</translation>
 <translation id="518094545883702183">Disse oplysninger bruges kun til diagnosticering af det problem, du rapporterer, de er kun tilgængelige for personer, der undersøger din rapport, og de tilbageholdes i højst 30 dage.</translation>
+<translation id="1261403020716313927">• Omfattende hukommelsesfejl ved afbrydelse af fjernskrivebord er rettet.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="4918086044614829423">Accepter</translation>
 <translation id="7215059001581613786">Indtast en pinkode, der består af seks eller flere cifre.</translation>

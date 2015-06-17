@@ -74,6 +74,7 @@
 <translation id="8551886023433311834">El dispositivo está casi actualizado. Reinícialo para completar la actualización.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="1073391069195728457">Chrome: notificaciones</translation>
+<translation id="6368805772029492593">Para mayor seguridad, Google Chrome encriptará los datos.</translation>
 <translation id="7339898014177206373">Nueva ventana</translation>
 <translation id="3282568296779691940">Acceder a Chrome</translation>
 <translation id="3089968997497233615">Hay disponible una versión de Google Chrome más nueva y más segura.</translation>
@@ -217,6 +218,7 @@ Si accedes de todos modos, se fusionará la información de Google Chrome, como 
 <translation id="5566025111015594046">Google Chrome (tráfico mDNS entrante)</translation>
 <translation id="6113794647360055231">Chrome mejorado</translation>
 <translation id="2588322182880276190">Logo de Chrome</translation>
+<translation id="4519152997629025674">Google Chrome podrá usar los <ph name="BEGIN_LINK"/>servicios web<ph name="END_LINK"/> para mejorar la experiencia de navegación. Podrás inhabilitar estos servicios en cualquier momento.</translation>
 <translation id="4367618624832907428">Google Chrome no puede mostrar la página web porque la computadora no está conectada a Internet.</translation>
 <translation id="174539241580958092">Google Chrome no pudo sincronizar los datos porque se produjo un error de acceso.</translation>
 <translation id="8255190535488645436">Google Chrome está usando tu cámara y tu micrófono.</translation>

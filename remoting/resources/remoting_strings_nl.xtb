@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="nl">
 <translation id="337167041784729019">Statistieken weergeven</translation>
+<translation id="2256115617011615191">Nu opnieuw starten</translation>
 <translation id="7606912958770842224">Externe verbindingen inschakelen</translation>
 <translation id="3785447812627779171">Chromoting-
 host</translation>
@@ -137,6 +138,7 @@ Voor meer informatie over privacy bekijk je het Privacybeleid van Google (http:/
 <translation id="8196755618196986400">Je e-mailadres wordt opgenomen in alle feedback die je verzendt zodat we contact met je kunnen opnemen voor meer informatie.</translation>
 <translation id="154040539590487450">Kan de service voor externe toegang niet starten.</translation>
 <translation id="7948001860594368197">Schermopties</translation>
+<translation id="2221097377466213233">Gebruik rechter Ctrl-toets als Windows-toets (⌘ op Mac)</translation>
 <translation id="5254120496627797685">Als je deze pagina verlaat, wordt je Chrome Remote Desktop-sessie beëindigd.</translation>
 <translation id="7019153418965365059">Onbekende hostfout: <ph name="HOST_OFFLINE_REASON"/>.</translation>
 <translation id="712467900648340229">Kan geen verbinding met het Cast-apparaat maken.</translation>
@@ -152,6 +154,7 @@ Voor meer informatie over privacy bekijk je het Privacybeleid van Google (http:/
 <translation id="8116630183974937060">Er is een netwerkfout opgetreden. Controleer of je apparaat online is en probeer het opnieuw.</translation>
 <translation id="3020807351229499221">Kan pincode niet updaten. Probeer het later opnieuw.</translation>
 <translation id="2647232381348739934">Chromoting-service</translation>
+<translation id="2888969873284818612">Er is een netwerkfout opgetreden. We starten de app opnieuw wanneer je apparaat weer online is.</translation>
 <translation id="579702532610384533">Opnieuw verbinding maken</translation>
 <translation id="4867841927763172006">PrtScn verzenden</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME"/> (laatst online: <ph name="DATE_OR_TIME"/>)</translation>
@@ -258,6 +261,7 @@ Desktop-host</translation>
 <translation id="4277463233460010382">Deze computer is geconfigureerd om een of meer clients toestemming te geven verbinding te maken zonder een pincode op te geven.</translation>
 <translation id="837021510621780684">Vanaf deze computer</translation>
 <translation id="518094545883702183">Deze informatie wordt alleen gebruikt voor een diagnose van het probleem dat je meldt, is alleen beschikbaar voor iemand die je melding onderzoekt en wordt maximaal 30 dagen bewaard.</translation>
+<translation id="1261403020716313927">• Grote fout opgelost met een geheugenlek na het verbreken van de verbinding met Remote Desktop.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="4918086044614829423">Accepteren</translation>
 <translation id="7215059001581613786">Geef een pincode van zes of meer cijfers op.</translation>

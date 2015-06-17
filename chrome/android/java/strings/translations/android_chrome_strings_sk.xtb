@@ -49,9 +49,8 @@
 <translation id="1644574205037202324">História</translation>
 <translation id="4761374747761474835">Vyberte účet a získajte svoje záložky, históriu, heslá a nastavenia do všetkých zariadení.</translation>
 <translation id="4803910478683254032">Import zlyhal</translation>
-<translation id="3485544713029068372">Smart Lock pre heslá</translation>
+<translation id="3485544713029068372">Smart Lock na heslá</translation>
 <translation id="6999892069268112724">Potvrdenie účtu Google</translation>
-<translation id="4352423910708841374">Synchronizované a vyhľadávateľné</translation>
 <translation id="1446450296470737166">Povoliť úplné ovlád. zar. MIDI</translation>
 <translation id="7851858861565204677">Ďalšie zariadenia</translation>
 <translation id="1404122904123200417">Vložené na webe <ph name="WEBSITE_URL"/></translation>
@@ -121,7 +120,6 @@ Prihlasujete sa pomocou spravovaného účtu a jeho správcovi tak umožňujete 
 <translation id="932327136139879170">Domov</translation>
 <translation id="963967414714199900">Posledná synchronizácia: práve teraz</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME"/>, webová aplikácia: <ph name="APP_URL"/></translation>
-<translation id="7646360244607347866">Zobrazenie v režime čítačky (EXPERIMENTÁLNA FUNKCIA)</translation>
 <translation id="200669432486043882">Nahradiť súbor</translation>
 <translation id="9086455579313502267">Nepodarilo sa pristúpiť k sieti</translation>
 <translation id="5595485650161345191">Upraviť adresu</translation>
@@ -465,7 +463,6 @@ Stačí otvoriť Chrome na počítači, prejsť do ponuky a vybrať možnosť Pr
 <translation id="5138299137310274655">Táto stránka je v jazyku <ph name="SOURCE_LANGUAGE"/>. Chcete ju preložiť do jazyka <ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="2913331724188855103">Povoliť stránkam ukladať a čítať údaje súborov cookie (odporučané)</translation>
 <translation id="5512137114520586844">Tento účet je spravovaný používateľom <ph name="PARENT_NAME"/>.</translation>
-<translation id="4852188034940155708">Automatické priečinky</translation>
 <translation id="7144878232160441200">Skúsiť znova</translation>
 <translation id="7829298379596169484">Pristupovanie k zvukovému vstupu</translation>
 <translation id="1373696734384179344">Vybraný obsah nie je možné stiahnuť z dôvodu nedostatku pamäte</translation>
@@ -474,7 +471,6 @@ Stačí otvoriť Chrome na počítači, prejsť do ponuky a vybrať možnosť Pr
 <translation id="8928220460877261598">Prihlásili ste sa do prehliadača Chrome.</translation>
 <translation id="7811044698839470685">Šifrované údaje si môže prečítať len osoba, ktorá pozná vašu prístupovú frázu. Táto prístupová fráza sa spoločnosti Google neodosiela ani ju neuchováva. Ak ju zabudnete, musíte obnoviť synchronizáciu.</translation>
 <translation id="8547287415299944404">Históriu prehliadania nemôžete vymazať prostredníctvom účtu pre deti</translation>
-<translation id="3700134753671613714">Ak chcete mať záložky vo všetkých svojich zariadeniach, prihláste sa.</translation>
 <translation id="5032574515228824816">Výzva</translation>
 <translation id="7772032839648071052">Potvrďte prístupovú frázu</translation>
 <translation id="6010869025736512584">Pristupovanie k vstupu videa</translation>
@@ -542,7 +538,6 @@ Stačí otvoriť Chrome na počítači, prejsť do ponuky a vybrať možnosť Pr
 <translation id="5210714456814679336">Tu sa zobrazia karty, ktoré ste otvorili v prehliadači Chrome na iných zariadeniach.</translation>
 <translation id="1568822834048182062">Vaše záložky, história, heslá a ďalšie nastavenia budú synchronizované s účtom Google.</translation>
 <translation id="2073235970478114994">Načítať obrázky</translation>
-<translation id="6336862230287483356">Automatické priečinky</translation>
 <translation id="6027491994609789413">Prehráva sa video</translation>
 <translation id="7561196759112975576">Vždy</translation>
 <translation id="605721222689873409">RR</translation>

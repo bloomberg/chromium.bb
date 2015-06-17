@@ -4150,7 +4150,6 @@ After you create a new supervised user, you can manage their settings at any tim
 <translation id="1502341367962526993">Determines what pages the Reader Mode button is shown on.</translation>
 <translation id="3627320433825461852">Less than 1 minute left</translation>
 <translation id="3123569374670379335">(Supervised)</translation>
-<translation id="854600348164706309">Your tabs, bookmarks, history and other settings will be synced to your Google Account.</translation>
 <translation id="4047345532928475040">N/A</translation>
 <translation id="5604324414379907186">Always show the bookmarks bar</translation>
 <translation id="249113932447298600">Sorry, the device <ph name="DEVICE_LABEL"/> is not supported at this time.</translation>
@@ -4241,7 +4240,6 @@ After you create a new supervised user, you can manage their settings at any tim
 <translation id="8299269255470343364">Japanese</translation>
 <translation id="9088659014978240063">Metrics relating to the effect of <ph name="SHORT_PRODUCT_NAME"/> on the system's CPU</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME"/> (<ph name="DEVICE"/>)</translation>
-<translation id="6429639049555216915">The app is currently unreachable.</translation>
 <translation id="1243314992276662751">Upload</translation>
 <translation id="2144536955299248197">Certificate Viewer: <ph name="CERTIFICATE_NAME"/></translation>
 <translation id="8261387128019234107">Add account for <ph name="PROFILE_NAME"/></translation>
@@ -4606,7 +4604,6 @@ After you create a new supervised user, you can manage their settings at any tim
 <translation id="3803991353670408298">Please add another input method before removing this one.</translation>
 <translation id="4209267054566995313">No mouse or touchpad was detected.</translation>
 <translation id="337920581046691015"><ph name="PRODUCT_NAME"/> will be installed.</translation>
-<translation id="8730941225957945932">Use the slimming paint display lists for all drawing.</translation>
 <translation id="5636996382092289526">To use <ph name="NETWORK_ID"/> you may first need to <ph name="LINK_START"/>visit the network's sign-in page<ph name="LINK_END"/>, which will open automatically in a few seconds. If it doesn't happen, the network can't be used.</translation>
 <translation id="78957024357676568">left</translation>
 <translation id="7048141481140415714">Enable Ctrl+Alt+Shift+8 to toggle the TouchView maximising mode.</translation>
@@ -4659,6 +4656,7 @@ After you create a new supervised user, you can manage their settings at any tim
 <translation id="6196854373336333322">The extension &quot;<ph name="EXTENSION_NAME"/>&quot; has taken control of your proxy settings, which means it can change, break or eavesdrop on anything you do online. If you aren't sure why this change happened, you probably don't want it.</translation>
 <translation id="7583419135027754249">Always send click events immediate upon a tap, even when it's part of a double-tap gesture. This speeds up navigation and other tap actions by 300 ms on most pages, but means links and buttons must be avoided when double tapping to zoom.</translation>
 <translation id="3420980393175304359">Switch Person</translation>
+<translation id="2541423446708352368">Show all downloads</translation>
 <translation id="2406941037785138796">Disables</translation>
 <translation id="5030338702439866405">Issued By</translation>
 <translation id="7940103665344164219">Shared Memory Usage</translation>
@@ -5500,6 +5498,7 @@ Press any key to continue exploring.</translation>
 <translation id="2785530881066938471">Could not load file '<ph name="RELATIVE_PATH"/>' for content script. It isn't UTF-8 encoded.</translation>
 <translation id="8744525654891896746">Select an avatar for this supervised user</translation>
 <translation id="3807747707162121253">&amp;Cancel</translation>
+<translation id="2740531572673183784">OK</translation>
 <translation id="202352106777823113">The download was taking too long and was stopped by the network.</translation>
 <translation id="6155817405098385604">Don't fall back to a 3D-software rasteriser when the GPU cannot be used.</translation>
 <translation id="3306897190788753224">Temporarily disable conversion personalisation, history-based suggestions and user dictionary</translation>
@@ -5810,6 +5809,7 @@ Press any key to continue exploring.</translation>
 <translation id="7353601530677266744">Command Line</translation>
 <translation id="2766006623206032690">Pa&amp;ste and go</translation>
 <translation id="5253753933804516447">Enable &quot;OK Google&quot; to voice search when your screen is on and unlocked</translation>
+<translation id="1568822834048182062">Your bookmarks, history, passwords and other settings will be synced to your Google Account.</translation>
 <translation id="5511823366942919280">Are you sure that you want to set up this device as a &quot;Shark&quot;?</translation>
 <translation id="5286673433070377078">Bleeding Edge Renderer Paths - LIKELY TO CRASH YOUR BROWSER</translation>
 <translation id="6843725295806269523">mute</translation>

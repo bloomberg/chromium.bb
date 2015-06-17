@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="uk">
 <translation id="2774256287122201187">Можна продовжити. Якщо перейти на сторінку, це попередження не відображатиметься протягом п’яти хвилин.</translation>
+<translation id="3963721102035795474">Режим перегляду</translation>
 <translation id="7485870689360869515">Даних не знайдено.</translation>
 <translation id="3884278016824448484">Конфліктуючий ідентифікатор пристрою</translation>
 <translation id="5172758083709347301">Комп’ютер</translation>
@@ -164,6 +165,7 @@
 <translation id="8891727572606052622">Недійсний режим проксі-сервера.</translation>
 <translation id="3105172416063519923">Ідентифікатор об’єкта:</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="1549470594296187301">Щоб користуватися цією функцією, потрібно ввімкнути JavaScript.</translation>
 <translation id="2587841377698384444">Ідентифікатор API каталогу:</translation>
 <translation id="7752995774971033316">Некерований клієнт</translation>
 <translation id="3712624925041724820">Ліцензії вичерпано</translation>

@@ -38,6 +38,7 @@
 <translation id="1812696562331527143">Giriş yönteminiz <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>3. taraf<ph name="END_LINK"/>) olarak değiştirildi.
 Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="6043994281159824495">Şimdi çıkış yap</translation>
+<translation id="5168181903108465623">Yayın cihazları kullanılabilir</translation>
 <translation id="2127372758936585790">Düşük güçlü şarj cihazı</translation>
 <translation id="3799026279081545374">Şarj cihazınız sorunlu olabilir. ABD'de yaşıyorsanız yardım almak ve cihazı yenisiyle değiştirmek için lütfen 866-628-1371 numaralı telefonu arayın. İngiltere'de yaşıyorsanız 0800-026-0613 numaralı telefonu, İrlanda'da yaşıyorsanız 1-800-832-664 numaralı telefonu, Kanada'da yaşıyorsanız 866-628-1372 numaralı telefonu, Avustralya'da yaşıyorsanız lütfen 1-800-067-460 numaralı telefonu arayın.</translation>
 <translation id="3891340733213178823">Oturumu kapatmak için Ctrl+ÜstKrktr+Q tuşlarına iki defa basın.</translation>
@@ -96,6 +97,7 @@ Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="9089416786594320554">Giriş yöntemleri</translation>
 <translation id="2700058918926273959">Oturumun süresi <ph name="SESSION_TIME_REMAINING"/> içinde bitiyor. Süre dolduğunda oturumunuz kapatılacaktır.</translation>
 <translation id="6247708409970142803">%<ph name="PERCENTAGE"/></translation>
+<translation id="1963814843110128691">$1, şuraya yayınlanıyor: $2</translation>
 <translation id="3963445509666917109">Hoparlör (Dahili)</translation>
 <translation id="1747827819627189109">Dokunmatik klavye etkin</translation>
 <translation id="2208323208084708176">Birleştirilmiş masaüstü modu</translation>
@@ -180,6 +182,7 @@ Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="6785414152754474415">Pil %<ph name="PERCENTAGE"/> dolu ve şarj oluyor.</translation>
 <translation id="4895488851634969361">Pil dolu.</translation>
 <translation id="615957422585914272">Dokunmatik klavyeyi göster</translation>
+<translation id="8443356412772935865">Ekran şuraya yayınlanıyor: $1</translation>
 <translation id="5947494881799873997">Geri döndür</translation>
 <translation id="7593891976182323525">Arama veya Üst Karakter</translation>
 <translation id="7649070708921625228">Yardım</translation>
@@ -188,9 +191,11 @@ Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="397105322502079400">Hesaplanııyor...</translation>
 <translation id="1013923882670373915">&quot;<ph name="DEVICE_NAME"/>&quot; adlı Bluetooth cihaz eşleme izni istiyor. Lütfen söz konusu cihazda şu PIN kodunu girin: <ph name="PINCODE"/></translation>
 <translation id="2819276065543622893">Şimdi çıkış yapacaksınız.</translation>
+<translation id="4961318399572185831">Ekranı yayınla</translation>
 <translation id="5507786745520522457">Mobil verileri ayarla</translation>
 <translation id="6165508094623778733">Daha fazla bilgi edinin</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS"/> saniye içinde eski çözünürlüğe dönülüyor</translation>
+<translation id="5927132638760172455">Bilinmeyen bir alıcıya yayınlanıyor</translation>
 <translation id="743058460480092004">Kamera ve mikrofon kullanımda.</translation>
 <translation id="6550675742724504774">Seçenekler</translation>
 <translation id="6406704438230478924">altgr</translation>

@@ -38,6 +38,7 @@
 <translation id="1812696562331527143">Il metodo di immissione è stato cambiato in <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>3a parte<ph name="END_LINK"/>).
 Premi Maiusc+Alt per cambiare metodo.</translation>
 <translation id="6043994281159824495">Esci ora</translation>
+<translation id="5168181903108465623">Dispositivi di trasmissione disponibili</translation>
 <translation id="2127372758936585790">Caricabatterie a basso consumo</translation>
 <translation id="3799026279081545374">Probabilmente il tuo caricabatterie non è valido. Se risiedi negli Stati Uniti, chiama il numero 866-628-1371, per ricevere assistenza e un caricabatterie sostitutivo. Se risiedi nel Regno Unito, chiama il numero 0800-026-0613. Se risiedi in Irlanda, chiama il numero 1-800-832-664. Se risiedi in Canada, chiama il numero 866-628-1372. Se risiedi in Australia, chiama il numero 1-800-067-460.</translation>
 <translation id="3891340733213178823">Premi due volte Ctrl+Maiusc+Q per uscire.</translation>
@@ -96,6 +97,7 @@ Premi Maiusc+Alt per cambiare metodo.</translation>
 <translation id="9089416786594320554">Metodi di immissione</translation>
 <translation id="2700058918926273959">La sessione terminerà tra <ph name="SESSION_TIME_REMAINING"/>. Verrà eseguita la disconnessione.</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
+<translation id="1963814843110128691">Trasmissione da $ 1 a $ 2</translation>
 <translation id="3963445509666917109">Altoparlante (interno)</translation>
 <translation id="1747827819627189109">Tastiera sullo schermo attiva</translation>
 <translation id="2208323208084708176">Modalità desktop unificato</translation>
@@ -179,6 +181,7 @@ Premi Maiusc+Alt per cambiare metodo.</translation>
 <translation id="6785414152754474415">Percentuale di caricamento batteria: <ph name="PERCENTAGE"/>%. La batteria è in carica.</translation>
 <translation id="4895488851634969361">La batteria è carica.</translation>
 <translation id="615957422585914272">Mostra tastiera sullo schermo</translation>
+<translation id="8443356412772935865">Trasmissione schermo a $ 1</translation>
 <translation id="5947494881799873997">Ripristina</translation>
 <translation id="7593891976182323525">Tasto per la ricerca o Maiusc</translation>
 <translation id="7649070708921625228">Guida</translation>
@@ -187,9 +190,11 @@ Premi il tasto per la ricerca o Maiusc per annullare.</translation>
 <translation id="397105322502079400">Calcolo in corso...</translation>
 <translation id="1013923882670373915">Il dispositivo Bluetooth &quot;<ph name="DEVICE_NAME"/>&quot; chiede l'autorizzazione per essere accoppiato. Inserisci questo codice PIN sul dispositivo: <ph name="PINCODE"/></translation>
 <translation id="2819276065543622893">Verrai disconnesso ora.</translation>
+<translation id="4961318399572185831">Trasmetti schermo</translation>
 <translation id="5507786745520522457">Imposta dati mobili</translation>
 <translation id="6165508094623778733">Ulteriori informazioni</translation>
 <translation id="7168224885072002358">Ripristino della risoluzione precedente tra <ph name="TIMEOUT_SECONDS"/></translation>
+<translation id="5927132638760172455">Trasmissione a un ricevitore sconosciuto</translation>
 <translation id="743058460480092004">Videocamera e microfono sono in uso.</translation>
 <translation id="6550675742724504774">Opzioni</translation>
 <translation id="6406704438230478924">altgr</translation>

@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="hi">
 <translation id="337167041784729019">आंकड़े दिखाएं</translation>
+<translation id="2256115617011615191">अभी पुनः प्रारंभ करें</translation>
 <translation id="7606912958770842224">दूरस्‍थ कनेक्‍शन सक्षम करें</translation>
 <translation id="3785447812627779171">Chromoting
 होस्ट</translation>
@@ -137,6 +138,7 @@
 <translation id="8196755618196986400">हमें अतिरिक्‍त जानकारी हेतु आपसे संपर्क करने देने के लिए, आपके द्वारा सबमिट किए जाने वाले किसी भी फ़ीडबैक में आपका ईमेल पता शामिल किया जाएगा.</translation>
 <translation id="154040539590487450">दूरस्‍थ पहुंच सेवा प्रारंभ करने में विफल.</translation>
 <translation id="7948001860594368197">स्‍क्रीन विकल्‍प</translation>
+<translation id="2221097377466213233">Win कुंजी के लिए राइट Ctrl का उपयोग करें (Mac पर ⌘)</translation>
 <translation id="5254120496627797685">इस पृष्ठ को छोड़ देने पर आपका Chrome दूरस्थ डेस्कटॉप सत्र समाप्त हो जाएगा.</translation>
 <translation id="7019153418965365059">अपरिचित होस्‍ट त्रुटि: <ph name="HOST_OFFLINE_REASON"/>.</translation>
 <translation id="712467900648340229">कास्‍ट डिवाइस से कनेक्‍ट करने में विफल रहा.</translation>
@@ -152,6 +154,7 @@
 <translation id="8116630183974937060">नेटवर्क त्रुटि हुई. कृपया जांचें कि आपका डिवाइस ऑन-लाइन है और फिर पुन: प्रयास करें.</translation>
 <translation id="3020807351229499221">पिन अपडेट करने में विफल. कृपया बाद में पुन: प्रयास करें.</translation>
 <translation id="2647232381348739934">Chromoting सेवा</translation>
+<translation id="2888969873284818612">नेटवर्क त्रुटि हुई. आपके डिवाइस के फिर से ऑन-लाइन होने पर हम ऐप को पुनः प्रारंभ करेंगे.</translation>
 <translation id="579702532610384533">पुन: कनेक्‍ट करें</translation>
 <translation id="4867841927763172006">PrtScn भेजें</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME"/> (पिछली बार <ph name="DATE_OR_TIME"/> को ऑनलाइन)</translation>
@@ -258,6 +261,7 @@
 <translation id="4277463233460010382">इस कंप्यूटर को PIN डाले बिना एक या इससे अधिक क्लाइंट से कनेक्ट करने देने के लिए कॉन्फ़िगर किया गया है.</translation>
 <translation id="837021510621780684">इस कंप्यूटर से</translation>
 <translation id="518094545883702183">इस जानकारी का उपयोग आपके द्वारा रिपोर्ट की जा रही समस्‍या का निदान करने के लिए ही किया जाता है, यह आपकी रिपोर्ट की जांच कर रहे व्‍यक्‍ति के लिए ही उपलब्‍ध होती है, और इसे 30 दिन से अधिक समय तक नहीं रखा जाता.</translation>
+<translation id="1261403020716313927">• दूरस्थ डेस्कटॉप से डिस्कनेक्ट होने की स्थिति में बड़ा मेमोरी लीक ठीक किया गया.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="4918086044614829423">स्वीकार करें</translation>
 <translation id="7215059001581613786">कृपया छः या अधिक अंकों वाला पिन दर्ज करें.</translation>

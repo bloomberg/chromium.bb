@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="th">
 <translation id="337167041784729019">แสดงสถิติ</translation>
+<translation id="2256115617011615191">รีสตาร์ทเลย</translation>
 <translation id="7606912958770842224">เปิดใช้งานการเชื่อมต่อระยะไกล</translation>
 <translation id="3785447812627779171">Chromoting
 Host</translation>
@@ -137,6 +138,7 @@ Host</translation>
 <translation id="8196755618196986400">หากต้องการอนุญาตให้เราติดต่อคุณสำหรับข้อมูลเพิ่มเติม จะมีการใส่ที่อยู่อีเมลของคุณในความคิดเห็นทั้งหมดที่คุณส่งมา</translation>
 <translation id="154040539590487450">ไม่สามารถเริ่มบริการเข้าถึงระยะไกล</translation>
 <translation id="7948001860594368197">ตัวเลือกหน้าจอ</translation>
+<translation id="2221097377466213233">ใช้ Ctrl ขวาสำหรับแป้น Win (⌘ สำหรับ Mac)</translation>
 <translation id="5254120496627797685">การออกจากหน้านี้จะสิ้นสุดเซสชัน Chrome Remote Desktop ของคุณ</translation>
 <translation id="7019153418965365059">ข้อผิดพลาดของโฮสต์ที่ไม่รู้จัก: <ph name="HOST_OFFLINE_REASON"/></translation>
 <translation id="712467900648340229">ไม่สามารถเชื่อมต่อเครื่องส่งได้</translation>
@@ -152,6 +154,7 @@ Host</translation>
 <translation id="8116630183974937060">เกิดข้อผิดพลาดในเครือข่าย โปรดตรวจสอบว่าอุปกรณ์ของคุณออนไลน์อยู่และลองอีกครั้ง</translation>
 <translation id="3020807351229499221">ไม่สามารถอัปเดต PIN โปรดลองอีกครั้งในภายหลัง</translation>
 <translation id="2647232381348739934">Chromoting Service</translation>
+<translation id="2888969873284818612">เกิดข้อผิดพลาดในเครือข่าย เราจะรีสตาร์ทแอปเมื่ออุปกรณ์ของคุณออนไลน์อีกครั้ง</translation>
 <translation id="579702532610384533">เชื่อมต่อใหม่</translation>
 <translation id="4867841927763172006">ส่ง PrtScn</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME"/> (ออนไลน์ล่าสุดเมื่อ <ph name="DATE_OR_TIME"/>)</translation>
@@ -258,6 +261,7 @@ Desktop Host</translation>
 <translation id="4277463233460010382">คอมพิวเตอร์เครื่องนี้ได้รับการกำหนดค่าให้อนุญาตไคลเอ็นต์หนึ่งหรือมากกว่าสามารถเชื่อมต่อโดยไม่ต้องป้อน PIN</translation>
 <translation id="837021510621780684">จากคอมพิวเตอร์เครื่องนี้</translation>
 <translation id="518094545883702183">ข้อมูลนี้จะใช้เพื่อวินิจฉัยปัญหาที่คุณรายงานเท่านั้น โดยจะมีเพียงผู้ตรวจสอบรายงานเท่านั้นที่ใช้งานได้ และจะมีการเก็บรักษาไว้ไม่เกิน 30 วัน</translation>
+<translation id="1261403020716313927">• แก้ไขการรั่วไหลอย่างมากของหน่วยความจำเมื่อยกเลิกการเชื่อมต่อจากเดสก์ท็อปเครื่องอื่น</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="4918086044614829423">ยอมรับ</translation>
 <translation id="7215059001581613786">โปรดป้อน PIN ที่ประกอบด้วยตัวเลขอย่างน้อยหกหลัก</translation>

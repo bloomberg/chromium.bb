@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="lv">
 <translation id="337167041784729019">Rādīt statistiku</translation>
+<translation id="2256115617011615191">Restartēt tūlīt</translation>
 <translation id="7606912958770842224">Iespējot attālos savienojumus</translation>
 <translation id="3785447812627779171">Chrome saites
 saimniekdators</translation>
@@ -137,6 +138,7 @@ Lai saņemtu informāciju par konfidencialitāti, skatiet Google konfidencialit�
 <translation id="8196755618196986400">Lai mēs varētu ar jums sazināties un iegūt papildu informāciju, iesniegtajās atsauksmēs tiks ietverta jūsu e-pasta adrese.</translation>
 <translation id="154040539590487450">Neizdevās sākt attālās piekļuves pakalpojumu.</translation>
 <translation id="7948001860594368197">Ekrāna opcijas</translation>
+<translation id="2221097377466213233">Win datorā izmantot labās puses Ctrl taustiņu (Mac datorā — ⌘)</translation>
 <translation id="5254120496627797685">Aizverot šo lapu, Chrome attālās darbvirsmas sesija tiks pārtraukta.</translation>
 <translation id="7019153418965365059">Neatpazīta saimniekdatora kļūda: <ph name="HOST_OFFLINE_REASON"/>.</translation>
 <translation id="712467900648340229">Neizdevās izveidot savienojumu ar Cast ierīci.</translation>
@@ -152,6 +154,7 @@ Lai saņemtu informāciju par konfidencialitāti, skatiet Google konfidencialit�
 <translation id="8116630183974937060">Radās tīkla kļūda. Lūdzu, pārbaudiet, vai ierīcē ir izveidots savienojumus, un mēģiniet vēlreiz.</translation>
 <translation id="3020807351229499221">Neizdevās atjaunināt PIN. Lūdzu, vēlāk mēģiniet vēlreiz.</translation>
 <translation id="2647232381348739934">Chrome saites pakalpojums</translation>
+<translation id="2888969873284818612">Radās tīkla kļūda. Kad ierīce atkal darbosies tiešsaistē, lietotne tiks restartēta.</translation>
 <translation id="579702532610384533">Atkārtoti savienot</translation>
 <translation id="4867841927763172006">Sūtīt PrtScn</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME"/> (pēdējoreiz tiešsaistē: <ph name="DATE_OR_TIME"/>)</translation>
@@ -258,6 +261,7 @@ darbvirsmas saimniekdators</translation>
 <translation id="4277463233460010382">Šajā datorā ir konfigurēta atļauja vienam vai vairākiem klientiem izveidot savienojumu, neievadot PIN kodu.</translation>
 <translation id="837021510621780684">No šī datora</translation>
 <translation id="518094545883702183">Šī informācija tiek izmantota tikai tās problēmas diagnosticēšanai, par kuru ziņojat, un tā ir pieejama tikai personai, kura izskata jūsu ziņojumu, kā arī tiek saglabāta ne ilgāk kā 30 dienas.</translation>
+<translation id="1261403020716313927">• Labota liela atmiņas noplūde, veicot atvienošanu no attālā datora.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="4918086044614829423">Pieņemt</translation>
 <translation id="7215059001581613786">Lūdzu, ievadiet PIN, kura garums ir vismaz seši cipari.</translation>

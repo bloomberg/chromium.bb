@@ -51,7 +51,6 @@
 <translation id="4803910478683254032">Falha na importação</translation>
 <translation id="3485544713029068372">Smart Lock para senhas</translation>
 <translation id="6999892069268112724">Confirmar Conta do Google</translation>
-<translation id="4352423910708841374">Sincronizados e pesquisáveis</translation>
 <translation id="1446450296470737166">Permitir controle total de dispositivos MIDI</translation>
 <translation id="7851858861565204677">Outros dispositivos</translation>
 <translation id="1404122904123200417">Incorporado em <ph name="WEBSITE_URL"/></translation>
@@ -121,7 +120,6 @@ Você está fazendo login com uma conta gerenciada e fornecendo ao administrador
 <translation id="932327136139879170">Início</translation>
 <translation id="963967414714199900">Última sincronização: agora</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME"/>, aplicativo da Web. <ph name="APP_URL"/></translation>
-<translation id="7646360244607347866">Visualização do leitor (EXPERIMENTAL)</translation>
 <translation id="200669432486043882">Substituir arquivo</translation>
 <translation id="9086455579313502267">Não foi possível acessar a rede</translation>
 <translation id="5595485650161345191">Editar endereço</translation>
@@ -178,7 +176,7 @@ Você está fazendo login com uma conta gerenciada e fornecendo ao administrador
 <translation id="6404511346730675251">Editar favorito</translation>
 <translation id="7473891865547856676">Não, obrigado</translation>
 <translation id="3656115297268584622">Ative o local nas <ph name="BEGIN_LINK"/>Configurações do Android<ph name="END_LINK"/>.</translation>
-<translation id="1886021608051665693">Escolher uma conta no seu Google Smart Lock</translation>
+<translation id="1886021608051665693">Escolher uma conta no Google Smart Lock.</translation>
 <translation id="7423098979219808738">Perguntar primeiro</translation>
 <translation id="8073388330009372546">Abrir imagem em nova guia</translation>
 <translation id="9060538597317784206">Ver aplicativo <ph name="APP_NAME"/> na Play Store.  Classificação: <ph name="APP_RATING"/>.</translation>
@@ -464,7 +462,6 @@ Basta abrir o Chrome no computador, ir até o menu e selecionar “Fazer login n
 <translation id="5138299137310274655">Esta página está escrita em <ph name="SOURCE_LANGUAGE"/>. Deseja traduzi-la para <ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="2913331724188855103">Permitir que os sites salvem e leiam dados de cookies (recomendado)</translation>
 <translation id="5512137114520586844">Esta conta é gerenciada por <ph name="PARENT_NAME"/>.</translation>
-<translation id="4852188034940155708">Pastas automáticas</translation>
 <translation id="7144878232160441200">Tentar novamente</translation>
 <translation id="7829298379596169484">Acessando entrada de áudio</translation>
 <translation id="1373696734384179344">Memória insuficiente para fazer o download do conteúdo selecionado.</translation>
@@ -473,7 +470,6 @@ Basta abrir o Chrome no computador, ir até o menu e selecionar “Fazer login n
 <translation id="8928220460877261598">Você fez login no Chrome.</translation>
 <translation id="7811044698839470685">Apenas uma pessoa com sua senha pode ler os dados criptografados. A senha não é enviada ao Google nem armazenada por ele. Se você esquecer a senha, terá que reiniciar a sincronização.</translation>
 <translation id="8547287415299944404">Não é possível apagar o histórico de navegação com contas para crianças</translation>
-<translation id="3700134753671613714">Faça login para ter acesso aos seus favoritos em todos os seus dispositivos.</translation>
 <translation id="5032574515228824816">Prompt</translation>
 <translation id="7772032839648071052">Confirmar senha</translation>
 <translation id="6010869025736512584">Acessando entrada de vídeo</translation>
@@ -542,7 +538,6 @@ Para receber novas licenças, conecte-se à Internet e use seu conteúdo baixado
 <translation id="5210714456814679336">As guias que você abriu no Google Chrome nos seus outros dispositivos aparecerão aqui.</translation>
 <translation id="1568822834048182062">Seus favoritos, histórico, senhas e outras configurações serão sincronizados com sua Conta do Google.</translation>
 <translation id="2073235970478114994">Carregar imagens</translation>
-<translation id="6336862230287483356">Pastas automáticas</translation>
 <translation id="6027491994609789413">Reproduzindo vídeo</translation>
 <translation id="7561196759112975576">Sempre</translation>
 <translation id="605721222689873409">AA</translation>

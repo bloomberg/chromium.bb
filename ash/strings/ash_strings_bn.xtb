@@ -38,6 +38,7 @@
 <translation id="1812696562331527143">আপনার ইনপুট পদ্ধতি <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>৩য় পক্ষ<ph name="END_LINK"/>) এ পরিবর্তিত হয়েছে৷
 স্যুইচ করতে Shift + Alt টিপুন৷</translation>
 <translation id="6043994281159824495">এখনই সাইন আউট করুন</translation>
+<translation id="5168181903108465623">কাস্ট ডিভাইসগুলি উপলব্ধ</translation>
 <translation id="2127372758936585790">নিম্ন শক্তির চার্জার</translation>
 <translation id="3799026279081545374">আপনার কাছে একটি খারাপ চার্জার থাকতে পারে৷ যদি আপনি মার্কিন যুক্তরাষ্ট্রে বাস করেন তবে সহায়তা পেতে এবং একটি প্রতিস্থাপনের জন্য দয়া করে ৮৬৬-৬২৮-১৩৭১ এ কল করুন৷ যদি আপনি যুক্তরাজ্য বাস করেন তবে দয়া করে ০৮০০-০২৬-০৬১৩ এ কল করুন৷ যদি আপনি আয়ারল্যান্ডে বাস করেন তবে দয়া করে ১-৮০০-৮৩২-৬৬৪ এ কল করুন৷ যদি আপনি কানাডায় বাস করেন তবে দয়া করে ৮৬৬-৬২৮-১৩৭২ এ কল করুন৷ যদি আপনি অস্ট্রেলিয়ায় বাস করেন তবে দয়া করে ১-৮০০-০৬৭-৪৬০ এ কল করুন৷</translation>
 <translation id="3891340733213178823">সাইন আউট করার জন্য দুবার Ctrl+Shift+Q টিপুন৷</translation>
@@ -96,6 +97,7 @@
 <translation id="9089416786594320554">ইনপুট পদ্ধতিসমূহ</translation>
 <translation id="2700058918926273959"><ph name="SESSION_TIME_REMAINING"/> এর মধ্যে সেশন শেষ হয়ে যাবে৷ আপনাকে সাইন আউট করা হবে৷</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
+<translation id="1963814843110128691">১ ডলার থেকে ২ ডলারে কাস্ট করা হচ্ছে</translation>
 <translation id="3963445509666917109">স্পিকার (অভ্যন্তরীণ)</translation>
 <translation id="1747827819627189109">অন-স্ক্রীন কীবোর্ড সক্ষম করা রয়েছে</translation>
 <translation id="2208323208084708176">একীভূত ডেস্কটপ মোড</translation>
@@ -179,6 +181,7 @@
 <translation id="6785414152754474415">ব্যাটারি <ph name="PERCENTAGE"/>% পূর্ণ এবং চার্জ হচ্ছে৷</translation>
 <translation id="4895488851634969361">ব্যাটারি পূর্ণ৷</translation>
 <translation id="615957422585914272">অন-স্ক্রীন কীবোর্ড প্রদর্শন করুন</translation>
+<translation id="8443356412772935865">১ ডলারে স্ক্রীন কাস্টিং করা হচ্ছে</translation>
 <translation id="5947494881799873997">ফেরান</translation>
 <translation id="7593891976182323525">Search অথবা Shift</translation>
 <translation id="7649070708921625228">সহায়তা</translation>
@@ -187,9 +190,11 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="397105322502079400">গণনা করা হচ্ছে...</translation>
 <translation id="1013923882670373915">Bluetooth ডিভাইস &quot;<ph name="DEVICE_NAME"/>&quot; যুক্ত করার অনুমতি চাইছে। দয়া করে ডিভাইসটিতে এই PIN কোড প্রবেশ করুন: <ph name="PINCODE"/></translation>
 <translation id="2819276065543622893">আপনি এখনই সাইন আউট হবেন৷</translation>
+<translation id="4961318399572185831">স্ক্রীন কাস্ট করুন</translation>
 <translation id="5507786745520522457">মোবাইল ডেটা সেটআপ করুন</translation>
 <translation id="6165508094623778733">আরো জানুন</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS"/> এ পুরানো রেসুলিউশানে ফেরানো হচ্ছে</translation>
+<translation id="5927132638760172455">একটি অজানা রিসিভারে কাস্টিং করা হচ্ছে</translation>
 <translation id="743058460480092004">ক্যামেরা এবং মাইক্রোফোন ব্যবহার করা হচ্ছে।</translation>
 <translation id="6550675742724504774">বিকল্পসমূহ</translation>
 <translation id="6406704438230478924">altgr</translation>

@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="lv">
 <translation id="2774256287122201187">Jūs varat turpināt. Ja turpināsiet lietot lapu, šis brīdinājums netiks rādīts vēlreiz piecas minūtes.</translation>
+<translation id="3963721102035795474">Lasītāja režīms</translation>
 <translation id="7485870689360869515">Dati netika atrasti.</translation>
 <translation id="3884278016824448484">Ierīces identifikators rada konfliktu.</translation>
 <translation id="5172758083709347301">Ierīce</translation>
@@ -164,6 +165,7 @@
 <translation id="8891727572606052622">Nederīgs starpniekservera režīms.</translation>
 <translation id="3105172416063519923">Līdzekļa ID:</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="1549470594296187301">Lai izmantotu šo funkciju, ir jābūt iespējotai valodai JavaScript.</translation>
 <translation id="2587841377698384444">Direktorija API ID:</translation>
 <translation id="7752995774971033316">Netiek pārvaldīts</translation>
 <translation id="3712624925041724820">Nav pietiekami daudz licenču.</translation>

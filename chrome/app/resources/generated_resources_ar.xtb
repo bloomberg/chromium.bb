@@ -4124,7 +4124,6 @@
 <translation id="1502341367962526993">يحدد الصفحات التي يظهر بها زر وضع القارئ.</translation>
 <translation id="3627320433825461852">تتبقى أقل من دقيقة واحدة</translation>
 <translation id="3123569374670379335">(خاضع للإشراف)</translation>
-<translation id="854600348164706309">‏ستتم مزامنة علامات التبويب، والإشارات المرجعية، والسجل، وغير ذلك من الإعدادات مع حسابك في Google.</translation>
 <translation id="4047345532928475040">غير متوفّر</translation>
 <translation id="5604324414379907186">عرض شريط الإشارات المرجعية دومًا</translation>
 <translation id="249113932447298600">عذرًا، لا يتوفر الجهاز <ph name="DEVICE_LABEL"/> في الوقت الحالي.</translation>
@@ -4213,7 +4212,6 @@
 <translation id="8299269255470343364">اليابانية</translation>
 <translation id="9088659014978240063">المقاييس المتعلقة بتأثير <ph name="SHORT_PRODUCT_NAME"/> على وحدة المعالجة المركزية للنظام</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME"/> (<ph name="DEVICE"/>)</translation>
-<translation id="6429639049555216915">يتعذر الوصول إلى التطبيق حاليًا.</translation>
 <translation id="1243314992276662751">تحميل</translation>
 <translation id="2144536955299248197">عارض الشهادة: <ph name="CERTIFICATE_NAME"/></translation>
 <translation id="8261387128019234107">إضافة حساب لـ <ph name="PROFILE_NAME"/></translation>
@@ -4576,7 +4574,6 @@
 <translation id="3803991353670408298">الرجاء إضافة طريقة إدخال أخرى قبل إزالة هذه الطريقة.</translation>
 <translation id="4209267054566995313">لم يتم التعرف على أي ماوس أو لوحة لمس.</translation>
 <translation id="337920581046691015">سيتم تثبيت <ph name="PRODUCT_NAME"/>.</translation>
-<translation id="8730941225957945932">‏استخدام قوائم عرض &quot;slimming paint&quot; لجميع الرسومات.</translation>
 <translation id="5636996382092289526">لاستخدام <ph name="NETWORK_ID"/> ربما تحتاج أولاً إلى <ph name="LINK_START"/>الانتقال إلى صفحة تسجيل الدخول إلى الشبكة<ph name="LINK_END"/>، والتي سيتم فتحها تلقائيًا خلال بضع ثوانٍ. إذا لم يحدث ذلك، فلن يمكن استخدام الشبكة.</translation>
 <translation id="78957024357676568">لليسار</translation>
 <translation id="7048141481140415714">‏تمكين Ctrl+Alt+Shift+8 للتبديل إلى وضع التكبير في TouchView.</translation>
@@ -4629,6 +4626,7 @@
 <translation id="6196854373336333322">أصبح بإمكان الإضافة &quot;<ph name="EXTENSION_NAME"/>&quot; التحكم في إعدادات الخادم الوكيل التابعة لك، مما يعني أن بإمكانها تغيير أي إجراء لك عبر الإنترنت أو قطعه أو التجسس عليه. إذا كنت غير متيقن من سبب حدوث هذا التغيير، فأنت لا ترغب فيه على الأرجح.</translation>
 <translation id="7583419135027754249">إرسال أحداث النقر على الفور دائمًا بعد النقر، حتى عندما تكون جزءًا من إيماءة نقر مزدوج. يؤدي هذا إلى تسريع التنقل وإجراءات النقر الأخرى بمقدار 300 مللي ثانية على معظم الصفحات، ولكنه يعني أنه يجب تجنب الروابط والأزرار عند النقر المزدوج للتكبير/التصغير.</translation>
 <translation id="3420980393175304359">تبديل شخص</translation>
+<translation id="2541423446708352368">عرض جميع التنزيلات</translation>
 <translation id="2406941037785138796">عمليات التعطيل</translation>
 <translation id="5030338702439866405">جهة الإصدار</translation>
 <translation id="7940103665344164219">استخدام الذاكرة المشتركة</translation>
@@ -5467,6 +5465,7 @@
 <translation id="2785530881066938471">‏تعذر تحميل الملف '<ph name="RELATIVE_PATH"/>' للنص البرمجي للمحتوى. لأنه ليس بتشفير UTF-8.</translation>
 <translation id="8744525654891896746">تحديد صورة شخصية لهذا المستخدم الذي يخضع للإشراف</translation>
 <translation id="3807747707162121253">إل&amp;غاء</translation>
+<translation id="2740531572673183784">موافق</translation>
 <translation id="202352106777823113">استغرق التنزيل وقتًا طويلاً للغاية وتم إيقافه بواسطة الشبكة.</translation>
 <translation id="6155817405098385604">‏عدم الرجوع إلى أداة تحويل البرنامج ثلاثي الأبعاد عند عدم التمكن من استخدام GPU.</translation>
 <translation id="3306897190788753224">تعطيل تخصيص التحويل مؤقتًا والاقتراحات التي تعتمد على السجل وقاموس المستخدم</translation>
@@ -5777,6 +5776,7 @@
 <translation id="7353601530677266744">سطر الأوامر</translation>
 <translation id="2766006623206032690">‏&amp;لصق عنوان URL والدخول إليه</translation>
 <translation id="5253753933804516447">‏تمكين &quot;Ok Google&quot; للبحث الصوتي عندما تكون شاشتك في وضع التشغيل وملغاة القفل</translation>
+<translation id="1568822834048182062">‏ستتم مزامنة الإشارات المرجعية والسجل وكلمات المرور وغير ذلك من الإعدادات مع حسابك على Google.</translation>
 <translation id="5511823366942919280">‏هل أنت متأكد من أنك تريد إعداد هذا الجهاز كـ &quot;Shark&quot;؟</translation>
 <translation id="5286673433070377078">أحدث مسارات العارض - من المرجح أن تؤدي إلى تعطيل متصفحك</translation>
 <translation id="6843725295806269523">كتم الصوت</translation>

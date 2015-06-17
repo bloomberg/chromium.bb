@@ -38,6 +38,7 @@
 <translation id="1812696562331527143">Метод уноса је промењен у <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>трећа страна<ph name="END_LINK"/>).
 Притисните Shift + Alt да бисте пребацили.</translation>
 <translation id="6043994281159824495">Одјави ме одмах</translation>
+<translation id="5168181903108465623">Доступни су уређаји за пребацивање</translation>
 <translation id="2127372758936585790">Пуњач мале снаге</translation>
 <translation id="3799026279081545374">Можда имате неисправан пуњач. Ако живите у САД, позовите 866 628 1371 да бисте добили помоћ и нов пуњач. Ако живите у УК, позовите 0800 026 0613. Ако живите у Ирској, позовите 1 800 832 664. Ако живите у Канади, позовите 866 628 1372. Ако живите у Аустралији, позовите 1 800 067 460.</translation>
 <translation id="3891340733213178823">Двапут притисните Ctrl+Shift+Q да бисте се одјавили.</translation>
@@ -96,6 +97,7 @@
 <translation id="9089416786594320554">Методи уноса</translation>
 <translation id="2700058918926273959">Сесија се завршава за <ph name="SESSION_TIME_REMAINING"/>. Бићете одјављени.</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
+<translation id="1963814843110128691">$1 се пребацује на екран $2</translation>
 <translation id="3963445509666917109">Звучник (интерни)</translation>
 <translation id="1747827819627189109">Тастатура на екрану је омогућена</translation>
 <translation id="2208323208084708176">Режим спојених радних површина</translation>
@@ -179,6 +181,7 @@
 <translation id="6785414152754474415">Батерија је <ph name="PERCENTAGE"/>% пуна и још увек се пуни.</translation>
 <translation id="4895488851634969361">Батерија је пуна.</translation>
 <translation id="615957422585914272">Прикажи тастатуру на екрану</translation>
+<translation id="8443356412772935865">Екран се пребацује на екран $1</translation>
 <translation id="5947494881799873997">Врати</translation>
 <translation id="7593891976182323525">Тастер за претрагу или Shift</translation>
 <translation id="7649070708921625228">Помоћ</translation>
@@ -187,9 +190,11 @@
 <translation id="397105322502079400">Израчунавање...</translation>
 <translation id="1013923882670373915">Bluetooth уређај „<ph name="DEVICE_NAME"/>“ жели дозволу за упаривање. Унесите овај PIN кôд на том уређају: <ph name="PINCODE"/></translation>
 <translation id="2819276065543622893">Бићете одмах одјављени.</translation>
+<translation id="4961318399572185831">Пребацивање екрана</translation>
 <translation id="5507786745520522457">Подешавање мобилне везе за пренос података</translation>
 <translation id="6165508094623778733">Сазнајте више</translation>
 <translation id="7168224885072002358">Враћање на стару резолуцију за <ph name="TIMEOUT_SECONDS"/></translation>
+<translation id="5927132638760172455">Пребацује се на непознати пријемник</translation>
 <translation id="743058460480092004">Камера и микрофон се користе.</translation>
 <translation id="6550675742724504774">Опције</translation>
 <translation id="6406704438230478924">altgr</translation>

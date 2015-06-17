@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="hr">
 <translation id="337167041784729019">Prikaži statistiku</translation>
+<translation id="2256115617011615191">Ponovo pokreni sad</translation>
 <translation id="7606912958770842224">Omogući daljinske veze</translation>
 <translation id="3785447812627779171">Host usluge
 Chromoting</translation>
@@ -137,6 +138,7 @@ Informacije o privatnosti potražite u Googleovim pravilima o privatnosti (http:
 <translation id="8196755618196986400">Da bi smo vam mogli poslati daljnje informacije, u povratnim informacijama koje pošaljete bit će vaša e-adresa.</translation>
 <translation id="154040539590487450">Nisam uspio pokrenuti uslugu daljinskog pristupa.</translation>
 <translation id="7948001860594368197">Opcije zaslona</translation>
+<translation id="2221097377466213233">Upotrijebite desni Ctrl za tipku Win (⌘ na Macu)</translation>
 <translation id="5254120496627797685">Ako napustite ovu stranicu, završit će vaša sesija u aplikaciji Udaljena radna površina Chrome.</translation>
 <translation id="7019153418965365059">Nepoznata pogreška hosta: <ph name="HOST_OFFLINE_REASON"/>.</translation>
 <translation id="712467900648340229">Nije uspjelo povezivanje s uređajem za emitiranje.</translation>
@@ -152,6 +154,7 @@ Informacije o privatnosti potražite u Googleovim pravilima o privatnosti (http:
 <translation id="8116630183974937060">Došlo je pogreške mreže. Provjerite je li uređaj povezan s mrežom i pokušajte ponovo.</translation>
 <translation id="3020807351229499221">PIN nije uspješno ažuriran. Pokušajte ponovo kasnije.</translation>
 <translation id="2647232381348739934">Usluga Chromoting</translation>
+<translation id="2888969873284818612">Došlo je mrežne pogreške. Ponovo ćemo pokrenuti aplikaciju kad se vaš uređaj opet poveže s mrežom.</translation>
 <translation id="579702532610384533">Ponovno povezivanje</translation>
 <translation id="4867841927763172006">Pošalji PrtScn</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME"/> (posljednji put na mreži <ph name="DATE_OR_TIME"/>)</translation>
@@ -258,6 +261,7 @@ površine Chrome</translation>
 <translation id="4277463233460010382">To je računalo konfigurirano tako da dozvoljava povezivanje jednog ili više klijenata bez unosa PIN-a.</translation>
 <translation id="837021510621780684">S ovog računala</translation>
 <translation id="518094545883702183">Informacije se upotrebljavaju samo za dijagnosticiranje problema koji prijavljujete, dostupne su samo osobi koja istražuje vaše izvješće i ne zadržavaju se dulje od 30 dana.</translation>
+<translation id="1261403020716313927">• Ispravak velikog curenja memorije prilikom prekidanja veze s udaljenom radnom površinom.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="4918086044614829423">Prihvati</translation>
 <translation id="7215059001581613786">Unesite PIN koji se sastoji od šest ili više znamenki.</translation>

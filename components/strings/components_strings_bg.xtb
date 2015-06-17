@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="bg">
 <translation id="2774256287122201187">Може да продължите към страницата. Ако го направите, това предупреждение няма да се показва пет минути.</translation>
+<translation id="3963721102035795474">Режим за четене</translation>
 <translation id="7485870689360869515">Няма намерени данни.</translation>
 <translation id="3884278016824448484">Идентификационният номер на устройството е несъвместим</translation>
 <translation id="5172758083709347301">Машината</translation>
@@ -164,6 +165,7 @@
 <translation id="8891727572606052622">Невалиден режим на прокси сървъра.</translation>
 <translation id="3105172416063519923">ID на актива:</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="1549470594296187301">Трябва да активирате JavaScript, за да използвате тази функция.</translation>
 <translation id="2587841377698384444">ID на API за директории:</translation>
 <translation id="7752995774971033316">Не се управлява</translation>
 <translation id="3712624925041724820">Лицензите са изчерпани</translation>

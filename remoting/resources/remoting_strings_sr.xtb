@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="sr">
 <translation id="337167041784729019">Прикажи статистику</translation>
+<translation id="2256115617011615191">Поново покрени одмах</translation>
 <translation id="7606912958770842224">Омогући даљинско повезивање</translation>
 <translation id="3785447812627779171">Хост за Chromoting</translation>
 <translation id="1841799852846221389">Онемогућавање даљинског повезивања за овај рачунар…</translation>
@@ -136,6 +137,7 @@
 <translation id="8196755618196986400">Да бисмо могли да вас контактирамо ради додатних информација, имејл адреса ће бити уврштена у све повратне информације које пошаљете.</translation>
 <translation id="154040539590487450">Покретање услуге даљинског приступа није успело.</translation>
 <translation id="7948001860594368197">Опције екрана</translation>
+<translation id="2221097377466213233">Користи десни тастер Ctrl као тастер Windows (⌘ на Mac-у)</translation>
 <translation id="5254120496627797685">Напуштањем ове странице завршићете сесију Chrome удаљеног рачунара.</translation>
 <translation id="7019153418965365059">Непозната грешка у вези са хостом: <ph name="HOST_OFFLINE_REASON"/>.</translation>
 <translation id="712467900648340229">Повезивање са уређајем за пребацивање није успело.</translation>
@@ -151,6 +153,7 @@
 <translation id="8116630183974937060">Дошло је до грешке на мрежи. Уверите се да је уређај онлајн и покушајте поново.</translation>
 <translation id="3020807351229499221">Ажурирање PIN-а није успело. Покушајте поново касније.</translation>
 <translation id="2647232381348739934">Услуга Chromoting</translation>
+<translation id="2888969873284818612">Дошло је до грешке на мрежи. Поново ћемо покренути апликацију када уређај поново буде онлајн.</translation>
 <translation id="579702532610384533">Поново се повежи</translation>
 <translation id="4867841927763172006">Пошаљи PrtScn</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME"/> (последњи пут онлајн <ph name="DATE_OR_TIME"/>)</translation>
@@ -256,6 +259,7 @@
 <translation id="4277463233460010382">Овај рачунар је конфигурисан тако да омогућава да се један клијент или више њих повезују без уношења PIN-а.</translation>
 <translation id="837021510621780684">Са овог рачунара</translation>
 <translation id="518094545883702183">Ови подаци се користе само за откривање проблема који пријављујете, доступни су само особи која истражује извештај и не задржавамо их дуже од 30 дана.</translation>
+<translation id="1261403020716313927">• Исправљена је грешка великог губитка меморије при прекиду везе са удаљеним рачунаром.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="4918086044614829423">Прихвати</translation>
 <translation id="7215059001581613786">Унесите PIN који се састоји од шест или више цифара.</translation>

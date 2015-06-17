@@ -12,7 +12,7 @@
 <translation id="166179487779922818">A senha é muito pequena.</translation>
 <translation id="2345460471437425338">Certificado incorreto para o host.</translation>
 <translation id="3688507211863392146">Realizar gravações em arquivos e pastas que você abre no aplicativo</translation>
-<translation id="226269835214688456">Se você desativar o Smart Lock para Chrome, não será possível desbloquear dispositivos Chrome usando seu smartphone. Será necessário digitar sua senha.</translation>
+<translation id="226269835214688456">Se você desativar o Smart Lock para Chromebook, não será possível desbloquear dispositivos Chrome usando seu smartphone. Será necessário digitar sua senha.</translation>
 <translation id="8996941253935762404">O site a seguir contém programas prejudiciais</translation>
 <translation id="3595596368722241419">Bateria carregada</translation>
 <translation id="8098352321677019742">Notificações do <ph name="PRODUCT_NAME"/></translation>
@@ -579,7 +579,7 @@
 <translation id="715487527529576698">O modo inicial para chinês é o chinês simplificado</translation>
 <translation id="6522350652862471760">Ativar nome do perfil e ícone do Google</translation>
 <translation id="2164862903024139959">Teclado vietnamita (TCVN)</translation>
-<translation id="8885197664446363138">O recurso Smart Lock não está disponível</translation>
+<translation id="8885197664446363138">O Smart Lock não está disponível</translation>
 <translation id="1697532407822776718">Pronto.</translation>
 <translation id="8373553483208508744">Desativar som das guias</translation>
 <translation id="8703575177326907206">Sua conexão com <ph name="DOMAIN"/> não está criptografada.</translation>
@@ -1033,7 +1033,7 @@ Todos os usuários devem sair para continuar.</translation>
 <translation id="3825863595139017598">Teclado mongol</translation>
 <translation id="8184538546369750125">Usar padrão global (Permitir)</translation>
 <translation id="1506687042165942984">Mostrar uma cópia salva (ou seja, reconhecidamente desatualizada) desta página.</translation>
-<translation id="4594109696316595112">Ativação única: digite sua senha para ativar o Smart Lock no <ph name="DEVICE_TYPE"/>. Com o Smart Lock, seu smartphone desbloqueará esse dispositivo sem uma senha. Para alterar ou desativar esse recurso, visite as configurações do seu <ph name="DEVICE_TYPE"/>.</translation>
+<translation id="4594109696316595112">Ativação única: digite sua senha para ativar o Smart Lock no <ph name="DEVICE_TYPE"/>. Com o Smart Lock, seu smartphone desbloqueará esse dispositivo sem uma senha. Para alterar ou desativar esse recurso, acesse as configurações do seu <ph name="DEVICE_TYPE"/>.</translation>
 <translation id="2018352199541442911">Seu dispositivo de armazenamento externo não é suportado atualmente.</translation>
 <translation id="2678063897982469759">Reativar</translation>
 <translation id="1779766957982586368">Fechar janela</translation>
@@ -1513,7 +1513,7 @@ Dica: o modo de navegação anônimo <ph name="SHORTCUT_KEY"/> pode ser útil da
 <translation id="5316588172263354223">Pesquisa por voz a qualquer momento</translation>
 <translation id="1389297115360905376">Você pode acrescentá-lo somente a partir da <ph name="CHROME_WEB_STORE"/>.</translation>
 <translation id="5474139872592516422">Quando a atualização do <ph name="PLUGIN_NAME"/> terminar, atualize a página para ativá-lo.</translation>
-<translation id="6162157842722615167">Smart Lock para Chromebok</translation>
+<translation id="6162157842722615167">Smart Lock para Chromebook</translation>
 <translation id="4012550234655138030">Configurar ou gerenciar impressoras em <ph name="CLOUD_PRINT_NAME"/>.</translation>
 <translation id="6868698883023260206">Desativar o novo caminho de renderização de vídeos para elementos de vídeo.</translation>
 <translation id="2112877397266219826">Ativar controle por toque para configurar</translation>
@@ -2257,7 +2257,7 @@ Depois que um novo usuário supervisionado é criado, é possível gerenciar as 
 <translation id="2485056306054380289">Cert. AC do servidor:</translation>
 <translation id="5631861698741076898">Falha ao fazer login. O login falhou porque foi configurado para usar um URL não seguro (<ph name="BLOCKED_URL"/>).</translation>
 <translation id="6462109140674788769">Teclado grego</translation>
-<translation id="9191610850443814852">Ativa uma configuração do Smart Lock que permite que o Chromebook descubra smartphones pelo Bluetooth de baixa energia para desbloquear o Chromebook quando o smartphone estiver próximo a ele.</translation>
+<translation id="9191610850443814852">Ativa uma configuração do Smart Lock que permite que o Chromebook descubra smartphones pelo Bluetooth Low Energy para desbloquear o Chromebook quando o smartphone estiver próximo a ele.</translation>
 <translation id="2727712005121231835">Tamanho real</translation>
 <translation id="1377600615067678409">Ignorar por enquanto</translation>
 <translation id="5581211282705227543">Nenhum plug-in instalado</translation>
@@ -3638,7 +3638,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="1464258312790801189">Suas contas</translation>
 <translation id="163309982320328737">A largura de caractere inicial é inteira</translation>
 <translation id="6596092346130528198">Esta é a página &quot;Nova guia&quot; que você esperava?</translation>
-<translation id="3926002189479431949">Telefone com Smart Lock alterado</translation>
+<translation id="3926002189479431949">Smartphone com Smart Lock alterado</translation>
 <translation id="6965648386495488594">Porta</translation>
 <translation id="7631887513477658702">&amp;Sempre abrir arquivos deste tipo</translation>
 <translation id="3858027520442213535">Atualizar data e hora</translation>
@@ -4138,13 +4138,12 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="1502341367962526993">Determina em quais páginas o botão do modo leitor é mostrado.</translation>
 <translation id="3627320433825461852">Menos de 1 minuto restante</translation>
 <translation id="3123569374670379335">(Supervisionado)</translation>
-<translation id="854600348164706309">Seus favoritos, guias, histórico e outras configurações serão sincronizados com sua Conta do Google.</translation>
 <translation id="4047345532928475040">N/A</translation>
 <translation id="5604324414379907186">Sempre mostrar a barra de favoritos</translation>
 <translation id="249113932447298600">O dispositivo <ph name="DEVICE_LABEL"/> não é atualmente suportado.</translation>
 <translation id="6401445054534215853">Item 1 da estante</translation>
 <translation id="6113134669445407638">Desativar Delay Agnostic AEC no WebRTC. Use se atrasos relatados pelo sistema forem muito confiáveis ou se outras pessoas sofrerem eco da sua máquina.</translation>
-<translation id="2365626167708453863">Escolher uma conta no seu Google Smart Lock</translation>
+<translation id="2365626167708453863">Escolher uma conta no Google Smart Lock</translation>
 <translation id="232562464593865424">Vamos treinar seu Chromebook</translation>
 <translation id="2351520734632194850"><ph name="MHZ"/> MHz</translation>
 <translation id="2799223571221894425">Reiniciar</translation>
@@ -4223,11 +4222,10 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6151417162996330722">O certificado do servidor tem um período de validade excessivamente longo.</translation>
 <translation id="952992212772159698">Desativado</translation>
 <translation id="443464694732789311">Continuar</translation>
-<translation id="140250605646987970">Seu smartphone foi localizado. No entanto, o Smart Lock funciona apenas em dispositivos com Android 5.0 e versões posteriores. &lt;a&gt;Saiba mais&lt;/a&gt;</translation>
+<translation id="140250605646987970">Seu smartphone foi localizado. No entanto, o Smart Lock funciona apenas em dispositivos com Android 5.0 e posterior. &lt;a&gt;Saiba mais&lt;/a&gt;</translation>
 <translation id="8299269255470343364">Japonês</translation>
 <translation id="9088659014978240063">Métricas relativas ao efeito do <ph name="SHORT_PRODUCT_NAME"/> na CPU do sistema</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME"/> (<ph name="DEVICE"/>)</translation>
-<translation id="6429639049555216915">No momento, não é possível acessar o aplicativo.</translation>
 <translation id="1243314992276662751">Fazer upload</translation>
 <translation id="2144536955299248197">Visualizador do certificado: <ph name="CERTIFICATE_NAME"/></translation>
 <translation id="8261387128019234107">Adicionar conta para <ph name="PROFILE_NAME"/></translation>
@@ -4592,7 +4590,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="3803991353670408298">Adicione outro método de entrada antes de remover este.</translation>
 <translation id="4209267054566995313">Nenhum mouse ou touchpad foi detectado.</translation>
 <translation id="337920581046691015">O <ph name="PRODUCT_NAME"/> será instalado</translation>
-<translation id="8730941225957945932">Usar as listas de exibição do Slimming Paint para todo o desenho.</translation>
 <translation id="5636996382092289526">Para usar <ph name="NETWORK_ID"/>, talvez seja necessário primeiro <ph name="LINK_START"/>visitar a página de login da rede<ph name="LINK_END"/>, que abrirá automaticamente em alguns segundos. Se isso não acontecer, significa que a rede não pode ser usada.</translation>
 <translation id="78957024357676568">para a esquerda</translation>
 <translation id="7048141481140415714">Usa Ctrl+Alt+Shift+8 para ativar/desativar o modo de maximização TouchView.</translation>
@@ -4645,6 +4642,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6196854373336333322">A extensão &quot;<ph name="EXTENSION_NAME"/>&quot; assumiu o controle das suas configurações de proxy, o que significa que ela pode alterar, invadir ou escutar qualquer coisa que você fizer on-line. Se você não tiver certeza do motivo dessa alteração, provavelmente não a deseja.</translation>
 <translation id="7583419135027754249">Sempre enviar eventos de clique imediatamente após um toque, mesmo quando fizer parte de um gesto de toque duplo. Isso acelera a navegação e outras ações de toque em 300 ms na maioria das páginas, mas significa que links e botões devem ser evitados ao tocar duas vezes para ampliar.</translation>
 <translation id="3420980393175304359">Alterar pessoa</translation>
+<translation id="2541423446708352368">Mostrar todos os downloads</translation>
 <translation id="2406941037785138796">Desativadas</translation>
 <translation id="5030338702439866405">Emitido por</translation>
 <translation id="7940103665344164219">Uso de memória compartilhada</translation>
@@ -4679,7 +4677,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7179921470347911571">Reiniciar agora</translation>
 <translation id="9065203028668620118">Editar</translation>
 <translation id="6978611942794658017">Este arquivo foi projetado para um computador que utilize o software Windows. Ele não é compatível com seu dispositivo, que executa o Chrome OS. Procure na Chrome Web Store por um app substituto adequado.</translation>
-<translation id="3002017044809397427">Seu <ph name="PHONE_TYPE"/> foi localizado. No entanto, o Smart Lock apenas funciona em dispositivos com Android 5.0 e versões posteriores. &lt;a&gt;Saiba mais&lt;/a&gt;</translation>
+<translation id="3002017044809397427">Seu <ph name="PHONE_TYPE"/> foi localizado. No entanto, o Smart Lock funciona apenas em dispositivos com Android 5.0 e posterior. &lt;a&gt;Saiba mais&lt;/a&gt;</translation>
 <translation id="2251218783371366160">Abrir com o Visualizador do sistema</translation>
 <translation id="1177863135347784049">Personalizado</translation>
 <translation id="4881695831933465202">Abrir</translation>
@@ -4971,7 +4969,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="3581912141526548234">Aplicar (se conseguir hashes, aplicá-los)</translation>
 <translation id="1974371662733320303">Estratégia de descarte de memória a ser usada</translation>
 <translation id="3991936620356087075">Você informou uma chave incorreta para desbloqueio de PIN muitas vezes. Seu cartão SIM está desativado permanentemente.</translation>
-<translation id="9217413363143870800">Ativar a descoberta do Smart Lock no Bluetooth de baixa energia.</translation>
+<translation id="9217413363143870800">Ativar a detecção do Bluetooth Low Energy do Smart Lock.</translation>
 <translation id="5367091008316207019">Lendo arquivo...</translation>
 <translation id="936801553271523408">Dados de diagnóstico do sistema</translation>
 <translation id="7951415247503192394">32 bits</translation>
@@ -5027,7 +5025,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="604124094241169006">Automático</translation>
 <translation id="862542460444371744">&amp;Extensões</translation>
 <translation id="2539110682392681234">O proxy é aplicado por seu administrador.</translation>
-<translation id="1115018219887494029">Smart Lock para Chromebok (beta)</translation>
+<translation id="1115018219887494029">Smart Lock para Chromebook (beta)</translation>
 <translation id="4977942889532008999">Confirmar acesso</translation>
 <translation id="7781335840981796660">Todas as contas de usuário e os dados locais serão removidos.</translation>
 <translation id="8045462269890919536">Romeno</translation>
@@ -5479,6 +5477,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="2785530881066938471">Não foi possível carregar o arquivo &quot;<ph name="RELATIVE_PATH"/>&quot; para o script de conteúdo. Ele não possui a codificação UTF-8.</translation>
 <translation id="8744525654891896746">Selecione um avatar para este usuário supervisionado</translation>
 <translation id="3807747707162121253">&amp;Cancelar</translation>
+<translation id="2740531572673183784">Ok</translation>
 <translation id="202352106777823113">O download estava demorando muito e foi interrompido pela rede.</translation>
 <translation id="6155817405098385604">Não caia em um rasterizador de software 3D quando a GPU não puder ser usada.</translation>
 <translation id="3306897190788753224">Desativar temporariamente a personalização da conversão, as sugestões baseadas no histórico e o dicionário do usuário</translation>
@@ -5789,6 +5788,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7353601530677266744">Linha de comando</translation>
 <translation id="2766006623206032690">Co&amp;lar e ir</translation>
 <translation id="5253753933804516447">Permite que &quot;Ok Google&quot; realize a pesquisa por voz quando a tela está ligada e desbloqueada</translation>
+<translation id="1568822834048182062">Seus favoritos, histórico, senhas e outras configurações serão sincronizados com sua Conta do Google.</translation>
 <translation id="5511823366942919280">Tem certeza de que deseja configurar este dispositivo como um &quot;Shark&quot;?</translation>
 <translation id="5286673433070377078">Caminhos de renderizadores de tecnologia &quot;Bleeding Edge&quot; - PODEM TRAVAR O SEU NAVEGADOR</translation>
 <translation id="6843725295806269523">sem som</translation>

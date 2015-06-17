@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="hi">
 <translation id="2774256287122201187">आप जारी रख सकते हैं. यदि आप पृष्‍ठ में जारी रखते हैं, तो यह चेतावनी पांच मिनट तक फिर से दिखाई नहीं देगी.</translation>
+<translation id="3963721102035795474">रीडर मोड</translation>
 <translation id="7485870689360869515">कोई डेटा नहीं मिला</translation>
 <translation id="3884278016824448484">विरोधाभासी डिवाइस पहचानकर्ता</translation>
 <translation id="5172758083709347301">मशीन</translation>
@@ -164,6 +165,7 @@
 <translation id="8891727572606052622">अमान्य प्रॉक्सी मोड.</translation>
 <translation id="3105172416063519923">एसेट आईडी:</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="1549470594296187301">इस सुविधा का उपयोग करने के लिए JavaScript को सक्षम किया जाना चाहिए.</translation>
 <translation id="2587841377698384444">निर्देशिका API आईडी:</translation>
 <translation id="7752995774971033316">अप्रबंधित</translation>
 <translation id="3712624925041724820">लाइसेंस समाप्त हो गए</translation>

@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="iw">
 <translation id="337167041784729019">הצג סטטיסטיקה</translation>
+<translation id="2256115617011615191">הפעל מחדש כעת</translation>
 <translation id="7606912958770842224">הפעל חיבורים מרוחקים</translation>
 <translation id="3785447812627779171">‏מארח
 Chromoting</translation>
@@ -137,6 +138,7 @@ Chromoting</translation>
 <translation id="8196755618196986400">כדי שנוכל ליצור איתך קשר ולקבל מידע נוסף, כתובת האימייל שלך תיכלל בכל משוב שתשלח.</translation>
 <translation id="154040539590487450">הפעלת שירות הגישה מרחוק נכשלה.</translation>
 <translation id="7948001860594368197">אפשרויות מסך</translation>
+<translation id="2221097377466213233">‏השתמש במקש Ctrl למקש Win (⌘ ב-Mac)</translation>
 <translation id="5254120496627797685">‏יציאה מדף זה תגרום לסיום הפעילות של 'שולחן עבודה מרוחק של Chrome'.</translation>
 <translation id="7019153418965365059">שגיאת מארח לא מזוהה: <ph name="HOST_OFFLINE_REASON"/>.</translation>
 <translation id="712467900648340229">נכשל החיבור למכשיר העברה.</translation>
@@ -152,6 +154,7 @@ Chromoting</translation>
 <translation id="8116630183974937060">אירעה שגיאת רשת. בדוק שהמכשיר מקוון ונסה שוב.</translation>
 <translation id="3020807351229499221">‏הניסיון לעדכן את ה-PIN נכשל. נסה שוב מאוחר יותר.</translation>
 <translation id="2647232381348739934">‏שירות Chromoting</translation>
+<translation id="2888969873284818612">אירעה שגיאת רשת. נפעיל את היישום מחדש כשהמכשיר יהיה שוב מקוון.</translation>
 <translation id="579702532610384533">התחבר מחדש</translation>
 <translation id="4867841927763172006">‏שלח PrtScn</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME"/> (התחברות אחרונה <ph name="DATE_OR_TIME"/>)</translation>
@@ -258,6 +261,7 @@ Chromoting</translation>
 <translation id="4277463233460010382">‏מחשב זה מוגדר לאפשר ללקוח אחד או יותר להתחבר מבלי להזין PIN.</translation>
 <translation id="837021510621780684">ממחשב זה</translation>
 <translation id="518094545883702183">המידע הזה משמש רק לאבחון הבעיה שדיווחת עליה. הוא זמין רק למי שבוחן את הדוח, ונשמר למשך זמן של 30 ימים לכל היותר.</translation>
+<translation id="1261403020716313927">• תוקנה דליפת זיכרון גדולה בניתוק משולחן עבודה מרוחק.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="4918086044614829423">אשר</translation>
 <translation id="7215059001581613786">‏הזן PIN המורכב משש ספרות או יותר.</translation>

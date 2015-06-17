@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="bn">
 <translation id="2774256287122201187">আপনি অবিরত রাখতে পারেন৷ আপনি যদি পৃষ্ঠাটিতে অবিরত করেন এই সতর্কতা পরবর্তী পাঁচ মিনিটের জন্য উপস্থিত হবে না৷</translation>
+<translation id="3963721102035795474">পাঠক মোড</translation>
 <translation id="7485870689360869515">কোনো ডেটা পাওয়া যায়নি৷</translation>
 <translation id="3884278016824448484">পরস্পর বিরোধী ডিভাইস সনাক্তকারী</translation>
 <translation id="5172758083709347301">যন্ত্র</translation>
@@ -165,6 +166,7 @@
 <translation id="8891727572606052622">প্রক্সি মোড অবৈধ৷</translation>
 <translation id="3105172416063519923">সম্পদ আইডি:</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="1549470594296187301">এই বৈশিষ্ট্যটি ব্যবহার করার জন্য JavaScript সক্ষম করা প্রয়োজন।</translation>
 <translation id="2587841377698384444">ডিরেক্টরি API আইডি:</translation>
 <translation id="7752995774971033316">অপরিচালিত</translation>
 <translation id="3712624925041724820">লাইসেন্সগুলির মেয়াদ শেষ হয়ে গেছে</translation>

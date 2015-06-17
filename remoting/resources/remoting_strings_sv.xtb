@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="sv">
 <translation id="337167041784729019">Visa statistik</translation>
+<translation id="2256115617011615191">Starta om nu</translation>
 <translation id="7606912958770842224">Aktivera fjärranslutningar</translation>
 <translation id="3785447812627779171">Chromoting
 Host</translation>
@@ -137,6 +138,7 @@ Du hittar mer information om sekretess i Googles sekretesspolicy (http://goo.gl/
 <translation id="8196755618196986400">Din e-postadress skickas tillsammans med din feedback så att vi kan kontakta dig om vi behöver mer information.</translation>
 <translation id="154040539590487450">Det gick inte att starta fjärråtkomsttjänsten.</translation>
 <translation id="7948001860594368197">Skärmalternativ</translation>
+<translation id="2221097377466213233">Använd höger Ctrl-tangent för Windows-tangenten (⌘ på Mac)</translation>
 <translation id="5254120496627797685">Om du lämnar sidan avslutas sessionen i Chrome Remote Desktop.</translation>
 <translation id="7019153418965365059">Okänt värdfel: <ph name="HOST_OFFLINE_REASON"/>.</translation>
 <translation id="712467900648340229">Det gick inte att ansluta till överföringsenheten.</translation>
@@ -152,6 +154,7 @@ Du hittar mer information om sekretess i Googles sekretesspolicy (http://goo.gl/
 <translation id="8116630183974937060">Ett nätverksfel inträffade. Kontrollera att enheten är online och försök igen.</translation>
 <translation id="3020807351229499221">Det gick inte att uppdatera PIN-koden. Försök igen senare.</translation>
 <translation id="2647232381348739934">Tjänsten Chromoting</translation>
+<translation id="2888969873284818612">Det uppstod ett nätverksfel. Vi startar om appen när enheten är online igen.</translation>
 <translation id="579702532610384533">Återanslut</translation>
 <translation id="4867841927763172006">Skicka PrtScn</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME"/> (senast online <ph name="DATE_OR_TIME"/>)</translation>
@@ -258,6 +261,7 @@ Desktop Host</translation>
 <translation id="4277463233460010382">Den här datorn är konfigurerad för att tillåta att en eller flera klienter ansluter utan att en pinkod måste anges.</translation>
 <translation id="837021510621780684">Från den här datorn</translation>
 <translation id="518094545883702183">Den här informationen används bara för att diagnostisera det som felrapporten gäller. Bara den som arbetar med ärendet kan se den och den sparas i högst 30 dagar.</translation>
+<translation id="1261403020716313927">• En stor minnesläcka som uppstod när anslutningen till fjärrskrivbordet bröts har åtgärdats.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="4918086044614829423">Acceptera</translation>
 <translation id="7215059001581613786">Ange en PIN-kod som består av minst sex siffror.</translation>

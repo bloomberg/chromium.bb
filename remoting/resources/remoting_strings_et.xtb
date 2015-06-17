@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="et">
 <translation id="337167041784729019">Kuva statistika</translation>
+<translation id="2256115617011615191">Taaskäivita kohe</translation>
 <translation id="7606912958770842224">Luba kaugühendused</translation>
 <translation id="3785447812627779171">Chromootimine
 Host</translation>
@@ -137,6 +138,7 @@ Lisateavet privaatsuse kohta vaadake Google'i privaatsuseeskirjadest (http://goo
 <translation id="8196755618196986400">Selleks et saaksime teiega lisateabe saamiseks ühendust võtta, tuleb teie e-posti aadress alati lisada saadetud tagasisidele.</translation>
 <translation id="154040539590487450">Kaugühenduse teenuse käivitamine ebaõnnestus.</translation>
 <translation id="7948001860594368197">Ekraani valikud</translation>
+<translation id="2221097377466213233">Kasuta Windowsis parempoolset juhtklahvi Ctrl (Maci puhul klahv ⌘)</translation>
 <translation id="5254120496627797685">Lehelt lahkudes katkeb teie Chrome Remote Desktopi seanss.</translation>
 <translation id="7019153418965365059">Tundmatu hostiviga: <ph name="HOST_OFFLINE_REASON"/>.</translation>
 <translation id="712467900648340229">Ülekandeseadmega ühenduse loomine ebaõnnestus.</translation>
@@ -152,6 +154,7 @@ Lisateavet privaatsuse kohta vaadake Google'i privaatsuseeskirjadest (http://goo
 <translation id="8116630183974937060">Ilmnes võrguviga. Kontrollige, kas seade on võrgus, ja proovige uuesti.</translation>
 <translation id="3020807351229499221">PIN-koodi värskendamine ebaõnnestus. Proovige hiljem uuesti.</translation>
 <translation id="2647232381348739934">Chromootimise teenus</translation>
+<translation id="2888969873284818612">Ilmnes võrguviga. Rakendus taaskäivitatakse, kui seadmes on taas võrguühendus.</translation>
 <translation id="579702532610384533">Ühenda uuesti</translation>
 <translation id="4867841927763172006">Saada klahvi PrtScn vajutamine</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME"/> (viimati võrgus <ph name="DATE_OR_TIME"/>)</translation>
@@ -258,6 +261,7 @@ Desktopi host</translation>
 <translation id="4277463233460010382">Arvuti on seadistatud nii, et see lubab ühel või mitmel kliendil luua ühenduse ilma PIN-koodi sisestamata.</translation>
 <translation id="837021510621780684">Sellest arvutist</translation>
 <translation id="518094545883702183">Seda teavet kasutatakse ainult teavitatud probleemi diagnoosimiseks, see on saadaval ainult probleemiga tegelejale ja seda ei säilitata üle 30 päeva.</translation>
+<translation id="1261403020716313927">• Parandati suur mäluleke kaugtöölaua ühenduse katkestamisel.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="4918086044614829423">Nõustu</translation>
 <translation id="7215059001581613786">Sisestage vähemalt kuuest numbrist koosnev PIN-kood.</translation>

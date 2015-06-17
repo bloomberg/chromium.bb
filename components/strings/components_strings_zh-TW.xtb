@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="zh-TW">
 <translation id="2774256287122201187">您可以繼續操作。如果您繼續造訪網頁，後續 5 分鐘內將不會再看到這項警告。</translation>
+<translation id="3963721102035795474">閱讀器模式</translation>
 <translation id="7485870689360869515">找不到任何資料。</translation>
 <translation id="3884278016824448484">裝置識別碼發生衝突</translation>
 <translation id="5172758083709347301">本機</translation>
@@ -164,6 +165,7 @@
 <translation id="8891727572606052622">Proxy 模式無效。</translation>
 <translation id="3105172416063519923">資產 ID：</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="1549470594296187301">您必須啟用 JavaScript 才能使用這項功能。</translation>
 <translation id="2587841377698384444">Directory API ID：</translation>
 <translation id="7752995774971033316">未管理</translation>
 <translation id="3712624925041724820">授權已用盡</translation>

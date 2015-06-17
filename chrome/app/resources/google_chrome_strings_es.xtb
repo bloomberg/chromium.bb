@@ -80,6 +80,7 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="8551886023433311834">El dispositivo está casi actualizado. Reinícialo para completar la actualización.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="1073391069195728457">Chrome - Notificaciones</translation>
+<translation id="6368805772029492593">Para mayor seguridad, Google Chrome cifrará tus datos.</translation>
 <translation id="7339898014177206373">Nueva ventana</translation>
 <translation id="3282568296779691940">Iniciar sesión en Chrome</translation>
 <translation id="3089968997497233615">Hay una nueva versión más segura de Google Chrome disponible.</translation>
@@ -223,6 +224,7 @@ Si decides iniciar sesión de todas formas, se fusionará la información de Chr
 <translation id="5566025111015594046">Google Chrome (tráfico mDNS entrante)</translation>
 <translation id="6113794647360055231">Chrome mejor que nunca</translation>
 <translation id="2588322182880276190">Logotipo de Chrome</translation>
+<translation id="4519152997629025674">Google Chrome puede utilizar <ph name="BEGIN_LINK"/>servicios web<ph name="END_LINK"/> para mejorar la experiencia de navegación de los usuarios. Puedes inhabilitar estos servicios en cualquier momento.</translation>
 <translation id="4367618624832907428">Google Chrome no puede mostrar la página web porque el ordenador no está conectado a Internet.</translation>
 <translation id="174539241580958092">Google Chrome no ha podido sincronizar los datos debido a un error de inicio de sesión.</translation>
 <translation id="8255190535488645436">Google Chrome está utilizando la cámara y el micrófono.</translation>

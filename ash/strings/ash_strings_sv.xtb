@@ -38,6 +38,7 @@
 <translation id="1812696562331527143">Inmatningsmetoden har ändrats till <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>tredje part<ph name="END_LINK"/>).
         Tryck på Skift + Alt om du vill byta.</translation>
 <translation id="6043994281159824495">Logga ut nu</translation>
+<translation id="5168181903108465623">Överföringsenheter finns tillgängliga</translation>
 <translation id="2127372758936585790">Laddning med låg effekt</translation>
 <translation id="3799026279081545374">Du har kanske fått en dålig laddare. Ring 866-628-1371 för att få hjälp om du bor i USA. Ring 0800-026-0613 om du bor i Storbritannien. Ring 1-800-832-664 om du bor i Irland. Ring 866-628-1372 om du bor i Kanada. Ring 1-800-067-460 om du bor i Australien.</translation>
 <translation id="3891340733213178823">Tryck på Ctrl+Skift+Q två gånger om du vill logga ut.</translation>
@@ -96,6 +97,7 @@
 <translation id="9089416786594320554">Inmatningsmetoder</translation>
 <translation id="2700058918926273959">Sessionen upphör om <ph name="SESSION_TIME_REMAINING"/>. Du kommer att loggas ut.</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/> %</translation>
+<translation id="1963814843110128691">Castar $1 till $2</translation>
 <translation id="3963445509666917109">Högtalare (inbyggd)</translation>
 <translation id="1747827819627189109">Skärmen på tangentbordet har aktiverats</translation>
 <translation id="2208323208084708176">Enhetligt skrivbordsläge</translation>
@@ -179,6 +181,7 @@
 <translation id="6785414152754474415">Batteriet är fullt till <ph name="PERCENTAGE"/> % och laddas.</translation>
 <translation id="4895488851634969361">Batteriet är fullt.</translation>
 <translation id="615957422585914272">Visa skärmtangentbordet</translation>
+<translation id="8443356412772935865">Castar skärmen till $1</translation>
 <translation id="5947494881799873997">Återgå</translation>
 <translation id="7593891976182323525">Sök eller Skift</translation>
 <translation id="7649070708921625228">Hjälp</translation>
@@ -186,9 +189,11 @@
 <translation id="397105322502079400">Beräknar ...</translation>
 <translation id="1013923882670373915">Bluetooth-enheten <ph name="DEVICE_NAME"/> har begärt tillstånd för koppling. Ange den här pinkoden på den enheten: <ph name="PINCODE"/></translation>
 <translation id="2819276065543622893">Du loggas nu ut.</translation>
+<translation id="4961318399572185831">Casta skärmen</translation>
 <translation id="5507786745520522457">Konfigurera mobildata</translation>
 <translation id="6165508094623778733">Läs mer</translation>
 <translation id="7168224885072002358">Återgår till den gamla upplösningen om <ph name="TIMEOUT_SECONDS"/></translation>
+<translation id="5927132638760172455">Castar till en okänd mottagare</translation>
 <translation id="743058460480092004">Kameran och mikrofonen används.</translation>
 <translation id="6550675742724504774">Alternativ</translation>
 <translation id="6406704438230478924">altgr</translation>

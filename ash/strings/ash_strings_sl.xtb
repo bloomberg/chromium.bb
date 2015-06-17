@@ -38,6 +38,7 @@
 <translation id="1812696562331527143">Način vnosa se je spremenil v <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>drug ponudnik<ph name="END_LINK"/>).
 Pritisnite Shift + Alt, da ga preklopite.</translation>
 <translation id="6043994281159824495">Odjava</translation>
+<translation id="5168181903108465623">Naprave za predvajanje so na voljo</translation>
 <translation id="2127372758936585790">Nizkoenergijski polnilnik</translation>
 <translation id="3799026279081545374">Morda je vaš polnilnik okvarjen. Če živite v Združenih državah, pokličite 866-628-1371 za pomoč in zamenjavo. Če živite v Združenem kraljestvu, pokličite 0800-026-0613. Če živite na Irskem, pokličite 1-800-832-664. Če živite v Kanadi, pokličite 866-628-1372. Če živite v Avstraliji, pokličite 1-800-067-460.</translation>
 <translation id="3891340733213178823">Dvakrat pritisnite Ctrl + Shift + Q, če se želite odjaviti.</translation>
@@ -96,6 +97,7 @@ Pritisnite Shift + Alt, da ga preklopite.</translation>
 <translation id="9089416786594320554">Načini vnosa</translation>
 <translation id="2700058918926273959">Seja se konča čez <ph name="SESSION_TIME_REMAINING"/>. Odjavljeni boste.</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/> %</translation>
+<translation id="1963814843110128691">Predvajanje $1 na: $2</translation>
 <translation id="3963445509666917109">Zvočnik (vgrajeni)</translation>
 <translation id="1747827819627189109">Zaslonska tipkovnica omogočena</translation>
 <translation id="2208323208084708176">Način enotnega namizja</translation>
@@ -179,6 +181,7 @@ Pritisnite Shift + Alt, da ga preklopite.</translation>
 <translation id="6785414152754474415">Napolnjenost akumulatorja: <ph name="PERCENTAGE"/> % – polnjenje še poteka.</translation>
 <translation id="4895488851634969361">Akumulator je poln.</translation>
 <translation id="615957422585914272">Pokaži zaslonsko tipkovnico</translation>
+<translation id="8443356412772935865">Predvajanje zaslona na: $1</translation>
 <translation id="5947494881799873997">Razveljavi</translation>
 <translation id="7593891976182323525">Iskanje ali Shift</translation>
 <translation id="7649070708921625228">Pomoč</translation>
@@ -187,9 +190,11 @@ Pritisnite tipko za iskanje ali Shift, da jo prekličete.</translation>
 <translation id="397105322502079400">Izračunavanje …</translation>
 <translation id="1013923882670373915">Naprava Bluetooth »<ph name="DEVICE_NAME"/>« želi dovoljenje za seznanjanje. V napravi vnesite ta PIN: <ph name="PINCODE"/></translation>
 <translation id="2819276065543622893">Zdaj boste odjavljeni.</translation>
+<translation id="4961318399572185831">Predvajanje zaslona</translation>
 <translation id="5507786745520522457">Nastavitev prenosa podatkov v mobilnih omrežjih</translation>
 <translation id="6165508094623778733">Več o tem</translation>
 <translation id="7168224885072002358">Ponastavitev na prejšnjo ločljivost čez <ph name="TIMEOUT_SECONDS"/></translation>
+<translation id="5927132638760172455">Predvajanje na neznanem sprejemniku</translation>
 <translation id="743058460480092004">Kamera in mikrofon sta v uporabi.</translation>
 <translation id="6550675742724504774">Možnosti</translation>
 <translation id="6406704438230478924">altgr</translation>

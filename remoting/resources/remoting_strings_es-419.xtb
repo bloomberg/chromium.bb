@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="es-419">
 <translation id="337167041784729019">Mostrar estadísticas</translation>
+<translation id="2256115617011615191">Reiniciar ahora</translation>
 <translation id="7606912958770842224">Habilitar conexiones remotas</translation>
 <translation id="3785447812627779171">Host de
 Chromoting</translation>
@@ -137,6 +138,7 @@ Para obtener más información sobre la privacidad, consulta la política de pri
 <translation id="8196755618196986400">Para que podamos comunicarnos contigo y brindarte más información, se incluirá tu dirección de correo electrónico en todos los comentarios que envíes.</translation>
 <translation id="154040539590487450">No se pudo iniciar el servicio de acceso remoto.</translation>
 <translation id="7948001860594368197">Opciones de pantalla</translation>
+<translation id="2221097377466213233">Usar Ctrl derecho para tecla de Windows (⌘ en Mac)</translation>
 <translation id="5254120496627797685">Al abandonar esta página, se cerrará la sesión en el Escritorio remoto de Chrome.</translation>
 <translation id="7019153418965365059">Error de host no reconocido: <ph name="HOST_OFFLINE_REASON"/></translation>
 <translation id="712467900648340229">No se pudo establecer conexión con el dispositivo de transmisión.</translation>
@@ -152,6 +154,7 @@ Para obtener más información sobre la privacidad, consulta la política de pri
 <translation id="8116630183974937060">Se produjo un error de red. Comprueba que el dispositivo esté conectado a Internet y vuelve a intentarlo.</translation>
 <translation id="3020807351229499221">No se pudo actualizar el PIN. Vuelve a intentarlo más tarde.</translation>
 <translation id="2647232381348739934">Servicio de Chromoting</translation>
+<translation id="2888969873284818612">Se produjo un error en la red. Reiniciaremos la aplicación cuando el dispositivo esté en línea nuevamente.</translation>
 <translation id="579702532610384533">Volver a conectar</translation>
 <translation id="4867841927763172006">Enviar Impr Pant</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME"/> (en línea por última vez: <ph name="DATE_OR_TIME"/>)</translation>
@@ -258,6 +261,7 @@ remoto de Chrome</translation>
 <translation id="4277463233460010382">Esta computadora está configurada para permitir que uno o más clientes se conecten sin ingresar un PIN.</translation>
 <translation id="837021510621780684">Desde esta computadora</translation>
 <translation id="518094545883702183">Esta información solo se usa con el fin de diagnosticar el problema informado, solo está disponible para la persona que investiga el informe y se guarda por no más de 30 días.</translation>
+<translation id="1261403020716313927">• Se corrigió una pérdida de memoria considerable al desconectar la aplicación del escritorio remoto.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="4918086044614829423">Aceptar</translation>
 <translation id="7215059001581613786">Ingresa un PIN de al menos seis dígitos.</translation>

@@ -38,6 +38,7 @@
 <translation id="1812696562331527143">‏שיטת הקלט שלך השתנתה ל-‏<ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>צד שלישי<ph name="END_LINK"/>)‎.
         הקש Shift + Alt כדי להחליף.</translation>
 <translation id="6043994281159824495">צא עכשיו</translation>
+<translation id="5168181903108465623">מכשירי העברה זמינים</translation>
 <translation id="2127372758936585790">מטען בעל מתח נמוך</translation>
 <translation id="3799026279081545374">ייתכן שהמטען שברשותך פגום. אם אתה מתגורר בארה&quot;ב, התקשר למספר 866-628-1371 כדי לקבל עזרה ומטען חלופי. אם אתה מתגורר בבריטניה, התקשר למספר 0800-026-0613. אם אתה מתגורר באירלנד, התקשר למספר 1-800-832-664. אם אתה מתגורר בקנדה, התקשר למספר 866-628-1372. אם אתה מתגורר באוסטרליה, התקשר למספר 1-800-067-460.</translation>
 <translation id="3891340733213178823">‏הקש פעמיים על Ctrl+Shift+Q כדי לצאת.</translation>
@@ -96,6 +97,7 @@
 <translation id="9089416786594320554">שיטות קלט</translation>
 <translation id="2700058918926273959">הפעילות באתר תסתיים בעוד <ph name="SESSION_TIME_REMAINING"/>. תנותק מהחשבון.</translation>
 <translation id="6247708409970142803">%<ph name="PERCENTAGE"/></translation>
+<translation id="1963814843110128691">העברת $1 ל-$2</translation>
 <translation id="3963445509666917109">רמקול (פנימי)</translation>
 <translation id="1747827819627189109">המקלדת שמופיעה במסך מופעלת</translation>
 <translation id="2208323208084708176">מצב שולחן עבודה מאוחד</translation>
@@ -179,6 +181,7 @@
 <translation id="6785414152754474415">‏הסוללה טעונה ברמה של ‎<ph name="PERCENTAGE"/>%‎ ומתבצעת טעינה.</translation>
 <translation id="4895488851634969361">הסוללה טעונה במלואה.</translation>
 <translation id="615957422585914272">הצג מקלדת במסך</translation>
+<translation id="8443356412772935865">העברת מסך ל-$1</translation>
 <translation id="5947494881799873997">חזרה לגרסה הקודמת</translation>
 <translation id="7593891976182323525">‏חיפוש או Shift</translation>
 <translation id="7649070708921625228">עזרה</translation>
@@ -187,9 +190,11 @@
 <translation id="397105322502079400">מחשב...</translation>
 <translation id="1013923882670373915">‏מכשיר ה-Bluetooth ‏&quot;<ph name="DEVICE_NAME"/>&quot; מבקש הרשאה לבצע התאמה. הזן את קוד ה-PIN הבא במכשיר הזה: <ph name="PINCODE"/></translation>
 <translation id="2819276065543622893">תצא עכשיו מהחשבון.</translation>
+<translation id="4961318399572185831">העברת מסך</translation>
 <translation id="5507786745520522457">הגדר נתונים לנייד</translation>
 <translation id="6165508094623778733">למידע נוסף</translation>
 <translation id="7168224885072002358">חוזר לרזולוציה הקודמת בעוד <ph name="TIMEOUT_SECONDS"/></translation>
+<translation id="5927132638760172455">מעביר למקבל לא ידוע</translation>
 <translation id="743058460480092004">המצלמה והמיקרופון נמצאים בשימוש.</translation>
 <translation id="6550675742724504774">אפשרויות</translation>
 <translation id="6406704438230478924">altgr</translation>

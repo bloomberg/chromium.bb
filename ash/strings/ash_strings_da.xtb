@@ -38,6 +38,7 @@
 <translation id="1812696562331527143">Din inputmetode er ændret til <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>tredjepart<ph name="END_LINK"/>).
 Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="6043994281159824495">Log ud nu</translation>
+<translation id="5168181903108465623">Tilgængelige Cast-enheder</translation>
 <translation id="2127372758936585790">Oplader ved lav kraft</translation>
 <translation id="3799026279081545374">Din oplader er muligvis beskadiget. Hvis du er bosiddende i USA, skal du ringe på 866-628-1371 for at få hjælp og en ny oplader. Hvis du er bosiddende i Storbritannien, skal du ringe på 0800-026-0613. Hvis du er bosiddende i Irland, skal du ringe på 1-800-832-664. Hvis du er bosiddende i Canada, skal du ringe på 866-628-1372. Hvis du er bosiddende i Australien, skal du ringe på 1-800-067-460.</translation>
 <translation id="3891340733213178823">Tryk på Ctrl+Shift+Q to gange for at logge ud.</translation>
@@ -96,6 +97,7 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="9089416786594320554">Indtastningsmetoder</translation>
 <translation id="2700058918926273959">Sessionen slutter om <ph name="SESSION_TIME_REMAINING"/>. Du vil blive logget af.</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/> %</translation>
+<translation id="1963814843110128691">Caster $1 til $2</translation>
 <translation id="3963445509666917109">Højttaler (indbygget)</translation>
 <translation id="1747827819627189109">Skærmtastaturet er aktiveret</translation>
 <translation id="2208323208084708176">Samlet skrivebordstilstand</translation>
@@ -179,6 +181,7 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="6785414152754474415">Batteriet er <ph name="PERCENTAGE"/> % opladet og oplades nu.</translation>
 <translation id="4895488851634969361">Batteriet er helt opladet.</translation>
 <translation id="615957422585914272">Vis skærmtastatur</translation>
+<translation id="8443356412772935865">Caster skærm til $1</translation>
 <translation id="5947494881799873997">Fortryd</translation>
 <translation id="7593891976182323525">Søg eller Shift</translation>
 <translation id="7649070708921625228">Hjælp</translation>
@@ -187,9 +190,11 @@ Tryk på Søg eller Shift for at annullere.</translation>
 <translation id="397105322502079400">Beregner...</translation>
 <translation id="1013923882670373915">Bluetooth-enheden &quot;<ph name="DEVICE_NAME"/>&quot; vil gerne have parringstilladelse. Indtast denne pinkode på den pågældende enhed: <ph name="PINCODE"/></translation>
 <translation id="2819276065543622893">Du bliver logget ud nu.</translation>
+<translation id="4961318399572185831">Cast skærm</translation>
 <translation id="5507786745520522457">Konfigurer mobildata</translation>
 <translation id="6165508094623778733">Flere oplysninger</translation>
 <translation id="7168224885072002358">Fortryder og vender tilbage til den gamle opløsning om <ph name="TIMEOUT_SECONDS"/> sekunder.</translation>
+<translation id="5927132638760172455">Caster til en ukendt modtager</translation>
 <translation id="743058460480092004">Kamera og mikrofon er i brug.</translation>
 <translation id="6550675742724504774">Valgmuligheder</translation>
 <translation id="6406704438230478924">altgr</translation>

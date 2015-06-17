@@ -38,6 +38,7 @@
 <translation id="1812696562331527143">ನಿಮ್ಮ ಇನ್‌ಪುಟ್ ವಿಧಾನವನ್ನು <ph name="INPUT_METHOD_ID"/>* ಗೆ ಬದಲಾಯಿಸಲಾಗಿದೆ (<ph name="BEGIN_LINK"/>3ನೇ ವ್ಯಕ್ತಿ<ph name="END_LINK"/>).
 ಬದಲಿಸಲು Shift + Alt ಅನ್ನು ಒತ್ತಿರಿ.</translation>
 <translation id="6043994281159824495">ಈಗ ಸೈನ್ ಔಟ್ ಮಾಡಿ</translation>
+<translation id="5168181903108465623">ಬಿತ್ತರಿಸುವಿಕೆಯ ಸಾಧನಗಳು ಲಭ್ಯವಿದೆ</translation>
 <translation id="2127372758936585790">ಕಡಿಮೆ ವಿದ್ಯುತ್ ಚಾರ್ಜರ್</translation>
 <translation id="3799026279081545374">ನೀವು ತಪ್ಪಾದ ಚಾರ್ಜರ್ ಅನ್ನು ಹೊಂದಿರಬಹುದು. ನೀವು US ನಲ್ಲಿ ನೆಲೆಸಿದ್ದರೇ, ಕ್ರಮವಾಗಿ ಸಹಾಯ ಪಡೆಯಲು ಮತ್ತು ಬದಲಾವಣೆಯನ್ನು ಪಡೆಯಲು ದಯವಿಟ್ಟು 866-628-1371 ಗೆ ಕರೆ ಮಾಡಿ. ನೀವು UK ಯಲ್ಲಿ ನೆಲೆಸಿದ್ದರೆ, ದಯವಿಟ್ಟು 0800-026-0613 ಗೆ ಕರೆ ಮಾಡಿ. ನೀವು ಐರ್ಲೆಂಡ್‍‍ನಲ್ಲಿ ನೆಲೆಸಿದ್ದರೆ, ದಯವಿಟ್ಟು 1-800-832-664 ಗೆ ಕರೆ ಮಾಡಿ. ನೀವು ಕೆನಡಾದಲ್ಲಿ ನೆಲೆಸಿದ್ದರೆ, ದಯವಿಟ್ಟು 866-628-1372 ಗೆ ಕರೆ ಮಾಡಿ. ನೀವು ಆಸ್ಟ್ರೇಲಿಯಾದಲ್ಲಿ ನೆಲೆಸಿದ್ದರೆ, ದಯವಿಟ್ಟು 1-800-067-460 ಗೆ ಕರೆ ಮಾಡಿ.</translation>
 <translation id="3891340733213178823">ಸೈನ್ ಔಟ್ ಮಾಡಲು Ctrl+Shift+Q ಅನ್ನು ಎರಡುಬಾರಿ ಒತ್ತಿರಿ.</translation>
@@ -96,6 +97,7 @@
 <translation id="9089416786594320554">ಇನ್‌ಪುಟ್ ವಿಧಾನಗಳು</translation>
 <translation id="2700058918926273959">ಸೆಷನ್ <ph name="SESSION_TIME_REMAINING"/> ರಲ್ಲಿ ಕೊನೆಗೊಳ್ಳಲಿದೆ. ನೀವು ಸೈನ್ ಔಟ್ ಆಗಲಿರುವಿರಿ.</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
+<translation id="1963814843110128691">$1 ರಿಂದ $2 ಗೆ ಬಿತ್ತರಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="3963445509666917109">ಸ್ಪೀಕರ್ (ಆಂತರಿಕ)</translation>
 <translation id="1747827819627189109">ಆನ್ ಸ್ಕ್ರೀನ್ ಕೀಬೋರ್ಡ್ ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="2208323208084708176">ಏಕೀಕೃತ ಡೆಸ್ಕ್‌ಟಾಪ್ ಮೋಡ್</translation>
@@ -179,6 +181,7 @@
 <translation id="6785414152754474415">ಬ್ಯಾಟರಿ <ph name="PERCENTAGE"/>% ಪೂರ್ಣಗೊಂಡಿದೆ ಮತ್ತು ಚಾರ್ಜ್ ಆಗುತ್ತಿದೆ.</translation>
 <translation id="4895488851634969361">ಬ್ಯಾಟರಿ ತುಂಬಿದೆ.</translation>
 <translation id="615957422585914272">ಆನ್-ಸ್ಕ್ರೀನ್ ಕೀಬೋರ್ಡ್ ತೋರಿಸು</translation>
+<translation id="8443356412772935865">ಪರದೆಯನ್ನು $1 ಗೆ ಬಿತ್ತರಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="5947494881799873997">ಹಿಂತಿರುಗಿಸು</translation>
 <translation id="7593891976182323525">ಹುಡುಕಾಟ ಅಥವಾ Shift</translation>
 <translation id="7649070708921625228">ಸಹಾಯ</translation>
@@ -187,9 +190,11 @@
 <translation id="397105322502079400">ಎಣಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="1013923882670373915">ಬ್ಲೂಟೂತ್‌ ಸಾಧನವು &quot;<ph name="DEVICE_NAME"/>&quot; ಜೋಡಣೆಗಾಗಿ ಅನುಮತಿಯನ್ನು ಬಯಸುತ್ತದೆ. ದಯವಿಟ್ಟು ಆ ಸಾಧನದಲ್ಲಿ ಈ PIN ಕೋಡ್ ನಮೂದಿಸಿ: <ph name="PINCODE"/></translation>
 <translation id="2819276065543622893">ಈಗ ನಿಮ್ಮನ್ನು ಸೈನ್ ಔಟ್ ಮಾಡಲಾಗುತ್ತದೆ.</translation>
+<translation id="4961318399572185831">ಪರದೆಯನ್ನು ಬಿತ್ತರಿಸಿ</translation>
 <translation id="5507786745520522457">ಮೊಬೈಲ್ ಡೇಟಾ ಹೊಂದಿಸಿ</translation>
 <translation id="6165508094623778733">ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS"/> ನಲ್ಲಿ ಹಳೆಯ ರೆಸಲ್ಯೂಷನ್‌ಗೆ ಹಿಂತಿರುಗಿಸಲಾಗುತ್ತಿದೆ</translation>
+<translation id="5927132638760172455">ಅಪರಿಚಿತ ಸ್ವೀಕರಿಸುವವರಿಗೆ ಬಿತ್ತರಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="743058460480092004">ಕ್ಯಾಮರಾ ಮತ್ತು ಮೈಕ್ರೋಫೋನ್ ಬಳಕೆಯಲ್ಲಿವೆ.</translation>
 <translation id="6550675742724504774">ಆಯ್ಕೆಗಳು</translation>
 <translation id="6406704438230478924">altgr</translation>

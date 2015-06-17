@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="fa">
 <translation id="2774256287122201187">می‌توانید ادامه دهید. اگر رفتن به صفحه را ادامه دهید، این هشدار به مدت پنج دقیقه دوباره ظاهر نمی‌شود.</translation>
+<translation id="3963721102035795474">حالت «خواننده»</translation>
 <translation id="7485870689360869515">هیچ داده‌ای یافت نشد.</translation>
 <translation id="3884278016824448484">شناسه دستگاه یکسان نیست</translation>
 <translation id="5172758083709347301">دستگاه</translation>
@@ -164,6 +165,7 @@
 <translation id="8891727572606052622">حالت پروکسی نامعتبر است.</translation>
 <translation id="3105172416063519923">شناسه دارایی:</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="1549470594296187301">برای استفاده از این قابلیت، جاوا اسکریپت باید فعال باشد.</translation>
 <translation id="2587841377698384444">‏شناسه Directory API:</translation>
 <translation id="7752995774971033316">مدیریت نشده</translation>
 <translation id="3712624925041724820">مجوزها دیگر معتبر نیستند</translation>

@@ -38,6 +38,7 @@
 <translation id="1812696562331527143">Je invoermethode is gewijzigd in <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>derden<ph name="END_LINK"/>).
 Druk op Shift + Alt om te schakelen.j</translation>
 <translation id="6043994281159824495">Nu uitloggen</translation>
+<translation id="5168181903108465623">Cast-apparaten beschikbaar</translation>
 <translation id="2127372758936585790">Laag-vermogen-lader</translation>
 <translation id="3799026279081545374">Je hebt mogelijk een slechte oplader. Als je in de Verenigde Staten woont, bel je 866-628-1371 om ondersteuning en een vervangende lader te ontvangen. Als je in het Verenigd Koninkrijk woont, bel je 0800-026-0613. Als je in Ierland woont, bel je 1-800-832-664. Als je in Canada woont, bel je 866-628-1372. Als je in Australië woont, bel je 1-800-067-460.</translation>
 <translation id="3891340733213178823">Druk twee keer op Ctrl+Shift+Q om uit te loggen.</translation>
@@ -96,6 +97,7 @@ Druk op Shift + Alt om te schakelen.</translation>
 <translation id="9089416786594320554">Invoermethoden</translation>
 <translation id="2700058918926273959">Sessie loopt af over <ph name="SESSION_TIME_REMAINING"/>. Je wordt uitgelogd.</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
+<translation id="1963814843110128691">$1 casten naar $2</translation>
 <translation id="3963445509666917109">Luidspreker (intern)</translation>
 <translation id="1747827819627189109">Schermtoetsenbord ingeschakeld</translation>
 <translation id="2208323208084708176">Samengestelde desktopmodus</translation>
@@ -179,6 +181,7 @@ Druk op Shift + Alt om te schakelen.</translation>
 <translation id="6785414152754474415">De accu is <ph name="PERCENTAGE"/>% vol en wordt opgeladen.</translation>
 <translation id="4895488851634969361">De accu is vol.</translation>
 <translation id="615957422585914272">Schermtoetsenbord weergeven</translation>
+<translation id="8443356412772935865">Scherm casten naar $1</translation>
 <translation id="5947494881799873997">Terugzetten</translation>
 <translation id="7593891976182323525">Zoeken of Shift</translation>
 <translation id="7649070708921625228">Help</translation>
@@ -187,9 +190,11 @@ Druk op Zoeken of Shift om te annuleren.</translation>
 <translation id="397105322502079400">Berekenen...</translation>
 <translation id="1013923882670373915">Bluetooth-apparaat '<ph name="DEVICE_NAME"/>' wil toestemming om te koppelen. Voer de volgende pincode in op dat apparaat: <ph name="PINCODE"/></translation>
 <translation id="2819276065543622893">Je wordt nu uitgelogd.</translation>
+<translation id="4961318399572185831">Scherm casten</translation>
 <translation id="5507786745520522457">Mobiele gegevens instellen</translation>
 <translation id="6165508094623778733">Meer informatie</translation>
 <translation id="7168224885072002358">Terugzetten naar oude resolutie over <ph name="TIMEOUT_SECONDS"/></translation>
+<translation id="5927132638760172455">Casten naar een onbekende ontvanger</translation>
 <translation id="743058460480092004">Camera en microfoon zijn in gebruik.</translation>
 <translation id="6550675742724504774">Opties</translation>
 <translation id="6406704438230478924">altgr</translation>

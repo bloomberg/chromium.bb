@@ -38,6 +38,7 @@
 <translation id="1812696562331527143">Teie sisestusmeetod on nüüd <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>kolmas osapool<ph name="END_LINK"/>).
 Selle muutmiseks vajutage klahve Tõstuklahv + Alt.</translation>
 <translation id="6043994281159824495">Logi nüüd välja</translation>
+<translation id="5168181903108465623">Ülekandeseadmed on saadaval</translation>
 <translation id="2127372758936585790">Väikese energiakuluga laadija</translation>
 <translation id="3799026279081545374">Teil võib olla halb laadija. Kui elate Ameerika Ühendriikides, helistage abi saamiseks ja laadija asendamiseks numbril 866-628-1371. Kui elate Ühendkuningriigis, helistage numbril 0800-026-0613. Kui elate Iirimaal, helistage numbril 1-800-832-664. Kui elate Kanadas, helistage numbril 866-628-1372. Kui elate Austraalias, helistage numbril 1-800-067-460.täis</translation>
 <translation id="3891340733213178823">Väljalogimiseks vajutage kaks korda klahvikombinatsiooni Ctrl + tõstuklahv + Q.</translation>
@@ -96,6 +97,7 @@ Selle muutmiseks vajutage klahve Tõstuklahv + Alt.</translation>
 <translation id="9089416786594320554">Sisestusviisid</translation>
 <translation id="2700058918926273959">Seansi lõpuni on jäänud <ph name="SESSION_TIME_REMAINING"/>. Teid logitakse välja.</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
+<translation id="1963814843110128691">Vahelehe $1 ülekandmine seadmesse $2</translation>
 <translation id="3963445509666917109">Kõlar (sisemine)</translation>
 <translation id="1747827819627189109">Ekraanil kuvatav klaviatuur on lubatud</translation>
 <translation id="2208323208084708176">Ühendatud töölaua režiim</translation>
@@ -179,6 +181,7 @@ Selle muutmiseks vajutage klahve Tõstuklahv + Alt.</translation>
 <translation id="6785414152754474415">Aku on <ph name="PERCENTAGE"/>% täis ja seda laetakse.</translation>
 <translation id="4895488851634969361">Aku on täis.</translation>
 <translation id="615957422585914272">Ekraanil kuvatava klaviatuuri kuvamine</translation>
+<translation id="8443356412772935865">Ekraani ülekandmine seadmesse $1</translation>
 <translation id="5947494881799873997">Ennista</translation>
 <translation id="7593891976182323525">Otsinguklahv või tõstuklahv</translation>
 <translation id="7649070708921625228">Abi</translation>
@@ -187,9 +190,11 @@ Tühistamiseks vajutage otsinguklahvi või tõstuklahvi</translation>
 <translation id="397105322502079400">Arvutamine ...</translation>
 <translation id="1013923882670373915">Bluetoothi seade „<ph name="DEVICE_NAME"/>” küsib luba sidumiseks. Sisestage seadmes järgmine PIN-kood: <ph name="PINCODE"/></translation>
 <translation id="2819276065543622893">Teid logitakse nüüd välja.</translation>
+<translation id="4961318399572185831">Ekraani ülekandmine</translation>
 <translation id="5507786745520522457">Mobiiliandmeside seadistamine</translation>
 <translation id="6165508094623778733">Lisateave</translation>
 <translation id="7168224885072002358">Ekraan ennistatakse vanale eraldusvõimele <ph name="TIMEOUT_SECONDS"/> pärast</translation>
+<translation id="5927132638760172455">Ülekandmine teadmata vastuvõtjasse</translation>
 <translation id="743058460480092004">Kaamera ja mikrofon on kasutusel.</translation>
 <translation id="6550675742724504774">Valikud</translation>
 <translation id="6406704438230478924">altgr</translation>

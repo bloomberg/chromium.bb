@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="fi">
 <translation id="337167041784729019">Näytä tilastot</translation>
+<translation id="2256115617011615191">Käynnistä uudelleen</translation>
 <translation id="7606912958770842224">Ota etäyhteydet käyttöön</translation>
 <translation id="3785447812627779171">Chromoting-
 isäntä</translation>
@@ -137,6 +138,7 @@ Lisätietoja tietosuojasta on Googlen tietosuojakäytännössä (http://goo.gl/S
 <translation id="8196755618196986400">Jotta voimme kysyä sinulta lisätietoja, sähköpostiosoitteesi liitetään kaikkeen lähettämääsi palautteeseen.</translation>
 <translation id="154040539590487450">Etäkäyttöpalvelun käynnistäminen epäonnistui.</translation>
 <translation id="7948001860594368197">Ruudun asetukset</translation>
+<translation id="2221097377466213233">Käytä oikeanpuoleista Ctrl-painiketta Win-painikkeena (⌘ Macilla)</translation>
 <translation id="5254120496627797685">Vaihtamalla sivua päätät Chrome-etäkäyttökerran.</translation>
 <translation id="7019153418965365059">Tuntematon isäntävirhe: <ph name="HOST_OFFLINE_REASON"/>.</translation>
 <translation id="712467900648340229">Yhteyden muodostaminen Cast-laitteeseen epäonnistui.</translation>
@@ -152,6 +154,7 @@ Lisätietoja tietosuojasta on Googlen tietosuojakäytännössä (http://goo.gl/S
 <translation id="8116630183974937060">Tapahtui verkkovirhe. Tarkista, että laite on yhdistetty verkkoon, ja yritä uudelleen.</translation>
 <translation id="3020807351229499221">PIN-koodin päivitys epäonnistui. Yritä myöhemmin uudelleen.</translation>
 <translation id="2647232381348739934">Chromoting-palvelu</translation>
+<translation id="2888969873284818612">Verkkovirhe. Käynnistämme sovelluksen uudelleen, kun laitteesi on seuraavan kerran yhteydessä verkkoon.</translation>
 <translation id="579702532610384533">Yhdistä uudelleen</translation>
 <translation id="4867841927763172006">Lähetä PrtScn</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME"/> (viimeksi online-tilassa <ph name="DATE_OR_TIME"/>)</translation>
@@ -258,6 +261,7 @@ isäntä</translation>
 <translation id="4277463233460010382">Tämä tietokone on määritetty sallimaan vähintään yhden asiakkaan yhteys ilman PIN-koodia.</translation>
 <translation id="837021510621780684">Tältä tietokoneelta</translation>
 <translation id="518094545883702183">Näitä tietoja käytetään vain ilmoittamasi ongelman diagnosointiin, näytetään vain ongelmaasi selvittävälle henkilölle ja säilytetään korkeintaan 30 päivää.</translation>
+<translation id="1261403020716313927">• Korjattu suuri muistivuoto, joka tapahtui etätyöpöytäyhteyden katkettua.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="4918086044614829423">Hyväksy</translation>
 <translation id="7215059001581613786">Anna PIN-koodi, jossa on vähintään kuusi numeroa.</translation>

@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ta">
 <translation id="2774256287122201187">தொடரலாம். அப்படி தொடர்ந்தால், ஐந்து நிமிடங்களுக்கு இந்த எச்சரிக்கை மீண்டும் காட்டப்படாது.</translation>
+<translation id="3963721102035795474">படித்தல் பயன்முறை</translation>
 <translation id="7485870689360869515">தரவு எதுவும் இல்லை.</translation>
 <translation id="3884278016824448484">முரண்பாடான சாதன அடையாளங்காட்டி</translation>
 <translation id="5172758083709347301">இயந்திரம்</translation>
@@ -164,6 +165,7 @@
 <translation id="8891727572606052622">தவறான ப்ராக்ஸி முறை.</translation>
 <translation id="3105172416063519923">பண்பு ஐடி:</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="1549470594296187301">இந்த அம்சத்தைப் பயன்படுத்த JavaScript இயக்கப்பட வேண்டும்.</translation>
 <translation id="2587841377698384444">கோப்பக API ஐடி:</translation>
 <translation id="7752995774971033316">நிர்வகிக்கப்படாதது</translation>
 <translation id="3712624925041724820">உரிமம் முடிந்தது</translation>

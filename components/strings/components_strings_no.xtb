@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="no">
 <translation id="2774256287122201187">Du kan fortsette. Hvis du fortsetter til siden, vises ikke denne advarselen igjen før det har gått fem minutter.</translation>
+<translation id="3963721102035795474">Lesermodus</translation>
 <translation id="7485870689360869515">Ingen data ble funnet.</translation>
 <translation id="3884278016824448484">Motstridende enhetsidentifikator</translation>
 <translation id="5172758083709347301">Datamaskin</translation>
@@ -164,6 +165,7 @@
 <translation id="8891727572606052622">Ugyldig modus for mellomtjener.</translation>
 <translation id="3105172416063519923">Ressurs-ID:</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="1549470594296187301">Denne funksjonen kan ikke brukes når JavaScript er slått av.</translation>
 <translation id="2587841377698384444">ID for katalog-API:</translation>
 <translation id="7752995774971033316">Administreres ikke</translation>
 <translation id="3712624925041724820">Lisensene er oppbrukt</translation>
@@ -238,7 +240,7 @@
 <translation id="6550675742724504774">Alternativer</translation>
 <translation id="8804164990146287819">Personvernregler</translation>
 <translation id="7334320624316649418">&amp;Omorganiser likevel</translation>
-<translation id="7182878459783632708">Ingen innstillinger er angitt</translation>
+<translation id="7182878459783632708">Ingen retningslinjer er angitt</translation>
 <translation id="5019198164206649151">Ugyldig funksjonalitet for sikkerhetskopiering</translation>
 <translation id="8364627913115013041">Ikke angitt.</translation>
 <translation id="8713130696108419660">Feil innledende signatur</translation>

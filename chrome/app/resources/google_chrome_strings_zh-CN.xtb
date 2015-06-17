@@ -74,6 +74,7 @@
 <translation id="8551886023433311834">即将更新到最新版本！请重新启动您的设备，以完成更新。</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="1073391069195728457">Chrome - 通知</translation>
+<translation id="6368805772029492593">为了提高安全性，Google Chrome 将对您的数据进行加密。</translation>
 <translation id="7339898014177206373">打开新的窗口</translation>
 <translation id="3282568296779691940">登录 Chrome</translation>
 <translation id="3089968997497233615">Google Chrome 浏览器现已推出更安全的新版本。</translation>
@@ -200,6 +201,7 @@
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="6113794647360055231">Chrome现在更好用了</translation>
 <translation id="2588322182880276190">Chrome 徽标</translation>
+<translation id="4519152997629025674">Google Chrome 可能会使用<ph name="BEGIN_LINK"/>网络服务<ph name="END_LINK"/>来改善您的浏览体验。不过，您可以随时停用这些服务。</translation>
 <translation id="4367618624832907428">您的计算机未连接到互联网，因此 Google Chrome 无法显示该网页。</translation>
 <translation id="174539241580958092">由于在登录时出现错误，Google Chrome无法同步您的数据。</translation>
 <translation id="8255190535488645436">Google Chrome 正在使用您的摄像头和麦克风。</translation>

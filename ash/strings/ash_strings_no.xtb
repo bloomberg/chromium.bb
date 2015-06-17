@@ -38,6 +38,7 @@
 <translation id="1812696562331527143">Inndatametoden din er endret til <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>tredjepart<ph name="END_LINK"/>).
 Trykk på Shift + Alt for å bytte.</translation>
 <translation id="6043994281159824495">Logg av nå</translation>
+<translation id="5168181903108465623">Cast-enheter er tilgjengelige</translation>
 <translation id="2127372758936585790">Lading med lav effekt</translation>
 <translation id="3799026279081545374">Det kan hende laderen din fungerer dårlig. Hvis du bor i USA, kan du ringe 866-628-1371 for å få hjelp og erstatning. Hvis du bor i Storbritannia, kan du ringe 0800-026-0613. Hvis du bor i Irland, kan du ringe 1-800-832-664. Hvis du bor i Canada, kan du ringe
 866-628-1372. Hvis du bor i Australia, kan du ringe 1-800-067-460.</translation>
@@ -97,6 +98,7 @@ Trykk på Shift + Alt for å bytte.</translation>
 <translation id="9089416786594320554">Inndatametoder</translation>
 <translation id="2700058918926273959">Økten slutter om <ph name="SESSION_TIME_REMAINING"/>. Du blir logget av automatisk.</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/> %</translation>
+<translation id="1963814843110128691">Caster $1 til $2</translation>
 <translation id="3963445509666917109">Mikrofon (intern)</translation>
 <translation id="1747827819627189109">Skjermtastaturet er aktivert</translation>
 <translation id="2208323208084708176">Enhetlig skrivebordsmodus</translation>
@@ -180,6 +182,7 @@ Trykk på Shift + Alt for å bytte.</translation>
 <translation id="6785414152754474415">Batteriet er <ph name="PERCENTAGE"/> % fullt og til lading.</translation>
 <translation id="4895488851634969361">Batteriet er fullt.</translation>
 <translation id="615957422585914272">Vis skjermtastaturet</translation>
+<translation id="8443356412772935865">Caster skjermen til $1</translation>
 <translation id="5947494881799873997">Tilbakestill</translation>
 <translation id="7593891976182323525">Søk eller Shift</translation>
 <translation id="7649070708921625228">Hjelp</translation>
@@ -188,9 +191,11 @@ Trykk på Søk eller Shift for å avbryte.</translation>
 <translation id="397105322502079400">Beregner …</translation>
 <translation id="1013923882670373915">Bluetooth-enheten «<ph name="DEVICE_NAME"/>» ber om tillatelse til å koble til. Skriv inn denne PIN-koden på den aktuelle enheten: <ph name="PINCODE"/></translation>
 <translation id="2819276065543622893">Du blir nå logget av.</translation>
+<translation id="4961318399572185831">Cast skjermen</translation>
 <translation id="5507786745520522457">Konfigurer mobildata</translation>
 <translation id="6165508094623778733">Les mer</translation>
 <translation id="7168224885072002358">Går tilbake til den gamle oppløsningen om <ph name="TIMEOUT_SECONDS"/></translation>
+<translation id="5927132638760172455">Caster til en ukjent mottaker</translation>
 <translation id="743058460480092004">Kameraet og mikrofonen er i bruk.</translation>
 <translation id="6550675742724504774">Alternativer</translation>
 <translation id="6406704438230478924">alt gr</translation>

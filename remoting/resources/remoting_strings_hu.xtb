@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="hu">
 <translation id="337167041784729019">Statisztika megjelenítése</translation>
+<translation id="2256115617011615191">Újraindítás most</translation>
 <translation id="7606912958770842224">Távoli kapcsolatok engedélyezése</translation>
 <translation id="3785447812627779171">Chromoting
 gazdagép</translation>
@@ -137,6 +138,7 @@ Adatvédelmi információkért tekintse meg a Google adatvédelmi irányelveit (
 <translation id="8196755618196986400">Ha szeretné, hogy további információkért felvegyük Önnel a kapcsolatot, e-mail címét tartalmazni fogják az Ön által küldött visszajelzések.</translation>
 <translation id="154040539590487450">Nem sikerült elindítani a távoli hozzáférési szolgáltatást.</translation>
 <translation id="7948001860594368197">Képernyő-beállítások</translation>
+<translation id="2221097377466213233">A jobb oldali Ctrl használata Windows billentyűként (Mac esetében ⌘ billentyűként)</translation>
 <translation id="5254120496627797685">Ha elhagyja ezt az oldalt, akkor befejeződik a Chrome távoliasztal-szolgáltatás munkamenete.</translation>
 <translation id="7019153418965365059">Ismeretlen gazdagéphiba: <ph name="HOST_OFFLINE_REASON"/>.</translation>
 <translation id="712467900648340229">Nem sikerült csatlakozni a Cast-eszközhöz.</translation>
@@ -152,6 +154,7 @@ Adatvédelmi információkért tekintse meg a Google adatvédelmi irányelveit (
 <translation id="8116630183974937060">Hálózati hiba történt. Ellenőrizze, hogy eszköze online állapotban van-e, majd próbálja újra.</translation>
 <translation id="3020807351229499221">Nem sikerült módosítani a PIN kódot. Kérjük, próbálja újra később.</translation>
 <translation id="2647232381348739934">Chromoting szolgáltatás</translation>
+<translation id="2888969873284818612">Hálózati hiba történt. Újraindítjuk az alkalmazást, amint eszköze ismét online lesz.</translation>
 <translation id="579702532610384533">Újrakapcsolódás</translation>
 <translation id="4867841927763172006">PrtScn küldése</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME"/> (utolsó online tevékenység: <ph name="DATE_OR_TIME"/>)</translation>
@@ -258,6 +261,7 @@ gazdagép</translation>
 <translation id="4277463233460010382">Ez a számítógép úgy van konfigurálva, hogy egy vagy több kliens PIN megadása nélkül csatlakozhasson.</translation>
 <translation id="837021510621780684">Erről a számítógépről</translation>
 <translation id="518094545883702183">Ezt az információt csak az Ön által jelentett probléma diagnosztizálására használjuk. Az adatok csak a jelentés vizsgálója számára érhetők el, és a rendszerünk nem őrzi meg őket 30 napnál tovább.</translation>
+<translation id="1261403020716313927">• A távoli asztallal való kapcsolat megszüntetésekor előforduló nagy memóriaszivárgás javítva.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="4918086044614829423">Elfogadás</translation>
 <translation id="7215059001581613786">Kérjük, legalább hat számjegyből álló PIN kódot adjon meg.</translation>

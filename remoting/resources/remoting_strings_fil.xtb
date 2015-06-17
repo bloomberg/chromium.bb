@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="fil">
 <translation id="337167041784729019">Ipakita ang mga istatistika</translation>
+<translation id="2256115617011615191">I-restart ngayon</translation>
 <translation id="7606912958770842224">Paganahin ang mga malayuang koneksyon</translation>
 <translation id="3785447812627779171">Chromoting
 Host</translation>
@@ -137,6 +138,7 @@ Para sa higit pang impormasyon tungkol sa privacy, pakitingnan ang Patakaran sa 
 <translation id="8196755618196986400">Upang mabigyang-daan kaming makipag-ugnayan sa iyo para sa karagdagang impormasyon, isasama ang iyong email address sa anumang feedback na iyong isusumite.</translation>
 <translation id="154040539590487450">Nabigong simulan ang serbisyo ng malayuang pag-access.</translation>
 <translation id="7948001860594368197">Mga pagpipilian sa screen</translation>
+<translation id="2221097377466213233">Gamitin ang Ctrl sa kanan para sa Win key (⌘ sa Mac)</translation>
 <translation id="5254120496627797685">Tatapusin ng pag-alis sa pahinang ito ang iyong session sa Remote na Desktop ng Chrome.</translation>
 <translation id="7019153418965365059">Hindi alam na error sa host: <ph name="HOST_OFFLINE_REASON"/>.</translation>
 <translation id="712467900648340229">Hindi nakakonekta sa Cast device.</translation>
@@ -152,6 +154,7 @@ Para sa higit pang impormasyon tungkol sa privacy, pakitingnan ang Patakaran sa 
 <translation id="8116630183974937060">May nangyaring error sa network. Pakitiyak na on-line ang iyong device at subukang muli.</translation>
 <translation id="3020807351229499221">Nabigong i-update ang PIN. Pakisubukang muli sa ibang pagkakataon.</translation>
 <translation id="2647232381348739934">Serbisyo ng Chromoting</translation>
+<translation id="2888969873284818612">Nagkaroon ng error sa network. Ire-restart namin ang app kapag on-line nang muli ang iyong device.</translation>
 <translation id="579702532610384533">Muling kumonekta</translation>
 <translation id="4867841927763172006">Magpadala ng PrtScn</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME"/> (huling online <ph name="DATE_OR_TIME"/>)</translation>
@@ -258,6 +261,7 @@ Desktop ng Chrome</translation>
 <translation id="4277463233460010382">Naka-configure ang computer na ito na payagan ang isa o higit pang mga client na kumonekta nang hindi naglalagay ng PIN.</translation>
 <translation id="837021510621780684">Mula sa computer na ito</translation>
 <translation id="518094545883702183">Ang impormasyong ito ay ginagamit lang para sa pagda-diagnose sa problemang inuulat mo, available lang sa isang taong nagsisiyasat ng iyong ulat, at pinapanatili sa loob ng hindi hihigit sa 30 araw.</translation>
+<translation id="1261403020716313927">• Inayos ang isang malaking memory leak sa pagdiskonekta mula sa remote na desktop.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="4918086044614829423">Tanggapin</translation>
 <translation id="7215059001581613786">Mangyaring maglagay ng PIN na binubuo ng anim o higit pang mga digit.</translation>

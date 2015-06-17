@@ -38,6 +38,7 @@
 <translation id="1812696562331527143">El mètode d'entrada ha canviat a <ph name="INPUT_METHOD_ID"/>* (<ph name="BEGIN_LINK"/>tercers<ph name="END_LINK"/>).
 Premeu Maj+Alt per canviar-lo.</translation>
 <translation id="6043994281159824495">Tanca la sessió ara</translation>
+<translation id="5168181903108465623">Dispositius d'emissió disponibles</translation>
 <translation id="2127372758936585790">Carregador de baix consum</translation>
 <translation id="3799026279081545374">Pot ser que el carregador s'hagi espatllat. Si residiu als EUA, truqueu al 866-628-1371 per rebre ajuda i un carregador de recanvi. Si residiu al Regne Unit, truqueu al 0800-026-0613. Si residiu a Irlanda, truqueu al 1-800-832-664. Si residiu al Canadà, truqueu al 866-628-1372. Si residiu a Austràlia, truqueu al 1-800-067-460.</translation>
 <translation id="3891340733213178823">Premeu Ctrl+Maj+Q dues vegades per tancar la sessió.</translation>
@@ -96,6 +97,7 @@ Premeu Maj+Alt per canviar-lo.</translation>
 <translation id="9089416786594320554">Mètodes d'introducció</translation>
 <translation id="2700058918926273959">La sessió finalitzarà d'aquí a <ph name="SESSION_TIME_REMAINING"/> i es tancarà.</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
+<translation id="1963814843110128691">S'està emetent $1 a $2</translation>
 <translation id="3963445509666917109">Altaveu (intern)</translation>
 <translation id="1747827819627189109">Teclat en pantalla activat</translation>
 <translation id="2208323208084708176">Mode d'escriptori unificat</translation>
@@ -179,6 +181,7 @@ Premeu Maj+Alt per canviar-lo.</translation>
 <translation id="6785414152754474415">La bateria està carregada fins al <ph name="PERCENTAGE"/>% i s'està carregant.</translation>
 <translation id="4895488851634969361">La bateria està carregada.</translation>
 <translation id="615957422585914272">Mostra el teclat en pantalla</translation>
+<translation id="8443356412772935865">S'està emetent la pantalla a $1</translation>
 <translation id="5947494881799873997">Reverteix</translation>
 <translation id="7593891976182323525">Cerca o Maj</translation>
 <translation id="7649070708921625228">Ajuda</translation>
@@ -187,9 +190,11 @@ Premeu Cerca o Maj per cancel·lar.</translation>
 <translation id="397105322502079400">S’està calculant...</translation>
 <translation id="1013923882670373915">El dispositiu Bluetooth &quot;<ph name="DEVICE_NAME"/>&quot; sol·licita permís per emparellar-se. Introduïu aquest codi PIN al dispositiu: <ph name="PINCODE"/>.</translation>
 <translation id="2819276065543622893">Ara se us tancarà la sessió.</translation>
+<translation id="4961318399572185831">Emet la pantalla</translation>
 <translation id="5507786745520522457">Configura les dades mòbils</translation>
 <translation id="6165508094623778733">Més informació</translation>
 <translation id="7168224885072002358">Es revertirà a la resolució anterior d'aquí a <ph name="TIMEOUT_SECONDS"/></translation>
+<translation id="5927132638760172455">S'està emetent a un receptor desconegut</translation>
 <translation id="743058460480092004">La càmera i el micròfon s'estan utilitzant.</translation>
 <translation id="6550675742724504774">Opcions</translation>
 <translation id="6406704438230478924">AltGr</translation>

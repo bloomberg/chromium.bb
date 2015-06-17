@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="id">
 <translation id="2774256287122201187">Anda dapat melanjutkannya. Jika Anda melanjutkan ke laman tersebut, peringatan ini tidak akan muncul lagi selama lima menit.</translation>
+<translation id="3963721102035795474">Mode Pembaca</translation>
 <translation id="7485870689360869515">Tidak ada data yang ditemukan.</translation>
 <translation id="3884278016824448484">Pengenal perangkat bertentangan</translation>
 <translation id="5172758083709347301">Mesin</translation>
@@ -164,6 +165,7 @@
 <translation id="8891727572606052622">Mode proxy tidak valid.</translation>
 <translation id="3105172416063519923">ID Aset:</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="1549470594296187301">JavaScript harus diaktifkan untuk menggunakan fitur ini.</translation>
 <translation id="2587841377698384444">ID API Direktori:</translation>
 <translation id="7752995774971033316">Tidak terkelola</translation>
 <translation id="3712624925041724820">Lisensi habis</translation>

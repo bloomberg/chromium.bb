@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="da">
 <translation id="2774256287122201187">Du kan nu fortsætte. Denne advarsel vises ikke igen i de næste fem minutter, hvis du fortsætter til siden.</translation>
+<translation id="3963721102035795474">Læser-tilstand</translation>
 <translation id="7485870689360869515">Der blev ikke fundet nogen data.</translation>
 <translation id="3884278016824448484">Modstridende enheds-id</translation>
 <translation id="5172758083709347301">Maskine</translation>
@@ -164,6 +165,7 @@
 <translation id="8891727572606052622">Ugyldig proxytilstand.</translation>
 <translation id="3105172416063519923">Aktiv-id:</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="1549470594296187301">JavaScript skal være aktiveret, før du kan bruge denne funktion.</translation>
 <translation id="2587841377698384444">Id for Directory API:</translation>
 <translation id="7752995774971033316">Administreres ikke</translation>
 <translation id="3712624925041724820">Licenserne er opbrugt</translation>

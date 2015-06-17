@@ -74,6 +74,7 @@
 <translation id="8551886023433311834">L'actualització està a punt d'acabar. Reinicieu el dispositiu per completar-la.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="1073391069195728457">Chrome: notificacions</translation>
+<translation id="6368805772029492593">Per a més seguretat, Google Chrome encriptarà les vostres dades.</translation>
 <translation id="7339898014177206373">Finestra nova</translation>
 <translation id="3282568296779691940">Inicia la sessió a Chrome</translation>
 <translation id="3089968997497233615">Hi ha disponible una nova versió més segura de Google Chrome.</translation>
@@ -217,6 +218,7 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="6113794647360055231">Chrome és millor que mai</translation>
 <translation id="2588322182880276190">Logotip de Chrome</translation>
+<translation id="4519152997629025674">Google Chrome podria utilitzar <ph name="BEGIN_LINK"/>serveis web<ph name="END_LINK"/> per millorar la vostra experiència de navegació. Si voleu, podeu desactivar aquests serveis en qualsevol moment.</translation>
 <translation id="4367618624832907428">Google Chrome no pot mostrar la pàgina web perquè l'ordinador no està connectat a Internet.</translation>
 <translation id="174539241580958092">Google Chrome no ha pogut sincronitzar les dades a causa d'un error en iniciar la sessió.</translation>
 <translation id="8255190535488645436">Google Chrome està utilitzant la càmera i el micròfon.</translation>

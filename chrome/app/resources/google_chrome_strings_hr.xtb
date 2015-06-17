@@ -74,6 +74,7 @@
 <translation id="8551886023433311834">Gotovo ažurno! Ponovo pokrenite uređaj da biste dovršili ažuriranje.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="1073391069195728457">Chrome – obavijesti</translation>
+<translation id="6368805772029492593">Radi dodatne sigurnosti Google Chrome kriptirat će vaše podatke.</translation>
 <translation id="7339898014177206373">Novi prozor</translation>
 <translation id="3282568296779691940">Prijavite se u Chrome</translation>
 <translation id="3089968997497233615">Dostupna je nova, sigurnija verzija preglednika Google Chrome.</translation>
@@ -216,6 +217,7 @@ Ako se ipak prijavite, podaci sustava Chrome kao što su oznake, povijest i osta
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="6113794647360055231">Chrome je upravo postao bolji</translation>
 <translation id="2588322182880276190">Logotip Chrome</translation>
+<translation id="4519152997629025674">Google Chrome može koristiti <ph name="BEGIN_LINK"/>web-usluge<ph name="END_LINK"/> za poboljšavanje vašeg doživljaja pregledavanja. Te usluge po želji možete onemogućiti.</translation>
 <translation id="4367618624832907428">Google Chrome ne može prikazati web-stranicu jer vaše računalo nije povezano s internetom.</translation>
 <translation id="174539241580958092">Google Chrome nije mogao sinkronizirati vaše podatke zbog pogreške prilikom prijave.</translation>
 <translation id="8255190535488645436">Google Chrome upotrebljava vašu kameru i mikrofon.</translation>

@@ -38,6 +38,7 @@
 <translation id="1812696562331527143">Phương thức nhập của bạn đã thay đổi thành <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>bên thứ ba<ph name="END_LINK"/>).
 Nhấn Shift + Alt để chuyển đổi.</translation>
 <translation id="6043994281159824495">Đăng xuất bây giờ</translation>
+<translation id="5168181903108465623">Có thiết bị truyền</translation>
 <translation id="2127372758936585790">Bộ sạc công suất thấp</translation>
 <translation id="3799026279081545374">Bộ sạc của bạn có thể bị hỏng. Nếu bạn sống ở Hoa Kỳ, hãy gọi đến số 866-628-1371 để nhận trợ giúp và được thay thế. Nếu bạn sống ở Vương quốc Anh, hãy gọi đến số 0800-026-0613. Nếu bạn sống ở Ireland, hãy gọi đến số 1-800-832-664. Nếu bạn sống ở Canada, hãy gọi đến số 866-628-1372. Nếu bạn sống ở Úc, hãy gọi đến số 1-800-067-460.</translation>
 <translation id="3891340733213178823">Nhấn Ctrl+Shift+Q hai lần để đăng xuất.</translation>
@@ -96,6 +97,7 @@ Nhấn Shift + Alt để chuyển đổi.</translation>
 <translation id="9089416786594320554">Phương thức nhập</translation>
 <translation id="2700058918926273959">Phiên sẽ kết thúc sau <ph name="SESSION_TIME_REMAINING"/>. Bạn sẽ bị đăng xuất.</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
+<translation id="1963814843110128691">Đang truyền $1 tới $2</translation>
 <translation id="3963445509666917109">Loa (Bên trong)</translation>
 <translation id="1747827819627189109">Đã bật bàn phím ảo</translation>
 <translation id="2208323208084708176">Chế độ màn hình đồng nhất</translation>
@@ -179,6 +181,7 @@ Nhấn Shift + Alt để chuyển đổi.</translation>
 <translation id="6785414152754474415">Pin đầy <ph name="PERCENTAGE"/>% và đang sạc.</translation>
 <translation id="4895488851634969361">Pin đầy.</translation>
 <translation id="615957422585914272">Hiển thị bàn phím ảo</translation>
+<translation id="8443356412772935865">Đang truyền màn hình tới $1</translation>
 <translation id="5947494881799873997">Hoàn nguyên</translation>
 <translation id="7593891976182323525">Search hoặc Shift</translation>
 <translation id="7649070708921625228">Trợ giúp</translation>
@@ -187,9 +190,11 @@ Nhấn Search hoặc Shift để hủy.</translation>
 <translation id="397105322502079400">Đang tính...</translation>
 <translation id="1013923882670373915">Thiết bị Bluetooth &quot;<ph name="DEVICE_NAME"/>&quot; muốn được phép ghép nối. Vui lòng nhập mã PIN này trên thiết bị đó: <ph name="PINCODE"/></translation>
 <translation id="2819276065543622893">Bạn sẽ bị đăng xuất bây giờ.</translation>
+<translation id="4961318399572185831">Truyền màn hình</translation>
 <translation id="5507786745520522457">Thiết lập dữ liệu di động</translation>
 <translation id="6165508094623778733">Tìm hiểu thêm</translation>
 <translation id="7168224885072002358">Sẽ hoàn nguyên về độ phân giải cũ sau <ph name="TIMEOUT_SECONDS"/></translation>
+<translation id="5927132638760172455">Đang truyền tới bộ thu không xác định</translation>
 <translation id="743058460480092004">Máy ảnh và micrô đang được sử dụng.</translation>
 <translation id="6550675742724504774">Tùy chọn</translation>
 <translation id="6406704438230478924">altgr</translation>

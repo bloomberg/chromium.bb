@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ja">
 <translation id="2774256287122201187">続行できますが、このページに移動するとこの警告は今後 5 分間表示されません。</translation>
+<translation id="3963721102035795474">リーダーモード</translation>
 <translation id="7485870689360869515">データが見つかりません。</translation>
 <translation id="3884278016824448484">競合するデバイス識別子です</translation>
 <translation id="5172758083709347301">マシン</translation>
@@ -164,6 +165,7 @@
 <translation id="8891727572606052622">プロキシ モードが無効です。</translation>
 <translation id="3105172416063519923">アセット ID:</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="1549470594296187301">この機能を使用するには JavaScript を有効にする必要があります。</translation>
 <translation id="2587841377698384444">Directory API ID:</translation>
 <translation id="7752995774971033316">管理されていません</translation>
 <translation id="3712624925041724820">ライセンスを使い切りました</translation>

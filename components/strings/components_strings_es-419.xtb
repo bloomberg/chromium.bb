@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="es-419">
 <translation id="2774256287122201187">Puedes continuar. Si accedes a la página, esta advertencia no volverá a aparecer durante cinco minutos.</translation>
+<translation id="3963721102035795474">Modo de lectura</translation>
 <translation id="7485870689360869515">No se encontró ningún dato.</translation>
 <translation id="3884278016824448484">Hay un identificador de dispositivo en conflicto.</translation>
 <translation id="5172758083709347301">Equipo</translation>
@@ -164,6 +165,7 @@
 <translation id="8891727572606052622">Modo proxy no válido</translation>
 <translation id="3105172416063519923">ID de recurso:</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="1549470594296187301">JavaScript debe estar habilitado para usar esta función.</translation>
 <translation id="2587841377698384444">ID de API de directorio:</translation>
 <translation id="7752995774971033316">Sin administrar</translation>
 <translation id="3712624925041724820">Licencias agotadas</translation>

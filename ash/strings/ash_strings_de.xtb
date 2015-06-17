@@ -38,6 +38,7 @@
 <translation id="1812696562331527143">Ihre Eingabemethode hat sich in <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>Drittanbieter<ph name="END_LINK"/>) geändert.
 Drücken Sie zum Wechseln Shift+Alt.</translation>
 <translation id="6043994281159824495">Jetzt abmelden</translation>
+<translation id="5168181903108465623">Übertragungsgeräte verfügbar</translation>
 <translation id="2127372758936585790">Schwachstrom-Ladegerät</translation>
 <translation id="3799026279081545374">Möglicherweise ist Ihr Ladegerät fehlerhaft. Wenn Sie in den USA leben, erhalten Sie unter der Telefonnummer 866-628-1371 Hilfe und ein Ersatzgerät. Wählen Sie im Vereinigten Königreich die Nummer 0800-026-0613, in Irland die Nummer 1-800-832-664, in Kanada die Nummer 866-628-1372 und in Australien die Nummer 1-800-067-460.</translation>
 <translation id="3891340733213178823">Drücken Sie zum Abmelden zweimal Strg + Shift + Q.</translation>
@@ -96,6 +97,7 @@ Drücken Sie zum Wechseln Shift+Alt.</translation>
 <translation id="9089416786594320554">Eingabemethoden</translation>
 <translation id="2700058918926273959">Sitzung endet in <ph name="SESSION_TIME_REMAINING"/>. Sie werden dann abgemeldet.</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/> %</translation>
+<translation id="1963814843110128691">Übertragung von $1 an $2</translation>
 <translation id="3963445509666917109">Lautsprecher (intern)</translation>
 <translation id="1747827819627189109">Bildschirmtastatur aktiviert</translation>
 <translation id="2208323208084708176">Unified Desktop-Modus</translation>
@@ -179,6 +181,7 @@ Drücken Sie zum Wechseln Shift+Alt.</translation>
 <translation id="6785414152754474415">Akku ist zu <ph name="PERCENTAGE"/> % geladen und wird geladen.</translation>
 <translation id="4895488851634969361">Akku ist vollständig geladen.</translation>
 <translation id="615957422585914272">Bildschirmtastatur anzeigen</translation>
+<translation id="8443356412772935865">Bildschirmübertragung an $1</translation>
 <translation id="5947494881799873997">Rückgängig machen</translation>
 <translation id="7593891976182323525">Suchen oder Shift</translation>
 <translation id="7649070708921625228">Hilfe</translation>
@@ -187,9 +190,11 @@ Drücken Sie die Such-Taste oder Shift, um die Aktivierung aufzuheben.</translat
 <translation id="397105322502079400">Wird berechnet...</translation>
 <translation id="1013923882670373915">Das Bluetooth-Gerät &quot;<ph name="DEVICE_NAME"/>&quot; bittet um Erlaubnis für das Pairing. Geben Sie folgenden PIN-Code auf dem Gerät ein: <ph name="PINCODE"/>.</translation>
 <translation id="2819276065543622893">Sie werden jetzt abgemeldet.</translation>
+<translation id="4961318399572185831">Bildschirmübertragung</translation>
 <translation id="5507786745520522457">Mobile Daten einrichten</translation>
 <translation id="6165508094623778733">Weitere Informationen</translation>
 <translation id="7168224885072002358">Alte Auflösung wird in <ph name="TIMEOUT_SECONDS"/> wiederhergestellt.</translation>
+<translation id="5927132638760172455">Übertragung an unbekannten Empfänger</translation>
 <translation id="743058460480092004">Kamera und Mikrofon werden verwendet.</translation>
 <translation id="6550675742724504774">Optionen</translation>
 <translation id="6406704438230478924">AltGr</translation>

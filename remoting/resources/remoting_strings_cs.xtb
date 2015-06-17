@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="cs">
 <translation id="337167041784729019">Zobrazit statistiky</translation>
+<translation id="2256115617011615191">Restartovat</translation>
 <translation id="7606912958770842224">Povolit vzdálená připojení</translation>
 <translation id="3785447812627779171">Hostitel
 funkce
@@ -138,6 +139,7 @@ Informace ohledně ochrany soukromí naleznete v zásadách ochrany soukromí sp
 <translation id="8196755618196986400">Abychom vás mohli kontaktovat kvůli dalším informacím, všechny zpětné vazby, které odešlete, budou obsahovat vaši e-mailovou adresu.</translation>
 <translation id="154040539590487450">Spuštění služby pro vzdálený přístup se nezdařilo.</translation>
 <translation id="7948001860594368197">Možnosti obrazovky</translation>
+<translation id="2221097377466213233">Použít pravou klávesu CTRL místo klávesy Windows (v počítači Mac klávesu ⌘)</translation>
 <translation id="5254120496627797685">Pokud opustíte tuto stránku, relace Vzdálené plochy Chrome bude ukončena.</translation>
 <translation id="7019153418965365059">Neznámá chyba hostitele: <ph name="HOST_OFFLINE_REASON"/>.</translation>
 <translation id="712467900648340229">Připojení k zařízení Cast se nezdařilo.</translation>
@@ -153,6 +155,7 @@ Informace ohledně ochrany soukromí naleznete v zásadách ochrany soukromí sp
 <translation id="8116630183974937060">Došlo k chybě sítě. Zkontrolujte prosím, zda je zařízení online a zkuste to znovu.</translation>
 <translation id="3020807351229499221">Aktualizace kódu PIN se nezdařila. Zkuste to prosím později.</translation>
 <translation id="2647232381348739934">Služba funkce Chromoting</translation>
+<translation id="2888969873284818612">Došlo k chybě sítě. Aplikaci restartujeme, až bude zařízení opět online.</translation>
 <translation id="579702532610384533">Znovu připojit</translation>
 <translation id="4867841927763172006">Odeslat akci PrtScn</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME"/> (naposledy online: <ph name="DATE_OR_TIME"/>)</translation>
@@ -259,6 +262,7 @@ plochy Chrome</translation>
 <translation id="4277463233460010382">Tento počítač je nakonfigurován tak, aby jednomu nebo více klientům umožnil připojení bez zadávání kódu PIN.</translation>
 <translation id="837021510621780684">Z tohoto počítače</translation>
 <translation id="518094545883702183">Tyto informace jsou využity pouze při diagnostikování problému, který jste nahlásili, jsou dostupné pouze osobě, která vaši zprávu prošetřuje, a nejsou uchovávány déle než 30 dní.</translation>
+<translation id="1261403020716313927">• Byla opravena chyba, kdy při odpojení od vzdálené plochy nebyla vrácena značná část paměti.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="4918086044614829423">Přijmout</translation>
 <translation id="7215059001581613786">Zadejte kód PIN obsahující 6 nebo více číslic.</translation>

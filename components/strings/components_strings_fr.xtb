@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="fr">
 <translation id="2774256287122201187">Vous pouvez continuer. Si vous accédez à la page, cet avertissement ne s'affichera pas pendant cinq minutes.</translation>
+<translation id="3963721102035795474">Mode lecture</translation>
 <translation id="7485870689360869515">Aucune donnée n'a été trouvée.</translation>
 <translation id="3884278016824448484">Identifiant de l'appareil en conflit.</translation>
 <translation id="5172758083709347301">Ordinateur</translation>
@@ -164,6 +165,7 @@
 <translation id="8891727572606052622">Mode proxy non valide.</translation>
 <translation id="3105172416063519923">ID d'élément :</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="1549470594296187301">Vous devez activer JavaScript pour utiliser cette fonctionnalité.</translation>
 <translation id="2587841377698384444">ID de l'API d'annuaire :</translation>
 <translation id="7752995774971033316">Non géré</translation>
 <translation id="3712624925041724820">Licences épuisées.</translation>
