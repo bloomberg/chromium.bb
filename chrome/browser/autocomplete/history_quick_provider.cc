@@ -105,7 +105,8 @@ void HistoryQuickProvider::DoAutocomplete() {
        autocomplete_input_.parts().password.is_nonempty() ||
        autocomplete_input_.parts().path.is_nonempty());
   if (can_have_url_what_you_typed_match_first) {
-    history::HistoryService* const history_service = client()->HistoryService();
+    history::HistoryService* const history_service =
+        client()->GetHistoryService();
     // We expect HistoryService to be available.  In case it's not,
     // (e.g., due to Profile corruption) we let HistoryQuick provider
     // completions (which may be available because it's a different

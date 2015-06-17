@@ -17,14 +17,14 @@ class ChromeAutocompleteProviderClient : public AutocompleteProviderClient {
   ~ChromeAutocompleteProviderClient() override;
 
   // AutocompleteProviderClient:
-  net::URLRequestContextGetter* RequestContext() override;
-  const AutocompleteSchemeClassifier& SchemeClassifier() override;
-  history::HistoryService* HistoryService() override;
-  bookmarks::BookmarkModel* BookmarkModel() override;
-  history::URLDatabase* InMemoryDatabase() override;
+  net::URLRequestContextGetter* GetRequestContext() override;
+  const AutocompleteSchemeClassifier& GetSchemeClassifier() override;
+  history::HistoryService* GetHistoryService() override;
+  bookmarks::BookmarkModel* GetBookmarkModel() override;
+  history::URLDatabase* GetInMemoryDatabase() override;
   TemplateURLService* GetTemplateURLService() override;
   const SearchTermsData& GetSearchTermsData() override;
-  std::string AcceptLanguages() override;
+  std::string GetAcceptLanguages() override;
   bool IsOffTheRecord() override;
   bool SearchSuggestEnabled() override;
   bool ShowBookmarkBar() override;

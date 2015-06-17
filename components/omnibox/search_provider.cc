@@ -417,7 +417,7 @@ void SearchProvider::UpdateMatchContentsClass(
        sug_it != results->suggest_results.end(); ++sug_it) {
     sug_it->ClassifyMatchContents(false, input_text);
   }
-  const std::string languages(client_->AcceptLanguages());
+  const std::string languages(client_->GetAcceptLanguages());
   for (SearchSuggestionParser::NavigationResults::iterator nav_it =
            results->navigation_results.begin();
        nav_it != results->navigation_results.end(); ++nav_it) {
@@ -588,7 +588,7 @@ void SearchProvider::DoHistoryQuery(bool minimal_changes) {
       input_.current_page_classification()))
     return;
 
-  history::URLDatabase* url_db = client_->InMemoryDatabase();
+  history::URLDatabase* url_db = client_->GetInMemoryDatabase();
   if (!url_db)
     return;
 
@@ -862,7 +862,7 @@ scoped_ptr<net::URLFetcher> SearchProvider::CreateSuggestFetcher(
 
   scoped_ptr<net::URLFetcher> fetcher =
       net::URLFetcher::Create(id, suggest_url, net::URLFetcher::GET, this);
-  fetcher->SetRequestContext(client_->RequestContext());
+  fetcher->SetRequestContext(client_->GetRequestContext());
   fetcher->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
   // Add Chrome experiment state to the request headers.
   net::HttpRequestHeaders headers;
@@ -1397,7 +1397,7 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
   const net::FormatUrlTypes format_types =
       net::kFormatUrlOmitAll & ~(trim_http ? 0 : net::kFormatUrlOmitHTTP);
 
-  const std::string languages(client_->AcceptLanguages());
+  const std::string languages(client_->GetAcceptLanguages());
   size_t inline_autocomplete_offset = (prefix == NULL) ?
       base::string16::npos : (match_start + input.length());
   match.fill_into_edit +=
@@ -1406,7 +1406,7 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
           net::FormatUrl(navigation.url(), languages, format_types,
                          net::UnescapeRule::SPACES, NULL, NULL,
                          &inline_autocomplete_offset),
-          client_->SchemeClassifier());
+          client_->GetSchemeClassifier());
   // Preserve the forced query '?' prefix in |match.fill_into_edit|.
   // Otherwise, user edits to a suggestion would show non-Search results.
   if (input_.type() == metrics::OmniboxInputType::FORCED_QUERY) {

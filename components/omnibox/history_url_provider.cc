@@ -520,7 +520,8 @@ void HistoryURLProvider::Start(const AutocompleteInput& input,
     matches_.push_back(what_you_typed_match);
 
   // We'll need the history service to run both passes, so try to obtain it.
-  history::HistoryService* const history_service = client()->HistoryService();
+  history::HistoryService* const history_service =
+      client()->GetHistoryService();
   if (!history_service)
     return;
 
@@ -536,7 +537,7 @@ void HistoryURLProvider::Start(const AutocompleteInput& input,
   // 2.
   scoped_ptr<HistoryURLProviderParams> params(new HistoryURLProviderParams(
       fixed_up_input, trim_http, what_you_typed_match,
-      client()->AcceptLanguages(), default_search_provider,
+      client()->GetAcceptLanguages(), default_search_provider,
       client()->GetSearchTermsData()));
   // Note that we use the non-fixed-up input here, since fixup may strip
   // trailing whitespace.
@@ -603,7 +604,7 @@ AutocompleteMatch HistoryURLProvider::SuggestExactInput(
     const size_t offset = trim_http ? TrimHttpPrefix(&display_string) : 0;
     match.fill_into_edit =
         AutocompleteInput::FormattedStringWithEquivalentMeaning(
-            destination_url, display_string, client()->SchemeClassifier());
+            destination_url, display_string, client()->GetSchemeClassifier());
     match.allowed_to_be_default_match = true;
     // NOTE: Don't set match.inline_autocompletion to something non-empty here;
     // it's surprising and annoying.
@@ -1134,7 +1135,7 @@ AutocompleteMatch HistoryURLProvider::HistoryMatchToACMatch(
           info.url(), net::FormatUrl(info.url(), languages, format_types,
                                      net::UnescapeRule::SPACES, NULL, NULL,
                                      &inline_autocomplete_offset),
-          client()->SchemeClassifier());
+          client()->GetSchemeClassifier());
   if (!params.prevent_inline_autocomplete &&
       (inline_autocomplete_offset != base::string16::npos)) {
     DCHECK(inline_autocomplete_offset <= match.fill_into_edit.length());

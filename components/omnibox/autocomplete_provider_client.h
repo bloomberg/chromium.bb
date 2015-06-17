@@ -33,41 +33,24 @@ class AutocompleteProviderClient {
  public:
   virtual ~AutocompleteProviderClient() {}
 
-  // Returns the request context.
-  virtual net::URLRequestContextGetter* RequestContext() = 0;
-
-  // Returns the scheme classifier.
-  virtual const AutocompleteSchemeClassifier& SchemeClassifier() = 0;
-
-  // Returns the HistoryService.
-  virtual history::HistoryService* HistoryService() = 0;
-
-  // Returns the bookmarks:BookmarkModel.
-  virtual bookmarks::BookmarkModel* BookmarkModel() = 0;
-
-  // Returns the in-memory URL database.
-  virtual history::URLDatabase* InMemoryDatabase() = 0;
-
-  // Returns the TemplateURLService.
+  virtual net::URLRequestContextGetter* GetRequestContext() = 0;
+  virtual const AutocompleteSchemeClassifier& GetSchemeClassifier() = 0;
+  virtual history::HistoryService* GetHistoryService() = 0;
+  virtual bookmarks::BookmarkModel* GetBookmarkModel() = 0;
+  virtual history::URLDatabase* GetInMemoryDatabase() = 0;
   virtual TemplateURLService* GetTemplateURLService() = 0;
-
-  // Returns the search terms data.
   virtual const SearchTermsData& GetSearchTermsData() = 0;
 
   // The value to use for Accept-Languages HTTP header when making an HTTP
   // request.
-  virtual std::string AcceptLanguages() = 0;
+  virtual std::string GetAcceptLanguages() = 0;
 
-  // Returns whether the provider should work in incognito mode.
   virtual bool IsOffTheRecord() = 0;
-
-  // Returns true when suggest support is enabled.
   virtual bool SearchSuggestEnabled() = 0;
 
   // Returns whether the bookmark bar is visible on all tabs.
   virtual bool ShowBookmarkBar() = 0;
 
-  // Returns whether the user has tab sync enabled and tab sync is unencrypted.
   virtual bool TabSyncEnabledAndUnencrypted() = 0;
 
   // Given some string |text| that the user wants to use for navigation,
@@ -86,7 +69,6 @@ class AutocompleteProviderClient {
       history::KeywordID keyword_id,
       const base::string16& term) = 0;
 
-  // Starts prefetching the image at the given |url|.
   virtual void PrefetchImage(const GURL& url) = 0;
 };
 
