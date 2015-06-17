@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/logging.h"
+#include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/media/router/media_router_mojo_impl_factory.h"
@@ -43,6 +44,37 @@ void RouteResponseReceived(const MediaRouteResponseCallback& callback,
 void EventPageWakeComplete(bool success) {
   if (!success)
     LOG(ERROR) << "An error encountered while waking the event page.";
+}
+
+scoped_ptr<content::PresentationSessionMessage>
+ConvertToPresentationSessionMessage(interfaces::RouteMessagePtr input) {
+  DCHECK(!input.is_null());
+  // TODO(haibinlu): get presentation_url&id from route_id
+  std::string presentation_url;
+  std::string presentation_id;
+  scoped_ptr<content::PresentationSessionMessage> output;
+  switch (input->type) {
+    case interfaces::RouteMessage::Type::TYPE_TEXT: {
+      DCHECK(!input->message.is_null());
+      DCHECK(input->data.is_null());
+      output = content::PresentationSessionMessage::CreateStringMessage(
+          presentation_url, presentation_id, make_scoped_ptr(new std::string));
+      input->message.Swap(output->message.get());
+      return output.Pass();
+    }
+    case interfaces::RouteMessage::Type::TYPE_BINARY: {
+      DCHECK(!input->data.is_null());
+      DCHECK(input->message.is_null());
+      output = content::PresentationSessionMessage::CreateArrayBufferMessage(
+          presentation_url, presentation_id,
+          make_scoped_ptr(new std::vector<uint8_t>));
+      input->data.Swap(output->data.get());
+      return output.Pass();
+    }
+  }
+
+  NOTREACHED() << "Invalid route message type " << input->type;
+  return output.Pass();
 }
 
 }  // namespace
@@ -101,13 +133,6 @@ void MediaRouterMojoImpl::ProvideMediaRouter(
   mojo_media_router_.set_error_handler(this);
   callback.Run(instance_id_);
   ExecutePendingRequests();
-}
-
-void MediaRouterMojoImpl::OnMessage(const mojo::String& route_id,
-                                    const mojo::String& message) {
-  // TODO(imcheng): Implement. (crbug.com/461815)
-  DCHECK(thread_checker_.CalledOnValidThread());
-  NOTIMPLEMENTED();
 }
 
 void MediaRouterMojoImpl::OnIssue(const interfaces::IssuePtr issue) {
@@ -208,6 +233,14 @@ void MediaRouterMojoImpl::SendRouteMessage(
 
   RunOrDefer(base::Bind(&MediaRouterMojoImpl::DoSendSessionMessage,
                         base::Unretained(this), route_id, message, callback));
+}
+
+void MediaRouterMojoImpl::ListenForRouteMessages(
+    const std::vector<MediaRoute::Id>& route_ids,
+    const PresentationSessionMessageCallback& message_cb) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  RunOrDefer(base::Bind(&MediaRouterMojoImpl::DoListenForRouteMessages,
+                        base::Unretained(this), route_ids, message_cb));
 }
 
 void MediaRouterMojoImpl::ClearIssue(const Issue::Id& issue_id) {
@@ -333,6 +366,28 @@ void MediaRouterMojoImpl::DoSendSessionMessage(
     const SendRouteMessageCallback& callback) {
   DVLOG_WITH_INSTANCE(1) << "SendRouteMessage " << route_id;
   mojo_media_router_->SendRouteMessage(route_id, message, callback);
+}
+
+void MediaRouterMojoImpl::DoListenForRouteMessages(
+    const std::vector<MediaRoute::Id>& route_ids,
+    const PresentationSessionMessageCallback& message_cb) {
+  DVLOG_WITH_INSTANCE(1) << "ListenForRouteMessages";
+  mojo_media_router_->ListenForRouteMessages(
+      mojo::Array<mojo::String>::From(route_ids),
+      base::Bind(&MediaRouterMojoImpl::OnRouteMessageReceived,
+                 base::Unretained(this), message_cb));
+}
+
+void MediaRouterMojoImpl::OnRouteMessageReceived(
+    const PresentationSessionMessageCallback& message_cb,
+    mojo::Array<interfaces::RouteMessagePtr> messages) {
+  scoped_ptr<ScopedVector<content::PresentationSessionMessage>>
+      session_messages(new ScopedVector<content::PresentationSessionMessage>());
+  for (size_t i = 0; i < messages.size(); ++i) {
+    session_messages->push_back(
+        ConvertToPresentationSessionMessage(messages[i].Pass()).Pass());
+  }
+  message_cb.Run(session_messages.Pass());
 }
 
 void MediaRouterMojoImpl::DoClearIssue(const Issue::Id& issue_id) {

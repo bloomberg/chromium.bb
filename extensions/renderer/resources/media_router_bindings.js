@@ -55,6 +55,27 @@ define('media_router_bindings', [
   }
 
   /**
+   * Converts a route message to a RouteMessage Mojo object.
+   * @param {!RouteMessage} message
+   * @return {!mediaRouterMojom.RouteMessage} A Mojo RouteMessage object.
+   */
+  function messageToMojo_(message) {
+    if ("string" == typeof message.message) {
+      return new mediaRouterMojom.RouteMessage({
+        'route_id': message.routeId,
+        'type': RouteMessage.Type.TEXT,
+        'message': message.message,
+      });
+    } else {
+      return new mediaRouterMojom.RouteMessage({
+        'route_id': message.routeId,
+        'type': RouteMessage.Type.BINARY,
+        'data': message.message,
+      });
+    }
+  }
+
+  /**
    * Creates a new MediaRouterObserver.
    * Converts a route struct to its Mojo form.
    * @param {!MediaRouterService} service
@@ -158,17 +179,6 @@ define('media_router_bindings', [
           serviceProvider.connectToService(
               keepAliveMojom.KeepAlive.name));
     }
-  };
-
-  /**
-   * Sends a message to an active media route.
-   * @param {!string} routeId
-   * @param {!Object|string} message A message that can be converted to a JSON
-   * string.
-   */
-  MediaRouterObserver.prototype.onMessage = function(routeId, message) {
-    // TODO(mfoltz): Handle binary messages (ArrayBuffer, Blob).
-    this.service_.onMessage(routeId, JSON.stringify(message));
   };
 
   /**
@@ -301,9 +311,14 @@ define('media_router_bindings', [
     this.stopObservingMediaSinks = null;
 
     /**
-     * @type {function(string, string)}
+     * @type {function(string, string): Promise}
      */
     this.sendRouteMessage = null;
+
+    /**
+     * @type {function(Array.<string>): Promise.<Array.<RouteMessage>>}
+     */
+    this.listenForRouteMessages = null;
 
     /**
      * @type {function()}
@@ -353,6 +368,7 @@ define('media_router_bindings', [
       'stopObservingMediaRoutes',
       'startObservingMediaRoutes',
       'sendRouteMessage',
+      'listenForRouteMessages',
       'closeRoute',
       'joinRoute',
       'createRoute',
@@ -459,6 +475,21 @@ define('media_router_bindings', [
           return true;
         }, function() {
           return false;
+        });
+  };
+
+  /**
+   * Listen for next batch of messages from one of the routeIds.
+   * @param {!Array.<string>} routeIds
+   * @return {!Promise.<Array.<RouteMessage>>} Resolved with a list of messages,
+   *    an empty list if an error occurred.
+   */
+  MediaRouter.prototype.listenForRouteMessages = function(routeIds) {
+    this.handlers_.listenForRouteMessages(routeIds)
+        .then(function(messages) {
+          return messages.map(messageToMojo_);
+        }, function() {
+          return [];
         });
   };
 

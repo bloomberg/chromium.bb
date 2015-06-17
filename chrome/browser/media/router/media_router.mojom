@@ -80,6 +80,21 @@ struct Issue {
   string? help_url;
 };
 
+struct RouteMessage {
+  enum Type {
+    TEXT,
+    BINARY
+  };
+  // The route ID of this message.
+  string route_id;
+  // The type of this message.
+  Type type;
+  // Used when the |type| is TEXT.
+  string? message;
+  // Used when the |type| is BINARY.
+  array<uint8>? data;
+};
+
 // Modeled after the MediaRouter interface defined in
 // chrome/browser/media/router/media_router.h
 interface MediaRouter {
@@ -137,6 +152,11 @@ interface MediaRouter {
 
   // "Clears" an issue after it is addressed.
   ClearIssue(string issue_id);
+
+  // Called when the MediaRouter is ready to get the next batch of messages
+  // associated with one of the |route_ids|.
+  ListenForRouteMessages(array<string> route_ids)
+      => (array<RouteMessage> messages);
 };
 
 // Interface for a service which observes state changes across media
@@ -151,9 +171,6 @@ interface MediaRouterObserver {
 
   // Called when the Media Route Manager receives a new list of sinks.
   OnSinksReceived(string media_source, array<MediaSink> sinks);
-
-  // Called when the Media Route Manager receives a route message.
-  OnMessage(string media_source, string message);
 
   // Called when issues are reported for media routes.
   OnIssue(Issue issue);

@@ -40,6 +40,9 @@ class MockMediaRouter : public MediaRouter {
                void(const MediaRoute::Id& route_id,
                     const std::string& message,
                     const SendRouteMessageCallback& callback));
+  MOCK_METHOD2(ListenForRouteMessages,
+               void(const std::vector<MediaRoute::Id>& route_ids,
+                    const PresentationSessionMessageCallback& message_cb));
   MOCK_METHOD1(ClearIssue, void(const Issue::Id& issue_id));
   MOCK_METHOD1(RegisterIssuesObserver, void(IssuesObserver* observer));
   MOCK_METHOD1(UnregisterIssuesObserver, void(IssuesObserver* observer));

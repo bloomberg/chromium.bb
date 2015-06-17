@@ -13,6 +13,7 @@
 #include "chrome/browser/media/router/media_route.h"
 #include "chrome/browser/media/router/media_sink.h"
 #include "chrome/browser/media/router/media_source.h"
+#include "content/public/browser/presentation_session_message.h"
 
 namespace media_router {
 
@@ -38,6 +39,8 @@ const int kInvalidTabId = -1;
 // posting messages or closing).
 class MediaRouter {
  public:
+  using PresentationSessionMessageCallback = base::Callback<void(
+      scoped_ptr<ScopedVector<content::PresentationSessionMessage>>)>;
   using SendRouteMessageCallback = base::Callback<void(bool sent)>;
 
   virtual ~MediaRouter() {}
@@ -80,18 +83,16 @@ class MediaRouter {
                                 const std::string& message,
                                 const SendRouteMessageCallback& callback) = 0;
 
+  // Gets the next batch of messages from one of the routes in |route_ids|.
+  // |message_cb|: Invoked with a non-empty list of messages when there are
+  //      messages, an empty list when messaging channel had error.
+  //      It is not invoked until there are messages available or error.
+  virtual void ListenForRouteMessages(
+      const std::vector<MediaRoute::Id>& route_ids,
+      const PresentationSessionMessageCallback& message_cb) = 0;
+
   // Clears the issue with the id |issue_id|.
   virtual void ClearIssue(const Issue::Id& issue_id) = 0;
-
-  // Receives updates from a MediaRouter instance.
-  class Delegate {
-   public:
-    // Called when there is a message from a route.
-    // |route_id|: The route ID.
-    // |message|: The message.
-    virtual void OnMessage(const MediaRoute::Id& route_id,
-                           const std::string& message) = 0;
-  };
 
  private:
   friend class IssuesObserver;

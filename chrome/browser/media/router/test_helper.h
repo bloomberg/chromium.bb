@@ -61,6 +61,13 @@ class MockMojoMediaRouterService : public interfaces::MediaRouter {
                void(const mojo::String& media_route_id,
                     const mojo::String& message,
                     const SendRouteMessageCallback& callback));
+  void ListenForRouteMessages(mojo::Array<mojo::String> route_ids,
+                              const ListenForRouteMessagesCallback& callback) {
+    ListenForRouteMessagesInteral(route_ids.storage(), callback);
+  }
+  MOCK_METHOD2(ListenForRouteMessagesInteral,
+               void(const std::vector<mojo::String>& route_ids,
+                    const ListenForRouteMessagesCallback& callback));
   MOCK_METHOD1(ClearIssue, void(const mojo::String& issue_id));
   MOCK_METHOD0(StartObservingMediaRoutes, void());
   MOCK_METHOD0(StopObservingMediaRoutes, void());

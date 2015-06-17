@@ -73,6 +73,9 @@ class MediaRouterMojoImpl : public MediaRouter,
   void SendRouteMessage(const MediaRoute::Id& route_id,
                         const std::string& message,
                         const SendRouteMessageCallback& callback) override;
+  void ListenForRouteMessages(
+      const std::vector<MediaRoute::Id>& route_ids,
+      const PresentationSessionMessageCallback& message_cb) override;
   void ClearIssue(const Issue::Id& issue_id) override;
   void RegisterMediaSinksObserver(MediaSinksObserver* observer) override;
   void UnregisterMediaSinksObserver(MediaSinksObserver* observer) override;
@@ -129,6 +132,9 @@ class MediaRouterMojoImpl : public MediaRouter,
   void DoSendSessionMessage(const MediaRoute::Id& route_id,
                             const std::string& message,
                             const SendRouteMessageCallback& callback);
+  void DoListenForRouteMessages(
+      const std::vector<MediaRoute::Id>& route_ids,
+      const PresentationSessionMessageCallback& message_cb);
   void DoClearIssue(const Issue::Id& issue_id);
   void DoStartObservingMediaSinks(const MediaSource::Id& source_id);
   void DoStopObservingMediaSinks(const MediaSource::Id& source_id);
@@ -136,6 +142,13 @@ class MediaRouterMojoImpl : public MediaRouter,
   void DoStopObservingMediaRoutes();
   void DoStartObservingIssues();
   void DoStopObservingIssues();
+
+  // Invoked when the next batch of messages arrives.
+  // |messages|: A list of messages received.
+  // |message_cb|: The callback to invoke to pass on the messages received.
+  void OnRouteMessageReceived(
+      const PresentationSessionMessageCallback& message_cb,
+      mojo::Array<interfaces::RouteMessagePtr> messages);
 
   // mojo::ErrorHandler implementation.
   void OnConnectionError() override;
@@ -145,8 +158,6 @@ class MediaRouterMojoImpl : public MediaRouter,
       interfaces::MediaRouterPtr media_router_ptr,
       const interfaces::MediaRouterObserver::ProvideMediaRouterCallback&
           callback) override;
-  void OnMessage(const mojo::String& route_id,
-                 const mojo::String& message) override;
   void OnIssue(interfaces::IssuePtr issue) override;
   void OnSinksReceived(const mojo::String& media_source,
                        mojo::Array<interfaces::MediaSinkPtr> sinks) override;

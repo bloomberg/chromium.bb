@@ -49,6 +49,18 @@ const char kPresentationId[] = "presentationId";
 const char kOrigin[] = "http://origin/";
 const int kTabId = 123;
 
+bool ArePresentationSessionMessagesEqual(
+    const content::PresentationSessionMessage* expected,
+    const content::PresentationSessionMessage* actual) {
+  if (expected->presentation_url != actual->presentation_url ||
+      expected->presentation_id != actual->presentation_id ||
+      expected->type != actual->type) {
+    return false;
+  }
+  return expected->is_binary() ? *(expected->data) == *(actual->data)
+                               : *(expected->message) == *(actual->message);
+}
+
 }  // namespace
 
 // Adapts Invoke(), which takes a move-only scoped_ptr parameter (not mockable)
@@ -66,6 +78,29 @@ class RouteResponseCallbackHandler {
 class SendMessageCallbackHandler {
  public:
   MOCK_METHOD1(Invoke, void(bool));
+};
+
+class ListenForMessagesCallbackHandler {
+ public:
+  ListenForMessagesCallbackHandler(scoped_ptr<
+      ScopedVector<content::PresentationSessionMessage>> expected_messages)
+      : expected_messages_(expected_messages.Pass()) {}
+  void Invoke(
+      scoped_ptr<ScopedVector<content::PresentationSessionMessage>> messages) {
+    InvokeObserver();
+    EXPECT_EQ(messages->size(), expected_messages_->size());
+    const auto& expected = expected_messages_->get();
+    const auto& actual = messages->get();
+    for (size_t i = 0; i < expected_messages_->size(); ++i) {
+      EXPECT_TRUE(ArePresentationSessionMessagesEqual(expected[i], actual[i]));
+    }
+  }
+
+  MOCK_METHOD0(InvokeObserver, void());
+
+ private:
+  scoped_ptr<ScopedVector<content::PresentationSessionMessage>>
+      expected_messages_;
 };
 
 template <typename T>
@@ -351,6 +386,46 @@ TEST_F(MediaRouterMojoImplTest, SendRouteMessage) {
   router()->SendRouteMessage(kRouteId, kMessage,
                              base::Bind(&SendMessageCallbackHandler::Invoke,
                                         base::Unretained(&handler)));
+  ProcessEventLoop();
+}
+
+TEST_F(MediaRouterMojoImplTest, ListenForRouteMessages) {
+  mojo::Array<interfaces::RouteMessagePtr> mojo_messages(2);
+  mojo_messages[0] = interfaces::RouteMessage::New();
+  mojo_messages[0]->route_id = "r1";
+  mojo_messages[0]->type = interfaces::RouteMessage::Type::TYPE_TEXT;
+  mojo_messages[0]->message = "text";
+  mojo_messages[1] = interfaces::RouteMessage::New();
+  mojo_messages[1]->route_id = "r2";
+  mojo_messages[1]->type = interfaces::RouteMessage::Type::TYPE_BINARY;
+  mojo_messages[1]->data.push_back(1);
+
+  scoped_ptr<ScopedVector<content::PresentationSessionMessage>>
+      expected_messages(
+          new ScopedVector<content::PresentationSessionMessage>());
+  expected_messages->push_back(
+      content::PresentationSessionMessage::CreateStringMessage(
+          "", "", make_scoped_ptr(new std::string("text"))));
+  scoped_ptr<std::vector<uint8_t>> expected_binary_data(
+      new std::vector<uint8_t>(1, 1));
+  expected_messages->push_back(
+      content::PresentationSessionMessage::CreateArrayBufferMessage(
+          "", "", expected_binary_data.Pass()));
+
+  EXPECT_CALL(mock_mojo_media_router_service_,
+              ListenForRouteMessagesInteral(_, _))
+      .WillOnce(Invoke([&mojo_messages](
+          const std::vector<mojo::String>& route_ids,
+          const interfaces::MediaRouter::ListenForRouteMessagesCallback& cb) {
+        cb.Run(mojo_messages.Pass());
+      }));
+
+  ListenForMessagesCallbackHandler handler(expected_messages.Pass());
+  EXPECT_CALL(handler, InvokeObserver());
+  std::vector<MediaRoute::Id> route_ids;
+  router()->ListenForRouteMessages(
+      route_ids, base::Bind(&ListenForMessagesCallbackHandler::Invoke,
+                            base::Unretained(&handler)));
   ProcessEventLoop();
 }
 
