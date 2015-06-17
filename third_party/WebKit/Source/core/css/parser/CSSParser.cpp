@@ -20,13 +20,14 @@
 
 namespace blink {
 
-bool CSSParser::parseDeclarationList(const CSSParserContext& context, MutableStylePropertySet* propertySet, const String& declaration, CSSParserObserver* observer)
+bool CSSParser::parseDeclarationList(const CSSParserContext& context, MutableStylePropertySet* propertySet, const String& declaration)
 {
-    if (observer) {
-        CSSParserImpl::parseDeclarationListForInspector(declaration, context, *observer);
-        return true;
-    }
     return CSSParserImpl::parseDeclarationList(propertySet, declaration, context);
+}
+
+void CSSParser::parseDeclarationListForInspector(const CSSParserContext& context, const String& declaration, CSSParserObserver& observer)
+{
+    CSSParserImpl::parseDeclarationListForInspector(declaration, context, observer);
 }
 
 void CSSParser::parseSelector(const CSSParserContext& context, const String& selector, CSSSelectorList& selectorList)
@@ -40,11 +41,14 @@ PassRefPtrWillBeRawPtr<StyleRuleBase> CSSParser::parseRule(const CSSParserContex
     return CSSParserImpl::parseRule(rule, context, CSSParserImpl::AllowImportRules);
 }
 
-void CSSParser::parseSheet(const CSSParserContext& context, StyleSheetContents* styleSheet, const String& text, CSSParserObserver* observer)
+void CSSParser::parseSheet(const CSSParserContext& context, StyleSheetContents* styleSheet, const String& text)
 {
-    if (observer)
-        return CSSParserImpl::parseStyleSheetForInspector(text, context, *observer);
     return CSSParserImpl::parseStyleSheet(text, context, styleSheet);
+}
+
+void CSSParser::parseSheetForInspector(const CSSParserContext& context, const String& text, CSSParserObserver& observer)
+{
+    return CSSParserImpl::parseStyleSheetForInspector(text, context, observer);
 }
 
 bool CSSParser::parseValue(MutableStylePropertySet* declaration, CSSPropertyID unresolvedProperty, const String& string, bool important, CSSParserMode parserMode, StyleSheetContents* styleSheet)

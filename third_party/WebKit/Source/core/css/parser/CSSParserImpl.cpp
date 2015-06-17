@@ -170,7 +170,7 @@ void CSSParserImpl::parseDeclarationListForInspector(const String& declaration, 
     CSSParserImpl parser(context);
     CSSParserObserverWrapper wrapper(observer);
     parser.m_observerWrapper = &wrapper;
-    CSSTokenizer::Scope scope(declaration, *parser.m_observerWrapper);
+    CSSTokenizer::Scope scope(declaration, wrapper);
     observer.startRuleHeader(StyleRule::Style, 0);
     observer.endRuleHeader(1);
     parser.consumeDeclarationList(scope.tokenRange(), StyleRule::Style);
@@ -182,7 +182,7 @@ void CSSParserImpl::parseStyleSheetForInspector(const String& string, const CSSP
     CSSParserImpl parser(context, sheet.get());
     CSSParserObserverWrapper wrapper(observer);
     parser.m_observerWrapper = &wrapper;
-    CSSTokenizer::Scope scope(string, *parser.m_observerWrapper);
+    CSSTokenizer::Scope scope(string, wrapper);
     parser.consumeRuleList(scope.tokenRange(), TopLevelRuleList, [](PassRefPtrWillBeRawPtr<StyleRuleBase> rule) { });
 }
 

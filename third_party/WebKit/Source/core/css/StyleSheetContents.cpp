@@ -293,7 +293,7 @@ void StyleSheetContents::parseAuthorStyleSheet(const CSSStyleSheetResource* cach
     }
 
     CSSParserContext context(parserContext(), UseCounter::getFrom(this));
-    CSSParser::parseSheet(context, this, sheetText, nullptr);
+    CSSParser::parseSheet(context, this, sheetText);
 }
 
 void StyleSheetContents::parseString(const String& sheetText)
@@ -304,7 +304,7 @@ void StyleSheetContents::parseString(const String& sheetText)
 void StyleSheetContents::parseStringAtPosition(const String& sheetText, const TextPosition& startPosition)
 {
     CSSParserContext context(parserContext(), UseCounter::getFrom(this));
-    CSSParser::parseSheet(context, this, sheetText, 0);
+    CSSParser::parseSheet(context, this, sheetText);
 }
 
 bool StyleSheetContents::isLoading() const

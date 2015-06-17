@@ -289,8 +289,7 @@ void StyleSheetHandler::observeComment(unsigned startOffset, unsigned endOffset)
     RuleSourceDataList sourceData;
 
     StyleSheetHandler handler(commentText, m_document, &sourceData);
-    RefPtrWillBeRawPtr<MutableStylePropertySet> tempMutableStyle = MutableStylePropertySet::create();
-    CSSParser::parseDeclarationList(parserContextForDocument(m_document), tempMutableStyle.get(), commentText, &handler);
+    CSSParser::parseDeclarationListForInspector(parserContextForDocument(m_document), commentText, handler);
     WillBeHeapVector<CSSPropertySourceData>& commentPropertyData = sourceData.first()->styleSourceData->propertyData;
     if (commentPropertyData.size() != 1)
         return;
@@ -413,7 +412,7 @@ bool ParsedStyleSheet::ensureSourceData()
 
     OwnPtrWillBeRawPtr<RuleSourceDataList> result = adoptPtrWillBeNoop(new RuleSourceDataList());
     StyleSheetHandler handler(text(), m_pageStyleSheet->ownerDocument(), result.get());
-    CSSParser::parseSheet(parserContextForDocument(m_pageStyleSheet->ownerDocument()), nullptr, text(), &handler);
+    CSSParser::parseSheetForInspector(parserContextForDocument(m_pageStyleSheet->ownerDocument()), text(), handler);
     setSourceData(result.release());
     return hasSourceData();
 }
@@ -531,11 +530,10 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSComputedStyleProperty> > Insp
 bool InspectorStyle::verifyPropertyText(const String& propertyText, bool canOmitSemicolon)
 {
     DEFINE_STATIC_LOCAL(String, bogusPropertyName, ("-webkit-boguz-propertee"));
-    RefPtrWillBeRawPtr<MutableStylePropertySet> tempMutableStyle = MutableStylePropertySet::create();
     RuleSourceDataList sourceData;
     String declarationText = propertyText + (canOmitSemicolon ? ";" : " ") + bogusPropertyName + ": none";
     StyleSheetHandler handler(declarationText, ownerDocument(), &sourceData);
-    CSSParser::parseDeclarationList(parserContextForDocument(ownerDocument()), tempMutableStyle.get(), declarationText, &handler);
+    CSSParser::parseDeclarationListForInspector(parserContextForDocument(ownerDocument()), declarationText, handler);
     WillBeHeapVector<CSSPropertySourceData>& propertyData = sourceData.first()->styleSourceData->propertyData;
     unsigned propertyCount = propertyData.size();
 
@@ -1161,7 +1159,7 @@ bool InspectorStyleSheet::verifyRuleText(const String& ruleText)
     RuleSourceDataList sourceData;
     String text = ruleText + " div { " + bogusPropertyName + ": none; }";
     StyleSheetHandler handler(text, ownerDocument(), &sourceData);
-    CSSParser::parseSheet(parserContextForDocument(ownerDocument()), nullptr, text, &handler);
+    CSSParser::parseSheetForInspector(parserContextForDocument(ownerDocument()), text, handler);
     unsigned ruleCount = sourceData.size();
 
     // Exactly two rules should be parsed.
@@ -1192,7 +1190,7 @@ bool InspectorStyleSheet::verifySelectorText(const String& selectorText)
     RuleSourceDataList sourceData;
     String text = selectorText + " { " + bogusPropertyName + ": none; }";
     StyleSheetHandler handler(text, ownerDocument(), &sourceData);
-    CSSParser::parseSheet(parserContextForDocument(ownerDocument()), nullptr, text, &handler);
+    CSSParser::parseSheetForInspector(parserContextForDocument(ownerDocument()), text, handler);
 
     // Exactly one rule should be parsed.
     unsigned ruleCount = sourceData.size();
@@ -1218,7 +1216,7 @@ bool InspectorStyleSheet::verifyMediaText(const String& mediaText)
     RuleSourceDataList sourceData;
     String text = "@media " + mediaText + " { div { " + bogusPropertyName + ": none; } }";
     StyleSheetHandler handler(text, ownerDocument(), &sourceData);
-    CSSParser::parseSheet(parserContextForDocument(ownerDocument()), nullptr, text, &handler);
+    CSSParser::parseSheetForInspector(parserContextForDocument(ownerDocument()), text, handler);
 
     // Exactly one media rule should be parsed.
     unsigned ruleCount = sourceData.size();
@@ -1939,7 +1937,7 @@ PassRefPtrWillBeRawPtr<CSSRuleSourceData> InspectorStyleSheetForInlineStyle::get
 
     RuleSourceDataList ruleSourceDataResult;
     StyleSheetHandler handler(m_styleText, &m_element->document(), &ruleSourceDataResult);
-    CSSParser::parseDeclarationList(parserContextForDocument(&m_element->document()), nullptr, m_styleText, &handler);
+    CSSParser::parseDeclarationListForInspector(parserContextForDocument(&m_element->document()), m_styleText, handler);
     return ruleSourceDataResult.first().release();
 }
 

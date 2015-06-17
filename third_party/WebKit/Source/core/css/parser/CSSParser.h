@@ -29,11 +29,9 @@ class CORE_EXPORT CSSParser {
 public:
     // As well as regular rules, allows @import and @namespace but not @charset
     static PassRefPtrWillBeRawPtr<StyleRuleBase> parseRule(const CSSParserContext&, const String&);
-    // TODO(timloh): Split into parseSheet and parseSheetForInspector
-    static void parseSheet(const CSSParserContext&, StyleSheetContents*, const String&, CSSParserObserver*);
+    static void parseSheet(const CSSParserContext&, StyleSheetContents*, const String&);
     static void parseSelector(const CSSParserContext&, const String&, CSSSelectorList&);
-    // TODO(timloh): Split into parseDeclarationList and parseDeclarationListForInspector
-    static bool parseDeclarationList(const CSSParserContext&, MutableStylePropertySet*, const String&, CSSParserObserver*);
+    static bool parseDeclarationList(const CSSParserContext&, MutableStylePropertySet*, const String&);
     // Returns whether anything was changed.
     static bool parseValue(MutableStylePropertySet*, CSSPropertyID unresolvedProperty, const String&, bool important, CSSParserMode, StyleSheetContents*);
 
@@ -54,6 +52,9 @@ public:
     static bool parseColor(RGBA32& color, const String&, bool strict = false);
     static bool parseSystemColor(RGBA32& color, const String&);
     static StyleColor colorFromRGBColorString(const String&);
+
+    static void parseSheetForInspector(const CSSParserContext&, const String&, CSSParserObserver&);
+    static void parseDeclarationListForInspector(const CSSParserContext&, const String&, CSSParserObserver&);
 
 private:
     static bool parseValue(MutableStylePropertySet*, CSSPropertyID unresolvedProperty, const String&, bool important, const CSSParserContext&);
