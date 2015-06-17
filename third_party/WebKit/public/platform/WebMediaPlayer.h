@@ -31,9 +31,11 @@
 #ifndef WebMediaPlayer_h
 #define WebMediaPlayer_h
 
+#include "WebCallbacks.h"
 #include "WebCanvas.h"
 #include "WebContentDecryptionModule.h"
 #include "WebMediaSource.h"
+#include "WebSetSinkIdError.h"
 #include "WebString.h"
 #include "WebTimeRange.h"
 #include "third_party/skia/include/core/SkXfermode.h"
@@ -108,11 +110,22 @@ public:
     virtual void seek(double seconds) = 0;
     virtual void setRate(double) = 0;
     virtual void setVolume(double) = 0;
+
     virtual void requestRemotePlayback() { };
     virtual void requestRemotePlaybackControl() { };
     virtual void setPreload(Preload) { };
     virtual WebTimeRanges buffered() const = 0;
     virtual WebTimeRanges seekable() const = 0;
+
+    // Attempts to switch the audio output device.
+    // Implementations of setSinkId take ownership of the WebCallbacks
+    // object, and the WebCallbacks object takes ownership of the returned
+    // error value, if any.
+    // Note also that setSinkId implementations must make sure that all
+    // methods of the WebCallbacks object, including constructors and
+    // destructors, run in the same thread where the object is created
+    // (i.e., the blink thread).
+    virtual void setSinkId(const WebString& deviceId, WebCallbacks<void, WebSetSinkIdError>*) = 0;
 
     // True if the loaded media has a playable video/audio track.
     virtual bool hasVideo() const = 0;
