@@ -173,16 +173,6 @@ private:
 
 } // namespace blink
 
-#if ENABLE(OILPAN)
-// TODO(sof): the trait override/specialization is needed by HitTestCache's
-// HeapVector<> to handle unused slots. It is not correct for HitTestResult
-// in the wider sense of what canInitializeWithMemset provides, so fix this
-// by introducing a trait that encompasses "unused slot" handling and use it
-// here instead.
-//
-// Until that time, make this trait specialization conditional on OILPAN to
-// limit exposure.
-WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::HitTestResult);
-#endif
+WTF_ALLOW_CLEAR_UNUSED_SLOTS_WITH_MEM_FUNCTIONS(blink::HitTestResult);
 
 #endif // HitTestResult_h
