@@ -99,8 +99,6 @@ public:
     CSSPropertyID getPropertyShorthand(CSSPropertyID) const;
     bool isPropertyImplicit(CSSPropertyID) const;
 
-    PassRefPtrWillBeRawPtr<MutableStylePropertySet> copyBlockProperties() const;
-
     CSSParserMode cssParserMode() const { return static_cast<CSSParserMode>(m_cssParserMode); }
 
     PassRefPtrWillBeRawPtr<MutableStylePropertySet> mutableCopy() const;
@@ -205,7 +203,6 @@ public:
     bool setProperty(const CSSProperty&, CSSProperty* slot = 0);
 
     bool removeProperty(CSSPropertyID, String* returnText = 0);
-    void removeBlockProperties();
     bool removePropertiesInSet(const CSSPropertyID* set, unsigned length);
     void removeEquivalentProperties(const StylePropertySet*);
     void removeEquivalentProperties(const CSSStyleDeclaration*);

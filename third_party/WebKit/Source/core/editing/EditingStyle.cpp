@@ -594,14 +594,45 @@ PassRefPtrWillBeRawPtr<EditingStyle> EditingStyle::copy() const
     return copy;
 }
 
+// This is the list of CSS properties that apply specially to block-level elements.
+static const CSSPropertyID staticBlockProperties[] = {
+    CSSPropertyOrphans,
+    CSSPropertyOverflow, // This can be also be applied to replaced elements
+    CSSPropertyWebkitColumnCount,
+    CSSPropertyWebkitColumnGap,
+    CSSPropertyWebkitColumnRuleColor,
+    CSSPropertyWebkitColumnRuleStyle,
+    CSSPropertyWebkitColumnRuleWidth,
+    CSSPropertyWebkitColumnBreakBefore,
+    CSSPropertyWebkitColumnBreakAfter,
+    CSSPropertyWebkitColumnBreakInside,
+    CSSPropertyWebkitColumnWidth,
+    CSSPropertyPageBreakAfter,
+    CSSPropertyPageBreakBefore,
+    CSSPropertyPageBreakInside,
+    CSSPropertyTextAlign,
+    CSSPropertyTextAlignLast,
+    CSSPropertyTextIndent,
+    CSSPropertyTextJustify,
+    CSSPropertyWidows
+};
+
+static const Vector<CSSPropertyID>& blockPropertiesVector()
+{
+    DEFINE_STATIC_LOCAL(Vector<CSSPropertyID>, properties, ());
+    if (properties.isEmpty())
+        CSSPropertyMetadata::filterEnabledCSSPropertiesIntoVector(staticBlockProperties, WTF_ARRAY_LENGTH(staticBlockProperties), properties);
+    return properties;
+}
+
 PassRefPtrWillBeRawPtr<EditingStyle> EditingStyle::extractAndRemoveBlockProperties()
 {
     RefPtrWillBeRawPtr<EditingStyle> blockProperties = EditingStyle::create();
     if (!m_mutableStyle)
         return blockProperties;
 
-    blockProperties->m_mutableStyle = m_mutableStyle->copyBlockProperties();
-    m_mutableStyle->removeBlockProperties();
+    blockProperties->m_mutableStyle = m_mutableStyle->copyPropertiesInSet(blockPropertiesVector());
+    removeBlockProperties();
 
     return blockProperties;
 }
@@ -625,7 +656,7 @@ void EditingStyle::removeBlockProperties()
     if (!m_mutableStyle)
         return;
 
-    m_mutableStyle->removeBlockProperties();
+    m_mutableStyle->removePropertiesInSet(blockPropertiesVector().data(), blockPropertiesVector().size());
 }
 
 void EditingStyle::removeStyleAddedByElement(Element* element)

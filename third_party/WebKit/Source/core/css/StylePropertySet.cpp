@@ -348,51 +348,9 @@ bool StylePropertySet::hasFailedOrCanceledSubresources() const
     return false;
 }
 
-// This is the list of properties we want to copy in the copyBlockProperties() function.
-// It is the list of CSS properties that apply specially to block-level elements.
-static const CSSPropertyID staticBlockProperties[] = {
-    CSSPropertyOrphans,
-    CSSPropertyOverflow, // This can be also be applied to replaced elements
-    CSSPropertyWebkitColumnCount,
-    CSSPropertyWebkitColumnGap,
-    CSSPropertyWebkitColumnRuleColor,
-    CSSPropertyWebkitColumnRuleStyle,
-    CSSPropertyWebkitColumnRuleWidth,
-    CSSPropertyWebkitColumnBreakBefore,
-    CSSPropertyWebkitColumnBreakAfter,
-    CSSPropertyWebkitColumnBreakInside,
-    CSSPropertyWebkitColumnWidth,
-    CSSPropertyPageBreakAfter,
-    CSSPropertyPageBreakBefore,
-    CSSPropertyPageBreakInside,
-    CSSPropertyTextAlign,
-    CSSPropertyTextAlignLast,
-    CSSPropertyTextIndent,
-    CSSPropertyTextJustify,
-    CSSPropertyWidows
-};
-
-static const Vector<CSSPropertyID>& blockProperties()
-{
-    DEFINE_STATIC_LOCAL(Vector<CSSPropertyID>, properties, ());
-    if (properties.isEmpty())
-        CSSPropertyMetadata::filterEnabledCSSPropertiesIntoVector(staticBlockProperties, WTF_ARRAY_LENGTH(staticBlockProperties), properties);
-    return properties;
-}
-
 void MutableStylePropertySet::clear()
 {
     m_propertyVector.clear();
-}
-
-PassRefPtrWillBeRawPtr<MutableStylePropertySet> StylePropertySet::copyBlockProperties() const
-{
-    return copyPropertiesInSet(blockProperties());
-}
-
-void MutableStylePropertySet::removeBlockProperties()
-{
-    removePropertiesInSet(blockProperties().data(), blockProperties().size());
 }
 
 inline bool containsId(const CSSPropertyID* set, unsigned length, CSSPropertyID id)
