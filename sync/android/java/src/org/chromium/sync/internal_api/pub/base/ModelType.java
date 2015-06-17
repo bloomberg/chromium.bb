@@ -112,7 +112,8 @@ public enum ModelType {
     }
 
     private boolean isNonInvalidationType() {
-        if ((this == SESSION || this == FAVICON_TRACKING) && LibraryLoader.isInitialized()) {
+        if ((this == SESSION || this == FAVICON_TRACKING || this == FAVICON_IMAGE)
+                && LibraryLoader.isInitialized()) {
             return FieldTrialList
                     .findFullName("AndroidSessionNotifications")
                     .equals("Disabled");
