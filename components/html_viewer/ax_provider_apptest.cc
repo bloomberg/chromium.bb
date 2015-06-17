@@ -6,6 +6,9 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/test_timeouts.h"
+#include "components/view_manager/public/cpp/tests/view_manager_test_base.h"
+#include "components/view_manager/public/cpp/view.h"
+#include "components/view_manager/public/cpp/view_manager.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/application_test_base.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
@@ -15,35 +18,6 @@
 namespace mojo {
 
 namespace {
-
-base::RunLoop* current_run_loop = nullptr;
-
-void TimeoutRunLoop(const base::Closure& timeout_task, bool* timeout) {
-  CHECK(current_run_loop);
-  *timeout = true;
-  timeout_task.Run();
-}
-
-bool DoRunLoopWithTimeout() {
-  if (current_run_loop != nullptr)
-    return false;
-
-  bool timeout = false;
-  base::RunLoop run_loop;
-  base::MessageLoop::current()->PostDelayedTask(
-    FROM_HERE, base::Bind(&TimeoutRunLoop, run_loop.QuitClosure(), &timeout),
-    TestTimeouts::action_timeout());
-
-  current_run_loop = &run_loop;
-  current_run_loop->Run();
-  current_run_loop = nullptr;
-  return !timeout;
-}
-
-void QuitRunLoop() {
-  current_run_loop->Quit();
-  current_run_loop = nullptr;
-}
 
 // Returns true if the tree contains a text node with contents matching |text|.
 bool AxTreeContainsText(const Array<AxNodePtr>& tree, const String& text) {
@@ -56,7 +30,7 @@ bool AxTreeContainsText(const Array<AxNodePtr>& tree, const String& text) {
 
 }  // namespace
 
-typedef test::ApplicationTestBase AXProviderTest;
+using AXProviderTest = ViewManagerTestBase;
 
 TEST_F(AXProviderTest, HelloWorld) {
   // Start a test server for net/data/test.html access.
@@ -73,13 +47,19 @@ TEST_F(AXProviderTest, HelloWorld) {
   ApplicationConnection* connection = application_impl()->ConnectToApplication(
       request.Pass());
 
+  // Embed the html_viewer in a View.
+  ViewManagerClientPtr view_manager_client;
+  connection->ConnectToService(&view_manager_client);
+  View* embed_view = window_manager()->CreateView();
+  embed_view->Embed(view_manager_client.Pass());
+
   // Connect to the AxProvider of the HTML document and get the AxTree.
   AxProviderPtr ax_provider;
   connection->ConnectToService(&ax_provider);
   Array<AxNodePtr> ax_tree;
   ax_provider->GetTree([&ax_tree](Array<AxNodePtr> tree) {
                          ax_tree = tree.Pass();
-                         QuitRunLoop();
+                         EXPECT_TRUE(QuitRunLoop());
                        });
   ASSERT_TRUE(DoRunLoopWithTimeout());
 

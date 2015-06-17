@@ -207,6 +207,7 @@ mojo_native_application("apptests") {
     "//base",
     "//base/test:test_config",
     "//components/view_manager/public/cpp",
+    "//components/view_manager/public/cpp/tests:test_support",
     "//components/view_manager/public/interfaces",
     "//mojo/application/public/cpp:test_support",
     "//ui/mojo/geometry:interfaces",

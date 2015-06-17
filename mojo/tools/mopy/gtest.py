@@ -104,7 +104,11 @@ def _print_error(command_line, error):
 
 def _build_command_line(config, args, apptest):
   """Build the apptest command line. This value isn't executed on Android."""
-  return [Paths(config).mojo_runner] + args + [apptest]
+  paths = Paths(config)
+  # On linux always run with xvfb.
+  prefix = [paths.xvfb, paths.build_dir] if (config.target_os ==
+                                             Config.OS_LINUX) else []
+  return prefix + [paths.mojo_runner] + args + [apptest]
 
 
 def _run_test(config, shell, args, apptest):

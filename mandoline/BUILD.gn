@@ -21,6 +21,10 @@ group("tests") {
     "//mojo:tests",
   ]
 
+  if (is_linux) {
+    deps += [ "//tools/xdisplaycheck" ]
+  }
+
   # TODO(GYP): Make this work.
   if (!is_component_build && !is_mac) {
     deps += [

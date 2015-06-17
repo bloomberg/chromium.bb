@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/test/test_timeouts.h"
 #include "components/view_manager/public/cpp/lib/view_manager_client_impl.h"
+#include "components/view_manager/public/cpp/tests/view_manager_test_base.h"
 #include "components/view_manager/public/cpp/view_manager_client_factory.h"
 #include "components/view_manager/public/cpp/view_manager_delegate.h"
 #include "components/view_manager/public/cpp/view_manager_init.h"
@@ -27,35 +28,6 @@ namespace mojo {
 
 namespace {
 
-base::RunLoop* current_run_loop = nullptr;
-
-void TimeoutRunLoop(const base::Closure& timeout_task, bool* timeout) {
-  CHECK(current_run_loop);
-  *timeout = true;
-  timeout_task.Run();
-}
-
-bool DoRunLoopWithTimeout() {
-  if (current_run_loop != nullptr)
-    return false;
-
-  bool timeout = false;
-  base::RunLoop run_loop;
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE, base::Bind(&TimeoutRunLoop, run_loop.QuitClosure(), &timeout),
-      TestTimeouts::action_timeout());
-
-  current_run_loop = &run_loop;
-  current_run_loop->Run();
-  current_run_loop = nullptr;
-  return !timeout;
-}
-
-void QuitRunLoop() {
-  current_run_loop->Quit();
-  current_run_loop = nullptr;
-}
-
 class BoundsChangeObserver : public ViewObserver {
  public:
   explicit BoundsChangeObserver(View* view) : view_(view) {
@@ -69,7 +41,7 @@ class BoundsChangeObserver : public ViewObserver {
                            const Rect& old_bounds,
                            const Rect& new_bounds) override {
     DCHECK_EQ(view, view_);
-    QuitRunLoop();
+    EXPECT_TRUE(ViewManagerTestBase::QuitRunLoop());
   }
 
   View* view_;
@@ -80,7 +52,7 @@ class BoundsChangeObserver : public ViewObserver {
 // Wait until the bounds of the supplied view change; returns false on timeout.
 bool WaitForBoundsToChange(View* view) {
   BoundsChangeObserver observer(view);
-  return DoRunLoopWithTimeout();
+  return ViewManagerTestBase::DoRunLoopWithTimeout();
 }
 
 // Increments the width of |view| and waits for a bounds change in |other_vm|s
@@ -111,7 +83,7 @@ class TreeSizeMatchesObserver : public ViewObserver {
   // Overridden from ViewObserver:
   void OnTreeChanged(const TreeChangeParams& params) override {
     if (IsTreeCorrectSize())
-      QuitRunLoop();
+      EXPECT_TRUE(ViewManagerTestBase::QuitRunLoop());
   }
 
   size_t CountViews(const View* view) const {
@@ -131,7 +103,8 @@ class TreeSizeMatchesObserver : public ViewObserver {
 // Wait until |view|'s tree size matches |tree_size|; returns false on timeout.
 bool WaitForTreeSizeToMatch(View* view, size_t tree_size) {
   TreeSizeMatchesObserver observer(view, tree_size);
-  return observer.IsTreeCorrectSize() || DoRunLoopWithTimeout();
+  return observer.IsTreeCorrectSize() ||
+         ViewManagerTestBase::DoRunLoopWithTimeout();
 }
 
 class OrderChangeObserver : public ViewObserver {
@@ -145,7 +118,7 @@ class OrderChangeObserver : public ViewObserver {
                        View* relative_view,
                        OrderDirection direction) override {
     DCHECK_EQ(view, view_);
-    QuitRunLoop();
+    EXPECT_TRUE(ViewManagerTestBase::QuitRunLoop());
   }
 
   View* view_;
@@ -156,7 +129,7 @@ class OrderChangeObserver : public ViewObserver {
 // Wait until |view|'s tree size matches |tree_size|; returns false on timeout.
 bool WaitForOrderChange(ViewManager* view_manager, View* view) {
   OrderChangeObserver observer(view);
-  return DoRunLoopWithTimeout();
+  return ViewManagerTestBase::DoRunLoopWithTimeout();
 }
 
 // Tracks a view's destruction. Query is_valid() for current state.
@@ -190,16 +163,10 @@ class ViewTracker : public ViewObserver {
 // These tests model synchronization of two peer connections to the view manager
 // service, that are given access to some root view.
 
-class ViewManagerTest : public test::ApplicationTestBase,
-                        public ApplicationDelegate,
-                        public ViewManagerDelegate {
+class ViewManagerTest : public ViewManagerTestBase {
  public:
   ViewManagerTest()
-      : most_recent_view_manager_(nullptr),
-        window_manager_(nullptr),
-        got_disconnect_(false),
-        on_will_embed_count_(0u),
-        on_will_embed_return_value_(true) {}
+      : on_will_embed_count_(0u), on_will_embed_return_value_(true) {}
 
   void clear_on_will_embed_count() { on_will_embed_count_ = 0u; }
   size_t on_will_embed_count() const { return on_will_embed_count_; }
@@ -207,22 +174,6 @@ class ViewManagerTest : public test::ApplicationTestBase,
   void set_on_will_embed_return_value(bool value) {
     on_will_embed_return_value_ = value;
   }
-
-  ViewManager* most_recent_view_manager() { return most_recent_view_manager_; }
-
-  // Overridden from ApplicationDelegate:
-  void Initialize(ApplicationImpl* app) override {
-    view_manager_client_factory_.reset(
-        new ViewManagerClientFactory(app->shell(), this));
-  }
-
-  // ApplicationDelegate implementation.
-  bool ConfigureIncomingConnection(ApplicationConnection* connection) override {
-    connection->AddService(view_manager_client_factory_.get());
-    return true;
-  }
-
-  ViewManager* window_manager() { return window_manager_; }
 
   // Embeds another version of the test app @ view. This runs a run loop until
   // a response is received, or a timeout. On success the new ViewManager is
@@ -249,15 +200,7 @@ class ViewManagerTest : public test::ApplicationTestBase,
     view->Embed(client.Pass());
   }
 
-  bool got_disconnect() const { return got_disconnect_; }
-
-  ApplicationDelegate* GetApplicationDelegate() override { return this; }
-
   // Overridden from ViewManagerDelegate:
-  void OnEmbed(View* root) override {
-    most_recent_view_manager_ = root->view_manager();
-    QuitRunLoop();
-  }
   void OnEmbedForDescendant(View* view,
                             mojo::URLRequestPtr request,
                             mojo::ViewManagerClientPtr* client) override {
@@ -267,11 +210,8 @@ class ViewManagerTest : public test::ApplicationTestBase,
           application_impl()->ConnectToApplication(request.Pass());
       connection->ConnectToService(client);
     } else {
-      QuitRunLoop();
+      EXPECT_TRUE(QuitRunLoop());
     }
-  }
-  void OnViewManagerDestroyed(ViewManager* view_manager) override {
-    got_disconnect_ = true;
   }
 
  private:
@@ -289,40 +229,12 @@ class ViewManagerTest : public test::ApplicationTestBase,
     } else {
       ConnectToApplicationAndEmbed(view);
     }
-    if (!DoRunLoopWithTimeout())
+    if (!ViewManagerTestBase::DoRunLoopWithTimeout())
       return nullptr;
     ViewManager* vm = nullptr;
     std::swap(vm, most_recent_view_manager_);
     return vm;
   }
-
-  // Overridden from testing::Test:
-  void SetUp() override {
-    ApplicationTestBase::SetUp();
-
-    view_manager_init_.reset(
-        new ViewManagerInit(application_impl(), this, nullptr));
-    ASSERT_TRUE(DoRunLoopWithTimeout());
-    std::swap(window_manager_, most_recent_view_manager_);
-  }
-
-  // Overridden from testing::Test:
-  void TearDown() override {
-    view_manager_init_.reset();  // Uses application_impl() from base class.
-    ApplicationTestBase::TearDown();
-  }
-
-  scoped_ptr<ViewManagerInit> view_manager_init_;
-
-  scoped_ptr<ViewManagerClientFactory> view_manager_client_factory_;
-
-  // Used to receive the most recent view manager loaded by an embed action.
-  ViewManager* most_recent_view_manager_;
-  // The View Manager connection held by the window manager (app running at the
-  // root view).
-  ViewManager* window_manager_;
-
-  bool got_disconnect_;
 
   // Number of times OnWillEmbed() has been called.
   size_t on_will_embed_count_;
@@ -516,7 +428,7 @@ class VisibilityChangeObserver : public ViewObserver {
   // Overridden from ViewObserver:
   void OnViewVisibilityChanged(View* view) override {
     EXPECT_EQ(view, view_);
-    QuitRunLoop();
+    EXPECT_TRUE(ViewManagerTestBase::QuitRunLoop());
   }
 
   View* view_;
@@ -544,7 +456,7 @@ TEST_F(ViewManagerTest, Visible) {
   {
     VisibilityChangeObserver observer(embedded_root);
     view1->SetVisible(false);
-    ASSERT_TRUE(DoRunLoopWithTimeout());
+    ASSERT_TRUE(ViewManagerTestBase::DoRunLoopWithTimeout());
   }
 
   EXPECT_FALSE(view1->visible());
@@ -557,7 +469,7 @@ TEST_F(ViewManagerTest, Visible) {
   {
     VisibilityChangeObserver observer(embedded_root);
     view1->SetVisible(true);
-    ASSERT_TRUE(DoRunLoopWithTimeout());
+    ASSERT_TRUE(ViewManagerTestBase::DoRunLoopWithTimeout());
   }
 
   EXPECT_TRUE(view1->visible());
@@ -580,7 +492,7 @@ class DrawnChangeObserver : public ViewObserver {
   // Overridden from ViewObserver:
   void OnViewDrawnChanged(View* view) override {
     EXPECT_EQ(view, view_);
-    QuitRunLoop();
+    EXPECT_TRUE(ViewManagerTestBase::QuitRunLoop());
   }
 
   View* view_;
@@ -640,7 +552,7 @@ class FocusChangeObserver : public ViewObserver {
   void OnViewFocusChanged(View* gained_focus, View* lost_focus) override {
     last_gained_focus_ = gained_focus;
     last_lost_focus_ = lost_focus;
-    QuitRunLoop();
+    EXPECT_TRUE(ViewManagerTestBase::QuitRunLoop());
   }
 
   View* view_;
@@ -726,7 +638,7 @@ TEST_F(ViewManagerTest, DeleteViewManager) {
   bool got_destroy = false;
   DestroyedChangedObserver observer(view_manager->GetRoot(), &got_destroy);
   delete view_manager;
-  EXPECT_TRUE(got_disconnect());
+  EXPECT_TRUE(view_manager_destroyed());
   EXPECT_TRUE(got_destroy);
 }
 
@@ -743,9 +655,9 @@ TEST_F(ViewManagerTest, DisconnectTriggersDelete) {
   // Embed again, this should trigger disconnect and deletion of view_manager.
   bool got_destroy;
   DestroyedChangedObserver observer(embedded_view, &got_destroy);
-  EXPECT_FALSE(got_disconnect());
+  EXPECT_FALSE(view_manager_destroyed());
   Embed(view);
-  EXPECT_TRUE(got_disconnect());
+  EXPECT_TRUE(view_manager_destroyed());
 }
 
 class ViewRemovedFromParentObserver : public ViewObserver {

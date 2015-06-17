@@ -224,6 +224,7 @@ mojo_native_application("apptests") {
 
   deps = [
     "//base",
+    "//components/view_manager/public/cpp/tests:test_support",
     "//mojo/application/public/cpp:test_support",
     "//net:test_support",
     "//testing/gtest",
@@ -231,5 +232,8 @@ mojo_native_application("apptests") {
     "//third_party/mojo/src/mojo/public/c/system:for_shared_library",
   ]
 
-  data_deps = [ ":html_viewer" ]
+  data_deps = [
+    ":html_viewer",
+    "//components/view_manager",
+  ]
 }

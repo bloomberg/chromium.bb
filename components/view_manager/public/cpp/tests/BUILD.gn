@@ -5,6 +5,24 @@
 import("//build/config/ui.gni")
 import("//testing/test.gni")
 
+source_set("test_support") {
+  testonly = true
+
+  sources = [
+    "view_manager_test_base.cc",
+    "view_manager_test_base.h",
+  ]
+
+  deps = [
+    "//base",
+    "//base/test:test_config",
+    "//components/view_manager/public/cpp",
+    "//mojo/application/public/cpp:sources",
+    "//mojo/application/public/cpp:test_support",
+    "//testing/gtest",
+  ]
+}
+
 test("mojo_view_manager_lib_unittests") {
   sources = [
     "run_all_unittests.cc",

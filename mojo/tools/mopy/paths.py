@@ -39,6 +39,7 @@ class Paths(object):
       self.apk_path = os.path.join(self.build_dir, "apks", config.apk_name)
       self.mojo_runner = os.path.join(self.src_root, "mojo", "tools",
                                       "android_mojo_shell.py")
+    self.xvfb = os.path.join(self.src_root, "testing", "xvfb.py")
 
   def RelPath(self, path):
     """Returns the given path, relative to the current directory."""
