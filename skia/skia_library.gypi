@@ -50,6 +50,7 @@
     '../third_party/skia/src/ports/SkFontHost_mac.cpp',
     '../third_party/skia/src/ports/SkFontHost_win.cpp',
     "../third_party/skia/src/ports/SkFontMgr_android.cpp",
+    "../third_party/skia/src/ports/SkFontMgr_android_factory.cpp",
     '../third_party/skia/src/ports/SkFontMgr_win_dw.cpp',
     '../third_party/skia/src/ports/SkGlobalInitialization_chromium.cpp',
     '../third_party/skia/src/ports/SkOSFile_posix.cpp',
@@ -253,6 +254,10 @@
       'hard_dependency': 1,
       'include_dirs': [
         '../third_party/expat/files/lib',
+      ],
+    },{ # not 'OS == "android"'
+      'sources!': [
+        "../third_party/skia/src/ports/SkFontMgr_android_factory.cpp",
       ],
     }],
     [ 'OS == "ios"', {
