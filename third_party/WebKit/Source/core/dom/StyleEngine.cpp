@@ -534,7 +534,7 @@ static bool isCacheableForStyleElement(const StyleSheetContents& contents)
     return true;
 }
 
-PassRefPtrWillBeRawPtr<CSSStyleSheet> StyleEngine::createSheet(Element* e, const String& text, TextPosition startPosition, bool createdByParser)
+PassRefPtrWillBeRawPtr<CSSStyleSheet> StyleEngine::createSheet(Element* e, const String& text, TextPosition startPosition)
 {
     RefPtrWillBeRawPtr<CSSStyleSheet> styleSheet = nullptr;
 
@@ -544,7 +544,7 @@ PassRefPtrWillBeRawPtr<CSSStyleSheet> StyleEngine::createSheet(Element* e, const
 
     WillBeHeapHashMap<AtomicString, RawPtrWillBeMember<StyleSheetContents>>::AddResult result = m_textToSheetCache.add(textContent, nullptr);
     if (result.isNewEntry || !result.storedValue->value) {
-        styleSheet = StyleEngine::parseSheet(e, text, startPosition, createdByParser);
+        styleSheet = StyleEngine::parseSheet(e, text, startPosition);
         if (result.isNewEntry && isCacheableForStyleElement(*styleSheet->contents())) {
             result.storedValue->value = styleSheet->contents();
             m_sheetToTextCache.add(styleSheet->contents(), textContent);
@@ -562,8 +562,7 @@ PassRefPtrWillBeRawPtr<CSSStyleSheet> StyleEngine::createSheet(Element* e, const
     return styleSheet;
 }
 
-// TODO(timloh): Remove createdByParser
-PassRefPtrWillBeRawPtr<CSSStyleSheet> StyleEngine::parseSheet(Element* e, const String& text, TextPosition startPosition, bool createdByParser)
+PassRefPtrWillBeRawPtr<CSSStyleSheet> StyleEngine::parseSheet(Element* e, const String& text, TextPosition startPosition)
 {
     RefPtrWillBeRawPtr<CSSStyleSheet> styleSheet = nullptr;
     styleSheet = CSSStyleSheet::createInline(e, KURL(), startPosition, e->document().characterSet());
