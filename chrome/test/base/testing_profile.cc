@@ -203,9 +203,8 @@ scoped_ptr<KeyedService> BuildInMemoryURLIndex(
       BookmarkModelFactory::GetForProfile(profile),
       HistoryServiceFactory::GetForProfile(profile,
                                            ServiceAccessType::IMPLICIT_ACCESS),
-      content::BrowserThread::GetBlockingPool(), profile->GetPath(),
-      profile->GetPrefs()->GetString(prefs::kAcceptLanguages),
-      SchemeSet()));
+      profile->GetPath(),
+      profile->GetPrefs()->GetString(prefs::kAcceptLanguages)));
   in_memory_url_index->Init();
   return in_memory_url_index.Pass();
 }

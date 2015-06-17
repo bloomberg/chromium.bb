@@ -8,23 +8,27 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/autocomplete/url_index_private_data.h"
+#include "chrome/common/url_constants.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/url_database.h"
+#include "content/public/browser/browser_thread.h"
 
 using in_memory_url_index::InMemoryURLIndexCacheItem;
 
+// Called by DoSaveToCacheFile to delete any old cache file at |path| when
+// there is no private data to save. Runs on the blocking pool.
+void DeleteCacheFile(const base::FilePath& path) {
+  DCHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  base::DeleteFile(path, false);
+}
+
 // Initializes a whitelist of URL schemes.
-void InitializeSchemeWhitelist(
-    SchemeSet* whitelist,
-    const SchemeSet& client_schemes_to_whitelist) {
+void InitializeSchemeWhitelist(std::set<std::string>* whitelist) {
   DCHECK(whitelist);
   if (!whitelist->empty())
     return;  // Nothing to do, already initialized.
-
-  whitelist->insert(client_schemes_to_whitelist.begin(),
-                    client_schemes_to_whitelist.end());
-
   whitelist->insert(std::string(url::kAboutScheme));
+  whitelist->insert(std::string(content::kChromeUIScheme));
   whitelist->insert(std::string(url::kFileScheme));
   whitelist->insert(std::string(url::kFtpScheme));
   whitelist->insert(std::string(url::kHttpScheme));
@@ -46,7 +50,7 @@ InMemoryURLIndex::RebuildPrivateDataFromHistoryDBTask::
     RebuildPrivateDataFromHistoryDBTask(
         InMemoryURLIndex* index,
         const std::string& languages,
-        const SchemeSet& scheme_whitelist)
+        const std::set<std::string>& scheme_whitelist)
     : index_(index),
       languages_(languages),
       scheme_whitelist_(scheme_whitelist),
@@ -75,13 +79,10 @@ InMemoryURLIndex::RebuildPrivateDataFromHistoryDBTask::
 
 // InMemoryURLIndex ------------------------------------------------------------
 
-InMemoryURLIndex::InMemoryURLIndex(
-    bookmarks::BookmarkModel* bookmark_model,
-    history::HistoryService* history_service,
-    base::SequencedWorkerPool* worker_pool,
-    const base::FilePath& history_dir,
-    const std::string& languages,
-    const SchemeSet& client_schemes_to_whitelist)
+InMemoryURLIndex::InMemoryURLIndex(bookmarks::BookmarkModel* bookmark_model,
+                                   history::HistoryService* history_service,
+                                   const base::FilePath& history_dir,
+                                   const std::string& languages)
     : bookmark_model_(bookmark_model),
       history_service_(history_service),
       history_dir_(history_dir),
@@ -90,12 +91,13 @@ InMemoryURLIndex::InMemoryURLIndex(
       restore_cache_observer_(NULL),
       save_cache_observer_(NULL),
       task_runner_(
-          worker_pool->GetSequencedTaskRunner(worker_pool->GetSequenceToken())),
+          content::BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(
+              content::BrowserThread::GetBlockingPool()->GetSequenceToken())),
       shutdown_(false),
       restored_(false),
       needs_to_be_cached_(false),
       listen_to_history_service_loaded_(false) {
-  InitializeSchemeWhitelist(&scheme_whitelist_, client_schemes_to_whitelist);
+  InitializeSchemeWhitelist(&scheme_whitelist_);
   // TODO(mrossetti): Register for language change notifications.
   if (history_service_)
     history_service_->AddObserver(this);
@@ -193,9 +195,7 @@ void InMemoryURLIndex::OnURLsDeleted(history::HistoryService* history_service,
   // would be odd and confusing.  It's better to force a rebuild.
   base::FilePath path;
   if (needs_to_be_cached_ && GetCacheFilePath(&path))
-    task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(base::IgnoreResult(base::DeleteFile), path, false));
+    task_runner_->PostTask(FROM_HERE, base::Bind(DeleteCacheFile, path));
 }
 
 void InMemoryURLIndex::OnHistoryServiceLoaded(
@@ -208,7 +208,7 @@ void InMemoryURLIndex::OnHistoryServiceLoaded(
 // Restoring from Cache --------------------------------------------------------
 
 void InMemoryURLIndex::PostRestoreFromCacheFileTask() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   TRACE_EVENT0("browser", "InMemoryURLIndex::PostRestoreFromCacheFileTask");
 
   base::FilePath path;
@@ -241,9 +241,7 @@ void InMemoryURLIndex::OnCacheLoadDone(
     base::FilePath path;
     if (!GetCacheFilePath(&path) || shutdown_)
       return;
-    task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(base::IgnoreResult(base::DeleteFile), path, false));
+    task_runner_->PostTask(FROM_HERE, base::Bind(DeleteCacheFile, path));
     if (history_service_->backend_loaded()) {
       ScheduleRebuildFromHistory();
     } else {
@@ -288,7 +286,7 @@ void InMemoryURLIndex::ScheduleRebuildFromHistory() {
 void InMemoryURLIndex::DoneRebuidingPrivateDataFromHistoryDB(
     bool succeeded,
     scoped_refptr<URLIndexPrivateData> private_data) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (succeeded) {
     private_data_tracker_.TryCancelAll();
     private_data_ = private_data;
@@ -332,9 +330,7 @@ void InMemoryURLIndex::PostSaveToCacheFileTask() {
         base::Bind(&InMemoryURLIndex::OnCacheSaveDone, AsWeakPtr()));
   } else {
     // If there is no data in our index then delete any existing cache file.
-    task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(base::IgnoreResult(base::DeleteFile), path, false));
+    task_runner_->PostTask(FROM_HERE, base::Bind(DeleteCacheFile, path));
   }
 }
 
