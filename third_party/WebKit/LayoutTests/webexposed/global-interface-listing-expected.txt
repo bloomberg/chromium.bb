@@ -2393,6 +2393,7 @@ interface HTMLMediaElement
     getter readyState
     getter seekable
     getter seeking
+    getter sinkId
     getter src
     getter textTracks
     getter videoTracks
@@ -2406,6 +2407,7 @@ interface HTMLMediaElement
     method pause
     method play
     method setMediaKeys
+    method setSinkId
     method webkitAddKey
     method webkitCancelKeyRequest
     method webkitGenerateKeyRequest

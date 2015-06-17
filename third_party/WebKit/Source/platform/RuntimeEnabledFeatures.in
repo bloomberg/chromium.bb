@@ -18,6 +18,7 @@
 
 AppBanner status=stable
 ApplicationCache status=stable
+AudioOutputDevices status=test
 AudioVideoTracks depends_on=Media, status=experimental
 AuthorShadowDOMForAnyElement
 BackgroundSync status=experimental

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Audio Output Devices</title>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script>
+  </head>
+  <body>
+    <video id="testVideo"></video>
+    <script>
+      // Tests that the setSinkId() Promise rejects with a  NotSupportedError,
+      // because the functionality has not been implemented yet.
+      promise_test(function() {
+        var video = document.getElementById('testVideo');
+        assert_not_equals(video, null);
+
+        assert_idl_attribute(video, 'setSinkId');
+        assert_equals(typeof video.setSinkId, 'function');
+        assert_idl_attribute(video, 'sinkId');
+        assert_equals(video.sinkId, '');
+
+        return video.setSinkId('').then(function() {
+          assert_unreached('setSinkId() should not be implemented yet!');
+        }, function(error) {
+          assert_equals(error.name, 'NotSupportedError');
+          return Promise.resolve();
+        });
+    }, 'setSinkId() test');
+    </script>
+  </body>
+</html>
+

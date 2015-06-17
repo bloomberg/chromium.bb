@@ -243,6 +243,7 @@
     ],
     # 'partial interface' or target (right side of) 'implements'
     'modules_dependency_idl_files': [
+      'audio_output_devices/HTMLMediaElementAudioOutputDevice.idl',
       'background_sync/ServiceWorkerGlobalScopeSync.idl',
       'background_sync/ServiceWorkerRegistrationSync.idl',
       'battery/NavigatorBattery.idl',
@@ -585,6 +586,8 @@
       'app_banner/AppBannerPromptResult.h',
       'app_banner/BeforeInstallPromptEvent.cpp',
       'app_banner/BeforeInstallPromptEvent.h',
+      'audio_output_devices/HTMLMediaElementAudioOutputDevice.cpp',
+      'audio_output_devices/HTMLMediaElementAudioOutputDevice.h',
       'background_sync/PeriodicSyncEvent.cpp',
       'background_sync/PeriodicSyncEvent.h',
       'background_sync/PeriodicSyncManager.cpp',
