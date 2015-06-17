@@ -541,6 +541,39 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
     ASSERT_EQ(expected_status, status);
   }
 
+  base::string16 RunSyncTestWithConsoleOutput(
+      const std::string& worker_url,
+      ServiceWorkerStatusCode expected_status) {
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+    command_line->AppendSwitch(switches::kEnableServiceWorkerSync);
+    RunOnIOThread(
+        base::Bind(&self::SetUpRegistrationOnIOThread, this, worker_url));
+    return SyncOnRegisteredWorkerWithConsoleOutput(expected_status);
+  }
+
+  void SyncOnRegisteredWorker(ServiceWorkerStatusCode expected_status) {
+    ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
+    base::RunLoop sync_run_loop;
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                            base::Bind(&self::SyncEventOnIOThread, this,
+                                       sync_run_loop.QuitClosure(), &status));
+    sync_run_loop.Run();
+    ASSERT_EQ(expected_status, status);
+  }
+
+  base::string16 SyncOnRegisteredWorkerWithConsoleOutput(
+      ServiceWorkerStatusCode expected_status) {
+    ConsoleListener console_listener;
+    version_->embedded_worker()->AddListener(&console_listener);
+
+    SyncOnRegisteredWorker(expected_status);
+
+    console_listener.WaitForConsoleMessages(1);
+    base::string16 console_output = console_listener.messages()[0];
+    version_->embedded_worker()->RemoveListener(&console_listener);
+    return console_output;
+  }
+
   void FetchOnRegisteredWorker(
       ServiceWorkerFetchEventResult* result,
       ServiceWorkerResponse* response,
@@ -1157,6 +1190,50 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, SyncEventHandled) {
   // Should 200 after sync event.
   FetchOnRegisteredWorker(&result, &response, &blob_data_handle);
   EXPECT_EQ(200, response.status_code);
+}
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, SyncEventInterface) {
+  // Verify that the fired sync event has the correct interface.
+  // The js event handler will console.log the event properties.
+  base::string16 console_output = RunSyncTestWithConsoleOutput(
+      "/background_sync/sync_event_interface.js", SERVICE_WORKER_OK);
+
+  EXPECT_FALSE(console_output.empty());
+
+  // Console output is a pipe-delimited string, as:
+  // <event prototype>|<typeof waitUntil>
+  std::vector<base::string16> event_properties;
+  base::SplitString(console_output, '|', &event_properties);
+
+  const base::string16::size_type num_properties = 2;
+  const base::string16 event_type = base::ASCIIToUTF16("SyncEvent");
+  const base::string16 wait_until_type = base::ASCIIToUTF16("function");
+  EXPECT_EQ(num_properties, event_properties.size());
+  EXPECT_EQ(event_type, event_properties[0]);
+  EXPECT_EQ(wait_until_type, event_properties[1]);
+}
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
+                       SyncEventWaitUntil_Fulfilled) {
+  base::string16 console_output = RunSyncTestWithConsoleOutput(
+      "/background_sync/sync_event_fulfilled.js", SERVICE_WORKER_OK);
+
+  // Verify that the event.waitUntil function resolved the promise.  If so,
+  // the js event handler will console.log the expected output.
+  const base::string16 expected = base::ASCIIToUTF16("Fulfilling onsync event");
+  EXPECT_EQ(expected, console_output);
+}
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
+                       SyncEventWaitUntil_Rejected) {
+  base::string16 console_output = RunSyncTestWithConsoleOutput(
+      "/background_sync/sync_event_rejected.js",
+      SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED);
+
+  // Verify that the event.waitUntil function rejected the promise.  If so,
+  // the js event handler will console.log the expected output.
+  const base::string16 expected = base::ASCIIToUTF16("Rejecting onsync event");
+  EXPECT_EQ(expected, console_output);
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, Reload) {
