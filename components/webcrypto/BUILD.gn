@@ -29,6 +29,8 @@ source_set("webcrypto") {
   ]
 
   deps = [
+    "//base",
+    "//crypto",
     "//crypto:platform",
   ]
 
