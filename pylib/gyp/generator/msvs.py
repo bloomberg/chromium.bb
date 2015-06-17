@@ -134,49 +134,44 @@ def _GetDomainAndUserName():
 fixpath_prefix = None
 
 
-def _NormalizedSource(source, curdir=None):
+def _NormalizedSource(source):
   """Normalize the path.
 
   But not if that gets rid of a variable, as this may expand to something
   larger than one directory.
 
   Arguments:
-      source: The path to be normalized
-      curdir: Current direcory to normalize against (optional)
+      source: The path to be normalize.d
 
   Returns:
       The normalized path.
   """
   normalized = os.path.normpath(source)
-  if curdir:
-    normalized = os.path.normpath(os.path.join(curdir, normalized))
-    normalized = os.path.relpath(normalized, curdir)
   if source.count('$') == normalized.count('$'):
     source = normalized
   return source
 
 
-def _FixPath(path, curdir=None):
+def _FixPath(path):
   """Convert paths to a form that will make sense in a vcproj file.
 
   Arguments:
     path: The path to convert, may contain / etc.
-    curdir: Current directory of path (optional)
   Returns:
     The path with all slashes made into backslashes.
   """
   if fixpath_prefix and path and not os.path.isabs(path) and not path[0] == '$':
     path = os.path.join(fixpath_prefix, path)
   path = path.replace('/', '\\')
-  path = _NormalizedSource(path, curdir)
+  path = _NormalizedSource(path)
   if path and path[-1] == '\\':
     path = path[:-1]
   return path
 
 
-def _FixPaths(paths, curdir=None):
+def _FixPaths(paths):
   """Fix each of the paths of the list."""
-  return [_FixPath(i, curdir) for i in paths]
+  return [_FixPath(i) for i in paths]
 
 
 def _ConvertSourcesToFilterHierarchy(sources, prefix=None, excluded=None,
@@ -1484,7 +1479,7 @@ def _AdjustSourcesAndConvertToFilterHierarchy(
   # Convert to proper windows form.
   # NOTE: sources goes from being a set to a list here.
   # NOTE: excluded_sources goes from being a set to a list here.
-  sources = _FixPaths(sources, _FixPath(gyp_dir))
+  sources = _FixPaths(sources)
   # Convert to proper windows form.
   excluded_sources = _FixPaths(excluded_sources)
 
