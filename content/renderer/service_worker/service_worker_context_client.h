@@ -116,8 +116,6 @@ class ServiceWorkerContextClient
       blink::WebServiceWorkerEventResult result);
   virtual void didHandlePushEvent(int request_id,
                                   blink::WebServiceWorkerEventResult result);
-  // TODO(chasej): crbug.com/486890 - Remove when matching blink changes land
-  virtual void didHandleSyncEvent(int request_id);
   virtual void didHandleSyncEvent(int request_id,
                                   blink::WebServiceWorkerEventResult result);
   virtual void didHandleCrossOriginConnectEvent(int request_id,

@@ -518,11 +518,6 @@ void ServiceWorkerContextClient::didHandlePushEvent(
       GetRoutingID(), request_id, result));
 }
 
-// TODO(chasej): crbug.com/486890 - Remove when matching blink changes land
-void ServiceWorkerContextClient::didHandleSyncEvent(int request_id) {
-  didHandleSyncEvent(request_id, blink::WebServiceWorkerEventResultCompleted);
-}
-
 void ServiceWorkerContextClient::didHandleSyncEvent(
     int request_id,
     blink::WebServiceWorkerEventResult result) {
