@@ -253,7 +253,6 @@ void RenderWidgetHostViewGuest::OnSwapCompositorFrame(
 
   if (surface_id_.is_null()) {
     surface_id_ = id_allocator_->GenerateId();
-    // wjm: Next line makes destructor unhappy ...
     surface_factory_->Create(surface_id_);
 
     cc::SurfaceSequence sequence = cc::SurfaceSequence(
