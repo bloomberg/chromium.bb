@@ -12,6 +12,8 @@
       'dependencies': [
         '../../base/base.gyp:base',
         '../../base/base.gyp:test_support_base',
+        '../../components/components.gyp:bookmarks_test_support',
+        '../../components/components.gyp:enhanced_bookmarks_test_support',
         '../../net/net.gyp:net_test_support',
         '../../testing/gmock.gyp:gmock',
         '../../testing/gtest.gyp:gtest',
@@ -28,6 +30,7 @@
         'app/safe_mode_util_unittest.cc',
         'browser/chrome_url_util_unittest.mm',
         'browser/crash_loop_detection_util_unittest.mm',
+        'browser/enhanced_bookmarks/bookmark_image_service_ios_unittest.mm',
         'browser/experimental_flags_unittest.mm',
         'browser/geolocation/CLLocation+XGeoHeaderTest.mm',
         'browser/geolocation/location_manager_unittest.mm',
@@ -44,6 +47,18 @@
         'browser/ui/ui_util_unittest.mm',
         'browser/ui/uikit_ui_util_unittest.mm',
         'common/string_util_unittest.mm',
+      ],
+      'actions': [
+        {
+          'action_name': 'copy_ios_chrome_test_data',
+          'variables': {
+            'test_data_files': [
+              'test/data/webdata/bookmarkimages',
+            ],
+            'test_data_prefix': 'ios/chrome',
+          },
+          'includes': [ '../../build/copy_test_data_ios.gypi' ]
+        },
       ],
       'includes': ['ios_chrome_resources_bundle.gypi'],
     },

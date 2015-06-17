@@ -47,6 +47,7 @@
         '../../components/components.gyp:autofill_core_browser',
         '../../components/components.gyp:autofill_core_common',
         '../../components/components.gyp:autofill_ios_browser',
+        '../../components/components.gyp:bookmarks_browser',
         '../../components/components.gyp:data_reduction_proxy_core_common',
         '../../components/components.gyp:dom_distiller_core',
         '../../components/components.gyp:dom_distiller_ios',
@@ -135,6 +136,10 @@
         'browser/dom_distiller/distiller_viewer.h',
         'browser/dom_distiller/dom_distiller_service_factory.cc',
         'browser/dom_distiller/dom_distiller_service_factory.h',
+        'browser/enhanced_bookmarks/bookmark_image_service_factory.h',
+        'browser/enhanced_bookmarks/bookmark_image_service_factory.mm',
+        'browser/enhanced_bookmarks/bookmark_image_service_ios.h',
+        'browser/enhanced_bookmarks/bookmark_image_service_ios.mm',
         'browser/enhanced_bookmarks/bookmark_server_cluster_service_factory.cc',
         'browser/enhanced_bookmarks/bookmark_server_cluster_service_factory.h',
         'browser/enhanced_bookmarks/enhanced_bookmark_model_factory.cc',
@@ -324,6 +329,7 @@
       'target_name': 'injected_js',
       'type': 'none',
       'sources': [
+        'browser/enhanced_bookmarks/bookmark_image_service_ios.js',
         'browser/find_in_page/resources/find_in_page.js',
       ],
       'includes': [
@@ -331,6 +337,7 @@
       ],
       'link_settings': {
         'mac_bundle_resources': [
+          '<(SHARED_INTERMEDIATE_DIR)/bookmark_image_service_ios.js',
           '<(SHARED_INTERMEDIATE_DIR)/find_in_page.js',
         ],
       },
