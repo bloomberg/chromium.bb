@@ -1406,6 +1406,8 @@ TEST_F(ServiceWorkerStorageTest, FindRegistration_LongestScopeMatch) {
 }
 
 TEST_F(ServiceWorkerStorageTest, CompareResources) {
+  LazyInitialize();
+
   // Compare two small responses containing the same data.
   WriteBasicResponse(storage(), 1);
   WriteBasicResponse(storage(), 2);

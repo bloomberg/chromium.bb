@@ -8,8 +8,10 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner_util.h"
+#include "base/time/time.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -40,6 +42,22 @@ ServiceWorkerStatusCode MigrateForAndroid(const base::FilePath& src_path,
   return SERVICE_WORKER_ERROR_FAILED;
 }
 #endif  // defined(OS_ANDROID)
+
+void RecordMigrationResult(ServiceWorkerStatusCode status) {
+  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.DiskCacheMigrator.MigrationResult",
+                            status, SERVICE_WORKER_ERROR_MAX_VALUE);
+}
+
+void RecordNumberOfMigratedResources(size_t migrated_resources) {
+  UMA_HISTOGRAM_COUNTS_1000(
+      "ServiceWorker.DiskCacheMigrator.NumberOfMigratedResources",
+      migrated_resources);
+}
+
+void RecordMigrationTime(const base::TimeDelta& time) {
+  UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.DiskCacheMigrator.MigrationTime",
+                             time);
+}
 
 }  // namespace
 
@@ -264,6 +282,7 @@ ServiceWorkerDiskCacheMigrator::~ServiceWorkerDiskCacheMigrator() {
 
 void ServiceWorkerDiskCacheMigrator::Start(const StatusCallback& callback) {
   callback_ = callback;
+  start_time_ = base::TimeTicks::Now();
 
 #if defined(OS_ANDROID)
   PostTaskAndReplyWithResult(
@@ -417,6 +436,8 @@ void ServiceWorkerDiskCacheMigrator::OnEntryMigrated(
     return;
   }
 
+  ++number_of_migrated_resources_;
+
   if (pending_task_) {
     RunPendingTask();
     OpenNextEntry();
@@ -432,7 +453,11 @@ void ServiceWorkerDiskCacheMigrator::OnEntryMigrated(
 
 void ServiceWorkerDiskCacheMigrator::Complete(ServiceWorkerStatusCode status) {
   DCHECK(inflight_tasks_.IsEmpty());
-  // TODO(nhiroki): Add UMA for the result of migration.
+  if (status == SERVICE_WORKER_OK) {
+    RecordMigrationTime(base::TimeTicks().Now() - start_time_);
+    RecordNumberOfMigratedResources(number_of_migrated_resources_);
+  }
+  RecordMigrationResult(status);
 
   src_.reset();
   dest_.reset();

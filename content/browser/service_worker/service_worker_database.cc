@@ -73,6 +73,16 @@
 //
 //   key: "REGID_TO_ORIGIN:" + <int64 'registration_id'>
 //   value: <GURL 'origin'>
+//
+//   key: "INITDATA_DISKCACHE_MIGRATION_NOT_NEEDED"
+//   value: <empty>
+//     - This entry represents that the diskcache uses the Simple backend and
+//       does not have to do diskcache migration (http://crbug.com/487482).
+//
+//   key: "INITDATA_OLD_DISKCACHE_DELETION_NOT_NEEDED"
+//   value: <empty>
+//     - This entry represents that the old BlockFile diskcache was deleted
+//       after diskcache migration (http://crbug.com/487482).
 namespace content {
 
 namespace {
@@ -82,6 +92,10 @@ const char kNextRegIdKey[] = "INITDATA_NEXT_REGISTRATION_ID";
 const char kNextResIdKey[] = "INITDATA_NEXT_RESOURCE_ID";
 const char kNextVerIdKey[] = "INITDATA_NEXT_VERSION_ID";
 const char kUniqueOriginKey[] = "INITDATA_UNIQUE_ORIGIN:";
+const char kDiskCacheMigrationNotNeededKey[] =
+    "INITDATA_DISKCACHE_MIGRATION_NOT_NEEDED";
+const char kOldDiskCacheDeletionNotNeededKey[] =
+    "INITDATA_OLD_DISKCACHE_DELETION_NOT_NEEDED";
 
 const char kRegKeyPrefix[] = "REG:";
 const char kRegUserDataKeyPrefix[] = "REG_USER_DATA:";
@@ -89,6 +103,7 @@ const char kRegHasUserDataKeyPrefix[] = "REG_HAS_USER_DATA:";
 const char kRegIdToOriginKeyPrefix[] = "REGID_TO_ORIGIN:";
 const char kResKeyPrefix[] = "RES:";
 const char kKeySeparator = '\x00';
+const char kEmptyValue[] = "";
 
 const char kUncommittedResIdKeyPrefix[] = "URES:";
 const char kPurgeableResIdKeyPrefix[] = "PRES:";
@@ -374,7 +389,8 @@ ServiceWorkerDatabase::ServiceWorkerDatabase(const base::FilePath& path)
       next_avail_registration_id_(0),
       next_avail_resource_id_(0),
       next_avail_version_id_(0),
-      state_(UNINITIALIZED) {
+      state_(UNINITIALIZED),
+      skip_writing_diskcache_migration_state_on_init_for_testing_(false) {
   sequence_checker_.DetachFromSequence();
 }
 
@@ -416,6 +432,92 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::GetNextAvailableIds(
   *next_avail_version_id = next_avail_version_id_;
   *next_avail_resource_id = next_avail_resource_id_;
   return STATUS_OK;
+}
+
+ServiceWorkerDatabase::Status ServiceWorkerDatabase::IsDiskCacheMigrationNeeded(
+    bool* migration_needed) {
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+
+  Status status = LazyOpen(false);
+  if (IsNewOrNonexistentDatabase(status)) {
+    *migration_needed = false;
+    return STATUS_OK;
+  }
+  if (status != STATUS_OK)
+    return status;
+
+  std::string value;
+  status = LevelDBStatusToStatus(db_->Get(
+      leveldb::ReadOptions(), kDiskCacheMigrationNotNeededKey, &value));
+  if (status == STATUS_ERROR_NOT_FOUND) {
+    *migration_needed = true;
+    HandleReadResult(FROM_HERE, STATUS_OK);
+    return STATUS_OK;
+  }
+  if (status != STATUS_OK) {
+    HandleReadResult(FROM_HERE, status);
+    return status;
+  }
+
+  *migration_needed = false;
+  HandleReadResult(FROM_HERE, status);
+  return status;
+}
+
+ServiceWorkerDatabase::Status
+ServiceWorkerDatabase::SetDiskCacheMigrationNotNeeded() {
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+
+  Status status = LazyOpen(true);
+  if (status != STATUS_OK)
+    return status;
+
+  leveldb::WriteBatch batch;
+  batch.Put(kDiskCacheMigrationNotNeededKey, kEmptyValue);
+  return WriteBatch(&batch);
+}
+
+ServiceWorkerDatabase::Status
+ServiceWorkerDatabase::IsOldDiskCacheDeletionNeeded(bool* deletion_needed) {
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+
+  Status status = LazyOpen(false);
+  if (IsNewOrNonexistentDatabase(status)) {
+    *deletion_needed = false;
+    return STATUS_OK;
+  }
+  if (status != STATUS_OK)
+    return status;
+
+  std::string value;
+  status = LevelDBStatusToStatus(db_->Get(
+      leveldb::ReadOptions(), kOldDiskCacheDeletionNotNeededKey, &value));
+  if (status == STATUS_ERROR_NOT_FOUND) {
+    *deletion_needed = true;
+    HandleReadResult(FROM_HERE, STATUS_OK);
+    return STATUS_OK;
+  }
+  if (status != STATUS_OK) {
+    HandleReadResult(FROM_HERE, status);
+    return status;
+  }
+
+  *deletion_needed = false;
+  HandleReadResult(FROM_HERE, status);
+  return status;
+}
+
+ServiceWorkerDatabase::Status
+ServiceWorkerDatabase::SetOldDiskCacheDeletionNotNeeded() {
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+
+  Status status = LazyOpen(true);
+  if (status != STATUS_OK)
+    return status;
+
+  leveldb::WriteBatch batch;
+  batch.Put(kOldDiskCacheDeletionNotNeededKey, kEmptyValue);
+  return WriteBatch(&batch);
 }
 
 ServiceWorkerDatabase::Status
@@ -1425,8 +1527,10 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::WriteBatch(
   DCHECK_NE(DISABLED, state_);
 
   if (state_ == UNINITIALIZED) {
-    // Write the database schema version.
+    // Write database default values.
     batch->Put(kDatabaseVersionKey, base::Int64ToString(kCurrentSchemaVersion));
+    if (!skip_writing_diskcache_migration_state_on_init_for_testing_)
+      batch->Put(kDiskCacheMigrationNotNeededKey, kEmptyValue);
     state_ = INITIALIZED;
   }
 

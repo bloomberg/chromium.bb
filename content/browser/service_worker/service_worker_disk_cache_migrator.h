@@ -77,6 +77,9 @@ class CONTENT_EXPORT ServiceWorkerDiskCacheMigrator {
   scoped_ptr<Task> pending_task_;
   size_t max_number_of_inflight_tasks_ = 10;
 
+  base::TimeTicks start_time_;
+  size_t number_of_migrated_resources_ = 0;
+
   StatusCallback callback_;
 
   base::WeakPtrFactory<ServiceWorkerDiskCacheMigrator> weak_factory_;
