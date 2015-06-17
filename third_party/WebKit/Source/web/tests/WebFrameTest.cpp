@@ -2472,7 +2472,7 @@ TEST_P(ParameterizedWebFrameTest, DivAutoZoomWideDivTest)
     EXPECT_FLOAT_EQ(webViewHelper.webViewImpl()->minimumPageScaleFactor(), scale);
 }
 
-TEST_F(WebFrameTest, DivAutoZoomVeryTallTest)
+TEST_P(ParameterizedWebFrameTest, DivAutoZoomVeryTallTest)
 {
     // When a block is taller than the viewport and a zoom targets a lower part
     // of it, then we should keep the target point onscreen instead of snapping
@@ -2482,7 +2482,7 @@ TEST_F(WebFrameTest, DivAutoZoomVeryTallTest)
     const float deviceScaleFactor = 2.0f;
     int viewportWidth = 640 / deviceScaleFactor;
     int viewportHeight = 1280 / deviceScaleFactor;
-    FrameTestHelpers::WebViewHelper webViewHelper;
+    FrameTestHelpers::WebViewHelper webViewHelper(this);
     webViewHelper.initializeAndLoad(m_baseURL + "very_tall_div.html", true, 0, 0, configureAndroid);
     webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight));
     webViewHelper.webView()->setDeviceScaleFactor(deviceScaleFactor);
@@ -2770,11 +2770,11 @@ TEST_F(WebFrameTest, DivAutoZoomScaleFontScaleFactorTest)
     EXPECT_FLOAT_EQ(legibleScale, scale);
 }
 
-TEST_F(WebFrameTest, BlockBoundTest)
+TEST_P(ParameterizedWebFrameTest, BlockBoundTest)
 {
     registerMockedHttpURLLoad("block_bound.html");
 
-    FrameTestHelpers::WebViewHelper webViewHelper;
+    FrameTestHelpers::WebViewHelper webViewHelper(this);
     webViewHelper.initializeAndLoad(m_baseURL + "block_bound.html", false, 0, 0, configureAndroid);
 
     IntRect rectBack = IntRect(0, 0, 200, 200);

@@ -65,6 +65,7 @@ public:
         , cacheSlot(slot)
         , subPixelAccumulation(accumulation)
         , respectOverflowClip(slot == PaintingClipRectsIgnoringOverflowClip ? IgnoreOverflowClip : RespectOverflowClip)
+        , respectOverflowClipForViewport(slot == RootRelativeClipRectsIgnoringViewportClip ? IgnoreOverflowClip : RespectOverflowClip)
     {
     }
 
@@ -91,6 +92,7 @@ private:
     ClipRectsCacheSlot cacheSlot;
     LayoutSize subPixelAccumulation;
     ShouldRespectOverflowClip respectOverflowClip;
+    ShouldRespectOverflowClip respectOverflowClipForViewport;
 };
 
 class DeprecatedPaintLayerClipper {
@@ -138,6 +140,8 @@ private:
             m_cache = adoptPtr(new ClipRectsCache);
         return *m_cache;
     }
+
+    bool shouldRespectOverflowClip(const ClipRectsContext&) const;
 
     // FIXME: Could this be a LayoutBox?
     LayoutBoxModelObject& m_layoutObject;

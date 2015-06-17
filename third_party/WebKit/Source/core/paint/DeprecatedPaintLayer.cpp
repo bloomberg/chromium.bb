@@ -1726,16 +1726,16 @@ DeprecatedPaintLayer* DeprecatedPaintLayer::hitTestLayer(DeprecatedPaintLayer* r
     if (!isSelfPaintingLayer() && !hasSelfPaintingLayerDescendant())
         return 0;
 
-    // The natural thing would be to keep HitTestingTransformState on the stack, but it's big, so we heap-allocate.
+    ClipRectsCacheSlot clipRectsCacheSlot = result.hitTestRequest().ignoreClipping() ? RootRelativeClipRectsIgnoringViewportClip : RootRelativeClipRects;
 
     // Apply a transform if we have one.
     if (transform() && !appliedTransform) {
         if (enclosingPaginationLayer())
-            return hitTestTransformedLayerInFragments(rootLayer, containerLayer, result, hitTestRect, hitTestLocation, transformState, zOffset);
+            return hitTestTransformedLayerInFragments(rootLayer, containerLayer, result, hitTestRect, hitTestLocation, transformState, zOffset, clipRectsCacheSlot);
 
         // Make sure the parent's clip rects have been calculated.
         if (parent()) {
-            ClipRect clipRect = clipper().backgroundClipRect(ClipRectsContext(rootLayer, RootRelativeClipRects, IncludeOverlayScrollbarSize));
+            ClipRect clipRect = clipper().backgroundClipRect(ClipRectsContext(rootLayer, clipRectsCacheSlot, IncludeOverlayScrollbarSize));
             // Go ahead and test the enclosing clip now.
             if (!clipRect.intersects(hitTestLocation))
                 return 0;
@@ -1748,6 +1748,7 @@ DeprecatedPaintLayer* DeprecatedPaintLayer::hitTestLayer(DeprecatedPaintLayer* r
     m_stackingNode->updateLayerListsIfNeeded();
     update3DTransformedDescendantStatus();
 
+    // The natural thing would be to keep HitTestingTransformState on the stack, but it's big, so we heap-allocate.
     RefPtr<HitTestingTransformState> localTransformState;
     if (appliedTransform) {
         // We computed the correct state in the caller (above code), so just reference it.
@@ -1816,9 +1817,9 @@ DeprecatedPaintLayer* DeprecatedPaintLayer::hitTestLayer(DeprecatedPaintLayer* r
     // Collect the fragments. This will compute the clip rectangles for each layer fragment.
     DeprecatedPaintLayerFragments layerFragments;
     if (appliedTransform)
-        appendSingleFragmentIgnoringPagination(layerFragments, rootLayer, hitTestRect, RootRelativeClipRects, IncludeOverlayScrollbarSize);
+        appendSingleFragmentIgnoringPagination(layerFragments, rootLayer, hitTestRect, clipRectsCacheSlot, IncludeOverlayScrollbarSize);
     else
-        collectFragments(layerFragments, rootLayer, hitTestRect, RootRelativeClipRects, IncludeOverlayScrollbarSize);
+        collectFragments(layerFragments, rootLayer, hitTestRect, clipRectsCacheSlot, IncludeOverlayScrollbarSize);
 
     if (m_scrollableArea && m_scrollableArea->hitTestResizerInFragments(layerFragments, hitTestLocation)) {
         layoutObject()->updateHitTestResult(result, hitTestLocation.point());
@@ -1897,14 +1898,14 @@ bool DeprecatedPaintLayer::hitTestContentsForFragments(const DeprecatedPaintLaye
 }
 
 DeprecatedPaintLayer* DeprecatedPaintLayer::hitTestTransformedLayerInFragments(DeprecatedPaintLayer* rootLayer, DeprecatedPaintLayer* containerLayer, HitTestResult& result,
-    const LayoutRect& hitTestRect, const HitTestLocation& hitTestLocation, const HitTestingTransformState* transformState, double* zOffset)
+    const LayoutRect& hitTestRect, const HitTestLocation& hitTestLocation, const HitTestingTransformState* transformState, double* zOffset, ClipRectsCacheSlot clipRectsCacheSlot)
 {
     DeprecatedPaintLayerFragments enclosingPaginationFragments;
     LayoutPoint offsetOfPaginationLayerFromRoot;
     // FIXME: We're missing a sub-pixel offset here crbug.com/348728
     LayoutRect transformedExtent = transparencyClipBox(this, enclosingPaginationLayer(), HitTestingTransparencyClipBox, DeprecatedPaintLayer::RootOfTransparencyClipBox, LayoutSize());
     enclosingPaginationLayer()->collectFragments(enclosingPaginationFragments, rootLayer, hitTestRect,
-        RootRelativeClipRects, IncludeOverlayScrollbarSize, RespectOverflowClip, &offsetOfPaginationLayerFromRoot, LayoutSize(), &transformedExtent);
+        clipRectsCacheSlot, IncludeOverlayScrollbarSize, RespectOverflowClip, &offsetOfPaginationLayerFromRoot, LayoutSize(), &transformedExtent);
 
     for (int i = enclosingPaginationFragments.size() - 1; i >= 0; --i) {
         const DeprecatedPaintLayerFragment& fragment = enclosingPaginationFragments.at(i);
@@ -1916,7 +1917,7 @@ DeprecatedPaintLayer* DeprecatedPaintLayer::hitTestTransformedLayerInFragments(D
         // Now compute the clips within a given fragment
         if (parent() != enclosingPaginationLayer()) {
             enclosingPaginationLayer()->convertToLayerCoords(rootLayer, offsetOfPaginationLayerFromRoot);
-            LayoutRect parentClipRect = clipper().backgroundClipRect(ClipRectsContext(enclosingPaginationLayer(), RootRelativeClipRects, IncludeOverlayScrollbarSize)).rect();
+            LayoutRect parentClipRect = clipper().backgroundClipRect(ClipRectsContext(enclosingPaginationLayer(), clipRectsCacheSlot, IncludeOverlayScrollbarSize)).rect();
             parentClipRect.moveBy(fragment.paginationOffset + offsetOfPaginationLayerFromRoot);
             clipRect.intersect(parentClipRect);
         }
