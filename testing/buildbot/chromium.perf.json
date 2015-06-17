@@ -11,13 +11,6 @@
         ],
         "name": "gpu_perftests",
         "script": "gtest_perf_test.py"
-      },
-      {
-        "args": [
-          "cc_perftests"
-        ],
-        "name": "cc_perftests",
-        "script": "gtest_perf_test.py"
       }
     ]
   },
@@ -32,13 +25,6 @@
           "gpu_perftests"
         ],
         "name": "gpu_perftests",
-        "script": "gtest_perf_test.py"
-      },
-      {
-        "args": [
-          "cc_perftests"
-        ],
-        "name": "cc_perftests",
         "script": "gtest_perf_test.py"
       }
     ]
@@ -55,13 +41,6 @@
         ],
         "name": "gpu_perftests",
         "script": "gtest_perf_test.py"
-      },
-      {
-        "args": [
-          "cc_perftests"
-        ],
-        "name": "cc_perftests",
-        "script": "gtest_perf_test.py"
       }
     ]
   },
@@ -77,13 +56,6 @@
         ],
         "name": "gpu_perftests",
         "script": "gtest_perf_test.py"
-      },
-      {
-        "args": [
-          "cc_perftests"
-        ],
-        "name": "cc_perftests",
-        "script": "gtest_perf_test.py"
       }
     ]
   },
@@ -92,13 +64,6 @@
       {
         "name": "host_info",
         "script": "host_info.py"
-      },
-      {
-        "args": [
-          "cc_perftests"
-        ],
-        "name": "cc_perftests",
-        "script": "gtest_perf_test.py"
       }
     ]
   },
@@ -113,13 +78,6 @@
           "gpu_perftests"
         ],
         "name": "gpu_perftests",
-        "script": "gtest_perf_test.py"
-      },
-      {
-        "args": [
-          "cc_perftests"
-        ],
-        "name": "cc_perftests",
         "script": "gtest_perf_test.py"
       }
     ]
@@ -136,13 +94,6 @@
         ],
         "name": "gpu_perftests",
         "script": "gtest_perf_test.py"
-      },
-      {
-        "args": [
-          "cc_perftests"
-        ],
-        "name": "cc_perftests",
-        "script": "gtest_perf_test.py"
       }
     ]
   },
@@ -156,14 +107,6 @@
   },
   "Linux Perf (3)": {
     "scripts": [
-      {
-        "args": [
-          "cc_perftests",
-          "--test-launcher-print-test-stdio=always"
-        ],
-        "name": "cc_perftests",
-        "script": "gtest_perf_test.py"
-      },
       {
         "args": [
           "load_library_perf_tests",
@@ -188,14 +131,6 @@
   },
   "Mac 10.8 Perf (3)": {
     "scripts": [
-      {
-        "args": [
-          "cc_perftests",
-          "--test-launcher-print-test-stdio=always"
-        ],
-        "name": "cc_perftests",
-        "script": "gtest_perf_test.py"
-      },
       {
         "args": [
           "performance_browser_tests",
@@ -231,14 +166,6 @@
   },
   "Mac 10.9 Perf (3)": {
     "scripts": [
-      {
-        "args": [
-          "cc_perftests",
-          "--test-launcher-print-test-stdio=always"
-        ],
-        "name": "cc_perftests",
-        "script": "gtest_perf_test.py"
-      },
       {
         "args": [
           "performance_browser_tests",
