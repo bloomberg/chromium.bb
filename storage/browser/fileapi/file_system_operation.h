@@ -68,6 +68,12 @@ class FileSystemOperation {
   // Used for CreateFile(), etc. |result| is the return code of the operation.
   typedef base::Callback<void(base::File::Error result)> StatusCallback;
 
+  // Called when an error had happened during operation.
+  // |url| is the url of processed entry.
+  // |error| is the error code of the failed operation.
+  typedef base::Callback<void(const FileSystemURL& url,
+                              base::File::Error error)> ErrorCallback;
+
   // Used for GetMetadata(). |result| is the return code of the operation,
   // |file_info| is the obtained file info.
   typedef base::Callback<

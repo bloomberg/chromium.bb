@@ -55,9 +55,19 @@ class LoggingRecursiveOperation : public storage::RecursiveOperationDelegate {
 
   void RunRecursively() override { StartRecursiveOperation(root_, callback_); }
 
+  void RunRecursivelyWithIgnoringError(const ErrorCallback& error_callback) {
+    StartRecursiveOperationWithIgnoringError(root_, error_callback, callback_);
+  }
+
   void ProcessFile(const FileSystemURL& url,
                    const StatusCallback& callback) override {
     RecordLogEntry(LogEntry::PROCESS_FILE, url);
+
+    if (error_url_.is_valid() && error_url_ == url) {
+      callback.Run(base::File::FILE_ERROR_FAILED);
+      return;
+    }
+
     operation_runner()->GetMetadata(
         url,
         base::Bind(&LoggingRecursiveOperation::DidGetMetadata,
@@ -75,6 +85,8 @@ class LoggingRecursiveOperation : public storage::RecursiveOperationDelegate {
     RecordLogEntry(LogEntry::POST_PROCESS_DIRECTORY, url);
     callback.Run(base::File::FILE_OK);
   }
+
+  void SetEntryToFail(const FileSystemURL& url) { error_url_ = url; }
 
  private:
   void RecordLogEntry(LogEntry::Type type, const FileSystemURL& url) {
@@ -100,6 +112,7 @@ class LoggingRecursiveOperation : public storage::RecursiveOperationDelegate {
   FileSystemURL root_;
   StatusCallback callback_;
   std::vector<LogEntry> log_entries_;
+  FileSystemURL error_url_;
 
   base::WeakPtrFactory<LoggingRecursiveOperation> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(LoggingRecursiveOperation);
@@ -109,6 +122,15 @@ void ReportStatus(base::File::Error* out_error,
                   base::File::Error error) {
   DCHECK(out_error);
   *out_error = error;
+}
+
+typedef std::pair<FileSystemURL, base::File::Error> ErrorEntry;
+
+void ReportError(std::vector<ErrorEntry>* out_errors,
+                 const FileSystemURL& url,
+                 base::File::Error error) {
+  DCHECK(out_errors);
+  out_errors->push_back(std::make_pair(url, error));
 }
 
 // To test the Cancel() during operation, calls Cancel() of |operation|
@@ -274,6 +296,105 @@ TEST_F(RecursiveOperationDelegateTest, Cancel) {
   CallCancelLater(operation.get(), 5);
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(base::File::FILE_ERROR_ABORT, error);
+}
+
+TEST_F(RecursiveOperationDelegateTest, AbortWithError) {
+  FileSystemURL src_root(CreateDirectory("src"));
+  FileSystemURL src_dir1(CreateDirectory("src/dir1"));
+  FileSystemURL src_file1(CreateFile("src/file1"));
+  FileSystemURL src_file2(CreateFile("src/dir1/file2"));
+  FileSystemURL src_file3(CreateFile("src/dir1/file3"));
+
+  base::File::Error error = base::File::FILE_ERROR_FAILED;
+  scoped_ptr<FileSystemOperationContext> context = NewContext();
+  scoped_ptr<LoggingRecursiveOperation> operation(
+      new LoggingRecursiveOperation(context->file_system_context(), src_root,
+                                    base::Bind(&ReportStatus, &error)));
+  operation->SetEntryToFail(src_file1);
+  operation->RunRecursively();
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_EQ(base::File::FILE_ERROR_FAILED, error);
+
+  // Confirm that operation has been aborted in the middle.
+  const std::vector<LoggingRecursiveOperation::LogEntry>& log_entries =
+      operation->log_entries();
+  ASSERT_EQ(3U, log_entries.size());
+
+  EXPECT_EQ(LoggingRecursiveOperation::LogEntry::PROCESS_FILE,
+            log_entries[0].type);
+  EXPECT_EQ(src_root, log_entries[0].url);
+
+  EXPECT_EQ(LoggingRecursiveOperation::LogEntry::PROCESS_DIRECTORY,
+            log_entries[1].type);
+  EXPECT_EQ(src_root, log_entries[1].url);
+
+  EXPECT_EQ(LoggingRecursiveOperation::LogEntry::PROCESS_FILE,
+            log_entries[2].type);
+  EXPECT_EQ(src_file1, log_entries[2].url);
+}
+
+TEST_F(RecursiveOperationDelegateTest, ContinueWithError) {
+  FileSystemURL src_root(CreateDirectory("src"));
+  FileSystemURL src_dir1(CreateDirectory("src/dir1"));
+  FileSystemURL src_file1(CreateFile("src/file1"));
+  FileSystemURL src_file2(CreateFile("src/dir1/file2"));
+  FileSystemURL src_file3(CreateFile("src/dir1/file3"));
+
+  base::File::Error error = base::File::FILE_ERROR_FAILED;
+  std::vector<ErrorEntry> errors;
+  scoped_ptr<FileSystemOperationContext> context = NewContext();
+  scoped_ptr<LoggingRecursiveOperation> operation(
+      new LoggingRecursiveOperation(context->file_system_context(), src_root,
+                                    base::Bind(&ReportStatus, &error)));
+  operation->SetEntryToFail(src_file1);
+  operation->RunRecursivelyWithIgnoringError(base::Bind(&ReportError, &errors));
+  base::RunLoop().RunUntilIdle();
+
+  // Error code should be base::File::FILE_ERROR_FAILED.
+  ASSERT_EQ(base::File::FILE_ERROR_FAILED, error);
+
+  // Error callback should be called.
+  ASSERT_EQ(1U, errors.size());
+  ASSERT_EQ(src_file1, errors[0].first);
+  ASSERT_EQ(base::File::FILE_ERROR_FAILED, errors[0].second);
+
+  // Confirm that operation continues after the error.
+  const std::vector<LoggingRecursiveOperation::LogEntry>& log_entries =
+      operation->log_entries();
+  ASSERT_EQ(8U, log_entries.size());
+
+  EXPECT_EQ(LoggingRecursiveOperation::LogEntry::PROCESS_FILE,
+            log_entries[0].type);
+  EXPECT_EQ(src_root, log_entries[0].url);
+
+  EXPECT_EQ(LoggingRecursiveOperation::LogEntry::PROCESS_DIRECTORY,
+            log_entries[1].type);
+  EXPECT_EQ(src_root, log_entries[1].url);
+
+  EXPECT_EQ(LoggingRecursiveOperation::LogEntry::PROCESS_FILE,
+            log_entries[2].type);
+  EXPECT_EQ(src_file1, log_entries[2].url);
+
+  EXPECT_EQ(LoggingRecursiveOperation::LogEntry::PROCESS_DIRECTORY,
+            log_entries[3].type);
+  EXPECT_EQ(src_dir1, log_entries[3].url);
+
+  EXPECT_EQ(LoggingRecursiveOperation::LogEntry::PROCESS_FILE,
+            log_entries[4].type);
+  EXPECT_EQ(src_file3, log_entries[4].url);
+
+  EXPECT_EQ(LoggingRecursiveOperation::LogEntry::PROCESS_FILE,
+            log_entries[5].type);
+  EXPECT_EQ(src_file2, log_entries[5].url);
+
+  EXPECT_EQ(LoggingRecursiveOperation::LogEntry::POST_PROCESS_DIRECTORY,
+            log_entries[6].type);
+  EXPECT_EQ(src_dir1, log_entries[6].url);
+
+  EXPECT_EQ(LoggingRecursiveOperation::LogEntry::POST_PROCESS_DIRECTORY,
+            log_entries[7].type);
+  EXPECT_EQ(src_root, log_entries[7].url);
 }
 
 }  // namespace content

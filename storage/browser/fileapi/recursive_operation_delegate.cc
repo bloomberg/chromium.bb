@@ -21,7 +21,9 @@ RecursiveOperationDelegate::RecursiveOperationDelegate(
     FileSystemContext* file_system_context)
     : file_system_context_(file_system_context),
       inflight_operations_(0),
-      canceled_(false) {
+      canceled_(false),
+      ignore_error_(false),
+      failed_some_operations_(false) {
 }
 
 RecursiveOperationDelegate::~RecursiveOperationDelegate() {
@@ -40,11 +42,29 @@ void RecursiveOperationDelegate::StartRecursiveOperation(
   DCHECK_EQ(0, inflight_operations_);
 
   callback_ = callback;
+
+  TryProcessFile(root);
+}
+
+void RecursiveOperationDelegate::StartRecursiveOperationWithIgnoringError(
+    const FileSystemURL& root,
+    const ErrorCallback& error_callback,
+    const StatusCallback& status_callback) {
+  DCHECK(pending_directory_stack_.empty());
+  DCHECK(pending_files_.empty());
+  DCHECK_EQ(0, inflight_operations_);
+
+  error_callback_ = error_callback;
+  callback_ = status_callback;
+  ignore_error_ = true;
+
+  TryProcessFile(root);
+}
+
+void RecursiveOperationDelegate::TryProcessFile(const FileSystemURL& root) {
   ++inflight_operations_;
-  ProcessFile(
-      root,
-      base::Bind(&RecursiveOperationDelegate::DidTryProcessFile,
-                 AsWeakPtr(), root));
+  ProcessFile(root, base::Bind(&RecursiveOperationDelegate::DidTryProcessFile,
+                               AsWeakPtr(), root));
 }
 
 FileSystemOperationRunner* RecursiveOperationDelegate::operation_runner() {
@@ -159,23 +179,31 @@ void RecursiveOperationDelegate::ProcessPendingFiles() {
     ++inflight_operations_;
     current_task_runner->PostTask(
         FROM_HERE,
-        base::Bind(&RecursiveOperationDelegate::ProcessFile,
-                   AsWeakPtr(), pending_files_.front(),
+        base::Bind(&RecursiveOperationDelegate::ProcessFile, AsWeakPtr(),
+                   pending_files_.front(),
                    base::Bind(&RecursiveOperationDelegate::DidProcessFile,
-                              AsWeakPtr())));
+                              AsWeakPtr(), pending_files_.front())));
     pending_files_.pop();
   }
 }
 
-void RecursiveOperationDelegate::DidProcessFile(
-    base::File::Error error) {
+void RecursiveOperationDelegate::DidProcessFile(const FileSystemURL& url,
+                                                base::File::Error error) {
   --inflight_operations_;
+
   if (error != base::File::FILE_OK) {
-    // If an error occurs, invoke Done immediately (even if there remain
-    // running operations). It is because in the callback, this instance is
-    // deleted.
-    Done(error);
-    return;
+    if (!ignore_error_) {
+      // If an error occurs, invoke Done immediately (even if there remain
+      // running operations). It is because in the callback, this instance is
+      // deleted.
+      Done(error);
+      return;
+    } else {
+      failed_some_operations_ = true;
+
+      if (!error_callback_.is_null())
+        error_callback_.Run(url, error);
+    }
   }
 
   ProcessPendingFiles();
@@ -234,7 +262,10 @@ void RecursiveOperationDelegate::Done(base::File::Error error) {
   if (canceled_ && error == base::File::FILE_OK) {
     callback_.Run(base::File::FILE_ERROR_ABORT);
   } else {
-    callback_.Run(error);
+    if (ignore_error_ && failed_some_operations_)
+      callback_.Run(base::File::FILE_ERROR_FAILED);
+    else
+      callback_.Run(error);
   }
 }
 
