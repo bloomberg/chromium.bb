@@ -32,25 +32,24 @@
 #include "config.h"
 #include "core/timing/PerformanceResourceTiming.h"
 
-#include "core/dom/Document.h"
-#include "core/loader/DocumentLoadTiming.h"
-#include "core/loader/DocumentLoader.h"
 #include "core/timing/ResourceTimingInfo.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/network/ResourceResponse.h"
 
 namespace blink {
 
-static double monotonicTimeToDocumentMilliseconds(Document* document, double seconds)
+static double monotonicTimeToDOMHighResTimeStamp(double timeOrigin, double seconds)
 {
     ASSERT(seconds >= 0.0);
-    return document->loader()->timing().monotonicTimeToZeroBasedDocumentTime(seconds) * 1000.0;
+    if (!seconds)
+        return 0.0;
+    return (seconds - timeOrigin) * 1000.0;
 }
 
-PerformanceResourceTiming::PerformanceResourceTiming(const ResourceTimingInfo& info, Document* requestingDocument, double startTime, double lastRedirectEndTime, bool allowTimingDetails, bool allowRedirectDetails)
-    : PerformanceEntry(info.initialRequest().url().string(), "resource", monotonicTimeToDocumentMilliseconds(requestingDocument, startTime), monotonicTimeToDocumentMilliseconds(requestingDocument, info.loadFinishTime()))
+PerformanceResourceTiming::PerformanceResourceTiming(const ResourceTimingInfo& info, double timeOrigin, double startTime, double lastRedirectEndTime, bool allowTimingDetails, bool allowRedirectDetails)
+    : PerformanceEntry(info.initialRequest().url().string(), "resource", monotonicTimeToDOMHighResTimeStamp(timeOrigin, startTime), monotonicTimeToDOMHighResTimeStamp(timeOrigin, info.loadFinishTime()))
     , m_initiatorType(info.initiatorType())
-    , m_requestingDocument(requestingDocument)
+    , m_timeOrigin(timeOrigin)
     , m_timing(info.finalResponse().resourceLoadTiming())
     , m_lastRedirectEndTime(lastRedirectEndTime)
     , m_finishTime(info.loadFinishTime())
@@ -74,7 +73,7 @@ double PerformanceResourceTiming::workerStart() const
     if (!m_timing || m_timing->workerStart() == 0.0)
         return 0.0;
 
-    return monotonicTimeToDocumentMilliseconds(m_requestingDocument.get(), m_timing->workerStart());
+    return monotonicTimeToDOMHighResTimeStamp(m_timeOrigin, m_timing->workerStart());
 }
 
 double PerformanceResourceTiming::workerReady() const
@@ -82,7 +81,7 @@ double PerformanceResourceTiming::workerReady() const
     if (!m_timing || m_timing->workerReady() == 0.0)
         return 0.0;
 
-    return monotonicTimeToDocumentMilliseconds(m_requestingDocument.get(), m_timing->workerReady());
+    return monotonicTimeToDOMHighResTimeStamp(m_timeOrigin, m_timing->workerReady());
 }
 
 double PerformanceResourceTiming::redirectStart() const
@@ -101,7 +100,7 @@ double PerformanceResourceTiming::redirectEnd() const
     if (!m_lastRedirectEndTime || !m_allowRedirectDetails)
         return 0.0;
 
-    return monotonicTimeToDocumentMilliseconds(m_requestingDocument.get(), m_lastRedirectEndTime);
+    return monotonicTimeToDOMHighResTimeStamp(m_timeOrigin, m_lastRedirectEndTime);
 }
 
 double PerformanceResourceTiming::fetchStart() const
@@ -110,7 +109,7 @@ double PerformanceResourceTiming::fetchStart() const
         // FIXME: ASSERT(m_timing) should be in constructor once timeticks of
         // AppCache is exposed from chrome network stack, crbug/251100
         ASSERT(m_timing);
-        return monotonicTimeToDocumentMilliseconds(m_requestingDocument.get(), m_timing->requestTime());
+        return monotonicTimeToDOMHighResTimeStamp(m_timeOrigin, m_timing->requestTime());
     }
 
     if (double workerReadyTime = workerReady())
@@ -127,7 +126,7 @@ double PerformanceResourceTiming::domainLookupStart() const
     if (!m_timing || m_timing->dnsStart() == 0.0)
         return fetchStart();
 
-    return monotonicTimeToDocumentMilliseconds(m_requestingDocument.get(), m_timing->dnsStart());
+    return monotonicTimeToDOMHighResTimeStamp(m_timeOrigin, m_timing->dnsStart());
 }
 
 double PerformanceResourceTiming::domainLookupEnd() const
@@ -138,7 +137,7 @@ double PerformanceResourceTiming::domainLookupEnd() const
     if (!m_timing || m_timing->dnsEnd() == 0.0)
         return domainLookupStart();
 
-    return monotonicTimeToDocumentMilliseconds(m_requestingDocument.get(), m_timing->dnsEnd());
+    return monotonicTimeToDOMHighResTimeStamp(m_timeOrigin, m_timing->dnsEnd());
 }
 
 double PerformanceResourceTiming::connectStart() const
@@ -155,7 +154,7 @@ double PerformanceResourceTiming::connectStart() const
     if (m_timing->dnsEnd() > 0.0)
         connectStart = m_timing->dnsEnd();
 
-    return monotonicTimeToDocumentMilliseconds(m_requestingDocument.get(), connectStart);
+    return monotonicTimeToDOMHighResTimeStamp(m_timeOrigin, connectStart);
 }
 
 double PerformanceResourceTiming::connectEnd() const
@@ -167,7 +166,7 @@ double PerformanceResourceTiming::connectEnd() const
     if (!m_timing || m_timing->connectEnd() == 0.0 || m_didReuseConnection)
         return connectStart();
 
-    return monotonicTimeToDocumentMilliseconds(m_requestingDocument.get(), m_timing->connectEnd());
+    return monotonicTimeToDOMHighResTimeStamp(m_timeOrigin, m_timing->connectEnd());
 }
 
 double PerformanceResourceTiming::secureConnectionStart() const
@@ -178,7 +177,7 @@ double PerformanceResourceTiming::secureConnectionStart() const
     if (!m_timing || m_timing->sslStart() == 0.0) // Secure connection not negotiated.
         return 0.0;
 
-    return monotonicTimeToDocumentMilliseconds(m_requestingDocument.get(), m_timing->sslStart());
+    return monotonicTimeToDOMHighResTimeStamp(m_timeOrigin, m_timing->sslStart());
 }
 
 double PerformanceResourceTiming::requestStart() const
@@ -189,7 +188,7 @@ double PerformanceResourceTiming::requestStart() const
     if (!m_timing)
         return connectEnd();
 
-    return monotonicTimeToDocumentMilliseconds(m_requestingDocument.get(), m_timing->sendStart());
+    return monotonicTimeToDOMHighResTimeStamp(m_timeOrigin, m_timing->sendStart());
 }
 
 double PerformanceResourceTiming::responseStart() const
@@ -201,7 +200,7 @@ double PerformanceResourceTiming::responseStart() const
         return requestStart();
 
     // FIXME: This number isn't exactly correct. See the notes in PerformanceTiming::responseStart().
-    return monotonicTimeToDocumentMilliseconds(m_requestingDocument.get(), m_timing->receiveHeadersEnd());
+    return monotonicTimeToDOMHighResTimeStamp(m_timeOrigin, m_timing->receiveHeadersEnd());
 }
 
 double PerformanceResourceTiming::responseEnd() const
@@ -209,13 +208,7 @@ double PerformanceResourceTiming::responseEnd() const
     if (!m_finishTime)
         return responseStart();
 
-    return monotonicTimeToDocumentMilliseconds(m_requestingDocument.get(), m_finishTime);
-}
-
-DEFINE_TRACE(PerformanceResourceTiming)
-{
-    visitor->trace(m_requestingDocument);
-    PerformanceEntry::trace(visitor);
+    return monotonicTimeToDOMHighResTimeStamp(m_timeOrigin, m_finishTime);
 }
 
 } // namespace blink

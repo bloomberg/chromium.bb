@@ -38,21 +38,20 @@
 
 namespace blink {
 
-class Document;
 class ResourceLoadTiming;
 class ResourceTimingInfo;
 
 class PerformanceResourceTiming final : public PerformanceEntry {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PerformanceResourceTiming* create(const ResourceTimingInfo& info, Document* requestingDocument, double startTime, double lastRedirectEndTime, bool m_allowTimingDetails, bool m_allowRedirectDetails)
+    static PerformanceResourceTiming* create(const ResourceTimingInfo& info, double timeOrigin, double startTime, double lastRedirectEndTime, bool m_allowTimingDetails, bool m_allowRedirectDetails)
     {
-        return new PerformanceResourceTiming(info, requestingDocument, startTime, lastRedirectEndTime, m_allowTimingDetails, m_allowRedirectDetails);
+        return new PerformanceResourceTiming(info, timeOrigin, startTime, lastRedirectEndTime, m_allowTimingDetails, m_allowRedirectDetails);
     }
 
-    static PerformanceResourceTiming* create(const ResourceTimingInfo& info, Document* requestingDocument, double startTime, bool m_allowTimingDetails)
+    static PerformanceResourceTiming* create(const ResourceTimingInfo& info, double timeOrigin, double startTime, bool m_allowTimingDetails)
     {
-        return new PerformanceResourceTiming(info, requestingDocument, startTime, 0.0, m_allowTimingDetails, false);
+        return new PerformanceResourceTiming(info, timeOrigin, startTime, 0.0, m_allowTimingDetails, false);
     }
 
     AtomicString initiatorType() const;
@@ -72,16 +71,14 @@ public:
 
     virtual bool isResource() override { return true; }
 
-    DECLARE_VIRTUAL_TRACE();
-
 private:
-    PerformanceResourceTiming(const ResourceTimingInfo&, Document* requestingDocument, double startTime, double lastRedirectEndTime, bool m_allowTimingDetails, bool m_allowRedirectDetails);
+    PerformanceResourceTiming(const ResourceTimingInfo&, double timeOrigin, double startTime, double lastRedirectEndTime, bool m_allowTimingDetails, bool m_allowRedirectDetails);
     virtual ~PerformanceResourceTiming();
 
     double workerReady() const;
 
     AtomicString m_initiatorType;
-    RefPtrWillBeMember<Document> m_requestingDocument;
+    double m_timeOrigin;
     RefPtr<ResourceLoadTiming> m_timing;
     double m_lastRedirectEndTime;
     double m_finishTime;

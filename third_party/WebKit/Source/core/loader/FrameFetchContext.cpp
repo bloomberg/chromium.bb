@@ -314,7 +314,7 @@ void FrameFetchContext::addResourceTiming(ResourceTimingInfo* info, bool isMainR
     Document* initiatorDocument = m_document && isMainResource ? m_document->parentDocument() : m_document.get();
     if (!initiatorDocument || !initiatorDocument->domWindow())
         return;
-    DOMWindowPerformance::performance(*initiatorDocument->domWindow())->addResourceTiming(*info, initiatorDocument);
+    DOMWindowPerformance::performance(*initiatorDocument->domWindow())->addResourceTiming(*info);
 }
 
 bool FrameFetchContext::allowImage(bool imagesEnabled, const KURL& url) const

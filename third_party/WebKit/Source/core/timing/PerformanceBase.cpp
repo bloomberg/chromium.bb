@@ -170,12 +170,12 @@ void PerformanceBase::setFrameTimingBufferSize(unsigned size)
         dispatchEvent(Event::create(EventTypeNames::frametimingbufferfull));
 }
 
-static bool passesTimingAllowCheck(const ResourceResponse& response, Document* requestingDocument, const AtomicString& originalTimingAllowOrigin)
+static bool passesTimingAllowCheck(const ResourceResponse& response, const SecurityOrigin& initiatorSecurityOrigin, const AtomicString& originalTimingAllowOrigin)
 {
     AtomicallyInitializedStaticReference(AtomicString, timingAllowOrigin, new AtomicString("timing-allow-origin"));
 
     RefPtr<SecurityOrigin> resourceOrigin = SecurityOrigin::create(response.url());
-    if (resourceOrigin->isSameSchemeHostPort(requestingDocument->securityOrigin()))
+    if (resourceOrigin->isSameSchemeHostPort(&initiatorSecurityOrigin))
         return true;
 
     const AtomicString& timingAllowOriginString = originalTimingAllowOrigin.isEmpty() ? response.httpHeaderField(timingAllowOrigin) : originalTimingAllowOrigin;
@@ -185,7 +185,7 @@ static bool passesTimingAllowCheck(const ResourceResponse& response, Document* r
     if (timingAllowOriginString == starAtom)
         return true;
 
-    const String& securityOrigin = requestingDocument->securityOrigin()->toString();
+    const String& securityOrigin = initiatorSecurityOrigin.toString();
     Vector<String> timingAllowOrigins;
     timingAllowOriginString.string().split(' ', timingAllowOrigins);
     for (const String& allowOrigin : timingAllowOrigins) {
@@ -196,36 +196,41 @@ static bool passesTimingAllowCheck(const ResourceResponse& response, Document* r
     return false;
 }
 
-static bool allowsTimingRedirect(const Vector<ResourceResponse>& redirectChain, const ResourceResponse& finalResponse, Document* initiatorDocument)
+static bool allowsTimingRedirect(const Vector<ResourceResponse>& redirectChain, const ResourceResponse& finalResponse, const SecurityOrigin& initiatorSecurityOrigin)
 {
-    if (!passesTimingAllowCheck(finalResponse, initiatorDocument, emptyAtom))
+    if (!passesTimingAllowCheck(finalResponse, initiatorSecurityOrigin, emptyAtom))
         return false;
 
     for (const ResourceResponse& response : redirectChain) {
-        if (!passesTimingAllowCheck(response, initiatorDocument, emptyAtom))
+        if (!passesTimingAllowCheck(response, initiatorSecurityOrigin, emptyAtom))
             return false;
     }
 
     return true;
 }
 
-void PerformanceBase::addResourceTiming(const ResourceTimingInfo& info, Document* initiatorDocument)
+void PerformanceBase::addResourceTiming(const ResourceTimingInfo& info)
 {
     if (isResourceTimingBufferFull())
         return;
+    SecurityOrigin* securityOrigin = nullptr;
+    if (ExecutionContext* context = executionContext())
+        securityOrigin = context->securityOrigin();
+    if (!securityOrigin)
+        return;
 
     const ResourceResponse& finalResponse = info.finalResponse();
-    bool allowTimingDetails = passesTimingAllowCheck(finalResponse, initiatorDocument, info.originalTimingAllowOrigin());
+    bool allowTimingDetails = passesTimingAllowCheck(finalResponse, *securityOrigin, info.originalTimingAllowOrigin());
     double startTime = info.initialTime();
 
     if (info.redirectChain().isEmpty()) {
-        PerformanceEntry* entry = PerformanceResourceTiming::create(info, initiatorDocument, startTime, allowTimingDetails);
+        PerformanceEntry* entry = PerformanceResourceTiming::create(info, timeOrigin(), startTime, allowTimingDetails);
         addResourceTimingBuffer(entry);
         return;
     }
 
     const Vector<ResourceResponse>& redirectChain = info.redirectChain();
-    bool allowRedirectDetails = allowsTimingRedirect(redirectChain, finalResponse, initiatorDocument);
+    bool allowRedirectDetails = allowsTimingRedirect(redirectChain, finalResponse, *securityOrigin);
 
     if (!allowRedirectDetails) {
         ResourceLoadTiming* finalTiming = finalResponse.resourceLoadTiming();
@@ -238,7 +243,7 @@ void PerformanceBase::addResourceTiming(const ResourceTimingInfo& info, Document
     ASSERT(lastRedirectTiming);
     double lastRedirectEndTime = lastRedirectTiming->receiveHeadersEnd();
 
-    PerformanceEntry* entry = PerformanceResourceTiming::create(info, initiatorDocument, startTime, lastRedirectEndTime, allowTimingDetails, allowRedirectDetails);
+    PerformanceEntry* entry = PerformanceResourceTiming::create(info, timeOrigin(), startTime, lastRedirectEndTime, allowTimingDetails, allowRedirectDetails);
     addResourceTimingBuffer(entry);
 }
 

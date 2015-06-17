@@ -76,7 +76,7 @@ public:
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(frametimingbufferfull);
 
-    void addResourceTiming(const ResourceTimingInfo&, Document*);
+    void addResourceTiming(const ResourceTimingInfo&);
 
     void addRenderTiming(Document*, unsigned, double, double);
 
