@@ -15,7 +15,6 @@
 #include "components/omnibox/autocomplete_match.h"
 #include "components/omnibox/history_provider.h"
 
-class Profile;
 struct ScoredHistoryMatch;
 
 // This class is an autocomplete provider (a pseudo-internal component of
@@ -25,7 +24,6 @@ struct ScoredHistoryMatch;
 class HistoryQuickProvider : public HistoryProvider {
  public:
   HistoryQuickProvider(AutocompleteProviderClient* client,
-                       Profile* profile,
                        InMemoryURLIndex* in_memory_url_index);
 
   // AutocompleteProvider. |minimal_changes| is ignored since there is no asynch
@@ -54,7 +52,6 @@ class HistoryQuickProvider : public HistoryProvider {
   AutocompleteMatch QuickMatchToACMatch(const ScoredHistoryMatch& history_match,
                                         int score);
 
-  Profile* profile_;
   AutocompleteInput autocomplete_input_;
   std::string languages_;
   InMemoryURLIndex* in_memory_url_index_;  // Not owned by this class.

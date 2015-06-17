@@ -128,6 +128,10 @@ const char kKaskoGuid[] = "kasko-guid";
 const char kKaskoEquivalentGuid[] = "kasko-equivalent-guid";
 #endif
 
+// Used to help investigate bug 464926.  NOTE: This value is defined multiple
+// places in the codebase due to layering issues. DO NOT change the value here
+// without changing it in all other places that it is defined in the codebase
+// (search for |kBug464926CrashKey|).
 const char kBug464926CrashKey[] = "bug-464926-info";
 
 const char kViewCount[] = "view-count";
