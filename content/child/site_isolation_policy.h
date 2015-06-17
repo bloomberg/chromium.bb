@@ -54,22 +54,23 @@ struct ResourceResponseInfo;
 // SiteIsolation.XSD.[%MIMETYPE].NotBlocked.MaybeJS :
 //   # of responses that are plausibly sniffed to be JavaScript.
 
-struct SiteIsolationResponseMetaData {
-  enum CanonicalMimeType {
-    HTML = 0,
-    XML = 1,
-    JSON = 2,
-    Plain = 3,
-    Others = 4,
-    MaxCanonicalMimeType,
-  };
+enum CrossSiteDocumentMimeType {
+  // Note that these values are used in histograms, and must not change.
+  CROSS_SITE_DOCUMENT_MIME_TYPE_HTML = 0,
+  CROSS_SITE_DOCUMENT_MIME_TYPE_XML = 1,
+  CROSS_SITE_DOCUMENT_MIME_TYPE_JSON = 2,
+  CROSS_SITE_DOCUMENT_MIME_TYPE_PLAIN = 3,
+  CROSS_SITE_DOCUMENT_MIME_TYPE_OTHERS = 4,
+  CROSS_SITE_DOCUMENT_MIME_TYPE_MAX,
+};
 
+struct SiteIsolationResponseMetaData {
   SiteIsolationResponseMetaData();
 
   std::string frame_origin;
   GURL response_url;
   ResourceType resource_type;
-  CanonicalMimeType canonical_mime_type;
+  CrossSiteDocumentMimeType canonical_mime_type;
   int http_status_code;
   bool no_sniff;
 };
@@ -116,7 +117,7 @@ class CONTENT_EXPORT CrossSiteDocumentClassifier {
   // Returns the representative mime type enum value of the mime type of
   // response. For example, this returns the same value for all text/xml mime
   // type families such as application/xml, application/rss+xml.
-  static SiteIsolationResponseMetaData::CanonicalMimeType GetCanonicalMimeType(
+  static CrossSiteDocumentMimeType GetCanonicalMimeType(
       const std::string& mime_type);
 
   // Returns whether this scheme is a target of cross-site document

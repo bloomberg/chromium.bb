@@ -167,10 +167,10 @@ SiteIsolationStatsGatherer::OnReceivedResponse(
   if (CrossSiteDocumentClassifier::IsSameSite(frame_origin, response_url))
     return linked_ptr<SiteIsolationResponseMetaData>();
 
-  SiteIsolationResponseMetaData::CanonicalMimeType canonical_mime_type =
+  CrossSiteDocumentMimeType canonical_mime_type =
       CrossSiteDocumentClassifier::GetCanonicalMimeType(info.mime_type);
 
-  if (canonical_mime_type == SiteIsolationResponseMetaData::Others)
+  if (canonical_mime_type == CROSS_SITE_DOCUMENT_MIME_TYPE_OTHERS)
     return linked_ptr<SiteIsolationResponseMetaData>();
 
   // Every CORS request should have the Access-Control-Allow-Origin header even
@@ -219,9 +219,9 @@ bool SiteIsolationStatsGatherer::OnReceivedFirstChunk(
 
   // Record the number of cross-site document responses with a specific mime
   // type (text/html, text/xml, etc).
-  UMA_HISTOGRAM_ENUMERATION(
-      "SiteIsolation.XSD.MimeType", resp_data->canonical_mime_type,
-      SiteIsolationResponseMetaData::MaxCanonicalMimeType);
+  UMA_HISTOGRAM_ENUMERATION("SiteIsolation.XSD.MimeType",
+                            resp_data->canonical_mime_type,
+                            CROSS_SITE_DOCUMENT_MIME_TYPE_MAX);
 
   // Store the result of cross-site document blocking analysis.
   bool would_block = false;
@@ -231,20 +231,20 @@ bool SiteIsolationStatsGatherer::OnReceivedFirstChunk(
   // type claims it to be. For example, we apply a HTML sniffer for a document
   // tagged with text/html here. Whenever this check becomes true, we'll block
   // the response.
-  if (resp_data->canonical_mime_type != SiteIsolationResponseMetaData::Plain) {
+  if (resp_data->canonical_mime_type != CROSS_SITE_DOCUMENT_MIME_TYPE_PLAIN) {
     std::string bucket_prefix;
     bool sniffed_as_target_document = false;
-    if (resp_data->canonical_mime_type == SiteIsolationResponseMetaData::HTML) {
+    if (resp_data->canonical_mime_type == CROSS_SITE_DOCUMENT_MIME_TYPE_HTML) {
       bucket_prefix = "SiteIsolation.XSD.HTML";
       sniffed_as_target_document =
           CrossSiteDocumentClassifier::SniffForHTML(data);
     } else if (resp_data->canonical_mime_type ==
-               SiteIsolationResponseMetaData::XML) {
+               CROSS_SITE_DOCUMENT_MIME_TYPE_XML) {
       bucket_prefix = "SiteIsolation.XSD.XML";
       sniffed_as_target_document =
           CrossSiteDocumentClassifier::SniffForXML(data);
     } else if (resp_data->canonical_mime_type ==
-               SiteIsolationResponseMetaData::JSON) {
+               CROSS_SITE_DOCUMENT_MIME_TYPE_JSON) {
       bucket_prefix = "SiteIsolation.XSD.JSON";
       sniffed_as_target_document =
           CrossSiteDocumentClassifier::SniffForJSON(data);
@@ -291,30 +291,29 @@ bool SiteIsolationStatsGatherer::OnReceivedFirstChunk(
   return would_block;
 }
 
-SiteIsolationResponseMetaData::CanonicalMimeType
-CrossSiteDocumentClassifier::GetCanonicalMimeType(
+CrossSiteDocumentMimeType CrossSiteDocumentClassifier::GetCanonicalMimeType(
     const std::string& mime_type) {
   if (base::LowerCaseEqualsASCII(mime_type, kTextHtml)) {
-    return SiteIsolationResponseMetaData::HTML;
+    return CROSS_SITE_DOCUMENT_MIME_TYPE_HTML;
   }
 
   if (base::LowerCaseEqualsASCII(mime_type, kTextPlain)) {
-    return SiteIsolationResponseMetaData::Plain;
+    return CROSS_SITE_DOCUMENT_MIME_TYPE_PLAIN;
   }
 
   if (base::LowerCaseEqualsASCII(mime_type, kAppJson) ||
       base::LowerCaseEqualsASCII(mime_type, kTextJson) ||
       base::LowerCaseEqualsASCII(mime_type, kTextXjson)) {
-    return SiteIsolationResponseMetaData::JSON;
+    return CROSS_SITE_DOCUMENT_MIME_TYPE_JSON;
   }
 
   if (base::LowerCaseEqualsASCII(mime_type, kTextXml) ||
       base::LowerCaseEqualsASCII(mime_type, xAppRssXml) ||
       base::LowerCaseEqualsASCII(mime_type, kAppXml)) {
-    return SiteIsolationResponseMetaData::XML;
+    return CROSS_SITE_DOCUMENT_MIME_TYPE_XML;
   }
 
-  return SiteIsolationResponseMetaData::Others;
+  return CROSS_SITE_DOCUMENT_MIME_TYPE_OTHERS;
 }
 
 bool CrossSiteDocumentClassifier::IsBlockableScheme(const GURL& url) {
