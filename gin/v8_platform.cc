@@ -39,14 +39,6 @@ void V8Platform::CallOnForegroundThread(v8::Isolate* isolate, v8::Task* task) {
       FROM_HERE, base::Bind(&v8::Task::Run, base::Owned(task)));
 }
 
-void V8Platform::CallDelayedOnForegroundThread(v8::Isolate* isolate,
-                                               v8::Task* task,
-                                               double delay_in_seconds) {
-  PerIsolateData::From(isolate)->task_runner()->PostDelayedTask(
-      FROM_HERE, base::Bind(&v8::Task::Run, base::Owned(task)),
-      base::TimeDelta::FromSecondsD(delay_in_seconds));
-}
-
 double V8Platform::MonotonicallyIncreasingTime() {
   return base::TimeTicks::Now().ToInternalValue() /
       static_cast<double>(base::Time::kMicrosecondsPerSecond);
