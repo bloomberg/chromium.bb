@@ -6,19 +6,28 @@
 // (and a lot of other test code) to it. https://crbug.com/303152
 var url = decodeURIComponent(/url=([^&]*)/.exec(location.search)[1]);
 var filter = {urls: ['http://www.example.com/*'], types: ['xmlhttprequest']};
-var numRequests = 0;
+var numSuccessfulRequests = 0;
+var numThrottledRequests = 0;
 
 chrome.webRequest.onCompleted.addListener(function(details) {
+  numSuccessfulRequests++;
+  chrome.test.assertEq(0, numThrottledRequests);
   chrome.test.assertEq(503, details.statusCode);
-  numRequests++;
   chrome.runtime.sendMessage({type: 'xhr', method: 'GET', url: url});
 }, filter);
 
 chrome.webRequest.onErrorOccurred.addListener(function(details) {
+  numThrottledRequests++;
   // Should not throttle the first request.
-  chrome.test.assertTrue(numRequests > 1);
+  chrome.test.assertTrue(numSuccessfulRequests > 1);
   chrome.test.assertEq('net::ERR_TEMPORARILY_THROTTLED', details.error);
-  chrome.test.notifyPass();
+  // Send 10 requests in a row so that backoff time is large enough to avoid
+  // flakiness on slow bots. See: crbug.com/501362.
+  if (numThrottledRequests < 10) {
+    chrome.runtime.sendMessage({type: 'xhr', method: 'GET', url: url});
+  } else {
+    chrome.test.notifyPass();
+  }
 }, filter);
 
 chrome.runtime.sendMessage({type: 'xhr', method: 'GET', url: url});
