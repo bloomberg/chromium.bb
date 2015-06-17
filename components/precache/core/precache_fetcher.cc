@@ -44,7 +44,7 @@ GURL GetConfigURL() {
 #endif
 }
 
-std::string GetManifestURLPrefix() {
+std::string GetDefaultManifestURLPrefix() {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kPrecacheManifestURLPrefix)) {
@@ -64,10 +64,10 @@ std::string GetManifestURLPrefix() {
 // Construct the URL of the precache manifest for the given name (either host or
 // URL). The server is expecting a request for a URL consisting of the manifest
 // URL prefix followed by the doubly escaped name.
-std::string ConstructManifestURL(const std::string& name) {
-  return GetManifestURLPrefix() +
-         net::EscapeQueryParamValue(net::EscapeQueryParamValue(name, false),
-                                    false);
+std::string ConstructManifestURL(const std::string& prefix,
+                                 const std::string& name) {
+  return prefix + net::EscapeQueryParamValue(
+                      net::EscapeQueryParamValue(name, false), false);
 }
 
 // Attempts to parse a protobuf message from the response string of a
@@ -135,17 +135,19 @@ void PrecacheFetcher::Fetcher::OnURLFetchComplete(const URLFetcher* source) {
 PrecacheFetcher::PrecacheFetcher(
     const std::vector<std::string>& starting_hosts,
     net::URLRequestContextGetter* request_context,
+    const std::string& manifest_url_prefix,
     PrecacheFetcher::PrecacheDelegate* precache_delegate)
     : starting_hosts_(starting_hosts),
       request_context_(request_context),
+      manifest_url_prefix_(manifest_url_prefix),
       precache_delegate_(precache_delegate) {
   DCHECK(request_context_.get());  // Request context must be non-NULL.
   DCHECK(precache_delegate_);  // Precache delegate must be non-NULL.
 
   DCHECK_NE(GURL(), GetConfigURL())
       << "Could not determine the precache config settings URL.";
-  DCHECK_NE(std::string(), GetManifestURLPrefix())
-      << "Could not determine the precache manifest URL prefix.";
+  DCHECK_NE(std::string(), GetDefaultManifestURLPrefix())
+      << "Could not determine the default precache manifest URL prefix.";
 }
 
 PrecacheFetcher::~PrecacheFetcher() {
@@ -201,6 +203,12 @@ void PrecacheFetcher::OnConfigFetchComplete(const URLFetcher& source) {
   PrecacheConfigurationSettings config;
   ParseProtoFromFetchResponse(source, &config);
 
+  std::string prefix = manifest_url_prefix_.empty()
+                           ? GetDefaultManifestURLPrefix()
+                           : manifest_url_prefix_;
+  DCHECK_NE(std::string(), prefix)
+      << "Could not determine the precache manifest URL prefix.";
+
   // Keep track of manifest URLs that are being fetched, in order to remove
   // duplicates.
   base::hash_set<std::string> unique_manifest_urls;
@@ -213,11 +221,11 @@ void PrecacheFetcher::OnConfigFetchComplete(const URLFetcher& source) {
     ++rank;
     if (rank > config.top_sites_count())
       break;
-    unique_manifest_urls.insert(ConstructManifestURL(host));
+    unique_manifest_urls.insert(ConstructManifestURL(prefix, host));
   }
 
   for (const std::string& url : config.forced_site())
-    unique_manifest_urls.insert(ConstructManifestURL(url));
+    unique_manifest_urls.insert(ConstructManifestURL(prefix, url));
 
   for (const std::string& manifest_url : unique_manifest_urls)
     manifest_urls_to_fetch_.push_back(GURL(manifest_url));

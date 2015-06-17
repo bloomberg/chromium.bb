@@ -74,6 +74,7 @@ class PrecacheFetcher {
   // the user is likely to fetch.
   PrecacheFetcher(const std::vector<std::string>& starting_hosts,
                   net::URLRequestContextGetter* request_context,
+                  const std::string& manifest_url_prefix,
                   PrecacheDelegate* precache_delegate);
 
   virtual ~PrecacheFetcher();
@@ -112,6 +113,10 @@ class PrecacheFetcher {
 
   // The request context used when fetching URLs.
   scoped_refptr<net::URLRequestContextGetter> request_context_;
+
+  // The custom URL prefix to use when fetching manifests. If not provided, the
+  // default flag-specified prefix will be used.
+  const std::string manifest_url_prefix_;
 
   // Non-owning pointer. Should not be NULL.
   PrecacheDelegate* precache_delegate_;

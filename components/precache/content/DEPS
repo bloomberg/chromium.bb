@@ -3,6 +3,7 @@ include_rules = [
   "+components/history/core/browser",
   "+components/keyed_service",
   "+components/user_prefs",
+  "+components/variations",
   "+content/public/browser",
   "+net/base",
 ]

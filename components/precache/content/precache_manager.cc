@@ -20,6 +20,7 @@
 #include "components/precache/core/precache_database.h"
 #include "components/precache/core/precache_switches.h"
 #include "components/user_prefs/user_prefs.h"
+#include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/network_change_notifier.h"
@@ -30,6 +31,7 @@ namespace {
 
 const char kPrecacheFieldTrialName[] = "Precache";
 const char kPrecacheFieldTrialEnabledGroup[] = "Enabled";
+const char kManifestURLPrefixParam[] = "manifest_url_prefix";
 const int kNumTopHosts = 100;
 
 }  // namespace
@@ -184,7 +186,10 @@ void PrecacheManager::OnHostsReceived(
 
   // Start precaching.
   precache_fetcher_.reset(
-      new PrecacheFetcher(hosts, browser_context_->GetRequestContext(), this));
+      new PrecacheFetcher(hosts, browser_context_->GetRequestContext(),
+                          variations::GetVariationParamValue(
+                              kPrecacheFieldTrialName, kManifestURLPrefixParam),
+                          this));
   precache_fetcher_->Start();
 }
 
