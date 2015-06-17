@@ -39,7 +39,7 @@
         ],
         'externs': [
           '<(CLOSURE_DIR)/externs/bookmark_manager_private.js',
-          '<(CLOSURE_DIR)/externs/chrome_send_externs.js',
+          '<(CLOSURE_DIR)/externs/chrome_send.js',
           '<(CLOSURE_DIR)/externs/chrome_extensions.js',
           '<(CLOSURE_DIR)/externs/metrics_private.js',
           '<(CLOSURE_DIR)/externs/system_private.js',

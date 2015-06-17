@@ -21,7 +21,7 @@ _POLYMER_EXTERNS = os.path.join(_SRC_DIR, "third_party", "polymer", "v1_0",
                                 "components-chromium", "polymer-externs",
                                 "polymer.externs.js")
 _CHROME_SEND_EXTERNS = os.path.join(_SRC_DIR, "third_party", "closure_compiler",
-                                    "externs", "chrome_send_externs.js")
+                                    "externs", "chrome_send.js")
 
 
 class CompilerTest(unittest.TestCase):

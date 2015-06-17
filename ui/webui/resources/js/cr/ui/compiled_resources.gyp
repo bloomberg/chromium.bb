@@ -21,7 +21,7 @@
           '../../util.js',
         ],
         'externs': [
-          '../../../../../../third_party/closure_compiler/externs/chrome_send_externs.js',
+          '../../../../../../third_party/closure_compiler/externs/chrome_send.js',
         ],
       },
       'includes': ['../../../../../../third_party/closure_compiler/compile_js.gypi'],

@@ -32,7 +32,7 @@
         ],
         'externs': [
           '<(CLOSURE_DIR)/externs/chrome_extensions.js',
-          '<(CLOSURE_DIR)/externs/chrome_send_externs.js',
+          '<(CLOSURE_DIR)/externs/chrome_send.js',
           '<(CLOSURE_DIR)/externs/developer_private.js',
         ],
       },

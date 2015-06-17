@@ -20,7 +20,7 @@
           'scheduler.js',
         ],
         'externs': [
-          '<(CLOSURE_DIR)/externs/chrome_send_externs.js',
+          '<(CLOSURE_DIR)/externs/chrome_send.js',
           '<(CLOSURE_DIR)/externs/chrome_extensions.js',
           '<(CLOSURE_DIR)/externs/file_manager_private.js',
           '<(CLOSURE_DIR)/externs/metrics_private.js',

@@ -27,7 +27,7 @@
           '../../../../ui/webui/resources/js/util.js',
           'history_focus_manager.js',
         ],
-        'externs': ['<(CLOSURE_DIR)/externs/chrome_send_externs.js'],
+        'externs': ['<(CLOSURE_DIR)/externs/chrome_send.js'],
       },
       'includes': ['../../../../third_party/closure_compiler/compile_js.gypi'],
     }
