@@ -12,7 +12,6 @@
 #include "cc/test/fake_picture_layer.h"
 #include "cc/test/fake_picture_layer_impl.h"
 #include "cc/test/fake_proxy.h"
-#include "cc/test/impl_side_painting_settings.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/single_thread_proxy.h"
@@ -66,7 +65,7 @@ TEST(PictureLayerTest, NoTilesIfEmptyBounds) {
     DebugScopedSetImplThread impl_thread(&proxy);
 
     TestSharedBitmapManager shared_bitmap_manager;
-    FakeLayerTreeHostImpl host_impl(ImplSidePaintingSettings(), &proxy,
+    FakeLayerTreeHostImpl host_impl(LayerTreeSettings(), &proxy,
                                     &shared_bitmap_manager, &task_graph_runner);
     host_impl.CreatePendingTree();
     scoped_ptr<FakePictureLayerImpl> layer_impl =

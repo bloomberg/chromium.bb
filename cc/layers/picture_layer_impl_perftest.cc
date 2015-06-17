@@ -11,7 +11,6 @@
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_picture_layer_impl.h"
 #include "cc/test/fake_picture_pile_impl.h"
-#include "cc/test/impl_side_painting_settings.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/tiles/tiling_set_raster_queue_all.h"
@@ -37,11 +36,18 @@ void AddTiling(float scale,
       tiling_tiles.begin(), tiling_tiles.end(), std::back_inserter(*all_tiles));
 }
 
+class LayerTreeSettingsWithLargeInterestArea : public LayerTreeSettings {
+ public:
+  LayerTreeSettingsWithLargeInterestArea() {
+    tiling_interest_area_viewport_multiplier = 10000;
+  }
+};
+
 class PictureLayerImplPerfTest : public testing::Test {
  public:
   PictureLayerImplPerfTest()
       : proxy_(base::ThreadTaskRunnerHandle::Get()),
-        host_impl_(ImplSidePaintingSettings(10000),
+        host_impl_(LayerTreeSettingsWithLargeInterestArea(),
                    &proxy_,
                    &shared_bitmap_manager_,
                    &task_graph_runner_),

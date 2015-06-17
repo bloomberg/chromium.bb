@@ -356,7 +356,7 @@ class NoLowResPictureLayerImplTest : public PictureLayerImplTest {
 
 TEST_F(PictureLayerImplTest, TileGridAlignment) {
   // Layer to span 4 raster tiles in x and in y
-  ImplSidePaintingSettings settings;
+  LayerTreeSettings settings;
   gfx::Size layer_size(settings.default_tile_size.width() * 7 / 2,
                        settings.default_tile_size.height() * 7 / 2);
 

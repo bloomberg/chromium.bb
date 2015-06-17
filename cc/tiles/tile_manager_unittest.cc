@@ -13,7 +13,6 @@
 #include "cc/test/fake_picture_layer_tiling_client.h"
 #include "cc/test/fake_picture_pile_impl.h"
 #include "cc/test/fake_tile_manager.h"
-#include "cc/test/impl_side_painting_settings.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/test/test_tile_priorities.h"
@@ -28,7 +27,7 @@
 namespace cc {
 namespace {
 
-class LowResTilingsSettings : public ImplSidePaintingSettings {
+class LowResTilingsSettings : public LayerTreeSettings {
  public:
   LowResTilingsSettings() {
     tiling_interest_area_viewport_multiplier = 10000;

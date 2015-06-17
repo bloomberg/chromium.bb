@@ -14,6 +14,7 @@
 #include "cc/test/fake_picture_pile_impl.h"
 #include "cc/test/fake_resource_provider.h"
 #include "cc/test/test_shared_bitmap_manager.h"
+#include "cc/trees/layer_tree_settings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size_conversions.h"
 

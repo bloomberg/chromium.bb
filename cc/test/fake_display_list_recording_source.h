@@ -8,7 +8,7 @@
 #include "cc/base/region.h"
 #include "cc/playback/display_list_recording_source.h"
 #include "cc/test/fake_content_layer_client.h"
-#include "cc/test/impl_side_painting_settings.h"
+#include "cc/trees/layer_tree_settings.h"
 
 namespace cc {
 
@@ -26,7 +26,7 @@ class FakeDisplayListRecordingSource : public DisplayListRecordingSource {
       const gfx::Size& layer_bounds) {
     scoped_ptr<FakeDisplayListRecordingSource> recording_source(
         new FakeDisplayListRecordingSource(
-            ImplSidePaintingSettings().default_tile_grid_size));
+            LayerTreeSettings().default_tile_grid_size));
     recording_source->SetRecordedViewport(recorded_viewport);
     recording_source->SetLayerBounds(layer_bounds);
     return recording_source;
@@ -36,7 +36,7 @@ class FakeDisplayListRecordingSource : public DisplayListRecordingSource {
       const gfx::Size& layer_bounds) {
     scoped_ptr<FakeDisplayListRecordingSource> recording_source(
         new FakeDisplayListRecordingSource(
-            ImplSidePaintingSettings().default_tile_grid_size));
+            LayerTreeSettings().default_tile_grid_size));
     recording_source->SetRecordedViewport(gfx::Rect(layer_bounds));
     recording_source->SetLayerBounds(layer_bounds);
     return recording_source;

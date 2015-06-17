@@ -209,7 +209,6 @@
       'test/fake_video_frame_provider.h',
       'test/geometry_test_utils.cc',
       'test/geometry_test_utils.h',
-      'test/impl_side_painting_settings.h',
       'test/layer_test_common.cc',
       'test/layer_test_common.h',
       'test/layer_tree_host_common_test.cc',

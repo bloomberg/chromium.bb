@@ -16,7 +16,6 @@
 #include "cc/test/fake_picture_pile_impl.h"
 #include "cc/test/fake_tile_manager.h"
 #include "cc/test/fake_tile_manager_client.h"
-#include "cc/test/impl_side_painting_settings.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/test/test_tile_priorities.h"
@@ -84,6 +83,13 @@ class FakeTileTaskRunnerImpl : public TileTaskRunner, public TileTaskClient {
 base::LazyInstance<FakeTileTaskRunnerImpl> g_fake_tile_task_runner =
     LAZY_INSTANCE_INITIALIZER;
 
+class LayerTreeSettingsWithLargeInterestArea : public LayerTreeSettings {
+ public:
+  LayerTreeSettingsWithLargeInterestArea() {
+    tiling_interest_area_viewport_multiplier = 10000;
+  }
+};
+
 class TileManagerPerfTest : public testing::Test {
  public:
   TileManagerPerfTest()
@@ -91,7 +97,7 @@ class TileManagerPerfTest : public testing::Test {
         max_tiles_(10000),
         id_(7),
         proxy_(base::ThreadTaskRunnerHandle::Get()),
-        host_impl_(ImplSidePaintingSettings(10000),
+        host_impl_(LayerTreeSettingsWithLargeInterestArea(),
                    &proxy_,
                    &shared_bitmap_manager_,
                    &task_graph_runner_),

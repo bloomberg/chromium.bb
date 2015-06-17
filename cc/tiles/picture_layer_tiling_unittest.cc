@@ -14,6 +14,7 @@
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/tiles/picture_layer_tiling.h"
 #include "cc/tiles/picture_layer_tiling_set.h"
+#include "cc/trees/layer_tree_settings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/quad_f.h"
 #include "ui/gfx/geometry/rect_conversions.h"

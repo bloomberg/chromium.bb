@@ -13,6 +13,7 @@
 #include "cc/test/test_context_provider.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/tiles/picture_layer_tiling.h"
+#include "cc/trees/layer_tree_settings.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"

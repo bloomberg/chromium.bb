@@ -45,7 +45,6 @@
 #include "cc/test/fake_scoped_ui_resource.h"
 #include "cc/test/fake_video_frame_provider.h"
 #include "cc/test/geometry_test_utils.h"
-#include "cc/test/impl_side_painting_settings.h"
 #include "cc/test/layer_tree_test.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_web_graphics_context_3d.h"
@@ -935,15 +934,14 @@ class LayerTreeHostTestDamageWithScale : public LayerTreeHostTest {
     client_.set_fill_with_nonsolid_color(true);
 
     scoped_ptr<FakePicturePile> pile(
-        new FakePicturePile(ImplSidePaintingSettings().minimum_contents_scale,
-                            ImplSidePaintingSettings().default_tile_grid_size));
+        new FakePicturePile(LayerTreeSettings().minimum_contents_scale,
+                            LayerTreeSettings().default_tile_grid_size));
     root_layer_ = FakePictureLayer::CreateWithRecordingSource(
         layer_settings(), &client_, pile.Pass());
     root_layer_->SetBounds(gfx::Size(50, 50));
 
-    pile.reset(
-        new FakePicturePile(ImplSidePaintingSettings().minimum_contents_scale,
-                            ImplSidePaintingSettings().default_tile_grid_size));
+    pile.reset(new FakePicturePile(LayerTreeSettings().minimum_contents_scale,
+                                   LayerTreeSettings().default_tile_grid_size));
     child_layer_ = FakePictureLayer::CreateWithRecordingSource(
         layer_settings(), &client_, pile.Pass());
     child_layer_->SetBounds(gfx::Size(25, 25));
@@ -5059,8 +5057,8 @@ class LayerTreeHostTestCrispUpAfterPinchEnds : public LayerTreeHostTest {
     root->AddChild(pinch);
 
     scoped_ptr<FakePicturePile> pile(
-        new FakePicturePile(ImplSidePaintingSettings().minimum_contents_scale,
-                            ImplSidePaintingSettings().default_tile_grid_size));
+        new FakePicturePile(LayerTreeSettings().minimum_contents_scale,
+                            LayerTreeSettings().default_tile_grid_size));
     pile->SetPlaybackAllowedEvent(&playback_allowed_event_);
     scoped_refptr<FakePictureLayer> layer =
         FakePictureLayer::CreateWithRecordingSource(layer_settings(), &client_,
@@ -5270,8 +5268,8 @@ class RasterizeWithGpuRasterizationCreatesResources : public LayerTreeHostTest {
     root->SetBounds(gfx::Size(500, 500));
 
     scoped_ptr<FakePicturePile> pile(
-        new FakePicturePile(ImplSidePaintingSettings().minimum_contents_scale,
-                            ImplSidePaintingSettings().default_tile_grid_size));
+        new FakePicturePile(LayerTreeSettings().minimum_contents_scale,
+                            LayerTreeSettings().default_tile_grid_size));
     scoped_refptr<FakePictureLayer> layer =
         FakePictureLayer::CreateWithRecordingSource(layer_settings(), &client_,
                                                     pile.Pass());
@@ -5313,8 +5311,8 @@ class GpuRasterizationRasterizesBorderTiles : public LayerTreeHostTest {
     client_.set_fill_with_nonsolid_color(true);
 
     scoped_ptr<FakePicturePile> pile(
-        new FakePicturePile(ImplSidePaintingSettings().minimum_contents_scale,
-                            ImplSidePaintingSettings().default_tile_grid_size));
+        new FakePicturePile(LayerTreeSettings().minimum_contents_scale,
+                            LayerTreeSettings().default_tile_grid_size));
     scoped_refptr<FakePictureLayer> root =
         FakePictureLayer::CreateWithRecordingSource(layer_settings(), &client_,
                                                     pile.Pass());
@@ -5370,8 +5368,8 @@ class LayerTreeHostTestContinuousDrawWhenCreatingVisibleTiles
     root->AddChild(pinch);
 
     scoped_ptr<FakePicturePile> pile(
-        new FakePicturePile(ImplSidePaintingSettings().minimum_contents_scale,
-                            ImplSidePaintingSettings().default_tile_grid_size));
+        new FakePicturePile(LayerTreeSettings().minimum_contents_scale,
+                            LayerTreeSettings().default_tile_grid_size));
     pile->SetPlaybackAllowedEvent(&playback_allowed_event_);
     scoped_refptr<FakePictureLayer> layer =
         FakePictureLayer::CreateWithRecordingSource(layer_settings(), &client_,

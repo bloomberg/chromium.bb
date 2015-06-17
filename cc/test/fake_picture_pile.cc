@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "cc/test/fake_picture_pile_impl.h"
+#include "cc/trees/layer_tree_settings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
@@ -17,8 +18,8 @@ scoped_ptr<FakePicturePile> CreatePile(const gfx::Size& tile_size,
                                        const gfx::Size& layer_bounds,
                                        bool is_filled) {
   scoped_ptr<FakePicturePile> pile(
-      new FakePicturePile(ImplSidePaintingSettings().minimum_contents_scale,
-                          ImplSidePaintingSettings().default_tile_grid_size));
+      new FakePicturePile(LayerTreeSettings().minimum_contents_scale,
+                          LayerTreeSettings().default_tile_grid_size));
   pile->tiling().SetBorderTexels(0);
   pile->tiling().SetTilingSize(layer_bounds);
   pile->tiling().SetMaxTextureSize(tile_size);

@@ -8,7 +8,6 @@
 #include "cc/test/fake_display_list_recording_source.h"
 #include "cc/test/fake_picture_pile.h"
 #include "cc/test/fake_picture_pile_impl.h"
-#include "cc/test/impl_side_painting_settings.h"
 #include "cc/test/skia_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
