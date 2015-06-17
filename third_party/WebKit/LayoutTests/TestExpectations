@@ -97,9 +97,6 @@ crbug.com/321460 animations/animation-direction-normal.html [ Pass ImageOnlyFail
 
 crbug.com/328996 [ Mac Debug ] http/tests/media/video-seek-to-middle.html [ Pass Failure ]
 
-# This test is slow due to Mesa slowness.
-crbug.com/244481 virtual/gpu/canvas/philip/tests/2d.shadow.blur.low.html [ Skip ]
-
 crbug.com/9798 [ Win ] http/tests/misc/redirect-with-quotes.php [ Pass Timeout ]
 
 crbug.com/430980 [ Mac ] fast/events/hit-test-counts.html [ Failure Pass ]
@@ -951,7 +948,6 @@ crbug.com/253763 virtual/slimmingpaint/fast/text-autosizing/first-line-scale-fac
 crbug.com/374643 [ Mac ] fast/text-autosizing/supercluster-multiple-layout.html [ Failure ]
 crbug.com/374643 [ Mac ] fast/text-autosizing/tables/table-with-inline-block.html [ Failure ]
 
-crbug.com/335710 virtual/gpu/canvas/philip/tests/2d.text.draw.fontface.notinpage.html [ Pass Failure ]
 crbug.com/335710 canvas/philip/tests/2d.text.draw.fontface.notinpage.html [ Pass Failure ]
 
 crbug.com/460633 virtual/prefer_compositing_to_lcd_text/compositing/overflow/do-not-repaint-if-scrolling-composited-layers.html [ Pass Failure ]
