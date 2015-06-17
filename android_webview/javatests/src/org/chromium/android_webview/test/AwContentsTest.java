@@ -650,6 +650,7 @@ public class AwContentsTest extends AwTestBase {
     }
 
     @Feature({"AndroidWebView"})
+    @SmallTest
     public void testRequestAccessibilitySnapshotStrongStyle() throws Throwable {
         final String data = "<html><body><p>foo</p><p><strong>bar</strong></p></body></html>";
         AccessibilitySnapshotNode root = receiveAccessibilitySnapshot(data);
@@ -667,6 +668,7 @@ public class AwContentsTest extends AwTestBase {
     }
 
     @Feature({"AndroidWebView"})
+    @SmallTest
     public void testRequestAccessibilitySnapshotItalicStyle() throws Throwable {
         final String data = "<html><body><i>foo</i></body></html>";
         AccessibilitySnapshotNode root = receiveAccessibilitySnapshot(data);
@@ -680,6 +682,7 @@ public class AwContentsTest extends AwTestBase {
     }
 
     @Feature({"AndroidWebView"})
+    @SmallTest
     public void testRequestAccessibilitySnapshotBoldStyle() throws Throwable {
         final String data = "<html><body><b>foo</b></body></html>";
         AccessibilitySnapshotNode root = receiveAccessibilitySnapshot(data);
