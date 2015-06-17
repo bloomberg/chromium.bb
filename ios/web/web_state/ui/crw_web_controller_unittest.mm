@@ -208,6 +208,7 @@ NSString* const kGetMessageQueueJavaScript =
 
 NSString* kCheckURLJavaScript =
     @"try{"
+     "window.__gCrWeb_Verifying = true;"
      "if(!window.__gCrWeb_CachedRequest||"
      "!(window.__gCrWeb_CachedRequestDocument===window.document)){"
      "window.__gCrWeb_CachedRequest = new XMLHttpRequest();"
@@ -223,6 +224,7 @@ NSString* kCheckURLJavaScript =
      "window.__gCrWeb_CachedRequest.send();"
      "}catch(e2){}"
      "}"
+     "delete window.__gCrWeb_Verifying;"
      "window.location.href";
 
 NSString* kTestURLString = @"http://www.google.com/";

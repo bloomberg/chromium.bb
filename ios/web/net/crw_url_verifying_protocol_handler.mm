@@ -116,23 +116,26 @@ const char kCheckRelativeURL[] =
     // from another document will trigger an exception. To prevent this,
     // information about the document on which the current XMLHttpRequest has
     // been created is kept.
-    cachedJavaScript.reset([[NSString stringWithFormat:
-        @"try{"
-         "if(!window.__gCrWeb_CachedRequest||"
-         "!(window.__gCrWeb_CachedRequestDocument===window.document)){"
-         "window.__gCrWeb_CachedRequest = new XMLHttpRequest();"
-         "window.__gCrWeb_CachedRequestDocument = window.document;"
-         "}"
-         "window.__gCrWeb_CachedRequest.open('POST','%s',false);"
-         "window.__gCrWeb_CachedRequest.send();"
-         "}catch(e){"
-         "try{"
-         "window.__gCrWeb_CachedRequest.open('POST','%s',false);"
-         "window.__gCrWeb_CachedRequest.send();"
-         "}catch(e2){}"
-         "}"
-         "window.location.href",
-        web::kURLForVerification, kCheckRelativeURL] retain]);
+    cachedJavaScript.reset([[NSString
+        stringWithFormat:
+            @"try{"
+             "window.__gCrWeb_Verifying = true;"
+             "if(!window.__gCrWeb_CachedRequest||"
+             "!(window.__gCrWeb_CachedRequestDocument===window.document)){"
+             "window.__gCrWeb_CachedRequest = new XMLHttpRequest();"
+             "window.__gCrWeb_CachedRequestDocument = window.document;"
+             "}"
+             "window.__gCrWeb_CachedRequest.open('POST','%s',false);"
+             "window.__gCrWeb_CachedRequest.send();"
+             "}catch(e){"
+             "try{"
+             "window.__gCrWeb_CachedRequest.open('POST','%s',false);"
+             "window.__gCrWeb_CachedRequest.send();"
+             "}catch(e2){}"
+             "}"
+             "delete window.__gCrWeb_Verifying;"
+             "window.location.href",
+            web::kURLForVerification, kCheckRelativeURL] retain]);
   }
   return cachedJavaScript.get();
 }

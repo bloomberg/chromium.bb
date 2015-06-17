@@ -72,6 +72,11 @@ __gCrWeb.message = {};
    * @private
    */
   __gCrWeb.message.invokeOnHost = function(command) {
+    // Avoid infinite loops in sites that send messages as a side effect
+    // of URL verification (e.g., due to logging in an XHR override).
+    if (window.__gCrWeb_Verifying) {
+      return;
+    }
     messageQueue_.queue.push(command);
     sendQueue_(messageQueue_);
   };
