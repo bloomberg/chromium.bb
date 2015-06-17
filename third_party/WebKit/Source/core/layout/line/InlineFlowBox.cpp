@@ -255,16 +255,16 @@ void InlineFlowBox::attachLineBoxToLayoutObject()
     lineBoxes()->attachLineBox(this);
 }
 
-void InlineFlowBox::adjustPosition(LayoutUnit dx, LayoutUnit dy)
+void InlineFlowBox::move(const LayoutSize& delta)
 {
-    InlineBox::adjustPosition(dx, dy);
+    InlineBox::move(delta);
     for (InlineBox* child = firstChild(); child; child = child->nextOnLine()) {
         if (child->layoutObject().isOutOfFlowPositioned())
             continue;
-        child->adjustPosition(dx, dy);
+        child->move(delta);
     }
     if (m_overflow)
-        m_overflow->move(dx, dy); // FIXME: Rounding error here since overflow was pixel snapped, but nobody other than list markers passes non-integral values here.
+        m_overflow->move(delta.width(), delta.height()); // FIXME: Rounding error here since overflow was pixel snapped, but nobody other than list markers passes non-integral values here.
 }
 
 LineBoxList* InlineFlowBox::lineBoxes() const
@@ -597,7 +597,7 @@ void InlineFlowBox::placeBoxesInBlockDirection(LayoutUnit top, LayoutUnit maxHei
             continue; // Positioned placeholders don't affect calculations.
 
         if (descendantsHaveSameLineHeightAndBaseline()) {
-            curr->adjustBlockDirectionPosition(adjustmentForChildrenWithSameLineHeightAndBaseline.toFloat());
+            curr->moveInBlockDirection(adjustmentForChildrenWithSameLineHeightAndBaseline.toFloat());
             continue;
         }
 

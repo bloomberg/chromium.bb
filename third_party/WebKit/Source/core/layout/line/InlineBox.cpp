@@ -196,12 +196,12 @@ void InlineBox::attachLine()
         toLayoutBox(layoutObject()).setInlineBoxWrapper(this);
 }
 
-void InlineBox::adjustPosition(LayoutUnit dx, LayoutUnit dy)
+void InlineBox::move(const LayoutSize& delta)
 {
-    m_topLeft.move(dx, dy);
+    m_topLeft.move(delta);
 
     if (layoutObject().isReplaced())
-        toLayoutBox(layoutObject()).move(dx, dy);
+        toLayoutBox(layoutObject()).move(delta.width(), delta.height());
 }
 
 void InlineBox::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit /* lineTop */, LayoutUnit /* lineBottom */)

@@ -851,7 +851,7 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState,
                     adjustLinePositionForPagination(*lineBox, adjustment, layoutState.flowThread());
                     if (adjustment) {
                         LayoutUnit oldLineWidth = availableLogicalWidthForLine(oldLogicalHeight, layoutState.lineInfo().isFirstLine());
-                        lineBox->adjustBlockDirectionPosition(adjustment.toFloat());
+                        lineBox->moveInBlockDirection(adjustment.toFloat());
                         if (layoutState.usesPaintInvalidationBounds())
                             layoutState.updatePaintInvalidationRangeFromBox(lineBox);
 
@@ -981,7 +981,7 @@ void LayoutBlockFlow::linkToEndLineIfNeeded(LineLayoutState& layoutState)
                 }
                 if (delta) {
                     layoutState.updatePaintInvalidationRangeFromBox(line, delta);
-                    line->adjustBlockDirectionPosition(delta.toFloat());
+                    line->moveInBlockDirection(delta.toFloat());
                 }
                 if (Vector<LayoutBox*>* cleanLineFloats = line->floatsPtr()) {
                     for (auto* box : *cleanLineFloats) {
@@ -1650,7 +1650,7 @@ RootInlineBox* LayoutBlockFlow::determineStartPosition(LineLayoutState& layoutSt
                     }
 
                     layoutState.updatePaintInvalidationRangeFromBox(curr, paginationDelta);
-                    curr->adjustBlockDirectionPosition(paginationDelta.toFloat());
+                    curr->moveInBlockDirection(paginationDelta.toFloat());
                 }
             }
 
@@ -1903,7 +1903,6 @@ void LayoutBlockFlow::addOverflowFromInlineChildren()
 void LayoutBlockFlow::deleteEllipsisLineBoxes()
 {
     ETextAlign textAlign = style()->textAlign();
-    bool ltr = style()->isLeftToRightDirection();
     bool firstLine = true;
     for (RootInlineBox* curr = firstRootBox(); curr; curr = curr->nextRootBox()) {
         if (curr->hasEllipsisBox()) {
@@ -1915,10 +1914,7 @@ void LayoutBlockFlow::deleteEllipsisLineBoxes()
             LayoutUnit totalLogicalWidth = curr->logicalWidth();
             updateLogicalWidthForAlignment(textAlign, curr, 0, logicalLeft, totalLogicalWidth, availableLogicalWidth, 0);
 
-            if (ltr)
-                curr->adjustLogicalPosition((logicalLeft - curr->logicalLeft()), 0);
-            else
-                curr->adjustLogicalPosition(-(curr->logicalLeft() - logicalLeft), 0);
+            curr->moveInInlineDirection(logicalLeft - curr->logicalLeft());
         }
         firstLine = false;
     }
@@ -1988,9 +1984,9 @@ void LayoutBlockFlow::checkLinesForTextOverflow()
                 LayoutUnit availableLogicalWidth = blockRightEdge - blockLeftEdge;
                 updateLogicalWidthForAlignment(textAlign, curr, 0, logicalLeft, totalLogicalWidth, availableLogicalWidth, 0);
                 if (ltr)
-                    curr->adjustLogicalPosition(logicalLeft, 0);
+                    curr->moveInInlineDirection(logicalLeft);
                 else
-                    curr->adjustLogicalPosition(logicalLeft - (availableLogicalWidth - totalLogicalWidth), 0);
+                    curr->moveInInlineDirection(logicalLeft - (availableLogicalWidth - totalLogicalWidth));
             }
         }
         firstLine = false;

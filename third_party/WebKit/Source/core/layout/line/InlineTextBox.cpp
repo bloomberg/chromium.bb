@@ -95,7 +95,18 @@ void InlineTextBox::setLogicalOverflowRect(const LayoutRect& rect)
     ASSERT(!knownToHaveNoOverflow());
     if (!gTextBoxesWithOverflow)
         gTextBoxesWithOverflow = new InlineTextBoxOverflowMap;
-    gTextBoxesWithOverflow->add(this, rect);
+    gTextBoxesWithOverflow->set(this, rect);
+}
+
+void InlineTextBox::move(const LayoutSize& delta)
+{
+    InlineBox::move(delta);
+
+    if (!knownToHaveNoOverflow()) {
+        LayoutRect logicalOverflowRect = this->logicalOverflowRect();
+        logicalOverflowRect.move(isHorizontal() ? delta : delta.transposedSize());
+        setLogicalOverflowRect(logicalOverflowRect);
+    }
 }
 
 int InlineTextBox::baselinePosition(FontBaseline baselineType) const

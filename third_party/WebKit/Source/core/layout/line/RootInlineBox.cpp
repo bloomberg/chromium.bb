@@ -167,17 +167,17 @@ bool RootInlineBox::nodeAtPoint(HitTestResult& result, const HitTestLocation& lo
     return InlineFlowBox::nodeAtPoint(result, locationInContainer, accumulatedOffset, lineTop, lineBottom);
 }
 
-void RootInlineBox::adjustPosition(LayoutUnit dx, LayoutUnit dy)
+void RootInlineBox::move(const LayoutSize& delta)
 {
-    InlineFlowBox::adjustPosition(dx, dy);
-    LayoutUnit blockDirectionDelta = isHorizontal() ? dy : dx; // The block direction delta is a LayoutUnit.
+    InlineFlowBox::move(delta);
+    LayoutUnit blockDirectionDelta = isHorizontal() ? delta.height() : delta.width();
     m_lineTop += blockDirectionDelta;
     m_lineBottom += blockDirectionDelta;
     m_lineTopWithLeading += blockDirectionDelta;
     m_lineBottomWithLeading += blockDirectionDelta;
     m_selectionBottom += blockDirectionDelta;
     if (hasEllipsisBox())
-        ellipsisBox()->adjustPosition(dx, dy);
+        ellipsisBox()->move(delta);
 }
 
 void RootInlineBox::childRemoved(InlineBox* box)
@@ -235,7 +235,7 @@ LayoutUnit RootInlineBox::alignBoxesInBlockDirection(LayoutUnit heightOfBlock, G
     if (annotationsAdjustment) {
         // FIXME: Need to handle pagination here. We might have to move to the next page/column as a result of the
         // ruby expansion.
-        adjustBlockDirectionPosition(annotationsAdjustment.toFloat());
+        moveInBlockDirection(annotationsAdjustment.toFloat());
         heightOfBlock += annotationsAdjustment;
     }
 

@@ -106,7 +106,7 @@ public:
     virtual void deleteLine() override final;
     virtual void extractLine() override final;
     virtual void attachLine() override final;
-    virtual void adjustPosition(LayoutUnit dx, LayoutUnit dy) override;
+    virtual void move(const LayoutSize&) override;
 
     virtual void extractLineBoxFromLayoutObject();
     virtual void attachLineBoxToLayoutObject();

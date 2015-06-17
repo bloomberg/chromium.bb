@@ -76,28 +76,13 @@ public:
 
     virtual bool isLineBreak() const { return false; }
 
-    virtual void adjustPosition(LayoutUnit dx, LayoutUnit dy);
-    void adjustLogicalPosition(LayoutUnit deltaLogicalLeft, LayoutUnit deltaLogicalTop)
-    {
-        if (isHorizontal())
-            adjustPosition(deltaLogicalLeft, deltaLogicalTop);
-        else
-            adjustPosition(deltaLogicalTop, deltaLogicalLeft);
-    }
-    void adjustLineDirectionPosition(LayoutUnit delta)
-    {
-        if (isHorizontal())
-            adjustPosition(delta, 0);
-        else
-            adjustPosition(0, delta);
-    }
-    void adjustBlockDirectionPosition(LayoutUnit delta)
-    {
-        if (isHorizontal())
-            adjustPosition(0, delta);
-        else
-            adjustPosition(delta, 0);
-    }
+    // These methods are called when the caller wants to move the position of InlineBox without full layout of it.
+    // The implementation should update the position of the whole subtree (e.g. position of descendants and overflow etc.
+    // should also be moved accordingly).
+    virtual void move(const LayoutSize& delta);
+    void moveInLogicalDirection(const LayoutSize& deltaInLogicalDirection) { move(isHorizontal() ? deltaInLogicalDirection : deltaInLogicalDirection.transposedSize()); }
+    void moveInInlineDirection(LayoutUnit delta) { moveInLogicalDirection(LayoutSize(delta, LayoutUnit())); }
+    void moveInBlockDirection(LayoutUnit delta) { moveInLogicalDirection(LayoutSize(LayoutUnit(), delta)); }
 
     virtual void paint(const PaintInfo&, const LayoutPoint&, LayoutUnit lineTop, LayoutUnit lineBottom);
     virtual bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, LayoutUnit lineTop, LayoutUnit lineBottom);

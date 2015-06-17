@@ -118,7 +118,7 @@ void SVGRootInlineBox::layoutRootBox(const LayoutRect& childRect)
         // Skip generated content.
         if (!child->layoutObject().node())
             continue;
-        child->adjustPosition(-childRect.x(), -childRect.y());
+        child->move(LayoutSize(-childRect.x(), -childRect.y()));
     }
 
     // Position ourselves.
