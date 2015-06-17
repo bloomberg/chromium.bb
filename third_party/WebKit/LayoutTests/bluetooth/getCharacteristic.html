@@ -15,7 +15,9 @@ var nonIncludedCharacteristicUUID = "00002a19-0000-1000-8000-00805f9b34fb";
 
 sequential_promise_test(function() {
   testRunner.setBluetoothMockDataSet('ConnectableDeviceAdapter');
-  return navigator.bluetooth.requestDevice().then(function(device) {
+  return navigator.bluetooth.requestDevice({
+    filters: [{services: [serviceUUID]}]
+  }).then(function(device) {
     return device.connectGATT();
   }).then(function(gattServer) {
       return gattServer.getPrimaryService(serviceUUID);
@@ -32,7 +34,9 @@ sequential_promise_test(function() {
 
 sequential_promise_test(function() {
   testRunner.setBluetoothMockDataSet('ConnectableDeviceAdapter');
-  return navigator.bluetooth.requestDevice().then(function(device) {
+  return navigator.bluetooth.requestDevice({
+    filters: [{services: [serviceUUID]}]
+  }).then(function(device) {
     return device.connectGATT();
   }).then(function(gattServer) {
     return gattServer.getPrimaryService(serviceUUID);
@@ -46,7 +50,9 @@ sequential_promise_test(function() {
 
 sequential_promise_test(function() {
   testRunner.setBluetoothMockDataSet('ConnectableDeviceAdapter');
-  return navigator.bluetooth.requestDevice().then(function(device) {
+  return navigator.bluetooth.requestDevice({
+    filters: [{services: [serviceUUID]}]
+  }).then(function(device) {
     return device.connectGATT();
   }).then(function(gattServer) {
     return gattServer.getPrimaryService(serviceUUID);
@@ -60,7 +66,9 @@ sequential_promise_test(function() {
 
 sequential_promise_test(function() {
   testRunner.setBluetoothMockDataSet('ConnectableDeviceAdapter');
-  return navigator.bluetooth.requestDevice().then(function(device) {
+  return navigator.bluetooth.requestDevice({
+    filters: [{services: [serviceUUID]}]
+  }).then(function(device) {
     return device.connectGATT();
   }).then(function(gattServer) {
     return gattServer.getPrimaryService(serviceUUID);

@@ -8,7 +8,9 @@ test(function(t) { assert_exists(window, "testRunner"); t.done(); },
 
 sequential_promise_test(function() {
   testRunner.setBluetoothMockDataSet('ConnectableDeviceAdapter');
-  return navigator.bluetooth.requestDevice().then(function(device) {
+  return navigator.bluetooth.requestDevice({
+    filters: [{services: [genericAccessServiceUuid]}]
+  }).then(function(device) {
     testRunner.setBluetoothMockDataSet('EmptyAdapter');
     return device.connectGATT().then(function() {
       assert_unreached('Should return error if device not in adapter.');
@@ -21,7 +23,9 @@ sequential_promise_test(function() {
 
 sequential_promise_test(function() {
   testRunner.setBluetoothMockDataSet('UnconnectableDeviceAdapter');
-  return navigator.bluetooth.requestDevice().then(function(device) {
+  return navigator.bluetooth.requestDevice({
+    filters: [{services: [genericAccessServiceUuid]}]
+  }).then(function(device) {
     return device.connectGATT().then(function() {
       assert_unreached('Should return error since device failed to connect.');
     }, function(e) {
@@ -33,7 +37,9 @@ sequential_promise_test(function() {
 
 sequential_promise_test(function() {
   testRunner.setBluetoothMockDataSet('ConnectableDeviceAdapter');
-  return navigator.bluetooth.requestDevice().then(function(device) {
+  return navigator.bluetooth.requestDevice({
+    filters: [{services: [genericAccessServiceUuid]}]
+  }).then(function(device) {
     return device.connectGATT();
   }).then(function(gattConnection) {
     assert_true(gattConnection.connected);

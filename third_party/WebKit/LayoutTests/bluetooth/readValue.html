@@ -15,7 +15,9 @@ var unreadableCharacteristicUUID = '00002a03-0000-1000-8000-00805f9b34fb';
 
 sequential_promise_test(function() {
   testRunner.setBluetoothMockDataSet('ConnectableDeviceAdapter');
-  return navigator.bluetooth.requestDevice().then(function(device) {
+  return navigator.bluetooth.requestDevice({
+    filters: [{services: [serviceUUID]}]
+  }).then(function(device) {
     return device.connectGATT();
   }).then(function(gattServer) {
     return gattServer.getPrimaryService(serviceUUID);
@@ -34,7 +36,9 @@ sequential_promise_test(function() {
 
 sequential_promise_test(function() {
   testRunner.setBluetoothMockDataSet('ConnectableDeviceAdapter');
-  return navigator.bluetooth.requestDevice().then(function(device) {
+  return navigator.bluetooth.requestDevice({
+    filters: [{services: [serviceUUID]}]
+  }).then(function(device) {
     return device.connectGATT();
   }).then(function(gattServer) {
     return gattServer.getPrimaryService(serviceUUID);
@@ -54,7 +58,9 @@ sequential_promise_test(function() {
 
 sequential_promise_test(function() {
   testRunner.setBluetoothMockDataSet('ConnectableDeviceAdapter');
-  return navigator.bluetooth.requestDevice().then(function(device) {
+  return navigator.bluetooth.requestDevice({
+    filters: [{services: [serviceUUID]}]
+  }).then(function(device) {
     return device.connectGATT();
   }).then(function(gattServer) {
     return gattServer.getPrimaryService(serviceUUID);
@@ -65,7 +71,8 @@ sequential_promise_test(function() {
   }).then(function(value) {
     var decoder = new TextDecoder('utf-8');
     var value_str = decoder.decode(value);
-    assert_equals(value_str, 'Empty Mock Device name');
+    // TODO: Remove the .slice after https://crrev.com/1172853004 is in.
+    assert_equals(value_str.slice(0, 17), 'Empty Mock Device');
   });
 }, 'Request for characteristic. Should return right characteristic');
 </script>

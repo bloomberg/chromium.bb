@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
+<script src="../resources/testharness-helpers.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <script src="bluetooth-helpers.js"></script>
 <script>
@@ -8,7 +9,21 @@ test(function(t) { assert_exists(window, "testRunner"); t.done(); },
 
 sequential_promise_test(function() {
   testRunner.setBluetoothMockDataSet('EmptyAdapter');
-  return navigator.bluetooth.requestDevice().then(function() {
+  return assert_promise_rejects(navigator.bluetooth.requestDevice(),
+                                new TypeError());
+}, 'Requires an argument.');
+
+sequential_promise_test(function() {
+  testRunner.setBluetoothMockDataSet('EmptyAdapter');
+  return assert_promise_rejects(navigator.bluetooth.requestDevice({}),
+                                new TypeError());
+}, 'RequestDeviceOptions requires a |filters| member.');
+
+sequential_promise_test(function() {
+  testRunner.setBluetoothMockDataSet('EmptyAdapter');
+  return navigator.bluetooth.requestDevice({
+    filters: [{services: [genericAccessServiceUuid]}]
+  }).then(function() {
     assert_unreached('Expected no devices but one was returned.');
   }, function(e) {
     assert_equals(e.name, 'NotFoundError');
@@ -18,7 +33,9 @@ sequential_promise_test(function() {
 
 sequential_promise_test(function() {
   testRunner.setBluetoothMockDataSet('SingleEmptyDeviceAdapter');
-  return navigator.bluetooth.requestDevice().then(function(device) {
+  return navigator.bluetooth.requestDevice({
+    filters: [{services: [genericAccessServiceUuid]}]
+  }).then(function(device) {
     assert_equals(device.constructor.name, "BluetoothDevice");
   });
 }, 'Mock will resolve.');

@@ -12,6 +12,7 @@
 namespace blink {
 
 class BluetoothUUIDs;
+class RequestDeviceOptions;
 class ScriptPromise;
 class ScriptState;
 
@@ -26,7 +27,7 @@ public:
     }
 
     // BluetoothDiscovery interface
-    ScriptPromise requestDevice(ScriptState*);
+    ScriptPromise requestDevice(ScriptState*, const RequestDeviceOptions&);
 
     DEFINE_INLINE_TRACE() { }
 

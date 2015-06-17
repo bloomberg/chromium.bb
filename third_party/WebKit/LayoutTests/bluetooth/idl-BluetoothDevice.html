@@ -15,7 +15,9 @@ test(function(t) { assert_exists(window, "testRunner"); t.done(); },
 
 sequential_promise_test(function() {
   testRunner.setBluetoothMockDataSet('SingleEmptyDeviceAdapter');
-  return navigator.bluetooth.requestDevice().then(function(device) {
+  return navigator.bluetooth.requestDevice({
+    filters: [{services: [genericAccessServiceUuid]}]
+  }).then(function(device) {
     assert_equals(device.constructor.name, "BluetoothDevice");
 
     // Attempt (and fail) to overwrite all members, verifying they are readonly.
@@ -30,15 +32,15 @@ sequential_promise_test(function() {
     device.uuids = "overwritten";
 
     assert_equals(device.instanceID, "Empty Mock Device instanceID");
-    assert_equals(device.name, "Empty Mock Device name");
+    assert_equals(device.name.slice(0, 17), "Empty Mock Device");
     assert_equals(device.deviceClass, 0x1F00);
     assert_equals(device.vendorIDSource, "bluetooth");
     assert_equals(device.vendorID, 0xFFFF);
     assert_equals(device.productID, 1);
     assert_equals(device.productVersion, 2);
     assert_equals(device.paired, true);
-    assert_equals(device.uuids[0], "00001800-0000-1000-8000-00805f9b34fb");
-    assert_equals(device.uuids[1], "00001801-0000-1000-8000-00805f9b34fb");
+    assert_equals(device.uuids[0], genericAccessServiceUuid);
+    assert_equals(device.uuids[1], genericAttributeServiceUuid);
   });
 }, 'BluetoothDevice attributes.');
 </script>

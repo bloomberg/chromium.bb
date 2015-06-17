@@ -16,6 +16,7 @@ struct WebBluetoothError;
 struct WebBluetoothGATTCharacteristic;
 struct WebBluetoothGATTRemoteServer;
 struct WebBluetoothGATTService;
+struct WebRequestDeviceOptions;
 
 // Success and failure callbacks for requestDevice.
 // WebBluetoothDevice and WebBluetoothError object ownership is transferred.
@@ -44,7 +45,10 @@ public:
     // BluetoothDiscovery Methods:
     // See https://webbluetoothcg.github.io/web-bluetooth/#idl-def-bluetoothdiscovery
     // WebBluetoothRequestDeviceCallbacks ownership transferred to the client.
-    virtual void requestDevice(WebBluetoothRequestDeviceCallbacks*) = 0;
+    virtual void requestDevice(const WebRequestDeviceOptions&, WebBluetoothRequestDeviceCallbacks* callbacks) { requestDevice(callbacks); }
+    // TODO(jyasskin): Remove this overload after
+    // https://codereview.chromium.org/1172853004/ lands.
+    virtual void requestDevice(WebBluetoothRequestDeviceCallbacks*) { }
 
     // BluetoothDevice methods:
     // See https://webbluetoothcg.github.io/web-bluetooth/#idl-def-bluetoothdevice
