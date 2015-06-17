@@ -302,9 +302,10 @@ cr.define('options', function() {
       var option = document.createElement('option');
       option.textContent = loadTimeData.getString('extensionCommandsRegular');
       select.appendChild(option);
-      if (command.isExtensionAction) {
+      if (command.isExtensionAction || !command.isActive) {
         // Extension actions cannot be global, so we might as well disable the
-        // combo box, to signify that.
+        // combo box, to signify that, and if the command is inactive, it
+        // doesn't make sense to allow the user to adjust the scope.
         select.disabled = true;
       } else {
         // Add the 'Global' option.
