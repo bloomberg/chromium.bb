@@ -175,12 +175,10 @@ public:
     virtual Document* ownerDocument() const override;
     virtual bool setText(const String&, ExceptionState&) override;
     virtual bool getText(String* result) const override;
-    String ruleSelector(unsigned ruleIndex, ExceptionState&);
-    bool setRuleSelector(unsigned ruleIndex, const String& selector, ExceptionState&);
-    String mediaRuleText(unsigned ruleIndex, ExceptionState&);
-    bool setMediaRuleText(unsigned ruleIndex, const String& text, ExceptionState&);
-    CSSStyleRule* addRule(const String& ruleText, const SourceRange& location, ExceptionState&);
-    bool deleteRule(unsigned ruleIndex, const String& oldText, ExceptionState&);
+    CSSStyleRule* setRuleSelector(const SourceRange&, const String& selector, SourceRange* newRange, String* oldSelector, ExceptionState&);
+    CSSMediaRule* setMediaRuleText(const SourceRange&, const String& selector, SourceRange* newRange, String* oldSelector, ExceptionState&);
+    CSSStyleRule* addRule(const String& ruleText, const SourceRange& location, SourceRange* addedRange, ExceptionState&);
+    bool deleteRule(const SourceRange&, ExceptionState&);
 
     CSSStyleSheet* pageStyleSheet() const { return m_pageStyleSheet.get(); }
 
@@ -198,9 +196,6 @@ public:
     virtual CSSStyleDeclaration* styleAt(unsigned ruleIndex) const override;
     virtual bool setStyleText(unsigned ruleIndex, const String&) override;
 
-    bool findRuleBySelectorRange(const SourceRange&, unsigned* ruleIndex);
-    bool findMediaRuleByRange(const SourceRange&, unsigned* ruleIndex);
-
     const CSSRuleVector& flatRules();
 
 protected:
@@ -214,6 +209,7 @@ protected:
 private:
     InspectorStyleSheet(InspectorResourceAgent*, const String& id, PassRefPtrWillBeRawPtr<CSSStyleSheet> pageStyleSheet, TypeBuilder::CSS::StyleSheetOrigin::Enum, const String& documentURL, InspectorCSSAgent*);
     unsigned ruleIndexBySourceRange(const CSSMediaRule* parentMediaRule, const SourceRange&);
+    bool findRuleByHeaderRange(const SourceRange&, CSSRule**, CSSRuleSourceData**);
     CSSStyleRule* insertCSSOMRuleInStyleSheet(const SourceRange&, const String& ruleText, ExceptionState&);
     CSSStyleRule* insertCSSOMRuleInMediaRule(CSSMediaRule*, const SourceRange&, const String& ruleText, ExceptionState&);
     CSSStyleRule* insertCSSOMRuleBySourceRange(const SourceRange&, const String& ruleText, ExceptionState&);
@@ -234,7 +230,8 @@ private:
     bool hasSourceURL() const;
     bool startsAtZero() const;
 
-    void updateText(const String& newText);
+    void replaceText(const SourceRange&, const String& text, SourceRange* newRange, String* oldText);
+    void innerSetText(const String& newText);
     Element* ownerStyleElement() const;
 
     RawPtrWillBeMember<InspectorCSSAgent> m_cssAgent;

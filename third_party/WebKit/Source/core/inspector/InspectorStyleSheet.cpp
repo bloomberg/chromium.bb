@@ -983,7 +983,7 @@ String InspectorStyleSheet::finalURL() const
 
 bool InspectorStyleSheet::setText(const String& text, ExceptionState& exceptionState)
 {
-    updateText(text);
+    innerSetText(text);
     m_flatRules.clear();
 
     if (listener())
@@ -1007,81 +1007,50 @@ bool InspectorStyleSheet::setText(const String& text, ExceptionState& exceptionS
     return true;
 }
 
-String InspectorStyleSheet::ruleSelector(unsigned ruleIndex, ExceptionState& exceptionState)
+CSSStyleRule* InspectorStyleSheet::setRuleSelector(const SourceRange& range, const String& text, SourceRange* newRange, String* oldText, ExceptionState& exceptionState)
 {
-    CSSStyleRule* rule = ruleAt(ruleIndex);
-    if (!rule) {
-        exceptionState.throwDOMException(NotFoundError, "No rule was found for the given ID.");
-        return "";
-    }
-    return rule->selectorText();
-}
-
-bool InspectorStyleSheet::setRuleSelector(unsigned ruleIndex, const String& selector, ExceptionState& exceptionState)
-{
-    CSSStyleRule* rule = ruleAt(ruleIndex);
-    if (!rule) {
-        exceptionState.throwDOMException(NotFoundError, "No rule was found for the given ID.");
-        return false;
-    }
-    CSSStyleSheet* styleSheet = rule->parentStyleSheet();
-    if (!styleSheet || !ensureParsedDataReady()) {
-        exceptionState.throwDOMException(NotFoundError, "No stylesheet could be found in which to set the selector.");
-        return false;
+    if (!verifySelectorText(text)) {
+        exceptionState.throwDOMException(SyntaxError, "Selector or media text is not valid.");
+        return nullptr;
     }
 
-    if (!verifySelectorText(selector)) {
-        exceptionState.throwDOMException(SyntaxError, "Selector text is not valid.");
-        return false;
+    CSSRule* rule = nullptr;
+    CSSRuleSourceData* sourceData = nullptr;
+    if (!findRuleByHeaderRange(range, &rule, &sourceData) || !sourceData->styleSourceData || rule->type() != CSSRule::STYLE_RULE) {
+        exceptionState.throwDOMException(NotFoundError, "Source range didn't match existing source range");
+        return nullptr;
     }
 
-    rule->setSelectorText(selector);
-    RefPtrWillBeRawPtr<CSSRuleSourceData> sourceData = ruleSourceDataAt(ruleIndex);
-    ASSERT(sourceData);
+    CSSStyleRule* styleRule = InspectorCSSAgent::asCSSStyleRule(rule);
+    styleRule->setSelectorText(text);
 
-    String sheetText = m_parsedStyleSheet->text();
-    sheetText.replace(sourceData->ruleHeaderRange.start, sourceData->ruleHeaderRange.length(), selector);
-    updateText(sheetText);
+    replaceText(sourceData->ruleHeaderRange, text, newRange, oldText);
     onStyleSheetTextChanged();
-    return true;
+
+    return styleRule;
 }
 
-String InspectorStyleSheet::mediaRuleText(unsigned ruleIndex, ExceptionState& exceptionState)
+CSSMediaRule* InspectorStyleSheet::setMediaRuleText(const SourceRange& range, const String& text, SourceRange* newRange, String* oldText, ExceptionState& exceptionState)
 {
-    CSSMediaRule* rule = mediaRuleAt(ruleIndex);
-    if (!rule) {
-        exceptionState.throwDOMException(NotFoundError, "No media rule was found for the given ID.");
-        return "";
-    }
-    return rule->media()->mediaText();
-}
-
-bool InspectorStyleSheet::setMediaRuleText(unsigned ruleIndex, const String& text, ExceptionState& exceptionState)
-{
-    CSSMediaRule* rule = mediaRuleAt(ruleIndex);
-    if (!rule) {
-        exceptionState.throwDOMException(NotFoundError, "No media rule was found for the given ID.");
-        return false;
-    }
-    CSSStyleSheet* styleSheet = rule->parentStyleSheet();
-    if (!styleSheet || !ensureParsedDataReady()) {
-        exceptionState.throwDOMException(NotFoundError, "No stylesheet could be found in which to set the media text.");
-        return false;
-    }
     if (!verifyMediaText(text)) {
-        exceptionState.throwDOMException(SyntaxError, "Media text is not valid.");
-        return false;
+        exceptionState.throwDOMException(SyntaxError, "Selector or media text is not valid.");
+        return nullptr;
     }
 
-    rule->media()->setMediaText(text);
-    RefPtrWillBeRawPtr<CSSRuleSourceData> sourceData = ruleSourceDataAt(ruleIndex);
-    ASSERT(sourceData && sourceData->mediaSourceData);
+    CSSRule* rule = nullptr;
+    CSSRuleSourceData* sourceData = nullptr;
+    if (!findRuleByHeaderRange(range, &rule, &sourceData) || !sourceData->mediaSourceData || rule->type() != CSSRule::MEDIA_RULE) {
+        exceptionState.throwDOMException(NotFoundError, "Source range didn't match existing source range");
+        return nullptr;
+    }
 
-    String sheetText = m_parsedStyleSheet->text();
-    sheetText.replace(sourceData->ruleHeaderRange.start, sourceData->ruleHeaderRange.length(), text);
-    updateText(sheetText);
+    CSSMediaRule* mediaRule = InspectorCSSAgent::asCSSMediaRule(rule);
+    mediaRule->media()->setMediaText(text);
+
+    replaceText(sourceData->ruleHeaderRange, text, newRange, oldText);
     onStyleSheetTextChanged();
-    return true;
+
+    return mediaRule;
 }
 
 unsigned InspectorStyleSheet::ruleIndexBySourceRange(const CSSMediaRule* parentMediaRule, const SourceRange& sourceRange)
@@ -1145,6 +1114,7 @@ CSSStyleRule* InspectorStyleSheet::insertCSSOMRuleBySourceRange(const SourceRang
     }
     if (containingRuleIndex == -1)
         return insertCSSOMRuleInStyleSheet(sourceRange, ruleText, exceptionState);
+
     RefPtrWillBeRawPtr<CSSRule> rule = m_flatRules.at(containingRuleIndex);
     if (rule->type() != CSSRule::MEDIA_RULE) {
         exceptionState.throwDOMException(NotFoundError, "Cannot insert rule in non-media rule.");
@@ -1242,13 +1212,8 @@ bool InspectorStyleSheet::verifyMediaText(const String& mediaText)
     return true;
 }
 
-CSSStyleRule* InspectorStyleSheet::addRule(const String& ruleText, const SourceRange& location, ExceptionState& exceptionState)
+CSSStyleRule* InspectorStyleSheet::addRule(const String& ruleText, const SourceRange& location, SourceRange* addedRange, ExceptionState& exceptionState)
 {
-    if (!ensureParsedDataReady()) {
-        exceptionState.throwDOMException(NotFoundError, "Cannot parse style sheet.");
-        return nullptr;
-    }
-
     if (location.start != location.end) {
         exceptionState.throwDOMException(NotFoundError, "Source range must be collapsed.");
         return nullptr;
@@ -1259,32 +1224,47 @@ CSSStyleRule* InspectorStyleSheet::addRule(const String& ruleText, const SourceR
         return nullptr;
     }
 
-    String text;
-    bool success = getText(&text);
-    if (!success) {
-        exceptionState.throwDOMException(NotFoundError, "The rule '" + ruleText + "' could not be added.");
+    if (!ensureParsedDataReady()) {
+        exceptionState.throwDOMException(NotFoundError, "Cannot parse style sheet.");
         return nullptr;
     }
-
     ensureFlatRules();
+
     CSSStyleRule* styleRule = insertCSSOMRuleBySourceRange(location, ruleText, exceptionState);
     if (exceptionState.hadException())
         return nullptr;
 
-    text.insert(ruleText, location.start);
-
-    updateText(text);
+    replaceText(location, ruleText, addedRange, nullptr);
     m_flatRules.clear();
 
     onStyleSheetTextChanged();
     return styleRule;
 }
 
-bool InspectorStyleSheet::deleteRule(unsigned ruleIndex, const String& oldText, ExceptionState& exceptionState)
+bool InspectorStyleSheet::deleteRule(const SourceRange& range, ExceptionState& exceptionState)
 {
-    RefPtrWillBeRawPtr<CSSStyleRule> rule = ruleAt(ruleIndex);
+    // Find index of CSSRule that entirely belongs to the range.
+    RefPtrWillBeRawPtr<CSSRule> rule = nullptr;
+    unsigned containingRuleLength = 0;
+
+    for (size_t i = 0; i < m_flatRules.size() && i < m_parsedStyleSheet->ruleCount(); ++i) {
+        RefPtrWillBeRawPtr<CSSRuleSourceData> ruleSourceData = m_parsedStyleSheet->ruleSourceDataAt(i);
+        unsigned ruleStart = ruleSourceData->ruleHeaderRange.start;
+        unsigned ruleEnd = ruleSourceData->ruleBodyRange.end + 1;
+        bool startBelongs = ruleStart >= range.start && ruleStart < range.end;
+        bool endBelongs = ruleEnd > range.start && ruleEnd <= range.end;
+
+        if (startBelongs != endBelongs)
+            break;
+        if (!startBelongs)
+            continue;
+        if (!rule || containingRuleLength > ruleSourceData->ruleBodyRange.length()) {
+            containingRuleLength = ruleSourceData->ruleBodyRange.length();
+            rule = m_flatRules.at(i).get();
+        }
+    }
     if (!rule) {
-        exceptionState.throwDOMException(NotFoundError, "No style rule could be found for the provided ID.");
+        exceptionState.throwDOMException(NotFoundError, "No style rule could be found in given range.");
         return false;
     }
     CSSStyleSheet* styleSheet = rule->parentStyleSheet();
@@ -1292,13 +1272,6 @@ bool InspectorStyleSheet::deleteRule(unsigned ruleIndex, const String& oldText, 
         exceptionState.throwDOMException(NotFoundError, "No parent stylesheet could be found.");
         return false;
     }
-
-    RefPtrWillBeRawPtr<CSSRuleSourceData> sourceData = ruleSourceDataAt(ruleIndex);
-    if (!sourceData) {
-        exceptionState.throwDOMException(NotFoundError, "No style rule could be found for the provided ID.");
-        return false;
-    }
-
     CSSRule* parentRule = rule->parentRule();
     if (parentRule) {
         if (parentRule->type() != CSSRule::MEDIA_RULE) {
@@ -1323,13 +1296,24 @@ bool InspectorStyleSheet::deleteRule(unsigned ruleIndex, const String& oldText, 
     if (exceptionState.hadException())
         return false;
 
-    updateText(oldText);
+    replaceText(range, "", nullptr, nullptr);
     m_flatRules.clear();
     onStyleSheetTextChanged();
     return true;
 }
 
-void InspectorStyleSheet::updateText(const String& newText)
+void InspectorStyleSheet::replaceText(const SourceRange& range, const String& text, SourceRange* newRange, String* oldText)
+{
+    String sheetText = m_parsedStyleSheet->text();
+    if (oldText)
+        *oldText = sheetText.substring(range.start, range.length());
+    sheetText.replace(range.start, range.length(), text);
+    if (newRange)
+        *newRange = SourceRange(range.start, range.start + text.length());
+    innerSetText(sheetText);
+}
+
+void InspectorStyleSheet::innerSetText(const String& newText)
 {
     Element* element = ownerStyleElement();
     if (element)
@@ -1611,32 +1595,19 @@ unsigned InspectorStyleSheet::indexOf(CSSStyleDeclaration* style) const
     return UINT_MAX;
 }
 
-bool InspectorStyleSheet::findRuleBySelectorRange(const SourceRange& sourceRange, unsigned* ruleIndex)
+bool InspectorStyleSheet::findRuleByHeaderRange(const SourceRange& sourceRange, CSSRule** pRule, CSSRuleSourceData** pSourceData)
 {
     if (!ensureParsedDataReady())
         return false;
-    for (size_t i = 0; i < ruleCount(); ++i) {
-        RefPtrWillBeRawPtr<CSSRuleSourceData> ruleSourceData = ruleSourceDataAt(i);
-        if (!ruleSourceData->styleSourceData)
-            continue;
-        if (ruleSourceData->ruleHeaderRange.start == sourceRange.start && ruleSourceData->ruleHeaderRange.end == sourceRange.end) {
-            *ruleIndex = i;
-            return true;
-        }
-    }
-    return false;
-}
+    ensureFlatRules();
 
-bool InspectorStyleSheet::findMediaRuleByRange(const SourceRange& sourceRange, unsigned* ruleIndex)
-{
-    if (!ensureParsedDataReady())
-        return false;
-    for (size_t i = 0; i < ruleCount(); ++i) {
+    for (size_t i = 0; i < ruleCount() && i < m_flatRules.size(); ++i) {
         RefPtrWillBeRawPtr<CSSRuleSourceData> ruleSourceData = ruleSourceDataAt(i);
-        if (!ruleSourceData->mediaSourceData)
-            continue;
         if (ruleSourceData->ruleHeaderRange.start == sourceRange.start && ruleSourceData->ruleHeaderRange.end == sourceRange.end) {
-            *ruleIndex = i;
+            *pRule = m_flatRules.at(i).get();
+            if (!(*pRule)->parentStyleSheet())
+                return false;
+            *pSourceData = ruleSourceData.get();
             return true;
         }
     }
@@ -1733,7 +1704,7 @@ bool InspectorStyleSheet::setStyleText(unsigned ruleIndex, const String& text)
     TrackExceptionState exceptionState;
     style->setCSSText(text, exceptionState);
     if (!exceptionState.hadException()) {
-        updateText(patchedStyleSheetText);
+        innerSetText(patchedStyleSheetText);
         onStyleSheetTextChanged();
     }
 

@@ -287,88 +287,62 @@ private:
     bool m_overwrite;
 };
 
-class InspectorCSSAgent::SetRuleSelectorAction final : public InspectorCSSAgent::StyleSheetAction {
-    WTF_MAKE_NONCOPYABLE(SetRuleSelectorAction);
+class InspectorCSSAgent::SetRuleSelectorOrMediaAction final : public InspectorCSSAgent::StyleSheetAction {
+    WTF_MAKE_NONCOPYABLE(SetRuleSelectorOrMediaAction);
 public:
-    SetRuleSelectorAction(InspectorStyleSheet* styleSheet, unsigned ruleIndex, const String& selector)
-        : InspectorCSSAgent::StyleSheetAction("SetRuleSelector")
+    SetRuleSelectorOrMediaAction(bool isMedia, InspectorStyleSheet* styleSheet, const SourceRange& range, const String& text)
+        : InspectorCSSAgent::StyleSheetAction("SetRuleSelectorOrMediaAction")
         , m_styleSheet(styleSheet)
-        , m_ruleIndex(ruleIndex)
-        , m_selector(selector)
-    {
-    }
-
-    virtual bool perform(ExceptionState& exceptionState) override
-    {
-        m_oldSelector = m_styleSheet->ruleSelector(m_ruleIndex, exceptionState);
-        if (exceptionState.hadException())
-            return false;
-        return redo(exceptionState);
-    }
-
-    virtual bool undo(ExceptionState& exceptionState) override
-    {
-        return m_styleSheet->setRuleSelector(m_ruleIndex, m_oldSelector, exceptionState);
-    }
-
-    virtual bool redo(ExceptionState& exceptionState) override
-    {
-        return m_styleSheet->setRuleSelector(m_ruleIndex, m_selector, exceptionState);
-    }
-
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        visitor->trace(m_styleSheet);
-        InspectorCSSAgent::StyleSheetAction::trace(visitor);
-    }
-
-private:
-    RefPtrWillBeMember<InspectorStyleSheet> m_styleSheet;
-    unsigned m_ruleIndex;
-    String m_selector;
-    String m_oldSelector;
-};
-
-class InspectorCSSAgent::SetMediaTextAction final : public InspectorCSSAgent::StyleSheetAction {
-    WTF_MAKE_NONCOPYABLE(SetMediaTextAction);
-public:
-    SetMediaTextAction(InspectorStyleSheet* styleSheet, unsigned ruleIndex, const String& text)
-        : InspectorCSSAgent::StyleSheetAction("SetMediaText")
-        , m_styleSheet(styleSheet)
-        , m_ruleIndex(ruleIndex)
+        , m_isMedia(isMedia)
+        , m_range(range)
         , m_text(text)
+        , m_cssRule(nullptr)
     {
     }
 
     virtual bool perform(ExceptionState& exceptionState) override
     {
-        m_oldText = m_styleSheet->mediaRuleText(m_ruleIndex, exceptionState);
-        if (exceptionState.hadException())
-            return false;
         return redo(exceptionState);
     }
 
     virtual bool undo(ExceptionState& exceptionState) override
     {
-        return m_styleSheet->setMediaRuleText(m_ruleIndex, m_oldText, exceptionState);
+        if (m_isMedia)
+            return m_styleSheet->setMediaRuleText(m_newRange, m_oldText, nullptr, nullptr, exceptionState);
+        return m_styleSheet->setRuleSelector(m_newRange, m_oldText, nullptr, nullptr, exceptionState);
     }
 
     virtual bool redo(ExceptionState& exceptionState) override
     {
-        return m_styleSheet->setMediaRuleText(m_ruleIndex, m_text, exceptionState);
+        if (m_isMedia)
+            m_cssRule = m_styleSheet->setMediaRuleText(m_range, m_text, &m_newRange, &m_oldText, exceptionState);
+        else
+            m_cssRule = m_styleSheet->setRuleSelector(m_range, m_text, &m_newRange, &m_oldText, exceptionState);
+        return m_cssRule;
+    }
+
+    RefPtrWillBeRawPtr<CSSRule> takeRule()
+    {
+        RefPtrWillBeRawPtr<CSSRule> result = m_cssRule;
+        m_cssRule = nullptr;
+        return result;
     }
 
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_styleSheet);
+        visitor->trace(m_cssRule);
         InspectorCSSAgent::StyleSheetAction::trace(visitor);
     }
 
 private:
     RefPtrWillBeMember<InspectorStyleSheet> m_styleSheet;
-    unsigned m_ruleIndex;
+    bool m_isMedia;
+    SourceRange m_range;
     String m_text;
     String m_oldText;
+    SourceRange m_newRange;
+    RefPtrWillBeMember<CSSRule> m_cssRule;
 };
 
 class InspectorCSSAgent::AddRuleAction final : public InspectorCSSAgent::StyleSheetAction {
@@ -389,34 +363,38 @@ public:
 
     virtual bool undo(ExceptionState& exceptionState) override
     {
-        return m_styleSheet->deleteRule(m_newOrdinal, m_oldText, exceptionState);
+        return m_styleSheet->deleteRule(m_addedRange, exceptionState);
     }
 
     virtual bool redo(ExceptionState& exceptionState) override
     {
-        if (!m_styleSheet->getText(&m_oldText))
-            return false;
-        CSSStyleRule* cssStyleRule = m_styleSheet->addRule(m_ruleText, m_location, exceptionState);
+        m_cssRule = m_styleSheet->addRule(m_ruleText, m_location, &m_addedRange, exceptionState);
         if (exceptionState.hadException())
             return false;
-        m_newOrdinal = m_styleSheet->indexOf(cssStyleRule);
         return true;
     }
 
-    unsigned newRuleOrdinal() { return m_newOrdinal; }
+    RefPtrWillBeRawPtr<CSSStyleRule> takeRule()
+    {
+        RefPtrWillBeRawPtr<CSSStyleRule> result = m_cssRule;
+        m_cssRule = nullptr;
+        return result;
+    }
 
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_styleSheet);
+        visitor->trace(m_cssRule);
         InspectorCSSAgent::StyleSheetAction::trace(visitor);
     }
 
 private:
     RefPtrWillBeMember<InspectorStyleSheet> m_styleSheet;
-    unsigned m_newOrdinal;
+    RefPtrWillBeMember<CSSStyleRule> m_cssRule;
     String m_ruleText;
     String m_oldText;
     SourceRange m_location;
+    SourceRange m_addedRange;
 };
 
 // static
@@ -986,17 +964,13 @@ void InspectorCSSAgent::setRuleSelector(ErrorString* errorString, const String& 
     SourceRange selectorRange;
     if (!jsonRangeToSourceRange(errorString, inspectorStyleSheet, range, &selectorRange))
         return;
-    unsigned ruleIndex = 0;
-    if (!inspectorStyleSheet->findRuleBySelectorRange(selectorRange, &ruleIndex)) {
-        *errorString = "Source range didn't match any rule selector source range";
-        return;
-    }
 
     TrackExceptionState exceptionState;
-    bool success = m_domAgent->history()->perform(adoptRefWillBeNoop(new SetRuleSelectorAction(inspectorStyleSheet, ruleIndex, selector)), exceptionState);
+    RefPtrWillBeRawPtr<SetRuleSelectorOrMediaAction> action = adoptRefWillBeNoop(new SetRuleSelectorOrMediaAction(false, inspectorStyleSheet, selectorRange, selector));
+    bool success = m_domAgent->history()->perform(action, exceptionState);
     if (success) {
-        CSSStyleRule* rule = inspectorStyleSheet->ruleAt(ruleIndex);
-        result = inspectorStyleSheet->buildObjectForRule(rule, buildMediaListChain(rule));
+        RefPtrWillBeRawPtr<CSSStyleRule> rule = InspectorCSSAgent::asCSSStyleRule(action->takeRule().get());
+        result = inspectorStyleSheet->buildObjectForRule(rule.get(), buildMediaListChain(rule.get()));
     }
     *errorString = InspectorDOMAgent::toErrorString(exceptionState);
 }
@@ -1011,16 +985,12 @@ void InspectorCSSAgent::setMediaText(ErrorString* errorString, const String& sty
     SourceRange textRange;
     if (!jsonRangeToSourceRange(errorString, inspectorStyleSheet, range, &textRange))
         return;
-    unsigned ruleIndex = 0;
-    if (!inspectorStyleSheet->findMediaRuleByRange(textRange, &ruleIndex)) {
-        *errorString = "Source range didn't match any media rule source range";
-        return;
-    }
 
     TrackExceptionState exceptionState;
-    bool success = m_domAgent->history()->perform(adoptRefWillBeNoop(new SetMediaTextAction(inspectorStyleSheet, ruleIndex, text)), exceptionState);
+    RefPtrWillBeRawPtr<SetRuleSelectorOrMediaAction> action = adoptRefWillBeNoop(new SetRuleSelectorOrMediaAction(true, inspectorStyleSheet, textRange, text));
+    bool success = m_domAgent->history()->perform(action, exceptionState);
     if (success) {
-        CSSMediaRule* rule = inspectorStyleSheet->mediaRuleAt(ruleIndex);
+        RefPtrWillBeRawPtr<CSSMediaRule> rule = InspectorCSSAgent::asCSSMediaRule(action->takeRule().get());
         String sourceURL = rule->parentStyleSheet()->contents()->baseURL();
         if (sourceURL.isEmpty())
             sourceURL = InspectorDOMAgent::documentURLString(rule->parentStyleSheet()->ownerDocument());
@@ -1071,9 +1041,8 @@ void InspectorCSSAgent::addRule(ErrorString* errorString, const String& styleShe
         return;
     }
 
-    unsigned ruleOrdinal = action->newRuleOrdinal();
-    CSSStyleRule* rule = inspectorStyleSheet->ruleAt(ruleOrdinal);
-    result = inspectorStyleSheet->buildObjectForRule(rule, buildMediaListChain(rule));
+    RefPtrWillBeRawPtr<CSSStyleRule> rule = action->takeRule();
+    result = inspectorStyleSheet->buildObjectForRule(rule.get(), buildMediaListChain(rule.get()));
 }
 
 void InspectorCSSAgent::forcePseudoState(ErrorString* errorString, int nodeId, const RefPtr<JSONArray>& forcedPseudoClasses)

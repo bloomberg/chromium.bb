@@ -100,16 +100,16 @@ html, body, div, a {
 
 
 Running test: testInvalidSelectorText
-Expected protocol error: SyntaxError Selector text is not valid.
+Expected protocol error: SyntaxError Selector or media text is not valid.
 
 Running test: testEmptySelector
-Expected protocol error: SyntaxError Selector text is not valid.
+Expected protocol error: SyntaxError Selector or media text is not valid.
 
 Running test: testSelectorTextWithUnclosedComment
-Expected protocol error: SyntaxError Selector text is not valid.
+Expected protocol error: SyntaxError Selector or media text is not valid.
 
 Running test: testEditSubSelector
-Expected protocol error: Source range didn't match any rule selector source range
+Expected protocol error: NotFoundError Source range didn't match existing source range
 
 Running test: testInvalidParameters
 Expected protocol error: range.startLine must be a non-negative integer

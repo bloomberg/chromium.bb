@@ -33,7 +33,7 @@ handheld and (max-width: 700px),
 
 Running test: testComplexToSimpleEdit
 ==== Style sheet text ====
-@media screen and (max-device-height: 200em) and (min-width: 700px) {
+@media screen and (min-width: 700px) and (max-device-height: 200em) {
     body {
         padding: 0;
     }
@@ -54,7 +54,9 @@ Running test: testSimpleToComplexEdit
     }
 }
 
- @media (orientation: portrait), handheld and (max-width: 700px), (max-resolution: 3dppx) {
+ @media all and (orientation: portrait),
+handheld and (max-width: 700px),
+(max-resolution: 3dppx) {
     body {
         padding: 10px;
     }
@@ -65,7 +67,7 @@ Running test: testInvalidParameters
 Expected protocol error: range.startLine must be a non-negative integer
 
 Running test: testInvalidText
-Expected protocol error: SyntaxError Media text is not valid.
+Expected protocol error: SyntaxError Selector or media text is not valid.
 
 Running test: testEditSequentially
 ==== Style sheet text ====
@@ -75,7 +77,9 @@ Running test: testEditSequentially
     }
 }
 
- @media (orientation: portrait), handheld and (max-width: 700px), (max-resolution: 3dppx) {
+ @media all and (orientation: portrait),
+handheld and (max-width: 700px),
+(max-resolution: 3dppx) {
     body {
         padding: 10px;
     }
@@ -90,7 +94,9 @@ handheld and (min-height: 20px),
     }
 }
 
- @media (orientation: portrait), handheld and (max-width: 700px), (max-resolution: 3dppx) {
+ @media all and (orientation: portrait),
+handheld and (max-width: 700px),
+(max-resolution: 3dppx) {
     body {
         padding: 10px;
     }
@@ -105,7 +111,9 @@ Running test: testSimpleAfterSequentially
     }
 }
 
- @media (orientation: portrait), handheld and (max-width: 700px), (max-resolution: 3dppx) {
+ @media all and (orientation: portrait),
+handheld and (max-width: 700px),
+(max-resolution: 3dppx) {
     body {
         padding: 10px;
     }

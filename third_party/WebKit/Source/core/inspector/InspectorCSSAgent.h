@@ -150,8 +150,7 @@ private:
     class StyleSheetAction;
     class SetStyleSheetTextAction;
     class SetPropertyTextAction;
-    class SetRuleSelectorAction;
-    class SetMediaTextAction;
+    class SetRuleSelectorOrMediaAction;
     class AddRuleAction;
     class InspectorResourceContentLoaderCallback;
 
