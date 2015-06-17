@@ -12,6 +12,7 @@ import java.lang.annotation.Target;
  * safely removed if their return value is not used. This is to be used with
  * {@link org.chromium.base.Log}'s method, that can also be removed by proguard. That way
  * expensive calls can be left in debug builds but removed in release.
+ * @deprecated Use {@link RemovableInRelease} instead.
  */
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 public @interface NoSideEffects {}

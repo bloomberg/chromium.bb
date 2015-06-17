@@ -30,19 +30,10 @@
 # Keep all runtime visible annotations
 -keepattributes RuntimeVisibleAnnotations
 
-# Tell proguard to remove those if the return values are unused. Allow to get
-# rid of verbose and debug logs and eventually functions used to build messages.
+# Remove methods annotated with this if their return value is unused
 -assumenosideeffects class * {
   @org.chromium.base.annotations.NoSideEffects <methods>;
-}
-# Remove debug log calls but keep the functions themselves for use in tests.
--assumenosideeffects class org.chromium.base.Log {
-    public *** d(...);
-    public *** v(...);
-}
--keep class org.chromium.base.Log {
-    public *** d(...);
-    public *** v(...);
+  @org.chromium.base.annotations.RemovableInRelease <methods>;
 }
 
 # TODO(aurimas): figure out why we need to keep these classes.

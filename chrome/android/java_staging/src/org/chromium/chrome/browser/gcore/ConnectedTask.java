@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.gcore;
 import org.chromium.base.Log;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.annotations.NoSideEffects;
+import org.chromium.base.annotations.RemovableInRelease;
 
 import java.util.concurrent.TimeUnit;
 
@@ -76,7 +76,7 @@ public abstract class ConnectedTask<T extends ChromeGoogleApiClient> implements 
      * Returns a name of a task. Implementations should not have side effects
      * as we want to have the logging related calls removed.
      */
-    @NoSideEffects
+    @RemovableInRelease
     protected abstract String getName();
 
     /**

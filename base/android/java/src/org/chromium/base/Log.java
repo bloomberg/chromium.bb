@@ -6,7 +6,7 @@ package org.chromium.base;
 
 import android.text.TextUtils;
 
-import org.chromium.base.annotations.NoSideEffects;
+import org.chromium.base.annotations.RemovableInRelease;
 
 import java.util.Locale;
 
@@ -93,7 +93,7 @@ public class Log {
      *
      * For optimization purposes, only the fixed parameters versions are visible. If you need more
      * than 7 parameters, consider building your log message using a function annotated with
-     * {@link NoSideEffects}.
+     * {@link RemovableInRelease}.
      *
      * @param tag Used to identify the source of a log message.
      * @param messageTemplate The message you would like logged. It is to be specified as a format
@@ -113,46 +113,62 @@ public class Log {
         }
     }
 
-    /** Sends a {@link android.util.Log#VERBOSE} log message. 0 arg version. */
+    /** Sends a {@link android.util.Log#VERBOSE} log message. 0 args version. */
+    @RemovableInRelease
+    @VisibleForTesting
     public static void v(String tag, String message) {
         verbose(tag, message);
     }
 
     /** Sends a {@link android.util.Log#VERBOSE} log message. 1 arg version. */
+    @RemovableInRelease
+    @VisibleForTesting
     public static void v(String tag, String messageTemplate, Object arg1) {
         verbose(tag, messageTemplate, arg1);
     }
 
     /** Sends a {@link android.util.Log#VERBOSE} log message. 2 args version */
+    @RemovableInRelease
+    @VisibleForTesting
     public static void v(String tag, String messageTemplate, Object arg1, Object arg2) {
         verbose(tag, messageTemplate, arg1, arg2);
     }
 
     /** Sends a {@link android.util.Log#VERBOSE} log message. 3 args version */
+    @RemovableInRelease
+    @VisibleForTesting
     public static void v(
             String tag, String messageTemplate, Object arg1, Object arg2, Object arg3) {
         verbose(tag, messageTemplate, arg1, arg2, arg3);
     }
 
     /** Sends a {@link android.util.Log#VERBOSE} log message. 4 args version */
+    @RemovableInRelease
+    @VisibleForTesting
     public static void v(String tag, String messageTemplate, Object arg1, Object arg2, Object arg3,
             Object arg4) {
         verbose(tag, messageTemplate, arg1, arg2, arg3, arg4);
     }
 
     /** Sends a {@link android.util.Log#VERBOSE} log message. 5 args version */
+    @RemovableInRelease
+    @VisibleForTesting
     public static void v(String tag, String messageTemplate, Object arg1, Object arg2, Object arg3,
             Object arg4, Object arg5) {
         verbose(tag, messageTemplate, arg1, arg2, arg3, arg4, arg5);
     }
 
     /** Sends a {@link android.util.Log#VERBOSE} log message. 6 args version */
+    @RemovableInRelease
+    @VisibleForTesting
     public static void v(String tag, String messageTemplate, Object arg1, Object arg2, Object arg3,
             Object arg4, Object arg5, Object arg6) {
         verbose(tag, messageTemplate, arg1, arg2, arg3, arg4, arg5, arg6);
     }
 
     /** Sends a {@link android.util.Log#VERBOSE} log message. 7 args version */
+    @RemovableInRelease
+    @VisibleForTesting
     public static void v(String tag, String messageTemplate, Object arg1, Object arg2, Object arg3,
             Object arg4, Object arg5, Object arg6, Object arg7) {
         verbose(tag, messageTemplate, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
@@ -163,7 +179,7 @@ public class Log {
      *
      * For optimization purposes, only the fixed parameters versions are visible. If you need more
      * than 7 parameters, consider building your log message using a function annotated with
-     * {@link NoSideEffects}.
+     * {@link RemovableInRelease}.
      *
      * @param tag Used to identify the source of a log message.
      * @param messageTemplate The message you would like logged. It is to be specified as a format
@@ -183,44 +199,60 @@ public class Log {
         }
     }
 
-    /** Sends a {@link android.util.Log#DEBUG} log message. 0 arg version. */
+    /** Sends a {@link android.util.Log#DEBUG} log message. 0 args version. */
+    @RemovableInRelease
+    @VisibleForTesting
     public static void d(String tag, String message) {
         debug(tag, message);
     }
 
     /** Sends a {@link android.util.Log#DEBUG} log message. 1 arg version. */
+    @RemovableInRelease
+    @VisibleForTesting
     public static void d(String tag, String messageTemplate, Object arg1) {
         debug(tag, messageTemplate, arg1);
     }
     /** Sends a {@link android.util.Log#DEBUG} log message. 2 args version */
+    @RemovableInRelease
+    @VisibleForTesting
     public static void d(String tag, String messageTemplate, Object arg1, Object arg2) {
         debug(tag, messageTemplate, arg1, arg2);
     }
     /** Sends a {@link android.util.Log#DEBUG} log message. 3 args version */
+    @RemovableInRelease
+    @VisibleForTesting
     public static void d(
             String tag, String messageTemplate, Object arg1, Object arg2, Object arg3) {
         debug(tag, messageTemplate, arg1, arg2, arg3);
     }
 
     /** Sends a {@link android.util.Log#DEBUG} log message. 4 args version */
+    @RemovableInRelease
+    @VisibleForTesting
     public static void d(String tag, String messageTemplate, Object arg1, Object arg2, Object arg3,
             Object arg4) {
         debug(tag, messageTemplate, arg1, arg2, arg3, arg4);
     }
 
     /** Sends a {@link android.util.Log#DEBUG} log message. 5 args version */
+    @RemovableInRelease
+    @VisibleForTesting
     public static void d(String tag, String messageTemplate, Object arg1, Object arg2, Object arg3,
             Object arg4, Object arg5) {
         debug(tag, messageTemplate, arg1, arg2, arg3, arg4, arg5);
     }
 
     /** Sends a {@link android.util.Log#DEBUG} log message. 6 args version */
+    @RemovableInRelease
+    @VisibleForTesting
     public static void d(String tag, String messageTemplate, Object arg1, Object arg2, Object arg3,
             Object arg4, Object arg5, Object arg6) {
         debug(tag, messageTemplate, arg1, arg2, arg3, arg4, arg5, arg6);
     }
 
     /** Sends a {@link android.util.Log#DEBUG} log message. 7 args version */
+    @RemovableInRelease
+    @VisibleForTesting
     public static void d(String tag, String messageTemplate, Object arg1, Object arg2, Object arg3,
             Object arg4, Object arg5, Object arg6, Object arg7) {
         debug(tag, messageTemplate, arg1, arg2, arg3, arg4, arg5, arg6, arg7);

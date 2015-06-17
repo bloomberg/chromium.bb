@@ -125,7 +125,7 @@ complementary ways:
     while the previous method can enable or disable debugging for a whole feature without changing
     any source file.
 
--   Annotate debug functions with the `@NoSideEffects` annotation.
+-   Annotate debug functions with the `@RemovableInRelease` annotation.
 
     That annotation tells Proguard to assume that a given function has no side effects, and is
     called only for its returned value. If this value is unused, the call will be removed. If the
@@ -135,7 +135,7 @@ complementary ways:
   
         /* If that function is only used in Log.d calls, proguard should completely remove it from
          * the release builds. */
-        @NoSideEffects
+        @RemovableInRelease
         private static String getSomeDebugLogString(Thing[] things) {
           /* Still needs to be guarded to avoid impacting debug builds, or in case it's used for
            * some other log levels. But at least it is done only once, inside the function. */
