@@ -4,6 +4,13 @@ endif
 
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 
+AM_CPPFLAGS =					\
+	-I$(top_builddir)/src			\
+	-I$(top_srcdir)/src			\
+	-I$(top_builddir)/protocol
+
+AM_CFLAGS = $(GCC_CFLAGS) $(FFI_CFLAGS)
+
 aclocaldir = $(datadir)/aclocal
 dist_aclocal_DATA = wayland-scanner.m4
 
@@ -213,13 +220,6 @@ fixed_benchmark_LDADD = libtest-runner.la
 
 os_wrappers_test_SOURCES = tests/os-wrappers-test.c
 os_wrappers_test_LDADD = libtest-runner.la
-
-AM_CPPFLAGS =					\
-	-I$(top_builddir)/src			\
-	-I$(top_srcdir)/src			\
-	-I$(top_builddir)/protocol
-
-AM_CFLAGS = $(GCC_CFLAGS) $(FFI_CFLAGS)
 
 exec_fd_leak_checker_SOURCES = tests/exec-fd-leak-checker.c
 exec_fd_leak_checker_LDADD = libtest-runner.la
