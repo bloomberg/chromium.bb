@@ -143,6 +143,7 @@ WebEmbeddedWorkerImpl::WebEmbeddedWorkerImpl(PassOwnPtr<WebServiceWorkerContextC
     , m_workerInspectorProxy(WorkerInspectorProxy::create())
     , m_webView(0)
     , m_mainFrame(0)
+    , m_loadingShadowPage(false)
     , m_askedToTerminate(false)
     , m_pauseAfterDownloadState(DontPauseAfterDownload)
     , m_waitingForDebuggerState(NotWaitingForDebugger)
@@ -196,15 +197,20 @@ void WebEmbeddedWorkerImpl::terminateWorkerContext()
     if (m_askedToTerminate)
         return;
     m_askedToTerminate = true;
+    if (m_loadingShadowPage) {
+        // This deletes 'this'.
+        m_workerContextClient->workerContextFailedToStart();
+        return;
+    }
     if (m_mainScriptLoader) {
         m_mainScriptLoader->cancel();
         m_mainScriptLoader.clear();
-        // This may delete 'this'.
+        // This deletes 'this'.
         m_workerContextClient->workerContextFailedToStart();
         return;
     }
     if (m_pauseAfterDownloadState == IsPausedAfterDownload) {
-        // This may delete 'this'.
+        // This deletes 'this'.
         m_workerContextClient->workerContextFailedToStart();
         return;
     }
@@ -326,6 +332,7 @@ void WebEmbeddedWorkerImpl::loadShadowPage()
     CString content("");
     int length = static_cast<int>(content.length());
     RefPtr<SharedBuffer> buffer(SharedBuffer::create(content.data(), length));
+    m_loadingShadowPage = true;
     m_mainFrame->frame()->loader().load(FrameLoadRequest(0, ResourceRequest(m_workerStartData.scriptURL), SubstituteData(buffer, "text/html", "UTF-8", KURL())));
 }
 
@@ -343,6 +350,9 @@ void WebEmbeddedWorkerImpl::didFinishDocumentLoad(WebLocalFrame* frame)
     ASSERT(!m_networkProvider);
     ASSERT(m_mainFrame);
     ASSERT(m_workerContextClient);
+    ASSERT(m_loadingShadowPage);
+    ASSERT(!m_askedToTerminate);
+    m_loadingShadowPage = false;
     m_networkProvider = adoptPtr(m_workerContextClient->createServiceWorkerNetworkProvider(frame->dataSource()));
     m_mainScriptLoader = Loader::create();
     m_mainScriptLoader->load(
@@ -375,7 +385,7 @@ void WebEmbeddedWorkerImpl::onScriptLoaderFinished()
 
     if (m_mainScriptLoader->failed()) {
         m_mainScriptLoader.clear();
-        // This may delete 'this'.
+        // This deletes 'this'.
         m_workerContextClient->workerContextFailedToStart();
         return;
     }

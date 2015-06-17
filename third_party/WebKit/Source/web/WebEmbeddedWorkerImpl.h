@@ -124,6 +124,7 @@ private:
     WebView* m_webView;
     WebLocalFrameImpl* m_mainFrame;
 
+    bool m_loadingShadowPage;
     bool m_askedToTerminate;
 
     enum WaitingForDebuggerState {
