@@ -135,8 +135,9 @@ class ProximityAuthBluetoothLowEnergyConnectionTest : public testing::Test {
 
     device::BluetoothAdapterFactory::SetAdapterForTesting(adapter_);
 
-    ON_CALL(*adapter_, GetDevice(kBluetoothAddress))
-        .WillByDefault(Return(device_.get()));
+    std::vector<const device::BluetoothDevice*> devices;
+    devices.push_back(device_.get());
+    ON_CALL(*adapter_, GetDevices()).WillByDefault(Return(devices));
     ON_CALL(*device_, GetGattService(kServiceID))
         .WillByDefault(Return(service_.get()));
     ON_CALL(*service_, GetCharacteristic(kFromPeripheralCharID))

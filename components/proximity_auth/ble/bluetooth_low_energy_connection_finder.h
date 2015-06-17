@@ -63,6 +63,9 @@ class BluetoothLowEnergyConnectionFinder
   virtual scoped_ptr<Connection> CreateConnection(
       scoped_ptr<device::BluetoothGattConnection> gatt_connection);
 
+  // Sets |delay_after_gatt_connection_| for testing.
+  void SetDelayForTesting(base::TimeDelta delay);
+
  private:
   // Callback to be called when the Bluetooth adapter is initialized.
   void OnAdapterInitialized(scoped_refptr<device::BluetoothAdapter> adapter);
@@ -106,6 +109,10 @@ class BluetoothLowEnergyConnectionFinder
   // be called once the connection is established.
   void CreateGattConnection(device::BluetoothDevice* remote_device);
 
+  // Creates a BluetoothLowEnergyconnection object and adds the necessary
+  // observers.
+  void CompleteConnection();
+
   // The uuid of the service it looks for to establish a GattConnection.
   device::BluetoothUUID remote_service_uuid_;
 
@@ -125,6 +132,9 @@ class BluetoothLowEnergyConnectionFinder
   // service |remote_service_uuid|.
   bool connected_;
 
+  // The GATT connection with |remote_device|.
+  scoped_ptr<device::BluetoothGattConnection> gatt_connection_;
+
   // The connection with |remote_device|.
   scoped_ptr<Connection> connection_;
 
@@ -137,6 +147,10 @@ class BluetoothLowEnergyConnectionFinder
 
   // BluetoothLowEnergyConnection parameter.
   int max_number_of_tries_;
+
+  // Necessary delay after a GATT connection is created and before any
+  // read/write request is sent to the characteristics.
+  base::TimeDelta delay_after_gatt_connection_;
 
   base::WeakPtrFactory<BluetoothLowEnergyConnectionFinder> weak_ptr_factory_;
 

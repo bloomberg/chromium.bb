@@ -135,6 +135,12 @@ class BluetoothLowEnergyConnection : public Connection,
     int number_of_failed_attempts;
   };
 
+  // Called when the remote device is successfully disconnected.
+  void OnDisconnected();
+
+  // Called when there is an error disconnecting the remote device.
+  void OnDisconnectError();
+
   // Called when a GATT connection is created or received by the constructor.
   void OnGattConnectionCreated(
       scoped_ptr<device::BluetoothGattConnection> gatt_connection);

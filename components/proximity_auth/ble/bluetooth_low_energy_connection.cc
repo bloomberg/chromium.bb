@@ -91,9 +91,6 @@ void BluetoothLowEnergyConnection::Connect() {
   }
 }
 
-// This actually forgets the remote BLE device. This is safe as long as we only
-// connect to BLE devices advertising the SmartLock service (assuming this
-// device has no other connection).
 void BluetoothLowEnergyConnection::Disconnect() {
   if (sub_status_ != SubStatus::DISCONNECTED) {
     ClearWriteRequestsQueue();
@@ -103,11 +100,23 @@ void BluetoothLowEnergyConnection::Disconnect() {
       connection_.reset();
       BluetoothDevice* device = GetRemoteDevice();
       if (device) {
-        VLOG(1) << "Forget device " << device->GetAddress();
-        device->Forget(base::Bind(&base::DoNothing));
+        VLOG(1) << "Disconnect from device " << device->GetAddress();
+        device->Disconnect(
+            base::Bind(&BluetoothLowEnergyConnection::OnDisconnected,
+                       weak_ptr_factory_.GetWeakPtr()),
+            base::Bind(&BluetoothLowEnergyConnection::OnDisconnectError,
+                       weak_ptr_factory_.GetWeakPtr()));
       }
     }
   }
+}
+
+void BluetoothLowEnergyConnection::OnDisconnected() {
+  VLOG(1) << "Disconnected.";
+}
+
+void BluetoothLowEnergyConnection::OnDisconnectError() {
+  VLOG(1) << "Disconnection failed.";
 }
 
 void BluetoothLowEnergyConnection::SetSubStatus(SubStatus new_sub_status) {
@@ -428,11 +437,20 @@ const std::string& BluetoothLowEnergyConnection::GetRemoteDeviceAddress() {
 }
 
 BluetoothDevice* BluetoothLowEnergyConnection::GetRemoteDevice() {
-  if (!adapter_ || !adapter_->IsInitialized()) {
-    VLOG(1) << "adapter not ready";
-    return NULL;
+  // It's not possible to simply use
+  // |adapter_->GetDevice(GetRemoteDeviceAddress())| to find the device with MAC
+  // address |GetRemoteDeviceAddress()|. For paired devices,
+  // BluetoothAdapter::GetDevice(XXX) searches for the temporary MAC address
+  // XXX, whereas |GetRemoteDeviceAddress()| is the real MAC address. This is a
+  // bug in the way device::BluetoothAdapter is storing the devices (see
+  // crbug.com/497841).
+  std::vector<BluetoothDevice*> devices = adapter_->GetDevices();
+  for (const auto& device : devices) {
+    if (device->GetAddress() == GetRemoteDeviceAddress())
+      return device;
   }
-  return adapter_->GetDevice(GetRemoteDeviceAddress());
+
+  return nullptr;
 }
 
 BluetoothGattService* BluetoothLowEnergyConnection::GetRemoteService() {

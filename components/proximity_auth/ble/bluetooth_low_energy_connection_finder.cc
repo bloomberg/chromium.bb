@@ -8,8 +8,10 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "components/proximity_auth/ble/bluetooth_low_energy_connection.h"
 #include "components/proximity_auth/connection.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -23,6 +25,10 @@ using device::BluetoothGattConnection;
 using device::BluetoothDiscoveryFilter;
 
 namespace proximity_auth {
+namespace {
+const int kMinDiscoveryRSSI = -100;
+const int kDelayAfterGattConnectionMilliseconds = 1000;
+}  // namespace
 
 BluetoothLowEnergyConnectionFinder::BluetoothLowEnergyConnectionFinder(
     const std::string& remote_service_uuid,
@@ -35,6 +41,8 @@ BluetoothLowEnergyConnectionFinder::BluetoothLowEnergyConnectionFinder(
           device::BluetoothUUID(from_peripheral_char_uuid)),
       connected_(false),
       max_number_of_tries_(max_number_of_tries),
+      delay_after_gatt_connection_(base::TimeDelta::FromMilliseconds(
+          kDelayAfterGattConnectionMilliseconds)),
       weak_ptr_factory_(this) {
 }
 
@@ -93,8 +101,8 @@ void BluetoothLowEnergyConnectionFinder::HandleDeviceUpdated(
     VLOG(1) << "Pending connection to device " << device->GetAddress();
     return;
   }
-  if (HasService(device)) {
-    VLOG(1) << "Connecting to device " << device->GetAddress();
+  if (HasService(device) && device->IsPaired()) {
+    VLOG(1) << "Connecting to paired device " << device->GetAddress();
     pending_connections_.insert(device);
     CreateGattConnection(device);
   }
@@ -120,9 +128,10 @@ void BluetoothLowEnergyConnectionFinder::OnAdapterInitialized(
   adapter_ = adapter;
   adapter_->AddObserver(this);
 
-  // Note: Avoid trying to connect to existing devices as they may be stale.
-  // The Bluetooth adapter will fire |OnDeviceChanged| notifications for all
-  // not-stale Bluetooth Low Energy devices that are advertising.
+  // Note: it's not possible to connect with the paired directly, as the
+  // temporary MAC may not be resolved automatically (see crbug.com/495402). The
+  // Bluetooth adapter will fire |OnDeviceChanged| notifications for all
+  // Bluetooth Low Energy devices that are advertising.
   if (VLOG_IS_ON(1)) {
     std::vector<BluetoothDevice*> devices = adapter_->GetDevices();
     for (auto* device : devices) {
@@ -151,7 +160,13 @@ void BluetoothLowEnergyConnectionFinder::StartDiscoverySession() {
     return;
   }
 
-  adapter_->StartDiscoverySession(
+  // Discover only low energy (LE) devices with strong enough signal.
+  scoped_ptr<BluetoothDiscoveryFilter> filter(new BluetoothDiscoveryFilter(
+      BluetoothDiscoveryFilter::Transport::TRANSPORT_LE));
+  filter->SetRSSI(kMinDiscoveryRSSI);
+
+  adapter_->StartDiscoverySessionWithFilter(
+      filter.Pass(),
       base::Bind(&BluetoothLowEnergyConnectionFinder::OnDiscoverySessionStarted,
                  weak_ptr_factory_.GetWeakPtr()),
       base::Bind(
@@ -221,11 +236,24 @@ void BluetoothLowEnergyConnectionFinder::OnGattConnectionCreated(
   connected_ = true;
   pending_connections_.clear();
 
-  connection_ = CreateConnection(gatt_connection.Pass());
-  connection_->AddObserver(this);
-  connection_->Connect();
+  gatt_connection_ = gatt_connection.Pass();
+
+  // This is a workaround for crbug.com/498850. Currently, trying to write/read
+  // characteristics immediatelly after the GATT connection was established
+  // fails with the very informative GATT_ERROR_FAILED.
+  base::MessageLoopProxy::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&BluetoothLowEnergyConnectionFinder::CompleteConnection,
+                 weak_ptr_factory_.GetWeakPtr()),
+      delay_after_gatt_connection_);
 
   StopDiscoverySession();
+}
+
+void BluetoothLowEnergyConnectionFinder::CompleteConnection() {
+  connection_ = CreateConnection(gatt_connection_.Pass());
+  connection_->AddObserver(this);
+  connection_->Connect();
 }
 
 void BluetoothLowEnergyConnectionFinder::CreateGattConnection(
@@ -249,9 +277,9 @@ void BluetoothLowEnergyConnectionFinder::CloseGattConnection(
   gatt_connection.reset();
   BluetoothDevice* device = adapter_->GetDevice(device_address);
   if (device) {
-    DCHECK(HasService(device));
-    VLOG(1) << "Forget device " << device->GetAddress();
-    device->Forget(base::Bind(&base::DoNothing));
+    VLOG(1) << "Disconnect from device " << device->GetAddress();
+    device->Disconnect(base::Bind(&base::DoNothing),
+                       base::Bind(&base::DoNothing));
   }
 }
 
@@ -277,6 +305,11 @@ void BluetoothLowEnergyConnectionFinder::OnConnectionStatusChanged(
     connection_callback_.Run(connection_.Pass());
     connection_callback_.Reset();
   }
+}
+
+void BluetoothLowEnergyConnectionFinder::SetDelayForTesting(
+    base::TimeDelta delay) {
+  delay_after_gatt_connection_ = delay;
 }
 
 }  // namespace proximity_auth
