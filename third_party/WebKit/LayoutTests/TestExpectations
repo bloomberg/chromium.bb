@@ -1935,18 +1935,6 @@ crbug.com/495523 svg/wicd/test-rightsizing-b.xhtml [ Pass Failure ]
 
 crbug.com/424338 [ XP ] tables/mozilla/bugs/bug3037-1.html [ Failure ]
 
-crbug.com/263911 [ Mavericks Retina ] svg/custom/masking-clipping-hidpi.svg [ NeedsRebaseline ]
-crbug.com/328814 [ Lion ] http/tests/webfont/popup-menu-load-webfont-after-open.html [ NeedsRebaseline ]
-crbug.com/336894 [ Mac ] http/tests/security/suborigins/suborigin-invalid-names.html [ NeedsRebaseline ]
-crbug.com/497950 [ XP ] fast/repaint/table-outer-border.html [ NeedsRebaseline ]
-crbug.com/497950 [ XP ] fast/repaint/multicol-as-paint-container.html [ NeedsRebaseline ]
-crbug.com/497950 [ XP ] fast/repaint/table-cell-move.html [ NeedsRebaseline ]
-crbug.com/497950 [ XP ] fast/repaint/table-cell-collapsed-border.html [ NeedsRebaseline ]
-crbug.com/497950 [ XP ] fast/repaint/destroy-scrollbar.html [ NeedsRebaseline ]
-crbug.com/497950 [ XP ] fast/repaint/layout-state-only-positioned.html [ NeedsRebaseline ]
-crbug.com/497950 [ XP ] fast/repaint/video-mute-repaint.html [ NeedsRebaseline ]
-crbug.com/497950 [ XP ] fast/repaint/video-unmute-repaint.html [ NeedsRebaseline ]
-
 crbug.com/501177 svg/clip-path/clip-path-evenodd-nonzero.svg [ Pass Timeout Crash ]
 crbug.com/501177 svg/clip-path/clip-path-nonzero-evenodd.svg [ Pass Timeout Crash ]
 crbug.com/501177 svg/clip-path/clip-path-nonzero.svg [ Pass Timeout Crash ]
