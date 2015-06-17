@@ -672,6 +672,9 @@ void CopySubTextureCHROMIUM(GLenum target,
                             GLint y,
                             GLsizei width,
                             GLsizei height) override;
+void CompressedCopyTextureCHROMIUM(GLenum target,
+                                   GLenum source_id,
+                                   GLenum dest_id) override;
 void DrawArraysInstancedANGLE(GLenum mode,
                               GLint first,
                               GLsizei count,

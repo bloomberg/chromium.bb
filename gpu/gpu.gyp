@@ -358,6 +358,7 @@
         'command_buffer/tests/gl_chromium_framebuffer_multisample_unittest.cc',
         'command_buffer/tests/gl_chromium_path_rendering_unittest.cc',
         'command_buffer/tests/gl_clear_framebuffer_unittest.cc',
+        'command_buffer/tests/gl_compressed_copy_texture_CHROMIUM_unittest.cc',
         'command_buffer/tests/gl_copy_texture_CHROMIUM_unittest.cc',
         'command_buffer/tests/gl_depth_texture_unittest.cc',
         'command_buffer/tests/gl_gpu_memory_buffer_unittest.cc',

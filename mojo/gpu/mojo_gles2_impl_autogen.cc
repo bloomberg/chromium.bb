@@ -1467,6 +1467,11 @@ void MojoGLES2Impl::CopySubTextureCHROMIUM(GLenum target,
   glCopySubTextureCHROMIUM(target, source_id, dest_id, xoffset, yoffset, x, y,
                            width, height);
 }
+void MojoGLES2Impl::CompressedCopyTextureCHROMIUM(GLenum target,
+                                                  GLenum source_id,
+                                                  GLenum dest_id) {
+  NOTREACHED() << "Unimplemented CompressedCopyTextureCHROMIUM.";
+}
 void MojoGLES2Impl::DrawArraysInstancedANGLE(GLenum mode,
                                              GLint first,
                                              GLsizei count,

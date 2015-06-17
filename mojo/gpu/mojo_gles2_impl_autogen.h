@@ -696,6 +696,9 @@ class MojoGLES2Impl : public gpu::gles2::GLES2Interface {
                               GLint y,
                               GLsizei width,
                               GLsizei height) override;
+  void CompressedCopyTextureCHROMIUM(GLenum target,
+                                     GLenum source_id,
+                                     GLenum dest_id) override;
   void DrawArraysInstancedANGLE(GLenum mode,
                                 GLint first,
                                 GLsizei count,

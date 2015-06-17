@@ -3635,6 +3635,12 @@ _FUNCTION_INFO = {
     'chromium': True,
     'trace_level': 2,
   },
+  'CompressedCopyTextureCHROMIUM': {
+    'decoder_func': 'DoCompressedCopyTextureCHROMIUM',
+    'unit_test': False,
+    'extension': True,
+    'chromium': True,
+  },
   'TexStorage2DEXT': {
     'unit_test': False,
     'extension': True,

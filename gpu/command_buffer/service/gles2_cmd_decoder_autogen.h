@@ -4498,6 +4498,19 @@ error::Error GLES2DecoderImpl::HandleCopySubTextureCHROMIUM(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleCompressedCopyTextureCHROMIUM(
+    uint32_t immediate_data_size,
+    const void* cmd_data) {
+  const gles2::cmds::CompressedCopyTextureCHROMIUM& c =
+      *static_cast<const gles2::cmds::CompressedCopyTextureCHROMIUM*>(cmd_data);
+  (void)c;
+  GLenum target = static_cast<GLenum>(c.target);
+  GLenum source_id = static_cast<GLenum>(c.source_id);
+  GLenum dest_id = static_cast<GLenum>(c.dest_id);
+  DoCompressedCopyTextureCHROMIUM(target, source_id, dest_id);
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderImpl::HandleProduceTextureCHROMIUMImmediate(
     uint32_t immediate_data_size,
     const void* cmd_data) {
