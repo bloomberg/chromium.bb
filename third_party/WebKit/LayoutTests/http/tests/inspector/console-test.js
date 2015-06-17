@@ -257,6 +257,31 @@ InspectorTest.expandConsoleMessages = function(callback, deepFilter, sectionFilt
     }
 }
 
+InspectorTest.expandConsoleMessagesErrorParameters = function(callback)
+{
+    var messageViews = WebInspector.ConsolePanel._view()._visibleViewMessages;
+    // Initiate round-trips to fetch necessary data for further rendering.
+    for (var i = 0; i < messageViews.length; ++i)
+        messageViews[i].contentElement();
+    InspectorTest.runAfterPendingDispatches(expandErrorParameters);
+    function expandErrorParameters()
+    {
+        for (var i = 0; i < messageViews.length; ++i) {
+            var element = messageViews[i].contentElement();
+            var spans = element.querySelectorAll("span.object-value-error");
+            for (var j = 0; j < spans.length; ++j) {
+                var links = spans[j].querySelectorAll("a");
+                for (var k = 0; k < links.length; ++k) {
+                    var link = links[k];
+                    if (link && link._showDetailedForTest)
+                        link._showDetailedForTest();
+                }
+            }
+        }
+        callback();
+    }
+}
+
 InspectorTest.waitForRemoteObjectsConsoleMessages = function(callback)
 {
     var messages = WebInspector.ConsolePanel._view()._visibleViewMessages;

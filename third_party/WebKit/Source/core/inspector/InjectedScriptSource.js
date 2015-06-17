@@ -1212,9 +1212,10 @@ InjectedScript.prototype = {
             try {
                 var stack = obj.stack;
                 var message = obj.message && obj.message.length ? ": " + obj.message : "";
-                var stackMessageEnd = stack ? indexOf(stack, "\n") : -1;
+                var firstCallFrame = /^\s+at\s/m.exec(stack);
+                var stackMessageEnd = firstCallFrame ? firstCallFrame.index : -1;
                 if (stackMessageEnd !== -1) {
-                    var stackTrace = stack.substr(stackMessageEnd + 1);
+                    var stackTrace = stack.substr(stackMessageEnd);
                     return className + message + "\n" + stackTrace;
                 }
                 return className + message;
