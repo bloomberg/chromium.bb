@@ -3185,6 +3185,9 @@ interface MediaController
     setter muted
     setter playbackRate
     setter volume
+interface MediaDevices
+    method constructor
+    method enumerateDevices
 interface MediaElementAudioSourceNode
     getter mediaElement
     method constructor
@@ -3414,6 +3417,7 @@ interface Navigator
     getter language
     getter languages
     getter maxTouchPoints
+    getter mediaDevices
     getter mimeTypes
     getter onLine
     getter permissions

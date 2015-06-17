@@ -27,23 +27,26 @@
 
 #include "modules/mediastream/MediaDevicesRequest.h"
 
-#include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/ScriptPromiseResolver.h"
+#include "bindings/core/v8/ScriptState.h"
+#include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
+#include "core/dom/ExceptionCode.h"
 #include "modules/mediastream/UserMediaController.h"
 
 namespace blink {
 
-MediaDevicesRequest* MediaDevicesRequest::create(ExecutionContext* context, UserMediaController* controller, MediaDeviceInfoCallback* callback, ExceptionState& exceptionState)
+MediaDevicesRequest* MediaDevicesRequest::create(ScriptState* state, UserMediaController* controller)
 {
-    MediaDevicesRequest* request = new MediaDevicesRequest(context, controller, callback);
+    MediaDevicesRequest* request = new MediaDevicesRequest(state, controller);
     request->suspendIfNeeded();
     return request;
 }
 
-MediaDevicesRequest::MediaDevicesRequest(ExecutionContext* context, UserMediaController* controller, MediaDeviceInfoCallback* callback)
-    : ActiveDOMObject(context)
+MediaDevicesRequest::MediaDevicesRequest(ScriptState* state, UserMediaController* controller)
+    : ActiveDOMObject(state->executionContext())
     , m_controller(controller)
-    , m_callback(callback)
+    , m_resolver(ScriptPromiseResolver::create(state))
 {
 }
 
@@ -60,30 +63,35 @@ Document* MediaDevicesRequest::ownerDocument()
     return 0;
 }
 
-void MediaDevicesRequest::start()
+ScriptPromise MediaDevicesRequest::start()
 {
-    if (m_controller)
+    if (m_controller) {
+        m_resolver->keepAliveWhilePending();
         m_controller->requestMediaDevices(this);
+        return m_resolver->promise();
+    }
+
+    return ScriptPromise::rejectWithDOMException(m_resolver->scriptState(), DOMException::create(NotSupportedError, "No media device controller available"));
 }
 
 void MediaDevicesRequest::succeed(const MediaDeviceInfoVector& mediaDevices)
 {
-    if (!executionContext() || !m_callback)
+    if (!executionContext() || !m_resolver)
         return;
 
-    m_callback->handleEvent(mediaDevices);
+    m_resolver->resolve(mediaDevices);
 }
 
 void MediaDevicesRequest::stop()
 {
-    m_callback.clear();
     m_controller.clear();
+    m_resolver.clear();
 }
 
 DEFINE_TRACE(MediaDevicesRequest)
 {
     visitor->trace(m_controller);
-    visitor->trace(m_callback);
+    visitor->trace(m_resolver);
     ActiveDOMObject::trace(visitor);
 }
 

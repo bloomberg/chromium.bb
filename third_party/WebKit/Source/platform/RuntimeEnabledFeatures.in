@@ -57,6 +57,7 @@ DeviceLight status=experimental
 DisplayList2dCanvas status=stable
 ForceDisplayList2dCanvas
 EncryptedMedia status=stable
+EnumerateDevices status=test
 ExecCommandInJavaScript status=test
 ComputedAccessibilityInfo status=experimental
 ExperimentalCanvasFeatures status=test

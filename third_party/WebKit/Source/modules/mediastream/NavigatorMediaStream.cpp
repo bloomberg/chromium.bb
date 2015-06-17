@@ -32,7 +32,6 @@
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
 #include "core/page/Page.h"
-#include "modules/mediastream/MediaDeviceInfoCallback.h"
 #include "modules/mediastream/MediaDevicesRequest.h"
 #include "modules/mediastream/NavigatorUserMediaErrorCallback.h"
 #include "modules/mediastream/NavigatorUserMediaSuccessCallback.h"
@@ -75,24 +74,6 @@ void NavigatorMediaStream::webkitGetUserMedia(Navigator& navigator, const Dictio
     UserMediaRequest* request = UserMediaRequest::create(navigator.frame()->document(), userMedia, options, successCallback, errorCallback, exceptionState);
     if (!request) {
         ASSERT(exceptionState.hadException());
-        return;
-    }
-
-    request->start();
-}
-
-void NavigatorMediaStream::getMediaDevices(Navigator& navigator, MediaDeviceInfoCallback* callback, ExceptionState& exceptionState)
-{
-    UserMediaController* userMedia = UserMediaController::from(navigator.frame());
-    if (!userMedia) {
-        exceptionState.throwDOMException(NotSupportedError, "No media device controller available; is this a detached window?");
-        return;
-    }
-
-    MediaDevicesRequest* request = MediaDevicesRequest::create(navigator.frame()->document(), userMedia, callback, exceptionState);
-    if (!request) {
-        if (!exceptionState.hadException())
-            exceptionState.throwDOMException(NotSupportedError, "Failed to request media devices.");
         return;
     }
 
