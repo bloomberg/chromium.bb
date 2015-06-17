@@ -65,7 +65,7 @@ MeasurementTimers::MeasurementTimers(gfx::GPUTimingClient* gpu_timing_client)
   }
 
   if (gpu_timing_client->IsAvailable()) {
-    gpu_timer_ = gpu_timing_client->CreateGPUTimer();
+    gpu_timer_ = gpu_timing_client->CreateGPUTimer(true);
     gpu_timer_->Start();
   }
 }

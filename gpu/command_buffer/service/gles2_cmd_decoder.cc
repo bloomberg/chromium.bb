@@ -66,6 +66,7 @@
 #include "ui/gl/gl_image.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
+#include "ui/gl/gpu_timing.h"
 
 #if defined(OS_MACOSX)
 #include <IOSurface/IOSurfaceAPI.h>
@@ -2614,6 +2615,12 @@ bool GLES2DecoderImpl::Initialize(
 
   // Create GPU Tracer for timing values.
   gpu_tracer_.reset(new GPUTracer(this));
+
+  if (feature_info_->workarounds().disable_timestamp_queries) {
+    // Forcing time elapsed query for any GPU Timing Client forces it for all
+    // clients in the context.
+    GetGLContext()->CreateGPUTimingClient()->ForceTimeElapsedQuery();
+  }
 
   // Save the loseContextWhenOutOfMemory context creation attribute.
   lose_context_when_out_of_memory_ =

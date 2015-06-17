@@ -1311,7 +1311,7 @@ LONG_STRING_CONST(
     {
       "id": 112,
       "cr_bugs": [477514],
-      "description": "EXT_disjoint_timer_query fails after 2 queries on adreno 330 in lollypop",
+      "description": "EXT_disjoint_timer_query fails after 2 queries on adreno 3xx in lollypop",
       "os": {
         "type": "android",
         "version": {
@@ -1320,15 +1320,15 @@ LONG_STRING_CONST(
         }
       },
       "gl_vendor": "Qualcomm.*",
-      "gl_renderer": ".*330",
-      "disabled_extensions": [
-        "GL_EXT_disjoint_timer_query"
+      "gl_renderer": "Adreno \\(TM\\) 3.*",
+      "features": [
+        "disable_timestamp_queries"
       ]
     },
     {
       "id": 113,
       "cr_bugs": [477514],
-      "description": "EXT_disjoint_timer_query fails after 256 queries on adreno 420",
+      "description": "EXT_disjoint_timer_query fails after 256 queries on adreno 4xx",
       "os": {
         "type": "android"
       },

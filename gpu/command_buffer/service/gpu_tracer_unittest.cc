@@ -189,8 +189,7 @@ class BaseGpuTest : public GpuServiceTest {
     if (tracing_service)
       ExpectOutputterBeginMocks(outputter, source, category, name);
     const bool valid_timer = tracing_device &&
-                             gpu_timing_client_->IsAvailable() &&
-                             GetTimerType() != gfx::GPUTiming::kTimerTypeEXT;
+                             gpu_timing_client_->IsAvailable();
     ExpectOutputterEndMocks(outputter, source, category, name,
                             expect_start_time, expect_end_time,
                             tracing_service, valid_timer);
@@ -402,8 +401,7 @@ class BaseGpuTracerTest : public BaseGpuTest {
       std::string source_category = category_name + num_char;
       std::string source_trace_name = trace_name + num_char;
 
-      const bool valid_timer = gpu_timing_client_->IsAvailable() &&
-                               GetTimerType() != gfx::GPUTiming::kTimerTypeEXT;
+      const bool valid_timer = gpu_timing_client_->IsAvailable();
 
       const GpuTracerSource source = static_cast<GpuTracerSource>(i);
       ExpectOutputterEndMocks(outputter_ref_.get(), source, source_category,

@@ -5,6 +5,8 @@
 #ifndef UI_GL_GPU_TIMING_H_
 #define UI_GL_GPU_TIMING_H_
 
+#include <queue>
+
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gl/gl_export.h"
@@ -41,7 +43,12 @@
 namespace gfx {
 
 class GLContextReal;
+class GPUTiming;
 class GPUTimingClient;
+class GPUTimingImpl;
+class QueryResult;
+class TimeElapsedTimerQuery;
+class TimerQuery;
 
 class GPUTiming {
  public:
@@ -53,25 +60,17 @@ class GPUTiming {
     kTimerTypeDisjoint  // EXT_disjoint_timer_query
   };
 
-  TimerType GetTimerType() const { return timer_type_; }
-  uint32_t GetDisjointCount();
-
-  int64 CalculateTimerOffset(base::Callback<int64(void)> cpu_time);
-  void InvalidateTimerOffset();
-
- private:
+ protected:
   friend struct base::DefaultDeleter<GPUTiming>;
   friend class GLContextReal;
-  friend class GPUTimer;
-  explicit GPUTiming(GLContextReal* context);
-  ~GPUTiming();
 
-  scoped_refptr<GPUTimingClient> CreateGPUTimingClient();
+  static GPUTiming* CreateGPUTiming(GLContextReal* context);
 
-  TimerType timer_type_ = kTimerTypeInvalid;
-  uint32_t disjoint_counter_ = 0;
-  int64 offset_ = 0;  // offset cache when timer_type_ == kTimerTypeARB
-  bool offset_valid_ = false;
+  GPUTiming();
+  virtual ~GPUTiming();
+
+  virtual scoped_refptr<GPUTimingClient> CreateGPUTimingClient() = 0;
+
   DISALLOW_COPY_AND_ASSIGN(GPUTiming);
 };
 
@@ -79,31 +78,38 @@ class GPUTiming {
 // complete a set of GL commands
 class GL_EXPORT GPUTimer {
  public:
+  static void DisableTimestampQueries();
+
   ~GPUTimer();
 
   // Destroy the timer object. This must be explicitly called before destroying
   // this object.
   void Destroy(bool have_context);
 
+  // Start an instant timer, start and end will be equal.
+  void Instant();
+
+  // Start a timer range.
   void Start();
   void End();
+
   bool IsAvailable();
 
   void GetStartEndTimestamps(int64* start, int64* end);
   int64 GetDeltaElapsed();
 
-  int64 GetOffset() const { return offset_; }
-
  private:
   friend class GPUTimingClient;
 
-  explicit GPUTimer(scoped_refptr<GPUTimingClient> gpu_timing_client);
+  explicit GPUTimer(scoped_refptr<GPUTimingClient> gpu_timing_client,
+                    bool use_elapsed_timer);
 
-  unsigned int queries_[2];
-  int64 offset_ = 0;
+  bool use_elapsed_timer_ = false;
   bool end_requested_ = false;
   bool end_available_ = false;
   scoped_refptr<GPUTimingClient> gpu_timing_client_;
+  scoped_refptr<QueryResult> time_stamp_result_;
+  scoped_refptr<QueryResult> elapsed_timer_result_;
 
   DISALLOW_COPY_AND_ASSIGN(GPUTimer);
 };
@@ -113,11 +119,10 @@ class GL_EXPORT GPUTimer {
 class GL_EXPORT GPUTimingClient
     : public base::RefCounted<GPUTimingClient> {
  public:
-  explicit GPUTimingClient(GPUTiming* gpu_timing = nullptr);
+  explicit GPUTimingClient(GPUTimingImpl* gpu_timing = nullptr);
 
-  scoped_ptr<GPUTimer> CreateGPUTimer();
+  scoped_ptr<GPUTimer> CreateGPUTimer(bool prefer_elapsed_time);
   bool IsAvailable();
-  bool IsTimerOffsetAvailable();
 
   const char* GetTimerTypeName() const;
 
@@ -127,25 +132,22 @@ class GL_EXPORT GPUTimingClient
   // If the returned value is false, all the previous timers should be
   // discarded.
   bool CheckAndResetTimerErrors();
-  void InvalidateTimerOffset();
 
-  void SetCpuTimeForTesting(const base::Callback<int64(void)>& cpu_time);
   int64 GetCurrentCPUTime();
+  void SetCpuTimeForTesting(const base::Callback<int64(void)>& cpu_time);
+
+  bool IsForceTimeElapsedQuery();
+  void ForceTimeElapsedQuery();
 
  private:
   friend class base::RefCounted<GPUTimingClient>;
   friend class GPUTimer;
-  friend class GPUTiming;
 
   virtual ~GPUTimingClient();
 
-  // Returns the offset between the current gpu time and the cpu time.
-  int64 CalculateTimerOffset();
-
-  GPUTiming* gpu_timing_;
+  GPUTimingImpl* gpu_timing_;
   GPUTiming::TimerType timer_type_ = GPUTiming::kTimerTypeInvalid;
   uint32_t disjoint_counter_ = 0;
-  base::Callback<int64(void)> cpu_time_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(GPUTimingClient);
 };

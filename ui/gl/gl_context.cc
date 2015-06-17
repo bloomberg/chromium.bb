@@ -259,7 +259,7 @@ GLContextReal::GLContextReal(GLShareGroup* share_group)
 
 scoped_refptr<gfx::GPUTimingClient> GLContextReal::CreateGPUTimingClient() {
   if (!gpu_timing_) {
-    gpu_timing_.reset(new gfx::GPUTiming(this));
+    gpu_timing_.reset(GPUTiming::CreateGPUTiming(this));
   }
   return gpu_timing_->CreateGPUTimingClient();
 }

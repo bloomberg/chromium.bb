@@ -44,6 +44,8 @@
          disable_ns_cgl_surface_api)                         \
   GPU_OP(DISABLE_POST_SUB_BUFFERS_FOR_ONSCREEN_SURFACES,     \
          disable_post_sub_buffers_for_onscreen_surfaces)     \
+  GPU_OP(DISABLE_TIMESTAMP_QUERIES,                          \
+         disable_timestamp_queries)                          \
   GPU_OP(ETC1_POWER_OF_TWO_ONLY,                             \
          etc1_power_of_two_only)                             \
   GPU_OP(EXIT_ON_CONTEXT_LOST,                               \

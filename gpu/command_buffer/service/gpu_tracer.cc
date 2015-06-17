@@ -133,11 +133,8 @@ GPUTrace::GPUTrace(scoped_refptr<Outputter> outputter,
       outputter_(outputter),
       service_enabled_(tracing_service),
       device_enabled_(tracing_device) {
-  if (tracing_device &&
-      gpu_timing_client->IsAvailable() &&
-      gpu_timing_client->IsTimerOffsetAvailable()) {
-    gpu_timer_ = gpu_timing_client->CreateGPUTimer();
-  }
+  if (tracing_device && gpu_timing_client->IsAvailable())
+    gpu_timer_ = gpu_timing_client->CreateGPUTimer(false);
 }
 
 GPUTrace::~GPUTrace() {

@@ -211,7 +211,6 @@ class TextureUploadPerfTest : public testing::Test {
     if (gpu_timing_client_->IsAvailable()) {
       LOG(INFO) << "Gpu timing initialized with timer type: "
                 << gpu_timing_client_->GetTimerTypeName();
-      gpu_timing_client_->InvalidateTimerOffset();
     } else {
       LOG(WARNING) << "Can't initialize gpu timing";
     }

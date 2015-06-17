@@ -55,32 +55,27 @@ void GPUTimingFake::ExpectNoDisjointCalls(MockGLInterface& gl) {
 
 void GPUTimingFake::ExpectGPUTimerQuery(
     MockGLInterface& gl, bool elapsed_query) {
-  if (elapsed_query) {
-    // Currently do not support elapsed queries.
-    return;
-  }
-
-  EXPECT_CALL(gl, GenQueries(2, NotNull())).Times(AtLeast(1))
+  EXPECT_CALL(gl, GenQueries(1, NotNull())).Times(AtLeast(2))
       .WillRepeatedly(Invoke(this, &GPUTimingFake::FakeGLGenQueries));
 
-  if (elapsed_query) {
-    // Time Elapsed based queries.
-    EXPECT_CALL(gl, BeginQuery(GL_TIME_ELAPSED, _))
-        .WillRepeatedly(
-            Invoke(this, &GPUTimingFake::FakeGLBeginQuery));
-
-    EXPECT_CALL(gl, EndQuery(GL_TIME_ELAPSED))
-        .WillRepeatedly(Invoke(this, &GPUTimingFake::FakeGLEndQuery));
-  } else {
+  if (!elapsed_query) {
     // Time Stamp based queries.
     EXPECT_CALL(gl, GetInteger64v(GL_TIMESTAMP, _))
         .WillRepeatedly(
             Invoke(this, &GPUTimingFake::FakeGLGetInteger64v));
 
-    EXPECT_CALL(gl, QueryCounter(_, GL_TIMESTAMP)).Times(AtLeast(2))
+    EXPECT_CALL(gl, QueryCounter(_, GL_TIMESTAMP)).Times(AtLeast(1))
         .WillRepeatedly(
              Invoke(this, &GPUTimingFake::FakeGLQueryCounter));
   }
+
+  // Time Elapsed based queries.
+  EXPECT_CALL(gl, BeginQuery(GL_TIME_ELAPSED, _))
+      .WillRepeatedly(
+          Invoke(this, &GPUTimingFake::FakeGLBeginQuery));
+
+  EXPECT_CALL(gl, EndQuery(GL_TIME_ELAPSED))
+      .WillRepeatedly(Invoke(this, &GPUTimingFake::FakeGLEndQuery));
 
   EXPECT_CALL(gl, GetQueryObjectiv(_, GL_QUERY_RESULT_AVAILABLE,
                                         NotNull()))
@@ -91,7 +86,7 @@ void GPUTimingFake::ExpectGPUTimerQuery(
       .WillRepeatedly(
            Invoke(this, &GPUTimingFake::FakeGLGetQueryObjectui64v));
 
-  EXPECT_CALL(gl, DeleteQueries(2, NotNull())).Times(AtLeast(1))
+  EXPECT_CALL(gl, DeleteQueries(1, NotNull())).Times(AtLeast(2))
       .WillRepeatedly(
            Invoke(this, &GPUTimingFake::FakeGLDeleteQueries));
 }

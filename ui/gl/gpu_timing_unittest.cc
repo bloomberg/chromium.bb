@@ -19,6 +19,8 @@ class GPUTimingTest : public testing::Test {
   void SetUp() override {
     setup_ = false;
     fake_cpu_time_ = 0;
+
+    CreateGPUTimingClient()->SetCpuTimeForTesting(base::Bind(&GetFakeCPUTime));
   }
 
   void TearDown() override {
@@ -70,12 +72,27 @@ TEST_F(GPUTimingTest, FakeTimerTest) {
   SetFakeCPUTime(123);
 
   scoped_refptr<GPUTimingClient> gpu_timing_client = CreateGPUTimingClient();
-  gpu_timing_client->SetCpuTimeForTesting(base::Bind(&GetFakeCPUTime));
   EXPECT_EQ(123, gpu_timing_client->GetCurrentCPUTime());
 
   base::Callback<int64_t(void)> empty;
   gpu_timing_client->SetCpuTimeForTesting(empty);
   EXPECT_NE(123, gpu_timing_client->GetCurrentCPUTime());
+}
+
+TEST_F(GPUTimingTest, ForceTimeElapsedQuery) {
+  // Test that forcing time elapsed query affects all clients.
+  scoped_refptr<GPUTimingClient> client1 = CreateGPUTimingClient();
+  EXPECT_FALSE(client1->IsForceTimeElapsedQuery());
+
+  scoped_refptr<GPUTimingClient> client_force = CreateGPUTimingClient();
+  EXPECT_FALSE(client1->IsForceTimeElapsedQuery());
+  client_force->ForceTimeElapsedQuery();
+  EXPECT_TRUE(client1->IsForceTimeElapsedQuery());
+
+  EXPECT_TRUE(client1->IsForceTimeElapsedQuery());
+
+  scoped_refptr<GPUTimingClient> client2 = CreateGPUTimingClient();
+  EXPECT_TRUE(client2->IsForceTimeElapsedQuery());
 }
 
 }  // namespace gpu
