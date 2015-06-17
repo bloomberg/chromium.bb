@@ -41,6 +41,8 @@ crbug.com/382491 virtual/slimmingpaint/fast/backgrounds/transformed-body-html-ba
 
 crbug.com/497874 virtual/slimmingpaint/fast/multicol/span/positioned-child-not-removed-crash.html [ Crash ]
 
+crbug.com/499688 virtual/rootlayerscrolls/fast/scrolling/background-paint-scrolled.html [ Pass Crash ]
+
 crbug.com/427606 virtual/gpu/fast/canvas/canvas-shadow-source-in.html [ Pass ImageOnlyFailure NeedsManualRebaseline ]
 
 crbug.com/452967 [ Mac ] svg/batik/text/xmlSpace.svg [ Pass Failure ImageOnlyFailure ]

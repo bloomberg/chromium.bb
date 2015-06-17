@@ -211,7 +211,8 @@
   {
     "prefix": "rootlayerscrolls",
     "base": "fast/scrolling",
-    "args": ["--root-layer-scrolls"]
+    "args": ["--root-layer-scrolls",
+             "--enable-slimming-paint"]
   },
   {
     "prefix": "scroll_customization",
