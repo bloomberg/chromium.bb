@@ -26,13 +26,14 @@ class CacheStorage final : public GarbageCollectedFinalized<CacheStorage>, publi
     WTF_MAKE_NONCOPYABLE(CacheStorage);
 public:
     static CacheStorage* create(WeakPtr<GlobalFetch::ScopedFetcher>, WebServiceWorkerCacheStorage*);
+    ~CacheStorage();
+    void dispose();
 
     ScriptPromise open(ScriptState*, const String& cacheName);
     ScriptPromise has(ScriptState*, const String& cacheName);
     ScriptPromise deleteFunction(ScriptState*, const String& cacheName);
     ScriptPromise keys(ScriptState*);
     ScriptPromise match(ScriptState*, const RequestInfo&, const CacheQueryOptions&, ExceptionState&);
-
 
     DECLARE_TRACE();
 

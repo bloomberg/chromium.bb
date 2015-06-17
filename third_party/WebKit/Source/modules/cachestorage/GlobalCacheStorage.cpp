@@ -33,6 +33,12 @@ public:
         return *supplement;
     }
 
+    ~GlobalCacheStorageImpl()
+    {
+        if (m_caches)
+            m_caches->dispose();
+    }
+
     CacheStorage* caches(T& fetchingScope, ExceptionState& exceptionState)
     {
         ExecutionContext* context = fetchingScope.executionContext();
@@ -54,6 +60,8 @@ public:
         return m_caches;
     }
 
+    // Promptly dispose of associated CacheStorage.
+    EAGERLY_FINALIZE();
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_caches);

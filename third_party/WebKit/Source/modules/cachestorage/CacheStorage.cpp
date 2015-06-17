@@ -269,15 +269,24 @@ ScriptPromise CacheStorage::matchImpl(ScriptState* scriptState, const Request* r
     return promise;
 }
 
-DEFINE_TRACE(CacheStorage)
-{
-    visitor->trace(m_nameToCacheMap);
-}
-
 CacheStorage::CacheStorage(WeakPtr<GlobalFetch::ScopedFetcher> fetcher, PassOwnPtr<WebServiceWorkerCacheStorage> webCacheStorage)
     : m_scopedFetcher(fetcher)
     , m_webCacheStorage(webCacheStorage)
 {
+}
+
+CacheStorage::~CacheStorage()
+{
+}
+
+void CacheStorage::dispose()
+{
+    m_webCacheStorage.clear();
+}
+
+DEFINE_TRACE(CacheStorage)
+{
+    visitor->trace(m_nameToCacheMap);
 }
 
 } // namespace blink
