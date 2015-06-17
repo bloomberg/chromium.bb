@@ -11,6 +11,8 @@
 #ifndef NET_DISK_CACHE_BLOCKFILE_HISTOGRAM_MACROS_V3_H_
 #define NET_DISK_CACHE_BLOCKFILE_HISTOGRAM_MACROS_V3_H_
 
+#include "base/metrics/histogram.h"
+
 // -----------------------------------------------------------------------------
 
 // These histograms follow the definition of UMA_HISTOGRAMN_XXX except that

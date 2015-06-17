@@ -4,7 +4,6 @@
 
 #include "net/disk_cache/blockfile/rankings.h"
 
-#include "base/metrics/histogram.h"
 #include "net/disk_cache/blockfile/backend_impl.h"
 #include "net/disk_cache/blockfile/disk_format.h"
 #include "net/disk_cache/blockfile/entry_impl.h"

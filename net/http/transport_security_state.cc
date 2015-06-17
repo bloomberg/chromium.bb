@@ -21,7 +21,7 @@
 #include "base/build_time.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"

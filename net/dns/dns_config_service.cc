@@ -5,7 +5,7 @@
 #include "net/dns/dns_config_service.h"
 
 #include "base/logging.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/values.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/ip_pattern.h"

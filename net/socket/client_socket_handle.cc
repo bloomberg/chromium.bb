@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
-#include "base/metrics/histogram.h"
 #include "base/logging.h"
 #include "net/base/net_errors.h"
 #include "net/socket/client_socket_pool.h"

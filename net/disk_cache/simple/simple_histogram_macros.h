@@ -5,7 +5,7 @@
 #ifndef NET_DISK_CACHE_SIMPLE_SIMPLE_HISTOGRAM_MACROS_H_
 #define NET_DISK_CACHE_SIMPLE_SIMPLE_HISTOGRAM_MACROS_H_
 
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "net/base/cache_type.h"
 

@@ -4,7 +4,7 @@
 
 #include "net/ftp/ftp_server_type_histograms.h"
 
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 
 namespace net {
 

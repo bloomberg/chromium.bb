@@ -9,7 +9,6 @@
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner.h"
 #include "base/thread_task_runner_handle.h"

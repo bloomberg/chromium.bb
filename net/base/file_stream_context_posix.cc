@@ -13,7 +13,6 @@
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/metrics/histogram.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/task_runner.h"

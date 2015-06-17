@@ -4,7 +4,7 @@
 
 #include "net/quic/crypto/quic_crypto_client_config.h"
 
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"

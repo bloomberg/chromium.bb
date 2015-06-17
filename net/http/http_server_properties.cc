@@ -5,7 +5,7 @@
 #include "net/http/http_server_properties.h"
 
 #include "base/logging.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/ssl/ssl_config.h"

@@ -12,7 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/containers/linked_list.h"
 #include "base/message_loop/message_loop.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/sha1.h"
 #include "base/stl_util.h"

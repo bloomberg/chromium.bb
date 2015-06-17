@@ -5,7 +5,7 @@
 #include "net/spdy/spdy_session_pool.h"
 
 #include "base/logging.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/values.h"
 #include "net/base/address_list.h"

@@ -6,7 +6,7 @@
 
 #include "base/android/build_info.h"
 #include "base/android/jni_android.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "jni/X509Util_jni.h"
 #include "net/cert/cert_database.h"
 

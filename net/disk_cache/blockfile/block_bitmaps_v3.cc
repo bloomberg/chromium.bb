@@ -4,7 +4,7 @@
 
 #include "net/disk_cache/blockfile/block_bitmaps_v3.h"
 
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "net/disk_cache/blockfile/disk_format_base.h"
 #include "net/disk_cache/blockfile/trace.h"

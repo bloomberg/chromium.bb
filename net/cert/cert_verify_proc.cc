@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/sha1.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"

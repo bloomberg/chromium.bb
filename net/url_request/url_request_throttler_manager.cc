@@ -5,8 +5,6 @@
 #include "net/url_request/url_request_throttler_manager.h"
 
 #include "base/logging.h"
-#include "base/metrics/field_trial.h"
-#include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 #include "net/base/net_util.h"
 #include "net/log/net_log.h"
