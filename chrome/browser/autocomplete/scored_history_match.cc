@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/omnibox/scored_history_match.h"
+#include "chrome/browser/autocomplete/scored_history_match.h"
 
 #include <math.h>
 
@@ -16,8 +16,8 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_offset_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/autocomplete/history_url_provider.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
-#include "components/omnibox/history_url_provider.h"
 #include "components/omnibox/omnibox_field_trial.h"
 #include "components/omnibox/url_prefix.h"
 

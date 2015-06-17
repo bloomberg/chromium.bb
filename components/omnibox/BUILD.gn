@@ -23,8 +23,6 @@ static_library("omnibox") {
     "bookmark_provider.h",
     "history_provider.cc",
     "history_provider.h",
-    "history_url_provider.cc",
-    "history_url_provider.h",
     "in_memory_url_index_types.cc",
     "in_memory_url_index_types.h",
     "keyword_extensions_delegate.cc",
@@ -37,8 +35,6 @@ static_library("omnibox") {
     "omnibox_log.h",
     "omnibox_switches.cc",
     "omnibox_switches.h",
-    "scored_history_match.cc",
-    "scored_history_match.h",
     "search_provider.cc",
     "search_provider.h",
     "search_suggestion_parser.cc",
@@ -95,7 +91,6 @@ source_set("unit_tests") {
     "in_memory_url_index_types_unittest.cc",
     "keyword_provider_unittest.cc",
     "omnibox_field_trial_unittest.cc",
-    "scored_history_match_unittest.cc",
     "suggestion_answer_unittest.cc",
   ]
 

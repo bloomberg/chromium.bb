@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_OMNIBOX_HISTORY_URL_PROVIDER_H_
-#define COMPONENTS_OMNIBOX_HISTORY_URL_PROVIDER_H_
+#ifndef CHROME_BROWSER_AUTOCOMPLETE_HISTORY_URL_PROVIDER_H_
+#define CHROME_BROWSER_AUTOCOMPLETE_HISTORY_URL_PROVIDER_H_
 
 #include <string>
 #include <vector>
@@ -194,7 +194,9 @@ class HistoryURLProvider : public HistoryProvider {
                      AutocompleteProviderListener* listener);
 
   // HistoryProvider:
-  void Start(const AutocompleteInput& input, bool minimal_changes) override;
+  void Start(const AutocompleteInput& input,
+             bool minimal_changes,
+             bool called_due_to_focus) override;
   void Stop(bool clear_cached_results, bool due_to_user_inactivity) override;
 
   // Returns a match representing a navigation to |destination_url| given user
@@ -339,4 +341,4 @@ class HistoryURLProvider : public HistoryProvider {
   DISALLOW_COPY_AND_ASSIGN(HistoryURLProvider);
 };
 
-#endif  // COMPONENTS_OMNIBOX_HISTORY_URL_PROVIDER_H_
+#endif  // CHROME_BROWSER_AUTOCOMPLETE_HISTORY_URL_PROVIDER_H_

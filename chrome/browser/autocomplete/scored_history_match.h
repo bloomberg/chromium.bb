@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_OMNIBOX_SCORED_HISTORY_MATCH_H_
-#define COMPONENTS_OMNIBOX_SCORED_HISTORY_MATCH_H_
+#ifndef CHROME_BROWSER_AUTOCOMPLETE_SCORED_HISTORY_MATCH_H_
+#define CHROME_BROWSER_AUTOCOMPLETE_SCORED_HISTORY_MATCH_H_
 
 #include <string>
 #include <vector>
@@ -193,4 +193,4 @@ struct ScoredHistoryMatch : public history::HistoryMatch {
 };
 typedef std::vector<ScoredHistoryMatch> ScoredHistoryMatches;
 
-#endif  // COMPONENTS_OMNIBOX_SCORED_HISTORY_MATCH_H_
+#endif  // CHROME_BROWSER_AUTOCOMPLETE_SCORED_HISTORY_MATCH_H_

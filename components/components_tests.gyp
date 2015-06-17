@@ -342,7 +342,6 @@
       'omnibox/in_memory_url_index_types_unittest.cc',
       'omnibox/keyword_provider_unittest.cc',
       'omnibox/omnibox_field_trial_unittest.cc',
-      'omnibox/scored_history_match_unittest.cc',
       'omnibox/suggestion_answer_unittest.cc',
     ],
     'os_crypt_unittest_sources': [
