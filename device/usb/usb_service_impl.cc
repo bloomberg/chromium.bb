@@ -178,6 +178,7 @@ void EnumerateUdevDevice(scoped_refptr<UsbDeviceImpl> device,
   udev_enumerate_add_match_subsystem(udev_enumerate.get(), "usb");
   if (udev_enumerate_scan_devices(udev_enumerate.get()) != 0) {
     task_runner->PostTask(FROM_HERE, failure_closure);
+    return;
   }
 
   std::string bus_number =
@@ -218,7 +219,9 @@ void EnumerateUdevDevice(scoped_refptr<UsbDeviceImpl> device,
       if (value) {
         device->set_device_path(value);
         task_runner->PostTask(FROM_HERE, success_closure);
+        return;
       }
+
       break;
     }
   }
