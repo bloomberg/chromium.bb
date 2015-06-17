@@ -8,6 +8,10 @@
       "repaintRects": [
         [8, 98, 100, 50],
         [8, 48, 100, 150]
+      ],
+      "paintInvalidationClients": [
+        "LayoutGrid DIV class='grid'",
+        "LayoutBlockFlow DIV class='sizedToGridArea'"
       ]
     }
   ]

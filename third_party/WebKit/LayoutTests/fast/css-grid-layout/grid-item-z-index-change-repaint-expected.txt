@@ -8,6 +8,10 @@
       "repaintRects": [
         [8, 236, 200, 100],
         [8, 126, 200, 100]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow DIV id='item1' class='sizedToGridArea green negativeZIndex'",
+        "LayoutBlockFlow DIV id='item2' class='sizedToGridArea green'"
       ]
     }
   ]

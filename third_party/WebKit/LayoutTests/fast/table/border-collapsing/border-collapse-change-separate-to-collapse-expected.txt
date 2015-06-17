@@ -16,6 +16,17 @@
         [8, 8, 220, 112],
         [8, 8, 212, 108],
         [8, 8, 107, 108]
+      ],
+      "paintInvalidationClients": [
+        "LayoutTableCell TD",
+        "LayoutTableCell TD",
+        "LayoutTable TABLE id='table'",
+        "LayoutTableCell TD",
+        "LayoutTableCell TD",
+        "LayoutTableSection TBODY",
+        "LayoutTableRow TR",
+        "LayoutTableCell TD",
+        "LayoutTableCell TD"
       ]
     }
   ]

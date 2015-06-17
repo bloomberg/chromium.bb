@@ -28,6 +28,19 @@
         [-9, 18, 18, 19],
         [-100, -100, 18, 18],
         [-100, -100, 18, 18]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow (positioned) DIV id='mask'",
+        "LayoutBlockFlow (positioned) DIV id='mask'",
+        "LayoutBlockFlow (positioned) DIV id='mask'",
+        "LayoutBlockFlow (positioned) DIV id='mask'",
+        "LayoutBlockFlow (positioned) DIV id='mask'",
+        "LayoutBlockFlow (positioned) DIV id='mask'",
+        "LayoutBlockFlow (positioned) DIV id='mask'",
+        "LayoutBlockFlow (positioned) DIV id='mask'",
+        "LayoutBlockFlow (positioned) DIV id='mask'",
+        "LayoutBlockFlow (positioned) DIV id='mask'",
+        "LayoutBlockFlow (positioned) DIV id='mask'"
       ]
     }
   ]

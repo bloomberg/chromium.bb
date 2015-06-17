@@ -7,6 +7,10 @@
       "drawsContent": true,
       "repaintRects": [
         [8, 8, 60, 54]
+      ],
+      "paintInvalidationClients": [
+        "LayoutTableCell TD",
+        "LayoutTable TABLE id='tbl'"
       ]
     }
   ]

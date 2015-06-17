@@ -7,6 +7,9 @@
       "drawsContent": true,
       "repaintRects": [
         [50, 50, 259, 194]
+      ],
+      "paintInvalidationClients": [
+        "LayoutImage IMG"
       ]
     }
   ]

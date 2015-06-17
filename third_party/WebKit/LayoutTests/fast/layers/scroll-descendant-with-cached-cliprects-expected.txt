@@ -14,6 +14,16 @@
         [677, 50, 100, 100],
         [677, 50, 100, 100],
         [677, 50, 100, 100]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow (positioned) DIV id='scrollpanel'",
+        "LayoutBlockFlow (relative positioned) DIV class='container'",
+        "LayoutBlockFlow (relative positioned) DIV id='ul'",
+        "LayoutBlockFlow DIV",
+        "LayoutBlockFlow (positioned) DIV id='scrollpanel'",
+        "LayoutBlockFlow (relative positioned) DIV class='container'",
+        "LayoutBlockFlow (relative positioned) DIV id='ul'",
+        "LayoutBlockFlow DIV"
       ]
     }
   ]
