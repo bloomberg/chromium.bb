@@ -103,11 +103,6 @@
     [MeasureAs=ElementOffsetWidth] readonly attribute long offsetWidth;
     [MeasureAs=ElementOffsetHeight] readonly attribute long offsetHeight;
 
-    // HTML
-    // https://html.spec.whatwg.org/#htmlelement
-    // FIXME: dataset should be on HTMLElement. crbug.com/498485
-    [SameObject, PerWorldBindings] readonly attribute DOMStringMap dataset;
-
     // Non-standard APIs
     // https://www.w3.org/Bugs/Public/show_bug.cgi?id=19962
     [RaisesException, CustomElementCallbacks, MeasureAs=InsertAdjacentElement] Element insertAdjacentElement(DOMString where, Element element);

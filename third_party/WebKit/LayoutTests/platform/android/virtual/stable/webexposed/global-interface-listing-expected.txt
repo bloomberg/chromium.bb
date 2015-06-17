@@ -996,7 +996,6 @@ interface Element
     getter clientLeft
     getter clientTop
     getter clientWidth
-    getter dataset
     getter firstElementChild
     getter id
     getter innerHTML
@@ -1552,6 +1551,7 @@ interface HTMLDocument
 interface HTMLElement
     getter accessKey
     getter contentEditable
+    getter dataset
     getter dir
     getter draggable
     getter hidden

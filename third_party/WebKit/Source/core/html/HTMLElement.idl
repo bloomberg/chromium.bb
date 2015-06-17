@@ -26,7 +26,7 @@ interface HTMLElement : Element {
     [Reflect] attribute DOMString lang;
     attribute boolean translate;
     attribute DOMString dir;
-    // FIXME: dataset is on Element. crbug.com/498485
+    [SameObject, PerWorldBindings] readonly attribute DOMStringMap dataset;
 
     // user interaction
     [Reflect] attribute boolean hidden;

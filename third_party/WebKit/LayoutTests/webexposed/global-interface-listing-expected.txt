@@ -1272,7 +1272,6 @@ interface Element
     getter clientWidth
     getter computedName
     getter computedRole
-    getter dataset
     getter firstElementChild
     getter id
     getter innerHTML
@@ -1845,6 +1844,7 @@ interface HTMLElement
     getter accessKey
     getter contentEditable
     getter contextMenu
+    getter dataset
     getter dir
     getter draggable
     getter hidden
