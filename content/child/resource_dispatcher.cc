@@ -19,7 +19,7 @@
 #include "content/child/request_extra_data.h"
 #include "content/child/request_info.h"
 #include "content/child/shared_memory_received_data_factory.h"
-#include "content/child/site_isolation_policy.h"
+#include "content/child/site_isolation_stats_gatherer.h"
 #include "content/child/sync_load_response.h"
 #include "content/child/threaded_data_provider.h"
 #include "content/common/inter_process_time_ticks_converter.h"

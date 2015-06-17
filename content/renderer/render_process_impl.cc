@@ -16,7 +16,7 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/sys_info.h"
-#include "content/child/site_isolation_policy.h"
+#include "content/child/site_isolation_stats_gatherer.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "third_party/WebKit/public/web/WebFrame.h"

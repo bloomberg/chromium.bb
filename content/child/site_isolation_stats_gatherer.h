@@ -1,17 +1,17 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_CHILD_SITE_ISOLATION_POLICY_H_
-#define CONTENT_CHILD_SITE_ISOLATION_POLICY_H_
+#ifndef CONTENT_CHILD_SITE_ISOLATION_STATS_GATHERER_H_
+#define CONTENT_CHILD_SITE_ISOLATION_STATS_GATHERER_H_
 
-#include <map>
-#include <utility>
+#include <string>
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/linked_ptr.h"
 #include "base/strings/string_piece.h"
 #include "content/common/content_export.h"
+#include "content/common/cross_site_document_classifier.h"
 #include "content/public/common/resource_type.h"
 #include "url/gurl.h"
 
@@ -19,11 +19,6 @@ namespace content {
 
 struct ResourceResponseInfo;
 
-// CrossSiteDocumentClassifier implements the cross-site document blocking
-// policy (XSDP) for Site Isolation. XSDP will monitor network responses to a
-// renderer and block illegal responses so that a compromised renderer cannot
-// steal private information from other sites.
-//
 // SiteIsolationStatsGatherer monitors responses to gather various UMA stats to
 // see the compatibility impact of actual deployment of the policy. The UMA stat
 // categories SiteIsolationStatsGatherer gathers are as follows:
@@ -54,16 +49,6 @@ struct ResourceResponseInfo;
 // SiteIsolation.XSD.[%MIMETYPE].NotBlocked.MaybeJS :
 //   # of responses that are plausibly sniffed to be JavaScript.
 
-enum CrossSiteDocumentMimeType {
-  // Note that these values are used in histograms, and must not change.
-  CROSS_SITE_DOCUMENT_MIME_TYPE_HTML = 0,
-  CROSS_SITE_DOCUMENT_MIME_TYPE_XML = 1,
-  CROSS_SITE_DOCUMENT_MIME_TYPE_JSON = 2,
-  CROSS_SITE_DOCUMENT_MIME_TYPE_PLAIN = 3,
-  CROSS_SITE_DOCUMENT_MIME_TYPE_OTHERS = 4,
-  CROSS_SITE_DOCUMENT_MIME_TYPE_MAX,
-};
-
 struct SiteIsolationResponseMetaData {
   SiteIsolationResponseMetaData();
 
@@ -75,15 +60,14 @@ struct SiteIsolationResponseMetaData {
   bool no_sniff;
 };
 
-// TODO(nick): Move this class into its own file.
 class CONTENT_EXPORT SiteIsolationStatsGatherer {
  public:
   // Set activation flag for the UMA data collection for this renderer process.
   static void SetEnabled(bool enabled);
 
-  // Returns any bookkeeping data about the HTTP header information for a
-  // request. Any data returned should then be passed to OnReceivedFirstChunk()
-  // with the first data chunk.
+  // Returns any bookkeeping data about the HTTP header information for the
+  // request identified by |request_id|. Any data returned should then be
+  // passed to OnReceivedFirstChunk() with the first data chunk.
   static linked_ptr<SiteIsolationResponseMetaData> OnReceivedResponse(
       const GURL& frame_origin,
       const GURL& response_url,
@@ -111,44 +95,6 @@ class CONTENT_EXPORT SiteIsolationStatsGatherer {
   DISALLOW_COPY_AND_ASSIGN(SiteIsolationStatsGatherer);
 };
 
-// TODO(nick): Move this class into its own file.
-class CONTENT_EXPORT CrossSiteDocumentClassifier {
- public:
-  // Returns the representative mime type enum value of the mime type of
-  // response. For example, this returns the same value for all text/xml mime
-  // type families such as application/xml, application/rss+xml.
-  static CrossSiteDocumentMimeType GetCanonicalMimeType(
-      const std::string& mime_type);
-
-  // Returns whether this scheme is a target of cross-site document
-  // policy(XSDP). This returns true only for http://* and https://* urls.
-  static bool IsBlockableScheme(const GURL& frame_origin);
-
-  // Returns whether the two urls belong to the same sites.
-  static bool IsSameSite(const GURL& frame_origin, const GURL& response_url);
-
-  // Returns whether there's a valid CORS header for frame_origin.  This is
-  // simliar to CrossOriginAccessControl::passesAccessControlCheck(), but we use
-  // sites as our security domain, not origins.
-  // TODO(dsjang): this must be improved to be more accurate to the actual CORS
-  // specification. For now, this works conservatively, allowing XSDs that are
-  // not allowed by actual CORS rules by ignoring 1) credentials and 2)
-  // methods. Preflight requests don't matter here since they are not used to
-  // decide whether to block a document or not on the client side.
-  static bool IsValidCorsHeaderSet(const GURL& frame_origin,
-                                   const GURL& website_origin,
-                                   const std::string& access_control_origin);
-
-  static bool SniffForHTML(base::StringPiece data);
-  static bool SniffForXML(base::StringPiece data);
-  static bool SniffForJSON(base::StringPiece data);
-
- private:
-  CrossSiteDocumentClassifier();  // Not instantiable.
-
-  DISALLOW_COPY_AND_ASSIGN(CrossSiteDocumentClassifier);
-};
-
 }  // namespace content
 
-#endif  // CONTENT_CHILD_SITE_ISOLATION_POLICY_H_
+#endif  // CONTENT_CHILD_SITE_ISOLATION_STATS_GATHERER_H_

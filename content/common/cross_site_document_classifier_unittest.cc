@@ -1,14 +1,10 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/strings/string_piece.h"
-#include "base/strings/utf_string_conversions.h"
-#include "content/child/site_isolation_policy.h"
-#include "content/public/common/context_menu_params.h"
+#include "content/common/cross_site_document_classifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/WebURLResponse.h"
-#include "ui/gfx/range/range.h"
 
 using base::StringPiece;
 
@@ -118,19 +114,6 @@ TEST(CrossSiteDocumentClassifierTest, SniffForJSON) {
 
   // Basic bounds check.
   EXPECT_FALSE(CrossSiteDocumentClassifier::SniffForJSON(empty_data));
-}
-
-TEST(SiteIsolationStatsGathererTest, SniffForJS) {
-  StringPiece basic_js_data("var a = 4");
-  StringPiece js_data("\t\t\r\n var a = 4");
-  StringPiece json_data("\t\t\r\n   { \"name\" : \"chrome\", ");
-  StringPiece empty_data("");
-
-  EXPECT_TRUE(SiteIsolationStatsGatherer::SniffForJS(js_data));
-  EXPECT_FALSE(SiteIsolationStatsGatherer::SniffForJS(json_data));
-
-  // Basic bounds check.
-  EXPECT_FALSE(SiteIsolationStatsGatherer::SniffForJS(empty_data));
 }
 
 }  // namespace content
