@@ -1852,3 +1852,7 @@ crbug.com/501177 svg/clip-path/clip-path-nonzero.svg [ Pass Timeout Crash ]
 crbug.com/501177 svg/clip-path/clipper-placement-issue.svg [ Pass Timeout Crash ]
 
 crbug.com/501284 http/tests/security/w3c/cross-origin-objects.html [ Pass Failure ]
+
+crbug.com/497950 [ SnowLeopard ] fast/forms/select/menulist-appearance-basic.html [ NeedsRebaseline ]
+crbug.com/497950 [ SnowLeopard ] fast/layers/scroll-with-transform-layer.html [ NeedsRebaseline ]
+crbug.com/497950 [ SnowLeopard ] fast/text/international/pop-up-button-text-alignment-and-direction.html [ NeedsRebaseline ]
