@@ -387,9 +387,12 @@ void FakeGaia::HandleProgramaticAuth(
     return;
   }
 
+  GURL request_url = GURL("http://localhost").Resolve(request.relative_url);
+  std::string request_query = request_url.query();
+
   GaiaUrls* gaia_urls = GaiaUrls::GetInstance();
   std::string scope;
-  if (!GetQueryParameter(request.content, "scope", &scope) ||
+  if (!GetQueryParameter(request_query, "scope", &scope) ||
       GaiaConstants::kOAuth1LoginScope != scope) {
     return;
   }
@@ -409,7 +412,7 @@ void FakeGaia::HandleProgramaticAuth(
   }
 
   std::string client_id;
-  if (!GetQueryParameter(request.content, "client_id", &client_id) ||
+  if (!GetQueryParameter(request_query, "client_id", &client_id) ||
       gaia_urls->oauth2_chrome_client_id() != client_id) {
     return;
   }

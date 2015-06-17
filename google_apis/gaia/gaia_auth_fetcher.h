@@ -97,13 +97,6 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
   void StartIssueAuthTokenForOAuth2(const std::string& oauth2_access_token,
                                     const char* const service);
 
-  // Start a request to exchange an "lso" service token given by |auth_token|
-  // for an OAuthLogin-scoped oauth2 token.
-  //
-  // Either OnClientOAuthSuccess or OnClientOAuthFailure will be
-  // called on the consumer on the original thread.
-  void StartLsoForOAuthLoginTokenExchange(const std::string& auth_token);
-
   // Start a request to revoke |auth_token|.
   //
   // OnOAuth2RevokeTokenCompleted will be called on the consumer on the original
@@ -269,11 +262,8 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
   static const char kClientLoginCaptchaFormat[];
   // The format of the POST body for IssueAuthToken.
   static const char kIssueAuthTokenFormat[];
-  // The format of the POST body to get OAuth2 auth code from auth token.
-  static const char kClientLoginToOAuth2BodyFormat[];
-  // The format of the POST body to get OAuth2 auth code from auth token. This
-  // format is used for request annotated with device_id.
-  static const char kClientLoginToOAuth2WithDeviceTypeBodyFormat[];
+  // The format of the query string to get OAuth2 auth code from auth token.
+  static const char kClientLoginToOAuth2URLFormat[];
   // The format of the POST body to get OAuth2 token pair from auth code.
   static const char kOAuth2CodeToTokenPairBodyFormat[];
   // Additional param for the POST body to get OAuth2 token pair from auth code.
@@ -421,8 +411,6 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
   static std::string MakeIssueAuthTokenBody(const std::string& sid,
                                             const std::string& lsid,
                                             const char* const service);
-  // Create body to get OAuth2 auth code.
-  static std::string MakeGetAuthCodeBody(bool include_device_type);
   // Given auth code and device ID (optional), create body to get OAuth2 token
   // pair.
   static std::string MakeGetTokenPairBody(const std::string& auth_code,

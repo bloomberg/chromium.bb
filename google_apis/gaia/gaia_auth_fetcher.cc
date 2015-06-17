@@ -102,11 +102,8 @@ const char GaiaAuthFetcher::kIssueAuthTokenFormat[] =
     "service=%s&"
     "Session=%s";
 // static
-const char GaiaAuthFetcher::kClientLoginToOAuth2BodyFormat[] =
-    "scope=%s&client_id=%s";
-// static
-const char GaiaAuthFetcher::kClientLoginToOAuth2WithDeviceTypeBodyFormat[] =
-    "scope=%s&client_id=%s&device_type=chrome";
+const char GaiaAuthFetcher::kClientLoginToOAuth2URLFormat[] =
+    "?scope=%s&client_id=%s";
 // static
 const char GaiaAuthFetcher::kOAuth2CodeToTokenPairBodyFormat[] =
     "scope=%s&"
@@ -327,23 +324,6 @@ std::string GaiaAuthFetcher::MakeIssueAuthTokenBody(
                             encoded_lsid.c_str(),
                             service,
                             session ? "true" : "false");
-}
-
-// static
-std::string GaiaAuthFetcher::MakeGetAuthCodeBody(bool include_device_type) {
-  std::string encoded_scope = net::EscapeUrlEncodedData(
-      GaiaConstants::kOAuth1LoginScope, true);
-  std::string encoded_client_id = net::EscapeUrlEncodedData(
-      GaiaUrls::GetInstance()->oauth2_chrome_client_id(), true);
-  if (include_device_type) {
-    return base::StringPrintf(kClientLoginToOAuth2WithDeviceTypeBodyFormat,
-                              encoded_scope.c_str(),
-                              encoded_client_id.c_str());
-  } else {
-    return base::StringPrintf(kClientLoginToOAuth2BodyFormat,
-                              encoded_scope.c_str(),
-                              encoded_client_id.c_str());
-  }
 }
 
 // static
@@ -620,20 +600,6 @@ void GaiaAuthFetcher::StartIssueAuthToken(const std::string& sid,
                             issue_auth_token_gurl_, kLoadFlagsIgnoreCookies);
 }
 
-void GaiaAuthFetcher::StartLsoForOAuthLoginTokenExchange(
-    const std::string& auth_token) {
-  DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
-
-  DVLOG(1) << "Starting OAuth login token exchange with auth_token";
-  request_body_ = MakeGetAuthCodeBody(false);
-  client_login_to_oauth2_gurl_ =
-      GaiaUrls::GetInstance()->client_login_to_oauth2_url();
-
-  CreateAndStartGaiaFetcher(request_body_, MakeGetAuthCodeHeader(auth_token),
-                            client_login_to_oauth2_gurl_,
-                            kLoadFlagsIgnoreCookies);
-}
-
 void GaiaAuthFetcher::StartRevokeOAuth2Token(const std::string& auth_token) {
   DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
 
@@ -655,14 +621,18 @@ void GaiaAuthFetcher::StartCookieForOAuthLoginTokenExchangeWithDeviceId(
   DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
 
   DVLOG(1) << "Starting OAuth login token fetch with cookie jar";
-  request_body_ = MakeGetAuthCodeBody(!device_id.empty());
 
-  client_login_to_oauth2_gurl_ =
-      GaiaUrls::GetInstance()->client_login_to_oauth2_url();
-  if (!session_index.empty()) {
-    client_login_to_oauth2_gurl_ =
-        client_login_to_oauth2_gurl_.Resolve("?authuser=" + session_index);
-  }
+  std::string encoded_scope = net::EscapeUrlEncodedData(
+      GaiaConstants::kOAuth1LoginScope, true);
+  std::string encoded_client_id = net::EscapeUrlEncodedData(
+      GaiaUrls::GetInstance()->oauth2_chrome_client_id(), true);
+  std::string query_string =
+      base::StringPrintf(kClientLoginToOAuth2URLFormat, encoded_scope.c_str(),
+                         encoded_client_id.c_str());
+  if (!device_id.empty())
+    query_string += "&device_type=chrome";
+  if (!session_index.empty())
+    query_string += "&authuser=" + session_index;
 
   std::string device_id_header;
   if (!device_id.empty()) {
@@ -670,8 +640,9 @@ void GaiaAuthFetcher::StartCookieForOAuthLoginTokenExchangeWithDeviceId(
         base::StringPrintf(kDeviceIdHeaderFormat, device_id.c_str());
   }
 
-  CreateAndStartGaiaFetcher(request_body_, device_id_header,
-                            client_login_to_oauth2_gurl_, net::LOAD_NORMAL);
+  CreateAndStartGaiaFetcher(std::string(), device_id_header,
+                            client_login_to_oauth2_gurl_.Resolve(query_string),
+                            net::LOAD_NORMAL);
 }
 
 void GaiaAuthFetcher::StartAuthCodeForOAuth2TokenExchange(
@@ -1080,7 +1051,8 @@ void GaiaAuthFetcher::DispatchFetchedRequest(
     OnClientLoginFetched(data, status, response_code);
   } else if (url == issue_auth_token_gurl_) {
     OnIssueAuthTokenFetched(data, status, response_code);
-  } else if (url == client_login_to_oauth2_gurl_) {
+  } else if (base::StartsWithASCII(url.spec(),
+                                   client_login_to_oauth2_gurl_.spec(), true)) {
     OnClientLoginToOAuth2Fetched(data, cookies, status, response_code);
   } else if (url == oauth2_token_gurl_) {
     OnOAuth2TokenPairFetched(data, status, response_code);
