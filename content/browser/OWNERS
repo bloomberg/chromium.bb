@@ -1,5 +1,3 @@
-nick@chromium.org
-
 per-file child_process_security_policy_impl.*=tsepez@chromium.org
 per-file child_process_security_policy_impl.*=creis@chromium.org
 per-file child_process_security_unittest.cc=tsepez@chromium.org
