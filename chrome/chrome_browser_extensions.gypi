@@ -1015,11 +1015,6 @@
             '../ui/keyboard/keyboard.gyp:keyboard_resources',
           ],
         }],
-        ['toolkit_views==1', {
-          'dependencies': [
-            '../ui/views/views.gyp:views',
-          ],
-        }],
         ['OS=="linux"', {
           'conditions': [
             ['use_aura==1', {

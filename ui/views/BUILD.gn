@@ -11,12 +11,7 @@ gypi_values = exec_script("//build/gypi_to_gn.py",
                           "scope",
                           [ "views.gyp" ])
 
-config("flags") {
-  defines = [ "TOOLKIT_VIEWS=1" ]
-}
-
 component("views") {
-  all_dependent_configs = [ ":flags" ]
   sources = gypi_values.views_sources
 
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.

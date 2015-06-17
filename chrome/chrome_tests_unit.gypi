@@ -2094,11 +2094,6 @@
             '../remoting/remoting.gyp:remoting_client_plugin',
           ],
         }],
-        ['toolkit_views==1', {
-          'dependencies': [
-            '../ui/views/views.gyp:views',
-          ],
-        }],
       ],
     },
     {

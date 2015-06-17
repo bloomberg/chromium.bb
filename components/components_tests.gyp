@@ -851,7 +851,6 @@
             'constrained_window/constrained_window_views_unittest.cc',
           ],
           'dependencies': [
-            '<(DEPTH)/ui/views/views.gyp:views',
             '<(DEPTH)/ui/views/views.gyp:views_test_support',
             'components.gyp:constrained_window',
           ]

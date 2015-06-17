@@ -2663,6 +2663,9 @@
       ['component=="shared_library"', {
         'defines': ['COMPONENT_BUILD'],
       }],
+      ['toolkit_views==1', {
+        'defines': ['TOOLKIT_VIEWS=1'],
+      }],
       ['ui_compositor_image_transport==1', {
         'defines': ['UI_COMPOSITOR_IMAGE_TRANSPORT'],
       }],

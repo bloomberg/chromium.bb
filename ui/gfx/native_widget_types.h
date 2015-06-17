@@ -135,8 +135,6 @@ typedef void* NativeCursor;
 typedef ui::ViewAndroid* NativeView;
 typedef ui::WindowAndroid* NativeWindow;
 typedef jobject NativeEvent;
-#else
-#error Unknown build environment.
 #endif
 
 #if defined(OS_WIN)

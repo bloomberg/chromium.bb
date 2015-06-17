@@ -195,9 +195,6 @@
             '../events/events.gyp:events',
             '../views/views.gyp:views',
           ],
-          'export_dependent_settings': [
-              '../views/views.gyp:views',
-          ],
         }, {  # toolkit_views==0
           'sources/': [
             ['exclude', 'views/'],
