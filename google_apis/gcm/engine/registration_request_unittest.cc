@@ -93,7 +93,7 @@ RegistrationRequestTest::RegistrationRequestTest()
       status_(RegistrationRequest::SUCCESS),
       callback_called_(false),
       url_request_context_getter_(new net::TestURLRequestContextGetter(
-          message_loop_.message_loop_proxy())) {}
+          message_loop_.task_runner())) {}
 
 RegistrationRequestTest::~RegistrationRequestTest() {}
 

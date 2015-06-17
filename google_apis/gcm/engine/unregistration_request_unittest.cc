@@ -85,7 +85,7 @@ UnregistrationRequestTest::UnregistrationRequestTest()
     : callback_called_(false),
       status_(UnregistrationRequest::UNREGISTRATION_STATUS_COUNT),
       url_request_context_getter_(new net::TestURLRequestContextGetter(
-          message_loop_.message_loop_proxy())) {}
+          message_loop_.task_runner())) {}
 
 UnregistrationRequestTest::~UnregistrationRequestTest() {}
 

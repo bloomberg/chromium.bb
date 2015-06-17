@@ -299,7 +299,7 @@ void MCSProbe::Start() {
                                 &recorder_));
   gcm_store_.reset(
       new GCMStoreImpl(gcm_store_path_,
-                       file_thread_.message_loop_proxy(),
+                       file_thread_.task_runner(),
                        make_scoped_ptr<Encryptor>(new FakeEncryptor)));
   mcs_client_.reset(new MCSClient("probe",
                                   &clock_,
@@ -482,7 +482,7 @@ int MCSProbeMain(int argc, char* argv[]) {
   // For check-in and creating registration ids.
   const scoped_refptr<MyTestURLRequestContextGetter> context_getter =
       new MyTestURLRequestContextGetter(
-          base::MessageLoop::current()->message_loop_proxy());
+          base::MessageLoop::current()->task_runner());
 
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();

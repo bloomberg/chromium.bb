@@ -275,7 +275,7 @@ class IdentityAccountTrackerTest : public testing::Test {
     account_tracker_.reset(
         new AccountTracker(fake_identity_provider_.get(),
                            new net::TestURLRequestContextGetter(
-                               message_loop_.message_loop_proxy())));
+                               message_loop_.task_runner())));
     account_tracker_->AddObserver(&observer_);
   }
 

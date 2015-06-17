@@ -120,11 +120,11 @@ class DriveApiRequestsTest : public testing::Test {
 
   void SetUp() override {
     request_context_getter_ = new net::TestURLRequestContextGetter(
-        message_loop_.message_loop_proxy());
+        message_loop_.task_runner());
 
     request_sender_.reset(new RequestSender(new DummyAuthService,
                                             request_context_getter_.get(),
-                                            message_loop_.message_loop_proxy(),
+                                            message_loop_.task_runner(),
                                             kTestUserAgent));
 
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());

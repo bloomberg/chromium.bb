@@ -99,7 +99,7 @@ class OAuth2ApiCallFlowTest : public testing::Test {
  protected:
   OAuth2ApiCallFlowTest()
       : request_context_getter_(new net::TestURLRequestContextGetter(
-            message_loop_.message_loop_proxy())) {}
+            message_loop_.task_runner())) {}
 
   TestURLFetcher* CreateURLFetcher(
       const GURL& url, bool fetch_succeeds,

@@ -108,11 +108,11 @@ class BaseRequestsTest : public testing::Test {
 
   void SetUp() override {
     request_context_getter_ = new net::TestURLRequestContextGetter(
-        message_loop_.message_loop_proxy());
+        message_loop_.task_runner());
 
     sender_.reset(new RequestSender(new DummyAuthService,
                                     request_context_getter_.get(),
-                                    message_loop_.message_loop_proxy(),
+                                    message_loop_.task_runner(),
                                     std::string() /* custom user agent */));
 
     ASSERT_TRUE(test_server_.InitializeAndWaitUntilReady());

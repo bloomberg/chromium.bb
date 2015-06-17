@@ -83,7 +83,7 @@ scoped_ptr<GCMStoreImpl> GCMStoreImplTest::BuildGCMStore() {
       // behavior in the production code. Currently GCMStoreImpl checks if
       // the directory exist or not to determine the store existence.
       temp_directory_.path().Append(FILE_PATH_LITERAL("GCM Store")),
-      message_loop_.message_loop_proxy(),
+      message_loop_.task_runner(),
       make_scoped_ptr<Encryptor>(new FakeEncryptor)));
 }
 

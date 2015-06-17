@@ -101,7 +101,7 @@ CheckinRequestTest::CheckinRequestTest()
       security_token_(kBlankSecurityToken),
       checkin_device_type_(0),
       url_request_context_getter_(new net::TestURLRequestContextGetter(
-          message_loop_.message_loop_proxy())) {
+          message_loop_.task_runner())) {
 }
 
 CheckinRequestTest::~CheckinRequestTest() {}

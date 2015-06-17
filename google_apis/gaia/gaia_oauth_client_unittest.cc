@@ -188,7 +188,7 @@ class GaiaOAuthClientTest : public testing::Test {
   net::TestURLRequestContextGetter* GetRequestContext() {
     if (!request_context_getter_.get()) {
       request_context_getter_ = new net::TestURLRequestContextGetter(
-          message_loop_.message_loop_proxy());
+          message_loop_.task_runner());
     }
     return request_context_getter_.get();
   }
