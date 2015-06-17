@@ -54,7 +54,7 @@ def GetNormalizedPlatform():
 class Gsutil(object):
   """Call gsutil with some predefined settings.  This is a convenience object,
   and is also immutable."""
-  def __init__(self, path, boto_path, timeout=None, version='4.7'):
+  def __init__(self, path, boto_path=None, timeout=None, version='4.7'):
     if not os.path.exists(path):
       raise FileNotFoundError('GSUtil not found in %s' % path)
     self.path = path
@@ -70,11 +70,6 @@ class Gsutil(object):
     elif self.boto_path:
       env['AWS_CREDENTIAL_FILE'] = self.boto_path
       env['BOTO_CONFIG'] = self.boto_path
-    else:
-      custompath = env.get('AWS_CREDENTIAL_FILE', '~/.boto') + '.depot_tools'
-      custompath = os.path.expanduser(custompath)
-      if os.path.exists(custompath):
-        env['AWS_CREDENTIAL_FILE'] = custompath
 
     return env
 
@@ -403,8 +398,11 @@ def main(args):
 
   # Passing in -g/--config will run our copy of GSUtil, then quit.
   if options.config:
-    return gsutil.call('config', '-r', '-o',
-                       os.path.expanduser('~/.boto.depot_tools'))
+    print '===Note from depot_tools==='
+    print 'If you do not have a project ID, enter "0" when asked for one.'
+    print '===End note from depot_tools==='
+    print
+    return gsutil.call('config')
 
   if not args:
     parser.error('Missing target.')
