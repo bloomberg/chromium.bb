@@ -33,6 +33,7 @@ android_library("chrome_staging_test_support_java") {
     "//base:base_java",
     "//base:base_java_test_support",
     "//chrome/android:chrome_java",
+    "//chrome/android:chrome_java_resources",
     "//chrome/android:chrome_staging_java",
     "//chrome/android:chrome_staging_java_resources",
     "//chrome/test/android:chrome_java_test_support",
