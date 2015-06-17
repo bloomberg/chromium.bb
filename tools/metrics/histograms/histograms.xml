@@ -8336,6 +8336,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Event.HitTest" enum="EventHitTest">
+  <owner>dtapuska@chromium.org</owner>
+  <summary>
+    For each hit test, records whether it was a hit or miss, and why.
+  </summary>
+</histogram>
+
+<histogram name="Event.HitTestValidity" enum="EventHitTestValidity">
+  <owner>dtapuska@chromium.org</owner>
+  <summary>
+    For hit tests that are validated, records whether it was correct or not, and
+    why.
+  </summary>
+</histogram>
+
 <histogram name="Event.Latency.Browser" units="microseconds">
   <owner>rbyers@chromium.org</owner>
   <summary>
@@ -53380,6 +53395,23 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="11002" label="WSATRY_AGAIN"/>
   <int value="11003" label="WSA_ANO_RECOVERY"/>
   <int value="11004" label="WSANO_DATA"/>
+</enum>
+
+<enum name="EventHitTest" type="int">
+  <int value="0" label="Miss, not found in cache."/>
+  <int value="1" label="Miss, explicitly avoided."/>
+  <int value="2" label="Miss, validity region matches; type doesn't."/>
+  <int value="3" label="Hit, exact point."/>
+  <int value="4" label="Hit, region matched."/>
+</enum>
+
+<enum name="EventHitTestValidity" type="int">
+  <int value="0" label="Valid, exact match."/>
+  <int value="1" label="Valid, region match."/>
+  <int value="2" label="Incorrect, exact match (rect query)."/>
+  <int value="3" label="Incorrect, exact match (point query)."/>
+  <int value="4" label="Incorrect, region match (rect query)."/>
+  <int value="5" label="Incorrect, region match (point query)."/>
 </enum>
 
 <enum name="EVWhitelistStatus" type="int">
