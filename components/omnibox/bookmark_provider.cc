@@ -57,8 +57,8 @@ BookmarkProvider::BookmarkProvider(AutocompleteProviderClient* client)
       client_(client),
       bookmark_model_(NULL) {
   if (client_) {
-    bookmark_model_ = client_->GetBookmarkModel();
-    languages_ = client_->GetAcceptLanguages();
+    bookmark_model_ = client_->BookmarkModel();
+    languages_ = client_->AcceptLanguages();
   }
 }
 
@@ -202,7 +202,7 @@ AutocompleteMatch BookmarkProvider::BookmarkMatchToACMatch(
                                true);
   match.fill_into_edit =
       AutocompleteInput::FormattedStringWithEquivalentMeaning(
-          url, match.contents, client_->GetSchemeClassifier());
+          url, match.contents, client_->SchemeClassifier());
   if (inline_autocomplete_offset != base::string16::npos) {
     // |inline_autocomplete_offset| may be beyond the end of the
     // |fill_into_edit| if the user has typed an URL with a scheme and the

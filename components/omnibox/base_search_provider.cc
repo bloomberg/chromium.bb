@@ -123,7 +123,7 @@ void BaseSearchProvider::DeleteMatch(const AutocompleteMatch& match) {
   if (!match.GetAdditionalInfo(BaseSearchProvider::kDeletionUrlKey).empty()) {
     deletion_handlers_.push_back(new SuggestionDeletionHandler(
         match.GetAdditionalInfo(BaseSearchProvider::kDeletionUrlKey),
-        client_->GetRequestContext(),
+        client_->RequestContext(),
         base::Bind(&BaseSearchProvider::OnDeletionComplete,
                    base::Unretained(this))));
   }
@@ -445,9 +445,9 @@ bool BaseSearchProvider::ParseSuggestResults(
     bool is_keyword_result,
     SearchSuggestionParser::Results* results) {
   if (!SearchSuggestionParser::ParseSuggestResults(
-          root_val, GetInput(is_keyword_result), client_->GetSchemeClassifier(),
-          default_result_relevance, client_->GetAcceptLanguages(),
-          is_keyword_result, results))
+      root_val, GetInput(is_keyword_result),
+      client_->SchemeClassifier(), default_result_relevance,
+      client_->AcceptLanguages(), is_keyword_result, results))
     return false;
 
   for (const GURL& url : results->answers_image_urls)

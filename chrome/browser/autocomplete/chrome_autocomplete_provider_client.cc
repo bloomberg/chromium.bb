@@ -29,26 +29,26 @@ ChromeAutocompleteProviderClient::~ChromeAutocompleteProviderClient() {
 }
 
 net::URLRequestContextGetter*
-ChromeAutocompleteProviderClient::GetRequestContext() {
+ChromeAutocompleteProviderClient::RequestContext() {
   return profile_->GetRequestContext();
 }
 
 const AutocompleteSchemeClassifier&
-ChromeAutocompleteProviderClient::GetSchemeClassifier() {
+ChromeAutocompleteProviderClient::SchemeClassifier() {
   return scheme_classifier_;
 }
 
-history::HistoryService* ChromeAutocompleteProviderClient::GetHistoryService() {
+history::HistoryService* ChromeAutocompleteProviderClient::HistoryService() {
   return HistoryServiceFactory::GetForProfile(
       profile_, ServiceAccessType::EXPLICIT_ACCESS);
 }
 
-bookmarks::BookmarkModel* ChromeAutocompleteProviderClient::GetBookmarkModel() {
+bookmarks::BookmarkModel* ChromeAutocompleteProviderClient::BookmarkModel() {
   return BookmarkModelFactory::GetForProfile(profile_);
 }
 
-history::URLDatabase* ChromeAutocompleteProviderClient::GetInMemoryDatabase() {
-  history::HistoryService* history_service = GetHistoryService();
+history::URLDatabase* ChromeAutocompleteProviderClient::InMemoryDatabase() {
+  history::HistoryService* history_service = HistoryService();
 
   // This method is called in unit test contexts where the HistoryService isn't
   // loaded.
@@ -63,7 +63,7 @@ const SearchTermsData& ChromeAutocompleteProviderClient::GetSearchTermsData() {
   return search_terms_data_;
 }
 
-std::string ChromeAutocompleteProviderClient::GetAcceptLanguages() {
+std::string ChromeAutocompleteProviderClient::AcceptLanguages() {
   return profile_->GetPrefs()->GetString(prefs::kAcceptLanguages);
 }
 
@@ -107,7 +107,7 @@ void ChromeAutocompleteProviderClient::Classify(
 void ChromeAutocompleteProviderClient::DeleteMatchingURLsForKeywordFromHistory(
     history::KeywordID keyword_id,
     const base::string16& term) {
-  GetHistoryService()->DeleteMatchingURLsForKeyword(keyword_id, term);
+  HistoryService()->DeleteMatchingURLsForKeyword(keyword_id, term);
 }
 
 void ChromeAutocompleteProviderClient::PrefetchImage(const GURL& url) {

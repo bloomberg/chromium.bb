@@ -25,14 +25,14 @@ using testing::_;
 class MockAutocompleteProviderClient : public AutocompleteProviderClient {
  public:
   MockAutocompleteProviderClient() {}
-  MOCK_METHOD0(GetRequestContext, net::URLRequestContextGetter*());
-  MOCK_METHOD0(GetSchemeClassifier, const AutocompleteSchemeClassifier&());
-  MOCK_METHOD0(GetHistoryService, history::HistoryService*());
-  MOCK_METHOD0(GetBookmarkModel, bookmarks::BookmarkModel*());
-  MOCK_METHOD0(GetInMemoryDatabase, history::URLDatabase*());
+  MOCK_METHOD0(RequestContext, net::URLRequestContextGetter*());
+  MOCK_METHOD0(SchemeClassifier, const AutocompleteSchemeClassifier&());
+  MOCK_METHOD0(HistoryService, history::HistoryService*());
+  MOCK_METHOD0(BookmarkModel, bookmarks::BookmarkModel*());
+  MOCK_METHOD0(InMemoryDatabase, history::URLDatabase*());
   MOCK_METHOD0(GetTemplateURLService, TemplateURLService*());
   MOCK_METHOD0(GetSearchTermsData, const SearchTermsData&());
-  MOCK_METHOD0(GetAcceptLanguages, std::string());
+  MOCK_METHOD0(AcceptLanguages, std::string());
   MOCK_METHOD0(IsOffTheRecord, bool());
   MOCK_METHOD0(SearchSuggestEnabled, bool());
   MOCK_METHOD0(ShowBookmarkBar, bool());
