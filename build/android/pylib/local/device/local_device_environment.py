@@ -25,7 +25,7 @@ class LocalDeviceEnvironment(environment.Environment):
       raise device_errors.NoDevicesError
     if self._device_serial:
       self._devices = [d for d in available_devices
-                       if d.adb.GetDeviceSerial == self._device_serial]
+                       if d.adb.GetDeviceSerial() == self._device_serial]
       if not self._devices:
         raise device_errors.DeviceUnreachableError(
             'Could not find device %r' % self._device_serial)
