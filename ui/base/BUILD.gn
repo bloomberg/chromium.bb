@@ -512,7 +512,6 @@ component("base") {
 
   if (is_android) {
     deps += [
-      "//cc",
       ":ui_base_jni_headers",
       "//ui/android:ui_java",
     ]

@@ -584,7 +584,6 @@
             'ui_base_types.cc',
           ],
           'dependencies': [
-            '../../cc/cc.gyp:cc',
             '../android/ui_android.gyp:ui_java',
             'ui_base_jni_headers',
           ],
