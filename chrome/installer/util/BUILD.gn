@@ -270,6 +270,10 @@ if (is_win) {
       "//chrome/common",
       "//chrome/installer/test:alternate_version_generator_lib",
       "//content/public/common",
+
+      # TODO(rockot): Remove this hack when we fix mojo environment deps.
+      # See http://crbug.com/501385
+      "//mojo/environment:chromium",
       "//testing/gmock",
       "//testing/gtest",
     ]
