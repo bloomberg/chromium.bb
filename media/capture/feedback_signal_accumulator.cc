@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/media/capture/feedback_signal_accumulator.h"
+#include "media/capture/feedback_signal_accumulator.h"
 
 #include <algorithm>
 #include <cmath>
 
-namespace content {
+namespace media {
 
 FeedbackSignalAccumulator::FeedbackSignalAccumulator(base::TimeDelta half_life)
     : half_life_(half_life) {
@@ -53,4 +53,4 @@ bool FeedbackSignalAccumulator::Update(double value,
   return true;
 }
 
-}  // namespace content
+}  // namespace media

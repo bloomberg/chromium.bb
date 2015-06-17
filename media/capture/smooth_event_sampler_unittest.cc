@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/media/capture/smooth_event_sampler.h"
+#include "media/capture/smooth_event_sampler.h"
 
 #include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace content {
+namespace media {
 
 namespace {
 
@@ -485,4 +485,4 @@ TEST(SmoothEventSamplerTest, DrawingAt60FpsWith60HzVsyncSampledAt30Hertz) {
   ReplayCheckingSamplerDecisions(data_points, arraysize(data_points), &sampler);
 }
 
-}  // namespace content
+}  // namespace media

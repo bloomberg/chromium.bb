@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/desktop_media_id.h"
+#include "media/capture/screen_capture_device_core.h"
 #include "media/video/capture/video_capture_device.h"
 
 namespace aura {
@@ -17,8 +18,6 @@ class Window;
 }  // namespace aura
 
 namespace content {
-
-class ContentVideoCaptureDeviceCore;
 
 // An implementation of VideoCaptureDevice that mirrors an Aura window.
 class CONTENT_EXPORT DesktopCaptureDeviceAura
@@ -37,7 +36,7 @@ class CONTENT_EXPORT DesktopCaptureDeviceAura
  private:
   DesktopCaptureDeviceAura(const DesktopMediaID& source);
 
-  scoped_ptr<class ContentVideoCaptureDeviceCore> core_;
+  scoped_ptr<media::ScreenCaptureDeviceCore> core_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopCaptureDeviceAura);
 };

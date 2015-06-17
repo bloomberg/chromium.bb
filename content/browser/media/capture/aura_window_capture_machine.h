@@ -8,7 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
-#include "content/browser/media/capture/content_video_capture_device_core.h"
+#include "media/capture/screen_capture_device_core.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/cursor/cursors_aura.h"
@@ -26,7 +26,7 @@ class PowerSaveBlocker;
 class ReadbackYUVInterface;
 
 class AuraWindowCaptureMachine
-    : public VideoCaptureMachine,
+    : public media::VideoCaptureMachine,
       public aura::WindowObserver,
       public ui::CompositorObserver,
       public base::SupportsWeakPtr<AuraWindowCaptureMachine> {
@@ -34,9 +34,10 @@ class AuraWindowCaptureMachine
   AuraWindowCaptureMachine();
   ~AuraWindowCaptureMachine() override;
 
-  // VideoCaptureFrameSource overrides.
-  bool Start(const scoped_refptr<ThreadSafeCaptureOracle>& oracle_proxy,
-             const media::VideoCaptureParams& params) override;
+  // VideoCaptureMachine overrides.
+  void Start(const scoped_refptr<media::ThreadSafeCaptureOracle>& oracle_proxy,
+             const media::VideoCaptureParams& params,
+             const base::Callback<void(bool)> callback) override;
   void Stop(const base::Closure& callback) override;
 
   // Implements aura::WindowObserver.
@@ -61,6 +62,11 @@ class AuraWindowCaptureMachine
   void SetWindow(aura::Window* window);
 
  private:
+  bool InternalStart(
+      const scoped_refptr<media::ThreadSafeCaptureOracle>& oracle_proxy,
+      const media::VideoCaptureParams& params);
+  void InternalStop(const base::Closure& callback);
+
   // Captures a frame.
   // |dirty| is false for timer polls and true for compositor updates.
   void Capture(bool dirty);
@@ -68,11 +74,14 @@ class AuraWindowCaptureMachine
   // Update capture size. Must be called on the UI thread.
   void UpdateCaptureSize();
 
+  using CaptureFrameCallback =
+      media::ThreadSafeCaptureOracle::CaptureFrameCallback;
+
   // Response callback for cc::Layer::RequestCopyOfOutput().
   void DidCopyOutput(
       scoped_refptr<media::VideoFrame> video_frame,
       base::TimeTicks start_time,
-      const ThreadSafeCaptureOracle::CaptureFrameCallback& capture_frame_cb,
+      const CaptureFrameCallback& capture_frame_cb,
       scoped_ptr<cc::CopyOutputResult> result);
 
   // A helper which does the real work for DidCopyOutput. Returns true if
@@ -80,7 +89,7 @@ class AuraWindowCaptureMachine
   bool ProcessCopyOutputResponse(
       scoped_refptr<media::VideoFrame> video_frame,
       base::TimeTicks start_time,
-      const ThreadSafeCaptureOracle::CaptureFrameCallback& capture_frame_cb,
+      const CaptureFrameCallback& capture_frame_cb,
       scoped_ptr<cc::CopyOutputResult> result);
 
   // Helper function to update cursor state.
@@ -102,7 +111,7 @@ class AuraWindowCaptureMachine
   bool screen_capture_;
 
   // Makes all the decisions about which frames to copy, and how.
-  scoped_refptr<ThreadSafeCaptureOracle> oracle_proxy_;
+  scoped_refptr<media::ThreadSafeCaptureOracle> oracle_proxy_;
 
   // The capture parameters for this capture.
   media::VideoCaptureParams capture_params_;

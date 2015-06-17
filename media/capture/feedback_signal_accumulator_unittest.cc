@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/media/capture/feedback_signal_accumulator.h"
+#include "media/capture/feedback_signal_accumulator.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace content {
+namespace media {
 
 class FeedbackSignalAccumulatorTest : public ::testing::Test {
  public:
@@ -199,4 +199,4 @@ TEST_F(FeedbackSignalAccumulatorTest, IgnoresUpdatesThatAreOutOfOrder) {
   }
 }
 
-}  // namespace content
+}  // namespace media

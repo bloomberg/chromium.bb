@@ -2,28 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_MEDIA_CAPTURE_CAPTURE_RESOLUTION_CHOOSER_H_
-#define CONTENT_BROWSER_MEDIA_CAPTURE_CAPTURE_RESOLUTION_CHOOSER_H_
+#ifndef MEDIA_CAPTURE_CAPTURE_RESOLUTION_CHOOSER_H_
+#define MEDIA_CAPTURE_CAPTURE_RESOLUTION_CHOOSER_H_
 
-#include "content/common/content_export.h"
+#include "media/base/media_export.h"
 #include "media/base/video_capture_types.h"
 #include "ui/gfx/geometry/size.h"
 
-namespace content {
+namespace media {
 
 // Encapsulates the logic that determines the capture frame resolution based on:
 //   1. The configured maximum frame resolution and resolution change policy.
 //   2. The resolution of the source content.
 //   3. The current capabilities of the end-to-end system, in terms of the
 //      maximum number of pixels per frame.
-class CONTENT_EXPORT CaptureResolutionChooser {
+class MEDIA_EXPORT CaptureResolutionChooser {
  public:
   // media::ResolutionChangePolicy determines whether the variable frame
   // resolutions being computed must adhere to a fixed aspect ratio or not, or
   // that there must only be a single fixed resolution.
   CaptureResolutionChooser(
       const gfx::Size& max_frame_size,
-      media::ResolutionChangePolicy resolution_change_policy);
+      ResolutionChangePolicy resolution_change_policy);
   ~CaptureResolutionChooser();
 
   // Returns the current capture frame resolution to use.
@@ -44,7 +44,7 @@ class CONTENT_EXPORT CaptureResolutionChooser {
   const gfx::Size min_frame_size_;  // Computed from the ctor arguments.
 
   // Specifies the set of heuristics to use.
-  const media::ResolutionChangePolicy resolution_change_policy_;
+  const ResolutionChangePolicy resolution_change_policy_;
 
   // The capture frame resolution to use, ignoring the limitations imposed by
   // the capability metric.
@@ -54,6 +54,6 @@ class CONTENT_EXPORT CaptureResolutionChooser {
   gfx::Size capture_size_;
 };
 
-}  // namespace content
+}  // namespace media
 
-#endif  // CONTENT_BROWSER_MEDIA_CAPTURE_RESOLUTION_CHOOSER_H_
+#endif  // MEDIA_CAPTURE_RESOLUTION_CHOOSER_H_

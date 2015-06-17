@@ -1,15 +1,15 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright (c) 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/media/capture/video_capture_oracle.h"
+#include "media/capture/video_capture_oracle.h"
 
 #include <algorithm>
 
 #include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
 
-namespace content {
+namespace media {
 
 namespace {
 
@@ -171,4 +171,4 @@ void VideoCaptureOracle::SetFrameTimestamp(int frame_number,
   frame_timestamps_[frame_number % kMaxFrameTimestamps] = timestamp;
 }
 
-}  // namespace content
+}  // namespace media

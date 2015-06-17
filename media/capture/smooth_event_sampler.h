@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_MEDIA_CAPTURE_SMOOTH_EVENT_SAMPLER_H_
-#define CONTENT_BROWSER_MEDIA_CAPTURE_SMOOTH_EVENT_SAMPLER_H_
+#ifndef MEDIA_CAPTURE_SMOOTH_EVENT_SAMPLER_H_
+#define MEDIA_CAPTURE_SMOOTH_EVENT_SAMPLER_H_
 
 #include "base/time/time.h"
-#include "content/common/content_export.h"
+#include "media/base/media_export.h"
 
-namespace content {
+namespace media {
 
 // Filters a sequence of events to achieve a target frequency.
-class CONTENT_EXPORT SmoothEventSampler {
+class MEDIA_EXPORT SmoothEventSampler {
  public:
   SmoothEventSampler(base::TimeDelta min_capture_period,
                      int redundant_capture_goal);
@@ -55,6 +55,6 @@ class CONTENT_EXPORT SmoothEventSampler {
   DISALLOW_COPY_AND_ASSIGN(SmoothEventSampler);
 };
 
-}  // namespace content
+}  // namespace media
 
-#endif  // CONTENT_BROWSER_MEDIA_CAPTURE_SMOOTH_EVENT_SAMPLER_H_
+#endif  // MEDIA_CAPTURE_SMOOTH_EVENT_SAMPLER_H_

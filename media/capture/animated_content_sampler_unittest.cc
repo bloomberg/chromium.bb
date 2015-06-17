@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/media/capture/animated_content_sampler.h"
+#include "media/capture/animated_content_sampler.h"
 
 #include <cmath>
 #include <utility>
@@ -14,7 +14,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/rect.h"
 
-namespace content {
+namespace media {
 
 namespace {
 
@@ -816,4 +816,4 @@ INSTANTIATE_TEST_CASE_P(
          Scenario(60, 30, 32),
          Scenario(60, 30, 33)));
 
-}  // namespace content
+}  // namespace media

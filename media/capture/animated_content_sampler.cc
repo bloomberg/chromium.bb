@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/media/capture/animated_content_sampler.h"
+#include "media/capture/animated_content_sampler.h"
 
 #include <algorithm>
 
-namespace content {
+namespace media {
 
 namespace {
 
@@ -290,4 +290,4 @@ base::TimeDelta AnimatedContentSampler::ComputeSamplingPeriod(
   return std::max(sampling_period, min_capture_period);
 }
 
-}  // namespace content
+}  // namespace media

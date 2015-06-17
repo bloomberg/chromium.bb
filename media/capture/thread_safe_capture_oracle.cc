@@ -2,47 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/media/capture/content_video_capture_device_core.h"
+#include "media/capture/thread_safe_capture_oracle.h"
 
 #include "base/basictypes.h"
 #include "base/bind.h"
-#include "base/callback_forward.h"
-#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
-#include "base/metrics/histogram.h"
-#include "base/sequenced_task_runner.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
-#include "base/threading/thread.h"
-#include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
-#include "content/public/browser/browser_thread.h"
 #include "media/base/video_capture_types.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_frame_metadata.h"
 #include "media/base/video_util.h"
 #include "ui/gfx/geometry/rect.h"
 
-namespace content {
-
-namespace {
-
-void DeleteCaptureMachineOnUIThread(
-    scoped_ptr<VideoCaptureMachine> capture_machine) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  capture_machine.reset();
-}
-
-}  // namespace
+namespace media {
 
 ThreadSafeCaptureOracle::ThreadSafeCaptureOracle(
-    scoped_ptr<media::VideoCaptureDevice::Client> client,
-    const media::VideoCaptureParams& params)
+    scoped_ptr<VideoCaptureDevice::Client> client,
+    const VideoCaptureParams& params)
     : client_(client.Pass()),
       oracle_(base::TimeDelta::FromMicroseconds(
           static_cast<int64>(1000000.0 / params.requested_format.frame_rate +
@@ -57,7 +36,7 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
     VideoCaptureOracle::Event event,
     const gfx::Rect& damage_rect,
     base::TimeTicks event_time,
-    scoped_refptr<media::VideoFrame>* storage,
+    scoped_refptr<VideoFrame>* storage,
     CaptureFrameCallback* callback) {
   // Grab the current time before waiting to acquire the |lock_|.
   const base::TimeTicks capture_begin_time = base::TimeTicks::Now();
@@ -73,7 +52,7 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
   const gfx::Size coded_size((visible_size.width() + 15) & ~15,
                              (visible_size.height() + 15) & ~15);
 
-  scoped_ptr<media::VideoCaptureDevice::Client::Buffer> output_buffer(
+  scoped_ptr<VideoCaptureDevice::Client::Buffer> output_buffer(
       client_->ReserveOutputBuffer(params_.requested_format.pixel_format,
                                    coded_size));
   // TODO(miu): Use current buffer pool utilization to drive automatic video
@@ -121,9 +100,9 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
                            "trigger", event_name);
   // NATIVE_TEXTURE frames wrap a texture mailbox, which we don't have at the
   // moment.  We do not construct those frames.
-  if (params_.requested_format.pixel_format != media::PIXEL_FORMAT_TEXTURE) {
-    *storage = media::VideoFrame::WrapExternalData(
-        media::VideoFrame::I420,
+  if (params_.requested_format.pixel_format != PIXEL_FORMAT_TEXTURE) {
+    *storage = VideoFrame::WrapExternalData(
+        VideoFrame::I420,
         coded_size,
         gfx::Rect(visible_size),
         visible_size,
@@ -167,10 +146,10 @@ void ThreadSafeCaptureOracle::ReportError(const std::string& reason) {
 
 void ThreadSafeCaptureOracle::DidCaptureFrame(
     int frame_number,
-    scoped_ptr<media::VideoCaptureDevice::Client::Buffer> buffer,
+    scoped_ptr<VideoCaptureDevice::Client::Buffer> buffer,
     base::TimeTicks capture_begin_time,
     base::TimeDelta estimated_frame_duration,
-    const scoped_refptr<media::VideoFrame>& frame,
+    const scoped_refptr<VideoFrame>& frame,
     base::TimeTicks timestamp,
     bool success) {
   base::AutoLock guard(lock_);
@@ -185,13 +164,13 @@ void ThreadSafeCaptureOracle::DidCaptureFrame(
     if (!client_)
       return;  // Capture is stopped.
 
-    frame->metadata()->SetDouble(media::VideoFrameMetadata::FRAME_RATE,
+    frame->metadata()->SetDouble(VideoFrameMetadata::FRAME_RATE,
                                  params_.requested_format.frame_rate);
     frame->metadata()->SetTimeTicks(
-        media::VideoFrameMetadata::CAPTURE_BEGIN_TIME, capture_begin_time);
+        VideoFrameMetadata::CAPTURE_BEGIN_TIME, capture_begin_time);
     frame->metadata()->SetTimeTicks(
-        media::VideoFrameMetadata::CAPTURE_END_TIME, base::TimeTicks::Now());
-    frame->metadata()->SetTimeDelta(media::VideoFrameMetadata::FRAME_DURATION,
+        VideoFrameMetadata::CAPTURE_END_TIME, base::TimeTicks::Now());
+    frame->metadata()->SetTimeDelta(VideoFrameMetadata::FRAME_DURATION,
                                     estimated_frame_duration);
 
     frame->AddDestructionObserver(base::Bind(
@@ -221,133 +200,4 @@ void ThreadSafeCaptureOracle::DidConsumeFrame(
   // http://crbug.com/156767.
 }
 
-void ContentVideoCaptureDeviceCore::AllocateAndStart(
-    const media::VideoCaptureParams& params,
-    scoped_ptr<media::VideoCaptureDevice::Client> client) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  if (state_ != kIdle) {
-    DVLOG(1) << "Allocate() invoked when not in state Idle.";
-    return;
-  }
-
-  if (params.requested_format.frame_rate <= 0) {
-    std::string error_msg("Invalid frame_rate: ");
-    error_msg += base::DoubleToString(params.requested_format.frame_rate);
-    DVLOG(1) << error_msg;
-    client->OnError(error_msg);
-    return;
-  }
-
-  if (params.requested_format.pixel_format != media::PIXEL_FORMAT_I420 &&
-      params.requested_format.pixel_format != media::PIXEL_FORMAT_TEXTURE) {
-    std::string error_msg = base::StringPrintf(
-        "unsupported format: %d", params.requested_format.pixel_format);
-    DVLOG(1) << error_msg;
-    client->OnError(error_msg);
-    return;
-  }
-
-  if (params.requested_format.frame_size.IsEmpty()) {
-    std::string error_msg =
-        "invalid frame size: " + params.requested_format.frame_size.ToString();
-    DVLOG(1) << error_msg;
-    client->OnError(error_msg);
-    return;
-  }
-
-  oracle_proxy_ = new ThreadSafeCaptureOracle(client.Pass(), params);
-
-  // Starts the capture machine asynchronously.
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&VideoCaptureMachine::Start,
-                 base::Unretained(capture_machine_.get()),
-                 oracle_proxy_,
-                 params),
-      base::Bind(&ContentVideoCaptureDeviceCore::CaptureStarted, AsWeakPtr()));
-
-  TransitionStateTo(kCapturing);
-}
-
-void ContentVideoCaptureDeviceCore::StopAndDeAllocate() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  if (state_ != kCapturing)
-    return;
-
-  oracle_proxy_->Stop();
-  oracle_proxy_ = NULL;
-
-  TransitionStateTo(kIdle);
-
-  // Stops the capture machine asynchronously.
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE, base::Bind(
-          &VideoCaptureMachine::Stop,
-          base::Unretained(capture_machine_.get()),
-          base::Bind(&base::DoNothing)));
-}
-
-void ContentVideoCaptureDeviceCore::CaptureStarted(bool success) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (!success) {
-    std::string reason("Failed to start capture machine.");
-    DVLOG(1) << reason;
-    Error(reason);
-  }
-}
-
-ContentVideoCaptureDeviceCore::ContentVideoCaptureDeviceCore(
-    scoped_ptr<VideoCaptureMachine> capture_machine)
-    : state_(kIdle),
-      capture_machine_(capture_machine.Pass()) {
-  DCHECK(capture_machine_.get());
-}
-
-ContentVideoCaptureDeviceCore::~ContentVideoCaptureDeviceCore() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_NE(state_, kCapturing);
-  // If capture_machine is not NULL, then we need to return to the UI thread to
-  // safely stop the capture machine.
-  if (capture_machine_) {
-    VideoCaptureMachine* capture_machine_ptr = capture_machine_.get();
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&VideoCaptureMachine::Stop,
-                   base::Unretained(capture_machine_ptr),
-                   base::Bind(&DeleteCaptureMachineOnUIThread,
-                              base::Passed(&capture_machine_))));
-  }
-  DVLOG(1) << "ContentVideoCaptureDeviceCore@" << this << " destroying.";
-}
-
-void ContentVideoCaptureDeviceCore::TransitionStateTo(State next_state) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-#ifndef NDEBUG
-  static const char* kStateNames[] = {
-    "Idle", "Allocated", "Capturing", "Error"
-  };
-  DVLOG(1) << "State change: " << kStateNames[state_]
-           << " --> " << kStateNames[next_state];
-#endif
-
-  state_ = next_state;
-}
-
-void ContentVideoCaptureDeviceCore::Error(const std::string& reason) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  if (state_ == kIdle)
-    return;
-
-  if (oracle_proxy_.get())
-    oracle_proxy_->ReportError(reason);
-
-  StopAndDeAllocate();
-  TransitionStateTo(kError);
-}
-
-}  // namespace content
+}  // namespace media

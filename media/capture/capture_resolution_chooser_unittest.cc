@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/media/capture/capture_resolution_chooser.h"
+#include "media/capture/capture_resolution_chooser.h"
 
 #include "base/location.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using tracked_objects::Location;
 
-namespace content {
+namespace media {
 
 namespace {
 
@@ -41,7 +41,7 @@ TEST(CaptureResolutionChooserTest,
      FixedResolutionPolicy_CaptureSizeAlwaysFixed) {
   const gfx::Size the_one_frame_size(kMaxFrameWidth, kMaxFrameHeight);
   CaptureResolutionChooser chooser(the_one_frame_size,
-                                   media::RESOLUTION_POLICY_FIXED_RESOLUTION);
+                                   RESOLUTION_POLICY_FIXED_RESOLUTION);
   EXPECT_EQ(the_one_frame_size, chooser.capture_size());
 
   chooser.SetSourceSize(the_one_frame_size);
@@ -61,7 +61,7 @@ TEST(CaptureResolutionChooserTest,
      FixedAspectRatioPolicy_CaptureSizeHasSameAspectRatio) {
   CaptureResolutionChooser chooser(
       gfx::Size(kMaxFrameWidth, kMaxFrameHeight),
-      media::RESOLUTION_POLICY_FIXED_ASPECT_RATIO);
+      RESOLUTION_POLICY_FIXED_ASPECT_RATIO);
 
   // Starting condition.
   const gfx::Size min_size(kMinFrameWidth, kMinFrameHeight);
@@ -125,7 +125,7 @@ TEST(CaptureResolutionChooserTest,
      AnyWithinLimitPolicy_CaptureSizeIsAnythingWithinLimits) {
   const gfx::Size max_size(kMaxFrameWidth, kMaxFrameHeight);
   CaptureResolutionChooser chooser(
-      max_size, media::RESOLUTION_POLICY_ANY_WITHIN_LIMIT);
+      max_size, RESOLUTION_POLICY_ANY_WITHIN_LIMIT);
 
   // Starting condition.
   EXPECT_EQ(max_size, chooser.capture_size());
@@ -166,4 +166,4 @@ TEST(CaptureResolutionChooserTest,
             chooser.capture_size());
 }
 
-}  // namespace content
+}  // namespace media

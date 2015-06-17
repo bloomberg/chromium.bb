@@ -9,11 +9,10 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
+#include "media/capture/screen_capture_device_core.h"
 #include "media/video/capture/video_capture_device.h"
 
 namespace content {
-
-class ContentVideoCaptureDeviceCore;
 
 // A virtualized VideoCaptureDevice that mirrors the displayed contents of a
 // WebContents (i.e., the composition of an entire render frame tree), producing
@@ -43,7 +42,7 @@ class CONTENT_EXPORT WebContentsVideoCaptureDevice
   WebContentsVideoCaptureDevice(
       int render_process_id, int main_render_frame_id);
 
-  const scoped_ptr<ContentVideoCaptureDeviceCore> core_;
+  const scoped_ptr<media::ScreenCaptureDeviceCore> core_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsVideoCaptureDevice);
 };

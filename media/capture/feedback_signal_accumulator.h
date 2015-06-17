@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_MEDIA_CAPTURE_FEEDBACK_SIGNAL_ACCUMULATOR_H_
-#define CONTENT_BROWSER_MEDIA_CAPTURE_FEEDBACK_SIGNAL_ACCUMULATOR_H_
+#ifndef MEDIA_CAPTURE_FEEDBACK_SIGNAL_ACCUMULATOR_H_
+#define MEDIA_CAPTURE_FEEDBACK_SIGNAL_ACCUMULATOR_H_
 
 #include "base/time/time.h"
-#include "content/common/content_export.h"
+#include "media/base/media_export.h"
 
-namespace content {
+namespace media {
 
 // Utility class for maintaining an exponentially-decaying average of feedback
 // signal values whose updates occur at undetermined, possibly irregular time
@@ -23,7 +23,7 @@ namespace content {
 //
 // Usage note: Reset() must be called at least once before the first call to
 // Update().
-class CONTENT_EXPORT FeedbackSignalAccumulator {
+class MEDIA_EXPORT FeedbackSignalAccumulator {
  public:
   // |half_life| is the amount of time that must pass between two data points to
   // move the accumulated average value halfway in-between.  Example: If
@@ -62,6 +62,6 @@ class CONTENT_EXPORT FeedbackSignalAccumulator {
   base::TimeTicks prior_update_time_;  // |timestamp| in prior call to Update().
 };
 
-}  // namespace content
+}  // namespace media
 
-#endif  // CONTENT_BROWSER_MEDIA_CAPTURE_FEEDBACK_SIGNAL_ACCUMULATOR_H_
+#endif  // MEDIA_CAPTURE_FEEDBACK_SIGNAL_ACCUMULATOR_H_

@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "base/timer/timer.h"
 #include "content/browser/media/capture/aura_window_capture_machine.h"
-#include "content/browser/media/capture/content_video_capture_device_core.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/aura/window.h"
 
@@ -28,7 +27,7 @@ void SetCaptureSource(AuraWindowCaptureMachine* machine,
 DesktopCaptureDeviceAura::DesktopCaptureDeviceAura(
     const DesktopMediaID& source) {
   AuraWindowCaptureMachine* machine = new AuraWindowCaptureMachine();
-  core_.reset(new ContentVideoCaptureDeviceCore(make_scoped_ptr(machine)));
+  core_.reset(new media::ScreenCaptureDeviceCore(make_scoped_ptr(machine)));
   // |core_| owns |machine| and deletes it on UI thread so passing the raw
   // pointer to the UI thread is safe here.
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,

@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_MEDIA_CAPTURE_VIDEO_CAPTURE_ORACLE_H_
-#define CONTENT_BROWSER_MEDIA_CAPTURE_VIDEO_CAPTURE_ORACLE_H_
+#ifndef MEDIA_CAPTURE_VIDEO_CAPTURE_ORACLE_H_
+#define MEDIA_CAPTURE_VIDEO_CAPTURE_ORACLE_H_
 
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
-#include "content/browser/media/capture/animated_content_sampler.h"
-#include "content/browser/media/capture/smooth_event_sampler.h"
-#include "content/common/content_export.h"
+#include "media/base/media_export.h"
+#include "media/capture/animated_content_sampler.h"
+#include "media/capture/smooth_event_sampler.h"
 #include "ui/gfx/geometry/rect.h"
 
-namespace content {
+namespace media {
 
 // VideoCaptureOracle manages the producer-side throttling of captured frames
 // from a video capture device.  It is informed of every update by the device;
 // this empowers it to look into the future and decide if a particular frame
 // ought to be captured in order to achieve its target frame rate.
-class CONTENT_EXPORT VideoCaptureOracle {
+class MEDIA_EXPORT VideoCaptureOracle {
  public:
   enum Event {
     kTimerPoll,
@@ -105,6 +105,6 @@ class CONTENT_EXPORT VideoCaptureOracle {
   base::TimeTicks frame_timestamps_[kMaxFrameTimestamps];
 };
 
-}  // namespace content
+}  // namespace media
 
-#endif  // CONTENT_BROWSER_MEDIA_CAPTURE_VIDEO_CAPTURE_ORACLE_H_
+#endif  // MEDIA_CAPTURE_VIDEO_CAPTURE_ORACLE_H_

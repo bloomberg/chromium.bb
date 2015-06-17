@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/media/capture/smooth_event_sampler.h"
+#include "media/capture/smooth_event_sampler.h"
 
 #include <algorithm>
 
 #include "base/trace_event/trace_event.h"
 
-namespace content {
+namespace media {
 
 namespace {
 
@@ -97,4 +97,4 @@ bool SmoothEventSampler::HasUnrecordedEvent() const {
   return !current_event_.is_null() && current_event_ != last_sample_;
 }
 
-}  // namespace content
+}  // namespace media

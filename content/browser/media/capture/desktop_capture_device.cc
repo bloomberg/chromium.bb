@@ -12,12 +12,12 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "base/timer/timer.h"
-#include "content/browser/media/capture/capture_resolution_chooser.h"
 #include "content/browser/media/capture/desktop_capture_device_uma_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/desktop_media_id.h"
 #include "content/public/browser/power_save_blocker.h"
 #include "media/base/video_util.h"
+#include "media/capture/capture_resolution_chooser.h"
 #include "third_party/libyuv/include/libyuv/scale_argb.h"
 #include "third_party/webrtc/modules/desktop_capture/cropping_window_capturer.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_and_cursor_composer.h"
@@ -100,7 +100,7 @@ class DesktopCaptureDevice::Core : public webrtc::DesktopCapturer::Callback {
   webrtc::DesktopSize previous_frame_size_;
 
   // Determines the size of frames to deliver to the |client_|.
-  scoped_ptr<CaptureResolutionChooser> resolution_chooser_;
+  scoped_ptr<media::CaptureResolutionChooser> resolution_chooser_;
 
   // DesktopFrame into which captured frames are down-scaled and/or letterboxed,
   // depending upon the caller's requested capture capabilities. If frames can
@@ -160,7 +160,7 @@ void DesktopCaptureDevice::Core::AllocateAndStart(
 
   client_ = client.Pass();
   requested_frame_rate_ = params.requested_format.frame_rate;
-  resolution_chooser_.reset(new CaptureResolutionChooser(
+  resolution_chooser_.reset(new media::CaptureResolutionChooser(
       params.requested_format.frame_size,
       params.resolution_change_policy));
 

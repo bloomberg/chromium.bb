@@ -10,13 +10,14 @@
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
 #include "content/browser/compositor/image_transport_factory.h"
-#include "content/browser/media/capture/content_video_capture_device_core.h"
 #include "content/browser/media/capture/desktop_capture_device_uma_types.h"
 #include "content/common/gpu/client/gl_helper.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/power_save_blocker.h"
 #include "media/base/video_capture_types.h"
 #include "media/base/video_util.h"
+#include "media/capture/thread_safe_capture_oracle.h"
+#include "media/capture/video_capture_oracle.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/aura/client/screen_position_client.h"
@@ -89,9 +90,12 @@ void RenderCursorOnVideoFrame(
   cursor_bitmap.unlockPixels();
 }
 
+using CaptureFrameCallback =
+    media::ThreadSafeCaptureOracle::CaptureFrameCallback;
+
 void CopyOutputFinishedForVideo(
     base::TimeTicks start_time,
-    const ThreadSafeCaptureOracle::CaptureFrameCallback& capture_frame_cb,
+    const CaptureFrameCallback& capture_frame_cb,
     const scoped_refptr<media::VideoFrame>& target,
     const SkBitmap& cursor_bitmap,
     const gfx::Point& cursor_position,
@@ -117,8 +121,23 @@ AuraWindowCaptureMachine::AuraWindowCaptureMachine()
 
 AuraWindowCaptureMachine::~AuraWindowCaptureMachine() {}
 
-bool AuraWindowCaptureMachine::Start(
-    const scoped_refptr<ThreadSafeCaptureOracle>& oracle_proxy,
+void AuraWindowCaptureMachine::Start(
+  const scoped_refptr<media::ThreadSafeCaptureOracle>& oracle_proxy,
+  const media::VideoCaptureParams& params,
+  const base::Callback<void(bool)> callback) {
+  // Starts the capture machine asynchronously.
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&AuraWindowCaptureMachine::InternalStart,
+                 base::Unretained(this),
+                 oracle_proxy,
+                 params),
+      callback);
+}
+
+bool AuraWindowCaptureMachine::InternalStart(
+    const scoped_refptr<media::ThreadSafeCaptureOracle>& oracle_proxy,
     const media::VideoCaptureParams& params) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -151,7 +170,7 @@ bool AuraWindowCaptureMachine::Start(
   // Starts timer.
   timer_.Start(FROM_HERE,
                std::max(oracle_proxy_->min_capture_period(),
-                        base::TimeDelta::FromMilliseconds(
+                        base::TimeDelta::FromMilliseconds(media::
                             VideoCaptureOracle::kMinTimerPollPeriodMillis)),
                base::Bind(&AuraWindowCaptureMachine::Capture, AsWeakPtr(),
                           false));
@@ -160,6 +179,15 @@ bool AuraWindowCaptureMachine::Start(
 }
 
 void AuraWindowCaptureMachine::Stop(const base::Closure& callback) {
+  // Stops the capture machine asynchronously.
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE, base::Bind(
+          &AuraWindowCaptureMachine::InternalStop,
+          base::Unretained(this),
+          callback));
+}
+
+void AuraWindowCaptureMachine::InternalStop(const base::Closure& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   power_save_blocker_.reset();
 
@@ -213,15 +241,15 @@ void AuraWindowCaptureMachine::Capture(bool dirty) {
     return;
 
   scoped_refptr<media::VideoFrame> frame;
-  ThreadSafeCaptureOracle::CaptureFrameCallback capture_frame_cb;
+  media::ThreadSafeCaptureOracle::CaptureFrameCallback capture_frame_cb;
 
   // TODO(miu): Need to fix this so the compositor is providing the presentation
   // timestamps and damage regions, to leverage the frame timestamp rewriting
   // logic.  http://crbug.com/492839
   const base::TimeTicks start_time = base::TimeTicks::Now();
-  const VideoCaptureOracle::Event event =
-      dirty ? VideoCaptureOracle::kCompositorUpdate
-            : VideoCaptureOracle::kTimerPoll;
+  const media::VideoCaptureOracle::Event event =
+      dirty ? media::VideoCaptureOracle::kCompositorUpdate
+            : media::VideoCaptureOracle::kTimerPoll;
   if (oracle_proxy_->ObserveEventAndDecideCapture(
           event, gfx::Rect(), start_time, &frame, &capture_frame_cb)) {
     scoped_ptr<cc::CopyOutputRequest> request =
@@ -238,7 +266,7 @@ void AuraWindowCaptureMachine::Capture(bool dirty) {
 void AuraWindowCaptureMachine::DidCopyOutput(
     scoped_refptr<media::VideoFrame> video_frame,
     base::TimeTicks start_time,
-    const ThreadSafeCaptureOracle::CaptureFrameCallback& capture_frame_cb,
+    const CaptureFrameCallback& capture_frame_cb,
     scoped_ptr<cc::CopyOutputResult> result) {
   static bool first_call = true;
 
@@ -271,7 +299,7 @@ void AuraWindowCaptureMachine::DidCopyOutput(
 bool AuraWindowCaptureMachine::ProcessCopyOutputResponse(
     scoped_refptr<media::VideoFrame> video_frame,
     base::TimeTicks start_time,
-    const ThreadSafeCaptureOracle::CaptureFrameCallback& capture_frame_cb,
+    const CaptureFrameCallback& capture_frame_cb,
     scoped_ptr<cc::CopyOutputResult> result) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 

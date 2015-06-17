@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_MEDIA_CAPTURE_ANIMATED_CONTENT_SAMPLER_H_
-#define CONTENT_BROWSER_MEDIA_CAPTURE_ANIMATED_CONTENT_SAMPLER_H_
+#ifndef MEDIA_CAPTURE_ANIMATED_CONTENT_SAMPLER_H_
+#define MEDIA_CAPTURE_ANIMATED_CONTENT_SAMPLER_H_
 
 #include <deque>
 
 #include "base/time/time.h"
-#include "content/common/content_export.h"
+#include "media/base/media_export.h"
 #include "ui/gfx/geometry/rect.h"
 
-namespace content {
+namespace media {
 
 // Analyzes a sequence of events to detect the presence of constant frame rate
 // animated content.  In the case where there are multiple regions of animated
@@ -22,7 +22,7 @@ namespace content {
 // In addition, AnimatedContentSampler will provide rewritten frame timestamps,
 // for downstream consumers, that are "truer" to the source content than to the
 // local presentation hardware.
-class CONTENT_EXPORT AnimatedContentSampler {
+class MEDIA_EXPORT AnimatedContentSampler {
  public:
   explicit AnimatedContentSampler(base::TimeDelta min_capture_period);
   ~AnimatedContentSampler();
@@ -152,6 +152,6 @@ class CONTENT_EXPORT AnimatedContentSampler {
   base::TimeTicks frame_timestamp_;
 };
 
-}  // namespace content
+}  // namespace media
 
-#endif  // CONTENT_BROWSER_MEDIA_CAPTURE_ANIMATED_CONTENT_SAMPLER_H_
+#endif  // MEDIA_CAPTURE_ANIMATED_CONTENT_SAMPLER_H_
