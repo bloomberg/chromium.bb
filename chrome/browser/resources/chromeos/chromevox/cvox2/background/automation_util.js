@@ -95,6 +95,8 @@ AutomationUtil.findNextSubtree = function(cur, dir) {
     if (!AutomationUtil.isInSameTree(cur, cur.parent))
       return null;
     cur = cur.parent;
+    if (AutomationUtil.isTraversalRoot_(cur))
+      return null;
   }
 };
 
@@ -113,8 +115,10 @@ AutomationUtil.findNextNode = function(cur, dir, pred) {
       return null;
     cur = next;
     next = AutomationUtil.findNodePre(next, dir, pred);
-    if (next && AutomationPredicate.shouldIgnoreLeaf(next))
+    if (next && AutomationPredicate.shouldIgnoreLeaf(next)) {
+      cur = next;
       next = null;
+    }
   } while (!next);
   return next;
 };
@@ -247,6 +251,25 @@ AutomationUtil.isInSameTree = function(a, b) {
     return true;
 
   return a.root === b.root;
+};
+
+/**
+ * Returns whether the given node should not be crossed when performing
+ * traversals up the ancestry chain.
+ * @param {AutomationNode} node
+ * @return {boolean}
+ * @private
+ */
+AutomationUtil.isTraversalRoot_ = function(node) {
+  switch (node.role) {
+    case 'dialog':
+    case 'window':
+      return true;
+    case 'toolbar':
+      return node.root.role == 'desktop';
+    default:
+      return false;
+  }
 };
 
 });  // goog.scope

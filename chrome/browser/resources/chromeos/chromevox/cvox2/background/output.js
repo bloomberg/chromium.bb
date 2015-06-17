@@ -106,6 +106,10 @@ Output.ROLE_INFO_ = {
     msgId: 'tag_button',
     earconId: 'BUTTON'
   },
+  buttonDropDown: {
+    msgId: 'tag_button',
+    earconId: 'BUTTON'
+  },
   cell: {
     msgId: 'aria_role_gridcell'
   },
@@ -221,10 +225,6 @@ Output.ROLE_INFO_ = {
     msgId: 'aria_role_note',
     inherits: 'abstractContainer'
   },
-  region: {
-    msgId: 'aria_role_region',
-    inherits: 'abstractContainer'
-  },
   popUpButton: {
     msgId: 'tag_button',
     earcon: 'LISTBOX'
@@ -234,6 +234,10 @@ Output.ROLE_INFO_ = {
   },
   radioGroup: {
     msgId: 'aria_role_radiogroup',
+  },
+  region: {
+    msgId: 'aria_role_region',
+    inherits: 'abstractContainer'
   },
   rowHeader: {
     msgId: 'aria_role_rowheader',
@@ -975,6 +979,10 @@ Output.prototype = {
       cursor = cursor.move(cursors.Unit.NODE,
                            cursors.Movement.DIRECTIONAL,
                            Dir.FORWARD);
+
+      // Reached a boundary.
+      if (cursor.getNode() == prevNode)
+        break;
     }
     var lastNode = range.getEnd().getNode();
     rangeBuff.push.apply(rangeBuff, formatNodeAndAncestors(lastNode, prevNode));

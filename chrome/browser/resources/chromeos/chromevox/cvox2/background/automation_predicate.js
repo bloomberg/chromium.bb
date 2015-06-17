@@ -131,7 +131,10 @@ AutomationPredicate.visitedLink = function(node) {
 AutomationPredicate.leaf = function(node) {
   return !node.firstChild ||
       node.role == RoleType.button ||
+      node.role == RoleType.buttonDropDown ||
+      node.role == RoleType.popUpButton ||
       node.role == RoleType.slider ||
+      node.role == RoleType.textField ||
       node.children.every(function(n) {
         return n.state.invisible;
       });
@@ -166,7 +169,9 @@ AutomationPredicate.linebreak = function(first, second) {
  */
 AutomationPredicate.shouldIgnoreLeaf = function(node) {
   return AutomationPredicate.leaf(node) &&
-      node.role == RoleType.client;
+      (node.role == RoleType.client ||
+      (node.role == 'image' && node.name == '') ||
+      (node.role == 'staticText' && node.value == ''));
 };
 
 });  // goog.scope
