@@ -50,31 +50,42 @@ void PendingSelection::clear()
     m_shouldShowBlockCursor = false;
 }
 
-bool PendingSelection::isInDocument(const Document& document) const
+template <typename Strategy>
+bool PendingSelection::isInDocumentAlgorithm(const Document& document) const
 {
-    Position start = m_selection.start();
+    using PositionType = typename Strategy::PositionType;
+
+    PositionType start = Strategy::selectionStart(m_selection);
     if (start.isNotNull() && (!start.inDocument() || start.document() != document))
         return false;
-    Position end = m_selection.end();
+    PositionType end = Strategy::selectionEnd(m_selection);
     if (end.isNotNull() && (!end.inDocument() || end.document() != document))
         return false;
-    Position extent = m_selection.extent();
+    PositionType extent = Strategy::selectionExtent(m_selection);
     if (extent.isNotNull() && (!extent.inDocument() || extent.document() != document))
         return false;
     return true;
 }
 
-VisibleSelection PendingSelection::calcVisibleSelection() const
+bool PendingSelection::isInDocument(const Document& document) const
 {
-    Position start = m_selection.start();
-    Position end = m_selection.end();
+    return isInDocumentAlgorithm<VisibleSelection::InDOMTree>(document);
+}
+
+template <typename Strategy>
+VisibleSelection PendingSelection::calcVisibleSelectionAlgorithm() const
+{
+    using PositionType = typename Strategy::PositionType;
+
+    PositionType start = Strategy::selectionStart(m_selection);
+    PositionType end = Strategy::selectionEnd(m_selection);
     SelectionType selectionType = VisibleSelection::selectionType(start, end);
     EAffinity affinity = m_selection.affinity();
 
     bool paintBlockCursor = m_shouldShowBlockCursor && selectionType == SelectionType::CaretSelection && !isLogicalEndOfLine(VisiblePosition(end, affinity));
     VisibleSelection selection;
-    if (enclosingTextFormControl(start)) {
-        Position endPosition = paintBlockCursor ? m_selection.extent().next() : end;
+    if (enclosingTextFormControl(start.containerNode())) {
+        PositionType endPosition = paintBlockCursor ? Strategy::selectionExtent(m_selection).next() : end;
         selection.setWithoutValidation(start, endPosition);
         return selection;
     }
@@ -87,6 +98,11 @@ VisibleSelection PendingSelection::calcVisibleSelection() const
     }
     VisiblePosition visibleEnd(end, selectionType == SelectionType::RangeSelection ? UPSTREAM : affinity);
     return VisibleSelection(visibleStart, visibleEnd);
+}
+
+VisibleSelection PendingSelection::calcVisibleSelection() const
+{
+    return calcVisibleSelectionAlgorithm<VisibleSelection::InDOMTree>();
 }
 
 DEFINE_TRACE(PendingSelection)

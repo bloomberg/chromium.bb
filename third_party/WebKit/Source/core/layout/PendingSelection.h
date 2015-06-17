@@ -50,6 +50,12 @@ public:
 private:
     PendingSelection();
 
+    template <typename Strategy>
+    bool isInDocumentAlgorithm(const Document&) const;
+
+    template <typename Strategy>
+    VisibleSelection calcVisibleSelectionAlgorithm() const;
+
     VisibleSelection m_selection;
     bool m_hasPendingSelection : 1;
     bool m_shouldShowBlockCursor : 1;

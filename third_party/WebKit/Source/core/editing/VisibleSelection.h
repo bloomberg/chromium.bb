@@ -43,6 +43,16 @@ class CORE_EXPORT VisibleSelection {
     DISALLOW_ALLOCATION();
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(VisibleSelection);
 public:
+    class InDOMTree {
+    public:
+        using PositionType = Position;
+
+        static PositionType selectionBase(const VisibleSelection& selection) { return selection.base(); }
+        static PositionType selectionExtent(const VisibleSelection& selection) { return selection.extent(); }
+        static PositionType selectionStart(const VisibleSelection& selection) { return selection.start(); }
+        static PositionType selectionEnd(const VisibleSelection& selection) { return selection.end(); }
+    };
+
     VisibleSelection();
 
     VisibleSelection(const Position&, EAffinity, bool isDirectional = false);
