@@ -32,9 +32,9 @@ class QuicDataStreamPeer;
 class ReliableQuicStreamPeer;
 }  // namespace test
 
-class QuicSession;
+class QuicSpdySession;
 
-// All this does right now is send data to subclasses via the sequencer.
+// A QUIC data stream that can also send and receive headers.
 class NET_EXPORT_PRIVATE QuicDataStream : public ReliableQuicStream {
  public:
   // Visitor receives callbacks from the stream.
@@ -52,8 +52,7 @@ class NET_EXPORT_PRIVATE QuicDataStream : public ReliableQuicStream {
     DISALLOW_COPY_AND_ASSIGN(Visitor);
   };
 
-  QuicDataStream(QuicStreamId id, QuicSession* session);
-
+  QuicDataStream(QuicStreamId id, QuicSpdySession* spdy_session);
   ~QuicDataStream() override;
 
   // ReliableQuicStream implementation
@@ -122,8 +121,10 @@ class NET_EXPORT_PRIVATE QuicDataStream : public ReliableQuicStream {
 
   bool FinishedReadingHeaders();
 
+  QuicSpdySession* spdy_session_;
+
   Visitor* visitor_;
-  // True if the headers have been completely decompresssed.
+  // True if the headers have been completely decompressed.
   bool headers_decompressed_;
   // The priority of the stream, once parsed.
   QuicPriority priority_;

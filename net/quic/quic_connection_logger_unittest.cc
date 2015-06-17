@@ -36,7 +36,7 @@ class QuicConnectionLoggerTest : public ::testing::Test {
         logger_(&session_, "CONNECTION_UNKNOWN", net_log_) {}
 
   BoundNetLog net_log_;
-  MockSession session_;
+  MockQuicSpdySession session_;
   QuicConnectionLogger logger_;
 };
 

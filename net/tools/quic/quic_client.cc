@@ -295,7 +295,7 @@ QuicSpdyClientStream* QuicClient::CreateReliableClientStream() {
     return nullptr;
   }
 
-  return session_->CreateOutgoingDataStream();
+  return session_->CreateOutgoingDynamicStream();
 }
 
 void QuicClient::WaitForStreamToClose(QuicStreamId id) {

@@ -289,7 +289,7 @@ class MockConnectionVisitor : public QuicConnectionVisitorInterface {
   MOCK_METHOD1(OnCongestionWindowChange, void(QuicTime now));
   MOCK_CONST_METHOD0(WillingAndAbleToWrite, bool());
   MOCK_CONST_METHOD0(HasPendingHandshake, bool());
-  MOCK_CONST_METHOD0(HasOpenDataStreams, bool());
+  MOCK_CONST_METHOD0(HasOpenDynamicStreams, bool());
   MOCK_METHOD1(OnSuccessfulVersionNegotiation,
                void(const QuicVersion& version));
   MOCK_METHOD0(OnConfigNegotiated, void());
@@ -422,16 +422,16 @@ class PacketSavingConnection : public MockConnection {
   DISALLOW_COPY_AND_ASSIGN(PacketSavingConnection);
 };
 
-class MockSession : public QuicSession {
+class MockQuicSpdySession : public QuicSpdySession {
  public:
-  explicit MockSession(QuicConnection* connection);
-  ~MockSession() override;
+  explicit MockQuicSpdySession(QuicConnection* connection);
+  ~MockQuicSpdySession() override;
 
   QuicCryptoStream* GetCryptoStream() { return crypto_stream_.get(); }
 
   MOCK_METHOD2(OnConnectionClosed, void(QuicErrorCode error, bool from_peer));
-  MOCK_METHOD1(CreateIncomingDataStream, QuicDataStream*(QuicStreamId id));
-  MOCK_METHOD0(CreateOutgoingDataStream, QuicDataStream*());
+  MOCK_METHOD1(CreateIncomingDynamicStream, QuicDataStream*(QuicStreamId id));
+  MOCK_METHOD0(CreateOutgoingDynamicStream, QuicDataStream*());
   MOCK_METHOD6(WritevData,
                QuicConsumedData(QuicStreamId id,
                                 const IOVector& data,
@@ -456,34 +456,34 @@ class MockSession : public QuicSession {
  private:
   scoped_ptr<QuicCryptoStream> crypto_stream_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockSession);
+  DISALLOW_COPY_AND_ASSIGN(MockQuicSpdySession);
 };
 
-class TestServerSession : public QuicSession {
+class TestQuicSpdyServerSession : public QuicSpdySession {
  public:
-  TestServerSession(QuicConnection* connection,
-                    const QuicConfig& config,
-                    const QuicCryptoServerConfig* crypto_config);
-  ~TestServerSession() override;
+  TestQuicSpdyServerSession(QuicConnection* connection,
+                            const QuicConfig& config,
+                            const QuicCryptoServerConfig* crypto_config);
+  ~TestQuicSpdyServerSession() override;
 
-  MOCK_METHOD1(CreateIncomingDataStream, QuicDataStream*(QuicStreamId id));
-  MOCK_METHOD0(CreateOutgoingDataStream, QuicDataStream*());
+  MOCK_METHOD1(CreateIncomingDynamicStream, QuicDataStream*(QuicStreamId id));
+  MOCK_METHOD0(CreateOutgoingDynamicStream, QuicDataStream*());
 
   QuicCryptoServerStream* GetCryptoStream() override;
 
  private:
   scoped_ptr<QuicCryptoServerStream> crypto_stream_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestServerSession);
+  DISALLOW_COPY_AND_ASSIGN(TestQuicSpdyServerSession);
 };
 
-class TestClientSession : public QuicClientSessionBase {
+class TestQuicSpdyClientSession : public QuicClientSessionBase {
  public:
-  TestClientSession(QuicConnection* connection,
-                    const QuicConfig& config,
-                    const QuicServerId& server_id,
-                    QuicCryptoClientConfig* crypto_config);
-  ~TestClientSession() override;
+  TestQuicSpdyClientSession(QuicConnection* connection,
+                            const QuicConfig& config,
+                            const QuicServerId& server_id,
+                            QuicCryptoClientConfig* crypto_config);
+  ~TestQuicSpdyClientSession() override;
 
   // QuicClientSessionBase
   MOCK_METHOD1(OnProofValid,
@@ -491,16 +491,16 @@ class TestClientSession : public QuicClientSessionBase {
   MOCK_METHOD1(OnProofVerifyDetailsAvailable,
                void(const ProofVerifyDetails& verify_details));
 
-  // TestClientSession
-  MOCK_METHOD1(CreateIncomingDataStream, QuicDataStream*(QuicStreamId id));
-  MOCK_METHOD0(CreateOutgoingDataStream, QuicDataStream*());
+  // TestQuicSpdyClientSession
+  MOCK_METHOD1(CreateIncomingDynamicStream, QuicDataStream*(QuicStreamId id));
+  MOCK_METHOD0(CreateOutgoingDynamicStream, QuicDataStream*());
 
   QuicCryptoClientStream* GetCryptoStream() override;
 
  private:
   scoped_ptr<QuicCryptoClientStream> crypto_stream_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestClientSession);
+  DISALLOW_COPY_AND_ASSIGN(TestQuicSpdyClientSession);
 };
 
 class MockPacketWriter : public QuicPacketWriter {
@@ -739,7 +739,7 @@ void CreateClientSessionForTest(QuicServerId server_id,
                                 QuicTime::Delta connection_start_time,
                                 QuicCryptoClientConfig* crypto_client_config,
                                 PacketSavingConnection** client_connection,
-                                TestClientSession** client_session);
+                                TestQuicSpdyClientSession** client_session);
 
 // Creates a server session for testing.
 //
@@ -758,7 +758,7 @@ void CreateServerSessionForTest(QuicServerId server_id,
                                 QuicTime::Delta connection_start_time,
                                 QuicCryptoServerConfig* crypto_server_config,
                                 PacketSavingConnection** server_connection,
-                                TestServerSession** server_session);
+                                TestQuicSpdyServerSession** server_session);
 
 }  // namespace test
 }  // namespace net

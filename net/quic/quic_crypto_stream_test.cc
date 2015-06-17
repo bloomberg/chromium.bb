@@ -62,7 +62,7 @@ class QuicCryptoStreamTest : public ::testing::Test {
 
  protected:
   MockConnection* connection_;
-  MockSession session_;
+  MockQuicSpdySession session_;
   MockQuicCryptoStream stream_;
   CryptoHandshakeMessage message_;
   scoped_ptr<QuicData> message_data_;

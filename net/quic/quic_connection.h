@@ -113,7 +113,7 @@ class NET_EXPORT_PRIVATE QuicConnectionVisitorInterface {
 
   // Called to ask if any streams are open in this visitor, excluding the
   // reserved crypto and headers stream.
-  virtual bool HasOpenDataStreams() const = 0;
+  virtual bool HasOpenDynamicStreams() const = 0;
 };
 
 // Interface which gets callbacks from the QuicConnection at interesting

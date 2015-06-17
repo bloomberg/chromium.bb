@@ -39,8 +39,8 @@ class QuicCryptoClientStreamTest : public ::testing::Test {
     // Advance the time, because timers do not like uninitialized times.
     connection_->AdvanceTime(QuicTime::Delta::FromSeconds(1));
 
-    session_.reset(new TestClientSession(connection_, DefaultQuicConfig(),
-                                         server_id_, &crypto_config_));
+    session_.reset(new TestQuicSpdyClientSession(
+        connection_, DefaultQuicConfig(), server_id_, &crypto_config_));
   }
 
   void CompleteCryptoHandshake() {
@@ -56,7 +56,7 @@ class QuicCryptoClientStreamTest : public ::testing::Test {
   QuicCryptoClientStream* stream() { return session_->GetCryptoStream(); }
 
   PacketSavingConnection* connection_;
-  scoped_ptr<TestClientSession> session_;
+  scoped_ptr<TestQuicSpdyClientSession> session_;
   QuicServerId server_id_;
   CryptoHandshakeMessage message_;
   scoped_ptr<QuicData> message_data_;
@@ -204,7 +204,7 @@ class QuicCryptoClientStreamStatelessTest : public ::testing::Test {
       : server_crypto_config_(QuicCryptoServerConfig::TESTING,
                               QuicRandom::GetInstance()),
         server_id_(kServerHostname, kServerPort, false, PRIVACY_MODE_DISABLED) {
-    TestClientSession* client_session = nullptr;
+    TestQuicSpdyClientSession* client_session = nullptr;
     CreateClientSessionForTest(server_id_,
                                /* supports_stateless_rejects= */ true,
                                QuicTime::Delta::FromSeconds(100000),
@@ -227,7 +227,7 @@ class QuicCryptoClientStreamStatelessTest : public ::testing::Test {
 
   // Initializes the server_stream_ for stateless rejects.
   void InitializeFakeStatelessRejectServer() {
-    TestServerSession* server_session = nullptr;
+    TestQuicSpdyServerSession* server_session = nullptr;
     CreateServerSessionForTest(server_id_, QuicTime::Delta::FromSeconds(100000),
                                &server_crypto_config_, &server_connection_,
                                &server_session);
@@ -241,12 +241,12 @@ class QuicCryptoClientStreamStatelessTest : public ::testing::Test {
 
   // Client crypto stream state
   PacketSavingConnection* client_connection_;
-  scoped_ptr<TestClientSession> client_session_;
+  scoped_ptr<TestQuicSpdyClientSession> client_session_;
   QuicCryptoClientConfig client_crypto_config_;
 
   // Server crypto stream state
   PacketSavingConnection* server_connection_;
-  scoped_ptr<TestServerSession> server_session_;
+  scoped_ptr<TestQuicSpdyServerSession> server_session_;
   QuicCryptoServerConfig server_crypto_config_;
   QuicServerId server_id_;
 };

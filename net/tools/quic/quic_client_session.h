@@ -32,7 +32,7 @@ class QuicClientSession : public QuicClientSessionBase {
   ~QuicClientSession() override;
 
   // QuicSession methods:
-  QuicSpdyClientStream* CreateOutgoingDataStream() override;
+  QuicSpdyClientStream* CreateOutgoingDynamicStream() override;
   QuicCryptoClientStream* GetCryptoStream() override;
 
   // QuicClientSessionBase methods:
@@ -54,7 +54,7 @@ class QuicClientSession : public QuicClientSessionBase {
 
  protected:
   // QuicSession methods:
-  QuicDataStream* CreateIncomingDataStream(QuicStreamId id) override;
+  QuicDataStream* CreateIncomingDynamicStream(QuicStreamId id) override;
 
  private:
   scoped_ptr<QuicCryptoClientStream> crypto_stream_;

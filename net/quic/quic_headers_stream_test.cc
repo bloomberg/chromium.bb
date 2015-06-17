@@ -7,7 +7,7 @@
 #include "net/quic/quic_utils.h"
 #include "net/quic/spdy_utils.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
-#include "net/quic/test_tools/quic_session_peer.h"
+#include "net/quic/test_tools/quic_spdy_session_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/quic/test_tools/reliable_quic_stream_peer.h"
 #include "net/spdy/spdy_protocol.h"
@@ -106,7 +106,7 @@ class QuicHeadersStreamTest : public ::testing::TestWithParam<TestParams> {
       : connection_(
             new StrictMock<MockConnection>(perspective(), GetVersion())),
         session_(connection_),
-        headers_stream_(QuicSessionPeer::GetHeadersStream(&session_)),
+        headers_stream_(QuicSpdySessionPeer::GetHeadersStream(&session_)),
         body_("hello world"),
         framer_(SPDY4) {
     headers_[":version"]  = "HTTP/1.1";
@@ -206,7 +206,7 @@ class QuicHeadersStreamTest : public ::testing::TestWithParam<TestParams> {
   static const bool kHasPriority = true;
 
   StrictMock<MockConnection>* connection_;
-  StrictMock<MockSession> session_;
+  StrictMock<MockQuicSpdySession> session_;
   QuicHeadersStream* headers_stream_;
   SpdyHeaderBlock headers_;
   string body_;

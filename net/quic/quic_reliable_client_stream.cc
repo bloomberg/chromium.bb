@@ -6,17 +6,15 @@
 
 #include "base/callback_helpers.h"
 #include "net/base/net_errors.h"
-#include "net/quic/quic_session.h"
+#include "net/quic/quic_spdy_session.h"
 #include "net/quic/quic_write_blocked_list.h"
 
 namespace net {
 
 QuicReliableClientStream::QuicReliableClientStream(QuicStreamId id,
-                                                   QuicSession* session,
+                                                   QuicSpdySession* session,
                                                    const BoundNetLog& net_log)
-    : QuicDataStream(id, session),
-      net_log_(net_log),
-      delegate_(nullptr) {
+    : QuicDataStream(id, session), net_log_(net_log), delegate_(nullptr) {
 }
 
 QuicReliableClientStream::~QuicReliableClientStream() {

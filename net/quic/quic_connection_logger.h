@@ -12,7 +12,7 @@
 #include "net/log/net_log.h"
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_protocol.h"
-#include "net/quic/quic_session.h"
+#include "net/quic/quic_spdy_session.h"
 
 namespace net {
 namespace test {
@@ -27,7 +27,7 @@ class CertVerifyResult;
 class NET_EXPORT_PRIVATE QuicConnectionLogger
     : public QuicConnectionDebugVisitor {
  public:
-  QuicConnectionLogger(QuicSession* session,
+  QuicConnectionLogger(QuicSpdySession* session,
                        const char* const connection_description,
                        const BoundNetLog& net_log);
 
@@ -118,7 +118,7 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
   void RecordLossHistograms() const;
 
   BoundNetLog net_log_;
-  QuicSession* session_;  // Unowned.
+  QuicSpdySession* session_;  // Unowned.
   // The last packet sequence number received.
   QuicPacketSequenceNumber last_received_packet_sequence_number_;
   // The size of the most recently received packet.

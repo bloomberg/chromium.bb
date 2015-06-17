@@ -281,7 +281,7 @@ AddressFamily GetRealAddressFamily(const IPAddressNumber& address) {
 }  // namespace
 
 QuicConnectionLogger::QuicConnectionLogger(
-    QuicSession* session,
+    QuicSpdySession* session,
     const char* const connection_description,
     const BoundNetLog& net_log)
     : net_log_(net_log),

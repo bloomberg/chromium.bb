@@ -189,7 +189,7 @@ int CryptoTestUtils::HandshakeWithFakeServer(
                                  server_conn->random_generator(), &config,
                                  &crypto_config);
 
-  TestServerSession server_session(server_conn, config, &crypto_config);
+  TestQuicSpdyServerSession server_session(server_conn, config, &crypto_config);
 
   // The client's handshake must have been started already.
   CHECK_NE(0u, client_conn->encrypted_packets_.size());
@@ -232,8 +232,8 @@ int CryptoTestUtils::HandshakeWithFakeClient(
     // a working ProofSourceForTesting().
     crypto_config.SetProofVerifier(FakeProofVerifierForTesting());
   }
-  TestClientSession client_session(client_conn, DefaultQuicConfig(), server_id,
-                                   &crypto_config);
+  TestQuicSpdyClientSession client_session(client_conn, DefaultQuicConfig(),
+                                           server_id, &crypto_config);
 
   client_session.GetCryptoStream()->CryptoConnect();
   CHECK_EQ(1u, client_conn->encrypted_packets_.size());

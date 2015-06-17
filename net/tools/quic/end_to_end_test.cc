@@ -28,6 +28,7 @@
 #include "net/quic/test_tools/quic_flow_controller_peer.h"
 #include "net/quic/test_tools/quic_sent_packet_manager_peer.h"
 #include "net/quic/test_tools/quic_session_peer.h"
+#include "net/quic/test_tools/quic_spdy_session_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/quic/test_tools/reliable_quic_stream_peer.h"
 #include "net/test/gtest_util.h"
@@ -58,6 +59,7 @@ using net::test::QuicConnectionPeer;
 using net::test::QuicFlowControllerPeer;
 using net::test::QuicSentPacketManagerPeer;
 using net::test::QuicSessionPeer;
+using net::test::QuicSpdySessionPeer;
 using net::test::ReliableQuicStreamPeer;
 using net::test::ValueRestore;
 using net::test::kClientDataStreamId1;
@@ -699,15 +701,14 @@ TEST_P(EndToEndTest, CorrectlyConfiguredFec) {
   QuicDispatcher* dispatcher =
       QuicServerPeer::GetDispatcher(server_thread_->server());
   ASSERT_EQ(1u, dispatcher->session_map().size());
-  QuicSession* session = dispatcher->session_map().begin()->second;
+  QuicSpdySession* session = dispatcher->session_map().begin()->second;
   EXPECT_EQ(expected_policy,
-            QuicSessionPeer::GetHeadersStream(session)->fec_policy());
+            QuicSpdySessionPeer::GetHeadersStream(session)->fec_policy());
   server_thread_->Resume();
 
   // Verify that client's FEC configuration is correct.
-  EXPECT_EQ(expected_policy,
-            QuicSessionPeer::GetHeadersStream(
-                client_->client()->session())->fec_policy());
+  EXPECT_EQ(expected_policy, QuicSpdySessionPeer::GetHeadersStream(
+                                 client_->client()->session())->fec_policy());
   EXPECT_EQ(expected_policy,
             client_->GetOrCreateStream()->fec_policy());
 }
@@ -1291,7 +1292,7 @@ TEST_P(EndToEndTest, HeadersAndCryptoStreamsNoConnectionFlowControl) {
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
 
   QuicHeadersStream* headers_stream =
-      QuicSessionPeer::GetHeadersStream(client_->client()->session());
+      QuicSpdySessionPeer::GetHeadersStream(client_->client()->session());
   EXPECT_LT(
       QuicFlowControllerPeer::SendWindowSize(headers_stream->flow_controller()),
       kStreamIFCW);

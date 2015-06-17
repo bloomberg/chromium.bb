@@ -12,7 +12,7 @@
 #include "net/quic/crypto/proof_verifier.h"
 #include "net/quic/quic_server_id.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
-#include "net/quic/test_tools/quic_session_peer.h"
+#include "net/quic/test_tools/quic_spdy_session_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/quic/test_tools/reliable_quic_stream_peer.h"
 #include "net/tools/balsa/balsa_headers.h"
@@ -27,7 +27,7 @@
 using base::StringPiece;
 using net::QuicServerId;
 using net::test::QuicConnectionPeer;
-using net::test::QuicSessionPeer;
+using net::test::QuicSpdySessionPeer;
 using net::test::ReliableQuicStreamPeer;
 using std::string;
 using std::vector;
@@ -558,7 +558,7 @@ void QuicTestClient::SetFecPolicy(FecPolicy fec_policy) {
   fec_policy_ = fec_policy;
   // Set policy for headers and crypto streams.
   ReliableQuicStreamPeer::SetFecPolicy(
-      QuicSessionPeer::GetHeadersStream(client()->session()), fec_policy);
+      QuicSpdySessionPeer::GetHeadersStream(client()->session()), fec_policy);
   ReliableQuicStreamPeer::SetFecPolicy(client()->session()->GetCryptoStream(),
                                        fec_policy);
 }

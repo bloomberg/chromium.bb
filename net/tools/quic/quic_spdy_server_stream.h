@@ -14,7 +14,7 @@
 
 namespace net {
 
-class QuicSession;
+class QuicSpdySession;
 
 namespace tools {
 
@@ -26,7 +26,7 @@ class QuicSpdyServerStreamPeer;
 // response.
 class QuicSpdyServerStream : public QuicDataStream {
  public:
-  QuicSpdyServerStream(QuicStreamId id, QuicSession* session);
+  QuicSpdyServerStream(QuicStreamId id, QuicSpdySession* session);
   ~QuicSpdyServerStream() override;
 
   // ReliableQuicStream implementation called by the session when there's

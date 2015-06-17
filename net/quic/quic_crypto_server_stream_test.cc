@@ -95,7 +95,7 @@ class QuicCryptoServerStreamTest : public ::testing::TestWithParam<bool> {
   // Initializes the crypto server stream state for testing.  May be
   // called multiple times.
   void InitializeServer() {
-    TestServerSession* server_session = nullptr;
+    TestQuicSpdyServerSession* server_session = nullptr;
     CreateServerSessionForTest(server_id_, QuicTime::Delta::FromSeconds(100000),
                                &server_crypto_config_, &server_connection_,
                                &server_session);
@@ -117,7 +117,7 @@ class QuicCryptoServerStreamTest : public ::testing::TestWithParam<bool> {
   // Initializes a fake client, and all its associated state, for
   // testing.  May be called multiple times.
   void InitializeFakeClient(bool supports_stateless_rejects) {
-    TestClientSession* client_session = nullptr;
+    TestQuicSpdyClientSession* client_session = nullptr;
     CreateClientSessionForTest(server_id_, supports_stateless_rejects,
                                QuicTime::Delta::FromSeconds(100000),
                                &client_crypto_config_, &client_connection_,
@@ -157,14 +157,14 @@ class QuicCryptoServerStreamTest : public ::testing::TestWithParam<bool> {
  protected:
   // Server state
   PacketSavingConnection* server_connection_;
-  scoped_ptr<TestServerSession> server_session_;
+  scoped_ptr<TestQuicSpdyServerSession> server_session_;
   QuicCryptoServerConfig server_crypto_config_;
   QuicServerId server_id_;
 
   // Client state
   PacketSavingConnection* client_connection_;
   QuicCryptoClientConfig client_crypto_config_;
-  scoped_ptr<TestClientSession> client_session_;
+  scoped_ptr<TestQuicSpdyClientSession> client_session_;
 
   CryptoHandshakeMessage message_;
   scoped_ptr<QuicData> message_data_;

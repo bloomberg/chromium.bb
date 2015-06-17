@@ -20,7 +20,7 @@
 
 using base::StringPiece;
 using net::test::MockConnection;
-using net::test::MockSession;
+using net::test::MockQuicSpdySession;
 using net::test::SupportedVersions;
 using net::test::kInitialSessionFlowControlWindowForTest;
 using net::test::kInitialStreamFlowControlWindowForTest;
@@ -40,9 +40,8 @@ namespace test {
 
 class QuicSpdyServerStreamPeer : public QuicSpdyServerStream {
  public:
-  QuicSpdyServerStreamPeer(QuicStreamId stream_id, QuicSession* session)
-      : QuicSpdyServerStream(stream_id, session) {
-  }
+  QuicSpdyServerStreamPeer(QuicStreamId stream_id, QuicSpdySession* session)
+      : QuicSpdyServerStream(stream_id, session) {}
 
   using QuicSpdyServerStream::SendResponse;
   using QuicSpdyServerStream::SendErrorResponse;
@@ -120,7 +119,7 @@ class QuicSpdyServerStreamTest : public ::testing::TestWithParam<QuicVersion> {
 
   SpdyHeaderBlock response_headers_;
   StrictMock<MockConnection>* connection_;
-  StrictMock<MockSession> session_;
+  StrictMock<MockQuicSpdySession> session_;
   scoped_ptr<QuicSpdyServerStreamPeer> stream_;
   string headers_string_;
   string body_;

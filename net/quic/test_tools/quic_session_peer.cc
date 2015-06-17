@@ -30,27 +30,16 @@ QuicCryptoStream* QuicSessionPeer::GetCryptoStream(QuicSession* session) {
 }
 
 // static
-QuicHeadersStream* QuicSessionPeer::GetHeadersStream(QuicSession* session) {
-  return session->headers_stream_.get();
-}
-
-// static
-void QuicSessionPeer::SetHeadersStream(QuicSession* session,
-                                       QuicHeadersStream* headers_stream) {
-  session->headers_stream_.reset(headers_stream);
-}
-
-// static
 QuicWriteBlockedList* QuicSessionPeer::GetWriteBlockedStreams(
     QuicSession* session) {
   return &session->write_blocked_streams_;
 }
 
 // static
-QuicDataStream* QuicSessionPeer::GetIncomingDataStream(
+ReliableQuicStream* QuicSessionPeer::GetIncomingDynamicStream(
     QuicSession* session,
     QuicStreamId stream_id) {
-  return session->GetIncomingDataStream(stream_id);
+  return session->GetIncomingDynamicStream(stream_id);
 }
 
 // static
@@ -68,7 +57,7 @@ bool QuicSessionPeer::IsStreamClosed(QuicSession* session, QuicStreamId id) {
 // static
 bool QuicSessionPeer::IsStreamCreated(QuicSession* session, QuicStreamId id) {
   DCHECK_NE(0u, id);
-  return ContainsKey(session->stream_map_, id);
+  return ContainsKey(session->dynamic_streams(), id);
 }
 
 // static

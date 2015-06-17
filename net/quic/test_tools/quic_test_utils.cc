@@ -338,37 +338,38 @@ void PacketSavingConnection::SendOrQueuePacket(QueuedPacket packet) {
       NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA);
 }
 
-MockSession::MockSession(QuicConnection* connection)
-    : QuicSession(connection, DefaultQuicConfig()) {
+MockQuicSpdySession::MockQuicSpdySession(QuicConnection* connection)
+    : QuicSpdySession(connection, DefaultQuicConfig()) {
   crypto_stream_.reset(new QuicCryptoStream(this));
   Initialize();
   ON_CALL(*this, WritevData(_, _, _, _, _, _))
       .WillByDefault(testing::Return(QuicConsumedData(0, false)));
 }
 
-MockSession::~MockSession() {
+MockQuicSpdySession::~MockQuicSpdySession() {
 }
 
-TestServerSession::TestServerSession(
+TestQuicSpdyServerSession::TestQuicSpdyServerSession(
     QuicConnection* connection,
     const QuicConfig& config,
     const QuicCryptoServerConfig* crypto_config)
-    : QuicSession(connection, config) {
+    : QuicSpdySession(connection, config) {
   crypto_stream_.reset(new QuicCryptoServerStream(crypto_config, this));
   Initialize();
 }
 
-TestServerSession::~TestServerSession() {
+TestQuicSpdyServerSession::~TestQuicSpdyServerSession() {
 }
 
-QuicCryptoServerStream* TestServerSession::GetCryptoStream() {
+QuicCryptoServerStream* TestQuicSpdyServerSession::GetCryptoStream() {
   return crypto_stream_.get();
 }
 
-TestClientSession::TestClientSession(QuicConnection* connection,
-                                     const QuicConfig& config,
-                                     const QuicServerId& server_id,
-                                     QuicCryptoClientConfig* crypto_config)
+TestQuicSpdyClientSession::TestQuicSpdyClientSession(
+    QuicConnection* connection,
+    const QuicConfig& config,
+    const QuicServerId& server_id,
+    QuicCryptoClientConfig* crypto_config)
     : QuicClientSessionBase(connection, config) {
   crypto_stream_.reset(new QuicCryptoClientStream(
       server_id, this, CryptoTestUtils::ProofVerifyContextForTesting(),
@@ -376,9 +377,10 @@ TestClientSession::TestClientSession(QuicConnection* connection,
   Initialize();
 }
 
-TestClientSession::~TestClientSession() {}
+TestQuicSpdyClientSession::~TestQuicSpdyClientSession() {
+}
 
-QuicCryptoClientStream* TestClientSession::GetCryptoStream() {
+QuicCryptoClientStream* TestQuicSpdyClientSession::GetCryptoStream() {
   return crypto_stream_.get();
 }
 
@@ -793,7 +795,7 @@ void CreateClientSessionForTest(QuicServerId server_id,
                                 QuicTime::Delta connection_start_time,
                                 QuicCryptoClientConfig* crypto_client_config,
                                 PacketSavingConnection** client_connection,
-                                TestClientSession** client_session) {
+                                TestQuicSpdyClientSession** client_session) {
   CHECK(crypto_client_config);
   CHECK(client_connection);
   CHECK(client_session);
@@ -805,8 +807,8 @@ void CreateClientSessionForTest(QuicServerId server_id,
                           ? DefaultQuicConfigStatelessRejects()
                           : DefaultQuicConfig();
   *client_connection = new PacketSavingConnection(Perspective::IS_CLIENT);
-  *client_session = new TestClientSession(*client_connection, config, server_id,
-                                          crypto_client_config);
+  *client_session = new TestQuicSpdyClientSession(
+      *client_connection, config, server_id, crypto_client_config);
   (*client_connection)->AdvanceTime(connection_start_time);
 }
 
@@ -814,7 +816,7 @@ void CreateServerSessionForTest(QuicServerId server_id,
                                 QuicTime::Delta connection_start_time,
                                 QuicCryptoServerConfig* server_crypto_config,
                                 PacketSavingConnection** server_connection,
-                                TestServerSession** server_session) {
+                                TestQuicSpdyServerSession** server_session) {
   CHECK(server_crypto_config);
   CHECK(server_connection);
   CHECK(server_session);
@@ -823,7 +825,7 @@ void CreateServerSessionForTest(QuicServerId server_id,
       << "strike-register will be unhappy.";
 
   *server_connection = new PacketSavingConnection(Perspective::IS_SERVER);
-  *server_session = new TestServerSession(
+  *server_session = new TestQuicSpdyServerSession(
       *server_connection, DefaultQuicConfig(), server_crypto_config);
 
   // We advance the clock initially because the default time is zero and the

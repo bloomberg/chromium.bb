@@ -35,7 +35,7 @@ const bool kShouldProcessData = true;
 class TestStream : public QuicDataStream {
  public:
   TestStream(QuicStreamId id,
-             QuicSession* session,
+             QuicSpdySession* session,
              bool should_process_data)
       : QuicDataStream(id, session),
         should_process_data_(should_process_data) {}
@@ -93,7 +93,7 @@ class QuicDataStreamTest : public ::testing::TestWithParam<QuicVersion> {
   void Initialize(bool stream_should_process_data) {
     connection_ = new testing::StrictMock<MockConnection>(
         Perspective::IS_SERVER, SupportedVersions(GetParam()));
-    session_.reset(new testing::StrictMock<MockSession>(connection_));
+    session_.reset(new testing::StrictMock<MockQuicSpdySession>(connection_));
     stream_.reset(new TestStream(kClientDataStreamId1, session_.get(),
                                  stream_should_process_data));
     stream2_.reset(new TestStream(kClientDataStreamId2, session_.get(),
@@ -104,7 +104,7 @@ class QuicDataStreamTest : public ::testing::TestWithParam<QuicVersion> {
 
  protected:
   MockConnection* connection_;
-  scoped_ptr<MockSession> session_;
+  scoped_ptr<MockQuicSpdySession> session_;
   scoped_ptr<TestStream> stream_;
   scoped_ptr<TestStream> stream2_;
   SpdyHeaderBlock headers_;

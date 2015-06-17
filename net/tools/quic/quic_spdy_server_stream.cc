@@ -7,7 +7,8 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "net/quic/quic_session.h"
+#include "net/quic/quic_data_stream.h"
+#include "net/quic/quic_spdy_session.h"
 #include "net/quic/spdy_utils.h"
 #include "net/spdy/spdy_protocol.h"
 #include "net/tools/quic/quic_in_memory_cache.h"
@@ -20,9 +21,8 @@ namespace net {
 namespace tools {
 
 QuicSpdyServerStream::QuicSpdyServerStream(QuicStreamId id,
-                                           QuicSession* session)
-    : QuicDataStream(id, session),
-      content_length_(-1) {
+                                           QuicSpdySession* session)
+    : QuicDataStream(id, session), content_length_(-1) {
 }
 
 QuicSpdyServerStream::~QuicSpdyServerStream() {

@@ -23,6 +23,7 @@
 #include "net/quic/crypto/quic_server_info.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/quic_client_session_peer.h"
+#include "net/quic/test_tools/quic_spdy_session_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/quic/test_tools/simple_quic_framer.h"
 #include "net/socket/socket_test_util.h"
@@ -109,15 +110,15 @@ TEST_P(QuicClientSessionTest, MaxNumStreams) {
 
   std::vector<QuicReliableClientStream*> streams;
   for (size_t i = 0; i < kDefaultMaxStreamsPerConnection; i++) {
-    QuicReliableClientStream* stream = session_.CreateOutgoingDataStream();
+    QuicReliableClientStream* stream = session_.CreateOutgoingDynamicStream();
     EXPECT_TRUE(stream);
     streams.push_back(stream);
   }
-  EXPECT_FALSE(session_.CreateOutgoingDataStream());
+  EXPECT_FALSE(session_.CreateOutgoingDynamicStream());
 
   // Close a stream and ensure I can now open a new one.
   session_.CloseStream(streams[0]->id());
-  EXPECT_TRUE(session_.CreateOutgoingDataStream());
+  EXPECT_TRUE(session_.CreateOutgoingDynamicStream());
 }
 
 TEST_P(QuicClientSessionTest, MaxNumStreamsViaRequest) {
@@ -125,7 +126,7 @@ TEST_P(QuicClientSessionTest, MaxNumStreamsViaRequest) {
 
   std::vector<QuicReliableClientStream*> streams;
   for (size_t i = 0; i < kDefaultMaxStreamsPerConnection; i++) {
-    QuicReliableClientStream* stream = session_.CreateOutgoingDataStream();
+    QuicReliableClientStream* stream = session_.CreateOutgoingDynamicStream();
     EXPECT_TRUE(stream);
     streams.push_back(stream);
   }
@@ -150,7 +151,7 @@ TEST_P(QuicClientSessionTest, GoAwayReceived) {
   // After receiving a GoAway, I should no longer be able to create outgoing
   // streams.
   session_.OnGoAway(QuicGoAwayFrame(QUIC_PEER_GOING_AWAY, 1u, "Going away."));
-  EXPECT_EQ(nullptr, session_.CreateOutgoingDataStream());
+  EXPECT_EQ(nullptr, session_.CreateOutgoingDynamicStream());
 }
 
 TEST_P(QuicClientSessionTest, CanPool) {

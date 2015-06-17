@@ -2101,7 +2101,7 @@ void QuicConnection::SetPingAlarm() {
     // Only clients send pings.
     return;
   }
-  if (!visitor_->HasOpenDataStreams()) {
+  if (!visitor_->HasOpenDynamicStreams()) {
     ping_alarm_->Cancel();
     // Don't send a ping unless there are open streams.
     return;

@@ -638,7 +638,8 @@ class QuicConnectionTest : public ::testing::TestWithParam<QuicVersion> {
     EXPECT_CALL(visitor_, WillingAndAbleToWrite()).Times(AnyNumber());
     EXPECT_CALL(visitor_, HasPendingHandshake()).Times(AnyNumber());
     EXPECT_CALL(visitor_, OnCanWrite()).Times(AnyNumber());
-    EXPECT_CALL(visitor_, HasOpenDataStreams()).WillRepeatedly(Return(false));
+    EXPECT_CALL(visitor_, HasOpenDynamicStreams())
+        .WillRepeatedly(Return(false));
     EXPECT_CALL(visitor_, OnCongestionWindowChange(_)).Times(AnyNumber());
 
     EXPECT_CALL(*loss_algorithm_, GetLossTimeout())
@@ -3122,7 +3123,7 @@ TEST_P(QuicConnectionTest, OverallTimeout) {
 
 TEST_P(QuicConnectionTest, PingAfterSend) {
   EXPECT_TRUE(connection_.connected());
-  EXPECT_CALL(visitor_, HasOpenDataStreams()).WillRepeatedly(Return(true));
+  EXPECT_CALL(visitor_, HasOpenDynamicStreams()).WillRepeatedly(Return(true));
   EXPECT_FALSE(connection_.GetPingAlarm()->IsSet());
 
   // Advance to 5ms, and send a packet to the peer, which will set
@@ -3155,7 +3156,7 @@ TEST_P(QuicConnectionTest, PingAfterSend) {
   ASSERT_EQ(1u, writer_->ping_frames().size());
   writer_->Reset();
 
-  EXPECT_CALL(visitor_, HasOpenDataStreams()).WillRepeatedly(Return(false));
+  EXPECT_CALL(visitor_, HasOpenDynamicStreams()).WillRepeatedly(Return(false));
   clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(5));
   SendAckPacketToPeer();
 

@@ -8,6 +8,7 @@
 #include "net/quic/proto/cached_network_parameters.pb.h"
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_flags.h"
+#include "net/quic/quic_spdy_session.h"
 #include "net/quic/reliable_quic_stream.h"
 #include "net/tools/quic/quic_spdy_server_stream.h"
 
@@ -19,7 +20,7 @@ QuicServerSession::QuicServerSession(
     QuicConnection* connection,
     QuicServerSessionVisitor* visitor,
     const QuicCryptoServerConfig* crypto_config)
-    : QuicSession(connection, config),
+    : QuicSpdySession(connection, config),
       crypto_config_(crypto_config),
       visitor_(visitor),
       bandwidth_resumption_enabled_(false),
@@ -32,7 +33,7 @@ QuicServerSession::~QuicServerSession() {}
 
 void QuicServerSession::Initialize() {
   crypto_stream_.reset(CreateQuicCryptoServerStream(crypto_config_));
-  QuicSession::Initialize();
+  QuicSpdySession::Initialize();
 }
 
 QuicCryptoServerStream* QuicServerSession::CreateQuicCryptoServerStream(
@@ -68,7 +69,7 @@ void QuicServerSession::OnConfigNegotiated() {
       ContainsQuicTag(config()->ReceivedConnectionOptions(), kFHDR)) {
     // kFHDR config maps to FEC protection always for headers stream.
     // TODO(jri): Add crypto stream in addition to headers for kHDR.
-    headers_stream_->set_fec_policy(FEC_PROTECT_ALWAYS);
+    headers_stream()->set_fec_policy(FEC_PROTECT_ALWAYS);
   }
 }
 
@@ -176,9 +177,9 @@ void QuicServerSession::OnCongestionWindowChange(QuicTime now) {
       connection()->sequence_number_of_last_sent_packet();
 }
 
-bool QuicServerSession::ShouldCreateIncomingDataStream(QuicStreamId id) {
+bool QuicServerSession::ShouldCreateIncomingDynamicStream(QuicStreamId id) {
   if (!connection()->connected()) {
-    LOG(DFATAL) << "ShouldCreateIncomingDataStream called when disconnected";
+    LOG(DFATAL) << "ShouldCreateIncomingDynamicStream called when disconnected";
     return false;
   }
 
@@ -197,16 +198,16 @@ bool QuicServerSession::ShouldCreateIncomingDataStream(QuicStreamId id) {
   return true;
 }
 
-QuicDataStream* QuicServerSession::CreateIncomingDataStream(
+QuicDataStream* QuicServerSession::CreateIncomingDynamicStream(
     QuicStreamId id) {
-  if (!ShouldCreateIncomingDataStream(id)) {
+  if (!ShouldCreateIncomingDynamicStream(id)) {
     return nullptr;
   }
 
   return new QuicSpdyServerStream(id, this);
 }
 
-QuicDataStream* QuicServerSession::CreateOutgoingDataStream() {
+QuicDataStream* QuicServerSession::CreateOutgoingDynamicStream() {
   DLOG(ERROR) << "Server push not yet supported";
   return nullptr;
 }

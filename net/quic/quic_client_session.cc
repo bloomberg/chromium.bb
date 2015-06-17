@@ -203,18 +203,17 @@ QuicClientSession::QuicClientSession(
 }
 
 QuicClientSession::~QuicClientSession() {
-  if (!streams()->empty())
+  if (!dynamic_streams().empty())
     RecordUnexpectedOpenStreams(DESTRUCTOR);
   if (!observers_.empty())
     RecordUnexpectedObservers(DESTRUCTOR);
   if (!going_away_)
     RecordUnexpectedNotGoingAway(DESTRUCTOR);
 
-  while (!streams()->empty() ||
-         !observers_.empty() ||
+  while (!dynamic_streams().empty() || !observers_.empty() ||
          !stream_requests_.empty()) {
     // The session must be closed before it is destroyed.
-    DCHECK(streams()->empty());
+    DCHECK(dynamic_streams().empty());
     CloseAllStreams(ERR_UNEXPECTED);
     DCHECK(observers_.empty());
     CloseAllObservers(ERR_UNEXPECTED);
@@ -400,7 +399,7 @@ void QuicClientSession::CancelRequest(StreamRequest* request) {
   }
 }
 
-QuicReliableClientStream* QuicClientSession::CreateOutgoingDataStream() {
+QuicReliableClientStream* QuicClientSession::CreateOutgoingDynamicStream() {
   if (!crypto_stream_->encryption_established()) {
     DVLOG(1) << "Encryption not active so no outgoing stream created.";
     return nullptr;
@@ -552,7 +551,7 @@ bool QuicClientSession::CanPool(const std::string& hostname,
                               server_id_.host(), hostname);
 }
 
-QuicDataStream* QuicClientSession::CreateIncomingDataStream(
+QuicDataStream* QuicClientSession::CreateIncomingDynamicStream(
     QuicStreamId id) {
   DLOG(ERROR) << "Server push not supported";
   return nullptr;
@@ -730,7 +729,7 @@ void QuicClientSession::OnConnectionClosed(QuicErrorCode error,
   }
   socket_->Close();
   QuicSession::OnConnectionClosed(error, from_peer);
-  DCHECK(streams()->empty());
+  DCHECK(dynamic_streams().empty());
   CloseAllStreams(ERR_UNEXPECTED);
   CloseAllObservers(ERR_UNEXPECTED);
   NotifyFactoryOfSessionClosedLater();
@@ -811,8 +810,8 @@ void QuicClientSession::CloseSessionOnErrorInner(int net_error,
 }
 
 void QuicClientSession::CloseAllStreams(int net_error) {
-  while (!streams()->empty()) {
-    ReliableQuicStream* stream = streams()->begin()->second;
+  while (!dynamic_streams().empty()) {
+    ReliableQuicStream* stream = dynamic_streams().begin()->second;
     QuicStreamId id = stream->id();
     static_cast<QuicReliableClientStream*>(stream)->OnError(net_error);
     CloseStream(id);
@@ -833,10 +832,9 @@ scoped_ptr<base::Value> QuicClientSession::GetInfoAsValue(
   dict->SetString("version", QuicVersionToString(connection()->version()));
   dict->SetInteger("open_streams", GetNumOpenStreams());
   scoped_ptr<base::ListValue> stream_list(new base::ListValue());
-  for (base::hash_map<QuicStreamId, QuicDataStream*>::const_iterator it
-           = streams()->begin();
-       it != streams()->end();
-       ++it) {
+  for (base::hash_map<QuicStreamId, ReliableQuicStream*>::const_iterator it =
+           dynamic_streams().begin();
+       it != dynamic_streams().end(); ++it) {
     stream_list->Append(new base::StringValue(
         base::Uint64ToString(it->second->id())));
   }
@@ -893,7 +891,7 @@ void QuicClientSession::NotifyFactoryOfSessionGoingAway() {
 }
 
 void QuicClientSession::NotifyFactoryOfSessionClosedLater() {
-  if (!streams()->empty())
+  if (!dynamic_streams().empty())
     RecordUnexpectedOpenStreams(NOTIFY_FACTORY_OF_SESSION_CLOSED_LATER);
 
   if (!going_away_)
@@ -908,7 +906,7 @@ void QuicClientSession::NotifyFactoryOfSessionClosedLater() {
 }
 
 void QuicClientSession::NotifyFactoryOfSessionClosed() {
-  if (!streams()->empty())
+  if (!dynamic_streams().empty())
     RecordUnexpectedOpenStreams(NOTIFY_FACTORY_OF_SESSION_CLOSED);
 
   if (!going_away_)

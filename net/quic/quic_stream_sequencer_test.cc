@@ -101,7 +101,7 @@ class QuicStreamSequencerTest : public ::testing::Test {
   }
 
   MockConnection* connection_;
-  MockSession session_;
+  MockQuicSpdySession session_;
   testing::StrictMock<MockStream> stream_;
   scoped_ptr<QuicStreamSequencer> sequencer_;
   map<QuicStreamOffset, string>* buffered_frames_;
