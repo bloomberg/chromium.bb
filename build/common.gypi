@@ -1331,7 +1331,7 @@
     # Control which version of clang to use when building for iOS.  If set to
     # '1', uses the version of clang that ships with Xcode.  If set to '0', uses
     # the version of clang that ships with the Chromium source.  This variable
-    # is automatically set to '1' when using the Xcode generator.
+    # is automatically set to '1' in Official builds.
     'clang_xcode%': 0,
 
     # These two variables can be set in GYP_DEFINES while running
@@ -5352,6 +5352,9 @@
             ['clang_xcode==1', {
               'WARNING_CFLAGS': [
                 '-Wno-unknown-warning-option',
+                # It's not possible to achieve nullability completeness before
+                # all builders are running Xcode 7. crbug.com/499809
+                '-Wno-nullability-completeness',
               ],
             }],
 
