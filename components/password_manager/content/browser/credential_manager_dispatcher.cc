@@ -163,11 +163,6 @@ GURL CredentialManagerDispatcher::GetOrigin() const {
   return web_contents()->GetLastCommittedURL().GetOrigin();
 }
 
-void CredentialManagerDispatcher::NotifyUserAutoSignin(
-    ScopedVector<autofill::PasswordForm> local_forms) {
-  client()->NotifyUserAutoSignin(local_forms.Pass());
-}
-
 base::WeakPtr<PasswordManagerDriver> CredentialManagerDispatcher::GetDriver() {
   ContentPasswordManagerDriverFactory* driver_factory =
       ContentPasswordManagerDriverFactory::FromWebContents(web_contents());

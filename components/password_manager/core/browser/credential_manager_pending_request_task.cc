@@ -84,7 +84,7 @@ void CredentialManagerPendingRequestTask::OnGetPasswordStoreResults(
     std::swap(*it, local_results[0]);
     // Clear the form pointer since its owner is being passed.
     zero_click_form_to_return = nullptr;
-    delegate_->NotifyUserAutoSignin(local_results.Pass());
+    delegate_->client()->NotifyUserAutoSignin(local_results.Pass());
     delegate_->SendCredential(id_, info);
     return;
   }

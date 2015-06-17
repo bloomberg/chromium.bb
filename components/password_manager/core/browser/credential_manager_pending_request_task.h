@@ -33,10 +33,6 @@ class CredentialManagerPendingRequestTaskDelegate {
   // Returns the PasswordManagerClient.
   virtual PasswordManagerClient* client() const = 0;
 
-  // Notifies the user that they were automatically signed in.
-  virtual void NotifyUserAutoSignin(
-      ScopedVector<autofill::PasswordForm> local_forms) = 0;
-
   // Sends a credential to JavaScript.
   virtual void SendCredential(int id, const CredentialInfo& credential) = 0;
 };

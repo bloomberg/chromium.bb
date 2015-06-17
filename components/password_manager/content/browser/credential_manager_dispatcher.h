@@ -75,8 +75,6 @@ class CredentialManagerDispatcher
   // CredentialManagerPendingRequestTaskDelegate:
   bool IsZeroClickAllowed() const override;
   GURL GetOrigin() const override;
-  void NotifyUserAutoSignin(
-      ScopedVector<autofill::PasswordForm> local_forms) override;
   void SendCredential(int request_id, const CredentialInfo& info) override;
   PasswordManagerClient* client() const override;
 
