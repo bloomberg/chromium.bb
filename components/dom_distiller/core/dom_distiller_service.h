@@ -153,12 +153,17 @@ class DomDistillerService : public DomDistillerServiceInterface {
   TaskTracker* CreateTaskTracker(const ArticleEntry& entry);
 
   TaskTracker* GetTaskTrackerForEntry(const ArticleEntry& entry) const;
+  TaskTracker* GetTaskTrackerForUrl(const GURL& url) const;
 
   // Gets the task tracker for the given |url| or |entry|. If no appropriate
-  // tracker exists, this will create one, initialize it, and add it to
-  // |tasks_|.
-  TaskTracker* GetOrCreateTaskTrackerForUrl(const GURL& url);
-  TaskTracker* GetOrCreateTaskTrackerForEntry(const ArticleEntry& entry);
+  // tracker exists, this will create one and put it in the |TaskTracker|
+  // parameter passed into this function, initialize it, and add it to
+  // |tasks_|. If a |TaskTracker| needed to be created, these functions will
+  // return true.
+  bool GetOrCreateTaskTrackerForUrl(const GURL& url,
+                                    TaskTracker** task_tracker);
+  bool GetOrCreateTaskTrackerForEntry(const ArticleEntry& entry,
+                                      TaskTracker** task_tracker);
 
   scoped_ptr<DomDistillerStoreInterface> store_;
   scoped_ptr<DistilledContentStore> content_store_;

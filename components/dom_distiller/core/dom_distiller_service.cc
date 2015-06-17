@@ -77,7 +77,7 @@ const std::string DomDistillerService::AddToList(
   ArticleEntry entry;
   const bool is_already_added = store_->GetEntryByUrl(url, &entry);
 
-  TaskTracker* task_tracker;
+  TaskTracker* task_tracker = nullptr;
   if (is_already_added) {
     task_tracker = GetTaskTrackerForEntry(entry);
     if (task_tracker == NULL) {
@@ -92,7 +92,7 @@ const std::string DomDistillerService::AddToList(
       return entry.entry_id();
     }
   } else {
-    task_tracker = GetOrCreateTaskTrackerForUrl(url);
+    GetOrCreateTaskTrackerForUrl(url, &task_tracker);
   }
 
   if (!article_cb.is_null()) {
@@ -155,10 +155,14 @@ scoped_ptr<ViewerHandle> DomDistillerService::ViewEntry(
     return scoped_ptr<ViewerHandle>();
   }
 
-  TaskTracker* task_tracker = GetOrCreateTaskTrackerForEntry(entry);
+  TaskTracker* task_tracker = nullptr;
+  bool was_created = GetOrCreateTaskTrackerForEntry(entry, &task_tracker);
   scoped_ptr<ViewerHandle> viewer_handle = task_tracker->AddViewer(delegate);
-  task_tracker->StartDistiller(distiller_factory_.get(), distiller_page.Pass());
-  task_tracker->StartBlobFetcher();
+  if (was_created) {
+    task_tracker->StartDistiller(distiller_factory_.get(),
+                                 distiller_page.Pass());
+    task_tracker->StartBlobFetcher();
+  }
 
   return viewer_handle.Pass();
 }
@@ -171,30 +175,44 @@ scoped_ptr<ViewerHandle> DomDistillerService::ViewUrl(
     return scoped_ptr<ViewerHandle>();
   }
 
-  TaskTracker* task_tracker = GetOrCreateTaskTrackerForUrl(url);
+  TaskTracker* task_tracker = nullptr;
+  bool was_created = GetOrCreateTaskTrackerForUrl(url, &task_tracker);
   scoped_ptr<ViewerHandle> viewer_handle = task_tracker->AddViewer(delegate);
-  task_tracker->StartDistiller(distiller_factory_.get(), distiller_page.Pass());
-  task_tracker->StartBlobFetcher();
+  // If a distiller is already running for one URL, don't start another.
+  if (was_created) {
+    task_tracker->StartDistiller(distiller_factory_.get(),
+                                 distiller_page.Pass());
+    task_tracker->StartBlobFetcher();
+  }
 
   return viewer_handle.Pass();
 }
 
-TaskTracker* DomDistillerService::GetOrCreateTaskTrackerForUrl(
-    const GURL& url) {
+bool DomDistillerService::GetOrCreateTaskTrackerForUrl(
+    const GURL& url,
+    TaskTracker** task_tracker) {
   ArticleEntry entry;
   if (store_->GetEntryByUrl(url, &entry)) {
-    return GetOrCreateTaskTrackerForEntry(entry);
+    return GetOrCreateTaskTrackerForEntry(entry, task_tracker);
   }
 
-  for (TaskList::iterator it = tasks_.begin(); it != tasks_.end(); ++it) {
+  *task_tracker = GetTaskTrackerForUrl(url);
+  if (*task_tracker) {
+    return false;
+  }
+
+  ArticleEntry skeleton_entry = CreateSkeletonEntryForUrl(url);
+  *task_tracker = CreateTaskTracker(skeleton_entry);
+  return true;
+}
+
+TaskTracker* DomDistillerService::GetTaskTrackerForUrl(const GURL& url) const {
+  for (TaskList::const_iterator it = tasks_.begin(); it != tasks_.end(); ++it) {
     if ((*it)->HasUrl(url)) {
       return *it;
     }
   }
-
-  ArticleEntry skeleton_entry = CreateSkeletonEntryForUrl(url);
-  TaskTracker* task_tracker = CreateTaskTracker(skeleton_entry);
-  return task_tracker;
+  return nullptr;
 }
 
 TaskTracker* DomDistillerService::GetTaskTrackerForEntry(
@@ -205,16 +223,18 @@ TaskTracker* DomDistillerService::GetTaskTrackerForEntry(
       return *it;
     }
   }
-  return NULL;
+  return nullptr;
 }
 
-TaskTracker* DomDistillerService::GetOrCreateTaskTrackerForEntry(
-    const ArticleEntry& entry) {
-  TaskTracker* task_tracker = GetTaskTrackerForEntry(entry);
-  if (task_tracker == NULL) {
-    task_tracker = CreateTaskTracker(entry);
+bool DomDistillerService::GetOrCreateTaskTrackerForEntry(
+    const ArticleEntry& entry,
+    TaskTracker** task_tracker) {
+  *task_tracker = GetTaskTrackerForEntry(entry);
+  if (!*task_tracker) {
+    *task_tracker = CreateTaskTracker(entry);
+    return true;
   }
-  return task_tracker;
+  return false;
 }
 
 TaskTracker* DomDistillerService::CreateTaskTracker(const ArticleEntry& entry) {
