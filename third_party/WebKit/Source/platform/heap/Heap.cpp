@@ -2039,8 +2039,6 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::GCTyp
     // we should have crashed during marking before getting here.)
     orphanedPagePool()->decommitOrphanedPages();
 
-    postGC(gcType);
-
     double markingTimeInMilliseconds = WTF::currentTimeMS() - timeStamp;
     s_estimatedMarkingTimePerByte = totalObjectSize ? (markingTimeInMilliseconds / 1000 / totalObjectSize) : 0;
 
@@ -2050,6 +2048,8 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::GCTyp
     Platform::current()->histogramEnumeration("BlinkGC.GCReason", reason, NumberOfGCReason);
     Heap::reportMemoryUsageHistogram();
     WTF::Partitions::reportMemoryUsageHistogram();
+
+    postGC(gcType);
 
     if (state->isMainThread())
         ScriptForbiddenScope::exit();
