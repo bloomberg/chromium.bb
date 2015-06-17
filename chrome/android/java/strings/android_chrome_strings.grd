@@ -1946,7 +1946,7 @@ Just open Chrome on your computer, go to the menu, and select “Sign in to Chro
         Text selection
       </message>
       <message name="IDS_READER_VIEW_TEXT" desc="Message shown on the reader mode button bar, to invite the user to tap to open a reader mode.">
-        Reader view (EXPERIMENTAL)
+        Make page mobile-friendly
       </message>
       <message name="IDS_UPDATE_AVAILABLE_INFOBAR" desc="Text to display when a new update is detected.">
         Chrome is out of date. Important security improvements and new features are available in the latest version.
