@@ -1499,10 +1499,6 @@ crbug.com/436436 fast/dom/HTMLImageElement/image-srcset-w-onerror.html [ Pass Fa
 
 crbug.com/364225 virtual/gpu/fast/canvas/canvas-composite-text-alpha.html [ Pass Slow Timeout ]
 
-crbug.com/498356 fast/canvas/downsample-quality.html [ NeedsRebaseline ]
-crbug.com/498356 virtual/gpu/fast/canvas/downsample-quality.html [ NeedsRebaseline ]
-crbug.com/498356 virtual/display_list_2d_canvas/fast/canvas/downsample-quality.html [ NeedsRebaseline ]
-
 crbug.com/440452 virtual/display_list_2d_canvas/fast/canvas/canvas-partial-invalidation-zoomed.html [ Pass Slow Timeout ]
 crbug.com/446740 [ Debug ] virtual/display_list_2d_canvas/fast/canvas/canvas-measure-text-rtl.html [ Pass Timeout Crash ]
 crbug.com/446740 [ Release ] virtual/display_list_2d_canvas/fast/canvas/canvas-measure-text-rtl.html [ Pass Timeout ]
