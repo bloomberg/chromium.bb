@@ -24,9 +24,6 @@ OfflinePageModel::~OfflinePageModel() {
 void OfflinePageModel::Shutdown() {
 }
 
-void OfflinePageModel::SavePageOffline(const GURL& url) {
-}
-
 void OfflinePageModel::OnCreateArchiveDone(
     OfflinePageArchiver::Request* request,
     OfflinePageArchiver::ArchiverResult result,
@@ -34,12 +31,20 @@ void OfflinePageModel::OnCreateArchiveDone(
   // TODO(fgorski): Match request against one of the expected requests
   // TODO(fgorski): Create an entry in the offline pages metadata store for that
   //                request.
+}
+
+void OfflinePageModel::SavePage(const GURL& url,
+                                OfflinePageModel::Client* client) {
   NOTIMPLEMENTED();
 }
 
-std::vector<OfflinePageItem> OfflinePageModel::GetAllOfflinePages() {
+void OfflinePageModel::DeletePage(const GURL& url,
+                                  OfflinePageModel::Client* client) {
   NOTIMPLEMENTED();
-  return std::vector<OfflinePageItem>();
+}
+
+void OfflinePageModel::LoadAllPages(OfflinePageModel::Client* client) {
+  NOTIMPLEMENTED();
 }
 
 OfflinePageMetadataStore* OfflinePageModel::GetStoreForTesting() {
