@@ -278,7 +278,7 @@ bool FontFace::setFamilyValue(CSSValueList* familyList)
 
     CSSPrimitiveValue* familyValue = toCSSPrimitiveValue(familyList->item(0));
     AtomicString family;
-    if (familyValue->isString()) {
+    if (familyValue->isCustomIdent()) {
         family = AtomicString(familyValue->getStringValue());
     } else if (familyValue->isValueID()) {
         // We need to use the raw text for all the generic family types, since @font-face is a way of actually

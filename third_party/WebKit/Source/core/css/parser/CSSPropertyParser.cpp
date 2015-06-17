@@ -3224,7 +3224,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseGridPosition()
 
 static PassRefPtrWillBeRawPtr<CSSValue> gridMissingGridPositionValue(CSSValue* value)
 {
-    if (value->isPrimitiveValue() && toCSSPrimitiveValue(value)->isString())
+    if (value->isPrimitiveValue() && toCSSPrimitiveValue(value)->isCustomIdent())
         return value;
 
     return cssValuePool().createIdentifierValue(CSSValueAuto);

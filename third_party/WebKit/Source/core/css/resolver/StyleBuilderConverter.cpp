@@ -130,7 +130,7 @@ static FontDescription::GenericFamilyType convertGenericFamily(CSSValueID valueI
 static bool convertFontFamilyName(StyleResolverState& state, CSSPrimitiveValue* primitiveValue,
     FontDescription::GenericFamilyType& genericFamily, AtomicString& familyName)
 {
-    if (primitiveValue->isString()) {
+    if (primitiveValue->isCustomIdent()) {
         genericFamily = FontDescription::NoFamily;
         familyName = AtomicString(primitiveValue->getStringValue());
     } else if (state.document().settings()) {
@@ -401,7 +401,7 @@ GridPosition StyleBuilderConverter::convertGridPosition(StyleResolverState&, CSS
         CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
         // We translate <custom-ident> to <string> during parsing as it
         // makes handling it more simple.
-        if (primitiveValue->isString()) {
+        if (primitiveValue->isCustomIdent()) {
             position.setNamedGridArea(primitiveValue->getStringValue());
             return position;
         }
@@ -432,7 +432,7 @@ GridPosition StyleBuilderConverter::convertGridPosition(StyleResolverState&, CSS
         currentValue = it != values->end() ? toCSSPrimitiveValue(it->get()) : 0;
     }
 
-    if (currentValue && currentValue->isString()) {
+    if (currentValue && currentValue->isCustomIdent()) {
         gridLineName = currentValue->getStringValue();
         ++it;
     }

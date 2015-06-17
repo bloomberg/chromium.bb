@@ -169,6 +169,7 @@ public:
     }
     bool isAttr() const { return m_primitiveUnitType == CSS_ATTR; }
     bool isCounter() const { return m_primitiveUnitType == CSS_COUNTER; }
+    bool isCustomIdent() const { return m_primitiveUnitType == CSS_CUSTOM_IDENT; }
     bool isFontRelativeLength() const
     {
         return m_primitiveUnitType == CSS_EMS
@@ -189,7 +190,7 @@ public:
     bool isRect() const { return m_primitiveUnitType == CSS_RECT; }
     bool isRGBColor() const { return m_primitiveUnitType == CSS_RGBCOLOR; }
     bool isShape() const { return m_primitiveUnitType == CSS_SHAPE; }
-    bool isString() const { return m_primitiveUnitType == CSS_CUSTOM_IDENT || m_primitiveUnitType == CSS_STRING; }
+    bool isString() const { return m_primitiveUnitType == CSS_STRING; }
     bool isTime() const { return m_primitiveUnitType == CSS_S || m_primitiveUnitType == CSS_MS; }
     bool isURI() const { return m_primitiveUnitType == CSS_URI; }
     bool isCalculated() const { return m_primitiveUnitType == CSS_CALC; }

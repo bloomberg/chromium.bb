@@ -367,7 +367,7 @@ CSSTransitionData::TransitionProperty CSSToStyleMap::mapAnimationProperty(CSSVal
     if (value->isInitialValue())
         return CSSTransitionData::initialProperty();
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    if (primitiveValue->isString())
+    if (primitiveValue->isCustomIdent())
         return CSSTransitionData::TransitionProperty(primitiveValue->getStringValue());
     if (primitiveValue->getValueID() == CSSValueAll)
         return CSSTransitionData::TransitionProperty(CSSTransitionData::TransitionAll);
