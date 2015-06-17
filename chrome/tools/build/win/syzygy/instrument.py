@@ -78,7 +78,8 @@ def _InstrumentBinary(syzygy_dir, mode, executable, symbol, dst_dir,
     # Disable some of the new SysyASAN features. We're seeing an increase in
     # crash rates and are wondering if they are to blame.
     cmd.append(
-        '--asan-rtl-options="--disable_ctmalloc --disable_large_block_heap"')
+        '--asan-rtl-options="--enable_feature_randomization '
+        '--prevent_duplicate_corruption_crashes"')
 
   # If any filters were specified then pass them on to the instrumenter.
   if filter_file:
