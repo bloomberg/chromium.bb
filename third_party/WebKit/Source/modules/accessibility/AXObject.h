@@ -596,13 +596,11 @@ public:
     virtual float maxValueForRange() const { return 0.0f; }
     virtual float minValueForRange() const { return 0.0f; }
     virtual String stringValue() const { return String(); }
-    virtual const AtomicString& textInputType() const { return nullAtom; }
 
     // ARIA attributes.
     virtual AXObject* activeDescendant() const { return 0; }
     virtual String ariaAutoComplete() const { return String(); }
     virtual String ariaDescribedByAttribute() const { return String(); }
-    virtual const AtomicString& ariaDropEffect() const { return nullAtom; }
     virtual void ariaFlowToElements(AccessibilityChildrenVector&) const { }
     virtual void ariaControlsElements(AccessibilityChildrenVector&) const { }
     virtual void ariaOwnsElements(AccessibilityChildrenVector& owns) const { };
@@ -613,7 +611,6 @@ public:
     bool ariaPressedIsPresent() const;
     virtual AccessibilityRole ariaRoleAttribute() const { return UnknownRole; }
     virtual bool ariaRoleHasPresentationalChildren() const { return false; }
-    virtual AccessibilityOptionalBool isAriaGrabbed() const { return OptionalBoolUndefined; }
     virtual AXObject* ancestorForWhichThisIsAPresentationalChild() const { return 0; }
     virtual bool shouldFocusActiveDescendant() const { return false; }
     bool supportsARIAAttributes() const;

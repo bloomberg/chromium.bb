@@ -102,7 +102,6 @@ public:
     BLINK_EXPORT WebAXObject parentObject() const;
 
     BLINK_EXPORT bool isAnchor() const;
-    BLINK_EXPORT WebAXOptionalBool isAriaGrabbed() const;
     BLINK_EXPORT bool isAriaReadOnly() const;
     BLINK_EXPORT bool isButtonStateMixed() const;
     BLINK_EXPORT bool isChecked() const;
@@ -136,7 +135,6 @@ public:
     BLINK_EXPORT WebAXObject ariaActiveDescendant() const;
     BLINK_EXPORT WebString ariaAutoComplete() const;
     BLINK_EXPORT bool ariaControls(WebVector<WebAXObject>& controlsElements) const;
-    BLINK_EXPORT WebString ariaDropEffect() const;
     BLINK_EXPORT bool ariaFlowTo(WebVector<WebAXObject>& flowToElements) const;
     BLINK_EXPORT bool ariaHasPopup() const;
     BLINK_EXPORT bool isMultiline() const;
@@ -228,7 +226,6 @@ public:
     BLINK_EXPORT WebString computedStyleDisplay() const;
     BLINK_EXPORT bool accessibilityIsIgnored() const;
     BLINK_EXPORT bool lineBreaks(WebVector<int>&) const;
-    BLINK_EXPORT WebString textInputType() const;
 
     // Actions
     BLINK_EXPORT WebString actionVerb() const; // The verb corresponding to performDefaultAction.

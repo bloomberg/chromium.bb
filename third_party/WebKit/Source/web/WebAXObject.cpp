@@ -225,14 +225,6 @@ bool WebAXObject::isAnchor() const
     return m_private->isAnchor();
 }
 
-WebAXOptionalBool WebAXObject::isAriaGrabbed() const
-{
-    if (isDetached())
-        return WebAXOptionalBoolUndefined;
-
-    return static_cast<WebAXOptionalBool>(m_private->isAriaGrabbed());
-}
-
 bool WebAXObject::isAriaReadOnly() const
 {
     if (isDetached())
@@ -494,14 +486,6 @@ bool WebAXObject::ariaControls(WebVector<WebAXObject>& controlsElements) const
     controlsElements.swap(result);
 
     return true;
-}
-
-WebString WebAXObject::ariaDropEffect() const
-{
-    if (isDetached())
-        return WebString();
-
-    return WebString(m_private->ariaDropEffect());
 }
 
 bool WebAXObject::ariaHasPopup() const
@@ -1240,14 +1224,6 @@ bool WebAXObject::lineBreaks(WebVector<int>& result) const
     result.swap(lineBreaksWebVector);
 
     return true;
-}
-
-WebString WebAXObject::textInputType() const
-{
-    if (isDetached())
-        return WebString();
-
-    return WebString(m_private->textInputType());
 }
 
 unsigned WebAXObject::columnCount() const

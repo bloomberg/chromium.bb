@@ -153,14 +153,11 @@ protected:
     virtual float maxValueForRange() const override;
     virtual float minValueForRange() const override;
     virtual String stringValue() const override;
-    virtual const AtomicString& textInputType() const override;
 
     // ARIA attributes.
     virtual String ariaDescribedByAttribute() const override final;
-    virtual const AtomicString& ariaDropEffect() const override final;
     virtual String ariaLabeledByAttribute() const override final;
     virtual AccessibilityRole ariaRoleAttribute() const override final;
-    virtual AccessibilityOptionalBool isAriaGrabbed() const override final;
 
     // Accessibility Text.
     virtual String deprecatedTextUnderElement(TextUnderElementMode) const override;

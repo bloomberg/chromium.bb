@@ -339,10 +339,6 @@ STATIC_ASSERT_MATCHING_ENUM(WebAXExpandedUndefined, ExpandedUndefined);
 STATIC_ASSERT_MATCHING_ENUM(WebAXExpandedCollapsed, ExpandedCollapsed);
 STATIC_ASSERT_MATCHING_ENUM(WebAXExpandedExpanded, ExpandedExpanded);
 
-STATIC_ASSERT_MATCHING_ENUM(WebAXOptionalBoolUndefined, OptionalBoolUndefined);
-STATIC_ASSERT_MATCHING_ENUM(WebAXOptionalBoolTrue, OptionalBoolTrue);
-STATIC_ASSERT_MATCHING_ENUM(WebAXOptionalBoolFalse, OptionalBoolFalse);
-
 STATIC_ASSERT_MATCHING_ENUM(WebAXOrientationUndefined, AccessibilityOrientationUndefined);
 STATIC_ASSERT_MATCHING_ENUM(WebAXOrientationVertical, AccessibilityOrientationVertical);
 STATIC_ASSERT_MATCHING_ENUM(WebAXOrientationHorizontal, AccessibilityOrientationHorizontal);

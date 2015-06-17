@@ -1476,30 +1476,12 @@ String AXNodeObject::stringValue() const
     return String();
 }
 
-
-const AtomicString& AXNodeObject::textInputType() const
-{
-    Node* node = this->node();
-    if (!isHTMLInputElement(node))
-        return nullAtom;
-
-    HTMLInputElement& input = toHTMLInputElement(*node);
-    if (input.isTextField())
-        return input.type();
-    return nullAtom;
-}
-
 String AXNodeObject::ariaDescribedByAttribute() const
 {
     WillBeHeapVector<RawPtrWillBeMember<Element>> elements;
     elementsFromAttribute(elements, aria_describedbyAttr);
 
     return accessibilityDescriptionForElements(elements);
-}
-
-const AtomicString& AXNodeObject::ariaDropEffect() const
-{
-    return getAttribute(aria_dropeffectAttr);
 }
 
 String AXNodeObject::ariaLabeledByAttribute() const
@@ -1513,17 +1495,6 @@ String AXNodeObject::ariaLabeledByAttribute() const
 AccessibilityRole AXNodeObject::ariaRoleAttribute() const
 {
     return m_ariaRole;
-}
-
-AccessibilityOptionalBool AXNodeObject::isAriaGrabbed() const
-{
-    const AtomicString& grabbed = getAttribute(aria_grabbedAttr);
-    if (equalIgnoringCase(grabbed, "true"))
-        return OptionalBoolTrue;
-    if (equalIgnoringCase(grabbed, "false"))
-        return OptionalBoolFalse;
-
-    return OptionalBoolUndefined;
 }
 
 // When building the textUnderElement for an object, determine whether or not
