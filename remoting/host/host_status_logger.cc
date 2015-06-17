@@ -5,7 +5,6 @@
 #include "remoting/host/host_status_logger.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "remoting/base/constants.h"
 #include "remoting/host/host_status_monitor.h"
 #include "remoting/host/server_log_entry_host.h"

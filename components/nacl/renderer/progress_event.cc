@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "components/nacl/renderer/ppb_nacl_private.h"
 #include "content/public/renderer/pepper_plugin_instance.h"
 #include "ppapi/shared_impl/ppapi_globals.h"

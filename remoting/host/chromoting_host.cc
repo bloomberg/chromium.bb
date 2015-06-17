@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "build/build_config.h"
 #include "jingle/glue/thread_wrapper.h"
 #include "remoting/base/constants.h"

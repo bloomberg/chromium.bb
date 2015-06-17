@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/thread_task_runner_handle.h"
 #include "chromecast/media/cma/base/decoder_buffer_base.h"
 #include "media/base/buffers.h"

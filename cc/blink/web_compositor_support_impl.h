@@ -6,7 +6,6 @@
 #define CC_BLINK_WEB_COMPOSITOR_SUPPORT_IMPL_H_
 
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "cc/blink/cc_blink_export.h"
 #include "third_party/WebKit/public/platform/WebCompositorAnimationCurve.h"
 #include "third_party/WebKit/public/platform/WebCompositorSupport.h"

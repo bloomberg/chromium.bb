@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/threading/worker_pool.h"
 #include "gin/per_isolate_data.h"
 
