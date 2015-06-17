@@ -1421,7 +1421,7 @@ void ChromeAppViewAsh::StartChromeOSMode() {
       IPC::ChannelProxy::Create(win8::kMetroViewerIPCChannelName,
                                 IPC::Channel::MODE_NAMED_CLIENT,
                                 channel_listener_,
-                                io_thread_->message_loop_proxy());
+                                io_thread_->task_runner());
   DVLOG(1) << "Created channel proxy";
 
   // Upon receipt of the MetroViewerHostMsg_SetTargetSurface message the

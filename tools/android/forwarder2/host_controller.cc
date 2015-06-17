@@ -85,7 +85,7 @@ HostController::HostController(
 }
 
 void HostController::ReadNextCommandSoon() {
-  thread_.message_loop_proxy()->PostTask(
+  thread_.task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&HostController::ReadCommandOnInternalThread,
                  base::Unretained(this)));

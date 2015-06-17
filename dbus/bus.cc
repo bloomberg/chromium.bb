@@ -201,7 +201,7 @@ Bus::Bus(const Options& options)
   // The origin message loop is unnecessary if the client uses synchronous
   // functions only.
   if (base::MessageLoop::current())
-    origin_task_runner_ = base::MessageLoop::current()->message_loop_proxy();
+    origin_task_runner_ = base::MessageLoop::current()->task_runner();
 }
 
 Bus::~Bus() {

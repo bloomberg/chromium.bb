@@ -445,7 +445,7 @@ TEST_F(RlzLibTest, SendFinancialPing) {
 
   scoped_refptr<net::TestURLRequestContextGetter> context =
       new net::TestURLRequestContextGetter(
-          io_thread.message_loop()->message_loop_proxy());
+          io_thread.message_loop()->task_runner());
   rlz_lib::SetURLRequestContext(context.get());
 
   URLRequestRAII set_context(context.get());
@@ -498,7 +498,7 @@ TEST_F(RlzLibTest, SendFinancialPingDuringShutdown) {
 
   scoped_refptr<net::TestURLRequestContextGetter> context =
       new net::TestURLRequestContextGetter(
-          io_thread.message_loop()->message_loop_proxy());
+          io_thread.message_loop()->task_runner());
   rlz_lib::SetURLRequestContext(context.get());
 
   URLRequestRAII set_context(context.get());

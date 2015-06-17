@@ -64,7 +64,7 @@ TEST_F(GetSessionNameTest, GetSessionNameSynchronouslyChromebox) {
 // with a session name.  Makes sure the returned session name is equal
 // to the return value of GetSessionNameSynchronouslyForTesting().
 TEST_F(GetSessionNameTest, GetSessionName) {
-  GetSessionName(message_loop_.message_loop_proxy(),
+  GetSessionName(message_loop_.task_runner(),
                  base::Bind(&GetSessionNameTest::SetSessionNameAndQuit,
                             base::Unretained(this)));
   message_loop_.Run();

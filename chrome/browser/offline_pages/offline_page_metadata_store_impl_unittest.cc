@@ -73,7 +73,7 @@ scoped_ptr<OfflinePageMetadataStoreImpl>
 OfflinePageMetadataStoreImplTest::BuildStore() {
   scoped_ptr<ProtoDatabaseImpl<offline_pages::OfflinePageEntry>> db(
       new ProtoDatabaseImpl<offline_pages::OfflinePageEntry>(
-          message_loop_.message_loop_proxy()));
+          message_loop_.task_runner()));
   return scoped_ptr<OfflinePageMetadataStoreImpl>(
       new OfflinePageMetadataStoreImpl(db.Pass(), temp_directory_.path()));
 }

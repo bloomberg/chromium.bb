@@ -360,7 +360,7 @@ void HistoryService::TopHosts(int num_hosts,
   DCHECK(thread_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
   PostTaskAndReplyWithResult(
-      thread_->message_loop_proxy().get(), FROM_HERE,
+      thread_->task_runner().get(), FROM_HERE,
       base::Bind(&HistoryBackend::TopHosts, history_backend_.get(), num_hosts),
       callback);
 }

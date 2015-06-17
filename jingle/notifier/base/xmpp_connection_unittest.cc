@@ -80,7 +80,7 @@ class XmppConnectionTest : public testing::Test {
     message_loop_.reset(new base::MessageLoop(pump.Pass()));
 
     url_request_context_getter_ = new net::TestURLRequestContextGetter(
-        message_loop_->message_loop_proxy());
+        message_loop_->task_runner());
   }
 
   ~XmppConnectionTest() override {}

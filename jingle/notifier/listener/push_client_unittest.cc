@@ -23,7 +23,7 @@ class PushClientTest : public testing::Test {
   PushClientTest() {
     notifier_options_.request_context_getter =
         new net::TestURLRequestContextGetter(
-            message_loop_.message_loop_proxy());
+            message_loop_.task_runner());
   }
 
   ~PushClientTest() override {}

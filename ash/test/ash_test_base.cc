@@ -151,7 +151,7 @@ void AshTestBase::SetUp() {
       options.message_loop_type = base::MessageLoop::TYPE_IO;
       ipc_thread_->StartWithOptions(options);
       metro_viewer_host_.reset(
-          new TestMetroViewerProcessHost(ipc_thread_->message_loop_proxy()));
+          new TestMetroViewerProcessHost(ipc_thread_->task_runner()));
       CHECK(metro_viewer_host_->LaunchViewerAndWaitForConnection(
           win8::test::kDefaultTestAppUserModelId));
       aura::RemoteWindowTreeHostWin* window_tree_host =

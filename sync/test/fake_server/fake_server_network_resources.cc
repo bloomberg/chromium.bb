@@ -31,7 +31,7 @@ FakeServerNetworkResources::GetHttpPostProviderFactory(
   return make_scoped_ptr<syncer::HttpPostProviderFactory>(
       new FakeServerHttpPostProviderFactory(
           fake_server_,
-          base::MessageLoop::current()->message_loop_proxy()));
+          base::MessageLoop::current()->task_runner()));
 }
 
 }  // namespace fake_server

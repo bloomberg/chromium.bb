@@ -31,7 +31,7 @@ class TaskRunners {
   }
 
   base::SingleThreadTaskRunner* io_runner() const {
-    return io_thread_->message_loop_proxy().get();
+    return io_thread_->task_runner().get();
   }
 
   base::SequencedWorkerPool* blocking_pool() const {

@@ -277,10 +277,10 @@ void AttachmentUploaderImplTest::OnRequestReceived(const HttpRequest& request) {
 
 void AttachmentUploaderImplTest::SetUp() {
   DCHECK(CalledOnValidThread());
-  request_handler_.reset(new RequestHandler(message_loop_.message_loop_proxy(),
+  request_handler_.reset(new RequestHandler(message_loop_.task_runner(),
                                             weak_ptr_factory_.GetWeakPtr()));
   url_request_context_getter_ =
-      new net::TestURLRequestContextGetter(message_loop_.message_loop_proxy());
+      new net::TestURLRequestContextGetter(message_loop_.task_runner());
 
   ASSERT_TRUE(server_.InitializeAndWaitUntilReady());
   server_.RegisterRequestHandler(

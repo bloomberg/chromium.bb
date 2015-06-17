@@ -53,7 +53,7 @@ class SyncHttpBridgeTest : public testing::Test {
   HttpBridge* BuildBridge() {
     if (!fake_default_request_context_getter_) {
       fake_default_request_context_getter_ =
-          new net::TestURLRequestContextGetter(io_thread_.message_loop_proxy());
+          new net::TestURLRequestContextGetter(io_thread_.task_runner());
       fake_default_request_context_getter_->AddRef();
     }
     HttpBridge* bridge =
@@ -159,7 +159,7 @@ void SyncHttpBridgeTest::RunSyncThreadBridgeUseTest(
     base::WaitableEvent* signal_when_created,
     base::WaitableEvent* signal_when_released) {
   scoped_refptr<net::URLRequestContextGetter> ctx_getter(
-      new net::TestURLRequestContextGetter(io_thread_.message_loop_proxy()));
+      new net::TestURLRequestContextGetter(io_thread_.task_runner()));
   {
     scoped_refptr<ShuntedHttpBridge> bridge(
         new ShuntedHttpBridge(ctx_getter.get(), this, true));
@@ -190,7 +190,7 @@ TEST_F(SyncHttpBridgeTest, TestUsesSameHttpNetworkSession) {
 // Test the HttpBridge without actually making any network requests.
 TEST_F(SyncHttpBridgeTest, TestMakeSynchronousPostShunted) {
   scoped_refptr<net::URLRequestContextGetter> ctx_getter(
-      new net::TestURLRequestContextGetter(io_thread()->message_loop_proxy()));
+      new net::TestURLRequestContextGetter(io_thread()->task_runner()));
   scoped_refptr<HttpBridge> http_bridge(
       new ShuntedHttpBridge(ctx_getter.get(), this, false));
   http_bridge->SetURL("http://www.google.com", 9999);
@@ -314,7 +314,7 @@ TEST_F(SyncHttpBridgeTest, TestResponseHeader) {
 
 TEST_F(SyncHttpBridgeTest, Abort) {
   scoped_refptr<net::URLRequestContextGetter> ctx_getter(
-      new net::TestURLRequestContextGetter(io_thread()->message_loop_proxy()));
+      new net::TestURLRequestContextGetter(io_thread()->task_runner()));
   scoped_refptr<ShuntedHttpBridge> http_bridge(
       new ShuntedHttpBridge(ctx_getter.get(), this, true));
   http_bridge->SetURL("http://www.google.com", 9999);
@@ -323,7 +323,7 @@ TEST_F(SyncHttpBridgeTest, Abort) {
   int os_error = 0;
   int response_code = 0;
 
-  io_thread()->message_loop_proxy()->PostTask(
+  io_thread()->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&SyncHttpBridgeTest::Abort, http_bridge));
   bool success = http_bridge->MakeSynchronousPost(&os_error, &response_code);
@@ -333,7 +333,7 @@ TEST_F(SyncHttpBridgeTest, Abort) {
 
 TEST_F(SyncHttpBridgeTest, AbortLate) {
   scoped_refptr<net::URLRequestContextGetter> ctx_getter(
-      new net::TestURLRequestContextGetter(io_thread()->message_loop_proxy()));
+      new net::TestURLRequestContextGetter(io_thread()->task_runner()));
   scoped_refptr<ShuntedHttpBridge> http_bridge(
       new ShuntedHttpBridge(ctx_getter.get(), this, false));
   http_bridge->SetURL("http://www.google.com", 9999);
@@ -367,7 +367,7 @@ TEST_F(SyncHttpBridgeTest, AbortAndReleaseBeforeFetchComplete) {
 
   // Stop IO so we can control order of operations.
   base::WaitableEvent io_waiter(false, false);
-  ASSERT_TRUE(io_thread()->message_loop_proxy()->PostTask(
+  ASSERT_TRUE(io_thread()->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&base::WaitableEvent::Wait, base::Unretained(&io_waiter))));
 
@@ -384,7 +384,7 @@ TEST_F(SyncHttpBridgeTest, AbortAndReleaseBeforeFetchComplete) {
   fetcher.set_response_code(200);
   fetcher.set_cookies(cookies);
   fetcher.SetResponseString(response_content);
-  ASSERT_TRUE(io_thread()->message_loop_proxy()->PostTask(
+  ASSERT_TRUE(io_thread()->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&net::URLFetcherDelegate::OnURLFetchComplete,
           base::Unretained(delegate), &fetcher)));
@@ -446,7 +446,7 @@ TEST_F(SyncHttpBridgeTest, RequestContextGetterReleaseOrder) {
   syncer::HttpPostProviderInterface* bridge = NULL;
 
   scoped_refptr<net::URLRequestContextGetter> baseline_context_getter(
-      new net::TestURLRequestContextGetter(io_thread()->message_loop_proxy()));
+      new net::TestURLRequestContextGetter(io_thread()->task_runner()));
 
   base::WaitableEvent signal_when_created(false, false);
   base::WaitableEvent wait_for_shutdown(false, false);
@@ -496,7 +496,7 @@ TEST_F(SyncHttpBridgeTest, EarlyAbortFactory) {
   // simplicity, this test uses only one thread.
 
   scoped_refptr<net::URLRequestContextGetter> baseline_context_getter(
-      new net::TestURLRequestContextGetter(io_thread()->message_loop_proxy()));
+      new net::TestURLRequestContextGetter(io_thread()->task_runner()));
   CancelationSignal release_request_context_signal;
 
   // UI Thread: Initialize the HttpBridgeFactory.  The next step would be to

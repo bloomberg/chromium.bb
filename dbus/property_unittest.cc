@@ -61,7 +61,7 @@ class PropertyTest : public testing::Test {
 
     // Start the test service, using the D-Bus thread.
     TestService::Options options;
-    options.dbus_task_runner = dbus_thread_->message_loop_proxy();
+    options.dbus_task_runner = dbus_thread_->task_runner();
     test_service_.reset(new TestService(options));
     ASSERT_TRUE(test_service_->StartService());
     ASSERT_TRUE(test_service_->WaitUntilServiceIsStarted());
@@ -71,7 +71,7 @@ class PropertyTest : public testing::Test {
     Bus::Options bus_options;
     bus_options.bus_type = Bus::SESSION;
     bus_options.connection_type = Bus::PRIVATE;
-    bus_options.dbus_task_runner = dbus_thread_->message_loop_proxy();
+    bus_options.dbus_task_runner = dbus_thread_->task_runner();
     bus_ = new Bus(bus_options);
     object_proxy_ = bus_->GetObjectProxy(
         "org.chromium.TestService",

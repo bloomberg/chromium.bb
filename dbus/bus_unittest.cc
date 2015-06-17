@@ -137,7 +137,7 @@ TEST(BusTest, RemoveObjectProxy) {
 
   // Create the bus.
   Bus::Options options;
-  options.dbus_task_runner = dbus_thread.message_loop_proxy();
+  options.dbus_task_runner = dbus_thread.task_runner();
   scoped_refptr<Bus> bus = new Bus(options);
   ASSERT_FALSE(bus->shutdown_completed());
 
@@ -217,7 +217,7 @@ TEST(BusTest, UnregisterExportedObject) {
 
   // Create the bus.
   Bus::Options options;
-  options.dbus_task_runner = dbus_thread.message_loop_proxy();
+  options.dbus_task_runner = dbus_thread.task_runner();
   scoped_refptr<Bus> bus = new Bus(options);
   ASSERT_FALSE(bus->shutdown_completed());
 
@@ -267,7 +267,7 @@ TEST(BusTest, ShutdownAndBlockWithDBusThread) {
 
   // Create the bus.
   Bus::Options options;
-  options.dbus_task_runner = dbus_thread.message_loop_proxy();
+  options.dbus_task_runner = dbus_thread.task_runner();
   scoped_refptr<Bus> bus = new Bus(options);
   ASSERT_FALSE(bus->shutdown_completed());
 

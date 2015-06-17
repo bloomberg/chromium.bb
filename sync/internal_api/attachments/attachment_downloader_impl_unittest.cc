@@ -205,7 +205,7 @@ class AttachmentDownloaderImplTest : public testing::Test {
 
 void AttachmentDownloaderImplTest::SetUp() {
   url_request_context_getter_ =
-      new net::TestURLRequestContextGetter(message_loop_.message_loop_proxy());
+      new net::TestURLRequestContextGetter(message_loop_.task_runner());
   url_fetcher_factory_.set_remove_fetcher_on_delete(true);
   token_service_.reset(new MockOAuth2TokenService());
   token_service_->AddAccount(kAccountId);

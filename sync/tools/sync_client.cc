@@ -330,7 +330,7 @@ int SyncClientMain(int argc, char* argv[]) {
 
   // Set up sync notifier factory.
   const scoped_refptr<MyTestURLRequestContextGetter> context_getter =
-      new MyTestURLRequestContextGetter(io_thread.message_loop_proxy());
+      new MyTestURLRequestContextGetter(io_thread.task_runner());
   const notifier::NotifierOptions& notifier_options =
       ParseNotifierOptions(command_line, context_getter);
   syncer::NetworkChannelCreator network_channel_creator =

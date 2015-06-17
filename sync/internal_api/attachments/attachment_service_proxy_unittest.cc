@@ -85,7 +85,7 @@ class AttachmentServiceProxyTest : public testing::Test,
     stub_thread.reset(new base::Thread("attachment service stub thread"));
     stub_thread->Start();
     stub.reset(new StubAttachmentService);
-    proxy.reset(new AttachmentServiceProxy(stub_thread->message_loop_proxy(),
+    proxy.reset(new AttachmentServiceProxy(stub_thread->task_runner(),
                                            stub->AsWeakPtr()));
 
     callback_get_or_download =

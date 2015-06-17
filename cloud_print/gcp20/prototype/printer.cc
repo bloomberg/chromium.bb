@@ -140,7 +140,7 @@ std::string GetDescription() {
 }
 
 scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() {
-  return base::MessageLoop::current()->message_loop_proxy();
+  return base::MessageLoop::current()->task_runner();
 }
 
 }  // namespace

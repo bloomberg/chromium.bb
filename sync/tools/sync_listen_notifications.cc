@@ -179,7 +179,7 @@ int SyncListenNotificationsMain(int argc, char* argv[]) {
   const notifier::NotifierOptions& notifier_options =
       ParseNotifierOptions(
           command_line,
-          new MyTestURLRequestContextGetter(io_thread.message_loop_proxy()));
+          new MyTestURLRequestContextGetter(io_thread.task_runner()));
   syncer::NetworkChannelCreator network_channel_creator =
       syncer::NonBlockingInvalidator::MakePushClientChannelCreator(
           notifier_options);

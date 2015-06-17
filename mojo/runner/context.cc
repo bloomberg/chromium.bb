@@ -276,7 +276,7 @@ bool Context::Init() {
 
   EnsureEmbedderIsInitialized();
   task_runners_.reset(
-      new TaskRunners(base::MessageLoop::current()->message_loop_proxy()));
+      new TaskRunners(base::MessageLoop::current()->task_runner()));
 
   // TODO(vtl): Probably these failures should be checked before |Init()|, and
   // this function simply shouldn't fail.
