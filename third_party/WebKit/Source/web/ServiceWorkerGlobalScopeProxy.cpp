@@ -105,6 +105,7 @@ void ServiceWorkerGlobalScopeProxy::dispatchFetchEvent(int eventID, const WebSer
     Request* request = Request::create(m_workerGlobalScope, webRequest);
     request->headers()->setGuard(Headers::ImmutableGuard);
     FetchEventInit eventInit;
+    eventInit.setCancelable(true);
     eventInit.setRequest(request);
     eventInit.setIsReload(webRequest.isReload());
     RefPtrWillBeRawPtr<FetchEvent> fetchEvent(FetchEvent::create(EventTypeNames::fetch, eventInit, observer));

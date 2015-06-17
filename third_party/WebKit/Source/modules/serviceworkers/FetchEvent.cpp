@@ -16,15 +16,13 @@ PassRefPtrWillBeRawPtr<FetchEvent> FetchEvent::create()
     return adoptRefWillBeNoop(new FetchEvent());
 }
 
-PassRefPtrWillBeRawPtr<FetchEvent> FetchEvent::create(const AtomicString& type, FetchEventInit& initializer)
+PassRefPtrWillBeRawPtr<FetchEvent> FetchEvent::create(const AtomicString& type, const FetchEventInit& initializer)
 {
-    initializer.setCancelable(true);
     return adoptRefWillBeNoop(new FetchEvent(type, initializer, nullptr));
 }
 
-PassRefPtrWillBeRawPtr<FetchEvent> FetchEvent::create(const AtomicString& type, FetchEventInit& initializer, RespondWithObserver* observer)
+PassRefPtrWillBeRawPtr<FetchEvent> FetchEvent::create(const AtomicString& type, const FetchEventInit& initializer, RespondWithObserver* observer)
 {
-    initializer.setCancelable(true);
     return adoptRefWillBeNoop(new FetchEvent(type, initializer, observer));
 }
 

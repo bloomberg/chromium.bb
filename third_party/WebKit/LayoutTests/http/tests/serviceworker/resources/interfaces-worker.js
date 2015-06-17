@@ -79,16 +79,16 @@ test(function() {
       'FetchEvent', 'Type of FetchEvent should be FetchEvent');
     assert_equals(
       new FetchEvent('FetchEvent').cancelable,
-      true, 'Default FetchEvent.cancelable should be true');
+      false, 'Default FetchEvent.cancelable should be false');
     assert_equals(
       new FetchEvent('FetchEvent').bubbles,
-      false, 'Default FetchEvent.bubbles should be true');
+      false, 'Default FetchEvent.bubbles should be false');
     assert_equals(
       new FetchEvent('FetchEvent').isReload,
       false, 'Default FetchEvent.isReload should be false');
     assert_equals(
       new FetchEvent('FetchEvent', {cancelable: false}).cancelable,
-      true, 'FetchEvent.cancelable should be true');
+      false, 'FetchEvent.cancelable should be false');
     assert_equals(
       new FetchEvent('FetchEvent', {isReload : true}).isReload, true,
       'FetchEvent.isReload with option {isReload : true} should be true');
