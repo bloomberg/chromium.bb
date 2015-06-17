@@ -189,7 +189,8 @@ public class ChromeShellActivity extends AppCompatActivity implements AppMenuPro
             mTabManager.setStartupUrl(startupUrl);
         }
         mToolbar = (ChromeShellToolbar) findViewById(R.id.toolbar);
-        mAppMenuHandler = sAppMenuHandlerFactory.getAppMenuHandler(this, this, R.menu.main_menu);
+        mAppMenuHandler = sAppMenuHandlerFactory.getAppMenuHandler(this, this,
+                R.menu.chrome_shell_main_menu);
         mToolbar.setMenuHandler(mAppMenuHandler);
 
         mDevToolsServer = new DevToolsServer("chrome_shell");
