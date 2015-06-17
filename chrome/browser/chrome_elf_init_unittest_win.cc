@@ -81,7 +81,8 @@ TEST_F(ChromeBlacklistTrialTest, DefaultRun) {
 
 // Ensure that the blacklist is disabled for any users in the
 // "BlacklistDisabled" finch group.
-TEST_F(ChromeBlacklistTrialTest, BlacklistDisabledRun) {
+// Crashes (http://crbug.com/501474).
+TEST_F(ChromeBlacklistTrialTest, DISABLED_BlacklistDisabledRun) {
   // Set the beacons to enabled values.
   blacklist_registry_key_->WriteValue(blacklist::kBeaconState,
                                       blacklist::BLACKLIST_ENABLED);
