@@ -29,7 +29,7 @@ VideoDecoderJob::VideoDecoderJob(
     const base::Closure& request_data_cb,
     const base::Closure& request_resources_cb,
     const base::Closure& on_demuxer_config_changed_cb)
-    : MediaDecoderJob(g_video_decoder_thread.Pointer()->message_loop_proxy(),
+    : MediaDecoderJob(g_video_decoder_thread.Pointer()->task_runner(),
                       request_data_cb,
                       on_demuxer_config_changed_cb),
       video_codec_(kUnknownVideoCodec),

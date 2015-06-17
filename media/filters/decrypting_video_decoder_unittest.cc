@@ -54,7 +54,7 @@ class DecryptingVideoDecoderTest : public testing::Test {
  public:
   DecryptingVideoDecoderTest()
       : decoder_(new DecryptingVideoDecoder(
-            message_loop_.message_loop_proxy(),
+            message_loop_.task_runner(),
             new MediaLog(),
             base::Bind(
                 &DecryptingVideoDecoderTest::RequestDecryptorNotification,

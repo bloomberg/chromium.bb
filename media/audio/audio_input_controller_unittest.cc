@@ -120,7 +120,7 @@ TEST_F(AudioInputControllerTest, RecordAndClose) {
   EXPECT_CALL(event_handler, OnData(NotNull(), NotNull()))
       .Times(AtLeast(10))
       .WillRepeatedly(CheckCountAndPostQuitTask(
-          &count, 10, message_loop_.message_loop_proxy()));
+          &count, 10, message_loop_.task_runner()));
 
   scoped_ptr<AudioManager> audio_manager(AudioManager::CreateForTesting());
   AudioParameters params(AudioParameters::AUDIO_FAKE, kChannelLayout,
@@ -166,7 +166,7 @@ TEST_F(AudioInputControllerTest, DISABLED_RecordAndError) {
   EXPECT_CALL(event_handler, OnData(NotNull(), NotNull()))
       .Times(AtLeast(10))
       .WillRepeatedly(CheckCountAndPostQuitTask(
-          &count, 10, message_loop_.message_loop_proxy()));
+          &count, 10, message_loop_.task_runner()));
 
   // OnError() will be called after the data stream stops while the
   // controller is in a recording state.

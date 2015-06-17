@@ -99,7 +99,7 @@ AudioManagerBase::AudioManagerBase(AudioLogFactory* audio_log_factory)
 #endif
 
   CHECK(audio_thread_.Start());
-  task_runner_ = audio_thread_.message_loop_proxy();
+  task_runner_ = audio_thread_.task_runner();
 }
 
 AudioManagerBase::~AudioManagerBase() {
@@ -129,7 +129,7 @@ AudioManagerBase::GetWorkerTaskRunner() {
   if (!audio_thread_.IsRunning())
     CHECK(audio_thread_.Start());
 
-  return audio_thread_.message_loop_proxy();
+  return audio_thread_.task_runner();
 }
 
 AudioOutputStream* AudioManagerBase::MakeAudioOutputStream(

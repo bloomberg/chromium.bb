@@ -654,7 +654,7 @@ void FFmpegDemuxer::Seek(base::TimeDelta time, const PipelineStatusCB& cb) {
 
   pending_seek_ = true;
   base::PostTaskAndReplyWithResult(
-      blocking_thread_.message_loop_proxy().get(),
+      blocking_thread_.task_runner().get(),
       FROM_HERE,
       base::Bind(&av_seek_frame,
                  glue_->format_context(),
@@ -696,7 +696,7 @@ void FFmpegDemuxer::Initialize(DemuxerHost* host,
   // Open the AVFormatContext using our glue layer.
   CHECK(blocking_thread_.Start());
   base::PostTaskAndReplyWithResult(
-      blocking_thread_.message_loop_proxy().get(),
+      blocking_thread_.task_runner().get(),
       FROM_HERE,
       base::Bind(&FFmpegGlue::OpenContext, base::Unretained(glue_.get())),
       base::Bind(&FFmpegDemuxer::OnOpenContextDone,
@@ -800,7 +800,7 @@ void FFmpegDemuxer::OnOpenContextDone(const PipelineStatusCB& status_cb,
 
   // Fully initialize AVFormatContext by parsing the stream a little.
   base::PostTaskAndReplyWithResult(
-      blocking_thread_.message_loop_proxy().get(),
+      blocking_thread_.task_runner().get(),
       FROM_HERE,
       base::Bind(&avformat_find_stream_info,
                  glue_->format_context(),
@@ -1137,7 +1137,7 @@ void FFmpegDemuxer::ReadFrameIfNeeded() {
 
   pending_read_ = true;
   base::PostTaskAndReplyWithResult(
-      blocking_thread_.message_loop_proxy().get(),
+      blocking_thread_.task_runner().get(),
       FROM_HERE,
       base::Bind(&av_read_frame, glue_->format_context(), packet_ptr),
       base::Bind(&FFmpegDemuxer::OnReadFrameDone,

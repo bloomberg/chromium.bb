@@ -91,7 +91,7 @@ class PipelineTest : public ::testing::Test {
   };
 
   PipelineTest()
-      : pipeline_(new Pipeline(message_loop_.message_loop_proxy(),
+      : pipeline_(new Pipeline(message_loop_.task_runner(),
                                new MediaLog())),
         demuxer_(new StrictMock<MockDemuxer>()),
         scoped_renderer_(new StrictMock<MockRenderer>()),

@@ -60,7 +60,7 @@ class RendererImplTest : public ::testing::Test {
         video_renderer_(new StrictMock<MockVideoRenderer>()),
         audio_renderer_(new StrictMock<MockAudioRenderer>()),
         renderer_impl_(
-            new RendererImpl(message_loop_.message_loop_proxy(),
+            new RendererImpl(message_loop_.task_runner(),
                              scoped_ptr<AudioRenderer>(audio_renderer_),
                              scoped_ptr<VideoRenderer>(video_renderer_))) {
     // SetDemuxerExpectations() adds overriding expectations for expected

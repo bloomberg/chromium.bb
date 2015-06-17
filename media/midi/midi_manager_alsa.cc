@@ -837,7 +837,7 @@ std::string MidiManagerAlsa::AlsaCard::ExtractManufacturerString(
 
 void MidiManagerAlsa::SendMidiData(uint32 port_index,
                                    const std::vector<uint8>& data) {
-  DCHECK(send_thread_.message_loop_proxy()->BelongsToCurrentThread());
+  DCHECK(send_thread_.task_runner()->BelongsToCurrentThread());
 
   snd_midi_event_t* encoder;
   snd_midi_event_new(kSendBufferSize, &encoder);

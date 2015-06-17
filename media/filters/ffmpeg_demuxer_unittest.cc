@@ -86,7 +86,7 @@ class FFmpegDemuxerTest : public testing::Test {
         &FFmpegDemuxerTest::OnEncryptedMediaInitData, base::Unretained(this));
 
     demuxer_.reset(new FFmpegDemuxer(
-        message_loop_.message_loop_proxy(), data_source_.get(),
+        message_loop_.task_runner(), data_source_.get(),
         encrypted_media_init_data_cb, new MediaLog()));
   }
 

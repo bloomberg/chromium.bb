@@ -100,7 +100,7 @@ void VideoCaptureDeviceLinux::AllocateAndStart(
   const int line_frequency =
       TranslatePowerLineFrequencyToV4L2(GetPowerLineFrequencyForLocation());
   capture_impl_ = V4L2CaptureDelegate::CreateV4L2CaptureDelegate(
-      device_name_, v4l2_thread_.message_loop_proxy(), line_frequency);
+      device_name_, v4l2_thread_.task_runner(), line_frequency);
   if (!capture_impl_) {
     client->OnError("Failed to create VideoCaptureDelegate");
     return;

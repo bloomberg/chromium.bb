@@ -19,7 +19,7 @@ class FakeAudioWorkerTest : public testing::Test {
   FakeAudioWorkerTest()
       : params_(
             AudioParameters::AUDIO_FAKE, CHANNEL_LAYOUT_STEREO, 44100, 8, 128),
-        fake_worker_(message_loop_.message_loop_proxy(), params_),
+        fake_worker_(message_loop_.task_runner(), params_),
         seen_callbacks_(0) {
     time_between_callbacks_ = base::TimeDelta::FromMicroseconds(
         params_.frames_per_buffer() * base::Time::kMicrosecondsPerSecond /
@@ -33,13 +33,13 @@ class FakeAudioWorkerTest : public testing::Test {
   }
 
   void RunOnAudioThread() {
-    ASSERT_TRUE(message_loop_.message_loop_proxy()->BelongsToCurrentThread());
+    ASSERT_TRUE(message_loop_.task_runner()->BelongsToCurrentThread());
     fake_worker_.Start(base::Bind(
         &FakeAudioWorkerTest::CalledByFakeWorker, base::Unretained(this)));
   }
 
   void RunOnceOnAudioThread() {
-    ASSERT_TRUE(message_loop_.message_loop_proxy()->BelongsToCurrentThread());
+    ASSERT_TRUE(message_loop_.task_runner()->BelongsToCurrentThread());
     RunOnAudioThread();
     // Start() should immediately post a task to run the callback, so we
     // should end up with only a single callback being run.
@@ -48,13 +48,13 @@ class FakeAudioWorkerTest : public testing::Test {
   }
 
   void StopStartOnAudioThread() {
-    ASSERT_TRUE(message_loop_.message_loop_proxy()->BelongsToCurrentThread());
+    ASSERT_TRUE(message_loop_.task_runner()->BelongsToCurrentThread());
     fake_worker_.Stop();
     RunOnAudioThread();
   }
 
   void TimeCallbacksOnAudioThread(int callbacks) {
-    ASSERT_TRUE(message_loop_.message_loop_proxy()->BelongsToCurrentThread());
+    ASSERT_TRUE(message_loop_.task_runner()->BelongsToCurrentThread());
 
     if (seen_callbacks_ == 0) {
       RunOnAudioThread();
@@ -73,7 +73,7 @@ class FakeAudioWorkerTest : public testing::Test {
   }
 
   void EndTest(int callbacks) {
-    ASSERT_TRUE(message_loop_.message_loop_proxy()->BelongsToCurrentThread());
+    ASSERT_TRUE(message_loop_.task_runner()->BelongsToCurrentThread());
     fake_worker_.Stop();
     EXPECT_LE(callbacks, seen_callbacks_);
     message_loop_.PostTask(FROM_HERE, base::MessageLoop::QuitClosure());

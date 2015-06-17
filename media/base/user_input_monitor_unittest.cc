@@ -54,7 +54,7 @@ TEST(UserInputMonitorTest, CreatePlatformSpecific) {
 
   base::RunLoop run_loop;
   scoped_ptr<UserInputMonitor> monitor = UserInputMonitor::Create(
-      message_loop.message_loop_proxy(), message_loop.message_loop_proxy());
+      message_loop.task_runner(), message_loop.task_runner());
 
   if (!monitor)
     return;

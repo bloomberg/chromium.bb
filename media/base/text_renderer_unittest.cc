@@ -54,7 +54,7 @@ class TextRendererTest : public testing::Test {
     DCHECK(!text_renderer_);
 
     text_renderer_.reset(
-        new TextRenderer(message_loop_.message_loop_proxy(),
+        new TextRenderer(message_loop_.task_runner(),
                          base::Bind(&TextRendererTest::OnAddTextTrack,
                                     base::Unretained(this))));
     text_renderer_->Initialize(base::Bind(&TextRendererTest::OnEnd,
@@ -214,7 +214,7 @@ class TextRendererTest : public testing::Test {
 
 TEST_F(TextRendererTest, CreateTextRendererNoInit) {
   text_renderer_.reset(
-      new TextRenderer(message_loop_.message_loop_proxy(),
+      new TextRenderer(message_loop_.task_runner(),
                        base::Bind(&TextRendererTest::OnAddTextTrack,
                                   base::Unretained(this))));
   text_renderer_.reset();

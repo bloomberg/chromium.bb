@@ -51,7 +51,7 @@ class VirtualAudioOutputStreamTest : public testing::Test {
   VirtualAudioOutputStreamTest()
       : audio_thread_(new base::Thread("AudioThread")) {
     audio_thread_->Start();
-    audio_task_runner_ = audio_thread_->message_loop_proxy();
+    audio_task_runner_ = audio_thread_->task_runner();
   }
 
   const scoped_refptr<base::SingleThreadTaskRunner>& audio_task_runner() const {

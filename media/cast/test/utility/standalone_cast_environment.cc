@@ -20,7 +20,7 @@ StandaloneCastEnvironment::StandaloneCastEnvironment()
       video_thread_("StandaloneCastEnvironment Video") {
 #define CREATE_TASK_RUNNER(name, options)   \
   name##_thread_.StartWithOptions(options); \
-  CastEnvironment::name##_thread_proxy_ = name##_thread_.message_loop_proxy()
+  CastEnvironment::name##_thread_proxy_ = name##_thread_.task_runner()
 
   CREATE_TASK_RUNNER(main,
                      base::Thread::Options(base::MessageLoop::TYPE_IO, 0));

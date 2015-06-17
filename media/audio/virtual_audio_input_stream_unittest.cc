@@ -95,7 +95,7 @@ class VirtualAudioInputStreamTest : public testing::TestWithParam<bool> {
         stream_(NULL),
         closed_stream_(false, false) {
     audio_thread_->Start();
-    audio_task_runner_ = audio_thread_->message_loop_proxy();
+    audio_task_runner_ = audio_thread_->task_runner();
   }
 
   virtual ~VirtualAudioInputStreamTest() {
@@ -206,7 +206,7 @@ class VirtualAudioInputStreamTest : public testing::TestWithParam<bool> {
     if (worker_is_separate_thread) {
       if (!worker_thread_->IsRunning()) {
         worker_thread_->Start();
-        worker_task_runner_ = worker_thread_->message_loop_proxy();
+        worker_task_runner_ = worker_thread_->task_runner();
       }
       return worker_task_runner_;
     } else {

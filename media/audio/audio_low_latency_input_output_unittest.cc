@@ -97,7 +97,7 @@ class MockAudioManager : public AudioManagerAnyPlatform {
   ~MockAudioManager() override {}
 
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() override {
-    return base::MessageLoop::current()->message_loop_proxy();
+    return base::MessageLoop::current()->task_runner();
   }
 
  private:

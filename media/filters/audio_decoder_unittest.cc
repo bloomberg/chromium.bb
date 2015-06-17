@@ -100,11 +100,11 @@ class AudioDecoderTest : public testing::TestWithParam<DecoderTestData> {
     switch (GetParam().decoder_type) {
       case FFMPEG:
         decoder_.reset(new FFmpegAudioDecoder(
-            message_loop_.message_loop_proxy(), LogCB()));
+            message_loop_.task_runner(), LogCB()));
         break;
       case OPUS:
         decoder_.reset(
-            new OpusAudioDecoder(message_loop_.message_loop_proxy()));
+            new OpusAudioDecoder(message_loop_.task_runner()));
         break;
     }
   }

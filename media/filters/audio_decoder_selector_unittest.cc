@@ -125,7 +125,7 @@ class AudioDecoderSelectorTest : public ::testing::Test {
         all_decoders_.begin() + num_decoders, all_decoders_.end());
 
     decoder_selector_.reset(
-        new AudioDecoderSelector(message_loop_.message_loop_proxy(),
+        new AudioDecoderSelector(message_loop_.task_runner(),
                                  all_decoders_.Pass(), new MediaLog()));
   }
 

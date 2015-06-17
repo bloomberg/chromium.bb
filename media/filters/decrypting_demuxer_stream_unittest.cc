@@ -74,7 +74,7 @@ class DecryptingDemuxerStreamTest : public testing::Test {
  public:
   DecryptingDemuxerStreamTest()
       : demuxer_stream_(new DecryptingDemuxerStream(
-            message_loop_.message_loop_proxy(),
+            message_loop_.task_runner(),
             new MediaLog(),
             base::Bind(
                 &DecryptingDemuxerStreamTest::RequestDecryptorNotification,

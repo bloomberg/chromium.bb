@@ -130,7 +130,7 @@ class BufferedDataSourceTest : public testing::Test {
     GURL gurl(url);
     data_source_.reset(
         new MockBufferedDataSource(gurl,
-                                   message_loop_.message_loop_proxy(),
+                                   message_loop_.task_runner(),
                                    view_->mainFrame()->toWebLocalFrame(),
                                    &host_));
     data_source_->SetPreload(preload_);

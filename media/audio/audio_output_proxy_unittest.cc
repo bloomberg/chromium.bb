@@ -139,9 +139,9 @@ class AudioOutputProxyTest : public testing::Test {
  protected:
   void SetUp() override {
     EXPECT_CALL(manager_, GetTaskRunner())
-        .WillRepeatedly(Return(message_loop_.message_loop_proxy()));
+        .WillRepeatedly(Return(message_loop_.task_runner()));
     EXPECT_CALL(manager_, GetWorkerTaskRunner())
-        .WillRepeatedly(Return(message_loop_.message_loop_proxy()));
+        .WillRepeatedly(Return(message_loop_.task_runner()));
     // Use a low sample rate and large buffer size when testing otherwise the
     // FakeAudioOutputStream will keep the message loop busy indefinitely; i.e.,
     // RunUntilIdle() will never terminate.

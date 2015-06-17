@@ -682,7 +682,7 @@ class UDPProxyImpl : public UDPProxy {
     proxy_thread_.StartWithOptions(
         base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
     base::WaitableEvent start_event(false, false);
-    proxy_thread_.message_loop_proxy()->PostTask(
+    proxy_thread_.task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&UDPProxyImpl::Start,
                    base::Unretained(this),
@@ -693,7 +693,7 @@ class UDPProxyImpl : public UDPProxy {
 
   ~UDPProxyImpl() final {
     base::WaitableEvent stop_event(false, false);
-    proxy_thread_.message_loop_proxy()->PostTask(
+    proxy_thread_.task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&UDPProxyImpl::Stop,
                    base::Unretained(this),

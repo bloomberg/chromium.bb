@@ -95,7 +95,7 @@ class VideoFrameStreamTest
     decoders.push_back(decoder3_);
 
     video_frame_stream_.reset(new VideoFrameStream(
-        message_loop_.message_loop_proxy(), decoders.Pass(), new MediaLog()));
+        message_loop_.task_runner(), decoders.Pass(), new MediaLog()));
 
     // Decryptor can only decrypt (not decrypt-and-decode) so that
     // DecryptingDemuxerStream will be used.

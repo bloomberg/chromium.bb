@@ -63,13 +63,13 @@ TEST(UdpTransport, SendAndReceive) {
   net::ParseIPLiteralToNumber("0.0.0.0", &empty_addr_number);
 
   UdpTransport send_transport(NULL,
-                              message_loop.message_loop_proxy(),
+                              message_loop.task_runner(),
                               free_local_port1,
                               free_local_port2,
                               65536,
                               base::Bind(&UpdateCastTransportStatus));
   UdpTransport recv_transport(NULL,
-                              message_loop.message_loop_proxy(),
+                              message_loop.task_runner(),
                               free_local_port2,
                               net::IPEndPoint(empty_addr_number, 0),
                               65536,

@@ -95,7 +95,7 @@ class AudioRendererImplTest : public ::testing::Test {
     ScopedVector<AudioDecoder> decoders;
     decoders.push_back(decoder_);
     sink_ = new FakeAudioRendererSink();
-    renderer_.reset(new AudioRendererImpl(message_loop_.message_loop_proxy(),
+    renderer_.reset(new AudioRendererImpl(message_loop_.task_runner(),
                                           sink_.get(),
                                           decoders.Pass(),
                                           hardware_config_,

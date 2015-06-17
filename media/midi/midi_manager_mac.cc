@@ -153,7 +153,7 @@ void MidiManagerMac::RunOnClientThread(const base::Closure& closure) {
 }
 
 void MidiManagerMac::InitializeCoreMIDI() {
-  DCHECK(client_thread_.message_loop_proxy()->BelongsToCurrentThread());
+  DCHECK(client_thread_.task_runner()->BelongsToCurrentThread());
 
   // CoreMIDI registration.
   DCHECK_EQ(0u, midi_client_);
@@ -236,7 +236,7 @@ void MidiManagerMac::ReceiveMidiNotifyDispatch(const MIDINotification* message,
 }
 
 void MidiManagerMac::ReceiveMidiNotify(const MIDINotification* message) {
-  DCHECK(client_thread_.message_loop_proxy()->BelongsToCurrentThread());
+  DCHECK(client_thread_.task_runner()->BelongsToCurrentThread());
 
   if (kMIDIMsgObjectAdded == message->messageID) {
     // New device is going to be attached.
@@ -347,7 +347,7 @@ void MidiManagerMac::SendMidiData(MidiManagerClient* client,
                                   uint32 port_index,
                                   const std::vector<uint8>& data,
                                   double timestamp) {
-  DCHECK(client_thread_.message_loop_proxy()->BelongsToCurrentThread());
+  DCHECK(client_thread_.task_runner()->BelongsToCurrentThread());
 
   // Lookup the destination based on the port index.
   if (static_cast<size_t>(port_index) >= destinations_.size())

@@ -244,13 +244,13 @@ int main(int argc, char** argv) {
   scoped_refptr<media::cast::CastEnvironment> cast_environment(
       new media::cast::CastEnvironment(
           make_scoped_ptr<base::TickClock>(new base::DefaultTickClock()),
-          io_message_loop.message_loop_proxy(),
-          audio_thread.message_loop_proxy(),
-          video_thread.message_loop_proxy()));
+          io_message_loop.task_runner(),
+          audio_thread.task_runner(),
+          video_thread.task_runner()));
 
   // SendProcess initialization.
   scoped_ptr<media::cast::FakeMediaSource> fake_media_source(
-      new media::cast::FakeMediaSource(test_thread.message_loop_proxy(),
+      new media::cast::FakeMediaSource(test_thread.task_runner(),
                                        cast_environment->Clock(),
                                        audio_config,
                                        video_config,
@@ -281,7 +281,7 @@ int main(int argc, char** argv) {
           base::Bind(&LogRawEvents, cast_environment),
           base::TimeDelta::FromSeconds(1),
           media::cast::PacketReceiverCallback(),
-          io_message_loop.message_loop_proxy());
+          io_message_loop.task_runner());
 
   // Set up event subscribers.
   scoped_ptr<media::cast::EncodingEventSubscriber> video_event_subscriber;
@@ -329,7 +329,7 @@ int main(int argc, char** argv) {
   }
 
   const int logging_duration_seconds = 10;
-  io_message_loop.message_loop_proxy()->PostDelayedTask(
+  io_message_loop.task_runner()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&WriteLogsToFileAndDestroySubscribers,
                  cast_environment,
@@ -339,7 +339,7 @@ int main(int argc, char** argv) {
                  base::Passed(&audio_log_file)),
       base::TimeDelta::FromSeconds(logging_duration_seconds));
 
-  io_message_loop.message_loop_proxy()->PostDelayedTask(
+  io_message_loop.task_runner()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&WriteStatsAndDestroySubscribers,
                  cast_environment,

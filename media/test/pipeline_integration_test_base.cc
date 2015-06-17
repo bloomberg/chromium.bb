@@ -40,7 +40,7 @@ PipelineIntegrationTestBase::PipelineIntegrationTestBase()
     : hashing_enabled_(false),
       clockless_playback_(false),
       pipeline_(
-          new Pipeline(message_loop_.message_loop_proxy(), new MediaLog())),
+          new Pipeline(message_loop_.task_runner(), new MediaLog())),
       ended_(false),
       pipeline_status_(PIPELINE_OK),
       last_video_frame_format_(VideoFrame::UNKNOWN),
@@ -224,7 +224,7 @@ void PipelineIntegrationTestBase::CreateDemuxer(const std::string& filename) {
 
 #if !defined(MEDIA_DISABLE_FFMPEG)
   demuxer_ = scoped_ptr<Demuxer>(
-      new FFmpegDemuxer(message_loop_.message_loop_proxy(), data_source_.get(),
+      new FFmpegDemuxer(message_loop_.task_runner(), data_source_.get(),
                         encrypted_media_init_data_cb, new MediaLog()));
 #endif
 }
@@ -233,12 +233,12 @@ scoped_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer() {
   ScopedVector<VideoDecoder> video_decoders;
 #if !defined(MEDIA_DISABLE_LIBVPX)
   video_decoders.push_back(
-      new VpxVideoDecoder(message_loop_.message_loop_proxy()));
+      new VpxVideoDecoder(message_loop_.task_runner()));
 #endif  // !defined(MEDIA_DISABLE_LIBVPX)
 
 #if !defined(MEDIA_DISABLE_FFMPEG)
   video_decoders.push_back(
-      new FFmpegVideoDecoder(message_loop_.message_loop_proxy()));
+      new FFmpegVideoDecoder(message_loop_.task_runner()));
 #endif
 
   // Simulate a 60Hz rendering sink.
@@ -250,11 +250,11 @@ scoped_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer() {
 
   // Disable frame dropping if hashing is enabled.
   scoped_ptr<VideoRenderer> video_renderer(new VideoRendererImpl(
-      message_loop_.message_loop_proxy(), video_sink_.get(),
+      message_loop_.task_runner(), video_sink_.get(),
       video_decoders.Pass(), false, nullptr, new MediaLog()));
 
   if (!clockless_playback_) {
-    audio_sink_ = new NullAudioSink(message_loop_.message_loop_proxy());
+    audio_sink_ = new NullAudioSink(message_loop_.task_runner());
   } else {
     clockless_audio_sink_ = new ClocklessAudioSink();
   }
@@ -263,11 +263,11 @@ scoped_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer() {
 
 #if !defined(MEDIA_DISABLE_FFMPEG)
   audio_decoders.push_back(
-      new FFmpegAudioDecoder(message_loop_.message_loop_proxy(), LogCB()));
+      new FFmpegAudioDecoder(message_loop_.task_runner(), LogCB()));
 #endif
 
   audio_decoders.push_back(
-      new OpusAudioDecoder(message_loop_.message_loop_proxy()));
+      new OpusAudioDecoder(message_loop_.task_runner()));
 
   AudioParameters out_params(AudioParameters::AUDIO_PCM_LOW_LATENCY,
                              CHANNEL_LAYOUT_STEREO,
@@ -277,7 +277,7 @@ scoped_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer() {
   hardware_config_.UpdateOutputConfig(out_params);
 
   scoped_ptr<AudioRenderer> audio_renderer(new AudioRendererImpl(
-      message_loop_.message_loop_proxy(),
+      message_loop_.task_runner(),
       (clockless_playback_)
           ? static_cast<AudioRendererSink*>(clockless_audio_sink_.get())
           : audio_sink_.get(),
@@ -286,7 +286,7 @@ scoped_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer() {
     audio_sink_->StartAudioHashForTesting();
 
   scoped_ptr<RendererImpl> renderer_impl(
-      new RendererImpl(message_loop_.message_loop_proxy(),
+      new RendererImpl(message_loop_.task_runner(),
                        audio_renderer.Pass(),
                        video_renderer.Pass()));
 
