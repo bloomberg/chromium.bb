@@ -11,7 +11,6 @@ namespace ui {
 
 OverlayPlane::OverlayPlane(scoped_refptr<ScanoutBuffer> buffer)
     : buffer(buffer),
-      z_order(0),
       display_bounds(gfx::Point(), buffer->GetSize()),
       crop_rect(0, 0, 1, 1) {
 }

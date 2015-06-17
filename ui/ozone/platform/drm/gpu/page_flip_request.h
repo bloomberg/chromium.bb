@@ -25,7 +25,7 @@ class PageFlipRequest : public base::RefCounted<PageFlipRequest> {
 
   SwapCompletionCallback callback_;
   int crtc_count_;
-  gfx::SwapResult result_;
+  gfx::SwapResult result_ = gfx::SwapResult::SWAP_ACK;
 
   DISALLOW_COPY_AND_ASSIGN(PageFlipRequest);
 };

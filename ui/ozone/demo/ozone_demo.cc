@@ -53,7 +53,7 @@ class RendererFactory {
                                           const gfx::Size& size);
 
  private:
-  RendererType type_;
+  RendererType type_ = SOFTWARE;
 
   // Helper for applications that do GL on main thread.
   ui::OzoneGpuTestHelper gpu_helper_;
@@ -90,12 +90,12 @@ class WindowManager : public ui::NativeDisplayObserver {
   //
   // True if configuring the displays. In this case a new display configuration
   // isn't started.
-  bool is_configuring_;
+  bool is_configuring_ = false;
 
   // If |is_configuring_| is true and another display configuration event
   // happens, the event is deferred. This is set to true and a display
   // configuration will be scheduled after the current one finishes.
-  bool should_configure_;
+  bool should_configure_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManager);
 };
@@ -107,7 +107,6 @@ class DemoWindow : public ui::PlatformWindowDelegate {
              const gfx::Rect& bounds)
       : window_manager_(window_manager),
         renderer_factory_(renderer_factory),
-        widget_(gfx::kNullAcceleratedWidget),
         weak_ptr_factory_(this) {
     platform_window_ =
         ui::OzonePlatform::GetInstance()->CreatePlatformWindow(this, bounds);
@@ -167,7 +166,7 @@ class DemoWindow : public ui::PlatformWindowDelegate {
 
   // Window-related state.
   scoped_ptr<ui::PlatformWindow> platform_window_;
-  gfx::AcceleratedWidget widget_;
+  gfx::AcceleratedWidget widget_ = gfx::kNullAcceleratedWidget;
 
   base::WeakPtrFactory<DemoWindow> weak_ptr_factory_;
 
@@ -177,7 +176,7 @@ class DemoWindow : public ui::PlatformWindowDelegate {
 ///////////////////////////////////////////////////////////////////////////////
 // RendererFactory implementation:
 
-RendererFactory::RendererFactory() : type_(SOFTWARE) {
+RendererFactory::RendererFactory() {
 }
 
 RendererFactory::~RendererFactory() {
@@ -223,9 +222,7 @@ scoped_ptr<ui::Renderer> RendererFactory::CreateRenderer(
 WindowManager::WindowManager(const base::Closure& quit_closure)
     : delegate_(
           ui::OzonePlatform::GetInstance()->CreateNativeDisplayDelegate()),
-      quit_closure_(quit_closure),
-      is_configuring_(false),
-      should_configure_(false) {
+      quit_closure_(quit_closure) {
   if (!renderer_factory_.Initialize())
     LOG(FATAL) << "Failed to initialize renderer factory";
 

@@ -9,8 +9,7 @@
 
 namespace ui {
 
-DrmWindowHostManager::DrmWindowHostManager()
-    : last_allocated_widget_(0), event_grabber_(gfx::kNullAcceleratedWidget) {
+DrmWindowHostManager::DrmWindowHostManager() {
 }
 
 DrmWindowHostManager::~DrmWindowHostManager() {

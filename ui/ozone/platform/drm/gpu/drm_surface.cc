@@ -37,7 +37,6 @@ scoped_refptr<DrmBuffer> AllocateBuffer(const scoped_refptr<DrmDevice>& drm,
 
 DrmSurface::DrmSurface(DrmWindow* window_delegate)
     : window_delegate_(window_delegate),
-      pending_pageflip_(false),
       weak_ptr_factory_(this) {
 }
 

@@ -26,7 +26,7 @@ const char* kSrcHPropName = "SRC_H";
 
 }  // namespace
 
-HardwareDisplayPlaneAtomic::Property::Property() : id(0) {
+HardwareDisplayPlaneAtomic::Property::Property() {
 }
 
 bool HardwareDisplayPlaneAtomic::Property::Initialize(
@@ -50,7 +50,7 @@ bool HardwareDisplayPlaneAtomic::Property::Initialize(
 
 HardwareDisplayPlaneAtomic::HardwareDisplayPlaneAtomic(uint32_t plane_id,
                                                        uint32_t possible_crtcs)
-    : HardwareDisplayPlane(plane_id, possible_crtcs), crtc_(nullptr) {
+    : HardwareDisplayPlane(plane_id, possible_crtcs) {
 }
 HardwareDisplayPlaneAtomic::~HardwareDisplayPlaneAtomic() {
 }

@@ -13,8 +13,7 @@
 
 namespace ui {
 
-SurfacelessGlRenderer::BufferWrapper::BufferWrapper()
-    : widget_(gfx::kNullAcceleratedWidget), gl_fb_(0), gl_tex_(0) {
+SurfacelessGlRenderer::BufferWrapper::BufferWrapper() {
 }
 
 SurfacelessGlRenderer::BufferWrapper::~BufferWrapper() {
@@ -85,7 +84,6 @@ SurfacelessGlRenderer::SurfacelessGlRenderer(
     GpuMemoryBufferFactoryOzoneNativeBuffer* buffer_factory)
     : GlRenderer(widget, size),
       buffer_factory_(buffer_factory),
-      back_buffer_(0),
       weak_ptr_factory_(this) {
 }
 

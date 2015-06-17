@@ -90,7 +90,7 @@ class DrmGpuPlatformSupport : public GpuPlatformSupport {
   void SetIOTaskRunner(
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
 
-  IPC::Sender* sender_;                   // Not owned.
+  IPC::Sender* sender_ = nullptr;             // Not owned.
   DrmDeviceManager* drm_device_manager_;  // Not owned.
   ScreenManager* screen_manager_;         // Not owned.
   ScanoutBufferGenerator* buffer_generator_;  // Not owned.

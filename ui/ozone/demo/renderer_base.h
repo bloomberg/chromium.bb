@@ -22,7 +22,7 @@ class RendererBase : public Renderer {
   gfx::AcceleratedWidget widget_;
   gfx::Size size_;
 
-  int iteration_;
+  int iteration_ = 0;
 };
 
 }  // namespace ui

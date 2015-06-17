@@ -43,18 +43,18 @@ class SurfacelessGlRenderer : public GlRenderer {
     void SchedulePlane();
 
    private:
-    gfx::AcceleratedWidget widget_;
+    gfx::AcceleratedWidget widget_ = gfx::kNullAcceleratedWidget;
     gfx::Size size_;
 
     scoped_refptr<gfx::GLImage> image_;
-    unsigned int gl_fb_;
-    unsigned int gl_tex_;
+    unsigned int gl_fb_ = 0;
+    unsigned int gl_tex_ = 0;
   };
 
   GpuMemoryBufferFactoryOzoneNativeBuffer* buffer_factory_;
 
   BufferWrapper buffers_[2];
-  int back_buffer_;
+  int back_buffer_ = 0;
 
   base::WeakPtrFactory<SurfacelessGlRenderer> weak_ptr_factory_;
 

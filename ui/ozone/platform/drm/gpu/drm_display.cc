@@ -79,7 +79,7 @@ std::vector<drmModeModeInfo> GetDrmModeVector(drmModeConnector* connector) {
 
 DrmDisplay::DrmDisplay(ScreenManager* screen_manager,
                        const scoped_refptr<DrmDevice>& drm)
-    : screen_manager_(screen_manager), display_id_(-1), drm_(drm) {
+    : screen_manager_(screen_manager), drm_(drm) {
 }
 
 DrmDisplay::~DrmDisplay() {

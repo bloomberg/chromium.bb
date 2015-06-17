@@ -42,11 +42,11 @@ class OZONE_EXPORT HardwareDisplayPlane {
   uint32_t owning_crtc() const { return owning_crtc_; }
 
  protected:
-  uint32_t plane_id_;
-  uint32_t possible_crtcs_;
-  uint32_t owning_crtc_;
-  bool in_use_;
-  bool is_dummy_;
+  uint32_t plane_id_ = 0;
+  uint32_t possible_crtcs_ = 0;
+  uint32_t owning_crtc_ = 0;
+  bool in_use_ = false;
+  bool is_dummy_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(HardwareDisplayPlane);
 };

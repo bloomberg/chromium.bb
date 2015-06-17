@@ -9,33 +9,17 @@
 
 namespace ui {
 
-DisplayMode_Params::DisplayMode_Params()
-    : size(), is_interlaced(false), refresh_rate(0.0f) {}
+DisplayMode_Params::DisplayMode_Params() {
+}
 
 DisplayMode_Params::~DisplayMode_Params() {}
 
-DisplaySnapshot_Params::DisplaySnapshot_Params()
-    : display_id(0),
-      origin(),
-      physical_size(),
-      type(ui::DISPLAY_CONNECTION_TYPE_NONE),
-      is_aspect_preserving_scaling(false),
-      has_overscan(false),
-      display_name(),
-      modes(),
-      has_current_mode(false),
-      current_mode(),
-      has_native_mode(false),
-      native_mode(),
-      product_id(0) {
+DisplaySnapshot_Params::DisplaySnapshot_Params() {
 }
 
 DisplaySnapshot_Params::~DisplaySnapshot_Params() {}
 
-OverlayCheck_Params::OverlayCheck_Params()
-    : transform(gfx::OVERLAY_TRANSFORM_INVALID),
-      format(SurfaceFactoryOzone::UNKNOWN),
-      plane_z_order(0) {
+OverlayCheck_Params::OverlayCheck_Params() {
 }
 
 OverlayCheck_Params::OverlayCheck_Params(

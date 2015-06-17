@@ -136,7 +136,7 @@ ui::EventType GetEventTypeFromNative(const caca_event_t& event) {
 
 }  // namespace
 
-CacaEventSource::CacaEventSource() : modifier_flags_(0) {
+CacaEventSource::CacaEventSource() {
 }
 
 CacaEventSource::~CacaEventSource() {

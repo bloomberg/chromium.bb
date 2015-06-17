@@ -15,11 +15,7 @@ namespace ui {
 
 DrmConsoleBuffer::DrmConsoleBuffer(const scoped_refptr<DrmDevice>& drm,
                                    uint32_t framebuffer)
-    : drm_(drm),
-      handle_(0),
-      framebuffer_(framebuffer),
-      mmap_base_(NULL),
-      mmap_size_(0) {
+    : drm_(drm), framebuffer_(framebuffer) {
 }
 
 DrmConsoleBuffer::~DrmConsoleBuffer() {

@@ -34,7 +34,7 @@ class CacaEventSource : public PlatformEventSource {
   // events.
   gfx::PointF last_cursor_location_;
 
-  int modifier_flags_;
+  int modifier_flags_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(CacaEventSource);
 };

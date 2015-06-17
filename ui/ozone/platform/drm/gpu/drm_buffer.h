@@ -41,20 +41,20 @@ class OZONE_EXPORT DrmBuffer : public ScanoutBuffer {
   scoped_refptr<DrmDevice> drm_;
 
   // Length of a row of pixels.
-  uint32_t stride_;
+  uint32_t stride_ = 0;
 
   // Buffer handle used by the DRM allocator.
-  uint32_t handle_;
+  uint32_t handle_ = 0;
 
   // Base address for memory mapping.
-  void* mmap_base_;
+  void* mmap_base_ = 0;
 
   // Size for memory mapping.
-  size_t mmap_size_;
+  size_t mmap_size_ = 0;
 
   // Buffer ID used by the DRM modesettings API. This is set when the buffer is
   // registered with the CRTC.
-  uint32_t framebuffer_;
+  uint32_t framebuffer_ = 0;
 
   // Wrapper around the native pixel memory.
   skia::RefPtr<SkSurface> surface_;

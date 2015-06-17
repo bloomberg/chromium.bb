@@ -23,7 +23,7 @@ class GbmDevice : public DrmDevice {
  private:
   ~GbmDevice() override;
 
-  gbm_device* device_;
+  gbm_device* device_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(GbmDevice);
 };

@@ -52,12 +52,7 @@ DrmWindow::DrmWindow(gfx::AcceleratedWidget widget,
                      ScreenManager* screen_manager)
     : widget_(widget),
       device_manager_(device_manager),
-      screen_manager_(screen_manager),
-      controller_(NULL),
-      cursor_frontbuffer_(0),
-      cursor_frame_(0),
-      cursor_frame_delay_ms_(0),
-      last_swap_sync_(false) {
+      screen_manager_(screen_manager) {
 }
 
 DrmWindow::~DrmWindow() {

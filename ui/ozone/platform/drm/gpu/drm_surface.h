@@ -55,7 +55,7 @@ class OZONE_EXPORT DrmSurface : public SurfaceOzoneCanvas {
   // events completes.
   skia::RefPtr<SkImage> pending_image_;
   gfx::Rect pending_image_damage_;
-  bool pending_pageflip_;
+  bool pending_pageflip_ = false;
 
   base::WeakPtrFactory<DrmSurface> weak_ptr_factory_;
 

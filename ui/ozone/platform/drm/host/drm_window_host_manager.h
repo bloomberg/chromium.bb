@@ -59,10 +59,10 @@ class DrmWindowHostManager {
  private:
   typedef std::map<gfx::AcceleratedWidget, DrmWindowHost*> WidgetToWindowMap;
 
-  gfx::AcceleratedWidget last_allocated_widget_;
+  gfx::AcceleratedWidget last_allocated_widget_ = 0;
   WidgetToWindowMap window_map_;
 
-  gfx::AcceleratedWidget event_grabber_;
+  gfx::AcceleratedWidget event_grabber_ = gfx::kNullAcceleratedWidget;
 
   DISALLOW_COPY_AND_ASSIGN(DrmWindowHostManager);
 };

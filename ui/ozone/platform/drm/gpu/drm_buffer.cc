@@ -34,13 +34,7 @@ uint8_t GetColorDepth(SkColorType type) {
 
 }  // namespace
 
-DrmBuffer::DrmBuffer(const scoped_refptr<DrmDevice>& drm)
-    : drm_(drm),
-      stride_(0),
-      handle_(0),
-      mmap_base_(0),
-      mmap_size_(0),
-      framebuffer_(0) {
+DrmBuffer::DrmBuffer(const scoped_refptr<DrmDevice>& drm) : drm_(drm) {
 }
 
 DrmBuffer::~DrmBuffer() {

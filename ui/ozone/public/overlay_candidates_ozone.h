@@ -24,9 +24,9 @@ class OZONE_BASE_EXPORT OverlayCandidatesOzone {
     ~OverlaySurfaceCandidate();
 
     // Transformation to apply to layer during composition.
-    gfx::OverlayTransform transform;
+    gfx::OverlayTransform transform = gfx::OVERLAY_TRANSFORM_NONE;
     // Format of the buffer to composite.
-    SurfaceFactoryOzone::BufferFormat format;
+    SurfaceFactoryOzone::BufferFormat format = SurfaceFactoryOzone::UNKNOWN;
     // Size of the buffer, in pixels.
     gfx::Size buffer_size;
     // Rect on the display to position the overlay to. Input rectangle may
@@ -37,11 +37,11 @@ class OZONE_BASE_EXPORT OverlayCandidatesOzone {
     gfx::RectF crop_rect;
     // Stacking order of the overlay plane relative to the main surface,
     // which is 0. Signed to allow for "underlays".
-    int plane_z_order;
+    int plane_z_order = 0;
 
     // To be modified by the implementer if this candidate can go into
     // an overlay.
-    bool overlay_handled;
+    bool overlay_handled = false;
   };
 
   typedef std::vector<OverlaySurfaceCandidate> OverlaySurfaceCandidateList;

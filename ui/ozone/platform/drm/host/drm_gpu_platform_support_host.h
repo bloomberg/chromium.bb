@@ -51,7 +51,7 @@ class DrmGpuPlatformSupportHost : public GpuPlatformSupportHost,
   bool Send(IPC::Message* message) override;
 
  private:
-  int host_id_;
+  int host_id_ = -1;
 
   scoped_refptr<base::SingleThreadTaskRunner> send_runner_;
   base::Callback<void(IPC::Message*)> send_callback_;

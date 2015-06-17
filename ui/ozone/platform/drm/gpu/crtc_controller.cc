@@ -15,11 +15,7 @@ namespace ui {
 CrtcController::CrtcController(const scoped_refptr<DrmDevice>& drm,
                                uint32_t crtc,
                                uint32_t connector)
-    : drm_(drm),
-      crtc_(crtc),
-      connector_(connector),
-      is_disabled_(true),
-      time_of_last_flip_(0) {
+    : drm_(drm), crtc_(crtc), connector_(connector) {
 }
 
 CrtcController::~CrtcController() {

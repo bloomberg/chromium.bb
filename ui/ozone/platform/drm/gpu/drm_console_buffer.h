@@ -40,19 +40,19 @@ class DrmConsoleBuffer {
   skia::RefPtr<SkSurface> surface_;
 
   // Length of a row of pixels.
-  uint32_t stride_;
+  uint32_t stride_ = 0;
 
   // Buffer handle used by the DRM allocator.
-  uint32_t handle_;
+  uint32_t handle_ = 0;
 
   // Buffer ID used by the DRM modesettings API.
-  uint32_t framebuffer_;
+  uint32_t framebuffer_ = 0;
 
   // Memory map base address.
-  void* mmap_base_;
+  void* mmap_base_ = nullptr;
 
   // Memory map size.
-  size_t mmap_size_;
+  size_t mmap_size_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(DrmConsoleBuffer);
 };

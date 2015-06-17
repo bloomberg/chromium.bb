@@ -8,10 +8,7 @@
 
 namespace ui {
 
-OverlayCandidatesOzone::OverlaySurfaceCandidate::OverlaySurfaceCandidate()
-    : transform(gfx::OVERLAY_TRANSFORM_NONE),
-      format(SurfaceFactoryOzone::UNKNOWN),
-      overlay_handled(false) {
+OverlayCandidatesOzone::OverlaySurfaceCandidate::OverlaySurfaceCandidate() {
 }
 
 OverlayCandidatesOzone::OverlaySurfaceCandidate::~OverlaySurfaceCandidate() {

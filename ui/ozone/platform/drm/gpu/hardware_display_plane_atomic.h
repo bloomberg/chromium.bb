@@ -37,7 +37,7 @@ class HardwareDisplayPlaneAtomic : public HardwareDisplayPlane {
     bool Initialize(DrmDevice* drm,
                     const char* name,
                     const ScopedDrmObjectPropertyPtr& plane_properties);
-    uint32_t id;
+    uint32_t id = 0;
   };
 
   Property crtc_prop_;
@@ -50,7 +50,7 @@ class HardwareDisplayPlaneAtomic : public HardwareDisplayPlane {
   Property src_y_prop_;
   Property src_w_prop_;
   Property src_h_prop_;
-  CrtcController* crtc_;
+  CrtcController* crtc_ = nullptr;
 };
 
 }  // namespace ui

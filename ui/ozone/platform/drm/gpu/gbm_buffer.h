@@ -49,7 +49,7 @@ class GbmPixmap : public NativePixmap {
   ~GbmPixmap() override;
 
   scoped_refptr<GbmBuffer> buffer_;
-  int dma_buf_;
+  int dma_buf_ = -1;
 
   DISALLOW_COPY_AND_ASSIGN(GbmPixmap);
 };

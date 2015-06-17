@@ -91,7 +91,7 @@ class DrmDisplayHostManager : public DeviceEventObserver,
   DrmGpuPlatformSupportHost* proxy_;  // Not owned.
   DeviceManager* device_manager_;     // Not owned.
 
-  DrmNativeDisplayDelegate* delegate_;  // Not owned.
+  DrmNativeDisplayDelegate* delegate_ = nullptr;  // Not owned.
 
   // File path for the primary graphics card which is opened by default in the
   // GPU process. We'll avoid opening this in hotplug events since it will race
@@ -103,7 +103,7 @@ class DrmDisplayHostManager : public DeviceEventObserver,
 
   // Keeps track if there is a dummy display. This happens on initialization
   // when there is no connection to the GPU to update the displays.
-  bool has_dummy_display_;
+  bool has_dummy_display_ = false;
 
   ScopedVector<DrmDisplayHost> displays_;
 
@@ -120,7 +120,7 @@ class DrmDisplayHostManager : public DeviceEventObserver,
   std::queue<DisplayEvent> event_queue_;
 
   // True if a display event is currently being processed on a worker thread.
-  bool task_pending_;
+  bool task_pending_ = false;
 
   // Keeps track of all the active DRM devices.
   std::set<base::FilePath> drm_devices_;

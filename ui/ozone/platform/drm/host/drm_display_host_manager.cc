@@ -112,10 +112,7 @@ DrmDisplayHostManager::DrmDisplayHostManager(DrmGpuPlatformSupportHost* proxy,
                                              DeviceManager* device_manager)
     : proxy_(proxy),
       device_manager_(device_manager),
-      delegate_(nullptr),
       primary_graphics_card_path_(GetPrimaryDisplayCardPath()),
-      has_dummy_display_(false),
-      task_pending_(false),
       weak_ptr_factory_(this) {
   {
     // First device needs to be treated specially. We need to open this

@@ -33,7 +33,7 @@ class GbmBufferBase : public ScanoutBuffer {
  private:
   scoped_refptr<DrmDevice> drm_;
   gbm_bo* bo_;
-  uint32_t framebuffer_;
+  uint32_t framebuffer_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(GbmBufferBase);
 };

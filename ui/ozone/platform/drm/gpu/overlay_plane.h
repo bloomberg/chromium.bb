@@ -35,7 +35,7 @@ struct OZONE_EXPORT OverlayPlane {
   static const OverlayPlane* GetPrimaryPlane(const OverlayPlaneList& overlays);
 
   scoped_refptr<ScanoutBuffer> buffer;
-  int z_order;
+  int z_order = 0;
   gfx::OverlayTransform plane_transform;
   gfx::Rect display_bounds;
   gfx::RectF crop_rect;

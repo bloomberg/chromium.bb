@@ -113,23 +113,23 @@ class OZONE_EXPORT DrmWindow {
 
   // The controller associated with the current window. This may be nullptr if
   // the window isn't over an active display.
-  HardwareDisplayController* controller_;
+  HardwareDisplayController* controller_ = nullptr;
 
   base::RepeatingTimer<DrmWindow> cursor_timer_;
 
   scoped_refptr<DrmBuffer> cursor_buffers_[2];
-  int cursor_frontbuffer_;
+  int cursor_frontbuffer_ = 0;
 
   std::vector<SkBitmap> cursor_bitmaps_;
   gfx::Point cursor_location_;
-  int cursor_frame_;
-  int cursor_frame_delay_ms_;
+  int cursor_frame_ = 0;
+  int cursor_frame_delay_ms_ = 0;
 
   // Planes and flips currently being queued in the absence of hardware display
   // controller.
   OverlayPlaneList pending_planes_;
   OverlayPlaneList last_submitted_planes_;
-  bool last_swap_sync_;
+  bool last_swap_sync_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(DrmWindow);
 };

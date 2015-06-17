@@ -39,9 +39,7 @@ class DrmGpuPlatformSupportMessageFilter : public IPC::MessageFilter {
       : screen_manager_(screen_manager),
         on_filter_added_callback_(on_filter_added_callback),
         main_thread_listener_(main_thread_listener),
-        main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-        pending_main_thread_operations_(0),
-        cursor_animating_(false) {}
+        main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
 
   void OnFilterAdded(IPC::Sender* sender) override {
     io_thread_task_runner_ = base::ThreadTaskRunnerHandle::Get();
@@ -160,8 +158,8 @@ class DrmGpuPlatformSupportMessageFilter : public IPC::MessageFilter {
   IPC::Listener* main_thread_listener_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner_;
-  int32 pending_main_thread_operations_;
-  bool cursor_animating_;
+  int32 pending_main_thread_operations_ = 0;
+  bool cursor_animating_ = false;
 };
 }
 
@@ -170,8 +168,7 @@ DrmGpuPlatformSupport::DrmGpuPlatformSupport(
     ScreenManager* screen_manager,
     ScanoutBufferGenerator* buffer_generator,
     scoped_ptr<DrmGpuDisplayManager> display_manager)
-    : sender_(NULL),
-      drm_device_manager_(drm_device_manager),
+    : drm_device_manager_(drm_device_manager),
       screen_manager_(screen_manager),
       buffer_generator_(buffer_generator),
       display_manager_(display_manager.Pass()) {

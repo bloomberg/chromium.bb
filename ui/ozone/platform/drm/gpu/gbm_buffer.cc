@@ -65,8 +65,7 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBuffer(
   return buffer;
 }
 
-GbmPixmap::GbmPixmap(const scoped_refptr<GbmBuffer>& buffer)
-    : buffer_(buffer), dma_buf_(-1) {
+GbmPixmap::GbmPixmap(const scoped_refptr<GbmBuffer>& buffer) : buffer_(buffer) {
 }
 
 bool GbmPixmap::Initialize() {

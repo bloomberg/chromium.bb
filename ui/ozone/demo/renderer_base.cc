@@ -11,7 +11,7 @@ const int kAnimationSteps = 240;
 }  // namespace
 
 RendererBase::RendererBase(gfx::AcceleratedWidget widget, const gfx::Size& size)
-    : widget_(widget), size_(size), iteration_(0) {
+    : widget_(widget), size_(size) {
 }
 
 RendererBase::~RendererBase() {

@@ -13,7 +13,7 @@
 namespace ui {
 
 DrmGpuPlatformSupportHost::DrmGpuPlatformSupportHost(DrmCursor* cursor)
-    : host_id_(-1), cursor_(cursor) {
+    : cursor_(cursor) {
 }
 
 DrmGpuPlatformSupportHost::~DrmGpuPlatformSupportHost() {
