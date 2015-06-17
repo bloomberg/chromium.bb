@@ -184,7 +184,8 @@ base::FilePath ExtractDrivePath(const base::FilePath& path) {
     return base::FilePath();
   if (components[1] != FILE_PATH_LITERAL("special"))
     return base::FilePath();
-  if (!base::StartsWithASCII(components[2], "drive", true))
+  static const base::FilePath::CharType kPrefix[] = FILE_PATH_LITERAL("drive");
+  if (components[2].compare(0, arraysize(kPrefix) - 1, kPrefix) != 0)
     return base::FilePath();
 
   base::FilePath drive_path = GetDriveGrandRootPath();

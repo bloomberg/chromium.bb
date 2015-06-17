@@ -293,7 +293,7 @@ FileError FileCache::OpenForWrite(
 
 bool FileCache::IsOpenedForWrite(const std::string& id) {
   AssertOnSequencedWorkerPool();
-  return write_opened_files_.count(id);
+  return write_opened_files_.count(id) != 0;
 }
 
 FileError FileCache::UpdateMd5(const std::string& id) {
