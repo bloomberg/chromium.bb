@@ -48386,6 +48386,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.Video.InputFramesPerSecond" units="fps">
+  <owner>asapersson@chromium.org</owner>
+  <summary>
+    The number of incoming frames per second for a sent video stream. Recorded
+    when a stream is removed.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.Video.KeyFramesReceivedInPermille" units="permille">
   <owner>asapersson@chromium.org</owner>
   <summary>
@@ -48525,6 +48533,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The number of sent bits over RTX per second for a sent video stream.
     Recorded when a stream is removed.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.SentFramesPerSecond" units="fps">
+  <owner>asapersson@chromium.org</owner>
+  <summary>
+    The number of sent frames per second for a sent video stream. Recorded when
+    a stream is removed.
   </summary>
 </histogram>
 
