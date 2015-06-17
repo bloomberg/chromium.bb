@@ -408,13 +408,6 @@ config("compiler") {
     } else {
       cflags += [ "-funwind-tables" ]
     }
-
-    if (is_clang && !is_nacl && !is_debug) {
-      # Non-unique section names appears to make linker dead stripping
-      # less effective. See http://crbug.com/483026#c20
-      # TODO(hans): Remove this if resolved upstream.
-      cflags += [ "-funique-section-names" ]
-    }
   }
 
   # Linux/Android common flags setup.

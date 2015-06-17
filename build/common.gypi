@@ -3825,14 +3825,6 @@
                 'cflags': ['-fno-unwind-tables', '-fno-asynchronous-unwind-tables'],
                 'defines': ['NO_UNWIND_TABLES'],
               }],
-              ['clang==1', {
-                # Non-unique section names appears to make linker dead stripping
-                # less effective. See http://crbug.com/483026#c20
-                # TODO(hans): Remove this if resolved upstream.
-                'cflags': [
-                  '-funique-section-names',
-                ],
-              }],
             ],
           },
         },
