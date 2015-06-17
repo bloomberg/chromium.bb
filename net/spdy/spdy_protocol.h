@@ -14,7 +14,6 @@
 #include <limits>
 #include <map>
 #include <string>
-#include <vector>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -962,38 +961,26 @@ class NET_EXPORT_PRIVATE SpdyContinuationIR
   DISALLOW_COPY_AND_ASSIGN(SpdyContinuationIR);
 };
 
-// TODO(bnc): Add probability.
-// TODO(bnc): Separate (protocol, port, host, max_age, probability) tuple into
-// struct, have a vector of that struct.  A single HTTP/1.1 header field or
-// HTTP/2 or QUIC frame can define multiple such tuples.
 class NET_EXPORT_PRIVATE SpdyAltSvcIR : public SpdyFrameWithStreamIdIR {
  public:
   explicit SpdyAltSvcIR(SpdyStreamId stream_id);
+  ~SpdyAltSvcIR() override;
 
   std::string origin() const { return origin_; }
-  const SpdyAltSvcWireFormat::AlternativeService& altsvc() const {
-    return altsvc_;
+  const SpdyAltSvcWireFormat::AlternativeServiceVector& altsvc_vector() const {
+    return altsvc_vector_;
   }
-  SpdyProtocolId protocol_id() const { return altsvc_.protocol_id; }
-  std::string host() const { return altsvc_.host; }
-  uint16 port() const { return altsvc_.port; }
-  uint32 max_age() const { return altsvc_.max_age; }
-  double p() const { return altsvc_.p; }
 
-  void set_origin(std::string origin) { origin_ = origin; }
-  void set_protocol_id(SpdyProtocolId protocol_id) {
-    altsvc_.protocol_id = protocol_id;
+  void set_origin(const std::string origin) { origin_ = origin; }
+  void add_altsvc(const SpdyAltSvcWireFormat::AlternativeService& altsvc) {
+    altsvc_vector_.push_back(altsvc);
   }
-  void set_host(std::string host) { altsvc_.host = host; }
-  void set_port(uint16 port) { altsvc_.port = port; }
-  void set_max_age(uint32 max_age) { altsvc_.max_age = max_age; }
-  void set_p(double p) { altsvc_.p = p; }
 
   void Visit(SpdyFrameVisitor* visitor) const override;
 
  private:
   std::string origin_;
-  SpdyAltSvcWireFormat::AlternativeService altsvc_;
+  SpdyAltSvcWireFormat::AlternativeServiceVector altsvc_vector_;
   DISALLOW_COPY_AND_ASSIGN(SpdyAltSvcIR);
 };
 

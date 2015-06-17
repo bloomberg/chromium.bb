@@ -271,7 +271,7 @@ class NET_EXPORT_PRIVATE SpdyFramerVisitorInterface {
   virtual void OnAltSvc(
       SpdyStreamId stream_id,
       base::StringPiece origin,
-      const SpdyAltSvcWireFormat::AlternativeService& altsvc) {}
+      const SpdyAltSvcWireFormat::AlternativeServiceVector& altsvc_vector) {}
 
   // Called when a PRIORITY frame is received.
   virtual void OnPriority(SpdyStreamId stream_id,

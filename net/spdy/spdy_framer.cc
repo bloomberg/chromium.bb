@@ -2067,14 +2067,15 @@ size_t SpdyFramer::ProcessAltSvcFramePayload(const char* data, size_t len) {
   StringPiece value(altsvc_scratch_.buffer.get() + reader.GetBytesConsumed(),
                     altsvc_scratch_.buffer_length - reader.GetBytesConsumed());
 
-  SpdyAltSvcWireFormat::AlternativeService altsvc;
-  bool success = SpdyAltSvcWireFormat::ParseHeaderFieldValue(value, &altsvc);
-  if (!success || altsvc.protocol_id.length() == 0) {
+  SpdyAltSvcWireFormat::AlternativeServiceVector altsvc_vector;
+  bool success =
+      SpdyAltSvcWireFormat::ParseHeaderFieldValue(value, &altsvc_vector);
+  if (!success) {
     set_error(SPDY_INVALID_CONTROL_FRAME);
     return 0;
   }
 
-  visitor_->OnAltSvc(current_frame_stream_id_, origin, altsvc);
+  visitor_->OnAltSvc(current_frame_stream_id_, origin, altsvc_vector);
   CHANGE_STATE(SPDY_AUTO_RESET);
   return len;
 }
@@ -2775,20 +2776,20 @@ SpdyFrame* SpdyFramer::SerializeContinuation(
   return builder.take();
 }
 
-SpdyFrame* SpdyFramer::SerializeAltSvc(const SpdyAltSvcIR& altsvc) {
+SpdyFrame* SpdyFramer::SerializeAltSvc(const SpdyAltSvcIR& altsvc_ir) {
   DCHECK_LT(SPDY3, protocol_version());
 
   size_t size = GetAltSvcMinimumSize();
-  size += altsvc.origin().length();
-  string value =
-      SpdyAltSvcWireFormat::SerializeHeaderFieldValue(altsvc.altsvc());
+  size += altsvc_ir.origin().length();
+  string value = SpdyAltSvcWireFormat::SerializeHeaderFieldValue(
+      altsvc_ir.altsvc_vector());
   size += value.length();
 
   SpdyFrameBuilder builder(size, protocol_version());
-  builder.BeginNewFrame(*this, ALTSVC, kNoFlags, altsvc.stream_id());
+  builder.BeginNewFrame(*this, ALTSVC, kNoFlags, altsvc_ir.stream_id());
 
-  builder.WriteUInt16(altsvc.origin().length());
-  builder.WriteBytes(altsvc.origin().data(), altsvc.origin().length());
+  builder.WriteUInt16(altsvc_ir.origin().length());
+  builder.WriteBytes(altsvc_ir.origin().data(), altsvc_ir.origin().length());
   builder.WriteBytes(value.data(), value.length());
   DCHECK_LT(GetAltSvcMinimumSize(), builder.length());
   return builder.take();

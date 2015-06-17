@@ -10,6 +10,8 @@
 #ifndef NET_SPDY_SPDY_ALT_SVC_WIRE_FORMAT_H_
 #define NET_SPDY_SPDY_ALT_SVC_WIRE_FORMAT_H_
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
@@ -27,21 +29,34 @@ class NET_EXPORT_PRIVATE SpdyAltSvcWireFormat {
   struct AlternativeService {
     std::string protocol_id;
     std::string host;
-    uint16 port = 0;
-    uint32 max_age = 0;
-    double p = 1.0;
+    uint16 port;
+    uint32 max_age;
+    double p;
+
+    AlternativeService() = default;
+    AlternativeService(const std::string& protocol_id,
+                       const std::string& host,
+                       uint16 port,
+                       uint32 max_age,
+                       double p)
+        : protocol_id(protocol_id),
+          host(host),
+          port(port),
+          max_age(max_age),
+          p(p) {}
 
     bool operator==(const AlternativeService& other) const {
       return protocol_id == other.protocol_id && host == other.host &&
              port == other.port && max_age == other.max_age && p == other.p;
     }
   };
+  typedef std::vector<AlternativeService> AlternativeServiceVector;
 
   friend class test::SpdyAltSvcWireFormatPeer;
   static bool ParseHeaderFieldValue(StringPiece value,
-                                    AlternativeService* altsvc);
+                                    AlternativeServiceVector* altsvc_vector);
   static std::string SerializeHeaderFieldValue(
-      const AlternativeService& altsvc);
+      const AlternativeServiceVector& altsvc_vector);
 
  private:
   static void SkipWhiteSpace(StringPiece::const_iterator* c,

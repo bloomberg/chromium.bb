@@ -69,7 +69,8 @@ class MockVisitor : public SpdyFramerVisitorInterface {
   MOCK_METHOD3(OnAltSvc,
                void(SpdyStreamId stream_id,
                     StringPiece origin,
-                    const SpdyAltSvcWireFormat::AlternativeService& altsvc));
+                    const SpdyAltSvcWireFormat::AlternativeServiceVector&
+                        altsvc_vector));
   MOCK_METHOD2(OnUnknownFrame, bool(SpdyStreamId stream_id, int frame_type));
 };
 
