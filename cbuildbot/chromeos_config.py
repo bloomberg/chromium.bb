@@ -407,6 +407,7 @@ _x86_internal_release_boards = frozenset([
     'glimmer',
     'gnawty',
     'guado',
+    'heli',
     'jecht',
     'kip',
     'lakitu',
@@ -2400,7 +2401,9 @@ def GetConfig():
   )
 
   _AddGroupConfig(
-      'rambi-e', 'orco', (),
+      'rambi-e', 'orco', (
+          'heli',
+      ),
       important=False,
   )
 
@@ -2641,6 +2644,7 @@ def GetConfig():
       'expresso',
       'glimmer',
       'gnawty',
+      'heli',
       'jecht',
       'kip',
       'leon',
