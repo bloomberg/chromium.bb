@@ -137,6 +137,7 @@ class BlinkPerfAnimation(perf_benchmark.PerfBenchmark):
     return CreatePageSetFromPath(path, SKIPPED_FILE)
 
 
+@benchmark.Disabled  # http://crbug.com/500958
 class BlinkPerfBindings(perf_benchmark.PerfBenchmark):
   tag = 'bindings'
   test = _BlinkPerfMeasurement
