@@ -805,8 +805,10 @@ void LocalDOMWindow::print()
 
     if (frame()->document()->isSandboxed(SandboxModals)) {
         UseCounter::count(frame()->document(), UseCounter::DialogInSandboxedContext);
-        if (RuntimeEnabledFeatures::sandboxBlocksModalsEnabled())
+        if (RuntimeEnabledFeatures::sandboxBlocksModalsEnabled()) {
+            frameConsole()->addMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, "Ignored call to 'print()'. The document is sandboxed, and the 'allow-modals' keyword is not set."));
             return;
+        }
     }
 
     if (frame()->isLoading()) {
@@ -831,8 +833,10 @@ void LocalDOMWindow::alert(const String& message)
 
     if (frame()->document()->isSandboxed(SandboxModals)) {
         UseCounter::count(frame()->document(), UseCounter::DialogInSandboxedContext);
-        if (RuntimeEnabledFeatures::sandboxBlocksModalsEnabled())
+        if (RuntimeEnabledFeatures::sandboxBlocksModalsEnabled()) {
+            frameConsole()->addMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, "Ignored call to 'alert()'. The document is sandboxed, and the 'allow-modals' keyword is not set."));
             return;
+        }
     }
 
     frame()->document()->updateLayoutTreeIfNeeded();
@@ -851,8 +855,10 @@ bool LocalDOMWindow::confirm(const String& message)
 
     if (frame()->document()->isSandboxed(SandboxModals)) {
         UseCounter::count(frame()->document(), UseCounter::DialogInSandboxedContext);
-        if (RuntimeEnabledFeatures::sandboxBlocksModalsEnabled())
+        if (RuntimeEnabledFeatures::sandboxBlocksModalsEnabled()) {
+            frameConsole()->addMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, "Ignored call to 'confirm()'. The document is sandboxed, and the 'allow-modals' keyword is not set."));
             return false;
+        }
     }
 
     frame()->document()->updateLayoutTreeIfNeeded();
@@ -860,12 +866,6 @@ bool LocalDOMWindow::confirm(const String& message)
     FrameHost* host = frame()->host();
     if (!host)
         return false;
-
-    if (frame()->document()->isSandboxed(SandboxModals)) {
-        UseCounter::count(frame()->document(), UseCounter::DialogInSandboxedContext);
-        if (RuntimeEnabledFeatures::sandboxBlocksModalsEnabled())
-            return false;
-    }
 
     return host->chromeClient().openJavaScriptConfirm(frame(), message);
 }
@@ -877,8 +877,10 @@ String LocalDOMWindow::prompt(const String& message, const String& defaultValue)
 
     if (frame()->document()->isSandboxed(SandboxModals)) {
         UseCounter::count(frame()->document(), UseCounter::DialogInSandboxedContext);
-        if (RuntimeEnabledFeatures::sandboxBlocksModalsEnabled())
+        if (RuntimeEnabledFeatures::sandboxBlocksModalsEnabled()) {
+            frameConsole()->addMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, "Ignored call to 'prompt()'. The document is sandboxed, and the 'allow-modals' keyword is not set."));
             return String();
+        }
     }
 
     frame()->document()->updateLayoutTreeIfNeeded();
