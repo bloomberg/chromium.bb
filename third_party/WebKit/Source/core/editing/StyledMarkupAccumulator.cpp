@@ -61,11 +61,6 @@ StyledMarkupAccumulator::StyledMarkupAccumulator(EAbsoluteURLs shouldResolveURLs
 {
 }
 
-void StyledMarkupAccumulator::appendStartTag(Node& node)
-{
-    appendStartMarkup(node);
-}
-
 void StyledMarkupAccumulator::appendEndTag(const Element& element)
 {
     appendEndMarkup(m_result, element);
@@ -73,26 +68,7 @@ void StyledMarkupAccumulator::appendEndTag(const Element& element)
 
 void StyledMarkupAccumulator::appendStartMarkup(Node& node)
 {
-    switch (node.nodeType()) {
-    case Node::TEXT_NODE: {
-        Text& text = toText(node);
-        if (text.parentElement() && text.parentElement()->tagQName() == textareaTag) {
-            appendText(text);
-            break;
-        }
-        appendTextWithInlineStyle(text);
-        break;
-    }
-    case Node::ELEMENT_NODE: {
-        Element& element = toElement(node);
-        RefPtrWillBeRawPtr<EditingStyle> style = createInlineStyle(element);
-        appendElement(element, style);
-        break;
-    }
-    default:
-        m_formatter.appendStartMarkup(m_result, node, nullptr);
-        break;
-    }
+    m_formatter.appendStartMarkup(m_result, node, nullptr);
 }
 
 void StyledMarkupAccumulator::appendEndMarkup(StringBuilder& result, const Element& element)
@@ -159,27 +135,6 @@ void StyledMarkupAccumulator::appendElement(const Element& element, PassRefPtrWi
         return;
     }
     appendElement(m_result, element);
-}
-
-RefPtrWillBeRawPtr<EditingStyle> StyledMarkupAccumulator::createInlineStyle(Element& element)
-{
-    RefPtrWillBeRawPtr<EditingStyle> inlineStyle = nullptr;
-
-    if (shouldApplyWrappingStyle(element)) {
-        inlineStyle = m_wrappingStyle->copy();
-        inlineStyle->removePropertiesInElementDefaultStyle(&element);
-        inlineStyle->removeStyleConflictingWithStyleOfElement(&element);
-    } else {
-        inlineStyle = EditingStyle::create();
-    }
-
-    if (element.isStyledElement() && element.inlineStyle())
-        inlineStyle->overrideWithStyle(element.inlineStyle());
-
-    if (element.isHTMLElement() && shouldAnnotate())
-        inlineStyle->mergeStyleFromRulesForSerialization(&toHTMLElement(element));
-
-    return inlineStyle;
 }
 
 void StyledMarkupAccumulator::appendElementWithInlineStyle(StringBuilder& out, const Element& element, PassRefPtrWillBeRawPtr<EditingStyle> style)

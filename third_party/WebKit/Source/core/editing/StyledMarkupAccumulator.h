@@ -46,24 +46,25 @@ class StyledMarkupAccumulator final {
 public:
     StyledMarkupAccumulator(EAbsoluteURLs, const TextOffset& start, const TextOffset& end, const PassRefPtrWillBeRawPtr<Document>, EAnnotateForInterchange, Node*);
 
-    void appendStartTag(Node&);
     void appendEndTag(const Element&);
     void appendInterchangeNewline();
 
     void appendText(Text&);
+    void appendTextWithInlineStyle(Text&);
 
     // TODO(hajimehoshi): These functions are called from the serializer, but
     // should not.
     Node* highestNodeToBeSerialized() { return m_highestNodeToBeSerialized.get(); }
     void setHighestNodeToBeSerialized(Node* highestNodeToBeSerialized) { m_highestNodeToBeSerialized = highestNodeToBeSerialized; }
+    EditingStyle* wrappingStyle() const { return m_wrappingStyle.get(); }
     void setWrappingStyle(PassRefPtrWillBeRawPtr<EditingStyle> wrappingStyle) { m_wrappingStyle = wrappingStyle; }
 
     void wrapWithStyleNode(StylePropertySet*);
     String takeResults();
 
     void pushMarkup(const String&);
-    RefPtrWillBeRawPtr<EditingStyle> createInlineStyle(Element&);
 
+    void appendElement(const Element&, PassRefPtrWillBeRawPtr<EditingStyle>);
     void appendElement(StringBuilder&, const Element&);
     void appendElementWithInlineStyle(StringBuilder&, const Element&, PassRefPtrWillBeRawPtr<EditingStyle>);
     void appendStartMarkup(Node&);
@@ -71,13 +72,10 @@ public:
     bool shouldApplyWrappingStyle(const Node&) const;
 
 private:
-    void appendTextWithInlineStyle(Text&);
-
     String renderedText(Text&);
     String stringValueForRange(const Text&);
     bool shouldAnnotate() const;
 
-    void appendElement(const Element&, PassRefPtrWillBeRawPtr<EditingStyle>);
     void appendEndMarkup(StringBuilder&, const Element&);
 
     MarkupFormatter m_formatter;

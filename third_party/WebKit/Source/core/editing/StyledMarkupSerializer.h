@@ -55,8 +55,10 @@ private:
     Node* serializeNodes(Node* startNode, Node* pastEnd, StyledMarkupAccumulator*);
     Node* traverseNodesForSerialization(Node* startNode, Node* pastEnd, StyledMarkupAccumulator*);
     void wrapWithNode(StyledMarkupAccumulator&, ContainerNode&, PassRefPtrWillBeRawPtr<EditingStyle>);
+    RefPtrWillBeRawPtr<EditingStyle> createInlineStyle(StyledMarkupAccumulator&, Element&);
     RefPtrWillBeRawPtr<EditingStyle> createInlineStyleIfNeeded(StyledMarkupAccumulator&, Node&);
     bool needsInlineStyle(const Element&);
+    void appendStartMarkup(StyledMarkupAccumulator&, Node&);
 
     const PositionType m_start;
     const PositionType m_end;

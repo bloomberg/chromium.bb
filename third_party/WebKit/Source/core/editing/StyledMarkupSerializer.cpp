@@ -240,7 +240,7 @@ Node* StyledMarkupSerializer<Strategy>::traverseNodesForSerialization(Node* star
         } else {
             // Add the node to the markup if we're not skipping the descendants
             if (markupAccumulator)
-                markupAccumulator->appendStartTag(*n);
+                appendStartMarkup(*markupAccumulator, *n);
 
             // If node has no children, close the tag now.
             if (Strategy::hasChildren(*n)) {
@@ -330,9 +330,56 @@ RefPtrWillBeRawPtr<EditingStyle> StyledMarkupSerializer<Strategy>::createInlineS
 {
     if (!node.isElementNode())
         return nullptr;
-    RefPtrWillBeRawPtr<EditingStyle> inlineStyle = accumulator.createInlineStyle(toElement(node));
+    RefPtrWillBeRawPtr<EditingStyle> inlineStyle = createInlineStyle(accumulator, toElement(node));
     if (convertBlocksToInlines() && isBlock(&node))
         inlineStyle->forceInline();
+    return inlineStyle;
+}
+
+template<typename Strategy>
+void StyledMarkupSerializer<Strategy>::appendStartMarkup(StyledMarkupAccumulator& accumulator, Node& node)
+{
+    switch (node.nodeType()) {
+    case Node::TEXT_NODE: {
+        Text& text = toText(node);
+        if (text.parentElement() && text.parentElement()->tagQName() == textareaTag) {
+            accumulator.appendText(text);
+            break;
+        }
+        accumulator.appendTextWithInlineStyle(text);
+        break;
+    }
+    case Node::ELEMENT_NODE: {
+        Element& element = toElement(node);
+        RefPtrWillBeRawPtr<EditingStyle> inlineStyle = createInlineStyle(accumulator, element);
+        accumulator.appendElement(element, inlineStyle);
+        break;
+    }
+    default:
+        accumulator.appendStartMarkup(node);
+        break;
+    }
+}
+
+template<typename Strategy>
+RefPtrWillBeRawPtr<EditingStyle> StyledMarkupSerializer<Strategy>::createInlineStyle(StyledMarkupAccumulator& accumulator, Element& element)
+{
+    RefPtrWillBeRawPtr<EditingStyle> inlineStyle = nullptr;
+
+    if (accumulator.shouldApplyWrappingStyle(element)) {
+        inlineStyle = accumulator.wrappingStyle()->copy();
+        inlineStyle->removePropertiesInElementDefaultStyle(&element);
+        inlineStyle->removeStyleConflictingWithStyleOfElement(&element);
+    } else {
+        inlineStyle = EditingStyle::create();
+    }
+
+    if (element.isStyledElement() && element.inlineStyle())
+        inlineStyle->overrideWithStyle(element.inlineStyle());
+
+    if (element.isHTMLElement() && shouldAnnotate())
+        inlineStyle->mergeStyleFromRulesForSerialization(&toHTMLElement(element));
+
     return inlineStyle;
 }
 
