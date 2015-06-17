@@ -1278,7 +1278,13 @@ TEST_PPAPI_NACL(MediaStreamVideoTrack)
 
 TEST_PPAPI_NACL(MouseCursor)
 
-TEST_PPAPI_NACL(NetworkProxy)
+// Flaky on Mac ASAN (possiby elsewhere too): http://crbug.com/501207.
+#if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
+#define MAYBE_NetworkProxy DISABLED_NetworkProxy
+#else
+#define MAYBE_NetworkProxy NetworkProxy
+#endif
+TEST_PPAPI_NACL(MAYBE_NetworkProxy)
 
 TEST_PPAPI_NACL(TrueTypeFont)
 
