@@ -21,7 +21,7 @@ namespace html_viewer {
 
 DevToolsAgentImpl::DevToolsAgentImpl(blink::WebLocalFrame* frame,
                                      mojo::Shell* shell)
-    : frame_(frame), binding_(this) {
+    : frame_(frame), binding_(this), handling_page_navigate_request_(false) {
   DCHECK(frame);
   DCHECK(shell);
 
@@ -83,7 +83,9 @@ void DevToolsAgentImpl::DispatchProtocolMessage(const mojo::String& message) {
     if (!url.is_valid())
       break;
 
+    handling_page_navigate_request_ = true;
     frame_->loadRequest(blink::WebURLRequest(url));
+    handling_page_navigate_request_ = false;
 
     // The command should fall through to be handled by frame_->devToolsAgent().
   } while (false);

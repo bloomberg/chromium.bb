@@ -370,7 +370,11 @@ void DevToolsHttpServer::OnReceivedRequest(
   DCHECK(connections_.find(connection) != connections_.end());
 
   if (request->url.get().find(kJsonRequestUrlPrefix) == 0) {
-    callback.Run(ProcessJsonRequest(request.Pass()));
+    mojo::HttpResponsePtr response = ProcessJsonRequest(request.Pass());
+    if (response)
+      callback.Run(response.Pass());
+    else
+      OnConnectionClosed(connection);
   } else {
     // TODO(yzshen): Implement it.
     NOTIMPLEMENTED();
@@ -453,9 +457,15 @@ mojo::HttpResponsePtr DevToolsHttpServer::ProcessJsonRequest(
   }
 
   if (command == kListCommand) {
+    DevToolsRegistryImpl::Iterator iter(service_->registry());
+    if (iter.IsAtEnd()) {
+      // If no agent is available, return a nullptr to indicate that the
+      // connection should be closed.
+      return nullptr;
+    }
+
     base::ListValue list_value;
-    for (DevToolsRegistryImpl::Iterator iter(service_->registry());
-         !iter.IsAtEnd(); iter.Advance()) {
+    for (; !iter.IsAtEnd(); iter.Advance()) {
       scoped_ptr<base::DictionaryValue> dict_value(new base::DictionaryValue());
 
       // TODO(yzshen): Add more information.

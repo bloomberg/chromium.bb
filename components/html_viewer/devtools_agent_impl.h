@@ -30,6 +30,11 @@ class DevToolsAgentImpl : public devtools_service::DevToolsAgent,
 
   blink::WebLocalFrame* frame() const { return frame_; }
 
+  // Returns whether a "Page.navigate" command is being handled.
+  bool handling_page_navigate_request() const {
+    return handling_page_navigate_request_;
+  }
+
  private:
   // devtools_service::DevToolsAgent implementation.
   void SetClient(devtools_service::DevToolsAgentClientPtr client,
@@ -47,6 +52,8 @@ class DevToolsAgentImpl : public devtools_service::DevToolsAgent,
   blink::WebLocalFrame* const frame_;
   mojo::Binding<DevToolsAgent> binding_;
   devtools_service::DevToolsAgentClientPtr client_;
+
+  bool handling_page_navigate_request_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsAgentImpl);
 };

@@ -386,6 +386,13 @@ blink::WebCookieJar* HTMLDocument::cookieJar(blink::WebLocalFrame* frame) {
 
 blink::WebNavigationPolicy HTMLDocument::decidePolicyForNavigation(
     const NavigationPolicyInfo& info) {
+  // TODO(yzshen): Remove this check once the browser is able to navigate an
+  // existing html_viewer instance and about:blank page support is ready.
+  if (devtools_agent_ && devtools_agent_->frame() == info.frame &&
+      devtools_agent_->handling_page_navigate_request()) {
+    return info.defaultPolicy;
+  }
+
   std::string frame_name = info.frame ? info.frame->assignedName().utf8() : "";
   if (info.frame->parent() && EnableOOPIFs()) {
     mojo::View* view = frame_to_view_[info.frame].view;
