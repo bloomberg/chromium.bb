@@ -86,6 +86,14 @@ class WebglConformanceValidator(page_test.PageTest):
         '--disable-domain-blocking-for-3d-apis',
         '--disable-gpu-process-crash-limit'
     ])
+    browser = browser_finder.FindBrowser(options.finder_options)
+    if (browser.target_os.startswith('android') and
+        browser.browser_type == 'android-webview-shell'):
+        # TODO(kbr): this is overly broad. We'd like to do this only on
+        # Nexus 9. It'll go away shortly anyway. crbug.com/499928
+        options.AppendExtraBrowserArgs([
+            '--disable-gl-extensions=GL_EXT_disjoint_timer_query'
+        ])
 
 
 class Webgl2ConformanceValidator(WebglConformanceValidator):

@@ -434,10 +434,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # Nexus 9 failures
     self.Fail('conformance/extensions/oes-texture-float-with-video.html',
               ['android', 'nvidia'], bug=499555) # flaky
-    # The entire android_webview_webgl_conformance_tests step is
-    # failing on the Nexus 9.
-    self.Fail('conformance/*',
-              ['android', 'android-webview-shell', 'nvidia'], bug=499928)
 
     # The following test is very slow and therefore times out on Android bot.
     self.Skip('conformance/rendering/multisample-corruption.html',
