@@ -444,6 +444,14 @@
     ],
 
     #
+    # All the JavaScript files required by credits.html
+    #
+    
+    'remoting_webapp_credits_html_all_js_files': [
+      'webapp/base/js/credits.js',
+    ],
+
+    #
     # Complete webapp JS and resource files.
     #
 
@@ -461,6 +469,7 @@
     'remoting_webapp_crd_js_files': [
       '<@(remoting_webapp_shared_js_files)',
       '<@(remoting_webapp_crd_main_html_all_js_files)',
+      '<@(remoting_webapp_credits_html_all_js_files)',
     ],
 
     'remoting_webapp_info_files': [
@@ -492,6 +501,7 @@
       'resources/reload.webp',
       'resources/tick.webp',
       'webapp/base/html/connection_stats.css',
+      'webapp/base/html/credits.css',
       'webapp/base/html/main.css',
       'webapp/base/html/message_window.css',
       'webapp/base/resources/open_sans.css',

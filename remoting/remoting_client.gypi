@@ -125,10 +125,38 @@
     },  # end of target 'remoting_webapp_html'
 
     {
+      # GN version: //remoting/webapp:credits
+      'target_name': 'remoting_credits',
+      'type': 'none',
+      'actions': [
+        {
+          'action_name': 'Build remoting credits',
+          'inputs': [
+            '../tools/licenses.py',
+            'webapp/base/html/credits.tmpl',
+            'webapp/base/html/credits_entry.tmpl',
+          ],
+          'outputs': [
+            '<(SHARED_INTERMEDIATE_DIR)/remoting/credits.html',
+          ],
+          'hard_dependency': 1,
+          'action': ['python',
+                     '../tools/licenses.py',
+                     'credits',
+                     '<(SHARED_INTERMEDIATE_DIR)/remoting/credits.html',
+                     '--file-template', 'webapp/base/html/credits.tmpl',
+                     '--entry-template', 'webapp/base/html/credits_entry.tmpl',
+
+          ],
+        },
+      ],
+    },
+    {
       # GN version: //remoting/webapp:webapp
       'target_name': 'remoting_webapp',
       'type': 'none',
       'dependencies': [
+        'remoting_credits',
         'remoting_webapp_v1',
       ],
       'conditions': [

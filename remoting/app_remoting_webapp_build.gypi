@@ -46,6 +46,7 @@
         '<(SHARED_INTERMEDIATE_DIR)/>(_target_name)/message_window.html',
         '<(SHARED_INTERMEDIATE_DIR)/>(_target_name)/wcs_sandbox.html',
         '<(SHARED_INTERMEDIATE_DIR)/>(_target_name)/feedback_consent.html',
+        '<(SHARED_INTERMEDIATE_DIR)/remoting/credits.html',
       ],
       'ar_webapp_files': [
         '<@(ar_app_specific_files)',

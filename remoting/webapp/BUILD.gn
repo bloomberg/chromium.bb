@@ -11,6 +11,7 @@ group("webapp") {
   deps = [
     ":webapp_v1",
     ":ar_sample_app",
+    ":credits",
   ]
 
   if (enable_nacl) {
@@ -44,4 +45,28 @@ app_remoting_webapp("ar_sample_app") {
   app_description = "App Remoting client"
   app_capabilities = [ "GOOGLE_DRIVE" ]
   manifest_key = "remotingdevbuild"
+}
+
+# GYP version: remoting/remoting_client:remoting_credits
+action("credits") {
+  about_credits_file = "$target_gen_dir/credits.html"
+  script = "//tools/licenses.py"
+
+  inputs = [
+    "base/html/credits.tmpl",
+    "base/html/credits_entry.tmpl",
+  ]
+
+  outputs = [
+    about_credits_file,
+  ]
+
+  args = [
+    "credits",
+    rebase_path(about_credits_file, root_build_dir),
+    "--file-template",
+    rebase_path("base/html/credits.tmpl", root_build_dir),
+    "--entry-template",
+    rebase_path("base/html/credits_entry.tmpl", root_build_dir),
+  ]
 }

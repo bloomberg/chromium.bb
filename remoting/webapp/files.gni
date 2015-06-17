@@ -434,12 +434,19 @@ remoting_webapp_message_window_html_all_js_files =
     remoting_webapp_message_window_html_js_files + [ "base/js/base.js" ]
 
 #
+# All the JavaScript files required by credits.html
+#
+
+remoting_webapp_credits_html_all_js_files = [ "base/js/credits.js" ]
+
+#
 # DesktopRemoting webapp JS and resource files.
 #
 
 # All the JavaScript files that are shared by webapps.
 remoting_webapp_shared_js_files = remoting_webapp_shared_main_html_js_files +
                                   remoting_webapp_background_html_js_files +
+                                  remoting_webapp_credits_html_all_js_files +
                                   remoting_webapp_message_window_html_js_files +
                                   remoting_webapp_wcs_sandbox_html_js_files +
                                   # JS files referenced in manifest.json.
@@ -478,6 +485,7 @@ remoting_webapp_resource_files = [
   "../resources/reload.webp",
   "../resources/tick.webp",
   "base/html/connection_stats.css",
+  "base/html/credits.css",
   "base/html/main.css",
   "base/html/message_window.css",
   "base/resources/open_sans.css",
@@ -608,7 +616,8 @@ ar_background_js_files = [
 ar_all_js_files =
     ar_main_js_files + ar_feedback_consent_html_js_files +
     remoting_webapp_message_window_html_js_files +
-    remoting_webapp_wcs_sandbox_html_js_files + ar_background_js_files
+    remoting_webapp_wcs_sandbox_html_js_files + ar_background_js_files +
+    remoting_webapp_credits_html_all_js_files
 
 # Files that contain localizable strings.
 app_remoting_webapp_localizable_files =

@@ -37,6 +37,10 @@ remoting.ApplicationContextMenu = function(adapter, plugin, clientSession,
       remoting.ApplicationContextMenu.kShowStatsId,
       l10n.getTranslationOrError(/*i18n-content*/'SHOW_STATS'),
       true);
+  this.adapter_.create(
+      remoting.ApplicationContextMenu.kShowCreditsId,
+      l10n.getTranslationOrError(/*i18n-content*/'CREDITS'),
+      true);
 
   // TODO(kelvinp):Unhook this event on shutdown.
   this.adapter_.addListener(this.onClicked_.bind(this));
@@ -118,6 +122,16 @@ remoting.ApplicationContextMenu.prototype.onClicked_ = function(info) {
     case remoting.ApplicationContextMenu.kShowStatsId:
       this.stats_.show(info.checked);
       break;
+
+    case remoting.ApplicationContextMenu.kShowCreditsId:
+      chrome.app.window.create(
+          'credits.html',
+          {
+            'width': 800,
+            'height': 600,
+            'id' : 'remoting-credits'
+          });
+      break;
   }
 };
 
@@ -127,3 +141,6 @@ remoting.ApplicationContextMenu.kSendFeedbackId = 'send-feedback';
 
 /** @type {string} */
 remoting.ApplicationContextMenu.kShowStatsId = 'show-stats';
+
+/** @type {string} */
+remoting.ApplicationContextMenu.kShowCreditsId = 'show-credits';

@@ -94,6 +94,7 @@
       '<@(remoting_webapp_wcs_sandbox_html_js_files)',
       # Referenced from the manifest.
       '<@(ar_background_js_files)',
+      'webapp/base/js/credits.js',
     ],
 
     # Files that contain localizable strings.
