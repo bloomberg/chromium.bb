@@ -32,10 +32,10 @@ bool CanUseNSCGLSurface(const gpu::gles2::FeatureInfo* feature_info) {
           switches::kForceNSCGLSurfaceApi);
   if (forced_at_command_line)
     return true;
-  static bool enabled_at_command_line =
+  static bool disabled_at_command_line =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableNSCGLSurfaceApi);
-  if (!enabled_at_command_line)
+          switches::kDisableNSCGLSurfaceApi);
+  if (disabled_at_command_line)
     return false;
 
   // If there are multiple displays connected, then it is possible that we will

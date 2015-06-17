@@ -11,8 +11,8 @@ namespace switches {
 // GPU process on Mac.
 const char kDisableRemoteCoreAnimation[] = "disable-remote-core-animation";
 
-// Enable using the private NSCGLSurface API to draw content.
-const char kEnableNSCGLSurfaceApi[] = "enable-ns-cgl-surface-api";
+// Disable using the private NSCGLSurface API to draw content.
+const char kDisableNSCGLSurfaceApi[] = "disable-ns-cgl-surface-api";
 
 // Force all content to draw via the private NSCGLSurface API, even when there
 // exist performance, stability, or correctness reasons not to.
