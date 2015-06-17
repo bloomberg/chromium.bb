@@ -234,7 +234,7 @@ void V8Window::toStringMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& i
 
 void V8Window::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    LocalDOMWindow* impl = toLocalDOMWindow(V8Window::toImpl(info.Holder()));
+    DOMWindow* impl = V8Window::toImpl(info.Holder());
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "open", "Window", info.Holder(), info.GetIsolate());
     if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), impl->frame(), exceptionState)) {
         exceptionState.throwIfNeeded();
@@ -251,7 +251,9 @@ void V8Window::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
     }
     TOSTRING_VOID(V8StringResource<TreatNullAndUndefinedAsNullString>, windowFeaturesString, info[2]);
 
-    RefPtrWillBeRawPtr<DOMWindow> openedWindow = impl->open(urlString, frameName, windowFeaturesString, callingDOMWindow(info.GetIsolate()), enteredDOMWindow(info.GetIsolate()));
+    // |impl| has to be a LocalDOMWindow, since RemoteDOMWindows wouldn't have
+    // passed the BindingSecurity check above.
+    RefPtrWillBeRawPtr<DOMWindow> openedWindow = toLocalDOMWindow(impl)->open(urlString, frameName, windowFeaturesString, callingDOMWindow(info.GetIsolate()), enteredDOMWindow(info.GetIsolate()));
     if (!openedWindow)
         return;
 
