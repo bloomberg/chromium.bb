@@ -201,6 +201,9 @@ max-width: none
 min-height: 0px
 min-width: 0px
 mix-blend-mode: normal
+motion-offset: 0px
+motion-path: none
+motion-rotation: auto 0deg
 object-fit: fill
 object-position: 50% 50%
 opacity: 1
