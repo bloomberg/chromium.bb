@@ -50,22 +50,28 @@ function LauncherSearch() {
  */
 LauncherSearch.prototype.onPreferencesChanged_ = function() {
   chrome.fileManagerPrivate.getPreferences(function(preferences) {
-    this.initializeEventListeners_(preferences.driveEnabled);
+    this.initializeEventListeners_(
+        preferences.driveEnabled, preferences.searchSuggestEnabled);
   }.bind(this));
 };
 
 /**
  * Initialize event listeners of chrome.launcherSearchProvider.
  *
- * When drive is enabled, listen events of chrome.launcherSearchProvider and
- * provide seach resutls. When it is disabled, remove these event listeners and
- * stop providing search results.
+ * When drive and search suggest are enabled, listen events of
+ * chrome.launcherSearchProvider and provide seach resutls. When one of them is
+ * disabled, remove these event listeners and stop providing search results.
  *
  * @param {boolean} isDriveEnabled True if drive is enabled.
+ * @param {boolean} searchSuggestEnabled True if search suggest is enabled.
  */
-LauncherSearch.prototype.initializeEventListeners_ = function(isDriveEnabled) {
-  // If this.enabled_ === isDriveEnabled, we don't need to change anything here.
-  if (this.enabled_ === isDriveEnabled)
+LauncherSearch.prototype.initializeEventListeners_ = function(
+    isDriveEnabled, isSearchSuggestEnabled) {
+  var launcherSearchEnabled = isDriveEnabled && isSearchSuggestEnabled;
+
+  // If this.enabled_ === launcherSearchEnabled, we don't need to change
+  // anything here.
+  if (this.enabled_ === launcherSearchEnabled)
     return;
 
   // Remove event listeners if it's already enabled.
@@ -82,8 +88,8 @@ LauncherSearch.prototype.initializeEventListeners_ = function(isDriveEnabled) {
   // results.
   this.queryId_ = null;
 
-  // Add event listeners when drive is enabled.
-  if (isDriveEnabled) {
+  // Add event listeners when launcher search of Drive is enabled.
+  if (launcherSearchEnabled) {
     this.enabled_ = true;
     chrome.launcherSearchProvider.onQueryStarted.addListener(
         this.onQueryStartedBound_);
