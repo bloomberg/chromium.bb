@@ -833,7 +833,7 @@ TEST_F(RenderWidgetHostViewAuraTest, ParentMovementUpdatesScreenRect) {
   parent1->AddChild(parent2.get());
   parent2->AddChild(view_->GetNativeView());
 
-  root->SetBounds(gfx::Rect(0, 0, 400, 400));
+  root->SetBounds(gfx::Rect(0, 0, 800, 600));
   parent1->SetBounds(gfx::Rect(1, 1, 300, 300));
   parent2->SetBounds(gfx::Rect(2, 2, 200, 200));
   view_->SetBounds(gfx::Rect(3, 3, 100, 100));
