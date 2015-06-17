@@ -564,7 +564,9 @@ class JwtOAuth2Rietveld(Rietveld):
       private_key_password = 'notasecret'
 
     self.url = url.rstrip('/')
-    bot_url = self.url + '/bots'
+    bot_url = self.url
+    if self.url.endswith('googleplex.com'):
+      bot_url = self.url + '/bots'
 
     with open(client_private_key_file, 'rb') as f:
       client_private_key = f.read()
