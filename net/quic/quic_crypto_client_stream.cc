@@ -340,8 +340,8 @@ void QuicCryptoClientStream::DoSendCHLO(
   SendHandshakeMessage(out);
   // Be prepared to decrypt with the new server write key.
   session()->connection()->SetAlternativeDecrypter(
-      crypto_negotiated_params_.initial_crypters.decrypter.release(),
       ENCRYPTION_INITIAL,
+      crypto_negotiated_params_.initial_crypters.decrypter.release(),
       true /* latch once used */);
   // Send subsequent packets under encryption on the assumption that the
   // server will accept the handshake.
@@ -578,7 +578,7 @@ void QuicCryptoClientStream::DoReceiveSHLO(
   // with the FORWARD_SECURE key until it receives a FORWARD_SECURE
   // packet from the client.
   session()->connection()->SetAlternativeDecrypter(
-      crypters->decrypter.release(), ENCRYPTION_FORWARD_SECURE,
+      ENCRYPTION_FORWARD_SECURE, crypters->decrypter.release(),
       false /* don't latch */);
   session()->connection()->SetEncrypter(
       ENCRYPTION_FORWARD_SECURE, crypters->encrypter.release());

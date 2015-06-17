@@ -34,16 +34,19 @@ class QuicSpdyServerStream : public QuicDataStream {
   uint32 ProcessData(const char* data, uint32 data_len) override;
   void OnFinRead() override;
 
+ protected:
+  // Sends a basic 200 response using SendHeaders for the headers and WriteData
+  // for the body.
+  virtual void SendResponse();
+
+  SpdyHeaderBlock* request_headers() { return &request_headers_; }
+
  private:
   friend class test::QuicSpdyServerStreamPeer;
 
   // Parses the request headers from |data| to |request_headers_|.
   // Returns false if there was an error parsing the headers.
   bool ParseRequestHeaders(const char* data, uint32 data_len);
-
-  // Sends a basic 200 response using SendHeaders for the headers and WriteData
-  // for the body.
-  void SendResponse();
 
   // Sends a basic 500 response using SendHeaders for the headers and WriteData
   // for the body

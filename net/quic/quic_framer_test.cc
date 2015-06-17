@@ -339,7 +339,7 @@ class QuicFramerTest : public ::testing::TestWithParam<QuicVersion> {
         framer_(QuicSupportedVersions(), start_, Perspective::IS_SERVER) {
     version_ = GetParam();
     framer_.set_version(version_);
-    framer_.SetDecrypter(decrypter_, ENCRYPTION_NONE);
+    framer_.SetDecrypter(ENCRYPTION_NONE, decrypter_);
     framer_.SetEncrypter(ENCRYPTION_NONE, encrypter_);
     framer_.set_visitor(&visitor_);
     framer_.set_received_entropy_calculator(&entropy_calculator_);
@@ -4067,7 +4067,7 @@ TEST_P(QuicFramerTest, EncryptPacket) {
       AsChars(packet), arraysize(packet), false, PACKET_8BYTE_CONNECTION_ID,
       !kIncludeVersion, PACKET_6BYTE_SEQUENCE_NUMBER));
   char buffer[kMaxPacketSize];
-  scoped_ptr<QuicEncryptedPacket> encrypted(framer_.EncryptPacket(
+  scoped_ptr<QuicEncryptedPacket> encrypted(framer_.EncryptPayload(
       ENCRYPTION_NONE, sequence_number, *raw, buffer, kMaxPacketSize));
 
   ASSERT_TRUE(encrypted.get() != nullptr);
@@ -4103,7 +4103,7 @@ TEST_P(QuicFramerTest, EncryptPacketWithVersionFlag) {
       AsChars(packet), arraysize(packet), false, PACKET_8BYTE_CONNECTION_ID,
       kIncludeVersion, PACKET_6BYTE_SEQUENCE_NUMBER));
   char buffer[kMaxPacketSize];
-  scoped_ptr<QuicEncryptedPacket> encrypted(framer_.EncryptPacket(
+  scoped_ptr<QuicEncryptedPacket> encrypted(framer_.EncryptPayload(
       ENCRYPTION_NONE, sequence_number, *raw, buffer, kMaxPacketSize));
 
   ASSERT_TRUE(encrypted.get() != nullptr);
@@ -4133,8 +4133,8 @@ TEST_P(QuicFramerTest, AckTruncationLargePacket) {
   ASSERT_TRUE(raw_ack_packet != nullptr);
   char buffer[kMaxPacketSize];
   scoped_ptr<QuicEncryptedPacket> ack_packet(
-      framer_.EncryptPacket(ENCRYPTION_NONE, header.packet_sequence_number,
-                            *raw_ack_packet, buffer, kMaxPacketSize));
+      framer_.EncryptPayload(ENCRYPTION_NONE, header.packet_sequence_number,
+                             *raw_ack_packet, buffer, kMaxPacketSize));
   // Now make sure we can turn our ack packet back into an ack frame.
   ASSERT_TRUE(framer_.ProcessPacket(*ack_packet));
   ASSERT_EQ(1u, visitor_.ack_frames_.size());
@@ -4173,8 +4173,8 @@ TEST_P(QuicFramerTest, AckTruncationSmallPacket) {
   ASSERT_TRUE(raw_ack_packet != nullptr);
   char buffer[kMaxPacketSize];
   scoped_ptr<QuicEncryptedPacket> ack_packet(
-      framer_.EncryptPacket(ENCRYPTION_NONE, header.packet_sequence_number,
-                            *raw_ack_packet, buffer, kMaxPacketSize));
+      framer_.EncryptPayload(ENCRYPTION_NONE, header.packet_sequence_number,
+                             *raw_ack_packet, buffer, kMaxPacketSize));
   // Now make sure we can turn our ack packet back into an ack frame.
   ASSERT_TRUE(framer_.ProcessPacket(*ack_packet));
   ASSERT_EQ(1u, visitor_.ack_frames_.size());
@@ -4218,8 +4218,8 @@ TEST_P(QuicFramerTest, CleanTruncation) {
 
   char buffer[kMaxPacketSize];
   scoped_ptr<QuicEncryptedPacket> ack_packet(
-      framer_.EncryptPacket(ENCRYPTION_NONE, header.packet_sequence_number,
-                            *raw_ack_packet, buffer, kMaxPacketSize));
+      framer_.EncryptPayload(ENCRYPTION_NONE, header.packet_sequence_number,
+                             *raw_ack_packet, buffer, kMaxPacketSize));
 
   // Now make sure we can turn our ack packet back into an ack frame.
   ASSERT_TRUE(framer_.ProcessPacket(*ack_packet));
@@ -4386,7 +4386,7 @@ static bool ExpectedStreamFrame(const QuicStreamFrame& frame) {
 TEST_P(QuicFramerTest, ConstructEncryptedPacket) {
   // Since we are using ConstructEncryptedPacket, we have to set the framer's
   // crypto to be Null.
-  framer_.SetDecrypter(QuicDecrypter::Create(kNULL), ENCRYPTION_NONE);
+  framer_.SetDecrypter(ENCRYPTION_NONE, QuicDecrypter::Create(kNULL));
   framer_.SetEncrypter(ENCRYPTION_NONE, QuicEncrypter::Create(kNULL));
 
   scoped_ptr<QuicEncryptedPacket> packet(ConstructEncryptedPacket(
@@ -4419,7 +4419,7 @@ TEST_P(QuicFramerTest, ConstructEncryptedPacket) {
 TEST_P(QuicFramerTest, ConstructMisFramedEncryptedPacket) {
   // Since we are using ConstructEncryptedPacket, we have to set the framer's
   // crypto to be Null.
-  framer_.SetDecrypter(QuicDecrypter::Create(kNULL), ENCRYPTION_NONE);
+  framer_.SetDecrypter(ENCRYPTION_NONE, QuicDecrypter::Create(kNULL));
   framer_.SetEncrypter(ENCRYPTION_NONE, QuicEncrypter::Create(kNULL));
 
   scoped_ptr<QuicEncryptedPacket> packet(ConstructMisFramedEncryptedPacket(

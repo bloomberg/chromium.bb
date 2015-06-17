@@ -78,11 +78,13 @@ QuicPacketCreator::QuicPacketCreator(QuicConnectionId connection_id,
       should_fec_protect_(false),
       fec_group_number_(0),
       send_version_in_packet_(framer->perspective() == Perspective::IS_CLIENT),
+      max_packet_length_(0),
       max_packets_per_fec_group_(kDefaultMaxPacketsPerFecGroup),
       connection_id_length_(PACKET_8BYTE_CONNECTION_ID),
       next_sequence_number_length_(PACKET_1BYTE_SEQUENCE_NUMBER),
       sequence_number_length_(next_sequence_number_length_),
-      packet_size_(0) {
+      packet_size_(0),
+      needs_padding_(false) {
   SetMaxPacketLength(kDefaultMaxPacketSize);
 }
 
@@ -103,9 +105,20 @@ void QuicPacketCreator::SetEncrypter(EncryptionLevel level,
   max_plaintext_size_ = framer_->GetMaxPlaintextSize(max_packet_length_);
 }
 
-void QuicPacketCreator::SetMaxPacketLength(QuicByteCount length) {
+bool QuicPacketCreator::CanSetMaxPacketLength() const {
   // |max_packet_length_| should not be changed mid-packet or mid-FEC group.
-  DCHECK(fec_group_.get() == nullptr && queued_frames_.empty());
+  return fec_group_.get() == nullptr && queued_frames_.empty();
+}
+
+void QuicPacketCreator::SetMaxPacketLength(QuicByteCount length) {
+  DCHECK(CanSetMaxPacketLength());
+
+  // Avoid recomputing |max_plaintext_size_| if the length does not actually
+  // change.
+  if (length == max_packet_length_) {
+    return;
+  }
+
   max_packet_length_ = length;
   max_plaintext_size_ = framer_->GetMaxPlaintextSize(max_packet_length_);
 }
@@ -298,6 +311,7 @@ SerializedPacket QuicPacketCreator::ReserializeAllFrames(
   const QuicSequenceNumberLength saved_next_length =
       next_sequence_number_length_;
   const bool saved_should_fec_protect = should_fec_protect_;
+  const bool needs_padding = needs_padding_;
   const EncryptionLevel default_encryption_level = encryption_level_;
 
   // Temporarily set the sequence number length, stop FEC protection,
@@ -306,6 +320,7 @@ SerializedPacket QuicPacketCreator::ReserializeAllFrames(
   next_sequence_number_length_ = original_length;
   should_fec_protect_ = false;
   encryption_level_ = frames.encryption_level();
+  needs_padding_ = frames.needs_padding();
 
   // Serialize the packet and restore the FEC and sequence number length state.
   SerializedPacket serialized_packet =
@@ -313,6 +328,7 @@ SerializedPacket QuicPacketCreator::ReserializeAllFrames(
   sequence_number_length_ = saved_length;
   next_sequence_number_length_ = saved_next_length;
   should_fec_protect_ = saved_should_fec_protect;
+  needs_padding_ = needs_padding;
   encryption_level_ = default_encryption_level;
 
   return serialized_packet;
@@ -325,7 +341,7 @@ SerializedPacket QuicPacketCreator::SerializeAllFrames(const QuicFrames& frames,
   LOG_IF(DFATAL, frames.empty())
       << "Attempt to serialize empty packet";
   for (const QuicFrame& frame : frames) {
-    bool success = AddFrame(frame, false, nullptr);
+    bool success = AddFrame(frame, false, false, nullptr);
     DCHECK(success);
   }
   SerializedPacket packet = SerializePacket(buffer, buffer_len);
@@ -375,11 +391,22 @@ size_t QuicPacketCreator::PacketSize() const {
 }
 
 bool QuicPacketCreator::AddSavedFrame(const QuicFrame& frame) {
-  return AddFrame(frame, true, nullptr);
+  return AddFrame(frame,
+                  /*save_retransmittable_frames=*/true,
+                  /*needs_padding=*/false, nullptr);
 }
 
 bool QuicPacketCreator::AddSavedFrame(const QuicFrame& frame, char* buffer) {
-  return AddFrame(frame, true, buffer);
+  return AddFrame(frame,
+                  /*save_retransmittable_frames=*/true,
+                  /*needs_padding=*/false, buffer);
+}
+
+bool QuicPacketCreator::AddPaddedSavedFrame(const QuicFrame& frame,
+                                            char* buffer) {
+  return AddFrame(frame,
+                  /*save_retransmittable_frames=*/true,
+                  /*needs_padding=*/true, buffer);
 }
 
 SerializedPacket QuicPacketCreator::SerializePacket(
@@ -427,8 +454,8 @@ SerializedPacket QuicPacketCreator::SerializePacket(
   // Immediately encrypt the packet, to ensure we don't encrypt the same packet
   // sequence number multiple times.
   QuicEncryptedPacket* encrypted =
-      framer_->EncryptPacket(encryption_level_, sequence_number_, *packet,
-                             encrypted_buffer, encrypted_buffer_len);
+      framer_->EncryptPayload(encryption_level_, sequence_number_, *packet,
+                              encrypted_buffer, encrypted_buffer_len);
   if (encrypted == nullptr) {
     LOG(DFATAL) << "Failed to encrypt packet number " << sequence_number_;
     return NoPacket();
@@ -436,6 +463,7 @@ SerializedPacket QuicPacketCreator::SerializePacket(
 
   packet_size_ = 0;
   queued_frames_.clear();
+  needs_padding_ = false;
   return SerializedPacket(header.packet_sequence_number,
                           header.public_header.sequence_number_length,
                           encrypted, QuicFramer::GetPacketEntropyHash(header),
@@ -464,7 +492,7 @@ SerializedPacket QuicPacketCreator::SerializeFec(char* buffer,
   DCHECK_GE(max_packet_length_, packet->length());
   // Immediately encrypt the packet, to ensure we don't encrypt the same packet
   // sequence number multiple times.
-  QuicEncryptedPacket* encrypted = framer_->EncryptPacket(
+  QuicEncryptedPacket* encrypted = framer_->EncryptPayload(
       encryption_level_, sequence_number_, *packet, buffer, buffer_len);
   if (encrypted == nullptr) {
     LOG(DFATAL) << "Failed to encrypt packet number " << sequence_number_;
@@ -525,6 +553,7 @@ bool QuicPacketCreator::ShouldRetransmit(const QuicFrame& frame) {
 
 bool QuicPacketCreator::AddFrame(const QuicFrame& frame,
                                  bool save_retransmittable_frames,
+                                 bool needs_padding,
                                  char* buffer) {
   DVLOG(1) << "Adding frame: " << frame;
   InFecGroup is_in_fec_group = MaybeUpdateLengthsAndStartFec();
@@ -548,37 +577,27 @@ bool QuicPacketCreator::AddFrame(const QuicFrame& frame,
   } else {
     queued_frames_.push_back(frame);
   }
+
+  if (needs_padding) {
+    needs_padding_ = true;
+    queued_retransmittable_frames_->set_needs_padding(true);
+  }
+
   return true;
 }
 
 void QuicPacketCreator::MaybeAddPadding() {
+  if (!needs_padding_) {
+    return;
+  }
+
   if (BytesFree() == 0) {
     // Don't pad full packets.
     return;
   }
 
-  // Since ReserializeAllFrames does not populate queued_retransmittable_frames_
-  // it's not sufficient to simply call
-  // queued_retransmittable_frames_->HasCryptoHandshake().
-  // TODO(rch): we should really make ReserializeAllFrames not be a special
-  // case!
-
-  // If any of the frames in the current packet are on the crypto stream
-  // then they contain handshake messagses, and we should pad them.
-  bool is_handshake = false;
-  for (const QuicFrame& frame : queued_frames_) {
-    if (frame.type == STREAM_FRAME &&
-        frame.stream_frame->stream_id == kCryptoStreamId) {
-      is_handshake = true;
-      break;
-    }
-  }
-  if (!is_handshake) {
-    return;
-  }
-
   QuicPaddingFrame padding;
-  bool success = AddFrame(QuicFrame(&padding), false, nullptr);
+  bool success = AddFrame(QuicFrame(&padding), false, false, nullptr);
   DCHECK(success);
 }
 

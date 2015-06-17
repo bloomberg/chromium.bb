@@ -20,5 +20,6 @@ NET_EXPORT_PRIVATE extern int64 FLAGS_quic_time_wait_list_max_connections;
 NET_EXPORT_PRIVATE extern bool FLAGS_enable_quic_stateless_reject_support;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_auto_tune_receive_window;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_stop_early_2;
+NET_EXPORT_PRIVATE extern bool FLAGS_quic_dont_ack_acks;
 
 #endif  // NET_QUIC_QUIC_FLAGS_H_

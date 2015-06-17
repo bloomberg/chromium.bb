@@ -39,8 +39,8 @@ void MockCryptoClientStream::CryptoConnect() {
     case ZERO_RTT: {
       encryption_established_ = true;
       handshake_confirmed_ = false;
-      session()->connection()->SetDecrypter(QuicDecrypter::Create(kNULL),
-                                            ENCRYPTION_INITIAL);
+      session()->connection()->SetDecrypter(ENCRYPTION_INITIAL,
+                                            QuicDecrypter::Create(kNULL));
       session()->OnCryptoHandshakeEvent(
           QuicSession::ENCRYPTION_FIRST_ESTABLISHED);
       break;
@@ -55,8 +55,8 @@ void MockCryptoClientStream::CryptoConnect() {
         client_session()->OnProofVerifyDetailsAvailable(*proof_verify_details_);
       }
       SetConfigNegotiated();
-      session()->connection()->SetDecrypter(QuicDecrypter::Create(kNULL),
-                                            ENCRYPTION_FORWARD_SECURE);
+      session()->connection()->SetDecrypter(ENCRYPTION_FORWARD_SECURE,
+                                            QuicDecrypter::Create(kNULL));
       session()->OnCryptoHandshakeEvent(QuicSession::HANDSHAKE_CONFIRMED);
       break;
     }

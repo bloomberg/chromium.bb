@@ -48,3 +48,6 @@ bool FLAGS_quic_auto_tune_receive_window = true;
 // If true, stop processing quic data as soon as the connection is
 // closed rather than processing a full packet.
 bool FLAGS_quic_stop_early_2 = true;
+
+// Don't ack acks in QUIC, even when there is a recent missing packet.
+bool FLAGS_quic_dont_ack_acks = true;

@@ -547,7 +547,9 @@ StringPiece QuicPacket::Plaintext() const {
 }
 
 RetransmittableFrames::RetransmittableFrames(EncryptionLevel level)
-    : encryption_level_(level), has_crypto_handshake_(NOT_HANDSHAKE) {
+    : encryption_level_(level),
+      has_crypto_handshake_(NOT_HANDSHAKE),
+      needs_padding_(false) {
 }
 
 RetransmittableFrames::~RetransmittableFrames() {

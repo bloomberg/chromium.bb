@@ -50,7 +50,8 @@ QuicPacketGenerator::QuicPacketGenerator(QuicConnectionId connection_id,
       should_send_ack_(false),
       should_send_stop_waiting_(false),
       ack_queued_(false),
-      stop_waiting_queued_(false) {
+      stop_waiting_queued_(false),
+      max_packet_length_(kDefaultMaxPacketSize) {
 }
 
 QuicPacketGenerator::~QuicPacketGenerator() {
@@ -177,7 +178,7 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(
       ack_notifiers_.push_back(notifier);
     }
 
-    if (!AddFrame(frame, buffer.get())) {
+    if (!AddFrame(frame, buffer.get(), has_handshake)) {
       LOG(DFATAL) << "Failed to add stream frame.";
       // Inability to add a STREAM frame creates an unrecoverable hole in a
       // the stream, so it's best to close the connection.
@@ -376,7 +377,8 @@ bool QuicPacketGenerator::AddNextPendingFrame() {
     delegate_->PopulateAckFrame(&pending_ack_frame_);
     ack_queued_ = true;
     // If we can't this add the frame now, then we still need to do so later.
-    should_send_ack_ = !AddFrame(QuicFrame(&pending_ack_frame_), nullptr);
+    should_send_ack_ = !AddFrame(QuicFrame(&pending_ack_frame_), nullptr,
+                                 /*needs_padding=*/false);
     // Return success if we have cleared out this flag (i.e., added the frame).
     // If we still need to send, then the frame is full, and we have failed.
     return !should_send_ack_;
@@ -387,7 +389,8 @@ bool QuicPacketGenerator::AddNextPendingFrame() {
     stop_waiting_queued_ = true;
     // If we can't this add the frame now, then we still need to do so later.
     should_send_stop_waiting_ =
-        !AddFrame(QuicFrame(&pending_stop_waiting_frame_), nullptr);
+        !AddFrame(QuicFrame(&pending_stop_waiting_frame_), nullptr,
+                  /*needs_padding=*/false);
     // Return success if we have cleared out this flag (i.e., added the frame).
     // If we still need to send, then the frame is full, and we have failed.
     return !should_send_stop_waiting_;
@@ -395,7 +398,8 @@ bool QuicPacketGenerator::AddNextPendingFrame() {
 
   LOG_IF(DFATAL, queued_control_frames_.empty())
       << "AddNextPendingFrame called with no queued control frames.";
-  if (!AddFrame(queued_control_frames_.back(), nullptr)) {
+  if (!AddFrame(queued_control_frames_.back(), nullptr,
+                /*needs_padding=*/false)) {
     // Packet was full.
     return false;
   }
@@ -403,8 +407,12 @@ bool QuicPacketGenerator::AddNextPendingFrame() {
   return true;
 }
 
-bool QuicPacketGenerator::AddFrame(const QuicFrame& frame, char* buffer) {
-  bool success = packet_creator_.AddSavedFrame(frame, buffer);
+bool QuicPacketGenerator::AddFrame(const QuicFrame& frame,
+                                   char* buffer,
+                                   bool needs_padding) {
+  bool success = needs_padding
+                     ? packet_creator_.AddPaddedSavedFrame(frame, buffer)
+                     : packet_creator_.AddSavedFrame(frame, buffer);
   if (success && debug_delegate_) {
     debug_delegate_->OnFrameAddedToPacket(frame);
   }
@@ -424,6 +432,12 @@ void QuicPacketGenerator::SerializeAndSendPacket() {
   delegate_->OnSerializedPacket(serialized_packet);
   MaybeSendFecPacketAndCloseGroup(/*force=*/false, /*is_fec_timeout=*/false);
 
+  // Maximum packet size may be only enacted while no packet is currently being
+  // constructed, so here we have a good opportunity to actually change it.
+  if (packet_creator_.CanSetMaxPacketLength()) {
+    packet_creator_.SetMaxPacketLength(max_packet_length_);
+  }
+
   // The packet has now been serialized, so the frames are no longer queued.
   ack_queued_ = false;
   stop_waiting_queued_ = false;
@@ -437,12 +451,28 @@ QuicPacketSequenceNumber QuicPacketGenerator::sequence_number() const {
   return packet_creator_.sequence_number();
 }
 
-QuicByteCount QuicPacketGenerator::max_packet_length() const {
+QuicByteCount QuicPacketGenerator::GetMaxPacketLength() const {
+  return max_packet_length_;
+}
+
+QuicByteCount QuicPacketGenerator::GetCurrentMaxPacketLength() const {
   return packet_creator_.max_packet_length();
 }
 
-void QuicPacketGenerator::set_max_packet_length(QuicByteCount length) {
-  packet_creator_.SetMaxPacketLength(length);
+void QuicPacketGenerator::SetMaxPacketLength(QuicByteCount length, bool force) {
+  // If we cannot immediately set new maximum packet length, and the |force|
+  // flag is set, we have to flush the contents of the queue and close existing
+  // FEC group.
+  if (!packet_creator_.CanSetMaxPacketLength() && force) {
+    SendQueuedFrames(/*flush=*/true, /*is_fec_timeout=*/false);
+    MaybeSendFecPacketAndCloseGroup(/*force=*/true, /*is_fec_timeout=*/false);
+    DCHECK(packet_creator_.CanSetMaxPacketLength());
+  }
+
+  max_packet_length_ = length;
+  if (packet_creator_.CanSetMaxPacketLength()) {
+    packet_creator_.SetMaxPacketLength(length);
+  }
 }
 
 QuicEncryptedPacket* QuicPacketGenerator::SerializeVersionNegotiationPacket(

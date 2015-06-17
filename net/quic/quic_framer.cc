@@ -1583,16 +1583,15 @@ StringPiece QuicFramer::GetAssociatedDataFromEncryptedPacket(
       - kStartOfHashData);
 }
 
-void QuicFramer::SetDecrypter(QuicDecrypter* decrypter,
-                              EncryptionLevel level) {
+void QuicFramer::SetDecrypter(EncryptionLevel level, QuicDecrypter* decrypter) {
   DCHECK(alternative_decrypter_.get() == nullptr);
   DCHECK_GE(level, decrypter_level_);
   decrypter_.reset(decrypter);
   decrypter_level_ = level;
 }
 
-void QuicFramer::SetAlternativeDecrypter(QuicDecrypter* decrypter,
-                                         EncryptionLevel level,
+void QuicFramer::SetAlternativeDecrypter(EncryptionLevel level,
+                                         QuicDecrypter* decrypter,
                                          bool latch_once_used) {
   alternative_decrypter_.reset(decrypter);
   alternative_decrypter_level_ = level;
@@ -1614,7 +1613,7 @@ void QuicFramer::SetEncrypter(EncryptionLevel level,
   encrypter_[level].reset(encrypter);
 }
 
-QuicEncryptedPacket* QuicFramer::EncryptPacket(
+QuicEncryptedPacket* QuicFramer::EncryptPayload(
     EncryptionLevel level,
     QuicPacketSequenceNumber packet_sequence_number,
     const QuicPacket& packet,

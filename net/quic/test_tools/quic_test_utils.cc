@@ -542,7 +542,7 @@ QuicEncryptedPacket* ConstructEncryptedPacket(
       BuildUnsizedDataPacket(&framer, header, frames));
   EXPECT_TRUE(packet != nullptr);
   char buffer[kMaxPacketSize];
-  scoped_ptr<QuicEncryptedPacket> encrypted(framer.EncryptPacket(
+  scoped_ptr<QuicEncryptedPacket> encrypted(framer.EncryptPayload(
       ENCRYPTION_NONE, sequence_number, *packet, buffer, kMaxPacketSize));
   EXPECT_TRUE(encrypted != nullptr);
   return encrypted->Clone();
@@ -586,7 +586,7 @@ QuicEncryptedPacket* ConstructMisFramedEncryptedPacket(
       connection_id_length, version_flag, sequence_number_length)] = 0xFF;
 
   char buffer[kMaxPacketSize];
-  scoped_ptr<QuicEncryptedPacket> encrypted(framer.EncryptPacket(
+  scoped_ptr<QuicEncryptedPacket> encrypted(framer.EncryptPayload(
       ENCRYPTION_NONE, sequence_number, *packet, buffer, kMaxPacketSize));
   EXPECT_TRUE(encrypted != nullptr);
   return encrypted->Clone();

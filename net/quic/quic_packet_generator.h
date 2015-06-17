@@ -190,9 +190,18 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
   // created.
   QuicPacketSequenceNumber sequence_number() const;
 
-  QuicByteCount max_packet_length() const;
+  // Returns the maximum packet length.  Note that this is the long-term maximum
+  // packet length, and it may not be the maximum length of the current packet,
+  // if the generator is in the middle of the packet (in batch mode) or FEC
+  // group.
+  QuicByteCount GetMaxPacketLength() const;
+  // Returns the maximum length current packet can actually have.
+  QuicByteCount GetCurrentMaxPacketLength() const;
 
-  void set_max_packet_length(QuicByteCount length);
+  // Set maximum packet length sent.  If |force| is set to true, all pending
+  // unfinished packets and FEC groups are closed, and the change is enacted
+  // immediately.  Otherwise, it is enacted at the next opportunity.
+  void SetMaxPacketLength(QuicByteCount length, bool force);
 
   void set_debug_delegate(DebugDelegate* debug_delegate) {
     debug_delegate_ = debug_delegate;
@@ -236,7 +245,7 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
   bool AddNextPendingFrame();
   // Adds a frame and takes ownership of the underlying buffer if the addition
   // was successful.
-  bool AddFrame(const QuicFrame& frame, char* buffer);
+  bool AddFrame(const QuicFrame& frame, char* buffer, bool needs_padding);
 
   void SerializeAndSendPacket();
 
@@ -276,6 +285,11 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
 
   // Stores notifiers that should be attached to the next serialized packet.
   std::list<QuicAckNotifier*> ack_notifiers_;
+
+  // Stores the maximum packet size we are allowed to send.  This might not be
+  // the maximum size we are actually using now, if we are in the middle of the
+  // packet.
+  QuicByteCount max_packet_length_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicPacketGenerator);
 };

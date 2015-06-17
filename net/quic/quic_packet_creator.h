@@ -155,6 +155,10 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
   // true.
   bool AddSavedFrame(const QuicFrame& frame, char* buffer);
 
+  // Identical to AddSavedFrame, but takes ownership of the buffer if it returns
+  // true, and allows to cause the packet to be padded.
+  bool AddPaddedSavedFrame(const QuicFrame& frame, char* buffer);
+
   // Serializes all frames which have been added and adds any which should be
   // retransmitted to |retransmittable_frames| if it's not nullptr. All frames
   // must fit into a single packet. Sets the entropy hash of the serialized
@@ -208,6 +212,10 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
   // plaintext size.
   void SetEncrypter(EncryptionLevel level, QuicEncrypter* encrypter);
 
+  // Indicates whether the packet creator is in a state where it can change
+  // current maximum packet length.
+  bool CanSetMaxPacketLength() const;
+
   // Sets the maximum packet length.
   void SetMaxPacketLength(QuicByteCount length);
 
@@ -249,6 +257,7 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
   // Particularly useful for retransmits using SerializeAllFrames().
   bool AddFrame(const QuicFrame& frame,
                 bool save_retransmittable_frames,
+                bool needs_padding,
                 char* buffer);
 
   // Adds a padding frame to the current packet only if the current packet
@@ -289,6 +298,8 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
   mutable size_t max_plaintext_size_;
   QuicFrames queued_frames_;
   scoped_ptr<RetransmittableFrames> queued_retransmittable_frames_;
+  // If true, the packet will be padded up to |max_packet_length_|.
+  bool needs_padding_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicPacketCreator);
 };

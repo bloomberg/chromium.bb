@@ -876,16 +876,16 @@ void QuicConnection::OnPacketComplete() {
   }
 
   DVLOG(1) << ENDPOINT << (last_packet_revived_ ? "Revived" : "Got")
-           << " packet " << last_header_.packet_sequence_number
-           << " with " << last_stream_frames_.size()<< " stream frames "
-           << last_ack_frames_.size() << " acks, "
-           << last_stop_waiting_frames_.size() << " stop_waiting, "
-           << last_rst_frames_.size() << " rsts, "
-           << last_goaway_frames_.size() << " goaways, "
-           << last_window_update_frames_.size() << " window updates, "
-           << last_blocked_frames_.size() << " blocked, "
-           << last_ping_frames_.size() << " pings, "
-           << last_close_frames_.size() << " closes, "
+           << " packet " << last_header_.packet_sequence_number << " with "  //
+           << last_stream_frames_.size() << " stream frames, "               //
+           << last_ack_frames_.size() << " acks, "                           //
+           << last_stop_waiting_frames_.size() << " stop_waiting, "          //
+           << last_rst_frames_.size() << " rsts, "                           //
+           << last_goaway_frames_.size() << " goaways, "                     //
+           << last_window_update_frames_.size() << " window updates, "       //
+           << last_blocked_frames_.size() << " blocked, "                    //
+           << last_ping_frames_.size() << " pings, "                         //
+           << last_close_frames_.size() << " closes "                        //
            << "for " << last_header_.public_header.connection_id;
 
   ++num_packets_received_since_last_ack_sent_;
@@ -962,7 +962,8 @@ void QuicConnection::OnPacketComplete() {
   }
 
   // If there are new missing packets to report, send an ack immediately.
-  if (received_packet_manager_.HasNewMissingPackets()) {
+  if ((!FLAGS_quic_dont_ack_acks || ShouldLastPacketInstigateAck()) &&
+      received_packet_manager_.HasNewMissingPackets()) {
     ack_queued_ = true;
     ack_alarm_->Cancel();
   }
@@ -973,11 +974,15 @@ void QuicConnection::OnPacketComplete() {
 }
 
 void QuicConnection::MaybeQueueAck() {
+  // If the last packet is an ack, don't ack it.
+  if (!ShouldLastPacketInstigateAck()) {
+    return;
+  }
   // If the incoming packet was missing, send an ack immediately.
   ack_queued_ = received_packet_manager_.IsMissing(
       last_header_.packet_sequence_number);
 
-  if (!ack_queued_ && ShouldLastPacketInstigateAck()) {
+  if (!ack_queued_) {
     if (ack_alarm_->IsSet()) {
       ack_queued_ = true;
     } else {
@@ -1214,7 +1219,7 @@ const QuicConnectionStats& QuicConnection::GetStats() {
   stats_.srtt_us = srtt.ToMicroseconds();
 
   stats_.estimated_bandwidth = sent_packet_manager_.BandwidthEstimate();
-  stats_.max_packet_size = packet_generator_.max_packet_length();
+  stats_.max_packet_size = packet_generator_.GetMaxPacketLength();
   return stats_;
 }
 
@@ -1348,7 +1353,7 @@ bool QuicConnection::ProcessValidatedPacket() {
 
   if (perspective_ == Perspective::IS_SERVER &&
       encryption_level_ == ENCRYPTION_NONE &&
-      last_size_ > packet_generator_.max_packet_length()) {
+      last_size_ > packet_generator_.GetMaxPacketLength()) {
     set_max_packet_length(last_size_);
   }
   return true;
@@ -1508,7 +1513,7 @@ bool QuicConnection::WritePacketInner(QueuedPacket* packet) {
   if (!FLAGS_quic_allow_oversized_packets_for_test) {
     DCHECK_LE(encrypted->length(), kMaxPacketSize);
   }
-  DCHECK_LE(encrypted->length(), packet_generator_.max_packet_length());
+  DCHECK_LE(encrypted->length(), packet_generator_.GetMaxPacketLength());
   DVLOG(1) << ENDPOINT << "Sending packet " << sequence_number << " : "
            << (packet->serialized_packet.is_fec_packet
                    ? "FEC "
@@ -1731,6 +1736,7 @@ void QuicConnection::SendPing() {
 
 void QuicConnection::SendAck() {
   ack_alarm_->Cancel();
+  ack_queued_ = false;
   stop_waiting_count_ = 0;
   num_packets_received_since_last_ack_sent_ = 0;
 
@@ -1788,15 +1794,15 @@ void QuicConnection::SetDefaultEncryptionLevel(EncryptionLevel level) {
   packet_generator_.set_encryption_level(level);
 }
 
-void QuicConnection::SetDecrypter(QuicDecrypter* decrypter,
-                                  EncryptionLevel level) {
-  framer_.SetDecrypter(decrypter, level);
+void QuicConnection::SetDecrypter(EncryptionLevel level,
+                                  QuicDecrypter* decrypter) {
+  framer_.SetDecrypter(level, decrypter);
 }
 
-void QuicConnection::SetAlternativeDecrypter(QuicDecrypter* decrypter,
-                                             EncryptionLevel level,
+void QuicConnection::SetAlternativeDecrypter(EncryptionLevel level,
+                                             QuicDecrypter* decrypter,
                                              bool latch_once_used) {
-  framer_.SetAlternativeDecrypter(decrypter, level, latch_once_used);
+  framer_.SetAlternativeDecrypter(level, decrypter, latch_once_used);
 }
 
 const QuicDecrypter* QuicConnection::decrypter() const {
@@ -1991,11 +1997,11 @@ void QuicConnection::CloseFecGroupsBefore(
 }
 
 QuicByteCount QuicConnection::max_packet_length() const {
-  return packet_generator_.max_packet_length();
+  return packet_generator_.GetMaxPacketLength();
 }
 
 void QuicConnection::set_max_packet_length(QuicByteCount length) {
-  return packet_generator_.set_max_packet_length(length);
+  return packet_generator_.SetMaxPacketLength(length, /*force=*/false);
 }
 
 bool QuicConnection::HasQueuedData() const {

@@ -917,7 +917,7 @@ TEST_P(QuicSessionTestServer, FlowControlWithInvalidFinalOffset) {
 
 TEST_P(QuicSessionTestServer, WindowUpdateUnblocksHeadersStream) {
   // Test that a flow control blocked headers stream gets unblocked on recipt of
-  // a WINDOW_UPDATE frame. Regression test for b/17413860.
+  // a WINDOW_UPDATE frame.
 
   // Set the headers stream to be flow control blocked.
   QuicHeadersStream* headers_stream =

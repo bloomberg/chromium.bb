@@ -1005,10 +1005,15 @@ class NET_EXPORT_PRIVATE RetransmittableFrames {
     return encryption_level_;
   }
 
+  bool needs_padding() const { return needs_padding_; }
+
+  void set_needs_padding(bool needs_padding) { needs_padding_ = needs_padding; }
+
  private:
   QuicFrames frames_;
   const EncryptionLevel encryption_level_;
   IsHandshake has_crypto_handshake_;
+  bool needs_padding_;
   // Data referenced by the IOVector of a QuicStreamFrame.
   std::vector<const char*> stream_data_;
 

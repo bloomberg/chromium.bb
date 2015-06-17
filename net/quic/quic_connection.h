@@ -487,7 +487,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   // function DCHECKs. This is intended for cases where one knows that future
   // packets will be using the new decrypter and the previous decrypter is now
   // obsolete. |level| indicates the encryption level of the new decrypter.
-  void SetDecrypter(QuicDecrypter* decrypter, EncryptionLevel level);
+  void SetDecrypter(EncryptionLevel level, QuicDecrypter* decrypter);
 
   // SetAlternativeDecrypter sets a decrypter that may be used to decrypt
   // future packets and takes ownership of it. |level| indicates the encryption
@@ -495,8 +495,8 @@ class NET_EXPORT_PRIVATE QuicConnection
   // that the decrypter is successful it will replace the primary decrypter.
   // Otherwise both decrypters will remain active and the primary decrypter
   // will be the one last used.
-  void SetAlternativeDecrypter(QuicDecrypter* decrypter,
-                               EncryptionLevel level,
+  void SetAlternativeDecrypter(EncryptionLevel level,
+                               QuicDecrypter* decrypter,
                                bool latch_once_used);
 
   const QuicDecrypter* decrypter() const;

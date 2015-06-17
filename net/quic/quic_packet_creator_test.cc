@@ -491,6 +491,7 @@ TEST_P(QuicPacketCreatorTest, ReserializeFramesWithPadding) {
                              &stream_buffer);
   RetransmittableFrames frames(ENCRYPTION_NONE);
   frames.AddFrame(frame);
+  frames.set_needs_padding(true);
   char buffer[kMaxPacketSize];
   SerializedPacket serialized = creator_.ReserializeAllFrames(
       frames, QuicPacketCreatorPeer::NextSequenceNumberLength(&creator_),
@@ -514,6 +515,7 @@ TEST_P(QuicPacketCreatorTest, ReserializeFramesWithFullPacketAndPadding) {
                                &frame, &stream_buffer);
     RetransmittableFrames frames(ENCRYPTION_NONE);
     frames.AddFrame(frame);
+    frames.set_needs_padding(true);
     char buffer[kMaxPacketSize];
     SerializedPacket serialized = creator_.ReserializeAllFrames(
         frames, QuicPacketCreatorPeer::NextSequenceNumberLength(&creator_),
@@ -791,7 +793,7 @@ TEST_P(QuicPacketCreatorTest, CryptoStreamFramePacketPadding) {
     size_t bytes_consumed = creator_.CreateStreamFrame(
         kCryptoStreamId, &io_vector, kOffset, false, &frame, &stream_buffer);
     EXPECT_LT(0u, bytes_consumed);
-    ASSERT_TRUE(creator_.AddSavedFrame(frame));
+    ASSERT_TRUE(creator_.AddPaddedSavedFrame(frame, nullptr));
     char buffer[kMaxPacketSize];
     SerializedPacket serialized_packet =
         creator_.SerializePacket(buffer, kMaxPacketSize);

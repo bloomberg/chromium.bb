@@ -214,6 +214,8 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   // Used in Chrome.
   const QuicHeadersStream* headers_stream() { return headers_stream_.get(); }
 
+  ReliableQuicStream* GetStream(const QuicStreamId stream_id);
+
  protected:
   typedef base::hash_map<QuicStreamId, QuicDataStream*> DataStreamMap;
 
@@ -238,8 +240,6 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   QuicDataStream* GetIncomingDataStream(QuicStreamId stream_id);
 
   QuicDataStream* GetDataStream(const QuicStreamId stream_id);
-
-  ReliableQuicStream* GetStream(const QuicStreamId stream_id);
 
   // This is called after every call other than OnConnectionClose from the
   // QuicConnectionVisitor to allow post-processing once the work has been done.

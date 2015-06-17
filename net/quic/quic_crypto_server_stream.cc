@@ -135,8 +135,8 @@ void QuicCryptoServerStream::FinishProcessingHandshakeMessage(
   // Set the decrypter immediately so that we no longer accept unencrypted
   // packets.
   session()->connection()->SetDecrypter(
-      crypto_negotiated_params_.initial_crypters.decrypter.release(),
-      ENCRYPTION_INITIAL);
+      ENCRYPTION_INITIAL,
+      crypto_negotiated_params_.initial_crypters.decrypter.release());
 
   // We want to be notified when the SHLO is ACKed so that we can disable
   // HANDSHAKE_MODE in the sent packet manager.
@@ -148,8 +148,9 @@ void QuicCryptoServerStream::FinishProcessingHandshakeMessage(
       ENCRYPTION_FORWARD_SECURE,
       crypto_negotiated_params_.forward_secure_crypters.encrypter.release());
   session()->connection()->SetAlternativeDecrypter(
+      ENCRYPTION_FORWARD_SECURE,
       crypto_negotiated_params_.forward_secure_crypters.decrypter.release(),
-      ENCRYPTION_FORWARD_SECURE, false /* don't latch */);
+      false /* don't latch */);
 
   encryption_established_ = true;
   handshake_confirmed_ = true;
