@@ -1570,16 +1570,14 @@ static inline LayoutRect frameVisibleRect(LayoutObject* layoutObject)
 
 bool DeprecatedPaintLayer::hitTest(HitTestResult& result)
 {
-    return hitTest(result.hitTestRequest(), result.hitTestLocation(), result);
-}
-
-bool DeprecatedPaintLayer::hitTest(const HitTestRequest& request, const HitTestLocation& hitTestLocation, HitTestResult& result)
-{
     ASSERT(isSelfPaintingLayer() || hasSelfPaintingLayerDescendant());
 
     // LayoutView should make sure to update layout before entering hit testing
     ASSERT(!layoutObject()->frame()->view()->layoutPending());
     ASSERT(!layoutObject()->document().layoutView()->needsLayout());
+
+    const HitTestRequest& request = result.hitTestRequest();
+    const HitTestLocation& hitTestLocation = result.hitTestLocation();
 
     // Start with frameVisibleRect to ensure we include the scrollbars.
     LayoutRect hitTestArea = frameVisibleRect(layoutObject());
@@ -1597,6 +1595,9 @@ bool DeprecatedPaintLayer::hitTest(const HitTestRequest& request, const HitTestL
         if (!request.isChildFrameHitTest() && ((request.active() || request.release()) || (request.move() && hitTestArea.contains(hitPoint.x(), hitPoint.y()))) && isRootLayer()) {
             layoutObject()->updateHitTestResult(result, toLayoutView(layoutObject())->flipForWritingMode(hitTestLocation.point()));
             insideLayer = this;
+
+            // Don't cache this result since it really wasn't a true hit.
+            result.setCacheable(false);
         }
     }
 

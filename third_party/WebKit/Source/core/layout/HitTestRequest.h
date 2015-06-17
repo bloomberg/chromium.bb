@@ -46,6 +46,7 @@ public:
         // When using list-based testing, this flag causes us to continue hit
         // testing after a hit has been found.
         PenetratingList = 1 << 12,
+        AvoidCache = 1 << 13,
     };
 
     typedef unsigned HitTestRequestType;
@@ -69,11 +70,22 @@ public:
     bool ignorePointerEventsNone() const { return m_requestType & IgnorePointerEventsNone; }
     bool listBased() const { return m_requestType & ListBased; }
     bool penetratingList() const { return m_requestType & PenetratingList; }
+    bool avoidCache() const { return m_requestType & AvoidCache; }
 
     // Convenience functions
     bool touchMove() const { return move() && touchEvent(); }
 
     HitTestRequestType type() const { return m_requestType; }
+
+    // The Cacheability bits don't affect hit testing computation.
+    // TODO(dtapuska): These bits really shouldn't be fields on the HitTestRequest as
+    // they don't influence the result; but rather are hints on the output as to what to do.
+    // Perhaps move these fields to another enum ?
+    static const HitTestRequestType CacheabilityBits = ReadOnly | Active | Move | Release | TouchEvent;
+    bool equalForCacheability(const HitTestRequest& value) const
+    {
+        return (m_requestType | CacheabilityBits) == (value.m_requestType | CacheabilityBits);
+    }
 
 private:
     HitTestRequestType m_requestType;

@@ -170,12 +170,17 @@ bool LayoutPart::nodeAtPoint(HitTestResult& result, const HitTestLocation& locat
         HitTestRequest newHitTestRequest(result.hitTestRequest().type() | HitTestRequest::ChildFrameHitTest);
         HitTestResult childFrameResult(newHitTestRequest, newHitTestLocation);
 
-        bool isInsideChildFrame = childRoot->hitTest(newHitTestRequest, newHitTestLocation, childFrameResult);
+        bool isInsideChildFrame = childRoot->hitTest(childFrameResult);
 
-        if (result.hitTestRequest().listBased())
+        if (result.hitTestRequest().listBased()) {
             result.append(childFrameResult);
-        else if (isInsideChildFrame)
+        } else if (isInsideChildFrame) {
+            // Force the result not to be cacheable because the parent
+            // frame should not cache this result; as it won't be notified of
+            // changes in the child.
+            childFrameResult.setCacheable(false);
             result = childFrameResult;
+        }
 
         if (isInsideChildFrame)
             return true;

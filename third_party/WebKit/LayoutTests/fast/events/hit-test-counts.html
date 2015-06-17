@@ -26,6 +26,7 @@ html {
 </div>
 <script src="../../resources/js-test.js"></script>
 <script>
+setPrintTestResultsLazily();
 if (window.internals) {
     window.internals.settings.setViewportEnabled(true);
     window.internals.settings.setMockScrollbarsEnabled(true);
@@ -43,14 +44,27 @@ function hitTestCountDelta(doc)
     return newCount - lastCount;
 }
 
+function hitTestCacheHitsDelta(doc)
+{
+    var lastCount = 0;
+    if ('lastHitTestCacheHits' in doc)
+      lastCount = doc.lastHitTestCacheHits;
+    var newCount = internals.hitTestCacheHits(doc);
+    doc.lastHitTestCacheHits = newCount;
+    return newCount - lastCount;
+}
+
 function logCounts(label, documents, multiTapNotification, eventSenderFunction)
 {
     if (eventSenderFunction)
         eventSenderFunction();
 
     var countStr = '';
-    for(var i = 0; i < documents.length; i++)
-        countStr += ' ' + hitTestCountDelta(documents[i]);
+    for(var i = 0; i < documents.length; i++) {
+        var hits = hitTestCountDelta(documents[i]);
+        var cacheHits =   hitTestCacheHitsDelta(documents[i]);
+        countStr += ' ' + (hits - cacheHits) + "+" + cacheHits;
+    }
 
     if (multiTapNotification) {
       debug(label + ':' + eventCounts[label]
@@ -64,8 +78,10 @@ function logCounts(label, documents, multiTapNotification, eventSenderFunction)
 
 function clearCounts(documents)
 {
-    for(var i = 0; i < documents.length; i++)
+    for(var i = 0; i < documents.length; i++) {
         documents[i].lastHitTestCount = internals.hitTestCount(documents[i]);
+        documents[i].lastHitTestCacheHits = internals.hitTestCacheHits(documents[i]);
+    }
 }
 
 function sendEvents(targetX, targetY, documents, multiTapNotification)
@@ -137,6 +153,9 @@ function runTestForDocuments(targetX, targetY, documents)
 {
     sendEvents(targetX, targetY, documents, false);
     window.internals.settings.setMultiTargetTapNotificationEnabled(true);
+    for(var i = 0; i < documents.length; i++) {
+        internals.clearHitTestCache(documents[i]);
+    }
     sendEvents(targetX, targetY, documents, true);
     window.internals.settings.setMultiTargetTapNotificationEnabled(false);
 }
@@ -181,5 +200,6 @@ onload = function() {
     runTestForDocuments(point.x, point.y, [document]);
     debug('');
     window.internals.settings.setViewportEnabled(true);
+    finishJSTest();
 }
 </script>

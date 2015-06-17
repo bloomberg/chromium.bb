@@ -50,6 +50,7 @@ using namespace HTMLNames;
 
 HitTestResult::HitTestResult()
     : m_hitTestRequest(HitTestRequest::ReadOnly | HitTestRequest::Active)
+    , m_cacheable(true)
     , m_isOverWidget(false)
 {
 }
@@ -57,6 +58,7 @@ HitTestResult::HitTestResult()
 HitTestResult::HitTestResult(const HitTestRequest& request, const LayoutPoint& point)
     : m_hitTestLocation(point)
     , m_hitTestRequest(request)
+    , m_cacheable(true)
     , m_pointInInnerNodeFrame(point)
     , m_isOverWidget(false)
 {
@@ -65,6 +67,7 @@ HitTestResult::HitTestResult(const HitTestRequest& request, const LayoutPoint& p
 HitTestResult::HitTestResult(const HitTestRequest& request, const LayoutPoint& centerPoint, unsigned topPadding, unsigned rightPadding, unsigned bottomPadding, unsigned leftPadding)
     : m_hitTestLocation(centerPoint, topPadding, rightPadding, bottomPadding, leftPadding)
     , m_hitTestRequest(request)
+    , m_cacheable(true)
     , m_pointInInnerNodeFrame(centerPoint)
     , m_isOverWidget(false)
 {
@@ -73,6 +76,7 @@ HitTestResult::HitTestResult(const HitTestRequest& request, const LayoutPoint& c
 HitTestResult::HitTestResult(const HitTestRequest& otherRequest, const HitTestLocation& other)
     : m_hitTestLocation(other)
     , m_hitTestRequest(otherRequest)
+    , m_cacheable(true)
     , m_pointInInnerNodeFrame(m_hitTestLocation.point())
     , m_isOverWidget(false)
 {
@@ -101,6 +105,31 @@ HitTestResult& HitTestResult::operator=(const HitTestResult& other)
 {
     m_hitTestLocation = other.m_hitTestLocation;
     m_hitTestRequest = other.m_hitTestRequest;
+    populateFromCachedResult(other);
+
+    return *this;
+}
+
+bool HitTestResult::equalForCacheability(const HitTestResult& other) const
+{
+    return m_hitTestRequest.equalForCacheability(other.m_hitTestRequest)
+        && m_innerNode == other.innerNode()
+        && m_innerPossiblyPseudoNode == other.innerPossiblyPseudoNode()
+        && m_pointInInnerNodeFrame == other.m_pointInInnerNodeFrame
+        && m_localPoint == other.localPoint()
+        && m_innerURLElement == other.URLElement()
+        && m_scrollbar == other.scrollbar()
+        && m_isOverWidget == other.isOverWidget();
+}
+
+void HitTestResult::cacheValues(const HitTestResult& other)
+{
+    *this = other;
+    m_hitTestRequest = other.m_hitTestRequest.type() & ~HitTestRequest::AvoidCache;
+}
+
+void HitTestResult::populateFromCachedResult(const HitTestResult& other)
+{
     m_innerNode = other.innerNode();
     m_innerPossiblyPseudoNode = other.innerPossiblyPseudoNode();
     m_pointInInnerNodeFrame = other.m_pointInInnerNodeFrame;
@@ -108,11 +137,10 @@ HitTestResult& HitTestResult::operator=(const HitTestResult& other)
     m_innerURLElement = other.URLElement();
     m_scrollbar = other.scrollbar();
     m_isOverWidget = other.isOverWidget();
+    m_cacheable = other.m_cacheable;
 
     // Only copy the NodeSet in case of list hit test.
     m_listBasedTestResult = adoptPtrWillBeNoop(other.m_listBasedTestResult ? new NodeSet(*other.m_listBasedTestResult) : 0);
-
-    return *this;
 }
 
 DEFINE_TRACE(HitTestResult)

@@ -25,6 +25,8 @@
 #include "core/CoreExport.h"
 #include "core/dom/Position.h"
 #include "core/frame/FrameView.h"
+#include "core/layout/HitTestCache.h"
+#include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutState.h"
 #include "core/layout/PaintInvalidationState.h"
@@ -51,10 +53,12 @@ public:
     void willBeDestroyed() override;
 
     bool hitTest(HitTestResult&);
-    bool hitTest(const HitTestRequest&, const HitTestLocation&, HitTestResult&);
 
     // Returns the total count of calls to HitTest, for testing.
     unsigned hitTestCount() const { return m_hitTestCount; }
+    unsigned hitTestCacheHits() const { return m_hitTestCacheHits; }
+
+    void clearHitTestCache() { m_hitTestCache->clear(); }
 
     virtual const char* name() const override { return "LayoutView"; }
 
@@ -213,6 +217,8 @@ private:
     unsigned m_layoutCounterCount;
 
     unsigned m_hitTestCount;
+    unsigned m_hitTestCacheHits;
+    OwnPtrWillBePersistent<HitTestCache> m_hitTestCache;
 
     OwnPtrWillBePersistent<PendingSelection> m_pendingSelection;
 };

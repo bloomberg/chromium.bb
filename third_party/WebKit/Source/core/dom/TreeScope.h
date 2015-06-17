@@ -29,6 +29,7 @@
 
 #include "core/CoreExport.h"
 #include "core/dom/DocumentOrderedMap.h"
+#include "core/layout/HitTestRequest.h"
 #include "platform/heap/Handle.h"
 #include "wtf/text/AtomicString.h"
 
@@ -41,7 +42,6 @@ class Element;
 class HTMLLabelElement;
 class HTMLMapElement;
 class HitTestResult;
-class HitTestRequest;
 class IdTargetObserverRegistry;
 class ScopedStyleResolver;
 class Node;
@@ -77,6 +77,7 @@ public:
     HTMLMapElement* getImageMap(const String& url) const;
 
     Element* elementFromPoint(int x, int y) const;
+    Element* hitTestPoint(int x, int y, const HitTestRequest&) const;
     Vector<Element*> elementsFromPoint(int x, int y) const;
 
     // For accessibility.
@@ -208,7 +209,7 @@ inline bool TreeScope::containsMultipleElementsWithId(const AtomicString& id) co
 
 DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES(TreeScope)
 
-HitTestResult hitTestInDocument(const Document*, int x, int y);
+HitTestResult hitTestInDocument(const Document*, int x, int y, const HitTestRequest& = HitTestRequest::ReadOnly | HitTestRequest::Active);
 
 } // namespace blink
 
