@@ -318,6 +318,8 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
 
   sync_tree->RegisterSelection(selection_);
 
+  // Setting property trees must happen before pushing the page scale.
+  sync_tree->SetPropertyTrees(property_trees_);
   sync_tree->PushPageScaleFromMainThread(
       page_scale_factor_, min_page_scale_factor_, max_page_scale_factor_);
   sync_tree->elastic_overscroll()->PushFromMainThread(elastic_overscroll_);
@@ -357,12 +359,15 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
   }
 
   sync_tree->set_has_ever_been_drawn(false);
-  sync_tree->SetPropertyTrees(property_trees_);
 
   {
     TRACE_EVENT0("cc", "LayerTreeHost::PushProperties");
     TreeSynchronizer::PushProperties(root_layer(), sync_tree->root_layer());
   }
+
+  // This must happen after synchronizing property trees and after push
+  // properties, which updates property tree indices.
+  sync_tree->UpdatePropertyTreeScrollingFromMainThread();
 
   micro_benchmark_controller_.ScheduleImplBenchmarks(host_impl);
 }

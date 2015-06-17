@@ -313,6 +313,20 @@ float LayerTreeImpl::ClampPageScaleFactorToLimits(
   return page_scale_factor;
 }
 
+void LayerTreeImpl::UpdatePropertyTreeScrollingFromMainThread() {
+  // TODO(enne): This should get replaced by pulling out scrolling into its own
+  // tree.  Then scrolls would have their own way of synchronizing across
+  // commits.  This occurs to push updates from scrolling deltas on the
+  // compositor thread that have occurred after begin frame to a newly-committed
+  // property tree.
+  if (!root_layer())
+    return;
+  LayerTreeHostCommon::CallFunctionForSubtree(
+      root_layer(), [](LayerImpl* layer) {
+        layer->UpdatePropertyTreeForScrollingIfNeeded();
+      });
+}
+
 void LayerTreeImpl::SetPageScaleOnActiveTree(float active_page_scale) {
   DCHECK(IsActiveTree());
   if (page_scale_factor()->SetCurrent(
@@ -334,11 +348,21 @@ void LayerTreeImpl::PushPageScaleFactorAndLimits(const float* page_scale_factor,
   bool changed_page_scale = false;
   if (page_scale_factor) {
     DCHECK(!IsActiveTree() || !layer_tree_host_impl_->pending_tree());
+    changed_page_scale |= page_scale_factor_->Delta() != 1.f;
+    // TODO(enne): Once CDP goes away, ignore this call below.  The only time
+    // the property trees will differ is if there's been a page scale on the
+    // compositor thread after the begin frame, which is the delta check above.
     changed_page_scale |=
         page_scale_factor_->PushFromMainThread(*page_scale_factor);
   }
-  if (IsActiveTree())
+  if (IsActiveTree()) {
+    // TODO(enne): Pushing from pending to active should never require
+    // DidUpdatePageScale.  The values should already be set by the fully
+    // computed property trees being synced from one tree to another.  Remove
+    // this once CDP goes away.
     changed_page_scale |= page_scale_factor_->PushPendingToActive();
+  }
+
   changed_page_scale |=
       SetPageScaleFactorLimits(min_page_scale_factor, max_page_scale_factor);
 

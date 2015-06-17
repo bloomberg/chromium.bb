@@ -660,6 +660,8 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
 
   bool sorted_for_recursion() { return sorted_for_recursion_; }
 
+  void UpdatePropertyTreeForScrollingIfNeeded();
+
  protected:
   LayerImpl(LayerTreeImpl* layer_impl,
             int id,

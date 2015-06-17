@@ -1260,6 +1260,22 @@ void LayerImpl::PushScrollOffset(const gfx::ScrollOffset* scroll_offset) {
     DidUpdateScrollOffset(false);
 }
 
+void LayerImpl::UpdatePropertyTreeForScrollingIfNeeded() {
+  // TODO(enne): in the future, scrolling should update the scroll tree
+  // directly instead of going through layers.
+  if (transform_tree_index_ != -1) {
+    TransformTree& transform_tree =
+        layer_tree_impl()->property_trees()->transform_tree;
+    TransformNode* node = transform_tree.Node(transform_tree_index_);
+    gfx::ScrollOffset current_offset = scroll_offset_->Current(IsActive());
+    if (node->data.scroll_offset != current_offset) {
+      node->data.scroll_offset = current_offset;
+      node->data.needs_local_transform_update = true;
+      transform_tree.set_needs_update(true);
+    }
+  }
+}
+
 void LayerImpl::DidUpdateScrollOffset(bool is_from_root_delegate) {
   DCHECK(scroll_offset_);
 
@@ -1268,16 +1284,7 @@ void LayerImpl::DidUpdateScrollOffset(bool is_from_root_delegate) {
   NoteLayerPropertyChangedForSubtree();
   ScrollbarParametersDidChange(false);
 
-  // TODO(enne): in the future, scrolling should update the scroll tree
-  // directly instead of going through layers.
-  if (transform_tree_index_ != -1) {
-    TransformTree& transform_tree =
-        layer_tree_impl()->property_trees()->transform_tree;
-    TransformNode* node = transform_tree.Node(transform_tree_index_);
-    node->data.scroll_offset = scroll_offset_->Current(IsActive());
-    node->data.needs_local_transform_update = true;
-    transform_tree.set_needs_update(true);
-  }
+  UpdatePropertyTreeForScrollingIfNeeded();
 
   // Inform the pending twin that a property changed.
   if (layer_tree_impl()->IsActiveTree()) {
