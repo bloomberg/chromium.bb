@@ -16,16 +16,6 @@ crbug.com/364398 fast/frames/viewsource/viewsource-7.html [ Leak ]
 crbug.com/364398 fast/frames/viewsource/viewsource-incomplete-token.html [ Leak ]
 crbug.com/364398 fast/frames/viewsource/viewsource-unfinished-script.html [ Leak ]
 crbug.com/364398 fast/frames/viewsource/viewsource-unfinished-textarea.html [ Leak ]
-crbug.com/364398 virtual/slimmingpaint/fast/frames/viewsource/viewsource-1.html [ Leak ]
-crbug.com/364398 virtual/slimmingpaint/fast/frames/viewsource/viewsource-2.html [ Leak ]
-crbug.com/364398 virtual/slimmingpaint/fast/frames/viewsource/viewsource-3.html [ Leak ]
-crbug.com/364398 virtual/slimmingpaint/fast/frames/viewsource/viewsource-4.html [ Leak ]
-crbug.com/364398 virtual/slimmingpaint/fast/frames/viewsource/viewsource-5.html [ Leak ]
-crbug.com/364398 virtual/slimmingpaint/fast/frames/viewsource/viewsource-6.html [ Leak ]
-crbug.com/364398 virtual/slimmingpaint/fast/frames/viewsource/viewsource-7.html [ Leak ]
-crbug.com/364398 virtual/slimmingpaint/fast/frames/viewsource/viewsource-incomplete-token.html [ Leak ]
-crbug.com/364398 virtual/slimmingpaint/fast/frames/viewsource/viewsource-unfinished-script.html [ Leak ]
-crbug.com/364398 virtual/slimmingpaint/fast/frames/viewsource/viewsource-unfinished-textarea.html [ Leak ]
 crbug.com/364398 http/tests/security/xssAuditor/viewsource-onmouseover.html [ Leak ]
 crbug.com/364398 http/tests/security/xssAuditor/viewsource-script-tag.html [ Leak ]
 
@@ -52,14 +42,12 @@ crbug.com/301515 fast/workers/worker-terminate.html [ Leak ]
 crbug.com/327574 permissionclient/image-permissions.html [ Leak ]
 crbug.com/327574 http/tests/permissionclient/image-permissions.html [ Leak ]
 crbug.com/327574 fast/loader/data-images-with-images-disabled.html [ Leak ]
-crbug.com/327574 virtual/slimmingpaint/fast/loader/data-images-with-images-disabled.html [ Leak ]
 
 # -----------------------------------------------------------------
 # Untriaged but known leaks which may be false positives.
 # -----------------------------------------------------------------
 
 crbug.com/364411 fast/frames/location-observe-callback-crash.html [ Leak ]
-crbug.com/364411 virtual/slimmingpaint/fast/frames/location-observe-callback-crash.html [ Leak ]
 
 crbug.com/364417 editing/selection/selection-in-iframe-removed-crash.html [ Leak ]
 crbug.com/364417 editing/selection/user-select-js-property.html [ Leak ]
@@ -73,7 +61,6 @@ crbug.com/364417 imported/web-platform-tests/shadow-dom/user-interaction/ranges-
 crbug.com/364417 imported/web-platform-tests/shadow-dom/user-interaction/ranges-and-selections/test-002.html [ Leak ]
 
 crbug.com/455369 fast/html/marquee-destroyed-without-removed-from-crash.html [ Leak Pass ]
-crbug.com/455369 virtual/slimmingpaint/fast/html/marquee-destroyed-without-removed-from-crash.html [ Leak Pass ]
 
 crbug.com/366042 fast/history/history-traversal-is-asynchronous.html [ Leak ]
 

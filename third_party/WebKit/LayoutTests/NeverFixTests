@@ -15,7 +15,6 @@
 # same.  Because the whole point is that this test should fail when run, it's
 # not SKIP, just WONTFIX.
 fast/harness/sample-fail-mismatch-reftest.html [ WontFix ]
-virtual/slimmingpaint/fast/harness/sample-fail-mismatch-reftest.html [ WontFix ]
 
 # Platform specific virtual test suites.
 [ Win Mac Android ] virtual/linux-subpixel [ WontFix ]
@@ -35,7 +34,6 @@ virtual/slimmingpaint/fast/harness/sample-fail-mismatch-reftest.html [ WontFix ]
 # this test will always fail.
 [ Linux Win ] fast/events/option-tab.html [ WontFix ]
 [ Linux Win ] virtual/pointerevent/fast/events/option-tab.html [ WontFix ]
-[ Linux Win ] virtual/slimmingpaint/fast/events/option-tab.html [ WontFix ]
 
 # This test only applies to overlay scrollbar platforms.
 [ SnowLeopard Win Linux ] fast/dom/partial-layout-overlay-scrollbars.html [ WontFix ]
@@ -86,14 +84,6 @@ virtual/slimmingpaint/fast/harness/sample-fail-mismatch-reftest.html [ WontFix ]
 [ Linux Mac ] virtual/pointerevent/fast/events/panScroll-nested-divs.html [ WontFix ]
 [ Linux Mac ] virtual/pointerevent/fast/events/panScroll-panIcon.html [ WontFix ]
 [ Linux Mac ] virtual/pointerevent/fast/events/panScroll-nested-divs-forbidden.html [ WontFix ]
-[ Linux Mac ] virtual/slimmingpaint/fast/events/panScroll-click.html [ WontFix ]
-[ Linux Mac ] virtual/slimmingpaint/fast/events/panScroll-click-hyperlink.html [ WontFix ]
-[ Linux Mac ] virtual/slimmingpaint/fast/events/panScroll-drag.html [ WontFix ]
-[ Linux Mac ] virtual/slimmingpaint/fast/events/panScroll-event-fired.html [ WontFix ]
-[ Linux Mac ] virtual/slimmingpaint/fast/events/panScroll-in-iframe.html [ WontFix ]
-[ Linux Mac ] virtual/slimmingpaint/fast/events/panScroll-nested-divs.html [ WontFix ]
-[ Linux Mac ] virtual/slimmingpaint/fast/events/panScroll-panIcon.html [ WontFix ]
-[ Linux Mac ] virtual/slimmingpaint/fast/events/panScroll-nested-divs-forbidden.html [ WontFix ]
 
 # These tests are specific to Windows and Linux.
 [ Mac ] fast/forms/calendar-picker/date-open-picker-with-f4-key.html [ WontFix ]
@@ -109,9 +99,6 @@ virtual/slimmingpaint/fast/harness/sample-fail-mismatch-reftest.html [ WontFix ]
 [ Mac ] virtual/pointerevent/fast/events/menu-key-context-menu-document.html [ WontFix ]
 [ Mac ] virtual/pointerevent/fast/events/menu-key-context-menu.html [ WontFix ]
 [ Mac ] virtual/pointerevent/fast/events/menu-key-context-menu-position.html [ WontFix ]
-[ Mac ] virtual/slimmingpaint/fast/events/menu-key-context-menu-document.html [ WontFix ]
-[ Mac ] virtual/slimmingpaint/fast/events/menu-key-context-menu.html [ WontFix ]
-[ Mac ] virtual/slimmingpaint/fast/events/menu-key-context-menu-position.html [ WontFix ]
 
 # Link Highlighting is only supported on Windows and Linux
 [ Mac ] compositing/gestures [ WontFix ]
@@ -120,19 +107,13 @@ virtual/slimmingpaint/fast/harness/sample-fail-mismatch-reftest.html [ WontFix ]
 # These tests are specific to Linux.
 [ Mac Win ] editing/selection/linux_selection_color.html [ WontFix ]
 [ Mac Win ] fast/text/chromium-linux-fontconfig-renderstyle.html [ WontFix ]
-[ Mac Win ] virtual/slimmingpaint/fast/text/chromium-linux-fontconfig-renderstyle.html [ WontFix ]
 [ Mac Win ] fast/text/international/arabic-vertical-offset.html [ WontFix ]
-[ Mac Win ] virtual/slimmingpaint/fast/text/international/arabic-vertical-offset.html [ WontFix ]
 [ Mac Win ] fast/text/international/complex-joining-using-gpos.html [ WontFix ]
-[ Mac Win ] virtual/slimmingpaint/fast/text/international/complex-joining-using-gpos.html [ WontFix ]
 [ Mac Win ] fast/text/international/draw-complex-text-from-to.html [ WontFix ]
-[ Mac Win ] virtual/slimmingpaint/fast/text/international/draw-complex-text-from-to.html [ WontFix ]
 [ Mac Win ] svg/text/text-with-geometric-precision.svg [ WontFix ]
-[ Mac Win ] virtual/slimmingpaint/svg/text/text-with-geometric-precision.svg [ WontFix ]
 
 # Mac has different fallback behavior so that this test won't work there
 [ Mac ] fast/text/font-cachekey.html [ WontFix ]
-[ Mac ] virtual/slimmingpaint/fast/text/font-cachekey.html [ WontFix ]
 [ Mac ] virtual/antialiasedtext/fast/text/font-cachekey.html [ WontFix ]
 
 # This test is specific to Android. Because long pressing on disabled/readonly input/textarea
@@ -142,7 +123,6 @@ virtual/slimmingpaint/fast/harness/sample-fail-mismatch-reftest.html [ WontFix ]
 # AAT/mortx shaping not supported on platforms other than Mac
 [ Linux Win Android ] fast/text/aat-morx.html [ WontFix ]
 [ Linux Win Android ] virtual/antialiasedtext/fast/text/aat-morx.html [ WontFix ]
-[ Linux Win Android ] virtual/slimmingpaint/fast/text/aat-morx.html [ WontFix ]
 
 # This test crashes occasionally on Windows and we can't seem to repro locally.
 # See comments in crbug.com/239077
@@ -174,22 +154,16 @@ fast/canvas/canvas-lost-gpu-context.html [ WontFix ]
 [ Snowleopard Debug ] inspector/sources/debugger-breakpoints/dom-breakpoints.html [ WontFix ]
 [ Snowleopard Debug ] inspector/sources/debugger-breakpoints/event-listener-breakpoints.html [ WontFix ]
 [ SnowLeopard Debug ] virtual/antialiasedtext/fast/text/trailing_whitespace_wrapping.html [ WontFix ]
-[ SnowLeopard Debug ] virtual/slimmingpaint/fast/text/trailing_whitespace_wrapping.html [ WontFix ]
 [ SnowLeopard Debug ] fast/text/trailing_whitespace_wrapping.html [ WontFix ]
 
 
 # Subpixel font scaling requires DirectWrite on windows (which isn't supported
 # on XP) and antialiasing on mac (which isn't enabled tests).
 [ XP Mac ] fast/text/sub-pixel/text-scaling-ltr.html [ WontFix ]
-[ XP Mac ] virtual/slimmingpaint/fast/text/sub-pixel/text-scaling-ltr.html [ WontFix ]
 [ XP Mac ] fast/text/sub-pixel/text-scaling-pixel.html [ WontFix ]
-[ XP Mac ] virtual/slimmingpaint/fast/text/sub-pixel/text-scaling-pixel.html [ WontFix ]
 [ XP Mac ] fast/text/sub-pixel/text-scaling-rtl.html [ WontFix ]
-[ XP Mac ] virtual/slimmingpaint/fast/text/sub-pixel/text-scaling-rtl.html [ WontFix ]
 [ XP Mac ] fast/text/sub-pixel/text-scaling-vertical.html [ WontFix ]
-[ XP Mac ] virtual/slimmingpaint/fast/text/sub-pixel/text-scaling-vertical.html [ WontFix ]
 [ XP Mac ] fast/text/sub-pixel/text-scaling-webfont.html [ WontFix ]
-[ XP Mac ] virtual/slimmingpaint/fast/text/sub-pixel/text-scaling-webfont.html [ WontFix ]
 [ Mac ] fast/text/mixed-direction-bidi-wrap.html [ WontFix ]
 
 # We don't have the necessary fonts for these tests on XP.
@@ -201,7 +175,6 @@ fast/canvas/canvas-lost-gpu-context.html [ WontFix ]
 
 # We don't have full plane2 support on XP.
 [ XP ] fast/text/international/plane2.html [ WontFix ]
-[ XP ] virtual/slimmingpaint/fast/text/international/plane2.html [ WontFix ]
 
 # These two printing tests fail with the threaded compositor but they
 # aren't critical to run in this mode.
@@ -210,10 +183,7 @@ virtual/threaded/printing/width-overflow.html [ WontFix ]
 
 # Reftests failing due to invisible differences caused by rounding.
 # Will remove when we enable slimming paint by default.
-virtual/slimmingpaint/fast/sub-pixel/sub-pixel-transparency-layer.html [ WontFix ]
 virtual/slimmingpaint/css3/filters/effect-all-on-background.html [ WontFix ]
-virtual/slimmingpaint/fast/multicol/border-radius-clipped-layer-second-column.html [ WontFix ]
-virtual/slimmingpaint/fast/multicol/border-radius-clipped-layer.html [ WontFix ]
 
 # This test only fails with an ASSERT in Debug build.
 [ Release ] editing/input/orphan-set-selection-range.html [ WontFix ]
