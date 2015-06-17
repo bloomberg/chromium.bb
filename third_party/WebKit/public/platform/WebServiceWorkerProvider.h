@@ -54,14 +54,15 @@ public:
     // The WebServiceWorkerRegistration and WebServiceWorkerError ownership are
     // passed to the WebServiceWorkerRegistrationCallbacks implementation.
     typedef WebCallbacks<WebServiceWorkerRegistration, WebServiceWorkerError> WebServiceWorkerRegistrationCallbacks;
-    typedef WebCallbacks<bool, WebServiceWorkerError> WebServiceWorkerUnregistrationCallbacks;
     typedef WebCallbacks<WebServiceWorkerRegistration, WebServiceWorkerError> WebServiceWorkerGetRegistrationCallbacks;
     typedef WebCallbacks<WebVector<WebServiceWorkerRegistration*>, WebServiceWorkerError> WebServiceWorkerGetRegistrationsCallbacks;
     typedef WebCallbacks<WebServiceWorkerRegistration, void> WebServiceWorkerGetRegistrationForReadyCallbacks;
 
     virtual void registerServiceWorker(const WebURL& pattern, const WebURL& scriptUrl, WebServiceWorkerRegistrationCallbacks*) { }
 
-    // Unregisters the ServiceWorker for a given scope.
+    // TODO(nhiroki): Remove after http://crbug.com/500404 is fixed.
+#define CRBUG_500404
+    typedef WebCallbacks<bool, WebServiceWorkerError> WebServiceWorkerUnregistrationCallbacks;
     virtual void unregisterServiceWorker(const WebURL& pattern, WebServiceWorkerUnregistrationCallbacks*) { }
 
     virtual void getRegistration(const WebURL& documentURL, WebServiceWorkerGetRegistrationCallbacks*) { }
