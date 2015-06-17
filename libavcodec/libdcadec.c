@@ -21,10 +21,10 @@
 
 #include <libdcadec/dca_context.h>
 
-#include "libavutil/avassert.h"
 #include "libavutil/channel_layout.h"
 #include "libavutil/common.h"
 #include "libavutil/opt.h"
+
 #include "avcodec.h"
 #include "dca.h"
 #include "dca_syncwords.h"
@@ -48,13 +48,20 @@ static int dcadec_decode_frame(AVCodecContext *avctx, void *data,
     int input_size = avpkt->size;
 
     /* convert bytestream syntax to RAW BE format if required */
+    if (input_size < 8) {
+        av_log(avctx, AV_LOG_ERROR, "Input size too small\n");
+        return AVERROR_INVALIDDATA;
+    }
     mrk = AV_RB32(input);
     if (mrk != DCA_SYNCWORD_CORE_BE && mrk != DCA_SYNCWORD_SUBSTREAM) {
         s->buffer = av_fast_realloc(s->buffer, &s->buffer_size, avpkt->size + FF_INPUT_BUFFER_PADDING_SIZE);
         if (!s->buffer)
             return AVERROR(ENOMEM);
 
-        if ((ret = avpriv_dca_convert_bitstream(avpkt->data, avpkt->size, s->buffer, s->buffer_size)) < 0)
+        for (i = 0, ret = AVERROR_INVALIDDATA; i < input_size - 3 && ret < 0; i++)
+            ret = avpriv_dca_convert_bitstream(input + i, input_size - i, s->buffer, s->buffer_size);
+
+        if (ret < 0)
             return ret;
 
         input      = s->buffer;
@@ -75,11 +82,15 @@ static int dcadec_decode_frame(AVCodecContext *avctx, void *data,
     avctx->channel_layout = channel_mask;
     avctx->sample_rate    = sample_rate;
 
-    av_assert0(bits_per_sample >= 16 && bits_per_sample <= 24);
     if (bits_per_sample == 16)
         avctx->sample_fmt = AV_SAMPLE_FMT_S16P;
-    else
+    else if (bits_per_sample > 16 && bits_per_sample <= 24)
         avctx->sample_fmt = AV_SAMPLE_FMT_S32P;
+    else {
+        av_log(avctx, AV_LOG_ERROR, "Unsupported number of bits per sample: %d\n",
+               bits_per_sample);
+        return AVERROR(ENOSYS);
+    }
 
     avctx->bits_per_raw_sample = bits_per_sample;
 
@@ -159,8 +170,13 @@ static av_cold int dcadec_close(AVCodecContext *avctx)
 static av_cold int dcadec_init(AVCodecContext *avctx)
 {
     DCADecContext *s = avctx->priv_data;
+    int flags = 0;
 
-    s->ctx = dcadec_context_create(0);
+    /* Affects only lossy DTS profiles. DTS-HD MA is always bitexact */
+    if (avctx->flags & CODEC_FLAG_BITEXACT)
+        flags |= DCADEC_FLAG_CORE_BIT_EXACT;
+
+    s->ctx = dcadec_context_create(flags);
     if (!s->ctx)
         return AVERROR(ENOMEM);
 

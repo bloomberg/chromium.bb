@@ -282,16 +282,18 @@ static int ogg_buffer_data(AVFormatContext *s, AVStream *st,
     return 0;
 }
 
-static uint8_t *ogg_write_vorbiscomment(int offset, int bitexact,
+static uint8_t *ogg_write_vorbiscomment(int64_t offset, int bitexact,
                                         int *header_len, AVDictionary **m, int framing_bit)
 {
     const char *vendor = bitexact ? "ffmpeg" : LIBAVFORMAT_IDENT;
-    int size;
+    int64_t size;
     uint8_t *p, *p0;
 
     ff_metadata_conv(m, ff_vorbiscomment_metadata_conv, NULL);
 
     size = offset + ff_vorbiscomment_length(*m, vendor) + framing_bit;
+    if (size > INT_MAX)
+        return NULL;
     p = av_mallocz(size);
     if (!p)
         return NULL;
@@ -618,7 +620,7 @@ static int ogg_write_packet(AVFormatContext *s, AVPacket *pkt)
     }
 
     ogg_write_pages(s, 2);
-    return 0;
+    return 1;
 }
 
 static int ogg_write_trailer(AVFormatContext *s)

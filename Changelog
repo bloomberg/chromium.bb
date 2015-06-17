@@ -2,12 +2,34 @@ Entries are sorted chronologically from oldest to youngest within each release,
 releases are sorted from youngest to oldest.
 
 version <next>:
+- colorkey video filter
+- BFSTM demuxer
+
+
+version 2.7:
 - FFT video filter
 - TDSC decoder
 - DTS lossless extension (XLL) decoding (not lossless, disabled by default)
 - showwavespic filter
-- libdcadec wrapper
+- DTS decoding through libdcadec
 - Drop support for nvenc API before 5.0
+- nvenc HEVC encoder
+- Detelecine filter
+- Intel QSV-accelerated H.264 encoding
+- MMAL-accelerated H.264 decoding
+- basic APNG encoder and muxer with default extension "apng"
+- unpack DivX-style packed B-frames in MPEG-4 bitstream filter
+- WebM Live Chunk Muxer
+- nvenc level and tier options
+- chorus filter
+- Canopus HQ/HQA decoder
+- Automatically rotate videos based on metadata in ffmpeg
+- improved Quickdraw compatibility
+- VP9 high bit-depth and extended colorspaces decoding support
+- WebPAnimEncoder API when available for encoding and muxing WebP
+- Direct3D11-accelerated decoding
+- Support Secure Transport
+- Multipart JPEG demuxer
 
 
 version 2.6:
@@ -553,7 +575,7 @@ easier to use. The changes are:
           all the stream in the first input file, except for the second audio
           stream'.
     * There is a new option -c (or -codec) for choosing the decoder/encoder to
-      use, which allows to precisely specify target stream(s) consistently with
+      use, which makes it possible to precisely specify target stream(s) consistently with
       other options. E.g. -c:v lib264 sets the codec for all video streams, -c:a:0
       libvorbis sets the codec for the first audio stream and -c copy copies all
       the streams without reencoding. Old -vcodec/-acodec/-scodec options are now

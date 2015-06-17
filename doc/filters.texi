@@ -8,13 +8,13 @@ outputs.
 To illustrate the sorts of things that are possible, we consider the
 following filtergraph.
 
-@example
+@verbatim
                 [main]
 input --> split ---------------------> overlay --> output
             |                             ^
             |[tmp]                  [flip]|
             +-----> crop --> vflip -------+
-@end example
+@end verbatim
 
 This filtergraph splits the input stream in two streams, then sends one
 stream through the crop filter and the vflip filter, before merging it
@@ -522,7 +522,7 @@ select half of sine wave
 select exponential sine wave
 @item log
 select logarithmic
-@item par
+@item ipar
 select inverted parabola
 @item qua
 select quadratic
@@ -532,6 +532,18 @@ select cubic
 select square root
 @item cbr
 select cubic root
+@item par
+select parabola
+@item exp
+select exponential
+@item iqsin
+select inverted quarter of sine wave
+@item ihsin
+select inverted half of sine wave
+@item dese
+select double-exponential seat
+@item desi
+select double-exponential sigmoid
 @end table
 @end table
 
@@ -1320,6 +1332,61 @@ front_center.wav -map '[LFE]' lfe.wav -map '[SL]' side_left.wav -map '[SR]'
 side_right.wav
 @end example
 
+@section chorus
+Add a chorus effect to the audio.
+
+Can make a single vocal sound like a chorus, but can also be applied to instrumentation.
+
+Chorus resembles an echo effect with a short delay, but whereas with echo the delay is
+constant, with chorus, it is varied using using sinusoidal or triangular modulation.
+The modulation depth defines the range the modulated delay is played before or after
+the delay. Hence the delayed sound will sound slower or faster, that is the delayed
+sound tuned around the original one, like in a chorus where some vocals are slightly
+off key.
+
+It accepts the following parameters:
+@table @option
+@item in_gain
+Set input gain. Default is 0.4.
+
+@item out_gain
+Set output gain. Default is 0.4.
+
+@item delays
+Set delays. A typical delay is around 40ms to 60ms.
+
+@item decays
+Set decays.
+
+@item speeds
+Set speeds.
+
+@item depths
+Set depths.
+@end table
+
+@subsection Examples
+
+@itemize
+@item
+A single delay:
+@example
+chorus=0.7:0.9:55:0.4:0.25:2
+@end example
+
+@item
+Two delays:
+@example
+chorus=0.6:0.9:50|60:0.4|0.32:0.25|0.4:2|1.3
+@end example
+
+@item
+Fuller sounding chorus with three delays:
+@example
+chorus=0.5:0.9:50|60|40:0.4|0.32|0.3:0.25|0.4|0.3:2|2.3|1.3
+@end example
+@end itemize
+
 @section compand
 Compress or expand the audio's dynamic range.
 
@@ -1379,6 +1446,11 @@ Make music with both quiet and loud passages suitable for listening to in a
 noisy environment:
 @example
 compand=.3|.3:1|1:-90/-60|-60/-40|-40/-30|-20/-20:6:0:-90:0.2
+@end example
+
+Another example for audio with whisper and explosion parts:
+@example
+compand=0|0:1|1:-90/-900|-70/-70|-30/-9|0/-3:6:0:0:0
 @end example
 
 @item
@@ -2693,8 +2765,11 @@ Available values for component modes are:
 @item divide
 @item dodge
 @item exclusion
+@item glow
 @item hardlight
+@item hardmix
 @item lighten
+@item linearlight
 @item multiply
 @item negation
 @item normal
@@ -2968,6 +3043,45 @@ Allowed ranges for options are @code{[-1.0, 1.0]}. Defaults are @code{0}.
 Add red color cast to shadows:
 @example
 colorbalance=rs=.3
+@end example
+@end itemize
+
+@section colorkey
+RGB colorspace color keying.
+
+The filter accepts the following options:
+
+@table @option
+@item color
+The color which will be replaced with transparency.
+
+@item similarity
+Similarity percentage with the key color.
+
+0.01 matches only the exact key color, while 1.0 matches everything.
+
+@item blend
+Blend percentage.
+
+0.0 makes pixels either fully transparent, or not transparent at all.
+
+Higher values result in semi-transparent pixels, with a higher transparency
+the more similar the pixels color is to the key color.
+@end table
+
+@subsection Examples
+
+@itemize
+@item
+Make every green pixel in the input image transparent:
+@example
+ffmpeg -i input.png -vf colorkey=green out.png
+@end example
+
+@item
+Overlay a greenscreen-video on top of a static background image.
+@example
+ffmpeg -i background.png -i video.mp4 -filter_complex "[1:v]colorkey=0x3BBD1E:0.3:0.2[ckout];[0:v][ckout]overlay[out]" -map "[out]" output.flv
 @end example
 @end itemize
 
@@ -3728,6 +3842,33 @@ FFmpeg was configured with @code{--enable-opencl}. Default value is 0.
 
 @end table
 
+@section detelecine
+
+Apply an exact inverse of the telecine operation. It requires a predefined
+pattern specified using the pattern option which must be the same as that passed
+to the telecine filter.
+
+This filter accepts the following options:
+
+@table @option
+@item first_field
+@table @samp
+@item top, t
+top field first
+@item bottom, b
+bottom field first
+The default value is @code{top}.
+@end table
+
+@item pattern
+A string of numbers representing the pulldown pattern you wish to apply.
+The default value is @code{23}.
+
+@item start_frame
+A number representing position of the first frame with respect to the telecine
+pattern. This is to be used if the stream is cut. The default value is @code{0}.
+@end table
+
 @section drawbox
 
 Draw a colored box on the input image.
@@ -3928,6 +4069,10 @@ Used to draw a box around text using the background color.
 The value must be either 1 (enable) or 0 (disable).
 The default value of @var{box} is 0.
 
+@item boxborderw
+Set the width of the border to be drawn around the box using @var{boxcolor}.
+The default value of @var{boxborderw} is 0.
+
 @item boxcolor
 The color to be used for drawing box around text. For the syntax of this
 option, check the "Color" section in the ffmpeg-utils manual.
@@ -3970,6 +4115,16 @@ The font family to be used for drawing text. By default Sans.
 @item fontfile
 The font file to be used for drawing text. The path must be included.
 This parameter is mandatory if the fontconfig support is disabled.
+
+@item draw
+This option does not exist, please see the timeline system
+
+@item alpha
+Draw the text applying alpha blending. The value can
+be either a number between 0.0 and 1.0
+The expression accepts the same variables @var{x, y} do.
+The default value is 1.
+Please see fontcolor_expr
 
 @item fontsize
 The font size to be used for drawing text.
@@ -5067,6 +5222,70 @@ framework.
 
 It does not take parameters.
 
+@section find_rect
+
+Find a rectangular object
+
+It accepts the following options:
+
+@table @option
+@item object
+Filepath of the object image, needs to be in gray8.
+
+@item threshold
+Detection threshold, default is 0.5.
+
+@item mipmaps
+Number of mipmaps, default is 3.
+
+@item xmin, ymin, xmax, ymax
+Specifies the rectangle in which to search.
+@end table
+
+@subsection Examples
+
+@itemize
+@item
+Generate a representative palette of a given video using @command{ffmpeg}:
+@example
+ffmpeg -i file.ts -vf find_rect=newref.pgm,cover_rect=cover.jpg:mode=cover new.mkv
+@end example
+@end itemize
+
+@section cover_rect
+
+Cover a rectangular object
+
+It accepts the following options:
+
+@table @option
+@item cover
+Filepath of the optional cover image, needs to be in yuv420.
+
+@item mode
+Set covering mode.
+
+It accepts the following values:
+@table @samp
+@item cover
+cover it by the supplied image
+@item blur
+cover it by interpolating the surrounding pixels
+@end table
+
+Default value is @var{blur}.
+@end table
+
+@subsection Examples
+
+@itemize
+@item
+Generate a representative palette of a given video using @command{ffmpeg}:
+@example
+ffmpeg -i file.ts -vf find_rect=newref.pgm,cover_rect=cover.jpg:mode=cover new.mkv
+@end example
+@end itemize
+
 @anchor{format}
 @section format
 
@@ -5961,7 +6180,7 @@ full weight of 1.0 forever.
 When this is not 0 then idet will use the specified number of frames to determine
 if the interlaced flag is accurate, it will not count undetermined frames.
 If the flag is found to be accurate it will be used without any further
-computations, if it is found to be inaccuarte it will be cleared without any
+computations, if it is found to be inaccurate it will be cleared without any
 further computations. This allows inserting the idet filter as a low computational
 method to clean up the interlaced flag
 @end table
@@ -9985,6 +10204,12 @@ display aspect ratio
 Zoom-in up to 1.5 and pan at same time to some spot near center of picture:
 @example
 zoompan=z='min(zoom+0.0015,1.5)':d=700:x='if(gte(zoom,1.5),x,x+1/a)':y='if(gte(zoom,1.5),y,y+1)':s=640x360
+@end example
+
+@item
+Zoom-in up to 1.5 and pan always at center of picture:
+@example
+zoompan=z='min(zoom+0.0015,1.5)':d=700:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)'
 @end example
 @end itemize
 

@@ -96,6 +96,7 @@ typedef struct HTTPContext {
     int send_expect_100;
     char *method;
     int reconnect;
+    int listen;
 } HTTPContext;
 
 #define OFFSET(x) offsetof(HTTPContext, x)
@@ -125,14 +126,16 @@ static const AVOption options[] = {
     { "location", "The actual location of the data received", OFFSET(location), AV_OPT_TYPE_STRING, { 0 }, 0, 0, D | E },
     { "offset", "initial byte offset", OFFSET(off), AV_OPT_TYPE_INT64, { .i64 = 0 }, 0, INT64_MAX, D },
     { "end_offset", "try to limit the request to bytes preceding this offset", OFFSET(end_off), AV_OPT_TYPE_INT64, { .i64 = 0 }, 0, INT64_MAX, D },
-    { "method", "Override the HTTP method", OFFSET(method), AV_OPT_TYPE_STRING, { .str = NULL }, 0, 0, E },
+    { "method", "Override the HTTP method or set the expected HTTP method from a client", OFFSET(method), AV_OPT_TYPE_STRING, { .str = NULL }, 0, 0, D | E },
     { "reconnect", "auto reconnect after disconnect before EOF", OFFSET(reconnect), AV_OPT_TYPE_INT, { .i64 = 0 }, 0, 1, D },
+    { "listen", "listen on HTTP", OFFSET(listen), AV_OPT_TYPE_INT, { .i64 = 0 }, 0, 1, D | E },
     { NULL }
 };
 
 static int http_connect(URLContext *h, const char *path, const char *local_path,
                         const char *hoststr, const char *auth,
                         const char *proxyauth, int *new_location);
+static int http_read_header(URLContext *h, int *new_location);
 
 void ff_http_init_auth_state(URLContext *dest, const URLContext *src)
 {
@@ -296,6 +299,55 @@ int ff_http_averror(int status_code, int default_averror)
         return default_averror;
 }
 
+static void handle_http_errors(URLContext *h, int error)
+{
+    static const char bad_request[] = "HTTP/1.1 400 Bad Request\r\nContent-Type: text/plain\r\n\r\n400 Bad Request\r\n";
+    static const char internal_server_error[] = "HTTP/1.1 500 Internal server error\r\nContent-Type: text/plain\r\n\r\n500 Internal server error\r\n";
+    HTTPContext *s = h->priv_data;
+    if (h->is_connected) {
+        switch(error) {
+            case AVERROR_HTTP_BAD_REQUEST:
+                ffurl_write(s->hd, bad_request, strlen(bad_request));
+                break;
+            default:
+                av_log(h, AV_LOG_ERROR, "Unhandled HTTP error.\n");
+                ffurl_write(s->hd, internal_server_error, strlen(internal_server_error));
+        }
+    }
+}
+
+static int http_listen(URLContext *h, const char *uri, int flags,
+                       AVDictionary **options) {
+    HTTPContext *s = h->priv_data;
+    int ret;
+    static const char header[] = "HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nTransfer-Encoding: chunked\r\n\r\n";
+    char hostname[1024], proto[10];
+    char lower_url[100];
+    const char *lower_proto = "tcp";
+    int port, new_location;
+    s->chunked_post = 1;
+    av_url_split(proto, sizeof(proto), NULL, 0, hostname, sizeof(hostname), &port,
+                 NULL, 0, uri);
+    if (!strcmp(proto, "https"))
+        lower_proto = "tls";
+    ff_url_join(lower_url, sizeof(lower_url), lower_proto, NULL, hostname, port,
+                NULL);
+    av_dict_set(options, "listen", "1", 0);
+    if ((ret = ffurl_open(&s->hd, lower_url, AVIO_FLAG_READ_WRITE,
+                          &h->interrupt_callback, options)) < 0)
+        goto fail;
+    if ((ret = http_read_header(h, &new_location)) < 0)
+         goto fail;
+    if ((ret = ffurl_write(s->hd, header, strlen(header))) < 0)
+         goto fail;
+    return 0;
+
+fail:
+    handle_http_errors(h, ret);
+    av_dict_free(&s->chained_options);
+    return ret;
+}
+
 static int http_open(URLContext *h, const char *uri, int flags,
                      AVDictionary **options)
 {
@@ -321,6 +373,9 @@ static int http_open(URLContext *h, const char *uri, int flags,
                    "No trailing CRLF found in HTTP header.\n");
     }
 
+    if (s->listen) {
+        return http_listen(h, uri, flags, options);
+    }
     ret = http_open_cnx(h, options);
     if (ret < 0)
         av_dict_free(&s->chained_options);
@@ -495,7 +550,7 @@ static int cookie_string(AVDictionary *dict, char **cookies)
     e = NULL;
     if (*cookies) av_free(*cookies);
     *cookies = av_malloc(len);
-    if (!cookies) return AVERROR(ENOMEM);
+    if (!*cookies) return AVERROR(ENOMEM);
     *cookies[0] = '\0';
 
     // write out the cookies
@@ -509,7 +564,8 @@ static int process_line(URLContext *h, char *line, int line_count,
                         int *new_location)
 {
     HTTPContext *s = h->priv_data;
-    char *tag, *p, *end;
+    const char *auto_method =  h->flags & AVIO_FLAG_READ ? "POST" : "GET";
+    char *tag, *p, *end, *method, *resource, *version;
     int ret;
 
     /* end of header */
@@ -520,16 +576,62 @@ static int process_line(URLContext *h, char *line, int line_count,
 
     p = line;
     if (line_count == 0) {
-        while (!av_isspace(*p) && *p != '\0')
-            p++;
-        while (av_isspace(*p))
-            p++;
-        s->http_code = strtol(p, &end, 10);
+        if (s->listen) {
+            // HTTP method
+            method = p;
+            while (!av_isspace(*p))
+                p++;
+            *(p++) = '\0';
+            av_log(h, AV_LOG_TRACE, "Received method: %s\n", method);
+            if (s->method) {
+                if (av_strcasecmp(s->method, method)) {
+                    av_log(h, AV_LOG_ERROR, "Received and expected HTTP method do not match. (%s expected, %s received)\n",
+                           s->method, method);
+                    return ff_http_averror(400, AVERROR(EIO));
+                }
+            } else {
+                // use autodetected HTTP method to expect
+                av_log(h, AV_LOG_TRACE, "Autodetected %s HTTP method\n", auto_method);
+                if (av_strcasecmp(auto_method, method)) {
+                    av_log(h, AV_LOG_ERROR, "Received and autodetected HTTP method did not match "
+                           "(%s autodetected %s received)\n", auto_method, method);
+                    return ff_http_averror(400, AVERROR(EIO));
+                }
+            }
 
-        av_log(h, AV_LOG_DEBUG, "http_code=%d\n", s->http_code);
+            // HTTP resource
+            while (av_isspace(*p))
+                p++;
+            resource = p;
+            while (!av_isspace(*p))
+                p++;
+            *(p++) = '\0';
+            av_log(h, AV_LOG_TRACE, "Requested resource: %s\n", resource);
 
-        if ((ret = check_http_code(h, s->http_code, end)) < 0)
-            return ret;
+            // HTTP version
+            while (av_isspace(*p))
+                p++;
+            version = p;
+            while (!av_isspace(*p))
+                p++;
+            *p = '\0';
+            if (av_strncasecmp(version, "HTTP/", 5)) {
+                av_log(h, AV_LOG_ERROR, "Malformed HTTP version string.\n");
+                return ff_http_averror(400, AVERROR(EIO));
+            }
+            av_log(h, AV_LOG_TRACE, "HTTP version string: %s\n", version);
+        } else {
+            while (!av_isspace(*p) && *p != '\0')
+                p++;
+            while (av_isspace(*p))
+                p++;
+            s->http_code = strtol(p, &end, 10);
+
+            av_log(h, AV_LOG_TRACE, "http_code=%d\n", s->http_code);
+
+            if ((ret = check_http_code(h, s->http_code, end)) < 0)
+                return ret;
+        }
     } else {
         while (*p != '\0' && *p != ':')
             p++;
@@ -715,7 +817,7 @@ static int http_read_header(URLContext *h, int *new_location)
         if ((err = http_get_line(s, line, sizeof(line))) < 0)
             return err;
 
-        av_log(h, AV_LOG_DEBUG, "header='%s'\n", line);
+        av_log(h, AV_LOG_TRACE, "header='%s'\n", line);
 
         err = process_line(h, line, s->line_count, new_location);
         if (err < 0)
@@ -884,6 +986,9 @@ static int http_connect(URLContext *h, const char *path, const char *local_path,
     if (err < 0)
         goto done;
 
+    if (*new_location)
+        s->off = off;
+
     err = (off == s->off) ? 0 : -1;
 done:
     av_freep(&authstr);
@@ -907,6 +1012,14 @@ static int http_buf_read(URLContext *h, uint8_t *buf, int size)
             s->filesize >= 0 && s->off >= s->filesize)
             return AVERROR_EOF;
         len = ffurl_read(s->hd, buf, size);
+        if (!len && (!s->willclose || s->chunksize < 0) &&
+            s->filesize >= 0 && s->off < s->filesize) {
+            av_log(h, AV_LOG_ERROR,
+                   "Stream ends prematurely at %"PRId64", should be %"PRId64"\n",
+                   s->off, s->filesize
+                  );
+            return AVERROR(EIO);
+        }
     }
     if (len > 0) {
         s->off += len;
@@ -976,7 +1089,7 @@ static int http_read_stream(URLContext *h, uint8_t *buf, int size)
 
                 s->chunksize = strtoll(line, NULL, 16);
 
-                av_dlog(NULL, "Chunked encoding data size: %"PRId64"'\n",
+                av_log(NULL, AV_LOG_TRACE, "Chunked encoding data size: %"PRId64"'\n",
                         s->chunksize);
 
                 if (!s->chunksize)
@@ -1130,7 +1243,8 @@ static int http_shutdown(URLContext *h, int flags)
     HTTPContext *s = h->priv_data;
 
     /* signal end of chunked encoding if used */
-    if ((flags & AVIO_FLAG_WRITE) && s->chunked_post) {
+    if (((flags & AVIO_FLAG_WRITE) && s->chunked_post) ||
+        ((flags & AVIO_FLAG_READ) && s->chunked_post && s->listen)) {
         ret = ffurl_write(s->hd, footer, sizeof(footer) - 1);
         ret = ret > 0 ? 0 : ret;
         s->end_chunked_post = 1;

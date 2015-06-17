@@ -36,7 +36,7 @@
 #include "h264dsp.h"
 #include "h264pred.h"
 #include "h264qpel.h"
-#include "internal.h" // for avpriv_find_start_code()
+#include "internal.h"
 #include "mpegutils.h"
 #include "parser.h"
 #include "qpeldsp.h"
@@ -69,7 +69,7 @@
 
 #ifdef ALLOW_INTERLACE
 #define MB_MBAFF(h)    (h)->mb_mbaff
-#define MB_FIELD(h)    (h)->mb_field_decoding_flag
+#define MB_FIELD(sl)  (sl)->mb_field_decoding_flag
 #define FRAME_MBAFF(h) (h)->mb_aff_frame
 #define FIELD_PICTURE(h) ((h)->picture_structure != PICT_FRAME)
 #define LEFT_MBS 2
@@ -78,7 +78,7 @@
 #define LEFT(i)  (i)
 #else
 #define MB_MBAFF(h)      0
-#define MB_FIELD(h)      0
+#define MB_FIELD(sl)     0
 #define FRAME_MBAFF(h)   0
 #define FIELD_PICTURE(h) 0
 #undef  IS_INTERLACED
@@ -290,8 +290,7 @@ typedef struct MMCO {
 } MMCO;
 
 typedef struct H264Picture {
-    struct AVFrame f;
-    uint8_t avframe_padding[1024]; // hack to allow linking to a avutil with larger AVFrame
+    AVFrame *f;
     ThreadFrame tf;
 
     AVBufferRef *qscale_table_buf;
@@ -322,7 +321,6 @@ typedef struct H264Picture {
     int mbaff;              ///< 1 -> MBAFF frame 0-> not MBAFF
     int field_picture;      ///< whether or not picture was encoded in separate fields
 
-    int needs_realloc;      ///< picture needs to be reallocated (eg due to a frame size change)
     int reference;
     int recovered;          ///< picture at IDR or recovery point + recovery count
     int invalid_gap;
@@ -411,6 +409,7 @@ typedef struct H264SliceContext {
     int mb_xy;
     int resync_mb_x;
     int resync_mb_y;
+    int mb_index_end;
     int mb_skip_run;
     int is_complex;
 
@@ -506,7 +505,7 @@ typedef struct H264Context {
     H264QpelContext h264qpel;
     GetBitContext gb;
 
-    H264Picture *DPB;
+    H264Picture DPB[H264_MAX_PICTURE_COUNT];
     H264Picture *cur_pic_ptr;
     H264Picture cur_pic;
     H264Picture last_pic_for_ec;
@@ -519,6 +518,14 @@ typedef struct H264Context {
     /* coded dimensions -- 16 * mb w/h */
     int width, height;
     int chroma_x_shift, chroma_y_shift;
+
+    /**
+     * Backup frame properties: needed, because they can be different
+     * between returned frame and last decoded frame.
+     **/
+    int backup_width;
+    int backup_height;
+    enum AVPixelFormat backup_pix_fmt;
 
     int droppable;
     int coded_picture_number;
@@ -645,7 +652,6 @@ typedef struct H264Context {
     H264Picture *delayed_pic[MAX_DELAYED_PIC_COUNT + 2]; // FIXME size?
     int last_pocs[MAX_DELAYED_PIC_COUNT];
     H264Picture *next_output_pic;
-    int outputed_poc;
     int next_outputed_poc;
 
     /**
@@ -781,11 +787,14 @@ typedef struct H264Context {
     int initial_cpb_removal_delay[32];  ///< Initial timestamps for CPBs
 
     int cur_chroma_format_idc;
+    int cur_bit_depth_luma;
     int16_t slice_row[MAX_SLICES]; ///< to detect when MAX_SLICES is too low
 
     uint8_t parse_history[6];
     int parse_history_count;
     int parse_last_mb;
+
+    int enable_er;
 
     AVBufferPool *qscale_table_pool;
     AVBufferPool *mb_type_pool;
@@ -808,7 +817,7 @@ int ff_h264_decode_sei(H264Context *h);
 /**
  * Decode SPS
  */
-int ff_h264_decode_seq_parameter_set(H264Context *h);
+int ff_h264_decode_seq_parameter_set(H264Context *h, int ignore_truncation);
 
 /**
  * compute profile from sps
@@ -1013,7 +1022,7 @@ static av_always_inline int pred_intra_mode(const H264Context *h,
     const int top    = sl->intra4x4_pred_mode_cache[index8 - 8];
     const int min    = FFMIN(left, top);
 
-    tprintf(h->avctx, "mode:%d %d min:%d\n", left, top, min);
+    ff_tlog(h->avctx, "mode:%d %d min:%d\n", left, top, min);
 
     if (min < 0)
         return DC_PRED;
@@ -1166,7 +1175,6 @@ int ff_h264_ref_picture(H264Context *h, H264Picture *dst, H264Picture *src);
 void ff_h264_unref_picture(H264Context *h, H264Picture *pic);
 
 int ff_h264_slice_context_init(H264Context *h, H264SliceContext *sl);
-int ff_h264_set_parameter_from_sps(H264Context *h);
 
 void ff_h264_draw_horiz_band(const H264Context *h, H264SliceContext *sl, int y, int height);
 int ff_init_poc(H264Context *h, int pic_field_poc[2], int *pic_poc);
@@ -1183,7 +1191,7 @@ int ff_h264_update_thread_context(AVCodecContext *dst,
 
 void ff_h264_flush_change(H264Context *h);
 
-void ff_h264_free_tables(H264Context *h, int free_rbsp);
+void ff_h264_free_tables(H264Context *h);
 
 void ff_h264_set_erpic(ERPicture *dst, H264Picture *src);
 

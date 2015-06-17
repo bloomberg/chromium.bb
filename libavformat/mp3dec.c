@@ -54,6 +54,8 @@ typedef struct {
     int is_cbr;
 } MP3DecContext;
 
+static int check(AVFormatContext *s, int64_t pos);
+
 /* mp3 read */
 
 static int mp3_read_probe(AVProbeData *p)
@@ -110,7 +112,7 @@ static void read_xing_toc(AVFormatContext *s, int64_t filesize, int64_t duration
 {
     int i;
     MP3DecContext *mp3 = s->priv_data;
-    int fill_index = mp3->usetoc && duration > 0;
+    int fill_index = mp3->usetoc == 1 && duration > 0;
 
     if (!filesize &&
         !(filesize = avio_size(s->pb))) {
@@ -216,7 +218,7 @@ static void mp3_parse_info_tag(AVFormatContext *s, AVStream *st,
 
         mp3->start_pad = v>>12;
         mp3->  end_pad = v&4095;
-        st->skip_samples = mp3->start_pad + 528 + 1;
+        st->start_skip_samples = mp3->start_pad + 528 + 1;
         if (mp3->frames) {
             st->first_discard_sample = -mp3->end_pad + 528 + 1 + mp3->frames * (int64_t)spf;
             st->last_discard_sample = mp3->frames * (int64_t)spf;
@@ -318,6 +320,10 @@ static int mp3_read_header(AVFormatContext *s)
     AVStream *st;
     int64_t off;
     int ret;
+    int i;
+
+    if (mp3->usetoc < 0)
+        mp3->usetoc = (s->flags & AVFMT_FLAG_FAST_SEEK) ? 0 : 2;
 
     st = avformat_new_stream(s, NULL);
     if (!st)
@@ -346,6 +352,22 @@ static int mp3_read_header(AVFormatContext *s)
     ret = ff_replaygain_export(st, s->metadata);
     if (ret < 0)
         return ret;
+
+    off = avio_tell(s->pb);
+    for (i = 0; i < 64 * 1024; i++) {
+        if (!(i&1023))
+            ffio_ensure_seekback(s->pb, i + 1024 + 4);
+        if (check(s, off + i) >= 0) {
+            av_log(s, AV_LOG_INFO, "Skipping %d bytes of junk at %"PRId64".\n", i, off);
+            avio_seek(s->pb, off + i, SEEK_SET);
+            break;
+        }
+        avio_seek(s->pb, off, SEEK_SET);
+    }
+
+    // the seek index is relative to the end of the xing vbr headers
+    for (i = 0; i < st->nb_index_entries; i++)
+        st->index_entries[i].pos += avio_tell(s->pb);
 
     /* the parameters will be extracted from the compressed bitstream */
     return 0;
@@ -411,25 +433,23 @@ static int mp3_seek(AVFormatContext *s, int stream_index, int64_t timestamp,
     int64_t best_pos;
     int best_score;
 
-    if (mp3->is_cbr && st->duration > 0 && mp3->header_filesize > s->internal->data_offset) {
-        int64_t filesize = avio_size(s->pb);
-        int64_t duration;
-        if (filesize <= s->internal->data_offset)
-            filesize = mp3->header_filesize;
-        filesize -= s->internal->data_offset;
-        duration = av_rescale(st->duration, filesize, mp3->header_filesize - s->internal->data_offset);
+    if (mp3->usetoc == 2)
+        return -1; // generic index code
+
+    if (   mp3->is_cbr
+        && (mp3->usetoc == 0 || !mp3->xing_toc)
+        && st->duration > 0
+        && mp3->header_filesize > s->internal->data_offset) {
         ie = &ie1;
-        timestamp = av_clip64(timestamp, 0, duration);
+        timestamp = av_clip64(timestamp, 0, st->duration);
         ie->timestamp = timestamp;
-        ie->pos       = av_rescale(timestamp, filesize, duration) + s->internal->data_offset;
+        ie->pos       = av_rescale(timestamp, mp3->header_filesize, st->duration) + s->internal->data_offset;
     } else if (mp3->xing_toc) {
         if (ret < 0)
             return ret;
 
         ie = &st->index_entries[ret];
     } else {
-        st->skip_samples = timestamp <= 0 ? mp3->start_pad + 528 + 1 : 0;
-
         return -1;
     }
 
@@ -470,13 +490,18 @@ static int mp3_seek(AVFormatContext *s, int stream_index, int64_t timestamp,
     ret = avio_seek(s->pb, best_pos, SEEK_SET);
     if (ret < 0)
         return ret;
+
+    if (mp3->is_cbr && ie == &ie1) {
+        int frame_duration = av_rescale(st->duration, 1, mp3->frames);
+        ie1.timestamp = frame_duration * av_rescale(best_pos - s->internal->data_offset, mp3->frames, mp3->header_filesize);
+    }
+
     ff_update_cur_dts(s, st, ie->timestamp);
-    st->skip_samples = ie->timestamp <= 0 ? mp3->start_pad + 528 + 1 : 0;
     return 0;
 }
 
 static const AVOption options[] = {
-    { "usetoc", "use table of contents", offsetof(MP3DecContext, usetoc), AV_OPT_TYPE_INT, {.i64 = -1}, -1, 1, AV_OPT_FLAG_DECODING_PARAM},
+    { "usetoc", "use table of contents", offsetof(MP3DecContext, usetoc), AV_OPT_TYPE_INT, {.i64 = -1}, -1, 2, AV_OPT_FLAG_DECODING_PARAM},
     { NULL },
 };
 

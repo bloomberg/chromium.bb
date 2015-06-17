@@ -136,6 +136,7 @@ typedef struct AVFrameSideData {
     uint8_t *data;
     int      size;
     AVDictionary *metadata;
+    AVBufferRef *buf;
 } AVFrameSideData;
 
 /**
@@ -665,7 +666,7 @@ AVFrame *av_frame_clone(const AVFrame *src);
 void av_frame_unref(AVFrame *frame);
 
 /**
- * Move everythnig contained in src to dst and reset src.
+ * Move everything contained in src to dst and reset src.
  */
 void av_frame_move_ref(AVFrame *dst, AVFrame *src);
 
