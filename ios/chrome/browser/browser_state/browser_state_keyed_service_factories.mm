@@ -5,6 +5,8 @@
 #include "ios/chrome/browser/browser_state/browser_state_keyed_service_factories.h"
 
 #include "ios/chrome/browser/dom_distiller/dom_distiller_service_factory.h"
+#include "ios/chrome/browser/enhanced_bookmarks/bookmark_server_cluster_service_factory.h"
+#include "ios/chrome/browser/enhanced_bookmarks/enhanced_bookmark_model_factory.h"
 #include "ios/chrome/browser/suggestions/suggestions_service_factory.h"
 #include "ios/chrome/browser/translate/translate_accept_languages_factory.h"
 #include "ios/public/provider/chrome/browser/keyed_service_provider.h"
@@ -19,9 +21,11 @@
 // TODO(erg): This needs to be something else. I don't think putting every
 // FooServiceFactory here will scale or is desirable long term.
 void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
-  TranslateAcceptLanguagesFactory::GetInstance();
   dom_distiller::DomDistillerServiceFactory::GetInstance();
+  enhanced_bookmarks::BookmarkServerClusterServiceFactory::GetInstance();
+  enhanced_bookmarks::EnhancedBookmarkModelFactory::GetInstance();
   suggestions::SuggestionsServiceFactory::GetInstance();
+  TranslateAcceptLanguagesFactory::GetInstance();
 
   if (ios::GetKeyedServiceProvider())
     ios::GetKeyedServiceProvider()->AssertKeyedFactoriesBuilt();

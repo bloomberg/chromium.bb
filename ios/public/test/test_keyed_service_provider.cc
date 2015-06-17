@@ -4,11 +4,59 @@
 
 #include "ios/public/test/test_keyed_service_provider.h"
 
+#include "base/logging.h"
+#include "base/macros.h"
+#include "base/memory/singleton.h"
+#include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
+#include "components/keyed_service/ios/browser_state_dependency_manager.h"
+#include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 #include "components/sync_driver/fake_sync_service.h"
 #include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/public/test/fake_sync_service_factory.h"
 
 namespace ios {
+namespace {
+
+class MissingServiceKeyedServiceFactory
+    : public BrowserStateKeyedServiceFactory {
+ public:
+  static MissingServiceKeyedServiceFactory* GetInstance();
+
+ private:
+  friend struct DefaultSingletonTraits<MissingServiceKeyedServiceFactory>;
+
+  MissingServiceKeyedServiceFactory();
+  ~MissingServiceKeyedServiceFactory() override;
+
+  // BrowserStateKeyedServiceFactory implementation.
+  KeyedService* BuildServiceInstanceFor(
+      web::BrowserState* context) const override;
+
+  DISALLOW_COPY_AND_ASSIGN(MissingServiceKeyedServiceFactory);
+};
+
+// static
+MissingServiceKeyedServiceFactory*
+MissingServiceKeyedServiceFactory::GetInstance() {
+  return Singleton<MissingServiceKeyedServiceFactory>::get();
+}
+
+MissingServiceKeyedServiceFactory::MissingServiceKeyedServiceFactory()
+    : BrowserStateKeyedServiceFactory(
+          "MissingService",
+          BrowserStateDependencyManager::GetInstance()) {
+}
+
+MissingServiceKeyedServiceFactory::~MissingServiceKeyedServiceFactory() {
+}
+
+KeyedService* MissingServiceKeyedServiceFactory::BuildServiceInstanceFor(
+    web::BrowserState* context) const {
+  NOTREACHED();
+  return nullptr;
+}
+
+}  // namespace
 
 TestKeyedServiceProvider::TestKeyedServiceProvider() {
 }
@@ -18,6 +66,59 @@ TestKeyedServiceProvider::~TestKeyedServiceProvider() {
 
 void TestKeyedServiceProvider::AssertKeyedFactoriesBuilt() {
   FakeSyncServiceFactory::GetInstance();
+  MissingServiceKeyedServiceFactory::GetInstance();
+}
+
+KeyedServiceBaseFactory* TestKeyedServiceProvider::GetBookmarkModelFactory() {
+  return MissingServiceKeyedServiceFactory::GetInstance();
+}
+
+bookmarks::BookmarkModel*
+TestKeyedServiceProvider::GetBookmarkModelForBrowserState(
+    ChromeBrowserState* browser_state) {
+  return nullptr;
+}
+
+KeyedServiceBaseFactory*
+TestKeyedServiceProvider::GetProfileOAuth2TokenServiceIOSFactory() {
+  return MissingServiceKeyedServiceFactory::GetInstance();
+}
+
+ProfileOAuth2TokenServiceIOS*
+TestKeyedServiceProvider::GetProfileOAuth2TokenServiceIOSForBrowserState(
+    ChromeBrowserState* browser_state) {
+  return nullptr;
+}
+
+KeyedServiceBaseFactory* TestKeyedServiceProvider::GetSigninManagerFactory() {
+  return MissingServiceKeyedServiceFactory::GetInstance();
+}
+
+SigninManager* TestKeyedServiceProvider::GetSigninManagerForBrowserState(
+    ChromeBrowserState* browser_state) {
+  return nullptr;
+}
+
+KeyedServiceBaseFactory* TestKeyedServiceProvider::GetAutofillWebDataFactory() {
+  return MissingServiceKeyedServiceFactory::GetInstance();
+}
+
+scoped_refptr<autofill::AutofillWebDataService>
+TestKeyedServiceProvider::GetAutofillWebDataForBrowserState(
+    ChromeBrowserState* browser_state,
+    ServiceAccessType access_type) {
+  return scoped_refptr<autofill::AutofillWebDataService>(nullptr);
+}
+
+KeyedServiceBaseFactory*
+TestKeyedServiceProvider::GetPersonalDataManagerFactory() {
+  return MissingServiceKeyedServiceFactory::GetInstance();
+}
+
+autofill::PersonalDataManager*
+TestKeyedServiceProvider::GetPersonalDataManagerForBrowserState(
+    ChromeBrowserState* browser_state) {
+  return nullptr;
 }
 
 KeyedServiceBaseFactory* TestKeyedServiceProvider::GetSyncServiceFactory() {
@@ -28,6 +129,17 @@ sync_driver::SyncService*
 TestKeyedServiceProvider::GetSyncServiceForBrowserState(
     ChromeBrowserState* browser_state) {
   return FakeSyncServiceFactory::GetForBrowserState(browser_state);
+}
+
+KeyedServiceBaseFactory* TestKeyedServiceProvider::GetHistoryServiceFactory() {
+  return MissingServiceKeyedServiceFactory::GetInstance();
+}
+
+history::HistoryService*
+TestKeyedServiceProvider::GetHistoryServiceForBrowserState(
+    ChromeBrowserState* browser_state,
+    ServiceAccessType access_type) {
+  return nullptr;
 }
 
 }  // namespace ios
