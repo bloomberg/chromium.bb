@@ -37,12 +37,11 @@ class BuiltinProviderTest : public testing::Test {
     for (size_t i = 0; i < num_cases; ++i) {
       SCOPED_TRACE(base::StringPrintf(
           "case %" PRIuS ": %s", i, base::UTF16ToUTF8(cases[i].input).c_str()));
-      const AutocompleteInput input(cases[i].input, base::string16::npos,
-                                    std::string(), GURL(),
-                                    metrics::OmniboxEventProto::INVALID_SPEC,
-                                    true, false, true, true,
-                                    ChromeAutocompleteSchemeClassifier(NULL));
-      provider_->Start(input, false, false);
+      const AutocompleteInput input(
+          cases[i].input, base::string16::npos, std::string(), GURL(),
+          metrics::OmniboxEventProto::INVALID_SPEC, true, false, true, true,
+          false, ChromeAutocompleteSchemeClassifier(NULL));
+      provider_->Start(input, false);
       EXPECT_TRUE(provider_->done());
       matches = provider_->matches();
       EXPECT_EQ(cases[i].num_results, matches.size());
@@ -283,13 +282,11 @@ TEST_F(BuiltinProviderTest, AboutBlank) {
 }
 
 TEST_F(BuiltinProviderTest, DoesNotSupportMatchesOnFocus) {
-  const AutocompleteInput input(ASCIIToUTF16("chrome://s"),
-                                base::string16::npos,
-                                std::string(), GURL(),
-                                metrics::OmniboxEventProto::INVALID_SPEC,
-                                true, false, true, true,
-                                ChromeAutocompleteSchemeClassifier(NULL));
-   provider_->Start(input, false, true);
+  const AutocompleteInput input(
+      ASCIIToUTF16("chrome://s"), base::string16::npos, std::string(), GURL(),
+      metrics::OmniboxEventProto::INVALID_SPEC, true, false, true, true, true,
+      ChromeAutocompleteSchemeClassifier(NULL));
+  provider_->Start(input, false);
    EXPECT_TRUE(provider_->matches().empty());
 }
 

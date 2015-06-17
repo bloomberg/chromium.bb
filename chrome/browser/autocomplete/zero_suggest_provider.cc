@@ -91,10 +91,9 @@ void ZeroSuggestProvider::RegisterProfilePrefs(
 }
 
 void ZeroSuggestProvider::Start(const AutocompleteInput& input,
-                                bool minimal_changes,
-                                bool called_due_to_focus) {
+                                bool minimal_changes) {
   matches_.clear();
-  if (!called_due_to_focus ||
+  if (!input.from_omnibox_focus() ||
       input.type() == metrics::OmniboxInputType::INVALID)
     return;
 
@@ -156,8 +155,8 @@ void ZeroSuggestProvider::Stop(bool clear_cached_results,
   if (clear_cached_results) {
     // We do not call Clear() on |results_| to retain |verbatim_relevance|
     // value in the |results_| object. |verbatim_relevance| is used at the
-    // beginning of the next OnOmniboxFocused() call to determine the current
-    // url match relevance.
+    // beginning of the next call to Start() to determine the current url
+    // match relevance.
     results_.suggest_results.clear();
     results_.navigation_results.clear();
     current_query_.clear();
@@ -216,10 +215,12 @@ const TemplateURL* ZeroSuggestProvider::GetTemplateURL(bool is_keyword) const {
 }
 
 const AutocompleteInput ZeroSuggestProvider::GetInput(bool is_keyword) const {
+  // The callers of this method won't look at the AutocompleteInput's
+  // |from_omnibox_focus| member, so we can set its value to false.
   return AutocompleteInput(
       base::string16(), base::string16::npos, std::string(),
       GURL(current_query_), current_page_classification_, true, false, false,
-      true, ChromeAutocompleteSchemeClassifier(profile_));
+      true, false, ChromeAutocompleteSchemeClassifier(profile_));
 }
 
 bool ZeroSuggestProvider::ShouldAppendExtraParams(

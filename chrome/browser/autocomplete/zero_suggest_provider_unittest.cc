@@ -227,11 +227,10 @@ TEST_F(ZeroSuggestProviderTest, TestDoesNotReturnMatchesForPrefix) {
   CreatePersonalizedFieldTrial();
 
   std::string url("http://www.cnn.com/");
-  AutocompleteInput input(base::ASCIIToUTF16(url), base::string16::npos,
-                          std::string(), GURL(url),
-                          metrics::OmniboxEventProto::INVALID_SPEC, true, false,
-                          true, true,
-                          ChromeAutocompleteSchemeClassifier(&profile_));
+  AutocompleteInput input(
+      base::ASCIIToUTF16(url), base::string16::npos, std::string(), GURL(url),
+      metrics::OmniboxEventProto::INVALID_SPEC, true, false, true, true, false,
+      ChromeAutocompleteSchemeClassifier(&profile_));
 
   // Set up the pref to cache the response from the previous run.
   std::string json_response("[\"\",[\"search1\", \"search2\", \"search3\"],"
@@ -240,7 +239,7 @@ TEST_F(ZeroSuggestProviderTest, TestDoesNotReturnMatchesForPrefix) {
   PrefService* prefs = profile_.GetPrefs();
   prefs->SetString(prefs::kZeroSuggestCachedResults, json_response);
 
-  provider_->Start(input, false, false);
+  provider_->Start(input, false);
 
   // Expect that matches don't get populated out of cache because we are not
   // in zero suggest mode.
@@ -256,17 +255,16 @@ TEST_F(ZeroSuggestProviderTest, TestMostVisitedCallback) {
 
   std::string current_url("http://www.foxnews.com/");
   std::string input_url("http://www.cnn.com/");
-  AutocompleteInput input(base::ASCIIToUTF16(input_url), base::string16::npos,
-                          std::string(), GURL(current_url),
-                          metrics::OmniboxEventProto::OTHER, false, false,
-                          true, true,
-                          ChromeAutocompleteSchemeClassifier(&profile_));
+  AutocompleteInput input(
+      base::ASCIIToUTF16(input_url), base::string16::npos, std::string(),
+      GURL(current_url), metrics::OmniboxEventProto::OTHER, false, false, true,
+      true, true, ChromeAutocompleteSchemeClassifier(&profile_));
   history::MostVisitedURLList urls;
   history::MostVisitedURL url(GURL("http://foo.com/"),
                               base::ASCIIToUTF16("Foo"));
   urls.push_back(url);
 
-  provider_->Start(input, false, true);
+  provider_->Start(input, false);
   EXPECT_TRUE(provider_->matches().empty());
   scoped_refptr<history::TopSites> top_sites =
       TopSitesFactory::GetForProfile(&profile_);
@@ -275,7 +273,7 @@ TEST_F(ZeroSuggestProviderTest, TestMostVisitedCallback) {
   EXPECT_EQ(2U, provider_->matches().size());
   provider_->Stop(false, false);
 
-  provider_->Start(input, false, true);
+  provider_->Start(input, false);
   provider_->Stop(false, false);
   EXPECT_TRUE(provider_->matches().empty());
   // Most visited results arriving after Stop() has been called, ensure they
@@ -289,35 +287,28 @@ TEST_F(ZeroSuggestProviderTest, TestMostVisitedNavigateToSearchPage) {
 
   std::string current_url("http://www.foxnews.com/");
   std::string input_url("http://www.cnn.com/");
-  AutocompleteInput input(base::ASCIIToUTF16(input_url), base::string16::npos,
-                          std::string(), GURL(current_url),
-                          metrics::OmniboxEventProto::OTHER, false, false,
-                          true, true,
-                          ChromeAutocompleteSchemeClassifier(&profile_));
+  AutocompleteInput input(
+      base::ASCIIToUTF16(input_url), base::string16::npos, std::string(),
+      GURL(current_url), metrics::OmniboxEventProto::OTHER, false, false, true,
+      true, true, ChromeAutocompleteSchemeClassifier(&profile_));
   history::MostVisitedURLList urls;
   history::MostVisitedURL url(GURL("http://foo.com/"),
                               base::ASCIIToUTF16("Foo"));
   urls.push_back(url);
 
-  provider_->Start(input, false, true);
+  provider_->Start(input, false);
   EXPECT_TRUE(provider_->matches().empty());
   // Stop() doesn't always get called.
 
   std::string search_url("https://www.google.com/?q=flowers");
   AutocompleteInput srp_input(
-      base::ASCIIToUTF16(search_url),
-      base::string16::npos,
-      std::string(),
-      GURL(search_url),
-      metrics::OmniboxEventProto::
-          SEARCH_RESULT_PAGE_DOING_SEARCH_TERM_REPLACEMENT,
-      false,
-      false,
-      true,
-      true,
+      base::ASCIIToUTF16(search_url), base::string16::npos, std::string(),
+      GURL(search_url), metrics::OmniboxEventProto::
+                            SEARCH_RESULT_PAGE_DOING_SEARCH_TERM_REPLACEMENT,
+      false, false, true, true, true,
       ChromeAutocompleteSchemeClassifier(&profile_));
 
-  provider_->Start(srp_input, false, true);
+  provider_->Start(srp_input, false);
   EXPECT_TRUE(provider_->matches().empty());
   // Most visited results arriving after a new request has been started.
   scoped_refptr<history::TopSites> top_sites =
@@ -334,13 +325,12 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestCachingFirstRun) {
   prefs->SetString(prefs::kZeroSuggestCachedResults, std::string());
 
   std::string url("http://www.cnn.com/");
-  AutocompleteInput input(base::ASCIIToUTF16(url), base::string16::npos,
-                          std::string(), GURL(url),
-                          metrics::OmniboxEventProto::INVALID_SPEC, true, false,
-                          true, true,
-                          ChromeAutocompleteSchemeClassifier(&profile_));
+  AutocompleteInput input(
+      base::ASCIIToUTF16(url), base::string16::npos, std::string(), GURL(url),
+      metrics::OmniboxEventProto::INVALID_SPEC, true, false, true, true, true,
+      ChromeAutocompleteSchemeClassifier(&profile_));
 
-  provider_->Start(input, false, true);
+  provider_->Start(input, false);
 
   EXPECT_TRUE(prefs->GetString(prefs::kZeroSuggestCachedResults).empty());
   EXPECT_TRUE(provider_->matches().empty());
@@ -364,11 +354,10 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestHasCachedResults) {
   CreatePersonalizedFieldTrial();
 
   std::string url("http://www.cnn.com/");
-  AutocompleteInput input(base::ASCIIToUTF16(url), base::string16::npos,
-                          std::string(), GURL(url),
-                          metrics::OmniboxEventProto::INVALID_SPEC, true, false,
-                          true, true,
-                          ChromeAutocompleteSchemeClassifier(&profile_));
+  AutocompleteInput input(
+      base::ASCIIToUTF16(url), base::string16::npos, std::string(), GURL(url),
+      metrics::OmniboxEventProto::INVALID_SPEC, true, false, true, true, true,
+      ChromeAutocompleteSchemeClassifier(&profile_));
 
   // Set up the pref to cache the response from the previous run.
   std::string json_response("[\"\",[\"search1\", \"search2\", \"search3\"],"
@@ -377,7 +366,7 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestHasCachedResults) {
   PrefService* prefs = profile_.GetPrefs();
   prefs->SetString(prefs::kZeroSuggestCachedResults, json_response);
 
-  provider_->Start(input, false, true);
+  provider_->Start(input, false);
 
   // Expect that matches get populated synchronously out of the cache.
   ASSERT_EQ(4U, provider_->matches().size());
@@ -411,11 +400,10 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestReceivedEmptyResults) {
   CreatePersonalizedFieldTrial();
 
   std::string url("http://www.cnn.com/");
-  AutocompleteInput input(base::ASCIIToUTF16(url), base::string16::npos,
-                          std::string(), GURL(url),
-                          metrics::OmniboxEventProto::INVALID_SPEC, true, false,
-                          true, true,
-                          ChromeAutocompleteSchemeClassifier(&profile_));
+  AutocompleteInput input(
+      base::ASCIIToUTF16(url), base::string16::npos, std::string(), GURL(url),
+      metrics::OmniboxEventProto::INVALID_SPEC, true, false, true, true, true,
+      ChromeAutocompleteSchemeClassifier(&profile_));
 
   // Set up the pref to cache the response from the previous run.
   std::string json_response("[\"\",[\"search1\", \"search2\", \"search3\"],"
@@ -424,7 +412,7 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestReceivedEmptyResults) {
   PrefService* prefs = profile_.GetPrefs();
   prefs->SetString(prefs::kZeroSuggestCachedResults, json_response);
 
-  provider_->Start(input, false, true);
+  provider_->Start(input, false);
 
   // Expect that matches get populated synchronously out of the cache.
   ASSERT_EQ(4U, provider_->matches().size());

@@ -475,8 +475,7 @@ HistoryURLProvider::HistoryURLProvider(AutocompleteProviderClient* client,
 }
 
 void HistoryURLProvider::Start(const AutocompleteInput& input,
-                               bool minimal_changes,
-                               bool called_due_to_focus) {
+                               bool minimal_changes) {
   // NOTE: We could try hard to do less work in the |minimal_changes| case
   // here; some clever caching would let us reuse the raw matches from the
   // history DB without re-querying.  However, we'd still have to go back to
@@ -491,7 +490,7 @@ void HistoryURLProvider::Start(const AutocompleteInput& input,
 
   matches_.clear();
 
-  if (called_due_to_focus ||
+  if (input.from_omnibox_focus() ||
       (input.type() == metrics::OmniboxInputType::INVALID) ||
       (input.type() == metrics::OmniboxInputType::FORCED_QUERY))
     return;

@@ -37,7 +37,7 @@ void OmniboxProvider::Start(bool is_voice_query, const base::string16& query) {
   is_voice_query_ = is_voice_query;
   controller_->Start(AutocompleteInput(
       query, base::string16::npos, std::string(), GURL(),
-      metrics::OmniboxEventProto::INVALID_SPEC, false, false, true, true,
+      metrics::OmniboxEventProto::INVALID_SPEC, false, false, true, true, false,
       ChromeAutocompleteSchemeClassifier(profile_)));
 }
 

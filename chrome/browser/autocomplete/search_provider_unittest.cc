@@ -340,12 +340,11 @@ void SearchProviderTest::RunTest(TestData* cases,
                                  bool prefer_keyword) {
   ACMatches matches;
   for (int i = 0; i < num_cases; ++i) {
-    AutocompleteInput input(cases[i].input, base::string16::npos,
-                            std::string(), GURL(),
-                            metrics::OmniboxEventProto::INVALID_SPEC, false,
-                            prefer_keyword, true, true,
+    AutocompleteInput input(cases[i].input, base::string16::npos, std::string(),
+                            GURL(), metrics::OmniboxEventProto::INVALID_SPEC,
+                            false, prefer_keyword, true, true, false,
                             ChromeAutocompleteSchemeClassifier(&profile_));
-    provider_->Start(input, false, false);
+    provider_->Start(input, false);
     matches = provider_->matches();
     SCOPED_TRACE(
         ASCIIToUTF16("Input was: ") +
@@ -389,8 +388,9 @@ void SearchProviderTest::QueryForInput(const base::string16& text,
   AutocompleteInput input(text, base::string16::npos, std::string(), GURL(),
                           metrics::OmniboxEventProto::INVALID_SPEC,
                           prevent_inline_autocomplete, prefer_keyword, true,
-                          true, ChromeAutocompleteSchemeClassifier(&profile_));
-  provider_->Start(input, false, false);
+                          true, false,
+                          ChromeAutocompleteSchemeClassifier(&profile_));
+  provider_->Start(input, false);
 
   // RunUntilIdle so that the task scheduled by SearchProvider to create the
   // URLFetchers runs.
@@ -1133,7 +1133,7 @@ TEST_F(SearchProviderTest, KeywordOrderingAndDescriptions) {
       NULL, AutocompleteProvider::TYPE_SEARCH);
   controller.Start(AutocompleteInput(
       ASCIIToUTF16("k t"), base::string16::npos, std::string(), GURL(),
-      metrics::OmniboxEventProto::INVALID_SPEC, false, false, true, true,
+      metrics::OmniboxEventProto::INVALID_SPEC, false, false, true, true, false,
       ChromeAutocompleteSchemeClassifier(&profile_)));
   const AutocompleteResult& result = controller.result();
 
@@ -3600,11 +3600,10 @@ TEST_F(SearchProviderTest, RemoveExtraAnswers) {
 }
 
 TEST_F(SearchProviderTest, DoesNotProvideOnFocus) {
-  AutocompleteInput input(base::ASCIIToUTF16("f"), base::string16::npos,
-                          std::string(), GURL(),
-                          metrics::OmniboxEventProto::INVALID_SPEC, false,
-                          true, true, true,
-                          ChromeAutocompleteSchemeClassifier(&profile_));
-  provider_->Start(input, false, true);
+  AutocompleteInput input(
+      base::ASCIIToUTF16("f"), base::string16::npos, std::string(), GURL(),
+      metrics::OmniboxEventProto::INVALID_SPEC, false, true, true, true, true,
+      ChromeAutocompleteSchemeClassifier(&profile_));
+  provider_->Start(input, false);
   EXPECT_TRUE(provider_->matches().empty());
 }

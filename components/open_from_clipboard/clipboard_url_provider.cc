@@ -30,10 +30,9 @@ ClipboardURLProvider::~ClipboardURLProvider() {
 }
 
 void ClipboardURLProvider::Start(const AutocompleteInput& input,
-                                 bool minimal_changes,
-                                 bool called_due_to_focus) {
+                                 bool minimal_changes) {
   matches_.clear();
-  if (!called_due_to_focus)
+  if (!input.from_omnibox_focus())
     return;
   // Attempt to add an AutocompleteMatch only if the user has not entered
   // anything in the omnibox.

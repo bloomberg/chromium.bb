@@ -238,6 +238,7 @@ AutocompleteController::~AutocompleteController() {
 void AutocompleteController::Start(const AutocompleteInput& input) {
   const base::string16 old_input_text(input_.text());
   const bool old_want_asynchronous_matches = input_.want_asynchronous_matches();
+  const bool old_from_omnibox_focus = input_.from_omnibox_focus();
   input_ = input;
 
   // See if we can avoid rerunning autocomplete when the query hasn't changed
@@ -249,8 +250,10 @@ void AutocompleteController::Start(const AutocompleteInput& input) {
   //
   // NOTE: This comes after constructing |input_| above since that construction
   // can change the text string (e.g. by stripping off a leading '?').
-  const bool minimal_changes = (input_.text() == old_input_text) &&
-      (input_.want_asynchronous_matches() == old_want_asynchronous_matches);
+  const bool minimal_changes =
+      (input_.text() == old_input_text) &&
+      (input_.want_asynchronous_matches() == old_want_asynchronous_matches) &&
+      (input.from_omnibox_focus() == old_from_omnibox_focus);
 
   expire_timer_.Stop();
   stop_timer_.Stop();
@@ -261,11 +264,11 @@ void AutocompleteController::Start(const AutocompleteInput& input) {
   for (Providers::iterator i(providers_.begin()); i != providers_.end(); ++i) {
     // TODO(mpearson): Remove timing code once bug 178705 is resolved.
     base::TimeTicks provider_start_time = base::TimeTicks::Now();
-    (*i)->Start(input_, minimal_changes, false);
+    (*i)->Start(input_, minimal_changes);
     if (!input.want_asynchronous_matches())
       DCHECK((*i)->done());
     base::TimeTicks provider_end_time = base::TimeTicks::Now();
-    std::string name = std::string("Omnibox.ProviderTime.") + (*i)->GetName();
+    std::string name = std::string("Omnibox.ProviderTime2.") + (*i)->GetName();
     base::HistogramBase* counter = base::Histogram::FactoryGet(
         name, 1, 5000, 20, base::Histogram::kUmaTargetedHistogramFlag);
     counter->Add(static_cast<int>(
@@ -273,8 +276,8 @@ void AutocompleteController::Start(const AutocompleteInput& input) {
   }
   if (input.want_asynchronous_matches() && (input.text().length() < 6)) {
     base::TimeTicks end_time = base::TimeTicks::Now();
-    std::string name = "Omnibox.QueryTime." + base::IntToString(
-        input.text().length());
+    std::string name =
+        "Omnibox.QueryTime2." + base::IntToString(input.text().length());
     base::HistogramBase* counter = base::Histogram::FactoryGet(
         name, 1, 1000, 50, base::Histogram::kUmaTargetedHistogramFlag);
     counter->Add(static_cast<int>((end_time - start_time).InMilliseconds()));
@@ -304,18 +307,6 @@ void AutocompleteController::Start(const AutocompleteInput& input) {
 
 void AutocompleteController::Stop(bool clear_result) {
   StopHelper(clear_result, false);
-}
-
-void AutocompleteController::OnOmniboxFocused(const AutocompleteInput& input) {
-  DCHECK(!in_start_);  // We should not be already running a query.
-
-  // Call Start() on all prefix-based providers with an INVALID
-  // AutocompleteInput to clear out cached |matches_|, which ensures that
-  // they aren't used with zero suggest.
-  for (Providers::iterator i(providers_.begin()); i != providers_.end(); ++i)
-    (*i)->Start(input, false, true);
-
-  UpdateResult(false, false);
 }
 
 void AutocompleteController::DeleteMatch(const AutocompleteMatch& match) {

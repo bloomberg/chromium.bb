@@ -81,12 +81,6 @@ class AutocompleteController : public AutocompleteProviderListener {
   // If |clear_result| is true, the controller will also erase the result set.
   void Stop(bool clear_result);
 
-  // Called when the omnibox is focused while no existing user input is in
-  // progress.  This is used to call Start() on all providers with
-  // |called_due_to_focus| parameter set to check if they want to provide
-  // on focus matches.
-  void OnOmniboxFocused(const AutocompleteInput& input);
-
   // Asks the relevant provider to delete |match|, and ensures observers are
   // notified of resulting changes immediately.  This should only be called when
   // no query is running.

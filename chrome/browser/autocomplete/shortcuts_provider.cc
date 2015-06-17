@@ -66,15 +66,13 @@ ShortcutsProvider::ShortcutsProvider(Profile* profile)
 }
 
 void ShortcutsProvider::Start(const AutocompleteInput& input,
-                              bool minimal_changes,
-                              bool called_due_to_focus) {
+                              bool minimal_changes) {
   matches_.clear();
 
-  if (called_due_to_focus ||
+  if (input.from_omnibox_focus() ||
       (input.type() == metrics::OmniboxInputType::INVALID) ||
       (input.type() == metrics::OmniboxInputType::FORCED_QUERY) ||
-      input.text().empty() ||
-      !initialized_)
+      input.text().empty() || !initialized_)
     return;
 
   base::TimeTicks start_time = base::TimeTicks::Now();

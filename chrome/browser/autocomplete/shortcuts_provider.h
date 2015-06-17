@@ -28,9 +28,7 @@ class ShortcutsProvider
 
   // Performs the autocompletion synchronously. Since no asynch completion is
   // performed |minimal_changes| is ignored.
-  void Start(const AutocompleteInput& input,
-             bool minimal_changes,
-             bool called_due_to_focus) override;
+  void Start(const AutocompleteInput& input, bool minimal_changes) override;
 
   void DeleteMatch(const AutocompleteMatch& match) override;
 

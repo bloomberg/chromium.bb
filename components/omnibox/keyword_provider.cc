@@ -199,8 +199,7 @@ AutocompleteMatch KeywordProvider::CreateVerbatimMatch(
 }
 
 void KeywordProvider::Start(const AutocompleteInput& input,
-                            bool minimal_changes,
-                            bool called_due_to_focus) {
+                            bool minimal_changes) {
   // This object ensures we end keyword mode if we exit the function without
   // toggling keyword mode to on.
   ScopedEndExtensionKeywordMode keyword_mode_toggle(extensions_delegate_.get());
@@ -216,7 +215,7 @@ void KeywordProvider::Start(const AutocompleteInput& input,
       extensions_delegate_->IncrementInputId();
   }
 
-  if (called_due_to_focus)
+  if (input.from_omnibox_focus())
     return;
 
   // Split user input into a keyword and some query input.

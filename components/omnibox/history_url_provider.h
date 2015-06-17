@@ -194,9 +194,7 @@ class HistoryURLProvider : public HistoryProvider {
                      AutocompleteProviderListener* listener);
 
   // HistoryProvider:
-  void Start(const AutocompleteInput& input,
-             bool minimal_changes,
-             bool called_due_to_focus) override;
+  void Start(const AutocompleteInput& input, bool minimal_changes) override;
   void Stop(bool clear_cached_results, bool due_to_user_inactivity) override;
 
   // Returns a match representing a navigation to |destination_url| given user

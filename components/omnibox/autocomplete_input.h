@@ -61,6 +61,11 @@ class AutocompleteInput {
   // to only return matches which are synchronously available, which should mean
   // that all providers will be done immediately.
   //
+  // |from_omnibox_focus| is true when input is created as a result of the
+  // omnibox being focused, instead of due to user input changes.  Most
+  // providers should not provide matches in this case.  Providers which want to
+  // display matches on focus can use this flag to know when they can do so.
+  //
   // |scheme_classifier| is passed to Parse() to help determine the type of
   // input this is; see comments there.
   AutocompleteInput(const base::string16& text,
@@ -73,6 +78,7 @@ class AutocompleteInput {
                     bool prefer_keyword,
                     bool allow_exact_keyword_match,
                     bool want_asynchronous_matches,
+                    bool from_omnibox_focus,
                     const AutocompleteSchemeClassifier& scheme_classifier);
   ~AutocompleteInput();
 
@@ -184,6 +190,10 @@ class AutocompleteInput {
   // when processing this input.
   bool want_asynchronous_matches() const { return want_asynchronous_matches_; }
 
+  // Returns whether this input query was triggered due to the omnibox being
+  // focused.
+  bool from_omnibox_focus() const { return from_omnibox_focus_; }
+
   // Resets all internal variables to the null-constructed state.
   void Clear();
 
@@ -204,6 +214,7 @@ class AutocompleteInput {
   bool prefer_keyword_;
   bool allow_exact_keyword_match_;
   bool want_asynchronous_matches_;
+  bool from_omnibox_focus_;
 };
 
 #endif  // COMPONENTS_OMNIBOX_AUTOCOMPLETE_INPUT_H_

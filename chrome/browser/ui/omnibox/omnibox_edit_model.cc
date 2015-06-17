@@ -545,6 +545,7 @@ void OmniboxEditModel::SetInputInProgress(bool in_progress) {
 
 void OmniboxEditModel::Revert() {
   SetInputInProgress(false);
+  input_.Clear();
   paste_state_ = NONE;
   InternalSetUserText(base::string16());
   keyword_.clear();
@@ -606,8 +607,8 @@ void OmniboxEditModel::StartAutocomplete(
           (has_selected_text && inline_autocomplete_text_.empty()) ||
           (paste_state_ != NONE),
       is_keyword_selected(),
-      is_keyword_selected() || allow_exact_keyword_match_,
-      true, ChromeAutocompleteSchemeClassifier(profile_));
+      is_keyword_selected() || allow_exact_keyword_match_, true, false,
+      ChromeAutocompleteSchemeClassifier(profile_));
 
   omnibox_controller_->StartAutocomplete(input_);
 }
@@ -664,13 +665,14 @@ void OmniboxEditModel::AcceptInput(WindowOpenDisposition disposition,
     // "foodnetwork.com".  At the time of writing, this behavior matches
     // Internet Explorer, but not Firefox.
     input_ = AutocompleteInput(
-      has_temporary_text_ ?
-          UserTextFromDisplayText(view_->GetText())  : input_.text(),
-      input_.cursor_position(), "com", GURL(),
-      input_.current_page_classification(),
-      input_.prevent_inline_autocomplete(), input_.prefer_keyword(),
-      input_.allow_exact_keyword_match(), input_.want_asynchronous_matches(),
-      ChromeAutocompleteSchemeClassifier(profile_));
+        has_temporary_text_ ? UserTextFromDisplayText(view_->GetText())
+                            : input_.text(),
+        input_.cursor_position(), "com", GURL(),
+        input_.current_page_classification(),
+        input_.prevent_inline_autocomplete(), input_.prefer_keyword(),
+        input_.allow_exact_keyword_match(), input_.want_asynchronous_matches(),
+        input_.from_omnibox_focus(),
+        ChromeAutocompleteSchemeClassifier(profile_));
     AutocompleteMatch url_match(
         autocomplete_controller()->history_url_provider()->SuggestExactInput(
             input_.text(), input_.canonicalized_url(), false));
@@ -1009,15 +1011,14 @@ void OmniboxEditModel::OnSetFocus(bool control_down) {
   // off).
   // TODO(hfung): Remove this when crbug/271590 is fixed.
   if (delegate_->CurrentPageExists() && !user_input_in_progress_) {
-    // TODO(jered): We may want to merge this into Start() and just call that
-    // here rather than having a special entry point for zero-suggest.  Note
-    // that we avoid PermanentURL() here because it's not guaranteed to give us
-    // the actual underlying current URL, e.g. if we're on the NTP and the
+    // We avoid PermanentURL() here because it's not guaranteed to give us the
+    // actual underlying current URL, e.g. if we're on the NTP and the
     // |permanent_text_| is empty.
-    autocomplete_controller()->OnOmniboxFocused(AutocompleteInput(
-        permanent_text_, base::string16::npos, std::string(),
-        delegate_->GetURL(), ClassifyPage(), false, false, true, true,
-        ChromeAutocompleteSchemeClassifier(profile_)));
+    input_ = AutocompleteInput(permanent_text_, base::string16::npos,
+                               std::string(), delegate_->GetURL(),
+                               ClassifyPage(), false, false, true, true, true,
+                               ChromeAutocompleteSchemeClassifier(profile_));
+    autocomplete_controller()->Start(input_);
   }
 
   if (user_input_in_progress_ || !in_revert_)

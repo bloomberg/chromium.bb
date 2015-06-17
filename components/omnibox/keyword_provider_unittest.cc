@@ -93,11 +93,11 @@ void KeywordProviderTest::RunTest(TestData<ResultType>* keyword_cases,
   ACMatches matches;
   for (int i = 0; i < num_cases; ++i) {
     SCOPED_TRACE(keyword_cases[i].input);
-    AutocompleteInput input(keyword_cases[i].input, base::string16::npos,
-                            std::string(), GURL(),
-                            metrics::OmniboxEventProto::INVALID_SPEC, true,
-                            false, true, true, TestingSchemeClassifier());
-    kw_provider_->Start(input, false, false);
+    AutocompleteInput input(
+        keyword_cases[i].input, base::string16::npos, std::string(), GURL(),
+        metrics::OmniboxEventProto::INVALID_SPEC, true, false, true, true,
+        false, TestingSchemeClassifier());
+    kw_provider_->Start(input, false);
     EXPECT_TRUE(kw_provider_->done());
     matches = kw_provider_->matches();
     ASSERT_EQ(keyword_cases[i].num_results, matches.size());
@@ -335,10 +335,11 @@ TEST_F(KeywordProviderTest, GetSubstitutingTemplateURLForInput) {
       base::string16::npos },
   };
   for (size_t i = 0; i < arraysize(cases); i++) {
-    AutocompleteInput input(
-        ASCIIToUTF16(cases[i].text), cases[i].cursor_position, std::string(),
-        GURL(), metrics::OmniboxEventProto::INVALID_SPEC, false, false,
-        cases[i].allow_exact_keyword_match, true, TestingSchemeClassifier());
+    AutocompleteInput input(ASCIIToUTF16(cases[i].text),
+                            cases[i].cursor_position, std::string(), GURL(),
+                            metrics::OmniboxEventProto::INVALID_SPEC, false,
+                            false, cases[i].allow_exact_keyword_match, true,
+                            false, TestingSchemeClassifier());
     const TemplateURL* url =
         KeywordProvider::GetSubstitutingTemplateURLForInput(model_.get(),
                                                             &input);
@@ -371,8 +372,8 @@ TEST_F(KeywordProviderTest, ExtraQueryParams) {
 TEST_F(KeywordProviderTest, DoesNotProvideMatchesOnFocus) {
   AutocompleteInput input(ASCIIToUTF16("aaa"), base::string16::npos,
                           std::string(), GURL(),
-                          metrics::OmniboxEventProto::INVALID_SPEC, true,
-                          false, true, true, TestingSchemeClassifier());
-  kw_provider_->Start(input, false, true);
+                          metrics::OmniboxEventProto::INVALID_SPEC, true, false,
+                          true, true, true, TestingSchemeClassifier());
+  kw_provider_->Start(input, false);
   ASSERT_TRUE(kw_provider_->matches().empty());
 }

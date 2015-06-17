@@ -196,7 +196,7 @@ void OmniboxUIHandler::StartOmniboxQuery(const mojo::String& input_string,
       input_string.To<base::string16>(), cursor_position, std::string(), GURL(),
       static_cast<metrics::OmniboxEventProto::PageClassification>(
           page_classification),
-      prevent_inline_autocomplete, prefer_keyword, true, true,
+      prevent_inline_autocomplete, prefer_keyword, true, true, false,
       ChromeAutocompleteSchemeClassifier(profile_));
   controller_->Start(input_);
 }

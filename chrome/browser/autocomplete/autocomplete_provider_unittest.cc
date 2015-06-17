@@ -60,9 +60,7 @@ class TestProvider : public AutocompleteProvider {
         match_keyword_(match_keyword) {
   }
 
-  void Start(const AutocompleteInput& input,
-             bool minimal_changes,
-             bool called_due_to_focus) override;
+  void Start(const AutocompleteInput& input, bool minimal_changes) override;
 
   void set_listener(AutocompleteProviderListener* listener) {
     listener_ = listener;
@@ -87,15 +85,13 @@ class TestProvider : public AutocompleteProvider {
   const base::string16 match_keyword_;
 };
 
-void TestProvider::Start(const AutocompleteInput& input,
-                         bool minimal_changes,
-                         bool called_due_to_focus) {
+void TestProvider::Start(const AutocompleteInput& input, bool minimal_changes) {
   if (minimal_changes)
     return;
 
   matches_.clear();
 
-  if (called_due_to_focus)
+  if (input.from_omnibox_focus())
     return;
 
   // Generate 4 results synchronously, the rest later.
@@ -412,7 +408,8 @@ void AutocompleteProviderTest::RunKeywordTest(const base::string16& input,
   controller_->input_ = AutocompleteInput(
       input, base::string16::npos, std::string(), GURL(),
       metrics::OmniboxEventProto::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS,
-      false, true, true, true, ChromeAutocompleteSchemeClassifier(&profile_));
+      false, true, true, true, false,
+      ChromeAutocompleteSchemeClassifier(&profile_));
   AutocompleteResult result;
   result.AppendMatches(controller_->input_, matches);
   controller_->UpdateAssociatedKeywords(&result);
@@ -457,7 +454,7 @@ void AutocompleteProviderTest::RunQuery(const base::string16 query) {
   result_.Reset();
   controller_->Start(AutocompleteInput(
       query, base::string16::npos, std::string(), GURL(),
-      metrics::OmniboxEventProto::INVALID_SPEC, true, false, true, true,
+      metrics::OmniboxEventProto::INVALID_SPEC, true, false, true, true, false,
       ChromeAutocompleteSchemeClassifier(&profile_)));
 
   if (!controller_->done())
@@ -477,7 +474,7 @@ void AutocompleteProviderTest::RunExactKeymatchTest(
   controller_->Start(AutocompleteInput(
       base::ASCIIToUTF16("k test"), base::string16::npos, std::string(), GURL(),
       metrics::OmniboxEventProto::INVALID_SPEC, true, false,
-      allow_exact_keyword_match, false,
+      allow_exact_keyword_match, false, false,
       ChromeAutocompleteSchemeClassifier(&profile_)));
   EXPECT_TRUE(controller_->done());
   EXPECT_EQ(AutocompleteProvider::TYPE_SEARCH,

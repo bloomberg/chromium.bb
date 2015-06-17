@@ -30,9 +30,7 @@ class HistoryQuickProvider : public HistoryProvider {
 
   // AutocompleteProvider. |minimal_changes| is ignored since there is no asynch
   // completion performed.
-  void Start(const AutocompleteInput& input,
-             bool minimal_changes,
-             bool called_due_to_focus) override;
+  void Start(const AutocompleteInput& input, bool minimal_changes) override;
 
   // Disable this provider. For unit testing purposes only. This is required
   // because this provider is closely associated with the HistoryURLProvider
