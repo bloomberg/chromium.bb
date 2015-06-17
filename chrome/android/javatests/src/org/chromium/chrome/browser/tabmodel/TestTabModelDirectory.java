@@ -213,7 +213,8 @@ public class TestTabModelDirectory {
     public TestTabModelDirectory(
             Context context, String baseDirectoryName, String subdirectoryName) throws Exception {
         mTestingDirectory = new File(context.getCacheDir(), baseDirectoryName);
-        if (!mTestingDirectory.exists() && !mTestingDirectory.mkdirs()) {
+        if (mTestingDirectory.exists()) recursivelyDelete(mTestingDirectory);
+        if (!mTestingDirectory.mkdirs()) {
             Log.e(TAG, "Failed to create: " + mTestingDirectory.getName());
         }
 

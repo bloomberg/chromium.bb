@@ -141,19 +141,6 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
     private int mLastShownTabId = Tab.INVALID_TAB_ID;
 
     /**
-     * Construct a DocumentTabModelImpl.
-     * @param activityDelegate Used to interact with DocumentActivities.
-     * @param tabCreatorManager Used to create/get Tabs.
-     * @param isIncognito Whether or not the TabList is managing incognito tabs.
-     * @param prioritizedTabId ID of the tab to prioritize when loading.
-     */
-    public DocumentTabModelImpl(ActivityDelegate activityDelegate,
-            TabCreatorManager tabCreatorManager, boolean isIncognito, int prioritizedTabId) {
-        this(activityDelegate, new StorageDelegate(), tabCreatorManager, isIncognito,
-                prioritizedTabId, ApplicationStatus.getApplicationContext());
-    }
-
-    /**
      * Construct a DocumentTabModel.
      * @param activityDelegate Delegate to use for accessing the ActivityManager.
      * @param storageDelegate Delegate to use for accessing persistent storage.
@@ -161,8 +148,6 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
      * @param isIncognito Whether or not the TabList is managing incognito tabs.
      * @param prioritizedTabId ID of the tab to prioritize when loading.
      * @param context Context to use for accessing SharedPreferences.
-     *
-     * TODO(dfalcantara): Reduce visibility once DocumentMigrationHelper is upstreamed.
      */
     public DocumentTabModelImpl(ActivityDelegate activityDelegate, StorageDelegate storageDelegate,
             TabCreatorManager tabCreatorManager, boolean isIncognito, int prioritizedTabId,

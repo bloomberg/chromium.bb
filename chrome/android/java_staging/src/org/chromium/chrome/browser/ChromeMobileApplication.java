@@ -61,6 +61,7 @@ import org.chromium.chrome.browser.sync.SyncController;
 import org.chromium.chrome.browser.tab.AuthenticatorNavigationInterceptor;
 import org.chromium.chrome.browser.tabmodel.document.ActivityDelegate;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelSelector;
+import org.chromium.chrome.browser.tabmodel.document.StorageDelegate;
 import org.chromium.content.browser.ChildProcessLauncher;
 import org.chromium.content.browser.ContentViewStatics;
 import org.chromium.content.browser.DownloadController;
@@ -584,7 +585,7 @@ public class ChromeMobileApplication extends ChromiumApplication {
         if (sDocumentTabModelSelector == null) {
             sDocumentTabModelSelector = new DocumentTabModelSelector(
                     new ActivityDelegate(DocumentActivity.class, IncognitoDocumentActivity.class),
-                    new TabDelegateImpl(false), new TabDelegateImpl(true));
+                    new StorageDelegate(), new TabDelegateImpl(false), new TabDelegateImpl(true));
         }
         return sDocumentTabModelSelector;
     }

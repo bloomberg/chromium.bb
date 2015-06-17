@@ -27,6 +27,7 @@ import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelSelector;
 import org.chromium.chrome.test.MultiActivityTestBase;
 import org.chromium.chrome.test.util.ActivityUtils;
 import org.chromium.chrome.test.util.DisableInTabbedMode;
+import org.chromium.chrome.test.util.browser.tabmodel.document.MockStorageDelegate;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TouchCommon;
@@ -45,7 +46,6 @@ import java.util.concurrent.Callable;
 @DisableInTabbedMode
 public class DocumentModeTestBase extends MultiActivityTestBase {
     protected static final String TAG = "cr.document";
-    protected static final String TEST_DIRECTORY = "DocumentModeTestBase";
 
     protected static final String URL_1 = createTestUrl(1);
     protected static final String URL_2 = createTestUrl(2);
@@ -102,8 +102,17 @@ public class DocumentModeTestBase extends MultiActivityTestBase {
     }
 
     protected Context mContext;
+    protected MockStorageDelegate mStorageDelegate;
 
-    protected static void launchMainIntent(Context context) throws Exception {
+    protected void launchHomeIntent(Context context) throws Exception {
+        Intent startMain = new Intent(Intent.ACTION_MAIN);
+        startMain.addCategory(Intent.CATEGORY_HOME);
+        startMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(startMain);
+        MultiActivityTestBase.waitUntilChromeInBackground();
+    }
+
+    protected void launchMainIntent(Context context) throws Exception {
         Intent intent = new Intent(Intent.ACTION_MAIN);
         intent.setPackage(context.getPackageName());
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -111,7 +120,7 @@ public class DocumentModeTestBase extends MultiActivityTestBase {
         MultiActivityTestBase.waitUntilChromeInForeground();
     }
 
-    protected static void fireViewIntent(Context context, Uri data) throws Exception {
+    protected void fireViewIntent(Context context, Uri data) throws Exception {
         Intent intent = new Intent(Intent.ACTION_VIEW, data);
         intent.setClassName(context.getPackageName(), ChromeLauncherActivity.class.getName());
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -137,8 +146,18 @@ public class DocumentModeTestBase extends MultiActivityTestBase {
 
     @Override
     public void setUp() throws Exception {
-        super.setUp();
         mContext = getInstrumentation().getTargetContext();
+
+        mStorageDelegate = new MockStorageDelegate(mContext.getCacheDir());
+        DocumentTabModelSelector.setStorageDelegateForTests(mStorageDelegate);
+
+        super.setUp();
+    }
+
+    @Override
+    public void tearDown() throws Exception {
+        mStorageDelegate.ensureDirectoryDestroyed();
+        super.tearDown();
     }
 
     /** Starts a DocumentActivity by using firing a VIEW Intent. */

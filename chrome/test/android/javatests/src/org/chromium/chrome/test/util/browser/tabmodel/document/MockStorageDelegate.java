@@ -31,7 +31,7 @@ public class MockStorageDelegate extends StorageDelegate {
     private byte[] mTaskFileBytes;
     private final File mStateDirectory;
 
-    public MockStorageDelegate(File cacheDirectory) {
+    public MockStorageDelegate(File cacheDirectory) throws Exception {
         mStateDirectory = new File(cacheDirectory, "DocumentTabModelTest");
         ensureDirectoryDestroyed();
     }
@@ -50,7 +50,7 @@ public class MockStorageDelegate extends StorageDelegate {
 
     @Override
     public File getStateDirectory() {
-        if (!mStateDirectory.exists() && !mStateDirectory.mkdir()) {
+        if (!mStateDirectory.exists() && !mStateDirectory.mkdirs()) {
             Assert.fail("Failed to create state directory.  Tests should fail.");
         }
         return mStateDirectory;
@@ -93,16 +93,21 @@ public class MockStorageDelegate extends StorageDelegate {
     /**
      * Ensures that the state directory and its contents are all wiped from storage.
      */
-    public void ensureDirectoryDestroyed() {
-        File states = getStateDirectory();
-        if (!states.exists()) return;
+    public void ensureDirectoryDestroyed() throws Exception {
+        if (!mStateDirectory.exists()) return;
+        recursivelyDelete(mStateDirectory);
+    }
 
-        File[] files = states.listFiles();
-        if (files != null) {
-            for (File file : files) {
-                if (!file.delete()) Log.e(TAG, "Failed to delete: " + file.getName());
+    private void recursivelyDelete(File currentFile) throws Exception {
+        if (currentFile.isDirectory()) {
+            File[] files = currentFile.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    recursivelyDelete(file);
+                }
             }
         }
-        if (!states.delete()) Log.e(TAG, "Failed to delete: " + states.getName());
+
+        if (!currentFile.delete()) Log.e(TAG, "Failed to delete: " + currentFile);
     }
 }
