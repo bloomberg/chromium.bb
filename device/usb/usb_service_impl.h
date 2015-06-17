@@ -61,10 +61,8 @@ class UsbServiceImpl : public UsbService,
   // base::MessageLoop::DestructionObserver implementation
   void WillDestroyCurrentMessageLoop() override;
 
-  // Enumerate USB devices from OS and update devices_ map. |new_device_path| is
-  // an optional hint used on Windows to prevent enumerations before drivers for
-  // a new device have been completely loaded.
-  void RefreshDevices(const std::string& new_device_path);
+  // Enumerate USB devices from OS and update devices_ map.
+  void RefreshDevices();
   void OnDeviceList(libusb_device** platform_devices, size_t device_count);
   void RefreshDevicesComplete();
 
@@ -97,6 +95,7 @@ class UsbServiceImpl : public UsbService,
 
   // Enumeration callbacks are queued until an enumeration completes.
   bool enumeration_ready_ = false;
+  bool enumeration_in_progress_ = false;
   std::queue<std::string> pending_path_enumerations_;
   std::vector<GetDevicesCallback> pending_enumeration_callbacks_;
 
@@ -109,7 +108,8 @@ class UsbServiceImpl : public UsbService,
       PlatformDeviceMap;
   PlatformDeviceMap platform_devices_;
 
-  // Tracks PlatformUsbDevices while they are being enumerated.
+  // Tracks PlatformUsbDevices that might be removed while they are being
+  // enumerated.
   std::set<PlatformUsbDevice> devices_being_enumerated_;
 
 #if defined(OS_WIN)

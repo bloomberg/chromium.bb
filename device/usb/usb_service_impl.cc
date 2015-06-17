@@ -388,7 +388,7 @@ UsbServiceImpl::UsbServiceImpl(
     hotplug_enabled_ = true;
   }
 
-  RefreshDevices("");
+  RefreshDevices();
 #if defined(OS_WIN)
   DeviceMonitorWin* device_monitor = DeviceMonitorWin::GetForAllInterfaces();
   if (device_monitor) {
@@ -420,10 +420,7 @@ scoped_refptr<UsbDevice> UsbServiceImpl::GetDevice(const std::string& guid) {
 void UsbServiceImpl::GetDevices(const GetDevicesCallback& callback) {
   DCHECK(CalledOnValidThread());
 
-  if (!enumeration_ready_) {
-    // On startup wait for the first enumeration,
-    pending_enumeration_callbacks_.push_back(callback);
-  } else if (hotplug_enabled_) {
+  if (hotplug_enabled_ && !enumeration_in_progress_) {
     // The device list is updated live when hotplug events are supported.
     std::vector<scoped_refptr<UsbDevice>> devices;
     for (const auto& map_entry : devices_) {
@@ -431,11 +428,8 @@ void UsbServiceImpl::GetDevices(const GetDevicesCallback& callback) {
     }
     callback.Run(devices);
   } else {
-    // Only post one re-enumeration task at a time.
-    if (pending_enumeration_callbacks_.empty()) {
-      RefreshDevices("");
-    }
     pending_enumeration_callbacks_.push_back(callback);
+    RefreshDevices();
   }
 }
 
@@ -449,15 +443,16 @@ void UsbServiceImpl::OnDeviceAdded(const GUID& class_guid,
   // (including devices on 3rd party USB controllers) to avoid the more
   // expensive driver check that needs to be done on the FILE thread.
   if (device_path.find("usb") != std::string::npos) {
-    RefreshDevices(device_path);
+    pending_path_enumerations_.push(device_path);
+    RefreshDevices();
   }
 }
 
 void UsbServiceImpl::OnDeviceRemoved(const GUID& class_guid,
                                      const std::string& device_path) {
-  // The root USB device node is removed last
+  // The root USB device node is removed last.
   if (class_guid == GUID_DEVINTERFACE_USB_DEVICE) {
-    RefreshDevices("");
+    RefreshDevices();
   }
 }
 
@@ -468,20 +463,27 @@ void UsbServiceImpl::WillDestroyCurrentMessageLoop() {
   delete this;
 }
 
-void UsbServiceImpl::RefreshDevices(const std::string& new_device_path) {
+void UsbServiceImpl::RefreshDevices() {
   DCHECK(CalledOnValidThread());
+
+  if (enumeration_in_progress_) {
+    return;
+  }
+
+  enumeration_in_progress_ = true;
   DCHECK(devices_being_enumerated_.empty());
 
-  if (pending_enumeration_callbacks_.empty() &&
-      pending_path_enumerations_.empty()) {
-    blocking_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&GetDeviceListOnBlockingThread, new_device_path, context_,
-                   task_runner_, base::Bind(&UsbServiceImpl::OnDeviceList,
-                                            weak_factory_.GetWeakPtr())));
-  } else if (!new_device_path.empty()) {
-    pending_path_enumerations_.push(new_device_path);
+  std::string device_path;
+  if (!pending_path_enumerations_.empty()) {
+    device_path = pending_path_enumerations_.front();
+    pending_path_enumerations_.pop();
   }
+
+  blocking_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&GetDeviceListOnBlockingThread, device_path, context_,
+                 task_runner_, base::Bind(&UsbServiceImpl::OnDeviceList,
+                                          weak_factory_.GetWeakPtr())));
 }
 
 void UsbServiceImpl::OnDeviceList(libusb_device** platform_devices,
@@ -533,7 +535,12 @@ void UsbServiceImpl::OnDeviceList(libusb_device** platform_devices,
 }
 
 void UsbServiceImpl::RefreshDevicesComplete() {
+  DCHECK(CalledOnValidThread());
+  DCHECK(enumeration_in_progress_);
+
   enumeration_ready_ = true;
+  enumeration_in_progress_ = false;
+  devices_being_enumerated_.clear();
 
   if (!pending_enumeration_callbacks_.empty()) {
     std::vector<scoped_refptr<UsbDevice>> devices;
@@ -549,9 +556,7 @@ void UsbServiceImpl::RefreshDevicesComplete() {
   }
 
   if (!pending_path_enumerations_.empty()) {
-    std::string next_path = pending_path_enumerations_.front();
-    pending_path_enumerations_.pop();
-    RefreshDevices(next_path);
+    RefreshDevices();
   }
 }
 
@@ -601,7 +606,6 @@ void UsbServiceImpl::AddDevice(const base::Closure& refresh_complete,
     refresh_complete.Run();
     return;
   }
-  devices_being_enumerated_.erase(it);
 
   platform_devices_[device->platform_device()] = device;
   DCHECK(!ContainsKey(devices_, device->guid()));
