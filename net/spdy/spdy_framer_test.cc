@@ -2902,19 +2902,81 @@ TEST_P(SpdyFramerTest, CreateHeadersUncompressed) {
         "HEADERS frame with a 0-length header val, FIN, max stream ID, pri";
 
     const unsigned char kV4FrameData[] = {
-      0x00, 0x00, 0x14, 0x01,  // Headers: FIN | END_HEADERS | PRIORITY
-      0x25, 0x7f, 0xff, 0xff,  // Stream 0x7fffffff
-      0xff, 0x00, 0x00, 0x00,  // parent stream
-      0x00, 0xdb,              // weight
-      0x00, 0x03, 0x62, 0x61,  // @.ba
-      0x72, 0x03, 0x66, 0x6f,  // r.fo
-      0x6f, 0x00, 0x03, 0x66,  // o@.f
-      0x6f, 0x6f, 0x00,        // oo.
+        0x00, 0x00, 0x14, 0x01,  // Headers: FIN | END_HEADERS | PRIORITY
+        0x25, 0x7f, 0xff, 0xff,  // Stream 0x7fffffff
+        0xff, 0x00, 0x00, 0x00,  // exclusive, parent stream
+        0x00, 0xdb,              // weight
+        0x00, 0x03, 0x62, 0x61,  // @.ba
+        0x72, 0x03, 0x66, 0x6f,  // r.fo
+        0x6f, 0x00, 0x03, 0x66,  // o@.f
+        0x6f, 0x6f, 0x00,        // oo.
     };
     SpdyHeadersIR headers_ir(0x7fffffff);
     headers_ir.set_fin(true);
     headers_ir.set_priority(1);
     headers_ir.set_has_priority(true);
+    headers_ir.SetHeader("bar", "foo");
+    headers_ir.SetHeader("foo", "");
+    scoped_ptr<SpdyFrame> frame(framer.SerializeHeaders(headers_ir));
+    if (IsSpdy2() || IsSpdy3()) {
+      // HEADERS with priority not supported.
+    } else {
+      CompareFrame(kDescription, *frame, kV4FrameData, arraysize(kV4FrameData));
+    }
+  }
+
+  {
+    const char kDescription[] =
+        "HEADERS frame with a 0-length header val, FIN, max stream ID, pri, "
+        "exclusive=true, parent_stream=0";
+
+    const unsigned char kV4FrameData[] = {
+        0x00, 0x00, 0x14, 0x01,  // Headers: FIN | END_HEADERS | PRIORITY
+        0x25, 0x7f, 0xff, 0xff,  // Stream 0x7fffffff
+        0xff, 0x80, 0x00, 0x00,  // exclusive, parent stream
+        0x00, 0xdb,              // weight
+        0x00, 0x03, 0x62, 0x61,  // @.ba
+        0x72, 0x03, 0x66, 0x6f,  // r.fo
+        0x6f, 0x00, 0x03, 0x66,  // o@.f
+        0x6f, 0x6f, 0x00,        // oo.
+    };
+    SpdyHeadersIR headers_ir(0x7fffffff);
+    headers_ir.set_fin(true);
+    headers_ir.set_priority(1);
+    headers_ir.set_has_priority(true);
+    headers_ir.set_exclusive(true);
+    headers_ir.set_parent_stream_id(0);
+    headers_ir.SetHeader("bar", "foo");
+    headers_ir.SetHeader("foo", "");
+    scoped_ptr<SpdyFrame> frame(framer.SerializeHeaders(headers_ir));
+    if (IsSpdy2() || IsSpdy3()) {
+      // HEADERS with priority not supported.
+    } else {
+      CompareFrame(kDescription, *frame, kV4FrameData, arraysize(kV4FrameData));
+    }
+  }
+
+  {
+    const char kDescription[] =
+        "HEADERS frame with a 0-length header val, FIN, max stream ID, pri, "
+        "exclusive=false, parent_stream=max stream ID";
+
+    const unsigned char kV4FrameData[] = {
+        0x00, 0x00, 0x14, 0x01,  // Headers: FIN | END_HEADERS | PRIORITY
+        0x25, 0x7f, 0xff, 0xff,  // Stream 0x7fffffff
+        0xff, 0x7f, 0xff, 0xff,  // exclusive, parent stream
+        0xff, 0xdb,              // weight
+        0x00, 0x03, 0x62, 0x61,  // @.ba
+        0x72, 0x03, 0x66, 0x6f,  // r.fo
+        0x6f, 0x00, 0x03, 0x66,  // o@.f
+        0x6f, 0x6f, 0x00,        // oo.
+    };
+    SpdyHeadersIR headers_ir(0x7fffffff);
+    headers_ir.set_fin(true);
+    headers_ir.set_priority(1);
+    headers_ir.set_has_priority(true);
+    headers_ir.set_exclusive(false);
+    headers_ir.set_parent_stream_id(0x7fffffff);
     headers_ir.SetHeader("bar", "foo");
     headers_ir.SetHeader("foo", "");
     scoped_ptr<SpdyFrame> frame(framer.SerializeHeaders(headers_ir));

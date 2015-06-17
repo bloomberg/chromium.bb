@@ -53,6 +53,17 @@ bool IsCookieEmpty(const base::StringPiece& cookie) {
   return (pos == 0) && ((cookie.size() - value_start) == 0);
 }
 
+// Pack parent stream ID and exclusive flag into the format used by HTTP/2
+// headers and priority frames.
+uint32 PackStreamDependencyValues(bool exclusive,
+                                  SpdyStreamId parent_stream_id) {
+  // Make sure the highest-order bit in the parent stream id is zeroed out.
+  uint32 parent = parent_stream_id & 0x7fffffff;
+  // Set the one-bit exclusivity flag.
+  uint32 e_bit = exclusive ? 0x80000000 : 0;
+  return parent | e_bit;
+}
+
 struct DictionaryIds {
   DictionaryIds()
     : v2_dictionary_id(CalculateDictionaryId(kV2Dictionary, kV2DictionarySize)),
@@ -2609,8 +2620,8 @@ SpdySerializedFrame* SpdyFramer::SerializeHeaders(
       padding_payload_len = headers.padding_payload_len();
     }
     if (headers.has_priority()) {
-      // TODO(jgraettinger): Plumb priorities and stream dependencies.
-      builder.WriteUInt32(0);  // Non-exclusive bit and root stream ID.
+      builder.WriteUInt32(PackStreamDependencyValues(
+          headers.exclusive(), headers.parent_stream_id()));
       builder.WriteUInt8(MapPriorityToWeight(priority));
     }
     WritePayloadWithContinuation(&builder,
@@ -2790,12 +2801,8 @@ SpdyFrame* SpdyFramer::SerializePriority(const SpdyPriorityIR& priority) const {
   SpdyFrameBuilder builder(size, protocol_version());
   builder.BeginNewFrame(*this, PRIORITY, kNoFlags, priority.stream_id());
 
-  // Make sure the highest-order bit in the parent stream id is zeroed out.
-  uint32 parent_stream_id = priority.parent_stream_id() & 0x7fffffff;
-  uint32 exclusive = priority.exclusive() ? 0x80000000 : 0;
-  // Set the one-bit exclusivity flag.
-  uint32 flag_and_parent_id = parent_stream_id | exclusive;
-  builder.WriteUInt32(flag_and_parent_id);
+  builder.WriteUInt32(PackStreamDependencyValues(priority.exclusive(),
+                                                 priority.parent_stream_id()));
   builder.WriteUInt8(priority.weight());
   DCHECK_EQ(GetPrioritySize(), builder.length());
   return builder.take();

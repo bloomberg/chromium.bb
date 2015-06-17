@@ -845,11 +845,7 @@ class NET_EXPORT_PRIVATE SpdyGoAwayIR : public SpdyFrameIR {
 class NET_EXPORT_PRIVATE SpdyHeadersIR : public SpdyFrameWithNameValueBlockIR {
  public:
   explicit SpdyHeadersIR(SpdyStreamId stream_id)
-      : SpdyFrameWithNameValueBlockIR(stream_id),
-        has_priority_(false),
-        priority_(0),
-        padded_(false),
-        padding_payload_len_(0) {}
+      : SpdyFrameWithNameValueBlockIR(stream_id) {}
 
   void Visit(SpdyFrameVisitor* visitor) const override;
 
@@ -857,7 +853,10 @@ class NET_EXPORT_PRIVATE SpdyHeadersIR : public SpdyFrameWithNameValueBlockIR {
   void set_has_priority(bool has_priority) { has_priority_ = has_priority; }
   uint32 priority() const { return priority_; }
   void set_priority(SpdyPriority priority) { priority_ = priority; }
-
+  SpdyStreamId parent_stream_id() const { return parent_stream_id_; }
+  void set_parent_stream_id(SpdyStreamId id) { parent_stream_id_ = id; }
+  bool exclusive() const { return exclusive_; }
+  void set_exclusive(bool exclusive) { exclusive_ = exclusive; }
   bool padded() const { return padded_; }
   int padding_payload_len() const { return padding_payload_len_; }
   void set_padding_len(int padding_len) {
@@ -869,12 +868,13 @@ class NET_EXPORT_PRIVATE SpdyHeadersIR : public SpdyFrameWithNameValueBlockIR {
   }
 
  private:
-  bool has_priority_;
+  bool has_priority_ = false;
   // 31-bit priority.
-  uint32 priority_;
-
-  bool padded_;
-  int padding_payload_len_;
+  uint32 priority_ = 0;
+  SpdyStreamId parent_stream_id_ = 0;
+  bool exclusive_ = false;
+  bool padded_ = false;
+  int padding_payload_len_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(SpdyHeadersIR);
 };
