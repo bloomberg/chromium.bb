@@ -45,7 +45,6 @@ LT_PREREQ([2.2])
 LT_INIT
 
 PKG_PROG_PKG_CONFIG()
-PKG_CHECK_MODULES(FFI, [libffi])
 
 if test "x$GCC" = "xyes"; then
 	GCC_CFLAGS="-Wall -Wextra -Wno-unused-parameter -g -Wstrict-prototypes -Wmissing-prototypes -fvisibility=hidden"
@@ -82,6 +81,7 @@ AC_ARG_WITH(icondir, [  --with-icondir=<dir>    Look for cursor icons here],
 AC_SUBST([ICONDIR])
 
 if test "x$enable_libraries" = "xyes"; then
+	PKG_CHECK_MODULES(FFI, [libffi])
 	AC_CHECK_DECL(SFD_CLOEXEC,[],
 		      [AC_MSG_ERROR("SFD_CLOEXEC is needed to compile wayland libraries")],
 		      [[#include <sys/signalfd.h>]])
