@@ -76,6 +76,7 @@ StyledMarkupSerializer<Strategy>::StyledMarkupSerializer(EAbsoluteURLs shouldRes
     , m_shouldAnnotate(shouldAnnotate)
     , m_highestNodeToBeSerialized(highestNodeToBeSerialized)
     , m_convertBlocksToInlines(convertBlocksToInlines)
+    , m_lastClosed(highestNodeToBeSerialized)
 {
 }
 
@@ -117,7 +118,7 @@ static PassRefPtrWillBeRawPtr<EditingStyle> styleFromMatchedRulesAndInlineDecl(c
 template<typename Strategy>
 String StyledMarkupSerializer<Strategy>::createMarkup()
 {
-    StyledMarkupAccumulator markupAccumulator(m_shouldResolveURLs, toTextOffset(m_start.parentAnchoredEquivalent()), toTextOffset(m_end.parentAnchoredEquivalent()), m_start.document(), m_shouldAnnotate, m_highestNodeToBeSerialized.get());
+    StyledMarkupAccumulator markupAccumulator(m_shouldResolveURLs, toTextOffset(m_start.parentAnchoredEquivalent()), toTextOffset(m_end.parentAnchoredEquivalent()), m_start.document(), m_shouldAnnotate);
 
     Node* pastEnd = m_end.nodeAsRangePastLastNode();
 
@@ -172,7 +173,7 @@ String StyledMarkupSerializer<Strategy>::createMarkup()
                     markupAccumulator.wrapWithStyleNode(fullySelectedRootStyle->style());
                 }
             } else {
-                RefPtrWillBeRawPtr<EditingStyle> style = createInlineStyleIfNeeded(markupAccumulator, *ancestor);
+                RefPtrWillBeRawPtr<EditingStyle> style = createInlineStyleIfNeeded(*ancestor);
                 // Since this node and all the other ancestors are not in the selection we want
                 // styles that affect the exterior of the node not to be not included.
                 // If the node is not fully selected by the range, then we don't want to keep styles that affect its relationship to the nodes around it
@@ -197,16 +198,10 @@ String StyledMarkupSerializer<Strategy>::createMarkup()
 template<typename Strategy>
 Node* StyledMarkupSerializer<Strategy>::serializeNodes(Node* startNode, Node* pastEnd, StyledMarkupAccumulator* markupAccumulator)
 {
-    if (!markupAccumulator->highestNodeToBeSerialized()) {
-        Node* lastClosed = traverseNodesForSerialization(startNode, pastEnd, nullptr);
-        markupAccumulator->setHighestNodeToBeSerialized(lastClosed);
-    }
-
-    Node* highestNodeToBeSerialized = markupAccumulator->highestNodeToBeSerialized();
-    if (highestNodeToBeSerialized && Strategy::parent(*highestNodeToBeSerialized)) {
-        RefPtrWillBeRawPtr<EditingStyle> wrappingStyle = EditingStyle::wrappingStyleForSerialization(Strategy::parent(*highestNodeToBeSerialized), shouldAnnotate());
-        markupAccumulator->setWrappingStyle(wrappingStyle.release());
-    }
+    if (!m_lastClosed)
+        m_lastClosed = traverseNodesForSerialization(startNode, pastEnd, nullptr);
+    if (m_lastClosed && Strategy::parent(*m_lastClosed))
+        m_wrappingStyle = EditingStyle::wrappingStyleForSerialization(Strategy::parent(*m_lastClosed), shouldAnnotate());
     return traverseNodesForSerialization(startNode, pastEnd, markupAccumulator);
 }
 
@@ -285,7 +280,7 @@ Node* StyledMarkupSerializer<Strategy>::traverseNodesForSerialization(Node* star
             ASSERT(startNode);
             ASSERT(Strategy::isDescendantOf(*startNode, *parent));
             if (markupAccumulator) {
-                RefPtrWillBeRawPtr<EditingStyle> style = createInlineStyleIfNeeded(*markupAccumulator, *parent);
+                RefPtrWillBeRawPtr<EditingStyle> style = createInlineStyleIfNeeded(*parent);
                 wrapWithNode(*markupAccumulator, *parent, style);
             }
             lastClosed = parent;
@@ -317,7 +312,7 @@ void StyledMarkupSerializer<Strategy>::wrapWithNode(StyledMarkupAccumulator& acc
     if (!node.isElementNode())
         return;
     Element& element = toElement(node);
-    if (accumulator.shouldApplyWrappingStyle(element) || needsInlineStyle(element))
+    if (shouldApplyWrappingStyle(element) || needsInlineStyle(element))
         accumulator.appendElementWithInlineStyle(markup, element, style);
     else
         accumulator.appendElement(markup, element);
@@ -326,11 +321,11 @@ void StyledMarkupSerializer<Strategy>::wrapWithNode(StyledMarkupAccumulator& acc
 }
 
 template<typename Strategy>
-RefPtrWillBeRawPtr<EditingStyle> StyledMarkupSerializer<Strategy>::createInlineStyleIfNeeded(StyledMarkupAccumulator& accumulator, Node& node)
+RefPtrWillBeRawPtr<EditingStyle> StyledMarkupSerializer<Strategy>::createInlineStyleIfNeeded(Node& node)
 {
     if (!node.isElementNode())
         return nullptr;
-    RefPtrWillBeRawPtr<EditingStyle> inlineStyle = createInlineStyle(accumulator, toElement(node));
+    RefPtrWillBeRawPtr<EditingStyle> inlineStyle = createInlineStyle(toElement(node));
     if (convertBlocksToInlines() && isBlock(&node))
         inlineStyle->forceInline();
     return inlineStyle;
@@ -346,13 +341,26 @@ void StyledMarkupSerializer<Strategy>::appendStartMarkup(StyledMarkupAccumulator
             accumulator.appendText(text);
             break;
         }
-        accumulator.appendTextWithInlineStyle(text);
+        RefPtrWillBeRawPtr<EditingStyle> inlineStyle = nullptr;
+        if (shouldApplyWrappingStyle(text)) {
+            inlineStyle = m_wrappingStyle->copy();
+            // FIXME: <rdar://problem/5371536> Style rules that match pasted content can change it's appearance
+            // Make sure spans are inline style in paste side e.g. span { display: block }.
+            inlineStyle->forceInline();
+            // FIXME: Should this be included in forceInline?
+            inlineStyle->style()->setProperty(CSSPropertyFloat, CSSValueNone);
+        }
+        accumulator.appendTextWithInlineStyle(text, inlineStyle);
         break;
     }
     case Node::ELEMENT_NODE: {
         Element& element = toElement(node);
-        RefPtrWillBeRawPtr<EditingStyle> inlineStyle = createInlineStyle(accumulator, element);
-        accumulator.appendElement(element, inlineStyle);
+        if ((element.isHTMLElement() && shouldAnnotate()) || shouldApplyWrappingStyle(element)) {
+            RefPtrWillBeRawPtr<EditingStyle> inlineStyle = createInlineStyle(element);
+            accumulator.appendElementWithInlineStyle(element, inlineStyle);
+            break;
+        }
+        accumulator.appendElement(element);
         break;
     }
     default:
@@ -362,12 +370,19 @@ void StyledMarkupSerializer<Strategy>::appendStartMarkup(StyledMarkupAccumulator
 }
 
 template<typename Strategy>
-RefPtrWillBeRawPtr<EditingStyle> StyledMarkupSerializer<Strategy>::createInlineStyle(StyledMarkupAccumulator& accumulator, Element& element)
+bool StyledMarkupSerializer<Strategy>::shouldApplyWrappingStyle(const Node& node) const
+{
+    return m_lastClosed && Strategy::parent(*m_lastClosed) == Strategy::parent(node)
+        && m_wrappingStyle && m_wrappingStyle->style();
+}
+
+template<typename Strategy>
+RefPtrWillBeRawPtr<EditingStyle> StyledMarkupSerializer<Strategy>::createInlineStyle(Element& element)
 {
     RefPtrWillBeRawPtr<EditingStyle> inlineStyle = nullptr;
 
-    if (accumulator.shouldApplyWrappingStyle(element)) {
-        inlineStyle = accumulator.wrappingStyle()->copy();
+    if (shouldApplyWrappingStyle(element)) {
+        inlineStyle = m_wrappingStyle->copy();
         inlineStyle->removePropertiesInElementDefaultStyle(&element);
         inlineStyle->removeStyleConflictingWithStyleOfElement(&element);
     } else {

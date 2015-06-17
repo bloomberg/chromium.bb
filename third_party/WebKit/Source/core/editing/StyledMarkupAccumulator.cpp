@@ -51,13 +51,12 @@ size_t totalLength(const Vector<String>& strings)
 
 using namespace HTMLNames;
 
-StyledMarkupAccumulator::StyledMarkupAccumulator(EAbsoluteURLs shouldResolveURLs, const TextOffset& start, const TextOffset& end, const PassRefPtrWillBeRawPtr<Document> document, EAnnotateForInterchange shouldAnnotate, Node* highestNodeToBeSerialized)
+StyledMarkupAccumulator::StyledMarkupAccumulator(EAbsoluteURLs shouldResolveURLs, const TextOffset& start, const TextOffset& end, const PassRefPtrWillBeRawPtr<Document> document, EAnnotateForInterchange shouldAnnotate)
     : m_formatter(shouldResolveURLs)
     , m_start(start)
     , m_end(end)
     , m_document(document)
     , m_shouldAnnotate(shouldAnnotate)
-    , m_highestNodeToBeSerialized(highestNodeToBeSerialized)
 {
 }
 
@@ -94,26 +93,17 @@ void StyledMarkupAccumulator::appendText(Text& text)
     MarkupFormatter::appendCharactersReplacingEntities(m_result, str, start, length, m_formatter.entityMaskForText(text));
 }
 
-void StyledMarkupAccumulator::appendTextWithInlineStyle(Text& text)
+void StyledMarkupAccumulator::appendTextWithInlineStyle(Text& text, PassRefPtrWillBeRawPtr<EditingStyle> inlineStyle)
 {
-    const bool wrappingSpan = shouldApplyWrappingStyle(text);
-    if (wrappingSpan) {
-        RefPtrWillBeRawPtr<EditingStyle> wrappingStyle = m_wrappingStyle->copy();
-        // FIXME: <rdar://problem/5371536> Style rules that match pasted content can change it's appearance
-        // Make sure spans are inline style in paste side e.g. span { display: block }.
-        wrappingStyle->forceInline();
-        // FIXME: Should this be included in forceInline?
-        wrappingStyle->style()->setProperty(CSSPropertyFloat, CSSValueNone);
-
+    if (inlineStyle) {
         // wrappingStyleForSerialization should have removed -webkit-text-decorations-in-effect
-        ASSERT(propertyMissingOrEqualToNone(wrappingStyle->style(), CSSPropertyWebkitTextDecorationsInEffect));
+        ASSERT(propertyMissingOrEqualToNone(inlineStyle->style(), CSSPropertyWebkitTextDecorationsInEffect));
         ASSERT(m_document);
 
         m_result.appendLiteral("<span style=\"");
-        MarkupFormatter::appendAttributeValue(m_result, wrappingStyle->style()->asText(), m_document->isHTMLDocument());
+        MarkupFormatter::appendAttributeValue(m_result, inlineStyle->style()->asText(), m_document->isHTMLDocument());
         m_result.appendLiteral("\">");
     }
-
     if (!shouldAnnotate()) {
         appendText(text);
     } else {
@@ -123,18 +113,13 @@ void StyledMarkupAccumulator::appendTextWithInlineStyle(Text& text)
         MarkupFormatter::appendCharactersReplacingEntities(buffer, content, 0, content.length(), EntityMaskInPCDATA);
         m_result.append(convertHTMLTextToInterchangeFormat(buffer.toString(), text));
     }
-
-    if (wrappingSpan)
+    if (inlineStyle)
         m_result.append("</span>");
 }
 
-void StyledMarkupAccumulator::appendElement(const Element& element, PassRefPtrWillBeRawPtr<EditingStyle> style)
+void StyledMarkupAccumulator::appendElementWithInlineStyle(const Element& element, PassRefPtrWillBeRawPtr<EditingStyle> style)
 {
-    if ((element.isHTMLElement() && shouldAnnotate()) || shouldApplyWrappingStyle(element)) {
-        appendElementWithInlineStyle(m_result, element, style);
-        return;
-    }
-    appendElement(m_result, element);
+    appendElementWithInlineStyle(m_result, element, style);
 }
 
 void StyledMarkupAccumulator::appendElementWithInlineStyle(StringBuilder& out, const Element& element, PassRefPtrWillBeRawPtr<EditingStyle> style)
@@ -154,6 +139,11 @@ void StyledMarkupAccumulator::appendElementWithInlineStyle(StringBuilder& out, c
         out.append('\"');
     }
     m_formatter.appendCloseTag(out, element);
+}
+
+void StyledMarkupAccumulator::appendElement(const Element& element)
+{
+    appendElement(m_result, element);
 }
 
 void StyledMarkupAccumulator::appendElement(StringBuilder& out, const Element& element)
@@ -216,13 +206,6 @@ String StyledMarkupAccumulator::stringValueForRange(const Text& node)
     if (m_end.text() == node)
         str.remove(0, m_start.offset());
     return str;
-}
-
-bool StyledMarkupAccumulator::shouldApplyWrappingStyle(const Node& node) const
-{
-    // TODO(hajimehoshi): Use Strategy
-    return m_highestNodeToBeSerialized && m_highestNodeToBeSerialized->parentNode() == node.parentNode()
-        && m_wrappingStyle && m_wrappingStyle->style();
 }
 
 bool StyledMarkupAccumulator::shouldAnnotate() const

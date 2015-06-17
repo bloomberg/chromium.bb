@@ -55,10 +55,11 @@ private:
     Node* serializeNodes(Node* startNode, Node* pastEnd, StyledMarkupAccumulator*);
     Node* traverseNodesForSerialization(Node* startNode, Node* pastEnd, StyledMarkupAccumulator*);
     void wrapWithNode(StyledMarkupAccumulator&, ContainerNode&, PassRefPtrWillBeRawPtr<EditingStyle>);
-    RefPtrWillBeRawPtr<EditingStyle> createInlineStyle(StyledMarkupAccumulator&, Element&);
-    RefPtrWillBeRawPtr<EditingStyle> createInlineStyleIfNeeded(StyledMarkupAccumulator&, Node&);
+    RefPtrWillBeRawPtr<EditingStyle> createInlineStyle(Element&);
+    RefPtrWillBeRawPtr<EditingStyle> createInlineStyleIfNeeded(Node&);
     bool needsInlineStyle(const Element&);
     void appendStartMarkup(StyledMarkupAccumulator&, Node&);
+    bool shouldApplyWrappingStyle(const Node&) const;
 
     const PositionType m_start;
     const PositionType m_end;
@@ -66,6 +67,8 @@ private:
     const EAnnotateForInterchange m_shouldAnnotate;
     const RefPtrWillBeMember<Node> m_highestNodeToBeSerialized;
     const ConvertBlocksToInlines m_convertBlocksToInlines;
+    RawPtrWillBeMember<Node> m_lastClosed;
+    RefPtrWillBeMember<EditingStyle> m_wrappingStyle;
 };
 
 extern template class StyledMarkupSerializer<EditingStrategy>;

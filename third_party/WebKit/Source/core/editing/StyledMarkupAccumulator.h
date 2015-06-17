@@ -44,32 +44,24 @@ class StyledMarkupAccumulator final {
     WTF_MAKE_NONCOPYABLE(StyledMarkupAccumulator);
     STACK_ALLOCATED();
 public:
-    StyledMarkupAccumulator(EAbsoluteURLs, const TextOffset& start, const TextOffset& end, const PassRefPtrWillBeRawPtr<Document>, EAnnotateForInterchange, Node*);
+    StyledMarkupAccumulator(EAbsoluteURLs, const TextOffset& start, const TextOffset& end, const PassRefPtrWillBeRawPtr<Document>, EAnnotateForInterchange);
 
     void appendEndTag(const Element&);
     void appendInterchangeNewline();
 
     void appendText(Text&);
-    void appendTextWithInlineStyle(Text&);
-
-    // TODO(hajimehoshi): These functions are called from the serializer, but
-    // should not.
-    Node* highestNodeToBeSerialized() { return m_highestNodeToBeSerialized.get(); }
-    void setHighestNodeToBeSerialized(Node* highestNodeToBeSerialized) { m_highestNodeToBeSerialized = highestNodeToBeSerialized; }
-    EditingStyle* wrappingStyle() const { return m_wrappingStyle.get(); }
-    void setWrappingStyle(PassRefPtrWillBeRawPtr<EditingStyle> wrappingStyle) { m_wrappingStyle = wrappingStyle; }
+    void appendTextWithInlineStyle(Text&, PassRefPtrWillBeRawPtr<EditingStyle>);
 
     void wrapWithStyleNode(StylePropertySet*);
     String takeResults();
 
     void pushMarkup(const String&);
 
-    void appendElement(const Element&, PassRefPtrWillBeRawPtr<EditingStyle>);
+    void appendElement(const Element&);
     void appendElement(StringBuilder&, const Element&);
+    void appendElementWithInlineStyle(const Element&, PassRefPtrWillBeRawPtr<EditingStyle>);
     void appendElementWithInlineStyle(StringBuilder&, const Element&, PassRefPtrWillBeRawPtr<EditingStyle>);
     void appendStartMarkup(Node&);
-
-    bool shouldApplyWrappingStyle(const Node&) const;
 
 private:
     String renderedText(Text&);
@@ -83,8 +75,6 @@ private:
     const TextOffset m_end;
     const RefPtrWillBeMember<Document> m_document;
     const EAnnotateForInterchange m_shouldAnnotate;
-    RawPtrWillBeMember<Node> m_highestNodeToBeSerialized;
-    RefPtrWillBeMember<EditingStyle> m_wrappingStyle;
     StringBuilder m_result;
     Vector<String> m_reversedPrecedingMarkup;
 };
