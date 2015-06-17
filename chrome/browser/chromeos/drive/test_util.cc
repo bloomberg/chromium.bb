@@ -7,7 +7,7 @@
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/testing_pref_service.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
-#include "chrome/common/pref_names.h"
+#include "chrome/browser/chromeos/drive/drive_pref_names.h"
 
 namespace drive {
 namespace test_util {

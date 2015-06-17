@@ -42,6 +42,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/drive/drive_pref_names.h"
 #include "chrome/browser/chromeos/policy/configuration_policy_handler_chromeos.h"
 #include "chromeos/chromeos_pref_names.h"
 #include "chromeos/dbus/power_policy_controller.h"
@@ -381,10 +382,10 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kChromeOsReleaseChannel,
     base::Value::TYPE_STRING },
   { key::kDriveDisabled,
-    prefs::kDisableDrive,
+    drive::prefs::kDisableDrive,
     base::Value::TYPE_BOOLEAN },
   { key::kDriveDisabledOverCellular,
-    prefs::kDisableDriveOverCellular,
+    drive::prefs::kDisableDriveOverCellular,
     base::Value::TYPE_BOOLEAN },
   { key::kExternalStorageDisabled,
     prefs::kExternalStorageDisabled,

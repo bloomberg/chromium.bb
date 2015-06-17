@@ -110,6 +110,8 @@
         'browser/chromeos/drive/drive_file_stream_reader.h',
         'browser/chromeos/drive/drive_integration_service.cc',
         'browser/chromeos/drive/drive_integration_service.h',
+        'browser/chromeos/drive/drive_pref_names.cc',
+        'browser/chromeos/drive/drive_pref_names.h',
         'browser/chromeos/drive/file_cache.cc',
         'browser/chromeos/drive/file_cache.h',
         'browser/chromeos/drive/file_change.cc',

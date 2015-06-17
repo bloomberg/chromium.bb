@@ -15,6 +15,7 @@
 #include "base/values.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
+#include "chrome/browser/chromeos/drive/drive_pref_names.h"
 #include "chrome/browser/chromeos/drive/file_change.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
@@ -435,9 +436,10 @@ void EventRouter::ObserveEvents() {
   base::Closure callback =
       base::Bind(&EventRouter::OnFileManagerPrefsChanged,
                  weak_factory_.GetWeakPtr());
-  pref_change_registrar_->Add(prefs::kDisableDriveOverCellular, callback);
-  pref_change_registrar_->Add(prefs::kDisableDriveHostedFiles, callback);
-  pref_change_registrar_->Add(prefs::kDisableDrive, callback);
+  pref_change_registrar_->Add(drive::prefs::kDisableDriveOverCellular,
+                              callback);
+  pref_change_registrar_->Add(drive::prefs::kDisableDriveHostedFiles, callback);
+  pref_change_registrar_->Add(drive::prefs::kDisableDrive, callback);
   pref_change_registrar_->Add(prefs::kSearchSuggestEnabled, callback);
   pref_change_registrar_->Add(prefs::kUse24HourClock, callback);
 }

@@ -13,8 +13,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
+#include "chrome/browser/chromeos/drive/drive_pref_names.h"
 #include "chrome/browser/drive/event_logger.h"
-#include "chrome/common/pref_names.h"
 #include "google_apis/drive/drive_api_parser.h"
 
 namespace drive {

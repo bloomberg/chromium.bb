@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_value_map.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/drive/drive_pref_names.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/policy/policy_path_parser.h"
 #include "chrome/common/pref_names.h"
@@ -108,7 +109,7 @@ void DownloadDirPolicyHandler::ApplyPolicySettingsWithParameters(
                     new base::FundamentalValue(false));
 #if defined(OS_CHROMEOS)
     if (download_to_drive) {
-      prefs->SetValue(prefs::kDisableDrive,
+      prefs->SetValue(drive::prefs::kDisableDrive,
                       new base::FundamentalValue(false));
     }
 #endif

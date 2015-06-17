@@ -7,6 +7,7 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/drive/drive_pref_names.h"
 #include "chrome/browser/download/download_dir_policy_handler.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/common/pref_names.h"
@@ -106,7 +107,7 @@ TEST_F(DownloadDirPolicyHandlerTest, SetDownloadToDrive) {
   EXPECT_FALSE(prompt_for_download);
 
   bool disable_drive;
-  EXPECT_TRUE(store_->GetValue(prefs::kDisableDrive, &value));
+  EXPECT_TRUE(store_->GetValue(drive::prefs::kDisableDrive, &value));
   EXPECT_TRUE(value);
   EXPECT_TRUE(value->GetAsBoolean(&disable_drive));
   EXPECT_FALSE(disable_drive);
@@ -123,7 +124,7 @@ TEST_F(DownloadDirPolicyHandlerTest, SetDownloadToDrive) {
              new base::StringValue(kUserIDHash),
              NULL);
   UpdateProviderPolicy(policy);
-  EXPECT_FALSE(recommended_store_->GetValue(prefs::kDisableDrive, NULL));
+  EXPECT_FALSE(recommended_store_->GetValue(drive::prefs::kDisableDrive, NULL));
 
   policy.Set(policy::key::kDownloadDirectory,
              policy::POLICY_LEVEL_RECOMMENDED,
@@ -134,7 +135,7 @@ TEST_F(DownloadDirPolicyHandlerTest, SetDownloadToDrive) {
   UpdateProviderPolicy(policy);
 
   EXPECT_FALSE(recommended_store_->GetValue(prefs::kPromptForDownload, NULL));
-  EXPECT_FALSE(recommended_store_->GetValue(prefs::kDisableDrive, NULL));
+  EXPECT_FALSE(recommended_store_->GetValue(drive::prefs::kDisableDrive, NULL));
 
   EXPECT_TRUE(
       recommended_store_->GetValue(prefs::kDownloadDefaultDirectory, &value));
@@ -151,7 +152,7 @@ TEST_F(DownloadDirPolicyHandlerTest, SetDownloadToDrive) {
   UpdateProviderPolicy(policy);
 
   EXPECT_FALSE(recommended_store_->GetValue(prefs::kPromptForDownload, NULL));
-  EXPECT_FALSE(recommended_store_->GetValue(prefs::kDisableDrive, NULL));
+  EXPECT_FALSE(recommended_store_->GetValue(drive::prefs::kDisableDrive, NULL));
 
   EXPECT_TRUE(
       recommended_store_->GetValue(prefs::kDownloadDefaultDirectory, &value));

@@ -13,6 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/drive/drive_pref_names.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
@@ -114,9 +115,9 @@ bool FileManagerPrivateGetPreferencesFunction::RunSync() {
 
   result.drive_enabled = drive::util::IsDriveEnabledForProfile(GetProfile());
   result.cellular_disabled =
-      service->GetBoolean(prefs::kDisableDriveOverCellular);
+      service->GetBoolean(drive::prefs::kDisableDriveOverCellular);
   result.hosted_files_disabled =
-      service->GetBoolean(prefs::kDisableDriveHostedFiles);
+      service->GetBoolean(drive::prefs::kDisableDriveHostedFiles);
   result.search_suggest_enabled =
       service->GetBoolean(prefs::kSearchSuggestEnabled);
   result.use24hour_clock = service->GetBoolean(prefs::kUse24HourClock);
@@ -143,11 +144,11 @@ bool FileManagerPrivateSetPreferencesFunction::RunSync() {
   PrefService* const service = GetProfile()->GetPrefs();
 
   if (params->change_info.cellular_disabled)
-    service->SetBoolean(prefs::kDisableDriveOverCellular,
+    service->SetBoolean(drive::prefs::kDisableDriveOverCellular,
                         *params->change_info.cellular_disabled);
 
   if (params->change_info.hosted_files_disabled)
-    service->SetBoolean(prefs::kDisableDriveHostedFiles,
+    service->SetBoolean(drive::prefs::kDisableDriveHostedFiles,
                         *params->change_info.hosted_files_disabled);
 
   drive::EventLogger* logger = file_manager::util::GetLogger(GetProfile());

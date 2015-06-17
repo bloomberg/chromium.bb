@@ -182,9 +182,6 @@ extern const char kMouseSensitivity[];
 extern const char kTouchpadSensitivity[];
 extern const char kUse24HourClock[];
 extern const char kResolveTimezoneByGeolocation[];
-extern const char kDisableDrive[];
-extern const char kDisableDriveOverCellular[];
-extern const char kDisableDriveHostedFiles[];
 // TODO(yusukes): Change "kLanguageABC" to "kABC". The current form is too long
 // to remember and confusing. The prefs are actually for input methods and i18n
 // keyboards, not UI languages.

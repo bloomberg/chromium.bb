@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/drive/debug_info_collector.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
+#include "chrome/browser/chromeos/drive/drive_pref_names.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_list.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
@@ -455,9 +456,9 @@ void DriveInternalsWebUIHandler::UpdateDriveRelatedPreferencesSection() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   const char* kDriveRelatedPreferences[] = {
-    prefs::kDisableDrive,
-    prefs::kDisableDriveOverCellular,
-    prefs::kDisableDriveHostedFiles,
+      drive::prefs::kDisableDrive,
+      drive::prefs::kDisableDriveOverCellular,
+      drive::prefs::kDisableDriveHostedFiles,
   };
 
   Profile* profile = Profile::FromWebUI(web_ui());

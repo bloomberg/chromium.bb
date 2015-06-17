@@ -472,18 +472,6 @@ const char kUse24HourClock[] = "settings.clock.use_24hour_clock";
 const char kResolveTimezoneByGeolocation[] =
     "settings.resolve_timezone_by_geolocation";
 
-// A boolean pref to disable Google Drive integration.
-// The pref prefix should remain as "gdata" for backward compatibility.
-const char kDisableDrive[] = "gdata.disabled";
-
-// A boolean pref to disable Drive over cellular connections.
-// The pref prefix should remain as "gdata" for backward compatibility.
-const char kDisableDriveOverCellular[] = "gdata.cellular.disabled";
-
-// A boolean pref to disable hosted files on Drive.
-// The pref prefix should remain as "gdata" for backward compatibility.
-const char kDisableDriveHostedFiles[] = "gdata.hosted_files.disabled";
-
 // A string pref set to the current input method.
 const char kLanguageCurrentInputMethod[] =
     "settings.language.current_input_method";

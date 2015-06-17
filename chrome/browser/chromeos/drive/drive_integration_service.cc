@@ -14,6 +14,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/drive/debug_info_collector.h"
 #include "chrome/browser/chromeos/drive/download_handler.h"
+#include "chrome/browser/chromeos/drive/drive_pref_names.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
@@ -554,9 +555,9 @@ void DriveIntegrationService::InitializeAfterMetadataInitialized(
 void DriveIntegrationService::AvoidDriveAsDownloadDirecotryPreference() {
   PrefService* pref_service = profile_->GetPrefs();
   if (util::IsUnderDriveMountPoint(
-          pref_service->GetFilePath(prefs::kDownloadDefaultDirectory))) {
+          pref_service->GetFilePath(::prefs::kDownloadDefaultDirectory))) {
     pref_service->SetFilePath(
-        prefs::kDownloadDefaultDirectory,
+        ::prefs::kDownloadDefaultDirectory,
         file_manager::util::GetDownloadsFolderForProfile(profile_));
   }
 }
