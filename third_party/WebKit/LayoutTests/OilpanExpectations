@@ -50,3 +50,5 @@ crbug.com/456357 [ Mac Debug ] virtual/slimmingpaint/fast/overflow/line-clamp.ht
 crbug.com/344239 inspector-protocol/heap-profiler/heap-objects-tracking.html [ Pass Timeout ]
 
 crbug.com/356742 [ Win ] svg/as-image/animated-svg-animation-control.html
+
+crbug.com/501229 fast/forms/associatedFormControls-leak-nodes.html [ Failure ]
