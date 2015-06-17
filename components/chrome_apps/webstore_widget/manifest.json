@@ -19,7 +19,7 @@
     "background": {
       "scripts": ["app/background.js"]
     },
-    "content_security_policy": "style-src 'self' chrome://resources; img-src 'self' chrome://theme chrome://resources;"
+    "content_security_policy": "style-src 'self' blob: filesystem: chrome://resources; img-src 'self' blob: filesystem: chrome://theme chrome://resources;"
   },
 
   "permissions": [

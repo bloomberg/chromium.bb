@@ -5,7 +5,7 @@
   "description": "Chrome OS Help",
   "default_locale": "en",
   "manifest_version": 2,
-  "content_security_policy": "default-src 'self'; img-src 'self' data:;",
+  "content_security_policy": "default-src 'self' blob: filesystem:; img-src 'self' blob: filesystem: data:;",
   "background": {
     "scripts": [
       "js/background-bundle.js"

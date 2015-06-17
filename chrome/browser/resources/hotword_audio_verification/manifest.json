@@ -14,7 +14,7 @@
       "scripts": ["event_page.js"],
       "persistent": false
     },
-    "content_security_policy": "default-src 'self'; script-src 'self' chrome://resources chrome://settings; style-src 'self' chrome://resources"
+    "content_security_policy": "default-src 'self' blob: filesystem:; script-src 'self' blob: filesystem: chrome://resources chrome://settings; style-src 'self' blob: filesystem: chrome://resources"
   },
   "permissions": [
     "chrome://resources/",

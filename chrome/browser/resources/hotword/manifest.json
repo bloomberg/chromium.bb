@@ -83,6 +83,6 @@
     }
   ],
 
-  "content_security_policy": "object-src 'none'; script-src chrome://resources 'self'",
+  "content_security_policy": "object-src 'none'; script-src chrome://resources 'self' blob: filesystem:",
   "minimum_chrome_version": "38"
 }

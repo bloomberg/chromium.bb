@@ -66,6 +66,6 @@
         "js/background.js"
       ]
     },
-    "content_security_policy": "default-src 'none'; script-src 'self' chrome://resources chrome-extension://boadgeojelhgndaghljhdicfkmllpafd chrome-extension://dliochdbjfkdbacpmhlcpmleaejidimm chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj chrome-extension://fmfcbgogabcbclcofgocippekhfcmgfj chrome-extension://enhhojjnijigcajfphajepfemndkmdlo; style-src 'self' chrome://resources 'unsafe-inline'; img-src 'self' chrome://theme chrome://resources data: https://www.googledrive.com; media-src 'self'; object-src 'self'"
+    "content_security_policy": "default-src 'none'; script-src 'self' blob: filesystem: chrome://resources chrome-extension://boadgeojelhgndaghljhdicfkmllpafd chrome-extension://dliochdbjfkdbacpmhlcpmleaejidimm chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj chrome-extension://fmfcbgogabcbclcofgocippekhfcmgfj chrome-extension://enhhojjnijigcajfphajepfemndkmdlo; style-src 'self' blob: filesystem: chrome://resources 'unsafe-inline'; img-src 'self' blob: filesystem: chrome://theme chrome://resources data: https://www.googledrive.com; media-src 'self' blob: filesystem:; object-src 'self' blob: filesystem:"
   }
 }

@@ -10,5 +10,5 @@
     "networkingPrivate",
     "chrome://resources/*"
   ],
-  "content_security_policy": "default-src 'none'; script-src 'self' chrome://resources ; style-src 'self' chrome://resources;"
+  "content_security_policy": "default-src 'none'; script-src 'self' blob: filesystem: chrome://resources ; style-src 'self' blob: filesystem: chrome://resources;"
 }

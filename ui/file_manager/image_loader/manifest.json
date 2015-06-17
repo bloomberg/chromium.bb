@@ -16,7 +16,7 @@
     "metricsPrivate",
     "storage"
   ],
-  "content_security_policy": "default-src 'none'; script-src 'self' chrome://resources chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj; style-src 'self'; frame-src 'self'; img-src 'self' data:; media-src 'self'; connect-src 'self' https://www.googledrive.com",
+  "content_security_policy": "default-src 'none'; script-src 'self' blob: filesystem: chrome://resources chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj; style-src 'self' blob: filesystem:; frame-src 'self' blob: filesystem:; img-src 'self' blob: filesystem: data:; media-src 'self' blob: filesystem:; connect-src 'self' blob: filesystem: https://www.googledrive.com",
   "background": {
     "scripts": [
       "chrome://resources/js/assert.js",

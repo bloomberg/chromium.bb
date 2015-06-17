@@ -25,7 +25,7 @@
       "all_frames": true
     }
   ],
-  "content_security_policy": "default-src 'self'; script-src 'self'; frame-src 'self' http: https:; style-src 'self'",
+  "content_security_policy": "default-src 'self' blob: filesystem:; script-src 'self' blob: filesystem:; frame-src 'self' blob: filesystem: http: https:; style-src 'self' blob: filesystem:",
   "description": "GAIA Component Extension",
   "incognito": "split",
   "web_accessible_resources": [

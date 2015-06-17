@@ -5,7 +5,7 @@
   "version": "1.0.0",
   "description": "Chrome Goodies",
   "manifest_version": 2,
-  "content_security_policy": "default-src 'self'; connect-src 'self' https://chromeos-registration.googleapis.com https://www.google-analytics.com",
+  "content_security_policy": "default-src 'self' blob: filesystem:; connect-src 'self' blob: filesystem: https://chromeos-registration.googleapis.com https://www.google-analytics.com",
   "permissions": [
       "alarms",
       "cookies",
