@@ -206,28 +206,10 @@ void HeapObjectHeader::zapMagic()
 void HeapObjectHeader::finalize(Address object, size_t objectSize)
 {
     const GCInfo* gcInfo = Heap::gcInfo(gcInfoIndex());
-    if (gcInfo->hasFinalizer()) {
+    if (gcInfo->hasFinalizer())
         gcInfo->m_finalize(object);
-    }
 
     ASAN_RETIRE_CONTAINER_ANNOTATION(object, objectSize);
-
-#if ENABLE(ASSERT) || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER)
-    // In Debug builds, memory is zapped when it's freed, and the zapped memory
-    // is zeroed out when the memory is reused.  Memory is also zapped when
-    // using Leak Sanitizer because the heap is used as a root region for LSan
-    // and therefore pointers in unreachable memory could hide leaks.
-    for (size_t i = 0; i < objectSize; ++i)
-        object[i] = finalizedZapValue;
-
-    // Zap the primary vTable entry (secondary vTable entries are not zapped).
-    if (gcInfo->hasVTable()) {
-        *(reinterpret_cast<uintptr_t*>(object)) = zappedVTable;
-    }
-#endif
-    // In Release builds, the entire object is zeroed out when it is added to
-    // the free list.  This happens right after sweeping the page and before the
-    // thread commences execution.
 }
 
 BaseHeap::BaseHeap(ThreadState* state, int index)
@@ -582,6 +564,7 @@ void NormalPageHeap::snapshotFreeList(TracedValue& json)
 }
 #endif
 
+NO_SANITIZE_ADDRESS
 void NormalPageHeap::allocatePage()
 {
     threadState()->shouldFlushHeapDoesNotContainCache();
@@ -617,6 +600,13 @@ void NormalPageHeap::allocatePage()
     page->link(&m_firstPage);
 
     Heap::increaseAllocatedSpace(page->size());
+#if ENABLE(ASSERT) || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER)
+    // Allow the following addToFreeList() to add the newly allocated memory
+    // to the free list.
+    Address address = page->payload();
+    for (size_t i = 0; i < page->payloadSize(); i++)
+        address[i] = reuseAllowedZapValue;
+#endif
     addToFreeList(page->payload(), page->payloadSize());
 }
 
@@ -1055,6 +1045,7 @@ FreeList::FreeList()
 {
 }
 
+NO_SANITIZE_ADDRESS
 void FreeList::addToFreeList(Address address, size_t size)
 {
     ASSERT(size < blinkPagePayloadSize());
@@ -1073,21 +1064,66 @@ void FreeList::addToFreeList(Address address, size_t size)
         return;
     }
     entry = new (NotNull, address) FreeListEntry(size);
-#if defined(ADDRESS_SANITIZER)
-    BasePage* page = pageFromObject(address);
-    ASSERT(!page->isLargeObjectPage());
-    // For ASan we don't add the entry to the free lists until the
-    // asanDeferMemoryReuseCount reaches zero.  However we always add entire
-    // pages to ensure that adding a new page will increase the allocation
-    // space.
-    if (static_cast<NormalPage*>(page)->payloadSize() != size && !entry->shouldAddToFreeList())
+
+#if ENABLE(ASSERT) || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER)
+    // The following logic delays reusing free lists for (at least) one GC
+    // cycle or coalescing. This is helpful to detect use-after-free errors
+    // that could be caused by lazy sweeping etc.
+    size_t allowedCount = 0;
+    size_t forbiddenCount = 0;
+    for (size_t i = sizeof(FreeListEntry); i < size; i++) {
+        if (address[i] == reuseAllowedZapValue) {
+            allowedCount++;
+        } else if (address[i] == reuseForbiddenZapValue) {
+            forbiddenCount++;
+        } else {
+            ASSERT_NOT_REACHED();
+        }
+    }
+    size_t entryCount = size - sizeof(FreeListEntry);
+    if (forbiddenCount == entryCount) {
+        // If all values in the memory region are reuseForbiddenZapValue,
+        // we flip them to reuseAllowedZapValue. This allows the next
+        // addToFreeList() to add the memory region to the free list
+        // (unless someone concatenates the memory region with another memory
+        // region that contains reuseForbiddenZapValue.)
+        for (size_t i = sizeof(FreeListEntry); i < size; i++)
+            address[i] = reuseAllowedZapValue;
+        // Don't add the memory region to the free list in this addToFreeList().
         return;
+    }
+    if (allowedCount != entryCount) {
+        // If the memory region mixes reuseForbiddenZapValue and
+        // reuseAllowedZapValue, we (conservatively) flip all the values
+        // to reuseForbiddenZapValue. These values will be changed to
+        // reuseAllowedZapValue in the next addToFreeList().
+        for (size_t i = sizeof(FreeListEntry); i < size; i++)
+            address[i] = reuseForbiddenZapValue;
+        // Don't add the memory region to the free list in this addToFreeList().
+        return;
+    }
+    // We reach here only when all the values in the memory region are
+    // reuseAllowedZapValue. In this case, we are allowed to add the memory
+    // region to the free list and reuse it for another object.
 #endif
+
     int index = bucketIndexForSize(size);
     entry->link(&m_freeLists[index]);
     if (index > m_biggestFreeListIndex)
         m_biggestFreeListIndex = index;
 }
+
+#if ENABLE(ASSERT) || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER)
+NO_SANITIZE_ADDRESS
+void FreeList::zapFreedMemory(Address address, size_t size)
+{
+    for (size_t i = 0; i < size; i++) {
+        // See the comment in addToFreeList().
+        if (address[i] != reuseAllowedZapValue)
+            address[i] = reuseForbiddenZapValue;
+    }
+}
+#endif
 
 void FreeList::clear()
 {
