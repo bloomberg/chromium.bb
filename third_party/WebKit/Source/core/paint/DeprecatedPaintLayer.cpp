@@ -395,20 +395,10 @@ DeprecatedPaintLayer* DeprecatedPaintLayer::renderingContextRoot()
     return renderingContext;
 }
 
-TransformationMatrix DeprecatedPaintLayer::currentTransform(ComputedStyle::ApplyTransformOrigin applyOrigin) const
+TransformationMatrix DeprecatedPaintLayer::currentTransform() const
 {
     if (!m_transform)
         return TransformationMatrix();
-
-    // m_transform includes transform-origin, so we need to recompute the transform here.
-    if (applyOrigin == ComputedStyle::ExcludeTransformOrigin) {
-        LayoutBox* box = layoutBox();
-        TransformationMatrix currTransform;
-        box->style()->applyTransform(currTransform, LayoutSize(box->pixelSnappedSize()), ComputedStyle::ExcludeTransformOrigin);
-        makeMatrixRenderable(currTransform, compositor()->hasAcceleratedCompositing());
-        return currTransform;
-    }
-
     return *m_transform;
 }
 
