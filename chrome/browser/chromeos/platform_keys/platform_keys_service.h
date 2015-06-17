@@ -74,7 +74,10 @@ class PlatformKeysService : public KeyedService {
   // Stores registration information in |state_store|, i.e. for each extension
   // the list of public keys that are valid to be used for signing. See
   // |KeyPermissions| for details.
-  explicit PlatformKeysService(content::BrowserContext* browser_context,
+  // |browser_context| and |state_store| must not be null and outlive this
+  // object.
+  explicit PlatformKeysService(bool profile_is_managed,
+                               content::BrowserContext* browser_context,
                                extensions::StateStore* state_store);
 
   ~PlatformKeysService() override;

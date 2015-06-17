@@ -385,28 +385,36 @@ class PlatformKeysService::SelectTask : public Task {
       return;
     }
 
-    // If the type field does not contain any entries, certificates of all types
-    // shall be returned.
-    if (request_.certificate_key_types.size() == 0) {
-      matches_.swap(*matches);
-      DoStep();
-      return;
-    }
-
-    // Filter the retrieved certificates returning only those whose type is
-    // equal to one of the entries in the type field of the certificate request.
     for (scoped_refptr<net::X509Certificate>& certificate : *matches) {
-      net::X509Certificate::PublicKeyType actual_key_type =
-          net::X509Certificate::kPublicKeyTypeUnknown;
-      size_t unused_key_size = 0;
-      net::X509Certificate::GetPublicKeyInfo(
-          certificate->os_cert_handle(), &unused_key_size, &actual_key_type);
-      const std::vector<net::X509Certificate::PublicKeyType>& accepted_types =
-          request_.certificate_key_types;
-      if (std::find(accepted_types.begin(), accepted_types.end(),
-                    actual_key_type) != accepted_types.end()) {
-        matches_.push_back(certificate.Pass());
+      const std::string public_key_spki_der(
+          platform_keys::GetSubjectPublicKeyInfo(certificate));
+      // Skip this key if the user cannot grant any permission for it, except if
+      // this extension can already use it for signing.
+      if (!key_permissions_->CanUserGrantPermissionFor(public_key_spki_der) &&
+          !extension_permissions_->CanUseKeyForSigning(public_key_spki_der)) {
+        continue;
       }
+
+      // Filter the retrieved certificates returning only those whose type is
+      // equal to one of the entries in the type field of the certificate
+      // request.
+      // If the type field does not contain any entries, certificates of all
+      // types shall be returned.
+      if (!request_.certificate_key_types.empty()) {
+        net::X509Certificate::PublicKeyType actual_key_type =
+            net::X509Certificate::kPublicKeyTypeUnknown;
+        size_t unused_key_size = 0;
+        net::X509Certificate::GetPublicKeyInfo(
+            certificate->os_cert_handle(), &unused_key_size, &actual_key_type);
+        const std::vector<net::X509Certificate::PublicKeyType>& accepted_types =
+            request_.certificate_key_types;
+        if (std::find(accepted_types.begin(), accepted_types.end(),
+                      actual_key_type) == accepted_types.end()) {
+          continue;
+        }
+      }
+
+      matches_.push_back(certificate.Pass());
     }
     DoStep();
   }
@@ -503,11 +511,13 @@ PlatformKeysService::SelectDelegate::~SelectDelegate() {
 }
 
 PlatformKeysService::PlatformKeysService(
+    bool profile_is_managed,
     content::BrowserContext* browser_context,
     extensions::StateStore* state_store)
     : browser_context_(browser_context),
-      key_permissions_(state_store),
+      key_permissions_(profile_is_managed, state_store),
       weak_factory_(this) {
+  DCHECK(browser_context);
   DCHECK(state_store);
 }
 

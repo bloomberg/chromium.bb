@@ -73,14 +73,20 @@ KeyPermissions::PermissionsForExtension::~PermissionsForExtension() {
 
 bool KeyPermissions::PermissionsForExtension::CanUseKeyForSigning(
     const std::string& public_key_spki_der) {
-  KeyEntry* matching_entry = GetKeyEntry(public_key_spki_der);
+  std::string public_key_spki_der_b64;
+  base::Base64Encode(public_key_spki_der, &public_key_spki_der_b64);
+
+  KeyEntry* matching_entry = GetStateStoreEntry(public_key_spki_der_b64);
 
   return matching_entry->sign_once || matching_entry->sign_unlimited;
 }
 
 void KeyPermissions::PermissionsForExtension::SetKeyUsedForSigning(
     const std::string& public_key_spki_der) {
-  KeyEntry* matching_entry = GetKeyEntry(public_key_spki_der);
+  std::string public_key_spki_der_b64;
+  base::Base64Encode(public_key_spki_der, &public_key_spki_der_b64);
+
+  KeyEntry* matching_entry = GetStateStoreEntry(public_key_spki_der_b64);
 
   if (!matching_entry->sign_once) {
     if (matching_entry->sign_unlimited)
@@ -96,7 +102,10 @@ void KeyPermissions::PermissionsForExtension::SetKeyUsedForSigning(
 
 void KeyPermissions::PermissionsForExtension::RegisterKeyForCorporateUsage(
     const std::string& public_key_spki_der) {
-  KeyEntry* matching_entry = GetKeyEntry(public_key_spki_der);
+  std::string public_key_spki_der_b64;
+  base::Base64Encode(public_key_spki_der, &public_key_spki_der_b64);
+
+  KeyEntry* matching_entry = GetStateStoreEntry(public_key_spki_der_b64);
 
   if (matching_entry->sign_once) {
     VLOG(1) << "Key is already allowed for signing, skipping.";
@@ -109,7 +118,10 @@ void KeyPermissions::PermissionsForExtension::RegisterKeyForCorporateUsage(
 
 void KeyPermissions::PermissionsForExtension::SetUserGrantedPermission(
     const std::string& public_key_spki_der) {
-  KeyEntry* matching_entry = GetKeyEntry(public_key_spki_der);
+  std::string public_key_spki_der_b64;
+  base::Base64Encode(public_key_spki_der, &public_key_spki_der_b64);
+
+  KeyEntry* matching_entry = GetStateStoreEntry(public_key_spki_der_b64);
 
   if (matching_entry->sign_unlimited) {
     VLOG(1) << "Key is already allowed for signing, skipping.";
@@ -188,14 +200,9 @@ KeyPermissions::PermissionsForExtension::KeyEntriesToState() {
   return new_state.Pass();
 }
 
-// Searches |platform_keys| for an entry for |public_key_spki_der_b64|. If found
-// returns a pointer to it, otherwise returns null.
 KeyPermissions::PermissionsForExtension::KeyEntry*
-KeyPermissions::PermissionsForExtension::GetKeyEntry(
-    const std::string& public_key_spki_der) {
-  std::string public_key_spki_der_b64;
-  base::Base64Encode(public_key_spki_der, &public_key_spki_der_b64);
-
+KeyPermissions::PermissionsForExtension::GetStateStoreEntry(
+    const std::string& public_key_spki_der_b64) {
   for (KeyEntry& entry : state_store_entries_) {
     // For every ASN.1 value there is exactly one DER encoding, so it is fine to
     // compare the DER (or its base64 encoding).
@@ -207,8 +214,11 @@ KeyPermissions::PermissionsForExtension::GetKeyEntry(
   return &state_store_entries_.back();
 }
 
-KeyPermissions::KeyPermissions(extensions::StateStore* extensions_state_store)
-    : extensions_state_store_(extensions_state_store), weak_factory_(this) {
+KeyPermissions::KeyPermissions(bool profile_is_managed,
+                               extensions::StateStore* extensions_state_store)
+    : profile_is_managed_(profile_is_managed),
+      extensions_state_store_(extensions_state_store),
+      weak_factory_(this) {
 }
 
 KeyPermissions::~KeyPermissions() {
@@ -221,6 +231,13 @@ void KeyPermissions::GetPermissionsForExtension(
       extension_id, kStateStorePlatformKeys,
       base::Bind(&KeyPermissions::CreatePermissionObjectAndPassToCallback,
                  weak_factory_.GetWeakPtr(), extension_id, callback));
+}
+
+bool KeyPermissions::CanUserGrantPermissionFor(
+    const std::string& public_key_spki_der) {
+  // As keys cannot be tagged for non-corporate usage, the user can currently
+  // not grant any permissions if the profile is managed.
+  return !profile_is_managed_;
 }
 
 void KeyPermissions::SetPlatformKeysOfExtension(const std::string& extension_id,

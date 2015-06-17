@@ -5,18 +5,17 @@
 #include <cryptohi.h>
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service_factory.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
+#include "chrome/browser/chromeos/policy/user_policy_test_helper.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/net/nss_context.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/login/user_names.h"
-#include "components/policy/core/browser/browser_policy_connector.h"
-#include "components/policy/core/common/policy_map.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/test/test_utils.h"
 #include "crypto/nss_util_internal.h"
 #include "crypto/scoped_test_system_nss_key_slot.h"
@@ -27,51 +26,43 @@
 #include "net/cert/nss_cert_database.h"
 #include "net/cert/test_root_certs.h"
 #include "net/test/cert_test_util.h"
-#include "net/test/url_request/url_request_mock_http_job.h"
-#include "policy/policy_constants.h"
-#include "testing/gmock/include/gmock/gmock.h"
 
 namespace {
 
 enum DeviceStatus { DEVICE_STATUS_ENROLLED, DEVICE_STATUS_NOT_ENROLLED };
 
-enum UserAffiliation {
-  USER_AFFILIATION_ENROLLED_DOMAIN,
-  USER_AFFILIATION_UNRELATED
+enum UserStatus {
+  USER_STATUS_MANAGED_AFFILIATED_DOMAIN,
+  USER_STATUS_MANAGED_OTHER_DOMAIN,
+  USER_STATUS_UNMANAGED
 };
 
-struct Params {
-  Params(DeviceStatus device_status, UserAffiliation user_affiliation)
-      : device_status_(device_status), user_affiliation_(user_affiliation) {}
-
-  DeviceStatus device_status_;
-  UserAffiliation user_affiliation_;
-};
-
-class PlatformKeysTest : public ExtensionApiTest,
-                         public ::testing::WithParamInterface<Params> {
+class PlatformKeysTest : public ExtensionApiTest {
  public:
-  PlatformKeysTest() {}
+  PlatformKeysTest(DeviceStatus device_status, UserStatus user_status)
+      : device_status_(device_status), user_status_(user_status) {
+    if (user_status_ != USER_STATUS_UNMANAGED)
+      SetupInitialEmptyPolicy();
+  }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
 
-    std::string user_email = "someuser@anydomain.com";
+    if (policy_helper_)
+      policy_helper_->UpdateCommandLine(command_line);
 
-    // The command line flag kLoginUser determines the user's email and thus
-    // his affiliation to the domain that the device is enrolled to.
-    if (GetParam().user_affiliation_ == USER_AFFILIATION_ENROLLED_DOMAIN)
-      user_email = chromeos::login::kStubUser;
-
-    command_line->AppendSwitchASCII(chromeos::switches::kLoginUser, user_email);
+    command_line->AppendSwitchASCII(chromeos::switches::kLoginUser,
+                                    chromeos::login::kStubUser);
   }
 
   void SetUpInProcessBrowserTestFixture() override {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
 
-    if (GetParam().device_status_ == DEVICE_STATUS_ENROLLED) {
+    if (device_status_ == DEVICE_STATUS_ENROLLED) {
       device_policy_test_helper_.device_policy()->policy_data().set_username(
-          chromeos::login::kStubUser);
+          user_status_ == USER_STATUS_MANAGED_AFFILIATED_DOMAIN
+              ? chromeos::login::kStubUser
+              : "someuser@anydomain.com");
 
       device_policy_test_helper_.device_policy()->Build();
       device_policy_test_helper_.MarkAsEnterpriseOwned();
@@ -79,6 +70,9 @@ class PlatformKeysTest : public ExtensionApiTest,
   }
 
   void SetUpOnMainThread() override {
+    if (policy_helper_)
+      policy_helper_->WaitForInitialPolicy(browser()->profile());
+
     {
       base::RunLoop loop;
       content::BrowserThread::PostTask(
@@ -127,23 +121,34 @@ class PlatformKeysTest : public ExtensionApiTest,
 
     // Only if the current user is of the same domain as the device is enrolled
     // to, the system token is available to the extension.
-    if (GetParam().device_status_ == DEVICE_STATUS_ENROLLED &&
-        GetParam().user_affiliation_ == USER_AFFILIATION_ENROLLED_DOMAIN) {
+    if (device_status_ == DEVICE_STATUS_ENROLLED &&
+        user_status_ == USER_STATUS_MANAGED_AFFILIATED_DOMAIN) {
       system_token_availability = "systemTokenEnabled";
     }
 
     GURL url = extension_->GetResourceURL(base::StringPrintf(
         "basic.html?%s#%s", system_token_availability.c_str(),
         test_suite_name.c_str()));
-    return RunExtensionSubtest("platform_keys", url.spec());
+    return RunExtensionSubtest("", url.spec());
   }
 
  protected:
+  const DeviceStatus device_status_;
+  const UserStatus user_status_;
+
   scoped_refptr<net::X509Certificate> client_cert1_;
   scoped_refptr<net::X509Certificate> client_cert2_;
   const extensions::Extension* extension_;
 
  private:
+  void SetupInitialEmptyPolicy() {
+    policy_helper_.reset(
+        new policy::UserPolicyTestHelper(chromeos::login::kStubUser));
+    policy_helper_->Init(
+        base::DictionaryValue() /* empty mandatory policy */,
+        base::DictionaryValue() /* empty recommended policy */);
+  }
+
   void SetupTestCerts(const base::Closure& done_callback,
                       net::NSSCertDatabase* cert_db) {
     SetupTestClientCerts(cert_db);
@@ -192,6 +197,7 @@ class PlatformKeysTest : public ExtensionApiTest,
                                      done_callback);
   }
 
+  scoped_ptr<policy::UserPolicyTestHelper> policy_helper_;
   policy::DevicePolicyCrosTestHelper device_policy_test_helper_;
   scoped_ptr<crypto::ScopedTestSystemNSSKeySlot> test_system_slot_;
 };
@@ -199,11 +205,12 @@ class PlatformKeysTest : public ExtensionApiTest,
 class TestSelectDelegate
     : public chromeos::PlatformKeysService::SelectDelegate {
  public:
-  // On each Select call, selects the next entry in |cert_to_select| from back
+  // On each Select call, selects the next entry in |certs_to_select| from back
   // to front. Once the first entry is reached, that one will be selected
   // repeatedly.
   // Entries of |certs_to_select| can be null in which case no certificate will
   // be selected.
+  // If |certs_to_select| is empty, any invocation of |Select| will fail.
   explicit TestSelectDelegate(net::CertificateList certs_to_select)
       : certs_to_select_(certs_to_select) {}
 
@@ -235,13 +242,37 @@ class TestSelectDelegate
   net::CertificateList certs_to_select_;
 };
 
+class UnmanagedPlatformKeysTest
+    : public PlatformKeysTest,
+      public ::testing::WithParamInterface<DeviceStatus> {
+ public:
+  UnmanagedPlatformKeysTest()
+      : PlatformKeysTest(GetParam(), USER_STATUS_UNMANAGED) {}
+};
+
+struct Params {
+  Params(DeviceStatus device_status, UserStatus user_status)
+      : device_status_(device_status), user_status_(user_status) {}
+
+  DeviceStatus device_status_;
+  UserStatus user_status_;
+};
+
+class ManagedWithoutPermissionPlatformKeysTest
+    : public PlatformKeysTest,
+      public ::testing::WithParamInterface<Params> {
+ public:
+  ManagedWithoutPermissionPlatformKeysTest()
+      : PlatformKeysTest(GetParam().device_status_, GetParam().user_status_) {}
+};
+
 }  // namespace
 
 // At first interactively selects |client_cert1_| and |client_cert2_| to grant
 // permissions and afterwards runs more basic tests.
 // After the initial two interactive calls, the simulated user does not select
 // any cert.
-IN_PROC_BROWSER_TEST_P(PlatformKeysTest, Basic) {
+IN_PROC_BROWSER_TEST_P(UnmanagedPlatformKeysTest, Basic) {
   net::CertificateList certs;
   certs.push_back(nullptr);
   certs.push_back(client_cert2_);
@@ -255,7 +286,7 @@ IN_PROC_BROWSER_TEST_P(PlatformKeysTest, Basic) {
 
 // On interactive calls, the simulated user always selects |client_cert1_| if
 // matching.
-IN_PROC_BROWSER_TEST_P(PlatformKeysTest, Permissions) {
+IN_PROC_BROWSER_TEST_P(UnmanagedPlatformKeysTest, Permissions) {
   net::CertificateList certs;
   certs.push_back(client_cert1_);
 
@@ -265,10 +296,25 @@ IN_PROC_BROWSER_TEST_P(PlatformKeysTest, Permissions) {
   ASSERT_TRUE(RunExtensionTest("permissionTests")) << message_;
 }
 
+INSTANTIATE_TEST_CASE_P(Unmanaged,
+                        UnmanagedPlatformKeysTest,
+                        ::testing::Values(DEVICE_STATUS_ENROLLED,
+                                          DEVICE_STATUS_NOT_ENROLLED));
+
+IN_PROC_BROWSER_TEST_P(ManagedWithoutPermissionPlatformKeysTest,
+                       UserPermissionsBlocked) {
+  // To verify that the user is not prompted for any certificate selection,
+  // set up a delegate that fails on any invocation.
+  GetPlatformKeysService()->SetSelectDelegate(
+      make_scoped_ptr(new TestSelectDelegate(net::CertificateList())));
+
+  ASSERT_TRUE(RunExtensionTest("managedProfile")) << message_;
+}
+
 INSTANTIATE_TEST_CASE_P(
-    CheckSystemTokenAvailability,
-    PlatformKeysTest,
+    ManagedWithoutPermission,
+    ManagedWithoutPermissionPlatformKeysTest,
     ::testing::Values(
-        Params(DEVICE_STATUS_ENROLLED, USER_AFFILIATION_ENROLLED_DOMAIN),
-        Params(DEVICE_STATUS_ENROLLED, USER_AFFILIATION_UNRELATED),
-        Params(DEVICE_STATUS_NOT_ENROLLED, USER_AFFILIATION_UNRELATED)));
+        Params(DEVICE_STATUS_ENROLLED, USER_STATUS_MANAGED_AFFILIATED_DOMAIN),
+        Params(DEVICE_STATUS_ENROLLED, USER_STATUS_MANAGED_OTHER_DOMAIN),
+        Params(DEVICE_STATUS_NOT_ENROLLED, USER_STATUS_MANAGED_OTHER_DOMAIN)));

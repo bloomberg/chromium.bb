@@ -174,7 +174,8 @@ function checkPropertyIsReadOnly(object, key) {
   var original = object[key];
   try {
     object[key] = {};
-    fail('Expected the property to be read-only and an exception to be thrown');
+    fail('Expected the property ' + key +
+         ' to be read-only and an exception to be thrown');
   } catch (error) {
     assertEq(original, object[key]);
   }
@@ -578,7 +579,16 @@ var testSuites = {
     ];
 
     chrome.test.runTests(tests);
-  }
+  },
+
+  managedProfile: function() {
+    var tests = [
+      // If the profile is managed, the user cannot grant permissions for any
+      // certificates.
+      testInteractiveSelectNoCerts
+    ];
+    chrome.test.runTests(tests);
+  },
 };
 
 setUp(testSuites[selectedTestSuite]);
