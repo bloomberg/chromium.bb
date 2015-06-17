@@ -76,6 +76,11 @@ bool CanUseNSCGLSurface(const gpu::gles2::FeatureInfo* feature_info) {
 @property(readonly) id layerContents;
 @end
 
+// Private CALayer API.
+@interface CALayer (Private)
+- (void)setContentsChanged;
+@end
+
 @interface ImageTransportCAOpenGLLayer : CAOpenGLLayer <ImageTransportLayer> {
   content::CALayerStorageProvider* storageProvider_;
   base::Closure didDrawCallback_;
@@ -108,7 +113,6 @@ bool CanUseNSCGLSurface(const gpu::gles2::FeatureInfo* feature_info) {
   base::ScopedTypeRef<CGLContextObj> cglContext_;
   base::scoped_nsobject<NSCGLSurface> surface_;
   gfx::Size pixelSize_;
-  bool hasDrawn_;
 }
 
 - (id)initWithStorageProvider:(content::CALayerStorageProvider*)storageProvider
@@ -131,6 +135,11 @@ bool CanUseNSCGLSurface(const gpu::gles2::FeatureInfo* feature_info) {
     [self setFrame:CGRectMake(0, 0, dipSize.width(), dipSize.height())];
     storageProvider_ = storageProvider;
     pixelSize_ = pixelSize;
+
+    // -[CAOpenGLLayer drawInCGLContext] won't get called until we're in the
+    // visible layer hierarchy, so call setLayer: immediately, to make this
+    // happen.
+    [storageProvider_->LayerCAContext() setLayer:self];
   }
   return self;
 }
@@ -282,7 +291,6 @@ bool CanUseNSCGLSurface(const gpu::gles2::FeatureInfo* feature_info) {
         "Failed to create CGL context for NSCGL surface.";
 
     pixelSize_ = pixelSize;
-    hasDrawn_ = false;
   }
   return self;
 }
@@ -290,10 +298,8 @@ bool CanUseNSCGLSurface(const gpu::gles2::FeatureInfo* feature_info) {
 - (void)drawNewFrame:(gfx::Rect)dirtyRect {
   // Draw the first frame to the layer as covering the full layer. Subsequent
   // frames may use partial damage.
-  if (!hasDrawn_) {
+  if (![self contents])
     dirtyRect = gfx::Rect(pixelSize_);
-    hasDrawn_ = true;
-  }
 
   // Make the context current to the thread, make the surface be the current
   // drawable for the context, and draw.
@@ -309,10 +315,17 @@ bool CanUseNSCGLSurface(const gpu::gles2::FeatureInfo* feature_info) {
   [surface_ attachToCGLContext:NULL];
   [surface_ flushRect:dirtyRect.ToCGRect()];
 
-  // Update the layer contents to be the content rendered by OpenGL.
-  {
-    ScopedCAActionDisabler disabler;
-    [self setContents:[surface_ layerContents]];
+  if (![self contents]) {
+    // The first time we draw, set the layer contents and the CAContext's layer
+    {
+      ScopedCAActionDisabler disabler;
+      [self setContents:[surface_ layerContents]];
+    }
+    [storageProvider_->LayerCAContext() setLayer:self];
+  } else {
+    // For subsequent draws, just indicate that the layer contents has changed.
+    // This has lower power usage than calling -[CALayer setContents:].
+    [self setContentsChanged];
   }
 }
 
@@ -587,7 +600,6 @@ void CALayerStorageProvider::SwapBuffers(const gfx::Rect& dirty_rect) {
                         pixelSize:fbo_pixel_size_
                       scaleFactor:fbo_scale_factor_]);
     }
-    [context_ setLayer:layer_];
   }
 
   // Replacing the CAContext's CALayer will sometimes results in an immediate

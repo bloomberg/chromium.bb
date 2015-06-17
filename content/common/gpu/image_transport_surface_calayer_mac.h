@@ -52,6 +52,7 @@ class CALayerStorageProvider
   base::Closure LayerShareGroupContextDirtiedCallback();
   bool LayerHasPendingDraw() const;
   void LayerDoDraw(const gfx::Rect& dirty_rect);
+  CAContext* LayerCAContext() { return context_.get(); }
 
   // ui::GpuSwitchingObserver implementation.
   void OnGpuSwitched() override;
