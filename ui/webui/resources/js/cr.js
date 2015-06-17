@@ -431,11 +431,5 @@ var cr = function() {
     get isLinux() {
       return /Linux/.test(navigator.userAgent);
     },
-
-    /** Whether this uses the views toolkit or not. */
-    get isViews() {
-      return typeof chrome.getVariableValue == 'function' &&
-          /views/.test(chrome.getVariableValue('toolkit'));
-    },
   };
 }();
