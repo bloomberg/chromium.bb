@@ -4625,9 +4625,9 @@ bool RenderFrameImpl::PrepareRenderViewForNavigation(
     const RequestNavigationParams& request_params,
     bool* is_reload,
     WebURLRequest::CachePolicy* cache_policy) {
+  DCHECK(render_view_->webview());
+
   MaybeHandleDebugURL(url);
-  if (!render_view_->webview())
-    return false;
 
   FOR_EACH_OBSERVER(
       RenderViewObserver, render_view_->observers_, Navigate(url));
