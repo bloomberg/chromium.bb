@@ -120,13 +120,6 @@ void CheckChromeVersion(Profile *profile, bool is_new) {
   EXPECT_EQ(created_by_version, pref_version);
 }
 
-void BlockThread(
-    base::WaitableEvent* is_blocked,
-    base::WaitableEvent* unblock) {
-  is_blocked->Signal();
-  unblock->Wait();
-}
-
 void FlushTaskRunner(base::SequencedTaskRunner* runner) {
   ASSERT_TRUE(runner);
   base::WaitableEvent unblock(false, false);
@@ -372,9 +365,6 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, DISABLED_ProfileReadmeCreated) {
   MockProfileDelegate delegate;
   EXPECT_CALL(delegate, OnProfileCreated(testing::NotNull(), true, true));
 
-  // No delay before README creation.
-  ProfileImpl::create_readme_delay_ms = 0;
-
   {
     content::WindowedNotificationObserver observer(
         chrome::NOTIFICATION_PROFILE_CREATED,
@@ -386,48 +376,10 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, DISABLED_ProfileReadmeCreated) {
     // Wait for the profile to be created.
     observer.Wait();
 
-    // Wait for file thread to create the README.
-    content::RunAllPendingInMessageLoop(content::BrowserThread::FILE);
-
     // Verify that README exists.
     EXPECT_TRUE(base::PathExists(
         temp_dir.path().Append(chrome::kReadmeFilename)));
   }
-
-  FlushIoTaskRunnerAndSpinThreads();
-}
-
-// Test that Profile can be deleted before README file is created.
-IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, ProfileDeletedBeforeReadmeCreated) {
-  base::ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-
-  MockProfileDelegate delegate;
-  EXPECT_CALL(delegate, OnProfileCreated(testing::NotNull(), true, true));
-
-  // No delay before README creation.
-  ProfileImpl::create_readme_delay_ms = 0;
-
-  base::WaitableEvent is_blocked(false, false);
-  base::WaitableEvent* unblock = new base::WaitableEvent(false, false);
-
-  // Block file thread.
-  content::BrowserThread::PostTask(
-      content::BrowserThread::FILE, FROM_HERE,
-      base::Bind(&BlockThread, &is_blocked, base::Owned(unblock)));
-  // Wait for file thread to actually be blocked.
-  is_blocked.Wait();
-
-  scoped_ptr<Profile> profile(CreateProfile(
-      temp_dir.path(), &delegate, Profile::CREATE_MODE_SYNCHRONOUS));
-
-  // Delete the Profile instance before we give the file thread a chance to
-  // create the README.
-  profile.reset();
-
-  // Now unblock the file thread again and run pending tasks (this includes the
-  // task for README creation).
-  unblock->Signal();
 
   FlushIoTaskRunnerAndSpinThreads();
 }
