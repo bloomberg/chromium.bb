@@ -48,15 +48,6 @@ remoting.DesktopRemoting.prototype.getConnectionMode = function() {
 };
 
 /**
- * @return {string} Application Id.
- * @override {remoting.ApplicationInterface}
- */
-remoting.DesktopRemoting.prototype.getApplicationId = function() {
-  // Application IDs are not used in desktop remoting.
-  return '';
-};
-
-/**
  * @return {string} Application product name to be used in UI.
  * @override {remoting.ApplicationInterface}
  */

@@ -5,11 +5,6 @@
 'use strict';
 
 /**
- * @type {string} The app id (from the webstore) for this application.
- */
-var appId = '';
-
-/**
  * @type {string} The host id corresponding to the user's VM. The @pending
  *     place-holder instructs the Orchestrator to abandon any pending host,
  *     and is used if no host id is provided by the main window.
@@ -145,7 +140,7 @@ function onToken(token) {
         'crashServiceReportId': crashServiceReportId
       };
       var uri = remoting.settings.APP_REMOTING_API_BASE_URL +
-          '/applications/' + appId +
+          '/applications/' + remoting.settings.getAppRemotingApplicationId() +
           '/hosts/'  + hostId +
           '/reportIssue';
       var onDone = function(/** !remoting.Xhr.Response */ response) {
@@ -255,7 +250,6 @@ function onWindowMessage(event) {
     if (event.data['hostId']) {
       hostId = /** @type {string} */ (event.data['hostId']);
     }
-    appId = /** @type {string} */ (event.data['appId']);
     connectionStats = /** @type {string} */ (event.data['connectionStats']);
     sessionId = /** @type {string} */ (event.data['sessionId']);
   }

@@ -94,7 +94,7 @@ remoting.AppRemotingActivity.prototype.cleanup_ = function() {
  */
 remoting.AppRemotingActivity.prototype.getAppHostInfo_ = function(token) {
   var url = remoting.settings.APP_REMOTING_API_BASE_URL + '/applications/' +
-            this.app_.getApplicationId() + '/run';
+            remoting.settings.getAppRemotingApplicationId() + '/run';
   // TODO(kelvinp): Passes |this.subscriptionToken_| to the XHR.
   return new remoting.AutoRetryXhr({
     method: 'POST',

@@ -169,6 +169,7 @@
     ],
     # Remoting core JavaScript files.
     'remoting_webapp_shared_js_core_files': [
+      'webapp/base/js/app_capabilities.js',
       'webapp/base/js/application.js',
       'webapp/base/js/base.js',
       'webapp/base/js/ipc.js',
