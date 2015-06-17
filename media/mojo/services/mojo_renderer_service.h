@@ -92,10 +92,13 @@ class MEDIA_EXPORT MojoRendererService
 
   State state_;
 
+  // Note: |renderer_| should be destructed before these objects to avoid access
+  // violation.
+  scoped_ptr<DemuxerStreamProviderShim> stream_provider_;
   scoped_refptr<AudioRendererSink> audio_renderer_sink_;
   scoped_ptr<VideoRendererSink> video_renderer_sink_;
+
   scoped_ptr<Renderer> renderer_;
-  scoped_ptr<DemuxerStreamProviderShim> stream_provider_;
 
   base::RepeatingTimer<MojoRendererService> time_update_timer_;
   uint64_t last_media_time_usec_;
