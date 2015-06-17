@@ -384,11 +384,15 @@ void WebMediaPlayerImpl::setVolume(double volume) {
 }
 
 void WebMediaPlayerImpl::setSinkId(const blink::WebString& device_id,
-                                   WebSetSinkIdCB* raw_web_callbacks) {
+                                   WebSetSinkIdCB* web_callbacks) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  scoped_ptr<WebSetSinkIdCB> web_callbacks(raw_web_callbacks);
-  web_callbacks->onError(new blink::WebSetSinkIdError(
-      blink::WebSetSinkIdError::ErrorTypeNotSupported, "Not Supported"));
+  std::string device_id_str(device_id.utf8());
+  GURL security_origin(frame_->securityOrigin().toString().utf8());
+  DVLOG(1) << __FUNCTION__
+           << "(" << device_id_str << ", " << security_origin << ")";
+  audio_source_provider_->SwitchOutputDevice(
+      device_id_str, security_origin,
+      ConvertToSwitchOutputDeviceCB(web_callbacks));
 }
 
 #define STATIC_ASSERT_MATCHING_ENUM(webkit_name, chromium_name) \

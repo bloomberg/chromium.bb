@@ -6,6 +6,7 @@
 #define MEDIA_BLINK_WEBMEDIAPLAYER_UTIL_H_
 
 #include "base/time/time.h"
+#include "media/base/audio_renderer_sink.h"
 #include "media/base/eme_constants.h"
 #include "media/base/media_export.h"
 #include "media/base/pipeline_status.h"
@@ -41,6 +42,11 @@ blink::WebEncryptedMediaInitDataType MEDIA_EXPORT
 ConvertToWebInitDataType(EmeInitDataType init_data_type);
 
 typedef blink::WebCallbacks<void, blink::WebSetSinkIdError> WebSetSinkIdCB;
+
+// Wraps a WebSetSinkIdCB into a media::SwitchOutputDeviceCB
+// and binds it to the current thread
+SwitchOutputDeviceCB MEDIA_EXPORT
+ConvertToSwitchOutputDeviceCB(WebSetSinkIdCB* web_callbacks);
 
 }  // namespace media
 
