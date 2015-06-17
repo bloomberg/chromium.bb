@@ -163,7 +163,7 @@ void AutocompleteResult::CopyOldMatches(
 
 void AutocompleteResult::AppendMatches(const AutocompleteInput& input,
                                        const ACMatches& matches) {
-  for (auto i : matches) {
+  for (const auto& i : matches) {
 #ifndef NDEBUG
     DCHECK_EQ(AutocompleteMatch::SanitizeString(i.contents), i.contents);
     DCHECK_EQ(AutocompleteMatch::SanitizeString(i.description),
