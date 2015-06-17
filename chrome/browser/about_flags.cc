@@ -21,6 +21,7 @@
 #include "chrome/browser/flags_storage.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/google_chrome_strings.h"
@@ -46,7 +47,6 @@
 #include "ui/views/views_switches.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/common/chrome_version_info.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #else
 #include "ui/message_center/message_center_switches.h"
@@ -2099,9 +2099,7 @@ void GetSanitizedEnabledFlags(
 
 bool SkipConditionalExperiment(const Experiment& experiment,
                                FlagsStorage* flags_storage) {
-#if defined(OS_ANDROID) || defined(ENABLE_DATA_REDUCTION_PROXY_DEBUGGING)
   chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-#endif
 
 #if defined(OS_ANDROID)
   // enable-data-reduction-proxy-dev is only available for the Dev/Beta channel.
@@ -2115,14 +2113,6 @@ bool SkipConditionalExperiment(const Experiment& experiment,
       channel != chrome::VersionInfo::CHANNEL_DEV) {
     return true;
   }
-  // data-reduction-proxy-lo-fi is only available for Chromium builds and
-  // the Canary/Dev channel.
-  if (!strcmp("data-reduction-proxy-lo-fi", experiment.internal_name) &&
-      channel != chrome::VersionInfo::CHANNEL_DEV &&
-      channel != chrome::VersionInfo::CHANNEL_CANARY &&
-      channel != chrome::VersionInfo::CHANNEL_UNKNOWN) {
-    return true;
-  }
   // enable-data-reduction-proxy-carrier-test is only available for Chromium
   // builds and the Canary/Dev channel.
   if (!strcmp("enable-data-reduction-proxy-carrier-test",
@@ -2133,6 +2123,15 @@ bool SkipConditionalExperiment(const Experiment& experiment,
     return true;
   }
 #endif
+
+  // data-reduction-proxy-lo-fi is only available for Chromium builds and
+  // the Canary/Dev channel.
+  if (!strcmp("data-reduction-proxy-lo-fi", experiment.internal_name) &&
+      channel != chrome::VersionInfo::CHANNEL_DEV &&
+      channel != chrome::VersionInfo::CHANNEL_CANARY &&
+      channel != chrome::VersionInfo::CHANNEL_UNKNOWN) {
+    return true;
+  }
 
 #if defined(ENABLE_DATA_REDUCTION_PROXY_DEBUGGING)
   // enable-data-reduction-proxy-bypass-warning is only available for Chromium
