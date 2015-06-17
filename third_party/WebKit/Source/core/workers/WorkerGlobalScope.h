@@ -97,6 +97,8 @@ public:
     void close();
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(rejectionhandled);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(unhandledrejection);
 
     // WorkerUtils
     virtual void importScripts(const Vector<String>& urls, ExceptionState&);

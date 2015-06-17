@@ -1710,9 +1710,11 @@ interface HTMLBodyElement
     getter onpagehide
     getter onpageshow
     getter onpopstate
+    getter onrejectionhandled
     getter onresize
     getter onscroll
     getter onstorage
+    getter onunhandledrejection
     getter onunload
     getter text
     getter vLink
@@ -1734,9 +1736,11 @@ interface HTMLBodyElement
     setter onpagehide
     setter onpageshow
     setter onpopstate
+    setter onrejectionhandled
     setter onresize
     setter onscroll
     setter onstorage
+    setter onunhandledrejection
     setter onunload
     setter text
     setter vLink
@@ -3777,6 +3781,10 @@ interface Promise
     method chain
     method constructor
     method then
+interface PromiseRejectionEvent
+    getter promise
+    getter reason
+    method constructor
 interface PushManager
     method constructor
     method getSubscription
@@ -6348,6 +6356,7 @@ interface Window
     attribute onpopstate
     attribute onprogress
     attribute onratechange
+    attribute onrejectionhandled
     attribute onreset
     attribute onresize
     attribute onscroll
@@ -6367,6 +6376,7 @@ interface Window
     attribute ontouchmove
     attribute ontouchstart
     attribute ontransitionend
+    attribute onunhandledrejection
     attribute onunload
     attribute onvolumechange
     attribute onwaiting

@@ -122,6 +122,7 @@ PASS oldChildWindow.onplaying is newChildWindow.onplaying
 PASS oldChildWindow.onpopstate is newChildWindow.onpopstate
 PASS oldChildWindow.onprogress is newChildWindow.onprogress
 PASS oldChildWindow.onratechange is newChildWindow.onratechange
+PASS oldChildWindow.onrejectionhandled is newChildWindow.onrejectionhandled
 PASS oldChildWindow.onreset is newChildWindow.onreset
 PASS oldChildWindow.onresize is newChildWindow.onresize
 PASS oldChildWindow.onscroll is newChildWindow.onscroll
@@ -141,6 +142,7 @@ PASS oldChildWindow.ontouchend is newChildWindow.ontouchend
 PASS oldChildWindow.ontouchmove is newChildWindow.ontouchmove
 PASS oldChildWindow.ontouchstart is newChildWindow.ontouchstart
 PASS oldChildWindow.ontransitionend is newChildWindow.ontransitionend
+PASS oldChildWindow.onunhandledrejection is newChildWindow.onunhandledrejection
 PASS oldChildWindow.onunload is newChildWindow.onunload
 PASS oldChildWindow.onvolumechange is newChildWindow.onvolumechange
 PASS oldChildWindow.onwaiting is newChildWindow.onwaiting

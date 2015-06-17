@@ -48,4 +48,9 @@
     attribute EventHandler onpopstate;
     attribute EventHandler onstorage;
     attribute EventHandler onunload;
+
+    // Unhandled Promise Rejection Events
+    // https://github.com/domenic/unhandled-rejections-browser-spec
+    [RuntimeEnabled=PromiseRejectionEvent] attribute EventHandler onrejectionhandled;
+    [RuntimeEnabled=PromiseRejectionEvent] attribute EventHandler onunhandledrejection;
 };

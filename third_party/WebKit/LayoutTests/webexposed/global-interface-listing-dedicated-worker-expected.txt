@@ -625,6 +625,10 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method chain
 [Worker]     method constructor
 [Worker]     method then
+[Worker] interface PromiseRejectionEvent
+[Worker]     getter promise
+[Worker]     getter reason
+[Worker]     method constructor
 [Worker] interface RangeError
 [Worker]     attribute name
 [Worker]     method constructor
@@ -900,6 +904,8 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     getter location
 [Worker]     getter navigator
 [Worker]     getter onerror
+[Worker]     getter onrejectionhandled
+[Worker]     getter onunhandledrejection
 [Worker]     getter performance
 [Worker]     getter self
 [Worker]     getter webkitIndexedDB
@@ -920,6 +926,8 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method webkitResolveLocalFileSystemURL
 [Worker]     setter console
 [Worker]     setter onerror
+[Worker]     setter onrejectionhandled
+[Worker]     setter onunhandledrejection
 [Worker] interface WorkerLocation
 [Worker]     getter hash
 [Worker]     getter host

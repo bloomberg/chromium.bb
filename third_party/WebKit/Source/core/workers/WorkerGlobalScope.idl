@@ -46,6 +46,11 @@
     // Console API (non-standard but widely implemented in some form)
     // https://developer.chrome.com/devtools/docs/console-api
     [Replaceable] readonly attribute WorkerConsole console;
+
+    // Unhandled Promise Rejection Events
+    // https://github.com/domenic/unhandled-rejections-browser-spec
+    [RuntimeEnabled=PromiseRejectionEvent] attribute EventHandler onrejectionhandled;
+    [RuntimeEnabled=PromiseRejectionEvent] attribute EventHandler onunhandledrejection;
 };
 
 WorkerGlobalScope implements WindowBase64;

@@ -122,6 +122,7 @@ PASS childWindow.onplaying is null
 PASS childWindow.onpopstate is null
 PASS childWindow.onprogress is null
 PASS childWindow.onratechange is null
+PASS childWindow.onrejectionhandled is null
 PASS childWindow.onreset is null
 PASS childWindow.onresize is null
 PASS childWindow.onscroll is null
@@ -141,6 +142,7 @@ PASS childWindow.ontouchend is null
 PASS childWindow.ontouchmove is null
 PASS childWindow.ontouchstart is null
 PASS childWindow.ontransitionend is null
+PASS childWindow.onunhandledrejection is null
 PASS childWindow.onunload is null
 PASS childWindow.onvolumechange is null
 PASS childWindow.onwaiting is null

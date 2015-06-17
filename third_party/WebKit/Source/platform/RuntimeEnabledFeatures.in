@@ -116,6 +116,7 @@ PrefixedEncryptedMedia status=stable
 // See https://crbug.com/346236 for current status.
 PrefixedVideoFullscreen status=stable
 Presentation status=test
+PromiseRejectionEvent status=experimental
 PushMessaging status=stable
 // Push messaging payloads are blocked on the Push API supporting encryption.
 PushMessagingData status=test

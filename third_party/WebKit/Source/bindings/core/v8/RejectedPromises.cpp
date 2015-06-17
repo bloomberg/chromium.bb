@@ -10,8 +10,11 @@
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/events/EventTarget.h"
+#include "core/events/PromiseRejectionEvent.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/ScriptArguments.h"
+#include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
 
@@ -58,27 +61,39 @@ public:
             return;
         ASSERT(!v8::Local<v8::Promise>::Cast(value)->HasHandler());
 
-        const String errorMessage = "Uncaught (in promise)";
-        Vector<ScriptValue> args;
-        args.append(ScriptValue(m_scriptState, v8String(m_scriptState->isolate(), errorMessage)));
-        args.append(m_exception);
-        RefPtrWillBeRawPtr<ScriptArguments> arguments = ScriptArguments::create(m_scriptState, args);
+        EventTarget* target = executionContext->errorEventTarget();
+        if (RuntimeEnabledFeatures::promiseRejectionEventEnabled() && target) {
+            PromiseRejectionEventInit init;
+            init.setPromise(ScriptPromise(m_scriptState, value));
+            init.setReason(m_exception);
+            init.setCancelable(true);
+            RefPtrWillBeRawPtr<PromiseRejectionEvent> event = PromiseRejectionEvent::create(EventTypeNames::unhandledrejection, init);
+            // Log to console if event was not preventDefault()'ed.
+            m_shouldLogToConsole = target->dispatchEvent(event);
+        }
 
-        String embedderErrorMessage = m_errorMessage;
-        if (embedderErrorMessage.isEmpty())
-            embedderErrorMessage = errorMessage;
-        else if (embedderErrorMessage.startsWith("Uncaught "))
-            embedderErrorMessage.insert(" (in promise)", 8);
+        if (m_shouldLogToConsole) {
+            const String errorMessage = "Uncaught (in promise)";
+            Vector<ScriptValue> args;
+            args.append(ScriptValue(m_scriptState, v8String(m_scriptState->isolate(), errorMessage)));
+            args.append(m_exception);
+            RefPtrWillBeRawPtr<ScriptArguments> arguments = ScriptArguments::create(m_scriptState, args);
 
-        RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, embedderErrorMessage, m_resourceName, m_lineNumber, m_columnNumber);
-        consoleMessage->setScriptArguments(arguments);
-        consoleMessage->setCallStack(m_callStack);
-        consoleMessage->setScriptId(m_scriptId);
-        m_consoleMessageId = consoleMessage->assignMessageId();
-        executionContext->addConsoleMessage(consoleMessage.release());
+            String embedderErrorMessage = m_errorMessage;
+            if (embedderErrorMessage.isEmpty())
+                embedderErrorMessage = errorMessage;
+            else if (embedderErrorMessage.startsWith("Uncaught "))
+                embedderErrorMessage.insert(" (in promise)", 8);
+
+            RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, embedderErrorMessage, m_resourceName, m_lineNumber, m_columnNumber);
+            consoleMessage->setScriptArguments(arguments);
+            consoleMessage->setCallStack(m_callStack);
+            consoleMessage->setScriptId(m_scriptId);
+            m_consoleMessageId = consoleMessage->assignMessageId();
+            executionContext->addConsoleMessage(consoleMessage.release());
+        }
 
         m_callStack.clear();
-        m_exception.clear();
     }
 
     void revoke()
@@ -87,9 +102,26 @@ public:
         if (!executionContext)
             return;
 
-        RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(JSMessageSource, RevokedErrorMessageLevel, "Handler added to rejected promise");
-        consoleMessage->setRelatedMessageId(m_consoleMessageId);
-        executionContext->addConsoleMessage(consoleMessage.release());
+        ScriptState::Scope scope(m_scriptState);
+        v8::Local<v8::Value> value = m_promise.newLocal(m_scriptState->isolate());
+        // Either collected or https://crbug.com/450330
+        if (value.IsEmpty() || !value->IsPromise())
+            return;
+
+        EventTarget* target = executionContext->errorEventTarget();
+        if (RuntimeEnabledFeatures::promiseRejectionEventEnabled() && target) {
+            PromiseRejectionEventInit init;
+            init.setPromise(ScriptPromise(m_scriptState, value));
+            init.setReason(m_exception);
+            RefPtrWillBeRawPtr<PromiseRejectionEvent> event = PromiseRejectionEvent::create(EventTypeNames::rejectionhandled, init);
+            m_shouldLogToConsole &= target->dispatchEvent(event);
+        }
+
+        if (m_shouldLogToConsole) {
+            RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(JSMessageSource, RevokedErrorMessageLevel, "Handler added to rejected promise");
+            consoleMessage->setRelatedMessageId(m_consoleMessageId);
+            executionContext->addConsoleMessage(consoleMessage.release());
+        }
     }
 
 private:
@@ -105,6 +137,7 @@ private:
         , m_callStack(callStack)
         , m_consoleMessageId(0)
         , m_collected(false)
+        , m_shouldLogToConsole(true)
     {
         m_promise.setWeak(this, &Message::didCollectPromise);
     }
@@ -126,6 +159,7 @@ private:
     RefPtrWillBeMember<ScriptCallStack> m_callStack;
     unsigned m_consoleMessageId;
     bool m_collected;
+    bool m_shouldLogToConsole;
 };
 
 RejectedPromises::RejectedPromises()

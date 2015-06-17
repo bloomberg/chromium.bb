@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script>
+'use strict';
+
+test(function() {
+  // No initializer is passed.
+  assert_equals(new PromiseRejectionEvent('eventType').bubbles, false);
+  assert_equals(new PromiseRejectionEvent('eventType').cancelable, false);
+  assert_equals(new PromiseRejectionEvent('eventType').promise, undefined);
+  assert_equals(new PromiseRejectionEvent('eventType').reason, undefined);
+
+  // bubbles is passed.
+  assert_equals(new PromiseRejectionEvent('eventType', { bubbles: false }).bubbles, false);
+  assert_equals(new PromiseRejectionEvent('eventType', { bubbles: true }).bubbles, true);
+
+  // cancelable is passed.
+  assert_equals(new PromiseRejectionEvent('eventType', { cancelable: false }).cancelable, false);
+  assert_equals(new PromiseRejectionEvent('eventType', { cancelable: true }).cancelable, true);
+
+  // promise is passed.
+  var p = new Promise(function(resolve, reject) {});
+  assert_equals(new PromiseRejectionEvent('eventType', { promise: p }).promise, p);
+
+  // reason is passed.
+  var r = new Error();
+  assert_equals(new PromiseRejectionEvent('eventType', { reason: r }).reason, r);
+
+
+  // All initializers are passed.
+  assert_equals(new PromiseRejectionEvent('eventType', { bubbles: true, cancelable: true, promise: p, reason: r }).bubbles, true);
+  assert_equals(new PromiseRejectionEvent('eventType', { bubbles: true, cancelable: true, promise: p, reason: r }).cancelable, true);
+  assert_equals(new PromiseRejectionEvent('eventType', { bubbles: true, cancelable: true, promise: p, reason: r }).promise, p);
+  assert_equals(new PromiseRejectionEvent('eventType', { bubbles: true, cancelable: true, promise: p, reason: r }).reason, r);
+}, "This tests the constructor for the PromiseRejectionEvent DOM class.");
+</script>

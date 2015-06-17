@@ -164,6 +164,7 @@ progress
 push
 ratechange
 readystatechange
+rejectionhandled
 removesourcebuffer
 removestream
 removetrack
@@ -208,6 +209,7 @@ touchmove
 touchstart
 transitionend
 typechange
+unhandledrejection
 unload
 unmute
 update
