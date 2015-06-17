@@ -2096,7 +2096,11 @@
           # TODO(eugenebut): Remove enable_coverage check once
           # libclang_rt.profile_ios.a is bundled with Chromium's clang.
           # http://crbug.com/450379
-          ['buildtype=="Official" or enable_coverage', {
+          #
+          # TODO(sdefresne): Remove xcodebuild version check onces clang ToT
+          # supports "nullable" and related. https://crbug.com/499448
+          ['buildtype=="Official" or enable_coverage or '
+            '<!(xcodebuild -version|awk \'/Xcode/{print ($2 >= 7.0)}\')==1', {
             'clang_xcode%': 1,
           }],
         ],
