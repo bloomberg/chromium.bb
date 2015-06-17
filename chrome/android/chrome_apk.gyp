@@ -12,7 +12,6 @@
     'manifest_package': 'org.chromium.chrome',
     'chrome_public_apk_manifest': '<(SHARED_INTERMEDIATE_DIR)/chrome_public_apk_manifest/AndroidManifest.xml',
     'chrome_public_test_apk_manifest': '<(SHARED_INTERMEDIATE_DIR)/chrome_public_test_apk_manifest/AndroidManifest.xml',
-    'never_lint': 1,
     'chrome_java_dir': 'java_staging',
     'chrome_java_tests_dir': 'javatests',
     'chrome_java_test_support_dir': '../test/android/javatests_staging',
