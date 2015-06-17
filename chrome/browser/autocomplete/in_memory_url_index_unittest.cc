@@ -14,6 +14,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/in_memory_url_index.h"
 #include "chrome/browser/autocomplete/url_index_private_data.h"
@@ -27,6 +28,7 @@
 #include "components/history/core/browser/history_database.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/omnibox/in_memory_url_index_types.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "sql/transaction.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -48,6 +50,7 @@ namespace {
 const size_t kInvalid = base::string16::npos;
 const size_t kMaxMatches = 3;
 const char kTestLanguages[] = "en,ja,hi,zh";
+const char kClientWhitelistedScheme[] = "xyz";
 
 // Helper function to set lower case |lower_string| and |lower_terms| (words
 // list) based on supplied |search_string| and |cursor_position|. If
@@ -136,7 +139,7 @@ class InMemoryURLIndexTest : public testing::Test {
   bool GetCacheFilePath(base::FilePath* file_path) const;
   void PostRestoreFromCacheFileTask();
   void PostSaveToCacheFileTask();
-  const std::set<std::string>& scheme_whitelist();
+  const SchemeSet& scheme_whitelist();
 
 
   // Pass-through functions to simplify our friendship with URLIndexPrivateData.
@@ -196,7 +199,7 @@ void InMemoryURLIndexTest::PostSaveToCacheFileTask() {
   url_index_->PostSaveToCacheFileTask();
 }
 
-const std::set<std::string>& InMemoryURLIndexTest::scheme_whitelist() {
+const SchemeSet& InMemoryURLIndexTest::scheme_whitelist() {
   return url_index_->scheme_whitelist();
 }
 
@@ -321,8 +324,12 @@ bool InMemoryURLIndexTest::InitializeInMemoryURLIndexInSetUp() const {
 
 void InMemoryURLIndexTest::InitializeInMemoryURLIndex() {
   DCHECK(!url_index_);
-  url_index_.reset(new InMemoryURLIndex(nullptr, history_service_,
-                                        base::FilePath(), kTestLanguages));
+
+  SchemeSet client_schemes_to_whitelist;
+  client_schemes_to_whitelist.insert(kClientWhitelistedScheme);
+  url_index_.reset(new InMemoryURLIndex(
+      nullptr, history_service_, content::BrowserThread::GetBlockingPool(),
+      base::FilePath(), kTestLanguages, client_schemes_to_whitelist));
   url_index_->Init();
   url_index_->RebuildFromHistory(history_database_);
 }
@@ -942,18 +949,20 @@ TEST_F(InMemoryURLIndexTest, ExpireRow) {
 }
 
 TEST_F(InMemoryURLIndexTest, WhitelistedURLs) {
+  std::string client_whitelisted_url =
+      base::StringPrintf("%s://foo", kClientWhitelistedScheme);
   struct TestData {
     const std::string url_spec;
     const bool expected_is_whitelisted;
   } data[] = {
     // URLs with whitelisted schemes.
     { "about:histograms", true },
-    { "chrome://settings", true },
     { "file://localhost/Users/joeschmoe/sekrets", true },
     { "ftp://public.mycompany.com/myfile.txt", true },
     { "http://www.google.com/translate", true },
     { "https://www.gmail.com/", true },
     { "mailto:support@google.com", true },
+    { client_whitelisted_url, true },
     // URLs with unacceptable schemes.
     { "aaa://www.dummyhost.com;frammy", false },
     { "aaas://www.dummyhost.com;frammy", false },
@@ -1015,7 +1024,7 @@ TEST_F(InMemoryURLIndexTest, WhitelistedURLs) {
     { "xmpp://guest@example.com", false },
   };
 
-  const std::set<std::string>& whitelist(scheme_whitelist());
+  const SchemeSet& whitelist(scheme_whitelist());
   for (size_t i = 0; i < arraysize(data); ++i) {
     GURL url(data[i].url_spec);
     EXPECT_EQ(data[i].expected_is_whitelisted,
@@ -1314,8 +1323,9 @@ class InMemoryURLIndexCacheTest : public testing::Test {
 void InMemoryURLIndexCacheTest::SetUp() {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   base::FilePath path(temp_dir_.path());
-  url_index_.reset(
-      new InMemoryURLIndex(nullptr, nullptr, path, kTestLanguages));
+  url_index_.reset(new InMemoryURLIndex(
+      nullptr, nullptr, content::BrowserThread::GetBlockingPool(), path,
+      kTestLanguages, SchemeSet()));
 }
 
 void InMemoryURLIndexCacheTest::TearDown() {
