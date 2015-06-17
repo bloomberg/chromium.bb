@@ -22,8 +22,31 @@ dist_pkgdata_DATA =				\
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA =
 
-lib_LTLIBRARIES = libwayland-server.la libwayland-client.la
+if ENABLE_SCANNER
+wayland_scanner = $(top_builddir)/wayland-scanner
+bin_PROGRAMS = wayland-scanner
+wayland_scanner_SOURCES = src/scanner.c
+wayland_scanner_CFLAGS = $(EXPAT_CFLAGS) $(AM_CFLAGS)
+wayland_scanner_LDADD = $(EXPAT_LIBS) libwayland-util.la
+$(BUILT_SOURCES) : wayland-scanner
+pkgconfig_DATA += src/wayland-scanner.pc
+else
+wayland_scanner = wayland-scanner
+endif
+
+libwayland_util_la_CFLAGS = $(FFI_CFLAGS) $(GCC_CFLAGS)
+libwayland_util_la_SOURCES =			\
+	src/connection.c			\
+	src/wayland-util.c			\
+	src/wayland-util.h			\
+	src/wayland-os.c			\
+	src/wayland-os.h			\
+	src/wayland-private.h
+
 noinst_LTLIBRARIES = libwayland-util.la
+
+if ENABLE_LIBRARIES
+lib_LTLIBRARIES = libwayland-server.la libwayland-client.la
 
 include_HEADERS =				\
 	src/wayland-util.h			\
@@ -38,15 +61,6 @@ include_HEADERS =				\
 nodist_include_HEADERS =			\
 	protocol/wayland-server-protocol.h	\
 	protocol/wayland-client-protocol.h
-
-libwayland_util_la_CFLAGS = $(FFI_CFLAGS) $(GCC_CFLAGS)
-libwayland_util_la_SOURCES =			\
-	src/connection.c			\
-	src/wayland-util.c			\
-	src/wayland-util.h			\
-	src/wayland-os.c			\
-	src/wayland-os.h			\
-	src/wayland-private.h
 
 libwayland_server_la_CFLAGS = $(FFI_CFLAGS) $(GCC_CFLAGS) -pthread
 libwayland_server_la_LIBADD = $(FFI_LIBS) libwayland-util.la -lrt -lm
@@ -71,18 +85,6 @@ nodist_libwayland_client_la_SOURCES =		\
 	protocol/wayland-protocol.c
 
 pkgconfig_DATA += src/wayland-client.pc src/wayland-server.pc
-
-if ENABLE_SCANNER
-wayland_scanner = $(top_builddir)/wayland-scanner
-bin_PROGRAMS = wayland-scanner
-wayland_scanner_SOURCES = src/scanner.c
-wayland_scanner_CFLAGS = $(EXPAT_CFLAGS) $(AM_CFLAGS)
-wayland_scanner_LDADD = $(EXPAT_LIBS) libwayland-util.la
-$(BUILT_SOURCES) : wayland-scanner
-pkgconfig_DATA += src/wayland-scanner.pc
-else
-wayland_scanner = wayland-scanner
-endif
 
 protocol/%-protocol.c : $(top_srcdir)/protocol/%.xml
 	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(wayland_scanner) code < $< > $@
@@ -224,3 +226,4 @@ os_wrappers_test_LDADD = libtest-runner.la
 
 exec_fd_leak_checker_SOURCES = tests/exec-fd-leak-checker.c
 exec_fd_leak_checker_LDADD = libtest-runner.la
+endif

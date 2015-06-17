@@ -54,16 +54,11 @@ AC_SUBST(GCC_CFLAGS)
 
 AC_CHECK_FUNCS([accept4 mkostemp posix_fallocate])
 
-AC_CHECK_DECL(SFD_CLOEXEC,[],
-	      [AC_MSG_ERROR("SFD_CLOEXEC is needed to compile wayland")],
-	      [[#include <sys/signalfd.h>]])
-AC_CHECK_DECL(TFD_CLOEXEC,[],
-	      [AC_MSG_ERROR("TFD_CLOEXEC is needed to compile wayland")],
-	      [[#include <sys/timerfd.h>]])
-AC_CHECK_DECL(CLOCK_MONOTONIC,[],
-	      [AC_MSG_ERROR("CLOCK_MONOTONIC is needed to compile wayland")],
-	      [[#include <time.h>]])
-AC_CHECK_HEADERS([execinfo.h])
+AC_ARG_ENABLE([libraries],
+	      [AC_HELP_STRING([--disable-libraries],
+			      [Disable compilation of wayland libraries])],
+	      [],
+	      [enable_libraries=yes])
 
 AC_ARG_ENABLE([scanner],
               [AC_HELP_STRING([--disable-scanner],
@@ -79,10 +74,25 @@ AC_ARG_ENABLE([documentation],
 
 AM_CONDITIONAL(ENABLE_SCANNER, test "x$enable_scanner" = xyes)
 
+AM_CONDITIONAL(ENABLE_LIBRARIES, test "x$enable_libraries" = xyes)
+
 AC_ARG_WITH(icondir, [  --with-icondir=<dir>    Look for cursor icons here],
 		     [  ICONDIR=$withval],
 		     [  ICONDIR=${datadir}/icons])
 AC_SUBST([ICONDIR])
+
+if test "x$enable_libraries" = "xyes"; then
+	AC_CHECK_DECL(SFD_CLOEXEC,[],
+		      [AC_MSG_ERROR("SFD_CLOEXEC is needed to compile wayland libraries")],
+		      [[#include <sys/signalfd.h>]])
+	AC_CHECK_DECL(TFD_CLOEXEC,[],
+		      [AC_MSG_ERROR("TFD_CLOEXEC is needed to compile wayland libraries")],
+		      [[#include <sys/timerfd.h>]])
+	AC_CHECK_DECL(CLOCK_MONOTONIC,[],
+		      [AC_MSG_ERROR("CLOCK_MONOTONIC is needed to compile wayland libraries")],
+		      [[#include <time.h>]])
+	AC_CHECK_HEADERS([execinfo.h])
+fi
 
 if test "x$enable_scanner" = "xyes"; then
 	PKG_CHECK_MODULES(EXPAT, [expat], [],
