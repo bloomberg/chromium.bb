@@ -2945,8 +2945,6 @@ int Segment::WriteFramesAll() {
   if (!cluster)
     return -1;
 
-  const uint64 timecode_scale = segment_info_.timecode_scale();
-
   for (int32 i = 0; i < frames_size_; ++i) {
     Frame*& frame = frames_[i];
     // TODO(jzern/vigneshv): using Segment::AddGenericFrame here would limit the
@@ -2988,7 +2986,6 @@ bool Segment::WriteFramesLessThan(uint64 timestamp) {
     if (!cluster)
       return false;
 
-    const uint64 timecode_scale = segment_info_.timecode_scale();
     int32 shift_left = 0;
 
     // TODO(fgalligan): Change this to use the durations of frames instead of
