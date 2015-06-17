@@ -37,7 +37,6 @@ namespace ios {
 
 class ChromeBrowserProvider;
 class GeolocationUpdaterProvider;
-class KeyedServiceProvider;
 class StringProvider;
 class UpdatableResourceProvider;
 
@@ -85,8 +84,6 @@ class ChromeBrowserProvider {
   virtual std::string GetRiskData();
   // Returns product version with prefix.
   virtual std::string GetProductVersionWithPrefix(const std::string& prefix);
-  // Returns an instance of KeyedServiceProvider.
-  virtual KeyedServiceProvider* GetKeyedServiceProvider();
 };
 
 }  // namespace ios

@@ -5,7 +5,6 @@
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 
 #include "base/logging.h"
-#include "ios/public/provider/chrome/browser/keyed_service_provider.h"
 
 namespace ios {
 
@@ -87,10 +86,6 @@ std::string ChromeBrowserProvider::GetProductVersionWithPrefix(
     const std::string& prefix) {
   NOTREACHED();
   return std::string();
-}
-
-KeyedServiceProvider* ChromeBrowserProvider::GetKeyedServiceProvider() {
-  return ::ios::GetKeyedServiceProvider();
 }
 
 }  // namespace ios
