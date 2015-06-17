@@ -295,6 +295,7 @@ bool BeginSmoothScroll(v8::Isolate* isolate,
   if (gesture_source_type == SyntheticGestureParams::MOUSE_INPUT) {
     // Ensure the mouse is centered and visible, in case it will
     // trigger any hover or mousemove effects.
+    context.web_view()->setIsActive(true);
     blink::WebRect contentRect =
         context.web_view()->mainFrame()->visibleContentRect();
     blink::WebMouseEvent mouseMove;
