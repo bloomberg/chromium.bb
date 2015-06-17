@@ -22,7 +22,7 @@ void HistoryProvider::DeleteMatch(const AutocompleteMatch& match) {
   DCHECK(client_);
   DCHECK(match.deletable);
 
-  history::HistoryService* const history_service = client_->HistoryService();
+  history::HistoryService* const history_service = client_->GetHistoryService();
 
   // Delete the underlying URL along with all its visits from the history DB.
   // The resulting HISTORY_URLS_DELETED notification will also cause all caches
@@ -51,7 +51,7 @@ HistoryProvider::~HistoryProvider() {}
 
 void HistoryProvider::DeleteMatchFromMatches(const AutocompleteMatch& match) {
   bool found = false;
-  BookmarkModel* bookmark_model = client_->BookmarkModel();
+  BookmarkModel* bookmark_model = client_->GetBookmarkModel();
   for (ACMatches::iterator i(matches_.begin()); i != matches_.end(); ++i) {
     if (i->destination_url == match.destination_url && i->type == match.type) {
       found = true;
