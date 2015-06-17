@@ -13,8 +13,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
-import com.google.android.apps.chrome.R;
-
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.PasswordUIView;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.bookmarkimport.AndroidBrowserImporter;

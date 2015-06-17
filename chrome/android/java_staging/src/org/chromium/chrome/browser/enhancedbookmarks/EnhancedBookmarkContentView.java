@@ -12,8 +12,7 @@ import android.view.View;
 import android.view.ViewTreeObserver.OnScrollChangedListener;
 import android.widget.RelativeLayout;
 
-import com.google.android.apps.chrome.R;
-
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.FadingShadow;
 import org.chromium.chrome.browser.widget.FadingShadowView;
 import org.chromium.components.bookmarks.BookmarkId;

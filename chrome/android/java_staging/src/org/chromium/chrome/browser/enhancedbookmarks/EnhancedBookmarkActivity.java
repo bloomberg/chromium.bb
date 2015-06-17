@@ -6,8 +6,7 @@ package org.chromium.chrome.browser.enhancedbookmarks;
 
 import android.os.Bundle;
 
-import com.google.android.apps.chrome.R;
-
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarManageable;
 

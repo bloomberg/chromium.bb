@@ -17,8 +17,7 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.widget.ScrollView;
 
-import com.google.android.apps.chrome.R;
-
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.FadingShadow;
 
 /**

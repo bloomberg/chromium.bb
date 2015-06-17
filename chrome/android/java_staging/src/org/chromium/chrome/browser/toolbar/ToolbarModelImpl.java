@@ -6,9 +6,8 @@ package org.chromium.chrome.browser.toolbar;
 
 import android.content.Context;
 
-import com.google.android.apps.chrome.R;
-
 import org.chromium.base.ApplicationStatus;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tab.BackgroundContentViewHelper;

@@ -14,9 +14,8 @@ import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.widget.Checkable;
 
-import com.google.android.apps.chrome.R;
-
 import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkItem;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkModelObserver;
 import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkPromoHeader.PromoHeaderShowingChangeListener;

@@ -6,9 +6,8 @@ package org.chromium.chrome.browser;
 
 import android.view.KeyEvent;
 
-import com.google.android.apps.chrome.R;
-
 import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;

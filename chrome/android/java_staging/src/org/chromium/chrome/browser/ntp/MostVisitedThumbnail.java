@@ -12,7 +12,7 @@ import android.graphics.Matrix;
 import android.util.AttributeSet;
 import android.widget.ImageView;
 
-import com.google.android.apps.chrome.R;
+import org.chromium.chrome.R;
 
 /**
  * Displays a thumbnail for a most visited item on the NTP.

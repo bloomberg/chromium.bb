@@ -9,11 +9,10 @@ import android.test.InstrumentationTestCase;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.google.android.apps.chrome.R;
-
 import junit.framework.Assert;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.EmptyTabObserver;

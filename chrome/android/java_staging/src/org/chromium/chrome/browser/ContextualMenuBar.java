@@ -13,7 +13,7 @@ import android.content.res.TypedArray;
 import android.support.v7.app.ActionBar;
 import android.util.Property;
 
-import com.google.android.apps.chrome.R;
+import org.chromium.chrome.R;
 
 /**
  * This class handles the animation for the contextual menu bar and adds a custom

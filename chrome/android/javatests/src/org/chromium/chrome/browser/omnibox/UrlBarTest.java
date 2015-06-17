@@ -9,10 +9,9 @@ import android.test.suitebuilder.annotation.SmallTest;
 import android.text.Editable;
 import android.view.inputmethod.BaseInputConnection;
 
-import com.google.android.apps.chrome.R;
-
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.OmniboxTestUtils;

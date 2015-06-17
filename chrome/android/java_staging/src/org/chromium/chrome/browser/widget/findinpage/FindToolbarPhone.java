@@ -10,7 +10,7 @@ import android.graphics.Color;
 import android.util.AttributeSet;
 import android.view.View;
 
-import com.google.android.apps.chrome.R;
+import org.chromium.chrome.R;
 
 /**
  * A phone specific version of the {@link FindToolbar}.

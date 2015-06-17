@@ -15,7 +15,7 @@ import android.view.View;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.FrameLayout;
 
-import com.google.android.apps.chrome.R;
+import org.chromium.chrome.R;
 
 /**
  * A tablet specific version of the {@link FindToolbar}.

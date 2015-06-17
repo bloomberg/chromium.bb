@@ -9,7 +9,7 @@ import android.content.res.TypedArray;
 import android.util.AttributeSet;
 import android.widget.LinearLayout;
 
-import com.google.android.apps.chrome.R;
+import org.chromium.chrome.R;
 
 /**
  * A LinearLayout that can be constrained to a maximum width.

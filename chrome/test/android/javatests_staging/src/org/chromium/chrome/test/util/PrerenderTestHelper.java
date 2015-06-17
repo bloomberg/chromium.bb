@@ -6,9 +6,8 @@ package org.chromium.chrome.test.util;
 
 import android.util.Pair;
 
-import com.google.android.apps.chrome.R;
-
 import org.chromium.base.ThreadUtils;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.TabLoadStatus;
 import org.chromium.chrome.browser.omnibox.LocationBarLayout;

@@ -10,8 +10,7 @@ import android.view.View.OnClickListener;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 
-import com.google.android.apps.chrome.R;
-
+import org.chromium.chrome.R;
 import org.chromium.ui.base.DeviceFormFactor;
 
 /**

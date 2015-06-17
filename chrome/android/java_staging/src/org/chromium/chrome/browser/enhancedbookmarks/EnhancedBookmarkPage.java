@@ -9,8 +9,7 @@ import android.content.res.Resources;
 import android.view.View;
 import android.view.ViewGroup.MarginLayoutParams;
 
-import com.google.android.apps.chrome.R;
-
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.NativePage;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.UrlConstants;

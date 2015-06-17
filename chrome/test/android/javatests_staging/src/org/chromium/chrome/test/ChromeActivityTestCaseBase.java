@@ -21,8 +21,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ListView;
 
-import com.google.android.apps.chrome.R;
-
 import junit.framework.Assert;
 
 import org.chromium.base.PerfTraceEvent;
@@ -31,6 +29,7 @@ import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.BaseActivityInstrumentationTestCase;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.PerfTest;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeMobileApplication;
 import org.chromium.chrome.browser.ChromeSwitches;

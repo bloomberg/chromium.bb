@@ -6,9 +6,8 @@ package org.chromium.chrome.browser.tabmodel;
 
 import android.test.FlakyTest;
 
-import com.google.android.apps.chrome.R;
-
 import org.chromium.base.ThreadUtils;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;

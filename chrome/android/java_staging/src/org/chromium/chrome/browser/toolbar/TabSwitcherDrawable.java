@@ -13,9 +13,8 @@ import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.text.TextPaint;
 
-import com.google.android.apps.chrome.R;
-
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 
 import java.util.Locale;

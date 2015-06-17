@@ -12,10 +12,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.PopupMenu;
 
-import com.google.android.apps.chrome.R;
-
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.test.partnercustomizations.TestPartnerBrowserCustomizationsProvider;
 import org.chromium.chrome.test.util.TestHttpServerClient;

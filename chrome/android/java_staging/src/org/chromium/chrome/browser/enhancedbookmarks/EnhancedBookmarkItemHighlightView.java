@@ -11,9 +11,8 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.widget.Checkable;
 
-import com.google.android.apps.chrome.R;
-
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.chrome.R;
 
 /**
  * Highlight overlay view for items on the main grid.

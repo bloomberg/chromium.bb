@@ -11,11 +11,10 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.FrameLayout;
 
-import com.google.android.apps.chrome.R;
-
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.CompositorChromeActivity;
 import org.chromium.chrome.browser.ContextualMenuBar;
 import org.chromium.chrome.browser.CustomSelectionActionModeCallback;

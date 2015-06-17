@@ -7,9 +7,8 @@ package org.chromium.chrome.browser.omaha;
 import android.content.res.Resources;
 import android.os.AsyncTask;
 
-import com.google.android.apps.chrome.R;
-
 import org.chromium.base.ThreadUtils;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.Tab;
 

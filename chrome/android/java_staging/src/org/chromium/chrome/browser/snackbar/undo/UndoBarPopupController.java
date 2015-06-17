@@ -6,9 +6,8 @@ package org.chromium.chrome.browser.snackbar.undo;
 
 import android.content.Context;
 
-import com.google.android.apps.chrome.R;
-
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;

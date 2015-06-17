@@ -8,11 +8,10 @@ import android.app.Activity;
 import android.content.Context;
 import android.text.TextUtils;
 
-import com.google.android.apps.chrome.R;
-
 import org.chromium.base.CommandLine;
 import org.chromium.base.ObserverList;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.CompositorChromeActivity;

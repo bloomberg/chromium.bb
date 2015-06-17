@@ -9,10 +9,9 @@ import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_PHONE;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.widget.ImageButton;
 
-import com.google.android.apps.chrome.R;
-
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.toolbar.TabSwitcherDrawable;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
 import org.chromium.chrome.test.util.ChromeTabUtils;

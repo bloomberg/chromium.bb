@@ -31,9 +31,8 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputConnectionWrapper;
 
-import com.google.android.apps.chrome.R;
-
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.UrlUtilities;
 import org.chromium.chrome.browser.omnibox.LocationBarLayout.OmniboxLivenessListener;
 import org.chromium.chrome.browser.tab.ChromeTab;

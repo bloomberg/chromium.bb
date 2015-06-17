@@ -8,8 +8,7 @@ import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.google.android.apps.chrome.R;
-
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BookmarkUtils;
 import org.chromium.chrome.browser.BookmarksBridge;
 import org.chromium.chrome.browser.ChromeActivity;

@@ -18,8 +18,7 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.util.SparseIntArray;
 
-import com.google.android.apps.chrome.R;
-
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler.TabOpenType;
 import org.chromium.chrome.browser.Tab;
 

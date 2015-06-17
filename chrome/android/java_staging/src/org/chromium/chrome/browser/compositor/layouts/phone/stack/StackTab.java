@@ -7,9 +7,8 @@ package org.chromium.chrome.browser.compositor.layouts.phone.stack;
 import android.content.Context;
 import android.content.res.Resources;
 
-import com.google.android.apps.chrome.R;
-
 import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation;
 import org.chromium.chrome.browser.compositor.layouts.Layout.Orientation;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;

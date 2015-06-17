@@ -16,10 +16,9 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Pair;
 
-import com.google.android.apps.chrome.R;
-
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.util.IntentUtils;
 
 import java.util.ArrayList;

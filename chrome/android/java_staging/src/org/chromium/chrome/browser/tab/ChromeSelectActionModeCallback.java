@@ -8,8 +8,7 @@ import android.content.Context;
 import android.view.ActionMode;
 import android.view.Menu;
 
-import com.google.android.apps.chrome.R;
-
+import org.chromium.chrome.R;
 import org.chromium.content.browser.SelectActionModeCallback;
 import org.chromium.ui.base.DeviceFormFactor;
 

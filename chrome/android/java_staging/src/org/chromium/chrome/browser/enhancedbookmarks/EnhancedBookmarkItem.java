@@ -20,8 +20,7 @@ import android.widget.FrameLayout;
 import android.widget.ListPopupWindow;
 import android.widget.TextView;
 
-import com.google.android.apps.chrome.R;
-
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkItem;
 import org.chromium.chrome.browser.enhanced_bookmarks.LaunchLocation;
 import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkItemsAdapter.BookmarkGrid;

@@ -17,9 +17,8 @@ import android.util.AttributeSet;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.google.android.apps.chrome.R;
-
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.chrome.R;
 
 /**
  * Displays the title, thumbnail, and favicon of a most visited page. The item can be clicked, or

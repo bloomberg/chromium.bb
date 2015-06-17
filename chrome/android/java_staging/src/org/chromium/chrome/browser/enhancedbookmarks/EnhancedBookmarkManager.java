@@ -16,10 +16,9 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.google.android.apps.chrome.R;
-
 import org.chromium.base.ObserverList;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkItem;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkModelObserver;
 import org.chromium.chrome.browser.UrlConstants;

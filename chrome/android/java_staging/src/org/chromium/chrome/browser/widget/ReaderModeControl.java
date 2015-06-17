@@ -12,7 +12,7 @@ import android.view.ViewParent;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.google.android.apps.chrome.R;
+import org.chromium.chrome.R;
 
 import org.chromium.ui.resources.dynamics.ViewResourceAdapter;
 

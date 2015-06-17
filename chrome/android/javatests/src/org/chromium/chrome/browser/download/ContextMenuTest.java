@@ -6,9 +6,8 @@ package org.chromium.chrome.browser.download;
 
 import android.test.FlakyTest;
 
-import com.google.android.apps.chrome.R;
-
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.CompositorChromeActivity;
 import org.chromium.chrome.browser.Tab;

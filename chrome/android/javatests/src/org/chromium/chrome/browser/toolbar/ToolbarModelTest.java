@@ -6,11 +6,10 @@ package org.chromium.chrome.browser.toolbar;
 
 import android.test.suitebuilder.annotation.MediumTest;
 
-import com.google.android.apps.chrome.R;
-
 import junit.framework.Assert;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;

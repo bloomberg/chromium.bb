@@ -14,11 +14,10 @@ import android.os.Messenger;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.google.android.apps.chrome.R;
-
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.ProcessInitException;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ApplicationInitialization;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.ChromiumApplication;

@@ -13,9 +13,8 @@ import android.util.Log;
 import android.view.ContextMenu;
 import android.view.Menu;
 
-import com.google.android.apps.chrome.R;
-
 import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.ShortcutHelper;

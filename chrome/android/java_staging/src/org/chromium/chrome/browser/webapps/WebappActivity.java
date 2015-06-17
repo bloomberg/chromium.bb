@@ -14,12 +14,11 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 
-import com.google.android.apps.chrome.R;
-
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.EmptyTabObserver;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.Tab;

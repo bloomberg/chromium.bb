@@ -13,7 +13,7 @@ import android.test.mock.MockResources;
 import android.util.DisplayMetrics;
 import android.util.SparseArray;
 
-import com.google.android.apps.chrome.R;
+import org.chromium.chrome.R;
 
 /**
  * This is the minimal {@link Resources} needed by the {@link LayoutManager} to be working properly.

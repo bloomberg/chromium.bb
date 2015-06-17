@@ -14,9 +14,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.LinearLayout;
 
-import com.google.android.apps.chrome.R;
-
 import org.chromium.base.ApplicationStatus;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromiumApplication;
 import org.chromium.chrome.browser.firstrun.AccountFirstRunView;
 import org.chromium.chrome.browser.firstrun.ProfileDataCache;

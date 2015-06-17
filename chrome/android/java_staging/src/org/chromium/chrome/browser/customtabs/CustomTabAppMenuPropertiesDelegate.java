@@ -7,9 +7,8 @@ package org.chromium.chrome.browser.customtabs;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.google.android.apps.chrome.R;
-
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.appmenu.ChromeAppMenuPropertiesDelegate;

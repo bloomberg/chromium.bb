@@ -7,13 +7,12 @@ package org.chromium.chrome.browser.prerender;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.widget.EditText;
 
-import com.google.android.apps.chrome.R;
-
 import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseActivityInstrumentationTestCase;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;

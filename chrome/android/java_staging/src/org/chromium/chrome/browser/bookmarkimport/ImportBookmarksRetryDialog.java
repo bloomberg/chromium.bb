@@ -8,7 +8,7 @@ import android.app.Dialog;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 
-import com.google.android.apps.chrome.R;
+import org.chromium.chrome.R;
 
 /**
  * The dialog asked to retry when the import bookmarks failed.

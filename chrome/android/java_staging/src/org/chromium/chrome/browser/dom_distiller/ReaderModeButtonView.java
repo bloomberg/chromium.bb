@@ -10,8 +10,7 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 
-import com.google.android.apps.chrome.R;
-
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.banners.SwipableOverlayView;
 import org.chromium.content.browser.ContentViewCore;
 

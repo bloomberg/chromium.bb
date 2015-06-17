@@ -15,10 +15,9 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ImageButton;
 
-import com.google.android.apps.chrome.R;
-
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.ntp.NewTabPage;

@@ -14,8 +14,7 @@ import android.os.Handler;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.google.android.apps.chrome.R;
-
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.EmptyTabObserver;
 import org.chromium.chrome.browser.Tab;

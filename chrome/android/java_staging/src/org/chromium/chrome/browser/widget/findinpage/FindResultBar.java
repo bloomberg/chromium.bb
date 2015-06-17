@@ -19,9 +19,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
-import com.google.android.apps.chrome.R;
-
 import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.findinpage.FindInPageBridge;
 import org.chromium.chrome.browser.util.MathUtils;

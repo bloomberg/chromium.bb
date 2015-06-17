@@ -12,12 +12,11 @@ import android.text.TextUtils;
 import android.view.ContextMenu;
 import android.view.View;
 
-import com.google.android.apps.chrome.R;
-
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.UrlUtils;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeMobileApplication;
 import org.chromium.chrome.browser.EmptyTabObserver;

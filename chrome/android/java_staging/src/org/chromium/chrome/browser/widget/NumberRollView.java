@@ -12,8 +12,7 @@ import android.util.Property;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
-import com.google.android.apps.chrome.R;
-
+import org.chromium.chrome.R;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
 import java.text.NumberFormat;

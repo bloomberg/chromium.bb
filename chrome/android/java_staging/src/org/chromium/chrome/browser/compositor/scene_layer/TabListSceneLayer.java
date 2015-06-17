@@ -8,9 +8,8 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Rect;
 
-import com.google.android.apps.chrome.R;
-
 import org.chromium.base.JNINamespace;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.Layout.Orientation;

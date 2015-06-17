@@ -19,8 +19,6 @@ import android.test.suitebuilder.annotation.Smoke;
 import android.util.Log;
 import android.view.View;
 
-import com.google.android.apps.chrome.R;
-
 import junit.framework.Assert;
 
 import org.chromium.base.CommandLine;
@@ -30,6 +28,7 @@ import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.UrlUtils;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;

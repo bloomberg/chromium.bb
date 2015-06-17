@@ -14,9 +14,8 @@ import android.util.AttributeSet;
 import android.util.Property;
 import android.widget.Button;
 
-import com.google.android.apps.chrome.R;
-
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.chrome.R;
 
 import java.util.ArrayList;
 import java.util.List;

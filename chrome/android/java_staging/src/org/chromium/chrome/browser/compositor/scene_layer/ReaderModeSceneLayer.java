@@ -4,9 +4,8 @@
 
 package org.chromium.chrome.browser.compositor.scene_layer;
 
-import com.google.android.apps.chrome.R;
-
 import org.chromium.base.JNINamespace;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.dom_distiller.ReaderModePanel;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.ui.resources.ResourceManager;

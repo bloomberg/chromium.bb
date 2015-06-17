@@ -11,10 +11,9 @@ import android.net.Uri;
 import android.os.SystemClock;
 import android.util.Log;
 
-import com.google.android.apps.chrome.R;
-
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.infobar.ConfirmInfoBar;
 import org.chromium.chrome.browser.infobar.InfoBar;
 import org.chromium.chrome.browser.infobar.InfoBarListeners;

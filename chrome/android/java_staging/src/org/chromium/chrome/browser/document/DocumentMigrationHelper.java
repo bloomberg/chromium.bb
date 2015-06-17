@@ -22,10 +22,9 @@ import android.util.Log;
 import android.util.Pair;
 import android.util.SparseArray;
 
-import com.google.android.apps.chrome.R;
-
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ImportantFileWriterAndroid;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ApplicationLifetime;
 import org.chromium.chrome.browser.ChromeMobileApplication;
 import org.chromium.chrome.browser.IntentHandler;

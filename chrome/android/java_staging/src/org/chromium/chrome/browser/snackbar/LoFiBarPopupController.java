@@ -6,8 +6,7 @@ package org.chromium.chrome.browser.snackbar;
 
 import android.content.Context;
 
-import com.google.android.apps.chrome.R;
-
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.bandwidth.DataReductionProxyUma;

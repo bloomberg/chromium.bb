@@ -9,8 +9,7 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.view.ViewGroup;
 
-import com.google.android.apps.chrome.R;
-
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BookmarkUtils;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.favicon.FaviconHelper;

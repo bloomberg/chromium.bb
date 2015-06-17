@@ -20,11 +20,10 @@ import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.google.android.apps.chrome.R;
-
 import junit.framework.Assert;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.bookmark.AddEditBookmarkFragment;
 import org.chromium.chrome.browser.bookmark.ManageBookmarkActivity;

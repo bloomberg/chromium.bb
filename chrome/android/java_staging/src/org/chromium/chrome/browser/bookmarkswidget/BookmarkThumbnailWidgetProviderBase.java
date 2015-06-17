@@ -13,9 +13,9 @@ import android.content.Intent;
 import android.net.Uri;
 import android.widget.RemoteViews;
 
-import com.google.android.apps.chrome.R;
 import com.google.android.apps.chrome.appwidget.bookmarks.BookmarkThumbnailWidgetProvider;
 
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.util.IntentUtils;
 
 /**

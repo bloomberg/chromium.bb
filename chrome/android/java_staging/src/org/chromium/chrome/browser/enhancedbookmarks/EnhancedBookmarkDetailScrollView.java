@@ -8,7 +8,7 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.ScrollView;
 
-import com.google.android.apps.chrome.R;
+import org.chromium.chrome.R;
 
 /**
  * Customized ScrollView used in EnhancedBookmarkDetailDialog. This ScrollView broadcasts scroll

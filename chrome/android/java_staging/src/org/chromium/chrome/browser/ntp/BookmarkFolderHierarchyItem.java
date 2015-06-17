@@ -13,8 +13,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.View.OnClickListener;
 
-import com.google.android.apps.chrome.R;
-
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.BookmarksPageView.BookmarksPageManager;
 import org.chromium.components.bookmarks.BookmarkId;
 

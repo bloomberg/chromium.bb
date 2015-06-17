@@ -8,8 +8,7 @@ import android.content.Context;
 import android.text.TextUtils;
 import android.view.ViewGroup;
 
-import com.google.android.apps.chrome.R;
-
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.AreaGestureEventFilter;

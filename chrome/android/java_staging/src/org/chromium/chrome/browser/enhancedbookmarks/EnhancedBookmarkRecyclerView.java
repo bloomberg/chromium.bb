@@ -14,8 +14,7 @@ import android.view.View;
 import android.widget.Checkable;
 import android.widget.RelativeLayout;
 
-import com.google.android.apps.chrome.R;
-
+import org.chromium.chrome.R;
 import org.chromium.components.bookmarks.BookmarkId;
 
 import java.util.List;

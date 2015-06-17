@@ -6,9 +6,8 @@ package org.chromium.chrome.browser.compositor.resources;
 
 import android.content.Context;
 
-import com.google.android.apps.chrome.R;
-
 import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.chrome.R;
 import org.chromium.ui.base.DeviceFormFactor;
 
 /**

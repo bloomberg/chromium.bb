@@ -9,9 +9,8 @@ import static org.chromium.chrome.browser.compositor.layouts.ChromeAnimation.Ani
 import android.content.Context;
 import android.graphics.RectF;
 
-import com.google.android.apps.chrome.R;
-
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation;
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation.Animatable;

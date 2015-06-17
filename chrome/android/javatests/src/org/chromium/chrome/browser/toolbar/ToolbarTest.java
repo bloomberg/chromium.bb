@@ -8,10 +8,9 @@ import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_TABLET;
 
 import android.test.suitebuilder.annotation.MediumTest;
 
-import com.google.android.apps.chrome.R;
-
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.omnibox.UrlBar;
 import org.chromium.chrome.browser.widget.findinpage.FindToolbar;

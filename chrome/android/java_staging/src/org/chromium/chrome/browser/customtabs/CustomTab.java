@@ -13,10 +13,9 @@ import android.text.TextUtils;
 import android.view.ContextMenu;
 import android.view.Menu;
 
-import com.google.android.apps.chrome.R;
-
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.CompositorChromeActivity;
 import org.chromium.chrome.browser.EmptyTabObserver;
 import org.chromium.chrome.browser.Tab;

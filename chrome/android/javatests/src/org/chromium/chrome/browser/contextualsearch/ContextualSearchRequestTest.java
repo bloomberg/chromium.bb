@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.contextualsearch;
 
 import android.test.suitebuilder.annotation.SmallTest;
 
-
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
 

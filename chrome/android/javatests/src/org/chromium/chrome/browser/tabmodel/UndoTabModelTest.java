@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.tabmodel;
 import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.MediumTest;
 
-
 import org.chromium.base.CommandLine;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.ChromeSwitches;

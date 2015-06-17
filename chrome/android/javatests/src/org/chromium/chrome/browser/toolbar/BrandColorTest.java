@@ -8,12 +8,11 @@ import android.graphics.Color;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.text.TextUtils;
 
-import com.google.android.apps.chrome.R;
-
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
+import org.chromium.chrome.R;
 import org.chromium.chrome.test.DocumentActivityTestBase;
 import org.chromium.chrome.test.util.DisableInTabbedMode;
 import org.chromium.content.browser.InterstitialPageDelegateAndroid;
