@@ -382,19 +382,23 @@ void V8GCController::majorGCPrologue(v8::Isolate* isolate, bool constructRetaine
 
 void V8GCController::gcEpilogue(v8::GCType type, v8::GCCallbackFlags flags)
 {
+    // v8::kGCCallbackFlagForced forces a Blink heap garbage collection
+    // when a garbage collection was forced from V8. This is either used
+    // for tests that force GCs from JavaScript to verify that objects die
+    // when expected, or when handling memory pressure notifications.
+    bool forceGC = flags & v8::kGCCallbackFlagForced;
+
     // FIXME: It would be nice if the GC callbacks passed the Isolate directly....
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     if (type == v8::kGCTypeScavenge) {
         minorGCEpilogue(isolate);
     } else if (type == v8::kGCTypeMarkSweepCompact) {
         majorGCEpilogue(isolate);
-        ThreadState::current()->didV8GC();
+        if (!forceGC)
+            ThreadState::current()->didV8MajorGC();
     }
 
-    // Forces a Blink heap garbage collection when a garbage collection
-    // was forced from V8. This is used for tests that force GCs from
-    // JavaScript to verify that objects die when expected.
-    if (flags & v8::kGCCallbackFlagForced) {
+    if (forceGC) {
         // This single GC is not enough for two reasons:
         //   (1) The GC is not precise because the GC scans on-stack pointers conservatively.
         //   (2) One GC is not enough to break a chain of persistent handles. It's possible that
