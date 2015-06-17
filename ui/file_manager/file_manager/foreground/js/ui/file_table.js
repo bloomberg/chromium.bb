@@ -481,16 +481,6 @@ FileTable.decorate = function(
 };
 
 /**
- * @override
- */
-FileTable.prototype.sort = function(i) {
-  this.dataModel.sort(this.columnModel.getId(i),
-                      this.columnModel.getDefaultOrder(i));
-  if (this.selectionModel.selectedIndex === -1)
-    this.list.scrollTop = 0;
-};
-
-/**
  * Updates high priority range of list thumbnail loader based on current
  * viewport.
  *
