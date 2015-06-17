@@ -12,11 +12,12 @@ package metrics;
 
 import "call_stack_profile.proto";
 import "perf_data.proto";
+import "perf_stat.proto";
 
 // Protocol buffer for collected sample-based profiling data.
 // Contains the parameters and data from a single profile collection event.
 
-// Next tag: 10
+// Next tag: 11
 message SampledProfile {
   // Indicates the event that triggered this collection.
   enum TriggerEvent {
@@ -76,4 +77,7 @@ message SampledProfile {
 
   // Sampled profile data collected by periodic sampling of call stacks.
   optional CallStackProfile call_stack_profile = 9;
+
+  // Perf counter data collected using "perf stat".
+  optional PerfStatProto perf_stat = 10;
 }

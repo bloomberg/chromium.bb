@@ -166,6 +166,7 @@
         'metrics/proto/omnibox_event.proto',
         'metrics/proto/omnibox_input_type.proto',
         'metrics/proto/perf_data.proto',
+        'metrics/proto/perf_stat.proto',
         'metrics/proto/profiler_event.proto',
         'metrics/proto/sampled_profile.proto',
         'metrics/proto/system_profile.proto',
