@@ -382,6 +382,7 @@ _x86_internal_release_boards = frozenset([
     'banjo',
     'beltino',
     'bobcat',
+    'buddy',
     'butterfly',
     'butterfly_freon',
     'candy',
@@ -2441,7 +2442,9 @@ def GetConfig():
       'auron-b', 'lulu', (
           'cid',
           'gandof',
-      )
+          'buddy',
+      ),
+      important=False,
   )
 
   # veyron-based boards
