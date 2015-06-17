@@ -1929,7 +1929,7 @@ crbug.com/495523 fast/text/international/text-spliced-font.html [ Pass Failure ]
 
 crbug.com/446406 [ Win ] fast/repaint/quotes.html [ Pass Failure ]
 
-crbug.com/495523 [ XP ] svg/W3C-SVG-1.1/animate-elem-52-t.svg [ Failure ]
+crbug.com/495523 [ XP ] svg/W3C-SVG-1.1/animate-elem-52-t.svg [ Failure ] 
 crbug.com/495523 [ XP ] svg/W3C-SVG-1.1/extend-namespace-01-f.svg [ Failure ]
 crbug.com/495523 svg/wicd/test-rightsizing-b.xhtml [ Pass Failure ]
 
@@ -1939,3 +1939,5 @@ crbug.com/501177 svg/clip-path/clip-path-evenodd-nonzero.svg [ Pass Timeout Cras
 crbug.com/501177 svg/clip-path/clip-path-nonzero-evenodd.svg [ Pass Timeout Crash ]
 crbug.com/501177 svg/clip-path/clip-path-nonzero.svg [ Pass Timeout Crash ]
 crbug.com/501177 svg/clip-path/clipper-placement-issue.svg [ Pass Timeout Crash ]
+
+crbug.com/501284 http/tests/security/w3c/cross-origin-objects.html [ Pass Failure ]
