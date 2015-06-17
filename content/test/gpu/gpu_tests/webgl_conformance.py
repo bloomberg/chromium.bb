@@ -91,8 +91,13 @@ class WebglConformanceValidator(page_test.PageTest):
         browser.browser_type == 'android-webview-shell'):
         # TODO(kbr): this is overly broad. We'd like to do this only on
         # Nexus 9. It'll go away shortly anyway. crbug.com/499928
+        #
+        # The --ignore_egl_sync_failures is only there to work around
+        # some strange failure on the Nexus 9 bot, not reproducible on
+        # local hardware.
         options.AppendExtraBrowserArgs([
-            '--disable-gl-extensions=GL_EXT_disjoint_timer_query'
+            '--disable-gl-extensions=GL_EXT_disjoint_timer_query',
+            '--ignore_egl_sync_failures'
         ])
 
 
