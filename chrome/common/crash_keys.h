@@ -157,9 +157,6 @@ extern const char kKaskoGuid[];
 extern const char kKaskoEquivalentGuid[];
 #endif
 
-// Used to help investigate bug 464926.
-extern const char kBug464926CrashKey[];
-
 // Numbers of active views.
 extern const char kViewCount[];
 
