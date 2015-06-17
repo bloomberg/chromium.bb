@@ -196,6 +196,8 @@ void RadioInputType::didDispatchClick(Event* event, const ClickHandlingState& st
             && checkedRadioButton->form() == element().form()
             && checkedRadioButton->name() == element().name())
             checkedRadioButton->setChecked(true);
+    } else {
+        element().dispatchChangeEventIfNeeded();
     }
 
     // The work we did in willDispatchClick was default handling.
