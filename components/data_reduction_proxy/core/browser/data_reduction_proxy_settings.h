@@ -256,8 +256,6 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
   // The group won't be reported if it changes while compiling the report. It
   // can be assumed that when no Lo-Fi group is reported, the user was in a
   // mixed Lo-Fi state.
-  // TODO(tbansal): State of the Lo-Fi synthetic field trial should change
-  // based on Auto Lo-Fi status.
   void RegisterLoFiFieldTrial();
 
   void OnProxyEnabledPrefChange();

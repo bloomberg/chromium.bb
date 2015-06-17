@@ -47,7 +47,7 @@ const char kAndroidOneIdentifier[] = "sprout";
 
 const char kQuicFieldTrial[] = "DataReductionProxyUseQuic";
 
-const char kLoFiFieldTrial[] = "DataReductionProxyLoFi";
+const char kLoFiFieldTrial[] = "DataCompressionProxyLoFi";
 
 const char kConfigServiceFieldTrial[] = "DataReductionProxyConfigService";
 const char kConfigServiceURLParam[] = "url";
