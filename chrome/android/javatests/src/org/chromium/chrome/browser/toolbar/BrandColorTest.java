@@ -9,7 +9,6 @@ import android.test.suitebuilder.annotation.SmallTest;
 import android.text.TextUtils;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
@@ -55,24 +54,26 @@ public class BrandColorTest extends DocumentActivityTestBase {
 
     private void checkForBrandColor(final int brandColor) {
         try {
-            assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
-                @Override
-                public boolean isSatisfied() {
-                    if (mToolbarDataProvider.getPrimaryColor() != brandColor) return false;
-                    return mToolbarDataProvider.getPrimaryColor()
-                            == mToolbar.getBackgroundDrawable().getColor();
-                }
-            }));
+            assertTrue("The toolbar background doesn't contain the right color",
+                    CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+                        @Override
+                        public boolean isSatisfied() {
+                            if (mToolbarDataProvider.getPrimaryColor() != brandColor) return false;
+                            return mToolbarDataProvider.getPrimaryColor()
+                                    == mToolbar.getBackgroundDrawable().getColor();
+                        }
+                    }));
+            assertTrue("The overlay drawable doesn't contain the right color",
+                    CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+                        @Override
+                        public boolean isSatisfied() {
+                            return mToolbar.getOverlayDrawable().getColor() == brandColor;
+                        }
+                    }));
         } catch (InterruptedException e) {
             fail();
         }
-        ThreadUtils.postOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                assertEquals("The overlay drawable doesn't contain the right color",
-                        brandColor, mToolbar.getOverlayDrawable().getColor());
-            }
-        });
+
     }
 
     @Override
@@ -135,11 +136,9 @@ public class BrandColorTest extends DocumentActivityTestBase {
     /**
      * Test for checking navigating to a brand color site from a site with no brand color and then
      * back again.
-     * @SmallTest
-     * @Feature({"Omnibox"})
-     * http://crbug.com/501324
      */
-    @DisabledTest
+    @SmallTest
+    @Feature({"Omnibox"})
     public void testNavigatingToBrandColorAndBack() throws InterruptedException {
         startMainActivityWithURL("about:blank");
         checkForBrandColor(mDefaultColor);
