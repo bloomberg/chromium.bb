@@ -14,6 +14,8 @@
 #include "chrome/common/pref_names.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/core/service_access_type.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/common/url_constants.h"
 
 // static
 InMemoryURLIndex* InMemoryURLIndexFactory::GetForProfile(Profile* profile) {
@@ -41,12 +43,15 @@ KeyedService* InMemoryURLIndexFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   // Do not force creation of the HistoryService if saving history is disabled.
   Profile* profile = Profile::FromBrowserContext(context);
+  SchemeSet chrome_schemes_to_whitelist;
+  chrome_schemes_to_whitelist.insert(content::kChromeUIScheme);
   InMemoryURLIndex* in_memory_url_index = new InMemoryURLIndex(
       BookmarkModelFactory::GetForProfile(profile),
       HistoryServiceFactory::GetForProfile(profile,
                                            ServiceAccessType::IMPLICIT_ACCESS),
-      profile->GetPath(),
-      profile->GetPrefs()->GetString(prefs::kAcceptLanguages));
+      content::BrowserThread::GetBlockingPool(), profile->GetPath(),
+      profile->GetPrefs()->GetString(prefs::kAcceptLanguages),
+      chrome_schemes_to_whitelist);
   in_memory_url_index->Init();
   return in_memory_url_index;
 }

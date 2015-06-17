@@ -18,6 +18,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "base/threading/sequenced_worker_pool.h"
+#include "base/threading/thread_checker.h"
 #include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/history/core/browser/history_types.h"
@@ -45,6 +47,8 @@ class HistoryService;
 }
 
 class URLIndexPrivateData;
+
+typedef std::set<std::string> SchemeSet;
 
 // The URL history source.
 // Holds portions of the URL database in memory in an indexed form.  Used to
@@ -101,8 +105,10 @@ class InMemoryURLIndex : public KeyedService,
   // characters.
   InMemoryURLIndex(bookmarks::BookmarkModel* bookmark_model,
                    history::HistoryService* history_service,
+                   base::SequencedWorkerPool* worker_pool,
                    const base::FilePath& history_dir,
-                   const std::string& languages);
+                   const std::string& languages,
+                   const SchemeSet& client_schemes_to_whitelist);
   ~InMemoryURLIndex() override;
 
   // Opens and prepares the index of historical URL visits. If the index private
@@ -152,7 +158,7 @@ class InMemoryURLIndex : public KeyedService,
     explicit RebuildPrivateDataFromHistoryDBTask(
         InMemoryURLIndex* index,
         const std::string& languages,
-        const std::set<std::string>& scheme_whitelist);
+        const SchemeSet& scheme_whitelist);
 
     bool RunOnDBThread(history::HistoryBackend* backend,
                        history::HistoryDatabase* db) override;
@@ -163,7 +169,7 @@ class InMemoryURLIndex : public KeyedService,
 
     InMemoryURLIndex* index_;  // Call back to this index at completion.
     std::string languages_;    // Languages for word-breaking.
-    std::set<std::string> scheme_whitelist_;  // Schemes to be indexed.
+    SchemeSet scheme_whitelist_;  // Schemes to be indexed.
     bool succeeded_;  // Indicates if the rebuild was successful.
     scoped_refptr<URLIndexPrivateData> data_;  // The rebuilt private data.
 
@@ -262,7 +268,7 @@ class InMemoryURLIndex : public KeyedService,
   }
 
   // Returns the set of whitelisted schemes. For unit testing only.
-  const std::set<std::string>& scheme_whitelist() { return scheme_whitelist_; }
+  const SchemeSet& scheme_whitelist() { return scheme_whitelist_; }
 
   // The BookmarkModel; may be null when testing.
   bookmarks::BookmarkModel* bookmark_model_;
@@ -279,7 +285,7 @@ class InMemoryURLIndex : public KeyedService,
   std::string languages_;
 
   // Only URLs with a whitelisted scheme are indexed.
-  std::set<std::string> scheme_whitelist_;
+  SchemeSet scheme_whitelist_;
 
   // The index's durable private data.
   scoped_refptr<URLIndexPrivateData> private_data_;
@@ -310,6 +316,8 @@ class InMemoryURLIndex : public KeyedService,
   // This flag is set to true if we want to listen to the
   // HistoryServiceLoaded Notification.
   bool listen_to_history_service_loaded_;
+
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(InMemoryURLIndex);
 };
