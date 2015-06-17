@@ -29,6 +29,7 @@
 #include "core/CoreExport.h"
 #include "core/dom/Position.h"
 #include "core/editing/EditingBoundary.h"
+#include "core/editing/PositionWithAffinity.h"
 #include "platform/text/TextDirection.h"
 #include "wtf/Forward.h"
 #include "wtf/unicode/CharacterNames.h"
@@ -43,7 +44,6 @@ class HTMLLIElement;
 class HTMLSpanElement;
 class HTMLUListElement;
 class Node;
-class PositionWithAffinity;
 class Range;
 class VisiblePosition;
 class VisibleSelection;

@@ -11,22 +11,32 @@
 
 namespace blink {
 
-class CORE_EXPORT PositionWithAffinity {
+template <typename Position>
+class CORE_TEMPLATE_CLASS_EXPORT PositionWithAffinityTemplate {
     DISALLOW_ALLOCATION();
 public:
-    PositionWithAffinity(const Position&, EAffinity = DOWNSTREAM);
-    PositionWithAffinity();
-    ~PositionWithAffinity();
+    typedef Position PositionType;
+
+    PositionWithAffinityTemplate(const PositionType&, EAffinity = DOWNSTREAM);
+    PositionWithAffinityTemplate();
+    ~PositionWithAffinityTemplate();
 
     EAffinity affinity() const { return m_affinity; }
-    const Position& position() const { return m_position; }
+    const PositionType& position() const { return m_position; }
 
-    DECLARE_TRACE();
+    DEFINE_INLINE_TRACE()
+    {
+        visitor->trace(m_position);
+    }
 
 private:
-    Position m_position;
+    PositionType m_position;
     EAffinity m_affinity;
 };
+
+extern template class CORE_EXTERN_TEMPLATE_EXPORT PositionWithAffinityTemplate<Position>;
+
+using PositionWithAffinity = PositionWithAffinityTemplate<Position>;
 
 } // namespace blink
 

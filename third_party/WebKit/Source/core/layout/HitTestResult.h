@@ -23,6 +23,7 @@
 #define HitTestResult_h
 
 #include "core/CoreExport.h"
+#include "core/editing/PositionWithAffinity.h"
 #include "core/layout/HitTestLocation.h"
 #include "core/layout/HitTestRequest.h"
 #include "platform/geometry/FloatQuad.h"
@@ -46,7 +47,6 @@ class Image;
 class KURL;
 class Node;
 class LayoutObject;
-class PositionWithAffinity;
 class Scrollbar;
 
 class CORE_EXPORT HitTestResult {

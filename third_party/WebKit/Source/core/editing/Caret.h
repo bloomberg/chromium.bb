@@ -36,7 +36,6 @@ namespace blink {
 
 class LocalFrame;
 class GraphicsContext;
-class PositionWithAffinity;
 class LayoutBlock;
 class LayoutView;
 

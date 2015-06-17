@@ -28,13 +28,13 @@
 
 #include "core/CoreExport.h"
 #include "core/editing/EditingBoundary.h"
+#include "core/editing/PositionWithAffinity.h"
 #include "platform/text/TextDirection.h"
 
 namespace blink {
 
 class LayoutRect;
 class LayoutUnit;
-class PositionWithAffinity;
 class LayoutObject;
 class Node;
 class VisiblePosition;

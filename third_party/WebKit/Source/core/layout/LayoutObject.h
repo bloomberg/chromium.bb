@@ -31,6 +31,7 @@
 #include "core/dom/DocumentLifecycle.h"
 #include "core/dom/Element.h"
 #include "core/dom/Position.h"
+#include "core/editing/PositionWithAffinity.h"
 #include "core/editing/TextAffinity.h"
 #include "core/fetch/ImageResourceClient.h"
 #include "core/html/HTMLElement.h"
@@ -59,7 +60,6 @@ class Document;
 class HitTestLocation;
 class HitTestResult;
 class InlineBox;
-class PositionWithAffinity;
 class PseudoStyleRequest;
 class LayoutBoxModelObject;
 class LayoutBlock;
