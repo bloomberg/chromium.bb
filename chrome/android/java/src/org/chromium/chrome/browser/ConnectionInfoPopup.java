@@ -75,6 +75,12 @@ public class ConnectionInfoPopup implements OnClickListener {
                 // showing is stale so dismiss the dialog.
                 mDialog.dismiss();
             }
+
+            @Override
+            public void destroy() {
+                super.destroy();
+                mDialog.dismiss();
+            }
         };
         mDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
             @Override

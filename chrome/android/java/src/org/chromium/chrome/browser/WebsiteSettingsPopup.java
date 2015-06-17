@@ -376,6 +376,12 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
                 // is stale so dismiss the dialog.
                 mDialog.dismiss();
             }
+
+            @Override
+            public void destroy() {
+                super.destroy();
+                mDialog.dismiss();
+            }
         };
         mDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
             @Override
@@ -730,7 +736,9 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
             runAfterDismiss(new Runnable() {
                 @Override
                 public void run() {
-                    ConnectionInfoPopup.show(mContext, mWebContents);
+                    if (!mWebContents.isDestroyed()) {
+                        ConnectionInfoPopup.show(mContext, mWebContents);
+                    }
                 }
             });
         }
