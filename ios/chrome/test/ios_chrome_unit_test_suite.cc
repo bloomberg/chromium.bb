@@ -8,7 +8,6 @@
 #include "ios/chrome/browser/chrome_paths.h"
 #include "ios/public/test/test_chrome_browser_provider.h"
 #include "ios/public/test/test_chrome_provider_initializer.h"
-#include "ios/public/test/test_keyed_service_provider.h"
 #include "ios/web/public/web_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -65,8 +64,6 @@ void IOSChromeUnitTestSuite::Initialize() {
 
   // Ensure that all BrowserStateKeyedServiceFactories are built before any
   // test is run so that the dependencies are correctly resolved.
-  ios::TestKeyedServiceProvider keyed_service_provider;
-  ios::SetKeyedServiceProvider(&keyed_service_provider);
   EnsureBrowserStateKeyedServiceFactoriesBuilt();
 
   ios::RegisterPathProvider();
