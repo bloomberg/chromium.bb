@@ -420,7 +420,7 @@ InspectorTest.eventListenersWidget = function()
 
 InspectorTest.expandAndDumpSelectedElementEventListeners = function(callback)
 {
-    InspectorTest.addSniffer(WebInspector.EventListenersWidget.prototype, "_eventListenersArrivedForTest", listenersArrived);
+    InspectorTest.addSniffer(WebInspector.EventListenersView.prototype, "_eventListenersArrivedForTest", listenersArrived);
 
     var eventListenersWidget = InspectorTest.eventListenersWidget();
 
