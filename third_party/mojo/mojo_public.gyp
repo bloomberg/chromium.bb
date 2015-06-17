@@ -37,7 +37,6 @@
       'type': 'none',
     },
     {
-      # GN version: //mojo/public/c/system
       'target_name': 'mojo_system',
       'type': 'static_library',
       'defines': [
@@ -55,6 +54,18 @@
         ],
       },
       'sources': [
+        'src/mojo/public/platform/native/system_thunks.cc',
+        'src/mojo/public/platform/native/system_thunks.h',
+      ],
+      'dependencies': [
+        'mojo_system_headers',
+      ],
+    },
+    {
+      # GN version: //mojo/public/c/system
+      'target_name': 'mojo_system_headers',
+      'type': 'none',
+      'sources': [
         'src/mojo/public/c/system/buffer.h',
         'src/mojo/public/c/system/core.h',
         'src/mojo/public/c/system/data_pipe.h',
@@ -63,8 +74,23 @@
         'src/mojo/public/c/system/message_pipe.h',
         'src/mojo/public/c/system/system_export.h',
         'src/mojo/public/c/system/types.h',
-        'src/mojo/public/platform/native/system_thunks.cc',
-        'src/mojo/public/platform/native/system_thunks.h',
+      ],
+    },
+    {
+      # GN version: //mojo/public/cpp/system
+      'target_name': 'mojo_system_cpp_headers',
+      'type': 'none',
+      'sources': [
+        'src/mojo/public/cpp/system/buffer.h',
+        'src/mojo/public/cpp/system/core.h',
+        'src/mojo/public/cpp/system/data_pipe.h',
+        'src/mojo/public/cpp/system/functions.h',
+        'src/mojo/public/cpp/system/handle.h',
+        'src/mojo/public/cpp/system/macros.h',
+        'src/mojo/public/cpp/system/message_pipe.h',
+      ],
+      'dependencies': [
+        'mojo_system_headers',
       ],
     },
     {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/html_viewer/web_message_port_channel_impl.h"
+#include "components/message_port/web_message_port_channel_impl.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -16,7 +16,7 @@ using blink::WebMessagePortChannelArray;
 using blink::WebMessagePortChannelClient;
 using blink::WebString;
 
-namespace html_viewer {
+namespace message_port {
 
 void WebMessagePortChannelImpl::CreatePair(
     blink::WebMessagePortChannel** channel1,
@@ -129,4 +129,4 @@ void WebMessagePortChannelImpl::OnMessageAvailable(MojoResult result) {
   WaitForNextMessage();
 }
 
-}  // namespace html_viewer
+}  // namespace message_port

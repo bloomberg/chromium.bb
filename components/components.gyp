@@ -93,6 +93,7 @@
         'cdm.gypi',
         'devtools_discovery.gypi',
         'devtools_http_handler.gypi',
+        'message_port.gypi',
         'navigation_interception.gypi',
         'power.gypi',
         'safe_json_parser.gypi',
