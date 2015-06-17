@@ -90,6 +90,7 @@ public:
     GCObservation* observeGC(ScriptValue);
 
     bool isPreloaded(const String& url);
+    bool isPreloadedBy(const String& url, Document*);
     bool isLoadingFromMemoryCache(const String& url);
 
     bool isSharingStyle(Element*, Element*) const;

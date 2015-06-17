@@ -145,14 +145,22 @@ const KURL& DocumentLoader::url() const
 
 void DocumentLoader::startPreload(Resource::Type type, FetchRequest& request)
 {
-    ASSERT(type == Resource::Script || type == Resource::CSSStyleSheet || type == Resource::Image);
+    ASSERT(type == Resource::Script || type == Resource::CSSStyleSheet || type == Resource::Image || type == Resource::ImportResource);
     ResourcePtr<Resource> resource;
-    if (type == Resource::Image)
+    switch (type) {
+    case Resource::Image:
         resource = ImageResource::fetch(request, fetcher());
-    else if (type == Resource::Script)
+        break;
+    case Resource::Script:
         resource = ScriptResource::fetch(request, fetcher());
-    else
+        break;
+    case Resource::CSSStyleSheet:
         resource = CSSStyleSheetResource::fetch(request, fetcher());
+        break;
+    default: // Resource::ImportResource
+        resource = RawResource::fetchImport(request, fetcher());
+        break;
+    }
 
     if (resource)
         fetcher()->preloadStarted(resource.get());

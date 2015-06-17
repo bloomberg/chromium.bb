@@ -363,7 +363,13 @@ void Internals::clearHitTestCache(Document* doc, ExceptionState& exceptionState)
 
 bool Internals::isPreloaded(const String& url)
 {
-    Document* document = contextDocument();
+    return isPreloadedBy(url, contextDocument());
+}
+
+bool Internals::isPreloadedBy(const String& url, Document* document)
+{
+    if (!document)
+        return false;
     return document->fetcher()->isPreloaded(document->completeURL(url));
 }
 

@@ -112,6 +112,7 @@ public:
         : m_tagImpl(tagImpl)
         , m_linkIsStyleSheet(false)
         , m_linkIsPreconnect(false)
+        , m_linkIsImport(false)
         , m_matchedMediaAttribute(true)
         , m_inputIsImage(false)
         , m_sourceSize(0)
@@ -236,6 +237,7 @@ private:
             LinkRelAttribute rel(attributeValue);
             m_linkIsStyleSheet = rel.isStyleSheet() && !rel.isAlternate() && rel.iconType() == InvalidIcon && !rel.isDNSPrefetch();
             m_linkIsPreconnect = rel.isPreconnect();
+            m_linkIsImport = rel.isImport();
         } else if (match(attributeName, mediaAttr)) {
             m_matchedMediaAttribute = mediaAttributeMatches(*m_mediaValues, attributeValue);
         } else if (match(attributeName, crossoriginAttr)) {
@@ -328,6 +330,8 @@ private:
             return Resource::CSSStyleSheet;
         if (m_linkIsPreconnect)
             return Resource::Raw;
+        if (match(m_tagImpl, linkTag) && m_linkIsImport)
+            return Resource::ImportResource;
         ASSERT_NOT_REACHED();
         return Resource::Raw;
     }
@@ -341,7 +345,7 @@ private:
     {
         if (m_urlToLoad.isEmpty())
             return false;
-        if (match(m_tagImpl, linkTag) && !m_linkIsStyleSheet)
+        if (match(m_tagImpl, linkTag) && !m_linkIsStyleSheet && !m_linkIsImport)
             return false;
         if (match(m_tagImpl, inputTag) && !m_inputIsImage)
             return false;
@@ -383,6 +387,7 @@ private:
     String m_charset;
     bool m_linkIsStyleSheet;
     bool m_linkIsPreconnect;
+    bool m_linkIsImport;
     bool m_matchedMediaAttribute;
     bool m_inputIsImage;
     String m_imgSrcUrl;

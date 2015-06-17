@@ -35,6 +35,7 @@
 
     [RaisesException, TypeChecking=Interface] DOMString elementLayoutTreeAsText(Element element);
     boolean isPreloaded(DOMString url);
+    boolean isPreloadedBy(DOMString url, Document document);
     boolean isLoadingFromMemoryCache(DOMString url);
 
     [TypeChecking=Interface] boolean isSharingStyle(Element element1, Element element2);

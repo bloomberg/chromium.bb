@@ -73,10 +73,11 @@ void HTMLResourcePreloader::preload(PassOwnPtr<PreloadRequest> preload)
         preconnectHost(preload.get());
         return;
     }
+    // TODO(yoichio): Should preload if document is imported.
     if (!m_document->loader())
         return;
     FetchRequest request = preload->resourceRequest(m_document);
-    if (preload->resourceType() == Resource::Script || preload->resourceType() == Resource::CSSStyleSheet)
+    if (preload->resourceType() == Resource::Script || preload->resourceType() == Resource::CSSStyleSheet || preload->resourceType() == Resource::ImportResource)
         request.setCharset(preload->charset().isEmpty() ? m_document->charset().string() : preload->charset());
     request.setForPreload(true);
     Platform::current()->histogramCustomCounts("WebCore.PreloadDelayMs", static_cast<int>(1000 * (monotonicallyIncreasingTime() - preload->discoveryTime())), 0, 2000, 20);

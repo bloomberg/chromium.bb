@@ -1,4 +1,7 @@
 <?php
+    $sleep = $_GET['delay'];
+    if (isset($sleep))
+        usleep($sleep*1000);
     $url = $_GET['url'];
     $refresh = $_GET['refresh'];
 
