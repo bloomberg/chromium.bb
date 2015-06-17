@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/time/time.h"
 
 class GURL;
 
@@ -22,6 +23,9 @@ class ClipboardRecentContent {
   // Returns true if the clipboard contains a recent URL, and copies it in
   // |url|. Otherwise, returns false. |url| must not be null.
   virtual bool GetRecentURLFromClipboard(GURL* url) const = 0;
+
+  // Returns how old the content of the clipboard is.
+  virtual base::TimeDelta GetClipboardContentAge() const = 0;
 
   // Sets which URL scheme this app can be opened with. Used by
   // ClipboardRecentContent to determine whether or not the clipboard contains

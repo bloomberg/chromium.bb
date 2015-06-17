@@ -72,7 +72,7 @@ NSString* kPasteboardChangeCountKey = @"PasteboardChangeCount";
 // Key used to store the last date at which it was detected that the pasteboard
 // changed. It is used to evaluate the age of the pasteboard's content.
 NSString* kPasteboardChangeDateKey = @"PasteboardChangeDate";
-NSTimeInterval kMaximumAgeOfClipboardInSeconds = 6 * 60 * 60;
+base::TimeDelta kMaximumAgeOfClipboard = base::TimeDelta::FromHours(3);
 // Schemes accepted by the ClipboardRecentContentIOS.
 const char* kAuthorizedSchemes[] = {
     url::kHttpScheme,
@@ -88,8 +88,7 @@ ClipboardRecentContentIOS* ClipboardRecentContentIOS::GetInstance() {
 
 bool ClipboardRecentContentIOS::GetRecentURLFromClipboard(GURL* url) const {
   DCHECK(url);
-  if (-[lastPasteboardChangeDate_ timeIntervalSinceNow] >
-      kMaximumAgeOfClipboardInSeconds) {
+  if (GetClipboardContentAge() > kMaximumAgeOfClipboard) {
     return false;
   }
   if (urlFromPasteboardCache_.is_valid()) {
@@ -97,6 +96,11 @@ bool ClipboardRecentContentIOS::GetRecentURLFromClipboard(GURL* url) const {
     return true;
   }
   return false;
+}
+
+base::TimeDelta ClipboardRecentContentIOS::GetClipboardContentAge() const {
+  return base::TimeDelta::FromSeconds(
+      static_cast<int64>(-[lastPasteboardChangeDate_ timeIntervalSinceNow]));
 }
 
 void ClipboardRecentContentIOS::PasteboardChanged() {
@@ -165,8 +169,8 @@ void ClipboardRecentContentIOS::SaveToUserDefaults() {
 }
 
 bool ClipboardRecentContentIOS::DeviceRestartedSincePasteboardChanged() {
-  int64 secondsSincePasteboardChange =
-      -static_cast<int64>([lastPasteboardChangeDate_ timeIntervalSinceNow]);
-  int64 secondsSinceLastDeviceRestart = base::SysInfo::Uptime() / 1000;
-  return secondsSincePasteboardChange > secondsSinceLastDeviceRestart;
+  base::TimeDelta timeSincePasteboardChange = GetClipboardContentAge();
+  base::TimeDelta timeSinceDeviceRestart =
+      base::TimeDelta::FromMilliseconds(base::SysInfo::Uptime());
+  return timeSincePasteboardChange > timeSinceDeviceRestart;
 }

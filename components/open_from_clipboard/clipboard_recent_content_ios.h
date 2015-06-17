@@ -26,8 +26,9 @@ class ClipboardRecentContentIOS : public ClipboardRecentContent {
   // Notifies that the content of the pasteboard may have changed.
   void PasteboardChanged();
 
-  // ClipboardRecentContent implementation.
   bool GetRecentURLFromClipboard(GURL* url) const override;
+
+  base::TimeDelta GetClipboardContentAge() const override;
 
  protected:
   // Protected for testing.
