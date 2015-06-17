@@ -115,11 +115,8 @@ crbug.com/331566 fast/preloader/document-write-noscript.html [ Failure Pass ]
 
 crbug.com/86340 fast/filesystem/workers/file-writer-write-overlapped.html [ Failure Pass ]
 
-crbug.com/497950 fast/repaint/paint-invalidation-with-reparent-across-frame-boundaries.html [ NeedsRebaseline ]
 crbug.com/497950 fast/repaint/float-overflow-right.html [ NeedsManualRebaseline ]
 crbug.com/497950 fast/repaint/float-overflow.html [ NeedsManualRebaseline ]
-crbug.com/497950 fast/repaint/inline-outline-repaint-2.html [ NeedsRebaseline ]
-crbug.com/497950 fast/repaint/inline-outline-repaint.html [ NeedsRebaseline ]
 crbug.com/497950 fast/repaint/transform-inline-layered-child.html [ NeedsManualRebaseline ]
 
 crbug.com/240374 compositing/overlap-blending/reflection-opacity-huge.html [ ImageOnlyFailure ]
