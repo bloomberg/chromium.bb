@@ -11,7 +11,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/proximity_auth/ble/bluetooth_low_energy_connection.h"
 #include "components/proximity_auth/connection.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -241,7 +241,7 @@ void BluetoothLowEnergyConnectionFinder::OnGattConnectionCreated(
   // This is a workaround for crbug.com/498850. Currently, trying to write/read
   // characteristics immediatelly after the GATT connection was established
   // fails with the very informative GATT_ERROR_FAILED.
-  base::MessageLoopProxy::current()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&BluetoothLowEnergyConnectionFinder::CompleteConnection,
                  weak_ptr_factory_.GetWeakPtr()),
