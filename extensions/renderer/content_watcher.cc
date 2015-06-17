@@ -83,8 +83,7 @@ void ContentWatcher::DidMatchCSS(
 void ContentWatcher::NotifyBrowserOfChange(
     blink::WebFrame* changed_frame) const {
   blink::WebFrame* const top_frame = changed_frame->top();
-  const blink::WebSecurityOrigin top_origin =
-      top_frame->document().securityOrigin();
+  const blink::WebSecurityOrigin top_origin = top_frame->securityOrigin();
   // Want to aggregate matched selectors from all frames where an
   // extension with access to top_origin could run on the frame.
   if (!top_origin.canAccess(changed_frame->document().securityOrigin())) {
