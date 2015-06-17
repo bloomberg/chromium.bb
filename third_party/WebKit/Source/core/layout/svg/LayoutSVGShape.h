@@ -61,7 +61,6 @@ public:
         ASSERT(m_path);
         return *m_path;
     }
-    bool hasPath() const { return m_path.get(); }
 
     virtual bool isShapeEmpty() const { return path().isEmpty(); }
 
@@ -83,9 +82,12 @@ public:
 
 protected:
     void clearPath() { m_path.clear(); }
-    void createPath();
 
+    // Reconstruct the Path. Subclasses may use geometry knowledge to avoid creating a Path.
     virtual void updateShapeFromElement();
+
+    virtual void updateStrokeAndFillBoundingBoxes();
+
     // Calculates an inclusive bounding box of this shape as if this shape has
     // a stroke. If this shape has a stroke, then m_strokeBoundingBox is returned;
     // otherwise, estimates a bounding box (not necessarily tight) that would
@@ -112,8 +114,7 @@ private:
     virtual bool nodeAtFloatPoint(HitTestResult&, const FloatPoint& pointInParent, HitTestAction) override final;
 
     virtual FloatRect strokeBoundingBox() const override final { return m_strokeBoundingBox; }
-    FloatRect calculateObjectBoundingBox() const;
-    FloatRect calculateStrokeBoundingBox() const;
+
     void updatePaintInvalidationBoundingBox();
     void updateLocalTransform();
 

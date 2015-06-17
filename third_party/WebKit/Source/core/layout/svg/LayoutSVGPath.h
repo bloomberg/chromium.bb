@@ -43,9 +43,10 @@ public:
     virtual const char* name() const override { return "LayoutSVGPath"; }
 
 private:
-    virtual void updateShapeFromElement() override;
+    void updateShapeFromElement() override;
+    void updateStrokeAndFillBoundingBoxes() override;
+
     virtual FloatRect hitTestStrokeBoundingBox() const override;
-    FloatRect calculateUpdatedStrokeBoundingBox() const;
 
     virtual bool shapeDependentStrokeContains(const FloatPoint&) override;
 

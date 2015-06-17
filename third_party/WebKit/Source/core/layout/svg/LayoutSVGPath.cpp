@@ -50,10 +50,24 @@ LayoutSVGPath::~LayoutSVGPath()
 void LayoutSVGPath::updateShapeFromElement()
 {
     LayoutSVGShape::updateShapeFromElement();
-    processMarkerPositions();
     updateZeroLengthSubpaths();
+}
 
-    m_strokeBoundingBox = calculateUpdatedStrokeBoundingBox();
+void LayoutSVGPath::updateStrokeAndFillBoundingBoxes()
+{
+    LayoutSVGShape::updateStrokeAndFillBoundingBoxes();
+
+    // TODO(pdr): We should only call this in updateShapeFromElement.
+    processMarkerPositions();
+    if (!m_markerPositions.isEmpty())
+        m_strokeBoundingBox.unite(markerRect(strokeWidth()));
+
+    if (style()->svgStyle().hasStroke()) {
+        // FIXME: zero-length subpaths do not respect vector-effect = non-scaling-stroke.
+        float strokeWidth = this->strokeWidth();
+        for (size_t i = 0; i < m_zeroLengthLinecapLocations.size(); ++i)
+            m_strokeBoundingBox.unite(zeroLengthSubpathRect(m_zeroLengthLinecapLocations[i], strokeWidth));
+    }
 }
 
 FloatRect LayoutSVGPath::hitTestStrokeBoundingBox() const
@@ -89,23 +103,6 @@ FloatRect LayoutSVGPath::hitTestStrokeBoundingBox() const
         box.unite(zeroLengthSubpathRect(m_zeroLengthLinecapLocations[i], strokeWidth));
 
     return box;
-}
-
-FloatRect LayoutSVGPath::calculateUpdatedStrokeBoundingBox() const
-{
-    FloatRect strokeBoundingBox = m_strokeBoundingBox;
-
-    if (!m_markerPositions.isEmpty())
-        strokeBoundingBox.unite(markerRect(strokeWidth()));
-
-    if (style()->svgStyle().hasStroke()) {
-        // FIXME: zero-length subpaths do not respect vector-effect = non-scaling-stroke.
-        float strokeWidth = this->strokeWidth();
-        for (size_t i = 0; i < m_zeroLengthLinecapLocations.size(); ++i)
-            strokeBoundingBox.unite(zeroLengthSubpathRect(m_zeroLengthLinecapLocations[i], strokeWidth));
-    }
-
-    return strokeBoundingBox;
 }
 
 bool LayoutSVGPath::shapeDependentStrokeContains(const FloatPoint& point)
