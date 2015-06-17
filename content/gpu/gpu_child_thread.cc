@@ -178,10 +178,11 @@ void GpuChildThread::OnInitialize() {
   // Defer creation of the render thread. This is to prevent it from handling
   // IPC messages before the sandbox has been enabled and all other necessary
   // initialization has succeeded.
-  gpu_channel_manager_.reset(new GpuChannelManager(
-      GetRouter(), watchdog_thread_.get(),
-      ChildProcess::current()->io_task_runner(),
-      ChildProcess::current()->GetShutDownEvent(), channel()));
+  gpu_channel_manager_.reset(
+      new GpuChannelManager(GetRouter(), watchdog_thread_.get(),
+                            ChildProcess::current()->io_task_runner(),
+                            ChildProcess::current()->GetShutDownEvent(),
+                            channel(), GetAttachmentBroker()));
 
 #if defined(USE_OZONE)
   ui::OzonePlatform::GetInstance()

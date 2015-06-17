@@ -437,13 +437,14 @@ GpuChannel::~GpuChannel() {
 }
 
 void GpuChannel::Init(base::SingleThreadTaskRunner* io_task_runner,
-                      base::WaitableEvent* shutdown_event) {
+                      base::WaitableEvent* shutdown_event,
+                      IPC::AttachmentBroker* broker) {
   DCHECK(!channel_.get());
 
   // Map renderer ID to a (single) channel to that process.
   channel_ =
       IPC::SyncChannel::Create(channel_id_, IPC::Channel::MODE_SERVER, this,
-                               io_task_runner, false, shutdown_event);
+                               io_task_runner, false, shutdown_event, broker);
 
   filter_ = new GpuChannelMessageFilter(
       weak_factory_.GetWeakPtr(), gpu_channel_manager_->sync_point_manager(),

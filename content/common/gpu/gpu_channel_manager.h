@@ -43,6 +43,7 @@ class ShaderTranslatorCache;
 }
 
 namespace IPC {
+class AttachmentBroker;
 struct ChannelHandle;
 class SyncChannel;
 class MessageFilter;
@@ -62,11 +63,13 @@ class MessageRouter;
 class CONTENT_EXPORT GpuChannelManager : public IPC::Listener,
                           public IPC::Sender {
  public:
+  // |broker| must outlive GpuChannelManager and any channels it creates.
   GpuChannelManager(MessageRouter* router,
                     GpuWatchdog* watchdog,
                     base::SingleThreadTaskRunner* io_task_runner,
                     base::WaitableEvent* shutdown_event,
-                    IPC::SyncChannel* channel);
+                    IPC::SyncChannel* channel,
+                    IPC::AttachmentBroker* broker);
   ~GpuChannelManager() override;
 
   // Remove the channel for a particular renderer.
@@ -159,6 +162,8 @@ class CONTENT_EXPORT GpuChannelManager : public IPC::Listener,
   IPC::SyncChannel* channel_;
   scoped_refptr<IPC::MessageFilter> filter_;
   bool relinquish_resources_pending_;
+  // Must outlive this instance of GpuChannelManager.
+  IPC::AttachmentBroker* attachment_broker_;
 
   // Member variables should appear before the WeakPtrFactory, to ensure
   // that any WeakPtrs to Controller are invalidated before its members

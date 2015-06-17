@@ -137,6 +137,7 @@
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/worker_service.h"
+#include "content/public/common/child_process_host.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/mojo_channel_switches.h"
@@ -717,14 +718,16 @@ scoped_ptr<IPC::ChannelProxy> RenderProcessHostImpl::CreateChannelProxy(
       channel_mojo_host_.reset(new IPC::ChannelMojoHost(mojo_task_runner));
     }
 
-    return IPC::ChannelProxy::Create(IPC::ChannelMojo::CreateServerFactory(
-                                         channel_mojo_host_->channel_delegate(),
-                                         mojo_task_runner, channel_id),
-                                     this, runner.get());
+    return IPC::ChannelProxy::Create(
+        IPC::ChannelMojo::CreateServerFactory(
+            channel_mojo_host_->channel_delegate(), mojo_task_runner,
+            channel_id, content::ChildProcessHost::GetAttachmentBroker()),
+        this, runner.get());
   }
 
   return IPC::ChannelProxy::Create(
-      channel_id, IPC::Channel::MODE_SERVER, this, runner.get());
+      channel_id, IPC::Channel::MODE_SERVER, this, runner.get(),
+      content::ChildProcessHost::GetAttachmentBroker());
 }
 
 void RenderProcessHostImpl::CreateMessageFilters() {

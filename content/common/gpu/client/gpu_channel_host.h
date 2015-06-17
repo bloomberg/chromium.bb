@@ -20,6 +20,7 @@
 #include "content/common/gpu/gpu_result_codes.h"
 #include "content/common/message_router.h"
 #include "gpu/config/gpu_info.h"
+#include "ipc/attachment_broker.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/message_filter.h"
@@ -74,7 +75,8 @@ struct ProxyFlushInfo {
   std::vector<ui::LatencyInfo> latency_info;
 };
 
-class CONTENT_EXPORT GpuChannelHostFactory {
+class CONTENT_EXPORT GpuChannelHostFactory
+    : virtual public IPC::SupportsAttachmentBrokering {
  public:
   virtual ~GpuChannelHostFactory() {}
 

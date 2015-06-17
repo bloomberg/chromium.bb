@@ -29,7 +29,7 @@ RenderThreadImplBrowserIPCTestHelper::RenderThreadImplBrowserIPCTestHelper() {
   } else {
     channel_ = IPC::ChannelProxy::Create(channel_id_, IPC::Channel::MODE_SERVER,
                                          dummy_listener_.get(),
-                                         ipc_thread_->task_runner());
+                                         ipc_thread_->task_runner(), nullptr);
   }
 }
 
@@ -55,7 +55,7 @@ void RenderThreadImplBrowserIPCTestHelper::SetupMojo() {
   channel_ = IPC::ChannelProxy::Create(
       IPC::ChannelMojo::CreateServerFactory(mojo_host_->channel_delegate(),
                                             ipc_thread_->task_runner(),
-                                            channel_id_),
+                                            channel_id_, nullptr),
       dummy_listener_.get(), ipc_thread_->task_runner());
 
   mojo_application_host_->Init();

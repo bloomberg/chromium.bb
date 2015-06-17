@@ -27,7 +27,9 @@ class PluginChannel : public NPChannelBase {
   // given renderer process. The renderer ID is an opaque unique ID generated
   // by the browser.
   static PluginChannel* GetPluginChannel(
-      int renderer_id, base::SingleThreadTaskRunner* ipc_task_runner);
+      int renderer_id,
+      base::SingleThreadTaskRunner* ipc_task_runner,
+      IPC::AttachmentBroker* broker);
 
   // Send a message to all renderers that the process is going to shutdown.
   static void NotifyRenderersOfPendingShutdown();
@@ -63,7 +65,8 @@ class PluginChannel : public NPChannelBase {
   void CleanUp() override;
   bool Init(base::SingleThreadTaskRunner* ipc_task_runner,
             bool create_pipe_now,
-            base::WaitableEvent* shutdown_event) override;
+            base::WaitableEvent* shutdown_event,
+            IPC::AttachmentBroker* broker) override;
 
  private:
   class MessageFilter;

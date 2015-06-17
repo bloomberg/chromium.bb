@@ -380,6 +380,10 @@ void BrowserGpuChannelHostFactory::CreateViewCommandBufferOnIO(
                  request));
 }
 
+IPC::AttachmentBroker* BrowserGpuChannelHostFactory::GetAttachmentBroker() {
+  return content::ChildProcessHost::GetAttachmentBroker();
+}
+
 // static
 void BrowserGpuChannelHostFactory::CommandBufferCreatedOnIO(
     CreateRequest* request, CreateCommandBufferResult result) {

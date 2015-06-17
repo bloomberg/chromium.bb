@@ -140,19 +140,17 @@ class PluginChannel::MessageFilter : public IPC::MessageFilter {
 };
 
 PluginChannel* PluginChannel::GetPluginChannel(
-    int renderer_id, base::SingleThreadTaskRunner* ipc_task_runner) {
+    int renderer_id,
+    base::SingleThreadTaskRunner* ipc_task_runner,
+    IPC::AttachmentBroker* broker) {
   // Map renderer ID to a (single) channel to that process.
   std::string channel_key = base::StringPrintf(
       "%d.r%d", base::GetCurrentProcId(), renderer_id);
 
   PluginChannel* channel =
       static_cast<PluginChannel*>(NPChannelBase::GetChannel(
-          channel_key,
-          IPC::Channel::MODE_SERVER,
-          ClassFactory,
-          ipc_task_runner,
-          false,
-          ChildProcess::current()->GetShutDownEvent()));
+          channel_key, IPC::Channel::MODE_SERVER, ClassFactory, ipc_task_runner,
+          false, ChildProcess::current()->GetShutDownEvent(), broker));
 
   if (channel)
     channel->renderer_id_ = renderer_id;
@@ -228,9 +226,12 @@ void PluginChannel::CleanUp() {
 
 bool PluginChannel::Init(base::SingleThreadTaskRunner* ipc_task_runner,
                          bool create_pipe_now,
-                         base::WaitableEvent* shutdown_event) {
-  if (!NPChannelBase::Init(ipc_task_runner, create_pipe_now, shutdown_event))
+                         base::WaitableEvent* shutdown_event,
+                         IPC::AttachmentBroker* broker) {
+  if (!NPChannelBase::Init(ipc_task_runner, create_pipe_now, shutdown_event,
+                           broker)) {
     return false;
+  }
 
   channel_->AddFilter(filter_.get());
   return true;

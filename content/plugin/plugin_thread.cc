@@ -138,7 +138,8 @@ bool PluginThread::OnControlMessageReceived(const IPC::Message& msg) {
 void PluginThread::OnCreateChannel(int renderer_id,
                                    bool incognito) {
   scoped_refptr<PluginChannel> channel(PluginChannel::GetPluginChannel(
-      renderer_id, ChildProcess::current()->io_task_runner()));
+      renderer_id, ChildProcess::current()->io_task_runner(),
+      GetAttachmentBroker()));
   IPC::ChannelHandle channel_handle;
   if (channel.get()) {
     channel_handle.name = channel->channel_handle().name;

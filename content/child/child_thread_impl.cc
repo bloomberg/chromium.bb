@@ -55,6 +55,7 @@
 #include "content/common/child_process_messages.h"
 #include "content/common/in_process_child_thread_params.h"
 #include "content/public/common/content_switches.h"
+#include "ipc/attachment_broker.h"
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_switches.h"
 #include "ipc/ipc_sync_channel.h"
@@ -71,6 +72,10 @@
 
 #if defined(OS_MACOSX)
 #include "content/child/child_io_surface_manager_mac.h"
+#endif
+
+#if defined(OS_WIN)
+#include "ipc/attachment_broker_win.h"
 #endif
 
 using tracked_objects::ThreadData;
@@ -307,14 +312,16 @@ void ChildThreadImpl::ConnectChannel(bool use_mojo_channel) {
     VLOG(1) << "Mojo is enabled on child";
     scoped_refptr<base::SequencedTaskRunner> io_task_runner = GetIOTaskRunner();
     DCHECK(io_task_runner);
-    channel_->Init(IPC::ChannelMojo::CreateClientFactory(
-                       nullptr, io_task_runner, channel_name_),
-                   create_pipe_now);
+    channel_->Init(
+        IPC::ChannelMojo::CreateClientFactory(
+            nullptr, io_task_runner, channel_name_, attachment_broker_.get()),
+        create_pipe_now);
     return;
   }
 
   VLOG(1) << "Mojo is disabled on child";
-  channel_->Init(channel_name_, IPC::Channel::MODE_CLIENT, create_pipe_now);
+  channel_->Init(channel_name_, IPC::Channel::MODE_CLIENT, create_pipe_now,
+                 attachment_broker_.get());
 }
 
 void ChildThreadImpl::Init(const Options& options) {
@@ -335,6 +342,10 @@ void ChildThreadImpl::Init(const Options& options) {
 #ifdef IPC_MESSAGE_LOG_ENABLED
   if (!IsInBrowserProcess())
     IPC::Logging::GetInstance()->SetIPCSender(this);
+#endif
+
+#if defined(OS_WIN)
+  attachment_broker_.reset(new IPC::AttachmentBrokerWin());
 #endif
 
   mojo_application_.reset(new MojoApplication(GetIOTaskRunner()));
@@ -509,6 +520,10 @@ void ChildThreadImpl::ReleaseCachedFonts() {
   Send(new ChildProcessHostMsg_ReleaseCachedFonts());
 }
 #endif
+
+IPC::AttachmentBroker* ChildThreadImpl::GetAttachmentBroker() {
+  return attachment_broker_.get();
+}
 
 MessageRouter* ChildThreadImpl::GetRouter() {
   DCHECK(base::MessageLoop::current() == message_loop());

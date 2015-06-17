@@ -21,6 +21,10 @@ namespace base {
 class SingleThreadTaskRunner;
 }
 
+namespace IPC {
+class AttachmentBroker;
+}
+
 namespace content {
 
 // Encapsulates an IPC channel between a renderer and another process. Used to
@@ -105,7 +109,8 @@ class NPChannelBase : public IPC::Listener,
       ChannelFactory factory,
       base::SingleThreadTaskRunner* ipc_task_runner,
       bool create_pipe_now,
-      base::WaitableEvent* shutdown_event);
+      base::WaitableEvent* shutdown_event,
+      IPC::AttachmentBroker* broker);
 
   // Sends a message to all instances.
   static void Broadcast(IPC::Message* message);
@@ -129,7 +134,8 @@ class NPChannelBase : public IPC::Listener,
 
   virtual bool Init(base::SingleThreadTaskRunner* ipc_task_runner,
                     bool create_pipe_now,
-                    base::WaitableEvent* shutdown_event);
+                    base::WaitableEvent* shutdown_event,
+                    IPC::AttachmentBroker* broker);
 
   scoped_ptr<IPC::SyncChannel> channel_;
   IPC::ChannelHandle channel_handle_;

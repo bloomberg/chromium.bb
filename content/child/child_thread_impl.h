@@ -33,6 +33,7 @@ class TraceMemoryController;
 }  // namespace base
 
 namespace IPC {
+class AttachmentBroker;
 class MessageFilter;
 class ScopedIPCSupport;
 class SyncChannel;
@@ -91,6 +92,7 @@ class CONTENT_EXPORT ChildThreadImpl
   void PreCacheFont(const LOGFONT& log_font) override;
   void ReleaseCachedFonts() override;
 #endif
+  IPC::AttachmentBroker* GetAttachmentBroker() override;
 
   IPC::SyncChannel* channel() { return channel_.get(); }
 
@@ -246,6 +248,7 @@ class CONTENT_EXPORT ChildThreadImpl
 
   std::string channel_name_;
   scoped_ptr<IPC::SyncChannel> channel_;
+  scoped_ptr<IPC::AttachmentBroker> attachment_broker_;
 
   // Allows threads other than the main thread to send sync messages.
   scoped_refptr<IPC::SyncMessageFilter> sync_message_filter_;

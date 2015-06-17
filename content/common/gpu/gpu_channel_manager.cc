@@ -93,7 +93,8 @@ GpuChannelManager::GpuChannelManager(
     GpuWatchdog* watchdog,
     base::SingleThreadTaskRunner* io_task_runner,
     base::WaitableEvent* shutdown_event,
-    IPC::SyncChannel* channel)
+    IPC::SyncChannel* channel,
+    IPC::AttachmentBroker* broker)
     : io_task_runner_(io_task_runner),
       shutdown_event_(shutdown_event),
       router_(router),
@@ -108,6 +109,7 @@ GpuChannelManager::GpuChannelManager(
       filter_(
           new GpuChannelManagerMessageFilter(gpu_memory_buffer_factory_.get())),
       relinquish_resources_pending_(false),
+      attachment_broker_(broker),
       weak_factory_(this) {
   DCHECK(router_);
   DCHECK(io_task_runner);
@@ -210,7 +212,7 @@ void GpuChannelManager::OnEstablishChannel(int client_id,
                                                 client_id,
                                                 false,
                                                 allow_future_sync_points));
-  channel->Init(io_task_runner_.get(), shutdown_event_);
+  channel->Init(io_task_runner_.get(), shutdown_event_, attachment_broker_);
   channel_handle.name = channel->GetChannelName();
 
 #if defined(OS_POSIX)

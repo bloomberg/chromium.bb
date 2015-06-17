@@ -77,6 +77,7 @@ class MockRenderThread : public RenderThread {
   void PreCacheFont(const LOGFONT& log_font) override;
   void ReleaseCachedFonts() override;
 #endif
+  IPC::AttachmentBroker* GetAttachmentBroker() override;
   ServiceRegistry* GetServiceRegistry() override;
 
   //////////////////////////////////////////////////////////////////////////

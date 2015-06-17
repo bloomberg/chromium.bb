@@ -19,6 +19,7 @@
 #include "content/common/plugin_process_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/child_process_host.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/pepper_plugin_info.h"
 #include "ppapi/proxy/ppapi_messages.h"
@@ -226,7 +227,8 @@ class PluginDataRemoverImpl::Context
       return;
 
     DCHECK(!channel_.get());
-    channel_ = IPC::Channel::CreateClient(handle, this);
+    channel_ = IPC::Channel::CreateClient(
+        handle, this, content::ChildProcessHost::GetAttachmentBroker());
     if (!channel_->Connect()) {
       NOTREACHED() << "Couldn't connect to plugin";
       SignalDone();

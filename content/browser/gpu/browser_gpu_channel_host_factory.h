@@ -40,6 +40,7 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
       int32 surface_id,
       const GPUCreateCommandBufferConfig& init_params,
       int32 route_id) override;
+  IPC::AttachmentBroker* GetAttachmentBroker() override;
 
   // Overridden from GpuMemoryBufferFactoryHost:
   bool IsGpuMemoryBufferConfigurationSupported(

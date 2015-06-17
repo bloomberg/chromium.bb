@@ -57,7 +57,7 @@ class SimpleWorker : public Listener, public Sender {
   SyncChannel* CreateChannel() {
     scoped_ptr<SyncChannel> channel = SyncChannel::Create(
         channel_name_, mode_, this, ipc_thread_.task_runner().get(), true,
-        &shutdown_event_);
+        &shutdown_event_, nullptr);
     return channel.release();
   }
 
@@ -112,7 +112,7 @@ class SimpleGpuClient : public IPC::SimpleWorker {
     IPC::SimpleWorker::Start();
     gpu_channel_manager_.reset(
         new GpuChannelManager(&router_, NULL, ipc_thread().task_runner().get(),
-                              shutdown_event(), channel()));
+                              shutdown_event(), channel(), nullptr));
   }
 
   void Shutdown() override {

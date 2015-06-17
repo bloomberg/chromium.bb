@@ -42,6 +42,7 @@ class SubscriptionRefSet;
 }
 
 namespace IPC {
+class AttachmentBroker;
 class MessageFilter;
 }
 
@@ -66,7 +67,8 @@ class GpuChannel : public IPC::Listener, public IPC::Sender,
   ~GpuChannel() override;
 
   void Init(base::SingleThreadTaskRunner* io_task_runner,
-            base::WaitableEvent* shutdown_event);
+            base::WaitableEvent* shutdown_event,
+            IPC::AttachmentBroker* broker);
 
   // Get the GpuChannelManager that owns this channel.
   GpuChannelManager* gpu_channel_manager() const {
