@@ -461,7 +461,7 @@ public class ChromeTabbedActivity extends CompositorChromeActivity implements Ac
 
             removeWindowBackground();
 
-            if (mIsTablet) {
+            if (isTablet()) {
                 EmptyBackgroundViewWrapper bgViewWrapper = new EmptyBackgroundViewWrapper(
                         getTabModelSelector(), getTabCreator(false), ChromeTabbedActivity.this,
                         mAppMenuHandler, mLayoutManager);
@@ -600,7 +600,7 @@ public class ChromeTabbedActivity extends CompositorChromeActivity implements Ac
             mLayoutManager.setEnableAnimations(
                     DeviceClassManager.enableAnimations(getApplicationContext()));
         }
-        if (mIsTablet) {
+        if (isTablet()) {
             if (getCompositorViewHolder() != null) {
                 getCompositorViewHolder().onAccessibilityStatusChanged(enabled);
             }
@@ -919,7 +919,7 @@ public class ChromeTabbedActivity extends CompositorChromeActivity implements Ac
                     fromMenu ? TabLaunchType.FROM_MENU_OR_OVERVIEW : TabLaunchType.FROM_KEYBOARD);
             RecordUserAction.record("MobileMenuNewTab");
             RecordUserAction.record("MobileNewTabOpened");
-            if (mIsTablet && !fromMenu && !launchedTab.isHidden()) {
+            if (isTablet() && !fromMenu && !launchedTab.isHidden()) {
                 mToolbarHelper.setUrlBarFocus(true);
             }
         } else if (id == R.id.new_incognito_tab_menu_id) {
@@ -932,7 +932,7 @@ public class ChromeTabbedActivity extends CompositorChromeActivity implements Ac
                         UrlConstants.NTP_URL,
                         fromMenu ? TabLaunchType.FROM_MENU_OR_OVERVIEW
                                 : TabLaunchType.FROM_KEYBOARD);
-                if (mIsTablet && !fromMenu && !launchedTab.isHidden()) {
+                if (isTablet() && !fromMenu && !launchedTab.isHidden()) {
                     mToolbarHelper.setUrlBarFocus(true);
                 }
             }
@@ -978,7 +978,7 @@ public class ChromeTabbedActivity extends CompositorChromeActivity implements Ac
             showMenu();
         } else if (id == R.id.focus_url_bar) {
             boolean isUrlBarVisible = !mLayoutManager.overviewVisible()
-                    && (!mIsTablet || getCurrentTabModel().getCount() != 0);
+                    && (!isTablet() || getCurrentTabModel().getCount() != 0);
             if (isUrlBarVisible) {
                 mToolbarHelper.setUrlBarFocus(true);
             }
@@ -1005,7 +1005,7 @@ public class ChromeTabbedActivity extends CompositorChromeActivity implements Ac
         }
 
         // If we are in overview mode and not a tablet, then leave overview mode on back.
-        if (mLayoutManager.overviewVisible() && !mIsTablet) {
+        if (mLayoutManager.overviewVisible() && !isTablet()) {
             mLayoutManager.hideOverview(true);
             // TODO(benm): Record any user metrics in this case?
             return true;
@@ -1180,7 +1180,7 @@ public class ChromeTabbedActivity extends CompositorChromeActivity implements Ac
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (!mUIInitialized) return false;
         boolean isCurrentTabVisible = !mLayoutManager.overviewVisible()
-                && (!mIsTablet || getCurrentTabModel().getCount() != 0);
+                && (!isTablet() || getCurrentTabModel().getCount() != 0);
         return KeyboardShortcuts.onKeyDown(event, this, isCurrentTabVisible, true)
                 || super.onKeyDown(keyCode, event);
     }
@@ -1265,7 +1265,7 @@ public class ChromeTabbedActivity extends CompositorChromeActivity implements Ac
         if (!mUIInitialized) return false;
 
         // Do not show the menu if we are in find in page view.
-        if (mFindToolbarManager != null && mFindToolbarManager.isShowing() && !mIsTablet) {
+        if (mFindToolbarManager != null && mFindToolbarManager.isShowing() && !isTablet()) {
             return false;
         }
 

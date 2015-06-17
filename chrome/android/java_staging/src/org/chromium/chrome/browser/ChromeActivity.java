@@ -16,18 +16,12 @@ import android.os.Build;
 import android.os.Looper;
 import android.os.MessageQueue;
 import android.os.StrictMode;
-import android.os.SystemClock;
 import android.preference.PreferenceManager;
-import android.provider.Settings;
-import android.provider.Settings.SettingNotFoundException;
 import android.util.DisplayMetrics;
-import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.Surface;
 import android.view.View;
 import android.view.Window;
-import android.view.WindowManager;
 import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.AccessibilityManager.AccessibilityStateChangeListener;
 import android.view.accessibility.AccessibilityManager.TouchExplorationStateChangeListener;
@@ -71,10 +65,7 @@ import org.chromium.content.browser.ContentReadbackHandler;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.common.ContentSwitches;
 import org.chromium.content_public.browser.readback_types.ReadbackResponse;
-import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.WindowAndroid;
-
-import java.lang.reflect.Field;
 
 /**
  * The main Chrome activity.  This exposes extra methods that relate to the {@link TabModelSelector}
@@ -103,12 +94,9 @@ public abstract class ChromeActivity extends AsyncInitializationActivity impleme
     private ContextReporter mContextReporter;
     protected GSAServiceClient mGSAServiceClient;
 
-    private int mCurrentOrientation = Surface.ROTATION_0;
     private boolean mPartnerBrowserRefreshNeeded = false;
 
     protected IntentHandler mIntentHandler;
-    protected boolean mIsTablet = false;
-    private long mLastUserInteractionTime;
 
     /** Whether onDeferredStartup() has been run. */
     private boolean mDeferredStartupNotified;
@@ -273,7 +261,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity impleme
         super.preInflationStartup();
         ApplicationInitialization.enableFullscreenFlags(
                 getResources(), this, getControlContainerHeightResource());
-        mIsTablet = DeviceFormFactor.isTablet(this);
         getWindow().setBackgroundDrawableResource(R.color.light_background_color);
     }
 
@@ -317,31 +304,11 @@ public abstract class ChromeActivity extends AsyncInitializationActivity impleme
     }
 
     @Override
-    public void initializeCompositor() {
-        super.initializeCompositor();
-    }
-
-    @Override
     public void initializeState() {
         super.initializeState();
         IntentHandler.setTestIntentsEnabled(
                 CommandLine.getInstance().hasSwitch(ContentSwitches.ENABLE_TEST_INTENTS));
         mIntentHandler = new IntentHandler(createIntentHandlerDelegate(), getPackageName());
-    }
-
-    @Override
-    public void finishNativeInitialization() {
-        // Set up the initial orientation of the device.
-        checkOrientation();
-        findViewById(android.R.id.content).addOnLayoutChangeListener(
-                new View.OnLayoutChangeListener() {
-                    @Override
-                    public void onLayoutChange(View v, int left, int top, int right, int bottom,
-                            int oldLeft, int oldTop, int oldRight, int oldBottom) {
-                        checkOrientation();
-                    }
-                });
-        super.finishNativeInitialization();
     }
 
     @Override
@@ -461,16 +428,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity impleme
     }
 
     /**
-     * Called when the orientation of the device changes.  The orientation is checked/detected on
-     * root view layouts.
-     * @param orientation One of {@link Surface#ROTATION_0} (no rotation),
-     *                    {@link Surface#ROTATION_90}, {@link Surface#ROTATION_180}, or
-     *                    {@link Surface#ROTATION_270}.
-     */
-    protected void onOrientationChange(int orientation) {
-    }
-
-    /**
      * Called when the accessibility status of this device changes.  This might be triggered by
      * touch exploration or general accessibility status updates.  It is an aggregate of two other
      * accessibility update methods.
@@ -488,11 +445,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity impleme
             return true;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public void onUserInteraction() {
-        mLastUserInteractionTime = SystemClock.elapsedRealtime();
     }
 
     /**
@@ -546,13 +498,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity impleme
     }
 
     /**
-     * @return Whether the activity is running in tablet mode.
-     */
-    public boolean isTablet() {
-        return mIsTablet;
-    }
-
-    /**
      * @return Whether the activity is in overview mode.
      */
     public boolean isInOverviewMode() {
@@ -571,13 +516,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity impleme
      * @param menu Menu that is going to be shown when the menu button is pressed.
      */
     public void prepareMenu(Menu menu) {
-    }
-
-    /**
-     * @return timestamp when the last user interaction was made.
-     */
-    public long getLastUserInteractionTime() {
-        return mLastUserInteractionTime;
     }
 
     protected IntentHandlerDelegate createIntentHandlerDelegate() {
@@ -662,51 +600,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity impleme
         onAccessibilityModeChanged(DeviceClassManager.isAccessibilityModeEnabled(this));
     }
 
-    private void checkOrientation() {
-        WindowManager wm = getWindowManager();
-        if (wm == null) return;
-
-        Display display = wm.getDefaultDisplay();
-        if (display == null) return;
-
-        int oldOrientation = mCurrentOrientation;
-        mCurrentOrientation = display.getRotation();
-
-        if (oldOrientation != mCurrentOrientation) onOrientationChange(mCurrentOrientation);
-    }
-
-    /**
-     * Removes the window background.
-     */
-    protected void removeWindowBackground() {
-        boolean removeWindowBackground = true;
-        try {
-            Field field = Settings.Secure.class.getField(
-                    "ACCESSIBILITY_DISPLAY_MAGNIFICATION_ENABLED");
-            field.setAccessible(true);
-
-            if (field.getType() == String.class) {
-                String accessibilityMagnificationSetting = (String) field.get(null);
-                // When Accessibility magnification is turned on, setting a null window
-                // background causes the overlaid android views to stretch when panning.
-                // (crbug/332994)
-                if (Settings.Secure.getInt(
-                        getContentResolver(), accessibilityMagnificationSetting) == 1) {
-                    removeWindowBackground = false;
-                }
-            }
-        } catch (SettingNotFoundException e) {
-            // Window background is removed if an exception occurs.
-        } catch (NoSuchFieldException e) {
-            // Window background is removed if an exception occurs.
-        } catch (IllegalAccessException e) {
-            // Window background is removed if an exception occurs.
-        } catch (IllegalArgumentException e) {
-            // Window background is removed if an exception occurs.
-        }
-        if (removeWindowBackground) getWindow().setBackgroundDrawable(null);
-    }
-
     /**
      * @return A casted version of {@link #getApplication()}.
      */
@@ -721,12 +614,9 @@ public abstract class ChromeActivity extends AsyncInitializationActivity impleme
         return true;
     }
 
-    /**
-     * Actions that may be run at some point after startup. Place tasks that are not critical to the
-     * startup path here.  This method will be called automatically and should not be called
-     * directly by subclasses.  Overriding methods should call super.onDeferredStartup().
-     */
+    @Override
     protected void onDeferredStartup() {
+        super.onDeferredStartup();
         boolean crashDumpUploadingDisabled = getIntent() != null
                 && getIntent().hasExtra(
                         ChromeTabbedActivity.INTENT_EXTRA_DISABLE_CRASH_DUMP_UPLOADING);
@@ -747,7 +637,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity impleme
         removeSnapshotDatabase();
     }
 
-    private void postDeferredStartupIfNeeded() {
+    private final void postDeferredStartupIfNeeded() {
         if (!mDeferredStartupNotified) {
             // We want to perform deferred startup tasks a short time after the first page
             // load completes, but only when the main thread Looper has become idle.

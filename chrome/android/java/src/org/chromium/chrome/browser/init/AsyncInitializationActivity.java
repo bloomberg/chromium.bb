@@ -10,10 +10,15 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
+import android.provider.Settings;
+import android.provider.Settings.SettingNotFoundException;
 import android.support.v7.app.AppCompatActivity;
+import android.view.Display;
+import android.view.Surface;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.view.ViewTreeObserver.OnPreDrawListener;
+import android.view.WindowManager;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.TraceEvent;
@@ -24,6 +29,9 @@ import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.metrics.LaunchHistogram;
 import org.chromium.chrome.browser.metrics.MemoryUma;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.ui.base.DeviceFormFactor;
+
+import java.lang.reflect.Field;
 
 
 /**
@@ -31,6 +39,7 @@ import org.chromium.chrome.browser.profiles.Profile;
  */
 public abstract class AsyncInitializationActivity extends AppCompatActivity implements
         ChromeActivityNativeDelegate, BrowserParts {
+
     private static final LaunchHistogram sBadIntentMetric =
             new LaunchHistogram("Launch.InvalidIntent");
 
@@ -42,9 +51,12 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
     // Time at which onCreate is called. This is uptime, to be sent to native code.
     private long mOnCreateTimestampUptimeMs;
     private Bundle mSavedInstanceState;
+    private int mCurrentOrientation = Surface.ROTATION_0;
     private boolean mDestroyed;
     private NativeInitializationController mNativeInitializationController;
     private MemoryUma mMemoryUma;
+    private boolean mIsTablet;
+    private long mLastUserInteractionTime;
 
     public AsyncInitializationActivity() {
         mHandler = new Handler();
@@ -57,7 +69,9 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
     }
 
     @Override
-    public void preInflationStartup() { }
+    public void preInflationStartup() {
+        mIsTablet = DeviceFormFactor.isTablet(this);
+    }
 
     @Override
     public final void setContentViewAndLoadLibrary() {
@@ -98,9 +112,26 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
 
     @Override
     public void finishNativeInitialization() {
+        // Set up the initial orientation of the device.
+        checkOrientation();
+        findViewById(android.R.id.content).addOnLayoutChangeListener(
+                new View.OnLayoutChangeListener() {
+                    @Override
+                    public void onLayoutChange(View v, int left, int top, int right, int bottom,
+                            int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                        checkOrientation();
+                    }
+                });
         mMemoryUma = new MemoryUma();
         mNativeInitializationController.onNativeInitializationComplete();
     }
+
+    /**
+     * Actions that may be run at some point after startup. Place tasks that are not critical to the
+     * startup path here.  This method will be called automatically and should not be called
+     * directly by subclasses.  Overriding methods should call super.onDeferredStartup().
+     */
+    protected void onDeferredStartup() { }
 
     @Override
     public void onStartupFailure() {
@@ -264,6 +295,79 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
         if (mMemoryUma != null) mMemoryUma.onTrimMemory(level);
     }
 
+    /**
+     * @return Whether the activity is running in tablet mode.
+     */
+    public boolean isTablet() {
+        return mIsTablet;
+    }
+
+    @Override
+    public void onUserInteraction() {
+        mLastUserInteractionTime = SystemClock.elapsedRealtime();
+    }
+
+    /**
+     * @return timestamp when the last user interaction was made.
+     */
+    public long getLastUserInteractionTime() {
+        return mLastUserInteractionTime;
+    }
+
+    /**
+     * Called when the orientation of the device changes.  The orientation is checked/detected on
+     * root view layouts.
+     * @param orientation One of {@link Surface#ROTATION_0} (no rotation),
+     *                    {@link Surface#ROTATION_90}, {@link Surface#ROTATION_180}, or
+     *                    {@link Surface#ROTATION_270}.
+     */
+    protected void onOrientationChange(int orientation) {
+    }
+
+    private void checkOrientation() {
+        WindowManager wm = getWindowManager();
+        if (wm == null) return;
+
+        Display display = wm.getDefaultDisplay();
+        if (display == null) return;
+
+        int oldOrientation = mCurrentOrientation;
+        mCurrentOrientation = display.getRotation();
+
+        if (oldOrientation != mCurrentOrientation) onOrientationChange(mCurrentOrientation);
+    }
+
+    /**
+     * Removes the window background.
+     */
+    protected void removeWindowBackground() {
+        boolean removeWindowBackground = true;
+        try {
+            Field field = Settings.Secure.class.getField(
+                    "ACCESSIBILITY_DISPLAY_MAGNIFICATION_ENABLED");
+            field.setAccessible(true);
+
+            if (field.getType() == String.class) {
+                String accessibilityMagnificationSetting = (String) field.get(null);
+                // When Accessibility magnification is turned on, setting a null window
+                // background causes the overlaid android views to stretch when panning.
+                // (crbug/332994)
+                if (Settings.Secure.getInt(
+                        getContentResolver(), accessibilityMagnificationSetting) == 1) {
+                    removeWindowBackground = false;
+                }
+            }
+        } catch (SettingNotFoundException e) {
+            // Window background is removed if an exception occurs.
+        } catch (NoSuchFieldException e) {
+            // Window background is removed if an exception occurs.
+        } catch (IllegalAccessException e) {
+            // Window background is removed if an exception occurs.
+        } catch (IllegalArgumentException e) {
+            // Window background is removed if an exception occurs.
+        }
+        if (removeWindowBackground) getWindow().setBackgroundDrawable(null);
+    }
 
     /**
      * Extending classes should implement this and call {@link Activity#setContentView(int)} in it.
