@@ -177,12 +177,14 @@ void MediaElementAudioSourceHandler::process(size_t numberOfFrames)
             if (!passesCORSAccessCheck()) {
                 if (m_maybePrintCORSMessage) {
                     // Print a CORS message, but just once for each change in the current media
-                    // element source.
+                    // element source, and only if we have a document to print to.
                     m_maybePrintCORSMessage = false;
-                    context()->executionContext()->postTask(FROM_HERE,
-                        createCrossThreadTask(&MediaElementAudioSourceHandler::printCORSMessage,
-                            this,
-                            m_currentSrcString));
+                    if (context()->executionContext()) {
+                        context()->executionContext()->postTask(FROM_HERE,
+                            createCrossThreadTask(&MediaElementAudioSourceHandler::printCORSMessage,
+                                this,
+                                m_currentSrcString));
+                    }
                 }
                 outputBus->zero();
             }
