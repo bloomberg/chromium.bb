@@ -63,7 +63,7 @@ LauncherSearch.prototype.onPreferencesChanged_ = function() {
  * disabled, remove these event listeners and stop providing search results.
  *
  * @param {boolean} isDriveEnabled True if drive is enabled.
- * @param {boolean} searchSuggestEnabled True if search suggest is enabled.
+ * @param {boolean} isSearchSuggestEnabled True if search suggest is enabled.
  */
 LauncherSearch.prototype.initializeEventListeners_ = function(
     isDriveEnabled, isSearchSuggestEnabled) {
