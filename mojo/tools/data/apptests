@@ -63,8 +63,9 @@ if config.target_os != config.OS_ANDROID:
       "type": "gtest_isolated",
       "args": ["--use-headless-config"]
     },
-    {
-      "test": "mojo:media_apptests",
-      "type": "gtest_isolated",
-    },
+    # TODO(xhwang): Fix and enable the media_apptests. http://crbug.com/501417
+    #{
+    #  "test": "mojo:media_apptests",
+    #  "type": "gtest_isolated",
+    #},
   ]
