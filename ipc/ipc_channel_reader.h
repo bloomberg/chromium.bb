@@ -25,7 +25,7 @@ namespace internal {
 // functionality that would benefit from being factored out. If we add
 // something like that in the future, it would be more appropriate to add it
 // here (and rename appropriately) rather than writing a different class.
-class ChannelReader : virtual public SupportsAttachmentBrokering {
+class ChannelReader : public SupportsAttachmentBrokering {
  public:
   explicit ChannelReader(Listener* listener);
   virtual ~ChannelReader();
