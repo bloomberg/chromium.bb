@@ -761,21 +761,9 @@ TEST_F(LayerTreeHostScrollTestCaseWithChild,
   RunTest(true, true);
 }
 
-class ImplSidePaintingScrollTest : public LayerTreeHostScrollTest {
+class LayerTreeHostScrollTestSimple : public LayerTreeHostScrollTest {
  public:
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->impl_side_painting = true;
-  }
-
-  void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
-    if (impl->pending_tree())
-      impl->SetNeedsRedraw();
-  }
-};
-
-class ImplSidePaintingScrollTestSimple : public ImplSidePaintingScrollTest {
- public:
-  ImplSidePaintingScrollTestSimple()
+  LayerTreeHostScrollTestSimple()
       : initial_scroll_(10, 20),
         main_thread_scroll_(40, 5),
         impl_thread_scroll1_(2, -1),
@@ -828,7 +816,8 @@ class ImplSidePaintingScrollTestSimple : public ImplSidePaintingScrollTest {
   }
 
   void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
-    ImplSidePaintingScrollTest::DrawLayersOnThread(impl);
+    if (impl->pending_tree())
+      impl->SetNeedsRedraw();
 
     LayerImpl* root = impl->active_tree()->root_layer();
     LayerImpl* scroll_layer = root->children()[0];
@@ -897,16 +886,16 @@ class ImplSidePaintingScrollTestSimple : public ImplSidePaintingScrollTest {
   int num_scrolls_;
 };
 
-MULTI_THREAD_TEST_F(ImplSidePaintingScrollTestSimple);
+// This tests scrolling on the impl side which is only possible with a thread.
+MULTI_THREAD_TEST_F(LayerTreeHostScrollTestSimple);
 
 // This test makes sure that layers pick up scrolls that occur between
 // beginning a commit and finishing a commit (aka scroll deltas not
 // included in sent scroll delta) still apply to layers that don't
 // push properties.
-class ImplSidePaintingScrollTestImplOnlyScroll
-    : public ImplSidePaintingScrollTest {
+class LayerTreeHostScrollTestImplOnlyScroll : public LayerTreeHostScrollTest {
  public:
-  ImplSidePaintingScrollTestImplOnlyScroll()
+  LayerTreeHostScrollTestImplOnlyScroll()
       : initial_scroll_(20, 10), impl_thread_scroll_(-2, 3), impl_scale_(2.f) {}
 
   void SetupTree() override {
@@ -999,7 +988,8 @@ class ImplSidePaintingScrollTestImplOnlyScroll
   }
 
   void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
-    ImplSidePaintingScrollTest::DrawLayersOnThread(impl);
+    if (impl->pending_tree())
+      impl->SetNeedsRedraw();
 
     LayerImpl* root = impl->active_tree()->root_layer();
     LayerImpl* scroll_layer = root->children()[0];
@@ -1037,7 +1027,8 @@ class ImplSidePaintingScrollTestImplOnlyScroll
   float impl_scale_;
 };
 
-MULTI_THREAD_TEST_F(ImplSidePaintingScrollTestImplOnlyScroll);
+// This tests scrolling on the impl side which is only possible with a thread.
+MULTI_THREAD_TEST_F(LayerTreeHostScrollTestImplOnlyScroll);
 
 class LayerTreeHostScrollTestScrollZeroMaxScrollOffset
     : public LayerTreeHostScrollTest {

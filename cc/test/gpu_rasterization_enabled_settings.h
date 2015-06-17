@@ -12,7 +12,6 @@ namespace cc {
 class GpuRasterizationEnabledSettings : public LayerTreeSettings {
  public:
   GpuRasterizationEnabledSettings() {
-    impl_side_painting = true;
     gpu_rasterization_enabled = true;
   }
 };

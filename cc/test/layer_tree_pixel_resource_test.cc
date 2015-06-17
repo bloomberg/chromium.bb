@@ -206,9 +206,6 @@ void LayerTreeHostPixelResourceTest::RunPixelResourceTest(
   if (!IsTestCaseSupported(test_case_))
     return;
   RunPixelTest(test_type_, content_root, file_name);
-
-  if (layer_tree_host())
-    EXPECT_TRUE(layer_tree_host()->settings().impl_side_painting);
 }
 
 ParameterizedPixelResourceTest::ParameterizedPixelResourceTest()

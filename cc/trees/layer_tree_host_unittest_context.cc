@@ -106,10 +106,9 @@ class LayerTreeHostContextTest : public LayerTreeTest {
                                    LayerTreeHostImpl::FrameData* frame,
                                    DrawResult draw_result) override {
     if (draw_result == DRAW_ABORTED_MISSING_HIGH_RES_CONTENT) {
-      // Only valid for single-threaded impl-side painting, which activates
+      // Only valid for single-threaded compositing, which activates
       // immediately and will try to draw again when content has finished.
       DCHECK(!host_impl->proxy()->HasImplThread());
-      DCHECK(host_impl->settings().impl_side_painting);
       return draw_result;
     }
     EXPECT_EQ(DRAW_SUCCESS, draw_result);
@@ -1184,24 +1183,13 @@ class UIResourceLostTest : public LayerTreeHostContextTest {
 
 class UIResourceLostTestSimple : public UIResourceLostTest {
  public:
-  // This is called when the commit is complete and the new layer tree has been
-  // activated.
+  // This is called when the new layer tree has been activated.
   virtual void StepCompleteOnImplThread(LayerTreeHostImpl* impl) = 0;
 
-  void CommitCompleteOnThread(LayerTreeHostImpl* impl) override {
-    if (!impl->settings().impl_side_painting) {
-      StepCompleteOnImplThread(impl);
-      PostStepCompleteToMainThread();
-      ++time_step_;
-    }
-  }
-
   void DidActivateTreeOnThread(LayerTreeHostImpl* impl) override {
-    if (impl->settings().impl_side_painting) {
-      StepCompleteOnImplThread(impl);
-      PostStepCompleteToMainThread();
-      ++time_step_;
-    }
+    StepCompleteOnImplThread(impl);
+    PostStepCompleteToMainThread();
+    ++time_step_;
   }
 };
 

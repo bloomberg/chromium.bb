@@ -766,17 +766,13 @@ class TextureLayerImplWithMailboxThreadedCallback : public LayerTreeTest {
         layer_->SetTextureMailbox(TextureMailbox(), nullptr);
         break;
       case 4:
-        if (layer_tree_host()->settings().impl_side_painting) {
-          // With impl painting, the texture mailbox will still be on the impl
-          // thread when the commit finishes, because the layer is not drawble
-          // when it has no texture mailbox, and thus does not block the commit
-          // on activation. So, we wait for activation.
-          // TODO(danakj): fix this. crbug.com/277953
-          layer_tree_host()->SetNeedsCommit();
-          break;
-        } else {
-          ++commit_count_;
-        }
+        // With impl painting, the texture mailbox will still be on the impl
+        // thread when the commit finishes, because the layer is not drawble
+        // when it has no texture mailbox, and thus does not block the commit
+        // on activation. So, we wait for activation.
+        // TODO(danakj): fix this. crbug.com/277953
+        layer_tree_host()->SetNeedsCommit();
+        break;
       case 5:
         EXPECT_EQ(4, callback_count_);
         // Restore a mailbox for the next step.
@@ -789,16 +785,12 @@ class TextureLayerImplWithMailboxThreadedCallback : public LayerTreeTest {
         layer_->RemoveFromParent();
         break;
       case 7:
-        if (layer_tree_host()->settings().impl_side_painting) {
-          // With impl painting, the texture mailbox will still be on the impl
-          // thread when the commit finishes, because the layer is not around to
-          // block the commit on activation anymore. So, we wait for activation.
-          // TODO(danakj): fix this. crbug.com/277953
-          layer_tree_host()->SetNeedsCommit();
-          break;
-        } else {
-          ++commit_count_;
-        }
+        // With impl painting, the texture mailbox will still be on the impl
+        // thread when the commit finishes, because the layer is not around to
+        // block the commit on activation anymore. So, we wait for activation.
+        // TODO(danakj): fix this. crbug.com/277953
+        layer_tree_host()->SetNeedsCommit();
+        break;
       case 8:
         EXPECT_EQ(4, callback_count_);
         // Resetting the mailbox will call the callback now.

@@ -775,8 +775,7 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationRemoval
   }
 
   void BeginCommitOnThread(LayerTreeHostImpl* host_impl) override {
-    if (host_impl->settings().impl_side_painting)
-      host_impl->BlockNotifyReadyToActivateForTesting(true);
+    host_impl->BlockNotifyReadyToActivateForTesting(true);
   }
 
   void WillBeginImplFrameOnThread(LayerTreeHostImpl* host_impl,
@@ -810,8 +809,6 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationRemoval
   }
 
   void WillActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
-    if (!host_impl->settings().impl_side_painting)
-      return;
     if (host_impl->pending_tree()->source_frame_number() != 1)
       return;
     LayerImpl* scroll_layer_impl =
@@ -867,8 +864,7 @@ class LayerTreeHostAnimationTestAnimationsAddedToNewAndExistingLayers
   }
 
   void BeginCommitOnThread(LayerTreeHostImpl* host_impl) override {
-    if (host_impl->settings().impl_side_painting)
-      host_impl->BlockNotifyReadyToActivateForTesting(true);
+    host_impl->BlockNotifyReadyToActivateForTesting(true);
   }
 
   void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
@@ -876,8 +872,7 @@ class LayerTreeHostAnimationTestAnimationsAddedToNewAndExistingLayers
     // blocking activation. We want to verify that even with activation blocked,
     // the animation on the layer that's already in the active tree won't get a
     // head start.
-    if (host_impl->settings().impl_side_painting &&
-        host_impl->pending_tree()->source_frame_number() != 2) {
+    if (host_impl->pending_tree()->source_frame_number() != 2) {
       host_impl->BlockNotifyReadyToActivateForTesting(false);
     }
   }
@@ -889,8 +884,7 @@ class LayerTreeHostAnimationTestAnimationsAddedToNewAndExistingLayers
       return;
 
     frame_count_with_pending_tree_++;
-    if (frame_count_with_pending_tree_ == 2 &&
-        host_impl->settings().impl_side_painting) {
+    if (frame_count_with_pending_tree_ == 2) {
       host_impl->BlockNotifyReadyToActivateForTesting(false);
     }
   }

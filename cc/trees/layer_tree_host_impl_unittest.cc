@@ -103,7 +103,6 @@ class LayerTreeHostImplTest : public testing::Test,
   LayerTreeSettings DefaultSettings() {
     LayerTreeSettings settings;
     settings.minimum_occlusion_tracking_size = gfx::Size();
-    settings.impl_side_painting = true;
     settings.renderer_settings.texture_id_allocation_chunk_size = 1;
     settings.report_overscroll_only_for_scrollable_axes = true;
     settings.gpu_rasterization_enabled = true;
@@ -6202,11 +6201,9 @@ TEST_F(LayerTreeHostImplTest, RequireHighResAfterGpuRasterizationToggles) {
 class LayerTreeHostImplTestPrepareTiles : public LayerTreeHostImplTest {
  public:
   void SetUp() override {
-    LayerTreeSettings settings;
-    settings.impl_side_painting = true;
-
-    fake_host_impl_ = new FakeLayerTreeHostImpl(
-        settings, &proxy_, &shared_bitmap_manager_, &task_graph_runner_);
+    fake_host_impl_ =
+        new FakeLayerTreeHostImpl(LayerTreeSettings(), &proxy_,
+                                  &shared_bitmap_manager_, &task_graph_runner_);
     host_impl_.reset(fake_host_impl_);
     host_impl_->InitializeRenderer(CreateOutputSurface());
     host_impl_->SetViewportSize(gfx::Size(10, 10));
