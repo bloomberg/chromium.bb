@@ -382,10 +382,12 @@ extern "C" int WatcherMain(const base::char16* registry_path,
           .value()
           .c_str(),
       &OnCrashReportUpload, nullptr);
+#ifdef KASKO_HANG_REPORTS
   if (launched_kasko &&
       base::StringPiece16(channel_name) == installer::kChromeChannelCanary) {
     on_hung_callback = base::Bind(&DumpHungBrowserProcess, channel_name);
   }
+#endif  // KASKO_HANG_REPORTS
 #endif  // KASKO
 
   // Run a UI message loop on the main thread.
