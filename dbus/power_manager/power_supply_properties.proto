@@ -49,8 +49,34 @@ message PowerSupplyProperties {
 
   // Details about a potential source of power to the system.
   message PowerSource {
+    enum Port {
+      // The location of the port is unknown, or there's only one port.
+      UNKNOWN = 0;
+
+      // Various positions on the device. The first word describes the side of
+      // the device where the port is located while the second clarifies the
+      // position. For example, LEFT_BACK means the farthest-back port on the
+      // left side, while BACK_LEFT means the leftmost port on the back of the
+      // device.
+      LEFT        = 1;
+      RIGHT       = 2;
+      BACK        = 3;
+      FRONT       = 4;
+      LEFT_FRONT  = 5;
+      LEFT_BACK   = 6;
+      RIGHT_FRONT = 7;
+      RIGHT_BACK  = 8;
+      BACK_LEFT   = 9;
+      BACK_RIGHT  = 10;
+
+      // Next value to use: 11
+    }
+
     // Opaque ID corresponding to the device; see |external_power_source_id|.
     optional string id = 1;
+
+    // The charging port to which this power source is connected.
+    optional Port port = 7;
 
     // Raw strings read from |manufacturer| and |model_name| files in sysfs.
     optional string manufacturer_id = 4;
@@ -65,7 +91,7 @@ message PowerSupplyProperties {
     // to do so by the user.
     optional bool active_by_default = 3;
 
-    // Next ID to use: 7
+    // Next ID to use: 8
   }
 
   // Current state of the external power source.
