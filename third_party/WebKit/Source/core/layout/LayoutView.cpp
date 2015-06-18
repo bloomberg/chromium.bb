@@ -83,17 +83,21 @@ LayoutView::~LayoutView()
 
 bool LayoutView::hitTest(HitTestResult& result)
 {
+    // We have to recursively update layout/style here because otherwise, when the hit test recurses
+    // into a child document, it could trigger a layout on the parent document, which can destroy DeprecatedPaintLayer
+    // that are higher up in the call stack, leading to crashes.
+    // Note that Document::updateLayout calls its parent's updateLayout.
+    frameView()->updateLayoutAndStyleForPainting();
+    return hitTestNoLayoutAndStyleUpdate(result);
+}
+
+bool LayoutView::hitTestNoLayoutAndStyleUpdate(HitTestResult& result)
+{
     TRACE_EVENT_BEGIN0("blink,devtools.timeline", "HitTest");
     m_hitTestCount++;
 
     ASSERT(!result.hitTestLocation().isRectBasedTest() || result.hitTestRequest().listBased());
 
-    // We have to recursively update layout/style here because otherwise, when the hit test recurses
-    // into a child document, it could trigger a layout on the parent document, which can destroy DeprecatedPaintLayer
-    // that are higher up in the call stack, leading to crashes.
-    // Note that Document::updateLayout calls its parent's updateLayout.
-    // FIXME: It should be the caller's responsibility to ensure an up-to-date layout.
-    frameView()->updateLayoutAndStyleForPainting();
     commitPendingSelection();
 
     uint64_t domTreeVersion = document().domTreeVersion();

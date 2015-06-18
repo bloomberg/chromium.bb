@@ -170,7 +170,8 @@ bool LayoutPart::nodeAtPoint(HitTestResult& result, const HitTestLocation& locat
         HitTestRequest newHitTestRequest(result.hitTestRequest().type() | HitTestRequest::ChildFrameHitTest);
         HitTestResult childFrameResult(newHitTestRequest, newHitTestLocation);
 
-        bool isInsideChildFrame = childRoot->hitTest(childFrameResult);
+        // The frame's layout and style must be up-to-date if we reach here.
+        bool isInsideChildFrame = childRoot->hitTestNoLayoutAndStyleUpdate(childFrameResult);
 
         if (result.hitTestRequest().listBased()) {
             result.append(childFrameResult);

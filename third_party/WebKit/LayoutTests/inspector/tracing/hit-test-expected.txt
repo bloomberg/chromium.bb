@@ -2,7 +2,6 @@ Tests instrumentation for Timeline HitTest event.
 
 HitTest Properties:
 {
-    children : <object>
     data : {
         endData : {
             nodeId : <number>
