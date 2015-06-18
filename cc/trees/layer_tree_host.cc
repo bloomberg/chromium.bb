@@ -373,6 +373,7 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
 }
 
 void LayerTreeHost::WillCommit() {
+  OnCommitForSwapPromises();
   client_->WillCommit();
 }
 
@@ -1091,6 +1092,11 @@ void LayerTreeHost::BreakSwapPromises(SwapPromise::DidNotSwapReason reason) {
   for (auto* swap_promise : swap_promise_list_)
     swap_promise->DidNotSwap(reason);
   swap_promise_list_.clear();
+}
+
+void LayerTreeHost::OnCommitForSwapPromises() {
+  for (auto* swap_promise : swap_promise_list_)
+    swap_promise->OnCommit();
 }
 
 void LayerTreeHost::set_surface_id_namespace(uint32_t id_namespace) {

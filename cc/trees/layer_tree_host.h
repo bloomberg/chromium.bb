@@ -356,6 +356,8 @@ class CC_EXPORT LayerTreeHost {
 
   MicroBenchmarkController micro_benchmark_controller_;
 
+  void OnCommitForSwapPromises();
+
  private:
   void InitializeProxy(scoped_ptr<Proxy> proxy);
 

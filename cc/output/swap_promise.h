@@ -54,6 +54,8 @@ class CC_EXPORT SwapPromise {
   virtual void DidActivate() = 0;
   virtual void DidSwap(CompositorFrameMetadata* metadata) = 0;
   virtual void DidNotSwap(DidNotSwapReason reason) = 0;
+  // This is called when the main thread starts a (blocking) commit
+  virtual void OnCommit() {}
 
   // A non-zero trace id identifies a trace flow object that is embedded in the
   // swap promise. This can be used for registering additional flow steps to
