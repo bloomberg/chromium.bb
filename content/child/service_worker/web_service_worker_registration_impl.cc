@@ -124,6 +124,18 @@ void WebServiceWorkerRegistrationImpl::update(
                                   registration_id());
 }
 
+void WebServiceWorkerRegistrationImpl::unregister(
+    blink::WebServiceWorkerProvider* provider,
+    WebServiceWorkerUnregistrationCallbacks* callbacks) {
+  WebServiceWorkerProviderImpl* provider_impl =
+      static_cast<WebServiceWorkerProviderImpl*>(provider);
+  ServiceWorkerDispatcher* dispatcher =
+      ServiceWorkerDispatcher::GetThreadSpecificInstance();
+  DCHECK(dispatcher);
+  dispatcher->UnregisterServiceWorker(provider_impl->provider_id(),
+                                      registration_id(), callbacks);
+}
+
 int64 WebServiceWorkerRegistrationImpl::registration_id() const {
   return handle_ref_->registration_id();
 }

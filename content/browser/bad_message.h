@@ -112,6 +112,7 @@ enum BadMessageReason {
   SWDH_UPDATE_NO_HOST = 86,
   SWDH_UPDATE_BAD_REGISTRATION_ID = 87,
   SWDH_UPDATE_CANNOT = 88,
+  SWDH_UNREGISTER_BAD_REGISTRATION_ID = 89,
 
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. RenderFrameHost becomes RFH) plus a unique description of the

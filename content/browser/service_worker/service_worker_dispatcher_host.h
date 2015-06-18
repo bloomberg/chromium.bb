@@ -89,10 +89,14 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
                                const GURL& pattern,
                                const GURL& script_url);
   void OnUpdateServiceWorker(int provider_id, int64 registration_id);
+  void OnDeprecatedUnregisterServiceWorker(int thread_id,
+                                           int request_id,
+                                           int provider_id,
+                                           const GURL& pattern);
   void OnUnregisterServiceWorker(int thread_id,
                                  int request_id,
                                  int provider_id,
-                                 const GURL& pattern);
+                                 int64 registration_id);
   void OnGetRegistration(int thread_id,
                          int request_id,
                          int provider_id,

@@ -136,7 +136,7 @@ void ServiceWorkerDispatcher::UpdateServiceWorker(int provider_id,
       provider_id, registration_id));
 }
 
-void ServiceWorkerDispatcher::UnregisterServiceWorker(
+void ServiceWorkerDispatcher::DeprecatedUnregisterServiceWorker(
     int provider_id,
     const GURL& pattern,
     WebServiceWorkerUnregistrationCallbacks* callbacks) {
@@ -159,8 +159,22 @@ void ServiceWorkerDispatcher::UnregisterServiceWorker(
                            "ServiceWorkerDispatcher::UnregisterServiceWorker",
                            request_id,
                            "Scope", pattern.spec());
+  thread_safe_sender_->Send(
+      new ServiceWorkerHostMsg_DeprecatedUnregisterServiceWorker(
+          CurrentWorkerId(), request_id, provider_id, pattern));
+}
+
+void ServiceWorkerDispatcher::UnregisterServiceWorker(
+    int provider_id,
+    int64 registration_id,
+    WebServiceWorkerUnregistrationCallbacks* callbacks) {
+  DCHECK(callbacks);
+  int request_id = pending_unregistration_callbacks_.Add(callbacks);
+  TRACE_EVENT_ASYNC_BEGIN1("ServiceWorker",
+                           "ServiceWorkerDispatcher::UnregisterServiceWorker",
+                           request_id, "Registration ID", registration_id);
   thread_safe_sender_->Send(new ServiceWorkerHostMsg_UnregisterServiceWorker(
-      CurrentWorkerId(), request_id, provider_id, pattern));
+      CurrentWorkerId(), request_id, provider_id, registration_id));
 }
 
 void ServiceWorkerDispatcher::GetRegistration(

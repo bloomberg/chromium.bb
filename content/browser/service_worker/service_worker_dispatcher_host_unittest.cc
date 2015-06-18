@@ -99,20 +99,6 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
     dispatcher_host_->ipc_sink()->ClearMessages();
   }
 
-  void SendUnregister(int64 provider_id, GURL pattern) {
-    dispatcher_host_->OnMessageReceived(
-        ServiceWorkerHostMsg_UnregisterServiceWorker(
-            -1, -1, provider_id, pattern));
-    base::RunLoop().RunUntilIdle();
-  }
-
-  void Unregister(int64 provider_id, GURL pattern, uint32 expected_message) {
-    SendUnregister(provider_id, pattern);
-    EXPECT_TRUE(dispatcher_host_->ipc_sink()->GetUniqueMessageMatching(
-        expected_message));
-    dispatcher_host_->ipc_sink()->ClearMessages();
-  }
-
   void SendGetRegistration(int64 provider_id, GURL document_url) {
     dispatcher_host_->OnMessageReceived(
         ServiceWorkerHostMsg_GetRegistration(
@@ -184,14 +170,12 @@ TEST_F(ServiceWorkerDispatcherHostTest,
            GURL("https://www.example.com/"),
            GURL("https://www.example.com/bar"),
            ServiceWorkerMsg_ServiceWorkerRegistrationError::ID);
-  Unregister(kProviderId,
-             GURL("https://www.example.com/"),
-             ServiceWorkerMsg_ServiceWorkerUnregistrationError::ID);
   GetRegistration(kProviderId,
                   GURL("https://www.example.com/"),
                   ServiceWorkerMsg_ServiceWorkerGetRegistrationError::ID);
   GetRegistrations(kProviderId,
                    ServiceWorkerMsg_ServiceWorkerGetRegistrationsError::ID);
+  // TODO(nhiroki): Test Unregister() (http://crbug.com/500404).
 
   SetBrowserClientForTesting(old_browser_client);
 }
@@ -348,64 +332,6 @@ TEST_F(ServiceWorkerDispatcherHostTest,
                GURL("filesystem:https://www.example.com/temporary/"),
                GURL("filesystem:https://www.example.com/temporary/bar"));
   EXPECT_EQ(3, dispatcher_host_->bad_messages_received_count_);
-}
-
-TEST_F(ServiceWorkerDispatcherHostTest, Unregister_HTTPS) {
-  const int64 kProviderId = 99;  // Dummy value
-  scoped_ptr<ServiceWorkerProviderHost> host(
-      CreateServiceWorkerProviderHost(kProviderId));
-  host->SetDocumentUrl(GURL("https://www.example.com/foo"));
-  context()->AddProviderHost(host.Pass());
-
-  Unregister(kProviderId,
-             GURL("https://www.example.com/"),
-             ServiceWorkerMsg_ServiceWorkerUnregistered::ID);
-}
-
-TEST_F(ServiceWorkerDispatcherHostTest,
-       Unregister_NotSecureTransportLocalhost) {
-  const int64 kProviderId = 99;  // Dummy value
-  scoped_ptr<ServiceWorkerProviderHost> host(
-      CreateServiceWorkerProviderHost(kProviderId));
-  host->SetDocumentUrl(GURL("http://localhost/foo"));
-  context()->AddProviderHost(host.Pass());
-
-  Unregister(kProviderId,
-             GURL("http://localhost/"),
-             ServiceWorkerMsg_ServiceWorkerUnregistered::ID);
-}
-
-TEST_F(ServiceWorkerDispatcherHostTest, Unregister_CrossOriginShouldFail) {
-  const int64 kProviderId = 99;  // Dummy value
-  scoped_ptr<ServiceWorkerProviderHost> host(
-      CreateServiceWorkerProviderHost(kProviderId));
-  host->SetDocumentUrl(GURL("https://www.example.com/foo"));
-  context()->AddProviderHost(host.Pass());
-
-  SendUnregister(kProviderId, GURL("https://foo.example.com/"));
-  EXPECT_EQ(1, dispatcher_host_->bad_messages_received_count_);
-}
-
-TEST_F(ServiceWorkerDispatcherHostTest, Unregister_InvalidScopeShouldFail) {
-  const int64 kProviderId = 99;  // Dummy value
-  scoped_ptr<ServiceWorkerProviderHost> host(
-      CreateServiceWorkerProviderHost(kProviderId));
-  host->SetDocumentUrl(GURL("https://www.example.com/foo"));
-  context()->AddProviderHost(host.Pass());
-
-  SendUnregister(kProviderId, GURL(""));
-  EXPECT_EQ(1, dispatcher_host_->bad_messages_received_count_);
-}
-
-TEST_F(ServiceWorkerDispatcherHostTest, Unregister_NonSecureOriginShouldFail) {
-  const int64 kProviderId = 99;  // Dummy value
-  scoped_ptr<ServiceWorkerProviderHost> host(
-      CreateServiceWorkerProviderHost(kProviderId));
-  host->SetDocumentUrl(GURL("http://www.example.com/foo"));
-  context()->AddProviderHost(host.Pass());
-
-  SendUnregister(kProviderId, GURL("http://www.example.com/"));
-  EXPECT_EQ(1, dispatcher_host_->bad_messages_received_count_);
 }
 
 TEST_F(ServiceWorkerDispatcherHostTest, EarlyContextDeletion) {

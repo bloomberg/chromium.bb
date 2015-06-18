@@ -49936,6 +49936,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="86" label="SWDH_UPDATE_NO_HOST"/>
   <int value="87" label="SWDH_UPDATE_BAD_REGISTRATION_ID"/>
   <int value="88" label="SWDH_UPDATE_CANNOT"/>
+  <int value="89" label="SWDH_UNREGISTER_BAD_REGISTRATION_ID"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions" type="int">

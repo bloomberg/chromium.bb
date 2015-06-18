@@ -46,8 +46,7 @@ class CONTENT_EXPORT ServiceWorkerDispatcher
  public:
   typedef blink::WebServiceWorkerProvider::WebServiceWorkerRegistrationCallbacks
       WebServiceWorkerRegistrationCallbacks;
-  typedef
-      blink::WebServiceWorkerProvider::WebServiceWorkerUnregistrationCallbacks
+  typedef blink::WebCallbacks<bool, blink::WebServiceWorkerError>
       WebServiceWorkerUnregistrationCallbacks;
   typedef
       blink::WebServiceWorkerProvider::WebServiceWorkerGetRegistrationCallbacks
@@ -74,9 +73,15 @@ class CONTENT_EXPORT ServiceWorkerDispatcher
   // Corresponds to ServiceWorkerRegistration.update().
   void UpdateServiceWorker(int provider_id, int64 registration_id);
   // Corresponds to ServiceWorkerRegistration.unregister().
-  void UnregisterServiceWorker(
+  // TODO(nhiroki): Remove a deprecated version after http://crbug.com/500404 is
+  // fixed.
+  void DeprecatedUnregisterServiceWorker(
       int provider_id,
       const GURL& pattern,
+      WebServiceWorkerUnregistrationCallbacks* callbacks);
+  void UnregisterServiceWorker(
+      int provider_id,
+      int64 registration_id,
       WebServiceWorkerUnregistrationCallbacks* callbacks);
   // Corresponds to navigator.serviceWorker.getRegistration().
   void GetRegistration(
