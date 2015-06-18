@@ -64,7 +64,6 @@
         'chromium_logger.h',
         'env_chromium.cc',
         'env_chromium.h',
-        'env_idb.h',
         'port/port_chromium.cc',
         'port/port_chromium.h',
         'src/db/builder.cc',

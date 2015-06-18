@@ -18,10 +18,10 @@
 #include "base/sys_info.h"
 #include "content/browser/indexed_db/indexed_db_class_factory.h"
 #include "content/browser/indexed_db/leveldb/leveldb_comparator.h"
+#include "content/browser/indexed_db/leveldb/leveldb_env.h"
 #include "content/browser/indexed_db/leveldb/leveldb_iterator_impl.h"
 #include "content/browser/indexed_db/leveldb/leveldb_write_batch.h"
 #include "third_party/leveldatabase/env_chromium.h"
-#include "third_party/leveldatabase/env_idb.h"
 #include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/env.h"
@@ -119,7 +119,7 @@ static leveldb::Status OpenDB(
 
 leveldb::Status LevelDBDatabase::Destroy(const base::FilePath& file_name) {
   leveldb::Options options;
-  options.env = leveldb::IDBEnv();
+  options.env = LevelDBEnv::Get();
   // ChromiumEnv assumes UTF8, converts back to FilePath before using.
   return leveldb::DestroyDB(file_name.AsUTF8Unsafe(), options);
 }
@@ -141,7 +141,7 @@ class LockImpl : public LevelDBLock {
 
 scoped_ptr<LevelDBLock> LevelDBDatabase::LockForTesting(
     const base::FilePath& file_name) {
-  leveldb::Env* env = leveldb::IDBEnv();
+  leveldb::Env* env = LevelDBEnv::Get();
   base::FilePath lock_path = file_name.AppendASCII("LOCK");
   leveldb::FileLock* lock = NULL;
   leveldb::Status status = env->LockFile(lock_path.AsUTF8Unsafe(), &lock);
@@ -271,11 +271,8 @@ leveldb::Status LevelDBDatabase::Open(const base::FilePath& file_name,
 
   leveldb::DB* db;
   scoped_ptr<const leveldb::FilterPolicy> filter_policy;
-  const leveldb::Status s = OpenDB(comparator_adapter.get(),
-                                   leveldb::IDBEnv(),
-                                   file_name,
-                                   &db,
-                                   &filter_policy);
+  const leveldb::Status s = OpenDB(comparator_adapter.get(), LevelDBEnv::Get(),
+                                   file_name, &db, &filter_policy);
 
   if (!s.ok()) {
     HistogramLevelDBError("WebCore.IndexedDB.LevelDBOpenErrors", s);
@@ -308,7 +305,7 @@ scoped_ptr<LevelDBDatabase> LevelDBDatabase::OpenInMemory(
     const LevelDBComparator* comparator) {
   scoped_ptr<ComparatorAdapter> comparator_adapter(
       new ComparatorAdapter(comparator));
-  scoped_ptr<leveldb::Env> in_memory_env(leveldb::NewMemEnv(leveldb::IDBEnv()));
+  scoped_ptr<leveldb::Env> in_memory_env(leveldb::NewMemEnv(LevelDBEnv::Get()));
 
   leveldb::DB* db;
   scoped_ptr<const leveldb::FilterPolicy> filter_policy;

@@ -318,13 +318,6 @@ Status ChromiumWritableFile::Sync() {
   return Status::OK();
 }
 
-class IDBEnv : public ChromiumEnv {
- public:
-  IDBEnv() : ChromiumEnv("LevelDBEnv.IDB", true /* make_backup */) {}
-};
-
-base::LazyInstance<IDBEnv>::Leaky idb_env = LAZY_INSTANCE_INITIALIZER;
-
 base::LazyInstance<ChromiumEnv>::Leaky default_env = LAZY_INSTANCE_INITIALIZER;
 
 }  // unnamed namespace
@@ -1069,10 +1062,6 @@ void ChromiumEnv::StartThread(void (*function)(void* arg), void* arg) {
 }  // namespace leveldb_env
 
 namespace leveldb {
-
-Env* IDBEnv() {
-  return leveldb_env::idb_env.Pointer();
-}
 
 Env* Env::Default() {
   return leveldb_env::default_env.Pointer();

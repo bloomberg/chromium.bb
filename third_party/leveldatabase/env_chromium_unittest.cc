@@ -7,17 +7,16 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/lazy_instance.h"
 #include "base/test/test_suite.h"
-#include "third_party/leveldatabase/env_chromium.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/leveldatabase/env_idb.h"
+#include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 
 #define FPL FILE_PATH_LITERAL
 
 using leveldb::DB;
 using leveldb::Env;
-using leveldb::IDBEnv;
 using leveldb::Options;
 using leveldb::ReadOptions;
 using leveldb::Slice;
@@ -93,10 +92,17 @@ bool GetFirstLDBFile(const base::FilePath& dir, base::FilePath* ldb_file) {
   return false;
 }
 
+class BackupEnv : public ChromiumEnv {
+ public:
+  BackupEnv() : ChromiumEnv("BackupEnv", true /* backup tables */) {}
+};
+
+base::LazyInstance<BackupEnv>::Leaky backup_env = LAZY_INSTANCE_INITIALIZER;
+
 TEST(ChromiumEnv, BackupTables) {
   Options options;
   options.create_if_missing = true;
-  options.env = IDBEnv();
+  options.env = backup_env.Pointer();
 
   base::ScopedTempDir scoped_temp_dir;
   ASSERT_TRUE(scoped_temp_dir.CreateUniqueTempDir());
@@ -146,7 +152,7 @@ TEST(ChromiumEnv, GetChildrenEmptyDir) {
   ASSERT_TRUE(scoped_temp_dir.CreateUniqueTempDir());
   base::FilePath dir = scoped_temp_dir.path();
 
-  Env* env = IDBEnv();
+  Env* env = Env::Default();
   std::vector<std::string> result;
   leveldb::Status status = env->GetChildren(dir.AsUTF8Unsafe(), &result);
   EXPECT_TRUE(status.ok());
@@ -165,7 +171,7 @@ TEST(ChromiumEnv, GetChildrenPriorResults) {
     fclose(f);
   }
 
-  Env* env = IDBEnv();
+  Env* env = Env::Default();
   std::vector<std::string> result;
   leveldb::Status status = env->GetChildren(dir.AsUTF8Unsafe(), &result);
   EXPECT_TRUE(status.ok());

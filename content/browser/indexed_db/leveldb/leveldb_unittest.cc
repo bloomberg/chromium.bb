@@ -13,11 +13,11 @@
 #include "base/strings/string_piece.h"
 #include "content/browser/indexed_db/leveldb/leveldb_comparator.h"
 #include "content/browser/indexed_db/leveldb/leveldb_database.h"
+#include "content/browser/indexed_db/leveldb/leveldb_env.h"
 #include "content/browser/indexed_db/leveldb/leveldb_iterator.h"
 #include "content/browser/indexed_db/leveldb/leveldb_transaction.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/env_chromium.h"
-#include "third_party/leveldatabase/env_idb.h"
 
 namespace content {
 
@@ -245,7 +245,7 @@ TEST(LevelDB, Locking) {
   base::ScopedTempDir temp_directory;
   ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
 
-  leveldb::Env* env = leveldb::IDBEnv();
+  leveldb::Env* env = LevelDBEnv::Get();
   base::FilePath file = temp_directory.path().AppendASCII("LOCK");
   leveldb::FileLock* lock;
   leveldb::Status status = env->LockFile(file.AsUTF8Unsafe(), &lock);
