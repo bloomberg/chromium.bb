@@ -656,7 +656,7 @@ def squash_current_branch(header=None, merge_base=None):
     # nothing to commit at this point.
     print 'Nothing to commit; squashed branch is empty'
     return False
-  run('commit', '-a', '-F', '-', indata=log_msg)
+  run('commit', '--no-verify', '-a', '-F', '-', indata=log_msg)
   return True
 
 
