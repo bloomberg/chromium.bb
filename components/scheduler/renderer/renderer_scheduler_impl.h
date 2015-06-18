@@ -139,8 +139,9 @@ class SCHEDULER_EXPORT RendererSchedulerImpl : public RendererScheduler,
 
   // For the purposes of deciding whether or not it's safe to turn timers on
   // only in idle periods, we regard the system as being as being "idle period"
-  // starved if there hasn't been an idle period in the last 100 ms.
-  static const int kIdlePeriodStarvationThresholdMillis = 100;
+  // starved if there hasn't been an idle period in the last 10 seconds. This
+  // was chosen to be long enough to cover most anticipated user gestures.
+  static const int kIdlePeriodStarvationThresholdMillis = 10000;
 
   // Schedules an immediate PolicyUpdate, if there isn't one already pending and
   // sets |policy_may_need_update_|. Note |any_thread_lock_| must be
