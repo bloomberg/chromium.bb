@@ -170,7 +170,8 @@ ScopedJavaLocalRef<jobject> BookmarksBridge::GetBookmarkByID(JNIEnv* env,
                                                              jlong id,
                                                              jint type) {
   DCHECK(IsLoaded());
-  return CreateJavaBookmark(GetNodeByID(id, type));
+  const BookmarkNode* node = GetNodeByID(id, type);
+  return node ? CreateJavaBookmark(node) : ScopedJavaLocalRef<jobject>();
 }
 
 bool BookmarksBridge::IsDoingExtensiveChanges(JNIEnv* env, jobject obj) {

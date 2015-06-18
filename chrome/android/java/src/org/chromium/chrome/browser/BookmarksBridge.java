@@ -205,6 +205,7 @@ public class BookmarksBridge {
 
     /**
      * @return A BookmarkItem instance for the given BookmarkId.
+     *         <code>null</code> if it doesn't exist.
      */
     public BookmarkItem getBookmarkById(BookmarkId id) {
         assert mIsNativeBookmarkModelLoaded;
