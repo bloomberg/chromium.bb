@@ -10,7 +10,6 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebTraceLocation.h"
-#include "wtf/Functional.h"
 #include "wtf/Locker.h"
 #include "wtf/ThreadSafeRefCounted.h"
 #include "wtf/ThreadingPrimitives.h"
@@ -18,73 +17,6 @@
 namespace blink {
 
 using Result = WebDataConsumerHandle::Result;
-
-namespace {
-
-class WaitingHandle final : public WebDataConsumerHandle {
-private:
-    class ReaderImpl final : public WebDataConsumerHandle::Reader {
-    public:
-        Result read(void*, size_t, WebDataConsumerHandle::Flags, size_t *readSize) override
-        {
-            *readSize = 0;
-            return ShouldWait;
-        }
-        Result beginRead(const void** buffer, WebDataConsumerHandle::Flags, size_t *available) override
-        {
-            *available = 0;
-            *buffer = nullptr;
-            return ShouldWait;
-        }
-        Result endRead(size_t) override
-        {
-            return UnexpectedError;
-        }
-    };
-    Reader* obtainReaderInternal(Client*) override { return new ReaderImpl; }
-};
-
-class DoneHandle final : public WebDataConsumerHandle {
-private:
-    class ReaderImpl final : public WebDataConsumerHandle::Reader {
-    public:
-        explicit ReaderImpl(Client* client) : m_factory(this)
-        {
-            if (!client)
-                return;
-            // Note we don't need thread safety here because this object is
-            // bound to the current thread.
-            Platform::current()->currentThread()->postTask(FROM_HERE, new Task(bind(&ReaderImpl::notify, m_factory.createWeakPtr(), client)));
-        }
-        Result read(void*, size_t, WebDataConsumerHandle::Flags, size_t *readSize) override
-        {
-            *readSize = 0;
-            return Done;
-        }
-        Result beginRead(const void** buffer, WebDataConsumerHandle::Flags, size_t *available) override
-        {
-            *available = 0;
-            *buffer = nullptr;
-            return Done;
-        }
-        Result endRead(size_t) override
-        {
-            return UnexpectedError;
-        }
-
-    private:
-        void notify(Client* client)
-        {
-            client->didGetReadable();
-        }
-
-        WeakPtrFactory<ReaderImpl> m_factory;
-    };
-
-    Reader* obtainReaderInternal(Client* client) override { return new ReaderImpl(client); }
-};
-
-} // namespace
 
 class CompositeDataConsumerHandle::ReaderImpl final : public WebDataConsumerHandle::Reader {
 public:
@@ -265,16 +197,6 @@ void CompositeDataConsumerHandle::update(PassOwnPtr<WebDataConsumerHandle> handl
 {
     ASSERT(handle);
     m_context->update(handle);
-}
-
-PassOwnPtr<WebDataConsumerHandle> CompositeDataConsumerHandle::createWaitingHandle()
-{
-    return adoptPtr(new WaitingHandle);
-}
-
-PassOwnPtr<WebDataConsumerHandle> CompositeDataConsumerHandle::createDoneHandle()
-{
-    return adoptPtr(new DoneHandle);
 }
 
 } // namespace blink

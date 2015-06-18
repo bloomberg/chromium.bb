@@ -29,21 +29,6 @@ public:
     // was created. |handle| must not be null and must not be locked.
     void update(PassOwnPtr<WebDataConsumerHandle> /* handle */);
 
-    // Utility static methods each of which provides a "basic block" of
-    // a CompositeDataConsumerHandle. For example, a user can create
-    // a CompositeDataConsumerHandle with a "waiting" handle to provide
-    // WebDataConsumerHandle APIs while waiting for another handle. When that
-    // handle arrives, the user will use |update| to replace the "waiting"
-    // handle with the arrived one.
-    //
-    // Returns a handle that returns ShouldWait for read / beginRead and
-    // UnexpectedError for endRead.
-    static PassOwnPtr<WebDataConsumerHandle> createWaitingHandle();
-
-    // Returns a handle that returns Done for read / beginRead and
-    // UnexpectedError for endRead.
-    static PassOwnPtr<WebDataConsumerHandle> createDoneHandle();
-
 private:
     class Context;
     class ReaderImpl;

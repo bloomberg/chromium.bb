@@ -5,6 +5,7 @@
 #include "config.h"
 #include "modules/fetch/CompositeDataConsumerHandle.h"
 
+#include "modules/fetch/DataConsumerHandleTestUtil.h"
 #include "platform/Task.h"
 #include "platform/ThreadSafeFunctional.h"
 #include "platform/heap/Handle.h"
@@ -21,28 +22,21 @@ namespace blink {
 
 namespace {
 
-using Result = WebDataConsumerHandle::Result;
-using Flags = WebDataConsumerHandle::Flags;
 using ::testing::InSequence;
 using ::testing::Return;
 using ::testing::StrictMock;
 using Checkpoint = StrictMock<::testing::MockFunction<void(int)>>;
 
-const Result kShouldWait = WebDataConsumerHandle::ShouldWait;
-const Result kDone = WebDataConsumerHandle::Done;
-const Result kOk = WebDataConsumerHandle::Ok;
-const Result kUnexpectedError = WebDataConsumerHandle::UnexpectedError;
-const Flags kNone = WebDataConsumerHandle::FlagNone;
-
-class NoopClient final : public WebDataConsumerHandle::Client {
-public:
-    void didGetReadable() override { }
-};
+const WebDataConsumerHandle::Result kShouldWait = WebDataConsumerHandle::ShouldWait;
+const WebDataConsumerHandle::Result kOk = WebDataConsumerHandle::Ok;
+const WebDataConsumerHandle::Flags kNone = WebDataConsumerHandle::FlagNone;
 
 class MockReader : public WebDataConsumerHandle::Reader {
 public:
     static PassOwnPtr<StrictMock<MockReader>> create() { return adoptPtr(new StrictMock<MockReader>); }
 
+    using Result = WebDataConsumerHandle::Result;
+    using Flags = WebDataConsumerHandle::Flags;
     MOCK_METHOD4(read, Result(void*, size_t, Flags, size_t*));
     MOCK_METHOD3(beginRead, Result(const void**, Flags, size_t*));
     MOCK_METHOD1(endRead, Result(size_t));
@@ -55,91 +49,7 @@ public:
     MOCK_METHOD1(obtainReaderInternal, Reader*(Client*));
 };
 
-class ThreadingTestBase : public ThreadSafeRefCounted<ThreadingTestBase> {
-public:
-    class Context : public ThreadSafeRefCounted<Context> {
-    public:
-        static PassRefPtr<Context> create() { return adoptRef(new Context); }
-        void recordAttach(const String& handle)
-        {
-            MutexLocker locker(m_loggingMutex);
-            m_result.append("A reader is attached to " + handle + " on " + currentThreadName() + ".\n");
-        }
-        void recordDetach(const String& handle)
-        {
-            MutexLocker locker(m_loggingMutex);
-            m_result.append("A reader is detached from " + handle + " on " + currentThreadName() + ".\n");
-        }
-
-        const String& result()
-        {
-            MutexLocker locker(m_loggingMutex);
-            return m_result;
-        }
-        WebThread* readingThread() { return m_readingThread.get(); }
-        WebThread* updatingThread() { return m_updatingThread.get(); }
-
-    private:
-        Context()
-            : m_readingThread(adoptPtr(Platform::current()->createThread("reading thread")))
-            , m_updatingThread(adoptPtr(Platform::current()->createThread("updating thread")))
-        {
-        }
-        String currentThreadName()
-        {
-            if (m_readingThread->isCurrentThread())
-                return "the reading thread";
-            if (m_updatingThread->isCurrentThread())
-                return "the updating thread";
-            return "an unknown thread";
-        }
-
-        OwnPtr<WebThread> m_readingThread;
-        OwnPtr<WebThread> m_updatingThread;
-        Mutex m_loggingMutex;
-        String m_result;
-    };
-
-    class ReaderImpl final : public WebDataConsumerHandle::Reader {
-    public:
-        ReaderImpl(const String& name, PassRefPtr<Context> context) : m_name(name.isolatedCopy()), m_context(context)
-        {
-            m_context->recordAttach(m_name.isolatedCopy());
-        }
-        ~ReaderImpl() override { m_context->recordDetach(m_name.isolatedCopy()); }
-        Result read(void*, size_t, Flags, size_t*) override { return kShouldWait; }
-        Result beginRead(const void**, Flags, size_t*) override { return kShouldWait; }
-        Result endRead(size_t) override { return kUnexpectedError; }
-
-    private:
-        const String m_name;
-        RefPtr<Context> m_context;
-    };
-    class DataConsumerHandle final : public WebDataConsumerHandle {
-    public:
-        DataConsumerHandle(const String& name, PassRefPtr<Context> context) : m_name(name.isolatedCopy()), m_context(context) { }
-
-    private:
-        Reader* obtainReaderInternal(Client*) { return new ReaderImpl(m_name, m_context); }
-        const String m_name;
-        RefPtr<Context> m_context;
-    };
-
-    void resetReader() { m_reader = nullptr; }
-    void signalDone() { m_waitableEvent->signal(); }
-    const String& result() { return m_context->result(); }
-    WebThread* readingThread() { return m_context->readingThread(); }
-    WebThread* updatingThread() { return m_context->updatingThread(); }
-
-protected:
-    RefPtr<Context> m_context;
-    OwnPtr<CompositeDataConsumerHandle> m_handle;
-    OwnPtr<WebDataConsumerHandle::Reader> m_reader;
-    OwnPtr<WebWaitableEvent> m_waitableEvent;
-    NoopClient m_client;
-};
-
-class ThreadingRegistrationTest : public ThreadingTestBase {
+class ThreadingRegistrationTest : public DataConsumerHandleTestUtil::ThreadingTestBase {
 public:
     using Self = ThreadingRegistrationTest;
     void run()
@@ -165,9 +75,11 @@ private:
         readingThread()->postTask(FROM_HERE, new Task(threadSafeBind(&Self::resetReader, this)));
         readingThread()->postTask(FROM_HERE, new Task(threadSafeBind(&Self::signalDone, this)));
     }
+
+    OwnPtr<CompositeDataConsumerHandle> m_handle;
 };
 
-class ThreadingRegistrationDeleteHandleTest : public ThreadingTestBase {
+class ThreadingRegistrationDeleteHandleTest : public DataConsumerHandleTestUtil::ThreadingTestBase {
 public:
     using Self = ThreadingRegistrationDeleteHandleTest;
     void run()
@@ -194,9 +106,11 @@ private:
         readingThread()->postTask(FROM_HERE, new Task(threadSafeBind(&Self::resetReader, this)));
         readingThread()->postTask(FROM_HERE, new Task(threadSafeBind(&Self::signalDone, this)));
     }
+
+    OwnPtr<CompositeDataConsumerHandle> m_handle;
 };
 
-class ThreadingRegistrationDeleteReaderTest : public ThreadingTestBase {
+class ThreadingRegistrationDeleteReaderTest : public DataConsumerHandleTestUtil::ThreadingTestBase {
 public:
     using Self = ThreadingRegistrationDeleteReaderTest;
     void run()
@@ -223,9 +137,11 @@ private:
         readingThread()->postTask(FROM_HERE, new Task(threadSafeBind(&Self::resetReader, this)));
         readingThread()->postTask(FROM_HERE, new Task(threadSafeBind(&Self::signalDone, this)));
     }
+
+    OwnPtr<CompositeDataConsumerHandle> m_handle;
 };
 
-class ThreadingUpdatingReaderWhileUpdatingTest : public ThreadingTestBase {
+class ThreadingUpdatingReaderWhileUpdatingTest : public DataConsumerHandleTestUtil::ThreadingTestBase {
 public:
     using Self = ThreadingUpdatingReaderWhileUpdatingTest;
     void run()
@@ -263,10 +179,11 @@ private:
         m_reader = m_handle->obtainReader(&m_client);
     }
 
+    OwnPtr<CompositeDataConsumerHandle> m_handle;
     OwnPtr<WebWaitableEvent> m_updateEvent;
 };
 
-class ThreadingRegistrationUpdateTwiceAtOneTimeTest : public ThreadingTestBase {
+class ThreadingRegistrationUpdateTwiceAtOneTimeTest : public DataConsumerHandleTestUtil::ThreadingTestBase {
 public:
     using Self = ThreadingRegistrationUpdateTwiceAtOneTimeTest;
     void run()
@@ -293,92 +210,15 @@ private:
         readingThread()->postTask(FROM_HERE, new Task(threadSafeBind(&Self::resetReader, this)));
         readingThread()->postTask(FROM_HERE, new Task(threadSafeBind(&Self::signalDone, this)));
     }
+
+    OwnPtr<CompositeDataConsumerHandle> m_handle;
 };
-
-class ThreadingDoneHandleNotificationTest : public ThreadingTestBase, public WebDataConsumerHandle::Client {
-public:
-    using Self = ThreadingDoneHandleNotificationTest;
-    void run()
-    {
-        m_context = Context::create();
-        m_waitableEvent = adoptPtr(Platform::current()->createWaitableEvent());
-        m_handle = CompositeDataConsumerHandle::create(CompositeDataConsumerHandle::createDoneHandle());
-
-        readingThread()->postTask(FROM_HERE, new Task(threadSafeBind(&Self::obtainReader, this)));
-
-        m_waitableEvent->wait();
-    }
-
-private:
-    void obtainReader()
-    {
-        m_reader = m_handle->obtainReader(this);
-    }
-    void didGetReadable() override
-    {
-        readingThread()->postTask(FROM_HERE, new Task(threadSafeBind(&Self::resetReader, this)));
-        readingThread()->postTask(FROM_HERE, new Task(threadSafeBind(&Self::signalDone, this)));
-    }
-};
-
-class ThreadingDoneHandleNoNotificationTest : public ThreadingTestBase, public WebDataConsumerHandle::Client {
-public:
-    using Self = ThreadingDoneHandleNoNotificationTest;
-    void run()
-    {
-        m_context = Context::create();
-        m_waitableEvent = adoptPtr(Platform::current()->createWaitableEvent());
-        m_handle = CompositeDataConsumerHandle::create(CompositeDataConsumerHandle::createDoneHandle());
-
-        readingThread()->postTask(FROM_HERE, new Task(threadSafeBind(&Self::obtainReader, this)));
-
-        m_waitableEvent->wait();
-    }
-
-private:
-    void obtainReader()
-    {
-        m_reader = m_handle->obtainReader(this);
-        m_reader = nullptr;
-        readingThread()->postTask(FROM_HERE, new Task(threadSafeBind(&Self::signalDone, this)));
-    }
-    void didGetReadable() override
-    {
-        ASSERT_NOT_REACHED();
-    }
-};
-
-TEST(CompositeDataConsumerHandleTest, CreateWaitingHandle)
-{
-    char buffer[20];
-    const void* p = nullptr;
-    size_t size = 0;
-    OwnPtr<WebDataConsumerHandle> handle = CompositeDataConsumerHandle::createWaitingHandle();
-    OwnPtr<WebDataConsumerHandle::Reader> reader = handle->obtainReader(nullptr);
-
-    EXPECT_EQ(kShouldWait, reader->read(buffer, sizeof(buffer), kNone, &size));
-    EXPECT_EQ(kShouldWait, reader->beginRead(&p, kNone, &size));
-    EXPECT_EQ(kUnexpectedError, reader->endRead(99));
-}
-
-TEST(CompositeDataConsumerHandleTest, CreateDoneHandle)
-{
-    char buffer[20];
-    const void* p = nullptr;
-    size_t size = 0;
-    OwnPtr<WebDataConsumerHandle> handle = CompositeDataConsumerHandle::createDoneHandle();
-    OwnPtr<WebDataConsumerHandle::Reader> reader = handle->obtainReader(nullptr);
-
-    EXPECT_EQ(kDone, reader->read(buffer, sizeof(buffer), kNone, &size));
-    EXPECT_EQ(kDone, reader->beginRead(&p, kNone, &size));
-    EXPECT_EQ(kUnexpectedError, reader->endRead(99));
-}
 
 TEST(CompositeDataConsumerHandleTest, Read)
 {
     char buffer[20];
     size_t size = 0;
-    NoopClient client;
+    DataConsumerHandleTestUtil::NoopClient client;
     Checkpoint checkpoint;
 
     OwnPtr<MockHandle> handle1 = MockHandle::create();
@@ -581,16 +421,16 @@ TEST(CompositeDataConsumerHandleTest, UpdateTwiceAtOnce)
 
 TEST(CompositeDataConsumerHandleTest, DoneHandleNotification)
 {
-    ThreadingDoneHandleNotificationTest test;
+    DataConsumerHandleTestUtil::ThreadingHandleNotificationTest test;
     // Test this function returns.
-    test.run();
+    test.run(CompositeDataConsumerHandle::create(createDoneDataConsumerHandle()));
 }
 
 TEST(CompositeDataConsumerHandleTest, DoneHandleNoNotification)
 {
-    ThreadingDoneHandleNoNotificationTest test;
+    DataConsumerHandleTestUtil::ThreadingHandleNoNotificationTest test;
     // Test this function doesn't crash.
-    test.run();
+    test.run(CompositeDataConsumerHandle::create(createDoneDataConsumerHandle()));
 }
 
 } // namespace
