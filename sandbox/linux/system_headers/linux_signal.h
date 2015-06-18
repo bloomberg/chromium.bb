@@ -70,4 +70,32 @@ typedef siginfo_t LinuxSigInfo;
 
 #endif  // !defined(__native_client_nonsfi__)
 
+// struct sigset_t is different size in PNaCl from the Linux's.
+#if defined(__mips__)
+#if !defined(_NSIG_WORDS)
+#define _NSIG_WORDS 4
+#endif
+struct LinuxSigSet {
+  unsigned long sig[_NSIG_WORDS];
+};
+#else
+typedef uint64_t LinuxSigSet;
+#endif
+
+// struct sigaction is different in PNaCl from the Linux's.
+#if defined(__mips__)
+struct LinuxSigAction {
+  unsigned int sa_flags;
+  void (*kernel_handler)(int);
+  LinuxSigSet sa_mask;
+};
+#else
+struct LinuxSigAction {
+  void (*kernel_handler)(int);
+  uint32_t sa_flags;
+  void (*sa_restorer)(void);
+  LinuxSigSet sa_mask;
+};
+#endif
+
 #endif  // SANDBOX_LINUX_SYSTEM_HEADERS_LINUX_SIGNAL_H_

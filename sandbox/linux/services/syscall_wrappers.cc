@@ -141,9 +141,12 @@ int sys_unshare(int flags) {
 
 int sys_sigprocmask(int how, const sigset_t* set, decltype(nullptr) oldset) {
   // In some toolchain (in particular Android and PNaCl toolchain),
-  // sigset_t is 32 bits, but Linux ABI requires 64 bits.
-  uint64_t linux_value = 0;
-  std::memcpy(&linux_value, set, std::min(sizeof(sigset_t), sizeof(uint64_t)));
+  // sigset_t is 32 bits, but the Linux ABI uses more.
+  LinuxSigSet linux_value;
+  std::memset(&linux_value, 0, sizeof(LinuxSigSet));
+  std::memcpy(&linux_value, set, std::min(sizeof(sigset_t),
+                                          sizeof(LinuxSigSet)));
+
   return syscall(__NR_rt_sigprocmask, how, &linux_value, nullptr,
                  sizeof(linux_value));
 }
@@ -186,14 +189,6 @@ int sys_sigaction(int signum,
   return sigaction(signum, act, oldact);
 }
 #else
-// struct sigaction is different ABI from the Linux's.
-struct KernelSigAction {
-  void (*kernel_handler)(int);
-  uint32_t sa_flags;
-  void (*sa_restorer)(void);
-  uint64_t sa_mask;
-};
-
 // On X86_64 arch, it is necessary to set sa_restorer always.
 #if defined(ARCH_CPU_X86_64)
 #if !defined(SA_RESTORER)
@@ -213,30 +208,32 @@ static __attribute__((naked)) void sys_rt_sigreturn() {
 int sys_sigaction(int signum,
                   const struct sigaction* act,
                   struct sigaction* oldact) {
-  KernelSigAction kernel_act = {};
+  LinuxSigAction linux_act = {};
   if (act) {
-    kernel_act.kernel_handler = act->sa_handler;
-    std::memcpy(&kernel_act.sa_mask, &act->sa_mask,
-                std::min(sizeof(kernel_act.sa_mask), sizeof(act->sa_mask)));
-    kernel_act.sa_flags = act->sa_flags;
+    linux_act.kernel_handler = act->sa_handler;
+    std::memcpy(&linux_act.sa_mask, &act->sa_mask,
+                std::min(sizeof(linux_act.sa_mask), sizeof(act->sa_mask)));
+    linux_act.sa_flags = act->sa_flags;
 
 #if defined(ARCH_CPU_X86_64)
-    if (!(kernel_act.sa_flags & SA_RESTORER)) {
-      kernel_act.sa_flags |= SA_RESTORER;
-      kernel_act.sa_restorer = sys_rt_sigreturn;
+    if (!(linux_act.sa_flags & SA_RESTORER)) {
+      linux_act.sa_flags |= SA_RESTORER;
+      linux_act.sa_restorer = sys_rt_sigreturn;
     }
 #endif
   }
 
-  KernelSigAction kernel_oldact = {};
-  int result = syscall(__NR_rt_sigaction, signum, act ? &kernel_act : nullptr,
-                       oldact ? &kernel_oldact : nullptr, sizeof(uint64_t));
+  LinuxSigAction linux_oldact = {};
+  int result = syscall(__NR_rt_sigaction, signum, act ? &linux_act : nullptr,
+                       oldact ? &linux_oldact : nullptr,
+                       sizeof(LinuxSigSet));
+
   if (result == 0 && oldact) {
-    oldact->sa_handler = kernel_oldact.kernel_handler;
+    oldact->sa_handler = linux_oldact.kernel_handler;
     sigemptyset(&oldact->sa_mask);
-    std::memcpy(&oldact->sa_mask, &kernel_oldact.sa_mask,
-                std::min(sizeof(kernel_act.sa_mask), sizeof(act->sa_mask)));
-    oldact->sa_flags = kernel_oldact.sa_flags;
+    std::memcpy(&oldact->sa_mask, &linux_oldact.sa_mask,
+                std::min(sizeof(linux_act.sa_mask), sizeof(act->sa_mask)));
+    oldact->sa_flags = linux_oldact.sa_flags;
   }
   return result;
 }
