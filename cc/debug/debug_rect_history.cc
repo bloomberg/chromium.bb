@@ -164,12 +164,10 @@ void DebugRectHistory::SaveTouchEventHandlerRectsCallback(LayerImpl* layer) {
   for (Region::Iterator iter(layer->touch_event_handler_region());
        iter.has_rect();
        iter.next()) {
-    gfx::Rect touch_rect = gfx::ScaleToEnclosingRect(
-        iter.rect(), layer->contents_scale_x(), layer->contents_scale_y());
     debug_rects_.push_back(
         DebugRect(TOUCH_EVENT_HANDLER_RECT_TYPE,
                   MathUtil::MapEnclosingClippedRect(
-                      layer->screen_space_transform(), touch_rect)));
+                      layer->screen_space_transform(), iter.rect())));
   }
 }
 
@@ -183,13 +181,10 @@ void DebugRectHistory::SaveWheelEventHandlerRectsCallback(LayerImpl* layer) {
   if (!layer->have_wheel_event_handlers())
     return;
 
-  gfx::Rect wheel_rect = gfx::ScaleToEnclosingRect(gfx::Rect(layer->bounds()),
-                                                   layer->contents_scale_x(),
-                                                   layer->contents_scale_y());
-  debug_rects_.push_back(
-      DebugRect(WHEEL_EVENT_HANDLER_RECT_TYPE,
-                MathUtil::MapEnclosingClippedRect(
-                    layer->screen_space_transform(), wheel_rect)));
+  debug_rects_.push_back(DebugRect(
+      WHEEL_EVENT_HANDLER_RECT_TYPE,
+      MathUtil::MapEnclosingClippedRect(layer->screen_space_transform(),
+                                        gfx::Rect(layer->bounds()))));
 }
 
 void DebugRectHistory::SaveScrollEventHandlerRects(LayerImpl* layer) {
@@ -202,13 +197,10 @@ void DebugRectHistory::SaveScrollEventHandlerRectsCallback(LayerImpl* layer) {
   if (!layer->have_scroll_event_handlers())
     return;
 
-  gfx::Rect scroll_rect = gfx::ScaleToEnclosingRect(gfx::Rect(layer->bounds()),
-                                                    layer->contents_scale_x(),
-                                                    layer->contents_scale_y());
-  debug_rects_.push_back(
-      DebugRect(SCROLL_EVENT_HANDLER_RECT_TYPE,
-                MathUtil::MapEnclosingClippedRect(
-                    layer->screen_space_transform(), scroll_rect)));
+  debug_rects_.push_back(DebugRect(
+      SCROLL_EVENT_HANDLER_RECT_TYPE,
+      MathUtil::MapEnclosingClippedRect(layer->screen_space_transform(),
+                                        gfx::Rect(layer->bounds()))));
 }
 
 void DebugRectHistory::SaveNonFastScrollableRects(LayerImpl* layer) {
@@ -221,12 +213,10 @@ void DebugRectHistory::SaveNonFastScrollableRectsCallback(LayerImpl* layer) {
   for (Region::Iterator iter(layer->non_fast_scrollable_region());
        iter.has_rect();
        iter.next()) {
-    gfx::Rect scroll_rect = gfx::ScaleToEnclosingRect(
-        iter.rect(), layer->contents_scale_x(), layer->contents_scale_y());
     debug_rects_.push_back(
         DebugRect(NON_FAST_SCROLLABLE_RECT_TYPE,
                   MathUtil::MapEnclosingClippedRect(
-                      layer->screen_space_transform(), scroll_rect)));
+                      layer->screen_space_transform(), iter.rect())));
   }
 }
 

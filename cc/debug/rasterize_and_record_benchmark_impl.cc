@@ -176,14 +176,13 @@ void RasterizeAndRecordBenchmarkImpl::RunOnLayer(PictureLayerImpl* layer) {
       settings.skewport_target_time_in_seconds,
       settings.skewport_extrapolation_limit_in_content_pixels);
 
-  PictureLayerTiling* tiling = tiling_set->AddTiling(layer->contents_scale_x(),
-                                                     layer->GetRasterSource());
+  PictureLayerTiling* tiling =
+      tiling_set->AddTiling(1.f, layer->GetRasterSource());
   tiling->CreateAllTilesForTesting();
   RasterSource* raster_source = tiling->raster_source();
-  for (PictureLayerTiling::CoverageIterator it(
-           tiling, layer->contents_scale_x(), layer->visible_content_rect());
-       it;
-       ++it) {
+  for (PictureLayerTiling::CoverageIterator it(tiling, 1.f,
+                                               layer->visible_content_rect());
+       it; ++it) {
     DCHECK(*it);
 
     gfx::Rect content_rect = (*it)->content_rect();

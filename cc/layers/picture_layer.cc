@@ -117,8 +117,7 @@ bool PictureLayer::Update(ResourceUpdateQueue* queue) {
   update_source_frame_number_ = layer_tree_host()->source_frame_number();
   bool updated = Layer::Update(queue);
 
-  gfx::Rect visible_layer_rect = gfx::ScaleToEnclosingRect(
-      visible_content_rect(), 1.f / contents_scale_x());
+  gfx::Rect visible_layer_rect = visible_content_rect();
   gfx::Size layer_size = paint_properties().bounds;
 
   if (last_updated_visible_content_rect_ == visible_content_rect() &&

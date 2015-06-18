@@ -710,9 +710,6 @@ gfx::Transform ComputeSizeDeltaCompensation(
   // Calculate step 1b
   gfx::Transform container_layer_space_to_container_target_surface_space =
       container->draw_transform();
-  container_layer_space_to_container_target_surface_space.Scale(
-      container->contents_scale_x(), container->contents_scale_y());
-
   gfx::Transform container_target_surface_space_to_container_layer_space;
   if (container_layer_space_to_container_target_surface_space.GetInverse(
       &container_target_surface_space_to_container_layer_space)) {
@@ -1794,10 +1791,6 @@ static void CalculateDrawPropertiesInternal(
   // draw_transform, unless the layer itself creates a render_surface. In that
   // case, the render_surface re-parents the transforms.
   layer_draw_properties.target_space_transform = combined_transform;
-  // M[draw] = M[parent] * LT * S[layer2content]
-  layer_draw_properties.target_space_transform.Scale(
-      SK_MScalar1 / layer->contents_scale_x(),
-      SK_MScalar1 / layer->contents_scale_y());
 
   // The layer's screen_space_transform represents the transform between root
   // layer's "screen space" and local content space.
@@ -1872,8 +1865,7 @@ static void CalculateDrawPropertiesInternal(
       // space.
       layer_draw_properties.target_space_transform.MakeIdentity();
       layer_draw_properties.target_space_transform.Scale(
-          combined_transform_scales.x() / layer->contents_scale_x(),
-          combined_transform_scales.y() / layer->contents_scale_y());
+          combined_transform_scales.x(), combined_transform_scales.y());
 
       // Inside the surface's subtree, we scale everything to the owning layer's
       // scale.  The sublayer matrix transforms layer rects into target surface
@@ -2290,9 +2282,8 @@ static void CalculateDrawPropertiesInternal(
     // layer space which we need to undo and replace with a scale from the
     // surface's subtree into layer space.
     gfx::Transform screen_space_transform = layer->screen_space_transform();
-    screen_space_transform.Scale(
-        layer->contents_scale_x() / combined_transform_scales.x(),
-        layer->contents_scale_y() / combined_transform_scales.y());
+    screen_space_transform.Scale(1.0 / combined_transform_scales.x(),
+                                 1.0 / combined_transform_scales.y());
     render_surface->SetScreenSpaceTransform(screen_space_transform);
 
     if (layer->replica_layer()) {

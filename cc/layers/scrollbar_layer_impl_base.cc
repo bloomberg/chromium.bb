@@ -94,16 +94,6 @@ void ScrollbarLayerImplBase::SetScrollLayerAndClipLayerByIds(
   ScrollbarParametersDidChange(false);
 }
 
-gfx::Rect ScrollbarLayerImplBase::ScrollbarLayerRectToContentRect(
-    const gfx::RectF& layer_rect) const {
-  // Don't intersect with the bounds as in LayerRectToContentRect() because
-  // layer_rect here might be in coordinates of the containing layer.
-  gfx::RectF content_rect = gfx::ScaleRect(layer_rect,
-      contents_scale_x(),
-      contents_scale_y());
-  return gfx::ToEnclosingRect(content_rect);
-}
-
 bool ScrollbarLayerImplBase::SetCurrentPos(float current_pos) {
   if (current_pos_ == current_pos)
     return false;
@@ -249,7 +239,7 @@ gfx::Rect ScrollbarLayerImplBase::ComputeThumbQuadRect() const {
         thumb_length);
   }
 
-  return ScrollbarLayerRectToContentRect(thumb_rect);
+  return gfx::ToEnclosingRect(thumb_rect);
 }
 
 void ScrollbarLayerImplBase::ScrollbarParametersDidChange(bool on_resize) {

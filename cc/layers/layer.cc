@@ -461,17 +461,6 @@ SkColor Layer::SafeOpaqueBackgroundColor() const {
   return color;
 }
 
-void Layer::CalculateContentsScale(float ideal_contents_scale,
-                                   float* contents_scale_x,
-                                   float* contents_scale_y,
-                                   gfx::Size* content_bounds) {
-  DCHECK(layer_tree_host_);
-
-  *contents_scale_x = 1;
-  *contents_scale_y = 1;
-  *content_bounds = bounds();
-}
-
 void Layer::SetMasksToBounds(bool masks_to_bounds) {
   DCHECK(IsPropertyChangeAllowed());
   if (masks_to_bounds_ == masks_to_bounds)

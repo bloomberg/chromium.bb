@@ -27,8 +27,6 @@ struct CC_EXPORT DrawProperties {
         can_use_lcd_text(false),
         is_clipped(false),
         render_target(nullptr),
-        contents_scale_x(1.f),
-        contents_scale_y(1.f),
         num_unclipped_descendants(0),
         layer_or_descendant_has_copy_request(false),
         layer_or_descendant_has_input_handler(false),
@@ -93,13 +91,6 @@ struct CC_EXPORT DrawProperties {
   // In target surface space, the original rect that clipped this layer. This
   // value is used to avoid unnecessarily changing GL scissor state.
   gfx::Rect clip_rect;
-
-  // The scale used to move between layer space and content space, and bounds
-  // of the space. One is always a function of the other, but which one
-  // depends on the layer type. For picture layers, this is an ideal scale,
-  // and not always the one used.
-  float contents_scale_x;
-  float contents_scale_y;
 
   // Number of descendants with a clip parent that is our ancestor. NB - this
   // does not include our clip children because they are clipped by us.

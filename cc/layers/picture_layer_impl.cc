@@ -382,9 +382,6 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
 }
 
 bool PictureLayerImpl::UpdateTiles(bool resourceless_software_draw) {
-  DCHECK_EQ(1.f, contents_scale_x());
-  DCHECK_EQ(1.f, contents_scale_y());
-
   if (!resourceless_software_draw) {
     visible_rect_for_tile_priority_ = visible_content_rect();
   }

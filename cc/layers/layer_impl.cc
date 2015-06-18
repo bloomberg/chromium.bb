@@ -464,14 +464,8 @@ InputHandler::ScrollStatus LayerImpl::TryScroll(
       // SCROLL_ON_MAIN_THREAD in this case?
     }
 
-    gfx::PointF hit_test_point_in_content_space =
-        MathUtil::ProjectPoint(inverse_screen_space_transform,
-                               screen_space_point,
-                               &clipped);
-    gfx::PointF hit_test_point_in_layer_space =
-        gfx::ScalePoint(hit_test_point_in_content_space,
-                        1.f / contents_scale_x(),
-                        1.f / contents_scale_y());
+    gfx::PointF hit_test_point_in_layer_space = MathUtil::ProjectPoint(
+        inverse_screen_space_transform, screen_space_point, &clipped);
     if (!clipped &&
         non_fast_scrollable_region().Contains(
             gfx::ToRoundedPoint(hit_test_point_in_layer_space))) {
@@ -521,7 +515,6 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->SetTransformOrigin(transform_origin_);
   layer->SetBackgroundColor(background_color_);
   layer->SetBounds(bounds_);
-  layer->SetContentsScale(contents_scale_x(), contents_scale_y());
   layer->SetDoubleSided(double_sided_);
   layer->SetDrawCheckerboardForMissingTiles(
       draw_checkerboard_for_missing_tiles_);
@@ -1138,15 +1131,9 @@ void LayerImpl::AddDamageRect(const gfx::RectF& damage_rect) {
   damage_rect_ = gfx::UnionRects(damage_rect_, damage_rect);
 }
 
+// TODO(danakj): Remove this. #impl_side_painting
 void LayerImpl::SetContentsScale(float contents_scale_x,
                                  float contents_scale_y) {
-  if (this->contents_scale_x() == contents_scale_x &&
-      this->contents_scale_y() == contents_scale_y)
-    return;
-
-  draw_properties_.contents_scale_x = contents_scale_x;
-  draw_properties_.contents_scale_y = contents_scale_y;
-  NoteLayerPropertyChanged();
 }
 
 bool LayerImpl::IsExternalScrollActive() const {

@@ -197,8 +197,6 @@ void RenderSurfaceImpl::AppendQuads(RenderPass* render_pass,
   DCHECK(owning_layer_->draw_properties().target_space_transform.IsScale2d());
   gfx::Vector2dF owning_layer_to_target_scale =
       owning_layer_->draw_properties().target_space_transform.Scale2d();
-  owning_layer_to_target_scale.Scale(owning_layer_->contents_scale_x(),
-                                     owning_layer_->contents_scale_y());
 
   RenderPassDrawQuad* quad =
       render_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();

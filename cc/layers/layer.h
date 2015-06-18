@@ -394,18 +394,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
 
   void ClearRenderSurfaceLayerList();
 
-  // The contents scale converts from logical, non-page-scaled pixels to target
-  // pixels. The contents scale is 1 for the root layer as it is already in
-  // physical pixels. By default contents scale is forced to be 1 except for
-  // subclasses of ContentsScalingLayer.
-  float contents_scale_x() const { return draw_properties_.contents_scale_x; }
-  float contents_scale_y() const { return draw_properties_.contents_scale_y; }
-
-  virtual void CalculateContentsScale(float ideal_contents_scale,
-                                      float* contents_scale_x,
-                                      float* contents_scale_y,
-                                      gfx::Size* content_bounds);
-
   LayerTreeHost* layer_tree_host() { return layer_tree_host_; }
   const LayerTreeHost* layer_tree_host() const { return layer_tree_host_; }
 

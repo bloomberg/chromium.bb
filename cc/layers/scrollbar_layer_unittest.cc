@@ -432,22 +432,6 @@ TEST_F(ScrollbarLayerTest, SolidColorDrawQuads) {
     EXPECT_EQ(gfx::Rect(6, 0, 39, 3), quads.front()->rect);
   }
 
-  // Contents scale should scale the draw quad.
-  scrollbar_layer_impl->draw_properties().contents_scale_x = 2.f;
-  scrollbar_layer_impl->draw_properties().contents_scale_y = 2.f;
-  {
-    scoped_ptr<RenderPass> render_pass = RenderPass::Create();
-    AppendQuadsData data;
-    scrollbar_layer_impl->AppendQuads(render_pass.get(), &data);
-
-    const QuadList& quads = render_pass->quad_list;
-    ASSERT_EQ(1u, quads.size());
-    EXPECT_EQ(DrawQuad::SOLID_COLOR, quads.front()->material);
-    EXPECT_EQ(gfx::Rect(12, 0, 78, 6), quads.front()->rect);
-  }
-  scrollbar_layer_impl->draw_properties().contents_scale_x = 1.f;
-  scrollbar_layer_impl->draw_properties().contents_scale_y = 1.f;
-
   // For solid color scrollbars, position and size should reflect the
   // current viewport state.
   scrollbar_layer_impl->SetVisibleToTotalLengthRatio(0.2f);
@@ -929,22 +913,15 @@ class ScaledScrollbarLayerTestResourceCreation : public ScrollbarLayerTest {
     scrollbar_layer->SetPosition(scrollbar_location);
     layer_tree_root->SetBounds(gfx::Size(100, 200));
     content_layer->SetBounds(gfx::Size(100, 200));
-    gfx::SizeF scaled_size =
-        gfx::ScaleSize(scrollbar_layer->bounds(), test_scale, test_scale);
-    gfx::PointF scaled_location =
-        gfx::ScalePoint(scrollbar_layer->position(), test_scale, test_scale);
-    scrollbar_layer->draw_properties().contents_scale_x = test_scale;
-    scrollbar_layer->draw_properties().contents_scale_y = test_scale;
     scrollbar_layer->draw_properties().visible_content_rect =
-        gfx::Rect(scaled_location.x(),
-                  scaled_location.y(),
-                  scaled_size.width(),
-                  scaled_size.height());
+        gfx::Rect(scrollbar_location, scrollbar_layer->bounds());
     scrollbar_layer->CreateRenderSurface();
     scrollbar_layer->draw_properties().render_target = scrollbar_layer.get();
 
     testing::Mock::VerifyAndClearExpectations(layer_tree_host_.get());
     EXPECT_EQ(scrollbar_layer->layer_tree_host(), layer_tree_host_.get());
+
+    layer_tree_host_->SetDeviceScaleFactor(test_scale);
 
     ResourceUpdateQueue queue;
     scrollbar_layer->SavePaintProperties();
@@ -999,17 +976,9 @@ class ScaledScrollbarLayerTestScaledRasterization : public ScrollbarLayerTest {
     scrollbar_layer->SetPosition(scrollbar_rect.origin());
     scrollbar_layer->fake_scrollbar()->set_location(scrollbar_rect.origin());
     scrollbar_layer->fake_scrollbar()->set_track_rect(scrollbar_rect);
-    gfx::SizeF scaled_size =
-        gfx::ScaleSize(scrollbar_layer->bounds(), test_scale, test_scale);
-    gfx::PointF scaled_location =
-        gfx::ScalePoint(scrollbar_layer->position(), test_scale, test_scale);
-    scrollbar_layer->draw_properties().contents_scale_x = test_scale;
-    scrollbar_layer->draw_properties().contents_scale_y = test_scale;
-    scrollbar_layer->draw_properties().visible_content_rect =
-        gfx::Rect(scaled_location.x(),
-                  scaled_location.y(),
-                  scaled_size.width(),
-                  scaled_size.height());
+    scrollbar_layer->draw_properties().visible_content_rect = scrollbar_rect;
+
+    layer_tree_host_->SetDeviceScaleFactor(test_scale);
 
     ResourceUpdateQueue queue;
     gfx::Rect screen_space_clip_rect;

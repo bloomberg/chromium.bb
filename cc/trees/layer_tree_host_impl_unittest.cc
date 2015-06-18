@@ -839,7 +839,6 @@ TEST_F(LayerTreeHostImplTest, NonFastScrollableRegionBasic) {
   host_impl_->SetViewportSize(gfx::Size(100, 100));
 
   LayerImpl* root = host_impl_->active_tree()->root_layer();
-  root->SetContentsScale(2.f, 2.f);
   root->SetNonFastScrollableRegion(gfx::Rect(0, 0, 50, 50));
 
   DrawFrame();
@@ -880,7 +879,6 @@ TEST_F(LayerTreeHostImplTest, NonFastScrollableRegionWithOffset) {
   host_impl_->SetViewportSize(gfx::Size(100, 100));
 
   LayerImpl* root = host_impl_->active_tree()->root_layer();
-  root->SetContentsScale(2.f, 2.f);
   root->SetNonFastScrollableRegion(gfx::Rect(0, 0, 50, 50));
   root->SetPosition(gfx::PointF(-25.f, 0.f));
 
@@ -3289,7 +3287,6 @@ TEST_F(LayerTreeHostImplTest, ScrollNonCompositedRoot) {
   content_layer->SetDrawsContent(true);
   content_layer->SetPosition(gfx::PointF());
   content_layer->SetBounds(contents_size);
-  content_layer->SetContentsScale(2.f, 2.f);
 
   scoped_ptr<LayerImpl> scroll_clip_layer =
       LayerImpl::Create(host_impl_->active_tree(), 3);
@@ -3539,15 +3536,6 @@ TEST_F(LayerTreeHostImplTest, PageScaleDeltaAppliedToRootScrollLayerOnly) {
   host_impl_->PinchGestureEnd();
   host_impl_->ScrollEnd();
   DrawOneFrame();
-
-  EXPECT_EQ(1.f, root->contents_scale_x());
-  EXPECT_EQ(1.f, root->contents_scale_y());
-  EXPECT_EQ(1.f, scroll->contents_scale_x());
-  EXPECT_EQ(1.f, scroll->contents_scale_y());
-  EXPECT_EQ(1.f, child->contents_scale_x());
-  EXPECT_EQ(1.f, child->contents_scale_y());
-  EXPECT_EQ(1.f, grand_child->contents_scale_x());
-  EXPECT_EQ(1.f, grand_child->contents_scale_y());
 
   // Make sure all the layers are drawn with the page scale delta applied, i.e.,
   // the page scale delta on the root layer is applied hierarchically.

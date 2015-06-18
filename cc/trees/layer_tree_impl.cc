@@ -1283,9 +1283,7 @@ static bool PointHitsRect(
 
 static bool PointHitsRegion(const gfx::PointF& screen_space_point,
                             const gfx::Transform& screen_space_transform,
-                            const Region& layer_space_region,
-                            float layer_content_scale_x,
-                            float layer_content_scale_y) {
+                            const Region& layer_space_region) {
   // If the transform is not invertible, then assume that this point doesn't hit
   // this region.
   gfx::Transform inverse_screen_space_transform(
@@ -1296,12 +1294,8 @@ static bool PointHitsRegion(const gfx::PointF& screen_space_point,
   // Transform the hit test point from screen space to the local space of the
   // given region.
   bool clipped = false;
-  gfx::PointF hit_test_point_in_content_space = MathUtil::ProjectPoint(
+  gfx::PointF hit_test_point_in_layer_space = MathUtil::ProjectPoint(
       inverse_screen_space_transform, screen_space_point, &clipped);
-  gfx::PointF hit_test_point_in_layer_space =
-      gfx::ScalePoint(hit_test_point_in_content_space,
-                      1.f / layer_content_scale_x,
-                      1.f / layer_content_scale_y);
 
   // If ProjectPoint could not project to a valid value, then we assume that
   // this point doesn't hit this region.
@@ -1463,11 +1457,8 @@ static bool LayerHasTouchEventHandlersAt(const gfx::PointF& screen_space_point,
   if (layer_impl->touch_event_handler_region().IsEmpty())
     return false;
 
-  if (!PointHitsRegion(screen_space_point,
-                       layer_impl->screen_space_transform(),
-                       layer_impl->touch_event_handler_region(),
-                       layer_impl->contents_scale_x(),
-                       layer_impl->contents_scale_y()))
+  if (!PointHitsRegion(screen_space_point, layer_impl->screen_space_transform(),
+                       layer_impl->touch_event_handler_region()))
     return false;
 
   // At this point, we think the point does hit the touch event handler region
@@ -1535,18 +1526,14 @@ static ViewportSelectionBound ComputeViewportSelectionBound(
   if (!layer || layer_bound.type == SELECTION_BOUND_EMPTY)
     return viewport_bound;
 
-  gfx::PointF layer_scaled_top = gfx::ScalePoint(layer_bound.edge_top,
-                                                 layer->contents_scale_x(),
-                                                 layer->contents_scale_y());
-  gfx::PointF layer_scaled_bottom = gfx::ScalePoint(layer_bound.edge_bottom,
-                                                    layer->contents_scale_x(),
-                                                    layer->contents_scale_y());
+  gfx::PointF layer_top = layer_bound.edge_top;
+  gfx::PointF layer_bottom = layer_bound.edge_bottom;
 
   bool clipped = false;
-  gfx::PointF screen_top = MathUtil::MapPoint(
-      layer->screen_space_transform(), layer_scaled_top, &clipped);
+  gfx::PointF screen_top =
+      MathUtil::MapPoint(layer->screen_space_transform(), layer_top, &clipped);
   gfx::PointF screen_bottom = MathUtil::MapPoint(
-      layer->screen_space_transform(), layer_scaled_bottom, &clipped);
+      layer->screen_space_transform(), layer_bottom, &clipped);
 
   const float inv_scale = 1.f / device_scale_factor;
   viewport_bound.edge_top = gfx::ScalePoint(screen_top, inv_scale);
@@ -1557,9 +1544,9 @@ static ViewportSelectionBound ComputeViewportSelectionBound(
   // Shifting the visibility point fractionally inward ensures that neighboring
   // or logically coincident layers aligned to integral DPI coordinates will not
   // spuriously occlude the bound.
-  gfx::Vector2dF visibility_offset = layer_scaled_top - layer_scaled_bottom;
+  gfx::Vector2dF visibility_offset = layer_top - layer_bottom;
   visibility_offset.Scale(device_scale_factor / visibility_offset.Length());
-  gfx::PointF visibility_point = layer_scaled_bottom + visibility_offset;
+  gfx::PointF visibility_point = layer_bottom + visibility_offset;
   if (visibility_point.x() <= 0)
     visibility_point.set_x(visibility_point.x() + device_scale_factor);
   visibility_point = MathUtil::MapPoint(

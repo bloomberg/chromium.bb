@@ -95,9 +95,6 @@ TEST_F(PictureImageLayerImplTest, CalculateContentsScale) {
   gfx::Rect viewport(100, 200);
   SetupDrawPropertiesAndUpdateTiles(
       layer.get(), 2.f, 3.f, 4.f, 1.f, false, viewport);
-
-  EXPECT_FLOAT_EQ(1.f, layer->contents_scale_x());
-  EXPECT_FLOAT_EQ(1.f, layer->contents_scale_y());
   EXPECT_FLOAT_EQ(1.f, layer->MaximumTilingContentsScale());
 }
 

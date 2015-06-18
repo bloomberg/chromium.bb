@@ -319,8 +319,6 @@ TEST_F(LayerTreeHostCommonTest, TransformsAboutScrollOffset) {
   scoped_ptr<LayerImpl> sublayer_scoped_ptr(
       LayerImpl::Create(host_impl.active_tree(), 1));
   LayerImpl* sublayer = sublayer_scoped_ptr.get();
-  sublayer->SetContentsScale(kPageScale * kDeviceScale,
-                             kPageScale * kDeviceScale);
   SetLayerPropertiesForTesting(sublayer, identity_matrix, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(500, 500), true, false,
                                false);
@@ -358,9 +356,12 @@ TEST_F(LayerTreeHostCommonTest, TransformsAboutScrollOffset) {
       root.get(), kDeviceScale, kPageScale, scroll_layer->parent());
   gfx::Transform expected_transform = identity_matrix;
   gfx::PointF sub_layer_screen_position = kScrollLayerPosition - kScrollDelta;
-  sub_layer_screen_position.Scale(kPageScale * kDeviceScale);
-  expected_transform.Translate(MathUtil::Round(sub_layer_screen_position.x()),
-                               MathUtil::Round(sub_layer_screen_position.y()));
+  expected_transform.Translate(MathUtil::Round(sub_layer_screen_position.x() *
+                                               kPageScale * kDeviceScale),
+                               MathUtil::Round(sub_layer_screen_position.y() *
+                                               kPageScale * kDeviceScale));
+  expected_transform.Scale(kPageScale * kDeviceScale,
+                           kPageScale * kDeviceScale);
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_transform,
                                   sublayer->draw_transform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_transform,
@@ -378,9 +379,13 @@ TEST_F(LayerTreeHostCommonTest, TransformsAboutScrollOffset) {
   expected_transform.MakeIdentity();
   expected_transform.Translate(
       MathUtil::Round(kTranslateX * kPageScale * kDeviceScale +
-                      sub_layer_screen_position.x()),
+                      sub_layer_screen_position.x() * kPageScale *
+                          kDeviceScale),
       MathUtil::Round(kTranslateY * kPageScale * kDeviceScale +
-                      sub_layer_screen_position.y()));
+                      sub_layer_screen_position.y() * kPageScale *
+                          kDeviceScale));
+  expected_transform.Scale(kPageScale * kDeviceScale,
+                           kPageScale * kDeviceScale);
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_transform,
                                   sublayer->draw_transform());
 }

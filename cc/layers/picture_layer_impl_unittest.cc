@@ -3065,11 +3065,8 @@ TEST_F(PictureLayerImplTest, TilingSetEvictionQueue) {
   for (size_t i = 0; i < pending_layer_->num_tilings(); ++i) {
     PictureLayerTiling* tiling = pending_layer_->tilings()->tiling_at(i);
     for (PictureLayerTiling::CoverageIterator iter(
-             tiling,
-             pending_layer_->contents_scale_x(),
-             pending_layer_->visible_content_rect());
-         iter;
-         ++iter) {
+             tiling, 1.f, pending_layer_->visible_content_rect());
+         iter; ++iter) {
       if (mark_required) {
         number_of_marked_tiles++;
         iter->set_required_for_activation(true);
@@ -4042,12 +4039,9 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
         tiling->UpdateAndGetAllPrioritizedTilesForTesting();
 
     occluded_tile_count = 0;
-    for (PictureLayerTiling::CoverageIterator iter(
-             tiling,
-             pending_layer_->contents_scale_x(),
-             gfx::Rect(layer_bounds));
-         iter;
-         ++iter) {
+    for (PictureLayerTiling::CoverageIterator iter(tiling, 1.f,
+                                                   gfx::Rect(layer_bounds));
+         iter; ++iter) {
       if (!*iter)
         continue;
       const Tile* tile = *iter;
@@ -4079,12 +4073,9 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
         tiling->UpdateAndGetAllPrioritizedTilesForTesting();
 
     occluded_tile_count = 0;
-    for (PictureLayerTiling::CoverageIterator iter(
-             tiling,
-             pending_layer_->contents_scale_x(),
-             gfx::Rect(layer_bounds));
-         iter;
-         ++iter) {
+    for (PictureLayerTiling::CoverageIterator iter(tiling, 1.f,
+                                                   gfx::Rect(layer_bounds));
+         iter; ++iter) {
       if (!*iter)
         continue;
       const Tile* tile = *iter;
@@ -4118,12 +4109,9 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
         tiling->UpdateAndGetAllPrioritizedTilesForTesting();
 
     occluded_tile_count = 0;
-    for (PictureLayerTiling::CoverageIterator iter(
-             tiling,
-             pending_layer_->contents_scale_x(),
-             gfx::Rect(layer_bounds));
-         iter;
-         ++iter) {
+    for (PictureLayerTiling::CoverageIterator iter(tiling, 1.f,
+                                                   gfx::Rect(layer_bounds));
+         iter; ++iter) {
       if (!*iter)
         continue;
       const Tile* tile = *iter;
@@ -4251,10 +4239,9 @@ TEST_F(OcclusionTrackingPictureLayerImplTest, DifferentOcclusionOnTrees) {
     auto prioritized_tiles =
         tiling->UpdateAndGetAllPrioritizedTilesForTesting();
 
-    for (
-        PictureLayerTiling::CoverageIterator iter(
-            tiling, active_layer_->contents_scale_x(), gfx::Rect(layer_bounds));
-        iter; ++iter) {
+    for (PictureLayerTiling::CoverageIterator iter(tiling, 1.f,
+                                                   gfx::Rect(layer_bounds));
+         iter; ++iter) {
       if (!*iter)
         continue;
       const Tile* tile = *iter;
@@ -4276,12 +4263,9 @@ TEST_F(OcclusionTrackingPictureLayerImplTest, DifferentOcclusionOnTrees) {
     auto prioritized_tiles =
         tiling->UpdateAndGetAllPrioritizedTilesForTesting();
 
-    for (PictureLayerTiling::CoverageIterator iter(
-             tiling,
-             active_layer_->contents_scale_x(),
-             gfx::Rect(layer_bounds));
-         iter;
-         ++iter) {
+    for (PictureLayerTiling::CoverageIterator iter(tiling, 1.f,
+                                                   gfx::Rect(layer_bounds));
+         iter; ++iter) {
       if (!*iter)
         continue;
       const Tile* tile = *iter;
@@ -4399,12 +4383,9 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
         tiling->UpdateAndGetAllPrioritizedTilesForTesting();
 
     size_t occluded_tile_count_on_active = 0u;
-    for (PictureLayerTiling::CoverageIterator iter(
-             tiling,
-             pending_layer_->contents_scale_x(),
-             gfx::Rect(layer_bounds));
-         iter;
-         ++iter) {
+    for (PictureLayerTiling::CoverageIterator iter(tiling, 1.f,
+                                                   gfx::Rect(layer_bounds));
+         iter; ++iter) {
       Tile* tile = *iter;
 
       if (!tile)

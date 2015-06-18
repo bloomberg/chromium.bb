@@ -2594,13 +2594,6 @@ gfx::Vector2dF LayerTreeHostImpl::ScrollLayerWithViewportSpaceDelta(
   if (start_clipped || end_clipped)
     return gfx::Vector2dF();
 
-  // local_start_point and local_end_point are in content space but we want to
-  // move them to layer space for scrolling.
-  float width_scale = 1.f / layer_impl->contents_scale_x();
-  float height_scale = 1.f / layer_impl->contents_scale_y();
-  local_start_point.Scale(width_scale, height_scale);
-  local_end_point.Scale(width_scale, height_scale);
-
   // Apply the scroll delta.
   gfx::ScrollOffset previous_offset = layer_impl->CurrentScrollOffset();
   layer_impl->ScrollBy(local_end_point - local_start_point);
@@ -2611,16 +2604,11 @@ gfx::Vector2dF LayerTreeHostImpl::ScrollLayerWithViewportSpaceDelta(
   // ScreenSpaceTransform.
   gfx::PointF actual_local_end_point =
       local_start_point + gfx::Vector2dF(scrolled.x(), scrolled.y());
-  gfx::PointF actual_local_content_end_point =
-      gfx::ScalePoint(actual_local_end_point,
-                      1.f / width_scale,
-                      1.f / height_scale);
 
   // Calculate the applied scroll delta in viewport space coordinates.
   gfx::PointF actual_screen_space_end_point =
       MathUtil::MapPoint(layer_impl->screen_space_transform(),
-                         actual_local_content_end_point,
-                         &end_clipped);
+                         actual_local_end_point, &end_clipped);
   DCHECK(!end_clipped);
   if (end_clipped)
     return gfx::Vector2dF();
