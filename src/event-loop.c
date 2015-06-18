@@ -199,7 +199,7 @@ wl_event_loop_add_timer(struct wl_event_loop *loop,
 
 	source->base.interface = &timer_source_interface;
 	source->base.fd = timerfd_create(CLOCK_MONOTONIC,
-									 TFD_CLOEXEC | TFD_NONBLOCK);
+					 TFD_CLOEXEC | TFD_NONBLOCK);
 	source->func = func;
 
 	return add_source(loop, &source->base, WL_EVENT_READABLE, data);
