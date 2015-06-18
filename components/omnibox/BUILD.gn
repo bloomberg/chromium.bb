@@ -39,6 +39,8 @@ static_library("omnibox") {
     "search_provider.h",
     "search_suggestion_parser.cc",
     "search_suggestion_parser.h",
+    "shortcuts_database.cc",
+    "shortcuts_database.h",
     "suggestion_answer.cc",
     "suggestion_answer.h",
     "url_prefix.cc",
@@ -62,6 +64,7 @@ static_library("omnibox") {
     "//components/variations",
     "//components/variations/net",
     "//net",
+    "//sql",
     "//ui/base",
     "//url",
   ]

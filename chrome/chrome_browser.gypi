@@ -1291,8 +1291,6 @@
       'browser/autocomplete/shortcuts_backend.h',
       'browser/autocomplete/shortcuts_backend_factory.cc',
       'browser/autocomplete/shortcuts_backend_factory.h',
-      'browser/autocomplete/shortcuts_database.cc',
-      'browser/autocomplete/shortcuts_database.h',
       'browser/autocomplete/shortcuts_provider.cc',
       'browser/autocomplete/shortcuts_provider.h',
       'browser/autocomplete/url_index_private_data.cc',

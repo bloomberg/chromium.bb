@@ -10,6 +10,7 @@ include_rules = [
   "+components/variations",
   "+grit",
   "+net",
+  "+sql",
   "+ui/base",
   "+url",
 ]

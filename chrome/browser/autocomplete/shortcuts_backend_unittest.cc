@@ -9,10 +9,10 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/shortcuts_backend_factory.h"
-#include "chrome/browser/autocomplete/shortcuts_database.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/omnibox/shortcuts_database.h"
 #include "components/search_engines/template_url_service.h"
 #include "content/public/test/test_browser_thread.h"
 
