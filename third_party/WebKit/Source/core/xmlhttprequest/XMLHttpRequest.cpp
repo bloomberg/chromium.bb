@@ -342,7 +342,6 @@ PassRefPtrWillBeRawPtr<XMLHttpRequest> XMLHttpRequest::create(ExecutionContext* 
 XMLHttpRequest::XMLHttpRequest(ExecutionContext* context, PassRefPtr<SecurityOrigin> securityOrigin)
     : ActiveDOMObject(context)
     , m_timeoutMilliseconds(0)
-    , m_loaderIdentifier(0)
     , m_state(UNSENT)
     , m_lengthDownloadedToFile(0)
     , m_receivedLength(0)
@@ -1148,8 +1147,6 @@ bool XMLHttpRequest::internalAbort()
 
     clearVariablesForLoading();
 
-    InspectorInstrumentation::didFailXHRLoading(executionContext(), this, this);
-
     if (m_responseLegacyStream && m_state != DONE)
         m_responseLegacyStream->abort();
 
@@ -1267,6 +1264,8 @@ void XMLHttpRequest::handleDidCancel()
 void XMLHttpRequest::handleRequestError(ExceptionCode exceptionCode, const AtomicString& type, long long receivedLength, long long expectedLength)
 {
     WTF_LOG(Network, "XMLHttpRequest %p handleRequestError()", this);
+
+    InspectorInstrumentation::didFailXHRLoading(executionContext(), this, this, m_method, m_url);
 
     // The request error steps for event 'type' and exception 'exceptionCode'.
 
@@ -1503,8 +1502,6 @@ void XMLHttpRequest::didFinishLoading(unsigned long identifier, double)
     if (m_state < HEADERS_RECEIVED)
         changeState(HEADERS_RECEIVED);
 
-    m_loaderIdentifier = identifier;
-
     if (m_downloadingToFile && m_responseTypeCode != ResponseTypeBlob && m_lengthDownloadedToFile) {
         ASSERT(m_state == LOADING);
         // In this case, we have sent the request with DownloadToFile true,
@@ -1608,11 +1605,10 @@ void XMLHttpRequest::notifyParserStopped()
 
 void XMLHttpRequest::endLoading()
 {
-    InspectorInstrumentation::didFinishXHRLoading(executionContext(), this, this, m_loaderIdentifier, m_responseText, m_method, m_url);
+    InspectorInstrumentation::didFinishXHRLoading(executionContext(), this, this, m_method, m_url);
 
     if (m_loader)
         m_loader = nullptr;
-    m_loaderIdentifier = 0;
 
     changeState(DONE);
 
@@ -1821,6 +1817,7 @@ void XMLHttpRequest::resume()
 
 void XMLHttpRequest::stop()
 {
+    InspectorInstrumentation::didFailXHRLoading(executionContext(), this, this, m_method, m_url);
     internalAbort();
 }
 

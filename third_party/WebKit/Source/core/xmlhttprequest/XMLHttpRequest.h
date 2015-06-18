@@ -269,7 +269,6 @@ private:
     PersistentWillBeMember<ReadableStreamSource> m_responseStreamSource;
 
     RefPtr<ThreadableLoader> m_loader;
-    unsigned long m_loaderIdentifier;
     State m_state;
 
     ResourceResponse m_response;

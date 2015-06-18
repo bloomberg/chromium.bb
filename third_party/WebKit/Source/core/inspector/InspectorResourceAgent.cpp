@@ -497,6 +497,7 @@ void InspectorResourceAgent::documentThreadableLoaderStartedLoadingForClient(uns
         String requestId = IdentifiersFactory::requestId(identifier);
         m_resourcesData->setResourceType(requestId, InspectorPageAgent::XHRResource);
         m_resourcesData->setXHRReplayData(requestId, m_pendingXHRReplayData.get());
+        m_xhrRequestIdMap.set(client, identifier);
         m_pendingXHR = nullptr;
         m_pendingXHRReplayData.clear();
     }
@@ -521,7 +522,17 @@ void InspectorResourceAgent::delayedRemoveReplayXHR(XMLHttpRequest* xhr)
     m_removeFinishedReplayXHRTimer.startOneShot(0, FROM_HERE);
 }
 
-void InspectorResourceAgent::didFailXHRLoading(XMLHttpRequest* xhr, ThreadableLoaderClient* client)
+void InspectorResourceAgent::didFailXHRLoading(ExecutionContext* context, XMLHttpRequest* xhr, ThreadableLoaderClient* client, const AtomicString& method, const String& url)
+{
+    didFinishXHRInternal(context, xhr, client, method, url, false);
+}
+
+void InspectorResourceAgent::didFinishXHRLoading(ExecutionContext* context, XMLHttpRequest* xhr, ThreadableLoaderClient* client, const AtomicString& method, const String& url)
+{
+    didFinishXHRInternal(context, xhr, client, method, url, true);
+}
+
+void InspectorResourceAgent::didFinishXHRInternal(ExecutionContext* context, XMLHttpRequest* xhr, ThreadableLoaderClient* client, const AtomicString& method, const String& url, bool success)
 {
     m_pendingXHR = nullptr;
     m_pendingXHRReplayData.clear();
@@ -529,22 +540,17 @@ void InspectorResourceAgent::didFailXHRLoading(XMLHttpRequest* xhr, ThreadableLo
     // This method will be called from the XHR.
     // We delay deleting the replay XHR, as deleting here may delete the caller.
     delayedRemoveReplayXHR(xhr);
-}
 
-void InspectorResourceAgent::didFinishXHRLoading(ExecutionContext* context, XMLHttpRequest* xhr, ThreadableLoaderClient* client, unsigned long identifier, ScriptString sourceString, const AtomicString& method, const String& url)
-{
-    m_pendingXHR = nullptr;
-    m_pendingXHRReplayData.clear();
+    ThreadableLoaderClientRequestIdMap::iterator it = m_xhrRequestIdMap.find(client);
 
-    // See comments on |didFailXHRLoading| for why we are delaying delete.
-    delayedRemoveReplayXHR(xhr);
-
-    if (m_state->getBoolean(ResourceAgentState::monitoringXHR)) {
-        String message = "XHR finished loading: " + method + " \"" + url + "\".";
+    if (m_state->getBoolean(ResourceAgentState::monitoringXHR) && it != m_eventSourceRequestIdMap.end()) {
+        String message = (success ? "XHR finished loading: " : "XHR failed loading: ") + method + " \"" + url + "\".";
         RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(NetworkMessageSource, DebugMessageLevel, message);
-        consoleMessage->setRequestIdentifier(identifier);
+        consoleMessage->setRequestIdentifier(it->value);
         m_pageAgent->frameHost()->consoleMessageStorage().reportMessage(context, consoleMessage.release());
     }
+
+    m_xhrRequestIdMap.remove(client);
 }
 
 void InspectorResourceAgent::willSendEventSourceRequest(ThreadableLoaderClient* eventSource)
@@ -554,7 +560,7 @@ void InspectorResourceAgent::willSendEventSourceRequest(ThreadableLoaderClient* 
 
 void InspectorResourceAgent::willDispachEventSourceEvent(ThreadableLoaderClient* eventSource, const AtomicString& eventName, const AtomicString& eventId, const Vector<UChar>& data)
 {
-    EventSourceRequestIdMap::iterator it = m_eventSourceRequestIdMap.find(eventSource);
+    ThreadableLoaderClientRequestIdMap::iterator it = m_eventSourceRequestIdMap.find(eventSource);
     if (it == m_eventSourceRequestIdMap.end())
         return;
     frontend()->eventSourceMessageReceived(IdentifiersFactory::requestId(it->value), monotonicallyIncreasingTime(), eventName.string(), eventId.string(), String(data));

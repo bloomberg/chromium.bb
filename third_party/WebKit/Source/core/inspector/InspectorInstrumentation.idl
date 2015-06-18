@@ -279,10 +279,10 @@ interface InspectorInstrumentation {
     void willLoadXHR(ExecutionContext*, XMLHttpRequest* xhr, ThreadableLoaderClient* client, const AtomicString& method, const KURL& url, bool async, PassRefPtr<FormData>, const HTTPHeaderMap& headers, bool includeCredentials);
 
     [Resource]
-    void didFailXHRLoading(ExecutionContext*, XMLHttpRequest* xhr, ThreadableLoaderClient* client);
+    void didFailXHRLoading([Keep] ExecutionContext*, XMLHttpRequest* xhr, ThreadableLoaderClient* client, const AtomicString& method, const String& url);
 
     [Resource]
-    void didFinishXHRLoading([Keep] ExecutionContext*, XMLHttpRequest* xhr, ThreadableLoaderClient* client, unsigned long identifier, ScriptString sourceString, const AtomicString& method, const String& url);
+    void didFinishXHRLoading([Keep] ExecutionContext*, XMLHttpRequest* xhr, ThreadableLoaderClient* client, const AtomicString& method, const String& url);
 
     [Resource]
     void scriptImported(ExecutionContext*, unsigned long identifier, const String& sourceString);
