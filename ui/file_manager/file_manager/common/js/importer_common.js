@@ -345,7 +345,7 @@ importer.getMachineId = function() {
             if (id) {
               return id;
             }
-            var id = importer.generateId();
+            id = importer.generateId();
             return storage.set(importer.Setting.MACHINE_ID, id)
                 .then(
                     function() {
