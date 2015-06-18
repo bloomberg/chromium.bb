@@ -416,6 +416,9 @@
                   'chrome/browser/resources/local_ntp/|'\
                   'chrome/common/search_types.*',
     },
+    'ios_chrome': {
+      'filepath': 'ios/chrome',
+    },
     'ipc': {
       'filepath': 'ipc/ipc',
     },
@@ -992,6 +995,7 @@
                 'melevin+watch@chromium.org', 'dougw+watch@chromium.org',
                 'kmadhusu+watch@chromium.org', 'dhollowa+watch@chromium.org',
                 'jfweitz+watch@chromium.org', 'skanuj+watch@chromium.org'],
+    'ios_chrome': ['sdefresne+watch@chromium.org'],
     'ipc': ['jam@chromium.org', 'darin-cc@chromium.org'],
     'libwebp': ['urvang@chromium.org', 'jzern@chromium.org',
                 'skal@google.com', 'vikasa@google.com'],
