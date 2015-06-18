@@ -23,7 +23,7 @@ import download_from_google_storage
 # ../third_party/gsutil/gsutil
 GSUTIL_DEFAULT_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-    'third_party', 'gsutil', 'gsutil')
+    'gsutil.py')
 TEST_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -169,12 +169,11 @@ class DownloadTests(unittest.TestCase):
         ('check_call',
             ('ls', input_filename)),
         ('check_call',
-            ('cp', '-q', input_filename, output_filename))]
+            ('cp', input_filename, output_filename))]
     if sys.platform != 'win32':
       expected_calls.append(
           ('check_call',
-           ('ls',
-            '-L',
+           ('stat',
             'gs://sometesturl/7871c8e24da15bad8b0be2c36edc9dc77e37727f')))
     expected_output = [
         '0> Downloading %s...' % output_filename]
@@ -210,7 +209,7 @@ class DownloadTests(unittest.TestCase):
         0, self.queue, False, self.base_url, self.gsutil,
         stdout_queue, self.ret_codes, True)
     expected_output = [
-        '0> File %s for %s does not exist, skipping.' % (
+        '0> Failed to fetch file %s for %s, skipping. [Err: ]' % (
             input_filename, output_filename),
     ]
     expected_calls = [
@@ -218,7 +217,7 @@ class DownloadTests(unittest.TestCase):
             ('ls', input_filename))
     ]
     expected_ret_codes = [
-        (1, 'File %s for %s does not exist.' % (
+        (1, 'Failed to fetch file %s for %s. [Err: ]' % (
             input_filename, output_filename))
     ]
     self.assertEqual(list(stdout_queue.queue), expected_output)
@@ -248,13 +247,12 @@ class DownloadTests(unittest.TestCase):
         ('check_call',
             ('ls', input_filename)),
         ('check_call',
-            ('cp', '-q', input_filename, output_filename))
+            ('cp', input_filename, output_filename))
     ]
     if sys.platform != 'win32':
       expected_calls.append(
           ('check_call',
-           ('ls',
-            '-L',
+           ('stat',
             'gs://sometesturl/7871c8e24da15bad8b0be2c36edc9dc77e37727f')))
     self.assertEqual(self.gsutil.history, expected_calls)
     self.assertEqual(code, 101)
@@ -280,12 +278,11 @@ class DownloadTests(unittest.TestCase):
         ('check_call',
             ('ls', input_filename)),
         ('check_call',
-            ('cp', '-q', input_filename, output_filename))]
+            ('cp', input_filename, output_filename))]
     if sys.platform != 'win32':
       expected_calls.append(
           ('check_call',
-           ('ls',
-            '-L',
+           ('stat',
             'gs://sometesturl/7871c8e24da15bad8b0be2c36edc9dc77e37727f')))
     self.assertEqual(self.gsutil.history, expected_calls)
     self.assertEqual(code, 0)
