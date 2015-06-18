@@ -8,16 +8,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
-import android.text.TextUtils;
 import android.view.ContextMenu;
 import android.view.View;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
-import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeMobileApplication;
 import org.chromium.chrome.browser.EmptyTabObserver;
 import org.chromium.chrome.browser.IntentHandler;
@@ -46,51 +43,6 @@ import java.util.concurrent.Callable;
 @DisableInTabbedMode
 public class DocumentModeTestBase extends MultiActivityTestBase {
     protected static final String TAG = "cr.document";
-
-    protected static final String URL_1 = createTestUrl(1);
-    protected static final String URL_2 = createTestUrl(2);
-    protected static final String URL_3 = createTestUrl(3);
-    protected static final String URL_4 = createTestUrl(4);
-
-    // Defines one gigantic link spanning the whole page that creates a new window.
-    protected static final String HREF_LINK = UrlUtils.encodeHtmlDataUri(
-            "<html>"
-            + "  <head>"
-            + "    <title>href link page</title>"
-            + "    <meta name='viewport'"
-            + "        content='width=device-width initial-scale=0.5, maximum-scale=0.5'>"
-            + "    <style>"
-            + "      body {margin: 0em;} div {width: 100%; height: 100%; background: #011684;}"
-            + "    </style>"
-            + "  </head>"
-            + "  <body>"
-            + "    <a href='" + URL_4 + "' target='_blank'><div></div></a>"
-            + "  </body>"
-            + "</html>");
-
-    // Clicking the body triggers a window.open() call.
-    protected static final String SUCCESS_URL = UrlUtils.encodeHtmlDataUri("opened!");
-    protected static final String ONCLICK_LINK = UrlUtils.encodeHtmlDataUri(
-            "<html>"
-            + "  <head>"
-            + "    <title>window.open page</title>"
-            + "    <meta name='viewport'"
-            + "        content='width=device-width initial-scale=0.5, maximum-scale=0.5'>"
-            + "    <style>"
-            + "      body {margin: 0em;} div {width: 100%; height: 100%; background: #011684;}"
-            + "    </style>"
-            + "    <script>"
-            + "      function openNewWindow() {"
-            + "        if (window.open('" + URL_4 + "')) location.href = '" + SUCCESS_URL + "';"
-            + "      }"
-            + "    </script>"
-            + "  </head>"
-            + "  <body id='body'>"
-            + "    <div onclick='openNewWindow()'></div></a>"
-            + "  </body>"
-            + "</html>");
-
-    private static final float FLOAT_EPSILON = 0.001f;
 
     private static class TestTabObserver extends EmptyTabObserver {
         private ContextMenu mContextMenu;
@@ -251,44 +203,6 @@ public class DocumentModeTestBase extends MultiActivityTestBase {
     }
 
     /**
-     * Approximates when a DocumentActivity is fully ready and loaded, which is hard to gauge
-     * because Android's Activity transition animations are not monitorable.
-     */
-    protected void waitForFullLoad(final DocumentActivity activity, final String expectedTitle)
-            throws Exception {
-        assertWaitForPageScaleFactorMatch(activity, 0.5f);
-        final Tab tab = activity.getActivityTab();
-        assert tab != null;
-
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                if (!tab.isLoadingAndRenderingDone()) return false;
-                if (!TextUtils.equals(expectedTitle, tab.getTitle())) return false;
-                return true;
-            }
-        }));
-    }
-
-    /**
-     * Proper use of this function requires waiting for a page scale factor that isn't 1.0f because
-     * the default seems to be 1.0f.
-     * TODO(dfalcantara): Combine this one and ChromeActivityTestCaseBase's (crbug.com/498973)
-     */
-    private void assertWaitForPageScaleFactorMatch(
-            final ChromeActivity activity, final float expectedScale) throws Exception {
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                if (activity.getCurrentContentViewCore() == null) return false;
-
-                return Math.abs(activity.getCurrentContentViewCore().getScale() - expectedScale)
-                        < FLOAT_EPSILON;
-            }
-        }));
-    }
-
-    /**
      * Long presses at the center of the page, selects "Open In New Tab" option from the menu.
      */
     protected void openLinkInBackgroundTab() throws Exception {
@@ -360,18 +274,5 @@ public class DocumentModeTestBase extends MultiActivityTestBase {
                 }
         );
         waitForFullLoad(newActivity, "Page 4");
-    }
-
-    private static final String createTestUrl(int index) {
-        String[] colors = {"#000000", "#ff0000", "#00ff00", "#0000ff", "#ffff00"};
-        return UrlUtils.encodeHtmlDataUri(
-            "<html>"
-            + "  <head>"
-            + "    <title>Page " + index + "</title>"
-            + "    <meta name='viewport' content='width=device-width "
-            + "        initial-scale=0.5 maximum-scale=0.5'>"
-            + "  </head>"
-            + "  <body style='margin: 0em; background: " + colors[index] + ";'></body>"
-            + "</html>");
     }
 }

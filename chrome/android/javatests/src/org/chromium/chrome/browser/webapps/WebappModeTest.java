@@ -15,13 +15,18 @@ import android.view.View;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.UrlUtils;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.document.DocumentActivity;
 import org.chromium.chrome.test.MultiActivityTestBase;
+import org.chromium.chrome.test.util.ActivityUtils;
+import org.chromium.chrome.test.util.DisableInTabbedMode;
+import org.chromium.chrome.test.util.browser.TabLoadObserver;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content_public.common.ScreenOrientationValues;
 
 import java.lang.ref.WeakReference;
@@ -209,5 +214,58 @@ public class WebappModeTest extends MultiActivityTestBase {
                         && lastActivity.findViewById(R.id.content).hasWindowFocus();
             }
         }));
+    }
+
+    /**
+     * Tests that WebappActivities handle window.open() properly in document mode.
+     */
+    @DisableInTabbedMode
+    @MediumTest
+    public void testWebappHandlesWindowOpenInDocumentMode() throws Exception {
+        // Start the WebappActivity.  We CAN use ActivityUtils.waitForActivity() because
+        // document mode only runs on L devices.
+        Runnable webappRunnable = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    fireWebappIntent(WEBAPP_1_ID, WEBAPP_1_URL, WEBAPP_1_TITLE, WEBAPP_ICON, true);
+                } catch (Exception e) {
+                    fail();
+                }
+            }
+        };
+        final WebappActivity webappActivity = ActivityUtils.waitForActivity(
+                getInstrumentation(), WebappActivity.class, webappRunnable);
+
+        // Load up the test page.
+        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return webappActivity.getActivityTab() != null;
+            }
+        }));
+        assertTrue(CriteriaHelper.pollForCriteria(
+                new TabLoadObserver(webappActivity.getActivityTab(), ONCLICK_LINK)));
+
+        // Do a plain click to make the link open in a new foreground Document via a window.open().
+        // If the window is opened successfully, javascript on the first page triggers and changes
+        // its URL as a signal for this test.
+        Runnable fgTrigger = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    DOMUtils.clickNode(null, webappActivity.getCurrentContentViewCore(), "body");
+                } catch (Exception e) {
+
+                }
+            }
+        };
+        ChromeActivity secondActivity = ActivityUtils.waitForActivity(
+                getInstrumentation(), DocumentActivity.class, fgTrigger);
+        waitForFullLoad(secondActivity, "Page 4");
+        assertEquals("New WebContents was not created",
+                SUCCESS_URL, webappActivity.getActivityTab().getUrl());
+        assertNotSame("Wrong Activity in foreground",
+                webappActivity, ApplicationStatus.getLastTrackedFocusedActivity());
     }
 }

@@ -9,11 +9,18 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.chrome.R;
+
+import org.chromium.chrome.browser.ChromeMobileApplication;
 import org.chromium.chrome.browser.CompositorChromeActivity;
+import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerDocument;
 import org.chromium.chrome.browser.tabmodel.SingleTabModelSelector;
+import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
+import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelSelector;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.ControlContainer;
+import org.chromium.content_public.browser.LoadUrlParams;
 
 import java.io.File;
 
@@ -25,9 +32,6 @@ import java.io.File;
  * Activity would be webapps and streaming media activities - anything where user interaction with
  * the regular browser's UI is either unnecessary or undesirable.
  * Subclasses can override {@link #createUI()} if they need something more exotic.
- *
- * TODO(dfalcantara, andrewhayden): Consider not using a Tab here once all initialization is cleaned
- *                                  up: crbug.com/270973
  */
 public abstract class FullScreenActivity extends CompositorChromeActivity
         implements FullScreenActivityTab.TopControlsVisibilityDelegate {
@@ -42,7 +46,26 @@ public abstract class FullScreenActivity extends CompositorChromeActivity
     @Override
     public void preInflationStartup() {
         super.preInflationStartup();
-        setTabModelSelector(new SingleTabModelSelector(this, false, true));
+
+        final boolean isDocumentMode = FeatureUtilities.isDocumentMode(this);
+        if (isDocumentMode) {
+            DocumentTabModelSelector selector =
+                    ChromeMobileApplication.getDocumentTabModelSelector();
+            setTabCreators(selector.getTabCreator(false), selector.getTabCreator(true));
+        }
+
+        setTabModelSelector(new SingleTabModelSelector(this, false, !isDocumentMode) {
+            @Override
+            public Tab openNewTab(LoadUrlParams loadUrlParams, TabLaunchType type, Tab parent,
+                    boolean incognito) {
+                if (isDocumentMode) {
+                    return ChromeMobileApplication.getDocumentTabModelSelector().openNewTab(
+                            loadUrlParams, type, parent, incognito);
+                } else {
+                    return super.openNewTab(loadUrlParams, type, parent, incognito);
+                }
+            }
+        });
     }
 
     @Override

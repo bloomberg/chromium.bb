@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.webapps;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -27,8 +28,10 @@ import org.chromium.chrome.browser.contextmenu.ContextMenuHelper;
 import org.chromium.chrome.browser.contextmenu.ContextMenuParams;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
+import org.chromium.chrome.browser.document.DocumentWebContentsDelegate;
 import org.chromium.chrome.browser.tab.ChromeTab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.StreamUtil;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
@@ -335,6 +338,28 @@ public class FullScreenActivityTab extends ChromeTab {
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
             getApplicationContext().startActivity(intent);
+        }
+
+        @Override
+        public void webContentsCreated(WebContents sourceWebContents, long openerRenderFrameId,
+                String frameName, String targetUrl, WebContents newWebContents) {
+            super.webContentsCreated(sourceWebContents, openerRenderFrameId, frameName,
+                    targetUrl, newWebContents);
+            if (FeatureUtilities.isDocumentMode(mActivity)) {
+                DocumentWebContentsDelegate.getInstance().attachDelegate(newWebContents);
+            }
+        }
+
+        @Override
+        public boolean addNewContents(WebContents sourceWebContents, WebContents webContents,
+                int disposition, Rect initialPosition, boolean userGesture) {
+            if (isClosing() || !FeatureUtilities.isDocumentMode(mActivity)) return false;
+
+            mActivity.getTabCreator(isIncognito()).createTabWithWebContents(
+                    webContents, getId(), TabLaunchType.FROM_LONGPRESS_FOREGROUND);
+
+            // Returns true because Tabs are created asynchronously.
+            return true;
         }
     }
 }

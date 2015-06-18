@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.test.util.browser;
 
+import android.text.TextUtils;
+
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.EmptyTabObserver;
 import org.chromium.chrome.browser.Tab;
@@ -14,15 +16,29 @@ import org.chromium.content_public.browser.LoadUrlParams;
  * Monitors that a Tab starts loading and stops loading a URL.
  */
 public class TabLoadObserver extends EmptyTabObserver implements Criteria {
+    private static final float FLOAT_EPSILON = 0.001f;
+
+    private final Tab mTab;
+    private final String mExpectedTitle;
+    private final Float mExpectedScale;
+
     private boolean mTabLoadStarted;
     private boolean mTabLoadStopped;
 
-    public TabLoadObserver(final Tab tab, final String url) {
-        tab.addObserver(this);
+    public TabLoadObserver(Tab tab, final String url) {
+        this(tab, url, null, null);
+    }
+
+    public TabLoadObserver(Tab tab, final String url, String expectedTitle, Float expectedScale) {
+        mTab = tab;
+        mExpectedTitle = expectedTitle;
+        mExpectedScale = expectedScale;
+
+        mTab.addObserver(this);
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                tab.loadUrl(new LoadUrlParams(url));
+                mTab.loadUrl(new LoadUrlParams(url));
             }
         });
     }
@@ -39,6 +55,19 @@ public class TabLoadObserver extends EmptyTabObserver implements Criteria {
 
     @Override
     public boolean isSatisfied() {
-        return mTabLoadStarted && mTabLoadStopped;
+        if (!mTabLoadStarted) return false;
+        if (!mTabLoadStopped) return false;
+        if (!mTab.isLoadingAndRenderingDone()) return false;
+
+        if (mExpectedTitle != null && !TextUtils.equals(mExpectedTitle, mTab.getTitle())) {
+            return false;
+        }
+        if (mExpectedScale != null) {
+            if (mTab.getContentViewCore() == null) return false;
+            if (Math.abs(mExpectedScale - mTab.getContentViewCore().getScale()) >= FLOAT_EPSILON) {
+                return false;
+            }
+        }
+        return true;
     }
 }
