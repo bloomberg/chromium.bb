@@ -49,6 +49,15 @@ Request* Request::createRequestWithRequestOrString(ScriptState* scriptState, Req
     // "1. Let |temporaryBody| be null."
     RefPtr<BlobDataHandle> temporaryBody;
 
+    if (inputRequest) {
+        // We check bodyUsed even when the body is null in spite of the
+        // spec. See https://github.com/whatwg/fetch/issues/61 for details.
+        if (inputRequest->bodyUsed()) {
+            exceptionState.throwTypeError("Cannot construct a Request with a Request object that has already been used.");
+            return nullptr;
+        }
+    }
+
     // "2. If |input| is a Request object and |input|'s body is non-null, run
     // these substeps:"
     if (inputRequest && inputRequest->hasBody()) {
@@ -243,7 +252,9 @@ Request* Request::createRequestWithRequestOrString(ScriptState* scriptState, Req
 
     // "31. If |input| is a Request object and |input|'s body is non-null, run
     // these substeps:"
-    if (inputRequest && inputRequest->hasBody()) {
+    // We set bodyUsed even when the body is null in spite of the
+    // spec. See https://github.com/whatwg/fetch/issues/61 for details.
+    if (inputRequest) {
         // "1. Set |input|'s body to null."
         inputRequest->setBodyBlobHandle(nullptr);
         // "2. Set |input|'s used flag."

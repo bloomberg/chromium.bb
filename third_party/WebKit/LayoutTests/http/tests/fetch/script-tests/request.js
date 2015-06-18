@@ -272,9 +272,10 @@ test(function() {
     assert_false(req.bodyUsed,
                  'Request should not be flagged as used if it has not been ' +
                  'consumed.');
+    // See https://crbug.com/501195.
     var req2 = new Request(req);
-    assert_false(req.bodyUsed,
-                'Request should not be flagged as used if it does not have' +
+    assert_true(req.bodyUsed,
+                'Request should be flagged as used if it does not have' +
                 'body.');
     assert_false(req2.bodyUsed,
                  'Request should not be flagged as used if it has not been ' +
@@ -292,11 +293,11 @@ test(function() {
     assert_false(req2.bodyUsed,
                  'Request should not be flagged as used if it has not been ' +
                  'consumed.');
-    // Now we can create a Request from |req|, because creating |req2| from
-    // |req| sets |req|'s body to null as specified.
-    var req3 = new Request(req);
-    assert_true(req.bodyUsed,
-                'Request should be flagged as used if it has been consumed.');
+    // See https://crbug.com/501195.
+    assert_throws(
+      {name: 'TypeError'},
+      function() { new Request(req); },
+      'Request construction should throw if used.');
   }, 'Request construction without body behavior regardning "bodyUsed"');
 
 test(function() {
