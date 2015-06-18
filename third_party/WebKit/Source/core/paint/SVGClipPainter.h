@@ -37,7 +37,7 @@ public:
     bool applyClippingToContext(const LayoutObject&, const FloatRect&, const FloatRect&, GraphicsContext*, ClipperState&);
 
 private:
-    void drawClipMaskContent(GraphicsContext*, const LayoutObject&, const FloatRect&);
+    void drawClipMaskContent(GraphicsContext*, const LayoutObject&, const FloatRect& targetBoundingBox, const FloatRect& targetPaintInvalidationRect);
 
     LayoutSVGResourceClipper& m_clip;
 };

@@ -21,7 +21,7 @@ public:
     void finishEffect(const LayoutObject&, GraphicsContext*);
 
 private:
-    void drawMaskForLayoutObject(GraphicsContext*, const LayoutObject&, const FloatRect& targetBoundingBox);
+    void drawMaskForLayoutObject(GraphicsContext*, const LayoutObject&, const FloatRect& targetBoundingBox, const FloatRect& targetPaintInvalidationRect);
 
     LayoutSVGResourceMasker& m_mask;
 };

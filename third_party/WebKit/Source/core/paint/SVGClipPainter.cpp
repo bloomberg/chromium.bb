@@ -10,6 +10,7 @@
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
 #include "core/paint/CompositingRecorder.h"
+#include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/TransformRecorder.h"
 #include "platform/graphics/paint/ClipPathDisplayItem.h"
@@ -82,7 +83,7 @@ bool SVGClipPainter::applyClippingToContext(const LayoutObject& target, const Fl
             return false;
         }
 
-        drawClipMaskContent(context, target, targetBoundingBox);
+        drawClipMaskContent(context, target, targetBoundingBox, paintInvalidationRect);
 
         if (clipPathClipper)
             SVGClipPainter(*clipPathClipper).postApplyStatefulResource(m_clip, context, clipPathClipperState);
@@ -120,23 +121,21 @@ void SVGClipPainter::postApplyStatefulResource(const LayoutObject& target, Graph
     }
 }
 
-void SVGClipPainter::drawClipMaskContent(GraphicsContext* context, const LayoutObject& layoutObject, const FloatRect& targetBoundingBox)
+void SVGClipPainter::drawClipMaskContent(GraphicsContext* context, const LayoutObject& layoutObject, const FloatRect& targetBoundingBox, const FloatRect& targetPaintInvalidationRect)
 {
     ASSERT(context);
 
     AffineTransform contentTransformation;
     RefPtr<const SkPicture> clipContentPicture = m_clip.createContentPicture(contentTransformation, targetBoundingBox, context);
 
-    TransformRecorder recorder(*context, layoutObject, contentTransformation);
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        ASSERT(context->displayItemList());
-        if (context->displayItemList()->displayItemConstructionIsDisabled())
-            return;
-        context->displayItemList()->add(DrawingDisplayItem::create(layoutObject, DisplayItem::SVGClip, clipContentPicture));
-    } else {
-        DrawingDisplayItem clipPicture(layoutObject, DisplayItem::SVGClip, clipContentPicture);
-        clipPicture.replay(*context);
-    }
+    LayoutObjectDrawingRecorder drawingRecorder(*context, layoutObject, DisplayItem::SVGClip, targetPaintInvalidationRect);
+    if (drawingRecorder.canUseCachedDrawing())
+        return;
+
+    context->save();
+    context->concatCTM(contentTransformation);
+    context->drawPicture(clipContentPicture.get());
+    context->restore();
 }
 
 }
