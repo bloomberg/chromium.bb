@@ -66,7 +66,8 @@ class ToughCanvasCasesPageSet(page_set_module.PageSet):
       'http://spielzeugz.de/html5/liquid-particles.html',
       'http://hakim.se/experiments/html5/magnetic/02/',
       'http://ie.microsoft.com/testdrive/Performance/LetItSnow/',
-      'http://ie.microsoft.com/testdrive/Graphics/WorkerFountains/Default.html',
+      # crbug.com/501406 causes OOM failures on perf bots
+      # 'http://ie.microsoft.com/testdrive/Graphics/WorkerFountains/Default.html',
       'http://ie.microsoft.com/testdrive/Graphics/TweetMap/Default.html',
       'http://ie.microsoft.com/testdrive/Graphics/VideoCity/Default.html',
       'http://ie.microsoft.com/testdrive/Performance/AsteroidBelt/Default.html',
