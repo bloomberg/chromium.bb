@@ -1216,6 +1216,15 @@ long ContentViewCoreImpl::GetNativeImeAdapter(JNIEnv* env, jobject obj) {
   return rwhva->GetNativeImeAdapter();
 }
 
+void ContentViewCoreImpl::ForceUpdateImeAdapter(long native_ime_adapter) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return;
+  Java_ContentViewCore_forceUpdateImeAdapter(env, obj.obj(),
+                                             native_ime_adapter);
+}
+
 void ContentViewCoreImpl::UpdateImeAdapter(long native_ime_adapter,
                                            int text_input_type,
                                            int text_input_flags,

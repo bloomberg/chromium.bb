@@ -2378,6 +2378,11 @@ public class ContentViewCore implements
         }
     }
 
+    @CalledByNative
+    private void forceUpdateImeAdapter(long nativeImeAdapterAndroid) {
+        mImeAdapter.attach(nativeImeAdapterAndroid);
+    }
+
     @SuppressWarnings("unused")
     @CalledByNative
     private void setTitle(String title) {

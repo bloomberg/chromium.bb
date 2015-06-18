@@ -225,6 +225,7 @@ class ContentViewCoreImpl : public ContentViewCore,
                        const gfx::Vector2dF& content_offset,
                        bool is_mobile_optimized_hint);
 
+  void ForceUpdateImeAdapter(long native_ime_adapter);
   void UpdateImeAdapter(long native_ime_adapter,
                         int text_input_type,
                         int text_input_flags,
