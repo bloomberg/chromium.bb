@@ -76,6 +76,9 @@ struct PasswordFormFillData {
   // and our saved representation don't match up.
   bool wait_for_username;
 
+  // True if this form is a change password form.
+  bool is_possible_change_password_form;
+
   PasswordFormFillData();
   ~PasswordFormFillData();
 };

@@ -183,6 +183,15 @@ const char kFormHTMLWithTwoTextFields[] =
     "  <INPUT type='submit' value='Login'/>"
     "</FORM>";
 
+const char kPasswordChangeFormHTML[] =
+    "<FORM name='ChangeWithUsernameForm' action='http://www.bidule.com'>"
+    "  <INPUT type='text' id='username'/>"
+    "  <INPUT type='password' id='password'/>"
+    "  <INPUT type='password' id='newpassword'/>"
+    "  <INPUT type='password' id='confirmpassword'/>"
+    "  <INPUT type='submit' value='Login'/>"
+    "</FORM>";
+
 // Sets the "readonly" attribute of |element| to the value given by |read_only|.
 void SetElementReadOnly(WebInputElement& element, bool read_only) {
   element.setAttribute(WebString::fromUTF8("readonly"),
@@ -1911,6 +1920,113 @@ TEST_F(PasswordAutofillAgentTest, PasswordGenerationSupersedesAutofill) {
             render_thread_->sink().GetFirstMessageMatching(
                 AutofillHostMsg_ShowPasswordSuggestions::ID));
   ExpectPasswordGenerationAvailable(password_generation_, true);
+}
+
+// Tests that a password change form is properly filled with the username and
+// password.
+TEST_F(PasswordAutofillAgentTest, FillSuggestionPasswordChangeForms) {
+  LoadHTML(kPasswordChangeFormHTML);
+  UpdateOriginForHTML(kPasswordChangeFormHTML);
+  UpdateUsernameAndPasswordElements();
+  // Simulate the browser sending the login info, but set |wait_for_username|
+  // to prevent the form from being immediately filled.
+  fill_data_.wait_for_username = true;
+  fill_data_.is_possible_change_password_form = true;
+  SimulateOnFillPasswordForm(fill_data_);
+
+  // Neither field should have been autocompleted.
+  CheckTextFieldsDOMState(std::string(), false, std::string(), false);
+
+  EXPECT_TRUE(password_autofill_agent_->FillSuggestion(
+      username_element_, kAliceUsername, kAlicePassword));
+  CheckTextFieldsDOMState(kAliceUsername, true, kAlicePassword, true);
+}
+
+// Tests that a password change form is properly filled with the password when
+// the user click on the password field.
+TEST_F(PasswordAutofillAgentTest,
+       FillSuggestionPasswordChangeFormsOnlyPassword) {
+  LoadHTML(kPasswordChangeFormHTML);
+  UpdateOriginForHTML(kPasswordChangeFormHTML);
+  UpdateUsernameAndPasswordElements();
+  // Simulate the browser sending the login info, but set |wait_for_username|
+  // to prevent the form from being immediately filled.
+  fill_data_.wait_for_username = true;
+  fill_data_.is_possible_change_password_form = true;
+  SimulateOnFillPasswordForm(fill_data_);
+
+  // Neither field should have been autocompleted.
+  CheckTextFieldsDOMState(std::string(), false, std::string(), false);
+
+  EXPECT_TRUE(password_autofill_agent_->FillSuggestion(
+      password_element_, kAliceUsername, kAlicePassword));
+  CheckTextFieldsDOMState("", false, kAlicePassword, true);
+}
+
+// Tests that one user click on a username field is sufficient to bring up a
+// credential suggestion popup on a change password form.
+TEST_F(PasswordAutofillAgentTest,
+       SuggestionsOnUsernameFieldOfChangePasswordForm) {
+  LoadHTML(kPasswordChangeFormHTML);
+  UpdateOriginForHTML(kPasswordChangeFormHTML);
+  UpdateUsernameAndPasswordElements();
+
+  ClearUsernameAndPasswordFields();
+  fill_data_.wait_for_username = true;
+  fill_data_.is_possible_change_password_form = true;
+  SimulateOnFillPasswordForm(fill_data_);
+  // Simulate a user clicking on the username element. This should produce a
+  // message.
+  render_thread_->sink().ClearMessages();
+  static_cast<PageClickListener*>(autofill_agent_)
+      ->FormControlElementClicked(username_element_, true);
+  CheckSuggestions("", true);
+}
+
+// Tests that one user click on a password field is sufficient to bring up a
+// credential suggestion popup on a change password form.
+TEST_F(PasswordAutofillAgentTest,
+       SuggestionsOnPasswordFieldOfChangePasswordForm) {
+  LoadHTML(kPasswordChangeFormHTML);
+  UpdateOriginForHTML(kPasswordChangeFormHTML);
+  UpdateUsernameAndPasswordElements();
+
+  ClearUsernameAndPasswordFields();
+  fill_data_.wait_for_username = true;
+  fill_data_.is_possible_change_password_form = true;
+  SimulateOnFillPasswordForm(fill_data_);
+  // Simulate a user clicking on the password element. This should produce a
+  // message.
+  render_thread_->sink().ClearMessages();
+  static_cast<PageClickListener*>(autofill_agent_)
+      ->FormControlElementClicked(password_element_, true);
+  CheckSuggestions("", false);
+}
+
+// Tests that there are no autosuggestions from the password manager when the
+// user clicks on the password field of change password form after the user
+// typed in the username field.
+TEST_F(PasswordAutofillAgentTest,
+       NoSuggestionsOnPasswordFieldOfChangePasswordFormAfterUsernameTyping) {
+  LoadHTML(kPasswordChangeFormHTML);
+  UpdateOriginForHTML(kPasswordChangeFormHTML);
+  UpdateUsernameAndPasswordElements();
+
+  ClearUsernameAndPasswordFields();
+  fill_data_.wait_for_username = true;
+  fill_data_.is_possible_change_password_form = true;
+  SimulateOnFillPasswordForm(fill_data_);
+
+  // Clear the text fields to start fresh.
+  SimulateUsernameChange("temp");
+
+  // Simulate a user clicking on the password element. This should produce no
+  // message.
+  render_thread_->sink().ClearMessages();
+  static_cast<PageClickListener*>(autofill_agent_)
+      ->FormControlElementClicked(password_element_, false);
+  EXPECT_FALSE(render_thread_->sink().GetFirstMessageMatching(
+      AutofillHostMsg_ShowPasswordSuggestions::ID));
 }
 
 }  // namespace autofill

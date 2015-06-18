@@ -113,6 +113,8 @@ class PasswordAutofillAgent : public content::RenderFrameObserver {
     // The user manually edited the password more recently than the username was
     // changed.
     bool password_was_edited_last;
+    // The user edited the username field after page loading.
+    bool username_was_edited;
     PasswordInfo();
   };
   typedef std::map<blink::WebInputElement, PasswordInfo> LoginToPasswordInfoMap;

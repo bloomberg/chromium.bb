@@ -143,13 +143,17 @@ bool LocateSpecificPasswords(std::vector<WebInputElement> passwords,
       *current_password = passwords[0];
       break;
     case 2:
-      if (passwords[0].value() == passwords[1].value()) {
-        // Two identical passwords: assume we are seeing a new password with a
-        // confirmation. This can be either a sign-up form or a password change
-        // form that does not ask for the old password.
+      if (!passwords[0].value().isEmpty() &&
+          passwords[0].value() == passwords[1].value()) {
+        // Two identical non-empty passwords: assume we are seeing a new
+        // password with a confirmation. This can be either a sign-up form or a
+        // password change form that does not ask for the old password.
         *new_password = passwords[0];
       } else {
         // Assume first is old password, second is new (no choice but to guess).
+        // This case also includes empty passwords in order to allow filling of
+        // password change forms (that also could autofill for sign up form, but
+        // we can't do anything with this using only client side information).
         *current_password = passwords[0];
         *new_password = passwords[1];
       }

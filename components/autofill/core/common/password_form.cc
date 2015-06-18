@@ -90,6 +90,11 @@ bool PasswordForm::IsPublicSuffixMatch() const {
   return !original_signon_realm.empty();
 }
 
+bool PasswordForm::IsPossibleChangePasswordForm() const {
+  return !new_password_element.empty() &&
+         layout != PasswordForm::Layout::LAYOUT_LOGIN_AND_SIGNUP;
+}
+
 bool PasswordForm::operator==(const PasswordForm& form) const {
   return scheme == form.scheme &&
       signon_realm == form.signon_realm &&

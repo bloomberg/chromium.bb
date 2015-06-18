@@ -1522,4 +1522,26 @@ TEST_F(PasswordFormManagerTest, PasswordToSave_NewValue) {
   EXPECT_EQ(kNewValue, PasswordFormManager::PasswordToSave(form));
 }
 
+TEST_F(PasswordFormManagerTest, TestSuggestingPasswordChangeForms) {
+  // Suggesting password on the password change form on the previously visited
+  // site. Credentials are found in the password store, and are not blacklisted.
+  TestPasswordManager password_manager(client());
+  PasswordForm observed_change_password_form = *observed_form();
+  observed_change_password_form.new_password_element =
+      base::ASCIIToUTF16("new_pwd");
+  PasswordFormManager manager_creds(&password_manager, client(),
+                                    client()->driver(),
+                                    observed_change_password_form, false);
+  manager_creds.SimulateFetchMatchingLoginsFromPasswordStore();
+  ScopedVector<PasswordForm> simulated_results;
+  simulated_results.push_back(CreateSavedMatch(false));
+  manager_creds.OnGetPasswordStoreResults(simulated_results.Pass());
+  Mock::VerifyAndClearExpectations(client()->mock_driver());
+
+  // Check that Autofill message was sent.
+  EXPECT_EQ(1u, password_manager.GetLatestBestMatches().size());
+  // Check that we suggest, not autofill.
+  EXPECT_TRUE(password_manager.GetLatestWaitForUsername());
+}
+
 }  // namespace password_manager

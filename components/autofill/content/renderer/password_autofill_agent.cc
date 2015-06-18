@@ -722,6 +722,12 @@ void PasswordAutofillAgent::UpdateStateForTextChange(
   if (element.isTextField())
     nonscript_modified_values_[element] = element.value();
 
+  LoginToPasswordInfoMap::iterator password_info_iter =
+      login_to_password_info_.find(element);
+  if (password_info_iter != login_to_password_info_.end()) {
+    password_info_iter->second.username_was_edited = true;
+  }
+
   DCHECK_EQ(element.document().frame(), render_frame()->GetWebFrame());
 
   if (element.isPasswordField()) {
@@ -859,7 +865,9 @@ bool PasswordAutofillAgent::ShowSuggestions(
   // is no username or the corresponding username element is not editable since
   // it is only in that case that the username element does not have a
   // suggestions popup.
-  if (element.isPasswordField() && username_is_available)
+  if (element.isPasswordField() && username_is_available &&
+      (!password_info->fill_data.is_possible_change_password_form ||
+       password_info->username_was_edited))
     return true;
 
   UMA_HISTOGRAM_BOOLEAN(
@@ -1295,7 +1303,9 @@ void PasswordAutofillAgent::OnFindFocusedPasswordForm() {
 // PasswordAutofillAgent, private:
 
 PasswordAutofillAgent::PasswordInfo::PasswordInfo()
-    : backspace_pressed_last(false), password_was_edited_last(false) {
+    : backspace_pressed_last(false),
+      password_was_edited_last(false),
+      username_was_edited(false) {
 }
 
 bool PasswordAutofillAgent::ShowSuggestionPopup(

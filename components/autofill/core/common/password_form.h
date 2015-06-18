@@ -271,6 +271,10 @@ struct PasswordForm {
   // Returns true if this match was found using public suffix matching.
   bool IsPublicSuffixMatch() const;
 
+  // Return true if we consider this form to be a change password form.
+  // We use only client heuristics, so it could include signup forms.
+  bool IsPossibleChangePasswordForm() const;
+
   // Equality operators for testing.
   bool operator==(const PasswordForm& form) const;
   bool operator!=(const PasswordForm& form) const;

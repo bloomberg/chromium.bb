@@ -96,6 +96,7 @@ IPC_STRUCT_TRAITS_BEGIN(autofill::PasswordFormFillData)
   IPC_STRUCT_TRAITS_MEMBER(additional_logins)
   IPC_STRUCT_TRAITS_MEMBER(other_possible_usernames)
   IPC_STRUCT_TRAITS_MEMBER(wait_for_username)
+  IPC_STRUCT_TRAITS_MEMBER(is_possible_change_password_form)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(autofill::PasswordAndRealm)

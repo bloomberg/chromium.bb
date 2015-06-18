@@ -23,7 +23,9 @@ bool UsernamesCollectionKey::operator<(
 }
 
 PasswordFormFillData::PasswordFormFillData()
-    : user_submitted(false), wait_for_username(false) {
+    : user_submitted(false),
+      wait_for_username(false),
+      is_possible_change_password_form(false) {
 }
 
 PasswordFormFillData::~PasswordFormFillData() {
@@ -55,6 +57,8 @@ void InitPasswordFormFillData(
   result->username_field = username_field;
   result->password_field = password_field;
   result->wait_for_username = wait_for_username_before_autofill;
+  result->is_possible_change_password_form =
+      form_on_page.IsPossibleChangePasswordForm();
 
   result->preferred_realm = preferred_match->original_signon_realm;
 

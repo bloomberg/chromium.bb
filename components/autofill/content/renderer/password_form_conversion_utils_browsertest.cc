@@ -292,13 +292,13 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, IdentifyingTwoPasswordFields) {
     const char* expected_new_password_element;
     const char* expected_new_password_value;
   } cases[] = {
-      // Twp non-empty fields with the same value should be treated as a new
+      // Two non-empty fields with the same value should be treated as a new
       // password field plus a confirmation field for the new password.
       {{"alpha", "alpha"}, "", "", "password1", "alpha"},
       // The same goes if the fields are yet empty: we speculate that we will
       // identify them as new password fields once they are filled out, and we
       // want to keep our abstract interpretation of the form less flaky.
-      {{"", ""}, "", "", "password1", ""},
+      {{"", ""}, "password1", "", "password2", ""},
       // Two different values should be treated as a password change form, one
       // that also asks for the current password, but only once for the new.
       {{"alpha", ""}, "password1", "alpha", "password2", ""},
