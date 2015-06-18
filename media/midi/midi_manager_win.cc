@@ -297,6 +297,12 @@ std::string GetManufacturerName(const MidiDeviceInfo& info) {
   }
 }
 
+bool IsUnsupportedDevice(const MidiDeviceInfo& info) {
+  return info.manufacturer_id == MM_MICROSOFT &&
+         (info.product_id == MM_MSFT_WDMAUDIO_MIDIOUT ||
+          info.product_id == MM_MSFT_GENERIC_MIDISYNTH);
+}
+
 using PortNumberCache = base::hash_map<
     MidiDeviceInfo,
     std::priority_queue<uint32, std::vector<uint32>, std::greater<uint32>>,
@@ -799,6 +805,8 @@ class MidiServiceWinImpl : public MidiServiceWin,
         make_scoped_refptr(new MidiOutputDeviceState(MidiDeviceInfo(caps)));
     state->midi_handle = midi_out_handle;
     const auto& state_device_info = state->device_info;
+    if (IsUnsupportedDevice(state_device_info))
+      return;
     bool add_new_port = false;
     uint32 port_number = 0;
     {
