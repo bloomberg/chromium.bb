@@ -79,6 +79,7 @@ static const int defaultFontSize = 10;
 static const char defaultFontFamily[] = "sans-serif";
 static const char defaultFont[] = "10px sans-serif";
 static const char inherit[] = "inherit";
+static const char initial[] = "initial";
 static const char rtl[] = "rtl";
 static const char ltr[] = "ltr";
 static const double TryRestoreContextInterval = 0.5;
@@ -1679,19 +1680,16 @@ void CanvasRenderingContext2D::setFont(const String& newFont)
             m_fetchedFonts.remove(m_fetchedFontsLRUList.first());
             m_fetchedFontsLRUList.removeFirst();
         }
+        if (parsedStyle->isEmpty())
+            return;
+        String fontValue = parsedStyle->getPropertyValue(CSSPropertyFont);
+        // According to http://lists.w3.org/Archives/Public/public-html/2009Jul/0947.html,
+        // the "inherit" and "initial" values must be ignored.
+        if (fontValue == inherit || fontValue == initial)
+            return;
         m_fetchedFonts.add(newFont, parsedStyle);
     }
     m_fetchedFontsLRUList.add(newFont);
-
-    if (parsedStyle->isEmpty())
-        return;
-
-    String fontValue = parsedStyle->getPropertyValue(CSSPropertyFont);
-
-    // According to http://lists.w3.org/Archives/Public/public-html/2009Jul/0947.html,
-    // the "inherit" and "initial" values must be ignored.
-    if (fontValue == "inherit" || fontValue == "initial")
-        return;
 
     // The parse succeeded.
     String newFontSafeCopy(newFont); // Create a string copy since newFont can be deleted inside realizeSaves.
