@@ -579,6 +579,10 @@ group("both_gn_and_gyp") {
   } else if (!is_android) {
     deps += [ "//breakpad:symupload" ]
   }
+
+  if (!is_ios) {
+    deps += [ "//gpu/skia_runner:skia_runner" ]
+  }
 }
 
 group("gn_only") {
