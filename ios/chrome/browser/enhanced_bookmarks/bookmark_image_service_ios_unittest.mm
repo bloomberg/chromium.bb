@@ -45,8 +45,9 @@ class BookmarkImagesIOSTest : public PlatformTest {
       : message_loop_(base::MessageLoop::TYPE_IO),
         ui_thread_(web::WebThread::UI, &message_loop_),
         io_thread_(web::WebThread::IO, &message_loop_),
-        request_context_getter_(new net::TestURLRequestContextGetter(
-            message_loop_.message_loop_proxy())) {}
+        request_context_getter_(
+            new net::TestURLRequestContextGetter(message_loop_.task_runner())) {
+  }
 
   ~BookmarkImagesIOSTest() override {}
 
