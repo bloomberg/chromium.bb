@@ -16,7 +16,7 @@ namespace content {
 
 struct CONTENT_EXPORT ServiceWorkerVersionInfo {
  public:
-  struct ClientInfo {
+  struct CONTENT_EXPORT ClientInfo {
    public:
     ClientInfo();
     ClientInfo(int process_id, int route_id, ServiceWorkerProviderType type);
