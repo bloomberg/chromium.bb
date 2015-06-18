@@ -50,46 +50,6 @@ PassRefPtrWillBeRawPtr<FEComponentTransfer> FEComponentTransfer::create(Filter* 
     return adoptRefWillBeNoop(new FEComponentTransfer(filter, redFunc, greenFunc, blueFunc, alphaFunc));
 }
 
-ComponentTransferFunction FEComponentTransfer::redFunction() const
-{
-    return m_redFunc;
-}
-
-void FEComponentTransfer::setRedFunction(const ComponentTransferFunction& func)
-{
-    m_redFunc = func;
-}
-
-ComponentTransferFunction FEComponentTransfer::greenFunction() const
-{
-    return m_greenFunc;
-}
-
-void FEComponentTransfer::setGreenFunction(const ComponentTransferFunction& func)
-{
-    m_greenFunc = func;
-}
-
-ComponentTransferFunction FEComponentTransfer::blueFunction() const
-{
-    return m_blueFunc;
-}
-
-void FEComponentTransfer::setBlueFunction(const ComponentTransferFunction& func)
-{
-    m_blueFunc = func;
-}
-
-ComponentTransferFunction FEComponentTransfer::alphaFunction() const
-{
-    return m_alphaFunc;
-}
-
-void FEComponentTransfer::setAlphaFunction(const ComponentTransferFunction& func)
-{
-    m_alphaFunc = func;
-}
-
 static void identity(unsigned char*, const ComponentTransferFunction&)
 {
 }

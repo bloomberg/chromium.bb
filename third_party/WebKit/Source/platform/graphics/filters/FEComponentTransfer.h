@@ -64,18 +64,6 @@ public:
     static PassRefPtrWillBeRawPtr<FEComponentTransfer> create(Filter*, const ComponentTransferFunction& redFunc, const ComponentTransferFunction& greenFunc,
         const ComponentTransferFunction& blueFunc, const ComponentTransferFunction& alphaFunc);
 
-    ComponentTransferFunction redFunction() const;
-    void setRedFunction(const ComponentTransferFunction&);
-
-    ComponentTransferFunction greenFunction() const;
-    void setGreenFunction(const ComponentTransferFunction&);
-
-    ComponentTransferFunction blueFunction() const;
-    void setBlueFunction(const ComponentTransferFunction&);
-
-    ComponentTransferFunction alphaFunction() const;
-    void setAlphaFunction(const ComponentTransferFunction&);
-
     virtual PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder*) override;
 
     virtual TextStream& externalRepresentation(TextStream&, int indention) const override;
