@@ -1669,10 +1669,22 @@ void FrameSelection::setFocusedNodeIfNeeded()
         m_frame->page()->focusController().setFocusedElement(0, m_frame);
 }
 
+template <typename Strategy>
+String extractSelectedTextAlgorithm(const FrameSelection& selection, TextIteratorBehavior behavior)
+{
+    using PositionType = typename Strategy::PositionType;
+
+    PositionType start;
+    PositionType end;
+    VisibleSelection visibleSelection = selection.selection();
+    VisibleSelection::normalizePositions(Strategy::selectionStart(visibleSelection), Strategy::selectionEnd(visibleSelection), &start, &end);
+    // We remove '\0' characters because they are not visibly rendered to the user.
+    return plainText(start, end, behavior).replace(0, "");
+}
+
 static String extractSelectedText(const FrameSelection& selection, TextIteratorBehavior behavior)
 {
-    // We remove '\0' characters because they are not visibly rendered to the user.
-    return plainText(selection.toNormalizedRange().get(), behavior).replace(0, "");
+    return extractSelectedTextAlgorithm<VisibleSelection::InDOMTree>(selection, behavior);
 }
 
 String FrameSelection::selectedHTMLForClipboard() const
