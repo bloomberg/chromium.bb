@@ -24,6 +24,8 @@ def set_color():
 def run_apptest(config, shell, args, apptest, isolate):
   """Run the apptest; optionally isolating fixtures across shell invocations.
 
+  Returns the list of tests run and the list of failures.
+
   Args:
     config: The mopy.config.Config for the build.
     shell: The mopy.android.AndroidShell, if Android is the target platform.
@@ -31,16 +33,19 @@ def run_apptest(config, shell, args, apptest, isolate):
     apptest: The application test URL.
     isolate: True if the test fixtures should be run in isolation.
   """
+  tests = [apptest]
+  failed = []
   if not isolate:
-    return _run_apptest(config, shell, args, apptest)
-
-  fixtures = _get_fixtures(config, shell, args, apptest)
-  result = True if fixtures else False
-  for fixture in fixtures:
-    arguments = args + ["--gtest_filter=%s" % fixture]
-    if not _run_apptest(config, shell, arguments, apptest):
-      result = False
-  return result
+    # TODO(msw): Parse fixture-granular successes and failures in this case.
+    if not _run_apptest(config, shell, args, apptest):
+      failed.append(apptest)
+  else:
+    tests = _get_fixtures(config, shell, args, apptest)
+    for fixture in tests:
+      arguments = args + ["--gtest_filter=%s" % fixture]
+      if not _run_apptest(config, shell, arguments, apptest):
+        failed.append(fixture)
+  return (tests, failed)
 
 
 def _run_apptest(config, shell, args, apptest):

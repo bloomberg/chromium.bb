@@ -50,7 +50,6 @@ def main():
       return result
 
   tests = []
-  passed = []
   failed = []
   for _ in range(args.repeat_count):
     for test_dict in test_list:
@@ -62,22 +61,24 @@ def main():
       print "Running %s...%s" % (test_name, ("\n" if args.verbose else "")),
       sys.stdout.flush()
 
-      tests.append(test_name)
       assert test_type in ("gtest", "gtest_isolated")
       isolate = test_type == "gtest_isolated"
-      result = gtest.run_apptest(config, shell, test_args, test, isolate)
-      passed.extend([test_name] if result else [])
-      failed.extend([] if result else [test_name])
+      (test, fail) = gtest.run_apptest(config, shell, test_args, test, isolate)
+      tests.extend(test)
+      failed.extend(fail)
+      result = test and not fail
       print "[  PASSED  ]" if result else "[  FAILED  ]",
       print test_name if args.verbose or not result else ""
 
     if failed:
       break;
 
-  print "[  PASSED  ] %d apptests" % len(passed),
-  print ": %s" % ", ".join(passed) if passed else ""
-  print "[  FAILED  ] %d apptests" % len(failed),
-  print ": %s" % ", ".join(failed) if failed else ""
+  print "[==========] %d tests ran." % len(tests)
+  print "[  PASSED  ] %d tests." % (len(tests) - len(failed))
+  if failed:
+    print "[  FAILED  ] %d tests, listed below:" % len(failed)
+    for failure in failed:
+      print "[  FAILED  ] %s" % failure
 
   if args.write_full_results_to:
     _WriteJSONResults(tests, failed, args.write_full_results_to)
