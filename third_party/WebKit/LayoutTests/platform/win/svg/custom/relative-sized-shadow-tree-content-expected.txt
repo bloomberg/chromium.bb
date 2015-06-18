@@ -20,6 +20,21 @@
         [59, 69, 150, 200],
         [8, 68, 402, 404],
         [8, 68, 102, 404]
+      ],
+      "paintInvalidationClients": [
+        "RootInlineBox",
+        "InlineBox",
+        "LayoutBlockFlow div id='contentBox'",
+        "LayoutSVGRoot svg",
+        "LayoutSVGRect rect id='targetRect'",
+        "LayoutSVGRect rect id='targetRect1'",
+        "LayoutSVGContainer use id='targetUse'",
+        "LayoutSVGRect rect id='targetRect1'",
+        "LayoutSVGContainer use",
+        "LayoutSVGRect rect id='targetRect'",
+        "LayoutSVGContainer use",
+        "LayoutSVGContainer g id='targetUse'",
+        "LayoutSVGRect rect id='targetRect1'"
       ]
     }
   ]

@@ -18,6 +18,25 @@
         [0, 14, 684, 366],
         [0, 14, 374, 131],
         [0, 14, 374, 131]
+      ],
+      "paintInvalidationClients": [
+        "LayoutSVGResourcePattern pattern id='fillPattern'",
+        "LayoutSVGRect rect",
+        "LayoutSVGRect rect",
+        "LayoutSVGResourcePattern pattern id='strokePattern'",
+        "LayoutSVGRect rect",
+        "LayoutSVGRect rect",
+        "LayoutSVGRoot svg id='svg-root'",
+        "LayoutSVGContainer g id='content'",
+        "LayoutSVGText text",
+        "LayoutSVGInlineText #text",
+        "InlineTextBox 'Pattern on fill'",
+        "LayoutSVGText text",
+        "LayoutSVGInlineText #text",
+        "InlineTextBox 'Pattern on stroke'",
+        "LayoutSVGText text",
+        "LayoutSVGInlineText #text",
+        "InlineTextBox 'Pattern on fill/stroke'"
       ]
     }
   ]

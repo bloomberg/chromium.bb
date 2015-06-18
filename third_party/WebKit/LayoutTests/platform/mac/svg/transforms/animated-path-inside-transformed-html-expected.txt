@@ -17,6 +17,16 @@
         [111, 83, 101, 100],
         [90, 206, 98, 98],
         [90, 83, 275, 248]
+      ],
+      "paintInvalidationClients": [
+        "RootInlineBox",
+        "InlineTextBox 'This is some text'",
+        "LayoutSVGRoot svg",
+        "LayoutSVGRect rect id='rect'",
+        "LayoutSVGText text id='text'",
+        "LayoutSVGInlineText #text",
+        "InlineTextBox 'This is some text'",
+        "LayoutSVGImage image id='image'"
       ]
     }
   ]

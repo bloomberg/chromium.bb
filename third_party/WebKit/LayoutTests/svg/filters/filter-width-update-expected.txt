@@ -8,6 +8,10 @@
       "repaintRects": [
         [0, 0, 140, 140],
         [0, 0, 40, 140]
+      ],
+      "paintInvalidationClients": [
+        "LayoutSVGResourceFilter filter id='blur'",
+        "LayoutSVGRect rect"
       ]
     }
   ]

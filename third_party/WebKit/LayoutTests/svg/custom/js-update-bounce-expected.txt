@@ -10,6 +10,10 @@
         [102, 102, 66, 66],
         [2, 2, 66, 66],
         [2, 2, 66, 66]
+      ],
+      "paintInvalidationClients": [
+        "LayoutSVGRoot svg",
+        "LayoutSVGEllipse circle id='bounce'"
       ]
     }
   ]

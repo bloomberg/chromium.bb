@@ -12,6 +12,11 @@
         [0, 0, 110, 110],
         [0, 0, 110, 110],
         [0, 0, 100, 100]
+      ],
+      "paintInvalidationClients": [
+        "LayoutSVGRoot svg",
+        "LayoutSVGContainer g",
+        "LayoutSVGEllipse circle id='circle'"
       ]
     }
   ]

@@ -8,6 +8,11 @@
       "repaintRects": [
         [8, 50, 602, 424],
         [8, 50, 422, 424]
+      ],
+      "paintInvalidationClients": [
+        "RootInlineBox",
+        "InlineBox",
+        "LayoutBlockFlow div id='contentBox'"
       ]
     }
   ]

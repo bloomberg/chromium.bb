@@ -8,6 +8,9 @@
       "repaintRects": [
         [8, 8, 200, 200],
         [8, 8, 100, 100]
+      ],
+      "paintInvalidationClients": [
+        "LayoutSVGRect rect"
       ]
     }
   ]

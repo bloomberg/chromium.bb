@@ -8,6 +8,10 @@
       "repaintRects": [
         [18, 18, 30, 20],
         [18, 18, 20, 20]
+      ],
+      "paintInvalidationClients": [
+        "LayoutSVGPath polygon id='target'",
+        "LayoutSVGPath polygon id='source'"
       ]
     }
   ]

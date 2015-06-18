@@ -8,6 +8,10 @@
       "repaintRects": [
         [0, 0, 100, 100],
         [0, 0, 100, 100]
+      ],
+      "paintInvalidationClients": [
+        "LayoutSVGViewportContainer svg id='s'",
+        "LayoutSVGRect rect"
       ]
     }
   ]

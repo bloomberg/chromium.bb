@@ -7,6 +7,9 @@
       "drawsContent": true,
       "repaintRects": [
         [9, 151, 200, 100]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow (positioned) DIV id='revealer'"
       ]
     }
   ]

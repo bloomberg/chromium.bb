@@ -16,7 +16,6 @@ crbug.com/382491 fast/backgrounds/repeat/negative-offset-repeat-transformed.html
 crbug.com/382491 fast/borders/border-antialiasing.html [ ImageOnlyFailure ]
 crbug.com/382491 fast/borders/border-image-rotate-transform.html [ ImageOnlyFailure ]
 crbug.com/382491 fast/forms/placeholder-position.html [ ImageOnlyFailure ]
-crbug.com/382491 [ Mac ] virtual/slimmingpaint/svg/custom/foreign-object-skew.svg [ ImageOnlyFailure ]
 
 crbug.com/474117 compositing/overflow/overflow-positioning.html [ ImageOnlyFailure Pass ]
 
@@ -235,7 +234,6 @@ crbug.com/330083 imported/web-platform-tests/custom-elements/instantiating-custo
 crbug.com/330083 imported/web-platform-tests/webrtc/simplecall.html [ Failure ]
 
 crbug.com/377950 svg/repaint/image-animation-with-zoom.html [ Failure Pass ]
-crbug.com/377950 virtual/slimmingpaint/svg/repaint/image-animation-with-zoom.html [ Skip ]
 
 crbug.com/498012 [ Win ] plugins/netscape-plugin-setwindow-size-2.html [ Pass Failure ]
 
@@ -1075,7 +1073,6 @@ crbug.com/350829 [ Win Debug ] virtual/threaded/animations/duplicated-keyframes-
 crbug.com/350829 [ Win Debug ] virtual/threaded/animations/keyframes-unprefixed-03.html [ Timeout Pass ]
 
 crbug.com/352377 svg/animations/repeatn-event-1c.svg [ ImageOnlyFailure Pass ]
-crbug.com/352377 virtual/slimmingpaint/svg/animations/repeatn-event-1c.svg [ Skip ]
 crbug.com/352385 [ Debug ] virtual/threaded/animations/3d/transform-perspective.html [ Timeout Pass ]
 crbug.com/352705 [ Win Debug ] virtual/threaded/animations/sample-on-last-keyframe.html [ Timeout Pass ]
 crbug.com/352705 [ Linux ] virtual/threaded/animations/sample-on-last-keyframe.html [ Timeout Pass ]
@@ -1162,9 +1159,6 @@ crbug.com/392640 [ Debug ] svg/as-object/sizing/svg-in-object-placeholder-height
 crbug.com/392640 [ Debug ] svg/as-object/sizing/svg-in-object-placeholder-height-percentage.html [ Pass Failure Timeout ]
 crbug.com/392640 [ Release ] svg/as-object/sizing/svg-in-object-placeholder-height-fixed.html [ Pass Timeout ]
 crbug.com/392640 [ Release ] svg/as-object/sizing/svg-in-object-placeholder-height-percentage.html [ Pass Timeout ]
-crbug.com/392640 virtual/slimmingpaint/svg/as-object/sizing/svg-in-object-placeholder-height-auto.html [ Skip ]
-crbug.com/392640 virtual/slimmingpaint/svg/as-object/sizing/svg-in-object-placeholder-height-fixed.html [ Skip ]
-crbug.com/392640 virtual/slimmingpaint/svg/as-object/sizing/svg-in-object-placeholder-height-percentage.html [ Skip ]
 
 crbug.com/393087 [ Win ] svg/custom/resource-client-removal.svg [ Pass Failure ]
 
@@ -1480,12 +1474,6 @@ crbug.com/442512 svg/dom/viewspec-viewboxparams.html [ Pass ImageOnlyFailure ]
 crbug.com/442512 svg/dom/viewspec-viewtargetparams.html [ Pass ImageOnlyFailure ]
 crbug.com/442512 svg/dom/viewspec-zoomandpanparams.html [ Pass ImageOnlyFailure ]
 crbug.com/442512 svg/dom/complex-svgView-specification.html [ Pass ImageOnlyFailure ]
-crbug.com/442512 virtual/slimmingpaint/svg/dom/viewspec-aspectparams.html [ Skip ]
-crbug.com/442512 virtual/slimmingpaint/svg/dom/viewspec-transformparams.html [ Skip ]
-crbug.com/442512 virtual/slimmingpaint/svg/dom/viewspec-viewboxparams.html [ Skip ]
-crbug.com/442512 virtual/slimmingpaint/svg/dom/viewspec-viewtargetparams.html [ Skip ]
-crbug.com/442512 virtual/slimmingpaint/svg/dom/viewspec-zoomandpanparams.html [ Skip ]
-crbug.com/442512 virtual/slimmingpaint/svg/dom/complex-svgView-specification.html [ Skip ]
 
 crbug.com/410929 virtual/gpu/fast/canvas/canvas-toDataURL-jpeg-maximum-quality.html [ Pass ImageOnlyFailure ]
 crbug.com/410929 virtual/gpu/fast/canvas/canvas-state-persistence-no-dirty.html [ Pass ImageOnlyFailure ]
@@ -1569,7 +1557,6 @@ crbug.com/449023 http/tests/security/mixedContent/insecure-image-in-main-frame-a
 crbug.com/449081 [ Debug ] virtual/gpu/fast/canvas/canvas-lose-restore-max-int-size.html [ Pass Failure ]
 
 crbug.com/425113 svg/clip-path/clip-path-multiple-children.svg [ ImageOnlyFailure ]
-crbug.com/425113 virtual/slimmingpaint/svg/clip-path/clip-path-multiple-children.svg [ Skip ]
 
 crbug.com/454729 svg/animations/dynamic-modify-transform-without-baseval.html [ Pass Timeout ]
 
@@ -1676,8 +1663,8 @@ crbug.com/498021 [ Linux ] fast/text/emoticons.html [ Failure ]
 crbug.com/498021 [ Linux ] fast/text/international/complex-character-based-fallback.html [ Failure ]
 crbug.com/498021 [ Linux ] fast/text/international/hindi-spacing.html [ Failure ]
 
-# Minor failure only on Mac 10.6 Debug.
-crbug.com/459305 [ Mac Debug ] svg/custom/foreign-object-skew.svg [ ImageOnlyFailure ]
+# Significant Slimming Paint failure.
+crbug.com/459305 [ Mac ] svg/custom/foreign-object-skew.svg [ ImageOnlyFailure ]
 
 crbug.com/457137 [ Win ] webaudio/osc-sine-sweep-snr.html [ Pass Failure ]
 
@@ -1717,16 +1704,14 @@ crbug.com/463358 [ Debug ] css3/masking/clip-path-polygon.html [ Pass ImageOnlyF
 crbug.com/463358 [ Debug ] fast/backgrounds/transformed-body-html-background.html [ Pass ImageOnlyFailure ]
 crbug.com/463358 [ Debug ] fast/transforms/transformed-caret.html [ Pass ImageOnlyFailure ]
 crbug.com/463358 [ Debug ] svg/W3C-SVG-1.1/paths-data-02-t.svg [ Pass ImageOnlyFailure ]
-crbug.com/463358 [ Debug ] virtual/slimmingpaint/svg/W3C-SVG-1.1/paths-data-02-t.svg [ Skip ]
 crbug.com/463358 [ Debug ] svg/transforms/text-with-pattern-inside-transformed-html.xhtml [ Pass ImageOnlyFailure ]
 crbug.com/463358 [ Mac ] svg/W3C-SVG-1.1/struct-frag-02-t.svg [ Failure NeedsManualRebaseline ]
 crbug.com/463358 [ Debug ] fast/backgrounds/transformed-body-background.html [ Pass ImageOnlyFailure ]
 crbug.com/463358 [ Debug ] svg/hixie/perf/005.xml [ Pass ImageOnlyFailure ]
-crbug.com/463358 [ Debug ] virtual/slimmingpaint/svg/hixie/perf/005.xml [ Skip ]
-crbug.com/463358 [ Debug ] svg/transforms/animated-path-inside-transformed-html.xhtml [ ImageOnlyFailure Pass ]
+# Temp disabled entry due to need for rebaselining
+# crbug.com/463358 [ Debug ] svg/transforms/animated-path-inside-transformed-html.xhtml [ ImageOnlyFailure Pass ]
 
 crbug.com/463358 [ Debug ] svg/hixie/perf/006.xml [ Pass ImageOnlyFailure ]
-crbug.com/463358 [ Debug ] virtual/slimmingpaint/svg/hixie/perf/006.xml [ Skip ]
 crbug.com/463358 transforms/2d/hindi-rotated.html [ Pass Failure ImageOnlyFailure ]
 
 crbug.com/482229 compositing/layer-creation/fixed-position-under-transform.html [ Failure ]
@@ -1840,6 +1825,14 @@ crbug.com/321237 [ Win ] fast/selectors/004.html [ ImageOnlyFailure ]
 crbug.com/321237 [ Mac ] fast/text/international/complex-text-leading-space-wrapping.html [ ImageOnlyFailure ]
 crbug.com/321237 [ Mac ] virtual/antialiasedtext/fast/text/international/complex-text-leading-space-wrapping.html [ ImageOnlyFailure ]
 crbug.com/321237 [ Win ] virtual/antialiasedtext/fast/text/international/complex-text-leading-space-wrapping.html [ ImageOnlyFailure ]
+
+# Slimming Paint svg rebaselines
+crbug.com/497950 svg/custom/focus-ring.svg [ NeedsRebaseline ]
+crbug.com/497950 svg/custom/transformed-outlines.svg [ NeedsRebaseline ]
+crbug.com/497950 svg/hixie/perf/004.xml [ NeedsRebaseline ]
+crbug.com/497950 svg/transforms/animated-path-inside-transformed-html.xhtml [ NeedsRebaseline ]
+crbug.com/497950 [ Mac ] svg/custom/absolute-sized-content-with-resources.xhtml [ NeedsRebaseline ]
+crbug.com/497950 [ Mac ] svg/text/text-rescale.html [ NeedsRebaseline ]
 
 #crbug.com/495523 fast/text/international/text-spliced-font.html [ Pass Failure ]
 

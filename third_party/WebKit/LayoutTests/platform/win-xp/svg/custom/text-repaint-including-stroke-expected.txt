@@ -12,6 +12,14 @@
         [30, 0, 403, 59],
         [30, 0, 403, 59],
         [30, 0, 403, 59]
+      ],
+      "paintInvalidationClients": [
+        "RootInlineBox",
+        "InlineTextBox 'Repaint me!'",
+        "LayoutSVGRoot svg",
+        "LayoutSVGText text id='bounce'",
+        "LayoutSVGInlineText #text",
+        "InlineTextBox 'Repaint me!'"
       ]
     }
   ]

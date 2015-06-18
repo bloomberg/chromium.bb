@@ -12,6 +12,14 @@
         [78, 40, 130, 84],
         [63, 25, 160, 114],
         [63, 25, 160, 114]
+      ],
+      "paintInvalidationClients": [
+        "RootInlineBox",
+        "InlineTextBox 'Foo'",
+        "LayoutSVGRoot svg",
+        "LayoutSVGText text",
+        "LayoutSVGInlineText #text",
+        "InlineTextBox 'Foo'"
       ]
     }
   ]

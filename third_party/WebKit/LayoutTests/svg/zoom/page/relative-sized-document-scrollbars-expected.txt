@@ -8,6 +8,11 @@
       "repaintRects": [
         [7, 5, 786, 590],
         [7, 5, 786, 590]
+      ],
+      "paintInvalidationClients": [
+        "LayoutSVGRoot svg",
+        "LayoutSVGRect rect",
+        "LayoutSVGHiddenContainer defs"
       ]
     }
   ]

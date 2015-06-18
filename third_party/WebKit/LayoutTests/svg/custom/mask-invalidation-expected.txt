@@ -14,6 +14,13 @@
         [50, 50, 453, 299],
         [50, 50, 453, 299],
         [50, 50, 453, 299]
+      ],
+      "paintInvalidationClients": [
+        "LayoutSVGRect rect",
+        "LayoutSVGRoot svg",
+        "LayoutSVGRect rect id='maskRect'",
+        "LayoutSVGContainer g id='root'",
+        "LayoutSVGRect rect"
       ]
     }
   ]

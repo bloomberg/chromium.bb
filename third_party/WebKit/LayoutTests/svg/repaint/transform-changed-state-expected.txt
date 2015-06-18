@@ -12,6 +12,11 @@
         [108, 8, 100, 100],
         [108, 8, 100, 100],
         [108, 8, 100, 100]
+      ],
+      "paintInvalidationClients": [
+        "LayoutSVGRoot svg",
+        "LayoutSVGContainer g",
+        "LayoutSVGRect rect"
       ]
     }
   ]

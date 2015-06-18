@@ -14,6 +14,17 @@
         [20, 6, 256, 18],
         [20, 6, 256, 18],
         [20, 6, 256, 18]
+      ],
+      "paintInvalidationClients": [
+        "RootInlineBox",
+        "InlineFlowBox",
+        "InlineTextBox 'This text should be at visible at 200,200'",
+        "LayoutSVGRoot svg",
+        "LayoutSVGText text",
+        "LayoutSVGTSpan tspan id='ts'",
+        "InlineFlowBox",
+        "LayoutSVGInlineText #text",
+        "InlineTextBox 'This text should be at visible at 200,200'"
       ]
     }
   ]

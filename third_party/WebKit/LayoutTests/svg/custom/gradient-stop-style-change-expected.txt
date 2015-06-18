@@ -7,6 +7,10 @@
       "drawsContent": true,
       "repaintRects": [
         [0, 0, 100, 100]
+      ],
+      "paintInvalidationClients": [
+        "LayoutSVGGradientStop stop id='stop'",
+        "LayoutSVGRect rect"
       ]
     }
   ]

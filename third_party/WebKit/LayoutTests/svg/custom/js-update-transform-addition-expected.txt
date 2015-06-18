@@ -8,6 +8,10 @@
       "repaintRects": [
         [265, 219, 162, 105],
         [265, 219, 162, 105]
+      ],
+      "paintInvalidationClients": [
+        "LayoutSVGRoot svg",
+        "LayoutSVGPath polygon id='polygon'"
       ]
     }
   ]

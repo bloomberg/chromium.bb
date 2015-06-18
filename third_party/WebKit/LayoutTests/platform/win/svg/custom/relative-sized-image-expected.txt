@@ -10,6 +10,13 @@
         [109, 69, 300, 400],
         [8, 68, 402, 404],
         [8, 68, 102, 404]
+      ],
+      "paintInvalidationClients": [
+        "RootInlineBox",
+        "InlineBox",
+        "LayoutBlockFlow div id='contentBox'",
+        "LayoutSVGRoot svg",
+        "LayoutSVGImage image"
       ]
     }
   ]

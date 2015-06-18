@@ -7,6 +7,9 @@
       "drawsContent": true,
       "repaintRects": [
         [0, 0, 100, 100]
+      ],
+      "paintInvalidationClients": [
+        "LayoutSVGRect rect id='r'"
       ]
     }
   ]

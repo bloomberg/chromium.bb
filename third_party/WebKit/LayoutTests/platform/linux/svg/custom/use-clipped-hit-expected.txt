@@ -10,6 +10,14 @@
         [90, 115, 59, 19],
         [90, 115, 43, 19],
         [90, 115, 43, 19]
+      ],
+      "paintInvalidationClients": [
+        "InlineTextBox ''",
+        "LayoutSVGInlineText #text",
+        "RootInlineBox",
+        "LayoutSVGText text id='status'",
+        "LayoutSVGInlineText #text",
+        "InlineTextBox 'Passed'"
       ]
     }
   ]

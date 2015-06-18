@@ -10,6 +10,12 @@
         [10, 10, 430, 80],
         [10, 10, 10, 10],
         [0, 10, 10, 10]
+      ],
+      "paintInvalidationClients": [
+        "LayoutSVGResourcePattern pattern id='Pattern'",
+        "LayoutSVGRect rect id='rect'",
+        "LayoutSVGRect rect",
+        "LayoutSVGRect rect"
       ]
     }
   ]

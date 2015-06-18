@@ -8,6 +8,9 @@ CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated a
       "drawsContent": true,
       "repaintRects": [
         [0, 0, 100, 100]
+      ],
+      "paintInvalidationClients": [
+        "LayoutSVGRect rect id='newId'"
       ]
     }
   ]

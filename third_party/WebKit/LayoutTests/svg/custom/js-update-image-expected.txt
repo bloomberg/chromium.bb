@@ -8,6 +8,10 @@
       "repaintRects": [
         [0, 0, 75, 75],
         [0, 0, 75, 75]
+      ],
+      "paintInvalidationClients": [
+        "LayoutSVGRoot svg",
+        "LayoutSVGImage image id='image'"
       ]
     }
   ]

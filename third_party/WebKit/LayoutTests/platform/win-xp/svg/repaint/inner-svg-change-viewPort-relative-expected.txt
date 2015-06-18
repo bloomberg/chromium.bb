@@ -21,6 +21,19 @@
         [0, 0, 200, 200],
         [0, 0, 100, 200],
         [0, 0, 100, 200]
+      ],
+      "paintInvalidationClients": [
+        "RootInlineBox",
+        "InlineTextBox 'right-aligned text'",
+        "LayoutSVGRoot svg",
+        "LayoutSVGViewportContainer svg id='inner'",
+        "LayoutSVGRect rect",
+        "LayoutSVGRect rect",
+        "LayoutSVGText text",
+        "LayoutSVGInlineText #text",
+        "InlineTextBox 'right-aligned text'",
+        "LayoutSVGContainer use",
+        "LayoutSVGPath polygon id='triangle'"
       ]
     }
   ]

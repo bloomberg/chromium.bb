@@ -14,6 +14,13 @@
         [90, 95, 98, 98],
         [2, 0, 8, 10],
         [0, 2, 10, 8]
+      ],
+      "paintInvalidationClients": [
+        "LayoutSVGRoot svg",
+        "LayoutSVGResourceMarker marker id='markerStart'",
+        "LayoutSVGRect rect",
+        "LayoutSVGContainer g",
+        "LayoutSVGPath path id='go'"
       ]
     }
   ]

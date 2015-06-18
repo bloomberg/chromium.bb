@@ -14,6 +14,13 @@
         [10, 10, 100, 100],
         [0, 240, 230, 120],
         [0, 240, 120, 120]
+      ],
+      "paintInvalidationClients": [
+        "LayoutSVGRoot svg",
+        "LayoutSVGContainer g id='box'",
+        "LayoutSVGRect rect id='rect1'",
+        "LayoutSVGRect rect id='rect2'",
+        "LayoutSVGRect rect id='rect3'"
       ]
     }
   ]

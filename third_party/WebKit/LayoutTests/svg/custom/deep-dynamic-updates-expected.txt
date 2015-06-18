@@ -9,6 +9,12 @@
         [24, 24, 402, 402],
         [0, 0, 401, 401],
         [0, 0, 121, 21]
+      ],
+      "paintInvalidationClients": [
+        "LayoutSVGRect rect",
+        "LayoutSVGGradientStop stop id='stop1'",
+        "LayoutSVGRect rect",
+        "LayoutSVGRect rect"
       ]
     }
   ]

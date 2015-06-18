@@ -14,6 +14,24 @@
         [0, 15, 759, 362],
         [0, 15, 449, 127],
         [0, 15, 449, 127]
+      ],
+      "paintInvalidationClients": [
+        "LayoutSVGResourceLinearGradient linearGradient id='fillLinearGradient'",
+        "LayoutSVGGradientStop stop",
+        "LayoutSVGGradientStop stop",
+        "LayoutSVGResourceLinearGradient linearGradient id='strokeLinearGradient'",
+        "LayoutSVGGradientStop stop",
+        "LayoutSVGRoot svg id='svg-root'",
+        "LayoutSVGContainer g id='content'",
+        "LayoutSVGText text",
+        "LayoutSVGInlineText #text",
+        "InlineTextBox 'Gradient on fill'",
+        "LayoutSVGText text",
+        "LayoutSVGInlineText #text",
+        "InlineTextBox 'Gradient on stroke'",
+        "LayoutSVGText text",
+        "LayoutSVGInlineText #text",
+        "InlineTextBox 'Gradient on fill/stroke'"
       ]
     }
   ]

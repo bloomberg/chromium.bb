@@ -12,6 +12,11 @@
         [0, 0, 76, 76],
         [0, 0, 40, 40],
         [0, 0, 40, 40]
+      ],
+      "paintInvalidationClients": [
+        "LayoutSVGRoot svg",
+        "LayoutSVGContainer g id='group'",
+        "LayoutSVGRect rect"
       ]
     }
   ]

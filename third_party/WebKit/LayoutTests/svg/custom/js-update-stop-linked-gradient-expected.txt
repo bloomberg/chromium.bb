@@ -9,6 +9,13 @@
         [10, 210, 430, 80],
         [10, 110, 430, 80],
         [10, 10, 430, 80]
+      ],
+      "paintInvalidationClients": [
+        "LayoutSVGGradientStop stop id='stop1'",
+        "LayoutSVGResourceLinearGradient linearGradient id='gradient'",
+        "LayoutSVGRect rect",
+        "LayoutSVGRect rect",
+        "LayoutSVGRect rect"
       ]
     }
   ]

@@ -8,6 +8,9 @@
       "repaintRects": [
         [196, 196, 76, 76],
         [46, 46, 76, 76]
+      ],
+      "paintInvalidationClients": [
+        "LayoutSVGEllipse circle id='c1'"
       ]
     }
   ]

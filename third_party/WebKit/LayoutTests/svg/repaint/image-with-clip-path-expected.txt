@@ -20,6 +20,20 @@
         [0, 0, 10, 10],
         [0, 0, 10, 10],
         [0, 0, 10, 10]
+      ],
+      "paintInvalidationClients": [
+        "LayoutSVGRoot svg",
+        "LayoutSVGContainer g id='g'",
+        "LayoutSVGHiddenContainer defs",
+        "LayoutSVGResourceClipper clipPath id='p'",
+        "LayoutSVGRect rect id='r'",
+        "LayoutSVGImage image",
+        "LayoutSVGRoot svg",
+        "LayoutSVGContainer g id='g'",
+        "LayoutSVGHiddenContainer defs",
+        "LayoutSVGResourceClipper clipPath id='p'",
+        "LayoutSVGRect rect id='r'",
+        "LayoutSVGImage image"
       ]
     }
   ]

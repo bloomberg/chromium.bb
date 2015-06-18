@@ -13,6 +13,12 @@
         [50, 150, 100, 100],
         [0, 100, 300, 200],
         [0, 0, 300, 100]
+      ],
+      "paintInvalidationClients": [
+        "LayoutSVGContainer g",
+        "LayoutSVGRect rect id='masker'",
+        "LayoutSVGContainer g",
+        "LayoutSVGRect rect id='clipper'"
       ]
     }
   ]

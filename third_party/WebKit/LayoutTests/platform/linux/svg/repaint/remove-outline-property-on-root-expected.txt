@@ -12,6 +12,13 @@
         [-2, -2, 802, 123],
         [-2, -2, 794, 120],
         [-2, -2, 120, 120]
+      ],
+      "paintInvalidationClients": [
+        "InlineBox",
+        "RootInlineBox",
+        "LayoutBlockFlow HTML",
+        "LayoutBlockFlow BODY",
+        "LayoutSVGRoot svg"
       ]
     }
   ]
