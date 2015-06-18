@@ -581,25 +581,13 @@ void LayoutMultiColumnFlowThread::willBeRemovedFromTree()
     LayoutFlowThread::willBeRemovedFromTree();
 }
 
-LayoutUnit LayoutMultiColumnFlowThread::skipColumnSpanner(LayoutBox* layoutObject, LayoutUnit logicalTopInFlowThread)
+void LayoutMultiColumnFlowThread::skipColumnSpanner(LayoutBox* layoutObject, LayoutUnit logicalTopInFlowThread)
 {
     ASSERT(layoutObject->isColumnSpanAll());
     LayoutMultiColumnSpannerPlaceholder* placeholder = layoutObject->spannerPlaceholder();
-    LayoutUnit adjustment;
     LayoutBox* previousColumnBox = placeholder->previousSiblingMultiColumnBox();
-    if (previousColumnBox && previousColumnBox->isLayoutMultiColumnSet()) {
-        // Pad flow thread offset to a column boundary, so that any column content that's supposed
-        // to come after the spanner doesn't bleed into the column row preceding the spanner.
-        LayoutMultiColumnSet* previousSet = toLayoutMultiColumnSet(previousColumnBox);
-        if (previousSet->pageLogicalHeight()) {
-            LayoutUnit columnLogicalTopInFlowThread = previousSet->pageLogicalTopForOffset(logicalTopInFlowThread);
-            if (columnLogicalTopInFlowThread != logicalTopInFlowThread) {
-                adjustment = columnLogicalTopInFlowThread + previousSet->pageLogicalHeight() - logicalTopInFlowThread;
-                logicalTopInFlowThread += adjustment;
-            }
-        }
-        previousSet->endFlow(logicalTopInFlowThread);
-    }
+    if (previousColumnBox && previousColumnBox->isLayoutMultiColumnSet())
+        toLayoutMultiColumnSet(previousColumnBox)->endFlow(logicalTopInFlowThread);
     LayoutBox* nextColumnBox = placeholder->nextSiblingMultiColumnBox();
     if (nextColumnBox && nextColumnBox->isLayoutMultiColumnSet()) {
         LayoutMultiColumnSet* nextSet = toLayoutMultiColumnSet(nextColumnBox);
@@ -618,8 +606,6 @@ LayoutUnit LayoutMultiColumnFlowThread::skipColumnSpanner(LayoutBox* layoutObjec
         if (descendant->isBox() && descendant->isOutOfFlowPositioned())
             descendant->containingBlock()->insertPositionedObject(toLayoutBox(descendant));
     }
-
-    return adjustment;
 }
 
 // When processing layout objects to remove or when processing layout objects that have just been

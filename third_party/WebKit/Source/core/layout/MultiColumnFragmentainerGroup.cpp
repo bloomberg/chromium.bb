@@ -447,6 +447,13 @@ LayoutRect MultiColumnFragmentainerGroup::columnRectAt(unsigned columnIndex) con
     LayoutUnit columnLogicalTop;
     LayoutUnit columnLogicalLeft;
     LayoutUnit columnGap = m_columnSet.columnGap();
+    LayoutUnit portionOutsideFlowThread = logicalTopInFlowThread() + (columnIndex + 1) * columnLogicalHeight - logicalBottomInFlowThread();
+    if (portionOutsideFlowThread > 0) {
+        // The last column may not be using all available space.
+        ASSERT(columnIndex + 1 == actualColumnCount());
+        columnLogicalHeight -= portionOutsideFlowThread;
+        ASSERT(columnLogicalHeight >= 0);
+    }
 
     if (m_columnSet.multiColumnFlowThread()->progressionIsInline()) {
         if (m_columnSet.style()->isLeftToRightDirection())
@@ -454,7 +461,7 @@ LayoutRect MultiColumnFragmentainerGroup::columnRectAt(unsigned columnIndex) con
         else
             columnLogicalLeft += m_columnSet.contentLogicalWidth() - columnLogicalWidth - columnIndex * (columnLogicalWidth + columnGap);
     } else {
-        columnLogicalTop += columnIndex * (columnLogicalHeight + columnGap);
+        columnLogicalTop += columnIndex * (m_columnHeight + columnGap);
     }
 
     LayoutRect columnRect(columnLogicalLeft, columnLogicalTop, columnLogicalWidth, columnLogicalHeight);
@@ -466,9 +473,17 @@ LayoutRect MultiColumnFragmentainerGroup::columnRectAt(unsigned columnIndex) con
 LayoutRect MultiColumnFragmentainerGroup::flowThreadPortionRectAt(unsigned columnIndex) const
 {
     LayoutUnit logicalTop = logicalTopInFlowThreadAt(columnIndex);
+    LayoutUnit logicalBottom = logicalTop + m_columnHeight;
+    if (logicalBottom > logicalBottomInFlowThread()) {
+        // The last column may not be using all available space.
+        ASSERT(columnIndex + 1 == actualColumnCount());
+        logicalBottom = logicalBottomInFlowThread();
+        ASSERT(logicalBottom >= logicalTop);
+    }
+    LayoutUnit portionLogicalHeight = logicalBottom - logicalTop;
     if (m_columnSet.isHorizontalWritingMode())
-        return LayoutRect(LayoutUnit(), logicalTop, m_columnSet.pageLogicalWidth(), m_columnHeight);
-    return LayoutRect(logicalTop, LayoutUnit(), m_columnHeight, m_columnSet.pageLogicalWidth());
+        return LayoutRect(LayoutUnit(), logicalTop, m_columnSet.pageLogicalWidth(), portionLogicalHeight);
+    return LayoutRect(logicalTop, LayoutUnit(), portionLogicalHeight, m_columnSet.pageLogicalWidth());
 }
 
 LayoutRect MultiColumnFragmentainerGroup::flowThreadPortionOverflowRect(const LayoutRect& portionRect, unsigned columnIndex, unsigned columnCount, LayoutUnit columnGap) const

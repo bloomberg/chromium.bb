@@ -293,13 +293,12 @@ TEST_F(MultiColumnRenderingTest, columnSetAtBlockOffset)
     EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(-10000)), firstRow); // negative overflow
     EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit()), firstRow);
     EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(499)), firstRow); // bottom of last line in first row.
-    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(599)), firstRow); // empty content in last column in first row
     LayoutMultiColumnSet* secondRow = firstRow->nextSiblingMultiColumnSet();
-    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(600)), secondRow);
-    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(799)), secondRow);
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(500)), secondRow);
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(699)), secondRow);
     LayoutMultiColumnSet* thirdRow = secondRow->nextSiblingMultiColumnSet();
-    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(800)), thirdRow);
-    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(899)), thirdRow); // bottom of last row
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(700)), thirdRow);
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(799)), thirdRow); // bottom of last row
     EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(10000)), thirdRow); // overflow
 }
 
@@ -312,13 +311,12 @@ TEST_F(MultiColumnRenderingTest, columnSetAtBlockOffsetVerticalRl)
     EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(-10000)), firstRow); // negative overflow
     EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit()), firstRow);
     EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(499)), firstRow); // bottom of last line in first row.
-    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(599)), firstRow); // empty content in last column in first row
     LayoutMultiColumnSet* secondRow = firstRow->nextSiblingMultiColumnSet();
-    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(600)), secondRow);
-    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(799)), secondRow);
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(500)), secondRow);
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(699)), secondRow);
     LayoutMultiColumnSet* thirdRow = secondRow->nextSiblingMultiColumnSet();
-    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(800)), thirdRow);
-    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(899)), thirdRow); // bottom of last row
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(700)), thirdRow);
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(799)), thirdRow); // bottom of last row
     EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(10000)), thirdRow); // overflow
 }
 
@@ -331,13 +329,12 @@ TEST_F(MultiColumnRenderingTest, columnSetAtBlockOffsetVerticalLr)
     EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(-10000)), firstRow); // negative overflow
     EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit()), firstRow);
     EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(499)), firstRow); // bottom of last line in first row.
-    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(599)), firstRow); // empty content in last column in first row
     LayoutMultiColumnSet* secondRow = firstRow->nextSiblingMultiColumnSet();
-    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(600)), secondRow);
-    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(799)), secondRow);
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(500)), secondRow);
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(699)), secondRow);
     LayoutMultiColumnSet* thirdRow = secondRow->nextSiblingMultiColumnSet();
-    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(800)), thirdRow);
-    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(899)), thirdRow); // bottom of last row
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(700)), thirdRow);
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(799)), thirdRow); // bottom of last row
     EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(10000)), thirdRow); // overflow
 }
 

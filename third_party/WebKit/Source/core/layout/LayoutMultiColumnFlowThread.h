@@ -198,7 +198,7 @@ private:
 
     virtual void addColumnSetToThread(LayoutMultiColumnSet*) override;
     virtual void willBeRemovedFromTree() override;
-    virtual LayoutUnit skipColumnSpanner(LayoutBox*, LayoutUnit logicalTopInFlowThread) override;
+    virtual void skipColumnSpanner(LayoutBox*, LayoutUnit logicalTopInFlowThread) override;
     virtual void flowThreadDescendantWasInserted(LayoutObject*) final;
     virtual void flowThreadDescendantWillBeRemoved(LayoutObject*) final;
     virtual void flowThreadDescendantStyleWillChange(LayoutObject*, StyleDifference, const ComputedStyle& newStyle) override;

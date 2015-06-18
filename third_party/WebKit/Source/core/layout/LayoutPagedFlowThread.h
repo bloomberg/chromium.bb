@@ -19,6 +19,9 @@ public:
 
     LayoutBlockFlow* pagedBlockFlow() const { return toLayoutBlockFlow(parent()); }
 
+    // Return the number of pages. Will never be less than 1.
+    int pageCount();
+
     virtual bool isLayoutPagedFlowThread() const override { return true; }
     virtual const char* name() const override { return "LayoutPagedFlowThread"; }
     virtual bool needsNewWidth() const override;

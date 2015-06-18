@@ -64,10 +64,8 @@ public:
 
     // Skip past a column spanner during flow thread layout. Spanners are not laid out inside the
     // flow thread, since the flow thread is not in a spanner's containing block chain (since the
-    // containing block is the multicol container). If the spanner follows right after a column set
-    // (as opposed to following another spanner), we may have to stretch the flow thread to ensure
-    // completely filled columns in the preceding column set. Return this adjustment, if any.
-    virtual LayoutUnit skipColumnSpanner(LayoutBox*, LayoutUnit logicalTopInFlowThread) { return LayoutUnit(); }
+    // containing block is the multicol container).
+    virtual void skipColumnSpanner(LayoutBox*, LayoutUnit logicalTopInFlowThread) { }
 
     virtual void flowThreadDescendantWasInserted(LayoutObject*) { }
     virtual void flowThreadDescendantWillBeRemoved(LayoutObject*) { }
