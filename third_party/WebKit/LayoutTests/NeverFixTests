@@ -175,9 +175,5 @@ fast/canvas/canvas-lost-gpu-context.html [ WontFix ]
 virtual/threaded/printing/setPrinting.html [ WontFix ]
 virtual/threaded/printing/width-overflow.html [ WontFix ]
 
-# Reftests failing due to invisible differences caused by rounding.
-# Will remove when we enable slimming paint by default.
-virtual/slimmingpaint/css3/filters/effect-all-on-background.html [ WontFix ]
-
 # This test only fails with an ASSERT in Debug build.
 [ Release ] editing/input/orphan-set-selection-range.html [ WontFix ]

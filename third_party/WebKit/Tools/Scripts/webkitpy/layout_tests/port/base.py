@@ -1572,6 +1572,9 @@ class Port(object):
             # PhysicalTestSuite('svg',
             #                   ['--force-compositing-mode']),
             PhysicalTestSuite('compositing', ['--enable-slimming-paint']),
+            PhysicalTestSuite('css1', ['--enable-slimming-paint']),
+            PhysicalTestSuite('css2.1', ['--enable-slimming-paint']),
+            PhysicalTestSuite('css3', ['--enable-slimming-paint']),
             PhysicalTestSuite('fast', ['--enable-slimming-paint']),
             PhysicalTestSuite('svg', ['--enable-slimming-paint']),
         ]
