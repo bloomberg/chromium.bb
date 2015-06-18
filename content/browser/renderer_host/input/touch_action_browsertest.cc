@@ -89,11 +89,19 @@ class TouchActionBrowserTest : public ContentBrowserTest {
     NavigateToURL(shell(), data_url);
 
     RenderWidgetHostImpl* host = GetWidgetHost();
+    scoped_refptr<FrameWatcher> frame_watcher(new FrameWatcher());
+    host->GetProcess()->AddFilter(frame_watcher.get());
     host->GetView()->SetSize(gfx::Size(400, 400));
 
     base::string16 ready_title(base::ASCIIToUTF16("ready"));
     TitleWatcher watcher(shell()->web_contents(), ready_title);
     ignore_result(watcher.WaitAndGetTitle());
+
+    // We need to wait until at least one frame has been composited
+    // otherwise the injection of the synthetic gestures may get
+    // dropped because of MainThread/Impl thread sync of touch event
+    // regions.
+    frame_watcher->WaitFrames(1);
   }
 
   // ContentBrowserTest:
@@ -115,7 +123,7 @@ class TouchActionBrowserTest : public ContentBrowserTest {
   }
 
   int GetScrollTop() {
-    return ExecuteScriptAndExtractInt("document.documentElement.scrollTop");
+    return ExecuteScriptAndExtractInt("document.scrollingElement.scrollTop");
   }
 
   // Generate touch events for a synthetic scroll from |point| for |distance|.
@@ -161,24 +169,25 @@ class TouchActionBrowserTest : public ContentBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(TouchActionBrowserTest);
 };
 
-// TouchActionBrowserTest.DefaultAuto fails under ThreadSanitizer v2, see
-// http://crbug.com/348539 and is flaky on XP, see
-// http://crbug.com/354763
-//
 // Mac doesn't yet have a gesture recognizer, so can't support turning touch
 // events into scroll gestures.
 // Will be fixed with http://crbug.com/337142
 //
 // Verify the test infrastructure works - we can touch-scroll the page and get a
 // touchcancel as expected.
-IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest, DISABLED_DefaultAuto) {
+#if defined(OS_MACOSX)
+#define MAYBE_DefaultAuto DISABLED_DefaultAuto
+#else
+#define MAYBE_DefaultAuto DefaultAuto
+#endif
+IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest, MAYBE_DefaultAuto) {
   LoadURL();
 
   bool scrolled = DoTouchScroll(gfx::Point(50, 50), gfx::Vector2d(0, 45));
   EXPECT_TRUE(scrolled);
 
   EXPECT_EQ(1, ExecuteScriptAndExtractInt("eventCounts.touchstart"));
-  EXPECT_EQ(1, ExecuteScriptAndExtractInt("eventCounts.touchmove"));
+  EXPECT_GE(ExecuteScriptAndExtractInt("eventCounts.touchmove"), 1);
   EXPECT_EQ(1, ExecuteScriptAndExtractInt("eventCounts.touchend"));
   EXPECT_EQ(0, ExecuteScriptAndExtractInt("eventCounts.touchcancel"));
 }
@@ -186,15 +195,19 @@ IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest, DISABLED_DefaultAuto) {
 // Verify that touching a touch-action: none region disables scrolling and
 // enables all touch events to be sent.
 // Disabled on MacOS because it doesn't support touch input.
-// It's just flaky everywhere.
-IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest, DISABLED_TouchActionNone) {
+#if defined(OS_MACOSX)
+#define MAYBE_TouchActionNone DISABLED_TouchActionNone
+#else
+#define MAYBE_TouchActionNone TouchActionNone
+#endif
+IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest, MAYBE_TouchActionNone) {
   LoadURL();
 
   bool scrolled = DoTouchScroll(gfx::Point(50, 150), gfx::Vector2d(0, 45));
   EXPECT_FALSE(scrolled);
 
   EXPECT_EQ(1, ExecuteScriptAndExtractInt("eventCounts.touchstart"));
-  EXPECT_GT(ExecuteScriptAndExtractInt("eventCounts.touchmove"), 1);
+  EXPECT_GE(ExecuteScriptAndExtractInt("eventCounts.touchmove"), 1);
   EXPECT_EQ(1, ExecuteScriptAndExtractInt("eventCounts.touchend"));
   EXPECT_EQ(0, ExecuteScriptAndExtractInt("eventCounts.touchcancel"));
 }
