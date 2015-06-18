@@ -166,6 +166,10 @@ void IDBCursor::continuePrimaryKey(ScriptState* scriptState, const ScriptValue& 
         exceptionState.throwDOMException(InvalidAccessError, "The cursor's source is not an index.");
         return;
     }
+    if (m_direction != WebIDBCursorDirectionNext && m_direction != WebIDBCursorDirectionPrev) {
+        exceptionState.throwDOMException(InvalidAccessError, "The cursor's direction is not 'next' or 'prev'.");
+        return;
+    }
 
     IDBKey* key = ScriptValue::to<IDBKey*>(scriptState->isolate(), keyValue, exceptionState);
     if (exceptionState.hadException())
