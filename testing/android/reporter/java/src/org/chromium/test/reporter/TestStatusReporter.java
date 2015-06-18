@@ -63,15 +63,15 @@ public class TestStatusReporter {
     }
 
     public void testStarted(String testClass, String testMethod) {
-        sendTestBroadcast(testClass, testMethod, ACTION_TEST_STARTED);
+        sendTestBroadcast(ACTION_TEST_STARTED, testClass, testMethod);
     }
 
     public void testPassed(String testClass, String testMethod) {
-        sendTestBroadcast(testClass, testMethod, ACTION_TEST_PASSED);
+        sendTestBroadcast(ACTION_TEST_PASSED, testClass, testMethod);
     }
 
     public void testFailed(String testClass, String testMethod) {
-        sendTestBroadcast(testClass, testMethod, ACTION_TEST_FAILED);
+        sendTestBroadcast(ACTION_TEST_FAILED, testClass, testMethod);
     }
 
     private void sendTestBroadcast(String action, String testClass, String testMethod) {
