@@ -15009,16 +15009,16 @@ After you create a new supervised user, you can manage their settings at any tim
           Determines what pages the Reader Mode button is shown on.
         </message>
         <message name="IDS_FLAGS_READER_MODE_HEURISTICS_MARKUP" desc="A choice in dropdown dialog on about:flags page to show the reader mode button with article structured markup">
-          Show the Reader Mode button on pages with article structured markup
+          With article structured markup
         </message>
         <message name="IDS_FLAGS_READER_MODE_HEURISTICS_ADABOOST" desc="A choice in dropdown dialog on about:flags page to show the reader mode button on pages that appear to be long form content">
-          Show the Reader Mode button on pages that appear to be long form content
+          Appears to be an article
         </message>
         <message name="IDS_FLAGS_READER_MODE_HEURISTICS_ALWAYS_OFF" desc="A choice in dropdown dialog on about:flags page to never show the reader mode button">
-          Never show Reader Mode button
+          Never
         </message>
         <message name="IDS_FLAGS_READER_MODE_HEURISTICS_ALWAYS_ON" desc="A choice in dropdown dialog on about:flags page to show the reader mode button on all pages">
-          Show Reader Mode button on all pages
+          Always
         </message>
         <message name="IDS_FLAGS_READER_MODE_EXPERIMENT_NAME" desc="An about:flags experiment for reading mode UI">
           Enable Reader Mode Toolbar Icon
