@@ -2021,7 +2021,7 @@ crbug.com/497950 [ Mac ] svg/text/text-rescale.html [ NeedsRebaseline ]
 
 #crbug.com/495523 fast/text/international/text-spliced-font.html [ Pass Failure ]
 
-crbug.com/446406 [ Win ] fast/repaint/quotes.html [ Pass Failure ]
+crbug.com/446406 [ Win ] fast/repaint/quotes.html [ NeedsRebaseline ]
 
 crbug.com/495523 [ XP ] svg/W3C-SVG-1.1/animate-elem-52-t.svg [ Failure ]
 crbug.com/495523 [ XP ] svg/W3C-SVG-1.1/extend-namespace-01-f.svg [ Failure ]
