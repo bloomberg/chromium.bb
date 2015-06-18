@@ -2039,7 +2039,10 @@ void WebGLRenderingContextBase::framebufferTexture2D(GLenum target, GLenum attac
 {
     if (isContextLost() || !validateFramebufferFuncParameters("framebufferTexture2D", target, attachment))
         return;
-    if (level) {
+    if (isWebGL2OrHigher()) {
+        if (!validateTexFuncLevel("framebufferTexture2D", textarget, level))
+            return;
+    } else if (level) {
         synthesizeGLError(GL_INVALID_VALUE, "framebufferTexture2D", "level not 0");
         return;
     }
