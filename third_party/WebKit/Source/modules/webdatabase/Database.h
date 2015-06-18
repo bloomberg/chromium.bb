@@ -138,7 +138,7 @@ private:
         const ChangeVersionData* = 0);
     Vector<String> performGetTableNames();
 
-    void reportOpenDatabaseResult(int errorSite, int webSqlErrorCode, int sqliteErrorCode);
+    void reportOpenDatabaseResult(int errorSite, int webSqlErrorCode, int sqliteErrorCode, double duration);
     void reportChangeVersionResult(int errorSite, int webSqlErrorCode, int sqliteErrorCode);
     void reportStartTransactionResult(int errorSite, int webSqlErrorCode, int sqliteErrorCode);
     void reportCommitTransactionResult(int errorSite, int webSqlErrorCode, int sqliteErrorCode);

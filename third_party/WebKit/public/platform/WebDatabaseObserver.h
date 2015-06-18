@@ -51,7 +51,8 @@ public:
     virtual void reportOpenDatabaseResult(
         const WebString& databaseIdentifier,
         const WebString& databaseName,
-        int errorSite, int webSqlErrorCode, int sqliteErrorCode) { }
+        int errorSite, int webSqlErrorCode, int sqliteErrorCode,
+        double callTime) { }
     virtual void reportChangeVersionResult(
         const WebString& databaseIdentifier,
         const WebString& databaseName,
