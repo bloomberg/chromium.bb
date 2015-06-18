@@ -42,9 +42,6 @@ class IntPoint;
 class IntSize;
 class SharedBuffer;
 
-// This is a helper class used by BitmapImage only. If you need an image
-// decoder then you should look into
-// Source/platform/image-decoders/ImageDecoder.h.
 class PLATFORM_EXPORT ImageSource {
     WTF_MAKE_NONCOPYABLE(ImageSource);
 public:
