@@ -252,7 +252,7 @@ crbug.com/377970 [ Win Linux ] http/tests/misc/image-blocked-src-change.html [ F
 crbug.com/321607 [ Linux ] fast/forms/submit-to-blank-multiple-times.html [ Failure Pass ]
 crbug.com/321607 [ Win Debug ] fast/forms/submit-to-blank-multiple-times.html [ Failure Pass ]
 
-crbug.com/501543 [ XP ] fast/images/size-failure.html [ Crash ]
+crbug.com/501543 [ Win Mac ] fast/images/size-failure.html [ Crash Timeout Pass ]
 
 # Linux Aura doesn't support NPAPI plugins (yet?)
 crbug.com/318978 [ Linux ] compositing/plugins/invalidate_rect.html [ Skip ]
