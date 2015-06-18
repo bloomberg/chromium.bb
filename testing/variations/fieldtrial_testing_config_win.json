@@ -19,6 +19,11 @@
             "group_name": "Default"
         }
     ],
+    "EnableSessionCrashedBubbleUI": [
+        {
+            "group_name": "Enabled"
+        }
+    ],
     "ExtensionContentVerification": [
         {
             "group_name": "Enforce"
