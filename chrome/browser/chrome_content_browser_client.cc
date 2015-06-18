@@ -124,8 +124,10 @@
 #include "content/public/common/service_registry.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/common/web_preferences.h"
-#include "device/devices_app/devices_app.h"
+#include "device/devices_app/public/cpp/constants.h"
+#include "device/devices_app/public/cpp/devices_app_factory.h"
 #include "gin/v8_initializer.h"
+#include "mojo/application/public/cpp/application_delegate.h"
 #include "net/base/mime_util.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_options.h"
@@ -2371,7 +2373,7 @@ void ChromeContentBrowserClient::RegisterMojoApplications(
     StaticMojoApplicationMap* apps) {
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   apps->insert(std::make_pair(GURL(device::kDevicesMojoAppUrl),
-                              base::Bind(&device::DevicesApp::CreateDelegate,
+                              base::Bind(&device::DevicesAppFactory::CreateApp,
                                          base::ThreadTaskRunnerHandle::Get())));
 #endif
 }
