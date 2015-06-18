@@ -72,4 +72,9 @@ SkCanvas::SaveLayerStrategy ReplayingCanvas::willSaveLayer(const SkRect* bounds,
     return this->InterceptingCanvas<ReplayingCanvas>::willSaveLayer(bounds, paint, flags);
 }
 
+void ReplayingCanvas::onDrawPicture(const SkPicture* picture, const SkMatrix* matrix, const SkPaint* paint)
+{
+    this->unrollDrawPicture(picture, matrix, paint, this);
+}
+
 } // namespace blink

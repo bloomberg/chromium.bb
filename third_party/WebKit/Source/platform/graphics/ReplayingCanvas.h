@@ -48,8 +48,9 @@ class ReplayingCanvas : public InterceptingCanvas<ReplayingCanvas>, public SkPic
 public:
     ReplayingCanvas(SkBitmap, unsigned fromStep, unsigned toStep);
 
-    virtual bool abort() override;
-    virtual SkCanvas::SaveLayerStrategy willSaveLayer(const SkRect* bounds, const SkPaint*, SaveFlags) override;
+    bool abort() override;
+    SkCanvas::SaveLayerStrategy willSaveLayer(const SkRect* bounds, const SkPaint*, SaveFlags) override;
+    void onDrawPicture(const SkPicture*, const SkMatrix*, const SkPaint*) override;
 
 private:
     friend class CanvasInterceptor<ReplayingCanvas>;

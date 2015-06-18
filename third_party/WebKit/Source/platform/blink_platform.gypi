@@ -541,6 +541,8 @@
       'graphics/ImageOrientation.h',
       'graphics/ImageSource.cpp',
       'graphics/ImageSource.h',
+      'graphics/InterceptingCanvas.cpp',
+      'graphics/InterceptingCanvas.h',
       'graphics/LoggingCanvas.cpp',
       'graphics/LoggingCanvas.h',
       'graphics/PaintInvalidationReason.cpp',

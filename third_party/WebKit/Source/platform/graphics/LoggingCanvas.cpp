@@ -100,15 +100,6 @@ PassRefPtr<JSONArray> arrayForSkPoints(size_t count, const SkPoint points[])
     return pointsArrayItem.release();
 }
 
-PassRefPtr<JSONObject> objectForSkPicture(const SkPicture& picture)
-{
-    const SkIRect bounds = picture.cullRect().roundOut();
-    RefPtr<JSONObject> pictureItem = JSONObject::create();
-    pictureItem->setNumber("width", bounds.width());
-    pictureItem->setNumber("height", bounds.height());
-    return pictureItem.release();
-}
-
 PassRefPtr<JSONObject> objectForRadius(const SkRRect& rrect, SkRRect::Corner corner)
 {
     RefPtr<JSONObject> radiusItem = JSONObject::create();
@@ -785,9 +776,7 @@ void LoggingCanvas::onClipRegion(const SkRegion& region, SkRegion::Op op)
 
 void LoggingCanvas::onDrawPicture(const SkPicture* picture, const SkMatrix* matrix, const SkPaint* paint)
 {
-    AutoLogger logger(this);
-    logger.logItemWithParams("drawPicture")->setObject("picture", objectForSkPicture(*picture));
-    this->SkCanvas::onDrawPicture(picture, matrix, paint);
+    this->unrollDrawPicture(picture, matrix, paint, nullptr);
 }
 
 void LoggingCanvas::didSetMatrix(const SkMatrix& matrix)

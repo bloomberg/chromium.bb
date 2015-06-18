@@ -32,6 +32,7 @@
 #define InterceptingCanvas_h
 
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkPicture.h"
 #include "wtf/Assertions.h"
 #include "wtf/Noncopyable.h"
 
@@ -66,6 +67,8 @@ public:
 protected:
     explicit InterceptingCanvasBase(SkBitmap bitmap) : SkCanvas(bitmap), m_callNestingDepth(0), m_callCount(0) { };
     InterceptingCanvasBase(int width, int height) : SkCanvas(width, height), m_callNestingDepth(0), m_callCount(0) { };
+
+    void unrollDrawPicture(const SkPicture*, const SkMatrix*, const SkPaint*, SkPicture::AbortCallback*);
 
     void onDrawPaint(const SkPaint&) override = 0;
     void onDrawPoints(PointMode, size_t count, const SkPoint pts[], const SkPaint&) override = 0;
@@ -256,8 +259,7 @@ protected:
 
     void onDrawPicture(const SkPicture* picture, const SkMatrix* matrix, const SkPaint* paint) override
     {
-        Interceptor interceptor(this);
-        this->SkCanvas::onDrawPicture(picture, matrix, paint);
+        this->unrollDrawPicture(picture, matrix, paint, nullptr);
     }
 
     void didSetMatrix(const SkMatrix& matrix) override
