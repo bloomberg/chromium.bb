@@ -68,6 +68,7 @@ Dumping matched rules:
 @media (min-width: 1px)
     *#test* {    regular
     }
+Dumping inherited rules: 
 
 Running test: testAddRuleToStyleSheetEnding
 ==== Style sheet text ====
@@ -113,6 +114,7 @@ Dumping matched rules:
 *#test* {    regular
     content: 'EDITED';
 }
+Dumping inherited rules: 
 
 Running test: testAddRuleToStyleSheetCenter
 ==== Style sheet text ====
@@ -158,6 +160,7 @@ Dumping matched rules:
 @media (min-width: 1px)
     *#test* {    regular
     }
+Dumping inherited rules: 
 
 Running test: testAddRuleToRuleEnding
 ==== Style sheet text ====
@@ -205,6 +208,7 @@ Dumping matched rules:
 @media (min-width: 1px)
     *#test* {    regular
     }
+Dumping inherited rules: 
 
 Running test: testAddRuleWithFormatting
 ==== Style sheet text ====
@@ -254,6 +258,7 @@ Dumping matched rules:
 @media (min-width: 1px)
     *#test* {    regular
     }
+Dumping inherited rules: 
 
 Running test: testAddRuleToMediaRuleBeginning
 ==== Style sheet text ====
@@ -300,6 +305,7 @@ Dumping matched rules:
 @media (min-width: 1px)
     *#test* {    regular
     }
+Dumping inherited rules: 
 
 Running test: testAddRuleToMediaRuleCenter
 ==== Style sheet text ====
@@ -346,6 +352,7 @@ Dumping matched rules:
 @media (min-width: 1px)
     *#test* {    regular
     }
+Dumping inherited rules: 
 
 Running test: testAddRuleToMediaRuleEnd
 ==== Style sheet text ====
@@ -392,6 +399,7 @@ Dumping matched rules:
     *#test* {    regular
         content: 'EDITED';
     }
+Dumping inherited rules: 
 
 Running test: testInvalidRule
 Expected protocol error: SyntaxError Rule text is not valid.

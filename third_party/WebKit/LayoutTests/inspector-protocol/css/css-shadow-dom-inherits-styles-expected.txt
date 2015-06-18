@@ -1,6 +1,6 @@
 Dumping matched rules: 
-:host {    regular
-    color: red;
-}
 Dumping inherited rules: 
+*body* {    regular
+    color: blue;
+}
 

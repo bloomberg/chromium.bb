@@ -57,13 +57,14 @@ InspectorTest.requestMainFrameId = function(callback)
     }
 };
 
+function indentLog(indent, string)
+{
+    var indentString = Array(indent+1).join(" ");
+    InspectorTest.log(indentString + string);
+}
+
 InspectorTest.dumpRuleMatch = function(ruleMatch)
 {
-    function log(indent, string)
-    {
-        var indentString = Array(indent+1).join(" ");
-        InspectorTest.log(indentString + string);
-    }
 
     var rule = ruleMatch.rule;
     var matchingSelectors = ruleMatch.matchingSelectors;
@@ -73,7 +74,7 @@ InspectorTest.dumpRuleMatch = function(ruleMatch)
         mediaLine += (i > 0 ? " " : "") + media[i].text;
     var baseIndent = 0;
     if (mediaLine.length) {
-        log(baseIndent, "@media " + mediaLine);
+        indentLog(baseIndent, "@media " + mediaLine);
         baseIndent += 4;
     }
     var selectorLine = "";
@@ -90,16 +91,22 @@ InspectorTest.dumpRuleMatch = function(ruleMatch)
     }
     selectorLine += " {";
     selectorLine += "    " + rule.origin;
-    log(baseIndent, selectorLine);
-    var style = rule.style;
+    indentLog(baseIndent, selectorLine);
+    InspectorTest.dumpStyle(rule.style, baseIndent);
+    indentLog(baseIndent, "}");
+};
+
+InspectorTest.dumpStyle = function(style, baseIndent)
+{
+    if (!style)
+        return;
     var cssProperties = style.cssProperties;
     for (var i = 0; i < cssProperties.length; ++i) {
         var cssProperty = cssProperties[i];
         var propertyLine = cssProperty.name + ": " + cssProperty.value + ";";
-        log(baseIndent + 4, propertyLine);
+        indentLog(baseIndent + 4, propertyLine);
     }
-    log(baseIndent, "}");
-};
+}
 
 InspectorTest.displayName = function(url)
 {
@@ -113,15 +120,23 @@ InspectorTest.loadAndDumpMatchingRulesForNode = function(nodeId, callback)
     function matchingRulesLoaded(result)
     {
         InspectorTest.log("Dumping matched rules: ");
-        var ruleMatches = result.matchedCSSRules;
-        for (var i = 0; i < ruleMatches.length; ++i) {
-            var ruleMatch = ruleMatches[i];
+        dumpRuleMatches(result.matchedCSSRules);
+        InspectorTest.log("Dumping inherited rules: ");
+        for (var inheritedEntry of result.inherited) {
+            InspectorTest.dumpStyle(inheritedEntry.inlineStyle);
+            dumpRuleMatches(inheritedEntry.matchedCSSRules);
+        }
+        callback();
+    }
+
+    function dumpRuleMatches(ruleMatches)
+    {
+        for (var ruleMatch of ruleMatches) {
             var origin = ruleMatch.rule.origin;
             if (origin !== "inspector" && origin !== "regular")
                 continue;
             InspectorTest.dumpRuleMatch(ruleMatch);
         }
-        callback();
     }
 }
 

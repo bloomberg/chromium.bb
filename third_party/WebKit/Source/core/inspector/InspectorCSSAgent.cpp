@@ -752,7 +752,7 @@ void InspectorCSSAgent::getMatchedStylesForNode(ErrorString* errorString, int no
     // Inherited styles.
     if (!elementPseudoId && !asBool(excludeInherited)) {
         RefPtr<TypeBuilder::Array<TypeBuilder::CSS::InheritedStyleEntry> > entries = TypeBuilder::Array<TypeBuilder::CSS::InheritedStyleEntry>::create();
-        Element* parentElement = element->parentElement();
+        Element* parentElement = element->parentOrShadowHostElement();
         while (parentElement) {
             StyleResolver& parentStyleResolver = parentElement->ownerDocument()->ensureStyleResolver();
             RefPtrWillBeRawPtr<CSSRuleList> parentMatchedRules = parentStyleResolver.cssRulesForElement(parentElement, StyleResolver::AllCSSRules);
@@ -765,7 +765,7 @@ void InspectorCSSAgent::getMatchedStylesForNode(ErrorString* errorString, int no
             }
 
             entries->addItem(entry.release());
-            parentElement = parentElement->parentElement();
+            parentElement = parentElement->parentOrShadowHostElement();
         }
 
         inheritedEntries = entries.release();
