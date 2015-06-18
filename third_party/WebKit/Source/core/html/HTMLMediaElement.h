@@ -72,6 +72,7 @@ class VideoTrackList;
 class CORE_EXPORT HTMLMediaElement : public HTMLElement, public WillBeHeapSupplementable<HTMLMediaElement>, public MediaPlayerClient, public ActiveDOMObject {
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLMediaElement);
+    WILL_BE_USING_PRE_FINALIZER(HTMLMediaElement, dispose);
 public:
     static WebMimeRegistry::SupportsType supportsType(const ContentType&, const String& keySystem = String());
 
@@ -288,6 +289,9 @@ public:
 protected:
     HTMLMediaElement(const QualifiedName&, Document&);
     virtual ~HTMLMediaElement();
+#if ENABLE(OILPAN)
+    void dispose();
+#endif
 
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
     virtual void finishParsingChildren() override final;

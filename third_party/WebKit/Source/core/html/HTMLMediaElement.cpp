@@ -368,6 +368,9 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
     , m_audioSourceNode(nullptr)
 #endif
 {
+#if ENABLE(OILPAN)
+    ThreadState::current()->registerPreFinalizer(*this);
+#endif
     ASSERT(RuntimeEnabledFeatures::mediaEnabled());
 
     WTF_LOG(Media, "HTMLMediaElement::HTMLMediaElement(%p)", this);
@@ -384,21 +387,24 @@ HTMLMediaElement::~HTMLMediaElement()
     WTF_LOG(Media, "HTMLMediaElement::~HTMLMediaElement(%p)", this);
 
 #if ENABLE(OILPAN)
-    // If the HTMLMediaElement dies with the document we are not
-    // allowed to touch the document to adjust delay load event counts
-    // because the document could have been already
-    // destructed. However, if the HTMLMediaElement dies with the
-    // document there is no need to change the delayed load counts
-    // because no load event will fire anyway. If the document is
-    // still alive we do have to decrement the load delay counts. We
-    // determine if the document is alive via the ActiveDOMObject
-    // which is a context lifecycle observer. If the Document has been
-    // destructed ActiveDOMObject::executionContext() returns 0.
-    if (ActiveDOMObject::executionContext())
-        setShouldDelayLoadEvent(false);
+    if (m_closeMediaSourceWhenFinalizing)
+        closeMediaSource();
+
+    // Oilpan: the player must be released, but the player object
+    // cannot safely access this player client any longer as parts of
+    // it may have been finalized already (like the media element's
+    // supplementable table.)  Handled for now by entering an
+    // is-finalizing state, which is explicitly checked for if the
+    // player tries to access the media element during shutdown.
+    //
+    // FIXME: Oilpan: move the media player to the heap instead and
+    // avoid having to finalize it from here; this whole #if block
+    // could then be removed (along with the state bit it depends on.)
+    // crbug.com/378229
+    m_isFinalizing = true;
 #else
     // HTMLMediaElement and m_asyncEventQueue always become unreachable
-    // together. So HTMLMediaElemenet and m_asyncEventQueue are destructed in
+    // together. So HTMLMediaElement and m_asyncEventQueue are destructed in
     // the same GC. We don't need to close it explicitly in Oilpan.
     m_asyncEventQueue->close();
 
@@ -413,12 +419,6 @@ HTMLMediaElement::~HTMLMediaElement()
         m_mediaController->removeMediaElement(this);
         m_mediaController = nullptr;
     }
-#endif
-
-#if ENABLE(OILPAN)
-    if (m_closeMediaSourceWhenFinalizing)
-        closeMediaSource();
-#else
     closeMediaSource();
 
     removeElementFromDocumentMap(this, &document());
@@ -444,21 +444,6 @@ HTMLMediaElement::~HTMLMediaElement()
     document().incrementLoadEventDelayCount();
 #endif
 
-#if ENABLE(OILPAN)
-    // Oilpan: the player must be released, but the player object
-    // cannot safely access this player client any longer as parts of
-    // it may have been finalized already (like the media element's
-    // supplementable table.)  Handled for now by entering an
-    // is-finalizing state, which is explicitly checked for if the
-    // player tries to access the media element during shutdown.
-    //
-    // FIXME: Oilpan: move the media player to the heap instead and
-    // avoid having to finalize it from here; this whole #if block
-    // could then be removed (along with the state bit it depends on.)
-    // crbug.com/378229
-    m_isFinalizing = true;
-#endif
-
     // m_audioSourceNode is explicitly cleared by AudioNode::dispose().
     // Since AudioNode::dispose() is guaranteed to be always called before
     // the AudioNode is destructed, m_audioSourceNode is explicitly cleared
@@ -474,6 +459,26 @@ HTMLMediaElement::~HTMLMediaElement()
 }
 
 #if ENABLE(OILPAN)
+void HTMLMediaElement::dispose()
+{
+    // If the HTMLMediaElement dies with the Document we are not
+    // allowed to touch the Document to adjust delay load event counts
+    // from the destructor, as the Document could have been already
+    // destructed.
+    //
+    // Work around that restriction by accessing the Document from
+    // a prefinalizer action instead, updating its delayed load count.
+    // If needed - if the Document has been detached and informed its
+    // ContextLifecycleObservers (which HTMLMediaElement is) that
+    // it is being destroyed, the connection to the Document will
+    // have been severed already, but in that case there is no need
+    // to update the delayed load count. But if the Document hasn't
+    // been detached cleanly from any frame or it isn't dying in the
+    // same GC, we do update the delayed load count from the prefinalizer.
+    if (ActiveDOMObject::executionContext())
+        setShouldDelayLoadEvent(false);
+}
+
 void HTMLMediaElement::setCloseMediaSourceWhenFinalizing()
 {
     ASSERT(!m_closeMediaSourceWhenFinalizing);
