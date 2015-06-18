@@ -49,7 +49,7 @@ GalleryUtil.createEntrySet = function(originalEntries) {
       // file extensions is enough.
       return FileType.isImage(entry) || FileType.isRaw(entry);
     }).sort(function(a, b) {
-      return a.name.localeCompare(b.name);
+      return util.compareName(a, b);
     });
   });
 };
