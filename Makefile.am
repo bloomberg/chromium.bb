@@ -63,7 +63,7 @@ bin_PROGRAMS += weston
 
 weston_LDFLAGS = -export-dynamic
 weston_CPPFLAGS = $(AM_CPPFLAGS) -DIN_WESTON
-weston_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS) $(LIBUNWIND_CFLAGS)
+weston_CFLAGS = $(AM_CFLAGS) $(COMPOSITOR_CFLAGS) $(LIBUNWIND_CFLAGS)
 weston_LDADD = $(COMPOSITOR_LIBS) $(LIBUNWIND_LIBS) \
 	$(DLOPEN_LIBS) -lm libshared.la
 
@@ -124,7 +124,7 @@ libsession_helper_la_SOURCES =			\
 	src/weston-launch.h			\
 	src/launcher-util.c			\
 	src/launcher-util.h
-libsession_helper_la_CFLAGS = $(GCC_CFLAGS) $(LIBDRM_CFLAGS) $(PIXMAN_CFLAGS) $(COMPOSITOR_CFLAGS)
+libsession_helper_la_CFLAGS = $(AM_CFLAGS) $(LIBDRM_CFLAGS) $(PIXMAN_CFLAGS) $(COMPOSITOR_CFLAGS)
 libsession_helper_la_LIBADD = $(LIBDRM_LIBS)
 
 if ENABLE_DBUS
@@ -155,7 +155,7 @@ bin_PROGRAMS += weston-launch
 weston_launch_SOURCES = src/weston-launch.c src/weston-launch.h
 weston_launch_CPPFLAGS = -DBINDIR='"$(bindir)"'
 weston_launch_CFLAGS=				\
-	$(GCC_CFLAGS)				\
+	$(AM_CFLAGS)				\
 	$(PAM_CFLAGS)				\
 	$(SYSTEMD_LOGIN_CFLAGS)			\
 	$(LIBDRM_CFLAGS)
@@ -200,7 +200,7 @@ gl_renderer_la_LIBADD = $(COMPOSITOR_LIBS) $(EGL_LIBS)
 gl_renderer_la_CFLAGS =				\
 	$(COMPOSITOR_CFLAGS)			\
 	$(EGL_CFLAGS)				\
-	$(GCC_CFLAGS)
+	$(AM_CFLAGS)
 gl_renderer_la_SOURCES =			\
 	src/gl-renderer.h			\
 	src/gl-renderer.c			\
@@ -220,7 +220,7 @@ x11_backend_la_CFLAGS =				\
 	$(PIXMAN_CFLAGS)			\
 	$(CAIRO_CFLAGS)				\
 	$(X11_COMPOSITOR_CFLAGS)		\
-	$(GCC_CFLAGS)
+	$(AM_CFLAGS)
 x11_backend_la_SOURCES = 			\
 	src/compositor-x11.c			\
 	shared/helpers.h
@@ -247,7 +247,7 @@ drm_backend_la_CFLAGS =				\
 	$(COMPOSITOR_CFLAGS)			\
 	$(EGL_CFLAGS)				\
 	$(DRM_COMPOSITOR_CFLAGS)		\
-	$(GCC_CFLAGS)
+	$(AM_CFLAGS)
 drm_backend_la_SOURCES =			\
 	src/compositor-drm.c			\
 	$(INPUT_BACKEND_SOURCES)		\
@@ -275,7 +275,7 @@ wayland_backend_la_CFLAGS =			\
 	$(PIXMAN_CFLAGS)			\
 	$(CAIRO_CFLAGS)				\
 	$(WAYLAND_COMPOSITOR_CFLAGS)		\
-	$(GCC_CFLAGS)
+	$(AM_CFLAGS)
 wayland_backend_la_SOURCES = 			\
 	src/compositor-wayland.c		\
 	shared/helpers.h
@@ -299,7 +299,7 @@ rpi_backend_la_LIBADD = $(COMPOSITOR_LIBS)	\
 	libsession-helper.la			\
 	libshared.la
 rpi_backend_la_CFLAGS =				\
-	$(GCC_CFLAGS)				\
+	$(AM_CFLAGS)				\
 	$(COMPOSITOR_CFLAGS)			\
 	$(RPI_COMPOSITOR_CFLAGS)		\
 	$(RPI_BCM_HOST_CFLAGS)
@@ -322,7 +322,7 @@ if ENABLE_HEADLESS_COMPOSITOR
 module_LTLIBRARIES += headless-backend.la
 headless_backend_la_LDFLAGS = -module -avoid-version
 headless_backend_la_LIBADD = $(COMPOSITOR_LIBS) libshared.la
-headless_backend_la_CFLAGS = $(COMPOSITOR_CFLAGS) $(GCC_CFLAGS)
+headless_backend_la_CFLAGS = $(COMPOSITOR_CFLAGS) $(AM_CFLAGS)
 headless_backend_la_SOURCES = 			\
 	src/compositor-headless.c		\
 	shared/helpers.h
@@ -342,7 +342,7 @@ fbdev_backend_la_CFLAGS =			\
 	$(EGL_CFLAGS)				\
 	$(FBDEV_COMPOSITOR_CFLAGS)		\
 	$(PIXMAN_CFLAGS)			\
-	$(GCC_CFLAGS)
+	$(AM_CFLAGS)
 fbdev_backend_la_SOURCES =			\
 	src/compositor-fbdev.c			\
 	shared/helpers.h			\
@@ -358,7 +358,7 @@ rdp_backend_la_LIBADD = $(COMPOSITOR_LIBS) \
 rdp_backend_la_CFLAGS =				\
 	$(COMPOSITOR_CFLAGS)			\
 	$(RDP_COMPOSITOR_CFLAGS)		\
-	$(GCC_CFLAGS)
+	$(AM_CFLAGS)
 rdp_backend_la_SOURCES = 			\
 	src/compositor-rdp.c			\
 	shared/helpers.h
@@ -368,7 +368,7 @@ if HAVE_LCMS
 module_LTLIBRARIES += cms-static.la
 cms_static_la_LDFLAGS = -module -avoid-version
 cms_static_la_LIBADD = $(COMPOSITOR_LIBS) $(LCMS_LIBS) libshared.la
-cms_static_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS) $(LCMS_CFLAGS)
+cms_static_la_CFLAGS = $(AM_CFLAGS) $(COMPOSITOR_CFLAGS) $(LCMS_CFLAGS)
 cms_static_la_SOURCES =				\
 	src/cms-static.c				\
 	src/cms-helper.c				\
@@ -378,7 +378,7 @@ if ENABLE_COLORD
 module_LTLIBRARIES += cms-colord.la
 cms_colord_la_LDFLAGS = -module -avoid-version
 cms_colord_la_LIBADD = $(COMPOSITOR_LIBS) $(COLORD_LIBS)
-cms_colord_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS) $(COLORD_CFLAGS)
+cms_colord_la_CFLAGS = $(AM_CFLAGS) $(COMPOSITOR_CFLAGS) $(COLORD_CFLAGS)
 cms_colord_la_SOURCES =				\
 	src/cms-colord.c			\
 	src/cms-helper.c			\
@@ -388,7 +388,7 @@ endif
 endif
 
 noinst_PROGRAMS += spring-tool
-spring_tool_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS)
+spring_tool_CFLAGS = $(AM_CFLAGS) $(COMPOSITOR_CFLAGS)
 spring_tool_LDADD = $(COMPOSITOR_LIBS) -lm
 spring_tool_SOURCES =				\
 	src/spring-tool.c			\
@@ -765,7 +765,7 @@ wcap_decode_SOURCES =				\
 	wcap/wcap-decode.c			\
 	wcap/wcap-decode.h
 
-wcap_decode_CFLAGS = $(GCC_CFLAGS) $(WCAP_CFLAGS)
+wcap_decode_CFLAGS = $(AM_CFLAGS) $(WCAP_CFLAGS)
 wcap_decode_LDADD = $(WCAP_LIBS)
 endif
 
@@ -787,7 +787,7 @@ desktop_shell_la_CPPFLAGS =			\
 
 desktop_shell_la_LDFLAGS = -module -avoid-version
 desktop_shell_la_LIBADD = $(COMPOSITOR_LIBS) libshared.la
-desktop_shell_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS)
+desktop_shell_la_CFLAGS = $(AM_CFLAGS) $(COMPOSITOR_CFLAGS)
 desktop_shell_la_SOURCES =				\
 	desktop-shell/shell.h				\
 	desktop-shell/shell.c				\
@@ -816,7 +816,7 @@ fullscreen_shell_la_CPPFLAGS =			\
 
 fullscreen_shell_la_LDFLAGS = -module -avoid-version
 fullscreen_shell_la_LIBADD = $(COMPOSITOR_LIBS)
-fullscreen_shell_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS)
+fullscreen_shell_la_CFLAGS = $(AM_CFLAGS) $(COMPOSITOR_CFLAGS)
 fullscreen_shell_la_SOURCES =			\
 	fullscreen-shell/fullscreen-shell.c	\
 	shared/helpers.h
@@ -836,7 +836,7 @@ module_LTLIBRARIES +=				\
 ivi_shell = ivi-shell.la
 ivi_shell_la_LDFLAGS = -module -avoid-version
 ivi_shell_la_LIBADD = $(COMPOSITOR_LIBS) libshared.la
-ivi_shell_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS)
+ivi_shell_la_CFLAGS = $(AM_CFLAGS) $(COMPOSITOR_CFLAGS)
 ivi_shell_la_SOURCES =				\
 	ivi-shell/ivi-layout-export.h		\
 	ivi-shell/ivi-layout-private.h		\
@@ -855,7 +855,7 @@ BUILT_SOURCES += $(nodist_ivi_shell_la_SOURCES)
 hmi_controller = hmi-controller.la
 hmi_controller_la_LDFLAGS = -module -avoid-version
 hmi_controller_la_LIBADD = $(COMPOSITOR_LIBS) libshared.la
-hmi_controller_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS)
+hmi_controller_la_CFLAGS = $(AM_CFLAGS) $(COMPOSITOR_CFLAGS)
 hmi_controller_la_SOURCES =				\
 	ivi-shell/ivi-layout-export.h			\
 	ivi-shell/hmi-controller.c			\
@@ -882,7 +882,7 @@ screen_share_la_LIBADD =			\
 screen_share_la_CFLAGS =			\
 	$(COMPOSITOR_CFLAGS)			\
 	$(SCREEN_SHARE_CFLAGS)			\
-	$(GCC_CFLAGS)
+	$(AM_CFLAGS)
 screen_share_la_SOURCES =			\
 	src/screen-share.c			\
 	shared/helpers.h
@@ -912,7 +912,7 @@ xwayland_la_LIBADD =			\
 	$(XWAYLAND_LIBS)		\
 	$(top_builddir)/libshared-cairo.la
 xwayland_la_CFLAGS =				\
-	$(GCC_CFLAGS)				\
+	$(AM_CFLAGS)				\
 	$(COMPOSITOR_CFLAGS)			\
 	$(PIXMAN_CFLAGS)			\
 	$(CAIRO_CFLAGS)
@@ -934,7 +934,7 @@ endif
 
 noinst_LTLIBRARIES += libshared.la libshared-cairo.la
 
-libshared_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS)
+libshared_la_CFLAGS = $(AM_CFLAGS) $(COMPOSITOR_CFLAGS)
 
 libshared_la_SOURCES =				\
 	shared/config-parser.c			\
@@ -948,7 +948,7 @@ libshared_la_SOURCES =				\
 
 libshared_cairo_la_CFLAGS =			\
 	-DDATADIR='"$(datadir)"'		\
-	$(GCC_CFLAGS)				\
+	$(AM_CFLAGS)				\
 	$(COMPOSITOR_CFLAGS)			\
 	$(PIXMAN_CFLAGS)			\
 	$(CAIRO_CFLAGS)				\
@@ -1037,15 +1037,15 @@ test_module_ldflags = \
 
 surface_global_test_la_SOURCES = tests/surface-global-test.c
 surface_global_test_la_LDFLAGS = $(test_module_ldflags)
-surface_global_test_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS)
+surface_global_test_la_CFLAGS = $(AM_CFLAGS) $(COMPOSITOR_CFLAGS)
 
 surface_test_la_SOURCES = tests/surface-test.c
 surface_test_la_LDFLAGS = $(test_module_ldflags)
-surface_test_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS)
+surface_test_la_CFLAGS = $(AM_CFLAGS) $(COMPOSITOR_CFLAGS)
 
 weston_test_la_LIBADD = $(COMPOSITOR_LIBS) libshared.la
 weston_test_la_LDFLAGS = $(test_module_ldflags)
-weston_test_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS)
+weston_test_la_CFLAGS = $(AM_CFLAGS) $(COMPOSITOR_CFLAGS)
 weston_test_la_SOURCES = 			\
 	tests/weston-test.c			\
 	shared/helpers.h
@@ -1061,7 +1061,7 @@ endif
 libtest_runner_la_SOURCES =			\
 	tests/weston-test-runner.c		\
 	tests/weston-test-runner.h
-libtest_runner_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS)
+libtest_runner_la_CFLAGS = $(AM_CFLAGS) $(COMPOSITOR_CFLAGS)
 
 config_parser_test_SOURCES = tests/config-parser-test.c
 config_parser_test_LDADD = libshared.la libtest-runner.la $(COMPOSITOR_LIBS)
@@ -1143,14 +1143,14 @@ roles_weston_LDADD = libtest-client.la
 if ENABLE_EGL
 weston_tests += buffer-count.weston
 buffer_count_weston_SOURCES = tests/buffer-count-test.c
-buffer_count_weston_CFLAGS = $(GCC_CFLAGS) $(EGL_TESTS_CFLAGS)
+buffer_count_weston_CFLAGS = $(AM_CFLAGS) $(EGL_TESTS_CFLAGS)
 buffer_count_weston_LDADD = libtest-client.la $(EGL_TESTS_LIBS)
 endif
 
 if ENABLE_XWAYLAND_TEST
 weston_tests +=	xwayland-test.weston
 xwayland_test_weston_SOURCES = tests/xwayland-test.c
-xwayland_test_weston_CFLAGS = $(GCC_CFLAGS) $(XWAYLAND_TEST_CFLAGS)
+xwayland_test_weston_CFLAGS = $(AM_CFLAGS) $(XWAYLAND_TEST_CFLAGS)
 xwayland_test_weston_LDADD = libtest-client.la $(XWAYLAND_TEST_LIBS)
 endif
 
@@ -1168,13 +1168,13 @@ module_tests += 				\
 
 ivi_layout_internal_test_la_LIBADD = $(COMPOSITOR_LIBS)
 ivi_layout_internal_test_la_LDFLAGS = $(test_module_ldflags)
-ivi_layout_internal_test_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS)
+ivi_layout_internal_test_la_CFLAGS = $(AM_CFLAGS) $(COMPOSITOR_CFLAGS)
 ivi_layout_internal_test_la_SOURCES =			\
 	tests/ivi_layout-internal-test.c
 
 ivi_layout_test_la_LIBADD = $(COMPOSITOR_LIBS)
 ivi_layout_test_la_LDFLAGS = $(test_module_ldflags)
-ivi_layout_test_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS)
+ivi_layout_test_la_CFLAGS = $(AM_CFLAGS) $(COMPOSITOR_CFLAGS)
 ivi_layout_test_la_SOURCES =			\
 	tests/ivi_layout-test-plugin.c		\
 	tests/ivi-test.h			\
@@ -1253,7 +1253,7 @@ noinst_LTLIBRARIES +=				\
 
 surface_screenshot_la_LIBADD = $(COMPOSITOR_LIBS) libshared.la
 surface_screenshot_la_LDFLAGS = $(test_module_ldflags)
-surface_screenshot_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS)
+surface_screenshot_la_CFLAGS = $(AM_CFLAGS) $(COMPOSITOR_CFLAGS)
 surface_screenshot_la_SOURCES = tests/surface-screenshot.c
 
 
