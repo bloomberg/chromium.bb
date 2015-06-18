@@ -872,8 +872,8 @@ public:
 
     enum ApplyTransformOrigin { IncludeTransformOrigin, ExcludeTransformOrigin };
     enum ApplyMotionPath { IncludeMotionPath, ExcludeMotionPath };
-    void applyTransform(TransformationMatrix&, const LayoutSize& borderBoxSize, ApplyTransformOrigin = IncludeTransformOrigin, ApplyMotionPath = IncludeMotionPath) const;
-    void applyTransform(TransformationMatrix&, const FloatRect& boundingBox, ApplyTransformOrigin = IncludeTransformOrigin, ApplyMotionPath = IncludeMotionPath) const;
+    void applyTransform(TransformationMatrix&, const LayoutSize& borderBoxSize, ApplyTransformOrigin, ApplyMotionPath) const;
+    void applyTransform(TransformationMatrix&, const FloatRect& boundingBox, ApplyTransformOrigin, ApplyMotionPath) const;
 
     bool hasMask() const { return rareNonInheritedData->m_mask.hasImage() || rareNonInheritedData->m_maskBoxImage.hasImage(); }
 
