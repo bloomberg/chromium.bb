@@ -18,7 +18,6 @@ namespace extensions {
 class ViscaWebcam : public Webcam {
  public:
   ViscaWebcam(const std::string& path, const std::string& extension_id);
-  ~ViscaWebcam() override;
 
   using OpenCompleteCallback = base::Callback<void(bool)>;
 
@@ -29,6 +28,8 @@ class ViscaWebcam : public Webcam {
   void Open(const OpenCompleteCallback& open_callback);
 
  private:
+  ~ViscaWebcam() override;
+
   enum CommandType {
     COMMAND,
     INQUIRY_PAN,

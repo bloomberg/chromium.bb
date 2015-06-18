@@ -9,4 +9,25 @@ namespace extensions {
 Webcam::Webcam() {}
 Webcam::~Webcam() {}
 
+WebcamResource::WebcamResource(const std::string& owner_extension_id,
+                               Webcam* webcam,
+                               const std::string& webcam_id)
+    : ApiResource(owner_extension_id), webcam_(webcam), webcam_id_(webcam_id) {
+}
+
+WebcamResource::~WebcamResource() {
+}
+
+Webcam* WebcamResource::GetWebcam() const {
+  return webcam_.get();
+}
+
+const std::string WebcamResource::GetWebcamId() const {
+  return webcam_id_;
+}
+
+bool WebcamResource::IsPersistent() const {
+  return false;
+}
+
 }  // namespace extensions

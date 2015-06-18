@@ -14,11 +14,10 @@ namespace extensions {
 class V4L2Webcam : public Webcam {
  public:
   V4L2Webcam(const std::string& device_id);
-  ~V4L2Webcam() override;
-
   bool Open();
 
  private:
+  ~V4L2Webcam() override;
   bool EnsureLogitechCommandsMapped();
   bool SetWebcamParameter(int fd, uint32_t control_id, int value);
   bool GetWebcamParameter(int fd, uint32_t control_id, int* value);

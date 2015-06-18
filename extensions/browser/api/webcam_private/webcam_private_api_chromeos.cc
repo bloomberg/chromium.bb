@@ -8,7 +8,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/media_device_id.h"
 #include "content/public/browser/resource_context.h"
-#include "content/public/common/media_stream_request.h"
 #include "extensions/browser/api/webcam_private/v4l2_webcam.h"
 #include "extensions/browser/api/webcam_private/visca_webcam.h"
 #include "extensions/browser/process_manager.h"
@@ -35,75 +34,70 @@ WebcamPrivateAPI* WebcamPrivateAPI::Get(content::BrowserContext* context) {
 
 WebcamPrivateAPI::WebcamPrivateAPI(content::BrowserContext* context)
     : browser_context_(context),
-      process_manager_observer_(this),
       weak_ptr_factory_(this) {
-  process_manager_observer_.Add(ProcessManager::Get(browser_context_));
+  webcam_resource_manager_.reset(
+      new ApiResourceManager<WebcamResource>(context));
 }
 
-WebcamPrivateAPI::~WebcamPrivateAPI() {}
+WebcamPrivateAPI::~WebcamPrivateAPI() {
+}
 
 Webcam* WebcamPrivateAPI::GetWebcam(const std::string& extension_id,
-                                    const std::string& device_id) {
-  auto ix = webcams_.find(device_id);
-  if (ix != webcams_.end()) {
-    ix->second->AddExtensionRef(extension_id);
-    return ix->second.get();
-  }
+                                    const std::string& webcam_id) {
+  WebcamResource* webcam_resource = FindWebcamResource(extension_id, webcam_id);
+  if (webcam_resource)
+    return webcam_resource->GetWebcam();
 
-  scoped_ptr<V4L2Webcam> v4l2_webcam(new V4L2Webcam(device_id));
+  std::string device_id;
+  GetDeviceId(extension_id, webcam_id, &device_id);
+  V4L2Webcam* v4l2_webcam(new V4L2Webcam(device_id));
   if (!v4l2_webcam->Open()) {
     return nullptr;
   }
 
-  linked_ptr<Webcam> webcam(v4l2_webcam.release());
+  webcam_resource_manager_->Add(
+      new WebcamResource(extension_id, v4l2_webcam, webcam_id));
 
-  webcams_[device_id] = webcam;
-  webcam->AddExtensionRef(extension_id);
-
-  return webcam.get();
+  return v4l2_webcam;
 }
 
 bool WebcamPrivateAPI::OpenSerialWebcam(
     const std::string& extension_id,
-    const std::string& device_id,
+    const std::string& device_path,
     const base::Callback<void(const std::string&, bool)>& callback) {
-  auto ix = webcams_.find(device_id);
-  if (ix != webcams_.end()) {
-    return false;
-  }
+  const std::string& webcam_id = GetWebcamId(extension_id, device_path);
+  WebcamResource* webcam_resource = FindWebcamResource(extension_id, webcam_id);
+  if (webcam_resource)
+    return webcam_resource->GetWebcam();
 
-  ViscaWebcam* visca_webcam(new ViscaWebcam(device_id, extension_id));
-  visca_webcam->AddExtensionRef(extension_id);
-  webcams_[device_id] = linked_ptr<Webcam>(visca_webcam);
-
-  visca_webcam->Open(base::Bind(&WebcamPrivateAPI::OnOpenSerialWebcam,
-                                weak_ptr_factory_.GetWeakPtr(), extension_id,
-                                device_id, callback));
+  ViscaWebcam* visca_webcam(new ViscaWebcam(device_path, extension_id));
+  visca_webcam->Open(base::Bind(
+      &WebcamPrivateAPI::OnOpenSerialWebcam, weak_ptr_factory_.GetWeakPtr(),
+      extension_id, device_path, make_scoped_refptr(visca_webcam), callback));
   return true;
 }
 
 bool WebcamPrivateAPI::CloseWebcam(const std::string& extension_id,
-                                   const std::string& device_id) {
-  auto webcam = webcams_.find(device_id);
-  if (webcam == webcams_.end())
-    return false;
-
-  webcam->second->RemoveExtensionRef(extension_id);
-  if (webcam->second->ShouldDelete())
-    webcams_.erase(webcam);
-  return true;
+                                   const std::string& webcam_id) {
+  if (FindWebcamResource(extension_id, webcam_id)) {
+    RemoveWebcamResource(extension_id, webcam_id);
+    return true;
+  }
+  return false;
 }
 
 void WebcamPrivateAPI::OnOpenSerialWebcam(
     const std::string& extension_id,
-    const std::string& device_id,
+    const std::string& device_path,
+    scoped_refptr<Webcam> webcam,
     const base::Callback<void(const std::string&, bool)>& callback,
     bool success) {
   if (success) {
-    std::string webcam_id = GetWebcamId(extension_id, device_id);
+    const std::string& webcam_id = GetWebcamId(extension_id, device_path);
+    webcam_resource_manager_->Add(
+        new WebcamResource(extension_id, webcam.get(), webcam_id));
     callback.Run(webcam_id, true);
   } else {
-    webcams_.erase(device_id);
     callback.Run("", false);
   }
 }
@@ -132,15 +126,45 @@ std::string WebcamPrivateAPI::GetWebcamId(const std::string& extension_id,
       security_origin, device_id);
 }
 
-void WebcamPrivateAPI::OnBackgroundHostClose(const std::string& extension_id) {
-  for (auto webcam = webcams_.begin();
-       webcam != webcams_.end(); /* No increment */ ) {
-    auto next = std::next(webcam);
-    webcam->second->RemoveExtensionRef(extension_id);
-    if (webcam->second->ShouldDelete())
-      webcams_.erase(webcam);
-    webcam = next;
+WebcamResource* WebcamPrivateAPI::FindWebcamResource(
+    const std::string& extension_id,
+    const std::string& webcam_id) const {
+  DCHECK(webcam_resource_manager_);
+
+  base::hash_set<int>* connection_ids =
+      webcam_resource_manager_->GetResourceIds(extension_id);
+  if (!connection_ids)
+    return nullptr;
+
+  for (const auto& connection_id : *connection_ids) {
+    WebcamResource* webcam_resource =
+        webcam_resource_manager_->Get(extension_id, connection_id);
+    if (webcam_resource && webcam_resource->GetWebcamId() == webcam_id)
+      return webcam_resource;
   }
+
+  return nullptr;
+}
+
+bool WebcamPrivateAPI::RemoveWebcamResource(const std::string& extension_id,
+                                            const std::string& webcam_id) {
+  DCHECK(webcam_resource_manager_);
+
+  base::hash_set<int>* connection_ids =
+      webcam_resource_manager_->GetResourceIds(extension_id);
+  if (!connection_ids)
+    return false;
+
+  for (const auto& connection_id : *connection_ids) {
+    WebcamResource* webcam_resource =
+        webcam_resource_manager_->Get(extension_id, connection_id);
+    if (webcam_resource && webcam_resource->GetWebcamId() == webcam_id) {
+      webcam_resource_manager_->Remove(extension_id, connection_id);
+      return true;
+    }
+  }
+
+  return false;
 }
 
 WebcamPrivateOpenSerialWebcamFunction::WebcamPrivateOpenSerialWebcamFunction() {
@@ -191,7 +215,7 @@ bool WebcamPrivateCloseWebcamFunction::RunAsync() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   return WebcamPrivateAPI::Get(browser_context())
-      ->CloseWebcam(extension_id(), params->path);
+      ->CloseWebcam(extension_id(), params->webcam_id);
 }
 
 WebcamPrivateSetFunction::WebcamPrivateSetFunction() {
@@ -206,7 +230,7 @@ bool WebcamPrivateSetFunction::RunSync() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   Webcam* webcam = WebcamPrivateAPI::Get(browser_context())
-                       ->GetWebcam(extension_id(), params->path);
+                       ->GetWebcam(extension_id(), params->webcam_id);
   if (!webcam) {
     SetError(kUnknownWebcam);
     return false;
@@ -278,7 +302,7 @@ bool WebcamPrivateGetFunction::RunSync() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   Webcam* webcam = WebcamPrivateAPI::Get(browser_context())
-                       ->GetWebcam(extension_id(), params->path);
+                       ->GetWebcam(extension_id(), params->webcam_id);
   if (!webcam) {
     SetError(kUnknownWebcam);
     return false;
@@ -315,7 +339,7 @@ bool WebcamPrivateResetFunction::RunSync() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   Webcam* webcam = WebcamPrivateAPI::Get(browser_context())
-                       ->GetWebcam(extension_id(), params->path);
+                       ->GetWebcam(extension_id(), params->webcam_id);
   if (!webcam) {
     SetError(kUnknownWebcam);
     return false;

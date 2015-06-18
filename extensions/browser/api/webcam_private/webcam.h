@@ -9,10 +9,13 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
+#include "content/public/browser/browser_thread.h"
+#include "extensions/browser/api/api_resource.h"
 
 namespace extensions {
 
-class Webcam {
+class Webcam : public base::RefCounted<Webcam> {
  public:
   enum PanDirection {
     PAN_LEFT,
@@ -27,7 +30,6 @@ class Webcam {
   };
 
   Webcam();
-  virtual ~Webcam();
 
   virtual void Reset(bool pan, bool tilt, bool zoom) = 0;
   virtual bool GetPan(int* value) = 0;
@@ -39,22 +41,35 @@ class Webcam {
   virtual bool SetPanDirection(PanDirection direction) = 0;
   virtual bool SetTiltDirection(TiltDirection direction) = 0;
 
-  void AddExtensionRef(const std::string& extension_id) {
-    extension_refs_.insert(extension_id);
-  }
-
-  void RemoveExtensionRef(const std::string& extension_id) {
-    extension_refs_.erase(extension_id);
-  }
-
-  bool ShouldDelete() {
-    return extension_refs_.empty();
-  }
+ protected:
+  friend class base::RefCounted<Webcam>;
+  virtual ~Webcam();
 
  private:
-  std::set<std::string> extension_refs_;
-
   DISALLOW_COPY_AND_ASSIGN(Webcam);
+};
+
+class WebcamResource : public ApiResource {
+ public:
+  WebcamResource(const std::string& owner_extension_id,
+                 Webcam* webcam,
+                 const std::string& webcam_id);
+  ~WebcamResource() override;
+
+  static const content::BrowserThread::ID kThreadId =
+      content::BrowserThread::UI;
+
+  Webcam* GetWebcam() const;
+  const std::string GetWebcamId() const;
+
+  // ApiResource overrides.
+  bool IsPersistent() const override;
+
+ private:
+  scoped_refptr<Webcam> webcam_;
+  std::string webcam_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebcamResource);
 };
 
 }  // namespace extensions

@@ -9,6 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/scoped_observer.h"
+#include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/browser/api/webcam_private/webcam.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_function.h"
@@ -20,8 +21,7 @@ namespace extensions {
 
 class ProcessManager;
 
-class WebcamPrivateAPI : public BrowserContextKeyedAPI,
-                         public ProcessManagerObserver {
+class WebcamPrivateAPI : public BrowserContextKeyedAPI {
  public:
   static BrowserContextKeyedAPIFactory<WebcamPrivateAPI>* GetFactoryInstance();
 
@@ -36,7 +36,7 @@ class WebcamPrivateAPI : public BrowserContextKeyedAPI,
 
   bool OpenSerialWebcam(
       const std::string& extension_id,
-      const std::string& device_id,
+      const std::string& device_path,
       const base::Callback<void(const std::string&, bool)>& callback);
   bool CloseWebcam(const std::string& extension_id,
                    const std::string& device_id);
@@ -46,20 +46,23 @@ class WebcamPrivateAPI : public BrowserContextKeyedAPI,
 
   void OnOpenSerialWebcam(
       const std::string& extension_id,
-      const std::string& device_id,
+      const std::string& device_path,
+      scoped_refptr<Webcam> webcam,
       const base::Callback<void(const std::string&, bool)>& callback,
       bool success);
 
-  // Todo(xdai): This function doesn't work for serial devices. It can't get the
-  // correct |device_id| for given |extension_id| and |webcam_id|. (why?)
+  // Note: This function does not work for serial devices. Do not use this
+  // function for serial devices.
   bool GetDeviceId(const std::string& extension_id,
                    const std::string& webcam_id,
                    std::string* device_id);
   std::string GetWebcamId(const std::string& extension_id,
                           const std::string& device_id);
 
-  // ProcessManagerObserver:
-  void OnBackgroundHostClose(const std::string& extension_id) override;
+  WebcamResource* FindWebcamResource(const std::string& extension_id,
+                                     const std::string& webcam_id) const;
+  bool RemoveWebcamResource(const std::string& extension_id,
+                            const std::string& webcam_id);
 
   // BrowserContextKeyedAPI:
   static const char* service_name() {
@@ -69,12 +72,11 @@ class WebcamPrivateAPI : public BrowserContextKeyedAPI,
   static const bool kServiceRedirectedInIncognito = true;
 
   content::BrowserContext* const browser_context_;
-  ScopedObserver<ProcessManager, ProcessManagerObserver>
-      process_manager_observer_;
-
-  std::map<std::string, linked_ptr<Webcam>> webcams_;
+  scoped_ptr<ApiResourceManager<WebcamResource>> webcam_resource_manager_;
 
   base::WeakPtrFactory<WebcamPrivateAPI> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebcamPrivateAPI);
 };
 
 template <>
