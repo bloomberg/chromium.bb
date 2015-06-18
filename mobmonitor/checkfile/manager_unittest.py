@@ -6,8 +6,8 @@
 
 from __future__ import print_function
 
-import mock
 import imp
+import mock
 import os
 import subprocess
 import time
@@ -30,8 +30,70 @@ class TestHealthCheck(object):
     """Stub Diagnose."""
     return ('Unknown Error.', [])
 
+
+class TestHealthCheckHasAttributes(object):
+  """Test health check with attributes."""
+
+  CHECK_INTERVAL = 10
+
+  def Check(self):
+    """Stub Check."""
+    return 0
+
+  def Diagnose(self, _errcode):
+    """Stub Diagnose."""
+    return ('Unknown Error.', [])
+
+
+class TestHealthCheckUnhealthy(object):
+  """Unhealthy test health check."""
+
+  def Check(self):
+    """Stub Check."""
+    return -1
+
+  def Diagnose(self, errcode):
+    """Stub Diagnose."""
+    if errcode == 1:
+      return ('Stub Error.', ['RepairStub'])
+    return ('Unknown Error.', [])
+
+  def ActionRepairStub(self):
+    """Stub repair action."""
+
+
+class TestHealthCheckQuasihealthy(object):
+  """Quasi-healthy test health check."""
+
+  def Check(self):
+    """Stub Check."""
+    return 1
+
+  def Diagnose(self, errcode):
+    """Stub Diagnose."""
+    if errcode == 1:
+      return ('Stub Error.', ['RepairStub'])
+    return ('Unknown Error.', [])
+
+  def ActionRepairStub(self):
+    """Stub repair action."""
+
+
+class TestHealthCheckBroken(object):
+  """Broken test health check."""
+
+  def Check(self):
+    """Stub Check."""
+    raise ValueError()
+
+  def Diagnose(self, _errcode):
+    """A broken Diagnose function. A proper return should be a pair."""
+    raise ValueError()
+
+
 TEST_SERVICE_NAME = 'test-service'
 TEST_MTIME = 100
+TEST_EXEC_TIME = 400
 CHECKDIR = '.'
 
 # Strings that are used to mock actual check modules.
@@ -122,6 +184,44 @@ class RunCommand(threading.Thread):
 class CheckFileManagerHelperTest(cros_test_lib.MockTestCase):
   """Unittests for CheckFileManager helper functions."""
 
+  def testDetermineHealthcheckStatusHealthy(self):
+    """Test DetermineHealthCheckStatus on a healthy check."""
+    hcname = TestHealthCheck.__name__
+    testhc = TestHealthCheck()
+    expected = manager.HEALTHCHECK_STATUS(hcname, True,
+                                          manager.NULL_DESCRIPTION,
+                                          manager.EMPTY_ACTIONS)
+    self.assertEquals(expected,
+                      manager.DetermineHealthcheckStatus(hcname, testhc))
+
+  def testDeterminHealthcheckStatusUnhealthy(self):
+    """Test DetermineHealthcheckStatus on an unhealthy check."""
+    hcname = TestHealthCheckUnhealthy.__name__
+    testhc = TestHealthCheckUnhealthy()
+    desc, actions = testhc.Diagnose(testhc.Check())
+    expected = manager.HEALTHCHECK_STATUS(hcname, False, desc, actions)
+    self.assertEquals(expected,
+                      manager.DetermineHealthcheckStatus(hcname, testhc))
+
+  def testDetermineHealthcheckStatusQuasihealth(self):
+    """Test DetermineHealthcheckStatus on a quasi-healthy check."""
+    hcname = TestHealthCheckQuasihealthy.__name__
+    testhc = TestHealthCheckQuasihealthy()
+    desc, actions = testhc.Diagnose(testhc.Check())
+    expected = manager.HEALTHCHECK_STATUS(hcname, True, desc, actions)
+    self.assertEquals(expected,
+                      manager.DetermineHealthcheckStatus(hcname, testhc))
+
+  def testDetermineHealthcheckStatusBrokenCheck(self):
+    """Test DetermineHealthcheckStatus raises on a broken health check."""
+    hcname = TestHealthCheckBroken.__name__
+    testhc = TestHealthCheckBroken()
+    result = manager.DetermineHealthcheckStatus(hcname, testhc)
+
+    self.assertEquals(hcname, result.name)
+    self.assertFalse(result.health)
+    self.assertFalse(result.actions)
+
   def testIsHealthCheck(self):
     """Test that IsHealthCheck properly asserts the health check interface."""
 
@@ -150,6 +250,20 @@ class CheckFileManagerHelperTest(cros_test_lib.MockTestCase):
     self.assertFalse(manager.IsHealthCheck(NoCheckAttr()))
     self.assertFalse(manager.IsHealthCheck(NoDiagnoseAttr()))
     self.assertTrue(manager.IsHealthCheck(GoodHealthCheck()))
+
+  def testApplyHealthCheckAttributesNoAttrs(self):
+    """Test that we can apply attributes to a health check."""
+    testhc = TestHealthCheck()
+    result = manager.ApplyHealthCheckAttributes(testhc)
+    self.assertEquals(result.CHECK_INTERVAL,
+                      manager.CHECK_INTERVAL_DEFAULT_SEC)
+
+  def testApplyHealthCheckAttributesHasAttrs(self):
+    """Test that we do not override an acceptable attribute."""
+    testhc = TestHealthCheckHasAttributes()
+    check_interval = testhc.CHECK_INTERVAL
+    result = manager.ApplyHealthCheckAttributes(testhc)
+    self.assertEquals(result.CHECK_INTERVAL, check_interval)
 
   def testImportCheckFileAllHealthChecks(self):
     """Test that health checks and service name are collected."""
@@ -193,8 +307,8 @@ class CheckFileManagerHelperTest(cros_test_lib.MockTestCase):
 class CheckFileManagerTest(cros_test_lib.MockTestCase):
   """Unittests for CheckFileManager."""
 
-  def testCollectionCallback(self):
-    """Test the CollectionCallback."""
+  def testCollectionExecutionCallback(self):
+    """Test the CollectionExecutionCallback."""
     self.StartPatcher(mock.patch('os.walk'))
     os.walk.return_value = [['/checkdir/', [], ['test_check.py']]]
 
@@ -202,7 +316,7 @@ class CheckFileManagerTest(cros_test_lib.MockTestCase):
     manager.ImportCheckfile = mock.Mock(
         return_value=[TEST_SERVICE_NAME, [myobj], 100])
     cfm = manager.CheckFileManager(checkdir=CHECKDIR)
-    cfm.CollectionCallback()
+    cfm.CollectionExecutionCallback()
 
     manager.ImportCheckfile.assert_called_once_with('/checkdir/test_check.py')
 
@@ -210,25 +324,25 @@ class CheckFileManagerTest(cros_test_lib.MockTestCase):
     self.assertEquals(cfm.service_checks[TEST_SERVICE_NAME],
                       {myobj.__class__.__name__: (100, myobj)})
 
-  def testCollectionCallbackNoChecks(self):
-    """Test the CollectionCallback with no valid check files."""
+  def testCollectionExecutionCallbackNoChecks(self):
+    """Test the CollectionExecutionCallback with no valid check files."""
     self.StartPatcher(mock.patch('os.walk'))
     os.walk.return_value = [['/checkdir/', [], ['test.py']]]
 
     manager.ImportCheckfile = mock.Mock(return_value=None)
     cfm = manager.CheckFileManager(checkdir=CHECKDIR)
-    cfm.CollectionCallback()
+    cfm.CollectionExecutionCallback()
 
     self.assertFalse(manager.ImportCheckfile.called)
 
     self.assertFalse(TEST_SERVICE_NAME in cfm.service_checks)
 
-  def testStartCollection(self):
-    """Test the StartCollection method."""
+  def testStartCollectionExecution(self):
+    """Test the StartCollectionExecution method."""
     plugins.Monitor = mock.Mock()
 
     cfm = manager.CheckFileManager(checkdir=CHECKDIR)
-    cfm.StartCollection()
+    cfm.StartCollectionExecution()
 
     self.assertTrue(plugins.Monitor.called)
 
@@ -260,6 +374,72 @@ class CheckFileManagerTest(cros_test_lib.MockTestCase):
     self.assertEquals(cfm.service_checks[TEST_SERVICE_NAME],
                       {myobj.__class__.__name__: (TEST_MTIME, myobj)})
 
+  def testExecuteFresh(self):
+    """Test executing a health check when the result is still fresh."""
+    self.StartPatcher(mock.patch('time.time'))
+    exec_time_offset = TestHealthCheckHasAttributes.CHECK_INTERVAL / 2
+    time.time.return_value = TEST_EXEC_TIME + exec_time_offset
+
+    cfm = manager.CheckFileManager(checkdir=CHECKDIR)
+    cfm.service_checks = {TEST_SERVICE_NAME:
+                          {TestHealthCheckHasAttributes.__name__:
+                           (TEST_MTIME, TestHealthCheckHasAttributes())}}
+    cfm.service_check_results = {
+        TEST_SERVICE_NAME: {TestHealthCheckHasAttributes.__name__:
+                            (manager.HCEXECUTION_COMPLETED, TEST_EXEC_TIME,
+                             None)}}
+
+    cfm.Execute()
+
+    _, exec_time, _ = cfm.service_check_results[TEST_SERVICE_NAME][
+        TestHealthCheckHasAttributes.__name__]
+
+    self.assertEquals(exec_time, TEST_EXEC_TIME)
+
+  def testExecuteStale(self):
+    """Test executing a health check when the result is stale."""
+    self.StartPatcher(mock.patch('time.time'))
+    exec_time_offset = TestHealthCheckHasAttributes.CHECK_INTERVAL * 2
+    time.time.return_value = TEST_EXEC_TIME + exec_time_offset
+
+    cfm = manager.CheckFileManager(checkdir=CHECKDIR)
+    cfm.service_checks = {TEST_SERVICE_NAME:
+                          {TestHealthCheckHasAttributes.__name__:
+                           (TEST_MTIME, TestHealthCheckHasAttributes())}}
+    cfm.service_check_results = {
+        TEST_SERVICE_NAME: {TestHealthCheckHasAttributes.__name__:
+                            (manager.HCEXECUTION_COMPLETED, TEST_EXEC_TIME,
+                             None)}}
+
+    cfm.Execute()
+
+    _, exec_time, _ = cfm.service_check_results[TEST_SERVICE_NAME][
+        TestHealthCheckHasAttributes.__name__]
+
+    self.assertEquals(exec_time, TEST_EXEC_TIME + exec_time_offset)
+
+  def testExecuteNonExistent(self):
+    """Test executing a health check when the result is nonexistent."""
+    self.StartPatcher(mock.patch('time.time'))
+    time.time.return_value = TEST_EXEC_TIME
+
+    cfm = manager.CheckFileManager(checkdir=CHECKDIR)
+    cfm.service_checks = {TEST_SERVICE_NAME:
+                          {TestHealthCheck.__name__:
+                           (TEST_MTIME, TestHealthCheck())}}
+
+    cfm.Execute()
+
+    resultsdict = cfm.service_check_results.get(TEST_SERVICE_NAME)
+    self.assertTrue(resultsdict is not None)
+
+    exec_status, exec_time, _ = resultsdict.get(TestHealthCheck.__name__,
+                                                (None, None, None))
+    self.assertTrue(exec_status is not None)
+    self.assertTrue(exec_time is not None)
+
+    self.assertEquals(exec_status, manager.HCEXECUTION_COMPLETED)
+    self.assertEquals(exec_time, TEST_EXEC_TIME)
 
 class CheckFileModificationTest(cros_test_lib.MockTempDirTestCase):
   """Unittests for checking when live changes are made to a checkfile."""

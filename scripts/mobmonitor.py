@@ -83,7 +83,7 @@ def main(argv):
   checkfile_manager = manager.CheckFileManager(checkdir=options.checkdir)
   mobmonitor = MobMonitorRoot(checkfile_manager)
 
-  # Start the checkfile collection background task.
-  checkfile_manager.StartCollection()
+  # Start the checkfile collection and execution background task.
+  checkfile_manager.StartCollectionExecution()
 
   cherrypy.quickstart(mobmonitor)
