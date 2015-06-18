@@ -414,7 +414,12 @@ void AccountTrackerService::RefreshAccountInfo(const std::string& account_id,
 
 void AccountTrackerService::OnRefreshTokenAvailable(
     const std::string& account_id) {
-  RefreshAccountInfo(account_id, false);
+    // The SigninClient needs a "final init" in order to perform some actions
+    // (such as fetching the signin token "handle" in order to look for password
+    // changes) once everything is initialized and the refresh token is present.
+    signin_client_->DoFinalInit();
+
+    RefreshAccountInfo(account_id, false);
 }
 
 void AccountTrackerService::OnRefreshTokenRevoked(

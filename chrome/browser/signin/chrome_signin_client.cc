@@ -16,13 +16,16 @@
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/signin/local_auth.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_cookie_changed_subscription.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/common/chrome_version_info.h"
 #include "components/metrics/metrics_service.h"
+#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/signin/core/common/signin_pref_names.h"
 #include "components/signin/core/common/signin_switches.h"
+#include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
@@ -47,7 +50,8 @@ const char kEphemeralUserDeviceIDPrefix[] = "t_";
 
 ChromeSigninClient::ChromeSigninClient(
     Profile* profile, SigninErrorController* signin_error_controller)
-    : profile_(profile),
+    : OAuth2TokenService::Consumer("chrome_signin_client"),
+      profile_(profile),
       signin_error_controller_(signin_error_controller) {
   signin_error_controller_->AddObserver(this);
 #if !defined(OS_CHROMEOS)
@@ -90,6 +94,10 @@ void ChromeSigninClient::Shutdown() {
 #if !defined(OS_CHROMEOS)
   net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
 #endif
+}
+
+void ChromeSigninClient::DoFinalInit() {
+  MaybeFetchSigninTokenHandle();
 }
 
 // static
@@ -294,6 +302,53 @@ void ChromeSigninClient::OnErrorChanged() {
       signin_error_controller_->HasError());
 }
 
+void ChromeSigninClient::OnGetTokenInfoResponse(
+    scoped_ptr<base::DictionaryValue> token_info) {
+  if (!token_info->HasKey("error")) {
+    std::string handle;
+    if (token_info->GetString("token_handle", &handle)) {
+      ProfileInfoCache& info_cache =
+          g_browser_process->profile_manager()->GetProfileInfoCache();
+      size_t index = info_cache.GetIndexOfProfileWithPath(profile_->GetPath());
+      info_cache.SetPasswordChangeDetectionTokenAtIndex(index, handle);
+    } else {
+      NOTREACHED();
+    }
+  }
+  oauth_request_.reset();
+}
+
+void ChromeSigninClient::OnOAuthError() {
+  // Ignore the failure.  It's not essential and we'll try again next time.
+    oauth_request_.reset();
+}
+
+void ChromeSigninClient::OnNetworkError(int response_code) {
+  // Ignore the failure.  It's not essential and we'll try again next time.
+    oauth_request_.reset();
+}
+
+void ChromeSigninClient::OnGetTokenSuccess(
+    const OAuth2TokenService::Request* request,
+    const std::string& access_token,
+    const base::Time& expiration_time) {
+  // Exchange the access token for a handle that can be used for later
+  // verification that the token is still valid (i.e. the password has not
+  // been changed).
+    if (!oauth_client_) {
+        oauth_client_.reset(new gaia::GaiaOAuthClient(
+            profile_->GetRequestContext()));
+    }
+    oauth_client_->GetTokenInfo(access_token, 3 /* retries */, this);
+}
+
+void ChromeSigninClient::OnGetTokenFailure(
+    const OAuth2TokenService::Request* request,
+    const GoogleServiceAuthError& error) {
+  // Ignore the failure.  It's not essential and we'll try again next time.
+  oauth_request_.reset();
+}
+
 #if !defined(OS_CHROMEOS)
 void ChromeSigninClient::OnNetworkChanged(
     net::NetworkChangeNotifier::ConnectionType type) {
@@ -328,4 +383,30 @@ GaiaAuthFetcher* ChromeSigninClient::CreateGaiaAuthFetcher(
     const std::string& source,
     net::URLRequestContextGetter* getter) {
   return new GaiaAuthFetcher(consumer, source, getter);
+}
+
+void ChromeSigninClient::MaybeFetchSigninTokenHandle() {
+#if !defined(OS_ANDROID) && !defined(OS_IOS) && !defined(OS_CHROMEOS)
+  // We get a "handle" that can be used to reference the signin token on the
+  // server.  We fetch this if we don't have one so that later we can check
+  // it to know if the signin token to which it is attached has been revoked
+  // and thus distinguish between a password mismatch due to the password
+  // being changed and the user simply mis-typing it.
+  if (profiles::IsLockAvailable(profile_)) {
+    ProfileInfoCache& info_cache =
+        g_browser_process->profile_manager()->GetProfileInfoCache();
+    size_t index = info_cache.GetIndexOfProfileWithPath(profile_->GetPath());
+    std::string token = info_cache.GetPasswordChangeDetectionTokenAtIndex(
+        index);
+    std::string account = profile_->GetProfileUserName();
+    if (token.empty() && !oauth_request_) {
+      // If we don't have a token for detecting a password change, create one.
+      ProfileOAuth2TokenService* token_service =
+          ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
+      OAuth2TokenService::ScopeSet scopes;
+      scopes.insert(GaiaConstants::kGoogleUserInfoEmail);
+      oauth_request_ = token_service->StartRequest(account, scopes, this);
+    }
+  }
+#endif
 }

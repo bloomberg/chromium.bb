@@ -30,6 +30,8 @@ class TestSigninClient : public SigninClient {
 
   // SigninClient implementation that is specialized for unit tests.
 
+  void DoFinalInit() override;
+
   // Returns NULL.
   // NOTE: This should be changed to return a properly-initalized PrefService
   // once there is a unit test that requires it.

@@ -29,6 +29,8 @@ TestSigninClient::TestSigninClient(PrefService* pref_service)
 
 TestSigninClient::~TestSigninClient() {}
 
+void TestSigninClient::DoFinalInit() {}
+
 PrefService* TestSigninClient::GetPrefs() {
   return pref_service_;
 }

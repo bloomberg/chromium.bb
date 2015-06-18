@@ -20,6 +20,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
+#include "google_apis/gaia/gaia_oauth_client.h"
 
 class GaiaAuthFetcher;
 
@@ -33,6 +34,7 @@ class UserManagerScreenHandler
     : public content::WebUIMessageHandler,
       public proximity_auth::ScreenlockBridge::LockHandler,
       public GaiaAuthConsumer,
+      public gaia::GaiaOAuthClient::Delegate,
       public content::NotificationObserver {
  public:
   UserManagerScreenHandler();
@@ -82,6 +84,11 @@ class UserManagerScreenHandler
   void HandleHardlockUserPod(const base::ListValue* args);
 
   // Handle GAIA auth results.
+  void OnGetTokenInfoResponse(
+      scoped_ptr<base::DictionaryValue> token_info) override;
+  void OnOAuthError() override;
+  void OnNetworkError(int response_code) override;
+  // ClientLogin is deprecated
   void OnClientLoginSuccess(const ClientLoginResult& result) override;
   void OnClientLoginFailure(const GoogleServiceAuthError& error) override;
 
@@ -107,12 +114,14 @@ class UserManagerScreenHandler
   chrome::HostDesktopType desktop_type_;
 
   // Authenticator used when local-auth fails.
+  scoped_ptr<gaia::GaiaOAuthClient> oauth_client_;
   scoped_ptr<GaiaAuthFetcher> client_login_;
 
   // The index of the profile currently being authenticated.
   size_t authenticating_profile_index_;
 
-  // Login password, held during on-line auth for saving later if correct.
+  // Login email and password, held during on-line auth for later use.
+  base::string16 email_address_;
   std::string password_attempt_;
 
   // URL hash, used to key post-profile actions if present.

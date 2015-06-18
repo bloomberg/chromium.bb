@@ -47,6 +47,11 @@ class SigninClient : public KeyedService {
 
   ~SigninClient() override {}
 
+  // Call when done local initialization and SigninClient can initiate any work
+  // it has to do that may require other components (like ProfileManager) to be
+  // available.
+  virtual void DoFinalInit() = 0;
+
   // Gets the preferences associated with the client.
   virtual PrefService* GetPrefs() = 0;
 

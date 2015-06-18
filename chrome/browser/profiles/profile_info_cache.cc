@@ -50,6 +50,7 @@ const char kIsUsingDefaultNameKey[] = "is_using_default_name";
 const char kIsUsingDefaultAvatarKey[] = "is_using_default_avatar";
 const char kAvatarIconKey[] = "avatar_icon";
 const char kAuthCredentialsKey[] = "local_auth_credentials";
+const char kPasswordTokenKey[] = "gaia_password_token";
 const char kUseGAIAPictureKey[] = "use_gaia_picture";
 const char kBackgroundAppsKey[] = "background_apps";
 const char kGAIAPictureFileNameKey[] = "gaia_picture_file_name";
@@ -348,6 +349,13 @@ std::string ProfileInfoCache::GetLocalAuthCredentialsOfProfileAtIndex(
   return credentials;
 }
 
+std::string ProfileInfoCache::GetPasswordChangeDetectionTokenAtIndex(
+    size_t index) const {
+  std::string token;
+  GetInfoForProfileAtIndex(index)->GetString(kPasswordTokenKey, &token);
+  return token;
+}
+
 bool ProfileInfoCache::GetBackgroundStatusOfProfileAtIndex(
     size_t index) const {
   bool background_app_status;
@@ -623,6 +631,16 @@ void ProfileInfoCache::SetLocalAuthCredentialsOfProfileAtIndex(
   scoped_ptr<base::DictionaryValue> info(
       GetInfoForProfileAtIndex(index)->DeepCopy());
   info->SetString(kAuthCredentialsKey, credentials);
+  // This takes ownership of |info|.
+  SetInfoForProfileAtIndex(index, info.release());
+}
+
+void ProfileInfoCache::SetPasswordChangeDetectionTokenAtIndex(
+    size_t index,
+    const std::string& token) {
+  scoped_ptr<base::DictionaryValue> info(
+      GetInfoForProfileAtIndex(index)->DeepCopy());
+  info->SetString(kPasswordTokenKey, token);
   // This takes ownership of |info|.
   SetInfoForProfileAtIndex(index, info.release());
 }

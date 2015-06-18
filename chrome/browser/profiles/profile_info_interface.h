@@ -41,6 +41,8 @@ class ProfileInfoInterface {
 
   virtual std::string GetLocalAuthCredentialsOfProfileAtIndex(
       size_t index) const = 0;
+  virtual std::string GetPasswordChangeDetectionTokenAtIndex(
+      size_t index) const = 0;
 
   // Returns true if the profile at the given index is currently running any
   // background apps.

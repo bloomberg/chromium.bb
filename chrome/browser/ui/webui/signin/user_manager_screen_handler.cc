@@ -83,6 +83,7 @@ const char kJsApiUserManagerLogRemoveUserWarningShown[] =
     "logRemoveUserWarningShown";
 
 const size_t kAvatarIconSize = 180;
+const int kMaxOAuthRetries = 3;
 
 void HandleAndDoNothing(const base::ListValue* args) {
 }
@@ -437,27 +438,44 @@ void UserManagerScreenHandler::HandleAuthenticatedLaunchUser(
   }
 
   authenticating_profile_index_ = profile_index;
-  if (!LocalAuth::ValidateLocalAuthCredentials(profile_index, password)) {
-    // Make a second attempt via an on-line authentication call.  This handles
-    // profiles that are missing sign-in credentials and also cases where the
-    // password has been changed externally.
-    client_login_.reset(new GaiaAuthFetcher(
-        this,
-        GaiaConstants::kChromeSource,
-        web_ui()->GetWebContents()->GetBrowserContext()->GetRequestContext()));
-
-    client_login_->StartClientLogin(
-        base::UTF16ToUTF8(email_address),
-        password,
-        GaiaConstants::kSyncService,
-        std::string(),
-        std::string(),
-        GaiaAuthFetcher::HostedAccountsAllowed);
-    password_attempt_ = password;
+  if (LocalAuth::ValidateLocalAuthCredentials(profile_index, password)) {
+    ReportAuthenticationResult(true, ProfileMetrics::AUTH_LOCAL);
     return;
   }
 
-  ReportAuthenticationResult(true, ProfileMetrics::AUTH_LOCAL);
+  email_address_ = email_address;
+  password_attempt_ = password;
+
+  // This could be a mis-typed password or typing a new password while we
+  // still have a hash of the old one.  The new way of checking a password
+  // change makes use of a token so we do that... if it's available.
+  if (!oauth_client_) {
+    oauth_client_.reset(new gaia::GaiaOAuthClient(
+        web_ui()->GetWebContents()->GetBrowserContext()->GetRequestContext()));
+  }
+  std::string token = info_cache.GetPasswordChangeDetectionTokenAtIndex(
+      profile_index);
+  if (!token.empty()) {
+    oauth_client_->GetTokenHandleInfo(token, kMaxOAuthRetries, this);
+    return;
+  }
+
+  // In order to support the upgrade case where we have a local hash but no
+  // password token, we fall back on (deprecated) ClientLogin.  This will
+  // have to be removed in future versions as the service gets turned down
+  // but by then we'll have seamlessly updated the majority of users.
+  client_login_.reset(new GaiaAuthFetcher(
+      this,
+      GaiaConstants::kChromeSource,
+      web_ui()->GetWebContents()->GetBrowserContext()->GetRequestContext()));
+
+  client_login_->StartClientLogin(
+      base::UTF16ToUTF8(email_address),
+      password,
+      GaiaConstants::kSyncService,
+      std::string(),
+      std::string(),
+      GaiaAuthFetcher::HostedAccountsAllowed);
 }
 
 void UserManagerScreenHandler::HandleRemoveUser(const base::ListValue* args) {
@@ -553,8 +571,42 @@ void UserManagerScreenHandler::HandleHardlockUserPod(
   HideUserPodCustomIcon(email);
 }
 
+void UserManagerScreenHandler::OnGetTokenInfoResponse(
+    scoped_ptr<base::DictionaryValue> token_info) {
+  // Password is unchanged so user just mistyped it.  Ask again.
+  ReportAuthenticationResult(false, ProfileMetrics::AUTH_FAILED);
+}
+
+void UserManagerScreenHandler::OnOAuthError() {
+  // Password has changed.  Go through online signin flow.
+  // ... if we had it.  Until then, use deprecated ClientLogin to validate
+  // the password.  This will have to be changed soon.  (TODO: bcwhite)
+    oauth_client_.reset();
+    client_login_.reset(new GaiaAuthFetcher(
+      this,
+      GaiaConstants::kChromeSource,
+      web_ui()->GetWebContents()->GetBrowserContext()->GetRequestContext()));
+
+  DCHECK(!email_address_.empty());
+  DCHECK(!password_attempt_.empty());
+  client_login_->StartClientLogin(
+      base::UTF16ToUTF8(email_address_),
+      password_attempt_,
+      GaiaConstants::kSyncService,
+      std::string(),
+      std::string(),
+      GaiaAuthFetcher::HostedAccountsAllowed);
+}
+
+void UserManagerScreenHandler::OnNetworkError(int response_code) {
+  // Inconclusive but can't do real signin without being online anyway.
+    oauth_client_.reset();
+    ReportAuthenticationResult(false, ProfileMetrics::AUTH_FAILED_OFFLINE);
+}
+
 void UserManagerScreenHandler::OnClientLoginSuccess(
     const ClientLoginResult& result) {
+  oauth_client_.reset();
   LocalAuth::SetLocalAuthCredentials(authenticating_profile_index_,
                                      password_attempt_);
   ReportAuthenticationResult(true, ProfileMetrics::AUTH_ONLINE);
@@ -787,6 +839,7 @@ void UserManagerScreenHandler::ReportAuthenticationResult(
     bool success,
     ProfileMetrics::ProfileAuth auth) {
   ProfileMetrics::LogProfileAuthResult(auth);
+  email_address_.clear();
   password_attempt_.clear();
 
   if (success) {
