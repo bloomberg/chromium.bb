@@ -415,13 +415,12 @@ class StubClient : public media::VideoCaptureDevice::Client {
     int id() const override { return id_; }
     size_t size() const override { return buffer_handle_->size(); }
     void* data() override { return buffer_handle_->data(); }
-    gfx::GpuMemoryBufferType GetType() override {
-      return gfx::SHARED_MEMORY_BUFFER;
-    }
     ClientBuffer AsClientBuffer() override { return nullptr; }
-    base::PlatformFile AsPlatformFile() override {
-      return base::PlatformFile();
+#if defined(OS_POSIX)
+    base::FileDescriptor AsPlatformFile() override {
+      return base::FileDescriptor();
     }
+#endif
 
    private:
     ~AutoReleaseBuffer() override { pool_->RelinquishProducerReservation(id_); }

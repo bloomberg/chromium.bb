@@ -67,17 +67,12 @@ class SimpleBufferHandle final : public VideoCaptureBufferPool::BufferHandle {
 
   size_t size() const override { return size_; }
   void* data() override { return data_; }
-  gfx::GpuMemoryBufferType GetType() override {
-    return gfx::SHARED_MEMORY_BUFFER;
-  }
   ClientBuffer AsClientBuffer() override { return nullptr; }
-  base::PlatformFile AsPlatformFile() override {
 #if defined(OS_POSIX)
-    return handle_.fd;
-#elif defined(OS_WIN)
+  base::FileDescriptor AsPlatformFile() override {
     return handle_;
-#endif
   }
+#endif
 
  private:
   void* const data_;
@@ -104,18 +99,12 @@ class GpuMemoryBufferBufferHandle
 
   size_t size() const override { return size_; }
   void* data() override { return data_[0]; }
-  gfx::GpuMemoryBufferType GetType() override {
-    return gmb_->GetHandle().type;
-  }
   ClientBuffer AsClientBuffer() override { return gmb_->AsClientBuffer(); }
-  base::PlatformFile AsPlatformFile() override {
-    DCHECK_EQ(gmb_->GetHandle().type, gfx::SHARED_MEMORY_BUFFER);
 #if defined(OS_POSIX)
-    return gmb_->GetHandle().handle.fd;
-#elif defined(OS_WIN)
+  base::FileDescriptor AsPlatformFile() override {
     return gmb_->GetHandle().handle;
-#endif
   }
+#endif
 
  private:
   gfx::GpuMemoryBuffer* const gmb_;

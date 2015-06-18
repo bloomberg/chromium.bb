@@ -39,13 +39,12 @@ class MockBuffer : public VideoCaptureDevice::Client::Buffer {
   int id() const override { return id_; }
   size_t size() const override { return size_; }
   void* data() override { return data_; }
-  gfx::GpuMemoryBufferType GetType() override {
-    return gfx::SHARED_MEMORY_BUFFER;
-  }
   ClientBuffer AsClientBuffer() override { return nullptr; }
-  base::PlatformFile AsPlatformFile() override {
-    return base::PlatformFile();
+#if defined(OS_POSIX)
+  base::FileDescriptor AsPlatformFile() override {
+    return base::FileDescriptor();
   }
+#endif
 
  private:
   const int id_;

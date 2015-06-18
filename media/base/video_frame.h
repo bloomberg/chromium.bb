@@ -349,8 +349,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   bool DuplicateFileDescriptors(const std::vector<int>& fds_in);
 #endif
 
-  void AddSharedMemoryHandle(base::SharedMemoryHandle handle,
-                             size_t shared_memory_offset);
+  void AddSharedMemoryHandle(base::SharedMemoryHandle handle);
 
 #if defined(OS_MACOSX)
   // Returns the backing CVPixelBuffer, if present.

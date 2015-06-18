@@ -179,7 +179,6 @@ void FakeVideoCaptureDevice::CaptureUsingClientBuffers(
   if (capture_buffer.get()) {
     uint8_t* const data_ptr = static_cast<uint8_t*>(capture_buffer->data());
     DCHECK(data_ptr) << "Buffer has NO backing memory";
-    DCHECK_EQ(capture_buffer->GetType(), gfx::SHARED_MEMORY_BUFFER);
     memset(data_ptr, 0, capture_buffer->size());
 
     DrawPacman(

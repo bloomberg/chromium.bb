@@ -118,15 +118,14 @@ class AutoReleaseBuffer : public media::VideoCaptureDevice::Client::Buffer {
   int id() const override { return id_; }
   size_t size() const override { return buffer_handle_->size(); }
   void* data() override { return buffer_handle_->data(); }
-  gfx::GpuMemoryBufferType GetType() override {
-    return buffer_handle_->GetType();
-  }
   ClientBuffer AsClientBuffer() override {
     return buffer_handle_->AsClientBuffer();
   }
-  base::PlatformFile AsPlatformFile() override {
+#if defined(OS_POSIX)
+  base::FileDescriptor AsPlatformFile() override {
     return buffer_handle_->AsPlatformFile();
   }
+#endif
 
  private:
   ~AutoReleaseBuffer() override { pool_->RelinquishProducerReservation(id_); }
@@ -579,10 +578,16 @@ VideoCaptureDeviceClient::TextureWrapHelper::OnIncomingCapturedGpuMemoryBuffer(
   video_frame->metadata()->SetDouble(VideoFrameMetadata::FRAME_RATE,
                                      frame_format.frame_rate);
 #if defined(OS_LINUX)
-  if (buffer->GetType() == gfx::OZONE_NATIVE_BUFFER) {
-    video_frame->DuplicateFileDescriptors(
-        std::vector<int>(buffer->AsPlatformFile()));
-  }
+// TODO(mcasas): After http://crev.com/1179323002, use |frame_format| to query
+// the storage type of the buffer and use the appropriate |video_frame| method.
+#if defined(USE_OZONE)
+  DCHECK_EQ(media::VideoFrame::NumPlanes(video_frame->format()), 1u);
+  video_frame->DuplicateFileDescriptors(
+      std::vector<int>(1, buffer->AsPlatformFile().fd));
+#else
+   video_frame->AddSharedMemoryHandle(buffer->AsPlatformFile());
+#endif
+
 #endif
   //TODO(mcasas): use AddSharedMemoryHandle() for gfx::SHARED_MEMORY_BUFFER.
 

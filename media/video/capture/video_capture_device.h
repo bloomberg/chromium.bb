@@ -203,9 +203,10 @@ class MEDIA_EXPORT VideoCaptureDevice {
       virtual int id() const = 0;
       virtual size_t size() const = 0;
       virtual void* data() = 0;
-      virtual gfx::GpuMemoryBufferType GetType() = 0;
       virtual ClientBuffer AsClientBuffer() = 0;
-      virtual base::PlatformFile AsPlatformFile() = 0;
+#if defined(OS_POSIX)
+      virtual base::FileDescriptor AsPlatformFile() = 0;
+#endif
     };
 
     virtual ~Client() {}

@@ -635,7 +635,8 @@ VideoFrame::VideoFrame(Format format,
                  natural_size,
                  timestamp) {
   DCHECK_EQ(storage_type, STORAGE_SHMEM);
-  AddSharedMemoryHandle(handle, shared_memory_offset);
+  AddSharedMemoryHandle(handle);
+  shared_memory_offset_ = shared_memory_offset;
 }
 
 VideoFrame::VideoFrame(Format format,
@@ -881,11 +882,9 @@ bool VideoFrame::DuplicateFileDescriptors(const std::vector<int>& in_fds) {
 }
 #endif
 
-void VideoFrame::AddSharedMemoryHandle(base::SharedMemoryHandle handle,
-                                       size_t shared_memory_offset) {
+void VideoFrame::AddSharedMemoryHandle(base::SharedMemoryHandle handle) {
   storage_type_ = STORAGE_SHMEM;
   shared_memory_handle_ = handle;
-  shared_memory_offset_ = shared_memory_offset;
 }
 
 #if defined(OS_MACOSX)
