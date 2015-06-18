@@ -284,6 +284,12 @@ jboolean BrowserAccessibilityManagerAndroid::PopulateAccessibilityNodeInfo(
         base::android::ConvertUTF16ToJavaString(env, node->GetText()).obj(),
         node->IsLink());
   }
+  base::string16 element_id;
+  if (node->GetHtmlAttribute("id", &element_id)) {
+    Java_BrowserAccessibilityManager_setAccessibilityNodeInfoViewIdResourceName(
+        env, obj, info,
+        base::android::ConvertUTF16ToJavaString(env, element_id).obj());
+  }
 
   gfx::Rect absolute_rect = node->GetLocalBoundsRect();
   gfx::Rect parent_relative_rect = absolute_rect;

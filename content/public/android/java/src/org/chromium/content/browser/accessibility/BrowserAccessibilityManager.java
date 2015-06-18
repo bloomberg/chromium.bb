@@ -761,6 +761,12 @@ public class BrowserAccessibilityManager {
     }
 
     @CalledByNative
+    private void setAccessibilityNodeInfoViewIdResourceName(
+            AccessibilityNodeInfo node, String viewIdResourceName) {
+        node.setViewIdResourceName(viewIdResourceName);
+    }
+
+    @CalledByNative
     private void setAccessibilityNodeInfoContentDescription(
             AccessibilityNodeInfo node, String contentDescription, boolean annotateAsLink) {
         if (annotateAsLink) {
