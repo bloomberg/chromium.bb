@@ -352,7 +352,8 @@ struct PartitionBucketMemoryStats {
     uint32_t allocatedPageSize; // Total size the partition page allocated from the system.
     uint32_t activeBytes; // Total active bytes used in the bucket.
     uint32_t residentBytes; // Total bytes provisioned in the bucket.
-    uint32_t freeableBytes; // Total bytes that could be decommitted.
+    uint32_t decommittableBytes; // Total bytes that could be decommitted.
+    uint32_t discardableBytes; // Total bytes that could be discarded.
     uint32_t numFullPages; // Number of pages with all slots allocated.
     uint32_t numActivePages; // Number of pages that have at least one provisioned slot.
     uint32_t numEmptyPages; // Number of pages that are empty but not decommitted.
@@ -370,8 +371,14 @@ WTF_EXPORT void partitionAllocInit(PartitionRoot*, size_t numBuckets, size_t max
 WTF_EXPORT bool partitionAllocShutdown(PartitionRoot*);
 WTF_EXPORT void partitionAllocGenericInit(PartitionRootGeneric*);
 WTF_EXPORT bool partitionAllocGenericShutdown(PartitionRootGeneric*);
-WTF_EXPORT void partitionPurgeMemory(PartitionRoot*);
-WTF_EXPORT void partitionPurgeMemoryGeneric(PartitionRootGeneric*);
+
+enum PartitionPurgeFlags {
+    // Decommitting the ring list of empty pages is reasonably fast.
+    PartitionPurgeDecommitEmptyPages = 1 << 0,
+};
+
+WTF_EXPORT void partitionPurgeMemory(PartitionRoot*, int);
+WTF_EXPORT void partitionPurgeMemoryGeneric(PartitionRootGeneric*, int);
 
 WTF_EXPORT NEVER_INLINE void* partitionAllocSlowPath(PartitionRootBase*, int, size_t, PartitionBucket*);
 WTF_EXPORT NEVER_INLINE void partitionFreeSlowPath(PartitionPage*);

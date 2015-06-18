@@ -45,7 +45,8 @@ void PartitionStatsDumperImpl::partitionsDumpBucketStats(const char* partitionNa
     allocatorDump->AddScalar("slot_size", "bytes", memoryStats->bucketSlotSize);
     allocatorDump->AddScalar("active_size", "bytes", memoryStats->activeBytes);
     allocatorDump->AddScalar("resident_size", "bytes", memoryStats->residentBytes);
-    allocatorDump->AddScalar("freeable_size", "bytes", memoryStats->freeableBytes);
+    allocatorDump->AddScalar("decommittable_size", "bytes", memoryStats->decommittableBytes);
+    allocatorDump->AddScalar("discardable_size", "bytes", memoryStats->discardableBytes);
     allocatorDump->AddScalar("num_active", "objects", memoryStats->numActivePages);
     allocatorDump->AddScalar("num_full", "objects", memoryStats->numFullPages);
     allocatorDump->AddScalar("num_empty", "objects", memoryStats->numEmptyPages);

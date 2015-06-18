@@ -1345,7 +1345,7 @@ TEST(PartitionAllocTest, DumpMemoryStats)
             EXPECT_EQ(2048u, stats->bucketSlotSize);
             EXPECT_EQ(2048u, stats->activeBytes);
             EXPECT_EQ(kSystemPageSize, stats->residentBytes);
-            EXPECT_EQ(0u, stats->freeableBytes);
+            EXPECT_EQ(0u, stats->decommittableBytes);
             EXPECT_EQ(0u, stats->numFullPages);
             EXPECT_EQ(1u, stats->numActivePages);
             EXPECT_EQ(0u, stats->numEmptyPages);
@@ -1365,7 +1365,7 @@ TEST(PartitionAllocTest, DumpMemoryStats)
             EXPECT_EQ(2048u, stats->bucketSlotSize);
             EXPECT_EQ(0u, stats->activeBytes);
             EXPECT_EQ(kSystemPageSize, stats->residentBytes);
-            EXPECT_EQ(kSystemPageSize, stats->freeableBytes);
+            EXPECT_EQ(kSystemPageSize, stats->decommittableBytes);
             EXPECT_EQ(0u, stats->numFullPages);
             EXPECT_EQ(0u, stats->numActivePages);
             EXPECT_EQ(1u, stats->numEmptyPages);
@@ -1385,7 +1385,7 @@ TEST(PartitionAllocTest, DumpMemoryStats)
             EXPECT_EQ(2048u, stats->bucketSlotSize);
             EXPECT_EQ(0u, stats->activeBytes);
             EXPECT_EQ(0u, stats->residentBytes);
-            EXPECT_EQ(0u, stats->freeableBytes);
+            EXPECT_EQ(0u, stats->decommittableBytes);
             EXPECT_EQ(0u, stats->numFullPages);
             EXPECT_EQ(0u, stats->numActivePages);
             EXPECT_EQ(0u, stats->numEmptyPages);
@@ -1416,7 +1416,7 @@ TEST(PartitionAllocTest, DumpMemoryStats)
             EXPECT_EQ(kPartitionPageSize, stats->bucketSlotSize);
             EXPECT_EQ(kPartitionPageSize, stats->activeBytes);
             EXPECT_EQ(kPartitionPageSize, stats->residentBytes);
-            EXPECT_EQ(0u, stats->freeableBytes);
+            EXPECT_EQ(0u, stats->decommittableBytes);
             EXPECT_EQ(1u, stats->numFullPages);
             EXPECT_EQ(0u, stats->numActivePages);
             EXPECT_EQ(0u, stats->numEmptyPages);
@@ -1446,7 +1446,7 @@ TEST(PartitionAllocTest, DumpMemoryStats)
             EXPECT_EQ(realSizeSmaller, stats->bucketSlotSize);
             EXPECT_EQ(realSizeSmaller, stats->activeBytes);
             EXPECT_EQ(realSizeSmaller, stats->residentBytes);
-            EXPECT_EQ(0u, stats->freeableBytes);
+            EXPECT_EQ(0u, stats->decommittableBytes);
             EXPECT_EQ(1u, stats->numFullPages);
             EXPECT_EQ(0u, stats->numActivePages);
             EXPECT_EQ(0u, stats->numEmptyPages);
@@ -1459,7 +1459,7 @@ TEST(PartitionAllocTest, DumpMemoryStats)
             EXPECT_EQ(realSizeBigger, stats->bucketSlotSize);
             EXPECT_EQ(realSizeBigger, stats->activeBytes);
             EXPECT_EQ(realSizeBigger, stats->residentBytes);
-            EXPECT_EQ(0u, stats->freeableBytes);
+            EXPECT_EQ(0u, stats->decommittableBytes);
             EXPECT_EQ(1u, stats->numFullPages);
             EXPECT_EQ(0u, stats->numActivePages);
             EXPECT_EQ(0u, stats->numEmptyPages);
@@ -1494,7 +1494,7 @@ TEST(PartitionAllocTest, DumpMemoryStats)
             EXPECT_EQ(slotSize, stats->bucketSlotSize);
             EXPECT_EQ(65536 + kSystemPageSize, stats->activeBytes);
             EXPECT_EQ(slotSize, stats->residentBytes);
-            EXPECT_EQ(0u, stats->freeableBytes);
+            EXPECT_EQ(0u, stats->decommittableBytes);
             EXPECT_EQ(1u, stats->numFullPages);
             EXPECT_EQ(0u, stats->numActivePages);
             EXPECT_EQ(0u, stats->numEmptyPages);
@@ -1522,10 +1522,10 @@ TEST(PartitionAllocTest, Purge)
         const PartitionBucketMemoryStats* stats = mockStatsDumperGeneric.GetBucketStats(2048);
         EXPECT_TRUE(stats);
         EXPECT_TRUE(stats->isValid);
-        EXPECT_EQ(kSystemPageSize, stats->freeableBytes);
+        EXPECT_EQ(kSystemPageSize, stats->decommittableBytes);
         EXPECT_EQ(kSystemPageSize, stats->residentBytes);
     }
-    partitionPurgeMemoryGeneric(genericAllocator.root());
+    partitionPurgeMemoryGeneric(genericAllocator.root(), PartitionPurgeDecommitEmptyPages);
     {
         MockPartitionStatsDumper mockStatsDumperGeneric;
         partitionDumpStatsGeneric(genericAllocator.root(), "mock_generic_allocator", &mockStatsDumperGeneric);
@@ -1534,12 +1534,12 @@ TEST(PartitionAllocTest, Purge)
         const PartitionBucketMemoryStats* stats = mockStatsDumperGeneric.GetBucketStats(2048);
         EXPECT_TRUE(stats);
         EXPECT_TRUE(stats->isValid);
-        EXPECT_EQ(0u, stats->freeableBytes);
+        EXPECT_EQ(0u, stats->decommittableBytes);
         EXPECT_EQ(0u, stats->residentBytes);
     }
     // Calling purge again here is a good way of testing we didn't mess up the
     // state of the free cache ring.
-    partitionPurgeMemoryGeneric(genericAllocator.root());
+    partitionPurgeMemoryGeneric(genericAllocator.root(), PartitionPurgeDecommitEmptyPages);
     TestShutdown();
 }
 

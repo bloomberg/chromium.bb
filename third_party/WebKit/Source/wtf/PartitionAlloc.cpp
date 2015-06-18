@@ -896,7 +896,7 @@ static ALWAYS_INLINE void partitionRegisterEmptyPage(PartitionPage* page)
     root->globalEmptyPageRingIndex = currentIndex;
 }
 
-static void partitionDecommitFreePages(PartitionRootBase* root)
+static void partitionDecommitEmptyPages(PartitionRootBase* root)
 {
     for (size_t i = 0; i < kMaxFreeableSpans; ++i) {
         PartitionPage* page = root->globalEmptyPageRing[i];
@@ -906,15 +906,17 @@ static void partitionDecommitFreePages(PartitionRootBase* root)
     }
 }
 
-void partitionPurgeMemory(PartitionRoot* root)
+void partitionPurgeMemory(PartitionRoot* root, int flags)
 {
-    partitionDecommitFreePages(root);
+    if (flags & PartitionPurgeDecommitEmptyPages)
+        partitionDecommitEmptyPages(root);
 }
 
-void partitionPurgeMemoryGeneric(PartitionRootGeneric* root)
+void partitionPurgeMemoryGeneric(PartitionRootGeneric* root, int flags)
 {
     spinLockLock(&root->lock);
-    partitionDecommitFreePages(root);
+    if (flags & PartitionPurgeDecommitEmptyPages)
+        partitionDecommitEmptyPages(root);
     spinLockUnlock(&root->lock);
 }
 
@@ -1100,7 +1102,7 @@ static void partitionDumpPageStats(PartitionBucketMemoryStats* statsOut, const P
         size_t pageBytesResidentRounded = partitionRoundUpToSystemPage(pageBytesResident);
         statsOut->residentBytes += pageBytesResidentRounded;
         if (!page->numAllocatedSlots) {
-            statsOut->freeableBytes += pageBytesResidentRounded;
+            statsOut->decommittableBytes += pageBytesResidentRounded;
             ++statsOut->numEmptyPages;
         } else if (page->numAllocatedSlots == bucketNumSlots) {
             ++statsOut->numFullPages;

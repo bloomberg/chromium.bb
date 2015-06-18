@@ -76,10 +76,10 @@ void Partitions::decommitFreeableMemory()
 {
     ASSERT(isMainThread());
 
-    partitionPurgeMemoryGeneric(bufferPartition());
-    partitionPurgeMemoryGeneric(fastMallocPartition());
-    partitionPurgeMemory(objectModelPartition());
-    partitionPurgeMemory(layoutPartition());
+    partitionPurgeMemoryGeneric(bufferPartition(), PartitionPurgeDecommitEmptyPages);
+    partitionPurgeMemoryGeneric(fastMallocPartition(), PartitionPurgeDecommitEmptyPages);
+    partitionPurgeMemory(objectModelPartition(), PartitionPurgeDecommitEmptyPages);
+    partitionPurgeMemory(layoutPartition(), PartitionPurgeDecommitEmptyPages);
 }
 
 void Partitions::reportMemoryUsageHistogram()
