@@ -27,6 +27,7 @@
 #define EventHandler_h
 
 #include "core/CoreExport.h"
+#include "core/events/PointerIdManager.h"
 #include "core/events/TextEventInputType.h"
 #include "core/layout/HitTestRequest.h"
 #include "core/page/DragActions.h"
@@ -34,6 +35,7 @@
 #include "core/style/ComputedStyleConstants.h"
 #include "platform/Cursor.h"
 #include "platform/PlatformMouseEvent.h"
+#include "platform/PlatformTouchPoint.h"
 #include "platform/Timer.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/geometry/LayoutPoint.h"
@@ -64,6 +66,7 @@ class HTMLFrameSetElement;
 class HitTestRequest;
 class HitTestResult;
 class KeyboardEvent;
+class LayoutObject;
 class LocalFrame;
 class Node;
 class OptionalCursor;
@@ -71,7 +74,6 @@ class PlatformGestureEvent;
 class PlatformKeyboardEvent;
 class PlatformTouchEvent;
 class PlatformWheelEvent;
-class LayoutObject;
 class ScrollableArea;
 class Scrollbar;
 class ScrollState;
@@ -316,6 +318,19 @@ private:
     // the given element.
     bool slideFocusOnShadowHostIfNecessary(const Element&);
 
+    using TouchInfo = struct {
+        PlatformTouchPoint point;
+        EventTarget* touchTarget;
+        LocalFrame* targetFrame;
+        FloatPoint adjustedPagePoint;
+        FloatSize adjustedRadius;
+        bool knownTarget;
+        bool consumed;
+    };
+
+    void dispatchPointerEventsForTouchEvent(const PlatformTouchEvent&, Vector<TouchInfo>&);
+    bool dispatchTouchEvents(const PlatformTouchEvent&, Vector<TouchInfo>&, bool, bool);
+
     // NOTE: If adding a new field to this class please ensure that it is
     // cleared in |EventHandler::clear()|.
 
@@ -387,6 +402,8 @@ private:
     RefPtr<UserGestureToken> m_touchSequenceUserGestureToken;
 
     bool m_touchPressed;
+
+    PointerIdManager m_pointerIdManager;
 
     RefPtrWillBeMember<Node> m_scrollGestureHandlingNode;
     bool m_lastGestureScrollOverWidget;

@@ -34,9 +34,12 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
+#include "core/EventNames.h"
+#include "core/EventTargetNames.h"
+#include "core/EventTypeNames.h"
 #include "core/events/EventListenerMap.h"
-#include "core/events/ThreadLocalEventNames.h"
 #include "platform/heap/Handle.h"
+#include "wtf/text/AtomicString.h"
 
 namespace blink {
 

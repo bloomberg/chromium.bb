@@ -43,6 +43,7 @@
 #include "core/events/EventPath.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/events/MouseEvent.h"
+#include "core/events/PointerEvent.h"
 #include "core/events/TextEvent.h"
 #include "core/events/TouchEvent.h"
 #include "core/events/WheelEvent.h"
@@ -314,6 +315,7 @@ void EventHandler::clear()
     m_scrollbarHandlingScrollGesture = nullptr;
     m_maxMouseMovedDuration = 0;
     m_touchPressed = false;
+    m_pointerIdManager.clear();
     m_mouseDownMayStartDrag = false;
     m_lastShowPressTimestamp = 0;
     m_lastDeferredTapElement = nullptr;
@@ -3379,7 +3381,7 @@ void EventHandler::updateLastScrollbarUnderMouse(Scrollbar* scrollbar, bool setL
     }
 }
 
-static const AtomicString& eventNameForTouchPointState(PlatformTouchPoint::State state)
+static const AtomicString& touchEventNameForTouchPointState(PlatformTouchPoint::State state)
 {
     switch (state) {
     case PlatformTouchPoint::TouchReleased:
@@ -3391,7 +3393,26 @@ static const AtomicString& eventNameForTouchPointState(PlatformTouchPoint::State
     case PlatformTouchPoint::TouchMoved:
         return EventTypeNames::touchmove;
     case PlatformTouchPoint::TouchStationary:
-        // TouchStationary state is not converted to touch events, so fall through to assert.
+        // Fall through to default
+    default:
+        ASSERT_NOT_REACHED();
+        return emptyAtom;
+    }
+}
+
+static const AtomicString& pointerEventNameForTouchPointState(PlatformTouchPoint::State state)
+{
+    switch (state) {
+    case PlatformTouchPoint::TouchReleased:
+        return EventTypeNames::pointerup;
+    case PlatformTouchPoint::TouchCancelled:
+        return EventTypeNames::pointercancel;
+    case PlatformTouchPoint::TouchPressed:
+        return EventTypeNames::pointerdown;
+    case PlatformTouchPoint::TouchMoved:
+        return EventTypeNames::pointermove;
+    case PlatformTouchPoint::TouchStationary:
+        // Fall through to default
     default:
         ASSERT_NOT_REACHED();
         return emptyAtom;
@@ -3413,17 +3434,174 @@ HitTestResult EventHandler::hitTestResultInFrame(LocalFrame* frame, const Layout
     return result;
 }
 
+void EventHandler::dispatchPointerEventsForTouchEvent(const PlatformTouchEvent& event, Vector<TouchInfo>& touchInfos)
+{
+    const String& PointerTypeStrForTouch("touch");
+
+    // Iterate through the touch points, sending PointerEvents to the targets as required.
+    for (unsigned i = 0; i < touchInfos.size(); ++i) {
+        TouchInfo& touchInfo = touchInfos[i];
+        const PlatformTouchPoint& point = touchInfo.point;
+        const unsigned& pointerId = point.id();
+        const PlatformTouchPoint::State pointState = point.state();
+
+        if (pointState == PlatformTouchPoint::TouchStationary)
+            continue;
+        bool pointerReleasedOrCancelled =
+            pointState == PlatformTouchPoint::TouchReleased || pointState == PlatformTouchPoint::TouchCancelled;
+        const AtomicString& eventName(pointerEventNameForTouchPointState(pointState));
+
+        if (pointState == PlatformTouchPoint::TouchPressed)
+            m_pointerIdManager.add(PointerIdManager::PointerTypeTouch, pointerId);
+
+        bool isEnterOrLeave = false;
+
+        PointerEventInit pointerEventInit;
+        pointerEventInit.setPointerId(pointerId);
+        pointerEventInit.setWidth(touchInfo.adjustedRadius.width());
+        pointerEventInit.setHeight(touchInfo.adjustedRadius.height());
+        pointerEventInit.setPressure(point.force());
+        pointerEventInit.setPointerType(PointerTypeStrForTouch);
+        pointerEventInit.setIsPrimary(m_pointerIdManager.isPrimary(PointerIdManager::PointerTypeTouch, pointerId));
+        pointerEventInit.setScreenX(point.screenPos().x());
+        pointerEventInit.setScreenY(point.screenPos().y());
+        pointerEventInit.setClientX(touchInfo.adjustedPagePoint.x());
+        pointerEventInit.setClientY(touchInfo.adjustedPagePoint.y());
+        pointerEventInit.setButton(0);
+        pointerEventInit.setButtons(pointerReleasedOrCancelled ? 0 : 1);
+
+        pointerEventInit.setCtrlKey(event.ctrlKey());
+        pointerEventInit.setShiftKey(event.shiftKey());
+        pointerEventInit.setAltKey(event.altKey());
+        pointerEventInit.setMetaKey(event.metaKey());
+
+        pointerEventInit.setBubbles(!isEnterOrLeave);
+        pointerEventInit.setCancelable(!isEnterOrLeave && pointState != PlatformTouchPoint::TouchCancelled);
+
+        RefPtrWillBeRawPtr<PointerEvent> pointerEvent = PointerEvent::create(eventName, pointerEventInit);
+        touchInfo.touchTarget->toNode()->dispatchPointerEvent(pointerEvent.get());
+        touchInfo.consumed = pointerEvent->defaultPrevented() || pointerEvent->defaultHandled();
+
+        // Remove the released/cancelled id at the end to correctly determine primary id above.
+        if (pointerReleasedOrCancelled)
+            m_pointerIdManager.remove(PointerIdManager::PointerTypeTouch, pointerId);
+    }
+}
+
+bool EventHandler::dispatchTouchEvents(const PlatformTouchEvent& event,
+    Vector<TouchInfo>& touchInfos, bool freshTouchEvents, bool allTouchReleased)
+{
+    bool swallowedEvent = false;
+
+    // Build up the lists to use for the 'touches', 'targetTouches' and
+    // 'changedTouches' attributes in the JS event. See
+    // http://www.w3.org/TR/touch-events/#touchevent-interface for how these
+    // lists fit together.
+
+    // Holds the complete set of touches on the screen.
+    RefPtrWillBeRawPtr<TouchList> touches = TouchList::create();
+
+    // A different view on the 'touches' list above, filtered and grouped by
+    // event target. Used for the 'targetTouches' list in the JS event.
+    using TargetTouchesHeapMap = WillBeHeapHashMap<EventTarget*, RefPtrWillBeMember<TouchList>>;
+    TargetTouchesHeapMap touchesByTarget;
+
+    // Array of touches per state, used to assemble the 'changedTouches' list.
+    using EventTargetSet = WillBeHeapHashSet<RefPtrWillBeMember<EventTarget>>;
+    struct {
+        // The touches corresponding to the particular change state this struct
+        // instance represents.
+        RefPtrWillBeMember<TouchList> m_touches;
+        // Set of targets involved in m_touches.
+        EventTargetSet m_targets;
+    } changedTouches[PlatformTouchPoint::TouchStateEnd];
+
+    for (unsigned i = 0; i < touchInfos.size(); ++i) {
+        const TouchInfo& touchInfo = touchInfos[i];
+        const PlatformTouchPoint& point = touchInfo.point;
+        PlatformTouchPoint::State pointState = point.state();
+
+        if (touchInfo.consumed)
+            continue;
+
+        RefPtrWillBeRawPtr<Touch> touch = Touch::create(
+            touchInfo.targetFrame,
+            touchInfo.touchTarget,
+            point.id(),
+            point.screenPos(),
+            touchInfo.adjustedPagePoint,
+            touchInfo.adjustedRadius,
+            point.rotationAngle(),
+            point.force());
+
+        // Ensure this target's touch list exists, even if it ends up empty, so
+        // it can always be passed to TouchEvent::Create below.
+        TargetTouchesHeapMap::iterator targetTouchesIterator = touchesByTarget.find(touchInfo.touchTarget);
+        if (targetTouchesIterator == touchesByTarget.end()) {
+            touchesByTarget.set(touchInfo.touchTarget, TouchList::create());
+            targetTouchesIterator = touchesByTarget.find(touchInfo.touchTarget);
+        }
+
+        // touches and targetTouches should only contain information about
+        // touches still on the screen, so if this point is released or
+        // cancelled it will only appear in the changedTouches list.
+        if (pointState != PlatformTouchPoint::TouchReleased && pointState != PlatformTouchPoint::TouchCancelled) {
+            touches->append(touch);
+            targetTouchesIterator->value->append(touch);
+        }
+
+        // Now build up the correct list for changedTouches.
+        // Note that  any touches that are in the TouchStationary state (e.g. if
+        // the user had several points touched but did not move them all) should
+        // never be in the changedTouches list so we do not handle them
+        // explicitly here. See https://bugs.webkit.org/show_bug.cgi?id=37609
+        // for further discussion about the TouchStationary state.
+        if (pointState != PlatformTouchPoint::TouchStationary && touchInfo.knownTarget) {
+            ASSERT(pointState < PlatformTouchPoint::TouchStateEnd);
+            if (!changedTouches[pointState].m_touches)
+                changedTouches[pointState].m_touches = TouchList::create();
+            changedTouches[pointState].m_touches->append(touch);
+            changedTouches[pointState].m_targets.add(touchInfo.touchTarget);
+        }
+    }
+    if (allTouchReleased) {
+        m_touchSequenceDocument.clear();
+        m_touchSequenceUserGestureToken.clear();
+    }
+
+    // Now iterate through the changedTouches list and m_targets within it, sending
+    // TouchEvents to the targets as required.
+    for (unsigned state = 0; state != PlatformTouchPoint::TouchStateEnd; ++state) {
+        if (!changedTouches[state].m_touches)
+            continue;
+
+        const AtomicString& eventName(touchEventNameForTouchPointState(static_cast<PlatformTouchPoint::State>(state)));
+        const EventTargetSet& targetsForState = changedTouches[state].m_targets;
+        for (const RefPtrWillBeMember<EventTarget>& eventTarget : targetsForState) {
+            EventTarget* touchEventTarget = eventTarget.get();
+            RefPtrWillBeRawPtr<TouchEvent> touchEvent = TouchEvent::create(
+                touches.get(), touchesByTarget.get(touchEventTarget), changedTouches[state].m_touches.get(),
+                eventName, touchEventTarget->toNode()->document().domWindow(),
+                event.ctrlKey(), event.altKey(), event.shiftKey(), event.metaKey(), event.cancelable(), event.causesScrollingIfUncanceled(), event.timestamp());
+            touchEventTarget->toNode()->dispatchTouchEvent(touchEvent.get());
+            swallowedEvent = swallowedEvent || touchEvent->defaultPrevented() || touchEvent->defaultHandled();
+        }
+    }
+
+    return swallowedEvent;
+}
+
 bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
 {
     TRACE_EVENT0("blink", "EventHandler::handleTouchEvent");
 
     const Vector<PlatformTouchPoint>& points = event.touchPoints();
 
-    unsigned i;
     bool freshTouchEvents = true;
     bool allTouchReleased = true;
-    for (i = 0; i < points.size(); ++i) {
+    for (unsigned i = 0; i < points.size(); ++i) {
         const PlatformTouchPoint& point = points[i];
+
         if (point.state() != PlatformTouchPoint::TouchPressed)
             freshTouchEvents = false;
         if (point.state() != PlatformTouchPoint::TouchReleased && point.state() != PlatformTouchPoint::TouchCancelled)
@@ -3456,7 +3634,7 @@ bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
     }
 
     // First do hit tests for any new touch points.
-    for (i = 0; i < points.size(); ++i) {
+    for (unsigned i = 0; i < points.size(); ++i) {
         const PlatformTouchPoint& point = points[i];
 
         // Touch events implicitly capture to the touched node, and don't change
@@ -3518,30 +3696,10 @@ bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
         return false;
     }
 
-    // Build up the lists to use for the 'touches', 'targetTouches' and
-    // 'changedTouches' attributes in the JS event. See
-    // http://www.w3.org/TR/touch-events/#touchevent-interface for how these
-    // lists fit together.
+    // Compute and store the common info used by both PointerEvent and TouchEvent.
+    Vector<TouchInfo> touchInfos(points.size());
 
-    // Holds the complete set of touches on the screen.
-    RefPtrWillBeRawPtr<TouchList> touches = TouchList::create();
-
-    // A different view on the 'touches' list above, filtered and grouped by
-    // event target. Used for the 'targetTouches' list in the JS event.
-    using TargetTouchesHeapMap = WillBeHeapHashMap<EventTarget*, RefPtrWillBeMember<TouchList>>;
-    TargetTouchesHeapMap touchesByTarget;
-
-    // Array of touches per state, used to assemble the 'changedTouches' list.
-    using EventTargetSet = WillBeHeapHashSet<RefPtrWillBeMember<EventTarget>>;
-    struct {
-        // The touches corresponding to the particular change state this struct
-        // instance represents.
-        RefPtrWillBeMember<TouchList> m_touches;
-        // Set of targets involved in m_touches.
-        EventTargetSet m_targets;
-    } changedTouches[PlatformTouchPoint::TouchStateEnd];
-
-    for (i = 0; i < points.size(); ++i) {
+    for (unsigned i = 0; i < points.size(); ++i) {
         const PlatformTouchPoint& point = points[i];
         PlatformTouchPoint::State pointState = point.state();
         RefPtrWillBeRawPtr<EventTarget> touchTarget = nullptr;
@@ -3590,71 +3748,28 @@ bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
 
         // pagePoint should always be in the target element's document coordinates.
         FloatPoint pagePoint = targetFrame->view()->rootFrameToContents(point.pos());
-
         float scaleFactor = 1.0f / targetFrame->pageZoomFactor();
 
-        FloatPoint adjustedPagePoint = pagePoint.scaledBy(scaleFactor);
-        FloatSize adjustedRadius = point.radius().scaledBy(scaleFactor);
-
-        RefPtrWillBeRawPtr<Touch> touch = Touch::create(
-            targetFrame, touchTarget.get(), point.id(), point.screenPos(), adjustedPagePoint, adjustedRadius, point.rotationAngle(), point.force());
-
-        // Ensure this target's touch list exists, even if it ends up empty, so
-        // it can always be passed to TouchEvent::Create below.
-        TargetTouchesHeapMap::iterator targetTouchesIterator = touchesByTarget.find(touchTarget.get());
-        if (targetTouchesIterator == touchesByTarget.end()) {
-            touchesByTarget.set(touchTarget.get(), TouchList::create());
-            targetTouchesIterator = touchesByTarget.find(touchTarget.get());
-        }
-
-        // touches and targetTouches should only contain information about
-        // touches still on the screen, so if this point is released or
-        // cancelled it will only appear in the changedTouches list.
-        if (pointState != PlatformTouchPoint::TouchReleased && pointState != PlatformTouchPoint::TouchCancelled) {
-            touches->append(touch);
-            targetTouchesIterator->value->append(touch);
-        }
-
-        // Now build up the correct list for changedTouches.
-        // Note that  any touches that are in the TouchStationary state (e.g. if
-        // the user had several points touched but did not move them all) should
-        // never be in the changedTouches list so we do not handle them
-        // explicitly here. See https://bugs.webkit.org/show_bug.cgi?id=37609
-        // for further discussion about the TouchStationary state.
-        if (pointState != PlatformTouchPoint::TouchStationary && knownTarget) {
-            ASSERT(pointState < PlatformTouchPoint::TouchStateEnd);
-            if (!changedTouches[pointState].m_touches)
-                changedTouches[pointState].m_touches = TouchList::create();
-            changedTouches[pointState].m_touches->append(touch);
-            changedTouches[pointState].m_targets.add(touchTarget);
-        }
-    }
-    if (allTouchReleased) {
-        m_touchSequenceDocument.clear();
-        m_touchSequenceUserGestureToken.clear();
+        TouchInfo& touchInfo = touchInfos[i];
+        touchInfo.point = point;
+        touchInfo.touchTarget = touchTarget.get();
+        touchInfo.targetFrame = targetFrame;
+        touchInfo.adjustedPagePoint = pagePoint.scaledBy(scaleFactor);
+        touchInfo.adjustedRadius = point.radius().scaledBy(scaleFactor);
+        touchInfo.knownTarget = knownTarget;
+        touchInfo.consumed = false;
     }
 
-    // Now iterate the changedTouches list and m_targets within it, sending
-    // events to the targets as required.
-    bool swallowedEvent = false;
-    for (unsigned state = 0; state != PlatformTouchPoint::TouchStateEnd; ++state) {
-        if (!changedTouches[state].m_touches)
-            continue;
-
-        const AtomicString& stateName(eventNameForTouchPointState(static_cast<PlatformTouchPoint::State>(state)));
-        const EventTargetSet& targetsForState = changedTouches[state].m_targets;
-        for (const RefPtrWillBeMember<EventTarget>& eventTarget : targetsForState) {
-            EventTarget* touchEventTarget = eventTarget.get();
-            RefPtrWillBeRawPtr<TouchEvent> touchEvent = TouchEvent::create(
-                touches.get(), touchesByTarget.get(touchEventTarget), changedTouches[state].m_touches.get(),
-                stateName, touchEventTarget->toNode()->document().domWindow(),
-                event.ctrlKey(), event.altKey(), event.shiftKey(), event.metaKey(), event.cancelable(), event.causesScrollingIfUncanceled(), event.timestamp());
-            touchEventTarget->toNode()->dispatchTouchEvent(touchEvent.get());
-            swallowedEvent = swallowedEvent || touchEvent->defaultPrevented() || touchEvent->defaultHandled();
-        }
+    if (RuntimeEnabledFeatures::pointerEventEnabled()) {
+        dispatchPointerEventsForTouchEvent(event, touchInfos);
+        // TODO(mustaq): This needs attention.
+        // From CL discussion: The disposition of any pointer events affects only the generation of
+        // touch events. If pointer events were handled (and hence no touch events generated) that is
+        // still equivalent to the touch events going unhandled because pointer event handler don't
+        // block scroll gesture generation.
     }
 
-    return swallowedEvent;
+    return dispatchTouchEvents(event, touchInfos, freshTouchEvents, allTouchReleased);
 }
 
 TouchAction EventHandler::intersectTouchAction(TouchAction action1, TouchAction action2)

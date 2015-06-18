@@ -1047,8 +1047,16 @@ interface Document
     getter onpause
     getter onplay
     getter onplaying
+    getter onpointercancel
+    getter onpointerdown
+    getter onpointerenter
+    getter onpointerleave
     getter onpointerlockchange
     getter onpointerlockerror
+    getter onpointermove
+    getter onpointerout
+    getter onpointerover
+    getter onpointerup
     getter onprogress
     getter onratechange
     getter onreadystatechange
@@ -1203,8 +1211,16 @@ interface Document
     setter onpause
     setter onplay
     setter onplaying
+    setter onpointercancel
+    setter onpointerdown
+    setter onpointerenter
+    setter onpointerleave
     setter onpointerlockchange
     setter onpointerlockerror
+    setter onpointermove
+    setter onpointerout
+    setter onpointerover
+    setter onpointerup
     setter onprogress
     setter onratechange
     setter onreadystatechange
@@ -1901,6 +1917,14 @@ interface HTMLElement
     getter onpause
     getter onplay
     getter onplaying
+    getter onpointercancel
+    getter onpointerdown
+    getter onpointerenter
+    getter onpointerleave
+    getter onpointermove
+    getter onpointerout
+    getter onpointerover
+    getter onpointerup
     getter onprogress
     getter onratechange
     getter onreset
@@ -1981,6 +2005,14 @@ interface HTMLElement
     setter onpause
     setter onplay
     setter onplaying
+    setter onpointercancel
+    setter onpointerdown
+    setter onpointerenter
+    setter onpointerleave
+    setter onpointermove
+    setter onpointerout
+    setter onpointerover
+    setter onpointerup
     setter onprogress
     setter onratechange
     setter onreset
@@ -4099,6 +4131,14 @@ interface SVGElement
     getter onpause
     getter onplay
     getter onplaying
+    getter onpointercancel
+    getter onpointerdown
+    getter onpointerenter
+    getter onpointerleave
+    getter onpointermove
+    getter onpointerout
+    getter onpointerover
+    getter onpointerup
     getter onprogress
     getter onratechange
     getter onreset
@@ -4167,6 +4207,14 @@ interface SVGElement
     setter onpause
     setter onplay
     setter onplaying
+    setter onpointercancel
+    setter onpointerdown
+    setter onpointerenter
+    setter onpointerleave
+    setter onpointermove
+    setter onpointerout
+    setter onpointerover
+    setter onpointerup
     setter onprogress
     setter onratechange
     setter onreset
@@ -6353,6 +6401,14 @@ interface Window
     attribute onpause
     attribute onplay
     attribute onplaying
+    attribute onpointercancel
+    attribute onpointerdown
+    attribute onpointerenter
+    attribute onpointerleave
+    attribute onpointermove
+    attribute onpointerout
+    attribute onpointerover
+    attribute onpointerup
     attribute onpopstate
     attribute onprogress
     attribute onratechange

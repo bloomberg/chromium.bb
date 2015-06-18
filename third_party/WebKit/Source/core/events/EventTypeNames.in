@@ -106,6 +106,7 @@ gestureshowpress
 gesturetap
 gesturetapdown
 gesturetapunconfirmed
+gotpointercapture
 hashchange
 icecandidate
 iceconnectionstatechange
@@ -127,6 +128,7 @@ loading
 loadingdone
 loadingerror
 loadstart
+lostpointercapture
 mark
 message
 midimessage
@@ -157,8 +159,16 @@ pause
 periodicsync
 play
 playing
+pointercancel
+pointerdown
+pointerenter
+pointerleave
 pointerlockchange
 pointerlockerror
+pointermove
+pointerout
+pointerover
+pointerup
 popstate
 progress
 push

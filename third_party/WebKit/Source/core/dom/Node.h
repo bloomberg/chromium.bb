@@ -73,6 +73,7 @@ class PlatformGestureEvent;
 class PlatformKeyboardEvent;
 class PlatformMouseEvent;
 class PlatformWheelEvent;
+class PointerEvent;
 class QualifiedName;
 class RadioNodeList;
 class RegisteredEventListener;
@@ -653,6 +654,7 @@ public:
     bool dispatchMouseEvent(const PlatformMouseEvent&, const AtomicString& eventType, int clickCount = 0, Node* relatedTarget = nullptr);
     bool dispatchGestureEvent(const PlatformGestureEvent&);
     bool dispatchTouchEvent(PassRefPtrWillBeRawPtr<TouchEvent>);
+    bool dispatchPointerEvent(PassRefPtrWillBeRawPtr<PointerEvent>);
 
     void dispatchSimulatedClick(Event* underlyingEvent, SimulatedClickMouseEventOptions = SendNoEvents);
 

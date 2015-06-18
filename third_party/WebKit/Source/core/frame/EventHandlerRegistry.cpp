@@ -5,7 +5,6 @@
 #include "config.h"
 #include "core/frame/EventHandlerRegistry.h"
 
-#include "core/events/ThreadLocalEventNames.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLFrameOwnerElement.h"
@@ -14,6 +13,32 @@
 #include "core/page/scrolling/ScrollingCoordinator.h"
 
 namespace blink {
+
+namespace {
+
+inline bool isTouchEventType(const AtomicString& eventType)
+{
+    return eventType == EventTypeNames::touchstart
+        || eventType == EventTypeNames::touchmove
+        || eventType == EventTypeNames::touchend
+        || eventType == EventTypeNames::touchcancel;
+}
+
+inline bool isPointerEventType(const AtomicString& eventType)
+{
+    return eventType == EventTypeNames::gotpointercapture
+        || eventType == EventTypeNames::lostpointercapture
+        || eventType == EventTypeNames::pointercancel
+        || eventType == EventTypeNames::pointerdown
+        || eventType == EventTypeNames::pointerenter
+        || eventType == EventTypeNames::pointerleave
+        || eventType == EventTypeNames::pointermove
+        || eventType == EventTypeNames::pointerout
+        || eventType == EventTypeNames::pointerover
+        || eventType == EventTypeNames::pointerup;
+}
+
+} // namespace
 
 EventHandlerRegistry::EventHandlerRegistry(FrameHost& frameHost)
     : m_frameHost(frameHost)
@@ -32,6 +57,10 @@ bool EventHandlerRegistry::eventTypeToClass(const AtomicString& eventType, Event
     } else if (eventType == EventTypeNames::wheel || eventType == EventTypeNames::mousewheel) {
         *result = WheelEvent;
     } else if (isTouchEventType(eventType)) {
+        *result = TouchEvent;
+    } else if (isPointerEventType(eventType)) {
+        // The EventHandlerClass is still TouchEvent below since we are firing PointerEvents only from
+        // EventHandler::handleTouchEvent for now. See crbug.com/476565.
         *result = TouchEvent;
 #if ENABLE(ASSERT)
     } else if (eventType == EventTypeNames::load || eventType == EventTypeNames::mousemove || eventType == EventTypeNames::touchstart) {

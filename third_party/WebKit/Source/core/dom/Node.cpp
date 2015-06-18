@@ -68,6 +68,7 @@
 #include "core/events/KeyboardEvent.h"
 #include "core/events/MouseEvent.h"
 #include "core/events/MutationEvent.h"
+#include "core/events/PointerEvent.h"
 #include "core/events/TextEvent.h"
 #include "core/events/TouchEvent.h"
 #include "core/events/UIEvent.h"
@@ -2070,6 +2071,9 @@ bool Node::dispatchEvent(PassRefPtrWillBeRawPtr<Event> event)
         return EventDispatcher::dispatchEvent(*this, MouseEventDispatchMediator::create(static_pointer_cast<MouseEvent>(event), MouseEventDispatchMediator::SyntheticMouseEvent));
     if (event->isTouchEvent())
         return dispatchTouchEvent(static_pointer_cast<TouchEvent>(event));
+    if (event->isPointerEvent())
+        return dispatchPointerEvent(static_pointer_cast<PointerEvent>(event));
+
     return EventDispatcher::dispatchEvent(*this, EventDispatchMediator::create(event));
 }
 
@@ -2117,6 +2121,11 @@ bool Node::dispatchGestureEvent(const PlatformGestureEvent& event)
 bool Node::dispatchTouchEvent(PassRefPtrWillBeRawPtr<TouchEvent> event)
 {
     return EventDispatcher::dispatchEvent(*this, TouchEventDispatchMediator::create(event));
+}
+
+bool Node::dispatchPointerEvent(PassRefPtrWillBeRawPtr<PointerEvent> event)
+{
+    return EventDispatcher::dispatchEvent(*this, PointerEventDispatchMediator::create(event));
 }
 
 void Node::dispatchSimulatedClick(Event* underlyingEvent, SimulatedClickMouseEventOptions eventOptions)

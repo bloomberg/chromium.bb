@@ -119,6 +119,14 @@ PASS childWindow.onpageshow is null
 PASS childWindow.onpause is null
 PASS childWindow.onplay is null
 PASS childWindow.onplaying is null
+PASS childWindow.onpointercancel is null
+PASS childWindow.onpointerdown is null
+PASS childWindow.onpointerenter is null
+PASS childWindow.onpointerleave is null
+PASS childWindow.onpointermove is null
+PASS childWindow.onpointerout is null
+PASS childWindow.onpointerover is null
+PASS childWindow.onpointerup is null
 PASS childWindow.onpopstate is null
 PASS childWindow.onprogress is null
 PASS childWindow.onratechange is null

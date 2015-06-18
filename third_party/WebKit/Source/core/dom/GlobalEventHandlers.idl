@@ -80,6 +80,14 @@
     attribute EventHandler onpause;
     attribute EventHandler onplay;
     attribute EventHandler onplaying;
+    attribute EventHandler onpointercancel;
+    attribute EventHandler onpointerdown;
+    attribute EventHandler onpointerenter;
+    attribute EventHandler onpointerleave;
+    attribute EventHandler onpointermove;
+    attribute EventHandler onpointerout;
+    attribute EventHandler onpointerover;
+    attribute EventHandler onpointerup;
     attribute EventHandler onprogress;
     attribute EventHandler onratechange;
     attribute EventHandler onreset;
