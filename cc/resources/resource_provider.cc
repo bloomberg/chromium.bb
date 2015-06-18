@@ -1143,24 +1143,17 @@ void ResourceProvider::ScopedWriteLockGr::InitSkSurface(
   bool use_worker_context = true;
   class GrContext* gr_context =
       resource_provider_->GrContext(use_worker_context);
-  skia::RefPtr<GrTexture> gr_texture =
-      skia::AdoptRef(gr_context->textureProvider()->wrapBackendTexture(desc));
-  if (gr_texture) {
-    uint32_t flags = use_distance_field_text
-                         ? SkSurfaceProps::kUseDistanceFieldFonts_Flag
-                         : 0;
-    // Use unknown pixel geometry to disable LCD text.
-    SkSurfaceProps surface_props(flags, kUnknown_SkPixelGeometry);
-    if (can_use_lcd_text) {
-      // LegacyFontHost will get LCD text and skia figures out what type to use.
-      surface_props =
-          SkSurfaceProps(flags, SkSurfaceProps::kLegacyFontHost_InitType);
-    }
-    sk_surface_ = skia::AdoptRef(SkSurface::NewRenderTargetDirect(
-        gr_texture->asRenderTarget(), &surface_props));
-    return;
+  uint32_t flags =
+      use_distance_field_text ? SkSurfaceProps::kUseDistanceFieldFonts_Flag : 0;
+  // Use unknown pixel geometry to disable LCD text.
+  SkSurfaceProps surface_props(flags, kUnknown_SkPixelGeometry);
+  if (can_use_lcd_text) {
+    // LegacyFontHost will get LCD text and skia figures out what type to use.
+    surface_props =
+        SkSurfaceProps(flags, SkSurfaceProps::kLegacyFontHost_InitType);
   }
-  sk_surface_.clear();
+  sk_surface_ = skia::AdoptRef(
+      SkSurface::NewWrappedRenderTarget(gr_context, desc, &surface_props));
 }
 
 void ResourceProvider::ScopedWriteLockGr::ReleaseSkSurface() {
