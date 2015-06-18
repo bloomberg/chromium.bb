@@ -38,7 +38,7 @@ _log = logging.getLogger(__name__)
 
 
 class MacPort(base.Port):
-    SUPPORTED_VERSIONS = ('snowleopard', 'lion', 'retina', 'mountainlion', 'mavericks', 'yosemite')
+    SUPPORTED_VERSIONS = ('snowleopard', 'lion', 'mountainlion', 'retina', 'mavericks', 'yosemite')
     port_name = 'mac'
 
     # FIXME: We treat Retina (High-DPI) devices as if they are running
