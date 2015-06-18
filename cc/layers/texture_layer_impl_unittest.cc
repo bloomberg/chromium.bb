@@ -31,7 +31,6 @@ TEST(TextureLayerImplTest, Occlusion) {
   TextureLayerImpl* texture_layer_impl =
       impl.AddChildToRoot<TextureLayerImpl>();
   texture_layer_impl->SetBounds(layer_size);
-  texture_layer_impl->SetContentBounds(layer_size);
   texture_layer_impl->SetDrawsContent(true);
   texture_layer_impl->SetTextureMailbox(
       texture_mailbox,

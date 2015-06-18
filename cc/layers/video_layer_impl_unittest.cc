@@ -47,7 +47,6 @@ TEST(VideoLayerImplTest, Occlusion) {
   VideoLayerImpl* video_layer_impl =
       impl.AddChildToRoot<VideoLayerImpl>(&provider, media::VIDEO_ROTATION_0);
   video_layer_impl->SetBounds(layer_size);
-  video_layer_impl->SetContentBounds(layer_size);
   video_layer_impl->SetDrawsContent(true);
 
   impl.CalcDrawProps(viewport_size);
@@ -98,7 +97,6 @@ TEST(VideoLayerImplTest, OccludesOtherLayers) {
   scoped_ptr<LayerImpl> layer_impl = LayerImpl::Create(active_tree, 3);
   layer_impl->SetHasRenderSurface(true);
   layer_impl->SetBounds(layer_size);
-  layer_impl->SetContentBounds(layer_size);
   layer_impl->SetDrawsContent(true);
   const auto& draw_properties = layer_impl->draw_properties();
 
@@ -106,7 +104,6 @@ TEST(VideoLayerImplTest, OccludesOtherLayers) {
   scoped_ptr<VideoLayerImpl> video_layer_impl = VideoLayerImpl::Create(
       active_tree, 4, &provider, media::VIDEO_ROTATION_0);
   video_layer_impl->SetBounds(layer_size);
-  video_layer_impl->SetContentBounds(layer_size);
   video_layer_impl->SetDrawsContent(true);
   video_layer_impl->SetContentsOpaque(true);
 
@@ -167,7 +164,6 @@ TEST(VideoLayerImplTest, Rotated0) {
   VideoLayerImpl* video_layer_impl =
       impl.AddChildToRoot<VideoLayerImpl>(&provider, media::VIDEO_ROTATION_0);
   video_layer_impl->SetBounds(layer_size);
-  video_layer_impl->SetContentBounds(layer_size);
   video_layer_impl->SetDrawsContent(true);
 
   impl.CalcDrawProps(viewport_size);
@@ -207,7 +203,6 @@ TEST(VideoLayerImplTest, Rotated90) {
   VideoLayerImpl* video_layer_impl =
       impl.AddChildToRoot<VideoLayerImpl>(&provider, media::VIDEO_ROTATION_90);
   video_layer_impl->SetBounds(layer_size);
-  video_layer_impl->SetContentBounds(layer_size);
   video_layer_impl->SetDrawsContent(true);
 
   impl.CalcDrawProps(viewport_size);
@@ -247,7 +242,6 @@ TEST(VideoLayerImplTest, Rotated180) {
   VideoLayerImpl* video_layer_impl =
       impl.AddChildToRoot<VideoLayerImpl>(&provider, media::VIDEO_ROTATION_180);
   video_layer_impl->SetBounds(layer_size);
-  video_layer_impl->SetContentBounds(layer_size);
   video_layer_impl->SetDrawsContent(true);
 
   impl.CalcDrawProps(viewport_size);
@@ -287,7 +281,6 @@ TEST(VideoLayerImplTest, Rotated270) {
   VideoLayerImpl* video_layer_impl =
       impl.AddChildToRoot<VideoLayerImpl>(&provider, media::VIDEO_ROTATION_270);
   video_layer_impl->SetBounds(layer_size);
-  video_layer_impl->SetContentBounds(layer_size);
   video_layer_impl->SetDrawsContent(true);
 
   impl.CalcDrawProps(viewport_size);
@@ -331,7 +324,6 @@ TEST(VideoLayerImplTest, SoftwareVideoFrameGeneratesYUVQuad) {
   VideoLayerImpl* video_layer_impl =
       impl.AddChildToRoot<VideoLayerImpl>(&provider, media::VIDEO_ROTATION_0);
   video_layer_impl->SetBounds(layer_size);
-  video_layer_impl->SetContentBounds(layer_size);
   video_layer_impl->SetDrawsContent(true);
 
   gfx::Rect occluded;
@@ -372,7 +364,6 @@ TEST(VideoLayerImplTest, NativeYUVFrameGeneratesYUVQuad) {
   VideoLayerImpl* video_layer_impl =
       impl.AddChildToRoot<VideoLayerImpl>(&provider, media::VIDEO_ROTATION_0);
   video_layer_impl->SetBounds(layer_size);
-  video_layer_impl->SetContentBounds(layer_size);
   video_layer_impl->SetDrawsContent(true);
 
   gfx::Rect occluded;

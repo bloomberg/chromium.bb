@@ -33,7 +33,6 @@ TEST(SolidColorLayerImplTest, VerifyTilingCompleteAndNoOverlap) {
       SolidColorLayerImpl::Create(host_impl.active_tree(), 1);
   layer->draw_properties().visible_content_rect = visible_content_rect;
   layer->SetBounds(layer_size);
-  layer->SetContentBounds(layer_size);
   layer->SetHasRenderSurface(true);
   layer->draw_properties().render_target = layer.get();
 
@@ -59,7 +58,6 @@ TEST(SolidColorLayerImplTest, VerifyCorrectBackgroundColorInQuad) {
       SolidColorLayerImpl::Create(host_impl.active_tree(), 1);
   layer->draw_properties().visible_content_rect = visible_content_rect;
   layer->SetBounds(layer_size);
-  layer->SetContentBounds(layer_size);
   layer->SetBackgroundColor(test_color);
   layer->SetHasRenderSurface(true);
   layer->draw_properties().render_target = layer.get();
@@ -88,7 +86,6 @@ TEST(SolidColorLayerImplTest, VerifyCorrectOpacityInQuad) {
       SolidColorLayerImpl::Create(host_impl.active_tree(), 1);
   layer->draw_properties().visible_content_rect = visible_content_rect;
   layer->SetBounds(layer_size);
-  layer->SetContentBounds(layer_size);
   layer->draw_properties().opacity = opacity;
   layer->SetHasRenderSurface(true);
   layer->draw_properties().render_target = layer.get();
@@ -116,7 +113,6 @@ TEST(SolidColorLayerImplTest, VerifyCorrectBlendModeInQuad) {
   scoped_ptr<SolidColorLayerImpl> layer =
       SolidColorLayerImpl::Create(host_impl.active_tree(), 1);
   layer->SetBounds(layer_size);
-  layer->SetContentBounds(layer_size);
   layer->draw_properties().blend_mode = blend_mode;
 
   AppendQuadsData data;
@@ -215,7 +211,6 @@ TEST(SolidColorLayerImplTest, Occlusion) {
       impl.AddChildToRoot<SolidColorLayerImpl>();
   solid_color_layer_impl->SetBackgroundColor(SkColorSetARGB(255, 10, 20, 30));
   solid_color_layer_impl->SetBounds(layer_size);
-  solid_color_layer_impl->SetContentBounds(layer_size);
   solid_color_layer_impl->SetDrawsContent(true);
 
   impl.CalcDrawProps(viewport_size);

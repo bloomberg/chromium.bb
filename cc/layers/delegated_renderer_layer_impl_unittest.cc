@@ -72,19 +72,16 @@ class DelegatedRendererLayerImplTestSimple
 
     layer_before->SetPosition(gfx::Point(20, 20));
     layer_before->SetBounds(gfx::Size(14, 14));
-    layer_before->SetContentBounds(gfx::Size(14, 14));
     layer_before->SetDrawsContent(true);
     layer_before->SetHasRenderSurface(true);
 
     layer_after->SetPosition(gfx::Point(5, 5));
     layer_after->SetBounds(gfx::Size(15, 15));
-    layer_after->SetContentBounds(gfx::Size(15, 15));
     layer_after->SetDrawsContent(true);
     layer_after->SetHasRenderSurface(true);
 
     delegated_renderer_layer->SetPosition(gfx::Point(3, 3));
     delegated_renderer_layer->SetBounds(gfx::Size(10, 10));
-    delegated_renderer_layer->SetContentBounds(gfx::Size(10, 10));
     delegated_renderer_layer->SetDrawsContent(true);
     gfx::Transform transform;
     transform.Translate(1.0, 1.0);
@@ -148,7 +145,6 @@ TEST_F(DelegatedRendererLayerImplTest,
 
     delegated_renderer_layer->SetPosition(gfx::Point(3, 3));
     delegated_renderer_layer->SetBounds(gfx::Size(10, 10));
-    delegated_renderer_layer->SetContentBounds(gfx::Size(10, 10));
     delegated_renderer_layer->SetDrawsContent(true);
     delegated_renderer_layer->SetHasRenderSurface(true);
     gfx::Transform transform;
@@ -228,7 +224,6 @@ TEST_F(DelegatedRendererLayerImplTest,
 
     delegated_renderer_layer->SetPosition(gfx::Point(3, 3));
     delegated_renderer_layer->SetBounds(gfx::Size(10, 10));
-    delegated_renderer_layer->SetContentBounds(gfx::Size(10, 10));
     delegated_renderer_layer->SetDrawsContent(true);
     delegated_renderer_layer->SetHasRenderSurface(true);
     gfx::Transform transform;
@@ -633,7 +628,6 @@ class DelegatedRendererLayerImplTestTransform
 
     delegated_renderer_layer->SetPosition(gfx::Point(20, 20));
     delegated_renderer_layer->SetBounds(gfx::Size(75, 75));
-    delegated_renderer_layer->SetContentBounds(gfx::Size(75, 75));
     delegated_renderer_layer->SetDrawsContent(true);
     gfx::Transform transform;
     transform.Scale(2.0, 2.0);
@@ -1066,7 +1060,6 @@ class DelegatedRendererLayerImplTestClip
 
     delegated_renderer_layer->SetPosition(gfx::Point(20, 20));
     delegated_renderer_layer->SetBounds(gfx::Size(50, 50));
-    delegated_renderer_layer->SetContentBounds(gfx::Size(50, 50));
     delegated_renderer_layer->SetDrawsContent(true);
 
     RenderPassList delegated_render_passes;
@@ -1174,7 +1167,6 @@ class DelegatedRendererLayerImplTestClip
 
       clip_layer->SetPosition(clip_rect.origin());
       clip_layer->SetBounds(clip_rect.size());
-      clip_layer->SetContentBounds(clip_rect.size());
       clip_layer->SetMasksToBounds(true);
 
       origin_layer->SetPosition(
@@ -1446,7 +1438,6 @@ TEST_F(DelegatedRendererLayerImplTest, Occlusion) {
   FakeDelegatedRendererLayerImpl* delegated_renderer_layer_impl =
       impl.AddChildToRoot<FakeDelegatedRendererLayerImpl>();
   delegated_renderer_layer_impl->SetBounds(layer_size);
-  delegated_renderer_layer_impl->SetContentBounds(layer_size);
   delegated_renderer_layer_impl->SetDrawsContent(true);
 
   // Contributing render pass is offset by a transform and holds a quad that
@@ -1614,7 +1605,6 @@ TEST_F(DelegatedRendererLayerImplTest, DeviceScaleFactorOcclusion) {
   FakeDelegatedRendererLayerImpl* delegated_renderer_layer_impl =
       impl.AddChildToRoot<FakeDelegatedRendererLayerImpl>();
   delegated_renderer_layer_impl->SetBounds(layer_size);
-  delegated_renderer_layer_impl->SetContentBounds(layer_size);
   delegated_renderer_layer_impl->SetDrawsContent(true);
 
   // Contributing render pass is offset by a transform and holds a quad that
@@ -1672,7 +1662,6 @@ TEST_F(DelegatedRendererLayerImplTest, PushPropertiesTo) {
   scoped_ptr<FakeDelegatedRendererLayerImpl> delegated_renderer_layer_impl =
       FakeDelegatedRendererLayerImpl::Create(host_impl_->active_tree(), 5);
   delegated_renderer_layer_impl->SetBounds(layer_size);
-  delegated_renderer_layer_impl->SetContentBounds(layer_size);
   delegated_renderer_layer_impl->SetDrawsContent(true);
 
   RenderPassList delegated_render_passes;

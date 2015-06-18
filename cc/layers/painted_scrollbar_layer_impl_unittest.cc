@@ -38,7 +38,6 @@ TEST(PaintedScrollbarLayerImplTest, Occlusion) {
   PaintedScrollbarLayerImpl* scrollbar_layer_impl =
       impl.AddChildToRoot<PaintedScrollbarLayerImpl>(orientation);
   scrollbar_layer_impl->SetBounds(layer_size);
-  scrollbar_layer_impl->SetContentBounds(layer_size);
   scrollbar_layer_impl->SetContentsOpaque(true);
   scrollbar_layer_impl->set_internal_contents_scale_and_bounds(
       scale, scaled_layer_size);

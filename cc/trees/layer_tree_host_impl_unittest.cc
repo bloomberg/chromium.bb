@@ -187,7 +187,6 @@ class LayerTreeHostImplTest : public testing::Test,
   void SetupRootLayerImpl(scoped_ptr<LayerImpl> root) {
     root->SetPosition(gfx::PointF());
     root->SetBounds(gfx::Size(10, 10));
-    root->SetContentBounds(gfx::Size(10, 10));
     root->SetDrawsContent(true);
     root->draw_properties().visible_content_rect = gfx::Rect(0, 0, 10, 10);
     root->SetHasRenderSurface(true);
@@ -242,7 +241,6 @@ class LayerTreeHostImplTest : public testing::Test,
     scoped_ptr<LayerImpl> root =
         LayerImpl::Create(layer_tree_impl, 1);
     root->SetBounds(content_size);
-    root->SetContentBounds(content_size);
     root->SetPosition(gfx::PointF());
     root->SetHasRenderSurface(true);
 
@@ -261,7 +259,6 @@ class LayerTreeHostImplTest : public testing::Test,
 
     inner_scroll->SetScrollClipLayer(inner_clip->id());
     inner_scroll->SetBounds(content_size);
-    inner_scroll->SetContentBounds(content_size);
     inner_scroll->SetPosition(gfx::PointF());
 
     scoped_ptr<LayerImpl> outer_clip =
@@ -274,14 +271,12 @@ class LayerTreeHostImplTest : public testing::Test,
     outer_scroll->SetScrollClipLayer(outer_clip->id());
     outer_scroll->PushScrollOffsetFromMainThread(gfx::ScrollOffset());
     outer_scroll->SetBounds(content_size);
-    outer_scroll->SetContentBounds(content_size);
     outer_scroll->SetPosition(gfx::PointF());
 
     scoped_ptr<LayerImpl> contents =
         LayerImpl::Create(layer_tree_impl, kContentLayerId);
     contents->SetDrawsContent(true);
     contents->SetBounds(content_size);
-    contents->SetContentBounds(content_size);
     contents->SetPosition(gfx::PointF());
 
     outer_scroll->AddChild(contents.Pass());
@@ -318,7 +313,6 @@ class LayerTreeHostImplTest : public testing::Test,
     layer->SetScrollClipLayer(clip_layer->id());
     layer->SetDrawsContent(true);
     layer->SetBounds(size);
-    layer->SetContentBounds(size);
     clip_layer->SetBounds(gfx::Size(size.width() / 2, size.height() / 2));
     return layer.Pass();
   }
@@ -646,7 +640,6 @@ TEST_F(LayerTreeHostImplTest, ScrollBlocksOnTouchEventHandlers) {
     child_layer->SetDrawsContent(true);
     child_layer->SetPosition(gfx::PointF(0, 20));
     child_layer->SetBounds(gfx::Size(50, 50));
-    child_layer->SetContentBounds(gfx::Size(50, 50));
     scroll->AddChild(child_layer.Pass());
   }
 
@@ -1020,7 +1013,6 @@ TEST_F(LayerTreeHostImplTest, ScrollWithUserUnscrollableLayers) {
   ASSERT_EQ(1u, scroll_layer->children().size());
   LayerImpl* overflow = scroll_layer->children()[0];
   overflow->SetBounds(overflow_size);
-  overflow->SetContentBounds(overflow_size);
   overflow->SetScrollClipLayer(scroll_layer->parent()->id());
   overflow->PushScrollOffsetFromMainThread(gfx::ScrollOffset());
   overflow->SetPosition(gfx::PointF());
@@ -1148,11 +1140,8 @@ TEST_F(LayerTreeHostImplTest, ScrollDuringPinchScrollsInnerViewport) {
   LayerImpl* inner_clip_layer =
       host_impl_->InnerViewportScrollLayer()->parent()->parent();
   inner_clip_layer->SetBounds(gfx::Size(100, 100));
-  inner_clip_layer->SetContentBounds(gfx::Size(100, 100));
   outer_scroll_layer->SetBounds(gfx::Size(200, 200));
-  outer_scroll_layer->SetContentBounds(gfx::Size(200, 200));
   content_layer->SetBounds(gfx::Size(200, 200));
-  content_layer->SetContentBounds(gfx::Size(200, 200));
 
   host_impl_->SetViewportSize(gfx::Size(100, 100));
 
@@ -1187,11 +1176,8 @@ TEST_F(LayerTreeHostImplTest, ImplPinchZoomWheelBubbleBetweenViewports) {
   LayerImpl* inner_clip_layer =
       host_impl_->InnerViewportScrollLayer()->parent()->parent();
   inner_clip_layer->SetBounds(gfx::Size(100, 100));
-  inner_clip_layer->SetContentBounds(gfx::Size(100, 100));
   outer_scroll_layer->SetBounds(gfx::Size(200, 200));
-  outer_scroll_layer->SetContentBounds(gfx::Size(200, 200));
   content_layer->SetBounds(gfx::Size(200, 200));
-  content_layer->SetContentBounds(gfx::Size(200, 200));
 
   host_impl_->SetViewportSize(gfx::Size(100, 100));
 
@@ -1807,14 +1793,12 @@ class LayerTreeHostImplTestScrollbarAnimation : public LayerTreeHostImplTest {
     scroll->PushScrollOffsetFromMainThread(gfx::ScrollOffset());
     root->SetBounds(viewport_size);
     scroll->SetBounds(content_size);
-    scroll->SetContentBounds(content_size);
     scroll->SetIsContainerForFixedPositionLayers(true);
 
     scoped_ptr<LayerImpl> contents =
         LayerImpl::Create(host_impl_->active_tree(), 3);
     contents->SetDrawsContent(true);
     contents->SetBounds(content_size);
-    contents->SetContentBounds(content_size);
 
     scoped_ptr<SolidColorScrollbarLayerImpl> scrollbar =
         SolidColorScrollbarLayerImpl::Create(host_impl_->active_tree(), 4,
@@ -1965,21 +1949,18 @@ void LayerTreeHostImplTest::SetupMouseMoveAtWithDeviceScale(
   scroll->SetScrollClipLayer(root->id());
   scroll->PushScrollOffsetFromMainThread(gfx::ScrollOffset());
   scroll->SetBounds(content_size);
-  scroll->SetContentBounds(content_size);
   scroll->SetIsContainerForFixedPositionLayers(true);
 
   scoped_ptr<LayerImpl> contents =
       LayerImpl::Create(host_impl_->active_tree(), 3);
   contents->SetDrawsContent(true);
   contents->SetBounds(content_size);
-  contents->SetContentBounds(content_size);
 
   // The scrollbar is on the right side.
   scoped_ptr<PaintedScrollbarLayerImpl> scrollbar =
       PaintedScrollbarLayerImpl::Create(host_impl_->active_tree(), 5, VERTICAL);
   scrollbar->SetDrawsContent(true);
   scrollbar->SetBounds(gfx::Size(15, viewport_size.height()));
-  scrollbar->SetContentBounds(gfx::Size(15, viewport_size.height()));
   scrollbar->SetPosition(gfx::Point(285, 0));
 
   scroll->AddChild(contents.Pass());
@@ -2172,7 +2153,6 @@ class DidDrawCheckLayer : public LayerImpl {
         append_quads_called_(false),
         did_draw_called_(false) {
     SetBounds(gfx::Size(10, 10));
-    SetContentBounds(gfx::Size(10, 10));
     SetDrawsContent(true);
     draw_properties().visible_content_rect = gfx::Rect(0, 0, 10, 10);
   }
@@ -2241,7 +2221,6 @@ TEST_F(LayerTreeHostImplTest, DidDrawNotCalledOnHiddenLayer) {
   // Ensure visible_content_rect for layer is empty.
   layer->SetPosition(gfx::PointF(100.f, 100.f));
   layer->SetBounds(gfx::Size(10, 10));
-  layer->SetContentBounds(gfx::Size(10, 10));
 
   LayerTreeHostImpl::FrameData frame;
 
@@ -2293,7 +2272,6 @@ TEST_F(LayerTreeHostImplTest, WillDrawNotCalledOnOccludedLayer) {
   // This layer covers the occluded_layer above. Make this layer large so it can
   // occlude.
   top_layer->SetBounds(big_size);
-  top_layer->SetContentBounds(big_size);
   top_layer->SetContentsOpaque(true);
 
   LayerTreeHostImpl::FrameData frame;
@@ -2676,7 +2654,6 @@ class LayerTreeHostImplTopControlsTest : public LayerTreeHostImplTest {
     root_clip->SetBounds(clip_size_);
     root->SetScrollClipLayer(root_clip->id());
     root->SetBounds(layer_size_);
-    root->SetContentBounds(layer_size_);
     root->SetPosition(gfx::PointF());
     root->SetDrawsContent(false);
     root->SetIsContainerForFixedPositionLayers(true);
@@ -2705,7 +2682,6 @@ class LayerTreeHostImplTopControlsTest : public LayerTreeHostImplTest {
     root_clip->SetBounds(clip_size_);
     root->SetScrollClipLayer(root_clip->id());
     root->SetBounds(layer_size_);
-    root->SetContentBounds(layer_size_);
     root->SetPosition(gfx::PointF());
     root->SetDrawsContent(false);
     root->SetIsContainerForFixedPositionLayers(true);
@@ -2747,7 +2723,6 @@ class LayerTreeHostImplTopControlsTest : public LayerTreeHostImplTest {
     root_clip->SetBounds(inner_viewport_size);
     root->SetScrollClipLayer(root_clip->id());
     root->SetBounds(outer_viewport_size);
-    root->SetContentBounds(outer_viewport_size);
     root->SetPosition(gfx::PointF());
     root->SetDrawsContent(false);
     root->SetIsContainerForFixedPositionLayers(true);
@@ -2755,7 +2730,6 @@ class LayerTreeHostImplTopControlsTest : public LayerTreeHostImplTest {
     outer_clip->SetBounds(outer_viewport_size);
     outer_scroll->SetScrollClipLayer(outer_clip->id());
     outer_scroll->SetBounds(scroll_layer_size);
-    outer_scroll->SetContentBounds(scroll_layer_size);
     outer_scroll->SetPosition(gfx::PointF());
     outer_scroll->SetDrawsContent(false);
     outer_scroll->SetIsContainerForFixedPositionLayers(true);
@@ -2960,7 +2934,6 @@ TEST_F(LayerTreeHostImplTopControlsTest, TopControlsScrollableSublayer) {
   child_clip->SetBounds(sub_content_layer_size);
   child->SetScrollClipLayer(child_clip->id());
   child->SetBounds(sub_content_size);
-  child->SetContentBounds(sub_content_size);
   child->SetPosition(gfx::PointF());
   child->SetDrawsContent(true);
   child->SetIsContainerForFixedPositionLayers(true);
@@ -3316,7 +3289,6 @@ TEST_F(LayerTreeHostImplTest, ScrollNonCompositedRoot) {
   content_layer->SetDrawsContent(true);
   content_layer->SetPosition(gfx::PointF());
   content_layer->SetBounds(contents_size);
-  content_layer->SetContentBounds(contents_size);
   content_layer->SetContentsScale(2.f, 2.f);
 
   scoped_ptr<LayerImpl> scroll_clip_layer =
@@ -3327,7 +3299,6 @@ TEST_F(LayerTreeHostImplTest, ScrollNonCompositedRoot) {
       LayerImpl::Create(host_impl_->active_tree(), 2);
   scroll_layer->SetScrollClipLayer(3);
   scroll_layer->SetBounds(contents_size);
-  scroll_layer->SetContentBounds(contents_size);
   scroll_layer->SetPosition(gfx::PointF());
   scroll_layer->AddChild(content_layer.Pass());
   scroll_clip_layer->AddChild(scroll_layer.Pass());
@@ -3350,7 +3321,6 @@ TEST_F(LayerTreeHostImplTest, ScrollChildCallsCommitAndRedraw) {
   gfx::Size contents_size(20, 20);
   scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl_->active_tree(), 1);
   root->SetBounds(surface_size);
-  root->SetContentBounds(contents_size);
   root->AddChild(CreateScrollableLayer(2, contents_size, root.get()));
   root->SetHasRenderSurface(true);
   host_impl_->active_tree()->SetRootLayer(root.Pass());
@@ -3606,7 +3576,6 @@ TEST_F(LayerTreeHostImplTest, ScrollChildAndChangePageScaleOnMainThread) {
   scoped_ptr<LayerImpl> root_scrolling =
       LayerImpl::Create(host_impl_->active_tree(), 2);
   root_scrolling->SetBounds(surface_size);
-  root_scrolling->SetContentBounds(surface_size);
   root_scrolling->SetScrollClipLayer(root->id());
   root_scrolling->SetIsContainerForFixedPositionLayers(true);
   LayerImpl* root_scrolling_ptr = root_scrolling.get();
@@ -4689,7 +4658,6 @@ class BlendStateCheckLayer : public LayerImpl {
             RGBA_8888)) {
     resource_provider->AllocateForTesting(resource_id_);
     SetBounds(gfx::Size(10, 10));
-    SetContentBounds(gfx::Size(10, 10));
     SetDrawsContent(true);
   }
 
@@ -4707,7 +4675,6 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
     scoped_ptr<LayerImpl> root =
         LayerImpl::Create(host_impl_->active_tree(), 1);
     root->SetBounds(gfx::Size(10, 10));
-    root->SetContentBounds(root->bounds());
     root->SetDrawsContent(false);
     root->SetHasRenderSurface(true);
     host_impl_->active_tree()->SetRootLayer(root.Pass());
@@ -4964,7 +4931,6 @@ class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
     gfx::Rect layer_rect(viewport_size_);
     child_->SetPosition(layer_rect.origin());
     child_->SetBounds(layer_rect.size());
-    child_->SetContentBounds(layer_rect.size());
     child_->SetQuadRect(gfx::Rect(layer_rect.size()));
     child_->SetQuadVisibleRect(gfx::Rect(layer_rect.size()));
 
@@ -4985,7 +4951,6 @@ class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
     gfx::Rect layer_rect(0, 0, 0, 0);
     child_->SetPosition(layer_rect.origin());
     child_->SetBounds(layer_rect.size());
-    child_->SetContentBounds(layer_rect.size());
     child_->SetQuadRect(gfx::Rect(layer_rect.size()));
     child_->SetQuadVisibleRect(gfx::Rect(layer_rect.size()));
 
@@ -5006,7 +4971,6 @@ class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
     gfx::Rect layer_rect(500, 500, 200, 200);
     child_->SetPosition(layer_rect.origin());
     child_->SetBounds(layer_rect.size());
-    child_->SetContentBounds(layer_rect.size());
     child_->SetQuadRect(gfx::Rect(layer_rect.size()));
     child_->SetQuadVisibleRect(gfx::Rect(layer_rect.size()));
 
@@ -5028,7 +4992,6 @@ class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
                          viewport_size_.height() + 10);
     child_->SetPosition(layer_rect.origin());
     child_->SetBounds(layer_rect.size());
-    child_->SetContentBounds(layer_rect.size());
     child_->SetQuadRect(gfx::Rect(layer_rect.size()));
     child_->SetQuadVisibleRect(gfx::Rect(layer_rect.size()));
 
@@ -5194,7 +5157,6 @@ TEST_F(LayerTreeHostImplTest, ReshapeNotCalledUntilDraw) {
   scoped_ptr<LayerImpl> root =
       FakeDrawableLayerImpl::Create(host_impl_->active_tree(), 1);
   root->SetBounds(gfx::Size(10, 10));
-  root->SetContentBounds(gfx::Size(10, 10));
   root->SetDrawsContent(true);
   root->SetHasRenderSurface(true);
   host_impl_->active_tree()->SetRootLayer(root.Pass());
@@ -5266,10 +5228,8 @@ TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
       FakeDrawableLayerImpl::Create(layer_tree_host_impl->active_tree(), 2);
   child->SetPosition(gfx::PointF(12.f, 13.f));
   child->SetBounds(gfx::Size(14, 15));
-  child->SetContentBounds(gfx::Size(14, 15));
   child->SetDrawsContent(true);
   root->SetBounds(gfx::Size(500, 500));
-  root->SetContentBounds(gfx::Size(500, 500));
   root->SetDrawsContent(true);
   root->AddChild(child.Pass());
   layer_tree_host_impl->active_tree()->SetRootLayer(root.Pass());
@@ -5323,10 +5283,8 @@ TEST_F(LayerTreeHostImplTest, RootLayerDoesntCreateExtraSurface) {
   scoped_ptr<LayerImpl> child =
       FakeDrawableLayerImpl::Create(host_impl_->active_tree(), 2);
   child->SetBounds(gfx::Size(10, 10));
-  child->SetContentBounds(gfx::Size(10, 10));
   child->SetDrawsContent(true);
   root->SetBounds(gfx::Size(10, 10));
-  root->SetContentBounds(gfx::Size(10, 10));
   root->SetDrawsContent(true);
   root->SetHasRenderSurface(true);
   root->AddChild(child.Pass());
@@ -5583,7 +5541,6 @@ static scoped_ptr<LayerTreeHostImpl> SetupLayersForOpacity(
   root->SetHasRenderSurface(true);
   root->SetPosition(root_rect.origin());
   root->SetBounds(root_rect.size());
-  root->SetContentBounds(root->bounds());
   root->draw_properties().visible_content_rect = root_rect;
   root->SetDrawsContent(false);
   root->render_surface()->SetContentRect(gfx::Rect(root_rect.size()));
@@ -5591,14 +5548,12 @@ static scoped_ptr<LayerTreeHostImpl> SetupLayersForOpacity(
   child->SetPosition(gfx::PointF(child_rect.x(), child_rect.y()));
   child->SetOpacity(0.5f);
   child->SetBounds(gfx::Size(child_rect.width(), child_rect.height()));
-  child->SetContentBounds(child->bounds());
   child->draw_properties().visible_content_rect = child_rect;
   child->SetDrawsContent(false);
   child->SetHasRenderSurface(true);
 
   grand_child->SetPosition(grand_child_rect.origin());
   grand_child->SetBounds(grand_child_rect.size());
-  grand_child->SetContentBounds(grand_child->bounds());
   grand_child->draw_properties().visible_content_rect = grand_child_rect;
   grand_child->SetDrawsContent(true);
 
@@ -5678,14 +5633,12 @@ TEST_F(LayerTreeHostImplTest, LayersFreeTextures) {
   scoped_ptr<VideoLayerImpl> video_layer = VideoLayerImpl::Create(
       host_impl_->active_tree(), 4, &provider, media::VIDEO_ROTATION_0);
   video_layer->SetBounds(gfx::Size(10, 10));
-  video_layer->SetContentBounds(gfx::Size(10, 10));
   video_layer->SetDrawsContent(true);
   root_layer->AddChild(video_layer.Pass());
 
   scoped_ptr<IOSurfaceLayerImpl> io_surface_layer =
       IOSurfaceLayerImpl::Create(host_impl_->active_tree(), 5);
   io_surface_layer->SetBounds(gfx::Size(10, 10));
-  io_surface_layer->SetContentBounds(gfx::Size(10, 10));
   io_surface_layer->SetDrawsContent(true);
   io_surface_layer->SetIOSurfaceProperties(1, gfx::Size(10, 10));
   root_layer->AddChild(io_surface_layer.Pass());
@@ -5841,7 +5794,6 @@ TEST_F(LayerTreeHostImplTestWithDelegatingRenderer, FrameIncludesDamageRect) {
       SolidColorLayerImpl::Create(host_impl_->active_tree(), 1);
   root->SetPosition(gfx::PointF());
   root->SetBounds(gfx::Size(10, 10));
-  root->SetContentBounds(gfx::Size(10, 10));
   root->SetDrawsContent(true);
   root->SetHasRenderSurface(true);
 
@@ -5850,7 +5802,6 @@ TEST_F(LayerTreeHostImplTestWithDelegatingRenderer, FrameIncludesDamageRect) {
       SolidColorLayerImpl::Create(host_impl_->active_tree(), 2);
   child->SetPosition(gfx::PointF(9.f, 9.f));
   child->SetBounds(gfx::Size(1, 1));
-  child->SetContentBounds(gfx::Size(1, 1));
   child->SetDrawsContent(true);
   root->AddChild(child.Pass());
 
@@ -6079,7 +6030,6 @@ TEST_F(LayerTreeHostImplTest,
   scoped_ptr<VideoLayerImpl> video_layer = VideoLayerImpl::Create(
       host_impl_->active_tree(), 2, &provider, media::VIDEO_ROTATION_0);
   video_layer->SetBounds(gfx::Size(10, 10));
-  video_layer->SetContentBounds(gfx::Size(10, 10));
   video_layer->SetDrawsContent(true);
   root_layer->AddChild(video_layer.Pass());
   SetupRootLayerImpl(root_layer.Pass());
@@ -6504,7 +6454,6 @@ TEST_F(LayerTreeHostImplTest, ScrollUnknownNotOnAncestorChain) {
       LayerImpl::Create(host_impl_->active_tree(), occluder_layer_id);
   occluder_layer->SetDrawsContent(true);
   occluder_layer->SetBounds(content_size);
-  occluder_layer->SetContentBounds(content_size);
   occluder_layer->SetPosition(gfx::PointF());
 
   // The parent of the occluder is *above* the scroller.
@@ -6533,7 +6482,6 @@ TEST_F(LayerTreeHostImplTest, ScrollUnknownScrollAncestorMismatch) {
       LayerImpl::Create(host_impl_->active_tree(), occluder_layer_id);
   occluder_layer->SetDrawsContent(true);
   occluder_layer->SetBounds(content_size);
-  occluder_layer->SetContentBounds(content_size);
   occluder_layer->SetPosition(gfx::PointF(-10.f, -10.f));
 
   int child_scroll_clip_layer_id = 7;
@@ -6605,7 +6553,6 @@ TEST_F(LayerTreeHostImplTest, ScrollInvisibleScrollerWithVisibleDescendent) {
       LayerImpl::Create(host_impl_->active_tree(), 9);
   grand_child_layer->SetDrawsContent(true);
   grand_child_layer->SetBounds(content_size);
-  grand_child_layer->SetContentBounds(content_size);
   // Move the grand child so it's not hit by our test point.
   grand_child_layer->SetPosition(gfx::PointF(10.f, 10.f));
 
@@ -6642,7 +6589,6 @@ TEST_F(LayerTreeHostImplTest, ScrollInvisibleScrollerWithVisibleScrollChild) {
       LayerImpl::Create(host_impl_->active_tree(), scroll_child_id);
   scroll_child->SetDrawsContent(true);
   scroll_child->SetBounds(content_size);
-  scroll_child->SetContentBounds(content_size);
   // Move the scroll child so it's not hit by our test point.
   scroll_child->SetPosition(gfx::PointF(10.f, 10.f));
 
@@ -6684,7 +6630,6 @@ TEST_F(LayerTreeHostImplTest, LatencyInfoPassedToCompositorFrameMetadata) {
       SolidColorLayerImpl::Create(host_impl_->active_tree(), 1);
   root->SetPosition(gfx::PointF());
   root->SetBounds(gfx::Size(10, 10));
-  root->SetContentBounds(gfx::Size(10, 10));
   root->SetDrawsContent(true);
   root->SetHasRenderSurface(true);
 
@@ -6725,7 +6670,6 @@ TEST_F(LayerTreeHostImplTest, SelectionBoundsPassedToCompositorFrameMetadata) {
       SolidColorLayerImpl::Create(host_impl_->active_tree(), root_layer_id);
   root->SetPosition(gfx::PointF());
   root->SetBounds(gfx::Size(10, 10));
-  root->SetContentBounds(gfx::Size(10, 10));
   root->SetDrawsContent(true);
   root->SetHasRenderSurface(true);
 
@@ -7286,7 +7230,6 @@ class LayerTreeHostImplVirtualViewportTest : public LayerTreeHostImplTest {
 
     inner_scroll->SetScrollClipLayer(inner_clip->id());
     inner_scroll->SetBounds(outer_viewport);
-    inner_scroll->SetContentBounds(outer_viewport);
     inner_scroll->SetPosition(gfx::PointF());
 
     scoped_ptr<LayerImpl> outer_clip =
@@ -7299,14 +7242,12 @@ class LayerTreeHostImplVirtualViewportTest : public LayerTreeHostImplTest {
     outer_scroll->SetScrollClipLayer(outer_clip->id());
     outer_scroll->PushScrollOffsetFromMainThread(gfx::ScrollOffset());
     outer_scroll->SetBounds(content_size);
-    outer_scroll->SetContentBounds(content_size);
     outer_scroll->SetPosition(gfx::PointF());
 
     scoped_ptr<LayerImpl> contents =
         LayerImpl::Create(layer_tree_impl, 8);
     contents->SetDrawsContent(true);
     contents->SetBounds(content_size);
-    contents->SetContentBounds(content_size);
     contents->SetPosition(gfx::PointF());
 
     outer_scroll->AddChild(contents.Pass());

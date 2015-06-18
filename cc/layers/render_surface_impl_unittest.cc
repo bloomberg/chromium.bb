@@ -18,7 +18,6 @@ TEST(RenderSurfaceLayerImplTest, Occlusion) {
 
   LayerImpl* owning_layer_impl = impl.AddChildToRoot<LayerImpl>();
   owning_layer_impl->SetBounds(layer_size);
-  owning_layer_impl->SetContentBounds(layer_size);
   owning_layer_impl->SetDrawsContent(true);
   owning_layer_impl->SetHasRenderSurface(true);
 

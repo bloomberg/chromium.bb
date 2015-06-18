@@ -25,7 +25,6 @@ FakePictureLayerImpl::FakePictureLayerImpl(
       use_set_valid_tile_priorities_flag_(false),
       release_resources_count_(0) {
   SetBounds(raster_source->GetSize());
-  SetContentBounds(raster_source->GetSize());
   SetRasterSourceOnPending(raster_source, Region());
 }
 
@@ -45,7 +44,6 @@ FakePictureLayerImpl::FakePictureLayerImpl(
       use_set_valid_tile_priorities_flag_(false),
       release_resources_count_(0) {
   SetBounds(layer_bounds);
-  SetContentBounds(layer_bounds);
   SetRasterSourceOnPending(raster_source, Region());
 }
 

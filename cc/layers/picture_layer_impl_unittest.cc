@@ -223,7 +223,6 @@ class PictureLayerImplTest : public testing::Test {
     pending_root->SetHasRenderSurface(true);
     // The bounds() just mirror the pile size.
     pending_layer->SetBounds(raster_source->GetSize());
-    pending_layer->SetContentBounds(raster_source->GetSize());
     pending_layer->SetRasterSourceOnPending(raster_source, invalidation);
 
     pending_root->AddChild(pending_layer.Pass());
@@ -1295,7 +1294,6 @@ TEST_F(PictureLayerImplTest, DontAddLowResForSmallLayers) {
       FakePictureLayerImpl::CreateMaskWithRasterSource(
           host_impl_.pending_tree(), 3, pending_pile);
   mask->SetBounds(layer_bounds);
-  mask->SetContentBounds(layer_bounds);
   mask->SetDrawsContent(true);
 
   SetupDrawPropertiesAndUpdateTiles(
@@ -1319,7 +1317,6 @@ TEST_F(PictureLayerImplTest, HugeMasksGetScaledDown) {
       FakePictureLayerImpl::CreateMaskWithRasterSource(
           host_impl_.pending_tree(), 3, valid_pile);
   mask_ptr->SetBounds(layer_bounds);
-  mask_ptr->SetContentBounds(layer_bounds);
   mask_ptr->SetDrawsContent(true);
   pending_layer_->SetMaskLayer(mask_ptr.Pass());
   pending_layer_->SetHasRenderSurface(true);
@@ -1371,7 +1368,6 @@ TEST_F(PictureLayerImplTest, HugeMasksGetScaledDown) {
 
   SetupPendingTree(huge_pile);
   pending_mask->SetBounds(huge_bounds);
-  pending_mask->SetContentBounds(huge_bounds);
   pending_mask->SetRasterSourceOnPending(huge_pile, Region());
 
   host_impl_.AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
@@ -1424,7 +1420,6 @@ TEST_F(PictureLayerImplTest, HugeMasksGetScaledDown) {
 
   SetupPendingTree(extra_huge_pile);
   pending_mask->SetBounds(extra_huge_bounds);
-  pending_mask->SetContentBounds(extra_huge_bounds);
   pending_mask->SetRasterSourceOnPending(extra_huge_pile, Region());
 
   EXPECT_FALSE(pending_mask->CanHaveTilings());
@@ -1451,7 +1446,6 @@ TEST_F(PictureLayerImplTest, ScaledMaskLayer) {
       FakePictureLayerImpl::CreateMaskWithRasterSource(
           host_impl_.pending_tree(), 3, valid_pile);
   mask_ptr->SetBounds(layer_bounds);
-  mask_ptr->SetContentBounds(layer_bounds);
   mask_ptr->SetDrawsContent(true);
   pending_layer_->SetMaskLayer(mask_ptr.Pass());
   pending_layer_->SetHasRenderSurface(true);
@@ -3976,7 +3970,6 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
   pending_layer_->AddChild(LayerImpl::Create(host_impl_.pending_tree(), 1));
   LayerImpl* layer1 = pending_layer_->children()[0];
   layer1->SetBounds(layer_bounds);
-  layer1->SetContentBounds(layer_bounds);
   layer1->SetDrawsContent(true);
   layer1->SetContentsOpaque(true);
   layer1->SetPosition(occluding_layer_position);
@@ -4072,7 +4065,6 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
   pending_layer_->AddChild(LayerImpl::Create(host_impl_.pending_tree(), 1));
   LayerImpl* layer1 = pending_layer_->children()[0];
   layer1->SetBounds(layer_bounds);
-  layer1->SetContentBounds(layer_bounds);
   layer1->SetDrawsContent(true);
   layer1->SetContentsOpaque(true);
   layer1->SetPosition(occluding_layer_position);
@@ -4173,7 +4165,6 @@ TEST_F(OcclusionTrackingPictureLayerImplTest, OcclusionForDifferentScales) {
   pending_layer_->AddChild(LayerImpl::Create(host_impl_.pending_tree(), 1));
   LayerImpl* layer1 = pending_layer_->children()[0];
   layer1->SetBounds(layer_bounds);
-  layer1->SetContentBounds(layer_bounds);
   layer1->SetDrawsContent(true);
   layer1->SetContentsOpaque(true);
   layer1->SetPosition(occluding_layer_position);
@@ -4249,7 +4240,6 @@ TEST_F(OcclusionTrackingPictureLayerImplTest, DifferentOcclusionOnTrees) {
   pending_layer_->AddChild(LayerImpl::Create(host_impl_.pending_tree(), 2));
   LayerImpl* layer1 = pending_layer_->children()[0];
   layer1->SetBounds(layer_bounds);
-  layer1->SetContentBounds(layer_bounds);
   layer1->SetDrawsContent(true);
   layer1->SetContentsOpaque(true);
   layer1->SetPosition(occluding_layer_position);
@@ -4343,7 +4333,6 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
   pending_layer_->AddChild(LayerImpl::Create(host_impl_.pending_tree(), 2));
   LayerImpl* active_occluding_layer = pending_layer_->children()[0];
   active_occluding_layer->SetBounds(layer_bounds);
-  active_occluding_layer->SetContentBounds(layer_bounds);
   active_occluding_layer->SetDrawsContent(true);
   active_occluding_layer->SetContentsOpaque(true);
   active_occluding_layer->SetPosition(active_occluding_layer_position);
@@ -4358,7 +4347,6 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
   pending_layer_->AddChild(LayerImpl::Create(host_impl_.pending_tree(), 3));
   LayerImpl* pending_occluding_layer = pending_layer_->children()[0];
   pending_occluding_layer->SetBounds(layer_bounds);
-  pending_occluding_layer->SetContentBounds(layer_bounds);
   pending_occluding_layer->SetDrawsContent(true);
   pending_occluding_layer->SetContentsOpaque(true);
   pending_occluding_layer->SetPosition(pending_occluding_layer_position);

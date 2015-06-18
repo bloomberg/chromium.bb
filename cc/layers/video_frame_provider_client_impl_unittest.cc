@@ -76,7 +76,6 @@ class VideoFrameProviderClientImplTest : public testing::Test,
     video_layer_impl_ = impl_.AddChildToRoot<VideoLayerImpl>(
         &provider_, media::VIDEO_ROTATION_0);
     video_layer_impl_->SetBounds(layer_size);
-    video_layer_impl_->SetContentBounds(layer_size);
     video_layer_impl_->SetDrawsContent(true);
     client_impl_->SetActiveVideoLayer(video_layer_impl_);
     ASSERT_TRUE(client_impl_->ActiveVideoLayer());

@@ -421,8 +421,6 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   void SetBoundsDelta(const gfx::Vector2dF& bounds_delta);
   gfx::Vector2dF bounds_delta() const { return bounds_delta_; }
 
-  void SetContentBounds(const gfx::Size& content_bounds);
-
   float contents_scale_x() const { return draw_properties_.contents_scale_x; }
   float contents_scale_y() const { return draw_properties_.contents_scale_y; }
   void SetContentsScale(float contents_scale_x, float contents_scale_y);

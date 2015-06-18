@@ -530,7 +530,6 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->SetTransformOrigin(transform_origin_);
   layer->SetBackgroundColor(background_color_);
   layer->SetBounds(bounds_);
-  layer->SetContentBounds(bounds_);
   layer->SetContentsScale(contents_scale_x(), contents_scale_y());
   layer->SetDoubleSided(double_sided_);
   layer->SetDrawCheckerboardForMissingTiles(
@@ -1146,10 +1145,6 @@ void LayerImpl::SetUpdateRect(const gfx::Rect& update_rect) {
 
 void LayerImpl::AddDamageRect(const gfx::RectF& damage_rect) {
   damage_rect_ = gfx::UnionRects(damage_rect_, damage_rect);
-}
-
-// TODO(danakj): Remove this after impl_side_painting.
-void LayerImpl::SetContentBounds(const gfx::Size& content_bounds) {
 }
 
 void LayerImpl::SetContentsScale(float contents_scale_x,

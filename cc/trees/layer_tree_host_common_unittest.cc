@@ -7962,8 +7962,6 @@ TEST_F(LayerTreeHostCommonTest, BoundsDeltaAffectVisibleContentRect) {
                                false,
                                false,
                                true);
-
-  root->SetContentBounds(root_size);
   root->SetMasksToBounds(true);
 
   root->AddChild(LayerImpl::Create(host_impl.active_tree(), 2));
@@ -7977,8 +7975,6 @@ TEST_F(LayerTreeHostCommonTest, BoundsDeltaAffectVisibleContentRect) {
                                false,
                                false,
                                false);
-
-  sublayer->SetContentBounds(sublayer_size);
   sublayer->SetDrawsContent(true);
 
   LayerImplList layer_impl_list;

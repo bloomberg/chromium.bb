@@ -1154,7 +1154,6 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetBounds(use_paint_properties ? paint_properties_.bounds
                                         : bounds_);
   layer->SetContentsScale(1.f, 1.f);
-  layer->SetContentBounds(bounds());
 
   if (frame_viewer_instrumentation::IsTracingLayerTreeSnapshots())
     layer->SetDebugInfo(TakeDebugInfo());

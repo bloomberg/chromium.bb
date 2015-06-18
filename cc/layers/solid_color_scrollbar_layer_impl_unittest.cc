@@ -30,7 +30,6 @@ TEST(SolidColorScrollbarLayerImplTest, Occlusion) {
           is_left_side_vertical_scrollbar,
           is_overlay);
   scrollbar_layer_impl->SetBounds(layer_size);
-  scrollbar_layer_impl->SetContentBounds(layer_size);
   scrollbar_layer_impl->SetDrawsContent(true);
   scrollbar_layer_impl->SetCurrentPos(100.f / 4);
   scrollbar_layer_impl->SetMaximum(100);

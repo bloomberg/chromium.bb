@@ -54,7 +54,6 @@ void NinePatchLayerLayoutTest(const gfx::Size& bitmap_size,
       NinePatchLayerImpl::Create(host_impl.active_tree(), 1);
   layer->draw_properties().visible_content_rect = visible_content_rect;
   layer->SetBounds(layer_size);
-  layer->SetContentBounds(layer_size);
   layer->SetHasRenderSurface(true);
   layer->draw_properties().render_target = layer.get();
 
@@ -231,7 +230,6 @@ TEST(NinePatchLayerImplTest, Occlusion) {
   NinePatchLayerImpl* nine_patch_layer_impl =
       impl.AddChildToRoot<NinePatchLayerImpl>();
   nine_patch_layer_impl->SetBounds(layer_size);
-  nine_patch_layer_impl->SetContentBounds(layer_size);
   nine_patch_layer_impl->SetDrawsContent(true);
   nine_patch_layer_impl->SetUIResourceId(uid);
   nine_patch_layer_impl->SetImageBounds(gfx::Size(10, 10));
@@ -304,7 +302,6 @@ TEST(NinePatchLayerImplTest, OpaqueRect) {
   NinePatchLayerImpl *nine_patch_layer_impl =
       impl.AddChildToRoot<NinePatchLayerImpl>();
   nine_patch_layer_impl->SetBounds(layer_size);
-  nine_patch_layer_impl->SetContentBounds(layer_size);
   nine_patch_layer_impl->SetDrawsContent(true);
 
   impl.CalcDrawProps(viewport_size);

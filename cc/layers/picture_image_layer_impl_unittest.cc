@@ -59,7 +59,6 @@ class PictureImageLayerImplTest : public testing::Test {
         new TestablePictureImageLayerImpl(tree, id);
     layer->raster_source_ = FakePicturePileImpl::CreateInfiniteFilledPile();
     layer->SetBounds(layer->raster_source_->GetSize());
-    layer->SetContentBounds(layer->raster_source_->GetSize());
     return make_scoped_ptr(layer);
   }
 

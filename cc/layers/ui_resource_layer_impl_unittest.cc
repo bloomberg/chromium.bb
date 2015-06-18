@@ -33,7 +33,6 @@ scoped_ptr<UIResourceLayerImpl> GenerateUIResourceLayer(
       UIResourceLayerImpl::Create(host_impl->active_tree(), 1);
   layer->draw_properties().visible_content_rect = visible_content_rect;
   layer->SetBounds(layer_size);
-  layer->SetContentBounds(layer_size);
   layer->SetHasRenderSurface(true);
   layer->draw_properties().render_target = layer.get();
 
@@ -174,7 +173,6 @@ TEST(UIResourceLayerImplTest, Occlusion) {
   UIResourceLayerImpl* ui_resource_layer_impl =
       impl.AddChildToRoot<UIResourceLayerImpl>();
   ui_resource_layer_impl->SetBounds(layer_size);
-  ui_resource_layer_impl->SetContentBounds(layer_size);
   ui_resource_layer_impl->SetDrawsContent(true);
   ui_resource_layer_impl->SetUIResourceId(uid);
 

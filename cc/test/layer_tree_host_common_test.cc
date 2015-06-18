@@ -48,8 +48,6 @@ void LayerTreeHostCommonTestBase::SetLayerPropertiesForTesting(
   if (create_render_surface) {
     layer->SetHasRenderSurface(true);
   }
-
-  layer->SetContentBounds(bounds);
 }
 
 void LayerTreeHostCommonTestBase::ExecuteCalculateDrawProperties(

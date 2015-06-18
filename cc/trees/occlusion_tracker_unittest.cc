@@ -287,22 +287,13 @@ class OcclusionTrackerTest : public testing::Test {
 
   void SetRootLayerOnMainThread(LayerImpl* root) {}
 
-  void SetBaseProperties(LayerImpl* layer,
-                         const gfx::Transform& transform,
-                         const gfx::PointF& position,
-                         const gfx::Size& bounds) {
-    layer->SetTransform(transform);
-    layer->SetPosition(position);
-    layer->SetBounds(bounds);
-  }
-
   void SetProperties(LayerImpl* layer,
                      const gfx::Transform& transform,
                      const gfx::PointF& position,
                      const gfx::Size& bounds) {
-    SetBaseProperties(layer, transform, position, bounds);
-
-    layer->SetContentBounds(layer->bounds());
+    layer->SetTransform(transform);
+    layer->SetPosition(position);
+    layer->SetBounds(bounds);
   }
 
   void SetReplica(LayerImpl* owning_layer, scoped_ptr<LayerImpl> layer) {
