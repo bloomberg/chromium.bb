@@ -269,6 +269,10 @@
       'filepath': 'chrome/browser/custom_handlers/|'\
                   'chrome/common/custom_handlers/',
     },
+    'custom_tabs': {
+      'filepath': 'chrome/android/java_staging/src/org/chromium/chrome/browser/customtabs/|'\
+                  'chrome/android/javatests/src/org/chromium/chrome/browser/customtabs/',
+    }
     'deep_memory_profiler': {
       'filepath': 'tools/(deep_memory_profiler|find_runtime_symbols)',
     },
@@ -332,6 +336,11 @@
     'enhanced_bookmarks': {
       'filepath': 'chrome/browser/enhanced_bookmarks/' \
                   '|components/enhanced_bookmarks/'
+    },
+    'enhanced_bookmarks_android': {
+      'filepath': 'chrome/android/java_staging/src/org/chromium/'\
+                    'chrome/browser/enhancedbookmarks/|'\
+                  'chrome/android/java/res/layout/eb*.xml'
     },
     'events': {
       'filepath': 'ui/events/',
@@ -947,6 +956,7 @@
     'content_worker': ['kinuko+watch@chromium.org'],
     'cookie_monster': ['erikwright@chromium.org'],
     'custom_handlers': ['vabr+watchlist@chromium.org'],
+    'custom_tabs': ['ianwen+watch@chromium.org'],
     'deep_memory_profiler': ['dmikurube@chromium.org'],
     'device_bluetooth': ['scheib+watch@chromium.org'],
     'device_sensors': ['timvolodine@chromium.org',
@@ -966,6 +976,7 @@
     'drive_resource_metadata': ['hashimoto+watch@chromium.org'],
     'eme': ['eme-reviews@chromium.org'],
     'enhanced_bookmarks': ['noyau+watch@chromium.org'],
+    'enhanced_bookmarks_android': ['ianwen+watch@chromium.org'],
     'events': ['tdresser+watch@chromium.org', 'jdduke+watch@chromium.org'],
     'extension': ['chromium-apps-reviews@chromium.org',
                   'extensions-reviews@chromium.org'],
