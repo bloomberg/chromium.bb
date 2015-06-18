@@ -94,6 +94,7 @@
       'webapp/base/js/typecheck_unittest.js',
       'webapp/base/js/viewport_unittest.js',
       'webapp/base/js/window_shape_unittest.js',
+      'webapp/base/js/xhr_event_writer_unittest.js',
       'webapp/base/js/xhr_unittest.js',
       'webapp/base/js/xmpp_connection_unittest.js',
       'webapp/base/js/xmpp_login_handler_unittest.js',
@@ -181,6 +182,7 @@
       'webapp/base/js/plugin_settings.js',
       'webapp/base/js/suspend_detector.js',
       'webapp/base/js/typecheck.js',
+      'webapp/base/js/xhr_event_writer.js',
       'webapp/base/js/xhr.js',
     ],
     # Host JavaScript files.

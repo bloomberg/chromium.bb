@@ -123,32 +123,34 @@ chromeMocks.runtime.lastError = {
 
 // Sample implementation of chrome.StorageArea according to
 // https://developer.chrome.com/apps/storage#type-StorageArea
-/** @constructor */
+/**
+ * @constructor
+ * @extends {StorageArea}
+ */
 chromeMocks.StorageArea = function() {
-  /** @type {Object} */
+  /** @type {!Object} */
   this.storage_ = {};
 };
 
 /**
- * @param {!Object} keys
+ * @param {Object|string} keys
  * @return {Array<string>}
  */
 function getKeys(keys) {
   if (typeof keys === 'string') {
     return [keys];
   } else if (typeof keys === 'object') {
-    return Object.keys(keys);
+    var objectKeys = /** @type {!Object} */ (keys);
+    return Object.keys(objectKeys);
   }
   return [];
 }
 
-/**
- * @param {!Object} keys
- * @param {Function} onDone
- */
 chromeMocks.StorageArea.prototype.get = function(keys, onDone) {
   if (!keys) {
-    onDone(base.deepCopy(this.storage_));
+    // No keys are specified, returns the entire storage.
+    var storageCopy = base.deepCopy(this.storage_);
+    onDone(/** @type {Object} */ (storageCopy));
     return;
   }
 
@@ -163,26 +165,33 @@ chromeMocks.StorageArea.prototype.get = function(keys, onDone) {
   onDone(result);
 };
 
-/** @param {Object} value */
-chromeMocks.StorageArea.prototype.set = function(value) {
+chromeMocks.StorageArea.prototype.set = function(value, opt_onDone) {
   for (var key in value) {
     this.storage_[key] = base.deepCopy(value[key]);
   }
+  if (opt_onDone) {
+    opt_onDone();
+  }
 };
 
-/**
- * @param {!Object} keys
- */
-chromeMocks.StorageArea.prototype.remove = function(keys) {
+chromeMocks.StorageArea.prototype.remove = function(keys, opt_onDone) {
   getKeys(keys).forEach(
       /** @param {string} key */
       function(key) {
         delete this.storage_[key];
       }, this);
+  if (opt_onDone) {
+    opt_onDone();
+  }
+};
+
+/** @return {!Object} */
+chromeMocks.StorageArea.prototype.mock$getStorage = function() {
+  return this.storage_;
 };
 
 chromeMocks.StorageArea.prototype.clear = function() {
-  this.storage_ = null;
+  this.storage_ = {};
 };
 
 /** @type {Object} */

@@ -90,6 +90,7 @@ remoting_webapp_unittests_js_files = [
   "base/js/typecheck_unittest.js",
   "base/js/viewport_unittest.js",
   "base/js/window_shape_unittest.js",
+  "base/js/xhr_event_writer_unittest.js",
   "base/js/xhr_unittest.js",
   "base/js/xmpp_connection_unittest.js",
   "base/js/xmpp_login_handler_unittest.js",
@@ -176,6 +177,7 @@ remoting_webapp_shared_js_core_files = [
   "base/js/plugin_settings.js",
   "base/js/suspend_detector.js",
   "base/js/typecheck.js",
+  "base/js/xhr_event_writer.js",
   "base/js/xhr.js",
 ]
 

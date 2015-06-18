@@ -395,6 +395,7 @@ remoting.AutoRetryXhr.prototype.doXhr_ = function() {
   if (!base.isOnline()) {
     this.deferred_.reject(
         new remoting.Error(remoting.Error.Tag.NETWORK_FAILURE));
+    return;
   }
 
   var that = this;
