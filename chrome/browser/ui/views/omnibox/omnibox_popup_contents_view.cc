@@ -207,7 +207,15 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
 
     // If the popup is currently closed, we need to create it.
     popup_ = (new AutocompletePopupWidget)->AsWeakPtr();
+    // On Windows use TYPE_MENU to ensure that this window uses the software
+    // compositor which avoids the UI thread blocking issue during command
+    // buffer creation. We can revert this change once http://crbug.com/125248
+    // is fixed.
+#if defined(OS_WIN)
+    views::Widget::InitParams params(views::Widget::InitParams::TYPE_MENU);
+#else
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
+#endif
     params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
     params.parent = popup_parent->GetNativeView();
     params.bounds = GetPopupBounds();

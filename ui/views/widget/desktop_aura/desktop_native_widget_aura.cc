@@ -104,6 +104,12 @@ class DesktopNativeWidgetTopLevelHandler : public aura::WindowObserver {
     // This widget instance will get deleted when the window is
     // destroyed.
     top_level_handler->top_level_widget_ = new Widget();
+    // Ensure that we always use the DesktopNativeWidgetAura instance as the
+    // native widget here. If we enter this code path in tests then it is
+    // possible that we may end up with a NativeWidgetAura instance as the
+    // native widget which breaks this code path.
+    init_params.native_widget =
+        new DesktopNativeWidgetAura(top_level_handler->top_level_widget_);
     top_level_handler->top_level_widget_->Init(init_params);
 
     top_level_handler->top_level_widget_->SetFullscreen(full_screen);
