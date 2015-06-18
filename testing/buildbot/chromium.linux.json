@@ -3,6 +3,11 @@
     "additional_compile_targets": [
       "chrome_shell_apk",
       "mandoline:all"
+    ],
+    "gtest_tests": [
+      {
+        "test": "mojo_common_unittests"
+      }
     ]
   },
   "Android GN (dbg)": {
