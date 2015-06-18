@@ -1495,8 +1495,7 @@ def GetConfig():
       boards=['wolf'],
       do_not_apply_cq_patches=True,
       prebuilts=False,
-      # TODO(): Remove these boards after crbug.com/500640 is resolved.
-      hw_tests=[],
+      hw_tests=HWTestList.SharedPoolCQ(),
   )
 
   _paladin_boards = _all_boards
@@ -1596,20 +1595,6 @@ def GetConfig():
       'gizmo',
   ])
 
-  # TODO(): Remove these boards after crbug.com/500640 is resolved.
-  _paladin_disable_hwtest_boards = frozenset([
-      'daisy_skate',
-      'link',
-      'lumpy',
-      'peach_pit',
-      'peppy',
-      'stumpy',
-      'stumpy_moblab',
-      'wolf',
-      'x86-alex',
-      'x86-zgb',
-  ])
-
   def _CreatePaladinConfigs():
     for board in _paladin_boards:
       assert board in _base_configs, '%s not in _base_configs' % board
@@ -1659,8 +1644,6 @@ def GetConfig():
 
         customizations.update(vm_tests_supported=supported)
 
-      if board in _paladin_disable_hwtest_boards:
-        customizations.update(hw_tests=[])
       if base_config.get('internal'):
         customizations.update(
             prebuilts=constants.PRIVATE,
@@ -1740,12 +1723,10 @@ def GetConfig():
   # Shard the bvt-inline and bvt-cq hw tests between similar builders.
   # The first builder gets bvt-inline, and the second builder gets bvt-cq.
   # bvt-cq takes longer, so it usually makes sense to give it the faster board.
-  # TODO(): Restore these after crbug.com/500640 is resolved.
-  if False:
-    ShardHWTestsBetweenBuilders('x86-zgb-paladin', 'x86-alex-paladin')
-    ShardHWTestsBetweenBuilders('wolf-paladin', 'peppy-paladin')
-    ShardHWTestsBetweenBuilders('daisy_skate-paladin', 'peach_pit-paladin')
-    ShardHWTestsBetweenBuilders('lumpy-paladin', 'stumpy-paladin')
+  ShardHWTestsBetweenBuilders('x86-zgb-paladin', 'x86-alex-paladin')
+  ShardHWTestsBetweenBuilders('wolf-paladin', 'peppy-paladin')
+  ShardHWTestsBetweenBuilders('daisy_skate-paladin', 'peach_pit-paladin')
+  ShardHWTestsBetweenBuilders('lumpy-paladin', 'stumpy-paladin')
 
   # Add a pre-cq config for every board.
   _CreateConfigsForBoards(pre_cq, _all_boards, 'pre-cq')
