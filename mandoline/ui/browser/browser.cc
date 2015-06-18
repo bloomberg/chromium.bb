@@ -11,6 +11,7 @@
 #include "mandoline/tab/frame.h"
 #include "mandoline/tab/frame_connection.h"
 #include "mandoline/tab/frame_tree.h"
+#include "mandoline/ui/browser/browser_manager.h"
 #include "mandoline/ui/browser/browser_ui.h"
 #include "mojo/application/public/cpp/application_runner.h"
 #include "mojo/common/common_type_converters.h"
@@ -32,28 +33,15 @@ gfx::Size GetInitialViewportSize() {
 
 }  // namespace
 
-Browser::Browser()
-    : root_(nullptr),
+Browser::Browser(mojo::ApplicationImpl* app, BrowserManager* browser_manager)
+    : view_manager_init_(app, this, this),
+      root_(nullptr),
       content_(nullptr),
       omnibox_(nullptr),
       navigator_host_(this),
-      app_(nullptr) {
-}
-
-Browser::~Browser() {
-  // Destruct ui_ manually while |this| is alive and reset the pointer first.
-  // This is to avoid a double delete when OnViewManagerDestroyed gets
-  // called.
-  delete ui_.release();
-}
-
-void Browser::ReplaceContentWithRequest(mojo::URLRequestPtr request) {
-  Embed(request.Pass());
-}
-
-void Browser::Initialize(mojo::ApplicationImpl* app) {
-  app_ = app;
-  view_manager_init_.reset(new mojo::ViewManagerInit(app, this, this));
+      app_(app),
+      browser_manager_(browser_manager) {
+  view_manager_init_.connection()->AddService<ViewEmbedder>(this);
 
   ui_.reset(BrowserUI::Create(this, app));
 
@@ -70,17 +58,15 @@ void Browser::Initialize(mojo::ApplicationImpl* app) {
   }
 }
 
-bool Browser::ConfigureIncomingConnection(
-    mojo::ApplicationConnection* connection) {
-  connection->AddService<LaunchHandler>(this);
-  // TODO: register embed interface here.
-  return true;
+Browser::~Browser() {
+  // Destruct ui_ manually while |this| is alive and reset the pointer first.
+  // This is to avoid a double delete when OnViewManagerDestroyed gets
+  // called.
+  ui_.reset();
 }
 
-bool Browser::ConfigureOutgoingConnection(
-    mojo::ApplicationConnection* connection) {
-  connection->AddService<ViewEmbedder>(this);
-  return true;
+void Browser::ReplaceContentWithRequest(mojo::URLRequestPtr request) {
+  Embed(request.Pass());
 }
 
 void Browser::OnEmbed(mojo::View* root) {
@@ -98,13 +84,13 @@ void Browser::OnEmbed(mojo::View* root) {
   content_ = root->view_manager()->CreateView();
   ui_->Init(root_);
 
-  view_manager_init_->view_manager_root()->SetViewportSize(
+  view_manager_init_.view_manager_root()->SetViewportSize(
       mojo::Size::From(GetInitialViewportSize()));
 
   root_->AddChild(content_);
   content_->SetVisible(true);
 
-  view_manager_init_->view_manager_root()->AddAccelerator(
+  view_manager_init_.view_manager_root()->AddAccelerator(
       mojo::KEYBOARD_CODE_BROWSER_BACK, mojo::EVENT_FLAGS_NONE);
 
   // Now that we're ready, either load a pending url or the default url.
@@ -149,7 +135,7 @@ void Browser::OnEmbedForDescendant(mojo::View* view,
 void Browser::OnViewManagerDestroyed(mojo::ViewManager* view_manager) {
   ui_.reset();
   root_ = nullptr;
-  app_->Terminate();
+  browser_manager_->BrowserClosed(this);
 }
 
 void Browser::OnAccelerator(mojo::EventPtr event) {
@@ -199,12 +185,6 @@ void Browser::Embed(mojo::URLRequestPtr request) {
   navigator_host_.RecordNavigation(gurl.spec());
 }
 
-void Browser::LaunchURL(const mojo::String& url) {
-  mojo::URLRequestPtr request(mojo::URLRequest::New());
-  request->url = url;
-  ReplaceContentWithRequest(request.Pass());
-}
-
 void Browser::Create(mojo::ApplicationConnection* connection,
                      mojo::InterfaceRequest<mojo::NavigatorHost> request) {
   navigator_host_.Bind(request.Pass());
@@ -213,11 +193,6 @@ void Browser::Create(mojo::ApplicationConnection* connection,
 void Browser::Create(mojo::ApplicationConnection* connection,
                      mojo::InterfaceRequest<ViewEmbedder> request) {
   view_embedder_bindings_.AddBinding(this, request.Pass());
-}
-
-void Browser::Create(mojo::ApplicationConnection* connection,
-                     mojo::InterfaceRequest<LaunchHandler> request) {
-  launch_handler_bindings_.AddBinding(this, request.Pass());
 }
 
 void Browser::ShowOmnibox(mojo::URLRequestPtr request) {

@@ -14,6 +14,7 @@
 
 namespace mojo {
 
+class ApplicationConnection;
 class ApplicationImpl;
 class ViewManagerDelegate;
 
@@ -32,6 +33,9 @@ class ViewManagerInit : public mojo::ErrorHandler {
   // supplied to the constructor.
   ViewManagerRoot* view_manager_root() { return view_manager_root_.get(); }
 
+  // Returns the application connection established with the view manager.
+  ApplicationConnection* connection() { return connection_; }
+
  private:
   class ClientFactory;
 
@@ -41,6 +45,7 @@ class ViewManagerInit : public mojo::ErrorHandler {
   void OnConnectionError() override;
 
   ApplicationImpl* app_;
+  ApplicationConnection* connection_;
   ViewManagerDelegate* delegate_;
   scoped_ptr<ClientFactory> client_factory_;
   ViewManagerServicePtr service_;

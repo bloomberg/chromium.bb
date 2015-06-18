@@ -7,10 +7,10 @@
 
 #include "components/view_manager/public/cpp/view_manager.h"
 #include "components/view_manager/public/cpp/view_manager_delegate.h"
+#include "components/view_manager/public/cpp/view_manager_init.h"
 #include "components/view_manager/public/interfaces/view_manager_root.mojom.h"
 #include "mandoline/services/navigation/public/interfaces/navigation.mojom.h"
 #include "mandoline/ui/browser/navigator_host_impl.h"
-#include "mandoline/ui/browser/public/interfaces/launch_handler.mojom.h"
 #include "mandoline/ui/browser/public/interfaces/omnibox.mojom.h"
 #include "mandoline/ui/browser/public/interfaces/view_embedder.mojom.h"
 #include "mojo/application/public/cpp/application_delegate.h"
@@ -26,20 +26,18 @@ class ViewManagerInit;
 
 namespace mandoline {
 
+class BrowserManager;
 class BrowserUI;
 class FrameTree;
 
-class Browser : public mojo::ApplicationDelegate,
-                public mojo::ViewManagerDelegate,
+class Browser : public mojo::ViewManagerDelegate,
                 public mojo::ViewManagerRootClient,
                 public OmniboxClient,
                 public ViewEmbedder,
-                public LaunchHandler,
                 public mojo::InterfaceFactory<mojo::NavigatorHost>,
-                public mojo::InterfaceFactory<ViewEmbedder>,
-                public mojo::InterfaceFactory<LaunchHandler> {
+                public mojo::InterfaceFactory<ViewEmbedder> {
  public:
-  Browser();
+  Browser(mojo::ApplicationImpl* app, BrowserManager* browser_manager);
   ~Browser() override;
 
   void ReplaceContentWithRequest(mojo::URLRequestPtr request);
@@ -50,13 +48,6 @@ class Browser : public mojo::ApplicationDelegate,
   const GURL& current_url() const { return current_url_; }
 
  private:
-  // Overridden from mojo::ApplicationDelegate:
-  void Initialize(mojo::ApplicationImpl* app) override;
-  bool ConfigureIncomingConnection(
-      mojo::ApplicationConnection* connection) override;
-  bool ConfigureOutgoingConnection(
-      mojo::ApplicationConnection* connection) override;
-
   // Overridden from mojo::ViewManagerDelegate:
   void OnEmbed(mojo::View* root) override;
   void OnEmbedForDescendant(mojo::View* view,
@@ -73,9 +64,6 @@ class Browser : public mojo::ApplicationDelegate,
   // Overridden from ViewEmbedder:
   void Embed(mojo::URLRequestPtr request) override;
 
-  // Overridden from LaunchHandler:
-  void LaunchURL(const mojo::String& url) override;
-
   // Overridden from mojo::InterfaceFactory<mojo::NavigatorHost>:
   void Create(mojo::ApplicationConnection* connection,
               mojo::InterfaceRequest<mojo::NavigatorHost> request) override;
@@ -84,13 +72,9 @@ class Browser : public mojo::ApplicationDelegate,
   void Create(mojo::ApplicationConnection* connection,
               mojo::InterfaceRequest<ViewEmbedder> request) override;
 
-  // Overridden from mojo::InterfaceFactory<LaunchHandler>:
-  void Create(mojo::ApplicationConnection* connection,
-              mojo::InterfaceRequest<LaunchHandler> request) override;
-
   void ShowOmnibox(mojo::URLRequestPtr request);
 
-  scoped_ptr<mojo::ViewManagerInit> view_manager_init_;
+  mojo::ViewManagerInit view_manager_init_;
 
   // Only support being embedded once, so both application-level
   // and embedding-level state are shared on the same object.
@@ -101,7 +85,6 @@ class Browser : public mojo::ApplicationDelegate,
   mojo::URLRequestPtr pending_request_;
 
   mojo::WeakBindingSet<ViewEmbedder> view_embedder_bindings_;
-  mojo::WeakBindingSet<LaunchHandler> launch_handler_bindings_;
 
   NavigatorHostImpl navigator_host_;
 
@@ -109,6 +92,7 @@ class Browser : public mojo::ApplicationDelegate,
 
   scoped_ptr<BrowserUI> ui_;
   mojo::ApplicationImpl* app_;
+  BrowserManager* browser_manager_;
 
   scoped_ptr<FrameTree> frame_tree_;
 

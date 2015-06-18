@@ -5,7 +5,6 @@
 #ifndef MANDOLINE_UI_BROWSER_DESKTOP_DESKTOP_UI_H_
 #define MANDOLINE_UI_BROWSER_DESKTOP_DESKTOP_UI_H_
 
-#include "mandoline/ui/aura/aura_init.h"
 #include "mandoline/ui/browser/browser_ui.h"
 #include "mandoline/ui/browser/public/interfaces/omnibox.mojom.h"
 #include "ui/views/controls/button/button.h"
@@ -43,7 +42,6 @@ class DesktopUI : public BrowserUI,
   // Overridden from views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
-  AuraInit aura_init_;
   Browser* browser_;
   mojo::ApplicationImpl* application_impl_;
   views::LabelButton* omnibox_launcher_;

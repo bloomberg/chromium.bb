@@ -21,8 +21,7 @@ namespace mandoline {
 // DesktopUI, public:
 
 DesktopUI::DesktopUI(Browser* browser, mojo::ApplicationImpl* application_impl)
-    : aura_init_(application_impl->shell()),
-      browser_(browser),
+    : browser_(browser),
       application_impl_(application_impl),
       omnibox_launcher_(nullptr),
       root_(nullptr),

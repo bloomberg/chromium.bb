@@ -12,7 +12,7 @@
 #include "components/resource_provider/resource_provider_app.h"
 #include "components/view_manager/surfaces/surfaces_service_application.h"
 #include "components/view_manager/view_manager_app.h"
-#include "mandoline/ui/browser/browser.h"
+#include "mandoline/ui/browser/browser_manager.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/application_runner.h"
@@ -122,7 +122,7 @@ void CoreServicesApplicationDelegate::StartApplication(
 
   scoped_ptr<mojo::ApplicationDelegate> delegate;
   if (url == "mojo://browser/")
-    delegate.reset(new mandoline::Browser);
+    delegate.reset(new mandoline::BrowserManager);
   else if (url == "mojo://clipboard/")
     delegate.reset(new clipboard::ClipboardApplicationDelegate);
   else if (url == "mojo://filesystem_service/")

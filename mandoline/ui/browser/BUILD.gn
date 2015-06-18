@@ -29,6 +29,8 @@ source_set("lib") {
   sources = [
     "browser.cc",
     "browser.h",
+    "browser_manager.cc",
+    "browser_manager.h",
     "navigator_host_impl.cc",
     "navigator_host_impl.h",
   ]
