@@ -195,6 +195,9 @@ bool ShaderTranslator::Translate(const std::string& shader_source,
     *info_log = ShGetInfoLog(compiler_);
   }
 
+  // We don't need results in the compiler anymore.
+  ShClearResults(compiler_);
+
   return success;
 }
 
