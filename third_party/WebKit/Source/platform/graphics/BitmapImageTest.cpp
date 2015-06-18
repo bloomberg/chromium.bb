@@ -204,8 +204,6 @@ TEST_F(BitmapImageTest, jpegHasColorProfile)
     EXPECT_EQ(1u, decodedFramesCount());
     EXPECT_EQ(227700u, decodedSize());
     EXPECT_TRUE(m_image->hasColorProfile());
-
-    destroyDecodedData(true);
 }
 
 TEST_F(BitmapImageTest, pngHasColorProfile)
@@ -214,8 +212,6 @@ TEST_F(BitmapImageTest, pngHasColorProfile)
     EXPECT_EQ(1u, decodedFramesCount());
     EXPECT_EQ(65536u, decodedSize());
     EXPECT_TRUE(m_image->hasColorProfile());
-
-    destroyDecodedData(true);
 }
 
 TEST_F(BitmapImageTest, webpHasColorProfile)
@@ -224,8 +220,6 @@ TEST_F(BitmapImageTest, webpHasColorProfile)
     EXPECT_EQ(1u, decodedFramesCount());
     EXPECT_EQ(2560000u, decodedSize());
     EXPECT_TRUE(m_image->hasColorProfile());
-
-    destroyDecodedData(true);
 }
 
 #endif // USE(QCMSLIB)
