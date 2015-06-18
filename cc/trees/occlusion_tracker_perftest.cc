@@ -4,6 +4,7 @@
 
 #include "cc/trees/occlusion_tracker.h"
 
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "cc/debug/lap_timer.h"
 #include "cc/layers/layer_iterator.h"
@@ -13,6 +14,7 @@
 #include "cc/test/fake_proxy.h"
 #include "cc/test/fake_rendering_stats_instrumentation.h"
 #include "cc/test/test_shared_bitmap_manager.h"
+#include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/single_thread_proxy.h"
@@ -32,13 +34,13 @@ class OcclusionTrackerPerfTest : public testing::Test {
       : timer_(kWarmupRuns,
                base::TimeDelta::FromMilliseconds(kTimeLimitMillis),
                kTimeCheckInterval),
+        proxy_(base::ThreadTaskRunnerHandle::Get(), nullptr),
         impl_(&proxy_) {}
   void CreateHost() {
     LayerTreeSettings settings;
-    shared_bitmap_manager_.reset(new TestSharedBitmapManager());
-    host_impl_ =
-        LayerTreeHostImpl::Create(settings, &client_, &proxy_, &stats_,
-                                  shared_bitmap_manager_.get(), NULL, NULL, 1);
+    host_impl_ = LayerTreeHostImpl::Create(settings, &client_, &proxy_, &stats_,
+                                           &shared_bitmap_manager_, nullptr,
+                                           &task_graph_runner_, 1);
     host_impl_->InitializeRenderer(FakeOutputSurface::Create3d());
 
     scoped_ptr<LayerImpl> root_layer = LayerImpl::Create(active_tree(), 1);
@@ -67,7 +69,8 @@ class OcclusionTrackerPerfTest : public testing::Test {
   FakeProxy proxy_;
   DebugScopedSetImplThread impl_;
   FakeRenderingStatsInstrumentation stats_;
-  scoped_ptr<SharedBitmapManager> shared_bitmap_manager_;
+  TestSharedBitmapManager shared_bitmap_manager_;
+  TestTaskGraphRunner task_graph_runner_;
   scoped_ptr<LayerTreeHostImpl> host_impl_;
 };
 
