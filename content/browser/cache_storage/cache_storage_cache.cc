@@ -827,9 +827,11 @@ void CacheStorageCache::PutDidWriteHeaders(scoped_ptr<PutContext> put_context,
 
   disk_cache::ScopedEntryPtr entry(put_context->cache_entry);
   put_context->cache_entry = NULL;
-  scoped_ptr<CacheStorageBlobToDiskCache> reader(
-      new CacheStorageBlobToDiskCache());
-  CacheStorageBlobToDiskCache* reader_ptr = reader.get();
+
+  CacheStorageBlobToDiskCache* blob_to_cache =
+      new CacheStorageBlobToDiskCache();
+  BlobToDiskCacheIDMap::KeyType blob_to_cache_key =
+      active_blob_to_disk_cache_writers_.Add(blob_to_cache);
 
   // Grab some pointers before passing put_context in Bind.
   scoped_refptr<net::URLRequestContextGetter> request_context_getter =
@@ -837,22 +839,23 @@ void CacheStorageCache::PutDidWriteHeaders(scoped_ptr<PutContext> put_context,
   scoped_ptr<storage::BlobDataHandle> blob_data_handle =
       put_context->blob_data_handle.Pass();
 
-  reader_ptr->StreamBlobToCache(
+  blob_to_cache->StreamBlobToCache(
       entry.Pass(), INDEX_RESPONSE_BODY, request_context_getter,
       blob_data_handle.Pass(),
       base::Bind(&CacheStorageCache::PutDidWriteBlobToCache,
                  weak_ptr_factory_.GetWeakPtr(),
-                 base::Passed(put_context.Pass()),
-                 base::Passed(reader.Pass())));
+                 base::Passed(put_context.Pass()), blob_to_cache_key));
 }
 
 void CacheStorageCache::PutDidWriteBlobToCache(
     scoped_ptr<PutContext> put_context,
-    scoped_ptr<CacheStorageBlobToDiskCache> blob_reader,
+    BlobToDiskCacheIDMap::KeyType blob_to_cache_key,
     disk_cache::ScopedEntryPtr entry,
     bool success) {
   DCHECK(entry);
   put_context->cache_entry = entry.release();
+
+  active_blob_to_disk_cache_writers_.Remove(blob_to_cache_key);
 
   if (!success) {
     put_context->cache_entry->Doom();

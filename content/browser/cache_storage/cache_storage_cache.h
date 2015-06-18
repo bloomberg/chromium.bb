@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/id_map.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/cache_storage/cache_storage_types.h"
@@ -117,6 +118,8 @@ class CONTENT_EXPORT CacheStorageCache
 
   using Entries = std::vector<disk_cache::Entry*>;
   using ScopedBackendPtr = scoped_ptr<disk_cache::Backend>;
+  using BlobToDiskCacheIDMap =
+      IDMap<CacheStorageBlobToDiskCache, IDMapOwnPointer>;
 
   CacheStorageCache(
       const GURL& origin,
@@ -150,11 +153,10 @@ class CONTENT_EXPORT CacheStorageCache
   void PutDidWriteHeaders(scoped_ptr<PutContext> put_context,
                           int expected_bytes,
                           int rv);
-  void PutDidWriteBlobToCache(
-      scoped_ptr<PutContext> put_context,
-      scoped_ptr<CacheStorageBlobToDiskCache> blob_reader,
-      disk_cache::ScopedEntryPtr entry,
-      bool success);
+  void PutDidWriteBlobToCache(scoped_ptr<PutContext> put_context,
+                              BlobToDiskCacheIDMap::KeyType blob_to_cache_key,
+                              disk_cache::ScopedEntryPtr entry,
+                              bool success);
 
   // Returns ERROR_NOT_FOUND if not found. Otherwise deletes and returns OK.
   void Delete(const CacheStorageBatchOperation& operation,
@@ -213,6 +215,9 @@ class CONTENT_EXPORT CacheStorageCache
   BackendState backend_state_;
   scoped_ptr<CacheStorageScheduler> scheduler_;
   bool initializing_;
+
+  // Owns the elements of the list
+  BlobToDiskCacheIDMap active_blob_to_disk_cache_writers_;
 
   // Whether or not to store data in disk or memory.
   bool memory_only_;
