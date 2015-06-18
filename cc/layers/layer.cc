@@ -1133,7 +1133,6 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetBackgroundColor(background_color_);
   layer->SetBounds(use_paint_properties ? paint_properties_.bounds
                                         : bounds_);
-  layer->SetContentsScale(1.f, 1.f);
 
   if (frame_viewer_instrumentation::IsTracingLayerTreeSnapshots())
     layer->SetDebugInfo(TakeDebugInfo());

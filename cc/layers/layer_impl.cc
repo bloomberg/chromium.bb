@@ -1131,11 +1131,6 @@ void LayerImpl::AddDamageRect(const gfx::RectF& damage_rect) {
   damage_rect_ = gfx::UnionRects(damage_rect_, damage_rect);
 }
 
-// TODO(danakj): Remove this. #impl_side_painting
-void LayerImpl::SetContentsScale(float contents_scale_x,
-                                 float contents_scale_y) {
-}
-
 bool LayerImpl::IsExternalScrollActive() const {
   return layer_tree_impl_->IsExternalScrollActive();
 }
