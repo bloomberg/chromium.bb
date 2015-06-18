@@ -199,4 +199,13 @@ source_set("renderer") {
     ]
     deps += [ "//media/mojo/services:proxy" ]
   }
+
+  if (enable_webvr) {
+    sources += [
+      "vr/vr_dispatcher.cc",
+      "vr/vr_dispatcher.h",
+      "vr/vr_type_converters.cc",
+      "vr/vr_type_converters.h",
+    ]
+  }
 }

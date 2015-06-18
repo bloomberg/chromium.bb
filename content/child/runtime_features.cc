@@ -203,6 +203,11 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kEnableUnsafeES3APIs))
     WebRuntimeFeatures::enableUnsafeES3APIs(true);
 
+  if (command_line.HasSwitch(switches::kEnableWebVR)) {
+    WebRuntimeFeatures::enableWebVR(true);
+    WebRuntimeFeatures::enableFeatureFromString("GeometryInterfaces", true);
+  }
+
   // Enable explicitly enabled features, and then disable explicitly disabled
   // ones.
   if (command_line.HasSwitch(switches::kEnableBlinkFeatures)) {

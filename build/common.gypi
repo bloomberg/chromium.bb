@@ -1016,6 +1016,14 @@
         }, {
           'pkg-config': 'pkg-config'
         }],
+
+        # Enable WebVR support by default on Android
+        # Still requires command line flag to access API
+        ['OS=="android"', {
+          'enable_webvr%': 1,
+        }, {
+          'enable_webvr%': 0,
+        }],
       ],
 
       # Setting this to '0' will cause V8's startup snapshot to be
@@ -1232,6 +1240,7 @@
     'mac_views_browser%': '<(mac_views_browser)',
     'android_app_version_name%': '<(android_app_version_name)',
     'android_app_version_code%': '<(android_app_version_code)',
+    'enable_webvr%': '<(enable_webvr)',
 
     # Use system protobuf instead of bundled one.
     'use_system_protobuf%': 0,
@@ -3029,6 +3038,9 @@
       }],
       ['v8_use_external_startup_data==1', {
        'defines': ['V8_USE_EXTERNAL_STARTUP_DATA'],
+      }],
+      ['enable_webvr==1', {
+        'defines': ['ENABLE_WEBVR'],
       }],
 
       # SAFE_BROWSING_SERVICE - browser manages a safe-browsing service.

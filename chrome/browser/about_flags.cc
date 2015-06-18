@@ -1992,6 +1992,13 @@ const Experiment kExperiments[] = {
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableMacViewsNativeAppWindows,
                                switches::kDisableMacViewsNativeAppWindows)},
 #endif
+#if defined(ENABLE_WEBVR)
+    {"enable-webvr",
+     IDS_FLAGS_ENABLE_WEBVR_NAME,
+     IDS_FLAGS_ENABLE_WEBVR_DESCRIPTION,
+     kOsAll,
+     SINGLE_VALUE_TYPE(switches::kEnableWebVR)},
+#endif
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.
