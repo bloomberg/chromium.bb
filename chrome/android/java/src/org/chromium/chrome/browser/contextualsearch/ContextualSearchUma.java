@@ -170,6 +170,11 @@ public class ContextualSearchUma {
     private static final int RESOLVED_MULTI_WORD = 1;
     private static final int RESOLVED_BOUNDARY = 2;
 
+    // Constants used to log UMA "enum" histograms for paritally / fully loaded.
+    private static final int PARTIALLY_LOADED = 0;
+    private static final int FULLY_LOADED = 1;
+    private static final int LOADED_BOUNDARY = 2;
+
 
     /**
      * Key used in maps from {state, reason} to state entry (exit) logging code.
@@ -637,6 +642,15 @@ public class ContextualSearchUma {
         RecordHistogram.recordEnumeratedHistogram(
                 "Search.ContextualSearchFallbackSearchRequestStatus",
                 isFailure ? REQUEST_FAILED : REQUEST_NOT_FAILED, REQUEST_BOUNDARY);
+    }
+
+    /**
+     * Logs whether the SERP was fully loaded when an opened panel was closed.
+     * @param fullyLoaded Whether the SERP had finished loading before the panel was closed.
+     */
+    public static void logSerpLoadedOnClose(boolean fullyLoaded) {
+        RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchSerpLoadedOnClose",
+                fullyLoaded ? FULLY_LOADED : PARTIALLY_LOADED, LOADED_BOUNDARY);
     }
 
     /**

@@ -113,6 +113,9 @@ abstract class ContextualSearchPanelStateHandler {
         boolean isFirstExitFromMaximized = fromState == PanelState.MAXIMIZED && !mHasExitedMaximized
                 && !isSameState;
         boolean isFirstSearchView = isFirstExitFromPeeking && toState != PanelState.CLOSED;
+        // This variable is needed for logging and gets reset in an isStartingSearch block below,
+        // so a local copy is created before the reset.
+        boolean isSearchPanelFullyPreloaded = mIsSearchPanelFullyPreloaded;
 
         if (isEndingSearch) {
             if (!mDidSearchInvolvePromo) {
@@ -178,6 +181,9 @@ abstract class ContextualSearchPanelStateHandler {
         }
 
         if (isEndingSearch) {
+            if (mHasMaximized || mHasExpanded) {
+                ContextualSearchUma.logSerpLoadedOnClose(isSearchPanelFullyPreloaded);
+            }
             mDidSearchInvolvePromo = false;
             mWasSearchContentViewSeen = false;
             mHasExpanded = false;
@@ -248,10 +254,10 @@ abstract class ContextualSearchPanelStateHandler {
             assert mSearchViewStartTimeNs != 0;
             long durationMs = (System.nanoTime() - mSearchViewStartTimeNs) / 1000000;
             logSearchPanelLoadDuration(wasPrefetch, durationMs);
-        } else {
-            // Not yet opened, wait till an open to log.
-            mIsSearchPanelFullyPreloaded = true;
         }
+
+        // Not yet opened, wait till an open to log.
+        mIsSearchPanelFullyPreloaded = true;
     }
 
     /**
