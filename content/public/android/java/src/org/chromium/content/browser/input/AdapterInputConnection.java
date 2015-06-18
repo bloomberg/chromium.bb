@@ -430,7 +430,8 @@ public class AdapterInputConnection extends BaseInputConnection {
     @Override
     public boolean sendKeyEvent(KeyEvent event) {
         if (DEBUG) {
-            Log.w(TAG, "sendKeyEvent [" + event.getAction() + "] [" + event.getKeyCode() + "]");
+            Log.w(TAG, "sendKeyEvent [" + event.getAction() + "] [" + event.getKeyCode() + "] ["
+                            + event.getUnicodeChar() + "]");
         }
 
         int action = event.getAction();
@@ -438,7 +439,8 @@ public class AdapterInputConnection extends BaseInputConnection {
         int unicodeChar = event.getUnicodeChar();
 
         // If this isn't a KeyDown event, no need to update composition state; just pass the key
-        // event through and return.
+        // event through and return. But note that some keys, such as enter, may actually be
+        // handled on ACTION_UP in Blink.
         if (action != KeyEvent.ACTION_DOWN) {
             mImeAdapter.translateAndSendNativeEvents(event);
             return true;
@@ -455,11 +457,7 @@ public class AdapterInputConnection extends BaseInputConnection {
         } else if (keycode == KeyEvent.KEYCODE_ENTER) {
             // Finish text composition when pressing enter, as that may submit a form field.
             // TODO(aurimas): remove this workaround when crbug.com/278584 is fixed.
-            beginBatchEdit();
             finishComposingText();
-            mImeAdapter.translateAndSendNativeEvents(event);
-            endBatchEdit();
-            return true;
         } else if ((unicodeChar & KeyCharacterMap.COMBINING_ACCENT) != 0) {
             // Store a pending accent character and make it the current composition.
             int pendingAccent = unicodeChar & KeyCharacterMap.COMBINING_ACCENT_MASK;
@@ -468,37 +466,39 @@ public class AdapterInputConnection extends BaseInputConnection {
             setComposingText(builder.toString(), 1);
             mPendingAccent = pendingAccent;
             return true;
-        }
-
-        if (unicodeChar != 0) {
-            if (mPendingAccent != 0) {
-                int combined = KeyEvent.getDeadChar(mPendingAccent, unicodeChar);
-                if (combined != 0) {
-                    StringBuilder builder = new StringBuilder();
-                    builder.appendCodePoint(combined);
-                    commitText(builder.toString(), 1);
-                    return true;
-                }
-                // Noncombinable character; commit the accent character and fall through to sending
-                // the key event for the character afterwards.
-                finishComposingText();
+        } else if (mPendingAccent != 0 && unicodeChar != 0) {
+            int combined = KeyEvent.getDeadChar(mPendingAccent, unicodeChar);
+            if (combined != 0) {
+                StringBuilder builder = new StringBuilder();
+                builder.appendCodePoint(combined);
+                commitText(builder.toString(), 1);
+                return true;
             }
-
-            // Update the mEditable state to reflect what Blink will do in response to the KeyDown
-            // for a unicode-mapped key event.
-            int selectionStart = Selection.getSelectionStart(mEditable);
-            int selectionEnd = Selection.getSelectionEnd(mEditable);
-            if (selectionStart > selectionEnd) {
-                int temp = selectionStart;
-                selectionStart = selectionEnd;
-                selectionEnd = temp;
-            }
-            mEditable.replace(selectionStart, selectionEnd,
-                    Character.toString((char) unicodeChar));
+            // Noncombinable character; commit the accent character and fall through to sending
+            // the key event for the character afterwards.
+            finishComposingText();
         }
-
+        replaceSelectionWithUnicodeChar(unicodeChar);
         mImeAdapter.translateAndSendNativeEvents(event);
         return true;
+    }
+
+    /**
+     * Update the mEditable state to reflect what Blink will do in response to the KeyDown
+     * for a unicode-mapped key event.
+     * @param unicodeChar The Unicode character to update selection with.
+     */
+    private void replaceSelectionWithUnicodeChar(int unicodeChar) {
+        if (unicodeChar == 0) return;
+        int selectionStart = Selection.getSelectionStart(mEditable);
+        int selectionEnd = Selection.getSelectionEnd(mEditable);
+        if (selectionStart > selectionEnd) {
+            int temp = selectionStart;
+            selectionStart = selectionEnd;
+            selectionEnd = temp;
+        }
+        mEditable.replace(selectionStart, selectionEnd, Character.toString((char) unicodeChar));
+        updateSelectionIfRequired();
     }
 
     /**

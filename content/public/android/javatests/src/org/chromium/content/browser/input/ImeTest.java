@@ -32,6 +32,7 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_shell_apk.ContentShellTestBase;
 
 import java.util.ArrayList;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Integration tests for text input using cases based on fixed regressions.
@@ -327,21 +328,8 @@ public class ImeTest extends ContentShellTestBase {
     public void testFinishComposingText() throws Throwable {
         DOMUtils.focusNode(mWebContents, "input_radio");
         assertWaitForKeyboardStatus(false);
-        DOMUtils.focusNode(mWebContents, "textarea");
-        assertWaitForKeyboardStatus(true);
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                try {
-                    return "textarea".equals(DOMUtils.getFocusedNode(mWebContents));
-                } catch (Exception e) {
-                    return false;
-                }
-            }
-        }));
 
-        mConnection = (TestAdapterInputConnection) getAdapterInputConnection();
-        waitAndVerifyStatesAndCalls(mConnection.mImeUpdateQueue, 0, "", 0, 0, -1, -1);
+        focusElement("textarea");
 
         commitText(mConnection, "hllo", 1);
         waitAndVerifyStatesAndCalls(mConnection.mImeUpdateQueue, 1, "hllo", 4, 4, -1, -1);
@@ -416,16 +404,12 @@ public class ImeTest extends ContentShellTestBase {
     */
     @DisabledTest
     public void testKeyCodesWhileComposingText() throws Throwable {
-        DOMUtils.focusNode(mWebContents, "textarea");
-        assertWaitForKeyboardStatus(true);
+        focusElement("textarea");
 
         // The calls below are a reflection of what the stock Google Keyboard (Android 4.4) sends
         // when the noted key is touched on screen.  Exercise care when altering to make sure
         // that the test reflects reality.  If this test breaks, it's possible that code has
         // changed and different calls need to be made instead.
-        mConnection = (TestAdapterInputConnection) getAdapterInputConnection();
-        waitAndVerifyStatesAndCalls(mConnection.mImeUpdateQueue, 0, "", 0, 0, -1, -1);
-
         // H
         expectUpdateStateCall(mConnection);
         setComposingText(mConnection, "h", 1);
@@ -490,16 +474,12 @@ public class ImeTest extends ContentShellTestBase {
     */
     @DisabledTest
     public void testKeyCodesWhileSwipingText() throws Throwable {
-        DOMUtils.focusNode(mWebContents, "textarea");
-        assertWaitForKeyboardStatus(true);
+        focusElement("textarea");
 
         // The calls below are a reflection of what the stock Google Keyboard (Android 4.4) sends
         // when the word is swiped on the soft keyboard.  Exercise care when altering to make sure
         // that the test reflects reality.  If this test breaks, it's possible that code has
         // changed and different calls need to be made instead.
-        mConnection = (TestAdapterInputConnection) getAdapterInputConnection();
-        waitAndVerifyStatesAndCalls(mConnection.mImeUpdateQueue, 0, "", 0, 0, -1, -1);
-
         // "three"
         expectUpdateStateCall(mConnection);
         setComposingText(mConnection, "three", 1);
@@ -536,15 +516,8 @@ public class ImeTest extends ContentShellTestBase {
         waitAndVerifyStatesAndCalls(mConnection.mImeUpdateQueue, 1, smiley, 2, 2, -1, -1);
 
         // DEL, sent via dispatchKeyEvent like it is in Android WebView or a physical keyboard.
-        getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                mContentViewCore.dispatchKeyEvent(
-                        new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL));
-                mContentViewCore.dispatchKeyEvent(
-                        new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DEL));
-            }
-        });
+        dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL));
+        dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DEL));
 
         waitAndVerifyStatesAndCalls(mConnection.mImeUpdateQueue, 2, "", 0, 0, -1, -1);
 
@@ -558,11 +531,7 @@ public class ImeTest extends ContentShellTestBase {
     @SmallTest
     @Feature({"TextInput", "Main"})
     public void testBackspaceKeycode() throws Throwable {
-        DOMUtils.focusNode(mWebContents, "textarea");
-        assertWaitForKeyboardStatus(true);
-
-        mConnection = (TestAdapterInputConnection) getAdapterInputConnection();
-        waitAndVerifyStatesAndCalls(mConnection.mImeUpdateQueue, 0, "", 0, 0, -1, -1);
+        focusElement("textarea");
 
         // H
         expectUpdateStateCall(mConnection);
@@ -581,15 +550,8 @@ public class ImeTest extends ContentShellTestBase {
         assertEquals("ho", mConnection.getTextBeforeCursor(9, 0));
 
         // DEL, sent via dispatchKeyEvent like it is in Android WebView or a physical keyboard.
-        getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                mContentViewCore.dispatchKeyEvent(
-                        new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL));
-                mContentViewCore.dispatchKeyEvent(
-                        new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DEL));
-            }
-        });
+        dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL));
+        dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DEL));
 
         // DEL
         expectUpdateStateCall(mConnection);
@@ -601,11 +563,7 @@ public class ImeTest extends ContentShellTestBase {
     @SmallTest
     @Feature({"TextInput", "Main"})
     public void testRepeatBackspaceKeycode() throws Throwable {
-        DOMUtils.focusNode(mWebContents, "textarea");
-        assertWaitForKeyboardStatus(true);
-
-        mConnection = (TestAdapterInputConnection) getAdapterInputConnection();
-        waitAndVerifyStatesAndCalls(mConnection.mImeUpdateQueue, 0, "", 0, 0, -1, -1);
+        focusElement("textarea");
 
         // H
         expectUpdateStateCall(mConnection);
@@ -625,17 +583,9 @@ public class ImeTest extends ContentShellTestBase {
 
         // Multiple keydowns should each delete one character (this is for physical keyboard
         // key-repeat).
-        getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                mContentViewCore.dispatchKeyEvent(
-                        new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL));
-                mContentViewCore.dispatchKeyEvent(
-                        new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL));
-                mContentViewCore.dispatchKeyEvent(
-                        new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DEL));
-            }
-        });
+        dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL));
+        dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL));
+        dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DEL));
 
         // DEL
         expectUpdateStateCall(mConnection);
@@ -644,19 +594,14 @@ public class ImeTest extends ContentShellTestBase {
         assertEquals("", mConnection.getTextBeforeCursor(9, 0));
     }
 
-
     @SmallTest
     @Feature({"TextInput", "Main"})
     public void testKeyCodesWhileTypingText() throws Throwable {
-        DOMUtils.focusNode(mWebContents, "textarea");
-        assertWaitForKeyboardStatus(true);
+        focusElement("textarea");
 
         // The calls below are a reflection of what the Hacker's Keyboard sends when the noted
         // key is touched on screen.  Exercise care when altering to make sure that the test
         // reflects reality.
-        mConnection = (TestAdapterInputConnection) getAdapterInputConnection();
-        waitAndVerifyStatesAndCalls(mConnection.mImeUpdateQueue, 0, "", 0, 0, -1, -1);
-
         // H
         expectUpdateStateCall(mConnection);
         commitText(mConnection, "h", 1);
@@ -729,92 +674,104 @@ public class ImeTest extends ContentShellTestBase {
 
     @SmallTest
     @Feature({"TextInput", "Main"})
-    public void testAccentKeyCodesFromPhysicalKeyboard() throws Throwable {
-        DOMUtils.focusNode(mWebContents, "textarea");
-        assertWaitForKeyboardStatus(true);
+    public void testPhysicalKeyboard() throws Throwable {
+        focusElement("textarea");
+        // Type 'a' using a physical keyboard.
+        dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_A));
+        dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_A));
+        waitAndVerifyStatesAndCalls(mConnection.mImeUpdateQueue, 1, "a", 1, 1, -1, -1);
 
-        mConnection = (TestAdapterInputConnection) getAdapterInputConnection();
-        waitAndVerifyStatesAndCalls(mConnection.mImeUpdateQueue, 0, "", 0, 0, -1, -1);
+        // Type 'enter' key.
+        dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER));
+        dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_ENTER));
+        waitAndVerifyStatesAndCalls(mConnection.mImeUpdateQueue, 2, "a\n\n", 2, 2, -1, -1);
+
+        // Type 'b'.
+        dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_B));
+        dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_B));
+        waitAndVerifyStatesAndCalls(mConnection.mImeUpdateQueue, 3, "a\nb", 3, 3, -1, -1);
+    }
+
+    @SmallTest
+    @Feature({"TextInput", "Main"})
+    public void testPhysicalKeyboard_AccentKeyCodes() throws Throwable {
+        focusElement("textarea");
 
         // h
-        dispatchKeyEvent(mConnection, new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_H));
-        dispatchKeyEvent(mConnection, new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_H));
+        dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_H));
+        dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_H));
         assertEquals("h", mConnection.getTextBeforeCursor(9, 0));
+        waitAndVerifyStatesAndCalls(mConnection.mImeUpdateQueue, 1, "h", 1, 1, -1, -1);
 
         // ALT-i  (circumflex accent key on virtual keyboard)
-        dispatchKeyEvent(
-                mConnection, new KeyEvent(
-                        0, 0, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_I, 0, KeyEvent.META_ALT_ON));
+        dispatchKeyEvent(new KeyEvent(
+                0, 0, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_I, 0, KeyEvent.META_ALT_ON));
         assertUpdateStateCall(mConnection, 1000);
         assertEquals("hˆ", mConnection.getTextBeforeCursor(9, 0));
-        dispatchKeyEvent(
-                mConnection, new KeyEvent(
-                        0, 0, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_I, 0, KeyEvent.META_ALT_ON));
+        dispatchKeyEvent(new KeyEvent(
+                0, 0, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_I, 0, KeyEvent.META_ALT_ON));
         assertEquals("hˆ", mConnection.getTextBeforeCursor(9, 0));
+        waitAndVerifyStatesAndCalls(mConnection.mImeUpdateQueue, 2, "hˆ", 2, 2, 1, 2);
 
         // o
-        dispatchKeyEvent(mConnection, new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_O));
+        dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_O));
         assertUpdateStateCall(mConnection, 1000);
         assertEquals("hô", mConnection.getTextBeforeCursor(9, 0));
-        dispatchKeyEvent(mConnection, new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_O));
+        dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_O));
         assertEquals("hô", mConnection.getTextBeforeCursor(9, 0));
-        assertEquals(-1, mConnection.getComposingSpanEnd(mConnection.getEditable()));
+        waitAndVerifyStatesAndCalls(mConnection.mImeUpdateQueue, 3, "hô", 2, 2, -1, -1);
 
         // ALT-i
-        dispatchKeyEvent(
-                mConnection, new KeyEvent(
-                        0, 0, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_I, 0, KeyEvent.META_ALT_ON));
+        dispatchKeyEvent(new KeyEvent(
+                0, 0, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_I, 0, KeyEvent.META_ALT_ON));
         assertUpdateStateCall(mConnection, 1000);
-        dispatchKeyEvent(
-                mConnection, new KeyEvent(
-                        0, 0, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_I, 0, KeyEvent.META_ALT_ON));
+        dispatchKeyEvent(new KeyEvent(
+                0, 0, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_I, 0, KeyEvent.META_ALT_ON));
         assertEquals("hôˆ", mConnection.getTextBeforeCursor(9, 0));
+        waitAndVerifyStatesAndCalls(mConnection.mImeUpdateQueue, 4, "hôˆ", 3, 3, 2, 3);
 
         // ALT-i again should have no effect
-        dispatchKeyEvent(
-                mConnection, new KeyEvent(
-                        0, 0, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_I, 0, KeyEvent.META_ALT_ON));
+        dispatchKeyEvent(new KeyEvent(
+                0, 0, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_I, 0, KeyEvent.META_ALT_ON));
         assertUpdateStateCall(mConnection, 1000);
-        dispatchKeyEvent(
-                mConnection, new KeyEvent(
-                        0, 0, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_I, 0, KeyEvent.META_ALT_ON));
+        dispatchKeyEvent(new KeyEvent(
+                0, 0, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_I, 0, KeyEvent.META_ALT_ON));
         assertEquals("hôˆ", mConnection.getTextBeforeCursor(9, 0));
 
         // b (cannot be accented, should just appear after)
-        dispatchKeyEvent(mConnection, new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_B));
+        dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_B));
         assertUpdateStateCall(mConnection, 1000);
         assertEquals("hôˆb", mConnection.getTextBeforeCursor(9, 0));
-        dispatchKeyEvent(mConnection, new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_B));
+        dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_B));
         assertEquals("hôˆb", mConnection.getTextBeforeCursor(9, 0));
-        assertEquals(-1, mConnection.getComposingSpanEnd(mConnection.getEditable()));
+        // A transitional state due to finishComposingText.
+        waitAndVerifyStates(mConnection.mImeUpdateQueue, 5, "hôˆ", 3, 3, -1, -1);
+        waitAndVerifyStatesAndCalls(mConnection.mImeUpdateQueue, 6, "hôˆb", 4, 4, -1, -1);
 
         // ALT-i
-        dispatchKeyEvent(
-                mConnection, new KeyEvent(
-                        0, 0, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_I, 0, KeyEvent.META_ALT_ON));
+        dispatchKeyEvent(new KeyEvent(
+                0, 0, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_I, 0, KeyEvent.META_ALT_ON));
         assertUpdateStateCall(mConnection, 1000);
-        dispatchKeyEvent(
-                mConnection, new KeyEvent(
-                        0, 0, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_I, 0, KeyEvent.META_ALT_ON));
+        dispatchKeyEvent(new KeyEvent(
+                0, 0, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_I, 0, KeyEvent.META_ALT_ON));
         assertEquals("hôˆbˆ", mConnection.getTextBeforeCursor(9, 0));
+        waitAndVerifyStatesAndCalls(mConnection.mImeUpdateQueue, 7, "hôˆbˆ", 5, 5, 4, 5);
 
         // Backspace
-        dispatchKeyEvent(mConnection, new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL));
+        dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL));
         assertUpdateStateCall(mConnection, 1000);
         assertEquals("hôˆb", mConnection.getTextBeforeCursor(9, 0));
-        dispatchKeyEvent(mConnection, new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DEL));
+        dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DEL));
         assertEquals("hôˆb", mConnection.getTextBeforeCursor(9, 0));
-        assertEquals(-1, mConnection.getComposingSpanEnd(mConnection.getEditable()));
+        // A transitional state due to finishComposingText in deleteSurroundingTextImpl.
+        waitAndVerifyStates(mConnection.mImeUpdateQueue, 8, "hôˆbˆ", 5, 5, -1, -1);
+        waitAndVerifyStatesAndCalls(mConnection.mImeUpdateQueue, 9, "hôˆb", 4, 4, -1, -1);
     }
 
     @SmallTest
     @Feature({"TextInput", "Main"})
     public void testSetComposingRegionOutOfBounds() throws Throwable {
-        DOMUtils.focusNode(mWebContents, "textarea");
-        assertWaitForKeyboardStatus(true);
-
-        mConnection = (TestAdapterInputConnection) getAdapterInputConnection();
-        waitAndVerifyStatesAndCalls(mConnection.mImeUpdateQueue, 0, "", 0, 0, -1, -1);
+        focusElement("textarea");
         setComposingText(mConnection, "hello", 1);
 
         setComposingRegion(mConnection, 0, 0);
@@ -824,71 +781,60 @@ public class ImeTest extends ContentShellTestBase {
 
     @SmallTest
     @Feature({"TextInput", "Main"})
-    public void testEnterKeyEventWhileComposingText() throws Throwable {
-        DOMUtils.focusNode(mWebContents, "input_radio");
-        assertWaitForKeyboardStatus(false);
-        DOMUtils.focusNode(mWebContents, "textarea");
-        assertWaitForKeyboardStatus(true);
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                try {
-                    return "textarea".equals(DOMUtils.getFocusedNode(mWebContents));
-                } catch (Exception e) {
-                    return false;
-                }
-            }
-        }));
+    public void testEnterKey_AfterCommitText() throws Throwable {
+        focusElement("textarea");
 
-        mConnection = (TestAdapterInputConnection) getAdapterInputConnection();
-        waitAndVerifyStatesAndCalls(mConnection.mImeUpdateQueue, 0, "", 0, 0, -1, -1);
+        commitText(mConnection, "hello", 1);
+        waitAndVerifyStatesAndCalls(mConnection.mImeUpdateQueue, 1, "hello", 5, 5, -1, -1);
+
+        dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER));
+        dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_ENTER));
+        // TODO(aurimas): remove this workaround when crbug.com/278584 is fixed.
+        // The second new line is not a user visible/editable one, it is a side-effect of Blink
+        // using <br> internally. This only happens when \n is at the end.
+        waitAndVerifyStatesAndCalls(mConnection.mImeUpdateQueue, 2, "hello\n\n", 6, 6, -1, -1);
+
+        commitText(mConnection, "world", 1);
+        waitAndVerifyStatesAndCalls(mConnection.mImeUpdateQueue, 3, "hello\nworld", 11, 11, -1, -1);
+    }
+
+    @SmallTest
+    @Feature({"TextInput", "Main"})
+    public void testEnterKey_WhileComposingText() throws Throwable {
+        focusElement("textarea");
 
         setComposingText(mConnection, "hello", 1);
         waitAndVerifyStatesAndCalls(mConnection.mImeUpdateQueue, 1, "hello", 5, 5, 0, 5);
 
-        getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                mConnection.sendKeyEvent(
-                        new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER));
-                mConnection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_ENTER));
-            }
-        });
+        dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER));
+        dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_ENTER));
 
         // TODO(aurimas): remove this workaround when crbug.com/278584 is fixed.
-        waitAndVerifyStatesAndCalls(mConnection.mImeUpdateQueue, 2, "hello", 5, 5, -1, -1);
+        // A transitional state due to finishComposingText.
+        waitAndVerifyStates(mConnection.mImeUpdateQueue, 2, "hello", 5, 5, -1, -1);
         // The second new line is not a user visible/editable one, it is a side-effect of Blink
-        // using <br> internally.
-        // TODO(changwan): [ 6, 6 ] is different from what we report to
-        // InputMethodManager#updateSelection().
-        // Uncomment this once it's fixed.
-        waitAndVerifyStates(mConnection.mImeUpdateQueue, 3, "hello\n\n", 6, 6, -1, -1);
+        // using <br> internally. This only happens when \n is at the end.
+        waitAndVerifyStatesAndCalls(mConnection.mImeUpdateQueue, 3, "hello\n\n", 6, 6, -1, -1);
+
+        commitText(mConnection, "world", 1);
+        waitAndVerifyStatesAndCalls(mConnection.mImeUpdateQueue, 4, "hello\nworld", 11, 11, -1, -1);
     }
 
     @SmallTest
     @Feature({"TextInput", "Main"})
     public void testDpadKeyCodesWhileSwipingText() throws Throwable {
-        DOMUtils.focusNode(mWebContents, "textarea");
-        assertWaitForKeyboardStatus(true);
-
-        mConnection = (TestAdapterInputConnection) getAdapterInputConnection();
-        waitAndVerifyStatesAndCalls(mConnection.mImeUpdateQueue, 0, "", 0, 0, -1, -1);
+        focusElement("textarea");
 
         // DPAD_CENTER should cause keyboard to appear
         expectUpdateStateCall(mConnection);
-        KeyEvent event = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_CENTER);
-        mContentViewCore.dispatchKeyEvent(event);
+        dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_CENTER));
         assertUpdateStateCall(mConnection, 1000);
     }
 
     @SmallTest
     @Feature({"TextInput", "Main"})
     public void testTransitionsWhileComposingText() throws Throwable {
-        DOMUtils.focusNode(mWebContents, "textarea");  // Default with autocomplete="on"
-        assertWaitForKeyboardStatus(true);
-
-        mConnection = (TestAdapterInputConnection) getAdapterInputConnection();
-        waitAndVerifyStatesAndCalls(mConnection.mImeUpdateQueue, 0, "", 0, 0, -1, -1);
+        focusElement("textarea"); // Default with autocomplete="on"
 
         // H
         // Since autocomplete="on" by default, COMPOSITION_KEY_CODE is emitted as key code
@@ -908,11 +854,7 @@ public class ImeTest extends ContentShellTestBase {
     @SmallTest
     @Feature({"TextInput", "Main"})
     public void testTransitionsWhileEmittingKeyCode() throws Throwable {
-        DOMUtils.focusNode(mWebContents, "textarea2");  // autocomplete="off"
-        assertWaitForKeyboardStatus(true);
-
-        mConnection = (TestAdapterInputConnection) getAdapterInputConnection();
-        waitAndVerifyStatesAndCalls(mConnection.mImeUpdateQueue, 0, "", 0, 0, -1, -1);
+        focusElement("textarea2"); // Default with autocomplete="off"
 
         // H
         // Although autocomplete="off", we still emit COMPOSITION_KEY_CODE since synthesized
@@ -959,15 +901,7 @@ public class ImeTest extends ContentShellTestBase {
         assertWaitForSelectActionBarStatus(true);
         assertTrue(mContentViewCore.hasSelection());
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                final KeyEvent downKeyEvent = new KeyEvent(
-                        KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_DOWN);
-                mImeAdapter.dispatchKeyEvent(downKeyEvent);
-            }
-        });
-
+        dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_DOWN));
         assertWaitForSelectActionBarStatus(true);
         assertTrue(mContentViewCore.hasSelection());
     }
@@ -1004,8 +938,6 @@ public class ImeTest extends ContentShellTestBase {
         }));
     }
 
-    // TODO(changwan): replace calls to this by waitAndVerifyStatesAndCalls once
-    // we figure out why updateSelection is called with incorrect values.
     private void waitAndVerifyStates(final ArrayList<TestImeState> states, final int index,
             String text, final int selectionStart, final int selectionEnd,
             final int compositionStart, final int compositionEnd) throws InterruptedException {
@@ -1183,13 +1115,31 @@ public class ImeTest extends ContentShellTestBase {
         });
     }
 
-    private void dispatchKeyEvent(final AdapterInputConnection connection, final KeyEvent event) {
+    private void dispatchKeyEvent(final KeyEvent event) {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
                 mImeAdapter.dispatchKeyEvent(event);
             }
         });
+    }
+
+    private void focusElement(final String id) throws InterruptedException, TimeoutException {
+        DOMUtils.focusNode(mWebContents, id);
+        assertWaitForKeyboardStatus(true);
+        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                try {
+                    return id.equals(DOMUtils.getFocusedNode(mWebContents));
+                } catch (Exception e) {
+                    return false;
+                }
+            }
+        }));
+        // When we focus another element, the connection may be recreated.
+        mConnection = (TestAdapterInputConnection) getAdapterInputConnection();
+        waitAndVerifyStatesAndCalls(mConnection.mImeUpdateQueue, 0, "", 0, 0, -1, -1);
     }
 
     private static class TestAdapterInputConnectionFactory extends
