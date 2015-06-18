@@ -9,7 +9,7 @@
  * @param {!HTMLElement} toolbar Toolbar element which contains controls.
  * @param {!HTMLElement} navigationList Navigation list on the left pane. The
  *     position of silesSelectedLabel depends on the navitaion list's width.
- * @param {!cr.ui.List} listContainer List container.
+ * @param {!ListContainer} listContainer List container.
  * @param {!LocationLine} locationLine Location line shown on the left side of
  *     the toolbar.
  * @param {!FileSelectionHandler} selectionHandler
@@ -71,7 +71,7 @@ function ToolbarController(toolbar,
   this.navigationList_ = navigationList;
 
   /**
-   * @private {!cr.ui.List}
+   * @private {!ListContainer}
    * @const
    */
   this.listContainer_ = listContainer;
