@@ -13,15 +13,11 @@
 namespace chromecast {
 namespace media {
 
-namespace {
-
 // Maximum audio bytes per sample.
 static const int kMaxBytesPerSample = 4;
 
 // Maximum audio sampling rate.
 static const int kMaxSampleRate = 192000;
-
-}  // namespace
 
 enum AudioCodec {
   kAudioCodecUnknown = 0,
@@ -165,6 +161,10 @@ struct VideoConfig {
 inline bool IsValidConfig(const AudioConfig& config) {
   return config.codec >= kAudioCodecMin &&
       config.codec <= kAudioCodecMax &&
+      config.codec != kAudioCodecUnknown &&
+      config.sample_format >= kSampleFormatMin &&
+      config.sample_format <= kSampleFormatMax &&
+      config.sample_format != kUnknownSampleFormat &&
       config.channel_number > 0 &&
       config.bytes_per_channel > 0 &&
       config.bytes_per_channel <= kMaxBytesPerSample &&
@@ -173,7 +173,9 @@ inline bool IsValidConfig(const AudioConfig& config) {
 }
 
 inline bool IsValidConfig(const VideoConfig& config) {
-  return config.codec >= kVideoCodecMin && config.codec <= kVideoCodecMax;
+  return config.codec >= kVideoCodecMin &&
+      config.codec <= kVideoCodecMax &&
+      config.codec != kVideoCodecUnknown;
 }
 
 }  // namespace media
