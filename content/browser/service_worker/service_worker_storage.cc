@@ -367,13 +367,10 @@ ServiceWorkerRegistration* ServiceWorkerStorage::GetUninstallingRegistration(
     const GURL& scope) {
   if (state_ != INITIALIZED || !context_)
     return NULL;
-  for (RegistrationRefsById::const_iterator it =
-           uninstalling_registrations_.begin();
-       it != uninstalling_registrations_.end();
-       ++it) {
-    if (it->second->pattern() == scope) {
-      DCHECK(it->second->is_uninstalling());
-      return it->second.get();
+  for (const auto& registration : uninstalling_registrations_) {
+    if (registration.second->pattern() == scope) {
+      DCHECK(registration.second->is_uninstalling());
+      return registration.second.get();
     }
   }
   return NULL;
@@ -874,8 +871,8 @@ void ServiceWorkerStorage::NotifyDoneInstallingRegistration(
     version->script_cache_map()->GetResources(&resources);
 
     std::set<int64> ids;
-    for (size_t i = 0; i < resources.size(); ++i)
-      ids.insert(resources[i].resource_id);
+    for (const auto& resource : resources)
+      ids.insert(resource.resource_id);
 
     database_task_manager_->GetTaskRunner()->PostTask(
         FROM_HERE,
@@ -1008,10 +1005,8 @@ void ServiceWorkerStorage::DidReadInitialData(
     ScheduleDeleteAndStartOver();
   }
 
-  for (std::vector<base::Closure>::const_iterator it = pending_tasks_.begin();
-       it != pending_tasks_.end(); ++it) {
-    RunSoon(FROM_HERE, *it);
-  }
+  for (const auto& task : pending_tasks_)
+    RunSoon(FROM_HERE, task);
   pending_tasks_.clear();
 }
 
@@ -1145,13 +1140,11 @@ void ServiceWorkerStorage::DidGetRegistrations(
   }
 
   // Add unstored registrations that are being installed.
-  for (RegistrationRefsById::const_iterator it =
-           installing_registrations_.begin();
-       it != installing_registrations_.end(); ++it) {
+  for (const auto& registration : installing_registrations_) {
     if ((!origin_filter.is_valid() ||
-         it->second->pattern().GetOrigin() == origin_filter) &&
-        registration_ids.insert(it->first).second) {
-      registrations.push_back((it->second).get());
+         registration.second->pattern().GetOrigin() == origin_filter) &&
+        registration_ids.insert(registration.first).second) {
+      registrations.push_back(registration.second);
     }
   }
 
@@ -1216,13 +1209,11 @@ void ServiceWorkerStorage::DidGetRegistrationsInfos(
   }
 
   // Add unstored registrations that are being installed.
-  for (RegistrationRefsById::const_iterator it =
-           installing_registrations_.begin();
-       it != installing_registrations_.end(); ++it) {
+  for (const auto& registration : installing_registrations_) {
     if ((!origin_filter.is_valid() ||
-         it->second->pattern().GetOrigin() == origin_filter) &&
-        pushed_registrations.insert(it->first).second) {
-      infos.push_back(it->second->GetInfo());
+         registration.second->pattern().GetOrigin() == origin_filter) &&
+        pushed_registrations.insert(registration.first).second) {
+      infos.push_back(registration.second->GetInfo());
     }
   }
 
@@ -1389,24 +1380,18 @@ ServiceWorkerStorage::FindInstallingRegistrationForDocument(
 
   // TODO(nhiroki): This searches over installing registrations linearly and it
   // couldn't be scalable. Maybe the regs should be partitioned by origin.
-  for (RegistrationRefsById::const_iterator it =
-           installing_registrations_.begin();
-       it != installing_registrations_.end(); ++it) {
-    if (matcher.MatchLongest(it->second->pattern()))
-      match = it->second.get();
-  }
+  for (const auto& registration : installing_registrations_)
+    if (matcher.MatchLongest(registration.second->pattern()))
+      match = registration.second.get();
   return match;
 }
 
 ServiceWorkerRegistration*
 ServiceWorkerStorage::FindInstallingRegistrationForPattern(
     const GURL& scope) {
-  for (RegistrationRefsById::const_iterator it =
-           installing_registrations_.begin();
-       it != installing_registrations_.end(); ++it) {
-    if (it->second->pattern() == scope)
-      return it->second.get();
-  }
+  for (const auto& registration : installing_registrations_)
+    if (registration.second->pattern() == scope)
+      return registration.second.get();
   return NULL;
 }
 
@@ -1533,16 +1518,16 @@ void ServiceWorkerStorage::OnDiskCacheInitialized(int rv) {
 void ServiceWorkerStorage::StartPurgingResources(
     const std::vector<int64>& ids) {
   DCHECK(has_checked_for_stale_resources_);
-  for (size_t i = 0; i < ids.size(); ++i)
-    purgeable_resource_ids_.push_back(ids[i]);
+  for (const auto& id : ids)
+    purgeable_resource_ids_.push_back(id);
   ContinuePurgingResources();
 }
 
 void ServiceWorkerStorage::StartPurgingResources(
     const ResourceList& resources) {
   DCHECK(has_checked_for_stale_resources_);
-  for (size_t i = 0; i < resources.size(); ++i)
-    purgeable_resource_ids_.push_back(resources[i].resource_id);
+  for (const auto& resource : resources)
+    purgeable_resource_ids_.push_back(resource.resource_id);
   ContinuePurgingResources();
 }
 
@@ -1772,9 +1757,9 @@ void ServiceWorkerStorage::FindForDocumentInDB(
     const GURL& document_url,
     const FindInDBCallback& callback) {
   GURL origin = document_url.GetOrigin();
-  RegistrationList registrations;
-  ServiceWorkerDatabase::Status status =
-      database->GetRegistrationsForOrigin(origin, &registrations, nullptr);
+  RegistrationList registration_data_list;
+  ServiceWorkerDatabase::Status status = database->GetRegistrationsForOrigin(
+      origin, &registration_data_list, nullptr);
   if (status != ServiceWorkerDatabase::STATUS_OK) {
     original_task_runner->PostTask(
         FROM_HERE,
@@ -1792,11 +1777,9 @@ void ServiceWorkerStorage::FindForDocumentInDB(
   // Find one with a pattern match.
   LongestScopeMatcher matcher(document_url);
   int64 match = kInvalidServiceWorkerRegistrationId;
-  for (size_t i = 0; i < registrations.size(); ++i) {
-    if (matcher.MatchLongest(registrations[i].scope))
-      match = registrations[i].registration_id;
-  }
-
+  for (const auto& registration_data : registration_data_list)
+    if (matcher.MatchLongest(registration_data.scope))
+      match = registration_data.registration_id;
   if (match != kInvalidServiceWorkerRegistrationId)
     status = database->ReadRegistration(match, origin, &data, &resources);
 
@@ -1811,9 +1794,9 @@ void ServiceWorkerStorage::FindForPatternInDB(
     const GURL& scope,
     const FindInDBCallback& callback) {
   GURL origin = scope.GetOrigin();
-  RegistrationList registrations;
-  ServiceWorkerDatabase::Status status =
-      database->GetRegistrationsForOrigin(origin, &registrations, nullptr);
+  RegistrationList registration_data_list;
+  ServiceWorkerDatabase::Status status = database->GetRegistrationsForOrigin(
+      origin, &registration_data_list, nullptr);
   if (status != ServiceWorkerDatabase::STATUS_OK) {
     original_task_runner->PostTask(
         FROM_HERE,
@@ -1828,12 +1811,11 @@ void ServiceWorkerStorage::FindForPatternInDB(
   ServiceWorkerDatabase::RegistrationData data;
   ResourceList resources;
   status = ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND;
-  for (RegistrationList::const_iterator it = registrations.begin();
-       it != registrations.end(); ++it) {
-    if (scope != it->scope)
+  for (const auto& registration_data : registration_data_list) {
+    if (scope != registration_data.scope)
       continue;
-    status = database->ReadRegistration(it->registration_id, origin,
-                                        &data, &resources);
+    status = database->ReadRegistration(registration_data.registration_id,
+                                        origin, &data, &resources);
     break;  // We're done looping.
   }
 
