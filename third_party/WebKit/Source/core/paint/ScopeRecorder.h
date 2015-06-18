@@ -22,7 +22,7 @@ public:
 
 private:
     DisplayItemList* m_displayItemList;
-    const DisplayItemClientWrapper& m_object;
+    DisplayItemClientWrapper m_object;
 };
 
 } // namespace blink
