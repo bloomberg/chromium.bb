@@ -2077,9 +2077,7 @@ def check_spacing(file_extension, clean_lines, line_number, error):
         error(line_number, 'whitespace/braces', 5,
               'Extra space before [')
 
-    # There should always be a single space in between braces on the same line.
-    if search(r'\{\}', line):
-        error(line_number, 'whitespace/braces', 5, 'Missing space inside { }.')
+    # There should always be zero or one space in between braces on the same line.
     if search(r'\{\s\s+\}', line):
         error(line_number, 'whitespace/braces', 5, 'Too many spaces inside { }.')
 

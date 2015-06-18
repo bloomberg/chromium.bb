@@ -1709,7 +1709,7 @@ class CppStyleTest(CppStyleTestBase):
 
     def test_spacing_between_braces(self):
         self.assert_lint('    { }', '')
-        self.assert_lint('    {}', 'Missing space inside { }.  [whitespace/braces] [5]')
+        self.assert_lint('    {}', '')
         self.assert_lint('    {   }', 'Too many spaces inside { }.  [whitespace/braces] [5]')
 
     def test_spacing_around_else(self):
