@@ -338,7 +338,7 @@ static void install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> function
         {% if attribute.is_expose_js_accessors %}
         static const V8DOMConfiguration::AccessorConfiguration accessorConfiguration =\
         {{attribute_configuration(attribute)}};
-        V8DOMConfiguration::installAccessor(isolate, prototypeTemplate, defaultSignature, accessorConfiguration);
+        V8DOMConfiguration::installAccessor(isolate, instanceTemplate, prototypeTemplate, functionTemplate, defaultSignature, accessorConfiguration);
         {% else %}
         static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration =\
         {{attribute_configuration(attribute)}};

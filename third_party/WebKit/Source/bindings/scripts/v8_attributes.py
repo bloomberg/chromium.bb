@@ -138,6 +138,9 @@ def attribute_context(interface, attribute):
         'is_static': attribute.is_static,
         'is_url': 'URL' in extended_attributes,
         'is_unforgeable': is_unforgeable(interface, attribute),
+        'on_instance': v8_utilities.on_instance(interface, attribute),
+        'on_interface': v8_utilities.on_interface(interface, attribute),
+        'on_prototype': v8_utilities.on_prototype(interface, attribute),
         'use_output_parameter_for_result': idl_type.use_output_parameter_for_result,
         'measure_as': v8_utilities.measure_as(attribute, interface),  # [MeasureAs]
         'name': attribute.name,

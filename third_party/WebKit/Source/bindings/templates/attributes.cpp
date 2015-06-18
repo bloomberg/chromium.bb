@@ -528,9 +528,17 @@ bool {{v8_class}}::PrivateScript::{{attribute.name}}AttributeSetter(LocalFrame* 
        'V8DOMConfiguration::OnlyExposedToPrivateScript'
        if attribute.only_exposed_to_private_script else
        'V8DOMConfiguration::ExposedToAllScripts' %}
-{% set on_prototype = 'V8DOMConfiguration::OnPrototype'
-       if interface_name == 'Window' and attribute.idl_type == 'EventHandler'
-       else 'V8DOMConfiguration::OnInstance' %}
+{% set property_location_list = [] %}
+{% if attribute.on_instance %}
+{% set property_location_list = property_location_list + ['V8DOMConfiguration::OnInstance'] %}
+{% endif %}
+{% if attribute.on_prototype %}
+{% set property_location_list = property_location_list + ['V8DOMConfiguration::OnPrototype'] %}
+{% endif %}
+{% if attribute.on_interface %}
+{% set property_location_list = property_location_list + ['V8DOMConfiguration::OnInterface'] %}
+{% endif %}
+{% set property_location = property_location_list | join(' | ') %}
 {% set holder_check = 'V8DOMConfiguration::DoNotCheckHolder'
        if attribute.is_lenient_this else 'V8DOMConfiguration::CheckHolder' %}
 {% set attribute_configuration_list = [
@@ -543,13 +551,8 @@ bool {{v8_class}}::PrivateScript::{{attribute.name}}AttributeSetter(LocalFrame* 
        access_control,
        property_attribute,
        only_exposed_to_private_script,
+       property_location,
+       holder_check,
    ] %}
-{% if attribute.is_expose_js_accessors %}
-{% set attribute_configuration_list = attribute_configuration_list
-                                    + [holder_check] %}
-{% else %}
-{% set attribute_configuration_list = attribute_configuration_list
-                                    + [on_prototype] %}
-{% endif %}
 {{'{'}}{{attribute_configuration_list | join(', ')}}{{'}'}}
 {%- endmacro %}

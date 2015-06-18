@@ -39,19 +39,21 @@ namespace blink {
 class CORE_EXPORT V8DOMConfiguration final {
 public:
     // The following Configuration structs and install methods are used for
-    // setting multiple properties on an ObjectTemplate, used from the
-    // generated bindings initialization (ConfigureXXXTemplate). This greatly
-    // reduces the binary size by moving from code driven setup to data table
-    // driven setup.
+    // setting multiple properties on ObjectTemplate / FunctionTemplate, used
+    // from the generated bindings initialization (ConfigureXXXTemplate).
+    // This greatly reduces the binary size by moving from code driven setup to
+    // data table driven setup.
 
     enum ExposeConfiguration {
         ExposedToAllScripts,
         OnlyExposedToPrivateScript,
     };
 
-    enum InstanceOrPrototypeConfiguration {
-        OnInstance,
-        OnPrototype,
+    // Bitflags to show where the member will be defined.
+    enum PropertyLocationConfiguration {
+        OnInstance = 1 << 0,
+        OnPrototype = 1 << 1,
+        OnInterface = 1 << 2,
     };
 
     enum HolderCheckConfiguration {
@@ -71,14 +73,13 @@ public:
         v8::AccessControl settings;
         v8::PropertyAttribute attribute;
         unsigned exposeConfiguration : 1; // ExposeConfiguration
-        unsigned instanceOrPrototypeConfiguration : 1; // InstanceOrPrototypeConfiguration
+        unsigned propertyLocationConfiguration : 3; // PropertyLocationConfiguration
+        unsigned holderCheckConfiguration : 1; // HolderCheckConfiguration
     };
 
     static void installAttributes(v8::Isolate*, v8::Local<v8::ObjectTemplate> instanceTemplate, v8::Local<v8::ObjectTemplate> prototypeTemplate, const AttributeConfiguration*, size_t attributeCount);
 
     static void installAttribute(v8::Isolate*, v8::Local<v8::ObjectTemplate> instanceTemplate, v8::Local<v8::ObjectTemplate> prototypeTemplate, const AttributeConfiguration&);
-
-    static void installAttribute(v8::Isolate*, v8::Local<v8::Object> instance, v8::Local<v8::Object> prototype, const AttributeConfiguration&);
 
     // AccessorConfiguration translates into calls to SetAccessorProperty()
     // on prototype ObjectTemplate.
@@ -92,14 +93,13 @@ public:
         v8::AccessControl settings;
         v8::PropertyAttribute attribute;
         unsigned exposeConfiguration : 1; // ExposeConfiguration
+        unsigned propertyLocationConfiguration : 3; // PropertyLocationConfiguration
         unsigned holderCheckConfiguration : 1; // HolderCheckConfiguration
     };
 
-    static void installAccessors(v8::Isolate*, v8::Local<v8::ObjectTemplate> prototypeTemplate, v8::Local<v8::Signature>, const AccessorConfiguration*, size_t accessorCount);
+    static void installAccessors(v8::Isolate*, v8::Local<v8::ObjectTemplate> instanceTemplate, v8::Local<v8::ObjectTemplate> prototypeTemplate, v8::Local<v8::FunctionTemplate> interfaceTemplate, v8::Local<v8::Signature>, const AccessorConfiguration*, size_t accessorCount);
 
-    static void installAccessor(v8::Isolate*, v8::Local<v8::ObjectTemplate> prototypeTemplate, v8::Local<v8::Signature>, const AccessorConfiguration&);
-
-    static void installAccessor(v8::Isolate*, v8::Local<v8::Object> prototype, const AccessorConfiguration&);
+    static void installAccessor(v8::Isolate*, v8::Local<v8::ObjectTemplate> instanceTemplate, v8::Local<v8::ObjectTemplate> prototypeTemplate, v8::Local<v8::FunctionTemplate> interfaceTemplate, v8::Local<v8::Signature>, const AccessorConfiguration&);
 
     enum ConstantType {
         ConstantTypeShort,

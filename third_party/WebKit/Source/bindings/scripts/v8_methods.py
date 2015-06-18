@@ -188,6 +188,9 @@ def method_context(interface, method, is_visible=True):
         'number_of_required_or_variadic_arguments': len([
             argument for argument in arguments
             if not argument.is_optional]),
+        'on_instance': v8_utilities.on_instance(interface, method),
+        'on_interface': v8_utilities.on_interface(interface, method),
+        'on_prototype': v8_utilities.on_prototype(interface, method),
         'only_exposed_to_private_script': is_only_exposed_to_private_script,
         'private_script_v8_value_to_local_cpp_value': idl_type.v8_value_to_local_cpp_value(
             extended_attributes, 'v8Value', 'cppValue', isolate='scriptState->isolate()', bailout_return_value='false'),

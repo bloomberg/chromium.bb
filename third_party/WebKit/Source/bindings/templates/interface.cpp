@@ -805,13 +805,14 @@ void {{v8_class}}::installConditionallyEnabledProperties(v8::Local<v8::Object> i
 
     {% for attribute in attributes if attribute.exposed_test %}
     {% filter exposed(attribute.exposed_test) %}
-    {% if attribute.is_expose_js_accessors %}
-    static const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = {{attribute_configuration(attribute)}};
-    V8DOMConfiguration::installAccessor(isolate, prototypeObject, accessorConfiguration);
-    {% else %}
-    static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration = {{attribute_configuration(attribute)}};
-    V8DOMConfiguration::installAttribute(isolate, instanceObject, prototypeObject, attributeConfiguration);
-    {% endif %}
+#error No one is actually using per-member [Exposed] extended attribute.  Not supported.  Contact to blink-reviews-bindings@ if you need.
+// TODO(yukishiino): Implement the feature again if there is a client.
+    {% endfilter %}
+    {% endfor %}
+    {% for method in methods if method.exposed_test %}
+    {% filter exposed(method.exposed_test) %}
+#error No one is actually using per-member [Exposed] extended attribute.  Not supported.  Contact to blink-reviews-bindings@ if you need.
+// TODO(yukishiino): Implement the feature again if there is a client.
     {% endfilter %}
     {% endfor %}
 }

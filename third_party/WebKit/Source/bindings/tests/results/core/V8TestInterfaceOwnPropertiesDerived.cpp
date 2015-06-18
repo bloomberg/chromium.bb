@@ -128,12 +128,12 @@ static void doNotExposeJSAccessorAttributeAttributeSetterCallback(v8::Local<v8::
 } // namespace TestInterfaceOwnPropertiesDerivedV8Internal
 
 static const V8DOMConfiguration::AttributeConfiguration V8TestInterfaceOwnPropertiesDerivedAttributes[] = {
-    {"noExposeJSAccessorAttribute", TestInterfaceOwnPropertiesDerivedV8Internal::noExposeJSAccessorAttributeAttributeGetterCallback, TestInterfaceOwnPropertiesDerivedV8Internal::noExposeJSAccessorAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
-    {"doNotExposeJSAccessorAttribute", TestInterfaceOwnPropertiesDerivedV8Internal::doNotExposeJSAccessorAttributeAttributeGetterCallback, TestInterfaceOwnPropertiesDerivedV8Internal::doNotExposeJSAccessorAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
+    {"noExposeJSAccessorAttribute", TestInterfaceOwnPropertiesDerivedV8Internal::noExposeJSAccessorAttributeAttributeGetterCallback, TestInterfaceOwnPropertiesDerivedV8Internal::noExposeJSAccessorAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance, V8DOMConfiguration::CheckHolder},
+    {"doNotExposeJSAccessorAttribute", TestInterfaceOwnPropertiesDerivedV8Internal::doNotExposeJSAccessorAttributeAttributeGetterCallback, TestInterfaceOwnPropertiesDerivedV8Internal::doNotExposeJSAccessorAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance, V8DOMConfiguration::CheckHolder},
 };
 
 static const V8DOMConfiguration::AccessorConfiguration V8TestInterfaceOwnPropertiesDerivedAccessors[] = {
-    {"exposeJSAccessorAttribute", TestInterfaceOwnPropertiesDerivedV8Internal::exposeJSAccessorAttributeAttributeGetterCallback, TestInterfaceOwnPropertiesDerivedV8Internal::exposeJSAccessorAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::CheckHolder},
+    {"exposeJSAccessorAttribute", TestInterfaceOwnPropertiesDerivedV8Internal::exposeJSAccessorAttributeAttributeGetterCallback, TestInterfaceOwnPropertiesDerivedV8Internal::exposeJSAccessorAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
 };
 
 static void installV8TestInterfaceOwnPropertiesDerivedTemplate(v8::Local<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate)

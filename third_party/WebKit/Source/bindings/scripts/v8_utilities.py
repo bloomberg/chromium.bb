@@ -225,6 +225,12 @@ def conditional_string(definition_or_member):
     return 'ENABLE(%s)' % extended_attributes['Conditional']
 
 
+# [Constructor], [NamedConstructor]
+def is_constructor_attribute(member):
+    # TODO(yukishiino): replace this with [Constructor] and [NamedConstructor] extended attribute
+    return member.idl_type.name.endswith('Constructor')
+
+
 # [DeprecateAs]
 def deprecate_as(member):
     extended_attributes = member.extended_attributes
@@ -403,6 +409,90 @@ def is_legacy_interface_type_checking(interface, member):
     if 'LegacyInterfaceTypeChecking' in member.extended_attributes:
         return True
     return False
+
+
+# [Unforgeable], [Global], [PrimaryGlobal] and [DoNotExposeJSAccessors]
+def on_instance(interface, member):
+    """Returns True if the interface's member needs to be defined on every
+    instance object.
+
+    The following members must be defiend on an instance object.
+    - [Unforgeable] members
+    - regular members of [Global] or [PrimaryGlobal] interfaces
+    - members on which [DoNotExposeJSAccessors] is specified
+    """
+    # TODO(yukishiino): Implement this function following the spec.
+    return not on_prototype(interface, member)
+
+
+# [ExposeJSAccessors]
+def on_prototype(interface, member):
+    """Returns True if the interface's member needs to be defined on the
+    prototype object.
+
+    Most members are defined on the prototype object.  Exceptions are as
+    follows.
+    - constant members
+    - static members (optional)
+    - [Unforgeable] members
+    - members of [Global] or [PrimaryGlobal] interfaces
+    - named properties of [Global] or [PrimaryGlobal] interfaces
+    However, if [ExposeJSAccessors] is specified, the member is defined on the
+    prototype object.
+    """
+    # TODO(yukishiino): Implement this function following the spec.
+
+    if ('ExposeJSAccessors' in interface.extended_attributes and
+            'DoNotExposeJSAccessors' in interface.extended_attributes):
+        raise Exception('Both of ExposeJSAccessors and DoNotExposeJSAccessors are specified at a time in an interface: ' + interface.name)
+    if ('ExposeJSAccessors' in member.extended_attributes and
+            'DoNotExposeJSAccessors' in member.extended_attributes):
+        raise Exception('Both of ExposeJSAccessors and DoNotExposeJSAccessors are specified at a time on a member: ' + member.name + ' in an interface: ' + interface.name)
+
+    # Note that ExposeJSAccessors and DoNotExposeJSAccessors are more powerful
+    # than 'static', [Unforgeable] and [OverrideBuiltins].
+    if 'ExposeJSAccessors' in member.extended_attributes:
+        return True
+    if 'DoNotExposeJSAccessors' in member.extended_attributes:
+        return False
+
+    # These members must not be placed on prototype chains.
+    if (is_constructor_attribute(member) or
+            member.is_static or
+            is_unforgeable(interface, member) or
+            'OverrideBuiltins' in interface.extended_attributes):
+        return False
+
+    # TODO(yukishiino): We should handle [Global] and [PrimaryGlobal] instead of
+    # Window.
+    if (interface.name == 'Window'):
+        return member.idl_type.name == 'EventHandler'
+
+    # TODO(yukishiino): We should move all of the following members to prototype
+    # chains.
+    if 'Custom' in member.extended_attributes:
+        return False
+
+    if 'ExposeJSAccessors' in interface.extended_attributes:
+        return True
+    if 'DoNotExposeJSAccessors' in interface.extended_attributes:
+        return False
+
+    return True
+
+
+# static, const
+def on_interface(interface, member):
+    """Returns True if the interface's member needs to be defined on the
+    interface object.
+
+    The following members must be defiend on an interface object.
+    - constant members
+    - static members
+    """
+    # TODO(yukishiino): Implement this function following the spec.
+    return False
+
 
 ################################################################################
 # Indexed properties
