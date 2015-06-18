@@ -102,6 +102,11 @@ SecurityLevel GetSecurityLevelForWebContents(
 
     case content::SECURITY_STYLE_AUTHENTICATED: {
 #if defined(OS_CHROMEOS)
+      // Report if there is a policy cert first, before reporting any other
+      // authenticated-but-with-errors cases. A policy cert is a strong
+      // indicator of a MITM being present (the enterprise), while the
+      // other authenticated-but-with-errors indicate something may
+      // be wrong, or may be wrong in the future, but is unclear now.
       policy::PolicyCertService* service =
           policy::PolicyCertServiceFactory::GetForProfile(
               Profile::FromBrowserContext(web_contents->GetBrowserContext()));
