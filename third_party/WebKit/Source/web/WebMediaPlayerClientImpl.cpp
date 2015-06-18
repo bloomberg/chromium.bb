@@ -59,6 +59,9 @@ WebMediaPlayerClientImpl::~WebMediaPlayerClientImpl()
 {
     // Explicitly destroy the WebMediaPlayer to allow verification of tear down.
     m_webMediaPlayer.clear();
+
+    if (mediaElement().layoutObject())
+        mediaElement().layoutObject()->setShouldDoFullPaintInvalidation();
 }
 
 void WebMediaPlayerClientImpl::networkStateChanged()
@@ -201,6 +204,9 @@ void WebMediaPlayerClientImpl::load(WebMediaPlayer::LoadType loadType, const WTF
     m_webMediaPlayer = createWebMediaPlayer(this, kurl, frame, HTMLMediaElementEncryptedMedia::contentDecryptionModule(mediaElement()));
     if (!m_webMediaPlayer)
         return;
+
+    if (mediaElement().layoutObject())
+        mediaElement().layoutObject()->setShouldDoFullPaintInvalidation();
 
 #if ENABLE(WEB_AUDIO)
     // Make sure if we create/re-create the WebMediaPlayer that we update our wrapper.

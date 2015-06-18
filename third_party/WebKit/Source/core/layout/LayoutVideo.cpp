@@ -164,6 +164,9 @@ void LayoutVideo::updateFromElement()
 {
     LayoutMedia::updateFromElement();
     updatePlayer();
+
+    // If the DisplayMode of the video changed, then we need to paint.
+    setShouldDoFullPaintInvalidation();
 }
 
 void LayoutVideo::updatePlayer()
