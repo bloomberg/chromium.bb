@@ -2,14 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/guid.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/sync/test/integration/preferences_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/common/pref_names.h"
 
-using preferences_helper::ChangeListPref;
-using preferences_helper::AwaitListPrefMatches;
+using preferences_helper::AwaitStringPrefMatches;
+using preferences_helper::ChangeStringPref;
+using preferences_helper::GetPrefs;
 
 class MultipleClientPreferencesSyncTest : public SyncTest {
  public:
@@ -22,16 +25,15 @@ class MultipleClientPreferencesSyncTest : public SyncTest {
   DISALLOW_COPY_AND_ASSIGN(MultipleClientPreferencesSyncTest);
 };
 
-IN_PROC_BROWSER_TEST_F(MultipleClientPreferencesSyncTest, Sanity) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+IN_PROC_BROWSER_TEST_F(MultipleClientPreferencesSyncTest, Sanity_E2ETest) {
   DisableVerifier();
-
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(AwaitStringPrefMatches(prefs::kHomePage));
+  const std::string new_home_page = base::StringPrintf(
+      "https://example.com/%s", base::GenerateGUID().c_str());
+  ChangeStringPref(0, prefs::kHomePage, new_home_page);
+  ASSERT_TRUE(AwaitStringPrefMatches(prefs::kHomePage));
   for (int i = 0; i < num_clients(); ++i) {
-    base::ListValue urls;
-    urls.Append(new base::StringValue(
-        base::StringPrintf("http://www.google.com/%d", i)));
-    ChangeListPref(i, prefs::kURLsToRestoreOnStartup, urls);
+    ASSERT_EQ(new_home_page, GetPrefs(i)->GetString(prefs::kHomePage));
   }
-
-  ASSERT_TRUE(AwaitListPrefMatches(prefs::kURLsToRestoreOnStartup));
 }
