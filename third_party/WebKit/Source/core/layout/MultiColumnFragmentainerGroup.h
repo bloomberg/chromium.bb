@@ -83,7 +83,6 @@ private:
 
     LayoutUnit calculateColumnHeight(BalancedColumnHeightCalculation) const;
 
-    LayoutSize translationAtColumn(unsigned columnIndex) const;
     LayoutRect columnRectAt(unsigned columnIndex) const;
     LayoutUnit logicalTopInFlowThreadAt(unsigned columnIndex) const { return m_logicalTopInFlowThread + columnIndex * m_columnHeight; }
     LayoutRect flowThreadPortionRectAt(unsigned columnIndex) const;

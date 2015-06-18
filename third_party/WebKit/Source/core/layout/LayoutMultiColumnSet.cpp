@@ -160,8 +160,7 @@ bool LayoutMultiColumnSet::heightIsAuto() const
 
 LayoutSize LayoutMultiColumnSet::flowThreadTranslationAtOffset(LayoutUnit blockOffset) const
 {
-    const MultiColumnFragmentainerGroup& row = fragmentainerGroupAtFlowThreadOffset(blockOffset);
-    return row.offsetFromColumnSet() + row.flowThreadTranslationAtOffset(blockOffset);
+    return fragmentainerGroupAtFlowThreadOffset(blockOffset).flowThreadTranslationAtOffset(blockOffset);
 }
 
 LayoutPoint LayoutMultiColumnSet::visualPointToFlowThreadPoint(const LayoutPoint& visualPoint) const
