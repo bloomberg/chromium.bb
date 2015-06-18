@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.feedback;
 import android.app.Activity;
 import android.graphics.Bitmap;
 
-import org.chromium.chrome.browser.CompositorChromeActivity;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.content.browser.ContentReadbackHandler;
 import org.chromium.content_public.browser.readback_types.ReadbackResponse;
 import org.chromium.ui.UiUtils;
@@ -39,11 +39,11 @@ public final class ScreenshotTask {
     /**
      * Prepares screenshot (possibly asynchronously) and invokes the callback when the screenshot
      * is available, or collection has failed. The asynchronous path is only taken when the activity
-     * that is passed in is a {@link CompositorChromeActivity}.
+     * that is passed in is a {@link ChromeActivity}.
      */
     public static void create(Activity activity, ScreenshotTaskCallback callback) {
-        if (activity instanceof CompositorChromeActivity) {
-            createCompositorActivityScreenshot((CompositorChromeActivity) activity, callback);
+        if (activity instanceof ChromeActivity) {
+            createCompositorActivityScreenshot((ChromeActivity) activity, callback);
             return;
         }
 
@@ -51,7 +51,7 @@ public final class ScreenshotTask {
         callback.onGotBitmap(bitmap, bitmap != null);
     }
 
-    private static void createCompositorActivityScreenshot(CompositorChromeActivity activity,
+    private static void createCompositorActivityScreenshot(ChromeActivity activity,
             final ScreenshotTaskCallback callback) {
         ContentReadbackHandler.GetBitmapCallback getBitmapCallback =
                 new ContentReadbackHandler.GetBitmapCallback() {

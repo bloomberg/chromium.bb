@@ -136,8 +136,8 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
 
         // Wait for the new tab animations on phones to finish.
         if (!DeviceFormFactor.isTablet(getActivity())
-                && getActivity() instanceof CompositorChromeActivity) {
-            final CompositorChromeActivity activity = (CompositorChromeActivity) getActivity();
+                && getActivity() instanceof ChromeActivity) {
+            final ChromeActivity activity = (ChromeActivity) getActivity();
             assertTrue("Did not finish animation",
                     CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
                         @Override
@@ -208,8 +208,8 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
 
         // Wait for the new tab animations on phones to finish.
         if (!DeviceFormFactor.isTablet(getActivity())
-                && getActivity() instanceof CompositorChromeActivity) {
-            final CompositorChromeActivity activity = (CompositorChromeActivity) getActivity();
+                && getActivity() instanceof ChromeActivity) {
+            final ChromeActivity activity = (ChromeActivity) getActivity();
             assertTrue("Did not finish animation",
                     CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
                         @Override

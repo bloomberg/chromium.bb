@@ -101,7 +101,7 @@ import org.chromium.ui.base.PageTransition;
  * This is the main activity for ChromeMobile when not running in document mode.  All the tabs
  * are accessible via a chrome specific tab switching UI.
  */
-public class ChromeTabbedActivity extends CompositorChromeActivity implements ActionBarDelegate,
+public class ChromeTabbedActivity extends ChromeActivity implements ActionBarDelegate,
         OverviewModeObserver {
 
     private static final int FIRST_RUN_EXPERIENCE_RESULT = 101;

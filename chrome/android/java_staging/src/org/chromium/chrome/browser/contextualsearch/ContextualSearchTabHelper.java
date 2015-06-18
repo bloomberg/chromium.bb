@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.contextualsearch;
 
 import org.chromium.base.CalledByNative;
-import org.chromium.chrome.browser.CompositorChromeActivity;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.EmptyTabObserver;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -168,8 +168,8 @@ public class ContextualSearchTabHelper extends EmptyTabObserver {
      */
     private static ContextualSearchManager getContextualSearchManager(ContentViewCore cvc) {
         // TODO(yfriedman): Decouple this from the activity.
-        if (cvc.getContext() instanceof CompositorChromeActivity) {
-            return ((CompositorChromeActivity) cvc.getContext()).getContextualSearchManager();
+        if (cvc.getContext() instanceof ChromeActivity) {
+            return ((ChromeActivity) cvc.getContext()).getContextualSearchManager();
         }
         return null;
     }

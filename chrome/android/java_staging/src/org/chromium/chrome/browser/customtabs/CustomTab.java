@@ -18,7 +18,7 @@ import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.CompositorChromeActivity;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.EmptyTabObserver;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.UrlUtilities;
@@ -131,7 +131,7 @@ public class CustomTab extends ChromeTab {
      * Construct an CustomTab. It might load a prerendered {@link WebContents} for the URL, if
      * {@link CustomTabsConnectionService} has successfully warmed up for the url.
      */
-    public CustomTab(CompositorChromeActivity activity, WindowAndroid windowAndroid,
+    public CustomTab(ChromeActivity activity, WindowAndroid windowAndroid,
             long sessionId, String url, int parentTabId) {
         super(Tab.generateValidId(Tab.INVALID_TAB_ID), activity, false, windowAndroid,
                 TabLaunchType.FROM_EXTERNAL_APP, parentTabId, null, null);

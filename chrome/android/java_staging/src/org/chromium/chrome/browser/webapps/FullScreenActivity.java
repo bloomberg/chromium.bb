@@ -9,9 +9,8 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.chrome.R;
-
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeMobileApplication;
-import org.chromium.chrome.browser.CompositorChromeActivity;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerDocument;
 import org.chromium.chrome.browser.tabmodel.SingleTabModelSelector;
@@ -33,7 +32,7 @@ import java.io.File;
  * the regular browser's UI is either unnecessary or undesirable.
  * Subclasses can override {@link #createUI()} if they need something more exotic.
  */
-public abstract class FullScreenActivity extends CompositorChromeActivity
+public abstract class FullScreenActivity extends ChromeActivity
         implements FullScreenActivityTab.TopControlsVisibilityDelegate {
     private FullScreenActivityTab mTab;
 

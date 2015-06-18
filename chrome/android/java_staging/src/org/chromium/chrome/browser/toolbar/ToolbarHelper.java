@@ -15,7 +15,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.CompositorChromeActivity;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ContextualMenuBar;
 import org.chromium.chrome.browser.CustomSelectionActionModeCallback;
 import org.chromium.chrome.browser.Tab;
@@ -47,7 +47,7 @@ public class ToolbarHelper {
     private static final int MIN_FOCUS_TIME_FOR_UMA_HISTOGRAM_MS = 1000;
     private static final int MAX_FOCUS_TIME_FOR_UMA_HISTOGRAM_MS = 30000;
 
-    protected final CompositorChromeActivity mActivity;
+    protected final ChromeActivity mActivity;
     private final ToolbarControlContainer mControlContainer;
     private TabObserver mTabObserver;
 
@@ -68,7 +68,7 @@ public class ToolbarHelper {
      * @param appMenuPropertiesDelegate Controller for app menu item visibility.
      * @param invalidator Notifier to toolbar to force view invalidations.
      */
-    public ToolbarHelper(CompositorChromeActivity activity,
+    public ToolbarHelper(ChromeActivity activity,
             ToolbarControlContainer controlContainer,
             final AppMenuHandler appMenuHandler,
             final ChromeAppMenuPropertiesDelegate appMenuPropertiesDelegate,

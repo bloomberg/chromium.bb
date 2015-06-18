@@ -8,8 +8,8 @@ import android.test.FlakyTest;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.CompositorChromeActivity;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.test.util.ChromeTabUtils;
@@ -95,8 +95,8 @@ public class ContextMenuTest extends DownloadTestBase {
                 nOpenedTabs , getActivity().getCurrentTabModel().getCount());
 
         // Wait for any new tab animation to finish if we're being driven by the compositor.
-        if (getActivity() instanceof CompositorChromeActivity) {
-            final LayoutManager layoutDriver = ((CompositorChromeActivity) getActivity())
+        if (getActivity() instanceof ChromeActivity) {
+            final LayoutManager layoutDriver = ((ChromeActivity) getActivity())
                     .getCompositorViewHolder().getLayoutManager();
             assertTrue("Background tab animation not finished.",
                     CriteriaHelper.pollForUIThreadCriteria(new Criteria() {

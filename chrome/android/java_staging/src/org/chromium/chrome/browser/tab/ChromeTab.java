@@ -25,7 +25,6 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeMobileApplication;
-import org.chromium.chrome.browser.CompositorChromeActivity;
 import org.chromium.chrome.browser.EmptyTabObserver;
 import org.chromium.chrome.browser.FrozenNativePage;
 import org.chromium.chrome.browser.IntentHandler.TabOpenType;
@@ -1352,8 +1351,7 @@ public class ChromeTab extends Tab {
     }
 
     public ReaderModeActivityDelegate getReaderModeActivityDelegate() {
-        if (!(mActivity instanceof CompositorChromeActivity)) return null;
-        return ((CompositorChromeActivity) mActivity).getReaderModeActivityDelegate();
+        return mActivity.getReaderModeActivityDelegate();
     }
 
     /**

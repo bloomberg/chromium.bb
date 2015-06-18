@@ -23,8 +23,8 @@ import android.widget.ImageButton;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
-import org.chromium.chrome.browser.CompositorChromeActivity;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.document.BrandColorUtils;
 import org.chromium.chrome.browser.document.DocumentActivity;
@@ -255,7 +255,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
             }
         });
 
-        final CompositorChromeActivity chromeActivity = (CompositorChromeActivity) monitor
+        final ChromeActivity chromeActivity = (ChromeActivity) monitor
                 .waitForActivityWithTimeout(ACTIVITY_START_TIMEOUT_MS);
         assertNotNull("A normal chrome activity did not start.", chromeActivity);
         assertTrue("The normal tab was not initiated correctly.",

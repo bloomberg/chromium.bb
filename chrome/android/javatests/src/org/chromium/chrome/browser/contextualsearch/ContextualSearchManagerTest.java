@@ -25,7 +25,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
-import org.chromium.chrome.browser.CompositorChromeActivity;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanelDelegate;
@@ -78,10 +77,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     protected void setUp() throws Exception {
         super.setUp();
 
-        ChromeActivity activity = getActivity();
-        if (activity instanceof CompositorChromeActivity) {
-            mManager = ((CompositorChromeActivity) activity).getContextualSearchManager();
-        }
+        mManager = getActivity().getContextualSearchManager();
 
         if (mManager != null) {
             mFakeServer = new ContextualSearchFakeServer(mManager);
@@ -1493,7 +1489,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                if (((CompositorChromeActivity) getActivity())
+                if (((ChromeActivity) getActivity())
                         .getAppMenuHandler().isAppMenuShowing() == isVisible) return true;
                 return false;
             }

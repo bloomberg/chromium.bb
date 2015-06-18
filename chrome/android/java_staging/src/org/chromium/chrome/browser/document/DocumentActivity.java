@@ -25,8 +25,8 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeMobileApplication;
-import org.chromium.chrome.browser.CompositorChromeActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.KeyboardShortcuts;
 import org.chromium.chrome.browser.Tab;
@@ -82,7 +82,7 @@ import org.chromium.ui.base.PageTransition;
  * Tab switching is handled via the system wide Android task management system.
  */
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-public class DocumentActivity extends CompositorChromeActivity {
+public class DocumentActivity extends ChromeActivity {
     protected static final String KEY_INITIAL_URL = "DocumentActivity.KEY_INITIAL_URL";
 
     private static final String TAG = "DocumentActivity";
