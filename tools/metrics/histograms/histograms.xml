@@ -20073,6 +20073,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.ErrorResponseHasContentMainFrame" units="BooleanSuccess">
+  <owner>mmenke@chromium.org</owner>
+  <summary>
+    The number of main frame 4xx/5xx responses that have content, to determine
+    if it's worth hooking up an error page for those that don't.  Intended to be
+    removed from the binary soon.
+  </summary>
+</histogram>
+
+<histogram name="Net.ErrorResponseHasContentNonMainFrame"
+    units="BooleanSuccess">
+  <owner>mmenke@chromium.org</owner>
+  <summary>
+    The number of non-main frame 4xx/5xx responses that have content, to
+    determine if it's worth hooking up an error page for those that don't.
+    Intended to be removed from the binary soon.
+  </summary>
+</histogram>
+
 <histogram name="Net.FileError_Flush">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>

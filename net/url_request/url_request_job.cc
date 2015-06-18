@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/single_thread_task_runner.h"
@@ -17,6 +18,7 @@
 #include "net/base/auth.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"
+#include "net/base/load_flags.h"
 #include "net/base/load_states.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_delegate.h"
@@ -542,6 +544,24 @@ void URLRequestJob::NotifyDone(const URLRequestStatus &status) {
                                                      status.error());
       }
       request_->set_status(status);
+    }
+
+    // If the request succeeded (And wasn't cancelled) and the response code was
+    // 4xx or 5xx, record whether or not the main frame was blank.  This is
+    // intended to be a short-lived histogram, used to figure out how important
+    // fixing http://crbug.com/331745 is.
+    if (request_->status().is_success()) {
+      int response_code = GetResponseCode();
+      if (400 <= response_code && response_code <= 599) {
+        bool page_has_content = (postfilter_bytes_read_ != 0);
+        if (request_->load_flags() & net::LOAD_MAIN_FRAME) {
+          UMA_HISTOGRAM_BOOLEAN("Net.ErrorResponseHasContentMainFrame",
+                                page_has_content);
+        } else {
+          UMA_HISTOGRAM_BOOLEAN("Net.ErrorResponseHasContentNonMainFrame",
+                                page_has_content);
+        }
+      }
     }
   }
 
