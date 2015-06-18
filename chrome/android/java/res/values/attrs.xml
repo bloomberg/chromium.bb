@@ -38,6 +38,10 @@
         <attr name="floatLabelHint" format="reference|string" />
     </declare-styleable>
 
+    <declare-styleable name="EmptyAlertEditText">
+        <attr name="alertMessage" format="string" />
+    </declare-styleable>
+
     <declare-styleable name="ButtonCompat">
         <attr name="buttonColor" format="reference|color"/>
     </declare-styleable>
