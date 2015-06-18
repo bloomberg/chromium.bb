@@ -946,13 +946,13 @@ TEST(LayerAnimationControllerTest, ScrollOffsetRemovalClearsScrollDelta) {
 class FakeAnimationDelegate : public AnimationDelegate {
  public:
   FakeAnimationDelegate()
-      : started_(false),
-        finished_(false) {}
+      : started_(false), finished_(false), start_time_(base::TimeTicks()) {}
 
   void NotifyAnimationStarted(TimeTicks monotonic_time,
                               Animation::TargetProperty target_property,
                               int group) override {
     started_ = true;
+    start_time_ = monotonic_time;
   }
 
   void NotifyAnimationFinished(TimeTicks monotonic_time,
@@ -965,9 +965,12 @@ class FakeAnimationDelegate : public AnimationDelegate {
 
   bool finished() { return finished_; }
 
+  TimeTicks start_time() { return start_time_; }
+
  private:
   bool started_;
   bool finished_;
+  TimeTicks start_time_;
 };
 
 // Tests that impl-only animations lead to start and finished notifications
@@ -1005,6 +1008,97 @@ TEST(LayerAnimationControllerTest,
 
   EXPECT_TRUE(delegate.started());
   EXPECT_TRUE(delegate.finished());
+}
+
+// Tests that specified start times are sent to the main thread delegate
+TEST(LayerAnimationControllerTest,
+     SpecifiedStartTimesAreSentToMainThreadDelegate) {
+  FakeLayerAnimationValueObserver dummy_impl;
+  scoped_refptr<LayerAnimationController> controller_impl(
+      LayerAnimationController::Create(0));
+  controller_impl->AddValueObserver(&dummy_impl);
+  FakeLayerAnimationValueObserver dummy;
+  scoped_refptr<LayerAnimationController> controller(
+      LayerAnimationController::Create(0));
+  controller->AddValueObserver(&dummy);
+  FakeAnimationDelegate delegate;
+  controller->set_layer_animation_delegate(&delegate);
+
+  int animation_id =
+      AddOpacityTransitionToController(controller.get(), 1, 0, 1, false);
+
+  const TimeTicks start_time = TicksFromSecondsF(123);
+  controller->GetAnimation(Animation::OPACITY)->set_start_time(start_time);
+
+  controller->PushAnimationUpdatesTo(controller_impl.get());
+  controller_impl->ActivateAnimations();
+
+  EXPECT_TRUE(controller_impl->GetAnimationById(animation_id));
+  EXPECT_EQ(Animation::WAITING_FOR_TARGET_AVAILABILITY,
+            controller_impl->GetAnimationById(animation_id)->run_state());
+
+  AnimationEventsVector events;
+  controller_impl->Animate(kInitialTickTime);
+  controller_impl->UpdateState(true, &events);
+
+  // Synchronize the start times.
+  EXPECT_EQ(1u, events.size());
+  controller->NotifyAnimationStarted(events[0]);
+
+  // Validate start time on the main thread delegate.
+  EXPECT_EQ(start_time, delegate.start_time());
+}
+
+class FakeLayerAnimationEventObserver : public LayerAnimationEventObserver {
+ public:
+  FakeLayerAnimationEventObserver() : start_time_(base::TimeTicks()) {}
+
+  void OnAnimationStarted(const AnimationEvent& event) override {
+    start_time_ = event.monotonic_time;
+  }
+
+  TimeTicks start_time() { return start_time_; }
+
+ private:
+  TimeTicks start_time_;
+};
+
+// Tests that specified start times are sent to the event observers
+TEST(LayerAnimationControllerTest, SpecifiedStartTimesAreSentToEventObservers) {
+  FakeLayerAnimationValueObserver dummy_impl;
+  scoped_refptr<LayerAnimationController> controller_impl(
+      LayerAnimationController::Create(0));
+  controller_impl->AddValueObserver(&dummy_impl);
+  FakeLayerAnimationValueObserver dummy;
+  scoped_refptr<LayerAnimationController> controller(
+      LayerAnimationController::Create(0));
+  controller->AddValueObserver(&dummy);
+  FakeLayerAnimationEventObserver observer;
+  controller->AddEventObserver(&observer);
+
+  int animation_id =
+      AddOpacityTransitionToController(controller.get(), 1, 0, 1, false);
+
+  const TimeTicks start_time = TicksFromSecondsF(123);
+  controller->GetAnimation(Animation::OPACITY)->set_start_time(start_time);
+
+  controller->PushAnimationUpdatesTo(controller_impl.get());
+  controller_impl->ActivateAnimations();
+
+  EXPECT_TRUE(controller_impl->GetAnimationById(animation_id));
+  EXPECT_EQ(Animation::WAITING_FOR_TARGET_AVAILABILITY,
+            controller_impl->GetAnimationById(animation_id)->run_state());
+
+  AnimationEventsVector events;
+  controller_impl->Animate(kInitialTickTime);
+  controller_impl->UpdateState(true, &events);
+
+  // Synchronize the start times.
+  EXPECT_EQ(1u, events.size());
+  controller->NotifyAnimationStarted(events[0]);
+
+  // Validate start time on the event observer.
+  EXPECT_EQ(start_time, observer.start_time());
 }
 
 // Tests animations that are waiting for a synchronized start time do not

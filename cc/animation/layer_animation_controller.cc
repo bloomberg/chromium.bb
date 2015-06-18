@@ -755,9 +755,14 @@ void LayerAnimationController::PromoteStartedAnimations(
           !animations_[i]->needs_synchronized_start_time())
         animations_[i]->set_start_time(monotonic_time);
       if (events) {
+        base::TimeTicks start_time;
+        if (animations_[i]->has_set_start_time())
+          start_time = animations_[i]->start_time();
+        else
+          start_time = monotonic_time;
         AnimationEvent started_event(
             AnimationEvent::STARTED, id_, animations_[i]->group(),
-            animations_[i]->target_property(), monotonic_time);
+            animations_[i]->target_property(), start_time);
         started_event.is_impl_only = animations_[i]->is_impl_only();
         if (started_event.is_impl_only)
           NotifyAnimationStarted(started_event);
