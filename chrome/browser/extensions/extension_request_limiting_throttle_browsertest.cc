@@ -102,16 +102,12 @@ class ExtensionRequestLimitingThrottleCommandLineBrowserTest
 };
 
 // Fails on msan bot: crbug.com/501362.
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_ThrottleRequest DISABLED_ThrottleRequest
-#else
-#define MAYBE_ThrottleRequest ThrottleRequest
-#endif
+// Flaky on Windows: crbug.com/501979.
 
 // Tests that if the same URL is requested repeatedly by an extension, it will
 // eventually be throttled.
 IN_PROC_BROWSER_TEST_F(ExtensionRequestLimitingThrottleBrowserTest,
-                       MAYBE_ThrottleRequest) {
+                       DISABLED_ThrottleRequest) {
   embedded_test_server()->RegisterRequestHandler(
       base::Bind(&HandleRequest, false, false));
   ASSERT_NO_FATAL_FAILURE(
@@ -133,15 +129,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionRequestLimitingThrottleBrowserTest,
 }
 
 // Fails on msan bot: crbug.com/501362.
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_ThrottleRequest_Redirect DISABLED_ThrottleRequest_Redirect
-#else
-#define MAYBE_ThrottleRequest_Redirect ThrottleRequest_Redirect
-#endif
+// Flaky on Windows: crbug.com/501979.
 
 // Tests that the redirected request is also being throttled.
 IN_PROC_BROWSER_TEST_F(ExtensionRequestLimitingThrottleBrowserTest,
-                       MAYBE_ThrottleRequest_Redirect) {
+                       DISABLED_ThrottleRequest_Redirect) {
   embedded_test_server()->RegisterRequestHandler(
       base::Bind(&HandleRequest, false, false));
   // Issue a bunch of requests to a url which gets redirected to a new url that
@@ -172,17 +164,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionRequestLimitingThrottleBrowserTest,
 }
 
 // Fails on msan bot: crbug.com/501362.
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_ThrottleRequest_RedirectCached DISABLED_ThrottleRequest_RedirectCached
-#else
-#define MAYBE_ThrottleRequest_RedirectCached ThrottleRequest_RedirectCached
-#endif
+// Flaky on Windows: crbug.com/501979.
 
 // Tests that if the redirect (302) is served from cache, but the non-redirect
 // (503) is not, the extension throttle throttles the requests for the second
 // url.
 IN_PROC_BROWSER_TEST_F(ExtensionRequestLimitingThrottleBrowserTest,
-                       MAYBE_ThrottleRequest_RedirectCached) {
+                       DISABLED_ThrottleRequest_RedirectCached) {
   embedded_test_server()->RegisterRequestHandler(
       base::Bind(&HandleRequest, true, false));
   ASSERT_NO_FATAL_FAILURE(
