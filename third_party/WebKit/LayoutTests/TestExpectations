@@ -1855,3 +1855,17 @@ crbug.com/501564 [ Lion ] fast/text/ellipsis-platform-font-change.html [ Pass Fa
 
 crbug.com/501775 inspector/extensions/extensions-resources.html [ Pass Failure Timeout ]
 crbug.com/501769 http/tests/serviceworker/stashed-ports.html [ Pass Failure Timeout ]
+
+crbug.com/501659 fast/parser/xml-colon-entity.html [ Failure ]
+crbug.com/501659 fast/dom/adopt-attribute-crash.svg [ Failure ]
+crbug.com/501659 svg/custom/path-bad-data.svg [ Failure ]
+crbug.com/501659 fast/xsl/xslt-extra-content-at-end.xml [ Failure ]
+crbug.com/501659 http/tests/security/xss-DENIED-xsl-external-entity.xml [ Failure ]
+crbug.com/501659 svg/custom/missing-xlink.svg [ Failure ]
+crbug.com/501659 fast/css/stylesheet-candidate-nodes-crash.xhtml [ Failure ]
+crbug.com/501659 http/tests/security/xss-DENIED-xml-external-entity.xhtml [ Failure ]
+crbug.com/501659 svg/custom/use-font-face-crash.svg [ Failure ]
+crbug.com/501659 fast/parser/xml-declaration-missing-ending-mark.html [ Failure ]
+crbug.com/501659 svg/custom/bug78807.svg [ Failure ]
+crbug.com/501659 fast/xsl/xslt-missing-namespace-in-xslt.xml [ Failure ]
+crbug.com/501659 http/tests/xmlviewer/dumpAsText/svg.xml [ Failure ]
