@@ -238,6 +238,9 @@ private:
     enum EPositionType { START, END, BASE, EXTENT };
 
     template <typename Strategy>
+    bool containsAlgorithm(const LayoutPoint&);
+
+    template <typename Strategy>
     void setNonDirectionalSelectionIfNeededAlgorithm(const VisibleSelection&, TextGranularity, EndPointsAdjustmentMode);
 
     void respondToNodeModification(Node&, bool baseRemoved, bool extentRemoved, bool startRemoved, bool endRemoved);

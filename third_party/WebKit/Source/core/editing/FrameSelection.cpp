@@ -1299,8 +1299,11 @@ void FrameSelection::paintCaret(GraphicsContext* context, const LayoutPoint& pai
     }
 }
 
-bool FrameSelection::contains(const LayoutPoint& point)
+template <typename Strategy>
+bool FrameSelection::containsAlgorithm(const LayoutPoint& point)
 {
+    using PositionType = typename Strategy::PositionType;
+
     Document* document = m_frame->document();
 
     // Treat a collapsed selection like no selection.
@@ -1320,14 +1323,20 @@ bool FrameSelection::contains(const LayoutPoint& point)
     if (visiblePos.isNull())
         return false;
 
-    if (m_selection.visibleStart().isNull() || m_selection.visibleEnd().isNull())
+    VisiblePosition visibleStart = Strategy::selectionVisibleStart(m_selection);
+    VisiblePosition visibleEnd = Strategy::selectionVisibleEnd(m_selection);
+    if (visibleStart.isNull() || visibleEnd.isNull())
         return false;
 
-    Position start(m_selection.visibleStart().deepEquivalent());
-    Position end(m_selection.visibleEnd().deepEquivalent());
-    Position p(visiblePos.deepEquivalent());
+    PositionType start(Strategy::toPositionType(visibleStart.deepEquivalent()));
+    PositionType end(Strategy::toPositionType(visibleEnd.deepEquivalent()));
+    PositionType pos(Strategy::toPositionType(visiblePos.deepEquivalent()));
+    return start.compareTo(pos) <= 0 && pos.compareTo(end) <= 0;
+}
 
-    return comparePositions(start, p) <= 0 && comparePositions(p, end) <= 0;
+bool FrameSelection::contains(const LayoutPoint& point)
+{
+    return containsAlgorithm<VisibleSelection::InDOMTree>(point);
 }
 
 // Workaround for the fact that it's hard to delete a frame.
