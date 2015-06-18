@@ -605,6 +605,8 @@
         'video/gpu_memory_buffer_video_frame_pool.h',
         'video/h264_poc.cc',
         'video/h264_poc.h',
+        'video/jpeg_decode_accelerator.cc',
+        'video/jpeg_decode_accelerator.h',
         'video/picture.cc',
         'video/picture.h',
         'video/video_decode_accelerator.cc',

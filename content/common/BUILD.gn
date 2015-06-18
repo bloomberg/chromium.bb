@@ -382,6 +382,10 @@ source_set("common") {
     if (current_cpu != "arm") {
       sources += [
                    "gpu/media/va_surface.h",
+                   "gpu/media/vaapi_jpeg_decode_accelerator.cc",
+                   "gpu/media/vaapi_jpeg_decode_accelerator.h",
+                   "gpu/media/vaapi_jpeg_decoder.cc",
+                   "gpu/media/vaapi_jpeg_decoder.h",
                    "gpu/media/vaapi_picture.cc",
                    "gpu/media/vaapi_picture.h",
                    "gpu/media/vaapi_video_decode_accelerator.cc",

@@ -27,6 +27,7 @@
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
 #include "media/base/video_frame.h"
+#include "media/video/jpeg_decode_accelerator.h"
 #include "media/video/video_decode_accelerator.h"
 #include "media/video/video_encode_accelerator.h"
 #include "ui/events/latency_info.h"
@@ -59,6 +60,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(gpu::MemoryAllocation::PriorityCutoff,
 IPC_ENUM_TRAITS_MAX_VALUE(gpu::error::Error, gpu::error::kErrorLast)
 IPC_ENUM_TRAITS_MAX_VALUE(gpu::error::ContextLostReason,
                           gpu::error::kContextLostReasonLast)
+IPC_ENUM_TRAITS_MAX_VALUE(media::JpegDecodeAccelerator::Error,
+                          media::JpegDecodeAccelerator::LARGEST_ERROR_ENUM)
 IPC_ENUM_TRAITS_MAX_VALUE(media::VideoEncodeAccelerator::Error,
                           media::VideoEncodeAccelerator::kErrorMax)
 IPC_ENUM_TRAITS_MAX_VALUE(media::VideoFrame::Format,
@@ -110,6 +113,15 @@ IPC_STRUCT_BEGIN(AcceleratedSurfaceMsg_BufferPresented_Params)
   IPC_STRUCT_MEMBER(int32, renderer_id)
 IPC_STRUCT_END()
 #endif
+
+IPC_STRUCT_BEGIN(AcceleratedJpegDecoderMsg_Decode_Params)
+  IPC_STRUCT_MEMBER(int32, input_buffer_id)
+  IPC_STRUCT_MEMBER(gfx::Size, coded_size)
+  IPC_STRUCT_MEMBER(base::SharedMemoryHandle, input_buffer_handle)
+  IPC_STRUCT_MEMBER(uint32, input_buffer_size)
+  IPC_STRUCT_MEMBER(base::SharedMemoryHandle, output_video_frame_handle)
+  IPC_STRUCT_MEMBER(uint32, output_buffer_size)
+IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(GPUCommandBufferConsoleMessage)
   IPC_STRUCT_MEMBER(int32, id)
@@ -274,6 +286,13 @@ IPC_MESSAGE_CONTROL3(GpuMsg_DestroyGpuMemoryBuffer,
                      gfx::GpuMemoryBufferId, /* id */
                      int32, /* client_id */
                      int32 /* sync_point */)
+
+// Create and initialize a hardware jpeg decoder using the specified route_id.
+// Created decoders should be freed with AcceleratedJpegDecoderMsg_Destroy when
+// no longer needed.
+IPC_SYNC_MESSAGE_CONTROL1_1(GpuMsg_CreateJpegDecoder,
+                            int32 /* route_id */,
+                            bool /* succeeded */)
 
 // Tells the GPU process to create a context for collecting graphics card
 // information.
@@ -758,3 +777,27 @@ IPC_MESSAGE_ROUTED1(AcceleratedVideoEncoderHostMsg_NotifyError,
 
 // Send destroy request to the encoder.
 IPC_MESSAGE_ROUTED0(AcceleratedVideoEncoderMsg_Destroy)
+
+//------------------------------------------------------------------------------
+// Accelerated JPEG Decoder Messages
+// These messages are sent from the Browser process to GPU process.
+
+// Decode one JPEG image from shared memory |input_buffer_handle| with size
+// |input_buffer_size|. The input buffer is associated with |input_buffer_id|
+// and the size of JPEG image is |coded_size|. Decoded I420 frame data will
+// be put onto shared memory associated with |output_video_frame_handle|
+// with size limit |output_buffer_size|.
+IPC_MESSAGE_ROUTED1(AcceleratedJpegDecoderMsg_Decode,
+                    AcceleratedJpegDecoderMsg_Decode_Params)
+
+// Send destroy request to the decoder.
+IPC_MESSAGE_ROUTED0(AcceleratedJpegDecoderMsg_Destroy)
+
+//------------------------------------------------------------------------------
+// Accelerated JPEG Decoder Host Messages
+// These messages are sent from the GPU process to Browser process.
+//
+// Report decode status.
+IPC_MESSAGE_ROUTED2(AcceleratedJpegDecoderHostMsg_DecodeAck,
+                    int32, /* bitstream_buffer_id */
+                    media::JpegDecodeAccelerator::Error /* error */)

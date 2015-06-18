@@ -340,6 +340,8 @@
       'common/gpu/image_transport_surface_win.cc',
       'common/gpu/media/fake_video_decode_accelerator.cc',
       'common/gpu/media/fake_video_decode_accelerator.h',
+      'common/gpu/media/gpu_jpeg_decode_accelerator.cc',
+      'common/gpu/media/gpu_jpeg_decode_accelerator.h',
       'common/gpu/media/gpu_video_accelerator_util.cc',
       'common/gpu/media/gpu_video_accelerator_util.h',
       'common/gpu/media/gpu_video_decode_accelerator.cc',
@@ -890,6 +892,8 @@
       ],
       'sources': [
         'common/gpu/media/va_surface.h',
+        'common/gpu/media/vaapi_jpeg_decode_accelerator.cc',
+        'common/gpu/media/vaapi_jpeg_decode_accelerator.h',
         'common/gpu/media/vaapi_jpeg_decoder.cc',
         'common/gpu/media/vaapi_jpeg_decoder.h',
         'common/gpu/media/vaapi_picture.cc',
