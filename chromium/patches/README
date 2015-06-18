@@ -6,6 +6,12 @@ Upstream cherry-picks:
 
 Current patches:
 
+  Changes/additions to libavutil/x86/x86inc.asm
+    https://chromium-review.googlesource.com/#/c/272274/
+    Fixes the conditionals on Linux so that these symbols are hidden and
+    adds the Chromium-specific private_extern extension for hiding these
+    symbols on OSX.
+
   Changes/additions to compat/msvcrt/{snprintf.h,strtod.h}
     Commit b5269bfb48c71fe17c02eee00c71b1e9762497db changes these files and
     relevant build rules to fix inconsistent linkage when building with MSVC.
