@@ -270,7 +270,7 @@ void Image::drawPattern(GraphicsContext* context, const FloatRect& floatSrcRect,
         paint.setColor(SK_ColorBLACK);
         paint.setXfermodeMode(compositeOp);
         paint.setFilterQuality(context->computeFilterQuality(this, destRect, normSrcRect));
-        paint.setAntiAlias(context->shouldAntialiasImages());
+        paint.setAntiAlias(context->shouldAntialias());
         RefPtr<SkShader> shader = createPatternShader(bitmapToPaint, localMatrix, paint,
             FloatSize(repeatSpacing.width() / scale.width(), repeatSpacing.height() / scale.height()));
         paint.setShader(shader.get());

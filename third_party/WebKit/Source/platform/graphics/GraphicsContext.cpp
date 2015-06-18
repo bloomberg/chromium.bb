@@ -944,7 +944,7 @@ void GraphicsContext::drawImage(Image* image, const FloatRect& dest, const Float
     // TODO(junov): crbug.com/492187 This code will disable antialiasing
     // regardless of whether content is pixel aligned. Is this correct?
     // For now, just preserving legacy behavior.
-    imagePaint.setAntiAlias(shouldAntialiasImages());
+    imagePaint.setAntiAlias(shouldAntialias());
     image->draw(m_canvas, imagePaint, dest, src, shouldRespectImageOrientation, Image::ClampImageToSourceRect);
 }
 

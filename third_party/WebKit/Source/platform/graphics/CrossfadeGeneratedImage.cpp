@@ -95,7 +95,7 @@ void CrossfadeGeneratedImage::drawTile(GraphicsContext* context, const FloatRect
 
     SkPaint paint = context->fillPaint();
     paint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
-    paint.setAntiAlias(context->shouldAntialiasImages());
+    paint.setAntiAlias(context->shouldAntialias());
     FloatRect destRect(FloatPoint(), m_crossfadeSize);
     paint.setFilterQuality(context->computeFilterQuality(this, destRect, srcRect));
     drawCrossfade(context->canvas(), paint, ClampImageToSourceRect);

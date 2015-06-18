@@ -280,7 +280,6 @@ public:
     // ---------- End transformation methods -----------------
 
     SkFilterQuality computeFilterQuality(Image*, const FloatRect& dest, const FloatRect& src) const;
-    bool shouldAntialiasImages() { return shouldAntialias() && !getTotalMatrix().rectStaysRect();}
 
     // URL drawing
     void setURLForRect(const KURL&, const IntRect&);
