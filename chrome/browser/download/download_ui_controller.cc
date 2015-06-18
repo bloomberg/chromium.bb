@@ -8,7 +8,6 @@
 #include "base/command_line.h"
 #include "base/stl_util.h"
 #include "chrome/browser/download/download_item_model.h"
-#include "chrome/browser/download/notification/download_notification_manager.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/common/chrome_switches.h"
@@ -19,6 +18,7 @@
 #if defined(OS_ANDROID)
 #include "content/public/browser/android/download_controller_android.h"
 #else
+#include "chrome/browser/download/notification/download_notification_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/host_desktop.h"
