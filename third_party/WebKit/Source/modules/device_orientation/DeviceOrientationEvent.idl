@@ -28,11 +28,11 @@ interface DeviceOrientationEvent : Event {
     readonly attribute double? beta;
     readonly attribute double? gamma;
     readonly attribute boolean? absolute;
-    [Custom] void initDeviceOrientationEvent([Default=Undefined] optional DOMString type,
-                                             [Default=Undefined] optional boolean bubbles,
-                                             [Default=Undefined] optional boolean cancelable,
-                                             [Default=Undefined] optional double alpha,
-                                             [Default=Undefined] optional double beta,
-                                             [Default=Undefined] optional double gamma,
-                                             [Default=Undefined] optional boolean absolute);
+    void initDeviceOrientationEvent([Default=Undefined] optional DOMString type,
+                                    [Default=Undefined] optional boolean bubbles,
+                                    [Default=Undefined] optional boolean cancelable,
+                                    [Default=Undefined] optional double? alpha,
+                                    [Default=Undefined] optional double? beta,
+                                    [Default=Undefined] optional double? gamma,
+                                    [Default=Undefined] optional boolean? absolute);
 };

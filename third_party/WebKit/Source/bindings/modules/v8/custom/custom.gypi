@@ -8,7 +8,6 @@
         'bindings_modules_v8_custom_files': [
             'V8CustomSQLStatementErrorCallback.cpp',
             'V8DeviceMotionEventCustom.cpp',
-            'V8DeviceOrientationEventCustom.cpp',
         ],
     },
 }

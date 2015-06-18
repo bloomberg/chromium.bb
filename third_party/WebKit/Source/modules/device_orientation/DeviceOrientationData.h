@@ -26,6 +26,7 @@
 #ifndef DeviceOrientationData_h
 #define DeviceOrientationData_h
 
+#include "bindings/core/v8/Nullable.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -35,7 +36,7 @@ class WebDeviceOrientationData;
 class DeviceOrientationData final : public GarbageCollected<DeviceOrientationData> {
 public:
     static DeviceOrientationData* create();
-    static DeviceOrientationData* create(bool canProvideAlpha, double alpha, bool canProvideBeta, double beta, bool canProvideGamma, double gamma, bool canProvideAbsolute = false, bool absolute = false);
+    static DeviceOrientationData* create(const Nullable<double>& alpha, const Nullable<double>& beta, const Nullable<double>& gamma, const Nullable<bool>& absolute = false);
     static DeviceOrientationData* create(const WebDeviceOrientationData&);
     DEFINE_INLINE_TRACE() { }
 
@@ -52,16 +53,12 @@ public:
 
 private:
     DeviceOrientationData();
-    DeviceOrientationData(bool canProvideAlpha, double alpha, bool canProvideBeta, double beta, bool canProvideGamma, double gamma, bool canProvideAbsolute, bool absolute);
+    DeviceOrientationData(const Nullable<double>& alpha, const Nullable<double>& beta, const Nullable<double>& gamma, const Nullable<bool>& absolute);
 
-    bool m_canProvideAlpha;
-    bool m_canProvideBeta;
-    bool m_canProvideGamma;
-    bool m_canProvideAbsolute;
-    double m_alpha;
-    double m_beta;
-    double m_gamma;
-    bool m_absolute;
+    Nullable<double> m_alpha;
+    Nullable<double> m_beta;
+    Nullable<double> m_gamma;
+    Nullable<bool> m_absolute;
 };
 
 } // namespace blink
