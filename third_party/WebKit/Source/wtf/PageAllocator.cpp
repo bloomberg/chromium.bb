@@ -221,5 +221,22 @@ void recommitSystemPages(void* addr, size_t len)
 #endif
 }
 
+void discardSystemPages(void* addr, size_t len)
+{
+    ASSERT(!(len & kSystemPageOffsetMask));
+#if OS(POSIX)
+    // On POSIX, the implementation detail is that discard and decommit are the
+    // same, and lead to pages that are returned to the system immediately and
+    // get replaced with zeroed pages when touched. So we just call
+    // decommitSystemPages() here to avoid code duplication.
+    decommitSystemPages(addr, len);
+#else
+    (void) addr;
+    (void) len;
+    // TODO(cevans): implement this using MEM_RESET for Windows, once we've
+    // decided that the semantics are a match.
+#endif
+}
+
 } // namespace WTF
 
