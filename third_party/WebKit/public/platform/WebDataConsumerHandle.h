@@ -113,6 +113,9 @@ public:
     PassOwnPtr<Reader> obtainReader(Client* client) { return adoptPtr(obtainReaderInternal(client)); }
 #endif
 
+    // Returns a string literal (e.g. class name) for debugging only.
+    virtual const char* debugName() const { return "WebDataConsumerHandle"; }
+
 private:
     // The caller takes ownership of the returned object.
     virtual Reader* obtainReaderInternal(Client* client)
