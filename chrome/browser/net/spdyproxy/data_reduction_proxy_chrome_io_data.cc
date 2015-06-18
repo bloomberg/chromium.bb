@@ -42,21 +42,21 @@ CreateDataReductionProxyChromeIOData(
   int flags = DataReductionProxyParams::kAllowed |
       DataReductionProxyParams::kFallbackAllowed |
       DataReductionProxyParams::kAlternativeAllowed;
-  if (DataReductionProxyParams::IsIncludedInPromoFieldTrial())
+  if (data_reduction_proxy::params::IsIncludedInPromoFieldTrial())
     flags |= DataReductionProxyParams::kPromoAllowed;
-  if (DataReductionProxyParams::IsIncludedInHoldbackFieldTrial())
+  if (data_reduction_proxy::params::IsIncludedInHoldbackFieldTrial())
     flags |= DataReductionProxyParams::kHoldback;
 #if defined(OS_ANDROID)
-  if (DataReductionProxyParams::IsIncludedInAndroidOnePromoFieldTrial(
+  if (data_reduction_proxy::params::IsIncludedInAndroidOnePromoFieldTrial(
           base::android::BuildInfo::GetInstance()->android_build_fp())) {
     flags |= DataReductionProxyParams::kPromoAllowed;
   }
 #endif
 
-  bool enabled = prefs->GetBoolean(
-                     data_reduction_proxy::prefs::kDataReductionProxyEnabled) ||
-                 data_reduction_proxy::DataReductionProxyParams::
-                     ShouldForceEnableDataReductionProxy();
+  bool enabled =
+      prefs->GetBoolean(
+          data_reduction_proxy::prefs::kDataReductionProxyEnabled) ||
+      data_reduction_proxy::params::ShouldForceEnableDataReductionProxy();
   scoped_ptr<data_reduction_proxy::DataReductionProxyIOData>
       data_reduction_proxy_io_data(
           new data_reduction_proxy::DataReductionProxyIOData(

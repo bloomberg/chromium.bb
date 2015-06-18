@@ -21,7 +21,6 @@
 
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ScopedJavaLocalRef;
-using data_reduction_proxy::DataReductionProxyParams;
 using data_reduction_proxy::DataReductionProxySettings;
 
 DataReductionProxySettingsAndroid::DataReductionProxySettingsAndroid() {
@@ -42,7 +41,7 @@ jboolean DataReductionProxySettingsAndroid::IsDataReductionProxyPromoAllowed(
 
 jboolean DataReductionProxySettingsAndroid::IsIncludedInAltFieldTrial(
     JNIEnv* env, jobject obj) {
-  return DataReductionProxyParams::IsIncludedInAlternativeFieldTrial();
+  return data_reduction_proxy::params::IsIncludedInAlternativeFieldTrial();
 }
 
 jboolean DataReductionProxySettingsAndroid::IsDataReductionProxyEnabled(

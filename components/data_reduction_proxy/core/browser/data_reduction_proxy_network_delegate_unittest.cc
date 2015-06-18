@@ -599,8 +599,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, OnResolveProxyHandler) {
   base::FieldTrialList field_trial_list(new base::MockEntropyProvider());
   base::FieldTrialList::CreateFieldTrial("DataCompressionProxyCriticalBypass",
                                          "Enabled");
-  EXPECT_TRUE(
-      DataReductionProxyParams::IsIncludedInCriticalPathBypassFieldTrial());
+  EXPECT_TRUE(params::IsIncludedInCriticalPathBypassFieldTrial());
 
   load_flags = net::LOAD_NORMAL;
 

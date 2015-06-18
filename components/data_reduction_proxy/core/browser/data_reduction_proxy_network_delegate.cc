@@ -302,7 +302,7 @@ void OnResolveProxyHandler(const GURL& url,
   }
 
   if ((load_flags & net::LOAD_BYPASS_DATA_REDUCTION_PROXY) &&
-      DataReductionProxyParams::IsIncludedInCriticalPathBypassFieldTrial()) {
+      params::IsIncludedInCriticalPathBypassFieldTrial()) {
     if (!result->is_empty() && !result->is_direct() &&
         config->IsDataReductionProxy(result->proxy_server().host_port_pair(),
                                      NULL)) {

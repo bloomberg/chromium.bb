@@ -58,9 +58,9 @@ const char kClientConfigURL[] = "";
 }  // namespace
 
 namespace data_reduction_proxy {
+namespace params {
 
-// static
-bool DataReductionProxyParams::IsIncludedInAlternativeFieldTrial() {
+bool IsIncludedInAlternativeFieldTrial() {
   const std::string group_name = base::FieldTrialList::FindFullName(
       "DataCompressionProxyAlternativeConfiguration");
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -70,52 +70,41 @@ bool DataReductionProxyParams::IsIncludedInAlternativeFieldTrial() {
   return group_name == kEnabled;
 }
 
-// static
-bool DataReductionProxyParams::IsIncludedInPromoFieldTrial() {
+bool IsIncludedInPromoFieldTrial() {
   return FieldTrialList::FindFullName(
       "DataCompressionProxyPromoVisibility") == kEnabled;
 }
 
-// static
-bool DataReductionProxyParams::IsIncludedInCriticalPathBypassFieldTrial() {
+bool IsIncludedInCriticalPathBypassFieldTrial() {
   return FieldTrialList::FindFullName(
           "DataCompressionProxyCriticalBypass") == kEnabled;
 }
 
-// static
-bool DataReductionProxyParams::IsIncludedInHoldbackFieldTrial() {
+bool IsIncludedInHoldbackFieldTrial() {
   return FieldTrialList::FindFullName(
       "DataCompressionProxyHoldback") == kEnabled;
 }
 
-// static
-bool DataReductionProxyParams::
-    IsIncludedInRemoveMissingViaHeaderOtherBypassFieldTrial() {
+bool IsIncludedInRemoveMissingViaHeaderOtherBypassFieldTrial() {
   return FieldTrialList::FindFullName(
       "DataReductionProxyRemoveMissingViaHeaderOtherBypass") == kEnabled;
 }
 
-// static
-bool DataReductionProxyParams::
-    IsIncludedInRelaxMissingViaHeaderOtherBypassFieldTrial() {
+bool IsIncludedInRelaxMissingViaHeaderOtherBypassFieldTrial() {
   return FieldTrialList::FindFullName(
       "DataReductionProxyRemoveMissingViaHeaderOtherBypass") == "Relaxed";
 }
 
-// static
-bool DataReductionProxyParams::IsIncludedInAndroidOnePromoFieldTrial(
-    const char* build_fingerprint) {
+bool IsIncludedInAndroidOnePromoFieldTrial(const char* build_fingerprint) {
   base::StringPiece fingerprint(build_fingerprint);
   return (fingerprint.find(kAndroidOneIdentifier) != std::string::npos);
 }
 
-// static
-std::string DataReductionProxyParams::GetLoFiFieldTrialName() {
+std::string GetLoFiFieldTrialName() {
   return kLoFiFieldTrial;
 }
 
-// static
-bool DataReductionProxyParams::IsLoFiAlwaysOnViaFlags() {
+bool IsLoFiAlwaysOnViaFlags() {
   const std::string& lo_fi_value =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           data_reduction_proxy::switches::kDataReductionProxyLoFi);
@@ -123,8 +112,7 @@ bool DataReductionProxyParams::IsLoFiAlwaysOnViaFlags() {
          data_reduction_proxy::switches::kDataReductionProxyLoFiValueAlwaysOn;
 }
 
-// static
-bool DataReductionProxyParams::IsLoFiCellularOnlyViaFlags() {
+bool IsLoFiCellularOnlyViaFlags() {
   const std::string& lo_fi_value =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           data_reduction_proxy::switches::kDataReductionProxyLoFi);
@@ -132,8 +120,7 @@ bool DataReductionProxyParams::IsLoFiCellularOnlyViaFlags() {
                             kDataReductionProxyLoFiValueCellularOnly;
 }
 
-// static
-bool DataReductionProxyParams::IsLoFiDisabledViaFlags() {
+bool IsLoFiDisabledViaFlags() {
   const std::string& lo_fi_value =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           data_reduction_proxy::switches::kDataReductionProxyLoFi);
@@ -141,8 +128,7 @@ bool DataReductionProxyParams::IsLoFiDisabledViaFlags() {
          data_reduction_proxy::switches::kDataReductionProxyLoFiValueDisabled;
 }
 
-//static
-bool DataReductionProxyParams::WarnIfNoDataReductionProxy() {
+bool WarnIfNoDataReductionProxy() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           data_reduction_proxy::switches::
           kEnableDataReductionProxyBypassWarning)) {
@@ -151,29 +137,20 @@ bool DataReductionProxyParams::WarnIfNoDataReductionProxy() {
   return false;
 }
 
-// static
-bool DataReductionProxyParams::CanProxyURLScheme(const GURL& url) {
-  return url.SchemeIs(url::kHttpScheme);
-}
-
-// static
-bool DataReductionProxyParams::IsIncludedInQuicFieldTrial() {
+bool IsIncludedInQuicFieldTrial() {
   return FieldTrialList::FindFullName(kQuicFieldTrial) == kEnabled;
 }
 
-// static
-std::string DataReductionProxyParams::GetQuicFieldTrialName() {
+std::string GetQuicFieldTrialName() {
   return kQuicFieldTrial;
 }
 
-// static
-bool DataReductionProxyParams::IsIncludedInUseDataSaverOnVPNFieldTrial() {
+bool IsIncludedInUseDataSaverOnVPNFieldTrial() {
   return FieldTrialList::FindFullName("DataReductionProxyUseDataSaverOnVPN") ==
          kEnabled;
 }
 
-// static
-bool DataReductionProxyParams::IsConfigClientEnabled() {
+bool IsConfigClientEnabled() {
   std::string group_value =
       base::FieldTrialList::FindFullName(kConfigServiceFieldTrial);
   base::StringPiece group = group_value;
@@ -183,8 +160,7 @@ bool DataReductionProxyParams::IsConfigClientEnabled() {
          group.starts_with(kEnabled);
 }
 
-// static
-GURL DataReductionProxyParams::GetConfigServiceURL() {
+GURL GetConfigServiceURL() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   std::string url;
   if (command_line->HasSwitch(switches::kDataReductionProxyConfigURL)) {
@@ -209,14 +185,12 @@ GURL DataReductionProxyParams::GetConfigServiceURL() {
   return GURL(kClientConfigURL);
 }
 
-// static
-bool DataReductionProxyParams::ShouldForceEnableDataReductionProxy() {
+bool ShouldForceEnableDataReductionProxy() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       data_reduction_proxy::switches::kEnableDataReductionProxy);
 }
 
-// static
-bool DataReductionProxyParams::ShouldUseSecureProxyByDefault() {
+bool ShouldUseSecureProxyByDefault() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           data_reduction_proxy::switches::
               kDataReductionProxyStartSecureDisabled))
@@ -229,12 +203,10 @@ bool DataReductionProxyParams::ShouldUseSecureProxyByDefault() {
   return true;
 }
 
-// static
-int DataReductionProxyParams::GetFieldTrialParameterAsInteger(
-    const std::string& group,
-    const std::string& param_name,
-    int default_value,
-    int min_value) {
+int GetFieldTrialParameterAsInteger(const std::string& group,
+                                    const std::string& param_name,
+                                    int default_value,
+                                    int min_value) {
   DCHECK(default_value >= min_value);
   std::string param_value =
       variations::GetVariationParamValue(group, param_name);
@@ -247,9 +219,11 @@ int DataReductionProxyParams::GetFieldTrialParameterAsInteger(
   return value;
 }
 
+}  // namespace params
+
 void DataReductionProxyParams::EnableQuic(bool enable) {
   quic_enabled_ = enable;
-  DCHECK(!quic_enabled_ || IsIncludedInQuicFieldTrial());
+  DCHECK(!quic_enabled_ || params::IsIncludedInQuicFieldTrial());
   if (override_quic_origin_.empty() && quic_enabled_) {
     origin_ = net::ProxyServer::FromURI(kDefaultQuicOrigin,
                                         net::ProxyServer::SCHEME_HTTP);

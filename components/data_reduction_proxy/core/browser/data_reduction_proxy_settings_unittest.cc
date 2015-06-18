@@ -545,13 +545,11 @@ TEST_F(DataReductionProxySettingsTest, CheckQUICFieldTrials) {
 
     base::FieldTrialList field_trial_list(new base::MockEntropyProvider());
     if (enable_quic) {
-      base::FieldTrialList::CreateFieldTrial(
-          DataReductionProxyParams::GetQuicFieldTrialName(),
-          "Enabled");
+      base::FieldTrialList::CreateFieldTrial(params::GetQuicFieldTrialName(),
+                                             "Enabled");
     } else {
-      base::FieldTrialList::CreateFieldTrial(
-          DataReductionProxyParams::GetQuicFieldTrialName(),
-          "Disabled");
+      base::FieldTrialList::CreateFieldTrial(params::GetQuicFieldTrialName(),
+                                             "Disabled");
     }
     test_context_->config()->EnableQuic(enable_quic);
 

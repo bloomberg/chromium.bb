@@ -23,6 +23,102 @@ class ProxyServer;
 
 namespace data_reduction_proxy {
 
+// The data_reduction_proxy::params namespace is a collection of methods to
+// determine the operating parameters of the Data Reduction Proxy as specified
+// by field trials and command line switches.
+namespace params {
+
+// Returns true if this client is part of field trial to use an alternative
+// configuration for the data reduction proxy.
+bool IsIncludedInAlternativeFieldTrial();
+
+// Returns true if this client is part of the field trial that should display
+// a promotion for the data reduction proxy.
+bool IsIncludedInPromoFieldTrial();
+
+// Returns true if this client is part of a field trial that bypasses the
+// proxy if the request resource type is on the critical path (e.g. HTML).
+bool IsIncludedInCriticalPathBypassFieldTrial();
+
+// Returns true if this client is part of a field trial that runs a holdback
+// experiment. A holdback experiment is one in which a fraction of browser
+// instances will not be configured to use the data reduction proxy even if
+// users have enabled it to be used. The UI will not indicate that a holdback
+// is in effect.
+bool IsIncludedInHoldbackFieldTrial();
+
+// Returns true if this client is part of a field trial that removes the
+// |MISSING_VIA_HEADER_OTHER| proxy bypass case. This experiment changes proxy
+// bypass logic to not trigger a proxy bypass when a response with a non-4xx
+// response code is expected to have a data reduction proxy via header, but
+// the data reduction proxy via header is missing.
+bool IsIncludedInRemoveMissingViaHeaderOtherBypassFieldTrial();
+
+// Returns true if this client is part of a field trial that relaxes the
+// |MISSING_VIA_HEADER_OTHER| proxy bypass case. In this experiment, if a
+// response with a data reduction proxy via header has been received through
+// the proxy since the last network change, then don't bypass on missing via
+// headers in responses with non-4xx response codes.
+bool IsIncludedInRelaxMissingViaHeaderOtherBypassFieldTrial();
+
+// Returns true if this client is part of the field trial that should display
+// a promotion for the data reduction proxy on Android One devices.
+bool IsIncludedInAndroidOnePromoFieldTrial(const char* build_fingerprint);
+
+// Returns true if this client has the command line switch to enable Lo-Fi
+// mode always on.
+bool IsLoFiAlwaysOnViaFlags();
+
+// Returns true if this client has the command line switch to enable Lo-Fi
+// mode only on cellular connections.
+bool IsLoFiCellularOnlyViaFlags();
+
+// Returns true if this client has the command line switch to disable Lo-Fi
+// mode.
+bool IsLoFiDisabledViaFlags();
+
+// Returns true if this client has the command line switch to show
+// interstitials for data reduction proxy bypasses.
+bool WarnIfNoDataReductionProxy();
+
+// Returns true if this client is part of a field trial that sets the origin
+// proxy server as quic://proxy.googlezip.net.
+bool IsIncludedInQuicFieldTrial();
+
+// Returns the name of the Lo-Fi field trial.
+std::string GetLoFiFieldTrialName();
+
+std::string GetQuicFieldTrialName();
+
+// Returns true if this client is part of a field trial that allows Data Saver
+// to be used on VPN.
+bool IsIncludedInUseDataSaverOnVPNFieldTrial();
+
+// Returns true if the Data Reduction Proxy config client should be used.
+bool IsConfigClientEnabled();
+
+// If the Data Reduction Proxy config client is being used, the URL for the
+// Data Reduction Proxy config service.
+GURL GetConfigServiceURL();
+
+// Returns true if the Data Reduction Proxy is forced to be enabled from the
+// command line.
+bool ShouldForceEnableDataReductionProxy();
+
+// Returns true if the secure Data Reduction Proxy should be used until the
+// secure proxy check fails.
+bool ShouldUseSecureProxyByDefault();
+
+// Retrieves the int stored in |param_name| from the field trial group
+// |group|. If the value is not present, cannot be parsed, or is less than
+// |min_value|, returns |default_value|.
+int GetFieldTrialParameterAsInteger(const std::string& group,
+                                    const std::string& param_name,
+                                    int default_value,
+                                    int min_value);
+
+}  // namespace params
+
 class ClientConfig;
 
 // Contains information about a given proxy server. |proxies_for_http| and
@@ -58,100 +154,6 @@ class DataReductionProxyParams : public DataReductionProxyConfigValues {
       kFallbackAllowed | kAlternativeAllowed | kAlternativeFallbackAllowed;
   static const unsigned int kPromoAllowed = (1 << 4);
   static const unsigned int kHoldback = (1 << 5);
-
-  // Returns true if this client is part of field trial to use an alternative
-  // configuration for the data reduction proxy.
-  static bool IsIncludedInAlternativeFieldTrial();
-
-  // Returns true if this client is part of the field trial that should display
-  // a promotion for the data reduction proxy.
-  static bool IsIncludedInPromoFieldTrial();
-
-  // Returns true if this client is part of a field trial that bypasses the
-  // proxy if the request resource type is on the critical path (e.g. HTML).
-  static bool IsIncludedInCriticalPathBypassFieldTrial();
-
-  // Returns true if this client is part of a field trial that runs a holdback
-  // experiment. A holdback experiment is one in which a fraction of browser
-  // instances will not be configured to use the data reduction proxy even if
-  // users have enabled it to be used. The UI will not indicate that a holdback
-  // is in effect.
-  static bool IsIncludedInHoldbackFieldTrial();
-
-  // Returns true if this client is part of a field trial that removes the
-  // |MISSING_VIA_HEADER_OTHER| proxy bypass case. This experiment changes proxy
-  // bypass logic to not trigger a proxy bypass when a response with a non-4xx
-  // response code is expected to have a data reduction proxy via header, but
-  // the data reduction proxy via header is missing.
-  static bool IsIncludedInRemoveMissingViaHeaderOtherBypassFieldTrial();
-
-  // Returns true if this client is part of a field trial that relaxes the
-  // |MISSING_VIA_HEADER_OTHER| proxy bypass case. In this experiment, if a
-  // response with a data reduction proxy via header has been received through
-  // the proxy since the last network change, then don't bypass on missing via
-  // headers in responses with non-4xx response codes.
-  static bool IsIncludedInRelaxMissingViaHeaderOtherBypassFieldTrial();
-
-  // Returns true if this client is part of the field trial that should display
-  // a promotion for the data reduction proxy on Android One devices.
-  static bool IsIncludedInAndroidOnePromoFieldTrial(
-      const char* build_fingerprint);
-
-  // Returns true if this client has the command line switch to enable Lo-Fi
-  // mode always on.
-  static bool IsLoFiAlwaysOnViaFlags();
-
-  // Returns true if this client has the command line switch to enable Lo-Fi
-  // mode only on cellular connections.
-  static bool IsLoFiCellularOnlyViaFlags();
-
-  // Returns true if this client has the command line switch to disable Lo-Fi
-  // mode.
-  static bool IsLoFiDisabledViaFlags();
-
-  // Returns true if this client has the command line switch to show
-  // interstitials for data reduction proxy bypasses.
-  static bool WarnIfNoDataReductionProxy();
-
-  // Returns true if the Data Reduction Proxy supports the scheme of the
-  // provided |url|.
-  static bool CanProxyURLScheme(const GURL& url);
-
-  // Returns true if this client is part of a field trial that sets the origin
-  // proxy server as quic://proxy.googlezip.net.
-  static bool IsIncludedInQuicFieldTrial();
-
-  // Returns the name of the Lo-Fi field trial.
-  static std::string GetLoFiFieldTrialName();
-
-  static std::string GetQuicFieldTrialName();
-
-  // Returns true if this client is part of a field trial that allows Data Saver
-  // to be used on VPN.
-  static bool IsIncludedInUseDataSaverOnVPNFieldTrial();
-
-  // Returns true if the Data Reduction Proxy config client should be used.
-  static bool IsConfigClientEnabled();
-
-  // If the Data Reduction Proxy config client is being used, the URL for the
-  // Data Reduction Proxy config service.
-  static GURL GetConfigServiceURL();
-
-  // Returns true if the Data Reduction Proxy is forced to be enabled from the
-  // command line.
-  static bool ShouldForceEnableDataReductionProxy();
-
-  // Returns true if the secure Data Reduction Proxy should be used until the
-  // secure proxy check fails.
-  static bool ShouldUseSecureProxyByDefault();
-
-  // Retrieves the int stored in |param_name| from the field trial group
-  // |group|. If the value is not present, cannot be parsed, or is less than
-  // |min_value|, returns |default_value|.
-  static int GetFieldTrialParameterAsInteger(const std::string& group,
-                                             const std::string& param_name,
-                                             int default_value,
-                                             int min_value);
 
   // Constructs configuration parameters. If |kAllowed|, then the standard
   // data reduction proxy configuration is allowed to be used. If

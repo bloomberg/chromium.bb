@@ -187,8 +187,7 @@ DataReductionProxyConfig::DataReductionProxyConfig(
     scoped_ptr<DataReductionProxyConfigValues> config_values,
     DataReductionProxyConfigurator* configurator,
     DataReductionProxyEventCreator* event_creator)
-    : secure_proxy_allowed_(
-          DataReductionProxyParams::ShouldUseSecureProxyByDefault()),
+    : secure_proxy_allowed_(params::ShouldUseSecureProxyByDefault()),
       disabled_on_vpn_(false),
       unreachable_(false),
       enabled_by_user_(false),
@@ -206,7 +205,7 @@ DataReductionProxyConfig::DataReductionProxyConfig(
       lofi_status_(LOFI_STATUS_TEMPORARILY_OFF) {
   DCHECK(configurator);
   DCHECK(event_creator);
-  if (DataReductionProxyParams::IsLoFiDisabledViaFlags())
+  if (params::IsLoFiDisabledViaFlags())
     SetLoFiModeOff();
   // Constructed on the UI thread, but should be checked on the IO thread.
   thread_checker_.DetachFromThread();
@@ -420,14 +419,14 @@ bool DataReductionProxyConfig::IsNetworkQualityProhibitivelySlow(
 
 bool DataReductionProxyConfig::IsIncludedInLoFiEnabledFieldTrial() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return FieldTrialList::FindFullName(
-             DataReductionProxyParams::GetLoFiFieldTrialName()) == kEnabled;
+  return FieldTrialList::FindFullName(params::GetLoFiFieldTrialName()) ==
+         kEnabled;
 }
 
 bool DataReductionProxyConfig::IsIncludedInLoFiControlFieldTrial() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return FieldTrialList::FindFullName(
-             DataReductionProxyParams::GetLoFiFieldTrialName()) == kControl;
+  return FieldTrialList::FindFullName(params::GetLoFiFieldTrialName()) ==
+         kControl;
 }
 
 LoFiStatus DataReductionProxyConfig::GetLoFiStatus() const {
@@ -469,7 +468,7 @@ void DataReductionProxyConfig::PopulateAutoLoFiParams() {
 
   uint64_t auto_lofi_minimum_rtt_msec;
   std::string variation_value = variations::GetVariationParamValue(
-      DataReductionProxyParams::GetLoFiFieldTrialName(), "rtt_msec");
+      params::GetLoFiFieldTrialName(), "rtt_msec");
   if (!variation_value.empty() &&
       base::StringToUint64(variation_value, &auto_lofi_minimum_rtt_msec)) {
     auto_lofi_minimum_rtt_ =
@@ -479,7 +478,7 @@ void DataReductionProxyConfig::PopulateAutoLoFiParams() {
 
   int32_t auto_lofi_maximum_kbps;
   variation_value = variations::GetVariationParamValue(
-      DataReductionProxyParams::GetLoFiFieldTrialName(), "kbps");
+      params::GetLoFiFieldTrialName(), "kbps");
   if (!variation_value.empty() &&
       base::StringToInt(variation_value, &auto_lofi_maximum_kbps)) {
     auto_lofi_maximum_kbps_ = auto_lofi_maximum_kbps;
@@ -488,8 +487,7 @@ void DataReductionProxyConfig::PopulateAutoLoFiParams() {
 
   uint32_t auto_lofi_hysteresis_period_seconds;
   variation_value = variations::GetVariationParamValue(
-      DataReductionProxyParams::GetLoFiFieldTrialName(),
-      "hysteresis_period_seconds");
+      params::GetLoFiFieldTrialName(), "hysteresis_period_seconds");
   if (!variation_value.empty() &&
       base::StringToUint(variation_value,
                          &auto_lofi_hysteresis_period_seconds)) {
@@ -694,8 +692,7 @@ void DataReductionProxyConfig::OnIPAddressChanged() {
       return;
     }
 
-    bool should_use_secure_proxy =
-        DataReductionProxyParams::ShouldUseSecureProxyByDefault();
+    bool should_use_secure_proxy = params::ShouldUseSecureProxyByDefault();
     if (!should_use_secure_proxy && secure_proxy_allowed_) {
       secure_proxy_allowed_ = false;
       RecordSecureProxyCheckFetchResult(PROXY_DISABLED_BEFORE_CHECK);
@@ -797,12 +794,12 @@ void DataReductionProxyConfig::UpdateLoFiStatusOnMainFrameRequest(
     }
   }
 
-  if (DataReductionProxyParams::IsLoFiAlwaysOnViaFlags()) {
+  if (params::IsLoFiAlwaysOnViaFlags()) {
     lofi_status_ = LOFI_STATUS_ACTIVE_FROM_FLAGS;
     return;
   }
 
-  if (DataReductionProxyParams::IsLoFiCellularOnlyViaFlags()) {
+  if (params::IsLoFiCellularOnlyViaFlags()) {
     if (net::NetworkChangeNotifier::IsConnectionCellular(
             net::NetworkChangeNotifier::GetConnectionType())) {
       lofi_status_ = LOFI_STATUS_ACTIVE_FROM_FLAGS;
@@ -846,7 +843,7 @@ void DataReductionProxyConfig::GetNetworkList(
 }
 
 bool DataReductionProxyConfig::MaybeDisableIfVPN() {
-  if (DataReductionProxyParams::IsIncludedInUseDataSaverOnVPNFieldTrial()) {
+  if (params::IsIncludedInUseDataSaverOnVPNFieldTrial()) {
     return false;
   }
   net::NetworkInterfaceList network_interfaces;

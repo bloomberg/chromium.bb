@@ -140,8 +140,7 @@ bool DataReductionProxyBypassProtocol::MaybeBypassProxyAndPrepareToRetry(
   DataReductionProxyBypassStats::DetectAndRecordMissingViaHeaderResponseCode(
       !data_reduction_proxy_type_info.is_fallback, response_headers);
 
-  if (DataReductionProxyParams::
-          IsIncludedInRelaxMissingViaHeaderOtherBypassFieldTrial() &&
+  if (params::IsIncludedInRelaxMissingViaHeaderOtherBypassFieldTrial() &&
       HasDataReductionProxyViaHeader(response_headers, NULL)) {
     DCHECK(config_->IsDataReductionProxy(request->proxy_server(), NULL));
     via_header_producing_proxies_.insert(request->proxy_server());
@@ -153,10 +152,8 @@ bool DataReductionProxyBypassProtocol::MaybeBypassProxyAndPrepareToRetry(
       response_headers, data_reduction_proxy_info);
 
   if (bypass_type == BYPASS_EVENT_TYPE_MISSING_VIA_HEADER_OTHER) {
-    if (DataReductionProxyParams::
-            IsIncludedInRemoveMissingViaHeaderOtherBypassFieldTrial() ||
-        (DataReductionProxyParams::
-             IsIncludedInRelaxMissingViaHeaderOtherBypassFieldTrial() &&
+    if (params::IsIncludedInRemoveMissingViaHeaderOtherBypassFieldTrial() ||
+        (params::IsIncludedInRelaxMissingViaHeaderOtherBypassFieldTrial() &&
          via_header_producing_proxies_.find(request->proxy_server()) !=
              via_header_producing_proxies_.end())) {
       // Ignore MISSING_VIA_HEADER_OTHER proxy bypass events if the client is

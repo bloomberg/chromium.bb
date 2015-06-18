@@ -1386,8 +1386,7 @@ bool IOThread::ShouldEnableQuicForDataReductionProxy() {
   if (command_line.HasSwitch(switches::kDisableQuic))
     return false;
 
-  return data_reduction_proxy::DataReductionProxyParams::
-      IsIncludedInQuicFieldTrial();
+  return data_reduction_proxy::params::IsIncludedInQuicFieldTrial();
 }
 
 // static

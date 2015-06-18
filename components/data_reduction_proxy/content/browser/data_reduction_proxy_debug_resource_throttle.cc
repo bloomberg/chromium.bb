@@ -29,8 +29,7 @@ DataReductionProxyDebugResourceThrottle::MaybeCreate(
     content::ResourceType resource_type,
     const DataReductionProxyIOData* io_data) {
   if (io_data && io_data->IsEnabled() &&
-      data_reduction_proxy::DataReductionProxyParams::
-          WarnIfNoDataReductionProxy()) {
+      data_reduction_proxy::params::WarnIfNoDataReductionProxy()) {
     DCHECK(io_data->debug_ui_service());
     DCHECK(request);
     return scoped_ptr<DataReductionProxyDebugResourceThrottle>(

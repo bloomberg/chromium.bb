@@ -1260,12 +1260,11 @@ TEST_F(DataReductionProxyConfigTest, AutoLoFiParams) {
   variation_params["spurious_field"] = "480";
 
   ASSERT_TRUE(variations::AssociateVariationParams(
-      DataReductionProxyParams::GetLoFiFieldTrialName(), "Enabled",
-      variation_params));
+      params::GetLoFiFieldTrialName(), "Enabled", variation_params));
 
   base::FieldTrialList field_trial_list(nullptr);
-  base::FieldTrialList::CreateFieldTrial(
-      DataReductionProxyParams::GetLoFiFieldTrialName(), "Enabled");
+  base::FieldTrialList::CreateFieldTrial(params::GetLoFiFieldTrialName(),
+                                         "Enabled");
 
   config.PopulateAutoLoFiParams();
 

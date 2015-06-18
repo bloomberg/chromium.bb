@@ -45,13 +45,11 @@ DataReductionProxySettings::DataReductionProxySettings()
       prefs_(NULL),
       config_(nullptr) {
   lo_fi_user_requests_for_images_per_session_ =
-      DataReductionProxyParams::GetFieldTrialParameterAsInteger(
-          DataReductionProxyParams::GetLoFiFieldTrialName(),
-          "load_images_requests_per_session", 3, 0);
-  lo_fi_consecutive_session_disables_ =
-      DataReductionProxyParams::GetFieldTrialParameterAsInteger(
-          DataReductionProxyParams::GetLoFiFieldTrialName(),
-          "consecutive_session_disables", 3, 0);
+      params::GetFieldTrialParameterAsInteger(
+          params::GetLoFiFieldTrialName(), "load_images_requests_per_session",
+          3, 0);
+  lo_fi_consecutive_session_disables_ = params::GetFieldTrialParameterAsInteger(
+      params::GetLoFiFieldTrialName(), "consecutive_session_disables", 3, 0);
 }
 
 DataReductionProxySettings::~DataReductionProxySettings() {
@@ -119,7 +117,7 @@ void DataReductionProxySettings::SetCallbackToRegisterSyntheticFieldTrial(
 
 bool DataReductionProxySettings::IsDataReductionProxyEnabled() const {
   return spdy_proxy_auth_enabled_.GetValue() ||
-         DataReductionProxyParams::ShouldForceEnableDataReductionProxy();
+         params::ShouldForceEnableDataReductionProxy();
 }
 
 bool DataReductionProxySettings::CanUseDataReductionProxy(
@@ -204,7 +202,7 @@ void DataReductionProxySettings::SetLoFiLoadImageRequested() {
 }
 
 void DataReductionProxySettings::IncrementLoFiUserRequestsForImages() {
-  if (!prefs_ || DataReductionProxyParams::IsLoFiAlwaysOnViaFlags())
+  if (!prefs_ || params::IsLoFiAlwaysOnViaFlags())
     return;
   prefs_->SetInteger(prefs::kLoFiLoadImagesPerSession,
                      prefs_->GetInteger(prefs::kLoFiLoadImagesPerSession) + 1);

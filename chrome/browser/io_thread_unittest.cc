@@ -197,8 +197,7 @@ TEST_F(IOThreadTest, EnableQuicFromFieldTrialGroup) {
 TEST_F(IOThreadTest, EnableQuicFromQuicProxyFieldTrialGroup) {
   base::FieldTrialList field_trial_list(new base::MockEntropyProvider());
   base::FieldTrialList::CreateFieldTrial(
-      data_reduction_proxy::DataReductionProxyParams::GetQuicFieldTrialName(),
-      "Enabled");
+      data_reduction_proxy::params::GetQuicFieldTrialName(), "Enabled");
 
   ConfigureQuicGlobals();
   net::HttpNetworkSession::Params params;

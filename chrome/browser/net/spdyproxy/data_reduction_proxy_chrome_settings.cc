@@ -205,8 +205,7 @@ void DataReductionProxyChromeSettings::InitDataReductionProxySettings(
           base::Bind(
               &ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial));
   SetDataReductionProxyAlternativeEnabled(
-      data_reduction_proxy::DataReductionProxyParams::
-          IsIncludedInAlternativeFieldTrial());
+      data_reduction_proxy::params::IsIncludedInAlternativeFieldTrial());
   // TODO(bengr): Remove after M46. See http://crbug.com/445599.
   MigrateDataReductionProxyOffProxyPrefs(profile_prefs);
 }

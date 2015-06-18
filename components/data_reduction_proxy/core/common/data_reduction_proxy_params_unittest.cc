@@ -575,9 +575,9 @@ TEST_F(DataReductionProxyParamsTest, InvalidConfigurations) {
 }
 
 TEST_F(DataReductionProxyParamsTest, AndroidOnePromoFieldTrial) {
-  EXPECT_TRUE(DataReductionProxyParams::IsIncludedInAndroidOnePromoFieldTrial(
+  EXPECT_TRUE(params::IsIncludedInAndroidOnePromoFieldTrial(
       "google/sprout/sprout:4.4.4/KPW53/1379542:user/release-keys"));
-  EXPECT_FALSE(DataReductionProxyParams::IsIncludedInAndroidOnePromoFieldTrial(
+  EXPECT_FALSE(params::IsIncludedInAndroidOnePromoFieldTrial(
       "google/hammerhead/hammerhead:5.0/LRX210/1570415:user/release-keys"));
 }
 
@@ -623,8 +623,7 @@ TEST_F(DataReductionProxyParamsTest, IsClientConfigEnabled) {
       base::FieldTrialList::CreateFieldTrial(kConfigServiceFieldTrial,
                                              test.trial_group_value);
     }
-    EXPECT_EQ(test.expected, DataReductionProxyParams::IsConfigClientEnabled())
-        << test.test_case;
+    EXPECT_EQ(test.expected, params::IsConfigClientEnabled()) << test.test_case;
   }
 }
 
@@ -673,7 +672,7 @@ TEST_F(DataReductionProxyParamsTest, SecureProxyCheckDefault) {
     }
 
     EXPECT_EQ(test_case.expected_use_by_default,
-              DataReductionProxyParams::ShouldUseSecureProxyByDefault())
+              params::ShouldUseSecureProxyByDefault())
         << test_index;
     test_index++;
   }

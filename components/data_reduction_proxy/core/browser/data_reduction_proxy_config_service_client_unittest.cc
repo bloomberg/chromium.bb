@@ -462,8 +462,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest, GetConfigServiceURL) {
       base::FieldTrialList::CreateFieldTrial(kConfigServiceFieldTrial,
                                              test.trial_group_value);
     }
-    EXPECT_EQ(test.expected, DataReductionProxyParams::GetConfigServiceURL())
-        << test.test_case;
+    EXPECT_EQ(test.expected, params::GetConfigServiceURL()) << test.test_case;
   }
 }
 
