@@ -101,7 +101,8 @@ void WindowTreeHostOzone::OnLostCapture() {
 }
 
 void WindowTreeHostOzone::OnAcceleratedWidgetAvailable(
-    gfx::AcceleratedWidget widget) {
+    gfx::AcceleratedWidget widget,
+    float device_pixel_ratio) {
   widget_ = widget;
   CreateCompositor(widget_);
 }

@@ -198,7 +198,8 @@ void X11Window::Show() {
   size_hints.win_gravity = StaticGravity;
   XSetWMNormalHints(xdisplay_, xwindow_, &size_hints);
 
-  delegate_->OnAcceleratedWidgetAvailable(xwindow_);
+  // TODO(sky): provide real scale factor.
+  delegate_->OnAcceleratedWidgetAvailable(xwindow_, 1.f);
 
   XMapWindow(xdisplay_, xwindow_);
 

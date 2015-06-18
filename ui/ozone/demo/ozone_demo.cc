@@ -144,7 +144,8 @@ class DemoWindow : public ui::PlatformWindowDelegate {
   void OnClosed() override {}
   void OnWindowStateChanged(ui::PlatformWindowState new_state) override {}
   void OnLostCapture() override {}
-  void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget) override {
+  void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget,
+                                    float device_pixel_ratio) override {
     DCHECK_NE(widget, gfx::kNullAcceleratedWidget);
     widget_ = widget;
   }

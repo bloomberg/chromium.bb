@@ -122,7 +122,7 @@ EgltestWindow::EgltestWindow(PlatformWindowDelegate* delegate,
       bounds_(bounds),
       window_id_(SHIM_NO_WINDOW_ID) {
   window_id_ = eglplatform_shim_->ShimCreateWindow();
-  delegate_->OnAcceleratedWidgetAvailable(window_id_);
+  delegate_->OnAcceleratedWidgetAvailable(window_id_, 1.f);
   ui::PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
 }
 

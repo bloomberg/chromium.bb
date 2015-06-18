@@ -12,7 +12,7 @@ PlatformWindowCast::PlatformWindowCast(PlatformWindowDelegate* delegate,
                                        const gfx::Rect& bounds)
     : delegate_(delegate), bounds_(bounds) {
   widget_ = (bounds.width() << 16) + bounds.height();
-  delegate_->OnAcceleratedWidgetAvailable(widget_);
+  delegate_->OnAcceleratedWidgetAvailable(widget_, 1.f);
 }
 
 gfx::Rect PlatformWindowCast::GetBounds() {

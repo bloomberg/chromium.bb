@@ -52,7 +52,7 @@ void DrmWindowHost::Initialize() {
   sender_->AddChannelObserver(this);
   PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
   cursor_->OnWindowAdded(widget_, bounds_, GetCursorConfinedBounds());
-  delegate_->OnAcceleratedWidgetAvailable(widget_);
+  delegate_->OnAcceleratedWidgetAvailable(widget_, 1.f);
 }
 
 gfx::AcceleratedWidget DrmWindowHost::GetAcceleratedWidget() {

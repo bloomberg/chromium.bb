@@ -56,8 +56,6 @@ class PlatformViewportCommon : public PlatformViewport,
     CHECK(!platform_window_);
 
     metrics_ = mojo::ViewportMetrics::New();
-    // TODO(sky): make density real.
-    metrics_->device_pixel_ratio = 1.f;
     metrics_->size_in_pixels = mojo::Size::From(bounds.size());
 
 #if defined(OS_WIN)
@@ -86,9 +84,8 @@ class PlatformViewportCommon : public PlatformViewport,
 
   // ui::PlatformWindowDelegate:
   void OnBoundsChanged(const gfx::Rect& new_bounds) override {
-    // TODO(fsamuel): Use the real device_scale_factor.
     delegate_->OnMetricsChanged(new_bounds.size(),
-                                1.f /* device_scale_factor */);
+                                metrics_->device_pixel_ratio);
   }
 
   void OnDamageRect(const gfx::Rect& damaged_region) override {}
@@ -163,7 +160,9 @@ class PlatformViewportCommon : public PlatformViewport,
 
   void OnLostCapture() override {}
 
-  void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget) override {
+  void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget,
+                                    float device_pixel_ratio) override {
+    metrics_->device_pixel_ratio = device_pixel_ratio;
     delegate_->OnAcceleratedWidgetAvailable(widget,
                                             metrics_->device_pixel_ratio);
   }

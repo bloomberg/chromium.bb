@@ -36,7 +36,7 @@ CacaWindow::CacaWindow(PlatformWindowDelegate* delegate,
       weak_ptr_factory_(this) {
   widget_ = manager_->AddWindow(this);
   ui::PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
-  delegate_->OnAcceleratedWidgetAvailable(widget_);
+  delegate_->OnAcceleratedWidgetAvailable(widget_, 1.f);
 }
 
 CacaWindow::~CacaWindow() {

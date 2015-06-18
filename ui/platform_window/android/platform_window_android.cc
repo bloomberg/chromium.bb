@@ -84,7 +84,7 @@ void PlatformWindowAndroid::SurfaceCreated(JNIEnv* env,
     base::android::ScopedJavaLocalFrame scoped_local_reference_frame(env);
     window_ = ANativeWindow_fromSurface(env, jsurface);
   }
-  delegate_->OnAcceleratedWidgetAvailable(window_);
+  delegate_->OnAcceleratedWidgetAvailable(window_, device_pixel_ratio);
 }
 
 void PlatformWindowAndroid::SurfaceDestroyed(JNIEnv* env, jobject obj) {

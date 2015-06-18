@@ -124,9 +124,10 @@ class RenderingHelper::StubOzoneDelegate : public ui::PlatformWindowDelegate {
 
   void OnLostCapture() override {};
 
-  void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget) override {
+  void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget,
+                                    float device_pixel_ratio) override {
     accelerated_widget_ = widget;
-  };
+  }
 
   void OnActivationChanged(bool active) override {};
 

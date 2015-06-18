@@ -171,7 +171,8 @@ LRESULT WinWindow::OnCreate(CREATESTRUCT* create_struct) {
   tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION("440919 WinWindow::OnCreate"));
 
-  delegate_->OnAcceleratedWidgetAvailable(hwnd());
+  // TODO(sky): provide real scale factor.
+  delegate_->OnAcceleratedWidgetAvailable(hwnd(), 1.f);
   return 0;
 }
 

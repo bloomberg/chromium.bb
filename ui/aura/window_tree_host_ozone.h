@@ -48,7 +48,8 @@ class AURA_EXPORT WindowTreeHostOzone : public WindowTreeHost,
   void OnClosed() override;
   void OnWindowStateChanged(ui::PlatformWindowState new_state) override;
   void OnLostCapture() override;
-  void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget) override;
+  void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget,
+                                    float device_pixel_ratio) override;
   void OnActivationChanged(bool active) override;
 
   // Platform-specific part of this WindowTreeHost.
