@@ -94,6 +94,10 @@ class ForeignSessionHandler : public content::WebUIMessageHandler,
   // The Registrar used to register ForeignSessionHandler for notifications.
   content::NotificationRegistrar registrar_;
 
+  // The time at which this WebUI was created. Used to calculate how long
+  // the WebUI was present before the sessions data was visible.
+  base::TimeTicks load_attempt_time_;
+
   DISALLOW_COPY_AND_ASSIGN(ForeignSessionHandler);
 };
 

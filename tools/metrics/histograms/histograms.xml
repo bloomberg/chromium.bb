@@ -43562,6 +43562,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Enumeration of types of session configuration failures.</summary>
 </histogram>
 
+<histogram name="Sync.SessionsRefreshDelay" units="milliseconds">
+  <owner>zea@chromium.org</owner>
+  <summary>
+    Delay from the time chrome://history is loaded until the other devices'
+    sessions data became available.
+  </summary>
+</histogram>
+
 <histogram name="Sync.SessionsStartFailure" enum="SyncStartResult">
   <obsolete>
     Replaced by SessionsConfigureFailure. See crbug.com/478226.

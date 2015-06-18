@@ -12,10 +12,12 @@
 #include "base/bind_helpers.h"
 #include "base/i18n/time_formatting.h"
 #include "base/memory/scoped_vector.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
@@ -53,6 +55,7 @@ bool SortSessionsByRecency(const SyncedSession* s1, const SyncedSession* s2) {
 }  // namepace
 
 ForeignSessionHandler::ForeignSessionHandler() {
+  load_attempt_time_ = base::TimeTicks::Now();
 }
 
 // static
@@ -225,6 +228,12 @@ void ForeignSessionHandler::HandleGetForeignSessions(
 
   base::ListValue session_list;
   if (open_tabs && open_tabs->GetAllForeignSessions(&sessions)) {
+    if (!load_attempt_time_.is_null()) {
+      UMA_HISTOGRAM_TIMES("Sync.SessionsRefreshDelay",
+                          base::TimeTicks::Now() - load_attempt_time_);
+      load_attempt_time_ = base::TimeTicks();
+    }
+
     // Sort sessions from most recent to least recent.
     std::sort(sessions.begin(), sessions.end(), SortSessionsByRecency);
 
