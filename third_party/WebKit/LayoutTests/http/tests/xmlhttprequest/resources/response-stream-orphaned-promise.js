@@ -13,8 +13,6 @@ function fetchBody(url) {
             if (xhr.readyState !== xhr.LOADING || visited)
                 return;
             visited = true;
-            // Note that all provided urls have empty bodies, so
-            // we don't have to read the data.
             xhr.response.getReader().closed.then(resolve, reject);
         };
         xhr.open('GET', url);
@@ -23,11 +21,15 @@ function fetchBody(url) {
 }
 
 promise_test(function() {
+    // slow-empty-response.cgi has an empty body, so we can assume that the
+    // closed promise will be resolved without reading data.
     var url = '/xmlhttprequest/resources/slow-empty-response.cgi';
     return fetchBody(url);
 }, 'check if |closed| gets resolved without stream reference');
 
 promise_test(function() {
+    // alow-failure.cgi will output an error after outputting a few valid
+    // chunks, so we will see a rejection.
     var url = '/xmlhttprequest/resources/slow-failure.cgi';
     return fetchBody(url).then(function() {
         assert_unreached('resolved unexpectedly');
