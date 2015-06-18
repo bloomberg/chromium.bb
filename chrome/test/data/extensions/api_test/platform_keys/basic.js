@@ -589,6 +589,43 @@ var testSuites = {
     ];
     chrome.test.runTests(tests);
   },
+
+  corporateKeyWithoutPermissionTests: function() {
+    var tests = [
+      // Directly trying to sign must fail
+      testSignClient1Fails,
+
+      // Interactively selecting must not show any cert to the user.
+      testInteractiveSelectNoCerts,
+    ];
+    chrome.test.runTests(tests);
+  },
+
+  corporateKeyWithPermissionTests: function() {
+    var tests = [
+      // The extension has non-interactive access to all corporate keys, even
+      // without previous additional consent of the user.
+      testSignSha1Client1,
+
+      // Interactively selecting for client_1 will work as well.
+      testInteractiveSelectClient1,
+    ];
+    chrome.test.runTests(tests);
+  },
+
+  policyDoesGrantAccessToNonCorporateKey: function() {
+    // The permission from policy must not affect usage of non-corproate keys.
+    var tests = [
+      // Attempts to sign must fail.
+      testSignClient1Fails,
+
+      // Interactive selection must not prompt the user and not return any
+      // certificate.
+      testInteractiveSelectNoCerts,
+    ];
+    chrome.test.runTests(tests);
+  },
+
 };
 
 setUp(testSuites[selectedTestSuite]);

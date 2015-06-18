@@ -807,6 +807,10 @@ const char kCaptivePortalAuthenticationIgnoresProxy[] =
 // unconditionally maximized, overriding the heuristic that normally chooses the
 // window size.
 const char kForceMaximizeOnFirstRun[] = "ui.force_maximize_on_first_run";
+
+// A dictionary pref mapping public keys that identify platform keys to its
+// properties like whether it's meant for corporate usage.
+const char kPlatformKeys[] = "platform_keys";
 #endif  // defined(OS_CHROMEOS)
 
 // A boolean pref set to true if a Home button to open the Home pages should be

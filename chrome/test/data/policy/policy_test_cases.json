@@ -2240,6 +2240,9 @@
     ]
   },
 
+  "KeyPermissions": {
+  },
+
   "----- Chrome OS device policies ---------------------------------------": {},
 
   "DevicePolicyRefreshRate": {

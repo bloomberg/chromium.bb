@@ -512,10 +512,15 @@ PlatformKeysService::SelectDelegate::~SelectDelegate() {
 
 PlatformKeysService::PlatformKeysService(
     bool profile_is_managed,
+    PrefService* profile_prefs,
+    policy::PolicyService* profile_policies,
     content::BrowserContext* browser_context,
     extensions::StateStore* state_store)
     : browser_context_(browser_context),
-      key_permissions_(profile_is_managed, state_store),
+      key_permissions_(profile_is_managed,
+                       profile_prefs,
+                       profile_policies,
+                       state_store),
       weak_factory_(this) {
   DCHECK(browser_context);
   DCHECK(state_store);

@@ -123,7 +123,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 301
+#   For your editing convenience: highest ID currently used: 302
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -7357,7 +7357,46 @@
       'desc': '''If this policy is set to true or not set usage of QUIC protocol in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is allowed.
       If this policy is set to false usage of QUIC protocol is disallowed.''',
     },
+    {
+      'name': 'KeyPermissions',
+      'type': 'dict',
+      'schema': {
+        'type': 'object',
+        'additionalProperties': {
+          'type': 'object',
+          'properties': {
+            'allowCorporateKeyUsage': {
+              'description': '''If set to true, this extension can use all keys that are designated for corporate usage to sign arbitrary data. If set to false, it cannot access any such keys and the user cannot grant such permission either.''',
+              'type': 'boolean',
+            },
+          },
+        },
+      },
+      'supported_on': ['chrome_os:45-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': {
+        'extension1': {
+          'allowCorporateKeyUsage': 'true'
+        },
+        'extension2': {
+          'allowCorporateKeyUsage': 'false'
+        }
+      },
+      'id': 302,
+      'caption': 'Key Permissions',
+      'desc': '''Grants access to corporate keys to extensions.
 
+      Keys are designated for corporate usage if they're generated using the chrome.platformKeys API on a managed account. Keys imported or generated in another way are not designated for corporate usage.
+
+      Access to keys designated for corporate usage is solely controlled by this policy. The user can neither grant nor withdraw access to corporate keys to or from extensions.
+
+      By default an extension cannot use a key designated for corporate usage, which is equivalent to setting allowCorporateKeyUsage to false for that extension.
+
+      Only if allowCorporateKeyUsage is set to true for an extension, it can use any platform key marked for corporate usage to sign arbitrary data. This permission should only be granted if the extension is trusted to secure access to the key against attackers.''',
+    },
   ],
   'messages': {
     # Messages that are not associated to any policies.

@@ -4,6 +4,7 @@
 
 #include <cryptohi.h>
 
+#include "base/json/json_writer.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
@@ -13,6 +14,9 @@
 #include "chrome/browser/chromeos/policy/user_policy_test_helper.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/net/nss_context.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
+#include "chrome/browser/policy/profile_policy_connector_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/login/user_names.h"
 #include "content/public/browser/notification_service.h"
@@ -26,6 +30,7 @@
 #include "net/cert/nss_cert_database.h"
 #include "net/cert/test_root_certs.h"
 #include "net/test/cert_test_util.h"
+#include "policy/policy_constants.h"
 
 namespace {
 
@@ -39,8 +44,12 @@ enum UserStatus {
 
 class PlatformKeysTest : public ExtensionApiTest {
  public:
-  PlatformKeysTest(DeviceStatus device_status, UserStatus user_status)
-      : device_status_(device_status), user_status_(user_status) {
+  PlatformKeysTest(DeviceStatus device_status,
+                   UserStatus user_status,
+                   bool key_permission_policy)
+      : device_status_(device_status),
+        user_status_(user_status),
+        key_permission_policy_(key_permission_policy) {
     if (user_status_ != USER_STATUS_UNMANAGED)
       SetupInitialEmptyPolicy();
   }
@@ -97,6 +106,9 @@ class PlatformKeysTest : public ExtensionApiTest {
 
     base::FilePath extension_path = test_data_dir_.AppendASCII("platform_keys");
     extension_ = LoadExtension(extension_path);
+
+    if (policy_helper_ && key_permission_policy_)
+      SetupKeyPermissionPolicy();
   }
 
   void TearDownOnMainThread() override {
@@ -132,6 +144,28 @@ class PlatformKeysTest : public ExtensionApiTest {
     return RunExtensionSubtest("", url.spec());
   }
 
+  void RegisterClient1AsCorporateKey() {
+    const extensions::Extension* const fake_gen_extension =
+        LoadExtension(test_data_dir_.AppendASCII("platform_keys_genkey"));
+
+    policy::ProfilePolicyConnector* const policy_connector =
+        policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile());
+
+    extensions::StateStore* const state_store =
+        extensions::ExtensionSystem::Get(profile())->state_store();
+
+    chromeos::KeyPermissions permissions(
+        policy_connector->IsManaged(), profile()->GetPrefs(),
+        policy_connector->policy_service(), state_store);
+
+    base::RunLoop run_loop;
+    permissions.GetPermissionsForExtension(
+        fake_gen_extension->id(),
+        base::Bind(&PlatformKeysTest::GotPermissionsForExtension,
+                   base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+  }
+
  protected:
   const DeviceStatus device_status_;
   const UserStatus user_status_;
@@ -147,6 +181,43 @@ class PlatformKeysTest : public ExtensionApiTest {
     policy_helper_->Init(
         base::DictionaryValue() /* empty mandatory policy */,
         base::DictionaryValue() /* empty recommended policy */);
+  }
+
+  void SetupKeyPermissionPolicy() {
+    // Set up the test policy that gives |extension_| the permission to access
+    // corporate keys.
+    base::DictionaryValue key_permissions_policy;
+    {
+      scoped_ptr<base::DictionaryValue> cert1_key_permission(
+          new base::DictionaryValue);
+      cert1_key_permission->SetBooleanWithoutPathExpansion(
+          "allowCorporateKeyUsage", true);
+      key_permissions_policy.SetWithoutPathExpansion(
+          extension_->id(), cert1_key_permission.release());
+    }
+
+    std::string key_permissions_policy_str;
+    base::JSONWriter::WriteWithOptions(key_permissions_policy,
+                                       base::JSONWriter::OPTIONS_PRETTY_PRINT,
+                                       &key_permissions_policy_str);
+
+    base::DictionaryValue user_policy;
+    user_policy.SetStringWithoutPathExpansion(policy::key::kKeyPermissions,
+                                              key_permissions_policy_str);
+
+    policy_helper_->UpdatePolicy(
+        user_policy, base::DictionaryValue() /* empty recommended policy */,
+        browser()->profile());
+  }
+
+  void GotPermissionsForExtension(
+      const base::Closure& done_callback,
+      scoped_ptr<chromeos::KeyPermissions::PermissionsForExtension>
+          permissions_for_ext) {
+    std::string client_cert1_spki =
+        chromeos::platform_keys::GetSubjectPublicKeyInfo(client_cert1_);
+    permissions_for_ext->RegisterKeyForCorporateUsage(client_cert1_spki);
+    done_callback.Run();
   }
 
   void SetupTestCerts(const base::Closure& done_callback,
@@ -197,6 +268,7 @@ class PlatformKeysTest : public ExtensionApiTest {
                                      done_callback);
   }
 
+  const bool key_permission_policy_;
   scoped_ptr<policy::UserPolicyTestHelper> policy_helper_;
   policy::DevicePolicyCrosTestHelper device_policy_test_helper_;
   scoped_ptr<crypto::ScopedTestSystemNSSKeySlot> test_system_slot_;
@@ -247,7 +319,9 @@ class UnmanagedPlatformKeysTest
       public ::testing::WithParamInterface<DeviceStatus> {
  public:
   UnmanagedPlatformKeysTest()
-      : PlatformKeysTest(GetParam(), USER_STATUS_UNMANAGED) {}
+      : PlatformKeysTest(GetParam(),
+                         USER_STATUS_UNMANAGED,
+                         false /* unused */) {}
 };
 
 struct Params {
@@ -258,12 +332,24 @@ struct Params {
   UserStatus user_status_;
 };
 
+class ManagedWithPermissionPlatformKeysTest
+    : public PlatformKeysTest,
+      public ::testing::WithParamInterface<Params> {
+ public:
+  ManagedWithPermissionPlatformKeysTest()
+      : PlatformKeysTest(GetParam().device_status_,
+                         GetParam().user_status_,
+                         true /* grant the extension key permission */) {}
+};
+
 class ManagedWithoutPermissionPlatformKeysTest
     : public PlatformKeysTest,
       public ::testing::WithParamInterface<Params> {
  public:
   ManagedWithoutPermissionPlatformKeysTest()
-      : PlatformKeysTest(GetParam().device_status_, GetParam().user_status_) {}
+      : PlatformKeysTest(GetParam().device_status_,
+                         GetParam().user_status_,
+                         false /* do not grant key permission */) {}
 };
 
 }  // namespace
@@ -311,9 +397,58 @@ IN_PROC_BROWSER_TEST_P(ManagedWithoutPermissionPlatformKeysTest,
   ASSERT_TRUE(RunExtensionTest("managedProfile")) << message_;
 }
 
+// A corporate key must not be useable if there is no policy permitting it.
+IN_PROC_BROWSER_TEST_P(ManagedWithoutPermissionPlatformKeysTest,
+                       CorporateKeyAccessBlocked) {
+  RegisterClient1AsCorporateKey();
+
+  // To verify that the user is not prompted for any certificate selection,
+  // set up a delegate that fails on any invocation.
+  GetPlatformKeysService()->SetSelectDelegate(
+      make_scoped_ptr(new TestSelectDelegate(net::CertificateList())));
+
+  ASSERT_TRUE(RunExtensionTest("corporateKeyWithoutPermissionTests"))
+      << message_;
+}
+
 INSTANTIATE_TEST_CASE_P(
     ManagedWithoutPermission,
     ManagedWithoutPermissionPlatformKeysTest,
+    ::testing::Values(
+        Params(DEVICE_STATUS_ENROLLED, USER_STATUS_MANAGED_AFFILIATED_DOMAIN),
+        Params(DEVICE_STATUS_ENROLLED, USER_STATUS_MANAGED_OTHER_DOMAIN),
+        Params(DEVICE_STATUS_NOT_ENROLLED, USER_STATUS_MANAGED_OTHER_DOMAIN)));
+
+IN_PROC_BROWSER_TEST_P(ManagedWithPermissionPlatformKeysTest,
+                       PolicyGrantsAccessToCorporateKey) {
+  RegisterClient1AsCorporateKey();
+
+  // Set up the test SelectDelegate to select |client_cert1_| if available for
+  // selection.
+  net::CertificateList certs;
+  certs.push_back(client_cert1_);
+
+  GetPlatformKeysService()->SetSelectDelegate(
+      make_scoped_ptr(new TestSelectDelegate(certs)));
+
+  ASSERT_TRUE(RunExtensionTest("corporateKeyWithPermissionTests")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_P(ManagedWithPermissionPlatformKeysTest,
+                       PolicyDoesGrantAccessToNonCorporateKey) {
+  // The policy grants access to corporate keys but none are available.
+  // As the profile is managed, the user must not be able to grant any
+  // certificate permission. Set up a delegate that fails on any invocation.
+  GetPlatformKeysService()->SetSelectDelegate(
+      make_scoped_ptr(new TestSelectDelegate(net::CertificateList())));
+
+  ASSERT_TRUE(RunExtensionTest("policyDoesGrantAccessToNonCorporateKey"))
+      << message_;
+}
+
+INSTANTIATE_TEST_CASE_P(
+    ManagedWithPermission,
+    ManagedWithPermissionPlatformKeysTest,
     ::testing::Values(
         Params(DEVICE_STATUS_ENROLLED, USER_STATUS_MANAGED_AFFILIATED_DOMAIN),
         Params(DEVICE_STATUS_ENROLLED, USER_STATUS_MANAGED_OTHER_DOMAIN),

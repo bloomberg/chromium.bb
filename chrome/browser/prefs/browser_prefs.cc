@@ -173,6 +173,7 @@
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/net/proxy_config_handler.h"
+#include "chrome/browser/chromeos/platform_keys/key_permissions.h"
 #include "chrome/browser/chromeos/policy/auto_enrollment_client.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/consumer_management_service.h"
@@ -490,6 +491,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 #if defined(OS_CHROMEOS)
   chromeos::first_run::RegisterProfilePrefs(registry);
   chromeos::file_system_provider::RegisterProfilePrefs(registry);
+  chromeos::KeyPermissions::RegisterProfilePrefs(registry);
   chromeos::MultiProfileUserController::RegisterProfilePrefs(registry);
   chromeos::Preferences::RegisterProfilePrefs(registry);
   chromeos::proxy_config::RegisterProfilePrefs(registry);

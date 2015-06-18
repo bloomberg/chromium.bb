@@ -16,6 +16,7 @@
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/platform_keys_certificate_selector_chromeos.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "extensions/browser/extension_registry.h"
@@ -103,8 +104,12 @@ KeyedService* PlatformKeysServiceFactory::BuildServiceInstanceFor(
 
   policy::ProfilePolicyConnector* const policy_connector =
       policy::ProfilePolicyConnectorFactory::GetForBrowserContext(context);
-  PlatformKeysService* const service =
-      new PlatformKeysService(policy_connector->IsManaged(), context, store);
+
+  Profile* const profile = Profile::FromBrowserContext(context);
+
+  PlatformKeysService* const service = new PlatformKeysService(
+      policy_connector->IsManaged(), profile->GetPrefs(),
+      policy_connector->policy_service(), context, store);
 
   service->SetSelectDelegate(make_scoped_ptr(new DefaultSelectDelegate()));
   return service;

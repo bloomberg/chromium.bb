@@ -8,8 +8,16 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/prefs/pref_service.h"
+#include "base/prefs/scoped_user_pref_update.h"
 #include "base/values.h"
+#include "chrome/common/pref_names.h"
+#include "components/policy/core/common/policy_map.h"
+#include "components/policy/core/common/policy_namespace.h"
+#include "components/policy/core/common/policy_service.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "extensions/browser/state_store.h"
+#include "policy/policy_constants.h"
 
 namespace chromeos {
 
@@ -35,6 +43,25 @@ const char kStateStoreSPKI[] = "SPKI";
 const char kStateStoreSignOnce[] = "signOnce";
 const char kStateStoreSignUnlimited[] = "signUnlimited";
 
+// The profile pref prefs::kPlatformKeys stores a dictionary mapping from
+// public key (base64 encoding of an DER-encoded SPKI) to key properties. The
+// currently only key property is the key usage, which can either be undefined
+// or "corporate". If a key is not present in the pref, the default for the key
+// usage is undefined, which in particular means "not for corporate usage".
+// E.g. the entry in the profile pref might look like:
+// "platform_keys" : {
+//   "ABCDEF123" : {
+//     "keyUsage" : "corporate"
+//   },
+//   "abcdef567" : {
+//     "keyUsage" : "corporate"
+//   }
+// }
+const char kPrefKeyUsage[] = "keyUsage";
+const char kPrefKeyUsageCorporate[] = "corporate";
+
+const char kPolicyAllowCorporateKeyUsage[] = "allowCorporateKeyUsage";
+
 }  // namespace
 
 struct KeyPermissions::PermissionsForExtension::KeyEntry {
@@ -51,9 +78,8 @@ struct KeyPermissions::PermissionsForExtension::KeyEntry {
   bool sign_once = false;
 
   // True if the key can be used for signing an unlimited number of times.
-  // This permission is granted by the user or by policy to allow the extension
-  // to use the key for signing through the enterprise.platformKeys or
-  // platformKeys API.
+  // This permission is granted by the user to allow the extension to use the
+  // key for signing through the enterprise.platformKeys or platformKeys API.
   // This permission is granted until revoked by the user or the policy.
   bool sign_unlimited = false;
 };
@@ -61,8 +87,15 @@ struct KeyPermissions::PermissionsForExtension::KeyEntry {
 KeyPermissions::PermissionsForExtension::PermissionsForExtension(
     const std::string& extension_id,
     scoped_ptr<base::Value> state_store_value,
+    PrefService* profile_prefs,
+    policy::PolicyService* profile_policies,
     KeyPermissions* key_permissions)
-    : extension_id_(extension_id), key_permissions_(key_permissions) {
+    : extension_id_(extension_id),
+      profile_prefs_(profile_prefs),
+      profile_policies_(profile_policies),
+      key_permissions_(key_permissions) {
+  DCHECK(profile_prefs_);
+  DCHECK(profile_policies_);
   DCHECK(key_permissions_);
   if (state_store_value)
     KeyEntriesFromState(*state_store_value);
@@ -78,7 +111,24 @@ bool KeyPermissions::PermissionsForExtension::CanUseKeyForSigning(
 
   KeyEntry* matching_entry = GetStateStoreEntry(public_key_spki_der_b64);
 
-  return matching_entry->sign_once || matching_entry->sign_unlimited;
+  // In any case, we allow the generating extension to use the generated key a
+  // single time for signing arbitrary data. The reason is, that the extension
+  // usually has to sign a certification request containing the public key in
+  // order to obtain a certificate for the key.
+  // That means, once a certificate authority generated a certificate for the
+  // key, the generating extension doesn't have access to the key anymore,
+  // except if explicitly permitted by the administrator.
+  if (matching_entry->sign_once)
+    return true;
+
+  // Usage of corporate keys is solely determined by policy. The user must not
+  // circumvent this decision.
+  if (key_permissions_->IsCorporateKey(public_key_spki_der_b64))
+    return PolicyAllowsCorporateKeyUsage();
+
+  // Only permissions for keys that are not designated for corporate usage are
+  // determined by user decisions.
+  return matching_entry->sign_unlimited;
 }
 
 void KeyPermissions::PermissionsForExtension::SetKeyUsedForSigning(
@@ -114,13 +164,28 @@ void KeyPermissions::PermissionsForExtension::RegisterKeyForCorporateUsage(
 
   matching_entry->sign_once = true;
   WriteToStateStore();
+
+  DictionaryPrefUpdate update(profile_prefs_, prefs::kPlatformKeys);
+
+  scoped_ptr<base::DictionaryValue> new_pref_entry(new base::DictionaryValue);
+  new_pref_entry->SetStringWithoutPathExpansion(kPrefKeyUsage,
+                                                kPrefKeyUsageCorporate);
+
+  update->SetWithoutPathExpansion(public_key_spki_der_b64,
+                                  new_pref_entry.release());
 }
 
 void KeyPermissions::PermissionsForExtension::SetUserGrantedPermission(
     const std::string& public_key_spki_der) {
+  if (!key_permissions_->CanUserGrantPermissionFor(public_key_spki_der)) {
+    LOG(WARNING) << "Tried to grant permission for a key although prohibited "
+                    "(either key is a corporate key or this account is "
+                    "managed).";
+    return;
+  }
+
   std::string public_key_spki_der_b64;
   base::Base64Encode(public_key_spki_der, &public_key_spki_der_b64);
-
   KeyEntry* matching_entry = GetStateStoreEntry(public_key_spki_der_b64);
 
   if (matching_entry->sign_unlimited) {
@@ -130,6 +195,37 @@ void KeyPermissions::PermissionsForExtension::SetUserGrantedPermission(
 
   matching_entry->sign_unlimited = true;
   WriteToStateStore();
+}
+
+bool KeyPermissions::PermissionsForExtension::PolicyAllowsCorporateKeyUsage()
+    const {
+  const policy::PolicyMap& policies = profile_policies_->GetPolicies(
+      policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string()));
+  const base::Value* policy_value =
+      policies.GetValue(policy::key::kKeyPermissions);
+  if (!policy_value)
+    return false;
+
+  const base::DictionaryValue* key_permissions_map = nullptr;
+  policy_value->GetAsDictionary(&key_permissions_map);
+  if (!key_permissions_map) {
+    LOG(ERROR) << "Expected policy to be a dictionary.";
+    return false;
+  }
+
+  const base::DictionaryValue* key_permissions_for_ext = nullptr;
+  key_permissions_map->GetDictionaryWithoutPathExpansion(
+      extension_id_, &key_permissions_for_ext);
+  if (!key_permissions_for_ext)
+    return false;
+
+  bool allow_corporate_key_usage = false;
+  key_permissions_for_ext->GetBooleanWithoutPathExpansion(
+      kPolicyAllowCorporateKeyUsage, &allow_corporate_key_usage);
+
+  VLOG_IF(allow_corporate_key_usage, 2)
+      << "Policy allows usage of corporate keys by extension " << extension_id_;
+  return allow_corporate_key_usage;
 }
 
 void KeyPermissions::PermissionsForExtension::WriteToStateStore() {
@@ -215,10 +311,17 @@ KeyPermissions::PermissionsForExtension::GetStateStoreEntry(
 }
 
 KeyPermissions::KeyPermissions(bool profile_is_managed,
+                               PrefService* profile_prefs,
+                               policy::PolicyService* profile_policies,
                                extensions::StateStore* extensions_state_store)
     : profile_is_managed_(profile_is_managed),
+      profile_prefs_(profile_prefs),
+      profile_policies_(profile_policies),
       extensions_state_store_(extensions_state_store),
       weak_factory_(this) {
+  DCHECK(profile_prefs_);
+  DCHECK(extensions_state_store_);
+  DCHECK(!profile_is_managed_ || profile_policies_);
 }
 
 KeyPermissions::~KeyPermissions() {
@@ -234,10 +337,44 @@ void KeyPermissions::GetPermissionsForExtension(
 }
 
 bool KeyPermissions::CanUserGrantPermissionFor(
-    const std::string& public_key_spki_der) {
+    const std::string& public_key_spki_der) const {
   // As keys cannot be tagged for non-corporate usage, the user can currently
   // not grant any permissions if the profile is managed.
-  return !profile_is_managed_;
+  if (profile_is_managed_)
+    return false;
+
+  std::string public_key_spki_der_b64;
+  base::Base64Encode(public_key_spki_der, &public_key_spki_der_b64);
+
+  // If this profile is not managed but we find a corporate key, don't allow
+  // the user to grant permissions.
+  return !IsCorporateKey(public_key_spki_der_b64);
+}
+
+bool KeyPermissions::IsCorporateKey(
+    const std::string& public_key_spki_der_b64) const {
+  const base::DictionaryValue* prefs_entry =
+      GetPrefsEntry(public_key_spki_der_b64);
+  if (prefs_entry) {
+    std::string key_usage;
+    prefs_entry->GetStringWithoutPathExpansion(kPrefKeyUsage, &key_usage);
+    return key_usage == kPrefKeyUsageCorporate;
+  }
+  return false;
+}
+
+void KeyPermissions::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  // For the format of the dictionary see the documentation at kPrefKeyUsage.
+  registry->RegisterDictionaryPref(prefs::kPlatformKeys);
+}
+
+void KeyPermissions::CreatePermissionObjectAndPassToCallback(
+    const std::string& extension_id,
+    const PermissionsCallback& callback,
+    scoped_ptr<base::Value> value) {
+  callback.Run(make_scoped_ptr(new PermissionsForExtension(
+      extension_id, value.Pass(), profile_prefs_, profile_policies_, this)));
 }
 
 void KeyPermissions::SetPlatformKeysOfExtension(const std::string& extension_id,
@@ -246,12 +383,15 @@ void KeyPermissions::SetPlatformKeysOfExtension(const std::string& extension_id,
       extension_id, kStateStorePlatformKeys, value.Pass());
 }
 
-void KeyPermissions::CreatePermissionObjectAndPassToCallback(
-    const std::string& extension_id,
-    const PermissionsCallback& callback,
-    scoped_ptr<base::Value> value) {
-  callback.Run(make_scoped_ptr(
-      new PermissionsForExtension(extension_id, value.Pass(), this)));
+const base::DictionaryValue* KeyPermissions::GetPrefsEntry(
+    const std::string& public_key_spki_der_b64) const {
+  const base::DictionaryValue* platform_keys =
+      profile_prefs_->GetDictionary(prefs::kPlatformKeys);
+
+  const base::DictionaryValue* key_entry = nullptr;
+  platform_keys->GetDictionaryWithoutPathExpansion(public_key_spki_der_b64,
+                                                   &key_entry);
+  return key_entry;
 }
 
 }  // namespace chromeos

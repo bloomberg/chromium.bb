@@ -53233,6 +53233,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       label="Allow users to opt in to Safe Browsing extended reporting"/>
   <int value="300" label="Allow proceeding from the SSL warning page"/>
   <int value="301" label="Allows QUIC protocol"/>
+  <int value="302" label="Key Permissions"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations" type="int">

@@ -18,14 +18,16 @@
 #include "chrome/browser/chromeos/platform_keys/platform_keys.h"
 #include "components/keyed_service/core/keyed_service.h"
 
-namespace content {
-class BrowserContext;
-class WebContents;
-}
+class PrefService;
 
 namespace base {
 class ListValue;
 class Value;
+}
+
+namespace content {
+class BrowserContext;
+class WebContents;
 }
 
 namespace extensions {
@@ -35,6 +37,10 @@ class StateStore;
 namespace net {
 class X509Certificate;
 typedef std::vector<scoped_refptr<X509Certificate>> CertificateList;
+}
+
+namespace policy {
+class PolicyService;
 }
 
 namespace chromeos {
@@ -77,6 +83,8 @@ class PlatformKeysService : public KeyedService {
   // |browser_context| and |state_store| must not be null and outlive this
   // object.
   explicit PlatformKeysService(bool profile_is_managed,
+                               PrefService* profile_prefs,
+                               policy::PolicyService* profile_policies,
                                content::BrowserContext* browser_context,
                                extensions::StateStore* state_store);
 

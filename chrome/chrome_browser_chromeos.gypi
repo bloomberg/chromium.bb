@@ -762,6 +762,8 @@
         'browser/chromeos/ownership/owner_settings_service_chromeos_factory.h',
         'browser/chromeos/platform_keys/key_permissions.cc',
         'browser/chromeos/platform_keys/key_permissions.h',
+        'browser/chromeos/platform_keys/key_permissions_policy_handler.cc',
+        'browser/chromeos/platform_keys/key_permissions_policy_handler.h',
         'browser/chromeos/platform_keys/platform_keys.cc',
         'browser/chromeos/platform_keys/platform_keys.h',
         'browser/chromeos/platform_keys/platform_keys_nss.cc',
