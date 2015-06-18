@@ -238,6 +238,7 @@ public:
 
     bool urlMatchesSelf(const KURL&) const;
     bool protocolMatchesSelf(const KURL&) const;
+    bool selfMatchesInnerURL() const;
 
     bool experimentalFeaturesEnabled() const;
 

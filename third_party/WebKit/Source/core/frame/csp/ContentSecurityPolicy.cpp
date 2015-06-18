@@ -953,6 +953,15 @@ bool ContentSecurityPolicy::protocolMatchesSelf(const KURL& url) const
     return equalIgnoringCase(url.protocol(), m_selfProtocol);
 }
 
+bool ContentSecurityPolicy::selfMatchesInnerURL() const
+{
+    // Due to backwards-compatibility concerns, we allow 'self' to match blob and filesystem URLs
+    // if we're in a context that bypasses Content Security Policy in the main world.
+    //
+    // TODO(mkwst): Revisit this once embedders have an opportunity to update their extension models.
+    return m_executionContext && SchemeRegistry::schemeShouldBypassContentSecurityPolicy(m_executionContext->securityOrigin()->protocol());
+}
+
 bool ContentSecurityPolicy::shouldBypassMainWorld(const ExecutionContext* context)
 {
     if (context && context->isDocument()) {

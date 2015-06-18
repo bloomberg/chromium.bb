@@ -9,6 +9,7 @@
 #include "core/frame/csp/CSPSource.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "platform/weborigin/KURL.h"
+#include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include <gtest/gtest.h>
 
@@ -63,6 +64,37 @@ TEST_F(CSPSourceListTest, BasicMatchingSelf)
     EXPECT_FALSE(sourceList.matches(KURL(base, "http://example.com/")));
     EXPECT_FALSE(sourceList.matches(KURL(base, "https://not-example.com/")));
     EXPECT_TRUE(sourceList.matches(KURL(base, "https://example.test/")));
+}
+
+TEST_F(CSPSourceListTest, BlobMatchingSelf)
+{
+    KURL base;
+    String sources = "'self'";
+    CSPSourceList sourceList(csp.get(), "script-src");
+    parseSourceList(sourceList, sources);
+
+    EXPECT_TRUE(sourceList.matches(KURL(base, "https://example.test/")));
+    EXPECT_FALSE(sourceList.matches(KURL(base, "blob:https://example.test/")));
+
+    // Register "https" as bypassing CSP, which should trigger the innerURL behavior.
+    SchemeRegistry::registerURLSchemeAsBypassingContentSecurityPolicy("https");
+
+    EXPECT_TRUE(sourceList.matches(KURL(base, "https://example.test/")));
+    EXPECT_TRUE(sourceList.matches(KURL(base, "blob:https://example.test/")));
+
+    // Unregister the scheme to clean up after ourselves.
+    SchemeRegistry::removeURLSchemeRegisteredAsBypassingContentSecurityPolicy("https");
+}
+
+TEST_F(CSPSourceListTest, BlobMatchingBlob)
+{
+    KURL base;
+    String sources = "blob:";
+    CSPSourceList sourceList(csp.get(), "script-src");
+    parseSourceList(sourceList, sources);
+
+    EXPECT_FALSE(sourceList.matches(KURL(base, "https://example.test/")));
+    EXPECT_TRUE(sourceList.matches(KURL(base, "blob:https://example.test/")));
 }
 
 TEST_F(CSPSourceListTest, BasicMatching)

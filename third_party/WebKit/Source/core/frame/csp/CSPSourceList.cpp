@@ -48,7 +48,7 @@ bool CSPSourceList::matches(const KURL& url, ContentSecurityPolicy::RedirectStat
     if (m_allowStar)
         return true;
 
-    KURL effectiveURL = SecurityOrigin::shouldUseInnerURL(url) ? SecurityOrigin::extractInnerURL(url) : url;
+    KURL effectiveURL = m_policy->selfMatchesInnerURL() && SecurityOrigin::shouldUseInnerURL(url) ? SecurityOrigin::extractInnerURL(url) : url;
 
     if (m_allowSelf && m_policy->urlMatchesSelf(effectiveURL))
         return true;
