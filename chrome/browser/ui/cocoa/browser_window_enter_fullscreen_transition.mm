@@ -35,12 +35,6 @@ NSString* TransformAnimationTimingFunction() {
   // A temporary window that holds |snapshotLayer_|.
   base::scoped_nsobject<NSWindow> snapshotWindow_;
 
-  // The animation applied to |snapshotLayer_|.
-  base::scoped_nsobject<CAAnimationGroup> snapshotAnimation_;
-
-  // The animation applied to the root layer of |primaryWindow_|.
-  base::scoped_nsobject<CAAnimationGroup> primaryWindowAnimation_;
-
   // The frame of the |primaryWindow_| before the transition began.
   NSRect primaryWindowInitialFrame_;
 
@@ -97,12 +91,6 @@ NSString* TransformAnimationTimingFunction() {
     primaryWindow_.reset([window retain]);
   }
   return self;
-}
-
-- (void)dealloc {
-  [snapshotAnimation_ setDelegate:nil];
-  [primaryWindowAnimation_ setDelegate:nil];
-  [super dealloc];
 }
 
 - (NSArray*)customWindowsToEnterFullScreen {
@@ -222,7 +210,6 @@ NSString* TransformAnimationTimingFunction() {
   [group setValue:kSnapshotWindowAnimationID forKey:kAnimationIDKey];
   group.delegate = self;
 
-  snapshotAnimation_.reset([group retain]);
   [snapshotLayer_ addAnimation:group forKey:nil];
 }
 
@@ -272,8 +259,6 @@ NSString* TransformAnimationTimingFunction() {
   group.duration = duration;
   [group setValue:kPrimaryWindowAnimationID forKey:kAnimationIDKey];
   group.delegate = self;
-
-  primaryWindowAnimation_.reset([group retain]);
 
   [root addAnimation:group forKey:kPrimaryWindowAnimationID];
 }
