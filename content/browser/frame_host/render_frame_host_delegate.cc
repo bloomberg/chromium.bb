@@ -72,11 +72,6 @@ bool RenderFrameHostDelegate::ShouldRouteMessageEvent(
   return false;
 }
 
-int RenderFrameHostDelegate::EnsureOpenerRenderViewsExist(
-    RenderFrameHost* source_rfh) {
-  return MSG_ROUTING_NONE;
-}
-
 #if defined(OS_WIN)
 gfx::NativeViewAccessible
     RenderFrameHostDelegate::GetParentNativeViewAccessible() {

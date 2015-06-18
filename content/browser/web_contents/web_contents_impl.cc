@@ -3935,8 +3935,7 @@ bool WebContentsImpl::ShouldRouteMessageEvent(
   return GetBrowserPluginGuest() || GetBrowserPluginEmbedder();
 }
 
-int WebContentsImpl::EnsureOpenerRenderViewsExist(
-    RenderFrameHost* source_rfh) {
+void WebContentsImpl::EnsureOpenerProxiesExist(RenderFrameHost* source_rfh) {
   WebContentsImpl* source_web_contents = static_cast<WebContentsImpl*>(
       WebContents::FromRenderFrameHost(source_rfh));
 
@@ -3945,14 +3944,14 @@ int WebContentsImpl::EnsureOpenerRenderViewsExist(
       // We create a swapped out RenderView for the embedder in the guest's
       // render process but we intentionally do not expose the embedder's
       // opener chain to it.
-      return
-          source_web_contents->CreateSwappedOutRenderView(GetSiteInstance());
+      source_web_contents->CreateSwappedOutRenderView(GetSiteInstance());
     } else {
-      return source_web_contents->CreateOpenerRenderViews(GetSiteInstance());
+      RenderFrameHostImpl* source_rfhi =
+          static_cast<RenderFrameHostImpl*>(source_rfh);
+      source_rfhi->frame_tree_node()->render_manager()->CreateOpenerProxies(
+          GetSiteInstance());
     }
   }
-
-  return MSG_ROUTING_NONE;
 }
 
 bool WebContentsImpl::AddMessageToConsole(int32 level,
@@ -4131,58 +4130,6 @@ void WebContentsImpl::NotifyMainFrameSwappedFromRenderManager(
     RenderViewHost* old_host,
     RenderViewHost* new_host) {
   NotifyViewSwapped(old_host, new_host);
-}
-
-int WebContentsImpl::CreateOpenerRenderViewsForRenderManager(
-    SiteInstance* instance) {
-  WebContentsImpl* opener = GetOpener();
-  if (!opener)
-    return MSG_ROUTING_NONE;
-
-  // Recursively create RenderViews for anything else in the opener chain.
-  return opener->CreateOpenerRenderViews(instance);
-}
-
-int WebContentsImpl::CreateOpenerRenderViews(SiteInstance* instance) {
-  int opener_route_id = MSG_ROUTING_NONE;
-
-  // If this tab has an opener, ensure it has a RenderView in the given
-  // SiteInstance as well.
-  WebContentsImpl* opener = GetOpener();
-  if (opener)
-    opener_route_id = opener->CreateOpenerRenderViews(instance);
-
-  // If any of the renderers (current, pending, or swapped out) for this
-  // WebContents has the same SiteInstance, use it.
-  if (GetRenderManager()->current_host()->GetSiteInstance() == instance)
-    return GetRenderManager()->current_host()->GetRoutingID();
-
-  if (GetRenderManager()->pending_render_view_host() &&
-      GetRenderManager()->pending_render_view_host()->GetSiteInstance() ==
-          instance)
-    return GetRenderManager()->pending_render_view_host()->GetRoutingID();
-
-  RenderViewHostImpl* rvh = GetRenderManager()->GetSwappedOutRenderViewHost(
-      instance);
-  if (rvh)
-    return rvh->GetRoutingID();
-
-  // Create a swapped out RenderView in the given SiteInstance if none exists,
-  // setting its opener to the given route_id.  Return the new view's route_id.
-  int render_view_routing_id = MSG_ROUTING_NONE;
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kSitePerProcess)) {
-    GetRenderManager()->CreateRenderFrameProxy(instance);
-    render_view_routing_id =
-        frame_tree_.GetRenderViewHost(instance)->GetRoutingID();
-  } else {
-    GetRenderManager()->CreateRenderFrame(instance, nullptr, opener_route_id,
-                                          CREATE_RF_FOR_MAIN_FRAME_NAVIGATION |
-                                            CREATE_RF_SWAPPED_OUT |
-                                            CREATE_RF_HIDDEN,
-                                          &render_view_routing_id);
-  }
-  return render_view_routing_id;
 }
 
 NavigationControllerImpl& WebContentsImpl::GetControllerForRenderManager() {

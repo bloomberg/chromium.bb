@@ -147,13 +147,6 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
     virtual NavigationControllerImpl&
         GetControllerForRenderManager() = 0;
 
-    // Create swapped out RenderViews in the given SiteInstance for each tab in
-    // the opener chain of this tab, if any.  This allows the current tab to
-    // make cross-process script calls to its opener(s).  Returns the route ID
-    // of the immediate opener, if one exists (otherwise MSG_ROUTING_NONE).
-    virtual int CreateOpenerRenderViewsForRenderManager(
-        SiteInstance* instance) = 0;
-
     // Creates a WebUI object for the given URL if one applies. Ownership of the
     // returned pointer will be passed to the caller. If no WebUI applies,
     // returns NULL.
@@ -419,9 +412,17 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   // origin.
   void OnDidUpdateOrigin(const url::Origin& origin);
 
-  void EnsureRenderViewInitialized(FrameTreeNode* source,
-                                   RenderViewHostImpl* render_view_host,
+  void EnsureRenderViewInitialized(RenderViewHostImpl* render_view_host,
                                    SiteInstance* instance);
+
+  // Recursively creates swapped out RenderViews and RenderFrameProxies for
+  // this frame's FrameTree and for its opener chain in the given SiteInstance.
+  // This allows other tabs to send cross-process JavaScript calls to their
+  // opener(s) and to any other frames in the opener's FrameTree (e.g.,
+  // supporting calls like window.opener.opener.frames[x][y]). Returns the
+  // route ID of this frame's RenderView for |instance|.
+  // TODO(alexmos): Switch this to return RenderFrame routing IDs.
+  int CreateOpenerProxies(SiteInstance* instance);
 
  private:
   friend class FrameTreeVisualizer;
@@ -549,14 +550,25 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
                                     SiteInstance* new_instance,
                                     bool is_main_frame);
 
-  // Ensure that we have created RFHs for the new RFH's opener chain if
-  // we are staying in the same BrowsingInstance. This allows the new RFH
-  // to send cross-process script calls to its opener(s). Returns the opener
-  // route ID to be used for the new RenderView to be created.
-  // |create_render_frame_flags| allows the method to set additional flags.
-  int CreateOpenerRenderViewsIfNeeded(SiteInstance* old_instance,
-                                      SiteInstance* new_instance,
-                                      int* create_render_frame_flags);
+  // Ensure that we have created all needed proxies for a new RFH with
+  // SiteInstance |new_instance|: (1) create swapped-out RVHs and proxies for
+  // the new RFH's opener chain if we are staying in the same BrowsingInstance;
+  // (2) Create proxies for the new RFH's SiteInstance in its own frame tree;
+  // (3) set any additional flags for the new RenderFrame with
+  // |create_render_frame_flags|.
+  // Returns the opener's RVH route ID to be used for the new RenderFrame.
+  // TODO(alexmos): switch this to return opener's RFH routing ID instead.
+  int CreateProxiesForNewRenderFrameHost(SiteInstance* old_instance,
+                                         SiteInstance* new_instance,
+                                         int* create_render_frame_flags);
+
+  // Create swapped out RenderViews and RenderFrameProxies in the given
+  // SiteInstance for all frames on the opener chain of this frame.  Same as
+  // CreateOpenerProxies, but starts from this frame's opener, returning
+  // MSG_ROUTING_NONE if it doesn't exist, and calling CreateOpenerProxies if
+  // it does.
+  // TODO(alexmos): Switch this to return RenderFrame routing IDs.
+  int CreateOpenerProxiesIfNeeded(SiteInstance* instance);
 
   // Creates a RenderFrameHost and corresponding RenderViewHost if necessary.
   scoped_ptr<RenderFrameHostImpl> CreateRenderFrameHost(SiteInstance* instance,

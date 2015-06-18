@@ -63,6 +63,18 @@ void PostMessageAndWaitForReply(FrameTreeNode* sender_ftn,
   }
 }
 
+// Helper function to extract and return "window.receivedMessages" from the
+// |sender_ftn| frame.  This variable is used in post_message.html to count the
+// number of messages received via postMessage by the current window.
+int GetReceivedMessages(FrameTreeNode* ftn) {
+  int received_messages = 0;
+  EXPECT_TRUE(ExecuteScriptAndExtractInt(
+      ftn->current_frame_host(),
+      "window.domAutomationController.send(window.receivedMessages);",
+      &received_messages));
+  return received_messages;
+}
+
 class RedirectNotificationObserver : public NotificationObserver {
  public:
   // Register to listen for notifications of the given type from either a
@@ -2329,7 +2341,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, SubframePostMessage) {
                             ->GetFrameTree()
                             ->root();
 
-  TestNavigationObserver observer(shell()->web_contents());
   ASSERT_EQ(2U, root->child_count());
 
   // Verify the frames start at correct URLs.  First frame should be
@@ -2357,20 +2368,104 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, SubframePostMessage) {
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 
   // Verify the total number of received messages for each subframe.  First
-  // frame should have one message (reply from second frame), and second frame
+  // frame should have one message (reply from second frame).  Second frame
   // should have two messages (message from first frame and reply from parent).
-  int subframe1_received_messages = 0;
-  int subframe2_received_messages = 0;
-  EXPECT_TRUE(ExecuteScriptAndExtractInt(
-      root->child_at(0)->current_frame_host(),
-      "window.domAutomationController.send(window.receivedMessages);",
-      &subframe1_received_messages));
-  EXPECT_EQ(1, subframe1_received_messages);
-  EXPECT_TRUE(ExecuteScriptAndExtractInt(
-      root->child_at(1)->current_frame_host(),
-      "window.domAutomationController.send(window.receivedMessages);",
-      &subframe2_received_messages));
-  EXPECT_EQ(2, subframe2_received_messages);
+  // Parent should have one message (from second frame).
+  EXPECT_EQ(1, GetReceivedMessages(root->child_at(0)));
+  EXPECT_EQ(2, GetReceivedMessages(root->child_at(1)));
+  EXPECT_EQ(1, GetReceivedMessages(root));
+}
+
+// Check that postMessage can be sent from a subframe on a cross-process opener
+// tab, and that its event.source points to a valid proxy.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       PostMessageWithSubframeOnOpenerChain) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/frame_tree/page_with_post_message_frames.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  ASSERT_EQ(2U, root->child_count());
+
+  // Verify the initial state of the world.  First frame should be same-site;
+  // second frame should be cross-site.
+  EXPECT_EQ(
+      " Site A ------------ proxies for B\n"
+      "   |--Site A ------- proxies for B\n"
+      "   +--Site B ------- proxies for A\n"
+      "Where A = http://a.com/\n"
+      "      B = http://foo.com/",
+      DepictFrameTree(root));
+
+  // Open a popup from the first subframe (so that popup's window.opener points
+  // to the subframe) and navigate it to bar.com.
+  ShellAddedObserver new_shell_observer;
+  EXPECT_TRUE(ExecuteScript(root->child_at(0)->current_frame_host(),
+                            "openPopup('about:blank');"));
+  Shell* popup = new_shell_observer.GetShell();
+  GURL popup_url(
+      embedded_test_server()->GetURL("bar.com", "/post_message.html"));
+  EXPECT_TRUE(NavigateToURL(popup, popup_url));
+
+  // From the popup, open another popup for baz.com.  This will be used to
+  // check that the whole opener chain is processed when creating proxies and
+  // not just an immediate opener.
+  ShellAddedObserver new_shell_observer2;
+  EXPECT_TRUE(
+      ExecuteScript(popup->web_contents(), "openPopup('about:blank');"));
+  Shell* popup2 = new_shell_observer2.GetShell();
+  GURL popup2_url(
+      embedded_test_server()->GetURL("baz.com", "/post_message.html"));
+  EXPECT_TRUE(NavigateToURL(popup2, popup2_url));
+
+  // Ensure that we've created proxies for SiteInstances of both popups (C, D)
+  // in the main window's frame tree.
+  EXPECT_EQ(
+      " Site A ------------ proxies for B C D\n"
+      "   |--Site A ------- proxies for B C D\n"
+      "   +--Site B ------- proxies for A C D\n"
+      "Where A = http://a.com/\n"
+      "      B = http://foo.com/\n"
+      "      C = http://bar.com/\n"
+      "      D = http://baz.com/",
+      DepictFrameTree(root));
+
+  // Check the first popup's frame tree as well.  Note that it doesn't have a
+  // proxy for foo.com, since foo.com can't reach the popup.  It does have a
+  // proxy for its opener a.com (which can reach it via the window.open
+  // reference) and second popup (which can reach it via window.opener).
+  FrameTreeNode* popup_root =
+      static_cast<WebContentsImpl*>(popup->web_contents())
+          ->GetFrameTree()
+          ->root();
+  EXPECT_EQ(
+      " Site C ------------ proxies for A D\n"
+      "Where A = http://a.com/\n"
+      "      C = http://bar.com/\n"
+      "      D = http://baz.com/",
+      DepictFrameTree(popup_root));
+
+  // Send a message from first subframe on main page to the first popup and
+  // wait for a reply back. The reply verifies that the proxy for the opener
+  // tab's subframe is targeted properly.
+  PostMessageAndWaitForReply(root->child_at(0), "postToPopup('subframe-msg')",
+                             "\"done-subframe1\"");
+
+  // TODO(alexmos): Once we propagate subframe opener information to new
+  // RenderViews, try sending a postMessage from the popup to window.opener and
+  // ensure that it reaches subframe1.
+
+  // Verify the total number of received messages for each subframe.  First
+  // subframe and popup should have one message each, and other frames
+  // shouldn't have received any messages.
+  EXPECT_EQ(0, GetReceivedMessages(root));
+  EXPECT_EQ(1, GetReceivedMessages(root->child_at(0)));
+  EXPECT_EQ(0, GetReceivedMessages(root->child_at(1)));
+  EXPECT_EQ(1, GetReceivedMessages(popup_root));
 }
 
 // Check that parent.frames[num] references correct sibling frames when the
@@ -2449,26 +2544,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, IndexedFrameAccess) {
                              "\"done-1-2-name\"");
 
   // Verify the total number of received messages for each subframe.
-  int child0_received_messages = 0;
-  EXPECT_TRUE(ExecuteScriptAndExtractInt(
-      child0->current_frame_host(),
-      "window.domAutomationController.send(window.receivedMessages);",
-      &child0_received_messages));
-  EXPECT_EQ(1, child0_received_messages);
-
-  int child1_received_messages = 0;
-  EXPECT_TRUE(ExecuteScriptAndExtractInt(
-      child1->current_frame_host(),
-      "window.domAutomationController.send(window.receivedMessages);",
-      &child1_received_messages));
-  EXPECT_EQ(2, child1_received_messages);
-
-  int child2_received_messages = 0;
-  EXPECT_TRUE(ExecuteScriptAndExtractInt(
-      child2->current_frame_host(),
-      "window.domAutomationController.send(window.receivedMessages);",
-      &child2_received_messages));
-  EXPECT_EQ(1, child2_received_messages);
+  EXPECT_EQ(1, GetReceivedMessages(child0));
+  EXPECT_EQ(2, GetReceivedMessages(child1));
+  EXPECT_EQ(1, GetReceivedMessages(child2));
 }
 
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, RFPHDestruction) {

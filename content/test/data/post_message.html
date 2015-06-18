@@ -15,6 +15,15 @@
     return true;
   }
   
+  function openPopup(url) {
+    popup = window.open(url);
+  }
+
+  function postToPopup(msg) {
+    popup.postMessage(msg, "*");
+    return true;
+  }
+
   // Send a message to parent.
   function postToParent(msg) {
     parent.postMessage(msg, "*");

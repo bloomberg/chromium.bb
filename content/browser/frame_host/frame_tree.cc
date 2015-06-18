@@ -224,9 +224,8 @@ void FrameTree::CreateProxiesForSiteInstance(
   // Create the swapped out RVH for the new SiteInstance. This will create
   // a top-level swapped out RFH as well, which will then be wrapped by a
   // RenderFrameProxyHost.
-  if (!source->IsMainFrame()) {
-    RenderViewHostImpl* render_view_host =
-        source->frame_tree()->GetRenderViewHost(site_instance);
+  if (!source || !source->IsMainFrame()) {
+    RenderViewHostImpl* render_view_host = GetRenderViewHost(site_instance);
     if (!render_view_host) {
       if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kSitePerProcess)) {
@@ -237,8 +236,8 @@ void FrameTree::CreateProxiesForSiteInstance(
             CREATE_RF_SWAPPED_OUT | CREATE_RF_HIDDEN, nullptr);
       }
     } else {
-      root()->render_manager()->EnsureRenderViewInitialized(
-          source, render_view_host, site_instance);
+      root()->render_manager()->EnsureRenderViewInitialized(render_view_host,
+                                                            site_instance);
     }
   }
 

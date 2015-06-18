@@ -87,11 +87,12 @@ class CONTENT_EXPORT FrameTree {
 
   // This method walks the entire frame tree and creates a RenderFrameProxyHost
   // for the given |site_instance| in each node except the |source| one --
-  // the source will have a RenderFrameHost. It assumes that no frame tree
-  // nodes already have RenderFrameProxyHost for the given |site_instance|.
-  void CreateProxiesForSiteInstance(
-      FrameTreeNode* source,
-      SiteInstance* site_instance);
+  // the source will have a RenderFrameHost.  |source| may be null if there is
+  // no node navigating in this frame tree (such as when this is called
+  // for an opener's frame tree), in which case no nodes are skipped for
+  // RenderFrameProxyHost creation.
+  void CreateProxiesForSiteInstance(FrameTreeNode* source,
+                                    SiteInstance* site_instance);
 
   // Convenience accessor for the main frame's RenderFrameHostImpl.
   RenderFrameHostImpl* GetMainFrame() const;

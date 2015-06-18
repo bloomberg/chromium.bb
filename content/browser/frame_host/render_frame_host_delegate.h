@@ -153,18 +153,19 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
       RenderFrameHost* target_rfh,
       SiteInstance* source_site_instance) const;
 
-  // Ensure that |source_rfh| has swapped-out RenderViews and proxies for
-  // itself and for each frame on its opener chain in the current frame's
-  // SiteInstance. Returns the routing ID of the swapped-out RenderView
-  // corresponding to |source_rfh|.
+  // Ensure that |source_rfh| has swapped-out RenderViews and
+  // RenderFrameProxies for itself and for all frames on its opener chain in
+  // the current frame's SiteInstance. Returns the routing ID of the
+  // swapped-out RenderView corresponding to |source_rfh|.
   //
-  // TODO(alexmos): This method will be removed once opener tracking and
-  // CreateOpenerRenderViews moves out of WebContents and into lower layers, as
-  // part of https://crbug.com/225940.  Currently, this method temporarily
-  // supports cross-process postMessage in non-site-per-process mode, where we
-  // need to create any missing proxies for the message's source frame and its
-  // opener chain on demand.
-  virtual int EnsureOpenerRenderViewsExist(RenderFrameHost* source_rfh);
+  // TODO(alexmos): This method currently supports cross-process postMessage,
+  // where we may need to create any missing proxies for the message's source
+  // frame and its opener chain. It currently exists in WebContents due to a
+  // special case for <webview> guests, but this logic should eventually be
+  // moved down into RenderFrameProxyHost::RouteMessageEvent when <webview>
+  // refactoring for --site-per-process mode is further along.  See
+  // https://crbug.com/330264.
+  virtual void EnsureOpenerProxiesExist(RenderFrameHost* source_rfh) {}
 
 #if defined(OS_WIN)
   // Returns the frame's parent's NativeViewAccessible.

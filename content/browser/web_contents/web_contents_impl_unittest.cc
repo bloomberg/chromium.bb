@@ -909,10 +909,10 @@ TEST_F(WebContentsImplTest, FindOpenerRVHWhenPending) {
   TestRenderFrameHost* pending_rfh = contents()->GetPendingMainFrame();
 
   // While it is still pending, simulate opening a new tab with the first tab
-  // as its opener.  This will call WebContentsImpl::CreateOpenerRenderViews
-  // on the opener to ensure that an RVH exists.
-  int opener_routing_id =
-      contents()->CreateOpenerRenderViews(pending_rfh->GetSiteInstance());
+  // as its opener.  This will call CreateOpenerProxies on the opener to ensure
+  // that an RVH exists.
+  int opener_routing_id = contents()->GetRenderManager()->CreateOpenerProxies(
+      pending_rfh->GetSiteInstance());
 
   // We should find the pending RVH and not create a new one.
   EXPECT_EQ(pending_rfh->GetRenderViewHost()->GetRoutingID(),

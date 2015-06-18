@@ -221,8 +221,8 @@ RenderFrameHostImpl* RenderFrameHostManager::Navigate(
     dest_render_frame_host->SetUpMojoIfNeeded();
 
     // Recreate the opener chain.
-    int opener_route_id = delegate_->CreateOpenerRenderViewsForRenderManager(
-        dest_render_frame_host->GetSiteInstance());
+    int opener_route_id =
+        CreateOpenerProxiesIfNeeded(dest_render_frame_host->GetSiteInstance());
     if (!InitRenderView(dest_render_frame_host->render_view_host(),
                         opener_route_id,
                         MSG_ROUTING_NONE,
@@ -809,8 +809,8 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
   // created or has crashed), initialize it.
   if (!navigation_rfh->IsRenderFrameLive()) {
     // Recreate the opener chain.
-    int opener_route_id = delegate_->CreateOpenerRenderViewsForRenderManager(
-        navigation_rfh->GetSiteInstance());
+    int opener_route_id =
+        CreateOpenerProxiesIfNeeded(navigation_rfh->GetSiteInstance());
     if (!InitRenderView(navigation_rfh->render_view_host(), opener_route_id,
                         MSG_ROUTING_NONE, frame_tree_node_->IsMainFrame())) {
       return nullptr;
@@ -1347,7 +1347,7 @@ void RenderFrameHostManager::CreatePendingRenderFrameHost(
   if (!new_instance->GetProcess()->Init())
     return;
 
-  int opener_route_id = CreateOpenerRenderViewsIfNeeded(
+  int opener_route_id = CreateProxiesForNewRenderFrameHost(
       old_instance, new_instance, &create_render_frame_flags);
 
   // Create a non-swapped-out RFH with the given opener.
@@ -1356,16 +1356,14 @@ void RenderFrameHostManager::CreatePendingRenderFrameHost(
                         create_render_frame_flags, nullptr);
 }
 
-int RenderFrameHostManager::CreateOpenerRenderViewsIfNeeded(
+int RenderFrameHostManager::CreateProxiesForNewRenderFrameHost(
     SiteInstance* old_instance,
     SiteInstance* new_instance,
     int* create_render_frame_flags) {
   int opener_route_id = MSG_ROUTING_NONE;
   // Only create opener proxies if they are in the same BrowsingInstance.
-  if (new_instance->IsRelatedSiteInstance(old_instance)) {
-    opener_route_id =
-        delegate_->CreateOpenerRenderViewsForRenderManager(new_instance);
-  }
+  if (new_instance->IsRelatedSiteInstance(old_instance))
+    opener_route_id = CreateOpenerProxiesIfNeeded(new_instance);
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSitePerProcess)) {
     // Ensure that the frame tree has RenderFrameProxyHosts for the new
@@ -1441,9 +1439,8 @@ bool RenderFrameHostManager::CreateSpeculativeRenderFrameHost(
     return false;
 
   int create_render_frame_flags = 0;
-  int opener_route_id =
-      CreateOpenerRenderViewsIfNeeded(old_instance, new_instance,
-                                      &create_render_frame_flags);
+  int opener_route_id = CreateProxiesForNewRenderFrameHost(
+      old_instance, new_instance, &create_render_frame_flags);
 
   if (frame_tree_node_->IsMainFrame())
     create_render_frame_flags |= CREATE_RF_FOR_MAIN_FRAME_NAVIGATION;
@@ -1631,7 +1628,6 @@ void RenderFrameHostManager::CreateProxiesForChildFrame(FrameTreeNode* child) {
 }
 
 void RenderFrameHostManager::EnsureRenderViewInitialized(
-    FrameTreeNode* source,
     RenderViewHostImpl* render_view_host,
     SiteInstance* instance) {
   DCHECK(frame_tree_node_->IsMainFrame());
@@ -1640,11 +1636,10 @@ void RenderFrameHostManager::EnsureRenderViewInitialized(
     return;
 
   // Recreate the opener chain.
-  int opener_route_id =
-      delegate_->CreateOpenerRenderViewsForRenderManager(instance);
+  int opener_route_id = CreateOpenerProxiesIfNeeded(instance);
   RenderFrameProxyHost* proxy = GetRenderFrameProxyHost(instance);
   InitRenderView(render_view_host, opener_route_id, proxy->GetRoutingID(),
-                 source->IsMainFrame());
+                 false);
   proxy->set_render_frame_proxy_created(true);
 }
 
@@ -2188,6 +2183,61 @@ void RenderFrameHostManager::DeleteRenderFrameProxyHost(
     delete iter->second;
     proxy_hosts_.erase(iter);
   }
+}
+
+int RenderFrameHostManager::CreateOpenerProxiesIfNeeded(
+    SiteInstance* instance) {
+  FrameTreeNode* opener = frame_tree_node_->opener();
+  if (!opener)
+    return MSG_ROUTING_NONE;
+
+  // Create proxies for the opener chain.
+  return opener->render_manager()->CreateOpenerProxies(instance);
+}
+
+int RenderFrameHostManager::CreateOpenerProxies(SiteInstance* instance) {
+  int opener_route_id = MSG_ROUTING_NONE;
+
+  // If this tab has an opener, recursively create proxies for the nodes on its
+  // frame tree.
+  // TODO(alexmos): Once we allow frame openers to be updated (which can happen
+  // via window.open(url, "target_frame")), this will need to be resilient to
+  // cycles. It will also need to handle tabs that have multiple openers (e.g.,
+  // main frame and subframe could have different openers, each of which must
+  // be traversed).
+  FrameTreeNode* opener = frame_tree_node_->opener();
+  if (opener)
+    opener_route_id = opener->render_manager()->CreateOpenerProxies(instance);
+
+  // If any of the RenderViews (current, pending, or swapped out) for this
+  // FrameTree has the same SiteInstance, use it.  If such a RenderView exists,
+  // that implies that proxies for all nodes in the tree should also exist
+  // (when in site-per-process mode), so it is safe to exit early.
+  FrameTree* frame_tree = frame_tree_node_->frame_tree();
+  RenderViewHostImpl* rvh = frame_tree->GetRenderViewHost(instance);
+  if (rvh)
+    return rvh->GetRoutingID();
+
+  int render_view_routing_id = MSG_ROUTING_NONE;
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess)) {
+    // Ensure that all the nodes in the opener's frame tree have
+    // RenderFrameProxyHosts for the new SiteInstance.
+    frame_tree->CreateProxiesForSiteInstance(nullptr, instance);
+    rvh = frame_tree->GetRenderViewHost(instance);
+    render_view_routing_id = rvh->GetRoutingID();
+  } else {
+    // Create a swapped out RenderView in the given SiteInstance if none exists,
+    // setting its opener to the given route_id.  Since the opener can point to
+    // a subframe, do this on the root frame of the opener's frame tree.
+    // Return the new view's route_id.
+    frame_tree->root()->render_manager()->
+        CreateRenderFrame(instance, nullptr, opener_route_id,
+                          CREATE_RF_FOR_MAIN_FRAME_NAVIGATION |
+                          CREATE_RF_SWAPPED_OUT | CREATE_RF_HIDDEN,
+                          &render_view_routing_id);
+  }
+  return render_view_routing_id;
 }
 
 }  // namespace content

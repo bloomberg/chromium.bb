@@ -230,32 +230,23 @@ void RenderFrameProxyHost::OnRouteMessageEvent(
     if (!source_rfh) {
       new_params.source_routing_id = MSG_ROUTING_NONE;
     } else {
-      // Ensure that we have a swapped-out RVH and proxy for the source frame.
-      // If it doesn't exist, create it on demand and also create its opener
-      // chain, since those will also be accessible to the target page.
-      //
-      // TODO(alexmos): This currently only works for top-level frames and
-      // won't create the right proxy if the message source is a subframe on a
-      // cross-process tab.  This will be cleaned up as part of moving opener
-      // tracking to FrameTreeNode (https://crbug.com/225940). For now, if the
-      // message is sent from a subframe on a cross-process tab, set the source
-      // routing ID to the main frame of the source tab, which matches legacy
-      // postMessage behavior prior to --site-per-process.
-      int source_view_routing_id =
-          target_rfh->delegate()->EnsureOpenerRenderViewsExist(source_rfh);
+      // Ensure that we have a swapped-out RVH and proxy for the source frame
+      // in the target SiteInstance. If it doesn't exist, create it on demand
+      // and also create its opener chain, since that will also be accessible
+      // to the target page.
+      target_rfh->delegate()->EnsureOpenerProxiesExist(source_rfh);
 
+      // If the message source is a cross-process subframe, its proxy will only
+      // be created in --site-per-process mode.  If the proxy wasn't created,
+      // set the source routing ID to MSG_ROUTING_NONE (see
+      // https://crbug.com/485520 for discussion on why this is ok).
       RenderFrameProxyHost* source_proxy_in_target_site_instance =
           source_rfh->frame_tree_node()
               ->render_manager()
-              ->GetRenderFrameProxyHost(target_rfh->GetSiteInstance());
+              ->GetRenderFrameProxyHost(target_site_instance);
       if (source_proxy_in_target_site_instance) {
         new_params.source_routing_id =
             source_proxy_in_target_site_instance->GetRoutingID();
-      } else if (source_view_routing_id != MSG_ROUTING_NONE) {
-        RenderViewHostImpl* source_rvh = RenderViewHostImpl::FromID(
-            target_rfh->GetProcess()->GetID(), source_view_routing_id);
-        CHECK(source_rvh);
-        new_params.source_routing_id = source_rvh->main_frame_routing_id();
       } else {
         new_params.source_routing_id = MSG_ROUTING_NONE;
       }

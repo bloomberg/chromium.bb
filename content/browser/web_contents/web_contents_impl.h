@@ -417,7 +417,7 @@ class CONTENT_EXPORT WebContentsImpl
   bool ShouldRouteMessageEvent(
       RenderFrameHost* target_rfh,
       SiteInstance* source_site_instance) const override;
-  int EnsureOpenerRenderViewsExist(RenderFrameHost* source_rfh) override;
+  void EnsureOpenerProxiesExist(RenderFrameHost* source_rfh) override;
 #if defined(OS_WIN)
   gfx::NativeViewAccessible GetParentNativeViewAccessible() override;
 #endif
@@ -587,7 +587,6 @@ class CONTENT_EXPORT WebContentsImpl
   void NotifyMainFrameSwappedFromRenderManager(
       RenderViewHost* old_host,
       RenderViewHost* new_host) override;
-  int CreateOpenerRenderViewsForRenderManager(SiteInstance* instance) override;
   NavigationControllerImpl& GetControllerForRenderManager() override;
   scoped_ptr<WebUIImpl> CreateWebUIForRenderManager(const GURL& url) override;
   NavigationEntry* GetLastCommittedNavigationEntryForRenderManager() override;
@@ -882,12 +881,6 @@ class CONTENT_EXPORT WebContentsImpl
   // different and was therefore updated.
   bool UpdateTitleForEntry(NavigationEntryImpl* entry,
                            const base::string16& title);
-
-  // Recursively creates swapped out RenderViews for this tab's opener chain
-  // (including this tab) in the given SiteInstance, allowing other tabs to send
-  // cross-process JavaScript calls to their opener(s).  Returns the route ID of
-  // this tab's RenderView for |instance|.
-  int CreateOpenerRenderViews(SiteInstance* instance);
 
   // Helper for CreateNewWidget/CreateNewFullscreenWidget.
   void CreateNewWidget(int render_process_id,
