@@ -195,12 +195,18 @@ void FetchManager::Loader::didFinishLoading(unsigned long, double)
 
 void FetchManager::Loader::didFail(const ResourceError& error)
 {
-    failed("Fetch API cannot load " + error.failingURL() + ". " + error.localizedDescription());
+    if (error.isCancellation() || error.isTimeout() || error.domain() != errorDomainBlinkInternal)
+        failed(String());
+    else
+        failed("Fetch API cannot load " + error.failingURL() + ". " + error.localizedDescription());
 }
 
 void FetchManager::Loader::didFailAccessControlCheck(const ResourceError& error)
 {
-    failed("Fetch API cannot load " + error.failingURL() + ". " + error.localizedDescription());
+    if (error.isCancellation() || error.isTimeout() || error.domain() != errorDomainBlinkInternal)
+        failed(String());
+    else
+        failed("Fetch API cannot load " + error.failingURL() + ". " + error.localizedDescription());
 }
 
 void FetchManager::Loader::didFailRedirectCheck()
@@ -430,7 +436,8 @@ void FetchManager::Loader::failed(const String& message)
     if (m_failed || m_finished)
         return;
     m_failed = true;
-    executionContext()->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, message));
+    if (!message.isEmpty())
+        executionContext()->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, message));
     if (m_responseBuffer) {
         m_responseBuffer->error(DOMException::create(NetworkError, "Failed to fetch"));
         m_responseBuffer.clear();
