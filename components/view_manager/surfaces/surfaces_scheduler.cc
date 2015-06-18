@@ -80,6 +80,7 @@ void SurfacesScheduler::ScheduledActionAnimate() {
 }
 
 void SurfacesScheduler::ScheduledActionCommit() {
+  scheduler_->NotifyReadyToActivate();
 }
 
 void SurfacesScheduler::ScheduledActionActivateSyncTree() {
