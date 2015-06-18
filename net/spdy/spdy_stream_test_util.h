@@ -88,7 +88,7 @@ class StreamDelegateBase : public SpdyStream::Delegate {
 // stream, e.g. its id when it was open.
 class StreamDelegateDoNothing : public StreamDelegateBase {
  public:
-  StreamDelegateDoNothing(const base::WeakPtr<SpdyStream>& stream);
+  explicit StreamDelegateDoNothing(const base::WeakPtr<SpdyStream>& stream);
   ~StreamDelegateDoNothing() override;
 };
 
@@ -123,7 +123,8 @@ class StreamDelegateWithBody : public StreamDelegateBase {
 // Test delegate that closes stream in OnResponseHeadersUpdated().
 class StreamDelegateCloseOnHeaders : public StreamDelegateBase {
  public:
-  StreamDelegateCloseOnHeaders(const base::WeakPtr<SpdyStream>& stream);
+  explicit StreamDelegateCloseOnHeaders(
+      const base::WeakPtr<SpdyStream>& stream);
   ~StreamDelegateCloseOnHeaders() override;
 
   SpdyResponseHeadersStatus OnResponseHeadersUpdated(

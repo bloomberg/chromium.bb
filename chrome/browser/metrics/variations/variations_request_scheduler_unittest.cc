@@ -5,22 +5,16 @@
 #include "chrome/browser/metrics/variations/variations_request_scheduler.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/message_loop/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chrome_variations {
 
-namespace {
-
-void DoNothing() {
-}
-
-}  // namespace
-
 TEST(VariationsRequestSchedulerTest, ScheduleFetchShortly) {
   base::MessageLoopForUI message_loop_;
 
-  const base::Closure task = base::Bind(&DoNothing);
+  const base::Closure task = base::Bind(&base::DoNothing);
   VariationsRequestScheduler scheduler(task);
   EXPECT_FALSE(scheduler.one_shot_timer_.IsRunning());
 

@@ -12,6 +12,7 @@
 #include <unistd.h>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
@@ -34,8 +35,6 @@ void RaiseAndExit(int signal) {
   PCHECK(0 == raise(signal));
   _exit(0);
 }
-
-void DoNothing() {}
 
 TEST(ScopedProcess, ScopedProcessNormalExit) {
   const int kCustomExitCode = 12;
@@ -64,7 +63,7 @@ TEST(ScopedProcess, DISABLE_ON_ANDROID(ScopedProcessAbort)) {
 }
 
 TEST(ScopedProcess, ScopedProcessSignaled) {
-  ScopedProcess process(base::Bind(&DoNothing));
+  ScopedProcess process(base::Bind(&base::DoNothing));
   bool got_signaled = false;
   ASSERT_EQ(0, kill(process.GetPid(), SIGKILL));
   int exit_code = process.WaitForExit(&got_signaled);
@@ -92,7 +91,7 @@ TEST(ScopedProcess, DiesForReal) {
 }
 
 TEST(ScopedProcess, SynchronizationBasic) {
-  ScopedProcess process1(base::Bind(&DoNothing));
+  ScopedProcess process1(base::Bind(&base::DoNothing));
   EXPECT_TRUE(process1.WaitForClosureToRun());
 
   ScopedProcess process2(base::Bind(&DoExit));

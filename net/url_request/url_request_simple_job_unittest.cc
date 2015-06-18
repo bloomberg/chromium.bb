@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind_helpers.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -27,10 +28,6 @@ static_assert(kRangeFirstPosition > 0 &&
                   kRangeLastPosition <
                       static_cast<int>(arraysize(kTestData) - 1),
               "invalid range");
-
-// This function does nothing.
-void DoNothing() {
-}
 
 class MockSimpleJob : public URLRequestSimpleJob {
  public:
@@ -70,7 +67,7 @@ class MockSimpleJob : public URLRequestSimpleJob {
 
 class CancelURLRequestDelegate : public URLRequest::Delegate {
  public:
-  explicit CancelURLRequestDelegate()
+  CancelURLRequestDelegate()
       : buf_(new IOBuffer(kBufferSize)), run_loop_(new base::RunLoop) {}
 
   void OnResponseStarted(URLRequest* request) override {
@@ -222,8 +219,8 @@ TEST_F(URLRequestSimpleJobTest, CancelAfterFirstRead) {
   // Feed a dummy task to the SequencedTaskRunner to make sure that the
   // callbacks which are invoked in ReadRawData have completed safely.
   base::RunLoop run_loop;
-  EXPECT_TRUE(task_runner_->PostTaskAndReply(FROM_HERE, base::Bind(&DoNothing),
-                                             run_loop.QuitClosure()));
+  EXPECT_TRUE(task_runner_->PostTaskAndReply(
+      FROM_HERE, base::Bind(&base::DoNothing), run_loop.QuitClosure()));
   run_loop.Run();
 }
 
