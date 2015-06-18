@@ -64,6 +64,8 @@ def main(argv):
                            'libraries rather then release')
   parser.add_argument('executable', help='executable (.nexe) to run')
   parser.add_argument('args', nargs='*', help='argument to pass to exectuable')
+  parser.add_argument('--library-path',
+                      help='Pass extra library paths')
 
   # To enable bash completion for this command first install optcomplete
   # and then add this line to your .bashrc:
@@ -139,24 +141,29 @@ def main(argv):
 
   if dynamic:
     if options.debug_libs:
-      libpath = os.path.join(NACL_SDK_ROOT, 'lib',
-                            'glibc_%s' % arch_suffix, 'Debug')
+      sdk_lib_dir = os.path.join(NACL_SDK_ROOT, 'lib',
+                                 'glibc_%s' % arch_suffix, 'Debug')
     else:
-      libpath = os.path.join(NACL_SDK_ROOT, 'lib',
-                            'glibc_%s' % arch_suffix, 'Release')
+      sdk_lib_dir = os.path.join(NACL_SDK_ROOT, 'lib',
+                                 'glibc_%s' % arch_suffix, 'Release')
     toolchain = '%s_x86_glibc' % osname
-    sdk_lib_dir = os.path.join(NACL_SDK_ROOT, 'toolchain',
-                               toolchain, 'x86_64-nacl')
+    toolchain_dir = os.path.join(NACL_SDK_ROOT, 'toolchain', toolchain)
+    sdk_lib_dir = os.path.join(toolchain_dir, 'x86_64-nacl')
     if arch == 'x86-64':
-      sdk_lib_dir = os.path.join(sdk_lib_dir, 'lib')
+      lib_dir = os.path.join(sdk_lib_dir, 'lib')
+      usr_lib_dir = os.path.join(toolchain_dir, 'x86_64-nacl', 'usr', 'lib')
     else:
-      sdk_lib_dir = os.path.join(sdk_lib_dir, 'lib32')
+      lib_dir = os.path.join(sdk_lib_dir, 'lib32')
+      usr_lib_dir = os.path.join(toolchain_dir, 'i686-nacl', 'usr', 'lib')
     ldso = os.path.join(sdk_lib_dir, 'runnable-ld.so')
     cmd.append(ldso)
     Log('LD.SO = %s' % ldso)
-    libpath += ':' + sdk_lib_dir
+    libpath = [usr_lib_dir, sdk_lib_dir, lib_dir]
+    if options.library_path:
+      libpath.extend([os.path.abspath(p) for p
+                      in options.library_path.split(':')])
     cmd.append('--library-path')
-    cmd.append(libpath)
+    cmd.append(':'.join(libpath))
 
 
   # Append arguments for the executable itself.
