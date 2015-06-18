@@ -59,9 +59,6 @@ WebMediaPlayerClientImpl::~WebMediaPlayerClientImpl()
 {
     // Explicitly destroy the WebMediaPlayer to allow verification of tear down.
     m_webMediaPlayer.clear();
-
-    if (mediaElement().layoutObject())
-        mediaElement().layoutObject()->setShouldDoFullPaintInvalidation();
 }
 
 void WebMediaPlayerClientImpl::networkStateChanged()

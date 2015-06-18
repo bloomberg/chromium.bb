@@ -3067,6 +3067,9 @@ void HTMLMediaElement::clearMediaPlayer(int flags)
 
     if (m_textTracks)
         configureTextTrackDisplay(AssumeNoVisibleChange);
+
+    if (layoutObject())
+        layoutObject()->setShouldDoFullPaintInvalidation();
 }
 
 void HTMLMediaElement::stop()
