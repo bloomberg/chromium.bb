@@ -1701,6 +1701,8 @@ crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug12384.html [ Pass ImageOnlyFailu
 # These need a manual rebaseline after crbug.com/461107
 crbug.com/461107 [ Linux Mac Android ] virtual/gpu/fast/canvas/canvas-composite-video.html [ NeedsManualRebaseline ]
 
+crbug.com/461371 [ Mac ] virtual/antialiasedtext/fast/text/unicode-variation-selector.html [ NeedsManualRebaseline ]
+
 crbug.com/463798 [ Mac ] svg/as-image/svg-invalid-image-1.html [ Failure ]
 
 crbug.com/463358 [ Debug ] css3/masking/clip-path-polygon-evenodd.html [ Pass ImageOnlyFailure ]
