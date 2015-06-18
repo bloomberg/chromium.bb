@@ -185,6 +185,7 @@ android_library("content_javatests") {
     "//mojo/android:system_java",
     "//net/android:net_java",
     "//net/android:net_java_test_support",
+    "//third_party/android_tools:android_support_v13_java",
     "//third_party/mojo/src/mojo/public/interfaces/bindings/tests:test_interfaces_java",
     "//third_party/mojo/src/mojo/public/java:bindings",
     "//third_party/mojo/src/mojo/public/java:system",
