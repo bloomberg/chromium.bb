@@ -8,11 +8,13 @@
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/download/download_commands.h"
 #include "chrome/browser/download/notification/download_notification.h"
+#include "chrome/browser/image_decoder.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_delegate.h"
 #include "chrome/browser/notifications/notification_test_util.h"
 #include "content/public/browser/download_item.h"
 #include "grit/theme_resources.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_observer.h"
 
@@ -20,7 +22,8 @@ namespace test {
 class DownloadNotificationItemTest;
 }
 
-class DownloadNotificationItem : public DownloadNotification {
+class DownloadNotificationItem : public DownloadNotification,
+                                 public ImageDecoder::ImageRequest {
  public:
   DownloadNotificationItem(content::DownloadItem* item,
                            DownloadNotificationManagerForProfile* manager);
@@ -38,6 +41,8 @@ class DownloadNotificationItem : public DownloadNotification {
  private:
   friend class test::DownloadNotificationItemTest;
 
+  enum ImageDecodeStatus { NOT_STARTED, IN_PROGRESS, DONE, FAILED, NOT_IMAGE };
+
   enum NotificationUpdateType {
     ADD,
     UPDATE,
@@ -48,7 +53,16 @@ class DownloadNotificationItem : public DownloadNotification {
   void CloseNotificationByNonUser();
   void Update();
   void UpdateNotificationData(NotificationUpdateType type);
-  void SetNotificationImage(int resource_id);
+
+  // Set icon of the notification.
+  void SetNotificationIcon(int resource_id);
+
+  // Set preview image of the notification. Must be called on IO thread.
+  void OnImageLoaded(const std::string& image_data);
+
+  // ImageDecoder::ImageRequest overrides:
+  void OnImageDecoded(const SkBitmap& decoded_image) override;
+  void OnDecodeImageFailed() override;
 
   // Returns a short one-line status string for the download.
   base::string16 GetTitle() const;
@@ -78,6 +92,11 @@ class DownloadNotificationItem : public DownloadNotification {
   scoped_ptr<Notification> notification_;
   content::DownloadItem* item_;
   scoped_ptr<std::vector<DownloadCommands::Command>> button_actions_;
+
+  // Status of the preview image decode.
+  ImageDecodeStatus image_decode_status_ = NOT_STARTED;
+
+  base::WeakPtrFactory<DownloadNotificationItem> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadNotificationItem);
 };

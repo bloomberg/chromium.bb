@@ -4,6 +4,7 @@
 
 #include "chrome/browser/download/notification/download_notification_item.h"
 
+#include "base/files/file_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/download/download_item_model.h"
@@ -15,6 +16,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/mime_util/mime_util.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_interrupt_reasons.h"
@@ -22,8 +24,11 @@
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/theme_resources.h"
+#include "net/base/mime_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/codec/jpeg_codec.h"
+#include "ui/gfx/image/image.h"
 #include "ui/message_center/message_center.h"
 
 namespace {
@@ -31,12 +36,30 @@ namespace {
 const char kDownloadNotificationNotifierId[] =
     "chrome://downloads/notification/id-notifier";
 
+// Maximum size of preview image. If the image exceeds this size, don't show the
+// preview image.
+const int64 kMaxImagePreviewSize = 10 * 1024 * 1024;  // 10 MB
+
+std::string ReadNotificationImage(const base::FilePath& file_path) {
+  DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
+
+  std::string data;
+  bool ret = base::ReadFileToString(file_path, &data);
+  if (!ret)
+    return std::string();
+
+  DCHECK_LE(data.size(), static_cast<size_t>(kMaxImagePreviewSize));
+
+  return data;
+}
+
 }  // anonymous namespace
 
 DownloadNotificationItem::DownloadNotificationItem(
     content::DownloadItem* item,
     DownloadNotificationManagerForProfile* manager)
-    : item_(item) {
+    : item_(item),
+      weak_factory_(this) {
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
 
   message_center::RichNotificationData data;
@@ -59,10 +82,17 @@ DownloadNotificationItem::DownloadNotificationItem(
 }
 
 DownloadNotificationItem::~DownloadNotificationItem() {
+  if (image_decode_status_ == IN_PROGRESS)
+    ImageDecoder::Cancel(this);
 }
 
 void DownloadNotificationItem::OnNotificationClose() {
   visible_ = false;
+
+  if (image_decode_status_ == IN_PROGRESS) {
+    image_decode_status_ = NOT_STARTED;
+    ImageDecoder::Cancel(this);
+  }
 }
 
 void DownloadNotificationItem::OnNotificationClick() {
@@ -186,6 +216,8 @@ void DownloadNotificationItem::Update() {
 
 void DownloadNotificationItem::UpdateNotificationData(
     NotificationUpdateType type) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
   DownloadItemModel model(item_);
   DownloadCommands command(item_);
 
@@ -195,7 +227,7 @@ void DownloadNotificationItem::UpdateNotificationData(
     notification_->set_message(GetWarningText());
 
     // Show icon.
-    SetNotificationImage(IDR_DOWNLOAD_NOTIFICATION_MALICIOUS);
+    SetNotificationIcon(IDR_DOWNLOAD_NOTIFICATION_MALICIOUS);
   } else {
     notification_->set_title(GetTitle());
     notification_->set_message(model.GetStatusText());
@@ -209,9 +241,9 @@ void DownloadNotificationItem::UpdateNotificationData(
         notification_->set_progress(item_->PercentComplete());
         if (is_off_the_record) {
           // TODO(yoshiki): Replace the tentative image.
-          SetNotificationImage(IDR_DOWNLOAD_NOTIFICATION_INCOGNITO);
+          SetNotificationIcon(IDR_DOWNLOAD_NOTIFICATION_INCOGNITO);
         } else {
-          SetNotificationImage(IDR_DOWNLOAD_NOTIFICATION_DOWNLOADING);
+          SetNotificationIcon(IDR_DOWNLOAD_NOTIFICATION_DOWNLOADING);
         }
         break;
       case content::DownloadItem::COMPLETE:
@@ -232,9 +264,9 @@ void DownloadNotificationItem::UpdateNotificationData(
 
         if (is_off_the_record) {
           // TODO(yoshiki): Replace the tentative image.
-          SetNotificationImage(IDR_DOWNLOAD_NOTIFICATION_INCOGNITO);
+          SetNotificationIcon(IDR_DOWNLOAD_NOTIFICATION_INCOGNITO);
         } else {
-          SetNotificationImage(IDR_DOWNLOAD_NOTIFICATION_DOWNLOADING);
+          SetNotificationIcon(IDR_DOWNLOAD_NOTIFICATION_DOWNLOADING);
         }
         break;
       case content::DownloadItem::CANCELLED:
@@ -257,7 +289,7 @@ void DownloadNotificationItem::UpdateNotificationData(
         }
 
         notification_->set_progress(0);
-        SetNotificationImage(IDR_DOWNLOAD_NOTIFICATION_WARNING);
+        SetNotificationIcon(IDR_DOWNLOAD_NOTIFICATION_WARNING);
         break;
       case content::DownloadItem::MAX_DOWNLOAD_STATE:  // sentinel
         NOTREACHED();
@@ -278,10 +310,6 @@ void DownloadNotificationItem::UpdateNotificationData(
   }
   notification_->set_buttons(notification_actions);
 
-  if (item_->IsDone()) {
-    // TODO(yoshiki): If the downloaded file is an image, show the thumbnail.
-  }
-
   if (type == ADD) {
     g_browser_process->notification_ui_manager()->
         Add(*notification_, profile());
@@ -299,6 +327,41 @@ void DownloadNotificationItem::UpdateNotificationData(
   } else {
     NOTREACHED();
   }
+
+  if (item_->IsDone() && image_decode_status_ == NOT_STARTED) {
+    // TODO(yoshiki): Add an UMA to collect statistics of image file sizes.
+
+    if (item_->GetReceivedBytes() > kMaxImagePreviewSize)
+      return;
+
+    DCHECK(notification_->image().IsEmpty());
+
+    image_decode_status_ = IN_PROGRESS;
+
+    bool maybe_image = false;
+    if (mime_util::IsSupportedImageMimeType(item_->GetMimeType())) {
+      maybe_image = true;
+    } else {
+      std::string mime;
+      base::FilePath::StringType extension_with_dot =
+          item_->GetTargetFilePath().FinalExtension();
+      if (!extension_with_dot.empty() &&
+          net::GetWellKnownMimeTypeFromExtension(extension_with_dot.substr(1),
+                                                 &mime) &&
+          mime_util::IsSupportedImageMimeType(mime)) {
+        maybe_image = true;
+      }
+    }
+
+    if (maybe_image) {
+      base::FilePath file_path = item_->GetFullPath();
+      base::PostTaskAndReplyWithResult(
+          content::BrowserThread::GetBlockingPool(), FROM_HERE,
+          base::Bind(&ReadNotificationImage, file_path),
+          base::Bind(&DownloadNotificationItem::OnImageLoaded,
+                     weak_factory_.GetWeakPtr()));
+    }
+  }
 }
 
 void DownloadNotificationItem::OnDownloadRemoved(content::DownloadItem* item) {
@@ -314,12 +377,34 @@ void DownloadNotificationItem::OnDownloadRemoved(content::DownloadItem* item) {
   item_ = nullptr;
 }
 
-void DownloadNotificationItem::SetNotificationImage(int resource_id) {
+void DownloadNotificationItem::SetNotificationIcon(int resource_id) {
   if (image_resource_id_ == resource_id)
     return;
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   image_resource_id_ = resource_id;
   notification_->set_icon(bundle.GetImageNamed(image_resource_id_));
+}
+
+void DownloadNotificationItem::OnImageLoaded(const std::string& image_data) {
+  if (image_data.empty())
+    return;
+
+  // TODO(yoshiki): Set option to reduce the image size to supress memory usage.
+  ImageDecoder::Start(this, image_data);
+}
+
+void DownloadNotificationItem::OnImageDecoded(const SkBitmap& decoded_image) {
+  gfx::Image image = gfx::Image::CreateFrom1xBitmap(decoded_image);
+  notification_->set_image(image);
+  image_decode_status_ = DONE;
+  UpdateNotificationData(UPDATE);
+}
+
+void DownloadNotificationItem::OnDecodeImageFailed() {
+  DCHECK(notification_->image().IsEmpty());
+
+  image_decode_status_ = FAILED;
+  UpdateNotificationData(UPDATE);
 }
 
 scoped_ptr<std::vector<DownloadCommands::Command>>

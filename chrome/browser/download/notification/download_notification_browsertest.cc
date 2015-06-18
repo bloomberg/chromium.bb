@@ -510,6 +510,26 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DiscardDangerousFile) {
   EXPECT_FALSE(base::PathExists(GetDownloadPath().Append(filename.BaseName())));
 }
 
+IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadImageFile) {
+  GURL download_url(embedded_test_server()->GetURL(
+      "/downloads/image-octet-stream.png"));
+
+  content::DownloadTestObserverTerminal download_terminal_observer(
+      GetDownloadManager(browser()), 1u, /* wait_count */
+      content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_IGNORE);
+
+  CreateDownloadForBrowserAndURL(browser(), download_url);
+
+  // Wait for the download completion.
+  download_terminal_observer.WaitForFinished();
+
+  // Waits for download completion.
+  while (GetNotification(notification_id())->image().IsEmpty()) {
+    NotificationUpdateObserver download_change_notification_observer;
+    download_change_notification_observer.Wait();
+  }
+}
+
 IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
                        CloseNotificationAfterDownload) {
   CreateDownload();

@@ -23,7 +23,15 @@
 
 using testing::NiceMock;
 using testing::Return;
+using testing::ReturnRefOfCopy;
 using testing::_;
+
+namespace {
+
+const base::FilePath::CharType kDownloadItemTargetPathString[] =
+    FILE_PATH_LITERAL("/tmp/TITLE.bin");
+
+}  // anonymouse namespace
 
 namespace test {
 
@@ -49,6 +57,7 @@ class DownloadNotificationItemTest : public testing::Test {
     download_notification_manager_.reset(
         new DownloadNotificationManagerForProfile(profile_, nullptr));
 
+    base::FilePath download_item_target_path(kDownloadItemTargetPathString);
     download_item_.reset(new NiceMock<content::MockDownloadItem>());
     ON_CALL(*download_item_, GetId()).WillByDefault(Return(12345));
     ON_CALL(*download_item_, GetState())
@@ -56,6 +65,8 @@ class DownloadNotificationItemTest : public testing::Test {
     ON_CALL(*download_item_, IsDangerous()).WillByDefault(Return(false));
     ON_CALL(*download_item_, GetFileNameToReportUser())
         .WillByDefault(Return(base::FilePath("TITLE.bin")));
+    ON_CALL(*download_item_, GetTargetFilePath())
+        .WillByDefault(ReturnRefOfCopy(download_item_target_path));
     ON_CALL(*download_item_, GetDangerType())
         .WillByDefault(Return(content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS));
     ON_CALL(*download_item_, IsDone()).WillByDefault(Return(false));
