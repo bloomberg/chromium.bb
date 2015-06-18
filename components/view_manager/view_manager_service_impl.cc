@@ -466,7 +466,7 @@ ViewDataPtr ViewManagerServiceImpl::ViewToViewData(const ServerView* view) {
   view_data->visible = view->visible();
   view_data->drawn = view->IsDrawn();
   view_data->viewport_metrics =
-      connection_manager_->display_manager()->GetViewportMetrics().Clone();
+      connection_manager_->GetViewportMetricsForView(view);
   return view_data.Pass();
 }
 

@@ -241,6 +241,13 @@ bool ConnectionManager::IsViewAttachedToRoot(const ServerView* view) const {
   return root_->Contains(view) && view != root_.get();
 }
 
+void ConnectionManager::SchedulePaint(const ServerView* view,
+                                      const gfx::Rect& bounds) {
+  // TODO(fsamuel): Direct this paint to the appropriate DisplayManager once we
+  // support multiple roots.
+  display_manager_->SchedulePaint(view, gfx::Rect(view->bounds().size()));
+}
+
 void ConnectionManager::OnConnectionMessagedClient(ConnectionSpecificId id) {
   if (current_change_)
     current_change_->MarkConnectionAsMessaged(id);
@@ -249,6 +256,14 @@ void ConnectionManager::OnConnectionMessagedClient(ConnectionSpecificId id) {
 bool ConnectionManager::DidConnectionMessageClient(
     ConnectionSpecificId id) const {
   return current_change_ && current_change_->DidMessageConnection(id);
+}
+
+mojo::ViewportMetricsPtr ConnectionManager::GetViewportMetricsForView(
+    const ServerView* view) {
+   // TODO(fsamuel): Once we support multiple roots, grab the the DisplayManager
+   // associated with the root view of this |view|, and grab that display's
+   // metrics.
+  return display_manager_->GetViewportMetrics().Clone();
 }
 
 const ViewManagerServiceImpl* ConnectionManager::GetConnectionWithRoot(
@@ -293,7 +308,7 @@ ConnectionManager::GetWindowManagerViewManagerClient() {
 
 bool ConnectionManager::CloneAndAnimate(const ViewId& view_id) {
   ServerView* view = GetView(view_id);
-  if (!view || !view->IsDrawn() || view == root_.get())
+  if (!view || !view->IsDrawn() || (view->GetRoot() == view))
     return false;
   if (!animation_timer_.IsRunning()) {
     animation_timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(100),
@@ -462,7 +477,7 @@ void ConnectionManager::PrepareToChangeViewVisibility(ServerView* view) {
 
 void ConnectionManager::OnScheduleViewPaint(const ServerView* view) {
   if (!in_destructor_)
-    display_manager_->SchedulePaint(view, gfx::Rect(view->bounds().size()));
+    SchedulePaint(view, gfx::Rect(view->bounds().size()));
 }
 
 const ServerView* ConnectionManager::GetRootView(const ServerView* view) const {
@@ -495,14 +510,10 @@ void ConnectionManager::OnViewHierarchyChanged(ServerView* view,
   ProcessViewHierarchyChanged(view, new_parent, old_parent);
 
   // TODO(beng): optimize.
-  if (old_parent) {
-    display_manager_->SchedulePaint(old_parent,
-                                    gfx::Rect(old_parent->bounds().size()));
-  }
-  if (new_parent) {
-    display_manager_->SchedulePaint(new_parent,
-                                    gfx::Rect(new_parent->bounds().size()));
-  }
+  if (old_parent)
+    SchedulePaint(old_parent, gfx::Rect(old_parent->bounds().size()));
+  if (new_parent)
+    SchedulePaint(new_parent, gfx::Rect(new_parent->bounds().size()));
 }
 
 void ConnectionManager::OnViewBoundsChanged(ServerView* view,
@@ -516,15 +527,15 @@ void ConnectionManager::OnViewBoundsChanged(ServerView* view,
     return;
 
   // TODO(sky): optimize this.
-  display_manager_->SchedulePaint(view->parent(), old_bounds);
-  display_manager_->SchedulePaint(view->parent(), new_bounds);
+  SchedulePaint(view->parent(), old_bounds);
+  SchedulePaint(view->parent(), new_bounds);
 }
 
 void ConnectionManager::OnViewReordered(ServerView* view,
                                         ServerView* relative,
                                         mojo::OrderDirection direction) {
   if (!in_destructor_)
-    display_manager_->SchedulePaint(view, gfx::Rect(view->bounds().size()));
+    SchedulePaint(view, gfx::Rect(view->bounds().size()));
 }
 
 void ConnectionManager::OnWillChangeViewVisibility(ServerView* view) {
@@ -535,7 +546,7 @@ void ConnectionManager::OnWillChangeViewVisibility(ServerView* view) {
   // hiding) or the view is transitioning to drawn.
   if (view->parent() && (view->IsDrawn() ||
       (!view->visible() && view->parent()->IsDrawn()))) {
-    display_manager_->SchedulePaint(view->parent(), view->bounds());
+    SchedulePaint(view->parent(), view->bounds());
   }
 
   for (auto& pair : connection_map_) {

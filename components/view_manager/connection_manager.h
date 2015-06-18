@@ -117,6 +117,9 @@ class ConnectionManager : public ServerViewDelegate,
 
   DisplayManager* display_manager() { return display_manager_.get(); }
 
+  // Schedules a paint for the specified region in the coordinates of |view|.
+  void SchedulePaint(const ServerView* view, const gfx::Rect& bounds);
+
   bool IsProcessingChange() const { return current_change_ != NULL; }
 
   bool is_processing_delete_view() const {
@@ -129,6 +132,9 @@ class ConnectionManager : public ServerViewDelegate,
 
   // Returns true if OnConnectionMessagedClient() was invoked for id.
   bool DidConnectionMessageClient(mojo::ConnectionSpecificId id) const;
+
+  // Returns the metrics of the viewport where the provided |view| is displayed.
+  mojo::ViewportMetricsPtr GetViewportMetricsForView(const ServerView* view);
 
   // Returns the ViewManagerServiceImpl that has |id| as a root.
   ViewManagerServiceImpl* GetConnectionWithRoot(const ViewId& id) {
