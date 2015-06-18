@@ -4786,8 +4786,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     option. These samples include:
 
     Displays and clicks on the &quot;Load images&quot; snackbar. Displays and
-    clicks on the &quot;Load image&quot; context menu option. Count of pages
-    where the user has clicked &quot;Load image&quot; at least once
+    clicks on the &quot;Load image&quot; and &quot;Load images&quot;context menu
+    options. Count of pages where the user has clicked &quot;Load image&quot; at
+    least once.
   </summary>
 </histogram>
 
@@ -51677,6 +51678,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="3" label="'Load image' context menu item clicked"/>
   <int value="4"
       label="Pages where the user has clicked 'Load image' at least once"/>
+  <int value="5" label="'Load images' context menu item shown"/>
+  <int value="6" label="'Load images' context menu item clicked"/>
 </enum>
 
 <enum name="DataReductionProxyNetworkChangeEvent" type="int">

@@ -36,6 +36,10 @@ public class EmptyChromeContextMenuItemDelegate implements ChromeContextMenuItem
     }
 
     @Override
+    public void onReloadIgnoringCache() {
+    }
+
+    @Override
     public void onLoadOriginalImage() {
     }
 

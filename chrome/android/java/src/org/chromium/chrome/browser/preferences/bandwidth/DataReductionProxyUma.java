@@ -30,7 +30,9 @@ public class DataReductionProxyUma {
     public static final int ACTION_LOAD_IMAGE_CONTEXT_MENU_SHOWN = 2;
     public static final int ACTION_LOAD_IMAGE_CONTEXT_MENU_CLICKED = 3;
     public static final int ACTION_LOAD_IMAGE_CONTEXT_MENU_CLICKED_ON_PAGE = 4;
-    public static final int LOFI_ACTION_INDEX_BOUNDARY = 5;
+    public static final int ACTION_LOAD_IMAGES_CONTEXT_MENU_SHOWN = 5;
+    public static final int ACTION_LOAD_IMAGES_CONTEXT_MENU_CLICKED = 6;
+    public static final int LOFI_ACTION_INDEX_BOUNDARY = 7;
 
     /**
      * Record the DataReductionProxy.UIAction histogram.

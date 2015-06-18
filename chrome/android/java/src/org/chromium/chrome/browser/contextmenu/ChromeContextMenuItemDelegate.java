@@ -63,6 +63,11 @@ public interface ChromeContextMenuItemDelegate {
     void onOpenImageInNewTab(String url, Referrer referrer);
 
     /**
+     * Called when the page should be reloaded ignoring the cache.
+     */
+    void onReloadIgnoringCache();
+
+    /**
      * Called when the original image should be loaded.
      */
     void onLoadOriginalImage();

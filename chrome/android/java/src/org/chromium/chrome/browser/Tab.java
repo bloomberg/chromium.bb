@@ -347,6 +347,11 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         }
 
         @Override
+        public void onReloadIgnoringCache() {
+            reloadIgnoringCache();
+        }
+
+        @Override
         public void onLoadOriginalImage() {
             if (mNativeTabAndroid != 0) nativeLoadOriginalImage(mNativeTabAndroid);
         }

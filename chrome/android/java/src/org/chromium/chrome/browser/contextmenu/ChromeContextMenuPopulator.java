@@ -73,6 +73,20 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         menu.findItem(R.id.contextmenu_save_link_as).setVisible(
                 UrlUtilities.isDownloadableScheme(params.getLinkUrl()));
 
+        if (params.imageWasFetchedLoFi()
+                || !DataReductionProxySettings.getInstance().wasLoFiModeActiveOnMainFrame()
+                || !DataReductionProxySettings.getInstance().canUseDataReductionProxy(
+                        params.getPageUrl())) {
+            menu.findItem(R.id.contextmenu_load_images).setVisible(false);
+        } else {
+            // Links can have images as backgrounds that aren't recognized here as images. CSS
+            // properties can also prevent an image underlying a link from being clickable.
+            // When Lo-Fi is active, provide the user with a "Load images" option on links
+            // to get the images in these cases.
+            DataReductionProxyUma.dataReductionProxyLoFiUIAction(
+                    DataReductionProxyUma.ACTION_LOAD_IMAGES_CONTEXT_MENU_SHOWN);
+        }
+
         if (params.isVideo()) {
             menu.findItem(R.id.contextmenu_save_video).setVisible(
                     UrlUtilities.isDownloadableScheme(params.getSrcUrl()));
@@ -131,6 +145,10 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         } else if (itemId == R.id.contextmenu_open_image_in_new_tab
                 || itemId == R.id.contextmenu_open_original_image_in_new_tab) {
             mDelegate.onOpenImageInNewTab(params.getSrcUrl(), params.getReferrer());
+        } else if (itemId == R.id.contextmenu_load_images) {
+            DataReductionProxyUma.dataReductionProxyLoFiUIAction(
+                    DataReductionProxyUma.ACTION_LOAD_IMAGES_CONTEXT_MENU_CLICKED);
+            mDelegate.onReloadIgnoringCache();
         } else if (itemId == R.id.contextmenu_load_original_image) {
             DataReductionProxyUma.dataReductionProxyLoFiUIAction(
                     DataReductionProxyUma.ACTION_LOAD_IMAGE_CONTEXT_MENU_CLICKED);
