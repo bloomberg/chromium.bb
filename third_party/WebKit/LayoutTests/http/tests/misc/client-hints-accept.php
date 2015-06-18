@@ -14,6 +14,7 @@
         var loadRWImage = function() {
             var img = new Image();
             img.src = 'resources/image-checks-for-width.php';
+            img.width = '500';
             img.onload = t.step_func(function(){ t.done(); });
             img.onerror = t.step_func(unreached);
             document.body.appendChild(img);

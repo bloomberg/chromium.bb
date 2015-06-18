@@ -219,12 +219,8 @@ static void configureRequest(FetchRequest& request, ImageLoader::BypassMainWorld
     if (!crossOriginMode.isNull())
         request.setCrossOriginAccessControl(element.document().securityOrigin(), crossOriginMode);
 
-    if (clientHintsPreferences.shouldSendResourceWidth() && isHTMLImageElement(element)) {
-        FetchRequest::ResourceWidth resourceWidth;
-        resourceWidth.width = toHTMLImageElement(element).sourceSize(element);
-        resourceWidth.isSet = true;
-        request.setResourceWidth(resourceWidth);
-    }
+    if (clientHintsPreferences.shouldSendResourceWidth() && isHTMLImageElement(element))
+        request.setResourceWidth(toHTMLImageElement(element).resourceWidth());
 }
 
 inline void ImageLoader::dispatchErrorEvent()

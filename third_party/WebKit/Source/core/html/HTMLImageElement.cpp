@@ -630,12 +630,45 @@ FloatSize HTMLImageElement::defaultDestinationSize() const
     return FloatSize(size);
 }
 
-float HTMLImageElement::sourceSize(Element& element)
+static bool sourceSizeValue(Element& element, Document& currentDocument, float& sourceSize)
 {
     String sizes = element.fastGetAttribute(sizesAttr);
-    if (!sizes.isNull())
-        UseCounter::count(document(), UseCounter::Sizes);
-    return SizesAttributeParser(MediaValuesDynamic::create(document()), sizes).length();
+    bool exists = !sizes.isNull();
+    if (exists)
+        UseCounter::count(currentDocument, UseCounter::Sizes);
+    sourceSize = SizesAttributeParser(MediaValuesDynamic::create(currentDocument), sizes).length();
+    return exists;
+}
+
+int HTMLImageElement::widthAttributeToInt(const String& value, bool& isValid)
+{
+    // '%' is excluded here since having a width percentage based value means
+    // that the actual width depends on layout, so we cannot use it for resourceWidth.
+    // '*' is exclueded since in Blink and WebKit it means that the entire attribtue is ignored.
+    // TODO(yoav): Count these occurences and try to deprecate/remove if feasible: crbug.com/501870
+    if (!value.isEmpty() && !value.contains('%') && !value.contains('*'))
+        return value.toInt(&isValid);
+
+    isValid = false;
+    return 0;
+}
+
+FetchRequest::ResourceWidth HTMLImageElement::resourceWidth()
+{
+    FetchRequest::ResourceWidth resourceWidth;
+    resourceWidth.isSet = sourceSizeValue(*this, document(), resourceWidth.width);
+    if (!resourceWidth.isSet)
+        resourceWidth.width = widthAttributeToInt(fastGetAttribute(widthAttr), resourceWidth.isSet);
+    return resourceWidth;
+}
+
+float HTMLImageElement::sourceSize(Element& element)
+{
+    float value;
+    // We don't care here if the sizes attribute exists, so we ignore the return value.
+    // If it doesn't exist, we just return the default.
+    sourceSizeValue(element, document(), value);
+    return value;
 }
 
 void HTMLImageElement::forceReload() const

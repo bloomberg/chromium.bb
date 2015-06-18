@@ -25,6 +25,7 @@
 #define HTMLImageElement_h
 
 #include "core/CoreExport.h"
+#include "core/fetch/FetchRequest.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLImageLoader.h"
 #include "core/html/canvas/CanvasImageSource.h"
@@ -108,6 +109,8 @@ public:
     void setUseFallbackContent();
     void setIsFallbackImage() { m_isFallbackImage = true; }
 
+    static int widthAttributeToInt(const String& value, bool& isValid);
+    FetchRequest::ResourceWidth resourceWidth();
     float sourceSize(Element&);
 
     void forceReload() const;
