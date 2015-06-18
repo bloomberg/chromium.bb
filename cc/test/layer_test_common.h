@@ -119,6 +119,7 @@ class LayerTestCommon {
       return host_->host_impl()->resource_provider();
     }
     LayerImpl* root_layer() const { return root_layer_impl_.get(); }
+    FakeLayerTreeHost* host() { return host_.get(); }
     FakeLayerTreeHostImpl* host_impl() const { return host_->host_impl(); }
     Proxy* proxy() const { return host_->host_impl()->proxy(); }
     const QuadList& quad_list() const { return render_pass_->quad_list; }

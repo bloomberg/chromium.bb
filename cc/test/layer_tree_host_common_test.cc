@@ -13,8 +13,7 @@
 namespace cc {
 
 LayerTreeHostCommonTestBase::LayerTreeHostCommonTestBase()
-    : client_(FakeLayerTreeHostClient::DIRECT_3D),
-      render_surface_layer_list_count_(0) {
+    : render_surface_layer_list_count_(0) {
 }
 
 LayerTreeHostCommonTestBase::~LayerTreeHostCommonTestBase() {
@@ -154,11 +153,6 @@ void LayerTreeHostCommonTestBase::ExecuteCalculateDrawProperties(
       render_surface_layer_list_count_;
 
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
-}
-
-scoped_ptr<FakeLayerTreeHost>
-LayerTreeHostCommonTestBase::CreateFakeLayerTreeHost() {
-  return FakeLayerTreeHost::Create(&client_, &task_graph_runner_);
 }
 
 }  // namespace cc
