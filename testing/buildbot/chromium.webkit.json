@@ -879,7 +879,7 @@
       }
     ]
   },
-  "WebKit Mac10.8 (retina)": {
+  "WebKit Mac10.9": {
     "gtest_tests": [
       {
         "test": "blink_heap_unittests"
@@ -905,7 +905,7 @@
       }
     ]
   },
-  "WebKit Mac10.9": {
+  "WebKit Mac10.9 (retina)": {
     "gtest_tests": [
       {
         "test": "blink_heap_unittests"
