@@ -334,8 +334,6 @@ uint16_fract_t lut_inverse_interp16(uint16_t Value, uint16_t LutTable[], int len
                 if (Value == 0) return 0;
                 // if (Value == 0xFFFF) return 0xFFFF;
                 sample = (length-1) * ((double) Value * (1./65535.));
-                if (LutTable[sample] == 0)
-                    return 0;
                 if (LutTable[sample] == 0xffff)
                     return 0xffff;
 
@@ -353,6 +351,13 @@ uint16_fract_t lut_inverse_interp16(uint16_t Value, uint16_t LutTable[], int len
                     l = 1;
                 if (r > 0x10000)
                     r = 0x10000;
+
+                // If the search range is inverted due to degeneracy,
+                // deem LutTable non-invertible in this search range.
+                // Refer to https://bugzil.la/1132467
+
+                if (r <= l)
+                    return 0;
         }
 
         // Seems not a degenerated case... apply binary search
@@ -376,13 +381,19 @@ uint16_fract_t lut_inverse_interp16(uint16_t Value, uint16_t LutTable[], int len
 
         // Not found, should we interpolate?
 
-
         // Get surrounding nodes
+
+        assert(x >= 1);
 
         val2 = (length-1) * ((double) (x - 1) / 65535.0);
 
         cell0 = (int) floor(val2);
         cell1 = (int) ceil(val2);
+
+        assert(cell0 >= 0);
+        assert(cell1 >= 0);
+        assert(cell0 < length);
+        assert(cell1 < length);
 
         if (cell0 == cell1) return (uint16_fract_t) x;
 
