@@ -1000,6 +1000,13 @@ bool EventHandler::handleMousePressEvent(const PlatformMouseEvent& mouseEvent)
             swallowEvent = handleMousePressEvent(mev);
     }
 
+    if (mev.hitTestResult().innerNode() && mouseEvent.button() == LeftButton) {
+        ASSERT(mouseEvent.type() == PlatformEvent::MousePressed);
+        HitTestResult result = mev.hitTestResult();
+        result.setToShadowHostIfInUserAgentShadowRoot();
+        m_frame->chromeClient().onMouseDown(result.innerNode());
+    }
+
     return swallowEvent;
 }
 
@@ -2035,6 +2042,13 @@ bool EventHandler::handleGestureTap(const GestureEventWithHitTestResults& target
         swallowMouseDownEvent = handleMouseFocus(MouseEventWithHitTestResults(fakeMouseDown, currentHitTest));
     if (!swallowMouseDownEvent)
         swallowMouseDownEvent = handleMousePressEvent(MouseEventWithHitTestResults(fakeMouseDown, currentHitTest));
+
+    if (currentHitTest.innerNode()) {
+        ASSERT(gestureEvent.type() == PlatformEvent::GestureTap);
+        HitTestResult result = currentHitTest;
+        result.setToShadowHostIfInUserAgentShadowRoot();
+        m_frame->chromeClient().onMouseDown(result.innerNode());
+    }
 
     // FIXME: Use a hit-test cache to avoid unnecessary hit tests. http://crbug.com/398920
     if (currentHitTest.innerNode()) {

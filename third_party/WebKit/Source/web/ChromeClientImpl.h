@@ -164,6 +164,7 @@ public:
     void registerViewportLayers() const override;
 
     void showUnhandledTapUIIfNeeded(IntPoint, Node*, bool) override;
+    void onMouseDown(Node*) override;
     void didUpdateTopControls() const override;
 
 private:

@@ -884,6 +884,12 @@ void ChromeClientImpl::showUnhandledTapUIIfNeeded(IntPoint tappedPositionInViewp
         m_webView->client()->showUnhandledTapUIIfNeeded(WebPoint(tappedPositionInViewport), WebNode(tappedNode), pageChanged);
 }
 
+void ChromeClientImpl::onMouseDown(Node* mouseDownNode)
+{
+    if (m_webView->client())
+        m_webView->client()->onMouseDown(WebNode(mouseDownNode));
+}
+
 void ChromeClientImpl::handleKeyboardEventOnTextField(HTMLInputElement& inputElement, KeyboardEvent& event)
 {
     WebLocalFrameImpl* webframe = WebLocalFrameImpl::fromFrame(inputElement.document().frame());

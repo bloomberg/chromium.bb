@@ -239,6 +239,8 @@ public:
 
     virtual void showUnhandledTapUIIfNeeded(IntPoint, Node*, bool) { }
 
+    virtual void onMouseDown(Node*) { }
+
     virtual void didUpdateTopControls() const { }
 
     virtual void registerPopupOpeningObserver(PopupOpeningObserver*) = 0;

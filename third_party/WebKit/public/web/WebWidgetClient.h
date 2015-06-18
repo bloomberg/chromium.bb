@@ -165,6 +165,11 @@ public:
     // something as a result of a tap without explicitly consuming the event.
     virtual void showUnhandledTapUIIfNeeded(const WebPoint& tappedPosition,
         const WebNode& tappedNode, bool pageChanged) { }
+
+    // Called immediately after a mousedown event is dispatched due to a mouse
+    // press or gesture tap.
+    // Note: This is called even when the mouse down event is prevent default.
+    virtual void onMouseDown(const WebNode& mouseDownNode) { }
 protected:
     ~WebWidgetClient() { }
 };
