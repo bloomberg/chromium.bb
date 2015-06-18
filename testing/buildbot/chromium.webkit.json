@@ -723,6 +723,32 @@
       }
     ]
   },
+  "WebKit Mac10.10": {
+    "gtest_tests": [
+      {
+        "test": "blink_heap_unittests"
+      },
+      {
+        "test": "blink_platform_unittests"
+      },
+      {
+        "test": "webkit_unit_tests"
+      },
+      {
+        "test": "wtf_unittests"
+      }
+    ],
+    "scripts": [
+      {
+        "name": "webkit_lint",
+        "script": "webkit_lint.py"
+      },
+      {
+        "name": "webkit_python_tests",
+        "script": "webkit_python_tests.py"
+      }
+    ]
+  },
   "WebKit Mac10.6": {
     "gtest_tests": [
       {
