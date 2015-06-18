@@ -58,7 +58,7 @@ class FontConfigIPC::MappedFontFile
     font_config->RemoveMappedFontFile(this);
   }
 
-  static void ReleaseProc(const void* ptr, size_t length, void* context) {
+  static void ReleaseProc(const void* ptr, void* context) {
     base::ThreadRestrictions::ScopedAllowIO allow_munmap;
     static_cast<MappedFontFile*>(context)->Release();
   }
