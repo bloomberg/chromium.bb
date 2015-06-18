@@ -42,10 +42,10 @@ class CC_EXPORT OcclusionTracker {
 
   // Called at the beginning of each step in the LayerIterator's front-to-back
   // traversal.
-  void EnterLayer(const LayerIteratorPosition<LayerImpl>& layer_iterator);
+  void EnterLayer(const LayerIteratorPosition& layer_iterator);
   // Called at the end of each step in the LayerIterator's front-to-back
   // traversal.
-  void LeaveLayer(const LayerIteratorPosition<LayerImpl>& layer_iterator);
+  void LeaveLayer(const LayerIteratorPosition& layer_iterator);
 
   // Gives the region of the screen that is not occluded by something opaque.
   Region ComputeVisibleRegionInScreen() const;

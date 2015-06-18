@@ -6,24 +6,24 @@
 #define CC_LAYERS_LAYER_ITERATOR_H_
 
 #include "cc/base/cc_export.h"
+#include "cc/layers/layer_impl.h"
 #include "cc/trees/layer_tree_host_common.h"
 
 namespace cc {
 
 // These classes provide means to iterate over the
-// RenderSurface-Layer tree.
+// RenderSurfaceImpl-LayerImpl tree.
 
-// Example code follows, for a tree of Layer/RenderSurface objects.
+// Example code follows, for a tree of LayerImpl/RenderSurfaceImpl objects.
 // See below for details.
 //
 // void DoStuffOnLayers(
-//     const RenderSurfaceLayerList& render_surface_layer_list) {
-//   typedef LayerIterator<Layer> LayerIteratorType;
+//     const LayerImplList& render_surface_layer_list) {
 //
-//   LayerIteratorType end =
-//       LayerIteratorType::End(&render_surface_layer_list);
-//   for (LayerIteratorType
-//            it = LayerIteratorType::Begin(&render_surface_layer_list);
+//   LayerIterator end =
+//       LayerIterator::End(&render_surface_layer_list);
+//   for (LayerIterator
+//            it = LayerIterator::Begin(&render_surface_layer_list);
 //        it != end;
 //        ++it) {
 //     // Only one of these will be true
@@ -79,7 +79,6 @@ namespace cc {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// Non-templated constants
 struct LayerIteratorValue {
   static const int kInvalidTargetRenderSurfaceLayerIndex = -1;
   // This must be (size_t)-1 since the iterator action code assumes that this
@@ -91,36 +90,30 @@ struct LayerIteratorValue {
 
 // The position of a layer iterator that is independent
 // of its many template types.
-template <typename LayerType> struct LayerIteratorPosition {
+struct LayerIteratorPosition {
   bool represents_target_render_surface;
   bool represents_contributing_render_surface;
   bool represents_itself;
-  LayerType* target_render_surface_layer;
-  LayerType* current_layer;
+  LayerImpl* target_render_surface_layer;
+  LayerImpl* current_layer;
 };
 
 // An iterator class for walking over layers in the
 // RenderSurface-Layer tree.
-template <typename LayerType>
+// TODO(enne): This class probably shouldn't be entirely inline and
+// should get moved to a .cc file where it makes sense.
 class LayerIterator {
-  typedef LayerIterator<LayerType> LayerIteratorType;
-  typedef typename LayerType::LayerListType LayerList;
-  typedef typename LayerType::RenderSurfaceListType RenderSurfaceLayerList;
-  typedef typename LayerType::RenderSurfaceType RenderSurfaceType;
-
  public:
   LayerIterator() : render_surface_layer_list_(nullptr) {}
 
-  static LayerIteratorType Begin(
-      const RenderSurfaceLayerList* render_surface_layer_list) {
-    return LayerIteratorType(render_surface_layer_list, true);
+  static LayerIterator Begin(const LayerImplList* render_surface_layer_list) {
+    return LayerIterator(render_surface_layer_list, true);
   }
-  static LayerIteratorType End(
-      const RenderSurfaceLayerList* render_surface_layer_list) {
-    return LayerIteratorType(render_surface_layer_list, false);
+  static LayerIterator End(const LayerImplList* render_surface_layer_list) {
+    return LayerIterator(render_surface_layer_list, false);
   }
 
-  LayerIteratorType& operator++() {
+  LayerIterator& operator++() {
     MoveToNext();
     return *this;
   }
@@ -129,12 +122,12 @@ class LayerIterator {
            other.target_render_surface_layer_index_ &&
            current_layer_index_ == other.current_layer_index_;
   }
-  bool operator!=(const LayerIteratorType& other) const {
+  bool operator!=(const LayerIterator& other) const {
     return !(*this == other);
   }
 
-  LayerType* operator->() const { return current_layer(); }
-  LayerType* operator*() const { return current_layer(); }
+  LayerImpl* operator->() const { return current_layer(); }
+  LayerImpl* operator*() const { return current_layer(); }
 
   bool represents_target_render_surface() const {
     return current_layer_represents_target_render_surface();
@@ -148,12 +141,12 @@ class LayerIterator {
            !represents_contributing_render_surface();
   }
 
-  LayerType* target_render_surface_layer() const {
+  LayerImpl* target_render_surface_layer() const {
     return render_surface_layer_list_->at(target_render_surface_layer_index_);
   }
 
-  operator const LayerIteratorPosition<LayerType>() const {
-    LayerIteratorPosition<LayerType> position;
+  operator const LayerIteratorPosition() const {
+    LayerIteratorPosition position;
     position.represents_target_render_surface =
         represents_target_render_surface();
     position.represents_contributing_render_surface =
@@ -165,8 +158,7 @@ class LayerIterator {
   }
 
  private:
-  LayerIterator(const RenderSurfaceLayerList* render_surface_layer_list,
-                bool start)
+  LayerIterator(const LayerImplList* render_surface_layer_list, bool start)
       : render_surface_layer_list_(render_surface_layer_list),
         target_render_surface_layer_index_(0) {
     for (size_t i = 0; i < render_surface_layer_list->size(); ++i) {
@@ -238,7 +230,7 @@ class LayerIterator {
       int previous_target_render_surface_layer =
           target_render_surface_layer_index_;
 
-      for (LayerType* layer = current_layer();
+      for (LayerImpl* layer = current_layer();
            target_render_surface_layer() != layer;
            ++target_render_surface_layer_index_) {
       }
@@ -249,7 +241,7 @@ class LayerIterator {
     }
   }
 
-  inline LayerType* current_layer() const {
+  inline LayerImpl* current_layer() const {
     return current_layer_represents_target_render_surface()
                ? target_render_surface_layer()
                : LayerTreeHostCommon::get_layer_as_raw_ptr(
@@ -257,7 +249,7 @@ class LayerIterator {
   }
 
   inline bool current_layer_represents_contributing_render_surface() const {
-    return LayerTreeHostCommon::RenderSurfaceContributesToTarget<LayerType>(
+    return LayerTreeHostCommon::RenderSurfaceContributesToTarget<LayerImpl>(
         current_layer(), target_render_surface_layer()->id());
   }
   inline bool current_layer_represents_target_render_surface() const {
@@ -265,14 +257,14 @@ class LayerIterator {
            LayerIteratorValue::kLayerIndexRepresentingTargetRenderSurface;
   }
 
-  inline RenderSurfaceType* target_render_surface() const {
+  inline RenderSurfaceImpl* target_render_surface() const {
     return target_render_surface_layer()->render_surface();
   }
-  inline const LayerList& target_render_surface_children() const {
+  inline const LayerImplList& target_render_surface_children() const {
     return target_render_surface()->layer_list();
   }
 
-  const RenderSurfaceLayerList* render_surface_layer_list_;
+  const LayerImplList* render_surface_layer_list_;
 
   // The iterator's current position.
 

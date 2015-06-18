@@ -97,10 +97,10 @@ TEST_F(OcclusionTrackerPerfTest, UnoccludedContentRect_FullyOccluded) {
   ASSERT_EQ(1u, rsll.size());
   EXPECT_EQ(1u, rsll[0]->render_surface()->layer_list().size());
 
-  LayerIterator<LayerImpl> begin = LayerIterator<LayerImpl>::Begin(&rsll);
-  LayerIterator<LayerImpl> end = LayerIterator<LayerImpl>::End(&rsll);
+  LayerIterator begin = LayerIterator::Begin(&rsll);
+  LayerIterator end = LayerIterator::End(&rsll);
 
-  LayerIteratorPosition<LayerImpl> pos = begin;
+  LayerIteratorPosition pos = begin;
 
   // The opaque_layer adds occlusion over the whole viewport.
   tracker.EnterLayer(pos);
@@ -130,7 +130,7 @@ TEST_F(OcclusionTrackerPerfTest, UnoccludedContentRect_FullyOccluded) {
   } while (!timer_.HasTimeLimitExpired());
 
   ++begin;
-  LayerIteratorPosition<LayerImpl> next = begin;
+  LayerIteratorPosition next = begin;
   EXPECT_EQ(active_tree()->root_layer(), next.current_layer);
 
   ++begin;
@@ -168,17 +168,17 @@ TEST_F(OcclusionTrackerPerfTest, UnoccludedContentRect_10OpaqueLayers) {
   EXPECT_EQ(static_cast<size_t>(kNumOpaqueLayers),
             rsll[0]->render_surface()->layer_list().size());
 
-  LayerIterator<LayerImpl> begin = LayerIterator<LayerImpl>::Begin(&rsll);
-  LayerIterator<LayerImpl> end = LayerIterator<LayerImpl>::End(&rsll);
+  LayerIterator begin = LayerIterator::Begin(&rsll);
+  LayerIterator end = LayerIterator::End(&rsll);
 
   // The opaque_layers add occlusion.
   for (int i = 0; i < kNumOpaqueLayers - 1; ++i) {
-    LayerIteratorPosition<LayerImpl> pos = begin;
+    LayerIteratorPosition pos = begin;
     tracker.EnterLayer(pos);
     tracker.LeaveLayer(pos);
     ++begin;
   }
-  LayerIteratorPosition<LayerImpl> pos = begin;
+  LayerIteratorPosition pos = begin;
   tracker.EnterLayer(pos);
   tracker.LeaveLayer(pos);
 
@@ -200,7 +200,7 @@ TEST_F(OcclusionTrackerPerfTest, UnoccludedContentRect_10OpaqueLayers) {
   } while (!timer_.HasTimeLimitExpired());
 
   ++begin;
-  LayerIteratorPosition<LayerImpl> next = begin;
+  LayerIteratorPosition next = begin;
   EXPECT_EQ(active_tree()->root_layer(), next.current_layer);
 
   ++begin;

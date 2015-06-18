@@ -823,9 +823,9 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
   bool have_copy_request = false;
   bool have_missing_animated_tiles = false;
 
-  auto end = LayerIterator<LayerImpl>::End(frame->render_surface_layer_list);
-  for (auto it =
-           LayerIterator<LayerImpl>::Begin(frame->render_surface_layer_list);
+  LayerIterator end = LayerIterator::End(frame->render_surface_layer_list);
+  for (LayerIterator it =
+           LayerIterator::Begin(frame->render_surface_layer_list);
        it != end; ++it) {
     RenderPassId target_render_pass_id =
         it.target_render_surface_layer()->render_surface()->GetRenderPassId();

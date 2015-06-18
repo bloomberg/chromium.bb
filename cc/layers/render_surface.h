@@ -19,8 +19,6 @@
 namespace cc {
 
 class Layer;
-template <typename LayerType>
-class LayerIterator;
 
 class CC_EXPORT RenderSurface {
  public:
@@ -116,8 +114,6 @@ class CC_EXPORT RenderSurface {
   void ClearLayerLists();
 
  private:
-  friend class LayerIterator<Layer>;
-
   Layer* owning_layer_;
 
   // Uses this surface's space.

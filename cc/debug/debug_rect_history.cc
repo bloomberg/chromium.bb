@@ -222,10 +222,8 @@ void DebugRectHistory::SaveNonFastScrollableRectsCallback(LayerImpl* layer) {
 
 void DebugRectHistory::SaveLayerAnimationBoundsRects(
     const LayerImplList& render_surface_layer_list) {
-  typedef LayerIterator<LayerImpl> LayerIteratorType;
-  LayerIteratorType end = LayerIteratorType::End(&render_surface_layer_list);
-  for (LayerIteratorType it =
-           LayerIteratorType::Begin(&render_surface_layer_list);
+  LayerIterator end = LayerIterator::End(&render_surface_layer_list);
+  for (LayerIterator it = LayerIterator::Begin(&render_surface_layer_list);
        it != end; ++it) {
     if (!it.represents_itself())
       continue;

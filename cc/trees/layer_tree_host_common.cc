@@ -2509,22 +2509,13 @@ void VerifyPropertyTreeValuesForLayer(LayerType* current_layer,
 
 void VerifyPropertyTreeValues(
     LayerTreeHostCommon::CalcDrawPropsMainInputs* inputs) {
-  LayerIterator<Layer> it, end;
-  for (it = LayerIterator<Layer>::Begin(inputs->render_surface_layer_list),
-      end = LayerIterator<Layer>::End(inputs->render_surface_layer_list);
-       it != end; ++it) {
-    Layer* current_layer = *it;
-    if (!it.represents_itself() || !current_layer->DrawsContent())
-      continue;
-    VerifyPropertyTreeValuesForLayer(current_layer, inputs->property_trees);
-  }
 }
 
 void VerifyPropertyTreeValues(
     LayerTreeHostCommon::CalcDrawPropsImplInputs* inputs) {
-  LayerIterator<LayerImpl> it, end;
-  for (it = LayerIterator<LayerImpl>::Begin(inputs->render_surface_layer_list),
-      end = LayerIterator<LayerImpl>::End(inputs->render_surface_layer_list);
+  LayerIterator it, end;
+  for (it = LayerIterator::Begin(inputs->render_surface_layer_list),
+      end = LayerIterator::End(inputs->render_surface_layer_list);
        it != end; ++it) {
     LayerImpl* current_layer = *it;
     if (!it.represents_itself() || !current_layer->DrawsContent())

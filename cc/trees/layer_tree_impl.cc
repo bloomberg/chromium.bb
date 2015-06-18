@@ -608,8 +608,8 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
     // LayerIterator is used here instead of CallFunctionForSubtree to only
     // UpdateTilePriorities on layers that will be visible (and thus have valid
     // draw properties) and not because any ordering is required.
-    auto end = LayerIterator<LayerImpl>::End(&render_surface_layer_list_);
-    for (auto it = LayerIterator<LayerImpl>::Begin(&render_surface_layer_list_);
+    LayerIterator end = LayerIterator::End(&render_surface_layer_list_);
+    for (LayerIterator it = LayerIterator::Begin(&render_surface_layer_list_);
          it != end; ++it) {
       occlusion_tracker.EnterLayer(it);
 
@@ -1006,12 +1006,9 @@ AnimationRegistrar* LayerTreeImpl::GetAnimationRegistrar() const {
 
 void LayerTreeImpl::GetAllPrioritizedTilesForTracing(
     std::vector<PrioritizedTile>* prioritized_tiles) const {
-  typedef LayerIterator<LayerImpl> LayerIteratorType;
-  LayerIteratorType end = LayerIteratorType::End(&render_surface_layer_list_);
-  for (LayerIteratorType it =
-           LayerIteratorType::Begin(&render_surface_layer_list_);
-       it != end;
-       ++it) {
+  LayerIterator end = LayerIterator::End(&render_surface_layer_list_);
+  for (LayerIterator it = LayerIterator::Begin(&render_surface_layer_list_);
+       it != end; ++it) {
     if (!it.represents_itself())
       continue;
     LayerImpl* layer_impl = *it;
@@ -1028,10 +1025,9 @@ void LayerTreeImpl::AsValueInto(base::trace_event::TracedValue* state) const {
   state->EndDictionary();
 
   state->BeginArray("render_surface_layer_list");
-  typedef LayerIterator<LayerImpl> LayerIteratorType;
-  LayerIteratorType end = LayerIteratorType::End(&render_surface_layer_list_);
-  for (LayerIteratorType it = LayerIteratorType::Begin(
-           &render_surface_layer_list_); it != end; ++it) {
+  LayerIterator end = LayerIterator::End(&render_surface_layer_list_);
+  for (LayerIterator it = LayerIterator::Begin(&render_surface_layer_list_);
+       it != end; ++it) {
     if (!it.represents_itself())
       continue;
     TracedValue::AppendIDRef(*it, state);

@@ -27,7 +27,6 @@ class Occlusion;
 class RenderPassId;
 class RenderPassSink;
 class LayerImpl;
-template <typename LayerType>
 class LayerIterator;
 
 struct AppendQuadsData;
@@ -194,7 +193,7 @@ class CC_EXPORT RenderSurfaceImpl {
   int target_render_surface_layer_index_history_;
   size_t current_layer_index_history_;
 
-  friend class LayerIterator<LayerImpl>;
+  friend class LayerIterator;
 
   DISALLOW_COPY_AND_ASSIGN(RenderSurfaceImpl);
 };

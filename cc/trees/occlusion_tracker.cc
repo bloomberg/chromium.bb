@@ -46,8 +46,7 @@ Occlusion OcclusionTracker::GetCurrentOcclusionForContributingSurface(
                    second_last.occlusion_from_inside_target);
 }
 
-void OcclusionTracker::EnterLayer(
-    const LayerIteratorPosition<LayerImpl>& layer_iterator) {
+void OcclusionTracker::EnterLayer(const LayerIteratorPosition& layer_iterator) {
   LayerImpl* render_target = layer_iterator.target_render_surface_layer;
 
   if (layer_iterator.represents_itself)
@@ -56,8 +55,7 @@ void OcclusionTracker::EnterLayer(
     FinishedRenderTarget(render_target);
 }
 
-void OcclusionTracker::LeaveLayer(
-    const LayerIteratorPosition<LayerImpl>& layer_iterator) {
+void OcclusionTracker::LeaveLayer(const LayerIteratorPosition& layer_iterator) {
   LayerImpl* render_target = layer_iterator.target_render_surface_layer;
 
   if (layer_iterator.represents_itself)

@@ -233,7 +233,7 @@ class OcclusionTrackerTest : public testing::Test {
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
     layer_iterator_ = layer_iterator_begin_ =
-        LayerIterator<LayerImpl>::Begin(&render_surface_layer_list_impl_);
+        LayerIterator::Begin(&render_surface_layer_list_impl_);
   }
 
   void EnterLayer(LayerImpl* layer, OcclusionTracker* occlusion) {
@@ -312,8 +312,8 @@ class OcclusionTrackerTest : public testing::Test {
   scoped_ptr<LayerImpl> root_;
   scoped_ptr<RenderSurfaceLayerList> render_surface_layer_list_;
   LayerImplList render_surface_layer_list_impl_;
-  LayerIterator<LayerImpl> layer_iterator_begin_;
-  LayerIterator<LayerImpl> layer_iterator_;
+  LayerIterator layer_iterator_begin_;
+  LayerIterator layer_iterator_;
   LayerList replica_layers_;
   LayerList mask_layers_;
   int next_layer_impl_id_;

@@ -1025,10 +1025,9 @@ class LayerTreeHostCopyRequestTestMultipleDrawsHiddenCopyRequest
 
     bool saw_root = false;
     bool saw_child = false;
-    for (LayerIterator<LayerImpl> it = LayerIterator<LayerImpl>::Begin(
-             frame_data->render_surface_layer_list);
-         it != LayerIterator<LayerImpl>::End(
-                   frame_data->render_surface_layer_list);
+    for (LayerIterator it =
+             LayerIterator::Begin(frame_data->render_surface_layer_list);
+         it != LayerIterator::End(frame_data->render_surface_layer_list);
          ++it) {
       if (it.represents_itself()) {
         if (*it == root)

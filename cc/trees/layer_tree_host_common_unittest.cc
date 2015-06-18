@@ -6195,8 +6195,8 @@ TEST_F(LayerTreeHostCommonTest, CanRenderToSeparateSurface) {
     int count_represents_target_render_surface = 0;
     int count_represents_contributing_render_surface = 0;
     int count_represents_itself = 0;
-    auto end = LayerIterator<LayerImpl>::End(&render_surface_layer_list);
-    for (auto it = LayerIterator<LayerImpl>::Begin(&render_surface_layer_list);
+    LayerIterator end = LayerIterator::End(&render_surface_layer_list);
+    for (LayerIterator it = LayerIterator::Begin(&render_surface_layer_list);
          it != end; ++it) {
       if (it.represents_target_render_surface())
         count_represents_target_render_surface++;
@@ -6226,8 +6226,8 @@ TEST_F(LayerTreeHostCommonTest, CanRenderToSeparateSurface) {
     int count_represents_target_render_surface = 0;
     int count_represents_contributing_render_surface = 0;
     int count_represents_itself = 0;
-    auto end = LayerIterator<LayerImpl>::End(&render_surface_layer_list);
-    for (auto it = LayerIterator<LayerImpl>::Begin(&render_surface_layer_list);
+    LayerIterator end = LayerIterator::End(&render_surface_layer_list);
+    for (LayerIterator it = LayerIterator::Begin(&render_surface_layer_list);
          it != end; ++it) {
       if (it.represents_target_render_surface())
         count_represents_target_render_surface++;
@@ -7324,10 +7324,9 @@ static int membership_id(LayerImpl* layer) {
 
 static void GatherDrawnLayers(LayerImplList* rsll,
                               std::set<LayerImpl*>* drawn_layers) {
-  for (LayerIterator<LayerImpl> it = LayerIterator<LayerImpl>::Begin(rsll),
-                                end = LayerIterator<LayerImpl>::End(rsll);
-       it != end;
-       ++it) {
+  for (LayerIterator it = LayerIterator::Begin(rsll),
+                     end = LayerIterator::End(rsll);
+       it != end; ++it) {
     LayerImpl* layer = *it;
     if (it.represents_itself())
       drawn_layers->insert(layer);
