@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/process/process.h"
 #include "base/strings/string16.h"
+#include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/render_process_host_observer.h"
@@ -398,6 +399,30 @@ class WebContentsAddedObserver {
   scoped_refptr<MessageLoopRunner> runner_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsAddedObserver);
+};
+
+// Watches compositor frame changes, blocking until a frame has been
+// composited. This class is intended to be run on the main thread; to
+// synchronize the main thread against the impl thread.
+class FrameWatcher : public BrowserMessageFilter {
+ public:
+  FrameWatcher();
+
+  // Wait for |frames_to_wait| swap mesages from the compositor.
+  void WaitFrames(int frames_to_wait);
+
+ private:
+  ~FrameWatcher() override;
+
+  // Overridden BrowserMessageFilter methods.
+  bool OnMessageReceived(const IPC::Message& message) override;
+
+  void ReceivedFrameSwap();
+
+  int frames_to_wait_;
+  base::Closure quit_;
+
+  DISALLOW_COPY_AND_ASSIGN(FrameWatcher);
 };
 
 }  // namespace content
