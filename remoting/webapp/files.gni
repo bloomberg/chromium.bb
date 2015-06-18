@@ -13,6 +13,9 @@
 # Please keep this file in sync with remoting/remoting_webapp_files.gypi
 # and remoting/app_remoting_webapp_files.gypi.
 
+# JSCompiler externs.
+remoting_webapp_js_externs = [ "externs/qunit.js" ]
+
 # Jscompile proto files.
 # These provide type information for jscompile.
 remoting_webapp_js_proto_files = [
