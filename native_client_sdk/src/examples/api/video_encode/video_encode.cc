@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <algorithm>
 #include <iostream>
 #include <map>
 #include <sstream>
@@ -175,6 +176,8 @@ class VideoEncoderInstance : public pp::Instance {
   pp::VideoFrame current_track_frame_;
 
   IVFWriter ivf_writer_;
+
+  PP_Time last_encode_tick_;
 };
 
 VideoEncoderInstance::VideoEncoderInstance(PP_Instance instance,
@@ -188,7 +191,8 @@ VideoEncoderInstance::VideoEncoderInstance(PP_Instance instance,
       video_profile_(PP_VIDEOPROFILE_H264MAIN),
 #endif
       frame_format_(PP_VIDEOFRAME_FORMAT_I420),
-      encoded_frames_(0) {
+      encoded_frames_(0),
+      last_encode_tick_(0) {
   InitializeVideoProfiles();
   ProbeEncoder();
 }
@@ -334,10 +338,12 @@ void VideoEncoderInstance::OnInitializedEncoder(int32_t result) {
 }
 
 void VideoEncoderInstance::ScheduleNextEncode() {
+  PP_Time now = pp::Module::Get()->core()->GetTime();
   pp::Module::Get()->core()->CallOnMainThread(
-      1000 / 30,
+      std::min(std::max(now - last_encode_tick_, 0.0), 1000.0 / 30),
       callback_factory_.NewCallback(&VideoEncoderInstance::GetEncoderFrameTick),
       0);
+  last_encode_tick_ = now;
 }
 
 void VideoEncoderInstance::GetEncoderFrameTick(int32_t result) {
