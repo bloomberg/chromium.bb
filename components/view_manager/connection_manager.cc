@@ -206,6 +206,11 @@ void ConnectionManager::EmbedAtView(mojo::ConnectionSpecificId creator_id,
   OnConnectionMessagedClient(client_connection->service()->id());
 }
 
+void ConnectionManager::OnAccelerator(ServerView* root, mojo::EventPtr event) {
+  // TODO(fsamuel): Support multiple roots.
+  view_manager_root_client_->OnAccelerator(event.Pass());
+}
+
 ViewManagerServiceImpl* ConnectionManager::GetConnection(
     ConnectionSpecificId connection_id) {
   ConnectionMap::iterator i = connection_map_.find(connection_id);
@@ -301,10 +306,6 @@ bool ConnectionManager::CloneAndAnimate(const ViewId& view_id) {
   return true;
 }
 
-void ConnectionManager::ProcessEvent(mojo::EventPtr event) {
-  event_dispatcher_.OnEvent(event.Pass());
-}
-
 void ConnectionManager::DispatchInputEventToView(const ServerView* view,
                                                  mojo::EventPtr event) {
   // It's possible for events to flow through here from the platform_window
@@ -327,7 +328,7 @@ ServerView* ConnectionManager::GetRoot() {
 }
 
 void ConnectionManager::OnEvent(mojo::EventPtr event) {
-  event_dispatcher_.OnEvent(event.Pass());
+  event_dispatcher_.OnEvent(root_.get(), event.Pass());
 }
 
 void ConnectionManager::OnDisplayClosed() {

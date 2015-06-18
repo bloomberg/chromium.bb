@@ -30,19 +30,19 @@ void EventDispatcher::RemoveAccelerator(mojo::KeyboardCode keyboard_code,
   accelerators_.erase(Accelerator(keyboard_code, flags));
 }
 
-void EventDispatcher::OnEvent(mojo::EventPtr event) {
+void EventDispatcher::OnEvent(ServerView* root, mojo::EventPtr event) {
   if (event->pointer_data) {
     const gfx::Point root_point(static_cast<int>(event->pointer_data->x),
                                 static_cast<int>(event->pointer_data->y));
     ServerView* target = connection_manager_->GetFocusedView();
-    if (event->action == mojo::EVENT_TYPE_POINTER_DOWN || !target) {
-      target =
-          FindDeepestVisibleView(connection_manager_->GetRoot(), root_point);
+    if (event->action == mojo::EVENT_TYPE_POINTER_DOWN || !target ||
+        !root->Contains(target)) {
+      target = FindDeepestVisibleView(root, root_point);
       CHECK(target);
       connection_manager_->SetFocusedView(target);
     }
     const gfx::PointF local_point(ConvertPointFBetweenViews(
-        connection_manager_->GetRoot(), target,
+        root, target,
         gfx::PointF(event->pointer_data->x, event->pointer_data->y)));
     event->pointer_data->x = local_point.x();
     event->pointer_data->y = local_point.y();
@@ -50,8 +50,7 @@ void EventDispatcher::OnEvent(mojo::EventPtr event) {
   } else if (event->action == mojo::EVENT_TYPE_KEY_PRESSED &&
              accelerators_.count(Accelerator(event->key_data->windows_key_code,
                                              event->flags))) {
-    connection_manager_->view_manager_root_client()->OnAccelerator(
-        event.Pass());
+    connection_manager_->OnAccelerator(root, event.Pass());
   } else {
     ServerView* focused_view = connection_manager_->GetFocusedView();
     if (focused_view)

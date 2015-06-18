@@ -97,6 +97,10 @@ class ConnectionManager : public ServerViewDelegate,
                    const ViewId& view_id,
                    mojo::ViewManagerClientPtr client);
 
+  // Invoked when an accelerator has been triggered on a view tree with the
+  // provided |root|.
+  void OnAccelerator(ServerView* root, mojo::EventPtr event);
+
   // Returns the connection by id.
   ViewManagerServiceImpl* GetConnection(
       mojo::ConnectionSpecificId connection_id);
@@ -150,9 +154,6 @@ class ConnectionManager : public ServerViewDelegate,
 
   // ViewManagerRoot implementation helper; see mojom for details.
   bool CloneAndAnimate(const ViewId& view_id);
-
-  // Processes an event, potentially changing focus.
-  void ProcessEvent(mojo::EventPtr event);
 
   // Dispatches |event| directly to the appropriate connection for |view|.
   void DispatchInputEventToView(const ServerView* view, mojo::EventPtr event);

@@ -520,7 +520,7 @@ TEST_F(ViewManagerServiceTest, FocusOnPointer) {
   connection1_client->tracker()->changes()->clear();
   wm_client()->tracker()->changes()->clear();
 
-  connection_manager()->ProcessEvent(CreatePointerDownEvent(21, 22));
+  connection_manager()->OnEvent(CreatePointerDownEvent(21, 22));
   // Focus should go to child1. This results in notifying both the window
   // manager and client connection being notified.
   EXPECT_EQ(v1, connection_manager()->GetFocusedView());
@@ -532,14 +532,14 @@ TEST_F(ViewManagerServiceTest, FocusOnPointer) {
       "Focused id=2,1",
       ChangesToDescription1(*connection1_client->tracker()->changes())[0]);
 
-  connection_manager()->ProcessEvent(CreatePointerUpEvent(21, 22));
+  connection_manager()->OnEvent(CreatePointerUpEvent(21, 22));
   wm_client()->tracker()->changes()->clear();
   connection1_client->tracker()->changes()->clear();
 
   // Press outside of the embedded view. Focus should go to the root. Notice
   // the client1 doesn't see who has focus as the focused view (root) isn't
   // visible to it.
-  connection_manager()->ProcessEvent(CreatePointerDownEvent(61, 22));
+  connection_manager()->OnEvent(CreatePointerDownEvent(61, 22));
   EXPECT_EQ(connection_manager()->GetRoot(),
             connection_manager()->GetFocusedView());
   ASSERT_GE(wm_client()->tracker()->changes()->size(), 1u);
@@ -550,13 +550,13 @@ TEST_F(ViewManagerServiceTest, FocusOnPointer) {
       "Focused id=null",
       ChangesToDescription1(*connection1_client->tracker()->changes())[0]);
 
-  connection_manager()->ProcessEvent(CreatePointerUpEvent(21, 22));
+  connection_manager()->OnEvent(CreatePointerUpEvent(21, 22));
   wm_client()->tracker()->changes()->clear();
   connection1_client->tracker()->changes()->clear();
 
   // Press in the same location. Should not get a focus change event (only input
   // event).
-  connection_manager()->ProcessEvent(CreatePointerDownEvent(61, 22));
+  connection_manager()->OnEvent(CreatePointerDownEvent(61, 22));
   EXPECT_EQ(connection_manager()->GetRoot(),
             connection_manager()->GetFocusedView());
   ASSERT_EQ(wm_client()->tracker()->changes()->size(), 1u);

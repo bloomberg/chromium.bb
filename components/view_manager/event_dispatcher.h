@@ -15,6 +15,7 @@
 namespace view_manager {
 
 class ConnectionManager;
+class ServerView;
 
 // Handles dispatching events to the right location as well as updating focus.
 class EventDispatcher {
@@ -26,7 +27,7 @@ class EventDispatcher {
   void RemoveAccelerator(mojo::KeyboardCode keyboard_code,
                          mojo::EventFlags flags);
 
-  void OnEvent(mojo::EventPtr event);
+  void OnEvent(ServerView* root, mojo::EventPtr event);
 
  private:
   struct Accelerator {
