@@ -1687,9 +1687,20 @@ static String extractSelectedText(const FrameSelection& selection, TextIteratorB
     return extractSelectedTextAlgorithm<VisibleSelection::InDOMTree>(selection, behavior);
 }
 
+template <typename Strategy>
+static String extractSelectedHTMLAlgorithm(const FrameSelection& selection)
+{
+    using PositionType = typename Strategy::PositionType;
+    PositionType start;
+    PositionType end;
+    VisibleSelection visibleSelection = selection.selection();
+    VisibleSelection::normalizePositions(Strategy::selectionStart(visibleSelection), Strategy::selectionEnd(visibleSelection), &start, &end);
+    return createMarkup(start, end, AnnotateForInterchange, ConvertBlocksToInlines::NotConvert, ResolveNonLocalURLs);
+}
+
 String FrameSelection::selectedHTMLForClipboard() const
 {
-    return createMarkup(m_selection.toNormalizedRange().get(), AnnotateForInterchange, ConvertBlocksToInlines::NotConvert, ResolveNonLocalURLs);
+    return extractSelectedHTMLAlgorithm<VisibleSelection::InDOMTree>(*this);
 }
 
 String FrameSelection::selectedText() const
