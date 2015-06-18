@@ -134,8 +134,6 @@ public:
     // ServiceWorker specific method. Called after SyncEvent (dispatched via
     // WebServiceWorkerContextProxy) is handled by the ServiceWorker's script
     // context.
-    // TODO(chasej): crbug.com/486890 - Remove after cleanup on content side
-    virtual void didHandleSyncEventDeprecated(int syncEventID) { }
     virtual void didHandleSyncEvent(int syncEventID, WebServiceWorkerEventResult result) { }
 
     // ServiceWorker specific method. Called after CrossOriginConnectEvent
