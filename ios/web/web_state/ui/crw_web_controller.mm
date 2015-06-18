@@ -3640,25 +3640,39 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (BOOL)shouldOpenExternalURLRequest:(NSURLRequest*)request
                          targetFrame:(const web::FrameInfo*)targetFrame {
-  // Prevent subrequests from opening an external URL if the main document URL
-  // has changed since the last user interaction.
+  // If targetFrame information is not provided, the request originated from the
+  // main frame if (a) the request's URL matches the request's main document URL
+  // or (b) if the current pending entry matches the request's main document
+  // URL, as this is a redirect from an in-progress main frame load.
   BOOL isMainFrame = targetFrame
                          ? targetFrame->is_main_frame
                          : [request.URL isEqual:request.mainDocumentURL];
-  BOOL documentChangedAfterUserInteraction =
+  if (!targetFrame && !isMainFrame) {
+    web::NavigationItem* pendingItem =
+        [self webStateImpl]->GetNavigationManager()->GetPendingItem();
+    if (pendingItem) {
+      isMainFrame =
+          pendingItem->GetURL() == net::GURLWithNSURL(request.mainDocumentURL);
+    }
+  }
+
+  // If the request's main document URL differs from that at the time of the
+  // last user interaction, then the page has changed since the user last
+  // interacted.
+  BOOL userHasInteractedWithCurrentPage =
       _lastUserInteraction &&
-      net::GURLWithNSURL(request.mainDocumentURL) !=
+      net::GURLWithNSURL(request.mainDocumentURL) ==
           _lastUserInteraction->main_document_url;
-  if (!isMainFrame && documentChangedAfterUserInteraction)
+
+  // Prevent subframe requests from opening an external URL if the user has not
+  // interacted with the page.
+  if (!isMainFrame && !userHasInteractedWithCurrentPage)
     return NO;
 
   GURL requestURL = net::GURLWithNSURL(request.URL);
   return [_delegate respondsToSelector:@selector(webController:
-                                           shouldOpenExternalURL:
-                                               userIsInteracting:)] &&
-         [_delegate webController:self
-             shouldOpenExternalURL:requestURL
-                 userIsInteracting:[self userIsInteracting]];
+                                           shouldOpenExternalURL:)] &&
+         [_delegate webController:self shouldOpenExternalURL:requestURL];
 }
 
 - (BOOL)urlTriggersNativeAppLaunch:(const GURL&)url

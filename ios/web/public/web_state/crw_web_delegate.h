@@ -188,8 +188,7 @@ typedef void (^SSLErrorCallback)(BOOL);
 // Called to ask if external URL should be opened. External URL is one that
 // cannot be presented by CRWWebController.
 - (BOOL)webController:(CRWWebController*)webController
-    shouldOpenExternalURL:(const GURL&)URL
-        userIsInteracting:(BOOL)userIsInteracting;
+    shouldOpenExternalURL:(const GURL&)URL;
 
 // Called when |url| is deemed suitable to be opened in a matching native app.
 // Needs to return whether |url| was opened in a matching native app.
