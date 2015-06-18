@@ -261,6 +261,8 @@ enum AutoplayMetrics {
     AutoplayManualStart = 3,
     // Autoplay was (re)enabled through a user-gesture triggered load()
     AutoplayEnabledThroughLoad = 4,
+    // Autoplay disabled by sandbox flags.
+    AutoplayDisabledBySandbox = 5,
     // This enum value must be last.
     NumberOfAutoplayMetrics,
 };
@@ -1541,9 +1543,12 @@ void HTMLMediaElement::setReadyState(ReadyState state)
                 scheduleEvent(EventTypeNames::playing);
         }
 
-        if (m_autoplaying && m_paused && autoplay() && !document().isSandboxed(SandboxAutomaticFeatures)) {
+        if (m_autoplaying && m_paused && autoplay()) {
             autoplayMediaEncountered();
-            if (!m_userGestureRequiredForPlay) {
+
+            if (document().isSandboxed(SandboxAutomaticFeatures)) {
+                recordAutoplayMetric(AutoplayDisabledBySandbox);
+            } else if (!m_userGestureRequiredForPlay) {
                 m_paused = false;
                 invalidateCachedTime();
                 scheduleEvent(EventTypeNames::play);
