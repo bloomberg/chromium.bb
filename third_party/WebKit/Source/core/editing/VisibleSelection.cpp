@@ -871,6 +871,11 @@ void VisibleSelection::validatePositionsIfNeeded()
         validate();
 }
 
+bool VisibleSelection::InDOMTree::equalSelections(const VisibleSelection& selection1, const VisibleSelection& selection2)
+{
+    return selection1 == selection2;
+}
+
 #ifndef NDEBUG
 
 void VisibleSelection::debugPosition() const

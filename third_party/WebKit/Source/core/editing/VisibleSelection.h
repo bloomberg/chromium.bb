@@ -47,6 +47,7 @@ public:
     public:
         using PositionType = Position;
 
+        static bool equalSelections(const VisibleSelection&, const VisibleSelection&);
         static PositionType selectionBase(const VisibleSelection& selection) { return selection.base(); }
         static PositionType selectionExtent(const VisibleSelection& selection) { return selection.extent(); }
         static PositionType selectionStart(const VisibleSelection& selection) { return selection.start(); }
