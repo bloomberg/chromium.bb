@@ -36,8 +36,10 @@ public:
         m_resolver.clear();
     }
 
-    virtual void onError(WebServiceWorkerCacheError* reason) override
+    // Ownership of |rawReason| must be passed.
+    virtual void onError(WebServiceWorkerCacheError* rawReason) override
     {
+        OwnPtr<WebServiceWorkerCacheError> reason = adoptPtr(rawReason);
         if (*reason == WebServiceWorkerCacheErrorNotFound)
             m_resolver->resolve();
         else
@@ -65,8 +67,10 @@ public:
         m_resolver.clear();
     }
 
-    virtual void onError(WebServiceWorkerCacheError* reason) override
+    // Ownership of |rawReason| must be passed.
+    virtual void onError(WebServiceWorkerCacheError* rawReason) override
     {
+        OwnPtr<WebServiceWorkerCacheError> reason = adoptPtr(rawReason);
         m_resolver->reject(CacheStorageError::createException(*reason));
         m_resolver.clear();
     }
@@ -88,8 +92,10 @@ public:
         m_resolver.clear();
     }
 
-    void onError(WebServiceWorkerCacheError* reason) override
+    // Ownership of |rawReason| must be passed.
+    virtual void onError(WebServiceWorkerCacheError* rawReason) override
     {
+        OwnPtr<WebServiceWorkerCacheError> reason = adoptPtr(rawReason);
         if (*reason == WebServiceWorkerCacheErrorNotFound)
             m_resolver->resolve(false);
         else
@@ -117,8 +123,10 @@ public:
         m_resolver.clear();
     }
 
-    virtual void onError(WebServiceWorkerCacheError* reason) override
+    // Ownership of |rawReason| must be passed.
+    virtual void onError(WebServiceWorkerCacheError* rawReason) override
     {
+        OwnPtr<WebServiceWorkerCacheError> reason = adoptPtr(rawReason);
         m_resolver->reject(CacheStorageError::createException(*reason));
         m_resolver.clear();
     }

@@ -112,8 +112,7 @@ public:
         checkQueryParamsIfProvided(queryParams);
 
         OwnPtr<CacheMatchCallbacks> ownedCallbacks(adoptPtr(callbacks));
-        WebServiceWorkerCacheError error = m_error;
-        return callbacks->onError(&error);
+        return callbacks->onError(new WebServiceWorkerCacheError(m_error));
     }
 
     virtual void dispatchMatchAll(CacheWithResponsesCallbacks* callbacks, const WebServiceWorkerRequest& webRequest, const QueryParams& queryParams) override
@@ -123,8 +122,7 @@ public:
         checkQueryParamsIfProvided(queryParams);
 
         OwnPtr<CacheWithResponsesCallbacks> ownedCallbacks(adoptPtr(callbacks));
-        WebServiceWorkerCacheError error = m_error;
-        return callbacks->onError(&error);
+        return callbacks->onError(new WebServiceWorkerCacheError(m_error));
     }
 
     virtual void dispatchKeys(CacheWithRequestsCallbacks* callbacks, const WebServiceWorkerRequest* webRequest, const QueryParams& queryParams) override
@@ -136,8 +134,7 @@ public:
         }
 
         OwnPtr<CacheWithRequestsCallbacks> ownedCallbacks(adoptPtr(callbacks));
-        WebServiceWorkerCacheError error = m_error;
-        return callbacks->onError(&error);
+        return callbacks->onError(new WebServiceWorkerCacheError(m_error));
     }
 
     virtual void dispatchBatch(CacheBatchCallbacks* callbacks, const WebVector<BatchOperation>& batchOperations) override
@@ -146,8 +143,7 @@ public:
         checkBatchOperationsIfProvided(batchOperations);
 
         OwnPtr<CacheBatchCallbacks> ownedCallbacks(adoptPtr(callbacks));
-        WebServiceWorkerCacheError error = m_error;
-        return callbacks->onError(&error);
+        return callbacks->onError(new WebServiceWorkerCacheError(m_error));
     }
 
 protected:

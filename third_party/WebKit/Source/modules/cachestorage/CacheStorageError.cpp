@@ -19,6 +19,7 @@ DOMException* CacheStorageError::take(ScriptPromiseResolver*, WebType* webErrorR
 
 void CacheStorageError::dispose(WebType* webErrorRaw)
 {
+    delete webErrorRaw;
 }
 
 DOMException* CacheStorageError::createException(WebType webError)
