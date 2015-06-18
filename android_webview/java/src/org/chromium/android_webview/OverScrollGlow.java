@@ -101,6 +101,12 @@ class OverScrollGlow {
      */
     public void absorbGlow(int x, int y, int oldX, int oldY, int rangeX, int rangeY,
             float currentFlingVelocity) {
+        if (mShouldPull) {
+            // Not absorb the glow because the user is pulling the glow now.
+            // TODO(hush): crbug.com/501556. Do not use "mShouldPull" to switch
+            // between absorbGlow and pullGlow. Use the velocity instead.
+            return;
+        }
         if (rangeY > 0 || mHostView.getOverScrollMode() == View.OVER_SCROLL_ALWAYS) {
             if (y < 0 && oldY >= 0) {
                 mEdgeGlowTop.onAbsorb((int) currentFlingVelocity);

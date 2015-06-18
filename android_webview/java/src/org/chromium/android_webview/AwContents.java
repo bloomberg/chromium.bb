@@ -2596,6 +2596,7 @@ public class AwContents implements SmartClipProvider,
         final int y = oldY + deltaY;
         final int scrollRangeX = mScrollOffsetManager.computeMaximumHorizontalScrollOffset();
         final int scrollRangeY = mScrollOffsetManager.computeMaximumVerticalScrollOffset();
+        // absorbGlow() will release the glow if it is not finished.
         mOverScrollGlow.absorbGlow(x, y, oldX, oldY, scrollRangeX, scrollRangeY,
                 (float) Math.hypot(velocityX, velocityY));
 
