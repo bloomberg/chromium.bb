@@ -1025,6 +1025,7 @@ MULTIPROCESS_TEST_MAIN(CheckPidProcess) {
   return kSuccess;
 }
 
+#if defined(CLONE_NEWUSER) && defined(CLONE_NEWPID)
 TEST_F(ProcessUtilTest, CloneFlags) {
   if (RunningOnValgrind() ||
       !base::PathExists(FilePath("/proc/self/ns/user")) ||
@@ -1043,6 +1044,7 @@ TEST_F(ProcessUtilTest, CloneFlags) {
   EXPECT_TRUE(process.WaitForExit(&exit_code));
   EXPECT_EQ(kSuccess, exit_code);
 }
+#endif
 
 TEST(ForkWithFlagsTest, UpdatesPidCache) {
   // The libc clone function, which allows ForkWithFlags to keep the pid cache
