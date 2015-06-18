@@ -60127,6 +60127,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="3" label="Autoplay disabled but user manually started media"/>
   <int value="4"
       label="Autoplay enabled through a user-gesture triggered load() call."/>
+  <int value="5" label="Autoplay disabled by sandbox flags."/>
 </enum>
 
 <enum name="MediaGalleriesUsageType" type="int">
