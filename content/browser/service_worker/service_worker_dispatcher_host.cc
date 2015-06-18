@@ -703,7 +703,7 @@ void ServiceWorkerDispatcherHost::OnPostMessageToWorker(
 
 void ServiceWorkerDispatcherHost::OnProviderCreated(
     int provider_id,
-    int render_frame_id,
+    int route_id,
     ServiceWorkerProviderType provider_type) {
   // TODO(pkasting): Remove ScopedTracker below once crbug.com/477117 is fixed.
   tracked_objects::ScopedTracker tracking_profile(
@@ -719,11 +719,8 @@ void ServiceWorkerDispatcherHost::OnProviderCreated(
     return;
   }
   scoped_ptr<ServiceWorkerProviderHost> provider_host(
-      new ServiceWorkerProviderHost(render_process_id_,
-                                    render_frame_id,
-                                    provider_id,
-                                    provider_type,
-                                    GetContext()->AsWeakPtr(),
+      new ServiceWorkerProviderHost(render_process_id_, route_id, provider_id,
+                                    provider_type, GetContext()->AsWeakPtr(),
                                     this));
   GetContext()->AddProviderHost(provider_host.Pass());
 }

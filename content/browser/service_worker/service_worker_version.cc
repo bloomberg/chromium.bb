@@ -538,6 +538,13 @@ ServiceWorkerVersionInfo ServiceWorkerVersion::GetInfo() {
       running_status(), status(), script_url(), registration_id(), version_id(),
       embedded_worker()->process_id(), embedded_worker()->thread_id(),
       embedded_worker()->worker_devtools_agent_route_id());
+  for (const auto& controllee : controllee_map_) {
+    const ServiceWorkerProviderHost* host = controllee.second;
+    info.clients.insert(std::make_pair(
+        host->client_uuid(),
+        ServiceWorkerVersionInfo::ClientInfo(
+            host->process_id(), host->route_id(), host->provider_type())));
+  }
   if (!main_script_http_info_)
     return info;
   info.script_response_time = main_script_http_info_->response_time;
@@ -936,6 +943,8 @@ void ServiceWorkerVersion::AddControllee(
   controllee_map_[uuid] = provider_host;
   // Keep the worker alive a bit longer right after a new controllee is added.
   RestartTick(&idle_time_);
+  FOR_EACH_OBSERVER(Listener, listeners_,
+                    OnControlleeAdded(this, provider_host));
 }
 
 void ServiceWorkerVersion::RemoveControllee(
@@ -943,6 +952,8 @@ void ServiceWorkerVersion::RemoveControllee(
   const std::string& uuid = provider_host->client_uuid();
   DCHECK(ContainsKey(controllee_map_, uuid));
   controllee_map_.erase(uuid);
+  FOR_EACH_OBSERVER(Listener, listeners_,
+                    OnControlleeRemoved(this, provider_host));
   if (HasControllee())
     return;
   FOR_EACH_OBSERVER(Listener, listeners_, OnNoControllees(this));

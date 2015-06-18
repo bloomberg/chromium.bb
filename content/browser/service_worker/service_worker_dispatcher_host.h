@@ -102,7 +102,7 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
                                  int request_id,
                                  int provider_id);
   void OnProviderCreated(int provider_id,
-                         int render_frame_id,
+                         int route_id,
                          ServiceWorkerProviderType provider_type);
   void OnProviderDestroyed(int provider_id);
   void OnSetHostedVersionId(int provider_id, int64 version_id);

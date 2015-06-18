@@ -110,6 +110,11 @@ class CONTENT_EXPORT ServiceWorkerVersion
                                         const base::string16& message,
                                         int line_number,
                                         const GURL& source_url) {}
+    virtual void OnControlleeAdded(ServiceWorkerVersion* version,
+                                   ServiceWorkerProviderHost* provider_host) {}
+    virtual void OnControlleeRemoved(ServiceWorkerVersion* version,
+                                     ServiceWorkerProviderHost* provider_host) {
+    }
     // Fires when a version transitions from having a controllee to not.
     virtual void OnNoControllees(ServiceWorkerVersion* version) {}
     virtual void OnCachedMetadataUpdated(ServiceWorkerVersion* version) {}

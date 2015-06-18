@@ -22,6 +22,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/push_messaging_status.h"
 #include "url/gurl.h"
 
@@ -57,7 +58,7 @@ const std::string GetVersionRunningStatusString(
     case content::ServiceWorkerVersion::STOPPING:
       return kServiceWorkerVersionRunningStatusStopping;
   }
-  return "";
+  return std::string();
 }
 
 const std::string GetVersionStatusString(
@@ -76,11 +77,31 @@ const std::string GetVersionStatusString(
     case content::ServiceWorkerVersion::REDUNDANT:
       return kServiceWorkerVersionStatusRedundant;
   }
-  return "";
+  return std::string();
 }
 
 scoped_refptr<ServiceWorkerVersion> CreateVersionDictionaryValue(
     const ServiceWorkerVersionInfo& version_info) {
+  std::vector<std::string> clients;
+  for (const auto& client : version_info.clients) {
+    if (client.second.type == SERVICE_WORKER_PROVIDER_FOR_WINDOW) {
+      RenderFrameHostImpl* render_frame_host = RenderFrameHostImpl::FromID(
+          client.second.process_id, client.second.route_id);
+      WebContents* web_contents =
+          WebContents::FromRenderFrameHost(render_frame_host);
+      scoped_refptr<DevToolsAgentHost> agent_host(
+          DevToolsAgentHost::GetOrCreateFor(web_contents));
+      if (agent_host)
+        clients.push_back(agent_host->GetId());
+    } else if (client.second.type ==
+               SERVICE_WORKER_PROVIDER_FOR_SHARED_WORKER) {
+      scoped_refptr<DevToolsAgentHost> agent_host(
+          DevToolsAgentHost::GetForWorker(client.second.process_id,
+                                          client.second.route_id));
+      if (agent_host)
+        clients.push_back(agent_host->GetId());
+    }
+  }
   scoped_refptr<ServiceWorkerVersion> version(
       ServiceWorkerVersion::Create()
           ->set_version_id(base::Int64ToString(version_info.version_id))
@@ -93,7 +114,8 @@ scoped_refptr<ServiceWorkerVersion> CreateVersionDictionaryValue(
           ->set_script_last_modified(
                 version_info.script_last_modified.ToDoubleT())
           ->set_script_response_time(
-              version_info.script_response_time.ToDoubleT()));
+                version_info.script_response_time.ToDoubleT())
+          ->set_controlled_clients(clients));
   return version;
 }
 
@@ -179,6 +201,26 @@ Response CreateContextErrorResponse() {
 
 Response CreateInvalidVersionIdErrorResponse() {
   return Response::InternalError("Invalid version ID");
+}
+
+const std::string GetDevToolsAgentHostTypeString(
+    content::DevToolsAgentHost::Type type) {
+  switch (type) {
+    case DevToolsAgentHost::TYPE_WEB_CONTENTS:
+      return "web_contents";
+    case DevToolsAgentHost::TYPE_FRAME:
+      return "frame";
+    case DevToolsAgentHost::TYPE_SHARED_WORKER:
+      return "shared_worker";
+    case DevToolsAgentHost::TYPE_SERVICE_WORKER:
+      return "service_worker";
+    case DevToolsAgentHost::TYPE_EXTERNAL:
+      return "external";
+    case DevToolsAgentHost::TYPE_BROWSER:
+      return "browser";
+  }
+  NOTREACHED() << type;
+  return std::string();
 }
 
 }  // namespace
@@ -397,9 +439,26 @@ Response ServiceWorkerHandler::DeliverPushMessage(
   return Response::OK();
 }
 
+// TODO(horo): I will remove it in crrev.com/1143363009.
 Response ServiceWorkerHandler::GetTargetInfo(DevToolsCommandId command_id,
                                              const std::string& target_id) {
   return Response::InternalError("Not implemented yet");
+}
+
+Response ServiceWorkerHandler::GetTargetInfo(
+    const std::string& target_id,
+    scoped_refptr<TargetInfo>* target_info) {
+  scoped_refptr<DevToolsAgentHost> agent_host(
+      DevToolsAgentHost::GetForId(target_id));
+  if (!agent_host)
+    return Response::InvalidParams("targetId");
+  *target_info =
+      TargetInfo::Create()
+          ->set_id(agent_host->GetId())
+          ->set_type(GetDevToolsAgentHostTypeString(agent_host->GetType()))
+          ->set_title(agent_host->GetTitle())
+          ->set_url(agent_host->GetURL().spec());
+  return Response::OK();
 }
 
 Response ServiceWorkerHandler::ActivateTarget(const std::string& target_id) {

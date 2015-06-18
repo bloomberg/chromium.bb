@@ -36,15 +36,14 @@ ServiceWorkerNetworkProvider* ServiceWorkerNetworkProvider::FromDocumentState(
 }
 
 ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
-    int render_frame_id,
+    int route_id,
     ServiceWorkerProviderType provider_type)
     : provider_id_(GetNextProviderId()),
       context_(new ServiceWorkerProviderContext(provider_id_)) {
   if (!ChildThreadImpl::current())
     return;  // May be null in some tests.
-  ChildThreadImpl::current()->Send(
-      new ServiceWorkerHostMsg_ProviderCreated(
-          provider_id_, render_frame_id, provider_type));
+  ChildThreadImpl::current()->Send(new ServiceWorkerHostMsg_ProviderCreated(
+      provider_id_, route_id, provider_type));
 }
 
 ServiceWorkerNetworkProvider::~ServiceWorkerNetworkProvider() {

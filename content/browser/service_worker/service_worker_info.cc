@@ -9,6 +9,19 @@
 
 namespace content {
 
+ServiceWorkerVersionInfo::ClientInfo::ClientInfo()
+    : ClientInfo(-1, MSG_ROUTING_NONE, SERVICE_WORKER_PROVIDER_UNKNOWN) {
+}
+
+ServiceWorkerVersionInfo::ClientInfo::ClientInfo(int process_id,
+                                                 int route_id,
+                                                 ServiceWorkerProviderType type)
+    : process_id(process_id), route_id(route_id), type(type) {
+}
+
+ServiceWorkerVersionInfo::ClientInfo::~ClientInfo() {
+}
+
 ServiceWorkerVersionInfo::ServiceWorkerVersionInfo()
     : running_status(ServiceWorkerVersion::STOPPED),
       status(ServiceWorkerVersion::NEW),

@@ -16,6 +16,16 @@ namespace content {
 
 struct CONTENT_EXPORT ServiceWorkerVersionInfo {
  public:
+  struct ClientInfo {
+   public:
+    ClientInfo();
+    ClientInfo(int process_id, int route_id, ServiceWorkerProviderType type);
+    ~ClientInfo();
+    int process_id;
+    int route_id;
+    ServiceWorkerProviderType type;
+  };
+
   ServiceWorkerVersionInfo();
   ServiceWorkerVersionInfo(ServiceWorkerVersion::RunningStatus running_status,
                            ServiceWorkerVersion::Status status,
@@ -37,6 +47,7 @@ struct CONTENT_EXPORT ServiceWorkerVersionInfo {
   int devtools_agent_route_id;
   base::Time script_response_time;
   base::Time script_last_modified;
+  std::map<std::string, ClientInfo> clients;
 };
 
 struct CONTENT_EXPORT ServiceWorkerRegistrationInfo {

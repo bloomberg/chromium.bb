@@ -238,6 +238,27 @@ void ServiceWorkerContextWatcher::OnReportConsoleMessage(
                            message.source_url)));
 }
 
+void ServiceWorkerContextWatcher::OnControlleeAdded(
+    int64 version_id,
+    const std::string& uuid,
+    int process_id,
+    int route_id,
+    ServiceWorkerProviderType type) {
+  ServiceWorkerVersionInfo* version = version_info_map_.get(version_id);
+  DCHECK(version);
+  version->clients[uuid] =
+      ServiceWorkerVersionInfo::ClientInfo(process_id, route_id, type);
+  SendVersionInfo(*version);
+}
+
+void ServiceWorkerContextWatcher::OnControlleeRemoved(int64 version_id,
+                                                      const std::string& uuid) {
+  ServiceWorkerVersionInfo* version = version_info_map_.get(version_id);
+  DCHECK(version);
+  version->clients.erase(uuid);
+  SendVersionInfo(*version);
+}
+
 void ServiceWorkerContextWatcher::OnRegistrationStored(int64 registration_id,
                                                        const GURL& pattern) {
   SendRegistrationInfo(registration_id, pattern,

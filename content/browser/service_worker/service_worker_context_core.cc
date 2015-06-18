@@ -24,6 +24,7 @@
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/public/browser/browser_thread.h"
+#include "ipc/ipc_message.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
@@ -491,7 +492,7 @@ void ServiceWorkerContextCore::TransferProviderHostIn(
 
 void ServiceWorkerContextCore::OnRunningStateChanged(
     ServiceWorkerVersion* version) {
-  if (!observer_list_.get())
+  if (!observer_list_)
     return;
   observer_list_->Notify(FROM_HERE,
                          &ServiceWorkerContextObserver::OnRunningStateChanged,
@@ -500,7 +501,7 @@ void ServiceWorkerContextCore::OnRunningStateChanged(
 
 void ServiceWorkerContextCore::OnVersionStateChanged(
     ServiceWorkerVersion* version) {
-  if (!observer_list_.get())
+  if (!observer_list_)
     return;
   observer_list_->Notify(FROM_HERE,
                          &ServiceWorkerContextObserver::OnVersionStateChanged,
@@ -509,7 +510,7 @@ void ServiceWorkerContextCore::OnVersionStateChanged(
 
 void ServiceWorkerContextCore::OnMainScriptHttpResponseInfoSet(
     ServiceWorkerVersion* version) {
-  if (!observer_list_.get())
+  if (!observer_list_)
     return;
   const net::HttpResponseInfo* info = version->GetMainScriptHttpResponseInfo();
   DCHECK(info);
@@ -527,7 +528,7 @@ void ServiceWorkerContextCore::OnErrorReported(
     int line_number,
     int column_number,
     const GURL& source_url) {
-  if (!observer_list_.get())
+  if (!observer_list_)
     return;
   observer_list_->Notify(
       FROM_HERE, &ServiceWorkerContextObserver::OnErrorReported,
@@ -544,7 +545,7 @@ void ServiceWorkerContextCore::OnReportConsoleMessage(
     const base::string16& message,
     int line_number,
     const GURL& source_url) {
-  if (!observer_list_.get())
+  if (!observer_list_)
     return;
   observer_list_->Notify(
       FROM_HERE, &ServiceWorkerContextObserver::OnReportConsoleMessage,
@@ -552,6 +553,28 @@ void ServiceWorkerContextCore::OnReportConsoleMessage(
       version->embedded_worker()->thread_id(),
       ServiceWorkerContextObserver::ConsoleMessage(
           source_identifier, message_level, message, line_number, source_url));
+}
+
+void ServiceWorkerContextCore::OnControlleeAdded(
+    ServiceWorkerVersion* version,
+    ServiceWorkerProviderHost* provider_host) {
+  if (!observer_list_)
+    return;
+  observer_list_->Notify(FROM_HERE,
+                         &ServiceWorkerContextObserver::OnControlleeAdded,
+                         version->version_id(), provider_host->client_uuid(),
+                         provider_host->process_id(), provider_host->route_id(),
+                         provider_host->provider_type());
+}
+
+void ServiceWorkerContextCore::OnControlleeRemoved(
+    ServiceWorkerVersion* version,
+    ServiceWorkerProviderHost* provider_host) {
+  if (!observer_list_)
+    return;
+  observer_list_->Notify(FROM_HERE,
+                         &ServiceWorkerContextObserver::OnControlleeRemoved,
+                         version->version_id(), provider_host->client_uuid());
 }
 
 ServiceWorkerProcessManager* ServiceWorkerContextCore::process_manager() {

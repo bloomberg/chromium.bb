@@ -67,6 +67,12 @@ class ServiceWorkerContextObserver {
                                       int process_id,
                                       int thread_id,
                                       const ConsoleMessage& message) {}
+  virtual void OnControlleeAdded(int64 version_id,
+                                 const std::string& uuid,
+                                 int process_id,
+                                 int route_id,
+                                 ServiceWorkerProviderType type) {}
+  virtual void OnControlleeRemoved(int64 version_id, const std::string& uuid) {}
   virtual void OnRegistrationStored(int64 registration_id,
                                     const GURL& pattern) {}
   virtual void OnRegistrationDeleted(int64 registration_id,

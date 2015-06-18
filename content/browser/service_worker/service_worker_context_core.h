@@ -128,6 +128,10 @@ class CONTENT_EXPORT ServiceWorkerContextCore
                               const base::string16& message,
                               int line_number,
                               const GURL& source_url) override;
+  void OnControlleeAdded(ServiceWorkerVersion* version,
+                         ServiceWorkerProviderHost* provider_host) override;
+  void OnControlleeRemoved(ServiceWorkerVersion* version,
+                           ServiceWorkerProviderHost* provider_host) override;
 
   ServiceWorkerContextWrapper* wrapper() const { return wrapper_; }
   ServiceWorkerStorage* storage() { return storage_.get(); }

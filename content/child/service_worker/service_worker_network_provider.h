@@ -37,8 +37,7 @@ class CONTENT_EXPORT ServiceWorkerNetworkProvider
   static ServiceWorkerNetworkProvider* FromDocumentState(
       base::SupportsUserData* document_state);
 
-  ServiceWorkerNetworkProvider(int render_frame_id,
-                               ServiceWorkerProviderType type);
+  ServiceWorkerNetworkProvider(int route_id, ServiceWorkerProviderType type);
   ~ServiceWorkerNetworkProvider() override;
 
   int provider_id() const { return provider_id_; }

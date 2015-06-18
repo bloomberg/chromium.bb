@@ -31,9 +31,8 @@ namespace content {
 
 namespace {
 
-ServiceWorkerClientInfo FocusOnUIThread(
-    int render_process_id,
-    int render_frame_id) {
+ServiceWorkerClientInfo FocusOnUIThread(int render_process_id,
+                                        int render_frame_id) {
   RenderFrameHostImpl* render_frame_host =
       RenderFrameHostImpl::FromID(render_process_id, render_frame_id);
   WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
@@ -70,14 +69,14 @@ ServiceWorkerProviderHost::OneShotGetReadyCallback::~OneShotGetReadyCallback() {
 
 ServiceWorkerProviderHost::ServiceWorkerProviderHost(
     int render_process_id,
-    int render_frame_id,
+    int route_id,
     int provider_id,
     ServiceWorkerProviderType provider_type,
     base::WeakPtr<ServiceWorkerContextCore> context,
     ServiceWorkerDispatcherHost* dispatcher_host)
     : client_uuid_(base::GenerateGUID()),
       render_process_id_(render_process_id),
-      render_frame_id_(render_frame_id),
+      route_id_(route_id),
       render_thread_id_(kDocumentMainThreadId),
       provider_id_(provider_id),
       provider_type_(provider_type),
@@ -110,6 +109,12 @@ ServiceWorkerProviderHost::~ServiceWorkerProviderHost() {
 
   for (const GURL& pattern : associated_patterns_)
     DecreaseProcessReference(pattern);
+}
+
+int ServiceWorkerProviderHost::frame_id() const {
+  if (provider_type_ == SERVICE_WORKER_PROVIDER_FOR_WINDOW)
+    return route_id_;
+  return MSG_ROUTING_NONE;
 }
 
 void ServiceWorkerProviderHost::OnVersionAttributesChanged(
@@ -386,20 +391,25 @@ void ServiceWorkerProviderHost::PostMessage(
 }
 
 void ServiceWorkerProviderHost::Focus(const GetClientInfoCallback& callback) {
+  if (provider_type_ != SERVICE_WORKER_PROVIDER_FOR_WINDOW) {
+    callback.Run(ServiceWorkerClientInfo());
+    return;
+  }
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&FocusOnUIThread,
-                 render_process_id_,
-                 render_frame_id_),
-      callback);
+      base::Bind(&FocusOnUIThread, render_process_id_, route_id_), callback);
 }
 
 void ServiceWorkerProviderHost::GetWindowClientInfo(
     const GetClientInfoCallback& callback) const {
+  if (provider_type_ != SERVICE_WORKER_PROVIDER_FOR_WINDOW) {
+    callback.Run(ServiceWorkerClientInfo());
+    return;
+  }
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&ServiceWorkerProviderHost::GetWindowClientInfoOnUI,
-                 render_process_id_, render_frame_id_),
+                 render_process_id_, route_id_),
       callback);
 }
 
@@ -453,7 +463,7 @@ bool ServiceWorkerProviderHost::GetRegistrationForReady(
 
 void ServiceWorkerProviderHost::PrepareForCrossSiteTransfer() {
   DCHECK_NE(ChildProcessHost::kInvalidUniqueID, render_process_id_);
-  DCHECK_NE(MSG_ROUTING_NONE, render_frame_id_);
+  DCHECK_NE(MSG_ROUTING_NONE, route_id_);
   DCHECK_EQ(kDocumentMainThreadId, render_thread_id_);
   DCHECK_NE(SERVICE_WORKER_PROVIDER_UNKNOWN, provider_type_);
 
@@ -471,7 +481,7 @@ void ServiceWorkerProviderHost::PrepareForCrossSiteTransfer() {
   }
 
   render_process_id_ = ChildProcessHost::kInvalidUniqueID;
-  render_frame_id_ = MSG_ROUTING_NONE;
+  route_id_ = MSG_ROUTING_NONE;
   render_thread_id_ = kInvalidEmbeddedWorkerThreadId;
   provider_id_ = kInvalidServiceWorkerProviderId;
   provider_type_ = SERVICE_WORKER_PROVIDER_UNKNOWN;
@@ -489,7 +499,7 @@ void ServiceWorkerProviderHost::CompleteCrossSiteTransfer(
   DCHECK_NE(MSG_ROUTING_NONE, new_frame_id);
 
   render_process_id_ = new_process_id;
-  render_frame_id_ = new_frame_id;
+  route_id_ = new_frame_id;
   render_thread_id_ = kDocumentMainThreadId;
   provider_id_ = new_provider_id;
   provider_type_ = new_provider_type;
