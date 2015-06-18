@@ -28,6 +28,9 @@ NSString* UIResultFromWKResult(id result) {
   if (result_type == CFBooleanGetTypeID())
     return [result boolValue] ? @"true" : @"false";
 
+  if (result_type == CFNullGetTypeID())
+    return @"";
+
   // TODO(stuartmorgan): Stringify other types.
   NOTREACHED();
   return nil;

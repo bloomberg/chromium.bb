@@ -99,4 +99,9 @@ WEB_TEST_F(UIWebViewJSUtilsTest, WKWebViewJSUtilsTest, BoolEvaluation) {
   EXPECT_NSEQ(@"false", EvaluateJavaScript(this->web_view_, @"false"));
 }
 
+// Tests that a script with null result correctly evaluates to empty string.
+WEB_TEST_F(UIWebViewJSUtilsTest, WKWebViewJSUtilsTest, NullEvaluation) {
+  EXPECT_NSEQ(@"", EvaluateJavaScript(this->web_view_, @"null"));
+}
+
 }  // namespace
