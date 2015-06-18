@@ -86,6 +86,11 @@ void RenderMediaClient::AddSupportedKeySystems(
 #endif
 }
 
+void RenderMediaClient::RecordRapporURL(const std::string& metric,
+                                        const GURL& url) {
+  GetContentClient()->renderer()->RecordRapporURL(metric, url);
+}
+
 void RenderMediaClient::SetTickClockForTesting(
     scoped_ptr<base::TickClock> tick_clock) {
   tick_clock_.swap(tick_clock);

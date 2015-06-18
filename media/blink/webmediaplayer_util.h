@@ -32,8 +32,10 @@ blink::WebTimeRanges MEDIA_EXPORT ConvertToWebTimeRanges(
 blink::WebMediaPlayer::NetworkState MEDIA_EXPORT PipelineErrorToNetworkState(
     PipelineStatus error);
 
-// Report the scheme of Media URIs.
-void MEDIA_EXPORT ReportMediaSchemeUma(const GURL& url);
+// Report various metrics to UMA and RAPPOR.
+void MEDIA_EXPORT ReportMetrics(blink::WebMediaPlayer::LoadType load_type,
+                                const GURL& url,
+                                const GURL& origin_url);
 
 // Convert Initialization Data Types.
 EmeInitDataType MEDIA_EXPORT

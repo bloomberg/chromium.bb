@@ -1955,11 +1955,10 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
   blink::WebMediaStream web_stream(
       blink::WebMediaStreamRegistry::lookupMediaStreamDescriptor(url));
   if (!web_stream.isNull())
-    return CreateWebMediaPlayerForMediaStream(url, client);
+    return CreateWebMediaPlayerForMediaStream(client);
 
 #if defined(OS_ANDROID)
-  return CreateAndroidWebMediaPlayer(url, client, GetMediaPermission(),
-                                     initial_cdm);
+  return CreateAndroidWebMediaPlayer(client, GetMediaPermission(), initial_cdm);
 #else
   scoped_refptr<media::MediaLog> media_log(new RenderMediaLog());
 
@@ -4588,7 +4587,6 @@ void RenderFrameImpl::InitializeUserMediaClient() {
 }
 
 WebMediaPlayer* RenderFrameImpl::CreateWebMediaPlayerForMediaStream(
-    const blink::WebURL& url,
     WebMediaPlayerClient* client) {
 #if defined(ENABLE_WEBRTC)
 #if defined(OS_ANDROID) && defined(ARCH_CPU_ARMEL)
@@ -4841,7 +4839,6 @@ NavigationState* RenderFrameImpl::CreateNavigationStateFromPending() {
 #if defined(OS_ANDROID)
 
 WebMediaPlayer* RenderFrameImpl::CreateAndroidWebMediaPlayer(
-    const blink::WebURL& url,
     WebMediaPlayerClient* client,
     media::MediaPermission* media_permission,
     blink::WebContentDecryptionModule* initial_cdm) {

@@ -24,11 +24,12 @@ class CONTENT_EXPORT RenderMediaClient : public media::MediaClient {
   static void Initialize();
 
   // MediaClient implementation.
-  void AddKeySystemsInfoForUMA(std::vector<media::KeySystemInfoForUMA>*
-                                   key_systems_info_for_uma) override;
-  bool IsKeySystemsUpdateNeeded() override;
+  void AddKeySystemsInfoForUMA(
+      std::vector<media::KeySystemInfoForUMA>* key_systems_info_for_uma) final;
+  bool IsKeySystemsUpdateNeeded() final;
   void AddSupportedKeySystems(
-      std::vector<media::KeySystemInfo>* key_systems_info) override;
+      std::vector<media::KeySystemInfo>* key_systems_info) final;
+  void RecordRapporURL(const std::string& metric, const GURL& url) final;
 
   void SetTickClockForTesting(scoped_ptr<base::TickClock> tick_clock);
 

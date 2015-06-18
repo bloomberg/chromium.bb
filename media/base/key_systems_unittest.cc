@@ -126,6 +126,7 @@ class TestMediaClient : public MediaClient {
   bool IsKeySystemsUpdateNeeded() final;
   void AddSupportedKeySystems(
       std::vector<KeySystemInfo>* key_systems_info) override;
+  void RecordRapporURL(const std::string& metric, const GURL& url) final;
 
   // Helper function to test the case where IsKeySystemsUpdateNeeded() is true
   // after AddSupportedKeySystems() is called.
@@ -175,6 +176,11 @@ void TestMediaClient::AddSupportedKeySystems(
     AddExternalKeySystem(key_systems);
 
   is_update_needed_ = false;
+}
+
+void TestMediaClient::RecordRapporURL(const std::string& /* metric */,
+                                      const GURL& /* url */) {
+  NOTIMPLEMENTED();
 }
 
 void TestMediaClient::SetKeySystemsUpdateNeeded() {

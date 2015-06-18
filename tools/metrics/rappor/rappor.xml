@@ -310,6 +310,21 @@ components/rappor/rappor_service.cc.
   </summary>
 </rappor-metric>
 
+<rappor-metric name="Media.OriginUrl.MSE" type="ETLD_PLUS_ONE">
+  <owner>xhwang@chromium.org</owner>
+  <summary>
+    The domain that loads an HTML5 media player using Media Source Extensions
+    (MSE).
+  </summary>
+</rappor-metric>
+
+<rappor-metric name="Media.OriginUrl.SRC" type="ETLD_PLUS_ONE">
+  <owner>xhwang@chromium.org</owner>
+  <summary>
+    The domain that loads an HTML5 media player using SRC.
+  </summary>
+</rappor-metric>
+
 <rappor-metric name="Plugins.FlashOriginUrl" type="ETLD_PLUS_ONE">
   <owner>wfh@chromium.org</owner>
   <summary>

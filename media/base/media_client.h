@@ -10,6 +10,7 @@
 
 #include "media/base/key_system_info.h"
 #include "media/base/media_export.h"
+#include "url/gurl.h"
 
 namespace media {
 
@@ -22,7 +23,7 @@ MEDIA_EXPORT void SetMediaClient(MediaClient* media_client);
 // Media's embedder API should only be used by media.
 #if defined(MEDIA_IMPLEMENTATION)
 // Getter for the client. Returns NULL if no customized client is needed.
-MediaClient* GetMediaClient();
+MEDIA_EXPORT MediaClient* GetMediaClient();
 #endif
 
 struct MEDIA_EXPORT KeySystemInfoForUMA {
@@ -65,6 +66,10 @@ class MEDIA_EXPORT MediaClient {
   // Adds info for supported key systems.
   virtual void AddSupportedKeySystems(
       std::vector<KeySystemInfo>* key_systems_info) = 0;
+
+  // Records a domain and registry of a url to a Rappor privacy-preserving
+  // metric. See: https://www.chromium.org/developers/design-documents/rappor
+  virtual void RecordRapporURL(const std::string& metric, const GURL& url) = 0;
 };
 
 }  // namespace media

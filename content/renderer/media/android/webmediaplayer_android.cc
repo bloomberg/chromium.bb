@@ -268,7 +268,9 @@ void WebMediaPlayerAndroid::load(LoadType load_type,
                                  const blink::WebURL& url,
                                  CORSMode cors_mode) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
-  media::ReportMediaSchemeUma(GURL(url));
+
+  media::ReportMetrics(load_type, GURL(url),
+                       GURL(frame_->document().securityOrigin().toString()));
 
   switch (load_type) {
     case LoadTypeURL:
@@ -325,8 +327,6 @@ void WebMediaPlayerAndroid::load(LoadType load_type,
 
   UpdateNetworkState(WebMediaPlayer::NetworkStateLoading);
   UpdateReadyState(WebMediaPlayer::ReadyStateHaveNothing);
-  UMA_HISTOGRAM_BOOLEAN(
-      "Media.MSE.Playback", player_type_ == MEDIA_PLAYER_TYPE_MEDIA_SOURCE);
 }
 
 void WebMediaPlayerAndroid::DidLoadMediaInfo(
