@@ -517,6 +517,31 @@ bool ThreadState::popAndInvokeThreadLocalWeakCallback(Visitor* visitor)
     return false;
 }
 
+void ThreadState::threadLocalWeakProcessing()
+{
+    ASSERT(!sweepForbidden());
+    TRACE_EVENT0("blink_gc", "ThreadState::threadLocalWeakProcessing");
+    SweepForbiddenScope forbiddenScope(this);
+    if (isMainThread())
+        ScriptForbiddenScope::enter();
+
+    // Disallow allocation during weak processing.
+    // It would be technically safe to allow allocations, but it is unsafe
+    // to mutate an object graph in a way in which a dead object gets
+    // resurrected or mutate a HashTable (because HashTable's weak processing
+    // assumes that the HashTable hasn't been mutated since the latest marking).
+    // Due to the complexity, we just forbid allocations.
+    NoAllocationScope noAllocationScope(this);
+
+    MarkingVisitor<Visitor::WeakProcessing> weakProcessingVisitor;
+
+    // Perform thread-specific weak processing.
+    while (popAndInvokeThreadLocalWeakCallback(&weakProcessingVisitor)) { }
+
+    if (isMainThread())
+        ScriptForbiddenScope::exit();
+}
+
 PersistentAnchor& ThreadState::globalRoots()
 {
     AtomicallyInitializedStaticReference(PersistentAnchor, anchor, new PersistentAnchor);
@@ -679,7 +704,7 @@ void ThreadState::performIdleLazySweep(double deadlineSeconds)
         return;
 
     bool sweepCompleted = true;
-    ThreadState::SweepForbiddenScope scope(this);
+    SweepForbiddenScope scope(this);
     {
         if (isMainThread())
             ScriptForbiddenScope::enter();
@@ -950,39 +975,27 @@ void ThreadState::preSweep()
     if (gcState() != EagerSweepScheduled && gcState() != LazySweepScheduled)
         return;
 
-    {
-        if (isMainThread())
-            ScriptForbiddenScope::enter();
+    threadLocalWeakProcessing();
 
-        SweepForbiddenScope forbiddenScope(this);
-        {
-            MarkingVisitor<Visitor::WeakProcessing> weakProcessingVisitor;
+#if ENABLE(LAZY_SWEEPING)
+    GCState previousGCState = gcState();
+#endif
+    // We have to set the GCState to Sweeping before calling pre-finalizers
+    // to disallow a GC during the pre-finalizers.
+    setGCState(Sweeping);
 
-            // Disallow allocation during weak processing.
-            NoAllocationScope noAllocationScope(this);
-            {
-                // Perform thread-specific weak processing.
-                TRACE_EVENT0("blink_gc", "ThreadState::threadLocalWeakProcessing");
-                while (popAndInvokeThreadLocalWeakCallback(&weakProcessingVisitor)) { }
-            }
-            {
-                TRACE_EVENT0("blink_gc", "ThreadState::invokePreFinalizers");
-                invokePreFinalizers();
-            }
-        }
-
-        if (isMainThread())
-            ScriptForbiddenScope::exit();
-    }
+    // Allocation is allowed during the pre-finalizers and destructors.
+    // However, they must not mutate an object graph in a way in which
+    // a dead object gets resurrected.
+    invokePreFinalizers();
 
 #if defined(ADDRESS_SANITIZER)
     poisonEagerHeap(SetPoison);
 #endif
 
 #if ENABLE(LAZY_SWEEPING)
-    if (gcState() == EagerSweepScheduled) {
+    if (previousGCState == EagerSweepScheduled) {
         // Eager sweeping should happen only in testing.
-        setGCState(Sweeping);
         eagerSweep();
 #if defined(ADDRESS_SANITIZER)
         poisonAllHeaps();
@@ -990,7 +1003,6 @@ void ThreadState::preSweep()
         completeSweep();
     } else {
         // The default behavior is lazy sweeping.
-        setGCState(Sweeping);
         eagerSweep();
 #if defined(ADDRESS_SANITIZER)
         poisonAllHeaps();
@@ -998,7 +1010,6 @@ void ThreadState::preSweep()
         scheduleIdleLazySweep();
     }
 #else
-    setGCState(Sweeping);
     completeSweep();
 #endif
 
@@ -1040,7 +1051,7 @@ void ThreadState::eagerSweep()
     if (sweepForbidden())
         return;
 
-    ThreadState::SweepForbiddenScope scope(this);
+    SweepForbiddenScope scope(this);
     {
         if (isMainThread())
             ScriptForbiddenScope::enter();
@@ -1064,7 +1075,7 @@ void ThreadState::completeSweep()
     if (sweepForbidden())
         return;
 
-    ThreadState::SweepForbiddenScope scope(this);
+    SweepForbiddenScope scope(this);
     {
         if (isMainThread())
             ScriptForbiddenScope::enter();
@@ -1297,6 +1308,13 @@ void ThreadState::unregisterPreFinalizerInternal(void* target)
 void ThreadState::invokePreFinalizers()
 {
     checkThread();
+    ASSERT(!sweepForbidden());
+    TRACE_EVENT0("blink_gc", "ThreadState::invokePreFinalizers");
+
+    if (isMainThread())
+        ScriptForbiddenScope::enter();
+
+    SweepForbiddenScope forbiddenScope(this);
     Vector<void*> deadObjects;
     for (auto& entry : m_preFinalizers) {
         if (entry.value(entry.key))
@@ -1304,6 +1322,9 @@ void ThreadState::invokePreFinalizers()
     }
     // FIXME: removeAll is inefficient.  It can shrink repeatedly.
     m_preFinalizers.removeAll(deadObjects);
+
+    if (isMainThread())
+        ScriptForbiddenScope::exit();
 }
 
 void ThreadState::clearHeapAges()

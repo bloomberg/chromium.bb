@@ -1597,6 +1597,31 @@ private:
     Persistent<IntWrapper>* m_wrapper;
 };
 
+class PreFinalizationAllocator : public GarbageCollectedFinalized<PreFinalizationAllocator> {
+    USING_PRE_FINALIZER(PreFinalizationAllocator, dispose);
+public:
+    PreFinalizationAllocator(Persistent<IntWrapper>* wrapper)
+        : m_wrapper(wrapper)
+    {
+        ThreadState::current()->registerPreFinalizer(*this);
+    }
+
+    void dispose()
+    {
+        for (int i = 0; i < 10; ++i)
+            *m_wrapper = IntWrapper::create(42);
+        for (int i = 0; i < 512; ++i)
+            new OneKiloByteObject();
+        for (int i = 0; i < 32; ++i)
+            LargeHeapObject::create();
+    }
+
+    DEFINE_INLINE_TRACE() { }
+
+private:
+    Persistent<IntWrapper>* m_wrapper;
+};
+
 TEST(HeapTest, Transition)
 {
     {
@@ -4298,6 +4323,35 @@ TEST(HeapTest, AllocationDuringFinalization)
 
     wrapper.clear();
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGC);
+    // The 42 IntWrappers were the ones allocated in ~FinalizationAllocator
+    // and the ones allocated in LargeHeapObject.
+    EXPECT_EQ(42, IntWrapper::s_destructorCalls);
+    EXPECT_EQ(512, OneKiloByteObject::s_destructorCalls);
+    EXPECT_EQ(32, LargeHeapObject::s_destructorCalls);
+}
+
+TEST(HeapTest, AllocationDuringPrefinalizer)
+{
+    clearOutOldGarbage();
+    IntWrapper::s_destructorCalls = 0;
+    OneKiloByteObject::s_destructorCalls = 0;
+    LargeHeapObject::s_destructorCalls = 0;
+
+    Persistent<IntWrapper> wrapper;
+    new PreFinalizationAllocator(&wrapper);
+
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGC);
+    EXPECT_EQ(0, IntWrapper::s_destructorCalls);
+    EXPECT_EQ(0, OneKiloByteObject::s_destructorCalls);
+    EXPECT_EQ(0, LargeHeapObject::s_destructorCalls);
+    // Check that the wrapper allocated during finalization is not
+    // swept away and zapped later in the same sweeping phase.
+    EXPECT_EQ(42, wrapper->value());
+
+    wrapper.clear();
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGC);
+    // The 42 IntWrappers were the ones allocated in the pre-finalizer
+    // of PreFinalizationAllocator and the ones allocated in LargeHeapObject.
     EXPECT_EQ(42, IntWrapper::s_destructorCalls);
     EXPECT_EQ(512, OneKiloByteObject::s_destructorCalls);
     EXPECT_EQ(32, LargeHeapObject::s_destructorCalls);

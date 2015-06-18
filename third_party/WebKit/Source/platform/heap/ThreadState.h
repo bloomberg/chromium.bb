@@ -72,11 +72,13 @@ using TraceCallback = VisitorCallback;
 using WeakCallback = VisitorCallback;
 using EphemeronCallback = VisitorCallback;
 
-// Declare that a class has a pre-finalizer function.  The function is called in
-// the object's owner thread, and can access Member<>s to other
-// garbage-collected objects allocated in the thread.  However we must not
-// allocate new garbage-collected objects, nor update Member<> and Persistent<>
-// pointers.
+// Declare that a class has a pre-finalizer function. The function is called in
+// the object's owner thread. The pre-finalizer is called before any object gets
+// swept, so it is allowed to touch on-heap objects that may be collected in the
+// GC cycle. If you cannot avoid touching on-heap objects in a destructor (which
+// is not allowed), you can consider using the pre-finalizer or
+// EARGERY_FINALIZED. The only restriction is that the pre-finalizer must not
+// resurrect dead objects (e.g., store unmarked objects into Members etc).
 //
 // This feature is similar to the HeapHashMap<WeakMember<Foo>, OwnPtr<Disposer>>
 // idiom.  The difference between this and the idiom is that pre-finalizer
@@ -529,6 +531,7 @@ public:
 
     void pushThreadLocalWeakCallback(void*, WeakCallback);
     bool popAndInvokeThreadLocalWeakCallback(Visitor*);
+    void threadLocalWeakProcessing();
 
     size_t objectPayloadSizeForTesting();
     void prepareHeapForTermination();
