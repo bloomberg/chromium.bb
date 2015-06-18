@@ -134,6 +134,7 @@ class DromaeoDomCoreAttr(_DromaeoBenchmark):
     return 'dromaeo.domcoreattr'
 
 
+@benchmark.Disabled('xp')  # crbug.com/501625
 class DromaeoDomCoreModify(_DromaeoBenchmark):
   """Dromaeo DOMCore modify JavaScript benchmark.
 
