@@ -90,7 +90,7 @@ def main():
   if options.depfile:
     build_utils.WriteDepfile(
         options.depfile,
-        [main_manifest] + build_utils.GetPythonDependencies())
+        [options.main_manifest] + build_utils.GetPythonDependencies())
 
 
 if __name__ == '__main__':
