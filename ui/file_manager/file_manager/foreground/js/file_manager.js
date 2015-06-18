@@ -748,10 +748,8 @@ FileManager.prototype = /** @struct */ {
     // Show the window as soon as the UI pre-initialization is done.
     if (this.dialogType == DialogType.FULL_PAGE && !util.runningInBrowser()) {
       chrome.app.window.current().show();
-      setTimeout(callback, 100);  // Wait until the animation is finished.
-    } else {
-      callback();
     }
+    callback();
   };
 
   /**
