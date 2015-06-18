@@ -78,7 +78,7 @@ void SearchResultPageView::SetSelection(bool select) {
   if (select)
     SetSelectedIndex(0, false);
   else
-    result_container_views_[selected_index_]->ClearSelectedIndex();
+    ClearSelectedIndex();
 }
 
 void SearchResultPageView::AddSearchResultContainerView(
@@ -94,8 +94,10 @@ void SearchResultPageView::AddSearchResultContainerView(
 }
 
 bool SearchResultPageView::OnKeyPressed(const ui::KeyEvent& event) {
-  if (result_container_views_.at(selected_index_)->OnKeyPressed(event))
+  if (HasSelection() &&
+      result_container_views_.at(selected_index_)->OnKeyPressed(event)) {
     return true;
+  }
 
   int dir = 0;
   bool directional_movement = false;
@@ -130,12 +132,20 @@ bool SearchResultPageView::OnKeyPressed(const ui::KeyEvent& event) {
   return false;
 }
 
+void SearchResultPageView::ClearSelectedIndex() {
+  if (HasSelection())
+    result_container_views_[selected_index_]->ClearSelectedIndex();
+
+  selected_index_ = -1;
+}
+
 void SearchResultPageView::SetSelectedIndex(int index,
                                             bool directional_movement) {
   bool from_bottom = index < selected_index_;
 
   // Reset the old selected view's selection.
-  result_container_views_[selected_index_]->ClearSelectedIndex();
+  ClearSelectedIndex();
+
   selected_index_ = index;
   // Set the new selected view's selection to its first result.
   result_container_views_[selected_index_]->OnContainerSelected(
@@ -149,6 +159,23 @@ bool SearchResultPageView::IsValidSelectionIndex(int index) {
 void SearchResultPageView::ChildPreferredSizeChanged(views::View* child) {
   DCHECK(!result_container_views_.empty());
 
+  // Only sort and layout the containers when they have all updated.
+  for (SearchResultContainerView* view : result_container_views_) {
+    if (view->UpdateScheduled()) {
+      return;
+    }
+  }
+
+  SearchResultContainerView* old_selection =
+      HasSelection() ? result_container_views_[selected_index_] : nullptr;
+
+  // Truncate the currently selected container's selection if necessary. If
+  // there are no results, the selection will be cleared below.
+  if (old_selection && old_selection->num_results() > 0 &&
+      old_selection->selected_index() >= old_selection->num_results()) {
+    old_selection->SetSelectedIndex(old_selection->num_results() - 1);
+  }
+
   if (switches::IsExperimentalAppListEnabled()) {
     // Sort the result container views by their score.
     std::sort(result_container_views_.begin(), result_container_views_.end(),
@@ -160,19 +187,34 @@ void SearchResultPageView::ChildPreferredSizeChanged(views::View* child) {
     int result_y_index = 0;
     for (size_t i = 0; i < result_container_views_.size(); ++i) {
       SearchResultContainerView* view = result_container_views_[i];
-      view->ClearSelectedIndex();
       ReorderChildView(view->parent(), i);
 
-      // Only notify containers that have finished updating.
-      if (!view->UpdateScheduled())
-        view->NotifyFirstResultYIndex(result_y_index);
+      view->NotifyFirstResultYIndex(result_y_index);
 
       result_y_index += view->GetYSize();
     }
   }
 
   Layout();
-  SetSelectedIndex(0, false);
+
+  SearchResultContainerView* new_selection = nullptr;
+  if (HasSelection() &&
+      result_container_views_[selected_index_]->num_results() > 0) {
+    new_selection = result_container_views_[selected_index_];
+  }
+
+  // If there was no previous selection or the new view at the selection index
+  // is different from the old one, update the selected view.
+  if (!HasSelection() || old_selection != new_selection) {
+    if (old_selection)
+      old_selection->ClearSelectedIndex();
+
+    int new_selection_index = new_selection ? selected_index_ : 0;
+    // Clear the current selection so that the selection always comes in from
+    // the top.
+    ClearSelectedIndex();
+    SetSelectedIndex(new_selection_index, false);
+  }
 }
 
 gfx::Rect SearchResultPageView::GetPageBoundsForState(
@@ -203,6 +245,10 @@ int SearchResultPageView::GetSearchBoxZHeight() const {
   return switches::IsExperimentalAppListEnabled()
              ? kSearchResultZHeight
              : AppListPage::GetSearchBoxZHeight();
+}
+
+void SearchResultPageView::OnHidden() {
+  ClearSelectedIndex();
 }
 
 }  // namespace app_list

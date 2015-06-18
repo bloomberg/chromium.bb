@@ -56,6 +56,7 @@ class SearchResultPageViewTest : public views::ViewsTestBase,
   void SetUpSearchResults(const std::vector<
       std::pair<SearchResult::DisplayType, int>> result_types) {
     AppListModel::SearchResults* results = GetResults();
+    results->DeleteAll();
     double relevance = result_types.size();
     for (const auto& data : result_types) {
       // Set the relevance of the results in each group in decreasing order (so
@@ -250,6 +251,84 @@ TEST_F(SearchResultPageViewTest, ResultsSorted) {
 
   EXPECT_EQ(list_view(), view()->result_container_views()[0]);
   EXPECT_EQ(tile_list_view(), view()->result_container_views()[1]);
+}
+
+TEST_F(SearchResultPageViewTest, UpdateWithSelection) {
+  {
+    std::vector<std::pair<SearchResult::DisplayType, int>> result_types;
+    result_types.push_back(std::make_pair(SearchResult::DISPLAY_TILE, 3));
+    result_types.push_back(std::make_pair(SearchResult::DISPLAY_LIST, 2));
+
+    SetUpSearchResults(result_types);
+  }
+
+  EXPECT_EQ(0, GetSelectedIndex());
+  EXPECT_EQ(0, tile_list_view()->selected_index());
+  EXPECT_EQ(-1, list_view()->selected_index());
+
+  // Navigate to the second result in the list group.
+  EXPECT_TRUE(KeyPress(ui::VKEY_DOWN));
+  EXPECT_EQ(1, GetSelectedIndex());
+  EXPECT_EQ(-1, tile_list_view()->selected_index());
+  EXPECT_EQ(0, list_view()->selected_index());
+
+  EXPECT_TRUE(KeyPress(ui::VKEY_DOWN));
+  EXPECT_EQ(1, GetSelectedIndex());
+  EXPECT_EQ(-1, tile_list_view()->selected_index());
+  EXPECT_EQ(1, list_view()->selected_index());
+
+  {
+    std::vector<std::pair<SearchResult::DisplayType, int>> result_types;
+    result_types.push_back(std::make_pair(SearchResult::DISPLAY_TILE, 3));
+    result_types.push_back(std::make_pair(SearchResult::DISPLAY_LIST, 3));
+
+    SetUpSearchResults(result_types);
+  }
+
+  // The second list result should still be selected after the update.
+  EXPECT_EQ(1, GetSelectedIndex());
+  EXPECT_EQ(-1, tile_list_view()->selected_index());
+  EXPECT_EQ(1, list_view()->selected_index());
+
+  {
+    std::vector<std::pair<SearchResult::DisplayType, int>> result_types;
+    result_types.push_back(std::make_pair(SearchResult::DISPLAY_TILE, 3));
+    result_types.push_back(std::make_pair(SearchResult::DISPLAY_LIST, 1));
+
+    SetUpSearchResults(result_types);
+  }
+
+  // The first list result should be selected after the update as the second
+  // result has vanished.
+  EXPECT_EQ(1, GetSelectedIndex());
+  EXPECT_EQ(-1, tile_list_view()->selected_index());
+  EXPECT_EQ(0, list_view()->selected_index());
+
+  {
+    std::vector<std::pair<SearchResult::DisplayType, int>> result_types;
+    result_types.push_back(std::make_pair(SearchResult::DISPLAY_LIST, 1));
+    result_types.push_back(std::make_pair(SearchResult::DISPLAY_TILE, 3));
+
+    SetUpSearchResults(result_types);
+  }
+
+  // The tile container should be selected because we hold the selected
+  // container index constant.
+  EXPECT_EQ(1, GetSelectedIndex());
+  EXPECT_EQ(0, tile_list_view()->selected_index());
+  EXPECT_EQ(-1, list_view()->selected_index());
+
+  {
+    std::vector<std::pair<SearchResult::DisplayType, int>> result_types;
+    result_types.push_back(std::make_pair(SearchResult::DISPLAY_LIST, 3));
+
+    SetUpSearchResults(result_types);
+  }
+
+  // The selected container has vanished so we reset the selection to 0.
+  EXPECT_EQ(0, GetSelectedIndex());
+  EXPECT_EQ(-1, tile_list_view()->selected_index());
+  EXPECT_EQ(0, list_view()->selected_index());
 }
 
 }  // namespace test

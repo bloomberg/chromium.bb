@@ -220,6 +220,8 @@ void ContentsView::ShowSearchResults(bool show) {
   int search_page = GetPageIndexForState(AppListModel::STATE_SEARCH_RESULTS);
   DCHECK_GE(search_page, 0);
 
+  search_results_page_view_->ClearSelectedIndex();
+
   SetActiveStateInternal(show ? search_page : page_before_search_, show, true);
 }
 

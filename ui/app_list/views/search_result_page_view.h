@@ -26,6 +26,7 @@ class APP_LIST_EXPORT SearchResultPageView : public AppListPage {
   ~SearchResultPageView() override;
 
   int selected_index() { return selected_index_; }
+  bool HasSelection() { return selected_index_ > -1; }
   void SetSelection(bool select);  // Set or unset result selection.
 
   void AddSearchResultContainerView(
@@ -46,6 +47,9 @@ class APP_LIST_EXPORT SearchResultPageView : public AppListPage {
                           AppListModel::State from_state,
                           AppListModel::State to_state) override;
   int GetSearchBoxZHeight() const override;
+  void OnHidden() override;
+
+  void ClearSelectedIndex();
 
  private:
   // |directional_movement| is true if the navigation was caused by directional
@@ -57,6 +61,7 @@ class APP_LIST_EXPORT SearchResultPageView : public AppListPage {
   // the views hierarchy.
   std::vector<SearchResultContainerView*> result_container_views_;
 
+  // -1 indicates no selection.
   int selected_index_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchResultPageView);
