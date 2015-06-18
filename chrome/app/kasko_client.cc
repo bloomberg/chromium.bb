@@ -10,16 +10,12 @@
 
 #include <string>
 
-#include "base/debug/crash_logging.h"
-#include "base/guid.h"
 #include "base/logging.h"
 #include "base/process/process_handle.h"
-#include "base/win/wrapped_window_proc.h"
 #include "breakpad/src/client/windows/common/ipc_protocol.h"
 #include "chrome/app/chrome_watcher_client_win.h"
 #include "chrome/chrome_watcher/chrome_watcher_main_api.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/crash_keys.h"
 #include "components/crash/app/crash_keys_win.h"
 #include "syzygy/kasko/api/client.h"
 
@@ -27,6 +23,32 @@ namespace {
 
 ChromeWatcherClient* g_chrome_watcher_client = nullptr;
 kasko::api::MinidumpType g_minidump_type = kasko::api::SMALL_DUMP_TYPE;
+
+void GetKaskoCrashKeys(const kasko::api::CrashKey** crash_keys,
+                       size_t* crash_key_count) {
+  static_assert(
+      sizeof(kasko::api::CrashKey) == sizeof(google_breakpad::CustomInfoEntry),
+      "CrashKey and CustomInfoEntry structs are not compatible.");
+  static_assert(offsetof(kasko::api::CrashKey, name) ==
+                    offsetof(google_breakpad::CustomInfoEntry, name),
+                "CrashKey and CustomInfoEntry structs are not compatible.");
+  static_assert(offsetof(kasko::api::CrashKey, value) ==
+                    offsetof(google_breakpad::CustomInfoEntry, value),
+                "CrashKey and CustomInfoEntry structs are not compatible.");
+  static_assert(
+      sizeof(reinterpret_cast<kasko::api::CrashKey*>(0)->name) ==
+          sizeof(reinterpret_cast<google_breakpad::CustomInfoEntry*>(0)->name),
+      "CrashKey and CustomInfoEntry structs are not compatible.");
+  static_assert(
+      sizeof(reinterpret_cast<kasko::api::CrashKey*>(0)->value) ==
+          sizeof(reinterpret_cast<google_breakpad::CustomInfoEntry*>(0)->value),
+      "CrashKey and CustomInfoEntry structs are not compatible.");
+
+  *crash_key_count =
+      breakpad::CrashKeysWin::keeper()->custom_info_entries().size();
+  *crash_keys = reinterpret_cast<const kasko::api::CrashKey*>(
+      breakpad::CrashKeysWin::keeper()->custom_info_entries().data());
+}
 
 }  // namespace
 
@@ -48,52 +70,24 @@ KaskoClient::~KaskoClient() {
 
 extern "C" void __declspec(dllexport) ReportCrashWithProtobuf(
     EXCEPTION_POINTERS* info, const char* protobuf, size_t protobuf_length) {
-  static_assert(
-      sizeof(kasko::api::CrashKey) == sizeof(google_breakpad::CustomInfoEntry),
-      "CrashKey and CustomInfoEntry structs are not compatible.");
-  static_assert(offsetof(kasko::api::CrashKey, name) ==
-                    offsetof(google_breakpad::CustomInfoEntry, name),
-                "CrashKey and CustomInfoEntry structs are not compatible.");
-  static_assert(offsetof(kasko::api::CrashKey, value) ==
-                    offsetof(google_breakpad::CustomInfoEntry, value),
-                "CrashKey and CustomInfoEntry structs are not compatible.");
-  static_assert(
-      sizeof(reinterpret_cast<kasko::api::CrashKey*>(0)->name) ==
-          sizeof(reinterpret_cast<google_breakpad::CustomInfoEntry*>(0)->name),
-      "CrashKey and CustomInfoEntry structs are not compatible.");
-  static_assert(
-      sizeof(reinterpret_cast<kasko::api::CrashKey*>(0)->value) ==
-          sizeof(reinterpret_cast<google_breakpad::CustomInfoEntry*>(0)->value),
-      "CrashKey and CustomInfoEntry structs are not compatible.");
-
-  // Assign a GUID that can be used to correlate the Kasko report to the
-  // Breakpad report, to verify data consistency.
-  std::string guid = base::GenerateGUID();
-  {
-    base::debug::ScopedCrashKey kasko_guid(crash_keys::kKaskoGuid, guid);
-    size_t crash_key_count =
-        breakpad::CrashKeysWin::keeper()->custom_info_entries().size();
-    const kasko::api::CrashKey* crash_keys =
-        reinterpret_cast<const kasko::api::CrashKey*>(
-            breakpad::CrashKeysWin::keeper()->custom_info_entries().data());
-
-    if (g_chrome_watcher_client &&
-        g_chrome_watcher_client->EnsureInitialized()) {
-      kasko::api::SendReport(info, g_minidump_type, protobuf, protobuf_length,
-                             crash_keys, crash_key_count);
-    }
+  if (g_chrome_watcher_client && g_chrome_watcher_client->EnsureInitialized()) {
+    size_t crash_key_count = 0;
+    const kasko::api::CrashKey* crash_keys = nullptr;
+    GetKaskoCrashKeys(&crash_keys, &crash_key_count);
+    kasko::api::SendReport(info, g_minidump_type, protobuf, protobuf_length,
+                           crash_keys, crash_key_count);
   }
 
-  {
-    base::debug::ScopedCrashKey kasko_equivalent_guid(
-        crash_keys::kKaskoEquivalentGuid, guid);
-    // While Kasko remains experimental, also report via Breakpad.
-    base::win::WinProcExceptionFilter crash_for_exception =
-        reinterpret_cast<base::win::WinProcExceptionFilter>(::GetProcAddress(
-            ::GetModuleHandle(chrome::kBrowserProcessExecutableName),
-            "CrashForException"));
-    crash_for_exception(info);
-  }
+  // The Breakpad integration hooks TerminateProcess. Sidestep it to avoid a
+  // secondary report.
+
+  using TerminateProcessWithoutDumpProc = void(__cdecl*)();
+  TerminateProcessWithoutDumpProc terminate_process_without_dump =
+      reinterpret_cast<TerminateProcessWithoutDumpProc>(::GetProcAddress(
+          ::GetModuleHandle(chrome::kBrowserProcessExecutableName),
+          "TerminateProcessWithoutDump"));
+  CHECK(terminate_process_without_dump);
+  terminate_process_without_dump();
 }
 
 #endif  // defined(KASKO)

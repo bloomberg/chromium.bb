@@ -368,6 +368,20 @@ bool ShowRestartDialogIfCrashed(bool* exit_now) {
   return WrapMessageBoxWithSEH(message.c_str(), title.c_str(), flags, exit_now);
 }
 
+extern "C" void __declspec(dllexport) TerminateProcessWithoutDump() {
+  // Patched stub exists based on conditions (See InitCrashReporter).
+  // As a side note this function also gets called from
+  // WindowProcExceptionFilter.
+  if (g_real_terminate_process_stub == NULL) {
+    ::TerminateProcess(::GetCurrentProcess(), content::RESULT_CODE_KILLED);
+  } else {
+    NtTerminateProcessPtr real_terminate_proc =
+        reinterpret_cast<NtTerminateProcessPtr>(
+            static_cast<char*>(g_real_terminate_process_stub));
+    real_terminate_proc(::GetCurrentProcess(), content::RESULT_CODE_KILLED);
+  }
+}
+
 // Crashes the process after generating a dump for the provided exception. Note
 // that the crash reporter should be initialized before calling this function
 // for it to do anything.
@@ -378,17 +392,7 @@ extern "C" int __declspec(dllexport) CrashForException(
     EXCEPTION_POINTERS* info) {
   if (g_breakpad) {
     g_breakpad->WriteMinidumpForException(info);
-    // Patched stub exists based on conditions (See InitCrashReporter).
-    // As a side note this function also gets called from
-    // WindowProcExceptionFilter.
-    if (g_real_terminate_process_stub == NULL) {
-      ::TerminateProcess(::GetCurrentProcess(), content::RESULT_CODE_KILLED);
-    } else {
-      NtTerminateProcessPtr real_terminate_proc =
-          reinterpret_cast<NtTerminateProcessPtr>(
-              static_cast<char*>(g_real_terminate_process_stub));
-      real_terminate_proc(::GetCurrentProcess(), content::RESULT_CODE_KILLED);
-    }
+    TerminateProcessWithoutDump();
   }
   return EXCEPTION_CONTINUE_SEARCH;
 }
