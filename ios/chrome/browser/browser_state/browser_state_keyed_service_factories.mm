@@ -8,6 +8,7 @@
 #include "ios/chrome/browser/enhanced_bookmarks/bookmark_image_service_factory.h"
 #include "ios/chrome/browser/enhanced_bookmarks/bookmark_server_cluster_service_factory.h"
 #include "ios/chrome/browser/enhanced_bookmarks/enhanced_bookmark_model_factory.h"
+#include "ios/chrome/browser/favicon/favicon_service_factory.h"
 #include "ios/chrome/browser/suggestions/suggestions_service_factory.h"
 #include "ios/chrome/browser/translate/translate_accept_languages_factory.h"
 #include "ios/public/provider/chrome/browser/keyed_service_provider.h"
@@ -26,6 +27,7 @@ void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
   dom_distiller::DomDistillerServiceFactory::GetInstance();
   enhanced_bookmarks::BookmarkServerClusterServiceFactory::GetInstance();
   enhanced_bookmarks::EnhancedBookmarkModelFactory::GetInstance();
+  ios::FaviconServiceFactory::GetInstance();
   suggestions::SuggestionsServiceFactory::GetInstance();
   TranslateAcceptLanguagesFactory::GetInstance();
 
