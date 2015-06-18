@@ -860,7 +860,7 @@
       'browser/ui/webui/media_router/media_router_dialog_controller_browsertest.cc',
     ],
     # Javascript sources. These are combined with the .cc files in the GYP build
-    # and are handled by a rule, but in the GN build theyr're in a separate
+    # and are handled by a rule, but in the GN build they're in a separate
     # action so need to be separated out.
     'chrome_browser_tests_webui_js_sources': [
       'browser/devtools/device/webrtc/devtools_bridge_client_browsertest.js',
