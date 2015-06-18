@@ -5,10 +5,6 @@
 #ifndef WebServiceWorkerCacheError_h
 #define WebServiceWorkerCacheError_h
 
-// TODO(nhiroki): Remove after chromium-side patch is landed.
-// http://crbug.com/494884
-#define CRBUG_494884
-
 namespace blink {
 
 enum WebServiceWorkerCacheError {
