@@ -9,6 +9,7 @@
  * @param {!HTMLElement} toolbar Toolbar element which contains controls.
  * @param {!HTMLElement} navigationList Navigation list on the left pane. The
  *     position of silesSelectedLabel depends on the navitaion list's width.
+ * @param {!cr.ui.List} listContainer List container.
  * @param {!LocationLine} locationLine Location line shown on the left side of
  *     the toolbar.
  * @param {!FileSelectionHandler} selectionHandler
@@ -18,6 +19,7 @@
  */
 function ToolbarController(toolbar,
                            navigationList,
+                           listContainer,
                            locationLine,
                            selectionHandler,
                            directoryModel) {
@@ -67,6 +69,12 @@ function ToolbarController(toolbar,
    * @const
    */
   this.navigationList_ = navigationList;
+
+  /**
+   * @private {!cr.ui.List}
+   * @const
+   */
+  this.listContainer_ = listContainer;
 
   /**
    * @private {!LocationLine}
@@ -162,7 +170,7 @@ ToolbarController.prototype.onCancelSelectionButtonClicked_ = function() {
  */
 ToolbarController.prototype.onDeleteButtonClicked_ = function() {
   this.deleteButton_.blur();
-  this.deleteCommand_.execute();
+  this.deleteCommand_.execute(this.listContainer_.currentList);
 }
 
 /**
