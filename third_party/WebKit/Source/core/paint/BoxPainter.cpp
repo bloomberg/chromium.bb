@@ -78,19 +78,19 @@ bool bleedAvoidanceIsClipping(BackgroundBleedAvoidance bleedAvoidance)
 
 void BoxPainter::paintBoxDecorationBackgroundWithRect(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, const LayoutRect& paintRect)
 {
+    const ComputedStyle& style = m_layoutBox.styleRef();
+
+    // FIXME: For now we don't have notification on media buffered range change from media player
+    // and miss paint invalidation on buffered range change. crbug.com/484288.
+    Optional<DisplayItemCacheSkipper> cacheSkipper;
+    if (style.appearance() == MediaSliderPart)
+        cacheSkipper.emplace(*paintInfo.context);
+
     LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutBox, DisplayItem::BoxDecorationBackground, boundsForDrawingRecorder(paintOffset));
     if (recorder.canUseCachedDrawing())
         return;
 
-    const ComputedStyle& style = m_layoutBox.styleRef();
     BoxDecorationData boxDecorationData(m_layoutBox);
-
-#if ENABLE(ASSERT)
-    // FIXME: For now we don't have notification on media buffered range change from media player
-    // and miss paint invalidation on buffered range change. crbug.com/484288.
-    if (style.appearance() == MediaSliderPart)
-        recorder.setUnderInvalidationCheckingMode(DrawingDisplayItem::DontCheck);
-#endif
 
     // FIXME: Should eventually give the theme control over whether the box shadow should paint, since controls could have
     // custom shadows of their own.

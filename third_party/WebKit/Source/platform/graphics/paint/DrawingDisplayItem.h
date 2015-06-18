@@ -19,7 +19,6 @@ public:
     enum UnderInvalidationCheckingMode {
         CheckPicture, // Check if the new picture and the old picture are the same
         CheckBitmap, // Check if the new picture and the old picture produce the same bitmap
-        DontCheck // Skip for known bugs. Each usage should have a FIXME and a link to the bug.
     };
 #endif
 

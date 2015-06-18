@@ -356,11 +356,7 @@ void DisplayItemList::checkCachedDisplayItemIsUnchanged(const DisplayItems::Item
 {
     ASSERT(RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled());
 
-    if (!DisplayItem::isDrawingType(displayItem.type()) || !clientCacheIsValid(displayItem.client()))
-        return;
-
-    DrawingDisplayItem::UnderInvalidationCheckingMode mode = displayItem.underInvalidationCheckingMode();
-    if (mode == DrawingDisplayItem::DontCheck)
+    if (!DisplayItem::isDrawingType(displayItem.type()) || displayItem.skippedCache() || !clientCacheIsValid(displayItem.client()))
         return;
 
     // If checking under-invalidation, we always generate new display item even if the client is not invalidated.
@@ -382,7 +378,7 @@ void DisplayItemList::checkCachedDisplayItemIsUnchanged(const DisplayItems::Item
     if (!newPicture && !oldPicture)
         return;
     if (newPicture && oldPicture) {
-        switch (mode) {
+        switch (displayItem.underInvalidationCheckingMode()) {
         case DrawingDisplayItem::CheckPicture:
             if (newPicture->approximateOpCount() == oldPicture->approximateOpCount()) {
                 SkDynamicMemoryWStream newPictureSerialized;

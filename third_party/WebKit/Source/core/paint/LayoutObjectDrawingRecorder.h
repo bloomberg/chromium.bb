@@ -8,29 +8,40 @@
 #include "core/layout/LayoutObject.h"
 #include "core/paint/PaintPhase.h"
 #include "platform/geometry/LayoutRect.h"
+#include "platform/graphics/paint/DisplayItemCacheSkipper.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
+#include "wtf/Optional.h"
 
 namespace blink {
 
 class GraphicsContext;
 
-// Convenience constructors for creating DrawingRecorders.
-class LayoutObjectDrawingRecorder final : public DrawingRecorder {
+// Convenience wrapper of DrawingRecorder for LayoutObject painters.
+class LayoutObjectDrawingRecorder final {
 public:
-    LayoutObjectDrawingRecorder(GraphicsContext& context, const LayoutObject& layoutObject, DisplayItem::Type displayItemType, const LayoutRect& clip)
-        : DrawingRecorder(context, layoutObject, displayItemType, pixelSnappedIntRect(clip))
+    LayoutObjectDrawingRecorder(GraphicsContext& context, const LayoutObject& layoutObject, DisplayItem::Type displayItemType, const FloatRect& clip)
     {
-#if ENABLE(ASSERT)
+        // We may paint a delayed-invalidation object before it's actually invalidated.
         if (layoutObject.fullPaintInvalidationReason() == PaintInvalidationDelayedFull)
-            setUnderInvalidationCheckingMode(DrawingDisplayItem::DontCheck);
-#endif
+            m_cacheSkipper.emplace(context);
+        m_drawingRecorder.emplace(context, layoutObject, displayItemType, clip);
     }
 
     LayoutObjectDrawingRecorder(GraphicsContext& context, const LayoutObject& layoutObject, PaintPhase phase, const FloatRect& clip)
-        : DrawingRecorder(context, layoutObject, DisplayItem::paintPhaseToDrawingType(phase), clip) { }
+        : LayoutObjectDrawingRecorder(context, layoutObject, DisplayItem::paintPhaseToDrawingType(phase), clip) { }
 
-    LayoutObjectDrawingRecorder(GraphicsContext& context, const LayoutObject& layoutObject, DisplayItem::Type type, const FloatRect& clip)
-        : DrawingRecorder(context, layoutObject, type, clip) { }
+    LayoutObjectDrawingRecorder(GraphicsContext& context, const LayoutObject& layoutObject, DisplayItem::Type type, const LayoutRect& clip)
+        : LayoutObjectDrawingRecorder(context, layoutObject, type, pixelSnappedIntRect(clip)) { }
+
+    bool canUseCachedDrawing() const { return m_drawingRecorder->canUseCachedDrawing(); }
+
+#if ENABLE(ASSERT)
+    void setUnderInvalidationCheckingMode(DrawingDisplayItem::UnderInvalidationCheckingMode mode) { m_drawingRecorder->setUnderInvalidationCheckingMode(mode); }
+#endif
+
+private:
+    Optional<DisplayItemCacheSkipper> m_cacheSkipper;
+    Optional<DrawingRecorder> m_drawingRecorder;
 };
 
 } // namespace blink
