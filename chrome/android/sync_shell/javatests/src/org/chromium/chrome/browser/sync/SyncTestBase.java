@@ -16,10 +16,13 @@ import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.sync.AndroidSyncSettings;
+import org.chromium.sync.internal_api.pub.base.ModelType;
 import org.chromium.sync.signin.AccountManagerHelper;
 import org.chromium.sync.signin.ChromeSigninController;
 import org.chromium.sync.test.util.MockAccountManager;
 import org.chromium.sync.test.util.MockSyncContentResolverDelegate;
+
+import java.util.Set;
 
 /**
  * Base class for common functionality between sync tests.
@@ -180,6 +183,17 @@ public class SyncTestBase extends ChromeShellTestBase {
             @Override
             public void run() {
                 SigninManager.get(mContext).signOut(getActivity(), null);
+            }
+        });
+    }
+
+    protected void disableDataType(final ModelType modelType) {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                Set<ModelType> preferredTypes = mProfileSyncService.getPreferredDataTypes();
+                preferredTypes.remove(modelType);
+                mProfileSyncService.setPreferredDataTypes(false, preferredTypes);
             }
         });
     }

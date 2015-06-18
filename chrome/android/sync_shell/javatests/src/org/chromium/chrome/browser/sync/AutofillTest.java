@@ -64,7 +64,7 @@ public class AutofillTest extends SyncTestBase {
     @LargeTest
     @Feature({"Sync"})
     public void testDownloadAutofill() throws Exception {
-        addServerAutofillProfile(STREET, CITY, STATE, ZIP);
+        addServerAutofillData(STREET, CITY, STATE, ZIP);
         assertServerAutofillCountWithName(1, STREET);
         SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
 
@@ -84,7 +84,7 @@ public class AutofillTest extends SyncTestBase {
     @Feature({"Sync"})
     public void testDownloadDeletedAutofill() throws Exception {
         // Add the entity to test deleting.
-        addServerAutofillProfile(STREET, CITY, STATE, ZIP);
+        addServerAutofillData(STREET, CITY, STATE, ZIP);
         SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
         assertServerAutofillCountWithName(1, STREET);
         assertClientAutofillCount(1);
@@ -97,7 +97,19 @@ public class AutofillTest extends SyncTestBase {
         waitForClientAutofillCount(0);
     }
 
-    private void addServerAutofillProfile(String street, String city, String state, String zip) {
+    // Test that autofill entries don't get synced if the data type is disabled.
+    @LargeTest
+    @Feature({"Sync"})
+    public void testDisabledNoDownloadAutofill() throws Exception {
+        disableDataType(ModelType.AUTOFILL);
+        addServerAutofillData(STREET, CITY, STATE, ZIP);
+        assertServerAutofillCountWithName(1, STREET);
+        SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
+        assertClientAutofillCount(0);
+    }
+
+    // TODO(maxbogue): Switch to using specifics.autofill_profile instead.
+    private void addServerAutofillData(String street, String city, String state, String zip) {
         EntitySpecifics specifics = new EntitySpecifics();
         specifics.autofill = new AutofillSpecifics();
         AutofillProfileSpecifics profile = new AutofillProfileSpecifics();

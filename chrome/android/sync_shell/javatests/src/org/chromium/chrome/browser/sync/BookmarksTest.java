@@ -137,6 +137,27 @@ public class BookmarksTest extends SyncTestBase {
         assertServerBookmarkCountWithName(0, MODIFIED_TITLE);
     }
 
+    // Test that bookmarks don't get downloaded if the data type is disabled.
+    @LargeTest
+    @Feature({"Sync"})
+    public void testDisabledNoDownloadBookmark() throws Exception {
+        disableDataType(ModelType.BOOKMARK);
+        addServerBookmarkAndSync(TITLE, URL);
+        waitForServerBookmarkCountWithName(1, TITLE);
+        SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
+        assertClientBookmarkCount(0);
+    }
+
+    // Test that bookmarks don't get uploaded if the data type is disabled.
+    @LargeTest
+    @Feature({"Sync"})
+    public void testDisabledNoUploadBookmark() throws Exception {
+        disableDataType(ModelType.BOOKMARK);
+        addClientBookmark(TITLE, URL);
+        SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
+        assertServerBookmarkCountWithName(0, TITLE);
+    }
+
     private BookmarkId addClientBookmark(final String title, final String url) {
         final AtomicReference<BookmarkId> id = new AtomicReference<BookmarkId>();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
