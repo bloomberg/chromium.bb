@@ -170,6 +170,8 @@ struct drm_output {
 	drmModePropertyPtr dpms_prop;
 	uint32_t format;
 
+	enum dpms_enum dpms;
+
 	int vblank_pending;
 	int page_flip_pending;
 	int destroy_pending;
@@ -1670,12 +1672,20 @@ drm_set_dpms(struct weston_output *output_base, enum dpms_enum level)
 	struct drm_output *output = (struct drm_output *) output_base;
 	struct weston_compositor *ec = output_base->compositor;
 	struct drm_backend *b = (struct drm_backend *)ec->backend;
+	int ret;
 
 	if (!output->dpms_prop)
 		return;
 
-	drmModeConnectorSetProperty(b->drm.fd, output->connector_id,
-				    output->dpms_prop->prop_id, level);
+	ret = drmModeConnectorSetProperty(b->drm.fd, output->connector_id,
+				 	  output->dpms_prop->prop_id, level);
+	if (ret) {
+		weston_log("DRM: DPMS: failed property set for %s\n",
+			   output->base.name);
+		return;
+	}
+
+	output->dpms = level;
 }
 
 static const char * const connector_type_names[] = {
