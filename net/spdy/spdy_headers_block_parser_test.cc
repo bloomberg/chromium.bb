@@ -108,10 +108,10 @@ class SpdyHeadersBlockParserTest :
 const char *const SpdyHeadersBlockParserTest::kBaseKey = "test_key";
 const char *const SpdyHeadersBlockParserTest::kBaseValue = "test_value";
 
-// All tests are run with 3 different SPDY versions: SPDY/2, SPDY/3, SPDY/4.
+// All tests are run with 3 different SPDY versions: SPDY/2, SPDY/3, HTTP/2.
 INSTANTIATE_TEST_CASE_P(SpdyHeadersBlockParserTests,
                         SpdyHeadersBlockParserTest,
-                        ::testing::Values(SPDY2, SPDY3, SPDY4));
+                        ::testing::Values(SPDY2, SPDY3, HTTP2));
 
 TEST_P(SpdyHeadersBlockParserTest, BasicTest) {
   // Sanity test, verify that we parse out correctly a block with

@@ -205,10 +205,8 @@ class SpdySMServerTest : public SpdySMTestBase {
   virtual ~SpdySMServerTest() {}
 };
 
-INSTANTIATE_TEST_CASE_P(SpdySMProxyTest,
-                        SpdySMProxyTest,
-                        Values(SPDY3, SPDY4));
-INSTANTIATE_TEST_CASE_P(SpdySMServerTest, SpdySMServerTest, Values(SPDY4));
+INSTANTIATE_TEST_CASE_P(SpdySMProxyTest, SpdySMProxyTest, Values(SPDY3, HTTP2));
+INSTANTIATE_TEST_CASE_P(SpdySMServerTest, SpdySMServerTest, Values(HTTP2));
 
 TEST_P(SpdySMProxyTest, InitSMConnection) {
   {
@@ -307,9 +305,9 @@ TEST_P(SpdySMProxyTest, CreateFramer) {
   ASSERT_EQ(interface_->spdy_version(), SPDY3);
 
   interface_->ResetForNewConnection();
-  interface_->CreateFramer(SPDY4);
+  interface_->CreateFramer(HTTP2);
   ASSERT_TRUE(interface_->spdy_framer() != NULL);
-  ASSERT_EQ(interface_->spdy_version(), SPDY4);
+  ASSERT_EQ(interface_->spdy_version(), HTTP2);
 }
 
 TEST_P(SpdySMProxyTest, PostAcceptHook) {
@@ -363,7 +361,7 @@ TEST_P(SpdySMProxyTest, SendErrorNotFound) {
 
   {
     InSequence s;
-    if (GetParam() < SPDY4) {
+    if (GetParam() < HTTP2) {
       EXPECT_CALL(*spdy_framer_visitor_,
                   OnSynReply(stream_id, false, _))
           .WillOnce(SaveArg<2>(&actual_header_block));
@@ -443,7 +441,7 @@ TEST_P(SpdySMProxyTest, SendSynReply) {
 
   {
     InSequence s;
-    if (GetParam() < SPDY4) {
+    if (GetParam() < HTTP2) {
       EXPECT_CALL(*spdy_framer_visitor_, OnSynReply(stream_id, false, _))
           .WillOnce(SaveArg<2>(&actual_header_block));
     } else {
@@ -569,7 +567,7 @@ TEST_P(SpdySMServerTest, NewStreamError) {
 
   {
     InSequence s;
-    if (GetParam() < SPDY4) {
+    if (GetParam() < HTTP2) {
       EXPECT_CALL(*spdy_framer_visitor_, OnSynReply(stream_id, false, _))
           .WillOnce(SaveArg<2>(&actual_header_block));
     } else {

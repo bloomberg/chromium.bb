@@ -458,7 +458,7 @@ void SplitPushedHeadersToRequestAndResponse(const SpdyHeaderBlock& headers,
       if (it->first == "url")
         to_insert = request_headers;
     } else {
-      const char* host = protocol_version >= SPDY4 ? ":authority" : ":host";
+      const char* host = protocol_version >= HTTP2 ? ":authority" : ":host";
       static const char scheme[] = ":scheme";
       static const char path[] = ":path";
       if (it->first == host || it->first == scheme || it->first == path)
@@ -1000,7 +1000,7 @@ bool SpdySession::HasAcceptableTransportSecurity() const {
   }
 
   // We don't enforce transport security standards for older SPDY versions.
-  if (GetProtocolVersion() < SPDY4) {
+  if (GetProtocolVersion() < HTTP2) {
     return true;
   }
 
@@ -2114,7 +2114,7 @@ void SpdySession::OnSettings(bool clear_persisted) {
                                  clear_persisted));
   }
 
-  if (GetProtocolVersion() >= SPDY4) {
+  if (GetProtocolVersion() >= HTTP2) {
     // Send an acknowledgment of the setting.
     SpdySettingsIR settings_ir;
     settings_ir.set_is_ack(true);
@@ -2311,9 +2311,8 @@ void SpdySession::OnSynReply(SpdyStreamId stream_id,
   stream->IncrementRawReceivedBytes(last_compressed_frame_len_);
   last_compressed_frame_len_ = 0;
 
-  if (GetProtocolVersion() >= SPDY4) {
-    const std::string& error =
-        "SPDY4 wasn't expecting SYN_REPLY.";
+  if (GetProtocolVersion() >= HTTP2) {
+    const std::string& error = "HTTP/2 wasn't expecting SYN_REPLY.";
     stream->LogStreamError(ERR_SPDY_PROTOCOL_ERROR, error);
     ResetStreamIterator(it, RST_STREAM_PROTOCOL_ERROR, error);
     return;
@@ -2361,7 +2360,7 @@ void SpdySession::OnHeaders(SpdyStreamId stream_id,
   base::TimeTicks recv_first_byte_time = time_func_();
 
   if (it->second.waiting_for_syn_reply) {
-    if (GetProtocolVersion() < SPDY4) {
+    if (GetProtocolVersion() < HTTP2) {
       const std::string& error =
           "Was expecting SYN_REPLY, not HEADERS.";
       stream->LogStreamError(ERR_SPDY_PROTOCOL_ERROR, error);
@@ -2601,9 +2600,9 @@ bool SpdySession::TryCreatePushStream(SpdyStreamId stream_id,
   }
 
   if (associated_stream_id == 0) {
-    // In SPDY4 0 stream id in PUSH_PROMISE frame leads to framer error and
+    // In HTTP/2 0 stream id in PUSH_PROMISE frame leads to framer error and
     // session going away. We should never get here.
-    CHECK_GT(SPDY4, GetProtocolVersion());
+    CHECK_GT(HTTP2, GetProtocolVersion());
     std::string description = base::StringPrintf(
         "Received invalid associated stream id %d for pushed stream %d",
         associated_stream_id,
@@ -2686,7 +2685,7 @@ bool SpdySession::TryCreatePushStream(SpdyStreamId stream_id,
   stream->set_stream_id(stream_id);
 
   // In spdy4/http2 PUSH_PROMISE arrives on associated stream.
-  if (associated_it != active_streams_.end() && GetProtocolVersion() >= SPDY4) {
+  if (associated_it != active_streams_.end() && GetProtocolVersion() >= HTTP2) {
     associated_it->second.stream->IncrementRawReceivedBytes(
         last_compressed_frame_len_);
   } else {

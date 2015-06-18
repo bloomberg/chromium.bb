@@ -17,7 +17,7 @@ namespace net {
 SpdyMajorVersion SpdyUtils::GetSpdyVersionForQuicVersion(
     QuicVersion quic_version) {
   if (quic_version > QUIC_VERSION_24) {
-    return SPDY4;
+    return HTTP2;
   }
   return SPDY3;
 }

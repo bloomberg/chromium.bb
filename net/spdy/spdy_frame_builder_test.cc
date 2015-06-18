@@ -18,10 +18,11 @@ class SpdyFrameBuilderTest : public ::testing::TestWithParam<SpdyMajorVersion> {
   SpdyMajorVersion spdy_version_;
 };
 
-// All tests are run with two different SPDY versions: SPDY/2 and SPDY/3.
+// All tests are run with three different SPDY versions: SPDY/2, SPDY/3 and
+// HTTP/2.
 INSTANTIATE_TEST_CASE_P(SpdyFrameBuilderTests,
                         SpdyFrameBuilderTest,
-                        ::testing::Values(SPDY2, SPDY3, SPDY4));
+                        ::testing::Values(SPDY2, SPDY3, HTTP2));
 
 TEST_P(SpdyFrameBuilderTest, GetWritableBuffer) {
   const size_t builder_size = 10;

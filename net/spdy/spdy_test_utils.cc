@@ -94,7 +94,7 @@ void SetFrameFlags(SpdyFrame* frame,
   switch (spdy_version) {
     case SPDY2:
     case SPDY3:
-    case SPDY4:
+    case HTTP2:
       frame->data()[4] = flags;
       break;
     default:
@@ -116,7 +116,7 @@ void SetFrameLength(SpdyFrame* frame,
         memcpy(frame->data() + 5, reinterpret_cast<char*>(&wire_length) + 1, 3);
       }
       break;
-    case SPDY4:
+    case HTTP2:
       CHECK_GT(1u<<14, length);
       {
         int32 wire_length = base::HostToNet32(length);

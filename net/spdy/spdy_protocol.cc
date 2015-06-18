@@ -39,7 +39,7 @@ bool SpdyConstants::IsValidFrameType(SpdyMajorVersion version,
       }
 
       return true;
-    case SPDY4:
+    case HTTP2:
       // Check for recognized extensions.
       if (frame_type_field == SerializeFrameType(version, ALTSVC) ||
           frame_type_field == SerializeFrameType(version, BLOCKED)) {
@@ -87,7 +87,7 @@ SpdyFrameType SpdyConstants::ParseFrameType(SpdyMajorVersion version,
           return WINDOW_UPDATE;
       }
       break;
-    case SPDY4:
+    case HTTP2:
       switch (frame_type_field) {
         case 0:
           return DATA;
@@ -147,7 +147,7 @@ int SpdyConstants::SerializeFrameType(SpdyMajorVersion version,
           LOG(DFATAL) << "Serializing unhandled frame type " << frame_type;
           return -1;
       }
-    case SPDY4:
+    case HTTP2:
       switch (frame_type) {
         case DATA:
           return 0;
@@ -189,7 +189,7 @@ int SpdyConstants::DataFrameType(SpdyMajorVersion version) {
     case SPDY2:
     case SPDY3:
       return 0;
-    case SPDY4:
+    case HTTP2:
       return SerializeFrameType(version, DATA);
   }
 
@@ -215,7 +215,7 @@ bool SpdyConstants::IsValidSettingId(SpdyMajorVersion version,
       }
 
       return true;
-    case SPDY4:
+    case HTTP2:
       // HEADER_TABLE_SIZE is the first valid setting id.
       if (setting_id_field <
           SerializeSettingId(version, SETTINGS_HEADER_TABLE_SIZE)) {
@@ -257,7 +257,7 @@ SpdySettingsIds SpdyConstants::ParseSettingId(SpdyMajorVersion version,
           return SETTINGS_INITIAL_WINDOW_SIZE;
       }
       break;
-    case SPDY4:
+    case HTTP2:
       switch (setting_id_field) {
         case 1:
           return SETTINGS_HEADER_TABLE_SIZE;
@@ -303,7 +303,7 @@ int SpdyConstants::SerializeSettingId(SpdyMajorVersion version,
           LOG(DFATAL) << "Serializing unhandled setting id " << id;
           return -1;
       }
-    case SPDY4:
+    case HTTP2:
       switch (id) {
         case SETTINGS_HEADER_TABLE_SIZE:
           return 1;
@@ -344,7 +344,7 @@ bool SpdyConstants::IsValidRstStreamStatus(SpdyMajorVersion version,
       }
 
       return true;
-    case SPDY4:
+    case HTTP2:
       // NO_ERROR is the first valid status code.
       if (rst_stream_status_field <
           SerializeRstStreamStatus(version, RST_STREAM_PROTOCOL_ERROR)) {
@@ -405,7 +405,7 @@ SpdyRstStreamStatus SpdyConstants::ParseRstStreamStatus(
           return RST_STREAM_FRAME_TOO_LARGE;
       }
       break;
-    case SPDY4:
+    case HTTP2:
       switch (rst_stream_status_field) {
         case 1:
           return RST_STREAM_PROTOCOL_ERROR;
@@ -471,7 +471,7 @@ int SpdyConstants::SerializeRstStreamStatus(
                       << rst_stream_status;
           return -1;
       }
-    case SPDY4:
+    case HTTP2:
       switch (rst_stream_status) {
         case RST_STREAM_PROTOCOL_ERROR:
           return 1;
@@ -522,7 +522,7 @@ bool SpdyConstants::IsValidGoAwayStatus(SpdyMajorVersion version,
       }
 
       return true;
-    case SPDY4:
+    case HTTP2:
       // GOAWAY_NO_ERROR is the first valid status.
       if (goaway_status_field < SerializeGoAwayStatus(version,
                                                       GOAWAY_NO_ERROR)) {
@@ -555,7 +555,7 @@ SpdyGoAwayStatus SpdyConstants::ParseGoAwayStatus(SpdyMajorVersion version,
           return GOAWAY_INTERNAL_ERROR;
       }
       break;
-    case SPDY4:
+    case HTTP2:
       switch (goaway_status_field) {
         case 0:
           return GOAWAY_NO_ERROR;
@@ -600,7 +600,7 @@ SpdyMajorVersion SpdyConstants::ParseMajorVersion(int version_number) {
     case 3:
       return SPDY3;
     case 4:
-      return SPDY4;
+      return HTTP2;
     default:
       LOG(DFATAL) << "Unsupported SPDY version number: " << version_number;
       return SPDY3;
@@ -613,7 +613,7 @@ int SpdyConstants::SerializeMajorVersion(SpdyMajorVersion version) {
       return 2;
     case SPDY3:
       return 3;
-    case SPDY4:
+    case HTTP2:
       return 4;
     default:
       LOG(DFATAL) << "Unsupported SPDY major version: " << version;
@@ -627,7 +627,7 @@ std::string SpdyConstants::GetVersionString(SpdyMajorVersion version) {
       return "spdy/2";
     case SPDY3:
       return "spdy/3";
-    case SPDY4:
+    case HTTP2:
       return "h2-14";
     default:
       LOG(DFATAL) << "Unsupported SPDY major version: " << version;
@@ -662,7 +662,7 @@ int SpdyConstants::SerializeGoAwayStatus(SpdyMajorVersion version,
           LOG(DFATAL) << "Serializing unhandled GOAWAY status " << status;
           return -1;
       }
-    case SPDY4:
+    case HTTP2:
       switch (status) {
         case GOAWAY_NO_ERROR:
           return 0;
@@ -706,7 +706,7 @@ size_t SpdyConstants::GetDataFrameMinimumSize(SpdyMajorVersion version) {
     case SPDY2:
     case SPDY3:
       return 8;
-    case SPDY4:
+    case HTTP2:
       return 9;
   }
   LOG(DFATAL) << "Unhandled SPDY version.";
@@ -718,7 +718,7 @@ size_t SpdyConstants::GetControlFrameHeaderSize(SpdyMajorVersion version) {
     case SPDY2:
     case SPDY3:
       return 8;
-    case SPDY4:
+    case HTTP2:
       return 9;
   }
   LOG(DFATAL) << "Unhandled SPDY version.";
@@ -735,7 +735,7 @@ size_t SpdyConstants::GetPrefixLength(SpdyFrameType type,
 }
 
 size_t SpdyConstants::GetFrameMaximumSize(SpdyMajorVersion version) {
-  if (version < SPDY4) {
+  if (version < HTTP2) {
     // 24-bit length field plus eight-byte frame header.
     return ((1<<24) - 1) + 8;
   } else {

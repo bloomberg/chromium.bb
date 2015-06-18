@@ -175,8 +175,8 @@ QuicHeadersStream::QuicHeadersStream(QuicSpdySession* session)
       stream_id_(kInvalidStreamId),
       fin_(false),
       frame_len_(0),
-      spdy_framer_(SPDY4),
-      spdy_framer_visitor_(new SpdyFramerVisitor(SPDY4, this)) {
+      spdy_framer_(HTTP2),
+      spdy_framer_visitor_(new SpdyFramerVisitor(HTTP2, this)) {
   spdy_framer_.set_visitor(spdy_framer_visitor_.get());
   spdy_framer_.set_debug_visitor(spdy_framer_visitor_.get());
   // The headers stream is exempt from connection level flow control.

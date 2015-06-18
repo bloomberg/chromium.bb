@@ -281,7 +281,7 @@ TEST_P(BufferedSpdyFramerTest, ReadSynReplyHeaderBlock) {
   EXPECT_EQ(0, visitor.error_count_);
   EXPECT_EQ(0, visitor.syn_frame_count_);
   EXPECT_EQ(0, visitor.push_promise_frame_count_);
-  if (spdy_version() < SPDY4) {
+  if (spdy_version() < HTTP2) {
     EXPECT_EQ(1, visitor.syn_reply_frame_count_);
     EXPECT_EQ(0, visitor.headers_frame_count_);
   } else {
@@ -316,7 +316,7 @@ TEST_P(BufferedSpdyFramerTest, ReadHeadersHeaderBlock) {
 }
 
 TEST_P(BufferedSpdyFramerTest, ReadPushPromiseHeaderBlock) {
-  if (spdy_version() < SPDY4)
+  if (spdy_version() < HTTP2)
     return;
   SpdyHeaderBlock headers;
   headers["alpha"] = "beta";

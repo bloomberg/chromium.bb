@@ -35,9 +35,8 @@ enum SpdyMajorVersion {
   SPDY2 = 2,
   SPDY_MIN_VERSION = SPDY2,
   SPDY3 = 3,
-  SPDY4 = 4,
-  HTTP2 = SPDY4,
-  SPDY_MAX_VERSION = SPDY4
+  HTTP2 = 4,
+  SPDY_MAX_VERSION = HTTP2
 };
 
 // A SPDY stream id is a 31 bit entity.

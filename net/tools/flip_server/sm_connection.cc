@@ -332,7 +332,7 @@ bool SMConnection::WasSpdyNegotiated(SpdyMajorVersion* version_negotiated) {
       if (!strncmp(reinterpret_cast<const char*>(npn_proto),
                    "spdy/4a2",
                    npn_proto_len)) {
-        *version_negotiated = SPDY4;
+        *version_negotiated = HTTP2;
         return true;
       }
     }

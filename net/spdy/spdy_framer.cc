@@ -990,7 +990,7 @@ void SpdyFramer::ProcessControlFrameHeader(int control_frame_type_field) {
         }
         if (current_frame_length_ < min_size) {
           // TODO(mlavan): check here for HEADERS with no payload?
-          // (not allowed in SPDY4)
+          // (not allowed in HTTP2)
           set_error(SPDY_INVALID_CONTROL_FRAME);
         } else if (protocol_version() <= SPDY3 &&
                    current_frame_flags_ & ~CONTROL_FLAG_FIN) {
@@ -2123,7 +2123,7 @@ size_t SpdyFramer::ProcessFramePadding(const char* data, size_t len) {
     DCHECK_EQ(remaining_padding_payload_length_, remaining_data_length_);
     size_t amount_to_discard = std::min(remaining_padding_payload_length_, len);
     if (current_frame_type_ == DATA && amount_to_discard > 0) {
-      DCHECK_LE(SPDY4, protocol_version());
+      DCHECK_LE(HTTP2, protocol_version());
       visitor_->OnStreamPadding(current_frame_stream_id_, amount_to_discard);
     }
     data += amount_to_discard;
@@ -2420,7 +2420,7 @@ SpdySerializedFrame* SpdyFramer::SerializeRstStream(
   builder.WriteUInt32(SpdyConstants::SerializeRstStreamStatus(
       protocol_version(), rst_stream.status()));
 
-  // In SPDY4 and up, RST_STREAM frames may also specify opaque data.
+  // In HTTP2 and up, RST_STREAM frames may also specify opaque data.
   if (protocol_version() > SPDY3 && rst_stream.description().size() > 0) {
     builder.WriteBytes(rst_stream.description().data(),
                        rst_stream.description().size());
@@ -2535,7 +2535,7 @@ SpdySerializedFrame* SpdyFramer::SerializeGoAway(
                                                              goaway.status()));
   }
 
-  // In SPDY4 and up, GOAWAY frames may also specify opaque data.
+  // In HTTP2 and up, GOAWAY frames may also specify opaque data.
   if ((protocol_version() > SPDY3) && (goaway.description().size() > 0)) {
     builder.WriteBytes(goaway.description().data(),
                        goaway.description().size());
@@ -2635,7 +2635,7 @@ SpdySerializedFrame* SpdyFramer::SerializeHeaders(
   }
 
   if (debug_visitor_) {
-    // SPDY4 uses HPACK for header compression. However, continue to
+    // HTTP2 uses HPACK for header compression. However, continue to
     // use GetSerializedLength() for an apples-to-apples comparision of
     // compression performance between HPACK and SPDY w/ deflate.
     const size_t payload_len =
@@ -2729,7 +2729,7 @@ SpdyFrame* SpdyFramer::SerializePushPromise(
                                padding_payload_len);
 
   if (debug_visitor_) {
-    // SPDY4 uses HPACK for header compression. However, continue to
+    // HTTP2 uses HPACK for header compression. However, continue to
     // use GetSerializedLength() for an apples-to-apples comparision of
     // compression performance between HPACK and SPDY w/ deflate.
     const size_t payload_len =

@@ -1372,9 +1372,9 @@ TEST_P(SpdySessionTest, OnSettings) {
 // also clears the persisted data. Verify that persisted data is
 // correct.
 TEST_P(SpdySessionTest, ClearSettings) {
-  if (spdy_util_.spdy_version() >= SPDY4) {
-    // SPDY4 doesn't include settings persistence, or a CLEAR_SETTINGS flag.
-    // Flag 0x1, CLEAR_SETTINGS in SPDY3, is instead settings ACK in SPDY4.
+  if (spdy_util_.spdy_version() >= HTTP2) {
+    // HTTP/2 doesn't include settings persistence, or a CLEAR_SETTINGS flag.
+    // Flag 0x1, CLEAR_SETTINGS in SPDY3, is instead settings ACK in HTTP/2.
     return;
   }
   session_deps_.host_resolver->set_synchronous_mode(true);
@@ -1747,7 +1747,7 @@ TEST_P(SpdySessionTest, SynCompressionHistograms) {
       histogram_tester.ExpectBucketCount(
           "Net.SpdySynStreamCompressionPercentage", 30, 1);
       break;
-    case SPDY4:
+    case HTTP2:
       histogram_tester.ExpectBucketCount(
           "Net.SpdySynStreamCompressionPercentage", 81, 1);
       break;
@@ -4905,8 +4905,8 @@ TEST_P(SpdySessionTest, RejectPushedStreamExceedingConcurrencyLimit) {
 }
 
 TEST_P(SpdySessionTest, IgnoreReservedRemoteStreamsCount) {
-  // Streams in reserved remote state exist only in SPDY4.
-  if (spdy_util_.spdy_version() < SPDY4)
+  // Streams in reserved remote state exist only in HTTP/2.
+  if (spdy_util_.spdy_version() < HTTP2)
     return;
 
   scoped_ptr<SpdyFrame> push_a(spdy_util_.ConstructSpdyPush(
@@ -5005,8 +5005,8 @@ TEST_P(SpdySessionTest, IgnoreReservedRemoteStreamsCount) {
 }
 
 TEST_P(SpdySessionTest, CancelReservedStreamOnHeadersReceived) {
-  // Streams in reserved remote state exist only in SPDY4.
-  if (spdy_util_.spdy_version() < SPDY4)
+  // Streams in reserved remote state exist only in HTTP/2.
+  if (spdy_util_.spdy_version() < HTTP2)
     return;
 
   const char kPushedUrl[] = "http://www.example.org/a.dat";

@@ -990,7 +990,7 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyPush(const char* const extra_headers[],
                                            int stream_id,
                                            int associated_stream_id,
                                            const char* url) {
-  if (spdy_version() < SPDY4) {
+  if (spdy_version() < HTTP2) {
     SpdySynStreamIR syn_stream(stream_id);
     syn_stream.set_associated_to_stream_id(associated_stream_id);
     syn_stream.SetHeader("hello", "bye");
@@ -1034,7 +1034,7 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyPush(const char* const extra_headers[],
                                            const char* url,
                                            const char* status,
                                            const char* location) {
-  if (spdy_version() < SPDY4) {
+  if (spdy_version() < HTTP2) {
     SpdySynStreamIR syn_stream(stream_id);
     syn_stream.set_associated_to_stream_id(associated_stream_id);
     syn_stream.SetHeader("hello", "bye");
@@ -1077,7 +1077,7 @@ SpdyFrame* SpdyTestUtil::ConstructInitialSpdyPushFrame(
     scoped_ptr<SpdyHeaderBlock> headers,
     int stream_id,
     int associated_stream_id) {
-  if (spdy_version() < SPDY4) {
+  if (spdy_version() < HTTP2) {
     SpdySynStreamIR syn_stream(stream_id);
     syn_stream.set_associated_to_stream_id(associated_stream_id);
     SetPriority(LOWEST, &syn_stream);

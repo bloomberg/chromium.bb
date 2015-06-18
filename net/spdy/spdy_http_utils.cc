@@ -43,14 +43,14 @@ bool SpdyHeadersToHttpResponse(const SpdyHeaderBlock& headers,
   std::string version;
   std::string status;
 
-  // The "status" header is required. "version" is required below SPDY4.
+  // The "status" header is required. "version" is required below HTTP/2.
   SpdyHeaderBlock::const_iterator it;
   it = headers.find(status_key);
   if (it == headers.end())
     return false;
   status = it->second;
 
-  if (protocol_version >= SPDY4) {
+  if (protocol_version >= HTTP2) {
     version = "HTTP/1.1";
   } else {
     it = headers.find(version_key);
@@ -127,7 +127,7 @@ void CreateSpdyHeadersFromHttpRequest(const HttpRequestInfo& info,
                                  : HttpUtil::SpecForRequest(info.url);
     }
   } else {
-    if (protocol_version < SPDY4) {
+    if (protocol_version < HTTP2) {
       (*headers)[":version"] = kHttpProtocolVersion;
       (*headers)[":host"] = GetHostAndOptionalPort(info.url);
     } else {
@@ -155,7 +155,7 @@ void CreateSpdyHeadersFromHttpResponse(
   const std::string status_line = response_headers.GetStatusLine();
   std::string::const_iterator after_version =
       std::find(status_line.begin(), status_line.end(), ' ');
-  if (protocol_version < SPDY4) {
+  if (protocol_version < HTTP2) {
     (*headers)[version_key] = std::string(status_line.begin(), after_version);
   }
   (*headers)[status_key] = std::string(after_version + 1, status_line.end());
@@ -198,7 +198,7 @@ GURL GetUrlFromHeaderBlock(const SpdyHeaderBlock& headers,
   std::string url = it->second;
   url.append("://");
 
-  it = headers.find(protocol_version >= SPDY4 ? ":authority" : ":host");
+  it = headers.find(protocol_version >= HTTP2 ? ":authority" : ":host");
   if (it == headers.end())
     return GURL();
   url.append(it->second);

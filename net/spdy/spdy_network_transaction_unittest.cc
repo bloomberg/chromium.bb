@@ -2878,7 +2878,7 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushMultipleDataFrameInterrupted) {
 }
 
 TEST_P(SpdyNetworkTransactionTest, ServerPushInvalidAssociatedStreamID0) {
-  if (spdy_util_.spdy_version() == SPDY4) {
+  if (spdy_util_.spdy_version() == HTTP2) {
     // PUSH_PROMISE with stream id 0 is connection-level error.
     // TODO(baranovich): Test session going away.
     return;
@@ -3074,8 +3074,8 @@ TEST_P(SpdyNetworkTransactionTest, SynReplyHeaders) {
   test_cases[2].expected_headers["hello"] = "bye";
   test_cases[2].expected_headers["status"] = "200";
 
-  if (spdy_util_.spdy_version() < SPDY4) {
-    // SPDY4/HTTP2 eliminates use of the :version header.
+  if (spdy_util_.spdy_version() < HTTP2) {
+    // HTTP/2 eliminates use of the :version header.
     test_cases[0].expected_headers["version"] = "HTTP/1.1";
     test_cases[1].expected_headers["version"] = "HTTP/1.1";
     test_cases[2].expected_headers["version"] = "HTTP/1.1";
@@ -3319,10 +3319,10 @@ TEST_P(SpdyNetworkTransactionTest, InvalidSynReply) {
 }
 
 // Verify that we don't crash on some corrupt frames.
-// TODO(jgraettinger): SPDY4 and up treats a header decompression failure as a
+// TODO(jgraettinger): HTTP/2 treats a header decompression failure as a
 // connection error. I'd like to backport this behavior to SPDY3 as well.
 TEST_P(SpdyNetworkTransactionTest, CorruptFrameSessionError) {
-  if (spdy_util_.spdy_version() >= SPDY4) {
+  if (spdy_util_.spdy_version() >= HTTP2) {
     return;
   }
   // This is the length field that's too short.
@@ -3330,9 +3330,9 @@ TEST_P(SpdyNetworkTransactionTest, CorruptFrameSessionError) {
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
   BufferedSpdyFramer framer(spdy_util_.spdy_version(), false);
   size_t right_size =
-      (spdy_util_.spdy_version() < SPDY4) ?
-      syn_reply_wrong_length->size() - framer.GetControlFrameHeaderSize() :
-      syn_reply_wrong_length->size();
+      (spdy_util_.spdy_version() < HTTP2)
+          ? syn_reply_wrong_length->size() - framer.GetControlFrameHeaderSize()
+          : syn_reply_wrong_length->size();
   size_t wrong_size = right_size - 4;
   test::SetFrameLength(syn_reply_wrong_length.get(),
                        wrong_size,
@@ -3370,9 +3370,9 @@ TEST_P(SpdyNetworkTransactionTest, CorruptFrameSessionError) {
   }
 }
 
-// SPDY4 treats a header decompression failure as a connection-level error.
+// HTTP/2 treats a header decompression failure as a connection-level error.
 TEST_P(SpdyNetworkTransactionTest, CorruptFrameSessionErrorSpdy4) {
-  if (spdy_util_.spdy_version() < SPDY4) {
+  if (spdy_util_.spdy_version() < HTTP2) {
     return;
   }
   // This is the length field that's too short.
@@ -3521,7 +3521,7 @@ TEST_P(SpdyNetworkTransactionTest, PartialWrite) {
 // In this test, we enable compression, but get a uncompressed SynReply from
 // the server.  Verify that teardown is all clean.
 TEST_P(SpdyNetworkTransactionTest, DecompressFailureOnSynReply) {
-  if (spdy_util_.spdy_version() >= SPDY4) {
+  if (spdy_util_.spdy_version() >= HTTP2) {
     // HPACK doesn't use deflate compression.
     return;
   }
@@ -3625,8 +3625,8 @@ TEST_P(SpdyNetworkTransactionTest, NetLog) {
                      spdy_util_.default_url().scheme());
   expected.push_back(std::string(spdy_util_.GetMethodKey()) + ": GET");
   expected.push_back("user-agent: Chrome");
-  if (spdy_util_.spdy_version() < SPDY4) {
-    // SPDY4/HTTP2 eliminates use of the :version header.
+  if (spdy_util_.spdy_version() < HTTP2) {
+    // HTTP/2 eliminates use of the :version header.
     expected.push_back(std::string(spdy_util_.GetVersionKey()) + ": HTTP/1.1");
   }
   EXPECT_EQ(expected.size(), header_list->GetSize());
@@ -4073,8 +4073,8 @@ TEST_P(SpdyNetworkTransactionTest, BufferedCancelled) {
 // Test that if the server requests persistence of settings, that we save
 // the settings in the HttpServerProperties.
 TEST_P(SpdyNetworkTransactionTest, SettingsSaved) {
-  if (spdy_util_.spdy_version() >= SPDY4) {
-    // SPDY4 doesn't support settings persistence.
+  if (spdy_util_.spdy_version() >= HTTP2) {
+    // HTTP/2 doesn't support settings persistence.
     return;
   }
   static const SpdyHeaderInfo kSynReplyInfo = {
@@ -4180,8 +4180,8 @@ TEST_P(SpdyNetworkTransactionTest, SettingsSaved) {
 // Test that when there are settings saved that they are sent back to the
 // server upon session establishment.
 TEST_P(SpdyNetworkTransactionTest, SettingsPlayback) {
-  if (spdy_util_.spdy_version() >= SPDY4) {
-    // SPDY4 doesn't support settings persistence.
+  if (spdy_util_.spdy_version() >= HTTP2) {
+    // HTTP/2 doesn't support settings persistence.
     return;
   }
   static const SpdyHeaderInfo kSynReplyInfo = {
@@ -4363,8 +4363,8 @@ TEST_P(SpdyNetworkTransactionTest, CloseWithActiveStream) {
 
 // HTTP_1_1_REQUIRED results in ERR_HTTP_1_1_REQUIRED.
 TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredError) {
-  // HTTP_1_1_REQUIRED is only supported by SPDY4.
-  if (spdy_util_.spdy_version() < SPDY4)
+  // HTTP_1_1_REQUIRED is only supported by HTTP/2.
+  if (spdy_util_.spdy_version() < HTTP2)
     return;
 
   NormalSpdyTransactionHelper helper(CreateGetRequest(), DEFAULT_PRIORITY,
@@ -4386,8 +4386,8 @@ TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredError) {
 // protocol negotiation happens, instead this test forces protocols for both
 // sockets.
 TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredRetry) {
-  // HTTP_1_1_REQUIRED is only supported by SPDY4.
-  if (spdy_util_.spdy_version() < SPDY4)
+  // HTTP_1_1_REQUIRED is only supported by HTTP/2.
+  if (spdy_util_.spdy_version() < HTTP2)
     return;
   // HTTP_1_1_REQUIRED implementation relies on the assumption that HTTP/2 is
   // only spoken over SSL.
@@ -4477,8 +4477,8 @@ TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredRetry) {
 // proxy.  Note that no actual protocol negotiation happens, instead this test
 // forces protocols for both sockets.
 TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredProxyRetry) {
-  // HTTP_1_1_REQUIRED is only supported by SPDY4.
-  if (spdy_util_.spdy_version() < SPDY4)
+  // HTTP_1_1_REQUIRED is only supported by HTTP/2.
+  if (spdy_util_.spdy_version() < HTTP2)
     return;
   // HTTP_1_1_REQUIRED implementation relies on the assumption that HTTP/2 is
   // only spoken over SSL.
@@ -5194,8 +5194,8 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushWithTwoHeaderFrames) {
   };
 
   scoped_ptr<SpdyHeaderBlock> initial_headers(new SpdyHeaderBlock());
-  if (spdy_util_.spdy_version() < SPDY4) {
-    // In SPDY4 PUSH_PROMISE headers won't show up in the response headers.
+  if (spdy_util_.spdy_version() < HTTP2) {
+    // In HTTP/2 PUSH_PROMISE headers won't show up in the response headers.
     (*initial_headers)["alpha"] = "beta";
   }
   spdy_util_.AddUrlToHeaderBlock(GetDefaultUrlWithPath("/foo.dat"),
@@ -5216,8 +5216,8 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushWithTwoHeaderFrames) {
 
   scoped_ptr<SpdyHeaderBlock> late_headers(new SpdyHeaderBlock());
   (*late_headers)[spdy_util_.GetStatusKey()] = "200";
-  if (spdy_util_.spdy_version() < SPDY4) {
-    // SPDY4/HTTP2 eliminates use of the :version header.
+  if (spdy_util_.spdy_version() < HTTP2) {
+    // HTTP/2 eliminates use of the :version header.
     (*late_headers)[spdy_util_.GetVersionKey()] = "HTTP/1.1";
   }
   scoped_ptr<SpdyFrame> stream2_headers2(
@@ -5309,7 +5309,7 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushWithTwoHeaderFrames) {
   EXPECT_EQ("HTTP/1.1 200 OK", response2.headers->GetStatusLine());
 
   // Verify we got all the headers from all header blocks.
-  if (spdy_util_.spdy_version() < SPDY4)
+  if (spdy_util_.spdy_version() < HTTP2)
     EXPECT_TRUE(response2.headers->HasHeaderValue("alpha", "beta"));
   EXPECT_TRUE(response2.headers->HasHeaderValue("hello", "bye"));
   EXPECT_TRUE(response2.headers->HasHeaderValue("status", "200"));

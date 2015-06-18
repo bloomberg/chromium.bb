@@ -108,7 +108,7 @@ class QuicHeadersStreamTest : public ::testing::TestWithParam<TestParams> {
         session_(connection_),
         headers_stream_(QuicSpdySessionPeer::GetHeadersStream(&session_)),
         body_("hello world"),
-        framer_(SPDY4) {
+        framer_(HTTP2) {
     headers_[":version"]  = "HTTP/1.1";
     headers_[":status"] = "200 Ok";
     headers_["content-length"] = "11";
