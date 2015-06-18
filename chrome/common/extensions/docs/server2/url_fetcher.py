@@ -10,7 +10,7 @@ from urllib import urlencode
 from urlparse import urlparse, parse_qs
 
 def _MakeHeaders(headers={}):
-  headers['User-Agent'] = 'Chomium docserver %s' % GetAppVersion()
+  headers['User-Agent'] = 'Chromium-Docserver/%s' % GetAppVersion()
   headers['Cache-Control'] = 'max-age=0'
   return headers
 
