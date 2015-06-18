@@ -5,9 +5,13 @@
 /* Small icons for file statuses, used in lists and menus. */
 [file-status-icon] {
   background-image: none;
-  background-position: center;
+  background-position: right center;
   background-repeat: no-repeat;
   background-size: 16px 16px;
+}
+
+html[dir='rtl'] [file-status-icon] {
+  background-position: left center;
 }
 
 [file-status-icon='copied'] {

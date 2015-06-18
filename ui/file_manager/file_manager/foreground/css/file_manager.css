@@ -1504,6 +1504,7 @@ li[renaming=''] .badge {
 }
 
 .status-icon {
+  -webkit-margin-end: 10px;
   height: 24px;
   width: 24px;
 }
