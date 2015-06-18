@@ -130,4 +130,18 @@ WebRTCBundlePolicy WebRTCConfiguration::bundlePolicy() const
     return WebRTCBundlePolicyBalanced;
 }
 
+WebRTCRtcpMuxPolicy WebRTCConfiguration::rtcpMuxPolicy() const
+{
+    ASSERT(!isNull());
+    switch (m_private->rtcpMuxPolicy()) {
+    case RTCRtcpMuxPolicyNegotiate:
+        return WebRTCRtcpMuxPolicyNegotiate;
+    case RTCRtcpMuxPolicyRequire:
+        return WebRTCRtcpMuxPolicyRequire;
+    default:
+        ASSERT_NOT_REACHED();
+    }
+    return WebRTCRtcpMuxPolicyNegotiate;
+}
+
 } // namespace blink

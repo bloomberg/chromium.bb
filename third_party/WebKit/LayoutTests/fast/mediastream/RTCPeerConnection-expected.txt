@@ -30,6 +30,9 @@ PASS new webkitRTCPeerConnection({iceServers:[], bundlePolicy:'balanced'}, null)
 PASS new webkitRTCPeerConnection({iceServers:[], bundlePolicy:'max-bundle'}, null); did not throw exception.
 PASS new webkitRTCPeerConnection({iceServers:[], bundlePolicy:'max-compat'}, null); did not throw exception.
 PASS new webkitRTCPeerConnection({iceServers:[], bundlePolicy:'foo'}, null); threw exception TypeError: Failed to construct 'RTCPeerConnection': Malformed RTCBundlePolicy.
+PASS new webkitRTCPeerConnection({iceServers:[], rtcpMuxPolicy:'negotiate'}, null); did not throw exception.
+PASS new webkitRTCPeerConnection({iceServers:[], rtcpMuxPolicy:'require'}, null); did not throw exception.
+PASS new webkitRTCPeerConnection({iceServers:[], rtcpMuxPolicy:'foo'}, null); threw exception TypeError: Failed to construct 'RTCPeerConnection': Malformed RTCRtcpMuxPolicy.
 PASS new webkitRTCPeerConnection(null, {mandatory:{valid_and_supported_1:1}}); did not throw exception.
 PASS new webkitRTCPeerConnection(null, {mandatory:{valid_and_supported_1:1, valid_and_supported_2:1}}); did not throw exception.
 PASS new webkitRTCPeerConnection(null, {optional:[{valid_and_supported_1:0}]}); did not throw exception.

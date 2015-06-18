@@ -84,6 +84,11 @@ enum WebRTCBundlePolicy {
     WebRTCBundlePolicyMaxBundle
 };
 
+enum WebRTCRtcpMuxPolicy {
+    WebRTCRtcpMuxPolicyNegotiate,
+    WebRTCRtcpMuxPolicyRequire
+};
+
 class WebRTCConfiguration {
 public:
     WebRTCConfiguration() { }
@@ -107,6 +112,8 @@ public:
     BLINK_PLATFORM_EXPORT WebRTCIceTransports iceTransports() const;
 
     BLINK_PLATFORM_EXPORT WebRTCBundlePolicy bundlePolicy() const;
+
+    BLINK_PLATFORM_EXPORT WebRTCRtcpMuxPolicy rtcpMuxPolicy() const;
 
 #if INSIDE_BLINK
     BLINK_PLATFORM_EXPORT WebRTCConfiguration(RTCConfiguration*);

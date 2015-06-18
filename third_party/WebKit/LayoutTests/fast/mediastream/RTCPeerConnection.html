@@ -39,6 +39,10 @@ shouldNotThrow("new webkitRTCPeerConnection({iceServers:[], bundlePolicy:'max-bu
 shouldNotThrow("new webkitRTCPeerConnection({iceServers:[], bundlePolicy:'max-compat'}, null);");
 shouldThrow("new webkitRTCPeerConnection({iceServers:[], bundlePolicy:'foo'}, null);");
 
+shouldNotThrow("new webkitRTCPeerConnection({iceServers:[], rtcpMuxPolicy:'negotiate'}, null);");
+shouldNotThrow("new webkitRTCPeerConnection({iceServers:[], rtcpMuxPolicy:'require'}, null);");
+shouldThrow("new webkitRTCPeerConnection({iceServers:[], rtcpMuxPolicy:'foo'}, null);");
+
 shouldNotThrow("new webkitRTCPeerConnection(null, {mandatory:{valid_and_supported_1:1}});");
 shouldNotThrow("new webkitRTCPeerConnection(null, {mandatory:{valid_and_supported_1:1, valid_and_supported_2:1}});");
 shouldNotThrow("new webkitRTCPeerConnection(null, {optional:[{valid_and_supported_1:0}]});");

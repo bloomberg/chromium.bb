@@ -129,9 +129,21 @@ RTCConfiguration* RTCPeerConnection::parseConfiguration(const Dictionary& config
         }
     }
 
+    RTCRtcpMuxPolicy rtcpMuxPolicy = RTCRtcpMuxPolicyNegotiate;
+    String rtcpMuxPolicyString;
+    if (DictionaryHelper::get(configuration, "rtcpMuxPolicy", rtcpMuxPolicyString)) {
+        if (rtcpMuxPolicyString == "require") {
+            rtcpMuxPolicy = RTCRtcpMuxPolicyRequire;
+        } else if (rtcpMuxPolicyString != "negotiate") {
+            exceptionState.throwTypeError("Malformed RTCRtcpMuxPolicy");
+            return 0;
+        }
+    }
+
     RTCConfiguration* rtcConfiguration = RTCConfiguration::create();
     rtcConfiguration->setIceTransports(iceTransports);
     rtcConfiguration->setBundlePolicy(bundlePolicy);
+    rtcConfiguration->setRtcpMuxPolicy(rtcpMuxPolicy);
 
     for (size_t i = 0; i < numberOfServers; ++i) {
         Dictionary iceServer;

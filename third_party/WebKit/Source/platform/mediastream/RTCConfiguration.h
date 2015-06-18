@@ -77,6 +77,11 @@ enum RTCBundlePolicy {
     RTCBundlePolicyMaxBundle
 };
 
+enum RTCRtcpMuxPolicy {
+    RTCRtcpMuxPolicyNegotiate,
+    RTCRtcpMuxPolicyRequire
+};
+
 class RTCConfiguration final : public GarbageCollected<RTCConfiguration> {
 public:
     static RTCConfiguration* create() { return new RTCConfiguration(); }
@@ -88,15 +93,21 @@ public:
     RTCIceTransports iceTransports() { return m_iceTransports; }
     void setBundlePolicy(RTCBundlePolicy bundlePolicy) { m_bundlePolicy = bundlePolicy; }
     RTCBundlePolicy bundlePolicy() { return m_bundlePolicy; }
+    void setRtcpMuxPolicy(RTCRtcpMuxPolicy rtcpMuxPolicy) { m_rtcpMuxPolicy = rtcpMuxPolicy; }
+    RTCRtcpMuxPolicy rtcpMuxPolicy() { return m_rtcpMuxPolicy; }
 
     DEFINE_INLINE_TRACE() { visitor->trace(m_servers); }
 
 private:
-    RTCConfiguration() : m_iceTransports(RTCIceTransportsAll), m_bundlePolicy(RTCBundlePolicyBalanced) { }
+    RTCConfiguration() :
+        m_iceTransports(RTCIceTransportsAll),
+        m_bundlePolicy(RTCBundlePolicyBalanced),
+        m_rtcpMuxPolicy(RTCRtcpMuxPolicyNegotiate) { }
 
     HeapVector<Member<RTCIceServer>> m_servers;
     RTCIceTransports m_iceTransports;
     RTCBundlePolicy m_bundlePolicy;
+    RTCRtcpMuxPolicy m_rtcpMuxPolicy;
 };
 
 } // namespace blink
