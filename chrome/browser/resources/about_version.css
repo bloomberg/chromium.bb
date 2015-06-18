@@ -18,7 +18,7 @@ body {
 
 #inner {
   padding-top: 10px;
-  width: 550px;
+  word-break: break-word;
 }
 
 .label {
