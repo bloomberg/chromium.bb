@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/autocomplete/history_url_provider.h"
+#include "components/omnibox/history_url_provider.h"
 
 #include <algorithm>
 
@@ -17,7 +17,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "chrome/browser/autocomplete/scored_history_match.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/history/core/browser/history_backend.h"
 #include "components/history/core/browser/history_database.h"
@@ -29,6 +28,7 @@
 #include "components/omnibox/autocomplete_result.h"
 #include "components/omnibox/in_memory_url_index_types.h"
 #include "components/omnibox/omnibox_field_trial.h"
+#include "components/omnibox/scored_history_match.h"
 #include "components/omnibox/url_prefix.h"
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url_service.h"

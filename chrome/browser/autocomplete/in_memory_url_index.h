@@ -20,11 +20,11 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_checker.h"
-#include "chrome/browser/autocomplete/scored_history_match.h"
 #include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/omnibox/scored_history_match.h"
 
 class HistoryQuickProviderTest;
 

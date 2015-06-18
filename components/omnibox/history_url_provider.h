@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_AUTOCOMPLETE_HISTORY_URL_PROVIDER_H_
-#define CHROME_BROWSER_AUTOCOMPLETE_HISTORY_URL_PROVIDER_H_
+#ifndef COMPONENTS_OMNIBOX_HISTORY_URL_PROVIDER_H_
+#define COMPONENTS_OMNIBOX_HISTORY_URL_PROVIDER_H_
 
 #include <string>
 #include <vector>
@@ -339,4 +339,4 @@ class HistoryURLProvider : public HistoryProvider {
   DISALLOW_COPY_AND_ASSIGN(HistoryURLProvider);
 };
 
-#endif  // CHROME_BROWSER_AUTOCOMPLETE_HISTORY_URL_PROVIDER_H_
+#endif  // COMPONENTS_OMNIBOX_HISTORY_URL_PROVIDER_H_
