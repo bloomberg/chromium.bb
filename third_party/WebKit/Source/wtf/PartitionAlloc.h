@@ -196,6 +196,7 @@ static const size_t kGenericMaxBucketedOrder = 20; // Largest bucketed order is 
 static const size_t kGenericNumBucketedOrders = (kGenericMaxBucketedOrder - kGenericMinBucketedOrder) + 1;
 static const size_t kGenericNumBucketsPerOrderBits = 3; // Eight buckets per order (for the higher orders), e.g. order 8 is 128, 144, 160, ..., 240
 static const size_t kGenericNumBucketsPerOrder = 1 << kGenericNumBucketsPerOrderBits;
+static const size_t kGenericNumBuckets = kGenericNumBucketedOrders * kGenericNumBucketsPerOrder;
 static const size_t kGenericSmallestBucket = 1 << (kGenericMinBucketedOrder - 1);
 static const size_t kGenericMaxBucketSpacing = 1 << ((kGenericMaxBucketedOrder - 1) - kGenericNumBucketsPerOrderBits);
 static const size_t kGenericMaxBucketed = (1 << (kGenericMaxBucketedOrder - 1)) + ((kGenericNumBucketsPerOrder - 1) * kGenericMaxBucketSpacing);
@@ -334,7 +335,7 @@ struct PartitionRootGeneric : public PartitionRootBase {
     // It is one flat array instead of a 2D array because in the 2D world, we'd
     // need to index array[blah][max+1] which risks undefined behavior.
     PartitionBucket* bucketLookups[((kBitsPerSizet + 1) * kGenericNumBucketsPerOrder) + 1];
-    PartitionBucket buckets[kGenericNumBucketedOrders * kGenericNumBucketsPerOrder];
+    PartitionBucket buckets[kGenericNumBuckets];
 };
 
 // Flags for partitionAllocGenericFlags.
@@ -516,10 +517,10 @@ ALWAYS_INLINE void* partitionBucketAlloc(PartitionRootBase* root, int flags, siz
         ASSERT(partitionPointerIsValid(ret));
         PartitionFreelistEntry* newHead = partitionFreelistMask(static_cast<PartitionFreelistEntry*>(ret)->next);
         page->freelistHead = newHead;
-        ASSERT(!ret || partitionPointerIsValid(ret));
         page->numAllocatedSlots++;
     } else {
         ret = partitionAllocSlowPath(root, flags, size, bucket);
+        ASSERT(!ret || partitionPointerIsValid(ret));
     }
 #if ENABLE(ASSERT)
     if (!ret)

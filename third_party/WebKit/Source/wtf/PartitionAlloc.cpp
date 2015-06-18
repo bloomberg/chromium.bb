@@ -206,7 +206,7 @@ void partitionAllocGenericInit(PartitionRootGeneric* root)
         currentIncrement <<= 1;
     }
     ASSERT(currentSize == 1 << kGenericMaxBucketedOrder);
-    ASSERT(bucket == &root->buckets[0] + (kGenericNumBucketedOrders * kGenericNumBucketsPerOrder));
+    ASSERT(bucket == &root->buckets[0] + kGenericNumBuckets);
 
     // Then set up the fast size -> bucket lookup table.
     bucket = &root->buckets[0];
@@ -228,7 +228,7 @@ void partitionAllocGenericInit(PartitionRootGeneric* root)
             }
         }
     }
-    ASSERT(bucket == &root->buckets[0] + (kGenericNumBucketedOrders * kGenericNumBucketsPerOrder));
+    ASSERT(bucket == &root->buckets[0] + kGenericNumBuckets);
     ASSERT(bucketPtr == &root->bucketLookups[0] + ((kBitsPerSizet + 1) * kGenericNumBucketsPerOrder));
     // And there's one last bucket lookup that will be hit for e.g. malloc(-1),
     // which tries to overflow to a non-existant order.
@@ -283,7 +283,7 @@ bool partitionAllocGenericShutdown(PartitionRootGeneric* root)
 {
     bool foundLeak = false;
     size_t i;
-    for (i = 0; i < kGenericNumBucketedOrders * kGenericNumBucketsPerOrder; ++i) {
+    for (i = 0; i < kGenericNumBuckets; ++i) {
         PartitionBucket* bucket = &root->buckets[i];
         foundLeak |= partitionAllocShutdownBucket(bucket);
     }
@@ -1151,10 +1151,9 @@ static void partitionDumpBucketStats(PartitionBucketMemoryStats* statsOut, const
 
 void partitionDumpStatsGeneric(PartitionRootGeneric* partition, const char* partitionName, PartitionStatsDumper* partitionStatsDumper)
 {
-    const size_t partitionNumBuckets = kGenericNumBucketedOrders * kGenericNumBucketsPerOrder;
+    PartitionBucketMemoryStats bucketStats[kGenericNumBuckets];
     spinLockLock(&partition->lock);
-    PartitionBucketMemoryStats bucketStats[partitionNumBuckets];
-    for (size_t i = 0; i < partitionNumBuckets; ++i) {
+    for (size_t i = 0; i < kGenericNumBuckets; ++i) {
         const PartitionBucket* bucket = &partition->buckets[i];
         // Don't report the pseudo buckets that the generic allocator sets up in
         // order to preserve a fast size->bucket map (see
@@ -1181,7 +1180,7 @@ void partitionDumpStatsGeneric(PartitionRootGeneric* partition, const char* part
     // partitionsDumpBucketStats is called after collecting stats because it
     // can try to allocate using PartitionAllocGeneric and it can't obtain the
     // lock.
-    for (size_t i = 0; i < partitionNumBuckets; ++i) {
+    for (size_t i = 0; i < kGenericNumBuckets; ++i) {
         if (bucketStats[i].isValid)
             partitionStatsDumper->partitionsDumpBucketStats(partitionName, &bucketStats[i]);
     }
