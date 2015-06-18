@@ -156,7 +156,7 @@ void DisplayItemList::addItemToIndex(DisplayItemClient client, DisplayItem::Type
     indices.append(index);
 }
 
-DisplayItems::Iterator DisplayItemList::findOutOfOrderCachedItem(DisplayItems::Iterator& currentIt, const DisplayItem::Id& id, DisplayItem::Type matchingType, DisplayItemIndicesByClientMap& displayItemIndicesByClient)
+DisplayItems::Iterator DisplayItemList::findOutOfOrderCachedItem(DisplayItems::Iterator currentIt, const DisplayItem::Id& id, DisplayItem::Type matchingType, DisplayItemIndicesByClientMap& displayItemIndicesByClient)
 {
     ASSERT(DisplayItem::isCachedType(id.type));
     ASSERT(clientCacheIsValid(id.client));
@@ -169,7 +169,7 @@ DisplayItems::Iterator DisplayItemList::findOutOfOrderCachedItem(DisplayItems::I
 }
 
 // Find forward for the item and index all skipped indexable items.
-DisplayItems::Iterator DisplayItemList::findOutOfOrderCachedItemForward(DisplayItems::Iterator& currentIt, const DisplayItem::Id& id, DisplayItem::Type matchingType, DisplayItemIndicesByClientMap& displayItemIndicesByClient)
+DisplayItems::Iterator DisplayItemList::findOutOfOrderCachedItemForward(DisplayItems::Iterator currentIt, const DisplayItem::Id& id, DisplayItem::Type matchingType, DisplayItemIndicesByClientMap& displayItemIndicesByClient)
 {
     DisplayItems::Iterator currentEnd = m_currentDisplayItems.end();
     for (; currentIt != currentEnd; ++currentIt) {
@@ -269,11 +269,16 @@ void DisplayItemList::commitNewDisplayItems()
                     showDebugData();
                     WTFLogAlways("CachedDisplayItem %s not found in m_currentDisplayItems\n",
                         newDisplayItem.asDebugString().utf8().data());
+                    ASSERT_NOT_REACHED();
                 }
 #endif
-                // TODO(chrishtr): downgrade to ASSERT as this goes to beta users, and replace with bailing out of the rest of the merge.
-                // This assert hits if we couldn't find the cached display item in our cache, which should be impossible.
-                RELEASE_ASSERT(foundIt != currentEnd);
+                // If foundIt == currentEnd, it means that we did not find the cached display item. This should be impossible, but may occur
+                // if there is a bug in the system, such as under-invalidation, incorrect cache checking or duplicate display ids. In this case,
+                // attempt to recover rather than crashing or bailing on display of the rest of the display list.
+                if (foundIt == currentEnd)
+                    continue;
+
+                currentIt = foundIt;
 
                 updatedList.appendByMoving(foundIt);
             }

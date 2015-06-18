@@ -89,8 +89,8 @@ private:
 
     static size_t findMatchingItemFromIndex(const DisplayItem::Id&, DisplayItem::Type matchingType, const DisplayItemIndicesByClientMap&, const DisplayItems&);
     static void addItemToIndex(DisplayItemClient, DisplayItem::Type, size_t index, DisplayItemIndicesByClientMap&);
-    DisplayItems::Iterator findOutOfOrderCachedItem(DisplayItems::Iterator& currentIt, const DisplayItem::Id&, DisplayItem::Type, DisplayItemIndicesByClientMap&);
-    DisplayItems::Iterator findOutOfOrderCachedItemForward(DisplayItems::Iterator& currentIt, const DisplayItem::Id&, DisplayItem::Type, DisplayItemIndicesByClientMap&);
+    DisplayItems::Iterator findOutOfOrderCachedItem(DisplayItems::Iterator currentIt, const DisplayItem::Id&, DisplayItem::Type, DisplayItemIndicesByClientMap&);
+    DisplayItems::Iterator findOutOfOrderCachedItemForward(DisplayItems::Iterator currentIt, const DisplayItem::Id&, DisplayItem::Type, DisplayItemIndicesByClientMap&);
 
 #if ENABLE(ASSERT)
     // The following two methods are for checking under-invalidations
