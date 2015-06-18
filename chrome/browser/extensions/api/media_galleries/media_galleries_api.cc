@@ -413,7 +413,12 @@ void MediaGalleriesEventRouter::DispatchEventToExtension(
     const std::string& event_name,
     scoped_ptr<base::ListValue> event_args) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  // TODO(tommycli): Remove these CHECKs after fixing https://crbug.com/467627.
+  CHECK(profile_);
   EventRouter* router = EventRouter::Get(profile_);
+  CHECK(router);
+
   if (!router->ExtensionHasEventListener(extension_id, event_name))
     return;
 
