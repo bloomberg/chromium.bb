@@ -210,15 +210,22 @@ Element* unsplittableElementForPosition(const Position& p)
     return editableRootForPosition(p);
 }
 
-Position nextCandidate(const Position& position)
+template <typename Strategy>
+typename Strategy::PositionType nextCandidateAlgorithm(const typename Strategy::PositionType& position)
 {
-    PositionIterator p(position);
+    using PositionType = typename Strategy::PositionType;
+    typename Strategy::PositionIteratorType p(position);
     while (!p.atEnd()) {
         p.increment();
         if (p.isCandidate())
             return p;
     }
-    return Position();
+    return PositionType();
+}
+
+Position nextCandidate(const Position& position)
+{
+    return nextCandidateAlgorithm<EditingStrategy>(position);
 }
 
 Position nextVisuallyDistinctCandidate(const Position& position)
@@ -233,27 +240,40 @@ Position nextVisuallyDistinctCandidate(const Position& position)
     return Position();
 }
 
-Position previousCandidate(const Position& position)
+template <typename Strategy>
+typename Strategy::PositionType previousCandidateAlgorithm(const typename Strategy::PositionType& position)
 {
-    PositionIterator p(position);
+    using PositionType = typename Strategy::PositionType;
+    typename Strategy::PositionIteratorType p(position);
     while (!p.atStart()) {
         p.decrement();
         if (p.isCandidate())
             return p;
     }
-    return Position();
+    return PositionType();
 }
 
-Position previousVisuallyDistinctCandidate(const Position& position)
+Position previousCandidate(const Position& position)
 {
-    Position p = position;
-    Position downstreamStart = p.downstream();
+    return previousCandidateAlgorithm<EditingStrategy>(position);
+}
+
+template <typename PositionType>
+PositionType previousVisuallyDistinctCandidateAlgorithm(const PositionType& position)
+{
+    PositionType p = position;
+    PositionType downstreamStart = p.downstream();
     while (!p.atStartOfTree()) {
         p = p.previous(Character);
         if (p.isCandidate() && p.downstream() != downstreamStart)
             return p;
     }
-    return Position();
+    return PositionType();
+}
+
+Position previousVisuallyDistinctCandidate(const Position& position)
+{
+    return previousVisuallyDistinctCandidateAlgorithm<Position>(position);
 }
 
 VisiblePosition firstEditableVisiblePositionAfterPositionInRoot(const Position& position, ContainerNode* highestRoot)
@@ -286,28 +306,34 @@ VisiblePosition lastEditableVisiblePositionBeforePositionInRoot(const Position& 
     return VisiblePosition(lastEditablePositionBeforePositionInRoot(position, highestRoot));
 }
 
-Position lastEditablePositionBeforePositionInRoot(const Position& position, Node* highestRoot)
+template <typename PositionType>
+PositionType lastEditablePositionBeforePositionInRootAlgorithm(const PositionType& position, Node* highestRoot)
 {
     // When position falls after highestRoot, the result is easy to compute.
-    if (comparePositions(position, lastPositionInNode(highestRoot)) == 1)
-        return lastPositionInNode(highestRoot);
+    if (position.compareTo(PositionType::lastPositionInNode(highestRoot)) == 1)
+        return PositionType::lastPositionInNode(highestRoot);
 
-    Position editablePosition = position;
+    PositionType editablePosition = position;
 
     if (position.deprecatedNode()->treeScope() != highestRoot->treeScope()) {
         Node* shadowAncestor = highestRoot->treeScope().ancestorInThisScope(editablePosition.deprecatedNode());
         if (!shadowAncestor)
-            return Position();
+            return PositionType();
 
-        editablePosition = firstPositionInOrBeforeNode(shadowAncestor);
+        editablePosition = PositionType::firstPositionInOrBeforeNode(shadowAncestor);
     }
 
     while (editablePosition.deprecatedNode() && !isEditablePosition(editablePosition) && editablePosition.deprecatedNode()->isDescendantOf(highestRoot))
-        editablePosition = isAtomicNode(editablePosition.deprecatedNode()) ? positionInParentBeforeNode(*editablePosition.deprecatedNode()) : previousVisuallyDistinctCandidate(editablePosition);
+        editablePosition = isAtomicNode(editablePosition.deprecatedNode()) ? PositionType::inParentBeforeNode(*editablePosition.deprecatedNode()) : previousVisuallyDistinctCandidate(editablePosition);
 
     if (editablePosition.deprecatedNode() && editablePosition.deprecatedNode() != highestRoot && !editablePosition.deprecatedNode()->isDescendantOf(highestRoot))
-        return Position();
+        return PositionType();
     return editablePosition;
+}
+
+Position lastEditablePositionBeforePositionInRoot(const Position& position, Node* highestRoot)
+{
+    return lastEditablePositionBeforePositionInRootAlgorithm<Position>(position, highestRoot);
 }
 
 // FIXME: The method name, comment, and code say three different things here!
