@@ -170,7 +170,7 @@ public class ContextualSearchSelectionController {
                 shouldHandleSelection = true;
                 break;
             case SelectionEventType.SELECTION_CLEARED:
-                mHandler.handleSelectionDismissal();
+                mHandler.onClearSelection();
                 resetAllStates();
                 break;
             case SelectionEventType.SELECTION_DRAG_STARTED:
