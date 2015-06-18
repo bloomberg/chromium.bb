@@ -28,6 +28,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "chrome/browser/safe_browsing/client_side_model_loader.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -58,6 +59,8 @@ class ClientPhishingRequest;
 class ClientPhishingResponse;
 class ClientSideModel;
 
+// Main service which pushes models to the renderers, responds to classification
+// requests. This owns two ModelLoader objects.
 class ClientSideDetectionService : public net::URLFetcherDelegate,
                                    public content::NotificationObserver {
  public:
@@ -101,13 +104,15 @@ class ClientSideDetectionService : public net::URLFetcherDelegate,
   // The URL scheme of the |url()| in the request should be HTTP.  This method
   // takes ownership of the |verdict| as well as the |callback| and calls the
   // the callback once the result has come back from the server or if an error
-  // occurs during the fetch.  If the service is disabled or an error occurs
+  // occurs during the fetch.  |is_extended_reporting| should be set based on
+  // the active profile setting. If the service is disabled or an error occurs
   // the phishing verdict will always be false.  The callback is always called
   // after SendClientReportPhishingRequest() returns and on the same thread as
   // SendClientReportPhishingRequest() was called.  You may set |callback| to
   // NULL if you don't care about the server verdict.
   virtual void SendClientReportPhishingRequest(
       ClientPhishingRequest* verdict,
+      bool is_extended_reporting,
       const ClientReportPhishingRequestCallback& callback);
 
   // Similar to above one, instead send ClientMalwareRequest
@@ -139,50 +144,20 @@ class ClientSideDetectionService : public net::URLFetcherDelegate,
   // reports in the last kReportsInterval.
   virtual bool OverMalwareReportLimit();
 
+  // Sends a model to each renderer.
+  virtual void SendModelToRenderers();
+
+  base::WeakPtr<ClientSideDetectionService> GetWeakPtr();
+
  protected:
   // Use Create() method to create an instance of this object.
   explicit ClientSideDetectionService(
       net::URLRequestContextGetter* request_context_getter);
 
-  // Enum used to keep stats about why we fail to get the client model.
-  enum ClientModelStatus {
-    MODEL_SUCCESS,
-    MODEL_NOT_CHANGED,
-    MODEL_FETCH_FAILED,
-    MODEL_EMPTY,
-    MODEL_TOO_LARGE,
-    MODEL_PARSE_ERROR,
-    MODEL_MISSING_FIELDS,
-    MODEL_INVALID_VERSION_NUMBER,
-    MODEL_BAD_HASH_IDS,
-    MODEL_STATUS_MAX  // Always add new values before this one.
-  };
-
-  // Starts fetching the model from the network or the cache.  This method
-  // is called periodically to check whether a new client model is available
-  // for download.
-  void StartFetchModel();
-
-  // Schedules the next fetch of the model.
-  virtual void ScheduleFetchModel(int64 delay_ms);  // Virtual for testing.
-
-  // This method is called when we're done fetching the model either because
-  // we hit an error somewhere or because we're actually done fetch and
-  // validating the model.
-  virtual void EndFetchModel(ClientModelStatus status);  // Virtual for testing.
-
  private:
   friend class ClientSideDetectionServiceTest;
-  FRIEND_TEST_ALL_PREFIXES(ClientSideDetectionServiceTest, FetchModelTest);
-  FRIEND_TEST_ALL_PREFIXES(ClientSideDetectionServiceTest, SetBadSubnets);
   FRIEND_TEST_ALL_PREFIXES(ClientSideDetectionServiceTest,
                            SetEnabledAndRefreshState);
-  FRIEND_TEST_ALL_PREFIXES(ClientSideDetectionServiceTest, IsBadIpAddress);
-  FRIEND_TEST_ALL_PREFIXES(ClientSideDetectionServiceTest,
-                           ModelHasValidHashIds);
-  FRIEND_TEST_ALL_PREFIXES(ClientSideDetectionServiceTest, ModelNamesTest);
-  FRIEND_TEST_ALL_PREFIXES(ClientSideDetectionServiceTest,
-                           FetchExperimentalModelTest);
 
   // CacheState holds all information necessary to respond to a caller without
   // actually making a HTTP request.
@@ -194,24 +169,9 @@ class ClientSideDetectionService : public net::URLFetcherDelegate,
   };
   typedef std::map<GURL, linked_ptr<CacheState> > PhishingCache;
 
-  // A tuple of (IP address block, prefix size) representing a private
-  // IP address range.
-  typedef std::pair<net::IPAddressNumber, size_t> AddressRange;
-
-  // Maps a IPv6 subnet mask to a set of hashed IPv6 subnets.  The IPv6
-  // subnets are in network order and hashed with sha256.
-  typedef std::map<std::string /* subnet mask */,
-                   std::set<std::string /* hashed subnet */> > BadSubnetMap;
-
   static const char kClientReportMalwareUrl[];
   static const char kClientReportPhishingUrl[];
-  static const char kClientModelUrlPrefix[];
-  static const char kClientModelNamePattern[];
-  static const char kClientModelFinchExperiment[];
-  static const char kClientModelFinchParam[];
-  static const size_t kMaxModelSizeBytes;
   static const int kMaxReportsPerInterval;
-  static const int kClientModelFetchIntervalMs;
   static const int kInitialClientModelFetchDelayMs;
   static const int kReportsIntervalDays;
   static const int kNegativeCacheIntervalDays;
@@ -221,20 +181,12 @@ class ClientSideDetectionService : public net::URLFetcherDelegate,
   // This method takes ownership of both pointers.
   void StartClientReportPhishingRequest(
       ClientPhishingRequest* verdict,
+      bool is_extended_reporting,
       const ClientReportPhishingRequestCallback& callback);
 
   void StartClientReportMalwareRequest(
       ClientMalwareRequest* verdict,
       const ClientReportMalwareRequestCallback& callback);
-
-  // Called by OnURLFetchComplete to handle the response from fetching the
-  // model.
-  void HandleModelResponse(const net::URLFetcher* source,
-                           const GURL& url,
-                           const net::URLRequestStatus& status,
-                           int response_code,
-                           const net::ResponseCookies& cookies,
-                           const std::string& data);
 
   // Called by OnURLFetchComplete to handle the server response from
   // sending the client-side phishing request.
@@ -270,43 +222,17 @@ class ClientSideDetectionService : public net::URLFetcherDelegate,
   // Send the model to the given renderer.
   void SendModelToProcess(content::RenderProcessHost* process);
 
-  // Same as above but sends the model to all rendereres.
-  void SendModelToRenderers();
-
-  // Reads the bad subnets from the client model and inserts them into
-  // |bad_subnets| for faster lookups.  This method is static to simplify
-  // testing.
-  static void SetBadSubnets(const ClientSideModel& model,
-                            BadSubnetMap* bad_subnets);
-
-
-  // Returns true iff all the hash id's in the client-side model point to
-  // valid hashes in the model.
-  static bool ModelHasValidHashIds(const ClientSideModel& model);
-
   // Returns the URL that will be used for phishing requests.
   static GURL GetClientReportUrl(const std::string& report_url);
-
-  // Construct a model name from parameters.
-  static std::string FillInModelName(bool is_extended_reporting,
-                                     int model_number);
-
-  // Construct a model name from client state.
-  static std::string MakeModelName();
 
   // Whether the service is running or not.  When the service is not running,
   // it won't download the model nor report detected phishing URLs.
   bool enabled_;
 
-  std::string model_str_;
-  scoped_ptr<ClientSideModel> model_;
-  scoped_ptr<base::TimeDelta> model_max_age_;
-  scoped_ptr<net::URLFetcher> model_fetcher_;
-
-  // Name of the model in model_.  This is the last component of the URL path.
-  std::string model_name_;
-  // Name of the model currently being fetched.
-  std::string fetching_model_name_;
+  // We load two models: One for stadard Safe Browsing profiles,
+  // and one for those opted into extended reporting.
+  scoped_ptr<ModelLoader> model_loader_standard_;
+  scoped_ptr<ModelLoader> model_loader_extended_;
 
   // Map of client report phishing request to the corresponding callback that
   // has to be invoked when the request is done.
@@ -339,10 +265,6 @@ class ClientSideDetectionService : public net::URLFetcherDelegate,
   // The context we use to issue network requests.
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 
-  // Map of bad subnets which are copied from the client model and put into
-  // this map to speed up lookups.
-  BadSubnetMap bad_subnets_;
-
   content::NotificationRegistrar registrar_;
 
   // Used to asynchronously call the callbacks for
@@ -351,6 +273,7 @@ class ClientSideDetectionService : public net::URLFetcherDelegate,
 
   DISALLOW_COPY_AND_ASSIGN(ClientSideDetectionService);
 };
+
 }  // namespace safe_browsing
 
 #endif  // CHROME_BROWSER_SAFE_BROWSING_CLIENT_SIDE_DETECTION_SERVICE_H_

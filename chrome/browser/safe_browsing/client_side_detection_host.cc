@@ -19,6 +19,7 @@
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
 #include "chrome/browser/safe_browsing/database_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome/common/safe_browsing/safebrowsing_messages.h"
 #include "content/public/browser/browser_thread.h"
@@ -653,9 +654,13 @@ void ClientSideDetectionHost::FeatureExtractionDone(
     callback = base::Bind(&ClientSideDetectionHost::MaybeShowPhishingWarning,
                           weak_factory_.GetWeakPtr());
   }
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   // Send ping even if the browser feature extraction failed.
   csd_service_->SendClientReportPhishingRequest(
       request.release(),  // The service takes ownership of the request object.
+      profile->GetPrefs()->GetBoolean(
+          prefs::kSafeBrowsingExtendedReportingEnabled),
       callback);
 }
 

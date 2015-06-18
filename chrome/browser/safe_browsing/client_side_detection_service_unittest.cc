@@ -35,50 +35,38 @@ using content::BrowserThread;
 
 namespace safe_browsing {
 namespace {
+
+class MockModelLoader : public ModelLoader {
+ public:
+  explicit MockModelLoader(const std::string model_name)
+      : ModelLoader(base::Closure(), model_name) {}
+  ~MockModelLoader() override {}
+
+  MOCK_METHOD1(ScheduleFetch, void(int64));
+  MOCK_METHOD0(CancelFetcher, void());
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockModelLoader);
+};
+
 class MockClientSideDetectionService : public ClientSideDetectionService {
  public:
   MockClientSideDetectionService() : ClientSideDetectionService(NULL) {}
-  virtual ~MockClientSideDetectionService() {}
 
-  MOCK_METHOD1(EndFetchModel, void(ClientModelStatus));
-  MOCK_METHOD1(ScheduleFetchModel, void(int64));
-
-  void Schedule(int64) {
-    // Ignore the delay when testing.
-    StartFetchModel();
-  }
-
-  void Disable(int) {
-    // Ignore the status.
-    SetEnabledAndRefreshState(false);
-  }
+  ~MockClientSideDetectionService() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockClientSideDetectionService);
 };
 
-ACTION(QuitCurrentMessageLoop) {
-  base::MessageLoop::current()->Quit();
-}
-
 }  // namespace
 
 class ClientSideDetectionServiceTest : public testing::Test {
  protected:
-  ClientSideDetectionServiceTest() {
-    // Needed to set the singlton.
-    field_trials_.reset(new base::FieldTrialList(NULL));
-  }
-
   void SetUp() override {
-    variations::testing::ClearAllVariationIDs();
-    variations::testing::ClearAllVariationParams();
-
     file_thread_.reset(new content::TestBrowserThread(BrowserThread::FILE,
                                                       &msg_loop_));
-
     factory_.reset(new net::FakeURLFetcherFactory(NULL));
-
     browser_thread_.reset(new content::TestBrowserThread(BrowserThread::UI,
                                                          &msg_loop_));
   }
@@ -98,6 +86,7 @@ class ClientSideDetectionServiceTest : public testing::Test {
     request->set_is_phishing(true);  // client thinks the URL is phishing.
     csd_service_->SendClientReportPhishingRequest(
         request,
+        false,
         base::Bind(&ClientSideDetectionServiceTest::SendRequestDone,
                    base::Unretained(this)));
     phishing_url_ = phishing_url;
@@ -117,35 +106,16 @@ class ClientSideDetectionServiceTest : public testing::Test {
     return is_malware_;
   }
 
-  std::string MakeModelUrl() {
-    return ClientSideDetectionService::kClientModelUrlPrefix +
-           ClientSideDetectionService::MakeModelName();
-  }
-
-  // Set up the finch experiment to control the model number
-  // used in the model URL.
-  void SetFinchModelNumber(int model_number) {
-    variations::testing::ClearAllVariationIDs();
-    variations::testing::ClearAllVariationParams();
-
-    const std::string group_name = "ModelFoo";  // Not used in CSD code.
-    base::FieldTrialList::CreateFieldTrial(
-        ClientSideDetectionService::kClientModelFinchExperiment, group_name);
-
-    std::map<std::string, std::string> params;
-    params[ClientSideDetectionService::kClientModelFinchParam] =
-        base::IntToString(model_number);
-
-    variations::AssociateVariationParams(
-        ClientSideDetectionService::kClientModelFinchExperiment, group_name,
-        params);
-  }
-
-  void SetModelFetchResponse(std::string response_data,
-                             net::HttpStatusCode response_code,
-                             net::URLRequestStatus::Status status) {
-    factory_->SetFakeResponse(GURL(MakeModelUrl()), response_data,
-                              response_code, status);
+  void SetModelFetchResponses() {
+    // Set reponses for both models.
+    factory_->SetFakeResponse(GURL(ModelLoader::kClientModelUrlPrefix +
+                                   ModelLoader::FillInModelName(false, 0)),
+                              "bogusmodel", net::HTTP_OK,
+                              net::URLRequestStatus::SUCCESS);
+    factory_->SetFakeResponse(GURL(ModelLoader::kClientModelUrlPrefix +
+                                   ModelLoader::FillInModelName(true, 0)),
+                              "bogusmodel", net::HTTP_OK,
+                              net::URLRequestStatus::SUCCESS);
   }
 
   void SetClientReportPhishingResponse(std::string response_data,
@@ -287,173 +257,9 @@ class ClientSideDetectionServiceTest : public testing::Test {
   bool is_malware_;
 };
 
-TEST_F(ClientSideDetectionServiceTest, FetchModelTest) {
-  // We don't want to use a real service class here because we can't call
-  // the real EndFetchModel.  It would reschedule a reload which might
-  // make the test flaky.
-  MockClientSideDetectionService service;
-  EXPECT_CALL(service, ScheduleFetchModel(_)).Times(1);
-  service.SetEnabledAndRefreshState(true);
-
-  // The model fetch failed.
-  SetModelFetchResponse("blamodel", net::HTTP_INTERNAL_SERVER_ERROR,
-                        net::URLRequestStatus::FAILED);
-  EXPECT_CALL(service, EndFetchModel(
-      ClientSideDetectionService::MODEL_FETCH_FAILED))
-      .WillOnce(QuitCurrentMessageLoop());
-  service.StartFetchModel();
-  msg_loop_.Run();  // EndFetchModel will quit the message loop.
-  Mock::VerifyAndClearExpectations(&service);
-
-  // Empty model file.
-  SetModelFetchResponse(std::string(), net::HTTP_OK,
-                        net::URLRequestStatus::SUCCESS);
-  EXPECT_CALL(service, EndFetchModel(ClientSideDetectionService::MODEL_EMPTY))
-      .WillOnce(QuitCurrentMessageLoop());
-  service.StartFetchModel();
-  msg_loop_.Run();  // EndFetchModel will quit the message loop.
-  Mock::VerifyAndClearExpectations(&service);
-
-  // Model is too large.
-  SetModelFetchResponse(
-      std::string(ClientSideDetectionService::kMaxModelSizeBytes + 1, 'x'),
-      net::HTTP_OK, net::URLRequestStatus::SUCCESS);
-  EXPECT_CALL(service, EndFetchModel(
-      ClientSideDetectionService::MODEL_TOO_LARGE))
-      .WillOnce(QuitCurrentMessageLoop());
-  service.StartFetchModel();
-  msg_loop_.Run();  // EndFetchModel will quit the message loop.
-  Mock::VerifyAndClearExpectations(&service);
-
-  // Unable to parse the model file.
-  SetModelFetchResponse("Invalid model file", net::HTTP_OK,
-                        net::URLRequestStatus::SUCCESS);
-  EXPECT_CALL(service, EndFetchModel(
-      ClientSideDetectionService::MODEL_PARSE_ERROR))
-      .WillOnce(QuitCurrentMessageLoop());
-  service.StartFetchModel();
-  msg_loop_.Run();  // EndFetchModel will quit the message loop.
-  Mock::VerifyAndClearExpectations(&service);
-
-  // Model that is missing some required fields (missing the version field).
-  ClientSideModel model;
-  model.set_max_words_per_term(4);
-  SetModelFetchResponse(model.SerializePartialAsString(), net::HTTP_OK,
-                        net::URLRequestStatus::SUCCESS);
-  EXPECT_CALL(service, EndFetchModel(
-      ClientSideDetectionService::MODEL_MISSING_FIELDS))
-      .WillOnce(QuitCurrentMessageLoop());
-  service.StartFetchModel();
-  msg_loop_.Run();  // EndFetchModel will quit the message loop.
-  Mock::VerifyAndClearExpectations(&service);
-
-  // Model that points to hashes that don't exist.
-  model.set_version(10);
-  model.add_hashes("bla");
-  model.add_page_term(1);  // Should be 0 instead of 1.
-  SetModelFetchResponse(model.SerializePartialAsString(), net::HTTP_OK,
-                        net::URLRequestStatus::SUCCESS);
-  EXPECT_CALL(service, EndFetchModel(
-      ClientSideDetectionService::MODEL_BAD_HASH_IDS))
-      .WillOnce(QuitCurrentMessageLoop());
-  service.StartFetchModel();
-  msg_loop_.Run();  // EndFetchModel will quit the message loop.
-  Mock::VerifyAndClearExpectations(&service);
-  model.set_page_term(0, 0);
-
-  // Model version number is wrong.
-  model.set_version(-1);
-  SetModelFetchResponse(model.SerializeAsString(), net::HTTP_OK,
-                        net::URLRequestStatus::SUCCESS);
-  EXPECT_CALL(service, EndFetchModel(
-      ClientSideDetectionService::MODEL_INVALID_VERSION_NUMBER))
-      .WillOnce(QuitCurrentMessageLoop());
-  service.StartFetchModel();
-  msg_loop_.Run();  // EndFetchModel will quit the message loop.
-  Mock::VerifyAndClearExpectations(&service);
-
-  // Normal model.
-  model.set_version(10);
-  SetModelFetchResponse(model.SerializeAsString(), net::HTTP_OK,
-                        net::URLRequestStatus::SUCCESS);
-  EXPECT_CALL(service, EndFetchModel(
-      ClientSideDetectionService::MODEL_SUCCESS))
-      .WillOnce(QuitCurrentMessageLoop());
-  service.StartFetchModel();
-  msg_loop_.Run();  // EndFetchModel will quit the message loop.
-  Mock::VerifyAndClearExpectations(&service);
-
-  // Model version number is decreasing.  Set the model version number of the
-  // model that is currently loaded in the service object to 11.
-  service.model_.reset(new ClientSideModel(model));
-  service.model_->set_version(11);
-  SetModelFetchResponse(model.SerializeAsString(), net::HTTP_OK,
-                        net::URLRequestStatus::SUCCESS);
-  EXPECT_CALL(service, EndFetchModel(
-      ClientSideDetectionService::MODEL_INVALID_VERSION_NUMBER))
-      .WillOnce(QuitCurrentMessageLoop());
-  service.StartFetchModel();
-  msg_loop_.Run();  // EndFetchModel will quit the message loop.
-  Mock::VerifyAndClearExpectations(&service);
-
-  // Model version hasn't changed since the last reload.
-  service.model_->set_version(10);
-  SetModelFetchResponse(model.SerializeAsString(), net::HTTP_OK,
-                        net::URLRequestStatus::SUCCESS);
-  EXPECT_CALL(service, EndFetchModel(
-      ClientSideDetectionService::MODEL_NOT_CHANGED))
-      .WillOnce(QuitCurrentMessageLoop());
-  service.StartFetchModel();
-  msg_loop_.Run();  // EndFetchModel will quit the message loop.
-  Mock::VerifyAndClearExpectations(&service);
-}
-
-TEST_F(ClientSideDetectionServiceTest, ModelNamesTest) {
-  // Test the name-templating.
-  EXPECT_EQ(ClientSideDetectionService::FillInModelName(true, 3),
-            "client_model_v5_ext_variation_3.pb");
-  EXPECT_EQ(ClientSideDetectionService::FillInModelName(false, 5),
-            "client_model_v5_variation_5.pb");
-
-  // Use Finch.  Should default to 0.
-  EXPECT_EQ(ClientSideDetectionService::MakeModelName(),
-            "client_model_v5_variation_0.pb");
-
-  SetFinchModelNumber(2);
-  EXPECT_EQ(ClientSideDetectionService::MakeModelName(),
-            "client_model_v5_variation_2.pb");
-
-  SetFinchModelNumber(0);
-  EXPECT_EQ(ClientSideDetectionService::MakeModelName(),
-            "client_model_v5_variation_0.pb");
-}
-
-// Like FetchModelTest, but we vary the finch params.
-TEST_F(ClientSideDetectionServiceTest, FetchExperimentalModelTest) {
-  MockClientSideDetectionService service;
-  EXPECT_CALL(service, ScheduleFetchModel(_)).Times(1);
-  service.SetEnabledAndRefreshState(true);
-
-  ClientSideModel model;
-  model.set_max_words_per_term(0);
-  model.set_version(10);
-  model.add_hashes("bla");
-  model.add_page_term(0);
-
-  SetFinchModelNumber(1);
-  SetModelFetchResponse(model.SerializeAsString(), net::HTTP_OK,
-                        net::URLRequestStatus::SUCCESS);
-  EXPECT_CALL(service, EndFetchModel(
-      ClientSideDetectionService::MODEL_SUCCESS))
-      .WillOnce(QuitCurrentMessageLoop());
-  service.StartFetchModel();
-  msg_loop_.Run();  // EndFetchModel will quit the message loop.
-  Mock::VerifyAndClearExpectations(&service);
-}
 
 TEST_F(ClientSideDetectionServiceTest, ServiceObjectDeletedBeforeCallbackDone) {
-  SetModelFetchResponse("bogus model", net::HTTP_OK,
-                        net::URLRequestStatus::SUCCESS);
+  SetModelFetchResponses();
   csd_service_.reset(ClientSideDetectionService::Create(NULL));
   csd_service_->SetEnabledAndRefreshState(true);
   EXPECT_TRUE(csd_service_.get() != NULL);
@@ -466,8 +272,7 @@ TEST_F(ClientSideDetectionServiceTest, ServiceObjectDeletedBeforeCallbackDone) {
 }
 
 TEST_F(ClientSideDetectionServiceTest, SendClientReportPhishingRequest) {
-  SetModelFetchResponse("bogus model", net::HTTP_OK,
-                        net::URLRequestStatus::SUCCESS);
+  SetModelFetchResponses();
   csd_service_.reset(ClientSideDetectionService::Create(NULL));
   csd_service_->SetEnabledAndRefreshState(true);
 
@@ -517,8 +322,7 @@ TEST_F(ClientSideDetectionServiceTest, SendClientReportPhishingRequest) {
 }
 
 TEST_F(ClientSideDetectionServiceTest, SendClientReportMalwareRequest) {
-  SetModelFetchResponse("bogus model", net::HTTP_OK,
-                        net::URLRequestStatus::SUCCESS);
+  SetModelFetchResponses();
   csd_service_.reset(ClientSideDetectionService::Create(NULL));
   csd_service_->SetEnabledAndRefreshState(true);
   GURL url("http://a.com/");
@@ -576,8 +380,7 @@ TEST_F(ClientSideDetectionServiceTest, SendClientReportMalwareRequest) {
 }
 
 TEST_F(ClientSideDetectionServiceTest, GetNumReportTest) {
-  SetModelFetchResponse("bogus model", net::HTTP_OK,
-                        net::URLRequestStatus::SUCCESS);
+  SetModelFetchResponses();
   csd_service_.reset(ClientSideDetectionService::Create(NULL));
 
   std::queue<base::Time>& report_times = GetPhishingReportTimes();
@@ -592,16 +395,14 @@ TEST_F(ClientSideDetectionServiceTest, GetNumReportTest) {
 }
 
 TEST_F(ClientSideDetectionServiceTest, CacheTest) {
-  SetModelFetchResponse("bogus model", net::HTTP_OK,
-                        net::URLRequestStatus::SUCCESS);
+  SetModelFetchResponses();
   csd_service_.reset(ClientSideDetectionService::Create(NULL));
 
   TestCache();
 }
 
 TEST_F(ClientSideDetectionServiceTest, IsPrivateIPAddress) {
-  SetModelFetchResponse("bogus model", net::HTTP_OK,
-                        net::URLRequestStatus::SUCCESS);
+  SetModelFetchResponses();
   csd_service_.reset(ClientSideDetectionService::Create(NULL));
 
   EXPECT_TRUE(csd_service_->IsPrivateIPAddress("10.1.2.3"));
@@ -621,163 +422,65 @@ TEST_F(ClientSideDetectionServiceTest, IsPrivateIPAddress) {
   EXPECT_TRUE(csd_service_->IsPrivateIPAddress("blah"));
 }
 
-TEST_F(ClientSideDetectionServiceTest, SetBadSubnets) {
-  ClientSideModel model;
-  ClientSideDetectionService::BadSubnetMap bad_subnets;
-  ClientSideDetectionService::SetBadSubnets(model, &bad_subnets);
-  EXPECT_EQ(0U, bad_subnets.size());
-
-  // Bad subnets are skipped.
-  ClientSideModel::IPSubnet* subnet = model.add_bad_subnet();
-  subnet->set_prefix(std::string(crypto::kSHA256Length, '.'));
-  subnet->set_size(130);  // Invalid size.
-
-  subnet = model.add_bad_subnet();
-  subnet->set_prefix(std::string(crypto::kSHA256Length, '.'));
-  subnet->set_size(-1);  // Invalid size.
-
-  subnet = model.add_bad_subnet();
-  subnet->set_prefix(std::string(16, '.'));  // Invalid len.
-  subnet->set_size(64);
-
-  ClientSideDetectionService::SetBadSubnets(model, &bad_subnets);
-  EXPECT_EQ(0U, bad_subnets.size());
-
-  subnet = model.add_bad_subnet();
-  subnet->set_prefix(std::string(crypto::kSHA256Length, '.'));
-  subnet->set_size(64);
-
-  subnet = model.add_bad_subnet();
-  subnet->set_prefix(std::string(crypto::kSHA256Length, ','));
-  subnet->set_size(64);
-
-  subnet = model.add_bad_subnet();
-  subnet->set_prefix(std::string(crypto::kSHA256Length, '.'));
-  subnet->set_size(128);
-
-  subnet = model.add_bad_subnet();
-  subnet->set_prefix(std::string(crypto::kSHA256Length, '.'));
-  subnet->set_size(100);
-
-  ClientSideDetectionService::SetBadSubnets(model, &bad_subnets);
-  EXPECT_EQ(3U, bad_subnets.size());
-  ClientSideDetectionService::BadSubnetMap::const_iterator it;
-  std::string mask = std::string(8, '\xFF') + std::string(8, '\x00');
-  EXPECT_TRUE(bad_subnets.count(mask));
-  EXPECT_TRUE(bad_subnets[mask].count(std::string(crypto::kSHA256Length, '.')));
-  EXPECT_TRUE(bad_subnets[mask].count(std::string(crypto::kSHA256Length, ',')));
-
-  mask = std::string(16, '\xFF');
-  EXPECT_TRUE(bad_subnets.count(mask));
-  EXPECT_TRUE(bad_subnets[mask].count(std::string(crypto::kSHA256Length, '.')));
-
-  mask = std::string(12, '\xFF') + "\xF0" + std::string(3, '\x00');
-  EXPECT_TRUE(bad_subnets.count(mask));
-  EXPECT_TRUE(bad_subnets[mask].count(std::string(crypto::kSHA256Length, '.')));
-}
-
-TEST_F(ClientSideDetectionServiceTest, ModelHasValidHashIds) {
-  ClientSideModel model;
-  EXPECT_TRUE(ClientSideDetectionService::ModelHasValidHashIds(model));
-  model.add_hashes("bla");
-  EXPECT_TRUE(ClientSideDetectionService::ModelHasValidHashIds(model));
-  model.add_page_term(0);
-  EXPECT_TRUE(ClientSideDetectionService::ModelHasValidHashIds(model));
-
-  model.add_page_term(-1);
-  EXPECT_FALSE(ClientSideDetectionService::ModelHasValidHashIds(model));
-  model.set_page_term(1, 1);
-  EXPECT_FALSE(ClientSideDetectionService::ModelHasValidHashIds(model));
-  model.set_page_term(1, 0);
-  EXPECT_TRUE(ClientSideDetectionService::ModelHasValidHashIds(model));
-
-  // Test bad rules.
-  model.add_hashes("blu");
-  ClientSideModel::Rule* rule = model.add_rule();
-  rule->add_feature(0);
-  rule->add_feature(1);
-  rule->set_weight(0.1f);
-  EXPECT_TRUE(ClientSideDetectionService::ModelHasValidHashIds(model));
-
-  rule = model.add_rule();
-  rule->add_feature(0);
-  rule->add_feature(1);
-  rule->add_feature(-1);
-  rule->set_weight(0.2f);
-  EXPECT_FALSE(ClientSideDetectionService::ModelHasValidHashIds(model));
-
-  rule->set_feature(2, 2);
-  EXPECT_FALSE(ClientSideDetectionService::ModelHasValidHashIds(model));
-
-  rule->set_feature(2, 1);
-  EXPECT_TRUE(ClientSideDetectionService::ModelHasValidHashIds(model));
-}
-
 TEST_F(ClientSideDetectionServiceTest, SetEnabledAndRefreshState) {
   // Check that the model isn't downloaded until the service is enabled.
   csd_service_.reset(ClientSideDetectionService::Create(NULL));
   EXPECT_FALSE(csd_service_->enabled());
-  EXPECT_TRUE(csd_service_->model_fetcher_.get() == NULL);
+  EXPECT_TRUE(csd_service_->model_loader_standard_->fetcher_.get() == NULL);
 
   // Use a MockClientSideDetectionService for the rest of the test, to avoid
   // the scheduling delay.
   MockClientSideDetectionService* service =
       new StrictMock<MockClientSideDetectionService>();
+  // Inject mock loaders.
+  MockModelLoader* loader_1 = new StrictMock<MockModelLoader>("model1");
+  MockModelLoader* loader_2 = new StrictMock<MockModelLoader>("model2");
+  service->model_loader_standard_.reset(loader_1);
+  service->model_loader_extended_.reset(loader_2);
   csd_service_.reset(service);
+
   EXPECT_FALSE(csd_service_->enabled());
-  EXPECT_TRUE(csd_service_->model_fetcher_.get() == NULL);
   // No calls expected yet.
   Mock::VerifyAndClearExpectations(service);
+  Mock::VerifyAndClearExpectations(loader_1);
+  Mock::VerifyAndClearExpectations(loader_2);
 
-  ClientSideModel model;
-  model.set_version(10);
-  model.set_max_words_per_term(4);
-  SetModelFetchResponse(model.SerializeAsString(), net::HTTP_OK,
-                        net::URLRequestStatus::SUCCESS);
-  EXPECT_CALL(*service, ScheduleFetchModel(_))
-      .WillOnce(Invoke(service, &MockClientSideDetectionService::Schedule));
-  EXPECT_CALL(*service, EndFetchModel(
-      ClientSideDetectionService::MODEL_SUCCESS))
-      .WillOnce(QuitCurrentMessageLoop());
+  // Check that initial ScheduleFetch() calls are made.
+  EXPECT_CALL(*loader_1,
+              ScheduleFetch(
+                  ClientSideDetectionService::kInitialClientModelFetchDelayMs));
+  EXPECT_CALL(*loader_2,
+              ScheduleFetch(
+                  ClientSideDetectionService::kInitialClientModelFetchDelayMs));
   csd_service_->SetEnabledAndRefreshState(true);
-  EXPECT_TRUE(csd_service_->model_fetcher_.get() != NULL);
-  msg_loop_.Run();  // EndFetchModel will quit the message loop.
+  msg_loop_.RunUntilIdle();
   Mock::VerifyAndClearExpectations(service);
+  Mock::VerifyAndClearExpectations(loader_1);
+  Mock::VerifyAndClearExpectations(loader_2);
 
   // Check that enabling again doesn't request the model.
   csd_service_->SetEnabledAndRefreshState(true);
   // No calls expected.
+  msg_loop_.RunUntilIdle();
   Mock::VerifyAndClearExpectations(service);
+  Mock::VerifyAndClearExpectations(loader_1);
+  Mock::VerifyAndClearExpectations(loader_2);
 
   // Check that disabling the service cancels pending requests.
-  EXPECT_CALL(*service, ScheduleFetchModel(_))
-      .WillOnce(Invoke(service, &MockClientSideDetectionService::Schedule));
+  EXPECT_CALL(*loader_1, CancelFetcher());
+  EXPECT_CALL(*loader_2, CancelFetcher());
   csd_service_->SetEnabledAndRefreshState(false);
-  csd_service_->SetEnabledAndRefreshState(true);
-  Mock::VerifyAndClearExpectations(service);
-  EXPECT_TRUE(csd_service_->model_fetcher_.get() != NULL);
-  csd_service_->SetEnabledAndRefreshState(false);
-  EXPECT_TRUE(csd_service_->model_fetcher_.get() == NULL);
   msg_loop_.RunUntilIdle();
+  Mock::VerifyAndClearExpectations(service);
+  Mock::VerifyAndClearExpectations(loader_1);
+  Mock::VerifyAndClearExpectations(loader_2);
+
+  // Check that disabling again doesn't request the model.
+  csd_service_->SetEnabledAndRefreshState(false);
   // No calls expected.
+  msg_loop_.RunUntilIdle();
   Mock::VerifyAndClearExpectations(service);
-
-  // Requests always return false when the service is disabled.
-  ClientPhishingResponse response;
-  response.set_phishy(true);
-  SetClientReportPhishingResponse(response.SerializeAsString(), net::HTTP_OK,
-                                  net::URLRequestStatus::SUCCESS);
-  EXPECT_FALSE(SendClientReportPhishingRequest(GURL("http://a.com/"), 0.4f));
-
-  // Pending requests also return false if the service is disabled before they
-  // report back.
-  EXPECT_CALL(*service, ScheduleFetchModel(_))
-      .WillOnce(Invoke(service, &MockClientSideDetectionService::Schedule));
-  EXPECT_CALL(*service, EndFetchModel(
-      ClientSideDetectionService::MODEL_NOT_CHANGED))
-      .WillOnce(Invoke(service, &MockClientSideDetectionService::Disable));
-  csd_service_->SetEnabledAndRefreshState(true);
-  EXPECT_FALSE(SendClientReportPhishingRequest(GURL("http://a.com/"), 0.4f));
-  Mock::VerifyAndClearExpectations(service);
+  Mock::VerifyAndClearExpectations(loader_1);
+  Mock::VerifyAndClearExpectations(loader_2);
 }
 }  // namespace safe_browsing

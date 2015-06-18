@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -16,18 +15,14 @@
 #include "base/prefs/pref_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/safe_browsing/client_model.pb.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome/common/safe_browsing/safebrowsing_messages.h"
-#include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -68,14 +63,9 @@ namespace {
 
 }  // namespace
 
-const size_t ClientSideDetectionService::kMaxModelSizeBytes = 90 * 1024;
-const int ClientSideDetectionService::kMaxReportsPerInterval = 3;
-// TODO(noelutz): once we know this mechanism works as intended we should fetch
-// the model much more frequently.  E.g., every 5 minutes or so.
-const int ClientSideDetectionService::kClientModelFetchIntervalMs = 3600 * 1000;
 const int ClientSideDetectionService::kInitialClientModelFetchDelayMs = 10000;
-
 const int ClientSideDetectionService::kReportsIntervalDays = 1;
+const int ClientSideDetectionService::kMaxReportsPerInterval = 3;
 const int ClientSideDetectionService::kNegativeCacheIntervalDays = 1;
 const int ClientSideDetectionService::kPositiveCacheIntervalMinutes = 30;
 
@@ -83,17 +73,6 @@ const char ClientSideDetectionService::kClientReportPhishingUrl[] =
     "https://sb-ssl.google.com/safebrowsing/clientreport/phishing";
 const char ClientSideDetectionService::kClientReportMalwareUrl[] =
     "https://sb-ssl.google.com/safebrowsing/clientreport/malware-check";
-const char ClientSideDetectionService::kClientModelUrlPrefix[] =
-    "https://ssl.gstatic.com/safebrowsing/csd/";
-const char ClientSideDetectionService::kClientModelNamePattern[] =
-    "client_model_v5%s_variation_%d.pb";
-
-// Finch names
-const char ClientSideDetectionService::kClientModelFinchExperiment[] =
-    "ClientSideDetectionModel";
-const char ClientSideDetectionService::kClientModelFinchParam[] =
-    "ModelNum";
-
 
 struct ClientSideDetectionService::ClientReportInfo {
   ClientReportPhishingRequestCallback callback;
@@ -115,6 +94,14 @@ ClientSideDetectionService::ClientSideDetectionService(
     : enabled_(false),
       request_context_getter_(request_context_getter),
       weak_factory_(this) {
+  base::Closure update_renderers =
+      base::Bind(&ClientSideDetectionService::SendModelToRenderers,
+                 base::Unretained(this));
+  model_loader_standard_.reset(
+      new ModelLoader(update_renderers, request_context_getter, false));
+  model_loader_extended_.reset(
+      new ModelLoader(update_renderers, request_context_getter, true));
+
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CREATED,
                  content::NotificationService::AllBrowserContextsAndSources());
 }
@@ -143,15 +130,17 @@ void ClientSideDetectionService::SetEnabledAndRefreshState(bool enabled) {
     return;
   enabled_ = enabled;
   if (enabled_) {
-    // Refresh the model when the service is enabled.  This can happen when the
-    // preference is toggled, or early during startup if the preference is
-    // already enabled. In a lot of cases the model will be in the cache so it
-    // won't actually be fetched from the network.
-    // We delay the first model fetch to avoid slowing down browser startup.
-    ScheduleFetchModel(kInitialClientModelFetchDelayMs);
+    // Refresh the models when the service is enabled.  This can happen when
+    // either of the preferences are toggled, or early during startup if
+    // safe browsing is already enabled. In a lot of cases the model will be
+    // in the cache so it  won't actually be fetched from the network.
+    // We delay the first model fetches to avoid slowing down browser startup.
+    model_loader_standard_->ScheduleFetch(kInitialClientModelFetchDelayMs);
+    model_loader_extended_->ScheduleFetch(kInitialClientModelFetchDelayMs);
   } else {
-    // Cancel pending requests.
-    model_fetcher_.reset();
+    // Cancel model loads in progress.
+    model_loader_standard_->CancelFetcher();
+    model_loader_extended_->CancelFetcher();
     // Invoke pending callbacks with a false verdict.
     for (std::map<const net::URLFetcher*, ClientReportInfo*>::iterator it =
              client_phishing_reports_.begin();
@@ -179,12 +168,14 @@ void ClientSideDetectionService::SetEnabledAndRefreshState(bool enabled) {
 
 void ClientSideDetectionService::SendClientReportPhishingRequest(
     ClientPhishingRequest* verdict,
+    bool is_extended_reporting,
     const ClientReportPhishingRequestCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&ClientSideDetectionService::StartClientReportPhishingRequest,
-                 weak_factory_.GetWeakPtr(), verdict, callback));
+                 weak_factory_.GetWeakPtr(), verdict, is_extended_reporting,
+                 callback));
 }
 
 void ClientSideDetectionService::SendClientReportMalwareRequest(
@@ -213,12 +204,8 @@ void ClientSideDetectionService::OnURLFetchComplete(
     const net::URLFetcher* source) {
   std::string data;
   source->GetResponseAsString(&data);
-  if (source == model_fetcher_.get()) {
-    HandleModelResponse(
-        source, source->GetURL(), source->GetStatus(),
-        source->GetResponseCode(), source->GetCookies(), data);
-  } else if (client_phishing_reports_.find(source) !=
-             client_phishing_reports_.end()) {
+
+  if (client_phishing_reports_.find(source) != client_phishing_reports_.end()) {
     HandlePhishingVerdict(
         source, source->GetURL(), source->GetStatus(),
         source->GetResponseCode(), source->GetCookies(), data);
@@ -238,10 +225,6 @@ void ClientSideDetectionService::Observe(
     const content::NotificationDetails& details) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(type == content::NOTIFICATION_RENDERER_PROCESS_CREATED);
-  if (!model_.get()) {
-    // Model might not be ready or maybe there was an error.
-    return;
-  }
   SendModelToProcess(
       content::Source<content::RenderProcessHost>(source).ptr());
 }
@@ -250,12 +233,21 @@ void ClientSideDetectionService::SendModelToProcess(
     content::RenderProcessHost* process) {
   // The ClientSideDetectionService is enabled if _any_ active profile has
   // SafeBrowsing turned on.  Here we check the profile for each renderer
-  // process and only send the model to those that have SafeBrowsing enabled.
+  // process and only send the model to those that have SafeBrowsing enabled,
+  // and we select the model based on the extended reporting setting.
   Profile* profile = Profile::FromBrowserContext(process->GetBrowserContext());
   std::string model;
   if (profile->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled)) {
-    DVLOG(2) << "Sending phishing model to RenderProcessHost @" << process;
-    model = model_str_;
+    if (profile->GetPrefs()->GetBoolean(
+            prefs::kSafeBrowsingExtendedReportingEnabled)) {
+      DVLOG(2) << "Sending phishing model " << model_loader_extended_->name()
+               << " to RenderProcessHost @" << process;
+      model = model_loader_extended_->model_str();
+    } else {
+      DVLOG(2) << "Sending phishing model " << model_loader_standard_->name()
+               << " to RenderProcessHost @" << process;
+      model = model_loader_standard_->model_str();
+    }
   } else {
     DVLOG(2) << "Disabling client-side phishing detection for "
              << "RenderProcessHost @" << process;
@@ -271,79 +263,9 @@ void ClientSideDetectionService::SendModelToRenderers() {
   }
 }
 
-void ClientSideDetectionService::ScheduleFetchModel(int64 delay_ms) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSbDisableAutoUpdate))
-    return;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&ClientSideDetectionService::StartFetchModel,
-                            weak_factory_.GetWeakPtr()),
-      base::TimeDelta::FromMilliseconds(delay_ms));
-}
-
-// static
-std::string ClientSideDetectionService::MakeModelName() {
-  std::string num_str = variations::GetVariationParamValue(
-      kClientModelFinchExperiment, kClientModelFinchParam);
-  int model_number = 0;
-  if (!base::StringToInt(num_str, &model_number)) {
-    model_number = 0;  // Default model
-  }
-
-  // TODO(nparker): Factor out the model-fetching so we can have
-  // up to two models: One for extended reporting, and one for not.
-  // Until then, we'll use the non-extended reporting model.
-  return FillInModelName(false /* is_extended_reporting */, model_number);
-}
-
-// static
-std::string ClientSideDetectionService::FillInModelName(
-    bool is_extended_reporting,
-    int model_number) {
-  return base::StringPrintf(kClientModelNamePattern,
-                            is_extended_reporting ? "_ext" : "", model_number);
-}
-
-void ClientSideDetectionService::StartFetchModel() {
-  if (enabled_) {
-    // Start fetching the model either from the cache or possibly from the
-    // network if the model isn't in the cache.
-    fetching_model_name_ = MakeModelName();
-    std::string model_url = kClientModelUrlPrefix + fetching_model_name_;
-    model_fetcher_ = net::URLFetcher::Create(0 /* ID used for testing */,
-                                             GURL(model_url),
-                                             net::URLFetcher::GET, this);
-    model_fetcher_->SetRequestContext(request_context_getter_.get());
-    model_fetcher_->Start();
-  }
-}
-
-void ClientSideDetectionService::EndFetchModel(ClientModelStatus status) {
-  UMA_HISTOGRAM_ENUMERATION("SBClientPhishing.ClientModelStatus",
-                            status,
-                            MODEL_STATUS_MAX);
-  if (status == MODEL_SUCCESS) {
-    SetBadSubnets(*model_, &bad_subnets_);
-    SendModelToRenderers();
-  }
-  int delay_ms = kClientModelFetchIntervalMs;
-  // If the most recently fetched model had a valid max-age and the model was
-  // valid we're scheduling the next model update for after the max-age expired.
-  if (model_max_age_.get() &&
-      (status == MODEL_SUCCESS || status == MODEL_NOT_CHANGED)) {
-    // We're adding 60s of additional delay to make sure we're past
-    // the model's age.
-    *model_max_age_ += base::TimeDelta::FromMinutes(1);
-    delay_ms = model_max_age_->InMilliseconds();
-  }
-  model_max_age_.reset();
-
-  // Schedule the next model reload.
-  ScheduleFetchModel(delay_ms);
-}
-
 void ClientSideDetectionService::StartClientReportPhishingRequest(
     ClientPhishingRequest* verdict,
+    bool is_extended_reporting,
     const ClientReportPhishingRequestCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   scoped_ptr<ClientPhishingRequest> request(verdict);
@@ -354,7 +276,17 @@ void ClientSideDetectionService::StartClientReportPhishingRequest(
     return;
   }
 
-  request->set_model_filename(model_name_);
+  // Fill in metadata about which model we used.
+  if (is_extended_reporting) {
+    request->set_model_filename(model_loader_extended_->name());
+    request->mutable_population()->set_user_population(
+        ChromeUserPopulation::EXTENDED_REPORTING);
+  } else {
+    request->set_model_filename(model_loader_standard_->name());
+    request->mutable_population()->set_user_population(
+        ChromeUserPopulation::SAFE_BROWSING);
+  }
+  DVLOG(2) << "Starting report for hit on model " << request->model_filename();
 
   std::string request_data;
   if (!request->SerializeToString(&request_data)) {
@@ -432,48 +364,6 @@ void ClientSideDetectionService::StartClientReportMalwareRequest(
   malware_report_times_.push(base::Time::Now());
 }
 
-void ClientSideDetectionService::HandleModelResponse(
-    const net::URLFetcher* source,
-    const GURL& url,
-    const net::URLRequestStatus& status,
-    int response_code,
-    const net::ResponseCookies& cookies,
-    const std::string& data) {
-  base::TimeDelta max_age;
-  if (status.is_success() && net::HTTP_OK == response_code &&
-      source->GetResponseHeaders() &&
-      source->GetResponseHeaders()->GetMaxAgeValue(&max_age)) {
-    model_max_age_.reset(new base::TimeDelta(max_age));
-  }
-  scoped_ptr<ClientSideModel> model(new ClientSideModel());
-  ClientModelStatus model_status;
-  if (!status.is_success() || net::HTTP_OK != response_code) {
-    model_status = MODEL_FETCH_FAILED;
-  } else if (data.empty()) {
-    model_status = MODEL_EMPTY;
-  } else if (data.size() > kMaxModelSizeBytes) {
-    model_status = MODEL_TOO_LARGE;
-  } else if (!model->ParseFromString(data)) {
-    model_status = MODEL_PARSE_ERROR;
-  } else if (!model->IsInitialized() || !model->has_version()) {
-    model_status = MODEL_MISSING_FIELDS;
-  } else if (!ModelHasValidHashIds(*model)) {
-    model_status = MODEL_BAD_HASH_IDS;
-  } else if (model->version() < 0 ||
-             (model_.get() && model->version() < model_->version())) {
-    model_status = MODEL_INVALID_VERSION_NUMBER;
-  } else if (model_.get() && model->version() == model_->version()) {
-    model_status = MODEL_NOT_CHANGED;
-  } else {
-    // The model is valid => replace the existing model with the new one.
-    model_str_.assign(data);
-    model_.swap(model);
-    model_name_ = fetching_model_name_;
-    fetching_model_name_ = "";
-    model_status = MODEL_SUCCESS;
-  }
-  EndFetchModel(model_status);
-}
 
 void ClientSideDetectionService::HandlePhishingVerdict(
     const net::URLFetcher* source,
@@ -626,53 +516,6 @@ int ClientSideDetectionService::GetNumReports(
 }
 
 // static
-void ClientSideDetectionService::SetBadSubnets(const ClientSideModel& model,
-                                               BadSubnetMap* bad_subnets) {
-  bad_subnets->clear();
-  for (int i = 0; i < model.bad_subnet_size(); ++i) {
-    int size = model.bad_subnet(i).size();
-    if (size < 0 || size > static_cast<int>(net::kIPv6AddressSize) * 8) {
-      DLOG(ERROR) << "Invalid bad subnet size: " << size;
-      continue;
-    }
-    if (model.bad_subnet(i).prefix().size() != crypto::kSHA256Length) {
-      DLOG(ERROR) << "Invalid bad subnet prefix length: "
-                  << model.bad_subnet(i).prefix().size();
-      continue;
-    }
-    // We precompute the mask for the given subnet size to speed up lookups.
-    // Basically we need to create a 16B long string which has the highest
-    // |size| bits sets to one.
-    std::string mask(net::kIPv6AddressSize, '\x00');
-    mask.replace(0, size / 8, size / 8, '\xFF');
-    if (size % 8) {
-      mask[size / 8] = 0xFF << (8 - (size % 8));
-    }
-    (*bad_subnets)[mask].insert(model.bad_subnet(i).prefix());
-  }
-}
-
-// static
-bool ClientSideDetectionService::ModelHasValidHashIds(
-    const ClientSideModel& model) {
-  const int max_index = model.hashes_size() - 1;
-  for (int i = 0; i < model.rule_size(); ++i) {
-    for (int j = 0; j < model.rule(i).feature_size(); ++j) {
-      if (model.rule(i).feature(j) < 0 ||
-          model.rule(i).feature(j) > max_index) {
-        return false;
-      }
-    }
-  }
-  for (int i = 0; i < model.page_term_size(); ++i) {
-    if (model.page_term(i) < 0 || model.page_term(i) > max_index) {
-      return false;
-    }
-  }
-  return true;
-}
-
-// static
 GURL ClientSideDetectionService::GetClientReportUrl(
     const std::string& report_url) {
   GURL url(report_url);
@@ -682,4 +525,5 @@ GURL ClientSideDetectionService::GetClientReportUrl(
 
   return url;
 }
+
 }  // namespace safe_browsing

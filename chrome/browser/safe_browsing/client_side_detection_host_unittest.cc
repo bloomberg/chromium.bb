@@ -113,8 +113,9 @@ class MockClientSideDetectionService : public ClientSideDetectionService {
   MockClientSideDetectionService() : ClientSideDetectionService(NULL) {}
   virtual ~MockClientSideDetectionService() {}
 
-  MOCK_METHOD2(SendClientReportPhishingRequest,
+  MOCK_METHOD3(SendClientReportPhishingRequest,
                void(ClientPhishingRequest*,
+                    bool,
                     const ClientReportPhishingRequestCallback&));
   MOCK_METHOD2(SendClientReportMalwareRequest,
                void(ClientMalwareRequest*,
@@ -479,8 +480,8 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneNotPhishing) {
       .WillOnce(InvokeDoneCallback(&verdict));
   EXPECT_CALL(*csd_service_,
               SendClientReportPhishingRequest(
-                  Pointee(PartiallyEqualVerdict(verdict)), _))
-      .WillOnce(DoAll(DeleteArg<0>(), SaveArg<1>(&cb)));
+                  Pointee(PartiallyEqualVerdict(verdict)), _, _))
+      .WillOnce(DoAll(DeleteArg<0>(), SaveArg<2>(&cb)));
   OnPhishingDetectionDone(verdict.SerializeAsString());
   EXPECT_TRUE(Mock::VerifyAndClear(csd_host_.get()));
   ASSERT_FALSE(cb.is_null());
@@ -511,8 +512,8 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneDisabled) {
       .WillOnce(InvokeDoneCallback(&verdict));
   EXPECT_CALL(*csd_service_,
               SendClientReportPhishingRequest(
-                  Pointee(PartiallyEqualVerdict(verdict)), _))
-      .WillOnce(DoAll(DeleteArg<0>(), SaveArg<1>(&cb)));
+                  Pointee(PartiallyEqualVerdict(verdict)), _, _))
+      .WillOnce(DoAll(DeleteArg<0>(), SaveArg<2>(&cb)));
   OnPhishingDetectionDone(verdict.SerializeAsString());
   EXPECT_TRUE(Mock::VerifyAndClear(csd_host_.get()));
   ASSERT_FALSE(cb.is_null());
@@ -544,8 +545,8 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneShowInterstitial) {
       .WillOnce(InvokeDoneCallback(&verdict));
   EXPECT_CALL(*csd_service_,
               SendClientReportPhishingRequest(
-                  Pointee(PartiallyEqualVerdict(verdict)), _))
-      .WillOnce(DoAll(DeleteArg<0>(), SaveArg<1>(&cb)));
+                  Pointee(PartiallyEqualVerdict(verdict)), _, _))
+      .WillOnce(DoAll(DeleteArg<0>(), SaveArg<2>(&cb)));
   OnPhishingDetectionDone(verdict.SerializeAsString());
   EXPECT_TRUE(Mock::VerifyAndClear(csd_host_.get()));
   EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));
@@ -598,8 +599,8 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneMultiplePings) {
       .WillOnce(InvokeDoneCallback(&verdict));
   EXPECT_CALL(*csd_service_,
               SendClientReportPhishingRequest(
-                  Pointee(PartiallyEqualVerdict(verdict)), _))
-      .WillOnce(DoAll(DeleteArg<0>(), SaveArg<1>(&cb)));
+                  Pointee(PartiallyEqualVerdict(verdict)), _, _))
+      .WillOnce(DoAll(DeleteArg<0>(), SaveArg<2>(&cb)));
   OnPhishingDetectionDone(verdict.SerializeAsString());
   EXPECT_TRUE(Mock::VerifyAndClear(csd_host_.get()));
   EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));
@@ -623,9 +624,9 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneMultiplePings) {
   verdict.set_client_score(0.8f);
   EXPECT_CALL(*csd_service_,
               SendClientReportPhishingRequest(
-                  Pointee(PartiallyEqualVerdict(verdict)), _))
+                  Pointee(PartiallyEqualVerdict(verdict)), _, _))
       .WillOnce(DoAll(DeleteArg<0>(),
-                      SaveArg<1>(&cb_other),
+                      SaveArg<2>(&cb_other),
                       QuitUIMessageLoop()));
   std::vector<GURL> redirect_chain;
   redirect_chain.push_back(other_phishing_url);
@@ -702,7 +703,7 @@ TEST_F(ClientSideDetectionHostTest,
 
   EXPECT_CALL(*csd_service_,
               SendClientReportPhishingRequest(
-                  Pointee(PartiallyEqualVerdict(verdict)), CallbackIsNull()))
+                  Pointee(PartiallyEqualVerdict(verdict)), _, CallbackIsNull()))
       .WillOnce(DoAll(DeleteArg<0>(), QuitUIMessageLoop()));
   std::vector<GURL> redirect_chain;
   redirect_chain.push_back(url);
@@ -741,7 +742,7 @@ TEST_F(ClientSideDetectionHostTest,
 
   EXPECT_CALL(*csd_service_,
               SendClientReportPhishingRequest(
-                  Pointee(PartiallyEqualVerdict(verdict)), CallbackIsNull()))
+                  Pointee(PartiallyEqualVerdict(verdict)), _, CallbackIsNull()))
       .WillOnce(DoAll(DeleteArg<0>(), QuitUIMessageLoop()));
   std::vector<GURL> redirect_chain;
   redirect_chain.push_back(url);

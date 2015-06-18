@@ -997,6 +997,7 @@
       'browser/safe_browsing/chunk_range_unittest.cc',
       'browser/safe_browsing/client_side_detection_host_unittest.cc',
       'browser/safe_browsing/client_side_detection_service_unittest.cc',
+      'browser/safe_browsing/client_side_model_loader_unittest.cc',
       'browser/safe_browsing/download_feedback_service_unittest.cc',
       'browser/safe_browsing/download_feedback_unittest.cc',
       'browser/safe_browsing/download_protection_service_unittest.cc',

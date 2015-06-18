@@ -2458,6 +2458,8 @@
       'browser/safe_browsing/client_side_detection_host.h',
       'browser/safe_browsing/client_side_detection_service.cc',
       'browser/safe_browsing/client_side_detection_service.h',
+      'browser/safe_browsing/client_side_model_loader.cc',
+      'browser/safe_browsing/client_side_model_loader.h',
       'browser/safe_browsing/database_manager.h',
       'browser/safe_browsing/download_feedback.cc',
       'browser/safe_browsing/download_feedback.h',

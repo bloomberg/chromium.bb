@@ -591,6 +591,11 @@ void SafeBrowsingService::AddPrefService(PrefService* pref_service) {
   registrar->Add(prefs::kSafeBrowsingEnabled,
                  base::Bind(&SafeBrowsingService::RefreshState,
                             base::Unretained(this)));
+  // ClientSideDetectionService will need to be refresh the models
+  // renderers have if extended-reporting changes.
+  registrar->Add(prefs::kSafeBrowsingExtendedReportingEnabled,
+                 base::Bind(&SafeBrowsingService::RefreshState,
+                            base::Unretained(this)));
   prefs_map_[pref_service] = registrar;
   RefreshState();
 }
