@@ -54,10 +54,6 @@ template("build_webapp_html") {
     target_jscompile_stamp = "$target_gen_dir/${target_jscompile}.stamp"
     action(target_jscompile) {
       js_files = remoting_webapp_js_proto_files + invoker.js_files
-      externs = [
-        remoting_webapp_externs,
-        "../../third_party/closure_compiler/externs/chrome_extensions.js",
-      ]
 
       script = "../../third_party/closure_compiler/compile.py"
       inputs = js_files
@@ -69,7 +65,7 @@ template("build_webapp_html") {
         "--strict",
         "--no-single-file",
         "--externs",
-        externs,
+        "../../third_party/closure_compiler/externs/chrome_extensions.js",
         "--success-stamp",
         rebase_path(target_jscompile_stamp, root_build_dir),
       ]

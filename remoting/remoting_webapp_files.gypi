@@ -15,11 +15,6 @@
 {
   'variables': {
 
-    # JSCompiler externs.
-    'remoting_webapp_js_externs': [
-      'webapp/externs/qunit.js',
-    ],
-
     # Jscompile proto files.
     # These provide type information for jscompile.
     'remoting_webapp_js_proto_files': [
