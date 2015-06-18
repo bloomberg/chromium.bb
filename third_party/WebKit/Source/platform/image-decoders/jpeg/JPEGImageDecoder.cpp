@@ -89,6 +89,7 @@ namespace blink {
 
 struct decoder_error_mgr {
     struct jpeg_error_mgr pub; // "public" fields for IJG library
+    int num_corrupt_warnings;  // Counts corrupt warning messages
     jmp_buf setjmp_buffer;     // For handling catastropic errors
 };
 
@@ -116,6 +117,7 @@ boolean fill_input_buffer(j_decompress_ptr jd);
 void skip_input_data(j_decompress_ptr jd, long num_bytes);
 void term_source(j_decompress_ptr jd);
 void error_exit(j_common_ptr cinfo);
+void emit_message(j_common_ptr cinfo, int msg_level);
 
 // Implementation of a JPEG src object that understands our state machine
 struct decoder_source_mgr {
@@ -473,6 +475,10 @@ public:
             // Don't allocate a giant and superfluous memory buffer when the
             // image is a sequential JPEG.
             m_info.buffered_image = jpeg_has_multiple_scans(&m_info);
+            if (m_info.buffered_image) {
+                m_err.pub.emit_message = emit_message;
+                m_err.num_corrupt_warnings = 0;
+            }
 
             if (onlySize) {
                 // We can stop here. Reduce our buffer length and available data.
@@ -489,8 +495,13 @@ public:
             m_info.dct_method = dctMethod();
             m_info.dither_mode = ditherMode();
             m_info.do_fancy_upsampling = doFancyUpsampling();
-            m_info.enable_2pass_quant = false;
             m_info.do_block_smoothing = true;
+            m_info.enable_2pass_quant = false;
+            // FIXME: should we just assert these?
+            m_info.enable_external_quant = false;
+            m_info.enable_1pass_quant = false;
+            m_info.quantize_colors = false;
+            m_info.colormap = 0;
 
             // Make a one-row-high sample array that will go away when done with
             // image. Always make it big enough to hold an RGB row. Since this
@@ -527,6 +538,9 @@ public:
             if (m_state == JPEG_DECOMPRESS_PROGRESSIVE) {
                 int status;
                 do {
+                    decoder_error_mgr* err = reinterpret_cast_ptr<decoder_error_mgr *>(m_info.err);
+                    if (err->num_corrupt_warnings)
+                        break;
                     status = jpeg_consume_input(&m_info);
                 } while ((status != JPEG_SUSPENDED) && (status != JPEG_REACHED_EOI));
 
@@ -642,8 +656,25 @@ private:
 void error_exit(j_common_ptr cinfo)
 {
     // Return control to the setjmp point.
-    decoder_error_mgr *err = reinterpret_cast_ptr<decoder_error_mgr *>(cinfo->err);
+    decoder_error_mgr* err = reinterpret_cast_ptr<decoder_error_mgr *>(cinfo->err);
     longjmp(err->setjmp_buffer, -1);
+}
+
+void emit_message(j_common_ptr cinfo, int msg_level)
+{
+    if (msg_level >= 0)
+        return;
+
+    decoder_error_mgr* err = reinterpret_cast_ptr<decoder_error_mgr *>(cinfo->err);
+    err->pub.num_warnings++;
+
+    // Detect and count corrupt JPEG warning messages.
+    const char* warning = 0;
+    int code = err->pub.msg_code;
+    if (code > 0 && code <= err->pub.last_jpeg_message)
+        warning = err->pub.jpeg_message_table[code];
+    if (warning && !strncmp("Corrupt JPEG", warning, 12))
+        err->num_corrupt_warnings++;
 }
 
 void init_source(j_decompress_ptr)
