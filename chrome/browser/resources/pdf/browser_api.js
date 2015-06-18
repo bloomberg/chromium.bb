@@ -4,16 +4,23 @@
 
 'use strict';
 
-let defaultZoomPromise = (function() {
+/**
+ * Returns a promise that will resolve to the default zoom factor.
+ * @param {!Object} streamInfo The stream object pointing to the data contained
+ *     in the PDF.
+ * @return {Promise<number>} A promise that will resolve to the default zoom
+ *     factor.
+ */
+function lookupDefaultZoom(streamInfo) {
   if (!chrome.tabs)
     return Promise.resolve(1);
 
   return new Promise(function(resolve, reject) {
-    chrome.tabs.getZoomSettings(function(zoomSettings) {
+    chrome.tabs.getZoomSettings(streamInfo.tabId, function(zoomSettings) {
       resolve(zoomSettings.defaultZoomFactor);
-    }.bind(this));
-  }.bind(this));
-})();
+    });
+  });
+}
 
 /**
  * A class providing an interface to the browser.
@@ -34,14 +41,13 @@ class BrowserApi {
 
   /**
    * Returns a promise to a BrowserApi.
-   * @param {!Promise.<Object>} streamInfoPromise A promise that will resolve
-   *     the stream object pointing to the data contained in the PDF.
+   * @param {!Object} streamInfo The stream object pointing to the data
+   *     contained in the PDF.
    * @param {boolean} manageZoom Whether to manage zoom.
    */
-  static create(streamInfoPromise, manageZoom) {
-    return Promise.all([streamInfoPromise, defaultZoomPromise]).then(
-        function(results) {
-      return new BrowserApi(results[0], results[1], manageZoom);
+  static create(streamInfo, manageZoom) {
+    return lookupDefaultZoom(streamInfo).then(function(defaultZoom) {
+      return new BrowserApi(streamInfo, defaultZoom, manageZoom);
     });
   }
 
@@ -102,28 +108,28 @@ class BrowserApi {
 
 /**
  * Creates a BrowserApi for an extension running as a mime handler.
- * @return {Promise.<BrowserApi>} A promise to a BrowserApi instance constructed
+ * @return {Promise<BrowserApi>} A promise to a BrowserApi instance constructed
  *     using the mimeHandlerPrivate API.
  */
 function createBrowserApiForMimeHandlerView() {
   return new Promise(function(resolve, reject) {
     chrome.mimeHandlerPrivate.getStreamInfo(resolve);
   }).then(function(streamInfo) {
-    if (streamInfo.embedded || streamInfo.tabId == -1)
-      return BrowserApi.create(streamInfo, false);
-
-    return BrowserApi.create(new Promise(function(resolve, reject) {
+    let manageZoom = !streamInfo.embedded && streamInfo.tabId != -1;
+    return new Promise(function(resolve, reject) {
+      if (!manageZoom) {
+        resolve();
+        return;
+      }
       chrome.tabs.setZoomSettings(
           streamInfo.tabId, {mode: 'manual', scope: 'per-tab'}, resolve);
-      }).then(function() {
-        return streamInfo;
-      }), true);
+    }).then(function() { return BrowserApi.create(streamInfo, manageZoom); });
   });
 }
 
 /**
  * Creates a BrowserApi instance for an extension not running as a mime handler.
- * @return {Promise.<BrowserApi>} A promise to a BrowserApi instance constructed
+ * @return {Promise<BrowserApi>} A promise to a BrowserApi instance constructed
  *     from the URL.
  */
 function createBrowserApiForStandaloneExtension() {
@@ -135,20 +141,21 @@ function createBrowserApiForStandaloneExtension() {
     embedded: window.parent != window,
     tabId: -1,
   };
-  if (!chrome.tabs)
-    return BrowserApi.create(streamInfo, false);
-
-  return BrowserApi.create(new Promise(function(resolve, reject) {
+  return new Promise(function(resolve, reject) {
+    if (!chrome.tabs) {
+      resolve();
+      return;
+    }
     chrome.tabs.getCurrent(function(tab) {
       streamInfo.tabId = tab.id;
-      resolve(streamInfo);
+      resolve();
     });
-  }), false);
+  }).then(function() { return BrowserApi.create(streamInfo, false); });
 }
 
 /**
  * Returns a promise that will resolve to a BrowserApi instance.
- * @return {Promise.<BrowserApi>} A promise to a BrowserApi instance for the
+ * @return {Promise<BrowserApi>} A promise to a BrowserApi instance for the
  *     current environment.
  */
 function createBrowserApi() {
