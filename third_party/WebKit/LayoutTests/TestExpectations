@@ -109,8 +109,9 @@ crbug.com/411175 [ XP ] svg/custom/svg-fonts-without-missing-glyph.xhtml [ Failu
 #crbug.com/310679 [ Mac ] fast/events/scale-and-scroll-iframe-window.html [ ImageOnlyFailure Pass ]
 crbug.com/310679 [ Mac ] fast/frames/frame-set-rotation-hit.html [ Failure ImageOnlyFailure Pass ]
 crbug.com/310679 [ Mac ] fast/frames/frame-set-scaling-hit.html [ Failure ImageOnlyFailure Pass ]
-crbug.com/310679 [ Mac ] virtual/pointerevent/fast/events/scale-and-scroll-iframe-body.html [ ImageOnlyFailure ]
-crbug.com/310679 [ Mac ] virtual/pointerevent/fast/events/scale-and-scroll-iframe-window.html [ ImageOnlyFailure ]
+#crbug.com/310679 [ Mac ] virtual/pointerevent/fast/events/scale-and-scroll-iframe-body.html [ ImageOnlyFailure ]
+#crbug.com/310679 [ Mac ] virtual/pointerevent/fast/events/scale-and-scroll-iframe-window.html [ ImageOnlyFailure ]
+
 
 # Tests failing since applyPageScaleFactorInCompositor enabled
 crbug.com/225184 fast/repaint/relayout-fixed-position-after-scale.html [ ImageOnlyFailure ]
@@ -380,6 +381,8 @@ crbug.com/492664 imported/csswg-test/css-writing-modes-3/writing-mode-vertical-r
 crbug.com/497950 fast/encoding/invalid-UTF-8.html [ NeedsManualRebaseline ]
 crbug.com/497950 fast/events/scale-and-scroll-iframe-body.html [ NeedsManualRebaseline ]
 crbug.com/497950 fast/events/scale-and-scroll-iframe-window.html [ NeedsManualRebaseline ]
+crbug.com/497950 virtual/pointerevent/fast/events/scale-and-scroll-iframe-body.html [ NeedsManualRebaseline ]
+crbug.com/497950 virtual/pointerevent/fast/events/scale-and-scroll-iframe-window.html [ NeedsManualRebaseline ]
 crbug.com/497950 fast/forms/button/button-reset-focus-by-mouse-then-keydown.html [ NeedsManualRebaseline ]
 crbug.com/497950 fast/forms/checkbox/checkbox-focus-by-mouse-then-keydown.html [ NeedsManualRebaseline ]
 crbug.com/497950 fast/text/atsui-small-caps-punctuation-size.html [ NeedsManualRebaseline ]

@@ -218,11 +218,13 @@
   {
     "prefix": "pointerevent",
     "base": "fast/events",
-    "args": ["--enable-blink-features=PointerEvent"]
+    "args": ["--enable-blink-features=PointerEvent",
+             "--enable-slimming-paint"]
   },
   {
     "prefix": "pointerevent",
     "base": "imported/web-platform-tests/pointerevents",
-    "args": ["--enable-blink-features=PointerEvent"]
+    "args": ["--enable-blink-features=PointerEvent",
+             "--enable-slimming-paint"]
   }
 ]
