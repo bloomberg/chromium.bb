@@ -825,15 +825,6 @@ class DownloadProtectionService::CheckClientDownloadRequest
                             base::TimeTicks::Now() - timeout_start_time_);
       }
     }
-    if (result == SAFE && (reason == REASON_WHITELISTED_URL ||
-                           reason == REASON_TRUSTED_EXECUTABLE)) {
-      // Due to the short-circuit logic in CheckWhitelists (see TODOs there), a
-      // ClientDownloadRequest was not generated for this download and callbacks
-      // were not run. Run them now with null to indicate that a download has
-      // taken place.
-      // TODO(grt): persist metadata for these downloads as well.
-      service_->client_download_request_callbacks_.Notify(item_, nullptr);
-    }
     if (service_) {
       DVLOG(2) << "SafeBrowsing download verdict for: "
                << item_->DebugString(true) << " verdict:" << reason
