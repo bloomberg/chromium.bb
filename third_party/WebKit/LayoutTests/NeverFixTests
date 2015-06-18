@@ -54,10 +54,6 @@ fast/harness/sample-fail-mismatch-reftest.html [ WontFix ]
 [ Win Linux ] compositing/plugins/composited-plugin.html [ WontFix ]
 [ Win Linux ] compositing/plugins/large-to-small-composited-plugin.html [ WontFix ]
 [ Win Linux ] compositing/plugins/small-to-large-composited-plugin.html [ WontFix ]
-[ Win Linux ] virtual/slimmingpaint/compositing/plugins/1x1-composited-plugin.html [ WontFix ]
-[ Win Linux ] virtual/slimmingpaint/compositing/plugins/composited-plugin.html [ WontFix ]
-[ Win Linux ] virtual/slimmingpaint/compositing/plugins/large-to-small-composited-plugin.html [ WontFix ]
-[ Win Linux ] virtual/slimmingpaint/compositing/plugins/small-to-large-composited-plugin.html [ WontFix ]
 
 # Mac's popup behavior is different.
 [ Mac ] fast/forms/select/menulist-onchange-fired-with-key-up-down.html [ WontFix ]
@@ -65,7 +61,6 @@ fast/harness/sample-fail-mismatch-reftest.html [ WontFix ]
 
 # Chromium does not support PDF content in <img> tags.
 [ Win Linux ] compositing/images/direct-pdf-image.html [ WontFix ]
-[ Win Linux ] virtual/slimmingpaint/compositing/images/direct-pdf-image.html [ WontFix ]
 
 # Pan-scroll tests are Windows-specific.
 [ Linux Mac ] fast/events/panScroll-click.html [ WontFix ]
@@ -102,7 +97,6 @@ fast/harness/sample-fail-mismatch-reftest.html [ WontFix ]
 
 # Link Highlighting is only supported on Windows and Linux
 [ Mac ] compositing/gestures [ WontFix ]
-[ Mac ] virtual/slimmingpaint/compositing/gestures [ WontFix ]
 
 # These tests are specific to Linux.
 [ Mac Win ] editing/selection/linux_selection_color.html [ WontFix ]

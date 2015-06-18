@@ -112,12 +112,6 @@
     
   {
     "prefix": "slimmingpaint",
-    "base": "compositing",
-    "args": ["--enable-slimming-paint"],
-    "references_use_default_args": "True"
-  },
-  {
-    "prefix": "slimmingpaint",
     "base": "css1",
     "args": ["--enable-slimming-paint"],
     "references_use_default_args": "True"

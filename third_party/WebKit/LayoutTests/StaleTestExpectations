@@ -13,5 +13,3 @@ crbug.com/7482 [ Win Mac ] http/tests/misc/timer-vs-loading.html [ WontFix ]
 # pass in the virtual test suite version.
 webkit.org/b/49629 compositing/lots-of-img-layers.html [ WontFix ]
 webkit.org/b/49629 compositing/lots-of-img-layers-with-opacity.html [ WontFix ]
-webkit.org/b/49629 virtual/slimmingpaint/compositing/lots-of-img-layers.html [ WontFix ]
-webkit.org/b/49629 virtual/slimmingpaint/compositing/lots-of-img-layers-with-opacity.html [ WontFix ]

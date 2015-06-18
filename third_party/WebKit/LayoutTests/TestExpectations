@@ -5,7 +5,6 @@ crbug.com/453972 virtual/slimmingpaint/ [ Skip ]
 # Force to run tests under skipped directories that ever had bugs to monitor regressions.
 crbug.com/486774 virtual/slimmingpaint/editing/selection/select-all-iframe-crash.html [ Pass ]
 crbug.com/486825 virtual/slimmingpaint/editing/selection/extend-by-character-002.html [ Pass ]
-crbug.com/486921 virtual/slimmingpaint/compositing/overflow/do-not-paint-outline-into-composited-scrolling-contents.html [ Pass ]
 crbug.com/496539 virtual/slimmingpaint/plugins/webview-plugin-lifecycle.html [ Pass ]
 
 crbug.com/486920 [ Mac Win ] virtual/slimmingpaint/plugins/destroy-on-setwindow.html [ Crash ]
@@ -57,7 +56,7 @@ crbug.com/364267 [ Win Mac ] http/tests/security/webgl-remote-read-remote-image-
 crbug.com/289002 http/tests/security/frame-loading-via-document-write.html [ Pass Failure ]
 crbug.com/390452 http/tests/security/isolatedWorld/media-query-wrapper-leaks.html [ Pass Failure ]
 
-crbug.com/489546 virtual/slimmingpaint/compositing/fixed-body-background-positioned.html [ Pass Failure ]
+crbug.com/489546 compositing/fixed-body-background-positioned.html [ Pass Failure ]
 
 # It is not possible to capture a marquee at exactly the same state 100% of the runs.
 crbug.com/445100 fast/block/float/marquee-shrink-to-avoid-floats.html [ Pass Failure ]
@@ -96,9 +95,6 @@ crbug.com/497950 fast/repaint/transform-inline-layered-child.html [ NeedsManualR
 crbug.com/240374 compositing/overlap-blending/reflection-opacity-huge.html [ ImageOnlyFailure ]
 crbug.com/240374 compositing/overlap-blending/children-opacity-huge.html [ ImageOnlyFailure ]
 crbug.com/240374 compositing/overlap-blending/children-opacity-no-overlap.html [ ImageOnlyFailure ]
-crbug.com/240374 virtual/slimmingpaint/compositing/overlap-blending/children-opacity-huge.html [ Skip ]
-crbug.com/240374 virtual/slimmingpaint/compositing/overlap-blending/children-opacity-no-overlap.html [ Skip ]
-crbug.com/240374 virtual/slimmingpaint/compositing/overlap-blending/reflection-opacity-huge.html [ Skip ]
 
 crbug.com/411164 [ Win ] http/tests/security/powerfulFeatureRestrictions/serviceworker-on-insecure-origin.html [ Pass Slow ]
 crbug.com/493895 inspector/sources/debugger-breakpoints/dom-breakpoints.html [ Pass Timeout ]
@@ -190,10 +186,6 @@ crbug.com/338794 crbug.com/192172 compositing/rtl/rtl-iframe-absolute-overflow.h
 crbug.com/338794 compositing/rtl/rtl-iframe-absolute-overflow-scrolled.html [ Failure ImageOnlyFailure Pass ]
 crbug.com/338794 crbug.com/192172 compositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ Failure ImageOnlyFailure Pass ]
 crbug.com/338794 crbug.com/192172 compositing/rtl/rtl-iframe-fixed-overflow.html [ Failure ImageOnlyFailure Pass ]
-crbug.com/338794 crbug.com/192172 virtual/slimmingpaint/compositing/rtl/rtl-iframe-absolute-overflow.html [ Skip ]
-crbug.com/338794 virtual/slimmingpaint/compositing/rtl/rtl-iframe-absolute-overflow-scrolled.html [ Skip ]
-crbug.com/338794 crbug.com/192172 virtual/slimmingpaint/compositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ Skip ]
-crbug.com/338794 crbug.com/192172 virtual/slimmingpaint/compositing/rtl/rtl-iframe-fixed-overflow.html [ Skip ]
 
 crbug.com/239811 crbug.com/229113 http/tests/history/redirect-js-location-assign-0-seconds.html [ Failure Pass ]
 
@@ -325,7 +317,6 @@ crbug.com/501543 [ Win Mac ] fast/images/size-failure.html [ Crash Timeout Pass 
 
 # Linux Aura doesn't support NPAPI plugins (yet?)
 crbug.com/318978 [ Linux ] compositing/plugins/invalidate_rect.html [ Skip ]
-crbug.com/318978 [ Linux ] virtual/slimmingpaint/compositing/plugins/invalidate_rect.html [ Skip ]
 crbug.com/318978 [ Linux ] fast/dom/Window/Plug-ins.html [ Skip ]
 crbug.com/318978 [ Linux ] fast/frames/sandboxed-iframe-about-blank.html [ Skip ]
 crbug.com/318978 [ Linux ] fast/frames/sandboxed-iframe-navigation-allowed.html [ Skip ]
@@ -538,7 +529,6 @@ crbug.com/389648 fast/text-autosizing/table-inflation-crash.html [ Pass Timeout 
 
 crbug.com/396775 compositing/overflow/reflected-overlay-scrollbars-should-appear-without-compositing.html [ ImageOnlyFailure ]
 crbug.com/396775 virtual/prefer_compositing_to_lcd_text/compositing/overflow/reflected-overlay-scrollbars-should-appear-without-compositing.html [ ImageOnlyFailure ]
-crbug.com/396775 virtual/slimmingpaint/compositing/overflow/reflected-overlay-scrollbars-should-appear-without-compositing.html [ Skip ]
 
 crbug.com/433727 [ XP ] http/tests/cachestorage/window/cache-put.html [ Pass Timeout Failure ]
 crbug.com/433727 [ XP ] http/tests/cachestorage/worker/cache-put.html [ Pass Timeout Failure ]
@@ -736,8 +726,38 @@ crbug.com/248063 plugins/plugin-clip-subframe.html [ Pass Failure ]
 
 crbug.com/254332 [ XP ] fast/forms/submit/submit-focus-by-mouse.html [ ImageOnlyFailure Pass ]
 
+crbug.com/497950 compositing/geometry/fixed-position-iframe-composited-page-scale-down.html [ NeedsRebaseline ]
+crbug.com/497950 compositing/geometry/fixed-position-iframe-composited-page-scale.html [ NeedsRebaseline ]
+crbug.com/497950 compositing/iframes/iframe-copy-on-scroll.html [ NeedsRebaseline ]
+crbug.com/497950 compositing/layer-creation/compositing-reason-removed.html [ NeedsRebaseline ]
+crbug.com/497950 compositing/layer-creation/should-invoke-deferred-compositing.html [ NeedsRebaseline ]
+crbug.com/497950 compositing/overflow/fixed-scroll-in-empty-root-layer.html [ NeedsRebaseline ]
+crbug.com/497950 compositing/overflow/scrolling-without-painting.html [ NeedsRebaseline ]
+crbug.com/497950 compositing/overflow/text-color-change.html [ NeedsRebaseline ]
+crbug.com/497950 compositing/overflow/text-match-highlight.html [ NeedsRebaseline ]
+crbug.com/497950 compositing/overflow/updating-scrolling-container-and-content.html [ NeedsRebaseline ]
+crbug.com/497950 compositing/overflow/updating-scrolling-container.html [ NeedsRebaseline ]
+crbug.com/497950 compositing/overflow/updating-scrolling-content.html [ NeedsRebaseline ]
+crbug.com/497950 compositing/repaint/fixed-pos-inside-composited-intermediate-layer.html [ NeedsRebaseline ]
+crbug.com/497950 compositing/repaint/invalidations-on-composited-layers.html [ NeedsManualRebaseline ]
+crbug.com/497950 compositing/repaint/resize-repaint.html [ NeedsManualRebaseline ]
+crbug.com/497950 compositing/repaint/should-not-clip-composited-overflow-scrolling-layer.html [ NeedsRebaseline ]
+crbug.com/497950 compositing/repaint/should-not-clip-composited-viewport-scrolling-layer.html [ NeedsRebaseline ]
+crbug.com/497950 compositing/repaint/should-not-repaint-composited-descendants-on-overflow-change.html [ NeedsRebaseline ]
+crbug.com/497950 compositing/repaint/should-not-repaint-composited-descendants.html [ NeedsRebaseline ]
+crbug.com/497950 compositing/squashing/iframe-inside-squashed-layer.html [ NeedsRebaseline ]
+crbug.com/497950 compositing/squashing/invalidate-when-leaving-squashed-layer.html [ NeedsRebaseline ]
+crbug.com/497950 compositing/squashing/invalidation-for-subpixel-offset-of-squashed-layer.html [ NeedsRebaseline ]
+crbug.com/497950 compositing/squashing/invalidations-with-large-negative-margin.html [ NeedsRebaseline ]
+crbug.com/497950 compositing/squashing/remove-squashed-layer-plus-move.html [ NeedsRebaseline ]
+crbug.com/497950 compositing/squashing/repaint-overflow-scrolled-squashed-content.html [ NeedsRebaseline ]
+crbug.com/497950 compositing/squashing/repaint-squashed-layer-in-rect.html [ NeedsRebaseline ]
+crbug.com/497950 compositing/squashing/repaint-via-layout-offset.html [ NeedsRebaseline ]
+crbug.com/497950 compositing/squashing/resize-squashing-layer-that-needs-full-repaint.html [ NeedsRebaseline ]
+crbug.com/497950 compositing/squashing/squash-partial-repaint-inside-squashed-layer.html [ NeedsRebaseline ]
+crbug.com/497950 compositing/squashing/squashing-inside-preserve-3d-element.html [ NeedsRebaseline ]
+
 crbug.com/265650 compositing/repaint/transform-style-change.html [ Pass ImageOnlyFailure ]
-crbug.com/265650 virtual/slimmingpaint/compositing/repaint/transform-style-change.html [ Skip ]
 
 crbug.com/266754 fast/ruby/ruby-svg-crash.html [ ImageOnlyFailure Pass ]
 
@@ -835,7 +855,6 @@ crbug.com/307777 [ Android ] webaudio/stereo2mono-down-mixing.html [ Timeout Pas
 crbug.com/307777 [ Android ] webexposed/custom-elements.html [ Timeout Pass ]
 
 crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html [ ImageOnlyFailure ]
-crbug.com/309675 virtual/slimmingpaint/compositing/gestures/gesture-tapHighlight-simple-longPress.html [ Skip ]
 
 # Linux uses the system's NSS library for its WebCrypto implementation, whereas
 # Windows, Mac and Android use a statically-linked BoringSSL.
@@ -967,7 +986,6 @@ crbug.com/313846 [ Release XP ] http/tests/images/bmp-partial-load.html [ ImageO
 crbug.com/390125 media/video-frame-accurate-seek.html [ NeedsManualRebaseline ]
 
 crbug.com/245556 compositing/transitions/transform-on-large-layer.html [ ImageOnlyFailure ]
-crbug.com/245556 virtual/slimmingpaint/compositing/transitions/transform-on-large-layer.html [ Skip ]
 
 crbug.com/321787 [ Win ] virtual/gpu/fast/canvas/webgl/premultiplyalpha-test.html [ Pass Failure ]
 crbug.com/321793 [ Win ] fast/frames/sandboxed-iframe-navigation-windowopen.html [ Pass Timeout ]
@@ -984,11 +1002,9 @@ crbug.com/335710 canvas/philip/tests/2d.text.draw.fontface.notinpage.html [ Pass
 
 crbug.com/460633 virtual/prefer_compositing_to_lcd_text/compositing/overflow/do-not-repaint-if-scrolling-composited-layers.html [ Pass Failure ]
 crbug.com/460633 compositing/overflow/do-not-repaint-if-scrolling-composited-layers.html [ Pass Failure ]
-crbug.com/460633 virtual/slimmingpaint/compositing/overflow/do-not-repaint-if-scrolling-composited-layers.html [ Skip ]
 
 # Started failing after r162705.
 crbug.com/324369 compositing/video/video-reflection.html [ Failure ]
-crbug.com/324369 virtual/slimmingpaint/compositing/video/video-reflection.html [ Skip ]
 
 crbug.com/326524 virtual/threaded/compositing/visibility/visibility-simple-video-layer.html [ Pass ImageOnlyFailure Timeout ]
 
@@ -1019,8 +1035,8 @@ crbug.com/307777 [ Android ] fast/invalid/009.html [ Failure Timeout ]
 crbug.com/439457 [ Android ] css1/units/rounding.html [ Crash Pass ]
 crbug.com/439457 [ Android ] compositing/draws-content/canvas-background-layer.html [ Failure Crash ]
 crbug.com/439457 [ Android ] http/tests/media/media-source/mediasource-play.html [ Failure Crash ]
-crbug.com/439457 [ Android ] compositing/repaint/invalidations-on-composited-layers.html [ Timeout Crash ]
-crbug.com/439457 [ Android ] compositing/repaint/resize-repaint.html [ Timeout Crash ]
+#crbug.com/439457 [ Android ] compositing/repaint/invalidations-on-composited-layers.html [ Timeout Crash ]
+#crbug.com/439457 [ Android ] compositing/repaint/resize-repaint.html [ Timeout Crash ]
 crbug.com/439457 [ Android ] css1/classification/list_style_image.html [ Timeout Crash ]
 crbug.com/439457 [ Android ] css1/classification/list_style_position.html [ Timeout Crash ]
 crbug.com/439457 [ Android ] css1/font_properties/font_style.html [ Timeout Crash ]
@@ -1174,7 +1190,6 @@ crbug.com/357427 http/tests/workers/terminate-during-sync-operation-file.html [ 
 crbug.com/357427 http/tests/workers/terminate-during-sync-operation-filesystem.html [ Crash Pass Slow Timeout ]
 crbug.com/357437 web-animations-api/change-in-animation-frame.html [ Failure Pass ]
 crbug.com/357438 [ Mac Win ] compositing/plugins/invalidate_rect.html [ Failure Pass ]
-crbug.com/357438 [ Mac Win ] virtual/slimmingpaint/compositing/plugins/invalidate_rect.html [ Skip ]
 crbug.com/357459 [ Linux Win ] virtual/threaded/animations/3d/matrix-transform-type-animation.html [ Pass Timeout ]
 crbug.com/357465 [ Debug ] virtual/threaded/animations/keyframe-timing-functions-multiple-animations.html [ Pass Timeout ]
 crbug.com/357465 [ Linux Release ] virtual/threaded/animations/keyframe-timing-functions-multiple-animations.html [ Pass Timeout ]
@@ -1196,7 +1211,6 @@ crbug.com/354785 [ Release Retina ] svg/as-background-image/animated-svg-animati
 crbug.com/356957 [ Win Mac Debug ] editing/spelling/spellcheck-editable-on-focus.html [ Timeout ]
 
 crbug.com/359960 compositing/iframes/scrolling-iframe.html [ Pass Failure ]
-crbug.com/359960 virtual/slimmingpaint/compositing/iframes/scrolling-iframe.html [ Skip ]
 
 crbug.com/361133 fast/frames/remove-frame-during-load-event.html [ Pass Crash ]
 
@@ -1208,7 +1222,6 @@ crbug.com/362047 [ Mac Linux ] mhtml/mhtml_in_iframe.html [ Crash Pass ]
 crbug.com/362073 [ Mac Debug ] fast/dom/shadow/input-color-in-content.html [ Crash Pass ]
 
 crbug.com/365400 [ Mac ] compositing/images/direct-pdf-image.html [ Failure ]
-crbug.com/365400 [ Mac ] virtual/slimmingpaint/compositing/images/direct-pdf-image.html [ Skip ]
 
 crbug.com/453940 fast/dom/HTMLImageElement/image-sizes-2x.html [ Pass Failure ]
 
@@ -1396,11 +1409,8 @@ crbug.com/402379 [ Win7 Debug ] storage/indexeddb/mozilla/indexes.html [ Pass Sl
 crbug.com/346357 storage/indexeddb/pending-version-change-stuck.html [ Pass Timeout ]
 
 crbug.com/420749 compositing/visibility/visibility-image-layers.html [ NeedsManualRebaseline ]
-crbug.com/420749 virtual/slimmingpaint/compositing/visibility/visibility-image-layers.html [ Skip ]
 crbug.com/420749 compositing/geometry/vertical-scroll-composited.html [ NeedsManualRebaseline ]
-crbug.com/420749 virtual/slimmingpaint/compositing/geometry/vertical-scroll-composited.html [ Skip ]
 crbug.com/420749 compositing/color-matching/image-color-matching.html [ NeedsManualRebaseline ]
-crbug.com/420749 virtual/slimmingpaint/compositing/color-matching/image-color-matching.html [ Skip ]
 crbug.com/420749 virtual/threaded/compositing/visibility/visibility-image-layers.html [ NeedsManualRebaseline ]
 
 crbug.com/419993 [ Debug ] fast/css/giant-stylesheet-crash.html [ Pass Slow ]
@@ -1418,7 +1428,6 @@ crbug.com/413604 http/tests/loading/script-priorities.html [ Failure Pass ]
 crbug.com/415620 media/media-controller-media-fragment-uri-initial-playback-position.html [ Pass Failure ]
 
 crbug.com/417174 compositing/scaling/tiled-layer-recursion.html [ Pass ImageOnlyFailure ]
-crbug.com/417174 virtual/slimmingpaint/compositing/scaling/tiled-layer-recursion.html [ Skip ]
 
 crbug.com/417181 http/tests/xmlhttprequest/abort-on-changestate-headers-received.html [ Pass Failure ]
 
@@ -1456,7 +1465,6 @@ crbug.com/458601 virtual/slimmingpaint/css3/filters/huge-region.html [ Timeout ]
 
 # Two part change for layer intersection. Can be rebaselined after https://codereview.chromium.org/595593002/ lands
 crbug.com/116710 compositing/perpendicular-layer-sorting.html [ NeedsManualRebaseline ]
-crbug.com/116710 virtual/slimmingpaint/compositing/perpendicular-layer-sorting.html [ Skip ]
 crbug.com/116710 transforms/3d/point-mapping/3d-point-mapping-2.html [ NeedsManualRebaseline ]
 crbug.com/116710 transforms/3d/point-mapping/3d-point-mapping-deep.html [ NeedsManualRebaseline ]
 crbug.com/116710 transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ NeedsManualRebaseline ]
@@ -1806,7 +1814,6 @@ crbug.com/463358 [ Debug ] virtual/slimmingpaint/svg/hixie/perf/006.xml [ Skip ]
 crbug.com/463358 transforms/2d/hindi-rotated.html [ Pass Failure ImageOnlyFailure ]
 
 crbug.com/482229 compositing/layer-creation/fixed-position-under-transform.html [ Failure ]
-crbug.com/482229 virtual/slimmingpaint/compositing/layer-creation/fixed-position-under-transform.html [ Skip ]
 
 crbug.com/469657 fast/events/mouse-event-buttons-attribute.html [ Pass Failure ]
 crbug.com/469657 virtual/pointerevent/fast/events/mouse-event-buttons-attribute.html [ Pass Failure ]
@@ -1875,7 +1882,6 @@ crbug.com/479533 accessibility/show-context-menu-shadowdom.html [ Skip ]
 crbug.com/483653 accessibility/scroll-containers.html [ Skip ]
 
 crbug.com/487878 [ Linux ] compositing/video-frame-size-change.html [ Pass ImageOnlyFailure ]
-crbug.com/487878 [ Linux ] virtual/slimmingpaint/compositing/video-frame-size-change.html [ Skip ]
 
 crbug.com/488037 [ Win Debug ] tables/mozilla_expected_failures/marvin/table_overflow_dirty_reflow_tbody.html [ Pass ImageOnlyFailure ]
 
