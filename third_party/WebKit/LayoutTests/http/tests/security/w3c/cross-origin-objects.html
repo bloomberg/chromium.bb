@@ -11,19 +11,20 @@ https://github.com/w3c/web-platform-tests/tree/master/html/browsers/origin/cross
 
 TODO(yukishiino): Redesign the security model of DOM-V8 binding code and fix all the failing test cases.
 -->
-<script>
-// This test needs to run on 'web-platform.test:8000'.
-if (document.location.hostname != "web-platform.test")
-    document.location = document.location.protocol + "//web-platform.test:8000" + document.location.pathname;
-if (window.testRunner)
-    window.testRunner.setCanOpenWindows();
-</script>
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
 <div id=log></div>
 <iframe id="B"></iframe>
 <iframe id="C"></iframe>
 <script>
+
+// This test needs to run on 'web-platform.test:8000'.
+if (document.location.hostname != "web-platform.test") {
+    document.location = document.location.protocol + "//web-platform.test:8000" + document.location.pathname;
+} else { // The main content of the test.
+
+if (window.testRunner)
+    window.testRunner.setCanOpenWindows();
 
 /*
  * Setup boilerplate. This gives us a same-origin window "B" and a cross-origin
@@ -345,5 +346,7 @@ function runNextTest() {
     doDocumentDomainTest(done); // Asynchronous.
 }
 reloadSubframes(runNextTest);
+
+} // if (document.location.hostname != "web-platform.test")
 
 </script>
