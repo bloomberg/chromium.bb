@@ -104,6 +104,9 @@ TEST_F(TouchSelectionMenuRunnerViewsTest, QuickMenuAdjustsAnchorRect) {
   ui::TouchSelectionMenuRunner::GetInstance()->OpenMenu(
       this, anchor_rect, handle_size, GetContext());
   EXPECT_EQ(anchor_rect, GetMenuAnchorRect());
+
+  ui::TouchSelectionMenuRunner::GetInstance()->CloseMenu();
+  RunPendingMessages();
 }
 
 }  // namespace views

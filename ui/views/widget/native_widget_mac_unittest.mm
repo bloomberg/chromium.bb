@@ -403,6 +403,8 @@ TEST_F(NativeWidgetMacTest, AccessibilityIntegration) {
   id hit = [widget->GetNativeWindow() accessibilityHitTest:midpoint];
   id title = [hit accessibilityAttributeValue:NSAccessibilityTitleAttribute];
   EXPECT_NSEQ(title, @"Green");
+
+  widget->CloseNow();
 }
 
 // Tests creating a views::Widget parented off a native NSWindow.
@@ -535,6 +537,8 @@ TEST_F(NativeWidgetMacTest, Tooltips) {
   // Move the mouse off of any view, tooltip should clear.
   event_generator.MoveMouseTo(gfx::Point(5, 5));
   EXPECT_TRUE(TooltipTextForWidget(widget).empty());
+
+  widget->CloseNow();
 }
 
 namespace {

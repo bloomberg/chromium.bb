@@ -153,8 +153,7 @@ TEST_F(ViewAuraTest, RecreateLayersWithWindows) {
     ui::Layer* v7_new_layer = w1_new_layer->children()[3];
     ASSERT_EQ("v8 v9", ui::test::ChildLayerNamesAsString(*v7_new_layer));
   }
-  // The views and the widgets are destroyed when AuraTestHelper::TearDown()
-  // destroys root_window().
+  w1->CloseNow();
 }
 
 }  // namespace views

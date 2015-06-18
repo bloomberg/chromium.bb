@@ -1025,6 +1025,9 @@ TEST_F(WidgetObserverTest, WidgetBoundsChanged) {
 
   child2->OnNativeWidgetSizeChanged(gfx::Size());
   EXPECT_EQ(child2, widget_bounds_changed());
+
+  child2->CloseNow();
+  child1->CloseNow();
 }
 
 // An extension to WidgetBoundsChanged to ensure notifications are forwarded
@@ -1825,6 +1828,8 @@ TEST_F(WidgetTest, SynthesizeMouseMoveEvent) {
 
   widget->SynthesizeMouseMoveEvent();
   EXPECT_EQ(1, v2->GetEventCount(ui::ET_MOUSE_ENTERED));
+
+  widget->CloseNow();
 }
 
 // No touch on desktop Mac. Tracked in http://crbug.com/445520.
@@ -2961,6 +2966,7 @@ TEST_F(WidgetTest, GetAllChildWidgets) {
 
   EXPECT_EQ(expected.size(), widgets.size());
   EXPECT_TRUE(std::equal(expected.begin(), expected.end(), widgets.begin()));
+  toplevel->CloseNow();
 }
 
 // Used by DestroyChildWidgetsInOrder. On destruction adds the supplied name to
@@ -3439,6 +3445,7 @@ TEST_F(WidgetTest, AlwaysOnTop) {
   EXPECT_TRUE(widget->IsAlwaysOnTop());
   widget->SetAlwaysOnTop(false);
   EXPECT_FALSE(widget->IsAlwaysOnTop());
+  widget->CloseNow();
 }
 
 }  // namespace test

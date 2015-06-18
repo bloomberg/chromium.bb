@@ -256,6 +256,8 @@ TEST_F(DialogTest, BoundsAccommodateTitle) {
   dialog()->GetWidget()->UpdateWindowTitle();
   EXPECT_EQ(frame1->GetPreferredSize().height(),
             frame2->GetPreferredSize().height());
+
+  dialog2->TearDown();
 }
 
 }  // namespace views

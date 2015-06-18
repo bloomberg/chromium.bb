@@ -6,8 +6,10 @@
 
 #import <Cocoa/Cocoa.h>
 
+#import "base/mac/scoped_nsautorelease_pool.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/views/test/event_generator_delegate_mac.h"
+#include "ui/views/widget/widget.h"
 
 namespace views {
 
@@ -29,6 +31,19 @@ ViewsTestHelperMac::ViewsTestHelperMac()
 }
 
 ViewsTestHelperMac::~ViewsTestHelperMac() {
+}
+
+void ViewsTestHelperMac::TearDown() {
+  // Ensure all Widgets are closed explicitly in tests. The Widget may be
+  // hosting a Compositor. If that's torn down after the test ContextFactory
+  // then a lot of confusing use-after-free errors result. In browser tests,
+  // this is handled automatically by views::Widget::CloseAllSecondaryWidgets().
+  // Unit tests on Aura may create Widgets owned by a RootWindow that gets torn
+  // down, but on Mac we need to be more explicit.
+  base::mac::ScopedNSAutoreleasePool pool;  // Ensure the NSArray is released.
+  NSArray* native_windows = [NSApp windows];
+  for (NSWindow* window : native_windows)
+    DCHECK(!Widget::GetWidgetForNativeWindow(window)) << "Widget not closed.";
 }
 
 }  // namespace views

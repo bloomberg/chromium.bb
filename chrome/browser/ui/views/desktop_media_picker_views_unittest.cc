@@ -15,6 +15,7 @@
 #include "ui/events/event_utils.h"
 #include "ui/views/test/scoped_views_test_helper.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/window/dialog_client_view.h"
 #include "ui/views/window/dialog_delegate.h"
 
 namespace views {
@@ -25,12 +26,6 @@ class DesktopMediaPickerViewsTest : public testing::Test {
   ~DesktopMediaPickerViewsTest() override {}
 
   void SetUp() override {
-    Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
-    params.context = test_helper_.GetContext();
-    params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    parent_widget_.reset(new Widget);
-    parent_widget_->Init(params);
-
     media_list_ = new FakeDesktopMediaList();
     scoped_ptr<FakeDesktopMediaList> media_list(media_list_);
 
@@ -38,13 +33,20 @@ class DesktopMediaPickerViewsTest : public testing::Test {
 
     picker_views_.reset(new DesktopMediaPickerViews());
     picker_views_->Show(NULL,
-                        parent_widget_->GetNativeWindow(),
+                        test_helper_.GetContext(),
                         NULL,
                         app_name,
                         app_name,
                         media_list.Pass(),
                         base::Bind(&DesktopMediaPickerViewsTest::OnPickerDone,
                                    base::Unretained(this)));
+  }
+
+  void TearDown() override {
+    if (GetPickerDialogView()) {
+      EXPECT_CALL(*this, OnPickerDone(content::DesktopMediaID()));
+      GetPickerDialogView()->GetWidget()->CloseNow();
+    }
   }
 
   DesktopMediaPickerDialogView* GetPickerDialogView() const {
@@ -57,7 +59,6 @@ class DesktopMediaPickerViewsTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   views::ScopedViewsTestHelper test_helper_;
   FakeDesktopMediaList* media_list_;
-  scoped_ptr<Widget> parent_widget_;
   scoped_ptr<DesktopMediaPickerViews> picker_views_;
 };
 
@@ -73,7 +74,6 @@ TEST_F(DesktopMediaPickerViewsTest, DoneCallbackCalledOnOkButtonPressed) {
   EXPECT_CALL(*this,
               OnPickerDone(content::DesktopMediaID(
                   content::DesktopMediaID::TYPE_WINDOW, kFakeId)));
-
   media_list_->AddSource(kFakeId);
 
   EXPECT_FALSE(
@@ -83,7 +83,7 @@ TEST_F(DesktopMediaPickerViewsTest, DoneCallbackCalledOnOkButtonPressed) {
   EXPECT_TRUE(
       GetPickerDialogView()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
 
-  GetPickerDialogView()->Accept();
+  GetPickerDialogView()->GetDialogClientView()->AcceptWindow();
   base::RunLoop().RunUntilIdle();
 }
 

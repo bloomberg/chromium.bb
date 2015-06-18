@@ -81,19 +81,24 @@ TEST_F(NativeWidgetTest, GetTopLevelNativeWidget1) {
 
 // |toplevel_widget| has the toplevel NativeWidget.
 TEST_F(NativeWidgetTest, GetTopLevelNativeWidget2) {
-  ScopedTestWidget toplevel_widget(CreateNativeWidget());
-
-  // |toplevel_widget| owns |child_host|.
-  NativeViewHost* child_host = new NativeViewHost;
-  toplevel_widget->GetWidget()->SetContentsView(child_host);
-
-  // |child_host| owns |child_widget|.
   internal::NativeWidgetPrivate* child_widget = CreateNativeSubWidget();
-  child_host->Attach(child_widget->GetWidget()->GetNativeView());
+  {
+    ScopedTestWidget toplevel_widget(CreateNativeWidget());
 
-  EXPECT_EQ(toplevel_widget.get(),
-            internal::NativeWidgetPrivate::GetTopLevelNativeWidget(
-                child_widget->GetWidget()->GetNativeView()));
+    // |toplevel_widget| owns |child_host|.
+    NativeViewHost* child_host = new NativeViewHost;
+    toplevel_widget->GetWidget()->SetContentsView(child_host);
+
+    // |child_host| hosts |child_widget|'s NativeView.
+    child_host->Attach(child_widget->GetWidget()->GetNativeView());
+
+    EXPECT_EQ(toplevel_widget.get(),
+              internal::NativeWidgetPrivate::GetTopLevelNativeWidget(
+                  child_widget->GetWidget()->GetNativeView()));
+  }
+  // NativeViewHost only had a weak reference to the |child_widget|'s
+  // NativeView. Delete it and the associated Widget.
+  child_widget->CloseNow();
 }
 
 }  // namespace views

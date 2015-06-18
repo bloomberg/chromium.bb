@@ -81,6 +81,11 @@ class CustomButtonTest : public ViewsTestBase {
     widget_->SetContentsView(button_);
   }
 
+  void TearDown() override {
+    widget_.reset();
+    ViewsTestBase::TearDown();
+  }
+
   Widget* widget() { return widget_.get(); }
   TestCustomButton* button() { return button_; }
 

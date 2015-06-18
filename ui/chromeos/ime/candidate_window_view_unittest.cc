@@ -74,6 +74,11 @@ class CandidateWindowViewTest : public views::ViewsTestBase {
     candidate_window_view_->InitWidget();
   }
 
+  void TearDown() override {
+    candidate_window_view_->GetWidget()->CloseNow();
+    views::ViewsTestBase::TearDown();
+  }
+
   CandidateWindowView* candidate_window_view() {
     return candidate_window_view_;
   }
@@ -109,8 +114,7 @@ class CandidateWindowViewTest : public views::ViewsTestBase {
   }
 
  private:
-  // owned by |parent_|.
-  CandidateWindowView* candidate_window_view_;
+  CandidateWindowView* candidate_window_view_;  // Owned by its Widget.
 
   DISALLOW_COPY_AND_ASSIGN(CandidateWindowViewTest);
 };

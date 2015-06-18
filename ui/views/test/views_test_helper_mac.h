@@ -19,6 +19,9 @@ class ViewsTestHelperMac : public ViewsTestHelper {
   ViewsTestHelperMac();
   ~ViewsTestHelperMac() override;
 
+  // ViewsTestHelper:
+  void TearDown() override;
+
  private:
   // Disable animations during tests.
   scoped_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_mode_;

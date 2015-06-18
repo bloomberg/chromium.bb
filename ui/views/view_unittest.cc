@@ -431,12 +431,35 @@ void TestView::OnPaint(gfx::Canvas* canvas) {
   did_paint_ = true;
 }
 
+namespace {
+
+// Helper class to create a Widget with standard parameters that is closed when
+// the helper class goes out of scope.
+class ScopedTestPaintWidget {
+ public:
+  explicit ScopedTestPaintWidget(const Widget::InitParams& params)
+        : widget_(new Widget) {
+    widget_->Init(params);
+    widget_->GetRootView()->SetBounds(0, 0, 25, 26);
+  }
+
+  ~ScopedTestPaintWidget() {
+    widget_->CloseNow();
+  }
+
+  Widget* operator->() { return widget_; }
+
+ private:
+  Widget* widget_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedTestPaintWidget);
+};
+
+}  // namespace
+
 TEST_F(ViewTest, PaintEmptyView) {
-  Widget* widget = new Widget;
-  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
-  widget->Init(params);
+  ScopedTestPaintWidget widget(CreateParams(Widget::InitParams::TYPE_POPUP));
   View* root_view = widget->GetRootView();
-  root_view->SetBounds(0, 0, 25, 26);
 
   // |v1| is empty.
   TestView* v1 = new TestView;
@@ -467,11 +490,8 @@ TEST_F(ViewTest, PaintEmptyView) {
 }
 
 TEST_F(ViewTest, PaintWithUnknownInvalidation) {
-  Widget* widget = new Widget;
-  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
-  widget->Init(params);
+  ScopedTestPaintWidget widget(CreateParams(Widget::InitParams::TYPE_POPUP));
   View* root_view = widget->GetRootView();
-  root_view->SetBounds(0, 0, 25, 26);
 
   TestView* v1 = new TestView;
   v1->SetBounds(10, 11, 12, 13);
@@ -510,11 +530,8 @@ TEST_F(ViewTest, PaintWithUnknownInvalidation) {
 }
 
 TEST_F(ViewTest, PaintContainsChildren) {
-  Widget* widget = new Widget;
-  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
-  widget->Init(params);
+  ScopedTestPaintWidget widget(CreateParams(Widget::InitParams::TYPE_POPUP));
   View* root_view = widget->GetRootView();
-  root_view->SetBounds(0, 0, 25, 26);
 
   TestView* v1 = new TestView;
   v1->SetBounds(10, 11, 12, 13);
@@ -546,12 +563,8 @@ TEST_F(ViewTest, PaintContainsChildren) {
 
 TEST_F(ViewTest, PaintContainsChildrenInRTL) {
   ScopedRTL rtl;
-
-  Widget* widget = new Widget;
-  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
-  widget->Init(params);
+  ScopedTestPaintWidget widget(CreateParams(Widget::InitParams::TYPE_POPUP));
   View* root_view = widget->GetRootView();
-  root_view->SetBounds(0, 0, 25, 26);
 
   TestView* v1 = new TestView;
   v1->SetBounds(10, 11, 12, 13);
@@ -593,11 +606,8 @@ TEST_F(ViewTest, PaintContainsChildrenInRTL) {
 }
 
 TEST_F(ViewTest, PaintIntersectsChildren) {
-  Widget* widget = new Widget;
-  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
-  widget->Init(params);
+  ScopedTestPaintWidget widget(CreateParams(Widget::InitParams::TYPE_POPUP));
   View* root_view = widget->GetRootView();
-  root_view->SetBounds(0, 0, 25, 26);
 
   TestView* v1 = new TestView;
   v1->SetBounds(10, 11, 12, 13);
@@ -629,12 +639,8 @@ TEST_F(ViewTest, PaintIntersectsChildren) {
 
 TEST_F(ViewTest, PaintIntersectsChildrenInRTL) {
   ScopedRTL rtl;
-
-  Widget* widget = new Widget;
-  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
-  widget->Init(params);
+  ScopedTestPaintWidget widget(CreateParams(Widget::InitParams::TYPE_POPUP));
   View* root_view = widget->GetRootView();
-  root_view->SetBounds(0, 0, 25, 26);
 
   TestView* v1 = new TestView;
   v1->SetBounds(10, 11, 12, 13);
@@ -676,11 +682,8 @@ TEST_F(ViewTest, PaintIntersectsChildrenInRTL) {
 }
 
 TEST_F(ViewTest, PaintIntersectsChildButNotGrandChild) {
-  Widget* widget = new Widget;
-  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
-  widget->Init(params);
+  ScopedTestPaintWidget widget(CreateParams(Widget::InitParams::TYPE_POPUP));
   View* root_view = widget->GetRootView();
-  root_view->SetBounds(0, 0, 25, 26);
 
   TestView* v1 = new TestView;
   v1->SetBounds(10, 11, 12, 13);
@@ -712,12 +715,8 @@ TEST_F(ViewTest, PaintIntersectsChildButNotGrandChild) {
 
 TEST_F(ViewTest, PaintIntersectsChildButNotGrandChildInRTL) {
   ScopedRTL rtl;
-
-  Widget* widget = new Widget;
-  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
-  widget->Init(params);
+  ScopedTestPaintWidget widget(CreateParams(Widget::InitParams::TYPE_POPUP));
   View* root_view = widget->GetRootView();
-  root_view->SetBounds(0, 0, 25, 26);
 
   TestView* v1 = new TestView;
   v1->SetBounds(10, 11, 12, 13);
@@ -759,11 +758,8 @@ TEST_F(ViewTest, PaintIntersectsChildButNotGrandChildInRTL) {
 }
 
 TEST_F(ViewTest, PaintIntersectsNoChildren) {
-  Widget* widget = new Widget;
-  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
-  widget->Init(params);
+  ScopedTestPaintWidget widget(CreateParams(Widget::InitParams::TYPE_POPUP));
   View* root_view = widget->GetRootView();
-  root_view->SetBounds(0, 0, 25, 26);
 
   TestView* v1 = new TestView;
   v1->SetBounds(10, 11, 12, 13);
@@ -795,12 +791,8 @@ TEST_F(ViewTest, PaintIntersectsNoChildren) {
 
 TEST_F(ViewTest, PaintIntersectsNoChildrenInRTL) {
   ScopedRTL rtl;
-
-  Widget* widget = new Widget;
-  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
-  widget->Init(params);
+  ScopedTestPaintWidget widget(CreateParams(Widget::InitParams::TYPE_POPUP));
   View* root_view = widget->GetRootView();
-  root_view->SetBounds(0, 0, 25, 26);
 
   TestView* v1 = new TestView;
   v1->SetBounds(10, 11, 12, 13);
@@ -842,11 +834,8 @@ TEST_F(ViewTest, PaintIntersectsNoChildrenInRTL) {
 }
 
 TEST_F(ViewTest, PaintIntersectsOneChild) {
-  Widget* widget = new Widget;
-  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
-  widget->Init(params);
+  ScopedTestPaintWidget widget(CreateParams(Widget::InitParams::TYPE_POPUP));
   View* root_view = widget->GetRootView();
-  root_view->SetBounds(0, 0, 25, 26);
 
   TestView* v1 = new TestView;
   v1->SetBounds(10, 11, 12, 13);
@@ -890,12 +879,8 @@ TEST_F(ViewTest, PaintIntersectsOneChild) {
 
 TEST_F(ViewTest, PaintIntersectsOneChildInRTL) {
   ScopedRTL rtl;
-
-  Widget* widget = new Widget;
-  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
-  widget->Init(params);
+  ScopedTestPaintWidget widget(CreateParams(Widget::InitParams::TYPE_POPUP));
   View* root_view = widget->GetRootView();
-  root_view->SetBounds(0, 0, 25, 26);
 
   TestView* v1 = new TestView;
   v1->SetBounds(10, 11, 12, 13);
@@ -949,11 +934,8 @@ TEST_F(ViewTest, PaintIntersectsOneChildInRTL) {
 }
 
 TEST_F(ViewTest, PaintInPromotedToLayer) {
-  Widget* widget = new Widget;
-  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
-  widget->Init(params);
+  ScopedTestPaintWidget widget(CreateParams(Widget::InitParams::TYPE_POPUP));
   View* root_view = widget->GetRootView();
-  root_view->SetBounds(0, 0, 25, 26);
 
   TestView* v1 = new TestView;
   v1->SetPaintToLayer(true);
@@ -1590,6 +1572,8 @@ TEST_F(ViewTest, CanProcessEventsWithinSubtree) {
   result_view = NULL;
   result_view = root_view->GetTooltipHandlerForPoint(point_in_v);
   EXPECT_EQ(root_view, result_view);
+
+  widget->CloseNow();
 }
 
 TEST_F(ViewTest, NotifyEnterExitOnChild) {

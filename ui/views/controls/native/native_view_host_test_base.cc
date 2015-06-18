@@ -29,6 +29,11 @@ NativeViewHostTestBase::NativeViewHostTestBase() : host_destroyed_count_(0) {
 NativeViewHostTestBase::~NativeViewHostTestBase() {
 }
 
+void NativeViewHostTestBase::TearDown() {
+  DestroyTopLevel();
+  ViewsTestBase::TearDown();
+}
+
 void NativeViewHostTestBase::CreateTopLevel() {
   toplevel_.reset(new Widget);
   Widget::InitParams toplevel_params =

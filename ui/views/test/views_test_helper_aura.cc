@@ -42,6 +42,15 @@ void ViewsTestHelperAura::SetUp() {
 }
 
 void ViewsTestHelperAura::TearDown() {
+  // Ensure all Widgets (and windows) are closed in unit tests. This is done
+  // automatically when the RootWindow is torn down, but is an error on
+  // platforms that must ensure no Compositors are alive when the ContextFactory
+  // is torn down.
+  // So, although it's optional, check the root window to detect failures before
+  // they hit the CQ on other platforms.
+  DCHECK(aura_test_helper_->root_window()->children().empty())
+      << "Not all windows were closed.";
+
   if (screen_position_client_.get() ==
       aura::client::GetScreenPositionClient(GetContext()))
     aura::client::SetScreenPositionClient(GetContext(), nullptr);

@@ -20,6 +20,9 @@ class NativeViewHostTestBase : public ViewsTestBase {
   NativeViewHostTestBase();
   ~NativeViewHostTestBase() override;
 
+  // testing::Test:
+  void TearDown() override;
+
   // Create the |toplevel_| widget.
   void CreateTopLevel();
 
