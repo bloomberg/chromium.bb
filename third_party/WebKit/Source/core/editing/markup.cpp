@@ -184,9 +184,10 @@ template<typename PositionType>
 static bool areSameRanges(Node* node, const PositionType& startPosition, const PositionType& endPosition)
 {
     ASSERT(node);
-    Position otherStartPosition;
-    Position otherEndPosition;
-    VisibleSelection::selectionFromContentsOfNode(node).toNormalizedPositions(otherStartPosition, otherEndPosition);
+
+    PositionType otherStartPosition;
+    PositionType otherEndPosition;
+    VisibleSelection::normalizePositions(PositionType::firstPositionInNode(node), PositionType::lastPositionInNode(node), &otherStartPosition, &otherEndPosition);
     return startPosition == otherStartPosition && endPosition == otherEndPosition;
 }
 
@@ -239,6 +240,14 @@ static HTMLElement* highestAncestorToWrapMarkup(const typename Strategy::Positio
     return specialCommonAncestor;
 }
 
+template <typename Strategy>
+class CreateMarkupAlgorithm {
+public:
+    using PositionType = typename Strategy::PositionType;
+
+    static String createMarkup(const PositionType& startPosition, const PositionType& endPosition, EAnnotateForInterchange shouldAnnotate = DoNotAnnotateForInterchange, ConvertBlocksToInlines = ConvertBlocksToInlines::NotConvert, EAbsoluteURLs shouldResolveURLs = DoNotResolveURLs, Node* constrainingAncestor = nullptr);
+};
+
 // FIXME: Shouldn't we omit style info when annotate == DoNotAnnotateForInterchange?
 // FIXME: At least, annotation and style info should probably not be included in range.markupString()
 template <typename Strategy>
@@ -270,6 +279,12 @@ String createMarkup(const Range* range, EAnnotateForInterchange shouldAnnotate, 
         return emptyString();
 
     return CreateMarkupAlgorithm<EditingStrategy>::createMarkup(range->startPosition(), range->endPosition(), shouldAnnotate, convertBlocksToInlines, shouldResolveURLs, constrainingAncestor);
+}
+
+String createMarkup(const Position& startPosition, const Position& endPosition, EAnnotateForInterchange shouldAnnotate, ConvertBlocksToInlines convertBlocksToInlines, EAbsoluteURLs shouldResolveURLs, Node* constrainingAncestor)
+{
+    ASSERT(startPosition.compareTo(endPosition) <= 0);
+    return CreateMarkupAlgorithm<EditingStrategy>::createMarkup(startPosition, endPosition, shouldAnnotate, convertBlocksToInlines, shouldResolveURLs, constrainingAncestor);
 }
 
 PassRefPtrWillBeRawPtr<DocumentFragment> createFragmentFromMarkup(Document& document, const String& markup, const String& baseURL, ParserContentPolicy parserContentPolicy)

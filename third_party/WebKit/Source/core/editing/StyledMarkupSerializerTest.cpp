@@ -60,7 +60,7 @@ std::string StyledMarkupSerializerTest::serialize()
     using PositionType = typename Tree::PositionType;
     PositionType start = PositionType(m_document->body(), PositionType::PositionIsBeforeChildren);
     PositionType end = PositionType(m_document->body(), PositionType::PositionIsAfterChildren);
-    return CreateMarkupAlgorithm<Tree>::createMarkup(start, end).utf8().data();
+    return createMarkup(start, end).utf8().data();
 }
 
 static PassRefPtrWillBeRawPtr<ShadowRoot> createShadowRootForElementWithIDAndSetInnerHTML(TreeScope& scope, const char* hostElementID, const char* shadowRootContent)

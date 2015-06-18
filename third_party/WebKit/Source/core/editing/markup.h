@@ -64,18 +64,10 @@ bool isPlainTextMarkup(Node*);
 void replaceChildrenWithFragment(ContainerNode*, PassRefPtrWillBeRawPtr<DocumentFragment>, ExceptionState&);
 void replaceChildrenWithText(ContainerNode*, const String&, ExceptionState&);
 
-template <typename Strategy>
-class CORE_TEMPLATE_CLASS_EXPORT CreateMarkupAlgorithm {
-public:
-    using PositionType = typename Strategy::PositionType;
-
-    static String createMarkup(const PositionType& startPosition, const PositionType& endPosition, EAnnotateForInterchange shouldAnnotate = DoNotAnnotateForInterchange, ConvertBlocksToInlines = ConvertBlocksToInlines::NotConvert, EAbsoluteURLs shouldResolveURLs = DoNotResolveURLs, Node* constrainingAncestor = nullptr);
-};
-
-extern template class CORE_EXTERN_TEMPLATE_EXPORT CreateMarkupAlgorithm<EditingStrategy>;
-
 CORE_EXPORT String createMarkup(const Range*, EAnnotateForInterchange = DoNotAnnotateForInterchange, ConvertBlocksToInlines = ConvertBlocksToInlines::NotConvert, EAbsoluteURLs = DoNotResolveURLs, Node* constrainingAncestor = nullptr);
 CORE_EXPORT String createMarkup(const Node*, EChildrenOnly = IncludeNode, EAbsoluteURLs = DoNotResolveURLs);
+
+CORE_EXPORT String createMarkup(const Position& start, const Position& end, EAnnotateForInterchange = DoNotAnnotateForInterchange, ConvertBlocksToInlines = ConvertBlocksToInlines::NotConvert, EAbsoluteURLs = DoNotResolveURLs, Node* constrainingAncestor = nullptr);
 
 String urlToMarkup(const KURL&, const String& title);
 void mergeWithNextTextNode(Text*, ExceptionState&);
