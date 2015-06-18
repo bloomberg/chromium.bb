@@ -142,6 +142,9 @@ public class ChromeLauncherActivity extends Activity
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        // Needs to be called as early as possible, to accurately capture the
+        // time at which the intent was received.
+        IntentHandler.addTimestampToIntent(getIntent());
         // Initialize the command line in case we've disabled document mode from there.
         ((ChromeMobileApplication) getApplication()).initCommandLine();
 

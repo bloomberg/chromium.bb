@@ -14,6 +14,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.provider.Browser;
 import android.provider.MediaStore;
 import android.speech.RecognizerResultsIntent;
@@ -110,6 +111,11 @@ public class IntentHandler {
      * A referrer id used for Chrome to Chrome referrer passing.
      */
     public static final String EXTRA_REFERRER_ID = "org.chromium.chrome.browser.referrer_id";
+
+    /**
+     * Key to associate a timestamp with an intent.
+     */
+    private static final String EXTRA_TIMESTAMP_MS = "org.chromium.chrome.browser.timestamp";
 
     /**
      * Fake ComponentName used in constructing TRUSTED_APPLICATION_CODE_EXTRA.
@@ -509,6 +515,23 @@ public class IntentHandler {
             extraHeaders.append(value);
         }
         return extraHeaders.length() == 0 ? null : extraHeaders.toString();
+    }
+
+    /**
+     * Adds a timestamp to an intent, as returned by {@link SystemClock#elapsedRealtime()}.
+     *
+     * To track page load time, this needs to be called as close as possible to
+     * the entry point (in {@link Activity#onCreate()} for instance).
+     */
+    public static void addTimestampToIntent(Intent intent) {
+        intent.putExtra(EXTRA_TIMESTAMP_MS, SystemClock.elapsedRealtime());
+    }
+
+    /**
+     * @return the timestamp associated with an intent, or -1.
+     */
+    public static long getTimestampFromIntent(Intent intent) {
+        return intent.getLongExtra(EXTRA_TIMESTAMP_MS, -1);
     }
 
     /**

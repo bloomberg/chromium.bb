@@ -81,7 +81,8 @@ public class CustomTabActivity extends CompositorChromeActivity {
         if (sActiveContentHandler.getSessionId() != intentSessionId) return false;
         String url = IntentHandler.getUrlFromIntent(intent);
         if (TextUtils.isEmpty(url)) return false;
-        sActiveContentHandler.loadUrl(new LoadUrlParams(url));
+        sActiveContentHandler.loadUrlAndTrackFromTimestamp(
+                new LoadUrlParams(url), IntentHandler.getTimestampFromIntent(intent));
         return true;
     }
 
@@ -176,11 +177,12 @@ public class CustomTabActivity extends CompositorChromeActivity {
                 });
 
         mTab.setFullscreenManager(getFullscreenManager());
-        mTab.loadUrl(new LoadUrlParams(url));
+        mTab.loadUrlAndTrackFromTimestamp(
+                new LoadUrlParams(url), IntentHandler.getTimestampFromIntent(getIntent()));
         mCustomTabContentHandler = new CustomTabContentHandler() {
             @Override
-            public void loadUrl(LoadUrlParams params) {
-                mTab.loadUrl(params);
+            public void loadUrlAndTrackFromTimestamp(LoadUrlParams params, long timestamp) {
+                mTab.loadUrlAndTrackFromTimestamp(params, timestamp);
             }
 
             @Override

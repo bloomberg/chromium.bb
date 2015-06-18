@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
+import android.os.SystemClock;
 import android.os.TransactionTooLargeException;
 import android.text.TextUtils;
 import android.view.ContextMenu;
@@ -15,6 +16,7 @@ import android.view.Menu;
 
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.CompositorChromeActivity;
 import org.chromium.chrome.browser.EmptyTabObserver;
@@ -33,6 +35,8 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * A chrome tab that is only used as a custom tab.
  */
@@ -40,10 +44,26 @@ public class CustomTab extends ChromeTab {
     private static class CustomTabObserver extends EmptyTabObserver {
         private CustomTabsConnection mCustomTabsConnection;
         private long mSessionId;
+        private long mIntentReceivedTimestamp;
+        private long mPageLoadStartedTimestamp;
+
+        private static final int STATE_RESET = 0;
+        private static final int STATE_WAITING_LOAD_START = 1;
+        private static final int STATE_WAITING_LOAD_FINISH = 2;
+        private int mCurrentState;
 
         public CustomTabObserver(CustomTabsConnection customTabsConnection, long sessionId) {
             mCustomTabsConnection = customTabsConnection;
             mSessionId = sessionId;
+            resetPageLoadTracking();
+        }
+
+        /**
+         * Tracks the next page load, with timestamp as the origin of time.
+         */
+        public void trackNextPageLoadFromTimestamp(long timestamp) {
+            mIntentReceivedTimestamp = timestamp;
+            mCurrentState = STATE_WAITING_LOAD_START;
         }
 
         @Override
@@ -53,12 +73,44 @@ public class CustomTab extends ChromeTab {
 
         @Override
         public void onPageLoadStarted(Tab tab, String url) {
+            if (mCurrentState == STATE_WAITING_LOAD_START) {
+                mPageLoadStartedTimestamp = SystemClock.elapsedRealtime();
+                mCurrentState = STATE_WAITING_LOAD_FINISH;
+            }
             mCustomTabsConnection.notifyPageLoadStarted(mSessionId, url);
         }
 
         @Override
         public void onPageLoadFinished(Tab tab) {
+            long pageLoadFinishedTimestamp = SystemClock.elapsedRealtime();
             mCustomTabsConnection.notifyPageLoadFinished(mSessionId, tab.getUrl());
+            // Both histograms (commit and PLT) are reported here, to make sure
+            // that they are always recorded together, and that we only record
+            // commits for successful navigations.
+            if (mCurrentState == STATE_WAITING_LOAD_FINISH && mIntentReceivedTimestamp > 0) {
+                long timeToPageLoadStartedMs = mPageLoadStartedTimestamp - mIntentReceivedTimestamp;
+                long timeToPageLoadFinishedMs =
+                        pageLoadFinishedTimestamp - mIntentReceivedTimestamp;
+                // Same bounds and bucket count as "Startup.FirstCommitNavigationTime"
+                RecordHistogram.recordCustomTimesHistogram(
+                        "CustomTabs.IntentToFirstCommitNavigationTime", timeToPageLoadStartedMs,
+                        1, TimeUnit.MINUTES.toMillis(1), TimeUnit.MILLISECONDS, 225);
+                // Same bounds and bucket count as PLT histograms.
+                RecordHistogram.recordCustomTimesHistogram("CustomTabs.IntentToPageLoadedTime",
+                        timeToPageLoadFinishedMs, 10, TimeUnit.MINUTES.toMillis(10),
+                        TimeUnit.MILLISECONDS, 100);
+            }
+            resetPageLoadTracking();
+        }
+
+        @Override
+        public void onPageLoadFailed(Tab tab, int errorCode) {
+            resetPageLoadTracking();
+        }
+
+        private void resetPageLoadTracking() {
+            mCurrentState = STATE_RESET;
+            mIntentReceivedTimestamp = -1;
         }
     }
 
@@ -72,6 +124,8 @@ public class CustomTab extends ChromeTab {
                     return !isLink || !shouldInterceptContextMenuDownload(url);
                 }
             };
+
+    private CustomTabObserver mTabObserver;
 
     /**
      * Construct an CustomTab. It might load a prerendered {@link WebContents} for the URL, if
@@ -89,7 +143,20 @@ public class CustomTab extends ChromeTab {
         }
         initialize(webContents, activity.getTabContentManager(), false);
         getView().requestFocus();
-        addObserver(new CustomTabObserver(customTabsConnection, sessionId));
+        mTabObserver = new CustomTabObserver(customTabsConnection, sessionId);
+        addObserver(mTabObserver);
+    }
+
+    /**
+     * Loads a URL and tracks its load time, from the timestamp of the intent arrival.
+     *
+     * @param params As in {@link Tab#loadUrl(LoadUrlParams)}.
+     * @param timestamp Timestamp of the intent arrival, as returned by
+     *                  {@link SystemClock#elapsedRealtime()}.
+     */
+    void loadUrlAndTrackFromTimestamp(LoadUrlParams params, long timestamp) {
+        mTabObserver.trackNextPageLoadFromTimestamp(timestamp);
+        loadUrl(params);
     }
 
     @Override

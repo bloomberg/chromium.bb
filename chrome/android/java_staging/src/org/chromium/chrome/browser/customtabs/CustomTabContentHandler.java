@@ -12,10 +12,14 @@ import org.chromium.content_public.browser.LoadUrlParams;
  */
 public interface CustomTabContentHandler {
     /**
-     * Load a new url inside the {@link CustomTabContentHandler}.
+     * Loads a new url inside the {@link CustomTabContentHandler}, and tracks
+     * its load time.
+     *
      * @param params The params to use while loading the url.
+     * @param timestamp The intent arrival timestamp, as returned by
+     *                  {@link SystemClock#elapsedRealtime()}.
      */
-    void loadUrl(LoadUrlParams params);
+    void loadUrlAndTrackFromTimestamp(LoadUrlParams params, long timestamp);
 
     /**
      * @return The session id this {@link CustomTabContentHandler} is associated with.

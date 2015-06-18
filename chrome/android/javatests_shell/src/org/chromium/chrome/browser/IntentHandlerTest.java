@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.provider.Browser;
 import android.speech.RecognizerResultsIntent;
 import android.test.UiThreadTest;
@@ -277,5 +278,21 @@ public class IntentHandlerTest extends NativeLibraryTestBase {
         assertNull(IntentHandler.getReferrerUrl(headersIntent, context));
         assertEquals("Referer: " + validReferer,
                 IntentHandler.getExtraHeadersFromIntent(headersIntent, false));
+    }
+
+    @SmallTest
+    @Feature({"Android-AppBase"})
+    public void testAddTimestampToIntent() {
+        Intent intent = new Intent();
+        assertEquals(-1, IntentHandler.getTimestampFromIntent(intent));
+        // Check both before and after to make sure that the returned value is
+        // really from {@link SystemClock#elapsedRealtime()}.
+        long before = SystemClock.elapsedRealtime();
+        IntentHandler.addTimestampToIntent(intent);
+        long after = SystemClock.elapsedRealtime();
+        assertTrue("Time should be increasing",
+                before <= IntentHandler.getTimestampFromIntent(intent));
+        assertTrue("Time should be increasing",
+                IntentHandler.getTimestampFromIntent(intent) <= after);
     }
 }
