@@ -63,5 +63,9 @@
     <style name="RemoteNotificationProgressBar" parent="@android:style/Widget.ProgressBar.Horizontal">
         <item name="android:minHeight">5dp</item>
     </style>
-    
+
+    <style name="IncognitoTheme" parent="MainTheme">
+        <item name="android:colorPrimary">@color/incognito_primary_color</item>
+    </style>
+
 </resources>

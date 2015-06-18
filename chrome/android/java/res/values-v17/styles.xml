@@ -4,6 +4,40 @@
      found in the LICENSE file. -->
 
 <resources>
+    <!-- Q: Why put style resources under values-v17/ ?
+         A: Problem:
+            1. paddingStart causes a crash on Galaxy Tab&Note b/8351339.
+            2. So we wrote a build script(generate_v14_compatible_resources.py) to convert
+               paddingStart to paddingLeft for pre-v17 (crbug.com/235118).
+            3. However, style files are not overrided by the corresponding generated style files,
+               but merged when we pass them to aapt unlike layout files.
+
+            So we decided to keep style resources under values-v17/ so that it is not merged with
+            the generated style resources under res_v14_compatibility/values/ (crbug.com/243952).
+    -->
+
+    <style name="MainTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:textColorHighlight">@color/text_highlight_color</item>
+        <item name="android:statusBarColor">@android:color/black</item>
+
+        <!--  Overriding AppCompat values -->
+        <item name="colorControlNormal">@color/light_normal_color</item>
+        <item name="colorControlActivated">@color/light_active_color</item>
+
+        <!-- Default TintedImageButton tint -->
+        <item name="tint">@color/dark_mode_tint</item>
+
+        <!-- Navigation Transitions -->
+        <item name="android:windowAllowEnterTransitionOverlap">false</item>
+        <item name="android:windowAllowReturnTransitionOverlap">true</item>
+        <item name="android:windowContentTransitions">true</item>
+        <item name="android:windowEnterTransition">@transition/fade</item>
+        <item name="android:windowExitTransition">@null</item>
+        <item name="android:windowSharedElementEnterTransition">@transition/move_image</item>
+        <item name="android:windowSharedElementExitTransition">@transition/move_image</item>
+    </style>
+
     <!-- A theme for alert dialogs. The colors are copied from MainTheme, and the window
          dimensions are copied from *.MinWidth theme variants. Sadly there is no
          AppCompat.Light.Dialog.Alert or even AppCompat.Light.Dialog.MinWidth. -->
@@ -259,5 +293,98 @@
         <item name="android:paddingEnd">0dp</item>
         <item name="externalRouteEnabledDrawable">@drawable/ic_cast_dark_chrome</item>
     </style>
-    
+
+    <!-- First Run and Bookmark/recent-tabs dialogs -->
+    <style name="DialogWhenLarge" parent="Theme.AppCompat.Light.DialogWhenLarge" >
+        <item name="android:windowBackground">@drawable/bg_white_dialog</item>
+        <item name="android:statusBarColor">@android:color/black</item>
+        <item name="android:textColorLink">@color/light_active_color</item>
+        <item name="colorPrimary">@color/light_active_color</item>
+        <item name="colorAccent">@color/light_active_color</item>
+
+        <!-- Remove ActionBar -->
+        <item name="windowNoTitle">true</item>
+        <item name="windowActionBar">false</item>
+    </style>
+
+    <!--  Legacy Bookmarks -->
+    <style name="DialogWhenLargeHolo" parent="@android:style/Theme.Holo.Light.DialogWhenLarge" >
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowNoTitle">true</item>
+    </style>
+    <style name="AlertDialogTitle" parent="@android:style/TextAppearance.Large">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@android:color/holo_blue_light</item>
+        <item name="android:paddingStart">15dp</item>
+        <item name="android:paddingEnd">15dp</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:minHeight">64dp</item>
+        <!-- Not clickable, this is a hack to make alert titles accessibility focusable. -->
+        <item name="android:clickable">true</item>
+    </style>
+    <style name="AlertDialogTitleDivider">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">2dp</item>
+        <item name="android:background">@android:color/holo_blue_light</item>
+    </style>
+
+    <!-- Enhanced bookmarks -->
+    <style name="EnhancedBookmarkDialogWhite" parent="Theme.AppCompat.Light.DialogWhenLarge">
+        <item name="android:windowBackground">@drawable/bg_white_dialog</item>
+        <item name="colorPrimaryDark">@android:color/black</item>
+        <item name="colorAccent">@color/light_active_color</item>
+
+        <!-- Remove ActionBar -->
+        <item name="windowNoTitle">true</item>
+        <item name="windowActionBar">false</item>
+    </style>
+    <style name="EnhancedBookmarkTitleBarButton">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:background">@null</item>
+        <item name="android:padding">15dp</item>
+    </style>
+    <style name="EnhancedBookmarkMenuStyle" parent="Widget.AppCompat.ListPopupWindow">
+        <item name="android:popupBackground">@drawable/menu_bg</item>
+    </style>
+    <style name="EnhancedBookmarkDrawerItemStyle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">?android:attr/listPreferredItemHeightSmall</item>
+        <item name="android:textAlignment">viewStart</item>
+        <item name="android:gravity">start|center_vertical</item>
+        <item name="android:paddingStart">@dimen/enhanced_bookmark_drawer_drawable_padding</item>
+        <item name="android:paddingEnd">@dimen/enhanced_bookmark_drawer_drawable_padding</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:textAppearance">?android:attr/textAppearanceLargePopupMenu</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <!-- Signin promo dialog-->
+    <style name="SigninPromoDialog" parent="Theme.AppCompat.Light">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowFrame">@null</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowAnimationStyle">@android:style/Animation.Dialog</item>
+        <item name="android:windowBackground">@android:color/white</item>
+        <item name="android:textColorLink">@color/light_active_color</item>
+        <item name="colorPrimary">@color/light_active_color</item>
+        <item name="colorAccent">@color/light_active_color</item>
+    </style>
+
+    <!-- Misc styles -->
+    <style name="SnackbarAnimation">
+        <item name="android:windowEnterAnimation">@anim/snackbar_in</item>
+        <item name="android:windowExitAnimation">@anim/snackbar_out</item>
+    </style>
+    <style name="LocationBarButton">
+        <item name="android:background">@null</item>
+    </style>
+    <style name="ToolbarButton">
+        <item name="android:background">?attr/selectableItemBackground</item>
+        <item name="android:layout_width">48dp</item>
+        <item name="android:layout_height">56dp</item>
+        <item name="android:scaleType">center</item>
+    </style>
 </resources>

@@ -47,4 +47,8 @@
         <attr name="maxChildHeight" format="dimension" />
     </declare-styleable>
 
+    <declare-styleable name="BoundedView">
+        <attr name="maxWidth" format="dimension" />
+    </declare-styleable>
+
 </resources>
