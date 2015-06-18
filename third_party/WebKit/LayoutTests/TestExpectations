@@ -342,9 +342,9 @@ crbug.com/496848 [ Mac ] imported/csswg-test/css-writing-modes-3/text-orientatio
 crbug.com/496848 [ Mac ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001m.html [ Failure Crash ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-orientation-script-001n.html [ Failure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/writing-mode-stretch-001.html [ ImageOnlyFailure ]
-crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-combine-upright/text-decoration-001.htm [ ImageOnlyFailure ]
-crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-combine-upright/text-emphasis-001.htm [ ImageOnlyFailure ]
-crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-combine-upright/value-all-and-inherit-001.htm [ ImageOnlyFailure ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-decoration-001.htm [ ImageOnlyFailure ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-emphasis-001.htm [ ImageOnlyFailure ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/value-all-and-inherit-001.htm [ ImageOnlyFailure ]
 
 # These tests pass but images do not match because of position: absolute in vertical flow bug
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/block-flow-direction-009.xht [ ImageOnlyFailure ]
@@ -363,10 +363,6 @@ crbug.com/492664 imported/csswg-test/css-writing-modes-3/bidi-embed-002.html [ P
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/bidi-isolate-002.html [ Pass ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/bidi-override-005.html [ Pass ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/bidi-plaintext-001.html [ Pass ImageOnlyFailure ]
-crbug.com/492664 imported/csswg-test/css-writing-modes-3/vertical-alignment-013.xht [ Pass ImageOnlyFailure ]
-crbug.com/492664 imported/csswg-test/css-writing-modes-3/vertical-alignment-016.xht [ Pass ImageOnlyFailure ]
-crbug.com/492664 imported/csswg-test/css-writing-modes-3/vertical-alignment-022.xht [ Pass ImageOnlyFailure ]
-crbug.com/492664 imported/csswg-test/css-writing-modes-3/vertical-alignment-025.xht [ Pass ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/writing-mode-vertical-lr-002.xht [ Pass ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/writing-mode-vertical-rl-001.xht [ Pass ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/writing-mode-vertical-rl-002.xht [ Pass ImageOnlyFailure ]
@@ -394,13 +390,8 @@ crbug.com/501169 [ Mac ] fast/frames/iframe-scaling-with-scroll.html [ ImageOnly
 # These CSS Writing Modes Level 3 tests pass but causes 1px diff on images, notified to the submitter.
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/box-offsets-rel-pos-vlr-005.xht [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/box-offsets-rel-pos-vrl-004.xht [ ImageOnlyFailure ]
-crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-combine-upright/value-all-002.html [ ImageOnlyFailure ]
-crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-combine-upright/value-all-003.html [ ImageOnlyFailure ]
-crbug.com/492664 imported/csswg-test/css-writing-modes-3/vertical-alignment-001.xht [ ImageOnlyFailure ]
-crbug.com/492664 imported/csswg-test/css-writing-modes-3/vertical-alignment-004.xht [ ImageOnlyFailure ]
-crbug.com/492664 imported/csswg-test/css-writing-modes-3/vertical-alignment-007.xht [ ImageOnlyFailure ]
-crbug.com/492664 imported/csswg-test/css-writing-modes-3/vertical-alignment-010.xht [ ImageOnlyFailure ]
-crbug.com/492664 imported/csswg-test/css-writing-modes-3/vertical-alignment-019.xht [ ImageOnlyFailure ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/value-all-002.html [ ImageOnlyFailure ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/value-all-003.html [ ImageOnlyFailure ]
 crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/block-flow-direction-001.xht [ ImageOnlyFailure ]
 crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/block-flow-direction-002.xht [ ImageOnlyFailure ]
 crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/block-flow-direction-003.xht [ ImageOnlyFailure ]
@@ -458,6 +449,7 @@ crbug.com/443379 imported/web-platform-tests/gamepad/idlharness.html [ Failure T
 
 crbug.com/443382 imported/web-platform-tests/subresource-integrity/subresource-integrity.html [ Failure ]
 crbug.com/492957 imported/web-platform-tests/webrtc/promises-call.html [ Failure ]
+crbug.com/492957 imported/web-platform-tests/webrtc/datachannel-emptystring.html [ Failure ]
 
 crbug.com/389648 fast/text-autosizing/table-inflation-crash.html [ Pass Timeout Crash ]
 
