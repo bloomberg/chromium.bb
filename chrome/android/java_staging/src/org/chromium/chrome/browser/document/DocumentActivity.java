@@ -36,6 +36,7 @@ import org.chromium.chrome.browser.UrlUtilities;
 import org.chromium.chrome.browser.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.appmenu.AppMenuObserver;
 import org.chromium.chrome.browser.appmenu.ChromeAppMenuPropertiesDelegate;
+import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerDocument;
 import org.chromium.chrome.browser.document.DocumentTab.DocumentTabObserver;
 import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkUtils;
@@ -596,10 +597,6 @@ public class DocumentActivity extends CompositorChromeActivity {
         mFindToolbarManager = new FindToolbarManager(this, getTabModelSelector(),
                 mToolbarHelper.getContextualMenuBar()
                         .getCustomSelectionActionModeCallback());
-        controlContainer.setFindToolbarManager(mFindToolbarManager);
-        if (getContextualSearchManager() != null) {
-            getContextualSearchManager().setFindToolbarManager(mFindToolbarManager);
-        }
 
         mToolbarHelper.initializeControls(
                 mFindToolbarManager, null, layoutDriver, null, null, null, null);
@@ -826,6 +823,7 @@ public class DocumentActivity extends CompositorChromeActivity {
             RecordUserAction.record("MobileMenuOpenTabs");
         } else if (id == R.id.find_in_page_id) {
             mFindToolbarManager.showToolbar();
+            getContextualSearchManager().hideContextualSearch(StateChangeReason.UNKNOWN);
             if (fromMenu) {
                 RecordUserAction.record("MobileMenuFindInPage");
             } else {

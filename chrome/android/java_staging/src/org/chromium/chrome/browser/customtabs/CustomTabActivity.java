@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.appmenu.AppMenuObserver;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
+import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerDocument;
 import org.chromium.chrome.browser.document.BrandColorUtils;
 import org.chromium.chrome.browser.tabmodel.SingleTabModelSelector;
@@ -166,7 +167,6 @@ public class CustomTabActivity extends CompositorChromeActivity {
                 (ViewGroup) findViewById(android.R.id.content), controlContainer);
         mFindToolbarManager = new FindToolbarManager(this, getTabModelSelector(),
                 mToolbarHelper.getContextualMenuBar().getCustomSelectionActionModeCallback());
-        controlContainer.setFindToolbarManager(mFindToolbarManager);
         mToolbarHelper.initializeControls(
                 mFindToolbarManager, null, layoutDriver, null, null, null,
                 new OnClickListener() {
@@ -319,7 +319,12 @@ public class CustomTabActivity extends CompositorChromeActivity {
             return true;
         } else if (id == R.id.find_in_page_id) {
             mFindToolbarManager.showToolbar();
-            RecordUserAction.record("CustomTabsMenuFindInPage");
+            getContextualSearchManager().hideContextualSearch(StateChangeReason.UNKNOWN);
+            if (fromMenu) {
+                RecordUserAction.record("MobileMenuFindInPage");
+            } else {
+                RecordUserAction.record("MobileShortcutFindInPage");
+            }
             return true;
         }
         return super.onMenuOrKeyboardAction(id, fromMenu);

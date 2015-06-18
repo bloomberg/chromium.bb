@@ -39,6 +39,7 @@ import org.chromium.chrome.browser.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.appmenu.AppMenuObserver;
 import org.chromium.chrome.browser.appmenu.ChromeAppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
+import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChrome;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChrome.OverviewLayoutFactoryDelegate;
@@ -428,10 +429,6 @@ public class ChromeTabbedActivity extends CompositorChromeActivity implements Ac
 
             mFindToolbarManager = new FindToolbarManager(this, getTabModelSelector(),
                     mToolbarHelper.getContextualMenuBar().getCustomSelectionActionModeCallback());
-            mControlContainer.setFindToolbarManager(mFindToolbarManager);
-            if (getContextualSearchManager() != null) {
-                getContextualSearchManager().setFindToolbarManager(mFindToolbarManager);
-            }
 
             OnClickListener tabSwitcherClickHandler = new OnClickListener() {
                 @Override
@@ -969,6 +966,7 @@ public class ChromeTabbedActivity extends CompositorChromeActivity implements Ac
             RecordUserAction.record("MobileMenuCloseAllTabs");
         } else if (id == R.id.find_in_page_id) {
             mFindToolbarManager.showToolbar();
+            getContextualSearchManager().hideContextualSearch(StateChangeReason.UNKNOWN);
             if (fromMenu) {
                 RecordUserAction.record("MobileMenuFindInPage");
             } else {

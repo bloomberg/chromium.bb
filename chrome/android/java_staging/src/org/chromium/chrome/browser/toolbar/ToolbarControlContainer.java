@@ -23,7 +23,6 @@ import org.chromium.chrome.browser.widget.ControlContainer;
 import org.chromium.chrome.browser.widget.SmoothProgressBar;
 import org.chromium.chrome.browser.widget.SmoothProgressBar.ProgressChangeListener;
 import org.chromium.chrome.browser.widget.ViewResourceFrameLayout;
-import org.chromium.chrome.browser.widget.findinpage.FindToolbarManager;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.resources.dynamics.ViewResourceAdapter;
 
@@ -39,8 +38,6 @@ public class ToolbarControlContainer extends FrameLayout implements ControlConta
 
     private final SwipeRecognizer mSwipeRecognizer;
     private EdgeSwipeHandler mSwipeHandler;
-
-    private FindToolbarManager mFindToolbarManager;
 
     private ViewResourceAdapter mProgressResourceAdapter;
 
@@ -72,13 +69,6 @@ public class ToolbarControlContainer extends FrameLayout implements ControlConta
     public void setSwipeHandler(EdgeSwipeHandler handler) {
         mSwipeHandler = handler;
         mSwipeRecognizer.setSwipeHandler(handler);
-    }
-
-    /**
-     * Sets the manager in charge of find in page.
-     */
-    public void setFindToolbarManager(FindToolbarManager manager) {
-        mFindToolbarManager = manager;
     }
 
     @Override
@@ -343,7 +333,6 @@ public class ToolbarControlContainer extends FrameLayout implements ControlConta
             if (isOnTabStrip(e1)) return false;
             if (mToolbar.shouldIgnoreSwipeGesture()) return false;
             if (UiUtils.isKeyboardShowing(getContext(), ToolbarControlContainer.this)) return false;
-            if (mFindToolbarManager == null || mFindToolbarManager.isShowing()) return false;
             return true;
         }
     }

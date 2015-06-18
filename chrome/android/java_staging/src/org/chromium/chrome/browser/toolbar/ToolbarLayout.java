@@ -58,6 +58,8 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
 
     protected final int mToolbarHeightWithoutShadow;
 
+    private boolean mFindInPageToolbarShowing;
+
     /**
      * Basic constructor for {@link ToolbarLayout}.
      */
@@ -244,6 +246,15 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
         }
     }
 
+    /**
+     * Gives inheriting classes the chance to respond to
+     * {@link org.chromium.chrome.browser.widget.findinpage.FindToolbar} state changes.
+     * @param showing Whether or not the {@code FindToolbar} will be showing.
+     */
+    protected void handleFindToolbarStateChange(boolean showing) {
+        mFindInPageToolbarShowing = showing;
+    }
+
     @Override
     public void setOnTabSwitcherClickHandler(OnClickListener listener) { }
 
@@ -283,13 +294,6 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
      * @param isBookmarked Whether or not the current tab is already bookmarked.
      */
     protected void updateBookmarkButtonVisibility(boolean isBookmarked) { }
-
-    /**
-     * Gives inheriting classes the chance to respond to
-     * {@link org.chromium.chrome.browser.widget.findinpage.FindToolbar} state changes.
-     * @param showing Whether or not the {@code FindToolbar} will be showing.
-     */
-    protected void handleFindToolbarStateChange(boolean showing) { }
 
     /**
      * Gives inheriting classes the chance to respond to accessibility state changes.
@@ -398,7 +402,8 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     @Override
     public boolean shouldIgnoreSwipeGesture() {
         return mUrlHasFocus
-                || (mAppMenuButtonHelper != null && mAppMenuButtonHelper.isAppMenuActive());
+                || (mAppMenuButtonHelper != null && mAppMenuButtonHelper.isAppMenuActive())
+                || mFindInPageToolbarShowing;
     }
 
     /**

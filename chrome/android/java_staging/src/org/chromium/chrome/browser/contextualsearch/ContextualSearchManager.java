@@ -41,8 +41,6 @@ import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
-import org.chromium.chrome.browser.widget.findinpage.FindToolbarManager;
-import org.chromium.chrome.browser.widget.findinpage.FindToolbarObserver;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.components.navigation_interception.NavigationParams;
 import org.chromium.components.web_contents_delegate_android.WebContentsDelegateAndroid;
@@ -113,8 +111,6 @@ public class ContextualSearchManager extends ContextualSearchObservable
     private final WebContentsDelegateAndroid mWebContentsDelegate;
     private ContextualSearchContentViewDelegate mSearchContentViewDelegate;
     private final ContextualSearchTabPromotionDelegate mTabPromotionDelegate;
-    private final FindToolbarObserver mFindToolbarObserver;
-    private FindToolbarManager mFindToolbarManager;
     private TabModelSelectorTabObserver mTabModelSelectorTabObserver;
     private TabModelObserver mTabModelObserver;
     private boolean mIsSearchContentViewShowing;
@@ -215,13 +211,6 @@ public class ContextualSearchManager extends ContextualSearchObservable
             }
         };
 
-        mFindToolbarObserver = new FindToolbarObserver() {
-            @Override
-            public void onFindToolbarShown() {
-                hideContextualSearch(StateChangeReason.UNKNOWN);
-            }
-        };
-
         final View controlContainer = mActivity.findViewById(R.id.control_container);
         mOnFocusChangeListener = new OnGlobalFocusChangeListener() {
             @Override
@@ -241,16 +230,6 @@ public class ContextualSearchManager extends ContextualSearchObservable
                 hideContextualSearch(StateChangeReason.UNKNOWN);
             }
         };
-    }
-
-    /**
-     * Sets the manager in charge of find in page.
-     * @param manager A {@link FindToolbarManager} instance.
-     */
-    public void setFindToolbarManager(FindToolbarManager manager) {
-        assert manager != null;
-        mFindToolbarManager = manager;
-        mFindToolbarManager.addObserver(mFindToolbarObserver);
     }
 
     /**
@@ -633,7 +612,6 @@ public class ContextualSearchManager extends ContextualSearchObservable
      */
     private void stopListeningForHideNotifications() {
         if (mTabModelSelectorTabObserver != null) mTabModelSelectorTabObserver.destroy();
-        if (mFindToolbarManager != null) mFindToolbarManager.removeObserver(mFindToolbarObserver);
 
         TabModelSelector selector = mActivity.getTabModelSelector();
         if (selector != null) {
