@@ -4,6 +4,7 @@ CONSOLE MESSAGE: line 10: %cAnd borders and margins and paddings!
 CONSOLE MESSAGE: line 11: %ctext-* is fine by us!
 CONSOLE MESSAGE: line 13: %cDisplay, on the other hand, is bad news.
 CONSOLE MESSAGE: line 14: %cAnd position too.
+CONSOLE MESSAGE: line 15: %cAnd URL is not allowed as a value .
 Tests that console logging dumps properly styled messages, and that the whole message gets the same style, regardless of multiple %c settings.
 
 console-format-style-whitelist.html:8 Colors are awesome.
@@ -17,5 +18,7 @@ Styled text #0: text-decoration-line: none; text-decoration-style: initial; text
 console-format-style-whitelist.html:13 Display, on the other hand, is bad news.
 Styled text #0: NO STYLES DEFINED
 console-format-style-whitelist.html:14 And position too.
+Styled text #0: NO STYLES DEFINED
+console-format-style-whitelist.html:15 And URL is not allowed as a value .
 Styled text #0: NO STYLES DEFINED
 
