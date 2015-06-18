@@ -838,8 +838,9 @@ class XcodeSettings(object):
       # These flags reflect the compilation options used by xcode to compile
       # extensions.
       ldflags.append('-lpkstart')
-      ldflags.append(sdk_root +
-          '/System/Library/PrivateFrameworks/PlugInKit.framework/PlugInKit')
+      if XcodeVersion() < '0900':
+        ldflags.append(sdk_root +
+            '/System/Library/PrivateFrameworks/PlugInKit.framework/PlugInKit')
       ldflags.append('-fapplication-extension')
       ldflags.append('-Xlinker -rpath '
           '-Xlinker @executable_path/../../Frameworks')
