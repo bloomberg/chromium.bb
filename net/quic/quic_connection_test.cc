@@ -1401,6 +1401,8 @@ TEST_P(QuicConnectionTest, TooManySentPackets) {
   ProcessAckPacket(&frame1);
 }
 
+// Flaky time out on Windows 7. http://crbug.com/501812
+#if !defined(OS_WIN)
 TEST_P(QuicConnectionTest, TooManyReceivedPackets) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   EXPECT_CALL(visitor_, OnConnectionClosed(
@@ -1414,6 +1416,7 @@ TEST_P(QuicConnectionTest, TooManyReceivedPackets) {
     }
   }
 }
+#endif
 
 TEST_P(QuicConnectionTest, LargestObservedLower) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
