@@ -1843,12 +1843,10 @@ crbug.com/321237 [ Win ] virtual/antialiasedtext/fast/text/international/complex
 
 crbug.com/446406 [ Win ] fast/repaint/quotes.html [ Pass Failure ]
 
-crbug.com/495523 [ XP ] svg/W3C-SVG-1.1/animate-elem-52-t.svg [ Failure ] 
+crbug.com/495523 [ XP ] svg/W3C-SVG-1.1/animate-elem-52-t.svg [ Failure ]
 crbug.com/495523 [ XP ] svg/W3C-SVG-1.1/extend-namespace-01-f.svg [ Failure ]
 crbug.com/495523 svg/wicd/test-rightsizing-b.xhtml [ Pass Failure ]
 
 crbug.com/424338 [ XP ] tables/mozilla/bugs/bug3037-1.html [ Failure ]
-
-crbug.com/501284 http/tests/security/w3c/cross-origin-objects.html [ Pass Failure ]
 
 crbug.com/501564 [ Lion ] fast/text/ellipsis-platform-font-change.html [ Pass Failure ]
