@@ -153,6 +153,9 @@ void InitializeThreadLocalEventBufferIfSupported() {
 const char* const MemoryDumpManager::kTraceCategoryForTesting = kTraceCategory;
 
 // static
+const int MemoryDumpManager::kMaxConsecutiveFailuresCount = 3;
+
+// static
 MemoryDumpManager* MemoryDumpManager::GetInstance() {
   if (g_instance_for_testing)
     return g_instance_for_testing;
@@ -349,11 +352,19 @@ bool MemoryDumpManager::InvokeDumpProviderLocked(MemoryDumpProvider* mdp,
                                                  ProcessMemoryDump* pmd) {
   lock_.AssertAcquired();
   bool dump_successful = mdp->OnMemoryDump(pmd);
-  if (!dump_successful) {
-    LOG(ERROR) << "The memory dumper failed, possibly due to sandboxing "
-                  "(crbug.com/461788), disabling it for current process. Try "
-                  "restarting chrome with the --no-sandbox switch.";
-    dump_providers_.find(mdp)->second.disabled = true;
+  MemoryDumpProviderInfo* mdp_info = &dump_providers_.find(mdp)->second;
+  if (dump_successful) {
+    mdp_info->consecutive_failures = 0;
+  } else {
+    // Disable the MDP if it fails kMaxConsecutiveFailuresCount times
+    // consecutively.
+    mdp_info->consecutive_failures++;
+    if (mdp_info->consecutive_failures >= kMaxConsecutiveFailuresCount) {
+      mdp_info->disabled = true;
+      LOG(ERROR) << "The memory dumper failed, possibly due to sandboxing "
+                    "(crbug.com/461788), disabling it for current process. Try "
+                    "restarting chrome with the --no-sandbox switch.";
+    }
   }
   return dump_successful;
 }
@@ -409,6 +420,7 @@ void MemoryDumpManager::OnTraceLogEnabled() {
   for (auto it = dump_providers_.begin(); it != dump_providers_.end(); ++it) {
     MemoryDumpProviderInfo& mdp_info = it->second;
     mdp_info.disabled = false;
+    mdp_info.consecutive_failures = 0;
     if (mdp_info.task_runner) {
       // The thread local event buffer must be initialized at this point as it
       // registers its own dump provider (for tracing overhead acounting).
@@ -439,7 +451,7 @@ void MemoryDumpManager::OnTraceLogDisabled() {
 
 MemoryDumpManager::MemoryDumpProviderInfo::MemoryDumpProviderInfo(
     const scoped_refptr<SingleThreadTaskRunner>& task_runner)
-    : task_runner(task_runner), disabled(false) {
+    : task_runner(task_runner), consecutive_failures(0), disabled(false) {
 }
 MemoryDumpManager::MemoryDumpProviderInfo::~MemoryDumpProviderInfo() {
 }

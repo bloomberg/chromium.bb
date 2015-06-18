@@ -90,6 +90,8 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
     ~MemoryDumpProviderInfo();
 
     scoped_refptr<SingleThreadTaskRunner> task_runner;  // Optional.
+    int consecutive_failures;  // Number of times the provider failed (to
+                               // disable the MDPs).
     bool disabled;  // For fail-safe logic (auto-disable failing MDPs).
   };
 
@@ -97,6 +99,9 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
   friend struct DefaultSingletonTraits<MemoryDumpManager>;
   friend class MemoryDumpManagerDelegate;
   friend class MemoryDumpManagerTest;
+  FRIEND_TEST_ALL_PREFIXES(MemoryDumpManagerTest, DisableFailingDumpers);
+
+  static const int kMaxConsecutiveFailuresCount;
 
   static void SetInstanceForTesting(MemoryDumpManager* instance);
 

@@ -250,9 +250,8 @@ TEST_F(MemoryDumpManagerTest, RespectTaskRunnerAffinity) {
   DisableTracing();
 }
 
-// Enable both dump providers, make mdp1 fail and assert that only mdp2 is
-// invoked the 2nd time.
-// FIXME(primiano): remove once crbug.com/461788 gets fixed.
+// Enable both dump providers, make sure that mdp gets disabled after 3 failures
+// and not disabled after 1.
 TEST_F(MemoryDumpManagerTest, DisableFailingDumpers) {
   MockDumpProvider mdp1;
   MockDumpProvider mdp2;
@@ -261,13 +260,17 @@ TEST_F(MemoryDumpManagerTest, DisableFailingDumpers) {
   mdm_->RegisterDumpProvider(&mdp2);
   EnableTracing(kTraceCategory);
 
-  EXPECT_CALL(mdp1, OnMemoryDump(_)).Times(1).WillRepeatedly(Return(false));
-  EXPECT_CALL(mdp2, OnMemoryDump(_)).Times(1).WillRepeatedly(Return(true));
-  mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED);
-
-  EXPECT_CALL(mdp1, OnMemoryDump(_)).Times(0);
-  EXPECT_CALL(mdp2, OnMemoryDump(_)).Times(1).WillRepeatedly(Return(false));
-  mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED);
+  EXPECT_CALL(mdp1, OnMemoryDump(_))
+      .Times(MemoryDumpManager::kMaxConsecutiveFailuresCount)
+      .WillRepeatedly(Return(false));
+  EXPECT_CALL(mdp2, OnMemoryDump(_))
+      .Times(1 + MemoryDumpManager::kMaxConsecutiveFailuresCount)
+      .WillOnce(Return(false))
+      .WillRepeatedly(Return(true));
+  for (int i = 0; i < 1 + MemoryDumpManager::kMaxConsecutiveFailuresCount;
+       i++) {
+    mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED);
+  }
 
   DisableTracing();
 }
