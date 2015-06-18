@@ -1584,16 +1584,21 @@ TEST_P(QuicStreamFactoryTest, BadPacketLoss) {
   socket_factory_.AddSocketDataProvider(&socket_data);
   socket_data.StopAfter(1);
 
-  DeterministicSocketData socket_data2(reads, arraysize(reads), nullptr, 0);
+  DeterministicSocketData socket_data2(nullptr, 0, nullptr, 0);
   socket_factory_.AddSocketDataProvider(&socket_data2);
   socket_data2.StopAfter(1);
 
-  DeterministicSocketData socket_data3(reads, arraysize(reads), nullptr, 0);
+  DeterministicSocketData socket_data3(nullptr, 0, nullptr, 0);
   socket_factory_.AddSocketDataProvider(&socket_data3);
   socket_data3.StopAfter(1);
 
+  DeterministicSocketData socket_data4(nullptr, 0, nullptr, 0);
+  socket_factory_.AddSocketDataProvider(&socket_data4);
+  socket_data4.StopAfter(1);
+
   HostPortPair server2("mail.example.org", kDefaultServerPort);
   HostPortPair server3("docs.example.org", kDefaultServerPort);
+  HostPortPair server4("images.example.org", kDefaultServerPort);
 
   crypto_client_stream_factory_.set_handshake_mode(
       MockCryptoClientStream::ZERO_RTT);
@@ -1602,6 +1607,7 @@ TEST_P(QuicStreamFactoryTest, BadPacketLoss) {
                                            "192.168.0.1", "");
   host_resolver_.rules()->AddIPLiteralRule(server2.host(), "192.168.0.1", "");
   host_resolver_.rules()->AddIPLiteralRule(server3.host(), "192.168.0.1", "");
+  host_resolver_.rules()->AddIPLiteralRule(server4.host(), "192.168.0.1", "");
 
   QuicStreamRequest request(&factory_);
   EXPECT_EQ(OK, request.Request(host_port_pair_, is_https_, privacy_mode_,
@@ -1625,16 +1631,16 @@ TEST_P(QuicStreamFactoryTest, BadPacketLoss) {
                    &factory_, host_port_pair_.port()));
 
   // Set packet_loss_rate to a higher value than packet_loss_threshold only once
-  // and that should close the session, but shouldn't disable QUIC.
-  EXPECT_TRUE(
+  // and that shouldn't close the session and it shouldn't disable QUIC.
+  EXPECT_FALSE(
       factory_.OnHandshakeConfirmed(session, /*packet_loss_rate=*/1.0f));
   EXPECT_EQ(1, QuicStreamFactoryPeer::GetNumberOfLossyConnections(
                    &factory_, host_port_pair_.port()));
+  EXPECT_TRUE(session->connection()->connected());
   EXPECT_FALSE(
       QuicStreamFactoryPeer::IsQuicDisabled(&factory_, host_port_pair_.port()));
-  EXPECT_FALSE(QuicStreamFactoryPeer::HasActiveSession(
+  EXPECT_TRUE(QuicStreamFactoryPeer::HasActiveSession(
       &factory_, host_port_pair_, is_https_));
-  EXPECT_FALSE(HasActiveSession(host_port_pair_));
 
   // Test N-in-a-row high packet loss connections.
 
@@ -1660,17 +1666,16 @@ TEST_P(QuicStreamFactoryTest, BadPacketLoss) {
       QuicStreamFactoryPeer::IsQuicDisabled(&factory_, server2.port()));
 
   // Set packet_loss_rate to a higher value than packet_loss_threshold only once
-  // and that should close the session, but shouldn't disable QUIC.
-  EXPECT_TRUE(
+  // and that shouldn't close the session and it shouldn't disable QUIC.
+  EXPECT_FALSE(
       factory_.OnHandshakeConfirmed(session2, /*packet_loss_rate=*/1.0f));
   EXPECT_EQ(1, QuicStreamFactoryPeer::GetNumberOfLossyConnections(
                    &factory_, server2.port()));
-  EXPECT_FALSE(session2->connection()->connected());
+  EXPECT_TRUE(session2->connection()->connected());
   EXPECT_FALSE(
       QuicStreamFactoryPeer::IsQuicDisabled(&factory_, server2.port()));
-  EXPECT_FALSE(
+  EXPECT_TRUE(
       QuicStreamFactoryPeer::HasActiveSession(&factory_, server2, is_https_));
-  EXPECT_FALSE(HasActiveSession(server2));
 
   DVLOG(1) << "Create 3rd session which also has packet loss";
 
@@ -1682,17 +1687,38 @@ TEST_P(QuicStreamFactoryTest, BadPacketLoss) {
   QuicClientSession* session3 =
       QuicStreamFactoryPeer::GetActiveSession(&factory_, server3, is_https_);
 
+  DVLOG(1) << "Create 4th session with packet loss and test IsQuicDisabled()";
+  TestCompletionCallback callback4;
+  QuicStreamRequest request4(&factory_);
+  EXPECT_EQ(OK,
+            request4.Request(server4, is_https_, privacy_mode_, server4.host(),
+                             "GET", net_log_, callback4.callback()));
+  QuicClientSession* session4 =
+      QuicStreamFactoryPeer::GetActiveSession(&factory_, server4, is_https_);
+
   // Set packet_loss_rate to higher value than packet_loss_threshold 2nd time in
   // a row and that should close the session and disable QUIC.
   EXPECT_TRUE(
       factory_.OnHandshakeConfirmed(session3, /*packet_loss_rate=*/1.0f));
   EXPECT_EQ(2, QuicStreamFactoryPeer::GetNumberOfLossyConnections(
                    &factory_, server3.port()));
-  EXPECT_FALSE(session2->connection()->connected());
+  EXPECT_FALSE(session3->connection()->connected());
   EXPECT_TRUE(QuicStreamFactoryPeer::IsQuicDisabled(&factory_, server3.port()));
   EXPECT_FALSE(
       QuicStreamFactoryPeer::HasActiveSession(&factory_, server3, is_https_));
   EXPECT_FALSE(HasActiveSession(server3));
+
+  // Set packet_loss_rate to higher value than packet_loss_threshold 3rd time in
+  // a row and IsQuicDisabled() should close the session.
+  EXPECT_TRUE(
+      factory_.OnHandshakeConfirmed(session4, /*packet_loss_rate=*/1.0f));
+  EXPECT_EQ(3, QuicStreamFactoryPeer::GetNumberOfLossyConnections(
+                   &factory_, server4.port()));
+  EXPECT_FALSE(session4->connection()->connected());
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsQuicDisabled(&factory_, server4.port()));
+  EXPECT_FALSE(
+      QuicStreamFactoryPeer::HasActiveSession(&factory_, server4, is_https_));
+  EXPECT_FALSE(HasActiveSession(server4));
 
   scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
   EXPECT_TRUE(stream.get());
@@ -1700,12 +1726,16 @@ TEST_P(QuicStreamFactoryTest, BadPacketLoss) {
   EXPECT_TRUE(stream2.get());
   scoped_ptr<QuicHttpStream> stream3 = request3.ReleaseStream();
   EXPECT_TRUE(stream3.get());
+  scoped_ptr<QuicHttpStream> stream4 = request4.ReleaseStream();
+  EXPECT_TRUE(stream4.get());
   EXPECT_TRUE(socket_data.AllReadDataConsumed());
   EXPECT_TRUE(socket_data.AllWriteDataConsumed());
   EXPECT_TRUE(socket_data2.AllReadDataConsumed());
   EXPECT_TRUE(socket_data2.AllWriteDataConsumed());
   EXPECT_TRUE(socket_data3.AllReadDataConsumed());
   EXPECT_TRUE(socket_data3.AllWriteDataConsumed());
+  EXPECT_TRUE(socket_data4.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data4.AllWriteDataConsumed());
 }
 
 }  // namespace test

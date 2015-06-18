@@ -135,10 +135,13 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
              const BoundNetLog& net_log,
              QuicStreamRequest* request);
 
-  // Returns false if |packet_loss_rate| is less than |packet_loss_threshold_|
-  // otherwise it returns true and closes the session and marks QUIC as recently
-  // broken for the port of the session. Increments
-  // |number_of_lossy_connections_| by port.
+  // If |packet_loss_rate| is greater than or equal to |packet_loss_threshold_|
+  // it marks QUIC as recently broken for the port of the session. Increments
+  // |number_of_lossy_connections_| by port. If |number_of_lossy_connections_|
+  // is greater than or equal to |max_number_of_lossy_connections_| then it
+  // disables QUIC. If QUIC is disabled then it closes the connection.
+  //
+  // Returns true if QUIC is disabled for the port of the session.
   bool OnHandshakeConfirmed(QuicClientSession* session, float packet_loss_rate);
 
   // Returns true if QUIC is disabled for this port.

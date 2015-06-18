@@ -830,17 +830,8 @@ bool QuicStreamFactory::OnHandshakeConfirmed(QuicClientSession* session,
         AlternativeService(QUIC, session->server_id().host(), port));
   }
 
-  // We abandon the connection if packet loss rate is too bad.
-  session->CloseSessionOnErrorAndNotifyFactoryLater(ERR_ABORTED,
-                                                    QUIC_BAD_PACKET_LOSS_RATE);
-
-  if (IsQuicDisabled(port))
-    return true;  // Exit if Quic is already disabled for this port.
-
-  if (++number_of_lossy_connections_[port] >=
-      max_number_of_lossy_connections_) {
-    UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicStreamFactory.QuicIsDisabled", port);
-  }
+  bool was_quic_disabled = IsQuicDisabled(port);
+  ++number_of_lossy_connections_[port];
 
   // Collect data for port 443 for packet loss events.
   if (port == 443 && max_number_of_lossy_connections_ > 0) {
@@ -850,7 +841,18 @@ bool QuicStreamFactory::OnHandshakeConfirmed(QuicClientSession* session,
         std::min(number_of_lossy_connections_[port],
                  max_number_of_lossy_connections_));
   }
-  return true;
+
+  bool is_quic_disabled = IsQuicDisabled(port);
+  if (is_quic_disabled) {
+    // Close QUIC connection if Quic is disabled for this port.
+    session->CloseSessionOnErrorAndNotifyFactoryLater(
+        ERR_ABORTED, QUIC_BAD_PACKET_LOSS_RATE);
+
+    // If this bad packet loss rate disabled the QUIC, then record it.
+    if (!was_quic_disabled)
+      UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicStreamFactory.QuicIsDisabled", port);
+  }
+  return is_quic_disabled;
 }
 
 void QuicStreamFactory::OnIdleSession(QuicClientSession* session) {
