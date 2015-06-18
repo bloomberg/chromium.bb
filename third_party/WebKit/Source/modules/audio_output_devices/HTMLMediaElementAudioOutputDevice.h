@@ -22,11 +22,12 @@ class HTMLMediaElementAudioOutputDevice final : public NoBaseWillBeGarbageCollec
 public:
     DECLARE_VIRTUAL_TRACE();
     static String sinkId(HTMLMediaElement&);
-    static ScriptPromise setSinkId(ScriptState*, HTMLMediaElement&, const String& newSinkId);
+    static ScriptPromise setSinkId(ScriptState*, HTMLMediaElement&, const String& sinkId);
+    static HTMLMediaElementAudioOutputDevice& from(HTMLMediaElement&);
+    void setSinkId(const String&);
 
 private:
     HTMLMediaElementAudioOutputDevice();
-    static HTMLMediaElementAudioOutputDevice& from(HTMLMediaElement&);
     static const char* supplementName();
 
     String m_sinkId;

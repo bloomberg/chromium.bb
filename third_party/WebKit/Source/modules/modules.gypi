@@ -585,6 +585,8 @@
       'app_banner/BeforeInstallPromptEvent.h',
       'audio_output_devices/HTMLMediaElementAudioOutputDevice.cpp',
       'audio_output_devices/HTMLMediaElementAudioOutputDevice.h',
+      'audio_output_devices/SetSinkIdCallbacks.cpp',
+      'audio_output_devices/SetSinkIdCallbacks.h',
       'background_sync/PeriodicSyncEvent.cpp',
       'background_sync/PeriodicSyncEvent.h',
       'background_sync/PeriodicSyncManager.cpp',

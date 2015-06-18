@@ -8,6 +8,7 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "core/dom/ExecutionContext.h"
+#include "modules/audio_output_devices/SetSinkIdCallbacks.h"
 #include "platform/Logging.h"
 
 namespace blink {
@@ -24,10 +25,26 @@ String HTMLMediaElementAudioOutputDevice::sinkId(HTMLMediaElement& element)
     return aodElement.m_sinkId;
 }
 
-ScriptPromise HTMLMediaElementAudioOutputDevice::setSinkId(ScriptState* scriptState, HTMLMediaElement& element, const String& newSinkId)
+void HTMLMediaElementAudioOutputDevice::setSinkId(const String& sinkId)
+{
+    m_sinkId = sinkId;
+}
+
+ScriptPromise HTMLMediaElementAudioOutputDevice::setSinkId(ScriptState* scriptState, HTMLMediaElement& element, const String& sinkId)
 {
     WTF_LOG(Media, __FUNCTION__);
-    return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(NotSupportedError, "Operation not supported"));
+    WebMediaPlayer* webMediaPlayer = element.webMediaPlayer();
+    if (!webMediaPlayer)
+        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(AbortError, "No media player available"));
+
+    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    HTMLMediaElementAudioOutputDevice& aodElement = HTMLMediaElementAudioOutputDevice::from(element);
+    if (sinkId == aodElement.m_sinkId)
+        resolver->resolve();
+    else
+        webMediaPlayer->setSinkId(sinkId, new SetSinkIdCallbacks(resolver, element, sinkId));
+
+    return resolver->promise();
 }
 
 const char* HTMLMediaElementAudioOutputDevice::supplementName()
