@@ -51,6 +51,8 @@ public:
         static PositionType selectionExtent(const VisibleSelection& selection) { return selection.extent(); }
         static PositionType selectionStart(const VisibleSelection& selection) { return selection.start(); }
         static PositionType selectionEnd(const VisibleSelection& selection) { return selection.end(); }
+        static VisiblePosition selectionVisibleStart(const VisibleSelection& selection) { return selection.visibleStart(); }
+        static VisiblePosition selectionVisibleEnd(const VisibleSelection& selection) { return selection.visibleEnd(); }
     };
 
     VisibleSelection();

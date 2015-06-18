@@ -752,8 +752,11 @@ void LayoutView::setSelection(const FrameSelection& selection)
     m_pendingSelection->setSelection(selection);
 }
 
-void LayoutView::commitPendingSelection()
+template <typename Strategy>
+void LayoutView::commitPendingSelectionAlgorithm()
 {
+    using PositionType = typename Strategy::PositionType;
+
     if (!hasPendingSelection())
         return;
     ASSERT(!needsLayout());
@@ -778,18 +781,18 @@ void LayoutView::commitPendingSelection()
     // Example: foo <a>bar</a>.  Imagine that a line wrap occurs after 'foo', and that 'bar' is selected.   If we pass [foo, 3]
     // as the start of the selection, the selection painting code will think that content on the line containing 'foo' is selected
     // and will fill the gap before 'bar'.
-    Position startPos = selection.start();
-    Position candidate = startPos.downstream();
+    PositionType startPos = Strategy::selectionStart(selection);
+    PositionType candidate = startPos.downstream();
     if (candidate.isCandidate())
         startPos = candidate;
-    Position endPos = selection.end();
+    PositionType endPos = Strategy::selectionEnd(selection);
     candidate = endPos.upstream();
     if (candidate.isCandidate())
         endPos = candidate;
 
     // We can get into a state where the selection endpoints map to the same VisiblePosition when a selection is deleted
     // because we don't yet notify the FrameSelection of text removal.
-    if (startPos.isNull() || endPos.isNull() || selection.visibleStart() == selection.visibleEnd())
+    if (startPos.isNull() || endPos.isNull() || Strategy::selectionVisibleStart(selection) == Strategy::selectionVisibleEnd(selection))
         return;
     LayoutObject* startLayoutObject = startPos.anchorNode()->layoutObject();
     LayoutObject* endLayoutObject = endPos.anchorNode()->layoutObject();
@@ -797,6 +800,11 @@ void LayoutView::commitPendingSelection()
         return;
     ASSERT(startLayoutObject->view() == this && endLayoutObject->view() == this);
     setSelection(startLayoutObject, startPos.deprecatedEditingOffset(), endLayoutObject, endPos.deprecatedEditingOffset());
+}
+
+void LayoutView::commitPendingSelection()
+{
+    commitPendingSelectionAlgorithm<VisibleSelection::InDOMTree>();
 }
 
 LayoutObject* LayoutView::selectionStart()
