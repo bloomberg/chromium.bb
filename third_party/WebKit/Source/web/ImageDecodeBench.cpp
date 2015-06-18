@@ -10,7 +10,7 @@ clocks to measure image decode time. Optionally applies color correction
 during image decoding on supported platforms (default off). Usage:
 
   % ninja -C /out/Release image_decode_bench &&
-     ./out/Release/image_decode_beanch file [iterations]
+     ./out/Release/image_decode_bench file [iterations]
 
 FIXME: Consider adding md5 checksum support to WTF. Use it to compute the
 decoded image frame md5 and output that value.
@@ -28,14 +28,11 @@ http://crbug.com/398235#c103 and http://crbug.com/258324#c5
 
 #include "config.h"
 
-#include "wtf/Threading.h"
 #include "platform/SharedBuffer.h"
-#include "platform/graphics/DeferredImageDecoder.h"
 #include "platform/image-decoders/ImageDecoder.h"
 #include "public/platform/Platform.h"
 #include "public/web/WebKit.h"
 #include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 
 #if defined(_WIN32)
@@ -351,7 +348,6 @@ int main(int argc, char* argv[])
 
     // Set image decoding Platform options.
 
-    DeferredImageDecoder::setEnabled(false); // Disable threaded image decodes.
 #if USE(QCMSLIB)
     ImageDecoder::qcmsOutputDeviceProfile(); // Initialize screen colorProfile.
 #endif
