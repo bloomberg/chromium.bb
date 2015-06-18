@@ -1662,8 +1662,8 @@ class DependencyGraphNode(object):
       if dependency.ref is None:
         continue
       if dependency.ref not in dependencies:
-        dependencies.add(dependency.ref)
         dependency.DeepDependencies(dependencies)
+        dependencies.add(dependency.ref)
 
     return dependencies
 
