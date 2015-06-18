@@ -33,6 +33,7 @@
     }
   };
 
+  /** @polymerBehavior */
   Polymer.PaperButtonBehavior = [
     Polymer.IronButtonState,
     Polymer.IronControlState,

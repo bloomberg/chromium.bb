@@ -243,6 +243,7 @@
         this.wave.style.transform = 'scale3d(' + scale + ',' + scale + ',1)';
       },
 
+      /** @param {Event=} event */
       downAction: function(event) {
         var xCenter = this.containerMetrics.width / 2;
         var yCenter = this.containerMetrics.height / 2;
@@ -287,6 +288,7 @@
         this.waveContainer.style.height = this.containerMetrics.size + 'px';
       },
 
+      /** @param {Event=} event */
       upAction: function(event) {
         if (!this.isMouseDown) {
           return;
@@ -410,11 +412,9 @@
         var ownerRoot = Polymer.dom(this).getOwnerRoot();
         var target;
 
-        if (ownerRoot) {
+        if (this.parentNode.nodeType == 11) { // DOCUMENT_FRAGMENT_NODE
           target = ownerRoot.host;
-        }
-
-        if (!target) {
+        } else {
           target = this.parentNode;
         }
 
@@ -428,8 +428,8 @@
       },
 
       attached: function() {
-        this._listen(this.target, 'up', this.upAction.bind(this));
-        this._listen(this.target, 'down', this.downAction.bind(this));
+        this.listen(this.target, 'up', 'upAction');
+        this.listen(this.target, 'down', 'downAction');
 
         if (!this.target.hasAttribute('noink')) {
           this.keyEventTarget = this.target;
@@ -455,6 +455,7 @@
         }, 1);
       },
 
+      /** @param {Event=} event */
       downAction: function(event) {
         if (this.holdDown && this.ripples.length > 0) {
           return;
@@ -469,6 +470,7 @@
         }
       },
 
+      /** @param {Event=} event */
       upAction: function(event) {
         if (this.holdDown) {
           return;

@@ -1,16 +1,15 @@
 
 
-  /** @polymerBehavior Polymer.IronButtonState */
+  /**
+   * @demo demo/index.html
+   * @polymerBehavior
+   */
   Polymer.IronButtonStateImpl = {
 
     properties: {
 
       /**
        * If true, the user is currently holding down the button.
-       *
-       * @attribute pressed
-       * @type boolean
-       * @default false
        */
       pressed: {
         type: Boolean,
@@ -23,10 +22,6 @@
       /**
        * If true, the button toggles the active state with each tap or press
        * of the spacebar.
-       *
-       * @attribute toggles
-       * @type boolean
-       * @default false
        */
       toggles: {
         type: Boolean,
@@ -36,10 +31,6 @@
 
       /**
        * If true, the button is a toggle and is currently in the active state.
-       *
-       * @attribute active
-       * @type boolean
-       * @default false
        */
       active: {
         type: Boolean,

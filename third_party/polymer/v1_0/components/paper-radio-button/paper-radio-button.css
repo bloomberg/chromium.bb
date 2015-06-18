@@ -31,12 +31,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   left: -16px;
   width: 48px;
   height: 48px;
-  color: var(--paper-radio-button-unchecked-ink-color);
+  color: var(--paper-radio-button-unchecked-ink-color, --primary-text-color);
   opacity: 0.6;
 }
 
 :host #ink[checked] {
-  color: var(--paper-radio-button-checked-ink-color);
+  color: var(--paper-radio-button-checked-ink-color, --default-primary-color);
 }
 
 :host #offRadio {
@@ -47,7 +47,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   height: 12px;
   border-radius: 50%;
   border: solid 2px;
-  border-color: var(--paper-radio-button-unchecked-color);
+  border-color: var(--paper-radio-button-unchecked-color, --primary-text-color);
   transition: border-color 0.28s;
 }
 
@@ -58,7 +58,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background-color: var(--paper-radio-button-checked-color);
+  background-color: var(--paper-radio-button-checked-color, --default-primary-color);
   -webkit-transform: scale(0);
   transform: scale(0);
   transition: -webkit-transform ease 0.28s;
@@ -66,7 +66,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 }
 
 :host([checked]) #offRadio {
-  border-color: var(--paper-radio-button-checked-color);
+  border-color: var(--paper-radio-button-checked-color, --default-primary-color);
 }
 
 :host([checked]) #onRadio {
@@ -81,7 +81,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   margin-left: 10px;
   white-space: normal;
   pointer-events: none;
-  color: var(--paper-radio-button-label-color);
+  color: var(--paper-radio-button-label-color, --primary-text-color);
 }
 
 #radioLabel[hidden] {
@@ -94,12 +94,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 }
 
 :host([disabled]) #offRadio {
-  border-color: var(--paper-radio-button-unchecked-color);
+  border-color: var(--paper-radio-button-unchecked-color, --primary-text-color);
   opacity: 0.5;
 }
 
 :host([disabled][checked]) #onRadio {
-  background-color: var(--paper-radio-button-unchecked-color);
+  background-color: var(--paper-radio-button-unchecked-color, --primary-text-color);
   opacity: 0.5;
 }
 

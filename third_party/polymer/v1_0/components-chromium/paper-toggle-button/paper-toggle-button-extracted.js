@@ -3,7 +3,7 @@
       is: 'paper-toggle-button',
 
       behaviors: [
-        Polymer.PaperRadioButtonBehavior
+        Polymer.PaperInkyFocusBehavior
       ],
 
       hostAttributes: {

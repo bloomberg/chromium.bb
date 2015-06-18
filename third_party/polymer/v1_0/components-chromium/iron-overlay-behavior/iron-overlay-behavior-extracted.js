@@ -1,6 +1,6 @@
 
 
-/*
+/**
 Use `Polymer.IronOverlayBehavior` to implement an element that can be hidden or shown, and displays
 on top of other content. It includes an optional backdrop, and can be used to implement a variety
 of UI controls including dialogs and drop downs. Multiple overlays may be displayed at once.
@@ -120,6 +120,17 @@ context. You should place this element as a child of `<body>` whenever possible.
       }
 
     },
+
+/**
+ * Fired after the `iron-overlay` opens.
+ * @event iron-overlay-opened
+ */
+
+/**
+ * Fired after the `iron-overlay` closes.
+ * @event iron-overlay-closed {{canceled: boolean}} detail -
+ *     canceled: True if the overlay was canceled.
+ */
 
     listeners: {
       'click': '_onClick',
@@ -402,14 +413,4 @@ context. You should place this element as a child of `<body>` whenever possible.
   /** @polymerBehavior */
   Polymer.IronOverlayBehavior = [Polymer.IronFitBehavior, Polymer.IronResizableBehavior, Polymer.IronOverlayBehaviorImpl];
 
-/*
- * Fired after the `iron-overlay` opens.
- * @event iron-overlay-opened
- */
-
-/*
- * Fired after the `iron-overlay` closes.
- * @event iron-overlay-closed {{canceled: boolean}} detail -
- *     canceled: True if the overlay was canceled.
- */
 

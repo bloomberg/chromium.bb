@@ -3,7 +3,7 @@
       is: 'paper-radio-button',
 
       behaviors: [
-        Polymer.PaperRadioButtonBehavior
+        Polymer.PaperInkyFocusBehavior
       ],
 
       hostAttributes: {

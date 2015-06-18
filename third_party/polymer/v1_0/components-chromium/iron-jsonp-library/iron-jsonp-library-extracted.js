@@ -12,6 +12,7 @@
     when possible instead of using this element.
 
     @hero hero.svg
+    @demo demo/index.html
     @polymerBehavior
    */
   Polymer.IronJsonpLibraryBehavior = {
@@ -87,14 +88,14 @@
     }
   };
 
-  /*
+  /**
    * LoaderMap keeps track of all Loaders
    */
   var LoaderMap = {
     apiMap: {}, // { hash -> Loader }
 
-    /*
-     * @param {function} notifyCallback loaded callback fn(result)
+    /**
+     * @param {Function} notifyCallback loaded callback fn(result)
      * @param {string} jsonpCallbackName name of jsonpcallback. If API does not provide it, leave empty. Optional.
      */
     require: function(url, notifyCallback, jsonpCallbackName) {
@@ -115,6 +116,7 @@
     }
   };
 
+  /** @constructor */
   var Loader = function(name, url, callbackName) {
     this.notifiers = [];  // array of notifyFn [ notifyFn* ]
 
@@ -173,7 +175,7 @@
       delete window[this.callbackName];
     },
 
-    notifyAll: function(notifyCallback) {
+    notifyAll: function() {
       this.notifiers.forEach( function(notifyCallback) {
         notifyCallback(this.error, this.result);
       }.bind(this));

@@ -109,7 +109,7 @@ This element is `display:block` by default, but you can set the `inline` attribu
       background: var(--paper-input-container-focus-color, --default-primary-color);
     }
 
-    .is-highlighted .focused-line {
+    .underline.is-highlighted .focused-line {
       -webkit-transform: none;
       transform: none;
       -webkit-transition: -webkit-transform 0.25s;
@@ -118,7 +118,7 @@ This element is `display:block` by default, but you can set the `inline` attribu
       @apply(--paper-transition-easing);
     }
 
-    .is-invalid .focused-line {
+    .underline.is-invalid .focused-line {
       background: var(--paper-input-container-invalid-color, --google-red-500);
 
       -webkit-transform: none;
@@ -305,10 +305,10 @@ This element is `display:block` by default, but you can set the `inline` attribu
       },
 
       _addons: {
-        type: Array,
-        value: function() {
-          return [];
-        }
+        type: Array
+        // do not set a default value here intentionally - it will be initialized lazily when a
+        // distributed child is attached, which may occur before configuration for this element
+        // in polyfill.
       },
 
       _inputHasContent: {
@@ -338,7 +338,7 @@ This element is `display:block` by default, but you can set the `inline` attribu
       _boundOnInput: {
         type: Function,
         value: function() {
-          this._onInput.bind(this)
+          return this._onInput.bind(this);
         }
       },
 
@@ -369,6 +369,9 @@ This element is `display:block` by default, but you can set the `inline` attribu
     },
 
     ready: function() {
+      if (!this._addons) {
+        this._addons = [];
+      }
       this.addEventListener('focus', this._boundOnFocus, true);
       this.addEventListener('blur', this._boundOnBlur, true);
       if (this.attrForValue) {
@@ -383,8 +386,16 @@ This element is `display:block` by default, but you can set the `inline` attribu
     },
 
     _onAddonAttached: function(event) {
-      this._addons.push(event.target);
-      this._handleValue(this._inputElement);
+      if (!this._addons) {
+        this._addons = [];
+      }
+      var target = event.target;
+      if (this._addons.indexOf(target) === -1) {
+        this._addons.push(target);
+        if (this.isAttached) {
+          this._handleValue(this._inputElement);
+        }
+      }
     },
 
     _onFocus: function() {

@@ -41,7 +41,7 @@ or, if you would prefer to do it in CSS, just give `html`, `body`, and `paper-sc
     }
 
 `paper-scroll-header-panel` works well with `paper-toolbar` but can use any element
-that represents a header by adding a `core-header` class to it.
+that represents a header by adding a `paper-header` class to it.
 
     <paper-scroll-header-panel>
       <paper-toolbar>Header</paper-toolbar>
@@ -378,7 +378,7 @@ Styling scroll-header-panel:
     _condenseHeader: function(y) {
       var reset = (y === null);
 
-      // adjust top bar in core-header so the top bar stays at the top
+      // adjust top bar in paper-header so the top bar stays at the top
       if (!this.scrollAwayTopbar && this.header.$ && this.header.$.topBar) {
         this._translateY(this.header.$.topBar.style,
             reset ? null : Math.min(y, this._headerMargin));
@@ -406,6 +406,7 @@ Styling scroll-header-panel:
       setTransform(s, t);
     },
 
+    /** @param {Event=} event */
     _scroll: function(event) {
       if (!this.header) {
         return;
@@ -432,7 +433,7 @@ Styling scroll-header-panel:
       this._y = y;
 
       if (event) {
-        this.fire('content-scroll', {target: this.scroller}, this, false);
+        this.fire('content-scroll', {target: this.scroller}, {cancelable: false});
       }
     }
 

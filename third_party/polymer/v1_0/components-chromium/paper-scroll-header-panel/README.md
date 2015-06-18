@@ -24,7 +24,7 @@ paper-scroll-header-panel {
   height: 100%;
 }
 ```
-`paper-scroll-header-panel` works well with `paper-toolbar` but can use any element that represents a header by adding a core-header class to it.
+`paper-scroll-header-panel` works well with `paper-toolbar` but can use any element that represents a header by adding a `paper-header` class to it.
 
 ```html
 <paper-scroll-header-panel>

@@ -3,7 +3,7 @@
       is: 'paper-checkbox',
 
       behaviors: [
-        Polymer.PaperRadioButtonBehavior
+        Polymer.PaperInkyFocusBehavior
       ],
 
       hostAttributes: {
@@ -76,12 +76,14 @@
         if (checked) {
           return 'checked';
         }
+        return '';
       },
 
       _computeCheckmarkClass: function(checked) {
         if (!checked) {
           return 'hidden';
         }
+        return '';
       }
     })
   

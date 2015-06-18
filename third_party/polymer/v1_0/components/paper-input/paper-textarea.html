@@ -35,12 +35,18 @@ style this element.
 <dom-module id="paper-textarea">
   <template>
 
-    <paper-input-container no-label-float$="[[noLabelFloat]]" auto-validate$="[[autoValidate]]" disabled$="[[disabled]]" invalid="[[invalid]]">
+    <paper-input-container no-label-float$="[[noLabelFloat]]" always-float-label="[[_computeAlwaysFloatLabel(alwaysFloatLabel,placeholder)]]" auto-validate$="[[autoValidate]]" disabled$="[[disabled]]" invalid="[[invalid]]">
 
       <label hidden$="[[!label]]">[[label]]</label>
 
       <iron-autogrow-textarea id="input" class="paper-input-input"
         bind-value="{{value}}"
+        autocomplete$="[[autocomplete]]"
+        autofocus$="[[autofocus]]"
+        inputmode$="[[inputmode]]"
+        name$="[[name]]"
+        placeholder$="[[placeholder]]"
+        readonly$="[[readonly]]"
         required$="[[required]]"
         maxlength$="[[maxlength]]"></iron-autogrow-textarea>
 

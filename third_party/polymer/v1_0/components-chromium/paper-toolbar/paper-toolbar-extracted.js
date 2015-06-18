@@ -96,7 +96,7 @@
         for (var content, index = 0; content = contents[index]; index++) {
           var nodes = Polymer.dom(content).getDistributedNodes();
           for (var node, jndex = 0; node = nodes[jndex]; jndex++) {
-            if (node.hasAttribute && node.hasAttribute('title')) {
+            if (node.classList && node.classList.contains('title')) {
               if (node.id) {
                 labelledBy.push(node.id);
               } else {

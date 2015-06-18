@@ -227,7 +227,7 @@
     _condenseHeader: function(y) {
       var reset = (y === null);
 
-      // adjust top bar in core-header so the top bar stays at the top
+      // adjust top bar in paper-header so the top bar stays at the top
       if (!this.scrollAwayTopbar && this.header.$ && this.header.$.topBar) {
         this._translateY(this.header.$.topBar.style,
             reset ? null : Math.min(y, this._headerMargin));
@@ -255,6 +255,7 @@
       setTransform(s, t);
     },
 
+    /** @param {Event=} event */
     _scroll: function(event) {
       if (!this.header) {
         return;
@@ -281,7 +282,7 @@
       this._y = y;
 
       if (event) {
-        this.fire('content-scroll', {target: this.scroller}, this, false);
+        this.fire('content-scroll', {target: this.scroller}, {cancelable: false});
       }
     }
 

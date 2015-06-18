@@ -126,7 +126,6 @@
      * @param {String|Number} icon The name or index of the icon to apply.
      * @param {String} theme (optional) The name or index of the icon to apply.
      * @param {Number} scale (optional, defaults to 1) Icon scaling factor.
-     * @return {Element} The applied icon element.
      */
     applyIcon: function(element, icon, theme, scale) {
       this._validateIconMap();

@@ -1,17 +1,15 @@
 
 
-  /** @polymerBehavior */
-
+  /**
+   * @demo demo/index.html
+   * @polymerBehavior
+   */
   Polymer.IronControlState = {
 
     properties: {
 
       /**
        * If true, the element currently has focus.
-       *
-       * @attribute focused
-       * @type boolean
-       * @default false
        */
       focused: {
         type: Boolean,
@@ -23,10 +21,6 @@
 
       /**
        * If true, the user cannot interact with this element.
-       *
-       * @attribute disabled
-       * @type boolean
-       * @default false
        */
       disabled: {
         type: Boolean,
@@ -38,17 +32,20 @@
 
       _oldTabIndex: {
         type: Number
+      },
+
+      _boundFocusBlurHandler: {
+        type: Function,
+        value: function() {
+          return this._focusBlurHandler.bind(this);
+        }
       }
+
     },
 
     observers: [
       '_changedControlState(focused, disabled)'
     ],
-
-    listeners: {
-      focus: '_focusHandler',
-      blur: '_blurHandler'
-    },
 
     ready: function() {
       // TODO(sjmiles): ensure read-only property is valued so the compound
@@ -56,14 +53,23 @@
       if (this.focused === undefined) {
         this._setFocused(false);
       }
+      this.addEventListener('focus', this._boundFocusBlurHandler, true);
+      this.addEventListener('blur', this._boundFocusBlurHandler, true);
     },
 
-    _focusHandler: function() {
-      this._setFocused(true);
-    },
-
-    _blurHandler: function() {
-      this._setFocused(false);
+    _focusBlurHandler: function(event) {
+      var target = event.path ? event.path[0] : event.target;
+      if (target === this) {
+        var focused = event.type === 'focus';
+        this._setFocused(focused);
+      } else if (!this.shadowRoot) {
+        event.stopPropagation();
+        this.fire(event.type, {sourceEvent: event}, {
+          node: this,
+          bubbles: event.bubbles,
+          cancelable: event.cancelable
+        });
+      }
     },
 
     _disabledChanged: function(disabled, old) {

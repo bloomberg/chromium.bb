@@ -21,27 +21,27 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 }
 
 :host .toggle-bar {
-  background-color: var(--paper-toggle-button-unchecked-bar-color);
+  background-color: var(--paper-toggle-button-unchecked-bar-color, #000000);
 }
 
 :host .toggle-button {
-  background-color: var(--paper-toggle-button-unchecked-button-color);
+  background-color: var(--paper-toggle-button-unchecked-button-color, --paper-grey-50);
 }
 
 :host([checked]) .toggle-bar {
-  background-color: var(--paper-toggle-button-checked-bar-color);
+  background-color: var(--paper-toggle-button-checked-bar-color, --google-green-500);
 }
 
 :host([checked]) .toggle-button {
-  background-color: var(--paper-toggle-button-checked-button-color);
+  background-color: var(--paper-toggle-button-checked-button-color, --google-green-500);
 }
 
 :host .toggle-ink {
-  color: var(--paper-toggle-button-unchecked-ink-color);
+  color: var(--paper-toggle-button-unchecked-ink-color, --primary-text-color);
 }
 
 :host([checked]) .toggle-ink {
-  color: var(--paper-toggle-button-checked-ink-color);
+  color: var(--paper-toggle-button-checked-ink-color, --google-green-500);
 }
 
 /* ID selectors should not be overriden by users. */

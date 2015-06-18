@@ -24,10 +24,10 @@ Example setting size to 32px x 32px:
 
     <iron-icon class="big" src="big_star.png"></iron-icon>
 
-    <style>
+    <style is="custom-style">
       .big {
-        height: 32px;
-        width: 32px;
+        --iron-icon-height: 32px;
+        --iron-icon-width: 32px;
       }
     </style>
 
@@ -56,7 +56,7 @@ Example of using an icon named `cherry` from a custom iconset with the ID `fruit
 See [iron-iconset](#iron-iconset) and [iron-iconset-svg](#iron-iconset-svg) for more information about
 how to create a custom iconset.
 
-See [iron-icons](http://www.polymer-project.org/components/iron-icons/demo.html) for the default set of icons.
+See [iron-icons](https://elements.polymer-project.org/elements/iron-icons?view=demo:demo/index.html) for the default set of icons.
 
 
 ### Styling
@@ -75,13 +75,6 @@ Custom property | Description | Default
 @homepage polymer.github.io
 -->
 
-<style is="custom-style">
-  :root {
-    --iron-icon-width: 24px;
-    --iron-icon-height: 24px;
-  }
-</style>
-
 <dom-module id="iron-icon">
 
   <style>
@@ -94,8 +87,8 @@ Custom property | Description | Default
 
       fill: currentcolor;
 
-      width: var(--iron-icon-width);
-      height: var(--iron-icon-height);
+      width: var(--iron-icon-width, 24px);
+      height: var(--iron-icon-height, 24px);
     }
   </style>
 
@@ -184,4 +177,3 @@ Custom property | Description | Default
   </script>
 
 </dom-module>
-

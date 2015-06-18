@@ -10,7 +10,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../paper-ripple/paper-ripple.html">
 <link rel="import" href="../paper-styles/default-theme.html">
-<link rel="import" href="../paper-behaviors/paper-radio-button-behavior.html">
+<link rel="import" href="../paper-behaviors/paper-inky-focus-behavior.html">
 
 <!--
 `paper-radio-button` is a button that can be either checked or unchecked.
@@ -42,18 +42,6 @@ Custom property | Description | Default
 @demo demo/index.html
 -->
 
-<style is="custom-style">
-  :root {
-    --paper-radio-button-unchecked-color: var(--primary-text-color);
-    --paper-radio-button-unchecked-ink-color: var(--primary-text-color);
-
-    --paper-radio-button-checked-color: var(--default-primary-color);
-    --paper-radio-button-checked-ink-color: var(--default-primary-color);
-
-    --paper-radio-button-label-color: var(--primary-text-color);
-  }
-</style>
-
 <dom-module id="paper-radio-button">
 
   <link rel="import" type="css" href="paper-radio-button.css">
@@ -75,7 +63,7 @@ Custom property | Description | Default
       is: 'paper-radio-button',
 
       behaviors: [
-        Polymer.PaperRadioButtonBehavior
+        Polymer.PaperInkyFocusBehavior
       ],
 
       hostAttributes: {

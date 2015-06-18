@@ -107,7 +107,7 @@ This element is `display:block` by default, but you can set the `inline` attribu
       background: var(--paper-input-container-focus-color, --default-primary-color);
     }
 
-    .is-highlighted .focused-line {
+    .underline.is-highlighted .focused-line {
       -webkit-transform: none;
       transform: none;
       -webkit-transition: -webkit-transform 0.25s;
@@ -116,7 +116,7 @@ This element is `display:block` by default, but you can set the `inline` attribu
       @apply(--paper-transition-easing);
     }
 
-    .is-invalid .focused-line {
+    .underline.is-invalid .focused-line {
       background: var(--paper-input-container-invalid-color, --google-red-500);
 
       -webkit-transform: none;

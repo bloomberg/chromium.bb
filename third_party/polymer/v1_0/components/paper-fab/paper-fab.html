@@ -42,7 +42,8 @@ The following custom properties and mixins are available for styling:
 
 Custom property | Description | Default
 ----------------|-------------|----------
-`--paper-fab-background` | The background color of the button | `--paper-indigo-500`
+`--paper-fab-background` | The background color of the button | `--accent-color`
+`--paper-fab-keyboard-focus-background` | The background color of the button when focused | `--paper-pink-900`
 `--paper-fab-disabled-background` | The background color of the button when it's disabled | `--paper-grey-300`
 `--paper-fab-disabled-text` | The text color of the button when it's disabled | `--paper-grey-500`
 `--paper-fab` | Mixin applied to the button | `{}`
@@ -71,7 +72,7 @@ Custom property | Description | Default
       min-width: 0;
       width: 56px;
       height: 56px;
-      background: var(--paper-fab-background, --paper-indigo-500);
+      background: var(--paper-fab-background, --accent-color);
       color: var(--text-primary-color);
       border-radius: 50%;
       padding: 16px;
@@ -97,11 +98,18 @@ Custom property | Description | Default
 
     paper-material {
       border-radius: inherit;
+      @apply(--layout-fit);
+      @apply(--layout-vertical);
+      @apply(--layout-center-center);
+    }
+
+    .keyboard-focus {
+      background: var(--paper-fab-keyboard-focus-background, --paper-pink-900);
     }
   </style>
   <template>
     <paper-ripple></paper-ripple>
-    <paper-material class="content fit flex layout vertical center-center" elevation="[[elevation]]" animated>
+    <paper-material class$="[[_computeContentClass(receivedFocusFromKeyboard)]]" elevation="[[_elevation]]" animated>
       <iron-icon id="icon" src="[[src]]" icon="[[icon]]"></iron-icon>
     </paper-material>
   </template>
@@ -153,6 +161,14 @@ Custom property | Description | Default
         type: Boolean,
         value: false
       }
+    },
+
+    _computeContentClass: function(receivedFocusFromKeyboard) {
+      var className = 'content';
+      if (receivedFocusFromKeyboard) {
+        className += ' keyboard-focus';
+      }
+      return className;
     }
 
   });

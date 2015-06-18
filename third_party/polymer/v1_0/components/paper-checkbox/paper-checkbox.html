@@ -11,7 +11,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../paper-ripple/paper-ripple.html">
 <link rel="import" href="../paper-styles/default-theme.html">
-<link rel="import" href="../paper-behaviors/paper-radio-button-behavior.html">
+<link rel="import" href="../paper-behaviors/paper-inky-focus-behavior.html">
 
 <!--
 
@@ -42,18 +42,6 @@ Custom property | Description | Default
 @demo demo/index.html
 -->
 
-<style is="custom-style">
-  :root {
-    --paper-checkbox-unchecked-color: var(--primary-text-color);
-    --paper-checkbox-unchecked-ink-color: var(--primary-text-color);
-
-    --paper-checkbox-checked-color: var(--default-primary-color);
-    --paper-checkbox-checked-ink-color: var(--default-primary-color);
-
-    --paper-checkbox-label-color: var(--primary-text-color);
-  }
-</style>
-
 <dom-module id="paper-checkbox">
   <link rel="import" type="css" href="paper-checkbox.css">
 
@@ -75,7 +63,7 @@ Custom property | Description | Default
       is: 'paper-checkbox',
 
       behaviors: [
-        Polymer.PaperRadioButtonBehavior
+        Polymer.PaperInkyFocusBehavior
       ],
 
       hostAttributes: {
@@ -148,12 +136,14 @@ Custom property | Description | Default
         if (checked) {
           return 'checked';
         }
+        return '';
       },
 
       _computeCheckmarkClass: function(checked) {
         if (!checked) {
           return 'hidden';
         }
+        return '';
       }
     })
   </script>

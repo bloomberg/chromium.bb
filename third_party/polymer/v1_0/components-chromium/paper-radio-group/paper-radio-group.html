@@ -7,7 +7,7 @@ The complete set of contributors may be found at http://polymer.github.io/CONTRI
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 --><html><head><link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../iron-selector/iron-selector.html">
+<link rel="import" href="../iron-selector/iron-selectable.html">
 <link rel="import" href="../paper-radio-button/paper-radio-button.html">
 <link rel="import" href="../iron-a11y-keys-behavior/iron-a11y-keys-behavior.html">
 
@@ -40,15 +40,13 @@ information about `paper-radio-button`.
       display: inline-block;
     }
 
-    iron-selector ::content > * {
+    :host ::content > * {
       padding: 12px;
     }
   </style>
 
   <template>
-    <iron-selector selected="{{selected}}" attr-for-selected="name" selectable="paper-radio-button">
       <content id="items" select="*"></content>
-    </iron-selector>
   </template>
 
 </dom-module>

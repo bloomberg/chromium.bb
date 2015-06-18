@@ -25,11 +25,12 @@
 
     behaviors: [
       Polymer.IronRangeBehavior,
-      Polymer.IronControlState
+      Polymer.IronA11yKeysBehavior,
+      Polymer.IronFormElementBehavior,
+      Polymer.PaperInkyFocusBehavior
     ],
 
     properties: {
-
       /**
        * If true, the slider thumb snaps to tick marks evenly spaced based
        * on the `step` property value.
@@ -42,7 +43,7 @@
 
       /**
        * If true, a pin with numeric value label is shown when the slider thumb
-       * is pressed.  Use for settings for which users need to know the exact
+       * is pressed. Use for settings for which users need to know the exact
        * value of the setting.
        */
       pin: {
@@ -114,6 +115,7 @@
       },
 
       markers: {
+        type: Array,
         readOnly: true,
         value: []
       },
@@ -127,8 +129,19 @@
       '_immediateValueChanged(immediateValue)'
     ],
 
+    hostAttributes: {
+      role: 'slider',
+      tabindex: 0
+    },
+
+    keyBindings: {
+      'left down pagedown home': '_decrementKey',
+      'right up pageup end': '_incrementKey'
+    },
+
     ready: function() {
       // issue polymer/polymer#1305
+
       this.async(function() {
         this._updateKnob(this.value);
         this._updateInputValue();
@@ -169,11 +182,12 @@
     },
 
     _immediateValueChanged: function() {
-      if (!this.dragging) {
+      if (this.dragging) {
+        this.fire('immediate-value-change');
+      } else {
         this.value = this.immediateValue;
       }
       this._updateInputValue();
-      this.fire('immediate-value-change');
     },
 
     _secondaryProgressChanged: function() {
@@ -182,23 +196,26 @@
 
     _updateInputValue: function() {
       if (this.editable) {
-        this.$$('#input').value = this.immediateValue;
+        this.$$('#input').value = this.immediateValue.toString();
       }
     },
 
     _expandKnob: function() {
+      this.$.ink.holdDown = false;
       this._setExpand(true);
     },
 
     _resetKnob: function() {
-      this._expandJob && this._expandJob.stop();
+      this.cancelDebouncer('expandKnob');
       this._setExpand(false);
+      this.$.ink.hidden = true;
     },
 
     _positionKnob: function(ratio) {
-      this._setImmediateValue(this._calcStep(this._calcKnobPosition(ratio)) || 0);
-      this._setRatio(this.snaps ? this._calcRatio(this.immediateValue) : ratio);
-      this.$.sliderKnob.style.left = this.ratio * 100 + '%';
+      this._setImmediateValue(this._calcStep(this._calcKnobPosition(ratio)));
+      this._setRatio(this._calcRatio(this.immediateValue));
+
+      this.$.sliderKnob.style.left = (this.ratio * 100) + '%';
     },
 
     _inputChange: function() {
@@ -210,75 +227,104 @@
       return (this.max - this.min) * ratio + this.min;
     },
 
-    _onTrack: function(e) {
+    _onTrack: function(event) {
       switch (event.detail.state) {
-        case 'end':
-          this._trackEnd(event);
+        case 'start':
+          this._trackStart(event);
           break;
         case 'track':
           this._trackX(event);
           break;
-        case 'start':
-          this._trackStart(event);
+        case 'end':
+          this._trackEnd();
           break;
       }
     },
 
-    _trackStart: function(e) {
+    _trackStart: function(event) {
       this._w = this.$.sliderBar.offsetWidth;
       this._x = this.ratio * this._w;
       this._startx = this._x || 0;
       this._minx = - this._startx;
       this._maxx = this._w - this._startx;
       this.$.sliderKnob.classList.add('dragging');
+
       this._setDragging(true);
-      e.preventDefault();
     },
 
     _trackX: function(e) {
       if (!this.dragging) {
         this._trackStart(e);
       }
-      var x = Math.min(this._maxx, Math.max(this._minx, e.detail.dx));
-      this._x = this._startx + x;
-      this._setImmediateValue(this._calcStep(
-          this._calcKnobPosition(this._x / this._w)) || 0);
-      var s =  this.$.sliderKnob.style;
-      s.transform = s.webkitTransform = 'translate3d(' + (this.snaps ?
-          (this._calcRatio(this.immediateValue) * this._w) - this._startx : x) + 'px, 0, 0)';
+
+      var dx = Math.min(this._maxx, Math.max(this._minx, e.detail.dx));
+      this._x = this._startx + dx;
+
+      var immediateValue = this._calcStep(this._calcKnobPosition(this._x / this._w));
+      this._setImmediateValue(immediateValue);
+
+      // update knob's position
+      var translateX = ((this._calcRatio(immediateValue) * this._w) - this._startx);
+      this.translate3d(translateX + 'px', 0, 0, this.$.sliderKnob);
     },
 
     _trackEnd: function() {
-      var s =  this.$.sliderKnob.style;
-      s.transform = s.webkitTransform = '';
+      var s = this.$.sliderKnob.style;
+
       this.$.sliderKnob.classList.remove('dragging');
       this._setDragging(false);
       this._resetKnob();
       this.value = this.immediateValue;
+
+      s.transform = s.webkitTransform = '';
+
       this.fire('change');
     },
 
-    _knobdown: function(e) {
-      e.preventDefault();
+    _knobdown: function(event) {
       this._expandKnob();
+
+      // cancel selection
+      event.detail.sourceEvent.preventDefault();
+
+      // set the focus manually because we will called prevent default
+      this.focus();
     },
 
-    _bardown: function(e) {
-      e.preventDefault();
-      this._setTransiting(true);
+    _bardown: function(event) {
+      this.$.ink.hidden = true;
+
+      event.preventDefault();
+
       this._w = this.$.sliderBar.offsetWidth;
       var rect = this.$.sliderBar.getBoundingClientRect();
-      var ratio = (e.detail.x - rect.left) / this._w;
+      var ratio = (event.detail.x - rect.left) / this._w;
+      var prevRatio = this.ratio;
+
+      this._setTransiting(true);
+
       this._positionKnob(ratio);
-      this._expandJob = this.debounce(this._expandJob, this._expandKnob, 60);
+
+      this.debounce('expandKnob', this._expandKnob, 60);
+
+      // if the ratio doesn't change, sliderKnob's animation won't start
+      // and `_knobTransitionEnd` won't be called
+      // Therefore, we need to manually update the `transiting` state
+
+      if (prevRatio === this.ratio) {
+        this._setTransiting(false);
+      }
 
       this.async(function() {
         this.fire('change');
       });
+
+      // cancel selection
+      event.detail.sourceEvent.preventDefault();
     },
 
-    _knobTransitionEnd: function(e) {
-      if (e.target === this.$.sliderKnob) {
+    _knobTransitionEnd: function(event) {
+      if (event.target === this.$.sliderKnob) {
         this._setTransiting(false);
       }
     },
@@ -295,14 +341,14 @@
     _getClassNames: function() {
       var classes = {};
 
-      classes['disabled'] = this.disabled;
-      classes['pin'] = this.pin;
-      classes['snaps'] = this.snaps;
-      classes['ring'] = this.immediateValue <= this.min;
-      classes['expand'] = this.expand;
-      classes['dragging'] = this.dragging;
-      classes['transiting'] = this.transiting;
-      classes['editable'] = this.editable;
+      classes.disabled = this.disabled;
+      classes.pin = this.pin;
+      classes.snaps = this.snaps;
+      classes.ring = this.immediateValue <= this.min;
+      classes.expand = this.expand;
+      classes.dragging = this.dragging;
+      classes.transiting = this.transiting;
+      classes.editable = this.editable;
 
       return Object.keys(classes).filter(
         function(className) {
@@ -310,8 +356,8 @@
         }).join(' ');
     },
 
-    _incrementKey: function(ev, keys) {
-      if (keys.key === 'end') {
+    _incrementKey: function(event) {
+      if (event.detail.key === 'end') {
         this.value = this.max;
       } else {
         this.increment();
@@ -319,8 +365,8 @@
       this.fire('change');
     },
 
-    _decrementKey: function(ev, keys) {
-      if (keys.key === 'home') {
+    _decrementKey: function(event) {
+      if (event.detail.key === 'home') {
         this.value = this.min;
       } else {
         this.decrement();

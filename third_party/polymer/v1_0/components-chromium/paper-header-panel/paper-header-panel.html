@@ -64,7 +64,7 @@ Mode | Description
 `scroll` | The header keeps its seam with the panel, and is pushed off screen.
 `cover` | The panel covers the whole `paper-header-panel` including the header. This allows user to style the panel in such a way that the panel is partially covering the header.
 
-Example: 
+Example:
 
     <paper-header-panel mode="waterfall">
       <div class="paper-header">standard</div>
@@ -123,6 +123,17 @@ To change the panel container in different modes:
 
       /* Create a stack context, we will need it for the shadow*/
       z-index: 0;
+    }
+
+    :root {
+      /**
+       * Default paper header panel shadow
+       */
+      --paper-header-panel-shadow: {
+        height: 6px;
+        bottom: -6px;
+        box-shadow: inset 0px 5px 6px -3px rgba(0, 0, 0, 0.4);
+      };
     }
 
     #mainContainer {
@@ -227,18 +238,5 @@ To change the panel container in different modes:
   </template>
 
 </dom-module>
-
-<style is="custom-style">
-  :root {
-    /**
-     * Default paper header panel shadow
-     */
-    --paper-header-panel-shadow: {
-      height: 6px;
-      bottom: -6px;
-      box-shadow: inset 0px 5px 6px -3px rgba(0, 0, 0, 0.4);
-    };
-  }
-</style>
 
 <script src="paper-header-panel-extracted.js"></script></body></html>

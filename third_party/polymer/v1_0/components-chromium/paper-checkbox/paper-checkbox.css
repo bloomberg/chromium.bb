@@ -37,12 +37,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   left: -15px;
   width: 48px;
   height: 48px;
-  color: var(--paper-checkbox-unchecked-ink-color);
+  color: var(--paper-checkbox-unchecked-ink-color, --primary-text-color);
   opacity: 0.6;
 }
 
 :host #ink[checked] {
-  color: var(--paper-checkbox-checked-ink-color);
+  color: var(--paper-checkbox-checked-ink-color, --default-primary-color);
 }
 
 :host #checkbox {
@@ -50,7 +50,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   box-sizing: border-box;
   height: 100%;
   border: solid 2px;
-  border-color: var(--paper-checkbox-unchecked-color);
+  border-color: var(--paper-checkbox-unchecked-color, --primary-text-color);
   border-radius: 2px;
   pointer-events: none;
   -webkit-transition: background-color 140ms, border-color 140ms;
@@ -94,8 +94,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 }
 
 :host #checkbox.checked {
-  background-color: var(--paper-checkbox-checked-color);
-  border-color: var(--paper-checkbox-checked-color);
+  background-color: var(--paper-checkbox-checked-color, --default-primary-color);
+  border-color: var(--paper-checkbox-checked-color, --default-primary-color);
 }
 
 :host #checkmark {
@@ -122,7 +122,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   padding-left: 8px;
   white-space: normal;
   pointer-events: none;
-  color: var(--paper-checkbox-label-color);
+  color: var(--paper-checkbox-label-color, --primary-text-color);
 }
 
 #checkboxLabel[hidden] {
@@ -136,11 +136,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 :host([disabled]) #checkbox {
   opacity: 0.5;
-  border-color: var(--paper-checkbox-unchecked-color);
+  border-color: var(--paper-checkbox-unchecked-color, --primary-text-color);
 }
 
 :host([disabled][checked]) #checkbox {
-  background-color: var(--paper-checkbox-unchecked-color);
+  background-color: var(--paper-checkbox-unchecked-color, --primary-text-color);
   opacity: 0.5;
 }
 

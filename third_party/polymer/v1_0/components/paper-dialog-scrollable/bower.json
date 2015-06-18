@@ -1,6 +1,6 @@
 {
   "name": "paper-dialog-scrollable",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A scrollable area used inside the material design dialog",
   "authors": [
     "The Polymer Authors"

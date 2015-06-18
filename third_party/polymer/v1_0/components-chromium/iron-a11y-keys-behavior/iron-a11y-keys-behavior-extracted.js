@@ -228,6 +228,7 @@
      * The `keys-pressed` event will fire when one of the key combinations set with the
      * `keys` property is pressed.
      *
+     * @demo demo/index.html
      * @polymerBehavior IronA11yKeysBehavior
      */
     Polymer.IronA11yKeysBehavior = {
@@ -243,6 +244,7 @@
         },
 
         _boundKeyHandlers: {
+          type: Array,
           value: function() {
             return [];
           }
@@ -251,6 +253,7 @@
         // We use this due to a limitation in IE10 where instances will have
         // own properties of everything on the "prototype".
         _imperativeKeyBindings: {
+          type: Object,
           value: function() {
             return {};
           }

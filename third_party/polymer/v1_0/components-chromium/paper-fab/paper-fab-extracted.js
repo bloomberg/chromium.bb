@@ -45,6 +45,14 @@
         type: Boolean,
         value: false
       }
+    },
+
+    _computeContentClass: function(receivedFocusFromKeyboard) {
+      var className = 'content';
+      if (receivedFocusFromKeyboard) {
+        className += ' keyboard-focus';
+      }
+      return className;
     }
 
   });

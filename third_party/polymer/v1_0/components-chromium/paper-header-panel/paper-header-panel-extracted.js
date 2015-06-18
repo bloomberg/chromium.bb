@@ -213,7 +213,7 @@
             header.classList.remove(this.tallClass);
             this.async(function() {
               header.classList.remove('animate');
-            }, null, animateDuration);
+            }, animateDuration);
           } else {
             header.classList.toggle('animate', configs.tallMode[newMode]);
           }
@@ -236,7 +236,7 @@
 
       _scroll: function(e) {
         this._keepScrollingState();
-        this.fire('content-scroll', {target: this.scroller}, this, false);
+        this.fire('content-scroll', {target: this.scroller}, {bubbles: false});
       },
 
       _getScrollerForMode: function(mode) {

@@ -1,6 +1,6 @@
 {
   "name": "iron-jsonp-library",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Loads jsonp libraries",
   "authors": [
     "Aleks Totic <a@totic.org>",
@@ -20,12 +20,13 @@
     "/demo/"
   ],
   "dependencies": {
-    "polymer": "Polymer/polymer#^1.0.0",
-    "iron-ajax": "PolymerElements/iron-ajax#^1.0.0"
+    "polymer": "Polymer/polymer#^1.0.0"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
     "web-component-tester": "*",
-    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0",
+    "paper-styles": "PolymerElements/paper-styles#^1.0.2",
+    "paper-spinner": "PolymerElements/paper-spinner#^1.0.1"
   }
 }

@@ -10,6 +10,7 @@
 
       /**
        * The dialog element that implements `Polymer.PaperDialogBehavior` containing this element.
+       * @type {?Node}
        */
       dialogElement: {
         type: Object,

@@ -2,9 +2,13 @@
   Polymer({
     is: 'paper-icon-button',
 
+    hostAttributes: {
+      role: 'button',
+      tabindex: '0'
+    },
+
     behaviors: [
-      Polymer.PaperButtonBehavior,
-      Polymer.PaperRadioButtonBehavior
+      Polymer.PaperInkyFocusBehavior
     ],
 
     properties: {
@@ -23,6 +27,23 @@
        */
       icon: {
         type: String
+      },
+
+      /**
+       * Specifies the alternate text for the button, for accessibility.
+       */
+      alt: {
+        type: String,
+        observer: "_altChanged"
+      }
+    },
+
+    _altChanged: function(newValue, oldValue) {
+      var label = this.getAttribute('aria-label');
+
+      // Don't stomp over a user-set aria-label.
+      if (!label || oldValue == label) {
+        this.setAttribute('aria-label', newValue);
       }
     }
   });

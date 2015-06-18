@@ -60,10 +60,10 @@
       },
 
       _addons: {
-        type: Array,
-        value: function() {
-          return [];
-        }
+        type: Array
+        // do not set a default value here intentionally - it will be initialized lazily when a
+        // distributed child is attached, which may occur before configuration for this element
+        // in polyfill.
       },
 
       _inputHasContent: {
@@ -93,7 +93,7 @@
       _boundOnInput: {
         type: Function,
         value: function() {
-          this._onInput.bind(this)
+          return this._onInput.bind(this);
         }
       },
 
@@ -124,6 +124,9 @@
     },
 
     ready: function() {
+      if (!this._addons) {
+        this._addons = [];
+      }
       this.addEventListener('focus', this._boundOnFocus, true);
       this.addEventListener('blur', this._boundOnBlur, true);
       if (this.attrForValue) {
@@ -138,8 +141,16 @@
     },
 
     _onAddonAttached: function(event) {
-      this._addons.push(event.target);
-      this._handleValue(this._inputElement);
+      if (!this._addons) {
+        this._addons = [];
+      }
+      var target = event.target;
+      if (this._addons.indexOf(target) === -1) {
+        this._addons.push(target);
+        if (this.isAttached) {
+          this._handleValue(this._inputElement);
+        }
+      }
     },
 
     _onFocus: function() {

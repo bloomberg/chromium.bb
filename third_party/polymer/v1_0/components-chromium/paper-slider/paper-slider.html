@@ -6,11 +6,14 @@ The complete set of authors may be found at http://polymer.github.io/AUTHORS
 The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS
---><html><head><link rel="import" href="../paper-styles/paper-styles.html">
-<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
-<link rel="import" href="../iron-behaviors/iron-control-state.html">
+--><html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-styles/paper-styles.html">
 <link rel="import" href="../paper-progress/paper-progress.html">
 <link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../paper-behaviors/paper-inky-focus-behavior.html">
+<link rel="import" href="../paper-ripple/paper-ripple.html">
+<link rel="import" href="../iron-a11y-keys-behavior/iron-a11y-keys-behavior.html">
+<link rel="import" href="../iron-form-element-behavior/iron-form-element-behavior.html">
 
 <!--
 `paper-slider` allows user to select a value from a range of values by
@@ -79,14 +82,15 @@ To change the slider disabled secondary progress bar color:
 -->
 
 </head><body><dom-module id="paper-slider">
-  <link rel="import" type="css" href="paper-slider.css">
-  <template>
-    <template is="dom-if" if="{{!disabled}}">
-    </template>
 
+  <link rel="import" type="css" href="paper-slider.css">
+
+  <template>
     <div id="sliderContainer" class$="[[_getClassNames(disabled, pin, snaps, immediateValue, min, expand, dragging, transiting, editable)]]">
+
       <div class="bar-container">
-        <paper-progress id="sliderBar" aria-hidden="true" min="[[min]]" max="[[max]]" value="[[immediateValue]]" secondary-progress="[[secondaryProgress]]" on-down="_bardown" on-up="_resetKnob" on-track="_onTrack"></paper-progress>
+        <paper-progress id="sliderBar" aria-hidden="true" min="[[min]]" max="[[max]]" step="[[step]]" value="[[immediateValue]]" secondary-progress="[[secondaryProgress]]" on-down="_bardown" on-up="_resetKnob" on-track="_onTrack">
+        </paper-progress>
       </div>
 
       <template is="dom-if" if="[[snaps]]">
@@ -97,17 +101,18 @@ To change the slider disabled secondary progress bar color:
         </div>
       </template>
 
-      <div id="sliderKnob" on-down="_knobdown" on-up="_resetKnob" on-track="_onTrack" on-transitionend="_knobTransitionEnd" center-justified="" center="" horizontal="" layout="">
-
-        <div id="sliderKnobInner" value$="[[immediateValue]]"></div>
+      <div id="sliderKnob" class="center-justified center horizontal layout" on-down="_knobdown" on-up="_resetKnob" on-track="_onTrack" on-transitionend="_knobTransitionEnd">
+          <paper-ripple id="ink" class="circle" center=""></paper-ripple>
+          <div id="sliderKnobInner" value$="[[immediateValue]]"></div>
       </div>
     </div>
 
     <template is="dom-if" if="[[editable]]">
-      <paper-input id="input" class="slider-input" disabled$="[[disabled]]" on-change="_inputChange"></paper-input>
+      <paper-input id="input" class="slider-input" disabled$="[[disabled]]" on-change="_inputChange">
+      </paper-input>
     </template>
-
   </template>
+
 </dom-module>
 
 <script src="paper-slider-extracted.js"></script></body></html>

@@ -19,8 +19,8 @@ Example:
 
     <paper-toolbar>
       <paper-icon-button icon="menu" on-tap="menuAction"></paper-icon-button>
-      <div title>Title</div>
-      <paper-icon-button icon="more" on-tap="moreAction"></paper-icon-button>
+      <div class="title">Title</div>
+      <paper-icon-button icon="more-vert" on-tap="moreAction"></paper-icon-button>
     </paper-toolbar>
 
 `paper-toolbar` has a standard height, but can made be taller by setting `tall`
@@ -42,8 +42,8 @@ When `tall`, items can pin to either the top (default), middle or bottom.  Use
 
     <paper-toolbar class="tall">
       <paper-icon-button icon="menu"></paper-icon-button>
-      <div title class="middle">Middle Title</div>
-      <div title class="bottom">Bottom Title</div>
+      <div class="middle title">Middle Title</div>
+      <div class="bottom title">Bottom Title</div>
     </paper-toolbar>
 
 For `medium-tall` toolbar, the middle and bottom contents overlap and are
@@ -62,7 +62,7 @@ Custom property | Description | Default
 
 ### Accessibility
 
-`<paper-toolbar>` has `role="toolbar"` by default. Any elements with the `title` attribute will
+`<paper-toolbar>` has `role="toolbar"` by default. Any elements with the class `title` will
 be used as the label of the toolbar via `aria-labelledby`.
 
 @demo demo/index.html
@@ -131,7 +131,6 @@ be used as the label of the toolbar via `aria-labelledby`.
 
     #topBar {
       position: relative;
-      z-index: 1;
     }
 
     /* middle bar */
@@ -140,7 +139,6 @@ be used as the label of the toolbar via `aria-labelledby`.
       top: 0;
       right: 0;
       left: 0;
-      z-index: 2;
     }
 
     :host(.tall) #middleBar,
@@ -155,7 +153,6 @@ be used as the label of the toolbar via `aria-labelledby`.
       right: 0;
       bottom: 0;
       left: 0;
-      z-index: 1;
     }
 
     /*
@@ -169,10 +166,11 @@ be used as the label of the toolbar via `aria-labelledby`.
       pointer-events: auto;
     }
 
-    .toolbar-tools > ::content [title] {
+    .toolbar-tools > ::content .title {
       @apply(--paper-font-title);
       @apply(--layout-flex);
 
+      pointer-events: none;
       text-overflow: ellipsis;
       white-space: nowrap;
       overflow: hidden;
@@ -192,23 +190,18 @@ be used as the label of the toolbar via `aria-labelledby`.
      * Work in progress.
      */
     .toolbar-tools > ::content paper-icon-button[icon=menu] {
-      margin-left: -8px;
       margin-right: 24px;
     }
 
-    .toolbar-tools > ::content paper-icon-button + paper-icon-button {
-      margin-right: -8px;
-    }
-
-    .toolbar-tools > ::content > [title],
-    .toolbar-tools > ::content[select=".middle"] > [title],
-    .toolbar-tools > ::content[select=".bottom"] > [title] {
+    .toolbar-tools > ::content > .title,
+    .toolbar-tools > ::content[select=".middle"] > .title,
+    .toolbar-tools > ::content[select=".bottom"] > .title {
       margin-left: 56px;
     }
 
-    .toolbar-tools > ::content > paper-icon-button + [title],
-    .toolbar-tools > ::content[select=".middle"] paper-icon-button + [title],
-    .toolbar-tools > ::content[select=".bottom"] paper-icon-button + [title] {
+    .toolbar-tools > ::content > paper-icon-button + .title,
+    .toolbar-tools > ::content[select=".middle"] paper-icon-button + .title,
+    .toolbar-tools > ::content[select=".bottom"] paper-icon-button + .title {
       margin-left: 0;
     }
   </style>

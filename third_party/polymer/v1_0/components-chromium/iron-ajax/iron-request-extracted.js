@@ -26,7 +26,7 @@
        * resolved.
        *
        * @attribute response
-       * @type Object
+       * @type {*}
        * @default null
        */
       response: {
@@ -96,7 +96,7 @@
      * the status code 0 is accepted as a success even though the outcome may
      * be ambiguous.
      *
-     * @return boolean
+     * @return {boolean}
      */
     get succeeded() {
       var status = this.xhr.status || 0;
@@ -110,7 +110,6 @@
     /**
      * Sends an HTTP request to the server and returns the XHR object.
      *
-     * @method request
      * @param {{
      *   url: string,
      *   method: (string|undefined),
@@ -127,13 +126,13 @@
      *     headers HTTP request headers.
      *     handleAs The response type. Default is 'text'.
      *     withCredentials Whether or not to send credentials on the request. Default is false.
-     * @return Promise
+     * @return {Promise}
      */
     send: function (options) {
       var xhr = this.xhr;
 
       if (xhr.readyState > 0) {
-        return;
+        return null;
       }
 
       xhr.addEventListener('readystatechange', function () {
@@ -190,6 +189,14 @@
       return this.completes;
     },
 
+    /**
+     * Attempts to parse the response body of the XHR. If parsing succeeds,
+     * the value returned will be deserialized based on the `responseType`
+     * set on the XHR.
+     *
+     * @return {*} The parsed response,
+     * or undefined if there was an empty response or parsing failed.
+     */
     parseResponse: function () {
       var xhr = this.xhr;
       var responseType = this.xhr.responseType ||
@@ -234,6 +241,9 @@
       }
     },
 
+    /**
+     * Aborts the request.
+     */
     abort: function () {
       this._setAborted(true);
       this.xhr.abort();

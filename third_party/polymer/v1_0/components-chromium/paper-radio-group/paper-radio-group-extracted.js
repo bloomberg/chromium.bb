@@ -3,7 +3,8 @@
     is: 'paper-radio-group',
 
     behaviors: [
-      Polymer.IronA11yKeysBehavior
+      Polymer.IronA11yKeysBehavior,
+      Polymer.IronSelectableBehavior
     ],
 
     hostAttributes: {
@@ -13,115 +14,75 @@
 
     properties: {
       /**
-       * Fired when the selected element changes to user interaction.
-       *
-       * @event paper-radio-group-changed
+       * Overriden from Polymer.IronSelectableBehavior
        */
+      attrForSelected: {
+        type: String,
+        value: 'name'
+      },
 
       /**
-       * Gets or sets the selected element. Use the `name` attribute of the
-       * <paper-radio-button> that should be selected.
-       *
-       * @attribute selected
-       * @type String
-       * @default null
+       * Overriden from Polymer.IronSelectableBehavior
        */
-
-      selected: {
+      selectedAttribute: {
         type: String,
-        value: null,
-        notify: true,
-        reflectToAttribute: true,
-        observer: "_selectedChanged"
+        value: 'checked'
       }
     },
 
     keyBindings: {
-      'left up': '_selectPrevious',
-      'right down': '_selectNext',
-    },
-
-    _selectedChanged: function() {
-      // TODO: This only needs to be async while a domReady event is unavailable.
-      this.async(function() {
-        this._selectIndex(this._valueToIndex(this.items, this.selected));
-        this.fire('paper-radio-group-changed');
-      });
-    },
-
-    _selectNext: function() {
-      this.selected = this._nextNode();
-    },
-
-    _selectPrevious: function() {
-      this.selected = this._previousNode();
+      'left up': 'selectPrevious',
+      'right down': 'selectNext',
     },
 
     /**
-     * Returns an array of all items.
-     *
-     * @property items
-     * @type array
+     * Selects the given value.
      */
-    get items() {
-      return Polymer.dom(this.$.items).getDistributedNodes();
-    },
+     select: function(value) {
+      if (this.selected) {
+        var oldItem = this._valueToItem(this.selected);
 
-    _nextNode: function() {
-      var items = this.items;
-      var index = this._selectedIndex;
-      var newIndex = index;
-      do {
-        newIndex = (newIndex + 1) % items.length;
-        if (newIndex === index) {
-          break;
+        // Do not allow unchecking the selected item.
+        if (this.selected == value) {
+          oldItem.checked = true;
+          return;
         }
-      } while (items[newIndex].disabled);
-      return this._valueForNode(items[newIndex]);
-    },
 
-    _previousNode: function() {
-      var items = this.items;
-      var index = this._selectedIndex;
-      var newIndex = index;
-      do {
-        newIndex = (newIndex || items.length) - 1;
-        if (newIndex === index) {
-          break;
-        }
-      } while (items[newIndex].disabled);
-      return this._valueForNode(items[newIndex]);
-    },
-
-    _selectIndex: function(index) {
-      if (index == this._selectedIndex)
-        return;
-
-      var nodes = this.items;
-
-      // If there was a previously selected node, deselect it.
-      if (nodes[this._selectedIndex]) {
-        nodes[this._selectedIndex].checked = false;
+        if (oldItem)
+          oldItem.checked = false;
       }
 
-      // Select a new node.
-      nodes[index].checked = true;
-      nodes[index].focus();
-      this._selectedIndex = index;
+      Polymer.IronSelectableBehavior.select.apply(this, [value]);
+      this.fire('paper-radio-group-changed');
     },
 
-    _valueForNode: function(node) {
-      return node["name"] || node.getAttribute("name");
+    /**
+     * Selects the previous item. If the previous item is disabled, then it is
+     * skipped, and its previous item is selected
+     */
+    selectPrevious: function() {
+      var length = this.items.length;
+      var newIndex = Number(this._valueToIndex(this.selected));
+
+      do {
+        newIndex = (newIndex - 1 + length) % length;
+      } while (this.items[newIndex].disabled)
+
+      this.select(this._indexToValue(newIndex));
     },
 
-    // Finds an item with value == |value| and return its index.
-    _valueToIndex: function(items, value) {
-      for (var index = 0, node; (node = items[index]); index++) {
-        if (this._valueForNode(node) == value) {
-          return index;
-        }
-      }
-      // If no item found, the value itself is probably the index.
-      return value;
-    }
+    /**
+     * Selects the next item. If the next item is disabled, then it is
+     * skipped, and its nexy item is selected
+     */
+    selectNext: function() {
+      var length = this.items.length;
+      var newIndex = Number(this._valueToIndex(this.selected));
+
+      do {
+        newIndex = (newIndex + 1 + length) % length;
+      } while (this.items[newIndex].disabled)
+
+      this.select(this._indexToValue(newIndex));
+    },
   });

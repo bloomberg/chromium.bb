@@ -46,6 +46,50 @@
       },
 
       /**
+       * Bound to the textarea's `autocomplete` attribute.
+       */
+      autocomplete: {
+        type: String,
+        value: 'off'
+      },
+
+      /**
+       * Bound to the textarea's `autofocus` attribute.
+       */
+      autofocus: {
+        type: String,
+        value: 'off'
+      },
+
+      /**
+       * Bound to the textarea's `inputmode` attribute.
+       */
+      inputmode: {
+        type: String
+      },
+
+      /**
+       * Bound to the textarea's `name` attribute.
+       */
+      name: {
+        type: String
+      },
+
+      /**
+       * Bound to the textarea's `placeholder` attribute.
+       */
+      placeholder: {
+        type: String
+      },
+
+      /**
+       * Bound to the textarea's `readonly` attribute.
+       */
+      readonly: {
+        type: String
+      },
+
+      /**
        * Set to true to mark the textarea as required.
        */
       required: {

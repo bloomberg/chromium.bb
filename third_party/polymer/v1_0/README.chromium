@@ -1,7 +1,7 @@
 Name: Polymer
 Short Name: polymer
 URL: http://www.polymer-project.org
-Version: 1.0
+Version: 1.0.3
 Revision: (See components/<component>/.bower.json)
 License: BSD
 License File: ../LICENSE.polymer
@@ -39,13 +39,9 @@ HTML elements to external JS files. This version of the Polymer is used in a web
 UI, where CSP forbids an execution of inline scripts. The extraction was made
 with the help of the Vulcanize tool (https://github.com/Polymer/vulcanize).
 - Replaced CRLF line endings with LF line endings in text files.
-- Manually applied patch (https://github.com/Polymer/polymer/pull/1724/files)
-to 'component-chromium/polymer/polymer-micro-extracted.js'.
 
 To restore a content of the 'components', 'components-chromium' directorires
-from scratch, run ./reproduce.sh (requires bower and vulcanize >= 1.2). Then
-download https://codereview.chromium.org/download/issue1165893005_40001.diff
-and run 'git apply --reject issue1165893005_40001.diff'.
+from scratch, run ./reproduce.sh (requires bower and vulcanize >= 1.2).
 
 Note on Bower:
 The directory can be updated by running "bower update". A new component can be

@@ -33,7 +33,9 @@
 
       /**
        * An object that contains query parameters to be appended to the
-       * specified `url` when generating a request.
+       * specified `url` when generating a request. If you wish to set the body
+       * content when making a POST request, you should use the `body` property
+       * instead.
        */
       params: {
         type: Object,
@@ -62,6 +64,9 @@
        *         headers='{"X-Requested-With": "XMLHttpRequest"}'
        *         handle-as="json"
        *         last-response-changed="{{handleResponse}}"></iron-ajax>
+       *
+       * Note: setting a `Content-Type` header here will override the value
+       * specified by the `contentType` property of this element.
        */
       headers: {
         type: Object,
@@ -71,9 +76,9 @@
       },
 
       /**
-       * Content type to use when sending data. If the contenttype is set
-       * and a `Content-Type` header is specified in the `headers` attribute,
-       * the `headers` attribute value will take precedence.
+       * Content type to use when sending data. If the `contentType` property
+       * is set and a `Content-Type` header is specified in the `headers`
+       * property, the `headers` property value will take precedence.
        */
       contentType: {
         type: String,
@@ -173,7 +178,7 @@
       /**
        * Will be set to the most recent response received by a request
        * that originated from this iron-ajax element. The type of the response
-       * is determined by the value of `handleas` at the time that the request
+       * is determined by the value of `handleAs` at the time that the request
        * was generated.
        */
       lastResponse: {
@@ -201,7 +206,7 @@
         notify: true,
         readOnly: true,
         value: function() {
-          this._setActiveRequests([]);
+          return [];
         }
       },
 
@@ -217,23 +222,22 @@
       _boundHandleResponse: {
         type: Function,
         value: function() {
-          return this.handleResponse.bind(this);
-        }
-      },
-
-      _boundDiscardRequest: {
-        type: Function,
-        value: function() {
-          return this.discardRequest.bind(this);
+          return this._handleResponse.bind(this);
         }
       }
     },
 
     observers: [
-      'requestOptionsChanged(url, method, params, headers,' +
+      '_requestOptionsChanged(url, method, params, headers,' +
         'contentType, body, sync, handleAs, withCredentials, auto)'
     ],
 
+    /**
+     * The query string that should be appended to the `url`, serialized from
+     * the current value of `params`.
+     *
+     * @return {string}
+     */
     get queryString () {
       var queryParts = [];
       var param;
@@ -253,6 +257,12 @@
       return queryParts.join('&');
     },
 
+    /**
+     * The `url` with query string (if `params` are specified), suitable for
+     * providing to an `iron-request` instance.
+     *
+     * @return {string}
+     */
     get requestUrl() {
       var queryString = this.queryString;
 
@@ -263,9 +273,16 @@
       return this.url;
     },
 
+    /**
+     * An object that maps header names to header values, first applying the
+     * the value of `Content-Type` and then overlaying the headers specified
+     * in the `headers` property.
+     *
+     * @return {Object}
+     */
     get requestHeaders() {
       var headers = {
-        'content-type': this.contentType
+        'Content-Type': this.contentType
       };
       var header;
 
@@ -278,6 +295,19 @@
       return headers;
     },
 
+    /**
+     * Request options suitable for generating an `iron-request` instance based
+     * on the current state of the `iron-ajax` instance's properties.
+     *
+     * @return {{
+     *   url: string,
+     *   method: (string|undefined),
+     *   async: (boolean|undefined),
+     *   body: (ArrayBuffer|ArrayBufferView|Blob|Document|FormData|null|string|undefined),
+     *   headers: (Object|undefined),
+     *   handleAs: (string|undefined),
+     *   withCredentials: (boolean|undefined)}}
+     */
     toRequestOptions: function() {
       return {
         url: this.requestUrl,
@@ -290,25 +320,13 @@
       };
     },
 
-    requestOptionsChanged: function() {
-      this.debounce('generate-request', function() {
-        if (!this.url && this.url !== '') {
-          return;
-        }
-
-        if (this.auto) {
-          this.generateRequest();
-        }
-      }, this.debounceDuration);
-    },
-
     /**
      * Performs an AJAX request to the specified URL.
      *
-     * @method generateRequest
+     * @return {!IronRequestElement}
      */
     generateRequest: function() {
-      var request = document.createElement('iron-request');
+      var request = /** @type {!IronRequestElement} */ (document.createElement('iron-request'));
       var requestOptions = this.toRequestOptions();
 
       this.activeRequests.push(request);
@@ -316,14 +334,15 @@
       request.completes.then(
         this._boundHandleResponse
       ).catch(
-        this.handleError.bind(this, request)
+        this._handleError.bind(this, request)
       ).then(
-        this._boundDiscardRequest
+        this._discardRequest.bind(this, request)
       );
 
       request.send(requestOptions);
 
       this._setLastRequest(request);
+      this._setLoading(true);
 
       this.fire('request', {
         request: request,
@@ -333,12 +352,12 @@
       return request;
     },
 
-    handleResponse: function(request) {
+    _handleResponse: function(request) {
       this._setLastResponse(request.response);
       this.fire('response', request);
     },
 
-    handleError: function(request, error) {
+    _handleError: function(request, error) {
       if (this.verbose) {
         console.error(error);
       }
@@ -353,11 +372,28 @@
       });
     },
 
-    discardRequest: function(request) {
+    _discardRequest: function(request) {
       var requestIndex = this.activeRequests.indexOf(request);
 
-      if (requestIndex > 0) {
+      if (requestIndex > -1) {
         this.activeRequests.splice(requestIndex, 1);
       }
-    }
+
+      if (this.activeRequests.length === 0) {
+        this._setLoading(false);
+      }
+    },
+
+    _requestOptionsChanged: function() {
+      this.debounce('generate-request', function() {
+        if (!this.url && this.url !== '') {
+          return;
+        }
+
+        if (this.auto) {
+          this.generateRequest();
+        }
+      }, this.debounceDuration);
+    },
+
   });

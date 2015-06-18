@@ -74,7 +74,9 @@
          */
         dragging: {
           type: Boolean,
-          value: false
+          value: false,
+          readOnly: true,
+          notify: true
         },
 
         /**
@@ -130,6 +132,7 @@
           reflectToAttribute: true,
           type: Boolean,
           value: false,
+          readOnly: true,
           notify: true
         },
 
@@ -138,7 +141,9 @@
          */
         peeking: {
           type: Boolean,
-          value: false
+          value: false,
+          readOnly: true,
+          notify: true
         },
 
         /**
@@ -163,6 +168,7 @@
          */
         selected: {
           reflectToAttribute: true,
+          notify: true,
           type: String,
           value: null
         },
@@ -289,7 +295,7 @@
       },
 
       _responsiveChange: function(narrow) {
-        this.narrow = narrow;
+        this._setNarrow(narrow);
 
         if (this.narrow) {
           this.selected = this.defaultSelected;
@@ -320,12 +326,12 @@
         this.width = this.$.drawer.offsetWidth;
         this._moveDrawer(this._translateXForDeltaX(this.rightDrawer ?
             -this.edgeSwipeSensitivity : this.edgeSwipeSensitivity));
-        this.peeking = true;
+        this._setPeeking(true);
       },
 
       _stopEdgePeek: function() {
         if (this.peeking) {
-          this.peeking = false;
+          this._setPeeking(false);
           this._moveDrawer(null);
         }
       },
@@ -364,13 +370,13 @@
             x <= this.edgeSwipeSensitivity);
       },
 
-      _trackStart: function() {
+      _trackStart: function(event) {
         if (this._swipeAllowed()) {
           sharedPanel = this;
-          this.dragging = true;
+          this._setDragging(true);
 
           if (this._isMainSelected()) {
-            this.dragging = this.peeking || this._isEdgeTouch(event);
+            this._setDragging(this.peeking || this._isEdgeTouch(event));
           }
 
           if (this.dragging) {
@@ -399,7 +405,7 @@
               // Ignore trackx until we move past the edge peek.
               return;
             }
-            this.peeking = false;
+            this._setPeeking(false);
           }
 
           this._moveDrawer(this._translateXForDeltaX(dx));
@@ -410,7 +416,7 @@
         if (this.dragging) {
           var xDirection = e.detail.dx > 0;
 
-          this.dragging = false;
+          this._setDragging(false);
           this.transition = true;
           sharedPanel = null;
           this._moveDrawer(null);

@@ -1,6 +1,6 @@
 {
   "name": "paper-dialog-behavior",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Implements a behavior used for material design dialogs",
   "authors": "The Polymer Authors",
   "keywords": [
@@ -23,7 +23,7 @@
   "ignore": [],
   "dependencies": {
     "iron-overlay-behavior": "PolymerElements/iron-overlay-behavior#^1.0.0",
-    "paper-styles": "PolymerElements/paper-styles#^1.0.0",
+    "paper-styles": "PolymerElements/paper-styles#^1.0.4",
     "polymer": "Polymer/polymer#^1.0.0"
   },
   "devDependencies": {

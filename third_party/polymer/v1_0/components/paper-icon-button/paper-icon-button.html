@@ -13,14 +13,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../paper-styles/default-theme.html">
 <link rel="import" href="../paper-behaviors/paper-button-behavior.html">
-<link rel="import" href="../paper-behaviors/paper-radio-button-behavior.html">
+<link rel="import" href="../paper-behaviors/paper-inky-focus-behavior.html">
 <link rel="import" href="../paper-ripple/paper-ripple.html">
-
-<style is="custom-style">
-  :root {
-    --paper-icon-button-disabled-text: var(--disabled-text-color);
-  }
-</style>
 
 <!--
 Material Design: <a href="http://www.google.com/design/spec/components/buttons.html">Buttons</a>
@@ -99,7 +93,7 @@ Custom property | Description | Default
     }
 
     :host([disabled]) {
-      color: var(--paper-icon-button-disabled-text, #fff);
+      color: var(--paper-icon-button-disabled-text, --disabled-text-color);
       pointer-events: none;
       cursor: auto;
       @apply(--paper-icon-button-disabled);
@@ -107,16 +101,20 @@ Custom property | Description | Default
   </style>
   <template>
     <paper-ripple id="ink" class="circle" center></paper-ripple>
-    <iron-icon id="icon" src="[[src]]" icon="[[icon]]"></iron-icon>
+    <iron-icon id="icon" src="[[src]]" icon="[[icon]]" alt$="[[alt]]"></iron-icon>
   </template>
 </dom-module>
 <script>
   Polymer({
     is: 'paper-icon-button',
 
+    hostAttributes: {
+      role: 'button',
+      tabindex: '0'
+    },
+
     behaviors: [
-      Polymer.PaperButtonBehavior,
-      Polymer.PaperRadioButtonBehavior
+      Polymer.PaperInkyFocusBehavior
     ],
 
     properties: {
@@ -135,6 +133,23 @@ Custom property | Description | Default
        */
       icon: {
         type: String
+      },
+
+      /**
+       * Specifies the alternate text for the button, for accessibility.
+       */
+      alt: {
+        type: String,
+        observer: "_altChanged"
+      }
+    },
+
+    _altChanged: function(newValue, oldValue) {
+      var label = this.getAttribute('aria-label');
+
+      // Don't stomp over a user-set aria-label.
+      if (!label || oldValue == label) {
+        this.setAttribute('aria-label', newValue);
       }
     }
   });

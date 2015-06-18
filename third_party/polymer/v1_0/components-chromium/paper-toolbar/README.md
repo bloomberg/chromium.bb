@@ -12,7 +12,7 @@ Example:
 ```html
 <paper-toolbar>
   <paper-icon-button icon="menu" on-tap="{{menuAction}}"></paper-icon-button>
-  <div title>Title</div>
+  <div class="title">Title</div>
   <paper-icon-button icon="more" on-tap="{{moreAction}}"></paper-icon-button>
 </paper-toolbar>
 ```
@@ -41,8 +41,8 @@ When `tall`, items can pin to either the top (default), middle or bottom.  Use
 ```html
 <paper-toolbar class="tall">
   <paper-icon-button icon="menu"></paper-icon-button>
-  <div title class="middle">Middle Title</div>
-  <div title class="bottom">Bottom Title</div>
+  <div class="title middle">Middle Title</div>
+  <div class="title bottom">Bottom Title</div>
 </paper-toolbar>
 ```
 

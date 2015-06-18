@@ -13,7 +13,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <!--
 Element access to Web Storage API (window.localStorage).
 
-Keeps `value` is sync with a localStorage key.
+Keeps `value` in sync with a localStorage key.
 
 Direct assignments to `value` are automatically detected and saved.
 Subproperty assignments are not (ex: `value.bar='foo'`).
@@ -46,9 +46,9 @@ No `<iron-localstorage value="{{foo.bar}}"`.
     /**
      * Fired when value loads from localStorage.
      *
-     * @param {Object} detail
-     * @param {Boolean} detail.externalChange true if change occured in different window
-     * @event iron-localstorage-load
+     * @event paper-responsive-change
+     * @param {{externalChange: boolean}} detail -
+     *     externalChange: True if change occured in different window.
      */
 
     /**
@@ -68,6 +68,7 @@ No `<iron-localstorage value="{{foo.bar}}"`.
       /**
        * The data associated with this storage.
        * If value is set to null, and storage is in useRaw mode, item will be deleted
+       * @type {*}
        */
       value: {
         type: Object,
@@ -149,10 +150,10 @@ No `<iron-localstorage value="{{foo.bar}}"`.
 
     /**
      * loads value from local storage
-     * @param {Boolean} externalChange true if loading changes from a different window
+     * @param {boolean=} externalChange true if loading changes from a different window
      */
     _load: function(externalChange) {
-      var v = localStorage.getItem(this.name);
+      var v = window.localStorage.getItem(this.name);
 
       if (v === null) {
         this.fire('iron-localstorage-load-empty');
@@ -179,9 +180,9 @@ No `<iron-localstorage value="{{foo.bar}}"`.
       var v = this.useRaw ? this.value : JSON.stringify(this.value);
       try {
         if (this.value === null) {
-          localStorage.removeItem(this.name);
+          window.localStorage.removeItem(this.name);
         } else {
-          localStorage.setItem(this.name, v);
+          window.localStorage.setItem(this.name, /** @type {string} */ (v));
         }
       }
       catch(ex) {

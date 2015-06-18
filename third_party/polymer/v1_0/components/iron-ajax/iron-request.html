@@ -11,17 +11,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../promise-polyfill/promise-polyfill-lite.html">
 
 <!--
-@group Iron Elements
-
 iron-request can be used to perform XMLHttpRequests.
 
     <iron-request id="xhr"></iron-request>
     ...
     this.$.xhr.send({url: url, params: params});
-
-@element iron-request
 -->
-
 <script>
   Polymer({
     is: 'iron-request',
@@ -50,7 +45,7 @@ iron-request can be used to perform XMLHttpRequests.
        * resolved.
        *
        * @attribute response
-       * @type Object
+       * @type {*}
        * @default null
        */
       response: {
@@ -120,7 +115,7 @@ iron-request can be used to perform XMLHttpRequests.
      * the status code 0 is accepted as a success even though the outcome may
      * be ambiguous.
      *
-     * @return boolean
+     * @return {boolean}
      */
     get succeeded() {
       var status = this.xhr.status || 0;
@@ -134,7 +129,6 @@ iron-request can be used to perform XMLHttpRequests.
     /**
      * Sends an HTTP request to the server and returns the XHR object.
      *
-     * @method request
      * @param {{
      *   url: string,
      *   method: (string|undefined),
@@ -151,13 +145,13 @@ iron-request can be used to perform XMLHttpRequests.
      *     headers HTTP request headers.
      *     handleAs The response type. Default is 'text'.
      *     withCredentials Whether or not to send credentials on the request. Default is false.
-     * @return Promise
+     * @return {Promise}
      */
     send: function (options) {
       var xhr = this.xhr;
 
       if (xhr.readyState > 0) {
-        return;
+        return null;
       }
 
       xhr.addEventListener('readystatechange', function () {
@@ -214,6 +208,14 @@ iron-request can be used to perform XMLHttpRequests.
       return this.completes;
     },
 
+    /**
+     * Attempts to parse the response body of the XHR. If parsing succeeds,
+     * the value returned will be deserialized based on the `responseType`
+     * set on the XHR.
+     *
+     * @return {*} The parsed response,
+     * or undefined if there was an empty response or parsing failed.
+     */
     parseResponse: function () {
       var xhr = this.xhr;
       var responseType = this.xhr.responseType ||
@@ -258,6 +260,9 @@ iron-request can be used to perform XMLHttpRequests.
       }
     },
 
+    /**
+     * Aborts the request.
+     */
     abort: function () {
       this._setAborted(true);
       this.xhr.abort();

@@ -6,9 +6,9 @@
     /**
      * Fired when value loads from localStorage.
      *
-     * @param {Object} detail
-     * @param {Boolean} detail.externalChange true if change occured in different window
-     * @event iron-localstorage-load
+     * @event paper-responsive-change
+     * @param {{externalChange: boolean}} detail -
+     *     externalChange: True if change occured in different window.
      */
 
     /**
@@ -28,6 +28,7 @@
       /**
        * The data associated with this storage.
        * If value is set to null, and storage is in useRaw mode, item will be deleted
+       * @type {*}
        */
       value: {
         type: Object,
@@ -109,10 +110,10 @@
 
     /**
      * loads value from local storage
-     * @param {Boolean} externalChange true if loading changes from a different window
+     * @param {boolean=} externalChange true if loading changes from a different window
      */
     _load: function(externalChange) {
-      var v = localStorage.getItem(this.name);
+      var v = window.localStorage.getItem(this.name);
 
       if (v === null) {
         this.fire('iron-localstorage-load-empty');
@@ -139,9 +140,9 @@
       var v = this.useRaw ? this.value : JSON.stringify(this.value);
       try {
         if (this.value === null) {
-          localStorage.removeItem(this.name);
+          window.localStorage.removeItem(this.name);
         } else {
-          localStorage.setItem(this.name, v);
+          window.localStorage.setItem(this.name, /** @type {string} */ (v));
         }
       }
       catch(ex) {

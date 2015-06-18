@@ -31,6 +31,7 @@
    *     iconset.applyIcon(iconNode, 'car');
    *
    * @element iron-iconset-svg
+   * @demo demo/index.html
    */
   Polymer({
 
@@ -50,14 +51,6 @@
       },
 
       /**
-       * Array of fully-qualitifed icon names in the iconset.
-       */
-      iconNames: {
-        type: Array,
-        notify: true
-      },
-
-      /**
        * The size of an individual icon. Note that icons must be square.
        *
        * @attribute iconSize
@@ -69,6 +62,18 @@
         value: 24
       }
 
+    },
+
+    /**
+     * Construct an array of all icon names in this iconset.
+     *
+     * @return {!Array} Array of icon names.
+     */
+    getIconNames: function() {
+      this._icons = this._createIconMap();
+      return Object.keys(this._icons).map(function(n) {
+        return this.name + ':' + n;
+      }, this);
     },
 
     /**
@@ -113,32 +118,17 @@
 
     /**
      *
-     * When name is changed, either register a new iconset with the included
-     * icons, or if there are no children, set up a meta-iconset.
+     * When name is changed, register iconset metadata
      *
      */
     _nameChanged: function() {
       new Polymer.IronMeta({type: 'iconset', key: this.name, value: this});
-      // icons (descendents) must exist a-priori
-      this._icons = this._createIconMap();
-      this.iconNames = this._getIconNames();
-    },
-
-    /**
-     * Array of all icon names in this iconset.
-     *
-     * @return {!Array} Array of icon names.
-     */
-    _getIconNames: function() {
-       return Object.keys(this._icons).map(function(n) {
-         return this.name + ':' + n;
-       }, this);
     },
 
     /**
      * Create a map of child SVG elements by id.
      *
-     * @return {Object} Map of id's to SVG elements.
+     * @return {!Object} Map of id's to SVG elements.
      */
     _createIconMap: function() {
       // Objects chained to Object.prototype (`{}`) have members. Specifically,
@@ -160,6 +150,9 @@
      * matching `id`.
      */
     _cloneIcon: function(id) {
+      // create the icon map on-demand, since the iconset itself has no discrete
+      // signal to know when it's children are fully parsed
+      this._icons = this._icons || this._createIconMap();
       return this._prepareSvgClone(this._icons[id], this.size);
     },
 

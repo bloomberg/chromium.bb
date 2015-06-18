@@ -30,10 +30,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     /**
      * The function called by `<paper-input-container>` when the input value or validity changes.
-     * @param {Object} state All properties are optional.
-     * @param {Node} state.inputElement The input element.
-     * @param {String} state.value The input value.
-     * @param {Boolean} state.invalid True if the input value is invalid.
+     * @param {{
+     *   inputElement: (Node|undefined),
+     *   value: (string|undefined),
+     *   invalid: (boolean|undefined)
+     * }} state All properties are optional -
+     *     inputElement: The input element.
+     *     value: The input value.
+     *     invalid: True if the input value is invalid.
      */
     update: function(state) {
     }

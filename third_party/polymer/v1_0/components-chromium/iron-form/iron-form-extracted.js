@@ -26,7 +26,7 @@ call the form's `submit` method.
     function submitForm() {
       document.getElementById('form').submit();
     }
-    
+
 @demo demo/index.html
 */
 
@@ -35,6 +35,12 @@ call the form's `submit` method.
     is: 'iron-form',
 
     extends: 'form',
+
+    /**
+     * Fired if the form cannot be submitted because it's invalid.
+     *
+     * @event iron-form-invalid
+     */
 
     /**
      * Fired after the form is submitted.
@@ -56,7 +62,7 @@ call the form's `submit` method.
 
     listeners: {
       'iron-form-element-register': '_registerElement',
-      'submit': 'submit'
+      'submit': '_onSubmit'
     },
 
     ready: function() {
@@ -72,9 +78,14 @@ call the form's `submit` method.
     /**
      * Called to submit the form.
      */
-    submit: function(event) {
-      if (!this._validate()) {
-        return false;
+    submit: function() {
+      if (!this.noValidate && !this._validate()) {
+
+        // In order to trigger the native browser invalid-form UI, we need
+        // to do perform a fake form submit.
+        this._doFakeSubmitForValidation();
+        this.fire('iron-form-invalid');
+        return;
       }
 
       var json = this.serialize();
@@ -89,6 +100,10 @@ call the form's `submit` method.
 
       this._requestBot.generateRequest();
       this.fire('iron-form-submit', json);
+    },
+
+    _onSubmit: function(event) {
+      this.submit();
 
       // Don't perform a page refresh.
       if (event) {
@@ -158,9 +173,25 @@ call the form's `submit` method.
 
     _validate: function() {
       var valid = true;
+
+      // Validate all the custom elements.
+      var validatable;
       for (var el, i = 0; el = this._customElements[i], i < this._customElements.length; i++) {
-        valid = el.validate() && valid;
+        if (el.required) {
+          validatable = /** @type {{validate: (function() : boolean)}} */ (el);
+          valid = validatable.validate() && valid;
+        }
       }
+
+      // Validate the form's native elements.
+      for (var el, i = 0; el = this.elements[i], i < this.elements.length; i++) {
+        // Custom elements that extend a native element will also appear in
+        // this list, but they've already been validated.
+        if (!el.hasAttribute('is') && el.willValidate && el.checkValidity) {
+          valid = el.checkValidity() && valid;
+        }
+      }
+
       return valid;
     },
 
@@ -171,6 +202,17 @@ call the form's `submit` method.
       } else {
         return el.checked;
       }
+    },
+
+    _doFakeSubmitForValidation: function() {
+      var fakeSubmit = document.createElement('input');
+      fakeSubmit.setAttribute('type', 'submit');
+      fakeSubmit.style.display = 'none';
+      this.appendChild(fakeSubmit);
+
+      fakeSubmit.click();
+
+      this.removeChild(fakeSubmit);
     }
 
   });

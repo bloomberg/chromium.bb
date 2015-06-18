@@ -1,6 +1,6 @@
 {
   "name": "iron-overlay-behavior",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "license": "http://polymer.github.io/LICENSE.txt",
   "description": "Provides a behavior for making an element an overlay",
   "private": true,
@@ -26,6 +26,7 @@
     "iron-resizable-behavior": "PolymerElements/iron-resizable-behavior#^1.0.0"
   },
   "devDependencies": {
+    "paper-styles": "polymerelements/paper-styles#^1.0.2",
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
     "iron-flex-layout": "PolymerElements/iron-flex-layout#^1.0.0",
     "iron-test-helpers": "PolymerElements/iron-test-helpers#^1.0.0",

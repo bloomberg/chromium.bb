@@ -34,6 +34,7 @@
        * True if the last call to `validate` is invalid.
        */
       invalid: {
+        notify: true,
         reflectToAttribute: true,
         type: Boolean,
         value: false
@@ -66,7 +67,7 @@
     },
 
     /**
-     * @return {Boolean} True if the validator `validator` exists.
+     * @return {boolean} True if the validator `validator` exists.
      */
     hasValidator: function() {
       return this._validator != null;
@@ -74,7 +75,7 @@
 
     /**
      * @param {Object} values Passed to the validator's `validate()` function.
-     * @return {Boolean} True if `values` is valid.
+     * @return {boolean} True if `values` is valid.
      */
     validate: function(values) {
       var valid = this._validator && this._validator.validate(values);

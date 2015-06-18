@@ -73,6 +73,7 @@ Keys Syntax Grammar:
     ],
 
     properties: {
+      /** @type {?Node} */
       target: {
         type: Object,
         observer: '_targetChanged'
