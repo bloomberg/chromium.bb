@@ -470,6 +470,8 @@ void GCMClientImplTest::CompleteCheckin(
   fetcher->set_response_code(net::HTTP_OK);
   fetcher->SetResponseString(response_string);
   fetcher->delegate()->OnURLFetchComplete(fetcher);
+  // Give a chance for GCMStoreImpl::Backend to finish persisting data.
+  PumpLoopUntilIdle();
 }
 
 void GCMClientImplTest::CompleteRegistration(
@@ -481,6 +483,8 @@ void GCMClientImplTest::CompleteRegistration(
   fetcher->set_response_code(net::HTTP_OK);
   fetcher->SetResponseString(response);
   fetcher->delegate()->OnURLFetchComplete(fetcher);
+  // Give a chance for GCMStoreImpl::Backend to finish persisting data.
+  PumpLoopUntilIdle();
 }
 
 void GCMClientImplTest::CompleteUnregistration(
@@ -492,6 +496,8 @@ void GCMClientImplTest::CompleteUnregistration(
   fetcher->set_response_code(net::HTTP_OK);
   fetcher->SetResponseString(response);
   fetcher->delegate()->OnURLFetchComplete(fetcher);
+  // Give a chance for GCMStoreImpl::Backend to finish persisting data.
+  PumpLoopUntilIdle();
 }
 
 void GCMClientImplTest::VerifyPendingRequestFetcherDeleted() {
@@ -749,6 +755,7 @@ TEST_F(GCMClientImplTest, DeletePendingRequestsWhenStopping) {
   Register(kAppId, senders);
 
   gcm_client()->Stop();
+  PumpLoopUntilIdle();
   VerifyPendingRequestFetcherDeleted();
 }
 
@@ -1373,6 +1380,8 @@ void GCMClientInstanceIDTest::CompleteDeleteToken() {
   fetcher->set_response_code(net::HTTP_OK);
   fetcher->SetResponseString(response);
   fetcher->delegate()->OnURLFetchComplete(fetcher);
+  // Give a chance for GCMStoreImpl::Backend to finish persisting data.
+  PumpLoopUntilIdle();
 }
 
 bool GCMClientInstanceIDTest::ExistsToken(const std::string& app_id,

@@ -3545,36 +3545,3 @@
     fun:_ZN5blink13CSSParserImpl23consumeDeclarationValueENS_19CSSParserTokenRangeENS_13CSSPropertyIDEbNS_13StyleRuleBase4TypeE
 fun:_ZN5blink13CSSParserImpl18consumeDeclarationENS_19CSSParserTokenRangeENS_13StyleRuleBase4TypeE
 }
-{
-   bug_501183_a
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN4base9TupleLeafILm1ESt3mapISsSsSt4lessISsESaISt4pairIKSsSsEEEEC2ERKS8_
-   fun:_ZN4base13TupleBaseImplINS_13IndexSequenceIJLm0ELm1ELm2ELm3EEEEJ13scoped_refptrIN3gcm12GCMStoreImpl7BackendEESt3mapISsSsSt4lessISsESaISt4pairIKSsSsEEESsNS_8CallbackIFvbEEEEEC2ERKS7_RKSF_RSC_RKSI_
-   ...
-   fun:_ZN3gcm12GCMStoreImpl20SetGServicesSettingsERKSt3mapISsSsSt4lessISsESaISt4pairIKSsSsEEERS5_RKN4base8CallbackIFvbEEE
-}
-{
-   bug_501183_b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN3gcm12GCMStoreImplC1ERKN4base8FilePathE13scoped_refptrINS1_19SequencedTaskRunnerEE10scoped_ptrINS_9EncryptorENS1_14DefaultDeleterIS9_EEE
-   fun:_ZN3gcm13GCMClientImpl10InitializeERKNS_9GCMClient15ChromeBuildInfoERKN4base8FilePathERK13scoped_refptrINS5_19SequencedTaskRunnerEERKS9_IN3net23URLRequestContextGetterEE10scoped_ptrINS_9EncryptorENS5_14DefaultDeleterISK_EEEPNS1_8DelegateE
-   fun:_ZN3gcm17GCMClientImplTest19InitializeGCMClientEv
-}
-{
-   bug_501183_c
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN7leveldb2DB4OpenERKNS_7OptionsERKSsPPS0_
-   fun:_ZN3gcm12GCMStoreImpl7Backend20OpenStoreAndLoadDataENS_8GCMStore13StoreOpenModeEPNS2_10LoadResultE
-}
-{
-   bug_501183_d
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN3gcm17GCMClientImplTestC2Ev
-   fun:_ZN3gcm*GCMClientImpl*TestC2Ev
-}
