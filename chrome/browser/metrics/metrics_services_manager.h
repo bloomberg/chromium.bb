@@ -7,8 +7,8 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/prefs/pref_change_registrar.h"
 #include "base/threading/thread_checker.h"
+#include "chrome/browser/safe_browsing/safe_browsing_service.h"
 
 class ChromeMetricsServiceClient;
 class PrefService;
@@ -70,14 +70,20 @@ class MetricsServicesManager {
 
   metrics::MetricsStateManager* GetMetricsStateManager();
 
+  // Retrieve the latest SafeBrowsing preferences state.
+  bool GetSafeBrowsingState();
+
+  // Update which services are running to match current permissions.
+  void UpdateRunningServices();
+
   // Ensures that all functions are called from the same thread.
   base::ThreadChecker thread_checker_;
 
   // Weak pointer to the local state prefs store.
   PrefService* local_state_;
 
-  // A change registrar for local_state_;
-  PrefChangeRegistrar pref_change_registrar_;
+  // Subscription to SafeBrowsing service state changes.
+  scoped_ptr<SafeBrowsingService::StateSubscription> sb_state_subscription_;
 
   // The current metrics reporting setting.
   bool may_upload_;

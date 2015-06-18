@@ -56,8 +56,8 @@ const RapporParameters kRapporParametersForType[NUM_RAPPOR_TYPES] = {
      rappor::PROBABILITY_50 /* Fake one probability */,
      rappor::PROBABILITY_75 /* One coin probability */,
      rappor::PROBABILITY_25 /* Zero coin probability */,
-     FINE_LEVEL /* Recording level */},
-    // COARSE_RAPPOR_TYPE
+     UMA_RAPPOR_GROUP /* Recording group */},
+    // SAFEBROWSING_RAPPOR_TYPE
     {128 /* Num cohorts */,
      1 /* Bloom filter size bytes */,
      2 /* Bloom filter hash count */,
@@ -65,7 +65,7 @@ const RapporParameters kRapporParametersForType[NUM_RAPPOR_TYPES] = {
      rappor::PROBABILITY_50 /* Fake one probability */,
      rappor::PROBABILITY_75 /* One coin probability */,
      rappor::PROBABILITY_25 /* Zero coin probability */,
-     COARSE_LEVEL /* Recording level */},
+     SAFEBROWSING_RAPPOR_GROUP /* Recording group */},
     // ETLD_PLUS_ONE_RAPPOR_TYPE
     {128 /* Num cohorts */,
      16 /* Bloom filter size bytes */,
@@ -74,7 +74,7 @@ const RapporParameters kRapporParametersForType[NUM_RAPPOR_TYPES] = {
      rappor::PROBABILITY_50 /* Fake one probability */,
      rappor::PROBABILITY_75 /* One coin probability */,
      rappor::PROBABILITY_25 /* Zero coin probability */,
-     FINE_LEVEL /* Recording level */},
+     UMA_RAPPOR_GROUP /* Recording group */},
 };
 
 }  // namespace
@@ -88,7 +88,7 @@ RapporService::RapporService(
       daily_event_(pref_service,
                    prefs::kRapporLastDailySample,
                    kRapporDailyEventHistogram),
-      recording_level_(RECORDING_DISABLED) {
+      recording_groups_(0) {
 }
 
 RapporService::~RapporService() {
@@ -101,6 +101,7 @@ void RapporService::AddDailyObserver(
 }
 
 void RapporService::Initialize(net::URLRequestContextGetter* request_context) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!IsInitialized());
   const GURL server_url = GetServerUrl();
   if (!server_url.is_valid()) {
@@ -116,26 +117,27 @@ void RapporService::Initialize(net::URLRequestContextGetter* request_context) {
                      internal::LoadSecret(pref_service_));
 }
 
-void RapporService::Update(RecordingLevel recording_level, bool may_upload) {
+void RapporService::Update(int recording_groups, bool may_upload) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(IsInitialized());
-  if (recording_level_ != recording_level) {
-    if (recording_level == RECORDING_DISABLED) {
-      DVLOG(1) << "Rappor service stopped due to RECORDING_DISABLED.";
-      recording_level_ = RECORDING_DISABLED;
+  if (recording_groups_ != recording_groups) {
+    if (recording_groups == 0) {
+      DVLOG(1) << "Rappor service stopped because all groups were disabled.";
+      recording_groups_ = 0;
       CancelNextLogRotation();
-    } else if (recording_level_ == RECORDING_DISABLED) {
-      DVLOG(1) << "RapporService started at recording level: "
-               << recording_level;
-      recording_level_ = recording_level;
+    } else if (recording_groups_ == 0) {
+      DVLOG(1) << "RapporService started for groups: "
+               << recording_groups;
+      recording_groups_ = recording_groups;
       ScheduleNextLogRotation(
           base::TimeDelta::FromSeconds(kInitialLogIntervalSeconds));
     } else {
-      DVLOG(1) << "RapporService recording_level changed:" << recording_level;
-      recording_level_ = recording_level;
+      DVLOG(1) << "RapporService recording_groups changed:" << recording_groups;
+      recording_groups_ = recording_groups;
     }
   }
 
-  DVLOG(1) << "RapporService recording_level=" << recording_level_
+  DVLOG(1) << "RapporService recording_groups=" << recording_groups_
            << " may_upload=" << may_upload;
   if (may_upload) {
     uploader_->Start();
@@ -153,6 +155,7 @@ void RapporService::InitializeInternal(
     scoped_ptr<LogUploaderInterface> uploader,
     int32_t cohort,
     const std::string& secret) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!IsInitialized());
   DCHECK(secret_.empty());
   uploader_.swap(uploader);
@@ -160,11 +163,8 @@ void RapporService::InitializeInternal(
   secret_ = secret;
 }
 
-void RapporService::SetRecordingLevel(RecordingLevel recording_level) {
-  recording_level_ = recording_level;
-}
-
 void RapporService::CancelNextLogRotation() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   STLDeleteValues(&metrics_map_);
   log_rotation_timer_.Stop();
 }
@@ -177,6 +177,7 @@ void RapporService::ScheduleNextLogRotation(base::TimeDelta interval) {
 }
 
 void RapporService::OnLogInterval() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(uploader_);
   DVLOG(2) << "RapporService::OnLogInterval";
   daily_event_.CheckInterval();
@@ -193,6 +194,7 @@ void RapporService::OnLogInterval() {
 }
 
 bool RapporService::ExportMetrics(RapporReports* reports) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_GE(cohort_, 0);
   reports->set_cohort(cohort_);
 
@@ -216,9 +218,25 @@ bool RapporService::IsInitialized() const {
   return cohort_ >= 0;
 }
 
+bool RapporService::RecordingAllowed(const RapporParameters& parameters) {
+  // Skip recording in incognito mode.
+  if (is_incognito_callback_.Run()) {
+    DVLOG(2) << "Metric not logged due to incognito mode.";
+    return false;
+  }
+  // Skip this metric if its recording_group is not enabled.
+  if (!(recording_groups_ & parameters.recording_group)) {
+    DVLOG(2) << "Metric not logged due to recording_group "
+             << recording_groups_ << " < " << parameters.recording_group;
+    return false;
+  }
+  return true;
+}
+
 void RapporService::RecordSample(const std::string& metric_name,
                                  RapporType type,
                                  const std::string& sample) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   // Ignore the sample if the service hasn't started yet.
   if (!IsInitialized())
     return;
@@ -233,24 +251,17 @@ void RapporService::RecordSample(const std::string& metric_name,
 void RapporService::RecordSampleInternal(const std::string& metric_name,
                                          const RapporParameters& parameters,
                                          const std::string& sample) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(IsInitialized());
-  if (is_incognito_callback_.Run()) {
-    DVLOG(2) << "Metric not logged due to incognito mode.";
+  if (!RecordingAllowed(parameters))
     return;
-  }
-  // Skip this metric if its reporting level is less than the enabled
-  // reporting level.
-  if (recording_level_ < parameters.recording_level) {
-    DVLOG(2) << "Metric not logged due to recording_level "
-             << recording_level_ << " < " << parameters.recording_level;
-    return;
-  }
   RapporMetric* metric = LookUpMetric(metric_name, parameters);
   metric->AddSample(sample);
 }
 
 RapporMetric* RapporService::LookUpMetric(const std::string& metric_name,
                                           const RapporParameters& parameters) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(IsInitialized());
   std::map<std::string, RapporMetric*>::const_iterator it =
       metrics_map_.find(metric_name);
@@ -266,6 +277,7 @@ RapporMetric* RapporService::LookUpMetric(const std::string& metric_name,
 }
 
 scoped_ptr<Sample> RapporService::CreateSample(RapporType type) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(IsInitialized());
   return scoped_ptr<Sample>(
       new Sample(cohort_, kRapporParametersForType[type]));
@@ -273,18 +285,9 @@ scoped_ptr<Sample> RapporService::CreateSample(RapporType type) {
 
 void RapporService::RecordSampleObj(const std::string& metric_name,
                                     scoped_ptr<Sample> sample) {
-  if (is_incognito_callback_.Run()) {
-    DVLOG(2) << "Metric not logged due to incognito mode.";
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!RecordingAllowed(sample->parameters()))
     return;
-  }
-  // Skip this metric if its reporting level is less than the enabled
-  // reporting level.
-  if (recording_level_ < sample->parameters().recording_level) {
-    DVLOG(2) << "Metric not logged due to recording_level "
-             << recording_level_ << " < "
-             << sample->parameters().recording_level;
-    return;
-  }
   sampler_.AddSample(metric_name, sample.Pass());
 }
 

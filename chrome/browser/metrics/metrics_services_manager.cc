@@ -14,6 +14,8 @@
 #include "chrome/browser/metrics/chrome_metrics_service_client.h"
 #include "chrome/browser/metrics/metrics_reporting_state.h"
 #include "chrome/browser/metrics/variations/variations_service.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_otr_state.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -39,7 +41,6 @@ MetricsServicesManager::MetricsServicesManager(PrefService* local_state)
       may_upload_(false),
       may_record_(false) {
   DCHECK(local_state);
-  pref_change_registrar_.Init(local_state);
 }
 
 MetricsServicesManager::~MetricsServicesManager() {
@@ -98,15 +99,36 @@ metrics::MetricsStateManager* MetricsServicesManager::GetMetricsStateManager() {
   return metrics_state_manager_.get();
 }
 
+bool MetricsServicesManager::GetSafeBrowsingState() {
+  // Start listening for updates to SB service state. This is done here instead
+  // of in the constructor to avoid errors from trying to instantiate SB
+  // service before the IO thread exists.
+  SafeBrowsingService* sb_service = g_browser_process->safe_browsing_service();
+  if (!sb_state_subscription_ && sb_service) {
+    // base::Unretained(this) is safe here since this object owns the
+    // sb_state_subscription_ which owns the pointer.
+    sb_state_subscription_ = sb_service->RegisterStateCallback(
+        base::Bind(&MetricsServicesManager::UpdateRunningServices,
+                   base::Unretained(this)));
+  }
+
+  return sb_service && sb_service->enabled_by_prefs();
+}
+
 void MetricsServicesManager::UpdatePermissions(bool may_record,
                                                bool may_upload) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   // Stash the current permissions so that we can update the RapporService
   // correctly when the Rappor preference changes.  The metrics recording
   // preference partially determines the initial rappor setting, and also
   // controls whether FINE metrics are sent.
   may_record_ = may_record;
   may_upload_ = may_upload;
+  UpdateRunningServices();
+}
 
+void MetricsServicesManager::UpdateRunningServices() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   metrics::MetricsService* metrics = GetMetricsService();
 
   const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
@@ -117,15 +139,17 @@ void MetricsServicesManager::UpdatePermissions(bool may_record,
 
   if (only_do_metrics_recording) {
     metrics->StartRecordingForTests();
-    GetRapporService()->Update(rappor::FINE_LEVEL, false);
+    GetRapporService()->Update(
+        rappor::UMA_RAPPOR_GROUP | rappor::SAFEBROWSING_RAPPOR_GROUP,
+        false);
     return;
   }
 
-  if (may_record) {
+  if (may_record_) {
     if (!metrics->recording_active())
       metrics->Start();
 
-    if (may_upload)
+    if (may_upload_)
       metrics->EnableReporting();
     else
       metrics->DisableReporting();
@@ -133,12 +157,14 @@ void MetricsServicesManager::UpdatePermissions(bool may_record,
     metrics->Stop();
   }
 
-  rappor::RecordingLevel recording_level = rappor::RECORDING_DISABLED;
+  int recording_groups = 0;
 #if defined(GOOGLE_CHROME_BUILD)
-  if (may_record)
-    recording_level = rappor::FINE_LEVEL;
+  if (may_record_)
+    recording_groups |= rappor::UMA_RAPPOR_GROUP;
+  if (GetSafeBrowsingState())
+    recording_groups |= rappor::SAFEBROWSING_RAPPOR_GROUP;
 #endif  // defined(GOOGLE_CHROME_BUILD)
-  GetRapporService()->Update(recording_level, may_upload);
+  GetRapporService()->Update(recording_groups, may_upload_);
 }
 
 void MetricsServicesManager::UpdateUploadPermissions(bool may_upload) {

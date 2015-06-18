@@ -1072,6 +1072,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, StartAndStop) {
   EXPECT_TRUE(pref_service->GetBoolean(prefs::kSafeBrowsingEnabled));
 
   // SBS might still be starting, make sure this doesn't flake.
+  EXPECT_TRUE(sb_service->enabled_by_prefs());
   WaitForIOAndCheckEnabled(sb_service, true);
   EXPECT_TRUE(csd_service->enabled());
 
@@ -1085,11 +1086,13 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, StartAndStop) {
   PrefService* pref_service2 = profile2->GetPrefs();
   EXPECT_TRUE(pref_service2->GetBoolean(prefs::kSafeBrowsingEnabled));
   // We don't expect the state to have changed, but if it did, wait for it.
+  EXPECT_TRUE(sb_service->enabled_by_prefs());
   WaitForIOAndCheckEnabled(sb_service, true);
   EXPECT_TRUE(csd_service->enabled());
 
   // Change one of the prefs. SBS should keep running.
   pref_service->SetBoolean(prefs::kSafeBrowsingEnabled, false);
+  EXPECT_TRUE(sb_service->enabled_by_prefs());
   WaitForIOAndCheckEnabled(sb_service, true);
   EXPECT_TRUE(csd_service->enabled());
 
@@ -1099,6 +1102,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, StartAndStop) {
 // TODO(mattm): Remove this when crbug.com/461493 is fixed.
 #if defined(OS_CHROMEOS)
   // On Chrome OS we should disable safe browsing for signin profile.
+  EXPECT_TRUE(sb_service->enabled_by_prefs());
   WaitForIOAndCheckEnabled(sb_service, true);
   EXPECT_TRUE(csd_service->enabled());
   chromeos::ProfileHelper::GetSigninProfile()
@@ -1107,17 +1111,20 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, StartAndStop) {
       ->SetBoolean(prefs::kSafeBrowsingEnabled, false);
   WaitForIOThread();
 #endif
+  EXPECT_FALSE(sb_service->enabled_by_prefs());
   WaitForIOAndCheckEnabled(sb_service, false);
   EXPECT_FALSE(csd_service->enabled());
 
   // Turn it back on. SBS comes back.
   pref_service2->SetBoolean(prefs::kSafeBrowsingEnabled, true);
+  EXPECT_TRUE(sb_service->enabled_by_prefs());
   WaitForIOAndCheckEnabled(sb_service, true);
   EXPECT_TRUE(csd_service->enabled());
 
   // Delete the Profile. SBS stops again.
   pref_service2 = NULL;
   profile2.reset();
+  EXPECT_FALSE(sb_service->enabled_by_prefs());
   WaitForIOAndCheckEnabled(sb_service, false);
   EXPECT_FALSE(csd_service->enabled());
 }

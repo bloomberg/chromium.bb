@@ -18,19 +18,24 @@
 namespace rappor {
 
 TEST(RapporServiceTest, Update) {
+  // Test rappor service initially has uploading and reporting enabled.
   TestRapporService rappor_service;
   EXPECT_LT(base::TimeDelta(), rappor_service.next_rotation());
   EXPECT_TRUE(rappor_service.test_uploader()->is_running());
 
-  rappor_service.Update(RECORDING_DISABLED, false);
+  // Disabling both should stop both uploads and reports.
+  rappor_service.Update(0, false);
   EXPECT_EQ(base::TimeDelta(), rappor_service.next_rotation());
   EXPECT_FALSE(rappor_service.test_uploader()->is_running());
 
-  rappor_service.Update(FINE_LEVEL, false);
+  // Some recording, but no reporting.
+  rappor_service.Update(UMA_RAPPOR_GROUP, false);
+  // Reports generation should still be scheduled.
   EXPECT_LT(base::TimeDelta(), rappor_service.next_rotation());
   EXPECT_FALSE(rappor_service.test_uploader()->is_running());
 
-  rappor_service.Update(COARSE_LEVEL, true);
+  // Some recording and reporting enabled.
+  rappor_service.Update(SAFEBROWSING_RAPPOR_GROUP, true);
   EXPECT_LT(base::TimeDelta(), rappor_service.next_rotation());
   EXPECT_TRUE(rappor_service.test_uploader()->is_running());
 }
@@ -53,13 +58,26 @@ TEST(RapporServiceTest, RecordAndExportMetrics) {
   EXPECT_EQ(16u, report.bits().size());
 }
 
-// Check that the reporting level is respected.
-TEST(RapporServiceTest, RecordingLevel) {
+// Check that the reporting groups are respected.
+TEST(RapporServiceTest, UmaRecordingGroup) {
   TestRapporService rappor_service;
-  rappor_service.Update(COARSE_LEVEL, false);
+  rappor_service.Update(SAFEBROWSING_RAPPOR_GROUP, false);
 
-  // ETLD_PLUS_ONE_RAPPOR_TYPE is a FINE_LEVEL metric
-  rappor_service.RecordSample("FineMetric", ETLD_PLUS_ONE_RAPPOR_TYPE, "foo");
+  // Wrong recording group.
+  rappor_service.RecordSample("UmaMetric", UMA_RAPPOR_TYPE, "foo");
+
+  RapporReports reports;
+  rappor_service.GetReports(&reports);
+  EXPECT_EQ(0, reports.report_size());
+}
+
+// Check that the reporting groups are respected.
+TEST(RapporServiceTest, SafeBrowsingRecordingGroup) {
+  TestRapporService rappor_service;
+  rappor_service.Update(UMA_RAPPOR_GROUP, false);
+
+  // Wrong recording group.
+  rappor_service.RecordSample("SbMetric", SAFEBROWSING_RAPPOR_TYPE, "foo");
 
   RapporReports reports;
   rappor_service.GetReports(&reports);
@@ -89,7 +107,7 @@ TEST(RapporServiceTest, Incognito) {
   TestRapporService rappor_service;
   rappor_service.set_is_incognito(true);
 
-  rappor_service.RecordSample("MyMetric", COARSE_RAPPOR_TYPE, "foo");
+  rappor_service.RecordSample("MyMetric", SAFEBROWSING_RAPPOR_TYPE, "foo");
 
   RapporReports reports;
   rappor_service.GetReports(&reports);
@@ -99,7 +117,8 @@ TEST(RapporServiceTest, Incognito) {
 // Check that Sample objects record correctly.
 TEST(RapporServiceTest, RecordSample) {
   TestRapporService rappor_service;
-  scoped_ptr<Sample> sample = rappor_service.CreateSample(COARSE_RAPPOR_TYPE);
+  scoped_ptr<Sample> sample =
+      rappor_service.CreateSample(SAFEBROWSING_RAPPOR_TYPE);
   sample->SetStringField("Url", "example.com");
   sample->SetFlagsField("Flags1", 0xbcd, 12);
   rappor_service.RecordSampleObj("ObjMetric", sample.Pass());

@@ -16,15 +16,13 @@ enum Probability {
 };
 
 
-// A metric is reported when it's reporting level is >= the reporting level
+// A metric is reported when its reporting group is in the set of groups
 // passed in to RapporService::Start()
-enum RecordingLevel {
-  // No metrics are reported at this level.
-  RECORDING_DISABLED = 0,
-  // Metrics suitable for broader populations.
-  COARSE_LEVEL,
-  // Metrics suitable for UMA opt-in users.
-  FINE_LEVEL,
+enum RecordingGroup {
+  // Metrics for UMA users.
+  UMA_RAPPOR_GROUP = 1 << 0,
+  // Metrics related to SafeBrowsing, for SafeBrowsing users.
+  SAFEBROWSING_RAPPOR_GROUP = 1 << 1,
 };
 
 // An object describing a rappor metric and the parameters used to generate it.
@@ -59,7 +57,7 @@ struct RapporParameters {
   Probability zero_coin_prob;
 
   // The reporting level this metric is reported at.
-  RecordingLevel recording_level;
+  RecordingGroup recording_group;
 };
 
 }  // namespace rappor

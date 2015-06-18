@@ -20,7 +20,7 @@ const RapporParameters kTestRapporParameters = {
     PROBABILITY_50 /* Fake one probability */,
     PROBABILITY_75 /* One coin probability */,
     PROBABILITY_50 /* Zero coin probability */,
-    FINE_LEVEL /* Reporting level (not used) */};
+    UMA_RAPPOR_GROUP /* Recording group (not used) */};
 
 const RapporParameters kTestStatsRapporParameters = {
     1 /* Num cohorts */,
@@ -30,7 +30,7 @@ const RapporParameters kTestStatsRapporParameters = {
     PROBABILITY_50 /* Fake one probability */,
     PROBABILITY_75 /* One coin probability */,
     PROBABILITY_50 /* Zero coin probability */,
-    FINE_LEVEL /* Reporting level (not used) */};
+    UMA_RAPPOR_GROUP /* Recording group (not used) */};
 
 // Check for basic syntax and use.
 TEST(RapporMetricTest, BasicMetric) {

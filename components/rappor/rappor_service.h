@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "components/metrics/daily_event.h"
 #include "components/rappor/rappor_parameters.h"
@@ -36,10 +37,11 @@ enum RapporType {
   // Generic metrics from UMA opt-in users.
   UMA_RAPPOR_TYPE = 0,
   // Generic metrics for SafeBrowsing users.
-  COARSE_RAPPOR_TYPE,
+  SAFEBROWSING_RAPPOR_TYPE,
   // Deprecated: Use UMA_RAPPOR_TYPE for new metrics
   ETLD_PLUS_ONE_RAPPOR_TYPE,
   NUM_RAPPOR_TYPES,
+  COARSE_RAPPOR_TYPE = SAFEBROWSING_RAPPOR_TYPE,
 };
 
 // This class provides an interface for recording samples for rappor metrics,
@@ -63,10 +65,12 @@ class RapporService {
 
   // Updates the settings for metric recording and uploading.
   // The RapporService must be initialized before this method is called.
-  // If |recording_level| > REPORTING_DISABLED, periodic reports will be
+  // |recording_groups| should be set of flags, e.g.
+  //    UMA_RECORDING_GROUP | SAFEBROWSING_RECORDING_GROUP
+  // If it contains any enabled groups, periodic reports will be
   // generated and queued for upload.
   // If |may_upload| is true, reports will be uploaded from the queue.
-  void Update(RecordingLevel recording_level, bool may_upload);
+  void Update(int recording_groups, bool may_upload);
 
   // Constructs a Sample object for the caller to record fields in.
   scoped_ptr<Sample> CreateSample(RapporType);
@@ -104,9 +108,6 @@ class RapporService {
                           int32_t cohort,
                           const std::string& secret);
 
-  // Sets the recording level.
-  void SetRecordingLevel(RecordingLevel parameters);
-
   // Cancels the next call to OnLogInterval.
   virtual void CancelNextLogRotation();
 
@@ -132,6 +133,11 @@ class RapporService {
   // Called whenever the logging interval elapses to generate a new log of
   // reports and pass it to the uploader.
   void OnLogInterval();
+
+  // Check if recording of the metric is allowed, given it's parameters.
+  // This will check that we are not in incognito mode, and that the
+  // appropriate recording group is enabled.
+  bool RecordingAllowed(const RapporParameters& parameters);
 
   // Finds a metric in the metrics_map_, creating it if it doesn't already
   // exist.
@@ -159,14 +165,17 @@ class RapporService {
   // A private LogUploader instance for sending reports to the server.
   scoped_ptr<LogUploaderInterface> uploader_;
 
-  // What reporting level of metrics are being reported.
-  RecordingLevel recording_level_;
+  // The set of recording groups that metrics are being recorded, e.g.
+  //     UMA_RECORDING_GROUP | SAFEBROWSING_RECORDING_GROUP
+  int recording_groups_;
 
   // We keep all registered metrics in a map, from name to metric.
   // The map owns the metrics it contains.
   std::map<std::string, RapporMetric*> metrics_map_;
 
   internal::Sampler sampler_;
+
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(RapporService);
 };

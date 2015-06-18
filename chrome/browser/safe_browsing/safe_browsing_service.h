@@ -12,6 +12,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/callback_list.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -107,6 +108,12 @@ class SafeBrowsingService
     return enabled_;
   }
 
+  // Whether the service is enabled by the current set of profiles.
+  bool enabled_by_prefs() const {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    return enabled_by_prefs_;
+  }
+
   safe_browsing::ClientSideDetectionService*
       safe_browsing_detection_service() const {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -151,6 +158,15 @@ class SafeBrowsingService
   // Observes resource requests made by the renderer and reports suspicious
   // activity.
   void OnResourceRequest(const net::URLRequest* request);
+
+  // Type for subscriptions to SafeBrowsing service state.
+  typedef base::CallbackList<void(void)>::Subscription StateSubscription;
+
+  // Adds a listener for when SafeBrowsing preferences might have changed.
+  // To get the current state, the callback should call enabled_by_prefs().
+  // Should only be called on the UI thread.
+  scoped_ptr<StateSubscription> RegisterStateCallback(
+      const base::Callback<void(void)>& callback);
 
  protected:
   // Creates the safe browsing service.  Need to initialize before using.
@@ -245,6 +261,10 @@ class SafeBrowsingService
   // on the IO thread during normal operations.
   bool enabled_;
 
+  // Whether SafeBrowsing is enabled by the current set of profiles.
+  // Accessed on UI thread.
+  bool enabled_by_prefs_;
+
   // Tracks existing PrefServices, and the safe browsing preference on each.
   // This is used to determine if any profile is currently using the safe
   // browsing service, and to start it up or shut it down accordingly.
@@ -253,6 +273,10 @@ class SafeBrowsingService
 
   // Used to track creation and destruction of profiles on the UI thread.
   content::NotificationRegistrar prefs_registrar_;
+
+  // Callbacks when SafeBrowsing state might have changed.
+  // Should only be accessed on the UI thread.
+  base::CallbackList<void(void)> state_callback_list_;
 
   // The ClientSideDetectionService is managed by the SafeBrowsingService,
   // since its running state and lifecycle depends on SafeBrowsingService's.

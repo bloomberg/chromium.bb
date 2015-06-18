@@ -29,7 +29,7 @@ TestRapporService::TestRapporService()
   InitializeInternal(make_scoped_ptr(test_uploader_),
                      0,
                      HmacByteVectorGenerator::GenerateEntropyInput());
-  Update(FINE_LEVEL, true);
+  Update(UMA_RAPPOR_GROUP | SAFEBROWSING_RAPPOR_GROUP, true);
 }
 
 TestRapporService::~TestRapporService() {}
