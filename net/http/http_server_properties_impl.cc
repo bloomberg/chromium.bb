@@ -291,21 +291,12 @@ void HttpServerPropertiesImpl::SetAlternativeService(
       alternative_service, alternative_probability);
   AlternativeServiceMap::const_iterator it =
       GetAlternateProtocolIterator(origin);
-  if (it != alternative_service_map_.end()) {
-    const AlternativeServiceInfo existing_alternative_service_info = it->second;
-    if (existing_alternative_service_info != alternative_service_info) {
-      LOG(WARNING) << "Changing the alternative service for: "
-                   << origin.ToString() << " from "
-                   << existing_alternative_service_info.ToString() << " to "
-                   << alternative_service_info.ToString() << ".";
-    }
-  } else {
-    if (alternative_probability >= alternative_service_probability_threshold_) {
-      // TODO(rch): Consider the case where multiple requests are started
-      // before the first completes. In this case, only one of the jobs
-      // would reach this code, whereas all of them should should have.
-      HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_MAPPING_MISSING);
-    }
+  if (it == alternative_service_map_.end() &&
+      alternative_probability >= alternative_service_probability_threshold_) {
+    // TODO(rch): Consider the case where multiple requests are started
+    // before the first completes. In this case, only one of the jobs
+    // would reach this code, whereas all of them should should have.
+    HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_MAPPING_MISSING);
   }
 
   alternative_service_map_.Put(origin, alternative_service_info);
