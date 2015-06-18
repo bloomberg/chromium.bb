@@ -847,11 +847,11 @@ scoped_ptr<net::URLFetcher> SearchProvider::CreateSuggestFetcher(
     return NULL;
   // Send the current page URL if user setting and URL requirements are met and
   // the user is in the field trial.
-  if (CanSendURL(current_page_url_, suggest_url, template_url,
+  if (CanSendURL(input.current_url(), suggest_url, template_url,
                  input.current_page_classification(),
                  template_url_service_->search_terms_data(), client_) &&
       OmniboxFieldTrial::InZeroSuggestAfterTypingFieldTrial()) {
-    search_term_args.current_page_url = current_page_url_.spec();
+    search_term_args.current_page_url = input.current_url().spec();
     // Create the suggest URL again with the current page URL.
     suggest_url = GURL(template_url->suggestions_url_ref().ReplaceSearchTerms(
         search_term_args,

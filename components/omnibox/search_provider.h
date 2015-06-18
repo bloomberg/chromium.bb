@@ -69,11 +69,6 @@ class SearchProvider : public BaseSearchProvider,
   // AutocompleteProvider:
   void ResetSession() override;
 
-  // This URL may be sent with suggest requests; see comments on CanSendURL().
-  void set_current_page_url(const GURL& current_page_url) {
-    current_page_url_ = current_page_url;
-  }
-
  protected:
   ~SearchProvider() override;
 
@@ -403,8 +398,6 @@ class SearchProvider : public BaseSearchProvider,
   base::string16 top_query_suggestion_match_contents_;
   // The top navigation suggestion, left blank/invalid if none.
   GURL top_navigation_suggestion_;
-
-  GURL current_page_url_;
 
   // Session token management.
   std::string current_token_;
