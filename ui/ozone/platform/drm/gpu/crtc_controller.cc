@@ -67,7 +67,7 @@ bool CrtcController::SchedulePageFlip(
     const OverlayPlaneList& overlays,
     bool test_only,
     scoped_refptr<PageFlipRequest> page_flip_request) {
-  DCHECK(!page_flip_request_.get());
+  DCHECK(page_flip_request.get());
   DCHECK(!is_disabled_);
   const OverlayPlane* primary = OverlayPlane::GetPrimaryPlane(overlays);
   if (!primary) {
