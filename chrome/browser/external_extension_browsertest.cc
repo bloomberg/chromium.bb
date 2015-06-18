@@ -3,13 +3,17 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/google/core/browser/google_switches.h"
+#include "components/search_engines/search_engines_pref_names.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
@@ -28,7 +32,7 @@ struct IsSearchProviderTestData {
   GURL test_url;
 };
 
-}
+}  // namespace
 
 class SearchProviderTest : public InProcessBrowserTest {
  protected:
@@ -45,9 +49,21 @@ class SearchProviderTest : public InProcessBrowserTest {
     // proxy configured.
     command_line->AppendSwitch(switches::kNoProxyServer);
 
+    // Always point google search to a known, non-secure URL. Normally, this
+    // varies based on locale and is a HTTPS host.
+    command_line->AppendSwitchASCII(
+        switches::kGoogleBaseURL, "http://www.google.com");
+
     // Get the url for the test page.
     search_provider_test_url_ =
         test_server()->GetURL("files/is_search_provider_installed.html");
+  }
+
+  void SetUpOnMainThread() override {
+    // Force the country to Canada, which has an installed search provider
+    // that's HTTP.
+    browser()->profile()->GetPrefs()->SetInteger(
+        prefs::kCountryIDAtInstall, ('C' << 8) | 'A');
   }
 
   IsSearchProviderTestData StartIsSearchProviderInstalledTest(
@@ -83,11 +99,7 @@ class SearchProviderTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(SearchProviderTest);
 };
 
-#if 1
-// Disabled - http://crbug.com/359727 (js has syntax errors which v8 hates)
-#define MAYBE_TestIsSearchProviderInstalled \
-    DISABLED_TestIsSearchProviderInstalled
-#elif defined(OS_WIN)
+#if defined(OS_WIN)
 // This is flaking on XP. See http://crbug.com/159530
 #define MAYBE_TestIsSearchProviderInstalled \
     DISABLED_TestIsSearchProviderInstalled
@@ -97,11 +109,9 @@ class SearchProviderTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(SearchProviderTest,
                        MAYBE_TestIsSearchProviderInstalled) {
   // Use the default search provider, other installed search provider, and
-  // one not installed as well. (Note that yahoo isn't tested because the
-  // its host name varies a lot for different locales unlike Google and Bing,
-  // which would make the test fail depending on the machine's locale.)
+  // one not installed as well. Note, Ask is used here because it's a HTTP host.
   const char* test_hosts[] = { "www.google.com",
-                               "www.bing.com",
+                               "www.ask.com",
                                "localhost" };
   const char* expected_results[] = { "2",
                                      "1",

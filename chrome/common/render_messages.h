@@ -80,8 +80,9 @@ IPC_ENUM_TRAITS_MAX_VALUE(OmniboxFocusChangeReason,
 IPC_ENUM_TRAITS_MAX_VALUE(OmniboxFocusState, OMNIBOX_FOCUS_STATE_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(search_provider::OSDDType,
                           search_provider::OSDD_TYPE_LAST)
-IPC_ENUM_TRAITS_MAX_VALUE(search_provider::InstallState,
-                          search_provider::INSTALLED_STATE_LAST)
+IPC_ENUM_TRAITS_MIN_MAX_VALUE(search_provider::InstallState,
+                              search_provider::DENIED,
+                              search_provider::INSTALLED_STATE_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(ThemeBackgroundImageAlignment,
                           THEME_BKGRND_IMAGE_ALIGN_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(ThemeBackgroundImageTiling, THEME_BKGRND_IMAGE_LAST)
