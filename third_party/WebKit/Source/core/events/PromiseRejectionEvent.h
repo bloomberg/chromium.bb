@@ -5,6 +5,7 @@
 #ifndef PromiseRejectionEvent_h
 #define PromiseRejectionEvent_h
 
+#include "bindings/core/v8/ScopedPersistent.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "core/CoreExport.h"
@@ -13,7 +14,7 @@
 
 namespace blink {
 
-class CORE_EXPORT PromiseRejectionEvent : public Event {
+class CORE_EXPORT PromiseRejectionEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<PromiseRejectionEvent> create()
@@ -25,8 +26,8 @@ public:
         return adoptRefWillBeNoop(new PromiseRejectionEvent(type, initializer));
     }
 
-    ScriptValue reason() const { return m_reason; }
-    ScriptPromise promise() const { return m_promise; }
+    ScriptValue reason(ScriptState*) const;
+    ScriptPromise promise(ScriptState*) const;
 
     virtual const AtomicString& interfaceName() const override;
 
@@ -38,8 +39,11 @@ private:
     PromiseRejectionEvent(const AtomicString&, const PromiseRejectionEventInit&);
     ~PromiseRejectionEvent() override;
 
-    ScriptPromise m_promise;
-    ScriptValue m_reason;
+    static void didCollectPromise(const v8::WeakCallbackInfo<PromiseRejectionEvent>&);
+    static void didCollectReason(const v8::WeakCallbackInfo<PromiseRejectionEvent>&);
+
+    ScopedPersistent<v8::Value> m_promise;
+    ScopedPersistent<v8::Value> m_reason;
 };
 
 } // namespace blink

@@ -14,16 +14,32 @@ PromiseRejectionEvent::PromiseRejectionEvent()
 
 PromiseRejectionEvent::PromiseRejectionEvent(const AtomicString& type, const PromiseRejectionEventInit& initializer)
     : Event(type, initializer)
-    , m_reason(initializer.reason())
 {
-    if (initializer.hasPromise())
-        m_promise = initializer.promise();
+    if (initializer.hasPromise()) {
+        m_promise.set(initializer.promise().isolate(), initializer.promise().v8Value());
+        m_promise.setWeak(this, &PromiseRejectionEvent::didCollectPromise);
+    }
+    if (initializer.hasReason()) {
+        m_reason.set(initializer.reason().isolate(), initializer.reason().v8Value());
+        m_reason.setWeak(this, &PromiseRejectionEvent::didCollectReason);
+    }
 }
 
 PromiseRejectionEvent::~PromiseRejectionEvent()
 {
 }
 
+ScriptPromise PromiseRejectionEvent::promise(ScriptState* state) const
+{
+    v8::Local<v8::Value> value = m_promise.newLocal(state->isolate());
+    return ScriptPromise(state, value);
+}
+
+ScriptValue PromiseRejectionEvent::reason(ScriptState* state) const
+{
+    v8::Local<v8::Value> value = m_reason.newLocal(state->isolate());
+    return ScriptValue(state, value);
+}
 
 const AtomicString& PromiseRejectionEvent::interfaceName() const
 {
@@ -33,6 +49,16 @@ const AtomicString& PromiseRejectionEvent::interfaceName() const
 DEFINE_TRACE(PromiseRejectionEvent)
 {
     Event::trace(visitor);
+}
+
+void PromiseRejectionEvent::didCollectPromise(const v8::WeakCallbackInfo<PromiseRejectionEvent>& data)
+{
+    data.GetParameter()->m_promise.clear();
+}
+
+void PromiseRejectionEvent::didCollectReason(const v8::WeakCallbackInfo<PromiseRejectionEvent>& data)
+{
+    data.GetParameter()->m_reason.clear();
 }
 
 } // namespace blink

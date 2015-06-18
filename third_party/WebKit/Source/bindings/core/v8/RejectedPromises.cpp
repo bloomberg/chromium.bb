@@ -94,6 +94,7 @@ public:
         }
 
         m_callStack.clear();
+        m_exception.clear();
     }
 
     void revoke()

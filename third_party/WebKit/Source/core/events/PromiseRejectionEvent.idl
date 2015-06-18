@@ -9,6 +9,6 @@
     Constructor(DOMString type, optional PromiseRejectionEventInit eventInitDict),
     Exposed=(Window,Worker,ServiceWorker),
 ] interface PromiseRejectionEvent : Event {
-    readonly attribute Promise<any> promise;
-    readonly attribute any reason;
+    [CallWith=ScriptState] readonly attribute Promise<any> promise;
+    [CallWith=ScriptState] readonly attribute any reason;
 };
