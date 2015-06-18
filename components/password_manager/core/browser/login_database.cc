@@ -199,7 +199,7 @@ bool CreateIndexOnSignonRealm(sql::Connection* db, const char* table_name) {
 }  // namespace
 
 LoginDatabase::LoginDatabase(const base::FilePath& db_path)
-    : db_path_(db_path) {
+    : db_path_(db_path), clear_password_values_(false) {
 }
 
 LoginDatabase::~LoginDatabase() {
@@ -534,8 +534,9 @@ PasswordStoreChangeList LoginDatabase::AddLogin(const PasswordForm& form) {
   if (!DoesMatchConstraints(form))
     return list;
   std::string encrypted_password;
-  if (EncryptedString(form.password_value, &encrypted_password) !=
-      ENCRYPTION_RESULT_SUCCESS)
+  if (EncryptedString(
+          clear_password_values_ ? base::string16() : form.password_value,
+          &encrypted_password) != ENCRYPTION_RESULT_SUCCESS)
     return list;
 
   // You *must* change LoginTableColumns if this query changes.
@@ -578,8 +579,9 @@ PasswordStoreChangeList LoginDatabase::AddLogin(const PasswordForm& form) {
 
 PasswordStoreChangeList LoginDatabase::UpdateLogin(const PasswordForm& form) {
   std::string encrypted_password;
-  if (EncryptedString(form.password_value, &encrypted_password) !=
-      ENCRYPTION_RESULT_SUCCESS)
+  if (EncryptedString(
+          clear_password_values_ ? base::string16() : form.password_value,
+          &encrypted_password) != ENCRYPTION_RESULT_SUCCESS)
     return PasswordStoreChangeList();
 
   // Replacement is necessary to deal with updating imported credentials. See

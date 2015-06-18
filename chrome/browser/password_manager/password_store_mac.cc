@@ -924,6 +924,7 @@ PasswordStoreMac::PasswordStoreMac(
       login_metadata_db_(login_db.Pass()) {
   DCHECK(keychain_.get());
   DCHECK(login_metadata_db_.get());
+  login_metadata_db_->set_clear_password_values(true);
 }
 
 PasswordStoreMac::~PasswordStoreMac() {}

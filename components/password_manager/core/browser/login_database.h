@@ -111,6 +111,8 @@ class LoginDatabase {
 
   StatisticsTable& stats_table() { return stats_table_; }
 
+  void set_clear_password_values(bool val) { clear_password_values_ = val; }
+
  private:
   // Result values for encryption/decryption actions.
   enum EncryptionResult {
@@ -169,6 +171,13 @@ class LoginDatabase {
   mutable sql::Connection db_;
   sql::MetaTable meta_table_;
   StatisticsTable stats_table_;
+
+  // If set to 'true', then the password values are cleared before encrypting
+  // and storing in the database. At the same time AddLogin/UpdateLogin return
+  // PasswordStoreChangeList containing the real password.
+  // This is a temporary measure for migration the Keychain on Mac.
+  // crbug.com/466638
+  bool clear_password_values_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginDatabase);
 };

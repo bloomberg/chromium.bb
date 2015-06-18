@@ -11,9 +11,11 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/histogram_tester.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/password_manager/password_store_mac_internal.h"
 #include "chrome/common/chrome_paths.h"
+#include "components/os_crypt/os_crypt.h"
 #include "components/password_manager/core/browser/login_database.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
@@ -1205,6 +1207,9 @@ class PasswordStoreMacTest : public testing::Test {
   void SetUp() override {
     ASSERT_TRUE(db_dir_.CreateUniqueTempDir());
 
+    // Ensure that LoginDatabase will use the mock keychain if it needs to
+    // encrypt/decrypt a password.
+    OSCrypt::UseMockKeychain(true);
     scoped_ptr<password_manager::LoginDatabase> login_db(
         new password_manager::LoginDatabase(test_login_db_file_path()));
     CreateAndInitPasswordStore(login_db.Pass());
@@ -1213,7 +1218,15 @@ class PasswordStoreMacTest : public testing::Test {
     FinishAsyncProcessing();
   }
 
-  void TearDown() override { ClosePasswordStore(); }
+  void TearDown() override {
+    ClosePasswordStore();
+    // Whatever a test did, PasswordStoreMac stores only empty password values
+    // in LoginDatabase. The empty valus do not require encryption and therefore
+    // OSCrypt shouldn't call the Keychain. The histogram doesn't cover the
+    // internet passwords.
+    EXPECT_FALSE(histogram_tester_.GetHistogramSamplesSinceCreation(
+        "OSX.Keychain.Access"));
+  }
 
   void CreateAndInitPasswordStore(
       scoped_ptr<password_manager::LoginDatabase> login_db) {
@@ -1314,6 +1327,7 @@ class PasswordStoreMacTest : public testing::Test {
 
   base::ScopedTempDir db_dir_;
   scoped_refptr<TestPasswordStoreMac> store_;
+  base::HistogramTester histogram_tester_;
 };
 
 TEST_F(PasswordStoreMacTest, TestStoreUpdate) {

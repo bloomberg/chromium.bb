@@ -23,6 +23,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_MACOSX)
+#include "components/os_crypt/os_crypt.h"
+#endif
+
 using autofill::PasswordForm;
 using base::ASCIIToUTF16;
 using ::testing::Eq;
@@ -37,15 +41,6 @@ PasswordStoreChangeList AddChangeForForm(const PasswordForm& form) {
 PasswordStoreChangeList UpdateChangeForForm(const PasswordForm& form) {
   return PasswordStoreChangeList(
       1, PasswordStoreChange(PasswordStoreChange::UPDATE, form));
-}
-
-void FormsAreEqual(const PasswordForm& expected, const PasswordForm& actual) {
-  PasswordForm expected_copy(expected);
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  // On the Mac we should never be storing passwords in the database.
-  expected_copy.password_value = ASCIIToUTF16("");
-#endif
-  EXPECT_EQ(expected_copy, actual);
 }
 
 void GenerateExamplePasswordForm(PasswordForm* form) {
@@ -80,6 +75,9 @@ class LoginDatabaseTest : public testing::Test {
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     file_ = temp_dir_.path().AppendASCII("TestMetadataStoreMacDatabase");
+#if defined(OS_MACOSX)
+    OSCrypt::UseMockKeychain(true);
+#endif  // defined(OS_MACOSX)
 
     db_.reset(new LoginDatabase(file_));
     ASSERT_TRUE(db_->Init());
@@ -183,13 +181,13 @@ TEST_F(LoginDatabaseTest, Logins) {
   EXPECT_EQ(AddChangeForForm(form), db().AddLogin(form));
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
   ASSERT_EQ(1U, result.size());
-  FormsAreEqual(form, *result[0]);
+  EXPECT_EQ(form, *result[0]);
   result.clear();
 
   // Match against an exact copy.
   EXPECT_TRUE(db().GetLogins(form, &result));
   ASSERT_EQ(1U, result.size());
-  FormsAreEqual(form, *result[0]);
+  EXPECT_EQ(form, *result[0]);
   result.clear();
 
   // The example site changes...
@@ -267,12 +265,7 @@ TEST_F(LoginDatabaseTest, Logins) {
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
   EXPECT_EQ(1U, result.size());
   // Password element was updated.
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  // On the Mac we should never be storing passwords in the database.
-  EXPECT_EQ(base::string16(), result[0]->password_value);
-#else
   EXPECT_EQ(form6.password_value, result[0]->password_value);
-#endif
   // Preferred login.
   EXPECT_TRUE(form6.preferred);
   result.clear();
@@ -752,13 +745,13 @@ TEST_F(LoginDatabaseTest, BlacklistedLogins) {
   // GetLogins should give the blacklisted result.
   EXPECT_TRUE(db().GetLogins(form, &result));
   ASSERT_EQ(1U, result.size());
-  FormsAreEqual(form, *result[0]);
+  EXPECT_EQ(form, *result[0]);
   result.clear();
 
   // So should GetAllBlacklistedLogins.
   EXPECT_TRUE(db().GetBlacklistLogins(&result));
   ASSERT_EQ(1U, result.size());
-  FormsAreEqual(form, *result[0]);
+  EXPECT_EQ(form, *result[0]);
   result.clear();
 }
 
@@ -815,13 +808,7 @@ TEST_F(LoginDatabaseTest, UpdateIncompleteCredentials) {
   EXPECT_EQ(incomplete_form.origin, result[0]->origin);
   EXPECT_EQ(incomplete_form.signon_realm, result[0]->signon_realm);
   EXPECT_EQ(incomplete_form.username_value, result[0]->username_value);
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  // On Mac, passwords are not stored in login database, instead they're in
-  // the keychain.
-  EXPECT_TRUE(result[0]->password_value.empty());
-#else
   EXPECT_EQ(incomplete_form.password_value, result[0]->password_value);
-#endif  // OS_MACOSX && !OS_IOS
   EXPECT_TRUE(result[0]->preferred);
   EXPECT_FALSE(result[0]->ssl_valid);
 
@@ -851,9 +838,6 @@ TEST_F(LoginDatabaseTest, UpdateIncompleteCredentials) {
 
   // This time we should have all the info available.
   PasswordForm expected_form(completed_form);
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  expected_form.password_value.clear();
-#endif  // OS_MACOSX && !OS_IOS
   EXPECT_EQ(expected_form, *result[0]);
   result.clear();
 }
@@ -903,12 +887,6 @@ TEST_F(LoginDatabaseTest, UpdateOverlappingCredentials) {
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
   ASSERT_EQ(2U, result.size());
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  // On Mac, passwords are not stored in login database, instead they're in
-  // the keychain.
-  complete_form.password_value.clear();
-  incomplete_form.password_value.clear();
-#endif  // OS_MACOSX && !OS_IOS
   if (result[0]->username_element.empty())
     std::swap(result[0], result[1]);
   EXPECT_EQ(complete_form, *result[0]);
@@ -987,11 +965,6 @@ TEST_F(LoginDatabaseTest, UpdateLogin) {
   ScopedVector<autofill::PasswordForm> result;
   EXPECT_TRUE(db().GetLogins(form, &result));
   ASSERT_EQ(1U, result.size());
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  // On Mac, passwords are not stored in login database, instead they're in
-  // the keychain.
-  form.password_value.clear();
-#endif  // OS_MACOSX && !OS_IOS
   EXPECT_EQ(form, *result[0]);
 }
 
@@ -1121,6 +1094,39 @@ TEST_F(LoginDatabaseTest, ReportMetricsTest) {
       1);
 }
 
+TEST_F(LoginDatabaseTest, ClearPasswordValues) {
+  db().set_clear_password_values(true);
+
+  // Add a PasswordForm, the password should be cleared.
+  base::HistogramTester histogram_tester;
+  PasswordForm form;
+  form.origin = GURL("http://accounts.google.com/LoginAuth");
+  form.signon_realm = "http://accounts.google.com/";
+  form.username_value = ASCIIToUTF16("my_username");
+  form.password_value = ASCIIToUTF16("12345");
+  EXPECT_EQ(AddChangeForForm(form), db().AddLogin(form));
+
+  ScopedVector<autofill::PasswordForm> result;
+  EXPECT_TRUE(db().GetLogins(form, &result));
+  ASSERT_EQ(1U, result.size());
+  PasswordForm expected_form = form;
+  expected_form.password_value.clear();
+  EXPECT_EQ(expected_form, *result[0]);
+
+  // Update the password, it should stay empty.
+  form.password_value = ASCIIToUTF16("password");
+  EXPECT_EQ(UpdateChangeForForm(form), db().UpdateLogin(form));
+  EXPECT_TRUE(db().GetLogins(form, &result));
+  ASSERT_EQ(1U, result.size());
+  EXPECT_EQ(expected_form, *result[0]);
+
+  // Encrypting/decrypting shouldn't happen. Thus there should be no keychain
+  // access on Mac.
+  scoped_ptr<base::HistogramSamples> samples =
+      histogram_tester.GetHistogramSamplesSinceCreation("OSX.Keychain.Access");
+  EXPECT_TRUE(!samples || samples->TotalCount() == 0);
+}
+
 #if defined(OS_POSIX)
 // Only the current user has permission to read the database.
 //
@@ -1144,6 +1150,9 @@ class LoginDatabaseMigrationTest : public testing::TestWithParam<int> {
                                   .AppendASCII("data")
                                   .AppendASCII("password_manager");
     database_path_ = temp_dir_.path().AppendASCII("test.db");
+#if defined(OS_MACOSX)
+    OSCrypt::UseMockKeychain(true);
+#endif  // defined(OS_MACOSX)
   }
 
   // Creates the databse from |sql_file|.
@@ -1235,7 +1244,7 @@ void LoginDatabaseMigrationTest::MigrationToVCurrent(
     ScopedVector<autofill::PasswordForm> result;
     EXPECT_TRUE(db.GetLogins(form, &result));
     ASSERT_EQ(1U, result.size());
-    FormsAreEqual(form, *result[0]);
+    EXPECT_EQ(form, *result[0]);
     EXPECT_TRUE(db.RemoveLogin(form));
   }
   // New date, in microseconds since platform independent epoch.

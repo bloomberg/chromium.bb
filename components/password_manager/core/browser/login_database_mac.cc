@@ -4,9 +4,7 @@
 
 #include "components/password_manager/core/browser/login_database.h"
 
-// On the Mac, the LoginDatabase nulls out passwords, so that we can use the
-// rest of the database as a suplemental storage system to complement Keychain,
-// providing storage of fields Keychain doesn't allow.
+#include "components/os_crypt/os_crypt.h"
 
 namespace password_manager {
 
@@ -14,16 +12,18 @@ namespace password_manager {
 LoginDatabase::EncryptionResult LoginDatabase::EncryptedString(
     const base::string16& plain_text,
     std::string* cipher_text) {
-  *cipher_text = std::string();
-  return ENCRYPTION_RESULT_SUCCESS;
+  return OSCrypt::EncryptString16(plain_text, cipher_text)
+             ? ENCRYPTION_RESULT_SUCCESS
+             : ENCRYPTION_RESULT_SERVICE_FAILURE;
 }
 
 // static
 LoginDatabase::EncryptionResult LoginDatabase::DecryptedString(
     const std::string& cipher_text,
     base::string16* plain_text) {
-  *plain_text = base::string16();
-  return ENCRYPTION_RESULT_SUCCESS;
+  return OSCrypt::DecryptString16(cipher_text, plain_text)
+             ? ENCRYPTION_RESULT_SUCCESS
+             : ENCRYPTION_RESULT_SERVICE_FAILURE;
 }
 
 }  // namespace password_manager
