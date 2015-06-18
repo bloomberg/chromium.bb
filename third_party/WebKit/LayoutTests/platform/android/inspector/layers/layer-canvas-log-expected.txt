@@ -89,7 +89,7 @@ Canvas log:
             paint : {
                 color : "#FF000000"
                 filterLevel : "High"
-                flags : "AntiAlias"
+                flags : "none"
                 hinting : "Normal"
                 strokeCap : "Butt"
                 strokeJoin : "Miter"
