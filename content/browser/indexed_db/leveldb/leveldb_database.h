@@ -101,6 +101,8 @@ class CONTENT_EXPORT LevelDBDatabase {
  private:
   friend class LevelDBSnapshot;
 
+  void CloseDatabase();
+
   scoped_ptr<leveldb::Env> env_;
   scoped_ptr<leveldb::Comparator> comparator_adapter_;
   scoped_ptr<leveldb::DB> db_;

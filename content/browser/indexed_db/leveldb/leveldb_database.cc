@@ -86,9 +86,18 @@ LevelDBDatabase::LevelDBDatabase() {}
 
 LevelDBDatabase::~LevelDBDatabase() {
   // db_'s destructor uses comparator_adapter_; order of deletion is important.
-  db_.reset();
+  CloseDatabase();
   comparator_adapter_.reset();
   env_.reset();
+}
+
+void LevelDBDatabase::CloseDatabase() {
+  if (db_) {
+    base::TimeTicks begin_time = base::TimeTicks::Now();
+    db_.reset();
+    UMA_HISTOGRAM_MEDIUM_TIMES("WebCore.IndexedDB.LevelDB.CloseTime",
+                               base::TimeTicks::Now() - begin_time);
+  }
 }
 
 static leveldb::Status OpenDB(

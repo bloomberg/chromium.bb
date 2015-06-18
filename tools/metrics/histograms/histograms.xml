@@ -47181,6 +47181,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebCore.IndexedDB.LevelDB.CloseTime" units="milliseconds">
+  <owner>cmumford@chromium.org</owner>
+  <summary>
+    The time that it takes to close IndexedDB's LevelDB backing store.
+  </summary>
+</histogram>
+
 <histogram name="WebCore.IndexedDB.LevelDB.FreeDiskSpaceFailure"
     enum="LevelDBErrorCount">
   <owner>dgrogan@chromium.org</owner>
