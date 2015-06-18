@@ -31,9 +31,9 @@
           '../../../../ui/webui/resources/js/util.js',
         ],
         'externs': [
-          '<(CLOSURE_DIR)/externs/chrome_extensions.js',
-          '<(CLOSURE_DIR)/externs/chrome_send.js',
-          '<(CLOSURE_DIR)/externs/developer_private.js',
+          '<(EXTERNS_DIR)/chrome_extensions.js',
+          '<(EXTERNS_DIR)/chrome_send.js',
+          '<(EXTERNS_DIR)/developer_private.js',
         ],
       },
       'includes': ['../../../../third_party/closure_compiler/compile_js.gypi'],

@@ -11,7 +11,7 @@
           'braille_ime.js',
         ],
         'externs': [
-          '<(CLOSURE_DIR)/externs/chrome_extensions.js',
+          '<(EXTERNS_DIR)/chrome_extensions.js',
           'externs.js',
         ],
       },

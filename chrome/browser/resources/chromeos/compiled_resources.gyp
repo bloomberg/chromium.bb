@@ -9,7 +9,7 @@
         'depends': [
           '../../../../chrome/browser/resources/options/compiled_resources.gyp:options_bundle',
         ],
-        'externs': ['<(CLOSURE_DIR)/externs/chrome_send.js'],
+        'externs': ['<(EXTERNS_DIR)/chrome_send.js'],
       },
       'includes': ['../../../../third_party/closure_compiler/compile_js.gypi'],
     }

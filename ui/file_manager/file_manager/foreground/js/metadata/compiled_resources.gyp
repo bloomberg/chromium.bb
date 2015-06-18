@@ -14,13 +14,13 @@
           'image_parsers.js',
           'mpeg_parser.js',
           'id3_parser.js',
-	  'function_sequence.js',
-	  'function_parallel.js',
-	],
-	'externs': [
+          'function_sequence.js',
+          'function_parallel.js',
+        ],
+        'externs': [
           '../../../../externs/exif_entry.js',
           '../../../../externs/platform_worker.js',
-	]
+        ]
       },
       'includes': [
         '../../../../../../third_party/closure_compiler/compile_js.gypi'

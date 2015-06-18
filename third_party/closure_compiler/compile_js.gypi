@@ -5,6 +5,7 @@
   'type': 'none',
   'variables': {
     'CLOSURE_DIR': '<(DEPTH)/third_party/closure_compiler',
+    'EXTERNS_DIR': '<(CLOSURE_DIR)/externs',
   },
   'actions': [
     {
