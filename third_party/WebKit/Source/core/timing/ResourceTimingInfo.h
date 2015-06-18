@@ -37,14 +37,15 @@
 
 namespace blink {
 
-class ResourceTimingInfo : public RefCounted<ResourceTimingInfo> {
+class ResourceTimingInfo {
 public:
-    static PassRefPtr<ResourceTimingInfo> create(const AtomicString& type, const double time)
+    static PassOwnPtr<ResourceTimingInfo> create(const AtomicString& type, const double time, bool isMainResource)
     {
-        return adoptRef(new ResourceTimingInfo(type, time));
+        return adoptPtr(new ResourceTimingInfo(type, time, isMainResource));
     }
 
     double initialTime() const { return m_initialTime; }
+    bool isMainResource() const { return m_isMainResource; }
 
     void setInitiatorType(const AtomicString& type) { m_type = type; }
     const AtomicString& initiatorType() const { return m_type; }
@@ -72,9 +73,10 @@ public:
     }
 
 private:
-    ResourceTimingInfo(const AtomicString& type, const double time)
+    ResourceTimingInfo(const AtomicString& type, const double time, bool isMainResource)
         : m_type(type)
         , m_initialTime(time)
+        , m_isMainResource(isMainResource)
     {
     }
 
@@ -85,6 +87,7 @@ private:
     ResourceRequest m_initialRequest;
     ResourceResponse m_finalResponse;
     Vector<ResourceResponse> m_redirectChain;
+    bool m_isMainResource;
 };
 
 } // namespace blink

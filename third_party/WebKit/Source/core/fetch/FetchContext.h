@@ -87,7 +87,7 @@ public:
     virtual void willStartLoadingResource(ResourceRequest&);
     virtual void didLoadResource();
 
-    virtual void addResourceTiming(ResourceTimingInfo*, bool isMainResource);
+    virtual void addResourceTiming(const ResourceTimingInfo&);
     virtual bool allowImage(bool, const KURL&) const { return false; }
     virtual bool canRequest(Resource::Type, const ResourceRequest&, const KURL&, const ResourceLoaderOptions&, bool forPreload, FetchRequest::OriginRestriction) const { return false; }
 

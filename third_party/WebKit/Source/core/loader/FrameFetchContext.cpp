@@ -309,12 +309,12 @@ void FrameFetchContext::didLoadResource()
     frame()->loader().checkCompleted();
 }
 
-void FrameFetchContext::addResourceTiming(ResourceTimingInfo* info, bool isMainResource)
+void FrameFetchContext::addResourceTiming(const ResourceTimingInfo& info)
 {
-    Document* initiatorDocument = m_document && isMainResource ? m_document->parentDocument() : m_document.get();
+    Document* initiatorDocument = m_document && info.isMainResource() ? m_document->parentDocument() : m_document.get();
     if (!initiatorDocument || !initiatorDocument->domWindow())
         return;
-    DOMWindowPerformance::performance(*initiatorDocument->domWindow())->addResourceTiming(*info);
+    DOMWindowPerformance::performance(*initiatorDocument->domWindow())->addResourceTiming(info);
 }
 
 bool FrameFetchContext::allowImage(bool imagesEnabled, const KURL& url) const

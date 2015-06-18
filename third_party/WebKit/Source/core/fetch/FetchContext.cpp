@@ -106,7 +106,7 @@ void FetchContext::didLoadResource()
 {
 }
 
-void FetchContext::addResourceTiming(ResourceTimingInfo*, bool)
+void FetchContext::addResourceTiming(const ResourceTimingInfo&)
 {
 }
 

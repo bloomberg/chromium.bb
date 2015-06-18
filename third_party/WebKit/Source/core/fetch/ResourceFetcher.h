@@ -184,10 +184,10 @@ private:
     Timer<ResourceFetcher> m_garbageCollectDocumentResourcesTimer;
     Timer<ResourceFetcher> m_resourceTimingReportTimer;
 
-    typedef HashMap<Resource*, RefPtr<ResourceTimingInfo>> ResourceTimingInfoMap;
+    typedef HashMap<Resource*, OwnPtr<ResourceTimingInfo>> ResourceTimingInfoMap;
     ResourceTimingInfoMap m_resourceTimingInfoMap;
 
-    HashMap<RefPtr<ResourceTimingInfo>, bool> m_scheduledResourceTimingReports;
+    Vector<OwnPtr<ResourceTimingInfo>> m_scheduledResourceTimingReports;
 
     OwnPtrWillBeMember<ResourceLoaderSet> m_loaders;
     OwnPtrWillBeMember<ResourceLoaderSet> m_nonBlockingLoaders;

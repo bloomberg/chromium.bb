@@ -237,9 +237,9 @@ void ResourceFetcher::requestLoadStarted(Resource* resource, const FetchRequest&
 
     if (type == ResourceLoadingFromCache && !resource->stillNeedsLoad() && !m_validatedURLs.contains(request.resourceRequest().url())) {
         // Resources loaded from memory cache should be reported the first time they're used.
-        RefPtr<ResourceTimingInfo> info = ResourceTimingInfo::create(request.options().initiatorInfo.name, monotonicallyIncreasingTime());
+        OwnPtr<ResourceTimingInfo> info = ResourceTimingInfo::create(request.options().initiatorInfo.name, monotonicallyIncreasingTime(), resource->type() == Resource::MainResource);
         populateResourceTiming(info.get(), resource, true);
-        m_scheduledResourceTimingReports.add(info, resource->type() == Resource::MainResource);
+        m_scheduledResourceTimingReports.append(info.release());
         if (!m_resourceTimingReportTimer.isActive())
             m_resourceTimingReportTimer.startOneShot(0, FROM_HERE);
     }
@@ -379,10 +379,10 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(FetchRequest& request, co
 void ResourceFetcher::resourceTimingReportTimerFired(Timer<ResourceFetcher>* timer)
 {
     ASSERT_UNUSED(timer, timer == &m_resourceTimingReportTimer);
-    HashMap<RefPtr<ResourceTimingInfo>, bool> timingReports;
+    Vector<OwnPtr<ResourceTimingInfo>> timingReports;
     timingReports.swap(m_scheduledResourceTimingReports);
     for (const auto& timingInfo : timingReports)
-        context().addResourceTiming(timingInfo.key.get(), timingInfo.value);
+        context().addResourceTiming(*timingInfo);
 }
 
 void ResourceFetcher::determineRequestContext(ResourceRequest& request, Resource::Type type)
@@ -466,7 +466,7 @@ void ResourceFetcher::storeResourceTimingInitiatorInformation(Resource* resource
     if (resource->options().initiatorInfo.name == FetchInitiatorTypeNames::internal)
         return;
 
-    RefPtr<ResourceTimingInfo> info = ResourceTimingInfo::create(resource->options().initiatorInfo.name, monotonicallyIncreasingTime());
+    OwnPtr<ResourceTimingInfo> info = ResourceTimingInfo::create(resource->options().initiatorInfo.name, monotonicallyIncreasingTime(), resource->type() == Resource::MainResource);
 
     if (resource->isCacheValidator()) {
         const AtomicString& timingAllowOrigin = resource->resourceToRevalidate()->response().httpHeaderField("Timing-Allow-Origin");
@@ -475,7 +475,7 @@ void ResourceFetcher::storeResourceTimingInitiatorInformation(Resource* resource
     }
 
     if (resource->type() != Resource::MainResource || context().updateTimingInfoForIFrameNavigation(info.get()))
-        m_resourceTimingInfoMap.add(resource, info);
+        m_resourceTimingInfoMap.add(resource, info.release());
 }
 
 ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy(Resource::Type type, const FetchRequest& fetchRequest, Resource* existingResource) const
@@ -802,10 +802,10 @@ void ResourceFetcher::didFinishLoading(Resource* resource, double finishTime, in
     if (resource && resource->response().isHTTP() && resource->response().httpStatusCode() < 400) {
         ResourceTimingInfoMap::iterator it = m_resourceTimingInfoMap.find(resource);
         if (it != m_resourceTimingInfoMap.end()) {
-            RefPtr<ResourceTimingInfo> info = it->value;
+            OwnPtr<ResourceTimingInfo> info = it->value.release();
             m_resourceTimingInfoMap.remove(it);
             populateResourceTiming(info.get(), resource, false);
-            context().addResourceTiming(info.get(), resource->type() == Resource::MainResource);
+            context().addResourceTiming(*info);
         }
     }
     context().dispatchDidFinishLoading(resource->identifier(), finishTime, encodedDataLength);

@@ -85,7 +85,7 @@ public:
     void willStartLoadingResource(ResourceRequest&) override;
     void didLoadResource() override;
 
-    void addResourceTiming(ResourceTimingInfo*, bool isMainResource) override;
+    void addResourceTiming(const ResourceTimingInfo&) override;
     bool allowImage(bool imagesEnabled, const KURL&) const override;
     bool canRequest(Resource::Type, const ResourceRequest&, const KURL&, const ResourceLoaderOptions&, bool forPreload, FetchRequest::OriginRestriction) const override;
 
