@@ -67,22 +67,23 @@ const size_t maxHeapObjectSizeLog2 = 27;
 const size_t maxHeapObjectSize = 1 << maxHeapObjectSizeLog2;
 const size_t largeObjectSizeThreshold = blinkPageSize / 2;
 
-// A zap value used for freed memory that is allowed to be added to the free
-// list in the next addToFreeList().
-const uint8_t reuseAllowedZapValue = 0x2a;
-// A zap value used for freed memory that is forbidden to be added to the free
-// list in the next addToFreeList().
-const uint8_t reuseForbiddenZapValue = 0x2c;
+const uint8_t freelistZapValue = 42;
+const uint8_t finalizedZapValue = 24;
 // The orphaned zap value must be zero in the lowest bits to allow for using
 // the mark bit when tracing.
 const uint8_t orphanedZapValue = 240;
+// A zap value for vtables should be < 4K to ensure it cannot be
+// used for dispatch.
+static const intptr_t zappedVTable = 0xd0d;
 
-// In non-production builds, memory is zapped when it's freed. The zapped
-// memory is zeroed out when the memory is reused in Heap::allocateObject().
-// In production builds, memory is not zapped (for performance). The memory
-// is just zeroed out when it is added to the free list.
+#if defined(ADDRESS_SANITIZER)
+const size_t asanMagic = 0xabefeed0;
+const size_t asanDeferMemoryReuseCount = 2;
+const size_t asanDeferMemoryReuseMask = 0x3;
+#endif
+
 #if ENABLE(ASSERT) || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER)
-#define FILL_ZERO_IF_PRODUCTION(address, size) FreeList::zapFreedMemory(address, size)
+#define FILL_ZERO_IF_PRODUCTION(address, size) do { } while (false)
 #define FILL_ZERO_IF_NOT_PRODUCTION(address, size) memset((address), 0, (size))
 #else
 #define FILL_ZERO_IF_PRODUCTION(address, size) memset((address), 0, (size))
@@ -249,7 +250,11 @@ public:
         : HeapObjectHeader(size, gcInfoIndexForFreeListHeader)
         , m_next(nullptr)
     {
-#if ENABLE(ASSERT)
+#if ENABLE(ASSERT) && !defined(ADDRESS_SANITIZER)
+        // Zap free area with asterisks, aka 0x2a2a2a2a.
+        // For ASan don't zap since we keep accounting in the freelist entry.
+        for (size_t i = sizeof(*this); i < size; ++i)
+            reinterpret_cast<Address>(this)[i] = freelistZapValue;
         ASSERT(size >= sizeof(HeapObjectHeader));
         zapMagic();
 #endif
@@ -281,8 +286,27 @@ public:
         m_next = next;
     }
 
+#if defined(ADDRESS_SANITIZER)
+    NO_SANITIZE_ADDRESS
+    bool shouldAddToFreeList()
+    {
+        // Init if not already magic.
+        if ((m_asanMagic & ~asanDeferMemoryReuseMask) != asanMagic) {
+            m_asanMagic = asanMagic | asanDeferMemoryReuseCount;
+            return false;
+        }
+        // Decrement if count part of asanMagic > 0.
+        if (m_asanMagic & asanDeferMemoryReuseMask)
+            m_asanMagic--;
+        return !(m_asanMagic & asanDeferMemoryReuseMask);
+    }
+#endif
+
 private:
     FreeListEntry* m_next;
+#if defined(ADDRESS_SANITIZER)
+    unsigned m_asanMagic;
+#endif
 };
 
 // Blink heap pages are set up with a guard page before and after the payload.
@@ -635,10 +659,6 @@ public:
     };
 
     void getFreeSizeStats(PerBucketFreeListStats bucketStats[], size_t& totalSize) const;
-#endif
-
-#if ENABLE(ASSERT) || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER)
-    static void zapFreedMemory(Address, size_t);
 #endif
 
 private:

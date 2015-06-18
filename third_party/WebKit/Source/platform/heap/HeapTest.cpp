@@ -1840,37 +1840,6 @@ TEST(HeapTest, SimpleFinalization)
     EXPECT_EQ(1, SimpleFinalizedObject::s_destructorCalls);
 }
 
-#if ENABLE(ASSERT) || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER)
-TEST(HeapTest, FreelistReuse)
-{
-    clearOutOldGarbage();
-
-    for (int i = 0; i < 100; i++)
-        new IntWrapper(i);
-    IntWrapper* p1 = new IntWrapper(100);
-    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGC);
-    // In non-production builds, we delay reusing freed memory for at least
-    // one GC cycle.
-    for (int i = 0; i < 100; i++) {
-        IntWrapper* p2 = new IntWrapper(i);
-        EXPECT_NE(p1, p2);
-    }
-
-    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGC);
-    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGC);
-    // Now the freed memory in the first GC should be reused.
-    bool reusedMemoryFound = false;
-    for (int i = 0; i < 10000; i++) {
-        IntWrapper* p2 = new IntWrapper(i);
-        if (p1 == p2) {
-            reusedMemoryFound = true;
-            break;
-        }
-    }
-    EXPECT_TRUE(reusedMemoryFound);
-}
-#endif
-
 #if ENABLE(LAZY_SWEEPING)
 TEST(HeapTest, LazySweepingPages)
 {
@@ -1893,22 +1862,11 @@ TEST(HeapTest, LazySweepingLargeObjectPages)
 {
     clearOutOldGarbage();
 
-    // Create free lists that can be reused for IntWrappers created in
-    // LargeHeapObject::create().
-    Persistent<IntWrapper> p1 = new IntWrapper(1);
-    for (int i = 0; i < 100; i++) {
-        new IntWrapper(i);
-    }
-    Persistent<IntWrapper> p2 = new IntWrapper(2);
-    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGC);
-    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGC);
-
     LargeHeapObject::s_destructorCalls = 0;
     EXPECT_EQ(0, LargeHeapObject::s_destructorCalls);
     for (int i = 0; i < 10; i++)
         LargeHeapObject::create();
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithoutSweep, Heap::ForcedGC);
-    EXPECT_EQ(0, LargeHeapObject::s_destructorCalls);
     for (int i = 0; i < 10; i++) {
         LargeHeapObject::create();
         EXPECT_EQ(i + 1, LargeHeapObject::s_destructorCalls);
