@@ -377,7 +377,7 @@ static gfx::Rect CalculateVisibleContentRect(
   DCHECK(layer->render_target());
 
   // Nothing is visible if the layer bounds are empty.
-  if (!layer->DrawsContent() || layer->content_bounds().IsEmpty() ||
+  if (!layer->DrawsContent() || layer->bounds().IsEmpty() ||
       layer->drawable_content_rect().IsEmpty())
     return gfx::Rect();
 
@@ -403,10 +403,8 @@ static gfx::Rect CalculateVisibleContentRect(
     return gfx::Rect();
 
   return CalculateVisibleRectWithCachedLayerRect(
-      visible_rect_in_target_surface_space,
-      gfx::Rect(layer->content_bounds()),
-      layer_rect_in_target_space,
-      layer->draw_transform());
+      visible_rect_in_target_surface_space, gfx::Rect(layer->bounds()),
+      layer_rect_in_target_space, layer->draw_transform());
 }
 
 static inline bool TransformToParentIsKnown(LayerImpl* layer) { return true; }
@@ -925,94 +923,6 @@ static inline void UpdateLayerScaleDrawProperties(
   layer->draw_properties().device_scale_factor = device_scale_factor;
 }
 
-static inline void CalculateContentsScale(LayerImpl* layer,
-                                          float contents_scale) {
-  // LayerImpl has all of its content scales and bounds pushed from the Main
-  // thread during commit and just uses those values as-is.
-}
-
-static inline void CalculateContentsScale(Layer* layer, float contents_scale) {
-  layer->CalculateContentsScale(contents_scale,
-                                &layer->draw_properties().contents_scale_x,
-                                &layer->draw_properties().contents_scale_y,
-                                &layer->draw_properties().content_bounds);
-
-  Layer* mask_layer = layer->mask_layer();
-  if (mask_layer) {
-    mask_layer->CalculateContentsScale(
-        contents_scale,
-        &mask_layer->draw_properties().contents_scale_x,
-        &mask_layer->draw_properties().contents_scale_y,
-        &mask_layer->draw_properties().content_bounds);
-  }
-
-  Layer* replica_mask_layer =
-      layer->replica_layer() ? layer->replica_layer()->mask_layer() : NULL;
-  if (replica_mask_layer) {
-    replica_mask_layer->CalculateContentsScale(
-        contents_scale,
-        &replica_mask_layer->draw_properties().contents_scale_x,
-        &replica_mask_layer->draw_properties().contents_scale_y,
-        &replica_mask_layer->draw_properties().content_bounds);
-  }
-}
-
-static inline void UpdateLayerContentsScale(
-    LayerImpl* layer,
-    bool can_adjust_raster_scale,
-    float ideal_contents_scale,
-    float device_scale_factor,
-    float page_scale_factor,
-    bool animating_transform_to_screen) {
-  CalculateContentsScale(layer, ideal_contents_scale);
-}
-
-static inline void UpdateLayerContentsScale(
-    Layer* layer,
-    bool can_adjust_raster_scale,
-    float ideal_contents_scale,
-    float device_scale_factor,
-    float page_scale_factor,
-    bool animating_transform_to_screen) {
-  if (can_adjust_raster_scale) {
-    float ideal_raster_scale =
-        ideal_contents_scale / (device_scale_factor * page_scale_factor);
-
-    bool need_to_set_raster_scale = layer->raster_scale_is_unknown();
-
-    // If we've previously saved a raster_scale but the ideal changes, things
-    // are unpredictable and we should just use 1.
-    if (!need_to_set_raster_scale && layer->raster_scale() != 1.f &&
-        ideal_raster_scale != layer->raster_scale()) {
-      ideal_raster_scale = 1.f;
-      need_to_set_raster_scale = true;
-    }
-
-    if (need_to_set_raster_scale) {
-      bool use_and_save_ideal_scale =
-          ideal_raster_scale >= 1.f && !animating_transform_to_screen;
-      if (use_and_save_ideal_scale)
-        layer->set_raster_scale(ideal_raster_scale);
-    }
-  }
-
-  float raster_scale = 1.f;
-  if (!layer->raster_scale_is_unknown())
-    raster_scale = layer->raster_scale();
-
-  gfx::Size old_content_bounds = layer->content_bounds();
-  float old_contents_scale_x = layer->contents_scale_x();
-  float old_contents_scale_y = layer->contents_scale_y();
-
-  float contents_scale = raster_scale * device_scale_factor * page_scale_factor;
-  CalculateContentsScale(layer, contents_scale);
-
-  if (layer->content_bounds() != old_content_bounds ||
-      layer->contents_scale_x() != old_contents_scale_x ||
-      layer->contents_scale_y() != old_contents_scale_y)
-    layer->SetNeedsPushProperties();
-}
-
 static inline void CalculateAnimationContentsScale(
     Layer* layer,
     bool ancestor_is_animating_scale,
@@ -1529,14 +1439,6 @@ static LayerImplList* GetLayerListForSorting(LayerImplList* layer_list) {
   return layer_list;
 }
 
-static inline gfx::Vector2d BoundsDelta(Layer* layer) {
-  return gfx::Vector2d();
-}
-
-static inline gfx::Vector2d BoundsDelta(LayerImpl* layer) {
-  return gfx::ToCeiledVector2d(layer->bounds_delta());
-}
-
 template <typename LayerType, typename GetIndexAndCountType>
 static void SortLayerListContributions(
     const LayerType& parent,
@@ -1849,13 +1751,6 @@ static void CalculateDrawPropertiesInternal(
       ? std::max(combined_transform_scales.x(),
                  combined_transform_scales.y())
       : layer_scale_factors;
-  UpdateLayerContentsScale(layer, globals.can_adjust_raster_scales,
-                           ideal_contents_scale, globals.device_scale_factor,
-                           data_from_ancestor.in_subtree_of_page_scale_layer
-                               ? globals.page_scale_factor
-                               : 1.f,
-                           animating_transform_to_screen);
-
   UpdateLayerScaleDrawProperties(
       layer, ideal_contents_scale, combined_maximum_animation_contents_scale,
       combined_starting_animation_contents_scale,
@@ -2031,7 +1926,7 @@ static void CalculateDrawPropertiesInternal(
           layer->mask_layer()->draw_properties();
       mask_layer_draw_properties.render_target = layer;
       mask_layer_draw_properties.visible_content_rect =
-          gfx::Rect(layer->content_bounds());
+          gfx::Rect(layer->bounds());
     }
 
     if (layer->replica_layer() && layer->replica_layer()->mask_layer()) {
@@ -2039,7 +1934,7 @@ static void CalculateDrawPropertiesInternal(
           layer->replica_layer()->mask_layer()->draw_properties();
       replica_mask_draw_properties.render_target = layer;
       replica_mask_draw_properties.visible_content_rect =
-          gfx::Rect(layer->content_bounds());
+          gfx::Rect(layer->bounds());
     }
 
     // Ignore occlusion from outside the surface when surface contents need to
@@ -2157,22 +2052,10 @@ static void CalculateDrawPropertiesInternal(
 
   layer_draw_properties.can_use_lcd_text = layer_can_use_lcd_text;
 
-  gfx::Size content_size_affected_by_delta(layer->content_bounds());
-
-  // Non-zero BoundsDelta imply the contents_scale of 1.0
-  // because BoundsDela is only set on Android where
-  // ContentScalingLayer is never used.
-  DCHECK_IMPLIES(!BoundsDelta(layer).IsZero(),
-                 (layer->contents_scale_x() == 1.0 &&
-                  layer->contents_scale_y() == 1.0));
-
-  // Thus we can omit contents scale in the following calculation.
-  gfx::Vector2d bounds_delta =  BoundsDelta(layer);
-  content_size_affected_by_delta.Enlarge(bounds_delta.x(), bounds_delta.y());
-
+  // The layer bounds() includes the layer's bounds_delta() which we want
+  // for the clip rect.
   gfx::Rect rect_in_target_space = MathUtil::MapEnclosingClippedRect(
-      layer->draw_transform(),
-      gfx::Rect(content_size_affected_by_delta));
+      layer->draw_transform(), gfx::Rect(layer->bounds()));
 
   if (LayerClipsSubtree(layer)) {
     layer_or_ancestor_clips_descendants = true;

@@ -2879,8 +2879,7 @@ float LayerTreeHostImpl::DeviceSpaceDistanceToLayer(
   if (!layer_impl)
     return std::numeric_limits<float>::max();
 
-  gfx::Rect layer_impl_bounds(
-      layer_impl->content_bounds());
+  gfx::Rect layer_impl_bounds(layer_impl->bounds());
 
   gfx::RectF device_viewport_layer_impl_bounds = MathUtil::MapClippedRect(
       layer_impl->screen_space_transform(),

@@ -100,7 +100,6 @@ struct CC_EXPORT DrawProperties {
   // and not always the one used.
   float contents_scale_x;
   float contents_scale_y;
-  gfx::Size content_bounds;
 
   // Number of descendants with a clip parent that is our ancestor. NB - this
   // does not include our clip children because they are clipped by us.

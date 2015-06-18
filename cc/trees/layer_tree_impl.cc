@@ -503,7 +503,7 @@ gfx::Rect LayerTreeImpl::RootScrollLayerDeviceViewportBounds() const {
     return gfx::Rect();
   LayerImpl* layer = root_scroll_layer->children()[0];
   return MathUtil::MapEnclosingClippedRect(layer->screen_space_transform(),
-                                           gfx::Rect(layer->content_bounds()));
+                                           gfx::Rect(layer->bounds()));
 }
 
 void LayerTreeImpl::ApplySentScrollAndScaleDeltasFromAbortedCommit() {
@@ -1334,10 +1334,8 @@ static bool PointIsClippedBySurfaceOrClipRect(
       return true;
 
     if (LayerClipsSubtree(layer) &&
-        !PointHitsRect(screen_space_point,
-                       layer->screen_space_transform(),
-                       gfx::Rect(layer->content_bounds()),
-                       NULL))
+        !PointHitsRect(screen_space_point, layer->screen_space_transform(),
+                       gfx::Rect(layer->bounds()), NULL))
       return true;
   }
 
@@ -1349,7 +1347,7 @@ static bool PointIsClippedBySurfaceOrClipRect(
 static bool PointHitsLayer(const LayerImpl* layer,
                            const gfx::PointF& screen_space_point,
                            float* distance_to_intersection) {
-  gfx::RectF content_rect(layer->content_bounds());
+  gfx::RectF content_rect(layer->bounds());
   if (!PointHitsRect(screen_space_point,
                      layer->screen_space_transform(),
                      content_rect,

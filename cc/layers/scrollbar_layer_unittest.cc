@@ -730,7 +730,6 @@ class ScrollbarLayerTestResourceCreationAndRelease : public ScrollbarLayerTest {
     layer_tree_root->SetScrollOffset(gfx::ScrollOffset(10, 20));
     layer_tree_root->SetBounds(gfx::Size(100, 200));
     content_layer->SetBounds(gfx::Size(100, 200));
-    scrollbar_layer->draw_properties().content_bounds = gfx::Size(100, 200);
     scrollbar_layer->draw_properties().visible_content_rect =
         gfx::Rect(0, 0, 100, 200);
     scrollbar_layer->CreateRenderSurface();
@@ -796,7 +795,6 @@ TEST_F(ScrollbarLayerTestResourceCreationAndRelease, TestResourceUpdate) {
   layer_tree_root->SetBounds(gfx::Size(100, 200));
   content_layer->SetBounds(gfx::Size(100, 200));
 
-  scrollbar_layer->draw_properties().content_bounds = gfx::Size(100, 200);
   scrollbar_layer->draw_properties().visible_content_rect =
       gfx::Rect(0, 0, 100, 200);
 
@@ -935,8 +933,6 @@ class ScaledScrollbarLayerTestResourceCreation : public ScrollbarLayerTest {
         gfx::ScaleSize(scrollbar_layer->bounds(), test_scale, test_scale);
     gfx::PointF scaled_location =
         gfx::ScalePoint(scrollbar_layer->position(), test_scale, test_scale);
-    scrollbar_layer->draw_properties().content_bounds =
-        gfx::Size(scaled_size.width(), scaled_size.height());
     scrollbar_layer->draw_properties().contents_scale_x = test_scale;
     scrollbar_layer->draw_properties().contents_scale_y = test_scale;
     scrollbar_layer->draw_properties().visible_content_rect =
@@ -1007,8 +1003,6 @@ class ScaledScrollbarLayerTestScaledRasterization : public ScrollbarLayerTest {
         gfx::ScaleSize(scrollbar_layer->bounds(), test_scale, test_scale);
     gfx::PointF scaled_location =
         gfx::ScalePoint(scrollbar_layer->position(), test_scale, test_scale);
-    scrollbar_layer->draw_properties().content_bounds =
-        gfx::Size(scaled_size.width(), scaled_size.height());
     scrollbar_layer->draw_properties().contents_scale_x = test_scale;
     scrollbar_layer->draw_properties().contents_scale_y = test_scale;
     scrollbar_layer->draw_properties().visible_content_rect =

@@ -283,11 +283,11 @@ void LayerImpl::ClearRenderSurfaceLayerList() {
 }
 
 void LayerImpl::PopulateSharedQuadState(SharedQuadState* state) const {
-  state->SetAll(
-      draw_properties_.target_space_transform, draw_properties_.content_bounds,
-      draw_properties_.visible_content_rect, draw_properties_.clip_rect,
-      draw_properties_.is_clipped, draw_properties_.opacity,
-      draw_properties_.blend_mode, sorting_context_id_);
+  state->SetAll(draw_properties_.target_space_transform, bounds(),
+                draw_properties_.visible_content_rect,
+                draw_properties_.clip_rect, draw_properties_.is_clipped,
+                draw_properties_.opacity, draw_properties_.blend_mode,
+                sorting_context_id_);
 }
 
 void LayerImpl::PopulateScaledSharedQuadState(SharedQuadState* state,
@@ -295,13 +295,12 @@ void LayerImpl::PopulateScaledSharedQuadState(SharedQuadState* state,
   gfx::Transform scaled_draw_transform =
       draw_properties_.target_space_transform;
   scaled_draw_transform.Scale(SK_MScalar1 / scale, SK_MScalar1 / scale);
-  gfx::Size scaled_content_bounds =
-      gfx::ToCeiledSize(gfx::ScaleSize(bounds(), scale));
+  gfx::Size scaled_bounds = gfx::ToCeiledSize(gfx::ScaleSize(bounds(), scale));
   gfx::Rect scaled_visible_content_rect =
       gfx::ScaleToEnclosingRect(visible_content_rect(), scale);
-  scaled_visible_content_rect.Intersect(gfx::Rect(scaled_content_bounds));
+  scaled_visible_content_rect.Intersect(gfx::Rect(scaled_bounds));
 
-  state->SetAll(scaled_draw_transform, scaled_content_bounds,
+  state->SetAll(scaled_draw_transform, scaled_bounds,
                 scaled_visible_content_rect, draw_properties().clip_rect,
                 draw_properties().is_clipped, draw_properties().opacity,
                 draw_properties().blend_mode, sorting_context_id_);
@@ -344,22 +343,18 @@ void LayerImpl::GetDebugBorderProperties(SkColor* color, float* width) const {
 
 void LayerImpl::AppendDebugBorderQuad(
     RenderPass* render_pass,
-    const gfx::Size& content_bounds,
+    const gfx::Size& bounds,
     const SharedQuadState* shared_quad_state,
     AppendQuadsData* append_quads_data) const {
   SkColor color;
   float width;
   GetDebugBorderProperties(&color, &width);
-  AppendDebugBorderQuad(render_pass,
-                        content_bounds,
-                        shared_quad_state,
-                        append_quads_data,
-                        color,
-                        width);
+  AppendDebugBorderQuad(render_pass, bounds, shared_quad_state,
+                        append_quads_data, color, width);
 }
 
 void LayerImpl::AppendDebugBorderQuad(RenderPass* render_pass,
-                                      const gfx::Size& content_bounds,
+                                      const gfx::Size& bounds,
                                       const SharedQuadState* shared_quad_state,
                                       AppendQuadsData* append_quads_data,
                                       SkColor color,
@@ -367,7 +362,7 @@ void LayerImpl::AppendDebugBorderQuad(RenderPass* render_pass,
   if (!ShowDebugBorders())
     return;
 
-  gfx::Rect quad_rect(content_bounds);
+  gfx::Rect quad_rect(bounds);
   gfx::Rect visible_quad_rect(quad_rect);
   DebugBorderDrawQuad* debug_border_quad =
       render_pass->CreateAndAppendDrawQuad<DebugBorderDrawQuad>();
@@ -515,13 +510,11 @@ InputHandler::ScrollStatus LayerImpl::TryScroll(
   return InputHandler::SCROLL_STARTED;
 }
 
+// TODO(danakj): Remove this after impl_side_painting.
 gfx::Rect LayerImpl::LayerRectToContentRect(
     const gfx::RectF& layer_rect) const {
-  gfx::RectF content_rect =
-      gfx::ScaleRect(layer_rect, contents_scale_x(), contents_scale_y());
-  // Intersect with content rect to avoid the extra pixel because for some
-  // values x and y, ceil((x / y) * y) may be x + 1.
-  content_rect.Intersect(gfx::Rect(content_bounds()));
+  gfx::RectF content_rect = layer_rect;
+  content_rect.Intersect(gfx::Rect(bounds()));
   return gfx::ToEnclosingRect(content_rect);
 }
 
@@ -537,7 +530,7 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->SetTransformOrigin(transform_origin_);
   layer->SetBackgroundColor(background_color_);
   layer->SetBounds(bounds_);
-  layer->SetContentBounds(content_bounds());
+  layer->SetContentBounds(bounds_);
   layer->SetContentsScale(contents_scale_x(), contents_scale_y());
   layer->SetDoubleSided(double_sided_);
   layer->SetDrawCheckerboardForMissingTiles(
@@ -1155,12 +1148,8 @@ void LayerImpl::AddDamageRect(const gfx::RectF& damage_rect) {
   damage_rect_ = gfx::UnionRects(damage_rect_, damage_rect);
 }
 
+// TODO(danakj): Remove this after impl_side_painting.
 void LayerImpl::SetContentBounds(const gfx::Size& content_bounds) {
-  if (this->content_bounds() == content_bounds)
-    return;
-
-  draw_properties_.content_bounds = content_bounds;
-  NoteLayerPropertyChanged();
 }
 
 void LayerImpl::SetContentsScale(float contents_scale_x,
@@ -1558,9 +1547,7 @@ void LayerImpl::AsValueInto(base::trace_event::TracedValue* state) const {
 
   bool clipped;
   gfx::QuadF layer_quad = MathUtil::MapQuad(
-      screen_space_transform(),
-      gfx::QuadF(gfx::Rect(content_bounds())),
-      &clipped);
+      screen_space_transform(), gfx::QuadF(gfx::Rect(bounds())), &clipped);
   MathUtil::AddToTracedValue("layer_quad", layer_quad, state);
   if (!touch_event_handler_region_.IsEmpty()) {
     state->BeginArray("touch_event_handler_region");
@@ -1568,14 +1555,14 @@ void LayerImpl::AsValueInto(base::trace_event::TracedValue* state) const {
     state->EndArray();
   }
   if (have_wheel_event_handlers_) {
-    gfx::Rect wheel_rect(content_bounds());
+    gfx::Rect wheel_rect(bounds());
     Region wheel_region(wheel_rect);
     state->BeginArray("wheel_event_handler_region");
     wheel_region.AsValueInto(state);
     state->EndArray();
   }
   if (have_scroll_event_handlers_) {
-    gfx::Rect scroll_rect(content_bounds());
+    gfx::Rect scroll_rect(bounds());
     Region scroll_region(scroll_rect);
     state->BeginArray("scroll_event_handler_region");
     scroll_region.AsValueInto(state);
@@ -1699,18 +1686,16 @@ Region LayerImpl::GetInvalidationRegion() {
 
 gfx::Rect LayerImpl::GetEnclosingRectInTargetSpace() const {
   return MathUtil::MapEnclosingClippedRect(
-      draw_properties_.target_space_transform,
-      gfx::Rect(draw_properties_.content_bounds));
+      draw_properties_.target_space_transform, gfx::Rect(bounds()));
 }
 
 gfx::Rect LayerImpl::GetScaledEnclosingRectInTargetSpace(float scale) const {
   gfx::Transform scaled_draw_transform =
       draw_properties_.target_space_transform;
   scaled_draw_transform.Scale(SK_MScalar1 / scale, SK_MScalar1 / scale);
-  gfx::Size scaled_content_bounds =
-      gfx::ToCeiledSize(gfx::ScaleSize(content_bounds(), scale));
+  gfx::Size scaled_bounds = gfx::ToCeiledSize(gfx::ScaleSize(bounds(), scale));
   return MathUtil::MapEnclosingClippedRect(scaled_draw_transform,
-                                           gfx::Rect(scaled_content_bounds));
+                                           gfx::Rect(scaled_bounds));
 }
 
 }  // namespace cc

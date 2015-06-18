@@ -69,14 +69,14 @@ void SolidColorLayerImpl::AppendQuads(
       render_pass->CreateAndAppendSharedQuadState();
   PopulateSharedQuadState(shared_quad_state);
 
-  AppendDebugBorderQuad(
-      render_pass, content_bounds(), shared_quad_state, append_quads_data);
+  AppendDebugBorderQuad(render_pass, bounds(), shared_quad_state,
+                        append_quads_data);
 
   // TODO(hendrikw): We need to pass the visible content rect rather than
-  // |content_bounds()| here.
+  // |bounds()| here.
   AppendSolidQuads(render_pass, draw_properties().occlusion_in_content_space,
-                   shared_quad_state, gfx::Rect(content_bounds()),
-                   background_color(), append_quads_data);
+                   shared_quad_state, gfx::Rect(bounds()), background_color(),
+                   append_quads_data);
 }
 
 const char* SolidColorLayerImpl::LayerTypeAsString() const {

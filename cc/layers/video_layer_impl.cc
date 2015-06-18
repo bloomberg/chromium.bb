@@ -139,7 +139,7 @@ void VideoLayerImpl::AppendQuads(RenderPass* render_pass,
   DCHECK(frame_.get());
 
   gfx::Transform transform = draw_transform();
-  gfx::Size rotated_size = content_bounds();
+  gfx::Size rotated_size = bounds();
 
   switch (video_rotation_) {
     case media::VIDEO_ROTATION_90:

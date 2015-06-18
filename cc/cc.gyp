@@ -161,8 +161,6 @@
         'input/top_controls_manager_client.h',
         'layers/append_quads_data.h',
         'layers/content_layer_client.h',
-        'layers/contents_scaling_layer.cc',
-        'layers/contents_scaling_layer.h',
         'layers/delegated_frame_provider.cc',
         'layers/delegated_frame_provider.h',
         'layers/delegated_frame_resource_collection.cc',

@@ -4111,13 +4111,13 @@ TEST_F(LayerTreeHostCommonTest, BackFaceCullingWithAnimatingTransforms) {
   // The animating layers should have a visible content rect that represents the
   // area of the front face that is within the viewport.
   EXPECT_EQ(animating_child->visible_content_rect(),
-            gfx::Rect(animating_child->content_bounds()));
+            gfx::Rect(animating_child->bounds()));
   EXPECT_EQ(animating_surface->visible_content_rect(),
-            gfx::Rect(animating_surface->content_bounds()));
+            gfx::Rect(animating_surface->bounds()));
   // And layers in the subtree of the animating layer should have valid visible
   // content rects also.
   EXPECT_EQ(child_of_animating_surface->visible_content_rect(),
-            gfx::Rect(child_of_animating_surface->content_bounds()));
+            gfx::Rect(child_of_animating_surface->bounds()));
 }
 
 TEST_F(LayerTreeHostCommonTest,
@@ -4302,12 +4302,12 @@ TEST_F(LayerTreeHostCommonTest, LayerTransformsInHighDPI) {
                                   parent->draw_transform());
 
   // Verify results of transformed parent rects
-  gfx::RectF parent_content_bounds(parent->content_bounds());
+  gfx::RectF parent_bounds(parent->bounds());
 
   gfx::RectF parent_draw_rect =
-      MathUtil::MapClippedRect(parent->draw_transform(), parent_content_bounds);
-  gfx::RectF parent_screen_space_rect = MathUtil::MapClippedRect(
-      parent->screen_space_transform(), parent_content_bounds);
+      MathUtil::MapClippedRect(parent->draw_transform(), parent_bounds);
+  gfx::RectF parent_screen_space_rect =
+      MathUtil::MapClippedRect(parent->screen_space_transform(), parent_bounds);
 
   gfx::RectF expected_parent_draw_rect(parent->bounds());
   expected_parent_draw_rect.Scale(device_scale_factor);
@@ -4330,17 +4330,17 @@ TEST_F(LayerTreeHostCommonTest, LayerTransformsInHighDPI) {
 
   // Verify results of transformed child and child_empty rects. They should
   // match.
-  gfx::RectF child_content_bounds(child->content_bounds());
+  gfx::RectF child_bounds(child->bounds());
 
   gfx::RectF child_draw_rect =
-      MathUtil::MapClippedRect(child->draw_transform(), child_content_bounds);
-  gfx::RectF child_screen_space_rect = MathUtil::MapClippedRect(
-      child->screen_space_transform(), child_content_bounds);
+      MathUtil::MapClippedRect(child->draw_transform(), child_bounds);
+  gfx::RectF child_screen_space_rect =
+      MathUtil::MapClippedRect(child->screen_space_transform(), child_bounds);
 
-  gfx::RectF child_empty_draw_rect = MathUtil::MapClippedRect(
-      child_empty->draw_transform(), child_content_bounds);
+  gfx::RectF child_empty_draw_rect =
+      MathUtil::MapClippedRect(child_empty->draw_transform(), child_bounds);
   gfx::RectF child_empty_screen_space_rect = MathUtil::MapClippedRect(
-      child_empty->screen_space_transform(), child_content_bounds);
+      child_empty->screen_space_transform(), child_bounds);
 
   gfx::RectF expected_child_draw_rect(child->position(), child->bounds());
   expected_child_draw_rect.Scale(device_scale_factor);
@@ -4692,8 +4692,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceTransformsInHighDPI) {
       duplicate_child_non_owner->screen_space_transform());
   EXPECT_EQ(child->drawable_content_rect(),
             duplicate_child_non_owner->drawable_content_rect());
-  EXPECT_EQ(child->content_bounds(),
-            duplicate_child_non_owner->content_bounds());
+  EXPECT_EQ(child->bounds(), duplicate_child_non_owner->bounds());
 
   gfx::Transform expected_render_surface_draw_transform;
   expected_render_surface_draw_transform.Translate(

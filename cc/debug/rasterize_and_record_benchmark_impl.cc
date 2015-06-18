@@ -163,8 +163,8 @@ void RasterizeAndRecordBenchmarkImpl::RunOnLayer(PictureLayerImpl* layer) {
     return;
   }
 
-  FixedInvalidationPictureLayerTilingClient client(
-      layer, gfx::Rect(layer->content_bounds()));
+  FixedInvalidationPictureLayerTilingClient client(layer,
+                                                   gfx::Rect(layer->bounds()));
 
   // In this benchmark, we will create a local tiling set and measure how long
   // it takes to rasterize content. As such, the actual settings used here don't

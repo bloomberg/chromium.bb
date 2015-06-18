@@ -400,7 +400,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   // subclasses of ContentsScalingLayer.
   float contents_scale_x() const { return draw_properties_.contents_scale_x; }
   float contents_scale_y() const { return draw_properties_.contents_scale_y; }
-  gfx::Size content_bounds() const { return draw_properties_.content_bounds; }
 
   virtual void CalculateContentsScale(float ideal_contents_scale,
                                       float* contents_scale_x,

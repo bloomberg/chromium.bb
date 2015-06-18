@@ -85,7 +85,7 @@ void PictureRecordBenchmark::DidUpdateLayers(LayerTreeHost* host) {
 
 void PictureRecordBenchmark::RunOnLayer(PictureLayer* layer) {
   ContentLayerClient* painter = layer->client();
-  gfx::Size content_bounds = layer->content_bounds();
+  gfx::Size bounds = layer->bounds();
 
   gfx::Size tile_grid_size(kTileGridSize, kTileGridSize);
 
@@ -94,8 +94,8 @@ void PictureRecordBenchmark::RunOnLayer(PictureLayer* layer) {
     int width = dimensions.first;
     int height = dimensions.second;
 
-    int y_limit = std::max(1, content_bounds.height() - height);
-    int x_limit = std::max(1, content_bounds.width() - width);
+    int y_limit = std::max(1, bounds.height() - height);
+    int x_limit = std::max(1, bounds.width() - width);
     for (int y = 0; y < y_limit; y += kPositionIncrement) {
       for (int x = 0; x < x_limit; x += kPositionIncrement) {
         gfx::Rect rect = gfx::Rect(x, y, width, height);

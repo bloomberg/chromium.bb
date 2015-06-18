@@ -380,87 +380,6 @@ TEST_F(LayerTreeImplTest, HitTestingForSinglePerspectiveLayer) {
   EXPECT_EQ(12345, result_layer->id());
 }
 
-TEST_F(LayerTreeImplTest, HitTestingForSingleLayerWithScaledContents) {
-  // A layer's visible content rect is actually in the layer's content space.
-  // The screen space transform converts from the layer's origin space to screen
-  // space. This test makes sure that hit testing works correctly accounts for
-  // the contents scale.  A contents scale that is not 1 effectively forces a
-  // non-identity transform between layer's content space and layer's origin
-  // space. The hit testing code must take this into account.
-  //
-  // To test this, the layer is positioned at (25, 25), and is size (50, 50). If
-  // contents scale is ignored, then hit testing will mis-interpret the visible
-  // content rect as being larger than the actual bounds of the layer.
-  //
-  scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl().active_tree(), 1);
-
-  gfx::Transform identity_matrix;
-  gfx::Point3F transform_origin;
-
-  SetLayerPropertiesForTesting(root.get(), identity_matrix, transform_origin,
-                               gfx::PointF(), gfx::Size(100, 100), true, false,
-                               true);
-  {
-    gfx::PointF position(25.f, 25.f);
-    gfx::Size bounds(50, 50);
-    scoped_ptr<LayerImpl> test_layer =
-        LayerImpl::Create(host_impl().active_tree(), 12345);
-    SetLayerPropertiesForTesting(test_layer.get(), identity_matrix,
-                                 transform_origin, position, bounds, true,
-                                 false, false);
-
-    // override content bounds and contents scale
-    test_layer->SetContentBounds(gfx::Size(100, 100));
-    test_layer->SetContentsScale(2, 2);
-
-    test_layer->SetDrawsContent(true);
-    root->AddChild(test_layer.Pass());
-  }
-
-  host_impl().SetViewportSize(root->bounds());
-  host_impl().active_tree()->SetRootLayer(root.Pass());
-  host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
-
-  // Sanity check the scenario we just created.
-  // The visible content rect for test_layer is actually 100x100, even though
-  // its layout size is 50x50, positioned at 25x25.
-  LayerImpl* test_layer =
-      host_impl().active_tree()->root_layer()->children()[0];
-  EXPECT_EQ(gfx::Rect(0, 0, 100, 100), test_layer->visible_content_rect());
-  ASSERT_EQ(1u, RenderSurfaceLayerList().size());
-  ASSERT_EQ(1u, root_layer()->render_surface()->layer_list().size());
-
-  // Hit testing for a point outside the layer should return a null pointer (the
-  // root layer does not draw content, so it will not be hit tested either).
-  gfx::Point test_point(101, 101);
-  LayerImpl* result_layer =
-      host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
-  EXPECT_FALSE(result_layer);
-
-  test_point = gfx::Point(24, 24);
-  result_layer =
-      host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
-  EXPECT_FALSE(result_layer);
-
-  test_point = gfx::Point(76, 76);
-  result_layer =
-      host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
-  EXPECT_FALSE(result_layer);
-
-  // Hit testing for a point inside should return the test layer.
-  test_point = gfx::Point(26, 26);
-  result_layer =
-      host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
-  ASSERT_TRUE(result_layer);
-  EXPECT_EQ(12345, result_layer->id());
-
-  test_point = gfx::Point(74, 74);
-  result_layer =
-      host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
-  ASSERT_TRUE(result_layer);
-  EXPECT_EQ(12345, result_layer->id());
-}
-
 TEST_F(LayerTreeImplTest, HitTestingForSimpleClippedLayer) {
   // Test that hit-testing will only work for the visible portion of a layer,
   // and not the entire layer bounds. Here we just test the simple axis-aligned
@@ -1500,110 +1419,6 @@ TEST_F(LayerTreeImplTest,
 }
 
 TEST_F(LayerTreeImplTest,
-       HitCheckingTouchHandlerRegionsForSingleLayerWithScaledContents) {
-  // A layer's visible content rect is actually in the layer's content space.
-  // The screen space transform converts from the layer's origin space to screen
-  // space. This test makes sure that hit testing works correctly accounts for
-  // the contents scale.  A contents scale that is not 1 effectively forces a
-  // non-identity transform between layer's content space and layer's origin
-  // space. The hit testing code must take this into account.
-  //
-  // To test this, the layer is positioned at (25, 25), and is size (50, 50). If
-  // contents scale is ignored, then hit checking will mis-interpret the visible
-  // content rect as being larger than the actual bounds of the layer.
-  //
-  scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl().active_tree(), 1);
-
-  gfx::Transform identity_matrix;
-  gfx::Point3F transform_origin;
-
-  SetLayerPropertiesForTesting(root.get(), identity_matrix, transform_origin,
-                               gfx::PointF(), gfx::Size(100, 100), true, false,
-                               true);
-  {
-    Region touch_handler_region(gfx::Rect(10, 10, 30, 30));
-    gfx::PointF position(25.f, 25.f);
-    gfx::Size bounds(50, 50);
-    scoped_ptr<LayerImpl> test_layer =
-        LayerImpl::Create(host_impl().active_tree(), 12345);
-    SetLayerPropertiesForTesting(test_layer.get(), identity_matrix,
-                                 transform_origin, position, bounds, true,
-                                 false, false);
-
-    // override content bounds and contents scale
-    test_layer->SetContentBounds(gfx::Size(100, 100));
-    test_layer->SetContentsScale(2, 2);
-
-    test_layer->SetDrawsContent(true);
-    test_layer->SetTouchEventHandlerRegion(touch_handler_region);
-    root->AddChild(test_layer.Pass());
-  }
-
-  host_impl().SetViewportSize(root->bounds());
-  host_impl().active_tree()->SetRootLayer(root.Pass());
-  host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
-
-  // Sanity check the scenario we just created.
-  // The visible content rect for test_layer is actually 100x100, even though
-  // its layout size is 50x50, positioned at 25x25.
-  LayerImpl* test_layer =
-      host_impl().active_tree()->root_layer()->children()[0];
-  EXPECT_EQ(gfx::Rect(0, 0, 100, 100), test_layer->visible_content_rect());
-  ASSERT_EQ(1u, RenderSurfaceLayerList().size());
-  ASSERT_EQ(1u, root_layer()->render_surface()->layer_list().size());
-
-  // Hit checking for a point outside the layer should return a null pointer
-  // (the root layer does not draw content, so it will not be tested either).
-  gfx::Point test_point(76, 76);
-  LayerImpl* result_layer =
-      host_impl().active_tree()->FindLayerThatIsHitByPointInTouchHandlerRegion(
-          test_point);
-  EXPECT_FALSE(result_layer);
-
-  // Hit checking for a point inside the layer, but outside the touch handler
-  // region should return a null pointer.
-  test_point = gfx::Point(26, 26);
-  result_layer =
-      host_impl().active_tree()->FindLayerThatIsHitByPointInTouchHandlerRegion(
-          test_point);
-  EXPECT_FALSE(result_layer);
-
-  test_point = gfx::Point(34, 34);
-  result_layer =
-      host_impl().active_tree()->FindLayerThatIsHitByPointInTouchHandlerRegion(
-          test_point);
-  EXPECT_FALSE(result_layer);
-
-  test_point = gfx::Point(65, 65);
-  result_layer =
-      host_impl().active_tree()->FindLayerThatIsHitByPointInTouchHandlerRegion(
-          test_point);
-  EXPECT_FALSE(result_layer);
-
-  test_point = gfx::Point(74, 74);
-  result_layer =
-      host_impl().active_tree()->FindLayerThatIsHitByPointInTouchHandlerRegion(
-          test_point);
-  EXPECT_FALSE(result_layer);
-
-  // Hit checking for a point inside the touch event handler region should
-  // return the root layer.
-  test_point = gfx::Point(35, 35);
-  result_layer =
-      host_impl().active_tree()->FindLayerThatIsHitByPointInTouchHandlerRegion(
-          test_point);
-  ASSERT_TRUE(result_layer);
-  EXPECT_EQ(12345, result_layer->id());
-
-  test_point = gfx::Point(64, 64);
-  result_layer =
-      host_impl().active_tree()->FindLayerThatIsHitByPointInTouchHandlerRegion(
-          test_point);
-  ASSERT_TRUE(result_layer);
-  EXPECT_EQ(12345, result_layer->id());
-}
-
-TEST_F(LayerTreeImplTest,
        HitCheckingTouchHandlerRegionsForSingleLayerWithDeviceScale) {
   // The layer's device_scale_factor and page_scale_factor should scale the
   // content rect and we should be able to hit the touch handler region by
@@ -1655,7 +1470,7 @@ TEST_F(LayerTreeImplTest,
   ASSERT_EQ(1u, root_layer()->render_surface()->layer_list().size());
 
   // Check whether the child layer fits into the root after scaled.
-  EXPECT_EQ(gfx::Rect(test_layer->content_bounds()),
+  EXPECT_EQ(gfx::Rect(test_layer->bounds()),
             test_layer->visible_content_rect());
 
   // Hit checking for a point outside the layer should return a null pointer

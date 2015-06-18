@@ -422,7 +422,6 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   gfx::Vector2dF bounds_delta() const { return bounds_delta_; }
 
   void SetContentBounds(const gfx::Size& content_bounds);
-  gfx::Size content_bounds() const { return draw_properties_.content_bounds; }
 
   float contents_scale_x() const { return draw_properties_.contents_scale_x; }
   float contents_scale_y() const { return draw_properties_.contents_scale_y; }
@@ -672,11 +671,11 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   virtual void GetDebugBorderProperties(SkColor* color, float* width) const;
 
   void AppendDebugBorderQuad(RenderPass* render_pass,
-                             const gfx::Size& content_bounds,
+                             const gfx::Size& bounds,
                              const SharedQuadState* shared_quad_state,
                              AppendQuadsData* append_quads_data) const;
   void AppendDebugBorderQuad(RenderPass* render_pass,
-                             const gfx::Size& content_bounds,
+                             const gfx::Size& bounds,
                              const SharedQuadState* shared_quad_state,
                              AppendQuadsData* append_quads_data,
                              SkColor color,

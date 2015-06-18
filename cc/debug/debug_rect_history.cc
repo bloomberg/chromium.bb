@@ -70,18 +70,10 @@ void DebugRectHistory::SavePaintRects(LayerImpl* layer) {
 
   Region invalidation_region = layer->GetInvalidationRegion();
   if (!invalidation_region.IsEmpty() && layer->DrawsContent()) {
-    float width_scale = layer->content_bounds().width() /
-                        static_cast<float>(layer->bounds().width());
-    float height_scale = layer->content_bounds().height() /
-                         static_cast<float>(layer->bounds().height());
-
     for (Region::Iterator it(invalidation_region); it.has_rect(); it.next()) {
-      gfx::Rect update_content_rect =
-          gfx::ScaleToEnclosingRect(it.rect(), width_scale, height_scale);
-      debug_rects_.push_back(
-          DebugRect(PAINT_RECT_TYPE,
-                    MathUtil::MapEnclosingClippedRect(
-                        layer->screen_space_transform(), update_content_rect)));
+      debug_rects_.push_back(DebugRect(
+          PAINT_RECT_TYPE, MathUtil::MapEnclosingClippedRect(
+                               layer->screen_space_transform(), it.rect())));
     }
   }
 
@@ -114,11 +106,10 @@ void DebugRectHistory::SavePropertyChangedRects(
       if (!layer->LayerPropertyChanged())
         continue;
 
-      debug_rects_.push_back(
-          DebugRect(PROPERTY_CHANGED_RECT_TYPE,
-                    MathUtil::MapEnclosingClippedRect(
-                        layer->screen_space_transform(),
-                        gfx::Rect(layer->content_bounds()))));
+      debug_rects_.push_back(DebugRect(
+          PROPERTY_CHANGED_RECT_TYPE,
+          MathUtil::MapEnclosingClippedRect(layer->screen_space_transform(),
+                                            gfx::Rect(layer->bounds()))));
     }
   }
 }
@@ -192,10 +183,9 @@ void DebugRectHistory::SaveWheelEventHandlerRectsCallback(LayerImpl* layer) {
   if (!layer->have_wheel_event_handlers())
     return;
 
-  gfx::Rect wheel_rect =
-      gfx::ScaleToEnclosingRect(gfx::Rect(layer->content_bounds()),
-                                layer->contents_scale_x(),
-                                layer->contents_scale_y());
+  gfx::Rect wheel_rect = gfx::ScaleToEnclosingRect(gfx::Rect(layer->bounds()),
+                                                   layer->contents_scale_x(),
+                                                   layer->contents_scale_y());
   debug_rects_.push_back(
       DebugRect(WHEEL_EVENT_HANDLER_RECT_TYPE,
                 MathUtil::MapEnclosingClippedRect(
@@ -212,10 +202,9 @@ void DebugRectHistory::SaveScrollEventHandlerRectsCallback(LayerImpl* layer) {
   if (!layer->have_scroll_event_handlers())
     return;
 
-  gfx::Rect scroll_rect =
-      gfx::ScaleToEnclosingRect(gfx::Rect(layer->content_bounds()),
-                                layer->contents_scale_x(),
-                                layer->contents_scale_y());
+  gfx::Rect scroll_rect = gfx::ScaleToEnclosingRect(gfx::Rect(layer->bounds()),
+                                                    layer->contents_scale_x(),
+                                                    layer->contents_scale_y());
   debug_rects_.push_back(
       DebugRect(SCROLL_EVENT_HANDLER_RECT_TYPE,
                 MathUtil::MapEnclosingClippedRect(

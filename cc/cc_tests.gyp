@@ -29,7 +29,6 @@
       'debug/micro_benchmark_controller_unittest.cc',
       'debug/rendering_stats_unittest.cc',
       'input/top_controls_manager_unittest.cc',
-      'layers/contents_scaling_layer_unittest.cc',
       'layers/delegated_frame_provider_unittest.cc',
       'layers/delegated_frame_resource_collection_unittest.cc',
       'layers/delegated_renderer_layer_impl_unittest.cc',

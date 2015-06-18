@@ -154,10 +154,8 @@ class BspTreePerfTest : public CalcDrawPropsTest {
     for (LayerImplList::iterator it = base_list.begin(); it != base_list.end();
          ++it) {
       DrawPolygon* draw_polygon =
-          new DrawPolygon(NULL,
-                          gfx::RectF((*it)->content_bounds()),
-                          (*it)->draw_transform(),
-                          polygon_counter++);
+          new DrawPolygon(NULL, gfx::RectF((*it)->bounds()),
+                          (*it)->draw_transform(), polygon_counter++);
       polygon_list.push_back(scoped_ptr<DrawPolygon>(draw_polygon));
     }
 
