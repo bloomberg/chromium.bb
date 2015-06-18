@@ -51,6 +51,7 @@ public:
         DataFormatRGBA4444,
         DataFormatRGB565,
         DataFormatRGB10F11F11F,
+        DataFormatRGB5999,
         DataFormatRG8,
         DataFormatRG8_S,
         DataFormatRG16,

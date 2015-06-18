@@ -212,6 +212,9 @@ WebGLImageConversion::DataFormat getDataFormat(GLenum destinationFormat, GLenum 
     case GL_UNSIGNED_SHORT_5_6_5:
         dstFormat = WebGLImageConversion::DataFormatRGB565;
         break;
+    case GL_UNSIGNED_INT_5_9_9_9_REV:
+        dstFormat = WebGLImageConversion::DataFormatRGB5999;
+        break;
     case GL_UNSIGNED_INT_24_8:
         dstFormat = WebGLImageConversion::DataFormatDS24_8;
         break;
@@ -1137,7 +1140,13 @@ bool HasAlpha(int format)
         || format == WebGLImageConversion::DataFormatRGBA16F
         || format == WebGLImageConversion::DataFormatRGBA32F
         || format == WebGLImageConversion::DataFormatRGBA4444
-        || format == WebGLImageConversion::DataFormatRGBA5551;
+        || format == WebGLImageConversion::DataFormatRGBA5551
+        || format == WebGLImageConversion::DataFormatRGBA8_S
+        || format == WebGLImageConversion::DataFormatRGBA16
+        || format == WebGLImageConversion::DataFormatRGBA16_S
+        || format == WebGLImageConversion::DataFormatRGBA32
+        || format == WebGLImageConversion::DataFormatRGBA32_S
+        || format == WebGLImageConversion::DataFormatRGBA2_10_10_10;
 }
 
 bool HasColor(int format)
@@ -1161,8 +1170,95 @@ bool HasColor(int format)
         || format == WebGLImageConversion::DataFormatRA8
         || format == WebGLImageConversion::DataFormatRA16F
         || format == WebGLImageConversion::DataFormatRA32F
-        || format == WebGLImageConversion::DataFormatAR8;
+        || format == WebGLImageConversion::DataFormatAR8
+        || format == WebGLImageConversion::DataFormatRGBA8_S
+        || format == WebGLImageConversion::DataFormatRGBA16
+        || format == WebGLImageConversion::DataFormatRGBA16_S
+        || format == WebGLImageConversion::DataFormatRGBA32
+        || format == WebGLImageConversion::DataFormatRGBA32_S
+        || format == WebGLImageConversion::DataFormatRGBA2_10_10_10
+        || format == WebGLImageConversion::DataFormatRGB8_S
+        || format == WebGLImageConversion::DataFormatRGB16
+        || format == WebGLImageConversion::DataFormatRGB16_S
+        || format == WebGLImageConversion::DataFormatRGB32
+        || format == WebGLImageConversion::DataFormatRGB32_S
+        || format == WebGLImageConversion::DataFormatRGB10F11F11F
+        || format == WebGLImageConversion::DataFormatRGB5999
+        || format == WebGLImageConversion::DataFormatRG8
+        || format == WebGLImageConversion::DataFormatRG8_S
+        || format == WebGLImageConversion::DataFormatRG16
+        || format == WebGLImageConversion::DataFormatRG16_S
+        || format == WebGLImageConversion::DataFormatRG32
+        || format == WebGLImageConversion::DataFormatRG32_S
+        || format == WebGLImageConversion::DataFormatRG16F
+        || format == WebGLImageConversion::DataFormatRG32F
+        || format == WebGLImageConversion::DataFormatR8_S
+        || format == WebGLImageConversion::DataFormatR16
+        || format == WebGLImageConversion::DataFormatR16_S
+        || format == WebGLImageConversion::DataFormatR32
+        || format == WebGLImageConversion::DataFormatR32_S;
 }
+
+template<int Format>
+struct IsInt8Format {
+    static const bool Value =
+        Format == WebGLImageConversion::DataFormatRGBA8_S
+        || Format == WebGLImageConversion::DataFormatRGB8_S
+        || Format == WebGLImageConversion::DataFormatRG8_S
+        || Format == WebGLImageConversion::DataFormatR8_S;
+};
+
+template<int Format>
+struct IsInt16Format {
+    static const bool Value =
+        Format == WebGLImageConversion::DataFormatRGBA16_S
+        || Format == WebGLImageConversion::DataFormatRGB16_S
+        || Format == WebGLImageConversion::DataFormatRG16_S
+        || Format == WebGLImageConversion::DataFormatR16_S;
+};
+
+template<int Format>
+struct IsInt32Format {
+    static const bool Value =
+        Format == WebGLImageConversion::DataFormatRGBA32_S
+        || Format == WebGLImageConversion::DataFormatRGB32_S
+        || Format == WebGLImageConversion::DataFormatRG32_S
+        || Format == WebGLImageConversion::DataFormatR32_S;
+};
+
+template<int Format>
+struct IsUInt8Format {
+    static const bool Value =
+        Format == WebGLImageConversion::DataFormatRGBA8
+        || Format == WebGLImageConversion::DataFormatRGB8
+        || Format == WebGLImageConversion::DataFormatRG8
+        || Format == WebGLImageConversion::DataFormatR8
+        || Format == WebGLImageConversion::DataFormatBGRA8
+        || Format == WebGLImageConversion::DataFormatBGR8
+        || Format == WebGLImageConversion::DataFormatARGB8
+        || Format == WebGLImageConversion::DataFormatABGR8
+        || Format == WebGLImageConversion::DataFormatRA8
+        || Format == WebGLImageConversion::DataFormatAR8
+        || Format == WebGLImageConversion::DataFormatA8;
+};
+
+template<int Format>
+struct IsUInt16Format {
+    static const bool Value =
+        Format == WebGLImageConversion::DataFormatRGBA16
+        || Format == WebGLImageConversion::DataFormatRGB16
+        || Format == WebGLImageConversion::DataFormatRG16
+        || Format == WebGLImageConversion::DataFormatR16;
+};
+
+template<int Format>
+struct IsUInt32Format {
+    static const bool Value =
+        Format == WebGLImageConversion::DataFormatRGBA32
+        || Format == WebGLImageConversion::DataFormatRGB32
+        || Format == WebGLImageConversion::DataFormatRG32
+        || Format == WebGLImageConversion::DataFormatR32;
+};
 
 template<int Format>
 struct IsFloatFormat {
@@ -1171,7 +1267,8 @@ struct IsFloatFormat {
         || Format == WebGLImageConversion::DataFormatRGB32F
         || Format == WebGLImageConversion::DataFormatRA32F
         || Format == WebGLImageConversion::DataFormatR32F
-        || Format == WebGLImageConversion::DataFormatA32F;
+        || Format == WebGLImageConversion::DataFormatA32F
+        || Format == WebGLImageConversion::DataFormatRG32F;
 };
 
 template<int Format>
@@ -1181,7 +1278,16 @@ struct IsHalfFloatFormat {
         || Format == WebGLImageConversion::DataFormatRGB16F
         || Format == WebGLImageConversion::DataFormatRA16F
         || Format == WebGLImageConversion::DataFormatR16F
-        || Format == WebGLImageConversion::DataFormatA16F;
+        || Format == WebGLImageConversion::DataFormatA16F
+        || Format == WebGLImageConversion::DataFormatRG16F;
+};
+
+template<int Format>
+struct Is32bppFormat {
+    static const bool Value =
+        Format == WebGLImageConversion::DataFormatRGBA2_10_10_10
+        || Format == WebGLImageConversion::DataFormatRGB5999
+        || Format == WebGLImageConversion::DataFormatRGB10F11F11F;
 };
 
 template<int Format>
@@ -1192,29 +1298,89 @@ struct Is16bppFormat {
         || Format == WebGLImageConversion::DataFormatRGB565;
 };
 
-template<int Format, bool IsFloat = IsFloatFormat<Format>::Value, bool IsHalfFloat = IsHalfFloatFormat<Format>::Value, bool Is16bpp = Is16bppFormat<Format>::Value>
+template<int Format,
+    bool IsInt8Format = IsInt8Format<Format>::Value,
+    bool IsUInt8Format = IsUInt8Format<Format>::Value,
+    bool IsInt16Format = IsInt16Format<Format>::Value,
+    bool IsUInt16Format = IsUInt16Format<Format>::Value,
+    bool IsInt32Format = IsInt32Format<Format>::Value,
+    bool IsUInt32Format = IsUInt32Format<Format>::Value,
+    bool IsFloat = IsFloatFormat<Format>::Value,
+    bool IsHalfFloat = IsHalfFloatFormat<Format>::Value,
+    bool Is16bpp = Is16bppFormat<Format>::Value,
+    bool Is32bpp = Is32bppFormat<Format>::Value>
 struct DataTypeForFormat {
+    typedef double Type; // Use a type that's not used in unpack/pack.
+};
+
+template<int Format>
+struct DataTypeForFormat<Format, true, false, false, false, false, false, false, false, false, false> {
+    typedef int8_t Type;
+};
+
+template<int Format>
+struct DataTypeForFormat<Format, false, true, false, false, false, false, false, false, false, false> {
     typedef uint8_t Type;
 };
 
 template<int Format>
-struct DataTypeForFormat<Format, true, false, false> {
+struct DataTypeForFormat<Format, false, false, true, false, false, false, false, false, false, false> {
+    typedef int16_t Type;
+};
+
+template<int Format>
+struct DataTypeForFormat<Format, false, false, false, true, false, false, false, false, false, false> {
+    typedef uint16_t Type;
+};
+
+template<int Format>
+struct DataTypeForFormat<Format, false, false, false, false, true, false, false, false, false, false> {
+    typedef int32_t Type;
+};
+
+template<int Format>
+struct DataTypeForFormat<Format, false, false, false, false, false, true, false, false, false, false> {
+    typedef uint32_t Type;
+};
+
+template<int Format>
+struct DataTypeForFormat<Format, false, false, false, false, false, false, true, false, false, false> {
     typedef float Type;
 };
 
 template<int Format>
-struct DataTypeForFormat<Format, false, true, false> {
+struct DataTypeForFormat<Format, false, false, false, false, false, false, false, true, false, false> {
     typedef uint16_t Type;
 };
 
 template<int Format>
-struct DataTypeForFormat<Format, false, false, true> {
+struct DataTypeForFormat<Format, false, false, false, false, false, false, false, false, true, false> {
     typedef uint16_t Type;
+};
+
+template<int Format>
+struct DataTypeForFormat<Format, false, false, false, false, false, false, false, false, false, true> {
+    typedef uint32_t Type;
+};
+
+template<int Format>
+struct UsesFloatIntermediateFormat {
+    static const bool Value =
+        IsFloatFormat<Format>::Value
+        || IsHalfFloatFormat<Format>::Value
+        || Format == WebGLImageConversion::DataFormatRGB10F11F11F
+        || Format == WebGLImageConversion::DataFormatRGB5999;
 };
 
 template<int Format>
 struct IntermediateFormat {
-    static const int Value = (IsFloatFormat<Format>::Value || IsHalfFloatFormat<Format>::Value) ? WebGLImageConversion::DataFormatRGBA32F : WebGLImageConversion::DataFormatRGBA8;
+    static const int Value =
+        UsesFloatIntermediateFormat<Format>::Value ? WebGLImageConversion::DataFormatRGBA32F
+        : IsInt32Format<Format>::Value ? WebGLImageConversion::DataFormatRGBA32_S
+        : IsUInt32Format<Format>::Value ? WebGLImageConversion::DataFormatRGBA32
+        : IsInt16Format<Format>::Value ? WebGLImageConversion::DataFormatRGBA16_S
+        : (IsUInt16Format<Format>::Value || Is32bppFormat<Format>::Value) ? WebGLImageConversion::DataFormatRGBA16
+        : IsInt8Format<Format>::Value ? WebGLImageConversion::DataFormatRGBA8_S : WebGLImageConversion::DataFormatRGBA8;
 };
 
 unsigned TexelBytesForFormat(WebGLImageConversion::DataFormat format)
@@ -1425,12 +1591,12 @@ void FormatConverter::convert()
 
     typedef typename DataTypeForFormat<SrcFormat>::Type SrcType;
     typedef typename DataTypeForFormat<DstFormat>::Type DstType;
-    const int IntermediateSrcFormat = IntermediateFormat<DstFormat>::Value;
-    typedef typename DataTypeForFormat<IntermediateSrcFormat>::Type IntermediateSrcType;
+    const int IntermFormat = IntermediateFormat<DstFormat>::Value;
+    typedef typename DataTypeForFormat<IntermFormat>::Type IntermType;
     const ptrdiff_t srcStrideInElements = m_srcStride / sizeof(SrcType);
     const ptrdiff_t dstStrideInElements = m_dstStride / sizeof(DstType);
-    const bool trivialUnpack = (SrcFormat == WebGLImageConversion::DataFormatRGBA8 && !IsFloatFormat<DstFormat>::Value && !IsHalfFloatFormat<DstFormat>::Value) || SrcFormat == WebGLImageConversion::DataFormatRGBA32F;
-    const bool trivialPack = (DstFormat == WebGLImageConversion::DataFormatRGBA8 || DstFormat == WebGLImageConversion::DataFormatRGBA32F) && alphaOp == WebGLImageConversion::AlphaDoNothing && m_dstStride > 0;
+    const bool trivialUnpack = SrcFormat == IntermFormat;
+    const bool trivialPack = DstFormat == IntermFormat && alphaOp == WebGLImageConversion::AlphaDoNothing && m_dstStride > 0;
     ASSERT(!trivialUnpack || !trivialPack);
 
     const SrcType *srcRowStart = static_cast<const SrcType*>(m_srcStart);
@@ -1449,8 +1615,8 @@ void FormatConverter::convert()
         }
     } else {
         for (size_t i = 0; i < m_height; ++i) {
-            unpack<SrcFormat>(srcRowStart, reinterpret_cast<IntermediateSrcType*>(m_unpackedIntermediateSrcData.get()), m_width);
-            pack<DstFormat, alphaOp>(reinterpret_cast<IntermediateSrcType*>(m_unpackedIntermediateSrcData.get()), dstRowStart, m_width);
+            unpack<SrcFormat>(srcRowStart, reinterpret_cast<IntermType*>(m_unpackedIntermediateSrcData.get()), m_width);
+            pack<DstFormat, alphaOp>(reinterpret_cast<IntermType*>(m_unpackedIntermediateSrcData.get()), dstRowStart, m_width);
             srcRowStart += srcStrideInElements;
             dstRowStart += dstStrideInElements;
         }
