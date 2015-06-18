@@ -139,14 +139,6 @@ void SharedMemory::Close() {
   }
 }
 
-void SharedMemory::LockDeprecated() {
-  NOTIMPLEMENTED();
-}
-
-void SharedMemory::UnlockDeprecated() {
-  NOTIMPLEMENTED();
-}
-
 bool SharedMemory::ShareToProcessCommon(ProcessHandle process,
                                         SharedMemoryHandle *new_handle,
                                         bool close_self,

@@ -32,8 +32,7 @@ SharedMemory::SharedMemory()
       memory_(NULL),
       read_only_(false),
       mapped_size_(0),
-      requested_size_(0),
-      lock_(NULL) {
+      requested_size_(0) {
 }
 
 SharedMemory::SharedMemory(const std::wstring& name)
@@ -42,7 +41,6 @@ SharedMemory::SharedMemory(const std::wstring& name)
       read_only_(false),
       requested_size_(0),
       mapped_size_(0),
-      lock_(NULL),
       name_(name) {
 }
 
@@ -51,18 +49,17 @@ SharedMemory::SharedMemory(SharedMemoryHandle handle, bool read_only)
       memory_(NULL),
       read_only_(read_only),
       requested_size_(0),
-      mapped_size_(0),
-      lock_(NULL) {
+      mapped_size_(0) {
 }
 
-SharedMemory::SharedMemory(SharedMemoryHandle handle, bool read_only,
+SharedMemory::SharedMemory(SharedMemoryHandle handle,
+                           bool read_only,
                            ProcessHandle process)
     : mapped_file_(NULL),
       memory_(NULL),
       read_only_(read_only),
       requested_size_(0),
-      mapped_size_(0),
-      lock_(NULL) {
+      mapped_size_(0) {
   ::DuplicateHandle(process, handle,
                     GetCurrentProcess(), &mapped_file_,
                     read_only_ ? FILE_MAP_READ : FILE_MAP_READ |
@@ -73,8 +70,6 @@ SharedMemory::SharedMemory(SharedMemoryHandle handle, bool read_only,
 SharedMemory::~SharedMemory() {
   Unmap();
   Close();
-  if (lock_ != NULL)
-    CloseHandle(lock_);
 }
 
 // static
@@ -268,26 +263,6 @@ void SharedMemory::Close() {
     CloseHandle(mapped_file_);
     mapped_file_ = NULL;
   }
-}
-
-void SharedMemory::LockDeprecated() {
-  if (lock_ == NULL) {
-    std::wstring name = name_;
-    name.append(L"lock");
-    lock_ = CreateMutex(NULL, FALSE, name.c_str());
-    if (lock_ == NULL) {
-      DPLOG(ERROR) << "Could not create mutex.";
-      NOTREACHED();
-      return;  // There is nothing good we can do here.
-    }
-  }
-  DWORD result = WaitForSingleObject(lock_, INFINITE);
-  DCHECK_EQ(result, WAIT_OBJECT_0);
-}
-
-void SharedMemory::UnlockDeprecated() {
-  DCHECK(lock_ != NULL);
-  ReleaseMutex(lock_);
 }
 
 SharedMemoryHandle SharedMemory::handle() const {

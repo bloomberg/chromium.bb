@@ -257,27 +257,11 @@ class BASE_EXPORT SharedMemory {
     return ShareToProcessCommon(process, new_handle, true, SHARE_CURRENT_MODE);
   }
 
-  // DEPRECATED (crbug.com/345734):
-  // Locks the shared memory.
-  //
-  // WARNING: on POSIX the memory locking primitive only works across
-  // processes, not across threads.  The LockDeprecated method is not currently
-  // used in inner loops, so we protect against multiple threads in a
-  // critical section using a class global lock.
-  void LockDeprecated();
-
-  // DEPRECATED (crbug.com/345734):
-  // Releases the shared memory lock.
-  void UnlockDeprecated();
-
  private:
-#if defined(OS_POSIX) && !defined(OS_NACL)
-#if !defined(OS_ANDROID)
+#if defined(OS_POSIX) && !defined(OS_NACL) && !defined(OS_ANDROID)
   bool PrepareMapFile(ScopedFILE fp, ScopedFD readonly);
   bool FilePathForMemoryName(const std::string& mem_name, FilePath* path);
-#endif
-  void LockOrUnlockCommon(int function);
-#endif  // defined(OS_POSIX) && !defined(OS_NACL)
+#endif  // defined(OS_POSIX) && !defined(OS_NACL) && !defined(OS_ANDROID)
   enum ShareMode {
     SHARE_READONLY,
     SHARE_CURRENT_MODE,
@@ -298,32 +282,9 @@ class BASE_EXPORT SharedMemory {
   void*              memory_;
   bool               read_only_;
   size_t             requested_size_;
-#if !defined(OS_POSIX)
-  HANDLE             lock_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(SharedMemory);
 };
-
-// DEPRECATED (crbug.com/345734):
-// A helper class that acquires the shared memory lock while
-// the SharedMemoryAutoLockDeprecated is in scope.
-class SharedMemoryAutoLockDeprecated {
- public:
-  explicit SharedMemoryAutoLockDeprecated(SharedMemory* shared_memory)
-      : shared_memory_(shared_memory) {
-    shared_memory_->LockDeprecated();
-  }
-
-  ~SharedMemoryAutoLockDeprecated() {
-    shared_memory_->UnlockDeprecated();
-  }
-
- private:
-  SharedMemory* shared_memory_;
-  DISALLOW_COPY_AND_ASSIGN(SharedMemoryAutoLockDeprecated);
-};
-
 }  // namespace base
 
 #endif  // BASE_MEMORY_SHARED_MEMORY_H_
