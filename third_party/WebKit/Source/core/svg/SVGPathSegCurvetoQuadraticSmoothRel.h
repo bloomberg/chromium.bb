@@ -34,6 +34,11 @@ public:
         return adoptRefWillBeNoop(new SVGPathSegCurvetoQuadraticSmoothRel(element, x, y));
     }
 
+    PassRefPtrWillBeRawPtr<SVGPathSeg> clone() override
+    {
+        return adoptRefWillBeNoop(new SVGPathSegCurvetoQuadraticSmoothRel(nullptr, x(), y()));
+    }
+
 private:
     SVGPathSegCurvetoQuadraticSmoothRel(SVGPathElement* element, float x, float y)
         : SVGPathSegSingleCoordinate(element, x, y) { }

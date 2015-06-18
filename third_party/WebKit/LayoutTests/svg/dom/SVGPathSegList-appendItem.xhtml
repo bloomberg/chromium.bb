@@ -55,9 +55,24 @@
     shouldBe("path2.pathSegList.getItem(3).x = -path2.pathSegList.getItem(3).x", "-100");
 
     debug("")
-    debug("Swap segment four and five of path2 - now should look like a rectangle");
+    debug("Append second item from path1 to path2 list");
     shouldBeEqualToString("path2.pathSegList.appendItem(path2.pathSegList.getItem(3)).toString()", "[object SVGPathSegLinetoHorizontalRel]");
-
+    shouldBe("path2.pathSegList.numberOfItems", "6");
+    shouldBeEqualToString("path2.pathSegList.getItem(0).toString()", "[object SVGPathSegMovetoAbs]");
+    shouldBe("path2.pathSegList.getItem(0).x", "0");
+    shouldBe("path2.pathSegList.getItem(0).y", "0");
+    shouldBeEqualToString("path2.pathSegList.getItem(1).toString()", "[object SVGPathSegLinetoAbs]");
+    shouldBe("path2.pathSegList.getItem(1).x", "50");
+    shouldBe("path2.pathSegList.getItem(1).y", "100");
+    shouldBeEqualToString("path2.pathSegList.getItem(2).toString()", "[object SVGPathSegLinetoHorizontalRel]");
+    shouldBe("path2.pathSegList.getItem(2).x", "100");
+    shouldBeEqualToString("path2.pathSegList.getItem(3).toString()", "[object SVGPathSegLinetoHorizontalRel]");
+    shouldBe("path2.pathSegList.getItem(3).x", "-100");
+    shouldBeEqualToString("path2.pathSegList.getItem(4).toString()", "[object SVGPathSegLinetoVerticalRel]");
+    shouldBe("path2.pathSegList.getItem(4).y", "100");
+    shouldBeEqualToString("path2.pathSegList.getItem(5).toString()", "[object SVGPathSegLinetoHorizontalRel]");
+    shouldBe("path2.pathSegList.getItem(5).x", "-100");
+    
     debug("");
     debug("Append second item from path2 to path1 list");
     shouldBeEqualToString("path1.pathSegList.appendItem(path2.pathSegList.getItem(1)).toString()", "[object SVGPathSegLinetoAbs]");
@@ -66,6 +81,14 @@
     debug("Change last item of path1 list, that came from path2 list, assure it's updating path1");
     shouldBe("path1.pathSegList.getItem(3).x -= 50", "0");
 
+    debug("");
+    debug("Reset points attribute to M 0 0 L 100 0 v 100");
+    shouldBeUndefined("path2.setAttribute('d', 'M 0 0 L 100 0 v 100')");
+    
+    debug("")
+    debug("Append fourth item from path1 to path2 list - now should look like a rectangle");
+    shouldBeEqualToString("path2.pathSegList.appendItem(path1.pathSegList.getItem(3)).toString()", "[object SVGPathSegLinetoAbs]");
+    
     debug("");
     debug("Check final 'pathSegList' value of path1");
     shouldBe("path1.pathSegList.numberOfItems", "4");
@@ -88,12 +111,14 @@
     shouldBeEqualToString("path2.pathSegList.getItem(0).toString()", "[object SVGPathSegMovetoAbs]");
     shouldBe("path2.pathSegList.getItem(0).x", "0");
     shouldBe("path2.pathSegList.getItem(0).y", "0");
-    shouldBeEqualToString("path2.pathSegList.getItem(1).toString()", "[object SVGPathSegLinetoHorizontalRel]");
+    shouldBeEqualToString("path2.pathSegList.getItem(1).toString()", "[object SVGPathSegLinetoAbs]");
     shouldBe("path2.pathSegList.getItem(1).x", "100");
+    shouldBe("path1.pathSegList.getItem(1).y", "0");
     shouldBeEqualToString("path2.pathSegList.getItem(2).toString()", "[object SVGPathSegLinetoVerticalRel]");
     shouldBe("path2.pathSegList.getItem(2).y", "100");
-    shouldBeEqualToString("path2.pathSegList.getItem(3).toString()", "[object SVGPathSegLinetoHorizontalRel]");
-    shouldBe("path2.pathSegList.getItem(3).x", "-100");
+    shouldBeEqualToString("path2.pathSegList.getItem(3).toString()", "[object SVGPathSegLinetoAbs]");
+    shouldBe("path2.pathSegList.getItem(3).x", "0");
+    shouldBe("path1.pathSegList.getItem(3).y", "100");
 
 ]]>
 </script>

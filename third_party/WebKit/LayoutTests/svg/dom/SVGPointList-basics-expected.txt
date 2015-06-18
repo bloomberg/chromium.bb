@@ -45,32 +45,43 @@ PASS poly1.points.insertItemBefore('aString') threw exception TypeError: Failed 
 PASS poly1.points.insertItemBefore(poly1) threw exception TypeError: Failed to execute 'insertItemBefore' on 'SVGPointList': 2 arguments required, but only 1 present..
 PASS poly1.points.insertItemBefore(null) threw exception TypeError: Failed to execute 'insertItemBefore' on 'SVGPointList': 2 arguments required, but only 1 present..
 PASS dumpPoint(poly1.points.insertItemBefore(poly1.points.getItem(1), 'aString')) is "x=100 y=0"
-PASS poly1.points.numberOfItems is 4
+PASS poly1.points.numberOfItems is 5
 PASS dumpPoint(poly1.points.getItem(0)) is "x=100 y=0"
 PASS dumpPoint(poly1.points.getItem(1)) is "x=0 y=0"
-PASS dumpPoint(poly1.points.getItem(2)) is "x=100 y=100"
-PASS dumpPoint(poly1.points.getItem(3)) is "x=0 y=100"
-PASS poly1.getAttribute('points').formatPointsAttribute() is "100 0 0 0 100 100 0 100"
+PASS dumpPoint(poly1.points.getItem(2)) is "x=100 y=0"
+PASS dumpPoint(poly1.points.getItem(3)) is "x=100 y=100"
+PASS dumpPoint(poly1.points.getItem(4)) is "x=0 y=100"
+PASS poly1.getAttribute('points').formatPointsAttribute() is "100 0 0 0 100 0 100 100 0 100"
 PASS dumpPoint(poly1.points.insertItemBefore(poly1.points.getItem(1), poly1)) is "x=0 y=0"
-PASS poly1.points.numberOfItems is 4
+PASS poly1.points.numberOfItems is 6
 PASS dumpPoint(poly1.points.getItem(0)) is "x=0 y=0"
 PASS dumpPoint(poly1.points.getItem(1)) is "x=100 y=0"
-PASS dumpPoint(poly1.points.getItem(2)) is "x=100 y=100"
-PASS dumpPoint(poly1.points.getItem(3)) is "x=0 y=100"
-PASS poly1.getAttribute('points').formatPointsAttribute() is "0 0 100 0 100 100 0 100"
+PASS dumpPoint(poly1.points.getItem(2)) is "x=0 y=0"
+PASS dumpPoint(poly1.points.getItem(3)) is "x=100 y=0"
+PASS dumpPoint(poly1.points.getItem(4)) is "x=100 y=100"
+PASS dumpPoint(poly1.points.getItem(5)) is "x=0 y=100"
+PASS poly1.getAttribute('points').formatPointsAttribute() is "0 0 100 0 0 0 100 0 100 100 0 100"
 PASS dumpPoint(poly1.points.insertItemBefore(poly1.points.getItem(1), null)) is "x=100 y=0"
-PASS poly1.points.numberOfItems is 4
+PASS poly1.points.numberOfItems is 7
 PASS dumpPoint(poly1.points.getItem(0)) is "x=100 y=0"
 PASS dumpPoint(poly1.points.getItem(1)) is "x=0 y=0"
-PASS dumpPoint(poly1.points.getItem(2)) is "x=100 y=100"
-PASS poly1.getAttribute('points').formatPointsAttribute() is "100 0 0 0 100 100 0 100"
+PASS dumpPoint(poly1.points.getItem(2)) is "x=100 y=0"
+PASS dumpPoint(poly1.points.getItem(3)) is "x=0 y=0"
+PASS dumpPoint(poly1.points.getItem(4)) is "x=100 y=0"
+PASS dumpPoint(poly1.points.getItem(5)) is "x=100 y=100"
+PASS dumpPoint(poly1.points.getItem(6)) is "x=0 y=100"
+PASS poly1.getAttribute('points').formatPointsAttribute() is "100 0 0 0 100 0 0 0 100 0 100 100 0 100"
 PASS dumpPoint(poly1.points.insertItemBefore(poly1.points.getItem(1), 0)) is "x=0 y=0"
-PASS poly1.points.numberOfItems is 4
+PASS poly1.points.numberOfItems is 8
 PASS dumpPoint(poly1.points.getItem(0)) is "x=0 y=0"
 PASS dumpPoint(poly1.points.getItem(1)) is "x=100 y=0"
-PASS dumpPoint(poly1.points.getItem(2)) is "x=100 y=100"
-PASS dumpPoint(poly1.points.getItem(3)) is "x=0 y=100"
-PASS poly1.getAttribute('points').formatPointsAttribute() is "0 0 100 0 100 100 0 100"
+PASS dumpPoint(poly1.points.getItem(2)) is "x=0 y=0"
+PASS dumpPoint(poly1.points.getItem(3)) is "x=100 y=0"
+PASS dumpPoint(poly1.points.getItem(4)) is "x=0 y=0"
+PASS dumpPoint(poly1.points.getItem(5)) is "x=100 y=0"
+PASS dumpPoint(poly1.points.getItem(6)) is "x=100 y=100"
+PASS dumpPoint(poly1.points.getItem(7)) is "x=0 y=100"
+PASS poly1.getAttribute('points').formatPointsAttribute() is "0 0 100 0 0 0 100 0 0 0 100 0 100 100 0 100"
 PASS poly1.points.insertItemBefore(30, 0) threw exception TypeError: Failed to execute 'insertItemBefore' on 'SVGPointList': parameter 1 is not of type 'SVGPoint'..
 PASS poly1.points.insertItemBefore('aString', 0) threw exception TypeError: Failed to execute 'insertItemBefore' on 'SVGPointList': parameter 1 is not of type 'SVGPoint'..
 PASS poly1.points.insertItemBefore(poly1, 0) threw exception TypeError: Failed to execute 'insertItemBefore' on 'SVGPointList': parameter 1 is not of type 'SVGPoint'..
@@ -92,36 +103,52 @@ PASS poly1.points[0] = poly1 threw exception TypeError: Failed to set an indexed
 PASS poly1.points[0] = null threw exception TypeError: Failed to set an indexed property on 'SVGPointList': The provided value is not of type 'SVGPoint'..
 
 Test uncommon arguments for replaceItem() and xml-dom synchronization
-PASS poly1.points.numberOfItems is 4
+PASS poly1.points.numberOfItems is 8
 PASS dumpPoint(poly1.points.getItem(0)) is "x=0 y=0"
 PASS dumpPoint(poly1.points.getItem(1)) is "x=100 y=0"
-PASS dumpPoint(poly1.points.getItem(2)) is "x=100 y=100"
-PASS dumpPoint(poly1.points.getItem(3)) is "x=0 y=100"
-PASS poly1.getAttribute('points').formatPointsAttribute() is "0 0 100 0 100 100 0 100"
+PASS dumpPoint(poly1.points.getItem(2)) is "x=0 y=0"
+PASS dumpPoint(poly1.points.getItem(3)) is "x=100 y=0"
+PASS dumpPoint(poly1.points.getItem(4)) is "x=0 y=0"
+PASS dumpPoint(poly1.points.getItem(5)) is "x=100 y=0"
+PASS dumpPoint(poly1.points.getItem(6)) is "x=100 y=100"
+PASS dumpPoint(poly1.points.getItem(7)) is "x=0 y=100"
+PASS poly1.getAttribute('points').formatPointsAttribute() is "0 0 100 0 0 0 100 0 0 0 100 0 100 100 0 100"
 PASS dumpPoint(poly1.points.replaceItem(poly1.points.getItem(0), 0)) is "x=0 y=0"
-PASS poly1.points.numberOfItems is 4
+PASS poly1.points.numberOfItems is 8
 PASS dumpPoint(poly1.points.getItem(0)) is "x=0 y=0"
 PASS dumpPoint(poly1.points.getItem(1)) is "x=100 y=0"
-PASS dumpPoint(poly1.points.getItem(2)) is "x=100 y=100"
-PASS dumpPoint(poly1.points.getItem(3)) is "x=0 y=100"
-PASS poly1.getAttribute('points').formatPointsAttribute() is "0 0 100 0 100 100 0 100"
+PASS dumpPoint(poly1.points.getItem(2)) is "x=0 y=0"
+PASS dumpPoint(poly1.points.getItem(3)) is "x=100 y=0"
+PASS dumpPoint(poly1.points.getItem(4)) is "x=0 y=0"
+PASS dumpPoint(poly1.points.getItem(5)) is "x=100 y=0"
+PASS dumpPoint(poly1.points.getItem(6)) is "x=100 y=100"
+PASS dumpPoint(poly1.points.getItem(7)) is "x=0 y=100"
+PASS poly1.getAttribute('points').formatPointsAttribute() is "0 0 100 0 0 0 100 0 0 0 100 0 100 100 0 100"
 PASS dumpPoint(poly1.points.replaceItem(poly1.points.getItem(0), 'aString')) is "x=0 y=0"
-PASS poly1.points.numberOfItems is 4
+PASS poly1.points.numberOfItems is 8
 PASS dumpPoint(poly1.points.getItem(0)) is "x=0 y=0"
 PASS dumpPoint(poly1.points.getItem(1)) is "x=100 y=0"
-PASS dumpPoint(poly1.points.getItem(2)) is "x=100 y=100"
-PASS dumpPoint(poly1.points.getItem(3)) is "x=0 y=100"
-PASS poly1.getAttribute('points').formatPointsAttribute() is "0 0 100 0 100 100 0 100"
+PASS dumpPoint(poly1.points.getItem(2)) is "x=0 y=0"
+PASS dumpPoint(poly1.points.getItem(3)) is "x=100 y=0"
+PASS dumpPoint(poly1.points.getItem(4)) is "x=0 y=0"
+PASS dumpPoint(poly1.points.getItem(5)) is "x=100 y=0"
+PASS dumpPoint(poly1.points.getItem(6)) is "x=100 y=100"
+PASS dumpPoint(poly1.points.getItem(7)) is "x=0 y=100"
+PASS poly1.getAttribute('points').formatPointsAttribute() is "0 0 100 0 0 0 100 0 0 0 100 0 100 100 0 100"
 PASS dumpPoint(poly1.points.replaceItem(poly1.points.getItem(0), poly1)) is "x=0 y=0"
-PASS poly1.points.numberOfItems is 4
+PASS poly1.points.numberOfItems is 8
 PASS dumpPoint(poly1.points.getItem(0)) is "x=0 y=0"
 PASS dumpPoint(poly1.points.getItem(1)) is "x=100 y=0"
-PASS dumpPoint(poly1.points.getItem(2)) is "x=100 y=100"
-PASS dumpPoint(poly1.points.getItem(3)) is "x=0 y=100"
-PASS poly1.getAttribute('points').formatPointsAttribute() is "0 0 100 0 100 100 0 100"
+PASS dumpPoint(poly1.points.getItem(2)) is "x=0 y=0"
+PASS dumpPoint(poly1.points.getItem(3)) is "x=100 y=0"
+PASS dumpPoint(poly1.points.getItem(4)) is "x=0 y=0"
+PASS dumpPoint(poly1.points.getItem(5)) is "x=100 y=0"
+PASS dumpPoint(poly1.points.getItem(6)) is "x=100 y=100"
+PASS dumpPoint(poly1.points.getItem(7)) is "x=0 y=100"
+PASS poly1.getAttribute('points').formatPointsAttribute() is "0 0 100 0 0 0 100 0 0 0 100 0 100 100 0 100"
 PASS dumpPoint(poly1.points.replaceItem(poly1.points.getItem(0), null)) is "x=0 y=0"
-PASS poly1.points.numberOfItems is 4
-PASS poly1.getAttribute('points') is "0 0 100 0 100 100 0 100"
+PASS poly1.points.numberOfItems is 8
+PASS poly1.getAttribute('points') is "0 0 100 0 0 0 100 0 0 0 100 0 100 100 0 100"
 
 Reset points attribute to 0 0 100 0 100 100 0 100
 PASS poly1.setAttribute('points', '0 0 100 0 100 100 0 100') is undefined.

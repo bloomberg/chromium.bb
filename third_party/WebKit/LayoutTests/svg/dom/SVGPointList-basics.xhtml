@@ -77,35 +77,46 @@
     shouldThrow("poly1.points.insertItemBefore(null)");
 
     shouldBeEqualToString("dumpPoint(poly1.points.insertItemBefore(poly1.points.getItem(1), 'aString'))", "x=100 y=0");
-    shouldBe("poly1.points.numberOfItems", "4");
+    shouldBe("poly1.points.numberOfItems", "5");
     shouldBeEqualToString("dumpPoint(poly1.points.getItem(0))", "x=100 y=0");
     shouldBeEqualToString("dumpPoint(poly1.points.getItem(1))", "x=0 y=0");
-    shouldBeEqualToString("dumpPoint(poly1.points.getItem(2))", "x=100 y=100");
-    shouldBeEqualToString("dumpPoint(poly1.points.getItem(3))", "x=0 y=100");
-    shouldBeEqualToString("poly1.getAttribute('points').formatPointsAttribute()", "100 0 0 0 100 100 0 100");
+    shouldBeEqualToString("dumpPoint(poly1.points.getItem(2))", "x=100 y=0");
+    shouldBeEqualToString("dumpPoint(poly1.points.getItem(3))", "x=100 y=100");
+    shouldBeEqualToString("dumpPoint(poly1.points.getItem(4))", "x=0 y=100");
+    shouldBeEqualToString("poly1.getAttribute('points').formatPointsAttribute()", "100 0 0 0 100 0 100 100 0 100");
     
     shouldBeEqualToString("dumpPoint(poly1.points.insertItemBefore(poly1.points.getItem(1), poly1))", "x=0 y=0");
-    shouldBe("poly1.points.numberOfItems", "4");
+    shouldBe("poly1.points.numberOfItems", "6");
     shouldBeEqualToString("dumpPoint(poly1.points.getItem(0))", "x=0 y=0");
     shouldBeEqualToString("dumpPoint(poly1.points.getItem(1))", "x=100 y=0");
-    shouldBeEqualToString("dumpPoint(poly1.points.getItem(2))", "x=100 y=100");
-    shouldBeEqualToString("dumpPoint(poly1.points.getItem(3))", "x=0 y=100");
-    shouldBeEqualToString("poly1.getAttribute('points').formatPointsAttribute()", "0 0 100 0 100 100 0 100");
+    shouldBeEqualToString("dumpPoint(poly1.points.getItem(2))", "x=0 y=0");
+    shouldBeEqualToString("dumpPoint(poly1.points.getItem(3))", "x=100 y=0");
+    shouldBeEqualToString("dumpPoint(poly1.points.getItem(4))", "x=100 y=100");
+    shouldBeEqualToString("dumpPoint(poly1.points.getItem(5))", "x=0 y=100");
+    shouldBeEqualToString("poly1.getAttribute('points').formatPointsAttribute()", "0 0 100 0 0 0 100 0 100 100 0 100");
 
     shouldBeEqualToString("dumpPoint(poly1.points.insertItemBefore(poly1.points.getItem(1), null))", "x=100 y=0");
-    shouldBe("poly1.points.numberOfItems", "4");
+    shouldBe("poly1.points.numberOfItems", "7");
     shouldBeEqualToString("dumpPoint(poly1.points.getItem(0))", "x=100 y=0");
     shouldBeEqualToString("dumpPoint(poly1.points.getItem(1))", "x=0 y=0");
-    shouldBeEqualToString("dumpPoint(poly1.points.getItem(2))", "x=100 y=100");
-    shouldBeEqualToString("poly1.getAttribute('points').formatPointsAttribute()", "100 0 0 0 100 100 0 100");
+    shouldBeEqualToString("dumpPoint(poly1.points.getItem(2))", "x=100 y=0");
+    shouldBeEqualToString("dumpPoint(poly1.points.getItem(3))", "x=0 y=0");
+    shouldBeEqualToString("dumpPoint(poly1.points.getItem(4))", "x=100 y=0");
+    shouldBeEqualToString("dumpPoint(poly1.points.getItem(5))", "x=100 y=100");
+    shouldBeEqualToString("dumpPoint(poly1.points.getItem(6))", "x=0 y=100");
+    shouldBeEqualToString("poly1.getAttribute('points').formatPointsAttribute()", "100 0 0 0 100 0 0 0 100 0 100 100 0 100");
     
     shouldBeEqualToString("dumpPoint(poly1.points.insertItemBefore(poly1.points.getItem(1), 0))", "x=0 y=0");
-    shouldBe("poly1.points.numberOfItems", "4");
+    shouldBe("poly1.points.numberOfItems", "8");
     shouldBeEqualToString("dumpPoint(poly1.points.getItem(0))", "x=0 y=0");
     shouldBeEqualToString("dumpPoint(poly1.points.getItem(1))", "x=100 y=0");
-    shouldBeEqualToString("dumpPoint(poly1.points.getItem(2))", "x=100 y=100");
-    shouldBeEqualToString("dumpPoint(poly1.points.getItem(3))", "x=0 y=100");
-    shouldBeEqualToString("poly1.getAttribute('points').formatPointsAttribute()", "0 0 100 0 100 100 0 100");
+    shouldBeEqualToString("dumpPoint(poly1.points.getItem(2))", "x=0 y=0");
+    shouldBeEqualToString("dumpPoint(poly1.points.getItem(3))", "x=100 y=0");
+    shouldBeEqualToString("dumpPoint(poly1.points.getItem(4))", "x=0 y=0");
+    shouldBeEqualToString("dumpPoint(poly1.points.getItem(5))", "x=100 y=0");
+    shouldBeEqualToString("dumpPoint(poly1.points.getItem(6))", "x=100 y=100");
+    shouldBeEqualToString("dumpPoint(poly1.points.getItem(7))", "x=0 y=100");
+    shouldBeEqualToString("poly1.getAttribute('points').formatPointsAttribute()", "0 0 100 0 0 0 100 0 0 0 100 0 100 100 0 100");
     
     shouldThrow("poly1.points.insertItemBefore(30, 0)");
     shouldThrow("poly1.points.insertItemBefore('aString', 0)");
@@ -131,40 +142,56 @@
 
     debug("");
     debug("Test uncommon arguments for replaceItem() and xml-dom synchronization");
-    shouldBe("poly1.points.numberOfItems", "4");
+    shouldBe("poly1.points.numberOfItems", "8");
     shouldBeEqualToString("dumpPoint(poly1.points.getItem(0))", "x=0 y=0");
     shouldBeEqualToString("dumpPoint(poly1.points.getItem(1))", "x=100 y=0");
-    shouldBeEqualToString("dumpPoint(poly1.points.getItem(2))", "x=100 y=100");
-    shouldBeEqualToString("dumpPoint(poly1.points.getItem(3))", "x=0 y=100");
-    shouldBeEqualToString("poly1.getAttribute('points').formatPointsAttribute()", "0 0 100 0 100 100 0 100");
+    shouldBeEqualToString("dumpPoint(poly1.points.getItem(2))", "x=0 y=0");
+    shouldBeEqualToString("dumpPoint(poly1.points.getItem(3))", "x=100 y=0");
+    shouldBeEqualToString("dumpPoint(poly1.points.getItem(4))", "x=0 y=0");
+    shouldBeEqualToString("dumpPoint(poly1.points.getItem(5))", "x=100 y=0");
+    shouldBeEqualToString("dumpPoint(poly1.points.getItem(6))", "x=100 y=100");
+    shouldBeEqualToString("dumpPoint(poly1.points.getItem(7))", "x=0 y=100");
+    shouldBeEqualToString("poly1.getAttribute('points').formatPointsAttribute()", "0 0 100 0 0 0 100 0 0 0 100 0 100 100 0 100");
 
     shouldBeEqualToString("dumpPoint(poly1.points.replaceItem(poly1.points.getItem(0), 0))", "x=0 y=0");
-    shouldBe("poly1.points.numberOfItems", "4");
+    shouldBe("poly1.points.numberOfItems", "8");
     shouldBeEqualToString("dumpPoint(poly1.points.getItem(0))", "x=0 y=0");
     shouldBeEqualToString("dumpPoint(poly1.points.getItem(1))", "x=100 y=0");
-    shouldBeEqualToString("dumpPoint(poly1.points.getItem(2))", "x=100 y=100");
-    shouldBeEqualToString("dumpPoint(poly1.points.getItem(3))", "x=0 y=100");
-    shouldBeEqualToString("poly1.getAttribute('points').formatPointsAttribute()", "0 0 100 0 100 100 0 100");
+    shouldBeEqualToString("dumpPoint(poly1.points.getItem(2))", "x=0 y=0");
+    shouldBeEqualToString("dumpPoint(poly1.points.getItem(3))", "x=100 y=0");
+    shouldBeEqualToString("dumpPoint(poly1.points.getItem(4))", "x=0 y=0");
+    shouldBeEqualToString("dumpPoint(poly1.points.getItem(5))", "x=100 y=0");
+    shouldBeEqualToString("dumpPoint(poly1.points.getItem(6))", "x=100 y=100");
+    shouldBeEqualToString("dumpPoint(poly1.points.getItem(7))", "x=0 y=100");
+    shouldBeEqualToString("poly1.getAttribute('points').formatPointsAttribute()", "0 0 100 0 0 0 100 0 0 0 100 0 100 100 0 100");
 
     shouldBeEqualToString("dumpPoint(poly1.points.replaceItem(poly1.points.getItem(0), 'aString'))", "x=0 y=0");
-    shouldBe("poly1.points.numberOfItems", "4");
+    shouldBe("poly1.points.numberOfItems", "8");
     shouldBeEqualToString("dumpPoint(poly1.points.getItem(0))", "x=0 y=0");
     shouldBeEqualToString("dumpPoint(poly1.points.getItem(1))", "x=100 y=0");
-    shouldBeEqualToString("dumpPoint(poly1.points.getItem(2))", "x=100 y=100");
-    shouldBeEqualToString("dumpPoint(poly1.points.getItem(3))", "x=0 y=100");
-    shouldBeEqualToString("poly1.getAttribute('points').formatPointsAttribute()", "0 0 100 0 100 100 0 100");
+    shouldBeEqualToString("dumpPoint(poly1.points.getItem(2))", "x=0 y=0");
+    shouldBeEqualToString("dumpPoint(poly1.points.getItem(3))", "x=100 y=0");
+    shouldBeEqualToString("dumpPoint(poly1.points.getItem(4))", "x=0 y=0");
+    shouldBeEqualToString("dumpPoint(poly1.points.getItem(5))", "x=100 y=0");
+    shouldBeEqualToString("dumpPoint(poly1.points.getItem(6))", "x=100 y=100");
+    shouldBeEqualToString("dumpPoint(poly1.points.getItem(7))", "x=0 y=100");
+    shouldBeEqualToString("poly1.getAttribute('points').formatPointsAttribute()", "0 0 100 0 0 0 100 0 0 0 100 0 100 100 0 100");
 
     shouldBeEqualToString("dumpPoint(poly1.points.replaceItem(poly1.points.getItem(0), poly1))", "x=0 y=0");
-    shouldBe("poly1.points.numberOfItems", "4");
+    shouldBe("poly1.points.numberOfItems", "8");
     shouldBeEqualToString("dumpPoint(poly1.points.getItem(0))", "x=0 y=0");
     shouldBeEqualToString("dumpPoint(poly1.points.getItem(1))", "x=100 y=0");
-    shouldBeEqualToString("dumpPoint(poly1.points.getItem(2))", "x=100 y=100");
-    shouldBeEqualToString("dumpPoint(poly1.points.getItem(3))", "x=0 y=100");
-    shouldBeEqualToString("poly1.getAttribute('points').formatPointsAttribute()", "0 0 100 0 100 100 0 100");
+    shouldBeEqualToString("dumpPoint(poly1.points.getItem(2))", "x=0 y=0");
+    shouldBeEqualToString("dumpPoint(poly1.points.getItem(3))", "x=100 y=0");
+    shouldBeEqualToString("dumpPoint(poly1.points.getItem(4))", "x=0 y=0");
+    shouldBeEqualToString("dumpPoint(poly1.points.getItem(5))", "x=100 y=0");
+    shouldBeEqualToString("dumpPoint(poly1.points.getItem(6))", "x=100 y=100");
+    shouldBeEqualToString("dumpPoint(poly1.points.getItem(7))", "x=0 y=100");
+    shouldBeEqualToString("poly1.getAttribute('points').formatPointsAttribute()", "0 0 100 0 0 0 100 0 0 0 100 0 100 100 0 100");
 
     shouldBeEqualToString("dumpPoint(poly1.points.replaceItem(poly1.points.getItem(0), null))", "x=0 y=0");
-    shouldBe("poly1.points.numberOfItems", "4");
-    shouldBeEqualToString("poly1.getAttribute('points')", "0 0 100 0 100 100 0 100");
+    shouldBe("poly1.points.numberOfItems", "8");
+    shouldBeEqualToString("poly1.getAttribute('points')", "0 0 100 0 0 0 100 0 0 0 100 0 100 100 0 100");
 
     debug("");
     debug("Reset points attribute to 0 0 100 0 100 100 0 100");

@@ -38,10 +38,7 @@
     debug("");
     debug("Insert fourth item at position three using insertItemBefore()");
     shouldBeEqualToString("path1.pathSegList.insertItemBefore(path1.pathSegList.getItem(3), 2).toString()", "[object SVGPathSegLinetoAbs]");
-
-    debug("");
-    debug("Check final 'pathSegList' value of path1");
-    shouldBe("path1.pathSegList.numberOfItems", "4");
+    shouldBe("path1.pathSegList.numberOfItems", "5");
     shouldBeEqualToString("path1.pathSegList.getItem(0).toString()", "[object SVGPathSegMovetoAbs]");
     shouldBe("path1.pathSegList.getItem(0).x", "0");
     shouldBe("path1.pathSegList.getItem(0).y", "0");
@@ -54,6 +51,32 @@
     shouldBeEqualToString("path1.pathSegList.getItem(3).toString()", "[object SVGPathSegLinetoAbs]");
     shouldBe("path1.pathSegList.getItem(3).x", "0");
     shouldBe("path1.pathSegList.getItem(3).y", "100");
+    shouldBeEqualToString("path1.pathSegList.getItem(4).toString()", "[object SVGPathSegLinetoAbs]");
+    shouldBe("path1.pathSegList.getItem(4).x", "100");
+    shouldBe("path1.pathSegList.getItem(4).y", "100");
+
+    debug("");
+    debug("Change last item of path1 list");
+    shouldBe("path1.pathSegList.getItem(4).x = 0", "0");
+
+    debug("");
+    debug("Check final 'pathSegList' value of path1");
+    shouldBe("path1.pathSegList.numberOfItems", "5");
+    shouldBeEqualToString("path1.pathSegList.getItem(0).toString()", "[object SVGPathSegMovetoAbs]");
+    shouldBe("path1.pathSegList.getItem(0).x", "0");
+    shouldBe("path1.pathSegList.getItem(0).y", "0");
+    shouldBeEqualToString("path1.pathSegList.getItem(1).toString()", "[object SVGPathSegLinetoAbs]");
+    shouldBe("path1.pathSegList.getItem(1).x", "100");
+    shouldBe("path1.pathSegList.getItem(1).y", "0");
+    shouldBeEqualToString("path1.pathSegList.getItem(2).toString()", "[object SVGPathSegLinetoAbs]");
+    shouldBe("path1.pathSegList.getItem(2).x", "100");
+    shouldBe("path1.pathSegList.getItem(2).y", "100");
+    shouldBeEqualToString("path1.pathSegList.getItem(3).toString()", "[object SVGPathSegLinetoAbs]");
+    shouldBe("path1.pathSegList.getItem(3).x", "0");
+    shouldBe("path1.pathSegList.getItem(3).y", "100");
+    shouldBeEqualToString("path1.pathSegList.getItem(4).toString()", "[object SVGPathSegLinetoAbs]");
+    shouldBe("path1.pathSegList.getItem(4).x", "0");
+    shouldBe("path1.pathSegList.getItem(4).y", "100");
 
 ]]>
 </script>

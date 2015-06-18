@@ -34,6 +34,11 @@ public:
         return adoptRefWillBeNoop(new SVGPathSegMovetoRel(element, x, y));
     }
 
+    PassRefPtrWillBeRawPtr<SVGPathSeg> clone() override
+    {
+        return adoptRefWillBeNoop(new SVGPathSegMovetoRel(nullptr, x(), y()));
+    }
+
 private:
     SVGPathSegMovetoRel(SVGPathElement* element, float x, float y)
         : SVGPathSegSingleCoordinate(element, x, y) { }

@@ -62,8 +62,16 @@
 
     debug("");
     debug("Replace third item of path2 with fourth item of path1");
-    shouldBeEqualToString("path2.pathSegList.replaceItem(path1.pathSegList.getItem(3), 2).toString()", "[object SVGPathSegLinetoVerticalRel]");
+    shouldBeEqualToString("path2.pathSegList.replaceItem(path1.pathSegList.getItem(4), 2).toString()", "[object SVGPathSegLinetoVerticalRel]");
 
+    debug("");
+    debug("Reset points attribute to M 0 0 L 100 0 v 100");
+    shouldBeUndefined("path1.setAttribute('d', 'M 0 0 L 100 0 v 100 h 100')");
+    
+    debug("");
+    debug("Replace fourth item of path1 with third item of path2");
+    shouldBeEqualToString("path1.pathSegList.replaceItem(path2.pathSegList.getItem(3), 3).toString()", "[object SVGPathSegLinetoHorizontalRel]");
+    
     debug("");
     debug("Check final 'pathSegList' value of path1");
     shouldBe("path1.pathSegList.numberOfItems", "4");
@@ -73,12 +81,10 @@
     shouldBeEqualToString("path1.pathSegList.getItem(1).toString()", "[object SVGPathSegLinetoAbs]");
     shouldBe("path1.pathSegList.getItem(1).x", "100");
     shouldBe("path1.pathSegList.getItem(1).y", "0");
-    shouldBeEqualToString("path1.pathSegList.getItem(2).toString()", "[object SVGPathSegLinetoAbs]");
-    shouldBe("path1.pathSegList.getItem(2).x", "100");
+    shouldBeEqualToString("path1.pathSegList.getItem(2).toString()", "[object SVGPathSegLinetoVerticalRel]");
     shouldBe("path1.pathSegList.getItem(2).y", "100");
-    shouldBeEqualToString("path1.pathSegList.getItem(3).toString()", "[object SVGPathSegLinetoAbs]");
-    shouldBe("path1.pathSegList.getItem(3).x", "0");
-    shouldBe("path1.pathSegList.getItem(3).y", "100");
+    shouldBeEqualToString("path1.pathSegList.getItem(3).toString()", "[object SVGPathSegLinetoHorizontalRel]");
+    shouldBe("path1.pathSegList.getItem(3).x", "-100");
 
     debug("");
     debug("Check final 'pathSegList' value of path2");

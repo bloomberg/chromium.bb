@@ -95,13 +95,16 @@
 
     debug("");
     debug("Check intermediate list state of path2");
-    shouldBe("path2.pathSegList.numberOfItems", "2");
-    shouldBeEqualToString("path2.pathSegList.getItem(0).toString()", "[object SVGPathSegLinetoAbs]");
-    shouldBe("path2.pathSegList.getItem(0).x", "0");
-    shouldBe("path2.pathSegList.getItem(0).y", "100");
-    shouldBeEqualToString("path2.pathSegList.getItem(1).toString()", "[object SVGPathSegMovetoAbs]");
+    shouldBe("path2.pathSegList.numberOfItems", "3");
+    shouldBeEqualToString("path2.pathSegList.getItem(0).toString()", "[object SVGPathSegMovetoAbs]");
+    shouldBe("path2.pathSegList.getItem(0).x", "50");
+    shouldBe("path2.pathSegList.getItem(0).y", "50");
+    shouldBeEqualToString("path2.pathSegList.getItem(1).toString()", "[object SVGPathSegLinetoAbs]");
     shouldBe("path2.pathSegList.getItem(1).x", "0");
-    shouldBe("path2.pathSegList.getItem(1).y", "0");
+    shouldBe("path2.pathSegList.getItem(1).y", "100");
+    shouldBeEqualToString("path2.pathSegList.getItem(2).toString()", "[object SVGPathSegMovetoAbs]");
+    shouldBe("path2.pathSegList.getItem(2).x", "0");
+    shouldBe("path2.pathSegList.getItem(2).y", "0");
 
     debug("");
     debug("Initialize path2 list with item0");

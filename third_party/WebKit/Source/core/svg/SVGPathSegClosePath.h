@@ -33,6 +33,11 @@ public:
         return adoptRefWillBeNoop(new SVGPathSegClosePath(element));
     }
 
+    PassRefPtrWillBeRawPtr<SVGPathSeg> clone() override
+    {
+        return adoptRefWillBeNoop(new SVGPathSegClosePath(nullptr));
+    }
+
 private:
     SVGPathSegClosePath(SVGPathElement* element)
         : SVGPathSeg(element) { }

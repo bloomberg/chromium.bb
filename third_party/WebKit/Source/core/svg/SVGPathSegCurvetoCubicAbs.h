@@ -34,6 +34,11 @@ public:
         return adoptRefWillBeNoop(new SVGPathSegCurvetoCubicAbs(element, x, y, x1, y1, x2, y2));
     }
 
+    PassRefPtrWillBeRawPtr<SVGPathSeg> clone() override
+    {
+        return adoptRefWillBeNoop(new SVGPathSegCurvetoCubicAbs(nullptr, x(), y(), x1(), y1(), x2(), y2()));
+    }
+
 private:
     SVGPathSegCurvetoCubicAbs(SVGPathElement* element, float x, float y, float x1, float y1, float x2, float y2)
         : SVGPathSegCurvetoCubic(element, x, y, x1, y1, x2, y2) { }

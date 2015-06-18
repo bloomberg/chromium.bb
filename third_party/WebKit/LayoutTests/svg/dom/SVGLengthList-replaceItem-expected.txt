@@ -40,16 +40,17 @@ Check initial list state of text2
 PASS text2.x.baseVal.numberOfItems is 4
 PASS text2.x.baseVal.getItem(0).value is 500
 PASS text2.x.baseVal.getItem(1).value is 100
-PASS text2.x.baseVal.getItem(2).value is 50
-PASS text2.x.baseVal.getItem(3).value is 150
+PASS text2.x.baseVal.getItem(2).value is 150
+PASS text2.x.baseVal.getItem(3).value is 50
 PASS text2.x.baseVal.getItem(4) threw exception IndexSizeError: Failed to execute 'getItem' on 'SVGLengthList': The index provided (4) is greater than or equal to the maximum bound (4)..
 
-Replace the first item in text2 x list with the third item in the list
-PASS text2.x.baseVal.replaceItem(text2.x.baseVal.getItem(2), 0).value is 50
-PASS text2.x.baseVal.numberOfItems is 3
+Replace the first item in text2 x list with the fourth item in the list
+PASS text2.x.baseVal.replaceItem(text2.x.baseVal.getItem(3), 0).value is 50
+PASS text2.x.baseVal.numberOfItems is 4
 PASS text2.x.baseVal.getItem(0).value is 50
 PASS text2.x.baseVal.getItem(1).value is 100
 PASS text2.x.baseVal.getItem(2).value is 150
+PASS text2.x.baseVal.getItem(3).value is 50
 
 Check initial list state of text3
 PASS text3.x.baseVal.numberOfItems is 5
@@ -70,12 +71,13 @@ PASS text4.x.baseVal.getItem(4) threw exception IndexSizeError: Failed to execut
 
 Replace the first item in text4 x list with the second item in the text3 x list
 PASS text4.x.baseVal.replaceItem(text3.x.baseVal.getItem(1), 0).value is 50
-PASS text3.x.baseVal.numberOfItems is 4
+PASS text3.x.baseVal.numberOfItems is 5
 PASS text3.x.baseVal.getItem(0).value is 50
-PASS text3.x.baseVal.getItem(1).value is 100
+PASS text3.x.baseVal.getItem(1).value is 50
 PASS text3.x.baseVal.getItem(2).value is 100
-PASS text3.x.baseVal.getItem(3).value is 150
-PASS text3.x.baseVal.getItem(4) threw exception IndexSizeError: Failed to execute 'getItem' on 'SVGLengthList': The index provided (4) is greater than or equal to the maximum bound (4)..
+PASS text3.x.baseVal.getItem(3).value is 100
+PASS text3.x.baseVal.getItem(4).value is 150
+PASS text3.x.baseVal.getItem(5) threw exception IndexSizeError: Failed to execute 'getItem' on 'SVGLengthList': The index provided (5) is greater than or equal to the maximum bound (5)..
 PASS text4.x.baseVal.numberOfItems is 4
 PASS text4.x.baseVal.getItem(0).value is 50
 PASS text4.x.baseVal.getItem(1).value is 50
@@ -92,6 +94,17 @@ PASS text4.x.baseVal.getItem(2).value is 150
 PASS text4.x.baseVal.getItem(3).value is 150
 PASS text4.x.baseVal.getItem(4) threw exception IndexSizeError: Failed to execute 'getItem' on 'SVGLengthList': The index provided (4) is greater than or equal to the maximum bound (4)..
 
+Replace the items of text3 x list with the same text3 x list
+PASS text3.x.baseVal.replaceItem(text3.x.baseVal.getItem(2), 1).value is 100
+PASS text3.x.baseVal.replaceItem(text3.x.baseVal.getItem(4), 2).value is 150
+PASS text3.x.baseVal.numberOfItems is 5
+PASS text3.x.baseVal.getItem(0).value is 50
+PASS text3.x.baseVal.getItem(1).value is 100
+PASS text3.x.baseVal.getItem(2).value is 150
+PASS text3.x.baseVal.getItem(3).value is 100
+PASS text3.x.baseVal.getItem(4).value is 150
+PASS text3.x.baseVal.getItem(5) threw exception IndexSizeError: Failed to execute 'getItem' on 'SVGLengthList': The index provided (5) is greater than or equal to the maximum bound (5)..
+
 Check final list state of text1
 PASS text1.x.baseVal.numberOfItems is 3
 PASS text1.x.baseVal.getItem(0).value is 50
@@ -100,18 +113,21 @@ PASS text1.x.baseVal.getItem(2).value is 150
 PASS text1.x.baseVal.getItem(3) threw exception IndexSizeError: Failed to execute 'getItem' on 'SVGLengthList': The index provided (3) is greater than or equal to the maximum bound (3)..
 
 Check final list state of text2
-PASS text2.x.baseVal.numberOfItems is 3
+PASS text2.x.baseVal.numberOfItems is 4
 PASS text2.x.baseVal.getItem(0).value is 50
 PASS text2.x.baseVal.getItem(1).value is 100
 PASS text2.x.baseVal.getItem(2).value is 150
-PASS text2.x.baseVal.getItem(3) threw exception IndexSizeError: Failed to execute 'getItem' on 'SVGLengthList': The index provided (3) is greater than or equal to the maximum bound (3)..
+PASS text2.x.baseVal.getItem(3).value is 50
+PASS text2.x.baseVal.getItem(4) threw exception IndexSizeError: Failed to execute 'getItem' on 'SVGLengthList': The index provided (4) is greater than or equal to the maximum bound (4)..
 
 Check final list state of text3
-PASS text3.x.baseVal.numberOfItems is 3
+PASS text3.x.baseVal.numberOfItems is 5
 PASS text3.x.baseVal.getItem(0).value is 50
 PASS text3.x.baseVal.getItem(1).value is 100
 PASS text3.x.baseVal.getItem(2).value is 150
-PASS text3.x.baseVal.getItem(3) threw exception IndexSizeError: Failed to execute 'getItem' on 'SVGLengthList': The index provided (3) is greater than or equal to the maximum bound (3)..
+PASS text3.x.baseVal.getItem(3).value is 100
+PASS text3.x.baseVal.getItem(4).value is 150
+PASS text3.x.baseVal.getItem(5) threw exception IndexSizeError: Failed to execute 'getItem' on 'SVGLengthList': The index provided (5) is greater than or equal to the maximum bound (5)..
 
 Check final list state of text4
 PASS text4.x.baseVal.numberOfItems is 4

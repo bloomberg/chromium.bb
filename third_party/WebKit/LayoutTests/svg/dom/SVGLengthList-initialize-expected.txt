@@ -44,27 +44,27 @@ Take the second x item '500' of the second text element, store it in 'itemInAnot
 PASS text2.x.baseVal.getItem(1).value is 500
 PASS text2.x.baseVal.getItem(1).value is 50
 
-Override the third text elements x list with the item x=50 from the second text element, where it should be removed afterwards
+Override the third text elements x list with the item x=50 from the second text element, where it should not be removed afterwards
 PASS text3.x.baseVal.initialize(itemInAnotherList) is itemInAnotherList
 PASS text3.x.baseVal.getItem(0).value is 50
 PASS text2.x.baseVal.getItem(0).value is 50
-PASS text2.x.baseVal.getItem(1) threw exception IndexSizeError: Failed to execute 'getItem' on 'SVGLengthList': The index provided (1) is greater than or equal to the maximum bound (1)..
+PASS text2.x.baseVal.getItem(1) did not throw exception.
 
 Assure that the 'itemInAnotherList' item is still live anymore, set value to 999 then back to 50
 PASS itemInAnotherList.value = 999; is 999
 PASS itemInAnotherList.value is 999
-PASS text3.x.baseVal.getItem(0).value is 999
+PASS text3.x.baseVal.getItem(0).value is 50
 PASS itemInAnotherList.value = 50; is 50
 PASS itemInAnotherList.value is 50
 PASS text3.x.baseVal.getItem(0).value is 50
 
-Move item from text3 to text4
+Copy item from text3 to text4
 PASS text4.x.baseVal.initialize(text3.x.baseVal.getItem(0)) is itemInAnotherList
 PASS text4.x.baseVal.getItem(0).value is 50
-PASS text3.x.baseVal.getItem(0) threw exception IndexSizeError: Failed to execute 'getItem' on 'SVGLengthList': The index provided (0) is greater than or equal to the maximum bound (0)..
+PASS text3.x.baseVal.getItem(0) did not throw exception.
 
-Initialize text3 using setAttribute('x', '50')
-PASS text3.x.baseVal.getItem(0).value is 50
+Initialize text2 using setAttribute('x', '50')
+PASS text2.x.baseVal.getItem(0).value is 50
 
 Final check whether the lists all look like expected
 PASS text1.x.baseVal.getItem(0).value is 50

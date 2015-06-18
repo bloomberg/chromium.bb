@@ -61,27 +61,30 @@ PASS text1.x.baseVal.getItem(4).value is 1500
 PASS text1.x.baseVal.getItem(5).value is 50
 PASS text1.x.baseVal.getItem(6) threw exception IndexSizeError: Failed to execute 'getItem' on 'SVGLengthList': The index provided (6) is greater than or equal to the maximum bound (6)..
 
-Insert item 'newLength3' at position=1, between '100' and '500', remove it from the old position=2 afterwards.
+Insert item 'newLength3' at position=1, between '100' and '500', should not remove it from the old position=2 afterwards.
 PASS text1.x.baseVal.insertItemBefore(newLength3, 1) is newLength3
-PASS text1.x.baseVal.numberOfItems is 6
+PASS text1.x.baseVal.numberOfItems is 7
 PASS text1.x.baseVal.getItem(0).value is 100
 PASS text1.x.baseVal.getItem(1).value is 150
 PASS text1.x.baseVal.getItem(2).value is 500
-PASS text1.x.baseVal.getItem(3).value is 1000
-PASS text1.x.baseVal.getItem(4).value is 1500
-PASS text1.x.baseVal.getItem(5).value is 50
-PASS text1.x.baseVal.getItem(6) threw exception IndexSizeError: Failed to execute 'getItem' on 'SVGLengthList': The index provided (6) is greater than or equal to the maximum bound (6)..
+PASS text1.x.baseVal.getItem(3).value is 150
+PASS text1.x.baseVal.getItem(4).value is 1000
+PASS text1.x.baseVal.getItem(5).value is 1500
+PASS text1.x.baseVal.getItem(6).value is 50
+PASS text1.x.baseVal.getItem(7) threw exception IndexSizeError: Failed to execute 'getItem' on 'SVGLengthList': The index provided (7) is greater than or equal to the maximum bound (7)..
 
-Insert item 'newLength3' at position=0, before '100', remove it from the old position=5 afterwards.
+Insert item 'newLength1' at position=0, before '100', should not remove it from the old position=6 afterwards.
 PASS text1.x.baseVal.insertItemBefore(newLength1, 0) is newLength1
-PASS text1.x.baseVal.numberOfItems is 6
+PASS text1.x.baseVal.numberOfItems is 8
 PASS text1.x.baseVal.getItem(0).value is 50
 PASS text1.x.baseVal.getItem(1).value is 100
 PASS text1.x.baseVal.getItem(2).value is 150
 PASS text1.x.baseVal.getItem(3).value is 500
-PASS text1.x.baseVal.getItem(4).value is 1000
-PASS text1.x.baseVal.getItem(5).value is 1500
-PASS text1.x.baseVal.getItem(6) threw exception IndexSizeError: Failed to execute 'getItem' on 'SVGLengthList': The index provided (6) is greater than or equal to the maximum bound (6)..
+PASS text1.x.baseVal.getItem(4).value is 150
+PASS text1.x.baseVal.getItem(5).value is 1000
+PASS text1.x.baseVal.getItem(6).value is 1500
+PASS text1.x.baseVal.getItem(7).value is 50
+PASS text1.x.baseVal.getItem(8) threw exception IndexSizeError: Failed to execute 'getItem' on 'SVGLengthList': The index provided (8) is greater than or equal to the maximum bound (8)..
 
 The test passes if you only see 'PASS' messages, and both text elements on top look the same
 

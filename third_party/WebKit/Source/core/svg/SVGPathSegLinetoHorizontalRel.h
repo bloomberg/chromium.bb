@@ -34,6 +34,11 @@ public:
         return adoptRefWillBeNoop(new SVGPathSegLinetoHorizontalRel(element, x));
     }
 
+    PassRefPtrWillBeRawPtr<SVGPathSeg> clone() override
+    {
+        return adoptRefWillBeNoop(new SVGPathSegLinetoHorizontalRel(nullptr, x()));
+    }
+
 private:
     SVGPathSegLinetoHorizontalRel(SVGPathElement* element, float x)
         : SVGPathSegLinetoHorizontal(element, x) { }

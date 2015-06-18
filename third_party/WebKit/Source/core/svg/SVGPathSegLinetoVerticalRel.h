@@ -34,6 +34,11 @@ public:
         return adoptRefWillBeNoop(new SVGPathSegLinetoVerticalRel(element, y));
     }
 
+    PassRefPtrWillBeRawPtr<SVGPathSeg> clone() override
+    {
+        return adoptRefWillBeNoop(new SVGPathSegLinetoVerticalRel(nullptr, y()));
+    }
+
 private:
     SVGPathSegLinetoVerticalRel(SVGPathElement* element, float y)
         : SVGPathSegLinetoVertical(element, y) { }

@@ -71,34 +71,34 @@
     itemInAnotherList.value = 50;
     shouldBe("text2.x.baseVal.getItem(1).value", "50");
 
-    // Spec: If the inserted item is already in a list, it is removed from its previous list before it is inserted into this list.
-    //       The inserted item is the item itself and not a copy.
+    // Spec: If newItem is already in a list, then a new object is created with the same values as newItem and this item is inserted into the list.
+    // Otherwise, newItem itself is inserted into the list..
     debug("");
-    debug("Override the third text elements x list with the item x=50 from the second text element, where it should be removed afterwards");
+    debug("Override the third text elements x list with the item x=50 from the second text element, where it should not be removed afterwards");
     shouldBe("text3.x.baseVal.initialize(itemInAnotherList)", "itemInAnotherList");
     shouldBe("text3.x.baseVal.getItem(0).value", "50");
     shouldBe("text2.x.baseVal.getItem(0).value", "50");
-    shouldThrow("text2.x.baseVal.getItem(1)");
+    shouldNotThrow("text2.x.baseVal.getItem(1)");
 
     debug("")
     debug("Assure that the 'itemInAnotherList' item is still live anymore, set value to 999 then back to 50");
     shouldBe("itemInAnotherList.value = 999;", "999");
     shouldBe("itemInAnotherList.value", "999");
-    shouldBe("text3.x.baseVal.getItem(0).value", "999");
+    shouldBe("text3.x.baseVal.getItem(0).value", "50");
     shouldBe("itemInAnotherList.value = 50;", "50");
     shouldBe("itemInAnotherList.value", "50");
     shouldBe("text3.x.baseVal.getItem(0).value", "50");
 
     debug("");
-    debug("Move item from text3 to text4");
+    debug("Copy item from text3 to text4");
     shouldBe("text4.x.baseVal.initialize(text3.x.baseVal.getItem(0))", "itemInAnotherList");
     shouldBe("text4.x.baseVal.getItem(0).value", "50");
-    shouldThrow("text3.x.baseVal.getItem(0)");
+    shouldNotThrow("text3.x.baseVal.getItem(0)");
 
     debug("");
-    debug("Initialize text3 using setAttribute('x', '50')");
-    text3.setAttribute("x", "50");
-    shouldBe("text3.x.baseVal.getItem(0).value", "50");
+    debug("Initialize text2 using setAttribute('x', '50')");
+    text2.setAttribute("x", "50");
+    shouldBe("text2.x.baseVal.getItem(0).value", "50");
 
     debug("");
     debug("Final check whether the lists all look like expected");

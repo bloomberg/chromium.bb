@@ -2,6 +2,7 @@
 <head>
 <script>window.enablePixelTesting = true;</script>
 <script src="../../resources/js-test.js"></script>
+<script src="resources/SVGTransformList-helper.js"></script>
 </head>
 <body>
 <svg id="svg" xmlns="http://www.w3.org/2000/svg" width="200" height="200">
@@ -17,145 +18,132 @@
     if (window.testRunner)
         testRunner.dumpAsText();
 
-    function dumpMatrix(matrix) {
-        return "[" + matrix.a.toFixed(1)
-             + " " + matrix.b.toFixed(1)
-             + " " + matrix.c.toFixed(1)
-             + " " + matrix.d.toFixed(1)
-             + " " + matrix.e.toFixed(1)
-             + " " + matrix.f.toFixed(1)
-             + "]";
-    }
-
-    function dumpTransform(transform) {
-        var transformTypes = {
-            "0": "SVG_TRANSFORM_UNKNOWN",
-            "1": "SVG_TRANSFORM_MATRIX",
-            "2": "SVG_TRANSFORM_TRANSLATE",
-            "3": "SVG_TRANSFORM_SCALE",
-            "4": "SVG_TRANSFORM_ROTATE",
-            "5": "SVG_TRANSFORM_SKEWX",
-            "6": "SVG_TRANSFORM_SKEWY"
-        };
-
-        return "type=" + transformTypes[transform.type] + " matrix=" + dumpMatrix(transform.matrix);
-    }
-
     var svg = document.getElementById("svg");
     var circle1 = document.getElementById("circle1");
- 
+    var transformList = circle1.transform.baseVal;
+
     // Spec: The object referenced by animVal will always be distinct from the one referenced by baseVal, even when the attribute is not animated.
     shouldBeTrue("circle1.transform.baseVal != circle1.transform.animVal");
 
     shouldBe("circle1.transform.baseVal.numberOfItems", "2");
     shouldBe("circle1.transform.animVal.numberOfItems", "2");
-    shouldBeEqualToString("dumpTransform(circle1.transform.baseVal.getItem(0))", "type=SVG_TRANSFORM_SCALE matrix=[2.0 0.0 0.0 2.0 0.0 0.0]");
-    shouldBeEqualToString("dumpTransform(circle1.transform.baseVal.getItem(1))", "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 10.0 10.0]");
+    shouldBeEqualToString("transformList.getItem(0).toString()", "type=SVG_TRANSFORM_SCALE matrix=[2.0 0.0 0.0 2.0 0.0 0.0]");
+    shouldBeEqualToString("transformList.getItem(1).toString()", "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 10.0 10.0]");
 
     debug("");
     debug("Test uncommon arguments for initialize()");
-    shouldThrow("circle1.transform.baseVal.initialize(30)");
-    shouldThrow("circle1.transform.baseVal.initialize('aString')");
-    shouldThrow("circle1.transform.baseVal.initialize(circle1)");
-    shouldThrow("circle1.transform.baseVal.initialize(null)");
+    shouldThrow("transformList.initialize(30)");
+    shouldThrow("transformList.initialize('aString')");
+    shouldThrow("transformList.initialize(circle1)");
+    shouldThrow("transformList.initialize(null)");
 
     debug("");
     debug("Test uncommon arguments for getItem()");
-    shouldThrow("circle1.transform.baseVal.getItem(30)");
-    shouldBe("circle1.transform.baseVal.getItem('aString')", "circle1.transform.baseVal.getItem(0)");
-    shouldBe("circle1.transform.baseVal.getItem(circle1)", "circle1.transform.baseVal.getItem(0)");
-    shouldBe("circle1.transform.baseVal.getItem(null)", "circle1.transform.baseVal.getItem(0)");
+    shouldThrow("transformList.getItem(30)");
+    shouldBeEqualToString("transformList.getItem('aString').toString()", "type=SVG_TRANSFORM_SCALE matrix=[2.0 0.0 0.0 2.0 0.0 0.0]");
+    shouldBeEqualToString("transformList.getItem(circle1).toString()", "type=SVG_TRANSFORM_SCALE matrix=[2.0 0.0 0.0 2.0 0.0 0.0]");
+    shouldBeEqualToString("transformList.getItem(null).toString()", "type=SVG_TRANSFORM_SCALE matrix=[2.0 0.0 0.0 2.0 0.0 0.0]");
 
     debug("");
     debug("Test uncommon arguments for insertItemBefore()");
-    shouldThrow("circle1.transform.baseVal.insertItemBefore(30)");
-    shouldThrow("circle1.transform.baseVal.insertItemBefore('aString')");
-    shouldThrow("circle1.transform.baseVal.insertItemBefore(circle1)");
-    shouldThrow("circle1.transform.baseVal.insertItemBefore(null)");
+    shouldThrow("transformList.insertItemBefore(30)");
+    shouldThrow("transformList.insertItemBefore('aString')");
+    shouldThrow("transformList.insertItemBefore(circle1)");
+    shouldThrow("transformList.insertItemBefore(null)");
  
-    shouldBe("circle1.transform.baseVal.insertItemBefore(circle1.transform.baseVal.getItem(1), 'aString')", "circle1.transform.baseVal.getItem(0)");
-    shouldBe("circle1.transform.baseVal.numberOfItems", "2");
-    shouldBeEqualToString("dumpTransform(circle1.transform.baseVal.getItem(0))", "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 10.0 10.0]");
-    shouldBeEqualToString("dumpTransform(circle1.transform.baseVal.getItem(1))", "type=SVG_TRANSFORM_SCALE matrix=[2.0 0.0 0.0 2.0 0.0 0.0]");
-    shouldBeEqualToString("circle1.getAttribute('transform')", "translate(10 10) scale(2 2)");
+    shouldBeEqualToString("transformList.insertItemBefore(transformList.getItem(1), 'aString').toString()", "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 10.0 10.0]");
+    shouldBe("transformList.numberOfItems", "3");
+    shouldBeEqualToString("transformList.getItem(0).toString()", "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 10.0 10.0]");
+    shouldBeEqualToString("transformList.getItem(1).toString()", "type=SVG_TRANSFORM_SCALE matrix=[2.0 0.0 0.0 2.0 0.0 0.0]");
+    shouldBeEqualToString("transformList.getItem(2).toString()", "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 10.0 10.0]");
+    shouldBeEqualToString("circle1.getAttribute('transform')", "translate(10 10) scale(2 2) translate(10 10)");
 
-    shouldBe("circle1.transform.baseVal.insertItemBefore(circle1.transform.baseVal.getItem(1), circle1)", "circle1.transform.baseVal.getItem(0)");
-    shouldBe("circle1.transform.baseVal.numberOfItems", "2");
-    shouldBeEqualToString("dumpTransform(circle1.transform.baseVal.getItem(0))", "type=SVG_TRANSFORM_SCALE matrix=[2.0 0.0 0.0 2.0 0.0 0.0]");
-    shouldBeEqualToString("dumpTransform(circle1.transform.baseVal.getItem(1))", "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 10.0 10.0]");
-    shouldBeEqualToString("circle1.getAttribute('transform')", "scale(2 2) translate(10 10)");
+    shouldBeEqualToString("transformList.insertItemBefore(transformList.getItem(1), circle1).toString()", "type=SVG_TRANSFORM_SCALE matrix=[2.0 0.0 0.0 2.0 0.0 0.0]");
+    shouldBe("transformList.numberOfItems", "4");
+    shouldBeEqualToString("transformList.getItem(0).toString()", "type=SVG_TRANSFORM_SCALE matrix=[2.0 0.0 0.0 2.0 0.0 0.0]");
+    shouldBeEqualToString("transformList.getItem(1).toString()", "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 10.0 10.0]");
+    shouldBeEqualToString("transformList.getItem(2).toString()", "type=SVG_TRANSFORM_SCALE matrix=[2.0 0.0 0.0 2.0 0.0 0.0]");
+    shouldBeEqualToString("transformList.getItem(3).toString()", "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 10.0 10.0]");
+    shouldBeEqualToString("circle1.getAttribute('transform')", "scale(2 2) translate(10 10) scale(2 2) translate(10 10)");
 
-    shouldBe("circle1.transform.baseVal.insertItemBefore(circle1.transform.baseVal.getItem(1), null)", "circle1.transform.baseVal.getItem(0)");
-    shouldBe("circle1.transform.baseVal.numberOfItems", "2");
-    shouldBeEqualToString("dumpTransform(circle1.transform.baseVal.getItem(0))", "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 10.0 10.0]");
-    shouldBeEqualToString("dumpTransform(circle1.transform.baseVal.getItem(1))", "type=SVG_TRANSFORM_SCALE matrix=[2.0 0.0 0.0 2.0 0.0 0.0]");
-    shouldBeEqualToString("circle1.getAttribute('transform')", "translate(10 10) scale(2 2)");
+    shouldBeEqualToString("transformList.insertItemBefore(transformList.getItem(1), null).toString()", "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 10.0 10.0]");
+    shouldBe("transformList.numberOfItems", "5");
+    shouldBeEqualToString("transformList.getItem(0).toString()", "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 10.0 10.0]");
+    shouldBeEqualToString("transformList.getItem(1).toString()", "type=SVG_TRANSFORM_SCALE matrix=[2.0 0.0 0.0 2.0 0.0 0.0]");
+    shouldBeEqualToString("transformList.getItem(2).toString()", "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 10.0 10.0]");
+    shouldBeEqualToString("transformList.getItem(3).toString()", "type=SVG_TRANSFORM_SCALE matrix=[2.0 0.0 0.0 2.0 0.0 0.0]");
+    shouldBeEqualToString("transformList.getItem(4).toString()", "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 10.0 10.0]");
+    shouldBeEqualToString("circle1.getAttribute('transform')", "translate(10 10) scale(2 2) translate(10 10) scale(2 2) translate(10 10)");
 
-    shouldBe("circle1.transform.baseVal.insertItemBefore(circle1.transform.baseVal.getItem(1), 0)", "circle1.transform.baseVal.getItem(0)");
-    shouldBe("circle1.transform.baseVal.numberOfItems", "2");
-    shouldBeEqualToString("dumpTransform(circle1.transform.baseVal.getItem(0))", "type=SVG_TRANSFORM_SCALE matrix=[2.0 0.0 0.0 2.0 0.0 0.0]");
-    shouldBeEqualToString("dumpTransform(circle1.transform.baseVal.getItem(1))", "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 10.0 10.0]");
-    shouldBeEqualToString("circle1.getAttribute('transform')", "scale(2 2) translate(10 10)");
+    shouldBeEqualToString("transformList.insertItemBefore(transformList.getItem(1), 0).toString()", "type=SVG_TRANSFORM_SCALE matrix=[2.0 0.0 0.0 2.0 0.0 0.0]");
+    shouldBe("transformList.numberOfItems", "6");
+    shouldBeEqualToString("transformList.getItem(0).toString()", "type=SVG_TRANSFORM_SCALE matrix=[2.0 0.0 0.0 2.0 0.0 0.0]");
+    shouldBeEqualToString("transformList.getItem(1).toString()", "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 10.0 10.0]");
+    shouldBeEqualToString("transformList.getItem(2).toString()", "type=SVG_TRANSFORM_SCALE matrix=[2.0 0.0 0.0 2.0 0.0 0.0]");
+    shouldBeEqualToString("transformList.getItem(3).toString()", "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 10.0 10.0]");
+    shouldBeEqualToString("transformList.getItem(4).toString()", "type=SVG_TRANSFORM_SCALE matrix=[2.0 0.0 0.0 2.0 0.0 0.0]");
+    shouldBeEqualToString("transformList.getItem(5).toString()", "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 10.0 10.0]");
+    shouldBeEqualToString("circle1.getAttribute('transform')", "scale(2 2) translate(10 10) scale(2 2) translate(10 10) scale(2 2) translate(10 10)");
 
-    shouldThrow("circle1.transform.baseVal.insertItemBefore(30, 0)");
-    shouldThrow("circle1.transform.baseVal.insertItemBefore('aString', 0)");
-    shouldThrow("circle1.transform.baseVal.insertItemBefore(circle1, 0)");
-    shouldThrow("circle1.transform.baseVal.insertItemBefore(null, 0)");
+    shouldThrow("transformList.insertItemBefore(30, 0)");
+    shouldThrow("transformList.insertItemBefore('aString', 0)");
+    shouldThrow("transformList.insertItemBefore(circle1, 0)");
+    shouldThrow("transformList.insertItemBefore(null, 0)");
 
     debug("");
     debug("Set transform='rotate(90) scale(2 2) translate(10 10) skewX(45)' for circle1");
     shouldBeUndefined("circle1.setAttribute('transform', 'rotate(90) scale(2 2) translate(10 10) skewX(45)')");
-    shouldBe("circle1.transform.baseVal.numberOfItems", "4");
-    shouldBeEqualToString("dumpTransform(circle1.transform.baseVal.getItem(0))", "type=SVG_TRANSFORM_ROTATE matrix=[0.0 1.0 -1.0 0.0 0.0 0.0]");
-    shouldBeEqualToString("dumpTransform(circle1.transform.baseVal.getItem(1))", "type=SVG_TRANSFORM_SCALE matrix=[2.0 0.0 0.0 2.0 0.0 0.0]");
-    shouldBeEqualToString("dumpTransform(circle1.transform.baseVal.getItem(2))", "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 10.0 10.0]");
-    shouldBeEqualToString("dumpTransform(circle1.transform.baseVal.getItem(3))", "type=SVG_TRANSFORM_SKEWX matrix=[1.0 0.0 1.0 1.0 0.0 0.0]");
+    shouldBe("transformList.numberOfItems", "4");
+    shouldBeEqualToString("transformList.getItem(0).toString()", "type=SVG_TRANSFORM_ROTATE matrix=[0.0 1.0 -1.0 0.0 0.0 0.0]");
+    shouldBeEqualToString("transformList.getItem(1).toString()", "type=SVG_TRANSFORM_SCALE matrix=[2.0 0.0 0.0 2.0 0.0 0.0]");
+    shouldBeEqualToString("transformList.getItem(2).toString()", "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 10.0 10.0]");
+    shouldBeEqualToString("transformList.getItem(3).toString()", "type=SVG_TRANSFORM_SKEWX matrix=[1.0 0.0 1.0 1.0 0.0 0.0]");
     shouldBeEqualToString("circle1.getAttribute('transform')", "rotate(90) scale(2 2) translate(10 10) skewX(45)");
 
     debug("");
     debug("Test uncommon arguments for replaceItem()");
-    shouldThrow("circle1.transform.baseVal.replaceItem(30)");
-    shouldThrow("circle1.transform.baseVal.replaceItem('aString')");
-    shouldThrow("circle1.transform.baseVal.replaceItem(circle1)");
-    shouldThrow("circle1.transform.baseVal.replaceItem(null)");
-    shouldThrow("circle1.transform.baseVal.replaceItem(30, 0)");
-    shouldThrow("circle1.transform.baseVal.replaceItem('aString', 0)");
-    shouldThrow("circle1.transform.baseVal.replaceItem(circle1, 0)");
-    shouldThrow("circle1.transform.baseVal.replaceItem(null, 0)");
+    shouldThrow("transformList.replaceItem(30)");
+    shouldThrow("transformList.replaceItem('aString')");
+    shouldThrow("transformList.replaceItem(circle1)");
+    shouldThrow("transformList.replaceItem(null)");
+    shouldThrow("transformList.replaceItem(30, 0)");
+    shouldThrow("transformList.replaceItem('aString', 0)");
+    shouldThrow("transformList.replaceItem(circle1, 0)");
+    shouldThrow("transformList.replaceItem(null, 0)");
 
     debug("");
     debug("Test uncommon values for indexed setter");
-    shouldThrow("circle1.transform.baseVal[0] = 30");
-    shouldThrow("circle1.transform.baseVal[0] = 'aString'");
-    shouldThrow("circle1.transform.baseVal[0] = circle1");
-    shouldThrow("circle1.transform.baseVal[0] = null");
+    shouldThrow("transformList[0] = 30");
+    shouldThrow("transformList[0] = 'aString'");
+    shouldThrow("transformList[0] = circle1");
+    shouldThrow("transformList[0] = null");
 
-    shouldBe("circle1.transform.baseVal.replaceItem(circle1.transform.baseVal.getItem(0), 0)", "circle1.transform.baseVal.getItem(0)");
-    shouldBe("circle1.transform.baseVal.numberOfItems", "4");
-    shouldBeEqualToString("dumpTransform(circle1.transform.baseVal.getItem(0))", "type=SVG_TRANSFORM_ROTATE matrix=[0.0 1.0 -1.0 0.0 0.0 0.0]");
-    shouldBeEqualToString("dumpTransform(circle1.transform.baseVal.getItem(1))", "type=SVG_TRANSFORM_SCALE matrix=[2.0 0.0 0.0 2.0 0.0 0.0]");
-    shouldBeEqualToString("dumpTransform(circle1.transform.baseVal.getItem(2))", "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 10.0 10.0]");
-    shouldBeEqualToString("dumpTransform(circle1.transform.baseVal.getItem(3))", "type=SVG_TRANSFORM_SKEWX matrix=[1.0 0.0 1.0 1.0 0.0 0.0]");
+    shouldBeEqualToString("transformList.replaceItem(transformList.getItem(0), 0).toString()", "type=SVG_TRANSFORM_ROTATE matrix=[0.0 1.0 -1.0 0.0 0.0 0.0]");
+    shouldBe("transformList.numberOfItems", "4");
+    shouldBeEqualToString("transformList.getItem(0).toString()", "type=SVG_TRANSFORM_ROTATE matrix=[0.0 1.0 -1.0 0.0 0.0 0.0]");
+    shouldBeEqualToString("transformList.getItem(1).toString()", "type=SVG_TRANSFORM_SCALE matrix=[2.0 0.0 0.0 2.0 0.0 0.0]");
+    shouldBeEqualToString("transformList.getItem(2).toString()", "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 10.0 10.0]");
+    shouldBeEqualToString("transformList.getItem(3).toString()", "type=SVG_TRANSFORM_SKEWX matrix=[1.0 0.0 1.0 1.0 0.0 0.0]");
     shouldBeEqualToString("circle1.getAttribute('transform')", "rotate(90) scale(2 2) translate(10 10) skewX(45)");
 
-    shouldBe("circle1.transform.baseVal.replaceItem(circle1.transform.baseVal.getItem(0), 'aString')", "circle1.transform.baseVal.getItem(0)");
-    shouldBe("circle1.transform.baseVal.numberOfItems", "4");
-    shouldBeEqualToString("dumpTransform(circle1.transform.baseVal.getItem(0))", "type=SVG_TRANSFORM_ROTATE matrix=[0.0 1.0 -1.0 0.0 0.0 0.0]");
-    shouldBeEqualToString("dumpTransform(circle1.transform.baseVal.getItem(1))", "type=SVG_TRANSFORM_SCALE matrix=[2.0 0.0 0.0 2.0 0.0 0.0]");
-    shouldBeEqualToString("dumpTransform(circle1.transform.baseVal.getItem(2))", "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 10.0 10.0]");
-    shouldBeEqualToString("dumpTransform(circle1.transform.baseVal.getItem(3))", "type=SVG_TRANSFORM_SKEWX matrix=[1.0 0.0 1.0 1.0 0.0 0.0]");
+    shouldBeEqualToString("transformList.replaceItem(transformList.getItem(0), 'aString').toString()", "type=SVG_TRANSFORM_ROTATE matrix=[0.0 1.0 -1.0 0.0 0.0 0.0]");
+    shouldBe("transformList.numberOfItems", "4");
+    shouldBeEqualToString("transformList.getItem(0).toString()", "type=SVG_TRANSFORM_ROTATE matrix=[0.0 1.0 -1.0 0.0 0.0 0.0]");
+    shouldBeEqualToString("transformList.getItem(1).toString()", "type=SVG_TRANSFORM_SCALE matrix=[2.0 0.0 0.0 2.0 0.0 0.0]");
+    shouldBeEqualToString("transformList.getItem(2).toString()", "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 10.0 10.0]");
+    shouldBeEqualToString("transformList.getItem(3).toString()", "type=SVG_TRANSFORM_SKEWX matrix=[1.0 0.0 1.0 1.0 0.0 0.0]");
     shouldBeEqualToString("circle1.getAttribute('transform')", "rotate(90) scale(2 2) translate(10 10) skewX(45)");
 
-    shouldBe("circle1.transform.baseVal.replaceItem(circle1.transform.baseVal.getItem(0), circle1)", "circle1.transform.baseVal.getItem(0)");
-    shouldBe("circle1.transform.baseVal.numberOfItems", "4");
-    shouldBeEqualToString("dumpTransform(circle1.transform.baseVal.getItem(0))", "type=SVG_TRANSFORM_ROTATE matrix=[0.0 1.0 -1.0 0.0 0.0 0.0]");
-    shouldBeEqualToString("dumpTransform(circle1.transform.baseVal.getItem(1))", "type=SVG_TRANSFORM_SCALE matrix=[2.0 0.0 0.0 2.0 0.0 0.0]");
-    shouldBeEqualToString("dumpTransform(circle1.transform.baseVal.getItem(2))", "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 10.0 10.0]");
-    shouldBeEqualToString("dumpTransform(circle1.transform.baseVal.getItem(3))", "type=SVG_TRANSFORM_SKEWX matrix=[1.0 0.0 1.0 1.0 0.0 0.0]");
+    shouldBeEqualToString("transformList.replaceItem(transformList.getItem(0), circle1).toString()", "type=SVG_TRANSFORM_ROTATE matrix=[0.0 1.0 -1.0 0.0 0.0 0.0]");
+    shouldBe("transformList.numberOfItems", "4");
+    shouldBeEqualToString("transformList.getItem(0).toString()", "type=SVG_TRANSFORM_ROTATE matrix=[0.0 1.0 -1.0 0.0 0.0 0.0]");
+    shouldBeEqualToString("transformList.getItem(1).toString()", "type=SVG_TRANSFORM_SCALE matrix=[2.0 0.0 0.0 2.0 0.0 0.0]");
+    shouldBeEqualToString("transformList.getItem(2).toString()", "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 10.0 10.0]");
+    shouldBeEqualToString("transformList.getItem(3).toString()", "type=SVG_TRANSFORM_SKEWX matrix=[1.0 0.0 1.0 1.0 0.0 0.0]");
     shouldBeEqualToString("circle1.getAttribute('transform')", "rotate(90) scale(2 2) translate(10 10) skewX(45)");
 
-    shouldBe("circle1.transform.baseVal.replaceItem(circle1.transform.baseVal.getItem(0), null)", "circle1.transform.baseVal.getItem(0)");
-    shouldBe("circle1.transform.baseVal.numberOfItems", "4");
+    shouldBeEqualToString("transformList.replaceItem(transformList.getItem(0), null).toString()", "type=SVG_TRANSFORM_ROTATE matrix=[0.0 1.0 -1.0 0.0 0.0 0.0]");
+    shouldBe("transformList.numberOfItems", "4");
     shouldBeEqualToString("circle1.getAttribute('transform')", "rotate(90) scale(2 2) translate(10 10) skewX(45)");
 
     debug("");
@@ -164,47 +152,47 @@
 
     debug("");
     debug("Test uncommon arguments for removeItem()");
-    shouldThrow("circle1.transform.baseVal.removeItem(30)");
+    shouldThrow("transformList.removeItem(30)");
 
-    shouldBeEqualToString("dumpTransform(circle1.transform.baseVal.removeItem(0))", "type=SVG_TRANSFORM_ROTATE matrix=[0.0 1.0 -1.0 0.0 0.0 0.0]");
-    shouldBe("circle1.transform.baseVal.numberOfItems", "3");
-    shouldBeEqualToString("dumpTransform(circle1.transform.baseVal.getItem(0))", "type=SVG_TRANSFORM_SCALE matrix=[2.0 0.0 0.0 2.0 0.0 0.0]");
-    shouldBeEqualToString("dumpTransform(circle1.transform.baseVal.getItem(1))", "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 10.0 10.0]");
-    shouldBeEqualToString("dumpTransform(circle1.transform.baseVal.getItem(2))", "type=SVG_TRANSFORM_SKEWX matrix=[1.0 0.0 1.0 1.0 0.0 0.0]");
+    shouldBeEqualToString("transformList.removeItem(0).toString()", "type=SVG_TRANSFORM_ROTATE matrix=[0.0 1.0 -1.0 0.0 0.0 0.0]");
+    shouldBe("transformList.numberOfItems", "3");
+    shouldBeEqualToString("transformList.getItem(0).toString()", "type=SVG_TRANSFORM_SCALE matrix=[2.0 0.0 0.0 2.0 0.0 0.0]");
+    shouldBeEqualToString("transformList.getItem(1).toString()", "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 10.0 10.0]");
+    shouldBeEqualToString("transformList.getItem(2).toString()", "type=SVG_TRANSFORM_SKEWX matrix=[1.0 0.0 1.0 1.0 0.0 0.0]");
     shouldBeEqualToString("circle1.getAttribute('transform')", "scale(2 2) translate(10 10) skewX(45)");
 
-    shouldBeEqualToString("dumpTransform(circle1.transform.baseVal.removeItem('aString'))", "type=SVG_TRANSFORM_SCALE matrix=[2.0 0.0 0.0 2.0 0.0 0.0]");
-    shouldBe("circle1.transform.baseVal.numberOfItems", "2");
-    shouldBeEqualToString("dumpTransform(circle1.transform.baseVal.getItem(0))", "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 10.0 10.0]");
-    shouldBeEqualToString("dumpTransform(circle1.transform.baseVal.getItem(1))", "type=SVG_TRANSFORM_SKEWX matrix=[1.0 0.0 1.0 1.0 0.0 0.0]");
+    shouldBeEqualToString("transformList.removeItem('aString').toString()", "type=SVG_TRANSFORM_SCALE matrix=[2.0 0.0 0.0 2.0 0.0 0.0]");
+    shouldBe("transformList.numberOfItems", "2");
+    shouldBeEqualToString("transformList.getItem(0).toString()", "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 10.0 10.0]");
+    shouldBeEqualToString("transformList.getItem(1).toString()", "type=SVG_TRANSFORM_SKEWX matrix=[1.0 0.0 1.0 1.0 0.0 0.0]");
     shouldBeEqualToString("circle1.getAttribute('transform')", "translate(10 10) skewX(45)");
 
-    shouldBeEqualToString("dumpTransform(circle1.transform.baseVal.removeItem(circle1))", "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 10.0 10.0]");
-    shouldBe("circle1.transform.baseVal.numberOfItems", "1");
-    shouldBeEqualToString("dumpTransform(circle1.transform.baseVal.getItem(0))", "type=SVG_TRANSFORM_SKEWX matrix=[1.0 0.0 1.0 1.0 0.0 0.0]");
+    shouldBeEqualToString("transformList.removeItem(circle1).toString()", "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 10.0 10.0]");
+    shouldBe("transformList.numberOfItems", "1");
+    shouldBeEqualToString("transformList.getItem(0).toString()", "type=SVG_TRANSFORM_SKEWX matrix=[1.0 0.0 1.0 1.0 0.0 0.0]");
     shouldBeEqualToString("circle1.getAttribute('transform')", "skewX(45)");
 
     debug("");
     debug("Test uncommon arguments for appendItem()");
-    shouldThrow("circle1.transform.baseVal.appendItem(30)");
-    shouldThrow("circle1.transform.baseVal.appendItem('aString')");
-    shouldThrow("circle1.transform.baseVal.appendItem(circle1)");
-    shouldThrow("circle1.transform.baseVal.appendItem(null)");
+    shouldThrow("transformList.appendItem(30)");
+    shouldThrow("transformList.appendItem('aString')");
+    shouldThrow("transformList.appendItem(circle1)");
+    shouldThrow("transformList.appendItem(null)");
 
     debug("");
     debug("Testing animVal clear throws");
     shouldThrow("circle1.transform.animVal.clear()");
-    shouldBeUndefined("circle1.transform.baseVal.clear()");
+    shouldBeUndefined("transformList.clear()");
 
     debug("");
     debug("Creating new SVGTransform, with 45 deg rotation about x=50, y=100 and append it to the transform list");
     var transform;
-    shouldBeEqualToString("dumpTransform(transform = svg.createSVGTransform())", "type=SVG_TRANSFORM_MATRIX matrix=[1.0 0.0 0.0 1.0 0.0 0.0]");
+    shouldBeEqualToString("(transform = svg.createSVGTransform()).toString()", "type=SVG_TRANSFORM_MATRIX matrix=[1.0 0.0 0.0 1.0 0.0 0.0]");
     shouldBeUndefined("transform.setRotate(45, 50, 100)");
 
-    shouldBeEqualToString("dumpTransform(circle1.transform.baseVal.appendItem(transform))", "type=SVG_TRANSFORM_ROTATE matrix=[0.7 0.7 -0.7 0.7 85.4 -6.1]");
-    shouldBe("circle1.transform.baseVal.numberOfItems", "1");
-    shouldBeEqualToString("dumpTransform(circle1.transform.baseVal.getItem(0))", "type=SVG_TRANSFORM_ROTATE matrix=[0.7 0.7 -0.7 0.7 85.4 -6.1]");
+    shouldBeEqualToString("transformList.appendItem(transform).toString()", "type=SVG_TRANSFORM_ROTATE matrix=[0.7 0.7 -0.7 0.7 85.4 -6.1]");
+    shouldBe("transformList.numberOfItems", "1");
+    shouldBeEqualToString("transformList.getItem(0).toString()", "type=SVG_TRANSFORM_ROTATE matrix=[0.7 0.7 -0.7 0.7 85.4 -6.1]");
     shouldBeEqualToString("circle1.getAttribute('transform')", "rotate(45 50 100)");
 
 ]]>

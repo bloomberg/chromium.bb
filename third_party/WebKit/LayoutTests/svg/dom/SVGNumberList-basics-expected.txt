@@ -26,29 +26,39 @@ PASS text1.rotate.baseVal.insertItemBefore('aString') threw exception TypeError:
 PASS text1.rotate.baseVal.insertItemBefore(text1) threw exception TypeError: Failed to execute 'insertItemBefore' on 'SVGNumberList': 2 arguments required, but only 1 present..
 PASS text1.rotate.baseVal.insertItemBefore(null) threw exception TypeError: Failed to execute 'insertItemBefore' on 'SVGNumberList': 2 arguments required, but only 1 present..
 PASS text1.rotate.baseVal.insertItemBefore(text1.rotate.baseVal.getItem(1), 'aString') is text1.rotate.baseVal.getItem(0)
-PASS text1.rotate.baseVal.numberOfItems is 3
+PASS text1.rotate.baseVal.numberOfItems is 4
 PASS text1.rotate.baseVal.getItem(0).value is 180
 PASS text1.rotate.baseVal.getItem(1).value is 90
-PASS text1.rotate.baseVal.getItem(2).value is 270
-PASS text1.getAttribute('rotate') is "180 90 270"
+PASS text1.rotate.baseVal.getItem(2).value is 180
+PASS text1.rotate.baseVal.getItem(3).value is 270
+PASS text1.getAttribute('rotate') is "180 90 180 270"
 PASS text1.rotate.baseVal.insertItemBefore(text1.rotate.baseVal.getItem(1), text1) is text1.rotate.baseVal.getItem(0)
-PASS text1.rotate.baseVal.numberOfItems is 3
+PASS text1.rotate.baseVal.numberOfItems is 5
 PASS text1.rotate.baseVal.getItem(0).value is 90
 PASS text1.rotate.baseVal.getItem(1).value is 180
-PASS text1.rotate.baseVal.getItem(2).value is 270
-PASS text1.getAttribute('rotate') is "90 180 270"
+PASS text1.rotate.baseVal.getItem(2).value is 90
+PASS text1.rotate.baseVal.getItem(3).value is 180
+PASS text1.rotate.baseVal.getItem(4).value is 270
+PASS text1.getAttribute('rotate') is "90 180 90 180 270"
 PASS text1.rotate.baseVal.insertItemBefore(text1.rotate.baseVal.getItem(1), null) is text1.rotate.baseVal.getItem(0)
-PASS text1.rotate.baseVal.numberOfItems is 3
+PASS text1.rotate.baseVal.numberOfItems is 6
 PASS text1.rotate.baseVal.getItem(0).value is 180
 PASS text1.rotate.baseVal.getItem(1).value is 90
-PASS text1.rotate.baseVal.getItem(2).value is 270
-PASS text1.getAttribute('rotate') is "180 90 270"
+PASS text1.rotate.baseVal.getItem(2).value is 180
+PASS text1.rotate.baseVal.getItem(3).value is 90
+PASS text1.rotate.baseVal.getItem(4).value is 180
+PASS text1.rotate.baseVal.getItem(5).value is 270
+PASS text1.getAttribute('rotate') is "180 90 180 90 180 270"
 PASS text1.rotate.baseVal.insertItemBefore(text1.rotate.baseVal.getItem(1), 0) is text1.rotate.baseVal.getItem(0)
-PASS text1.rotate.baseVal.numberOfItems is 3
+PASS text1.rotate.baseVal.numberOfItems is 7
 PASS text1.rotate.baseVal.getItem(0).value is 90
 PASS text1.rotate.baseVal.getItem(1).value is 180
-PASS text1.rotate.baseVal.getItem(2).value is 270
-PASS text1.getAttribute('rotate') is "90 180 270"
+PASS text1.rotate.baseVal.getItem(2).value is 90
+PASS text1.rotate.baseVal.getItem(3).value is 180
+PASS text1.rotate.baseVal.getItem(4).value is 90
+PASS text1.rotate.baseVal.getItem(5).value is 180
+PASS text1.rotate.baseVal.getItem(6).value is 270
+PASS text1.getAttribute('rotate') is "90 180 90 180 90 180 270"
 PASS text1.rotate.baseVal.insertItemBefore(30, 0) threw exception TypeError: Failed to execute 'insertItemBefore' on 'SVGNumberList': parameter 1 is not of type 'SVGNumber'..
 PASS text1.rotate.baseVal.insertItemBefore('aString', 0) threw exception TypeError: Failed to execute 'insertItemBefore' on 'SVGNumberList': parameter 1 is not of type 'SVGNumber'..
 PASS text1.rotate.baseVal.insertItemBefore(text1, 0) threw exception TypeError: Failed to execute 'insertItemBefore' on 'SVGNumberList': parameter 1 is not of type 'SVGNumber'..

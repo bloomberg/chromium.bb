@@ -6,7 +6,7 @@
 <body>
 <svg id="svg" xmlns="http://www.w3.org/2000/svg" width="200" height="200">
     <text id="text1" x="500 1000 1500" y="50">  ABC   </text>
-    <text id="text2" x="500 100 50 150" y="75"> ABC   </text>
+    <text id="text2" x="500 100 150 50" y="75"> ABC   </text>
     <text id="text3" x="50 50 100 100 150" y="100">  ABC</text>
     <text id="text4" x="100 50 150 150" y="125">   ABC</text>
     <text id="reference" x="50 100 150" y="150">ABC  </text>
@@ -68,17 +68,20 @@
     shouldBe("text2.x.baseVal.numberOfItems", "4");
     shouldBe("text2.x.baseVal.getItem(0).value", "500");
     shouldBe("text2.x.baseVal.getItem(1).value", "100");
-    shouldBe("text2.x.baseVal.getItem(2).value", "50");
-    shouldBe("text2.x.baseVal.getItem(3).value", "150");
+    shouldBe("text2.x.baseVal.getItem(2).value", "150");
+    shouldBe("text2.x.baseVal.getItem(3).value", "50");
     shouldThrow("text2.x.baseVal.getItem(4)");
 
+    // Spec: If newItem is already in a list, then a new object is created with the same values as newItem and this item is inserted into the list.
+    // Otherwise, newItem itself is inserted into the list.
     debug("");
-    debug("Replace the first item in text2 x list with the third item in the list");
-    shouldBe("text2.x.baseVal.replaceItem(text2.x.baseVal.getItem(2), 0).value", "50");
-    shouldBe("text2.x.baseVal.numberOfItems", "3");
+    debug("Replace the first item in text2 x list with the fourth item in the list");
+    shouldBe("text2.x.baseVal.replaceItem(text2.x.baseVal.getItem(3), 0).value", "50");
+    shouldBe("text2.x.baseVal.numberOfItems", "4");
     shouldBe("text2.x.baseVal.getItem(0).value", "50");
     shouldBe("text2.x.baseVal.getItem(1).value", "100");
     shouldBe("text2.x.baseVal.getItem(2).value", "150");
+    shouldBe("text2.x.baseVal.getItem(3).value", "50");
 
     debug("");
     debug("Check initial list state of text3");
@@ -102,12 +105,13 @@
     debug("");
     debug("Replace the first item in text4 x list with the second item in the text3 x list");
     shouldBe("text4.x.baseVal.replaceItem(text3.x.baseVal.getItem(1), 0).value", "50");
-    shouldBe("text3.x.baseVal.numberOfItems", "4");
+    shouldBe("text3.x.baseVal.numberOfItems", "5");
     shouldBe("text3.x.baseVal.getItem(0).value", "50");
-    shouldBe("text3.x.baseVal.getItem(1).value", "100");
+    shouldBe("text3.x.baseVal.getItem(1).value", "50");
     shouldBe("text3.x.baseVal.getItem(2).value", "100");
-    shouldBe("text3.x.baseVal.getItem(3).value", "150");
-    shouldThrow("text3.x.baseVal.getItem(4)");
+    shouldBe("text3.x.baseVal.getItem(3).value", "100");
+    shouldBe("text3.x.baseVal.getItem(4).value", "150");
+    shouldThrow("text3.x.baseVal.getItem(5)");
     shouldBe("text4.x.baseVal.numberOfItems", "4");
     shouldBe("text4.x.baseVal.getItem(0).value", "50");
     shouldBe("text4.x.baseVal.getItem(1).value", "50");
@@ -126,6 +130,18 @@
     shouldThrow("text4.x.baseVal.getItem(4)");
 
     debug("");
+    debug("Replace the items of text3 x list with the same text3 x list");
+    shouldBe("text3.x.baseVal.replaceItem(text3.x.baseVal.getItem(2), 1).value", "100");
+    shouldBe("text3.x.baseVal.replaceItem(text3.x.baseVal.getItem(4), 2).value", "150");
+    shouldBe("text3.x.baseVal.numberOfItems", "5");
+    shouldBe("text3.x.baseVal.getItem(0).value", "50");
+    shouldBe("text3.x.baseVal.getItem(1).value", "100");
+    shouldBe("text3.x.baseVal.getItem(2).value", "150");
+    shouldBe("text3.x.baseVal.getItem(3).value", "100");
+    shouldBe("text3.x.baseVal.getItem(4).value", "150");
+    shouldThrow("text3.x.baseVal.getItem(5)");
+    
+    debug("");
     debug("Check final list state of text1");
     shouldBe("text1.x.baseVal.numberOfItems", "3");
     shouldBe("text1.x.baseVal.getItem(0).value", "50");
@@ -135,19 +151,22 @@
 
     debug("");
     debug("Check final list state of text2");
-    shouldBe("text2.x.baseVal.numberOfItems", "3");
+    shouldBe("text2.x.baseVal.numberOfItems", "4");
     shouldBe("text2.x.baseVal.getItem(0).value", "50");
     shouldBe("text2.x.baseVal.getItem(1).value", "100");
     shouldBe("text2.x.baseVal.getItem(2).value", "150");
-    shouldThrow("text2.x.baseVal.getItem(3)");
+    shouldBe("text2.x.baseVal.getItem(3).value", "50");
+    shouldThrow("text2.x.baseVal.getItem(4)");
 
     debug("");
     debug("Check final list state of text3");
-    shouldBe("text3.x.baseVal.numberOfItems", "3");
+    shouldBe("text3.x.baseVal.numberOfItems", "5");
     shouldBe("text3.x.baseVal.getItem(0).value", "50");
     shouldBe("text3.x.baseVal.getItem(1).value", "100");
     shouldBe("text3.x.baseVal.getItem(2).value", "150");
-    shouldThrow("text3.x.baseVal.getItem(3)");
+    shouldBe("text3.x.baseVal.getItem(3).value", "100");
+    shouldBe("text3.x.baseVal.getItem(4).value", "150");
+    shouldThrow("text3.x.baseVal.getItem(5)");
 
     debug("");
     debug("Check final list state of text4");

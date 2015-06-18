@@ -34,6 +34,11 @@ public:
         return adoptRefWillBeNoop(new SVGPathSegCurvetoQuadraticAbs(element, x, y, x1, y1));
     }
 
+    PassRefPtrWillBeRawPtr<SVGPathSeg> clone() override
+    {
+        return adoptRefWillBeNoop(new SVGPathSegCurvetoQuadraticAbs(nullptr, x(), y(), x1(), y1()));
+    }
+
 private:
     SVGPathSegCurvetoQuadraticAbs(SVGPathElement* element, float x, float y, float x1, float y1)
         : SVGPathSegCurvetoQuadratic(element, x, y, x1, y1) { }

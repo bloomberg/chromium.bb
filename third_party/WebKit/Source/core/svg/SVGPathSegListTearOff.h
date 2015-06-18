@@ -48,6 +48,13 @@ public:
     {
         ASSERT(attributeName == SVGNames::dAttr);
         RefPtrWillBeRawPtr<ItemTearOffType> newItem = passNewItem;
+
+        // Spec: If newItem is already in a list, then a new SVGPathSeg object is created with the same values as newItem and this item is inserted into the list.
+        // Otherwise, newItem itself is inserted into the list.
+        // https://svgwg.org/svg2-draft/paths.html#InterfaceSVGPathSegList
+        if (newItem->ownerList())
+            newItem = newItem->clone();
+
         newItem->setContextElement(contextElement);
         return newItem.release();
     }

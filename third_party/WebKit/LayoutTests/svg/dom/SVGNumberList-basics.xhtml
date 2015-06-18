@@ -47,32 +47,42 @@
     shouldThrow("text1.rotate.baseVal.insertItemBefore(null)");
 
     shouldBe("text1.rotate.baseVal.insertItemBefore(text1.rotate.baseVal.getItem(1), 'aString')", "text1.rotate.baseVal.getItem(0)");
-    shouldBe("text1.rotate.baseVal.numberOfItems", "3");
+    shouldBe("text1.rotate.baseVal.numberOfItems", "4");
     shouldBe("text1.rotate.baseVal.getItem(0).value", "180");
     shouldBe("text1.rotate.baseVal.getItem(1).value", "90");
-    shouldBe("text1.rotate.baseVal.getItem(2).value", "270");
-    shouldBeEqualToString("text1.getAttribute('rotate')", "180 90 270");
+    shouldBe("text1.rotate.baseVal.getItem(2).value", "180");
+    shouldBe("text1.rotate.baseVal.getItem(3).value", "270");
+    shouldBeEqualToString("text1.getAttribute('rotate')", "180 90 180 270");
 
     shouldBe("text1.rotate.baseVal.insertItemBefore(text1.rotate.baseVal.getItem(1), text1)", "text1.rotate.baseVal.getItem(0)");
-    shouldBe("text1.rotate.baseVal.numberOfItems", "3");
+    shouldBe("text1.rotate.baseVal.numberOfItems", "5");
     shouldBe("text1.rotate.baseVal.getItem(0).value", "90");
     shouldBe("text1.rotate.baseVal.getItem(1).value", "180");
-    shouldBe("text1.rotate.baseVal.getItem(2).value", "270");
-    shouldBeEqualToString("text1.getAttribute('rotate')", "90 180 270");
+    shouldBe("text1.rotate.baseVal.getItem(2).value", "90");
+    shouldBe("text1.rotate.baseVal.getItem(3).value", "180");
+    shouldBe("text1.rotate.baseVal.getItem(4).value", "270");
+    shouldBeEqualToString("text1.getAttribute('rotate')", "90 180 90 180 270");
 
     shouldBe("text1.rotate.baseVal.insertItemBefore(text1.rotate.baseVal.getItem(1), null)", "text1.rotate.baseVal.getItem(0)");
-    shouldBe("text1.rotate.baseVal.numberOfItems", "3");
+    shouldBe("text1.rotate.baseVal.numberOfItems", "6");
     shouldBe("text1.rotate.baseVal.getItem(0).value", "180");
     shouldBe("text1.rotate.baseVal.getItem(1).value", "90");
-    shouldBe("text1.rotate.baseVal.getItem(2).value", "270");
-    shouldBeEqualToString("text1.getAttribute('rotate')", "180 90 270");
+    shouldBe("text1.rotate.baseVal.getItem(2).value", "180");
+    shouldBe("text1.rotate.baseVal.getItem(3).value", "90");
+    shouldBe("text1.rotate.baseVal.getItem(4).value", "180");
+    shouldBe("text1.rotate.baseVal.getItem(5).value", "270");
+    shouldBeEqualToString("text1.getAttribute('rotate')", "180 90 180 90 180 270");
 
     shouldBe("text1.rotate.baseVal.insertItemBefore(text1.rotate.baseVal.getItem(1), 0)", "text1.rotate.baseVal.getItem(0)");
-    shouldBe("text1.rotate.baseVal.numberOfItems", "3");
+    shouldBe("text1.rotate.baseVal.numberOfItems", "7");
     shouldBe("text1.rotate.baseVal.getItem(0).value", "90");
     shouldBe("text1.rotate.baseVal.getItem(1).value", "180");
-    shouldBe("text1.rotate.baseVal.getItem(2).value", "270");
-    shouldBeEqualToString("text1.getAttribute('rotate')", "90 180 270");
+    shouldBe("text1.rotate.baseVal.getItem(2).value", "90");
+    shouldBe("text1.rotate.baseVal.getItem(3).value", "180");
+    shouldBe("text1.rotate.baseVal.getItem(4).value", "90");
+    shouldBe("text1.rotate.baseVal.getItem(5).value", "180");
+    shouldBe("text1.rotate.baseVal.getItem(6).value", "270");;
+    shouldBeEqualToString("text1.getAttribute('rotate')", "90 180 90 180 90 180 270");
 
     shouldThrow("text1.rotate.baseVal.insertItemBefore(30, 0)");
     shouldThrow("text1.rotate.baseVal.insertItemBefore('aString', 0)");

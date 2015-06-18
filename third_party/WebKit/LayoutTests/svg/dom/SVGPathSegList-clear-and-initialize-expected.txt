@@ -67,13 +67,16 @@ PASS path1.pathSegList.getItem(0).x is 50
 PASS path1.pathSegList.getItem(0).y is 50
 
 Check intermediate list state of path2
-PASS path2.pathSegList.numberOfItems is 2
-PASS path2.pathSegList.getItem(0).toString() is "[object SVGPathSegLinetoAbs]"
-PASS path2.pathSegList.getItem(0).x is 0
-PASS path2.pathSegList.getItem(0).y is 100
-PASS path2.pathSegList.getItem(1).toString() is "[object SVGPathSegMovetoAbs]"
+PASS path2.pathSegList.numberOfItems is 3
+PASS path2.pathSegList.getItem(0).toString() is "[object SVGPathSegMovetoAbs]"
+PASS path2.pathSegList.getItem(0).x is 50
+PASS path2.pathSegList.getItem(0).y is 50
+PASS path2.pathSegList.getItem(1).toString() is "[object SVGPathSegLinetoAbs]"
 PASS path2.pathSegList.getItem(1).x is 0
-PASS path2.pathSegList.getItem(1).y is 0
+PASS path2.pathSegList.getItem(1).y is 100
+PASS path2.pathSegList.getItem(2).toString() is "[object SVGPathSegMovetoAbs]"
+PASS path2.pathSegList.getItem(2).x is 0
+PASS path2.pathSegList.getItem(2).y is 0
 
 Initialize path2 list with item0
 PASS path2.pathSegList.initialize(item0).toString() is "[object SVGPathSegMovetoAbs]"

@@ -171,7 +171,6 @@ protected:
 
 private:
     inline bool checkIndexBound(size_t, ExceptionState&);
-    bool removeFromOldOwnerListAndAdjustIndex(PassRefPtrWillBeRawPtr<ItemPropertyType>, size_t* indexToModify);
     size_t findItem(PassRefPtrWillBeRawPtr<ItemPropertyType>);
 
     WillBeHeapVector<RefPtrWillBeMember<ItemPropertyType>> m_values;
@@ -221,9 +220,6 @@ PassRefPtrWillBeRawPtr<ItemProperty> SVGListPropertyHelper<Derived, ItemProperty
 {
     RefPtrWillBeRawPtr<ItemPropertyType> newItem = passNewItem;
 
-    // Spec: If the inserted item is already in a list, it is removed from its previous list before it is inserted into this list.
-    removeFromOldOwnerListAndAdjustIndex(newItem, 0);
-
     // Spec: Clears all existing current items from the list and re-initializes the list to hold the single item specified by the parameter.
     clear();
     append(newItem);
@@ -249,12 +245,6 @@ PassRefPtrWillBeRawPtr<ItemProperty> SVGListPropertyHelper<Derived, ItemProperty
         index = m_values.size();
 
     RefPtrWillBeRawPtr<ItemPropertyType> newItem = passNewItem;
-
-    // Spec: If newItem is already in a list, it is removed from its previous list before it is inserted into this list.
-    if (!removeFromOldOwnerListAndAdjustIndex(newItem, &index)) {
-        // Inserting the item before itself is a no-op.
-        return newItem.release();
-    }
 
     // Spec: Inserts a new item into the list at the specified position. The index of the item before which the new item is to be
     // inserted. The first item is number 0. If the index is equal to 0, then the new item is inserted at the front of the list.
@@ -283,9 +273,6 @@ PassRefPtrWillBeRawPtr<ItemProperty> SVGListPropertyHelper<Derived, ItemProperty
 {
     RefPtrWillBeRawPtr<ItemPropertyType> newItem = passNewItem;
 
-    // Spec: If newItem is already in a list, it is removed from its previous list before it is inserted into this list.
-    removeFromOldOwnerListAndAdjustIndex(newItem, 0);
-
     // Append the value and wrapper at the end of the list.
     append(newItem);
 
@@ -299,13 +286,6 @@ PassRefPtrWillBeRawPtr<ItemProperty> SVGListPropertyHelper<Derived, ItemProperty
         return nullptr;
 
     RefPtrWillBeRawPtr<ItemPropertyType> newItem = passNewItem;
-
-    // Spec: If newItem is already in a list, it is removed from its previous list before it is inserted into this list.
-    // Spec: If the item is already in this list, note that the index of the item to replace is before the removal of the item.
-    if (!removeFromOldOwnerListAndAdjustIndex(newItem, &index)) {
-        // Replacing the item with itself is a no-op.
-        return newItem.release();
-    }
 
     if (m_values.isEmpty()) {
         // 'newItem' already lived in our list, we removed it, and now we're empty, which means there's nothing to replace.
@@ -329,41 +309,6 @@ bool SVGListPropertyHelper<Derived, ItemProperty>::checkIndexBound(size_t index,
     if (index >= m_values.size()) {
         exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexExceedsMaximumBound("index", index, m_values.size()));
         return false;
-    }
-
-    return true;
-}
-
-template<typename Derived, typename ItemProperty>
-bool SVGListPropertyHelper<Derived, ItemProperty>::removeFromOldOwnerListAndAdjustIndex(PassRefPtrWillBeRawPtr<ItemPropertyType> passItem, size_t* indexToModify)
-{
-    RefPtrWillBeRawPtr<ItemPropertyType> item = passItem;
-    ASSERT(item);
-    RefPtrWillBeRawPtr<Derived> ownerList = toDerived(item->ownerList());
-    if (!ownerList)
-        return true;
-
-    // Spec: If newItem is already in a list, it is removed from its previous list before it is inserted into this list.
-    // 'newItem' is already living in another list. If it's not our list, synchronize the other lists wrappers after the removal.
-    bool livesInOtherList = ownerList.get() != this;
-    size_t indexToRemove = ownerList->findItem(item);
-    ASSERT(indexToRemove != WTF::kNotFound);
-
-    // Do not remove newItem if already in this list at the target index.
-    if (!livesInOtherList && indexToModify && indexToRemove == *indexToModify)
-        return false;
-
-    ownerList->removeItem(indexToRemove, ASSERT_NO_EXCEPTION);
-
-    if (!indexToModify)
-        return true;
-
-    // If the item lived in our list, adjust the insertion index.
-    if (!livesInOtherList) {
-        size_t& index = *indexToModify;
-        // Spec: If the item is already in this list, note that the index of the item to (replace|insert before) is before the removal of the item.
-        if (static_cast<size_t>(indexToRemove) < index)
-            --index;
     }
 
     return true;
