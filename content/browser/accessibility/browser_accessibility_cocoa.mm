@@ -971,6 +971,9 @@ bool InitializeAccessibilityTreeSearch(
   case ui::AX_ROLE_MAIN:
     return base::SysUTF16ToNSString(content_client->GetLocalizedString(
         IDS_AX_ROLE_MAIN_CONTENT));
+  case ui::AX_ROLE_MARK:
+    return base::SysUTF16ToNSString(content_client->GetLocalizedString(
+        IDS_AX_ROLE_MARK));
   case ui::AX_ROLE_MATH:
     return base::SysUTF16ToNSString(content_client->GetLocalizedString(
         IDS_AX_ROLE_MATH));

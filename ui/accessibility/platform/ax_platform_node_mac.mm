@@ -77,6 +77,7 @@ RoleMap BuildRoleMap() {
       {ui::AX_ROLE_LIST_MARKER, @"AXListMarker"},
       {ui::AX_ROLE_LOG, NSAccessibilityGroupRole},
       {ui::AX_ROLE_MAIN, NSAccessibilityGroupRole},
+      {ui::AX_ROLE_MARK, NSAccessibilityGroupRole},
       {ui::AX_ROLE_MARQUEE, NSAccessibilityGroupRole},
       {ui::AX_ROLE_MATH, NSAccessibilityGroupRole},
       {ui::AX_ROLE_MENU, NSAccessibilityMenuRole},

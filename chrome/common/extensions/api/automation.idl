@@ -114,6 +114,7 @@
     locationBar,
     log,
     main,
+    mark,
     marquee,
     math,
     menuBar,

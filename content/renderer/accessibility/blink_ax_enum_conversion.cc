@@ -205,6 +205,8 @@ ui::AXRole AXRoleFromBlink(blink::WebAXRole role) {
       return ui::AX_ROLE_MAIN;
     case blink::WebAXRoleMarquee:
       return ui::AX_ROLE_MARQUEE;
+    case blink::WebAXRoleMark:
+      return ui::AX_ROLE_MARK;
     case blink::WebAXRoleMath:
       return ui::AX_ROLE_MATH;
     case blink::WebAXRoleMenu:
