@@ -364,30 +364,6 @@ void unpack(const SourceType*, DstType*, unsigned)
     ASSERT_NOT_REACHED();
 }
 
-template<> void unpack<WebGLImageConversion::DataFormatRGB8, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
-{
-    for (unsigned i = 0; i < pixelsPerRow; ++i) {
-        destination[0] = source[0];
-        destination[1] = source[1];
-        destination[2] = source[2];
-        destination[3] = 0xFF;
-        source += 3;
-        destination += 4;
-    }
-}
-
-template<> void unpack<WebGLImageConversion::DataFormatBGR8, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
-{
-    for (unsigned i = 0; i < pixelsPerRow; ++i) {
-        destination[0] = source[2];
-        destination[1] = source[1];
-        destination[2] = source[0];
-        destination[3] = 0xFF;
-        source += 3;
-        destination += 4;
-    }
-}
-
 template<> void unpack<WebGLImageConversion::DataFormatARGB8, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
 {
     for (unsigned i = 0; i < pixelsPerRow; ++i) {
@@ -469,37 +445,6 @@ template<> void unpack<WebGLImageConversion::DataFormatRGBA4444, uint16_t, uint8
     }
 }
 
-template<> void unpack<WebGLImageConversion::DataFormatRGB565, uint16_t, uint8_t>(const uint16_t* source, uint8_t* destination, unsigned pixelsPerRow)
-{
-#if HAVE(ARM_NEON_INTRINSICS)
-    SIMD::unpackOneRowOfRGB565ToRGBA8(source, destination, pixelsPerRow);
-#endif
-    for (unsigned i = 0; i < pixelsPerRow; ++i) {
-        uint16_t packedValue = source[0];
-        uint8_t r = packedValue >> 11;
-        uint8_t g = (packedValue >> 5) & 0x3F;
-        uint8_t b = packedValue & 0x1F;
-        destination[0] = (r << 3) | (r & 0x7);
-        destination[1] = (g << 2) | (g & 0x3);
-        destination[2] = (b << 3) | (b & 0x7);
-        destination[3] = 0xFF;
-        source += 1;
-        destination += 4;
-    }
-}
-
-template<> void unpack<WebGLImageConversion::DataFormatR8, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
-{
-    for (unsigned i = 0; i < pixelsPerRow; ++i) {
-        destination[0] = source[0];
-        destination[1] = source[0];
-        destination[2] = source[0];
-        destination[3] = 0xFF;
-        source += 1;
-        destination += 4;
-    }
-}
-
 template<> void unpack<WebGLImageConversion::DataFormatRA8, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
 {
     for (unsigned i = 0; i < pixelsPerRow; ++i) {
@@ -520,18 +465,6 @@ template<> void unpack<WebGLImageConversion::DataFormatAR8, uint8_t, uint8_t>(co
         destination[2] = source[1];
         destination[3] = source[0];
         source += 2;
-        destination += 4;
-    }
-}
-
-template<> void unpack<WebGLImageConversion::DataFormatA8, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
-{
-    for (unsigned i = 0; i < pixelsPerRow; ++i) {
-        destination[0] = 0x0;
-        destination[1] = 0x0;
-        destination[2] = 0x0;
-        destination[3] = source[0];
-        source += 1;
         destination += 4;
     }
 }
@@ -588,56 +521,6 @@ template<> void unpack<WebGLImageConversion::DataFormatARGB8, uint8_t, float>(co
     }
 }
 
-template<> void unpack<WebGLImageConversion::DataFormatRGB8, uint8_t, float>(const uint8_t* source, float* destination, unsigned pixelsPerRow)
-{
-    const float scaleFactor = 1.0f / 255.0f;
-    for (unsigned i = 0; i < pixelsPerRow; ++i) {
-        destination[0] = source[0] * scaleFactor;
-        destination[1] = source[1] * scaleFactor;
-        destination[2] = source[2] * scaleFactor;
-        destination[3] = 1;
-        source += 3;
-        destination += 4;
-    }
-}
-
-template<> void unpack<WebGLImageConversion::DataFormatBGR8, uint8_t, float>(const uint8_t* source, float* destination, unsigned pixelsPerRow)
-{
-    const float scaleFactor = 1.0f / 255.0f;
-    for (unsigned i = 0; i < pixelsPerRow; ++i) {
-        destination[0] = source[2] * scaleFactor;
-        destination[1] = source[1] * scaleFactor;
-        destination[2] = source[0] * scaleFactor;
-        destination[3] = 1;
-        source += 3;
-        destination += 4;
-    }
-}
-
-template<> void unpack<WebGLImageConversion::DataFormatRGB32F, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
-{
-    for (unsigned i = 0; i < pixelsPerRow; ++i) {
-        destination[0] = source[0];
-        destination[1] = source[1];
-        destination[2] = source[2];
-        destination[3] = 1;
-        source += 3;
-        destination += 4;
-    }
-}
-
-template<> void unpack<WebGLImageConversion::DataFormatR32F, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
-{
-    for (unsigned i = 0; i < pixelsPerRow; ++i) {
-        destination[0] = source[0];
-        destination[1] = source[0];
-        destination[2] = source[0];
-        destination[3] = 1;
-        source += 1;
-        destination += 4;
-    }
-}
-
 template<> void unpack<WebGLImageConversion::DataFormatRA32F, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
 {
     for (unsigned i = 0; i < pixelsPerRow; ++i) {
@@ -646,18 +529,6 @@ template<> void unpack<WebGLImageConversion::DataFormatRA32F, float, float>(cons
         destination[2] = source[0];
         destination[3] = source[1];
         source += 2;
-        destination += 4;
-    }
-}
-
-template<> void unpack<WebGLImageConversion::DataFormatA32F, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
-{
-    for (unsigned i = 0; i < pixelsPerRow; ++i) {
-        destination[0] = 0;
-        destination[1] = 0;
-        destination[2] = 0;
-        destination[3] = source[0];
-        source += 1;
         destination += 4;
     }
 }
@@ -1456,16 +1327,8 @@ void FormatConverter::convert(WebGLImageConversion::DataFormat srcFormat, WebGLI
         return convert<SrcFormat>(dstFormat, alphaOp);
 
         switch (srcFormat) {
-            FORMATCONVERTER_CASE_SRCFORMAT(WebGLImageConversion::DataFormatR8)
-            FORMATCONVERTER_CASE_SRCFORMAT(WebGLImageConversion::DataFormatA8)
-            FORMATCONVERTER_CASE_SRCFORMAT(WebGLImageConversion::DataFormatR32F)
-            FORMATCONVERTER_CASE_SRCFORMAT(WebGLImageConversion::DataFormatA32F)
             FORMATCONVERTER_CASE_SRCFORMAT(WebGLImageConversion::DataFormatRA8)
             FORMATCONVERTER_CASE_SRCFORMAT(WebGLImageConversion::DataFormatRA32F)
-            FORMATCONVERTER_CASE_SRCFORMAT(WebGLImageConversion::DataFormatRGB8)
-            FORMATCONVERTER_CASE_SRCFORMAT(WebGLImageConversion::DataFormatBGR8)
-            FORMATCONVERTER_CASE_SRCFORMAT(WebGLImageConversion::DataFormatRGB565)
-            FORMATCONVERTER_CASE_SRCFORMAT(WebGLImageConversion::DataFormatRGB32F)
             FORMATCONVERTER_CASE_SRCFORMAT(WebGLImageConversion::DataFormatRGBA8)
             FORMATCONVERTER_CASE_SRCFORMAT(WebGLImageConversion::DataFormatARGB8)
             FORMATCONVERTER_CASE_SRCFORMAT(WebGLImageConversion::DataFormatABGR8)
