@@ -11,7 +11,6 @@
 
 #include "base/base_export.h"
 #include "base/basictypes.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_pump.h"
 #include "base/message_loop/message_pump_dispatcher.h"
 #include "base/observer_list.h"
@@ -19,8 +18,6 @@
 #include "base/win/scoped_handle.h"
 
 namespace base {
-
-class Thread;
 
 // MessagePumpWin serves as the base for specialized versions of the MessagePump
 // for Windows. It provides basic functionality like handling of observers and
@@ -138,39 +135,11 @@ class BASE_EXPORT MessagePumpForUI : public MessagePumpWin {
   bool ProcessMessageHelper(const MSG& msg);
   bool ProcessPumpReplacementMessage();
 
-  // We spawn a worker thread to periodically post (3 ms) the kMsgHaveWork
-  // message to the UI message pump. This is to ensure that the main thread
-  // gets to process tasks and delayed tasks when there is no activity in the
-  // Windows message pump or when there is a nested modal loop (sizing/moving/
-  // drag drop/message boxes) etc.
-  void DoWorkerThreadRunLoop();
-
-  // This function is posted as part of a user mode APC to shutdown the worker
-  // thread when the main message pump is shutting down.
-  static void CALLBACK ShutdownWorkerThread(ULONG_PTR param);
-
-  // Helper function for posting the kMsgHaveWork message to wake up the pump
-  // for processing tasks.
-  void PostWorkMessage();
-
-  // Helper function to set the waitable timer used to wake up the UI worker
-  // thread for processing delayed tasks.
-  // |delay_ms| : The delay in milliseconds.
-  void SetWakeupTimer(int64 delay_ms);
-
   // Atom representing the registered window class.
   ATOM atom_;
 
   // A hidden message-only window.
   HWND message_hwnd_;
-
-  // This thread is used to periodically wake up the main thread to process
-  // tasks.
-  scoped_ptr<base::Thread> ui_worker_thread_;
-
-  // The UI worker thread waits on this timer indefinitely. When the main
-  // thread has tasks ready to be processed it sets the timer.
-  base::win::ScopedHandle ui_worker_thread_timer_;
 };
 
 //-----------------------------------------------------------------------------
