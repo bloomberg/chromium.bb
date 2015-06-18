@@ -108,8 +108,11 @@ TilingSetRasterQueueAll::~TilingSetRasterQueueAll() {
 void TilingSetRasterQueueAll::MakeTilingIterator(IteratorType type,
                                                  PictureLayerTiling* tiling) {
   iterators_[type] = TilingIterator(tiling, &tiling->tiling_data_);
-  if (iterators_[type].done())
+  if (iterators_[type].done()) {
     tiling->set_all_tiles_done(true);
+    // If we've marked the tiling as done, make sure we're actually done.
+    tiling->VerifyNoTileNeedsRaster();
+  }
 }
 
 bool TilingSetRasterQueueAll::IsEmpty() const {
@@ -205,9 +208,11 @@ bool TilingSetRasterQueueAll::OnePriorityRectIterator::IsTileValid(
   // After the pending visible rect has been processed, we must return false
   // for pending visible rect tiles as tiling iterators do not ignore those
   // tiles.
-  if (priority_rect_type_ > PictureLayerTiling::PENDING_VISIBLE_RECT &&
-      pending_visible_rect_.Intersects(tile->content_rect())) {
-    return false;
+  if (priority_rect_type_ > PictureLayerTiling::PENDING_VISIBLE_RECT) {
+    gfx::Rect tile_rect = tiling_->tiling_data()->TileBounds(
+        tile->tiling_i_index(), tile->tiling_j_index());
+    if (pending_visible_rect_.Intersects(tile_rect))
+      return false;
   }
   return true;
 }

@@ -1406,5 +1406,63 @@ TEST_F(TileManagerTilePriorityQueueTest,
   host_impl_.resource_pool()->ReleaseResource(resource.Pass(), 0);
 }
 
+TEST_F(TileManagerTilePriorityQueueTest, RasterQueueAllUsesCorrectTileBounds) {
+  // Verify that we use the real tile bounds when advancing phases during the
+  // tile iteration.
+  gfx::Size layer_bounds(1, 1);
+
+  scoped_refptr<FakePicturePileImpl> pile =
+      FakePicturePileImpl::CreateFilledPileWithDefaultTileSize(layer_bounds);
+
+  FakePictureLayerTilingClient pending_client;
+  pending_client.SetTileSize(gfx::Size(64, 64));
+
+  auto tiling_set = PictureLayerTilingSet::Create(
+      WhichTree::ACTIVE_TREE, &pending_client, 1.0f, 1.0f, 1000);
+  pending_client.set_twin_tiling_set(tiling_set.get());
+
+  auto tiling = tiling_set->AddTiling(1.0f, pile);
+
+  tiling->CreateAllTilesForTesting();
+  tiling->set_resolution(HIGH_RESOLUTION);
+
+  // The tile is (0, 0, 1, 1), create an intersecting and non-intersecting
+  // rectangle to test the advance phase with. The tile size is (64, 64), so
+  // both rectangles intersect the tile content size, but only one should
+  // intersect the actual size.
+  gfx::Rect non_intersecting_rect(2, 2, 10, 10);
+  gfx::Rect intersecting_rect(0, 0, 10, 10);
+  {
+    tiling->SetTilePriorityRectsForTesting(
+        non_intersecting_rect,  // Visible rect.
+        intersecting_rect,      // Skewport rect.
+        intersecting_rect,      // Soon rect.
+        intersecting_rect);     // Eventually rect.
+    scoped_ptr<TilingSetRasterQueueAll> queue(
+        new TilingSetRasterQueueAll(tiling_set.get(), false));
+    EXPECT_FALSE(queue->IsEmpty());
+  }
+  {
+    tiling->SetTilePriorityRectsForTesting(
+        non_intersecting_rect,  // Visible rect.
+        non_intersecting_rect,  // Skewport rect.
+        intersecting_rect,      // Soon rect.
+        intersecting_rect);     // Eventually rect.
+    scoped_ptr<TilingSetRasterQueueAll> queue(
+        new TilingSetRasterQueueAll(tiling_set.get(), false));
+    EXPECT_FALSE(queue->IsEmpty());
+  }
+  {
+    tiling->SetTilePriorityRectsForTesting(
+        non_intersecting_rect,  // Visible rect.
+        non_intersecting_rect,  // Skewport rect.
+        non_intersecting_rect,  // Soon rect.
+        intersecting_rect);     // Eventually rect.
+    scoped_ptr<TilingSetRasterQueueAll> queue(
+        new TilingSetRasterQueueAll(tiling_set.get(), false));
+    EXPECT_FALSE(queue->IsEmpty());
+  }
+}
+
 }  // namespace
 }  // namespace cc

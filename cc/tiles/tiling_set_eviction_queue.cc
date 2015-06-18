@@ -224,9 +224,11 @@ bool TilingSetEvictionQueue::EvictionRectIterator::GetFirstTileAndCheckIfValid(
   // After the pending visible rect has been processed, we must return false
   // for pending visible rect tiles as tiling iterators do not ignore those
   // tiles.
-  if (priority_rect_type_ > PictureLayerTiling::PENDING_VISIBLE_RECT &&
-      tiling->pending_visible_rect().Intersects(tile->content_rect())) {
-    return false;
+  if (priority_rect_type_ > PictureLayerTiling::PENDING_VISIBLE_RECT) {
+    gfx::Rect tile_rect = tiling->tiling_data()->TileBounds(
+        tile->tiling_i_index(), tile->tiling_j_index());
+    if (tiling->pending_visible_rect().Intersects(tile_rect))
+      return false;
   }
   (*tilings_)[tiling_index_]->UpdateRequiredStatesOnTile(tile);
   prioritized_tile_ = (*tilings_)[tiling_index_]->MakePrioritizedTile(

@@ -597,6 +597,13 @@ bool PictureLayerTiling::ComputeTilePriorityRects(
     float ideal_contents_scale,
     double current_frame_time_in_seconds,
     const Occlusion& occlusion_in_layer_space) {
+  // If we have, or had occlusions, mark the tiles as 'not done' to ensure that
+  // we reiterate the tiles for rasterization.
+  if (occlusion_in_layer_space.HasOcclusion() ||
+      current_occlusion_in_layer_space_.HasOcclusion()) {
+    set_all_tiles_done(false);
+  }
+
   if (!NeedsUpdateForFrameAtTimeAndViewport(current_frame_time_in_seconds,
                                             viewport_in_layer_space)) {
     // This should never be zero for the purposes of has_ever_been_updated().

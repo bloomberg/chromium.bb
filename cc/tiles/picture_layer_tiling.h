@@ -136,6 +136,15 @@ class CC_EXPORT PictureLayerTiling {
     all_tiles_done_ = all_tiles_done;
   }
 
+  void VerifyNoTileNeedsRaster() const {
+#if DCHECK_IS_ON()
+    for (const auto tile_pair : tiles_) {
+      DCHECK(!tile_pair.second->draw_info().NeedsRaster() ||
+             IsTileOccluded(tile_pair.second));
+    }
+#endif  // DCHECK_IS_ON()
+  }
+
   // For testing functionality.
   void CreateAllTilesForTesting() {
     SetLiveTilesRect(gfx::Rect(tiling_data_.tiling_size()));
@@ -165,6 +174,14 @@ class CC_EXPORT PictureLayerTiling {
   }
   const gfx::Rect& GetCurrentVisibleRectForTesting() const {
     return current_visible_rect_;
+  }
+  void SetTilePriorityRectsForTesting(
+      const gfx::Rect& visible_rect_in_content_space,
+      const gfx::Rect& skewport,
+      const gfx::Rect& soon_border_rect,
+      const gfx::Rect& eventually_rect) {
+    SetTilePriorityRects(1.0f, visible_rect_in_content_space, skewport,
+                         soon_border_rect, eventually_rect, Occlusion());
   }
 
   // Iterate over all tiles to fill content_rect.  Even if tiles are invalid
