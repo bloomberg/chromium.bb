@@ -2183,6 +2183,27 @@ void GetSanitizedEnabledFlagsForCurrentPlatform(
   result->swap(new_enabled_experiments);
 }
 
+// Returns true if none of this experiment's options have been enabled.
+bool IsDefaultValue(
+    const Experiment& experiment,
+    const std::set<std::string>& enabled_experiments) {
+  switch (experiment.type) {
+    case Experiment::SINGLE_VALUE:
+    case Experiment::SINGLE_DISABLE_VALUE:
+      return enabled_experiments.count(experiment.internal_name) == 0;
+    case Experiment::MULTI_VALUE:
+    case Experiment::ENABLE_DISABLE_VALUE:
+      for (int i = 0; i < experiment.num_choices; ++i) {
+        if (enabled_experiments.count(experiment.NameForChoice(i)) > 0)
+          return false;
+      }
+      break;
+    default:
+      NOTREACHED();
+  }
+  return true;
+}
+
 // Returns the Value representing the choice data in the specified experiment.
 base::Value* CreateChoiceData(
     const Experiment& experiment,
@@ -2291,14 +2312,12 @@ void GetFlagsExperimentsData(FlagsStorage* flags_storage,
     AddOsStrings(experiment.supported_platforms, supported_platforms);
     data->Set("supported_platforms", supported_platforms);
     // True if the switch is not currently passed.
-    bool is_default_value =
-        enabled_experiments.count(experiment.internal_name) == 0;
+    bool is_default_value = IsDefaultValue(experiment, enabled_experiments);
+    data->SetBoolean("is_default", is_default_value);
 
     switch (experiment.type) {
       case Experiment::SINGLE_VALUE:
       case Experiment::SINGLE_DISABLE_VALUE:
-        data->SetBoolean("is_default", is_default_value);
-
         data->SetBoolean(
             "enabled",
             (!is_default_value &&
