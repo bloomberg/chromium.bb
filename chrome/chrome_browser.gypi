@@ -1277,10 +1277,6 @@
       'browser/autocomplete/chrome_autocomplete_provider_client.h',
       'browser/autocomplete/chrome_autocomplete_scheme_classifier.cc',
       'browser/autocomplete/chrome_autocomplete_scheme_classifier.h',
-      'browser/autocomplete/history_quick_provider.cc',
-      'browser/autocomplete/history_quick_provider.h',
-      'browser/autocomplete/in_memory_url_index.cc',
-      'browser/autocomplete/in_memory_url_index.h',
       'browser/autocomplete/in_memory_url_index_factory.cc',
       'browser/autocomplete/in_memory_url_index_factory.h',
       'browser/autocomplete/shortcuts_backend.cc',
@@ -1289,8 +1285,6 @@
       'browser/autocomplete/shortcuts_backend_factory.h',
       'browser/autocomplete/shortcuts_provider.cc',
       'browser/autocomplete/shortcuts_provider.h',
-      'browser/autocomplete/url_index_private_data.cc',
-      'browser/autocomplete/url_index_private_data.h',
       'browser/autocomplete/zero_suggest_provider.cc',
       'browser/autocomplete/zero_suggest_provider.h',
     ],
@@ -3081,7 +3075,6 @@
         'common',
         'common_net',
         'encrypted_cert_logger_proto',
-        'in_memory_url_index_cache_proto',
         'offline_pages_proto',
         'probe_message_proto',
         '../components/components.gyp:autofill_core_browser',
@@ -3800,19 +3793,6 @@
           ]
         }],
       ],
-    },
-    {
-      # Protobuf compiler / generator for the InMemoryURLIndex caching
-      # protocol buffer.
-      # GN version: //chrome/browser/autocomplete:in_memory_url_index_cache_proto
-      'target_name': 'in_memory_url_index_cache_proto',
-      'type': 'static_library',
-      'sources': [ 'browser/autocomplete/in_memory_url_index_cache.proto', ],
-      'variables': {
-        'proto_in_dir': 'browser/autocomplete',
-        'proto_out_dir': 'chrome/browser/autocomplete',
-      },
-      'includes': [ '../build/protoc.gypi', ],
     },
     {
       # Protobuf compiler / generator for the fraudulent certificate reporting

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_AUTOCOMPLETE_IN_MEMORY_URL_INDEX_H_
-#define CHROME_BROWSER_AUTOCOMPLETE_IN_MEMORY_URL_INDEX_H_
+#ifndef COMPONENTS_OMNIBOX_IN_MEMORY_URL_INDEX_H_
+#define COMPONENTS_OMNIBOX_IN_MEMORY_URL_INDEX_H_
 
 #include <functional>
 #include <map>
@@ -322,4 +322,4 @@ class InMemoryURLIndex : public KeyedService,
   DISALLOW_COPY_AND_ASSIGN(InMemoryURLIndex);
 };
 
-#endif  // CHROME_BROWSER_AUTOCOMPLETE_IN_MEMORY_URL_INDEX_H_
+#endif  // COMPONENTS_OMNIBOX_IN_MEMORY_URL_INDEX_H_

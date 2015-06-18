@@ -13,6 +13,7 @@
         '../base/base.gyp:base_i18n',
         '../net/net.gyp:net',
         '../sql/sql.gyp:sql',
+        '../third_party/protobuf/protobuf.gyp:protobuf_lite',
         '../ui/base/ui_base.gyp:ui_base',
         '../url/url.gyp:url_lib',
         'bookmarks_browser',
@@ -20,6 +21,8 @@
         'components_resources.gyp:components_resources',
         'components_strings.gyp:components_strings',
         'history_core_browser',
+        'keyed_service_core',
+        'omnibox_in_memory_url_index_cache_proto',
         'query_parser',
         'search',
         'search_engines',
@@ -55,8 +58,12 @@
         'omnibox/bookmark_provider.h',
         'omnibox/history_provider.cc',
         'omnibox/history_provider.h',
+        'omnibox/history_quick_provider.cc',
+        'omnibox/history_quick_provider.h',
         'omnibox/history_url_provider.cc',
         'omnibox/history_url_provider.h',
+        'omnibox/in_memory_url_index.cc',
+        'omnibox/in_memory_url_index.h',
         'omnibox/in_memory_url_index_types.cc',
         'omnibox/in_memory_url_index_types.h',
         'omnibox/keyword_extensions_delegate.cc',
@@ -79,9 +86,24 @@
         'omnibox/shortcuts_database.h',
         'omnibox/suggestion_answer.cc',
         'omnibox/suggestion_answer.h',
+        'omnibox/url_index_private_data.cc',
+        'omnibox/url_index_private_data.h',
         'omnibox/url_prefix.cc',
         'omnibox/url_prefix.h',
       ],
+    },
+    {
+      # Protobuf compiler / generator for the InMemoryURLIndex caching
+      # protocol buffer.
+      # GN version: //components/omnibox:in_memory_url_index_cache_proto
+      'target_name': 'omnibox_in_memory_url_index_cache_proto',
+      'type': 'static_library',
+      'sources': [ 'omnibox/in_memory_url_index_cache.proto', ],
+      'variables': {
+        'proto_in_dir': 'omnibox',
+        'proto_out_dir': 'components/omnibox',
+      },
+      'includes': [ '../build/protoc.gypi', ],
     },
     {
       # GN version: //components/omnibox:test_support

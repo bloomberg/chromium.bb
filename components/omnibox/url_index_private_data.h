@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_AUTOCOMPLETE_URL_INDEX_PRIVATE_DATA_H_
-#define CHROME_BROWSER_AUTOCOMPLETE_URL_INDEX_PRIVATE_DATA_H_
+#ifndef COMPONENTS_OMNIBOX_URL_INDEX_PRIVATE_DATA_H_
+#define COMPONENTS_OMNIBOX_URL_INDEX_PRIVATE_DATA_H_
 
 #include <set>
 #include <string>
@@ -11,8 +11,8 @@
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/autocomplete/in_memory_url_index_cache.pb.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/omnibox/in_memory_url_index_cache.pb.h"
 #include "components/omnibox/in_memory_url_index_types.h"
 #include "components/omnibox/scored_history_match.h"
 
@@ -407,4 +407,4 @@ class URLIndexPrivateData
   size_t post_scoring_item_count_;  // After performing final filter/scoring.
 };
 
-#endif  // CHROME_BROWSER_AUTOCOMPLETE_URL_INDEX_PRIVATE_DATA_H_
+#endif  // COMPONENTS_OMNIBOX_URL_INDEX_PRIVATE_DATA_H_

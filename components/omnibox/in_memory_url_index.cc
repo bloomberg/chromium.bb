@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/autocomplete/in_memory_url_index.h"
+#include "components/omnibox/in_memory_url_index.h"
 
 #include "base/files/file_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
-#include "chrome/browser/autocomplete/url_index_private_data.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/url_database.h"
+#include "components/omnibox/url_index_private_data.h"
 
 using in_memory_url_index::InMemoryURLIndexCacheItem;
 

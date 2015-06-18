@@ -1,6 +1,7 @@
 include_rules = [
   "+components/bookmarks/browser",
   "+components/history/core/browser",
+  "+components/keyed_service/core",
   "+components/metrics/proto",
   "+components/query_parser",
   "+components/search",
@@ -11,6 +12,7 @@ include_rules = [
   "+grit",
   "+net",
   "+sql",
+  "+third_party/protobuf/src/google",
   "+ui/base",
   "+url",
 ]

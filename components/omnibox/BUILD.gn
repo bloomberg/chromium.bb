@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//third_party/protobuf/proto_library.gni")
+
 static_library("omnibox") {
   sources = [
     "answers_cache.cc",
@@ -23,8 +25,12 @@ static_library("omnibox") {
     "bookmark_provider.h",
     "history_provider.cc",
     "history_provider.h",
+    "history_quick_provider.cc",
+    "history_quick_provider.h",
     "history_url_provider.cc",
     "history_url_provider.h",
+    "in_memory_url_index.cc",
+    "in_memory_url_index.h",
     "in_memory_url_index_types.cc",
     "in_memory_url_index_types.h",
     "keyword_extensions_delegate.cc",
@@ -47,6 +53,8 @@ static_library("omnibox") {
     "shortcuts_database.h",
     "suggestion_answer.cc",
     "suggestion_answer.h",
+    "url_index_private_data.cc",
+    "url_index_private_data.h",
     "url_prefix.cc",
     "url_prefix.h",
   ]
@@ -55,10 +63,12 @@ static_library("omnibox") {
     "//components/metrics/proto",
   ]
   deps = [
+    ":in_memory_url_index_cache_proto",
     "//base",
     "//base:i18n",
     "//components/bookmarks/browser",
     "//components/history/core/browser",
+    "//components/keyed_service/core",
     "//components/query_parser",
     "//components/resources",
     "//components/search",
@@ -69,8 +79,15 @@ static_library("omnibox") {
     "//components/variations/net",
     "//net",
     "//sql",
+    "//third_party/protobuf:protobuf_lite",
     "//ui/base",
     "//url",
+  ]
+}
+
+proto_library("in_memory_url_index_cache_proto") {
+  sources = [
+    "in_memory_url_index_cache.proto",
   ]
 }
 

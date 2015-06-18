@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_AUTOCOMPLETE_HISTORY_QUICK_PROVIDER_H_
-#define CHROME_BROWSER_AUTOCOMPLETE_HISTORY_QUICK_PROVIDER_H_
+#ifndef COMPONENTS_OMNIBOX_HISTORY_QUICK_PROVIDER_H_
+#define COMPONENTS_OMNIBOX_HISTORY_QUICK_PROVIDER_H_
 
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/autocomplete/in_memory_url_index.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/omnibox/autocomplete_input.h"
 #include "components/omnibox/autocomplete_match.h"
 #include "components/omnibox/history_provider.h"
+#include "components/omnibox/in_memory_url_index.h"
 
 struct ScoredHistoryMatch;
 
@@ -62,4 +62,4 @@ class HistoryQuickProvider : public HistoryProvider {
   DISALLOW_COPY_AND_ASSIGN(HistoryQuickProvider);
 };
 
-#endif  // CHROME_BROWSER_AUTOCOMPLETE_HISTORY_QUICK_PROVIDER_H_
+#endif  // COMPONENTS_OMNIBOX_HISTORY_QUICK_PROVIDER_H_
