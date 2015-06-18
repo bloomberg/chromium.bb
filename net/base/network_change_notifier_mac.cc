@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_restrictions.h"
 #include "net/dns/dns_config_service.h"
 
 namespace net {
@@ -102,6 +103,7 @@ NetworkChangeNotifierMac::NetworkChangeCalculatorParamsMac() {
 
 NetworkChangeNotifier::ConnectionType
 NetworkChangeNotifierMac::GetCurrentConnectionType() const {
+  base::ThreadRestrictions::ScopedAllowWait allow_wait;
   base::AutoLock lock(connection_type_lock_);
   // Make sure the initial connection type is set before returning.
   while (!connection_type_initialized_) {
