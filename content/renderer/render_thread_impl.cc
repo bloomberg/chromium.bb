@@ -1041,10 +1041,11 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
 #endif
     if (!compositor_task_runner_.get()) {
       compositor_thread_.reset(new base::Thread("Compositor"));
-      compositor_thread_->Start();
+      base::Thread::Options compositor_thread_options;
 #if defined(OS_ANDROID)
-      compositor_thread_->SetPriority(base::ThreadPriority::DISPLAY);
+      compositor_thread_options.priority = base::ThreadPriority::DISPLAY;
 #endif
+      compositor_thread_->StartWithOptions(compositor_thread_options);
       compositor_task_runner_ = compositor_thread_->task_runner();
       compositor_task_runner_->PostTask(
           FROM_HERE,

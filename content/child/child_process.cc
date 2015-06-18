@@ -44,12 +44,11 @@ ChildProcess::ChildProcess()
   base::StatisticsRecorder::Initialize();
 
   // We can't recover from failing to start the IO thread.
-  CHECK(io_thread_.StartWithOptions(
-      base::Thread::Options(base::MessageLoop::TYPE_IO, 0)));
-
+  base::Thread::Options thread_options(base::MessageLoop::TYPE_IO, 0);
 #if defined(OS_ANDROID)
-  io_thread_.SetPriority(base::ThreadPriority::DISPLAY);
+  thread_options.priority = base::ThreadPriority::DISPLAY;
 #endif
+  CHECK(io_thread_.StartWithOptions(thread_options));
 }
 
 ChildProcess::~ChildProcess() {

@@ -190,13 +190,6 @@ bool Thread::IsRunning() const {
   return running_;
 }
 
-void Thread::SetPriority(ThreadPriority priority) {
-  // The thread must be started (and id known) for this to be
-  // compatible with all platforms.
-  DCHECK(message_loop_ != nullptr);
-  PlatformThread::SetThreadPriority(thread_, priority);
-}
-
 void Thread::Run(MessageLoop* message_loop) {
   message_loop->Run();
 }

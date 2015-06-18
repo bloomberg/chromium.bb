@@ -841,6 +841,11 @@ int BrowserMainLoop::CreateThreads() {
             "Thread", "BrowserThread::IO");
         thread_to_start = &io_thread_;
         options = io_message_loop_options;
+#if defined(OS_ANDROID)
+        // Up the priority of the |io_thread_| as some of its IPCs relate to
+        // display tasks.
+        options.priority = base::ThreadPriority::DISPLAY;
+#endif
         break;
       case BrowserThread::UI:
       case BrowserThread::ID_COUNT:
@@ -1124,9 +1129,7 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   // GpuDataManager for in-process initialized in PreCreateThreads.
   bool initialize_gpu_data_manager = !UsingInProcessGpu();
 #if defined(OS_ANDROID)
-  // Up the priority of anything that touches with display tasks
-  // (this thread is UI thread, and io_thread_ is for IPCs).
-  io_thread_->SetPriority(base::ThreadPriority::DISPLAY);
+  // Up the priority of the UI thread.
   base::PlatformThread::SetThreadPriority(base::PlatformThread::CurrentHandle(),
                                           base::ThreadPriority::DISPLAY);
 
