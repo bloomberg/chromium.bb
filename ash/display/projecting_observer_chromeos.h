@@ -47,14 +47,6 @@ class ASH_EXPORT ProjectingObserver : public ui::DisplayConfigurator::Observer,
   // Weak pointer to the DBusClient PowerManagerClient;
   chromeos::PowerManagerClient* power_manager_client_;
 
-#if defined(USE_OZONE)
-  // TODO(dnicoara) Remove once merged to M43.
-  // Used to skip the first call to the power management during the initial
-  // display configuration to avoid changing power settings due to possibly
-  // invalid display configuration.
-  bool is_initial_configuration_;
-#endif
-
   DISALLOW_COPY_AND_ASSIGN(ProjectingObserver);
 };
 

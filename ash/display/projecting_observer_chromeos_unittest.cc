@@ -30,14 +30,6 @@ class ProjectingObserverTest : public testing::Test {
 
   ~ProjectingObserverTest() override {}
 
-#if defined(USE_OZONE)
-  void SetUp() override {
-    // First configuration event is ignored on Ozone to work around setting the
-    // wrong power state during startup.
-    observer_.OnDisplayModeChanged(std::vector<ui::DisplaySnapshot*>());
-  }
-#endif
-
  protected:
   chromeos::FakePowerManagerClient fake_power_client_;
   ProjectingObserver observer_;
