@@ -1846,11 +1846,6 @@ crbug.com/495523 svg/wicd/test-rightsizing-b.xhtml [ Pass Failure ]
 
 crbug.com/424338 [ XP ] tables/mozilla/bugs/bug3037-1.html [ Failure ]
 
-crbug.com/501177 svg/clip-path/clip-path-evenodd-nonzero.svg [ NeedsRebaseline ]
-crbug.com/501177 svg/clip-path/clip-path-nonzero-evenodd.svg [ NeedsRebaseline ]
-crbug.com/501177 svg/clip-path/clip-path-nonzero.svg [ NeedsRebaseline ]
-crbug.com/501177 svg/clip-path/clipper-placement-issue.svg [ NeedsRebaseline ]
-
 crbug.com/501284 http/tests/security/w3c/cross-origin-objects.html [ Pass Failure ]
 
 crbug.com/497950 [ SnowLeopard ] fast/forms/select/menulist-appearance-basic.html [ NeedsRebaseline ]
