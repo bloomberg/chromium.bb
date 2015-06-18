@@ -57,6 +57,7 @@ private:
     void notifyFinished() override;
 
     RefPtr<WorkerScriptLoader> m_scriptLoader;
+    RefPtr<ContentSecurityPolicy> m_contentSecurityPolicy;
     WorkerGlobalScopeProxy* m_contextProxy; // The proxy outlives the worker to perform thread shutdown.
 };
 

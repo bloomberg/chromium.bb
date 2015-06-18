@@ -92,13 +92,6 @@ public:
             *loadingContext, scriptURL, DenyCrossOriginRequests, this);
     }
 
-    void didReceiveResponse(unsigned long identifier, const ResourceResponse& response) override
-    {
-        m_contentSecurityPolicy = ContentSecurityPolicy::create();
-        m_contentSecurityPolicy->setOverrideURLForSelf(response.url());
-        m_contentSecurityPolicy->didReceiveHeaders(ContentSecurityPolicyResponseHeaders(response));
-    }
-
     virtual void notifyFinished() override
     {
         (*m_callback)();
@@ -114,7 +107,7 @@ public:
     String script() const { return m_scriptLoader->script(); }
     const Vector<char>* cachedMetadata() const { return m_scriptLoader->cachedMetadata(); }
     PassOwnPtr<Vector<char>> releaseCachedMetadata() const { return m_scriptLoader->releaseCachedMetadata(); }
-    PassRefPtr<ContentSecurityPolicy> releaseContentSecurityPolicy() { return m_contentSecurityPolicy.release(); }
+    PassRefPtr<ContentSecurityPolicy> releaseContentSecurityPolicy() { return m_scriptLoader->releaseContentSecurityPolicy(); }
 
 private:
     Loader() : m_scriptLoader(WorkerScriptLoader::create())
@@ -123,7 +116,6 @@ private:
 
     RefPtr<WorkerScriptLoader> m_scriptLoader;
     OwnPtr<Closure> m_callback;
-    RefPtr<ContentSecurityPolicy> m_contentSecurityPolicy;
 };
 
 WebEmbeddedWorker* WebEmbeddedWorker::create(WebServiceWorkerContextClient* client, WebWorkerContentSettingsClientProxy* contentSettingsClient)

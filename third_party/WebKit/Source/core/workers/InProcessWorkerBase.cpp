@@ -78,12 +78,13 @@ bool InProcessWorkerBase::hasPendingActivity() const
 
 PassRefPtr<ContentSecurityPolicy> InProcessWorkerBase::contentSecurityPolicy()
 {
-    return WorkerScriptLoaderClient::contentSecurityPolicy();
+    if (m_scriptLoader)
+        return m_scriptLoader->contentSecurityPolicy();
+    return m_contentSecurityPolicy;
 }
 
 void InProcessWorkerBase::didReceiveResponse(unsigned long identifier, const ResourceResponse& response)
 {
-    processContentSecurityPolicy(response);
     InspectorInstrumentation::didReceiveScriptResponse(executionContext(), identifier);
 }
 
@@ -99,6 +100,7 @@ void InProcessWorkerBase::notifyFinished()
         m_contextProxy->startWorkerGlobalScope(m_scriptLoader->url(), executionContext()->userAgent(m_scriptLoader->url()), m_scriptLoader->script(), startMode);
         InspectorInstrumentation::scriptImported(executionContext(), m_scriptLoader->identifier(), m_scriptLoader->script());
     }
+    m_contentSecurityPolicy = m_scriptLoader->releaseContentSecurityPolicy();
     m_scriptLoader = nullptr;
 }
 

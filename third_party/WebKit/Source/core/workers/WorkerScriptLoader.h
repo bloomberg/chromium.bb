@@ -41,6 +41,7 @@
 
 namespace blink {
 
+class ContentSecurityPolicy;
 class ResourceRequest;
 class ResourceResponse;
 class ExecutionContext;
@@ -74,12 +75,17 @@ public:
     PassOwnPtr<Vector<char>> releaseCachedMetadata() { return m_cachedMetadata.release(); }
     const Vector<char>* cachedMetadata() const { return m_cachedMetadata.get(); }
 
-    virtual void didReceiveResponse(unsigned long /*identifier*/, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) override;
-    virtual void didReceiveData(const char* data, unsigned dataLength) override;
-    virtual void didReceiveCachedMetadata(const char*, int /*dataLength*/) override;
-    virtual void didFinishLoading(unsigned long identifier, double) override;
-    virtual void didFail(const ResourceError&) override;
-    virtual void didFailRedirectCheck() override;
+    void setContentSecurityPolicy(PassRefPtr<ContentSecurityPolicy> policy) { m_contentSecurityPolicy = policy; };
+    PassRefPtr<ContentSecurityPolicy> contentSecurityPolicy() { return m_contentSecurityPolicy; }
+    PassRefPtr<ContentSecurityPolicy> releaseContentSecurityPolicy() { return m_contentSecurityPolicy.release(); }
+
+    // ThreadableLoaderClient
+    void didReceiveResponse(unsigned long /*identifier*/, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) override;
+    void didReceiveData(const char* data, unsigned dataLength) override;
+    void didReceiveCachedMetadata(const char*, int /*dataLength*/) override;
+    void didFinishLoading(unsigned long identifier, double) override;
+    void didFail(const ResourceError&) override;
+    void didFailRedirectCheck() override;
 
     void setRequestContext(WebURLRequest::RequestContext requestContext) { m_requestContext = requestContext; }
 
@@ -87,10 +93,12 @@ private:
     friend class WTF::RefCounted<WorkerScriptLoader>;
 
     WorkerScriptLoader();
-    virtual ~WorkerScriptLoader();
+    ~WorkerScriptLoader() override;
 
     PassOwnPtr<ResourceRequest> createResourceRequest();
     void notifyFinished();
+
+    void processContentSecurityPolicy(const ResourceResponse&);
 
     WorkerScriptLoaderClient* m_client;
     RefPtr<ThreadableLoader> m_threadableLoader;
@@ -104,6 +112,7 @@ private:
     bool m_finishing;
     OwnPtr<Vector<char>> m_cachedMetadata;
     WebURLRequest::RequestContext m_requestContext;
+    RefPtr<ContentSecurityPolicy> m_contentSecurityPolicy;
 };
 
 } // namespace blink

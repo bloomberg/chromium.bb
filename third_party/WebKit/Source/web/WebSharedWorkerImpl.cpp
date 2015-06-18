@@ -106,7 +106,6 @@ public:
     {
         m_identifier = identifier;
         m_appCacheID = response.appCacheID();
-        processContentSecurityPolicy(response);
         (*m_receiveResponseCallback)();
     }
 
@@ -125,6 +124,7 @@ public:
     String script() const { return m_scriptLoader->script(); }
     unsigned long identifier() const { return m_identifier; }
     long long appCacheID() const { return m_appCacheID; }
+    PassRefPtr<ContentSecurityPolicy> contentSecurityPolicy() { return m_scriptLoader->contentSecurityPolicy(); }
 
 private:
     Loader()
@@ -132,7 +132,7 @@ private:
         , m_identifier(0)
         , m_appCacheID(0)
     {
-        setContentSecurityPolicy(ContentSecurityPolicy::create());
+        m_scriptLoader->setContentSecurityPolicy(ContentSecurityPolicy::create());
     }
 
     RefPtr<WorkerScriptLoader> m_scriptLoader;
@@ -411,7 +411,15 @@ void WebSharedWorkerImpl::onScriptLoaderFinished()
     provideLocalFileSystemToWorker(workerClients.get(), LocalFileSystemClient::create());
     WebSecurityOrigin webSecurityOrigin(m_loadingDocument->securityOrigin());
     provideContentSettingsClientToWorker(workerClients.get(), adoptPtr(m_client->createWorkerContentSettingsClientProxy(webSecurityOrigin)));
-    OwnPtr<WorkerThreadStartupData> startupData = WorkerThreadStartupData::create(m_url, m_loadingDocument->userAgent(m_url), m_mainScriptLoader->script(), nullptr, startMode, m_mainScriptLoader->contentSecurityPolicy()->headers(), starterOrigin, workerClients.release());
+    OwnPtr<WorkerThreadStartupData> startupData = WorkerThreadStartupData::create(
+        m_url,
+        m_loadingDocument->userAgent(m_url),
+        m_mainScriptLoader->script(),
+        nullptr,
+        startMode,
+        m_mainScriptLoader->contentSecurityPolicy()->headers(),
+        starterOrigin,
+        workerClients.release());
     m_loaderProxy = WorkerLoaderProxy::create(this);
     setWorkerThread(SharedWorkerThread::create(m_name, m_loaderProxy, *this));
     InspectorInstrumentation::scriptImported(m_loadingDocument.get(), m_mainScriptLoader->identifier(), m_mainScriptLoader->script());

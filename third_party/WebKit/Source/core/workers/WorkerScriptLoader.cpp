@@ -33,6 +33,7 @@
 #include "core/loader/WorkerThreadableLoader.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerScriptLoaderClient.h"
+#include "platform/network/ContentSecurityPolicyResponseHeaders.h"
 #include "platform/network/ResourceResponse.h"
 #include "public/platform/WebURLRequest.h"
 
@@ -119,6 +120,7 @@ void WorkerScriptLoader::didReceiveResponse(unsigned long identifier, const Reso
     }
     m_responseURL = response.url();
     m_responseEncoding = response.textEncodingName();
+    processContentSecurityPolicy(response);
     if (m_client)
         m_client->didReceiveResponse(identifier, response);
 }
@@ -195,6 +197,15 @@ void WorkerScriptLoader::notifyFinished()
 
     m_finishing = true;
     m_client->notifyFinished();
+}
+
+void WorkerScriptLoader::processContentSecurityPolicy(const ResourceResponse& response)
+{
+    if (!response.url().protocolIs("blob") && !response.url().protocolIs("file") && !response.url().protocolIs("filesystem")) {
+        m_contentSecurityPolicy = ContentSecurityPolicy::create();
+        m_contentSecurityPolicy->setOverrideURLForSelf(response.url());
+        m_contentSecurityPolicy->didReceiveHeaders(ContentSecurityPolicyResponseHeaders(response));
+    }
 }
 
 } // namespace blink

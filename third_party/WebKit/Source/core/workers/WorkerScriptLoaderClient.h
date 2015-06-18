@@ -44,16 +44,8 @@ public:
     // This will cause leaks when we support nested workers.
     virtual void notifyFinished() { }
 
-    PassRefPtr<ContentSecurityPolicy> contentSecurityPolicy();
-
 protected:
-    virtual ~WorkerScriptLoaderClient();
-
-    void processContentSecurityPolicy(const ResourceResponse&);
-    void setContentSecurityPolicy(PassRefPtr<ContentSecurityPolicy>);
-
-private:
-    RefPtr<ContentSecurityPolicy> m_contentSecurityPolicy;
+    virtual ~WorkerScriptLoaderClient() { }
 };
 
 } // namespace blink
