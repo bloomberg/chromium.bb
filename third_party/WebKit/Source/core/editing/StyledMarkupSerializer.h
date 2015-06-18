@@ -38,8 +38,6 @@
 
 namespace blink {
 
-enum class ConvertBlocksToInlines;
-
 template<typename Strategy>
 class StyledMarkupSerializer final {
     STACK_ALLOCATED();
@@ -50,16 +48,7 @@ public:
     String createMarkup();
 
 private:
-    bool convertBlocksToInlines() const { return m_convertBlocksToInlines == ConvertBlocksToInlines::Convert; }
     bool shouldAnnotate() const { return m_shouldAnnotate == AnnotateForInterchange; }
-    Node* serializeNodes(Node* startNode, Node* pastEnd, StyledMarkupAccumulator*);
-    Node* traverseNodesForSerialization(Node* startNode, Node* pastEnd, StyledMarkupAccumulator*);
-    void wrapWithNode(StyledMarkupAccumulator&, ContainerNode&, PassRefPtrWillBeRawPtr<EditingStyle>);
-    RefPtrWillBeRawPtr<EditingStyle> createInlineStyle(Element&);
-    RefPtrWillBeRawPtr<EditingStyle> createInlineStyleIfNeeded(Node&);
-    bool needsInlineStyle(const Element&);
-    void appendStartMarkup(StyledMarkupAccumulator&, Node&);
-    bool shouldApplyWrappingStyle(const Node&) const;
 
     const PositionType m_start;
     const PositionType m_end;

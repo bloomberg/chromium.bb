@@ -44,7 +44,7 @@ class StyledMarkupAccumulator final {
     WTF_MAKE_NONCOPYABLE(StyledMarkupAccumulator);
     STACK_ALLOCATED();
 public:
-    StyledMarkupAccumulator(EAbsoluteURLs, const TextOffset& start, const TextOffset& end, const PassRefPtrWillBeRawPtr<Document>, EAnnotateForInterchange);
+    StyledMarkupAccumulator(EAbsoluteURLs, const TextOffset& start, const TextOffset& end, const PassRefPtrWillBeRawPtr<Document>, EAnnotateForInterchange, ConvertBlocksToInlines);
 
     void appendEndTag(const Element&);
     void appendInterchangeNewline();
@@ -63,10 +63,12 @@ public:
     void appendElementWithInlineStyle(StringBuilder&, const Element&, PassRefPtrWillBeRawPtr<EditingStyle>);
     void appendStartMarkup(Node&);
 
+    bool shouldAnnotate() const;
+    bool convertBlocksToInlines() const { return m_convertBlocksToInlines == ConvertBlocksToInlines::Convert; }
+
 private:
     String renderedText(Text&);
     String stringValueForRange(const Text&);
-    bool shouldAnnotate() const;
 
     void appendEndMarkup(StringBuilder&, const Element&);
 
@@ -77,6 +79,7 @@ private:
     const EAnnotateForInterchange m_shouldAnnotate;
     StringBuilder m_result;
     Vector<String> m_reversedPrecedingMarkup;
+    const ConvertBlocksToInlines m_convertBlocksToInlines;
 };
 
 } // namespace blink

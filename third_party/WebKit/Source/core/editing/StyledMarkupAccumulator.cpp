@@ -51,12 +51,13 @@ size_t totalLength(const Vector<String>& strings)
 
 using namespace HTMLNames;
 
-StyledMarkupAccumulator::StyledMarkupAccumulator(EAbsoluteURLs shouldResolveURLs, const TextOffset& start, const TextOffset& end, const PassRefPtrWillBeRawPtr<Document> document, EAnnotateForInterchange shouldAnnotate)
+StyledMarkupAccumulator::StyledMarkupAccumulator(EAbsoluteURLs shouldResolveURLs, const TextOffset& start, const TextOffset& end, const PassRefPtrWillBeRawPtr<Document> document, EAnnotateForInterchange shouldAnnotate, ConvertBlocksToInlines convertBlocksToInlines)
     : m_formatter(shouldResolveURLs)
     , m_start(start)
     , m_end(end)
     , m_document(document)
     , m_shouldAnnotate(shouldAnnotate)
+    , m_convertBlocksToInlines(convertBlocksToInlines)
 {
 }
 

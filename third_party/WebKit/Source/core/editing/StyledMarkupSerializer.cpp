@@ -63,9 +63,47 @@ TextOffset toTextOffset(const PositionType& position)
 
 using namespace HTMLNames;
 
+template<typename Strategy>
+class StyledMarkupTraverser {
+    WTF_MAKE_NONCOPYABLE(StyledMarkupTraverser);
+    STACK_ALLOCATED();
+public:
+    StyledMarkupTraverser();
+    StyledMarkupTraverser(StyledMarkupAccumulator*, Node*);
+
+    Node* traverse(Node*, Node*);
+    void wrapWithNode(ContainerNode&, PassRefPtrWillBeRawPtr<EditingStyle>);
+    RefPtrWillBeRawPtr<EditingStyle> createInlineStyleIfNeeded(Node&);
+
+private:
+    bool shouldAnnotate() const;
+    bool convertBlocksToInlines() const;
+    void appendStartMarkup(Node&);
+    void appendEndMarkup(Node&);
+    RefPtrWillBeRawPtr<EditingStyle> createInlineStyle(Element&);
+    bool needsInlineStyle(const Element&);
+    bool shouldApplyWrappingStyle(const Node&) const;
+
+    StyledMarkupAccumulator* m_accumulator;
+    RefPtrWillBeMember<Node> m_lastClosed;
+    RefPtrWillBeMember<EditingStyle> m_wrappingStyle;
+};
+
 static Position toPositionInDOMTree(const Position& position)
 {
     return position;
+}
+
+template<typename Strategy>
+bool StyledMarkupTraverser<Strategy>::shouldAnnotate() const
+{
+    return m_accumulator->shouldAnnotate();
+}
+
+template<typename Strategy>
+bool StyledMarkupTraverser<Strategy>::convertBlocksToInlines() const
+{
+    return m_accumulator->convertBlocksToInlines();
 }
 
 template<typename Strategy>
@@ -118,7 +156,7 @@ static PassRefPtrWillBeRawPtr<EditingStyle> styleFromMatchedRulesAndInlineDecl(c
 template<typename Strategy>
 String StyledMarkupSerializer<Strategy>::createMarkup()
 {
-    StyledMarkupAccumulator markupAccumulator(m_shouldResolveURLs, toTextOffset(m_start.parentAnchoredEquivalent()), toTextOffset(m_end.parentAnchoredEquivalent()), m_start.document(), m_shouldAnnotate);
+    StyledMarkupAccumulator markupAccumulator(m_shouldResolveURLs, toTextOffset(m_start.parentAnchoredEquivalent()), toTextOffset(m_end.parentAnchoredEquivalent()), m_start.document(), m_shouldAnnotate, m_convertBlocksToInlines);
 
     Node* pastEnd = m_end.nodeAsRangePastLastNode();
 
@@ -138,7 +176,10 @@ String StyledMarkupSerializer<Strategy>::createMarkup()
         }
     }
 
-    Node* lastClosed = serializeNodes(firstNode, pastEnd, &markupAccumulator);
+    if (!m_lastClosed)
+        m_lastClosed = StyledMarkupTraverser<Strategy>().traverse(firstNode, pastEnd);
+    StyledMarkupTraverser<Strategy> traverser(&markupAccumulator, m_lastClosed);
+    Node* lastClosed = traverser.traverse(firstNode, pastEnd);
 
     if (m_highestNodeToBeSerialized && lastClosed) {
         // TODO(hajimehoshi): This is calculated at createMarkupInternal too.
@@ -153,7 +194,7 @@ String StyledMarkupSerializer<Strategy>::createMarkup()
         // Also include all of the ancestors of lastClosed up to this special ancestor.
         // FIXME: What is ancestor?
         for (ContainerNode* ancestor = Strategy::parent(*lastClosed); ancestor; ancestor = Strategy::parent(*ancestor)) {
-            if (ancestor == fullySelectedRoot && !convertBlocksToInlines()) {
+            if (ancestor == fullySelectedRoot && !markupAccumulator.convertBlocksToInlines()) {
                 RefPtrWillBeRawPtr<EditingStyle> fullySelectedRootStyle = styleFromMatchedRulesAndInlineDecl(fullySelectedRoot);
 
                 // Bring the background attribute over, but not as an attribute because a background attribute on a div
@@ -173,14 +214,14 @@ String StyledMarkupSerializer<Strategy>::createMarkup()
                     markupAccumulator.wrapWithStyleNode(fullySelectedRootStyle->style());
                 }
             } else {
-                RefPtrWillBeRawPtr<EditingStyle> style = createInlineStyleIfNeeded(*ancestor);
+                RefPtrWillBeRawPtr<EditingStyle> style = traverser.createInlineStyleIfNeeded(*ancestor);
                 // Since this node and all the other ancestors are not in the selection we want
                 // styles that affect the exterior of the node not to be not included.
                 // If the node is not fully selected by the range, then we don't want to keep styles that affect its relationship to the nodes around it
                 // only the ones that affect it and the nodes within it.
                 if (style && style->style())
                     style->style()->removeProperty(CSSPropertyFloat);
-                wrapWithNode(markupAccumulator, *ancestor, style);
+                traverser.wrapWithNode(*ancestor, style);
             }
 
             if (ancestor == m_highestNodeToBeSerialized)
@@ -196,17 +237,30 @@ String StyledMarkupSerializer<Strategy>::createMarkup()
 }
 
 template<typename Strategy>
-Node* StyledMarkupSerializer<Strategy>::serializeNodes(Node* startNode, Node* pastEnd, StyledMarkupAccumulator* markupAccumulator)
+StyledMarkupTraverser<Strategy>::StyledMarkupTraverser()
+    : StyledMarkupTraverser(nullptr, nullptr)
 {
-    if (!m_lastClosed)
-        m_lastClosed = traverseNodesForSerialization(startNode, pastEnd, nullptr);
-    if (m_lastClosed && Strategy::parent(*m_lastClosed))
-        m_wrappingStyle = EditingStyle::wrappingStyleForSerialization(Strategy::parent(*m_lastClosed), shouldAnnotate());
-    return traverseNodesForSerialization(startNode, pastEnd, markupAccumulator);
 }
 
 template<typename Strategy>
-Node* StyledMarkupSerializer<Strategy>::traverseNodesForSerialization(Node* startNode, Node* pastEnd, StyledMarkupAccumulator* markupAccumulator)
+StyledMarkupTraverser<Strategy>::StyledMarkupTraverser(StyledMarkupAccumulator* accumulator, Node* lastClosed)
+    : m_accumulator(accumulator)
+    , m_lastClosed(lastClosed)
+    , m_wrappingStyle(nullptr)
+{
+    if (!m_accumulator) {
+        ASSERT(!m_lastClosed);
+        return;
+    }
+    ASSERT(m_lastClosed);
+    ContainerNode* parent = Strategy::parent(*m_lastClosed);
+    if (!parent)
+        return;
+    m_wrappingStyle = EditingStyle::wrappingStyleForSerialization(parent, shouldAnnotate());
+}
+
+template<typename Strategy>
+Node* StyledMarkupTraverser<Strategy>::traverse(Node* startNode, Node* pastEnd)
 {
     WillBeHeapVector<RawPtrWillBeMember<ContainerNode>> ancestorsToClose;
     Node* next;
@@ -234,16 +288,14 @@ Node* StyledMarkupSerializer<Strategy>::traverseNodesForSerialization(Node* star
                 next = pastEnd;
         } else {
             // Add the node to the markup if we're not skipping the descendants
-            if (markupAccumulator)
-                appendStartMarkup(*markupAccumulator, *n);
+            appendStartMarkup(*n);
 
             // If node has no children, close the tag now.
             if (Strategy::hasChildren(*n)) {
                 ancestorsToClose.append(toContainerNode(n));
                 continue;
             }
-            if (markupAccumulator && n->isElementNode())
-                markupAccumulator->appendEndTag(toElement(*n));
+            appendEndMarkup(*n);
             lastClosed = n;
         }
 
@@ -259,8 +311,7 @@ Node* StyledMarkupSerializer<Strategy>::traverseNodesForSerialization(Node* star
             if (next != pastEnd && Strategy::isDescendantOf(*next, *ancestor))
                 break;
             // Not at the end of the range, close ancestors up to sibling of next node.
-            if (markupAccumulator && ancestor->isElementNode())
-                markupAccumulator->appendEndTag(toElement(*ancestor));
+            appendEndMarkup(*ancestor);
             lastClosed = ancestor;
             ancestorsToClose.removeLast();
         }
@@ -279,10 +330,8 @@ Node* StyledMarkupSerializer<Strategy>::traverseNodesForSerialization(Node* star
             // or b) ancestors that we never encountered during a pre-order traversal starting at startNode:
             ASSERT(startNode);
             ASSERT(Strategy::isDescendantOf(*startNode, *parent));
-            if (markupAccumulator) {
-                RefPtrWillBeRawPtr<EditingStyle> style = createInlineStyleIfNeeded(*parent);
-                wrapWithNode(*markupAccumulator, *parent, style);
-            }
+            RefPtrWillBeRawPtr<EditingStyle> style = createInlineStyleIfNeeded(*parent);
+            wrapWithNode(*parent, style);
             lastClosed = parent;
         }
     }
@@ -291,7 +340,7 @@ Node* StyledMarkupSerializer<Strategy>::traverseNodesForSerialization(Node* star
 }
 
 template<typename Strategy>
-bool StyledMarkupSerializer<Strategy>::needsInlineStyle(const Element& element)
+bool StyledMarkupTraverser<Strategy>::needsInlineStyle(const Element& element)
 {
     if (!element.isHTMLElement())
         return false;
@@ -301,28 +350,32 @@ bool StyledMarkupSerializer<Strategy>::needsInlineStyle(const Element& element)
 }
 
 template<typename Strategy>
-void StyledMarkupSerializer<Strategy>::wrapWithNode(StyledMarkupAccumulator& accumulator, ContainerNode& node, PassRefPtrWillBeRawPtr<EditingStyle> style)
+void StyledMarkupTraverser<Strategy>::wrapWithNode(ContainerNode& node, PassRefPtrWillBeRawPtr<EditingStyle> style)
 {
+    if (!m_accumulator)
+        return;
     StringBuilder markup;
     if (node.isDocumentNode()) {
         MarkupFormatter::appendXMLDeclaration(markup, toDocument(node));
-        accumulator.pushMarkup(markup.toString());
+        m_accumulator->pushMarkup(markup.toString());
         return;
     }
     if (!node.isElementNode())
         return;
     Element& element = toElement(node);
     if (shouldApplyWrappingStyle(element) || needsInlineStyle(element))
-        accumulator.appendElementWithInlineStyle(markup, element, style);
+        m_accumulator->appendElementWithInlineStyle(markup, element, style);
     else
-        accumulator.appendElement(markup, element);
-    accumulator.pushMarkup(markup.toString());
-    accumulator.appendEndTag(toElement(node));
+        m_accumulator->appendElement(markup, element);
+    m_accumulator->pushMarkup(markup.toString());
+    m_accumulator->appendEndTag(toElement(node));
 }
 
 template<typename Strategy>
-RefPtrWillBeRawPtr<EditingStyle> StyledMarkupSerializer<Strategy>::createInlineStyleIfNeeded(Node& node)
+RefPtrWillBeRawPtr<EditingStyle> StyledMarkupTraverser<Strategy>::createInlineStyleIfNeeded(Node& node)
 {
+    if (!m_accumulator)
+        return nullptr;
     if (!node.isElementNode())
         return nullptr;
     RefPtrWillBeRawPtr<EditingStyle> inlineStyle = createInlineStyle(toElement(node));
@@ -332,13 +385,15 @@ RefPtrWillBeRawPtr<EditingStyle> StyledMarkupSerializer<Strategy>::createInlineS
 }
 
 template<typename Strategy>
-void StyledMarkupSerializer<Strategy>::appendStartMarkup(StyledMarkupAccumulator& accumulator, Node& node)
+void StyledMarkupTraverser<Strategy>::appendStartMarkup(Node& node)
 {
+    if (!m_accumulator)
+        return;
     switch (node.nodeType()) {
     case Node::TEXT_NODE: {
         Text& text = toText(node);
-        if (text.parentElement() && text.parentElement()->tagQName() == textareaTag) {
-            accumulator.appendText(text);
+        if (text.parentElement() && isHTMLTextAreaElement(text.parentElement())) {
+            m_accumulator->appendText(text);
             break;
         }
         RefPtrWillBeRawPtr<EditingStyle> inlineStyle = nullptr;
@@ -350,34 +405,42 @@ void StyledMarkupSerializer<Strategy>::appendStartMarkup(StyledMarkupAccumulator
             // FIXME: Should this be included in forceInline?
             inlineStyle->style()->setProperty(CSSPropertyFloat, CSSValueNone);
         }
-        accumulator.appendTextWithInlineStyle(text, inlineStyle);
+        m_accumulator->appendTextWithInlineStyle(text, inlineStyle);
         break;
     }
     case Node::ELEMENT_NODE: {
         Element& element = toElement(node);
         if ((element.isHTMLElement() && shouldAnnotate()) || shouldApplyWrappingStyle(element)) {
             RefPtrWillBeRawPtr<EditingStyle> inlineStyle = createInlineStyle(element);
-            accumulator.appendElementWithInlineStyle(element, inlineStyle);
+            m_accumulator->appendElementWithInlineStyle(element, inlineStyle);
             break;
         }
-        accumulator.appendElement(element);
+        m_accumulator->appendElement(element);
         break;
     }
     default:
-        accumulator.appendStartMarkup(node);
+        m_accumulator->appendStartMarkup(node);
         break;
     }
 }
 
 template<typename Strategy>
-bool StyledMarkupSerializer<Strategy>::shouldApplyWrappingStyle(const Node& node) const
+void StyledMarkupTraverser<Strategy>::appendEndMarkup(Node& node)
+{
+    if (!m_accumulator || !node.isElementNode())
+        return;
+    m_accumulator->appendEndTag(toElement(node));
+}
+
+template<typename Strategy>
+bool StyledMarkupTraverser<Strategy>::shouldApplyWrappingStyle(const Node& node) const
 {
     return m_lastClosed && Strategy::parent(*m_lastClosed) == Strategy::parent(node)
         && m_wrappingStyle && m_wrappingStyle->style();
 }
 
 template<typename Strategy>
-RefPtrWillBeRawPtr<EditingStyle> StyledMarkupSerializer<Strategy>::createInlineStyle(Element& element)
+RefPtrWillBeRawPtr<EditingStyle> StyledMarkupTraverser<Strategy>::createInlineStyle(Element& element)
 {
     RefPtrWillBeRawPtr<EditingStyle> inlineStyle = nullptr;
 
