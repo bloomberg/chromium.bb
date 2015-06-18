@@ -113,16 +113,13 @@ def CMDbuilders(parser, args):
 
   The output is a dictionary in the following format:
     {
-      'master_name': {
-        'builder_name': {
-          'custom_property': 'value',
-          'testfilter': 'compile'
-        },
-        'another_builder': {}
-      },
-      'another_master': {
-        'third_builder': {}
-      }
+      'master_name': [
+        'builder_name',
+        'another_builder'
+      ],
+      'another_master': [
+        'third_builder'
+      ]
     }
   """
   _, args = parser.parse_args(args)
@@ -138,10 +135,10 @@ def CMDbuilders(parser, args):
   masters = {}
   if config.HasField('verifiers') and config.verifiers.HasField('try_job'):
     for bucket in config.verifiers.try_job.buckets:
-      masters.setdefault(bucket.name, {})
+      masters.setdefault(bucket.name, [])
       for builder in bucket.builders:
         if not builder.HasField('experiment_percentage'):
-          masters[bucket.name].setdefault(builder.name, {})
+          masters[bucket.name].append(builder.name)
   print json.dumps(masters)
 
 CMDbuilders.func_usage_more = '<path-to-cq-config>'
