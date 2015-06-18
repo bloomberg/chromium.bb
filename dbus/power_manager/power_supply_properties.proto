@@ -106,11 +106,5 @@ message PowerSupplyProperties {
   // sources or sinks (i.e. to either deliver or receive charge).
   optional bool supports_dual_role_devices = 19;
 
-  // True if the battery is low enough that powerd has decided to put the
-  // system in battery saver mode. If the user cancels battery saver mode, then
-  // this field will revert to false until powerd decides to enter battery
-  // saver mode again.
-  optional bool battery_saver_mode_active = 20;
-
-  // Next ID to use: 21
+  // Next ID to use: 20
 }
