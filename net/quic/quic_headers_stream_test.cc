@@ -118,9 +118,9 @@ class QuicHeadersStreamTest : public ::testing::TestWithParam<TestParams> {
     VLOG(1) << GetParam();
   }
 
-  QuicConsumedData SaveIov(const IOVector& data) {
-    const iovec* iov = data.iovec();
-    int count = data.Capacity();
+  QuicConsumedData SaveIov(const QuicIOVector& data) {
+    const iovec* iov = data.iov;
+    int count = data.iov_count;
     for (int i = 0 ; i < count; ++i) {
       saved_data_.append(static_cast<char*>(iov[i].iov_base), iov[i].iov_len);
     }

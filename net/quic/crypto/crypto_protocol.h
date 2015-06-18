@@ -78,6 +78,8 @@ const QuicTag kTCID = TAG('T', 'C', 'I', 'D');   // Connection ID truncation.
 
 // FEC options
 const QuicTag kFHDR = TAG('F', 'H', 'D', 'R');   // FEC protect headers
+// Set FecSendPolicy for sending FEC packet only when FEC alarm goes off.
+const QuicTag kFSPA = TAG('F', 'S', 'P', 'A');
 
 // Enable bandwidth resumption experiment.
 const QuicTag kBWRE = TAG('B', 'W', 'R', 'E');  // Bandwidth resumption.

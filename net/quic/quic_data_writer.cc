@@ -95,18 +95,6 @@ bool QuicDataWriter::WriteStringPiece16(StringPiece val) {
   return WriteBytes(val.data(), val.size());
 }
 
-bool QuicDataWriter::WriteIOVector(const IOVector& data) {
-  char *dest = BeginWrite(data.TotalBufferSize());
-  if (!dest) {
-    return false;
-  }
-  for (size_t i = 0; i < data.Size(); ++i) {
-    WriteBytes(data.iovec()[i].iov_base,  data.iovec()[i].iov_len);
-  }
-
-  return true;
-}
-
 char* QuicDataWriter::BeginWrite(size_t length) {
   if (length_ > capacity_) {
     return nullptr;

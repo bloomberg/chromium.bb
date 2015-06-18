@@ -434,7 +434,7 @@ class MockQuicSpdySession : public QuicSpdySession {
   MOCK_METHOD0(CreateOutgoingDynamicStream, QuicDataStream*());
   MOCK_METHOD6(WritevData,
                QuicConsumedData(QuicStreamId id,
-                                const IOVector& data,
+                                const QuicIOVector& data,
                                 QuicStreamOffset offset,
                                 bool fin,
                                 FecProtection fec_protection,

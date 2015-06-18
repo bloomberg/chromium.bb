@@ -52,13 +52,6 @@ class NET_EXPORT_PRIVATE QuicStreamSequencer {
   // Returns true if the sequencer has delivered the fin.
   bool IsClosed() const;
 
-  // Returns true if the sequencer has received this frame before.
-  bool IsDuplicate(const QuicStreamFrame& frame) const;
-
-  // Returns true if |frame| contains data which overlaps buffered data
-  // (indicating an invalid stream frame has been received).
-  bool FrameOverlapsBufferedData(const QuicStreamFrame& frame) const;
-
   // Calls |ProcessRawData| on |stream_| for each buffered frame that may
   // be processed.
   void FlushBufferedFrames();
@@ -79,6 +72,13 @@ class NET_EXPORT_PRIVATE QuicStreamSequencer {
 
  private:
   friend class test::QuicStreamSequencerPeer;
+
+  // Returns true if |frame| contains data which overlaps buffered data
+  // (indicating an invalid stream frame has been received).
+  bool FrameOverlapsBufferedData(const QuicStreamFrame& frame) const;
+
+  // Returns true if the sequencer has received this frame before.
+  bool IsDuplicate(const QuicStreamFrame& frame) const;
 
   // Wait until we've seen 'offset' bytes, and then terminate the stream.
   void CloseStreamAtOffset(QuicStreamOffset offset);

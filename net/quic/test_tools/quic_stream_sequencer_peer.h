@@ -16,8 +16,10 @@ namespace test {
 
 class QuicStreamSequencerPeer {
  public:
-  static std::map<QuicStreamOffset, std::string>* GetBufferedFrames(
-      QuicStreamSequencer* sequencer);
+  static size_t GetNumBufferedFrames(QuicStreamSequencer* sequencer);
+
+  static bool FrameOverlapsBufferedData(QuicStreamSequencer* sequencer,
+                                        const QuicStreamFrame& frame);
 
   static QuicStreamOffset GetCloseOffset(QuicStreamSequencer* sequencer);
 

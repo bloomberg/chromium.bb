@@ -64,9 +64,7 @@ class QuicStreamSequencerTest : public ::testing::Test {
       : connection_(new MockConnection(Perspective::IS_CLIENT)),
         session_(connection_),
         stream_(&session_, 1),
-        sequencer_(new QuicStreamSequencer(&stream_)),
-        buffered_frames_(
-            QuicStreamSequencerPeer::GetBufferedFrames(sequencer_.get())) {}
+        sequencer_(new QuicStreamSequencer(&stream_)) {}
 
   bool VerifyIovec(const iovec& iovec, StringPiece expected) {
     if (iovec.iov_len != expected.length()) {
@@ -100,42 +98,50 @@ class QuicStreamSequencerTest : public ::testing::Test {
     sequencer_->OnStreamFrame(frame);
   }
 
+  size_t NumBufferedFrames() {
+    return QuicStreamSequencerPeer::GetNumBufferedFrames(sequencer_.get());
+  }
+
+  bool FrameOverlapsBufferedData(const QuicStreamFrame& frame) {
+    return QuicStreamSequencerPeer::FrameOverlapsBufferedData(sequencer_.get(),
+                                                              frame);
+  }
+
   MockConnection* connection_;
   MockQuicSpdySession session_;
   testing::StrictMock<MockStream> stream_;
   scoped_ptr<QuicStreamSequencer> sequencer_;
-  map<QuicStreamOffset, string>* buffered_frames_;
 };
 
 TEST_F(QuicStreamSequencerTest, RejectOldFrame) {
   EXPECT_CALL(stream_, ProcessRawData(StrEq("abc"), 3)).WillOnce(Return(3));
 
   OnFrame(0, "abc");
-  EXPECT_EQ(0u, buffered_frames_->size());
+  EXPECT_EQ(0u, NumBufferedFrames());
   EXPECT_EQ(3u, sequencer_->num_bytes_consumed());
   // Ignore this - it matches a past sequence number and we should not see it
   // again.
   OnFrame(0, "def");
-  EXPECT_EQ(0u, buffered_frames_->size());
+  EXPECT_EQ(0u, NumBufferedFrames());
 }
 
 TEST_F(QuicStreamSequencerTest, RejectBufferedFrame) {
   EXPECT_CALL(stream_, ProcessRawData(StrEq("abc"), 3));
 
   OnFrame(0, "abc");
-  EXPECT_EQ(1u, buffered_frames_->size());
+  EXPECT_EQ(1u, NumBufferedFrames());
   EXPECT_EQ(0u, sequencer_->num_bytes_consumed());
   // Ignore this - it matches a buffered frame.
   // Right now there's no checking that the payload is consistent.
   OnFrame(0, "def");
-  EXPECT_EQ(1u, buffered_frames_->size());
+  EXPECT_EQ(1u, NumBufferedFrames());
 }
 
 TEST_F(QuicStreamSequencerTest, FullFrameConsumed) {
   EXPECT_CALL(stream_, ProcessRawData(StrEq("abc"), 3)).WillOnce(Return(3));
 
   OnFrame(0, "abc");
-  EXPECT_EQ(0u, buffered_frames_->size());
+  EXPECT_EQ(0u, NumBufferedFrames());
   EXPECT_EQ(3u, sequencer_->num_bytes_consumed());
 }
 
@@ -143,12 +149,12 @@ TEST_F(QuicStreamSequencerTest, BlockedThenFullFrameConsumed) {
   sequencer_->SetBlockedUntilFlush();
 
   OnFrame(0, "abc");
-  EXPECT_EQ(1u, buffered_frames_->size());
+  EXPECT_EQ(1u, NumBufferedFrames());
   EXPECT_EQ(0u, sequencer_->num_bytes_consumed());
 
   EXPECT_CALL(stream_, ProcessRawData(StrEq("abc"), 3)).WillOnce(Return(3));
   sequencer_->FlushBufferedFrames();
-  EXPECT_EQ(0u, buffered_frames_->size());
+  EXPECT_EQ(0u, NumBufferedFrames());
   EXPECT_EQ(3u, sequencer_->num_bytes_consumed());
 
   EXPECT_CALL(stream_, ProcessRawData(StrEq("def"), 3)).WillOnce(Return(3));
@@ -160,13 +166,13 @@ TEST_F(QuicStreamSequencerTest, BlockedThenFullFrameAndFinConsumed) {
   sequencer_->SetBlockedUntilFlush();
 
   OnFinFrame(0, "abc");
-  EXPECT_EQ(1u, buffered_frames_->size());
+  EXPECT_EQ(1u, NumBufferedFrames());
   EXPECT_EQ(0u, sequencer_->num_bytes_consumed());
 
   EXPECT_CALL(stream_, ProcessRawData(StrEq("abc"), 3)).WillOnce(Return(3));
   EXPECT_CALL(stream_, OnFinRead());
   sequencer_->FlushBufferedFrames();
-  EXPECT_EQ(0u, buffered_frames_->size());
+  EXPECT_EQ(0u, NumBufferedFrames());
   EXPECT_EQ(3u, sequencer_->num_bytes_consumed());
 }
 
@@ -174,14 +180,14 @@ TEST_F(QuicStreamSequencerTest, EmptyFrame) {
   EXPECT_CALL(stream_,
               CloseConnectionWithDetails(QUIC_INVALID_STREAM_FRAME, _));
   OnFrame(0, "");
-  EXPECT_EQ(0u, buffered_frames_->size());
+  EXPECT_EQ(0u, NumBufferedFrames());
   EXPECT_EQ(0u, sequencer_->num_bytes_consumed());
 }
 
 TEST_F(QuicStreamSequencerTest, EmptyFinFrame) {
   EXPECT_CALL(stream_, OnFinRead());
   OnFinFrame(0, "");
-  EXPECT_EQ(0u, buffered_frames_->size());
+  EXPECT_EQ(0u, NumBufferedFrames());
   EXPECT_EQ(0u, sequencer_->num_bytes_consumed());
 }
 
@@ -189,38 +195,35 @@ TEST_F(QuicStreamSequencerTest, PartialFrameConsumed) {
   EXPECT_CALL(stream_, ProcessRawData(StrEq("abc"), 3)).WillOnce(Return(2));
 
   OnFrame(0, "abc");
-  EXPECT_EQ(1u, buffered_frames_->size());
+  EXPECT_EQ(1u, NumBufferedFrames());
   EXPECT_EQ(2u, sequencer_->num_bytes_consumed());
-  EXPECT_EQ("c", buffered_frames_->find(2)->second);
 }
 
 TEST_F(QuicStreamSequencerTest, NextxFrameNotConsumed) {
   EXPECT_CALL(stream_, ProcessRawData(StrEq("abc"), 3)).WillOnce(Return(0));
 
   OnFrame(0, "abc");
-  EXPECT_EQ(1u, buffered_frames_->size());
+  EXPECT_EQ(1u, NumBufferedFrames());
   EXPECT_EQ(0u, sequencer_->num_bytes_consumed());
-  EXPECT_EQ("abc", buffered_frames_->find(0)->second);
   EXPECT_EQ(0, sequencer_->num_early_frames_received());
 }
 
 TEST_F(QuicStreamSequencerTest, FutureFrameNotProcessed) {
   OnFrame(3, "abc");
-  EXPECT_EQ(1u, buffered_frames_->size());
+  EXPECT_EQ(1u, NumBufferedFrames());
   EXPECT_EQ(0u, sequencer_->num_bytes_consumed());
-  EXPECT_EQ("abc", buffered_frames_->find(3)->second);
   EXPECT_EQ(1, sequencer_->num_early_frames_received());
 }
 
 TEST_F(QuicStreamSequencerTest, OutOfOrderFrameProcessed) {
   // Buffer the first
   OnFrame(6, "ghi");
-  EXPECT_EQ(1u, buffered_frames_->size());
+  EXPECT_EQ(1u, NumBufferedFrames());
   EXPECT_EQ(0u, sequencer_->num_bytes_consumed());
   EXPECT_EQ(3u, sequencer_->num_bytes_buffered());
   // Buffer the second
   OnFrame(3, "def");
-  EXPECT_EQ(2u, buffered_frames_->size());
+  EXPECT_EQ(2u, NumBufferedFrames());
   EXPECT_EQ(0u, sequencer_->num_bytes_consumed());
   EXPECT_EQ(6u, sequencer_->num_bytes_buffered());
 
@@ -234,7 +237,7 @@ TEST_F(QuicStreamSequencerTest, OutOfOrderFrameProcessed) {
   EXPECT_EQ(9u, sequencer_->num_bytes_consumed());
   EXPECT_EQ(0u, sequencer_->num_bytes_buffered());
 
-  EXPECT_EQ(0u, buffered_frames_->size());
+  EXPECT_EQ(0u, NumBufferedFrames());
 }
 
 TEST_F(QuicStreamSequencerTest, BasicHalfCloseOrdered) {
@@ -361,47 +364,40 @@ TEST_F(QuicSequencerRandomTest, RandomFramesNoDroppingNoBackup) {
 TEST_F(QuicStreamSequencerTest, FrameOverlapsBufferedData) {
   // Ensure that FrameOverlapsBufferedData returns appropriate responses when
   // there is existing data buffered.
-
-  map<QuicStreamOffset, string>* buffered_frames =
-      QuicStreamSequencerPeer::GetBufferedFrames(sequencer_.get());
-
   const int kBufferedOffset = 10;
   const int kBufferedDataLength = 3;
   const int kNewDataLength = 3;
-  StringPiece data(string(kNewDataLength, '.'));
+  string data(kNewDataLength, '.');
 
   // No overlap if no buffered frames.
-  EXPECT_TRUE(buffered_frames_->empty());
-  EXPECT_FALSE(sequencer_->FrameOverlapsBufferedData(
-      QuicStreamFrame(1, false, kBufferedOffset - 1, data)));
-
+  EXPECT_EQ(0u, NumBufferedFrames());
   // Add a buffered frame.
-  buffered_frames->insert(
-      std::make_pair(kBufferedOffset, string(kBufferedDataLength, '.')));
+  sequencer_->OnStreamFrame(QuicStreamFrame(1, false, kBufferedOffset,
+                                            string(kBufferedDataLength, '.')));
 
   // New byte range partially overlaps with buffered frame, start offset
-  // preceeding buffered frame.
-  EXPECT_TRUE(sequencer_->FrameOverlapsBufferedData(
+  // preceding buffered frame.
+  EXPECT_TRUE(FrameOverlapsBufferedData(
       QuicStreamFrame(1, false, kBufferedOffset - 1, data)));
-  EXPECT_TRUE(sequencer_->FrameOverlapsBufferedData(
+  EXPECT_TRUE(FrameOverlapsBufferedData(
       QuicStreamFrame(1, false, kBufferedOffset - kNewDataLength + 1, data)));
 
   // New byte range partially overlaps with buffered frame, start offset
   // inside existing buffered frame.
-  EXPECT_TRUE(sequencer_->FrameOverlapsBufferedData(
+  EXPECT_TRUE(FrameOverlapsBufferedData(
       QuicStreamFrame(1, false, kBufferedOffset + 1, data)));
-  EXPECT_TRUE(sequencer_->FrameOverlapsBufferedData(QuicStreamFrame(
+  EXPECT_TRUE(FrameOverlapsBufferedData(QuicStreamFrame(
       1, false, kBufferedOffset + kBufferedDataLength - 1, data)));
 
   // New byte range entirely outside of buffered frames, start offset preceeding
   // buffered frame.
-  EXPECT_FALSE(sequencer_->FrameOverlapsBufferedData(
+  EXPECT_FALSE(FrameOverlapsBufferedData(
       QuicStreamFrame(1, false, kBufferedOffset - kNewDataLength, data)));
 
   // New byte range entirely outside of buffered frames, start offset later than
   // buffered frame.
-  EXPECT_FALSE(sequencer_->FrameOverlapsBufferedData(QuicStreamFrame(
-      1, false, kBufferedOffset + kBufferedDataLength, data)));
+  EXPECT_FALSE(FrameOverlapsBufferedData(
+      QuicStreamFrame(1, false, kBufferedOffset + kBufferedDataLength, data)));
 }
 
 TEST_F(QuicStreamSequencerTest, DontAcceptOverlappingFrames) {
@@ -412,7 +408,7 @@ TEST_F(QuicStreamSequencerTest, DontAcceptOverlappingFrames) {
   sequencer_->OnStreamFrame(frame1);
 
   QuicStreamFrame frame2(kClientDataStreamId1, false, 2, StringPiece("hello"));
-  EXPECT_TRUE(sequencer_->FrameOverlapsBufferedData(frame2));
+  EXPECT_TRUE(FrameOverlapsBufferedData(frame2));
   EXPECT_CALL(stream_, CloseConnectionWithDetails(QUIC_INVALID_STREAM_FRAME, _))
       .Times(1);
   sequencer_->OnStreamFrame(frame2);

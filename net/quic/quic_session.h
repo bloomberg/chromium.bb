@@ -87,7 +87,7 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   // we have seen ACKs for all packets resulting from this call.
   virtual QuicConsumedData WritevData(
       QuicStreamId id,
-      const IOVector& data,
+      const QuicIOVector& iov,
       QuicStreamOffset offset,
       bool fin,
       FecProtection fec_protection,

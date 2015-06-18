@@ -312,12 +312,12 @@ bool QuicSession::HasOpenDynamicStreams() const {
 
 QuicConsumedData QuicSession::WritevData(
     QuicStreamId id,
-    const IOVector& data,
+    const QuicIOVector& iov,
     QuicStreamOffset offset,
     bool fin,
     FecProtection fec_protection,
     QuicAckNotifier::DelegateInterface* ack_notifier_delegate) {
-  return connection_->SendStreamData(id, data, offset, fin, fec_protection,
+  return connection_->SendStreamData(id, iov, offset, fin, fec_protection,
                                      ack_notifier_delegate);
 }
 

@@ -127,12 +127,12 @@ class QuicSpdyServerStreamTest : public ::testing::TestWithParam<QuicVersion> {
 
 QuicConsumedData ConsumeAllData(
     QuicStreamId id,
-    const IOVector& data,
+    const QuicIOVector& data,
     QuicStreamOffset offset,
     bool fin,
     FecProtection /*fec_protection_*/,
     QuicAckNotifier::DelegateInterface* /*ack_notifier_delegate*/) {
-  return QuicConsumedData(data.TotalBufferSize(), fin);
+  return QuicConsumedData(data.total_length, fin);
 }
 
 INSTANTIATE_TEST_CASE_P(Tests, QuicSpdyServerStreamTest,

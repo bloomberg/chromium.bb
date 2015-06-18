@@ -149,14 +149,14 @@ class TestSession : public QuicSpdySession {
 
   QuicConsumedData WritevData(
       QuicStreamId id,
-      const IOVector& data,
+      const QuicIOVector& data,
       QuicStreamOffset offset,
       bool fin,
       FecProtection fec_protection,
       QuicAckNotifier::DelegateInterface* ack_notifier_delegate) override {
     // Always consumes everything.
     if (writev_consumes_all_data_) {
-      return QuicConsumedData(data.TotalBufferSize(), fin);
+      return QuicConsumedData(data.total_length, fin);
     } else {
       return QuicSession::WritevData(id, data, offset, fin, fec_protection,
                                      ack_notifier_delegate);
@@ -168,8 +168,9 @@ class TestSession : public QuicSpdySession {
   }
 
   QuicConsumedData SendStreamData(QuicStreamId id) {
-    return WritevData(id, MakeIOVector("not empty"), 0, true, MAY_FEC_PROTECT,
-                      nullptr);
+    struct iovec iov;
+    return WritevData(id, MakeIOVector("not empty", &iov), 0, true,
+                      MAY_FEC_PROTECT, nullptr);
   }
 
   using QuicSession::PostProcessAfterData;

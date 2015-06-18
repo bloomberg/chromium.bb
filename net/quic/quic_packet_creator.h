@@ -79,12 +79,14 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
   bool HasRoomForStreamFrame(QuicStreamId id, QuicStreamOffset offset) const;
 
   // Converts a raw payload to a frame which fits into the currently open
-  // packet if there is one.  Returns the number of bytes consumed from data.
+  // packet.  The payload begins at |iov_offset| into the |iov|.
+  // Returns the number of bytes consumed from data.
   // If data is empty and fin is true, the expected behavior is to consume the
   // fin but return 0.  If any data is consumed, it will be copied into a
   // new buffer that |frame| will point to and will be stored in |buffer|.
   size_t CreateStreamFrame(QuicStreamId id,
-                           IOVector* data,
+                           const QuicIOVector& iov,
+                           size_t iov_offset,
                            QuicStreamOffset offset,
                            bool fin,
                            QuicFrame* frame,
@@ -239,6 +241,14 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
   friend class test::QuicPacketCreatorPeer;
 
   static bool ShouldRetransmit(const QuicFrame& frame);
+
+  // Copies |length| bytes from iov starting at offset |iov_offset| into buffer.
+  // |iov| must be at least iov_offset+length total length and buffer must be
+  // at least |length| long.
+  static void CopyToBuffer(const QuicIOVector& iov,
+                           size_t iov_offset,
+                           size_t length,
+                           char* buffer);
 
   // Updates lengths and also starts an FEC group if FEC protection is on and
   // there is not already an FEC group open.

@@ -13,9 +13,16 @@ namespace net {
 namespace test {
 
 // static
-map<QuicStreamOffset, string>* QuicStreamSequencerPeer::GetBufferedFrames(
+size_t QuicStreamSequencerPeer::GetNumBufferedFrames(
     QuicStreamSequencer* sequencer) {
-  return &(sequencer->buffered_frames_);
+  return sequencer->buffered_frames_.size();
+}
+
+// static
+bool QuicStreamSequencerPeer::FrameOverlapsBufferedData(
+    QuicStreamSequencer* sequencer,
+    const QuicStreamFrame& frame) {
+  return sequencer->FrameOverlapsBufferedData(frame);
 }
 
 // static

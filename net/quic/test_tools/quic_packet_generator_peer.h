@@ -18,9 +18,6 @@ class QuicPacketGeneratorPeer {
  public:
   static QuicPacketCreator* GetPacketCreator(QuicPacketGenerator* generator);
   static QuicTime::Delta GetFecTimeout(QuicPacketGenerator* generator);
-  static FecSendPolicy GetFecSendPolicy(QuicPacketGenerator* generator);
-  static void SetFecSendPolicy(QuicPacketGenerator* generator,
-                               FecSendPolicy fec_send_policy);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicPacketGeneratorPeer);

@@ -45,7 +45,6 @@ QuicPacketGenerator::QuicPacketGenerator(QuicConnectionId connection_id,
       batch_mode_(false),
       fec_timeout_(QuicTime::Delta::Zero()),
       should_fec_protect_(false),
-      // TODO(rtenneti): Add the ability to set a different policy.
       fec_send_policy_(FEC_ANY_TRIGGER),
       should_send_ack_(false),
       should_send_stop_waiting_(false),
@@ -127,7 +126,7 @@ void QuicPacketGenerator::AddControlFrame(const QuicFrame& frame) {
 
 QuicConsumedData QuicPacketGenerator::ConsumeData(
     QuicStreamId id,
-    const IOVector& data_to_write,
+    const QuicIOVector& iov,
     QuicStreamOffset offset,
     bool fin,
     FecProtection fec_protection,
@@ -157,9 +156,7 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(
     notifier = new QuicAckNotifier(delegate);
   }
 
-  IOVector data = data_to_write;
-  size_t data_size = data.TotalBufferSize();
-  if (!fin && (data_size == 0)) {
+  if (!fin && (iov.total_length == 0)) {
     LOG(DFATAL) << "Attempt to consume empty data without FIN.";
     return QuicConsumedData(0, false);
   }
@@ -170,7 +167,8 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(
     QuicFrame frame;
     scoped_ptr<char[]> buffer;
     size_t bytes_consumed = packet_creator_.CreateStreamFrame(
-        id, &data, offset + total_bytes_consumed, fin, &frame, &buffer);
+        id, iov, total_bytes_consumed, offset + total_bytes_consumed, fin,
+        &frame, &buffer);
     ++frames_created;
 
     // We want to track which packet this stream frame ends up in.
@@ -190,10 +188,10 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(
     ignore_result(buffer.release());
 
     total_bytes_consumed += bytes_consumed;
-    fin_consumed = fin && total_bytes_consumed == data_size;
-    DCHECK(data.Empty() || packet_creator_.BytesFree() == 0u);
+    fin_consumed = fin && total_bytes_consumed == iov.total_length;
+    DCHECK(total_bytes_consumed == iov.total_length ||
+           packet_creator_.BytesFree() == 0u);
 
-    // TODO(ianswett): Restore packet reordering.
     if (!InBatchMode() || !packet_creator_.HasRoomForStreamFrame(id, offset)) {
       // TODO(rtenneti): remove MaybeSendFecPacketAndCloseGroup() from inside
       // SerializeAndSendPacket() and make it an explicit call here (and
@@ -201,7 +199,7 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(
       SerializeAndSendPacket();
     }
 
-    if (data.Empty()) {
+    if (total_bytes_consumed == iov.total_length) {
       // We're done writing the data. Exit the loop.
       // We don't make this a precondition because we could have 0 bytes of data
       // if we're simply writing a fin.

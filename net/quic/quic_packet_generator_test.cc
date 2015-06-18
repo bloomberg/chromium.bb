@@ -113,7 +113,7 @@ class QuicPacketGeneratorTest : public ::testing::TestWithParam<FecSendPolicy> {
                 Perspective::IS_CLIENT),
         generator_(42, &framer_, &random_, &delegate_),
         creator_(QuicPacketGeneratorPeer::GetPacketCreator(&generator_)) {
-    QuicPacketGeneratorPeer::SetFecSendPolicy(&generator_, GetParam());
+    generator_.set_fec_send_policy(GetParam());
   }
 
   ~QuicPacketGeneratorTest() override {
@@ -203,12 +203,16 @@ class QuicPacketGeneratorTest : public ::testing::TestWithParam<FecSendPolicy> {
     EXPECT_EQ(fec_group, simple_framer_.fec_data().fec_group);
   }
 
-  IOVector CreateData(size_t len) {
+  QuicIOVector CreateData(size_t len) {
     data_array_.reset(new char[len]);
     memset(data_array_.get(), '?', len);
-    IOVector data;
-    data.Append(data_array_.get(), len);
-    return data;
+    iov_.iov_base = data_array_.get();
+    iov_.iov_len = len;
+    return QuicIOVector(&iov_, 1, len);
+  }
+
+  QuicIOVector MakeIOVector(StringPiece s) {
+    return ::net::MakeIOVector(s, &iov_);
   }
 
   QuicFramer framer_;
@@ -221,6 +225,7 @@ class QuicPacketGeneratorTest : public ::testing::TestWithParam<FecSendPolicy> {
 
  private:
   scoped_ptr<char[]> data_array_;
+  struct iovec iov_;
 };
 
 class MockDebugDelegate : public QuicPacketGenerator::DebugDelegate {
@@ -459,8 +464,7 @@ TEST_P(QuicPacketGeneratorTest, ConsumeDataFecOnMaxGroupSize) {
         .WillOnce(Invoke(this, &QuicPacketGeneratorTest::SavePacket));
     EXPECT_CALL(delegate_, OnSerializedPacket(_))
         .WillOnce(Invoke(this, &QuicPacketGeneratorTest::SavePacket));
-    if (QuicPacketGeneratorPeer::GetFecSendPolicy(&generator_) ==
-        FEC_ALARM_TRIGGER) {
+    if (generator_.fec_send_policy() == FEC_ALARM_TRIGGER) {
       // FEC packet is not sent when send policy is FEC_ALARM_TRIGGER, but FEC
       // group is closed.
       EXPECT_CALL(delegate_, OnResetFecGroup()).Times(1);
@@ -483,8 +487,7 @@ TEST_P(QuicPacketGeneratorTest, ConsumeDataFecOnMaxGroupSize) {
 
   CheckPacketHasSingleStreamFrame(0);
   CheckPacketHasSingleStreamFrame(1);
-  if (QuicPacketGeneratorPeer::GetFecSendPolicy(&generator_) ==
-      FEC_ALARM_TRIGGER) {
+  if (generator_.fec_send_policy() == FEC_ALARM_TRIGGER) {
     // FEC packet is not sent when send policy is FEC_ALARM_TRIGGER.
     CheckPacketHasSingleStreamFrame(2);
   } else {
@@ -505,8 +508,7 @@ TEST_P(QuicPacketGeneratorTest, ConsumeDataFecOnMaxGroupSize) {
     InSequence dummy;
     EXPECT_CALL(delegate_, OnSerializedPacket(_))
         .WillOnce(Invoke(this, &QuicPacketGeneratorTest::SavePacket));
-    if (QuicPacketGeneratorPeer::GetFecSendPolicy(&generator_) ==
-        FEC_ALARM_TRIGGER) {
+    if (generator_.fec_send_policy() == FEC_ALARM_TRIGGER) {
       EXPECT_CALL(delegate_, OnResetFecGroup()).Times(1);
     } else {
       EXPECT_CALL(delegate_, OnSerializedPacket(_))
@@ -516,8 +518,7 @@ TEST_P(QuicPacketGeneratorTest, ConsumeDataFecOnMaxGroupSize) {
   consumed = generator_.ConsumeData(5, CreateData(1u), 0, true, MAY_FEC_PROTECT,
                                     nullptr);
   EXPECT_EQ(1u, consumed.bytes_consumed);
-  if (QuicPacketGeneratorPeer::GetFecSendPolicy(&generator_) ==
-      FEC_ALARM_TRIGGER) {
+  if (generator_.fec_send_policy() == FEC_ALARM_TRIGGER) {
     CheckPacketHasSingleStreamFrame(3);
   } else {
     CheckPacketHasSingleStreamFrame(4);
@@ -820,8 +821,7 @@ TEST_P(QuicPacketGeneratorTest, FecGroupSizeChangeWithOpenGroup) {
     InSequence dummy;
     EXPECT_CALL(delegate_, OnSerializedPacket(_))
         .WillOnce(Invoke(this, &QuicPacketGeneratorTest::SavePacket));
-    if (QuicPacketGeneratorPeer::GetFecSendPolicy(&generator_) ==
-        FEC_ALARM_TRIGGER) {
+    if (generator_.fec_send_policy() == FEC_ALARM_TRIGGER) {
       EXPECT_CALL(delegate_, OnResetFecGroup()).Times(1);
     } else {
       EXPECT_CALL(delegate_, OnSerializedPacket(_))
@@ -831,8 +831,7 @@ TEST_P(QuicPacketGeneratorTest, FecGroupSizeChangeWithOpenGroup) {
   consumed = generator_.ConsumeData(7, CreateData(kDefaultMaxPacketSize), 0,
                                     true, MAY_FEC_PROTECT, nullptr);
   EXPECT_EQ(kDefaultMaxPacketSize, consumed.bytes_consumed);
-  if (QuicPacketGeneratorPeer::GetFecSendPolicy(&generator_) ==
-      FEC_ANY_TRIGGER) {
+  if (generator_.fec_send_policy() == FEC_ANY_TRIGGER) {
     // Verify that one FEC packet was sent.
     CheckPacketIsFec(4, /*fec_group=*/1u);
   }
@@ -864,8 +863,7 @@ TEST_P(QuicPacketGeneratorTest, SwitchFecOnOff) {
         .WillOnce(Invoke(this, &QuicPacketGeneratorTest::SavePacket));
     EXPECT_CALL(delegate_, OnSerializedPacket(_))
         .WillOnce(Invoke(this, &QuicPacketGeneratorTest::SavePacket));
-    if (QuicPacketGeneratorPeer::GetFecSendPolicy(&generator_) ==
-        FEC_ALARM_TRIGGER) {
+    if (generator_.fec_send_policy() == FEC_ALARM_TRIGGER) {
       // If FEC send policy is FEC_ALARM_TRIGGER, FEC group is closed.
       EXPECT_CALL(delegate_, OnResetFecGroup()).Times(1);
     } else {
@@ -889,8 +887,7 @@ TEST_P(QuicPacketGeneratorTest, SwitchFecOnOff) {
   // data and FEC group is closed.
   CheckPacketHasSingleStreamFrame(1);
   CheckPacketHasSingleStreamFrame(2);
-  if (QuicPacketGeneratorPeer::GetFecSendPolicy(&generator_) ==
-      FEC_ALARM_TRIGGER) {
+  if (generator_.fec_send_policy() == FEC_ALARM_TRIGGER) {
     CheckPacketHasSingleStreamFrame(3);
   } else {
     CheckPacketIsFec(3, /*fec_group=*/2u);
@@ -901,8 +898,7 @@ TEST_P(QuicPacketGeneratorTest, SwitchFecOnOff) {
   EXPECT_CALL(delegate_, OnSerializedPacket(_))
       .WillOnce(Invoke(this, &QuicPacketGeneratorTest::SavePacket));
   generator_.OnFecTimeout();
-  if (QuicPacketGeneratorPeer::GetFecSendPolicy(&generator_) ==
-      FEC_ALARM_TRIGGER) {
+  if (generator_.fec_send_policy() == FEC_ALARM_TRIGGER) {
     CheckPacketIsFec(4, /*fec_group=*/4u);
   } else {
     CheckPacketIsFec(5, /*fec_group=*/5u);
@@ -917,8 +913,7 @@ TEST_P(QuicPacketGeneratorTest, SwitchFecOnOff) {
   EXPECT_FALSE(generator_.HasQueuedFrames());
   EXPECT_FALSE(creator_->IsFecProtected());
   // Verify that one unprotected data packet was sent.
-  if (QuicPacketGeneratorPeer::GetFecSendPolicy(&generator_) ==
-      FEC_ALARM_TRIGGER) {
+  if (generator_.fec_send_policy() == FEC_ALARM_TRIGGER) {
     CheckPacketContains(contents, 5);
   } else {
     CheckPacketContains(contents, 6);
@@ -1047,8 +1042,7 @@ TEST_P(QuicPacketGeneratorTest, SwitchFecOnOffWithSubsequentPacketsProtected) {
     InSequence dummy;
     EXPECT_CALL(delegate_, OnSerializedPacket(_))
         .WillOnce(Invoke(this, &QuicPacketGeneratorTest::SavePacket));
-    if (QuicPacketGeneratorPeer::GetFecSendPolicy(&generator_) ==
-        FEC_ALARM_TRIGGER) {
+    if (generator_.fec_send_policy() == FEC_ALARM_TRIGGER) {
       EXPECT_CALL(delegate_, OnResetFecGroup()).Times(1);
     } else {
       EXPECT_CALL(delegate_, OnSerializedPacket(_))
@@ -1060,8 +1054,7 @@ TEST_P(QuicPacketGeneratorTest, SwitchFecOnOffWithSubsequentPacketsProtected) {
   EXPECT_EQ(1u, consumed.bytes_consumed);
   contents.num_stream_frames = 1u;
   CheckPacketContains(contents, 1);
-  if (QuicPacketGeneratorPeer::GetFecSendPolicy(&generator_) ==
-      FEC_ANY_TRIGGER) {
+  if (generator_.fec_send_policy() == FEC_ANY_TRIGGER) {
     // FEC packet is sent when send policy is FEC_ANY_TRIGGER.
     CheckPacketIsFec(2, /*fec_group=*/1u);
   }
@@ -1104,8 +1097,7 @@ TEST_P(QuicPacketGeneratorTest, SwitchFecOnOffThenOnWithCreatorProtectionOn) {
     InSequence dummy;
     EXPECT_CALL(delegate_, OnSerializedPacket(_))
         .WillOnce(Invoke(this, &QuicPacketGeneratorTest::SavePacket));
-    if (QuicPacketGeneratorPeer::GetFecSendPolicy(&generator_) ==
-        FEC_ALARM_TRIGGER) {
+    if (generator_.fec_send_policy() == FEC_ALARM_TRIGGER) {
       EXPECT_CALL(delegate_, OnResetFecGroup()).Times(1);
     } else {
       EXPECT_CALL(delegate_, OnSerializedPacket(_))
@@ -1116,8 +1108,7 @@ TEST_P(QuicPacketGeneratorTest, SwitchFecOnOffThenOnWithCreatorProtectionOn) {
                                     MUST_FEC_PROTECT, nullptr);
   EXPECT_EQ(data_len, consumed.bytes_consumed);
   CheckPacketContains(contents, 1);
-  if (QuicPacketGeneratorPeer::GetFecSendPolicy(&generator_) ==
-      FEC_ANY_TRIGGER) {
+  if (generator_.fec_send_policy() == FEC_ANY_TRIGGER) {
     // FEC packet is sent when send policy is FEC_ANY_TRIGGER.
     CheckPacketIsFec(2, /*fec_group=*/1u);
   }
@@ -1142,8 +1133,7 @@ TEST_P(QuicPacketGeneratorTest, ResetFecGroupNoTimeout) {
         .WillOnce(Invoke(this, &QuicPacketGeneratorTest::SavePacket));
     EXPECT_CALL(delegate_, OnSerializedPacket(_))
         .WillOnce(Invoke(this, &QuicPacketGeneratorTest::SavePacket));
-    if (QuicPacketGeneratorPeer::GetFecSendPolicy(&generator_) ==
-        FEC_ALARM_TRIGGER) {
+    if (generator_.fec_send_policy() == FEC_ALARM_TRIGGER) {
       // FEC packet is not sent when send policy is FEC_ALARM_TRIGGER, but FEC
       // group is closed.
       EXPECT_CALL(delegate_, OnResetFecGroup()).Times(1);
@@ -1163,8 +1153,7 @@ TEST_P(QuicPacketGeneratorTest, ResetFecGroupNoTimeout) {
   EXPECT_FALSE(generator_.HasQueuedFrames());
   CheckPacketHasSingleStreamFrame(0);
   CheckPacketHasSingleStreamFrame(1);
-  if (QuicPacketGeneratorPeer::GetFecSendPolicy(&generator_) ==
-      FEC_ALARM_TRIGGER) {
+  if (generator_.fec_send_policy() == FEC_ALARM_TRIGGER) {
     // FEC packet is not sent when send policy is FEC_ALARM_TRIGGER.
     CheckPacketHasSingleStreamFrame(2);
   } else {
@@ -1183,8 +1172,7 @@ TEST_P(QuicPacketGeneratorTest, ResetFecGroupNoTimeout) {
     // FEC packet is sent after 2 packets and when send policy is
     // FEC_ANY_TRIGGER. When policy is FEC_ALARM_TRIGGER, FEC group is closed
     // and FEC packet is not sent.
-    if (QuicPacketGeneratorPeer::GetFecSendPolicy(&generator_) ==
-        FEC_ALARM_TRIGGER) {
+    if (generator_.fec_send_policy() == FEC_ALARM_TRIGGER) {
       EXPECT_CALL(delegate_, OnResetFecGroup()).Times(1);
     } else {
       EXPECT_CALL(delegate_, OnSerializedPacket(_))
@@ -1197,8 +1185,7 @@ TEST_P(QuicPacketGeneratorTest, ResetFecGroupNoTimeout) {
     // FEC packet is sent after 2 packets and when send policy is
     // FEC_ANY_TRIGGER. When policy is FEC_ALARM_TRIGGER, FEC group is closed
     // and FEC packet is not sent.
-    if (QuicPacketGeneratorPeer::GetFecSendPolicy(&generator_) ==
-        FEC_ALARM_TRIGGER) {
+    if (generator_.fec_send_policy() == FEC_ALARM_TRIGGER) {
       EXPECT_CALL(delegate_, OnResetFecGroup()).Times(1);
     } else {
       EXPECT_CALL(delegate_, OnSerializedPacket(_))
@@ -1210,8 +1197,7 @@ TEST_P(QuicPacketGeneratorTest, ResetFecGroupNoTimeout) {
   EXPECT_EQ(data_len, consumed.bytes_consumed);
   EXPECT_TRUE(consumed.fin_consumed);
   EXPECT_FALSE(generator_.HasQueuedFrames());
-  if (QuicPacketGeneratorPeer::GetFecSendPolicy(&generator_) ==
-      FEC_ALARM_TRIGGER) {
+  if (generator_.fec_send_policy() == FEC_ALARM_TRIGGER) {
     CheckPacketHasSingleStreamFrame(3);
     CheckPacketHasSingleStreamFrame(4);
     CheckPacketHasSingleStreamFrame(5);

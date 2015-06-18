@@ -21,9 +21,9 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/net_errors.h"
+#include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
-#include "net/quic/iovector.h"
 #include "net/quic/proto/cached_network_parameters.pb.h"
 #include "net/quic/quic_bandwidth.h"
 #include "net/quic/quic_config.h"
@@ -64,7 +64,7 @@ const size_t kMaxFecGroups = 2;
 const QuicPacketCount kMaxPacketsReceivedBeforeAckSend = 20;
 
 // Maximum number of tracked packets.
-const QuicPacketCount kMaxTrackedPackets = 15 * kMaxTcpCongestionWindow;
+const QuicPacketCount kMaxTrackedPackets = 5000;
 
 bool Near(QuicPacketSequenceNumber a, QuicPacketSequenceNumber b) {
   QuicPacketSequenceNumber delta = (a > b) ? a - b : b - a;
@@ -314,6 +314,16 @@ void QuicConnection::SetFromConfig(const QuicConfig& config) {
         config.ReceivedBytesForConnectionId());
   }
   max_undecryptable_packets_ = config.max_undecryptable_packets();
+
+  if (FLAGS_quic_send_fec_packet_only_on_fec_alarm &&
+      ((perspective_ == Perspective::IS_SERVER &&
+        config.HasReceivedConnectionOptions() &&
+        ContainsQuicTag(config.ReceivedConnectionOptions(), kFSPA)) ||
+       (perspective_ == Perspective::IS_CLIENT &&
+        config.HasSendConnectionOptions() &&
+        ContainsQuicTag(config.SendConnectionOptions(), kFSPA)))) {
+    packet_generator_.set_fec_send_policy(FecSendPolicy::FEC_ALARM_TRIGGER);
+  }
 }
 
 void QuicConnection::OnSendConnectionState(
@@ -1127,12 +1137,12 @@ void QuicConnection::SendVersionNegotiationPacket() {
 
 QuicConsumedData QuicConnection::SendStreamData(
     QuicStreamId id,
-    const IOVector& data,
+    const QuicIOVector& iov,
     QuicStreamOffset offset,
     bool fin,
     FecProtection fec_protection,
     QuicAckNotifier::DelegateInterface* delegate) {
-  if (!fin && data.Empty()) {
+  if (!fin && iov.total_length == 0) {
     LOG(DFATAL) << "Attempt to send empty stream frame";
     return QuicConsumedData(0, false);
   }
@@ -1151,7 +1161,7 @@ QuicConsumedData QuicConnection::SendStreamData(
   // also if there is possibility of revival. Only bundle an ack if there's no
   // processing left that may cause received_info_ to change.
   ScopedPacketBundler ack_bundler(this, BUNDLE_PENDING_ACK);
-  return packet_generator_.ConsumeData(id, data, offset, fin, fec_protection,
+  return packet_generator_.ConsumeData(id, iov, offset, fin, fec_protection,
                                        delegate);
 }
 

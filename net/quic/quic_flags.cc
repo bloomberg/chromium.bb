@@ -51,3 +51,6 @@ bool FLAGS_quic_stop_early_2 = true;
 
 // Don't ack acks in QUIC, even when there is a recent missing packet.
 bool FLAGS_quic_dont_ack_acks = true;
+
+// Enables sending of FEC packet only when FEC alarm goes off.
+bool FLAGS_quic_send_fec_packet_only_on_fec_alarm = true;

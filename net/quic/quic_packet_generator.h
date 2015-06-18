@@ -122,7 +122,7 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
   // |delegate| (if not nullptr) will be informed once all packets sent as a
   // result of this call are ACKed by the peer.
   QuicConsumedData ConsumeData(QuicStreamId id,
-                               const IOVector& data,
+                               const QuicIOVector& iov,
                                QuicStreamOffset offset,
                                bool fin,
                                FecProtection fec_protection,
@@ -205,6 +205,11 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
 
   void set_debug_delegate(DebugDelegate* debug_delegate) {
     debug_delegate_ = debug_delegate;
+  }
+
+  FecSendPolicy fec_send_policy() { return fec_send_policy_; }
+  void set_fec_send_policy(FecSendPolicy fec_send_policy) {
+    fec_send_policy_ = fec_send_policy;
   }
 
  private:

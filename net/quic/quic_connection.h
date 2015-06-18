@@ -29,7 +29,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "net/base/ip_endpoint.h"
-#include "net/quic/iovector.h"
 #include "net/quic/quic_ack_notifier.h"
 #include "net/quic/quic_ack_notifier_manager.h"
 #include "net/quic/quic_alarm.h"
@@ -289,7 +288,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   // received for all the packets written in this call.
   // The |delegate| is not owned by the QuicConnection and must outlive it.
   QuicConsumedData SendStreamData(QuicStreamId id,
-                                  const IOVector& data,
+                                  const QuicIOVector& iov,
                                   QuicStreamOffset offset,
                                   bool fin,
                                   FecProtection fec_protection,

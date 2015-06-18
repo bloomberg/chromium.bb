@@ -21,5 +21,6 @@ NET_EXPORT_PRIVATE extern bool FLAGS_enable_quic_stateless_reject_support;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_auto_tune_receive_window;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_stop_early_2;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_dont_ack_acks;
+NET_EXPORT_PRIVATE extern bool FLAGS_quic_send_fec_packet_only_on_fec_alarm;
 
 #endif  // NET_QUIC_QUIC_FLAGS_H_

@@ -194,7 +194,7 @@ InFecGroup QuicPacketCreator::MaybeUpdateLengthsAndStartFec() {
   }
   if (!queued_frames_.empty()) {
     // Don't change creator state if there are frames queued.
-    return fec_group_.get() == nullptr ? NOT_IN_FEC_GROUP : IN_FEC_GROUP;
+    return NOT_IN_FEC_GROUP;
   }
 
   // Update sequence number length only on packet and FEC group boundaries.
@@ -261,7 +261,8 @@ size_t QuicPacketCreator::StreamFramePacketOverhead(
 }
 
 size_t QuicPacketCreator::CreateStreamFrame(QuicStreamId id,
-                                            IOVector* data,
+                                            const QuicIOVector& iov,
+                                            size_t iov_offset,
                                             QuicStreamOffset offset,
                                             bool fin,
                                             QuicFrame* frame,
@@ -278,7 +279,7 @@ size_t QuicPacketCreator::CreateStreamFrame(QuicStreamId id,
       << " MinStreamFrameSize: "
       << QuicFramer::GetMinStreamFrameSize(id, offset, true, is_in_fec_group);
 
-  if (data->Empty()) {
+  if (iov_offset == iov.total_length) {
     LOG_IF(DFATAL, !fin)
         << "Creating a stream frame with no data or fin.";
     // Create a new packet for the fin, if necessary.
@@ -286,19 +287,39 @@ size_t QuicPacketCreator::CreateStreamFrame(QuicStreamId id,
     return 0;
   }
 
-  const size_t data_size = data->TotalBufferSize();
+  const size_t data_size = iov.total_length - iov_offset;
   size_t min_frame_size = QuicFramer::GetMinStreamFrameSize(
       id, offset, /* last_frame_in_packet= */ true, is_in_fec_group);
   size_t bytes_consumed = min<size_t>(BytesFree() - min_frame_size, data_size);
 
   bool set_fin = fin && bytes_consumed == data_size;  // Last frame.
   buffer->reset(new char[bytes_consumed]);
-  size_t bytes_copied = data->ConsumeAndCopy(bytes_consumed, buffer->get());
-  LOG_IF(DFATAL, bytes_copied < bytes_consumed)
-      << "Fewer bytes copied than in IOVector.";
+  CopyToBuffer(iov, iov_offset, bytes_consumed, buffer->get());
   *frame = QuicFrame(new QuicStreamFrame(
       id, set_fin, offset, StringPiece(buffer->get(), bytes_consumed)));
   return bytes_consumed;
+}
+
+// static
+void QuicPacketCreator::CopyToBuffer(const QuicIOVector& iov,
+                                     size_t iov_offset,
+                                     size_t length,
+                                     char* buffer) {
+  int iovnum = 0;
+  while (iovnum < iov.iov_count && iov_offset >= iov.iov[iovnum].iov_len) {
+    iov_offset -= iov.iov[iovnum].iov_len;
+    ++iovnum;
+  }
+  while (iovnum < iov.iov_count && length > 0) {
+    const size_t copy_len = min(length, iov.iov[iovnum].iov_len - iov_offset);
+    memcpy(buffer, static_cast<char*>(iov.iov[iovnum].iov_base) + iov_offset,
+           copy_len);
+    iov_offset = 0;
+    length -= copy_len;
+    buffer += copy_len;
+    ++iovnum;
+  }
+  LOG_IF(DFATAL, length > 0) << "Failed to copy entire length to buffer.";
 }
 
 SerializedPacket QuicPacketCreator::ReserializeAllFrames(

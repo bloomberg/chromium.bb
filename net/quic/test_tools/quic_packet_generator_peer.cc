@@ -22,17 +22,5 @@ QuicTime::Delta QuicPacketGeneratorPeer::GetFecTimeout(
   return generator->fec_timeout_;
 }
 
-// static
-FecSendPolicy QuicPacketGeneratorPeer::GetFecSendPolicy(
-    QuicPacketGenerator* generator) {
-  return generator->fec_send_policy_;
-}
-
-// static
-void QuicPacketGeneratorPeer::SetFecSendPolicy(QuicPacketGenerator* generator,
-                                               FecSendPolicy fec_send_policy) {
-  generator->fec_send_policy_ = fec_send_policy;
-}
-
 }  // namespace test
 }  // namespace net

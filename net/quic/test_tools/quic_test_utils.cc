@@ -686,9 +686,9 @@ size_t GetPacketLengthForOneStream(
       QuicPacketCreator::StreamFramePacketOverhead(
           PACKET_8BYTE_CONNECTION_ID, include_version,
           sequence_number_length, 0u, is_in_fec_group);
-  const size_t ack_length = NullEncrypter().GetCiphertextSize(
-      QuicFramer::GetMinAckFrameSize(
-          sequence_number_length, PACKET_1BYTE_SEQUENCE_NUMBER)) +
+  const size_t ack_length =
+      NullEncrypter().GetCiphertextSize(
+          QuicFramer::GetMinAckFrameSize(PACKET_1BYTE_SEQUENCE_NUMBER)) +
       GetPacketHeaderSize(connection_id_length, include_version,
                           sequence_number_length, is_in_fec_group);
   if (stream_length < ack_length) {
