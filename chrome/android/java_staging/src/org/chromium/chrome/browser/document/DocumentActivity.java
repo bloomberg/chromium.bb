@@ -787,7 +787,7 @@ public class DocumentActivity extends CompositorChromeActivity {
         ChromeLauncherActivity.launchDocumentInstance(this, false,
                 ChromeLauncherActivity.LAUNCH_MODE_FOREGROUND, url,
                 DocumentMetricIds.STARTED_BY_CONTEXTUAL_SEARCH,
-                PageTransition.LINK, false, documentData);
+                PageTransition.LINK, documentData);
         return false;
     }
 
@@ -972,7 +972,6 @@ public class DocumentActivity extends CompositorChromeActivity {
         if (incognito && !PrefServiceBridge.getInstance().isIncognitoModeEnabled()) return;
         ChromeLauncherActivity.launchDocumentInstance(this, incognito,
                 ChromeLauncherActivity.LAUNCH_MODE_RETARGET, UrlConstants.NTP_URL,
-                DocumentMetricIds.STARTED_BY_OPTIONS_MENU, PageTransition.AUTO_TOPLEVEL, false,
-                null);
+                DocumentMetricIds.STARTED_BY_OPTIONS_MENU, PageTransition.AUTO_TOPLEVEL, null);
     }
 }

@@ -190,7 +190,7 @@ public class DocumentTab extends ChromeTab {
                     getWindowAndroid().getActivity().get(), isIncognito(),
                     ChromeLauncherActivity.LAUNCH_MODE_AFFILIATED, url,
                     DocumentMetricIds.STARTED_BY_CONTEXT_MENU,
-                    PageTransition.AUTO_TOPLEVEL, false, params);
+                    PageTransition.AUTO_TOPLEVEL, params);
         }
 
         @Override
@@ -199,7 +199,7 @@ public class DocumentTab extends ChromeTab {
                     getWindowAndroid().getActivity().get(), true,
                     ChromeLauncherActivity.LAUNCH_MODE_FOREGROUND,
                     url, DocumentMetricIds.STARTED_BY_CONTEXT_MENU,
-                    PageTransition.AUTO_TOPLEVEL, false, null);
+                    PageTransition.AUTO_TOPLEVEL, null);
         }
 
         @Override

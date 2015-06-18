@@ -46,7 +46,7 @@ public class ChromeServiceTabLauncher extends ServiceTabLauncher {
 
             ChromeLauncherActivity.launchDocumentInstance(null /* activity */, incognito,
                     ChromeLauncherActivity.LAUNCH_MODE_FOREGROUND, url, intentSource,
-                    PageTransition.LINK, false /* useDesktopUserAgent */, data);
+                    PageTransition.LINK, data);
             return;
         }
 

@@ -83,7 +83,7 @@ public class TabDelegateImpl implements TabDelegate {
                 ? PageTransition.RELOAD : PageTransition.AUTO_TOPLEVEL;
         ChromeLauncherActivity.launchDocumentInstance(activity, mIsIncognito,
                 ChromeLauncherActivity.LAUNCH_MODE_FOREGROUND, url, startedBy, pageTransition,
-                false, data);
+                data);
 
         return null;
     }
@@ -118,7 +118,7 @@ public class TabDelegateImpl implements TabDelegate {
         ChromeLauncherActivity.launchDocumentInstance(
                 parentActivity, mIsIncognito, launchMode, loadUrlParams.getUrl(),
                 DocumentMetricIds.STARTED_BY_CHROME_HOME_RECENT_TABS,
-                PageTransition.RELOAD, false, params);
+                PageTransition.RELOAD, params);
         return null;
     }
 

@@ -149,7 +149,7 @@ public class DocumentModeTestBase extends MultiActivityTestBase {
             public void run() {
                 ChromeLauncherActivity.launchDocumentInstance(null, incognito,
                         ChromeLauncherActivity.LAUNCH_MODE_FOREGROUND, url,
-                        DocumentMetricIds.STARTED_BY_UNKNOWN, PageTransition.LINK, false, null);
+                        DocumentMetricIds.STARTED_BY_UNKNOWN, PageTransition.LINK, null);
             }
         };
         return launchUrlViaRunnable(incognito, runnable, expectedTitle);

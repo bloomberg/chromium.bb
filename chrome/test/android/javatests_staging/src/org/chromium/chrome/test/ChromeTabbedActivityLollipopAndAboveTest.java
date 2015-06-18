@@ -56,7 +56,7 @@ public class ChromeTabbedActivityLollipopAndAboveTest extends ChromeTabbedActivi
                     public void run() {
                         ChromeLauncherActivity.launchDocumentInstance(null, false,
                                 ChromeLauncherActivity.LAUNCH_MODE_FOREGROUND, "about:blank",
-                                DocumentMetricIds.STARTED_BY_UNKNOWN, 0, false, null);
+                                DocumentMetricIds.STARTED_BY_UNKNOWN, 0, null);
                     }
                 });
             }

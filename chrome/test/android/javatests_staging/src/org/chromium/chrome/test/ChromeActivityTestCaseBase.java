@@ -438,8 +438,7 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
                             ChromeLauncherActivity.launchDocumentInstance(getActivity(), incognito,
                                     ChromeLauncherActivity.LAUNCH_MODE_FOREGROUND, url,
                                     DocumentMetricIds.STARTED_BY_UNKNOWN,
-                                    PageTransition.AUTO_TOPLEVEL,
-                                    false, null);
+                                    PageTransition.AUTO_TOPLEVEL, null);
                         }
                     });
                 }
