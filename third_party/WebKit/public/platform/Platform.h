@@ -572,6 +572,12 @@ public:
     // Returns a newly allocated WebProcessMemoryDump instance.
     virtual blink::WebProcessMemoryDump* createProcessMemoryDump() { return nullptr; }
 
+    typedef uint64_t WebMemoryAllocatorDumpGuid;
+
+    // Returns guid corresponding to the given string (the hash value) for
+    // creating a WebMemoryAllocatorDump.
+    virtual WebMemoryAllocatorDumpGuid createWebMemoryAllocatorDumpGuid(const WebString& guidStr) { return 0; }
+
     // GPU ----------------------------------------------------------------
     //
     // May return null if GPU is not supported.

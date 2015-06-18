@@ -9,6 +9,7 @@
 #include "WebString.h"
 
 namespace blink {
+typedef uint64_t WebMemoryAllocatorDumpGuid;
 
 // A container which holds all the attributes of a particular dump for a given
 // allocator.
@@ -27,6 +28,18 @@ public:
     virtual void AddScalar(const char* name, const char* units, uint64_t value) { }
     virtual void AddScalarF(const char* name, const char* units, double value) { }
     virtual void AddString(const char* name, const char* units, const WebString& value) { }
+
+    // |guid| is an optional global dump identifier, unique across all processes
+    // within the scope of a global dump. It is only required when using the
+    // graph APIs (see AddOwnershipEdge) to express retention / suballocation or
+    // cross process sharing. See crbug.com/492102 for design docs.
+    // Subsequent MemoryAllocatorDump(s) with the same |absolute_name| are
+    // expected to have the same guid.
+    virtual WebMemoryAllocatorDumpGuid guid() const
+    {
+        BLINK_ASSERT_NOT_REACHED();
+        return 0;
+    }
 };
 
 } // namespace blink

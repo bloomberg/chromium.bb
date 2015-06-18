@@ -6,11 +6,10 @@
 #define WebProcessMemoryDump_h
 
 #include "WebCommon.h"
+#include "WebMemoryAllocatorDump.h"
 #include "WebString.h"
 
 namespace blink {
-
-class WebMemoryAllocatorDump;
 
 // A container which holds all the dumps for the various allocators for a given
 // process. Embedders of WebMemoryDumpProvider are expected to populate a
@@ -24,14 +23,25 @@ public:
     // dump within the scope of a ProcessMemoryDump. It is possible to express
     // nesting by means of a slash-separated path naming (e.g.,
     // "allocator_name/arena_1/subheap_X").
+    // |guid| is  an optional identifier, unique among all processes within the
+    // scope of a global dump. This is only relevant when using
+    // AddOwnershipEdge(). If omitted, it will be automatically generated.
+    virtual WebMemoryAllocatorDump* createMemoryAllocatorDump(const WebString& absoluteName, WebMemoryAllocatorDumpGuid guid)
+    {
+        BLINK_ASSERT_NOT_REACHED();
+        return nullptr;
+    }
+
     virtual WebMemoryAllocatorDump* createMemoryAllocatorDump(const WebString& absoluteName)
     {
+        BLINK_ASSERT_NOT_REACHED();
         return nullptr;
     }
 
     // Gets a previously created MemoryAllocatorDump given its name.
     virtual WebMemoryAllocatorDump* getMemoryAllocatorDump(const WebString& absoluteName) const
     {
+        BLINK_ASSERT_NOT_REACHED();
         return nullptr;
     }
 
@@ -48,6 +58,22 @@ public:
     // |other| will be an empty WebProcessMemoryDump after this method returns
     // and can be reused as if it was new.
     virtual void takeAllDumpsFrom(WebProcessMemoryDump* other)
+    {
+        BLINK_ASSERT_NOT_REACHED();
+    }
+
+    // Adds an ownership relationship between two MemoryAllocatorDump(s) with
+    // the semantics: |source| owns |target|, and has the effect of attributing
+    // the memory usage of |target| to |source|. |importance| is optional and
+    // relevant only for the cases of co-ownership, where it acts as a z-index:
+    // the owner with the highest importance will be attributed |target|'s
+    // memory.
+    virtual void AddOwnershipEdge(WebMemoryAllocatorDumpGuid source, WebMemoryAllocatorDumpGuid target, int importance)
+    {
+        BLINK_ASSERT_NOT_REACHED();
+    }
+
+    virtual void AddOwnershipEdge(WebMemoryAllocatorDumpGuid source, WebMemoryAllocatorDumpGuid target)
     {
         BLINK_ASSERT_NOT_REACHED();
     }
