@@ -34,7 +34,7 @@ else
 wayland_scanner = wayland-scanner
 endif
 
-libwayland_util_la_CFLAGS = $(GCC_CFLAGS)
+libwayland_util_la_CFLAGS = $(AM_CFLAGS)
 libwayland_util_la_SOURCES =			\
 	src/wayland-util.c			\
 	src/wayland-util.h
@@ -65,7 +65,7 @@ nodist_include_HEADERS =			\
 	protocol/wayland-server-protocol.h	\
 	protocol/wayland-client-protocol.h
 
-libwayland_server_la_CFLAGS = $(FFI_CFLAGS) $(GCC_CFLAGS) -pthread
+libwayland_server_la_CFLAGS = $(FFI_CFLAGS) $(AM_CFLAGS) -pthread
 libwayland_server_la_LIBADD = $(FFI_LIBS) libwayland-util.la -lrt -lm
 libwayland_server_la_LDFLAGS = -version-info 1:0:1
 libwayland_server_la_SOURCES =			\
@@ -77,7 +77,7 @@ nodist_libwayland_server_la_SOURCES =		\
 	protocol/wayland-server-protocol.h	\
 	protocol/wayland-protocol.c
 
-libwayland_client_la_CFLAGS = $(FFI_CFLAGS) $(GCC_CFLAGS) -pthread
+libwayland_client_la_CFLAGS = $(FFI_CFLAGS) $(AM_CFLAGS) -pthread
 libwayland_client_la_LIBADD = $(FFI_LIBS) libwayland-util.la -lrt -lm
 libwayland_client_la_LDFLAGS = -version-info 3:0:3
 libwayland_client_la_SOURCES =			\
@@ -131,7 +131,7 @@ libwayland_cursor_la_LIBADD = libwayland-client.la
 pkgconfig_DATA += cursor/wayland-cursor.pc
 
 libwayland_cursor_la_CFLAGS =			\
-	$(GCC_CFLAGS)				\
+	$(AM_CFLAGS)				\
 	-I$(top_builddir)/src			\
 	-I$(top_srcdir)/src			\
 	-DICONDIR=\"$(ICONDIR)\"
