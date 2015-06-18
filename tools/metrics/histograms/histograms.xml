@@ -16046,6 +16046,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.VAJDA.DecoderFailure" enum="VAJDADecoderFailure">
+  <owner>kcwu@chromium.org</owner>
+  <summary>
+    Error codes reported by jpeg decode using VA-API hardware jpeg decoder.
+  </summary>
+</histogram>
+
 <histogram name="Media.VAVDA.DecoderFailure" enum="VAVDADecoderFailure">
   <owner>posciak@chromium.org</owner>
   <summary>
@@ -67939,6 +67946,10 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="OPENED_RETRY">Opened after one or more retries</int>
   <int value="2" label="FAILED_IN_USE">Failed because file in use</int>
   <int value="3" label="FAILED_OTHER">Failed for other reason</int>
+</enum>
+
+<enum name="VAJDADecoderFailure" type="int">
+  <int value="0" label="VAAPI_ERROR"/>
 </enum>
 
 <enum name="ValidateMenuItemSelectorType" type="int">

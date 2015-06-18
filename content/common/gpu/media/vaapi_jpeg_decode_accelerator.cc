@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "content/common/gpu/gpu_channel.h"
@@ -17,8 +18,15 @@
 namespace content {
 
 namespace {
-static void ReportVaapiError() {
-  // TODO(kcwu) report error to UMA
+// UMA errors that the VaapiJpegDecodeAccelerator class reports.
+enum VAJDADecoderFailure {
+  VAAPI_ERROR = 0,
+  VAJDA_DECODER_FAILURES_MAX,
+};
+
+static void ReportToUMA(VAJDADecoderFailure failure) {
+  UMA_HISTOGRAM_ENUMERATION("Media.VAJDA.DecoderFailure", failure,
+                            VAJDA_DECODER_FAILURES_MAX);
 }
 }  // namespace
 
@@ -81,7 +89,7 @@ bool VaapiJpegDecodeAccelerator::Initialize(Client* client) {
 
   vaapi_wrapper_ =
       VaapiWrapper::Create(VaapiWrapper::kDecode, VAProfileJPEGBaseline,
-                           base::Bind(&ReportVaapiError));
+                           base::Bind(&ReportToUMA, VAAPI_ERROR));
 
   if (!vaapi_wrapper_.get()) {
     DLOG(ERROR) << "Failed initializing VAAPI";
