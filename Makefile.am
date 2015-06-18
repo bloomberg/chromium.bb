@@ -43,10 +43,11 @@ libwayland_util_la_SOURCES =			\
 noinst_LTLIBRARIES = libwayland-util.la
 
 if ENABLE_LIBRARIES
+noinst_LTLIBRARIES += libwayland-private.la
 lib_LTLIBRARIES = libwayland-server.la libwayland-client.la
 
-libwayland_util_la_CFLAGS += $(FFI_CFLAGS)
-libwayland_util_la_SOURCES +=			\
+libwayland_private_la_CFLAGS = $(FFI_CFLAGS) $(AM_CFLAGS)
+libwayland_private_la_SOURCES =			\
 	src/connection.c			\
 	src/wayland-os.c			\
 	src/wayland-os.h			\
@@ -67,7 +68,7 @@ nodist_include_HEADERS =			\
 	protocol/wayland-client-protocol.h
 
 libwayland_server_la_CFLAGS = $(FFI_CFLAGS) $(AM_CFLAGS) -pthread
-libwayland_server_la_LIBADD = $(FFI_LIBS) libwayland-util.la -lrt -lm
+libwayland_server_la_LIBADD = $(FFI_LIBS) libwayland-private.la libwayland-util.la -lrt -lm
 libwayland_server_la_LDFLAGS = -version-info 1:0:1
 libwayland_server_la_SOURCES =			\
 	src/wayland-server.c			\
@@ -79,7 +80,7 @@ nodist_libwayland_server_la_SOURCES =		\
 	protocol/wayland-protocol.c
 
 libwayland_client_la_CFLAGS = $(FFI_CFLAGS) $(AM_CFLAGS) -pthread
-libwayland_client_la_LIBADD = $(FFI_LIBS) libwayland-util.la -lrt -lm
+libwayland_client_la_LIBADD = $(FFI_LIBS) libwayland-private.la libwayland-util.la -lrt -lm
 libwayland_client_la_LDFLAGS = -version-info 3:0:3
 libwayland_client_la_SOURCES =			\
 	src/wayland-client.c
@@ -176,6 +177,7 @@ libtest_runner_la_SOURCES =			\
 	tests/test-compositor.h			\
 	tests/test-compositor.c
 libtest_runner_la_LIBADD =			\
+	libwayland-private.la			\
 	libwayland-util.la			\
 	libwayland-client.la			\
 	libwayland-server.la			\
@@ -230,4 +232,4 @@ os_wrappers_test_LDADD = libtest-runner.la
 
 exec_fd_leak_checker_SOURCES = tests/exec-fd-leak-checker.c
 exec_fd_leak_checker_LDADD = libtest-runner.la
-endif
+endif #ENABLE_LIBRARIES
