@@ -706,7 +706,7 @@
         },
       ],
     }],
-    ['OS == "win"', {
+    ['OS == "win" or OS == "linux"', {
       'targets': [
         {
           # TODO(kbr): port this target to the GN build.
@@ -724,6 +724,10 @@
             'angle_end2end_tests_main.cc',
           ],
         },
+      ],
+    }],
+    ['OS == "win"', {
+      'targets': [
         {
           # TODO(jmadill): port this target to the GN build.
           'target_name': 'angle_perftests',
