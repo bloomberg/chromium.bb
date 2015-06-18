@@ -26,6 +26,7 @@ function modifyTestUnfriendlyText(rootElement)
 {
     replaceInnerTextAll(rootElement, ".service-worker-script-last-modified", "LAST-MODIFIED");
     replaceInnerTextAll(rootElement, ".service-worker-script-response-time", "RESPONSE-TIME");
+    replaceInnerTextAll(rootElement, ".service-worker-client", "CLIENT");
 }
 
 InspectorTest.dumpServiceWorkersView = function(scopes)

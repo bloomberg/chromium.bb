@@ -25,6 +25,7 @@ activated
 inspectrunning
 Script: /inspector/service-workers/resources/changing-worker.php
 RESPONSE-TIME
+CLIENT
 
 ============================
 The first ServiceWorker worker became redundant and stopped.
@@ -36,6 +37,7 @@ activated
 inspectrunning
 Script: /inspector/service-workers/resources/changing-worker.php
 RESPONSE-TIME
+CLIENT
 
 ============================
 DevTools frontend is reopened.
