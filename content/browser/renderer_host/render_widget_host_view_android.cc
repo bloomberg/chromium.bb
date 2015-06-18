@@ -1854,9 +1854,14 @@ void RenderWidgetHostViewAndroid::OnRootWindowVisibilityChanged(bool visible) {
   if (visible) {
     ShowInternal();
   } else {
-    bool hide_frontbuffer = true;
-    bool stop_observing_root_window = false;
-    HideInternal(hide_frontbuffer, stop_observing_root_window);
+    // Only hide the active frontbuffer if the Activity has been paused and
+    // we've already hidden the host. Otherwise the root window visibility is
+    // likely to be temporarily changing, e.g., with fullscreen video.
+    if (host_ && host_->is_hidden()) {
+      bool hide_frontbuffer = true;
+      bool stop_observing_root_window = false;
+      HideInternal(hide_frontbuffer, stop_observing_root_window);
+    }
   }
 }
 

@@ -500,6 +500,10 @@ void CompositorImpl::SetVisible(bool visible) {
     CreateLayerTreeHost();
     ui_resource_provider_.SetLayerTreeHost(host_.get());
   }
+  // TODO(jdduke): Consider using View.onWindowVisibilityChange() to drive
+  // WindowAndroid visibility updates. CompositorImpl::SetVisible changes can
+  // occur while the visibile surface is temporarily changing, e.g., when
+  // transitioning to fullscreen video. See crbug.com/471262.
   root_window_->OnVisibilityChanged(visible);
 }
 
