@@ -4,7 +4,7 @@
 
 #include "content/shell/app/blink_test_platform_support.h"
 
-#include "third_party/skia/include/ports/SkTypeface_android.h"
+#include "third_party/skia/include/ports/SkFontMgr_android.h"
 
 namespace {
 
