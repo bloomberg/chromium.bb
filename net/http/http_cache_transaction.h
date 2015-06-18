@@ -8,18 +8,29 @@
 #ifndef NET_HTTP_HTTP_CACHE_TRANSACTION_H_
 #define NET_HTTP_HTTP_CACHE_TRANSACTION_H_
 
+#include <stddef.h>
+
 #include <string>
 
+#include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "net/base/completion_callback.h"
+#include "net/base/io_buffer.h"
+#include "net/base/load_states.h"
 #include "net/base/request_priority.h"
+#include "net/base/upload_progress.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
 #include "net/http/http_transaction.h"
+#include "net/http/partial_data.h"
 #include "net/log/net_log.h"
 #include "net/socket/connection_attempts.h"
+#include "net/websockets/websocket_handshake_stream_base.h"
 
 namespace net {
 

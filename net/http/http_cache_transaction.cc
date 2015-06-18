@@ -4,10 +4,7 @@
 
 #include "net/http/http_cache_transaction.h"
 
-#include "base/location.h"
-#include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
-#include "build/build_config.h"
+#include "build/build_config.h"  // For OS_POSIX
 
 #if defined(OS_POSIX)
 #include <unistd.h>
@@ -19,36 +16,30 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/format_macros.h"
-#include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/metrics/field_trial.h"
+#include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/profiler/scoped_tracker.h"
-#include "base/rand_util.h"
-#include "base/strings/string_number_conversions.h"
+#include "base/single_thread_task_runner.h"
+#include "base/strings/string_number_conversions.h"  // For HexEncode.
 #include "base/strings/string_piece.h"
-#include "base/strings/string_util.h"
+#include "base/strings/string_util.h"  // For LowerCaseEqualsASCII.
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/clock.h"
-#include "base/time/time.h"
 #include "base/values.h"
-#include "net/base/completion_callback.h"
-#include "net/base/io_buffer.h"
+#include "net/base/auth.h"
 #include "net/base/load_flags.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/net_errors.h"
 #include "net/base/upload_data_stream.h"
 #include "net/cert/cert_status_flags.h"
+#include "net/cert/x509_certificate.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/http/disk_based_cert_cache.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_request_info.h"
-#include "net/http/http_response_headers.h"
-#include "net/http/http_transaction.h"
 #include "net/http/http_util.h"
-#include "net/http/partial_data.h"
-#include "net/log/net_log.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_config_service.h"
 
