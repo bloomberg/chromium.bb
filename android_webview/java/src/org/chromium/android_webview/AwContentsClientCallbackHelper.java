@@ -90,6 +90,8 @@ public class AwContentsClientCallbackHelper {
     private static final int MSG_ON_RECEIVED_HTTP_ERROR = 8;
     private static final int MSG_ON_PAGE_FINISHED = 9;
     private static final int MSG_ON_RECEIVED_TITLE = 10;
+    private static final int MSG_ON_PROGRESS_CHANGED = 11;
+    private static final int MSG_SYNTHESIZE_PAGE_LOADING = 12;
 
     // Minimum period allowed between consecutive onNewPicture calls, to rate-limit the callbacks.
     private static final long ON_NEW_PICTURE_MIN_PERIOD_MILLIS = 500;
@@ -169,6 +171,18 @@ public class AwContentsClientCallbackHelper {
                     mContentsClient.onReceivedTitle(title);
                     break;
                 }
+                case MSG_ON_PROGRESS_CHANGED: {
+                    mContentsClient.onProgressChanged(msg.arg1);
+                    break;
+                }
+                case MSG_SYNTHESIZE_PAGE_LOADING: {
+                    final String url = (String) msg.obj;
+                    mContentsClient.onPageStarted(url);
+                    mContentsClient.onLoadResource(url);
+                    mContentsClient.onProgressChanged(100);
+                    mContentsClient.onPageFinished(url);
+                    break;
+                }
                 default:
                     throw new IllegalStateException(
                             "AwContentsClientCallbackHelper: unhandled message " + msg.what);
@@ -238,5 +252,13 @@ public class AwContentsClientCallbackHelper {
 
     public void postOnReceivedTitle(String title) {
         mHandler.sendMessage(mHandler.obtainMessage(MSG_ON_RECEIVED_TITLE, title));
+    }
+
+    public void postOnProgressChanged(int progress) {
+        mHandler.sendMessage(mHandler.obtainMessage(MSG_ON_PROGRESS_CHANGED, progress, 0));
+    }
+
+    public void postSynthesizedPageLoadingForUrlBarUpdate(String url) {
+        mHandler.sendMessage(mHandler.obtainMessage(MSG_SYNTHESIZE_PAGE_LOADING, url));
     }
 }

@@ -53,7 +53,7 @@ class AwWebContentsDelegateAdapter extends AwWebContentsDelegate {
 
     @Override
     public void onLoadProgressChanged(int progress) {
-        mContentsClient.onProgressChanged(progress);
+        mContentsClient.getCallbackHelper().postOnProgressChanged(progress);
     }
 
     @Override
@@ -256,10 +256,7 @@ class AwWebContentsDelegateAdapter extends AwWebContentsDelegate {
             // the pending entry.
             String url = mAwContents.getLastCommittedUrl();
             url = TextUtils.isEmpty(url) ? "about:blank" : url;
-            mContentsClient.onPageStarted(url);
-            mContentsClient.onLoadResource(url);
-            mContentsClient.onProgressChanged(100);
-            mContentsClient.onPageFinished(url);
+            mContentsClient.getCallbackHelper().postSynthesizedPageLoadingForUrlBarUpdate(url);
         }
     }
 
