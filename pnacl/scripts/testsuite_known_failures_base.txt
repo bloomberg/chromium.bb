@@ -38,7 +38,6 @@ office-ispell
 city
 ocean
 ft
-ReedSolomon
 # undefined re_comp (also needs regex library port?)
 plot2fig
 # no sys/utsname.h
