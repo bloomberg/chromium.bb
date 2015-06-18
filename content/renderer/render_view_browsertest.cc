@@ -57,6 +57,7 @@
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebPerformance.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
+#include "third_party/WebKit/public/web/WebSettings.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/WebKit/public/web/WebWindowFeatures.h"
 #include "ui/events/event.h"
@@ -368,6 +369,26 @@ class DevToolsAgentTest : public RenderViewImplTest {
   DevToolsAgent* agent() {
     return frame()->devtools_agent();
   }
+};
+
+class RenderViewImplBlinkSettingsTest : public RenderViewImplTest {
+ public:
+  void DoSetUp() {
+    RenderViewImplTest::SetUp();
+  }
+
+  const blink::WebSettings* settings() {
+    return view()->webview()->settings();
+  }
+
+ protected:
+  // Blink settings may be specified on the command line, which must
+  // be configured before RenderViewImplTest::SetUp runs. Thus we make
+  // SetUp() a no-op, and expose RenderViewImplTest::SetUp() via
+  // DoSetUp(), to allow tests to perform command line modifications
+  // before RenderViewImplTest::SetUp is run. Each test must invoke
+  // DoSetUp manually once pre-SetUp configuration is complete.
+  void SetUp() override {}
 };
 
 // Ensure that the main RenderFrame is deleted and cleared from the RenderView
@@ -2407,6 +2428,20 @@ TEST_F(RenderViewImplTest, HistoryIsProperlyUpdatedOnNavigation) {
   EXPECT_EQ(1, view()->historyBackListCount());
   EXPECT_EQ(2, view()->historyBackListCount() +
       view()->historyForwardListCount() + 1);
+}
+
+TEST_F(RenderViewImplBlinkSettingsTest, Default) {
+  DoSetUp();
+  EXPECT_EQ(blink::WebSettings::HoverTypeNone, settings()->primaryHoverType());
+  EXPECT_FALSE(settings()->viewportEnabled());
+}
+
+TEST_F(RenderViewImplBlinkSettingsTest, CommandLine) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kBlinkSettings, "primaryHoverType=4,viewportEnabled=true");
+  DoSetUp();
+  EXPECT_EQ(blink::WebSettings::HoverTypeHover, settings()->primaryHoverType());
+  EXPECT_TRUE(settings()->viewportEnabled());
 }
 
 TEST_F(DevToolsAgentTest, DevToolsResumeOnClose) {
