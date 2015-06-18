@@ -267,10 +267,9 @@ void LayerImpl::TakeCopyRequestsAndTransformToTarget(
       continue;
 
     gfx::Rect request_in_layer_space = request->area();
-    gfx::Rect request_in_content_space =
-        LayerRectToContentRect(request_in_layer_space);
+    request_in_layer_space.Intersect(gfx::Rect(bounds()));
     request->set_area(MathUtil::MapEnclosingClippedRect(
-        draw_properties_.target_space_transform, request_in_content_space));
+        draw_properties_.target_space_transform, request_in_layer_space));
   }
 
   layer_tree_impl()->RemoveLayerWithCopyOutputRequest(this);
@@ -508,14 +507,6 @@ InputHandler::ScrollStatus LayerImpl::TryScroll(
   }
 
   return InputHandler::SCROLL_STARTED;
-}
-
-// TODO(danakj): Remove this after impl_side_painting.
-gfx::Rect LayerImpl::LayerRectToContentRect(
-    const gfx::RectF& layer_rect) const {
-  gfx::RectF content_rect = layer_rect;
-  content_rect.Intersect(gfx::Rect(bounds()));
-  return gfx::ToEnclosingRect(content_rect);
 }
 
 skia::RefPtr<SkPicture> LayerImpl::GetPicture() {

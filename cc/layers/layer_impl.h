@@ -591,8 +591,6 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
     return scroll_clip_layer_ ? scroll_clip_layer_->bounds().height() : 0;
   }
 
-  gfx::Rect LayerRectToContentRect(const gfx::RectF& layer_rect) const;
-
   virtual skia::RefPtr<SkPicture> GetPicture();
 
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl);

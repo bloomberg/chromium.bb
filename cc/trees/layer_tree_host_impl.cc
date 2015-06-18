@@ -880,9 +880,7 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
         // For layers that represent themselves, add composite frame timing
         // requests if the visible rect intersects the requested rect.
         for (const auto& request : it->frame_timing_requests()) {
-          const gfx::Rect& request_content_rect =
-              it->LayerRectToContentRect(request.rect());
-          if (request_content_rect.Intersects(it->visible_content_rect())) {
+          if (request.rect().Intersects(it->visible_content_rect())) {
             frame->composite_events.push_back(
                 FrameTimingTracker::FrameAndRectIds(
                     active_tree_->source_frame_number(), request.id()));

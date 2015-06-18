@@ -240,15 +240,6 @@ bool Layer::IsPropertyChangeAllowed() const {
   return !layer_tree_host_->in_paint_layer_contents();
 }
 
-// TODO(danakj): Remove this after impl_side_painting.
-gfx::Rect Layer::LayerRectToContentRect(const gfx::Rect& layer_rect) const {
-  gfx::Rect content_rect = layer_rect;
-  // Intersect with content rect to avoid the extra pixel because for some
-  // values x and y, ceil((x / y) * y) may be x + 1.
-  content_rect.Intersect(gfx::Rect(bounds()));
-  return content_rect;
-}
-
 skia::RefPtr<SkPicture> Layer::GetPicture() const {
   return skia::RefPtr<SkPicture>();
 }

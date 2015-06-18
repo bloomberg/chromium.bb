@@ -440,8 +440,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
 
   virtual ScrollbarLayerInterface* ToScrollbarLayer();
 
-  gfx::Rect LayerRectToContentRect(const gfx::Rect& layer_rect) const;
-
   virtual skia::RefPtr<SkPicture> GetPicture() const;
 
   // Constructs a LayerImpl of the correct runtime type for this Layer type.

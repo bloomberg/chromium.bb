@@ -288,6 +288,7 @@ void DamageTracker::ExtendDamageForLayer(LayerImpl* layer,
 
   gfx::RectF damage_rect =
       gfx::UnionRects(layer->update_rect(), layer->damage_rect());
+  damage_rect.Intersect(gfx::RectF(layer->bounds()));
 
   if (layer_is_new || layer->LayerPropertyChanged()) {
     // If a layer is new or has changed, then its entire layer rect affects the
@@ -300,9 +301,8 @@ void DamageTracker::ExtendDamageForLayer(LayerImpl* layer,
   } else if (!damage_rect.IsEmpty()) {
     // If the layer properties haven't changed, then the the target surface is
     // only affected by the layer's damaged area, which could be empty.
-    gfx::Rect damage_content_rect = layer->LayerRectToContentRect(damage_rect);
-    gfx::Rect damage_rect_in_target_space = MathUtil::MapEnclosingClippedRect(
-        layer->draw_transform(), damage_content_rect);
+    gfx::Rect damage_rect_in_target_space = gfx::ToEnclosingRect(
+        MathUtil::MapClippedRect(layer->draw_transform(), damage_rect));
     target_damage_rect->Union(damage_rect_in_target_space);
   }
 }
