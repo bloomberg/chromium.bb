@@ -193,7 +193,7 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
     Document* document = toDocument(executionContext);
     if (!document->page()) {
         return ScriptPromise::rejectWithDOMException(
-            scriptState, DOMException::create(InvalidStateError, "Document does not have a page."));
+            scriptState, DOMException::create(InvalidStateError, "The context provided is not associated with a page."));
     }
 
     MediaKeySystemAccessInitializer* initializer = new MediaKeySystemAccessInitializer(scriptState, keySystem, supportedConfigurations);
