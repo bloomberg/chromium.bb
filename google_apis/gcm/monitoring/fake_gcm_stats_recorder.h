@@ -39,7 +39,8 @@ class FakeGCMStatsRecorder : public GCMStatsRecorder {
       const std::string& app_id,
       UnregistrationRequest::Status status) override;
   void RecordUnregistrationRetryDelayed(const std::string& app_id,
-                                        int64 delay_msec) override;
+                                        int64 delay_msec,
+                                        int retries_left) override;
   void RecordDataMessageReceived(const std::string& app_id,
                                  const std::string& from,
                                  int message_byte_size,

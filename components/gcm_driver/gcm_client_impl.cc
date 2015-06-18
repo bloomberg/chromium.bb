@@ -75,6 +75,7 @@ enum ResetStoreError {
 
 const char kGCMScope[] = "GCM";
 const int kMaxRegistrationRetries = 5;
+const int kMaxUnregistrationRetries = 5;
 const char kMessageTypeDataMessage[] = "gcm";
 const char kMessageTypeDeletedMessagesKey[] = "deleted_messages";
 const char kMessageTypeKey[] = "message_type";
@@ -1050,6 +1051,7 @@ void GCMClientImpl::Unregister(
       base::Bind(&GCMClientImpl::OnUnregisterCompleted,
                   weak_ptr_factory_.GetWeakPtr(),
                   registration_info),
+      kMaxUnregistrationRetries,
       url_request_context_getter_,
       &recorder_);
   pending_unregistration_requests_[registration_info] = unregistration_request;

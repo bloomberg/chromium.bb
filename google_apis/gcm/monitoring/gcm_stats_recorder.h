@@ -100,7 +100,8 @@ class GCM_EXPORT GCMStatsRecorder {
   // Records that an unregistration retry has been requested and delayed due to
   // backoff logic.
   virtual void RecordUnregistrationRetryDelayed(const std::string& app_id,
-                                                int64 delay_msec) = 0;
+                                                int64 delay_msec,
+                                                int retries_left) = 0;
 
   // Records that a data message has been received. If this message is not
   // sent to a registered app, to_registered_app shoudl be false. If it

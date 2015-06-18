@@ -70,7 +70,8 @@ void FakeGCMStatsRecorder::RecordUnregistrationResponse(
 
 void FakeGCMStatsRecorder::RecordUnregistrationRetryDelayed(
     const std::string& app_id,
-    int64 delay_msec) {
+    int64 delay_msec,
+    int retries_left) {
 }
 
 void FakeGCMStatsRecorder::RecordDataMessageReceived(

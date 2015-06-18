@@ -46,6 +46,7 @@ class GCM_EXPORT UnregistrationRequest : public net::URLFetcherDelegate {
     INTERNAL_SERVER_ERROR,    // Internal server error happened during request.
     HTTP_NOT_OK,              // HTTP response code was not OK.
     UNKNOWN_ERROR,            // Unknown error.
+    REACHED_MAX_RETRIES,      // Reached maximum number of retries.
     // NOTE: Always keep this entry at the end. Add new status types only
     // immediately above this line. Make sure to update the corresponding
     // histogram enum accordingly.
@@ -102,6 +103,7 @@ class GCM_EXPORT UnregistrationRequest : public net::URLFetcherDelegate {
       scoped_ptr<CustomRequestHandler> custom_request_handler,
       const net::BackoffEntry::Policy& backoff_policy,
       const UnregistrationCallback& callback,
+      int max_retry_count,
       scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       GCMStatsRecorder* recorder);
   ~UnregistrationRequest() override;
@@ -130,6 +132,7 @@ class GCM_EXPORT UnregistrationRequest : public net::URLFetcherDelegate {
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   scoped_ptr<net::URLFetcher> url_fetcher_;
   base::TimeTicks request_start_time_;
+  int retries_left_;
 
   // Recorder that records GCM activities for debugging purpose. Not owned.
   GCMStatsRecorder* recorder_;

@@ -77,7 +77,7 @@ static const char kUnregistrationResponseDetails[] = "SUCCESS";
 static const char kUnregistrationRetryDelayedEvent[] =
     "Unregistration retry delayed";
 static const char kUnregistrationRetryDelayedDetails[] =
-    "Delayed for 15000 msec";
+    "Delayed for 15000 msec, retries left: 3";
 
 static const char kDataReceivedEvent[] = "Data msg received";
 static const char kDataReceivedDetails[] = "";
@@ -383,7 +383,7 @@ TEST_F(GCMStatsRecorderImplTest, StartStopRecordingTest) {
   recorder_.RecordRegistrationRetryRequested(kAppId, sender_ids_, kRetries);
   recorder_.RecordUnregistrationSent(kAppId);
   recorder_.RecordUnregistrationResponse(kAppId, kUnregistrationStatus);
-  recorder_.RecordUnregistrationRetryDelayed(kAppId, kDelay);
+  recorder_.RecordUnregistrationRetryDelayed(kAppId, kDelay, kRetries);
   VerifyAllActivityQueueEmpty("no unregistration");
 
   recorder_.RecordDataMessageReceived(kAppId, kFrom, kByteSize, true,
@@ -478,7 +478,7 @@ TEST_F(GCMStatsRecorderImplTest, RegistrationTest) {
   VerifyRecordedRegistrationCount(5);
   VerifyUnregistrationResponse("5th call");
 
-  recorder_.RecordUnregistrationRetryDelayed(kAppId, kDelay);
+  recorder_.RecordUnregistrationRetryDelayed(kAppId, kDelay, kRetries);
   VerifyRecordedRegistrationCount(6);
   VerifyUnregistrationRetryDelayed("6th call");
 }

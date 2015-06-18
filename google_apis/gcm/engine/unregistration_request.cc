@@ -56,6 +56,7 @@ UnregistrationRequest::UnregistrationRequest(
     scoped_ptr<CustomRequestHandler> custom_request_handler,
     const net::BackoffEntry::Policy& backoff_policy,
     const UnregistrationCallback& callback,
+    int max_retry_count,
     scoped_refptr<net::URLRequestContextGetter> request_context_getter,
     GCMStatsRecorder* recorder)
     : callback_(callback),
@@ -64,8 +65,10 @@ UnregistrationRequest::UnregistrationRequest(
       registration_url_(registration_url),
       backoff_entry_(&backoff_policy),
       request_context_getter_(request_context_getter),
+      retries_left_(max_retry_count),
       recorder_(recorder),
       weak_ptr_factory_(this) {
+  DCHECK_GE(max_retry_count, 0);
 }
 
 UnregistrationRequest::~UnregistrationRequest() {}
@@ -140,6 +143,8 @@ UnregistrationRequest::Status UnregistrationRequest::ParseResponse(
 
 void UnregistrationRequest::RetryWithBackoff(bool update_backoff) {
   if (update_backoff) {
+    DCHECK_GT(retries_left_, 0);
+    --retries_left_;
     url_fetcher_.reset();
     backoff_entry_.InformOfRequest(false);
   }
@@ -151,7 +156,8 @@ void UnregistrationRequest::RetryWithBackoff(bool update_backoff) {
              << " milliseconds.";
     recorder_->RecordUnregistrationRetryDelayed(
         request_info_.app_id,
-        backoff_entry_.GetTimeUntilRelease().InMilliseconds());
+        backoff_entry_.GetTimeUntilRelease().InMilliseconds(),
+        retries_left_ + 1);
     base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&UnregistrationRequest::RetryWithBackoff,
@@ -178,16 +184,28 @@ void UnregistrationRequest::OnURLFetchComplete(const net::URLFetcher* source) {
   recorder_->RecordUnregistrationResponse(request_info_.app_id, status);
 
   if (status == URL_FETCHING_FAILED ||
+      status == HTTP_NOT_OK ||
+      status == NO_RESPONSE_BODY ||
       status == SERVICE_UNAVAILABLE ||
       status == INTERNAL_SERVER_ERROR ||
       status == INCORRECT_APP_ID ||
       status == RESPONSE_PARSING_FAILED) {
-    RetryWithBackoff(true);
-    return;
+    if (retries_left_ > 0) {
+      RetryWithBackoff(true);
+      return;
+    }
+
+    status = REACHED_MAX_RETRIES;
+    recorder_->RecordUnregistrationResponse(request_info_.app_id, status);
+
+    // Only REACHED_MAX_RETRIES is reported because the function will skip
+    // reporting count and time when status is not SUCCESS.
+    DCHECK(custom_request_handler_.get());
+    custom_request_handler_->ReportUMAs(status, 0, base::TimeDelta());
   }
 
-  // status == SUCCESS || HTTP_NOT_OK || NO_RESPONSE_BODY ||
-  // INVALID_PARAMETERS || UNKNOWN_ERROR
+  // status == SUCCESS || INVALID_PARAMETERS || UNKNOWN_ERROR ||
+  //           REACHED_MAX_RETRIES
 
   callback_.Run(status);
 }

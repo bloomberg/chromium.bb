@@ -339,14 +339,17 @@ void GCMStatsRecorderImpl::RecordUnregistrationResponse(
 
 void GCMStatsRecorderImpl::RecordUnregistrationRetryDelayed(
     const std::string& app_id,
-    int64 delay_msec) {
+    int64 delay_msec,
+    int retries_left) {
   if (!is_recording_)
     return;
-  RecordRegistration(app_id,
-                     std::string(),
-                     "Unregistration retry delayed",
-                     base::StringPrintf("Delayed for %" PRId64 " msec",
-                                        delay_msec));
+  RecordRegistration(
+      app_id,
+      std::string(),
+      "Unregistration retry delayed",
+      base::StringPrintf("Delayed for %" PRId64 " msec, retries left: %d",
+                         delay_msec,
+                         retries_left));
 }
 
 void GCMStatsRecorderImpl::RecordReceiving(

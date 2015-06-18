@@ -18,6 +18,7 @@
 namespace gcm {
 
 namespace {
+const int kMaxRetries = 2;
 const uint64 kAndroidId = 42UL;
 const char kLoginHeader[] = "AidLogin";
 const char kAppId[] = "TestAppId";
@@ -36,7 +37,7 @@ const net::BackoffEntry::Policy kDefaultBackoffPolicy = {
   // exponential back-off rules.
   // Explicitly set to 2 to skip the delay on the first retry, as we are not
   // trying to test the backoff itself, but rather the fact that retry happens.
-  1,
+  2,
 
   // Initial delay for exponential back-off in ms.
   15000,  // 15 seconds.
@@ -71,7 +72,13 @@ class UnregistrationRequestTest : public testing::Test {
                                   const std::string& response_body);
   void CompleteFetch();
 
+  int max_retry_count() const { return max_retry_count_; }
+  void set_max_retry_count(int max_retry_count) {
+    max_retry_count_ = max_retry_count;
+  }
+
  protected:
+  int max_retry_count_;
   bool callback_called_;
   UnregistrationRequest::Status status_;
   scoped_ptr<UnregistrationRequest> request_;
@@ -82,7 +89,8 @@ class UnregistrationRequestTest : public testing::Test {
 };
 
 UnregistrationRequestTest::UnregistrationRequestTest()
-    : callback_called_(false),
+    : max_retry_count_(kMaxRetries),
+      callback_called_(false),
       status_(UnregistrationRequest::UNREGISTRATION_STATUS_COUNT),
       url_request_context_getter_(new net::TestURLRequestContextGetter(
           message_loop_.task_runner())) {}
@@ -138,6 +146,7 @@ void GCMUnregistrationRequestTest::CreateRequest() {
       kDefaultBackoffPolicy,
       base::Bind(&UnregistrationRequestTest::UnregistrationCallback,
                  base::Unretained(this)),
+      max_retry_count_,
       url_request_context_getter_.get(),
       &recorder_));
 }
@@ -191,6 +200,7 @@ TEST_F(GCMUnregistrationRequestTest, RequestDataPassedToFetcher) {
 }
 
 TEST_F(GCMUnregistrationRequestTest, SuccessfulUnregistration) {
+  set_max_retry_count(0);
   CreateRequest();
   request_->Start();
 
@@ -208,8 +218,13 @@ TEST_F(GCMUnregistrationRequestTest, ResponseHttpStatusNotOK) {
   SetResponseStatusAndString(net::HTTP_UNAUTHORIZED, "");
   CompleteFetch();
 
+  EXPECT_FALSE(callback_called_);
+
+  SetResponseStatusAndString(net::HTTP_OK, kDeletedAppId);
+  CompleteFetch();
+
   EXPECT_TRUE(callback_called_);
-  EXPECT_EQ(UnregistrationRequest::HTTP_NOT_OK, status_);
+  EXPECT_EQ(UnregistrationRequest::SUCCESS, status_);
 }
 
 TEST_F(GCMUnregistrationRequestTest, ResponseEmpty) {
@@ -314,6 +329,39 @@ TEST_F(GCMUnregistrationRequestTest, ResponseParsingFailed) {
   EXPECT_EQ(UnregistrationRequest::SUCCESS, status_);
 }
 
+TEST_F(GCMUnregistrationRequestTest, MaximumAttemptsReachedWithZeroRetries) {
+  set_max_retry_count(0);
+  CreateRequest();
+  request_->Start();
+
+  SetResponseStatusAndString(net::HTTP_GATEWAY_TIMEOUT, "bad response");
+  CompleteFetch();
+
+  EXPECT_TRUE(callback_called_);
+  EXPECT_EQ(UnregistrationRequest::REACHED_MAX_RETRIES, status_);
+}
+
+TEST_F(GCMUnregistrationRequestTest, MaximumAttemptsReached) {
+  CreateRequest();
+  request_->Start();
+
+  SetResponseStatusAndString(net::HTTP_GATEWAY_TIMEOUT, "bad response");
+  CompleteFetch();
+
+  EXPECT_FALSE(callback_called_);
+
+  SetResponseStatusAndString(net::HTTP_GATEWAY_TIMEOUT, "bad response");
+  CompleteFetch();
+
+  EXPECT_FALSE(callback_called_);
+
+  SetResponseStatusAndString(net::HTTP_GATEWAY_TIMEOUT, "bad response");
+  CompleteFetch();
+
+  EXPECT_TRUE(callback_called_);
+  EXPECT_EQ(UnregistrationRequest::REACHED_MAX_RETRIES, status_);
+}
+
 class InstaceIDDeleteTokenRequestTest : public UnregistrationRequestTest {
  public:
   InstaceIDDeleteTokenRequestTest();
@@ -346,6 +394,7 @@ void InstaceIDDeleteTokenRequestTest::CreateRequest(
       kDefaultBackoffPolicy,
       base::Bind(&UnregistrationRequestTest::UnregistrationCallback,
                  base::Unretained(this)),
+      max_retry_count(),
       url_request_context_getter_.get(),
       &recorder_));
 }
@@ -420,8 +469,13 @@ TEST_F(InstaceIDDeleteTokenRequestTest, ResponseHttpStatusNotOK) {
   SetResponseStatusAndString(net::HTTP_UNAUTHORIZED, "");
   CompleteFetch();
 
+  EXPECT_FALSE(callback_called_);
+
+  SetResponseStatusAndString(net::HTTP_OK, kDeletedToken);
+  CompleteFetch();
+
   EXPECT_TRUE(callback_called_);
-  EXPECT_EQ(UnregistrationRequest::HTTP_NOT_OK, status_);
+  EXPECT_EQ(UnregistrationRequest::SUCCESS, status_);
 }
 
 }  // namespace gcm

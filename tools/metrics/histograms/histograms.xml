@@ -56644,6 +56644,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="7" label="Internal server error"/>
   <int value="8" label="HTTP reponse code not OK"/>
   <int value="9" label="Unknown error"/>
+  <int value="10" label="Reached maximum number of retries"/>
 </enum>
 
 <enum name="GCReason" type="int">
