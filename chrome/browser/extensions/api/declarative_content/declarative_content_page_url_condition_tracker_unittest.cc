@@ -92,7 +92,7 @@ TEST_F(DeclarativeContentPageUrlConditionTrackerTest,
   delegate_.evaluation_requests().clear();
   tracker.AddConditionSets(condition_sets);
   EXPECT_THAT(delegate_.evaluation_requests(),
-              UnorderedElementsAreArray(tabs));
+              UnorderedElementsAre(tabs[0]));
   std::set<int> match_ids;
   tracker.GetMatches(tabs[0], &match_ids);
   EXPECT_THAT(match_ids, UnorderedElementsAre(condition_set_id));
@@ -102,7 +102,7 @@ TEST_F(DeclarativeContentPageUrlConditionTrackerTest,
   delegate_.evaluation_requests().clear();
   tracker.RemoveConditionSets(std::vector<int>(1, condition_set_id));
   EXPECT_THAT(delegate_.evaluation_requests(),
-              UnorderedElementsAreArray(tabs));
+              UnorderedElementsAre(tabs[0]));
 }
 
 // Tests that tracking WebContents triggers evaluation requests for matching

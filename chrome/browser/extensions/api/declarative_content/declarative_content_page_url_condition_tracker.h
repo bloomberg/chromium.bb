@@ -90,7 +90,7 @@ class DeclarativeContentPageUrlConditionTracker {
         const WebContentsDestroyedCallback& web_contents_destroyed);
     ~PerWebContentsTracker() override;
 
-    void UpdateMatchesForCurrentUrl();
+    void UpdateMatchesForCurrentUrl(bool request_evaluation_if_unchanged);
 
     const std::set<url_matcher::URLMatcherConditionSet::ID>& matches() {
       return matches_;

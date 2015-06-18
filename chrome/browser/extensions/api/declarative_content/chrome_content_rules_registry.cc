@@ -44,28 +44,27 @@ class ChromeContentRulesRegistry::EvaluationScope {
 
  private:
   ChromeContentRulesRegistry* const registry_;
+  const EvaluationDisposition previous_disposition_;
 
   DISALLOW_COPY_AND_ASSIGN(EvaluationScope);
 };
 
 ChromeContentRulesRegistry::EvaluationScope::EvaluationScope(
     ChromeContentRulesRegistry* registry)
-    : EvaluationScope(registry, PERFORM_EVALUATION) {}
+    : EvaluationScope(registry, DEFER_REQUESTS) {}
 
 ChromeContentRulesRegistry::EvaluationScope::EvaluationScope(
     ChromeContentRulesRegistry* registry,
     EvaluationDisposition disposition)
-    : registry_(registry) {
-  // All coalescers on the stack should have the same disposition.
-  DCHECK(registry_->record_rule_evaluation_requests_ == 0 ||
-         registry_->evaluation_disposition_ == disposition);
+    : registry_(registry),
+      previous_disposition_(registry_->evaluation_disposition_) {
+  DCHECK_NE(EVALUATE_REQUESTS, disposition);
   registry_->evaluation_disposition_ = disposition;
-  ++registry_->record_rule_evaluation_requests_;
 }
 
 ChromeContentRulesRegistry::EvaluationScope::~EvaluationScope() {
-  if (--registry_->record_rule_evaluation_requests_ == 0 &&
-      registry_->evaluation_disposition_ == PERFORM_EVALUATION) {
+  registry_->evaluation_disposition_ = previous_disposition_;
+  if (registry_->evaluation_disposition_ == EVALUATE_REQUESTS) {
     for (content::WebContents* tab : registry_->evaluation_pending_)
       registry_->EvaluateConditionsForTab(tab);
     registry_->evaluation_pending_.clear();
@@ -86,8 +85,7 @@ ChromeContentRulesRegistry::ChromeContentRulesRegistry(
                            RulesRegistryService::kDefaultRulesRegistryID),
       page_url_condition_tracker_(browser_context, this),
       css_condition_tracker_(browser_context, this),
-      record_rule_evaluation_requests_(0),
-      evaluation_disposition_(PERFORM_EVALUATION) {
+      evaluation_disposition_(EVALUATE_REQUESTS) {
   extension_info_map_ = ExtensionSystem::Get(browser_context)->info_map();
 
   registrar_.Add(this,
@@ -113,12 +111,16 @@ void ChromeContentRulesRegistry::Observe(
 
 void ChromeContentRulesRegistry::RequestEvaluation(
     content::WebContents* contents) {
-  if (record_rule_evaluation_requests_ > 0) {
-    evaluation_pending_.insert(contents);
-    return;
+  switch (evaluation_disposition_) {
+    case EVALUATE_REQUESTS:
+      EvaluateConditionsForTab(contents);
+      break;
+    case DEFER_REQUESTS:
+      evaluation_pending_.insert(contents);
+      break;
+    case IGNORE_REQUESTS:
+      break;
   }
-
-  EvaluateConditionsForTab(contents);
 }
 
 bool ChromeContentRulesRegistry::ShouldManageConditionsForBrowserContext(
@@ -276,7 +278,7 @@ std::string ChromeContentRulesRegistry::RemoveRulesImpl(
   // Ignore evaluation requests in this function because it reverts actions on
   // any active rules itself. Otherwise, we run the risk of reverting the same
   // rule multiple times.
-  EvaluationScope evaluation_scope(this, IGNORE_EVALUATION);
+  EvaluationScope evaluation_scope(this, IGNORE_REQUESTS);
   // URLMatcherConditionSet IDs that can be removed from URLMatcher.
   std::vector<URLMatcherConditionSet::ID> condition_set_ids_to_remove;
 

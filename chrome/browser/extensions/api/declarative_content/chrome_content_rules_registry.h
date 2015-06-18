@@ -128,12 +128,16 @@ class ChromeContentRulesRegistry
       const std::string& extension_id) const;
 
  private:
-  // Specifies what to do with a series of evaluation requests: either perform a
-  // single evaluation or ignore them.  TODO(wittman): Try to eliminate the need
-  // for IGNORE_EVALUATION after refactoring to treat all condition evaluation
-  // consistently. Currently RemoveRulesImpl only updates the CSS selectors
-  // after the rules are removed, which is too late for evaluation.
-  enum EvaluationDisposition { PERFORM_EVALUATION, IGNORE_EVALUATION };
+  // Specifies what to do with evaluation requests.
+  // TODO(wittman): Try to eliminate the need for IGNORE after refactoring to
+  // treat all condition evaluation consistently. Currently RemoveRulesImpl only
+  // updates the CSS selectors after the rules are removed, which is too late
+  // for evaluation.
+  enum EvaluationDisposition {
+    EVALUATE_REQUESTS,  // Evaluate immediately.
+    DEFER_REQUESTS,  // Defer for later evaluation.
+    IGNORE_REQUESTS  // Ignore.
+  };
 
   class EvaluationScope;
 
@@ -177,17 +181,11 @@ class ChromeContentRulesRegistry
   // Responsible for tracking declarative content CSS condition state.
   DeclarativeContentCssConditionTracker css_condition_tracker_;
 
-  // If non-zero, requests for rule evaluation should be recorded in
-  // |evaluation_pending_| rather than performed immediately. The value of this
-  // variable is the number of EvaluationScopes currently in use.
-  int record_rule_evaluation_requests_;
-
-  // Specifies what the EvaluationScope should ultimately do with the evaluation
-  // requests.
+  // Specifies what to do with evaluation requests.
   EvaluationDisposition evaluation_disposition_;
 
   // Contains WebContents which require rule evaluation. Only used while
-  // |record_rule_evaluation_requests_| is true.
+  // |evaluation_disposition_| is DEFER.
   std::set<content::WebContents*> evaluation_pending_;
 
   // Manages our notification registrations.

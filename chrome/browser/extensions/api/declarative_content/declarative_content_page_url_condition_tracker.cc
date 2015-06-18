@@ -31,9 +31,12 @@ DeclarativeContentPageUrlConditionTracker::PerWebContentsTracker::
 }
 
 void DeclarativeContentPageUrlConditionTracker::PerWebContentsTracker::
-UpdateMatchesForCurrentUrl() {
-  matches_ = url_matcher_->MatchURL(web_contents()->GetURL());
-  request_evaluation_.Run(web_contents());
+UpdateMatchesForCurrentUrl(bool request_evaluation_if_unchanged) {
+  std::set<url_matcher::URLMatcherConditionSet::ID> new_matches =
+      url_matcher_->MatchURL(web_contents()->GetURL());
+  matches_.swap(new_matches);
+  if (matches_ != new_matches || request_evaluation_if_unchanged)
+    request_evaluation_.Run(web_contents());
 }
 
 void DeclarativeContentPageUrlConditionTracker::PerWebContentsTracker::
@@ -86,7 +89,7 @@ void DeclarativeContentPageUrlConditionTracker::TrackForWebContents(
           base::Bind(&DeclarativeContentPageUrlConditionTracker::
                      DeletePerWebContentsTracker,
                      base::Unretained(this))));
-  per_web_contents_tracker_[contents]->UpdateMatchesForCurrentUrl();
+  per_web_contents_tracker_[contents]->UpdateMatchesForCurrentUrl(true);
 }
 
 void DeclarativeContentPageUrlConditionTracker::OnWebContentsNavigation(
@@ -94,7 +97,7 @@ void DeclarativeContentPageUrlConditionTracker::OnWebContentsNavigation(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
   DCHECK(ContainsKey(per_web_contents_tracker_, contents));
-  per_web_contents_tracker_[contents]->UpdateMatchesForCurrentUrl();
+  per_web_contents_tracker_[contents]->UpdateMatchesForCurrentUrl(true);
 }
 
 void DeclarativeContentPageUrlConditionTracker::GetMatches(
@@ -116,7 +119,7 @@ bool DeclarativeContentPageUrlConditionTracker::IsEmpty() const {
 
 void DeclarativeContentPageUrlConditionTracker::UpdateMatchesForAllTrackers() {
   for (const auto& web_contents_tracker_pair : per_web_contents_tracker_)
-    web_contents_tracker_pair.second->UpdateMatchesForCurrentUrl();
+    web_contents_tracker_pair.second->UpdateMatchesForCurrentUrl(false);
 }
 
 }  // namespace extensions
