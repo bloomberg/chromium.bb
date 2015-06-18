@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_view.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -30,6 +31,12 @@ class PermissionBubbleManager
       public content::WebContentsUserData<PermissionBubbleManager>,
       public PermissionBubbleView::Delegate {
  public:
+  class Observer {
+   public:
+    virtual ~Observer();
+    virtual void OnBubbleAdded();
+  };
+
   enum AutoResponseType {
     NONE,
     ACCEPT_ALL,
@@ -70,6 +77,10 @@ class PermissionBubbleManager
   // If |required| is true, requests will be silently queued until a request
   // comes in with a user gesture.
   void RequireUserGesture(bool required);
+
+  // For observing the status of the permission bubble manager.
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   // Do NOT use this methods in production code. Use this methods in browser
   // tests that need to accept or deny permissions when requested in
@@ -134,6 +145,8 @@ class PermissionBubbleManager
   bool HasUserGestureRequest(
       const std::vector<PermissionBubbleRequest*>& queue);
 
+  void NotifyBubbleAdded();
+
   void DoAutoResponseForTesting();
 
   // Whether to delay displaying the bubble until a request with a user gesture.
@@ -157,6 +170,7 @@ class PermissionBubbleManager
 
   std::vector<bool> accept_states_;
 
+  base::ObserverList<Observer> observer_list_;
   AutoResponseType auto_response_for_test_;
 
   base::WeakPtrFactory<PermissionBubbleManager> weak_factory_;

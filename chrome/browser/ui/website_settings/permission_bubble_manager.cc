@@ -55,6 +55,16 @@ class CancelledRequest : public PermissionBubbleRequest {
 
 }  // namespace
 
+// PermissionBubbleManager::Observer -------------------------------------------
+
+PermissionBubbleManager::Observer::~Observer() {
+}
+
+void PermissionBubbleManager::Observer::OnBubbleAdded() {
+}
+
+// PermissionBubbleManager -----------------------------------------------------
+
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(PermissionBubbleManager);
 
 // static
@@ -348,6 +358,7 @@ void PermissionBubbleManager::TriggerShowBubble() {
   // case we may do in-line calling of finalization.
   bubble_showing_ = true;
   view_->Show(requests_, accept_states_);
+  NotifyBubbleAdded();
 
   // If in testing mode, automatically respond to the bubble that was shown.
   if (auto_response_for_test_ != NONE)
@@ -418,6 +429,18 @@ bool PermissionBubbleManager::HasUserGestureRequest(
       return true;
   }
   return false;
+}
+
+void PermissionBubbleManager::AddObserver(Observer* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void PermissionBubbleManager::RemoveObserver(Observer* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
+void PermissionBubbleManager::NotifyBubbleAdded() {
+  FOR_EACH_OBSERVER(Observer, observer_list_, OnBubbleAdded());
 }
 
 void PermissionBubbleManager::DoAutoResponseForTesting() {

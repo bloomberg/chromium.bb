@@ -39,23 +39,32 @@ function cancelNotification(id) {
   g_notifications[id].close();
 }
 
-// Requests permission for this origin to create notifications.
-function requestPermission() {
-  Notification.requestPermission(onPermissionGranted);
-  sendResultToTest(1);
+// Requests permission for this origin to create notifications. Immediately
+// sends the result without waiting for callbacks to complete.
+function requestPermissionAndRespond() {
+  Notification.requestPermission(permissionCallbackNoResponse);
+  sendResultToTest('requested');
 }
 
-// Waits for the permission to create notifications to be granted.
-function waitForPermissionGranted() {
-  if (g_permissionGranted) {
-    sendResultToTest(1);
-  } else {
-    setTimeout(waitForPermissionGranted, 50);
-  }
+// Requests permission for this origin to create notifications. The result will
+// be sent from the callback (permissionCallbackWithResponse);
+function requestPermission() {
+  Notification.requestPermission(permissionCallbackWithResponse);
+}
+
+// Callback for requestPermissionAndRespond. Will send the permission status to
+// the test driver.
+function permissionCallbackWithResponse(permissionStatus) {
+  if (permissionStatus === 'granted')
+    sendResultToTest('request-callback-granted');
+  else if (permissionStatus === 'denied')
+    sendResultToTest('request-callback-denied');
+  else if (permissionStatus === 'default')
+    sendResultToTest('request-callback-default');
 }
 
 // Callback for requesting notification privileges.
-function onPermissionGranted() {
+function permissionCallbackNoResponse() {
   g_permissionGranted = true;
 }
 
