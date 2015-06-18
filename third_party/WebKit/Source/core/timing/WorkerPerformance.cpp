@@ -29,49 +29,39 @@
  */
 
 #include "config.h"
+#include "core/timing/WorkerPerformance.h"
 
-#include "modules/performance/WorkerGlobalScopePerformance.h"
-
+#include "core/timing/MemoryInfo.h"
+#include "core/workers/DedicatedWorkerGlobalScope.h"
 #include "core/workers/WorkerGlobalScope.h"
-#include "modules/performance/WorkerPerformance.h"
+#include "wtf/CurrentTime.h"
 
 namespace blink {
 
-WorkerGlobalScopePerformance::WorkerGlobalScopePerformance()
+WorkerPerformance::WorkerPerformance(WorkerGlobalScope* context)
+    : PerformanceBase(context->timeOrigin())
+    , ContextLifecycleObserver(context)
 {
 }
 
-const char* WorkerGlobalScopePerformance::supplementName()
+ExecutionContext* WorkerPerformance::executionContext() const
 {
-    return "WorkerGlobalScopePerformance";
+    return ContextLifecycleObserver::executionContext();
 }
 
-WorkerGlobalScopePerformance& WorkerGlobalScopePerformance::from(WorkerGlobalScope& context)
+DEFINE_TRACE(WorkerPerformance)
 {
-    WorkerGlobalScopePerformance* supplement = static_cast<WorkerGlobalScopePerformance*>(WillBeHeapSupplement<WorkerGlobalScope>::from(context, supplementName()));
-    if (!supplement) {
-        supplement = new WorkerGlobalScopePerformance();
-        provideTo(context, supplementName(), adoptPtrWillBeNoop(supplement));
-    }
-    return *supplement;
+    visitor->trace(m_memoryInfo);
+    PerformanceBase::trace(visitor);
+    ContextLifecycleObserver::trace(visitor);
 }
 
-WorkerPerformance* WorkerGlobalScopePerformance::performance(WorkerGlobalScope& context)
+MemoryInfo* WorkerPerformance::memory()
 {
-    return from(context).performance(&context);
-}
+    if (!m_memoryInfo)
+        m_memoryInfo = MemoryInfo::create();
 
-WorkerPerformance* WorkerGlobalScopePerformance::performance(WorkerGlobalScope* context)
-{
-    if (!m_performance)
-        m_performance = WorkerPerformance::create(context);
-    return m_performance.get();
-}
-
-DEFINE_TRACE(WorkerGlobalScopePerformance)
-{
-    visitor->trace(m_performance);
-    WillBeHeapSupplement<WorkerGlobalScope>::trace(visitor);
+    return m_memoryInfo.get();
 }
 
 } // namespace blink

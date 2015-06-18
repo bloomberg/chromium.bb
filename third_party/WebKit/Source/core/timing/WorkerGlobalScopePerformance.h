@@ -28,40 +28,35 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "modules/performance/WorkerPerformance.h"
+#ifndef WorkerGlobalScopePerformance_h
+#define WorkerGlobalScopePerformance_h
 
-#include "core/timing/MemoryInfo.h"
-#include "core/workers/DedicatedWorkerGlobalScope.h"
-#include "core/workers/WorkerGlobalScope.h"
-#include "wtf/CurrentTime.h"
+#include "core/timing/WorkerPerformance.h"
+#include "platform/Supplementable.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
-WorkerPerformance::WorkerPerformance(WorkerGlobalScope* context)
-    : PerformanceBase(context->timeOrigin())
-    , ContextLifecycleObserver(context)
-{
-}
+class WorkerGlobalScope;
 
-ExecutionContext* WorkerPerformance::executionContext() const
-{
-    return ContextLifecycleObserver::executionContext();
-}
+class WorkerGlobalScopePerformance final : public NoBaseWillBeGarbageCollected<WorkerGlobalScopePerformance>, public WillBeHeapSupplement<WorkerGlobalScope> {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WorkerGlobalScopePerformance);
+public:
+    static WorkerGlobalScopePerformance& from(WorkerGlobalScope&);
 
-DEFINE_TRACE(WorkerPerformance)
-{
-    visitor->trace(m_memoryInfo);
-    PerformanceBase::trace(visitor);
-    ContextLifecycleObserver::trace(visitor);
-}
+    static WorkerPerformance* performance(WorkerGlobalScope&);
 
-MemoryInfo* WorkerPerformance::memory()
-{
-    if (!m_memoryInfo)
-        m_memoryInfo = MemoryInfo::create();
+    DECLARE_VIRTUAL_TRACE();
 
-    return m_memoryInfo.get();
-}
+private:
+    WorkerGlobalScopePerformance();
+
+    WorkerPerformance* performance(WorkerGlobalScope*);
+    static const char* supplementName();
+
+    PersistentWillBeMember<WorkerPerformance> m_performance;
+};
 
 } // namespace blink
+
+#endif // WorkerGlobalScopePerformance_h

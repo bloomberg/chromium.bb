@@ -28,7 +28,7 @@
  */
 
 #include "config.h"
-#include "modules/performance/SharedWorkerPerformance.h"
+#include "core/timing/SharedWorkerPerformance.h"
 
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"

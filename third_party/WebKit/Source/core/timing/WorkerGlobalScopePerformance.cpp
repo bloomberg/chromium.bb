@@ -28,35 +28,50 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WorkerGlobalScopePerformance_h
-#define WorkerGlobalScopePerformance_h
+#include "config.h"
 
-#include "modules/performance/WorkerPerformance.h"
-#include "platform/Supplementable.h"
-#include "platform/heap/Handle.h"
+#include "core/timing/WorkerGlobalScopePerformance.h"
+
+#include "core/timing/WorkerPerformance.h"
+#include "core/workers/WorkerGlobalScope.h"
 
 namespace blink {
 
-class WorkerGlobalScope;
+WorkerGlobalScopePerformance::WorkerGlobalScopePerformance()
+{
+}
 
-class WorkerGlobalScopePerformance final : public NoBaseWillBeGarbageCollected<WorkerGlobalScopePerformance>, public WillBeHeapSupplement<WorkerGlobalScope> {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WorkerGlobalScopePerformance);
-public:
-    static WorkerGlobalScopePerformance& from(WorkerGlobalScope&);
+const char* WorkerGlobalScopePerformance::supplementName()
+{
+    return "WorkerGlobalScopePerformance";
+}
 
-    static WorkerPerformance* performance(WorkerGlobalScope&);
+WorkerGlobalScopePerformance& WorkerGlobalScopePerformance::from(WorkerGlobalScope& context)
+{
+    WorkerGlobalScopePerformance* supplement = static_cast<WorkerGlobalScopePerformance*>(WillBeHeapSupplement<WorkerGlobalScope>::from(context, supplementName()));
+    if (!supplement) {
+        supplement = new WorkerGlobalScopePerformance();
+        provideTo(context, supplementName(), adoptPtrWillBeNoop(supplement));
+    }
+    return *supplement;
+}
 
-    DECLARE_VIRTUAL_TRACE();
+WorkerPerformance* WorkerGlobalScopePerformance::performance(WorkerGlobalScope& context)
+{
+    return from(context).performance(&context);
+}
 
-private:
-    WorkerGlobalScopePerformance();
+WorkerPerformance* WorkerGlobalScopePerformance::performance(WorkerGlobalScope* context)
+{
+    if (!m_performance)
+        m_performance = WorkerPerformance::create(context);
+    return m_performance.get();
+}
 
-    WorkerPerformance* performance(WorkerGlobalScope*);
-    static const char* supplementName();
-
-    PersistentWillBeMember<WorkerPerformance> m_performance;
-};
+DEFINE_TRACE(WorkerGlobalScopePerformance)
+{
+    visitor->trace(m_performance);
+    WillBeHeapSupplement<WorkerGlobalScope>::trace(visitor);
+}
 
 } // namespace blink
-
-#endif // WorkerGlobalScopePerformance_h
