@@ -270,9 +270,6 @@ char kTSanDefaultSuppressions[] =
 "race:g_next_user_script_id\n"
 
 // http://crbug.com/389098
-"race:webrtc::RtpToNtpMs\n"
-"race:webrtc::UpdateRtcpList\n"
-"race:webrtc::RemoteNtpTimeEstimator::Estimate\n"
 "race:webrtc::voe::TransmitMixer::EnableStereoChannelSwapping\n"
 
 // http://crbug.com/397022
