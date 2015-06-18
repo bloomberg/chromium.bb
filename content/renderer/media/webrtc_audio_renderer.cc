@@ -106,6 +106,16 @@ class SharedAudioRenderer : public MediaStreamAudioRenderer {
     on_play_state_changed_.Run(media_stream_, &playing_state_);
   }
 
+  void SwitchOutputDevice(
+      const std::string& device_id,
+      const GURL& security_origin,
+      const media::SwitchOutputDeviceCB& callback) override {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    DVLOG(1) << __FUNCTION__
+             << "(" << device_id << ", " << security_origin << ")";
+    delegate_->SwitchOutputDevice(device_id, security_origin, callback);
+  }
+
   base::TimeDelta GetCurrentRenderTime() const override {
     DCHECK(thread_checker_.CalledOnValidThread());
     return delegate_->GetCurrentRenderTime();
@@ -404,6 +414,17 @@ void WebRtcAudioRenderer::SetVolume(float volume) {
 
   playing_state_.set_volume(volume);
   OnPlayStateChanged(media_stream_, &playing_state_);
+}
+
+void WebRtcAudioRenderer::SwitchOutputDevice(
+    const std::string& device_id,
+    const GURL& security_origin,
+    const media::SwitchOutputDeviceCB& callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(sink_);
+  DVLOG(1) << __FUNCTION__
+           << "(" << device_id << ", " << security_origin << ")";
+  sink_->SwitchOutputDevice(device_id, security_origin, callback);
 }
 
 base::TimeDelta WebRtcAudioRenderer::GetCurrentRenderTime() const {

@@ -5,8 +5,13 @@
 #ifndef CONTENT_PUBLIC_RENDERER_MEDIA_STREAM_AUDIO_RENDERER_H_
 #define CONTENT_PUBLIC_RENDERER_MEDIA_STREAM_AUDIO_RENDERER_H_
 
+#include <string>
+
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
+#include "media/base/audio_renderer_sink.h"
+#include "url/gurl.h"
 
 namespace content {
 
@@ -28,6 +33,22 @@ class MediaStreamAudioRenderer
 
   // Sets the output volume.
   virtual void SetVolume(float volume) = 0;
+
+  // Attempts to switch the audio output device.
+  // Once the attempt is finished, |callback| is invoked with the
+  // result of the operation passed as a parameter. The result is a value from
+  // the media::SwitchOutputDeviceResult enum.
+  // There is no guarantee about the thread where |callback| will
+  // be invoked, so users are advised to use media::BindToCurrentLoop() to
+  // ensure that |callback| runs on the correct thread.
+  // Note also that copy constructors and destructors for arguments bound to
+  // |callback| may run on arbitrary threads as |callback| is moved across
+  // threads. It is advisable to bind arguments such that they are released by
+  // |callback| when it runs in order to avoid surprises.
+  virtual void SwitchOutputDevice(
+      const std::string& device_id,
+      const GURL& security_origin,
+      const media::SwitchOutputDeviceCB& callback) = 0;
 
   // Time stamp that reflects the current render time. Should not be updated
   // when paused.

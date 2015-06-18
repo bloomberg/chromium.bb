@@ -257,11 +257,20 @@ void WebMediaPlayerMS::setVolume(double volume) {
 }
 
 void WebMediaPlayerMS::setSinkId(const blink::WebString& device_id,
-                                 media::WebSetSinkIdCB* raw_web_callbacks) {
+                                 media::WebSetSinkIdCB* web_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  scoped_ptr<media::WebSetSinkIdCB> web_callbacks(raw_web_callbacks);
-  web_callbacks->onError(new blink::WebSetSinkIdError(
-      blink::WebSetSinkIdError::ErrorTypeNotSupported, "Not Supported"));
+  std::string device_id_str(device_id.utf8());
+  GURL security_origin(frame_->securityOrigin().toString().utf8());
+  DVLOG(1) << __FUNCTION__
+           << "(" << device_id_str << ", " << security_origin << ")";
+  media::SwitchOutputDeviceCB callback =
+      media::ConvertToSwitchOutputDeviceCB(web_callback);
+  if (audio_renderer_.get()) {
+    audio_renderer_->SwitchOutputDevice(device_id_str, security_origin,
+                                        callback);
+  } else {
+    callback.Run(media::SWITCH_OUTPUT_DEVICE_RESULT_ERROR_NOT_SUPPORTED);
+  }
 }
 
 void WebMediaPlayerMS::setPreload(WebMediaPlayer::Preload preload) {

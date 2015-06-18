@@ -77,7 +77,7 @@ class WebMediaPlayerMS
   virtual void setRate(double rate);
   virtual void setVolume(double volume);
   virtual void setSinkId(const blink::WebString& device_id,
-                         media::WebSetSinkIdCB* raw_web_callbacks);
+                         media::WebSetSinkIdCB* web_callback);
   virtual void setPreload(blink::WebMediaPlayer::Preload preload);
   virtual blink::WebTimeRanges buffered() const;
   virtual blink::WebTimeRanges seekable() const;

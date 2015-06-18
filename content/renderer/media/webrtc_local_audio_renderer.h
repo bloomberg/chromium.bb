@@ -5,6 +5,7 @@
 #ifndef CONTENT_RENDERER_MEDIA_WEBRTC_LOCAL_AUDIO_RENDERER_H_
 #define CONTENT_RENDERER_MEDIA_WEBRTC_LOCAL_AUDIO_RENDERER_H_
 
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
@@ -62,6 +63,9 @@ class CONTENT_EXPORT WebRtcLocalAudioRenderer
   void Play() override;
   void Pause() override;
   void SetVolume(float volume) override;
+  void SwitchOutputDevice(const std::string& device_id,
+                          const GURL& security_origin,
+                          const media::SwitchOutputDeviceCB& callback) override;
   base::TimeDelta GetCurrentRenderTime() const override;
   bool IsLocalRenderer() const override;
 
