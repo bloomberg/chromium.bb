@@ -1162,12 +1162,7 @@ shm_surface_create(struct display *display, struct wl_surface *wl_surface,
 	struct shm_surface *surface;
 	DBG_OBJ(wl_surface, "\n");
 
-	surface = xmalloc(sizeof *surface);
-	memset(surface, 0, sizeof *surface);
-
-	if (!surface)
-		return NULL;
-
+	surface = xzalloc(sizeof *surface);
 	surface->base.prepare = shm_surface_prepare;
 	surface->base.swap = shm_surface_swap;
 	surface->base.acquire = shm_surface_acquire;
@@ -4511,11 +4506,7 @@ surface_create(struct window *window)
 	struct display *display = window->display;
 	struct surface *surface;
 
-	surface = xmalloc(sizeof *surface);
-	memset(surface, 0, sizeof *surface);
-	if (!surface)
-		return NULL;
-
+	surface = xzalloc(sizeof *surface);
 	surface->window = window;
 	surface->surface = wl_compositor_create_surface(display->compositor);
 	surface->buffer_scale = 1;
