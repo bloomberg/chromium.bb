@@ -17,6 +17,7 @@ source_set("utility") {
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
   deps = [
+    "//content/public/common",
     "//content/public/utility",
     "//extensions/common",
     "//skia",

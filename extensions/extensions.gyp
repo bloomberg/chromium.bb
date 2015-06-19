@@ -228,6 +228,7 @@
       'target_name': 'extensions_utility',
       'type': 'static_library',
       'dependencies': [
+        '../content/content.gyp:content_common',
         '../content/content.gyp:content_utility',
         '../third_party/zlib/google/zip.gyp:zip',
         'extensions_common',
