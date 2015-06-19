@@ -1816,5 +1816,3 @@ crbug.com/501659 fast/parser/xml-declaration-missing-ending-mark.html [ Failure 
 crbug.com/501659 svg/custom/bug78807.svg [ Failure ]
 crbug.com/501659 fast/xsl/xslt-missing-namespace-in-xslt.xml [ Failure ]
 crbug.com/501659 http/tests/xmlviewer/dumpAsText/svg.xml [ Failure ]
-
-crbug.com/497950 [ Mac Debug ] svg/transforms/animated-path-inside-transformed-html.xhtml [ Pass ImageOnlyFailure ]
