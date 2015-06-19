@@ -1668,9 +1668,7 @@ crbug.com/463358 [ Debug ] svg/transforms/text-with-pattern-inside-transformed-h
 crbug.com/463358 [ Mac ] svg/W3C-SVG-1.1/struct-frag-02-t.svg [ Failure NeedsManualRebaseline ]
 crbug.com/463358 [ Debug ] fast/backgrounds/transformed-body-background.html [ Pass ImageOnlyFailure ]
 crbug.com/463358 [ Debug ] svg/hixie/perf/005.xml [ Pass ImageOnlyFailure ]
-# Temp disabled entry due to need for rebaselining
-# crbug.com/463358 [ Debug ] svg/transforms/animated-path-inside-transformed-html.xhtml [ ImageOnlyFailure Pass ]
-
+crbug.com/463358 [ Debug ] svg/transforms/animated-path-inside-transformed-html.xhtml [ ImageOnlyFailure Pass ]
 crbug.com/463358 [ Debug ] svg/hixie/perf/006.xml [ Pass ImageOnlyFailure ]
 crbug.com/463358 transforms/2d/hindi-rotated.html [ Pass Failure ImageOnlyFailure ]
 
