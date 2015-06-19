@@ -34,6 +34,7 @@
 #include "core/layout/LayoutAnalyzer.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/paint/DeprecatedPaintLayer.h"
+#include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/ThemePainter.h"
 #include "platform/PlatformKeyboardEvent.h"
@@ -84,7 +85,10 @@ void LayoutTextControlSingleLine::paint(const PaintInfo& paintInfo, const Layout
 
         // Convert the rect into the coords used for painting the content
         contentsRect.moveBy(paintOffset + location());
-        LayoutTheme::theme().painter().paintCapsLockIndicator(this, paintInfo, pixelSnappedIntRect(contentsRect));
+        IntRect snappedRect = pixelSnappedIntRect(contentsRect);
+        LayoutObjectDrawingRecorder recorder(*paintInfo.context, *this, paintInfo.phase, snappedRect);
+        if (!recorder.canUseCachedDrawing())
+            LayoutTheme::theme().painter().paintCapsLockIndicator(this, paintInfo, snappedRect);
     }
 }
 

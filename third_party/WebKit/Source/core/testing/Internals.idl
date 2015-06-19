@@ -322,4 +322,5 @@
     [Unscopeable] DOMString unscopeableMethod();
 
     ClientRectList focusRingRects(Element element);
+    void setCapsLockState(boolean enabled);
 };

@@ -363,6 +363,8 @@ public:
 
     ClientRectList* focusRingRects(Element*);
 
+    void setCapsLockState(bool enabled);
+
 private:
     explicit Internals(Document*);
     Document* contextDocument() const;

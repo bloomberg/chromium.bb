@@ -41,6 +41,9 @@ namespace blink {
 static const unsigned short HIGHBITMASKSHORT = 0x8000;
 #endif
 
+PlatformKeyboardEvent::OverrideCapsLockState PlatformKeyboardEvent::s_overrideCapsLockState =
+    PlatformKeyboardEvent::OverrideCapsLockState::Default;
+
 void PlatformKeyboardEvent::disambiguateKeyDownEvent(Type type)
 {
 #if OS(WIN)
@@ -73,15 +76,23 @@ void PlatformKeyboardEvent::disambiguateKeyDownEvent(Type type)
 
 bool PlatformKeyboardEvent::currentCapsLockState()
 {
+    switch (s_overrideCapsLockState) {
+    case OverrideCapsLockState::Default:
 #if OS(WIN)
-    // FIXME: Does this even work inside the sandbox?
-    return GetKeyState(VK_CAPITAL) & 1;
+            // FIXME: Does this even work inside the sandbox?
+            return GetKeyState(VK_CAPITAL) & 1;
 #elif OS(MACOSX)
-    return GetCurrentKeyModifiers() & alphaLock;
+            return GetCurrentKeyModifiers() & alphaLock;
 #else
-    notImplemented();
-    return false;
+            notImplemented();
+            return false;
 #endif
+    case OverrideCapsLockState::On:
+        return true;
+    case OverrideCapsLockState::Off:
+    default:
+        return false;
+    }
 }
 
 void PlatformKeyboardEvent::getCurrentModifierState(bool& shiftKey, bool& ctrlKey, bool& altKey, bool& metaKey)

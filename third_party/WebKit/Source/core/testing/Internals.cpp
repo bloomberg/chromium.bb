@@ -130,6 +130,7 @@
 #include "core/workers/WorkerThread.h"
 #include "platform/Cursor.h"
 #include "platform/Language.h"
+#include "platform/PlatformKeyboardEvent.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
 #include "platform/geometry/IntRect.h"
@@ -218,6 +219,7 @@ void Internals::resetToConsistentState(Page* page)
         scrollingCoordinator->reset();
 
     page->deprecatedLocalMainFrame()->view()->clear();
+    PlatformKeyboardEvent::setCurrentCapsLockState(PlatformKeyboardEvent::OverrideCapsLockState::Default);
 }
 
 Internals::Internals(Document* document)
@@ -2434,6 +2436,12 @@ ClientRectList* Internals::focusRingRects(Element* element)
     if (element && element->layoutObject())
         element->layoutObject()->addFocusRingRects(rects, LayoutPoint());
     return ClientRectList::create(rects);
+}
+
+void Internals::setCapsLockState(bool enabled)
+{
+    PlatformKeyboardEvent::setCurrentCapsLockState(enabled ?
+        PlatformKeyboardEvent::OverrideCapsLockState::On : PlatformKeyboardEvent::OverrideCapsLockState::Off);
 }
 
 } // namespace blink
