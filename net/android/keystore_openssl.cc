@@ -290,22 +290,24 @@ const RSA_METHOD android_rsa_method = {
      0 /* references */,
      1 /* is_static */
     } /* common */,
-    NULL /* app_data */,
+    nullptr /* app_data */,
 
-    NULL /* init */,
-    NULL /* finish */,
+    nullptr /* init */,
+    nullptr /* finish */,
     RsaMethodSize,
-    NULL /* sign */,
-    NULL /* verify */,
+    nullptr /* sign */,
+    nullptr /* verify */,
     RsaMethodEncrypt,
     RsaMethodSignRaw,
     RsaMethodDecrypt,
     RsaMethodVerifyRaw,
-    NULL /* private_transform */,
-    NULL /* mod_exp */,
-    NULL /* bn_mod_exp */,
+    nullptr /* private_transform */,
+    nullptr /* mod_exp */,
+    nullptr /* bn_mod_exp */,
     RSA_FLAG_OPAQUE,
-    NULL /* keygen */,
+    nullptr /* keygen */,
+    nullptr /* multi_prime_keygen */,
+    nullptr /* supports_digest */,
 };
 
 // Setup an EVP_PKEY to wrap an existing platform RSA PrivateKey object.

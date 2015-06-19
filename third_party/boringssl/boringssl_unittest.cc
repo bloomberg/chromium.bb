@@ -288,6 +288,14 @@ TEST(BoringSSL, SSL) {
   TestSimple("ssl_test");
 }
 
+TEST(BoringSSL, TabTest) {
+  TestSimple("tab_test");
+}
+
 TEST(BoringSSL, Thread) {
   TestSimple("thread_test");
+}
+
+TEST(BoringSSL, V3NameTest) {
+  TestSimple("v3name_test");
 }
