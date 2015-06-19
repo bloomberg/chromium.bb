@@ -6,9 +6,16 @@
 
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/autocomplete/shortcuts_backend.h"
+#include "chrome/browser/autocomplete/shortcuts_extensions_manager.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+
+namespace {
+#if defined(ENABLE_EXTENSIONS)
+const char kShortcutsExtensionsManagerKey[] = "ShortcutsExtensionsManager";
+#endif
+}
 
 // static
 scoped_refptr<ShortcutsBackend> ShortcutsBackendFactory::GetForProfile(
@@ -33,22 +40,14 @@ ShortcutsBackendFactory* ShortcutsBackendFactory::GetInstance() {
 scoped_refptr<RefcountedKeyedService>
 ShortcutsBackendFactory::BuildProfileForTesting(
     content::BrowserContext* profile) {
-  scoped_refptr<ShortcutsBackend> backend(
-      new ShortcutsBackend(static_cast<Profile*>(profile), false));
-  if (backend->Init())
-    return backend;
-  return NULL;
+  return CreateShortcutsBackend(Profile::FromBrowserContext(profile), false);
 }
 
 // static
 scoped_refptr<RefcountedKeyedService>
 ShortcutsBackendFactory::BuildProfileNoDatabaseForTesting(
     content::BrowserContext* profile) {
-  scoped_refptr<ShortcutsBackend> backend(
-      new ShortcutsBackend(static_cast<Profile*>(profile), true));
-  if (backend->Init())
-    return backend;
-  return NULL;
+  return CreateShortcutsBackend(Profile::FromBrowserContext(profile), true);
 }
 
 ShortcutsBackendFactory::ShortcutsBackendFactory()
@@ -63,13 +62,32 @@ ShortcutsBackendFactory::~ShortcutsBackendFactory() {}
 scoped_refptr<RefcountedKeyedService>
 ShortcutsBackendFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
-  scoped_refptr<ShortcutsBackend> backend(
-      new ShortcutsBackend(static_cast<Profile*>(profile), false));
-  if (backend->Init())
-    return backend;
-  return NULL;
+  return CreateShortcutsBackend(Profile::FromBrowserContext(profile), false);
 }
 
 bool ShortcutsBackendFactory::ServiceIsNULLWhileTesting() const {
   return true;
+}
+
+void ShortcutsBackendFactory::BrowserContextShutdown(
+    content::BrowserContext* context) {
+#if defined(ENABLE_EXTENSIONS)
+  context->RemoveUserData(kShortcutsExtensionsManagerKey);
+#endif
+
+  RefcountedBrowserContextKeyedServiceFactory::BrowserContextShutdown(context);
+}
+
+// static
+scoped_refptr<ShortcutsBackend> ShortcutsBackendFactory::CreateShortcutsBackend(
+    Profile* profile,
+    bool suppress_db) {
+  scoped_refptr<ShortcutsBackend> backend(
+      new ShortcutsBackend(profile, suppress_db));
+#if defined(ENABLE_EXTENSIONS)
+  ShortcutsExtensionsManager* extensions_manager =
+      new ShortcutsExtensionsManager(profile);
+  profile->SetUserData(kShortcutsExtensionsManagerKey, extensions_manager);
+#endif
+  return backend->Init() ? backend : nullptr;
 }

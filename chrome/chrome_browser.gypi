@@ -1283,6 +1283,8 @@
       'browser/autocomplete/shortcuts_backend.h',
       'browser/autocomplete/shortcuts_backend_factory.cc',
       'browser/autocomplete/shortcuts_backend_factory.h',
+      'browser/autocomplete/shortcuts_extensions_manager.cc',
+      'browser/autocomplete/shortcuts_extensions_manager.h',
       'browser/autocomplete/shortcuts_provider.cc',
       'browser/autocomplete/shortcuts_provider.h',
       'browser/autocomplete/zero_suggest_provider.cc',

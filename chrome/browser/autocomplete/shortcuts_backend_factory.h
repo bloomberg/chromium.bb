@@ -44,6 +44,11 @@ class ShortcutsBackendFactory
   scoped_refptr<RefcountedKeyedService> BuildServiceInstanceFor(
       content::BrowserContext* profile) const override;
   bool ServiceIsNULLWhileTesting() const override;
+  void BrowserContextShutdown(content::BrowserContext* context) override;
+
+  static scoped_refptr<ShortcutsBackend> CreateShortcutsBackend(
+      Profile* profile,
+      bool suppress_db);
 };
 
 #endif  // CHROME_BROWSER_AUTOCOMPLETE_SHORTCUTS_BACKEND_FACTORY_H_

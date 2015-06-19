@@ -22,8 +22,6 @@
 #include "components/keyed_service/core/refcounted_keyed_service.h"
 #include "components/omnibox/autocomplete_match.h"
 #include "components/omnibox/shortcuts_database.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "url/gurl.h"
 
 class Profile;
@@ -35,7 +33,6 @@ class ShortcutsDatabase;
 // This class manages the shortcut provider backend - access to database on the
 // db thread, etc.
 class ShortcutsBackend : public RefcountedKeyedService,
-                         public content::NotificationObserver,
                          public history::HistoryServiceObserver {
  public:
   typedef std::multimap<base::string16, const ShortcutsDatabase::Shortcut>
@@ -71,6 +68,9 @@ class ShortcutsBackend : public RefcountedKeyedService,
   // Deletes the Shortcuts with the url.
   bool DeleteShortcutsWithURL(const GURL& shortcut_url);
 
+  // Deletes the Shortcuts that begin with the url.
+  bool DeleteShortcutsBeginningWithURL(const GURL& shortcut_url);
+
   void AddObserver(ShortcutsBackendObserver* obs);
   void RemoveObserver(ShortcutsBackendObserver* obs);
 
@@ -102,11 +102,6 @@ class ShortcutsBackend : public RefcountedKeyedService,
 
   // RefcountedKeyedService:
   void ShutdownOnUIThread() override;
-
-  // content::NotificationObserver:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
 
   // history::HistoryServiceObserver:
   void OnURLsDeleted(history::HistoryService* history_service,
@@ -154,7 +149,6 @@ class ShortcutsBackend : public RefcountedKeyedService,
   // This is a helper map for quick access to a shortcut by guid.
   GuidMap guid_map_;
 
-  content::NotificationRegistrar notification_registrar_;
   ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
       history_service_observer_;
 

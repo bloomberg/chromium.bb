@@ -13,7 +13,6 @@
 #include "base/guid.h"
 #include "base/i18n/case_conversion.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -28,13 +27,6 @@
 #include "components/omnibox/omnibox_log.h"
 #include "components/omnibox/shortcuts_database.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
-
-#if defined(ENABLE_EXTENSIONS)
-#include "extensions/browser/notification_types.h"
-#include "extensions/common/extension.h"
-#endif
 
 using content::BrowserThread;
 
@@ -87,12 +79,6 @@ ShortcutsBackend::ShortcutsBackend(Profile* profile, bool suppress_db)
   }
   // |profile| can be NULL in tests.
   if (profile) {
-#if defined(ENABLE_EXTENSIONS)
-    notification_registrar_.Add(
-        this,
-        extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-        content::Source<Profile>(profile));
-#endif
     history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
         profile, ServiceAccessType::EXPLICIT_ACCESS);
     if (hs)
@@ -116,6 +102,11 @@ bool ShortcutsBackend::Init() {
 
 bool ShortcutsBackend::DeleteShortcutsWithURL(const GURL& shortcut_url) {
   return initialized() && DeleteShortcutsWithURL(shortcut_url, true);
+}
+
+bool ShortcutsBackend::DeleteShortcutsBeginningWithURL(
+    const GURL& shortcut_url) {
+  return initialized() && DeleteShortcutsWithURL(shortcut_url, false);
 }
 
 void ShortcutsBackend::AddObserver(ShortcutsBackendObserver* obs) {
@@ -183,24 +174,7 @@ ShortcutsDatabase::Shortcut::MatchCore ShortcutsBackend::MatchToMatchCore(
 void ShortcutsBackend::ShutdownOnUIThread() {
   DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::UI));
-  notification_registrar_.RemoveAll();
   history_service_observer_.RemoveAll();
-}
-
-void ShortcutsBackend::Observe(int type,
-                               const content::NotificationSource& source,
-                               const content::NotificationDetails& details) {
-#if defined(ENABLE_EXTENSIONS)
-  DCHECK_EQ(extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED, type);
-  if (!initialized())
-    return;
-
-  // When an extension is unloaded, we want to remove any Shortcuts associated
-  // with it.
-  DeleteShortcutsWithURL(content::Details<extensions::UnloadedExtensionInfo>(
-                             details)->extension->url(),
-                         false);
-#endif
 }
 
 void ShortcutsBackend::OnURLsDeleted(history::HistoryService* history_service,
