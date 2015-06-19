@@ -842,8 +842,8 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
     }
 
     private static boolean enableReadOnlyPopup() {
-        return CommandLine.getInstance().hasSwitch(
-                ChromeSwitches.ENABLE_READ_ONLY_WEBSITE_SETTINGS_POPUP);
+        return !CommandLine.getInstance().hasSwitch(
+                ChromeSwitches.DISABLE_READ_ONLY_WEBSITE_SETTINGS_POPUP);
     }
 
     /**
