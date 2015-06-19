@@ -1790,6 +1790,66 @@ TEST_F(HistoryBackendTest, SetFaviconMappingsForPageAndRedirects) {
   EXPECT_EQ(1u, NumIconMappingsForPageURL(url2, favicon_base::FAVICON));
 }
 
+
+// Test that SetFaviconMappingsForPageAndRedirects correctly updates icon
+// mappings when the final URL has a fragment.
+TEST_F(HistoryBackendTest, SetFaviconMappingsForPageAndRedirectsWithFragment) {
+  // URLs used for recent_redirects_
+  const GURL url1("http://www.google.com#abc");
+  const GURL url2("http://www.google.com");
+  const GURL url3("http://www.google.com/m");
+  URLRow url_info1(url1);
+  url_info1.set_visit_count(0);
+  url_info1.set_typed_count(0);
+  url_info1.set_last_visit(base::Time());
+  url_info1.set_hidden(false);
+  backend_->db_->AddURL(url_info1);
+
+  URLRow url_info2(url2);
+  url_info2.set_visit_count(0);
+  url_info2.set_typed_count(0);
+  url_info2.set_last_visit(base::Time());
+  url_info2.set_hidden(false);
+  backend_->db_->AddURL(url_info2);
+
+  URLRow url_info3(url3);
+  url_info3.set_visit_count(0);
+  url_info3.set_typed_count(0);
+  url_info3.set_last_visit(base::Time());
+  url_info3.set_hidden(false);
+  backend_->db_->AddURL(url_info3);
+
+  // Icon URL.
+  const GURL icon_url1("http://www.google.com/icon");
+  std::vector<SkBitmap> bitmaps;
+  bitmaps.push_back(CreateBitmap(SK_ColorBLUE, kSmallEdgeSize));
+
+  // Page URL has a fragment, but redirect is keyed to the same URL without a
+  // fragment.
+  history::RedirectList redirects;
+  redirects.push_back(url3);
+  redirects.push_back(url2);
+  backend_->recent_redirects_.Put(url2, redirects);
+
+  backend_->SetFavicons(url1, favicon_base::FAVICON, icon_url1, bitmaps);
+  EXPECT_EQ(1u, NumIconMappingsForPageURL(url1, favicon_base::FAVICON));
+  EXPECT_EQ(1u, NumIconMappingsForPageURL(url2, favicon_base::FAVICON));
+  EXPECT_EQ(1u, NumIconMappingsForPageURL(url3, favicon_base::FAVICON));
+
+  // Both page and redirect key have a fragment.
+  redirects.clear();
+  redirects.push_back(url3);
+  redirects.push_back(url2);
+  redirects.push_back(url1);
+  backend_->recent_redirects_.Clear();
+  backend_->recent_redirects_.Put(url1, redirects);
+
+  backend_->SetFavicons(url1, favicon_base::FAVICON, icon_url1, bitmaps);
+  EXPECT_EQ(1u, NumIconMappingsForPageURL(url1, favicon_base::FAVICON));
+  EXPECT_EQ(1u, NumIconMappingsForPageURL(url2, favicon_base::FAVICON));
+  EXPECT_EQ(1u, NumIconMappingsForPageURL(url3, favicon_base::FAVICON));
+}
+
 // Test that there is no churn in icon mappings from calling
 // SetFavicons() twice with the same |bitmaps| parameter.
 TEST_F(HistoryBackendTest, SetFaviconMappingsForPageDuplicates) {

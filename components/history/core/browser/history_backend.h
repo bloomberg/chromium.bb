@@ -484,6 +484,8 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest,
                            SetFaviconMappingsForPageAndRedirects);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest,
+                           SetFaviconMappingsForPageAndRedirectsWithFragment);
+  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest,
                            SetFaviconMappingsForPageDuplicates);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, SetFaviconsDeleteBitmaps);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, SetFaviconsReplaceBitmapData);
@@ -693,8 +695,16 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
       favicon_base::IconType icon_type,
       const std::vector<favicon_base::FaviconID>& icon_ids);
 
+  // Maps the favicon ids in |icon_ids| to URLs in |page_urls| for |icon_type|.
+  // Returns true if the function changed at least one of the |page_urls|
+  // mappings.
+  bool SetFaviconMappingsForPages(
+      const std::vector<GURL>& page_urls,
+      favicon_base::IconType icon_type,
+      const std::vector<favicon_base::FaviconID>& icon_ids);
+
   // Maps the favicon ids in |icon_ids| to |page_url| for |icon_type|.
-  // Returns true if the function changed some of |page_url|'s mappings.
+  // Returns true if the function changed at least one of |page_url|'s mappings.
   bool SetFaviconMappingsForPage(
       const GURL& page_url,
       favicon_base::IconType icon_type,

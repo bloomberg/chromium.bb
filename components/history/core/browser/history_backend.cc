@@ -2085,12 +2085,28 @@ bool HistoryBackend::SetFaviconMappingsForPageAndRedirects(
   // all the pages in the redirect chain if it redirected.
   RedirectList redirects;
   GetCachedRecentRedirects(page_url, &redirects);
+  bool mappings_changed = SetFaviconMappingsForPages(redirects, icon_type,
+                                                     icon_ids);
+  if (page_url.has_ref()) {
+    // Refs often gets added by Javascript, but the redirect chain is keyed to
+    // the URL without a ref.
+    GURL::Replacements replacements;
+    replacements.ClearRef();
+    GURL page_url_without_ref = page_url.ReplaceComponents(replacements);
+    GetCachedRecentRedirects(page_url_without_ref, &redirects);
+    mappings_changed |= SetFaviconMappingsForPages(redirects, icon_type,
+                                                   icon_ids);
+  }
 
+  return mappings_changed;
+}
+
+bool HistoryBackend::SetFaviconMappingsForPages(
+    const std::vector<GURL>& page_urls,
+    favicon_base::IconType icon_type,
+    const std::vector<favicon_base::FaviconID>& icon_ids) {
   bool mappings_changed = false;
-
-  // Save page <-> favicon associations.
-  for (RedirectList::const_iterator i(redirects.begin()); i != redirects.end();
-       ++i) {
+  for (auto i(page_urls.begin()); i != page_urls.end(); ++i) {
     mappings_changed |= SetFaviconMappingsForPage(*i, icon_type, icon_ids);
   }
   return mappings_changed;
