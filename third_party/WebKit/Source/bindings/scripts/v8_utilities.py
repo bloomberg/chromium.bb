@@ -468,11 +468,6 @@ def on_prototype(interface, member):
     if (interface.name == 'Window'):
         return member.idl_type.name == 'EventHandler'
 
-    # TODO(yukishiino): We should move all of the following members to prototype
-    # chains.
-    if 'Custom' in member.extended_attributes:
-        return False
-
     if 'ExposeJSAccessors' in interface.extended_attributes:
         return True
     if 'DoNotExposeJSAccessors' in interface.extended_attributes:

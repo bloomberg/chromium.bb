@@ -50,7 +50,7 @@ static v8::Local<v8::Value> cacheState(v8::Isolate* isolate, v8::Local<v8::Objec
 }
 
 
-void V8CustomEvent::detailAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>& info)
+void V8CustomEvent::detailAttributeGetterCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     CustomEvent* event = V8CustomEvent::toImpl(info.Holder());
 

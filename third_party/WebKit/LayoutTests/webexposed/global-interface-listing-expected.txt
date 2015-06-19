@@ -649,6 +649,7 @@ interface CryptoKey
     getter usages
     method constructor
 interface CustomEvent
+    getter detail
     method constructor
     method initCustomEvent
 interface DOMError
@@ -1394,6 +1395,7 @@ interface Error
     method toString
 interface ErrorEvent
     getter colno
+    getter error
     getter filename
     getter lineno
     getter message
@@ -2560,11 +2562,13 @@ interface HTMLOptionElement
     setter text
     setter value
 interface HTMLOptionsCollection
+    getter length
     getter selectedIndex
     method add
     method constructor
     method namedItem
     method remove
+    setter length
     setter selectedIndex
 interface HTMLOutputElement
     getter defaultValue
@@ -3353,6 +3357,7 @@ interface MessageChannel
     getter port2
     method constructor
 interface MessageEvent
+    getter data
     getter lastEventId
     getter origin
     getter ports
@@ -3779,6 +3784,7 @@ interface PluginArray
     method namedItem
     method refresh
 interface PopStateEvent
+    getter state
     method constructor
 interface Presentation
     getter onavailablechange
@@ -6502,6 +6508,8 @@ interface XMLHttpRequest
     attribute UNSENT
     getter onreadystatechange
     getter readyState
+    getter response
+    getter responseText
     getter responseType
     getter responseURL
     getter responseXML

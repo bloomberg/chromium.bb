@@ -43,7 +43,7 @@
 
 namespace blink {
 
-void V8HTMLOptionsCollection::lengthAttributeSetterCustom(v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+void V8HTMLOptionsCollection::lengthAttributeSetterCustom(v8::Local<v8::Value> value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     HTMLOptionsCollection* impl = V8HTMLOptionsCollection::toImpl(info.Holder());
     unsigned newLength = 0;

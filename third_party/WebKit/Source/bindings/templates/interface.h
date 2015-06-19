@@ -97,12 +97,20 @@ public:
     {% for attribute in attributes %}
     {% if attribute.has_custom_getter %}{# FIXME: and not attribute.implemented_by #}
     {% filter conditional(attribute.conditional_string) %}
+    {% if attribute.is_expose_js_accessors %}
+    static void {{attribute.name}}AttributeGetterCustom(const v8::FunctionCallbackInfo<v8::Value>&);
+    {% else %}
     static void {{attribute.name}}AttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>&);
+    {% endif %}
     {% endfilter %}
     {% endif %}
     {% if attribute.has_custom_setter %}{# FIXME: and not attribute.implemented_by #}
     {% filter conditional(attribute.conditional_string) %}
+    {% if attribute.is_expose_js_accessors %}
+    static void {{attribute.name}}AttributeSetterCustom(v8::Local<v8::Value>, const v8::FunctionCallbackInfo<v8::Value>&);
+    {% else %}
     static void {{attribute.name}}AttributeSetterCustom(v8::Local<v8::Value>, const v8::PropertyCallbackInfo<void>&);
+    {% endif %}
     {% endfilter %}
     {% endif %}
     {% endfor %}

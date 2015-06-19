@@ -82,6 +82,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     getter usages
 [Worker]     method constructor
 [Worker] interface CustomEvent
+[Worker]     getter detail
 [Worker]     method constructor
 [Worker]     method initCustomEvent
 [Worker] interface DOMException
@@ -539,6 +540,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     getter port2
 [Worker]     method constructor
 [Worker] interface MessageEvent
+[Worker]     getter data
 [Worker]     getter lastEventId
 [Worker]     getter origin
 [Worker]     getter ports
@@ -956,6 +958,8 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     attribute UNSENT
 [Worker]     getter onreadystatechange
 [Worker]     getter readyState
+[Worker]     getter response
+[Worker]     getter responseText
 [Worker]     getter responseType
 [Worker]     getter responseURL
 [Worker]     getter responseXML

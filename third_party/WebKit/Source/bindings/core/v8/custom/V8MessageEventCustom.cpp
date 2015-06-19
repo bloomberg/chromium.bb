@@ -43,7 +43,7 @@
 
 namespace blink {
 
-void V8MessageEvent::dataAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>& info)
+void V8MessageEvent::dataAttributeGetterCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> cachedData = V8HiddenValue::getHiddenValue(info.GetIsolate(), info.Holder(), V8HiddenValue::data(info.GetIsolate()));
     if (!cachedData.IsEmpty()) {

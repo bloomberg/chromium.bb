@@ -43,13 +43,13 @@
 
 namespace blink {
 
-static void setHiddenValueAndReturnValue(const v8::PropertyCallbackInfo<v8::Value>& info, v8::Local<v8::Value> error)
+static void setHiddenValueAndReturnValue(const v8::FunctionCallbackInfo<v8::Value>& info, v8::Local<v8::Value> error)
 {
     V8HiddenValue::setHiddenValue(info.GetIsolate(), info.Holder(), V8HiddenValue::error(info.GetIsolate()), error);
     v8SetReturnValue(info, error);
 }
 
-void V8ErrorEvent::errorAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>& info)
+void V8ErrorEvent::errorAttributeGetterCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Isolate* isolate = info.GetIsolate();
     v8::Local<v8::Value> cachedError = V8HiddenValue::getHiddenValue(isolate, info.Holder(), V8HiddenValue::error(isolate));

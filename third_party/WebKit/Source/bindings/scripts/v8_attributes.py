@@ -519,11 +519,8 @@ def is_expose_js_accessors(interface, attribute):
             'OverrideBuiltins' in interface.extended_attributes):
         return False
 
-    # FIXME: We should move all of the following DOM attributes to prototype
-    # chains.
-    if (has_custom_getter(attribute) or
-            has_custom_setter(attribute) or
-            interface.name == 'Window'):
+    # The members of Window interface must be placed on the instance object.
+    if interface.name == 'Window':
         return False
 
     return is_accessor
