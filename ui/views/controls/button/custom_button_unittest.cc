@@ -5,9 +5,6 @@
 #include "ui/views/controls/button/custom_button.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/aura/test/test_cursor_client.h"
-#include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/layout.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/screen.h"
@@ -19,6 +16,12 @@
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/test/views_test_base.h"
+
+#if defined(USE_AURA)
+#include "ui/aura/test/test_cursor_client.h"
+#include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
+#endif
 
 namespace views {
 
@@ -45,13 +48,6 @@ class TestCustomButton : public CustomButton, public ButtonListener {
 
   DISALLOW_COPY_AND_ASSIGN(TestCustomButton);
 };
-
-void PerformGesture(CustomButton* button, ui::EventType event_type) {
-  ui::GestureEventDetails gesture_details(event_type);
-  base::TimeDelta time_stamp = base::TimeDelta::FromMicroseconds(0);
-  ui::GestureEvent gesture_event(0, 0, 0, time_stamp, gesture_details);
-  button->OnGestureEvent(&gesture_event);
-}
 
 class CustomButtonTest : public ViewsTestBase {
  public:
@@ -100,9 +96,6 @@ class CustomButtonTest : public ViewsTestBase {
 
 // Tests that hover state changes correctly when visiblity/enableness changes.
 TEST_F(CustomButtonTest, HoverStateOnVisibilityChange) {
-  aura::test::TestCursorClient cursor_client(
-      widget()->GetNativeView()->GetRootWindow());
-
   gfx::Point center(10, 10);
   button()->OnMousePressed(ui::MouseEvent(
       ui::ET_MOUSE_PRESSED, center, center, ui::EventTimeForNow(),
@@ -126,6 +119,12 @@ TEST_F(CustomButtonTest, HoverStateOnVisibilityChange) {
   button()->SetVisible(true);
   EXPECT_EQ(CustomButton::STATE_HOVERED, button()->state());
 
+// Disabling cursor events occurs for touch events and the Ash magnifier. There
+// is no touch on desktop Mac. Tracked in http://crbug.com/445520.
+#if !defined(OS_MACOSX) || defined(USE_AURA)
+  aura::test::TestCursorClient cursor_client(
+      widget()->GetNativeView()->GetRootWindow());
+
   // In Aura views, no new hover effects are invoked if mouse events
   // are disabled.
   cursor_client.DisableMouseEvents();
@@ -141,6 +140,7 @@ TEST_F(CustomButtonTest, HoverStateOnVisibilityChange) {
 
   button()->SetVisible(true);
   EXPECT_EQ(CustomButton::STATE_NORMAL, button()->state());
+#endif  // !defined(OS_MACOSX) || defined(USE_AURA)
 }
 
 // Tests the different types of NotifyActions.
@@ -178,6 +178,20 @@ TEST_F(CustomButtonTest, NotifyAction) {
   EXPECT_FALSE(button()->notified());
 }
 
+// No touch on desktop Mac. Tracked in http://crbug.com/445520.
+#if !defined(OS_MACOSX) || defined(USE_AURA)
+
+namespace {
+
+void PerformGesture(CustomButton* button, ui::EventType event_type) {
+  ui::GestureEventDetails gesture_details(event_type);
+  base::TimeDelta time_stamp = base::TimeDelta::FromMicroseconds(0);
+  ui::GestureEvent gesture_event(0, 0, 0, time_stamp, gesture_details);
+  button->OnGestureEvent(&gesture_event);
+}
+
+}  // namespace
+
 // Tests that gesture events correctly change the button state.
 TEST_F(CustomButtonTest, GestureEventsSetState) {
   aura::test::TestCursorClient cursor_client(
@@ -194,6 +208,8 @@ TEST_F(CustomButtonTest, GestureEventsSetState) {
   PerformGesture(button(), ui::ET_GESTURE_TAP_CANCEL);
   EXPECT_EQ(CustomButton::STATE_NORMAL, button()->state());
 }
+
+#endif  // !defined(OS_MACOSX) || defined(USE_AURA)
 
 // Ensure subclasses of CustomButton are correctly recognized as CustomButton.
 TEST_F(CustomButtonTest, AsCustomButton) {
