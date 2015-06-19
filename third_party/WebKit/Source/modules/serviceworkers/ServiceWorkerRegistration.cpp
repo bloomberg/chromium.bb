@@ -105,16 +105,7 @@ ScriptPromise ServiceWorkerRegistration::unregister(ScriptState* scriptState)
         return promise;
     }
 
-    RefPtr<SecurityOrigin> documentOrigin = scriptState->executionContext()->securityOrigin();
-    KURL scopeURL = scriptState->executionContext()->completeURL(scope());
-    scopeURL.removeFragmentIdentifier();
-    if (!scope().isEmpty() && !documentOrigin->canRequest(scopeURL)) {
-        RefPtr<SecurityOrigin> scopeOrigin = SecurityOrigin::create(scopeURL);
-        resolver->reject(DOMException::create(SecurityError, "Failed to unregister a ServiceWorkerRegistration: The origin of the registration's scope ('" + scopeOrigin->toString() + "') does not match the current origin ('" + documentOrigin->toString() + "')."));
-        return promise;
-    }
-
-    m_provider->unregisterServiceWorker(scopeURL, new CallbackPromiseAdapter<bool, ServiceWorkerError>(resolver));
+    m_outerRegistration->unregister(m_provider, new CallbackPromiseAdapter<bool, ServiceWorkerError>(resolver));
     return promise;
 }
 

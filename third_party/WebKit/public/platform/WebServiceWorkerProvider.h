@@ -59,12 +59,6 @@ public:
     typedef WebCallbacks<WebServiceWorkerRegistration, void> WebServiceWorkerGetRegistrationForReadyCallbacks;
 
     virtual void registerServiceWorker(const WebURL& pattern, const WebURL& scriptUrl, WebServiceWorkerRegistrationCallbacks*) { }
-
-    // TODO(nhiroki): Remove after http://crbug.com/500404 is fixed.
-#define CRBUG_500404
-    typedef WebCallbacks<bool, WebServiceWorkerError> WebServiceWorkerUnregistrationCallbacks;
-    virtual void unregisterServiceWorker(const WebURL& pattern, WebServiceWorkerUnregistrationCallbacks*) { }
-
     virtual void getRegistration(const WebURL& documentURL, WebServiceWorkerGetRegistrationCallbacks*) { }
     virtual void getRegistrations(WebServiceWorkerGetRegistrationsCallbacks*) { }
     virtual void getRegistrationForReady(WebServiceWorkerGetRegistrationForReadyCallbacks*) { }
