@@ -1793,14 +1793,6 @@ crbug.com/321237 [ Mac ] fast/text/international/complex-text-leading-space-wrap
 crbug.com/321237 [ Mac ] virtual/antialiasedtext/fast/text/international/complex-text-leading-space-wrapping.html [ ImageOnlyFailure ]
 crbug.com/321237 [ Win ] virtual/antialiasedtext/fast/text/international/complex-text-leading-space-wrapping.html [ ImageOnlyFailure ]
 
-# Slimming Paint svg rebaselines
-crbug.com/497950 svg/custom/focus-ring.svg [ NeedsRebaseline ]
-crbug.com/497950 svg/custom/transformed-outlines.svg [ NeedsRebaseline ]
-crbug.com/497950 svg/hixie/perf/004.xml [ NeedsRebaseline ]
-crbug.com/497950 svg/transforms/animated-path-inside-transformed-html.xhtml [ NeedsRebaseline ]
-crbug.com/497950 [ Mac ] svg/custom/absolute-sized-content-with-resources.xhtml [ NeedsRebaseline ]
-crbug.com/497950 [ Mac ] svg/text/text-rescale.html [ NeedsRebaseline ]
-
 #crbug.com/495523 fast/text/international/text-spliced-font.html [ Pass Failure ]
 
 crbug.com/446406 [ Win ] fast/repaint/quotes.html [ NeedsRebaseline ]
