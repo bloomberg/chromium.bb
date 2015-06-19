@@ -49,7 +49,7 @@ void SignalCatch(int sig, siginfo_t* info, void* uc) {
                                        not useful for NonSFI NaCl. */);
     signal_handler_function_pointer(&exception_frame.context);
   }
-  _exit(-1);
+  _exit(-sig);
 }
 
 int IrtExceptionHandler(NaClExceptionHandler handler,

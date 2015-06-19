@@ -139,10 +139,14 @@ void NaClSandbox::InitializeLayerOneSandbox() {
     layer_one_enabled_ = true;
   } else if (sandbox::NamespaceSandbox::InNewUserNamespace()) {
     CHECK(sandbox::Credentials::MoveToNewUserNS());
-    // This relies on SealLayerOneSandbox() to be called later since this
-    // class is keeping a file descriptor to /proc/.
     CHECK(sandbox::Credentials::DropFileSystemAccess(proc_fd_.get()));
-    CHECK(sandbox::Credentials::DropAllCapabilities(proc_fd_.get()));
+
+    // We do not drop CAP_SYS_ADMIN because we need it to place each child
+    // process in its own PID namespace later on.
+    std::vector<sandbox::Credentials::Capability> caps;
+    caps.push_back(sandbox::Credentials::Capability::SYS_ADMIN);
+    CHECK(sandbox::Credentials::SetCapabilities(proc_fd_.get(), caps));
+
     CHECK(IsSandboxed());
     layer_one_enabled_ = true;
   }

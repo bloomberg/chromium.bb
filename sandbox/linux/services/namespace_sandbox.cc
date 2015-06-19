@@ -80,7 +80,7 @@ void TerminationSignalHandler(int sig) {
     _exit(g_signal_exit_codes[sig_idx]);
   }
 
-  _exit(NamespaceSandbox::kDefaultExitCode);
+  _exit(NamespaceSandbox::SignalExitCode(sig));
 }
 
 }  // namespace
@@ -161,7 +161,7 @@ void NamespaceSandbox::InstallDefaultTerminationSignalHandlers() {
   };
 
   for (const int sig : kDefaultTermSignals) {
-    InstallTerminationSignalHandler(sig, kDefaultExitCode);
+    InstallTerminationSignalHandler(sig, SignalExitCode(sig));
   }
 }
 

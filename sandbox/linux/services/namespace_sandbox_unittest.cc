@@ -120,7 +120,6 @@ TEST_F(NamespaceSandboxTest, NestedNamespaceSandbox) {
 }
 
 const int kNormalExitCode = 0;
-const int kSignalTerminationExitCode = 255;
 
 // Ensure that CHECK(false) is distinguishable from _exit(kNormalExitCode).
 // Allowing noise since CHECK(false) will write a stack trace to stderr.
@@ -182,7 +181,7 @@ SANDBOX_TEST(ForkInNewPidNamespace, ExitWithSignal) {
     CHECK_EQ(1, getpid());
     CHECK(!Credentials::HasAnyCapability());
     CHECK(NamespaceSandbox::InstallTerminationSignalHandler(
-        SIGTERM, kSignalTerminationExitCode));
+        SIGTERM, NamespaceSandbox::SignalExitCode(SIGTERM)));
     while (true) {
       raise(SIGTERM);
     }
@@ -191,7 +190,7 @@ SANDBOX_TEST(ForkInNewPidNamespace, ExitWithSignal) {
   int status;
   PCHECK(waitpid(pid, &status, 0) == pid);
   CHECK(WIFEXITED(status));
-  CHECK_EQ(kSignalTerminationExitCode, WEXITSTATUS(status));
+  CHECK_EQ(NamespaceSandbox::SignalExitCode(SIGTERM), WEXITSTATUS(status));
 }
 
 volatile sig_atomic_t signal_handler_called;
@@ -206,7 +205,7 @@ SANDBOX_TEST(InstallTerminationSignalHandler, DoesNotOverrideExistingHandlers) {
 
   NamespaceSandbox::InstallDefaultTerminationSignalHandlers();
   CHECK(!NamespaceSandbox::InstallTerminationSignalHandler(
-            SIGUSR1, kSignalTerminationExitCode));
+            SIGUSR1, NamespaceSandbox::SignalExitCode(SIGUSR1)));
 
   raise(SIGUSR1);
   CHECK_EQ(1, signal_handler_called);

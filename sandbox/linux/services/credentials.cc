@@ -296,4 +296,15 @@ bool Credentials::DropFileSystemAccess(int proc_fd) {
   return true;
 }
 
+pid_t Credentials::ForkAndDropCapabilitiesInChild() {
+  pid_t pid = fork();
+  if (pid != 0) {
+    return pid;
+  }
+
+  // Since we just forked, we are single threaded.
+  PCHECK(DropAllCapabilitiesOnCurrentThread());
+  return 0;
+}
+
 }  // namespace sandbox.

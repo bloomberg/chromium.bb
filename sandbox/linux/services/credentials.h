@@ -95,6 +95,9 @@ class SANDBOX_EXPORT Credentials {
   //   - DropAllCapabilities() must be called to prevent escapes.
   static bool DropFileSystemAccess(int proc_fd) WARN_UNUSED_RESULT;
 
+  // Forks and drops capabilities in the child.
+  static pid_t ForkAndDropCapabilitiesInChild();
+
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(Credentials);
 };

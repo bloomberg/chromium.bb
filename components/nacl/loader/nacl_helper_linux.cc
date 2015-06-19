@@ -41,7 +41,9 @@
 #include "crypto/nss_util.h"
 #include "ipc/ipc_descriptors.h"
 #include "ipc/ipc_switches.h"
+#include "sandbox/linux/services/credentials.h"
 #include "sandbox/linux/services/libc_urandom_override.h"
+#include "sandbox/linux/services/namespace_sandbox.h"
 
 #if defined(OS_NACL_NONSFI)
 #include "native_client/src/public/nonsfi/irt_exception_handling.h"
@@ -190,12 +192,28 @@ bool HandleForkRequest(ScopedVector<base::ScopedFD> child_fds,
   }
 
   VLOG(1) << "nacl_helper: forking";
-  pid_t child_pid = fork();
+  pid_t child_pid;
+  if (sandbox::NamespaceSandbox::InNewUserNamespace()) {
+    child_pid = sandbox::NamespaceSandbox::ForkInNewPidNamespace(
+        /*drop_capabilities_in_child=*/true);
+  } else {
+    child_pid = sandbox::Credentials::ForkAndDropCapabilitiesInChild();
+  }
+
   if (child_pid < 0) {
     PLOG(ERROR) << "*** fork() failed.";
   }
 
   if (child_pid == 0) {
+    // Install termiantion signal handlers for nonsfi NaCl. The SFI NaCl runtime
+    // will install signal handlers for SIGINT, SIGTERM, etc. so we do not need
+    // to install termination signal handlers ourselves (in fact, it will crash
+    // if signal handlers for these are present).
+    if (uses_nonsfi_mode && getpid() == 1) {
+      // Note that nonsfi NaCl may override some of these signal handlers, which
+      // is fine.
+      sandbox::NamespaceSandbox::InstallDefaultTerminationSignalHandlers();
+    }
     ChildNaClLoaderInit(child_fds.Pass(),
                         system_info,
                         uses_nonsfi_mode,
