@@ -439,12 +439,6 @@ Response ServiceWorkerHandler::DeliverPushMessage(
   return Response::OK();
 }
 
-// TODO(horo): I will remove it in crrev.com/1143363009.
-Response ServiceWorkerHandler::GetTargetInfo(DevToolsCommandId command_id,
-                                             const std::string& target_id) {
-  return Response::InternalError("Not implemented yet");
-}
-
 Response ServiceWorkerHandler::GetTargetInfo(
     const std::string& target_id,
     scoped_refptr<TargetInfo>* target_info) {

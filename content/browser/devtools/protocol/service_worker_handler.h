@@ -59,9 +59,6 @@ class ServiceWorkerHandler : public DevToolsAgentHostClient,
   Response DeliverPushMessage(const std::string& origin,
                               const std::string& registration_id,
                               const std::string& data);
-  // TODO(horo): I will remove it in crrev.com/1143363009.
-  Response GetTargetInfo(DevToolsCommandId command_id,
-                         const std::string& target_id);
   Response GetTargetInfo(const std::string& target_id,
                          scoped_refptr<TargetInfo>* target_info);
   Response ActivateTarget(const std::string& target_id);
