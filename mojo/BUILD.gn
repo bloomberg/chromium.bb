@@ -26,6 +26,7 @@ group("mojo") {
 group("tests") {
   testonly = true
   deps = [
+    "//ipc/mojo:ipc_mojo_unittests",
     "//mojo/application/public/cpp/tests:mojo_public_application_unittests",
     "//mojo/common:mojo_common_unittests",
     "//mojo/converters/surfaces/tests:mojo_surfaces_lib_unittests",
