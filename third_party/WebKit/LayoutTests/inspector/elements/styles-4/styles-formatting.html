@@ -33,7 +33,7 @@ function test()
 
         function testFormattedInsertStart(next)
         {
-            formattedStyle.insertPropertyAt(0, "firstProperty", "firstValue", dumpFormattedAndCallNext.bind(null, next));
+            formattedStyle.insertPropertyAt(0, "firstProperty", "rgba(1, 2, 3, 0)", dumpFormattedAndCallNext.bind(null, next));
         },
 
         function testFormattedRemoveStart(next)
@@ -43,7 +43,7 @@ function test()
 
         function testFormattedInsertMiddle(next)
         {
-            formattedStyle.insertPropertyAt(1, "middleProperty", "middleValue", dumpFormattedAndCallNext.bind(null, next));
+            formattedStyle.insertPropertyAt(1, "middleProperty", "middleValue /* comment */", dumpFormattedAndCallNext.bind(null, next));
         },
 
         function testFormattedRemoveMiddle(next)

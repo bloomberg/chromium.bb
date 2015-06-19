@@ -216,3 +216,6 @@ Dumping matched rules:
     }
 Dumping inherited rules: 
 
+Running test: testSetStyleOfRemovedRule
+ERROR: NotFoundError Source range didn't match existing style source range
+

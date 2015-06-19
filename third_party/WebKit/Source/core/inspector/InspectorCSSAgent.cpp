@@ -214,79 +214,6 @@ private:
     String m_oldText;
 };
 
-class InspectorCSSAgent::SetPropertyTextAction final : public InspectorCSSAgent::StyleSheetAction {
-    WTF_MAKE_NONCOPYABLE(SetPropertyTextAction);
-public:
-    SetPropertyTextAction(InspectorStyleSheetBase* styleSheet, unsigned ruleIndex, unsigned propertyIndex, const String& text, bool overwrite)
-        : InspectorCSSAgent::StyleSheetAction("SetPropertyText")
-        , m_styleSheet(styleSheet)
-        , m_ruleIndex(ruleIndex)
-        , m_propertyIndex(propertyIndex)
-        , m_text(text)
-        , m_overwrite(overwrite)
-    {
-    }
-
-    virtual String toString() override
-    {
-        return mergeId() + ": " + m_oldStyleText + " -> " + m_text;
-    }
-
-    virtual bool perform(ExceptionState& exceptionState) override
-    {
-        return redo(exceptionState);
-    }
-
-    virtual bool undo(ExceptionState& exceptionState) override
-    {
-        String placeholder;
-        return m_styleSheet->setStyleText(m_ruleIndex, m_oldStyleText);
-    }
-
-    virtual bool redo(ExceptionState& exceptionState) override
-    {
-        if (!m_styleSheet->getStyleText(m_ruleIndex, &m_oldStyleText))
-            return false;
-        bool result = m_styleSheet->setPropertyText(m_ruleIndex, m_propertyIndex, m_text, m_overwrite, exceptionState);
-        m_styleSheet->getStyleText(m_ruleIndex, &m_newStyleText);
-        return result;
-    }
-
-    virtual String mergeId() override
-    {
-        return String::format("SetPropertyText %s:%u:%s", m_styleSheet->id().utf8().data(), m_propertyIndex, m_overwrite ? "true" : "false");
-    }
-
-    virtual void merge(PassRefPtrWillBeRawPtr<Action> action) override
-    {
-        ASSERT(action->mergeId() == mergeId());
-
-        SetPropertyTextAction* other = static_cast<SetPropertyTextAction*>(action.get());
-        m_text = other->m_text;
-        m_newStyleText = other->m_newStyleText;
-    }
-
-    virtual bool isNoop() override
-    {
-        return m_newStyleText == m_oldStyleText;
-    }
-
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        visitor->trace(m_styleSheet);
-        InspectorCSSAgent::StyleSheetAction::trace(visitor);
-    }
-
-private:
-    RefPtrWillBeMember<InspectorStyleSheetBase> m_styleSheet;
-    unsigned m_ruleIndex;
-    unsigned m_propertyIndex;
-    String m_text;
-    String m_oldStyleText;
-    String m_newStyleText;
-    bool m_overwrite;
-};
-
 class InspectorCSSAgent::ModifyRuleAction final : public InspectorCSSAgent::StyleSheetAction {
     WTF_MAKE_NONCOPYABLE(ModifyRuleAction);
 public:
@@ -361,6 +288,11 @@ public:
     virtual String mergeId() override
     {
         return String::format("ModifyRuleAction:%d %s:%d", m_type, m_styleSheet->id().utf8().data(), m_oldRange.start);
+    }
+
+    virtual bool isNoop() override
+    {
+        return m_oldText == m_newText;
     }
 
     virtual void merge(PassRefPtrWillBeRawPtr<Action> action) override
@@ -999,29 +931,6 @@ static bool jsonRangeToSourceRange(ErrorString* errorString, InspectorStyleSheet
     sourceRange->start = startOffset;
     sourceRange->end = endOffset;
     return true;
-}
-
-void InspectorCSSAgent::setPropertyText(ErrorString* errorString, const String& styleSheetId, const RefPtr<JSONObject>& range, const String& text, RefPtr<TypeBuilder::CSS::CSSStyle>& result)
-{
-    InspectorStyleSheetBase* inspectorStyleSheet = assertStyleSheetForId(errorString, styleSheetId);
-    if (!inspectorStyleSheet)
-        return;
-    SourceRange propertyRange;
-    if (!jsonRangeToSourceRange(errorString, inspectorStyleSheet, range, &propertyRange))
-        return;
-    unsigned ruleIndex = 0;
-    unsigned propertyIndex = 0;
-    bool overwrite;
-    if (!inspectorStyleSheet->findPropertyByRange(propertyRange, &ruleIndex, &propertyIndex, &overwrite)) {
-        *errorString = "Source range didn't match any existing property source range nor any property insertion point";
-        return;
-    }
-
-    TrackExceptionState exceptionState;
-    bool success = m_domAgent->history()->perform(adoptRefWillBeNoop(new SetPropertyTextAction(inspectorStyleSheet, ruleIndex, propertyIndex, text, overwrite)), exceptionState);
-    if (success)
-        result = inspectorStyleSheet->buildObjectForStyle(inspectorStyleSheet->styleAt(ruleIndex));
-    *errorString = InspectorDOMAgent::toErrorString(exceptionState);
 }
 
 void InspectorCSSAgent::setRuleSelector(ErrorString* errorString, const String& styleSheetId, const RefPtr<JSONObject>& range, const String& selector, RefPtr<TypeBuilder::CSS::CSSRule>& result)

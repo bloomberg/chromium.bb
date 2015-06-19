@@ -160,131 +160,6 @@ Running: test_tableStyles
 === Stylesheet-for-inline-style modification result ===
 null
 
-Running: test_styleSheets
-
-=== All stylesheets ===
-
-StyleSheet: '@import url(styles-new-API-2.css);
-
-@page { margin: 2cm } /* All margins set to 2cm */
-
-@page :first {
-  margin-top: 10cm    /* Top margin on first page 10cm */
-}
-
-@media screen {
-
-#absent-id {
-}
-
-@font-face {
-    font-family: 'TheFont';
-    src: url('font.url');
-    font-weight: normal;
-    font-style: normal;
-}
-
-body {
-    property: imported-media-screen-stylesheet;
-}
-
-}
-'
-
-StyleSheet: '@import url(styles-new-API-1.css);
-
-@page { margin: 2cm } /* All margins set to 2cm */
-
-@page :first {
-  margin-top: 10cm    /* Top margin on first page 10cm */
-}
-
-@media screen {
-
-#absent-id {
-}
-
-@font-face {
-    font-family: 'TheFont';
-    src: url('font.url');
-    font-weight: normal;
-    font-style: normal;
-}
-
-body {
-    property: imported-media-screen-stylesheet;
-}
-
-}
-'
-
-StyleSheet: '@charset "UTF-8";
-
-@import url("styles-new-API-1.css");
-
-html {
-    font-weight: 400;
-}
-
-@media screen {
-body {
-    font-size: 12px;
-    foo: bar !
-
-    important /* !important property not recognized by WebCore */;
-    height: 100% !important;
-    colorz: "!important";
-    important:!important;
-    color: yellow;
-    color: "badcolor" ! important /* good property with strange value */;
-}
-
-/* comment before selector */body.main1/* comment after selector */{/* comment */color: #F00BAA;zoo:moo /* not an !important unrecognized property */}/* comment */
-
-body.main2{background: green /* value !important comment */ !important /* no semicolon, very !important */}
-}
-
-body::after  {
-    content: "After body";
-}
-
-h1 {
-    height : 100% ; border: 1px solid; border-width: 2px; background-color : #33FF33; googles: abra; foo: .bar; -moz-goog: 1***; border-width: 0px; /*padding-top:1px;*/
-}
-'
-
-StyleSheet: '
-
-/* An inline stylesheet */
-body.mainpage {
-    text-decoration: none; /* at least one valid property is necessary for WebCore to match a rule */
-    ;badproperty: 1badvalue1;
-}
-
-body.mainpage {
-    prop1: val1;
-    prop2: val2;
-}
-
-body:hover {
-  color: #CDE;
-}
-'
-
-=== Last stylesheet patched ===
-
-StyleSheet: 'body.mainpage {    text-decoration: strikethrough;    badproperty: 2badvalue2;}body {    text-align: justify;}'
-
-=== After selector set ===
-
-StyleSheet: 'html *, body[foo="bar"] {    text-decoration: strikethrough;    badproperty: 2badvalue2;}body {    text-align: justify;}'
-
-=== After style text set ===
-
-StyleSheet: 'html *, body[foo="bar"] {
-    color: white; background: black;
-}body {    text-align: justify;}'
-
 Running: test_addRule
 
 === Matched rules after rule added ===
@@ -312,25 +187,8 @@ body: [regular, 9:0-9:4] {
     ['color':'yellow'] @[17:4-17:18] 
     ['color':'"badcolor" ! important /* good property with strange value */' is-important non-parsed] @[18:4-18:73] 
 }
-html *, body[foo="bar"]: [regular, 0:0-0:6; 0:8-0:23] {
-    ['color':'white'] @[1:4-1:17] 
-    ['background':'black'] @[1:18-1:36] 
-    ['background-image':'initial'] @[undefined-undefined] 
-    ['background-repeat-x':'initial'] @[undefined-undefined] 
-    ['background-repeat-y':'initial'] @[undefined-undefined] 
-    ['background-attachment':'initial'] @[undefined-undefined] 
-    ['background-position-x':'initial'] @[undefined-undefined] 
-    ['background-position-y':'initial'] @[undefined-undefined] 
-    ['background-origin':'initial'] @[undefined-undefined] 
-    ['background-clip':'initial'] @[undefined-undefined] 
-    ['background-color':'black'] @[undefined-undefined] 
-    ['background-size':'initial'] @[undefined-undefined] 
-}
-body: [regular, 2:1-2:5] {
-    ['text-align':'justify'] @[2:11-2:31] 
-}
 body: [inspector, 0:0-0:4] {
-    ['font-family':'serif'] @[1:4-1:23] 
+    ['font-family':'serif'] @[0:6-0:25] 
 }
 body.main1: [regular, 21:29-21:67] {
     ['color':'#F00BAA'] @[21:81-21:96] 
@@ -349,64 +207,18 @@ body.main2: [regular, 23:0-23:10] {
     ['background-color':'green' is-important] @[undefined-undefined] 
     ['background-size':'initial' is-important] @[undefined-undefined] 
 }
-
-Running: test_disableProperty
-
-=== After property manipulations ===
-[text='/* height : 100% ; */'] disabled
-['border':'1px solid'] @[31:26-31:44] 
-['border-width':'2px'] @[31:45-31:63] 
-['googles':'abra' non-parsed] @[31:65-31:79] 
-['foo':'.bar' non-parsed] @[31:80-31:90] 
-['-moz-goog':'1***' non-parsed] @[31:91-31:107] 
-['font-size':'12px'] @[32:4-32:20] 
-['border-width':'1px'] @[33:4-33:22] 
-[text='/* font-size: 14px; */'] disabled
-['padding-top':'1px'] @[35:4-35:20] 
-['border-top-width':'1px'] @[undefined-undefined] 
-['border-right-width':'1px'] @[undefined-undefined] 
-['border-bottom-width':'1px'] @[undefined-undefined] 
-['border-left-width':'1px'] @[undefined-undefined] 
-['border-top-style':'solid'] @[undefined-undefined] 
-['border-right-style':'solid'] @[undefined-undefined] 
-['border-bottom-style':'solid'] @[undefined-undefined] 
-['border-left-style':'solid'] @[undefined-undefined] 
-['border-top-color':'initial'] @[undefined-undefined] 
-['border-right-color':'initial'] @[undefined-undefined] 
-['border-bottom-color':'initial'] @[undefined-undefined] 
-['border-left-color':'initial'] @[undefined-undefined] 
-['border-image-source':'initial'] @[undefined-undefined] 
-['border-image-slice':'initial'] @[undefined-undefined] 
-['border-image-width':'initial'] @[undefined-undefined] 
-['border-image-outset':'initial'] @[undefined-undefined] 
-['border-image-repeat':'initial'] @[undefined-undefined] 
-
-=== After property enabled ===
-[text='/* height : 100% ; */'] disabled
-['border':'1px solid'] @[31:26-31:44] 
-['border-width':'2px'] @[31:45-31:63] 
-['googles':'abra' non-parsed] @[31:65-31:79] 
-['foo':'.bar' non-parsed] @[31:80-31:90] 
-['-moz-goog':'1***' non-parsed] @[31:91-31:107] 
-['font-size':'12px'] @[32:4-32:20] 
-['border-width':'1px'] @[33:4-33:22] 
-['font-size':'14px'] @[34:4-34:20] 
-['padding-top':'1px'] @[35:4-35:20] 
-['border-top-width':'1px'] @[undefined-undefined] 
-['border-right-width':'1px'] @[undefined-undefined] 
-['border-bottom-width':'1px'] @[undefined-undefined] 
-['border-left-width':'1px'] @[undefined-undefined] 
-['border-top-style':'solid'] @[undefined-undefined] 
-['border-right-style':'solid'] @[undefined-undefined] 
-['border-bottom-style':'solid'] @[undefined-undefined] 
-['border-left-style':'solid'] @[undefined-undefined] 
-['border-top-color':'initial'] @[undefined-undefined] 
-['border-right-color':'initial'] @[undefined-undefined] 
-['border-bottom-color':'initial'] @[undefined-undefined] 
-['border-left-color':'initial'] @[undefined-undefined] 
-['border-image-source':'initial'] @[undefined-undefined] 
-['border-image-slice':'initial'] @[undefined-undefined] 
-['border-image-width':'initial'] @[undefined-undefined] 
-['border-image-outset':'initial'] @[undefined-undefined] 
-['border-image-repeat':'initial'] @[undefined-undefined] 
+body.mainpage: [regular, 3:0-3:13] {
+    ['text-decoration':'none'] @[4:4-4:26] 
+    ['badproperty':'1badvalue1' non-parsed] @[5:5-5:29] 
+    ['text-decoration-line':'none'] @[undefined-undefined] 
+    ['text-decoration-style':'initial'] @[undefined-undefined] 
+    ['text-decoration-color':'initial'] @[undefined-undefined] 
+}
+body.mainpage: [regular, 8:0-8:13] {
+    ['prop1':'val1' non-parsed] @[9:4-9:16] 
+    ['prop2':'val2' non-parsed] @[10:4-10:16] 
+}
+body:hover: [regular, 13:0-13:10] {
+    ['color':'#CDE'] @[14:2-14:14] 
+}
 

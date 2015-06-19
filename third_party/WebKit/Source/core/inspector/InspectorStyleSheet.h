@@ -28,7 +28,6 @@
 #include "core/InspectorTypeBuilder.h"
 #include "core/css/CSSPropertySourceData.h"
 #include "core/css/CSSStyleDeclaration.h"
-#include "core/inspector/InspectorStyleTextEditor.h"
 #include "platform/JSONValues.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
@@ -87,7 +86,6 @@ public:
     CSSStyleDeclaration* cssStyle() const { return m_style.get(); }
     PassRefPtr<TypeBuilder::CSS::CSSStyle> buildObjectForStyle() const;
     PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSComputedStyleProperty> > buildArrayForComputedStyle() const;
-    bool setPropertyText(unsigned index, const String& text, bool overwrite, ExceptionState&);
     bool styleText(String* result) const;
     bool textForRange(const SourceRange&, String* result) const;
 
@@ -96,20 +94,15 @@ public:
 private:
     InspectorStyle(unsigned ruleIndex, PassRefPtrWillBeRawPtr<CSSStyleDeclaration>, InspectorStyleSheetBase* parentStyleSheet);
 
-    bool verifyPropertyText(const String& propertyText, bool canOmitSemicolon);
     void populateAllProperties(WillBeHeapVector<InspectorStyleProperty>& result) const;
     PassRefPtr<TypeBuilder::CSS::CSSStyle> styleWithProperties() const;
     PassRefPtrWillBeRawPtr<CSSRuleSourceData> extractSourceData() const;
-    bool applyStyleText(const String&);
     String shorthandValue(const String& shorthandProperty) const;
-    NewLineAndWhitespace& newLineAndWhitespaceDelimiters() const;
     inline Document* ownerDocument() const;
 
     unsigned m_ruleIndex;
     RefPtrWillBeMember<CSSStyleDeclaration> m_style;
     RawPtrWillBeMember<InspectorStyleSheetBase> m_parentStyleSheet;
-    mutable std::pair<String, String> m_format;
-    mutable bool m_formatAcquired;
 };
 
 class InspectorStyleSheetBase : public RefCountedWillBeGarbageCollectedFinalized<InspectorStyleSheetBase> {
@@ -130,16 +123,11 @@ public:
     virtual Document* ownerDocument() const = 0;
     virtual bool setText(const String&, ExceptionState&) = 0;
     virtual bool getText(String* result) const = 0;
-    bool setPropertyText(unsigned ruleIndex, unsigned propertyIndex, const String& text, bool overwrite, ExceptionState&);
-
-    virtual bool setStyleText(unsigned ruleIndex, const String&) = 0;
-    bool getStyleText(unsigned ruleIndex, String*);
 
     virtual CSSStyleDeclaration* styleAt(unsigned ruleIndex) const = 0;
     virtual unsigned indexOf(CSSStyleDeclaration*) const = 0;
 
     PassRefPtr<TypeBuilder::CSS::CSSStyle> buildObjectForStyle(CSSStyleDeclaration*);
-    bool findPropertyByRange(const SourceRange&, unsigned* ruleIndex, unsigned* propertyIndex, bool* overwrite);
     bool lineNumberAndColumnToOffset(unsigned lineNumber, unsigned columnNumber, unsigned* offset);
     virtual bool isInlineStyle() = 0;
 
@@ -196,7 +184,6 @@ public:
 
     virtual unsigned indexOf(CSSStyleDeclaration*) const override;
     virtual CSSStyleDeclaration* styleAt(unsigned ruleIndex) const override;
-    virtual bool setStyleText(unsigned ruleIndex, const String&) override;
     bool isInlineStyle() override { return false; }
     const CSSRuleVector& flatRules();
 
@@ -220,7 +207,6 @@ private:
     String sourceURL() const;
     bool ensureText() const;
     void ensureFlatRules() const;
-    bool styleSheetTextWithChangedStyle(CSSStyleDeclaration*, const String& newStyleText, String* result);
     bool originalStyleSheetText(String* result) const;
     bool resourceStyleSheetText(String* result) const;
     bool inlineStyleSheetText(String* result) const;
@@ -255,7 +241,6 @@ public:
 
     virtual CSSStyleDeclaration* styleAt(unsigned ruleIndex) const override { ASSERT_UNUSED(ruleIndex, !ruleIndex); return inlineStyle(); }
     virtual unsigned indexOf(CSSStyleDeclaration* style) const override { return 0; }
-    virtual bool setStyleText(unsigned ruleIndex, const String&) override;
     CSSStyleDeclaration* inlineStyle() const;
 
     DECLARE_VIRTUAL_TRACE();

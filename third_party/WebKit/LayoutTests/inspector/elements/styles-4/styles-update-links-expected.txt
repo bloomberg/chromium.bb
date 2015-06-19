@@ -56,12 +56,12 @@ element.style  { ()
     font-family: monospace;
 
 [expanded] 
-.should-change  { (styles-update-links.css:9 -> styles-update-links.css:9:47)
+.should-change  { (styles-update-links.css:9 -> styles-update-links.css:9:51)
     position: relative;
     margin: 1em;
 
 [expanded] 
-.should-change  { (styles-update-links.css:9 -> styles-update-links.css:9:3)
+.should-change  { (styles-update-links.css:9 -> styles-update-links.css:9:7)
     border: 1px solid black;
 
 [expanded] 
@@ -109,12 +109,12 @@ element.style  { ()
     font-family: monospace;
 
 [expanded] 
-.should-change  { (styles-update-links.css:9 -> styles-update-links.css:9:73)
+.should-change  { (styles-update-links.css:9 -> styles-update-links.css:9:77)
     position: relative;
     margin: 1em;
 
 [expanded] 
-.should-change, .INSERTED-OTHER-SELECTOR  { (styles-update-links.css:9 -> styles-update-links.css:9:3)
+.should-change, .INSERTED-OTHER-SELECTOR  { (styles-update-links.css:9 -> styles-update-links.css:9:7)
     border: 1px solid black;
 
 [expanded] 
@@ -162,12 +162,12 @@ element.style  { ()
     font-family: monospace;
 
 [expanded] 
-.should-change  { (styles-update-links.css:9 -> styles-update-links.css:9:79)
+.should-change  { (styles-update-links.css:9 -> styles-update-links.css:9:83)
     position: relative;
     margin: 1em;
 
 [expanded] 
-.should-change, .INSERTED-OTHER-SELECTOR  { (styles-update-links.css:9 -> styles-update-links.css:9:3)
+.should-change, .INSERTED-OTHER-SELECTOR  { (styles-update-links.css:9 -> styles-update-links.css:9:7)
 /-- overloaded --/ /-- disabled --/     /* border: 1px solid black; */
 
 [expanded] 

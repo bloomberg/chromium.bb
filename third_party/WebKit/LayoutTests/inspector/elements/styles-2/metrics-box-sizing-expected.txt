@@ -2,7 +2,7 @@ Tests that content-box and border-box content area dimensions are handled proper
 
 content-box
 border-box
-content-box rendered dimensions: 80 x 75
+content-box rendered dimensions: 75 x 75
 border-box rendered dimensions: 80 x 55
 
 Running: testBorderBoxInit1

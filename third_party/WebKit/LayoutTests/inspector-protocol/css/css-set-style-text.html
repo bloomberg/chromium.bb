@@ -5,6 +5,12 @@
 <script type="text/javascript" src="../../http/tests/inspector-protocol/css-protocol-test.js"></script>
 <script type="text/javascript" src="../../http/tests/inspector-protocol/dom-protocol-test.js"></script>
 <script type="text/javascript">
+
+function removeRule()
+{
+    document.styleSheets[0].removeRule(0);
+}
+
 function test()
 {
     var setStyleText;
@@ -96,6 +102,19 @@ function test()
                 range: { startLine: 13, startColumn: 11, endLine: 15, endColumn: 4 },
                 text: "\n        content: 'EDITED'/* ;\n",
             }, dumpAndNext(next));
+        },
+
+        function testSetStyleOfRemovedRule(next)
+        {
+            InspectorTest.sendCommandOrDie("Runtime.evaluate", {expression: "removeRule()"}, mutateRule);
+            function mutateRule()
+            {
+                setStyleText({
+                    styleSheetId: styleSheetId,
+                    range: { startLine: 0, startColumn: 7, endLine: 2, endColumn: 0 },
+                    text: "\n    content: 'EDITED';\n",
+                }, dumpAndNext(next));
+            }
         }
    ];
 }
