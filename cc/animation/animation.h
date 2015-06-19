@@ -151,6 +151,9 @@ class CC_EXPORT Animation {
 
   scoped_ptr<Animation> CloneAndInitialize(RunState initial_run_state) const;
 
+  void set_is_controlling_instance_for_test(bool is_controlling_instance) {
+    is_controlling_instance_ = is_controlling_instance;
+  }
   bool is_controlling_instance() const { return is_controlling_instance_; }
 
   void PushPropertiesTo(Animation* other) const;

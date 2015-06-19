@@ -1035,5 +1035,55 @@ class LayerTreeHostAnimationTestAddAnimationAfterAnimating
 SINGLE_AND_MULTI_THREAD_TEST_F(
     LayerTreeHostAnimationTestAddAnimationAfterAnimating);
 
+class LayerTreeHostAnimationTestNotifyAnimationFinished
+    : public LayerTreeHostAnimationTest {
+ public:
+  LayerTreeHostAnimationTestNotifyAnimationFinished()
+      : called_animation_started_(false), called_animation_finished_(false) {}
+
+  void SetupTree() override {
+    LayerTreeHostAnimationTest::SetupTree();
+    picture_ = FakePictureLayer::Create(layer_settings(), &client_);
+    picture_->SetBounds(gfx::Size(4, 4));
+    picture_->set_layer_animation_delegate(this);
+    layer_tree_host()->root_layer()->AddChild(picture_);
+  }
+
+  void BeginTest() override {
+    layer_tree_host()->SetViewportSize(gfx::Size());
+    PostAddLongAnimationToMainThread(picture_.get());
+  }
+
+  void NotifyAnimationStarted(base::TimeTicks monotonic_time,
+                              Animation::TargetProperty target_property,
+                              int group) override {
+    called_animation_started_ = true;
+    layer_tree_host()->AnimateLayers(
+        base::TimeTicks::FromInternalValue(std::numeric_limits<int64>::max()));
+    PostSetNeedsCommitToMainThread();
+  }
+
+  void NotifyAnimationFinished(base::TimeTicks monotonic_time,
+                               Animation::TargetProperty target_property,
+                               int group) override {
+    called_animation_finished_ = true;
+    EndTest();
+  }
+
+  void AfterTest() override {
+    EXPECT_TRUE(called_animation_started_);
+    EXPECT_TRUE(called_animation_finished_);
+  }
+
+ private:
+  bool called_animation_started_;
+  bool called_animation_finished_;
+  FakeContentLayerClient client_;
+  scoped_refptr<FakePictureLayer> picture_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(
+    LayerTreeHostAnimationTestNotifyAnimationFinished);
+
 }  // namespace
 }  // namespace cc

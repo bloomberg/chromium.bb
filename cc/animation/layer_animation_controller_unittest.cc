@@ -1527,16 +1527,20 @@ TEST(LayerAnimationControllerTest, SkipUpdateState) {
       LayerAnimationController::Create(0));
   controller->AddValueObserver(&dummy);
 
-  controller->AddAnimation(CreateAnimation(
+  scoped_ptr<Animation> first_animation(CreateAnimation(
       scoped_ptr<AnimationCurve>(new FakeTransformTransition(1)).Pass(), 1,
       Animation::TRANSFORM));
+  first_animation->set_is_controlling_instance_for_test(true);
+  controller->AddAnimation(first_animation.Pass());
 
   controller->Animate(kInitialTickTime);
   controller->UpdateState(true, events.get());
 
-  controller->AddAnimation(CreateAnimation(
+  scoped_ptr<Animation> second_animation(CreateAnimation(
       scoped_ptr<AnimationCurve>(new FakeFloatTransition(1.0, 0.f, 1.f)).Pass(),
       2, Animation::OPACITY));
+  second_animation->set_is_controlling_instance_for_test(true);
+  controller->AddAnimation(second_animation.Pass());
 
   // Animate but don't UpdateState.
   controller->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(1000));
@@ -1838,12 +1842,17 @@ TEST(LayerAnimationControllerTest, FinishedEventsForGroup) {
   const int group_id = 1;
 
   // Add two animations with the same group id but different durations.
-  controller_impl->AddAnimation(Animation::Create(
+  scoped_ptr<Animation> first_animation(Animation::Create(
       scoped_ptr<AnimationCurve>(new FakeTransformTransition(2.0)).Pass(), 1,
       group_id, Animation::TRANSFORM));
-  controller_impl->AddAnimation(Animation::Create(
+  first_animation->set_is_controlling_instance_for_test(true);
+  controller_impl->AddAnimation(first_animation.Pass());
+
+  scoped_ptr<Animation> second_animation(Animation::Create(
       scoped_ptr<AnimationCurve>(new FakeFloatTransition(1.0, 0.f, 1.f)).Pass(),
       2, group_id, Animation::OPACITY));
+  second_animation->set_is_controlling_instance_for_test(true);
+  controller_impl->AddAnimation(second_animation.Pass());
 
   controller_impl->Animate(kInitialTickTime);
   controller_impl->UpdateState(true, events.get());
@@ -1888,12 +1897,17 @@ TEST(LayerAnimationControllerTest, FinishedAndAbortedEventsForGroup) {
   controller_impl->AddValueObserver(&dummy_impl);
 
   // Add two animations with the same group id.
-  controller_impl->AddAnimation(CreateAnimation(
+  scoped_ptr<Animation> first_animation(CreateAnimation(
       scoped_ptr<AnimationCurve>(new FakeTransformTransition(1.0)).Pass(), 1,
       Animation::TRANSFORM));
-  controller_impl->AddAnimation(CreateAnimation(
+  first_animation->set_is_controlling_instance_for_test(true);
+  controller_impl->AddAnimation(first_animation.Pass());
+
+  scoped_ptr<Animation> second_animation(CreateAnimation(
       scoped_ptr<AnimationCurve>(new FakeFloatTransition(1.0, 0.f, 1.f)).Pass(),
       1, Animation::OPACITY));
+  second_animation->set_is_controlling_instance_for_test(true);
+  controller_impl->AddAnimation(second_animation.Pass());
 
   controller_impl->Animate(kInitialTickTime);
   controller_impl->UpdateState(true, events.get());
