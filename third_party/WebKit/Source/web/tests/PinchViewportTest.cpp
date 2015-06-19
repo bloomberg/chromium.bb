@@ -462,6 +462,29 @@ TEST_F(PinchViewportTest, TestVisibleRect)
     EXPECT_FLOAT_RECT_EQ(expectedRect, pinchViewport.visibleRect());
 }
 
+// Make sure that the visibleRectInDocument method acurately reflects the scale
+// and scroll location of the viewport relative to the document.
+TEST_F(PinchViewportTest, TestVisibleRectInDocument)
+{
+    initializeWithDesktopSettings();
+    webViewImpl()->resize(IntSize(100, 400));
+
+    registerMockedHttpURLLoad("200-by-800-viewport.html");
+    navigateTo(m_baseURL + "200-by-800-viewport.html");
+
+    PinchViewport& pinchViewport = frame()->page()->frameHost().pinchViewport();
+
+    // Scale the viewport to 2X and move it.
+    pinchViewport.setScale(2);
+    pinchViewport.setLocation(FloatPoint(10, 15));
+    EXPECT_FLOAT_RECT_EQ(FloatRect(10, 15, 50, 200), pinchViewport.visibleRectInDocument());
+
+    // Scroll the layout viewport. Ensure its offset is reflected in visibleRectInDocument().
+    FrameView& frameView = *webViewImpl()->mainFrameImpl()->frameView();
+    frameView.setScrollPosition(DoublePoint(40, 100), ProgrammaticScroll);
+    EXPECT_FLOAT_RECT_EQ(FloatRect(50, 115, 50, 200), pinchViewport.visibleRectInDocument());
+}
+
 TEST_F(PinchViewportTest, TestFractionalScrollOffsetIsNotOverwritten)
 {
     initializeWithAndroidSettings();

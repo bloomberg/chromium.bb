@@ -146,9 +146,7 @@ FloatRect PinchViewport::visibleRectInDocument() const
         return FloatRect();
 
     FloatPoint viewLocation = FloatPoint(mainFrame()->view()->scrollableArea()->scrollPositionDouble());
-    FloatRect pinchRect = visibleRect();
-    pinchRect.moveBy(viewLocation);
-    return pinchRect;
+    return FloatRect(viewLocation, visibleSize());
 }
 
 FloatRect PinchViewport::mainViewToViewportCSSPixels(const FloatRect& rect) const
