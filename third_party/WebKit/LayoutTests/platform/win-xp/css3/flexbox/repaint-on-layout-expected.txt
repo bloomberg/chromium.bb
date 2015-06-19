@@ -8,6 +8,13 @@
       "repaintRects": [
         [712, 8, 80, 24],
         [712, 8, 80, 20]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow DIV id='badge'",
+        "InlineBox",
+        "LayoutText #text",
+        "RootInlineBox",
+        "LayoutBlockFlow (floating) DIV class='state'"
       ]
     }
   ]
