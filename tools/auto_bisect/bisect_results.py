@@ -141,41 +141,36 @@ class BisectResults(object):
     return warnings
 
   @staticmethod
-  def ConfidenceScore(sample1, sample2,
-                      accept_single_bad_or_good=False):
+  def ConfidenceScore(sample1, sample2, accept_single_bad_or_good=False):
     """Calculates a confidence score.
 
-    This score is a percentage which represents our degree of confidence in the
-    proposition that the good results and bad results are distinct groups, and
-    their differences aren't due to chance alone.
+    This score is based on a statistical hypothesis test. The null
+    hypothesis is that the two groups of results have no difference,
+    i.e. there is no performance regression. The alternative hypothesis
+    is that there is some difference between the groups that's unlikely
+    to occur by chance.
 
+    The score returned by this function represents our confidence in the
+    alternative hypothesis.
+
+    Note that if there's only one item in either sample, this means only
+    one revision was classified good or bad, so there's not much evidence
+    to make a decision.
 
     Args:
       sample1: A flat list of "good" result numbers.
       sample2: A flat list of "bad" result numbers.
-      accept_single_bad_or_good: If True, computes confidence even if there is
-          just one bad or good revision, otherwise single good or bad revision
-          always returns 0.0 confidence. This flag will probably get away when
-          we will implement expanding the bisect range by one more revision for
-          such case.
+      accept_single_bad_or_good: If True, compute a value even if
+          there is only one bad or good revision.
 
     Returns:
-      A number in the range [0, 100].
+      A float between 0 and 100; 0 if the samples aren't large enough.
     """
-    # If there's only one item in either list, this means only one revision was
-    # classified good or bad; this isn't good enough evidence to make a
-    # decision. If an empty list was passed, that also implies zero confidence.
-    if not accept_single_bad_or_good:
-      if len(sample1) <= 1 or len(sample2) <= 1:
-        return 0.0
-
-    # If there were only empty lists in either of the lists (this is unexpected
-    # and normally shouldn't happen), then we also want to return 0.
+    if ((len(sample1) <= 1 or len(sample2) <= 1) and
+        not accept_single_bad_or_good):
+      return 0.0
     if not sample1 or not sample2:
       return 0.0
-
-    # The p-value is approximately the probability of obtaining the given set
-    # of good and bad values just by chance.
     _, _, p_value = ttest.WelchsTTest(sample1, sample2)
     return 100.0 * (1.0 - p_value)
 
