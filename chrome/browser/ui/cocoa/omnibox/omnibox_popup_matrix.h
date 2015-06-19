@@ -65,10 +65,13 @@ class OmniboxPopupMatrixObserver {
 
   // The width of widest match contents in a set of infinite suggestions.
   CGFloat maxMatchContentsWidth_;
+
+  CGFloat answerLineHeight_;
 }
 
 @property(retain, nonatomic) NSAttributedString* separator;
 @property(nonatomic) CGFloat maxMatchContentsWidth;
+@property(nonatomic) CGFloat answerLineHeight;
 
 // Create a zero-size matrix.
 - (instancetype)initWithObserver:(OmniboxPopupMatrixObserver*)observer;

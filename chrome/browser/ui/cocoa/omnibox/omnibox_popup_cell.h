@@ -34,6 +34,10 @@ class OmniboxPopupViewMac;
   CGFloat contentsOffset_;
 
   BOOL isContentsRTL_;
+
+  // Is this suggestion an answer or calculator result.
+  bool isAnswer_;
+
   AutocompleteMatch::Type matchType_;
 }
 
@@ -44,15 +48,13 @@ class OmniboxPopupViewMac;
 @property(readonly, retain, nonatomic) NSImage* answerImage;
 @property(readonly, nonatomic) CGFloat contentsOffset;
 @property(readonly, nonatomic) BOOL isContentsRTL;
+@property(readonly, nonatomic) bool isAnswer;
 @property(readonly, nonatomic) AutocompleteMatch::Type matchType;
 
 - (instancetype)initWithMatch:(const AutocompleteMatch&)match
                contentsOffset:(CGFloat)contentsOffset
                         image:(NSImage*)image
                   answerImage:(NSImage*)answerImage;
-
-// Each row is allowed to have a different value.
-- (CGFloat)rowHeight;
 
 // Returns the width of the match contents.
 - (CGFloat)getMatchContentsWidth;
@@ -73,5 +75,7 @@ class OmniboxPopupViewMac;
 + (NSAttributedString*)createSeparatorString;
 
 @end
+
+const CGFloat kContentLineHeight = 25.0;
 
 #endif  // CHROME_BROWSER_UI_COCOA_OMNIBOX_OMNIBOX_POPUP_CELL_H_

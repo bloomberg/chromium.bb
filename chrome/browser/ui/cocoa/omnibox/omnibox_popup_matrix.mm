@@ -8,6 +8,7 @@
 #include "base/mac/foundation_util.h"
 #import "chrome/browser/ui/cocoa/omnibox/omnibox_popup_cell.h"
 #include "chrome/browser/ui/cocoa/omnibox/omnibox_popup_view_mac.h"
+#include "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
 #include "components/omnibox/autocomplete_result.h"
 
 namespace {
@@ -98,7 +99,13 @@ const NSInteger kMiddleButtonNumber = 2;
 }
 
 - (CGFloat)tableView:(NSTableView*)tableView heightOfRow:(NSInteger)row {
-  return [[array_ objectAtIndex:row] rowHeight];
+  CGFloat height = kContentLineHeight;
+  if ([[array_ objectAtIndex:row] isAnswer]) {
+    OmniboxPopupMatrix* matrix =
+        base::mac::ObjCCastStrict<OmniboxPopupMatrix>(tableView);
+    height += [matrix answerLineHeight];
+  }
+  return height;
 }
 
 @end
@@ -114,6 +121,7 @@ const NSInteger kMiddleButtonNumber = 2;
 
 @synthesize separator = separator_;
 @synthesize maxMatchContentsWidth = maxMatchContentsWidth_;
+@synthesize answerLineHeight = answerLineHeight_;
 
 - (instancetype)initWithObserver:(OmniboxPopupMatrixObserver*)observer {
   if ((self = [super initWithFrame:NSZeroRect])) {
@@ -133,6 +141,12 @@ const NSInteger kMiddleButtonNumber = 2;
     [self deselectAll:self];
 
     [self resetTrackingArea];
+
+    base::scoped_nsobject<NSLayoutManager> layoutManager(
+        [[NSLayoutManager alloc] init]);
+    answerLineHeight_ =
+        [layoutManager defaultLineHeightForFont:OmniboxViewMac::GetLargeFont(
+                                                    gfx::Font::NORMAL)];
   }
   return self;
 }
