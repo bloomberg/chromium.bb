@@ -1925,8 +1925,9 @@ void LayoutBlockFlow::checkLinesForTextOverflow()
     // Determine the width of the ellipsis using the current font.
     const Font& font = style()->font();
 
+    const size_t fullStopStringLength = 3;
     const UChar fullStopString[] = {fullstopCharacter, fullstopCharacter, fullstopCharacter};
-    DEFINE_STATIC_LOCAL(AtomicString, fullstopCharacterStr, (fullStopString, 3));
+    DEFINE_STATIC_LOCAL(AtomicString, fullstopCharacterStr, (fullStopString, fullStopStringLength));
     DEFINE_STATIC_LOCAL(AtomicString, ellipsisStr, (&horizontalEllipsisCharacter, 1));
     AtomicString& selectedEllipsisStr = ellipsisStr;
 
@@ -1943,7 +1944,7 @@ void LayoutBlockFlow::checkLinesForTextOverflow()
         firstLineEllipsisWidth = firstLineFont.width(constructTextRun(this, firstLineFont, &horizontalEllipsisCharacter, 1, *firstLineStyle(), ellipsisDirection));
     } else {
         selectedEllipsisStr = fullstopCharacterStr;
-        firstLineEllipsisWidth = firstLineFont.width(constructTextRun(this, firstLineFont, fullStopString, 1, *firstLineStyle(), ellipsisDirection));
+        firstLineEllipsisWidth = firstLineFont.width(constructTextRun(this, firstLineFont, fullStopString, fullStopStringLength, *firstLineStyle(), ellipsisDirection));
     }
     ellipsisWidth = (font == firstLineFont) ? firstLineEllipsisWidth : 0;
 
@@ -1954,7 +1955,7 @@ void LayoutBlockFlow::checkLinesForTextOverflow()
             ellipsisWidth = font.width(constructTextRun(this, font, &horizontalEllipsisCharacter, 1, styleRef(), ellipsisDirection));
         } else {
             selectedEllipsisStr = fullstopCharacterStr;
-            ellipsisWidth = font.width(constructTextRun(this, font, fullStopString, 1, styleRef(), ellipsisDirection));
+            ellipsisWidth = font.width(constructTextRun(this, font, fullStopString, fullStopStringLength, styleRef(), ellipsisDirection));
         }
     }
 

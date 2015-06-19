@@ -1714,6 +1714,9 @@ crbug.com/418091 [ SnowLeopard ] virtual/antialiasedtext/fast/text/soft-hyphen-3
 crbug.com/418091 [ SnowLeopard ] virtual/antialiasedtext/fast/text/soft-hyphen-4.html [ Pass Failure ]
 crbug.com/418091 [ SnowLeopard ] virtual/antialiasedtext/fast/text/splitText-dirty-lines.html [ Pass Failure ]
 
+crbug.com/502051 virtual/antialiasedtext/fast/text/ellipsis-platform-font-change.html [ NeedsRebaseline ]
+crbug.com/502051 fast/text/ellipsis-platform-font-change.html [ NeedsManualRebaseline ]
+
 crbug.com/446385 [ Linux Mac ] http/tests/xmlhttprequest/xmlhttprequest-json-response-overflow.html [ Pass Timeout ]
 crbug.com/446385 [ Win7 Debug ] http/tests/xmlhttprequest/xmlhttprequest-json-response-overflow.html [ Crash Pass Timeout ]
 
@@ -2097,7 +2100,7 @@ crbug.com/495523 svg/wicd/test-rightsizing-b.xhtml [ Pass Failure ]
 
 crbug.com/424338 [ XP ] tables/mozilla/bugs/bug3037-1.html [ Failure ]
 
-crbug.com/501564 [ Lion ] fast/text/ellipsis-platform-font-change.html [ Pass Failure ]
+#crbug.com/501564 [ Lion ] fast/text/ellipsis-platform-font-change.html [ Pass Failure ]
 
 crbug.com/501775 inspector/extensions/extensions-resources.html [ Pass Failure Timeout ]
 crbug.com/501769 http/tests/serviceworker/stashed-ports.html [ Pass Failure Timeout ]
