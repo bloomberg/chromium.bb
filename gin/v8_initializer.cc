@@ -5,6 +5,7 @@
 #include "gin/v8_initializer.h"
 
 #include "base/basictypes.h"
+#include "base/debug/alias.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/memory_mapped_file.h"
@@ -128,6 +129,17 @@ base::PlatformFile OpenV8File(const char* file_name,
       }
     } else if (file.error_details() != base::File::FILE_ERROR_IN_USE) {
       result = OpenV8FileResult::FAILED_OTHER;
+#ifdef OS_WIN
+      // TODO(oth): temporary diagnostics for http://crbug.com/479537
+      std::string narrow(kNativesFileName);
+      base::FilePath::StringType nativesBlob(narrow.begin(), narrow.end());
+      if (path.BaseName().value() == nativesBlob) {
+        base::File::Error file_error = file.error_details();
+        base::debug::Alias(&file_error);
+        LOG(FATAL) << "Failed to open V8 file '" << path.value()
+                   << "' (reason: " << file.error_details() << ")";
+      }
+#endif  // OS_WIN
       break;
     } else if (kMaxOpenAttempts - 1 != attempt) {
       base::PlatformThread::Sleep(
@@ -164,6 +176,20 @@ bool VerifyV8StartupFile(base::MemoryMappedFile** file,
   if (!memcmp(fingerprint, output, sizeof(output))) {
     return true;
   }
+
+  // TODO(oth): Remove this temporary diagnostics for http://crbug.com/501799
+  uint64_t input[sizeof(output)];
+  memcpy(input, fingerprint, sizeof(input));
+
+  base::debug::Alias(output);
+  base::debug::Alias(input);
+
+  const uint64_t* o64 = reinterpret_cast<const uint64_t*>(output);
+  const uint64_t* f64 = reinterpret_cast<const uint64_t*>(fingerprint);
+  LOG(FATAL) << "Natives length " << (*file)->length()
+             << " H(computed) " << o64[0] << o64[1] << o64[2] << o64[3]
+             << " H(expected) " << f64[0] << f64[1] << f64[2] << f64[3];
+
   delete *file;
   *file = NULL;
   return false;
