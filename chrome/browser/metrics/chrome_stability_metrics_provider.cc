@@ -37,7 +37,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/memory/system_memory_stats_recorder.h"
+#include "chrome/browser/memory/system_memory_stats_recorder.h"
 #endif
 
 namespace {
@@ -302,10 +302,10 @@ void ChromeStabilityMetricsProvider::LogRendererCrash(
     UMA_HISTOGRAM_ENUMERATION("BrowserRenderProcessHost.ChildKills.OOM",
                               was_extension_process ? 2 : 1,
                               3);
-    chromeos::RecordMemoryStats(
-        was_extension_process ?
-        chromeos::RECORD_MEMORY_STATS_EXTENSIONS_OOM_KILLED :
-        chromeos::RECORD_MEMORY_STATS_CONTENTS_OOM_KILLED);
+    memory::RecordMemoryStats(
+        was_extension_process
+            ? memory::RECORD_MEMORY_STATS_EXTENSIONS_OOM_KILLED
+            : memory::RECORD_MEMORY_STATS_CONTENTS_OOM_KILLED);
 #endif
   } else if (status == base::TERMINATION_STATUS_STILL_RUNNING) {
     UMA_HISTOGRAM_PERCENTAGE("BrowserRenderProcessHost.DisconnectedAlive",

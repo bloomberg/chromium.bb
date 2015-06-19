@@ -34,7 +34,7 @@
 #include "ui/views/widget/widget.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/memory/oom_memory_details.h"
+#include "chrome/browser/memory/oom_memory_details.h"
 #endif
 
 using content::OpenURLParams;
@@ -91,8 +91,8 @@ SadTabView::SadTabView(WebContents* web_contents, chrome::SadTabKind kind)
   DCHECK(web_contents);
 
   // These stats should use the same counting approach and bucket size used for
-  // tab discard events in chromeos::OomPriorityManager so they can be
-  // directly compared.
+  // tab discard events in memory::OomPriorityManager so they can be directly
+  // compared.
   // TODO(jamescook): Maybe track time between sad tabs?
   switch (kind_) {
     case chrome::SAD_TAB_KIND_CRASHED: {
@@ -113,9 +113,8 @@ SadTabView::SadTabView(WebContents* web_contents, chrome::SadTabKind kind)
       RecordKillCreated();
       RecordKillCreatedOOM();
       const std::string spec = web_contents->GetURL().GetOrigin().spec();
-      chromeos::OomMemoryDetails::Log(
-          "Tab OOM-Killed Memory details: " + spec + ", ",
-          base::Closure());
+      memory::OomMemoryDetails::Log(
+          "Tab OOM-Killed Memory details: " + spec + ", ", base::Closure());
       break;
     }
 #endif
@@ -297,8 +296,8 @@ void SadTabView::Layout() {
 void SadTabView::OnPaint(gfx::Canvas* canvas) {
   if (!painted_) {
     // These stats should use the same counting approach and bucket size used
-    // for tab discard events in chromeos::OomPriorityManager so they
-    // can be directly compared.
+    // for tab discard events in memory::OomPriorityManager so they can be
+    // directly compared.
     switch (kind_) {
       case chrome::SAD_TAB_KIND_CRASHED: {
         static int crashed = 0;

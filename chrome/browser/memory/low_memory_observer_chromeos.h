@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_MEMORY_LOW_MEMORY_OBSERVER_H_
-#define CHROME_BROWSER_CHROMEOS_MEMORY_LOW_MEMORY_OBSERVER_H_
+#ifndef CHROME_BROWSER_MEMORY_LOW_MEMORY_OBSERVER_CHROMEOS_H_
+#define CHROME_BROWSER_MEMORY_LOW_MEMORY_OBSERVER_CHROMEOS_H_
 
 #include "base/memory/ref_counted.h"
 
-namespace chromeos {
+namespace memory {
 
 class LowMemoryObserverImpl;
 
@@ -36,6 +36,6 @@ class LowMemoryObserver {
   DISALLOW_COPY_AND_ASSIGN(LowMemoryObserver);
 };
 
-}  // namespace chromeos
+}  // namespace memory
 
-#endif  // CHROME_BROWSER_CHROMEOS_MEMORY_LOW_MEMORY_OBSERVER_H_
+#endif  // CHROME_BROWSER_MEMORY_LOW_MEMORY_OBSERVER_CHROMEOS_H_

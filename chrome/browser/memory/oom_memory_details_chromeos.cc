@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/memory/oom_memory_details.h"
+#include "chrome/browser/memory/oom_memory_details.h"
 
 #include "base/logging.h"
 #include "base/process/process_metrics.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chromeos/memory/oom_memory_details.h"
+#include "chrome/browser/memory/oom_memory_details.h"
 #include "ui/base/text/bytes_formatting.h"
 
-namespace chromeos {
+namespace memory {
 
 // static
 void OomMemoryDetails::Log(const std::string& title,
@@ -49,4 +49,4 @@ void OomMemoryDetails::OnDetailsAvailable() {
   Release();
 }
 
-}  // namespace chromeos
+}  // namespace memory

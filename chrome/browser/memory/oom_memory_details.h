@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_MEMORY_OOM_MEMORY_DETAILS_H_
-#define CHROME_BROWSER_CHROMEOS_MEMORY_OOM_MEMORY_DETAILS_H_
+#ifndef CHROME_BROWSER_MEMORY_OOM_MEMORY_DETAILS_H_
+#define CHROME_BROWSER_MEMORY_OOM_MEMORY_DETAILS_H_
 
 #include <string>
 
@@ -12,7 +12,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/memory_details.h"
 
-namespace chromeos {
+namespace memory {
 
 ////////////////////////////////////////////////////////////////////////////////
 // OomMemoryDetails logs details about all Chrome processes during an out-of-
@@ -37,6 +37,6 @@ class OomMemoryDetails : public MemoryDetails {
   DISALLOW_COPY_AND_ASSIGN(OomMemoryDetails);
 };
 
-}  // namespace chromeos
+}  // namespace memory
 
-#endif  // CHROME_BROWSER_CHROMEOS_MEMORY_OOM_MEMORY_DETAILS_H_
+#endif  // CHROME_BROWSER_MEMORY_OOM_MEMORY_DETAILS_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/memory/low_memory_observer.h"
+#include "chrome/browser/memory/low_memory_observer_chromeos.h"
 
 #include <fcntl.h>
 
@@ -14,12 +14,10 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
-#include "chrome/browser/chromeos/memory/oom_priority_manager.h"
+#include "chrome/browser/memory/oom_priority_manager.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
-
-namespace chromeos {
 
 namespace {
 // This is the file that will exist if low memory notification is available
@@ -31,6 +29,8 @@ const char kLowMemFile[] = "/dev/chromeos-low-mem";
 // low memory.
 const int kLowMemoryCheckTimeoutMs = 750;
 }  // namespace
+
+namespace memory {
 
 ////////////////////////////////////////////////////////////////////////////////
 // LowMemoryObserverImpl
@@ -62,9 +62,7 @@ class LowMemoryObserverImpl
  private:
   friend class base::RefCountedThreadSafe<LowMemoryObserverImpl>;
 
-  ~LowMemoryObserverImpl() {
-    StopObservingOnFileThread();
-  }
+  ~LowMemoryObserverImpl() { StopObservingOnFileThread(); }
 
   // Start a timer to resume watching the low memory file descriptor.
   void ScheduleNextObservation();
@@ -95,8 +93,9 @@ class LowMemoryObserverImpl
       CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
       if (g_browser_process &&
           g_browser_process->platform_part()->oom_priority_manager()) {
-        g_browser_process->platform_part()->
-            oom_priority_manager()->LogMemoryAndDiscardTab();
+        g_browser_process->platform_part()
+            ->oom_priority_manager()
+            ->LogMemoryAndDiscardTab();
       }
     }
 
@@ -145,8 +144,7 @@ void LowMemoryObserverImpl::StopObservingOnFileThread() {
 void LowMemoryObserverImpl::ScheduleNextObservation() {
   timer_.Start(FROM_HERE,
                base::TimeDelta::FromMilliseconds(kLowMemoryCheckTimeoutMs),
-               this,
-               &LowMemoryObserverImpl::StartWatchingDescriptor);
+               this, &LowMemoryObserverImpl::StartWatchingDescriptor);
 }
 
 void LowMemoryObserverImpl::StartWatchingDescriptor() {
@@ -158,8 +156,7 @@ void LowMemoryObserverImpl::StartWatchingDescriptor() {
   if (!base::MessageLoopForIO::current()->WatchFileDescriptor(
           file_descriptor_,
           false,  // persistent=false: We want it to fire once and reschedule.
-          base::MessageLoopForIO::WATCH_READ,
-          watcher_.get(),
+          base::MessageLoopForIO::WATCH_READ, watcher_.get(),
           &watcher_delegate_)) {
     LOG(ERROR) << "Unable to watch " << kLowMemFile;
   }
@@ -168,24 +165,25 @@ void LowMemoryObserverImpl::StartWatchingDescriptor() {
 ////////////////////////////////////////////////////////////////////////////////
 // LowMemoryObserver
 
-LowMemoryObserver::LowMemoryObserver() : observer_(new LowMemoryObserverImpl) {}
+LowMemoryObserver::LowMemoryObserver() : observer_(new LowMemoryObserverImpl) {
+}
 
-LowMemoryObserver::~LowMemoryObserver() { Stop(); }
+LowMemoryObserver::~LowMemoryObserver() {
+  Stop();
+}
 
 void LowMemoryObserver::Start() {
   BrowserThread::PostTask(
-      BrowserThread::FILE,
-      FROM_HERE,
+      BrowserThread::FILE, FROM_HERE,
       base::Bind(&LowMemoryObserverImpl::StartObservingOnFileThread,
                  observer_.get()));
 }
 
 void LowMemoryObserver::Stop() {
   BrowserThread::PostTask(
-      BrowserThread::FILE,
-      FROM_HERE,
+      BrowserThread::FILE, FROM_HERE,
       base::Bind(&LowMemoryObserverImpl::StopObservingOnFileThread,
                  observer_.get()));
 }
 
-}  // namespace chromeos
+}  // namespace memory

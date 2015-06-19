@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_MEMORY_SYSTEM_MEMORY_STATS_RECORDER_H_
-#define CHROME_BROWSER_CHROMEOS_MEMORY_SYSTEM_MEMORY_STATS_RECORDER_H_
+#ifndef CHROME_BROWSER_MEMORY_SYSTEM_MEMORY_STATS_RECORDER_H_
+#define CHROME_BROWSER_MEMORY_SYSTEM_MEMORY_STATS_RECORDER_H_
 
-namespace chromeos {
+namespace memory {
 
 // The type of memory UMA stats to be recorded in RecordMemoryStats.
 enum RecordMemoryStatsType {
@@ -21,6 +21,6 @@ enum RecordMemoryStatsType {
 
 void RecordMemoryStats(RecordMemoryStatsType type);
 
-}  // namespace chromeos
+}  // namespace memory
 
-#endif  // CHROME_BROWSER_CHROMEOS_MEMORY_SYSTEM_MEMORY_STATS_RECORDER_H_
+#endif  // CHROME_BROWSER_MEMORY_SYSTEM_MEMORY_STATS_RECORDER_H_

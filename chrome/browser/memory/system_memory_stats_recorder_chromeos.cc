@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/memory/system_memory_stats_recorder.h"
+#include "chrome/browser/memory/system_memory_stats_recorder.h"
 
 #include "base/metrics/histogram_macros.h"
 #include "base/process/process_metrics.h"
+
+namespace memory {
 
 // Record a size in megabytes, over a potential interval up to 32 GB.
 #define UMA_HISTOGRAM_AVAILABLE_MEGABYTES(name, sample) \
@@ -30,8 +32,6 @@
 
 #define UMA_HISTOGRAM_MEGABYTES_LINEAR(name, sample) \
   UMA_HISTOGRAM_LINEAR(name, sample, 2500, 50)
-
-namespace chromeos {
 
 void RecordMemoryStats(RecordMemoryStatsType type) {
   base::SystemMemoryInfoKB memory;
@@ -91,4 +91,4 @@ void RecordMemoryStats(RecordMemoryStatsType type) {
   }
 }
 
-}  // namespace chromeos
+}  // namespace memory

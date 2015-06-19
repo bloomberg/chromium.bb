@@ -16,7 +16,6 @@ class CommandLine;
 
 namespace chromeos {
 class ChromeUserManager;
-class OomPriorityManager;
 class ProfileHelper;
 class TimeZoneResolver;
 }
@@ -27,6 +26,10 @@ class AutomaticRebootManager;
 class DeviceDisablingManager;
 class DeviceDisablingManagerDefaultDelegate;
 }
+}
+
+namespace memory {
+class OomPriorityManager;
 }
 
 namespace policy {
@@ -71,7 +74,7 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase,
 
   // Returns the out-of-memory priority manager.
   // Virtual for testing (see TestingBrowserProcessPlatformPart).
-  virtual chromeos::OomPriorityManager* oom_priority_manager();
+  virtual memory::OomPriorityManager* oom_priority_manager();
 
   // Returns the ProfileHelper instance that is used to identify
   // users and their profiles in Chrome OS multi user session.
@@ -107,7 +110,7 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase,
   bool created_profile_helper_;
   scoped_ptr<chromeos::ProfileHelper> profile_helper_;
 
-  scoped_ptr<chromeos::OomPriorityManager> oom_priority_manager_;
+  scoped_ptr<memory::OomPriorityManager> oom_priority_manager_;
 
   scoped_ptr<chromeos::system::AutomaticRebootManager>
       automatic_reboot_manager_;

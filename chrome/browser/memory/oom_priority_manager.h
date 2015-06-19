@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_MEMORY_OOM_PRIORITY_MANAGER_H_
-#define CHROME_BROWSER_CHROMEOS_MEMORY_OOM_PRIORITY_MANAGER_H_
+#ifndef CHROME_BROWSER_MEMORY_OOM_PRIORITY_MANAGER_H_
+#define CHROME_BROWSER_MEMORY_OOM_PRIORITY_MANAGER_H_
 
 #include <utility>
 #include <vector>
@@ -23,7 +23,7 @@
 
 class GURL;
 
-namespace chromeos {
+namespace memory {
 
 class LowMemoryObserver;
 
@@ -192,6 +192,6 @@ class OomPriorityManager : public content::NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(OomPriorityManager);
 };
 
-}  // namespace chromeos
+}  // namespace memory
 
-#endif  // CHROME_BROWSER_CHROMEOS_MEMORY_OOM_PRIORITY_MANAGER_H_
+#endif  // CHROME_BROWSER_MEMORY_OOM_PRIORITY_MANAGER_H_

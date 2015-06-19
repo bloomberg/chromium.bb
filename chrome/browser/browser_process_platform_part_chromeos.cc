@@ -11,7 +11,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/session/chrome_session_manager.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_impl.h"
-#include "chrome/browser/chromeos/memory/oom_priority_manager.h"
 #include "chrome/browser/chromeos/net/delay_network_call.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -20,6 +19,7 @@
 #include "chrome/browser/chromeos/system/device_disabling_manager.h"
 #include "chrome/browser/chromeos/system/device_disabling_manager_default_delegate.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
+#include "chrome/browser/memory/oom_priority_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/geolocation/simple_geolocation_provider.h"
@@ -92,11 +92,10 @@ session_manager::SessionManager* BrowserProcessPlatformPart::SessionManager() {
   return session_manager_.get();
 }
 
-chromeos::OomPriorityManager*
-    BrowserProcessPlatformPart::oom_priority_manager() {
+memory::OomPriorityManager* BrowserProcessPlatformPart::oom_priority_manager() {
   DCHECK(CalledOnValidThread());
   if (!oom_priority_manager_.get())
-    oom_priority_manager_.reset(new chromeos::OomPriorityManager());
+    oom_priority_manager_.reset(new memory::OomPriorityManager());
   return oom_priority_manager_.get();
 }
 

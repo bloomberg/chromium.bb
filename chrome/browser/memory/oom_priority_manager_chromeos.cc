@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/memory/oom_priority_manager.h"
+#include "chrome/browser/memory/oom_priority_manager.h"
 
 #include <algorithm>
 #include <set>
@@ -27,9 +27,9 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
-#include "chrome/browser/chromeos/memory/low_memory_observer.h"
-#include "chrome/browser/chromeos/memory/oom_memory_details.h"
-#include "chrome/browser/chromeos/memory/system_memory_stats_recorder.h"
+#include "chrome/browser/memory/low_memory_observer_chromeos.h"
+#include "chrome/browser/memory/oom_memory_details.h"
+#include "chrome/browser/memory/system_memory_stats_recorder.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -53,8 +53,7 @@ using base::TimeTicks;
 using content::BrowserThread;
 using content::WebContents;
 
-namespace chromeos {
-
+namespace memory {
 namespace {
 
 // The default interval in seconds after which to adjust the oom_score_adj
@@ -88,14 +87,14 @@ int64 IdFromWebContents(WebContents* web_contents) {
 // OomPriorityManager
 
 OomPriorityManager::TabStats::TabStats()
-  : is_app(false),
-    is_reloadable_ui(false),
-    is_playing_audio(false),
-    is_pinned(false),
-    is_selected(false),
-    is_discarded(false),
-    renderer_handle(0),
-    tab_contents_id(0) {
+    : is_app(false),
+      is_reloadable_ui(false),
+      is_playing_audio(false),
+      is_pinned(false),
+      is_selected(false),
+      is_discarded(false),
+      renderer_handle(0),
+      tab_contents_id(0) {
 }
 
 OomPriorityManager::TabStats::~TabStats() {
@@ -109,15 +108,12 @@ OomPriorityManager::OomPriorityManager()
   if (!base::MemoryPressureMonitor::Get())
     low_memory_observer_.reset(new LowMemoryObserver);
 
-  registrar_.Add(this,
-      content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
-      content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this,
-      content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-      content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this,
-      content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
-      content::NotificationService::AllBrowserContextsAndSources());
+  registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
+                 content::NotificationService::AllBrowserContextsAndSources());
+  registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
+                 content::NotificationService::AllBrowserContextsAndSources());
+  registrar_.Add(this, content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
+                 content::NotificationService::AllBrowserContextsAndSources());
 }
 
 OomPriorityManager::~OomPriorityManager() {
@@ -126,17 +122,13 @@ OomPriorityManager::~OomPriorityManager() {
 
 void OomPriorityManager::Start() {
   if (!timer_.IsRunning()) {
-    timer_.Start(FROM_HERE,
-                 TimeDelta::FromSeconds(kAdjustmentIntervalSeconds),
-                 this,
-                 &OomPriorityManager::AdjustOomPriorities);
+    timer_.Start(FROM_HERE, TimeDelta::FromSeconds(kAdjustmentIntervalSeconds),
+                 this, &OomPriorityManager::AdjustOomPriorities);
   }
   if (!recent_tab_discard_timer_.IsRunning()) {
     recent_tab_discard_timer_.Start(
-        FROM_HERE,
-        TimeDelta::FromSeconds(kRecentTabDiscardIntervalSeconds),
-        this,
-        &OomPriorityManager::RecordRecentTabDiscard);
+        FROM_HERE, TimeDelta::FromSeconds(kRecentTabDiscardIntervalSeconds),
+        this, &OomPriorityManager::RecordRecentTabDiscard);
   }
   start_time_ = TimeTicks::Now();
   // If a |LowMemoryObserver| exists we use the old system, otherwise we create
@@ -146,9 +138,9 @@ void OomPriorityManager::Start() {
   } else {
     base::MemoryPressureMonitor* monitor = base::MemoryPressureMonitor::Get();
     if (monitor) {
-      memory_pressure_listener_.reset(new base::MemoryPressureListener(
-          base::Bind(&OomPriorityManager::OnMemoryPressure,
-                     base::Unretained(this))));
+      memory_pressure_listener_.reset(
+          new base::MemoryPressureListener(base::Bind(
+              &OomPriorityManager::OnMemoryPressure, base::Unretained(this))));
       base::MemoryPressureListener::MemoryPressureLevel level =
           monitor->GetCurrentPressureLevel();
       if (level ==
@@ -174,7 +166,7 @@ std::vector<base::string16> OomPriorityManager::GetTabTitles() {
   std::vector<base::string16> titles;
   titles.reserve(stats.size());
   TabStatsList::iterator it = stats.begin();
-  for ( ; it != stats.end(); ++it) {
+  for (; it != stats.end(); ++it) {
     base::string16 str;
     str.reserve(4096);
     int score = oom_score_map_[it->child_process_host_id];
@@ -201,8 +193,7 @@ bool OomPriorityManager::DiscardTab() {
     return false;
   // Loop until we find a non-discarded tab to kill.
   for (TabStatsList::const_reverse_iterator stats_rit = stats.rbegin();
-       stats_rit != stats.rend();
-       ++stats_rit) {
+       stats_rit != stats.rend(); ++stats_rit) {
     int64 least_important_tab_id = stats_rit->tab_contents_id;
     if (DiscardTabById(least_important_tab_id))
       return true;
@@ -248,8 +239,7 @@ bool OomPriorityManager::IsReloadableUI(const GURL& url) {
   // Prefix-match against the table above. Use strncmp to avoid allocating
   // memory to convert the URL prefix constants into std::strings.
   for (size_t i = 0; i < arraysize(kReloadableUrlPrefixes); ++i) {
-    if (!strncmp(url.spec().c_str(),
-                 kReloadableUrlPrefixes[i],
+    if (!strncmp(url.spec().c_str(), kReloadableUrlPrefixes[i],
                  strlen(kReloadableUrlPrefixes[i])))
       return true;
   }
@@ -267,8 +257,8 @@ bool OomPriorityManager::DiscardTabById(int64 target_web_contents_id) {
       WebContents* web_contents = model->GetWebContentsAt(idx);
       int64 web_contents_id = IdFromWebContents(web_contents);
       if (web_contents_id == target_web_contents_id) {
-        LOG(WARNING) << "Discarding tab " << idx
-                     << " id " << target_web_contents_id;
+        LOG(WARNING) << "Discarding tab " << idx << " id "
+                     << target_web_contents_id;
         // Record statistics before discarding because we want to capture the
         // memory state that lead to the discard.
         RecordDiscardStatistics();
@@ -284,17 +274,17 @@ bool OomPriorityManager::DiscardTabById(int64 target_web_contents_id) {
 void OomPriorityManager::RecordDiscardStatistics() {
   // Record a raw count so we can compare to discard reloads.
   discard_count_++;
-  UMA_HISTOGRAM_CUSTOM_COUNTS(
-      "Tabs.Discard.DiscardCount", discard_count_, 1, 1000, 50);
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Tabs.Discard.DiscardCount", discard_count_, 1,
+                              1000, 50);
 
   // TODO(jamescook): Maybe incorporate extension count?
-  UMA_HISTOGRAM_CUSTOM_COUNTS(
-      "Tabs.Discard.TabCount", GetTabCount(), 1, 100, 50);
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Tabs.Discard.TabCount", GetTabCount(), 1, 100,
+                              50);
   // Record the discarded tab in relation to the amount of simultaneously
   // logged in users.
-  ash::MultiProfileUMA::RecordDiscardedTab(
-      ash::Shell::GetInstance()->session_state_delegate()->
-          NumberOfLoggedInUsers());
+  ash::MultiProfileUMA::RecordDiscardedTab(ash::Shell::GetInstance()
+                                               ->session_state_delegate()
+                                               ->NumberOfLoggedInUsers());
 
   // TODO(jamescook): If the time stats prove too noisy, then divide up users
   // based on how heavily they use Chrome using tab count as a proxy.
@@ -304,16 +294,16 @@ void OomPriorityManager::RecordDiscardStatistics() {
     TimeDelta interval = TimeTicks::Now() - start_time_;
     int interval_seconds = static_cast<int>(interval.InSeconds());
     // Record time in seconds over an interval of approximately 1 day.
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
-        "Tabs.Discard.InitialTime2", interval_seconds, 1, 100000, 50);
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Tabs.Discard.InitialTime2", interval_seconds,
+                                1, 100000, 50);
   } else {
     // Not the first discard, so compute time since last discard.
     TimeDelta interval = TimeTicks::Now() - last_discard_time_;
     int interval_ms = static_cast<int>(interval.InMilliseconds());
     // Record time in milliseconds over an interval of approximately 1 day.
     // Start at 100 ms to get extra resolution in the target 750 ms range.
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
-        "Tabs.Discard.IntervalTime2", interval_ms, 100, 100000 * 1000, 50);
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Tabs.Discard.IntervalTime2", interval_ms, 100,
+                                100000 * 1000, 50);
   }
   // Record chromeos's concept of system memory usage at the time of the
   // discard.
@@ -356,8 +346,7 @@ int OomPriorityManager::GetTabCount() const {
 
 // Returns true if |first| is considered less desirable to be killed
 // than |second|.
-bool OomPriorityManager::CompareTabStats(TabStats first,
-                                         TabStats second) {
+bool OomPriorityManager::CompareTabStats(TabStats first, TabStats second) {
   // Being currently selected is most important to protect.
   if (first.is_selected != second.is_selected)
     return first.is_selected;
@@ -439,27 +428,29 @@ void OomPriorityManager::Observe(int type,
       bool visible = *content::Details<bool>(details).ptr();
       if (visible) {
         content::RenderProcessHost* render_host =
-            content::Source<content::RenderWidgetHost>(source).ptr()->
-            GetProcess();
-        focused_tab_process_info_ = std::make_pair(render_host->GetID(),
-                                                   render_host->GetHandle());
+            content::Source<content::RenderWidgetHost>(source)
+                .ptr()
+                ->GetProcess();
+        focused_tab_process_info_ =
+            std::make_pair(render_host->GetID(), render_host->GetHandle());
 
         // If the currently focused tab already has a lower score, do not
         // set it. This can happen in case the newly focused tab is script
         // connected to the previous tab.
         ProcessScoreMap::iterator it;
         it = oom_score_map_.find(focused_tab_process_info_.first);
-        if (it == oom_score_map_.end()
-            || it->second != chrome::kLowestRendererOomScore) {
+        if (it == oom_score_map_.end() ||
+            it->second != chrome::kLowestRendererOomScore) {
           // By starting a timer we guarantee that the tab is focused for
           // certain amount of time. Secondly, it also does not add overhead
           // to the tab switching time.
           if (focus_tab_score_adjust_timer_.IsRunning())
             focus_tab_score_adjust_timer_.Reset();
           else
-            focus_tab_score_adjust_timer_.Start(FROM_HERE,
-              TimeDelta::FromMilliseconds(kFocusedTabScoreAdjustIntervalMs),
-              this, &OomPriorityManager::OnFocusTabScoreAdjustmentTimeout);
+            focus_tab_score_adjust_timer_.Start(
+                FROM_HERE,
+                TimeDelta::FromMilliseconds(kFocusedTabScoreAdjustIntervalMs),
+                this, &OomPriorityManager::OnFocusTabScoreAdjustmentTimeout);
         }
       }
       break;
@@ -547,8 +538,7 @@ OomPriorityManager::TabStatsList OomPriorityManager::GetTabStatsOnUIThread() {
 
 // static
 std::vector<OomPriorityManager::ProcessInfo>
-    OomPriorityManager::GetChildProcessInfos(
-    const TabStatsList& stats_list) {
+OomPriorityManager::GetChildProcessInfos(const TabStatsList& stats_list) {
   std::vector<ProcessInfo> process_infos;
   std::set<base::ProcessHandle> already_seen;
   for (TabStatsList::const_iterator iterator = stats_list.begin();
@@ -564,8 +554,8 @@ std::vector<OomPriorityManager::ProcessInfo>
       continue;
     }
 
-    process_infos.push_back(std::make_pair(
-        iterator->child_process_host_id, iterator->renderer_handle));
+    process_infos.push_back(std::make_pair(iterator->child_process_host_id,
+                                           iterator->renderer_handle));
   }
   return process_infos;
 }
@@ -591,14 +581,13 @@ void OomPriorityManager::AdjustOomPrioritiesOnFileThread(
   // the end, however, it's a pretty arbitrary range to use.  Higher
   // values are more likely to be killed by the OOM killer.
   float priority = chrome::kLowestRendererOomScore;
-  const int kPriorityRange = chrome::kHighestRendererOomScore -
-                             chrome::kLowestRendererOomScore;
+  const int kPriorityRange =
+      chrome::kHighestRendererOomScore - chrome::kLowestRendererOomScore;
   float priority_increment =
       static_cast<float>(kPriorityRange) / process_infos.size();
   for (const auto& process_info : process_infos) {
     int score = static_cast<int>(priority + 0.5f);
-    ProcessScoreMap::iterator it =
-        oom_score_map_.find(process_info.first);
+    ProcessScoreMap::iterator it = oom_score_map_.find(process_info.first);
     // If a process has the same score as the newly calculated value,
     // do not set it.
     if (it == oom_score_map_.end() || it->second != score) {
@@ -621,4 +610,4 @@ void OomPriorityManager::OnMemoryPressure(
   // consider to call PurgeBrowserMemory() before CRITICAL is reached.
 }
 
-}  // namespace chromeos
+}  // namespace memory

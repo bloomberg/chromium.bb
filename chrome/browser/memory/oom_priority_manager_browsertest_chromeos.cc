@@ -6,7 +6,7 @@
 #include "base/memory/memory_pressure_listener.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
-#include "chrome/browser/chromeos/memory/oom_priority_manager.h"
+#include "chrome/browser/memory/oom_priority_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
@@ -21,6 +21,7 @@
 
 using content::OpenURLParams;
 
+namespace memory {
 namespace {
 
 typedef InProcessBrowserTest OomPriorityManagerTest;
@@ -28,7 +29,7 @@ typedef InProcessBrowserTest OomPriorityManagerTest;
 IN_PROC_BROWSER_TEST_F(OomPriorityManagerTest, OomPriorityManagerBasics) {
   using content::WindowedNotificationObserver;
 
-  chromeos::OomPriorityManager* oom_priority_manager =
+  OomPriorityManager* oom_priority_manager =
       g_browser_process->platform_part()->oom_priority_manager();
   EXPECT_FALSE(oom_priority_manager->recent_tab_discard());
 
@@ -45,8 +46,7 @@ IN_PROC_BROWSER_TEST_F(OomPriorityManagerTest, OomPriorityManagerBasics) {
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::NotificationService::AllSources());
   OpenURLParams open2(GURL(chrome::kChromeUICreditsURL), content::Referrer(),
-                      NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_TYPED,
-                      false);
+                      NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_TYPED, false);
   browser()->OpenURL(open2);
   load2.Wait();
 
@@ -54,8 +54,7 @@ IN_PROC_BROWSER_TEST_F(OomPriorityManagerTest, OomPriorityManagerBasics) {
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::NotificationService::AllSources());
   OpenURLParams open3(GURL(chrome::kChromeUITermsURL), content::Referrer(),
-                      NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_TYPED,
-                      false);
+                      NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_TYPED, false);
   browser()->OpenURL(open3);
   load3.Wait();
 
@@ -67,8 +66,7 @@ IN_PROC_BROWSER_TEST_F(OomPriorityManagerTest, OomPriorityManagerBasics) {
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::NotificationService::AllSources());
   OpenURLParams open4(GURL(chrome::kChromeUIVersionURL), content::Referrer(),
-                      CURRENT_TAB, ui::PAGE_TRANSITION_TYPED,
-                      false);
+                      CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false);
   browser()->OpenURL(open4);
   load4.Wait();
 
@@ -76,9 +74,8 @@ IN_PROC_BROWSER_TEST_F(OomPriorityManagerTest, OomPriorityManagerBasics) {
   WindowedNotificationObserver load5(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::NotificationService::AllSources());
-  OpenURLParams open5(GURL("chrome://dns"), content::Referrer(),
-                      CURRENT_TAB, ui::PAGE_TRANSITION_TYPED,
-                      false);
+  OpenURLParams open5(GURL("chrome://dns"), content::Referrer(), CURRENT_TAB,
+                      ui::PAGE_TRANSITION_TYPED, false);
   browser()->OpenURL(open5);
   load5.Wait();
 
@@ -165,7 +162,7 @@ IN_PROC_BROWSER_TEST_F(OomPriorityManagerTest, OomPriorityManagerBasics) {
 // Test that the MemoryPressureListener event is properly triggering a tab
 // discard upon |MEMORY_PRESSURE_LEVEL_CRITICAL| event.
 IN_PROC_BROWSER_TEST_F(OomPriorityManagerTest, OomPressureListener) {
-  chromeos::OomPriorityManager* oom_priority_manager =
+  OomPriorityManager* oom_priority_manager =
       g_browser_process->platform_part()->oom_priority_manager();
   // Get three tabs open.
   content::WindowedNotificationObserver load1(
@@ -180,8 +177,7 @@ IN_PROC_BROWSER_TEST_F(OomPriorityManagerTest, OomPressureListener) {
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::NotificationService::AllSources());
   OpenURLParams open2(GURL(chrome::kChromeUICreditsURL), content::Referrer(),
-                      NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_TYPED,
-                      false);
+                      NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_TYPED, false);
   browser()->OpenURL(open2);
   load2.Wait();
   EXPECT_FALSE(oom_priority_manager->recent_tab_discard());
@@ -209,3 +205,4 @@ IN_PROC_BROWSER_TEST_F(OomPriorityManagerTest, OomPressureListener) {
 }
 
 }  // namespace
+}  // namespace memory

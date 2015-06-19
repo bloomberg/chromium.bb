@@ -8,12 +8,12 @@
 #include "base/logging.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/memory/oom_priority_manager.h"
+#include "chrome/browser/memory/oom_priority_manager.h"
 #include "chrome/common/url_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-namespace chromeos {
+namespace memory {
 
 typedef testing::Test OomPriorityManagerTest;
 
@@ -34,7 +34,7 @@ enum TestIndicies {
 // Tests the sorting comparator so that we know it's producing the
 // desired order.
 TEST_F(OomPriorityManagerTest, Comparator) {
-  chromeos::OomPriorityManager::TabStatsList test_list;
+  OomPriorityManager::TabStatsList test_list;
   const base::TimeTicks now = base::TimeTicks::Now();
 
   // Add kSelected last to verify we are sorting the array.
@@ -114,8 +114,7 @@ TEST_F(OomPriorityManagerTest, Comparator) {
     test_list.push_back(stats);
   }
 
-  std::sort(test_list.begin(),
-            test_list.end(),
+  std::sort(test_list.begin(), test_list.end(),
             OomPriorityManager::CompareTabStats);
 
   int index = 0;
@@ -142,18 +141,18 @@ TEST_F(OomPriorityManagerTest, Comparator) {
 }
 
 TEST_F(OomPriorityManagerTest, IsReloadableUI) {
-  EXPECT_TRUE(OomPriorityManager::IsReloadableUI(
-      GURL(chrome::kChromeUIDownloadsURL)));
-  EXPECT_TRUE(OomPriorityManager::IsReloadableUI(
-      GURL(chrome::kChromeUIHistoryURL)));
-  EXPECT_TRUE(OomPriorityManager::IsReloadableUI(
-      GURL(chrome::kChromeUINewTabURL)));
-  EXPECT_TRUE(OomPriorityManager::IsReloadableUI(
-      GURL(chrome::kChromeUISettingsURL)));
+  EXPECT_TRUE(
+      OomPriorityManager::IsReloadableUI(GURL(chrome::kChromeUIDownloadsURL)));
+  EXPECT_TRUE(
+      OomPriorityManager::IsReloadableUI(GURL(chrome::kChromeUIHistoryURL)));
+  EXPECT_TRUE(
+      OomPriorityManager::IsReloadableUI(GURL(chrome::kChromeUINewTabURL)));
+  EXPECT_TRUE(
+      OomPriorityManager::IsReloadableUI(GURL(chrome::kChromeUISettingsURL)));
 
   // Debugging URLs are not included.
-  EXPECT_FALSE(OomPriorityManager::IsReloadableUI(
-      GURL(chrome::kChromeUIDiscardsURL)));
+  EXPECT_FALSE(
+      OomPriorityManager::IsReloadableUI(GURL(chrome::kChromeUIDiscardsURL)));
   EXPECT_FALSE(OomPriorityManager::IsReloadableUI(
       GURL(chrome::kChromeUINetInternalsURL)));
 
@@ -168,8 +167,7 @@ TEST_F(OomPriorityManagerTest, GetProcessHandles) {
 
   // Empty stats list gives empty |process_id_pairs| list.
   OomPriorityManager::TabStatsList empty_list;
-  process_id_pairs =
-      OomPriorityManager::GetChildProcessInfos(empty_list);
+  process_id_pairs = OomPriorityManager::GetChildProcessInfos(empty_list);
   EXPECT_EQ(0u, process_id_pairs.size());
 
   // Two tabs in two different processes generates two
@@ -193,8 +191,7 @@ TEST_F(OomPriorityManagerTest, GetProcessHandles) {
   stats.child_process_host_id = 100;
   stats.renderer_handle = 0;
   zero_handle_list.push_back(stats);
-  process_id_pairs =
-      OomPriorityManager::GetChildProcessInfos(zero_handle_list);
+  process_id_pairs = OomPriorityManager::GetChildProcessInfos(zero_handle_list);
   EXPECT_EQ(0u, process_id_pairs.size());
 
   // Two tabs in the same process generates one handle out. When a duplicate
@@ -218,4 +215,4 @@ TEST_F(OomPriorityManagerTest, GetProcessHandles) {
   EXPECT_EQ(201, process_id_pairs[1].second);
 }
 
-}  // namespace chromeos
+}  // namespace memory
