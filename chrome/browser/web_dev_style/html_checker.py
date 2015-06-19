@@ -15,9 +15,52 @@ class HtmlChecker(object):
     self.output_api = output_api
     self.file_filter = file_filter
 
+  def ClassesUseDashFormCheck(self, line_number, line):
+    regex = self.input_api.re.compile("""
+        (?:^|\s)                    # start of line or whitespace
+        (class="[^"]*[A-Z_][^"]*")  # class contains caps or '_'
+        """,
+        self.input_api.re.VERBOSE)
+    return regex_check.RegexCheck(self.input_api.re, line_number, line, regex,
+        "Classes should use dash-form.")
+
+  def DoNotCloseSingleTagsCheck(self, line_number, line):
+    regex = r"(/>)"
+    return regex_check.RegexCheck(self.input_api.re, line_number, line, regex,
+        "Do not close single tags.")
+
+  def DoNotUseBrElementCheck(self, line_number, line):
+    regex = r"(<br)"
+    return regex_check.RegexCheck(self.input_api.re, line_number, line, regex,
+        "Do not use <br>; place blocking elements (<div>) as appropriate.")
+
+  def DoNotUseInputTypeButtonCheck(self, line_number, line):
+    regex = self.input_api.re.compile("""
+        (<input [^>]*  # "<input " followed by anything but ">"
+        type="button"  # type="button"
+        [^>]*>)        # anything but ">" then ">"
+        """,
+        self.input_api.re.VERBOSE)
+    return regex_check.RegexCheck(self.input_api.re, line_number, line, regex,
+        'Use the button element instead of <input type="button">')
+
+  def I18nContentJavaScriptCaseCheck(self, line_number, line):
+    regex = self.input_api.re.compile("""
+        (?:^|\s)           # start of line or whitespace
+        i18n-content="     # i18n-content="
+        ([A-Z]|.*[_-].*")  # starts with caps or contains '-' or '_'
+        """,
+        self.input_api.re.VERBOSE)
+    return regex_check.RegexCheck(self.input_api.re, line_number, line, regex,
+        "For i18n-content use javaScriptCase.")
+
   def LabelCheck(self, line_number, line):
-    return regex_check.RegexCheck(self.input_api.re, line_number, line,
-        r"(?:^|\s)(for=)",
+    regex = self.input_api.re.compile("""
+        (?:^|\s) # start of line or whitespace
+        (for=)   # for=
+        """,
+        self.input_api.re.VERBOSE)
+    return regex_check.RegexCheck(self.input_api.re, line_number, line, regex,
         "Avoid 'for' attribute on <label>. Place the input within the <label>, "
         "or use aria-labelledby for <select>.")
 
@@ -34,9 +77,14 @@ class HtmlChecker(object):
       errors = []
 
       for line_number, line in f.ChangedContents():
-        error = self.LabelCheck(line_number, line)
-        if error:
-          errors.append(error)
+        errors.extend(filter(None, [
+            self.ClassesUseDashFormCheck(line_number, line),
+            self.DoNotCloseSingleTagsCheck(line_number, line),
+            self.DoNotUseBrElementCheck(line_number, line),
+            self.DoNotUseInputTypeButtonCheck(line_number, line),
+            self.I18nContentJavaScriptCaseCheck(line_number, line),
+            self.LabelCheck(line_number, line),
+        ]))
 
       if errors:
         abs_local_path = f.AbsoluteLocalPath()

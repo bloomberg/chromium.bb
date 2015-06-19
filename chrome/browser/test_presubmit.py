@@ -38,36 +38,143 @@ class HtmlStyleTest(SuperMoxTestBase):
     output_api = self.mox.CreateMockAnything()
     self.checker = html_checker.HtmlChecker(input_api, output_api)
 
-  def ShouldFailLabelCheck(self, line):
-    """Checks that the label checker flags |line| as a style error."""
-    error = self.checker.LabelCheck(1, line)
+  def ShouldFailCheck(self, line, checker):
+    """Checks that the |checker| flags |line| as a style error."""
+    error = checker(1, line)
     self.assertNotEqual('', error, 'Should be flagged as style error: ' + line)
     highlight = GetHighlight(line, error).strip()
-    self.assertEqual('for=', highlight)
 
-  def ShouldPassLabelCheck(self, line):
-    """Checks that the label checker doesn't flag |line| as a style error."""
-    error = self.checker.LabelCheck(1, line)
+  def ShouldPassCheck(self, line, checker):
+    """Checks that the |checker| doesn't flag |line| as a style error."""
+    error = checker(1, line)
     self.assertEqual('', error, 'Should not be flagged as style error: ' + line)
 
-  def testForAttributeFails(self):
+  def testClassesUseDashFormCheckFails(self):
     lines = [
-      " for=\"abc\"",
+      ' <a class="Foo-bar" href="classBar"> ',
+      '<b class="foo-Bar"> ',
+      '<i class="foo_bar" >',
+      ' <hr class="fooBar"> ',
+    ]
+    for line in lines:
+      self.ShouldFailCheck(line, self.checker.ClassesUseDashFormCheck)
+
+  def testClassesUseDashFormCheckPasses(self):
+    lines = [
+      ' class="abc" ',
+      'class="foo-bar"',
+      '<div class="foo-bar" id="classBar"',
+    ]
+    for line in lines:
+      self.ShouldPassCheck(line, self.checker.ClassesUseDashFormCheck)
+
+  def testDoNotCloseSingleTagsCheckFails(self):
+    lines = [
+      "<input/>",
+      ' <input id="a" /> ',
+      "<div/>",
+      "<br/>",
+      "<br />",
+    ]
+    for line in lines:
+      self.ShouldFailCheck(line, self.checker.DoNotCloseSingleTagsCheck)
+
+  def testDoNotCloseSingleTagsCheckPasses(self):
+    lines = [
+      "<input>",
+      "<link>",
+      "<div></div>",
+      '<input text="/">',
+    ]
+    for line in lines:
+      self.ShouldPassCheck(line, self.checker.DoNotCloseSingleTagsCheck)
+
+  def testDoNotUseBrElementCheckFails(self):
+    lines = [
+      " <br>",
+      "<br  >  ",
+      "<br\>",
+      '<br name="a">',
+    ]
+    for line in lines:
+      self.ShouldFailCheck(
+          line, self.checker.DoNotUseBrElementCheck)
+
+  def testDoNotUseBrElementCheckPasses(self):
+    lines = [
+      "br",
+      "br>",
+      "give me a break"
+    ]
+    for line in lines:
+      self.ShouldPassCheck(
+          line, self.checker.DoNotUseBrElementCheck)
+
+  def testDoNotUseInputTypeButtonCheckFails(self):
+    lines = [
+      '<input type="button">',
+      ' <input id="a" type="button" >',
+      '<input type="button" id="a"> ',
+    ]
+    for line in lines:
+      self.ShouldFailCheck(line, self.checker.DoNotUseInputTypeButtonCheck)
+
+  def testDoNotUseInputTypeButtonCheckPasses(self):
+    lines = [
+      "<input>",
+      '<input type="text">',
+      '<input type="result">',
+      '<input type="submit">',
+      "<button>",
+      '<button type="button">',
+      '<button type="reset">',
+      '<button type="submit">',
+
+    ]
+    for line in lines:
+      self.ShouldPassCheck(line, self.checker.DoNotUseInputTypeButtonCheck)
+
+  def testI18nContentJavaScriptCaseCheckFails(self):
+    lines = [
+      ' i18n-content="foo-bar" ',
+      'i18n-content="foo_bar"',
+      'i18n-content="FooBar"',
+      'i18n-content="_foo"',
+      'i18n-content="foo_"',
+      'i18n-content="-foo"',
+      'i18n-content="foo-"',
+      'i18n-content="Foo"',
+    ]
+    for line in lines:
+      self.ShouldFailCheck(line, self.checker.I18nContentJavaScriptCaseCheck)
+
+  def testI18nContentJavaScriptCaseCheckPasses(self):
+    lines = [
+      ' i18n-content="abc" ',
+      'i18n-content="fooBar"',
+      '<div i18n-content="exampleTitle"',
+    ]
+    for line in lines:
+      self.ShouldPassCheck(line, self.checker.I18nContentJavaScriptCaseCheck)
+
+  def testLabelCheckFails(self):
+    lines = [
+      ' for="abc"',
       "for=    ",
       " \tfor=    ",
       "   for="
     ]
     for line in lines:
-      self.ShouldFailLabelCheck(line)
+      self.ShouldFailCheck(line, self.checker.LabelCheck)
 
-  def testOtherAttributesPass(self):
+  def testLabelCheckPass(self):
     lines = [
-      " my-for=\"abc\" ",
-      " myfor=\"abc\" ",
+      ' my-for="abc" ',
+      ' myfor="abc" ',
       " <for",
     ]
     for line in lines:
-      self.ShouldPassLabelCheck(line)
+      self.ShouldPassCheck(line, self.checker.LabelCheck)
 
 
 class ResourceStyleGuideTest(SuperMoxTestBase):
