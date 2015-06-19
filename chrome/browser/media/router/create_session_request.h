@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "chrome/browser/media/router/media_route.h"
 #include "chrome/browser/media/router/media_source.h"
 #include "content/public/browser/presentation_service_delegate.h"
 #include "url/gurl.h"
@@ -27,7 +28,8 @@ namespace media_router {
 class CreateSessionRequest {
  public:
   using PresentationSessionSuccessCallback =
-      content::PresentationServiceDelegate::PresentationSessionSuccessCallback;
+      base::Callback<void(const content::PresentationSessionInfo&,
+                          const MediaRoute::Id&)>;
   using PresentationSessionErrorCallback =
       content::PresentationServiceDelegate::PresentationSessionErrorCallback;
 
@@ -50,7 +52,7 @@ class CreateSessionRequest {
   // Invokes |success_cb_| or |error_cb_| with the given arguments.
   // These functions can only be invoked once per instance. Further invocations
   // are no-op.
-  void MaybeInvokeSuccessCallback();
+  void MaybeInvokeSuccessCallback(const MediaRoute::Id& route_id);
   void MaybeInvokeErrorCallback(const content::PresentationError& error);
 
  private:

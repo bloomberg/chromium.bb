@@ -148,6 +148,21 @@ class PresentationServiceDelegateImpl
   MediaSource GetMediaSourceFromListener(
       content::PresentationScreenAvailabilityListener* listener);
 
+  void OnJoinRouteResponse(int render_process_id,
+                           int render_frame_id,
+                           const content::PresentationSessionInfo& session,
+                           const PresentationSessionSuccessCallback& success_cb,
+                           const PresentationSessionErrorCallback& error_cb,
+                           scoped_ptr<MediaRoute> route,
+                           const std::string& error_text);
+
+  void OnStartSessionSucceeded(
+      int render_process_id,
+      int render_frame_id,
+      const PresentationSessionSuccessCallback& success_cb,
+      const content::PresentationSessionInfo& new_session,
+      const MediaRoute::Id& route_id);
+
   // Returns |true| if the frame is the main frame of |web_contents_|.
   bool IsMainFrame(int render_process_id, int render_frame_id) const;
 

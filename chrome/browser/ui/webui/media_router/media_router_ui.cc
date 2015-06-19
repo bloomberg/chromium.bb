@@ -195,7 +195,8 @@ void MediaRouterUI::HandleRouteResponseForPresentation(
   } else {
     // TODO(imcheng): Presentation ID should come from the response
     // as the IDs might not be the same.
-    presentation_session_request_->MaybeInvokeSuccessCallback();
+    presentation_session_request_->MaybeInvokeSuccessCallback(
+        route->media_route_id());
   }
 }
 

@@ -23,7 +23,8 @@ class CreateSessionRequestTest : public ::testing::Test {
   ~CreateSessionRequestTest() override {}
 
   void OnSuccess(const content::PresentationSessionInfo& expected_info,
-                 const content::PresentationSessionInfo& actual_info) {
+                 const content::PresentationSessionInfo& actual_info,
+                 const MediaRoute::Id& route_id) {
     cb_invoked_ = true;
     EXPECT_EQ(expected_info.presentation_url, actual_info.presentation_url);
     EXPECT_EQ(expected_info.presentation_id, actual_info.presentation_id);
@@ -36,7 +37,8 @@ class CreateSessionRequestTest : public ::testing::Test {
     EXPECT_EQ(expected_error.message, actual_error.message);
   }
 
-  void FailOnSuccess(const content::PresentationSessionInfo& info) {
+  void FailOnSuccess(const content::PresentationSessionInfo& info,
+    const MediaRoute::Id& route_id) {
     FAIL() << "Success callback should not have been called.";
   }
 
@@ -77,7 +79,7 @@ TEST_F(CreateSessionRequestTest, SuccessCallback) {
                  session_info),
       base::Bind(&CreateSessionRequestTest::FailOnError,
                  base::Unretained(this)));
-  context.MaybeInvokeSuccessCallback();
+  context.MaybeInvokeSuccessCallback("routeid");
   // No-op since success callback is already invoked.
   context.MaybeInvokeErrorCallback(content::PresentationError(
       content::PRESENTATION_ERROR_NO_AVAILABLE_SCREENS, "Error message"));
@@ -99,7 +101,7 @@ TEST_F(CreateSessionRequestTest, ErrorCallback) {
                  error));
   context.MaybeInvokeErrorCallback(error);
   // No-op since error callback is already invoked.
-  context.MaybeInvokeSuccessCallback();
+  context.MaybeInvokeSuccessCallback("routeid");
   EXPECT_TRUE(cb_invoked_);
 }
 

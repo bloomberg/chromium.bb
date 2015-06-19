@@ -28,9 +28,10 @@ CreateSessionRequest::CreateSessionRequest(
 CreateSessionRequest::~CreateSessionRequest() {
 }
 
-void CreateSessionRequest::MaybeInvokeSuccessCallback() {
+void CreateSessionRequest::MaybeInvokeSuccessCallback(
+    const MediaRoute::Id& route_id) {
   if (!cb_invoked_) {
-    success_cb_.Run(presentation_info_);
+    success_cb_.Run(presentation_info_, route_id);
     cb_invoked_ = true;
   }
 }
