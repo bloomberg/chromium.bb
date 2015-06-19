@@ -656,6 +656,11 @@ void FrameFetchContext::countClientHintsViewportWidth()
     UseCounter::count(frame(), UseCounter::ClientHintsViewportWidth);
 }
 
+bool FrameFetchContext::isLowPriorityIframe() const
+{
+    return !frame()->isMainFrame() && frame()->settings() && frame()->settings()->lowPriorityIframes();
+}
+
 DEFINE_TRACE(FrameFetchContext)
 {
     visitor->trace(m_document);

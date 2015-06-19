@@ -65,7 +65,7 @@ ResourceLoadPriority ResourceFetcher::loadPriority(Resource::Type type, const Fe
 
     switch (type) {
     case Resource::MainResource:
-        return ResourceLoadPriorityVeryHigh;
+        return context().isLowPriorityIframe() ? ResourceLoadPriorityVeryLow : ResourceLoadPriorityVeryHigh;
     case Resource::CSSStyleSheet:
         return ResourceLoadPriorityHigh;
     case Resource::Raw:

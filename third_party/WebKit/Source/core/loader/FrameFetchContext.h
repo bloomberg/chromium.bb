@@ -104,6 +104,7 @@ public:
     void upgradeInsecureRequest(FetchRequest&) override;
     void addClientHintsIfNecessary(FetchRequest&) override;
     void addCSPHeaderIfNecessary(Resource::Type, FetchRequest&) override;
+    bool isLowPriorityIframe() const override;
 
     virtual void countClientHintsDPR() override;
     virtual void countClientHintsResourceWidth() override;

@@ -178,7 +178,7 @@ void LinkLoader::preloadIfNeeded(const LinkRelAttribute& relAttribute, const KUR
             return;
         }
         FetchRequest linkRequest(ResourceRequest(document.completeURL(href)), FetchInitiatorTypeNames::link);
-        linkRequest.setPriority(ResourceFetcher::loadPriority(priorityType, linkRequest));
+        linkRequest.setPriority(document.fetcher()->loadPriority(priorityType, linkRequest));
         Settings* settings = document.settings();
         if (settings && settings->logPreload())
             document.addConsoleMessage(ConsoleMessage::create(OtherMessageSource, DebugMessageLevel, String("Preload triggered for " + href.host() + href.path())));

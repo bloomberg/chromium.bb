@@ -106,6 +106,7 @@ public:
     virtual void upgradeInsecureRequest(FetchRequest&);
     virtual void addClientHintsIfNecessary(FetchRequest&);
     virtual void addCSPHeaderIfNecessary(Resource::Type, FetchRequest&);
+    virtual bool isLowPriorityIframe() const { return false; }
 
 protected:
     FetchContext() { }
