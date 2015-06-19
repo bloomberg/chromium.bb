@@ -192,6 +192,7 @@ void DefaultDisplayManager::OnAcceleratedWidgetAvailable(
     gfx::AcceleratedWidget widget,
     float device_pixel_ratio) {
   context_provider_->SetAcceleratedWidget(widget);
+  OnMetricsChanged(metrics_.size_in_pixels.To<gfx::Size>(), device_pixel_ratio);
 }
 
 void DefaultDisplayManager::OnAcceleratedWidgetDestroyed() {
