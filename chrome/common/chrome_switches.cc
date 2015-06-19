@@ -1061,6 +1061,10 @@ const char kSyncDeferredStartupTimeoutSeconds[] =
 const char kSyncEnableGetUpdateAvoidance[]   =
     "sync-enable-get-update-avoidance";
 
+// Enables clearing of sync data when a user enables passphrase encryption.
+const char kSyncEnableClearDataOnPassphraseEncryption[] =
+    "enable-clear-sync-data-on-passphrase-encryption";
+
 // Disable data backup when user's not signed in.
 const char kSyncDisableBackup[] = "disable-sync-backup";
 

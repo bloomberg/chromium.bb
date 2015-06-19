@@ -53,7 +53,7 @@ enum BootstrapTokenType {
 // methods must be invoked on the sync thread.
 class SYNC_EXPORT SyncEncryptionHandler {
  public:
-  struct NigoriState;
+  class NigoriState;
 
   // All Observer methods are done synchronously from within a transaction and
   // on the sync thread.
@@ -134,7 +134,9 @@ class SYNC_EXPORT SyncEncryptionHandler {
     virtual ~Observer();
   };
 
-  struct NigoriState {
+  class SYNC_EXPORT NigoriState {
+   public:
+    NigoriState() {}
     sync_pb::NigoriSpecifics nigori_specifics;
   };
 

@@ -23,7 +23,8 @@ void SyncBackendHostMock::Initialize(
     scoped_ptr<syncer::SyncManagerFactory> sync_manager_factory,
     scoped_ptr<syncer::UnrecoverableErrorHandler> unrecoverable_error_handler,
     const base::Closure& report_unrecoverable_error_function,
-    syncer::NetworkResources* network_resources) {
+    syncer::NetworkResources* network_resources,
+    scoped_ptr<syncer::SyncEncryptionHandler::NigoriState> saved_nigori_state) {
   frontend->OnBackendInitialized(
       syncer::WeakHandle<syncer::JsBackend>(),
       syncer::WeakHandle<syncer::DataTypeDebugInfoListener>(),
@@ -136,4 +137,3 @@ void SyncBackendHostMock::set_fail_initial_download(bool should_fail) {
 }
 
 }  // namespace browser_sync
-

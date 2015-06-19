@@ -116,7 +116,9 @@ class SyncBackendHostNoReturn : public SyncBackendHostMock {
       scoped_ptr<syncer::SyncManagerFactory> sync_manager_factory,
       scoped_ptr<syncer::UnrecoverableErrorHandler> unrecoverable_error_handler,
       const base::Closure& report_unrecoverable_error_function,
-      syncer::NetworkResources* network_resources) override {}
+      syncer::NetworkResources* network_resources,
+      scoped_ptr<syncer::SyncEncryptionHandler::NigoriState> saved_nigori_state)
+      override {}
 };
 
 class SyncBackendHostMockCollectDeleteDirParam : public SyncBackendHostMock {
@@ -135,7 +137,9 @@ class SyncBackendHostMockCollectDeleteDirParam : public SyncBackendHostMock {
       scoped_ptr<syncer::SyncManagerFactory> sync_manager_factory,
       scoped_ptr<syncer::UnrecoverableErrorHandler> unrecoverable_error_handler,
       const base::Closure& report_unrecoverable_error_function,
-      syncer::NetworkResources* network_resources) override {
+      syncer::NetworkResources* network_resources,
+      scoped_ptr<syncer::SyncEncryptionHandler::NigoriState> saved_nigori_state)
+      override {
     delete_dir_param_->push_back(delete_sync_data_folder);
     SyncBackendHostMock::Initialize(frontend, sync_thread.Pass(),
                                     event_handler, service_url, credentials,
@@ -143,7 +147,8 @@ class SyncBackendHostMockCollectDeleteDirParam : public SyncBackendHostMock {
                                     sync_manager_factory.Pass(),
                                     unrecoverable_error_handler.Pass(),
                                     report_unrecoverable_error_function,
-                                    network_resources);
+                                    network_resources,
+                                    saved_nigori_state.Pass());
   }
 
  private:
@@ -703,6 +708,27 @@ TEST_F(ProfileSyncServiceTest, MemoryPressureRecording) {
                 sync_driver::prefs::kSyncMemoryPressureWarningCount),
             2);
   EXPECT_TRUE(sync_prefs.DidSyncShutdownCleanly());
+}
+
+// Verify that OnLocalSetPassphraseEncryption shuts down and restarts sync.
+TEST_F(ProfileSyncServiceTest, OnLocalSetPassphraseEncryption) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kSyncEnableClearDataOnPassphraseEncryption);
+  IssueTestTokens();
+  CreateService(browser_sync::AUTO_START);
+  ExpectDataTypeManagerCreation(1);
+  ExpectSyncBackendHostCreation(1);
+  InitializeForNthSync();
+  EXPECT_TRUE(service()->IsSyncActive());
+  EXPECT_EQ(ProfileSyncService::SYNC, service()->backend_mode());
+  testing::Mock::VerifyAndClearExpectations(components_factory());
+
+  ExpectDataTypeManagerCreation(1);
+  ExpectSyncBackendHostCreation(1);
+  const syncer::SyncEncryptionHandler::NigoriState nigori_state;
+  service()->OnLocalSetPassphraseEncryption(nigori_state);
+  PumpLoop();
+  testing::Mock::VerifyAndClearExpectations(components_factory());
 }
 
 }  // namespace

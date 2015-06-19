@@ -39,7 +39,9 @@ struct DoInitializeOptions {
       const std::string& restored_keystore_key_for_bootstrapping,
       scoped_ptr<syncer::InternalComponentsFactory> internal_components_factory,
       scoped_ptr<syncer::UnrecoverableErrorHandler> unrecoverable_error_handler,
-      const base::Closure& report_unrecoverable_error_function);
+      const base::Closure& report_unrecoverable_error_function,
+      scoped_ptr<syncer::SyncEncryptionHandler::NigoriState>
+          saved_nigori_state);
   ~DoInitializeOptions();
 
   base::MessageLoop* sync_loop;
@@ -61,6 +63,7 @@ struct DoInitializeOptions {
   scoped_ptr<syncer::InternalComponentsFactory> internal_components_factory;
   scoped_ptr<syncer::UnrecoverableErrorHandler> unrecoverable_error_handler;
   base::Closure report_unrecoverable_error_function;
+  scoped_ptr<syncer::SyncEncryptionHandler::NigoriState> saved_nigori_state;
 };
 
 // Helper struct to handle currying params to

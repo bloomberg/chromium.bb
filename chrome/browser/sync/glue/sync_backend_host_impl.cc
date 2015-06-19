@@ -107,7 +107,8 @@ void SyncBackendHostImpl::Initialize(
     scoped_ptr<syncer::SyncManagerFactory> sync_manager_factory,
     scoped_ptr<syncer::UnrecoverableErrorHandler> unrecoverable_error_handler,
     const base::Closure& report_unrecoverable_error_function,
-    syncer::NetworkResources* network_resources) {
+    syncer::NetworkResources* network_resources,
+    scoped_ptr<syncer::SyncEncryptionHandler::NigoriState> saved_nigori_state) {
   registrar_.reset(new browser_sync::SyncBackendRegistrar(name_,
                                             profile_,
                                             sync_thread.Pass()));
@@ -157,7 +158,8 @@ void SyncBackendHostImpl::Initialize(
       scoped_ptr<InternalComponentsFactory>(
           new syncer::InternalComponentsFactoryImpl(factory_switches)).Pass(),
       unrecoverable_error_handler.Pass(),
-      report_unrecoverable_error_function));
+      report_unrecoverable_error_function,
+      saved_nigori_state.Pass()));
   InitCore(init_opts.Pass());
 }
 

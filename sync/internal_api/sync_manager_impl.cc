@@ -287,6 +287,13 @@ void SyncManagerImpl::Init(InitArgs* args) {
     return;
   }
 
+  // Now that we have opened the Directory we can restore any previously saved
+  // nigori specifics.
+  if (args->saved_nigori_state) {
+    sync_encryption_handler_->RestoreNigori(*args->saved_nigori_state);
+    args->saved_nigori_state.reset();
+  }
+
   connection_manager_.reset(new SyncAPIServerConnectionManager(
       args->service_url.host() + args->service_url.path(),
       args->service_url.EffectiveIntPort(),

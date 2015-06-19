@@ -536,14 +536,14 @@ void ProfileSyncService::InitializeBackend(bool delete_stale_data) {
           new browser_sync::BackendUnrecoverableErrorHandler(
               MakeWeakHandle(weak_factory_.GetWeakPtr())));
 
-  backend_->Initialize(
-      this, sync_thread_.Pass(), GetJsEventHandler(), sync_service_url_,
-      credentials, delete_stale_data,
-      scoped_ptr<syncer::SyncManagerFactory>(
-          new syncer::SyncManagerFactory(GetManagerType())).Pass(),
-      backend_unrecoverable_error_handler.Pass(),
-      base::Bind(browser_sync::ChromeReportUnrecoverableError),
-      network_resources_.get());
+  backend_->Initialize(this, sync_thread_.Pass(), GetJsEventHandler(),
+                       sync_service_url_, credentials, delete_stale_data,
+                       scoped_ptr<syncer::SyncManagerFactory>(
+                           new syncer::SyncManagerFactory(GetManagerType()))
+                           .Pass(),
+                       backend_unrecoverable_error_handler.Pass(),
+                       base::Bind(browser_sync::ChromeReportUnrecoverableError),
+                       network_resources_.get(), saved_nigori_state_.Pass());
 }
 
 bool ProfileSyncService::IsEncryptedDatatypeEnabled() const {
@@ -1418,13 +1418,20 @@ void ProfileSyncService::OnActionableError(const SyncProtocolError& error) {
 void ProfileSyncService::OnLocalSetPassphraseEncryption(
     const syncer::SyncEncryptionHandler::NigoriState& nigori_state) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  // TODO(maniscalco): At this point the user has set a custom passphrase and we
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSyncEnableClearDataOnPassphraseEncryption))
+    return;
+
+  // At this point the user has set a custom passphrase and we
   // have received the updated nigori state. Time to cache the nigori state,
   // shutdown sync, then restart it and restore the cached nigori state.
-  //
-  // We should also clear the bootstrap keystore key from the pref before
-  // restarting sync to ensure we obtain a new, valid one when we perform the
-  // configuration sync cycle (crbug.com/490836).
+  ShutdownImpl(syncer::DISABLE_SYNC);
+  saved_nigori_state_.reset(
+      new syncer::SyncEncryptionHandler::NigoriState(nigori_state));
+  // TODO(maniscalco): We should also clear the bootstrap keystore key from the
+  // pref before restarting sync to ensure we obtain a new, valid one when we
+  // perform the configuration sync cycle (crbug.com/490836).
+  startup_controller_->TryStart();
 }
 
 void ProfileSyncService::OnConfigureDone(

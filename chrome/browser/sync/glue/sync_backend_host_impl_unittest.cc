@@ -218,7 +218,8 @@ class SyncBackendHostTest : public testing::Test {
         fake_manager_factory_.Pass(),
         make_scoped_ptr(new syncer::TestUnrecoverableErrorHandler),
         base::Closure(),
-        network_resources_.get());
+        network_resources_.get(),
+        saved_nigori_state_.Pass());
     base::RunLoop run_loop;
     BrowserThread::PostDelayedTask(BrowserThread::UI, FROM_HERE,
                                    run_loop.QuitClosure(),
@@ -292,6 +293,7 @@ class SyncBackendHostTest : public testing::Test {
   FakeSyncManager* fake_manager_;
   syncer::ModelTypeSet enabled_types_;
   scoped_ptr<syncer::NetworkResources> network_resources_;
+  scoped_ptr<syncer::SyncEncryptionHandler::NigoriState> saved_nigori_state_;
 };
 
 // Test basic initialization with no initial types (first time initialization).

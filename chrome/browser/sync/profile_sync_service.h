@@ -1090,6 +1090,9 @@ class ProfileSyncService : public sync_driver::SyncService,
   // Listens for the system being under memory pressure.
   scoped_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 
+  // Used to save/restore nigori state across backend instances. May be null.
+  scoped_ptr<syncer::SyncEncryptionHandler::NigoriState> saved_nigori_state_;
+
   base::WeakPtrFactory<ProfileSyncService> weak_factory_;
 
   // We don't use |weak_factory_| for the StartupController because the weak

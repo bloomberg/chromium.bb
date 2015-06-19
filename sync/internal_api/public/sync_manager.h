@@ -269,6 +269,9 @@ class SYNC_EXPORT SyncManager {
     //
     // Must outlive SyncManager.
     CancelationSignal* cancelation_signal;
+
+    // Optional nigori state to be restored.
+    scoped_ptr<SyncEncryptionHandler::NigoriState> saved_nigori_state;
   };
 
   SyncManager();

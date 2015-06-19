@@ -291,6 +291,7 @@ extern const char kSyncServiceURL[];
 extern const char kSyncDisableDeferredStartup[];
 extern const char kSyncDeferredStartupTimeoutSeconds[];
 extern const char kSyncEnableGetUpdateAvoidance[];
+extern const char kSyncEnableClearDataOnPassphraseEncryption[];
 extern const char kSyncDisableBackup[];
 extern const char kSyncDisableRollback[];
 extern const char kTestName[];

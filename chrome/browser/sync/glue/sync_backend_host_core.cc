@@ -71,7 +71,8 @@ DoInitializeOptions::DoInitializeOptions(
     const std::string& restored_keystore_key_for_bootstrapping,
     scoped_ptr<syncer::InternalComponentsFactory> internal_components_factory,
     scoped_ptr<syncer::UnrecoverableErrorHandler> unrecoverable_error_handler,
-    const base::Closure& report_unrecoverable_error_function)
+    const base::Closure& report_unrecoverable_error_function,
+    scoped_ptr<syncer::SyncEncryptionHandler::NigoriState> saved_nigori_state)
     : sync_loop(sync_loop),
       registrar(registrar),
       routing_info(routing_info),
@@ -89,7 +90,8 @@ DoInitializeOptions::DoInitializeOptions(
           restored_keystore_key_for_bootstrapping),
       internal_components_factory(internal_components_factory.Pass()),
       unrecoverable_error_handler(unrecoverable_error_handler.Pass()),
-      report_unrecoverable_error_function(report_unrecoverable_error_function) {
+      report_unrecoverable_error_function(report_unrecoverable_error_function),
+      saved_nigori_state(saved_nigori_state.Pass()) {
 }
 
 DoInitializeOptions::~DoInitializeOptions() {}
@@ -450,6 +452,7 @@ void SyncBackendHostCore::DoInitialize(
   args.report_unrecoverable_error_function =
       options->report_unrecoverable_error_function;
   args.cancelation_signal = &stop_syncing_signal_;
+  args.saved_nigori_state = options->saved_nigori_state.Pass();
   sync_manager_->Init(&args);
 }
 
