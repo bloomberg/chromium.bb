@@ -751,7 +751,7 @@ copy_ex("chrome_public_apk_assets") {
 
 # GYP: //chrome/android/chrome_apk.gyp:chrome_apk_manifest
 jinja_template("chrome_public_apk_manifest") {
-  input = "java_staging/AndroidManifest.xml"
+  input = "java/AndroidManifest.xml"
   output = "$root_gen_dir/chrome_public_apk_manifest/AndroidManifest.xml"
   variables = jinja_variables
   variables += [

@@ -270,7 +270,7 @@
       'target_name': 'chrome_public_manifest',
       'type': 'none',
       'variables': {
-        'jinja_inputs': ['<(chrome_java_dir)/AndroidManifest.xml'],
+        'jinja_inputs': ['java/AndroidManifest.xml'],
         'jinja_output': '<(chrome_public_apk_manifest)',
         'jinja_variables': [
           'channel=<(android_channel)',
